@@ -6,13 +6,17 @@ use crate::model::document::Document;
 use snafu::Snafu;
 use std::io::{self, Cursor, Read};
 
+mod border_width;
 pub mod crypto;
 pub mod drawing;
 pub mod encoding;
+mod equation;
+mod font_program;
 pub mod johab;
 pub mod johab_map;
 pub mod ole;
 pub mod paragraph;
+mod picture_caption;
 pub mod records;
 pub mod special_char;
 use paragraph::{Hwp3LineInfo, Hwp3ParaInfo};
@@ -821,25 +825,6 @@ fn hwp3_para_shape_border_fill(
     Some(bf)
 }
 
-/// HWP3 줄에 한/글 변환기와 같은 들여쓰기 적용 기록(`TAG_INDENTATION`, bit 20)을 단다.
-///
-/// HWP3 줄 정보에는 이 기록이 없다. 렌더러는 bit 20 이 꺼진 저장 줄을 "한/글이 들여쓰기를
-/// 적용하지 않은 줄"로 읽으므로(#6190), 비운 채 두면 HWP3 문단의 들여쓰기·내어쓰기가
-/// 모두 사라진다. 한/글의 HWP3 변환본(`samples/SO-SUEOP.hwpx`, `hwp3-sample10-hwpx.hwpx`)은
-/// 들여쓰기 문단의 첫 줄, 내어쓰기 문단의 둘째 줄부터 bit 20 을 켜고, 들여쓰기 0 문단은
-/// 켜지 않는다.
-fn hwp3_stamp_indentation(line_segs: &mut [crate::model::paragraph::LineSeg], indent: i32) {
-    use crate::model::paragraph::LineSeg;
-    for (line_index, seg) in line_segs.iter_mut().enumerate() {
-        let applied = (indent > 0 && line_index == 0) || (indent < 0 && line_index > 0);
-        if applied {
-            seg.tag |= LineSeg::TAG_INDENTATION;
-        } else {
-            seg.tag &= !LineSeg::TAG_INDENTATION;
-        }
-    }
-}
-
 fn hwp3_para_line_box(
     para_shape: Option<&crate::model::style::ParaShape>,
     column_width_hu: i32,
@@ -1463,10 +1448,10 @@ fn parse_hwp3_object_dispatch(
                 use crate::model::style::BorderLineType;
                 // HWP3 선 종류: 0=투명, 1=실선, 2=굵은 실선, 3=점선, 4=2중 실선
                 let (line_type, width) = match line_val {
-                    1 => (BorderLineType::Solid, 0),  // 0.1mm
-                    2 => (BorderLineType::Solid, 6),  // 0.4mm (굵은 실선)
-                    3 => (BorderLineType::Dot, 0),    // 0.1mm
-                    4 => (BorderLineType::Double, 6), // 0.4mm (이중선 두께 확보)
+                    1 => (BorderLineType::Solid, 1), // 한컴 정상 저장의 기본 얇은 선: 0.12mm
+                    2 => (BorderLineType::Solid, 6), // 0.4mm (굵은 실선)
+                    3 => (BorderLineType::Dot, 1),   // 기본 얇은 선과 같은 두께
+                    4 => (BorderLineType::Double, border_width::DOUBLE_LINE_WIDTH),
                     _ => (BorderLineType::None, 0),
                 };
                 crate::model::style::BorderLine {
@@ -1498,7 +1483,8 @@ fn parse_hwp3_object_dispatch(
             let diag = cell_info[25] & 0x03;
             if diag != 0 {
                 border_fill.diagonal.diagonal_type = 1; // 실선 (BorderLineType::Solid = 1)
-                border_fill.diagonal.width = 0; // 0.1mm thickness
+                                                        // HWP3의 기본 대각선도 한컴 저장본과 Print에서 0.12mm다.
+                border_fill.diagonal.width = 1;
                 match diag {
                     1 => {
                         // 역슬래시 \
@@ -1729,25 +1715,8 @@ fn parse_hwp3_object_dispatch(
         }
 
         if obj_type == 2 {
-            let mut eq = crate::model::control::Equation::default();
-            // [#4367] 개체 공통 헤더의 크기 — 그림(ch==11) 경로와 같은 오프셋
-            // (42..46, HWP3 단위 ×4 = HWPUNIT). 종전 미적재로 수식이 크기 0 으로
-            // 저장됐고, 한글 2022 는 크기 0 수식 개체를 만나면 크래시했다
-            // (sample16 문단 이등분 COM 실측 — N=155 열림/156 크래시, 발동체 수식).
-            eq.common.width =
-                ((&info_buf[42..44]).read_u16::<LittleEndian>().unwrap_or(0) as u32) * 4;
-            eq.common.height =
-                ((&info_buf[44..46]).read_u16::<LittleEndian>().unwrap_or(0) as u32) * 4;
-            eq.baseline = (&info_buf[76..78]).read_i16::<LittleEndian>().unwrap_or(0);
-            if let Some(cell) = table.cells.first() {
-                let mut script_text = String::new();
-                for para in &cell.paragraphs {
-                    script_text.push_str(&para.text);
-                    script_text.push('\n');
-                }
-                eq.script = script_text.trim().to_string();
-            }
-            **parsed_equation = Some(eq);
+            let baseline_1800dpi = (&info_buf[76..78]).read_u16::<LittleEndian>().unwrap_or(0);
+            **parsed_equation = Some(equation::from_box(table, baseline_1800dpi));
         } else {
             **parsed_table = Some(table);
         }
@@ -1918,6 +1887,7 @@ fn parse_hwp3_object_dispatch(
             crate::model::shape::Caption {
                 direction: caption_direction,
                 width: caption_width as _,
+                spacing: picture_caption::stored_gap(&info_buf, caption_direction),
                 paragraphs: caption_paras,
                 ..Default::default()
             }
@@ -3289,75 +3259,8 @@ fn parse_paragraph_list_inner(
             }
         }
 
-        // [Task #741 Stage 7] 제목차례 type paragraph 자동 장식 inject (한컴 viewer 정합).
-        // 본질: HWP3 → HWP5 변환 시 한컴이 특정 paragraph 에 ═══ ■ ... ■ ═══ 장식 inject.
-        // HWP3 spec 외 한컴 사적 로직. 한컴 변환본 cross-ref 영역에서 도출:
-        //   - hwp3-sample10 paragraph 26 (cc=8, "￼￼ 제목차례 ") → HWP5 p.26 ("════...■ 제목차례 ■═════")
-        //   - hwp3-sample10 paragraph 340 (cc=30, "￼        ￼-EXPORT/...") → HWP5 p.340 단순 본문 (장식 없음)
-        // 차이: visible text 길이 — 짧은 (~5 chars) 제목 인 경우 한컴이 장식 inject.
-        //
-        // 본 환경 trigger 영역:
-        //   - 새번호 + 쪽번호위치 controls 조합 (section start marker)
-        //   - visible text (object marker + whitespace 제외) ≤ 6 chars (짧은 제목)
-        let has_new_num = controls
-            .iter()
-            .any(|c| matches!(c, crate::model::control::Control::NewNumber(_)));
-        let has_page_pos = controls
-            .iter()
-            .any(|c| matches!(c, crate::model::control::Control::PageNumberPos(_)));
-        let mut title_bold_shape_id: Option<u16> = None;
-        if has_new_num && has_page_pos {
-            let visible_text: String = text_string
-                .chars()
-                .filter(|c| !c.is_whitespace() && *c != '\u{FFFC}')
-                .collect();
-            if !visible_text.is_empty() && visible_text.chars().count() <= 6 {
-                // 원본 visible 영역 (제목차례) 의 char_shape 찾기 — hwp3_inline_shapes 의
-                // 가장 큰 idx 가 마지막 ' ' 직전 visible char 위치.
-                // sample10 p.26: hwp3_inline_shapes [(0,76), (0,77), (3,78), (8,79), (8,80)]
-                // 제목차례 위치 (3) 의 shape id (78=bold) 를 추출.
-                title_bold_shape_id = hwp3_inline_shapes
-                    .iter()
-                    .find(|(idx, _)| {
-                        *idx > 0 && *idx < (para_info.char_count as usize).saturating_sub(1)
-                    })
-                    .map(|(_, sid)| *sid);
-
-                // ═ ■ 제목 ■ ═ 패턴 inject. HWP5 변환본 p.26 영역 정합:
-                //   "═ × 20 + ■ + ' ' + 제목 + ' ' + ■ + ═ × 22"
-                let visible_char_count = visible_text.chars().count();
-                let new_text = format!(
-                    "════════════════════■ {} ■══════════════════════",
-                    visible_text
-                );
-                // char_offsets 재구성 (각 char 1 utf16 unit 가정 — BMP 영역 만)
-                let new_char_count = new_text.chars().count() as u32;
-                let new_offsets: Vec<u32> = (0..new_char_count).collect();
-                text_string = new_text;
-                char_offsets = new_offsets;
-                utf16_len = new_char_count;
-
-                // 기존 hwp3_inline_shapes 는 원본 char index 기반 — 재구성 시 무효.
-                // 제목 bold 영역만 새 위치 (22 ~ 22+visible_char_count) 로 재등록.
-                // 제목 visible 위치: 20 ═ + ■ + ' ' = 22
-                hwp3_inline_shapes.clear();
-                if let Some(bold_id) = title_bold_shape_id {
-                    hwp3_inline_shapes.push((22usize, bold_id));
-                    // 제목 끝 + ' ' 직후 ■ 부터 rep_char_shape (regular) 로 복귀
-                    let after_title = 22 + visible_char_count + 1; // +1 for ' '
-                    hwp3_inline_shapes.push((after_title, rep_char_shape_id as u16));
-                }
-                // hwp3_char_to_utf16_pos 는 하단 char_shapes 빌드 시 idx → utf16_pos 변환에 사용.
-                // 신규 위치 22, after_title 도 직접 utf16 pos 이므로 1:1 매핑 추가.
-                if hwp3_char_to_utf16_pos.len() < new_char_count as usize {
-                    hwp3_char_to_utf16_pos.resize(new_char_count as usize, 0);
-                }
-                for i in 0..(new_char_count as usize) {
-                    hwp3_char_to_utf16_pos[i] = i as u32;
-                }
-            }
-        }
-
+        // 원문 제목의 공백·문자/제어 슬롯·글자모양 축을 함께 보존한다.
+        // 컨트롤 조합만으로 원문에 없는 장식을 합성하지 않는다.
         let mut para = Paragraph::default();
         // [#3494, #3510] 공통 IR 의 char_count 는 **문단 종결자를 포함**한다
         // (model/paragraph.rs:1042 `+1 for paragraph end marker`, HWP5 PARA_HEADER.nChars 와 동일).
@@ -3424,7 +3327,14 @@ fn parse_paragraph_list_inner(
         let mut line_spacing_ratio = 160;
         let mut fixed_line_spacing = None;
 
-        if let Some(char_shape) = doc_char_shapes.get(rep_char_shape_id as usize) {
+        // 대표 모양은 문단 끝의 기본 글꼴일 수 있다. 실제 첫 글자·개체
+        // 마커의 모양이 있으면 그 호스트 글꼴에서 줄 여유를 계산한다.
+        if let Some(char_shape) = para
+            .char_shapes
+            .first()
+            .and_then(|shape| doc_char_shapes.get(shape.char_shape_id as usize))
+            .or_else(|| doc_char_shapes.get(rep_char_shape_id as usize))
+        {
             base_size = char_shape.base_size;
         }
         if let Some(para_shape) = doc_para_shapes.get(para_shape_id as usize) {
@@ -3444,8 +3354,7 @@ fn parse_paragraph_list_inner(
         // 가 lh=1440/ls=0 보다 60% 작은 시각 높이 → 페이지 회귀 해소).
         let (mut fallback_line_height, fallback_line_spacing) =
             if let Some(fixed) = fixed_line_spacing {
-                // fixed: lh=fixed, ls=fixed-th (추가 간격)
-                (fixed, fixed - fallback_text_height)
+                paragraph::fixed_line_metrics(fallback_text_height, fixed)
             } else {
                 // percent: lh=th, ls=th*(ratio-100)/100
                 (
@@ -3553,13 +3462,22 @@ fn parse_paragraph_list_inner(
                 ..Default::default()
             });
         } else {
-            for linfo in &line_infos {
+            let inline_equation_positions = paragraph::inline_equation_positions(&para);
+            for (line_index, linfo) in line_infos.iter().enumerate() {
                 let char_idx = linfo.start_pos as usize;
                 let text_start = if char_idx < hwp3_char_to_utf16_pos.len() {
                     hwp3_char_to_utf16_pos[char_idx]
                 } else {
                     utf16_len
                 };
+                let text_end = line_infos
+                    .get(line_index + 1)
+                    .and_then(|line| hwp3_char_to_utf16_pos.get(line.start_pos as usize))
+                    .copied()
+                    .unwrap_or(u32::MAX);
+                let has_inline_equation = inline_equation_positions
+                    .iter()
+                    .any(|position| (text_start..text_end).contains(position));
 
                 let mut th = (linfo.line_height as i32) * 4;
                 // [#4680 실험] HWP3 저장 줄높이는 **줄 상자**(글자+여유)다. 그걸 그대로
@@ -3593,8 +3511,7 @@ fn parse_paragraph_list_inner(
                     // [Task #604 Stage D-2] HWP5 IR 정합: lh=th, ls 분리 인코딩
                     bl = (th as f32 * 0.85) as i32;
                     if let Some(fixed) = fixed_line_spacing {
-                        lh = fixed;
-                        ls = fixed - th;
+                        (lh, ls) = paragraph::fixed_line_metrics(th, fixed);
                     } else {
                         lh = th;
                         // [Task #741] TAC 그림 paragraph (treat_as_char=true) 의 line_spacing
@@ -3632,11 +3549,27 @@ fn parse_paragraph_list_inner(
                             && hwp3_is_password_toc_page_number_host(&para);
                         ls = if has_password_toc_page_number {
                             HWP3_PASSWORD_TOC_LINE_SPACING_HU
+                        } else if has_inline_equation {
+                            // 수식 상자 높이와 호스트 글꼴의 줄 여유는 별개다.
+                            // 같은 원본 줄에 속한 글자모양만 간격의 기준으로 쓴다.
+                            let host_height = paragraph::host_font_height_in_range(
+                                &para,
+                                doc_char_shapes,
+                                text_start..text_end,
+                                fallback_text_height,
+                            );
+                            hwp3_percent_line_spacing(host_height, line_spacing_ratio)
                         } else if has_tac_picture
                             || (!use_password_layout_contract && has_tac_shape)
                             || has_marker_only_tac_shape
                         {
-                            HWP3_TAC_OBJECT_LINE_SPACING_HU
+                            if use_password_layout_contract {
+                                HWP3_TAC_OBJECT_LINE_SPACING_HU
+                            } else {
+                                // 줄 여유는 개체 높이가 아니라 원본 호스트 글꼴에서 나온다.
+                                // 공백+개체인 줄도 정상 저장본의 문단 간격을 보존한다.
+                                fallback_line_spacing
+                            }
                         } else {
                             hwp3_percent_line_spacing(th, line_spacing_ratio)
                         };
@@ -3746,27 +3679,29 @@ fn parse_paragraph_list_inner(
             para.line_segs = line_segs;
         }
 
-        // TAC 표 문단: 줄간격 배율 미적용 — lh=th (표 높이 그대로).
-        // 암호 HWP3의 한컴 변환본은 표 높이에 160% 배율을 곱하지 않되, 표 호스트 뒤에
-        // 2mm(600 HU)의 고정 줄간격을 보존한다. 일반 HWP3은 #460의 0 HU 계약을
-        // 유지한다. 이를 전역으로 바꾸면 일반 HWP3→HWPX 변환의 페이지 수가 바뀐다.
+        // TAC 표의 줄 높이는 표 자체 높이지만 뒤 간격은 원래 글자 줄의
+        // 간격이다. 표 높이에 배율을 곱하거나 일반 HWP3의 간격을 0으로
+        // 지우지 않는다. 독립 정상 저장·Print의 host 뒤 띠와 대응한다.
         if hwp3_paragraph_has_treat_as_char_table(&para) {
             for seg in para.line_segs.iter_mut() {
                 seg.line_height = seg.text_height;
                 seg.line_spacing = if use_password_layout_contract {
                     HWP3_TAC_OBJECT_LINE_SPACING_HU
                 } else {
-                    0
+                    fallback_line_spacing
                 };
             }
         }
 
         if para.text.is_empty()
             && para.controls.len() == 1
+            && !hwp3_paragraph_has_treat_as_char_table(&para)
             && hwp3_is_treat_as_char_visual_control(&para.controls[0])
         {
             for seg in para.line_segs.iter_mut() {
-                seg.line_spacing = 0;
+                // 개체의 높이와 호스트 글꼴의 줄 여유는 서로 다른 점유다.
+                // 개체만 있는 줄도 원본 문단의 줄간격 계약을 보존한다.
+                seg.line_spacing = fallback_line_spacing;
             }
         }
 
@@ -3820,7 +3755,7 @@ fn parse_paragraph_list_inner(
             }
         }
 
-        hwp3_stamp_indentation(
+        paragraph::apply_line_indentation(
             &mut para.line_segs,
             para_shape.map_or(0, |shape| shape.indent),
         );
@@ -3852,14 +3787,15 @@ fn parse_paragraph_list_inner(
         // para_info.flags bit 1은 명시적 쪽나누기이고, pgy/break_flag는 선별된
         // 자연 페이지 경계이다. 표 셀/미주 등 nested paragraph list에서는
         // body_height_hu=0 이므로 자연 페이지 승격이 일어나지 않는다.
-        // [Task #724] 한컴 IR 정합: 빈 paragraph (text_len=0 + controls=0) 인 경우
-        // column_type=Page 설정 안 함 (HWP5 변환본 paragraph 171 column_type=Normal 정합).
-        // 단, vpos reset 은 강제 (force_vpos_reset) — page break 시점 acc_section_vpos=0
-        // 정합 (HWP5 변환본 vpos=0 페이지 시작 정합 보존).
+        // 보이는 글자와 저장 글줄의 점유는 다른 상태다. 유효한 빈 줄도
+        // 실제 쪽 시작을 소유한다. 좌표만 리셋하고 소속을 버리면 빈 줄은
+        // 앞 쪽에서 숨겨지고 뒤 표가 그 줄 높이만큼 위로 이동한다.
         let mut force_vpos_reset = false;
         if prev_para_had_flags_break || pgy_page_break || first_line_page_break {
             let is_empty_no_ctrl = para.text.is_empty() && para.controls.is_empty();
-            if !is_empty_no_ctrl {
+            let owns_stored_empty_line =
+                line_infos.first().is_some_and(|line| line.line_height > 0);
+            if !is_empty_no_ctrl || owns_stored_empty_line {
                 para.column_type = crate::model::paragraph::ColumnBreakType::Page;
                 // pgy/break_flag 승격은 저장 당시 자연 쪽 경계일 뿐 사용자의 명시적
                 // 쪽나눔이 아니다. 합성 표시를 남겨 저장 포맷 방출에서 제외한다
@@ -3974,8 +3910,7 @@ fn parse_paragraph_list_inner(
             // `spacing_after`로 이미 반영된다. 둘을 누적하면 같은 문서의 HWP5 변환본과
             // 한컴 PDF보다 표가 아래로 한 번 더 밀린다. 일반 HWP3의 before/after
             // 계약은 유지한다.
-            if !starts_new_page
-                && !para.line_segs.is_empty()
+            if !para.line_segs.is_empty()
                 && !(use_password_layout_contract && hwp3_paragraph_has_treat_as_char_table(&para))
             {
                 acc_section_vpos = acc_section_vpos.saturating_add(para_flow_spacing.0);
@@ -4094,6 +4029,15 @@ fn parse_hwp3_inner(
     // 1. 문서 정보 파싱 (128 바이트)
     let doc_info = Hwp3DocInfo::read(&mut cursor)?;
 
+    // 공식 3.x 표 3의 offset 28, bit 0은 외부 생성 문서의 realign 요청이다.
+    // 원시 탭 폭은 보존하되 소비자가 오래된 배치 캐시와 구분할 수 있게 전달한다.
+    if doc_info.reserved1 & 1 != 0 {
+        doc.extra_streams.push((
+            crate::model::document::HWP3_EXTERNAL_REALIGN_STREAM_PATH.to_string(),
+            b"1".to_vec(),
+        ));
+    }
+
     if doc_info.encrypted != 0 {
         return Err(Hwp3Error::PasswordRequired);
     }
@@ -4180,6 +4124,7 @@ fn parse_hwp3_inner(
             // HWP3 legacy 글꼴 이름을 한/글 변환기가 쓰는 이름으로 옮긴다
             // (`hwp3_font_name_to_hwp5`). alt_name 에 원본을 보존한다.
             let mapped_name = hwp3_font_name_to_hwp5(&font_name);
+            font_program::preserve_source_kind(&mut font, &font_name, &mapped_name);
             if mapped_name != font_name {
                 font.alt_name = Some(font_name.clone());
             }
@@ -4499,7 +4444,12 @@ fn parse_hwp3_inner(
         // margin_bottom 을 직접 줄이면 쪽 테두리/페이지 번호 위치까지 영향받으므로
         // pagination_bottom_tolerance 로 paginator 에게만 추가 공간을 허용한다.
         // min(1600, margin_bottom) 으로 clamp: 기존 saturating_sub 동작과 동일한 상한 유지.
-        pagination_bottom_tolerance: 1600u32.min((doc_info.bottom_margin as u32) * 4),
+        pagination_bottom_tolerance: if doc_info.reserved1 & 1 != 0 {
+            // 외부 생성 문서는 한글97의 마지막 줄 배치를 증언하지 않는다.
+            0
+        } else {
+            1600u32.min((doc_info.bottom_margin as u32) * 4)
+        },
         landscape: doc_info.paper_direction != 0,
         ..Default::default()
     };
@@ -4585,11 +4535,14 @@ fn parse_hwp3_inner(
                 4 => BorderLineType::Double,
                 _ => BorderLineType::Solid, // 5 이상: 미정의 → Solid fallback
             };
-            // width: HWP5 BorderLine.width 는 인덱스 (0=0.1mm, 1=0.12mm, ..., 6=0.5mm).
-            // HWP3 raw 의 border 두께 별도 정보 없음 → 기본 1 (얇은 실선) 적용.
+            // HWP5 폭 인덱스7은 이중선 전체0.5mm다. 기본 얇은 선 폭과 구분한다.
             let bl = BorderLine {
                 line_type,
-                width: 1,
+                width: if doc_info.border_type == 4 {
+                    border_width::DOUBLE_LINE_WIDTH
+                } else {
+                    1
+                },
                 color: 0x00000000,
             };
             page_border.borders = [bl, bl, bl, bl];
@@ -4643,7 +4596,6 @@ fn parse_hwp3_inner(
     fixup_hwp3_outline_fields(&mut doc);
     fixup_hwp3_picture_numbers(&mut doc);
     fixup_hwp3_outline_bullets(&mut doc);
-    fixup_hwp3_heading_decoration(&mut doc);
 
     Ok(doc)
 }
@@ -5196,21 +5148,6 @@ fn hwp3_outline_command_level(command: &str) -> Option<u8> {
     Some(level.unwrap_or(0).min(6))
 }
 
-/// [Task #1008 격차 C] HWP3 의 heading decoration text strip.
-///
-/// HWP3 raw 의 일부 paragraph 는 "═════■ NUM.title ■═════" 형태 decoration text
-/// 를 plain text 로 저장 (sample16 pi=70: "════...■ 1.추진목적 ■════..." 52자).
-/// 한컴 변환기 HWP3→HWP5 는 decoration 을 strip 하여 clean text 만 보존 (HWP5
-/// pi=70: "1. 추진목적" 7자). 한컴 한글 viewer 의 HWP3 rendering 도 동일 strip
-/// 으로 추정 — HWP3 spec 미명문화이나 작업지시자 시각 판정 권위.
-///
-/// 휴리스틱 detection:
-/// - 텍스트가 `═{5+}` 로 시작 + `═{5+}` 로 종료
-/// - 중간에 `■` 가 시작 + 종료에 등장 (decoration marker)
-/// - 두 `■` 사이의 텍스트가 실제 heading 내용
-///
-/// 회귀 risk: 의도된 `═` 사용 사례. 단언: 다른 HWP3 sample sweep 시 회귀 0.
-//
 // HWP3 legacy 글꼴 이름 → 한/글 변환기(HWP3 → HWP5/HWPX)가 쓰는 이름.
 //
 // 한/글은 HWP3 의 한양 글꼴을 `한양*` HFT 로 옮긴다. `HY*` 는 이름이 비슷한 별개의
@@ -5227,70 +5164,6 @@ fn hwp3_font_name_to_hwp5(name: &str) -> String {
         "궁서" => "한양궁서".to_string(),
         _ => name.to_string(),
     }
-}
-
-fn fixup_hwp3_heading_decoration(doc: &mut crate::model::document::Document) {
-    for section in &mut doc.sections {
-        for paragraph in &mut section.paragraphs {
-            if let Some(cleaned) = strip_heading_decoration(&paragraph.text) {
-                paragraph.text = cleaned;
-            }
-        }
-    }
-}
-
-/// HWP3 heading decoration pattern detection + strip.
-/// Returns Some(stripped_text) 시 매치, None 시 패턴 비매치 (원본 유지).
-fn strip_heading_decoration(text: &str) -> Option<String> {
-    const DECORATION_CHAR: char = '═';
-    const MARKER_CHAR: char = '■';
-    const MIN_DECORATION: usize = 5;
-
-    let chars: Vec<char> = text.chars().collect();
-    let len = chars.len();
-    if len < MIN_DECORATION * 2 + 2 {
-        return None;
-    }
-
-    // Leading ═ count
-    let mut leading = 0;
-    while leading < len && chars[leading] == DECORATION_CHAR {
-        leading += 1;
-    }
-    if leading < MIN_DECORATION {
-        return None;
-    }
-
-    // Trailing ═ count
-    let mut trailing_end = len;
-    while trailing_end > 0 && chars[trailing_end - 1] == DECORATION_CHAR {
-        trailing_end -= 1;
-    }
-    if len - trailing_end < MIN_DECORATION {
-        return None;
-    }
-
-    // Middle slice (between leading and trailing ═ runs)
-    let mid: String = chars[leading..trailing_end].iter().collect();
-    let mid = mid.trim();
-    let mid_chars: Vec<char> = mid.chars().collect();
-    if mid_chars.len() < 3 {
-        return None;
-    }
-
-    // Must start AND end with ■
-    if mid_chars[0] != MARKER_CHAR || mid_chars[mid_chars.len() - 1] != MARKER_CHAR {
-        return None;
-    }
-
-    // Extract content between ■...■
-    let core: String = mid_chars[1..mid_chars.len() - 1].iter().collect();
-    let core = core.trim();
-    if core.is_empty() {
-        return None;
-    }
-
-    Some(core.to_string())
 }
 
 /// [Task #877 Stage 4] HWP3 → IR 변환 후 outline list 글머리 자동 prefix.

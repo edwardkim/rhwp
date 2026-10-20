@@ -3498,6 +3498,13 @@ fn render_endnote(note: &Endnote, ctx: &mut SerializeContext) -> String {
 
 fn render_equation(eq: &Equation) -> String {
     let c = &eq.common;
+    // 한컴 저장본이 보존하는 크기 보호를 내보내기에서도 유지한다.
+    // false는 기존과 같이 생략한다.
+    let size_protect = if c.size_protect {
+        r#" protect="1""#
+    } else {
+        ""
+    };
     let id = c.instance_id.to_string();
     let z_order = c.z_order.to_string();
     let version = xml_escape(&eq.version_info);
@@ -3554,7 +3561,7 @@ fn render_equation(eq: &Equation) -> String {
     let allow_overlap = if c.allow_overlap { "1" } else { "0" };
 
     format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="{width_rel_to}" height="{height}" heightRelTo="{height_rel_to}"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="{allow_overlap}" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="{width_rel_to}" height="{height}" heightRelTo="{height_rel_to}"{size_protect}/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="{allow_overlap}" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
         text_wrap_to_hwpx(c.text_wrap),
         text_flow_to_hwpx(c.text_flow),
         vert_rel_to_hwpx(c.vert_rel_to),

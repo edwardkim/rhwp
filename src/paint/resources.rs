@@ -308,39 +308,12 @@ pub fn source_image_key(
     bin_data_epoch: u32,
     image: &crate::renderer::render_tree::ImageNode,
 ) -> Option<String> {
-    let data = image.data.as_deref()?;
-    if image.bin_data_id == 0 {
+    if image.data.is_none() || image.bin_data_id == 0 {
         return None;
     }
 
-    // 술어는 `image_resolver::is_watermark_image` 가 단일 권위다 — 여기서 사본을 들면
-    // 키가 가리키는 바이트와 실제로 내보내는 바이트가 조용히 갈라진다 (#3315).
-    let bakes_watermark = crate::renderer::image_resolver::detect_image_mime_type(data)
-        == "image/jpeg"
-        && crate::renderer::image_resolver::is_watermark_image(image);
-    let variant = if crate::renderer::image_resolver::is_baked_blackwhite_image(image) {
-        SourceImageVariant::BakedBlackWhitePng
-    } else if bakes_watermark {
-        SourceImageVariant::BakedWatermarkPng
-    } else if let Some((brightness, contrast, grayscale)) =
-        crate::renderer::image_resolver::wmf_picture_parameters(image)
-    {
-        SourceImageVariant::WmfPictureTone {
-            brightness,
-            contrast,
-            grayscale,
-        }
-    } else if let Some((brightness, contrast, effect)) =
-        crate::renderer::image_resolver::picture_tone_parameters(image)
-    {
-        SourceImageVariant::PictureTone {
-            brightness,
-            contrast,
-            effect,
-        }
-    } else {
-        SourceImageVariant::Source
-    };
+    // 실제로 내보내는 바이트와 같은 출력 변형을 단일 권위에서 고른다.
+    let variant = crate::renderer::image_resolver::source_image_variant(image);
     let tag = match variant {
         SourceImageVariant::WmfPictureTone {
             brightness,
@@ -383,6 +356,8 @@ pub enum SourceImageVariant {
         contrast: i8,
         grayscale: bool,
     },
+    /// 한컴 2024 Print의 원본색 bitmap 전달. 팔레트 범위면 원본 경로를 보존한다.
+    Hancom2024Bitmap,
 }
 
 impl SourceImageVariant {
@@ -393,6 +368,7 @@ impl SourceImageVariant {
             SourceImageVariant::BakedBlackWhitePng => "bwpng",
             SourceImageVariant::PictureTone { .. } => "pictone",
             SourceImageVariant::WmfPictureTone { .. } => "wmftone",
+            SourceImageVariant::Hancom2024Bitmap => "h24bmp",
         }
     }
 
@@ -453,6 +429,7 @@ pub fn parse_source_image_key(key: &str) -> Option<(u32, u16, SourceImageVariant
                 grayscale,
             }
         }
+        "h24bmp" => SourceImageVariant::Hancom2024Bitmap,
         _ => return None,
     };
     if parts.next().is_some() {

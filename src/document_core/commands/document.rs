@@ -2,6 +2,7 @@
 
 mod hft_outline_fonts;
 mod initial_fields;
+mod metafile_fonts;
 mod reflowed_table_frames;
 
 use crate::document_core::validation::{
@@ -25,6 +26,8 @@ use serde::Deserialize;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
+#[path = "stored_body_frames.rs"]
+mod stored_body_frames;
 mod stored_table_tail;
 mod tac_cache_repair;
 
@@ -310,6 +313,7 @@ impl DocumentCore {
             styles,
             canvas_metrics: None,
             hft_outline_fonts: Default::default(),
+            metafile_fonts: Default::default(),
             font_environment: None,
             composed: Vec::new(),
             body_page_field_error: None,
@@ -797,6 +801,38 @@ impl DocumentCore {
                         ))
                     })
                     .collect();
+                // 번호·책갈피 등의 표지와 비자리차지 부동 개체는 호스트의
+                // 저장 글줄을 없애지 않는다. 폭·높이 소유는 기존 공통 분류를 따른다.
+                // 자리차지 개체·각주 슬롯은 제외하고 별도 머리말/꼬리말의 부모 표지는 보존한다.
+                let has_only_text_controls =
+                    |para: &Paragraph| crate::renderer::empty_host_controls_are_flow_neutral(para);
+                // 합성 텍스트 줄의 전진에는 문단 앞뒤 간격도 한 번씩 포함된다.
+                // 물리 개체의 별도 높이는 이 텍스트 브리지로 추측하지 않는다.
+                let reflowed_text_advances: Vec<Option<i32>> = section
+                    .paragraphs
+                    .iter()
+                    .enumerate()
+                    .map(|(i, para)| {
+                        if !reflowed_paras.contains(&i)
+                            || !para
+                                .controls
+                                .iter()
+                                .all(crate::renderer::control_is_body_flow_neutral_marker)
+                        {
+                            return None;
+                        }
+                        let style = styles.para_styles.get(para.para_shape_id as usize);
+                        let outer = style.map_or(0, |style| {
+                            ((style.spacing_before + style.spacing_after) * 7200.0 / dpi).round()
+                                as i32
+                        });
+                        Some(para.line_segs.iter().fold(outer, |advance, line| {
+                            advance
+                                .saturating_add(line.line_height)
+                                .saturating_add(line.line_spacing)
+                        }))
+                    })
+                    .collect();
                 // 재구성 전에 실제 글줄 끝과 다음 줄 전진 끝을 함께 고정한다.
                 let orig_plain_tail: Vec<Option<(i32, i32)>> = section
                     .paragraphs
@@ -813,7 +849,7 @@ impl DocumentCore {
                         {
                             return None;
                         }
-                        if !para.controls.is_empty() {
+                        if !has_only_text_controls(para) {
                             return source_table_frames
                                 .then(|| stored_table_tail::source_frame_tail(para))
                                 .flatten();
@@ -837,13 +873,18 @@ impl DocumentCore {
 
                 for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                     let was_reflowed = reflowed_paras.contains(&pi);
-                    // 필드는 저장 글줄 안의 텍스트 범위를 표시할 뿐 별도 높이를
-                    // 차지하지 않는다. 필드가 있다는 이유로 저장 간격을 끊으면
-                    // 다음 문단의 빈 물리 공간이 사라진다.
-                    let text_only_controls = para
-                        .controls
-                        .iter()
-                        .all(|control| matches!(control, Control::Field(_)));
+                    let text_only_controls = has_only_text_controls(para)
+                        || stored_body_frames::inline_graphics_fit_saved_text_line(
+                            para,
+                            styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map_or(0, |style| style.vertical_alignment),
+                        );
+                    // 개체 높이가 저장 줄 전체에 들어 있으면 높이와 후속 간격의
+                    // 소유를 구분한다. 간격 보존이 개체 높이를 다시 더하지 않는다.
+                    let saved_object_line =
+                        !was_reflowed && stored_body_frames::owns_saved_object_line(para);
                     // 저장 줄이 없는 글자취급 그림의 높이는 재구성 사다리가 이미
                     // 소비한다. 직전 저장 글줄의 앵커를 유지해야 그림 뒤 원본 줄의
                     // 저장 간격과 재구성된 그림 높이 중 큰 쪽을 사용할 수 있다.
@@ -878,7 +919,11 @@ impl DocumentCore {
                                     && first <= body_height_hu
                                     && first == prev_end.saturating_add(before)
                             });
-                    if !text_only_controls && !inline_reflowed_picture && !inline_saved_table {
+                    if !text_only_controls
+                        && !saved_object_line
+                        && !inline_reflowed_picture
+                        && !inline_saved_table
+                    {
                         source_anchor_end = None;
                     }
                     let hosts_bottom_fixed_frame = para.controls.iter().any(|c| {
@@ -927,7 +972,7 @@ impl DocumentCore {
                     // 누적 축·개체·합성/편집 줄의 0을 물리 경계로 추측하지 않는다.
                     let source_plain_reset = !was_reflowed
                         && !para.stored_text_partition_dirty
-                        && para.controls.is_empty()
+                        && text_only_controls
                         && orig_span[pi].is_some()
                         && orig_plain_tail[pi].is_some()
                         && first_source
@@ -949,7 +994,25 @@ impl DocumentCore {
                                     ) > body_height_hu
                             });
                     let accumulated_vpos = running_vpos;
-                    if source_page_break || source_tac_reset || source_plain_reset {
+                    let source_positive_reset = !was_reflowed
+                        && !para.stored_text_partition_dirty
+                        && orig_span[pi].is_some()
+                        && first_source.is_some_and(|first| {
+                            stored_body_frames::saved_positive_frame_reset(
+                                stored_body_frames::preceding_saved_span(
+                                    &orig_span,
+                                    &reflowed_text_advances,
+                                    pi,
+                                ),
+                                first,
+                                body_height_hu,
+                            )
+                        });
+                    if source_page_break
+                        || source_tac_reset
+                        || source_plain_reset
+                        || source_positive_reset
+                    {
                         running_vpos = first_source.expect("저장 프레임 원점").vertical_pos;
                     } else if !was_reflowed
                         && hosts_bottom_fixed_frame
@@ -1083,12 +1146,22 @@ impl DocumentCore {
                         .map(|line| line.vertical_pos)
                         .collect();
                     let preserve_source_frames = !was_reflowed
-                        && (para.controls.is_empty() || source_tac_frames[pi].is_some())
+                        && (text_only_controls || source_tac_frames[pi].is_some())
                         && !para.stored_text_partition_dirty
                         && para.line_segs.iter().all(|line| {
                             line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
                                 == 0
                         });
+                    if reflowed_text_advances[pi].is_some() {
+                        running_vpos = running_vpos.saturating_add(
+                            styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map_or(0, |style| {
+                                    (style.spacing_before * 7200.0 / dpi).round() as i32
+                                }),
+                        );
+                    }
                     // 문단의 첫 LINE_SEG vpos를 running_vpos로 갱신
                     if let Some(first_seg) = para.line_segs.first_mut() {
                         first_seg.vertical_pos = running_vpos;
@@ -1205,7 +1278,19 @@ impl DocumentCore {
                         }
                     }
                     running_vpos = inner_vpos;
-                    if let Some((_, original_end)) = orig_span[pi].filter(|_| text_only_controls) {
+                    if reflowed_text_advances[pi].is_some() {
+                        running_vpos = running_vpos.saturating_add(
+                            styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map_or(0, |style| {
+                                    (style.spacing_after * 7200.0 / dpi).round() as i32
+                                }),
+                        );
+                    }
+                    if let Some((_, original_end)) =
+                        orig_span[pi].filter(|_| text_only_controls || saved_object_line)
+                    {
                         source_anchor_end = Some((original_end, running_vpos));
                     } else if inline_saved_table {
                         // 표 높이는 다음 일반 글줄의 저장 간격으로 재가산하지 않는다.

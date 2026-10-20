@@ -15,6 +15,8 @@ const MAX_COLLECTION_FACES: u32 = 64;
 #[derive(Clone, Default)]
 pub(super) struct TypefaceCatalog {
     families: HashMap<String, Vec<Typeface>>,
+    // name ID 6은 특정 face의 식별자이며 family 별칭으로 등록하지 않는다.
+    postscript_faces: HashMap<String, Typeface>,
 }
 
 impl TypefaceCatalog {
@@ -156,6 +158,9 @@ impl TypefaceCatalog {
             for (family, faces) in source_catalog.families {
                 catalog.families.entry(family).or_insert(faces);
             }
+            for (name, face) in source_catalog.postscript_faces {
+                catalog.postscript_faces.entry(name).or_insert(face);
+            }
             if loaded_files >= MAX_FONT_FILES {
                 break;
             }
@@ -164,6 +169,9 @@ impl TypefaceCatalog {
     }
 
     fn insert_face(&mut self, data: &[u8], face_index: u32, face: Typeface) {
+        if let Some(name) = face.post_script_name() {
+            self.postscript_faces.entry(name).or_insert(face.clone());
+        }
         for family in supplied_family_names(data, face_index, &face.family_name()) {
             let family = family.trim().to_lowercase();
             if family.is_empty() {
@@ -204,6 +212,9 @@ impl TypefaceCatalog {
                 // Stable sorting keeps the first supplied program on a tie.
                 faces.sort_by_key(|face| supplied_style_rank(style, face.font_style()));
                 result.extend(faces);
+            } else if let Some(face) = self.postscript_faces.get(family) {
+                // 명시적 face 요청에는 다른 굵기의 같은 family를 대입하지 않는다.
+                result.push(face.clone());
             }
         }
         result

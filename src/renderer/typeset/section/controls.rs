@@ -434,7 +434,20 @@ impl TypesetEngine {
                                 } else {
                                     0.0
                                 };
-                                Some((h, (h + mb - absorbed_host_line).max(0.0), hl, hr))
+                                let host_line = hwpunit_to_px(
+                                    crate::renderer::hwp3_caption_host::line_advance_hwp(
+                                        para,
+                                        pic,
+                                        self.profile.get(),
+                                    ),
+                                    self.dpi,
+                                );
+                                Some((
+                                    h,
+                                    (h + mb - absorbed_host_line).max(0.0) + host_line,
+                                    hl,
+                                    hr,
+                                ))
                             }
                             Control::Shape(s)
                                 if !s.common().treat_as_char

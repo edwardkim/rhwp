@@ -2,6 +2,7 @@
 import contextlib
 import importlib.util
 import io
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -111,6 +112,29 @@ class OriginalHftFontTests(unittest.TestCase):
                 characters = ''.join(node.text or '' for node in section.iter() if node.tag.endswith('}t'))
                 self.assertEqual(characters, ''.join(chr(i) for i in range(0xAC00, 0xD7A4)))
                 self.assertFalse(any(node.tag.endswith('}linesegarray') for node in section.iter()))
+
+    def test_requested_face_is_not_renamed_to_the_default_face(self):
+        template = Path(__file__).resolve().parents[2] / 'samples/hwpx/blank_hwpx.hwpx'
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / 'alphabet.hwpx'
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.tool.create_specimen(template, output, 'HY신명조')
+            with zipfile.ZipFile(output) as archive:
+                import xml.etree.ElementTree as ET
+                header = ET.fromstring(archive.read('Contents/header.xml'))
+                fonts = [node for node in header.iter() if node.tag.endswith('}font')]
+                self.assertTrue(fonts)
+                self.assertTrue(all(node.attrib['face'] == 'HY신명조'
+                                    and node.attrib['type'] == 'HFT' for node in fonts))
+            provenance = json.loads(output.with_suffix('.provenance.json').read_text())
+            self.assertEqual(provenance['requestedFace'], 'HY신명조')
+            self.assertEqual(provenance['characters'], 11172)
+
+    def test_invalid_face_cannot_be_used_to_label_a_font(self):
+        for face in ['', '  ', 'HFT\x00Other', 'HFT\nOther', 'a' * 257]:
+            with self.subTest(face=repr(face)):
+                with self.assertRaisesRegex(ValueError, 'HFT face'):
+                    self.tool.validate_face(face)
 
 
 if __name__ == '__main__':

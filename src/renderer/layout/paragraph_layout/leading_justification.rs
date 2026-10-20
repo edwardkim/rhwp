@@ -12,6 +12,7 @@ pub(super) struct LeadingSpacePlan<'a> {
     pub leading_spaces: usize,
     pub natural_prefix_runs: usize,
     pub body_field_runs: Vec<bool>,
+    pub terminal_inline_object: bool,
 }
 
 impl<'a> LeadingSpacePlan<'a> {
@@ -39,6 +40,7 @@ impl<'a> LeadingSpacePlan<'a> {
                 leading_spaces: 0,
                 natural_prefix_runs: 0,
                 body_field_runs: Vec::new(),
+                terminal_inline_object: false,
             };
         }
         let mut prepared = line.clone();
@@ -67,10 +69,34 @@ impl<'a> LeadingSpacePlan<'a> {
         }
         Self {
             body_field_runs: Vec::new(),
+            terminal_inline_object: false,
             line: Cow::Owned(prepared),
             leading_spaces,
             natural_prefix_runs,
         }
+    }
+
+    /// 마지막 가시 글자 다음에 실제 개체가 있으면 그 사이 자간도 소비한다.
+    pub fn with_inline_objects(mut self, offsets: &[(usize, f64, usize)]) -> Self {
+        let text_end = self.line.char_start
+            + self
+                .line
+                .runs
+                .iter()
+                .map(|run| run.source_scalar_count())
+                .sum::<usize>();
+        let trailing = self
+            .line
+            .runs
+            .iter()
+            .rev()
+            .flat_map(|run| run.text.chars().rev())
+            .take_while(|ch| *ch == ' ')
+            .count();
+        self.terminal_inline_object = offsets
+            .iter()
+            .any(|(position, _, _)| *position >= text_end.saturating_sub(trailing));
+        self
     }
 
     /// 표시 숫자는 원본 필드 한 칸에 속한다. 자릿수와 관계없이 내부/뒤에

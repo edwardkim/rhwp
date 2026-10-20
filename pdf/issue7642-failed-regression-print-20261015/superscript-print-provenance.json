@@ -1,0 +1,24 @@
+{
+  "input": "samples/issue5756/156732409_superscript_advance.hwp",
+  "input_sha256": "f354fdc246a0b334c34af1bd1916185a23eb7cc729c74e57407a7ea35f65b422",
+  "source_saved_with": {
+    "product": "hancom-office-2022",
+    "version": "12.0.0.3650"
+  },
+  "pdf": "pdf/issue7642-failed-regression-print-20261015/156732409_superscript_advance-2020.pdf",
+  "pdf_sha256": "4eeaa80029b57fbcd1cbea83236d84d8099a4c98c435096dbf0ddee0eb09f0ee",
+  "source_commit": "207c74af147fc113f8f453ccb2729bbd2f215221",
+  "job_id": "c91b784c-b283-4e94-a5a8-6e13f5a48ceb",
+  "engine": "2020",
+  "result": {
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "input_format": "hwp",
+    "format": "pdf",
+    "bytes": 207563,
+    "pdf_page_count": 3,
+    "input_preprocess": "none",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  }
+}

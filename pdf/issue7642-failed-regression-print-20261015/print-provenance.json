@@ -1,0 +1,27 @@
+{
+  "input": "samples/task1768/distribution_doc.hwpx",
+  "input_sha256": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+  "input_container": "HWP5 CFB; original filename extension is hwpx",
+  "input_preprocess": "none",
+  "transport_alias": "distribution_doc.hwp; identical bytes and SHA-256; extension only",
+  "source_saved_with": {
+    "product": "hancom-office-2018",
+    "version": "10.90.0.1719"
+  },
+  "source_commit": "22eccc1f70063618a225f5aa71b8b4d17a6f40f5",
+  "pdf": "pdf/issue7642-failed-regression-print-20261015/distribution_doc-2020.pdf",
+  "pdf_sha256": "0299869bf040b01e07a19dde600852e44aec406257916b781eabdfbce6ed5aba",
+  "job_id": "3598f345-2242-42a2-b3c0-f1747d567ee1",
+  "engine": "2020",
+  "result": {
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "input_format": "hwp",
+    "format": "pdf",
+    "bytes": 124189,
+    "pdf_page_count": 3,
+    "input_preprocess": "none",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  }
+}

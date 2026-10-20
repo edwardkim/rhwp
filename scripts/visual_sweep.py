@@ -26,9 +26,11 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 try:
     from scripts.visual_sweep_workers import ordered_page_map
     from scripts.visual_sweep_images import open_page_rgb, page_rgb
+    from scripts.visual_sweep_pdf import PDF_RASTERIZER, pdf_raster_commands, pdf_rasterizer_provenance
 except ModuleNotFoundError:
     from visual_sweep_workers import ordered_page_map
     from visual_sweep_images import open_page_rgb, page_rgb
+    from visual_sweep_pdf import PDF_RASTERIZER, pdf_raster_commands, pdf_rasterizer_provenance
 
 
 LABEL_FONT_ENV = "RHWP_VISUAL_SWEEP_LABEL_FONT"
@@ -267,36 +269,6 @@ def raster_paths_for_selected_pages(
     return []
 
 
-def pdf_raster_commands(
-    pdf: Path, dpi: int, pdf_prefix: Path, selected_pages: list[int] | None
-) -> list[list[str]]:
-    """선 너비에 비례한 coverage를 보존하며 요청한 PDF 쪽을 래스터화한다.
-
-    1px보다 얇은 회색 선을 한 픽셀 전체 농도로 그리면 같은 SVG 선이
-    이진화 경계 반대편에 놓인다. shape는 원래 선 너비에 비례해 그리며
-    비교 임계값이나 원본 PDF/SVG의 두께·색상은 바꾸지 않는다.
-    """
-    if not selected_pages:
-        return [["pdftoppm", "-r", str(dpi), "-thinlinemode", "shape", "-png", str(pdf), str(pdf_prefix)]]
-    return [
-        [
-            "pdftoppm",
-            "-f",
-            str(page),
-            "-l",
-            str(page),
-            "-r",
-            str(dpi),
-            "-thinlinemode",
-            "shape",
-            "-png",
-            str(pdf),
-            str(pdf_prefix),
-        ]
-        for page in selected_pages
-    ]
-
-
 def ensure_selected_pages_available(
     selected_pages: list[int],
     groups: dict[str, list[Path]],
@@ -335,12 +307,14 @@ def page_num(path: Path) -> int:
 
 
 def ensure_tools(svg_rasterizer: str = "webfont") -> None:
-    required = ["pdftoppm", "pdftotext", "pdfinfo"]
+    required = [PDF_RASTERIZER, "pdftotext", "pdfinfo"]
     if svg_rasterizer == "rsvg":
         required.append("rsvg-convert")
     elif svg_rasterizer != "native-skia":
         required.append("node")
     missing = [tool for tool in required if shutil.which(tool) is None]
+    if not pdf_rasterizer_provenance()["available"]:
+        missing.append("pypdfium2 (PDFium 라이브러리 포함)")
     if missing:
         raise SystemExit("필수 도구가 없습니다: " + ", ".join(missing))
 
@@ -585,7 +559,7 @@ def sweep_provenance(
         },
         "image_decoding": image_decoding_provenance(),
         "svg_rasterizer": svg_rasterizer,
-        "pdf_rasterizer": {"program": "pdftoppm", "thin_line_mode": "shape"},
+        "pdf_rasterizer": pdf_rasterizer_provenance(),
         "comparison_profile": "print",
         "rhwp_binary": rhwp_binary_identifier(root, rhwp_bin),
     }

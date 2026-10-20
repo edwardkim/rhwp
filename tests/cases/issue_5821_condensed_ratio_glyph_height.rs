@@ -1,44 +1,99 @@
-//! [Issue #5821] 표 안 제목 글자를 선언 크기 그대로 그려 괘선이 글자를 가로지른다
-//! — 한글은 5% 작게 (156601658 제목 상자 등).
-//!
-//! 근인(오라클 확정): 한글 2022 는 **압축 장평(ratio<100%) 글자를 세로도 √r 로**
-//! 줄인다 — COM 으로 뜬 원본 PDF 실측: 선언 25pt·ratio 90% → `Tf 23.706`
-//! = 25×√0.90(오차 0.05%), 총 폭은 선언×0.90(한글 630.1px ↔ rhwp 634.0px)로
-//! 종전과 같다. rhwp 는 세로를 선언 그대로(33.33px) 그려 5.4% 크고 3.8px 위라
-//! 위/아래 괘선에 닿았다.
-//!
-//! 수정: glyph 크기 = fs×√r, 가로 스케일 = √r (폭 ×r 불변, advance 불변) —
-//! SSOT `condensed_ratio_draw_params`, svg/web_canvas/skia 3벡엔드 공용.
-//! 보도일시 칸 축(156513948·156560092, ratio=100%)은 별개 축으로 잔존.
-//!
-//! 픽스처는 원본 HWPX 구역0 문단 3..5(제목 상자 표) 절단 + BinData 스텁(69KB).
+//! #5821: 장평은 가로 축에 적용하고 선언된 세로 크기는 유지한다.
+//! 독립 Print의 Tf·CTM·Tz가 근거다. 추출 span의 기하평균 size와 구분한다.
+//! 전체 1쪽 Native 99.98879% / fresh WASM 100%와 직접 판독은 단계 910에 기록했다.
 #![cfg(not(target_arch = "wasm32"))]
 
+use std::collections::HashSet;
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::{control::Control, paragraph::Paragraph};
+use rhwp::parser::parse_document;
 
 const SAMPLE: &str = "samples/issue5821/condensed_ratio_title_box.hwpx";
 
-#[test]
-fn issue_5821_condensed_ratio_shrinks_glyph_height_sqrt_r() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let core = DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open");
-    let svg = core.render_page_svg_native(0).expect("page 1 svg");
+fn used_shapes(paragraphs: &[Paragraph], ids: &mut HashSet<u32>) {
+    for paragraph in paragraphs {
+        if !paragraph.text.is_empty() {
+            ids.extend(
+                paragraph
+                    .char_shapes
+                    .iter()
+                    .map(|shape| shape.char_shape_id),
+            );
+        }
+        for control in &paragraph.controls {
+            if let Control::Table(table) = control {
+                for cell in &table.cells {
+                    used_shapes(&cell.paragraphs, ids);
+                }
+                if let Some(caption) = &table.caption {
+                    used_shapes(&caption.paragraphs, ids);
+                }
+            }
+        }
+    }
+}
 
-    // 제목 글리프: 선언 2500HU(33.33px)·ratio 90% → 그리기 33.33×√0.90 = 31.62px
-    // + scale(√0.90=0.9487). 결함 시 font-size 33.33 + scale(0.9).
-    let shrunk = svg.matches("font-size=\"31.62").count();
+#[test]
+fn issue_5821_condensed_title_preserves_source_height_and_horizontal_ratio() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = std::fs::read(path).expect("원본 입력");
+    let document = parse_document(&bytes).expect("원본 속성");
+    let mut used = HashSet::new();
+    for section in &document.sections {
+        used_shapes(&section.paragraphs, &mut used);
+    }
+    // 이 입력의 가장 큰 실제 사용 모양은 압축 장평을 가진 한글 제목이다.
+    // 사용하지 않은 header의 큰 모양이나 화면 좌표로 제목을 고르지 않는다.
+    let title = used
+        .iter()
+        .map(|id| &document.doc_info.char_shapes[*id as usize])
+        .max_by_key(|shape| shape.base_size * i32::from(shape.relative_sizes[0]))
+        .expect("제목 글자 모양");
+    let expected_size = f64::from(title.base_size) * f64::from(title.relative_sizes[0]) / 100.0
+        * rhwp::renderer::DEFAULT_DPI
+        / rhwp::renderer::HWPUNIT_PER_INCH;
+    let expected_ratio = f64::from(title.ratios[0]) / 100.0;
+    assert!(expected_size > 0.0 && expected_ratio > 0.0 && expected_ratio < 1.0);
+
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 열기");
+    let svg = core.render_page_svg_native(0).expect("첫 쪽 SVG");
+    let xml = roxmltree::Document::parse(&svg).expect("SVG 구조");
+    let candidates: Vec<_> = xml
+        .descendants()
+        .filter(|node| node.has_tag_name("text"))
+        .filter_map(|node| {
+            let size = node.attribute("font-size")?.parse::<f64>().ok()?;
+            (size >= expected_size * expected_ratio).then_some((node, size))
+        })
+        .collect();
     assert!(
-        shrunk >= 40,
-        "제목 글리프가 √r 축소 크기(31.62px)로 그려져야 한다 (결함 시 33.33): {shrunk}"
+        !candidates.is_empty(),
+        "제목 글리프가 실제 출력에 있어야 한다"
     );
-    assert!(
-        svg.contains("scale(0.9487"),
-        "가로 스케일이 √0.90 이어야 총 폭이 선언×0.90 으로 유지된다"
-    );
-    assert!(
-        !svg.contains("font-size=\"33.33"),
-        "선언 크기 그대로 그려진 제목 글리프가 남아 있다"
-    );
+    for (node, size) in candidates {
+        assert!(
+            (size / expected_size - 1.0).abs() < 0.001,
+            "선언 세로 크기를 보존해야 한다: source={expected_size}, actual={size}"
+        );
+        let transform = node.attribute("transform").expect("장평 변환");
+        let scale = transform
+            .split("scale(")
+            .nth(1)
+            .expect("가로 축 변환")
+            .split(')')
+            .next()
+            .expect("변환 끝");
+        let values: Vec<f64> = scale
+            .split(',')
+            .map(|value| value.trim().parse().expect("배율"))
+            .collect();
+        assert_eq!(values.len(), 2);
+        assert!(
+            (values[0] - expected_ratio).abs() < 0.001,
+            "가로 축은 원본 장평이다"
+        );
+        assert_eq!(values[1], 1.0, "세로 축은 변하지 않는다");
+    }
 }

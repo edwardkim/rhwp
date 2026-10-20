@@ -27,14 +27,10 @@ use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/task1768/distribution_doc.hwpx";
-/// 표를 든 host 문단(구역 0).
-const HOST_PARA: usize = 47;
 /// 한컴 정본에서 다음 쪽 첫 줄로 함께 넘어가는 소제목.
 const SECTION_HEADING_PARA: usize = 35;
 /// 소제목 바로 뒤의 첫 목록 항목.
 const FIRST_LIST_PARA: usize = 36;
-/// 이 문단의 글자 — 정본에서 표 **위** 줄에 있다.
-const HOST_TEXT: &str = "단위";
 /// 본문 오른쪽 끝(px). 표가 이 밖으로 나가면 안 된다.
 const BODY_RIGHT: f64 = 725.7;
 /// 한컴 2024 기준 PDF 3쪽의 해당 표 왼쪽 테두리.
@@ -63,20 +59,6 @@ fn column_nodes(root: &RenderNode) -> Vec<&RenderNode> {
     out
 }
 
-fn run_text(node: &RenderNode) -> String {
-    let mut text = String::new();
-    fn walk(node: &RenderNode, out: &mut String) {
-        if let RenderNodeType::TextRun(run) = &node.node_type {
-            out.push_str(&run.text);
-        }
-        for child in &node.children {
-            walk(child, out);
-        }
-    }
-    walk(node, &mut text);
-    text
-}
-
 fn find_text_run_x(node: &RenderNode, needle: &str) -> Option<f64> {
     if let RenderNodeType::TextRun(run) = &node.node_type {
         if run.text.contains(needle) {
@@ -88,46 +70,9 @@ fn find_text_run_x(node: &RenderNode, needle: &str) -> Option<f64> {
         .find_map(|child| find_text_run_x(child, needle))
 }
 
-/// 표가 있는 쪽의 (표 bbox, host 문단 줄들).
-fn host_page(core: &DocumentCore) -> (u32, (f64, f64, f64), Vec<(f64, String)>) {
-    for page in 0..core.page_count() as u32 {
-        let tree = core.build_page_render_tree(page).expect("render tree");
-        let nodes = column_nodes(&tree.root);
-        let Some(table) = nodes.iter().find_map(|n| match &n.node_type {
-            RenderNodeType::Table(t) if t.para_index == Some(HOST_PARA) => {
-                Some((n.bbox.y, n.bbox.x, n.bbox.width))
-            }
-            _ => None,
-        }) else {
-            continue;
-        };
-        let lines: Vec<(f64, String)> = nodes
-            .iter()
-            .filter(|n| {
-                matches!(&n.node_type, RenderNodeType::TextLine(line)
-                    if line.para_index == Some(HOST_PARA))
-            })
-            .map(|n| (n.bbox.y, run_text(n)))
-            .collect();
-        return (page, table, lines);
-    }
-    panic!("표 pi={HOST_PARA} 가 있는 쪽이 없다");
-}
-
-/// 말미 공백은 줄상자를 얻지 못한다 — host 문단의 보이는 줄은 하나뿐이다.
-#[test]
-fn trailing_whitespace_does_not_get_its_own_line() {
-    let core = open();
-    let (page, _, lines) = host_page(&core);
-    assert_eq!(
-        lines.len(),
-        1,
-        "{}쪽 host 문단 줄이 {}개다 — 말미 공백은 앞 줄이 흡수하므로 글자 줄 하나여야 한다: {:?}",
-        page + 1,
-        lines.len(),
-        lines
-    );
-}
+// 공백만 있는 표 호스트의 줄 상자는 표의 점유 영역을 표현할 수 있다.
+// 전체 TextLine 수 대신 가시 단위 표시·표 소유·불필요한 빈 줄을 구분하는 검사는
+// verified_inline_print_rows::verified_distribution_whitespace_rows_belong_to_the_budget_table에 있다.
 
 #[test]
 fn viewtext_table_unit_label_uses_the_table_right_inset() {

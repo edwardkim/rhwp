@@ -328,6 +328,17 @@
       ]
     },
     {
+      "file": "NotoSansMath-Regular.woff2",
+      "sha256": "6836027b99d29fd0e6f668cf0c2e89107de4131b91116cd96516ad4a7e19d66d",
+      "copyrightNotices": [
+        "Copyright 2018 Google LLC. All Rights Reserved."
+      ],
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "NotoSansMath-OFL.txt"
+      ]
+    },
+    {
       "file": "NotoSansSymbols2-Regular.ttf",
       "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688",
       "copyrightNotices": [
@@ -628,6 +639,11 @@
       "file": "LPPL-1.3c.txt",
       "sha256": "3d262cdf34dafa6955f703c634a8c238ec44109bc8dd6ef34fb7aa54809f7e66",
       "sourceUrl": "https://www.latex-project.org/lppl/lppl-1-3c.txt"
+    },
+    {
+      "file": "NotoSansMath-OFL.txt",
+      "sha256": "4fbd190167f23b4c0e2368160f412bf2d1fade887b78b6aec66689ce31698e8b",
+      "sourceUrl": "https://github.com/google/fonts/blob/main/ofl/notosansmath/OFL.txt"
     }
   ],
   "repositoryOnlyFonts": [
@@ -894,6 +910,31 @@
       ],
       "copyrightNotices": [
         "Copyright 2013 Google Inc. All Rights Reserved."
+      ]
+    },
+    {
+      "repositoryPath": "assets/fonts/LatinModernMath-VariableOutline-subset.otf",
+      "sha256": "c3b70b3a6ad5d7b03fb9c86067b6fc212b3a084870a9acff13238190137bf260",
+      "copyrightNotices": [
+        "Copyright 2012--2014 for Latin Modern Math OTF by B. Jackowski, P. Strzelczyk and P. Pianowski (on behalf of TeX users groups). This work is released under the GUST Font License -- see http://tug.org/fonts/licenses/GUST-FONT-LICENSE.txt for details."
+      ],
+      "license": "GUST-Font-License-1.0 AND LPPL-1.3c-or-later",
+      "licenseFiles": [
+        "assets/fonts/licenses/LatinModernMath-GUST-FONT-LICENSE.txt",
+        "assets/fonts/licenses/LPPL-1.3c.txt"
+      ],
+      "provenance": "assets/fonts/MANIFEST-RHWP-LMM-VariableOutline.txt"
+    },
+    {
+      "repositoryPath": "tests/fixtures/fonts/RHWPHostFixture-CoverageSubset.ttf",
+      "sha256": "88ff7274201030cef93ce4f7884a1f3aa469a692315694ecc6b708a8701e23c2",
+      "license": "MIT",
+      "licenseFiles": [
+        "LICENSE",
+        "tests/fixtures/fonts/RHWPHostFixture.LICENSE.md"
+      ],
+      "copyrightNotices": [
+        "Copyright (c) 2025-2026 Edward Kim"
       ]
     }
   ]

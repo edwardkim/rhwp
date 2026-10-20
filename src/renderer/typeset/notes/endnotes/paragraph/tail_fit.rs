@@ -81,7 +81,6 @@ pub(super) struct TailFitInput<'a> {
     pub(super) internal_rewind_full_advance_needed: bool,
     pub(super) no_separator_tail_after_picture_starts_next_page: bool,
     pub(super) later_endnote_vpos_rewinds_after_current: bool,
-    pub(super) large_between_equation_tail_starts_next_column: bool,
     pub(super) large_between_question_title_render_y: Option<f64>,
     pub(super) large_between_question_title_head_inside_frame: bool,
     pub(super) large_between_question_title_head_fits_flow: bool,
@@ -174,7 +173,6 @@ impl TypesetEngine {
             internal_rewind_full_advance_needed,
             no_separator_tail_after_picture_starts_next_page,
             later_endnote_vpos_rewinds_after_current,
-            large_between_equation_tail_starts_next_column,
             large_between_question_title_render_y,
             large_between_question_title_head_inside_frame,
             large_between_question_title_head_fits_flow,
@@ -998,7 +996,6 @@ impl TypesetEngine {
             || large_between_last_column_new_note_tail
             || no_separator_tail_after_picture_starts_next_page
             || zero_between_large_separator_last_column_title_orphan
-            || large_between_equation_tail_starts_next_column
             || large_between_final_visible_equation_rewind_tail_starts_next_column
             || large_between_lead_in_before_final_tail_starts_next_column
             || large_between_last_column_final_lead_tac_tail_starts_next_page
