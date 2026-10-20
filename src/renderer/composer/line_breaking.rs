@@ -2167,6 +2167,8 @@ fn fill_one_interval(
                 );
                 let w_hwp_fit = if at_written_line_end
                     && fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx) < 0
+                    && cursor.lw + w_hwp
+                        <= effective_width + line_break_tolerance_hwp(effective_width)
                 {
                     FitWidthHwp(w_hwp)
                 } else {
