@@ -3657,10 +3657,11 @@ mod validate_linesegs_tests {
         );
 
         let line = short_table_frame_target_line(&document);
-        // HWPUNIT↔실수 변환의 정수 절삭 한 단위만 허용한다. 원시 칸 폭이나
-        // 칸 안 여백을 중복 차감한 폭은 이 관계를 만족하지 못한다.
-        assert!(
-            (line.segment_width - owner_width).abs() <= 1,
+        // 소유자 폭은 5002 HU지만 저장 줄 폭은 #7412의 독립 한컴 줄 메트릭처럼
+        // 4 HU 격자로 내려 5000 HU다. 원시 칸 폭(4998→4996)·중복 패딩은 배제한다.
+        let segment_width = owner_width - owner_width.rem_euclid(4);
+        assert_eq!(
+            line.segment_width, segment_width,
             "표가 소유한 폭과 저장 안 여백을 보존해야 한다: 줄 폭 {}, 원본 폭 {owner_width}",
             line.segment_width
         );
@@ -3680,10 +3681,11 @@ mod validate_linesegs_tests {
 
         assert_eq!(core.reflow_linesegs_on_demand(), 1);
         let line = short_table_frame_target_line(core.document());
-        // HWPUNIT↔실수 변환의 정수 절삭 한 단위만 허용한다. 원시 칸 폭이나
-        // 칸 안 여백을 중복 차감한 폭은 이 관계를 만족하지 못한다.
-        assert!(
-            (line.segment_width - owner_width).abs() <= 1,
+        // 초기 조판과 편집 모두 같은 소유자 폭을 같은 저장 줄 격자로 발행한다.
+        // 실제 소유자 폭 5002 HU와 원시 칸 폭 4998 HU의 차이는 여전히 보호한다.
+        let segment_width = owner_width - owner_width.rem_euclid(4);
+        assert_eq!(
+            line.segment_width, segment_width,
             "표가 소유한 폭과 저장 안 여백을 보존해야 한다: 줄 폭 {}, 원본 폭 {owner_width}",
             line.segment_width
         );

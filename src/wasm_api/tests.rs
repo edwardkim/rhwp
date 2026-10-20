@@ -16164,6 +16164,7 @@ fn test_save_picture() {
     // 4. Picture 컨트롤 구성 (참조 파일의 정확한 값 사용)
     let picture = crate::model::image::Picture {
         common: ref_pic.common.clone(),
+        border_paint_fingerprint: None,
         shape_attr: ref_pic.shape_attr.clone(),
         border_color: ref_pic.border_color,
         border_width: ref_pic.border_width,
@@ -17358,6 +17359,7 @@ fn test_save_pic_in_table() {
     // 5. Picture 컨트롤 구성 (참조 파일의 정확한 값 사용)
     let picture = crate::model::image::Picture {
         common: ref_pic.common.clone(),
+        border_paint_fingerprint: None,
         shape_attr: ref_pic.shape_attr.clone(),
         border_color: ref_pic.border_color,
         border_width: ref_pic.border_width,
