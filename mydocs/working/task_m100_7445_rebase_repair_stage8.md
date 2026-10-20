@@ -3326,7 +3326,7 @@ Docker 최적화 결과가 아니다. root pkg와 Studio public의 JS/WASM hash�
 예전 oracle 파일과 바이트가 다르므로 그 Print를 재사용하지 않고 정확한 현재 입력을
 한컴2024에서 다시 Print했다. job`ed5f546b-ff0a-48da-9084-aba9311b137c`, engine2024,
 Hancom13.0.0.3901, method0/frame_print_to_pdf_ex_one_up이며 PDF는
-`pdf/issue7445-current-model-baseline67-2024.pdf`, SHA256
+`/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/temporary-artifacts-20261020/pdf/issue7445-current-model-baseline67-2024.pdf`, SHA256
 `b033ccd684d6fbaaec402a31ba632f5a6697c72d1ed3e670a1f07d7dc46ca0c4`다.
 
 정확한 입력·새 Print의 전1쪽은 Native/fresh WASM 각각100.00000%,1/1쪽이다.

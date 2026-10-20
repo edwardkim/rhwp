@@ -14,7 +14,7 @@ runtime2199파일과 정식 검사 source hash를 대조했다. 글꼴 바이너
 - 입력은 로컬 ignored `repair89-svg-webfont-public-edit-control/svg-webfont-public-edit.hwp`,
   SHA `9cb5b230e785c9f101dc9d55357ccfb089c1809f11e09788b7368279dbc4e36a`다.
   `rhwp info`는 hancom-office-2020/11.0.0.2129, 1쪽이다.
-- 독립 Print는 `pdf/issue7445-svg-webfont-public-edit-20261020-2020.pdf`,
+- 독립 Print는 `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/temporary-artifacts-20261020/pdf/issue7445-svg-webfont-public-edit-20261020-2020.pdf`,
   SHA `91601e7fc918209c9bf7cffd58875d43df925210c99cb6d34c38989d6ea6889a`다.
   MCP job `b20d7b2a-9861-487b-9330-1a92ba6acf84`, engine2020/11.0.0.9136,
   method0/hancom2020_pdf_driver_one_up, 전1쪽이며 실제 PDF face는 Haansoft Dotum이다.

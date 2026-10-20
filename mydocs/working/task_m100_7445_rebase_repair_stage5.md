@@ -134,7 +134,7 @@ S27 before0 PASS / 3 FAIL(1.195초)에서 해당 줄 소속 검사 통과로 바
 S27은1 PASS / 2 FAIL(1.475초), 쪽수196/197이며 전쪽 수용이 아닙니다.
 새 저장본 `v27-liter-split-1x2.hwp` SHA `4c38aa3b917770fe3d96d2fbf19beb1ed962535d5006d210e66ce218680cd66d`,
 독립 Print job `cbd18ccf-9827-4793-8288-f7cce5675487`,
-`pdf/issue4138-picture-liter-20261014-2024.pdf` SHA `c6055ab303d693ba2a403ca3484d082bd7f8642a3958bbfb6a112cb351b9558d`에
+`/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/temporary-artifacts-20261020/pdf/issue4138-picture-liter-20261014-2024.pdf` SHA `c6055ab303d693ba2a403ca3484d082bd7f8642a3958bbfb6a112cb351b9558d`에
 동일 입력의 출처를 보존했습니다. Native12쪽은79.93509→93.25333%이며 줄바꿈은 직접 판독했습니다.
 1/10쪽96.99353/95.13630%이나13/24/31/196쪽 미달과196/197 불일치를 그대로 기록합니다.
 S27의 기존 그림 이월 대조군 #7518은22 PASS / 0 FAIL(2.863초)입니다.

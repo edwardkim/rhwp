@@ -217,7 +217,9 @@ pub // [#2430] 한양신명조 실측 ASCII (한글 COM 무신축 래더 2026-07
 // 한글은 한양신명조 를 HYSinMyeongJo-Medium 와 다른 실폭으로 렌더한다 — LATIN_0 만 교체, 이외 범위·한글 메트릭은 HYSinMyeongJo-Medium 공유.
 // U+0022는 독립 한컴2024 Print의 Type3 /Widths 42.3/100 em → 433/1024로 정정한다.
 // 원본115쪽 pdf/issue1949_giant_cell_nested_tables_perf-hwp-2024.pdf 8/9쪽의30개와
-// 분할197쪽 pdf/issue4138-picture-liter-20261014-2024.pdf 13쪽의 실제 줄 소속이 근거다.
+// 분할197쪽 로컬 Print issue4138-picture-liter-20261014-2024.pdf 13쪽의 실제 줄 소속이 근거다.
+// PDF SHA256: c6055ab303d693ba2a403ca3484d082bd7f8642a3958bbfb6a112cb351b9558d.
+// 보관 경로는 task_m100_7445_rebase_repair_stage5.md를 따른다.
 // HFT 한양신명조의 Latin/Symbol 슬롯이며, 대체 Batang의0.416em이나 TTF hmtx를 사용하지 않는다.
 // U+002E는 독립 Print 원본 8/9쪽 88개·분할 148쪽 31개의 Type3 전진폭
 // 0.244em을 250/1024로 양자화한다. 246/1024는 물리 폭 경계에서 문단 끝
