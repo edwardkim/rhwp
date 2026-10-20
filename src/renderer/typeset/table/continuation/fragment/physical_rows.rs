@@ -420,10 +420,29 @@ impl TypesetEngine {
                     &[],
                     source.styles,
                 );
-                before
+                let content_box = before
                     + cursor
                         .start_row_height_override
-                        .map_or(content, |height| content.max(height))
+                        .map_or(content, |height| content.max(height));
+                // 일반 행의 내용 컷은 소비한 글줄만 나타낸다. 칸에 남은 물리 공간은
+                // 원래 측정 상자에 속하므로 내용 종료만으로 행을 축소하지 않는다.
+                // 걸침 행은 아직 미지인 전체 높이 대신 기존 병합 원장으로 푼다.
+                let mut owns_plain_row = false;
+                let plain_row = table.cells.iter().all(|cell| {
+                    let first = usize::from(cell.row);
+                    let end = first + usize::from(cell.row_span);
+                    if first <= row && row < end {
+                        owns_plain_row = true;
+                        first == row && cell.row_span == 1
+                    } else {
+                        true
+                    }
+                });
+                if plain_row && owns_plain_row {
+                    content_box.max(source.measured_table.row_heights[row])
+                } else {
+                    content_box
+                }
             })
         });
         let start_row_box = pending_row_box
