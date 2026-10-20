@@ -26,7 +26,7 @@ impl NativePuaMetrics {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct NativePuaFonts {
     programs: BTreeMap<String, BTreeMap<(bool, bool), Arc<NativePuaMetrics>>>,
 }
@@ -56,7 +56,14 @@ impl NativePuaFonts {
             (width > 0).then(|| f64::from(width) / f64::from(face.units_per_em()))
         });
         if advances.iter().all(Option::is_none) {
-            return Ok(false);
+            let removed = self
+                .programs
+                .get_mut(family)
+                .is_some_and(|programs| programs.remove(&(bold, italic)).is_some());
+            if self.programs.get(family).is_some_and(BTreeMap::is_empty) {
+                self.programs.remove(family);
+            }
+            return Ok(removed);
         }
         let metric = NativePuaMetrics {
             digest: Sha256::digest(bytes).into(),

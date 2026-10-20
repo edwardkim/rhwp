@@ -9,6 +9,7 @@ use super::DocumentCore;
 #[derive(Debug, Clone, Serialize)]
 pub struct NativePuaFontRequest {
     pub family: String,
+    pub paint_families: Vec<String>,
     pub bold: bool,
     pub italic: bool,
 }
@@ -19,15 +20,15 @@ impl DocumentCore {
         &mut self,
         mut provider: impl FnMut(&NativePuaFontRequest) -> Option<(Vec<u8>, u32)>,
     ) -> Result<bool, HwpError> {
-        let mut fonts = (*self.native_pua_fonts).clone();
-        let mut changed = false;
+        let mut fonts = crate::renderer::native_pua_fonts::NativePuaFonts::default();
         for request in self.native_pua_font_requests() {
             if let Some((bytes, index)) = provider(&request) {
-                changed |= fonts
+                fonts
                     .register(&request.family, request.bold, request.italic, &bytes, index)
                     .map_err(|message| HwpError::RenderError(message.into()))?;
             }
         }
+        let changed = fonts != *self.native_pua_fonts;
         if changed {
             self.native_pua_fonts = std::sync::Arc::new(fonts);
             self.rebuild_derived_state();
@@ -64,6 +65,14 @@ impl DocumentCore {
                 requests
                     .entry((family.clone(), style.bold, style.italic))
                     .or_insert(NativePuaFontRequest {
+                        paint_families: crate::renderer::internal_font_family_members(
+                            &crate::renderer::render_font_family_chain_for_weight(
+                                &family, style.bold,
+                            ),
+                        )
+                        .into_iter()
+                        .map(str::to_owned)
+                        .collect(),
                         family,
                         bold: style.bold,
                         italic: style.italic,
@@ -87,11 +96,12 @@ impl DocumentCore {
         let changed = fonts
             .register(family, bold, italic, bytes, face_index)
             .map_err(|message| HwpError::RenderError(message.into()))?;
+        let supported = fonts.get(family, bold, italic).is_some();
         if changed {
             self.native_pua_fonts = std::sync::Arc::new(fonts);
             self.rebuild_derived_state();
         }
-        Ok(changed)
+        Ok(supported)
     }
 
     /// 호스트 글꼴 세대가 바뀌면 원 PUA 결정과 파생 배치를 함께 폐기한다.

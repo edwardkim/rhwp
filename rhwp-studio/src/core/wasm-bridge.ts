@@ -359,6 +359,9 @@ export class WasmBridge {
             selected.set(localFontFaceKey(record), record);
           }
         }
+        for (const record of this.nativePuaFonts.records(doc as unknown as NativePuaFontDocument | null)) {
+          selected.set(localFontFaceKey(record), record);
+        }
         return [...selected.values()];
       });
       await this.hostCanvasFonts.prepare(records);

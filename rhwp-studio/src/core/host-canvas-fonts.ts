@@ -103,9 +103,15 @@ export class HostCanvasFontSession {
     const slant = tokens.includes('italic') ? 'italic' : tokens.includes('oblique') ? 'oblique' : 'normal';
     const families = parseCssFontFamilyList(match[3]);
     if (this.aliases.has(families[0])) return cssFont;
-    const record = families[0] ? resolveRendererLocalFont(families[0], { weight, slant }) : null;
-    const loaded = record?.hostReference ? this.faces.get(localFontFaceKey(record)) : null;
-    return loaded ? `${match[1]}${match[2]} ${formatCssFontFamilyList([loaded.alias, ...families])}` : null;
+    let changed = false;
+    const selected = families.flatMap(family => {
+      const record = resolveRendererLocalFont(family, { weight, slant });
+      const loaded = record?.hostReference ? this.faces.get(localFontFaceKey(record)) : null;
+      if (!loaded) return [family];
+      changed = true;
+      return [loaded.alias, family];
+    });
+    return changed ? `${match[1]}${match[2]} ${formatCssFontFamilyList(selected)}` : null;
   }
 
   /** The asynchronous metric session receives a scoped synchronous context. */
