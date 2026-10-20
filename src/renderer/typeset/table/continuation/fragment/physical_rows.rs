@@ -8,35 +8,6 @@ use crate::renderer::typeset::{
 use super::super::TableContinuationCursor;
 use super::FragmentInput;
 
-fn plain_row_owns_physical_box(table: &crate::model::table::Table, row: usize) -> bool {
-    let mut owned = false;
-    table.cells.iter().all(|cell| {
-        let first = usize::from(cell.row);
-        let end = first + usize::from(cell.row_span);
-        if first <= row && row < end {
-            owned = true;
-            first == row && cell.row_span == 1
-        } else {
-            true
-        }
-    }) && owned
-}
-
-/// 행 계획과 분할기가 같은 앞 조각의 실제 물리 소비를 차감한다.
-pub(super) fn pending_plain_row_remaining(
-    cursor: &TableContinuationCursor,
-    table: &crate::model::table::Table,
-    physical_rows: Option<&[f64]>,
-) -> Option<f64> {
-    let (row, before) = cursor.pending_row_box?;
-    if row != cursor.row || cursor.start_cut.is_empty() || !plain_row_owns_physical_box(table, row)
-    {
-        return None;
-    }
-    let remaining = physical_rows?.get(row)? - before;
-    (remaining.is_finite() && remaining > 0.0).then_some(remaining)
-}
-
 pub(super) struct StoredFragmentEnd<'a> {
     pub(super) row: usize,
     pub(super) complete_cut: bool,
@@ -449,18 +420,10 @@ impl TypesetEngine {
                     &[],
                     source.styles,
                 );
-                let content_box = before
+                before
                     + cursor
                         .start_row_height_override
-                        .map_or(content, |height| content.max(height));
-                // 일반 행의 내용 컷은 소비한 글줄만 나타낸다. 칸에 남은 물리 공간은
-                // 원래 측정 상자에 속하므로 내용 종료만으로 행을 축소하지 않는다.
-                // 걸침 행은 아직 미지인 전체 높이 대신 기존 병합 원장으로 푼다.
-                if plain_row_owns_physical_box(table, row) {
-                    content_box.max(source.measured_table.row_heights[row])
-                } else {
-                    content_box
-                }
+                        .map_or(content, |height| content.max(height))
             })
         });
         let start_row_box = pending_row_box

@@ -2901,9 +2901,28 @@ pub fn render_font_family_chain(font_family: &str) -> String {
 
 /// `bold` 이면 ExtraLight 를 빼서 Noto Sans KR Regular/Bold 가 매칭되게 한다 (#3772).
 pub fn render_font_family_chain_for_weight(font_family: &str, bold: bool) -> String {
+    render_font_family_names_for_weight(font_family, bold)
+        .into_iter()
+        .map(|family| {
+            if family == "serif" || family == "sans-serif" || family == "monospace" {
+                family
+            } else {
+                css_single_quoted_font_family(&family)
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(",")
+}
+
+/// 호스트의 실제 face 준비 요청도 paint와 같은 별칭·fallback 순서를 소비한다.
+/// CSS 인용 전 이름을 공유해 호스트의 실제 family 조회에 인용부호가 섞이지 않게 한다.
+pub(crate) fn render_font_family_names_for_weight(font_family: &str, bold: bool) -> Vec<String> {
     let requested = internal_font_family_members(font_family);
     let Some(primary) = requested.first().copied() else {
-        return generic_fallback_for_weight("", bold);
+        return internal_font_family_members(&generic_fallback_for_weight("", bold))
+            .into_iter()
+            .map(|family| family.trim_matches('\'').to_owned())
+            .collect();
     };
     let fb = generic_fallback_for_weight(primary, bold);
     let mut family_names = Vec::new();
@@ -2919,18 +2938,14 @@ pub fn render_font_family_chain_for_weight(font_family: &str, bold: bool) -> Str
     }
     let mut families: Vec<String> = family_names
         .iter()
-        .map(|family| css_single_quoted_font_family(family))
+        .map(|family| family.to_string())
         .collect();
-    families.push(fb);
-    families.join(",")
-}
-
-/// 호스트의 실제 face 준비 요청도 paint와 같은 별칭·fallback 순서를 소비한다.
-pub(crate) fn render_font_family_names_for_weight(font_family: &str, bold: bool) -> Vec<String> {
-    internal_font_family_members(&render_font_family_chain_for_weight(font_family, bold))
-        .into_iter()
-        .map(str::to_owned)
-        .collect()
+    families.extend(
+        internal_font_family_members(&fb)
+            .into_iter()
+            .map(|family| family.trim_matches('\'').to_owned()),
+    );
+    families
 }
 
 /// Canvas 2D 렌더용 인용 font-family 체인.
@@ -3429,6 +3444,17 @@ pub(crate) fn topbottom_float_displaced_below_following_flow(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn host_font_requests_use_actual_names_before_css_quoting() {
+        let families = render_font_family_names_for_weight("휴먼명조", false);
+        assert_eq!(families[0], "휴먼명조");
+        assert!(families.iter().any(|family| family == "Haansoft Batang"));
+        assert!(!families.iter().any(|family| family.starts_with('\'')));
+        let literal = render_font_family_names_for_weight("Tom's Handwriting", false);
+        assert_eq!(literal[0], "Tom's Handwriting");
+        assert!(render_font_family_chain("Tom's Handwriting").starts_with("'Tom\\'s Handwriting',"));
+    }
 
     #[test]
     fn test_render_backend_from_str() {
