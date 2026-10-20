@@ -318,6 +318,36 @@ pub(super) fn stored_overlay_guide_advance(
     .then_some(fmt.total_height)
 }
 
+/// 다단 배치가 이미 보존한 저장 줄의 실제 하단과 후속 원점을 공유한다.
+/// 줄 상자끼리 겹치는 사다리를 높이 합으로 바꾸지 않는다. 쪽말 fit에서는
+/// 제외할 수 있는 마지막 줄간격도 다음 문단으로의 실제 전진에는 한 번 남긴다.
+#[allow(clippy::too_many_arguments)]
+fn stored_multicolumn_flow(
+    st: &TypesetState,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    if st.col_count <= 1
+        || fmt.stored_ladder_is_filler
+        || fmt.computed_host_lines.is_some()
+        || para.controls.iter().any(|control| {
+            !super::super::controls::stored_tac::inline_text_control(control)
+                && !matches!(control, Control::Table(table) if table.common.treat_as_char)
+                && !crate::renderer::composer::control_is_width_neutral_marker(control)
+        })
+    {
+        return None;
+    }
+    let bottom = stored_content_bottom(st, para, fmt, paragraphs, styles, dpi)?;
+    let trailing = *fmt.line_spacings.last()?;
+    let end = bottom + trailing + fmt.spacing_after;
+    (trailing >= 0.0 && fmt.spacing_after >= 0.0 && end.is_finite() && bottom >= st.current_height)
+        .then_some((bottom, end))
+}
+
 #[allow(clippy::too_many_arguments)]
 pub(super) fn stored_successor_flow(
     st: &TypesetState,
@@ -328,8 +358,10 @@ pub(super) fn stored_successor_flow(
     para_idx: usize,
     dpi: f64,
 ) -> Option<(f64, f64)> {
-    if st.col_count != 1
-        || fmt.stored_ladder_is_filler
+    if st.col_count > 1 {
+        return stored_multicolumn_flow(st, para, fmt, paragraphs, styles, dpi);
+    }
+    if fmt.stored_ladder_is_filler
         || fmt.computed_host_lines.is_some()
         || fmt.line_count() != para.line_segs.len()
     {

@@ -1,0 +1,15 @@
+{
+  "head": "c07d208e2b996b254d5484df88d741849928e3da",
+  "sourceLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair774-multicolumn-stored-flow-fresh-wasm/source.json",
+  "hashes": {
+    "rhwp.js": "63c587e4b072f0a65416e65a0e86bf00b2971cdfb0f46cfda7f150449dd30524",
+    "rhwp_bg.wasm": "efacc584d529451970d9ac1337927a05928de0543cadf3b471875498e6d8e6a9"
+  },
+  "rootPackageRecompiled": true,
+  "wrapperInvoked": true,
+  "rootPkgStudioPublicMatch": true,
+  "buildExitCode": 0,
+  "seconds": 211.1597949579591,
+  "mode": "Mac locked web/pkg/no-opt local alternative; not Docker optimized",
+  "actualBrowserInitialization": "pending"
+}

@@ -1,0 +1,15 @@
+{
+  "parent": "c07d208e2b996b254d5484df88d741849928e3da",
+  "files": {
+    "src/paint/builder.rs": "bf28944bba3d8b9d3b3dd866d44bc7791a8dd9f1ff2883e51f8376894d0a5703",
+    "src/paint/paper_viewport.rs": "c5cf7728bd85558fd859a1c76a9985a5b725ba5adc93151d442959b822f79e3b",
+    "src/renderer/float_placement.rs": "23e02f4212f2ff69b513034d5ac20f113658a639626b791ee6571cca65c65a3f",
+    "src/renderer/height_measurer.rs": "e6e6d43ff029b0661ebb452bacf657ea590a0338f9eec313b44b4830c851dcbe",
+    "src/renderer/layout/paragraph_layout.rs": "9c9295e53df30a54e58c579e8d968d357de4f03145e2caf4f4d64a4f6ab222e2",
+    "src/renderer/layout/table_layout/stored_plain_cell_minimum.rs": "bc2db4d7d39c18a87dfce93d1af34b87a59a5ffff341b91be793ef12262c74cd",
+    "src/renderer/skia/text_replay.rs": "078e8efe34ce086f454971394766fdd594a340108c8b06f058d2a16b0757d1a5",
+    "src/renderer/typeset/paragraph/content.rs": "b712143afc634de386a905a719b09464400780b5e856760e818fc37626a25fd9"
+  },
+  "patchSha256": "ca99325c471b7e5247ad44ab929fa047622fe6bd0c96ff8ca48b7691a6efd6a7",
+  "scope": "Stage20 stored multicolumn paragraph flow consumes certified source content bottom, trailing spacing and paragraph after spacing; no document/page conditions. Independent Hancom source and before typeset/paint trace in repair770 and cause.md. Full validation pending."
+}

@@ -84,6 +84,37 @@ pub(crate) fn stored_text_cell_required_height(content: f64, declared: f64, padd
     }
 }
 
+/// 저장 텍스트 줄과 그 줄 안의 수식은 셀 전체 프레임이 아니라 줄의 점유다.
+/// 실제 문자가 있는 줄은 활성 안 여백도 수용해야 한다. 그림·자식 표의 저장
+/// 줄과 빈 셀은 별도의 물리 프레임 계약을 유지한다.
+pub(crate) fn stored_text_line_cell_minimum(
+    cell: &crate::model::table::Cell,
+    content: f64,
+    padding: f64,
+) -> Option<f64> {
+    if cell.dirty_flag
+        || !cell
+            .paragraphs
+            .iter()
+            .any(|paragraph| !paragraph.text.is_empty())
+        || cell.paragraphs.iter().any(|paragraph| {
+            paragraph.stored_text_partition_is_dirty()
+                || paragraph.cell_format_vpos_dirty
+                || paragraph.controls.iter().any(|control| {
+                    !matches!(control, Control::Equation(equation) if equation.common.treat_as_char)
+                })
+                || paragraph.line_segs.is_empty()
+                || paragraph.line_segs.iter().any(|line| {
+                    line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                        || line.line_height <= 0
+                })
+        })
+    {
+        return None;
+    }
+    Some(content + padding)
+}
+
 /// A natural, progressing saved text frame closes at its last line's ink
 /// plus active padding. The final line spacing advances a successor outside
 /// this closed cell; it is not another line or a physical blank band.

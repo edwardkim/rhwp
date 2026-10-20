@@ -1,0 +1,188 @@
+{
+  "parent": "c07d208e2b996b254d5484df88d741849928e3da",
+  "productionSource": {
+    "src/paint/builder.rs": "bf28944bba3d8b9d3b3dd866d44bc7791a8dd9f1ff2883e51f8376894d0a5703",
+    "src/paint/paper_viewport.rs": "c5cf7728bd85558fd859a1c76a9985a5b725ba5adc93151d442959b822f79e3b",
+    "src/renderer/float_placement.rs": "23e02f4212f2ff69b513034d5ac20f113658a639626b791ee6571cca65c65a3f",
+    "src/renderer/height_measurer.rs": "e6e6d43ff029b0661ebb452bacf657ea590a0338f9eec313b44b4830c851dcbe",
+    "src/renderer/layout/paragraph_layout.rs": "9c9295e53df30a54e58c579e8d968d357de4f03145e2caf4f4d64a4f6ab222e2",
+    "src/renderer/layout/table_layout/stored_plain_cell_minimum.rs": "bc2db4d7d39c18a87dfce93d1af34b87a59a5ffff341b91be793ef12262c74cd",
+    "src/renderer/skia/text_replay.rs": "078e8efe34ce086f454971394766fdd594a340108c8b06f058d2a16b0757d1a5",
+    "src/renderer/typeset/paragraph/content.rs": "b712143afc634de386a905a719b09464400780b5e856760e818fc37626a25fd9"
+  },
+  "scope": "Stage20 checkpoint. Science source771 whole4 Native772/freshWASM775. Sample11 whole151 uses earlier765 Native and751 WASM; native glyph width fix proof, not claimed latest771/global qualification. Complete branch acceptance/actual36/full regression pending.",
+  "assets": [
+    {
+      "file": "science-native-whole.tsv",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair772-native-science-stored-flow-whole/native/science/silhouette.tsv",
+      "sha256": "2ae182628d4b1fbbc29ff5f1c7a8f7eabc415fc77e5aad1d2862a43fdba7f476"
+    },
+    {
+      "file": "science-native-p002-review.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair772-native-science-stored-flow-whole/native/science/review/review_002.png",
+      "sha256": "5329d9a5df84fa17820eaed0cc9856e61761051a203c5bf54884981a3b66ab58"
+    },
+    {
+      "file": "science-native-p002-overlay.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair772-native-science-stored-flow-whole/native/science/overlay/overlay_002.png",
+      "sha256": "750639c9a2041a5112cc35ce8cb7adfc350dd553a96f661541a5eb7904f46767"
+    },
+    {
+      "file": "science-native-p003-review.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair772-native-science-stored-flow-whole/native/science/review/review_003.png",
+      "sha256": "e8590897016c1c9a97fc3aef4efeab00b6fc44c5bdfac3a4d4c9d3985cae8e1a"
+    },
+    {
+      "file": "science-native-p003-overlay.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair772-native-science-stored-flow-whole/native/science/overlay/overlay_003.png",
+      "sha256": "a1c5a0959d4b4dc87dcea031fb639c3d8ae358f81a9fd6d454006771fae09e4e"
+    },
+    {
+      "file": "science-native-p004-review.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair772-native-science-stored-flow-whole/native/science/review/review_004.png",
+      "sha256": "1ba5c58ce9fef20030543886f1788b90ae939b651ece48fdce08b363907aeecc"
+    },
+    {
+      "file": "science-native-p004-overlay.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair772-native-science-stored-flow-whole/native/science/overlay/overlay_004.png",
+      "sha256": "29c5349235401dea6f03a7aed39d9a33a9e6bbed4818350da9cec00e3b1d6dab"
+    },
+    {
+      "file": "science-wasm-whole.tsv",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair775-wasm-science-stored-flow-whole/wasm/science/silhouette.tsv",
+      "sha256": "62d9be842e43e065e895dee0c30060b16d17b297924fedfc8f4dc1d9db90c81e"
+    },
+    {
+      "file": "science-wasm-p002-review.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair775-wasm-science-stored-flow-whole/wasm/science/review/review_002.png",
+      "sha256": "35bd1dcf69dce3bf0cdc03f337121dd30389ddbc2427c5ce5e20076408faa270"
+    },
+    {
+      "file": "science-wasm-p002-overlay.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair775-wasm-science-stored-flow-whole/wasm/science/overlay/overlay_002.png",
+      "sha256": "ee5bf575d8bd8f78c87e2b99ae06dcd1bcbd3792f18b3d46e36197d07a0528e9"
+    },
+    {
+      "file": "science-wasm-p003-review.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair775-wasm-science-stored-flow-whole/wasm/science/review/review_003.png",
+      "sha256": "8cbe23293e9fbf775542aa6303492e726841706869fcd017a3280a74ecff6b44"
+    },
+    {
+      "file": "science-wasm-p003-overlay.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair775-wasm-science-stored-flow-whole/wasm/science/overlay/overlay_003.png",
+      "sha256": "3466cdcb82b0b3f35829f238d40082e4714d2d1e2ce1599d13f0c9c2c440f30c"
+    },
+    {
+      "file": "science-wasm-p004-review.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair775-wasm-science-stored-flow-whole/wasm/science/review/review_004.png",
+      "sha256": "c4dfe83c2abd4a4621a60fad09f311387ad267566e01f788f1fae46117549b88"
+    },
+    {
+      "file": "science-wasm-p004-overlay.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair775-wasm-science-stored-flow-whole/wasm/science/overlay/overlay_004.png",
+      "sha256": "19a50818cf29668e454b15d97f860c71cb8d591dfb6b358ea6eceb8f85544fb4"
+    },
+    {
+      "file": "sample11-native-whole-765-751.tsv",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair769-sample11-common-glyph-fit-whole/native/sample11/silhouette.tsv",
+      "sha256": "98fee9820f86957e7fbef8407f7374dfac98f325d1704d30cdaf1e1b8e607772"
+    },
+    {
+      "file": "sample11-native-p002-review.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair769-sample11-common-glyph-fit-whole/native/sample11/review/review_002.png",
+      "sha256": "3377872b619e359ba33cef71221d458b9e53f52b49bacee6e57f8274593db0eb"
+    },
+    {
+      "file": "sample11-native-p002-overlay.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair769-sample11-common-glyph-fit-whole/native/sample11/overlay/overlay_002.png",
+      "sha256": "840e02877354534ed2c9b50a2933962496a9c429132eb599c8998fdb9ad4288f"
+    },
+    {
+      "file": "sample11-native-p050-review.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair769-sample11-common-glyph-fit-whole/native/sample11/review/review_050.png",
+      "sha256": "e939ee443f49f42a8809dce82a72f87c3427db832e855c74b735102f801c69ff"
+    },
+    {
+      "file": "sample11-native-p050-overlay.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair769-sample11-common-glyph-fit-whole/native/sample11/overlay/overlay_050.png",
+      "sha256": "d265692f77fb600d2a31d8ba025f3401aa823d708fee40f95052b96c61a4e7dc"
+    },
+    {
+      "file": "sample11-wasm-whole-765-751.tsv",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair769-sample11-common-glyph-fit-whole/wasm/sample11/silhouette.tsv",
+      "sha256": "cac91e6ac26e036bd1aefd34b2185e508d221b111cc4a3d2611ca09f67a15b15"
+    },
+    {
+      "file": "sample11-wasm-p002-review.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair769-sample11-common-glyph-fit-whole/wasm/sample11/review/review_002.png",
+      "sha256": "2e6d7e160456243fb7ca5e04b1558f95603c9200e728dd3e651e8c04656b3a97"
+    },
+    {
+      "file": "sample11-wasm-p002-overlay.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair769-sample11-common-glyph-fit-whole/wasm/sample11/overlay/overlay_002.png",
+      "sha256": "d33907afe9fc9077919e8fc393d296c81491d0af28dc2e6c3901ab57379afe59"
+    },
+    {
+      "file": "sample11-wasm-p050-review.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair769-sample11-common-glyph-fit-whole/wasm/sample11/review/review_050.png",
+      "sha256": "e1d598c86a88be56ab75b110911b323ac08fa0fd997171d8e6e42f3f8c8a967c"
+    },
+    {
+      "file": "sample11-wasm-p050-overlay.png",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair769-sample11-common-glyph-fit-whole/wasm/sample11/overlay/overlay_050.png",
+      "sha256": "86ddb2ce994a89c0ab2a505c2cbaa8c49ca734da5c2edbf1eb5857ac73d4d1d0"
+    },
+    {
+      "file": "science-page2-independent-vectors.json",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair779-independent-completed-page-coordinates/science-page2-vectors.json",
+      "sha256": "d0c0fd0cb7e1ab9a3fe7d26cd469d9c579b31fb106c13c6943a5df83018d2486"
+    },
+    {
+      "file": "native-source-771.json",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair771-multicolumn-stored-paragraph-flow/source.json",
+      "sha256": "c4265e0e9ccfc9c0fd18c94c3aeb81e23a7e2b333bd572906f5751709f64f09c"
+    },
+    {
+      "file": "wasm-producer-774.json",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair774-multicolumn-stored-flow-fresh-wasm/producer.json",
+      "sha256": "57416e2c1df60f88672f4df6626b19692fb949b6ef6c146a3b0a4376103d0053"
+    }
+  ],
+  "readings": {
+    "science": "Native2/3/4 review+overlay and WASM2/3/4 review read; no loss/reordering in reviewed region. Previous p119 drift fixed. Residual text baseline differences on3/4 remain; no px pins there.",
+    "sample11": "Native/WASM2/50 reviewed. Native widths now align Canvas. Independent Print gray/brown regions under diagram remain visible in overlay; not masked. This artifact is not claimed fully identical."
+  },
+  "assetHashes": {
+    "sample11-wasm-p050-review.png": "e1d598c86a88be56ab75b110911b323ac08fa0fd997171d8e6e42f3f8c8a967c",
+    "science-page2-independent-vectors.json": "d0c0fd0cb7e1ab9a3fe7d26cd469d9c579b31fb106c13c6943a5df83018d2486",
+    "science-native-p003-overlay.png": "a1c5a0959d4b4dc87dcea031fb639c3d8ae358f81a9fd6d454006771fae09e4e",
+    "sample11-wasm-whole-765-751.tsv": "cac91e6ac26e036bd1aefd34b2185e508d221b111cc4a3d2611ca09f67a15b15",
+    "sample11-native-p002-review.png": "3377872b619e359ba33cef71221d458b9e53f52b49bacee6e57f8274593db0eb",
+    "sample11-wasm-p050-overlay.png": "86ddb2ce994a89c0ab2a505c2cbaa8c49ca734da5c2edbf1eb5857ac73d4d1d0",
+    "wasm-producer-774.json": "57416e2c1df60f88672f4df6626b19692fb949b6ef6c146a3b0a4376103d0053",
+    "science-wasm-p004-overlay.png": "19a50818cf29668e454b15d97f860c71cb8d591dfb6b358ea6eceb8f85544fb4",
+    "science-wasm-p004-review.png": "c4dfe83c2abd4a4621a60fad09f311387ad267566e01f788f1fae46117549b88",
+    "sample11-native-whole-765-751.tsv": "98fee9820f86957e7fbef8407f7374dfac98f325d1704d30cdaf1e1b8e607772",
+    "science-before-flow-native-p003-review.png": "7165b8e085a9c54aed13e22c03ee1d1c635be76bf360bb11349d15b83aaf2471",
+    "sample11-wasm-p002-overlay.png": "d33907afe9fc9077919e8fc393d296c81491d0af28dc2e6c3901ab57379afe59",
+    "science-native-p002-review.png": "5329d9a5df84fa17820eaed0cc9856e61761051a203c5bf54884981a3b66ab58",
+    "science-native-whole.tsv": "2ae182628d4b1fbbc29ff5f1c7a8f7eabc415fc77e5aad1d2862a43fdba7f476",
+    "native-source-771.json": "c4265e0e9ccfc9c0fd18c94c3aeb81e23a7e2b333bd572906f5751709f64f09c",
+    "science-before-flow-native-p004-review.png": "a4b95a4bbdbd90f81796e2a97067022f115b62d433c3c20c74c37d670c297c45",
+    "science-wasm-p003-review.png": "8cbe23293e9fbf775542aa6303492e726841706869fcd017a3280a74ecff6b44",
+    "science-before-flow-native-p004-overlay.png": "6de316007e765d8bc8615a616487c9de14a6888d49a672be67905d65cc163f44",
+    "sample11-native-p050-review.png": "e939ee443f49f42a8809dce82a72f87c3427db832e855c74b735102f801c69ff",
+    "science-wasm-p002-overlay.png": "ee5bf575d8bd8f78c87e2b99ae06dcd1bcbd3792f18b3d46e36197d07a0528e9",
+    "sample11-wasm-p002-review.png": "2e6d7e160456243fb7ca5e04b1558f95603c9200e728dd3e651e8c04656b3a97",
+    "science-wasm-whole.tsv": "62d9be842e43e065e895dee0c30060b16d17b297924fedfc8f4dc1d9db90c81e",
+    "science-native-p004-review.png": "1ba5c58ce9fef20030543886f1788b90ae939b651ece48fdce08b363907aeecc",
+    "science-native-p002-overlay.png": "750639c9a2041a5112cc35ce8cb7adfc350dd553a96f661541a5eb7904f46767",
+    "science-before-flow-native-p003-overlay.png": "2ff1dc58e52fe72a57a9e1bd2844220a1ad2e0506190bcb71b936ec5c39e3507",
+    "sample11-native-p050-overlay.png": "d265692f77fb600d2a31d8ba025f3401aa823d708fee40f95052b96c61a4e7dc",
+    "science-wasm-p003-overlay.png": "3466cdcb82b0b3f35829f238d40082e4714d2d1e2ce1599d13f0c9c2c440f30c",
+    "science-native-p003-review.png": "e8590897016c1c9a97fc3aef4efeab00b6fc44c5bdfac3a4d4c9d3985cae8e1a",
+    "sample11-native-p002-overlay.png": "840e02877354534ed2c9b50a2933962496a9c429132eb599c8998fdb9ad4288f",
+    "science-native-p004-overlay.png": "29c5349235401dea6f03a7aed39d9a33a9e6bbed4818350da9cec00e3b1d6dab",
+    "science-wasm-p002-review.png": "35bd1dcf69dce3bf0cdc03f337121dd30389ddbc2427c5ce5e20076408faa270"
+  }
+}

@@ -149,9 +149,9 @@ fn text_glyph_fit_uses_layout_advance_without_distribution_spacing() {
     let render = |advance: f64, distribution: f64, letter_spacing: f64| {
         let bounds = BoundingBox::new(8.0, 0.0, 56.0, 56.0);
         let run = TextRunNode {
-            text: "m".into(),
+            text: "A".into(),
             style: TextStyle {
-                font_family: "Noto Sans KR".into(),
+                font_family: "RHWP Host Fixture".into(),
                 font_size: 32.0,
                 extra_char_spacing: distribution,
                 letter_spacing,
@@ -184,9 +184,13 @@ fn text_glyph_fit_uses_layout_advance_without_distribution_spacing() {
             ),
         );
         let out = SkiaLayerRenderer::new()
-            .with_font_paths(&[
-                std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("ttfs/opensource")
+            // The bundled fixture's A has a 900/1000em advance. A much
+            // narrower source advance must control its painted width, without
+            // relying on a contributor's installed system fallback face.
+            .try_with_font_data(&[
+                include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf").to_vec(),
             ])
+            .unwrap()
             .render_raster_with_options(&tree, RasterRenderOptions::default())
             .unwrap();
         decode_rgba(&out.bytes)

@@ -149,6 +149,7 @@ impl LayerBuilder {
             fonts,
             &claimed_glyph_run_sources,
         );
+        context.publish_table_border_geometry(&mut layer_tree.root);
         context.publish_decoration_geometry(&mut layer_tree.root);
         context.publish_glyph_geometry(
             &mut layer_tree.root,

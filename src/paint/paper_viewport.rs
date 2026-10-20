@@ -35,6 +35,55 @@ impl PagePaintContext {
         self.output_size
     }
 
+    /// 표 괘선은 논리 조판 상자를 유지하되 물리 Print 종이의 정밀 CTM을 쓴다.
+    /// 독립 Print의 가로·세로 괘선에서 확인한 공통 프레임이며, 장치 정수
+    /// 반올림이나 끝점의 pen 확장은 이 좌표 변환으로 추측하지 않는다.
+    pub(crate) fn publish_table_border_geometry(self, node: &mut LayerNode) {
+        if !self.print {
+            return;
+        }
+        let ratio = |extent: f64| {
+            (extent * 0.75 + 1e-9).floor() / (extent * 600.0 / 96.0).round() * (600.0 / 72.0)
+        };
+        let (sx, sy) = (ratio(self.logical_size.0), ratio(self.logical_size.1));
+        if ![sx, sy]
+            .into_iter()
+            .all(|value| value.is_finite() && value > 0.0)
+        {
+            return;
+        }
+        fn publish(node: &mut LayerNode, table_owned: bool, sx: f64, sy: f64) {
+            match &mut node.kind {
+                LayerNodeKind::Group {
+                    children,
+                    group_kind,
+                    ..
+                } => {
+                    // 소유를 모든 자손에 상속하면 셀 본문의 도형까지 표 괘선으로
+                    // 바뀐다. 표가 직접 발행한 선만 같은 물리 프레임을 소비한다.
+                    let table = matches!(group_kind, crate::paint::layer_tree::GroupKind::Table(_));
+                    for child in children {
+                        publish(child, table, sx, sy);
+                    }
+                }
+                LayerNodeKind::ClipRect { child, .. } => publish(child, table_owned, sx, sy),
+                LayerNodeKind::Leaf { ops } if table_owned => {
+                    for op in ops {
+                        if let PaintOp::Line { bbox, line } = op {
+                            line.x1 *= sx;
+                            line.x2 *= sx;
+                            line.y1 *= sy;
+                            line.y2 *= sy;
+                            *bbox = line.ink_bbox();
+                        }
+                    }
+                }
+                LayerNodeKind::Leaf { .. } => {}
+            }
+        }
+        publish(node, false, sx, sy);
+    }
+
     /// 독립 Print의 도형 polygon/글자 shade fill은 이후 device CTM의 소수점
     /// 출력을 6→3자리로 바꾼다. 2020의 BorderFill 배경은 바꾸지 않지만
     /// 2024의 같은 셀 배경은 바꾼다(동일 입력 C308/C311).

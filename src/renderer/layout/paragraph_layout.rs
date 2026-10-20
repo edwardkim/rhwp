@@ -6688,16 +6688,18 @@ impl LayoutEngine {
                 && styled_margin_left + margin_right >= effective_col_w;
             // 저장 줄의 cs가 문단의 왼쪽 여백 자체이면 완성 줄 상자에 같은 여백을
             // 두 번 더하지 않는다. 셀의 cs/안쪽 여백 계약과는 구분한다 (#6706).
-            let stored_inline_own_margin = uses_stored_segment_geometry
-                && cell_ctx.is_none()
-                && cs_is_own_margin
-                && stored_tac_assignment.is_some();
+            // UTF-16 경계의 TAC 충돌 복원 여부는 이 원점의 출처와 무관하다.
+            // 충돌이 없는 정상 인라인 표 줄도 cs에 이미 문단 여백을 담고 있다.
+            let stored_inline_own_margin =
+                uses_stored_segment_geometry && cell_ctx.is_none() && cs_is_own_margin;
             let (effective_margin_left, effective_margin_right) = if physical_frame_rows {
                 // 프레임 구간에는 문단 여백·배제가 이미 들어 있지만, 채움이
                 // 별도로 차감한 들여쓰기는 글자 원점과 가용 폭에도 한 번 적용한다.
                 (line_indent, 0.0)
-            } else if stored_inline_own_margin
-                || hwp3_password_stored_segment_line_box
+            } else if stored_inline_own_margin {
+                // cs는 문단 여백을 소유하지만 줄별 들여쓰기는 별도 소비한다.
+                (line_indent, 0.0)
+            } else if hwp3_password_stored_segment_line_box
                 || stored_segment_line_box_cannot_hold_margins
             {
                 (0.0, 0.0)

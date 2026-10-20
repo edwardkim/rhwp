@@ -2666,6 +2666,24 @@ impl HeightMeasurer {
         }
     }
 
+    /// 저장 텍스트·인라인 수식의 줄 점유와 안 여백을 실제 배치와 공유한다.
+    fn stored_cell_text_minimum(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &Table,
+        content: f64,
+        padding: f64,
+    ) -> Option<f64> {
+        if !(self.is_native_hwp5 || self.hwpx_stored_layout)
+            || self.is_hwp3_variant
+            || self.session_edited
+            || self.render_normalization.table_text_reflowed(table)
+        {
+            return None;
+        }
+        crate::renderer::float_placement::stored_text_line_cell_minimum(cell, content, padding)
+    }
+
     /// 표의 높이를 측정한다.
     /// layout_table과 동일한 방식으로 셀 내용 높이를 고려한다.
     pub(crate) fn measure_table(
@@ -4054,12 +4072,15 @@ impl HeightMeasurer {
                     } else {
                         f64::MAX
                     };
-                    crate::renderer::float_placement::stored_text_cell_required_height(
-                        text_height,
-                        declared,
-                        total_pad,
-                    )
-                    .max(object_req)
+                    self.stored_cell_text_minimum(cell, table, text_height, total_pad)
+                        .unwrap_or_else(|| {
+                            crate::renderer::float_placement::stored_text_cell_required_height(
+                                text_height,
+                                declared,
+                                total_pad,
+                            )
+                        })
+                        .max(object_req)
                 } else {
                     content_height + total_pad
                 };
@@ -4603,12 +4624,15 @@ impl HeightMeasurer {
                     } else {
                         f64::MAX
                     };
-                    crate::renderer::float_placement::stored_text_cell_required_height(
-                        text_height,
-                        declared,
-                        pad_top + pad_bottom,
-                    )
-                    .max(object_req)
+                    self.stored_cell_text_minimum(cell, table, text_height, pad_top + pad_bottom)
+                        .unwrap_or_else(|| {
+                            crate::renderer::float_placement::stored_text_cell_required_height(
+                                text_height,
+                                declared,
+                                pad_top + pad_bottom,
+                            )
+                        })
+                        .max(object_req)
                 } else {
                     let reflow_block_host = cell.paragraphs.iter().all(
                         crate::renderer::para_has_no_stored_line_segs,

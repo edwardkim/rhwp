@@ -284,14 +284,12 @@ impl SkiaTextReplay<'_> {
                     style,
                     layout_positions,
                 );
-                let fit_positions = style.fixed_glyph_advances.then(|| {
-                    crate::renderer::glyph_fit_positions(
-                        metric_text,
-                        style,
-                        layout_positions,
-                        &char_positions,
-                    )
-                });
+                let fit_positions = crate::renderer::glyph_fit_positions(
+                    metric_text,
+                    style,
+                    layout_positions,
+                    &char_positions,
+                );
                 let clusters = split_into_clusters(text);
                 let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();
                 let trim = trim_trailing_spaces.min(trailing);
@@ -740,20 +738,25 @@ impl SkiaTextReplay<'_> {
                                 canvas.restore();
                                 continue;
                             }
-                            // 생성자가 원본 폭을 명시한 텍스트만 같은 커닝 전
-                            // 경계를 소비한다. 본문을 일괄 축소·확대하지 않는다.
+                            // 위치와 윤곽 폭을 분리한 공통 경계를 Canvas와 같이 쓴다.
+                            // 양수 자간·굵기 tracking은 글리프를 늘리지 않으며,
+                            // 확정 원점은 char_positions에 그대로 남는다.
+                            let pin_ascii_advance = cluster.chars().any(|ch| {
+                                ch.is_ascii_alphanumeric()
+                                    || (style.fixed_glyph_advances && ch.is_ascii_graphic())
+                            });
                             let fit_scale = fit_positions
-                                .as_deref()
-                                .and_then(|positions| {
+                                .get(*char_idx)
+                                .and_then(|start| {
                                     let end = *char_idx + cluster.chars().count();
-                                    let advance = positions.get(end)? - positions.get(*char_idx)?;
+                                    let advance = fit_positions.get(end)? - start;
                                     let natural_width =
                                         f64::from(font.measure_str(cluster, None).0);
                                     crate::renderer::canvas_cluster_fit_scale(
                                         style,
                                         advance,
                                         natural_width * f64::from(ratio),
-                                        cluster.chars().any(|ch| ch.is_ascii_graphic()),
+                                        pin_ascii_advance,
                                     )
                                 })
                                 .unwrap_or(1.0) as f32;
