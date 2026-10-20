@@ -3,6 +3,8 @@
 //! 33쪽 raw99.25546/98.53604%: 중요한 표 시작만 ±2CSSpx로 보호한다.
 //! C144 최신 전64쪽 최저94.38750/94.46126%,33쪽99.57555/98.83569%로
 //! 재검증한 뒤 중요한 첫 글머리표와 뒤 본문 원점도 독립±2CSSpx로 보호한다.
+//! Stage13: 현재 전64쪽 최저94.87079/94.87154%,6쪽99.77898/99.79231%,
+//! 33쪽99.90769/99.91034%. 원본 수식의 실제 줄 소속과6쪽 paint 원점을 함께 검사한다.
 use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
@@ -159,25 +161,115 @@ fn inline_equations_keep_source_size_baseline_and_single_line_ownership() {
     let paragraphs = &doc.document().sections[0].paragraphs;
     let equations: Vec<_> = paragraphs
         .iter()
-        .flat_map(|para| {
-            para.controls.iter().filter_map(move |control| {
-                if let Control::Equation(eq) = control {
-                    Some((para, eq))
-                } else {
-                    None
-                }
-            })
+        .enumerate()
+        .flat_map(|(para_index, para)| {
+            para.controls
+                .iter()
+                .enumerate()
+                .filter_map(move |(control_index, control)| {
+                    if let Control::Equation(eq) = control {
+                        Some((para_index, control_index, para, eq))
+                    } else {
+                        None
+                    }
+                })
         })
         .collect();
     assert_eq!(equations.len(), 2);
-    for (para, equation) in equations {
-        assert!(equation.common.treat_as_char && equation.common.flow_with_text);
+    fn collect<'a>(
+        node: &'a RenderNode,
+        line: Option<&'a RenderNode>,
+        page: u32,
+        out: &mut Vec<(u32, &'a RenderNode, &'a RenderNode)>,
+    ) {
+        if matches!(node.node_type, RenderNodeType::Equation(_)) {
+            out.push((page, node, line.expect("원본 인라인 수식의 소유 글줄")));
+        }
+        let line = if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            Some(node)
+        } else {
+            line
+        };
+        for child in &node.children {
+            collect(child, line, page, out);
+        }
+    }
+    let pages: Vec<_> = (0..doc.page_count())
+        .map(|page| doc.build_page_render_tree(page).expect("원본 전쪽"))
+        .collect();
+    let mut painted = Vec::new();
+    for (page, tree) in pages.iter().enumerate() {
+        collect(&tree.root, None, page as u32, &mut painted);
+    }
+    assert_eq!(painted.len(), equations.len(), "전쪽 수식 누락·중복");
+    for (para_index, control_index, para, equation) in equations {
+        // HWP3 box의 ref_pos=0이 글자처럼 취급을 결정한다. 이 형식에 없는
+        // HWP5 flow_with_text 비트를 인라인 참여 조건으로 요구하지 않는다.
+        assert!(equation.common.treat_as_char);
         assert_eq!(equation.font_size, 1200, "원본 스크립트 셀300×4HU");
         assert_eq!(equation.font_name, "HYhwpEQ");
-        // 원본 baseline465×4HU / 상자2808HU를 백분율로 올림한 값.
-        assert_eq!(equation.baseline, 67);
+        // 원본 box offset76=465(1800dpi),높이702: 465/702×100은66.239…%다.
+        // 공통 Equation IR의 정수 백분율은 반올림66이며 올림67이 아니다.
+        assert_eq!(equation.baseline, 66);
         assert_eq!(para.line_segs.len(), 1);
         assert!(para.line_segs[0].baseline_distance < para.line_segs[0].line_height);
         assert!(equation.script.contains("입찰가격"));
+        let owned: Vec<_> = painted
+            .iter()
+            .filter(|(_, node, _)| {
+                matches!(&node.node_type, RenderNodeType::Equation(eq)
+                    if eq.section_index == Some(0)
+                        && eq.para_index == Some(para_index)
+                        && eq.control_index == Some(control_index))
+            })
+            .collect();
+        assert_eq!(owned.len(), 1, "원본 수식별 소속·누락·중복");
+        let (page, node, line) = owned[0];
+        assert_eq!(*page, 5, "독립 Print6쪽의 두 입찰가격 수식");
+        let RenderNodeType::Equation(paint) = &node.node_type else {
+            unreachable!()
+        };
+        let RenderNodeType::TextLine(host) = &line.node_type else {
+            unreachable!()
+        };
+        assert_eq!(host.section_index, Some(0));
+        assert_eq!(host.para_index, Some(para_index));
+        assert_eq!(host.line_index, Some(0));
+        assert_eq!(paint.script, equation.script, "원본 수식 내용 보존");
+        assert_eq!(paint.font_size, f64::from(equation.font_size) / 75.0);
+        assert!((node.bbox.width - f64::from(equation.common.width) / 75.0).abs() < 1e-6);
+        assert!((node.bbox.height - f64::from(equation.common.height) / 75.0).abs() < 1e-6);
+        assert!(node.bbox.x >= line.bbox.x && node.bbox.y >= line.bbox.y);
+        assert!(node.bbox.x + node.bbox.width <= line.bbox.x + line.bbox.width + 1e-6);
+        assert!(node.bbox.y + node.bbox.height <= line.bbox.y + line.bbox.height + 1e-6);
+
+        // 외부 슬롯이 아니라 최종 SVG paint의 한글 원점을 대조한다.
+        // 독립 Print6쪽의 실제 glyph origin(pt→96CSSpx),192DPI 전쪽 증거는 stage13.
+        let expected: &[(&str, usize, f64, f64)] = if equation.script.starts_with("평점") {
+            &[("평점", 0, 146.0799967448, 828.7999674479)]
+        } else {
+            &[
+                ("예정가격의", 0, 288.1599934896, 930.3999837240),
+                ("예정가격의", 1, 248.3199869792, 948.6399739583),
+            ]
+        };
+        let svg = format!("<svg>{}</svg>", paint.svg_content);
+        let svg = roxmltree::Document::parse(&svg).expect("실제 수식 SVG");
+        for &(text, occurrence, x, y) in expected {
+            let glyph = svg
+                .descendants()
+                .filter(|n| n.has_tag_name("text") && n.text() == Some(text))
+                .nth(occurrence)
+                .expect("원본 내용으로 선택한 수식 글리프");
+            assert!(glyph.attribute("transform").is_none(), "직접 한글 원점");
+            let local = |axis| glyph.attribute(axis).unwrap().parse::<f64>().unwrap();
+            for (actual, expected) in [(node.bbox.x + local("x"), x), (node.bbox.y + local("y"), y)]
+            {
+                assert!(
+                    (actual - expected).abs() <= 2.0,
+                    "독립 Print 수식 원점±2CSSpx: {actual} vs {expected}"
+                );
+            }
+        }
     }
 }
