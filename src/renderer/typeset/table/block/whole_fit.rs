@@ -765,8 +765,10 @@ impl TypesetEngine {
         // 다행 RowBreak 표는 common.height가 첫 fragment만 뜻할 수도 있다. cell
         // 내부 reset 없이 다음 host가 새 물리 page를 명시할 때만, object frame을
         // 현 page 전체를 소유한 frame으로 쓴다.
-        let saved_rowbreak_object_frame = ((st.profile.hwpx_container()
-            || st.profile.native_hwp5_layout())
+        // 전체 저장 프레임은 컨테이너가 아니라 원본 조판 계보의 계약이다.
+        // HWPX에서 저장한 HWP와 HWP5 원본에서 내보낸 HWPX도 같은 근거를 소비한다.
+        let saved_rowbreak_object_frame = ((st.profile.hwpx_stored_layout()
+            || st.profile.hwp5_stored_pagination_layout())
             && !table.common.treat_as_char
             && matches!(
                 table.page_break,

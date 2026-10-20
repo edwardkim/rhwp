@@ -1,0 +1,18 @@
+{
+  "head": "bd21c14458d138eeb613b5a53710fcb056894a19",
+  "sourceLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair499-3930-stored-lineage-fresh-wasm/source.json",
+  "hashes": {
+    "rhwp.js": "23f085e36c78d952ddac0d91faed9752f33ee1124db78e290382687410917591",
+    "rhwp_bg.wasm": "148d57807c079abbc263eba4bbf79561ce163e42d2b5ea385973404873ed134c"
+  },
+  "rootPackageRecompiled": true,
+  "wrapperInvoked": true,
+  "changesSincePreviousWasm": [
+    "src/renderer/typeset/table/block/whole_fit.rs"
+  ],
+  "rootPkgStudioPublicMatch": true,
+  "buildExitCode": 0,
+  "seconds": 224.66906213760376,
+  "mode": "Mac locked web/pkg/no-opt local alternative; not Docker optimized",
+  "actualBrowserInitialization": "pending"
+}
