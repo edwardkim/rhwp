@@ -134,7 +134,7 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
         || stored_rows_are_stale(composed, para, inner_width_px, styles)
         || line_breaking::remeasured_equation_start_row(para).is_some()
         || (stored_geometry_policy.stored_rows_before_hancom_2020
-            && stored_last_row_is_condensable_word_tail(composed, para, styles)
+            && stored_last_row_is_rejoinable_word_tail(composed, para, styles)
             && fresh_rows_absorb_stored_tail(
                 para,
                 &frame,
@@ -328,7 +328,7 @@ pub(crate) fn probe_stored_row_disposition(
     let stale = stored_geometry_policy.requires_realign
         || stored_rows_are_stale(&composed, para, inner_width_px, styles)
         || (stored_geometry_policy.stored_rows_before_hancom_2020
-            && stored_last_row_is_condensable_word_tail(&composed, para, styles)
+            && stored_last_row_is_rejoinable_word_tail(&composed, para, styles)
             && fresh_rows_absorb_stored_tail(
                 para,
                 &frame,

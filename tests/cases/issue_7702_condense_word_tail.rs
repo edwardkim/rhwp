@@ -17,8 +17,9 @@
 //! 반례:
 //! - 새 줄 나눔이 마지막 꼬리 말고 앞 줄 경계까지 옮기면 저장 줄을 따른다(114쪽 `[12융과04-02]`
 //!   칸 `…정보|가`, 정본도 저장 줄 그대로).
-//! - condense 가 없는 문단은 같은 꼬리 모양이어도 저장 줄을 따른다(1342000 25쪽 `…포함 논의 필` /
-//!   `요`, 정본도 두 줄).
+//! - 다시 나눠도 꼬리가 앞 줄에 들어가지 않으면 두 줄 그대로다(1342000 25쪽 `…포함 논의 필` /
+//!   `요`, 정본도 두 줄). 이 문단은 condense 가 없지만 번호 문단이라 한/글이 다시 나누는
+//!   대상이다(#8105) — 새 줄 나눔에서도 `요` 가 앞 줄에 들지 않는다.
 //! - 한/글 2020 으로 저장한 문서는 저장 줄을 따른다(`21_언어_기출_편집가능본.hwp` 11.0.0.2129
 //!   1쪽 `…문항 수를 확인하` / `십시오.`, 정본 `pdf/21_언어_기출_편집가능본-hwp-2020.pdf` 도 두 줄).
 //!   원본 HWP5 요약 정보(한/글 2010)를 그대로 실은 HWPX 도 `version.xml` 의 마지막 저장(11.0)을
@@ -187,12 +188,12 @@ fn fresh_break_that_moves_an_earlier_boundary_keeps_the_stored_rows() {
 }
 
 #[test]
-fn stored_tail_without_condense_keeps_the_stored_break() {
+fn recomposed_tail_that_does_not_fit_stays_on_the_next_line() {
     let core = core(SAMPLE_1342000);
     let (page, lines) = page_with(&core, "포함논의필");
     assert!(
         lines.iter().any(|line| line.ends_with("포함논의필")),
-        "{}쪽: condense 없는 문단은 저장 줄 끊김을 따른다\n{lines:#?}",
+        "{}쪽: 새 줄 나눔에서도 꼬리 `요` 가 앞 줄에 들지 않는다\n{lines:#?}",
         page + 1
     );
 }
