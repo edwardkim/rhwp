@@ -172,13 +172,12 @@ impl TypesetState {
     /// 사용 가능한 본문 높이 (각주, 존 오프셋 차감)
     pub(in crate::renderer::typeset) fn available_height(&self) -> f64 {
         let base = self.base_available_height();
-        let fn_margin = if self.data.current_footnote_height > 0.0
-            && !self.data.current_footnote_body_bottom_reserved
-        {
-            self.data.footnote_safety_margin
-        } else {
-            0.0
-        };
+        // [#7732] 이 쪽 각주가 정해졌으면 본문 줄도 쪽 나눔 표의 행(`entry.rs`
+        // `rowbreak_page_footnote_boundary_known`)과 같은 각주 영역 경계까지 쓴다. 한/글은 각주
+        // 구분선 바로 위까지 본문을 놓는다(합성 `samples/issue1937/gen_para_footnote_fill.py`: 각주
+        // 길이와 무관하게 마지막 줄 하단 = 구분선 − 24.2px, 표 행은 구분선 − 12.6px 까지). 표만
+        // 경계를 쓰고 문단이 40px 여유를 남기면 표 바로 뒤 빈 줄 하나가 홀로 다음 쪽이 된다.
+        let fn_margin = 0.0;
         // [#2559] 한글은 꼬리말 콘텐츠가 없는 구역에서 각주가 빈 꼬리말 밴드까지
         // 사용하도록 배치한다. 밴드를 초과하는 각주 높이만 본문을 줄여야 조기
         // 개행이 누적되지 않는다. 실제 꼬리말이 있으면 점유 가능성이 있으므로
