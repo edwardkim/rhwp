@@ -750,31 +750,40 @@ fn test_svg_text_decoration() {
 }
 
 #[test]
-fn test_svg_text_ratio() {
-    let mut renderer = SvgRenderer::new();
-    renderer.begin_page(800.0, 600.0);
-    // ratio 80%: 문자별 transform 적용
-    renderer.draw_text(
-        "장평",
-        50.0,
-        100.0,
-        &TextStyle {
-            font_size: 16.0,
-            ratio: 0.8,
+fn svg_condensed_ratio_preserves_declared_height_and_horizontal_scale() {
+    // #5821의 독립 Print Tf·CTM·Tz와 전쪽 Native/fresh WASM이 근거다.
+    // 추출 span의 기하평균 size를 세로 글리프 크기로 사용하지 않는다.
+    for (font_size, ratio) in [(16.0, 0.8), (24.0, 0.95)] {
+        let style = TextStyle {
+            font_size,
+            ratio,
             ..Default::default()
-        },
-    );
-    let output = renderer.output();
-    // [#5821] 압축 장평은 세로 fs×√r + 가로 √r (총 폭 ×r 불변) — 한글 2022
-    // PDF 실측 계약. 첫 문자 '장': translate(50,100) scale(√0.8=0.8944,1).
-    assert!(output.contains("transform=\"translate(50,100) scale(0.8944,1)\""));
-    assert!(
-        output.contains("font-size=\"14.31"),
-        "글리프 크기가 16×√0.8=14.31 로 축소되어야 함"
-    );
-    // 문자별 렌더링이므로 각 문자가 개별 <text> 요소
-    let text_count = output.matches("<text ").count();
-    assert_eq!(text_count, 2, "2개 문자 = 2개 <text> 요소");
+        };
+        let mut renderer = SvgRenderer::new();
+        renderer.begin_page(800.0, 600.0);
+        renderer.draw_text("장평", 50.0, 100.0, &style);
+        renderer.end_page();
+        let xml = roxmltree::Document::parse(renderer.output()).expect("완전한 SVG");
+        let glyphs: Vec<_> = xml
+            .descendants()
+            .filter(|node| node.has_tag_name("text"))
+            .collect();
+        assert_eq!(glyphs.len(), 2, "원본의 두 글자 보존");
+        for glyph in glyphs {
+            let actual_size: f64 = glyph.attribute("font-size").unwrap().parse().unwrap();
+            assert!((actual_size / style.font_size - 1.0).abs() < 1e-6);
+            let transform = glyph.attribute("transform").expect("장평 변환");
+            let scale = transform.split("scale(").nth(1).unwrap();
+            let values: Vec<f64> = scale
+                .trim_end_matches(')')
+                .split(',')
+                .map(|value| value.parse().unwrap())
+                .collect();
+            assert_eq!(values.len(), 2);
+            assert!((values[0] - style.ratio).abs() < 1e-6);
+            assert_eq!(values[1], 1.0, "장평은 세로 축을 바꾸지 않는다");
+        }
+    }
 }
 
 #[test]

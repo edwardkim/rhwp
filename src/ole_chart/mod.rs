@@ -9,6 +9,7 @@ pub mod ir;
 mod legacy_column_renderer;
 mod legacy_combo_renderer;
 mod legacy_presentation;
+mod ooxml_text;
 pub mod orientation;
 pub mod parser;
 mod preview_palette;
@@ -21,6 +22,7 @@ pub use ir::{
     ole_chart_ir_base64, ole_chart_ir_json, OleChartIrPayload, OLE_CHART_IR_SCHEMA,
     OLE_CHART_IR_VERSION,
 };
+pub(crate) use ooxml_text::render_ooxml_chart;
 pub use orientation::{decide_series_axis, SeriesAxis, SeriesAxisEvidence};
 pub use parser::{
     parse_ole_chart_contents, probe_ole_chart_contents, OleChart, OleChartContentsProbe,

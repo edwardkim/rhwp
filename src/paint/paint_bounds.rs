@@ -739,14 +739,17 @@ fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
     // Character position moves ink, not the line's logical flow box. Keep both
     // extents in the conservative paint bounds so clipping/cache invalidation
     // cannot drop a raised/lowered glyph. Rotation still uses the original box.
-    let positioned = if run.style.baseline_offset == 0.0 {
+    let position_offset = run.style.baseline_offset
+        + run.style.effective_font_size() * f64::from(run.style.font_position.unwrap_or_default())
+            / 100.0;
+    let positioned = if position_offset == 0.0 {
         logical
     } else {
         union(
             logical,
             BoundingBox::new(
                 logical.x,
-                logical.y + run.style.baseline_offset,
+                logical.y + position_offset,
                 logical.width,
                 logical.height,
             ),
@@ -893,10 +896,6 @@ pub(super) fn bounded_display_text_for_run(run: &TextRunNode) -> (String, bool) 
 }
 
 pub(super) fn effective_text_font_size_and_baseline(run: &TextRunNode) -> (f64, f64) {
-    let base_font_size = if run.style.font_size > 0.0 {
-        run.style.font_size
-    } else {
-        12.0
-    };
+    let base_font_size = run.style.effective_font_size();
     run.style.script_draw_metrics(base_font_size, run.baseline)
 }

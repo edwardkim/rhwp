@@ -837,8 +837,7 @@ fn project_replay_geometry(
         );
     }
 
-    let (draw_font_size_px, draw_x_scale) =
-        crate::renderer::condensed_ratio_draw_params(run.style.font_size, run.style.ratio);
+    let (draw_font_size_px, draw_x_scale) = run.style.ratio_draw_params(run.style.font_size);
     if !super::font_size::glyph_font_size_is_portable(draw_font_size_px)
         || !draw_x_scale.is_finite()
         || draw_x_scale <= 0.0

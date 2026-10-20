@@ -309,6 +309,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 ttf-parser = "0.25"
 rustybuzz = "0.20"
+resvg = { version = "0.47", default-features = false, features = ["text", "raster-images"] }
 
 console_error_panic_hook = { version = "0.1", optional = true }
 # [#4580] 핫패치 버전의 **유일한** 사본. `dx` 가 만든 점프 테이블을 이 크레이트가 역직렬화하므로
@@ -327,14 +328,13 @@ pdf-import = ["dep:pdf_oxide", "dep:office_oxide", "dep:tiny-skia"]
 # 기본값을 끈 Rust 소비자가 `wasm_api`를 쓰려면 `wasm-api`를 명시적으로 켠다.
 # Cargo feature는 합쳐지므로 다른 의존성이 이 feature를 켜면 다시 포함된다.
 wasm-api = []
-native-skia = ["dep:resvg", "dep:skia-safe", "dep:icy_sixel"]
+native-skia = ["dep:skia-safe", "dep:icy_sixel"]
 subsecond-dev = ["dep:subsecond"]
 
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 svg2pdf = "0.13"
 usvg = "0.45"
-resvg = { version = "0.47", optional = true }
 pdf-writer = "0.12"
 subsetter = "0.2"
 skia-safe = { version = "0.153.2", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
@@ -345,10 +345,10 @@ icy_sixel = { version = "=0.7.0", optional = true }
 web-sys = { version = "0.3", features = [
     "CanvasRenderingContext2d",
     "CanvasWindingRule",
-    "CanvasGradient",
-    "CanvasPattern",
     "DomMatrix",
     "DomMatrixReadOnly",
+    "CanvasGradient",
+    "CanvasPattern",
     "HtmlCanvasElement",
     "HtmlImageElement",
     "ImageData",

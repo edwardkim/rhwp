@@ -11,12 +11,14 @@ pub(in crate::renderer::typeset) mod content;
 pub(in crate::renderer::typeset) mod debug;
 pub(in crate::renderer::typeset) mod emit;
 pub(in crate::renderer::typeset) mod fit;
+mod flow_table;
 pub(in crate::renderer::typeset) mod format;
 pub(in crate::renderer::typeset) mod measure;
 pub(in crate::renderer::typeset) mod metrics;
 pub(in crate::renderer::typeset) mod paragraph;
 pub(in crate::renderer::typeset) mod prepare;
 pub(in crate::renderer::typeset) mod profile;
+pub(in crate::renderer::typeset) mod row_projection;
 pub(in crate::renderer::typeset) mod types;
 
 impl TypesetEngine {
@@ -55,6 +57,7 @@ impl TypesetEngine {
         // 한컴 정합: 미주는 섹션 마지막에 일반 본문처럼 2단 레이아웃 플로우를 따름
         // 미주 paragraphs를 endnote_paragraphs Vec에 모으고, ENDNOTE_PARA_BASE 이상 인덱스로 마킹
         if !st.endnotes.is_empty() {
+            st.begin_endnote_paragraphs(paragraphs.len());
             let endnote_refs: Vec<EndnoteRef> = st.endnotes.clone();
             // 미주는 문서 본문과 마지막 쪽 각주의 실제 점유 뒤에 시작한다.
             let separator_origin = if st.current_footnote_height > 0.0 {

@@ -1,5 +1,6 @@
 //! 기존 미주 간격·구분선·SSOT 정책 관측. 정책과 상수는 변경하지 않는다.
 
+use crate::renderer::note_separator::NoteSeparatorGeometry;
 use crate::renderer::typeset::{hwpunit_to_px, FootnoteShape};
 
 /// [Task #1363] 미주 높이 모델 SSOT 마이그레이션 단계 플래그(`RHWP_EN_SSOT`).
@@ -225,6 +226,12 @@ pub(in crate::renderer::typeset) fn endnote_separator_height_px(
     shape: &FootnoteShape,
     dpi: f64,
 ) -> f64 {
-    hwpunit_to_px(shape.separator_above_margin_hu() as i32, dpi)
-        + hwpunit_to_px(endnote_separator_below_margin(shape) as i32, dpi)
+    NoteSeparatorGeometry::new(
+        shape.separator_above_margin_hu() as i32,
+        endnote_separator_below_margin(shape) as i32,
+        endnote_has_visible_separator(shape),
+        shape.separator_line_width,
+        dpi,
+    )
+    .advance
 }

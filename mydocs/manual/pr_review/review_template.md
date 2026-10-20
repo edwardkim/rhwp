@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review/intake_and_review.md
-last_verified: 2026-10-14
+last_verified: 2026-10-17
 ---
 
 # PR #N 리뷰 — 변경 요약
@@ -40,9 +40,15 @@ PR 채번과 code head CI 성공 뒤 이 review와 오늘할일을 문서-only t
 
 ## 검증 입력과 결과
 
+리베이스가 있으면 [반영 PR의 기능 보존 검증](local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)에
+따라 이전/새 base·후보 SHA, 들어온 PR과 제공 기능, 실제 실행 경로·입력·명령·결과를 연결한다.
+현재 작업의 개선과 반영 PR의 유지·개선을 함께 판정하며, 후퇴하면 보정과 새 후보의 양쪽 재검증을
+기록한다. 충돌 없음·CI 성공만으로 충족 처리하지 않는다. 후퇴는 미충족, 필수 증거 부족은 미검증으로
+구분하고 해소 전에는 준비 완료·승인으로 쓰지 않는다. 비해당은 실제 diff·소비 경로 근거를 적는다.
+
 조판·렌더링 영향 PR은 고정한 최신 upstream/devel SHA와 후보 SHA의 전쪽 Native/fresh WASM
 TSV를 같은 조건·페이지로 비교한 증거를 적는다. 원본/PDF·producer·글꼴·backend·쪽수와
-페이지별 기준/후보/하락폭,0.01%p 이상 하락한 쪽 목록을 연결한다. 한 쪽이라도 하락하면
+페이지별 기준/후보/하락폭,0.1%p 이상 하락한 쪽 목록을 연결한다. 한 쪽이라도0.1%p 이상 하락하면
 90% 이상·평균 개선·CI 성공과 관계없이 재검토다. 기준 TSV가 없으면 미검증으로 기록한다.
 [상세 비교 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)을 따른다.
 

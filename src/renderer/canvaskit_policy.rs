@@ -1464,9 +1464,11 @@ impl CanvasKitReplayPlanBuilder {
                 PaintOp::Equation { equation, .. }
                     if crate::renderer::equation::hancom_glyphs::is_used(&equation.layout_box) =>
                 {
-                    self.record_required_font_family(
-                        crate::renderer::equation::hancom_glyphs::FONT_FAMILY,
-                    );
+                    for family in crate::renderer::equation::hancom_glyphs::used_font_families(
+                        &equation.layout_box,
+                    ) {
+                        self.record_required_font_family(family);
+                    }
                 }
                 _ => {}
             }
@@ -2009,7 +2011,10 @@ fn canvaskit_equation_layout_is_supported(layout: &LayoutBox) -> bool {
             | LayoutKind::Symbol(text)
             | LayoutKind::MathSymbol(text)
             | LayoutKind::Function(text) => text_supported(text),
-            LayoutKind::Fraction { numer, denom } => {
+            // CanvasKit은 해당 시스템 face의 SFNT 조달을 아직 입증하지 않았다.
+            // 다른 수학 글꼴로 조용히 대체하지 않고 기존 SVG fallback을 사용한다.
+            LayoutKind::FontGlyph { outline, .. } => outline.is_some(),
+            LayoutKind::Fraction { numer, denom, .. } => {
                 child(numer, remaining_nodes) && child(denom, remaining_nodes)
             }
             LayoutKind::Atop { top, bottom } => {
@@ -2032,7 +2037,9 @@ fn canvaskit_equation_layout_is_supported(layout: &LayoutBox) -> bool {
                     && child(sub, remaining_nodes)
                     && child(sup, remaining_nodes)
             }
-            LayoutKind::BigOp { symbol, sub, sup } => {
+            LayoutKind::BigOp {
+                symbol, sub, sup, ..
+            } => {
                 text_supported(symbol)
                     && sub
                         .as_deref()
@@ -2062,15 +2069,18 @@ fn canvaskit_equation_layout_is_supported(layout: &LayoutBox) -> bool {
             LayoutKind::EqAlign { rows } => rows
                 .iter()
                 .all(|(left, right)| child(left, remaining_nodes) && child(right, remaining_nodes)),
-            LayoutKind::Paren { left, right, body } => {
+            LayoutKind::Paren {
+                left, right, body, ..
+            } => {
                 (left.is_empty() || text_supported(left))
                     && (right.is_empty() || text_supported(right))
                     && child(body, remaining_nodes)
             }
-            LayoutKind::Decoration { kind, body } => {
+            LayoutKind::Decoration { kind, body, .. } => {
                 matches!(
                     kind,
-                    DecoKind::Hat
+                    DecoKind::Box
+                        | DecoKind::Hat
                         | DecoKind::Dot
                         | DecoKind::DDot
                         | DecoKind::Bar
@@ -2082,6 +2092,7 @@ fn canvaskit_equation_layout_is_supported(layout: &LayoutBox) -> bool {
                         | DecoKind::StrikeThrough
                 ) && child(body, remaining_nodes)
             }
+            LayoutKind::Color { body, .. } => child(body, remaining_nodes),
             LayoutKind::FontStyle { style, body } => {
                 matches!(
                     style,
@@ -2332,6 +2343,7 @@ fn image_has_replayable_payload(
 fn resolved_image_kind_detail(value: ResolvedImageKind) -> &'static str {
     match value {
         ResolvedImageKind::FormatConverted => "formatConverted",
+        ResolvedImageKind::OutputDevice => "outputDevice",
         ResolvedImageKind::BakedWatermark => "bakedWatermark",
     }
 }
@@ -2471,6 +2483,7 @@ mod tests {
         EquationNode {
             svg_content: "<text>x</text>".to_string(),
             layout_box: LayoutBox {
+                font_size: 12.0,
                 x: 0.0,
                 y: 0.0,
                 width: 8.0,
@@ -2980,6 +2993,7 @@ mod tests {
         equation.layout_box.kind = LayoutKind::FontStyle {
             style: FontStyleKind::Blackboard,
             body: Box::new(LayoutBox {
+                font_size: 12.0,
                 x: 0.0,
                 y: 0.0,
                 width: 8.0,

@@ -8,6 +8,7 @@ import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, Ce
 import type { HeaderFooterTextPosition, CellBlockSelectionState } from './cursor';
 import type { CharShapeRun } from '@/core/types';
 import { hyperlinkTarget } from '../core/hyperlink';
+import { normalizeTextNewlines } from '../core/text-newlines';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
 import { setObjectProps, type ObjectPropsRef } from './object-props';
@@ -680,7 +681,9 @@ export class InsertTextCommand implements EditCommand {
     private fragmentIds: number[] = [],
   ) {
     this.timestamp = timestamp ?? Date.now();
-    this.steps = [[text, replacedText]];
+    // #8001: 삽입 범위와 되돌리기 범위는 코어가 실제로 소비하는 문자열로 맞춘다.
+    this.text = normalizeTextNewlines(text);
+    this.steps = [[this.text, replacedText]];
   }
 
   getCharFormat(): Partial<CharProperties> | undefined {

@@ -190,6 +190,7 @@ export class HwpDocument {
      * 없는 요청의 clear는 멱등이며 다른 slot의 요청을 건드리지 않는다.
      */
     clearExactFontInstance(options_json: string): string;
+    clearMetafileFonts(): void;
     /**
      * 셀 블록이 덮은 칸들의 글을 비운다 — `Run("TableDeleteCell")`. 규약은 merge 와 같다.
      */
@@ -1023,6 +1024,7 @@ export class HwpDocument {
      * 문단의 논리적 길이를 반환한다 (텍스트 문자 + 인라인 컨트롤 수).
      */
     getLogicalLength(section_idx: number, para_idx: number): number;
+    getMetafileFontRequests(): string;
     /**
      * 각주/미주 편집 모드 진입 대상 조회
      */
@@ -1971,6 +1973,10 @@ export class HwpDocument {
      */
     registerHftOutlineFont(family: string, bytes: Uint8Array, face_index: number): boolean;
     /**
+     * 문서 측정 slot과 별도로 SVG/WMF paint에 실제 선택한 font face를 공급한다.
+     */
+    registerMetafileFont(family: string, bytes: Uint8Array, face_index: number): boolean;
+    /**
      * [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목을 절단한다.
      *
      * json: `{"fromLen":12,"dirtyWas":false}` — `from_len` 위 항목을 모두 잘라내고,
@@ -2324,7 +2330,8 @@ export class HwpDocument {
      */
     setFormValueInCellEx(options_json: string): string;
     /**
-     * Native와 같은 조판 세대를 선택하고 공통 core에서 재페이지네이션한다.
+     * 실제 기준 출력의 한컴 세대를 선택한다. 저장 메타데이터로 추정하지 않는다.
+     * 기존 공통 경로가 캐시를 무효화하고 모든 섹션을 다시 조판한다.
      */
     setHangul2024Compat(enabled: boolean): void;
     /**
@@ -2673,6 +2680,7 @@ export interface InitOutput {
     readonly hwpdocument_clearActiveField: (a: number) => void;
     readonly hwpdocument_clearClipboard: (a: number) => void;
     readonly hwpdocument_clearExactFontInstance: (a: number, b: number, c: number) => [number, number, number, number];
+    readonly hwpdocument_clearMetafileFonts: (a: number) => void;
     readonly hwpdocument_clearTableCellsAtCursor: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_clipboardHasControl: (a: number) => number;
     readonly hwpdocument_collectCanvasMetricRequests: (a: number, b: number, c: number) => [number, number, number, number];
@@ -2835,6 +2843,7 @@ export interface InitOutput {
     readonly hwpdocument_getLineInfoInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
     readonly hwpdocument_getLineStarts: (a: number, b: number, c: number) => [number, number];
     readonly hwpdocument_getLogicalLength: (a: number, b: number, c: number) => [number, number, number];
+    readonly hwpdocument_getMetafileFontRequests: (a: number) => [number, number, number, number];
     readonly hwpdocument_getNoteEditInfo: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_getNoteEquationProperties: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
     readonly hwpdocument_getNumberingList: (a: number) => [number, number];
@@ -3013,6 +3022,7 @@ export interface InitOutput {
     readonly hwpdocument_registerCanvasMetricReplies: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
     readonly hwpdocument_registerExactFontSource: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_registerHftOutlineFont: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
+    readonly hwpdocument_registerMetafileFont: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
     readonly hwpdocument_removeBorderFillTails: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_removeFieldAt: (a: number, b: number, c: number, d: number) => [number, number];
     readonly hwpdocument_removeFieldAtInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
@@ -3140,6 +3150,8 @@ export interface InitOutput {
     readonly hwpviewer_setZoom: (a: number, b: number) => void;
     readonly hwpviewer_updateViewport: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly hwpviewer_visiblePages: (a: number) => [number, number];
+    readonly version: () => [number, number];
+    readonly init_panic_hook: () => void;
     readonly hwpviewer_pageCount: (a: number) => number;
     readonly hwpviewer_setAnnotateMetricFont: (a: number, b: number) => void;
     readonly version: () => [number, number];

@@ -1,9 +1,23 @@
 //! 첫 저장 글줄의 앞 간격을 측정과 실제 배치의 같은 쪽 원점으로 해석한다.
 
 use crate::model::{control::Control, paragraph::Paragraph};
-use crate::renderer::{
-    hwpunit_to_px, layout::para_has_overlay_shape, style_resolver::ResolvedStyleSet,
-};
+use crate::renderer::{hwpunit_to_px, style_resolver::ResolvedStyleSet};
+
+/// 문단 기준 위·아래 배치 그림은 본문 밴드를 따로 점유할 수 있다.
+/// 글앞/글뒤 개체는 그려져도 본문 글줄의 앞 간격을 대체하지 않는다.
+fn has_paragraph_float_graphic(paragraph: &Paragraph) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+    paragraph.controls.iter().any(|control| {
+        let common = match control {
+            Control::Shape(shape) => shape.common(),
+            Control::Picture(picture) => &picture.common,
+            _ => return false,
+        };
+        !common.treat_as_char
+            && common.text_wrap == TextWrap::TopAndBottom
+            && common.vert_rel_to == VertRelTo::Para
+    })
+}
 
 /// 쪽 첫 저장 줄의 vpos가 문단 앞 간격을 포함하면 쪽 원점은 0이다.
 /// 다음 문단의 저장 사다리도 앞 간격을 계상하는지 확인하여 측정과 배치가
@@ -73,8 +87,8 @@ pub(crate) fn stored_first_margin_is_page_relative(
         .controls
         .iter()
         .any(|control| matches!(control, Control::Shape(shape) if shape.common().treat_as_char))
-        && !para_has_overlay_shape(first)
-        && !para_has_overlay_shape(next)
+        && !has_paragraph_float_graphic(first)
+        && !has_paragraph_float_graphic(next)
         && first_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && last_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0

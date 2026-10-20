@@ -11,6 +11,7 @@ pub mod document;
 pub mod event;
 pub mod footnote;
 pub mod header_footer;
+pub(crate) mod hwp3_page_ownership;
 pub mod hyperlink;
 pub mod hyperlink_format;
 pub(crate) mod identity;

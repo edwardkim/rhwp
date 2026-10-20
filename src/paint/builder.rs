@@ -19,6 +19,9 @@ pub struct LayerBuilder {
     output_options: LayerOutputOptions,
     bin_data_epoch: u32,
     page_context: Option<PagePaintContext>,
+    metafile_device_pixel_width: Option<f64>,
+    hancom2024_print_bitmap: bool,
+    metafile_fonts: super::metafile_fonts::MetafileFonts,
 }
 
 impl LayerBuilder {
@@ -28,7 +31,22 @@ impl LayerBuilder {
             output_options: LayerOutputOptions::default(),
             bin_data_epoch: 0,
             page_context: None,
+            metafile_device_pixel_width: None,
+            hancom2024_print_bitmap: false,
+            metafile_fonts: Default::default(),
         }
+    }
+
+    /// 원본 형식과 분리된 출력 장치 픽셀의 레이아웃 단위 크기다.
+    pub fn with_metafile_device_pixel_width(mut self, width: Option<f64>) -> Self {
+        self.metafile_device_pixel_width = width.filter(|v| v.is_finite() && *v > 0.0);
+        self
+    }
+
+    /// 그림 색의 출력 세대를 장치 픽셀 값과 독립적으로 전달한다.
+    pub fn with_hancom2024_print_bitmap(mut self, enabled: bool) -> Self {
+        self.hancom2024_print_bitmap = enabled && self.profile == RenderProfile::Print;
+        self
     }
 
     pub fn with_output_options(mut self, output_options: LayerOutputOptions) -> Self {
@@ -41,6 +59,14 @@ impl LayerBuilder {
         self
     }
 
+    pub(crate) fn with_metafile_fonts(
+        mut self,
+        fonts: &super::metafile_fonts::MetafileFonts,
+    ) -> Self {
+        self.metafile_fonts = fonts.clone();
+        self
+    }
+
     pub fn build(&mut self, tree: &PageRenderTree) -> PageLayerTree {
         self.build_with_embedded_fonts(tree, &[])
     }
@@ -50,6 +76,19 @@ impl LayerBuilder {
         tree: &PageRenderTree,
         fonts: &[EmbeddedFontFace<'_>],
     ) -> PageLayerTree {
+        if self.hancom2024_print_bitmap && !fonts.is_empty() && super::metafile::has_wmf(&tree.root)
+        {
+            for font in fonts {
+                let _ = self
+                    .metafile_fonts
+                    .register(font.family, font.bytes, font.face_index);
+                if let Some(alias) = font.alternate_family {
+                    let _ = self
+                        .metafile_fonts
+                        .register(alias, font.bytes, font.face_index);
+                }
+            }
+        }
         let (page_width, page_height) = match &tree.root.node_type {
             RenderNodeType::Page(page) => (page.width, page.height),
             _ => (tree.root.bbox.width, tree.root.bbox.height),
@@ -184,11 +223,15 @@ impl LayerBuilder {
                 {
                     vec![PaintOp::path(frame, path)]
                 } else {
-                    vec![PaintOp::image(
-                        frame,
-                        image.clone(),
-                        crate::renderer::image_resolver::resolve_image_payload(image),
-                    )]
+                    let mut image = image.clone();
+                    image.hancom2024_print_bitmap = self.hancom2024_print_bitmap;
+                    let resolved = crate::paint::metafile::image_payload(
+                        &image,
+                        node.bbox,
+                        self.metafile_device_pixel_width,
+                        &self.metafile_fonts,
+                    );
+                    vec![PaintOp::image(frame, image, resolved)]
                 };
                 if self.output_options.show_control_codes {
                     ops.push(PaintOp::control_label(frame, "[그림]"));
@@ -208,7 +251,10 @@ impl LayerBuilder {
             RenderNodeType::Placeholder(placeholder) => {
                 Some(vec![PaintOp::placeholder(node.bbox, placeholder.clone())])
             }
-            RenderNodeType::RawSvg(raw) => Some(vec![PaintOp::raw_svg(node.bbox, raw.clone())]),
+            RenderNodeType::RawSvg(raw) => Some(vec![PaintOp::raw_svg(
+                node.bbox,
+                crate::paint::metafile::raw_svg(raw, self.metafile_device_pixel_width),
+            )]),
             _ => None,
         };
 
@@ -1407,6 +1453,7 @@ mod tests {
         EquationNode {
             svg_content: "<text>x</text>".to_string(),
             layout_box: LayoutBox {
+                font_size: 12.0,
                 x: 0.0,
                 y: 0.0,
                 width: 8.0,

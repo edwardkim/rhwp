@@ -337,6 +337,7 @@ fn sample_equation_node() -> EquationNode {
     EquationNode {
         svg_content: "<text>x</text>".into(),
         layout_box: LayoutBox {
+            font_size: 12.0,
             x: 0.0,
             y: 0.0,
             width: 10.0,

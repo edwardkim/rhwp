@@ -6,6 +6,7 @@ use crate::renderer::{
     float_placement::{original_hwpx_infront_para_flow_paginates, signed_hwpunit},
     height_measurer::MeasuredTable,
     hwpunit_to_px,
+    page_layout::LayoutRect,
 };
 
 pub(in crate::renderer::typeset) struct TableControlPage {
@@ -63,6 +64,8 @@ pub(super) fn uses_decoration_placement(
     col_count: u16,
     has_tac: bool,
     host_col_w: f64,
+    body: LayoutRect,
+    paper_height: f64,
     dpi: f64,
     base_available_height: impl FnOnce() -> f64,
     original_hwpx: impl FnOnce() -> bool,
@@ -104,6 +107,11 @@ pub(super) fn uses_decoration_placement(
         .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx)
         .map(|mt| mt.total_height)
         .unwrap_or(0.0);
+    // 용지 기준 개체의 외곽 상자가 본문 밖에 있으면 자리차지 띠도
+    // 본문과 만나지 않는다. 표는 그 위치에 그리고 호스트 글줄만 소비한다.
+    // paint와 같은 가장자리 정렬식을 사용하며 본문 안의 고정 표는 제외한다.
+    let paper_outside_body =
+        paper_table_is_outside_body(table, table_measured_h, body, paper_height, dpi);
     let oversized_multirow = table.row_count > 1
         && table_measured_h > base_available_height()
         && !paper_anchored_overlay_table;
@@ -161,7 +169,8 @@ pub(super) fn uses_decoration_placement(
             crate::model::shape::TextWrap::Through
         )
         && table.page_break == crate::model::table::TablePageBreak::None;
-    paper_through
+    paper_outside_body
+        || paper_through
         || (matches!(
             table.common.text_wrap,
             crate::model::shape::TextWrap::InFrontOfText
@@ -179,4 +188,38 @@ pub(super) fn uses_decoration_placement(
     )) || multicol_empty_overlay_anchor
             || multicol_tac_host_overlay_anchor))
         || horz_fully_outside_column
+}
+
+fn paper_table_is_outside_body(
+    table: &Table,
+    measured_height: f64,
+    body: LayoutRect,
+    paper_height: f64,
+    dpi: f64,
+) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+    if table.common.treat_as_char
+        || table.common.vert_rel_to != VertRelTo::Paper
+        || table.common.text_wrap != TextWrap::TopAndBottom
+        || table.caption.is_some()
+        || table.common.height == 0
+        || table.common.height > i32::MAX as u32
+        || !measured_height.is_finite()
+        || !paper_height.is_finite()
+        || paper_height <= 0.0
+        || !dpi.is_finite()
+        || dpi <= 0.0
+    {
+        return false;
+    }
+    let height = measured_height.max(hwpunit_to_px(table.common.height as i32, dpi));
+    let (top, bottom) = crate::renderer::float_placement::absolute_table_vertical_geometry(
+        table,
+        0.0,
+        paper_height,
+        height,
+        dpi,
+    );
+    let outer_top = top - hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+    bottom <= body.y || outer_top >= body.y + body.height
 }

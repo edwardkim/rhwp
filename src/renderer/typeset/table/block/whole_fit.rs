@@ -273,47 +273,64 @@ impl TypesetEngine {
         }
         let para = paragraphs.get(para_idx)?;
         let next = paragraphs.get(para_idx + 1)?;
-        let mut placement = crate::renderer::float_placement::stored_float_frame_before_tac_line(
-            para,
-            ctrl_idx,
-            table,
-            effective_height,
-            self.dpi,
-        )
-        .or_else(|| {
-            crate::renderer::float_placement::stored_interior_control_table_frame(
-                para,
-                next,
-                ctrl_idx,
-                table,
-                effective_height,
-                st.vpos_page_base.unwrap_or(0),
-                self.dpi,
-            )
-        })
-        .or_else(|| {
-            crate::renderer::float_placement::stored_empty_control_table_frame(
-                para,
-                next,
-                table,
-                effective_height,
-                host_spacing_before,
-                // 빈 호스트의 닫힌 개체 프레임은 물리 쪽 기준 저장 좌표다.
-                // 글줄 호스트의 상대 원점처럼 page base를 다시 빼지 않는다.
-                0,
-                self.dpi,
-            )
-        })
-        .or_else(|| {
-            crate::renderer::float_placement::stored_adjacent_line_table_frame(
-                paragraphs.get(para_idx.checked_sub(1)?)?,
-                para,
-                next,
-                table,
-                effective_height,
-                self.dpi,
-            )
-        })?;
+        let opening = (st.current_items.is_empty()
+            && st.current_height == 0.0
+            && st.current_zone_y_offset == 0.0)
+            .then(|| {
+                crate::renderer::float_placement::stored_opening_table_before_host_frame(
+                    para,
+                    next,
+                    table,
+                    ctrl_idx,
+                    effective_height,
+                    self.dpi,
+                )
+            })
+            .flatten();
+        let mut placement = opening
+            .or_else(|| {
+                crate::renderer::float_placement::stored_float_frame_before_tac_line(
+                    para,
+                    ctrl_idx,
+                    table,
+                    effective_height,
+                    self.dpi,
+                )
+            })
+            .or_else(|| {
+                crate::renderer::float_placement::stored_interior_control_table_frame(
+                    para,
+                    next,
+                    ctrl_idx,
+                    table,
+                    effective_height,
+                    st.vpos_page_base.unwrap_or(0),
+                    self.dpi,
+                )
+            })
+            .or_else(|| {
+                crate::renderer::float_placement::stored_empty_control_table_frame(
+                    para,
+                    next,
+                    table,
+                    effective_height,
+                    host_spacing_before,
+                    // 빈 호스트의 닫힌 개체 프레임은 물리 쪽 기준 저장 좌표다.
+                    // 글줄 호스트의 상대 원점처럼 page base를 다시 빼지 않는다.
+                    0,
+                    self.dpi,
+                )
+            })
+            .or_else(|| {
+                crate::renderer::float_placement::stored_adjacent_line_table_frame(
+                    paragraphs.get(para_idx.checked_sub(1)?)?,
+                    para,
+                    next,
+                    table,
+                    effective_height,
+                    self.dpi,
+                )
+            })?;
         // 저장한 본문 좌표를 현재 단 영역 좌표로 한 번 변환한다.
         placement.anchor_y -= st.current_zone_y_offset;
         placement.table_top -= st.current_zone_y_offset;

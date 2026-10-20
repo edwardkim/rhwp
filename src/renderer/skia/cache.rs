@@ -324,6 +324,7 @@ pub(super) struct ReplayCacheContext<'a> {
     pub page_bounds: skia_safe::Rect,
     pub retained_resource_estimate: usize,
     pub policy: ReplayPolicy,
+    pub raster_target: bool,
     pub diagnostics: &'a RefCell<ReplayDiagnostics>,
 }
 
@@ -332,6 +333,7 @@ impl<'a> ReplayCacheContext<'a> {
         tree: &PageLayerTree,
         scale: f32,
         strict: bool,
+        raster_target: bool,
         diagnostics: &'a RefCell<ReplayDiagnostics>,
     ) -> Self {
         let resources = resource_identity(&tree.resources);
@@ -345,6 +347,7 @@ impl<'a> ReplayCacheContext<'a> {
                 tree.page_height,
                 scale,
                 strict,
+                raster_target,
                 digest,
             ))
         });
@@ -359,6 +362,7 @@ impl<'a> ReplayCacheContext<'a> {
                 .map_or(usize::MAX, |(_, bytes)| bytes)
                 .saturating_add(svg_estimate),
             policy: ReplayPolicy::new(tree.profile),
+            raster_target,
             diagnostics,
         }
     }

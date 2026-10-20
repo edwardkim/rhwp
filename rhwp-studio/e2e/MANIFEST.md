@@ -48,6 +48,8 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `drag-selection-autoscroll.test.mjs` | 상시 | active | 텍스트 드래그 선택 edge 자동 스크롤 | — | npm e2e:drag-autoscroll |  |
 | `drop-confirm.test.mjs` | 상시 | active | 드롭 확인 대화상자 경계 (문서=없음, 이미지=#1439 게이트) | — | 수동 |  |
 | `edit-pipeline.test.mjs` | 상시 | active | 편집 파이프라인 검증 (Issue #2) | — | 수동 |  |
+| `embed-field-events.test.mjs` | 상시 | active | `field-focus-events-v1` 누름틀 진입·변경·이탈 이벤트가 부모 페이지까지 오고 같은 누름틀 안 이동·해지 후는 무알림, 문서 교체 이탈·동일 ID 재진입 | field-01.hwp | npm e2e:field-events |  |
+| `embed-svg-profile.test.mjs` | 상시 | active | SDK SVG 4종 profile·기존 경로·인쇄 안내문 제외·내용/Undo 보존 | field-01.hwp | 수동 | 독립 Print PDF와 별도 Visual Sweep |
 | `embed-save-ack.test.mjs` | 상시 | active | Task #2660 호스트 저장 완료 통지와 dirty/autosave 정리 계약 | footnote-01.hwp | 수동 |  |
 | `embed-transport.test.mjs` | 상시 | active | Issue #2186 @rhwp/editor MessageChannel v1 iframe transport | — | npm e2e:embed |  |
 | `export-hwpx.test.mjs` | 상시 | active | Issue #557 — npm/editor RPC + Wrapper 에 exportHwpx / exportHwpVeri | — | 수동 |  |
@@ -70,7 +72,9 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `hml-open.check.mjs` | 상시 | active | Standalone HML browser regression. | — | 수동 | legacy-name |
 | `hwpctl-basic.test.mjs` | 상시 | active | hwpctl 호환 레이어 기본 동작 | — | 수동 |  |
 | `hwp-password-open.test.mjs` | 상시 | active | #3474/#3481/#5986 HWP3·HWP5·HWPX 암호 문서: 대화상자·오답·취소·Enter·저장소 비보존·저장 보호 상태 수명주기, HWP3 A4 144dpi Canvas 경계 | HWP3-password-123456.hwp, hwp3-sample16-hwp5-2024-password-123456.hwp, HWP5-password-123456.hwpx, HWP5-nopassword-123456.hwpx | npm e2e:hwp-password-open | 실제 암호 fixture; 비밀번호와 로컬 E2E 보고서는 비커밋 |
-| `hwpctrl-plugin.test.mjs` | 상시 | active | hwpctrl 플러그인 — studio 문서 공유·배치 편집·좌표 변환·unload 생존 | — | npm e2e:hwpctrl-plugin |  |
+| `crlf-insert-history.test.mjs` | 상시 | active | CRLF 입력의 커서·Undo/Redo·HWP 저장 보존 | 합성 본문·셀·중첩 셀 | 수동 | #8001, run-with-vite·fresh WASM 실동작 |
+| `hwpctrl-nested-caret.test.mjs` | 상시 | active | SDK 캐럿 동기화→CreateField의 중첩 셀 부모 문단 소유·Undo | issue1949_giant_cell_nested_tables_perf.hwp | 수동 | 조판 좌표 고정 없음 |
+| `hwpctrl-plugin.test.mjs` | 상시 | active | hwpctrl 플러그인 — studio 문서 공유·배치 편집·좌표 변환·사용자 캐럿 동기화·unload 생존 | — | npm e2e:hwpctrl-plugin |  |
 | `hwpx-direct-save.test.mjs` | 상시 | active | HWPX 직접 저장 (file:save) E2E — #1532 | — | 수동 |  |
 | `issue-1280-textbox-text-input.test.mjs` | 상시 | active | E2E 회귀: #1280 — rhwp-studio가 삽입한 글상자가 text_box 없는 Rectangle로 생성되어  | — | 수동 |  |
 | `issue-1456-chart-rerender.test.mjs` | 상시 | active | E2E 회귀 — #1456: rhwp-studio 캔버스 차트/OLE(rawSvg) 비동기 디코드 재렌더 안전망 | — | 수동 |  |
@@ -174,3 +178,5 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `hyperlink-ui-issue6963.test.mjs` | 상시 | active | #6963 한컴형 링크 UI·우클릭·방문 색·undo/redo·드래그 선택 | 새 문서 | 수동 | 실제 WASM 필요 |
 
 | `host-font-provider-issue7403.test.mjs` | 상시 | active | #7403 호스트 face 선택·동명 교체·실패 복구·저장 이름/dirty 보존 | 새 문서·합성 TTC·번들 Noto·basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-7403 / e2e:issue-7403-canvas2d | 명시적 CanvasKit/Canvas2D, 측정·paint·SVG 경계 포함 |
+
+| `issue-7593-dyad-display.test.mjs` | 상시 | active | dyad와 복합 수식의 실제 표시·CanvasKit 누락 방지 | `samples/issue7593/` 2개 | 수동 | `VITE_URL=… node e2e/issue-7593-dyad-display.test.mjs --mode=headless`; Native/fresh WASM 전쪽90% 선행 확인; 실제 WASM 바이트·내용·replay 진단 |

@@ -1,5 +1,6 @@
 import type { LayerEquationLayoutBox, LayerNode, LayerTextStyle, PageLayerTree } from './types.ts';
 import { resolveRendererLocalFont, localFontFaceKey, type LocalFontRecord } from './local-fonts.ts';
+import boxedDigitMetrics from '../../../assets/fonts/boxed-digit-metrics.json' with { type: 'json' };
 
 export function hostFontStyle(style?: LayerTextStyle): { weight: number; slant: 'normal' | 'italic' } {
   return { weight: style?.bold ? 700 : 400, slant: style?.italic ? 'italic' : 'normal' };
@@ -9,8 +10,9 @@ export function primaryHostFontFamily(family: string): string {
   return family.split(',')[0].trim().replace(/^['"]|['"]$/g, '');
 }
 
-/** CanvasKit의 hancomGlyphs 소비 경로만 HyhwpEQ의 실제 face를 사용한다. */
-function usesHancomEquationGlyphs(root: LayerEquationLayoutBox | undefined): boolean {
+/** 실제 수식 글리프 런마다 측정에 사용한 face를 준비한다. */
+function hancomEquationFamilies(root: LayerEquationLayoutBox | undefined): Set<string> {
+  const families = new Set<string>();
   const stack = root ? [root] : [];
   const seen = new Set<LayerEquationLayoutBox>();
   while (stack.length) {
@@ -19,7 +21,7 @@ function usesHancomEquationGlyphs(root: LayerEquationLayoutBox | undefined): boo
     seen.add(box);
     const kind = box.kind;
     switch (kind.type) {
-      case 'hancomGlyphs': return true;
+      case 'hancomGlyphs': families.add(kind.fontFamily ?? 'HyhwpEQ'); break;
       case 'row': stack.push(...kind.children); break;
       case 'fraction': stack.push(kind.numer, kind.denom); break;
       case 'atop': stack.push(kind.top, kind.bottom); break;
@@ -51,7 +53,7 @@ function usesHancomEquationGlyphs(root: LayerEquationLayoutBox | undefined): boo
       case 'fontStyle': stack.push(kind.body); break;
     }
   }
-  return false;
+  return families;
 }
 
 /** 실제 text/수식 face 소비자를 준비한다. glyph ID나 자원 내용은 다시 쓰지 않는다. */
@@ -63,10 +65,11 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
     if (node.kind === 'group') stack.push(...node.children);
     else if ((node.kind === 'clipRect' || node.kind === 'clipPath')) stack.push(node.child);
     else for (const op of node.ops) {
-      if (op.type === 'equation' && usesHancomEquationGlyphs(op.layoutBox)) {
-        // renderEquationBox의 hancomGlyphs는 Regular HyhwpEQ와 저장 glyph ID를 소비한다.
-        const record = resolveRendererLocalFont('HyhwpEQ', { weight: 400, slant: 'normal' });
-        if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+      if (op.type === 'equation') {
+        for (const family of hancomEquationFamilies(op.layoutBox)) {
+          const record = resolveRendererLocalFont(family, { weight: 400, slant: 'normal' });
+          if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+        }
         continue;
       }
       if (op.type !== 'textRun' && op.type !== 'charOverlap') continue;
@@ -74,6 +77,14 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
       if (!family) continue;
       const record = resolveRendererLocalFont(primaryHostFontFamily(family), hostFontStyle(op.style));
       if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+      if ([...op.text].some(character => {
+        const code = character.codePointAt(0) ?? 0;
+        return code >= 0xf02b0 && code <= 0xf02b9;
+      })) {
+        const numberFace = resolveRendererLocalFont(boxedDigitMetrics.numberFace,
+          { weight: 400, slant: 'normal' });
+        if (numberFace?.hostReference) selected.set(localFontFaceKey(numberFace), numberFace);
+      }
     }
   }
   return [...selected.values()];

@@ -8,6 +8,8 @@ const src = join(dirname(fileURLToPath(import.meta.url)), '../../src');
 const [mode, mutation] = process.argv.slice(2);
 registerHooks({
   resolve(specifier, context, next) {
+    // 제품이 읽는 실제 JSON 자원에는 TypeScript 확장자를 덧붙이지 않는다.
+    if (specifier.endsWith('.json')) return next(specifier, context);
     if (specifier === '@wasm/rhwp.js') return {
       url: 'data:text/javascript,export default function init(){return {}};export class HwpDocument{};export function version(){return "test"}',
       shortCircuit: true,

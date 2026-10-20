@@ -81,11 +81,18 @@ impl TypesetEngine {
         let scan_start_row = r;
         let consumed_before_row = consumed;
         let reflow_minimum = layout_engine.reflow_row_physical_minimum(table, r, styles);
+        let continuing_reflow_minimum =
+            layout_engine.row_has_continuing_reflow_minimum(table, r, styles);
+        let plain_reflow_line_units =
+            layout_engine.row_has_plain_reflow_line_units(table, r, styles);
+        let physical_minimum_splittable =
+            mt.allows_row_break_split() && reflow_minimum.is_some() && plain_reflow_line_units;
+        let row_units_splittable = mt.is_row_splittable(r) || physical_minimum_splittable;
         let ordinary_row_can_split = !rowspan_touched[r]
-            || (mt.allows_row_break_split() && can_intra_split && mt.is_row_splittable(r));
+            || (mt.allows_row_break_split() && can_intra_split && row_units_splittable);
         let owns_plain_row_frame = ordinary_row_can_split
-            && reflow_minimum.is_some()
-            && layout_engine.row_has_plain_reflow_line_units(table, r, styles);
+            && (reflow_minimum.is_some() || continuing_reflow_minimum)
+            && plain_reflow_line_units;
         let avail_for_rows = if owns_plain_row_frame {
             reflow_frame_avail_for_rows.map_or(avail_for_rows, |height| avail_for_rows.min(height))
         } else {
@@ -119,7 +126,7 @@ impl TypesetEngine {
                 return false;
             }
             let rowbreak_rowspan_row_splittable =
-                mt.allows_row_break_split() && can_intra_split && mt.is_row_splittable(r);
+                mt.allows_row_break_split() && can_intra_split && row_units_splittable;
             if rowspan_touched[r] && !rowbreak_rowspan_row_splittable {
                 // 실제로 수용한 앞 행들의 높이(consumed)를 사용한다. 이전 행의
                 // 증분까지 포함하며, 늘린 높이가 안 맞으면 원래 높이로 되돌리지 않는다.
@@ -278,7 +285,7 @@ impl TypesetEngine {
                     source_first_fragment_row_end,
                     ordinary_declared_band_can_split: mt.allows_row_break_split()
                         && r > cursor_row
-                        && !rowspan_touched[r]
+                        && (!rowspan_touched[r] || physical_minimum_splittable)
                         && row_start_cut.is_empty()
                         && table::scan::row::ordinary_band_row_shape(table, r, row_total, self.dpi)
                         // 닫힌 저장 프레임의 가운데·아래 정렬은 상자 높이를
@@ -298,7 +305,7 @@ impl TypesetEngine {
                                 row_start_cut,
                             }
                             .padding();
-                            need - padding >= MIN_TOP_KEEP_PX
+                            (need - padding >= MIN_TOP_KEEP_PX || owns_plain_row_frame)
                                 && layout_engine.row_aligned_content_bottom(
                                     table, r, need, row_total, styles,
                                 ) <= avail_for_rows - consumed - cs_before + 0.5
@@ -442,20 +449,24 @@ impl TypesetEngine {
             let table::scan::row_entry::RowSplitGate {
                 native_short_parent_child_splittable,
                 splittable,
-            } = row_entry.split_gate(can_intra_split, {
-                // [#7288] «쪽 경계에서» 가 행 내부 컷을 허용하는지 묻는다. 값 2 «나눔» 만
-                // 무조건 자르고, 값 0 «나누지 않음»·값 1 «셀 단위로 나눔» 은 이 조각의
-                // **온전한 밴드**에도 행이 안 들어갈 때 — 곧 어느 쪽에도 못 넣을 때 —
-                // 만 불가피하게 자른다. 그 밖에는 `splittable=false` 로 떨어져 행 경계에서
-                // 조각을 끝내고(`end_row = r`) 다음 쪽에서 행을 통째로 재개한다. 한/글
-                // 정본: 편람 PDF 158→159쪽이 큰 행을 통째로 넘기며 앞쪽 바닥을 비운다.
-                let row_needs_whole_band =
-                    r == cursor_row && cut_row_h.get(r).copied().unwrap_or(0.0) > avail_for_rows;
-                !(crate::renderer::typeset::none_table_is_atomic_here(table)
-                    || crate::renderer::typeset::cell_unit_row_is_atomic_here(table))
-                    || table_storage_declares_splits
-                    || row_needs_whole_band
-            });
+            } = row_entry.split_gate(
+                can_intra_split,
+                {
+                    // [#7288] «쪽 경계에서» 가 행 내부 컷을 허용하는지 묻는다. 값 2 «나눔» 만
+                    // 무조건 자르고, 값 0 «나누지 않음»·값 1 «셀 단위로 나눔» 은 이 조각의
+                    // **온전한 밴드**에도 행이 안 들어갈 때 — 곧 어느 쪽에도 못 넣을 때 —
+                    // 만 불가피하게 자른다. 그 밖에는 `splittable=false` 로 떨어져 행 경계에서
+                    // 조각을 끝내고(`end_row = r`) 다음 쪽에서 행을 통째로 재개한다. 한/글
+                    // 정본: 편람 PDF 158→159쪽이 큰 행을 통째로 넘기며 앞쪽 바닥을 비운다.
+                    let row_needs_whole_band = r == cursor_row
+                        && cut_row_h.get(r).copied().unwrap_or(0.0) > avail_for_rows;
+                    !(crate::renderer::typeset::none_table_is_atomic_here(table)
+                        || crate::renderer::typeset::cell_unit_row_is_atomic_here(table))
+                        || table_storage_declares_splits
+                        || row_needs_whole_band
+                },
+                physical_minimum_splittable,
+            );
             if !splittable {
                 if r == cursor_row {
                     // 페이지 시작 행 — 강제 통째 배치(오버플로 감수).
@@ -703,6 +714,7 @@ impl TypesetEngine {
                     && row_total > rest + 0.5
                     && res.consumed_height + padding <= rest + 0.5
                     && rest > 0.5
+                    && (r == cursor_row || rest >= MIN_TOP_KEEP_PX)
                 {
                     consumed += cs_before + rest;
                     end_row = r + 1;
@@ -846,8 +858,36 @@ impl TypesetEngine {
                 } else {
                     row_total
                 };
+                let physical_band = (avail_for_rows - consumed - cs_before).max(0.0);
+                let fresh_reflow_minimum_band = r == cursor_row
+                    && owns_plain_row_frame
+                    && reflow_minimum.is_some()
+                    && row_total > physical_band
+                    && physical_band > 0.0
+                    && ordinary_band_content_fits(
+                        &res.end_cut,
+                        res.consumed_height,
+                        true,
+                        layout_engine.row_aligned_content_bottom(
+                            table,
+                            r,
+                            res.consumed_height + padding,
+                            physical_band,
+                            styles,
+                        ),
+                        physical_band,
+                        self.dpi,
+                    );
+                if fresh_reflow_minimum_band {
+                    // 내용 완료와 물리 최소 완료는 다르다. 빈 꼬리도 같은 행의
+                    // 실제 수용 상자로 나누고 다음 조각에서 정확한 잔여를 소비한다.
+                    end_row = r + 1;
+                    split_end_cut = res.end_cut.clone();
+                    split_end_limit = physical_band;
+                    end_row_height_override = Some(physical_band);
+                    consumed += cs_before + physical_band;
                 // 단일 유닛 행 — 분할 불가, 페이지 시작이면 강제, 아니면 다음으로.
-                if r == cursor_row {
+                } else if r == cursor_row {
                     consumed += cs_before + row_total;
                     end_row = r + 1;
                 } else if layout_engine.stored_single_line_row_is_fragmentable(table, r, styles)
@@ -882,11 +922,12 @@ impl TypesetEngine {
                     end_row = row_count;
                 } else if mt.allows_row_break_split()
                     && r > cursor_row
-                    && !rowspan_touched[r]
+                    && (!rowspan_touched[r] || physical_minimum_splittable)
                     && table::scan::row::ordinary_band_row_shape(table, r, row_total, self.dpi)
                     && ordinary_band_content_fits(
                         &res.end_cut,
                         res.consumed_height,
+                        owns_plain_row_frame,
                         layout_engine.row_aligned_content_bottom(
                             table,
                             r,
@@ -895,6 +936,7 @@ impl TypesetEngine {
                             styles,
                         ),
                         avail_for_rows - consumed - cs_before,
+                        self.dpi,
                     )
                 {
                     // [#5585] 일반 행의 밴드 컷: «쪽 경계에서 나눔»(값 2) 표에서 행 **내용과
@@ -1097,8 +1139,14 @@ impl TypesetEngine {
                     .is_some_and(|cut| cut == res.end_cut);
             // 수용한 글줄 컷은 이웃 셀의 실제 문단 유지 지시를 확인한다.
             // 컷 유닛의 소유로 판정하고, 아래 실제 표시 높이·예산 검사는 유지한다.
-            let plain_paragraph_keep_contract = layout_engine
-                .row_cut_respects_plain_paragraph_keeps(
+            let plain_paragraph_keep_contract =
+                layout_engine.row_cut_respects_plain_paragraph_keeps(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    styles,
+                ) || layout_engine.reflow_row_cut_respects_plain_paragraph_keeps(
                     table,
                     r,
                     row_start_cut,
@@ -1449,7 +1497,7 @@ impl TypesetEngine {
             // 실제 수용한 높이만 소유하며 예약과 paint가 이 같은 상자를 쓴다.
             end_row_height_override = Some(consumed);
         }
-        // 선언 최소 높이를 이어받는 행의 앞 상자도 실제 수용한 높이다.
+        // 재조판 행의 앞 상자는 내용 컷과 별개인 쪽 끝의 빈 띠도 함께 소유한다.
         // 같은 값을 예약 결과와 PageItem에 실어 paint가 더 작은 상자로
         // 다시 계산한 뒤 잔여에서 더 큰 높이를 빼는 일을 막는다.
         if !keep_scanning
@@ -1459,22 +1507,32 @@ impl TypesetEngine {
             && split_block_start.is_none()
             && end_row == scan_start_row + 1
         {
-            if let Some(minimum) = reflow_minimum {
-                let accepted_height = consumed - consumed_before_row - cs_before;
-                if accepted_height > 0.0 {
-                    let available = (avail_for_rows - consumed_before_row - cs_before).max(0.0);
-                    let remaining = if scan_start_row == cursor_row {
-                        start_row_height_override.unwrap_or(minimum)
-                    } else {
-                        minimum
-                    };
-                    // 빈 물리 띠도 이 행이 소유한다. 내용 컷 뒤의 여백을
-                    // 공통 하단까지 예약하고 같은 앞 상자에서 잔여를 뺀다.
-                    let frame_height = if accepted_height <= available {
-                        remaining.min(available).max(accepted_height)
-                    } else {
-                        accepted_height
-                    };
+            let accepted_height = consumed - consumed_before_row - cs_before;
+            if accepted_height > 0.0 {
+                let available = (avail_for_rows - consumed_before_row - cs_before).max(0.0);
+                // 일반 칸의 독립 최소 또는 계속되는 병합 칸의 최소가 빈 띠를
+                // 소유한다. 내용이 큰 것만으로 쪽 하단까지 늘리지 않는다.
+                let minimum = if continuing_reflow_minimum {
+                    available.max(reflow_minimum.unwrap_or(0.0))
+                } else {
+                    reflow_minimum.unwrap_or(available)
+                };
+                let remaining = if scan_start_row == cursor_row {
+                    start_row_height_override.unwrap_or(minimum)
+                } else {
+                    minimum
+                };
+                // 빈 물리 띠도 이 행이 소유한다. 내용 컷 뒤의 여백을
+                // 공통 하단까지 예약하고 같은 앞 상자에서 잔여를 뺀다.
+                let frame_height = if accepted_height <= available {
+                    remaining.min(available).max(accepted_height)
+                } else {
+                    accepted_height
+                };
+                if frame_height > accepted_height
+                    || continuing_reflow_minimum
+                    || reflow_minimum.is_some_and(|minimum| minimum >= accepted_height)
+                {
                     consumed += frame_height - accepted_height;
                     end_row_height_override = Some(frame_height);
                 }
@@ -1511,7 +1569,7 @@ impl TypesetEngine {
 }
 
 /// [#5585] 일반 행 밴드 컷의 내용이 남은 쪽(`rest`)에 들어가는가. 25px 고아 기준은 다른
-/// 행내 분할과 같다.
+/// 행내 분할과 같다. 실제 재조판 일반 글줄의 완전 소비는 작은 한 줄도 허용한다.
 ///
 /// 들어가는지는 그려지는 내용의 끝(`aligned_content_bottom`)으로 판정한다. 가운데·아래 정렬
 /// 칸은 내용의 자리가 쪽 경계 너머의 선언 높이로 정해지므로, 내용 높이가 남은 쪽에
@@ -1521,8 +1579,17 @@ impl TypesetEngine {
 fn ordinary_band_content_fits(
     end_cut: &[usize],
     content_height: f64,
+    complete_plain_reflow: bool,
     aligned_content_bottom: f64,
     rest: f64,
+    dpi: f64,
 ) -> bool {
-    !end_cut.is_empty() && content_height >= MIN_TOP_KEEP_PX && aligned_content_bottom <= rest + 0.5
+    !end_cut.is_empty()
+        && (content_height >= MIN_TOP_KEEP_PX
+            // 한컴은 짧은 한 줄이 물리 경계와 정확히 닿으면 이월한다.
+            // +1HU의 여유는 수용하므로 원본 단위로 엄격히 비교한다.
+            || (complete_plain_reflow
+                && crate::renderer::px_to_hwpunit(content_height, dpi)
+                    < crate::renderer::px_to_hwpunit(rest, dpi)))
+        && aligned_content_bottom <= rest + 0.5
 }

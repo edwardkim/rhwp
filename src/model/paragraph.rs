@@ -3,6 +3,15 @@
 use super::control::{Control, FieldType, CTRL_CHAR_CODE_UNITS};
 use serde::{Deserialize, Serialize};
 
+/// 편집 입력의 줄바꿈을 LF로 통일한다. CR은 HWP5에서 문단 종료 코드다.
+pub fn normalize_text_newlines(text: &str) -> std::borrow::Cow<'_, str> {
+    if text.contains('\r') {
+        std::borrow::Cow::Owned(text.replace("\r\n", "\n").replace('\r', "\n"))
+    } else {
+        std::borrow::Cow::Borrowed(text)
+    }
+}
+
 /// 문자 offset 단위의 글자 모양 복원 구간. IR의 UTF-16 위치와 구분한다.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -45,6 +54,10 @@ pub struct Paragraph {
     /// 각 항목은 해당 LineSeg의 text_start와 결합하며, 줄 교체 시 함께 교체한다.
     #[serde(skip_serializing)]
     pub layout_space_metrics: Vec<(u32, SpaceMetric)>,
+    /// 정규화가 개체 흐름에서 이미 확정한 줄 기하. 파일의 저장 줄 권위와 구분한다.
+    /// 재조판 입력을 무효화하거나 줄을 교체하면 지우며, 직렬화하지 않는다.
+    #[serde(skip_serializing)]
+    pub layout_object_projection: bool,
     /// 본문 동적 필드의 확정 표시값. 모델 문자 위치는 유지하며 측정과 paint가 함께 읽는다.
     /// 직렬화하지 않고, 재페이지네이션이 실제 쪽 소속에서 다시 결정한다.
     #[serde(skip_serializing)]
@@ -837,6 +850,7 @@ impl Paragraph {
     #[inline]
     pub fn invalidate_layout_inputs(&mut self) {
         self.stored_text_partition_dirty = true;
+        self.layout_object_projection = false;
         self.layout_field_values.clear();
     }
 
@@ -848,6 +862,7 @@ impl Paragraph {
     /// Replace stored rows and their validity state at one owner boundary.
     pub(crate) fn replace_line_segs(&mut self, line_segs: Vec<LineSeg>) {
         self.line_segs = line_segs;
+        self.layout_object_projection = false;
         self.layout_space_metrics.clear();
         // A fresh vector has no renderer-appended suffix and cannot reuse a
         // source-position snapshot owned by the replaced rows.
@@ -867,6 +882,12 @@ impl Paragraph {
     ) {
         self.replace_line_segs(line_segs);
         self.layout_space_metrics = metrics;
+    }
+
+    /// 개체 흐름 투영의 생산 경계에서만 확정 줄과 그 출처를 함께 발행한다.
+    pub(crate) fn publish_object_projection(&mut self, line_segs: Vec<LineSeg>) {
+        self.replace_line_segs(line_segs);
+        self.layout_object_projection = true;
     }
 
     pub(crate) fn line_space_metric(&self, line_index: usize) -> SpaceMetric {
@@ -1626,6 +1647,7 @@ impl Paragraph {
     /// 분할의 시맨틱이다. 병합의 역연산으로 쓰는 호출부는 `apply_meta` 로 사라진
     /// 문단의 원래 값을 되돌려야 한다 (Task #2342).
     pub fn split_at(&mut self, char_offset: usize) -> Paragraph {
+        self.layout_object_projection = false;
         let control_positions = self.split_logical_control_positions();
         let split_pos = self.split_text_pos_for_logical_offset(char_offset, &control_positions);
         let text_positions = self.control_text_positions();
@@ -1930,6 +1952,7 @@ impl Paragraph {
             char_shapes: new_char_shapes,
             line_segs: new_line_segs,
             layout_space_metrics: Vec::new(),
+            layout_object_projection: false,
             layout_field_values: Vec::new(),
             // 분리된 문단의 줄은 새로 계산된 것이라 조판 전용 보강 줄이 없다 (#4677).
             layout_only_fill_lines: 0,

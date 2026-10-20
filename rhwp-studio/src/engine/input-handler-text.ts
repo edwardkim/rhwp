@@ -1,6 +1,7 @@
 /** input-handler text methods — extracted from InputHandler class */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { normalizeTextNewlines } from '../core/text-newlines';
 import {
   InsertTextCommand,
   DeleteTextCommand,
@@ -552,7 +553,7 @@ export function onInput(this: any, e?: InputEvent): void {
     return;
   }
 
-  const text = this.textarea.value;
+  const text = normalizeTextNewlines(this.textarea.value);
   // const inputType = e?.inputType ?? 'unknown';
   // const inputData = e?.data ?? '';
   // const isComp = e?.isComposing ?? false;

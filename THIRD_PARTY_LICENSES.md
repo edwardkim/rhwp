@@ -45,7 +45,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 | pdf-writer | 0.12.1 | MIT OR Apache-2.0 | typst/pdf-writer | PDF 출력 |
 | rhwp-pdf-import-backend | 0.3.78-rhwp.1 | MIT OR Apache-2.0 | edwardkim/rhwp | `pdf-import` optional; `pdf_oxide 0.3.78` 기반 내부 보안 패치, 코드 import alias `pdf_oxide` |
 | quick-xml | 0.41.0 | MIT | tafia/quick-xml | HWPX XML 파싱 |
-| resvg | 0.47.0 | Apache-2.0 OR MIT | linebender/resvg | native-skia SVG raster (optional) |
+| resvg | 0.47.0 | Apache-2.0 OR MIT | linebender/resvg | Native/WASM 공통 WMF Print surface, native-skia SVG raster |
 | roxmltree | 0.21.1 | MIT OR Apache-2.0 | RazrFalcon/roxmltree | XML 검증·정규화 |
 | serde | 1.0.229 | MIT OR Apache-2.0 | serde-rs/serde | 직렬화 |
 | serde_json | 1.0.151 | MIT OR Apache-2.0 | serde-rs/json | JSON 직렬화 |
@@ -62,7 +62,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 | unicode-properties | 0.1.4 | MIT OR Apache-2.0 | unicode-rs/unicode-properties | 유니코드 문자 분류 |
 | unicode-segmentation | 1.13.3 | MIT OR Apache-2.0 | unicode-rs/unicode-segmentation | grapheme/word segmentation |
 | unicode-width | 0.2.2 | MIT OR Apache-2.0 | unicode-rs/unicode-width | 문자 폭 계산 |
-| usvg | 0.45.1 | Apache-2.0 OR MIT | linebender/resvg | SVG 파싱 |
+| usvg | 0.45.1 / 0.47.0 | Apache-2.0 OR MIT | linebender/resvg | Native SVG 파싱 / 공통 WMF surface의 resvg 파싱 |
 | wasm-bindgen | 0.2.125 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM binding |
 | wasm-bindgen-test | 0.3.75 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM 테스트 |
 | web-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | Web API binding |
@@ -335,6 +335,7 @@ USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
 | Pretendard (9종) | SIL Open Font License 1.1 | github.com/orioncactus/pretendard | Sans-serif fallback |
 | Noto Serif KR (2종) | SIL Open Font License 1.1 | Google Fonts | Serif fallback |
 | Noto Sans KR (3종) | SIL Open Font License 1.1 | Google Fonts | Sans-serif fallback |
+| Noto Sans Math Regular 2.001 | SIL Open Font License 1.1 | Google LLC / Ubuntu `fonts-noto-core`; [공식 라이선스](https://github.com/google/fonts/blob/main/ofl/notosansmath/OFL.txt) | CanvasKit 수학 기호 fallback; [라이선스 전문](assets/fonts/NotoSansMath-OFL.txt) 동봉 |
 | Nanum Myeongjo (3종) | SIL Open Font License 1.1 | Google Fonts | Serif fallback |
 | Nanum Gothic (3종) | SIL Open Font License 1.1 | Google Fonts | Sans-serif fallback |
 | Nanum Gothic Coding (2종) | SIL Open Font License 1.1 | Google Fonts | Monospace fallback |
@@ -343,7 +344,7 @@ USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
 | D2 Coding (2종) | SIL Open Font License 1.1 | NAVER | Monospace fallback |
 | Spoqa Han Sans | SIL Open Font License 1.1 | github.com/spoqa/spoqa-han-sans | Sans-serif fallback |
 | RHWP Old Hangul subset | SIL Open Font License 1.1 | Adobe / Google | 옛한글 PUA fallback, `SourceHanSerifK-OFL.txt` 동봉 |
-| Latin Modern Math | GUST Font License | GUST / TeX ecosystem | 수식 fallback |
+| Latin Modern Math 1.959 | GUST Font License | B. Jackowski, P. Strzelczyk, P. Pianowski / TeX 사용자 그룹 | 수식 fallback 및 적분·곱셈·근호·중괄호·연산자·대문자 윤곽; [라이선스 전문](assets/fonts/LatinModernMath-GUST-FONT-LICENSE.txt) 동봉 |
 | Cafe24 써라운드 | 카페24 무료 배포 | fonts.cafe24.com | 장식체 |
 | Cafe24 슈퍼매직 | 카페24 무료 배포 | fonts.cafe24.com | 장식체 |
 | 해피니스 산스 (Happiness Sans, 4종) | SIL Open Font License 1.1 | [현대백화점](https://thehyundaifont.com/) | 공식 배포 WOFF2 원본. [동봉 라이선스 PDF](ttfs/redistributable/happiness-sans/HapinessSans_License.pdf)에 저작권·Reserved Font Name·OFL 전문 수록 |
@@ -358,6 +359,45 @@ USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
 | `tests/fixtures/native_font_family_names/family-contract.ttf` | Adobe Noto Sans KR 수정본, SIL OFL 1.1 | [출처](tests/fixtures/native_font_family_names/README.md), [전문](tests/fixtures/native_font_family_names/OFL.txt) |
 | `tests/fixtures/native_font_styles/*.ttf` (2개) | Adobe Noto Sans KR 수정본, SIL OFL 1.1 | [출처·재생성](tests/fixtures/native_font_styles/README.md), [전문](tests/fixtures/native_font_styles/OFL.txt) |
 | 나머지 `tests/fixtures/fonts/`의 TTF·TTC (7개) | 저장소 생성기의 직접 작성 윤곽선, MIT | 각 `*.LICENSE.md`에 생성기·용도 기록. 외부 폰트 수정본과 구별 |
+
+`assets/fonts/NotoSansMath-Regular.woff2`는 Ubuntu 설치본의 전체 TTF를 WOFF2로 변환한
+파일이다. 이 버전의 `Copyright 2018 Google LLC. All Rights Reserved.`와 SIL OFL 1.1
+정보를 폰트 내부 및 동봉 라이선스에 보존한다. 소프트웨어와 함께 재배포하며 폰트 자체는
+SIL OFL 1.1을 유지한다. 원본 경로·SHA-256·변환 방법은 [폰트 목록](assets/fonts/FONTS.md)에 기록한다.
+
+`src/renderer/equation/integral_outline.rs`,
+`src/renderer/equation/multiplication_outline.rs`,
+`src/renderer/equation/radical_outline.rs`,
+`src/renderer/equation/brace_outline.rs`,
+`src/renderer/equation/brace_stretch_data.rs`,
+`src/renderer/equation/round_stretch_data.rs`,
+`src/renderer/equation/relation_outline.rs`,
+`src/renderer/equation/operator_outline.rs`의 윤곽 상수는 동봉된 Latin Modern Math
+1.959의 `integral`·`multiply`·`radical`·`braceleft`·`plus`·`minus`·`equal` glyph에서
+추출한 공개 윤곽이다. `brace_stretch_data.rs`는 중괄호의 MATH 크기별 variant와
+`uni23A7`·`uni23A8`·`uni23A9`·`braceleft.ex` 조립 부품의 윤곽·연결 메트릭도 포함한다.
+`round_stretch_data.rs`는 공개 둥근 괄호의 `uni239B`·`uni239C`·`uni239D`
+MATH 조립 부품의 윤곽·연결 메트릭을 포함한다.
+원본 SHA-256과 추출 방법을 해당 파일에 기록한다. 원본 Copyright 2012--2014
+B. Jackowski, P. Strzelczyk, P. Pianowski를 보존하고, 해당 윤곽 데이터는
+GUST Font License를 유지한다. rhwp는 글꼴 파일을 개명·수정하는 대신 이 윤곽의
+좌표를 공통 수식 ink 영역으로 변환한다. 한컴 사설 글꼴의 윤곽은 포함하지 않는다.
+
+`relation_outline.rs`는 같은 공개 원본의 `less`·`greater`·`lessequal`·`greaterequal`·
+`parenleft`·`parenright` glyph를 추출한 관계 기호와 둥근 괄호 윤곽이다.
+저작권·GUST Font License를 그대로 유지한다. 사설 face에서 소비하는 bbox는
+메트릭이며 사설 윤곽 데이터가 아니다.
+
+`src/renderer/equation/accent_outline.rs`의 화살촉은 같은 공개 원본의 MATH 조립
+부품 `arrowright.rt`, `arrowboth.lft`, `arrowboth.rt`에서 파생했다. 원 저작권과
+GUST Font License를 유지하며 사설 글꼴의 윤곽·바이트는 포함하지 않는다.
+
+`assets/fonts/LatinModernMath-VariableOutline-subset.otf`는 같은 공개 원본의
+정체 A~Z/a~z와 이탤릭 a~z 윤곽을 포함한 13,488 byte 파생 OpenType CFF 글꼴이다. 원본 저작권·
+라이선스를 보존하고 family·full·PostScript 및 CFF 이름을 변경했다.
+[파생 manifest](assets/fonts/MANIFEST-RHWP-LMM-VariableOutline.txt)에 원본·
+파생 SHA와 변경 범위를 기록한다. `src/renderer/equation/variable_outline.rs`는
+이 공개 윤곽을 파싱하며, 사설 글꼴에서는 em 프레임의 메트릭만 소비한다.
 
 ---
 

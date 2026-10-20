@@ -83,13 +83,7 @@ pub(in crate::renderer::typeset) fn plan_fragment(
             end_line,
         }
     };
-    // 음수 줄간격은 흐름 전진량을 줄여도 앞선 줄 상자의 점유 영역을 지우지 않는다.
-    let mut line_top = sp_b;
-    let mut content_height = sp_b;
-    for line_idx in cursor_line..end_line.min(fmt.line_count()) {
-        content_height = content_height.max(line_top + fmt.line_heights[line_idx]);
-        line_top += fmt.line_advance(line_idx);
-    }
+    let content_height = fmt.line_content_height(cursor_line..end_line, sp_b);
     Some(ParagraphFragment {
         item,
         height: part_height,

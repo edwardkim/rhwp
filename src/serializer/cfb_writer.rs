@@ -254,6 +254,17 @@ fn serialize_hwp_inner(
         extra_streams.push((crate::model::text_clip::HWP_STREAM.into(), bytes));
         content_loss.record(crate::model::text_clip::native_visibility_loss());
     }
+    // HWPX에 보존한 재정렬 요청도 HWP 저장·재열기에서 같은 계약을 유지한다.
+    if doc.layout_profile().hwp3_external_realign()
+        && !extra_streams
+            .iter()
+            .any(|(path, _)| path == crate::model::document::HWP3_EXTERNAL_REALIGN_STREAM_PATH)
+    {
+        extra_streams.push((
+            crate::model::document::HWP3_EXTERNAL_REALIGN_STREAM_PATH.to_string(),
+            b"1".to_vec(),
+        ));
+    }
     extra_streams.retain(|(path, _)| path != crate::model::hyperlink_format::HWP_STREAM);
     if let Some(bytes) = crate::model::hyperlink_format::encode(doc) {
         extra_streams.push((crate::model::hyperlink_format::HWP_STREAM.into(), bytes));

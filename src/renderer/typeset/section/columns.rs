@@ -13,6 +13,20 @@ impl TypesetEngine {
         page_def: &PageDef,
     ) {
         st.flush_column();
+        let blank_tail_spacing = (st.col_count == 1)
+            .then(|| {
+                let column = st.pages.last()?.column_contents.last()?;
+                crate::renderer::blank_band::stored_blank_tail_spacing(
+                    st.profile,
+                    &column.items,
+                    paragraphs,
+                    self.dpi,
+                )
+            })
+            .flatten()
+            .filter(|spacing| *spacing <= st.current_height)
+            .unwrap_or(0.0);
+        let closing_content_height = st.current_height - blank_tail_spacing;
 
         // [Task #874 Case 5] leaving zone 의 height 계산 시 마지막 라인의 trailing
         // line_spacing 을 제외한다. zone 간 gap 은 design_spacing/2 + solo_zone_pad 가
@@ -47,7 +61,7 @@ impl TypesetEngine {
             let max_vpos_px = hwpunit_to_px(max_vpos_end, self.dpi);
             if max_vpos_end > 0
                 && !prev_is_floating_anchor
-                && max_vpos_px <= st.layout.available_body_height()
+                && max_vpos_px <= st.base_available_height()
             {
                 // 사다리는 **한글의 쪽 경계** 기준이라, 한글이 이미 쪽을 끊은 자리에서는
                 // 직전 문단의 vpos 가 다음 쪽 상단 값이 되어 이 쪽이 실제로 소비한 높이를
@@ -56,12 +70,12 @@ impl TypesetEngine {
                 // vs 실소비 867.4px — zone 두 개가 1657.3px 로 본문 876.9px 에 겹쳐
                 // 745.7px 이 쪽 밖으로 나갔다). 흐름 누적은 이 쪽에 실제로 놓인 양이므로
                 // 둘 중 큰 값이 이 쪽의 소비량이다.
-                max_vpos_px.max(st.current_height)
+                max_vpos_px.max(closing_content_height)
             } else {
-                st.current_height
+                closing_content_height
             }
         } else {
-            st.current_height
+            closing_content_height
         };
         // [Task #853] zone 전환 시 디자인 spacing(1단 ColumnDef 의 `간격`)을 세로 간격으로:
         // (이전 zone 디자인 spacing /2) + (새 zone 디자인 spacing /2) 를 더한다.
@@ -178,7 +192,14 @@ impl TypesetEngine {
         } else if column_break_new_band && st.col_count > 1 && new_band_is_multicol {
             crate::renderer::multicol_band_break_pad_px(self.dpi)
         } else if entering_solo_zero || leaving_solo_zero || column_break_new_band {
-            crate::renderer::solo_zone_pad_px(entering_solo_zero, st.col_count > 1, self.dpi)
+            crate::renderer::solo_zone_pad_px(
+                entering_solo_zero,
+                st.col_count > 1,
+                (self.profile.get().hwp5_container() || self.profile.get().hwpx_container())
+                    .then(|| self.section_column_spacing_hu.get())
+                    .flatten(),
+                self.dpi,
+            )
         } else {
             0.0
         };
@@ -208,7 +229,7 @@ impl TypesetEngine {
         // 본문영역을 넘어 바닥 여백에 그려지던 결함)
         let one_line = hwpunit_to_px(1500, self.dpi);
         if paper_overlay_tail_overflows_page
-            || candidate_offset > st.layout.available_body_height() - 4.0 * one_line
+            || candidate_offset > st.base_available_height() - 4.0 * one_line
         {
             st.push_new_page();
             // 새 페이지 첫 zone: 새 zone 디자인 spacing /2 만 (이전 zone 은 이전 페이지).

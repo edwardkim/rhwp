@@ -1283,7 +1283,7 @@ impl LayoutEngine {
         let table = Self::footnote_block_table(para, selected)?;
         let measurer = crate::renderer::height_measurer::HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(self.profile.get().hwp3_layout())
-            .with_legacy_hwp3_stored_geometry(self.profile.get().legacy_hwp3_stored_geometry())
+            .with_stored_geometry_policy(self.profile.get().stored_geometry_policy())
             .with_native_hwp5(self.profile.get().hwp5_stored_pagination_layout())
             .with_hwpx_stored_layout(self.profile.get().hwpx_stored_layout())
             .with_session_edited(self.profile.get().session_edited())
@@ -1516,7 +1516,7 @@ impl LayoutEngine {
     }
 
     /// Paragraph plans are shared by area sizing, body reservation and paint.
-    fn footnote_paragraphs_content_height(
+    pub(crate) fn footnote_paragraphs_content_height(
         &self,
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
@@ -1843,7 +1843,7 @@ impl LayoutEngine {
                         marker_para,
                         bin_data_content,
                         &[],
-                    ) + placement.spacing.after - after;
+                    ).flow_bottom + placement.spacing.after - after;
                     if is_last_selected_line {
                         y -= hwpunit_to_px(composed.lines[0].line_spacing, self.dpi);
                     }

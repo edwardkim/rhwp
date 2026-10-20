@@ -133,7 +133,7 @@ impl TypesetState {
         suffix_height: f64,
         content_height: f64,
     ) {
-        self.record_paragraph_content_bottom((para_idx, end_line), content_height);
+        self.record_paragraph_content_bottom((para_idx, end_line), content_height, suffix_height);
         self.data.current_items.push(PageItem::PartialParagraph {
             para_index: para_idx,
             start_line: wrap_prefix_len,
@@ -514,85 +514,6 @@ impl TypesetState {
         self.data.current_height = self.data.current_height.max(lanes.max_bottom());
     }
 
-    /// 각주 등록 뒤 단일 단의 vpos 관측값을 기존 순서로 확정한다.
-    pub(super) fn commit_deferred_table_anchor(
-        &mut self,
-        para_index: usize,
-        paragraphs: &[Paragraph],
-    ) {
-        if self.data.col_count == 1 {
-            self.data.vpos_prev_layout_para = Some(para_index);
-            if matches!(
-                self.data.current_items.last(),
-                Some(PageItem::Table { .. } | PageItem::PartialTable { .. })
-            ) {
-                let preserves_paragraph_frame = match self.data.current_items.last() {
-                    Some(PageItem::Table { para_index, control_index }) => paragraphs
-                        .get(*para_index)
-                        .and_then(|para| para.controls.get(*control_index))
-                        .is_some_and(|control| matches!(control, Control::Table(table)
-                            if crate::renderer::float_placement::is_para_topbottom_float(&table.common))),
-                    _ => false,
-                };
-                if preserves_paragraph_frame {
-                    // Whole paragraph-following tables keep the column's
-                    // source axis in paint. A table opening the column owns
-                    // the same initial origin as build_single_column.
-                    self.seed_whole_table_column_origin(para_index, paragraphs);
-                } else {
-                    self.data.vpos_page_base = None;
-                    self.data.vpos_lazy_base = None;
-                }
-                self.data.vpos_prev_partial_table = matches!(
-                    self.data.current_items.last(),
-                    Some(PageItem::PartialTable { .. })
-                );
-            }
-        }
-    }
-
-    /// The whole table that opens this column owns paint's initial source axis.
-    pub(super) fn seed_whole_table_column_origin(
-        &mut self,
-        para_index: usize,
-        paragraphs: &[Paragraph],
-    ) {
-        if let Some(PageItem::Table {
-            para_index: first,
-            control_index,
-        }) = self.data.current_items.first()
-        {
-            if *first == para_index {
-                let has_host_line = self.data.current_items.iter().any(|item| {
-                    matches!(
-                        item,
-                        PageItem::FullParagraph { para_index: owner }
-                            | PageItem::PartialParagraph { para_index: owner, start_line: 0, .. }
-                            if owner == first
-                    )
-                }) || paragraphs
-                    .get(*first)
-                    .is_some_and(super::para_has_visible_text);
-                self.data.vpos_page_base = paragraphs.get(*first).and_then(|para| {
-                    crate::renderer::float_placement::stored_table_column_origin(
-                        para,
-                        has_host_line,
-                        self.data
-                            .paragraph_float_placements
-                            .get(&(*first, *control_index)),
-                        self.data.layout.dpi,
-                    )
-                });
-                self.data.vpos_lazy_base = None;
-                self.data.vpos_page_base_stored = self.data.vpos_page_base.is_some()
-                    && paragraphs
-                        .get(*first)
-                        .and_then(|para| para.line_segs.first())
-                        .is_some_and(|line| !super::is_synthetic_line_seg(line));
-            }
-        }
-    }
-
     pub(super) fn has_deferred_table_controls(&self) -> bool {
         !self.data.deferred_table_controls.is_empty()
     }
@@ -617,36 +538,6 @@ impl TypesetState {
             current_height: self.data.current_height,
             vpos_page_base: self.data.vpos_page_base,
             current_items: &self.data.current_items,
-        }
-    }
-
-    /// 저장 TAC 줄 수용에 필요한 읽기 전용 페이지 관측값.
-    pub(super) fn stored_tac_page(
-        &self,
-        paragraphs: &[crate::model::paragraph::Paragraph],
-    ) -> StoredTacPage {
-        StoredTacPage {
-            profile: self.data.profile,
-            current_height: self.data.current_height,
-            vpos_col_anchor: self.data.vpos_col_anchor,
-            vpos_page_base: self.data.vpos_page_base,
-            vpos_lazy_base: self.data.vpos_lazy_base,
-            side_wrap_empty: self.data.side_wrap_exclusions.is_empty(),
-            // layout의 단 초기 base와 같은 첫 완전한 표의 저장 줄을 읽는다.
-            // PartialTable에는 소비된 컷이 있고, 문단 시작의 들여쓰기·앞 간격은
-            // 별도 계약이므로 이 표 원점 조회에 섞지 않는다.
-            stored_table_column_base: self.data.current_items.first().and_then(|item| {
-                let PageItem::Table { para_index, .. } = item else {
-                    return None;
-                };
-                paragraphs
-                    .get(*para_index)
-                    .and_then(|para| para.line_segs.first())
-                    .filter(|seg| {
-                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                    })
-                    .map(|seg| seg.vertical_pos)
-            }),
         }
     }
 
@@ -860,9 +751,7 @@ impl TypesetState {
             Some(height),
         ) = (&fragment.item, fragment.content_height)
         {
-            self.data
-                .paragraph_fragment_content_bottoms
-                .insert((*para_index, *end_line), self.data.current_height + height);
+            self.record_paragraph_content_bottom((*para_index, *end_line), height, fragment.height);
         }
         self.data.current_items.push(fragment.item);
         self.data.vpos_prev_trimmed_sb_px = 0.0;
@@ -897,6 +786,7 @@ impl TypesetState {
             current_height: self.data.current_height,
             has_items: !self.data.current_items.is_empty(),
             vpos_ladder_dirty: self.data.vpos_ladder_dirty,
+            stored_vpos_base: self.data.vpos_page_base,
             current_footnote_height: self.data.current_footnote_height,
             footnote_safety_margin: self.data.footnote_safety_margin,
             current_zone_y_offset: self.data.current_zone_y_offset,
@@ -937,6 +827,37 @@ impl TypesetState {
             exclusions: preceding.then_some(&self.data.side_wrap_exclusions),
             visible_float_exclusions: preceding.then_some(&self.data.visible_float_exclusions),
         }
+    }
+
+    /// 새 다단 쪽의 첫 host에만 절대 전폭 예약의 좌표계를 제공한다.
+    pub(super) fn stored_body_wide_host_frame(&self) -> Option<(LayoutRect, f64)> {
+        (self.data.current_items.is_empty()
+            && self.data.current_column == 0
+            && self.data.col_count > 1
+            && self.data.current_start_height == 0.0
+            && self.data.current_zone_y_offset == 0.0
+            && !self.data.current_endnote_flow)
+            .then_some((self.data.layout.body_area, self.data.layout.page_height))
+    }
+
+    /// 부분 수용/이월이면 기존 소유자를 유지한다. 전체 수용한 줄의 원점과 전진 끝을 공유한다.
+    pub(super) fn commit_stored_body_wide_host(
+        &mut self,
+        para_index: usize,
+        para: &crate::model::paragraph::Paragraph,
+        plan: InlineFlowPlan,
+    ) {
+        if self.data.current_column != 0
+            || !matches!(self.data.current_items.first(),
+                Some(PageItem::PartialParagraph { para_index: owner, start_line: 0, end_line })
+                    if *owner == para_index && *end_line == para.line_segs.len())
+            || plan.end > self.available_height()
+        {
+            return;
+        }
+        // PartialParagraph의 측정은 이미 앞 간격을 제외한 글줄 전진량이다.
+        // 표 배치가 뒤 문단까지 수용했을 수 있으므로 그 소비 높이·좌표축을 되감지 않는다.
+        self.data.inline_flow_plans.insert(para_index, plan);
     }
 
     /// fit을 통과한 동일 plan을 배치 metadata와 높이에 함께 반영한다.
@@ -1066,6 +987,8 @@ mod data;
 mod empty_run;
 pub(super) mod finalize;
 mod notes;
+mod paragraph_fragment;
+mod stored_tac;
 mod transition;
 
 pub(super) struct TypesetState {
