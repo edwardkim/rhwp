@@ -89,21 +89,50 @@ fn gulim_missing_point_publishes_the_measured_supplier_to_paint() {
 
 #[test]
 fn measured_original_glyph_survives_legacy_type1_display_fallback() {
-    let core = core("HCI Poppy", "A/A·", None);
-    let slash = record(&core, "/");
-    assert_eq!(
-        slash["layoutMetric"]["widthSource"],
-        "measuredOriginalGlyph"
-    );
-    // 독립2020/2024 Print의 동일 CharProc SHA와 Widths=605/1000em.
-    // 기존4HU 장치 격자의 반 격자만 허용하며 전체 HFT 표를 승격하지 않는다.
-    assert!((advance(&slash) - 7500.0 * 0.605).abs() <= 2.0);
     let fallback = core_with_palatino_program();
-    for character in ["A", "·"] {
+    // 독립2020 Print에서 Batang은 선택되지 않은 대체 후보로 남아 Type3이고,
+    // Palatino 대체는 실제 CID TrueType으로 선택된다. 후보 존재와 선택을 구분한다.
+    for alternate in [None, Some("Batang"), Some("Palatino Linotype")] {
+        let mut program = core("HCI Poppy", "A/A·", None);
+        let mut source = program.document().clone();
+        for fonts in &mut source.doc_info.font_faces {
+            for font in fonts {
+                font.subst_font = alternate.map(|face| rhwp::model::style::SubstFont {
+                    face: face.into(),
+                    font_type: 1,
+                    ..Default::default()
+                });
+            }
+        }
+        program.set_document(source);
+        let original = program.export_hwpx_native().unwrap();
+        let slash = record(&program, "/");
+        if alternate == Some("Palatino Linotype") {
+            assert_eq!(advance(&slash), advance(&record(&fallback, "/")));
+            assert_ne!(
+                slash["layoutMetric"]["widthSource"],
+                "measuredOriginalGlyph"
+            );
+        } else {
+            assert_eq!(
+                slash["layoutMetric"]["widthSource"],
+                "measuredOriginalGlyph"
+            );
+            // 원본/저장2022 Print의 동일 CharProc SHA, Widths605/1000em.
+            // 기존4HU 장치 격자의 반 격자만 허용하며 전체 HFT 표를 승격하지 않는다.
+            assert!((advance(&slash) - 7500.0 * 0.605).abs() <= 2.0);
+        }
+        for character in ["A", "·"] {
+            assert_eq!(
+                advance(&record(&program, character)),
+                advance(&record(&fallback, character)),
+                "미측정 글자는 표시 프로그램에 남는다:{alternate:?}/{character}"
+            );
+        }
         assert_eq!(
-            advance(&record(&core, character)),
-            advance(&record(&fallback, character)),
-            "부분 표에 없는 글자는 표시 프로그램의 폭을 유지함:{character}"
+            program.export_hwpx_native().unwrap(),
+            original,
+            "선택은 원본을 수정하지 않는다"
         );
     }
 }

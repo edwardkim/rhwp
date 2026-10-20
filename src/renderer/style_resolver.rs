@@ -346,17 +346,29 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
             .get(lang)
             .and_then(|faces| faces.get(font_id as usize));
         font_families_source_hft.push(source_font.is_some_and(|face| face.alt_type == 2));
-        // TTF로 선언한 원 face가 없으면 문서의 명시 TTF 대체 프로그램을 쓴다.
-        // 대체 선언이 없는 type1 원본과 실제 HFT(type2)는 이 경계에 속하지 않는다.
-        let document_true_type_substitute = source_font.is_some_and(|face| {
-            face.alt_type == 1
-                && face.subst_font.as_ref().is_some_and(|substitute| {
-                    substitute.font_type == 1 && !substitute.face.trim().is_empty()
-                })
-        });
         let decision = lookup_font_name_decision(doc_info, lang, font_id);
         let substituted = decision.substitution_boundary.is_some()
             && decision.normalized_face != decision.requested_face;
+        // 대체 후보의 선언과 실제 주 공급자의 선택은 구분한다.
+        // 현재 해소 결과가 선택한 TTF만 원본 프로그램의 전진폭을 대체한다.
+        let document_true_type_substitute = source_font.is_some_and(|face| {
+            face.alt_type == 1
+                && face.subst_font.as_ref().is_some_and(|substitute| {
+                    let name = substitute.face.trim();
+                    substitute.font_type == 1
+                        && !name.is_empty()
+                        && decision.normalized_face.as_deref()
+                            == Some(
+                                resolve_font_substitution_decision(
+                                    name,
+                                    substitute.font_type,
+                                    lang,
+                                )
+                                .map(|(resolved, _, _)| resolved)
+                                .unwrap_or(name),
+                            )
+                })
+        });
         if lang == 1 {
             latin_declared_hft = decision.alt_type == Some(2) && !substituted;
         }
@@ -416,8 +428,8 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                 .flatten()
                 .map(str::to_string)
         });
-        // 대체 선언 없는 type1 HCI Poppy도 독립 Print의 원본 HFT 글리프를 쓴다.
-        // 명시 TTF 대체 프로그램은 자기 전진폭을 소유한다. 전체 HFT 표 선택과
+        // 선택되지 않은 대체 후보가 있는 type1도 원본 HFT 글리프를 쓸 수 있다.
+        // 실제 선택한 TTF 대체 프로그램은 자기 전진폭을 소유한다. 전체 HFT 표 선택과
         // 실제 type2의 부분 폭은 보존하고 내장 글꼴·호출자 TTF 환경은 승격하지 않는다.
         font_families_original_glyph_metric_face.push(
             (!document_true_type_substitute && decision.embedded != Some(true)

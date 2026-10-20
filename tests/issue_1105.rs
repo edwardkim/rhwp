@@ -271,6 +271,51 @@ fn task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom() {
         vec![22, 23],
         "클러스터 문단은 한컴과 같은 두 쪽이 소유한다"
     );
+    // 전64쪽 Native/fresh WASM 최저94.59411/94.60213%, 미달0쪽.
+    // 이어받기 경계의 두 완료 쪽 중 양쪽 최솟값이 높은23쪽을 선택했다:
+    // 23쪽99.71668/99.71773%, 24쪽99.46509/99.47145%.
+    // 독립 한컴 Print의 S/W와 다음 한글 원점·기준선(96dpi CSSpx)을 보호한다.
+    // source-font-selected-program 증적의192dpi TSV·review/overlay 직접 판독 완료.
+    fn program_origins(
+        node: &rhwp::renderer::render_tree::RenderNode,
+        output: &mut Vec<(String, f64, f64, f64)>,
+    ) {
+        if let rhwp::renderer::render_tree::RenderNodeType::TextRun(run) = &node.node_type {
+            if run.cell_context.is_none()
+                && run.para_index == Some(460)
+                && (run.text == "S/W" || run.text.starts_with("와의 "))
+            {
+                output.push((
+                    run.text.clone(),
+                    node.bbox.x,
+                    node.bbox.y + run.baseline,
+                    node.bbox.width,
+                ));
+            }
+        }
+        for child in &node.children {
+            program_origins(child, output);
+        }
+    }
+    let mut origins = Vec::new();
+    program_origins(&core.build_page_render_tree(22).unwrap().root, &mut origins);
+    assert_eq!(origins.len(), 2, "원문 영문과 후속 한글의 단일 소유");
+    assert_eq!(origins[0].0, "S/W", "원문 순서 유지");
+    assert!(origins[1].0.starts_with("와의 "), "후속 본문 보존");
+    for (run, expected_x) in origins.iter().zip([136.64, 167.68]) {
+        assert!(
+            (run.1 - expected_x).abs() <= 2.0,
+            "독립 Print의 프로그램 경계 원점 ±2 CSSpx: {run:?}"
+        );
+        assert!(
+            (run.2 - 1040.32).abs() <= 2.0,
+            "독립 Print의 같은 줄 기준선 ±2 CSSpx: {run:?}"
+        );
+    }
+    assert!(
+        origins[0].1 + origins[0].3 <= origins[1].1 + 1e-6,
+        "영문 프로그램의 끝은 후속 한글과 겹치지 않는다"
+    );
     assert!(
         fragments[0].1.trim_end().ends_with("Heart Bit"),
         "앞 조각에서 다음 낱말의 첫 글자를 빼앗지 않는다"
