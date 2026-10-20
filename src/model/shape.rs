@@ -103,8 +103,8 @@ pub struct CommonObjAttr {
     pub description: String,
     /// HWPX `numberingType` (캡션 번호 범주) 보존 (#1379).
     ///
-    /// HWP5 파서는 설정하지 않는다 (기본 None). HWPX 그리기 개체의
-    /// `numberingType="PICTURE"` 등을 라운드트립 보존하기 위한 필드.
+    /// HWP5 공통 속성 bits26-28과 HWPX `numberingType`을 같은 범주로 읽는다.
+    /// `None`은 번호를 세지 않는 명시적 범주이며, 표시 번호와 저장 왕복에 사용한다.
     pub numbering_type: ObjectNumberingType,
     /// HWPX `dropcapstyle` (개체를 감싼 단락의 드롭캡 표시 방식) 보존.
     ///

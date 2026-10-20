@@ -16,7 +16,7 @@
 //! 4. section*.xml → Section (hwpx/section)
 
 mod auto_numbers;
-pub(crate) use auto_numbers::assign_auto_numbers;
+pub(crate) use auto_numbers::{assign_auto_numbers, assign_auto_numbers_from_fields};
 
 pub mod bin_data;
 pub mod body_text;

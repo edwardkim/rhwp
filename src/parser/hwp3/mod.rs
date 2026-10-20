@@ -4831,7 +4831,7 @@ fn parse_hwp3_inner(
     // 같은 디렉터리의 외부 파일을 로드할 수 있도록 공통 Link 경로 전달을 적용한다.
     super::populate_link_image_paths(&mut doc);
 
-    crate::parser::assign_auto_numbers(&mut doc);
+    crate::parser::assign_auto_numbers_from_fields(&mut doc);
     fixup_hwp3_notes(&mut doc, &doc_info);
     fixup_hwp3_outline_fields(&mut doc);
     fixup_hwp3_picture_numbers(&mut doc);
@@ -5676,6 +5676,13 @@ fn assign_pic_numbers_in_controls(
     for ctrl in controls.iter_mut() {
         match ctrl {
             Control::Picture(pic) => {
+                // HWP3는 캡션 없는 그림도 암묵적 그림 순번에 포함한다.
+                // 이 범주를 IR에 명시해 HWP5/HWPX 저장 후에도 같은 개체가 센다.
+                pic.common.numbering_type = crate::model::shape::ObjectNumberingType::Picture;
+                // HWP5 방출기는 이 원시 의미 비트도 소비한다. 암묵적 범주를
+                // 정규화하는 이 경계에서 enum과 같은 PICTURE(001)로 맞춘다.
+                pic.common.hwp5_gen_shape_attr_bit26 = true;
+                pic.common.hwp5_gen_shape_attr_bit28 = false;
                 *pic_counter += 1;
                 let num = *pic_counter;
                 if let Some(ref mut caption) = pic.caption {

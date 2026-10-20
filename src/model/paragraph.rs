@@ -2844,11 +2844,25 @@ impl Paragraph {
                         .checked_sub(1)
                         .and_then(|i| self.char_offsets.get(i).zip(text_chars.get(i)))
                         .map_or(0, |(start, ch)| *start + ch.len_utf16() as u32);
+                    // A retained number placeholder owns its eight source units;
+                    // its offset is the control start, not the end of a preceding
+                    // gap. Keep this consistent with control_text_positions and
+                    // slot editing so display projection consumes that same slot.
+                    let owned_number_slot = matches!(
+                        self.controls.get(group_start),
+                        Some(Control::AutoNumber(_) | Control::NewNumber(_))
+                    ) && self.control_owns_char(
+                        group_start,
+                        text_position,
+                        &text_chars,
+                        &self.char_offsets,
+                    );
                     // Some inputs retain a one-unit visible object marker rather
                     // than an eight-unit gap. Its own source offset is the anchor.
                     if count == 1
-                        && text_chars.get(text_position) == Some(&'\u{FFFC}')
-                        && offset.saturating_sub(previous_end) < CTRL_CHAR_CODE_UNITS
+                        && (owned_number_slot
+                            || (text_chars.get(text_position) == Some(&'\u{FFFC}')
+                                && offset.saturating_sub(previous_end) < CTRL_CHAR_CODE_UNITS))
                     {
                         offset
                     } else {

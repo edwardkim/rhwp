@@ -791,6 +791,9 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     {
         crate::model::hyperlink_format::decode(&mut doc, &bytes);
     }
+    // 개체 번호는 autoNum 필드의 저장 캐시나 필드 개수가 아니라 실제 소유 개체의
+    // numberingType과 순번에서 결정한다. 각주·쪽 번호의 별도 저장 계약은 유지한다.
+    super::auto_numbers::assign_object_numbers(&mut doc);
     Ok(doc)
 }
 
