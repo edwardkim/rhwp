@@ -1699,3 +1699,115 @@ fn transparent_or_occluded_rectangles_do_not_invent_opaque_native_cell_borders()
         );
     }
 }
+
+// Qualification: task_m100_7998_stage30.md; all-page Native/fresh WASM,
+// same edited HWP/HWPX Hancom Print. This locks the horizontal box, not the
+// separately pending PDF/reflow baseline or the observed source line breaks.
+#[test]
+fn pdf_cell_text_reflow_keeps_source_horizontal_box_through_edits_and_both_saves() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    use rhwp::{
+        model::{control::Control, paragraph::Paragraph},
+        DocumentCore,
+    };
+    fn root_control(c: &DocumentCore) -> usize {
+        c.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Table(_)))
+            .unwrap()
+    }
+    fn paragraph<'a>(c: &'a DocumentCore, path: &[(usize, usize, usize)]) -> &'a Paragraph {
+        let mut p = &c.document().sections[0].paragraphs[0];
+        for (i, &(ci, cell, para)) in path.iter().enumerate() {
+            let ci = if i == 0 { root_control(c) } else { ci };
+            let Control::Table(t) = &p.controls[ci] else {
+                panic!("real table owner")
+            };
+            p = &t.cells[cell].paragraphs[para];
+        }
+        p
+    }
+    fn ink(n: &RenderNode, out: &mut String) {
+        if let RenderNodeType::TextRun(r) = &n.node_type {
+            out.extend(r.text.chars().filter(|c| !c.is_whitespace()));
+        }
+        for child in &n.children {
+            ink(child, out);
+        }
+    }
+    fn painted_ink(c: &DocumentCore) -> String {
+        let mut text = String::new();
+        ink(&c.build_page_render_tree(0).unwrap().root, &mut text);
+        text
+    }
+    // Independent PDF text matrices: native-pen x=30 in a cell at20pt,
+    // child A x=48 in its cell at40pt; paragraph-origins x=28 in a cell at20pt.
+    // Center keeps a zero origin and uses paragraph alignment, not an inset.
+    let pen = include_bytes!("../../pdf/issue7998/structure-borders/native-pen.pdf").as_slice();
+    let origins = include_bytes!("../../pdf/issue7998/paragraph-origins.pdf").as_slice();
+    let targets: Vec<(&[u8], Vec<(usize, usize, usize)>, i32)> = vec![
+        (pen, vec![(0, 0, 0)], 1000),
+        (pen, vec![(0, 0, 1), (0, 0, 0)], 800),
+        (origins, vec![(0, 0, 0)], 800),
+        (origins, vec![(0, 0, 1)], 800),
+        (origins, vec![(0, 1, 0)], 0),
+        (origins, vec![(0, 2, 0)], 800),
+        (origins, vec![(0, 3, 0)], 800),
+    ];
+    for (source, template_path, source_origin) in targets {
+        let original = DocumentCore::from_pdf_bytes(source, &PdfImportOptions::default()).unwrap();
+        let hwp = original.export_hwp_with_adapter_snapshot().unwrap();
+        let hwpx = original.export_hwpx_native().unwrap();
+        for bytes in [source, hwp.as_slice(), hwpx.as_slice()] {
+            let mut c = if bytes.starts_with(b"%PDF-") {
+                DocumentCore::from_pdf_bytes(bytes, &PdfImportOptions::default()).unwrap()
+            } else {
+                DocumentCore::from_bytes(bytes).unwrap()
+            };
+            let mut path = template_path.clone();
+            path[0].0 = root_control(&c);
+            let before = paragraph(&c, &path).clone();
+            assert_eq!(before.line_segs[0].column_start, source_origin);
+            let width = before.line_segs[0].segment_width;
+            let ink_before = painted_ink(&c);
+            c.insert_text_in_cell_by_path(0, 0, &path, 0, "X").unwrap();
+            for inserted in [true, false] {
+                if !inserted {
+                    c.delete_text_in_cell_by_path(0, 0, &path, 0, 1).unwrap();
+                }
+                let expected_text = if inserted {
+                    format!("X{}", before.text)
+                } else {
+                    before.text.clone()
+                };
+                let p = paragraph(&c, &path);
+                assert_eq!(p.text, expected_text);
+                assert!(
+                    p.line_segs.iter().all(|l| l.column_start == source_origin),
+                    "an edit must retain the independent style-derived line origin"
+                );
+                assert!(
+                    (p.line_segs[0].segment_width - width).abs() <= 4,
+                    "the shared content box must not gain or lose a paragraph margin"
+                );
+                for saved in [
+                    c.export_hwp_with_adapter_snapshot().unwrap(),
+                    c.export_hwpx_native().unwrap(),
+                ] {
+                    let reread = DocumentCore::from_bytes(&saved).unwrap();
+                    let p = paragraph(&reread, &path);
+                    assert_eq!(p.text, expected_text);
+                    assert!(p.line_segs.iter().all(|l| l.column_start == source_origin));
+                    assert_eq!(reread.page_count(), c.page_count());
+                    assert_eq!(painted_ink(&reread), painted_ink(&c));
+                }
+            }
+            assert_eq!(
+                painted_ink(&c),
+                ink_before,
+                "direct inverse must retain all painted content and order"
+            );
+        }
+    }
+}

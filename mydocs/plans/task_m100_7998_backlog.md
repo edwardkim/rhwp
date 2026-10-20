@@ -167,6 +167,14 @@ B10–B13의 저장 행 원점·문단 속성과 편집 재조판의 공통 수�
 [stage21](../working/task_m100_7998_stage21.md)의 이전 WASM SHA·XML 대조와 실제 출력에
 연결했다. Snapshot undo/redo의 현재 상태 복원 통과를 이 문자 배치의 해결로 보고하지 않는다.
 
+[stage30](../working/task_m100_7998_stage30.md)에서 현재 코드의 PDF/HWP/HWPX 실제
+역편집으로 원점을 다시 재현했다. 첫 보정은 flat·깊이≥2 편집의 폭 전용 상자를 기존
+`ParagraphBox::content_for_style`과 연결하는 수평 계약이다. 문단 여백은 원래 남아 있었고
+renderer가 화면 x를 보완했으므로 화면 원점 이동 개선이라고 부르지 않는다. PDF producer
+.95×font / edit reflow .85×font 기준선 차이와 source 줄의 재나눔은 별도 미완료로
+유지한다. 수평 계약의 fresh WASM·독립 Print·직접 판독과 정식 회귀 1건은 stage30에서 마감했다.
+2026-10-20 **“수평 원점 범위 시각·편집 구조 통과”**이며 R2 전체 완료로 올리지 않는다.
+
 ## 2026-10-19 임의 굵기 연속 실선 상속 첫 경계 수용
 
 [stage22](../working/task_m100_7998_stage22.md)의 동일 pen 격자를 첫 비표준 경계로 구현한다.

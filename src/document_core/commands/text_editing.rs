@@ -2685,9 +2685,10 @@ impl DocumentCore {
             }
         };
         let para_style = styles.para_styles.get(para_shape_id as usize);
-        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-        let final_width = (available_width - margin_left - margin_right).max(0.0);
+        // Keep the style-derived origin as well as the width. The render frame
+        // already consumes this box; passing only its width here published
+        // column_start=0 after an edit despite a nonzero paragraph margin.
+        let paragraph_box = ParagraphBox::content_for_style(available_width, para_style, self.dpi);
 
         // 가변 참조로 리플로우 실행
         match self.document.sections[section_idx].paragraphs[parent_para_idx]
@@ -2724,7 +2725,7 @@ impl DocumentCore {
                         let preserved_prefix =
                             crate::renderer::composer::reflow_line_segs_after_cell_text_edit(
                                 cell_para,
-                                ParagraphBox::content_width_px(final_width, self.dpi),
+                                paragraph_box.clone(),
                                 &styles,
                                 self.dpi,
                                 edit_char_offset,
@@ -2759,7 +2760,7 @@ impl DocumentCore {
                             if let Some(mut candidate) = hwpx_full_reflow_candidate.take() {
                                 reflow_line_segs(
                                     &mut candidate,
-                                    ParagraphBox::content_width_px(final_width, self.dpi),
+                                    paragraph_box.clone(),
                                     &styles,
                                     self.dpi,
                                 );
@@ -2774,17 +2775,12 @@ impl DocumentCore {
                         if split_stale_cell_reflow {
                             crate::renderer::composer::reflow_line_segs_after_cell_split(
                                 cell_para,
-                                ParagraphBox::content_width_px(final_width, self.dpi),
+                                paragraph_box.clone(),
                                 &styles,
                                 self.dpi,
                             );
                         } else {
-                            reflow_line_segs(
-                                cell_para,
-                                ParagraphBox::content_width_px(final_width, self.dpi),
-                                &styles,
-                                self.dpi,
-                            );
+                            reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                         }
                     }
                 }
@@ -2792,24 +2788,14 @@ impl DocumentCore {
             Some(Control::Shape(shape)) => {
                 if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
                     if let Some(cell_para) = tb.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(
-                            cell_para,
-                            ParagraphBox::content_width_px(final_width, self.dpi),
-                            &styles,
-                            self.dpi,
-                        );
+                        reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                     }
                 }
             }
             Some(Control::Picture(pic)) => {
                 if let Some(ref mut cap) = pic.caption {
                     if let Some(cell_para) = cap.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(
-                            cell_para,
-                            ParagraphBox::content_width_px(final_width, self.dpi),
-                            &styles,
-                            self.dpi,
-                        );
+                        reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                     }
                 }
             }
@@ -3081,16 +3067,9 @@ impl DocumentCore {
             return;
         };
         let para_style = styles.para_styles.get(cell_para.para_shape_id as usize);
-        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-        let final_width = (available_width - margin_left - margin_right).max(0.0);
+        let paragraph_box = ParagraphBox::content_for_style(available_width, para_style, dpi);
         // 셀 내용 상자 — 열이 없으므로 미스냅.
-        reflow_line_segs(
-            cell_para,
-            ParagraphBox::content_width_px(final_width, dpi),
-            &styles,
-            dpi,
-        );
+        reflow_line_segs(cell_para, paragraph_box, &styles, dpi);
     }
 
     /// [#2755] path 기반 셀 문단 vpos 재계산 (깊이 ≥ 2 중첩 표 지원).
