@@ -1,0 +1,208 @@
+{
+  "base": "4a07d3ae4dd3255a57fb0166b2b2a2dc335a61fa",
+  "parent": "979dbf4ebd72fbd0f72bb1efd01f882cdd16d7ea",
+  "runtimeSource": {
+    "parent": "979dbf4ebd72fbd0f72bb1efd01f882cdd16d7ea",
+    "files": {
+      "src/renderer/layout/table_layout.rs": "64f475828732378c14fa39edc0d5604d457ca0a64b837d19d54bf82548555b15",
+      "src/renderer/layout/table_layout/row_block_cut.rs": "83546aafdcd85a3d4c278ea7fa22a1d6b10c618bc61417ab20979bfa0e93ecb5",
+      "src/renderer/layout/table_partial.rs": "981716d6b2d7c4f01888ce4be457dbe89e817a220189575e7b82633bf1052dc7",
+      "src/renderer/typeset/table/scan.rs": "3ff9e2fb01949a175000c464eb71c149dd19128f73613be0cfa4ebc5ba67cfb7"
+    },
+    "patchSha256": "b13b25576a73b157338bb7f157ab6e2e3c547729c595a6bdf11350cce5b12e42",
+    "scope": "shared actual block cut and accepted source row-frame alignment candidate; not accepted"
+  },
+  "nativeArtifacts": {
+    "cliSha256": "69c8415332b89002a8673b497428e299719dae9c54f8ffef58fd13a33a326574",
+    "librarySha256": "1abf354e2d767d2cd4720f79c3beec8d2d3fe13984f9a055e7627ba47ea63169"
+  },
+  "wasm": {
+    "head": "979dbf4ebd72fbd0f72bb1efd01f882cdd16d7ea",
+    "sourceLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair486-shared-block-cut-fresh-wasm/source.json",
+    "hashes": {
+      "rhwp.js": "23f085e36c78d952ddac0d91faed9752f33ee1124db78e290382687410917591",
+      "rhwp_bg.wasm": "d398095ccd6e711726eb03482df50cbe4ff7595ecd54a835d8cb2b92ec8a4761"
+    },
+    "rootPackageRecompiled": true,
+    "wrapperInvoked": true,
+    "changesSincePreviousWasm": [
+      "src/renderer/layout/table_layout.rs",
+      "src/renderer/layout/table_layout/row_block_cut.rs",
+      "src/renderer/layout/table_partial.rs",
+      "src/renderer/typeset/table/scan.rs"
+    ],
+    "rootPkgStudioPublicMatch": true,
+    "buildExitCode": 0,
+    "seconds": 267.25586891174316,
+    "mode": "Mac locked web/pkg/no-opt local alternative; not Docker optimized",
+    "actualBrowserInitialization": "pending"
+  },
+  "sourceInput": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+  "inputSha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+  "referencePdf": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+  "pdfSha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+  "canonicalToolSha256": "69d9d56394b26fcb7a64b41588a378da745475b3297bae89fd6b4d16903cede4",
+  "dpi": 192,
+  "layoutCoordinateDpi": 96,
+  "compat": "2022",
+  "rawTolerancePx": 2,
+  "threshold": 90,
+  "rasterizer": "current canonical visual_sweep_pdf.py/PDFium smooth_rgb_v1",
+  "backends": {
+    "native": {
+      "pages": 50,
+      "minimum": "94.90661",
+      "below90": [],
+      "selected": {
+        "9": "99.88474",
+        "13": "99.99969",
+        "37": "96.16765",
+        "38": "98.55731",
+        "43": "99.99482"
+      },
+      "previousProducer": "repair469-first-frame-native-whole",
+      "changed": [
+        {
+          "page": 38,
+          "before": "97.13861",
+          "after": "98.55731",
+          "delta": "1.41870"
+        }
+      ],
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair482-shared-block-cut-native/source.json"
+    },
+    "wasm": {
+      "pages": 50,
+      "minimum": "94.96082",
+      "below90": [],
+      "selected": {
+        "9": "99.88906",
+        "13": "99.99970",
+        "37": "96.18486",
+        "38": "98.52943",
+        "43": "99.99482"
+      },
+      "previousProducer": "repair471-first-frame-wasm-whole",
+      "changed": [
+        {
+          "page": 38,
+          "before": "97.11528",
+          "after": "98.52943",
+          "delta": "1.41415"
+        }
+      ],
+      "producer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair482-shared-block-cut-native/source.json"
+    }
+  },
+  "assets": {
+    "native-p009-review.png": "5fdd8161b5564775d9b5eb3673580b807e3bebf15e20aed35f9297c31495da52",
+    "native-p009-overlay.png": "28ce4b0015b4edb0ea822f8cf20bd500b10c3359e4eb03cfea745255c8b530c2",
+    "native-p013-review.png": "2f2830ca8b130939ed294b49ce6fece57b58ff1200e8fd55c98a2db7ac09609a",
+    "native-p013-overlay.png": "2888a780a45174ef7334d2ca3c4f640cbaa8c82e30b1e06c35be40149343310c",
+    "native-p038-review.png": "d39ad6d05bc8ec362f421cc21761e9bdfe481bc75be33ff953aab80be9b3c932",
+    "native-p038-overlay.png": "c1cf1f1d1f959cd78a24a96c07b8f4e69895b8922c12c315b80fb8849fc8d9ad",
+    "wasm-p038-review.png": "0f5f76497e4bfdb5c0687d49e3476aa75513bce141f38fd7d2a611c5dfb6cdf1",
+    "wasm-p038-overlay.png": "38ca3b6a98e71a3532eeed85f5b85c48e2458da24246a32220e1421bc78787d9"
+  },
+  "controls": {
+    "pages": 508,
+    "renderTreeJsonFiles": 512,
+    "changed": 0,
+    "notVisualSweep": true
+  },
+  "status": "focused correction verified; full nextest/remaining original-PR regression repairs and complete PR validation pending",
+  "scope": "completed spanning suffix alignment; page37 prefix residual is not claimed fixed; whole #7445 is not claimed solved",
+  "officialFocusedGate": {
+    "exitCode": 0,
+    "seconds": 191.53091887501068,
+    "summary": [
+      "     Summary [   0.425s] 18 tests run: 18 passed, 1246 skipped"
+    ],
+    "sourceUnchanged": true,
+    "scope": "Native official case plus five control cases named by original PR1976; not full nextest"
+  },
+  "actualStudioInitialization": {
+    "head": "979dbf4ebd72fbd0f72bb1efd01f882cdd16d7ea",
+    "mode": "Mac locked web/pkg/no-opt local alternative; not Docker optimized",
+    "browserVersion": "Chrome/155.0.8059.85",
+    "producer": {
+      "head": "979dbf4ebd72fbd0f72bb1efd01f882cdd16d7ea",
+      "sourceLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair486-shared-block-cut-fresh-wasm/source.json",
+      "hashes": {
+        "rhwp.js": "23f085e36c78d952ddac0d91faed9752f33ee1124db78e290382687410917591",
+        "rhwp_bg.wasm": "d398095ccd6e711726eb03482df50cbe4ff7595ecd54a835d8cb2b92ec8a4761"
+      },
+      "rootPackageRecompiled": true,
+      "wrapperInvoked": true,
+      "changesSincePreviousWasm": [
+        "src/renderer/layout/table_layout.rs",
+        "src/renderer/layout/table_layout/row_block_cut.rs",
+        "src/renderer/layout/table_partial.rs",
+        "src/renderer/typeset/table/scan.rs"
+      ],
+      "rootPkgStudioPublicMatch": true,
+      "buildExitCode": 0,
+      "seconds": 267.25586891174316,
+      "mode": "Mac locked web/pkg/no-opt local alternative; not Docker optimized",
+      "actualBrowserInitialization": "pending"
+    },
+    "rows": [
+      {
+        "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+        "httpMethod": "GET",
+        "resourceType": "script",
+        "status": 200,
+        "fromCache": false,
+        "bytes": 2705563,
+        "servedSha256": "f2294e7a48873a5ffe66aa3409d96be9a7d191fce5973dbf6b514faa09cc929b",
+        "frozenSha256": "23f085e36c78d952ddac0d91faed9752f33ee1124db78e290382687410917591",
+        "matchesFrozenBuild": true,
+        "sourceMapContentSha256": "319f1364be37ceb61752deeda2a8da9c1ed11505eb080c5f506edabc08356f5e",
+        "expectedAssetRewriteSha256": "319f1364be37ceb61752deeda2a8da9c1ed11505eb080c5f506edabc08356f5e",
+        "viteAssetRewrite": {
+          "original": "new URL('rhwp_bg.wasm', import.meta.url)",
+          "transformed": "new URL(\"/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm\", '' + import.meta.url)",
+          "wasmPath": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "sourceMapSource": "rhwp.js"
+        },
+        "method": "vite-inline-source-map-exact-asset-url-rewrite"
+      },
+      {
+        "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+        "httpMethod": "GET",
+        "resourceType": "fetch",
+        "status": 200,
+        "fromCache": false,
+        "bytes": 22645001,
+        "servedSha256": "d398095ccd6e711726eb03482df50cbe4ff7595ecd54a835d8cb2b92ec8a4761",
+        "frozenSha256": "d398095ccd6e711726eb03482df50cbe4ff7595ecd54a835d8cb2b92ec8a4761",
+        "matchesFrozenBuild": true,
+        "method": "raw-byte-identity"
+      }
+    ],
+    "errors": [],
+    "preflights": [],
+    "wasmInitialized": true,
+    "scope": "actual Studio7736 initialization responses only; not document paint, fonts, CanvasKit readiness or actual36 acceptance"
+  },
+  "directReading": {
+    "native38": "완료 꼬리 Center·표 경계·후속 내용 직접 판독",
+    "freshWasm38": "같은 영역 직접 판독",
+    "nativeFreshWasm9and13": "중요 종료·이어받기 괘선·마지막 행·쪽번호 직접 판독; Native는 신규PNG와 직전 직접 판독한PNG 동일성 확인",
+    "notClaimed": "37쪽 앞 조각 기존 잔여 또는 전체 #7445 개선"
+  },
+  "nativeSelectedPngIdentity": [
+    {
+      "page": 9,
+      "previousPngSha256": "038c24d2b5e9f9b5ca972da45a35dd63bbc83e5d4cc2518471ed5a7fdc915911",
+      "currentPngSha256": "038c24d2b5e9f9b5ca972da45a35dd63bbc83e5d4cc2518471ed5a7fdc915911",
+      "same": true
+    },
+    {
+      "page": 13,
+      "previousPngSha256": "0586e4d969deeb6213eca839108473785f4db0be99a41f4faedabb835fe9b8c5",
+      "currentPngSha256": "0586e4d969deeb6213eca839108473785f4db0be99a41f4faedabb835fe9b8c5",
+      "same": true
+    }
+  ]
+}

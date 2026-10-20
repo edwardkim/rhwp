@@ -194,7 +194,7 @@ impl RowBlockQuery<'_> {
             return self.mt.row_heights[row];
         }
         self.layout_engine
-            .row_block_cut_physical_height(
+            .row_block_cut_physical_frame(
                 self.table,
                 (block.b_start, block.b_end),
                 (row, self.mt.row_heights[row]),
@@ -202,6 +202,7 @@ impl RowBlockQuery<'_> {
                 end,
                 self.styles,
             )
+            .map(|frame| frame.height)
             .unwrap_or_else(|| {
                 self.layout_engine.row_block_cut_row_content_height(
                     self.table,
