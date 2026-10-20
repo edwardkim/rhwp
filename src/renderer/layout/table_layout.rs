@@ -12817,6 +12817,39 @@ impl LayoutEngine {
         }
     }
 
+    /// 셀 저장 줄 사다리가 앞 줄보다 위로 되감긴 마지막 프레임의 원점(유닛 누적 px).
+    /// 쪽 경계에서 나뉜 셀의 다음 쪽 몫은 저장 vpos 를 새 프레임에서 다시 쌓는다. 되감긴
+    /// 줄이 자기 유닛 시작에 놓이도록 원점을 잡아, 그 뒤 저장 목표 좌표를 같은 누적 좌표로
+    /// 읽는다. 되감김이 없으면 `None` 이다.
+    fn stored_rewind_frame_base(
+        &self,
+        cell: &crate::model::table::Cell,
+        units: &[CellUnit],
+    ) -> Option<f64> {
+        let mut previous_vpos: Option<i32> = None;
+        let mut base = None;
+        let mut cumulative = 0.0;
+        for unit in units {
+            if unit.nested_row.is_none() && !unit.mixed_nested_fragment {
+                if let Some(seg) = cell
+                    .paragraphs
+                    .get(unit.para_idx)
+                    .and_then(|para| para.line_segs.get(unit.vis_start))
+                    .filter(|seg| {
+                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    })
+                {
+                    if previous_vpos.is_some_and(|previous| seg.vertical_pos < previous) {
+                        base = Some(cumulative - hwpunit_to_px(seg.vertical_pos.max(0), self.dpi));
+                    }
+                    previous_vpos = Some(seg.vertical_pos);
+                }
+            }
+            cumulative += unit.height;
+        }
+        base
+    }
+
     /// [Task #1949] `cell_units_uncached` 의 메모이즈 래퍼. 거대 셀이 RowBreak 로
     /// 여러 페이지에 걸칠 때 각 페이지 컷 판정이 같은 셀 units 를 재계산하는 O(pages×cell)
     /// 폭증을 제거한다. 셀 포인터를 키로 표 단위 캐시(문서 재조판 경계에서 clear).
@@ -14110,19 +14143,34 @@ impl LayoutEngine {
         };
         let first_unit_lead =
             hwpunit_to_px(cell_first_vpos.max(0).saturating_sub(vpos_origin), self.dpi);
-        let saved_unit_start_px =
-            |vertical_pos: i32, first_unit: bool, leading_in_unit: f64| -> f64 {
-                normalized_vpos_px(vertical_pos)
+        // 저장 vpos 는 자기 저장 프레임의 원점에서 잰 값이다. 셀이 쪽 경계에서 나뉘어
+        // 다음 쪽 프레임이 다시 쌓였으면(`frame_base`) 그 프레임 원점에 더해야 앞 프레임까지
+        // 센 `unit_cum` 과 같은 좌표가 된다. 중첩 표 host 의 표 높이 점프 판별(#6095)이
+        // 이 좌표를 쓴다 — 프레임을 섞으면 앞 쪽 몫만큼 가짜 틈이 생긴다(#8095, 71352 11쪽).
+        let saved_unit_start_px = |vertical_pos: i32,
+                                   first_unit: bool,
+                                   leading_in_unit: f64,
+                                   frame_base: Option<f64>|
+         -> f64 {
+            if let Some(base) = frame_base {
+                return base + hwpunit_to_px(vertical_pos.max(0), self.dpi)
                     - if preserve_linear_single_cell_vpos || before_space_proves_local_origin {
-                        if first_unit {
-                            first_unit_lead
-                        } else {
-                            leading_in_unit
-                        }
+                        leading_in_unit
                     } else {
                         0.0
+                    };
+            }
+            normalized_vpos_px(vertical_pos)
+                - if preserve_linear_single_cell_vpos || before_space_proves_local_origin {
+                    if first_unit {
+                        first_unit_lead
+                    } else {
+                        leading_in_unit
                     }
-            };
+                } else {
+                    0.0
+                }
+        };
         let para_count = cell.paragraphs.len();
         let cell_has_visible_content = cell
             .paragraphs
@@ -15394,6 +15442,7 @@ impl LayoutEngine {
                                                 seg.vertical_pos,
                                                 pi == 0,
                                                 spacing_before,
+                                                self.stored_rewind_frame_base(cell, &units),
                                             );
                                             // [#6095] 중첩 표 호스트의 저장 vpos 가 표
                                             // **아래** host 줄 좌표면(점프가 중첩 표 선언
@@ -15470,8 +15519,12 @@ impl LayoutEngine {
                         let mut vpos_gap_before = vpos_gap_before_para && ri == 0;
                         if use_vpos_unit_positions && ri == 0 && !hard_break_before {
                             if let Some(seg) = p.line_segs.first() {
-                                let mut target_top =
-                                    saved_unit_start_px(seg.vertical_pos, pi == 0, spacing_before);
+                                let mut target_top = saved_unit_start_px(
+                                    seg.vertical_pos,
+                                    pi == 0,
+                                    spacing_before,
+                                    self.stored_rewind_frame_base(cell, &units),
+                                );
                                 // [#6095] 중첩 표 호스트의 저장 vpos 가 표 **아래**
                                 // host 줄 좌표면(직전 흐름에서의 점프가 중첩 표 선언
                                 // 높이 규모) 표 상단 목표는 vpos − 표 높이다. 그대로
@@ -15824,6 +15877,7 @@ impl LayoutEngine {
                                         seg.vertical_pos,
                                         pi == 0,
                                         spacing_before,
+                                        None,
                                     );
                                     if target_top > unit_cum {
                                         uh += target_top - unit_cum;
@@ -15956,6 +16010,7 @@ impl LayoutEngine {
                                         seg.vertical_pos,
                                         pi == 0 && li == 0,
                                         if li == 0 { spacing_before } else { 0.0 },
+                                        None,
                                     );
                                     if target_top > unit_cum {
                                         lh += target_top - unit_cum;
@@ -16292,8 +16347,12 @@ impl LayoutEngine {
                 if use_vpos_unit_positions {
                     if let Some(seg) = p.line_segs.first() {
                         if !line_seg_is_synthetic(seg) {
-                            let target_top =
-                                saved_unit_start_px(seg.vertical_pos, pi == 0, spacing_before);
+                            let target_top = saved_unit_start_px(
+                                seg.vertical_pos,
+                                pi == 0,
+                                spacing_before,
+                                None,
+                            );
                             if target_top > unit_cum {
                                 let delta = target_top - unit_cum;
                                 let suppress_hwpx_mixed_nested_gap =
@@ -16429,6 +16488,7 @@ impl LayoutEngine {
                                     } else {
                                         0.0
                                     },
+                                    None,
                                 );
                                 if target_top > unit_cum {
                                     let delta = target_top - unit_cum;
