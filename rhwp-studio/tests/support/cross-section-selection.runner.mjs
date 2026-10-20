@@ -7,6 +7,8 @@ const src = resolve(root, 'src');
 const toast = 'data:text/javascript,export function showToast() {}';
 const wasmStub = 'data:text/javascript,export default async function init() {} export class HwpDocument {} export function version() { return "0"; }';
 registerHooks({ resolve(specifier, context, next) {
+  // JSON 메트릭은 Node의 JSON 로더로 읽고 확장자를 덧붙이지 않는다.
+  if (specifier.endsWith('.json')) return next(specifier, context);
   if (specifier === '@/ui/toast') return { url: toast, shortCircuit: true };
   if (specifier === '@wasm/rhwp.js') return { url: wasmStub, shortCircuit: true };
   if (specifier.startsWith('@/')) return { url: pathToFileURL(resolve(src, specifier.slice(2) + '.ts')).href, shortCircuit: true };

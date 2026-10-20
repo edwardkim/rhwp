@@ -1,0 +1,15 @@
+{
+  "input": "samples/hwp3-sample16-hwp5.hwpx",
+  "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+  "last_saved_product": "hancom-office-2024",
+  "last_saved_version": "13.0.0.3457",
+  "job_id": "133e6c54-9f3e-42bc-acab-308505957cdc",
+  "engine": "2024",
+  "hancom_version": "13.0.0.3901",
+  "pdf_print_method": 0,
+  "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+  "pdf_page_count": 64,
+  "pdf": "pdf/issue7642-sample16-print-refresh-20261012/hwp3-sample16-hwp5-hwpx-2024.pdf",
+  "pdf_sha256": "a98b362554d5bd1b2859b74765a67f3ec23f2d07a0b2315f55646139eb704985",
+  "pdf_bytes": 2234016
+}

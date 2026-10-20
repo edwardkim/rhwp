@@ -2,18 +2,38 @@
 //! `rhWP` is a private ancillary, unsafe-to-copy chunk immediately after IHDR.
 //! Raw BinData preservation keeps this contract through HWP/HWPX save/reopen;
 //! ordinary images without the declaration retain the renderer's profile policy.
-pub(crate) fn interpolation(data: &[u8]) -> Option<bool> {
+fn declaration(data: &[u8]) -> Option<(u8, u8)> {
     if data.len() < 47
         || &data[..8] != b"\x89PNG\r\n\x1a\n"
         || data[8..16] != [0, 0, 0, 13, b'I', b'H', b'D', b'R']
         || data[33..41] != [0, 0, 0, 2, b'r', b'h', b'W', b'P']
-        || data[41] != 1
+        || !matches!(data[41], 1 | 2)
         || data[42] > 1
     {
         return None;
     }
     let expected = u32::from_be_bytes(data[43..47].try_into().ok()?);
-    (crc32fast::hash(&data[37..43]) == expected).then_some(data[42] != 0)
+    (crc32fast::hash(&data[37..43]) == expected).then_some((data[41], data[42]))
+}
+
+pub(crate) fn interpolation(data: &[u8]) -> Option<bool> {
+    declaration(data).and_then(|(version, value)| (version == 1).then_some(value != 0))
+}
+
+/// 두 번째 버전은 한컴 2024의 실제 색 확장 payload만 표시한다.
+/// 일반 그림·팔레트 전달·다른 Print 버전의 표본 정책을 바꾸지 않는다.
+pub(crate) fn print_bitmap_reconstruction(data: &[u8]) -> bool {
+    declaration(data) == Some((2, 1))
+}
+
+pub(super) fn mark_print_bitmap(data: &mut Vec<u8>) {
+    if data.len() < 33 || &data[..8] != b"\x89PNG\r\n\x1a\n" {
+        return;
+    }
+    let mut chunk = [0, 0, 0, 2, b'r', b'h', b'W', b'P', 2, 1, 0, 0, 0, 0];
+    let crc = crc32fast::hash(&chunk[4..10]);
+    chunk[10..14].copy_from_slice(&crc.to_be_bytes());
+    data.splice(33..33, chunk);
 }
 
 pub(crate) fn preserve(source: &[u8], output: &mut Vec<u8>) {

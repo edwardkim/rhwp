@@ -451,10 +451,24 @@ pub(crate) fn serialize_master_page(
     records: &mut Vec<Record>,
 ) {
     let data = if !master_page.raw_list_header.is_empty() {
-        master_page.raw_list_header.clone()
+        let mut data = master_page.raw_list_header.clone();
+        // 원본 목록은 보존하되 지정 쪽이 바뀌면 같은 소유 필드만 갱신한다.
+        if let Some(kind) = master_page
+            .optional_page_number
+            .and_then(|number| number.checked_add(3))
+        {
+            if let Some(slot) = data.get_mut(18..20) {
+                slot.copy_from_slice(&kind.to_le_bytes());
+            }
+        }
+        data
     } else {
-        let ext_flags =
-            u16::from(master_page.overlap) | if master_page.is_extension { 0x02 } else { 0 };
+        let ext_flags = master_page
+            .optional_page_number
+            .and_then(|number| number.checked_add(3))
+            .unwrap_or_else(|| {
+                u16::from(master_page.overlap) | if master_page.is_extension { 0x02 } else { 0 }
+            });
         build_header_footer_list_header(
             master_page.paragraphs.len() as u16,
             0,

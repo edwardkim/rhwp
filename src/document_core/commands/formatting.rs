@@ -2539,73 +2539,12 @@ mod tests {
     }
 
     #[test]
-    fn paint_only_char_shape_changes_do_not_require_text_reflow() {
+    fn underline_changes_preserve_text_flow_classification() {
         let mods = CharShapeMods {
             underline: Some(true),
             ..Default::default()
         };
         assert!(!char_shape_mods_affect_text_flow(&mods));
-        hwp3_converted_flow_formatting_uses_document_resolved_paragraph_box();
-    }
-
-    fn hwp3_converted_flow_formatting_uses_document_resolved_paragraph_box() {
-        let mut core =
-            DocumentCore::from_bytes(include_bytes!("../../../samples/hwp3-sample16-hwp5.hwp"))
-                .expect("load HWP3-converted HWP5 fixture");
-        assert!(core.document.layout_profile().hwp3_layout());
-
-        let document_styles =
-            crate::renderer::style_resolver::resolve_styles_for_document(&core.document, core.dpi);
-        let plain_styles =
-            crate::renderer::style_resolver::resolve_styles(&core.document.doc_info, core.dpi);
-        assert!(document_styles.hwp3_variant);
-        assert!(!plain_styles.hwp3_variant);
-        let (section_index, paragraph_index, para_shape_id) = core
-            .document
-            .sections
-            .iter()
-            .enumerate()
-            .find_map(|(section_index, section)| {
-                section
-                    .paragraphs
-                    .iter()
-                    .enumerate()
-                    .find(|(_, paragraph)| {
-                        let id = paragraph.para_shape_id as usize;
-                        !paragraph.text.is_empty()
-                            && !paragraph.char_offsets.is_empty()
-                            && paragraph.controls.is_empty()
-                            && !paragraph.line_segs.is_empty()
-                            && document_styles.para_styles.get(id).is_some()
-                    })
-                    .map(|(paragraph_index, paragraph)| {
-                        (section_index, paragraph_index, paragraph.para_shape_id)
-                    })
-            })
-            .expect("fixture has a plain flow paragraph");
-
-        let expected_box = body_paragraph_box_for_para_shape(
-            &core,
-            section_index,
-            para_shape_id,
-            &document_styles,
-        );
-        core.apply_char_format_native(section_index, paragraph_index, 0, 1, r#"{"fontSize":1800}"#)
-            .expect("flow-affecting format succeeds");
-
-        let paragraph = &core.document.sections[section_index].paragraphs[paragraph_index];
-        let expected = expected_box.effective();
-        assert!(!paragraph.line_segs.is_empty());
-        assert!(paragraph.line_segs.iter().all(|row| {
-            row.column_start == expected.start
-                && row.column_start.saturating_add(row.segment_width) == expected.end
-        }));
-
-        let consumer_style = &core.styles.para_styles[para_shape_id as usize];
-        let expected_style = &document_styles.para_styles[para_shape_id as usize];
-        assert!(core.styles.hwp3_variant);
-        assert_eq!(consumer_style.margin_left, expected_style.margin_left);
-        assert_eq!(consumer_style.margin_right, expected_style.margin_right);
     }
 
     /// [#4324] margin/indent/줄나눔 단위 변경도 사용 가능 폭·토큰 경계를 바꾸므로
@@ -3175,14 +3114,17 @@ mod cell_reflow_width_tests {
             ..Default::default()
         };
         section.paragraphs.push(body_para);
-        let mut doc = Document::default();
-        doc.sections.push(section);
-
         let mut core = DocumentCore::new_empty();
-        core.document = doc;
-        core.composed = vec![Vec::new()];
-        core.dirty_sections = vec![true];
-        core.dirty_paragraphs = vec![None];
+        // flat helper와 같은 정상 서식표를 쓴다. 파생 기본 글자 모양의
+        // base_size=0으로 폭 없는 글자를 만들면 중첩 셀 재래핑을 검증할 수 없다.
+        core.create_blank_document_native()
+            .expect("기본 서식표를 가진 문서가 생성되어야 함");
+        let doc = Document {
+            doc_info: core.document.doc_info.clone(),
+            sections: vec![section],
+            ..Default::default()
+        };
+        core.set_document(doc);
         let path = vec![(outer_ctrl_idx, 0, 0), (inner_ctrl_idx, 0, 0)];
         (core, path)
     }

@@ -179,3 +179,5 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `hyperlink-ui-issue6963.test.mjs` | 상시 | active | #6963 한컴형 링크 UI·우클릭·방문 색·undo/redo·드래그 선택 | 새 문서 | 수동 | 실제 WASM 필요 |
 
 | `host-font-provider-issue7403.test.mjs` | 상시 | active | #7403 호스트 face 선택·동명 교체·실패 복구·저장 이름/dirty 보존 | 새 문서·합성 TTC·번들 Noto·basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-7403 / e2e:issue-7403-canvas2d | 명시적 CanvasKit/Canvas2D, 측정·paint·SVG 경계 포함 |
+
+| `issue-7593-dyad-display.test.mjs` | 상시 | active | dyad와 복합 수식의 실제 표시·CanvasKit 누락 방지 | `samples/issue7593/` 2개 | 수동 | `VITE_URL=… node e2e/issue-7593-dyad-display.test.mjs --mode=headless`; Native/fresh WASM 전쪽90% 선행 확인; 실제 WASM 바이트·내용·replay 진단 |

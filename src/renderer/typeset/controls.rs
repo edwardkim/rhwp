@@ -32,7 +32,9 @@ pub(super) mod flow_table;
 pub(super) mod host_wrap;
 pub(super) mod order;
 pub(super) mod paragraph_flow;
+pub(super) mod physical_tac;
 pub(super) mod shape_flow;
+mod square_host_frame;
 pub(super) mod stored_tac;
 pub(super) mod table_entry;
 pub(super) mod tac_fit;
@@ -179,6 +181,7 @@ pub(super) fn prepare_table_control(
     ) {
         st.advance_column_or_new_page();
     }
+    let frame = st.inline_flow_input(0.0, false);
     table_entry::uses_decoration_placement(
         para,
         table,
@@ -189,6 +192,8 @@ pub(super) fn prepare_table_control(
         st.table_control_page().col_count,
         has_tac,
         host_col_w,
+        *frame.body,
+        frame.page_height,
         dpi,
         || st.base_available_height(),
         original_hwpx,
@@ -563,11 +568,23 @@ pub(super) fn try_place_stored_tac_paragraph(
         measured_tables,
         st.stored_tac_page(paragraphs),
         shared_spacing_before,
+        para_idx
+            .checked_sub(1)
+            .and_then(|index| paragraphs.get(index)),
+        para_idx
+            .checked_sub(1)
+            .and_then(|index| paragraphs.get(index))
+            .and_then(|previous| styles.para_styles.get(previous.para_shape_id as usize))
+            .map_or(0.0, |shape| shape.spacing_after),
         paragraphs.get(para_idx + 1),
         paragraphs
             .get(para_idx + 1)
             .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
             .map_or(0.0, |shape| shape.spacing_before),
+        styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .is_some_and(|style| style.page_break_before),
         || st.available_height(),
         dpi,
     ) else {
@@ -577,9 +594,10 @@ pub(super) fn try_place_stored_tac_paragraph(
         let placement = plan.placement(line, fmt.spacing_after, dpi);
         st.commit_stored_tac_control(para_idx, placement);
     }
-    if plan.source_origin.is_some() {
+    if let Some(frame) = plan.source_frame {
         st.commit_deferred_table_anchor(para_idx, paragraphs);
-        st.record_vpos_page_origin(plan.source_origin);
+        st.record_vpos_page_origin(Some(frame.source_origin_hu));
+        st.record_vpos_column_anchor(frame.column_anchor_y);
         st.record_vpos_origin_provenance(true);
         st.record_vpos_lazy_origin(None);
     }

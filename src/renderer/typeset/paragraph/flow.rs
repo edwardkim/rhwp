@@ -56,6 +56,7 @@ pub(in crate::renderer::typeset) fn place(
     let paragraph::FitBudget {
         strict_after_empty_host_float,
         layout_drift_safety_px,
+        split_safety,
         prev_is_partial_table,
         available,
     } = paragraph::prepare_fit_budget(
@@ -106,7 +107,7 @@ pub(in crate::renderer::typeset) fn place(
     );
     if st.prefilled_line_prefixes.contains_key(&para_idx) {
         // 앞 쪽의 선행 조각이 소유한 줄을 whole-fit으로 다시 배치하지 않는다.
-        let base_available = (st.base_available_height() - layout_drift_safety_px).max(0.0);
+        let base_available = st.base_available_height();
         paragraph::place_split_paragraph(
             st,
             para_idx,
@@ -116,7 +117,7 @@ pub(in crate::renderer::typeset) fn place(
             styles,
             fmt.line_count(),
             base_available,
-            layout_drift_safety_px,
+            split_safety,
             forced_page_break_line,
             native_hwp5_existing_footnote_reset_line,
             current_page_vpos_base,
@@ -149,6 +150,7 @@ pub(in crate::renderer::typeset) fn place(
         para,
         fmt,
         paragraphs,
+        styles,
         strict_after_empty_host_float,
         forced_page_break_line,
         current_page_vpos_base,
@@ -199,7 +201,7 @@ pub(in crate::renderer::typeset) fn place(
         body_bottom_vpos,
         available,
         strict_after_empty_host_float,
-        layout_drift_safety_px,
+        split_safety,
         stored_vpos_rewind_break,
         stored_vpos_rewind_overflow_break,
         forced_page_break_line,

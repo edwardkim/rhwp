@@ -1,0 +1,13 @@
+{
+  "input": "samples/hwp3-sample16.hwp",
+  "input_sha256": "559fd94860cf836d5800436d56055c23a73e59eedef3da273a5ba365e6ed9e16",
+  "pdf": "pdf/issue7642-hwp3-original-print/hwp3-sample16-2020.pdf",
+  "pdf_sha256": "f1f2e6dd265d098ea468bae14b44e98a1609dd7eba293f91d73ba16704be73c5",
+  "pdf_page_count": 64,
+  "job_id": "4ed44e9a-5608-4727-8004-8e3e959c5c8d",
+  "engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "pdf_print_method": 0,
+  "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+  "scope": "원본 무변경, 원본 용지·방향, 전쪽 한 쪽씩 Print"
+}

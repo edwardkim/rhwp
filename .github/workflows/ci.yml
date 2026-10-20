@@ -989,9 +989,11 @@ jobs:
 
       - name: Validate Visual Sweep PNG contracts
         run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y poppler-utils
           rhwp_visual_contract_env="${RUNNER_TEMP}/rhwp-visual-sweep-contracts"
           python3 -m venv "$rhwp_visual_contract_env"
-          "$rhwp_visual_contract_env/bin/python" -m pip install Pillow==12.3.0 fonttools==4.64.0
+          "$rhwp_visual_contract_env/bin/python" -m pip install Pillow==12.3.0 fonttools==4.64.0 pypdfium2==5.13.0
           "$rhwp_visual_contract_env/bin/python" -m unittest discover -s scripts/tests -p 'test_visual_sweep*.py'
 
       - name: Validate CI impact classifier

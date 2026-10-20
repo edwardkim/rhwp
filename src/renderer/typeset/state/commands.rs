@@ -92,6 +92,15 @@ impl TypesetState {
         super::finalize::finalize_pages(&mut self.data.pages, entries, number, paragraphs);
     }
     pub(in crate::renderer::typeset) fn append_item(&mut self, item: PageItem) {
+        // 본문 표의 공통 이어받기도 등록된 미주 문단의 소속을 유지한다.
+        // 단 전환은 이 표시를 초기화하므로 각 조각의 소유에서 다시 게시한다.
+        if crate::renderer::typeset::page_item_para_index(&item).is_some_and(|index| {
+            self.data.endnote_para_base.is_some_and(|base| {
+                index >= base && index - base < self.data.endnote_paragraphs.len()
+            })
+        }) {
+            self.data.current_endnote_flow = true;
+        }
         self.data.current_items.push(item);
     }
     pub(in crate::renderer::typeset) fn remove_last_item(&mut self) -> Option<PageItem> {
@@ -323,6 +332,12 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn record_vpos_lazy_origin(&mut self, value: Option<i32>) {
         self.data.vpos_lazy_base = value;
     }
+    pub(in crate::renderer::typeset) fn record_stored_column_origin(
+        &mut self,
+        value: Option<(i32, f64)>,
+    ) {
+        self.data.vpos_stored_column_origin = value;
+    }
     pub(in crate::renderer::typeset) fn record_vpos_page_origin(&mut self, value: Option<i32>) {
         self.data.vpos_page_base = value;
     }
@@ -441,6 +456,8 @@ impl TypesetState {
         self.data.vpos_page_base = Some(frame.source_origin_hu);
         self.data.vpos_lazy_base = None;
         self.data.vpos_col_anchor = self.data.current_height;
+        self.data.vpos_stored_column_origin =
+            Some((frame.source_origin_hu, self.data.current_height));
         self.data.stored_column_top_spacings.insert(para_idx, frame);
     }
     /// 뒤 줄간격과 문단 아래 여백을 제외한 확정 본문 하단을 보존한다.
@@ -448,16 +465,37 @@ impl TypesetState {
         &mut self,
         key: (usize, usize),
         content_height: f64,
+        flow_advance: f64,
     ) {
-        self.data
-            .paragraph_fragment_content_bottoms
-            .insert(key, self.data.current_height + content_height);
+        self.data.paragraph_fragment_content_bottoms.insert(
+            key,
+            super::paragraph_fragment::ParagraphFragmentBounds {
+                content_bottom: self.data.current_height + content_height,
+                flow_end: self.data.current_height + flow_advance,
+                stored_frame: None,
+            },
+        );
     }
     pub(in crate::renderer::typeset) fn append_endnote_paragraph(
         &mut self,
         paragraph: crate::model::paragraph::Paragraph,
     ) {
         self.data.endnote_paragraphs.push(paragraph);
+    }
+    pub(in crate::renderer::typeset) fn begin_endnote_paragraphs(&mut self, base: usize) {
+        self.data.endnote_para_base = Some(base);
+    }
+    pub(in crate::renderer::typeset) fn record_reissued_endnote_rows(
+        &mut self,
+        local_index: usize,
+    ) {
+        self.data.reissued_endnote_rows.insert(local_index);
+    }
+    pub(in crate::renderer::typeset) fn append_endnote_measured_table(
+        &mut self,
+        table: crate::renderer::height_measurer::MeasuredTable,
+    ) {
+        self.data.endnote_measured_tables.push(table);
     }
     pub(in crate::renderer::typeset) fn append_endnote_source(
         &mut self,
@@ -641,6 +679,7 @@ impl TypesetState {
             endnotes: self.data.endnotes,
             endnote_paragraphs: self.data.endnote_paragraphs,
             endnote_para_sources: self.data.endnote_para_sources,
+            endnote_measured_tables: self.data.endnote_measured_tables,
             endnote_between_notes_hu: self.data.endnote_between_notes_hu,
             endnote_separator_above_hu: self.data.endnote_separator_above_hu,
             endnote_separator_below_hu: self.data.endnote_separator_below_hu,
@@ -655,18 +694,66 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn invalidate_vpos_after_clearance(&mut self, clearance: f64) {
         self.data.vpos_ladder_dirty |= clearance > 0.0;
     }
-    pub(in crate::renderer::typeset) fn apply_endnote_render_tail_spacing(
+    fn owns_endnote_tail(&self, paragraph_index: usize, line_count: usize) -> bool {
+        self.data.current_items.iter().any(|item| match item {
+            PageItem::FullParagraph { para_index } => *para_index == paragraph_index,
+            PageItem::PartialParagraph {
+                para_index,
+                end_line,
+                ..
+            } => *para_index == paragraph_index && *end_line == line_count,
+            _ => false,
+        })
+    }
+    /// 미주 사이 0 경계는 앞 미주의 내용 높이를 보존하고 마지막 줄 간격만 회수한다.
+    /// 앞 단의 tail이나 아직 마지막 줄을 소비하지 않은 조각은 변경하지 않는다.
+    pub(in crate::renderer::typeset) fn reclaim_endnote_tail_spacing(
         &mut self,
         index: usize,
+        paragraph_index: usize,
+        dpi: f64,
+    ) -> i32 {
+        let Some(paragraph) = self.data.endnote_paragraphs.get(index) else {
+            return 0;
+        };
+        let Some(line) = paragraph.line_segs.last() else {
+            return 0;
+        };
+        let spacing = line.line_spacing.max(0);
+        if spacing == 0 || !self.owns_endnote_tail(paragraph_index, paragraph.line_segs.len()) {
+            return 0;
+        }
+        if let Some(line) = self.data.endnote_paragraphs[index].line_segs.last_mut() {
+            line.line_spacing = 0;
+        }
+        self.data.current_height -= crate::renderer::hwpunit_to_px(spacing, dpi);
+        spacing
+    }
+    pub(in crate::renderer::typeset) fn apply_endnote_tail_spacing(
+        &mut self,
+        index: usize,
+        paragraph_index: usize,
         spacing: i32,
-    ) {
-        if let Some(seg) = self
-            .data
-            .endnote_paragraphs
-            .get_mut(index)
-            .and_then(|p| p.line_segs.last_mut())
-        {
-            seg.line_spacing = spacing;
+        dpi: f64,
+    ) -> f64 {
+        let Some(paragraph) = self.data.endnote_paragraphs.get_mut(index) else {
+            return 0.0;
+        };
+        let line_count = paragraph.line_segs.len();
+        let Some(line) = paragraph.line_segs.last_mut() else {
+            return 0.0;
+        };
+        let added = spacing.saturating_sub(line.line_spacing).max(0);
+        line.line_spacing = spacing;
+        // 간격은 완성된 마지막 줄이 소유한다. 앞 단의 tail이나 현재 단의
+        // 미완성 조각에 같은 공간을 다시 청구하지 않는다.
+        let owns_tail = self.owns_endnote_tail(paragraph_index, line_count);
+        if owns_tail {
+            let reserved = crate::renderer::hwpunit_to_px(added, dpi);
+            self.data.current_height += reserved;
+            reserved
+        } else {
+            0.0
         }
     }
     pub(in crate::renderer::typeset) fn append_routed_item(

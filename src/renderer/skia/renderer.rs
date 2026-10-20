@@ -1046,6 +1046,7 @@ impl SkiaLayerRenderer {
             tree,
             fallback_raster_scale,
             strict_resource_failures,
+            canvas.image_info().color_type() != skia_safe::ColorType::Unknown,
             &diagnostics,
         );
         let setup_time = setup_start.elapsed();
@@ -1138,19 +1139,20 @@ impl SkiaLayerRenderer {
         let clip_enabled = output_options.clip_enabled;
         let antialias = cache_context.policy.antialias();
         let apply_dash = |paint: &mut Paint, dash: StrokeDash| {
-            let base_width = paint.stroke_width().max(1.0);
-            let intervals: Option<[f32; 6]> = match dash {
-                StrokeDash::Solid => None,
-                StrokeDash::Dash => Some([6.0, 3.0, 0.0, 0.0, 0.0, 0.0]),
-                StrokeDash::Dot => Some([2.0, 2.0, 0.0, 0.0, 0.0, 0.0]),
-                StrokeDash::DashDot => Some([6.0, 3.0, 2.0, 3.0, 0.0, 0.0]),
-                StrokeDash::DashDotDot => Some([6.0, 3.0, 2.0, 3.0, 2.0, 3.0]),
-            };
-            if let Some(intervals) = intervals {
+            let mut intervals = dash.intervals(f64::from(paint.stroke_width()));
+            // 기존 범용 Skia 패턴은 종전 선 굵기 배율을 유지한다.
+            if !dash.is_absolute_pattern() {
+                for value in &mut intervals {
+                    *value *= f64::from(paint.stroke_width().max(1.0));
+                }
+            }
+            if dash.uses_round_cap() {
+                paint.set_stroke_cap(paint::Cap::Round);
+            }
+            if !intervals.is_empty() {
                 let intervals = intervals
-                    .into_iter()
-                    .filter(|value| *value > 0.0)
-                    .map(|value| value * base_width)
+                    .iter()
+                    .map(|value| *value as f32)
                     .collect::<Vec<_>>();
                 if let Some(effect) = PathEffect::dash(&intervals, 0.0) {
                     paint.set_path_effect(effect);
@@ -1251,6 +1253,7 @@ impl SkiaLayerRenderer {
         };
         let text_replay = SkiaTextReplay {
             canvas,
+            raster_target: cache_context.raster_target,
             hft_outline_enabled,
             font_mgr: &self.font_mgr,
             text_shaper: &self.text_shaper,
@@ -2049,18 +2052,14 @@ impl SkiaLayerRenderer {
                         }
                         PaintOp::Equation { bbox, equation } => {
                             canvas.save();
-                            let scale_x = crate::renderer::equation::stored_horizontal_scale(
-                                bbox.width,
-                                &equation.layout_box,
-                            );
                             let scale_y = crate::renderer::equation::stored_vertical_scale(
                                 bbox.height,
                                 equation.layout_box.height,
                                 equation.font_size,
                             );
-                            if (scale_x - 1.0).abs() > 0.01 || (scale_y - 1.0).abs() > 0.01 {
+                            if (scale_y - 1.0).abs() > 0.01 {
                                 canvas.translate((bbox.x as f32, bbox.y as f32));
-                                canvas.scale((scale_x as f32, scale_y as f32));
+                                canvas.scale((1.0, scale_y as f32));
                                 render_equation(
                                     canvas,
                                     &equation_fonts,

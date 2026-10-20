@@ -10,9 +10,11 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) pages: Vec<PageContent>,
     /// 현재 단에 쌓이는 항목
     pub(in crate::renderer::typeset) current_items: Vec<PageItem>,
-    /// 수용한 일반 전체/분할 본문의 (문단, 끝 줄)별 단 상대 점유 하단.
-    pub(in crate::renderer::typeset) paragraph_fragment_content_bottoms:
-        std::collections::HashMap<(usize, usize), f64>,
+    /// 수용한 본문 조각의 (문단, 끝 줄)별 점유 하단·흐름 끝·검증된 저장 축.
+    pub(in crate::renderer::typeset) paragraph_fragment_content_bottoms: std::collections::HashMap<
+        (usize, usize),
+        super::paragraph_fragment::ParagraphFragmentBounds,
+    >,
     /// 축소된 본문 프레임에서 실제 빈 줄을 이어받은 저장 쪽 경계.
     pub(in crate::renderer::typeset) saved_empty_run: Option<super::empty_run::SavedEmptyRun>,
     /// 현재 단에서 소비된 높이 (px)
@@ -238,7 +240,14 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [Task #836] 미주 목록 (섹션별 수집, 문서 끝에 렌더).
     pub(in crate::renderer::typeset) endnotes: Vec<EndnoteRef>,
     pub(in crate::renderer::typeset) endnote_paragraphs: Vec<Paragraph>,
+    /// 실제 줄 높이·간격을 다시 계산한 미주 문단의 목록 내 인덱스.
+    /// 이 문단의 저장 단 컷은 이전 세로 배치의 캐시이므로 실제 fit을 우선한다.
+    pub(in crate::renderer::typeset) reissued_endnote_rows: std::collections::HashSet<usize>,
     pub(in crate::renderer::typeset) endnote_para_sources: Vec<EndnoteParaSource>,
+    /// 현재 구역의 본문 다음에 등록되는 가상 미주 문단 범위의 시작.
+    pub(in crate::renderer::typeset) endnote_para_base: Option<usize>,
+    pub(in crate::renderer::typeset) endnote_measured_tables:
+        Vec<crate::renderer::height_measurer::MeasuredTable>,
     /// [Task #1246] 현재 섹션 미주의 between-notes 마진(HU, 0=미적용). HeightCursor 가 미주 사이
     /// min-gap 보정에 사용. 모든 경계에서 동일한 섹션 설정값이므로 스칼라로 보관.
     pub(in crate::renderer::typeset) endnote_between_notes_hu: i32,
@@ -332,6 +341,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// current_height 상대공간(col_area_y=0)에서 HeightCursor 를 구동한다.
     pub(in crate::renderer::typeset) vpos_page_base: Option<i32>,
     pub(in crate::renderer::typeset) vpos_lazy_base: Option<i32>,
+    /// 단 첫 수용 항목의 저장 축. 활성 page/lazy 기준이 소거돼도 paint와 같은
+    /// 새 축 판정에 사용하며, HeightCursor가 종료한 결과도 그대로 보존한다.
+    pub(in crate::renderer::typeset) vpos_stored_column_origin: Option<(i32, f64)>,
     /// [#2243] page_base 가 **저장**(비합성) lineseg 에서 왔는지. 저장-앵커 사다리는
     /// 저장 lineseg 없는 문단(생성기 누락 — 한글 fresh 재계산으로 성장 가능)을
     /// 만나면 연속성이 깨지므로 dirty 판단에 쓴다.

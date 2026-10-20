@@ -12,12 +12,7 @@ pub(in crate::renderer::typeset) struct BodyFootnoteMeasure<'a> {
 }
 
 impl BodyFootnoteMeasure<'_> {
-    pub fn block_content_height(
-        &self,
-        st: &TypesetState,
-        footnote: &Footnote,
-        fragment: Option<FootnoteFragment>,
-    ) -> Option<f64> {
+    fn configured_layout(&self, st: &TypesetState) -> crate::renderer::layout::LayoutEngine {
         let layout = crate::renderer::layout::LayoutEngine::new(self.engine.dpi);
         self.engine.prime_section_cell_context(&layout);
         layout.set_layout_profile(st.profile);
@@ -25,17 +20,34 @@ impl BodyFootnoteMeasure<'_> {
         layout.set_render_normalization_overlay(std::sync::Arc::clone(
             &self.engine.render_normalization,
         ));
-        layout.footnote_with_block_table_content_height(
-            footnote,
-            self.styles,
-            st.layout.body_area.width,
-            fragment,
-        )
+        layout
+    }
+
+    pub fn block_content_height(
+        &self,
+        st: &TypesetState,
+        footnote: &Footnote,
+        fragment: Option<FootnoteFragment>,
+    ) -> Option<f64> {
+        self.configured_layout(st)
+            .footnote_with_block_table_content_height(
+                footnote,
+                self.styles,
+                st.layout.body_area.width,
+                fragment,
+            )
     }
 
     pub fn content_height(&self, st: &TypesetState, footnote: &Footnote) -> f64 {
-        self.block_content_height(st, footnote, None)
-            .unwrap_or_else(|| composed_footnote_content_height(footnote, self.engine.dpi))
+        // 저장 줄 높이 추정이 아니라 paint의 스타일·줄 구성·문단 간격을 소비한다.
+        self.configured_layout(st)
+            .footnote_paragraphs_content_height(
+                &footnote.paragraphs,
+                self.styles,
+                st.layout.body_area.width,
+                None,
+                0.0,
+            )
     }
 }
 

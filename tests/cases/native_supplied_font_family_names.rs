@@ -89,3 +89,9 @@ fn wws_family_selects_the_same_supplied_program() {
 fn full_face_record_does_not_become_a_family_alias() {
     assert_ne!(decision("검사용 전체 얼굴 이름")["resolved"], PRIMARY);
 }
+
+#[test]
+fn explicit_postscript_identity_selects_its_supplied_program() {
+    // name ID 6은 family 별칭이 아니라 이 Regular 프로그램의 고유 이름이다.
+    assert_supplied("RhwpFamilyContract-Regular");
+}
