@@ -722,6 +722,7 @@ mod tests {
             rotation: 15.0,
             horz_flip: true,
             vert_flip: false,
+            ..Default::default()
         };
         tree.root.children.push(RenderNode::new(
             1,
@@ -742,6 +743,7 @@ mod tests {
             rotation: 45.0,
             horz_flip: false,
             vert_flip: true,
+            ..Default::default()
         };
         tree.root.children.push(RenderNode::new(
             2,

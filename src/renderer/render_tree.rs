@@ -1242,6 +1242,10 @@ pub struct ShapeTransform {
     pub horz_flip: bool,
     /// 상하 대칭
     pub vert_flip: bool,
+    /// 그림의 회전 전 표시 크기 / 회전 후 선언 프레임 크기.
+    /// 흐름·선택 bbox는 유지하고 모든 paint 소비자가 같은 잉크 상자를 구한다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image_frame_ratio: Option<[f64; 2]>,
 }
 
 impl ShapeTransform {
@@ -1270,6 +1274,14 @@ impl ShapeTransform {
     /// bbox 위에 동일 rotation transform 을 적용하면 한컴 정답지와 정합한다.
     /// cx, cy 는 swap 전후 동일하므로 rotate 식 자체는 그대로 둔다.
     pub fn effective_image_bbox(&self, bbox: &BoundingBox) -> BoundingBox {
+        if let Some([width, height]) = self.image_frame_ratio {
+            return BoundingBox::new(
+                bbox.x + bbox.width * (1.0 - width) / 2.0,
+                bbox.y + bbox.height * (1.0 - height) / 2.0,
+                bbox.width * width,
+                bbox.height * height,
+            );
+        }
         let r = self.rotation.rem_euclid(360.0);
         let is_perpendicular = (r - 90.0).abs() < 1.0 || (r - 270.0).abs() < 1.0;
         if !is_perpendicular {
@@ -1392,6 +1404,14 @@ pub struct RectangleNode {
     pub style: ShapeStyle,
     /// 그라데이션 채우기 (style.fill_color보다 우선)
     pub gradient: Option<Box<GradientFillInfo>>,
+    /// Picture outlines are emitted as filled outline polygons by the Print
+    /// driver, including dotted/dashed outlines. Preserve that source role even
+    /// when a backend draws the equivalent outline with a stroke.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub picture_border: bool,
+    /// Source pen이 ROUND인 닫힌 그림 외곽선의 모서리 연결.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub round_stroke_join: bool,
     /// 소속 구역 인덱스
     pub section_index: Option<usize>,
     /// 도형 컨트롤을 소유한 문단 인덱스
@@ -1421,6 +1441,8 @@ impl RectangleNode {
             corner_radius,
             style,
             gradient,
+            picture_border: false,
+            round_stroke_join: false,
             section_index: None,
             para_index: None,
             control_index: None,

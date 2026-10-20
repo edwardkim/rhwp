@@ -1854,6 +1854,16 @@ fn parse_hwp3_object_dispatch(
         pic.padding.top = read_hwp3_margin_scaled(&info_buf[30..32]);
         pic.padding.bottom = read_hwp3_margin_scaled(&info_buf[32..34]);
 
+        // HWP3 표44의 기타 옵션 bit0은 그림 외곽이다. 종류·색·굵기
+        // 필드는 없으며 독립 Print는 검정 600dpi 한 점(0.12pt) 외곽을
+        // 그린다. 여백이나 캡션 범주와 별개의 원본 속성으로 보존한다.
+        let picture_options = (&info_buf[14..16]).read_u16::<LittleEndian>().unwrap_or(0);
+        if picture_options & 1 != 0 {
+            pic.border_attr.attr = 1;
+            pic.border_width = 12;
+            pic.border_attr.width = 12;
+        }
+
         let horz_align = (&info_buf[10..12]).read_i16::<LittleEndian>().unwrap_or(0);
         if horz_align == -1 {
             pic.common.horz_align = crate::model::shape::HorzAlign::Left;

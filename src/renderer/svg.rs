@@ -942,6 +942,9 @@ impl SvgRenderer {
             }
             RenderNodeType::Rectangle(rect) => {
                 self.open_shape_transform(&rect.transform, &node.bbox);
+                if rect.round_stroke_join {
+                    self.output.push_str("<g stroke-linejoin=\"round\">");
+                }
                 self.draw_rect_with_gradient(
                     node.bbox.x,
                     node.bbox.y,
@@ -951,6 +954,9 @@ impl SvgRenderer {
                     &rect.style,
                     rect.gradient.as_deref(),
                 );
+                if rect.round_stroke_join {
+                    self.output.push_str("</g>");
+                }
             }
             RenderNodeType::Line(line) => {
                 self.open_shape_transform(&line.transform, &node.bbox);

@@ -2570,7 +2570,18 @@ fn write_shape_component_base(
     w.write_i32(attr.rotation_center.x).unwrap();
     w.write_i32(attr.rotation_center.y).unwrap();
 
-    // Rendering 정보 (원본이 있으면 복원, 없으면 적절한 행렬 생성)
+    w.write_bytes(&shape_rendering_bytes(attr)).unwrap();
+}
+
+/// HWP와 HWPX가 같은 저장 변환을 소비한다. 원본 행렬은 그대로 보존하고,
+/// 편집으로 raw 캐시가 사라진 개체는 기존 HWP 계약으로 회전·축척을 발행한다.
+pub(crate) fn shape_rendering_bytes(attr: &ShapeComponentAttr) -> Vec<u8> {
+    let mut writer = ByteWriter::new();
+    write_shape_rendering(&mut writer, attr);
+    writer.into_bytes()
+}
+
+fn write_shape_rendering(w: &mut ByteWriter, attr: &ShapeComponentAttr) {
     if !attr.raw_rendering.is_empty() {
         w.write_bytes(&attr.raw_rendering).unwrap();
     } else if attr.rotation_angle.rem_euclid(360) != 0 {

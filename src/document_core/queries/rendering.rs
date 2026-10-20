@@ -2605,6 +2605,8 @@ impl DocumentCore {
                 }
                 buf.push_str("{\"bbox\":");
                 write_bbox(buf, bbox);
+                buf.push_str(",\"imagePaintBBox\":");
+                write_bbox(buf, image.transform.effective_image_bbox(&bbox));
                 // 조상 clip 이 있으면 **언제나** 싣는다. 교차한 값을 그대로 주고, 그것으로 무엇을
                 // 할지는 소비자가 정한다.
                 //
@@ -2801,6 +2803,13 @@ impl DocumentCore {
             buf.push_str("\"bbox\":");
             // [#7193] 그리는 자리 — 틀에서 그림 안쪽 여백을 뺀 사각형.
             write_bbox(buf, image.paint_bbox(&bbox));
+            buf.push_str(",\"imagePaintBBox\":");
+            write_bbox(
+                buf,
+                image
+                    .transform
+                    .effective_image_bbox(&image.paint_bbox(&bbox)),
+            );
             buf.push_str(",\"mime\":");
             write_json_str(buf, mime);
             buf.push_str(",\"base64\":");

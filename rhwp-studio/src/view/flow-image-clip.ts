@@ -14,6 +14,8 @@ export interface FlowImageCrop {
 
 export interface FlowImagePaintOp {
   bbox: FlowImageBbox;
+  /** Shared unrotated paint frame, separate from occupied/clipped bounds. */
+  imagePaintBBox?: FlowImageBbox;
   imageInterpolation?: 'nearest' | 'linear';
   /**
    * `<img>.src` 로 그대로 넣는 값.
@@ -48,6 +50,7 @@ type LayerPaintOpLike = {
   imageInterpolation?: unknown;
   type?: unknown;
   bbox?: unknown;
+  imagePaintBBox?: unknown;
   mime?: unknown;
   base64?: unknown;
   crop?: unknown;
@@ -117,6 +120,7 @@ export function collectFlowImagePaintOps(
         }
         images.push({
           bbox: op.bbox,
+          ...(isFiniteBbox(op.imagePaintBBox) ? { imagePaintBBox: op.imagePaintBBox } : {}),
           ...(op.imageInterpolation === 'nearest' || op.imageInterpolation === 'linear'
             ? { imageInterpolation: op.imageInterpolation } : {}),
           src: `data:${op.mime};base64,${op.base64}`,
@@ -251,6 +255,7 @@ export function flowImageOpsFromNarrowQuery(
 
     images.push({
       bbox: op.bbox,
+      ...(isFiniteBbox(op.imagePaintBBox) ? { imagePaintBBox: op.imagePaintBBox } : {}),
       ...(op.imageInterpolation === 'nearest' || op.imageInterpolation === 'linear'
         ? { imageInterpolation: op.imageInterpolation } : {}),
       src,

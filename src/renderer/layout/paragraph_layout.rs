@@ -22,7 +22,7 @@ use super::text_measurement::{
     resolved_to_text_style,
 };
 use super::utils::{
-    expand_numbering_format, extract_shape_transform, find_bin_data_bytes,
+    expand_numbering_format, extract_picture_transform, find_bin_data_bytes,
     numbering_format_to_number_format, picture_display_size_hu, resolve_numbering_id,
 };
 use super::{
@@ -3088,7 +3088,7 @@ impl LayoutEngine {
                     };
                     let (width, height) = self.resolve_inline_picture_size(picture, col_area);
                     let data_id = picture.image_attr.bin_data_id;
-                    line.children.push(make_picture_image_node(
+                    let image = make_picture_image_node(
                         tree,
                         picture,
                         section_index,
@@ -3105,7 +3105,8 @@ impl LayoutEngine {
                             width,
                             height,
                         ),
-                    ));
+                    );
+                    self.append_picture_image_node(tree, &mut line, picture, image);
                     continue;
                 }
                 let InlineFlowContent::Text {
@@ -11525,7 +11526,7 @@ fn make_picture_image_node(
             // Inline glyphs stay in flow even if the saved object retains a
             // floating wrap mode. Otherwise a textbox fill covers its pictures.
             text_wrap: (!pic.common.treat_as_char).then_some(pic.common.text_wrap),
-            transform: extract_shape_transform(&pic.shape_attr),
+            transform: extract_picture_transform(pic),
             external_path: pic.image_attr.external_path.clone(),
             content_inset: crate::renderer::layout::utils::picture_content_inset(pic),
             ..ImageNode::new(bin_data_id, image_data)

@@ -163,7 +163,38 @@ impl PagePaintContext {
                 }
             }
         }
-        let mut rounded = prior_solid_fill;
+        fn header_footer_fill(node: &LayerNode, owned: bool, hangul2024_print: bool) -> bool {
+            match &node.kind {
+                LayerNodeKind::Group {
+                    children,
+                    group_kind,
+                    ..
+                } => {
+                    let owned = owned
+                        || matches!(
+                            group_kind,
+                            crate::paint::layer_tree::GroupKind::Header
+                                | crate::paint::layer_tree::GroupKind::Footer
+                        );
+                    children
+                        .iter()
+                        .any(|child| header_footer_fill(child, owned, hangul2024_print))
+                }
+                LayerNodeKind::ClipRect { child, .. } => {
+                    header_footer_fill(child, owned, hangul2024_print)
+                }
+                LayerNodeKind::Leaf { ops } => {
+                    owned
+                        && ops.iter().any(|op| {
+                            PagePaintContext::op_has_print_solid_fill(op, hangul2024_print)
+                        })
+                }
+            }
+        }
+        // 인쇄기는 머리말·꼬리말 개체를 본문보다 먼저 출력한다. 그림 테두리
+        // 비트만 바꾼 독립 Print에서 첫 본문 이전의 장치 정밀도 전환을 확인했다.
+        // 편집·가림의 레이어 및 원문 순서는 보존하고 공통 Print 상태만 질의한다.
+        let mut rounded = prior_solid_fill || header_footer_fill(node, false, hangul2024_print);
         for plane in crate::paint::PaintReplayPlane::ORDERED {
             collect(
                 node,
@@ -188,8 +219,12 @@ impl PagePaintContext {
         // BorderFill에서 생산한 배경 사각형과 원본 도형은 같은 paint primitive를
         // 쓰지만 Print의 device 상태 계약은 다르다. 원본 도형 control 소유는
         // shape layout에서 이미 발행한다. 색·위치·쪽 번호로 배경을 추측하지 않는다.
-        (hangul2024_print || rect.control_index.is_some())
-            && Self::shape_has_print_solid_fill(&rect.style)
+        ((hangul2024_print || rect.control_index.is_some())
+            && Self::shape_has_print_solid_fill(&rect.style))
+            || (rect.picture_border
+                && rect.style.opacity > 0.0
+                && rect.style.stroke_color.is_some()
+                && rect.style.stroke_width > 0.0)
     }
 
     fn op_has_print_solid_fill(op: &PaintOp, hangul2024_print: bool) -> bool {

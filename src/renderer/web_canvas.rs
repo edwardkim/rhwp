@@ -1081,6 +1081,10 @@ impl WebCanvasRenderer {
         restore_transform: bool,
     ) {
         self.open_shape_transform(&rect.transform, bbox);
+        let previous_join = self.ctx.line_join();
+        if rect.round_stroke_join {
+            self.ctx.set_line_join("round");
+        }
         self.draw_rect_with_gradient(
             bbox.x,
             bbox.y,
@@ -1090,6 +1094,7 @@ impl WebCanvasRenderer {
             &rect.style,
             rect.gradient.as_deref(),
         );
+        self.ctx.set_line_join(&previous_join);
         if restore_transform {
             self.close_shape_transform_if_needed(&rect.transform);
         }

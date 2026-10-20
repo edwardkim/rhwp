@@ -2067,14 +2067,17 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderRectangle(canvas: SkCanvas, op: LayerRectangleOp): void {
-    this.drawStyledShape(canvas, op.bbox, op.style, (paint) => {
-      const cornerRadius = op.cornerRadius ?? 0;
-      if (cornerRadius > 0) {
-        canvas.drawRRect(this.canvasKit.RRectXY(this.rect(op.bbox), cornerRadius, cornerRadius), paint);
-      } else {
-        canvas.drawRect(this.rect(op.bbox), paint);
-      }
-    }, op.gradient);
+    this.withImageTransform(canvas, op.bbox, op.transform, () => {
+      this.drawStyledShape(canvas, op.bbox, op.style, (paint) => {
+        if (op.strokeJoin === 'round') paint.setStrokeJoin(this.canvasKit.StrokeJoin.Round);
+        const cornerRadius = op.cornerRadius ?? 0;
+        if (cornerRadius > 0) {
+          canvas.drawRRect(this.canvasKit.RRectXY(this.rect(op.bbox), cornerRadius, cornerRadius), paint);
+        } else {
+          canvas.drawRect(this.rect(op.bbox), paint);
+        }
+      }, op.gradient);
+    });
   }
 
   private renderEllipse(canvas: SkCanvas, op: LayerEllipseOp): void {
@@ -2212,7 +2215,9 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('image:decodeFailed');
       return;
     }
-    this.withImageTransform(canvas, op.bbox, op.transform, () => this.drawImageOp(canvas, image, op, undefined, profile));
+    const paintOp = op.imagePaintBBox ? { ...op, bbox: op.imagePaintBBox } : op;
+    this.withImageTransform(canvas, paintOp.bbox, paintOp.transform,
+      () => this.drawImageOp(canvas, image, paintOp, undefined, profile));
   }
 
   private renderGlyphRun(canvas: SkCanvas, op: LayerGlyphRunOp): void {

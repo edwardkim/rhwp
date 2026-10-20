@@ -509,6 +509,12 @@ impl DocumentCore {
         control_idx: usize,
         props_json: &str,
     ) -> Result<String, HwpError> {
+        let stored_end_before = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(parent_para_idx))
+            .and_then(crate::renderer::composer::paragraph_flow_end);
         // JSON 파싱 (serde_json 사용 대신 수동 파싱 — 기존 패턴)
         // [Task #825] 픽쳐 속성 mutation 은 helper 로 분리 (머리말/꼬리말 path 와 공유).
         // [Issue #6204] 개체의 **배제 밴드 기하**를 변경 전에 찍어 둔다. 위치·크기가
@@ -645,6 +651,25 @@ impl DocumentCore {
             // 재투영 실패는 이 편집의 실패가 아니다 — 밴드를 만들 수 없는 형상이면
             // 종전대로 recompose 에 맡긴다.
             let _ = self.apply_body_edit_through_picture_band(section_idx, parent_para_idx, |_| {});
+            // TAC 개체의 크기·바깥 여백 편집도 저장 줄을 다시 발행해야 한다.
+            // 화면만 recompose하면 이전 줄 높이가 저장되어 재열기와 Print가 갈린다.
+            if parent_para_idx < self.document.sections[section_idx].paragraphs.len()
+                && self
+                    .resolve_picture_control_ref(section_idx, parent_para_idx, control_idx)
+                    .is_ok_and(|picture| picture.common.treat_as_char)
+            {
+                self.reflow_paragraph(section_idx, parent_para_idx);
+                let hwp3_layout = self.document.layout_profile().hwp3_layout();
+                crate::renderer::composer::recalculate_section_vpos(
+                    &mut self.document.sections[section_idx].paragraphs,
+                    parent_para_idx,
+                    None,
+                    stored_end_before,
+                    &self.styles,
+                    self.dpi,
+                    hwp3_layout,
+                );
+            }
         }
 
         // 리플로우
@@ -808,7 +833,7 @@ impl DocumentCore {
         // (treatAsChar=1 + PAPER 모순 → 한글 렌더 깨짐, Issue #3781 실측).
         crate::serializer::control::sync_anchor_bits(&mut pic.common);
 
-        let picture_height_hu = pic.common.height as i32;
+        let picture_height_hu = crate::renderer::composer::inline_picture_occupied_size_hu(pic).1;
         let baseline = (picture_height_hu as f64 * 0.85).round() as i32;
         if let Some(seg) = line_segs.first_mut() {
             seg.line_height = picture_height_hu;

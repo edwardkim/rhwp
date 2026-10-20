@@ -1033,6 +1033,9 @@ impl PaintOp {
                     rect.corner_radius
                 );
                 write_shape_style(buf, &rect.style);
+                if rect.round_stroke_join {
+                    buf.push_str(",\"strokeJoin\":\"round\"");
+                }
                 if let Some(gradient) = &rect.gradient {
                     buf.push_str(",\"gradient\":");
                     write_gradient(buf, gradient);
@@ -1097,6 +1100,13 @@ impl PaintOp {
                 let resolved = resolved.as_deref().or(fallback.as_ref());
                 // [#7193] 소비자가 그리는 자리 — 틀에서 그림 안쪽 여백을 뺀 사각형.
                 write_bbox(buf, image.paint_bbox(bbox));
+                buf.push_str(",\"imagePaintBBox\":");
+                write_bbox(
+                    buf,
+                    image
+                        .transform
+                        .effective_image_bbox(&image.paint_bbox(bbox)),
+                );
                 if resolved
                     .map(|payload| payload.data.as_slice())
                     .or(image.data.as_deref())

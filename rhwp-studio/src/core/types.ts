@@ -1347,6 +1347,8 @@ export interface LayerLineOp {
 export interface LayerRectangleOp {
   type: 'rectangle';
   bbox: LayerBounds;
+  transform?: LayerPathTransform;
+  strokeJoin?: 'round';
   cornerRadius?: number;
   style?: LayerShapeStyle;
   gradient?: LayerGradientFill;
@@ -1395,6 +1397,8 @@ export interface LayerPathOp {
 export interface LayerImageOp {
   type: 'image';
   bbox: LayerBounds;
+  /** Shared producer result before rotation; bbox remains the occupied frame. */
+  imagePaintBBox?: LayerBounds;
   /** Explicit source sampling; absent preserves the output profile policy. */
   imageInterpolation?: 'nearest' | 'linear';
   /** 실제 Print 색 전달 payload의 축소 재구성 계약. */

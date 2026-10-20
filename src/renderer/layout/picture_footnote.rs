@@ -6,13 +6,14 @@ use super::super::pagination::{FootnoteFragment, FootnoteRef, FootnoteSource};
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{
-    format_number, hwpunit_to_px, AutoNumberCounter, LineStyle, NumberFormat as NumFmt, StrokeDash,
-    TextStyle,
+    format_number, hwpunit_to_px, AutoNumberCounter, LineStyle, NumberFormat as NumFmt,
+    PathCommand, StrokeDash, TextStyle,
 };
 use super::border_rendering::border_width_to_px;
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::{
-    extract_shape_transform, find_bin_data_bytes, picture_data_is_unusable, picture_display_size_hu,
+    extract_picture_transform, find_bin_data_bytes, picture_data_is_unusable,
+    picture_display_size_hu,
 };
 use super::{footnote_separator_length_px, LayoutEngine, ParagraphVerticalSpacing};
 use crate::model::bin_data::BinDataContent;
@@ -589,7 +590,7 @@ impl LayoutEngine {
                 contrast: picture.image_attr.contrast,
                 opacity: picture.image_attr.opacity(),
                 text_wrap: Some(picture.common.text_wrap),
-                transform: extract_shape_transform(&picture.shape_attr),
+                transform: extract_picture_transform(picture),
                 external_path: picture.image_attr.external_path.clone(),
                 content_inset: crate::renderer::layout::utils::picture_content_inset(picture),
                 header_footer_ref: header_footer_ref.clone(),
@@ -603,7 +604,7 @@ impl LayoutEngine {
             rotated_frame_node_box(pic_x, pic_y, pic_width, pic_height, node_box_size),
         );
 
-        parent_node.children.push(img_node);
+        self.append_picture_image_node(tree, parent_node, picture, img_node);
 
         // [#6284] 캡션 렌더링 — 기하는 위에서 예약한 띠와 같은 산식이다
         // (`layout_body_picture` 의 캡션 방출부와 같은 규칙).
@@ -682,16 +683,7 @@ impl LayoutEngine {
             }
         }
 
-        // 그림 테두리(선) 렌더링
-        self.render_picture_border(
-            tree,
-            parent_node,
-            picture,
-            pic_x,
-            pic_y,
-            pic_width,
-            pic_height,
-        );
+        // 그림과 외곽선은 위 append_picture_image_node에서 한 번 발행했다.
     }
 
     /// 개체(Picture/Shape)의 절대 좌표 (x, y)를 계산한다.
@@ -929,7 +921,7 @@ impl LayoutEngine {
                 contrast: picture.image_attr.contrast,
                 opacity: picture.image_attr.opacity(),
                 text_wrap: Some(picture.common.text_wrap),
-                transform: extract_shape_transform(&picture.shape_attr),
+                transform: extract_picture_transform(picture),
                 external_path: picture.image_attr.external_path.clone(),
                 content_inset: crate::renderer::layout::utils::picture_content_inset(picture),
                 ..ImageNode::new(bin_data_id, image_data)
@@ -2584,9 +2576,22 @@ impl LayoutEngine {
             shadow: None,
         };
         let border_id = tree.next_id();
-        let transform = extract_shape_transform(&picture.shape_attr);
+        let transform = extract_picture_transform(picture);
         let bbox = transform.effective_image_bbox(&bbox);
+        // 독립 Print의 그림 외곽선은 한 화면 픽셀까지 그림 안에 겹치고
+        // 나머지 굵기는 바깥으로 자란다. 중앙 stroke로 그리면 굵은 선이
+        // 그림 전체를 덮는다. source 그림·점유 프레임은 바꾸지 않는다.
+        let overlap = border_w.min(hwpunit_to_px(75, self.dpi));
+        let outset = border_w / 2.0 - overlap;
+        let bbox = BoundingBox::new(
+            bbox.x - outset,
+            bbox.y - outset,
+            bbox.width + 2.0 * outset,
+            bbox.height + 2.0 * outset,
+        );
         let mut rectangle = RectangleNode::new(0.0, style, None);
+        rectangle.picture_border = true;
+        rectangle.round_stroke_join = !matches!((picture.border_attr.attr >> 6) & 0x0f, 1 | 2);
         rectangle.transform = transform;
         Some(RenderNode::new(
             border_id,

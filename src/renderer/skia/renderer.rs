@@ -1868,7 +1868,10 @@ impl SkiaLayerRenderer {
                                     canvas.draw_rect(sk_rect, &fill);
                                 }
                             }
-                            if let Some(stroke) = make_stroke_paint(&rect.style) {
+                            if let Some(mut stroke) = make_stroke_paint(&rect.style) {
+                                if rect.round_stroke_join {
+                                    stroke.set_stroke_join(skia_safe::paint::Join::Round);
+                                }
                                 if rect.corner_radius > 0.0 {
                                     canvas.draw_round_rect(
                                         sk_rect,
