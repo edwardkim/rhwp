@@ -4721,3 +4721,34 @@ Native/WASM Clippy·fmt·manifest는 exit0이다. 전쪽90%와8쪽 양쪽99.9988
 이 단계 뒤에도 다른 기존 실패·OSS 가는 괘선·로드맵153쪽·최신 전체 회귀/범위 게이트·
 리베이스 유입 기능·고정devel 전쪽 대조·actual36이 남으므로 PR 전체 준비 완료로 표시하지 않는다.
 사용자 별도 승인 전 PR/push·외부 게시를 하지 않는다.
+
+
+## C450 — 주소별 선택의 용량 경계
+
+부모는 `00a42b1fb3cf2af5952a28d4ea6865f23445e1aa`다. C449 후속 검토에서
+기존 전역256개 한도 초과는 `Ok(None)`인데 새 주소별259개는 validate 오류로
+문서 처리를 중단하는 차이를 실제 재현했다. 유효한7언어×37레코드가 입력 JSON 크기
+한도를 넘지 않아도 발생한다. 공통 생성기의 같은 용량 관문에 주소별 선택 수를 포함했다.
+외부 JSON 검증의 한도·주소 중복·family/program 규칙은 완화하지 않았다.
+
+최종 프로토콜 함수는 정확히256개가 수용됨,259개의 자동 선택은 기존 no-environment
+fallback으로 돌아감,64KiB 미만의 고유259주소 외부 JSON은 여전히 거부됨을 함께 검사한다.
+최종 동일 검사 source SHA-256은
+`1ee5b30eaeb9dddf01dac2c73173bbfc73529283b44e5171dbf6993fed54b872`다.
+358의 동결 C449 라이브러리에서는10PASS/1FAIL(자동 생성기의 RenderError),
+새356 라이브러리에서는11PASS다.359에서prepare한 현재 정식 suite008의11건도 PASS다.
+356의 같은 runtime에서 원문 소속/좌표2건이 PASS이며 Native/WASM Clippy·fmt·manifest도
+exit0이다. 정식 root target은 수동 추정하지 않았다. 이는 전체 nextest 결과가 아니다.
+
+실제 Native 글꼴 프로그램 조회를 원본78494와 같은3개 공급 경로로 실행하여
+C449와 C450의 완전한 typed Debug snapshot을 비교했다. 주소별 선택14개를 포함한
+snapshot SHA-256은 양쪽
+`950298f6579721d0a029639d8b958cf2fef4993374a95638fe52c81d03f4a9df`로 동일하다.
+이는 실제 프로그램 선택의 동일성이지 JSON 직렬화 hash나 새 head PNG 결과가 아니다.
+첫 외부 serde graph 조합 진단은 컴파일 오류로 폐기했고, 제품을 바꾸지 않은 std Debug
+출력으로 확인했다. accepted-selection-comparison.json에 구분했다.
+
+신규 검사는 glyph 출력이나 px 배치를 고정하는 렌더링 fixture가 아닌 선택 프로토콜
+용량 경계다. C449의 전쪽 시각 증거를 C450의 새로운 전쪽 실행으로 재명명하지 않는다.
+최신 source의 최종 corpus/전쪽·전체 회귀·나머지 실패 보정은 계속 남는다.
+로그와 라이브러리·진단 JSON은 ignored repair355/356/357/358/359에만 보존한다.

@@ -224,3 +224,55 @@ fn scoped_program_declarations_require_distinct_bounded_source_addresses() {
         "대상은 CSS 사다리가 아닌 하나의 프로그램"
     );
 }
+
+#[test]
+fn oversized_scoped_selection_keeps_the_existing_no_environment_fallback() {
+    let mut core = core();
+    let mut doc = core.document().clone();
+    // Seven valid language tables with distinct font-record addresses exceed
+    // the existing 256-selection protocol capacity without oversized input JSON.
+    for (language, fonts) in doc.doc_info.font_faces.iter_mut().enumerate() {
+        let mut font = fonts[0].clone();
+        if language == 0 {
+            font.subst_font = Some(SubstFont {
+                face: "Arial".into(),
+                font_type: 1,
+                ..Default::default()
+            });
+        }
+        *fonts = vec![font; 37];
+    }
+    let mut bounded = doc.clone();
+    for (language, fonts) in bounded.doc_info.font_faces.iter_mut().enumerate() {
+        fonts.truncate(if language < 4 { 37 } else { 36 });
+    }
+    core.set_document(bounded);
+    let accepted = select(&core, json!([program(PUBLIC), program("Arial")]));
+    assert_eq!(
+        accepted["documentSubstitutions"].as_array().unwrap().len(),
+        256,
+        "the exact existing protocol capacity remains representable"
+    );
+    core.set_document(doc);
+    assert!(select(&core, json!([program(PUBLIC), program("Arial")])).is_null(),
+        "an unrepresentable selection snapshot must retain the legacy no-environment fallback, not abort the document");
+
+    let slots: Vec<_> = (0..259)
+        .map(|font_id| {
+            json!({
+                "languageSlot":0,"fontId":font_id,"source":"Family","target":"Arial","programId":"p"
+            })
+        })
+        .collect();
+    let explicit =
+        json!({"id":"oversized-explicit","substitutions":{},"documentSubstitutions":slots})
+            .to_string();
+    assert!(
+        explicit.len() < 65_536,
+        "exercise the record capacity, not the input-byte limit"
+    );
+    assert!(
+        FontEnvironment::from_json(&explicit).is_err(),
+        "externally supplied oversized environments must still be rejected"
+    );
+}

@@ -348,6 +348,7 @@ impl FontEnvironment {
         }
         if (substitutions.is_empty() && document_substitutions.is_empty())
             || substitutions.len() > 256
+            || document_substitutions.len() > 256
         {
             return Ok(None);
         }
