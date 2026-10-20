@@ -103,11 +103,23 @@ export abstract class ModalDialog {
         this.hide();
         return;
       }
+      // 버튼의 Enter/Space는 브라우저의 기본 활성화를 허용한다.
+      // 확인 버튼으로 덮어쓰면 남김·취소·닫기도 파괴적 확인이 된다.
+      if (target instanceof HTMLButtonElement && this.dialog.contains(target)
+        && (e.key === 'Enter' || e.key === ' ')) {
+        e.stopPropagation();
+        return;
+      }
       if (e.key === 'Enter' && !isEditable) {
         e.stopPropagation();
         e.preventDefault();
         const btn = this.dialog.querySelector('.dialog-btn-primary') as HTMLButtonElement | null;
         btn?.click();
+        return;
+      }
+      if (e.key === 'Tab' && this.onTabKey(e)) {
+        e.stopPropagation();
+        e.preventDefault();
         return;
       }
       // 편집 가능한 요소 내부 → 키 입력 허용, 외부 전파만 차단
@@ -139,6 +151,8 @@ export abstract class ModalDialog {
 
   /** 서브클래스에서 본문 DOM을 생성 */
   protected abstract createBody(): HTMLElement;
+
+  protected onTabKey(_e: KeyboardEvent): boolean { return false; }
 
   /** 서브클래스에서 확인 버튼 동작 구현. false 반환 시 대화상자 유지 */
   protected abstract onConfirm(): void | boolean;

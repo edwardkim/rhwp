@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const POLICY_VERSION = '6';
+const POLICY_VERSION = '7';
 const POLICY_CONTEXT = 'CI Impact Policy';
 const WORKFLOW_ORDER = ['CI', 'CodeQL', 'Render Diff'];
 const WORKFLOW_PATHS = {
@@ -14,7 +14,7 @@ const WRITER_PERMISSIONS = new Set(['admin', 'maintain', 'write']);
 const FRONTEND_MODES = new Set(['none', 'unit', 'package']);
 const BOOLEAN_VALUES = new Set(['true', 'false']);
 const CLASSIFICATION_STATUSES = new Set(['classified', 'full']);
-const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
+const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust', 'actions'];
 
 const CI_PUSH_PATHS_IGNORE = []; // CI push is release-tag-only; no branch push checks.
 
@@ -173,6 +173,7 @@ const CODEQL_JOBS = {
   'javascript-typescript': 'Analyze (javascript-typescript)',
   python: 'Analyze (python)',
   rust: 'Analyze (rust)',
+  actions: 'Analyze (actions)',
 };
 
 function fullClassification(reason) {
@@ -426,6 +427,8 @@ function workflowRunMatchesPull(run, identity) {
   // GitHub can return an empty pull_requests array for fork runs. In that case the
   // repository + branch + exact SHA guards in selectLatestWorkflowRun remain the
   // authority. When association data exists, reject runs from another PR/base.
+  // 연결 PR의 head.sha는 이후 push에 맞춰 갱신된다. 실행 SHA는 아래 호출자의
+  // run.head_sha 검사로 확인하며 가변 PR 메타데이터와 중복 대조하지 않는다.
   if (pulls.length === 0) return true;
   return pulls.some((pull) => (
     Number(pull?.number || 0) === Number(identity.pullNumber || 0)
@@ -435,7 +438,6 @@ function workflowRunMatchesPull(run, identity) {
       || String(pull?.base?.sha || '') === String(identity.baseSha || '')
     )
     && String(pull?.head?.ref || '') === String(identity.headBranch || '')
-    && String(pull?.head?.sha || '') === String(identity.headSha || '')
   ));
 }
 
@@ -473,6 +475,7 @@ function encodeCodeqlLanguages(value) {
     'javascript-typescript': 'js',
     python: 'py',
     rust: 'rs',
+    actions: 'ac',
   })[language] || 'all').join(',');
 }
 
@@ -527,7 +530,7 @@ function parseStatusDescription(description) {
   if (!FRONTEND_MODES.has(fields.get('fe'))) throw new Error('invalid frontend axis');
   if (!new Set(['0', '1']).has(fields.get('render'))) throw new Error('invalid render axis');
   if (!new Set(['0', '1']).has(fields.get('skia'))) throw new Error('invalid skia axis');
-  if (!/^(none|all|(?:js|py|rs)(?:,(?:js|py|rs))*)$/.test(fields.get('ql'))) {
+  if (!/^(none|all|(?:js|py|rs|ac)(?:,(?:js|py|rs|ac))*)$/.test(fields.get('ql'))) {
     throw new Error('invalid CodeQL axis');
   }
   const languages = fields.get('ql').split(',');

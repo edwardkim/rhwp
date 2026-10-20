@@ -1,0 +1,59 @@
+[package]
+name = "jpeg-decoder"
+version = "0.3.2"
+edition = "2021"
+
+rust-version = "1.61.0"
+
+license = "MIT OR Apache-2.0"
+description = "JPEG decoder"
+authors = ["The image-rs Developers"]
+readme = "README.md"
+
+documentation = "https://docs.rs/jpeg-decoder"
+repository = "https://github.com/image-rs/jpeg-decoder"
+keywords = ["jpeg", "jpg", "decoder", "image"]
+exclude = ["/tests/*", "!/tests/*.rs"]
+
+[dependencies]
+rayon = { version = "1.5.1", optional = true }
+
+[dev-dependencies]
+png = "0.16"
+walkdir = "2.0"
+criterion = "0.3"
+wasm-bindgen-test = "0.3"
+wasm-bindgen = "0.2.89"
+
+[features]
+default = ["rayon"]
+platform_independent = []
+# Opt-in, this depends on Rust nightly. Will be changed to a no-op feature when
+# the Rust feature is stabilized which is expected to be 1.61.
+nightly_aarch64_neon = []
+
+## Internal development configuration: testing and benchmarking
+
+[[bench]]
+name = "decoding_benchmark"
+harness = false
+
+[[bench]]
+name = "large_image"
+harness = false
+
+[[test]]
+name = "rayon"
+required-features = ["rayon"]
+
+[[test]]
+name = "rayon-0"
+required-features = ["rayon"]
+
+[[test]]
+name = "rayon-1"
+required-features = ["rayon"]
+
+[[test]]
+name = "rayon-2"
+required-features = ["rayon"]

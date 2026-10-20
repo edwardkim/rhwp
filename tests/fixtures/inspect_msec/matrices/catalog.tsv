@@ -186,7 +186,6 @@ uni-filter-zero-width	unicode	kind-filter	filter	envelopes/unicode/uni-filter-ze
 uni-filter-bidi	unicode	kind-filter	filter	envelopes/unicode/uni-filter-bidi.json	0	uni-filter-all-mixed
 uni-filter-tag	unicode	kind-filter	filter	envelopes/unicode/uni-filter-tag.json	0	uni-filter-all-mixed
 uni-filter-confusable	unicode	kind-filter	filter	envelopes/unicode/uni-filter-confusable.json	0	uni-filter-all-mixed
-uni-zw-hangul-pua-typesetting	unicode	zero_width	negative	envelopes/unicode/uni-zw-hangul-pua-typesetting.json	0	
 uni-clean-2026_oss_rst.hwp	unicode	clean-corpus	negative	envelopes/unicode/uni-clean-2026_oss_rst.hwp.json	0	
 uni-clean-hwp3-sample.hwp	unicode	clean-corpus	negative	envelopes/unicode/uni-clean-hwp3-sample.hwp.json	0	
 uni-clean-2022년_국립국어원_업무계획.hwp	unicode	clean-corpus	negative	envelopes/unicode/uni-clean-2022년_국립국어원_업무계획.hwp.json	0	

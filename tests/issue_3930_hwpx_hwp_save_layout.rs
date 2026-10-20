@@ -12,22 +12,23 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 
 const FIXTURE: &str = "samples/2025 행정업무운영 편람(최종).hwpx";
-const HWP_FIXTURE: &str = "samples/2025 행정업무운영 편람(최종).hwp";
 const PAGE_30: u32 = 29;
 const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
-// [#5923] 비-TAC 다문단 셀 trailing 줄간격 제외로 Q&A 지역(281쪽 이후)이 한 쪽씩
-// 당겨진다 — p30·p144 지역은 불변이고 본문 문자 다중집합은 불변이다.
-const PAGE_283: u32 = 281;
-const PAGE_284: u32 = 282;
-const PAGE_285: u32 = 283;
-const PAGE_286: u32 = 284;
-const PAGE_287: u32 = 285;
-const PAGE_290: u32 = 288;
-const PAGE_291: u32 = 289;
-const PAGE_294: u32 = 292;
-const PAGE_295: u32 = 293;
-const PAGE_296: u32 = 294;
+// 쪽 번호는 독립 정본 `pdf/2025 행정업무운영 편람(최종)-hwp(x)-kopub-2024.pdf`(한컴 2024 +
+// KoPub 내장, 383쪽)의 물리 쪽이고 상수 값은 그 0-기반 색인이다. [#5923] 에서 한 쪽씩 당긴
+// 값(281 …)은 rhwp 가 제5장 간지 뒤 PageHide 빈 쪽(정본 278쪽)을 만들지 않아 생긴 어긋남을
+// 받아 준 것이었다. 그 빈 쪽을 되살린 뒤 Q5·Q8·Q9·Q10·Q16·Q27 은 정본과 같은 물리 쪽에 온다.
+const PAGE_283: u32 = 282;
+const PAGE_284: u32 = 283;
+const PAGE_285: u32 = 284;
+const PAGE_286: u32 = 285;
+const PAGE_287: u32 = 286;
+const PAGE_290: u32 = 289;
+const PAGE_291: u32 = 290;
+const PAGE_294: u32 = 293;
+const PAGE_295: u32 = 294;
+const PAGE_296: u32 = 295;
 const Q5_RESPONSE_FIRST_LINE: &str = "문서는 결재권자의 결재가 완료된 시점에";
 const Q9_TITLE: &str = "보조기관, 보좌기관, 합의제행정기관의 의미";
 const Q10_TITLE: &str = "공문서 작성시 연·월·일의 정확한 표기방법";
@@ -40,6 +41,32 @@ fn page_tree(document: &HwpDocument, page: u32) -> String {
     document
         .get_page_render_tree(page)
         .unwrap_or_else(|error| panic!("p{} render tree: {error:?}", page + 1))
+}
+
+/// render tree JSON 의 `TextLine` 마다 자식 run 의 글을 이어 붙인다. 한 줄은 언어 슬롯마다
+/// run 이 갈린다 — `연·월·일` 의 `·` 는 영문 슬롯이다(#7702).
+fn has_line_text(tree: &str, needle: &str) -> bool {
+    fn walk(node: &serde_json::Value, needle: &str) -> bool {
+        let children = node["children"].as_array();
+        if node["type"] == "TextLine" {
+            let text: String = children
+                .into_iter()
+                .flatten()
+                .filter_map(|child| child["text"].as_str())
+                .collect();
+            if text.contains(needle) {
+                return true;
+            }
+        }
+        children
+            .into_iter()
+            .flatten()
+            .any(|child| walk(child, needle))
+    }
+    walk(
+        &serde_json::from_str(tree).expect("render tree JSON"),
+        needle,
+    )
 }
 
 /// PDF p144 안에서 끝나는 붙임 표가 `page tree`에만 남고 물리적으로 쪽 밖으로
@@ -125,43 +152,43 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         "원본 p30 바탕쪽은 장 제목으로 바뀌면 안 된다"
     );
     assert!(
-        source_p144_tree.contains(ATTACHMENT_GUIDANCE),
+        has_line_text(&source_p144_tree, ATTACHMENT_GUIDANCE),
         "한컴 PDF p144와 같이 붙임 안내 블록은 원본 p144에 있어야 한다"
     );
     assert!(
-        !source_p145_tree.contains(ATTACHMENT_GUIDANCE),
+        !has_line_text(&source_p145_tree, ATTACHMENT_GUIDANCE),
         "원본 p145는 앞 표의 붙임 안내 블록을 다시 갖지 않아야 한다"
     );
     assert!(
-        source_p283_tree.contains(Q5_RESPONSE_FIRST_LINE),
+        has_line_text(&source_p283_tree, Q5_RESPONSE_FIRST_LINE),
         "HWPX Q5의 saved-frame response 첫 줄은 PDF/native HWP와 같이 p283에 있어야 한다"
     );
     assert!(
-        !source_p284_tree.contains(Q5_RESPONSE_FIRST_LINE),
+        !has_line_text(&source_p284_tree, Q5_RESPONSE_FIRST_LINE),
         "HWPX Q5의 saved-frame response 첫 줄은 p284로 밀리면 안 된다"
     );
     assert!(
-        source_p285_tree.contains("홈페이지상의 질의에 대하여"),
+        has_line_text(&source_p285_tree, "홈페이지상의 질의에 대하여"),
         "HWPX Q8 표제는 PDF physical p285와 같이 Q7 tail 뒤 같은 쪽에서 시작해야 한다"
     );
     assert!(
-        source_p286_tree.contains(Q9_TITLE),
+        has_line_text(&source_p286_tree, Q9_TITLE),
         "HWPX Q9 표제는 PDF/native HWP와 같이 p286에서 시작해야 한다"
     );
     assert!(
-        source_p287_tree.contains(Q10_TITLE),
+        has_line_text(&source_p287_tree, Q10_TITLE),
         "HWPX Q10 표제는 PDF/native HWP와 같이 p287에서 시작해야 한다"
     );
     assert!(
-        source_p290_tree.contains(Q16_TITLE),
+        has_line_text(&source_p290_tree, Q16_TITLE),
         "HWPX Q16 표와 trailing blank-bottom row는 PDF/native HWP와 같이 p290에서 끝나야 한다"
     );
     assert!(
-        !source_p291_tree.contains(Q16_TITLE),
+        !has_line_text(&source_p291_tree, Q16_TITLE),
         "HWPX Q16 표는 p291로 분할되어 반복되면 안 된다"
     );
     assert!(
-        !source_p294_tree.contains(Q27_TITLE),
+        !has_line_text(&source_p294_tree, Q27_TITLE),
         "HWPX Q26의 3+3줄 응답 tail은 PDF/native HWP와 같이 p294에서 끝나야 한다"
     );
     // 독립 PDF296쪽에도 Q29가 있다. 이미 #7445에 이관한 물리쪽의
@@ -302,30 +329,10 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
             "한컴 HWPX 저장본처럼 SC_PICTURE original image size는 0으로 쓴다"
         );
     }
-    assert_eq!(grouped_picture.image_attr.brightness, 0);
-    assert_eq!(grouped_picture.image_attr.contrast, 8);
-}
-
-/// native HWP 원본의 6x5 Q&A RowBreak 표에서 짧은 마지막 응답 tail은 저장
-/// frame owner를 유지한다. Stage 131의 terminal spacer/guide 보정은 386쪽을 383쪽으로 낮추며,
-/// HWPX fixture의 저장/roundtrip page-count 계약과는 별도로 고정한다 (#3820).
-///
-/// [#5751] 기대값을 383 → 385 로 갱신했다. `#501` 가드를 렌더와 같은 기준으로
-/// 맞추면서 이 문서의 표 43개가 각 1행씩 내용에 맞게 늘었다. 383 은 한컴 2020
-/// 기준이고 한글 2022 는 같은 파일을 384쪽으로 조판한다 — 갱신 전후 모두 오차 1.
-///
-/// [#5923] 비-TAC 다문단 셀 trailing 줄간격 제외로 385 → 384 — 한글 2022 조판과
-/// 정확히 일치한다. Q8 표제 위치도 같은 이유로 한 쪽 당겨진다(283 → 282, 0-기반).
-#[test]
-fn issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(HWP_FIXTURE);
-    let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
-    let source = HwpDocument::from_bytes(&bytes).expect("HWP fixture parse");
-
-    assert!(
-        page_tree(&source, 283).contains("홈페이지상의 질의에 대하여"),
-        "Hancom PDF physical p285와 같이 Q8 표제는 Q7 tail 뒤 같은 쪽에서 시작해야 한다"
-    );
+    // 원본 Contents/section0.xml의 image354는 bright="8" contrast="0"이다.
+    // 저장·재열기에서도 원본 속성 의미를 보존하며 두 필드를 교환하지 않는다.
+    assert_eq!(grouped_picture.image_attr.brightness, 8);
+    assert_eq!(grouped_picture.image_attr.contrast, 0);
 }
 
 /// PDF p144의 자동날인 안내는 같은 빈 host paragraph의 `BehindText` 1×1 table 세 개를

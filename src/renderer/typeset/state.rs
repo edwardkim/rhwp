@@ -27,12 +27,33 @@ use super::paragraph::placement::ParagraphFragment;
 use super::paragraph::scan::LineScanPage;
 use super::paragraph::split_entry::SplitEntryPage;
 
+use crate::model::{control::Control, paragraph::Paragraph};
 use crate::renderer::float_placement::FloatLaneSet;
 use crate::renderer::inline_flow::InlineFlowPlan;
 use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    pub(in crate::renderer::typeset) fn table_flow_successor<'a>(
+        &self,
+        host_index: usize,
+        paragraphs: &'a [crate::model::paragraph::Paragraph],
+    ) -> Option<(usize, &'a crate::model::paragraph::Paragraph)> {
+        paragraphs
+            .iter()
+            .enumerate()
+            .skip(
+                self.data
+                    .deferred_table_successor_start
+                    .unwrap_or(host_index + 1)
+                    .max(host_index + 1),
+            )
+            .find(|(index, _)| {
+                !self.data.prefilled_paras.contains(index)
+                    && !self.data.pre_emitted_host_paras.contains(index)
+            })
+    }
+
     /// 빈 단은 배경 개체가 있는 단이 아니다. 통째 표의 별도 여유 경로는
     /// 실제 Shape가 있고 흐름을 점유한 다른 항목이 없을 때만 사용한다.
     pub(super) fn current_column_has_only_overlay_shapes(&self) -> bool {
@@ -110,7 +131,9 @@ impl TypesetState {
         wrap_prefix_len: usize,
         end_line: usize,
         suffix_height: f64,
+        content_height: f64,
     ) {
+        self.record_paragraph_content_bottom((para_idx, end_line), content_height, suffix_height);
         self.data.current_items.push(PageItem::PartialParagraph {
             para_index: para_idx,
             start_line: wrap_prefix_len,
@@ -333,16 +356,27 @@ impl TypesetState {
         continuation: Option<OverlayContinuation>,
     ) {
         if let Some(continuation) = continuation {
-            self.data.pending_overlay_continuations.push((
-                para_idx,
-                ctrl_idx,
-                continuation.first_unfit,
-                continuation.reserve_px,
-            ));
+            let fragment = continuation.row_fragment;
+            self.data.pending_overlay_continuations.push(
+                crate::renderer::pagination::OverlayContinuation {
+                    para_index: para_idx,
+                    control_index: ctrl_idx,
+                    start_row: continuation.first_unfit,
+                    start_cut: fragment
+                        .as_ref()
+                        .map_or_else(Vec::new, |f| f.end_cut.clone()),
+                    start_row_height: fragment.as_ref().map(|f| f.remaining_height),
+                    reserve_px: continuation.reserve_px,
+                },
+            );
             self.data.current_column_overlay_cuts.push((
                 para_idx,
                 ctrl_idx,
-                continuation.first_unfit,
+                crate::renderer::pagination::OverlayCut {
+                    end_row: continuation.first_unfit + usize::from(fragment.is_some()),
+                    end_row_height: fragment.as_ref().map(|f| f.opening_height),
+                    end_cut: fragment.map_or_else(Vec::new, |f| f.end_cut),
+                },
             ));
         }
         // [#4514] 흐름 소비 0 배치 — 이 앵커는 #1955 흡수 대상이 아니다.
@@ -353,6 +387,7 @@ impl TypesetState {
         TableControlPage {
             has_items: !self.data.current_items.is_empty(),
             col_count: self.data.col_count,
+            profile: self.data.profile,
         }
     }
 
@@ -404,12 +439,18 @@ impl TypesetState {
         para_idx: usize,
         ctrl_idx: usize,
         flow: TableHostShapeFlow,
+        accepted_frame: Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
     ) {
         self.data.current_items.push(PageItem::Shape {
             para_index: para_idx,
             control_index: ctrl_idx,
         });
-        if let Some(line_h) = flow.tac_separate_line_h {
+        if let Some(frame) = accepted_frame {
+            self.data.current_height = frame.occupied_bottom;
+            self.data
+                .paragraph_float_placements
+                .insert((para_idx, ctrl_idx), frame);
+        } else if let Some(line_h) = flow.tac_separate_line_h {
             self.data.current_height += line_h;
         } else if let Some(extra) = flow.non_tac_pushdown_h {
             self.data.current_height += extra;
@@ -473,24 +514,6 @@ impl TypesetState {
         self.data.current_height = self.data.current_height.max(lanes.max_bottom());
     }
 
-    /// 각주 등록 뒤 단일 단의 vpos 관측값을 기존 순서로 확정한다.
-    pub(super) fn commit_deferred_table_anchor(&mut self, para_index: usize) {
-        if self.data.col_count == 1 {
-            self.data.vpos_prev_layout_para = Some(para_index);
-            if matches!(
-                self.data.current_items.last(),
-                Some(PageItem::Table { .. } | PageItem::PartialTable { .. })
-            ) {
-                self.data.vpos_page_base = None;
-                self.data.vpos_lazy_base = None;
-                self.data.vpos_prev_partial_table = matches!(
-                    self.data.current_items.last(),
-                    Some(PageItem::PartialTable { .. })
-                );
-            }
-        }
-    }
-
     pub(super) fn has_deferred_table_controls(&self) -> bool {
         !self.data.deferred_table_controls.is_empty()
     }
@@ -515,36 +538,6 @@ impl TypesetState {
             current_height: self.data.current_height,
             vpos_page_base: self.data.vpos_page_base,
             current_items: &self.data.current_items,
-        }
-    }
-
-    /// 저장 TAC 줄 수용에 필요한 읽기 전용 페이지 관측값.
-    pub(super) fn stored_tac_page(
-        &self,
-        paragraphs: &[crate::model::paragraph::Paragraph],
-    ) -> StoredTacPage {
-        StoredTacPage {
-            profile: self.data.profile,
-            current_height: self.data.current_height,
-            vpos_col_anchor: self.data.vpos_col_anchor,
-            vpos_page_base: self.data.vpos_page_base,
-            vpos_lazy_base: self.data.vpos_lazy_base,
-            side_wrap_empty: self.data.side_wrap_exclusions.is_empty(),
-            // layout의 단 초기 base와 같은 첫 완전한 표의 저장 줄을 읽는다.
-            // PartialTable에는 소비된 컷이 있고, 문단 시작의 들여쓰기·앞 간격은
-            // 별도 계약이므로 이 표 원점 조회에 섞지 않는다.
-            stored_table_column_base: self.data.current_items.first().and_then(|item| {
-                let PageItem::Table { para_index, .. } = item else {
-                    return None;
-                };
-                paragraphs
-                    .get(*para_index)
-                    .and_then(|para| para.line_segs.first())
-                    .filter(|seg| {
-                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                    })
-                    .map(|seg| seg.vertical_pos)
-            }),
         }
     }
 
@@ -758,9 +751,7 @@ impl TypesetState {
             Some(height),
         ) = (&fragment.item, fragment.content_height)
         {
-            self.data
-                .paragraph_fragment_content_bottoms
-                .insert((*para_index, *end_line), self.data.current_height + height);
+            self.record_paragraph_content_bottom((*para_index, *end_line), height, fragment.height);
         }
         self.data.current_items.push(fragment.item);
         self.data.vpos_prev_trimmed_sb_px = 0.0;
@@ -780,6 +771,7 @@ impl TypesetState {
             self.flush_column();
             self.data.current_column += 1;
             self.data.current_height = 0.0;
+            self.activate_next_column_stored_frames();
         } else {
             self.advance_column_or_new_page();
         }
@@ -794,6 +786,7 @@ impl TypesetState {
             current_height: self.data.current_height,
             has_items: !self.data.current_items.is_empty(),
             vpos_ladder_dirty: self.data.vpos_ladder_dirty,
+            stored_vpos_base: self.data.vpos_page_base,
             current_footnote_height: self.data.current_footnote_height,
             footnote_safety_margin: self.data.footnote_safety_margin,
             current_zone_y_offset: self.data.current_zone_y_offset,
@@ -834,6 +827,37 @@ impl TypesetState {
             exclusions: preceding.then_some(&self.data.side_wrap_exclusions),
             visible_float_exclusions: preceding.then_some(&self.data.visible_float_exclusions),
         }
+    }
+
+    /// 새 다단 쪽의 첫 host에만 절대 전폭 예약의 좌표계를 제공한다.
+    pub(super) fn stored_body_wide_host_frame(&self) -> Option<(LayoutRect, f64)> {
+        (self.data.current_items.is_empty()
+            && self.data.current_column == 0
+            && self.data.col_count > 1
+            && self.data.current_start_height == 0.0
+            && self.data.current_zone_y_offset == 0.0
+            && !self.data.current_endnote_flow)
+            .then_some((self.data.layout.body_area, self.data.layout.page_height))
+    }
+
+    /// 부분 수용/이월이면 기존 소유자를 유지한다. 전체 수용한 줄의 원점과 전진 끝을 공유한다.
+    pub(super) fn commit_stored_body_wide_host(
+        &mut self,
+        para_index: usize,
+        para: &crate::model::paragraph::Paragraph,
+        plan: InlineFlowPlan,
+    ) {
+        if self.data.current_column != 0
+            || !matches!(self.data.current_items.first(),
+                Some(PageItem::PartialParagraph { para_index: owner, start_line: 0, end_line })
+                    if *owner == para_index && *end_line == para.line_segs.len())
+            || plan.end > self.available_height()
+        {
+            return;
+        }
+        // PartialParagraph의 측정은 이미 앞 간격을 제외한 글줄 전진량이다.
+        // 표 배치가 뒤 문단까지 수용했을 수 있으므로 그 소비 높이·좌표축을 되감지 않는다.
+        self.data.inline_flow_plans.insert(para_index, plan);
     }
 
     /// fit을 통과한 동일 plan을 배치 metadata와 높이에 함께 반영한다.
@@ -960,8 +984,11 @@ impl TypesetState {
 
 mod commands;
 mod data;
+mod empty_run;
 pub(super) mod finalize;
 mod notes;
+mod paragraph_fragment;
+mod stored_tac;
 mod transition;
 
 pub(super) struct TypesetState {

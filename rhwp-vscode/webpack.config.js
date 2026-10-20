@@ -121,18 +121,31 @@ const webviewConfig = {
           from: path.resolve(__dirname, "node_modules", "@noble", "hashes", "LICENSE"),
           to: path.resolve(__dirname, "dist", "licenses", "noble-hashes-LICENSE.txt"),
         },
+        {
+          from: path.resolve(__dirname, "..", "assets", "fonts", "licenses"),
+          to: path.resolve(__dirname, "dist", "media", "fonts", "licenses"),
+        },
         // 필수 오픈소스 폰트만 번들 (크기 최적화)
         ...[
           "NotoSerifKR-Regular.woff2", "NotoSerifKR-Bold.woff2",
           "NotoSansKR-Regular.woff2", "NotoSansKR-Bold.woff2", "NotoSansKR-ExtraLight.woff2",
           "Pretendard-Regular.woff2", "Pretendard-Bold.woff2",
           "D2Coding-Regular.woff2",
+          "NotoSansMath-Regular.woff2",
           "NanumGothic-Regular.woff2", "NanumMyeongjo-Regular.woff2",
           "GowunBatang-Regular.woff2", "GowunDodum-Regular.woff2",
         ].map(f => ({
           from: path.resolve(__dirname, "..", "assets", "fonts", f),
           to: path.resolve(__dirname, "dist", "media", "fonts", f),
         })),
+        {
+          from: path.resolve(__dirname, "..", "assets", "fonts", "NotoSansMath-OFL.txt"),
+          to: path.resolve(__dirname, "dist", "media", "fonts", "NotoSansMath-OFL.txt"),
+        },
+        {
+          from: path.resolve(__dirname, "..", "THIRD_PARTY_LICENSES.md"),
+          to: path.resolve(__dirname, "dist", "licenses", "THIRD_PARTY_LICENSES.md"),
+        },
       ],
     }),
   ],

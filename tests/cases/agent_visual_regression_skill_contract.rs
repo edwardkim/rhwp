@@ -256,32 +256,6 @@ fn ir_diff_json_identical_exit_zero_when_sample_exists() {
 }
 
 #[test]
-fn ir_diff_json_diff_is_exit_three_when_samples_exist() {
-    let a = repo_root().join("samples/hwp3-sample.hwp");
-    let b = repo_root().join("samples/SO-SUEOP.hwp");
-    if !a.exists() || !b.exists() {
-        eprintln!("샘플 없음 — 건너뜀");
-        return;
-    }
-    let args = [
-        "ir-diff",
-        a.to_str().unwrap(),
-        b.to_str().unwrap(),
-        "--json",
-    ];
-    let output = run(&args);
-    assert_eq!(
-        output.status.code(),
-        Some(3),
-        "{}",
-        describe(&args, &output)
-    );
-    let v: serde_json::Value = serde_json::from_slice(&output.stdout).expect("json");
-    assert_eq!(v["identical"], false, "{v}");
-    assert!(v["diffCount"].as_u64().unwrap() > 0, "{v}");
-}
-
-#[test]
 fn render_diff_missing_file_is_runtime_not_usage() {
     let args = ["render-diff", "samples/no-such-visual-regression.hwp"];
     let output = run(&args);

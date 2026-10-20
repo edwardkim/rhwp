@@ -292,8 +292,10 @@ impl Cell {
     /// 렌더는 저장 여백을 그대로 써서 글자가 아래 괘선을 넘는다 — 여백이 셀
     /// 높이의 절반~1배인 정상 조밀 표에서 오발동한 #5751 이 그 사례다
     /// (156505020 데이터 셀: pad 15.09px, h 21.09px).
+    /// 여백 합과 같은 선언 높이는 내용 높이가 아직 반영되지 않은 정상 최소값이다.
+    /// 이를 축소하면 실제 줄로 성장한 행에서도 컷 계산만 여백을 잃는다.
     pub fn vertical_padding_is_abnormal(cell_height_px: f64, total_v_pad_px: f64) -> bool {
-        cell_height_px > 0.0 && total_v_pad_px >= cell_height_px
+        cell_height_px > 0.0 && total_v_pad_px > cell_height_px
     }
 
     /// 1×1 표의 선언된 바깥 높이는 유일한 셀의 물리 높이이기도 하다.
@@ -559,6 +561,17 @@ impl Cell {
 }
 
 impl Table {
+    /// The empty bands before the first and after the last cell are part of
+    /// a separated table's physical box, in addition to its internal gaps.
+    pub(crate) fn outer_cell_spacing_hu(&self) -> i32 {
+        i32::from(self.cell_spacing) * 2
+    }
+
+    /// The physical space between the row or column cores owned by a span.
+    pub(crate) fn inner_cell_spacing_hu(&self, span: usize) -> i64 {
+        i64::from(self.cell_spacing).saturating_mul(span.saturating_sub(1) as i64)
+    }
+
     #[cfg(test)]
     pub(crate) fn reset_paragraph_frame_owner_widths_calls_for_test() {
         PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.set(0));
@@ -697,12 +710,15 @@ impl Table {
         if col_count == 0 || self.common.width == 0 {
             return invalid;
         }
-        for row in 0..self.row_count {
-            let mut cells = self
-                .cells
-                .iter()
-                .filter(|cell| cell.row == row && cell.row_span == 1)
-                .collect::<Vec<_>>();
+        // 같은 행의 선언만 비교한다. 전체 셀을 행마다 다시 검색하지 않고,
+        // 불변 입력을 한 번 모아 원래의 안정적 열 순서로 소비한다.
+        let mut by_row = std::collections::BTreeMap::<u16, Vec<&Cell>>::new();
+        for cell in &self.cells {
+            if cell.row < self.row_count && cell.row_span == 1 {
+                by_row.entry(cell.row).or_default().push(cell);
+            }
+        }
+        for (row, mut cells) in by_row {
             cells.sort_by_key(|cell| cell.col);
             let mut next_col = 0usize;
             let mut total = 0u64;
@@ -782,15 +798,15 @@ impl Table {
             }
             let last = r + span - 1;
             // 걸친 행 합 — 미지 행이 있으면 기존 분배 규칙 담당.
-            let mut span_sum: u64 = 0;
-            let mut prefix_sum: u64 = 0;
+            let mut span_sum: i64 = 0;
+            let mut prefix_sum: i64 = 0;
             let mut all_known = true;
             for (i, h) in declared.iter().enumerate().take(last + 1) {
                 match h {
                     Some(v) => {
-                        prefix_sum += *v as u64;
+                        prefix_sum += i64::from(*v);
                         if i >= r {
-                            span_sum += *v as u64;
+                            span_sum += i64::from(*v);
                         }
                     }
                     None => {
@@ -799,16 +815,18 @@ impl Table {
                     }
                 }
             }
-            if !all_known || span_sum <= cell.height as u64 {
+            span_sum += self.inner_cell_spacing_hu(span);
+            prefix_sum += self.inner_cell_spacing_hu(last + 1) + i64::from(self.cell_spacing) * 2;
+            if !all_known || span_sum <= i64::from(cell.height) {
                 continue;
             }
-            let deficit = span_sum - cell.height as u64;
+            let deficit = span_sum - i64::from(cell.height);
             // 저장 표 높이 확인 — 축소 후 마지막 걸침 행까지의 행합이 `common.height`
             // 와 정확히 같을 때만 적용한다. 손상 선언(걸침 선언 0 등)은 여기서 걸러진다.
-            if prefix_sum.checked_sub(deficit) != Some(self.common.height as u64) {
+            if prefix_sum.checked_sub(deficit) != Some(i64::from(self.common.height)) {
                 continue;
             }
-            let capped = deficit.min(declared[last].unwrap_or(0) as u64) as HwpUnit;
+            let capped = deficit.min(i64::from(declared[last].unwrap_or(0))) as HwpUnit;
             // 같은 마지막 행에 상한이 여러 개면 **덜 줄이는** 쪽을 택한다 —
             // 이 규칙은 부푼 묶음을 되돌리는 보정이지 새 압축이 아니다.
             if shrink[last] == 0 || capped < shrink[last] {
@@ -1292,6 +1310,36 @@ impl Table {
             }
         }
         heights
+    }
+
+    /// 여러 행에 걸친 셀이 덮는 측정 행을 표시한다.
+    /// 원본의 반열린 span 구간을 시작/끝 이벤트로 보존하여 행마다
+    /// 전체 셀을 다시 순회하지 않는다. 선언 행 수와 조회 범위는 구분한다.
+    pub fn rows_touched_by_rowspans(&self, row_count: usize) -> Vec<bool> {
+        if row_count == 0 {
+            return Vec::new();
+        }
+        let mut events = vec![0i64; row_count];
+        for cell in &self.cells {
+            let start = usize::from(cell.row);
+            if cell.row_span <= 1 || start >= row_count {
+                continue;
+            }
+            let end = (start + usize::from(cell.row_span)).min(row_count);
+            events[start] += 1;
+            if end < row_count {
+                events[end] -= 1;
+            }
+        }
+        let mut active = 0i64;
+        events
+            .into_iter()
+            .take(row_count)
+            .map(|event| {
+                active += event;
+                active > 0
+            })
+            .collect()
     }
 
     /// row_sizes를 행별 실제 셀 개수로 재계산한다.

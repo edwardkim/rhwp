@@ -472,16 +472,58 @@ fn actual_hwp3_password_fixture_keeps_icon_outline_at_column_origin_without_fill
 
 #[test]
 fn actual_hwp3_password_fixture_keeps_regular_page_background_opaque() {
+    use base64::Engine as _;
+
+    let source = parse_document_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+        .expect("원본 쪽 배경 속성과 payload");
+    let border_id = source.sections[0]
+        .section_def
+        .page_border_fill
+        .border_fill_id;
+    let fill = source.doc_info.border_fills[(border_id - 1) as usize]
+        .fill
+        .image
+        .as_ref()
+        .expect("원본 쪽 배경");
+    assert_eq!((fill.brightness, fill.contrast), (-15, 50));
+    let original = image::load_from_memory(
+        &source.bin_data_content[(fill.bin_data_id - 1) as usize]
+            .data
+            .load(),
+    )
+    .expect("원본 배경 BMP")
+    .to_rgba8();
     let document = HwpDocument::from_bytes_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
         .expect("실제 HWP3 fixture를 열어야 함");
     let svg = document
         .render_page_svg(0)
         .expect("첫 쪽 SVG를 렌더해야 함");
 
-    assert!(
-        svg.contains("rhwp-img-bc-b50c-15"),
-        "배경의 HWP 밝기 50·대비 -15 색조는 유지해야 함"
-    );
+    // 효과가 이미 픽셀에 들어간 PNG를 보호한다. 이전 SVG filter ID의 존재는
+    // 실제 불투명도·색조의 증거가 아니며 중복 효과 적용을 요구해서도 안 된다.
+    let backgrounds: Vec<_> = svg
+        .split("data:image/png;base64,")
+        .skip(1)
+        .filter_map(|tail| {
+            let encoded = tail.split('"').next()?;
+            let bytes = base64::engine::general_purpose::STANDARD
+                .decode(encoded)
+                .ok()?;
+            let png = image::load_from_memory(&bytes).ok()?.to_rgba8();
+            (png.dimensions() == original.dimensions()).then_some(png)
+        })
+        .collect();
+    assert_eq!(backgrounds.len(), 1, "원본 크기의 쪽 배경 하나를 보존한다");
+    let background = &backgrounds[0];
+    assert!(background.pixels().all(|pixel| pixel[3] == 255));
+    assert!(background
+        .pixels()
+        .zip(original.pixels())
+        .all(|(after, before)| (0..3).all(|channel| after[channel] >= before[channel])));
+    assert!(background
+        .pixels()
+        .zip(original.pixels())
+        .any(|(after, before)| after.0[..3] != before.0[..3]));
     assert!(
         !svg.contains("<g opacity=\"0.17\">"),
         "일반 쪽 배경의 밝기·대비를 legacy watermark opacity로 처리하면 안 됨"

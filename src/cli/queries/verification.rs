@@ -204,6 +204,7 @@ pub(crate) fn run(args: &[String]) -> i32 {
         rhwp::parser::FileFormat::Hwpx => "hwpx",
         rhwp::parser::FileFormat::Hwp3 => "hwp3",
         rhwp::parser::FileFormat::Hml => "hml",
+        rhwp::parser::FileFormat::Pdf => "pdf",
         _ => "unknown",
     };
     let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {

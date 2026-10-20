@@ -1,0 +1,59 @@
+{
+  "production_source_sha": "37caee9df5f9b208794ea333134084362a370226",
+  "input": "samples/issue6111/56345_regulatory_impact_analysis.hwp",
+  "input_sha256": "58013017c3a3dc7e2d278b99c5b4fa1c61de0aa861f913a2c41a49145baadafc",
+  "pdf": "pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf",
+  "pdf_sha256": "c66ea20c3b8d6b31af73752e170372bc7af839c38812991125bdde4dfba35abb",
+  "profile": "print",
+  "dpi": 96,
+  "docker_wasm_sha256": "6675faa946fc54083e6fcfbfe0ac1028f995905458167b4101470fed40b7e826",
+  "pages": {
+    "20": 92.69159,
+    "21": 99.85289
+  },
+  "full_document_minimum": 14.34841,
+  "below90": [
+    7,
+    8,
+    9,
+    17,
+    18
+  ],
+  "user_visual_verdict": "PASS",
+  "user_merge_approval": "2026-10-08",
+  "scope": "20/21 empty paragraph continuation; remaining fidelity differences disclosed",
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/issue_7644_stored_block_empty_paragraph/56345-p020-native-review.png",
+      "sha256": "20eef283c6de9c6c8eac3084693a0e44336784fb906ce4ca952a906d8ecf120f"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_7644_stored_block_empty_paragraph/56345-p020-native-overlay.png",
+      "sha256": "e8f2887f83f3a3ead179791bade9ad077b97131b2b988e4a0d5236150d743cda"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_7644_stored_block_empty_paragraph/56345-p021-native-review.png",
+      "sha256": "6eadaa69e5cddb9460665424443f55afec814b3ca0303bf8a729b2e05ec820c3"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_7644_stored_block_empty_paragraph/56345-p021-native-overlay.png",
+      "sha256": "96b59b83c1bba1394edf08f37f94dda1e51a5565c3337eb8c3d607b28181d419"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_7644_stored_block_empty_paragraph/56345-p020-wasm-review.png",
+      "sha256": "879b5b70edcd8a7fde333f9512e632e824a7be6f1f0709c366af2af2343ad3b1"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_7644_stored_block_empty_paragraph/56345-p020-wasm-overlay.png",
+      "sha256": "9b7ee4df31670b132ea2feea0538aeb16dfd2ef30dd3eddf70ec7c45dc28253d"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_7644_stored_block_empty_paragraph/56345-p021-wasm-review.png",
+      "sha256": "b147c0678ff28bafc9bfb8e9f6acbd48f87c56f4f242e3194bf5680380d1757e"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_7644_stored_block_empty_paragraph/56345-p021-wasm-overlay.png",
+      "sha256": "96b385d55dd9628af76d54089a2c41210bcf714472700daea7698947a9beca65"
+    }
+  ]
+}

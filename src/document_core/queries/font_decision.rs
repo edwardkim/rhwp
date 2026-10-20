@@ -16,6 +16,9 @@ use crate::renderer::style_resolver::{
     detect_lang_category, lookup_font_name_in_environment, FontSubstitutionBoundary,
 };
 
+#[path = "font_decision/direct_metric_rule.rs"]
+mod direct_metric_rule;
+
 const DEFAULT_MAX_CHARACTERS: usize = 1024;
 const MAX_CHARACTERS: usize = 4096;
 
@@ -279,15 +282,21 @@ fn metric_alias_provenance(
 ) -> Result<ProvenanceDecision, HwpError> {
     let (relation_type, evidence_status) = metric_alias_relation(source, target);
     let is_surrogate = relation_type == "metric-surrogate";
+    let identity = json!({
+        "sourceBoundaryId": "rust-metric.metric-alias",
+        "candidateKind": "finite-mapping",
+        "sourceFace": source,
+        "targetOrPolicy": target,
+        "conditions": {},
+        "order": null,
+    });
+    if let Some(provenance) =
+        direct_metric_rule::provenance(source, target, generated_rule_id, &identity)?
+    {
+        return Ok(provenance);
+    }
     let provenance = linked_provenance(
-        json!({
-            "sourceBoundaryId": "rust-metric.metric-alias",
-            "candidateKind": "finite-mapping",
-            "sourceFace": source,
-            "targetOrPolicy": target,
-            "conditions": {},
-            "order": null,
-        }),
+        identity,
         "rust-metric",
         relation_type,
         evidence_status,
@@ -584,8 +593,7 @@ impl DocumentCore {
                         paragraph_box,
                         &self.styles,
                         self.dpi,
-                        self.effective_layout_profile()
-                            .legacy_hwp3_stored_geometry(),
+                        self.effective_layout_profile().stored_geometry_policy(),
                         miss_policy,
                     );
                     let reason = match disposition {
@@ -876,7 +884,12 @@ impl DocumentCore {
                     paint: PaintDecision::stage3(
                         Some(run.style.font_family.clone()),
                         native_observer.map(|observe| {
-                            observe(&run.style.font_family, ch, run.style.bold, run.style.italic)
+                            observe(
+                                &crate::renderer::native_font_family_for_style(&run.style),
+                                ch,
+                                run.style.bold,
+                                run.style.italic,
+                            )
                         }),
                         native_unavailable_reason,
                     ),

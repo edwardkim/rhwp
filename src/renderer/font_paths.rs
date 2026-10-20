@@ -104,13 +104,12 @@ pub fn search_dirs(extra: &[PathBuf]) -> Vec<PathBuf> {
 
 /// custom typeface 로더(skia `with_font_paths`)용 디렉터리 — **시스템·번들 제외**.
 ///
-/// skia 의 custom 로더는 family 당 typeface 1개만 담아 굵기(스타일) 변형을
-/// 표현하지 못하고, 해석 체인에서 시스템 매칭보다 앞선다(#2864 이전 필드
-/// 검증 의미론). 그래서 여기에는 사용자가 의도한 폰트(호출자 지정 → 환경
-/// 변수)만 담는다:
-/// - 시스템 디렉터리를 넣으면 regular 파일이 family 를 선점해 bold run 이
-///   전부 regular 로 렌더된다(#3300) — 시스템 폰트는
-///   `FontMgr::match_family_style`(정상 스타일 매칭)이 담당한다.
+/// custom 로더는 이제 collection 의 모든 bounded face와 family별 스타일
+/// 후보를 보존하지만, 해석 체인에서 시스템 매칭보다 앞선다는 계약은 같다.
+/// 그래서 여기에는 사용자가 의도한 폰트(호출자 지정 → 환경 변수)만 담는다:
+/// - 시스템 폰트는 `FontMgr::match_family_style`이 담당한다. 시스템 디렉터리를
+///   custom inventory로 다시 읽어 명시적인 사용자 폰트처럼 우선하지 않는다.
+///   예전 single-face 로더의 regular 선점 문제(#3300)도 이 경계의 근거다.
 /// - 번들 opensource 를 넣으면 깊은 폴백(Noto Sans KR)이 시스템 1순위를
 ///   제치고 선점된다(#3300, r23 발산 −6.9pp) — 번들은 별도 최후-폴백 로더
 ///   (`bundled_font_dirs`)로 체인 말미에만 선다.
@@ -251,7 +250,7 @@ mod tests {
     }
 
     /// [#3300] custom 로더 목록은 시스템·번들을 포함하면 안 된다.
-    /// - 시스템: family 당 1 typeface 라 굵기 변형 소실(regular 선점)
+    /// - 시스템: 사용자 지정 inventory로 승격하지 않고 FontMgr의 스타일 매칭에 위임
     /// - 번들: 깊은 폴백(Noto)이 시스템 1순위를 제치고 본문을 렌더(r23 −6.9pp)
     #[test]
     fn custom_font_dirs_excludes_system_and_bundled() {

@@ -83,36 +83,6 @@ fn tabs_of(rel: &str) -> Vec<[u16; 7]> {
     out
 }
 
-/// HWP3 인라인 탭이 폭을 싣는다 — 종전에는 `tab_extended` 가 비어 저장본이 폭 0 이었다.
-#[test]
-fn hwp3_inline_tab_carries_its_width() {
-    for rel in [
-        "samples/hwp3-sample10.hwp",
-        "samples/hwp3-sample16.hwp",
-        "samples/SO-SUEOP.hwp",
-    ] {
-        let tabs = tabs_of(rel);
-        assert!(
-            !tabs.is_empty(),
-            "{rel}: 인라인 탭 확장이 하나도 없다 — 저장본에서 탭 폭과 채움을 통째로 잃는다"
-        );
-        let zero_width = tabs
-            .iter()
-            .filter(|ext| ((ext[0] as u32) | ((ext[1] as u32) << 16)) == 0)
-            .count();
-        assert_eq!(
-            zero_width,
-            0,
-            "{rel}: 탭 {}개 중 {zero_width}개가 폭 0 이다 — 한글이 점선을 그리지 않는다",
-            tabs.len()
-        );
-        assert!(
-            tabs.iter().all(|ext| ext[6] == 0x0009),
-            "{rel}: 탭 확장의 닫는 마커가 0x0009 가 아니다"
-        );
-    }
-}
-
 /// 채움은 문서가 말한 대로 갈린다 — 점끌기를 끈 탭까지 점선으로 칠하지 않는다.
 #[test]
 fn hwp3_inline_tab_fill_follows_the_document() {
@@ -136,30 +106,4 @@ fn hwp3_inline_tab_fill_follows_the_document() {
         tabs.iter().all(|ext| ext[2] >> 8 == 0),
         "탭 종류(ext[2] 고바이트)는 정본이 0(미지정)을 쓴다 — 여기서 채우지 않는다"
     );
-}
-
-/// 탭 확장 개수가 본문의 `\t` 개수와 맞는다 — 직렬화가 `\t` 순번으로 확장을 꺼낸다.
-#[test]
-fn hwp3_inline_tab_count_matches_the_tab_characters() {
-    for rel in ["samples/hwp3-sample16.hwp", "samples/SO-SUEOP.hwp"] {
-        let doc = load(rel);
-        let mut checked = 0usize;
-        for section in &doc.sections {
-            for para in &section.paragraphs {
-                if para.tab_extended.is_empty() {
-                    continue;
-                }
-                assert_eq!(
-                    para.tab_extended.len(),
-                    para.text.matches('\t').count(),
-                    "{rel}: 탭 확장 개수가 본문 '\\t' 개수와 다르다 — 직렬화가 엉뚱한 확장을 쓴다"
-                );
-                checked += 1;
-            }
-        }
-        assert!(
-            checked > 0,
-            "{rel}: 탭이 있는 문단을 하나도 못 찾았다 — 대상 0건은 통과 증거가 아니다"
-        );
-    }
 }

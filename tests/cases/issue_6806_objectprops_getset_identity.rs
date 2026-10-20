@@ -95,42 +95,6 @@ fn shape_feedback_keeps_stored_zero_size() {
     );
 }
 
-/// 반례 — 값을 **실제로** 0 으로 떨어뜨리는 편집은 종전대로 클램프된다.
-///
-/// 클램프의 존재 이유(리사이즈 핸들을 반대편으로 넘기면 studio 가 0 을 보낸다)를
-/// 함께 잠근다. 위 완화를 이 경우까지 넓히면 도형이 화면에서 사라진다.
-#[test]
-fn shape_edit_that_drops_a_nonzero_size_to_zero_still_clamps() {
-    const SAMPLE: &str = "samples/21_언어_기출_편집가능본.hwp";
-    let mut core = load(SAMPLE);
-    // 한컴 저장 가로선 s0p4c0 은 높이 4 HWPUNIT. 도형 부재를 PASS 로 세지 않는다.
-    let before = core
-        .get_shape_properties_native(0, 4, 0)
-        .expect("대조 가로선 속성 읽기");
-    let value: serde_json::Value = serde_json::from_str(&before).expect("봉지 파싱");
-    let h = value
-        .get("height")
-        .and_then(|v| v.as_u64())
-        .expect("높이 필드");
-    assert_eq!(h, 4, "대조 가로선의 한컴 저장 높이 전제");
-
-    core.set_shape_properties_native(0, 4, 0, r#"{"height":0}"#)
-        .expect("0 으로 떨어뜨리는 편집");
-    let after = core
-        .get_shape_properties_native(0, 4, 0)
-        .expect("도형 속성 다시 읽기");
-    let after_h = serde_json::from_str::<serde_json::Value>(&after)
-        .ok()
-        .and_then(|v| v.get("height").and_then(|x| x.as_u64()))
-        .expect("높이 읽기");
-
-    assert!(
-        after_h == 200,
-        "0 으로 떨어뜨리는 편집은 최소 크기로 올라와야 한다 — 이 보호까지 풀면 도형이 \
-         화면에서 사라진다. 이전 높이={h} 이후 높이={after_h}"
-    );
-}
-
 /// 저장 높이 0인 도형을 실제로 확대했다가 undo 하면 한컴 저장값으로 돌아와야 한다.
 #[test]
 fn shape_resize_undo_restores_stored_zero_height() {

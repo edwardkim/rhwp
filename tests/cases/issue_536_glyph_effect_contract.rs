@@ -5,8 +5,14 @@ use rhwp::renderer::TextStyle;
 
 #[test]
 fn effects_require_explicit_replay_but_preserve_simple_glyph_geometry() {
-    let mut style = PaintTextStyle::from(&TextStyle::default());
+    let mut style = PaintTextStyle::from(&TextStyle {
+        font_size: 12.0,
+        ..Default::default()
+    });
     assert!(style.is_fill_only_glyph_replay());
+    let mut zero_size = style.clone();
+    zero_size.font_size = 0.0;
+    assert!(!zero_size.is_simple_glyph_run_replay());
     style.outline_type = 1;
     style.shadow_type = 1;
     style.emboss = true;

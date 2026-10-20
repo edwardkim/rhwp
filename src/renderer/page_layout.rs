@@ -177,9 +177,15 @@ impl PageLayoutInfo {
         }
     }
 
-    /// 본문 영역의 사용 가능한 높이 (각주 영역 제외 + 페이지네이션 허용치 포함)
+    /// 각주 영역을 제외한 물리 본문 높이. 저장 형식의 허용치로 용지를 늘리지 않는다.
+    pub fn physical_body_height(&self) -> f64 {
+        self.body_area.height - self.footnote_area.height
+    }
+
+    /// 레거시 미주 흐름에서 사용하는 추가 페이지네이션 예산.
+    /// 일반 본문의 줄·표 점유는 `physical_body_height`를 사용한다.
     pub fn available_body_height(&self) -> f64 {
-        self.body_area.height - self.footnote_area.height + self.pagination_tolerance_px
+        self.physical_body_height() + self.pagination_tolerance_px
     }
 
     /// 단 너비 (HWPUNIT) — vpos 보정에서 segment_width 비교에 사용
@@ -208,7 +214,7 @@ impl PageLayoutInfo {
 }
 
 /// 다단 영역 계산
-fn calculate_column_areas(
+pub(crate) fn calculate_column_areas(
     body_area: &LayoutRect,
     column_def: &ColumnDef,
     dpi: f64,
@@ -224,7 +230,7 @@ fn calculate_column_areas(
         let mut x = body_area.x;
 
         if column_def.proportional_widths {
-            // HWP 5.0 바이너리: widths/gaps는 비례값 (합계=32768)
+            // 한컴 HWP5·HWPX: widths/gaps는 비례값(합계=32768)
             // body_area.width에 대한 비례로 변환
             let total: f64 = column_def
                 .widths

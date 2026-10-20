@@ -14,6 +14,46 @@
       "changeSetId": "issue-7196.ygodic230-metric-name",
       "path": "assets/font-rules/changes/issue-7196-ygodic230-metric-name.json",
       "sha256": "32ba0e30b0bbb23fa29f46d56ac2dc6ffd80bfb16315090be1886df0b74cccf9"
+    },
+    {
+      "changeSetId": "issue-5884.noto-symbols2-webfont",
+      "path": "assets/font-rules/changes/issue-5884-noto-symbols2-webfont.json",
+      "sha256": "269c36ec10b2eae9af54e6630931875a5bfb9627be9881285eeb48d216dd82f4"
+    },
+    {
+      "changeSetId": "issue-5884.noto-symbols2-canvaskit",
+      "path": "assets/font-rules/changes/issue-5884-noto-symbols2-canvaskit.json",
+      "sha256": "0513fa026fc89793049314e945c94aff589961bfc9c6e8b7e996fcc58bda4be9"
+    },
+    {
+      "changeSetId": "issue-4969.oldhangul-license-webfont",
+      "path": "assets/font-rules/changes/issue-4969-oldhangul-license-webfont.json",
+      "sha256": "212b6169582fb2b18fc875b6f9b0094e24b1aa5d68dc57ef256c125110e6a0e2"
+    },
+    {
+      "changeSetId": "issue-4969.oldhangul-license-canvaskit",
+      "path": "assets/font-rules/changes/issue-4969-oldhangul-license-canvaskit.json",
+      "sha256": "2bc3932d2ee31d52f53282972d3a3ad081b215c1c1c9bbfa4d0067cddddb3faf"
+    },
+    {
+      "changeSetId": "issue-7958.h2hdrm-postscript-identity",
+      "path": "assets/font-rules/changes/issue-7958-h2hdrm-postscript-identity.json",
+      "sha256": "d04a756721112256a849a0fbee447d615921cbc8ac926e4ee99c1bb08da49d26"
+    },
+    {
+      "changeSetId": "issue-7959.malgun-postscript-identity",
+      "path": "assets/font-rules/changes/issue-7959-malgun-postscript-identity.json",
+      "sha256": "9af4b0a40b0109ff7193bcd69205ed95b1e6474498b7fc5948aa44bb1d022849"
+    },
+    {
+      "changeSetId": "issue-7966.postscript-layout-name",
+      "path": "assets/font-rules/changes/issue-7966-postscript-layout-name.json",
+      "sha256": "63aaae1650a7df78feb9d16e20c679cc24499559c98ed92012430ff8c0daebba"
+    },
+    {
+      "changeSetId": "issue-7966.postscript-layout-metric",
+      "path": "assets/font-rules/changes/issue-7966-postscript-layout-metric.json",
+      "sha256": "11fae7cb24b36e78ae21025701378a9eb8b81f93cc0c3603a76e9bd05a56a7b1"
     }
   ],
   "evidenceRecords": [
@@ -48,6 +88,46 @@
       "parentEvidenceIds": [],
       "sha256": "5db32d3107d229d471eb43b544e2c87a5fade1d1738b4bdea6338958726cc443",
       "source": "samples/issue7196/156760012_page_top_spacing_trim-2024.pdf"
+    },
+    {
+      "evidenceId": "evidence.issue-5884.noto-symbols2-program",
+      "kind": "public-source",
+      "licenseOrProvenance": "SIL OFL 1.1 원본 Noto Sans Symbols2 Regular. font-program-evidence.json의 cmap/hmtx 직접 추출과 공개 라이선스를 보존한다.",
+      "parentEvidenceIds": [],
+      "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688",
+      "source": "rhwp-studio/public/fonts/NotoSansSymbols2-Regular.ttf"
+    },
+    {
+      "evidenceId": "evidence.issue-4969.oldhangul-redistribution-name",
+      "kind": "public-source",
+      "licenseOrProvenance": "Adobe Source Han Serif K OFL 1.1 수정본. Reserved Font Name을 수정본 이름으로 사용하지 않도록 RHWP Old Hangul로 재명명. 원본 저작권과 OFL, 2215개 glyph charstring 및 메트릭·cmap·GSUB·GPOS 보존. scripts/rename-old-hangul-font.py로 재생성한다.",
+      "parentEvidenceIds": [],
+      "sha256": "1a45a61e9a320c1bc62ca1401f7b23ceffffe8133dc2a9650ad4e12524f8dcab",
+      "source": "assets/fonts/RHWPOldHangul-Regular.woff2"
+    },
+    {
+      "evidenceId": "evidence.issue-7958.h2hdrm-name-table",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "Locally installed H2HDRM.TTF name table: nameID 6 H2hdrM and nameID 1/4 HYHeadLine-Medium / HY헤드라인M describe the same font program. Metadata only; no proprietary font bytes distributed.",
+      "parentEvidenceIds": [],
+      "sha256": "c675d28d3826836832e6423e5826669fa44583ef7f299817939e11d0fc854b66",
+      "source": "assets/font-rules/evidence/issue-7958-postscript-identity.json"
+    },
+    {
+      "evidenceId": "evidence.issue-7959.malgun-name-table",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "Installed malgun.ttf nameID 6 MalgunGothic and nameID 1/4 Malgun Gothic / 맑은 고딕 identify the same regular program. The separate bold program is recorded as a counterexample; its full face is not collapsed into the regular identity. Metadata only, no proprietary font bytes.",
+      "parentEvidenceIds": [],
+      "sha256": "968cd976cfcba1fe511f7f37fd1154e9c004265b0ff55a432f7770fd39fcfd58",
+      "source": "assets/font-rules/evidence/issue-7959-postscript-identity.json"
+    },
+    {
+      "evidenceId": "evidence.issue-7966.postscript-styles",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "Installed SFNT family/full/PostScript names and OS/2 weight. Metadata only, no font bytes. PDF FontDescriptor weight 700 is independently retained. Full face targets keep Bold; neither bold identity aliases to a regular name.",
+      "parentEvidenceIds": [],
+      "sha256": "0d348703c2d9d027af77c42fda6293f61f63aef8af6205e6b595bc39cd1fd337",
+      "source": "assets/font-rules/evidence/issue-7966-postscript-styles.json"
     }
   ],
   "issue": 5955,
@@ -31895,15 +31975,18 @@
         "w1RuleId": "rule.studio-supply.0aab2d58429b52047acb.canvas2d"
       },
       "evidenceIds": [
-        "evidence.issue-5955.sealed-v1-registry"
+        "evidence.issue-5955.sealed-v1-registry",
+        "evidence.issue-4969.oldhangul-redistribution-name"
       ],
       "lifecycle": {
         "introducedBy": "migration:issue-5955",
         "lastEvidenceChangeBy": null,
         "predecessorRuleIds": [],
-        "retiredBy": null,
-        "retirementReason": null,
-        "successorRuleIds": []
+        "retiredBy": "issue-4969.oldhangul-license-webfont",
+        "retirementReason": "수정본을 RHWP 고유 이름으로 공급하고 원본 Source Reserved Font Name을 primary font name에서 제거한다.",
+        "successorRuleIds": [
+          "rule.issue-4969.oldhangul-license-webfont"
+        ]
       },
       "metricEntryIds": [],
       "order": null,
@@ -31919,7 +32002,7 @@
       "selectionTupleSha256": "aeab4bb705e97d654bee51adc7c84cce6c6d056b145c173061ca113cec5548e2",
       "sourceBoundaryId": "studio-supply.font-list",
       "sourceFace": "Source Han Serif K Old Hangul",
-      "status": "active",
+      "status": "retired",
       "supply": {
         "external": false,
         "fontFamily": "Source Han Serif K Old Hangul",
@@ -42978,15 +43061,18 @@
         "w1RuleId": "rule.studio-supply.0aab2d58429b52047acb.canvaskit"
       },
       "evidenceIds": [
-        "evidence.issue-5955.sealed-v1-registry"
+        "evidence.issue-5955.sealed-v1-registry",
+        "evidence.issue-4969.oldhangul-redistribution-name"
       ],
       "lifecycle": {
         "introducedBy": "migration:issue-5955",
         "lastEvidenceChangeBy": null,
         "predecessorRuleIds": [],
-        "retiredBy": null,
-        "retirementReason": null,
-        "successorRuleIds": []
+        "retiredBy": "issue-4969.oldhangul-license-canvaskit",
+        "retirementReason": "수정본을 RHWP 고유 이름으로 공급하고 원본 Source Reserved Font Name을 primary font name에서 제거한다.",
+        "successorRuleIds": [
+          "rule.issue-4969.oldhangul-license-canvaskit"
+        ]
       },
       "metricEntryIds": [],
       "order": null,
@@ -43002,7 +43088,7 @@
       "selectionTupleSha256": "41d172a0612eb72b5e4c535b18147c4a506856b9bfd76f3022ff886c35e0222e",
       "sourceBoundaryId": "studio-supply.font-list",
       "sourceFace": "Source Han Serif K Old Hangul",
-      "status": "active",
+      "status": "retired",
       "supply": {
         "capabilityAgreement": false,
         "declaredCapability": "unavailable",
@@ -43374,9 +43460,507 @@
       "status": "active",
       "supply": null,
       "targetFaceOrPolicy": "Haan YGodic 230"
+    },
+    {
+      "conditions": {
+        "profile": "canvas2d-css-unknown"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-5884.noto-symbols2-program"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-5884.noto-symbols2-webfont",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 153,
+      "projections": [
+        {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-5884.noto-symbols2.webfont",
+      "selectionTupleSha256": "47801966375da37a6f40dbc5bb83c7e91a8f4d90fb07a89ec249bc773f78de34",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "Noto Sans Symbols2",
+      "status": "active",
+      "supply": {
+        "external": false,
+        "fontFamily": "Noto Sans Symbols2",
+        "format": "truetype",
+        "kind": "canvas2d-webfont",
+        "sourceUrl": "fonts/NotoSansSymbols2-Regular.ttf",
+        "unicodeRange": null
+      },
+      "targetFaceOrPolicy": "'fonts/NotoSansSymbols2-Regular.ttf'"
+    },
+    {
+      "conditions": {
+        "profile": "canvaskit-sfnt"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-5884.noto-symbols2-program"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-5884.noto-symbols2-canvaskit",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 158,
+      "projections": [
+        {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-5884.noto-symbols2.canvaskit",
+      "selectionTupleSha256": "4c35df2cd5de0deef1bbc3201db9fc7e06b5774f19dfe571c66f433275e1147d",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "Noto Sans Symbols2",
+      "status": "active",
+      "supply": {
+        "capabilityAgreement": true,
+        "declaredCapability": "sfnt-source",
+        "fontFamily": "Noto Sans Symbols2",
+        "kind": "canvaskit-plan",
+        "offline": {
+          "sources": [
+            {
+              "aliases": [
+                "Noto Sans Symbols2"
+              ],
+              "url": "fonts/NotoSansSymbols2-Regular.ttf"
+            }
+          ],
+          "unavailableFonts": []
+        },
+        "online": {
+          "sources": [
+            {
+              "aliases": [
+                "Noto Sans Symbols2"
+              ],
+              "url": "fonts/NotoSansSymbols2-Regular.ttf"
+            }
+          ],
+          "unavailableFonts": []
+        },
+        "runtimePlanStatus": "planned"
+      },
+      "targetFaceOrPolicy": "sfnt: fonts/NotoSansSymbols2-Regular.ttf"
+    },
+    {
+      "conditions": {
+        "profile": "canvas2d-css-unknown"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-4969.oldhangul-redistribution-name"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-4969.oldhangul-license-webfont",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [
+          "rule.studio-supply.0aab2d58429b52047acb.canvas2d"
+        ],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 152,
+      "projections": [
+        {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-4969.oldhangul-license-webfont",
+      "selectionTupleSha256": "42f8570f739f3e6fa6e453f0a5c7aa2115d928ab54ebfa355586f515b0d23b08",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "RHWP Old Hangul",
+      "status": "active",
+      "supply": {
+        "external": false,
+        "fontFamily": "RHWP Old Hangul",
+        "format": "woff2",
+        "kind": "canvas2d-webfont",
+        "sourceUrl": "fonts/RHWPOldHangul-Regular.woff2",
+        "unicodeRange": "U+1100-11FF, U+A960-A97F, U+D7B0-D7FF"
+      },
+      "targetFaceOrPolicy": "'fonts/RHWPOldHangul-Regular.woff2'"
+    },
+    {
+      "conditions": {
+        "profile": "canvaskit-sfnt"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-4969.oldhangul-redistribution-name"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-4969.oldhangul-license-canvaskit",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [
+          "rule.studio-supply.0aab2d58429b52047acb.canvaskit"
+        ],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 152,
+      "projections": [
+        {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.issue-4969.oldhangul-license-canvaskit",
+      "selectionTupleSha256": "48ec1c8fbd5aad92f09fc4c81a8752e69746b2d693e6fdb50f77e6a95dc8a810",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "RHWP Old Hangul",
+      "status": "active",
+      "supply": {
+        "capabilityAgreement": false,
+        "declaredCapability": "unavailable",
+        "fontFamily": "RHWP Old Hangul",
+        "kind": "canvaskit-plan",
+        "offline": {
+          "sources": [
+            {
+              "aliases": [
+                "RHWP Old Hangul"
+              ],
+              "url": "fonts/RHWPOldHangul-Regular.woff2"
+            }
+          ],
+          "unavailableFonts": []
+        },
+        "online": {
+          "sources": [
+            {
+              "aliases": [
+                "RHWP Old Hangul"
+              ],
+              "url": "fonts/RHWPOldHangul-Regular.woff2"
+            }
+          ],
+          "unavailableFonts": []
+        },
+        "runtimePlanStatus": "planned"
+      },
+      "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for 'fonts/RHWPOldHangul-Regular.woff2'"
+    },
+    {
+      "conditions": {
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7958.h2hdrm-name-table"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7958.h2hdrm-postscript-identity",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 171,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.14713c8b701c74678152",
+      "selectionTupleSha256": "5b834431ba9566a9aa30b0e91b5666c15232e6272fdc1e9080129bee39261ab1",
+      "sourceBoundaryId": "rust-style-resolution.ttf",
+      "sourceFace": "H2hdrM",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "HY헤드라인M"
+    },
+    {
+      "conditions": {
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7958.h2hdrm-name-table"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7958.h2hdrm-postscript-identity",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 172,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.1ce3e788a4c6198b4799",
+      "selectionTupleSha256": "f00bf83eb9479db39744380ec8ad733f1cd1dd10380051b8dc30e5f57e9502ee",
+      "sourceBoundaryId": "rust-style-resolution.ttf",
+      "sourceFace": "HYHeadLine-Medium",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "HY헤드라인M"
+    },
+    {
+      "conditions": {
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7959.malgun-name-table"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7959.malgun-postscript-identity",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 173,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.dada52dd12498becd0dd",
+      "selectionTupleSha256": "7c15eecec50562fdcffe9d73a84acf875f2e71f04e0ecaeb6284705e2fdec958",
+      "sourceBoundaryId": "rust-style-resolution.ttf",
+      "sourceFace": "MalgunGothic",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "맑은 고딕"
+    },
+    {
+      "conditions": {
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7966.postscript-styles"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7966.postscript-layout-name",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 174,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.d145573b4a0a8f0207a1",
+      "selectionTupleSha256": "ee4a6522a15903461a5ddb6b39d615e1e453fb0ffef2c0d576d5d1321d86eb88",
+      "sourceBoundaryId": "rust-style-resolution.ttf",
+      "sourceFace": "MalgunGothicBold",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Malgun Gothic Bold"
+    },
+    {
+      "conditions": {
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7966.postscript-styles"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7966.postscript-layout-name",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 175,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.b1f7fd94d0b7349f050c",
+      "selectionTupleSha256": "573b4590a1cfb99436d64f4fb89f4dff7876378685310cc171e7f090aaed7171",
+      "sourceBoundaryId": "rust-style-resolution.ttf",
+      "sourceFace": "Arial-BoldMT",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Arial Bold"
+    },
+    {
+      "conditions": {
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7966.postscript-styles"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7966.postscript-layout-name",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 176,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.95cdb8836bbe2ab25687",
+      "selectionTupleSha256": "a8042c45e4dfe76b6f177cf4b0ef1a03185b64e09cf4d720f5811233980923dd",
+      "sourceBoundaryId": "rust-style-resolution.ttf",
+      "sourceFace": "Wingdings-Regular",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Wingdings"
+    },
+    {
+      "conditions": {},
+      "decisionPlane": "layout-metric",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7966.postscript-styles"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7966.postscript-layout-metric",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [
+        "font-metric.cb5db76c0649913e4438",
+        "font-metric.1beeab194e16e4a6107d"
+      ],
+      "order": null,
+      "projectionSequence": 68,
+      "projections": [
+        {
+          "id": "rust-layout-metric",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "metric-surrogate",
+      "ruleId": "rule.rust-metric.97a520bd286dc482c765",
+      "selectionTupleSha256": "1d553548323bc05107d5d1ad7c9761b94541b6ab2a9a1c0f234f36430901ff34",
+      "sourceBoundaryId": "rust-metric.metric-alias",
+      "sourceFace": "Malgun Gothic Bold",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Malgun Gothic"
+    },
+    {
+      "conditions": {},
+      "decisionPlane": "layout-metric",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7966.postscript-styles"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7966.postscript-layout-metric",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [
+        "font-metric.b5fafcd791a4af142ef1",
+        "font-metric.6edd92d6f8127459749a",
+        "font-metric.a94242c0b0f23c0e97fd",
+        "font-metric.a04310c5f53100889fc3"
+      ],
+      "order": null,
+      "projectionSequence": 69,
+      "projections": [
+        {
+          "id": "rust-layout-metric",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "metric-surrogate",
+      "ruleId": "rule.rust-metric.d3b78b2bdea7d0531b5f",
+      "selectionTupleSha256": "96b9563572e9061c2413d052d0ed962a91a129067aee998bc4ce1ff36ec8080d",
+      "sourceBoundaryId": "rust-metric.metric-alias",
+      "sourceFace": "Arial Bold",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Arial"
     }
   ],
-  "rulesSha256": "837b77ca5f77164eff7913fcab46c8dd4bbe5a78bf7b77a546cbf3c31d1b50c0",
+  "rulesSha256": "c5dfc832aed0996b85307aacdce61c3fb1a2f8fbe816b5f2494ce7ac2d04a293",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
@@ -43388,15 +43972,15 @@
   },
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
   "summary": {
-    "activeRuleCount": 831,
+    "activeRuleCount": 841,
     "countsByProjection": {
       "canvas2d-paint": 281,
-      "canvas2d-webfont": 153,
-      "canvaskit-sfnt": 158,
-      "rust-layout-metric": 68,
-      "rust-layout-name": 171
+      "canvas2d-webfont": 154,
+      "canvaskit-sfnt": 159,
+      "rust-layout-metric": 70,
+      "rust-layout-name": 177
     },
-    "retiredRuleCount": 2,
-    "ruleCount": 833
+    "retiredRuleCount": 4,
+    "ruleCount": 845
   }
 }

@@ -50,7 +50,7 @@ fn section_xml_concat(pkg: &[u8]) -> String {
     let mut all = String::new();
     for i in 0..archive.len() {
         let mut file = archive.by_index(i).expect("ZIP 엔트리 접근 실패");
-        let name = file.name().to_string();
+        let name = file.name().expect("ZIP 엔트리 이름").to_string();
         if name.contains("section") && name.ends_with(".xml") {
             let mut s = String::new();
             file.read_to_string(&mut s).expect("section XML 읽기 실패");

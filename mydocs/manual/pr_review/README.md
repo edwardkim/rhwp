@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-12
+last_verified: 2026-10-09
 ---
 
 # PR review 조건별 가이드 선택표
@@ -21,6 +21,20 @@ last_verified: 2026-09-12
 기록한다. 실제 변경이 비해당이면 이유를 남기고, 적용 대상은 검토 head의 코드·증거로 판정한다.
 또한 [검증 입력 커밋 확인](intake_and_review.md#28-검증-입력-커밋-확인)을 공통으로 기록한다.
 HWP/HWPX/PDF를 검증에 사용하면 실제 실행 파일과 검토 대상 commit의 일치를 확인한다.
+
+기여자·메인터너·콜라보레이터 모두 렌더링 회귀를 추가하거나 변경할 때
+[시각 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
+[기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 적용한다.
+기존 회귀가 실패하면 원본 출력 보정 후 관련 모든 페이지의 Native/fresh WASM 일치율 90% 이상을
+확인하고 필요한 검사만 변경한다. 실물 배치를 절대 px 좌표·고정 px 영역으로 선택·고정하지 않는다.
+
+고정한 `upstream/devel`에서 이미 90% 미만인 원본에 등록되어 있던 부적합한 회귀는
+[새 이슈 이관](visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관) 절차로 처리한다.
+동일 입력의 base/head 비교로 기존 미달을 확인하며 현재 수정으로 발생한 회귀는 구현을 고친다.
+base의 시각 근거가 없으면 이관 판정을 보류한다.
+
+90% 통과 후에도 모든 역할이 [수식·간격 확대 판독](visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독)으로
+변경 영역·알려진 차이·사용자 지적 영역의 모양·장평·미세 간격을 대조하고 점수와 판독을 구분한다.
 
 | 문서 | 읽는 시점 |
 | --- | --- |
@@ -50,6 +64,11 @@ HWP/HWPX/PDF를 검증에 사용하면 실제 실행 파일과 검토 대상 com
 | collaborator가 contributor code를 local 검증한 뒤 review·오늘할일만 source head에 추가 | collaborator_external_pr | intake_and_review, local_validation, review_only_fast_pass, post_merge |
 | 완료된 원 PR의 review·asset만 별도 PR로 반영 | collaborator_self_merge | intake_and_review, review_only_fast_pass, post_merge |
 | base가 잘못되었거나 재작업 요청 | 해당 기본 경로 | intake_and_review, rework_and_exceptions |
+
+collaborator self PR의 기록 순서는 **PR 생성·채번 → 정확한 code head CI 성공 → PR review·오늘할일
+문서-only trailing commit → trailing head CI 확인 → merge**다. 상세 기록 시점은
+[8.2.1절](collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)을 따르며,
+trailing commit에는 `review_only_fast_pass`도 보조 경로로 읽는다.
 
 다수 PR을 동시에 다루더라도 reviewer assign, review 문서, 최종 CI·merge 판단은 PR 번호별로 분리한다.
 CI 관찰과 읽기 전용 조사는 병렬로 할 수 있지만, Cargo 공유 상태와 GitHub·Git 상태 변경은

@@ -313,3 +313,78 @@ test('확정 HWP 파일명과 DEXT5 우선순위는 유지한다 (#198/#6534)', 
     reason: 'non-refetchable',
   });
 });
+
+// ─── #7664: 저장 위치 확인 대화상자의 로컬 file:// HWP ──────────────
+
+test('filename이 빈 로컬 file:// HWP는 onCreated에서 바로 연다 (#7664)', () => {
+  for (const url of [
+    'file:///C:/Users/user/Documents/report.hwp',
+    'file:///Users/user/Documents/%ED%95%9C%EA%B8%80.hwpx',
+    'file:///Users/user/Downloads/form.HML',
+  ]) {
+    assertDecision({
+      filename: '',
+      url,
+      mime: 'application/octet-stream',
+    }, { metadataFinalized: false }, {
+      action: 'intercept',
+      reason: 'local-hwp-file-url',
+    });
+  }
+});
+
+test('로컬 file:// 판정은 쿼리·fragment가 아니라 경로 확장자를 본다 (#7664)', () => {
+  assert.equal(downloadPolicy.isLocalHwpFileUrl('file:///tmp/report.hwp#page=2'), true);
+  assert.equal(downloadPolicy.isLocalHwpFileUrl('file:///tmp/report.xlsx?name=a.hwp'), false);
+  assert.equal(downloadPolicy.isLocalHwpFileUrl('https://example.com/report.hwp'), false);
+  assert.equal(downloadPolicy.isLocalHwpFileUrl(''), false);
+  assert.equal(downloadPolicy.isLocalHwpFileUrl(undefined), false);
+
+  assertDecision({
+    filename: '',
+    url: 'file:///tmp/report.xlsx?name=a.hwp',
+    mime: 'application/octet-stream',
+  }, { metadataFinalized: false }, {
+    action: 'defer',
+    reason: 'provisional-hwp-evidence',
+  });
+});
+
+test('로컬 file:// HWP도 확정 비-HWP 근거와 재요청 불가 우선순위를 따른다 (#7664)', () => {
+  assertDecision({
+    filename: 'C:\\Users\\user\\Downloads\\report.xlsx',
+    url: 'file:///C:/Users/user/Documents/report.hwp',
+  }, { metadataFinalized: false }, {
+    action: 'ignore',
+    reason: 'non-hwp-filename',
+  });
+
+  assertDecision({
+    filename: '',
+    url: 'file:///C:/Users/user/Documents/report.hwp',
+    mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  }, { metadataFinalized: false }, {
+    action: 'ignore',
+    reason: 'non-hwp-mime',
+  });
+});
+
+test('원격 URL만 HWP인 빈 filename 후보는 계속 보류한다 (#6534/#7664)', () => {
+  assertDecision({
+    filename: '',
+    url: 'https://public.example.go.kr/files/report.hwp',
+    mime: 'application/octet-stream',
+  }, { metadataFinalized: false }, {
+    action: 'defer',
+    reason: 'provisional-hwp-evidence',
+  });
+});
+
+test('로컬 file:// HWP 표시 파일명은 URL 경로 끝을 디코딩한다 (#7664)', () => {
+  const { localHwpFileUrlFilename } = downloadPolicy;
+  assert.equal(localHwpFileUrlFilename('file:///Users/user/Documents/%ED%95%9C%EA%B8%80.hwp'), '한글.hwp');
+  assert.equal(localHwpFileUrlFilename('file:///C:/Users/user/Documents/report%20v2.hwpx#page=2'), 'report v2.hwpx');
+  assert.equal(localHwpFileUrlFilename('file:///tmp/%E0%A4%A.hwp'), '%E0%A4%A.hwp');
+  assert.equal(localHwpFileUrlFilename('file:///tmp/report.xlsx'), '');
+  assert.equal(localHwpFileUrlFilename('https://example.com/report.hwp'), '');
+});

@@ -32,6 +32,7 @@ pub(super) fn measure(
     para: &Paragraph,
     next_para: Option<&Paragraph>,
     fmt: &FormattedParagraph,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     measured_tables: &[MeasuredTable],
     tac_count: usize,
     height_before: f64,
@@ -62,8 +63,9 @@ pub(super) fn measure(
                         .unwrap_or(0.0);
                     let effective_h = crate::renderer::tac_table_effective_height(seg_lh, mt_h);
                     let trailing = if seg.line_spacing > 0 {
-                        crate::renderer::composer::tac_host_trailing_spacing(
+                        crate::renderer::composer::tac_host_trailing_spacing_at_boundary(
                             para,
+                            next_para,
                             ci,
                             seg,
                             profile.hwpx_stored_layout(),
@@ -156,6 +158,38 @@ pub(super) fn measure(
     } else {
         fmt.total_height
     };
+    // A complete source slot includes its outer margins and full closing
+    // advance. Reuse the same producer as table paint instead of independently
+    // halving spacing or adding a margin already owned by the stored line.
+    let cap =
+        if !profile.session_edited() && tac_count == 1 && fmt.line_count() == 1 {
+            next_para
+                .and_then(|next| {
+                    para.controls
+                        .iter()
+                        .enumerate()
+                        .find_map(|(index, control)| {
+                            let Control::Table(table) = control else {
+                                return None;
+                            };
+                            flow.is_effective_tac_table(para, table, fmt)
+                    .then(|| crate::renderer::float_placement::stored_tac_line_successor_advance(
+                        para, index, next, styles, dpi,
+                    )).flatten()
+                        })
+                })
+                .map(|advance| {
+                    advance
+                        + if height_before < 1.0 {
+                            0.0
+                        } else {
+                            fmt.spacing_before
+                        }
+                })
+                .unwrap_or(cap)
+        } else {
+            cap
+        };
     // [#2279 누적Δ] 저장 ladder 가 host paraPr spacing 을 누락한 기계생성
     // 결재문서(HWPX, 빈 host TAC 표): 저장 스텝(다음 문단 vpos−현 vpos)이
     // fmt.total_height(sb+lh+ls+sa)보다 짧으면 생성기가 sa/sb 를 좌표에
@@ -270,7 +304,15 @@ pub(super) fn capped_bottom(
         .filter(|((pi, _), _)| *pi == para_idx)
         .map(|(_, placement)| placement.clearance)
         .sum();
-    let capped_bottom = snapped_base + cap + side_wrap_clearance;
+    let shared_end = page
+        .inline_placements
+        .iter()
+        .filter(|((pi, _), _)| *pi == para_idx)
+        .filter_map(|(_, placement)| placement.advance_end)
+        .fold(0.0_f64, f64::max);
+    // 확정 줄 프레임의 뒤 간격은 다음 문단도 실제로 소비한다.
+    // 오래된 분리 예산 cap으로 fit/paint 공통 끝을 되감지 않는다.
+    let capped_bottom = (snapped_base + cap + side_wrap_clearance).max(shared_end);
     // 저장 host가 4px여도 회피 줄의 실측 표 높이는 되돌릴 수 없다.
     // 뒤 표까지 같은 단에서 물리 하단을 이어야 렌더와 fit의 cursor가 같다.
     if page.inline_placements.is_empty() {

@@ -5,46 +5,6 @@
         "native",
         "wasm"
       ],
-      "id": "exam_kor",
-      "path": "samples/exam_kor.hwp",
-      "purpose": "native-wasm-svg-byte-parity",
-      "sha256": "0315576fb25dd29ad3b6b188ee2539d0e8d31c15b74847be801c2186a97aac69"
-    },
-    {
-      "backend": [
-        "native",
-        "wasm"
-      ],
-      "id": "exam_eng",
-      "path": "samples/exam_eng.hwp",
-      "purpose": "native-wasm-svg-byte-parity",
-      "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b"
-    },
-    {
-      "backend": [
-        "native",
-        "wasm"
-      ],
-      "id": "exam_math",
-      "path": "samples/exam_math.hwp",
-      "purpose": "native-wasm-svg-byte-parity",
-      "sha256": "e40e3d675373c8efb3a844fc71f209600d3b0db987a04b3808b8e74a6b1671fe"
-    },
-    {
-      "backend": [
-        "native",
-        "wasm"
-      ],
-      "id": "exam_science",
-      "path": "samples/exam_science.hwp",
-      "purpose": "native-wasm-svg-byte-parity",
-      "sha256": "22d29786a80d68a9b2ad9294c2dab4915e0eced941e790e37390b14312b8b6a8"
-    },
-    {
-      "backend": [
-        "native",
-        "wasm"
-      ],
       "id": "synam-001",
       "path": "samples/synam-001.hwp",
       "purpose": "native-wasm-svg-byte-parity",
@@ -109,7 +69,7 @@
       "status": "required"
     },
     {
-      "command": "node scripts/svg_native_wasm_diff.mjs samples/exam_kor.hwp samples/exam_eng.hwp samples/exam_math.hwp samples/exam_science.hwp samples/synam-001.hwp samples/aift.hwp samples/2010-01-06.hwp",
+      "command": "node scripts/svg_native_wasm_diff.mjs samples/synam-001.hwp samples/aift.hwp samples/2010-01-06.hwp",
       "evidence": "mydocs/working/task_m100_4939_stage2.md",
       "id": "native-wasm-public-parity",
       "status": "required"

@@ -1338,6 +1338,7 @@ impl DocumentCore {
                 Some(TextBox {
                     list_attr: 0x20,
                     vertical_all: false,
+                    text_margin_explicit: false,
                     vertical_align: crate::model::table::VerticalAlign::Top,
                     margin_left: 283,
                     margin_right: 283,
@@ -2756,6 +2757,7 @@ mod resize_clamp_tests {
                 ..Default::default()
             },
             paragraphs: vec![Paragraph::default()],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         });

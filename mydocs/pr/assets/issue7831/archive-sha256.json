@@ -1,0 +1,12 @@
+[
+  {
+    "file": "issue_2430_cell_rewrap_threshold.rs.txt",
+    "sha256": "606aae884115a363a82be2b29ff5ae80b61cff4059b55946e7d313f0f8155a05",
+    "source_commit": "8ee271e8c8cbdc82e18f62f610c9b38b99874b9e"
+  },
+  {
+    "file": "issue_7095_page_spanning_fragment_box.rs.txt",
+    "sha256": "594623f688bfc30f6aa4ad9b7ee22eb36d892e92bf74d5e73169db37983da16c",
+    "source_commit": "8ee271e8c8cbdc82e18f62f610c9b38b99874b9e"
+  }
+]

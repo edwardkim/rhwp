@@ -41,7 +41,20 @@ pub(in crate::renderer::typeset) fn place(
             // [#6175] 유도 밴드의 앵커는 묶음(GroupShape)일 수 있다 — 개체
             // 종류로 흡수/통과를 가르는 이 판정에서 묶음 그림을 표로 오인하면
             // 밴드 옆 본문 문단이 통째로 흡수된다.
-            if anchor_is_picture || st.following_wrap_is_derived() {
+            // 절대 위치 표는 host 본문만 전진시킨다. 문단 상대 표는 표 프레임이
+            // 안내 줄을 소유하며, 현재 단의 square_band_top 유무만으로 이 소유를
+            // 바꿀 수 없다(통째 예약·첫 조각 이후에는 그 밴드가 없을 수도 있다).
+            let profile = engine.profile.get();
+            let absolute_table_empty_flow = is_empty_para
+                && wrap_match::anchor_table_has_absolute_frame(paragraphs, band)
+                && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+                && !profile.session_edited()
+                && !engine.uniform_filler_ladder.get()
+                && !st.vpos_ladder_dirty
+                && crate::renderer::float_placement::stored_empty_line_has_closed_source_box(
+                    paragraphs, para_idx,
+                );
+            if anchor_is_picture || st.following_wrap_is_derived() || absolute_table_empty_flow {
                 let anchor = wrap_match::picture_anchor(paragraphs, band);
                 st.register_following_wrap_anchor(para_idx, anchor);
             } else {
@@ -52,6 +65,7 @@ pub(in crate::renderer::typeset) fn place(
                 // 통째로 페이지 흐름에서 누락된다. 이 경우 wrap zone 을 종료하고
                 // 일반 텍스트 배치로 폴백한다 (LINE_SEG cs/sw 가 이미 wrap 형상을
                 // 인코딩하므로 layout 이 첫 줄을 표 옆에, 나머지를 표 아래에 렌더).
+
                 if let Some(absorption) = wrap_absorption::whole_paragraph(
                     para,
                     paragraphs,
@@ -73,8 +87,8 @@ pub(in crate::renderer::typeset) fn place(
                 let wrap_prefix_len = prefix.len;
                 let col_width = st.following_wrap_column_width();
                 let formatted = engine.format_paragraph(para, composed, styles, Some(col_width));
-                if let Some(suffix_height) = prefix.suffix_height(para, &formatted, is_empty_para) {
-                    if suffix_height <= st.available_height() + 0.5 {
+                if let Some(suffix) = prefix.suffix_metrics(para, &formatted, is_empty_para) {
+                    if suffix.content_height <= st.available_height() + 0.5 {
                         let absorption = wrap_absorption::prefix(
                             para,
                             paragraphs,
@@ -85,14 +99,15 @@ pub(in crate::renderer::typeset) fn place(
                         );
                         st.commit_wrap_absorption(absorption);
                         st.end_following_wrap();
-                        if st.wrap_tail_needs_advance(suffix_height) {
+                        if st.wrap_tail_needs_advance(suffix.content_height) {
                             st.advance_column_or_new_page();
                         }
                         st.commit_wrap_tail(
                             para_idx,
                             wrap_prefix_len,
                             formatted.line_count(),
-                            suffix_height,
+                            suffix.advance,
+                            suffix.content_height,
                         );
                         return true;
                     }

@@ -118,7 +118,7 @@ fn sample_with_square_float_below_body_rows() -> TempSample {
 
     for index in 0..archive.len() {
         let mut entry = archive.by_index(index).expect("sample zip 항목");
-        let name = entry.name().to_owned();
+        let name = entry.name().expect("ZIP 엔트리 이름").into_owned();
         let options = SimpleFileOptions::default().compression_method(entry.compression());
         if name.ends_with('/') {
             writer

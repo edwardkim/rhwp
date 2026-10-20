@@ -12,6 +12,37 @@ use super::metrics::FormattedParagraph;
 use crate::model::{paragraph::Paragraph, provenance::LayoutCompatibilityProfile};
 use crate::renderer::{hwpunit_to_px, pagination::PageItem};
 
+/// 수식이 참여한 실제 한 줄의 점유가 독립 저장 줄 프레임 안에 남는지 확인한다.
+/// 크기가 증가한 개체·재조판 다줄을 낡은 저장 경계로 수용하지 않는다.
+fn inline_equations_match_saved_line(
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    current_height: f64,
+    body_height: f64,
+    dpi: f64,
+) -> bool {
+    use crate::model::control::Control;
+    if para.controls.is_empty()
+        || !para.controls.iter().all(|control| {
+            matches!(control, Control::Equation(equation) if equation.common.treat_as_char)
+        })
+    {
+        return false;
+    }
+    let [height] = fmt.line_heights.as_slice() else {
+        return false;
+    };
+    let Some(saved) = para.line_segs.first() else {
+        return false;
+    };
+    let saved_height = hwpunit_to_px(saved.line_height.max(saved.text_height), dpi);
+    let roundoff = f64::EPSILON * saved_height.abs().max(1.0) * 8.0;
+    *height > 0.0
+        && saved_height > 0.0
+        && *height <= saved_height + roundoff
+        && current_height + fmt.height_for_fit <= body_height
+}
+
 pub(in crate::renderer::typeset) struct WholeFitPage<'a> {
     pub profile: LayoutCompatibilityProfile,
     pub omit_fresh_recalc_doc: bool,
@@ -21,21 +52,6 @@ pub(in crate::renderer::typeset) struct WholeFitPage<'a> {
     pub body_height: f64,
     pub visible_float_exclusions: &'a [VisibleFloatExclusion],
     pub hangul2024_reclaimed: f64,
-}
-
-/// 저장 줄이 없는 제목 뒤에 번호 목록이 오면, 한/글은 제목과 첫 항목을 같은 쪽에서
-/// 시작시킨다. 페이지 꼬리의 `height_for_fit`은 제목의 마지막 line spacing을 빼므로,
-/// 그 값만으로는 제목이 layout에서 본문 밖으로 잘려 목록과 분리될 수 있다.
-fn no_lineseg_heading_precedes_ordered_list(para: &Paragraph, next: Option<&Paragraph>) -> bool {
-    if !para.line_segs.is_empty() || !para.controls.is_empty() || !para_has_visible_text(para) {
-        return false;
-    }
-    let Some(next) = next else {
-        return false;
-    };
-    let trimmed = next.text.trim_start();
-    let digits = trimmed.bytes().take_while(u8::is_ascii_digit).count();
-    digits > 0 && trimmed.as_bytes().get(digits) == Some(&b'.')
 }
 
 pub(super) struct WholeFitEvidence {
@@ -57,6 +73,8 @@ pub(super) fn inspect(
     strict_after_empty_host_float: bool,
     forced_page_break_line: Option<usize>,
     current_page_vpos_base: Option<i32>,
+    accepted_opening_owner: Option<usize>,
+    stored_frame_prefix_consumed: bool,
     available: f64,
     page: &WholeFitPage<'_>,
     dpi: f64,
@@ -93,7 +111,14 @@ pub(super) fn inspect(
         // page-last 증거가 있으면 신뢰 — 개체는 하단 여백 스필(한컴 정합).
         && (para.controls.is_empty()
             || para_controls_only_topbottom_floats(para)
-            || para_controls_only_tac_topbottom_objects(para))
+            || para_controls_only_tac_topbottom_objects(para)
+            || inline_equations_match_saved_line(
+                para,
+                fmt,
+                page.current_height,
+                available_height(),
+                dpi,
+            ))
         && !page.current_items.is_empty()
         // [Task #1749] 저장 flow 가 이 줄을 페이지 마지막으로 인코딩한 경우에만
         // bounds 신뢰 — 누적좌표 문서의 쪽 경계 overfill 차단.
@@ -142,16 +167,12 @@ pub(super) fn inspect(
     // 위 omit_untrusted_empty(저장 리셋 직전 빈 문단)는 트림 혜택도 잃는다
     // — 전량(lh+ls) 부족 시 다음 쪽 상단으로 넘긴다(36392557 pi14 36px).
     // 텍스트 문단은 종전 h4f 트림 유지(36392757 pi19: 전량 요구 시 +1 실측).
-    // 저장 줄 없는 제목이 번호 목록 바로 앞에 있으면, 마지막 line spacing까지
-    // 현재 쪽 예산에 넣어 제목과 첫 항목의 소속을 함께 판정한다. 일반 무저장
-    // 본문까지 전량 요구하면 정상적으로 현재 쪽에 끝나는 문단을 다음 쪽으로 밀어
-    // 페이지 수가 늘어나므로 이 구조에만 한정한다.
+    // 다음 문장의 숫자 표기는 현재 문단의 제목/목록 소속 근거가 아니다.
+    // 정상 본문 뒤 장 제목도 같은 문자열 형태이므로 물리 줄 점유로 판정한다.
     let page_end_fit_height = paragraph_page_end_fit_height(
         fmt.total_height,
         fmt.height_for_fit,
-        omit_untrusted_empty
-            || strict_after_empty_host_float
-            || no_lineseg_heading_precedes_ordered_list(para, paragraphs.get(para_idx + 1)),
+        omit_untrusted_empty || strict_after_empty_host_float,
     );
     // [#6855] "이 쪽이 찼는가"를 `current_height` 로만 물으면 **자리차지 밴드가
     // 차지한 쪽을 빈 쪽으로 읽는다.** 1613000-202200037 182쪽은 29×3 표가
@@ -166,7 +187,15 @@ pub(super) fn inspect(
         .map(|zone| zone.bottom)
         .fold(page.current_height, f64::max);
     // [#3837] 저장 vpos 가 되돌아가면 한글은 거기서 쪽을 끊었다.
-    let stored_vpos_rewind_base = page.col_count == 1
+    let boundary_already_consumed =
+        accepted_opening_owner.is_some() && accepted_opening_owner == para_idx.checked_sub(1);
+    let stored_vpos_rewind_base = !boundary_already_consumed
+        && !stored_frame_prefix_consumed
+        && page.col_count == 1
+        && !super::stored_lines::stored_page_boundary_invalidated_by_reflow(
+            page.profile, page.col_count, page.current_items, paragraphs,
+            para_idx, page_occupied_height, dpi,
+        )
         && !page.current_items.is_empty()
         // 같은 문단이 이미 이 쪽에 놓였으면 걸지 않는다 — 되돌아감은 문단 시작 신호라
         // 이미 시작한 뒤 걸면 문단을 쪼갠다.
@@ -182,12 +211,29 @@ pub(super) fn inspect(
         && stored_rewind_boundary_matches_current_flow(
             paragraphs,
             para_idx,
+            page.current_items,
             page_occupied_height,
             dpi,
         );
-    let stored_vpos_rewind_break = stored_vpos_rewind_base
-        && (page_occupied_height >= available * STORED_VPOS_REWIND_MIN_FILL
-            || stored_rewind_at_matching_flow_position);
+    let saved_object_frame_reset = !boundary_already_consumed
+        && page.col_count == 1
+        && (page.profile.hwpx_stored_layout() || page.profile.hwp5_stored_pagination_layout())
+        && !page.current_items.is_empty()
+        && !page
+            .current_items
+            .iter()
+            .any(|item| page_item_para_index(item) == Some(para_idx))
+        && super::stored_lines::saved_object_frame_reset_at_current_flow(
+            paragraphs,
+            para_idx,
+            page.current_items,
+            page.body_height,
+            dpi,
+        );
+    let stored_vpos_rewind_break = saved_object_frame_reset
+        || (stored_vpos_rewind_base
+            && (page_occupied_height >= available * STORED_VPOS_REWIND_MIN_FILL
+                || stored_rewind_at_matching_flow_position));
     // [#5755] 되돌아간 문단이 통째로는 안 들어가는 경우 — 어차피 전체 배치는 실패라
     // 종전엔 split 경로로 흘러가 저장 좌표(새 쪽의 쪽-지역 좌표)를 현재 쪽 꼬리
     // 적합 근거로 오독, 본문 밖·용지 밖까지 그렸다(156677324 pi=9: 996>934px).
@@ -202,6 +248,7 @@ pub(super) fn inspect(
     // 이 문단의 첫 줄이 (회수 보너스 포함) 들어가면 저장 되감김(=2022 조판의
     // 쪽 경계)을 덮는다. 회수도 선행 덮음도 없으면 종전 동작 그대로.
     let hangul2024_rewind_override = stored_vpos_rewind_break
+        && !saved_object_frame_reset
         && page.profile.hangul2024_layout()
         && page.hangul2024_reclaimed > 0.0
         && {

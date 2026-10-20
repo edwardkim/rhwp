@@ -10,6 +10,6 @@ pub mod xform;
 pub use header::Header;
 pub use logbrush::LogBrush;
 pub use logfont::LogFontW;
-pub use logpen::LogPen;
+pub use logpen::{LogPen, PenWidthKind};
 pub use rectl::{PointL, RectL, SizeL};
 pub use xform::XForm;

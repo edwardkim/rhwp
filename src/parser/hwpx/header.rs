@@ -92,6 +92,19 @@ pub(crate) fn is_real_strike_shape(shape: &str) -> bool {
 ///
 /// 본 함수는 헤더 root element 만 읽고 즉시 반환하므로 비용이 매우 낮다.
 pub fn parse_hwpx_hwpml_version(xml: &str) -> Option<String> {
+    parse_hwpx_head_attr(xml, b"version")
+}
+
+/// header.xml `<hh:head secCnt="N">` 가 선언한 구역 수.
+///
+/// 한/글은 패키지 spine 이 더 많은 구역 파일을 나열해도 이 값만큼의 앞 구역만
+/// 읽는다(hwpx-02 대조 실험: secCnt 1→2 만 바꾸면 5→6쪽, container.rdf 에
+/// section1 을 추가해도 secCnt=1 이면 5쪽). 속성이 없거나 정수가 아니면 `None`.
+pub fn parse_hwpx_declared_section_count(xml: &str) -> Option<usize> {
+    parse_hwpx_head_attr(xml, b"secCnt")?.trim().parse().ok()
+}
+
+fn parse_hwpx_head_attr(xml: &str, key: &[u8]) -> Option<String> {
     let mut reader = Reader::from_str(xml);
     let mut buf = Vec::new();
     loop {
@@ -100,7 +113,7 @@ pub fn parse_hwpx_hwpml_version(xml: &str) -> Option<String> {
                 let name = e.name();
                 if local_name(name.as_ref()) == b"head" {
                     for attr in e.attributes().flatten() {
-                        if attr.key.as_ref().as_bytes() == b"version" {
+                        if attr.key.as_ref().as_bytes() == key {
                             return Some(attr_str(&attr));
                         }
                     }
@@ -1206,6 +1219,16 @@ fn parse_para_shape_margin_value_child(ce: &quick_xml::events::BytesStart, ps: &
     let local = local_name(cname.as_ref());
     if !matches!(local, b"intent" | b"left" | b"right" | b"prev" | b"next") {
         return;
+    }
+    // 여백 값 요소는 core 네임스페이스(`hc:`)다. 한/글은 다른 접두어로 쓴 요소를 읽지
+    // 않는다 — 옛 rhwp 저장본 `samples/hwpx/hwpx-02.hwpx` 는 `<hh:intent>` 로
+    // 썼고, 한/글 2022 PDF 는 그 내어쓰기(-5184)를 적용하지 않는다(2쪽 `39.2억` 줄 x
+    // 113.44 = 본문 왼쪽). 같은 파일의 접두어만 `hc:` 로 바꾸면 한/글이 148.00 으로
+    // 내어 쓴다(engine 2020 대조 실험). 접두어가 없는 요소는 종전대로 읽는다.
+    if let Some(prefix) = cname.prefix() {
+        if prefix.into_inner() != "hc" {
+            return;
+        }
     }
 
     // 패키지 xmlVersion 1.4 이상에서만 평문 HWPUNIT은 물리 단위다.

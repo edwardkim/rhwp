@@ -21,7 +21,7 @@ last_verified: 2026-08-18
 에이전트가 "이 문서는 N쪽이다"거나 "검증을 통과했다"고 말하는 순간,
 보통 다섯 가지 중 하나가 빠진다.
 
-1. **파일 이름을 쪽수로 믿었다.** `exam-kor-2p.hwp` 는 이름에 2 가 있어도
+1. **파일 이름을 쪽수로 믿었다.** 다쪽 실문서도 파일 이름의 숫자가 아니라
    `info.pageCount` 를 읽어야 한다.
 2. **형식 표기를 추측했다.** `verify --expect-format hwp` 는 틀린 기대다.
    실제 표기는 `hwp5` 또는 `hwpx` 다.
@@ -42,13 +42,9 @@ last_verified: 2026-08-18
 | ID | 하는 일 | 표본 | 지목 |
 |---|---|---|---|
 | LR01 | 다쪽 실측 | `issue2007_…42065.hwp` | `pageCount` |
-| LR11 | 2쪽 시험지 | `exam-kor-2p.hwp` | `pageCount` |
-| LR12 | 3쪽 시험지 | `exam-kor-3p.hwp` | `pageCount` |
-| LR13 | 4쪽 시험지 | `exam-kor-4p.hwp` | `pageCount` |
 | LR14 | 문단 문서 | `para-001.hwp` | `pageCount` |
 | LR36 | 가로 문서 | `landscape-001.hwp` | `pageCount` |
 | LR38 | 실문서 | `143E433F503322BD33.hwp` | `pageCount` |
-| LR39 | 1쪽 시험지 | `exam-kor-1p.hwp` | `pageCount` |
 | LR43 | 영문 표본 | `basic/english.hwp` | `pageCount` |
 
 **실패 모드**
@@ -65,7 +61,6 @@ last_verified: 2026-08-18
 |---|---|---|---|
 | LR09 | 표 문서 문단 | `table-001.hwp` | `paraCount` |
 | LR15 | 문단 문서 문단 | `para-001.hwp` | `paraCount` |
-| LR16 | 1쪽 시험지 문단 | `exam-kor-1p.hwp` | `paraCount` |
 | LR17 | 가로 문서 문단 | `landscape-001.hwp` | `paraCount` |
 | LR44 | 영문 표본 문단 | `basic/english.hwp` | `paraCount` |
 
@@ -80,7 +75,6 @@ last_verified: 2026-08-18
 |---|---|---|---|
 | LR10 | 표 문서 hwp5 | `table-001.hwp` | `hwp5` |
 | LR18 | 문단 문서 hwp5 | `para-001.hwp` | `hwp5` |
-| LR19 | 1쪽 시험지 hwp5 | `exam-kor-1p.hwp` | `hwp5` |
 | LR20 | HWPX 서식 hwpx | `hwpx/form-01.hwpx` | `hwpx` |
 | LR21 | HWPX 표 hwpx | `hwpx/basic-table-01.hwpx` | `hwpx` |
 | LR37 | 가로 문서 hwp5 | `landscape-001.hwp` | `hwp5` |
@@ -104,13 +98,9 @@ last_verified: 2026-08-18
 | LR06 | 표 문서 100쪽 (위반) | `table-001.hwp` | min-pages 100 |
 | LR08 | 다쪽 10쪽+표 1 | `issue2007_…` | pages+tables |
 | LR22 | 표 문서 1쪽 이상 | `table-001.hwp` | min-pages 1 |
-| LR23 | 2쪽 시험지 2쪽 이상 | `exam-kor-2p.hwp` | min-pages 2 |
-| LR24 | 1쪽 시험지 50쪽 (위반) | `exam-kor-1p.hwp` | min-pages 50 |
 | LR25 | 표 문서 표 1개 | `table-001.hwp` | min-tables 1 |
 | LR26 | 표 문서 표 99개 (위반) | `table-001.hwp` | min-tables 99 |
 | LR27 | 표 문서 1쪽+표 1 | `table-001.hwp` | pages+tables |
-| LR40 | 4쪽 시험지 3쪽 이상 | `exam-kor-4p.hwp` | min-pages 3 |
-| LR46 | 3쪽 시험지 3쪽 이상 | `exam-kor-3p.hwp` | min-pages 3 |
 | LR48 | 표 문서 100쪽 통과 수 | `table-001.hwp` | `passCount` |
 
 **실패 모드**
@@ -146,7 +136,6 @@ objects-media 의 미리보기 여정과 명령은 같다. 이 pack 은 조판 �
 |---|---|---|---|
 | LR04 | 표 문서 회귀 | `table-001.hwp` | `status` |
 | LR30 | 문단 문서 회귀 | `para-001.hwp` | `status` |
-| LR31 | 2쪽 시험지 회귀 | `exam-kor-2p.hwp` | `status` |
 | LR32 | 가로 문서 회귀 | `landscape-001.hwp` | `status` |
 | LR47 | 실문서 회귀 | `143E433F503322BD33.hwp` | `status` |
 
@@ -165,9 +154,7 @@ objects-media 의 미리보기 여정과 명령은 같다. 이 pack 은 조판 �
 | LR03 | 표 문서 첫 쪽 | `table-001.hwp` | `svg/table-001.svg` |
 | LR07 | 실문서 첫 쪽 | `143E433F503322BD33.hwp` | `svg/143E….svg` |
 | LR33 | 문단 문서 첫 쪽 | `para-001.hwp` | `svg/para-001.svg` |
-| LR34 | 1쪽 시험지 첫 쪽 | `exam-kor-1p.hwp` | `svg/exam-kor-1p.svg` |
 | LR35 | 가로 문서 첫 쪽 | `landscape-001.hwp` | `svg/landscape-001.svg` |
-| LR42 | 2쪽 시험지 첫 쪽 | `exam-kor-2p.hwp` | `svg/exam-kor-2p.svg` |
 
 **실패 모드**
 
@@ -205,7 +192,6 @@ objects-media 의 미리보기 여정과 명령은 같다. 이 pack 은 조판 �
 | `samples/table-001.hwp` | J1–J7 |
 | `samples/para-001.hwp` | J1, J2, J3, J5, J6, J7 |
 | `samples/landscape-001.hwp` | J1, J2, J3, J5, J6, J7 |
-| `samples/exam-kor-1p.hwp` … `4p.hwp` | J1, J2, J4, J6, J7 |
 | `samples/143E433F503322BD33.hwp` | J1, J6, J7 |
 | `samples/basic/issue2007_nested_cell_pagination_42065.hwp` | J1, J4, J5 |
 | `samples/basic/english.hwp` | J1, J2, J3 |
@@ -216,3 +202,7 @@ objects-media 의 미리보기 여정과 명령은 같다. 이 pack 은 조판 �
 - 작업 노트: [mydocs/working/gym_om_lr_cd.md](../../../mydocs/working/archives/gym_om_lr_cd.md)
 - 개체 pack: [../objects-media/README.md](../objects-media/README.md)
 - 코퍼스 pack: [../corpus-diagnostics/README.md](../corpus-diagnostics/README.md)
+
+## 시험지 과제 제외
+
+지정된 시험지 입력을 참조하는 다음 과제를 활성 평가에서 제거했다: LR11, LR12, LR13, LR16, LR19, LR23, LR24, LR31, LR34, LR39, LR40, LR42, LR46. 원본 문서 파일은 보존하며 과제 ID는 재사용하지 않는다.

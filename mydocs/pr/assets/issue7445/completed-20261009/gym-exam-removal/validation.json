@@ -1,0 +1,140 @@
+{
+  "productCodeHead": "7589a9323",
+  "removedTasks": 86,
+  "removedReferences": 86,
+  "packs": {
+    "casual-rides": [
+      "CR16",
+      "CR17",
+      "CR18",
+      "CR40"
+    ],
+    "core-cli": [
+      "T20",
+      "T54"
+    ],
+    "corpus-diagnostics": [
+      "CD17",
+      "CD18",
+      "CD21",
+      "CD22",
+      "CD25",
+      "CD26",
+      "CD27",
+      "CD28",
+      "CD29",
+      "CD30",
+      "CD33",
+      "CD41",
+      "CD44",
+      "CD45",
+      "CD46"
+    ],
+    "extraction": [
+      "EX04",
+      "EX08",
+      "EX09",
+      "EX10",
+      "EX11",
+      "EX12",
+      "EX13",
+      "EX14",
+      "EX25",
+      "EX26",
+      "EX27",
+      "EX28"
+    ],
+    "layout-rendering": [
+      "LR11",
+      "LR12",
+      "LR13",
+      "LR16",
+      "LR19",
+      "LR23",
+      "LR24",
+      "LR31",
+      "LR34",
+      "LR39",
+      "LR40",
+      "LR42",
+      "LR46"
+    ],
+    "objects-media": [
+      "OM25",
+      "OM29",
+      "OM38",
+      "OM39"
+    ],
+    "oracle-probe": [
+      "OP35",
+      "OP36"
+    ],
+    "render-tree": [
+      "RT04",
+      "RT23",
+      "RT24",
+      "RT25",
+      "RT26",
+      "RT27",
+      "RT28",
+      "RT29",
+      "RT32",
+      "RT38",
+      "RT39"
+    ],
+    "security": [
+      "SE23",
+      "SE34",
+      "SE55",
+      "SE68"
+    ],
+    "serialization": [
+      "SR10",
+      "SR14",
+      "SR18",
+      "SR28",
+      "SR29",
+      "SR30",
+      "SR31",
+      "SR33",
+      "SR34",
+      "SR38",
+      "SR46",
+      "SR54"
+    ],
+    "text-editing": [
+      "TE29",
+      "TE36",
+      "TE37",
+      "TE38",
+      "TE39",
+      "TE76",
+      "TE82"
+    ]
+  },
+  "remainingPacks": 21,
+  "remainingTasks": 949,
+  "remainingMaximumScore": 2194,
+  "retainedOriginalFiles": 60,
+  "retainedOriginalHashMismatch": [],
+  "activeExamTasks": [],
+  "autoCorpusExcludedUniqueNames": 54,
+  "pythonUnit": {
+    "run": 3170,
+    "passed": 3169,
+    "failed": 0,
+    "skipped": 1,
+    "seconds": 10.866,
+    "newTestFunctionCount": 0,
+    "removedDedicatedTestFunctions": 1,
+    "exitCode": 0
+  },
+  "structural": {
+    "audit": true,
+    "oracle-structural": true,
+    "oracle-selftest": true
+  },
+  "wholeBenchmarkAxesExecuted": false,
+  "gymProductAccuracyClaim": false,
+  "logs": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/stage425-gym-exam-removal"
+}

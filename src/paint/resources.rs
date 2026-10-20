@@ -308,27 +308,30 @@ pub fn source_image_key(
     bin_data_epoch: u32,
     image: &crate::renderer::render_tree::ImageNode,
 ) -> Option<String> {
-    let data = image.data.as_deref()?;
-    if image.bin_data_id == 0 {
+    if image.data.is_none() || image.bin_data_id == 0 {
         return None;
     }
 
-    // 술어는 `image_resolver::is_watermark_image` 가 단일 권위다 — 여기서 사본을 들면
-    // 키가 가리키는 바이트와 실제로 내보내는 바이트가 조용히 갈라진다 (#3315).
-    let bakes_watermark = crate::renderer::image_resolver::detect_image_mime_type(data)
-        == "image/jpeg"
-        && crate::renderer::image_resolver::is_watermark_image(image);
-    let variant = if crate::renderer::image_resolver::is_baked_blackwhite_image(image) {
-        SourceImageVariant::BakedBlackWhitePng
-    } else if bakes_watermark {
-        SourceImageVariant::BakedWatermarkPng
-    } else {
-        SourceImageVariant::Source
+    // 실제로 내보내는 바이트와 같은 출력 변형을 단일 권위에서 고른다.
+    let variant = crate::renderer::image_resolver::source_image_variant(image);
+    let tag = match variant {
+        SourceImageVariant::WmfPictureTone {
+            brightness,
+            contrast,
+            grayscale,
+        } => format!("wmftone_{brightness}_{contrast}_{}", u8::from(grayscale)),
+        SourceImageVariant::PictureTone {
+            brightness,
+            contrast,
+            effect,
+        } => {
+            format!("pictone_{brightness}_{contrast}_{effect}")
+        }
+        _ => variant.as_str().to_owned(),
     };
     Some(format!(
         "bin:{bin_data_epoch}:{}:{}",
-        image.bin_data_id,
-        variant.as_str()
+        image.bin_data_id, tag
     ))
 }
 
@@ -341,6 +344,20 @@ pub enum SourceImageVariant {
     BakedWatermarkPng,
     /// 원본 해상도에서 흑백을 확정한 PNG.
     BakedBlackWhitePng,
+    /// 일반 raster의 원본 포맷 변환 뒤 밝기·대비·효과를 확정한 PNG.
+    PictureTone {
+        brightness: i8,
+        contrast: i8,
+        effect: u8,
+    },
+    /// WMF 색 처리. producer의 밝기·명암·회색조 결과를 재현한다.
+    WmfPictureTone {
+        brightness: i8,
+        contrast: i8,
+        grayscale: bool,
+    },
+    /// 한컴 2024 Print의 원본색 bitmap 전달. 팔레트 범위면 원본 경로를 보존한다.
+    Hancom2024Bitmap,
 }
 
 impl SourceImageVariant {
@@ -349,6 +366,9 @@ impl SourceImageVariant {
             SourceImageVariant::Source => "src",
             SourceImageVariant::BakedWatermarkPng => "wmpng",
             SourceImageVariant::BakedBlackWhitePng => "bwpng",
+            SourceImageVariant::PictureTone { .. } => "pictone",
+            SourceImageVariant::WmfPictureTone { .. } => "wmftone",
+            SourceImageVariant::Hancom2024Bitmap => "h24bmp",
         }
     }
 
@@ -373,6 +393,43 @@ pub fn parse_source_image_key(key: &str) -> Option<(u32, u16, SourceImageVariant
         "src" => SourceImageVariant::Source,
         "wmpng" => SourceImageVariant::BakedWatermarkPng,
         "bwpng" => SourceImageVariant::BakedBlackWhitePng,
+        tag if tag.starts_with("pictone_") => {
+            let mut values = tag.strip_prefix("pictone_")?.split('_');
+            let brightness = values.next()?.parse::<i8>().ok()?;
+            let contrast = values.next()?.parse::<i8>().ok()?;
+            let effect = values.next()?.parse::<u8>().ok()?;
+            if values.next().is_some()
+                || !(-100..=100).contains(&brightness)
+                || !(-100..=100).contains(&contrast)
+                || effect > 2
+            {
+                return None;
+            }
+            SourceImageVariant::PictureTone {
+                brightness,
+                contrast,
+                effect,
+            }
+        }
+        tag if tag.starts_with("wmftone_") => {
+            let mut values = tag.strip_prefix("wmftone_")?.split('_');
+            let brightness = values.next()?.parse::<i8>().ok()?;
+            let contrast = values.next()?.parse::<i8>().ok()?;
+            let grayscale = match values.next()? {
+                "0" => false,
+                "1" => true,
+                _ => return None,
+            };
+            if values.next().is_some() {
+                return None;
+            }
+            SourceImageVariant::WmfPictureTone {
+                brightness,
+                contrast,
+                grayscale,
+            }
+        }
+        "h24bmp" => SourceImageVariant::Hancom2024Bitmap,
         _ => return None,
     };
     if parts.next().is_some() {
@@ -538,7 +595,7 @@ mod tests {
     }
 
     #[test]
-    fn source_image_key_changes_only_when_jpeg_base64_is_baked() {
+    fn source_image_key_tracks_picture_tones_and_legacy_watermarks() {
         // MIME 판정은 다른 포맷의 8-byte magic과 같은 최소 길이 계약을 사용한다.
         let mut image = ImageNode::new(
             7,
@@ -548,18 +605,32 @@ mod tests {
 
         image.effect = ImageEffect::GrayScale;
         image.brightness = 1;
+        // 일반 색조는 legacy 워터마크와 구분한 요청 신원을 사용한다.
+        // 실제 바이트·RGB·decode 실패 계약은 공개 API 회귀에서 따로 검사한다.
         assert_eq!(
             source_image_key(3, &image).as_deref(),
-            Some("bin:3:7:wmpng")
+            Some("bin:3:7:pictone_1_0_1")
         );
 
-        // 밝기와 명암 중 하나만 바뀌어도 기존 bake 술어는 같은 variant를 발급한다.
         image.brightness = 0;
         image.contrast = 1;
         assert_eq!(
             source_image_key(3, &image).as_deref(),
+            Some("bin:3:7:pictone_0_1_1")
+        );
+
+        // 실제 워터마크의 두 축과 JPEG 형식이 함께 있을 때만 전용 bake다.
+        image.brightness = 1;
+        assert_eq!(
+            source_image_key(3, &image).as_deref(),
             Some("bin:3:7:wmpng")
         );
+        image.effect = ImageEffect::RealPic;
+        assert_eq!(
+            source_image_key(3, &image).as_deref(),
+            Some("bin:3:7:pictone_1_1_0")
+        );
+        image.effect = ImageEffect::GrayScale;
 
         // JPEG 이 아니면 효과 필드는 별도 JSON 속성일 뿐 base64 payload는 바뀌지 않는다.
         image.data = Some(vec![0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a]);

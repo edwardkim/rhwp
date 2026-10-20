@@ -1,7 +1,7 @@
 //! Shared font setup for horizontal positioned Canvas2D text and its provider.
 //! This does not select an exact fallback face or authorize another backend.
 
-use super::{canvas_font_family_chain, condensed_ratio_draw_params, TextStyle};
+use super::{canvas_font_family_chain, TextStyle};
 
 #[derive(Debug, Clone)]
 pub struct CanvasTextFont {
@@ -18,13 +18,9 @@ impl CanvasTextFont {
     /// condensed-ratio rule, family chain and three-decimal CSS size verbatim.
     /// Registration must reject invalid styles; painting keeps its old fallback.
     pub fn for_positioned_text(style: &TextStyle, baseline: f64) -> Self {
-        let base_size = if style.font_size > 0.0 {
-            style.font_size
-        } else {
-            12.0
-        };
+        let base_size = style.effective_font_size();
         let (size, baseline) = style.script_draw_metrics(base_size, baseline);
-        let (draw_size, horizontal_scale) = condensed_ratio_draw_params(size, style.ratio);
+        let (draw_size, horizontal_scale) = style.ratio_draw_params(size);
         let family = canvas_font_family_chain(&style.font_family);
         let prefix = format!(
             "{}{}{:.3}px ",
@@ -34,7 +30,7 @@ impl CanvasTextFont {
         );
         Self {
             descriptor: format!("{prefix}{family}"),
-            old_hangul_descriptor: format!("{prefix}'Source Han Serif K Old Hangul', {family}"),
+            old_hangul_descriptor: format!("{prefix}'RHWP Old Hangul', {family}"),
             draw_size,
             baseline,
             horizontal_scale,

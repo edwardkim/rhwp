@@ -208,7 +208,7 @@ pub fn convert_hwpx_to_hwp_ir(doc: &mut Document) -> AdapterReport {
     report
 }
 
-/// HWPX/HWP3 출처 IR 을 HWP 직렬화기가 기대하는 형태로 정규화한다.
+/// HWPX/HWP3/PDF 출처 IR 을 HWP 직렬화기가 기대하는 형태로 정규화한다.
 ///
 /// 한컴 HWP5 스트림은 출처와 관계없이 구역당 `PAGE_BORDER_FILL` 레코드 세 개를
 /// 요구한다. HWPX 원본의 단일 BOTH XML 구조 보존은 이 변환을 생략하는 대신,
@@ -884,11 +884,9 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
         // original-width/height 칸을 0으로 쓴다. 이 칸에 imgDim을 복사하면 묶음
         // 그림을 인쇄할 때 한컴이 크기를 다시 해석해 표지가 크게 어긋난다.
         if source_is_hwpx && pic.raw_picture_extra.is_empty() {
-            // HWPX hc:img는 bright, contrast 순서지만 한컴 2020이 HWP5
-            // SC_PICTURE에 저장하는 두 i8 칸은 반대 순서다. HWP5 serializer는
-            // 모델 순서대로 기록하므로 이 경계에서만 바꾼다. raw extra를 함께
-            // 채워 두므로 adapter 재호출 시 다시 교환되지 않는다.
-            std::mem::swap(&mut pic.image_attr.brightness, &mut pic.image_attr.contrast);
+            // 밝기·명암은 의미 IR 그대로 유지한다. HWP5의 명암→밝기 바이트
+            // 순서는 serialize_picture_data가 결정한다. 이 경계에서도 교환하면
+            // HWPX→HWP 저장 시 두 값을 다시 뒤집게 된다(#7751).
             pic.raw_picture_extra.reserve_exact(18);
             pic.raw_picture_extra.push(pic.border_opacity);
             pic.raw_picture_extra
@@ -2523,6 +2521,20 @@ fn adapt_cell_list_attr(cell: &mut Cell, report: &mut AdapterReport) {
 ///
 /// 호출자: `DocumentCore::export_hwp_with_adapter()` (Stage 5 에서 추가).
 pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> AdapterReport {
+    // PDF lowering creates semantic IR, not an existing HWP5 stream. Materialize
+    // its wire-only fields on the export snapshot just as for other non-HWP
+    // inputs. Use the 5.1 record schema supported by the writer; a scaffold's
+    // default 0.0.0.0 header is not an HWP file version. Do not add HWPX/HWP3
+    // origin markers or apply the HWPX-only picture tone/extra-data conversion.
+    if matches!(source_format, FileFormat::Pdf) {
+        doc.header.version = HwpVersion {
+            major: 5,
+            minor: 1,
+            build: 0,
+            revision: 0,
+        };
+        return convert_to_hwp_ir(doc, false);
+    }
     // [#5933] HWPML(HML) 출처는 HWPX 전용 보정을 타면 안 되지만, **HWP5 스트림 계약**인
     // 구역당 `HWPTAG_PAGE_BORDER_FILL` 3개(#3676)는 출처와 무관하게 지켜야 한다.
     //

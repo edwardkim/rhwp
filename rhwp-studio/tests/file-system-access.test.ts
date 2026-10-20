@@ -224,7 +224,7 @@ test('forceSaveAs picker에서 HML 원본을 다시 선택해도 원본에 쓰�
         showSaveFilePicker: async () => originalHandle,
       },
     }),
-    /HML 원본/,
+    /원본 파일/,
   );
 
   assert.equal(originalHandle.writable.writes.length, 0);
@@ -246,7 +246,7 @@ test('HML 원본 이름이 .hwp여도 같은 handle을 변환 저장 대상으�
         showSaveFilePicker: async () => misleadingOriginal,
       },
     }),
-    /HML 원본/,
+    /원본 파일/,
   );
 
   assert.equal(misleadingOriginal.writable.writes.length, 0);
@@ -300,7 +300,7 @@ test('picker가 새 wrapper로 같은 HML 원본 entry를 반환해도 쓰지 �
         showSaveFilePicker: async () => reselectedHandle,
       },
     }),
-    /HML 원본/,
+    /원본 파일/,
   );
 
   assert.equal(reselectedHandle.writable.writes.length, 0);

@@ -77,12 +77,16 @@ fn issue_1142_hwp3_external_image_references_are_structured() {
 
 #[test]
 fn issue_1142_hwp5_link_external_image_references_are_structured() {
-    assert_sample10_external_refs("samples/hwp3-sample10-hwp5.hwp");
+    assert_sample10_external_refs(
+        "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp",
+    );
 }
 
 #[test]
 fn issue_1142_hwpx_external_image_references_are_structured() {
-    assert_sample10_external_refs("samples/hwp3-sample10-hwpx.hwpx");
+    assert_sample10_external_refs(
+        "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx",
+    );
 }
 
 #[test]

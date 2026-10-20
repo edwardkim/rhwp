@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/dev_environment_guide.md
-last_verified: 2026-09-30
+last_verified: 2026-10-20
 ---
 
 # 개발 환경 가이드
@@ -73,6 +73,92 @@ git switch -c <work-branch> upstream/devel
 원격 이름이나 쓰기 가능한 원격은 clone 방식과 권한에 따라 다를 수 있다. PR 준비·merge의 역할별 절차는
 [PR 리뷰·통합 워크플로우](pr_review_workflow.md)를 따른다.
 
+## 빌드 병렬도
+
+Native·fresh WASM·테스트 컴파일의 Cargo 빌드 잡 수는 모든 OS에서 **논리 CPU 수 − 2, 최소 1개**를
+시작값으로 권장한다. 강제값은 아니며 메모리 여유, 다른 작업의 CPU 사용량, 실제 빌드 시간에 맞게
+`CARGO_BUILD_JOBS`를 늘리거나 줄일 수 있다. 아래는 권장 시작값을 설정하는 예시이며, CPU 수가
+1개 또는 2개이면 잡 수를 1개로 계산한다.
+
+Linux:
+
+```bash
+rhwp_build_cpu_count="$(nproc)"
+rhwp_build_jobs=$((rhwp_build_cpu_count > 2 ? rhwp_build_cpu_count - 2 : 1))
+export CARGO_BUILD_JOBS="$rhwp_build_jobs"
+```
+
+macOS:
+
+```bash
+rhwp_build_cpu_count="$(sysctl -n hw.logicalcpu)"
+rhwp_build_jobs=$((rhwp_build_cpu_count > 2 ? rhwp_build_cpu_count - 2 : 1))
+export CARGO_BUILD_JOBS="$rhwp_build_jobs"
+```
+
+Windows PowerShell:
+
+```powershell
+$rhwpBuildJobs = [Math]::Max(1, [Environment]::ProcessorCount - 2)
+$env:CARGO_BUILD_JOBS = [string]$rhwpBuildJobs
+```
+
+Windows 대화형 cmd에서는 PowerShell로 수량을 계산한다. `.cmd` 파일에서는 `%J`를 `%%J`로 바꾼다.
+
+```bat
+for /f %J in ('powershell.exe -NoProfile -Command "[Math]::Max(1, [Environment]::ProcessorCount - 2)"') do set "CARGO_BUILD_JOBS=%J"
+```
+
+`--jobs`/`-j`를 명시하면 환경변수보다 우선한다. 환경에 맞춰 조절한 수량을 전달할 수 있다.
+빌드 잡 수는 Cargo의 동시 작업 수이고, `codegen-units`는 crate 내부 코드 생성 분할 수다.
+테스트 실행의 `--test-threads`와도 별개이며, CPU 두 개가 항상 유휴 상태라는 뜻은 아니다.
+공용 `target/pr-review`를 사용하는 Cargo 명령은 잡 수와 무관하게 순차 실행한다.
+
+fresh WASM의 `codegen-units=16`도 권장 시작값이며, 빌드 시간·메모리·출력 크기·실행 성능을 보고
+조절할 수 있다. WASM용 설정은 해당 명령에만 적용해 Native 프로필에 영향을 주지 않도록 한다.
+POSIX 셸에서는 다음처럼 명령 범위를 한정할 수 있다.
+
+```bash
+CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 \
+  CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg
+```
+
+Windows PowerShell에서는 같은 명령을 실행하는 동안만 `$env:CARGO_PROFILE_RELEASE_CODEGEN_UNITS = '16'`을
+설정하고, 종료 후 이전 환경변수 값으로 복원한다. cmd도 WASM 명령 동안만 같은 환경변수를 설정한다.
+설정 변경으로 재컴파일될 수 있으며, 이전 설정으로 시작한 빌드는 새 설정으로 실행한 결과와 구분한다.
+
+## 디스크 공간이 부족할 때
+
+빌드 캐시를 정리하기 전에 **종료된 검증용 Chromium/Puppeteer 임시 프로필**의 용량을
+확인하고 삭제하는 것을 권장한다. PNG 방식의 fresh WASM 검증도 Chromium을 사용하며,
+중단된 실행이 임시 프로필과 캐시를 남길 수 있다. 공유 `target/pr-review`를 임의로
+삭제·초기화하지 않는다.
+
+Linux Snap Chromium의 후보 경로는 `/tmp/snap-private-tmp/snap.chromium/tmp/`다.
+일반 Chromium/Puppeteer와 다른 OS에서는 실제 실행의 임시 경로·`--user-data-dir`를 먼저
+확인한다. 설치 경로나 일반 사용자의 브라우저 프로필을 임시 프로필로 추정하지 않는다.
+
+1. 임시 루트의 용량·항목별 수정 시각·소유자를 확인한다. 기본 후보는 24시간 이상 지난
+   항목이며 환경과 작업에 맞게 보존 기간을 조절할 수 있다. 하위 파일의 최근 변경도 확인한다.
+2. 실행 중인 프로세스의 프로필 경로·작업 디렉터리·열린 파일 참조와 `SingletonLock` 등의
+   잠금 PID를 대조한다. 오래된 시각이나 잠금 파일 존재·부재만으로 종료를 단정하지 않는다.
+   사용 중이거나 판정이 불확실한 항목은 보존한다.
+3. 삭제할 정확한 경로와 사용 중 아님을 확인한 근거를 ignored 검증 로그에 기록한다.
+   삭제 직전에도 경로·소유자·사용 여부를 재확인하고 해당 임시 항목만 제거한다.
+   임시 루트 전체, `.snap`·`.X11-unix` 같은 시스템 항목, 현재 프로필, 일반 사용자 프로필,
+   쿠키·방문 기록이 있는 일반 사용자 데이터와 검증 증적은 일괄 삭제하지 않는다.
+4. 삭제 결과·실패 항목·전후 파일시스템 여유 공간을 기록한다. 예상 삭제 용량과 다른 작업의
+   쓰기·정리가 함께 반영된 실제 여유 공간 증가는 구분한다.
+
+`target/pr-review`의 **종료된 오래된 증분 캐시**도 공간 확보를 위한 정리 후보로 권장한다.
+공유 target을 사용하는 Cargo·rustc·wasm-pack·wasm-opt 작업이 모두 종료된 뒤, 캐시별
+용량·수정 시각·작업 소유와 사용 여부를 확인한다. Native 또는 WASM 프로필 아래
+`incremental`에 있는 사용하지 않는 정확한 캐시 하위 경로만 지정해 삭제하고, 삭제 목록과
+전후 여유 공간을 기록한다. 경과 시간만으로 사용하지 않는다고 단정하거나 `incremental`
+전체를 일괄 삭제하지 않는다. target 전체·프로필 디렉터리·실행 파일·`deps`·`.fingerprint`·
+다른 작업의 산출물은 보존한다. 삭제한 증분 캐시는 이후 빌드에서 재생성될 수 있다.
+
 ## 네이티브 빌드와 테스트
 
 ```bash
@@ -142,50 +228,121 @@ nextest 기본 동시성은 현재 host를 따른다. CPU·메모리·동시 작
 
 Rust 또는 WASM 경계가 바뀌면 저장소 루트에서 `pkg/`를 갱신한다.
 
-Windows·macOS·Linux 공통 표준 경로는 Docker의 `wasm` 서비스다. 최초 한 번만 `.env.docker`가
-없을 때 예제를 복사하고, 이후에는 기존 파일을 덮어쓰지 않는다.
+**Docker는 필수 설치 조건이 아니다.** Windows·macOS·Linux 모두 환경에 따라 Docker 또는
+호스트의 최적화 포함 빌드를 선택할 수 있다. PR 제출 전에는 [로컬 사전 검증의 환경별 경로](pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)와
+변경 범위별 필수 검증을 완료한다. Docker 미설치·daemon 접근 불가를 WASM 검증 생략 사유로 삼지 않는다.
 
-```powershell
-if (-not (Test-Path .env.docker)) {
-    Copy-Item .env.docker.example .env.docker
-}
-docker compose --env-file .env.docker run --rm wasm
-```
+### Docker 실행 가능 환경
 
-Linux/macOS 셸에서는 같은 준비를 다음처럼 수행한다.
+`docker compose version`과 `docker info`가 성공하고, 공용 target의 마운트·읽기/쓰기·Cargo
+hard-link를 지원하면 Docker 경로를 사용할 수 있다. 최초 한 번만 `.env.docker`가 없을 때 예제를
+복사하고 기존 파일은 덮어쓰지 않는다. Linux 등 POSIX 셸에서 공용 target을 다음처럼 연결한다.
 
 ```bash
-if [ ! -f .env.docker ]; then
-  cp .env.docker.example .env.docker
-fi
-docker compose --env-file .env.docker run --rm wasm
+if [ ! -f .env.docker ]; then cp .env.docker.example .env.docker; fi
+mkdir -p "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
+docker compose --env-file .env.docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  --env HOST_UID="$(id -u)" --env HOST_GID="$(id -g)" \
+  --env CARGO_TARGET_DIR=/review-target \
+  --volume "${rhwp_review_target_dir}:/review-target" wasm
 ```
 
-이 서비스는 Cargo target을 named volume에 유지한다. 특히 Windows Docker Desktop의 `/app/target`
-bind mount는 hard-link를 지원하지 않아 Cargo가 실패할 수 있으므로, host `target/`을 강제로
-재사용하지 않는다. 빌드 시작 시에는 이전에 중단된 wasm-pack이 남긴 `pkg/*-opt.wasm`만 제거한다.
+`/review-target`는 호스트의 기존 `target/pr-review`와 같은 물리적 캐시다. Compose 기본값의
+`/build-target` named volume은 별도 캐시이므로 로컬 PR 검증에서는 위 환경 변수·마운트를 지정한다.
+Windows Docker Desktop 등의 bind mount가 hard-link나 공용 target 접근을 지원하지 않으면
+아래 호스트 빌드를 사용한다. 별도 캐시를 만들거나 공용 target을 강제로 변경하지 않는다. 빌드 시작 시에는 이전에 중단된 wasm-pack이 남긴 `pkg/*-opt.wasm`만 제거한다.
 이 파일을 남기면 wasm-pack이 임시 최적화 결과를 다시 입력으로 열거해 무한 실행 또는
 `*-opt.wasm-opt.wasm` 실패로 이어질 수 있다. (#4089)
 
-Docker를 사용할 수 없는 호스트에서 원인을 분리하는 **진단용** 네이티브 경로는 아래와 같다.
-`--no-opt` 결과는 최적화된 배포 산출물을 대체하지 않는다. 모든 OS의 native Cargo/WASM 검증은
-[고정 review target 준비](pr_review/local_validation.md#고정-review-target과-실행-환경)를 기본 작업공간에서 먼저
-수행해 공용 절대 target 변수를 유지한다. worktree에서는 상대 target 경로를 다시 지정하지 않는다.
+서로 다른 worktree에서 같은 공용 target을 사용할 때는 source의
+수정 시각이 캐시보다 오래되어 이전 worktree의 산출물이 재사용될 수 있다. 짧은 build 성공이나
+pkg/public의 동일 해시만으로 source 일치를 판정하지 않는다. 기준 source SHA와 실제 JS/API의
+추가·제거 내용을 대조하고, 불일치 산출물은 증거에서 제외한 뒤 변경 패키지의 재컴파일을 확인한다.
+공유 cache 전체를 삭제해 해결하지 않는다.
 
-```powershell
-if (-not $rhwpReviewTargetDir) { throw '기본 작업공간에서 공용 target 경로를 먼저 고정하세요' }
-Remove-Item -Force -ErrorAction SilentlyContinue pkg\*-opt.wasm
-$env:CARGO_TARGET_DIR = $rhwpReviewTargetDir
-.\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg --no-opt
-Remove-Item Env:CARGO_TARGET_DIR
-```
+### Studio에서 PDF 직접 열기
 
-macOS/Linux의 native WASM 검증은 `wasm-pack`을 직접 실행하지 않는다. 아래 wrapper는
-`cargo metadata`와 `cargo build` 모두에 `--locked`를 적용해 루트 `Cargo.lock`을
-갱신하지 못하게 한다.
+기본 Native·WASM 빌드는 `pdf-import`를 포함한다. Docker와 호스트 빌드 모두 기본 feature로
+Studio의 PDF 열기를 사용할 수 있다. 추가 feature 지정은 필요하지 않다. 아래는 Docker 사용 가능
+환경의 예시이며 `.env.docker`는 위 준비 절차를 재사용한다. Docker 사용 불가 환경에서는 아래
+호스트 빌드를 완료하고 같은 JS·WASM 동기화와 실제 PDF 열기를 확인한다.
 
 ```bash
-CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg
+docker compose --env-file .env.docker run --rm --no-deps \
+  --user "$(id -u):$(id -g)" \
+  --env HOST_UID="$(id -u)" --env HOST_GID="$(id -g)" \
+  --env CARGO_TARGET_DIR=/review-target \
+  --volume "${rhwp_review_target_dir:?공용 target 경로를 먼저 고정하세요}:/review-target" wasm sh -ec '
+  finish() {
+    status=$?
+    chown -R "$HOST_UID:$HOST_GID" pkg
+    chown "$HOST_UID:$HOST_GID" rhwp-studio/public/rhwp.js rhwp-studio/public/rhwp_bg.wasm
+    exit "$status"
+  }
+  trap finish EXIT
+  rm -f pkg/*-opt.wasm
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg
+'
+```
+
+이후 위 wrapper가 동기화한 pkg/public의 JS·WASM SHA-256을 확인하고 Studio 개발 서버를
+시작·새로고침한다. 파일 → 열기(Ctrl/Cmd+O) 또는 문서 영역 드롭으로 PDF를 직접 열 수 있다.
+지원 여부는 실제 WASM의 `HwpDocument.supportsPdfImport()` 결과로 결정한다. 이전 bundle이나
+`pdf-import`를 제외하고 `wasm-api`를 유지한 빌드에서는 PDF를 열기 목록에 추가하지 않으며
+HWP/HWPX/HML 열기는 유지한다. Studio용 명시적 제외 빌드는
+`--no-default-features --features console_error_panic_hook,wasm-api`를 사용한다.
+`--no-default-features`만 지정하면 라이브러리 소비용으로 JS facade와 자동 start도 제외되므로
+Studio 패키지의 PDF 제외 옵션으로 단독 사용하지 않는다.
+
+PDF 원본은 입력으로 보존한다. 첫 저장은 HWP/HWPX 출력 형식을 선택하며, 원본 핸들에
+내용을 덮어쓰지 않는다. 현재 Studio 가져오기는 동기 WASM 호출이므로 진행 표시가 취소나
+시간 제한을 보장하지 않는다. PDF의 줄/문단 복원·지원 제한과 parser allocation 감사는
+별도 범위이며, 자세한 API/Worker 계약은 [공용 PDF 모듈](../../rhwp-shared/pdf/README.md)을 따른다.
+
+### Docker 실행 불가 환경의 호스트 빌드
+
+Docker가 없거나 사용할 수 없으면 호스트의 Rust·`wasm32-unknown-unknown` target·`wasm-pack`을
+준비하고 저장소 루트에서 아래 명령을 실행한다. **최적화를 포함해 성공한 호스트 빌드는 정식
+로컬 검증 경로다.** Docker를 추가 설치·복구하거나 동일 빌드를 컨테이너에서 반복할 의무는 없다.
+모든 OS에서 [고정 review target 준비](pr_review/local_validation.md#고정-review-target과-실행-환경)를
+기본 작업공간에서 먼저 수행한다. worktree에서도 같은 공용 절대 target을 사용한다.
+
+Linux/macOS에서는 다음 locked wrapper를 사용한다. `cargo metadata`와 `cargo build` 모두에
+`--locked`를 적용하므로 루트 `Cargo.lock`을 임의 갱신하지 않는다.
+
+```bash
+CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg
+```
+
+Windows PowerShell에서는 아래 locked wrapper를 사용한다. 종료 코드 확인, 이전 환경 변수 복원과
+`pkg/` → `rhwp-studio/public/`의 네 산출물 동기화를 포함한 전체 명령은
+[Windows 호스트 실행 예시](pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)를 따른다.
+
+```powershell
+# CARGO_TARGET_DIR을 공용 $rhwpReviewTargetDir로 지정한 같은 셸에서 실행한다.
+.\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg
+```
+
+Windows `cmd.exe`에서는 같은 공용 target을 `CARGO_TARGET_DIR`에 지정하고
+`scripts\wasm-pack-locked.cmd --target web --out-dir pkg`를 사용한다. 셸별 환경 변수 문법을
+섞지 않으며 성공 후 Studio가 읽는 JS·WASM·선언 파일도 동기화한다.
+
+어느 경로든 source SHA·도구 버전·옵션·최적화 종료 결과·산출물 해시를 기록한다. 이어 동일 fresh
+package로 브라우저 동작과 필요한 Visual Sweep을 완료한다. 이전 package가 남아 있다는 사실이나
+`pkg/`와 public의 해시가 같다는 사실만으로 최신 source의 빌드 성공을 판단하지 않는다.
+
+### 최적화 실패의 진단
+
+`--no-opt`는 최적화 단계의 문제를 분리하는 진단 옵션이다. Docker 사용 불가 환경의 유일한
+대체 경로나 제출용 빌드로 취급하지 않는다. 진단 뒤에는 Docker 또는 호스트 경로 중 하나에서
+최적화를 포함한 빌드와 필수 검증을 완료한다.
+
+```bash
+# 진단 전용: 최종 fresh WASM 검증 완료로 기록하지 않는다.
+CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt
 ```
 
 WASM release의 산출물 선택을 비교하는 선택 경로는 다음과 같습니다. 기본 동작은 바뀌지 않습니다.
@@ -204,31 +361,9 @@ Native/Rust 소비자를 위한 rlib 설정은 바꾸지 않습니다. 별도 pr
 PowerShell wrapper의 옵션은 아닙니다. 근거와 검증 범위는
 [빌드 비용 조사](https://github.com/edwardkim/rhwp/blob/7aa36953478812711e671d55c16b5daa11cd7a7a/mydocs/report/task_m100_7473_rust_phases.md)를 참고합니다.
 
-반복 실행은 macOS/Linux 셸의 alias로 줄일 수 있습니다. alias는 현재 셸에만 적용하며, 영구 적용이 필요하면
-사용 중인 셸의 초기화 파일에 같은 줄을 넣습니다.
-
-```bash
-alias rhwp-wasm-build='CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg'
-rhwp-wasm-build
-# 예: 최적화를 생략한 진단 빌드
-rhwp-wasm-build --no-opt
-```
-
-Windows에서는 native PowerShell wrapper를 사용합니다. `cmd.exe`에서는 아래 `doskey` macro를 현재 세션에
-등록할 수 있습니다. 새 `cmd.exe`를 열면 다시 등록해야 합니다.
-
-```bat
-doskey rhwp-wasm-build=scripts\wasm-pack-locked.cmd --target web --out-dir pkg $*
-if not defined RHWP_REVIEW_TARGET_DIR exit /b 1
-set "CARGO_TARGET_DIR=%RHWP_REVIEW_TARGET_DIR%"
-rhwp-wasm-build
-rhwp-wasm-build --no-opt
-set "CARGO_TARGET_DIR="
-```
-
-네이티브 `wasm-pack build`를 최적화까지 포함해 반복 검증해야 하면 먼저 표준 Docker 경로를
-복구한다. Windows에서는 이전의 직접 최적화 명령을 반복 실행하지 않으며, 위 진단으로
-`pkg/` 잔재와 wasm-opt만 분리해 확인한다.
+반복·무한 최적화가 발생하면 실행 중인 wasm-pack·wasm-opt와 `pkg/*-opt.wasm` 잔재를 먼저 확인한다.
+실행 중인 파일을 지우거나 공유 cache 전체를 초기화하지 않는다. 종료된 실행의 정확한 임시 잔재와
+도구 환경을 보정한 뒤 최적화 포함 빌드를 다시 완료한다. Windows도 같은 원칙을 따른다.
 
 TypeScript와 CSS는 Vite가 다시 읽지만 Rust 변경은 위 빌드가 끝나야 브라우저에 반영된다.
 

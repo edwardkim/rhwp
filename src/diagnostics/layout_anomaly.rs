@@ -51,6 +51,10 @@
 //! 보이는데, `Body` 안만 보면 그 짝이 애초에 후보가 아니기 때문이다
 //! (편람 69쪽 실측 4건). 자세한 근거는 [`collect_text_outside_body`].
 
+mod glyph_advance;
+mod text_clip;
+
+use glyph_advance::glyph_band_horizontal;
 use serde_json::{json, Value};
 
 use crate::document_core::DocumentCore;
@@ -566,43 +570,6 @@ fn glyph_band_bbox(node: &RenderNode) -> BoundingBox {
     BoundingBox::new(x, top, width, em)
 }
 
-/// 렌더러의 replay 위치로 앞뒤 공백의 전진폭만 제거한다.
-/// 장평·자간·탭·유효한 layout_positions를 같은 경로로 해석한다.
-/// 표시 문자열이 달라진 필드도 backend와 같은 검증/fallback을 거친다.
-fn glyph_band_horizontal(
-    run: &crate::renderer::render_tree::TextRunNode,
-    x: f64,
-    width: f64,
-    _em: f64,
-) -> (f64, f64) {
-    let text = run.display_or_text();
-    let is_space = |c: char| matches!(c, ' ' | '\u{3000}');
-    let start = text.chars().take_while(|&c| is_space(c)).count();
-    let end = text.chars().count() - text.chars().rev().take_while(|&c| is_space(c)).count();
-    if start >= end || (start == 0 && end == text.chars().count()) {
-        return (x, width);
-    }
-    let positions = run.replay_positions_for(text);
-    let Some((&left, &right)) = positions.get(start).zip(positions.get(end)) else {
-        return (x, width);
-    };
-    // bbox와 전진폭의 계약이 맞지 않을 때 근거 없는 축소를 하지 않는다.
-    if !left.is_finite() || !right.is_finite() || left < 0.0 || right <= left || left >= width {
-        return (x, width);
-    }
-    // 공백 없는 쪽 끝은 원상자를 유지한다. 비공백 advance 차이까지 줄이지 않는다.
-    let left = if start == 0 { 0.0 } else { left };
-    let right = if end == text.chars().count() {
-        width
-    } else {
-        right.min(width)
-    };
-    if right <= left {
-        return (x, width);
-    }
-    (x + left, right - left)
-}
-
 /// em 상자에서 baseline 위쪽이 차지하는 몫.
 ///
 /// `renderer::corrected_line_baseline_for_source` 가 글꼴 기준 baseline 을
@@ -703,7 +670,10 @@ fn is_horizontal_union_object(t: &RenderNodeType) -> bool {
 fn deep_vertical_union_bbox(node: &RenderNode) -> BoundingBox {
     fn vertical_extent(node: &RenderNode, min_y: &mut f64, max_bottom: &mut f64) {
         for child in &node.children {
-            if !child.visible || child.editor_only {
+            // 빈 운반 줄은 커서·흐름의 높이를 소유하지만 그 상자를 그리지는 않는다.
+            // 세로 그리기 합집합에서도 기존 판정을 재사용한다. 공백·장식·대체 표시·
+            // 개체 자식은 이 조건을 얻지 않으며 조판/배치의 점유 높이는 바꾸지 않는다.
+            if !child.visible || child.editor_only || is_empty_text_carrier(child) {
                 continue;
             }
             if child.bbox.height > 0.0 && child.bbox.width > 0.0 {
@@ -835,6 +805,7 @@ fn walk(
     off_canvas_suppress: bool,
     boundary: &BoundingBox,
     page: &BoundingBox,
+    inherited_text_clip: BoundingBox,
     opts: &AnomalyOptions,
     overflow_out: &mut Vec<OverflowAnomaly>,
     off_canvas_out: &mut Vec<OffCanvasAnomaly>,
@@ -871,11 +842,13 @@ fn walk(
 
     // 표·글상자 안으로도 내려가 런 bbox 를 모은다. 일반 overlap 의 suppress 와
     // 무관 — 표 안의 글자가 서로 겹치는 것은 표-표 겹침이 아니다.
-    if is_text_overlap_candidate(node) {
+    let current_text_clip = text_clip::for_node(node, inherited_text_clip);
+    let visible_text = text_clip::intersect(glyph_band_bbox(node), current_text_clip);
+    if is_text_overlap_candidate(node) && visible_text.width > 0.0 && visible_text.height > 0.0 {
         text_out.push(FlowCandidate {
             path: path.clone(),
             node_type: "TextRun",
-            bbox: glyph_band_bbox(node),
+            bbox: visible_text,
             column,
         });
     }
@@ -922,6 +895,7 @@ fn walk(
             next_off_canvas_suppress,
             boundary,
             page,
+            current_text_clip,
             opts,
             overflow_out,
             off_canvas_out,
@@ -1007,21 +981,29 @@ fn find_overlaps_with(
 ///
 /// 단(column) 은 본문 개념이라 여기서 모은 후보는 모두 `column: None` 이다.
 /// 짝짓기는 [`text_columns_can_overlap`] 이 "단 밖은 어느 단과도 짝이 된다"로 받는다.
-fn collect_text_outside_body(node: &RenderNode, path: String, out: &mut Vec<FlowCandidate>) {
+fn collect_text_outside_body(
+    node: &RenderNode,
+    path: String,
+    inherited_text_clip: BoundingBox,
+    out: &mut Vec<FlowCandidate>,
+) {
     if !node.visible || node.editor_only {
         return;
     }
-    if is_text_overlap_candidate(node) {
+    let current_text_clip = text_clip::for_node(node, inherited_text_clip);
+    // 이 경로의 기존 node bbox 기준은 유지하고 실제 clip만 대조한다.
+    let visible_text = text_clip::intersect(node.bbox, current_text_clip);
+    if is_text_overlap_candidate(node) && visible_text.width > 0.0 && visible_text.height > 0.0 {
         out.push(FlowCandidate {
             path: path.clone(),
             node_type: "TextRun",
-            bbox: node.bbox,
+            bbox: visible_text,
             column: None,
         });
     }
     for (i, child) in node.children.iter().enumerate() {
         let child_path = format!("{path}/{}{i}", node_type_label(&child.node_type));
-        collect_text_outside_body(child, child_path, out);
+        collect_text_outside_body(child, child_path, current_text_clip, out);
     }
 }
 
@@ -1326,6 +1308,7 @@ pub fn scan_page_with_source(
             false,
             &boundary,
             &page_boundary,
+            page_boundary,
             opts,
             &mut overflow,
             &mut off_canvas,
@@ -1340,7 +1323,7 @@ pub fn scan_page_with_source(
     for (i, child) in root.children.iter().enumerate() {
         if is_outside_body_text_area(&child.node_type) {
             let path = format!("Page/{}{i}", node_type_label(&child.node_type));
-            collect_text_outside_body(child, path, &mut text);
+            collect_text_outside_body(child, path, page_boundary, &mut text);
         }
     }
 
@@ -1993,6 +1976,8 @@ pub fn run(args: &[String]) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[path = "empty_carrier_off_canvas.rs"]
+    mod empty_carrier_off_canvas;
     use crate::renderer::render_tree::{
         BoundingBox, RectangleNode, RenderLayerInfo, RenderNode, RenderNodeType, TableCellNode,
         TableNode, TextLineNode, TextRunNode,

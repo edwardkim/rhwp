@@ -23,8 +23,14 @@ struct ExternalImageReference {
 
 const SAMPLE10_EXTERNAL_FORMATS: &[(&str, &str)] = &[
     ("hwp3", "samples/hwp3-sample10.hwp"),
-    ("hwp5", "samples/hwp3-sample10-hwp5.hwp"),
-    ("hwpx", "samples/hwp3-sample10-hwpx.hwpx"),
+    (
+        "hwp5",
+        "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp",
+    ),
+    (
+        "hwpx",
+        "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx",
+    ),
 ];
 
 const SAMPLE10_EXTERNAL_IMAGES: &[(u16, &str, &str, &str)] = &[

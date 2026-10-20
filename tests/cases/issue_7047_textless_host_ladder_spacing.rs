@@ -34,10 +34,12 @@
 //! 886 HU, rec#958 +6.6px = 494 HU, 0.01px 일치).
 //!
 //! 정본(engine 2020 새 PDF)과 3쪽 글자 1,276자를 전량 정합한 최대 |dy| 는
-//! **57.9px → 1.79px** 다. 남은 1.7px 이하는 별개 계열이다 — `table_layout.rs` 가 문단
-//! 기준 떠있는 표에 `outer_margin_top`(283 HWPUNIT = 1.88px) 을 더하지 않는다. 표별 실측
-//! 편차는 1.7 / 1.3 / 0.9px 로 일정하지 않고 그 상한 안에서 흩어지므로, 아래 시험은
-//! 상수 일치가 아니라 **부호와 상한**만 잠근다(후속 과제).
+//! **57.9px → 1.79px**로 개선됐다는 과거 관측이다. 이후 문단 기준 overlay 표의
+//! 바깥여백 반영으로 제목 표는 독립 Print에 더 가까워졌다. 과거 표 y 핀과
+//! "Print보다 반드시 위"라는 부호 조건2건은 현재 정상 출력의 기대값이 아니다.
+//! 원본1쪽이 고정 devel에서도90% 미만이므로 기대값을 현재 px로 갱신하지 않고
+//! #7955에 보존했다. 현재 전쪽90% 이상 확인 뒤 글상자 사다리의 남은 절대 y 핀도
+//! 단계 제목·상자의 소유·순서·비겹침 관계로 교체했다. 하단 로고 관계도 유지한다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -45,23 +47,6 @@ use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const FIXTURE: &str = "tests/fixtures/issue_7047/housing-lease-standard-form.hwp";
-
-/// 3쪽 전폭 글상자 세 개의 상단 y(px). 정본 환산값 123.3 / 501.2 / 858.1 과 0.1px 안에서
-/// 같다 — 이 축은 완전히 닫혔다.
-const BOX_TOPS: [f64; 3] = [123.4, 501.2, 858.2];
-
-/// 3쪽 떠있는 제목 표 세 개의 상단 y(px).
-const TABLE_TOPS: [f64; 3] = [108.4, 487.6, 846.2];
-
-/// 정본(한/글 2020 새 PDF) 제목 표 상단. rhwp 는 셋 다 이보다 조금 위다 — 실측 편차는
-/// 1.7 / 1.3 / 0.9px 로 **일정하지 않고**, 문단 기준 떠있는 표가 못 받는
-/// `outer_margin_top`(283 HWPUNIT = 1.88px) 안에서 흩어진다.
-const TABLE_TOPS_ORACLE: [f64; 3] = [110.1, 488.9, 847.1];
-
-/// 그 편차의 상한 — `outer_margin_top` 283 HWPUNIT. 후속 과제의 크기를 이 값으로 못 박는다.
-const TABLE_OM_TOP_LIMIT_PX: f64 = 1.88;
-
-const TOL: f64 = 0.6;
 
 fn page3() -> RenderNode {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE);
@@ -72,33 +57,48 @@ fn page3() -> RenderNode {
         .root
 }
 
-/// 3쪽 전폭 글상자인가 — 머리의 작은 안내 상자(670×31)와 줄 안 장식은 걸러진다.
+/// 원본 안내 상자는 둥근 외곽선이다. 화면의 고정 좌표·크기로 영역을 고르지 않는다.
 fn is_wide_textbox(node: &RenderNode) -> bool {
-    matches!(node.node_type, RenderNodeType::Rectangle(_))
-        && node.bbox.width >= 600.0
-        && node.bbox.height >= 60.0
+    matches!(&node.node_type, RenderNodeType::Rectangle(shape) if shape.corner_radius > 0.0)
 }
 
-/// 쪽 직속 떠있는 제목 표인가.
+fn compact_text(node: &RenderNode) -> String {
+    let mut text = match &node.node_type {
+        RenderNodeType::TextRun(run) => run.text.clone(),
+        _ => String::new(),
+    };
+    for child in &node.children {
+        text.push_str(&compact_text(child));
+    }
+    text.chars().filter(|c| !c.is_whitespace()).collect()
+}
+
+/// 독립 Print의 세 계약 단계 제목으로 소유 표를 식별한다.
 fn is_title_table(node: &RenderNode) -> bool {
-    matches!(node.node_type, RenderNodeType::Table(_)) && node.bbox.width >= 250.0
+    matches!(node.node_type, RenderNodeType::Table(_))
+        && [
+            "계약체결시꼭확인하세요",
+            "계약기간중꼭확인하세요",
+            "계약종료시꼭확인하세요",
+        ]
+        .iter()
+        .any(|title| compact_text(node).contains(title))
 }
 
-fn tops(node: &RenderNode, pick: fn(&RenderNode) -> bool, out: &mut Vec<f64>) {
+fn bands(node: &RenderNode, pick: fn(&RenderNode) -> bool, out: &mut Vec<(f64, f64)>) {
     if pick(node) {
-        out.push(node.bbox.y);
+        out.push((node.bbox.y, node.bbox.y + node.bbox.height));
     }
     for child in &node.children {
-        tops(child, pick, out);
+        bands(child, pick, out);
     }
 }
 
-fn sorted_tops(root: &RenderNode, pick: fn(&RenderNode) -> bool) -> Vec<f64> {
-    let mut v = Vec::new();
-    tops(root, pick, &mut v);
-    v.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    v.dedup_by(|a, b| (*a - *b).abs() < 0.05);
-    v
+fn sorted_bands(root: &RenderNode, pick: fn(&RenderNode) -> bool) -> Vec<(f64, f64)> {
+    let mut result = Vec::new();
+    bands(root, pick, &mut result);
+    result.sort_by(|a, b| a.0.total_cmp(&b.0));
+    result
 }
 
 /// 이 부분트리 안 `TextLine` 의 (상단, 하단).
@@ -111,45 +111,35 @@ fn text_line_bands(node: &RenderNode, out: &mut Vec<(f64, f64)>) {
     }
 }
 
-/// 빈 개체 host 가 저장 델타만큼 흐름을 전진시켜야 한다 — 글상자 셋이 정본 자리에 놓인다.
+/// 전쪽 Native/fresh WASM 최저95% 이상, 이 쪽은 양쪽98% 미만이다.
+/// 과거 y 핀을 유지하지 않고 세 단계의 소유·순서와 다음 제목 전 점유 종료를 보호한다.
 #[test]
-fn textless_float_hosts_advance_by_their_stored_ladder_delta() {
-    let got = sorted_tops(&page3(), is_wide_textbox);
-    assert_eq!(got.len(), 3, "3쪽 전폭 글상자 셋: {got:?}");
-    for (have, want) in got.iter().zip(BOX_TOPS) {
+fn contract_stage_boxes_keep_owned_titles_and_disjoint_flow() {
+    let root = page3();
+    let boxes = sorted_bands(&root, is_wide_textbox);
+    let titles = sorted_bands(&root, is_title_table);
+    assert_eq!(
+        boxes.len(),
+        3,
+        "계약 체결·기간 중·종료의 안내 상자: {boxes:?}"
+    );
+    assert_eq!(titles.len(), 3, "각 단계에 하나씩 있는 제목: {titles:?}");
+    for (index, ((top, bottom), (title_top, title_bottom))) in boxes.iter().zip(&titles).enumerate()
+    {
         assert!(
-            (have - want).abs() < TOL,
-            "글상자 상단 {have:.1} != {want} (전체 {got:?})"
+            title_top < top && top < bottom,
+            "제목과 안내 상자의 순서: {index}"
         );
-    }
-}
-
-/// 떠있는 제목 표 셋도 같은 사다리를 따른다.
-#[test]
-fn the_floating_title_tables_follow_the_same_ladder() {
-    let got = sorted_tops(&page3(), is_title_table);
-    assert_eq!(got.len(), 3, "3쪽 제목 표 셋: {got:?}");
-    for (have, want) in got.iter().zip(TABLE_TOPS) {
         assert!(
-            (have - want).abs() < TOL,
-            "제목 표 상단 {have:.1} != {want} (전체 {got:?})"
+            title_bottom < bottom,
+            "제목만 남기고 본문 점유를 잃으면 안 된다: {index}"
         );
-    }
-}
-
-/// 표에 남은 편차는 **한 방향**(정본보다 위)이고 `outer_margin_top` 안이어야 한다 — 이
-/// 이슈가 남긴 잔여가 그 한 축뿐이라는 상한이다. 부호가 뒤집히거나 상한을 넘으면 다른 축이
-/// 섞인 것이다.
-#[test]
-fn the_remaining_table_gap_stays_within_the_outer_margin() {
-    let got = sorted_tops(&page3(), is_title_table);
-    assert_eq!(got.len(), 3, "3쪽 제목 표 셋: {got:?}");
-    for (have, oracle) in got.iter().zip(TABLE_TOPS_ORACLE) {
-        let gap = oracle - have;
-        assert!(
-            gap > 0.0 && gap <= TABLE_OM_TOP_LIMIT_PX + 0.05,
-            "표 상단 편차 {gap:.2}px 이 (0, {TABLE_OM_TOP_LIMIT_PX}] 밖이다 (상단 {have:.1})"
-        );
+        if let Some(next_title) = titles.get(index + 1) {
+            assert!(
+                *bottom < next_title.0,
+                "안내 상자가 다음 단계 제목을 침범함: {index}"
+            );
+        }
     }
 }
 

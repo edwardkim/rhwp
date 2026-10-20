@@ -2,10 +2,12 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-09-16
+last_verified: 2026-10-16
 ---
 
 # rhwp CLI 명령어 매뉴얼
+
+별도 조회 도구의 하위 명령·기존 rhwp-q-* 이관은 [rhwp-q 매뉴얼](rhwp_query_cli.md)을 따른다.
 
 `rhwp` 바이너리의 전체 명령을 정리한다. 권위 출처는 `src/main.rs` 의 명령 디스패치이며,
 `rhwp --help` 와 본 문서를 함께 현행화한다.
@@ -67,6 +69,59 @@ rhwp inspect hidden-text --help
 
 > 한컴은 그림 미지정 placeholder 를 편집기에서만 표시하고 인쇄(및 인쇄 등가
 > 출력)에서는 미출력한다 — rhwp 의 인쇄 등가 프로필이 이 계약을 따른다.
+
+## Sixel 출력
+
+Sixel을 지원하는 terminal에서 한 쪽을 바로 표시하려면
+`rhwp export-sixel 문서.hwp --page 0 --width 360`을 사용한다.
+`rhwp export-sixel 문서.hwp -o output/sixel --width 720`은 전체 쪽을 파일로 저장한다.
+`-p 2`를 함께 지정하면 세 번째 쪽만 저장한다.
+기본 첫 쪽만 stdout에 출력하며 흰 배경·256색으로 변환한다. `native-skia`가 필요하다.
+옵션·종료 코드·terminal/SSH 검증은 [Sixel 출력 가이드](export_sixel_command.md)를 따른다.
+
+## PDF 가져오기 (기본 포함)
+
+기본 빌드에 포함된 `pdf-import`로 PDF를 공통 Document IR로 가져와 HWPX 또는 HWP로 저장한다.
+devel에서 함께 구현하는 기능이며, parser 전체 할당 경계는 아직 미입증이다.
+기본 요청 정책은 입력 64 MiB, 가져올 쪽 최대 1,024개다. 원본 쪽 인덱스는 선택 쪽수와
+분리하며, page tree의 유한한 참조 방문 예산 안에서 검증한다. 128쪽 이후를 선택할 수도 있다.
+선택하지 않으면 전체 쪽을 가져오므로 1,024쪽을 초과하는 원본에는 선택 범위를 지정한다.
+실제 operator·decoded·그림·자원 ID 등 다른 요청 한도도 적용하며 암호화 PDF는 지원하지 않는다.
+
+```bash
+cargo build --locked --profile release-test --bin rhwp \
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간의 공용 target/pr-review 절대 경로를 지정하세요}"
+
+# 전체 쪽
+rhwp import-pdf input.pdf output.hwpx --json
+
+# 원본 1·7·8쪽을 순서대로 가져오기: 0-based, 범위 양 끝 포함
+rhwp import-pdf input.pdf selected.hwp --source-pages 0,6-7 --json
+```
+
+- 입력·출력 위치 인자 두 개가 필수이며 출력 확장자는 `.hwpx` 또는 `.hwp`다.
+  `--source-pages`·`--json`은 위치 인자 앞뒤에 둘 수 있다.
+- 쪽 선택 생략은 전체 쪽이다. 목록은 엄격히 증가해야 하며 중복·역순·빈 항목·범위 초과와
+  미지/중복 옵션은 exit 2다. `--page`는 렌더 출력 옵션이므로 이 명령에서 사용하지 않는다.
+- 읽기·PDF 처리·저장 실패는 exit 1, 성공은 exit 0이다. 실패하면 stdout은 비어 있고
+  stderr에 원인을 출력한다. 기존 검증 명령의 exit 3/4 의미는 바꾸지 않는다.
+- 원본과 같은 파일(심볼릭 링크, Unix hard link 포함)은 거부한다. 모든 선택 쪽을 처리·직렬화한
+  후 같은 폴더의 임시 파일을 원자적으로 교체한다. 처리/교체 실패 시 기존 출력 파일을 보존한다.
+- `--json` 성공 봉투는 `schemaVersion`, `source`, `output`, `format`, `bytes`, `pageCount`,
+  `diagnostics`와 출처 표지를 포함한다. `diagnostics.pages`의 `sourcePage` → `outputSection`은
+  원본 쪽과 가져온 구역의 0-based 대응이며 `pageCount`는 Core가 조판한 쪽수다. 이 둘을 동일한
+  값으로 가정하지 않는다. `paragraphPolicy`, `warnings`, `parserAllocationBoundsProven=false`도
+  진단에 남긴다. 원본 좌표를 담는 `diagnostics.pages`는 비신뢰 문서 파생 필드로 표시한다.
+- 암호 옵션은 이 명령에서 거부한다. 출력 암호가 필요하면 생성된 파일에 `convert` 또는
+  `export-hwpx`의 암호 옵션을 사용한다.
+- `--no-default-features --features wasm-api`로 PDF만 제외한 CLI 빌드에도 도움말·capabilities는 보이며 `available=false`, 실행은
+  `PDF_IMPORT_DISABLED`(exit 1)다. `capabilities.formats.read`에는 feature-on일 때만 PDF를 넣는다.
+
+feature-on에서는 기존 `info input.pdf --json`, `export-svg input.pdf`,
+`export-hwpx input.pdf output.hwpx`, `convert input.pdf output.hwp`도 **전체 쪽** 공통 로더를 쓴다.
+선택 쪽은 `import-pdf`로 저장한 뒤 기존 조회·렌더 명령을 사용한다.
+MCP `hwp_import_pdf`도 같은 CLI를 사용한다. 필수 인자는 `path`·`output`이며 선택 문자열
+`sourcePages`의 문법은 `--source-pages`와 같다. 별도 파싱·변환 구현은 두지 않는다.
 
 ## 비밀번호 보호 HWP
 
@@ -178,23 +233,21 @@ HWP/HWPX → SVG.
 
 ### `export-png <파일> [옵션]` *(native-skia feature 필요)*
 HWP/HWPX → PNG(Skia raster, AI 파이프라인/VLM 연동). 상세: [export_png_command.md](export_png_command.md)
-- `-o`, `-p`, `--font-path` (공통/폰트)
+- `-o`, `-p`, `--font-path` (공통/폰트). `-p`는 0부터 시작하며 여러 번 지정할 수 있다.
+- `--json` — 전체 쪽수와 실제 PNG 경로·bytes·출력 backend/profile의 JSON manifest만 stdout에 출력.
+- `--metadata-only` — PNG를 만들지 않고 전체 쪽수 JSON만 출력.
+- `--render-tree-output <폴더>` — 같은 문서·글꼴 환경의 선택 쪽 render tree를 함께 저장.
+- `capabilities --mcp`의 `hwp_export_png`는 원본·출력 폴더를 받아 같은 JSON 계약을 사용한다.
+  `requiresFeature: native-skia`와 현재 빌드의 `available`을 함께 확인한다.
 - `--scale <배율>` (기본 1.0), `--dpi <값>`(pHYs 메타 + scale 자동), `--max-dimension <픽셀>`(longest edge)
 - `--vlm-target <프리셋>` — claude / gpt4v-low / gpt4v-high(gpt4v) / gemini / qwen-vl(qwen) / llava
-- `--profile <프로필>` — 출력 프로필. **기본 `high-quality`(인쇄 등가)** —
-  그림 미지정 placeholder 는 억제된다. 편집기식 표시가 필요하면
-  `--profile screen` 을 명시한다 (#2297, #2225 계약).
+- `--profile <프로필>` — **기본 `screen`**. 인쇄 비교에는 `--profile print`를 명시한다.
+  Print에서는 편집 화면 안내문·미지정 그림 placeholder를 제외한다.
 - `--compat 2022|2024` — 목표 한글 조판 세대. [조판 세대](#조판-세대-compat)
 
-### `export-png-gpu <파일.hwp|파일.hwpx> [옵션]` / `gpu-info` *(gpu feature 필요)*
-`export-png-gpu`는 기존 SVG 산출을 `vello`/`wgpu`로 래스터화하여 PNG로 내보내는 대량
-VLM 입력용 경로다. 문서 파싱·레이아웃을 GPU로 옮기는 명령은 아니며, 래스터화 단계만 대상이다.
-- `-o, --output <폴더>`(기본 `output/`)·`-p, --page <0-기준 번호>`·`--scale <배율>`(기본 2.0)·
-  `--font-path <경로>`(여러 번 가능)를 받는다.
-- `--benchmark`는 동일 SVG를 CPU `resvg`로도 래스터화하여 시간·픽셀 차이를 함께 보고하며,
-  `--repeat <N>`은 페이지별 반복 중 최솟값을 쓴다.
-- `gpu-info`로 실행 가능한 GPU 어댑터를 먼저 확인한다. `gpu` feature 없이 빌드한 바이너리는
-  두 명령을 사용법 오류(exit 2)로 거부한다.
+> 네이티브 `gpu` 옵션과 `export-png-gpu`·`gpu-info` 명령은 제거되었습니다.
+> PNG 출력에는 `native-skia` 빌드의 `export-png`를 사용합니다.
+> Studio·브라우저 확장의 Canvas2D/CanvasKit 렌더링은 별도 경로입니다.
 
 ### `export-pdf <파일> [옵션]`
 HWP/HWPX → PDF (svg2pdf + pdf-writer).

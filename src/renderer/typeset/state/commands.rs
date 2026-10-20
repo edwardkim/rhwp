@@ -6,6 +6,77 @@ use crate::renderer::typeset::{
 };
 
 impl TypesetState {
+    pub(in crate::renderer::typeset) fn replace_deferred_table_successor_start(
+        &mut self,
+        start: Option<usize>,
+    ) -> Option<usize> {
+        std::mem::replace(&mut self.data.deferred_table_successor_start, start)
+    }
+
+    pub(in crate::renderer::typeset) fn defer_table_terminal_gap(
+        &mut self,
+        para_index: usize,
+        control_index: usize,
+    ) {
+        self.data.pending_table_terminal_gap = Some(super::data::DeferredTableTerminalGap {
+            para_index,
+            control_index,
+            flow_end: self.data.current_height,
+            page_index: self.data.pages.len(),
+            column_index: self.data.current_column,
+        });
+    }
+
+    /// 지연 표 뒤 줄은 원래 host가 아니라 현재 물리 흐름에서 증명한다.
+    /// 사이 문단이 공간을 소비하거나 쪽/단이 바뀌면 그 계약은 종료한다.
+    pub(in crate::renderer::typeset) fn consume_pending_table_terminal_gap(
+        &mut self,
+        para_index: usize,
+        paragraphs: &[Paragraph],
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+        dpi: f64,
+    ) {
+        let Some(witness) = self.data.pending_table_terminal_gap.take() else {
+            return;
+        };
+        if witness.page_index != self.data.pages.len()
+            || witness.column_index != self.data.current_column
+            || witness.flow_end != self.data.current_height
+        {
+            return;
+        }
+        let Some(para) = paragraphs.get(para_index) else {
+            return;
+        };
+        let Some(crate::model::control::Control::Table(table)) = paragraphs
+            .get(witness.para_index)
+            .and_then(|host| host.controls.get(witness.control_index))
+        else {
+            return;
+        };
+        if let Some(gap) = crate::renderer::float_placement::stored_terminal_empty_line_gap(
+            para,
+            table,
+            styles,
+            self.data.profile,
+            witness.flow_end,
+            dpi,
+        ) {
+            if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
+                eprintln!(
+                    "DIAG_SCAN DEFERRED_TERMINAL_GAP pi={} ci={} next={} flow={:.3} gap={:.3}",
+                    witness.para_index, witness.control_index, para_index, witness.flow_end, gap,
+                );
+            }
+            self.advance_flow_by(gap);
+            self.record_stored_paragraph_flow_end(witness.para_index, self.data.current_height);
+        } else if para.controls.is_empty() && !super::super::para_has_visible_text(para) {
+            // 글자가 없다고 줄 상자를 없애지 않는다. 기존 문단 fit가 그 줄을
+            // 수용하면 실제 흐름 전진으로 다음 호출에서 witness가 폐기된다.
+            self.data.pending_table_terminal_gap = Some(witness);
+        }
+    }
+
     pub(in crate::renderer::typeset) fn discard_terminal_blank_only_page(
         &mut self,
         paragraphs: &[Paragraph],
@@ -21,6 +92,15 @@ impl TypesetState {
         super::finalize::finalize_pages(&mut self.data.pages, entries, number, paragraphs);
     }
     pub(in crate::renderer::typeset) fn append_item(&mut self, item: PageItem) {
+        // 본문 표의 공통 이어받기도 등록된 미주 문단의 소속을 유지한다.
+        // 단 전환은 이 표시를 초기화하므로 각 조각의 소유에서 다시 게시한다.
+        if crate::renderer::typeset::page_item_para_index(&item).is_some_and(|index| {
+            self.data.endnote_para_base.is_some_and(|base| {
+                index >= base && index - base < self.data.endnote_paragraphs.len()
+            })
+        }) {
+            self.data.current_endnote_flow = true;
+        }
         self.data.current_items.push(item);
     }
     pub(in crate::renderer::typeset) fn remove_last_item(&mut self) -> Option<PageItem> {
@@ -64,7 +144,90 @@ impl TypesetState {
         &mut self,
         picture: crate::renderer::typeset::DeferredStoredFrameControl,
     ) {
+        if let Some(index) = picture.following_body_para_index {
+            self.data
+                .deferred_source_frame_body_pages
+                .insert(index, self.data.pages.len() + 2);
+        }
         self.data.deferred_next_page_stored_frames.push(picture);
+    }
+    /// OLE를 넘기더라도 현재 단의 뒤 본문은 남은 예산을 계속 소비한다.
+    pub(in crate::renderer::typeset) fn defer_table_host_ole_to_next_column(
+        &mut self,
+        para_idx: usize,
+        ctrl_idx: usize,
+        ctrl: &crate::model::control::Control,
+        dpi: f64,
+    ) -> bool {
+        if self.data.current_column + 1 >= self.data.col_count {
+            return false;
+        }
+        let crate::model::control::Control::Shape(shape) = ctrl else {
+            return false;
+        };
+        let anchor_y = self
+            .data
+            .deferred_next_column_stored_frames
+            .iter()
+            .map(|frame| frame.placement.occupied_bottom)
+            .fold(self.data.pending_body_wide_top_reserve, f64::max);
+        let Some(placement) =
+            crate::renderer::float_placement::column_ole_placement(shape, anchor_y, dpi)
+        else {
+            return false;
+        };
+        let required_height = placement.occupied_bottom - placement.anchor_y;
+        if self.data.current_height < 1.0
+            || self.data.current_height + required_height <= self.available_height() + 0.5
+            || placement.occupied_bottom > self.available_height()
+        {
+            return false;
+        }
+        self.data.deferred_next_column_stored_frames.push(
+            crate::renderer::typeset::DeferredStoredFrameControl {
+                kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
+                para_index: para_idx,
+                control_index: ctrl_idx,
+                placement,
+                following_body_para_index: None,
+            },
+        );
+        true
+    }
+    pub(in crate::renderer::typeset) fn activate_next_column_stored_frames(&mut self) {
+        if self.data.deferred_next_column_stored_frames.is_empty() {
+            return;
+        }
+        for deferred in std::mem::take(&mut self.data.deferred_next_column_stored_frames) {
+            self.data.current_height = self
+                .data
+                .current_height
+                .max(deferred.placement.occupied_bottom);
+            self.data.paragraph_float_placements.insert(
+                (deferred.para_index, deferred.control_index),
+                deferred.placement,
+            );
+            self.data.page_start_stored_frames.push(deferred);
+        }
+        self.data.current_start_height = self.data.current_height;
+    }
+
+    /// 뒤 본문이 없거나 명시적 쪽 나눔이 있어도 이월 개체의 원래 쪽 소유를 닫는다.
+    pub(in crate::renderer::typeset) fn finish_next_column_stored_frames(&mut self) {
+        if !self.data.deferred_next_column_stored_frames.is_empty() {
+            self.advance_column_or_new_page();
+            self.flush_column();
+        }
+    }
+    pub(in crate::renderer::typeset) fn apply_deferred_source_frame_body_page(
+        &mut self,
+        index: usize,
+    ) {
+        if let Some(page) = self.data.deferred_source_frame_body_pages.remove(&index) {
+            while self.data.pages.len() < page {
+                self.advance_column_or_new_page();
+            }
+        }
     }
     pub(in crate::renderer::typeset) fn mark_pre_emitted_host(&mut self, index: usize) {
         self.data.pre_emitted_host_paras.insert(index);
@@ -169,6 +332,12 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn record_vpos_lazy_origin(&mut self, value: Option<i32>) {
         self.data.vpos_lazy_base = value;
     }
+    pub(in crate::renderer::typeset) fn record_stored_column_origin(
+        &mut self,
+        value: Option<(i32, f64)>,
+    ) {
+        self.data.vpos_stored_column_origin = value;
+    }
     pub(in crate::renderer::typeset) fn record_vpos_page_origin(&mut self, value: Option<i32>) {
         self.data.vpos_page_base = value;
     }
@@ -230,9 +399,16 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn protect_current_ladder_floor(&mut self) {
         self.data.ladder_band_floor = self.data.ladder_band_floor.max(self.data.current_height);
     }
-    pub(in crate::renderer::typeset) fn register_square_band(&mut self, top: f64, bottom: f64) {
+    /// Keep the source host origin separate from the object's physical box.
+    /// Following stored paragraph offsets use this origin; closing flow uses
+    /// the occupied bottom supplied by the accepted object placement.
+    pub(in crate::renderer::typeset) fn register_square_band(
+        &mut self,
+        source_origin: f64,
+        bottom: f64,
+    ) {
         self.data.square_band_bottom = self.data.square_band_bottom.max(bottom);
-        self.data.square_band_top = Some(top);
+        self.data.square_band_top = Some(source_origin);
     }
     pub(in crate::renderer::typeset) fn record_ladder_band_table(&mut self, key: (usize, usize)) {
         self.data.current_ladder_band_tables.push(key);
@@ -244,6 +420,18 @@ impl TypesetState {
     ) {
         self.data.inline_placements.insert(key, placement);
     }
+    /// [#7330] 자리차지 표가 민 host 첫 글줄의 앞 간격을 흐름에 한 번 소비하고 기록한다.
+    /// 배치는 이 기록을 확정 앞 간격으로 받아 같은 값을 소비한다.
+    pub(in crate::renderer::typeset) fn consume_float_pushed_line_spacing(
+        &mut self,
+        para_idx: usize,
+        spacing: f64,
+    ) {
+        self.data.current_height += spacing;
+        self.data
+            .float_pushed_line_spacings
+            .insert(para_idx, spacing);
+    }
     pub(in crate::renderer::typeset) fn record_paragraph_float_placement(
         &mut self,
         key: (usize, usize),
@@ -251,21 +439,63 @@ impl TypesetState {
     ) {
         self.data.paragraph_float_placements.insert(key, placement);
     }
+    /// fit이 수용한 저장 문단 끝을 paint에 그대로 전달한다.
+    pub(in crate::renderer::typeset) fn record_stored_paragraph_flow_end(
+        &mut self,
+        para_idx: usize,
+        end: f64,
+    ) {
+        self.data.stored_paragraph_flow_ends.insert(para_idx, end);
+    }
+
+    pub(in crate::renderer::typeset) fn record_stored_column_top_spacing(
+        &mut self,
+        para_idx: usize,
+        frame: crate::renderer::float_placement::StoredColumnTopSpacing,
+    ) {
+        self.data.vpos_page_base = Some(frame.source_origin_hu);
+        self.data.vpos_lazy_base = None;
+        self.data.vpos_col_anchor = self.data.current_height;
+        self.data.vpos_stored_column_origin =
+            Some((frame.source_origin_hu, self.data.current_height));
+        self.data.stored_column_top_spacings.insert(para_idx, frame);
+    }
     /// 뒤 줄간격과 문단 아래 여백을 제외한 확정 본문 하단을 보존한다.
     pub(in crate::renderer::typeset) fn record_paragraph_content_bottom(
         &mut self,
         key: (usize, usize),
         content_height: f64,
+        flow_advance: f64,
     ) {
-        self.data
-            .paragraph_fragment_content_bottoms
-            .insert(key, self.data.current_height + content_height);
+        self.data.paragraph_fragment_content_bottoms.insert(
+            key,
+            super::paragraph_fragment::ParagraphFragmentBounds {
+                content_bottom: self.data.current_height + content_height,
+                flow_end: self.data.current_height + flow_advance,
+                stored_frame: None,
+            },
+        );
     }
     pub(in crate::renderer::typeset) fn append_endnote_paragraph(
         &mut self,
         paragraph: crate::model::paragraph::Paragraph,
     ) {
         self.data.endnote_paragraphs.push(paragraph);
+    }
+    pub(in crate::renderer::typeset) fn begin_endnote_paragraphs(&mut self, base: usize) {
+        self.data.endnote_para_base = Some(base);
+    }
+    pub(in crate::renderer::typeset) fn record_reissued_endnote_rows(
+        &mut self,
+        local_index: usize,
+    ) {
+        self.data.reissued_endnote_rows.insert(local_index);
+    }
+    pub(in crate::renderer::typeset) fn append_endnote_measured_table(
+        &mut self,
+        table: crate::renderer::height_measurer::MeasuredTable,
+    ) {
+        self.data.endnote_measured_tables.push(table);
     }
     pub(in crate::renderer::typeset) fn append_endnote_source(
         &mut self,
@@ -329,6 +559,18 @@ impl TypesetState {
         self.data.current_zone_layout = Some(layout.clone());
         self.data.layout = layout;
         self.data.current_zone_column_type = column_type;
+    }
+    /// 명시적으로 만든 새 쪽의 첫 영역과 편집용 쪽 정보에 같은 단 배치를 발행한다.
+    /// 쪽 중간 영역 전환은 install_zone_layout을 사용해 기존 쪽 정보를 보존한다.
+    pub(in crate::renderer::typeset) fn install_page_start_layout(
+        &mut self,
+        layout: crate::renderer::page_layout::PageLayoutInfo,
+        column_type: crate::model::page::ColumnType,
+    ) {
+        if let Some(page) = self.data.pages.last_mut() {
+            page.layout = layout.clone();
+        }
+        self.install_zone_layout(layout, column_type);
     }
     pub(in crate::renderer::typeset) fn advance_zone_origin(&mut self, height: f64) {
         self.data.current_zone_y_offset += height;
@@ -437,6 +679,7 @@ impl TypesetState {
             endnotes: self.data.endnotes,
             endnote_paragraphs: self.data.endnote_paragraphs,
             endnote_para_sources: self.data.endnote_para_sources,
+            endnote_measured_tables: self.data.endnote_measured_tables,
             endnote_between_notes_hu: self.data.endnote_between_notes_hu,
             endnote_separator_above_hu: self.data.endnote_separator_above_hu,
             endnote_separator_below_hu: self.data.endnote_separator_below_hu,
@@ -451,18 +694,66 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn invalidate_vpos_after_clearance(&mut self, clearance: f64) {
         self.data.vpos_ladder_dirty |= clearance > 0.0;
     }
-    pub(in crate::renderer::typeset) fn apply_endnote_render_tail_spacing(
+    fn owns_endnote_tail(&self, paragraph_index: usize, line_count: usize) -> bool {
+        self.data.current_items.iter().any(|item| match item {
+            PageItem::FullParagraph { para_index } => *para_index == paragraph_index,
+            PageItem::PartialParagraph {
+                para_index,
+                end_line,
+                ..
+            } => *para_index == paragraph_index && *end_line == line_count,
+            _ => false,
+        })
+    }
+    /// 미주 사이 0 경계는 앞 미주의 내용 높이를 보존하고 마지막 줄 간격만 회수한다.
+    /// 앞 단의 tail이나 아직 마지막 줄을 소비하지 않은 조각은 변경하지 않는다.
+    pub(in crate::renderer::typeset) fn reclaim_endnote_tail_spacing(
         &mut self,
         index: usize,
+        paragraph_index: usize,
+        dpi: f64,
+    ) -> i32 {
+        let Some(paragraph) = self.data.endnote_paragraphs.get(index) else {
+            return 0;
+        };
+        let Some(line) = paragraph.line_segs.last() else {
+            return 0;
+        };
+        let spacing = line.line_spacing.max(0);
+        if spacing == 0 || !self.owns_endnote_tail(paragraph_index, paragraph.line_segs.len()) {
+            return 0;
+        }
+        if let Some(line) = self.data.endnote_paragraphs[index].line_segs.last_mut() {
+            line.line_spacing = 0;
+        }
+        self.data.current_height -= crate::renderer::hwpunit_to_px(spacing, dpi);
+        spacing
+    }
+    pub(in crate::renderer::typeset) fn apply_endnote_tail_spacing(
+        &mut self,
+        index: usize,
+        paragraph_index: usize,
         spacing: i32,
-    ) {
-        if let Some(seg) = self
-            .data
-            .endnote_paragraphs
-            .get_mut(index)
-            .and_then(|p| p.line_segs.last_mut())
-        {
-            seg.line_spacing = spacing;
+        dpi: f64,
+    ) -> f64 {
+        let Some(paragraph) = self.data.endnote_paragraphs.get_mut(index) else {
+            return 0.0;
+        };
+        let line_count = paragraph.line_segs.len();
+        let Some(line) = paragraph.line_segs.last_mut() else {
+            return 0.0;
+        };
+        let added = spacing.saturating_sub(line.line_spacing).max(0);
+        line.line_spacing = spacing;
+        // 간격은 완성된 마지막 줄이 소유한다. 앞 단의 tail이나 현재 단의
+        // 미완성 조각에 같은 공간을 다시 청구하지 않는다.
+        let owns_tail = self.owns_endnote_tail(paragraph_index, line_count);
+        if owns_tail {
+            let reserved = crate::renderer::hwpunit_to_px(added, dpi);
+            self.data.current_height += reserved;
+            reserved
+        } else {
+            0.0
         }
     }
     pub(in crate::renderer::typeset) fn append_routed_item(
@@ -489,7 +780,11 @@ impl TypesetState {
     ) {
         for (&(owner, _), placement) in &self.data.paragraph_float_placements {
             if owner == para_idx
-                && placement.flow == crate::renderer::float_placement::ParagraphFloatFlow::NextLine
+                && matches!(
+                    placement.flow,
+                    crate::renderer::float_placement::ParagraphFloatFlow::NextLine
+                        | crate::renderer::float_placement::ParagraphFloatFlow::EmptyHost
+                )
             {
                 self.data.current_height =
                     placement.paragraph_end(self.data.current_height, spacing_after);

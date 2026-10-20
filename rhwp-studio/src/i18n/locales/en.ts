@@ -7,6 +7,10 @@
  */
 
 const catalog = {
+  "editor.crossSectionSelectionUnsupported": "Editing a selection across sections is not supported yet. Select and edit one section at a time.",
+  "dialog.fill.keepGradient": "Keep existing gradient",
+  "dialog.fill.keepImage": "Keep existing image fill",
+  "dialog.fill.keepExisting": "Keep existing fill",
   "command.edit.compareDocuments.label": "Compare Documents",
   "command.edit.compareDocuments.splitLabel": "Compare Documents ",
   "command.edit.compareDocuments.toolbarLabel": "Compare\nDocuments",
@@ -414,6 +418,10 @@ const catalog = {
   "dialog.bookmark.statusLabel.text.x5fcb7e": "A bookmark name cannot exceed {p1} characters.",
   "dialog.bookmark.titleBar.text": "Bookmark",
   "dialog.bookmark.typeSpan.text": "Position",
+  "dialog.cellBlockDelete.body.text": "Delete the selected cells.\nKeep the cells and clear only their contents?",
+  "dialog.cellBlockDelete.deleteBtn.text": "Delete",
+  "dialog.cellBlockDelete.keepBtn.text": "Keep",
+  "dialog.cellBlockDelete.title": "Delete",
   "dialog.cellBorderBg.buildBackgroundTab.label": "Cross",
   "dialog.cellBorderBg.buildBackgroundTab.label.x432dc9": "Diagonal cross",
   "dialog.cellBorderBg.buildBackgroundTab.text": " No fill",
@@ -899,6 +907,10 @@ const catalog = {
   "dialog.hmlSaveFormat.primaryButton.text": "Save as HML",
   "dialog.hmlSaveFormat.primaryButton.text.xa0b100": "Save as HWP",
   "dialog.hmlSaveFormat.title": "Save HML document",
+  "dialog.pdfSaveFormat.title": "Save PDF document",
+  "dialog.pdfSaveFormat.message": "The original PDF is preserved. Choose a format for saving your edits.",
+  "dialog.pdfSaveFormat.hwpx": "Save as HWPX",
+  "dialog.pdfSaveFormat.hwp": "Save as HWP",
   "dialog.hwpPassword.createPasswordInput.label": "New password",
   "dialog.hwpPassword.createPasswordInput.label.x0c638a": "Confirm password",
   "dialog.hwpPassword.help.text": "The password is used only while opening this document and is not stored.",

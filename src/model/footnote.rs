@@ -239,6 +239,10 @@ impl FootnoteShape {
     }
 
     /// 한컴 UI "구분선 위": 본문과 주석 구분선 사이의 간격.
+    ///
+    /// HWPX 는 `aboveLine` 을 `separator_margin_top` 에, HWP5 는 레코드의 "구분선 위"
+    /// i16 을 `separator_margin_bottom` 에 둔다([#7862] HWP5 의 길이 상위 워드는 이제
+    /// `separator_length` 에 합쳐지므로 `separator_margin_top` 은 HWPX 전용이다).
     pub fn separator_above_margin_hu(&self) -> HwpUnit16 {
         let hwpx_above = self.separator_margin_top.max(0);
         if hwpx_above != 0 {

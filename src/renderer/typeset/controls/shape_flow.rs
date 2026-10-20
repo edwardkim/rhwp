@@ -66,19 +66,14 @@ pub(super) fn prepare(
                     && matches!(p.common.text_wrap, TextWrap::TopAndBottom)
                     && matches!(p.common.vert_rel_to, VertRelTo::Para) =>
             {
-                let h = hwpunit_to_px(p.common.height as i32, dpi);
-                let mb = hwpunit_to_px(p.common.margin.bottom as i32, dpi);
-                Some(h + mb)
+                topbottom_pushdown_height(&p.common, dpi)
             }
             Control::Shape(s)
                 if !s.common().treat_as_char
                     && matches!(s.common().text_wrap, TextWrap::TopAndBottom)
                     && matches!(s.common().vert_rel_to, VertRelTo::Para) =>
             {
-                let cm = s.common();
-                let h = hwpunit_to_px(cm.height as i32, dpi);
-                let mb = hwpunit_to_px(cm.margin.bottom as i32, dpi);
-                Some(h + mb)
+                topbottom_pushdown_height(s.common(), dpi)
             }
             _ => None,
         }
@@ -93,6 +88,39 @@ pub(super) fn prepare(
 }
 
 impl TableHostShapeFlow {
+    /// A sequential paragraph-relative shape owns the frame accepted before
+    /// its height advances the cursor. A later saved host line can already
+    /// include this exclusion band; it is not another object origin.
+    pub(super) fn accepted_shape_frame(
+        &self,
+        control: &Control,
+        origin: f64,
+    ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
+        use crate::model::shape::VertAlign;
+        use crate::renderer::float_placement::{ParagraphFloatFlow, ParagraphFloatPlacement};
+        let Control::Shape(shape) = control else {
+            return None;
+        };
+        let common = shape.common();
+        let height = self.non_tac_pushdown_h?;
+        // Nonzero offsets and bottom/center alignment need their own anchor
+        // resolution, rather than substituting the sequential flow origin.
+        if common.vertical_offset != 0
+            || !matches!(common.vert_align, VertAlign::Top | VertAlign::Inside)
+        {
+            return None;
+        }
+        Some(ParagraphFloatPlacement {
+            flow: ParagraphFloatFlow::NextLine,
+            anchor_y: origin,
+            stored_host_origin: None,
+            stored_successor_line_origin: None,
+            table_left: None,
+            table_top: origin,
+            occupied_bottom: origin + height,
+        })
+    }
+
     /// TAC의 항목 존재 조건과 float의 단 상단 조건을 구별한다. 예산 조회도 단락 평가한다.
     pub(super) fn needs_advance(
         &self,
@@ -110,4 +138,17 @@ impl TableHostShapeFlow {
             false
         }
     }
+}
+
+/// 호스트 위쪽에서 끝나는 개체는 현재 본문 흐름의 물리 띠를 차지하지 않는다.
+/// 개체의 출력 위치는 보존하며, 양수 오프셋 등 다른 앵커의 기존 처리는 유지한다.
+fn topbottom_pushdown_height(common: &crate::model::shape::CommonObjAttr, dpi: f64) -> Option<f64> {
+    let bottom = i64::from(crate::renderer::float_placement::signed_hwpunit(
+        common.vertical_offset,
+    )) + i64::from(common.height)
+        + i64::from(common.margin.bottom);
+    if bottom <= 0 {
+        return None;
+    }
+    Some(hwpunit_to_px(common.height as i32, dpi) + hwpunit_to_px(common.margin.bottom as i32, dpi))
 }

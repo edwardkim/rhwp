@@ -23,10 +23,12 @@
 //!   행이 `시아노아크릴레이트 | – 순식간에 피부 및 안구가 접착됨. 어` 이고 40쪽이
 //!   `함유 혼합물 | 린이 손에 닿게 하지 마시오.` 로 시작한다
 //!
-//! ## 반례 — 저장값이 모두 0 인 입력은 증거가 아니다
+//! ## 수동 변형의 기대값 재검토
 //!
-//! 같은 행의 모든 줄을 0 으로 바꾸면 "되감김"은 남아도 사다리가 이어진다는 확인(다음 seg 의
-//! `lh + ls` 전진)이 사라진다. 그때는 종전 고아 기준대로 행을 통째로 넘겨야 한다.
+//! 후속 저장 줄을 80HU 옮기거나 뒤에 0 원점 문단을 추가한 두 변형도 독립
+//! 한컴 2020 Print는 첫 줄을 표의 시작 쪽에 남긴다. 사다리 확인이 깨지면 행 전체를
+//! 이월해야 한다는 종전 가정은 기각한다. 원본/변형 전쪽 Native/fresh WASM은
+//! 최저 90.47526%이며 검사는 행 소유·셀 안 포함·원본 내용의 순서/완전 보존을 확인한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -40,8 +42,6 @@ const SAMPLE: &str = "samples/issue6782/1480000-201900042-chemical-product-label
 const ROW_HEAD: &str = "시아노아크릴레이트";
 /// 표가 시작하는 쪽에만 있는 캡션.
 const CAPTION: &str = "어린이보호에대한경고문구";
-/// 본문 바닥: 본문 상자 y 132.28 + h 895.73.
-const BODY_BOTTOM: f64 = 1028.0;
 
 fn open() -> DocumentCore {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
@@ -116,20 +116,25 @@ fn continuation_page_stays_inside_body() {
     let page = table_start_page(&core) + 1;
     let tree = core.build_page_render_tree(page).expect("render tree");
     let bottom = body_bottom(&tree.root, false);
+    fn find_body(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(node.node_type, RenderNodeType::Body { .. }) {
+            return Some(node);
+        }
+        node.children.iter().find_map(find_body)
+    }
+    let body = find_body(&tree.root).expect("실제 Body 상자");
+    let limit = body.bbox.y + body.bbox.height;
     assert!(
-        bottom <= BODY_BOTTOM + 0.5,
-        "{}쪽 본문 마지막 줄 하단이 {bottom:.1}px 로 본문 바닥 {BODY_BOTTOM}px 를 넘는다 (#6761)",
+        bottom <= limit + 0.5,
+        "{}쪽 본문 마지막 줄은 실제 Body 안에 있어야 한다: {bottom} > {limit}",
         page + 1
     );
 }
 
-/// 반례 — 되감김 뒤 사다리가 이어지지 않으면(다음 seg 가 되감긴 줄의 `lh + ls` 만큼 전진하지
-/// 않으면) 저장 분할의 증거가 아니다. 행 형상과 컷은 그대로 두고 `셀[9] p[1]` 의 저장 위치만
-/// 80HU(약 1px) 밀어 그 확인 하나만 깨뜨린다 — 종전 고아 기준대로 행을 통째 넘겨야 한다.
+/// 저장 전진 확인의 변경이 실제로 수용 가능한 행 첫 줄을 강제로 이월하지 않는다.
 #[test]
-fn rewind_without_ladder_continuation_is_not_split_evidence() {
+fn changed_later_line_preserves_the_physically_fitting_row_head() {
     let mut core = open();
-    let table_page = table_start_page(&core);
     let mut doc = core.document().clone();
     let mut touched = 0;
     for section in &mut doc.sections {
@@ -156,24 +161,13 @@ fn rewind_without_ladder_continuation_is_not_split_evidence() {
     }
     assert_eq!(touched, 2, "대상 셀[9] p[1] 의 저장 줄 2개를 찾지 못했다");
     core.set_document(doc);
-    let head_page = first_page_with(&core, ROW_HEAD);
-    assert_eq!(
-        head_page,
-        table_page + 1,
-        "사다리 전진 확인이 없으면 `{ROW_HEAD}` 행은 종전 고아 기준대로 다음 쪽({}쪽)으로 가야 \
-         한다 — {}쪽에 남았다",
-        table_page + 2,
-        head_page + 1
-    );
+    assert_response_content_and_fragment_owners(&core);
 }
 
-/// 한 셀 안에 여러 `0 -> 0` 후보가 있으면, 나중 후보의 사다리 확인이 앞 후보의 컷을
-/// 승인하면 안 된다. 앞 후보 다음 줄은 일부러 80HU 밀어 확인을 깨고, 같은 문단 끝에
-/// 별도 후보를 붙인다. 둘째 후보만 확인되어도 실제 컷은 첫 후보이므로 행 전체를 넘겨야 한다.
+/// 뒤의 확인 문단 추가는 독립 Print와 같은 앞 조각을 유지하며 추가 내용도 전부 보존한다.
 #[test]
-fn later_confirmed_rewind_does_not_authorize_an_earlier_cut() {
+fn appended_rewind_preserves_row_ownership_and_all_response_paragraphs() {
     let mut core = open();
-    let table_page = table_start_page(&core);
     let mut doc = core.document().clone();
     let mut touched = 0;
     for section in &mut doc.sections {
@@ -208,9 +202,125 @@ fn later_confirmed_rewind_does_not_authorize_an_earlier_cut() {
     }
     assert_eq!(touched, 1, "대상 응답 셀을 찾지 못했다");
     core.set_document(doc);
+    assert_response_content_and_fragment_owners(&core);
+}
+
+/// 독립 Print에서 행 첫 줄은 표의 시작 쪽에 남고, 다음 쪽이 같은 셀을 이어받는다.
+/// 저장 사다리 후보의 변경과 실제 공간에 들어가는 내용의 소유는 구분한다.
+fn assert_response_content_and_fragment_owners(core: &DocumentCore) {
+    let mut owners = Vec::new();
+    for (section_index, section) in core.document().sections.iter().enumerate() {
+        for (para_index, paragraph) in section.paragraphs.iter().enumerate() {
+            for (control_index, control) in paragraph.controls.iter().enumerate() {
+                let Control::Table(table) = control else {
+                    continue;
+                };
+                for (cell_index, cell) in table.cells.iter().enumerate() {
+                    if cell.row == 3
+                        && cell
+                            .paragraphs
+                            .first()
+                            .is_some_and(|p| flat(&p.text).starts_with(&flat("- 순식간에")))
+                    {
+                        owners.push((
+                            section_index,
+                            para_index,
+                            control_index,
+                            cell_index,
+                            flat(
+                                &cell
+                                    .paragraphs
+                                    .iter()
+                                    .map(|p| p.text.as_str())
+                                    .collect::<String>(),
+                            ),
+                        ));
+                    }
+                }
+            }
+        }
+    }
+    assert_eq!(owners.len(), 1, "검증할 원본 응답 셀은 하나다");
+    let (section, para, control, cell_index, expected) = &owners[0];
+    let table_page = table_start_page(core);
     assert_eq!(
-        first_page_with(&core, ROW_HEAD),
-        table_page + 1,
-        "나중 후보의 확인으로 첫 후보 컷을 승인하면 안 된다"
+        first_page_with(core, ROW_HEAD),
+        table_page,
+        "독립 Print와 같이 행 첫 줄은 표의 시작 쪽에 남아야 한다"
+    );
+    let mut actual = String::new();
+    let mut cell_pages = Vec::new();
+    fn text(node: &RenderNode, cell: &RenderNode, out: &mut String) {
+        if !node.visible || node.editor_only {
+            return;
+        }
+        if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            assert!(
+                node.bbox.y + 0.5 >= cell.bbox.y
+                    && node.bbox.y + node.bbox.height <= cell.bbox.y + cell.bbox.height + 0.5,
+                "분할한 응답 줄은 배정된 셀 안에 있어야 한다"
+            );
+        }
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            out.push_str(&run.text);
+        }
+        for child in &node.children {
+            text(child, cell, out);
+        }
+    }
+    fn visit(
+        node: &RenderNode,
+        owner: (usize, usize, usize, usize),
+        page: u32,
+        out: &mut String,
+        pages: &mut Vec<u32>,
+    ) {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if table.section_index == Some(owner.0)
+                && table.para_index == Some(owner.1)
+                && table.control_index == Some(owner.2)
+                && table.cell_context.is_none()
+            {
+                for child in &node.children {
+                    if matches!(&child.node_type, RenderNodeType::TableCell(cell)
+                        if cell.model_cell_index == Some(u32::try_from(owner.3).expect("모델 cell index")))
+                    {
+                        pages.push(page);
+                        text(child, child, out);
+                    }
+                }
+                return;
+            }
+        }
+        for child in &node.children {
+            visit(child, owner, page, out, pages);
+        }
+    }
+    for page in 0..core.page_count() {
+        let tree = core
+            .build_page_render_tree(page)
+            .expect("검증할 실제 render tree");
+        visit(
+            &tree.root,
+            (*section, *para, *control, *cell_index),
+            page,
+            &mut actual,
+            &mut cell_pages,
+        );
+    }
+    assert_eq!(
+        cell_pages,
+        vec![table_page, table_page + 1],
+        "응답 셀은 앞 조각과 이어받기 조각에 한 번씩 배정돼야 한다"
+    );
+    assert_eq!(
+        flat(&actual),
+        *expected,
+        "원본 셀의 모든 문단을 순서대로 보존하며 누락·중복하지 않아야 한다"
+    );
+    assert!(
+        flat(&core.extract_page_text_native(table_page + 1).unwrap())
+            .contains(&flat("함유 혼합물")),
+        "다음 쪽은 왼쪽 셀의 남은 내용도 보존해야 한다"
     );
 }

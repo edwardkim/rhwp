@@ -101,64 +101,12 @@ fn hwpx_sample16_business_box_gradient_colors_materialized() {
     );
 }
 
-/// 격차 C: HWP3 heading decoration ("═══■ 1.추진목적 ■═══") strip 회귀 가드.
-/// fixup_hwp3_heading_decoration 후 paragraph.text 가 decoration 제거된 상태인지 단언.
-#[test]
-fn hwp3_sample16_heading_decoration_stripped() {
-    let bytes = std::fs::read("samples/hwp3-sample16.hwp").expect("read hwp3-sample16.hwp");
-    let doc = parse_hwp3(&bytes).expect("parse hwp3-sample16.hwp");
+// 원본의 작성 공백·제어 축·점선 및 최종 글상자 소유는 새 이름의
+// tests/cases/verified_hwp3_original_print_boundaries.rs에서 보호한다.
 
-    // pi=70 이 1.추진목적 heading paragraph
-    let para = &doc.sections[0].paragraphs[70];
-    assert!(
-        !para.text.contains('═'),
-        "decoration char ═ 잔존 — heading strip 회귀 (text={:?})",
-        para.text
-    );
-    assert!(
-        !para.text.contains('■'),
-        "marker char ■ 잔존 — heading strip 회귀 (text={:?})",
-        para.text
-    );
-    assert!(
-        para.text.contains("추진목적"),
-        "heading 본문 보존 (text={:?})",
-        para.text
-    );
-}
-
-/// 격차 B: HWP3 Shape border LineType 2~7 → Solid normalization 회귀 가드.
-/// HWP3 raw line_style=2 (Dash per spec) 인 sample16 사업개요 박스 (pi=71) 의
-/// border attr 가 1 (Solid) 로 normalize 되어야 함.
-#[test]
-fn hwp3_sample16_business_box_border_solid() {
-    let bytes = std::fs::read("samples/hwp3-sample16.hwp").expect("read hwp3-sample16.hwp");
-    let doc = parse_hwp3(&bytes).expect("parse hwp3-sample16.hwp");
-
-    let para = &doc.sections[0].paragraphs[71];
-    let shape = para
-        .controls
-        .iter()
-        .find_map(|c| match c {
-            Control::Shape(s) => Some(s.as_ref()),
-            _ => None,
-        })
-        .expect("pi=71 Shape control 존재");
-
-    let rect = match shape {
-        ShapeObject::Rectangle(r) => r,
-        other => panic!("expected Rectangle, got {:?}", other),
-    };
-
-    let line_type = (rect.drawing.border_line.attr as u32) & 0x3F;
-    assert_eq!(
-        line_type, 1,
-        "HWP3 raw line_style=2 (Dash) 가 1 (Solid) 로 normalize 되어야 함 (격차 B)"
-    );
-}
-
-/// 격차 D: HWP3 legacy 폰트명 ("신명조" 등) → 한컴 변환기 정합 명칭 ("HY신명조" 등)
-/// 매핑 회귀 가드. font_faces[0] 의 "신명조" 가 "HY신명조" 로 매핑되어야 함.
+/// 격차 D: HWP3 legacy 폰트명 ("신명조" 등) → 한/글 변환기가 쓰는 이름 ("한양신명조" 등)
+/// 매핑 회귀 가드. 기대값은 한/글 변환본 `samples/hwp3-sample16-hwp5.hwp` 의 글꼴 이름이다
+/// (#7810 — 종전 기대값 `HY*` 는 한/글 변환본에 없는 별개의 TrueType 글꼴이었다).
 #[test]
 fn hwp3_sample16_font_name_mapped_to_hwp5_convention() {
     let bytes = std::fs::read("samples/hwp3-sample16.hwp").expect("read hwp3-sample16.hwp");
@@ -170,11 +118,11 @@ fn hwp3_sample16_font_name_mapped_to_hwp5_convention() {
         .first()
         .expect("group 0 (한글) 존재");
 
-    // HWP3 raw idx 1 = "신명조" 가 "HY신명조" 로 매핑된 후 alt_name 에 원본 보존
+    // HWP3 raw idx 1 = "신명조" 가 "한양신명조" 로 매핑된 후 alt_name 에 원본 보존
     let f1 = &group0[1];
     assert_eq!(
-        f1.name, "HY신명조",
-        "신명조 → HY신명조 매핑 (격차 D, 한컴 변환기 mimic)"
+        f1.name, "한양신명조",
+        "신명조 → 한양신명조 매핑 (격차 D, 한/글 변환기)"
     );
     assert_eq!(
         f1.alt_name.as_deref(),
@@ -182,9 +130,11 @@ fn hwp3_sample16_font_name_mapped_to_hwp5_convention() {
         "alt_name 에 원본 폰트명 보존"
     );
 
-    // 다른 매핑 단언
-    assert_eq!(group0[0].name, "HY고딕", "고딕 → HY고딕");
-    assert_eq!(group0[2].name, "HY중고딕", "중고딕 → HY중고딕");
-    assert_eq!(group0[3].name, "HY견고딕", "견고딕 → HY견고딕");
-    assert_eq!(group0[4].name, "HY그래픽", "그래픽 → HY그래픽");
+    // 다른 매핑 단언. sample16 변환본은 쓰지 않는 고딕을 뺐다 — 고딕을 고딕으로 두는
+    // 근거는 `hwp3-sample4-hwp5.hwp`·`hwp3-sample11-hwp5.hwp` 변환본이다.
+    assert_eq!(group0[0].name, "고딕", "고딕 → 고딕");
+    assert_eq!(group0[0].alt_name, None, "바뀌지 않은 이름은 alt_name 없음");
+    assert_eq!(group0[2].name, "한양중고딕", "중고딕 → 한양중고딕");
+    assert_eq!(group0[3].name, "한양견고딕", "견고딕 → 한양견고딕");
+    assert_eq!(group0[4].name, "한양그래픽", "그래픽 → 한양그래픽");
 }

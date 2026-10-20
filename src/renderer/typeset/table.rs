@@ -15,6 +15,7 @@ use crate::renderer::height_measurer::{
     fit_stored_hwpx_no_adjust_rowspans, fit_stored_inline_picture_frame,
     trim_stored_hwpx_inline_row_trailing_spacing, MeasuredTable,
 };
+use crate::renderer::hwpunit_to_px;
 use crate::renderer::pagination::estimate_footnote_note_height;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
@@ -119,7 +120,16 @@ pub(super) fn format(
         )
     };
 
-    let effective_height = if profile().hwp5_stored_pagination_layout() {
+    let unrestricted_wrapper = crate::renderer::height_measurer::transparent_table_wrapper_child(
+        table,
+    )
+    .is_some_and(|nested| {
+        crate::renderer::height_measurer::unrestricted_wrapper_frame(table, nested, dpi).is_some()
+    });
+    let effective_height = if profile().hwp5_stored_pagination_layout()
+        || profile().hwpx_stored_layout()
+        || unrestricted_wrapper
+    {
         crate::renderer::height_measurer::unwrapped_table_whole_height(table, effective_height, dpi)
     } else {
         effective_height
@@ -128,34 +138,27 @@ pub(super) fn format(
 
     // 표 셀 내 각주 높이 사전 계산 (Paginator engine.rs:565-581 동일)
     let mut table_footnote_height = 0.0;
-    let mut table_footnote_count = 0usize;
+    let source_notes = crate::renderer::pagination::table_cell_footnotes(table);
+    let table_footnote_count = source_notes.len();
     let mut table_footnotes = Vec::new();
-    for (cell_idx, cell) in table.cells.iter().enumerate() {
-        for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
-            for (cc_idx, cc) in cp.controls.iter().enumerate() {
-                if let Control::Footnote(fn_ctrl) = cc {
-                    let fn_height = estimate_footnote_note_height(fn_ctrl, dpi);
-                    table_footnote_height += fn_height;
-                    table_footnote_count += 1;
-                    // 두 저장 컨테이너 모두 같은 명시적 각주 줄 재시작을 보존한다.
-                    // 조회는 저장 줄과 구성 줄의 일대일 대응을 확인하며,
-                    // 편집·합성 메타데이터를 분할 신호로 쓰지 않는다.
-                    let fragment_split = (profile().hwp5_stored_pagination_layout()
-                        || (profile().hwpx_stored_layout() && !profile().session_edited()))
-                    .then(|| native_hwp5_footnote_reset_fragments(fn_ctrl, dpi))
-                    .flatten();
-                    table_footnotes.push(TableCellFootnote {
-                        number: fn_ctrl.number,
-                        cell_index: cell_idx,
-                        cell_para_index: cp_idx,
-                        cell_control_index: cc_idx,
-                        row: cell.row as usize,
-                        content_height: queued_table_footnote_content_height(fn_ctrl, dpi),
-                        fragment_split,
-                    });
-                }
-            }
-        }
+    for (cell_path, fn_ctrl) in source_notes {
+        let owner = cell_path[0];
+        let fn_height = estimate_footnote_note_height(fn_ctrl, dpi);
+        table_footnote_height += fn_height;
+        // 두 저장 컨테이너 모두 같은 명시적 각주 줄 재시작을 보존한다.
+        // 조회는 저장 줄과 구성 줄의 일대일 대응을 확인하며,
+        // 편집·합성 메타데이터를 분할 신호로 쓰지 않는다.
+        let fragment_split = (profile().hwp5_stored_pagination_layout()
+            || (profile().hwpx_stored_layout() && !profile().session_edited()))
+        .then(|| native_hwp5_footnote_reset_fragments(fn_ctrl, dpi))
+        .flatten();
+        table_footnotes.push(TableCellFootnote {
+            number: fn_ctrl.number,
+            row: table.cells[owner.cell_index].row as usize,
+            cell_path,
+            content_height: queued_table_footnote_content_height(fn_ctrl, dpi),
+            fragment_split,
+        });
     }
 
     FormattedTable {
@@ -188,9 +191,14 @@ pub(super) fn fit_measured_for_host(
 ) -> Option<MeasuredTable> {
     // An outer wrapper's height is a physical frame, not a target height for
     // proportional rescaling of the unwrapped child's rows.
-    if profile().hwp5_stored_pagination_layout()
-        && crate::renderer::height_measurer::transparent_table_wrapper_child(table).is_some()
-    {
+    if crate::renderer::height_measurer::transparent_table_wrapper_child(table).is_some_and(
+        |nested| {
+            profile().hwp5_stored_pagination_layout()
+                || profile().hwpx_stored_layout()
+                || crate::renderer::height_measurer::unrestricted_wrapper_frame(table, nested, dpi)
+                    .is_some()
+        },
+    ) {
         return mt.cloned();
     }
     if profile().hwpx_stored_layout() && !profile().session_edited() {
@@ -218,6 +226,20 @@ pub(super) fn fit_measured_for_host(
     // 가 과대 압축/팽창을 차단한다.
     if is_para_topbottom_float(&table.common) {
         mt.map(|measured| {
+            let body_height = measured.row_heights.iter().sum::<f64>()
+                + measured.cell_spacing * measured.row_heights.len().saturating_sub(1) as f64;
+            if !profile().session_edited()
+                && (profile().hwp5_stored_pagination_layout() || profile().hwpx_stored_layout())
+                && hwpunit_to_px(table.common.height as i32, dpi) > body_height
+                && crate::renderer::table_row_frame::stored_rows_own_body(
+                    table,
+                    &measured.row_heights,
+                    dpi,
+                )
+            {
+                // 실제 내용을 담은 행 선언을 개체의 낡은 전체 캐시로 다시 늘리지 않는다.
+                return measured.clone();
+            }
             let (fitted, shrink_blocked_by_content) =
                 crate::renderer::height_measurer::fit_measured_table_to_declared_height_with_outcome(measured, table, dpi);
             // 빈 앵커는 **확대 방향만**: 한글 규칙 = max(선언, 콘텐츠) — 콘텐츠가
@@ -262,7 +284,10 @@ pub(super) fn fit_measured_for_host(
                 // 선언(cellSz)으로만 잡혀 여유가 남아 있으면 그 행에서만 초과분을
                 // 회수한다. 페인트 경로가 이미 반대 방향(부족분 → 마지막 행)으로
                 // 하는 일과 같다 (float-stack-defer 2쪽 표 3쪽 분열).
-                let native_empty_rowbreak = profile().hwp5_stored_pagination_layout()
+                // 저장 표 선언 높이와 셀 저장 줄 사다리라는 같은 증거는 원본 HWPX 에도
+                // 있다 — 한/글은 형식으로 조판을 가르지 않는다(편람 hwp·hwpx 정본 동일).
+                let native_empty_rowbreak = (profile().hwp5_stored_pagination_layout()
+                    || profile().hwpx_stored_layout())
                     && !table.common.treat_as_char
                     && matches!(
                         table.page_break,

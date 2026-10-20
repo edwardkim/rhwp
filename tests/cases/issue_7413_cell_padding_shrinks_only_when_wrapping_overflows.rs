@@ -20,20 +20,16 @@
 //! 그래서 묻는 것을 바꿨다 — **줄바꿈한 결과가 칸 높이를 넘는가.** 넘지 않으면 줄바꿈이
 //! 답이고 선언 여백을 그대로 둔다.
 //!
-//! # 이 검사가 잠그는 것
+//! # 현재 검사 범위
 //!
-//! 양방향을 함께 잠근다. 한쪽만 잠그면 규칙이 한 방향으로 무너져도 통과한다.
+//! 이 파일은 `table-text.hwpx`의 선언 여백 검사만 유지한다.
+//! 영월 서식의 고정 위치·한 줄 기대값은 독립 한컴 2020 Print와 상충한다.
+//! Native/fresh WASM 전 4쪽 최저 99.29% 확인 후 새 파일
+//! `issue_7642_yeongwol_monthly_cell_relations.rs`에서 원본 소유·월별/누계 두 줄·
+//! 순서·비겹침·셀 내부 포함을 검사한다. 다른 입력의 검사는 일괄 제거하지 않는다.
 //!
-//! 1. **깎지 말아야 할 칸** — 줄바꿈이 칸 높이에 들어가면 선언 여백이 남는다.
-//! 2. **깎아야 할 칸** — 줄바꿈이 칸 높이를 넘으면 종전대로 깎아 글자가 칸 밖으로
-//!    새지 않는다.
-//!
-//! # 기대값의 출처
-//!
-//! 두 입력 모두 대응하는 한/글 출력 PDF 가 없다. 그래서 기대값을 **정본이 아니라 기하
-//! 계약**에서 가져온다 — 문서가 선언한 안 여백과, 글자가 칸 안에 머무는가. 정본 대조가
-//! 가능한 문서들(`80168`·`2022 국립국어원`)에서 이 변경이 한/글에 가까워진다는 증거는
-//! 이슈 `#7413` 의 Visual Sweep 기록에 있다.
+//! `table-text.hwpx`의 기존 선언 여백 검사는 별도의 Print 출처 확인 대상이다.
+//! 영월 검증 결과를 이 입력의 시각 근거로 사용하지 않는다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -42,8 +38,6 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 /// 줄바꿈이 칸 높이에 들어가는 칸 — 선언 여백이 남아야 한다.
 const FITS: &str = "samples/hwpx/table-text.hwpx";
-/// 줄바꿈이 칸 높이를 넘는 칸 — 종전대로 깎여 글자가 칸 밖으로 안 나가야 한다.
-const OVERFLOWS: &str = "samples/issue5699/20099369_yeongwol_forms.hwp";
 
 fn load(rel: &str) -> DocumentCore {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
@@ -72,26 +66,6 @@ fn cell_text_extents(
     }
     for child in &node.children {
         cell_text_extents(child, next_cell, out);
-    }
-}
-
-/// `(칸 x, 칸 y, 칸 폭, 그 칸의 TextLine 수)`.
-fn cell_line_counts(node: &RenderNode, out: &mut Vec<(f64, f64, f64, usize)>) {
-    if let RenderNodeType::TableCell(_) = node.node_type {
-        let mut count = 0usize;
-        fn walk(n: &RenderNode, count: &mut usize) {
-            if matches!(n.node_type, RenderNodeType::TextLine(_)) {
-                *count += 1;
-            }
-            for c in &n.children {
-                walk(c, count);
-            }
-        }
-        walk(node, &mut count);
-        out.push((node.bbox.x, node.bbox.y, node.bbox.width, count));
-    }
-    for child in &node.children {
-        cell_line_counts(child, out);
     }
 }
 
@@ -128,34 +102,5 @@ fn a_cell_that_wraps_within_its_height_keeps_its_declared_padding() {
     assert!(
         pad_left > 3.0 && pad_right > 3.0,
         "줄바꿈이 칸 높이에 들어가는데도 안 여백이 깎였다 — 축소 하한(1.0px)까지 내려가면          여기서 1.0 근처가 나온다. 좌 {pad_left:.2}px / 우 {pad_right:.2}px"
-    );
-}
-
-/// 줄바꿈이 칸 높이를 넘는 칸은 종전대로 깎여 **한 줄**로 담긴다.
-///
-/// 이 칸(y=865.4, h=43.6, w=41.9)은 줄바꿈하면 22.5px 두 줄 = 45px 로 행 높이를 넘는다.
-/// 축소를 끄면 둘째 줄이 표 바닥을 9.4px 지나 아래 본문 줄과 겹친다(이슈 `#7413` 기록).
-#[test]
-fn b_cell_that_cannot_wrap_within_its_height_still_shrinks() {
-    let core = load(OVERFLOWS);
-    let page = core.build_page_render_tree(2).expect("3쪽 render tree");
-    let mut lines = Vec::new();
-    cell_line_counts(&page.root, &mut lines);
-
-    let target: Vec<_> = lines
-        .iter()
-        .filter(|(cx, cy, cw, _)| {
-            (*cw - 41.9).abs() < 0.3 && (*cy - 865.4).abs() < 1.0 && *cx > 0.0
-        })
-        .collect();
-    assert_eq!(
-        target.len(),
-        1,
-        "정답지 전제가 깨졌다 — 대상 칸(y=865.4, w=41.9)을 하나로 못 집었다. 쪽 구성이          바뀌었으면 이 검사의 좌표부터 다시 정해야 한다. 후보={target:?}"
-    );
-    let (_, _, _, line_count) = target[0];
-    assert_eq!(
-        *line_count, 1,
-        "줄바꿈이 칸 높이(43.6px)를 넘는 칸이 두 줄로 나뉘었다 — 여백을 깎아 한 줄로 담아야          둘째 줄이 표 바닥을 지나 아래 본문과 겹치지 않는다."
     );
 }

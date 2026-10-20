@@ -6,8 +6,10 @@
 
 pub mod grid;
 pub mod ir;
+mod legacy_column_renderer;
 mod legacy_combo_renderer;
 mod legacy_presentation;
+mod ooxml_text;
 pub mod orientation;
 pub mod parser;
 mod preview_palette;
@@ -20,6 +22,7 @@ pub use ir::{
     ole_chart_ir_base64, ole_chart_ir_json, OleChartIrPayload, OLE_CHART_IR_SCHEMA,
     OLE_CHART_IR_VERSION,
 };
+pub(crate) use ooxml_text::render_ooxml_chart;
 pub use orientation::{decide_series_axis, SeriesAxis, SeriesAxisEvidence};
 pub use parser::{
     parse_ole_chart_contents, probe_ole_chart_contents, OleChart, OleChartContentsProbe,
@@ -30,15 +33,42 @@ pub use svg_renderer::{
     render_ole_chart_standalone_svg, render_ole_chart_svg_body, render_ole_chart_svg_fragment,
 };
 
-/// Use supported legacy combo presentation metadata without changing the data IR.
-/// Other archive versions retain the existing rendering path.
+/// 지원하는 구형 차트의 저장 축·계열 속성을 데이터 IR과 함께 소비한다.
+/// 지원하지 않는 archive 버전은 기존 렌더링 경로를 유지한다.
 pub fn render_ole_chart_svg_fragment_with_contents(
     chart: &OleChart,
     contents: &[u8],
     bounds: [f64; 4],
     bin_data_id: u32,
 ) -> String {
+    render_ole_chart_svg_fragment_with_contents_at_dpi(chart, contents, bounds, bin_data_id, 96.0)
+}
+
+/// 저장 포인트 크기를 레이아웃과 같은 DPI에서 출력한다.
+pub fn render_ole_chart_svg_fragment_with_contents_at_dpi(
+    chart: &OleChart,
+    contents: &[u8],
+    bounds: [f64; 4],
+    bin_data_id: u32,
+    dpi: f64,
+) -> String {
     if let Some(presentation) = legacy_presentation::parse(contents) {
+        if presentation.chart_type == 1
+            && !presentation.series.iter().any(|series| series.secondary)
+            && chart.series.len() == presentation.series.len()
+            && chart
+                .series
+                .iter()
+                .all(|series| series.values.len() == chart.categories.len())
+        {
+            return svg_renderer::render_legacy_column_fragment(
+                chart,
+                &presentation,
+                bounds,
+                bin_data_id,
+                dpi,
+            );
+        }
         if let Some(svg) = legacy_combo_renderer::render(chart, &presentation, bounds) {
             return svg;
         }

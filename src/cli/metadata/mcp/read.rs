@@ -209,6 +209,27 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 "pages",
             ],
         ),
+        {
+            let mut definition = tool(
+                "hwp_export_png",
+                "native-skia 빌드에서 문서를 PNG로 저장하고 전체 쪽수·실제 산출물 JSON을 반환한다.",
+                serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "path": { "type": "string", "description": "원본 문서 경로" },
+                        "output": { "type": "string", "description": "PNG 출력 폴더" }
+                    },
+                    "required": ["path", "output"]
+                }),
+                "export-png",
+                serde_json::json!(["export-png", "{path}", "-o", "{output}", "--json"]),
+                &["schemaVersion", "source", "backend", "comparisonProfile", "layoutGeneration",
+                  "outputDir", "pageCount", "renderedCount", "pages"],
+            );
+            definition["requiresFeature"] = serde_json::json!("native-skia");
+            definition["available"] = serde_json::json!(cfg!(feature = "native-skia"));
+            definition
+        },
         tool(
             "hwp_export_pdf",
             "문서를 PDF 로 렌더해 저장하고 산출물 매니페스트(경로·크기·페이지 수)를 돌려준다. 제출·인쇄용 최종 산출물을 만들 때 쓴다.",
@@ -268,6 +289,23 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
             "convert",
             serde_json::json!(["convert", "{path}", "{output}", "--verify", "--json"]),
             &["schemaVersion", "source", "output", "format", "bytes", "wasDistribution", "verify", "verifyPages"],
+        ),
+        tool_with_optional_args(
+            "hwp_import_pdf",
+            "PDF 전체 또는 선택 원본 쪽을 HWPX/HWP로 가져온다. 기본 포함 pdf-import 기능을 사용하며 전체 parser 할당 경계는 아직 미입증이다. 원본 덮어쓰기는 거부한다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 PDF 경로" },
+                    "output": { "type": "string", "description": "출력 .hwpx 또는 .hwp 경로" },
+                    "sourcePages": { "type": "string", "description": "0-based 증가 목록·포함 범위 (예: 0,6-7). 생략하면 전체 쪽" }
+                },
+                "required": ["path", "output"]
+            }),
+            "import-pdf",
+            serde_json::json!(["import-pdf", "{path}", "{output}", "--json"]),
+            serde_json::json!([{ "when": "sourcePages", "args": ["--source-pages", "{sourcePages}"] }]),
+            &["schemaVersion", "source", "output", "format", "bytes", "pageCount", "diagnostics"],
         ),
         tool(
             "hwp_export_hml",

@@ -589,6 +589,13 @@ pub const MAP: &[CommandProvenance] = &[
                안에 있고 봉투에는 없다.",
     },
     CommandProvenance {
+        command: "export-png",
+        untrusted: NONE,
+        note: "매니페스트는 산출 경로·바이트·쪽수·출력 조건뿐이다. 문서 내용은 PNG와 \
+               별도 render tree 파일에 있으며 JSON 봉투에는 없다. metadata-only도 \
+               엔진이 계산한 쪽수만 반환한다.",
+    },
+    CommandProvenance {
         command: "export-pdf",
         untrusted: NONE,
         note: "매니페스트는 backend·경로·바이트·쪽수뿐이다.",
@@ -602,6 +609,13 @@ pub const MAP: &[CommandProvenance] = &[
         command: "export-hwpx",
         untrusted: NONE,
         note: "저장 봉투는 경로·바이트·verify 판정값뿐이다.",
+    },
+    CommandProvenance {
+        command: "import-pdf",
+        untrusted: &[
+            f("diagnostics.pages", "PDF MediaBox와 추출 span의 원본 좌표·쪽 대응"),
+        ],
+        note: "본문은 저장 파일에 있다. 진단의 원본 좌표는 문서 파생 값이며, 경고·문단 정책은 엔진 상수다.",
     },
     CommandProvenance {
         command: "export-hml",

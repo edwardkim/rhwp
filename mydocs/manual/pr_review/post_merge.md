@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-13
+last_verified: 2026-10-16
 ---
 
 # Merge 후속 처리
@@ -22,7 +22,8 @@ last_verified: 2026-09-13
 4. 최종 devel을 upstream/devel로 fast-forward한다.
 5. 관련 issue close 상태를 확인하고 필요한 issue comment를 게시한다.
 6. 원 PR 또는 supersede PR에 review 결과 comment를 게시한다.
-7. local·remote branch, worktree, 검토 전용 target을 정리하고 잔여 여부를 검증한다.
+7. local·remote branch, worktree, 검토 전용 target을 정리하고, 아래 7.7에 따라 저장소 루트의
+   `output/` 디렉터리 전체를 제거한 뒤 잔여 여부를 검증한다.
 
 시각 asset URL을 comment에 쓰면 asset이 devel에 실제 존재한 뒤에만 게시한다. 이미 완료된 원 PR의 기록만
 담는 별도 fast-pass PR은 5–6과 오늘할일 갱신을 반복하지 않고, devel sync와 cleanup만 수행한다.
@@ -210,10 +211,24 @@ heavy worker skip, final aggregate, issue 상태를 PR comment에 남긴다. 반
 성공 merge뿐 아니라 reject/close, supersede, review 중단, 후속 기록 fast-pass 완료도 최종 종료 gate다.
 정리 또는 유지 사유를 확인하기 전에는 후속 처리 완료라고 보고하지 않는다.
 
-PR이 merge되고 필수 후속 처리가 끝나면, 해당 검토가 만든
-`output/pr-review/<review-id>/`의 로그와 임시 산출물을 정리한다. 먼저 이 경로를 사용하는 실행이 없는지,
-필요한 결과 요약·영구 증적이 검토 문서와 추적 asset에 남았는지 확인한다. 정확히 해당 review가 소유한
-경로만 제거하며 다른 검토의 `output`과 공유 산출물은 보존한다. merge 전 보류 중인 검토의 로그는 유지한다.
+검토와 필수 후속 처리가 끝나면 **저장소 루트의 `output/` 디렉터리 전체를 통째로 제거한다.**
+`output/pr-review/<review-id>/` 또는 `output/pr-review/`만 지우는 것으로 끝내지 않는다.
+이전에 완료·종료한 다른 검토의 로그·중간 출력·중복 산출물과 `output/`의 다른 하위 디렉터리도
+포함한다. 검토별 하위 경로는 실행 결과의 저장·귀속 단위이며 정리 범위를 제한하지 않는다.
+
+1. `output/` 전체의 용량·용도·소유 작업과 관련 이슈·PR의 상태를 확인한다. 실행 중인 프로세스의
+   경로·열린 파일 참조도 확인하며, 진행 중인 다른 작업의 자료를 임의로 이동·삭제하지 않는다.
+2. 필요한 원본 HWP/HWPX·독립 Print PDF·글꼴·후속 재현 자료와 최종 TSV·대표 review/overlay PNG,
+   입력/기준 SHA·렌더 명령은 삭제 전에 `output/` 밖의 정해진 영구 보존 경로로 옮긴다.
+   보존한 파일의 해시와 접근 가능 여부를 검증하고 검토 문서·후속 comment의 참조도 갱신한다.
+   계속 필요한 공유 캐시도 `output/` 밖의 적절한 캐시 경로로 이관하고 참조를 확인한다.
+3. 필요한 증거 보존과 모든 사용 종료를 확인한 뒤 **정확한 저장소 루트의 `output/` 경로를 지정해
+   디렉터리 자체를 재귀 삭제한다.** 하위 산출물 일부만 지우거나 압축본을 그 안에 남기는 것으로
+   대체하지 않는다. `output/` 밖의 원본·PDF·글꼴·사용자 자료와 공유 `target/pr-review`는 보존한다.
+4. 다른 작업이 사용 중이거나 소유·필요 여부가 불명확해 전체 삭제를 완료할 수 없으면 해당 경로와
+   사유를 기록하고 **output 정리는 미완료**로 보고한다. 전체를 점검했다는 이유만으로 완료 처리하지 않는다.
+5. 삭제 목록·삭제 전후 용량과 여유 공간·영구 증적 경로를 기존 작업 기록에 남긴다. 마지막에는
+   `output/` 디렉터리 자체가 존재하지 않는지 확인한 뒤에만 output 정리 완료로 보고한다.
 
 이번 PR 또는 검토만을 위해 만든 별도 local worktree는 merge와 필수 후속 처리가 끝난 뒤 **제거가 기본**이다.
 여기에는 commit·push를 만들지 않고 PR diff 열람, CI 로그 조사, 재현, 검증, cherry-pick 누적 또는 merge

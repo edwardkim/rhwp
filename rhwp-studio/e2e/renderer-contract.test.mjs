@@ -9,6 +9,8 @@ import { bytesToHex } from '@noble/hashes/utils.js';
 
 import { comparePngBuffers } from './helpers.mjs';
 import { inspectCanvasKitRuntimeImageFailures } from './renderer-baseline-contract.mjs';
+import { makePatternImageReplayApi } from './pattern-image-replay-api.mjs';
+import { assertFootnoteMarkerBaselineReplay } from './footnote-marker-replay-contract.mjs';
 
 const studioRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = path.resolve(studioRoot, '..');
@@ -94,13 +96,20 @@ function extractBlockBody(source, signatureIndex, blockName) {
 }
 
 function extractMethodBody(source, methodName) {
-  let signatureIndex = source.indexOf(`private ${methodName}(`);
-  if (signatureIndex === -1) {
-    signatureIndex = source.indexOf(`${methodName}(`);
-  }
-  assert.notEqual(signatureIndex, -1, `missing method ${methodName}`);
+  const signature = source.match(new RegExp(
+    `^\\s*(?:(?:private|public|protected)\\s+)?(?:async\\s+)?${methodName}\\(`, 'm',
+  ));
+  assert.notEqual(signature, null, `missing method ${methodName}`);
 
-  return extractBlockBody(source, signatureIndex, methodName);
+  // Skip the parameter list, including object-valued defaults, before finding
+  // the method body. Declarations are anchored so call sites cannot match.
+  let depth = 1;
+  for (let index = signature.index + signature[0].length; index < source.length; index += 1) {
+    if (source[index] === '(') depth += 1;
+    if (source[index] === ')') depth -= 1;
+    if (depth === 0) return extractBlockBody(source, index + 1, methodName);
+  }
+  throw new Error(`unterminated parameters for ${methodName}`);
 }
 
 function extractSwitchCaseClusterBody(methodBody, caseLabel) {
@@ -180,6 +189,7 @@ function requireSnippet(source, pattern, message) {
 
 const renderOpBody = extractMethodBody(canvaskitSource, 'renderOp');
 const renderNodeBody = extractMethodBody(canvaskitSource, 'renderNode');
+const renderNodeContentsBody = extractMethodBody(canvaskitSource, 'renderNodeContents');
 const diagnosticsBody = extractMethodBody(canvaskitSource, 'diagnostics');
 const makeSurfaceBody = extractMethodBody(canvaskitSource, 'makeSurface');
 const renderPageCanvasKitBody = extractMethodBody(pageRendererSource, 'renderPageCanvasKit');
@@ -204,7 +214,8 @@ const forbiddenCanvas2dApiPatterns = [
   [/\bcreateImageBitmap\s*\(/, 'createImageBitmap'],
   [/\bImageBitmap\b/, 'ImageBitmap'],
   [/\bHTMLImageElement\b/, 'HTMLImageElement'],
-  [/\bnew\s+Image\s*\(/, 'new Image'],
+  [/\bnew\s+(?:globalThis\s*\.\s*)?Image\s*\(/, 'new Image'],
+  [/\bBlob\b/, 'Blob'],
   [/\bDOMParser\b/, 'DOMParser'],
   [/\bXMLSerializer\b/, 'XMLSerializer'],
   [/\bURL\s*\.\s*createObjectURL\s*\(/, 'URL.createObjectURL'],
@@ -312,16 +323,21 @@ assert.deepEqual(
 
 requireSnippet(
   renderNodeBody,
+  /this\.renderNodeContents\(canvas, node, profile, replayPlane, inheritedLayer\);/,
+  'node replay wrapper should delegate through the dispatch helper',
+);
+requireSnippet(
+  renderNodeContentsBody,
   /node\.kind === 'group'[\s\S]*?for \(const child of node\.children\)[\s\S]*?this\.renderNode\(canvas, child,[\s\S]*?\}\s*return;/,
   'group nodes should recurse through children',
 );
 requireSnippet(
-  renderNodeBody,
+  renderNodeContentsBody,
   /node\.kind === 'clipRect'[\s\S]*?this\.renderClipNode\(canvas, node,[\s\S]*?\);\s*return;/,
   'clipRect nodes should go through renderClipNode',
 );
 requireSnippet(
-  renderNodeBody,
+  renderNodeContentsBody,
   /this\.renderLeaf\(canvas, node, profile, replayPlane, activeLayer\);/,
   'leaf nodes should go through renderLeaf',
 );
@@ -362,7 +378,7 @@ requireSnippet(
 );
 requireSnippet(
   makeSurfaceBody,
-  /surfaceRequest\.preference === 'webgpu'[\s\S]*?surfaceFallbackReason = 'webgpuSurfaceUnsupported'[\s\S]*?reuseSoftwareFallbackCanvas/,
+  /surfaceRequest\.preference === 'webgpu'[\s\S]*?surfaceFallbackReason \?\?= 'webgpuSurfaceUnsupported'[\s\S]*?reuseSoftwareFallbackCanvas/,
   'CanvasKit repeated software fallback should preserve the original WebGPU rejection reason',
 );
 requireSnippet(
@@ -537,7 +553,7 @@ assert.doesNotMatch(
 );
 requireSnippet(
   mainSource,
-  /new RendererSession\([\s\S]*?async \(mode, surface\) => \{[\s\S]*?import\('\@\/view\/canvaskit-renderer'\)[\s\S]*?CanvasKitLayerRenderer\.create\(mode, surface,[\s\S]*?requirePreparedFontFamilies:[\s\S]*?transformCanvasKitPreflight[\s\S]*?prepareCanvasKitDocument[\s\S]*?loadStoredLocalFonts\(\)[\s\S]*?prepareLocalFonts\(report\.requiredFontFamilies\)[\s\S]*?prepareBundledFonts/,
+  /new RendererSession\([\s\S]*?async \(mode, surface\) => \{[\s\S]*?import\('\@\/view\/canvaskit-renderer'\)[\s\S]*?CanvasKitLayerRenderer\.create\(mode, surface,[\s\S]*?requirePreparedFontFamilies:[\s\S]*?transformCanvasKitPreflight[\s\S]*?prepareCanvasKitDocument[\s\S]*?loadStoredLocalFonts\(\)[\s\S]*?prepareLocalFonts\(fontRequirements\.requiredFontFamilies\)[\s\S]*?prepareBundledFonts/,
   'Studio should prepare stored local faces and bundled fallback before first CanvasKit replay',
 );
 requireSnippet(
@@ -547,7 +563,7 @@ requireSnippet(
 );
 requireSnippet(
   canvaskitSource,
-  /private findPreparedTypeface\([\s\S]*?const local =[\s\S]*?const bundled =[\s\S]*?if \(local\) return local;[\s\S]*?if \(bundled\) return bundled;/,
+  /private resolvePreparedTypeface\([\s\S]*?let local =[\s\S]*?const bundled =[\s\S]*?if \(local\) return local;[\s\S]*?if \(bundled\) return bundled;/,
   'CanvasKit should prefer an exact prepared local face over its bundled fallback alias',
 );
 requireSnippet(
@@ -714,7 +730,6 @@ const renderEquationBody = extractMethodBody(canvaskitSource, 'renderEquation');
 const renderEquationBoxBody = extractMethodBody(canvaskitSource, 'renderEquationBox');
 const renderPathBody = extractMethodBody(canvaskitSource, 'renderPath');
 const renderLineBody = extractMethodBody(canvaskitSource, 'renderLine');
-const drawStrokeWithDashBody = extractMethodBody(canvaskitSource, 'drawStrokeWithDash');
 const renderFormObjectBody = extractMethodBody(canvaskitSource, 'renderFormObject');
 const renderPlaceholderBody = extractMethodBody(canvaskitSource, 'renderPlaceholder');
 const renderTextRunBody = extractMethodBody(canvaskitSource, 'renderTextRun');
@@ -845,6 +860,9 @@ function runExecutableTextReplay(op, {
     translate(x, y) {
       events.push({ type: 'canvas.translate', x, y });
     },
+    scale(x, y) {
+      events.push({ type: 'canvas.scale', x, y });
+    },
     drawGlyphs(ids, positions, x, y, _font, paint) {
       events.push({
         type: 'canvas.drawGlyphs',
@@ -899,7 +917,7 @@ function runExecutableTextReplay(op, {
   renderer.unsupportedOps = unsupportedOps;
   if (usePreparedTypeface) {
     renderer.findPreparedTypeface = (fontFamily) => ({
-      typeface: fontFamily === 'Source Han Serif K Old Hangul'
+      typeface: fontFamily === 'RHWP Old Hangul'
         ? null
         : { face: 'primary' },
       fontManager: shapedTextAvailable ? {} : null,
@@ -940,6 +958,9 @@ function runExecutableStrokeDashReplay() {
     setStyle() {}
     setColor(color) { this.color = color; }
     setStrokeWidth(width) { this.width = width; }
+    getStrokeWidth() { return this.width ?? 0; }
+    getStrokeCap() { return this.strokeCap ?? 0; }
+    setStrokeCap(cap) { this.strokeCap = cap; }
     setPathEffect() { events.push({ type: 'paint.pathEffect' }); }
     delete() { events.push({ type: 'paint.delete' }); }
   }
@@ -1111,13 +1132,17 @@ function runExecutableGradientFillReplay() {
   return { events, renderer };
 }
 
-function runExecutableM07PackReplay() {
+function runExecutableM07PackReplay({ withArrowGeometry = true } = {}) {
   const events = [];
   class FakePaint {
     setAntiAlias() {}
     setStyle() {}
     setColor(color) { this.color = color; }
     setStrokeWidth(width) { this.width = width; }
+    getStrokeWidth() { return this.width ?? 0; }
+    getStrokeCap() { return this.strokeCap ?? 0; }
+    setStrokeCap(cap) { this.strokeCap = cap; }
+    setShader(shader) { this.shader = shader; }
     setPathEffect() {}
     delete() { events.push({ type: 'paint.delete' }); }
   }
@@ -1132,6 +1157,7 @@ function runExecutableM07PackReplay() {
     delete() { events.push({ type: 'pathBuilder.delete' }); }
   }
   const renderer = new CanvasKitLayerRendererRuntime({
+    ...makePatternImageReplayApi(events),
     Paint: FakePaint,
     Path: FakePath,
     PathBuilder: FakePathBuilder,
@@ -1154,7 +1180,7 @@ function runExecutableM07PackReplay() {
       events.push({ type: 'canvas.drawOval', rect, color: paint.color });
     },
     drawRect(rect, paint) {
-      events.push({ type: 'canvas.drawRect', rect, color: paint.color });
+      events.push({ type: 'canvas.drawRect', rect, color: paint.color, shader: Boolean(paint.shader) });
     },
   };
   renderer.unsupportedOps = new Set();
@@ -1164,6 +1190,16 @@ function runExecutableM07PackReplay() {
     y1: 0,
     x2: 40,
     y2: 0,
+    // The producer owns geometry; replay must consume these commands verbatim.
+    arrowHeads: withArrowGeometry ? [{
+      filled: true,
+      commands: [
+        { type: 'moveTo', x: 40, y: 0 },
+        { type: 'lineTo', x: 24, y: -8 },
+        { type: 'lineTo', x: 24, y: 8 },
+        { type: 'closePath' },
+      ],
+    }] : undefined,
     style: {
       color: '#123456',
       width: 4,
@@ -1250,14 +1286,15 @@ function runExecutableTextSpecialReplay() {
   renderer.currentShowParagraphMarks = true;
   renderer.currentShowControlCodes = true;
   const incompleteOldHangulAlias = { typeface: { face: 'old-hangul-incomplete' }, fontManager: null };
-  renderer.bundledTypefaceAliases.set('source han serif k old hangul', incompleteOldHangulAlias);
-  const rejectedOldHangulAlias = renderer.findPreparedTypeface('Source Han Serif K Old Hangul');
+  renderer.bundledTypefaceAliases.set('rhwp old hangul', [incompleteOldHangulAlias]);
+  const rejectedOldHangulAlias = renderer.findPreparedTypeface('RHWP Old Hangul');
   const oldHangulAlias = {
     typeface: { face: 'old-hangul-alias' },
     fontManager: { family: 'old-hangul-manager' },
   };
-  renderer.bundledTypefaceAliases.set('source han serif k old hangul', oldHangulAlias);
-  const resolvedOldHangulAlias = renderer.findPreparedTypeface('Source Han Serif K Old Hangul');
+  renderer.bundledTypefaceAliases.set('rhwp old hangul', [oldHangulAlias]);
+  renderer.invalidateFontCaches(); // Match the production font registration lifecycle.
+  const resolvedOldHangulAlias = renderer.findPreparedTypeface('RHWP Old Hangul');
 
   renderer.renderOp(canvas, {
     type: 'charOverlap',
@@ -1582,6 +1619,10 @@ function runExecutableTextSpecialReplay() {
       positionsComplete: true,
     },
   }, 'screen');
+  const malformedEvents = events.slice(beforeMalformed);
+  // Finite horizontal rotation is admitted by Rust preflight and browser dispatch.
+  // Observe dispatch only; this is not a document raster or placement comparison.
+  const beforeRotatedVisuals = events.length;
   renderer.renderOp(canvas, {
     type: 'textControlMark',
     bbox: { x: 0, y: 0, width: 10, height: 10 },
@@ -1620,6 +1661,8 @@ function runExecutableTextSpecialReplay() {
       positionsComplete: true,
     },
   }, 'screen');
+  const rotatedVisualEvents = events.slice(beforeRotatedVisuals);
+  const beforeInvalidBounds = events.length;
   renderer.renderOp(canvas, {
     type: 'tabLeader',
     bbox: { x: 0, y: 0, width: -1, height: 10 },
@@ -1634,7 +1677,8 @@ function runExecutableTextSpecialReplay() {
   return {
     events,
     mirrorEvents,
-    malformedEvents: events.slice(beforeMalformed),
+    malformedEvents: [...malformedEvents, ...events.slice(beforeInvalidBounds)],
+    rotatedVisualEvents,
     oldHangulAlias,
     rejectedOldHangulAlias,
     resolvedOldHangulAlias,
@@ -1900,6 +1944,8 @@ function runExecutableEquationFallback() {
       baseline: 10,
       kind: {
         type: 'fraction',
+        // 수학 축은 글자 크기에 대한 비율이며 실제 layout JSON의 필수 필드다.
+        axisHeight: 12 * 0.25,
         numer: { x: 2, y: 0, width: 8, height: 8, baseline: 7, kind: { type: 'text', text: 'x' } },
         denom: { x: 2, y: 12, width: 8, height: 8, baseline: 7, kind: { type: 'number', text: '2' } },
       },
@@ -1952,6 +1998,8 @@ assert.deepEqual(
   {
     dashedStrokes: 4,
     glyphRuns: 0,
+    tabLeaders: 0,
+    charOverlaps: 0,
     verticalPresentationPunctuation: 0,
     verticalTextRuns: 0,
   },
@@ -2021,16 +2069,46 @@ assert.equal(
   true,
   'double compoundLine should emit two 0.30-width-ratio strokes',
 );
-assert.equal(
-  m07PackReplay.events.some((event) => event.type === 'path.moveTo'),
-  true,
-  'lineArrow should build a CanvasKit path for the serialized arrow head',
+assert.deepEqual(
+  m07PackReplay.events.filter((event) => ['path.moveTo', 'path.lineTo', 'path.close'].includes(event.type)),
+  [
+    { type: 'path.moveTo', x: 40, y: 0 },
+    { type: 'path.lineTo', x: 24, y: -8 },
+    { type: 'path.lineTo', x: 24, y: 8 },
+    { type: 'path.close' },
+  ],
+  'lineArrow should preserve the serialized arrow head tip and every path command',
 );
+assert.equal(m07PackReplay.renderer.unsupportedOps.has('arrow:geometryMissing'), false);
+const missingArrowGeometryReplay = runExecutableM07PackReplay({ withArrowGeometry: false });
+assert.ok(missingArrowGeometryReplay.renderer.unsupportedOps.has('arrow:geometryMissing'));
 assert.equal(
-  m07PackReplay.events.some((event) => event.type === 'canvas.drawRect' && event.color?.[0] === 255),
-  true,
-  'patternFill should paint the serialized background color first',
+  missingArrowGeometryReplay.events.some((event) => event.type === 'canvas.drawPath'),
+  false,
+  'missing arrow geometry must be reported without guessing a replacement head',
 );
+const patternImage = m07PackReplay.events.find((event) => event.type === 'image.create');
+assert.ok(patternImage, '무늬 채우기는 배경색과 무늬색을 담은 이미지를 생성해야 한다');
+assert.deepEqual(
+  [patternImage.info.colorType, patternImage.info.alphaType, patternImage.info.colorSpace],
+  ['RGBA_8888', 'Unpremul', 'SRGB'],
+);
+assert.equal(patternImage.rowBytes, patternImage.info.width * 4);
+assert.equal(patternImage.bytes.length, patternImage.rowBytes * patternImage.info.height);
+const patternPixels = Array.from({ length: patternImage.bytes.length / 4 },
+  (_, i) => patternImage.bytes.slice(i * 4, i * 4 + 4));
+assert.ok(patternPixels.some((pixel) => pixel.join(',') === '17,34,51,255'),
+  '직렬화한 무늬색이 이미지에 있어야 한다');
+assert.ok(patternPixels.some((pixel) => pixel.join(',') === '255,255,255,255'),
+  '직렬화한 배경색이 이미지에 있어야 한다');
+assert.ok(m07PackReplay.events.some((event) => event.type === 'canvas.drawRect' && event.shader),
+  '무늬 shader는 원래 사각형 경로에 그려져야 한다');
+const patternShader = m07PackReplay.events.find((event) => event.type === 'shader.pattern');
+assert.deepEqual([patternShader.tileX, patternShader.tileY], ['Repeat', 'Repeat']);
+assert.deepEqual([patternShader.filter, patternShader.mipmap], ['Linear', 'None']);
+const patternDraw = m07PackReplay.events.findIndex((event) => event.type === 'canvas.drawRect' && event.shader);
+assert.ok(m07PackReplay.events.findIndex((event) => event.type === 'shader.delete') > patternDraw);
+assert.ok(m07PackReplay.events.findIndex((event) => event.type === 'image.delete') > patternDraw);
 assert.equal(
   m07PackReplay.renderer.unsupportedOps.has('tabLeader:invalidGeometry'),
   false,
@@ -2086,8 +2164,8 @@ requireSnippet(
 );
 requireSnippet(
   canvaskitSource,
-  /drawArrowHead\([\s\S]*?concaveArrow[\s\S]*?openDiamond[\s\S]*?openCircle[\s\S]*?openSquare/,
-  'arrow replay should cover every serialized ArrowStyle except none',
+  /private drawLineArrows\([\s\S]*?arrow:geometryMissing[\s\S]*?this\.createCommandPath\(head\.commands, 0, 0\)[\s\S]*?head\.filled[\s\S]*?canvas\.drawPath\(path, fill\)/,
+  'arrow replay should consume producer geometry and fill rather than reinterpret ArrowStyle',
 );
 requireSnippet(
   canvaskitSource,
@@ -2104,19 +2182,24 @@ requireSnippet(
   /resolvedShadow\([\s\S]*?1 - alpha \/ 255/,
   'shape and line shadows should convert HWP alpha 0=opaque into CanvasKit opacity',
 );
-requireSnippet(
-  drawStrokeWithDashBody,
-  /dash === 'dash'[\s\S]*?\[6, 3\][\s\S]*?dash === 'dot'[\s\S]*?\[2, 2\][\s\S]*?dash === 'dashDot'[\s\S]*?\[6, 3, 2, 3\][\s\S]*?dash === 'dashDotDot'[\s\S]*?\[6, 3, 2, 3, 2, 3\][\s\S]*?PathEffect\.MakeDash[\s\S]*?setPathEffect[\s\S]*?finally[\s\S]*?effect\.delete/,
-  'stroke dash replay should map every producer enum and release its native path effect',
-);
+
 requireSnippet(
   renderFormObjectBody,
-  /op\.formType === 'checkBox'[\s\S]*?op\.formType === 'radioButton'[\s\S]*?op\.formType === 'checkbox'[\s\S]*?op\.formType === 'radio'[\s\S]*?canvas\.drawLine[\s\S]*?const label = op\.caption \|\| op\.text[\s\S]*?this\.renderTextRun/,
-  'form object replay should keep canonical and compatibility checkbox/radio mark names explicit',
+  /formDrawingReplayRejection\(op\)[\s\S]*?if \(rejection\)[\s\S]*?return;[\s\S]*?const drawing = op\.drawing![\s\S]*?for \(const primitive of drawing\.primitives\)[\s\S]*?const label = drawing\.label[\s\S]*?this\.drawStaticControlText[\s\S]*?x: label\.x, y: label\.baseline[\s\S]*?formObject:textReplayFailed/,
+  'form replay should validate and consume producer drawing, preserve its label baseline, and reject failed text replay',
 );
+assert.doesNotMatch(renderFormObjectBody, /op\.(?:formType|caption|text)\b/,
+  'form replay must not rederive geometry or display text from raw control fields');
+const formReplaySource = fs.readFileSync(path.join(canvaskitDirectory, 'form-replay.ts'), 'utf8');
+requireSnippet(formReplaySource, /if \(!drawing\) return 'missingProducerDrawing'/,
+  'form admission should reject a missing producer drawing');
+requireSnippet(canvaskitSource,
+  /private drawStaticControlText\([\s\S]*?this\.paragraphFonts\.source[\s\S]*?MakeFromFontProvider[\s\S]*?unresolvedCodepoints[\s\S]*?getAlphabeticBaseline/,
+  'static labels should consume only prepared Paragraph fonts and reject missing native glyphs');
+assertFootnoteMarkerBaselineReplay(CanvasKitLayerRendererRuntime);
+assert.doesNotMatch(extractSwitchCaseClusterBody(renderOpBody, 'footnoteMarker'), /baseline:\s*op\.bbox\.y/,
+  '각주 표식의 기준선은 쪽의 절대 y 좌표가 아닌 줄 내부 값이어야 한다');
 for (const [label, body, baselinePattern] of [
-  ['footnote marker', extractSwitchCaseClusterBody(renderOpBody, 'footnoteMarker'), /baseline: op\.fontSize \?\? 7/],
-  ['form object', renderFormObjectBody, /baseline: Math\.max\(10, op\.bbox\.height \* 0\.68\)/],
   ['placeholder', renderPlaceholderBody, /baseline: Math\.max\(10, op\.bbox\.height \* 0\.65\)/],
 ]) {
   requireSnippet(body, baselinePattern, `${label} replay should declare its run-local baseline`);
@@ -2128,7 +2211,7 @@ for (const [label, body, baselinePattern] of [
 }
 requireSnippet(
   renderTextRunBody,
-  /MAX_TEXT_RUN_CODE_POINTS[\s\S]*?this\.recordTextRunCoverageGaps\(op, replayCodePoints\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs[\s\S]*?const drawPass[\s\S]*?const runGlyphIds = new Uint16Array[\s\S]*?canvas\.drawGlyphs\(/,
+  /MAX_TEXT_RUN_CODE_POINTS[\s\S]*?this\.recordTextRunCoverageGaps\(op, replayCodePoints\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs[\s\S]*?const drawPass[\s\S]*?const runGlyphIds = new Uint16Array[\s\S]*?this\.drawCachedGlyphs\(/,
   'textRun replay should validate coverage once and reuse positioned glyphs across paint passes',
 );
 requireSnippet(
@@ -2158,7 +2241,7 @@ requireSnippet(
 );
 requireSnippet(
   renderGlyphRunBody,
-  /this\.glyphRunFonts\.font\(op, this\.currentFontResources\)[\s\S]*?drawCanvasKitGlyphRun\(canvas, op, font, paint\)[\s\S]*?this\.currentReplayFeatureCounts\.glyphRuns \+= 1[\s\S]*?glyphRun:replayFailed[\s\S]*?finally[\s\S]*?paint\.delete/,
+  /this\.glyphRunFonts\.font\(op, this\.currentFontResources\)[\s\S]*?drawCanvasKitGlyphRun\(canvas, op, font, current, x, y\)[\s\S]*?this\.currentReplayFeatureCounts\.glyphRuns \+= 1[\s\S]*?glyphRun:replayFailed[\s\S]*?finally[\s\S]*?paint\.delete/,
   'strict GlyphRun replay should use the verified exact font and release per-draw paint state',
 );
 requireSnippet(
@@ -2173,7 +2256,7 @@ requireSnippet(
 );
 requireSnippet(
   renderTextRunBody,
-  /const replayText = op\.displayText \?\? op\.text;[\s\S]*?const replayPositions = op\.displayText !== undefined \? op\.displayPositions : op\.positions;[\s\S]*?for \(const character of replayText\)[\s\S]*?textRun:visualItemLimitExceeded[\s\S]*?const glyphReplayText = verticalPresentationText \?\? replayText;[\s\S]*?if \(hasLayoutPositions\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs\(glyphReplayText, codePoints\.length\)[\s\S]*?const runPositions = new Float32Array[\s\S]*?runPositions\[\(index - runStart\) \* 2\] = replayPositions!\[index\];[\s\S]*?canvas\.drawGlyphs\(/,
+  /const replayText = op\.displayText \?\? op\.text;[\s\S]*?const replayPositions = op\.displayText !== undefined \? op\.displayPositions : op\.positions;[\s\S]*?for \(const character of replayText\)[\s\S]*?textRun:visualItemLimitExceeded[\s\S]*?const glyphReplayText = verticalPresentationText \?\? replayText;[\s\S]*?if \(hasLayoutPositions\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs\(glyphReplayText, codePoints\.length\)[\s\S]*?const runPositions = new Float32Array[\s\S]*?runPositions\[\(index - runStart\) \* 2\] = replayPositions!\[index\];[\s\S]*?this\.drawCachedGlyphs\(/,
   'textRun replay should bound display projection and preserve serialized advances',
 );
 requireSnippet(
@@ -2486,6 +2569,8 @@ assert.deepEqual(
   {
     dashedStrokes: 0,
     glyphRuns: 0,
+    tabLeaders: 0,
+    charOverlaps: 0,
     verticalPresentationPunctuation: 1,
     verticalTextRuns: 1,
   },
@@ -2852,9 +2937,6 @@ for (const diagnostic of [
   'tabLeader:visualItemLimitExceeded',
   'textDecoration:invalidGeometry',
   'textDecoration:visualItemLimitExceeded',
-  'textControlMark:rotatedText',
-  'tabLeader:rotatedText',
-  'textDecoration:rotatedText',
 ]) {
   assert.equal(
     textSpecialReplay.unsupportedOps.has(diagnostic),
@@ -2862,6 +2944,20 @@ for (const diagnostic of [
     `malformed text visuals should report ${diagnostic}`,
   );
 }
+for (const type of ['textControlMark', 'tabLeader', 'textDecoration']) {
+  assert.equal(
+    textSpecialReplay.unsupportedOps.has(`${type}:rotatedText`),
+    false,
+    `finite horizontal ${type} rotation must remain admitted`,
+  );
+}
+assert.equal(
+  textSpecialReplay.rotatedVisualEvents.filter(
+    event => event.type === 'canvas.rotate' && event.rotation === 15,
+  ).length,
+  3,
+  'each admitted horizontal text visual should dispatch its producer rotation',
+);
 assert.equal(
   textSpecialReplay.unsupportedOps.has('textRun:verticalText'),
   false,
@@ -2969,7 +3065,7 @@ requireSnippet(
 );
 requireSnippet(
   renderColorPaintGraphNodeBody,
-  /node\.kind === 'transform'[\s\S]*?transformNode\?\.childNodeId[\s\S]*?this\.renderColorPaintGraphNode\(canvas, nodesById, transformNode\.childNodeId, visited\)/,
+  /node\.kind === 'transform'[\s\S]*?transformNode\?\.childNodeId[\s\S]*?this\.renderColorPaintGraphNode\(canvas, nodesById, transformNode\.childNodeId, visited, budget, depth \+ 1\)/,
   'glyphOutline color graph replay should keep transform recursion explicit',
 );
 requireSnippet(
@@ -2980,6 +3076,10 @@ requireSnippet(
 
 for (const { label, source } of canvaskitSourceFiles) {
   for (const [pattern, name] of forbiddenCanvas2dApiPatterns) {
+    // Only this bounded preparation adapter may decode a DOM image into SkImage.
+    // All replay modules remain forbidden from using a DOM/Canvas2D fallback.
+    if (label === 'src/view/canvaskit/browser-image-decoder.ts'
+      && ['HTMLImageElement', 'URL.createObjectURL', 'new Image', 'Blob'].includes(name)) continue;
     assert.doesNotMatch(
       source,
       pattern,
@@ -2987,6 +3087,28 @@ for (const { label, source } of canvaskitSourceFiles) {
     );
   }
 }
+
+const browserImageDecoderSource = fs.readFileSync(
+  path.join(canvaskitDirectory, 'browser-image-decoder.ts'), 'utf8',
+);
+requireSnippet(browserImageDecoderSource,
+  /MakeImageFromCanvasImageSource[\s\S]*?decodedImageMatchesEncodedHeader[\s\S]*?decoded\.delete/,
+  'browser image preparation must import into Skia and reject mismatched decoded dimensions');
+requireSnippet(browserImageDecoderSource,
+  /if \(settled\) \{ result\?\.delete\(\); return; \}[\s\S]*?clearTimeout[\s\S]*?image\.onload = null[\s\S]*?revokeObjectURL/,
+  'browser image settlement must release handlers and URLs and dispose late native results');
+requireSnippet(browserImageDecoderSource,
+  /cancel = \(\) => finish\(null\)[\s\S]*?setTimeout\(\(\) => finish\(null\), 10_000\)/,
+  'browser image preparation must remain cancellable and time bounded');
+requireSnippet(canvaskitSource,
+  /this\.disposed \|\| generation !== this\.documentGeneration[\s\S]*?decoded\?\.delete/,
+  'late browser images must be discarded after document changes or disposal');
+requireSnippet(canvaskitSource,
+  /for \(const load of this\.pendingImageLoads\.values\(\)\) load\.cancel\(\)/,
+  'document resource invalidation must cancel every pending browser decode');
+requireSnippet(canvaskitSource,
+  /const encodedHeader = replayableEncodedImageHeader\(bytes\)[\s\S]*?if \(!encodedHeader\)[\s\S]*?return null;[\s\S]*?encodedImageHasStableFrame\(bytes, encodedHeader\)[\s\S]*?decodeBrowserImage\(this\.canvasKit, bytes, encodedHeader\)/,
+  'only bounded static encoded images may reach browser preparation');
 
 for (const { token, path: touchpointPath, kind } of canvaskitParityPlanTouchpoints) {
   assert.ok(
@@ -3187,8 +3309,17 @@ assert.deepEqual(
   'the real HWP gate must prove its vertical text, punctuation, and dash features are present',
 );
 assert.equal(rendererBaselineManifest.schemaVersion, 1, 'renderer baseline manifest schema must be explicit');
+// The six exam inputs are intentionally excluded; their files remain in samples/.
+const retiredExamSampleIds = [
+  'exam-kor', 'exam-eng', 'exam-math', 'exam-math-no', 'exam-science', 'exam-social',
+];
+assert.equal(
+  rendererBaselineManifest.samples.some((sample) => retiredExamSampleIds.includes(sample.id)),
+  false,
+  'retired exam inputs must not participate in renderer regression coverage',
+);
 assert.ok(
-  rendererBaselineManifest.samples.length >= 120,
+  rendererBaselineManifest.samples.length >= 120 - retiredExamSampleIds.length,
   'renderer baseline manifest must keep the refreshed cross-backend corpus',
 );
 for (const sample of rendererBaselineManifest.samples) {
@@ -3209,9 +3340,11 @@ for (const sample of rendererBaselineManifest.samples) {
 }
 assert.equal(
   rendererBaselineManifest.samples.filter((sample) => sample.baselineTier === 'representative').length,
-  24,
+  22,
   'the default renderer baseline tier must remain bounded',
 );
+assert.equal(rendererBaselineManifest.samples.some((sample) => sample.id === 'hwpctl-api'), false,
+  '#7445/#7731로 이관한 hwpctl_API_v2.4.hwp는 활성 renderer baseline에서 제외한다');
 for (const sampleId of [
   'chart-line-markers-hwp',
   'chart-line-markers-hwpx',

@@ -1,0 +1,50 @@
+---
+kind: evidence
+status: active
+canonical: mydocs/manual/pr_review/visual_fixture_evidence.md
+last_verified: 2026-10-10
+---
+
+# 초기 편집 9개 입력과 인쇄 대조 증거
+
+## 범위와 생성 출처
+
+PR #7613의 연속 표, #7656의 첫 줄 표 뒤 문단, #7616의 일반/누름틀/책갈피 뒤 인라인 표, #7658의 스타일 탭·배경에 해당한다. 입력은 기존 source assertion/API·모델 편집으로 캡처한 저장본이다. 실제 한컴에서 작성한 원본 또는 새 정상 한컴 fixture로 분류하지 않는다. 같은 캡처 바이트를 실제 한컴2020 runtime11.0.0.9136/PrintMethod0/hancom2020_pdf_driver_one_up으로 출력한 독립 PDF를 대조한다. 정상 통과한 편집 상태의 검토용 재현 자료이며, 정식 test나 baseline을 추가하지 않는다.
+
+각 입력의 관련 전체 범위는 1쪽이다. Native 및 fresh WASM의 canonical sweep에서 각각 최저100%, 누락0, rhwp/Print 각1쪽, gatepassed다. 이는 아래 9개 편집 상태의 근거이며 초기18개 전체 또는 다른 교육과정/위임전결규정/chemical 원본의 통과를 뜻하지 않는다.
+
+## 실제 source와 산출물
+
+- Production code: `9b53bd699126205b7a93fff326167f575252f1ea`에 고정한 v86 retry2. 실제 빌드는 부모 `3874bc4be037e84998d548e7755bc689af9d871b` 위 당시 미커밋 변경으로 실행했다.
+- 현재 Native binary SHA-256: `a41dbbebdf51f7c2fa928c6f2a7d5bd80a80a91bb9c904b3320fbd1afed8f2e2`.
+- Fresh WASM SHA-256: `ab5e01324ad024dd34979f03a08d2da6844d26ff31c49069c17de0fe849779b6`, JS SHA-256: `4628f097cddafb073362cc2ff03d19744de3e037aa62d311b4bd4386528c7a20`. 실제 Chrome export/print profile을 사용했다.
+- 현재 Native/WASM PNG는 v91에서 같은 원본/Print를 새로 export/raster한 출력이다. Native terminal exit0/361.659초, WASM terminal exit0/399.087초이며 각1쪽100%/누락0/gatepassed다. v86 패키지를 새 빌드한 것으로 보고하지 않는다. 이전 Native raster 재사용 자료는 ignored output의 역사 증거로 남기고 이 폴더에는 새 PNG를 보존한다. 9개 Native/WASM 실제 raster가 모두 바이트 동일하다.
+- 글꼴 공급은 실제 HCR Batang/함초롬바탕 regular TTF를 우선한다. 원본 SHA-256 `8664669bd2d6a4fe8b7538706d2bb2a1004c074aa02dca59051e515e731294f5`와 새 Native SVG9개의 embedded 실제 font 바이트가 모두 일치한다. FontTools name table/fc-scan 및 Print embedded HCRBatang을 확인했다. CSS 명칭만으로 공급을 판정하지 않았다. 96dpi, print profile, webfont rasterizer, 2px 이웃 관용 내용 실루엣이다.
+
+## 직접 판독과 남은 차이
+
+2026-10-10에 실제 HCR face를 공급해 새로 만든 v91 WASM 9개 review를 모두 직접 열었다. Native9개 raster도 모두 같은 바이트임을 확인했다. 0010/0011은 두 표가 겹치지 않고 같은 문단/표 순서로 놓이며, 0015/0021은 표 뒤 문단이 아래쪽 여백을 보존한다. 0244/0250/0257은 첫 문단·표·후속 「라」「끝문단」의 순서와 소속을 보존한다. 0545의 탭 뒤 「나」, 0547의 배경/테두리 하단과 글자 소속이 Print에 대응한다. 괘선의 회색/검정 차이와 작은 글자/가는 선의 AA 차이는 남는다. 수식이 없는 입력이며 수식 일치를 주장하지 않는다. 쪽 점수 외에 이 경계들을 직접 판독했다.
+
+## 바이트 동일하게 보존한 입력과 PNG
+
+PDF는 이미 커밋한 일반 검증 PDF를 링크한다. HWP/HWPX와 PNG는 실행 원본과 복사 후 SHA가 동일함을 재확인했다. 입력 바이트를 바꾸거나 다른 정상 문서로 교체하지 않았다.
+
+| 입력 | 입력 SHA-256 | 독립 Print | Print SHA-256 | 대표 PNG |
+| --- | --- | --- | --- | --- |
+| [column_top_table_reserves_outer_margins-0015-0aad3cf3a347](column_top_table_reserves_outer_margins-0015-0aad3cf3a347/input.hwpx) | `0aad3cf3a34737e4593c81c10989899e224505bbfabe104a4c73667cc0155f4b` | [column_top_table_reserves_outer_margins-0015-0aad3cf3a347-2020.pdf](../../../../../pdf/semanticist21-20261008/column_top_table_reserves_outer_margins-0015-0aad3cf3a347-2020.pdf) | `3a960780f6afb663ec83f0bf1b69e65001fcf68fc54a79c01c9b9914c9df6bfe` | [현재 Native](column_top_table_reserves_outer_margins-0015-0aad3cf3a347/native-review_001.png) / [fresh WASM](column_top_table_reserves_outer_margins-0015-0aad3cf3a347/wasm-review_001.png) / [overlay](column_top_table_reserves_outer_margins-0015-0aad3cf3a347/wasm-overlay_001.png) |
+| [column_top_table_reserves_outer_margins-0021-80d658ee147e](column_top_table_reserves_outer_margins-0021-80d658ee147e/input.hwpx) | `80d658ee147e7ada087460808be94c6433abf7a0b4f08cd7126a6f159e632661` | [column_top_table_reserves_outer_margins-0021-80d658ee147e-2020.pdf](../../../../../pdf/semanticist21-20261008/column_top_table_reserves_outer_margins-0021-80d658ee147e-2020.pdf) | `97559a36aa108672fd553edcea48ec8e6cd1d2f1e7c1b786ab924795babe5399` | [현재 Native](column_top_table_reserves_outer_margins-0021-80d658ee147e/native-review_001.png) / [fresh WASM](column_top_table_reserves_outer_margins-0021-80d658ee147e/wasm-review_001.png) / [overlay](column_top_table_reserves_outer_margins-0021-80d658ee147e/wasm-overlay_001.png) |
+| [created_table_after_table_starts_below_it-0010-e93fb91c8b2c](created_table_after_table_starts_below_it-0010-e93fb91c8b2c/input.hwp) | `e93fb91c8b2c28ff87744e8ef1f8be245f650fc3060f2c54eaebdb502e151ea6` | [created_table_after_table_starts_below_it-0010-e93fb91c8b2c-2020.pdf](../../../../../pdf/semanticist21-20261008/created_table_after_table_starts_below_it-0010-e93fb91c8b2c-2020.pdf) | `a16a20a002f83d60f0cdf5ce1cfdd9488ead35bb5983439f7f55bba356420af1` | [현재 Native](created_table_after_table_starts_below_it-0010-e93fb91c8b2c/native-review_001.png) / [fresh WASM](created_table_after_table_starts_below_it-0010-e93fb91c8b2c/wasm-review_001.png) / [overlay](created_table_after_table_starts_below_it-0010-e93fb91c8b2c/wasm-overlay_001.png) |
+| [created_table_after_table_starts_below_it-0011-bb7be43f0149](created_table_after_table_starts_below_it-0011-bb7be43f0149/input.hwpx) | `bb7be43f0149db7981b3bebac7a8f002f7d617010c9e060517b37793d8cdbf0d` | [created_table_after_table_starts_below_it-0011-bb7be43f0149-2020.pdf](../../../../../pdf/semanticist21-20261008/created_table_after_table_starts_below_it-0011-bb7be43f0149-2020.pdf) | `532a0728cf80ee150d1f1b0471f407c2368e6ebfb41fc1d9e0b26a39939e1e35` | [현재 Native](created_table_after_table_starts_below_it-0011-bb7be43f0149/native-review_001.png) / [fresh WASM](created_table_after_table_starts_below_it-0011-bb7be43f0149/wasm-review_001.png) / [overlay](created_table_after_table_starts_below_it-0011-bb7be43f0149/wasm-overlay_001.png) |
+| [inline_table_after_field_or_bookmark-0244-1792e69cfaf2](inline_table_after_field_or_bookmark-0244-1792e69cfaf2/input.hwpx) | `1792e69cfaf2daa3bb1ee12ec6dc28ffb28e85f56bcfdb87e28068e843f59cfc` | [inline_table_after_field_or_bookmark-0244-1792e69cfaf2-2020.pdf](../../../../../pdf/semanticist21-20261008/inline_table_after_field_or_bookmark-0244-1792e69cfaf2-2020.pdf) | `96ec8c928a03b02f78952fffd5ae7ba57a34b468b56c40c3abcff3a1d17500d0` | [현재 Native](inline_table_after_field_or_bookmark-0244-1792e69cfaf2/native-review_001.png) / [fresh WASM](inline_table_after_field_or_bookmark-0244-1792e69cfaf2/wasm-review_001.png) / [overlay](inline_table_after_field_or_bookmark-0244-1792e69cfaf2/wasm-overlay_001.png) |
+| [inline_table_after_field_or_bookmark-0250-4536c5dce2d6](inline_table_after_field_or_bookmark-0250-4536c5dce2d6/input.hwpx) | `4536c5dce2d6bd9141c91440a21fcd47410bb141f44b8e7fb0d5fa3c7de9e382` | [inline_table_after_field_or_bookmark-0250-4536c5dce2d6-2020.pdf](../../../../../pdf/semanticist21-20261008/inline_table_after_field_or_bookmark-0250-4536c5dce2d6-2020.pdf) | `0ae2eadcf1a1ad0bab34290333ac47caf488a71b800659630bd65b14e80eec4b` | [현재 Native](inline_table_after_field_or_bookmark-0250-4536c5dce2d6/native-review_001.png) / [fresh WASM](inline_table_after_field_or_bookmark-0250-4536c5dce2d6/wasm-review_001.png) / [overlay](inline_table_after_field_or_bookmark-0250-4536c5dce2d6/wasm-overlay_001.png) |
+| [inline_table_after_field_or_bookmark-0257-dbaa6d12fde5](inline_table_after_field_or_bookmark-0257-dbaa6d12fde5/input.hwpx) | `dbaa6d12fde562d8f1a59448b2edd6946e601e6ccab36b72a415a23fb2ef4193` | [inline_table_after_field_or_bookmark-0257-dbaa6d12fde5-2020.pdf](../../../../../pdf/semanticist21-20261008/inline_table_after_field_or_bookmark-0257-dbaa6d12fde5-2020.pdf) | `f888cfaeaa2e5b06e1d07c5d5cafb0272857f7059ab885accb8805cb6e7a6cd4` | [현재 Native](inline_table_after_field_or_bookmark-0257-dbaa6d12fde5/native-review_001.png) / [fresh WASM](inline_table_after_field_or_bookmark-0257-dbaa6d12fde5/wasm-review_001.png) / [overlay](inline_table_after_field_or_bookmark-0257-dbaa6d12fde5/wasm-overlay_001.png) |
+| [updated_style_keeps_tabs_and_borders-0545-e0a6bc5b14ba](updated_style_keeps_tabs_and_borders-0545-e0a6bc5b14ba/input.hwpx) | `e0a6bc5b14ba9c0da977b6319484ce65196199b05f00a16ee12396b22c48bbf3` | [updated_style_keeps_tabs_and_borders-0545-e0a6bc5b14ba-2020.pdf](../../../../../pdf/semanticist21-20261008/updated_style_keeps_tabs_and_borders-0545-e0a6bc5b14ba-2020.pdf) | `3fac3a82586d718786990e7fc9d16738b993611f878388da37019600c995485d` | [현재 Native](updated_style_keeps_tabs_and_borders-0545-e0a6bc5b14ba/native-review_001.png) / [fresh WASM](updated_style_keeps_tabs_and_borders-0545-e0a6bc5b14ba/wasm-review_001.png) / [overlay](updated_style_keeps_tabs_and_borders-0545-e0a6bc5b14ba/wasm-overlay_001.png) |
+| [updated_style_keeps_tabs_and_borders-0547-e1b58ace1b99](updated_style_keeps_tabs_and_borders-0547-e1b58ace1b99/input.hwpx) | `e1b58ace1b9955a7aa984b580a557cba6d694c69533b89d9daecc09b47b147d0` | [updated_style_keeps_tabs_and_borders-0547-e1b58ace1b99-2020.pdf](../../../../../pdf/semanticist21-20261008/updated_style_keeps_tabs_and_borders-0547-e1b58ace1b99-2020.pdf) | `5a9bd75bc850507f45394c240e14f11646ba0c133980e9b24abb9e9581ff0289` | [현재 Native](updated_style_keeps_tabs_and_borders-0547-e1b58ace1b99/native-review_001.png) / [fresh WASM](updated_style_keeps_tabs_and_borders-0547-e1b58ace1b99/wasm-review_001.png) / [overlay](updated_style_keeps_tabs_and_borders-0547-e1b58ace1b99/wasm-overlay_001.png) |
+
+## 재현과 ignored 증거
+
+같은 input을 `venv/bin/python scripts/visual_sweep.py --hwp <input> --pdf <대응Print> --key <key> --rhwp-bin output/pr-review/semanticist21-20261008/binaries/rhwp-accepted-interior-row-ledger-batch-v86-retry2-native-skia --pages 1 --dpi 96 --out <ignored출력>` 로 비교한다. fresh WASM은 같은 입력에 `--wasm-pkg output/pr-review/semanticist21-20261008/wasm-pkg-current-ledger-v86-retry2-3874bc4be0` 를 지정한다. 실제 글꼴 우선순위는 `verified-declared-faces-v91/`, 한컴2020 Hwp/All/Install, 기존 공급 경로 순이다. 완전한 실행 argv와 SHA는 각 v91 canonical `run_manifest.json`을 참조한다.
+
+canonical 현재 출력: `output/pr-review/semanticist21-20261008/native-actual-original-faces-edit-axes-v91/` 및 `wasm-actual-original-faces-edit-axes-v91/`. 실제 HCR font byte 증거는 `initial-edit-axes-genuine-hcr-face-proof-v91.json`, 전체 Native/WASM 실제 raster 동일성은 `genuine-faces-edit9-current-native-wasm-audit-v91.json`에 있다. TSV·로그·중간 JSON·font binary는 ignored output에만 둔다. source가 바뀌면 영향 범위를 새 head에서 재검증하며 과거 캡처를 새 출력으로 보고하지 않는다. PR 본문 이미지 URL은 실제 게시 후 정확한 head repository/SHA로 고정한다.
+
+이전 v86 retry1/retry2의 선언 「함초롬바탕」 아래 실제 Haansoft Batang/한컴바탕이 공급됐던 자료는 대체 face 진단이다. 당시100%를 올바른 HCR 공급 완료로 쓰지 않는다. 이 폴더의 현재 새 PNG는 실제 HCR bytes를 검증한 v91 출력이다. glyph AA·회색/검정 괘선 차이는 여전히 남는다.

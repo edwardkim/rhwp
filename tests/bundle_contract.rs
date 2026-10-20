@@ -172,7 +172,7 @@ fn rewrite_bundle_entry(bundle: &std::path::Path, target: &str, mutate: impl Fn(
     let mut entries: Vec<(String, Vec<u8>)> = Vec::new();
     for i in 0..archive.len() {
         let mut e = archive.by_index(i).unwrap();
-        let name = e.name().to_string();
+        let name = e.name().expect("ZIP 엔트리 이름").to_string();
         let mut bytes = Vec::new();
         e.read_to_end(&mut bytes).unwrap();
         if name == target {
@@ -270,7 +270,7 @@ fn export_verify_roundtrip_and_three_attacks() {
         let mut zw = zip::ZipWriter::new(out);
         for i in 0..archive.len() {
             let mut e = archive.by_index(i).unwrap();
-            let name = e.name().to_string();
+            let name = e.name().expect("ZIP 엔트리 이름").to_string();
             if name == "capsules/a.capsule.json" || name == "signatures/a.capsule.json.sig.json" {
                 continue; // 조상 은닉
             }

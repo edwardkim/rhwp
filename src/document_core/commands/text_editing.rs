@@ -1,7 +1,6 @@
 //! 텍스트 삽입/삭제/문단 분리·병합/범위 삭제/문단 쿼리 관련 native 메서드
 
 use super::super::helpers::get_textbox_from_shape;
-use super::super::queries::field_query::rebuild_char_offsets;
 use super::super::queries::rendering::FocusedPageTreePatch;
 use super::formatting::restore_para_meta;
 use crate::document_core::{
@@ -12,7 +11,7 @@ use crate::model::control::{Control, FieldType};
 use crate::model::document::Document;
 use crate::model::event::DocumentEvent;
 use crate::model::page::ColumnDef;
-use crate::model::paragraph::{LineSeg, ParaMeta, Paragraph};
+use crate::model::paragraph::{normalize_text_newlines, LineSeg, ParaMeta, Paragraph};
 use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::model::style::Alignment;
 use crate::renderer::composer::{
@@ -24,7 +23,7 @@ use crate::renderer::style_resolver::ResolvedStyleSet;
 
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
 
-fn cell_vpos_resets(previous: &Paragraph, current: &Paragraph) -> bool {
+pub(super) fn cell_vpos_resets(previous: &Paragraph, current: &Paragraph) -> bool {
     if let Some(reset) = current.cell_vpos_reset {
         return reset;
     }
@@ -37,7 +36,7 @@ fn cell_vpos_resets(previous: &Paragraph, current: &Paragraph) -> bool {
     }
 }
 
-fn recalculate_cell_paragraph_vpos(
+pub(super) fn recalculate_cell_paragraph_vpos(
     paragraphs: &mut [Paragraph],
     start_para: usize,
     ignore_reset_at: Option<usize>,
@@ -886,80 +885,59 @@ fn body_paragraph_flow_signature(paragraph: &Paragraph) -> (usize, Option<i64>) 
 }
 
 #[derive(Clone, Copy)]
-struct FieldEndInsertion {
-    control_idx: usize,
-    start_char_idx: usize,
-    end_char_idx: usize,
-}
-
-#[derive(Clone, Copy)]
-struct FieldStartInsertion {
-    control_idx: usize,
-    start_char_idx: usize,
-    end_char_idx: usize,
-}
-
-#[derive(Clone, Copy)]
 struct SquareOleWrapChainForEnter {
     bottom_vpos: i32,
     column_start: i32,
     segment_width: i32,
 }
 
-fn active_field_matches(
+/// 이 문단(셀이면 그 경로)에서 입력을 받는 누름틀의 컨트롤 번호.
+fn active_field_control(
     active_field: Option<&ActiveFieldInfo>,
     section_idx: usize,
     para_idx: usize,
     cell_path: Option<&[(usize, usize, usize)]>,
-    control_idx: usize,
-) -> bool {
-    active_field.is_some_and(|af| {
-        af.section_idx == section_idx
-            && af.para_idx == para_idx
-            && af.control_idx == control_idx
-            && match (&af.cell_path, cell_path) {
-                (None, None) => true,
-                (Some(a), Some(b)) => a.as_slice() == b,
-                _ => false,
-            }
-    })
+) -> Option<usize> {
+    active_field
+        .filter(|af| {
+            af.section_idx == section_idx
+                && af.para_idx == para_idx
+                && match (&af.cell_path, cell_path) {
+                    (None, None) => true,
+                    (Some(a), Some(b)) => a.as_slice() == b,
+                    _ => false,
+                }
+        })
+        .map(|af| af.control_idx)
 }
 
-fn inactive_field_end_insertions(
-    para: &Paragraph,
-    active_field: Option<&ActiveFieldInfo>,
-    section_idx: usize,
-    para_idx: usize,
-    cell_path: Option<&[(usize, usize, usize)]>,
+/// 글자를 지우고 넣는다. 누름틀 문단은 누름틀 경계와 다른 컨트롤의 원시 슬롯을 지킨다.
+/// `after_inline_control` 이면 `char_offset` 자리 개체 뒤에 넣는다 (#7444).
+/// 실제로 지운 글자 수를 돌려준다.
+fn replace_paragraph_text(
+    para: &mut Paragraph,
     char_offset: usize,
-) -> Vec<FieldEndInsertion> {
-    para.field_ranges
-        .iter()
-        .filter_map(|fr| {
-            match para.controls.get(fr.control_idx) {
-                Some(Control::Field(field)) if field.field_type == FieldType::ClickHere => {}
-                _ => return None,
-            }
-            // 빈 누름틀은 active 상태가 아직 반영되기 전 첫 입력도 값으로 받아야 한다.
-            if fr.start_char_idx == fr.end_char_idx || fr.end_char_idx != char_offset {
-                return None;
-            }
-            if active_field_matches(
-                active_field,
-                section_idx,
-                para_idx,
-                cell_path,
-                fr.control_idx,
-            ) {
-                return None;
-            }
-            Some(FieldEndInsertion {
-                control_idx: fr.control_idx,
-                start_char_idx: fr.start_char_idx,
-                end_char_idx: fr.end_char_idx,
-            })
-        })
-        .collect()
+    delete_count: usize,
+    text: &str,
+    active: Option<usize>,
+    after_inline_control: bool,
+) -> usize {
+    if !text.is_empty() && has_clickhere_field_range(para) {
+        return para.replace_text_keeping_slots(
+            char_offset,
+            delete_count,
+            text,
+            active,
+            after_inline_control,
+        );
+    }
+    let deleted = if delete_count > 0 {
+        para.delete_text_at(char_offset, delete_count)
+    } else {
+        0
+    };
+    para.insert_text_at_caret(char_offset, text, after_inline_control);
+    deleted
 }
 
 fn para_has_visible_text_for_enter(para: &Paragraph) -> bool {
@@ -1111,81 +1089,6 @@ fn empty_paragraph_after_square_wrap_anchor(anchor: &Paragraph) -> Paragraph {
     para
 }
 
-fn inactive_field_start_insertions(
-    para: &Paragraph,
-    active_field: Option<&ActiveFieldInfo>,
-    section_idx: usize,
-    para_idx: usize,
-    cell_path: Option<&[(usize, usize, usize)]>,
-    char_offset: usize,
-) -> Vec<FieldStartInsertion> {
-    para.field_ranges
-        .iter()
-        .filter_map(|fr| {
-            match para.controls.get(fr.control_idx) {
-                Some(Control::Field(field)) if field.field_type == FieldType::ClickHere => {}
-                _ => return None,
-            }
-            // 빈 누름틀은 시작/끝 경계가 없고 첫 입력이 필드 값이어야 한다.
-            if fr.start_char_idx == fr.end_char_idx || fr.start_char_idx != char_offset {
-                return None;
-            }
-            if active_field_matches(
-                active_field,
-                section_idx,
-                para_idx,
-                cell_path,
-                fr.control_idx,
-            ) {
-                return None;
-            }
-            Some(FieldStartInsertion {
-                control_idx: fr.control_idx,
-                start_char_idx: fr.start_char_idx,
-                end_char_idx: fr.end_char_idx,
-            })
-        })
-        .collect()
-}
-
-fn keep_inactive_field_end_outside(
-    para: &mut Paragraph,
-    insertions: &[FieldEndInsertion],
-    inserted_len: usize,
-) {
-    if inserted_len == 0 || insertions.is_empty() {
-        return;
-    }
-    for target in insertions {
-        if let Some(fr) = para.field_ranges.iter_mut().find(|fr| {
-            fr.control_idx == target.control_idx
-                && fr.start_char_idx == target.start_char_idx
-                && fr.end_char_idx == target.end_char_idx + inserted_len
-        }) {
-            fr.end_char_idx = target.end_char_idx;
-        }
-    }
-}
-
-fn keep_inactive_field_start_outside(
-    para: &mut Paragraph,
-    insertions: &[FieldStartInsertion],
-    inserted_len: usize,
-) {
-    if inserted_len == 0 || insertions.is_empty() {
-        return;
-    }
-    for target in insertions {
-        if let Some(fr) = para.field_ranges.iter_mut().find(|fr| {
-            fr.control_idx == target.control_idx
-                && fr.start_char_idx == target.start_char_idx
-                && fr.end_char_idx == target.end_char_idx + inserted_len
-        }) {
-            fr.start_char_idx = target.start_char_idx + inserted_len;
-        }
-    }
-}
-
 fn has_clickhere_field_range(para: &Paragraph) -> bool {
     para.field_ranges.iter().any(|fr| {
         matches!(
@@ -1243,39 +1146,15 @@ impl DocumentCore {
         );
         self.document.sections[section_idx].raw_stream = None;
 
-        let deleted_count = if delete_count > 0 {
-            self.document.sections[section_idx].paragraphs[para_idx]
-                .delete_text_at(char_offset, delete_count)
-        } else {
-            0
-        };
-
-        if new_chars_count > 0 {
-            let active_field = self.active_field.clone();
-            let outside_insertions = inactive_field_end_insertions(
-                &self.document.sections[section_idx].paragraphs[para_idx],
-                active_field.as_ref(),
-                section_idx,
-                para_idx,
-                None,
-                char_offset,
-            );
-            let before_insertions = inactive_field_start_insertions(
-                &self.document.sections[section_idx].paragraphs[para_idx],
-                active_field.as_ref(),
-                section_idx,
-                para_idx,
-                None,
-                char_offset,
-            );
-            let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
-            para.insert_text_at(char_offset, text);
-            keep_inactive_field_start_outside(para, &before_insertions, new_chars_count);
-            keep_inactive_field_end_outside(para, &outside_insertions, new_chars_count);
-            if has_clickhere_field_range(para) {
-                rebuild_char_offsets(para);
-            }
-        }
+        let active = active_field_control(self.active_field.as_ref(), section_idx, para_idx, None);
+        let deleted_count = replace_paragraph_text(
+            &mut self.document.sections[section_idx].paragraphs[para_idx],
+            char_offset,
+            delete_count,
+            text,
+            active,
+            false,
+        );
 
         self.reflow_paragraph(section_idx, para_idx);
         let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
@@ -1387,11 +1266,20 @@ impl DocumentCore {
     /// [#4180] 문서 캐럿 메타데이터 스탬핑의 유일한 쓰기 지점 — doc_properties
     /// (재직렬화 경로)와 raw_stream(passthrough 경로) 양쪽에 반영한다.
     pub(crate) fn stamp_caret(&mut self, sec: u32, para: u32, caret_utf16: u32) {
-        self.document.doc_properties.caret_list_id = sec;
-        self.document.doc_properties.caret_para_id = para;
-        self.document.doc_properties.caret_char_pos = caret_utf16;
+        Self::stamp_document_caret(&mut self.document, sec, para, caret_utf16);
+    }
+
+    fn stamp_document_caret(
+        document: &mut crate::model::document::Document,
+        sec: u32,
+        para: u32,
+        caret_utf16: u32,
+    ) {
+        document.doc_properties.caret_list_id = sec;
+        document.doc_properties.caret_para_id = para;
+        document.doc_properties.caret_char_pos = caret_utf16;
         // DocInfo raw_stream 내 캐럿 위치만 surgical update (전체 재직렬화 방지)
-        if let Some(ref mut raw) = self.document.doc_info.raw_stream {
+        if let Some(ref mut raw) = document.doc_info.raw_stream {
             let _ = crate::serializer::doc_info::surgical_update_caret(raw, sec, para, caret_utf16);
         }
     }
@@ -1407,8 +1295,18 @@ impl DocumentCore {
         para_idx: usize,
         char_idx: usize,
     ) {
-        let Some(para) = self
-            .document
+        Self::set_document_caret_position(&mut self.document, section_idx, para_idx, char_idx);
+    }
+
+    /// Use the same scalar-to-UTF16/raw DocInfo contract on an export snapshot.
+    /// The caller validates its address; legacy out-of-range behavior is retained.
+    pub(crate) fn set_document_caret_position(
+        document: &mut crate::model::document::Document,
+        section_idx: usize,
+        para_idx: usize,
+        char_idx: usize,
+    ) {
+        let Some(para) = document
             .sections
             .get(section_idx)
             .and_then(|s| s.paragraphs.get(para_idx))
@@ -1416,7 +1314,7 @@ impl DocumentCore {
             return;
         };
         let caret_utf16 = Self::caret_utf16_at(para, char_idx);
-        self.stamp_caret(section_idx as u32, para_idx as u32, caret_utf16);
+        Self::stamp_document_caret(document, section_idx as u32, para_idx as u32, caret_utf16);
     }
 
     pub fn insert_text_native(
@@ -1439,6 +1337,8 @@ impl DocumentCore {
         after_inline_control: bool,
         text: &str,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
         // 인덱스 범위 검증
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -1458,30 +1358,9 @@ impl DocumentCore {
 
         // 텍스트 삽입
         let new_chars_count = text.chars().count();
-        let active_field = self.active_field.clone();
-        let outside_insertions = inactive_field_end_insertions(
-            &self.document.sections[section_idx].paragraphs[para_idx],
-            active_field.as_ref(),
-            section_idx,
-            para_idx,
-            None,
-            char_offset,
-        );
-        let before_insertions = inactive_field_start_insertions(
-            &self.document.sections[section_idx].paragraphs[para_idx],
-            active_field.as_ref(),
-            section_idx,
-            para_idx,
-            None,
-            char_offset,
-        );
+        let active = active_field_control(self.active_field.as_ref(), section_idx, para_idx, None);
         let apply_insert = |para: &mut Paragraph| {
-            para.insert_text_at_caret(char_offset, text, after_inline_control);
-            keep_inactive_field_start_outside(para, &before_insertions, new_chars_count);
-            keep_inactive_field_end_outside(para, &outside_insertions, new_chars_count);
-            if has_clickhere_field_range(para) {
-                rebuild_char_offsets(para);
-            }
+            replace_paragraph_text(para, char_offset, 0, text, active, after_inline_control);
         };
         let picture_band_applied =
             self.apply_body_edit_through_picture_band(section_idx, para_idx, &apply_insert)?;
@@ -1851,6 +1730,8 @@ impl DocumentCore {
         text: &str,
         paginate_immediately: bool,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
         let new_chars_count = text.chars().count();
         let focused_target_is_table_cell = !paginate_immediately
             && is_focused_table_cell_target(
@@ -1880,8 +1761,13 @@ impl DocumentCore {
         };
 
         // 셀 문단 접근 검증 및 텍스트 교체
-        let active_field = self.active_field.clone();
         let cell_path = [(control_idx, cell_idx, cell_para_idx)];
+        let active = active_field_control(
+            self.active_field.as_ref(),
+            section_idx,
+            parent_para_idx,
+            Some(&cell_path),
+        );
         let cell_para = self.get_cell_paragraph_mut(
             section_idx,
             parent_para_idx,
@@ -1897,35 +1783,8 @@ impl DocumentCore {
             );
         let units_fp_before =
             crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(cell_para);
-        let deleted_count = if delete_count > 0 {
-            cell_para.delete_text_at(char_offset, delete_count)
-        } else {
-            0
-        };
-        let outside_insertions = inactive_field_end_insertions(
-            cell_para,
-            active_field.as_ref(),
-            section_idx,
-            parent_para_idx,
-            Some(&cell_path),
-            char_offset,
-        );
-        let before_insertions = inactive_field_start_insertions(
-            cell_para,
-            active_field.as_ref(),
-            section_idx,
-            parent_para_idx,
-            Some(&cell_path),
-            char_offset,
-        );
-        if new_chars_count > 0 {
-            cell_para.insert_text_at(char_offset, text);
-            keep_inactive_field_start_outside(cell_para, &before_insertions, new_chars_count);
-            keep_inactive_field_end_outside(cell_para, &outside_insertions, new_chars_count);
-            if has_clickhere_field_range(cell_para) {
-                rebuild_char_offsets(cell_para);
-            }
-        }
+        let deleted_count =
+            replace_paragraph_text(cell_para, char_offset, delete_count, text, active, false);
         debug_assert_eq!(deleted_count, delete_count);
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
@@ -3736,14 +3595,6 @@ impl DocumentCore {
         self.document.sections[section_idx]
             .paragraphs
             .insert(new_para_idx, new_para);
-        for i in para_idx..=new_para_idx {
-            if !self.document.sections[section_idx].paragraphs[i]
-                .field_ranges
-                .is_empty()
-            {
-                rebuild_char_offsets(&mut self.document.sections[section_idx].paragraphs[i]);
-            }
-        }
 
         // 양쪽 문단 리플로우 → vpos 재계산 → 재구성 → 재페이지네이션 + 다단 수렴 루프
         let old_col1 = self
@@ -3846,14 +3697,6 @@ impl DocumentCore {
         self.document.sections[section_idx]
             .paragraphs
             .insert(new_para_idx, new_para);
-        for i in para_idx..=new_para_idx {
-            if !self.document.sections[section_idx].paragraphs[i]
-                .field_ranges
-                .is_empty()
-            {
-                rebuild_char_offsets(&mut self.document.sections[section_idx].paragraphs[i]);
-            }
-        }
 
         // 새 문단에 쪽 나누기 설정
         self.document.sections[section_idx].paragraphs[new_para_idx].column_type =
@@ -5809,6 +5652,8 @@ impl DocumentCore {
         char_offset: usize,
         text: &str,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
         // 깊이 1 표는 일반 셀 삽입 경로가 셀 폭 리플로우와 vpos 재계산을 이미 담당한다.
         // IME가 cellPath를 항상 전달하더라도 같은 편집 계약을 사용해야 한다.
         if path.len() == 1 {
@@ -5825,30 +5670,14 @@ impl DocumentCore {
         }
 
         let new_chars_count = text.chars().count();
-        let active_field = self.active_field.clone();
+        let active = active_field_control(
+            self.active_field.as_ref(),
+            section_idx,
+            parent_para_idx,
+            Some(path),
+        );
         let cell_para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
-        let outside_insertions = inactive_field_end_insertions(
-            cell_para,
-            active_field.as_ref(),
-            section_idx,
-            parent_para_idx,
-            Some(path),
-            char_offset,
-        );
-        let before_insertions = inactive_field_start_insertions(
-            cell_para,
-            active_field.as_ref(),
-            section_idx,
-            parent_para_idx,
-            Some(path),
-            char_offset,
-        );
-        cell_para.insert_text_at(char_offset, text);
-        keep_inactive_field_start_outside(cell_para, &before_insertions, new_chars_count);
-        keep_inactive_field_end_outside(cell_para, &outside_insertions, new_chars_count);
-        if has_clickhere_field_range(cell_para) {
-            rebuild_char_offsets(cell_para);
-        }
+        replace_paragraph_text(cell_para, char_offset, 0, text, active, false);
 
         let inner_cell_para_idx = path.last().map(|entry| entry.2).unwrap_or(0);
         self.reflow_cell_paragraph_by_path(section_idx, parent_para_idx, path, inner_cell_para_idx);
@@ -7811,294 +7640,6 @@ mod tests {
     }
 
     #[test]
-    fn picture_frame_body_edit_publishes_complete_band_before_recompose() {
-        use crate::model::control::Control;
-        use crate::model::page::ColumnDef;
-        use crate::renderer::page_layout::PageLayoutInfo;
-
-        const HOST: usize = 325;
-        const INTERIOR: usize = 326;
-        const DOWNSTREAM: usize = 332;
-        const DPI: f64 = 96.0;
-
-        let bytes = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("samples/3-09월_교육_통합_2022.hwp"),
-        )
-        .expect("p325 corpus fixture");
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
-
-        let styles = core.styles.clone();
-        let page_def = core.document.sections[0].section_def.page_def.clone();
-        let para_column_map = core.para_column_map.clone();
-        let hwp3_layout = core.document.layout_profile().hwp3_layout();
-        let original_paragraphs = core.document.sections[0].paragraphs.clone();
-        let column_def = original_paragraphs[..=HOST]
-            .iter()
-            .flat_map(|paragraph| &paragraph.controls)
-            .filter_map(|control| match control {
-                Control::ColumnDef(column) => Some(column.clone()),
-                _ => None,
-            })
-            .next_back()
-            .unwrap_or_else(ColumnDef::default);
-        let page_layout = PageLayoutInfo::from_page_def(&page_def, &column_def, DPI);
-        let host_column_index = para_column_map
-            .first()
-            .and_then(|columns| columns.get(HOST))
-            .copied()
-            .unwrap_or(0) as usize;
-        let column_width_px = page_layout
-            .column_areas
-            .get(host_column_index)
-            .or_else(|| page_layout.column_areas.first())
-            .unwrap_or(&page_layout.body_area)
-            .width;
-        let initial_band = crate::renderer::composer::layout_picture_band(
-            &original_paragraphs,
-            HOST,
-            column_width_px,
-            &styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("p325 Picture frame");
-        assert_eq!(initial_band.paragraph_range, HOST..DOWNSTREAM);
-        assert!(initial_band.paragraph_range.contains(&INTERIOR));
-
-        let geometry = |paragraphs: &[Paragraph]| {
-            paragraphs
-                .iter()
-                .map(|paragraph| {
-                    paragraph
-                        .line_segs
-                        .iter()
-                        .map(|line| {
-                            (
-                                line.text_start,
-                                line.vertical_pos,
-                                line.line_height,
-                                line.text_height,
-                                line.baseline_distance,
-                                line.line_spacing,
-                                line.column_start,
-                                line.segment_width,
-                                line.tag,
-                            )
-                        })
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>()
-        };
-        let reflow_released_body_paragraph = |paragraphs: &mut [Paragraph], para_idx: usize| {
-            let column_def = DocumentCore::find_column_def_for_paragraph(paragraphs, para_idx);
-            let layout = PageLayoutInfo::from_page_def(&page_def, &column_def, DPI);
-            let column_index = para_column_map
-                .first()
-                .and_then(|columns| columns.get(para_idx))
-                .copied()
-                .unwrap_or(0) as usize;
-            let column_area = layout
-                .column_areas
-                .get(column_index)
-                .or_else(|| layout.column_areas.first())
-                .unwrap_or(&layout.body_area);
-            let paragraph = &mut paragraphs[para_idx];
-            let para_style = styles.para_styles.get(paragraph.para_shape_id as usize);
-            let margin_left = para_style.map(|style| style.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|style| style.margin_right).unwrap_or(0.0);
-            reflow_line_segs(
-                paragraph,
-                ParagraphBox::body_for_style(column_area.width, para_style, DPI),
-                &styles,
-                DPI,
-            );
-        };
-
-        let insertion = "가".repeat(4);
-        let original_text = original_paragraphs[INTERIOR].text.clone();
-        let mut expected_after_insert = original_paragraphs.clone();
-        expected_after_insert[INTERIOR].insert_text_at(0, &insertion);
-        let inserted_band = crate::renderer::composer::layout_picture_band(
-            &expected_after_insert,
-            HOST,
-            column_width_px,
-            &styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("edited p325 Picture frame");
-        let inserted_range = inserted_band.paragraph_range.clone();
-        assert_eq!(inserted_range, HOST..331);
-        assert_eq!(
-            inserted_band.line_segs[INTERIOR - HOST].len(),
-            2,
-            "the interior insertion must add one physical row"
-        );
-        for (paragraph, line_segs) in expected_after_insert[inserted_range.clone()]
-            .iter_mut()
-            .zip(inserted_band.line_segs)
-        {
-            paragraph.replace_line_segs(line_segs);
-        }
-        for released_para_idx in inserted_range.end..initial_band.paragraph_range.end {
-            reflow_released_body_paragraph(&mut expected_after_insert, released_para_idx);
-        }
-        crate::renderer::composer::recalculate_section_vpos(
-            &mut expected_after_insert,
-            HOST,
-            Some(HOST..initial_band.paragraph_range.end.max(inserted_range.end)),
-            crate::renderer::composer::paragraph_flow_end(&original_paragraphs[HOST]),
-            &styles,
-            DPI,
-            hwp3_layout,
-        );
-
-        core.insert_text_native(0, INTERIOR, 0, &insertion)
-            .expect("Picture-owned paragraph insert succeeds");
-        assert_eq!(
-            core.document.sections[0].paragraphs[INTERIOR].text,
-            format!("{}{}", insertion, original_text),
-        );
-        assert!(
-            core.document.sections[0].raw_stream.is_none(),
-            "the successful transaction invalidates the source section together with its LineSegs"
-        );
-        assert_eq!(
-            geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]),
-            geometry(&expected_after_insert[HOST..=DOWNSTREAM]),
-            "the complete fresh band, released p331, and downstream p332 boundary must publish together"
-        );
-        assert_eq!(
-            core.document.sections[0].paragraphs[DOWNSTREAM].line_segs[0].segment_width,
-            original_paragraphs[DOWNSTREAM].line_segs[0].segment_width,
-            "p332 remains a full-width downstream paragraph while its vertical position is recomposed"
-        );
-
-        let before_delete = core.document.sections[0].paragraphs.clone();
-        let before_delete_band = crate::renderer::composer::layout_picture_band(
-            &before_delete,
-            HOST,
-            column_width_px,
-            &styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("inserted Picture frame before delete");
-        assert_eq!(before_delete_band.paragraph_range, HOST..331);
-        let mut expected_after_delete = before_delete.clone();
-        expected_after_delete[INTERIOR].delete_text_at(0, insertion.chars().count());
-        let deleted_band = crate::renderer::composer::layout_picture_band(
-            &expected_after_delete,
-            HOST,
-            column_width_px,
-            &styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("restored p325 Picture frame");
-        let deleted_range = deleted_band.paragraph_range.clone();
-        assert_eq!(deleted_range, HOST..DOWNSTREAM);
-        for (paragraph, line_segs) in expected_after_delete[deleted_range.clone()]
-            .iter_mut()
-            .zip(deleted_band.line_segs)
-        {
-            paragraph.replace_line_segs(line_segs);
-        }
-        for released_para_idx in deleted_range.end..before_delete_band.paragraph_range.end {
-            reflow_released_body_paragraph(&mut expected_after_delete, released_para_idx);
-        }
-        crate::renderer::composer::recalculate_section_vpos(
-            &mut expected_after_delete,
-            HOST,
-            Some(
-                HOST..before_delete_band
-                    .paragraph_range
-                    .end
-                    .max(deleted_range.end),
-            ),
-            crate::renderer::composer::paragraph_flow_end(&before_delete[HOST]),
-            &styles,
-            DPI,
-            hwp3_layout,
-        );
-
-        core.delete_text_native(0, INTERIOR, 0, insertion.chars().count())
-            .expect("Picture-owned paragraph delete succeeds");
-        assert_eq!(
-            core.document.sections[0].paragraphs[INTERIOR].text, original_text,
-            "delete restores the edited paragraph text"
-        );
-        assert_eq!(
-            geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]),
-            geometry(&expected_after_delete[HOST..=DOWNSTREAM]),
-            "delete must also republish the fresh complete band and p332 boundary"
-        );
-    }
-
-    #[test]
-    fn picture_frame_transaction_rejects_shadow_failure_without_publication() {
-        const HOST: usize = 325;
-        const INTERIOR: usize = 326;
-        const DOWNSTREAM: usize = 332;
-
-        let bytes = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("samples/3-09월_교육_통합_2022.hwp"),
-        )
-        .expect("p325 corpus fixture");
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
-        let before_paragraphs = core.document.sections[0].paragraphs.clone();
-        let before_raw_stream = core.document.sections[0].raw_stream.clone();
-        let geometry = |paragraphs: &[Paragraph]| {
-            paragraphs
-                .iter()
-                .map(|paragraph| {
-                    paragraph
-                        .line_segs
-                        .iter()
-                        .map(|line| {
-                            (
-                                line.text_start,
-                                line.vertical_pos,
-                                line.line_height,
-                                line.text_height,
-                                line.baseline_distance,
-                                line.line_spacing,
-                                line.column_start,
-                                line.segment_width,
-                                line.tag,
-                            )
-                        })
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>()
-        };
-
-        let result = core.apply_body_edit_through_picture_band(0, INTERIOR, |paragraph| {
-            paragraph.column_type = ColumnBreakType::Column;
-        });
-
-        assert!(
-            result.is_err(),
-            "the staged layout must reject a column break"
-        );
-        assert_eq!(
-            core.document.sections[0].paragraphs[INTERIOR].text, before_paragraphs[INTERIOR].text,
-            "a rejected shadow edit must not publish source text"
-        );
-        assert_eq!(
-            geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]),
-            geometry(&before_paragraphs[HOST..=DOWNSTREAM]),
-            "a rejected shadow edit must not publish partial LineSeg geometry"
-        );
-        assert_eq!(
-            core.document.sections[0].raw_stream, before_raw_stream,
-            "a rejected shadow edit must not invalidate source serialization state"
-        );
-    }
-
-    #[test]
     fn picture_frame_column_convergence_accepts_stable_and_rejects_exhaustion() {
         const HOST: usize = 325;
 
@@ -8131,321 +7672,6 @@ mod tests {
                     if message == "그림 배치 영역(325..)의 단 배치가 수렴하지 않습니다"
             ),
             "an exhausted alternating column sequence must be rejected before commit"
-        );
-    }
-
-    #[test]
-    fn picture_frame_reprojects_after_host_moves_to_unequal_column() {
-        use crate::model::control::Control;
-
-        const HOST: usize = 325;
-        const INTERIOR: usize = 326;
-        const DPI: f64 = 96.0;
-
-        let bytes = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("samples/3-09월_교육_통합_2022.hwp"),
-        )
-        .expect("p325 corpus fixture");
-
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
-        let column = core.document.sections[0].paragraphs[0]
-            .controls
-            .iter_mut()
-            .find_map(|control| match control {
-                Control::ColumnDef(column) => Some(column),
-                _ => None,
-            })
-            .expect("p0 column definition");
-        column.same_width = false;
-        column.proportional_widths = true;
-        column.widths = vec![10_000, 22_000];
-        column.gaps = vec![500];
-        core.document.sections[0].section_def.page_def.height = 12_000;
-        core.recompose_section(0);
-        core.paginate();
-
-        let before_col = core.para_column_map[0][HOST];
-        let (_, _, before_width_hwp, _) = core
-            .picture_band_owning_body_paragraph(0, HOST)
-            .expect("initial Picture band");
-        assert_eq!(
-            before_col, 0,
-            "fixture starts the host in the narrow column"
-        );
-
-        core.insert_text_native(0, HOST, 0, &"가".repeat(32))
-            .expect("host insert succeeds");
-
-        let after_col = core.para_column_map[0][HOST];
-        let (_, fresh_range, after_width_hwp, _) = core
-            .picture_band_owning_body_paragraph(0, HOST)
-            .expect("Picture band after pagination");
-        assert_eq!(after_col, 1, "the expanded host moves to the wide column");
-        assert_ne!(
-            before_width_hwp, after_width_hwp,
-            "the two physical columns must have different available widths"
-        );
-
-        let fresh_band = crate::renderer::composer::layout_picture_band(
-            &core.document.sections[0].paragraphs,
-            HOST,
-            after_width_hwp,
-            &core.styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("fresh band at the post-pagination column width");
-        assert_eq!(fresh_band.paragraph_range, fresh_range);
-        let horizontal_projection = |line: &LineSeg| {
-            (
-                line.text_start,
-                line.line_height,
-                line.text_height,
-                line.baseline_distance,
-                line.line_spacing,
-                line.column_start,
-                line.segment_width,
-                line.tag,
-            )
-        };
-        for (paragraph, fresh_lines) in core.document.sections[0].paragraphs[fresh_range.clone()]
-            .iter()
-            .zip(fresh_band.line_segs)
-        {
-            assert_eq!(
-                paragraph
-                    .line_segs
-                    .iter()
-                    .map(horizontal_projection)
-                    .collect::<Vec<_>>(),
-                fresh_lines
-                    .iter()
-                    .map(horizontal_projection)
-                    .collect::<Vec<_>>(),
-                "every current band member must match the post-pagination column projection"
-            );
-        }
-    }
-
-    #[test]
-    fn picture_frame_batch_edit_reprojects_before_final_pagination() {
-        use crate::model::control::Control;
-
-        const HOST: usize = 325;
-        const DPI: f64 = 96.0;
-
-        let bytes = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("samples/3-09월_교육_통합_2022.hwp"),
-        )
-        .expect("p325 corpus fixture");
-
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
-        let column = core.document.sections[0].paragraphs[0]
-            .controls
-            .iter_mut()
-            .find_map(|control| match control {
-                Control::ColumnDef(column) => Some(column),
-                _ => None,
-            })
-            .expect("p0 column definition");
-        column.same_width = false;
-        column.proportional_widths = true;
-        column.widths = vec![10_000, 22_000];
-        column.gaps = vec![500];
-        core.document.sections[0].section_def.page_def.height = 12_000;
-        core.recompose_section(0);
-        core.paginate();
-
-        let before_col = core.para_column_map[0][HOST];
-        let (_, _, before_width_hwp, _) = core
-            .picture_band_owning_body_paragraph(0, HOST)
-            .expect("initial Picture band");
-        assert_eq!(before_col, 0, "fixture starts in the narrow column");
-
-        core.begin_batch_native().expect("begin batch");
-        core.insert_text_native(0, HOST, 0, &"가".repeat(32))
-            .expect("host insert succeeds during batch");
-        let after_edit_col = core.para_column_map[0][HOST];
-        core.end_batch_native().expect("end batch");
-
-        let after_flush_col = core.para_column_map[0][HOST];
-        let (_, fresh_range, after_width_hwp, _) = core
-            .picture_band_owning_body_paragraph(0, HOST)
-            .expect("Picture band after final pagination");
-        assert_eq!(
-            after_edit_col, before_col,
-            "batch mode keeps the live column map deferred"
-        );
-        assert_eq!(
-            after_flush_col, 1,
-            "the expanded host moves to the wide column when the batch flushes"
-        );
-        assert_ne!(before_width_hwp, after_width_hwp);
-
-        let fresh_band = crate::renderer::composer::layout_picture_band(
-            &core.document.sections[0].paragraphs,
-            HOST,
-            after_width_hwp,
-            &core.styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("fresh band at the post-batch column width");
-        assert_eq!(fresh_band.paragraph_range, fresh_range);
-        let horizontal_projection = |line: &LineSeg| {
-            (
-                line.text_start,
-                line.line_height,
-                line.text_height,
-                line.baseline_distance,
-                line.line_spacing,
-                line.column_start,
-                line.segment_width,
-                line.tag,
-            )
-        };
-        let actual_projection = core.document.sections[0].paragraphs[fresh_range.clone()]
-            .iter()
-            .map(|paragraph| {
-                paragraph
-                    .line_segs
-                    .iter()
-                    .map(horizontal_projection)
-                    .collect::<Vec<_>>()
-            })
-            .collect::<Vec<_>>();
-        let fresh_projection = fresh_band
-            .line_segs
-            .iter()
-            .map(|line_segs| {
-                line_segs
-                    .iter()
-                    .map(horizontal_projection)
-                    .collect::<Vec<_>>()
-            })
-            .collect::<Vec<_>>();
-
-        assert_eq!(
-            actual_projection, fresh_projection,
-            "the deferred batch flush must already receive the destination-width Picture band"
-        );
-    }
-
-    #[test]
-    fn picture_frame_failed_narrow_column_convergence_publishes_nothing() {
-        use crate::model::control::Control;
-
-        const HOST: usize = 325;
-        const DOWNSTREAM: usize = 332;
-        let bytes = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("samples/3-09월_교육_통합_2022.hwp"),
-        )
-        .expect("p325 corpus fixture");
-
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
-        let host_style_id = core.document.sections[0].paragraphs[HOST].para_shape_id;
-        core.styles.para_styles[host_style_id as usize].margin_left =
-            crate::renderer::hwpunit_to_px(20_000, core.dpi);
-        let column = core.document.sections[0].paragraphs[0]
-            .controls
-            .iter_mut()
-            .find_map(|control| match control {
-                Control::ColumnDef(column) => Some(column),
-                _ => None,
-            })
-            .expect("p0 column definition");
-        column.same_width = false;
-        column.proportional_widths = true;
-        column.widths = vec![22_000, 10_000];
-        column.gaps = vec![500];
-        core.document.sections[0].section_def.page_def.height = 12_000;
-        core.recompose_section(0);
-        core.paginate();
-
-        let before_col = core.para_column_map[0][HOST];
-        let (_, before_range, before_width_px, _) = core
-            .picture_band_owning_body_paragraph(0, HOST)
-            .expect("supported Picture band in the wide source column");
-        assert_eq!(before_col, 0, "fixture starts in the wide column");
-        assert_eq!(before_range, HOST..326);
-        // Same pin, same quantity — the tuple carries px now, so convert at
-        // the assertion rather than restating the number in another unit.
-        assert_eq!(
-            crate::renderer::px_to_hwpunit(before_width_px, core.dpi),
-            36_842
-        );
-
-        let geometry = |paragraphs: &[Paragraph]| {
-            paragraphs
-                .iter()
-                .map(|paragraph| {
-                    paragraph
-                        .line_segs
-                        .iter()
-                        .map(|line| {
-                            (
-                                line.text_start,
-                                line.vertical_pos,
-                                line.line_height,
-                                line.text_height,
-                                line.baseline_distance,
-                                line.line_spacing,
-                                line.column_start,
-                                line.segment_width,
-                                line.tag,
-                            )
-                        })
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>()
-        };
-        let before_text = core.document.sections[0].paragraphs[HOST].text.clone();
-        let before_geometry = geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]);
-        let before_raw_stream = core.document.sections[0].raw_stream.clone();
-        let before_columns = core.para_column_map.clone();
-        let before_event_count = core.event_log.len();
-
-        let result = core.insert_text_native(0, HOST, 0, &"가".repeat(32));
-        let after_col = core.para_column_map[0][HOST];
-        let text_changed = core.document.sections[0].paragraphs[HOST].text != before_text;
-        let raw_changed = core.document.sections[0].raw_stream != before_raw_stream;
-        let event_count = core.event_log.len();
-
-        assert!(
-            matches!(
-                result,
-                Err(HwpError::RenderError(ref message))
-                    if message == "그림 배치 영역(325..)을 새 단 너비로 다시 배치할 수 없습니다"
-            ),
-            "the narrow destination column must reject its re-projection"
-        );
-        assert_eq!(
-            after_col, before_col,
-            "a rejected convergence must not publish its destination column"
-        );
-        assert!(
-            !text_changed,
-            "a rejected convergence must not publish text"
-        );
-        assert!(
-            !raw_changed,
-            "a rejected convergence must not invalidate raw data"
-        );
-        assert_eq!(
-            geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]),
-            before_geometry,
-            "a rejected convergence must not publish partial LineSeg geometry"
-        );
-        assert_eq!(
-            core.para_column_map, before_columns,
-            "a rejected convergence must not publish pagination state"
-        );
-        assert_eq!(
-            event_count, before_event_count,
-            "a rejected convergence must not publish an edit event"
         );
     }
 }

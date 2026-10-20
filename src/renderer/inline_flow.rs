@@ -5,13 +5,23 @@
 
 use std::ops::Range;
 
+mod picture_rows;
+pub(crate) use picture_rows::supports_picture_rows;
+mod separator_spaces;
+mod table_rows;
+pub(crate) use table_rows::{standalone_table_fragment_owner, supports_table_text_rows};
+
+mod stored_host;
+mod stored_square_rows;
+pub(crate) use stored_host::{plan_stored_body_wide_host, plan_stored_empty_square_host};
+
 use crate::model::{control::Control, paragraph::Paragraph, style::Alignment};
 
 use super::{
     float_placement::ObjectPlacementFrame,
     height_measurer::MeasuredTable,
     hwpunit_to_px,
-    layout::{estimate_text_width, estimate_text_width_unrounded, resolved_to_text_style},
+    layout::{estimate_text_width_unrounded, resolved_to_text_style},
     layout_frame::{FrameExclusion, LayoutFrame},
     px_to_hwpunit,
     style_resolver::{detect_lang_category, ResolvedParaStyle, ResolvedStyleSet},
@@ -24,6 +34,8 @@ pub enum InlineFlowContent {
         range: Range<usize>,
         style: u32,
         lang: usize,
+        /// 줄 안 정렬점과 실제 글꼴 기준선을 구분한다.
+        alignment_baseline: Option<f64>,
     },
     Table {
         control: usize,
@@ -32,6 +44,13 @@ pub enum InlineFlowContent {
     },
     /// Width-neutral object anchored to the physical text row.
     FloatingTable { control: usize },
+    /// 글자처럼 그림의 줄 상자와 실제 잉크 사이 바깥 여백.
+    Picture {
+        control: usize,
+        margin_left: f64,
+        margin_top: f64,
+        affect_line_spacing: bool,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -42,6 +61,18 @@ pub struct InlineFlowBox {
     pub width: f64,
     pub height: f64,
     pub baseline: f64,
+}
+
+impl InlineFlowBox {
+    fn alignment_baseline(&self) -> f64 {
+        match self.content {
+            InlineFlowContent::Text {
+                alignment_baseline: Some(value),
+                ..
+            } => value,
+            _ => self.baseline,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -57,6 +88,10 @@ pub(crate) struct InlineFlowRow {
 /// 좌표와 높이는 같은 계산의 결과다. 확정 후 단 상대 좌표로 보관한다.
 #[derive(Debug, Clone, PartialEq)]
 pub struct InlineFlowPlan {
+    /// 정상 저장 증언으로 확정한 빈 부동 개체 호스트의 실제 줄 예약.
+    pub(crate) stored_empty_host: bool,
+    /// 절대 전폭 개체의 예약 뒤에서 시작하는 첫 저장 부분 문단.
+    pub(crate) stored_float_host: bool,
     /// NO_LS 본문의 확정 frame 행. 원본 IR은 바꾸지 않고 fit와 paint에 함께 전달한다.
     pub(crate) text_rows: Option<Vec<crate::model::paragraph::LineSeg>>,
     /// Square table owns the object; this plan owns only its host text rows.
@@ -76,6 +111,14 @@ pub struct InlineFlowPlan {
 }
 
 impl InlineFlowPlan {
+    /// 확정한 행의 물리 하단. 다음 줄 전진과 문단 뒤 여백을 구분한다.
+    pub(crate) fn occupied_end(&self) -> f64 {
+        self.rows
+            .iter()
+            .map(|row| row.y + row.height)
+            .fold(self.start, f64::max)
+    }
+
     pub(crate) fn relative_to(&mut self, x: f64, y: f64) {
         self.start -= y;
         self.end -= y;
@@ -120,10 +163,11 @@ impl RowMetrics {
     }
 
     fn with(self, item: &InlineFlowBox) -> Self {
+        let baseline = item.alignment_baseline();
         Self {
             width: self.width + item.width,
-            baseline: self.baseline.max(item.baseline),
-            descent: self.descent.max(item.height - item.baseline),
+            baseline: self.baseline.max(baseline),
+            descent: self.descent.max(item.height - baseline),
         }
     }
 }
@@ -131,6 +175,9 @@ impl RowMetrics {
 /// 현재 연결된 계약은 본문의 텍스트 / TAC 표 / 그림 / 구조 marker다.
 /// 다른 소유자의 수식·각주·필드를 누락시키지 않고 연결 전까지 기존 경로로 반환한다.
 pub(crate) fn supports(para: &Paragraph, width_hu: i32) -> bool {
+    if supports_picture_rows(para) {
+        return true;
+    }
     para.controls.iter().any(|c| {
         matches!(c, Control::Table(t)
         if super::height_measurer::is_tac_table_inline_in_para(t, width_hu, para))
@@ -155,8 +202,15 @@ pub(crate) fn plan(
     preceding: &[FrameExclusion],
 ) -> Option<InlineFlowPlan> {
     let style = styles.para_styles.get(para.para_shape_id as usize)?;
+    let picture_rows = supports_picture_rows(para);
     let top = frame.paragraph_y + style.spacing_before;
-    let positions = para.control_text_positions();
+    // 가시 글자가 없는 문단의 개체 순번은 문자 위치가 아니다. 각 개체의
+    // 순서를 유지해 토큰으로 넣고, 공통 줄 구성 결과가 같은 줄 수용 여부와 줄 소유를 결정한다.
+    let positions = if para.text.is_empty() {
+        vec![0; para.controls.len()]
+    } else {
+        para.control_text_positions()
+    };
     let chars: Vec<_> = para.text.chars().collect();
     let mut controls: Vec<_> = positions.into_iter().enumerate().collect();
     controls.sort_by_key(|&(ci, position)| (position, ci));
@@ -206,7 +260,13 @@ pub(crate) fn plan(
                     }));
                 }
                 Control::Picture(picture) => {
-                    if let Some(exclusion) = frame.picture_exclusion(picture) {
+                    if picture.common.treat_as_char {
+                        atoms.push(Atom::Box(picture_rows::picture_box(
+                            picture, ci, style, frame.dpi,
+                        )));
+                    } else if let Some(exclusion) =
+                        frame.picture_exclusion(picture, para, ci, styles)
+                    {
                         atoms.push(Atom::Float(exclusion));
                     }
                 }
@@ -226,24 +286,36 @@ pub(crate) fn plan(
         let cs = super::composer::find_active_char_shape(&para.char_shapes, stream_position);
         let lang = detect_lang_category(ch);
         let text_style = resolved_to_text_style(styles, cs, lang);
-        let width = if ch == ' ' {
-            estimate_text_width_unrounded(" ", &text_style)
+        // 같은 글리프 전진량을 줄 수용과 실제 box 원점에 보존한다.
+        // 문자마다 정수 px로 반올림하면 긴 prefix의 줄 경계가 달라진다.
+        let width = estimate_text_width_unrounded(&ch.to_string(), &text_style);
+        // 표시 relSz는 글리프 크기다. 새 그림 글줄도 일반 문단과 같이
+        // 선언 글자 크기를 줄 상자·간격에 사용하고 표시 크기는 style에 보존한다.
+        let line_font_size = if picture_rows {
+            styles
+                .char_styles
+                .get(cs as usize)
+                .map_or(text_style.font_size, |s| s.font_size)
         } else {
-            estimate_text_width(&ch.to_string(), &text_style)
+            text_style.font_size
         };
         let metrics = super::composer::frame_metrics_for_line(
-            text_style.font_size,
+            line_font_size,
             12.0,
             style.line_spacing_type,
             style.line_spacing,
             frame.dpi,
         );
         let height = hwpunit_to_px(metrics.line_height, frame.dpi);
+        let alignment_baseline = (picture_rows && style.vertical_alignment != 0).then(|| {
+            height * super::composer::inline_picture_ascent_ratio(style.vertical_alignment)
+        });
         let mut item = InlineFlowBox {
             content: InlineFlowContent::Text {
                 range: position..position + 1,
                 style: cs,
                 lang,
+                alignment_baseline,
             },
             x: 0.0,
             y: 0.0,
@@ -256,6 +328,7 @@ pub(crate) fn plan(
                 range: position..position,
                 style: cs,
                 lang,
+                alignment_baseline,
             };
             item.width = 0.0;
             atoms.push(Atom::Break(item));
@@ -272,27 +345,8 @@ pub(crate) fn plan(
     let word_ranges = super::composer::text_word_ranges(para, styles);
     let mut words = word_ranges.iter().peekable();
     let mut word_metrics = std::collections::BTreeMap::new();
-    let mut separator_spaces = std::collections::BTreeSet::new();
-    let mut followed_by_flow = false;
-    for atom in atoms.iter().rev() {
-        match atom {
-            Atom::Box(InlineFlowBox {
-                content: InlineFlowContent::Text { range, .. },
-                ..
-            }) if !range.is_empty() && chars[range.clone()].iter().all(|ch| *ch == ' ') => {
-                if followed_by_flow {
-                    separator_spaces.insert(range.start);
-                }
-            }
-            Atom::Box(InlineFlowBox {
-                content: InlineFlowContent::Text { .. } | InlineFlowContent::Table { .. },
-                ..
-            }) => followed_by_flow = true,
-            // A floating anchor owns its authored physical row. Spaces before
-            // it cannot be consumed as separators before the next flow box.
-            _ => followed_by_flow = false,
-        }
-    }
+    let mut attached_word_metrics = std::collections::BTreeMap::new();
+    let spaces = separator_spaces::classify(&atoms, &chars);
     let mut index = 0;
     while index < atoms.len() {
         let Atom::Box(first) = &atoms[index] else {
@@ -332,10 +386,19 @@ pub(crate) fn plan(
             index += 1;
         }
         word_metrics.insert(start, metrics);
+        if let Some(Atom::Box(next)) = atoms.get(index) {
+            if matches!(next.content, InlineFlowContent::Table { .. }) {
+                // 구분 공백 없이 붙은 TAC는 앞 어절의 수용 후보에 속한다.
+                // 후보가 한 줄보다 크면 새 줄에서 개체 앞 경계를 분리한다.
+                attached_word_metrics.insert(start, metrics.with(next));
+            }
+        }
     }
     let mut exclusions = preceding.to_vec();
     let horizontal = frame.container.x..frame.container.x + frame.container.width;
     let mut result = InlineFlowPlan {
+        stored_empty_host: false,
+        stored_float_host: false,
         text_rows: None,
         square_host_control: None,
         text_spacing_before: None,
@@ -372,10 +435,9 @@ pub(crate) fn plan(
                 row_metrics = RowMetrics::default();
             }
             Atom::Break(empty_line) => {
-                // Consecutive authored breaks reserve real lines even without ink.
-                if row.is_empty() {
-                    row.push(empty_line);
-                }
+                // 작성 개행의 글자 크기도 현재 줄의 기준선·높이를 소유한다.
+                // 폭 0 상자로 빈 줄과 연속 개행의 공간도 같은 결과에 보존한다.
+                row.push(empty_line);
                 finish_row(
                     &mut result,
                     &mut row,
@@ -400,28 +462,54 @@ pub(crate) fn plan(
                 let row_horizontal =
                     paragraph_row_horizontal(&horizontal, style, result.boxes.is_empty());
                 let row_width = row_horizontal.end - row_horizontal.start;
+                // 개체 앞 작성 공백 그룹의 첫 공백만 우단 밖으로 전진한다.
+                // 그룹의 후속 공백이 처음 넘쳤다는 이유로 hanging하지 않는다.
+                let object_separator = matches!(&item.content, InlineFlowContent::Text { range, .. }
+                    if spaces.object.contains(&range.start));
+                let first_overhang_space = matches!(&item.content, InlineFlowContent::Text { range, .. }
+                    if spaces.first_object.contains(&range.start))
+                    && separator_spaces::has_flow_content(&row, &chars)
+                    && row_metrics.width <= row_width + 0.01
+                    && row_metrics.width + item.width > row_width + 0.01;
                 // A separator consumed by a soft wrap remains in the source
                 // row. It must not create a whitespace-only row before the
                 // next word/table. Space-only paragraphs and authored breaks
                 // retain their real line boxes.
                 if matches!(&item.content, InlineFlowContent::Text { range, .. }
-                    if separator_spaces.contains(&range.start))
+                    if spaces.wrap.contains(&range.start))
                     && row_metrics.width + item.width > row_width + 0.01
-                    && row.iter().any(|existing| match &existing.content {
-                        InlineFlowContent::Text { range, .. } => {
-                            chars[range.clone()].iter().any(|ch| !ch.is_whitespace())
-                        }
-                        InlineFlowContent::Table { .. } => true,
-                        InlineFlowContent::FloatingTable { .. } => false,
-                    })
+                    && !first_overhang_space
+                    && separator_spaces::has_flow_content(&row, &chars)
                 {
                     item.width = 0.0;
+                    // 개체 앞의 넘친 공백은 앞 줄에서 소비하고 그 줄을 끝낸다.
+                    // 이후 작성된 공백은 다음 물리 줄에 남아 개체의 전진량과
+                    // 함께 fit한다. 모두 폭 0으로 흡수하면 표 소유 줄을 잃는다.
+                    if object_separator {
+                        row.push(item);
+                        finish_row(
+                            &mut result,
+                            &mut row,
+                            &horizontal,
+                            &exclusions,
+                            style,
+                            frame.dpi,
+                            Some(&chars),
+                        )?;
+                        row_metrics = RowMetrics::default();
+                        continue;
+                    }
                 }
                 let lookahead = match &item.content {
-                    InlineFlowContent::Text { range, .. } => word_metrics
+                    InlineFlowContent::Text { range, .. } => attached_word_metrics
                         .get(&range.start)
-                        .filter(|metrics| metrics.width <= row_width + 0.01)
                         .copied()
+                        .or_else(|| {
+                            word_metrics
+                                .get(&range.start)
+                                .filter(|metrics| metrics.width <= row_width + 0.01)
+                                .copied()
+                        })
                         .unwrap_or_else(|| RowMetrics::default().with(&item)),
                     _ => RowMetrics::default().with(&item),
                 };
@@ -447,7 +535,8 @@ pub(crate) fn plan(
                     next.1 > old.1 + 0.01
                 };
                 if !row.is_empty()
-                    && (row_metrics.width + lookahead.width > row_width + 0.01
+                    && ((row_metrics.width + lookahead.width > row_width + 0.01
+                        && !first_overhang_space)
                         || moves_existing_row)
                 {
                     finish_row(
@@ -509,14 +598,14 @@ fn finish_row(
     let baseline = row_metrics.baseline;
     let height = row_metrics.baseline + row_metrics.descent;
     if let Some(chars) = trim_separator_spaces {
-        // Spaces consumed before a soft wrap or authored break do not move
-        // the centered/right-aligned ink. Paragraph-end spaces remain authored.
+        // 개행 메트릭 상자는 폭 0이며 후행 공백 조회를 막지 않는다.
+        // 줄 경계에서 소비한 공백은 가운데·오른쪽 잉크 정렬을 밀지 않는다.
         row_metrics.width -= row
             .iter()
             .rev()
             .take_while(|item| {
                 matches!(&item.content, InlineFlowContent::Text { range, .. }
-                    if !range.is_empty() && chars[range.clone()].iter().all(|ch| *ch == ' '))
+                    if chars[range.clone()].iter().all(|ch| *ch == ' '))
             })
             .map(|item| item.width)
             .sum::<f64>();
@@ -536,7 +625,16 @@ fn finish_row(
         .any(|b| matches!(b.content, InlineFlowContent::Table { .. }));
     let row_font_size = row
         .iter()
-        .filter(|item| matches!(item.content, InlineFlowContent::Text { .. }))
+        .filter(|item| {
+            matches!(
+                item.content,
+                InlineFlowContent::Text { .. }
+                    | InlineFlowContent::Picture {
+                        affect_line_spacing: true,
+                        ..
+                    }
+            )
+        })
         .map(|item| item.height)
         .reduce(f64::max)
         .unwrap_or(plan.fallback_font_size);
@@ -547,7 +645,7 @@ fn finish_row(
         item.y = if matches!(item.content, InlineFlowContent::FloatingTable { .. }) {
             y
         } else {
-            y + baseline - item.baseline
+            y + baseline - item.alignment_baseline()
         };
         x += item.width;
         plan.boxes.push(item);
@@ -622,8 +720,14 @@ fn row_geometry(
 }
 
 /// 저장 행과 자체 inline 소유자가 없는 본문만 현재 물리 frame에서 재조판한다.
+///
+/// [#7548] 저장 LineSeg 가 없는 HWPX 문단은 로드 시 합성 줄(구현 태그)을 받는다.
+/// 합성 줄은 앞 개체의 배제 영역을 모르는 전폭 재조판 결과라 저장 증거가 아니다 —
+/// 저장 줄이 하나도 없으면 빈 줄 목록과 같이 이 frame 에서 다시 조판한다.
 pub(crate) fn supports_plain_text(para: &Paragraph) -> bool {
-    para.line_segs.is_empty() && !para.text.trim().is_empty() && para.controls.is_empty()
+    super::para_has_no_stored_line_segs(para)
+        && !para.text.trim().is_empty()
+        && para.controls.is_empty()
 }
 
 pub(crate) fn plan_plain_text(
@@ -664,6 +768,8 @@ pub(crate) fn plan_plain_text(
         });
     let end = text_top + hwpunit_to_px(frame.top, placement.dpi) + style.spacing_after;
     Some(InlineFlowPlan {
+        stored_empty_host: false,
+        stored_float_host: false,
         start: placement.paragraph_y,
         end,
         boxes: Vec::new(),
@@ -679,7 +785,7 @@ pub(crate) fn plan_plain_text(
     })
 }
 
-/// Resolve the text beside a single Square table once, before fit and paint.
+/// 실제 단일 어울림 표의 배제 영역으로 호스트 줄을 fit·paint 전에 한 번 확정한다.
 /// Inline controls and other object owners keep their existing transaction.
 pub(crate) fn plan_square_table_host(
     para: &Paragraph,
@@ -692,7 +798,16 @@ pub(crate) fn plan_square_table_host(
     use super::float_placement::{signed_hwpunit, ParagraphFloatFlow, ParagraphFloatPlacement};
     use super::layout_frame::FrameExclusionPolicy;
     use crate::model::shape::{HorzAlign, HorzRelTo, TextFlow, VertAlign, VertRelTo};
-    if !super::is_no_lineseg_visible_text_host(para) {
+    let uncached = super::is_no_lineseg_visible_text_host(para);
+    if !uncached
+        && (!para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+            || styles.hwp3_variant
+            || super::composer::stored_rows_cross_physical_frame(para))
+    {
+        // 하나의 배제 프레임은 다른 쪽/단에 속한 저장 줄을 재구성하지 않는다.
         return None;
     }
     let control = para.controls.iter().position(|c| {
@@ -757,47 +872,84 @@ pub(crate) fn plan_square_table_host(
         HorzAlign::Center => ref_left + (ref_width - object_width) / 2.0 + offset,
         HorzAlign::Right | HorzAlign::Outside => ref_left + ref_width - object_width - offset,
     };
-    let outer_top = hwpunit_to_px(signed_hwpunit(c.vertical_offset), dpi);
-    let table_top = outer_top + hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
-    let occupied_bottom = table_top
-        + measured.total_height
-        + hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
-    let placement = ParagraphFloatPlacement {
-        flow: ParagraphFloatFlow::Exclusion,
-        anchor_y: 0.0,
-        stored_host_origin: None,
-        stored_successor_line_origin: None,
-        table_left: Some(outer_left + ml),
-        table_top,
-        occupied_bottom,
-    };
+    let box_ = super::composer::ParagraphBox::body_for_style(column_width, Some(style), dpi);
+    let stored_rows = stored_square_rows::source(para, control, table, measured, &box_, dpi);
     let spacing_before =
         if para.line_segs.is_empty() && std::env::var("RHWP_EXP_BODY_FRESH").is_err() {
             0.0
         } else {
             style.spacing_before
         };
-    let exclusion = FrameExclusion {
-        horizontal: px_to_hwpunit(outer_left, dpi)..px_to_hwpunit(outer_left + object_width, dpi),
-        vertical: px_to_hwpunit(outer_top, dpi)..px_to_hwpunit(occupied_bottom, dpi),
-        policy: match c.text_flow {
-            TextFlow::BothSides => FrameExclusionPolicy::BothSides,
-            TextFlow::LargestOnly => FrameExclusionPolicy::LargestSide,
-            TextFlow::LeftOnly => FrameExclusionPolicy::LeftSide,
-            TextFlow::RightOnly => FrameExclusionPolicy::RightSide,
-        },
+    let geometry = |anchor_offset_hwp| {
+        let outer_top = hwpunit_to_px(
+            signed_hwpunit(c.vertical_offset).saturating_add(anchor_offset_hwp),
+            dpi,
+        );
+        let table_top = outer_top + hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+        let occupied_bottom = table_top
+            + measured.total_height
+            + hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
+        let placement = ParagraphFloatPlacement {
+            flow: ParagraphFloatFlow::Exclusion,
+            anchor_y: 0.0,
+            stored_host_origin: None,
+            stored_successor_line_origin: None,
+            table_left: Some(outer_left + ml),
+            table_top,
+            occupied_bottom,
+        };
+        let exclusion = FrameExclusion {
+            horizontal: px_to_hwpunit(outer_left, dpi)
+                ..px_to_hwpunit(outer_left + object_width, dpi),
+            vertical: px_to_hwpunit(outer_top, dpi)..px_to_hwpunit(occupied_bottom, dpi),
+            policy: match c.text_flow {
+                TextFlow::BothSides => FrameExclusionPolicy::BothSides,
+                TextFlow::LargestOnly => FrameExclusionPolicy::LargestSide,
+                TextFlow::LeftOnly => FrameExclusionPolicy::LeftSide,
+                TextFlow::RightOnly => FrameExclusionPolicy::RightSide,
+            },
+        };
+        let mut text_exclusion = exclusion.clone();
+        let spacing_hu = px_to_hwpunit(spacing_before, dpi);
+        text_exclusion.vertical.start -= spacing_hu;
+        text_exclusion.vertical.end -= spacing_hu;
+        (
+            placement,
+            exclusion,
+            box_.frame_with(0, vec![text_exclusion]),
+        )
     };
-    let box_ = super::composer::ParagraphBox::body_for_style(column_width, Some(style), dpi);
-    let mut text_exclusion = exclusion.clone();
-    let spacing_hu = px_to_hwpunit(spacing_before, dpi);
-    text_exclusion.vertical.start -= spacing_hu;
-    text_exclusion.vertical.end -= spacing_hu;
-    let mut frame = box_.frame_with(0, vec![text_exclusion]);
-    let rows = super::composer::layout_paragraph_in_frame(&text, &mut frame, styles, dpi)?;
+    let (mut placement, mut exclusion, mut frame) = geometry(
+        stored_rows
+            .as_ref()
+            .map_or(0, |source| source.anchor_offset_hwp),
+    );
+    let projected = stored_rows
+        .as_ref()
+        .and_then(|source| stored_square_rows::project(para, source, &mut frame));
+    let uses_stored_rows = projected.is_some();
+    let rows = if let Some(rows) = projected {
+        rows
+    } else {
+        (placement, exclusion, frame) = geometry(0);
+        super::composer::layout_paragraph_in_frame(&text, &mut frame, styles, dpi)?
+    };
+    if !uses_stored_rows
+        && !uncached
+        && rows.len() == para.line_segs.len()
+        && rows.iter().zip(&para.line_segs).all(|(row, source)| {
+            row.column_start == source.column_start && row.segment_width == source.segment_width
+        })
+    {
+        // 같은 물리 구간의 저장 줄은 기존 소유자에게 남긴다.
+        return None;
+    }
     // Following paragraphs can use the free side of the same object. The
     // object remains an exclusion and fit budget; it is not a text advance.
     let end = spacing_before + hwpunit_to_px(frame.top, dpi) + style.spacing_after;
     Some(InlineFlowPlan {
+        stored_empty_host: false,
+        stored_float_host: false,
         text_rows: Some(rows),
         square_host_control: Some(control),
         text_spacing_before: Some(spacing_before),
@@ -811,76 +963,4 @@ pub(crate) fn plan_square_table_host(
         next_row_top: end,
         fallback_font_size: 12.0,
     })
-}
-
-/// Reflowed TAC rows also own the text preceding, separating and following
-/// their objects. Stored rows and controls with other owners retain that path.
-pub(crate) fn supports_table_text_rows(para: &Paragraph) -> bool {
-    // Keep a standalone multi-row RowBreak table with its fragment/host owner,
-    // including inputs without a LineSeg. A one-row table has no inter-row
-    // cut: reuse its existing owner only when composition already supplies
-    // the current object row, otherwise build the physical row here.
-    let flow_objects = para
-        .controls
-        .iter()
-        .filter(|control| matches!(control, Control::Table(_)))
-        .count();
-    let has_text = super::composer::expand_pua_display_text(&para.text)
-        .chars()
-        .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace());
-    let has_standalone_fragment_owner = flow_objects == 1
-        && !has_text
-        && para.controls.iter().any(|control| {
-            matches!(control, Control::Table(table)
-                if table.common.treat_as_char
-                && table.row_count > 1
-                && table.page_break == crate::model::table::TablePageBreak::RowBreak)
-        });
-    let has_composed_object_row = flow_objects == 1
-        && !has_text
-        && para.line_segs.len() == 1
-        && para.line_segs[0].tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-            != 0
-        && para.controls.iter().enumerate().any(|(control, _)| {
-            super::composer::owned_rowbreak_tac_height(para, control).is_some()
-        });
-    super::para_has_no_stored_line_segs(para)
-        && !has_standalone_fragment_owner
-        && !has_composed_object_row
-        && !para.text.contains('\t')
-        && para
-            .controls
-            .iter()
-            .any(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
-        && para.controls.iter().all(|c| match c {
-            Control::Table(t) => {
-                // Captions and cell notes have their own placement/reservation owner.
-                t.caption.is_none()
-                    && !t.cells.iter().any(|cell| {
-                        cell.paragraphs.iter().any(|p| {
-                            p.controls
-                                .iter()
-                                .any(|c| matches!(c, Control::Footnote(_) | Control::Table(_)))
-                        })
-                    })
-                    && (t.common.treat_as_char
-                        || (matches!(
-                            t.common.text_wrap,
-                            crate::model::shape::TextWrap::InFrontOfText
-                                | crate::model::shape::TextWrap::BehindText
-                        ) && matches!(
-                            t.common.vert_rel_to,
-                            crate::model::shape::VertRelTo::Para
-                        ) && matches!(
-                            t.common.vert_align,
-                            crate::model::shape::VertAlign::Top
-                                | crate::model::shape::VertAlign::Inside
-                        ) && matches!(
-                            t.common.horz_rel_to,
-                            crate::model::shape::HorzRelTo::Column
-                                | crate::model::shape::HorzRelTo::Para
-                        )))
-            }
-            c => super::composer::control_is_width_neutral_marker(c),
-        })
 }

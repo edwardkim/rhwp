@@ -120,6 +120,10 @@ fn issue_6389_environment_rejects_invalid_declarations_and_active_batches() {
         json!({"id":"x", "substitutions":{"KoPub돋움체 Light":"바탕,serif"}}),
         json!({"id":"x", "substitutions":{" KoPub돋움체 Light":"바탕"}}),
         json!({"id":"x", "substitutions":{}, "typo":true}),
+        json!({"id":"x", "substitutions":{}, "glyphFallbacks":{"휴먼명조":[]}}),
+        json!({"id":"x", "substitutions":{}, "glyphFallbacks":{"휴먼명조":["HCR Batang,serif"]}}),
+        json!({"id":"x", "substitutions":{}, "glyphFallbacks":{"휴먼명조":["휴먼명조"]}}),
+        json!({"id":"x", "substitutions":{}, "glyphFallbacks":{"휴먼명조":["HCR Batang", "HCR Batang"]}}),
     ] {
         assert!(FontEnvironment::from_json(&invalid.to_string()).is_err());
     }

@@ -98,6 +98,24 @@ def release_binary_matrix() -> dict[str, dict[str, str]]:
 
 
 class ReleaseChannelPolicyWorkflowTests(unittest.TestCase):
+    def test_packaged_cli_has_png_backend_on_every_release_target(self):
+        workflow = RELEASE_BINARY_WORKFLOW.read_text(encoding="utf-8")
+        build = workflow.split("      - name: Build release binary\n", 1)[1].split(
+            "\n      - name:", 1
+        )[0]
+        self.assertIn("--locked", build)
+        self.assertIn("--features native-skia", build)
+        self.assertIn("--target ${{ matrix.target }}", build)
+        self.assertNotIn("if:", build)
+        smoke = workflow.split("      - name: Verify packaged PNG export\n", 1)[1].split(
+            "\n      - name:", 1
+        )[0]
+        self.assertNotIn("if:", smoke, "PNG export must be verified on all five targets")
+        self.assertIn("scripts/verify_release_binary.py", smoke)
+        self.assertIn('--archive "${ARCHIVE_NAME}"', smoke)
+        self.assertIn("--sample samples/issue2527_empty_linesegs.hwpx", smoke)
+        self.assertLess(workflow.index("Verify packaged PNG export"), workflow.index("Upload artifact"))
+
     def test_release_binary_matrix_includes_linux_aarch64(self):
         entries = release_binary_matrix()
         expected_targets = {

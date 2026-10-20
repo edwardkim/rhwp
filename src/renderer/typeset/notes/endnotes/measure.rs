@@ -4,10 +4,19 @@ use crate::renderer::typeset::notes::endnotes::profile::{
     en_ssot_debug, en_ssot_level, EnSsotLevel,
 };
 use crate::renderer::typeset::{
-    compose_paragraph, first_text_line, hwpunit_to_px, page_item_para_index,
-    para_has_treat_as_char_picture_or_shape, paragraph_by_global_index, ComposedParagraph,
-    HeightCursor, PageItem, Paragraph, ResolvedStyleSet, TypesetEngine, TypesetState,
+    compose_paragraph, endnote_first_local_paras, first_text_line, hwpunit_to_px,
+    page_item_para_index, para_has_treat_as_char_picture_or_shape, paragraph_by_global_index,
+    ComposedParagraph, HeightCursor, MeasuredTable, PageItem, Paragraph, ResolvedStyleSet,
+    TypesetEngine, TypesetState,
 };
+
+/// 같은 단 배치에서 생산한 흐름 예약 끝과 실제 줄·내용의 점유 끝이다.
+pub(super) struct EndnoteColumnGeometry {
+    pub(super) flow_bottom: f64,
+    pub(super) occupied_bottom: Option<f64>,
+}
+
+include!("stored_ink_fit.inc.rs");
 
 impl TypesetEngine {
     /// 문단의 렌더링 높이를 계산한다 (format).
@@ -31,9 +40,137 @@ impl TypesetEngine {
         extra_para_full: Option<usize>,
         sequential_compact_rewind: bool,
     ) -> Option<f64> {
+        self.simulate_endnote_column_with_tail(
+            st,
+            paragraphs,
+            styles,
+            available,
+            en_col_w,
+            extra_para_full,
+            sequential_compact_rewind,
+            None,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub(in crate::renderer::typeset) fn simulate_endnote_column_with_tail(
+        &self,
+        st: &TypesetState,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        available: f64,
+        en_col_w: f64,
+        extra_para_full: Option<usize>,
+        sequential_compact_rewind: bool,
+        future: Option<(&[Paragraph], i32, bool)>,
+    ) -> Option<f64> {
+        self.simulate_endnote_column_with_item(
+            st,
+            paragraphs,
+            styles,
+            available,
+            en_col_w,
+            extra_para_full.map(|para_index| PageItem::FullParagraph { para_index }),
+            sequential_compact_rewind,
+            future,
+            &[],
+            false,
+        )
+    }
+
+    /// 분할 후보도 실제 방출할 PartialParagraph로 측정한다.
+    /// 이미 배치한 그림 프레임은 현재 단의 paint 문맥 그대로 소비한다.
+    #[allow(clippy::too_many_arguments)]
+    pub(in crate::renderer::typeset) fn simulate_endnote_column_with_item(
+        &self,
+        st: &TypesetState,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        available: f64,
+        en_col_w: f64,
+        extra_item: Option<PageItem>,
+        sequential_compact_rewind: bool,
+        future: Option<(&[Paragraph], i32, bool)>,
+        measured_tables: &[MeasuredTable],
+        occupied_only: bool,
+    ) -> Option<f64> {
+        let use_occupied = occupied_only
+            || future.is_some()
+            || matches!(extra_item, Some(PageItem::PartialParagraph { .. }));
+        let geometry = self.measure_endnote_column_with_item(
+            st,
+            paragraphs,
+            styles,
+            available,
+            en_col_w,
+            extra_item,
+            sequential_compact_rewind,
+            future,
+            measured_tables,
+        )?;
+        if use_occupied {
+            geometry.occupied_bottom
+        } else {
+            Some(geometry.flow_bottom)
+        }
+    }
+
+    /// fit 후보가 줄 뒤 물리 간격도 예약해야 할 때 같은 생산 결과를 소비한다.
+    #[allow(clippy::too_many_arguments)]
+    pub(super) fn measure_endnote_column_with_item(
+        &self,
+        st: &TypesetState,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        available: f64,
+        en_col_w: f64,
+        extra_item: Option<PageItem>,
+        sequential_compact_rewind: bool,
+        future: Option<(&[Paragraph], i32, bool)>,
+        measured_tables: &[MeasuredTable],
+    ) -> Option<EndnoteColumnGeometry> {
+        self.measure_endnote_column_with_items(
+            st,
+            paragraphs,
+            styles,
+            available,
+            en_col_w,
+            extra_item.as_slice(),
+            sequential_compact_rewind,
+            future,
+            measured_tables,
+        )
+    }
+
+    /// fit 후보의 문단·표·그림을 최종 방출과 같은 순서로 측정한다.
+    #[allow(clippy::too_many_arguments)]
+    pub(super) fn measure_endnote_column_with_items(
+        &self,
+        st: &TypesetState,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        available: f64,
+        en_col_w: f64,
+        extra_items: &[PageItem],
+        sequential_compact_rewind: bool,
+        future: Option<(&[Paragraph], i32, bool)>,
+        measured_tables: &[MeasuredTable],
+    ) -> Option<EndnoteColumnGeometry> {
         if st.current_items.is_empty() {
             return None;
         }
+        // 앞 미주에서 방출한 표 조각도 최종 paint와 같은 행 측정을 받는다.
+        // caller가 본문 측정만 전달하는 준비 조회에서는 소유 원장을 보충한다.
+        let mut measured_tables = std::borrow::Cow::Borrowed(measured_tables);
+        for table in &st.endnote_measured_tables {
+            if !measured_tables.iter().any(|measured| {
+                measured.para_index == table.para_index
+                    && measured.control_index == table.control_index
+            }) {
+                measured_tables.to_mut().push(table.clone());
+            }
+        }
+        let measured_tables = measured_tables.as_ref();
         let ssot_level = en_ssot_level();
         let ssot_debug = en_ssot_debug();
         let mut local_paras: Vec<Paragraph> = Vec::new();
@@ -42,7 +179,7 @@ impl TypesetEngine {
             .current_items
             .iter()
             .filter_map(page_item_para_index)
-            .chain(extra_para_full)
+            .chain(extra_items.iter().filter_map(page_item_para_index))
         {
             if local_indices.iter().any(|(global, _)| *global == pi) {
                 continue;
@@ -66,120 +203,157 @@ impl TypesetEngine {
         // 저장 span/75% 되감김으로 순차 렌더(+69.7px)를 과소 계상해 알짜 풀이가
         // 용지 밖에 남았다. acc·A2 스냅은 그대로 휴리스틱.
         if ssot_level >= EnSsotLevel::A3 || sequential_compact_rewind {
-            // 로컬 인덱스를 **+1 오프셋**하고 인덱스 0 에 더미 para 를 둔다. 렌더의
-            // `layout_composed_paragraph` 는 `para_index == 0` + column-top + 첫 줄 vpos>0 이면
-            // 절대 vpos 를 가산하는 fallback(섹션 첫 문단 제목용)이 있는데, 실제 미주 para 는
-            // 큰 글로벌 인덱스라 결코 0 이 아니다. 0-기반 재색인이 이 fallback 을 잘못 발동시켜
-            // 단독 측정이 폭발(35px→13721px)하므로 0 을 비워 둔다(더미는 어떤 item 도 미참조).
-            let a3_paras: Vec<Paragraph> = std::iter::once(Paragraph::default())
-                .chain(local_paras.iter().cloned())
-                .collect();
-            let a3_composed: Vec<crate::renderer::composer::ComposedParagraph> = a3_paras
-                .iter()
-                .map(crate::renderer::composer::compose_paragraph)
-                .collect();
-            let remap = |item: &PageItem| -> Option<PageItem> {
-                match item {
-                    PageItem::FullParagraph { para_index } => lookup_local(*para_index)
-                        .map(|l| PageItem::FullParagraph { para_index: l + 1 }),
-                    PageItem::PartialParagraph {
-                        para_index,
-                        start_line,
-                        end_line,
-                    } => lookup_local(*para_index).map(|l| PageItem::PartialParagraph {
-                        para_index: l + 1,
-                        start_line: *start_line,
-                        end_line: *end_line,
-                    }),
-                    PageItem::Table {
-                        para_index,
-                        control_index,
-                    } => lookup_local(*para_index).map(|l| PageItem::Table {
-                        para_index: l + 1,
-                        control_index: *control_index,
-                    }),
-                    PageItem::PartialTable {
-                        para_index,
-                        control_index,
-                        start_row,
-                        end_row,
-                        is_continuation,
-                        start_cut,
-                        end_cut,
-                        is_block_split,
-                        start_cut_is_block,
-                        row_cursor_is_nested,
-                        end_row_height_override,
-                        start_row_height_override,
-                    } => lookup_local(*para_index).map(|l| PageItem::PartialTable {
-                        para_index: l + 1,
-                        control_index: *control_index,
-                        start_row: *start_row,
-                        end_row: *end_row,
-                        is_continuation: *is_continuation,
-                        start_cut: start_cut.clone(),
-                        end_cut: end_cut.clone(),
-                        is_block_split: *is_block_split,
-                        start_cut_is_block: *start_cut_is_block,
-                        row_cursor_is_nested: *row_cursor_is_nested,
-                        end_row_height_override: *end_row_height_override,
-                        start_row_height_override: *start_row_height_override,
-                    }),
-                    PageItem::Shape {
-                        para_index,
-                        control_index,
-                    } => lookup_local(*para_index).map(|l| PageItem::Shape {
-                        para_index: l + 1,
-                        control_index: *control_index,
-                    }),
-                    // 구분선은 측정에서 제외(현 per-para 시뮬과 동일 — start_height 가 단 콘텐츠
-                    // 시작을 이미 반영).
-                    PageItem::EndnoteSeparator { .. } => None,
-                }
-            };
-            let extra_local = extra_para_full
-                .and_then(|pi| lookup_local(pi))
-                .map(|l| PageItem::FullParagraph { para_index: l + 1 });
-            let local_items: Vec<PageItem> = st
-                .current_items
-                .iter()
-                .filter_map(&remap)
-                .chain(extra_local)
-                .collect();
+            // 실제 paint와 같은 전역 문단 식별자를 보존한다. 로컬 재색인하면
+            // 본문/미주 구분, 원본 소유자와 다음 문단의 trailing 간격이 달라진다.
+            let future_count = future.map_or(0, |(tail, _, _)| tail.len());
+            let future_base = paragraphs.len() + st.endnote_paragraphs.len();
+            let mut paint_paras = vec![Paragraph::default(); future_base + future_count];
+            for (global, local) in &local_indices {
+                paint_paras[*global] = local_paras[*local].clone();
+            }
+            // 구분선도 실제 흐름 항목이다. 제거하면 본문 후행 간격 회수와
+            // 첫 미주 원점이 최종 배치와 달라진다.
+            let mut local_items = st.current_items.clone();
+            local_items.extend_from_slice(extra_items);
             if local_items.is_empty() {
                 return None;
             }
-            // build_single_column 은 양수 start_height 를 무시(음수 shift 만 적용)하므로,
-            // 단이 본문 아래에서 시작(start>0)하면 col_area.y 에 그 오프셋을 실어 동일 프레임에서
-            // 렌더한다. 음수(vpos 되감김)는 col_area.y=0 + start_height 음수 shift 로 처리.
-            let col_y = st.current_start_height.max(0.0);
-            let col_area = crate::renderer::page_layout::LayoutRect {
-                x: 0.0,
-                y: col_y,
-                width: en_col_w,
-                height: (available - col_y).max(0.0),
+            let mut sources = st.endnote_para_sources.clone();
+            if let Some((tail, endnote_start, compact_spacing)) = future {
+                // 표/float/글상자는 이 scratch의 실제 측정 문맥이 부족하므로
+                // 원래 저장 단 경계를 유지한다. TAC 그림의 명시 크기는 동일 경로로 측정한다.
+                let supported = |paragraph: &Paragraph| {
+                    paragraph.controls.iter().all(|control| match control {
+                        crate::model::control::Control::Table(_)
+                        | crate::model::control::Control::Shape(_) => false,
+                        crate::model::control::Control::Picture(picture) => {
+                            picture.common.treat_as_char
+                                && picture.common.width > 0
+                                && picture.common.height > 0
+                        }
+                        _ => true,
+                    })
+                };
+                if local_paras.iter().any(|p| !supported(p))
+                    || tail.iter().any(|p| {
+                        !supported(p)
+                            || p.column_type != crate::model::paragraph::ColumnBreakType::None
+                    })
+                {
+                    return None;
+                }
+                let owner = sources.last()?.clone();
+                for (offset, paragraph) in tail.iter().enumerate() {
+                    let para_index = future_base + offset;
+                    paint_paras[para_index] = super::row_projection::render_paragraph(
+                        paragraph,
+                        endnote_start,
+                        compact_spacing,
+                    );
+                    let mut source = owner.clone();
+                    source.note_para_index += offset + 1;
+                    sources.push(source);
+                    local_items.push(PageItem::FullParagraph { para_index });
+                    for (control_index, control) in paragraph.controls.iter().enumerate() {
+                        if matches!(control, crate::model::control::Control::Picture(_)) {
+                            local_items.push(PageItem::Shape {
+                                para_index,
+                                control_index,
+                            });
+                        }
+                    }
+                }
+            }
+            let paint_composed: Vec<_> = paint_paras
+                .iter()
+                .map(|p| crate::renderer::composer::compose_paragraph_in_context(p, styles))
+                .collect();
+            // 아직 emit하지 않은 다음 내부 문단도 원본에서 확인한다. 같은 미주의
+            // 연속 여부는 현재 항목 목록의 끝과 무관하므로 paint의 소유자 계약을
+            // 유지해야 한다. 가상 본문이나 저장 LineSeg를 새로 만들지 않는다.
+            if let Some(last) = sources.last().cloned() {
+                let parent = paragraphs
+                    .get(last.para_index)
+                    .and_then(|p| p.controls.get(last.control_index));
+                if let Some(crate::model::control::Control::Endnote(note)) = parent {
+                    if last.note_para_index + 1 < note.paragraphs.len() {
+                        let mut next = last;
+                        next.note_para_index += 1;
+                        sources.push(next);
+                    }
+                }
+            }
+            // flush 뒤 실제 paint에 전달되는 단 문맥을 그대로 재생한다.
+            // 빈 inline 계획이나 가상 용지 원점은 이미 배치한 표의 높이와
+            // 이어지는 미주 원점을 다시 계산하게 하므로 사용할 수 없다.
+            let column = crate::renderer::pagination::ColumnContent {
+                column_index: st.current_column,
+                start_height: st.current_start_height,
+                endnote_flow: st.current_endnote_flow,
+                items: local_items,
+                zone_layout: st.current_zone_layout.clone(),
+                zone_y_offset: st.current_zone_y_offset,
+                wrap_around_paras: st.current_column_wrap_around_paras.clone(),
+                used_height: st.current_height,
+                wrap_anchors: st.current_column_wrap_anchors.clone(),
+                overlay_continuations: st.current_column_overlay_continuations.clone(),
+                overlay_cuts: st.current_column_overlay_cuts.clone(),
+                inline_placements: st.inline_placements.clone(),
+                inline_flow_plans: st.inline_flow_plans.clone(),
+                stored_paragraph_flow_ends: st.stored_paragraph_flow_ends.clone(),
+                stored_column_top_spacings: st.stored_column_top_spacings.clone(),
+                float_pushed_line_spacings: st.float_pushed_line_spacings.clone(),
+                paragraph_float_placements: st.paragraph_float_placements.clone(),
             };
+            let mut col_area = st.inline_flow_column();
+            col_area.width = en_col_w;
+            col_area.height = available;
+            let mut page = st
+                .pages
+                .last()
+                .cloned()
+                .unwrap_or_else(|| st.new_page_content(Vec::new()));
+            // flush_column과 같이 현재 단의 후보 항목을 페이지에도 게시한다.
+            // 빈 float host의 줄 예약은 페이지가 소유한 Shape 항목을 확인한다.
+            // 단만 전달하면 실제 개체가 있는데도 일반 빈 문단으로 측정한다.
+            page.column_contents.push(column.clone());
             let scratch = crate::renderer::layout::LayoutEngine::new(self.dpi);
-            let bottom = scratch.measure_endnote_column_bottom(
-                local_items,
-                &a3_paras,
-                &a3_composed,
+            scratch.set_layout_profile(st.profile);
+            scratch.set_render_normalization_overlay(std::sync::Arc::clone(
+                &self.render_normalization,
+            ));
+            scratch.set_endnote_para_sources(paragraphs.len(), &sources);
+            scratch.set_endnote_shape_margins_hu(
+                st.endnote_separator_above_hu,
+                st.endnote_between_notes_hu,
+                st.endnote_separator_below_hu,
+            );
+            let (flow_bottom, occupied_bottom) = scratch.measure_endnote_column_bottom(
+                &column,
+                &page,
+                &paint_paras,
+                &paint_composed,
                 styles,
                 &col_area,
-                st.current_start_height,
-                st.section_index,
                 st.endnote_between_notes_hu,
+                measured_tables,
             );
+            // 실제 배치는 용지 좌표, typeset 예산은 현재 단 원점 기준이다.
+            let flow_bottom = flow_bottom - col_area.y;
+            let occupied_bottom = occupied_bottom.map(|bottom| bottom - col_area.y);
             if ssot_debug {
                 eprintln!(
                     "EN_COLSIM start_h={:.1} avail={:.1} items={} bottom={:.1}",
                     st.current_start_height,
                     available,
                     local_indices.len(),
-                    bottom,
+                    flow_bottom,
                 );
             }
-            return Some(bottom);
+            return Some(EndnoteColumnGeometry {
+                flow_bottom,
+                occupied_bottom,
+            });
         }
         let page_base = st
             .current_items
@@ -202,11 +376,14 @@ impl TypesetEngine {
             st.current_endnote_flow,
         );
         hc.endnote_between_notes_hu = st.endnote_between_notes_hu;
+        hc.endnote_note_first_paras =
+            endnote_first_local_paras(paragraphs.len(), &st.endnote_para_sources, &local_indices);
+        hc.stored_equation_reflow = !st.profile.session_edited()
+            && (st.profile.hwp5_container() || st.profile.hwpx_stored_layout());
         let mut y = st.current_start_height;
-        let extra_item = extra_para_full.map(|pi| PageItem::FullParagraph { para_index: pi });
         // [#5886] 한 번 compact 되감김이 나오면 렌더처럼 나머지도 순차 적층한다.
         let mut stack_sequential = false;
-        for item in st.current_items.iter().chain(extra_item.as_ref()) {
+        for item in st.current_items.iter().chain(extra_items.iter()) {
             let Some(pi) = page_item_para_index(item) else {
                 continue;
             };
@@ -362,10 +539,18 @@ impl TypesetEngine {
                 hc.vpos_lazy_base = None;
             } else {
                 hc.prev_layout_para = Some(local);
+                hc.prev_reissued_equation_rows =
+                    crate::renderer::composer::stored_row_projection::reissued_equation_rows(
+                        item_para,
+                        &item_composed,
+                    );
             }
             hc.prev_item_was_partial_table = matches!(item, PageItem::PartialTable { .. });
         }
-        Some(y)
+        Some(EndnoteColumnGeometry {
+            flow_bottom: y,
+            occupied_bottom: Some(y),
+        })
     }
 
     /// [Task #2079] 미주 fit 판정용 렌더-시뮬 예측 — 현재 단 items 를 저장 vpos 로
@@ -424,6 +609,13 @@ impl TypesetEngine {
                 st.current_endnote_flow,
             );
             hc.endnote_between_notes_hu = st.endnote_between_notes_hu;
+            hc.endnote_note_first_paras = endnote_first_local_paras(
+                paragraphs.len(),
+                &st.endnote_para_sources,
+                &local_indices,
+            );
+            hc.stored_equation_reflow = !st.profile.session_edited()
+                && (st.profile.hwp5_container() || st.profile.hwpx_stored_layout());
             let mut y = st.current_start_height;
             for item in &st.current_items {
                 let Some(pi) = page_item_para_index(item) else {
@@ -476,6 +668,11 @@ impl TypesetEngine {
                     hc.vpos_lazy_base = None;
                 } else {
                     hc.prev_layout_para = Some(local);
+                    hc.prev_reissued_equation_rows =
+                        crate::renderer::composer::stored_row_projection::reissued_equation_rows(
+                            item_para,
+                            &item_composed,
+                        );
                 }
                 hc.prev_item_was_partial_table = matches!(item, PageItem::PartialTable { .. });
             }
@@ -549,6 +746,7 @@ impl TypesetEngine {
         // `PageLayoutContext` 만 만든다. `col_node` 는 방출된 노드를 받는 sink 로만 쓰이고
         // 높이만 읽은 뒤 버려진다.
         let scratch = LayoutEngine::new(self.dpi);
+        self.prime_section_cell_context(&scratch);
         let mut frame = PageLayoutContext::new(0, en_col_w, height);
         let col_id = frame.next_id();
         let mut col_node = RenderNode::new(

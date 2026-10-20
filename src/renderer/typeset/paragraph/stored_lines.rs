@@ -1,12 +1,308 @@
-//! 저장 줄 사다리의 문단 간격 복원 가능성 판정.
+//! 저장 줄 사다리의 간격·프레임 소유 유효성 판정.
 //!
-//! 문단과 해석된 스타일을 읽어 기존 판정만 반환한다. 실제 spacing 트림과
-//! dirty 전환·페이지 전진은 호출자가 수행한다. 기존 경험적 조건의 타당성을
-//! 이번 구조 이동으로 새로 승인하는 것은 아니다.
+//! 문단·스타일과 실제 수용한 앞뒤 프레임을 읽어 판정을 반환한다.
+//! 실제 spacing 트림과 dirty 전환·페이지 전진은 호출자가 수행한다.
 
 use crate::model::paragraph::Paragraph;
+
+/// 현재 실제 페이지가 저장 프레임의 중간부터 시작하는지 실제 앞뒤 소유로 확인한다.
+/// 저장 prefix가 이전 실제 페이지에서 소비됐으면 다음 자동 reset도 재배분 대상이다.
+pub(in crate::renderer::typeset) fn stored_frame_prefix_consumed_before_page(
+    st: &super::super::TypesetState,
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+) -> bool {
+    use crate::renderer::pagination::PageItem;
+    if st.col_count != 1
+        || st.profile.session_edited()
+        || st.profile.hwp3_layout()
+        || !(st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+        || paragraphs.get(para_idx).is_none_or(|para| {
+            para.column_type != crate::model::paragraph::ColumnBreakType::None
+                || para
+                    .line_segs
+                    .first()
+                    .is_some_and(|line| line.is_first_line_of_page())
+        })
+    {
+        return false;
+    }
+    // 완전한 TAC 줄이 새 단의 원점에서 수용되고 뒤 저장 줄까지 같은
+    // 전진 끝으로 이어지면 새 저장 프레임이 이미 확립됐다. 옛 host의
+    // 양수 vpos만 보고 그 뒤 모든 쪽 경계를 무효화하지 않는다.
+    // 배치와 post_flow가 확인한 동일한 placement·줄 전진 결과를 읽는다.
+    if st.current_start_height == 0.0
+        && !st.current_endnote_flow
+        && crate::renderer::float_placement::restarted_tac::accepted_column_origin(
+            &st.current_items,
+            &st.inline_placements,
+            paragraphs,
+            styles,
+            st.layout.dpi,
+        )
+        .is_some_and(|(_, origin)| st.vpos_page_base == Some(origin))
+    {
+        return false;
+    }
+    let Some(previous_page) = st
+        .pages
+        .iter()
+        .rev()
+        .nth(1)
+        .filter(|page| page.section_index == st.section_index)
+    else {
+        return false;
+    };
+    let Some(previous) = previous_page
+        .column_contents
+        .last()
+        .and_then(|col| col.items.last())
+    else {
+        return false;
+    };
+    let Some(first) = st.current_items.first() else {
+        return false;
+    };
+    let complete_tac_source = |para: &Paragraph| {
+        matches!(para.controls.as_slice(), [crate::model::control::Control::Table(table)]
+            if table.common.treat_as_char)
+    };
+    let (owner, start) = match first {
+        PageItem::FullParagraph { para_index } => (*para_index, 0),
+        PageItem::PartialParagraph {
+            para_index,
+            start_line,
+            ..
+        } => (*para_index, *start_line),
+        PageItem::Table {
+            para_index,
+            control_index: 0,
+        } if paragraphs.get(*para_index).is_some_and(complete_tac_source) => (*para_index, 0),
+        _ => return false,
+    };
+    let Some(para) = paragraphs.get(owner) else {
+        return false;
+    };
+    let valid_source = |para: &Paragraph| {
+        !para.stored_text_partition_is_dirty()
+            && !para.cell_format_vpos_dirty
+            && (para.controls.is_empty() || complete_tac_source(para))
+            && para.column_type == crate::model::paragraph::ColumnBreakType::None
+            && !para.line_segs.is_empty()
+            && para
+                .line_segs
+                .iter()
+                .all(|line| !super::is_synthetic_line_seg(line))
+            && para
+                .source_line_seg_vertical_pos
+                .as_ref()
+                .is_none_or(|source| source.len() == para.line_segs.len())
+    };
+    let position = |para: &Paragraph, index: usize| {
+        para.source_line_seg_vertical_pos
+            .as_ref()
+            .map_or(para.line_segs[index].vertical_pos, |source| source[index])
+    };
+    if !valid_source(para)
+        || start >= para.line_segs.len()
+        || position(para, start) <= 0
+        || para.line_segs[start].is_first_line_of_page()
+    {
+        return false;
+    }
+    if start > 0 {
+        // 현재 조각 바로 앞 줄을 이전 실제 페이지가 소유했고, 저장 축은 이어진다.
+        return matches!(previous,
+            PageItem::PartialParagraph { para_index, end_line, .. }
+            if *para_index == owner && *end_line == start)
+            && position(para, start) > position(para, start - 1)
+            && (0..start).any(|line| position(para, line) == 0);
+    }
+    let Some(before_index) = owner.checked_sub(1) else {
+        return false;
+    };
+    let Some(before) = paragraphs
+        .get(before_index)
+        .filter(|para| valid_source(para))
+    else {
+        return false;
+    };
+    let complete = match previous {
+        PageItem::FullParagraph { para_index } => *para_index == before_index,
+        PageItem::PartialParagraph {
+            para_index,
+            end_line,
+            ..
+        } => *para_index == before_index && *end_line == before.line_segs.len(),
+        PageItem::Table {
+            para_index,
+            control_index: 0,
+        } => *para_index == before_index && complete_tac_source(before),
+        _ => false,
+    };
+    let last = before.line_segs.len() - 1;
+    // 실제 쪽이 같은 저장 프레임의 중간에서 시작하면 다음 자동 reset은
+    // 이미 소비한 prefix를 다시 쪽 나눌 근거가 아니다.
+    // 완전한 TAC 표도 저장 줄 소유자이므로 텍스트 항목과 함께 확인한다.
+    let continued_source_frame = position(before, 0) > 0
+        && position(para, 0)
+            >= position(before, last).saturating_add(before.line_segs[last].line_height);
+    complete
+        && (continued_source_frame
+            || ((1..=last).any(|line| {
+                position(before, line) == 0
+                    && position(before, line - 1) > 0
+                    && !before.line_segs[line].is_first_line_of_page()
+            }) && position(para, 0)
+                == position(before, last)
+                    .saturating_add(before.line_segs[last].line_height)
+                    .saturating_add(before.line_segs[last].line_spacing)))
+}
+
+/// 위쪽에서 시작한 큰 개체 줄도 끝까지 소비했다면 다음 저장 프레임의 경계를 따른다.
+/// 저장 시작 위치의 수치 문턱으로 그 줄의 물리 점유를 대신하지 않는다.
+pub(super) fn saved_object_frame_reset_at_current_flow(
+    paragraphs: &[Paragraph],
+    index: usize,
+    current_items: &[crate::renderer::pagination::PageItem],
+    body_height: f64,
+    dpi: f64,
+) -> bool {
+    let Some(previous) = index.checked_sub(1).and_then(|i| paragraphs.get(i)) else {
+        return false;
+    };
+    let Some(current) = paragraphs.get(index) else {
+        return false;
+    };
+    // 실제 쪽이 앞 개체 전체를 소유해야 그 뒤의 저장 경계를 사용할 수 있다.
+    // 저장 줄 높이와 표 측정 높이는 바깥여백·줄 끝 간격의 계상 범위가 달라,
+    // 두 끝 좌표의 정확한 수치 일치를 소유 근거로 사용하지 않는다.
+    let previous_is_complete = current_items.last().is_some_and(|item| {
+        matches!(item,
+            crate::renderer::pagination::PageItem::Table { para_index, .. }
+            | crate::renderer::pagination::PageItem::FullParagraph { para_index }
+            if Some(*para_index) == index.checked_sub(1))
+    });
+    if !previous_is_complete {
+        return false;
+    }
+    if !crate::renderer::stored_frame_boundary::owns_saved_object_line(previous)
+        || current.stored_text_partition_is_dirty()
+        || current.cell_format_vpos_dirty
+        || !current
+            .controls
+            .iter()
+            .all(crate::renderer::control_is_body_flow_neutral_marker)
+    {
+        return false;
+    }
+    let Some(first) = current.line_segs.first().filter(|line| {
+        line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+    }) else {
+        return false;
+    };
+    // 사다리 재구성 전의 source 축은 직렬화와 쪽 소속의 독립 근거다.
+    // 편집된 줄은 위에서 제외하며 snapshot과 현재 줄의 대응도 확인한다.
+    let source_position = |para: &Paragraph, line: usize| match &para.source_line_seg_vertical_pos {
+        Some(source) if source.len() == para.line_segs.len() => source.get(line).copied(),
+        Some(_) => None,
+        None => para.line_segs.get(line).map(|line| line.vertical_pos),
+    };
+    let Some(previous_top) = source_position(previous, 0) else {
+        return false;
+    };
+    let Some(current_top) = source_position(current, 0) else {
+        return false;
+    };
+    let previous_line = &previous.line_segs[0];
+    let painted_end = previous_top.saturating_add(previous_line.line_height);
+    let previous_end = painted_end.saturating_add(previous_line.line_spacing);
+    let mut source_first = first.clone();
+    source_first.vertical_pos = current_top;
+    crate::renderer::stored_frame_boundary::saved_positive_frame_reset(
+        Some((previous_top, previous_end)),
+        &source_first,
+        crate::renderer::px_to_hwpunit(body_height, dpi),
+    )
+}
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::style_resolver::ResolvedStyleSet;
+
+/// 재조판으로 재기준한 좌표를 저장 쪽 경계의 증거로 다시 사용하지 않는다.
+/// 직렬화용으로 보존한 원본 좌표와 해당 저장 줄의 진행량을 같은 축에서 읽는다.
+pub(in crate::renderer::typeset) fn stored_tail_end_and_advance_hu(
+    para: &Paragraph,
+) -> Option<(i32, i32)> {
+    if para.stored_text_partition_is_dirty() {
+        return None;
+    }
+    let (index, line) = para
+        .line_segs
+        .iter()
+        .enumerate()
+        .rev()
+        .find(|(_, line)| !crate::renderer::typeset::is_synthetic_line_seg(line))?;
+    let source_vpos = para
+        .source_line_seg_vertical_pos
+        .as_ref()
+        .and_then(|positions| positions.get(index).copied())
+        .unwrap_or(line.vertical_pos);
+    let advance = line.line_height.saturating_add(line.line_spacing);
+    Some((source_vpos.saturating_add(advance), advance))
+}
+
+/// 재조판 뒤 저장 빈 줄만 이어지면 옛 자동 쪽 경계를 복원하지 않는다.
+/// 다만 실제 소비한 흐름 끝이 저장 경계와 일치하면 재조판 이력만으로
+/// 그 경계를 버리지 않는다. 같은 쪽 소유는 기존 저장 끝/실제 흐름 대조로 확인한다.
+/// 저장 본문/개체를 다시 소비한 경계는 그 저장 흐름의 소유다. 따라서 쪽에
+/// 재조판 항목이 한 번 있었다는 사실을 쪽 전체의 무효 상태로 사용하지 않는다.
+/// 명시적 쪽/단 나누기는 이 검사 이전의 entry 경로에서 처리한다.
+pub(in crate::renderer::typeset) fn stored_page_boundary_invalidated_by_reflow(
+    profile: crate::model::provenance::LayoutCompatibilityProfile,
+    col_count: u16,
+    current_items: &[crate::renderer::pagination::PageItem],
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    current_height_px: f64,
+    dpi: f64,
+) -> bool {
+    if col_count != 1 || !(profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
+    {
+        return false;
+    }
+    for item in current_items.iter().rev() {
+        use crate::renderer::pagination::PageItem;
+        let para_index = match item {
+            PageItem::FullParagraph { para_index }
+            | PageItem::PartialParagraph { para_index, .. } => *para_index,
+            // 개체 항목은 독립 배치 owner다. host의 합성 줄을 본문 재조판으로
+            // 오인하지 않고, 이 owner 뒤의 저장 경계는 기존 개체 경로가 맡는다.
+            _ => return false,
+        };
+        let Some(para) = paragraphs.get(para_index) else {
+            return false;
+        };
+        if crate::renderer::para_has_no_stored_line_segs(para) {
+            let boundary_matches_actual_flow = paragraphs.get(para_idx).is_some_and(|current| {
+                !current.stored_text_partition_is_dirty()
+                    && crate::renderer::typeset::stored_vpos_restarts_near_body_top(current)
+                    && crate::renderer::typeset::stored_rewind_boundary_matches_current_flow(
+                        paragraphs,
+                        para_idx,
+                        current_items,
+                        current_height_px,
+                        dpi,
+                    )
+            });
+            return !boundary_matches_actual_flow;
+        }
+        if !para.text.trim().is_empty() {
+            return false;
+        }
+    }
+    false
+}
 
 /// [#5801] 저장 사다리가 이 문단의 **문단 위 간격을 실제로 담고 있는가**.
 ///
@@ -149,9 +445,6 @@ pub(in crate::renderer::typeset) fn next_boundary_reverts_spacing_trim(
     para_idx: usize,
     dpi: f64,
 ) -> bool {
-    if !hwpx_stored_non_hwp3 {
-        return false;
-    }
     let next_idx = para_idx + 1;
     let Some(next) = paragraphs.get(next_idx) else {
         return false;
@@ -166,6 +459,20 @@ pub(in crate::renderer::typeset) fn next_boundary_reverts_spacing_trim(
             .map(|style| style.spacing_before)
             .unwrap_or(0.0)
     };
+    if paragraphs.get(para_idx).is_some_and(|previous| {
+        crate::renderer::height_cursor::paragraph_origin_rewinds(previous, next)
+            || crate::renderer::height_cursor::rebuilt_ladder_omits_spacing_before(
+                previous,
+                next,
+                spacing_before_px,
+                dpi,
+            )
+    }) {
+        return true;
+    }
+    if !hwpx_stored_non_hwp3 {
+        return false;
+    }
     spacing_before_px > 5.0
         && !stored_ladder_encodes_spacing_before(paragraphs, next_idx, spacing_before_px, dpi)
 }

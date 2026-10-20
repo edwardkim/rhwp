@@ -50,7 +50,9 @@ fn edited_cell_table_starts_after_outer_top_margin() {
 #[test]
 fn zero_outer_top_stays_at_body_start() {
     let mut core = sample();
-    let table = core.document_mut().sections[0]
+    // 조판이 확정한 표 배치도 바뀐 여백으로 다시 계산하도록 문서를 통째로 바꾼다.
+    let mut document = core.document().clone();
+    let table = document.sections[0]
         .paragraphs
         .iter_mut()
         .flat_map(|p| &mut p.controls)
@@ -60,6 +62,7 @@ fn zero_outer_top_stays_at_body_start() {
         })
         .expect("table");
     table.outer_margin_top = 0;
+    core.set_document(document);
     let tree = core.build_page_render_tree(0).expect("page render tree");
     let body_y = top_of(&tree.root, false).expect("body");
     let table_y = top_of(&tree.root, true).expect("table");

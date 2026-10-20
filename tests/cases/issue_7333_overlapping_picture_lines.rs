@@ -322,29 +322,59 @@ fn full_band_empty_tac_tables_use_their_saved_line_top() {
 fn fixed_line_spacing_after_in_front_decoration_table_is_not_reserved_twice() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"));
-    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
+    let document = rhwp::document_core::DocumentCore::from_bytes(&bytes)
         .unwrap_or_else(|error| panic!("parse {SAMPLE}: {error}"));
 
-    // 한컴 2020 PDF에서 측정한 표 뒤 첫 본문 줄: p13, p16~21.
-    for (page_index, para_index, expected_y) in [
-        (12, 209, 853.5),
-        (15, 253, 835.4),
-        (16, 265, 814.5),
-        (17, 277, 816.8),
-        (18, 288, 662.5),
-        (19, 301, 685.2),
-        (20, 315, 729.0),
+    // 독립 Print의 측정값은 모두 본문 단 원점 + 원본 저장 줄 vpos에 일치한다.
+    // 고정 px 대신 같은 일곱 후속 본문의 소유자와 저장 위치를 검사한다.
+    use rhwp::renderer::render_tree::RenderNodeType;
+    for (page_index, para_index) in [
+        (12, 209),
+        (15, 253),
+        (16, 265),
+        (17, 277),
+        (18, 288),
+        (19, 301),
+        (20, 315),
     ] {
-        let json = document
-            .get_page_render_tree(page_index)
+        let tree = document
+            .build_page_render_tree(page_index)
             .unwrap_or_else(|error| panic!("{}쪽 render tree: {error:?}", page_index + 1));
-        let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
-        let y = find_text_line_y(&tree, para_index)
+        let body = tree
+            .root
+            .children
+            .iter()
+            .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+            .expect("본문 영역");
+        let column = body
+            .children
+            .iter()
+            .find(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+            .expect("본문 단");
+        let line = column
+            .children
+            .iter()
+            .filter(|node| matches!(&node.node_type, RenderNodeType::TextLine(owner) if owner.para_index == Some(para_index)))
+            .min_by(|a, b| a.bbox.y.total_cmp(&b.bbox.y))
             .unwrap_or_else(|| panic!("{}쪽 pi={para_index} 표 뒤 첫 본문 줄", page_index + 1));
+        let RenderNodeType::TextLine(owner) = &line.node_type else {
+            unreachable!();
+        };
+        let source = &document.document().sections[owner.section_index.expect("본문 구역")]
+            .paragraphs[para_index];
+        let saved = source.line_segs.first().expect("원본 저장 첫 줄");
+        assert_eq!(
+            saved.tag & rhwp::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY,
+            0,
+            "합성 줄로 원본 위치를 대신하지 않는다"
+        );
+        let saved_offset = f64::from(saved.vertical_pos) * 96.0 / 7200.0;
         assert!(
-            (y - expected_y).abs() < 1.0,
-            "{}쪽 pi={para_index} 본문 y={y:.1}px — 음수 저장 줄간격을 표 예약에 중복 계상하면 안 된다",
-            page_index + 1
+            (line.bbox.y - column.bbox.y - saved_offset).abs() < 1.0,
+            "{}쪽 pi={para_index} 본문은 소유 단의 원점에서 원본 저장 위치에 있어야 한다 — 줄 {}, 단 {}, 원본 거리 {saved_offset}",
+            page_index + 1,
+            line.bbox.y,
+            column.bbox.y,
         );
     }
 }
@@ -512,6 +542,70 @@ fn svg_numeric_attr(tag: &str, name: &str) -> Option<f64> {
     value.split_once('"')?.0.parse().ok()
 }
 
+// These saved connectors are straight M/L paths. Check the painted head's
+// ownership and direction, rather than an invisible line used to attach SVG
+// markers in the previous backend. Independent Hancom Print: stage7 record.
+fn straight_path_points(data: &str) -> Option<Vec<(f64, f64)>> {
+    if data
+        .chars()
+        .any(|c| c.is_ascii_alphabetic() && !matches!(c, 'M' | 'L' | 'Z'))
+    {
+        return None;
+    }
+    let coordinates: Vec<f64> = data
+        .split(['M', 'L', 'Z', ' ', ','])
+        .filter(|s| !s.is_empty())
+        .map(str::parse)
+        .collect::<Result<_, _>>()
+        .ok()?;
+    if !coordinates.len().is_multiple_of(2) {
+        return None;
+    }
+    Some(coordinates.chunks_exact(2).map(|p| (p[0], p[1])).collect())
+}
+
+fn assert_red_connector_head(svg: &str, page: u32, expected_direction: (f64, f64)) {
+    let xml = roxmltree::Document::parse(svg).expect("parse rendered SVG");
+    let paths: Vec<_> = xml
+        .descendants()
+        .filter(|n| n.has_tag_name("path"))
+        .collect();
+    let shafts: Vec<_> = paths
+        .iter()
+        .filter(|n| n.attribute("stroke") == Some("#ff0000"))
+        .filter_map(|n| straight_path_points(n.attribute("d")?))
+        .filter(|p| p.len() == 2)
+        .collect();
+    assert_eq!(shafts.len(), 1, "{page}쪽의 저장 빨간 직선 연결선");
+    let (start, tip) = (shafts[0][0], shafts[0][1]);
+    let direction = (tip.0 - start.0, tip.1 - start.1);
+    assert!(
+        direction.0 * expected_direction.0 > 0.0 && direction.1 * expected_direction.1 > 0.0,
+        "{page}쪽 연결선은 독립 PDF의 방향이어야 한다: {start:?}→{tip:?}"
+    );
+    let heads: Vec<_> = paths
+        .iter()
+        .filter(|n| n.attribute("fill") == Some("#ff0000"))
+        .filter_map(|n| straight_path_points(n.attribute("d")?))
+        .filter(|p| p.len() == 3 && (p[0].0 - tip.0).hypot(p[0].1 - tip.1) < 0.01)
+        .collect();
+    assert_eq!(heads.len(), 1, "{page}쪽 연결선 끝점에 소속된 실제 화살촉");
+    let base = (
+        (heads[0][1].0 + heads[0][2].0) / 2.0,
+        (heads[0][1].1 + heads[0][2].1) / 2.0,
+    );
+    let outward = (tip.0 - base.0, tip.1 - base.1);
+    assert!(
+        outward.0 * direction.0 + outward.1 * direction.1 > 0.0,
+        "{page}쪽 화살촉은 연결선의 끝 방향을 가리켜야 한다"
+    );
+    assert!(
+        (outward.0 * direction.1 - outward.1 * direction.0).abs()
+            < 0.01 * outward.0.hypot(outward.1) * direction.0.hypot(direction.1),
+        "{page}쪽 화살촉 중심축은 저장 직선에 정렬되어야 한다"
+    );
+}
+
 #[test]
 fn page_31_signed_line_transform_preserves_arrow_direction() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
@@ -549,14 +643,16 @@ fn page_31_signed_line_transform_preserves_arrow_direction() {
     assert!(
         (x1 - 542.0).abs() < 2.0
             && (y1 - 484.2).abs() < 2.0
-            && (x2 - 445.9).abs() < 2.0
-            && (y2 - 701.2).abs() < 2.0,
-        "31쪽 화살표 끝점=({x1:.1}, {y1:.1})→({x2:.1}, {y2:.1}) — 저장 renderingInfo frame을 유지해야 한다"
+            // Independent PDF triangle tip = (331.140625, 532.097656)pt.
+            // The previous expectation pinned the shortened shaft, not the tip.
+            && (x2 - 331.140625 * 96.0 / 72.0).abs() < 2.0
+            && (y2 - 532.097656 * 96.0 / 72.0).abs() < 2.0,
+        "31쪽 화살표 끝점=({x1:.1}, {y1:.1})→({x2:.1}, {y2:.1}) — 저장 frame과 독립 PDF의 화살촉 끝점을 유지해야 한다"
     );
 }
 
 #[test]
-fn connector_paths_preserve_saved_direction_and_endpoint_marker() {
+fn connector_paths_preserve_saved_direction_and_endpoint_head() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = fs::read(&path).expect("read fixture");
     let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse fixture");
@@ -585,25 +681,11 @@ fn connector_paths_preserve_saved_direction_and_endpoint_marker() {
     let svg = document
         .render_page_svg_native(18)
         .expect("19쪽 SVG 렌더링");
-    let marker_line = svg
-        .lines()
-        .filter(|tag| tag.contains("<line") && tag.contains("stroke=\"none\""))
-        .find(|tag| tag.contains("marker-end"))
-        .expect("19쪽 연결선의 SVG 끝 marker");
-    let (x1, y1, x2, y2) = (
-        svg_numeric_attr(marker_line, "x1").expect("x1"),
-        svg_numeric_attr(marker_line, "y1").expect("y1"),
-        svg_numeric_attr(marker_line, "x2").expect("x2"),
-        svg_numeric_attr(marker_line, "y2").expect("y2"),
-    );
-    assert!(
-        x2 > x1 && y2 > y1,
-        "19쪽 연결선 방향=({x1:.1}, {y1:.1})→({x2:.1}, {y2:.1}) — PDF처럼 오른쪽 아래 끝에 arrow가 있어야 한다"
-    );
+    assert_red_connector_head(&svg, 19, (1.0, 1.0));
 }
 
 #[test]
-fn screenshot_table_direction_lines_keep_their_arrow_markers() {
+fn screenshot_table_direction_lines_keep_their_arrow_heads() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = fs::read(&path).expect("read fixture");
     let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse fixture");
@@ -623,13 +705,7 @@ fn screenshot_table_direction_lines_keep_their_arrow_markers() {
         let svg = document
             .render_page_svg_native(page_index)
             .unwrap_or_else(|error| panic!("{}쪽 SVG: {error:?}", page_index + 1));
-        assert!(
-            svg.lines().any(|tag| tag.contains("<line")
-                && tag.contains("stroke=\"none\"")
-                && tag.contains("marker-")),
-            "{}쪽 연결선 SVG marker",
-            page_index + 1
-        );
+        assert_red_connector_head(&svg, page_index + 1, (1.0, -1.0));
     }
 }
 

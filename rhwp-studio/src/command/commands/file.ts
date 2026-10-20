@@ -11,9 +11,11 @@ import { showConfirm } from '@/ui/confirm-dialog';
 import { showHwpSavePasswordDialog } from '@/ui/hwp-password-dialog';
 import { showUnsavedChangesDialog } from '@/ui/unsaved-changes-dialog';
 import { showHmlSaveFormatDialog } from '@/ui/hml-save-format-dialog';
+import { showPdfSaveFormatDialog } from '@/ui/pdf-save-format-dialog';
 import {
   fileNameForFormat,
   markConvertedHmlSaveHandle,
+  markConvertedPdfSaveHandle,
   requiresSaveFormatChoice,
   resolveSaveTarget,
   type SaveFormat,
@@ -73,6 +75,7 @@ import { t } from '../../i18n/index.ts';
  */
 async function openFileViaPicker(services: CommandServices): Promise<void> {
   await openDocumentViaPicker({
+    pdfImportEnabled: services.wasm.hasPdfImportCapability?.() === true,
     canReplace: () => confirmSaveBeforeReplacingDocument(services),
     windowLike: window as FileSystemWindowLike,
     findFileInput: () => document.getElementById('file-input') as HTMLInputElement | null,
@@ -127,6 +130,7 @@ function flushDeferredPaginationBeforeExplicitOutput(
 
 async function chooseSaveAsFormat(services: CommandServices): Promise<SaveFormat | null> {
   const sourceFormat = services.wasm.getSourceFormat();
+  if (sourceFormat === 'pdf') return showPdfSaveFormatDialog();
   if (sourceFormat !== 'hml') return sourceFormat === 'hwpx' ? 'hwpx' : 'hwp';
   const context = getHmlSaveContext(services);
   return showHmlSaveFormatDialog(
@@ -221,6 +225,7 @@ function completeHandleSave(
   passwordProtected = false,
 ): void {
   if (sourceFormat === 'hml') markConvertedHmlSaveHandle(result.handle);
+  if (sourceFormat === 'pdf') markConvertedPdfSaveHandle(result.handle);
   services.wasm.currentFileHandle = result.handle;
   services.wasm.fileName = result.fileName;
   void addRecentDoc({
@@ -316,7 +321,8 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
     flushDeferredPaginationBeforeExplicitOutput(services, 'save-as');
     const saveName = options.fileName;
     const payload = createSavePayload(services, format, password ?? undefined);
-    const originalHandle = sourceFormat === 'hml' ? services.wasm.currentFileHandle : null;
+    const originalHandle = sourceFormat === 'hml' || sourceFormat === 'pdf'
+      ? services.wasm.currentFileHandle : null;
     const result = await persistWithContentLoss(
       payload.contentLoss,
       () => tryFileSystemSave(

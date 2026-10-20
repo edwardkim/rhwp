@@ -163,7 +163,8 @@ function gitFiles() {
   return execFileSync(
     'git',
     ['ls-files', '--cached', '--others', '--exclude-standard'],
-    { cwd: ROOT, encoding: 'utf8' },
+    // The repository's tracked file inventory exceeds Node's default 1 MiB.
+    { cwd: ROOT, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
   )
     .split(/\r?\n/)
     .filter(Boolean)

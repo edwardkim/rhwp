@@ -22,6 +22,7 @@ impl TypesetEngine {
         measured_tables: &[MeasuredTable],
         boundary: &super::entry::ParagraphBoundary<'_>,
     ) {
+        let reset_consumed_by_empty_prefix = st.consume_saved_empty_run_reset(para_idx, paragraphs);
         let para_style = boundary.para_style;
         let overlay_columndef_separator_break = boundary.overlay_columndef_separator_break;
         // Task #321: 문단간 vpos-reset 기반 강제 분할
@@ -48,6 +49,17 @@ impl TypesetEngine {
                 .filter(|s| !is_synthetic_line_seg(s))
                 .map(|s| s.vertical_pos);
             if let (Some(cv), Some(pv)) = (curr_first_vpos, prev_last_vpos) {
+                // 저장 쪽 경계는 그 쪽의 줄 구성에 의존한다. 현재 쪽에서
+                // 재조판 뒤 빈 저장 줄의 연속성만으로 옛 경계를 복구하지 않는다.
+                // 실제 흐름 끝이 저장 끝과 일치하는 경계는 공통 판정에서 보존한다.
+                // 명시적 쪽/단 나눔은 entry 단계에서 처리한다.
+                let stored_boundary_invalidated_by_reflow =
+                    crate::renderer::typeset::paragraph::stored_lines::stored_page_boundary_invalidated_by_reflow(
+                        profile, st.col_count, &st.current_items, paragraphs,
+                        para_idx, st.current_height, self.dpi,
+                    ) || crate::renderer::typeset::paragraph::stored_lines::stored_frame_prefix_consumed_before_page(
+                        st, paragraphs, para_idx, styles,
+                    );
                 // 현재 문단의 vpos가 직전 문단의 마지막 vpos보다 작은 경우 — 컬럼/페이지 reset 시그널.
                 // - 단일 단: cv == 0 만 인정 (Task #321 보수적 기준 유지).
                 //   단일 단에서 cv != 0 의 cv < pv 는 partial-table split 의 LAYOUT 잔재로
@@ -105,21 +117,18 @@ impl TypesetEngine {
                 // 그려지고 이어지는 본문은 다음 쪽으로 넘어간다.
                 let native_inline_shape_reset = !hwp3_origin_page_tolerance
                     && profile.hwp5_stored_pagination_layout()
+                    && !profile.session_edited()
                     && shape_only_para
                     && para.controls.len() == 1
                     && matches!(&para.controls[0], Control::Shape(shape) if shape.common().treat_as_char)
-                    && para.line_segs.len() == 1
                     && cv > 0
-                    && cv <= 2500
-                    && prev_vpos_end > 60_000
-                    && paragraphs.get(para_idx + 1).is_some_and(|next| {
-                        next.line_segs
-                            .first()
-                            .filter(|seg| !is_synthetic_line_seg(seg))
-                            .is_some_and(|seg| {
-                                seg.vertical_pos > cv && seg.vertical_pos < prev_vpos_end / 2
-                            })
-                    })
+                    && cv == para_sb_hu_for_reset
+                    && stored_inline_shape_restarts_column(
+                        prev_para,
+                        para,
+                        paragraphs.get(para_idx + 1),
+                        crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi),
+                    )
                     && !para_is_page_bottom_fixed_table_anchor(para)
                     && !para_hosts_page_anchored_block(para);
                 // [#1921 d=-1] 네이티브 HWP5/HWPX 의 비영 near-top reset:
@@ -209,6 +218,35 @@ impl TypesetEngine {
                     && st.wrap_around_cs < 0
                     && !para_is_page_bottom_fixed_table_anchor(para)
                     && stored_vpos_top_collision(prev_para, para);
+                // 좌표 축을 닫은 완전한 TAC 표도 원본 쪽 경계는 보존한다.
+                // 부분 이어받기는 이 단에 원본 전체 줄을 소비한 증거가 아니다.
+                let inline_frame_page_restart = st.col_count == 1
+                    && !profile.session_edited()
+                    && profile.hwp5_stored_pagination_layout()
+                    && matches!(st.current_items.last(), Some(crate::renderer::typeset::PageItem::Table {
+                        para_index, control_index: 0,
+                    }) if *para_index == para_idx - 1)
+                    && crate::renderer::stored_page_origin::stored_inline_frame_restarts_page(
+                        prev_para,
+                        para,
+                        paragraphs.get(para_idx + 1),
+                        styles,
+                        self.dpi,
+                    );
+                let source_margin_restart = st.col_count == 1
+                    && !profile.session_edited()
+                    && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+                    && st.vpos_page_base.is_some_and(|origin| {
+                        crate::renderer::float_placement::stored_margin_page_restart(
+                            prev_para,
+                            para,
+                            paragraphs.get(para_idx + 1),
+                            styles,
+                            origin,
+                            st.current_height - st.vpos_col_anchor,
+                            self.dpi,
+                        )
+                    });
                 let trigger = if st.col_count > 1 {
                     if is_distribute {
                         cv < prev_vpos_end && prev_vpos_end > 0
@@ -224,9 +262,17 @@ impl TypesetEngine {
                             // 쪽 리셋 신호가 아니다.
                             && !para_hosts_page_anchored_block(para))
                         || near_page_top_reset
-                        || native_near_top_reset
+                        // The accepted column origin can survive a broken
+                        // source ladder. Its dirty/provenance flag controls
+                        // backward snapping, not ownership of a carried frame.
+                        || (native_near_top_reset
+                            && !st
+                                .vpos_page_base
+                                .is_some_and(|origin| cv < origin))
                         || native_inline_shape_reset
                         || stored_top_collision_reset
+                        || source_margin_restart
+                        || inline_frame_page_restart
                 };
                 // [#2279 OMIT-fit] spacing-누락 문서군에서 fresh 재계산이 직전
                 // 쪽에서 밀어낸 빈 문단만 담긴 쪽에는 저장 리셋 경계를 적용하지
@@ -318,7 +364,12 @@ impl TypesetEngine {
                             None => false,
                         }
                     };
+                // Plain-text near-top source resets were evaluated against the
+                // accepted stored origin above. Explicit zero/shape/column
+                // boundaries retain their separate ownership contracts.
                 let trigger = trigger
+                    && !reset_consumed_by_empty_prefix
+                    && !stored_boundary_invalidated_by_reflow
                     && !omit_pushed_empty_page
                     && !hangul2024_refit
                     && !overlay_columndef_separator_break
@@ -356,4 +407,43 @@ impl TypesetEngine {
             }
         }
     }
+}
+
+/// 인라인 도형은 자기 저장 줄 상자를 소유한다. 이전 쪽의 남은 물리 높이에
+/// 그 상자가 들어가지 않고 뒤 줄이 새 축에서 이어질 때 저장 재시작을 보존한다.
+fn stored_inline_shape_restarts_column(
+    previous: &Paragraph,
+    current: &Paragraph,
+    next: Option<&Paragraph>,
+    body_height_hu: i32,
+) -> bool {
+    let Some(next) = next else {
+        return false;
+    };
+    let (Some(last), [line], Some(after)) = (
+        previous.line_segs.last(),
+        current.line_segs.as_slice(),
+        next.line_segs.first(),
+    ) else {
+        return false;
+    };
+    if [previous, current, next]
+        .iter()
+        .any(|para| para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty)
+        || [last, line, after]
+            .iter()
+            .any(|seg| is_synthetic_line_seg(seg) || seg.line_height <= 0 || seg.line_spacing < 0)
+        || body_height_hu <= 0
+    {
+        return false;
+    }
+    let previous_end =
+        i64::from(last.vertical_pos) + i64::from(last.line_height) + i64::from(last.line_spacing);
+    let current_end =
+        i64::from(line.vertical_pos) + i64::from(line.line_height) + i64::from(line.line_spacing);
+    line.vertical_pos < last.vertical_pos
+        && i64::from(after.vertical_pos) >= current_end
+        && i64::from(after.vertical_pos) < previous_end
+        && previous_end + i64::from(line.line_height) + i64::from(line.line_spacing)
+            > i64::from(body_height_hu)
 }

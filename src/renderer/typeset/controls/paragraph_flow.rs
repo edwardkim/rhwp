@@ -19,6 +19,65 @@ pub(in crate::renderer::typeset) struct TableParagraphInput<'a> {
     pub composed_all: &'a [ComposedParagraph],
 }
 
+fn try_place_reflowed_table_rows(
+    engine: &TypesetEngine,
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    measured_tables: &[MeasuredTable],
+) -> bool {
+    if !crate::renderer::inline_flow::supports_table_text_rows(para) {
+        return false;
+    }
+    let build = |st: &TypesetState, start: f64, preceding: bool| {
+        crate::renderer::typeset::inline_flow::plan::build_plan(
+            st.inline_flow_input(start, preceding),
+            para,
+            para_idx,
+            styles,
+            measured_tables,
+            engine.dpi,
+        )
+    };
+    let Some(mut plan) = build(st, st.current_height, true) else {
+        return false;
+    };
+    // Fragmented tables and footnote reservation retain their existing owner.
+    // A fitting prefix must stay in this column, even if later rows need a cut.
+    if plan.occupied_end() > st.available_height() {
+        // 단독 행 나눔 표도 전체가 들어가면 공백과 같은 물리 줄을 공유한다.
+        // 들어가지 않는 조각은 상태를 바꾸기 전에 기존 분할 소유자에게 돌려준다.
+        if crate::renderer::inline_flow::standalone_table_fragment_owner(para) {
+            return false;
+        }
+        if st.current_items.is_empty()
+            || plan
+                .rows
+                .first()
+                .is_none_or(|row| row.y + row.height <= st.available_height())
+        {
+            return false;
+        }
+        let Some(candidate) = build(st, 0.0, false) else {
+            return false;
+        };
+        if candidate.occupied_end() > st.base_available_height() {
+            return false;
+        }
+        st.advance_column_or_new_page();
+        let Some(candidate) = build(st, st.current_height, true) else {
+            return false;
+        };
+        if candidate.occupied_end() > st.available_height() {
+            return false;
+        }
+        plan = candidate;
+    }
+    st.commit_inline_flow(para_idx, plan);
+    true
+}
+
 pub(in crate::renderer::typeset) fn place(
     engine: &TypesetEngine,
     st: &mut TypesetState,
@@ -40,24 +99,30 @@ pub(in crate::renderer::typeset) fn place(
     // 문단의 블록 표 fit 이 존 위에 겹쳐 배치됐다 (19439117: 870px 서식 표
     // 존 [31..902] 위에 866px 표가 y≈36 에 통배치 → 1쪽, 한글 2쪽).
     let host_col_w = st.prepare_table_paragraph_column();
-    if crate::renderer::inline_flow::supports_table_text_rows(para) {
-        if let Some(plan) = crate::renderer::typeset::inline_flow::plan::build_plan(
-            st.inline_flow_input(st.current_height, true),
-            para,
-            para_idx,
-            styles,
-            measured_tables,
-            engine.dpi,
-        ) {
-            // Fragmented tables and footnote reservation retain their existing owner.
-            // Only publish a whole-row plan that fits the current page budget.
-            if plan.end <= st.available_height() {
-                st.commit_inline_flow(para_idx, plan);
-                return;
-            }
-        }
+    if try_place_reflowed_table_rows(engine, st, para_idx, para, styles, measured_tables) {
+        return;
     }
     let mut fmt = engine.format_paragraph(para, composed, styles, Some(host_col_w));
+    // 문서의 다른 개체를 편집해도 이 호스트의 저장 줄과 현재 표 프레임은 유효할 수 있다.
+    // 계획이 현재 측정 높이와 앞뒤 저장 원점을 검증하므로 문서 전체 편집 플래그로 거절하지 않는다.
+    let stored_body_wide_host = st
+        .profile
+        .hwp5_container()
+        .then(|| st.stored_body_wide_host_frame())
+        .flatten()
+        .and_then(|(body, page_height)| {
+            crate::renderer::inline_flow::plan_stored_body_wide_host(
+                para,
+                next_para?,
+                styles,
+                &body,
+                page_height,
+                engine.dpi,
+                para_idx,
+                measured_tables,
+            )
+        });
+
     if let Some(plan) = crate::renderer::inline_flow::plan_square_table_host(
         para,
         para_idx,
@@ -66,6 +131,16 @@ pub(in crate::renderer::typeset) fn place(
         host_col_w,
         engine.dpi,
     ) {
+        if let Some(origin) = super::square_host_frame::stored_host_origin(
+            st,
+            para_idx,
+            paragraphs_all,
+            composed_all,
+            engine.dpi,
+        ) {
+            // fit 전에 같은 원점을 선택한다. 이월 뒤에는 새 프레임의 흐름을 사용한다.
+            st.align_flow_to(origin);
+        }
         fmt.use_square_host_plan(plan, engine.dpi);
     }
     if controls::try_place_stored_tac_paragraph(
@@ -74,9 +149,10 @@ pub(in crate::renderer::typeset) fn place(
         para,
         &fmt,
         measured_tables,
-        engine.dpi,
+        engine,
         paragraphs_all,
         styles,
+        composed,
     ) {
         return;
     }
@@ -96,6 +172,12 @@ pub(in crate::renderer::typeset) fn place(
 
     st.ensure_page();
 
+    // A candidate rejected in the previous column does not describe the new
+    // column. Recompose at its origin so fit and paint still consume one plan.
+    if try_place_reflowed_table_rows(engine, st, para_idx, para, styles, measured_tables) {
+        return;
+    }
+
     // pre-fit가 단을 넘겼으면 그 단의 원점·예산으로 확정 줄 배치를 다시 계산한다.
     // 앞 단에서 거절된 후보를 이유로 새 단에서도 legacy 높이 상한을 쓰지 않는다.
     if controls::try_place_stored_tac_paragraph(
@@ -104,9 +186,10 @@ pub(in crate::renderer::typeset) fn place(
         para,
         &fmt,
         measured_tables,
-        engine.dpi,
+        engine,
         paragraphs_all,
         styles,
+        composed,
     ) {
         return;
     }
@@ -159,6 +242,7 @@ pub(in crate::renderer::typeset) fn place(
                         table,
                         next_para,
                         engine.dpi,
+                        None,
                         |is_column_top| {
                             engine.format_table(
                                 para,
@@ -172,6 +256,8 @@ pub(in crate::renderer::typeset) fn place(
                                 is_column_top,
                             )
                         },
+                        engine,
+                        styles,
                     );
                     // [#703 잔여] host 문단의 가시 텍스트(제목 등)를 흐름 문단으로
                     // 방출한다. 종전에는 표만 방출하고 `continue` 해서 이 텍스트를
@@ -265,6 +351,11 @@ pub(in crate::renderer::typeset) fn place(
         },
     );
 
+    if let Some(plan) = stored_body_wide_host {
+        // 최초 host의 모든 글줄이 같은 단에 실제 수용됐을 때만 원점과 끝을 확정한다.
+        st.commit_stored_body_wide_host(para_idx, para, plan);
+    }
+
     // TAC 표 높이 보정 (Paginator engine.rs:123-179 동일)
     // [#2319] 저장 lineseg 없는(기계생성) 문단은 스킵 — cap 의 두 축(tac_seg_total
     // 의 seg.lh, fallback 의 fmt.total_height)이 모두 lineseg/컴포즈에 표 높이가
@@ -282,6 +373,7 @@ pub(in crate::renderer::typeset) fn place(
             para,
             next_para,
             &fmt,
+            styles,
             measured_tables,
             tac_count,
             height_before,

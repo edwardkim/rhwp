@@ -8,6 +8,7 @@ import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, Ce
 import type { HeaderFooterTextPosition, CellBlockSelectionState } from './cursor';
 import type { CharShapeRun } from '@/core/types';
 import { hyperlinkTarget } from '../core/hyperlink';
+import { normalizeTextNewlines } from '../core/text-newlines';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
 import { setObjectProps, type ObjectPropsRef } from './object-props';
@@ -680,7 +681,9 @@ export class InsertTextCommand implements EditCommand {
     private fragmentIds: number[] = [],
   ) {
     this.timestamp = timestamp ?? Date.now();
-    this.steps = [[text, replacedText]];
+    // #8001: 삽입 범위와 되돌리기 범위는 코어가 실제로 소비하는 문자열로 맞춘다.
+    this.text = normalizeTextNewlines(text);
+    this.steps = [[this.text, replacedText]];
   }
 
   getCharFormat(): Partial<CharProperties> | undefined {
@@ -1106,6 +1109,9 @@ export class DeleteSelectionCommand implements EditCommand {
   };
 
   constructor(start: DocumentPosition, end: DocumentPosition, blockPhase: number | null = null) {
+    if (start.sectionIndex !== end.sectionIndex) {
+      throw new Error('구역을 걸친 선택 삭제는 아직 지원하지 않습니다.');
+    }
     this.selection = { start: { ...start }, end: { ...end }, blockPhase };
 
     if (isCell(start)) {
@@ -1115,19 +1121,6 @@ export class DeleteSelectionCommand implements EditCommand {
         wasm.deleteRangeInCellByPath(
           start.sectionIndex, start.parentParaIndex!, cellPathJson(start),
           cellParaIndexOf(start), start.charOffset, cellParaIndexOf(end), end.charOffset,
-        );
-        return { ...start };
-      });
-    } else if (start.sectionIndex !== end.sectionIndex) {
-      // 교차 구역 선택 — 조각 캡처는 단일 구역 전제(start.sectionIndex 만 사용,
-      // delete_fragment.rs)라 다른 구역의 문단 인덱스를 넘기면 캡처 단계에서
-      // 오류가 나거나 잘못된 범위를 잡는다. 스냅샷은 통째 복원이라 어떤 선택
-      // 모양이든 되돌릴 수 있다 — 방어적 폴백.
-      this.fragment = null;
-      this.snapshot = new SnapshotCommand('deleteSelection', end, start, (wasm) => {
-        wasm.deleteRange(
-          start.sectionIndex, start.paragraphIndex, start.charOffset,
-          end.paragraphIndex, end.charOffset,
         );
         return { ...start };
       });
@@ -1552,12 +1545,12 @@ export class InsertTextInHeaderFooterCommand implements EditCommand {
     private charOffset: number,
     private text: string,
   ) {
-    this.lastContext = hfEditContext(target, paraIdx, charOffset + text.length);
+    this.lastContext = hfEditContext(target, paraIdx, charOffset + charCount(text));
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
     wasm.insertTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.charOffset, this.text);
-    this.lastContext = hfEditContext(this.target, this.paraIdx, this.charOffset + this.text.length);
+    this.lastContext = hfEditContext(this.target, this.paraIdx, this.charOffset + charCount(this.text));
     return hfFnStubPosition(this.target.sectionIdx);
   }
 
@@ -1737,12 +1730,12 @@ export class InsertTextInFootnoteCommand implements EditCommand {
     private charOffset: number,
     private text: string,
   ) {
-    this.lastContext = fnEditContext(target, innerParaIdx, charOffset + text.length);
+    this.lastContext = fnEditContext(target, innerParaIdx, charOffset + charCount(text));
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
     wasm.insertTextInFootnote(this.target.sectionIdx, this.target.paraIdx, this.target.controlIdx, this.innerParaIdx, this.charOffset, this.text);
-    this.lastContext = fnEditContext(this.target, this.innerParaIdx, this.charOffset + this.text.length);
+    this.lastContext = fnEditContext(this.target, this.innerParaIdx, this.charOffset + charCount(this.text));
     return hfFnStubPosition(this.target.sectionIdx);
   }
 

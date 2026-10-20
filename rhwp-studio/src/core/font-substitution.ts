@@ -438,9 +438,11 @@ export function fontFamilyCandidatesForDisplayWithRules(
   const localRecord = options.confirmedLocalFonts === undefined
     ? resolveLocalFont(fontName)
     : null;
+  const installedOriginal = installedFaceName(fontName, options.confirmedLocalFonts);
   const originalAllowed =
     options.includeUnconfirmedOriginal === true ||
     REGISTERED_FONTS.has(fontName) ||
+    installedOriginal !== null ||
     confirmedLocalFontSet.has(fontName.toLocaleLowerCase('en-US'));
 
   if (!localRecord) {
@@ -458,7 +460,7 @@ export function fontFamilyCandidatesForDisplayWithRules(
     pushUniqueFontFamily(families, localRecordCssFamily(fontName, localRecord));
     ruleIds.push(FONT_RULE_DISPLAY_CHAIN_POLICY_IDS['style-fallback']);
   } else if (originalAllowed) {
-    pushUniqueFontFamily(families, fontName);
+    pushUniqueFontFamily(families, installedOriginal ?? fontName);
     ruleIds.push(FONT_RULE_DISPLAY_CHAIN_POLICY_IDS['style-fallback']);
   }
 

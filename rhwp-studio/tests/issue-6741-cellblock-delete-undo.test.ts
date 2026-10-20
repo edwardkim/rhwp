@@ -84,10 +84,10 @@ function cellSelectionBranch(kb: string): string {
   return kb.slice(at, end);
 }
 
-test('셀 블록 모드에서 Delete 는 블록을 유지한 채 선택 칸 내용을 지운다', () => {
+test('셀 블록 모드에서 Delete·Backspace 는 블록을 유지한 채 선택 칸 내용을 지운다', () => {
   const block = cellSelectionBranch(codeOnly(source('src/engine/input-handler-keyboard.ts')));
 
-  const deleteAt = block.indexOf("e.key === 'Delete'");
+  const deleteAt = block.indexOf("e.key === 'Delete' || e.key === 'Backspace'");
   const fallthroughAt = block.lastIndexOf('this.cursor.exitCellSelectionMode();');
   assert.notEqual(deleteAt, -1, 'Delete 처리가 없다 — 블록이 해제되고 한 글자만 지워진다');
   assert.ok(
@@ -105,7 +105,7 @@ test('되돌리기·다시실행은 셀 블록을 해제하지 않고 통과한�
   const kb = codeOnly(source('src/engine/input-handler-keyboard.ts'));
   assert.match(
     kb,
-    /const CELL_BLOCK_GLOBAL_COMMANDS = new Set\(\[\s*'edit:undo',\s*'edit:redo',\s*\]\)/,
+    /const CELL_BLOCK_GLOBAL_COMMANDS = new Set\(\[\s*'edit:undo',\s*'edit:redo',\s*'edit:delete',\s*\]\)/,
     '셀 블록에서 유지 통과할 명령 집합이 없다',
   );
   const block = cellSelectionBranch(kb);

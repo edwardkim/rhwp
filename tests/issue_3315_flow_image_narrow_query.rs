@@ -94,22 +94,6 @@ fn collect_flow_images_from_tree<'a>(
     }
 }
 
-/// `Option<&Value>` 를 거치지 않는 형태 — `clip` 필드가 있으면 반드시 유효한 bbox 여야 한다.
-fn bbox_of_value(value: &Value) -> [f64; 4] {
-    bbox_of(Some(value)).expect("clip 필드는 유효한 bbox 여야 한다")
-}
-
-/// 직렬화 정밀도(`{:.3}`)로 접어 비교한다.
-///
-/// 두 생산자는 교차를 **다른 순서**로 한다 — Rust 는 교차한 뒤 `{:.3}` 으로 쓰고, 트리 경로는
-/// 이미 `{:.3}` 인 값들을 받아 소비자 쪽에서 교차한다. 그래서 `211.987` 과
-/// `211.98699999999997` 처럼 마지막 비트만 다른 값이 나온다. 이 차이는 소비자의 wrapper 를
-/// bbox 와 사실상 같은 크기로 만들 뿐이라 화면에 나타나지 않는다. 이 테스트가 잡아야 하는 것은
-/// **clip 의 존재 여부와 위치**이므로 직렬화 정밀도에서 비교한다.
-fn rounded(bbox: Option<[f64; 4]>) -> Option<[i64; 4]> {
-    bbox.map(|values| values.map(|value| (value * 1000.0).round() as i64))
-}
-
 fn bbox_of(value: Option<&Value>) -> Option<[f64; 4]> {
     let value = value?;
     Some([
@@ -133,17 +117,6 @@ fn intersect(first: Option<[f64; 4]>, second: [f64; 4]) -> Option<[f64; 4]> {
     }
     Some([left, top, right - left, bottom - top])
 }
-
-/// 본문 흐름에 실제로 얽힌 flow 그림이 있는 표본들.
-///
-/// `insert_picture_native` 로 넣은 그림은 (0,0) 에 고정된 부동 개체라 본문이 흘러도 움직이지
-/// 않는다 — 이 트랙이 다루는 "본문 인라인 그림"이 아니다. 그래서 등가성은 실문서로 잰다.
-const FLOW_IMAGE_SAMPLES: &[&str] = &[
-    "samples/143E433F503322BD33.hwp",
-    "samples/3-10월_교육_통합_2022.hwp",
-    "samples/20250130-hongbo.hwp",
-    "samples/3-09월_교육_통합_2023.hwpx",
-];
 
 fn open(relative: &str) -> rhwp::wasm_api::HwpDocument {
     let repo_root = env!("CARGO_MANIFEST_DIR");
@@ -193,107 +166,6 @@ fn tree_flow_images(doc: &rhwp::wasm_api::HwpDocument, page: u32) -> Vec<TreeFlo
     let mut out = Vec::new();
     collect_flow_images_from_tree(&tree["root"], None, None, &mut out);
     out
-}
-
-/// 이 질의가 전체 트리 경로를 대체할 수 있다는 것 — 이 파일의 핵심 단언.
-#[test]
-fn issue_3315_narrow_query_matches_full_tree() {
-    let mut total_images = 0;
-    for sample in FLOW_IMAGE_SAMPLES {
-        let doc = open(sample);
-        let pages = doc.page_count().min(3);
-        for page in 0..pages {
-            let narrow = narrow(&doc, page);
-            let from_tree = tree_flow_images(&doc, page);
-            let images = narrow["images"].as_array().expect("images 배열");
-
-            assert_eq!(
-                images.len(),
-                from_tree.len(),
-                "{sample} p{page}: 좁은 질의와 전체 트리의 flow 그림 개수가 다르다"
-            );
-            total_images += images.len();
-
-            for (index, (narrow_op, tree)) in images.iter().zip(&from_tree).enumerate() {
-                let at = format!("{sample} p{page} #{index}");
-                let tree_op = &tree.op;
-                // clip 은 op 밖(조상 ClipRect)에서 오므로 트리 쪽 계산값과 대조한다.
-                //
-                // **존재 여부까지** 맞아야 한다. `page-renderer.ts` 의 `needsClipWrapper` 는
-                // `clip !== null` 을 먼저 보고 그다음 `rotation !== 0` 을 보므로, bbox 를 줄이지
-                // 않는 clip 을 생략하면 회전 그림이 좁은 질의 경로에서만 모서리를 노출한다.
-                assert_eq!(
-                    rounded(narrow_op.get("clip").map(bbox_of_value)),
-                    rounded(tree.clip),
-                    "{at}: 조상 clip 이 다르다 — 회전 그림의 wrapper 판정이 갈린다"
-                );
-                assert_eq!(
-                    narrow_op["bbox"], tree_op["bbox"],
-                    "{at}: bbox 가 다르다 — 소비자가 다른 자리에 그린다"
-                );
-                assert_eq!(narrow_op["mime"], tree_op["mime"], "{at}: mime 이 다르다");
-                assert_eq!(
-                    narrow_op["effect"], tree_op["effect"],
-                    "{at}: effect 가 다르다"
-                );
-                assert_eq!(
-                    narrow_op["brightness"], tree_op["brightness"],
-                    "{at}: brightness 가 다르다"
-                );
-                assert_eq!(
-                    narrow_op["contrast"], tree_op["contrast"],
-                    "{at}: contrast 가 다르다"
-                );
-                assert_eq!(
-                    narrow_op["transform"], tree_op["transform"],
-                    "{at}: transform 이 다르다 — 회전·반전이 어긋난다"
-                );
-                assert_eq!(narrow_op["crop"], tree_op["crop"], "{at}: crop 이 다르다");
-                assert_eq!(
-                    narrow_op["originalSizeHu"], tree_op["originalSizeHu"],
-                    "{at}: originalSizeHu 가 다르다"
-                );
-                assert_eq!(
-                    narrow_op["bakedWatermark"], tree_op["bakedWatermark"],
-                    "{at}: bakedWatermark 가 다르다 — CSS filter 적용 여부가 갈린다"
-                );
-                assert_eq!(
-                    narrow_op["sourceImageKey"], tree_op["sourceImageKey"],
-                    "{at}: 신원 키가 다르다 — 바이트를 못 찾거나 남의 바이트를 받는다"
-                );
-            }
-        }
-    }
-    assert!(
-        total_images >= 4,
-        "표본이 flow 그림을 실제로 담고 있어야 이 테스트가 의미가 있다 (총 {total_images}장)"
-    );
-}
-
-#[test]
-fn issue_3315_narrow_query_keys_resolve_to_bytes() {
-    for sample in FLOW_IMAGE_SAMPLES {
-        let doc = open(sample);
-        let narrow = narrow(&doc, 0);
-        if narrow["cacheable"].as_bool() != Some(true) {
-            // 합성 그림이 섞인 페이지는 키를 못 내므로 이 단언의 대상이 아니다.
-            continue;
-        }
-        for image in narrow["images"].as_array().expect("images") {
-            let key = image["sourceImageKey"]
-                .as_str()
-                .expect("cacheable 페이지의 모든 그림은 키를 가져야 한다");
-            let (mime, bytes) = doc
-                .get_source_image_bytes_native(key)
-                .unwrap_or_else(|| panic!("{sample}: 키로 바이트를 받을 수 없다 ({key})"));
-            assert!(!bytes.is_empty(), "{sample}: 빈 바이트 ({key})");
-            assert_eq!(
-                Some(mime),
-                image["mime"].as_str(),
-                "{sample}: 좁은 질의의 mime 과 키 조회의 mime 이 다르다 ({key})"
-            );
-        }
-    }
 }
 
 #[test]

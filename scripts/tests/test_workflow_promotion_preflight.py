@@ -497,6 +497,43 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
 
+    def test_real_codeql_policy_requires_successful_actions_analysis(self) -> None:
+        path = ".github/workflows/codeql.yml"
+        inventory = {
+            "schemaVersion": 1, "baseSha": "a" * 40, "candidateSha": "b" * 40,
+            "entries": [{"path": path, "classification": "executable",
+                         "after": {"sha256": sha256(path)}, "riskAxes": ["matrix"]}],
+            "policyViolations": [],
+        }
+        inventory["inventorySha256"] = canonical_sha256(inventory)
+        enriched = MODULE.apply_execution_policy(inventory, self.policy)
+        run = {
+            "id": 42, "url": "https://github.com/edwardkim/rhwp/actions/runs/42",
+            "path": path, "event": "workflow_dispatch", "actor": "edwardkim", "executionMode": "direct",
+            "headSha": "b" * 40, "workflowSha256": sha256(path), "paginationComplete": True,
+            "status": "completed", "conclusion": "success",
+            "jobs": [{"name": name, "status": "completed", "conclusion": "success"}
+                     for name in ("CodeQL preflight", "Analyze (javascript-typescript)",
+                                  "Analyze (python)", "Analyze (rust)", "Analyze (actions)")],
+        }
+        def verify(candidate_run: dict) -> dict:
+            return MODULE.verify_evidence(
+                enriched, [candidate_run], [], now=datetime(2026, 10, 7, tzinfo=UTC),
+                trusted_maintainers=frozenset({"edwardkim"}),
+            )
+
+        accepted = verify(run)
+        self.assertTrue(accepted["ok"], accepted["errors"])
+        for conclusion in (None, "skipped", "failure"):
+            invalid = dict(run)
+            invalid["jobs"] = [dict(job) for job in run["jobs"] if job["name"] != "Analyze (actions)"]
+            if conclusion is not None:
+                invalid["jobs"].append({"name": "Analyze (actions)", "status": "completed", "conclusion": conclusion})
+            with self.subTest(conclusion=conclusion):
+                rejected = verify(invalid)
+                self.assertFalse(rejected["ok"])
+                self.assertIn("Analyze (actions)", "\n".join(rejected["errors"]))
+
     def test_policy_covers_baseline_and_is_bound_to_inventory_hash(self) -> None:
         self.assertEqual(set(self.policy["workflows"]), self.expected_workflows)
         inventory = {

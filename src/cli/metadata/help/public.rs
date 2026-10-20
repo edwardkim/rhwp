@@ -58,10 +58,14 @@ pub(super) fn print() {
     println!("  export-png <파일.hwp> [옵션]   (native-skia feature 필요)");
     println!("      HWP 파일을 PNG로 내보내기 (Skia raster backend, AI 파이프라인 + VLM 연동)");
     println!();
+    println!("      --json                 stdout에 PNG 산출물·전체 쪽수 JSON만 출력");
+    println!("      --metadata-only        PNG 없이 전체 쪽수 JSON만 출력");
+    println!("      --render-tree-output <폴더> 같은 문서의 선택 쪽 render tree를 함께 저장");
+    println!("      --font-environment <JSON> 조판/출력의 명시적 글꼴 환경 적용");
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
-    println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!("      -p, --page <번호>       선택 쪽 (0부터 시작, 여러 번 지정 가능)");
     println!(
-        "      --profile <프로필>      출력 프로필: screen|print|high-quality|fast-preview (기본: high-quality)"
+        "      --profile <프로필>      출력 프로필: screen|print|high-quality|fast-preview (기본: screen)"
     );
     println!("      --font-path <경로>      폰트 파일 탐색 경로 (여러 번 지정 가능)");
     println!("                              한컴 전용 폰트 (HY견명조 등) 가 시스템에 없을 때 ttfs 디렉토리 지정");
@@ -83,22 +87,15 @@ pub(super) fn print() {
     println!("                              qwen-vl:    2240 px (Qwen-VL, 별칭: qwen)");
     println!("                              llava:      672 px (LLaVA / OSS CLIP)");
     println!();
-    println!("  export-png-gpu <파일.hwp|파일.hwpx> [옵션]   (gpu feature 필요)");
-    println!("      기존 SVG 산출을 GPU(vello/wgpu)로 래스터화해 PNG로 내보내기");
-    println!("      대량 문서 코퍼스를 VLM 입력 이미지로 굽는 파이프라인용. 파싱·레이아웃은");
-    println!("      GPU 대상이 아니다(분기 지배적) — 래스터화 단계만 GPU로 옮긴다.");
-    println!();
-    println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
-    println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
-    println!("      --scale <배율>          렌더링 배율 (기본: 2.0)");
-    println!("      --font-path <경로>      폰트 파일/디렉터리 탐색 경로 (여러 번 지정 가능)");
-    println!(
-        "      --benchmark             같은 벡터를 CPU(resvg)로도 굽고 시간·픽셀차를 정직 보고"
-    );
-    println!("      --repeat <N>            각 페이지 래스터화 반복 후 최솟값 (기본: 1)");
-    println!();
-    println!("  gpu-info                        (gpu feature 필요)");
-    println!("      사용 가능한 GPU 어댑터를 열거 (export-png-gpu 가 쓸 백엔드 확인)");
+    println!("  export-sixel <파일.hwp|파일.hwpx> [옵션] (native-skia feature 필요)");
+    println!("      Sixel을 stdout에 직접 표시하거나 페이지별 .six 파일로 저장; 오류는 stderr.");
+    println!("      -o, --output <폴더>   출력 폴더 지정 시 전체 쪽 저장, 생략 시 stdout 한 쪽");
+    println!("      -p, --page <번호>     특정 페이지만 (0부터), stdout 기본 첫 쪽");
+    println!("      --width <픽셀>       너비 1..16384 (기본 360), 종횡비 유지");
+    println!("      --font-path <경로>   글꼴 경로, 반복 가능");
+    println!("      --profile <프로필>   screen|print|high-quality|fast-preview");
+    println!("      --compat <2022|2024> 기존 한컴 호환 옵션");
+    println!("      예: rhwp export-sixel 문서.hwp -o output/sixel --width 720");
     println!();
     println!("  export-text <파일.hwp> [옵션]");
     println!("      페이지별 텍스트를 TXT로 내보내기");
@@ -263,6 +260,16 @@ pub(super) fn print() {
         "      --verify              변환 후 산출물을 재파싱해 IR 차이를 검출 (차이 시 exit 3)"
     );
     println!("      --verify-pages        변환 전/후 렌더 페이지 수를 비교 (불일치 시 exit 4)");
+    println!();
+    println!("  import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--json]");
+    println!(
+        "      PDF 전체 또는 선택 쪽을 가져오기 (기본 포함 pdf-import; 제외 빌드는 재빌드 필요)"
+    );
+    println!("      --source-pages <목록>  원본 쪽 0-based 증가 목록·포함 범위. 생략하면 전체 쪽");
+    println!("      --json                 stdout에 저장 결과·원본 쪽/구역 대응·진단 JSON 한 개");
+    println!("      중복·역순·잘못된 범위는 exit 2, 읽기·변환·쓰기 실패는 exit 1 (stdout 비움)");
+    println!("      원본 덮어쓰기 금지. 성공한 전체 결과만 원자적으로 저장하며 암호 옵션은 미지원");
+    println!("      기본 feature-off는 PDF_IMPORT_DISABLED. 전체 할당 경계는 아직 미입증");
     println!();
     println!("  export-hml <입력.hml> -o <출력.hml>");
     println!("      HML 원본 문서를 의미 보존 HWPML 2.91 XML로 저장");

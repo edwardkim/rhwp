@@ -36,6 +36,7 @@ pub(in crate::renderer::typeset) fn inspect_entry(
     line_count: usize,
     available: f64,
     page: &SplitEntryPage<'_>,
+    stored_frame_prefix_consumed: bool,
     dpi: f64,
 ) -> SplitEntryFit {
     // 남은 공간이 없거나 첫 줄도 못 넣으면 먼저 다음 단/페이지로
@@ -68,10 +69,16 @@ pub(in crate::renderer::typeset) fn inspect_entry(
             .line_segs
             .first()
             .map(|cur| {
-                let bottom_px = crate::renderer::hwpunit_to_px(
-                    cur.vertical_pos.saturating_add(cur.line_height),
-                    dpi,
-                );
+                // [#7702] 쪽 안 위치는 한/글이 저장한 좌표로 잰다. 앞 문단에 저장 줄이 없어
+                // 로드 재구성이 이 문단의 vpos 를 rhwp 누적 좌표로 옮겼으면 원본 값을 쓴다
+                // (HWP5-nopassword pi=228: 원본 64520 → 873.6px ≤ 876.9, 누적 128472).
+                let first_vpos = para
+                    .source_line_seg_vertical_pos
+                    .as_ref()
+                    .and_then(|source| source.first().copied())
+                    .unwrap_or(cur.vertical_pos);
+                let bottom_px =
+                    crate::renderer::hwpunit_to_px(first_vpos.saturating_add(cur.line_height), dpi);
                 bottom_px <= page.body_height + 0.5
             })
             .unwrap_or(false);
@@ -98,9 +105,14 @@ pub(in crate::renderer::typeset) fn inspect_entry(
             });
     let stored_whole_para_reset = page.col_count == 1
         && para_idx > 0
+        && !stored_frame_prefix_consumed
         // 앞 문단의 손상 HWPX 줄을 순차 조판으로 접은 경우, 그 뒤 문단의
         // 작은 vpos는 새 쪽이 아니라 같은 손상 좌표계의 잔여값이다.
         && !current_page_has_stale_hwpx_line_metrics
+        && !super::stored_lines::stored_page_boundary_invalidated_by_reflow(
+            page.profile, page.col_count, page.current_items, paragraphs,
+            para_idx, page.current_height, dpi,
+        )
         && para
             .line_segs
             .first()
