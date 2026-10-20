@@ -279,3 +279,19 @@ Rectangle stroke를 표준 BorderFill로 보정한 뒤 실제 네 Studio 탭의 
 별도 **B25/이번 범위 예외**로 명시 수용했으며, 새 정상 fixture로 등록하지 않는다.
 최종 전쪽 집계·정식 집중 검사와 구체적인 source 지문은 stage29 결과를 따른다.
 R2 두 줄·직접 역삭제 원점, R1 일반화·B24·P5는 미완료이며 다음 절편이나 원격 처리는 실행하지 않는다.
+
+### R2 본문 무편집 저장의 source 글줄 — stage31에서 다음 절편으로 분리
+
+2026-10-20 메인테이너가 **“다음 R2 절편으로 분리”**를 지시했다. `body-basic.pdf`와
+`body-baseline.pdf`의 무편집 HWP/HWPX 저장본을 한컴에서 열면 원본 두 글줄이 같은
+Paragraph의 한 줄로 재조판된다. rhwp 저장 재열기는 source LineSeg 두 줄을 재사용한다.
+수정 전 `d7b267ff9`의 같은 본문 저장본·독립 한컴 2020 Print에서도 재현했다(28.21447%).
+현재 basic 무편집 저장본은 27.64057%, baseline 무편집 저장본은 11.99262%(Native)이며
+시각 통과·예외 수용으로 바꾸지 않는다. 첫 줄 기준선 보존과 source 줄 구성/재조판 폭의
+계약을 구분하고, 근거 없이 강제 개행을 넣거나 글자를 그림으로 바꾸지 않는다.
+다음 절편에서 source 폭·문단 상자·저장 LineSeg·한컴 재조판을 연결하고 같은 입력과
+독립 Print를 재사용한다. source 두 줄을 모든 편집 뒤 강제로 고정하는 의미는 아니다.
+증거: `/mnt/e/tmp/issue7998-stage31-evidence/before-print/`, `print-inputs/body*-noop.*`,
+`native/visual/body*-noop-*/`, `probe-result.json`; 사용자 비교 화면은
+`E:\tmp\issue7998-paragraph-baseline-review\body-boundary.html`이다. 이번 기준선 절편의
+본문 관련 진단은 보존하되, 이 미달 입력에 대한 새 정식 렌더링 회귀 등록은 보류한다.

@@ -425,7 +425,28 @@ fn paragraph(
     let first = lines.first().ok_or("paragraph has no lines")?;
     let cell_x = number(&cell_box["x"])?;
     let cell_width = number(&cell_box["width"])?;
-    let top = first.baseline - first.font * 0.95;
+    // PDF observations are in points (72 dpi). Publish the same HWP row
+    // metrics as edit reflow, and derive the row origin from the observed
+    // baseline. A separate 0.95em ascent made the first edit move ink upward.
+    let row_metrics = lines
+        .iter()
+        .map(|line| {
+            let size = f64::from(hu(line.font)?) / 100.;
+            Ok(crate::renderer::composer::frame_metrics_for_line(
+                size,
+                size,
+                LineSpacingType::Percent,
+                100.,
+                72.,
+            ))
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    let row_tops: Vec<_> = lines
+        .iter()
+        .zip(&row_metrics)
+        .map(|(line, metrics)| line.baseline - metrics.baseline_distance as f32 / 100.)
+        .collect();
+    let top = row_tops[0];
     let layout = proposal
         .layout
         .as_ref()
@@ -449,14 +470,13 @@ fn paragraph(
         if indices.is_empty() {
             return Err("empty recognized line".into());
         }
-        let baseline = line.baseline;
-        let size = line.font;
-        let line_top = baseline - size * 0.95;
-        let next_top = if let Some(next) = lines.get(line_no + 1) {
-            next.baseline - next.font * 0.95
-        } else {
-            line_top + size
-        };
+        let metrics = &row_metrics[line_no];
+        let line_height = metrics.line_height as f32 / 100.;
+        let line_top = row_tops[line_no];
+        let next_top = row_tops
+            .get(line_no + 1)
+            .copied()
+            .unwrap_or(line_top + line_height);
         let (text, runs): (String, Vec<(u32, u32)>) = if fixed_line_height {
             let before_styles = doc.doc_info.char_shapes.len();
             match observed_line_text(page, doc, line, shape_ids, styles, &mut glyph_styles) {
@@ -528,10 +548,10 @@ fn paragraph(
         para.line_segs.push(LineSeg {
             text_start: line_start,
             vertical_pos: hu(line_top - top)? as i32,
-            line_height: hu(size)? as i32,
-            text_height: hu(size)? as i32,
-            baseline_distance: hu(size * 0.95)? as i32,
-            line_spacing: hu((next_top - line_top - size).max(0.))? as i32,
+            line_height: metrics.line_height,
+            text_height: metrics.text_height,
+            baseline_distance: metrics.baseline_distance,
+            line_spacing: hu((next_top - line_top - line_height).max(0.))? as i32,
             column_start: if centered {
                 0
             } else {
@@ -544,7 +564,7 @@ fn paragraph(
             },
             tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
         });
-        last_end = line_top + size;
+        last_end = line_top + line_height;
     }
     finalize_text_axis(&mut para)?;
     para.has_para_text = true;

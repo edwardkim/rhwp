@@ -2213,12 +2213,11 @@ impl DocumentCore {
             }
         }
 
-        let refresh_compat_projection = !paginate_immediately
-            && self
-                .render_normalization
-                .sections
-                .get(section_idx)
-                .is_some_and(|section| section.is_some());
+        let has_compat_projection = self
+            .render_normalization
+            .sections
+            .get(section_idx)
+            .is_some_and(|section| section.is_some());
         self.mark_render_normalization_path_dirty(
             section_idx,
             parent_para_idx,
@@ -2268,8 +2267,13 @@ impl DocumentCore {
 
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변)
         self.document.sections[section_idx].raw_stream = None;
-        if refresh_compat_projection {
+        // Immediate edits need the same revision bump as deferred edits and
+        // insertion. Otherwise pagination can reuse a projection that still
+        // paints text which has already been deleted from the editable IR.
+        if has_compat_projection {
             self.invalidate_render_normalization_section(section_idx);
+        }
+        if has_compat_projection && !paginate_immediately {
             self.compute_render_normalized();
         }
         self.mark_section_pagination_dirty(section_idx);
