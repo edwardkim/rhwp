@@ -1,8 +1,9 @@
 //! Infer a representable soft-wrap box; source rows are not authored hard breaks.
 use super::*;
 use crate::renderer::{
-    composer::{paragraph_flow_end, reflow_line_segs, ParagraphBox},
-    hwpunit_to_px,
+    composer::{paragraph_flow_end, reflow_line_segs, restamp_indentation, ParagraphBox},
+    equation_tac_flow::paragraph_line_indent_for_source,
+    hwpunit_to_px, px_to_hwpunit,
     style_resolver::{resolve_styles_for_document, ResolvedStyleSet},
 };
 use pdf_oxide::geometry::Rect;
@@ -75,8 +76,13 @@ pub(super) fn fit(
         let original = &doc.doc_info.para_shapes[item.paragraph.para_shape_id as usize];
         let owner_width = hu(owner.width)? as i32;
         let centered = layout.alignment == TextAlignment::Center;
+        // These are observed PDF rows, not Hancom records denying indentation.
+        // Trial the inferred paragraph rule using the same stamp as an explicit
+        // indent edit. Publish it only after the physical source origins agree.
+        let mut source = item.paragraph.clone();
+        restamp_indentation(&mut source.line_segs, 0, original.indent);
         let mut trial = Trial {
-            source: &item.paragraph,
+            source: &source,
             styles: resolve_styles_for_document(doc, 96.),
             owner_width,
             left: original.margin_left / 2,
@@ -125,13 +131,29 @@ pub(super) fn fit(
         if ends(&para) != expected || para.line_segs.len() != item.paragraph.line_segs.len() {
             return Err("selected box does not reproduce source cuts".into());
         }
-        for (fresh, stored) in para.line_segs.iter().zip(&item.paragraph.line_segs) {
+        let style = &trial.styles.para_styles[para.para_shape_id as usize];
+        for (index, (fresh, stored)) in para
+            .line_segs
+            .iter()
+            .zip(&item.paragraph.line_segs)
+            .enumerate()
+        {
+            let indent = paragraph_line_indent_for_source(
+                style.indent,
+                index,
+                Some(&para),
+                para.line_segs.len(),
+                true,
+                hwpunit_to_px(fresh.segment_width, 96.),
+                96.,
+            );
+            let physical_start = fresh.column_start + px_to_hwpunit(indent, 96.);
             if (fresh.vertical_pos + fresh.baseline_distance
                 - stored.vertical_pos
                 - stored.baseline_distance)
                 .abs()
                 > 50
-                || (!centered && (fresh.column_start - stored.column_start).abs() > 50)
+                || (!centered && (physical_start - stored.column_start).abs() > 50)
             {
                 return Err("ordinary flow does not reproduce source origins".into());
             }
