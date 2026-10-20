@@ -14,7 +14,8 @@ use super::LineSpec;
 /// 기본 시리즈 색상 팔레트 (시리즈 색상 미지정 시 순환 사용)
 ///
 /// 한컴 2022 기본 팔레트(`hncChartStyle colorIndex="0"`) — 앞 5색은 `pdf/chart/` 정답지
-/// PDF 픽셀 실측(막대 3시리즈 + 원형 4슬라이스 + ofPie 결합 슬라이스), 6번째 이후는
+/// PDF 픽셀 실측(막대 3시리즈 + 원형 4슬라이스 + ofPie 결합 슬라이스), 6번째는
+/// PrEP 원본과 저장 idx만 바꾼 독립 한컴 2024 Print로 확인했다. 7번째 이후는
 /// 코퍼스에 초과 샘플이 없어 미실측(Office 유사색 순서로 유추 배치).
 const DEFAULT_PALETTE: &[u32] = &[
     0xFF6183D7, // 파랑 (실측)
@@ -22,11 +23,11 @@ const DEFAULT_PALETTE: &[u32] = &[
     0xFFB0B0B0, // 회색 (실측)
     0xFFFCD801, // 노랑 (실측)
     0xFF27A172, // 초록계 (실측 — ofPie 결합 슬라이스, 원형대원형·가로막대 교차 일치)
-    0xFF5B9BD5, // 하늘 (유추 — [4]에서 강등)
+    0xFFA35CC2, // 보라 (독립 Print의 저장 계열 idx=5 범례)
     0xFF9013FE, 0xFF50E3C2,
 ];
 
-fn palette(i: usize) -> u32 {
+pub(crate) fn palette(i: usize) -> u32 {
     DEFAULT_PALETTE[i % DEFAULT_PALETTE.len()]
 }
 
@@ -143,6 +144,13 @@ const EMU_PER_PT: f64 = 12700.0;
 /// 축 라벨·범례 글꼴 px — 차트 XML 의 기본 글꼴(`text_size_pt`), 없으면 한컴 기본 10pt.
 fn label_font_px(chart: &OoxmlChart) -> f64 {
     chart.text_size_pt.unwrap_or(hancom_default::LABEL_PT) * PX_PER_PT
+}
+
+fn legend_font_px(chart: &OoxmlChart) -> f64 {
+    chart
+        .legend_size_pt
+        .map(|size| size * PX_PER_PT)
+        .unwrap_or_else(|| label_font_px(chart))
 }
 
 fn data_label_font_px(chart: &OoxmlChart, series: &OoxmlSeries) -> f64 {
@@ -350,13 +358,28 @@ fn format_value_axis_num(v: f64, format_code: Option<&str>) -> String {
 
 /// 차트 전체를 SVG 조각으로 렌더
 pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> String {
+    render_chart_svg_with_text_measure(chart, x, y, w, h, &|text, font, _| {
+        label_text_width(text, font)
+    })
+}
+
+/// 호출자가 공급한 글꼴 측정 결과를 범례 공간 예약과 실제 전진이 함께 소비한다.
+pub fn render_chart_svg_with_text_measure(
+    chart: &OoxmlChart,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+    measure: &dyn Fn(&str, f64, &str) -> f64,
+) -> String {
     if chart.series.is_empty() || chart.chart_type == OoxmlChartType::Unknown {
         return render_fallback(chart, x, y, w, h);
     }
 
     let mut svg = String::new();
     svg.push_str(&format!(
-        "<g class=\"hwp-ooxml-chart\"><rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" {}/>\n",
+        "<g class=\"hwp-ooxml-chart\"><g font-family=\"{}\"><rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" {}/>\n",
+        xml_escape(chart.text_font_family.as_deref().unwrap_or("sans-serif")),
         x,
         y,
         w,
@@ -380,6 +403,7 @@ pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> S
     // 플롯 아래 3.1L, 라벨 폭 + 1.3L 왼쪽 여백 (T=제목 글꼴, L=라벨 글꼴).
     let title_font = title_font_px(chart);
     let label_font = label_font_px(chart);
+    let legend_font = legend_font_px(chart);
     // 원형은 축·축 라벨이 없어 제목 아래 간격과 아래 여백이 다르다 (실측 2차원원형 지름 183 =
     // 프레임 높이 252.5 − 위 54.5 − 아래 15).
     let is_pie = chart.chart_type == OoxmlChartType::Pie;
@@ -401,15 +425,23 @@ pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> S
     // `w * 0.30 >= 50.0` 가드: 폭이 좁으면(<167px) 하단 폴백 — 아래 clamp의
     // min(50)>max(w*0.30) 패닉 방지 (w는 문서 데이터가 결정). NaN도 false → 폴백.
     let legend_right = legend_visible && chart.legend_pos == LegendPos::Right && w * 0.30 >= 50.0;
-    let legend_h = if legend_visible && !legend_right {
-        22.0
-    } else {
-        0.0
-    };
+    let legend_layout = crate::legend_layout::LegendLayout::new(
+        if legend_visible && !legend_right {
+            legend_items(chart)
+                .iter()
+                .map(|(label, _, _)| 18.0 + measure(label, legend_font, legend_family(chart)))
+                .collect()
+        } else {
+            Vec::new()
+        },
+        w - 16.0,
+        legend_font,
+    );
+    let legend_h = legend_layout.height();
     let legend_w = if legend_right {
         let max_w = legend_items(chart)
             .iter()
-            .map(|(label, _, _)| label_text_width(label, label_font))
+            .map(|(label, _, _)| measure(label, legend_font, legend_family(chart)))
             .fold(0.0f64, f64::max);
         // 스와치 10 + 간격 8 + 글자 폭(10pt) + 오른쪽 여백 8 (플롯 최소폭은 아래 .max(10.0)이 방어)
         (max_w + 26.0).clamp(50.0, w * 0.30)
@@ -453,9 +485,10 @@ pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> S
     if let Some(ref title) = effective_title {
         // 한컴 제목은 regular weight (정답지 PDF 실측 — C1c #1882 갭①), 14pt 검정 (#6624)
         svg.push_str(&format!(
-            "<text class=\"hwp-chart-title\" x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" font-weight=\"400\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
+            "<text class=\"hwp-chart-title\" x=\"{:.2}\" y=\"{:.2}\" font-family=\"{}\" font-size=\"{:.2}\" font-weight=\"400\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
             x + w / 2.0,
             y + title_font * hancom_default::TITLE_BASELINE_EM,
+            xml_escape(chart.title_font_family.as_deref().unwrap_or("inherit")),
             title_font,
             hancom_default::TEXT_COLOR,
             xml_escape(title)
@@ -481,9 +514,10 @@ pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> S
                 y + h - legend_h,
                 w - 16.0,
                 legend_h,
+                &legend_layout,
             );
         }
-        svg.push_str("</g>\n");
+        svg.push_str("</g></g>\n");
         return svg;
     }
 
@@ -517,9 +551,10 @@ pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> S
             y + h - legend_h,
             w - 16.0,
             legend_h,
+            &legend_layout,
         );
     }
-    svg.push_str("</g>\n");
+    svg.push_str("</g></g>\n");
     svg
 }
 
@@ -909,8 +944,8 @@ fn render_bars(
                 if horizontal {
                     let seg = pw * (v / denom);
                     svg.push_str(&format!(
-                        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
-                        base + acc, cell, seg.max(0.0), bar_span_total, color
+                        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
+                        base + acc, cell, seg.max(0.0), bar_span_total, color, line_attr(ser.shape_line, "")
                     ));
                     if ser.show_values && v > 0.0 {
                         let font = data_label_font_px(chart, ser);
@@ -921,7 +956,7 @@ fn render_bars(
                             _ => base + acc + seg + 2.0,
                         };
                         data_labels.push_str(&format!(
-                            "<text class=\"hwp-chart-data-label\" x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" fill=\"#000000\" stroke=\"#ffffff\" stroke-width=\"1.5\" paint-order=\"stroke\" text-anchor=\"start\">{}</text>\n",
+                            "<text class=\"hwp-chart-data-label\" x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"#000000\" stroke=\"#ffffff\" stroke-width=\"1.5\" paint-order=\"stroke\" text-anchor=\"start\">{}</text>\n",
                             label_x,
                             cell + bar_span_total / 2.0 + font * 0.35,
                             font,
@@ -933,8 +968,8 @@ fn render_bars(
                     let seg = ph * (v / denom);
                     let by = py + ph - acc - seg;
                     svg.push_str(&format!(
-                        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
-                        cell, by, bar_span_total, seg.max(0.0), color
+                        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
+                        cell, by, bar_span_total, seg.max(0.0), color, line_attr(ser.shape_line, "")
                     ));
                     if ser.show_values && v > 0.0 {
                         let font = data_label_font_px(chart, ser);
@@ -978,7 +1013,7 @@ fn render_bars(
                             fill_bottom = fill_top;
                         }
                         data_labels.push_str(&format!(
-                            "<text class=\"hwp-chart-data-label\" x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
+                            "<text class=\"hwp-chart-data-label\" x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
                             cell + bar_span_total / 2.0,
                             label_y,
                             font,
@@ -1010,8 +1045,8 @@ fn render_bars(
                         + bar_w * (ser_count - 1 - si) as f64;
                     let bw = pw * t;
                     svg.push_str(&format!(
-                        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
-                        px, cy, bw.max(0.0), bar_w * 0.95, color
+                        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
+                        px, cy, bw.max(0.0), bar_w * 0.95, color, line_attr(ser.shape_line, "")
                     ));
                 } else {
                     let cx =
@@ -1019,8 +1054,8 @@ fn render_bars(
                     let bh = ph * t;
                     let by = py + ph - bh;
                     svg.push_str(&format!(
-                        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
-                        cx, by, bar_w * 0.95, bh.max(0.0), color
+                        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
+                        cx, by, bar_w * 0.95, bh.max(0.0), color, line_attr(ser.shape_line, "")
                     ));
                 }
             }
@@ -2032,7 +2067,7 @@ fn render_value_grid(
                 py + ph,
                 px + pw,
                 py + ph,
-                hancom_default::GRID_STYLE
+                line_attr(axis.line, hancom_default::GRID_STYLE)
             ));
         } else {
             svg.push_str(&format!(
@@ -2041,7 +2076,7 @@ fn render_value_grid(
                 py,
                 px,
                 py + ph,
-                hancom_default::GRID_STYLE
+                line_attr(axis.line, hancom_default::GRID_STYLE)
             ));
         }
     }
@@ -2057,7 +2092,7 @@ fn render_value_grid(
                     py,
                     gx,
                     py + ph,
-                    hancom_default::GRID_STYLE
+                    line_attr(axis.grid_line, hancom_default::GRID_STYLE)
                 ));
             }
             if axis.deleted {
@@ -2068,7 +2103,7 @@ fn render_value_grid(
             }
             let v = vmin + step * i as f64;
             svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
                 gx,
                 py + ph + font * hancom_default::CATEGORY_LABEL_BASELINE_EM,
                 font,
@@ -2084,7 +2119,7 @@ fn render_value_grid(
                     gy,
                     px + pw,
                     gy,
-                    hancom_default::GRID_STYLE
+                    line_attr(axis.grid_line, hancom_default::GRID_STYLE)
                 ));
             }
             if axis.deleted {
@@ -2101,7 +2136,7 @@ fn render_value_grid(
                 (px - gap, "end")
             };
             svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"{}\">{}</text>\n",
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"{}\">{}</text>\n",
                 tx,
                 gy + font * 0.35,
                 font,
@@ -2214,7 +2249,7 @@ fn render_value_grid_3d(
                 fy + fh + ROOM_TICK_DOWN
             ));
             svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
                 gx,
                 fy + fh + ROOM_TICK_DOWN + font,
                 font,
@@ -2246,7 +2281,7 @@ fn render_value_grid_3d(
                 gy
             ));
             svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"end\">{}</text>\n",
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"end\">{}</text>\n",
                 fx - ROOM_TICK_LEFT - 1.0,
                 gy + font * 0.35,
                 font,
@@ -2502,7 +2537,7 @@ fn render_category_labels_at(
             py,
             px,
             py + ph,
-            hancom_default::GRID_STYLE
+            line_attr(cat_axis.line, hancom_default::GRID_STYLE)
         ));
         for i in 0..=cat_count {
             let y = py + cat_span * i as f64;
@@ -2515,7 +2550,7 @@ fn render_category_labels_at(
             py + ph,
             px + pw,
             py + ph,
-            hancom_default::GRID_STYLE
+            line_attr(cat_axis.line, hancom_default::GRID_STYLE)
         ));
         for i in 0..=cat_count {
             let x = px + cat_span * i as f64;
@@ -2539,7 +2574,7 @@ fn render_category_labels_at(
             let row = cat_count - 1 - ci;
             let cy = py + cat_span * row as f64 + cat_span / 2.0 + font * 0.35;
             svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"end\">{}</text>\n",
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"end\">{}</text>\n",
                 px - left_gap,
                 cy,
                 font,
@@ -2549,7 +2584,7 @@ fn render_category_labels_at(
         } else {
             let cx = px + cat_span * ci as f64 + cat_span / 2.0;
             svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
                 cx,
                 py + ph + font * hancom_default::CATEGORY_LABEL_BASELINE_EM,
                 font,
@@ -2595,6 +2630,8 @@ fn legend_order_reversed(chart: &OoxmlChart) -> bool {
 enum SwatchKind {
     /// 막대/원형: 10×10 색 사각형 (현행 유지 — issue_1882 필터 문자열 보호)
     Square,
+    /// 계열 자체에 선언된 사각형 테두리를 범례 키도 함께 표시한다.
+    OutlinedSquare { rgb: u32, width_emu: Option<u32> },
     /// 무표식 라인·콤보 라인: 14px 색 선분 (현행 유지)
     LineOnly,
     /// 표식 라인·선+표식 분산형: 선분 + 중앙 마커 글리프 (—◆—)
@@ -2630,7 +2667,10 @@ fn swatch_kind(chart: &OoxmlChart, s: &OoxmlSeries, i: usize) -> SwatchKind {
                 SwatchKind::Blank
             }
         }
-        _ => SwatchKind::Square,
+        _ => match s.shape_line {
+            LineSpec::Solid { rgb, width_emu } => SwatchKind::OutlinedSquare { rgb, width_emu },
+            _ => SwatchKind::Square,
+        },
     }
 }
 
@@ -2669,7 +2709,14 @@ fn legend_items(chart: &OoxmlChart) -> Vec<(String, u32, SwatchKind)> {
                     } else {
                         s.name.clone()
                     };
-                    let color = s.color.unwrap_or_else(|| palette(i));
+                    // 한컴 사용자 서식은 면색과 별도로 저장 idx의 기본 범례 키를 쓴다.
+                    // idx만 바꾼 Print 대조군에서 막대 면은 유지되고 범례 키만 바뀐다.
+                    let color = if let (Some(-1), Some(index)) = (chart.color_index, s.source_index)
+                    {
+                        palette(index as usize)
+                    } else {
+                        s.color.unwrap_or_else(|| palette(i))
+                    };
                     (label, color, swatch_kind(chart, s, i))
                 })
                 .collect();
@@ -2705,6 +2752,15 @@ fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: Swat
                 color_hex(color)
             ));
         }
+        SwatchKind::OutlinedSquare { rgb, width_emu } => {
+            svg.push_str(&format!(
+                "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"10\" height=\"10\" fill=\"{}\" {}/>\n",
+                ix,
+                cy - 6.0,
+                color_hex(color),
+                line_attr(LineSpec::Solid { rgb, width_emu }, "stroke=\"none\"")
+            ));
+        }
         SwatchKind::LineOnly => swatch_line(svg),
         SwatchKind::LineGlyph(si) => {
             swatch_line(svg);
@@ -2734,31 +2790,47 @@ fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: Swat
 }
 
 /// 하단 가로 범례 (legendPos=b 및 기본값)
-fn render_legend(svg: &mut String, chart: &OoxmlChart, x: f64, y: f64, w: f64, _h: f64) {
-    if chart.series.is_empty() {
-        return;
-    }
-    let items = legend_items(chart);
-    let font = label_font_px(chart);
+fn legend_family(chart: &OoxmlChart) -> &str {
+    chart
+        .legend_font_family
+        .as_deref()
+        .or(chart.text_font_family.as_deref())
+        .unwrap_or("sans-serif")
+}
 
-    svg.push_str("<g class=\"hwp-chart-legend\">\n");
-    // 가운데 정렬: 항목 개수로 총 너비 계산
-    let item_w = 100.0_f64.min((w / items.len().max(1) as f64).max(60.0));
-    let total_w = item_w * items.len() as f64;
-    let start_x = x + (w - total_w) / 2.0;
-    for (i, (label, color, kind)) in items.iter().enumerate() {
-        let ix = start_x + item_w * i as f64;
-        push_legend_swatch(svg, ix, y + 11.0, *color, *kind);
-        svg.push_str(&format!(
-            "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" fill=\"{}\">{}</text>\n",
-            ix + 18.0,
-            y + 11.0 + font * 0.35,
-            font,
-            hancom_default::TEXT_COLOR,
-            xml_escape(label)
-        ));
+fn render_legend(
+    svg: &mut String,
+    chart: &OoxmlChart,
+    x: f64,
+    y: f64,
+    w: f64,
+    _h: f64,
+    layout: &crate::legend_layout::LegendLayout,
+) {
+    let items = legend_items(chart);
+    let font = legend_font_px(chart);
+    svg.push_str(&format!(
+        "<g class=\"hwp-chart-legend\"><g font-family=\"{}\">\n",
+        xml_escape(legend_family(chart))
+    ));
+    // 가장 넓은 행을 기준으로 블록을 가운데 놓고 다음 행도 같은 왼쪽에서 시작한다.
+    // 플롯이 예약한 높이와 실제 행 간격은 동일한 layout에서 가져온다.
+    let start_x = x + (w - layout.width) / 2.0;
+    for (row_index, row) in layout.rows.iter().enumerate() {
+        let mut ix = start_x;
+        let cy = y + layout.row_height * (row_index as f64 + 0.5);
+        for i in row.items.clone() {
+            let (label, color, kind) = &items[i];
+            push_legend_swatch(svg, ix, cy, *color, *kind);
+            svg.push_str(&format!(
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\">{}</text>\n",
+                ix + 18.0, cy + font * 0.35, font,
+                hancom_default::TEXT_COLOR, xml_escape(label)
+            ));
+            ix += layout.widths[i];
+        }
     }
-    svg.push_str("</g>\n");
+    svg.push_str("</g></g>\n");
 }
 
 /// 우측 세로 범례 (legendPos=r — 한컴 코퍼스 전 샘플). 플롯 세로 중앙 정렬.
@@ -2768,17 +2840,20 @@ fn render_legend_right(svg: &mut String, chart: &OoxmlChart, x: f64, y: f64, h: 
         return;
     }
     let items = legend_items(chart);
-    let font = label_font_px(chart);
+    let font = legend_font_px(chart);
     let row_h = font * 1.3;
     let total_h = row_h * items.len() as f64;
     let start_y = y + ((h - total_h) / 2.0).max(0.0);
 
-    svg.push_str("<g class=\"hwp-chart-legend\">\n");
+    svg.push_str(&format!(
+        "<g class=\"hwp-chart-legend\"><g font-family=\"{}\">\n",
+        xml_escape(legend_family(chart))
+    ));
     for (i, (label, color, kind)) in items.iter().enumerate() {
         let cy = start_y + row_h * i as f64 + row_h / 2.0;
         push_legend_swatch(svg, x, cy, *color, *kind);
         svg.push_str(&format!(
-            "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" fill=\"{}\">{}</text>\n",
+            "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\">{}</text>\n",
             x + 18.0,
             cy + font * 0.35,
             font,
@@ -2786,7 +2861,7 @@ fn render_legend_right(svg: &mut String, chart: &OoxmlChart, x: f64, y: f64, h: 
             xml_escape(label)
         ));
     }
-    svg.push_str("</g>\n");
+    svg.push_str("</g></g>\n");
 }
 
 #[cfg(test)]

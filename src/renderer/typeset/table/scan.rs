@@ -58,8 +58,22 @@ impl RowBlockQuery<'_> {
         let block_size = b_end.saturating_sub(b_start);
         let block_has_any_rowspan = block_size >= 2
             && (b_start..b_end).any(|x| rowspan_touched.get(x).copied().unwrap_or(false));
-        let block_has_protectable_rowspan =
-            block_has_any_rowspan && mt.rowspan_block_uses_whole_unit(b_start, b_end);
+        // 저장 제목/라벨의 작은 그룹 보호는 실제 저장 줄의 계약이다.
+        // 모든 칸이 재조판 줄을 쓰는 RowBreak 그룹은 같은 행·유닛·최소
+        // 원장으로 나눈다. 행 수만으로 빈 최소까지 통째로 이월하지 않는다.
+        let plain_reflow_block = mt.allows_row_break_split()
+            && block_has_any_rowspan
+            && table
+                .cells
+                .iter()
+                .filter(|cell| {
+                    usize::from(cell.row) < b_end
+                        && usize::from(cell.row) + usize::from(cell.row_span) > b_start
+                })
+                .all(|cell| layout_engine.cell_uses_plain_reflow_units(cell, table));
+        let block_has_protectable_rowspan = block_has_any_rowspan
+            && !plain_reflow_block
+            && mt.rowspan_block_uses_whole_unit(b_start, b_end);
         let rowbreak_hard_break_row =
             if mt.allows_row_break_split() && b_start == r && block_has_protectable_rowspan {
                 layout_engine.row_block_first_internal_hard_break_row(table, b_start, b_end, styles)
@@ -88,6 +102,7 @@ impl RowBlockQuery<'_> {
         let rowbreak_rowspan_block = mt.allows_row_break_split()
             && b_start == r
             && block_has_any_rowspan
+            && !plain_reflow_block
             && (rowbreak_has_internal_hard_break || rowbreak_block_content_exceeds_row_sum);
         // #1486: hard-break가 rowspan 블록 첫 행의 큰 셀 안에 있을 때만
         // 행 시작 y offset을 빼서 아래 행 셀을 다음 조각에 남긴다.

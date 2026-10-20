@@ -1,4 +1,4 @@
-//! [#6865] `PATINVERT → DPa → PATINVERT` 관용구의 **1비트 마스크**는 보이는 칠이 아니다.
+//! [#6865] `PATINVERT → DPa → PATINVERT`의 마스크는 바탕과 브러시 색을 선택한다.
 //!
 //! **증상.** 156627451 3쪽 WMF 도해의 옅은 회색 패널이 흑백 체커보드(50% 회색)로 칠해져
 //! 그 위 글자가 배경에 묻힌다. 7쪽 배너는 그러데이션 자리에 디더 띠 220개가 깔린다.
@@ -22,23 +22,20 @@
 //!   M=0x000000 :  (D ⊕ G) ∧ 0x000000 ⊕ G = G      브러시 색
 //! ```
 //!
-//! 곧 마스크는 **브러시 색이 어디에 남을지**를 정할 뿐 그 자신이 칠이 아니다. `#6469` 가
-//! 이 관용구를 `PATCOPY` 로 근사하기로 했으므로 색은 이미 앞 `PATINVERT` 가 칠했고,
-//! 가운데 마스크를 또 칠하면 흑백 디더가 그 위를 덮는다.
+//! 마스크를 단색으로 대체하거나 삭제하면 흰 비트가 보존해야 할 바탕도 지운다.
+//! 아래 합성 검사는 MS-WMF의 비트 연산을 독립 기대값으로 사용한다. 원본 패턴의
+//! 팔레트 반전과 중간 연산 영역도 보존해야 하며 SVG 태그·정의 이름은 기대값이 아니다.
+//! 실문서의 전쪽 Print 일치 여부는 별도의 Native/fresh WASM TSV로 확인한다.
 //!
-//! **수정.** 상쇄기가 마지막 `PATINVERT` 만 지우던 것을, 가운데 `DPa` 의 브러시가 1비트일
-//! 때 그 blit 도 함께 지우도록 했다. `#6469` 가 살려 둔 "**그림**을 실은 `DPa`"(흰 원)는
-//! 1비트가 아니므로 종전대로 그려진다 — 아래 음성 대조가 그것을 잠근다.
-//!
-//! **실측(3쪽 패널 4점, 96dpi PNG).**
+//! **과거 단색 근사의 실측(3쪽 패널 4점, 96dpi PNG).**
 //!
 //! | | 수정 전 | 수정 후 | 정본(engine 2020) |
 //! |---|---:|---:|---:|
 //! | (130,460) | 96 | **217** | 245 |
 //! | (150,250) | 98 | **217** | 245 |
 //!
-//! 남는 28 계조는 `#6469` 의 `PATCOPY` 근사가 50% 하프톤을 단색으로 평탄화하기 때문이고
-//! 별개 축이다 — 이 시험은 **디더가 칠로 나가지 않는다**만 잠근다.
+//! 당시의 28 계조 차이는 현재 출력의 기대값이 아니다. 현 검사는 패턴 삭제 여부 대신
+//! 비트별 바탕 보존과 브러시 선택을 확인하며 실문서 점수와 구분한다.
 //!
 //! **폭발반경.** 코퍼스 10,000건에서 1비트 패턴 브러시를 가진 문서는 21건뿐이고, 전/후
 //! 바이너리 렌더 대조에서 쪽수가 달라진 문서는 0이다.
@@ -188,16 +185,13 @@ fn to_svg(bytes: &[u8]) -> String {
 }
 
 #[test]
-fn issue_6865_monochrome_mask_blit_is_not_painted() {
+fn issue_6865_complete_mask_selects_brush_or_original_destination() {
     let svg = to_svg(&idiom(1));
     assert!(
         svg.contains("#D9D9D9") || svg.contains("rgb(217,217,217)"),
         "앞 PATINVERT 의 브러시 색은 남아야 한다:\n{svg}"
     );
-    assert!(
-        !svg.contains("rop_pat"),
-        "1비트 마스크는 보이는 칠로 나가면 안 된다:\n{svg}"
-    );
+    assert_xor_pattern_pixels(&svg, [10, 10, 50, 50], false);
     // 동일한 비트 연산이 벡터 윤곽 사이에 저장된 정상 한컴 WMF도 대조한다.
     // 월간 수출입 보도자료 BinData/BIN0003.wmf의 원본 바이트이며, 독립 PDF1쪽은
     // 붉은 사각형 대신 8×8 흑백 패턴을 적용한 꺾은선으로 표시한다.
@@ -289,15 +283,14 @@ fn blit_rect(rop: u32, x: i16, y: i16, width: i16, height: i16) -> Vec<u8> {
 }
 
 #[test]
-fn issue_6865_halftone_one_unit_edge_padding_is_removed() {
-    // Match both real fixture shapes: top/left overscan and a shifted bottom.
-    for middle in [blit_rect(DPA, 9, 9, 51, 51), blit_rect(DPA, 9, 11, 51, 50)] {
+fn issue_6865_halftone_padding_keeps_each_operation_region() {
+    for rect in [[9, 9, 51, 51], [9, 11, 51, 50]] {
+        let [x, y, width, height] = rect;
         let svg = finish_sequence(
-            mask_prefix(dib_pattern_brush(1), middle),
+            mask_prefix(dib_pattern_brush(1), blit_rect(DPA, x, y, width, height)),
             &[select_object(0), brush_blit(PATINVERT)],
         );
-        assert!(!svg.contains("rop_pat"));
-        assert_eq!(svg.matches("fill=\"#D9D9D9\"").count(), 1);
+        assert_xor_pattern_pixels(&svg, rect.map(i32::from), false);
     }
 }
 
@@ -465,7 +458,7 @@ fn issue_6865_colored_one_bit_pattern_is_preserved() {
 }
 
 #[test]
-fn issue_6865_reversed_black_white_palette_is_a_mask() {
+fn issue_6865_reversed_palette_reverses_brush_and_destination_selection() {
     let mut pattern = dib_pattern_brush(1);
     let palette = 6 + 2 + 2 + 40;
     pattern[palette..palette + 8].copy_from_slice(&[255, 255, 255, 0, 0, 0, 0, 0]);
@@ -473,5 +466,58 @@ fn issue_6865_reversed_black_white_palette_is_a_mask() {
         mask_prefix(pattern, brush_blit(DPA)),
         &[select_object(0), brush_blit(PATINVERT)],
     );
-    assert!(!svg.contains("rop_pat"));
+    assert_xor_pattern_pixels(&svg, [10, 10, 50, 50], true);
+}
+
+/// 합성 WMF에 기록한 실제 연산 영역과 DIB 비트로 기대 색을 계산한다.
+/// 실물 문서의 화면 좌표 핀이 아니라 GDI 비트 연산의 독립 계약이다.
+fn assert_xor_pattern_pixels(svg: &str, middle: [i32; 4], reversed: bool) {
+    use resvg::tiny_skia::{Color, Pixmap, Transform};
+    let tree = resvg::usvg::Tree::from_str(svg, &resvg::usvg::Options::default())
+        .expect("WMF 변환 SVG 해석");
+    let size = tree.size().to_int_size();
+    let mut bitmap = Pixmap::new(size.width(), size.height()).unwrap();
+    let destination = [31u8, 79, 127];
+    bitmap.fill(Color::from_rgba8(31, 79, 127, 255));
+    // 한 WMF 장치 픽셀을 한 출력 픽셀로 재생한다. 확대 후 소수 위치에서
+    // 표본을 고르면 영상 보간 결과가 섞여 이 이산 비트 계약을 검사할 수 없다.
+    resvg::render(&tree, Transform::identity(), &mut bitmap.as_mut());
+    let [left, top, width, height] = middle;
+    for y in 8..63 {
+        for x in 8..63 {
+            let outer = (10..60).contains(&x) && (10..60).contains(&y);
+            let masked = (left..left + width).contains(&x) && (top..top + height).contains(&y);
+            // DIB는 bottom-up이다. 첫 저장 행은 0x55, 맨 위 행은 0xAA이므로
+            // 기본 팔레트에서 x+y가 짝수인 비트가 흰색이다.
+            let mask = if ((x + y) % 2 == 0) ^ reversed {
+                255
+            } else {
+                0
+            };
+            let expected = destination.map(|mut value| {
+                if outer {
+                    value ^= 217;
+                }
+                if masked {
+                    value &= mask;
+                }
+                if outer {
+                    value ^= 217;
+                }
+                value
+            });
+            let actual = bitmap.pixel(x as u32, y as u32).unwrap();
+            assert_eq!(actual.alpha(), 255, "원래 바탕은 불투명하다");
+            for (channel, expected) in [actual.red(), actual.green(), actual.blue()]
+                .into_iter()
+                .zip(expected)
+            {
+                assert!(
+                    channel.abs_diff(expected) <= 1,
+                    "비트 연산 결과 불일치: ({x},{y}), middle={middle:?}, \
+                     reversed={reversed}, actual={actual:?}, expected={expected}"
+                );
+            }
+        }
+    }
 }

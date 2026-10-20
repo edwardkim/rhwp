@@ -23,14 +23,14 @@
       "page": 0,
       "expectedStatus": "complete",
       "expectedCounts": {
-        "runsSeen": 136,
         "charactersSeen": 607,
         "recordsEmitted": 607,
         "recordsOmitted": 0
       },
       "renderPinsDeferredToIssue7445": [
         "expectedLayoutHash"
-      ]
+      ],
+      "validateRunOwnership": true
     },
     {
       "id": "subst-counterpart-hwp",
@@ -39,14 +39,14 @@
       "page": 0,
       "expectedStatus": "complete",
       "expectedCounts": {
-        "runsSeen": 46,
         "charactersSeen": 41,
         "recordsEmitted": 41,
         "recordsOmitted": 0
       },
       "renderPinsDeferredToIssue7445": [
         "expectedLayoutHash"
-      ]
+      ],
+      "validateRunOwnership": true
     },
     {
       "id": "document-substitute-hwpx",
@@ -55,21 +55,20 @@
       "page": 0,
       "expectedStatus": "complete",
       "expectedCounts": {
-        "runsSeen": 46,
         "charactersSeen": 41,
         "recordsEmitted": 41,
         "recordsOmitted": 0
       },
       "renderPinsDeferredToIssue7445": [
         "expectedLayoutHash"
-      ]
+      ],
+      "validateRunOwnership": true
     }
   ],
   "profiles": [
     {
       "id": "exact-face",
       "documentId": "exact-face",
-      "recordId": "page:0:run:1:char:0",
       "expected": {
         "sourceStatus": "complete",
         "character": "초",
@@ -80,12 +79,18 @@
         "metricMatchKind": "exact",
         "metricCharacterMatch": "hit",
         "widthSource": "embeddedMetric"
+      },
+      "sourceAddress": {
+        "sectionIndex": 0,
+        "paragraphIndex": 1,
+        "charOffset": 0,
+        "charShapeId": 0,
+        "nestedPath": []
       }
     },
     {
       "id": "missing-face",
       "documentId": "missing-face",
-      "recordId": "page:0:run:46:char:1",
       "expected": {
         "sourceStatus": "complete",
         "character": "1",
@@ -96,12 +101,18 @@
         "metricMatchKind": "exact",
         "metricCharacterMatch": "hit",
         "widthSource": "embeddedMetric"
+      },
+      "sourceAddress": {
+        "sectionIndex": 0,
+        "paragraphIndex": 7,
+        "charOffset": 22,
+        "charShapeId": 318,
+        "nestedPath": []
       }
     },
     {
       "id": "document-substitute",
       "documentId": "document-substitute-hwpx",
-      "recordId": "page:0:run:3:char:0",
       "expected": {
         "sourceStatus": "complete",
         "character": "2",
@@ -110,8 +121,19 @@
         "normalizedFace": "KoPubWorld돋움체 Light",
         "layoutStepKind": "documentSubstFont",
         "metricMatchKind": "none",
-        "metricCharacterMatch": "notApplicable",
-        "widthSource": "heuristicHalfwidth"
+        "metricCharacterMatch": "hit",
+        "widthSource": "kopubTable"
+      },
+      "sourceAddress": {
+        "sectionIndex": 0,
+        "paragraphIndex": 3,
+        "charOffset": 0,
+        "charShapeId": 89,
+        "nestedPath": [
+          1,
+          1,
+          0
+        ]
       }
     }
   ],

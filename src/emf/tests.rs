@@ -364,6 +364,7 @@ fn object_table_insert_get_remove() {
         GraphicsObject::Pen(LogPen {
             style: 0,
             width: 2,
+            width_kind: super::parser::objects::PenWidthKind::Logical,
             _reserved: 0,
             color: 0x00FF0000,
         }),

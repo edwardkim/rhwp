@@ -696,7 +696,7 @@ fn issue_4969_q3_c_native_skia_exact_blob_instance_round_trips_coordinates() {
 
 #[test]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-fn issue_4969_q2_d4_a_projects_exact_local_geometry_and_clusters() {
+fn issue_4969_condensed_projection_preserves_declared_size_and_page_geometry() {
     let (sidecars, measurement, _) = prepared_sidecar();
     let run = text_run();
     let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
@@ -718,15 +718,13 @@ fn issue_4969_q2_d4_a_projects_exact_local_geometry_and_clusters() {
     let expected_ids = [614, 1230, 1497, 2085];
     let expected_page_x = [0.0, 7.728, 15.456, 15.456];
     let expected_page_advance_x = [7.728, 7.728, 0.0, 0.0];
-    let expected_local_x = [
-        0.0,
-        8.640166665059187,
-        17.280333330118374,
-        17.280333330118374,
-    ];
-    let expected_local_advance_x = [8.640166665059187, 8.640166665059187, 0.0, 0.0];
-    let expected_draw_font_size = 8.94427190999916;
-    let expected_draw_x_scale = 0.8944271909999159;
+    // 독립 Print의 장평은 가로 축만 바꾼다(#5821, 전쪽 시각 증거 단계 910).
+    // 로컬 좌표는 원본 page 좌표를 선언 장평으로 역변환하며 세로 em은 유지한다.
+    // 이전 sqrt 장평에서 관측한 로컬 px 배열을 정답으로 고정하지 않는다.
+    let expected_local_x = expected_page_x.map(|x| x / run.style.ratio);
+    let expected_local_advance_x = expected_page_advance_x.map(|advance| advance / run.style.ratio);
+    let expected_draw_font_size = run.style.font_size;
+    let expected_draw_x_scale = run.style.ratio;
     assert_eq!(lowered.glyph_ids, expected_ids);
     assert_eq!(lowered.positions.len(), expected_local_x.len());
     assert_eq!(

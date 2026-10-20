@@ -11,8 +11,9 @@
 use std::fs;
 use std::path::Path;
 
-use rhwp::diagnostics::render_geom_diff::{roundtrip_geom, Via};
 use rhwp::document_core::DocumentCore;
+use rhwp::renderer::layout::CellContext;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue1880_anchor_stack_sb_convert.hwpx";
 
@@ -31,21 +32,57 @@ fn issue_1880_hwpx_renders_13_pages() {
 /// convert-HWP 왕복 렌더 자기정합: 인코딩이 달라도 같은 pagination 이어야 한다.
 /// 종전: convert-HWP 만 sb 2회분 덜 쌓아 p12 로 오-페이지네이션 (구조 분기).
 #[test]
-fn issue_1880_convert_hwp_roundtrip_render_is_self_consistent() {
+fn issue_1880_convert_hwp_roundtrip_preserves_page_content_and_ownership() {
     let data = read_sample();
-    let diff = roundtrip_geom(&data, Via::Hwp).unwrap_or_else(|e| panic!("roundtrip_geom: {e:?}"));
-
-    assert_eq!(
-        diff.page_count_a, diff.page_count_b,
-        "HWPX vs convert-HWP 페이지 수: A={} B={}",
-        diff.page_count_a, diff.page_count_b
-    );
-    assert_eq!(diff.page_count_a, 13, "한컴 13쪽 정합");
-    for pg in &diff.pages {
-        assert!(
-            !pg.structure_mismatch,
-            "page {} 구조 불일치 (node {} vs {}) — 빈-앵커 스택 sb 인코딩 분기 회귀",
-            pg.page, pg.node_count_a, pg.node_count_b
+    let mut original = DocumentCore::from_bytes(&data).expect("원본");
+    let saved = original.export_hwp_with_adapter().expect("공개 HWP 저장");
+    let reopened = DocumentCore::from_bytes(&saved).expect("저장본 재열람");
+    assert_eq!(original.page_count(), 13, "독립 Print 전체 쪽수");
+    assert_eq!(reopened.page_count(), original.page_count());
+    for page in 0..original.page_count() {
+        let left = original.build_page_render_tree(page).expect("원본 쪽");
+        let right = reopened.build_page_render_tree(page).expect("저장본 쪽");
+        assert_eq!(
+            page_content(&left.root),
+            page_content(&right.root),
+            "같은 쪽·문단·셀 소속 내용의 순서·누락·중복: {page}"
         );
     }
+}
+
+#[derive(Debug, PartialEq)]
+struct OwnedContent {
+    section: Option<usize>,
+    paragraph: Option<usize>,
+    cell: Option<CellContext>,
+    text: String,
+}
+
+fn page_content(node: &RenderNode) -> Vec<OwnedContent> {
+    fn walk(node: &RenderNode, output: &mut Vec<OwnedContent>) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if !run.text.is_empty() {
+                if let Some(last) = output.last_mut().filter(|v| {
+                    v.section == run.section_index
+                        && v.paragraph == run.para_index
+                        && v.cell == run.cell_context
+                }) {
+                    last.text.push_str(&run.text);
+                } else {
+                    output.push(OwnedContent {
+                        section: run.section_index,
+                        paragraph: run.para_index,
+                        cell: run.cell_context.clone(),
+                        text: run.text.clone(),
+                    });
+                }
+            }
+        }
+        for child in &node.children {
+            walk(child, output);
+        }
+    }
+    let mut out = Vec::new();
+    walk(node, &mut out);
+    out
 }

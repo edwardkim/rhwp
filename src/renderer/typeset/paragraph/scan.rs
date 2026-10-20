@@ -22,6 +22,8 @@ pub(in crate::renderer::typeset) struct LineScanPage {
     pub current_height: f64,
     pub has_items: bool,
     pub vpos_ladder_dirty: bool,
+    /// 첫 항목에서 임시 유추한 원점과 구분되는 확정 저장 프레임의 축.
+    pub stored_vpos_base: Option<i32>,
     pub current_footnote_height: f64,
     pub footnote_safety_margin: f64,
     pub current_zone_y_offset: f64,
@@ -247,6 +249,14 @@ pub(in crate::renderer::typeset) fn scan_lines(
                 page.body_height,
                 page.current_height,
             );
+            // 진단은 원본 줄의 수용 근거와 실제 예약 경계를 함께 남긴다.
+            if std::env::var("RHWP_DIAG_SPLIT_BUDGET").is_ok() {
+                eprintln!(
+                    "DIAG_LINE_FIT pi={para_idx} line={li} cursor={cursor_line} current={:.3} cumulative={cumulative:.3} content={content_h:.3} available={avail_for_lines:.3} body={:.3} notes={:.3} zone={:.3} saved_tail={saved_tail_vpos_fit} authoritative={hwp_authoritative} reset_owner={hwpx_reset_fragment_owner} note_reset={native_hwp5_reset_tail_fits_actual_footnote_boundary} note_clear={saved_line_clears_footnote_area} dirty={}",
+                    page.current_height, page.body_height, page.current_footnote_height,
+                    page.current_zone_y_offset, page.vpos_ladder_dirty,
+                );
+            }
             match saved_tail_fit_chain_decision(
                 tail_fit_chain,
                 saved_tail_vpos_fit,
@@ -373,6 +383,13 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
                         | crate::model::shape::TextWrap::InFrontOfText))
         });
     if page.profile.session_edited()
+        // 앞선 재조판 이력만으로 현재 저장 조각의 소유를 버리지 않는다.
+        // 아래에서 현재 실제 원점과 저장 첫 줄의 일치, 편집되지 않은
+        // 연속 prefix와 본문 안의 마지막 점유 끝을 함께 확인한다.
+        // 재조판된 쪽의 임시 로컬 원점에 맞는다는 사실만으로 원래의
+        // 물리 reset을 복원하지 않는다. 확정 프레임의 같은 축이어야 한다.
+        || (page.vpos_ladder_dirty
+            && page.stored_vpos_base != Some(current_page_vpos_base))
         || para.stored_text_partition_is_dirty()
         || para.cell_format_vpos_dirty
         || page.col_count != 1

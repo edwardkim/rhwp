@@ -182,12 +182,30 @@ def git_pdf_paths():
 
 
 def sample_paths():
+    # 활성 회귀에서 제거한 입력은 원본을 보존해도 재생성 원장에 다시 넣지 않는다.
+    retired = inactive_oracle_samples()
     found = []
     for root, _, files in os.walk('samples'):
         for f in files:
             if f.lower().endswith(('.hwp', '.hwpx')):
-                found.append(os.path.join(root, f).replace(os.sep, '/'))
+                path = os.path.join(root, f).replace(os.sep, '/')
+                if path not in retired:
+                    found.append(path)
     return sorted(found)
+
+
+def inactive_oracle_samples():
+    """사용자 승인 제거 목록과 이관한 oracle 축만 읽는다."""
+    with open('tests/fixtures/retired_exam_baseline_inputs.txt', encoding='utf-8') as fh:
+        retired = {line.strip() for line in fh if line.strip() and not line.startswith('#')}
+    with open('tests/fixtures/deferred_visual_regression_inputs.tsv', encoding='utf-8') as fh:
+        for line in fh:
+            if not line.strip() or line.startswith('#'):
+                continue
+            path, axes, _issue = line.rstrip('\n').split('\t')
+            if 'oracle' in axes.split(','):
+                retired.add(path)
+    return retired
 
 
 def oracle_pages_and_text(git_path, tmp):

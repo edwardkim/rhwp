@@ -240,6 +240,17 @@ fn serialize_hwp_inner(
     // 6. CFB 컨테이너 조립
     let mut content_loss = ContentLossReport::new(SerializedFormat::Hwp);
     let mut extra_streams = doc.extra_streams.clone();
+    // HWPX에 보존한 재정렬 요청도 HWP 저장·재열기에서 같은 계약을 유지한다.
+    if doc.layout_profile().hwp3_external_realign()
+        && !extra_streams
+            .iter()
+            .any(|(path, _)| path == crate::model::document::HWP3_EXTERNAL_REALIGN_STREAM_PATH)
+    {
+        extra_streams.push((
+            crate::model::document::HWP3_EXTERNAL_REALIGN_STREAM_PATH.to_string(),
+            b"1".to_vec(),
+        ));
+    }
     extra_streams.retain(|(path, _)| path != crate::model::hyperlink_format::HWP_STREAM);
     if let Some(bytes) = crate::model::hyperlink_format::encode(doc) {
         extra_streams.push((crate::model::hyperlink_format::HWP_STREAM.into(), bytes));

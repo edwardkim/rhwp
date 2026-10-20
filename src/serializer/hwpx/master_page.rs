@@ -19,7 +19,7 @@ const XMLNS: &str = r#"xmlns:ha="http://www.hancom.co.kr/hwpml/2011/app" xmlns:h
 /// 확장 바탕쪽(is_extension)은 ext_flags 의 optional 비트(0x04)로 LAST_PAGE/OPTIONAL_PAGE 구분.
 fn master_page_type_str(mp: &MasterPage) -> &'static str {
     if mp.is_extension {
-        if mp.ext_flags & 0x04 != 0 {
+        if mp.optional_page_number.is_some() || mp.ext_flags & 0x04 != 0 {
             "OPTIONAL_PAGE"
         } else {
             "LAST_PAGE"
@@ -86,7 +86,7 @@ pub fn render_master_page_xml(mp: &MasterPage, id: &str, ctx: &mut SerializeCont
         xmlns = XMLNS,
         id = id,
         ty = master_page_type_str(mp),
-        pn = mp.hwpx_page_number.unwrap_or(0),
+        pn = mp.optional_page_number.or(mp.hwpx_page_number).unwrap_or(0),
         pd = page_duplicate_str(mp),
         pf = mp.page_front as u8,
         td = if mp.text_direction == 1 {

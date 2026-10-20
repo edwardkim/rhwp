@@ -5,11 +5,9 @@ use crate::renderer::typeset::notes::footnotes::boundary::{
     native_hwp5_footnote_fragment_height, native_hwp5_footnote_reset_fragments,
     native_hwp5_two_line_footnote_fragments, NativeHwp5FootnoteFragmentSplit,
 };
-use crate::renderer::typeset::notes::footnotes::measure::composed_footnote_content_height;
 use crate::renderer::typeset::{
-    estimate_footnote_note_height, hwpunit_to_px,
-    native_hwp5_rowbreak_host_precedes_first_fragment, Control, Footnote, FootnoteRef,
-    FootnoteSource, Paragraph, ResolvedStyleSet, TypesetEngine, TypesetState,
+    hwpunit_to_px, native_hwp5_rowbreak_host_precedes_first_fragment, Control, Footnote,
+    FootnoteRef, FootnoteSource, Paragraph, ResolvedStyleSet, TypesetEngine, TypesetState,
 };
 
 impl TypesetEngine {
@@ -69,8 +67,8 @@ impl TypesetEngine {
             styles,
         };
         let block_content_height = note_measure.block_content_height(st, fn_ctrl, None);
-        let content_height = block_content_height
-            .unwrap_or_else(|| composed_footnote_content_height(fn_ctrl, self.dpi));
+        let content_height =
+            block_content_height.unwrap_or_else(|| note_measure.content_height(st, fn_ctrl));
         // 번호는 문서 순서다. 앞 각주의 저장 suffix가 다음 쪽 lane을 열었으면
         // 뒤 번호를 현재 쪽에 끼워 넣지 않고 같은 lane에서 이어받는다.
         // 본문 marker의 소유 쪽은 이 예약으로 바뀌지 않는다.
@@ -192,11 +190,9 @@ impl TypesetEngine {
                 full_content_height,
             );
         } else {
-            // 이 호출의 source는 최상위 본문 control이다. 같은 문단의 표는
-            // 형제 각주의 소유를 바꾸지 않는다. 셀 안 각주는 별도의
-            // TableCell source/fragment queue에서 등록하므로 중복되지 않는다.
-            let fn_height = block_content_height
-                .unwrap_or_else(|| estimate_footnote_note_height(fn_ctrl, self.dpi));
+            // 최상위 본문 control의 각주는 같은 문단의 형제 표와 독립적이다.
+            // 셀 내부 각주는 별도의 fragment queue에서 등록한다.
+            let fn_height = content_height;
             let move_to_next_reset_page = native_hwp5_final_marker_footnote_uses_next_reset_page(
                 st, para_idx, para, paragraphs, ctrl_idx, fn_ctrl, fn_height,
             );

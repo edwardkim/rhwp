@@ -15,6 +15,8 @@
 //!     ...
 //! ```
 
+mod master_page_scope;
+
 use super::byte_reader::ByteReader;
 use super::record::Record;
 use super::tags;
@@ -143,7 +145,7 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
         section
             .section_def
             .master_pages
-            .extend(parse_master_pages_from_raw(&tail, 0));
+            .extend(master_page_scope::parse_extended_master_pages(&tail));
         section.trailing_lists = Some(crate::model::section_tail::SectionTail {
             records: tail,
             projection_seal: None,
@@ -1072,6 +1074,7 @@ fn parse_master_pages_from_raw(raw_records: &[RawRecord], section_flags: u32) ->
             text_ref,
             num_ref,
             hwpx_page_number: None,
+            optional_page_number: None,
             raw_list_header,
         });
     }
