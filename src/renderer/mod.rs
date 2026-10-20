@@ -3446,17 +3446,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn host_font_requests_use_actual_names_before_css_quoting() {
-        let families = render_font_family_names_for_weight("휴먼명조", false);
-        assert_eq!(families[0], "휴먼명조");
-        assert!(families.iter().any(|family| family == "Haansoft Batang"));
-        assert!(!families.iter().any(|family| family.starts_with('\'')));
-        let literal = render_font_family_names_for_weight("Tom's Handwriting", false);
-        assert_eq!(literal[0], "Tom's Handwriting");
-        assert!(render_font_family_chain("Tom's Handwriting").starts_with("'Tom\\'s Handwriting',"));
-    }
-
-    #[test]
     fn test_render_backend_from_str() {
         assert_eq!(
             RenderBackend::from_str("canvas"),

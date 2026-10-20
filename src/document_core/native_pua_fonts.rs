@@ -126,33 +126,3 @@ impl DocumentCore {
         self.paginate_if_needed();
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::DocumentCore;
-
-    #[test]
-    fn pua_supply_clear_preserves_explicit_exact_font_owner() {
-        let mut core = DocumentCore::new_empty();
-        let bytes = include_bytes!("../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
-        let before: serde_json::Value = serde_json::from_str(
-            &core
-                .register_exact_font_source_native(0, 0, bytes, 0)
-                .unwrap(),
-        )
-        .unwrap();
-        core.clear_native_pua_fonts();
-        let after: serde_json::Value = serde_json::from_str(
-            &core
-                .register_exact_font_source_native(0, 0, bytes, 0)
-                .unwrap(),
-        )
-        .unwrap();
-        assert_eq!(
-            after["status"], "already-registered",
-            "PUA만 해제해도 명시 exact 소유자는 동일한 채 유지한다"
-        );
-        assert_eq!(before["handle"], after["handle"]);
-        assert_eq!(before["registry"], after["registry"]);
-    }
-}

@@ -90,10 +90,10 @@ fn assert_split(rel: &str) {
 
 #[test]
 fn host_text_after_float_table_splits_at_the_page_end_saved_hwp() {
-    assert_split("samples/issue7678/float_push_spacing_before_continuation-2024.hwp");
+    assert_split("mydocs/pr/assets/issue7445/deferred-20261020/added-issue7678-float_push_spacing_before_continuation-2024-hwp/float_push_spacing_before_continuation-2024.hwp");
 }
 
 #[test]
 fn host_text_after_float_table_splits_at_the_page_end_without_stored_lines() {
-    assert_split("samples/issue7678/float_push_spacing_before_continuation.hwpx");
+    assert_split("mydocs/pr/assets/issue7445/deferred-20261020/added-issue7678-float_push_spacing_before_continuation-hwpx/float_push_spacing_before_continuation.hwpx");
 }

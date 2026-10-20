@@ -4,7 +4,7 @@
 //! 한/글 규칙: host 첫 글줄은 마지막 표 조각 하단 + 표 바깥 아래 여백에 선다. 문단 앞 간격은
 //! 문단 상단(첫 조각이 있던 쪽)에서 이미 소비됐으므로 다시 더하지 않는다.
 //!
-//! 입력 `samples/issue7677/float_push_spacing_before_continuation-2024.hwp` 는 저장소 생성기
+//! 입력 `mydocs/pr/assets/issue7445/deferred-20261020/added-issue7677-float_push_spacing_before_continuation-2024-hwp/float_push_spacing_before_continuation-2024.hwp` 는 저장소 생성기
 //! `samples/float_push_spacing_before/make_float_push_spacing_before_boundaries.py --continuation-s`
 //! 의 HWPX(동봉, 저장 줄 없음)를 한/글 2024(13.0.0.564)로 HWP 저장한 것이고(저장 줄 있음), 정본
 //! `pdf/issue7677/float_push_spacing_before_continuation-2024.pdf` 는 같은 한/글의 Print 출력이다.
@@ -25,7 +25,7 @@
 use rhwp::wasm_api::HwpDocument;
 use serde_json::Value;
 
-const SAMPLE: &str = "samples/issue7677/float_push_spacing_before_continuation-2024.hwp";
+const SAMPLE: &str = "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7677-float_push_spacing_before_continuation-2024-hwp/float_push_spacing_before_continuation-2024.hwp";
 /// host 문단(「S. …」)과 다음 문단의 구역 내 문단 번호.
 const HOST_PI: u64 = 87;
 const NEXT_PI: u64 = 88;
@@ -126,7 +126,7 @@ fn host_text_is_not_drawn_twice_across_the_split() {
 #[test]
 fn hwpx_without_stored_lines_follows_the_same_outer_bottom_rule() {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("samples/issue7677/float_push_spacing_before_continuation.hwpx");
+        .join("mydocs/pr/assets/issue7445/deferred-20261020/added-issue7677-float_push_spacing_before_continuation-hwpx/float_push_spacing_before_continuation.hwpx");
     let doc = HwpDocument::from_bytes(&std::fs::read(&path).expect("read")).expect("표본 파싱");
     let mut seen = 0;
     for page in 0..doc.page_count() {
