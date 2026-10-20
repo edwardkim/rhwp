@@ -1,0 +1,192 @@
+{
+  "parent": "f437aa89fc783a96673afc90ec423c3b817854b6",
+  "base": "2e3b4f880bd11d35398e6ea0100846611f13a72d",
+  "files": {
+    "src/renderer/typeset/paragraph/content.rs": "92ea61b01402615951ebcbbedef3ecbb8bd52a3647cfcdf8542276313b73c9fd",
+    "tests/cases/issue_7445_stored_multicolumn_flow.rs": "c5339682c3fd6a84abcea35dc4c3bb173ba8b6af704c6a1c46b4cd1ec26cfa2a"
+  },
+  "nativeLedger": {
+    "parent": "f437aa89fc783a96673afc90ec423c3b817854b6",
+    "files": {
+      "src/renderer/typeset/paragraph/content.rs": "92ea61b01402615951ebcbbedef3ecbb8bd52a3647cfcdf8542276313b73c9fd"
+    },
+    "patchSha256": "23c35e4b354433078e1e6d3e171ba4b5fa7406ff0b0e2294d674974e8d175655",
+    "scope": "Stage21 repair787: certify the adjoining original TAC successor when transferring stored physical content end; preserve ordinary multicolumn fit advancement. Correct actual shortcut regression; independent prior whole7 min91.78141 in786. New tests and fresh outputs pending."
+  },
+  "wasmProducer": {
+    "head": "f437aa89fc783a96673afc90ec423c3b817854b6",
+    "sourceLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair791-junction-fresh-wasm/source.json",
+    "hashes": {
+      "rhwp.js": "63c587e4b072f0a65416e65a0e86bf00b2971cdfb0f46cfda7f150449dd30524",
+      "rhwp_bg.wasm": "92b78ea0f0b30da37181daeb9981a26863fa6645d8a4189cfcb091ed756ff5c1"
+    },
+    "rootPackageRecompiled": true,
+    "wrapperInvoked": true,
+    "rootPkgStudioPublicMatch": true,
+    "buildExitCode": 0,
+    "seconds": 198.01042995799799,
+    "mode": "Mac locked web/pkg/no-opt local alternative; not Docker optimized",
+    "actualBrowserInitialization": "pending"
+  },
+  "scope": [
+    {
+      "label": "shortcut-native",
+      "origin": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair790-junction-native-shortcut-whole/native/junction",
+      "tsvSha256": "8eda872dd60236344063633408c44c6fb6e8d67dfa31125c59597c12db0de96c",
+      "rows": 7
+    },
+    {
+      "label": "shortcut-wasm",
+      "origin": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair793-junction-wasm-shortcut-whole/wasm/junction",
+      "tsvSha256": "d482114d99b2f5caff6919026a5363b156ae616a4df0b64acbf54ec9dfa7b152",
+      "rows": 7
+    },
+    {
+      "label": "science-native",
+      "origin": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair789-junction-native-science-whole/native/science",
+      "tsvSha256": "2ae182628d4b1fbbc29ff5f1c7a8f7eabc415fc77e5aad1d2862a43fdba7f476",
+      "rows": 4
+    },
+    {
+      "label": "science-wasm",
+      "origin": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair792-junction-wasm-science-whole/wasm/science",
+      "tsvSha256": "62d9be842e43e065e895dee0c30060b16d17b297924fedfc8f4dc1d9db90c81e",
+      "rows": 4
+    }
+  ],
+  "sciencePngComparisons": [
+    {
+      "backend": "native",
+      "page": 1,
+      "current": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair789-junction-native-science-whole/native/science/rhwp_png/rhwp_001.png",
+      "previous": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair772-native-science-stored-flow-whole/native/science/rhwp_png/rhwp_001.png",
+      "sha256": "af039a45c7a9cbd6ea2ad26ca3dd811a9162eae5b403ba2dfa18414e30e43d33",
+      "previousSha256": "af039a45c7a9cbd6ea2ad26ca3dd811a9162eae5b403ba2dfa18414e30e43d33",
+      "byteIdentical": true
+    },
+    {
+      "backend": "native",
+      "page": 2,
+      "current": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair789-junction-native-science-whole/native/science/rhwp_png/rhwp_002.png",
+      "previous": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair772-native-science-stored-flow-whole/native/science/rhwp_png/rhwp_002.png",
+      "sha256": "600339b7af05845ff938b4de3a5d5ddafa0210164c5d852c217133fc93b7809d",
+      "previousSha256": "600339b7af05845ff938b4de3a5d5ddafa0210164c5d852c217133fc93b7809d",
+      "byteIdentical": true
+    },
+    {
+      "backend": "native",
+      "page": 3,
+      "current": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair789-junction-native-science-whole/native/science/rhwp_png/rhwp_003.png",
+      "previous": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair772-native-science-stored-flow-whole/native/science/rhwp_png/rhwp_003.png",
+      "sha256": "09f7fb5d759f600a5b8b1e2ac372c70419dead55c6826483bd9d096e1a304c98",
+      "previousSha256": "09f7fb5d759f600a5b8b1e2ac372c70419dead55c6826483bd9d096e1a304c98",
+      "byteIdentical": true
+    },
+    {
+      "backend": "native",
+      "page": 4,
+      "current": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair789-junction-native-science-whole/native/science/rhwp_png/rhwp_004.png",
+      "previous": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair772-native-science-stored-flow-whole/native/science/rhwp_png/rhwp_004.png",
+      "sha256": "616da855d1c711556e2080edb488e5aa959351bb46f278bb0ef7708f74954632",
+      "previousSha256": "616da855d1c711556e2080edb488e5aa959351bb46f278bb0ef7708f74954632",
+      "byteIdentical": true
+    },
+    {
+      "backend": "wasm",
+      "page": 1,
+      "current": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair792-junction-wasm-science-whole/wasm/science/rhwp_png/rhwp_001.png",
+      "previous": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair775-wasm-science-stored-flow-whole/wasm/science/rhwp_png/rhwp_001.png",
+      "sha256": "f2807755dd15514f19394bcaca114dc191f4614162d3ebf3aab04424e0a05fee",
+      "previousSha256": "f2807755dd15514f19394bcaca114dc191f4614162d3ebf3aab04424e0a05fee",
+      "byteIdentical": true
+    },
+    {
+      "backend": "wasm",
+      "page": 2,
+      "current": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair792-junction-wasm-science-whole/wasm/science/rhwp_png/rhwp_002.png",
+      "previous": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair775-wasm-science-stored-flow-whole/wasm/science/rhwp_png/rhwp_002.png",
+      "sha256": "393f5a9b7e074438026ca282f8145c0f86fd4b624221d4cf29fbb9c1daae7233",
+      "previousSha256": "393f5a9b7e074438026ca282f8145c0f86fd4b624221d4cf29fbb9c1daae7233",
+      "byteIdentical": true
+    },
+    {
+      "backend": "wasm",
+      "page": 3,
+      "current": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair792-junction-wasm-science-whole/wasm/science/rhwp_png/rhwp_003.png",
+      "previous": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair775-wasm-science-stored-flow-whole/wasm/science/rhwp_png/rhwp_003.png",
+      "sha256": "6b8fd6cbfd6e66064205d7a0ff27af3c79c4ac50c6c0cc8554630824d455aa0d",
+      "previousSha256": "6b8fd6cbfd6e66064205d7a0ff27af3c79c4ac50c6c0cc8554630824d455aa0d",
+      "byteIdentical": true
+    },
+    {
+      "backend": "wasm",
+      "page": 4,
+      "current": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair792-junction-wasm-science-whole/wasm/science/rhwp_png/rhwp_004.png",
+      "previous": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair775-wasm-science-stored-flow-whole/wasm/science/rhwp_png/rhwp_004.png",
+      "sha256": "6439933b4781aed60429345d10a5e45b7925ec0782088f68522a27d17497c92a",
+      "previousSha256": "6439933b4781aed60429345d10a5e45b7925ec0782088f68522a27d17497c92a",
+      "byteIdentical": true
+    }
+  ],
+  "shortcutDirectReading": {
+    "nativePages": [
+      1,
+      7
+    ],
+    "wasmPages": [
+      7
+    ],
+    "kinds": [
+      "review",
+      "overlay"
+    ],
+    "findings": "Both column tails, shortcuts, band, decorative page7 retained. Small dot/ink edge residuals remain; no whole pixel equality claimed."
+  },
+  "fullPrAcceptance": false,
+  "beforeAfter": {
+    "testSha256": "c5339682c3fd6a84abcea35dc4c3bb173ba8b6af704c6a1c46b4cd1ec26cfa2a",
+    "results": [
+      {
+        "label": "final-before",
+        "exitCode": 101,
+        "summary": [
+          "test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s"
+        ]
+      },
+      {
+        "label": "final-after",
+        "exitCode": 0,
+        "summary": [
+          "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s"
+        ]
+      }
+    ]
+  },
+  "officialNextest": {
+    "pid": 13559,
+    "complete": true,
+    "exitCode": 0,
+    "seconds": 123.51205801963806,
+    "testsRun": 5,
+    "passed": 5,
+    "failed": 0,
+    "filteredOut": 243,
+    "executionSeconds": 0.126
+  },
+  "relatedShortcutPartitions": [
+    {
+      "case": "overlap::text_overlaps_do_not_grow_partition_11",
+      "exitCode": 0,
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 33 filtered out; finished in 0.59s"
+      ]
+    },
+    {
+      "case": "oracle::page_counts_do_not_drift_from_hancom_oracle_partition_2",
+      "exitCode": 0,
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 33 filtered out; finished in 0.27s"
+      ]
+    }
+  ]
+}

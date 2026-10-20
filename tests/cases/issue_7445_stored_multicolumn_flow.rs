@@ -3,6 +3,7 @@
 //! 전4쪽 최저 Native96.14438% / fresh WASM96.06833%, 쪽수4/4.
 //! Stage20 repair772/775 TSV와 3·4쪽 review/overlay를 직접 판독했다.
 //! 절대 px를 고정하지 않고 줄/셀 포함, 문단 소유와 원본 상대 간격을 검사한다.
+//! 완료 페이지의 별도 px 검사는 각 함수에 독립 Print 근거를 기록한다.
 use rhwp::{
     renderer::render_tree::{RenderNode, RenderNodeType},
     DocumentCore,
@@ -274,4 +275,78 @@ fn completed_page_two_fraction_divider_keeps_independent_print_endpoints() {
             "완료 2쪽 독립 Print CSS96 좌표: {actual} vs {expected}"
         );
     }
+}
+
+/// shortcut 전7쪽 Native/fresh WASM 최저91.78413/91.99857%, 미달0.
+/// 완료7쪽은99.65777/99.79309%이며 양쪽 review/overlay를 판독했다.
+/// 독립 shortcut-2022.pdf의7쪽 MediaBox841×595pt에서 마지막 두 단의
+/// '글 앞으로'와 '개체 풀기' 기준선을 CSS96으로 변환했다.
+/// 후보 위치로 문단을 고르지 않고 원문·쪽·단 소유와 누락/중복을 함께 검사한다.
+#[test]
+fn completed_shortcut_last_page_keeps_both_column_tails_and_print_baselines() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut core = DocumentCore::from_bytes(
+        &std::fs::read(root.join("samples/basic/shortcut.hwp")).expect("단축키 원본"),
+    )
+    .unwrap();
+    core.set_hangul2024_compat(false);
+    assert_eq!(core.page_count(), 7, "독립 Print의 전체 쪽수");
+    let anchors = [
+        ("글 앞으로", "Shift+Home", 121.28),
+        ("개체 풀기", "Ctrl+U", 589.92),
+    ];
+    let mut positions = Vec::new();
+    for (label, shortcut, expected_x) in anchors {
+        let source: Vec<_> = core.document().sections[0]
+            .paragraphs
+            .iter()
+            .enumerate()
+            .filter(|(_, para)| para.text.starts_with(label))
+            .map(|(index, _)| index)
+            .collect();
+        assert_eq!(source.len(), 1, "원본 항목의 단일 문단 소유");
+        let mut found = Vec::new();
+        for page in 0..core.page_count() {
+            let tree = core.build_page_render_tree(page).unwrap();
+            let mut nodes = Vec::new();
+            visit(&tree.root, &mut nodes);
+            for line in nodes.iter().filter(|node| {
+                matches!(node.node_type, RenderNodeType::TextLine(_))
+                    && text(node).starts_with(label)
+            }) {
+                assert_eq!(page, 6, "두 단의 마지막 항목은 마지막 쪽이 소유한다");
+                let mut runs = Vec::new();
+                visit(line, &mut runs);
+                let owned: Vec<_> = runs
+                    .iter()
+                    .filter_map(|node| match &node.node_type {
+                        RenderNodeType::TextRun(run) => Some((*node, run)),
+                        _ => None,
+                    })
+                    .collect();
+                assert!(!owned.is_empty());
+                assert!(owned
+                    .iter()
+                    .all(|(_, run)| run.para_index == Some(source[0])));
+                let actual: String = text(line).chars().filter(|c| !c.is_whitespace()).collect();
+                let expected: String = format!("{label}{shortcut}")
+                    .chars()
+                    .filter(|c| !c.is_whitespace())
+                    .collect();
+                assert_eq!(actual, expected, "내용 순서와 단축키의 누락/중복");
+                let (node, run) = owned[0];
+                found.push((node.bbox.x, node.bbox.y + run.baseline));
+            }
+        }
+        assert_eq!(found.len(), 1, "원문 항목이 전체 문서에서 한 번만 배치된다");
+        let (x, baseline) = found[0];
+        assert!((x - expected_x).abs() <= 2.0, "독립 Print의 단별 시작 x");
+        assert!(
+            (baseline - 461.76).abs() <= 2.0,
+            "독립 Print의 마지막 줄 기준선"
+        );
+        positions.push((x, baseline));
+    }
+    assert!(positions[0].0 < positions[1].0, "좌/우 단 순서");
+    equal_ratio(positions[0].1, positions[1].1);
 }

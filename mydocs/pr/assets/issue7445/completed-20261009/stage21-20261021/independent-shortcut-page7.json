@@ -1,0 +1,24 @@
+{
+  "pdf": "pdf/basic/shortcut-2022.pdf",
+  "pdfSha256": "9c877ad7aafe78d4734536f0a7b0e985a431534cc9d01d0737a90c106e2f2eb5",
+  "mediaBox": [
+    0.0,
+    0.0,
+    841.0,
+    595.0
+  ],
+  "page": 7,
+  "coordinateSource": "Original PDF text matrix transformed from PDF points to CSS96, not candidate bbox",
+  "anchors": [
+    {
+      "text": "글 앞으로",
+      "x": 121.28,
+      "baseline": 461.76
+    },
+    {
+      "text": "개체 풀기",
+      "x": 589.92,
+      "baseline": 461.76
+    }
+  ]
+}
