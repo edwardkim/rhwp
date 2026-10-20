@@ -4899,3 +4899,68 @@ preprocess none으로 독립 인쇄했다. 추가3개 기준 PDF와 hash는 아�
 repair360~403에만 둔다. 다른 실패·sample11 50쪽 미달·OSS 괘선·로드맵153쪽·전체
 회귀/시각 corpus·유입 기능·actual36은 계속 보정/검증할 대상이다. PR 전체 완료나 제출
 승인이 아니며 PR은 사용자에게 결과 보고 후 별도 승인받는다.
+
+
+### C452 표시를 명시한 JSON 검사 입력과 원문 보존 계약
+
+C451 `d00a7b02f529d428fb16c5346f2374402c398f86`의405 전체 nextest는
+11,155건 실행/11,142PASS/13FAIL/45SKIP, 실행1,014.569초(빌드 포함1,647.856초),
+exit100으로 끝났다. source가 실행 중 바뀌지 않았음을 확인했다.404는 `-j`와
+`--test-threads`를 같은 nextest option으로 중복 전달한 명령 오류로 테스트를 실행하지
+못했으며 INVALID로 보존했다.405가 실제 전체 결과다.
+
+13실패는 PUA JSON1,시험지 본문/구두점 기준선1,1133 쪽번호5,시험지42수식/쪽수1,
+원본 HWP3 수식 flow 속성1,3930 저장/바탕쪽1,bold title1,1105 sample16 요구사항1,
+off_canvas partition15 1이다. 집중 검사 이후 단순히13에서1을 빼 새 전체 결과로 보고하지 않는다.
+
+PUA 실패의 원 이슈948 → 원 PR982/72f75969082c → 실제 통합ab98d4a3d9를 읽었다.
+원 계약은 기존 source `text/positions/clusters` 보존과 additive `displayText/displayPositions`다.
+당시 helper가 F081C를 언제나 숨겨서 단위 fixture의 `display_text:None`도 빈 표시가 됐다.
+후속 C447은7017 원본 절취선의 한컴 Print에 따라 실제 paint의 F081C를 U+2508 `┈`로
+보존하고 흐름 채움 조회만 비표시로 분리했다. 과거 fixture를 맞추려고 실제 획을 다시 없애지 않는다.
+
+기존 `serializes_empty_display_positions_for_hidden_pua_filler`의 입력만 명시적 빈 표시
+`Some("")`로 바꿔 빈 `displayText`와 `displayPositions:[]` 계약을 유지했다.
+기본 `None`인 새 대조는 원문 F081C/양끝 source caret 보존, literal `┈` 표시 및 양끝 display
+caret/양의 전진을 검사한다. 구현 helper 반환값을 정답으로 재인용하지 않는다. source 위치 배열은
+글자 수가 아닌 시작/끝을 포함한 n+1 caret 계약이다. 초기 ignored v1의1개 위치 기대는
+잘못된 진단이며 v2/v3에서 정정했다. 제품 결함의 FAIL 증거로 사용하지 않는다.
+
+정식 검사 변경 전에408에서 원본7017/복학원서937의 Native393/fresh WASM394 전1쪽씩을
+canonical PDFium smooth_rgb_v1/192DPI/compat2022/raw2px90%로 다시 산출했다.
+각각99.35164/99.37179%,96.92177/97.68584%,네 조건 쪽수 일치·미달0이다.
+review/overlay를 직접 열어 절취선·표·본문·서명·접수증을 대조했다. 복학원서는 PDF에 없는 상단
+로고와 서명/글자 래스터·하단 채움 획 차이가 남으며,98% px 핀 대상이 아니다. 현재393 Native와
+C447after294 복학원서 PNG는 픽셀이 같다. before270 대비121pixel 차이는 하단왼쪽 source16의
+두 F081C 획이며 이를 숨겨 검사를 통과시키지 않았다. 기존0.1%p 허용 판단과 미세차이 기록을 유지한다.
+
+[최종 원본 전쪽 TSV·review·overlay](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/pua-json-contract/README.md)에
+408 새 산출물12개를 바이트 그대로 복사했다. runtime/입력/PDF/글꼴/hash 원문과 로그는
+ignored repair408/409/412에 보존한다. 정식 변경은 기존 `src/paint/json.rs` 첫 `#[cfg(test)]`
+모듈 내부뿐이며 생산 코드 접두부와 후속 테스트 모듈은 동일하다. 같은393/394 runtime의
+실제 출력 근거를 재사용하며 cfg(test) 수정만으로 WASM을 새 빌드했다고 주장하지 않는다.
+
+412 정식 `paint::json::tests`는19PASS(나머지3,796건 선택 제외), Native/WASM Clippy와
+workspace build도 exit0이다. 전체 target Clippy·manifest도 exit0이나 unit tier 정책은 아래와 같이 한 번 실패했다.
+다른12실패의 해결이나 전체 PR 수용은 아직 아니다. 특히411 Native 진단에서 각주1937의
+실제51/PDF50쪽,35쪽 표 시작 누락과43쪽 마지막 표/각주 겹침을 확인했다. 병합 셀의
+fragment marker 소유를 추측해 큐 guard만 제거하지 않고 terminal 소유·실제 수용 예산을
+추적한다. sample11 50쪽89.13433%도 남으며 기대값을 바꾸지 않았다. PR은 새 승인을 받는다.
+
+412의19PASS는 중간 실행이다. 이후 unit tier가 source 검사18→19 증가를 금지해 실패했다.
+정책/기준선을 올리지 않고 같은 기존 검사 한 함수 안에 explicit empty와 default dash 두 입력을
+함께 넣었다. 최종 함수 `serializes_hidden_pua_override_and_default_paint_without_erasing_source`는
+검사 수를 늘리지 않으며, 정확히 같은 formatted 함수의 ignored v4가 before270에서1FAIL
+(default dash에서 실패, 먼저 실행한 explicit empty 계약은 보존),after393에서1PASS다.
+기존 v3의 분리 두 함수1PASS1FAIL→2PASS는 중간 진단이고 v4가 최종 형태다.
+415에서 두 입력을 합친 최종18개 JSON 검사와 전체 scoped lint/policy 묶음을 순차 재실행했다.414는 종료된 generated 진단 실행파일48개만 원본 source/hash/
+로그/열린 파일 참조를 대조한 뒤 제거했다(1,667,870,264bytes). 소스·로그·JSON·PNG·TSV·원본·PDF·
+동결 CLI/lib·공유 target은 보존했고 삭제 실행파일을 재사용 증거로 주장하지 않는다.
+
+415 최종 결과는 prepare/fmt/JSON18PASS/Native Clippy/WASM Clippy/workspace build/
+workspace all-target Clippy/고정4a07 manifest/unit tier의9단계 전부 exit0이다.
+unit tier는4,101검사/296모듈로 base 대비 증가0이며 정책 파일은 수정하지 않았다.
+JSON 실행은0.090초(최초 재컴파일 포함188.888초),다른3,796건은 filter 선택 제외다.
+source hash가 실행 전후 같고 생산 코드에는 변경이 없다. 현재 단계 로컬 커밋의 근거이며
+full405의 다른 실패·새 전체 회귀/전쪽 시각 corpus/actual36 완료를 뜻하지 않는다.
+다음 각주 후보416은 아직 ignored output에만 있으며 제품에는 적용하지 않았다.

@@ -3815,7 +3815,50 @@ mod tests {
     }
 
     #[test]
-    fn serializes_empty_display_positions_for_hidden_pua_filler() {
+    fn serializes_hidden_pua_override_and_default_paint_without_erasing_source() {
+        let text_run = PaintOp::text_run(
+            BoundingBox::new(10.0, 20.0, 80.0, 18.0),
+            TextRunNode {
+                text: "\u{F081C}".to_string(),
+                style: TextStyle {
+                    font_family: "Noto Sans KR".to_string(),
+                    font_size: 16.0,
+                    ..Default::default()
+                },
+                char_shape_id: None,
+                para_shape_id: None,
+                section_index: None,
+                para_index: None,
+                char_start: None,
+                cell_context: None,
+                is_para_end: false,
+                is_line_break_end: false,
+                rotation: 0.0,
+                is_vertical: false,
+                char_overlap: None,
+                border_fill_id: 0,
+                baseline: 13.0,
+                field_marker: FieldMarkerType::None,
+                layout_positions: None,
+                // 명시적으로 숨긴 표시와 기본 PUA paint를 구분한다.
+                display_text: Some(String::new()),
+            },
+        );
+        let tree = PageLayerTree::new(
+            120.0,
+            80.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 120.0, 80.0),
+                None,
+                vec![text_run],
+            ),
+        );
+
+        let json = tree.to_json();
+
+        assert!(json.contains("\"displayText\":\"\""));
+        assert!(json.contains("\"displayPositions\":[]"));
+        // 기본 PUA paint는 빈 표시 override와 별개이며 source scalar를 보존한다.
         let text_run = PaintOp::text_run(
             BoundingBox::new(10.0, 20.0, 80.0, 18.0),
             TextRunNode {
@@ -3855,8 +3898,26 @@ mod tests {
 
         let json = tree.to_json();
 
-        assert!(json.contains("\"displayText\":\"\""));
-        assert!(json.contains("\"displayPositions\":[]"));
+        let value: Value = serde_json::from_str(&json).expect("valid layer JSON");
+        let run = &value["root"]["ops"][0];
+        assert_eq!(run["text"], "\u{F081C}", "source scalar 보존");
+        assert_eq!(
+            run["displayText"], "┈",
+            "흐름 채움도 실제 paint는 점선을 표시"
+        );
+        assert_eq!(
+            run["positions"]
+                .as_array()
+                .expect("source caret positions")
+                .len(),
+            2
+        );
+        let display = run["displayPositions"]
+            .as_array()
+            .expect("display caret positions");
+        assert_eq!(display.len(), 2, "한 표시 글자 양끝의 caret 위치");
+        assert_eq!(display[0], 0.0);
+        assert!(display[1].as_f64().expect("끝 전진") > 0.0);
     }
 
     #[test]
