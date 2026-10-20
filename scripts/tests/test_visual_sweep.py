@@ -459,7 +459,7 @@ class PdfRasterFillStateTests(unittest.TestCase):
                         prefix = Path(directory) / f"page-{rule}-{index}"
                         for command in SWEEP.pdf_raster_commands(source, 96, prefix, [1]):
                             subprocess.run(command, check=True, capture_output=True)
-                        with Image.open(prefix.with_name(prefix.name + "-1.png")) as raster:
+                        with Image.open(prefix.with_name(prefix.name + "-001.png")) as raster:
                             outputs.append(raster.convert("RGB"))
                     self.assertLess(min(outputs[0].convert("L").getdata()), 255, "the declared black fill must be visible")
                     self.assertEqual(
