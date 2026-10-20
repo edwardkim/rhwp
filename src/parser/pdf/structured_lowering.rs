@@ -147,7 +147,14 @@ struct ObservedLineText {
     runs: Vec<(u32, u32)>,
     tabs: Vec<TabItem>,
     extensions: Vec<[u16; 7]>,
+    positioning: Vec<PositioningTab>,
     evidence: Value,
+}
+
+struct PositioningTab {
+    content_utf16: u32,
+    cursor_px: f64,
+    stop: u32,
 }
 
 fn observed_line_text(
@@ -168,6 +175,7 @@ fn observed_line_text(
     let mut text = String::new();
     let mut tabs = Vec::new();
     let mut extensions = Vec::new();
+    let mut positioning = Vec::new();
     let mut positioning_tabs = Vec::new();
     let mut offset = 0;
     let mut maximum_error: f64 = 0.;
@@ -245,6 +253,11 @@ fn observed_line_text(
             // tab cache. Reuse the standard no-cache marker so insertion before
             // the tab still reaches the same stop in measure, paint and saves.
             extensions.push(crate::model::paragraph::TAB_EXT_PLACEHOLDER);
+            positioning.push(PositioningTab {
+                content_utf16: offset,
+                cursor_px: f64::from(origin - owner_x) * 96. / 72. + emitted_advance,
+                stop,
+            });
             let id = positioned_span_style(page, doc, line, glyph.span, base_id, cache)?;
             if runs.last().is_none_or(|&(_, previous)| previous != id) {
                 runs.push((offset, id));
@@ -308,6 +321,7 @@ fn observed_line_text(
         runs,
         tabs,
         extensions,
+        positioning,
         evidence: json!({
             "characters":content.characters,
             "positioningTabs":positioning_tabs,
@@ -320,6 +334,99 @@ fn observed_line_text(
             "hwpQuantization":"integer-percent ratio, spacing and character position; no source-font outline recovery"
         }),
     })
+}
+
+/// Each inferred gap names a source destination, whereas a standard tab visits
+/// the next stop in the paragraph-wide definition. Other rows may introduce
+/// intervening stops. Traverse them with ordinary tabs, preserving every source
+/// scalar and retaining the same standard navigation after editing and saving.
+fn materialize_positioning_tabs(
+    para: &mut Paragraph,
+    tabs: &[TabItem],
+    positioning: &[PositioningTab],
+) -> Result<Vec<Value>, String> {
+    use crate::renderer::{hwpunit_to_px, layout::find_next_tab_stop, TabStop};
+    if positioning.is_empty() {
+        return Ok(Vec::new());
+    }
+    let stops: Vec<_> = tabs
+        .iter()
+        .map(|tab| TabStop {
+            position: hwpunit_to_px(tab.position as i32, 96.) / 2.,
+            tab_type: tab.tab_type,
+            fill_type: tab.fill_type,
+        })
+        .collect();
+    let mut repeats = BTreeMap::new();
+    let mut evidence = Vec::new();
+    let mut extra = 0_usize;
+    let original_length = para.text.chars().count();
+    for tab in positioning {
+        // All destinations are explicit and inside their source owner. The
+        // final common wrap trial checks its actual available width separately.
+        let (next, _, _) = find_next_tab_stop(tab.cursor_px, &stops, 0., false, 0., 0.);
+        let first = stops
+            .binary_search_by(|stop| stop.position.total_cmp(&next))
+            .map_err(|_| "inferred tab has no reachable standard stop")?;
+        let target = tabs
+            .binary_search_by_key(&tab.stop, |stop| stop.position)
+            .map_err(|_| "missing inferred tab destination")?;
+        let count = target
+            .checked_sub(first)
+            .map(|delta| delta + 1)
+            .ok_or("inferred tab destination precedes the next standard stop")?;
+        extra = extra
+            .checked_add(count - 1)
+            .ok_or("inferred tab navigation exceeds PDF text budget")?;
+        if original_length + extra > super::text_analysis::MAX_GLYPHS {
+            return Err("inferred tab navigation exceeds PDF text budget".into());
+        }
+        repeats.insert(tab.content_utf16, count);
+        evidence.push(json!({"paragraphContentUtf16Start":tab.content_utf16,
+            "stopHwpUnits":tab.stop,"emittedStandardTabs":count,
+            "policy":"ordinary_next_stop_navigation; source_scalars_unchanged"}));
+    }
+    if extra == 0 {
+        return Ok(evidence);
+    }
+    let mut text = String::new();
+    let mut extensions = Vec::new();
+    let mut offsets = BTreeMap::new();
+    let (mut old, mut new, mut tab_index) = (0, 0, 0);
+    for ch in para.text.chars() {
+        offsets.insert(old, new);
+        let count = repeats.get(&old).copied().unwrap_or(1);
+        if ch == '\t' {
+            let extension = *para
+                .tab_extended
+                .get(tab_index)
+                .ok_or("missing PDF tab extension")?;
+            if count > 1 && !crate::model::paragraph::tab_ext_is_placeholder(&extension) {
+                return Err("only inferred uncached tabs may traverse shared stops".into());
+            }
+            extensions.extend(std::iter::repeat_n(extension, count));
+            tab_index += 1;
+        }
+        text.extend(std::iter::repeat_n(ch, count));
+        old += ch.len_utf16() as u32;
+        new += ch.len_utf16() as u32 * count as u32;
+    }
+    offsets.insert(old, new);
+    let convert = |position| {
+        offsets
+            .get(&position)
+            .copied()
+            .ok_or("PDF positioning metadata is not on a scalar boundary")
+    };
+    for run in &mut para.char_shapes {
+        run.start_pos = convert(run.start_pos)?;
+    }
+    for line in &mut para.line_segs {
+        line.text_start = convert(line.text_start)?;
+    }
+    para.text = text;
+    para.tab_extended = extensions;
+    Ok(evidence)
 }
 
 fn array(v: &Value) -> Result<&Vec<Value>, String> {
@@ -520,6 +627,8 @@ fn paragraph(
     let mut last_end = top;
     let mut utf16 = 0;
     let mut tabs = Vec::new();
+    let mut positioning = Vec::new();
+    let typography_start = typography.borrow().len();
     let mut glyph_styles = BTreeMap::new();
     for (line_no, line) in lines.iter().enumerate() {
         let mut materialization = None;
@@ -534,6 +643,7 @@ fn paragraph(
             .get(line_no + 1)
             .copied()
             .unwrap_or(line_top + line_height);
+        let mut line_positioning = Vec::new();
         let (text, runs): (String, Vec<(u32, u32)>) = if fixed_line_height {
             let before_styles = doc.doc_info.char_shapes.len();
             match observed_line_text(
@@ -549,6 +659,7 @@ fn paragraph(
                     materialization = Some(observed.evidence);
                     tabs.extend(observed.tabs);
                     para.tab_extended.extend(observed.extensions);
+                    line_positioning = observed.positioning;
                     (observed.text, observed.runs)
                 }
                 Err(reason) => {
@@ -597,6 +708,10 @@ fn paragraph(
             utf16 += 1;
         }
         let line_start = utf16;
+        positioning.extend(line_positioning.into_iter().map(|mut tab| {
+            tab.content_utf16 += line_start;
+            tab
+        }));
         if let Some(mut evidence) = materialization {
             evidence["context"] = json!(proposal.context);
             evidence["spans"] = json!(indices);
@@ -633,6 +748,14 @@ fn paragraph(
         });
         last_end = line_top + line_height;
     }
+    tabs.sort_by_key(|tab| tab.position);
+    tabs.dedup_by_key(|tab| tab.position);
+    let navigation = materialize_positioning_tabs(&mut para, &tabs, &positioning)?;
+    if !navigation.is_empty() {
+        if let Some(first) = typography.borrow_mut().get_mut(typography_start) {
+            first["paragraphPositioningTabs"] = json!(navigation);
+        }
+    }
     finalize_text_axis(&mut para)?;
     para.has_para_text = true;
     let mut style = doc.doc_info.para_shapes[0].clone();
@@ -668,8 +791,6 @@ fn paragraph(
     style.spacing_before = 0;
     style.spacing_after = 0;
     if !tabs.is_empty() {
-        tabs.sort_by_key(|t| t.position);
-        tabs.dedup_by_key(|t| t.position);
         style.tab_def_id = u16::try_from(doc.doc_info.tab_defs.len())
             .map_err(|_| "too many PDF line tab definitions")?;
         doc.doc_info.tab_defs.push(TabDef {

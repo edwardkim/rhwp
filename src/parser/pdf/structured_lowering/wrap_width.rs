@@ -7,7 +7,7 @@ use crate::renderer::{
     style_resolver::{resolve_styles_for_document, ResolvedStyleSet},
 };
 use pdf_oxide::geometry::Rect;
-use std::cmp::Ordering;
+use std::{cmp::Ordering, collections::VecDeque};
 
 fn ends(para: &Paragraph) -> Vec<u32> {
     para.line_segs
@@ -46,6 +46,70 @@ impl Trial<'_> {
         let mut para = self.source.clone();
         reflow_line_segs(&mut para, bounds, &self.styles, 96.);
         para
+    }
+
+    fn width_for_cuts(
+        &mut self,
+        lower: i32,
+        upper: i32,
+        expected: &[u32],
+    ) -> Result<(i32, Option<(i32, i32)>), String> {
+        let mut ordered_search = || -> Result<_, String> {
+            let (mut lo, mut hi) = (lower, upper + 1);
+            while lo < hi {
+                let mid = lo + (hi - lo) / 2;
+                if ends(&self.run(mid)).as_slice().cmp(expected) == Ordering::Less {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
+                }
+            }
+            let first = lo;
+            if first > upper || ends(&self.run(first)) != expected {
+                return Err("source cuts have no verified ordinary wrap box".into());
+            }
+            hi = upper + 1;
+            while lo < hi {
+                let mid = lo + (hi - lo) / 2;
+                if ends(&self.run(mid)).as_slice().cmp(expected) == Ordering::Greater {
+                    hi = mid;
+                } else {
+                    lo = mid + 1;
+                }
+            }
+            let width = first + (lo - first - 1) / 2;
+            if ends(&self.run(width)) != expected {
+                return Err("selected box does not reproduce source cuts".into());
+            }
+            Ok((width, Some((first, lo - 1))))
+        };
+        let ordered = ordered_search();
+        if ordered.is_ok() || !self.source.text.contains('\t') {
+            return ordered;
+        }
+        // A later tab can move a break back before an earlier word separator
+        // as the box widens. Cut vectors with tabs are not globally monotone.
+        // Search both halves, using only the real common reflow as a witness.
+        // This bounded fallback proves one usable width, not an authored box
+        // or the absence of other widths when its work budget is exhausted.
+        const MAX_TAB_WIDTH_TRIALS: usize = 64;
+        let mut pending = VecDeque::from([(lower, upper)]);
+        for _ in 0..MAX_TAB_WIDTH_TRIALS {
+            let Some((lo, hi)) = pending.pop_front() else {
+                break;
+            };
+            let width = lo + (hi - lo) / 2;
+            if ends(&self.run(width)) == expected {
+                return Ok((width, Some((width, width))));
+            }
+            if lo < width {
+                pending.push_back((lo, width - 1));
+            }
+            if width < hi {
+                pending.push_back((width + 1, hi));
+            }
+        }
+        Err("tabbed source cuts have no verified wrap witness within search budget".into())
     }
 }
 
@@ -100,34 +164,7 @@ pub(super) fn fit(
         let (width, interval) = if ends(&full) == expected {
             (upper, None)
         } else {
-            // Row-end vectors are compared lexicographically. Widening a
-            // soft-wrap box advances its first changed cut. At most two integer
-            // bisections are needed; no per-unit scan or per-document constant.
-            let (mut lo, mut hi) = (lower, upper + 1);
-            while lo < hi {
-                let mid = lo + (hi - lo) / 2;
-                if ends(&trial.run(mid)).cmp(&expected) == Ordering::Less {
-                    lo = mid + 1;
-                } else {
-                    hi = mid;
-                }
-            }
-            let first = lo;
-            if first > upper || ends(&trial.run(first)) != expected {
-                return Err("source cuts have no verified ordinary wrap box".into());
-            }
-            hi = upper + 1;
-            while lo < hi {
-                let mid = lo + (hi - lo) / 2;
-                if ends(&trial.run(mid)).cmp(&expected) == Ordering::Greater {
-                    hi = mid;
-                } else {
-                    lo = mid + 1;
-                }
-            }
-            // The original authored width is unknown. The midpoint of the
-            // verified interval avoids a quantization-sensitive word threshold.
-            (first + (lo - first - 1) / 2, Some((first, lo - 1)))
+            trial.width_for_cuts(lower, upper, &expected)?
         };
         let para = trial.run(width);
         if ends(&para) != expected || para.line_segs.len() != item.paragraph.line_segs.len() {
