@@ -45,6 +45,8 @@ pub(super) fn measure(
     // layout에서 따로 맞추며, 그 간격 전량을 분할 예산에 또 더하지 않는다.
     let mut tac_seg_total = 0.0;
     let mut tac_idx = 0;
+    // TAC 개체가 소유한 줄. 나머지 줄은 같은 문단의 글줄이다.
+    let mut tac_owned_lines = Vec::new();
     for (ci, c) in para.controls.iter().enumerate() {
         if let Control::Table(t) = c {
             if flow.is_effective_tac_table(para, t, fmt) {
@@ -54,6 +56,7 @@ pub(super) fn measure(
                     } else {
                         tac_idx
                     };
+                tac_owned_lines.push(seg_index);
                 if let Some(seg) = para.line_segs.get(seg_index) {
                     let seg_lh = hwpunit_to_px(seg.line_height, dpi);
                     let mt_h = measured_tables
@@ -125,6 +128,7 @@ pub(super) fn measure(
         if prior_tac_count == 0 {
             continue;
         }
+        tac_owned_lines.push(prior_tac_count);
         if let Some(seg) = para.line_segs.get(prior_tac_count) {
             let lh = hwpunit_to_px(seg.line_height, dpi);
             let ls_extra = if seg.line_spacing > 0 {
@@ -134,6 +138,33 @@ pub(super) fn measure(
             };
             tac_seg_total += lh + ls_extra;
             trace_sibling(ci, prior_tac_count, lh, ls_extra);
+        }
+    }
+    // 같은 문단에서 TAC 개체가 소유하지 않은 저장 글줄(표 줄 뒤 제목 줄 등)도
+    // 문단의 흐름을 전진시킨다. 표 줄만 세면 상한이 그 글줄을 되감아, 뒤 문단의
+    // 조판 원점이 저장 사다리보다 그만큼 위로 간다(#8095, 156465345 1쪽 pi=0:
+    // 표 줄 231.6px 만 세어 제목 줄 44.8px 를 잃었다).
+    // 표 줄 **뒤** 같은 저장 프레임의 글줄만 센다. 표 앞 앵커 줄(한/글 2024 는 흐름에서
+    // 회수한다, #5524)과 저장 되감김 뒤 줄(다음 쪽 몫, #5700)은 이 문단 상한에 넣지 않는다.
+    if tac_seg_total > 0.0
+        && fmt.computed_host_lines.is_none()
+        && fmt.line_heights.len() == para.line_segs.len()
+        && fmt.line_spacings.len() == fmt.line_heights.len()
+    {
+        if let Some(&first_owned) = tac_owned_lines.iter().min() {
+            let mut previous_vpos = para.line_segs.get(first_owned).map(|seg| seg.vertical_pos);
+            for index in first_owned + 1..para.line_segs.len() {
+                let seg = &para.line_segs[index];
+                if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                    || previous_vpos.is_none_or(|previous| seg.vertical_pos <= previous)
+                {
+                    break;
+                }
+                previous_vpos = Some(seg.vertical_pos);
+                if !tac_owned_lines.contains(&index) {
+                    tac_seg_total += fmt.line_heights[index] + fmt.line_spacings[index];
+                }
+            }
         }
     }
     let cap = if tac_seg_total > 0.0 {

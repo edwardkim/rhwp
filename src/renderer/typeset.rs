@@ -5309,6 +5309,17 @@ impl TypesetEngine {
                 // The host was resolved before fit, even though its text item is
                 // emitted after the floating table. Consume that same origin.
                 st.align_flow_to(origin);
+            } else if let Some(step) =
+                self.stored_tac_line_step_to_post_text(para, table, fmt, post_table_start)
+            {
+                // [#8095] 표 줄 0 의 적합 높이는 줄 높이만 센다(뒤 글줄이 저장 되감김으로
+                // 다음 쪽에 갈 수 있다). 뒤 글줄이 같은 저장 프레임에서 `표 줄 높이 +
+                // 줄간격` 뒤에 이어지면 그 줄간격도 흐름이 지나간다 — 빼면 뒤 문단 조판
+                // 원점이 저장 사다리보다 그만큼 위로 간다(156465345 1쪽 pi=0, 12.8px).
+                let extra = step - table_total_height;
+                if extra > 0.5 {
+                    st.advance_flow_by(extra);
+                }
             }
             // [#2808] 소비 조건을 layout 의 same_owner_table_precedes 와 동일하게
             // 다중 co-anchored float host 로 한정 — 단일 표 host post-text 는 기존
@@ -5425,6 +5436,36 @@ impl TypesetEngine {
         if strict_following_plain_text_fit && is_last_placed {
             st.require_strict_following_text_fit();
         }
+    }
+
+    /// 표 줄 0 다음 글줄이 같은 저장 프레임에서 끊김 없이 이어질 때, 표 줄 원점에서
+    /// 그 글줄 원점까지의 저장 걸음(px). 되감김·합성 줄·편집 세션은 `None` 이다.
+    fn stored_tac_line_step_to_post_text(
+        &self,
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+        fmt: &FormattedParagraph,
+        post_table_start: usize,
+    ) -> Option<f64> {
+        if post_table_start != 1
+            || self.profile.get().session_edited()
+            || self.tac_table_line_index(para, table, fmt) != Some(0)
+        {
+            return None;
+        }
+        let (table_line, post_line) = para.line_segs.first().zip(para.line_segs.get(1))?;
+        if is_synthetic_line_seg(table_line)
+            || is_synthetic_line_seg(post_line)
+            || table_line.line_spacing <= 0
+        {
+            return None;
+        }
+        let step = table_line
+            .vertical_pos
+            .checked_add(table_line.line_height)?
+            .checked_add(table_line.line_spacing)?;
+        (post_line.vertical_pos == step)
+            .then(|| hwpunit_to_px(table_line.line_height + table_line.line_spacing, self.dpi))
     }
 
     fn tac_flow_query(&self) -> controls::tac_flow::TacFlowQuery<'_> {
