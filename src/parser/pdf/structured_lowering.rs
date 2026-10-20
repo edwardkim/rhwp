@@ -182,6 +182,7 @@ fn observed_line_text(
     let mut maximum_baseline_error: f64 = 0.;
     let mut maximum_origin_error: f64 = 0.;
     let mut joint_whitespace_fits = 0;
+    let mut source_space_movements = Vec::new();
     let origin = content
         .characters
         .first()
@@ -231,13 +232,27 @@ fn observed_line_text(
             .then(|| fit_spacing(&mut style, &glyph_text, ratio as u8, desired))
             .flatten()
             .map(|(s, _, measured)| (ratio as u8, s, measured));
-        let fit = if let Some(fit) = ordinary {
+        let mut fit = if let Some(fit) = ordinary {
             Some(fit)
         } else if glyph.character.is_whitespace() {
             fit_whitespace_advance(&mut style, &glyph_text, desired)
         } else {
             None
         };
+        // A PDF source space and the displacement following it are distinct.
+        // Keep the scalar at the ordinary font size, and infer only the excess
+        // forward movement as a standard positioning tab. A small/backtracking
+        // advance still needs a representable character metric or is deferred.
+        let mut space_movement = false;
+        if fit.is_none() && glyph.source_character.is_some() && glyph.character == ' ' {
+            let ordinary_space =
+                resolved_to_text_style(styles, base_id, detect_lang_category(glyph.character));
+            let measured = estimate_text_width_exact(&glyph_text, &ordinary_space);
+            if measured.is_finite() && measured > 0. && desired > measured {
+                fit = Some((100, 0, measured));
+                space_movement = true;
+            }
+        }
         // A source-less geometric separator is an inference, not an authored
         // space with an out-of-range character style. Preserve actual source
         // whitespace; only the inferred separator may become a positioning tab.
@@ -284,13 +299,10 @@ fn observed_line_text(
         } else {
             return Err("source displacement exceeds HWP spacing range".into());
         };
-        if ordinary.is_none() && glyph.character.is_whitespace() {
+        if ordinary.is_none() && glyph.character.is_whitespace() && !space_movement {
             joint_whitespace_fits += 1;
         }
-        let error = (measured - desired).abs();
         emitted_advance += measured;
-        maximum_origin_error = maximum_origin_error.max(error * 72. / 96.);
-        maximum_error = maximum_error.max((measured - source_advance).abs() * 72. / 96.);
         let key = (base_id, ratio, spacing, position);
         let id = if ratio == 100 && spacing == 0 && position == 0 {
             base_id
@@ -315,6 +327,36 @@ fn observed_line_text(
         }
         text.push(glyph.character);
         offset += glyph.character.len_utf16() as u32;
+        let mut movement = 0.;
+        if space_movement {
+            let stop_pt = glyph.origin + glyph.advance - owner_x;
+            let stop = u32::try_from(physical_margin(stop_pt)?)
+                .map_err(|_| "invalid source-space PDF tab position")?;
+            tabs.push(TabItem {
+                position: stop,
+                ..Default::default()
+            });
+            extensions.push(crate::model::paragraph::TAB_EXT_PLACEHOLDER);
+            positioning.push(PositioningTab {
+                content_utf16: offset,
+                cursor_px: f64::from(origin - owner_x) * 96. / 72. + emitted_advance,
+                stop,
+            });
+            source_space_movements.push(json!({"sourceSpan":glyph.span,
+                "sourceCharacter":glyph.source_character,"sourceUtf16":glyph.source_utf16,
+                "emittedSpaceUtf16Start":offset-glyph.character.len_utf16() as u32,
+                "emittedTabUtf16Start":offset,"stopPt":stop_pt,
+                "inference":"forward_movement_after_preserved_source_space",
+                "authoredTab":"unknown","tabWidthPolicy":"standard_tab_stop_without_cached_advance"}));
+            text.push('\t');
+            offset += 1;
+            movement = (f64::from(stop) / 200. - f64::from(origin - owner_x)) * 96. / 72.
+                - emitted_advance;
+            emitted_advance += movement;
+        }
+        maximum_origin_error =
+            maximum_origin_error.max((measured + movement - desired).abs() * 72. / 96.);
+        maximum_error = maximum_error.max((measured + movement - source_advance).abs() * 72. / 96.);
     }
     Ok(ObservedLineText {
         text,
@@ -327,6 +369,7 @@ fn observed_line_text(
             "positioningTabs":positioning_tabs,
             "maximumAdvanceQuantizationErrorPt":maximum_error,
             "jointWhitespaceFits":joint_whitespace_fits,
+            "sourceSpaceMovements":source_space_movements,
             "maximumOriginQuantizationErrorPt":maximum_origin_error,
             "maximumBaselineQuantizationErrorPt":maximum_baseline_error,
             "lineBaselinePt":line.baseline,

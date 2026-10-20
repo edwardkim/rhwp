@@ -1241,8 +1241,8 @@ fn joint_whitespace_metrics_preserve_source_cell_paragraph_and_both_saves() {
     }
 }
 #[test]
-fn whitespace_outside_combined_fields_stays_unverified_and_ordinary_path_stays_ordinary() {
-    for (name, joint, legacy) in [("ordinary", 0, false), ("too-wide", 0, true)] {
+fn source_spaces_keep_scalars_and_only_excess_movement_gains_tabs() {
+    for (name, movement) in [("ordinary", false), ("too-wide", true)] {
         let input = whitespace_source(name);
         let report = inference(&input, true);
         let first = report["sourceTypography"]["lines"]
@@ -1254,29 +1254,39 @@ fn whitespace_outside_combined_fields_stays_unverified_and_ordinary_path_stays_o
                     && l["lineIndex"] == 0
             })
             .unwrap();
-        if legacy {
-            assert_eq!(first["status"], "unverified_legacy_line_frame");
-            assert_eq!(
-                first["reason"],
-                "source whitespace advance exceeds combined HWP character range"
-            );
-        } else {
-            assert_eq!(first["jointWhitespaceFits"], joint);
-            assert_eq!(first["status"], "observed_origins_with_nominal_widths");
-        }
+        assert_eq!(first["status"], "observed_origins_with_nominal_widths");
+        assert_eq!(first["jointWhitespaceFits"], 0);
+        assert_eq!(
+            first["sourceSpaceMovements"].as_array().unwrap().len(),
+            usize::from(movement)
+        );
+        let source_line: String = first["characters"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| x["character"].as_str().unwrap())
+            .collect();
+        assert_eq!(source_line, "A B");
         let core =
             rhwp::DocumentCore::from_pdf_bytes(&input, &PdfImportOptions::default()).unwrap();
+        let cell = whitespace_first_cell(&core);
+        assert_eq!(cell.paragraphs.len(), 1);
+        let p = &cell.paragraphs[0];
         assert_eq!(
-            whitespace_first_cell(&core)
-                .paragraphs
-                .iter()
-                .flat_map(|p| p.text.chars())
-                .filter(|c| !c.is_whitespace())
-                .collect::<String>(),
-            "ABCD"
+            p.text.replace('\t', ""),
+            "A B C D",
+            "source space scalars are retained independently of movement controls"
         );
+        assert_eq!(p.text.contains('\t'), movement);
+        assert_eq!(p.line_segs.len(), 2);
+        assert!(
+            p.controls.is_empty(),
+            "native cell border has no selection overlay"
+        );
+        whitespace_paint(&core, if movement { 27. } else { 6. });
     }
 }
+
 #[test]
 fn plain_rectangular_strokes_use_native_cell_borders_without_overlay_objects() {
     use rhwp::DocumentCore;

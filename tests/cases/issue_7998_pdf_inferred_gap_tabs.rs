@@ -304,13 +304,39 @@ fn inferred_gap_tab_and_later_soft_wrap_share_the_hwp_stream_axis() {
     );
 }
 #[test]
-fn authored_spaces_and_nonblank_width_failures_are_not_changed_into_inferred_tabs() {
-    for page in [4, 9] {
+fn source_spaces_remain_scalars_and_nonblank_width_failures_stay_unverified() {
+    for (page, needle) in [(4, "붙임2"), (9, "붙임4")] {
         let c = source(page);
         let m = serde_json::to_value(c.pdf_metadata()).unwrap();
         let f = &m["pages"][0]["tableInference"]["bodyParagraphMapping"]["frames"][0];
-        assert_eq!(f["status"], "retained_positioned_spans");
-        assert_eq!(f["reason"],"body glyph metrics require positioned source: source whitespace advance exceeds combined HWP character range");
+        assert_eq!(f["status"], "paragraph_ir");
+        let line = m["pages"][0]["tableInference"]["sourceTypography"]["lines"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|l| {
+                l["context"] == serde_json::json!(["page", "body-region:0"])
+                    && l["lineIndex"] == 0
+                    && l["sourceSpaceMovements"]
+                        .as_array()
+                        .is_some_and(|v| !v.is_empty())
+            })
+            .unwrap();
+        let original: String = line["characters"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| x["character"].as_str().unwrap())
+            .collect();
+        let path = owner(&c, needle);
+        let p = paragraph(&c, &path);
+        assert_eq!(
+            p.text.replace('\t', ""),
+            original,
+            "the original spaces survive as scalars, alongside separate inferred movement"
+        );
+        assert!(p.text.contains(" \t "));
+        assert_paint(&c, &path);
     }
     let c = source(5);
     let m = serde_json::to_value(c.pdf_metadata()).unwrap();
