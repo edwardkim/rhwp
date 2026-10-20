@@ -3951,7 +3951,9 @@ impl ParagraphFloatPlacement {
             && table.common.horz_rel_to == HorzRelTo::Column
         {
             let left = area.x + hwpunit_to_px(table.outer_margin_left as i32, dpi);
-            let width = area.width - hwpunit_to_px(table.outer_margin_left as i32, dpi);
+            let right = topbottom_float_outer_margin_right_hu(table)
+                .map_or(0.0, |hu| hwpunit_to_px(hu, dpi));
+            let width = area.width - hwpunit_to_px(table.outer_margin_left as i32, dpi) - right;
             let offset = hwpunit_to_px(signed_hwpunit(table.common.horizontal_offset), dpi);
             self.table_left = Some(match table.common.horz_align {
                 HorzAlign::Left | HorzAlign::Inside => left + offset,
@@ -6471,6 +6473,26 @@ pub(crate) fn topbottom_float_outer_margin_left_hu(table: &Table) -> Option<i32>
         return None;
     }
     Some(i32::from(table.outer_margin_left))
+}
+
+/// 오른쪽 정렬 자리차지 표는 기준 영역의 오른끝에서 바깥여백 상자를 닫는다.
+/// 본문/단 기준의 동일 정렬 계약이며 글줄 참여·어울림·가운데 정렬은 별도다.
+pub(crate) fn topbottom_float_outer_margin_right_hu(table: &Table) -> Option<i32> {
+    if table.common.treat_as_char
+        || table.common.text_wrap != TextWrap::TopAndBottom
+        || !matches!(
+            table.common.horz_rel_to,
+            HorzRelTo::Para | HorzRelTo::Column
+        )
+        || !matches!(
+            table.common.horz_align,
+            HorzAlign::Right | HorzAlign::Outside
+        )
+        || table.outer_margin_right <= 0
+    {
+        return None;
+    }
+    Some(i32::from(table.outer_margin_right))
 }
 
 /// [#6378] 원본 HWPX 단 기준 RowBreak 자리차지 표의 사방 균등 outMargin (HU).

@@ -32,19 +32,28 @@ impl LayoutEngine {
         table: &'a Table,
         row: usize,
     ) -> Option<Vec<&'a Cell>> {
-        if !self.stored_row_boxes_exceed_first_frame(table)
-            || table.cells.iter().any(|cell| {
-                cell.row_span > 1
-                    && usize::from(cell.row) <= row
-                    && row < usize::from(cell.row) + usize::from(cell.row_span)
-            })
-        {
+        if table.cells.iter().any(|cell| {
+            cell.row_span > 1
+                && usize::from(cell.row) <= row
+                && row < usize::from(cell.row) + usize::from(cell.row_span)
+        }) {
+            return None;
+        }
+        self.original_ordinary_cells_at_row(table, row)
+    }
+
+    fn original_ordinary_cells_at_row<'a>(
+        &self,
+        table: &'a Table,
+        row: usize,
+    ) -> Option<Vec<&'a Cell>> {
+        if !self.stored_row_boxes_exceed_first_frame(table) {
             return None;
         }
         let mut cells: Vec<_> = table
             .cells
             .iter()
-            .filter(|cell| usize::from(cell.row) == row)
+            .filter(|cell| usize::from(cell.row) == row && cell.row_span == 1)
             .collect();
         cells.sort_by_key(|cell| cell.col);
         (!cells.is_empty()
@@ -426,16 +435,42 @@ impl LayoutEngine {
         (owners > 0).then_some(height)
     }
 
-    /// 종료 줄의 다음 줄 간격만 남은 컷은 새 내용·빈 밴드 소유자를 만들지 않는다.
-    pub(crate) fn stored_complete_row_tail_is_line_advance(
+    /// 완료된 줄의 종료 간격·아래 패딩만 남으면 새 빈 행 소유자를 만들지 않는다.
+    pub(crate) fn stored_complete_row_tail_is_closing_advance(
         &self,
         table: &Table,
         row: usize,
         cut: &[usize],
         tail: f64,
+        accepted_spans: &[crate::renderer::pagination::StraddleCellCarry],
         styles: &ResolvedStyleSet,
     ) -> bool {
-        let Some(cells) = self.original_ordinary_row_cells(table, row) else {
+        // 병합 칸이 걸쳐 있으면 내용 완료만으로 공간까지 완료됐다고
+        // 추측하지 않는다. 수용한 실제 상자의 누적 원장과 내용 컷이 모두
+        // 독립 최소를 닫았을 때만 같은 일반 행의 종료 간격을 닫는다.
+        let spans_complete = table.cells.iter().enumerate().all(|(index, cell)| {
+            if cell.row_span <= 1
+                || usize::from(cell.row) > row
+                || row >= usize::from(cell.row) + usize::from(cell.row_span)
+            {
+                return true;
+            }
+            self.cell_has_original_physical_minimum(cell)
+                && accepted_spans.iter().any(|carry| {
+                    carry.cell_index == index
+                        && carry.fragment_cut.is_some_and(|(_, end)| {
+                            end == self.cell_units(cell, table, styles).len()
+                        })
+                        && carry.accepted_physical_height.is_some_and(|height| {
+                            height + hwpunit_to_px(2, self.dpi)
+                                >= hwpunit_to_px(cell.height as i32, self.dpi)
+                        })
+                })
+        });
+        let Some(cells) = spans_complete
+            .then(|| self.original_ordinary_cells_at_row(table, row))
+            .flatten()
+        else {
             return false;
         };
         if cells.len() != cut.len() || tail <= 0.0 {
@@ -458,10 +493,89 @@ impl LayoutEngine {
                 .is_some_and(|line| {
                     line.line_spacing > 0
                         && tail
-                            <= hwpunit_to_px(line.line_spacing, self.dpi)
-                                + hwpunit_to_px(2, self.dpi)
+                            <= hwpunit_to_px(
+                                line.line_spacing
+                                    + i32::from(cell.effective_padding(&table.padding).bottom),
+                                self.dpi,
+                            ) + hwpunit_to_px(2, self.dpi)
                 })
         })
+    }
+
+    /// 병합 칸의 선언 상자를 닫는 일반 행 사슬은 독립적인 빈 공간도 소유한다.
+    /// 걸친 칸의 일부 내용이 이미 소비돼도 온전한 자기 셀의 최소는 사라지지 않는다.
+    pub(super) fn stored_complete_block_row_minimum(
+        &self,
+        table: &Table,
+        block: (usize, usize),
+        row: usize,
+        start: &[usize],
+        end: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let profile = self.profile.get();
+        if !end.is_empty()
+            // 부분 종료 컷은 내용 수용과 별도로 물리 예산을 나눠야 한다.
+            // 여기서는 블록의 남은 부분을 통째로 수용하는 최소만 조회한다.
+            || !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            || profile.session_edited()
+            || table.common.treat_as_char
+            || table.page_break != crate::model::table::TablePageBreak::RowBreak
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+        {
+            return None;
+        }
+        let mut cells = Self::row_block_cells(table, block.0, block.1);
+        cells.sort_by_key(|cell| (cell.row, cell.col));
+        let mut own_height = 0.0_f64;
+        let mut owns_row = false;
+        for (index, cell) in cells
+            .iter()
+            .enumerate()
+            .filter(|(_, cell)| usize::from(cell.row) == row && cell.row_span == 1)
+        {
+            let units = self.cell_units(cell, table, styles);
+            if !self.cell_has_original_physical_minimum(cell)
+                || !crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs)
+                || units.is_empty()
+                || start.get(index).copied().unwrap_or(0) != 0
+                || end.get(index).copied().unwrap_or(units.len()) != units.len()
+            {
+                return None;
+            }
+            let height = hwpunit_to_px(cell.height as i32, self.dpi);
+            let padding = cell.effective_padding(&table.padding);
+            let content = self.cell_cut_visible_height(cell, table, styles, 0, units.len())
+                + hwpunit_to_px(i32::from(padding.top) + i32::from(padding.bottom), self.dpi);
+            if content > height + hwpunit_to_px(2, self.dpi) {
+                return None;
+            }
+            own_height = own_height.max(height);
+            owns_row = true;
+        }
+        if !owns_row {
+            return None;
+        }
+        let raw = table.get_raw_row_heights();
+        let closed_chain = table.cells.iter().any(|cell| {
+            let first = usize::from(cell.row);
+            let limit = first + usize::from(cell.row_span);
+            cell.row_span > 1
+                && first <= row
+                && row < limit
+                && self.cell_has_original_physical_minimum(cell)
+                && raw.get(first..limit).is_some_and(|rows| {
+                    rows.iter()
+                        .all(|height| *height > 0 && *height < 0x8000_0000)
+                        && rows.iter().map(|height| i64::from(*height)).sum::<i64>()
+                            + i64::from(table.cell_spacing) * (rows.len() - 1) as i64
+                            == i64::from(cell.height)
+                })
+        });
+        closed_chain.then_some(own_height)
     }
 
     /// 실제 전달된 조각 높이 안에서 원본 정렬을 적용한다. 좌표를 다시 추측하지 않는다.

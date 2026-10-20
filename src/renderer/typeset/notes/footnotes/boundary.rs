@@ -448,14 +448,28 @@ pub(in crate::renderer::typeset) fn native_hwp5_final_marker_footnote_uses_next_
     // owner를 이동시키지는 않는다.
     let projected_footnote_height = st.projected_footnote_height(footnote_height, 1);
     let projected_reclaim = st.footer_band_reclaim_for_height(projected_footnote_height);
+    let projected_margin = if st.current_footnote_body_bottom_reserved {
+        0.0
+    } else {
+        st.footnote_safety_margin
+    };
     let projected_available = (st.base_available_height()
         - (projected_footnote_height - projected_reclaim).max(0.0)
-        - st.footnote_safety_margin
+        - projected_margin
         - st.current_zone_y_offset
         - st.current_bottom_fixed_exclusion)
         .max(0.0);
 
-    st.current_height > projected_available + 0.5
+    // 수용한 마지막 본문의 내용 끝과 다음 줄로의 흐름 끝은 별개다.
+    // 후속 항목이 없는 같은 종료점에서만 fit/paint에 발행한 내용 끝을 공유한다.
+    // 원시 LINE_SEG의 마지막 간격을 다시 빼면 재구성한 줄을 오인할 수 있으므로,
+    // 수용 결과가 없으면 기존의 보수적인 흐름 끝 판정을 유지한다.
+    let body_bottom = st
+        .paragraph_fragment_content_bottoms
+        .get(&(para_idx, para.line_segs.len()))
+        .filter(|bounds| bounds.flow_end == st.current_height)
+        .map_or(st.current_height, |bounds| bounds.content_bottom);
+    body_bottom > projected_available + 0.5
 }
 
 /// 현재 page의 일반 Body 각주를 layout과 같은 composed line metric으로 재측정한다.

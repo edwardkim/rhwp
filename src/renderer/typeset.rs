@@ -7364,6 +7364,7 @@ mod tests {
             total_rows_height: 30.0,
             total_footnote_height: 0.0,
             queue_table_footnotes: false,
+            table_footnotes_follow_terminal: false,
             table_footnotes: Vec::new(),
             footnote_margin: 0.0,
             host_spacing_total: 0.0,

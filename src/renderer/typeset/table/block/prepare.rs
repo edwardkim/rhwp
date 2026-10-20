@@ -362,6 +362,9 @@ impl TypesetEngine {
             && is_para_topbottom_float(&table.common)
             && st.col_count == 1
             && (table.row_count > 1 || hwpx_saved_single_cell_frame.is_some());
+        // 병합 셀은 기존 terminal 소유를 유지한다. 중간 row 컷으로 marker를
+        // 추측하지 않되, 마지막 조각 뒤 실제 각주 lane의 수용/이월은 같은 큐가 맡는다.
+        let table_footnotes_follow_terminal = table.cells.iter().any(|cell| cell.row_span > 1);
         let queue_table_footnotes = !table.common.treat_as_char
             && (st.profile.hwp5_stored_pagination_layout() || hwpx_stored_table_footnote_queue)
             && matches!(
@@ -369,7 +372,7 @@ impl TypesetEngine {
                 crate::model::table::TablePageBreak::RowBreak
             )
             && !ft.table_footnotes.is_empty()
-            && table.cells.iter().all(|cell| cell.row_span == 1)
+            && table.cells.iter().all(|cell| cell.row_span >= 1)
             && ((row_count > 1
                 // 기존 page의 일반 각주는 유지한 채, 표 첫 행만은 실제로 시작할 수 있어야 한다.
                 && no_table_note_available >= st.current_height + cut_row_h[0] + 0.5)
@@ -388,9 +391,24 @@ impl TypesetEngine {
                     st.current_height,
                 );
             }
+            // 현재 쪽의 유효 저장 각주가 차지하는 실제 영역을 조회한다.
+            // 뒤 표 각주는 아직 소유하지 않으며, 이미 측정한 영역에 추정 안전값을
+            // 다시 붙여 첫 조각의 마지막 행을 밀지 않는다.
+            let current_painted_note_height = (st.col_count == 1)
+                .then(|| {
+                    crate::renderer::typeset::notes::footnotes::measure::BodyFootnoteMeasure {
+                        engine: self,
+                        styles,
+                    }
+                    .stored_current_area_height(st, paragraphs_all)
+                })
+                .flatten();
+            if let Some(height) = current_painted_note_height {
+                st.reserve_painted_footnote_area(height);
+            }
             total_footnote = st.projected_footnote_height(0.0, 0);
             fn_margin = if total_footnote > 0.0 {
-                if next_starts_new_page {
+                if next_starts_new_page || current_painted_note_height.is_some() {
                     0.0
                 } else {
                     st.footnote_safety_margin
@@ -1398,6 +1416,7 @@ impl TypesetEngine {
             total_rows_height: total_rows_h,
             total_footnote_height: total_footnote,
             queue_table_footnotes,
+            table_footnotes_follow_terminal,
             table_footnotes: ft.table_footnotes.clone(),
             footnote_margin: fn_margin,
             host_spacing_total,

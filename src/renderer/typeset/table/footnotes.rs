@@ -115,6 +115,7 @@ impl TypesetEngine {
         fragment_end_row: usize,
         fragment_start_cut: &[usize],
         terminal_fragment: bool,
+        table_footnotes_follow_terminal: bool,
         relax_terminal_table_footnote_fit: bool,
         queued_fresh_page: bool,
     ) {
@@ -269,9 +270,14 @@ impl TypesetEngine {
             // 차단했고, 마커 행이 현재 fragment 밖이면 분할 필터도 기각해 빈 새
             // 쪽에서 진행 불가(디버그 불변식 패닉, 1130000-202100008: note 0
             // h=90.1px 가 avail 876.9px 에 들어가는데도 정지).
-            let force_source_page_split = marker_owned_in_fragment
+            // 표 끝이 소유하는 각주는 표시의 원래 행이 앞 조각에 있어도
+            // 이 terminal 영역이 본문을 소유한다. 새 쪽의 pending tail은 먼저 소비한다.
+            let terminal_note_owned_here =
+                terminal_fragment && table_footnotes_follow_terminal && !queued_fresh_page;
+            let note_owned_here = marker_owned_in_fragment || terminal_note_owned_here;
+            let force_source_page_split = note_owned_here
                 && note.fragment_split.is_some_and(|split| {
-                    split.force_next_page
+                    split.force_next_page || terminal_note_owned_here
                             // 유효한 HWPX 각주 영역 재시작은 표시가 속한
                             // 중간 표 조각 쪽에 속한다. 전체 각주 높이가 수치 예산에
                             // 들어가더라도 저장된 물리 경계를
@@ -290,12 +296,12 @@ impl TypesetEngine {
                 // 명시한 다음 physical page이므로 terminal table에서도 보존한다
                 // (p176 note 234).
                 let split = note.fragment_split.filter(|split| {
-                    (!terminal_fragment || split.force_next_page)
+                    (!terminal_fragment || split.force_next_page || terminal_note_owned_here)
                         && st.col_count == 1
-                        && marker_owned_in_fragment
+                        && note_owned_here
                         && continuation.pending_table_footnote_fragment.is_none()
-                        && note.row >= fragment_start_row
-                        && note.row < fragment_end_row
+                        && (terminal_note_owned_here
+                            || (note.row >= fragment_start_row && note.row < fragment_end_row))
                 });
                 let mut split_registered = false;
                 if let Some(split) = split
@@ -320,7 +326,10 @@ impl TypesetEngine {
                     }
                     split_registered = true;
                 }
-                if !split_registered || !(terminal_fragment && force_source_page_split) {
+                if continuation.pending_table_footnote_fragment.is_some()
+                    || !split_registered
+                    || !(terminal_fragment && force_source_page_split)
+                {
                     break;
                 }
                 continue;
