@@ -1531,46 +1531,8 @@ impl TypesetEngine {
                     &res.end_cut,
                     styles,
                 );
-            // 컷의 허용 계약은 두 쪽의 고아 줄을 모두 소유한다는 증거가 아니다.
-            // 진행 칸마다 앞뒤 한 줄만 남는 짧은 행은 기존 최소 표시에도 못 미치면
-            // 새 쪽의 온전한 행으로 받는다. 긴 문단의 첫 줄과 인증된 저장 컷은 유지한다.
-            let defer_two_single_line_fragments = r > cursor_row
-                && row_start_cut.is_empty()
-                && !res.fully_consumed
-                && plain_paragraph_keep_contract
-                && row_total <= (st.layout.body_area.height - header_overhead).max(0.0)
-                && layout_engine.row_cut_leaves_single_lines_on_both_sides(
-                    table,
-                    r,
-                    row_start_cut,
-                    &res.end_cut,
-                    styles,
-                )
-                && !plain_cut_completes_paragraphs
-                && !cellbreak_complete_unit_keep
-                && !stored_page_reset_keep
-                && !stored_plain_reset_boundary_keep
-                && !landscape_boundary_band_keep
-                && !stored_zero_origin_rewind_keep
-                && !stored_restart_capacity_keep
-                && !closed_paragraph_restart_keep
-                && !uses_source_frame_tail
-                && !rowbreak_row_has_internal_saved_vpos_reset(table, r)
-                && !row_has_stored_cross_paragraph_zero_reset(table, r)
-                && !row_split_meets_min_top_keep(
-                    res.consumed_height,
-                    split_total,
-                    row_split_min_keep_uses_painted_height,
-                );
-            if defer_two_single_line_fragments && std::env::var_os("RHWP_DIAG_SCAN").is_some() {
-                eprintln!(
-                    "DEFER_TWO_SINGLE_LINES row={r} cut={:?} content={:.6} physical={split_total:.6}",
-                    res.end_cut, res.consumed_height,
-                );
-            }
             if r > cursor_row
                 && (defer_single_unit_row_start
-                    || defer_two_single_line_fragments
                     || (!cellbreak_complete_unit_keep
                         && !plain_paragraph_keep_contract
                         && !complete_list_item_keep

@@ -98,50 +98,6 @@ impl LayoutEngine {
         .is_some()
     }
 
-    /// 진행 중인 모든 칸이 한 줄씩 두 조각으로만 나뉘는가.
-    /// 긴 문단의 첫 줄 컷과, 완결한 문단 사이의 컷은 이 고아 줄 질의와 구분한다.
-    pub(crate) fn row_cut_leaves_single_lines_on_both_sides(
-        &self,
-        table: &Table,
-        row: usize,
-        start_cut: &[usize],
-        end_cut: &[usize],
-        styles: &ResolvedStyleSet,
-    ) -> bool {
-        if !start_cut.is_empty()
-            || !self.row_cut_respects_plain_paragraph_keeps(table, row, start_cut, end_cut, styles)
-        {
-            return false;
-        }
-        let mut splits_paragraph = false;
-        for (index, cell_index) in Self::row_cut_cell_order(table, row).into_iter().enumerate() {
-            let cell = &table.cells[cell_index];
-            if cell.paragraphs.iter().any(|paragraph| {
-                !paragraph
-                    .controls
-                    .iter()
-                    .all(crate::renderer::composer::control_is_width_neutral_marker)
-            }) {
-                return false;
-            }
-            let units = self.cell_units(cell, table, styles);
-            let Some(&end) = end_cut.get(index) else {
-                return false;
-            };
-            if end == units.len() {
-                continue;
-            }
-            if end != 1
-                || units.len() != 2
-                || units.iter().any(|unit| !unit.is_single_visible_line())
-            {
-                return false;
-            }
-            splits_paragraph |= units[0].continues_same_paragraph(&units[1]);
-        }
-        splits_paragraph
-    }
-
     /// 재조판한 일반 텍스트의 온전한 글줄도 같은 문단 유지 지시를 따른다.
     /// 저장 사다리 인증을 대체하지 않으며 실제 높이·예산 검사는 호출자가 유지한다.
     pub(crate) fn reflow_row_cut_respects_plain_paragraph_keeps(
