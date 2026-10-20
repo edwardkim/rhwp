@@ -36,7 +36,7 @@ pub(crate) fn projects_current_marker_geometry(
 
 /// 앞선 물리 경계가 없는 마지막 자동 어절의 캐시 원점 되감김인가.
 /// 명시적 쪽/단과 다른 가로 상자는 실제 프레임 소유자로 남긴다.
-fn has_unmarked_final_word_rewind(para: &Paragraph) -> bool {
+pub(super) fn has_unmarked_final_word_rewind(para: &Paragraph) -> bool {
     let Some((last, prefix)) = para.line_segs.split_last() else {
         return false;
     };
@@ -189,5 +189,9 @@ pub(crate) fn project_stored_soft_wraps(
     // 채움은 새 줄을 만들지만 원본의 줄별 들여쓰기 기록도 소비한다. 저장 줄을
     // 비워 입력의 근거까지 없애면 명시적으로 꺼진 들여쓰기가 다시 적용된다.
     let rows = line_breaking::layout_paragraph_in_frame(para, &mut probe, styles, dpi)?;
-    (rows.len() < para.line_segs.len()).then(|| (rows, probe.project_space_metrics()))
+    // 마지막 자동 어절의 가짜 프레임 원점은 줄 수가 같아도 복원한다.
+    // 일반 저장 줄은 같은 줄 수라는 이유만으로 다시 구성하지 않는다.
+    (rows.len() < para.line_segs.len()
+        || (rows.len() == para.line_segs.len() && has_unmarked_final_word_rewind(para)))
+    .then(|| (rows, probe.project_space_metrics()))
 }

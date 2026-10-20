@@ -11,6 +11,8 @@ pub(super) fn project(
     dpi: f64,
 ) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
     if para.line_segs.len() < 2
+        // 기존에 인증한 마지막 자동 어절의 캐시 되감김은 실제 쪽 슬롯이 아니다.
+        || super::stored_word_tail::has_unmarked_final_word_rewind(para)
         || !para.controls.is_empty()
         || para.text.contains('\n')
         || para.stored_text_partition_is_dirty()
