@@ -739,9 +739,9 @@ fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
     // Character position moves ink, not the line's logical flow box. Keep both
     // extents in the conservative paint bounds so clipping/cache invalidation
     // cannot drop a raised/lowered glyph. Rotation still uses the original box.
-    let position_offset = run.style.baseline_offset
-        + run.style.effective_font_size() * f64::from(run.style.font_position.unwrap_or_default())
-            / 100.0;
+    let position_offset = run.style.effective_font_size()
+        * f64::from(run.style.font_position.unwrap_or_default())
+        / 100.0;
     let positioned = if position_offset == 0.0 {
         logical
     } else {

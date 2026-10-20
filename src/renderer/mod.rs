@@ -304,10 +304,6 @@ pub struct TextStyle {
     pub font_family: String,
     /// 글꼴 크기 (px)
     pub font_size: f64,
-    /// Character position relative to the line baseline, positive down (px).
-    /// Independent of relative font size and the automatic script-size flags.
-    #[serde(skip_serializing_if = "is_zero_baseline_offset")]
-    pub baseline_offset: f64,
     /// 저장 글줄 없이 생성한 텍스트의 원본 글자 폭을 paint에도 적용한다.
     /// HFT 자동 쪽번호는 HFT 메트릭으로 정렬하므로 대체 TTF의 자연 폭을
     /// 그대로 그리면 숫자·장식의 점유 폭이 달라진다. 본문은 기존 계약을 쓴다.
@@ -500,10 +496,6 @@ pub const SUPERSCRIPT_RISE_EM: f64 = 0.3;
 /// 아래첨자 baseline 하향 이동량 (본문 글꼴 크기 대비 em).
 pub const SUBSCRIPT_DROP_EM: f64 = 0.15;
 
-fn is_zero_baseline_offset(value: &f64) -> bool {
-    *value == 0.0
-}
-
 impl TextStyle {
     /// 원본의 0 크기를 보존한다. 해소되지 않은 기본 스타일에만 기존 폴백을 쓴다.
     pub(crate) fn effective_font_size(&self) -> f64 {
@@ -522,7 +514,6 @@ impl TextStyle {
     ///
     /// 원본의 글자 위치는 줄 기준선에 한 번만 적용한다.
     pub fn script_draw_metrics(&self, base_font_size: f64, baseline_y: f64) -> (f64, f64) {
-        let baseline_y = baseline_y + self.baseline_offset;
         // 줄 기준선과 글리프 위치는 별도 속성이다. 양수는 아래 방향이며
         // 원본 글꼴 크기의 비율로 이동한다. 모든 paint backend가 같은 값을 쓴다.
         let baseline_y =
@@ -643,7 +634,6 @@ impl Default for TextStyle {
             supplemental_metrics: None,
             font_family: String::new(),
             font_size: 0.0,
-            baseline_offset: 0.0,
             fixed_glyph_advances: false,
             source_font_is_hft: false,
             resolved_font_size: false,
