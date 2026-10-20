@@ -730,7 +730,6 @@ const renderEquationBody = extractMethodBody(canvaskitSource, 'renderEquation');
 const renderEquationBoxBody = extractMethodBody(canvaskitSource, 'renderEquationBox');
 const renderPathBody = extractMethodBody(canvaskitSource, 'renderPath');
 const renderLineBody = extractMethodBody(canvaskitSource, 'renderLine');
-const drawStrokeWithDashBody = extractMethodBody(canvaskitSource, 'drawStrokeWithDash');
 const renderFormObjectBody = extractMethodBody(canvaskitSource, 'renderFormObject');
 const renderPlaceholderBody = extractMethodBody(canvaskitSource, 'renderPlaceholder');
 const renderTextRunBody = extractMethodBody(canvaskitSource, 'renderTextRun');
@@ -861,6 +860,9 @@ function runExecutableTextReplay(op, {
     translate(x, y) {
       events.push({ type: 'canvas.translate', x, y });
     },
+    scale(x, y) {
+      events.push({ type: 'canvas.scale', x, y });
+    },
     drawGlyphs(ids, positions, x, y, _font, paint) {
       events.push({
         type: 'canvas.drawGlyphs',
@@ -956,6 +958,9 @@ function runExecutableStrokeDashReplay() {
     setStyle() {}
     setColor(color) { this.color = color; }
     setStrokeWidth(width) { this.width = width; }
+    getStrokeWidth() { return this.width ?? 0; }
+    getStrokeCap() { return this.strokeCap ?? 0; }
+    setStrokeCap(cap) { this.strokeCap = cap; }
     setPathEffect() { events.push({ type: 'paint.pathEffect' }); }
     delete() { events.push({ type: 'paint.delete' }); }
   }
@@ -1134,6 +1139,9 @@ function runExecutableM07PackReplay({ withArrowGeometry = true } = {}) {
     setStyle() {}
     setColor(color) { this.color = color; }
     setStrokeWidth(width) { this.width = width; }
+    getStrokeWidth() { return this.width ?? 0; }
+    getStrokeCap() { return this.strokeCap ?? 0; }
+    setStrokeCap(cap) { this.strokeCap = cap; }
     setShader(shader) { this.shader = shader; }
     setPathEffect() {}
     delete() { events.push({ type: 'paint.delete' }); }
@@ -1936,6 +1944,8 @@ function runExecutableEquationFallback() {
       baseline: 10,
       kind: {
         type: 'fraction',
+        // 수학 축은 글자 크기에 대한 비율이며 실제 layout JSON의 필수 필드다.
+        axisHeight: 12 * 0.25,
         numer: { x: 2, y: 0, width: 8, height: 8, baseline: 7, kind: { type: 'text', text: 'x' } },
         denom: { x: 2, y: 12, width: 8, height: 8, baseline: 7, kind: { type: 'number', text: '2' } },
       },
@@ -2172,11 +2182,7 @@ requireSnippet(
   /resolvedShadow\([\s\S]*?1 - alpha \/ 255/,
   'shape and line shadows should convert HWP alpha 0=opaque into CanvasKit opacity',
 );
-requireSnippet(
-  drawStrokeWithDashBody,
-  /dash === 'dash'[\s\S]*?\[6, 3\][\s\S]*?dash === 'dot'[\s\S]*?\[2, 2\][\s\S]*?dash === 'dashDot'[\s\S]*?\[6, 3, 2, 3\][\s\S]*?dash === 'dashDotDot'[\s\S]*?\[6, 3, 2, 3, 2, 3\][\s\S]*?PathEffect\.MakeDash[\s\S]*?setPathEffect[\s\S]*?finally[\s\S]*?effect\.delete/,
-  'stroke dash replay should map every producer enum and release its native path effect',
-);
+
 requireSnippet(
   renderFormObjectBody,
   /formDrawingReplayRejection\(op\)[\s\S]*?if \(rejection\)[\s\S]*?return;[\s\S]*?const drawing = op\.drawing![\s\S]*?for \(const primitive of drawing\.primitives\)[\s\S]*?const label = drawing\.label[\s\S]*?this\.drawStaticControlText[\s\S]*?x: label\.x, y: label\.baseline[\s\S]*?formObject:textReplayFailed/,

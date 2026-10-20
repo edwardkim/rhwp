@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-10
+last_verified: 2026-10-18
 ---
 
 # Collaborator self-merge 후보
@@ -83,7 +83,9 @@ PR을 만든다. **같은 PR의 정확한 code head에 대한 GitHub Actions CI�
 PR review와 오늘할일을 작성·갱신하고 문서-only trailing commit으로 반영한다.
 
 1. 검증을 마친 후보 commit을 원격 작업 branch에 push한다.
-2. Draft 지시가 없으면 Open PR을 생성해 번호 `N`을 받는다.
+2. [로컬 사전 검증](local_validation.md) 4.3과 해당 보조 절차를 빠짐없이 완료한 뒤 Open PR을
+   생성해 번호 `N`을 받는다. 특별한 목적의 명시적 Draft 지시가 없으면 Draft 생성은 금지한다.
+   번호 확보·CI 대기 또는 검증 실패·미완료를 Draft 예외로 삼지 않는다.
 3. 번호 `N`의 code head SHA를 고정하고 해당 SHA의 required check와 변경 범위상 필요한
    GitHub Actions가 모두 완료되어 성공했는지 확인한다. 진행 중·실패·취소·미실행 상태에서는
    review·오늘할일 trailing commit을 만들거나 push하지 않는다. 로컬 검증 성공으로 이 CI를

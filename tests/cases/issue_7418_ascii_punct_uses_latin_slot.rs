@@ -40,10 +40,10 @@ fn load() -> DocumentCore {
     DocumentCore::from_bytes(&bytes).expect("문서 로드")
 }
 
-/// 한글 run 안의 `-` 는 영문 슬롯 메트릭으로 전진한다 — run 은 쪼개지 않는다.
+/// 원문 하이픈은 영문 슬롯으로 전진하고, 한글과 런이 나뉘어도 원문 소속을 보존한다.
 ///
-/// 공개 text-layout 의 `charX` 로 잰다. 한글 슬롯(휴먼명조 반각)으로 재면 9.63px, 영문 슬롯
-/// (Palatino Linotype 0.336em × 20px − 자간 3%)이면 ≈6.1px 다. 정본 PDF 의 이 `-` 는 6.4px 전진.
+/// 공개 text-layout의 원문 주소와 `charX`를 함께 검사한다. 독립 Print의 하이픈 전진은
+/// 글자 크기의 약 0.32배이고, 한글 슬롯의 반각 전진인 약 0.48배보다 작다.
 #[test]
 fn the_hyphen_in_a_hangul_run_advances_with_latin_slot_metrics() {
     let core = load();
@@ -53,16 +53,32 @@ fn the_hyphen_in_a_hangul_run_advances_with_latin_slot_metrics() {
             .expect("공개 text-layout"),
     )
     .expect("text-layout JSON");
-    let run = layout["runs"]
-        .as_array()
-        .expect("runs")
+    let runs = layout["runs"].as_array().expect("runs");
+    let paragraph: Vec<_> = runs
         .iter()
-        .find(|run| {
-            run["text"]
-                .as_str()
-                .is_some_and(|text| text.contains("- 해당 사업자는"))
-        })
-        .expect("`- 해당 사업자는` 이 든 run — 구두점은 한글 run 안에 남는다");
+        .filter(|run| run["secIdx"] == 0 && run["paraIdx"] == 73)
+        .collect();
+    let source = &core.document().sections[0].paragraphs[73];
+    let mut next = 0;
+    let mut actual_text = String::new();
+    for run in &paragraph {
+        assert_eq!(run["charStart"].as_u64(), Some(next), "원문 순서·누락·중복");
+        let text = run["text"].as_str().expect("소유 런 내용");
+        next += text.encode_utf16().count() as u64;
+        actual_text.push_str(text);
+    }
+    assert_eq!(actual_text, source.text, "원문 문단의 전체 내용 보존");
+    let matches: Vec<_> = paragraph
+        .iter()
+        .filter(|run| run["charStart"] == 2)
+        .collect();
+    assert_eq!(matches.len(), 1, "원문 하이픈의 소유 런은 유일하다");
+    let run = matches[0];
+    assert_eq!(run["text"], "-");
+    assert_eq!(
+        run["fontFamily"], "Palatino Linotype",
+        "독립 Print의 영문 슬롯"
+    );
     let text: Vec<char> = run["text"].as_str().unwrap().chars().collect();
     let hyphen = text.iter().position(|c| *c == '-').expect("`-`");
     let char_x: Vec<f64> = run["charX"]
@@ -72,8 +88,29 @@ fn the_hyphen_in_a_hangul_run_advances_with_latin_slot_metrics() {
         .map(|x| x.as_f64().expect("문자 경계"))
         .collect();
     let advance = char_x[hyphen + 1] - char_x[hyphen];
+    let font_size = run["fontSize"].as_f64().expect("원문 글자 크기");
+    let advance_em = advance / font_size;
     assert!(
-        (5.5..7.0).contains(&advance),
-        "`-` 전진폭 {advance:.2}px — 영문 슬롯이면 ≈6.1px, 한글 슬롯(휴먼명조 반각)이면 9.63px"
+        (0.275..0.35).contains(&advance_em),
+        "`-` 전진/글자 크기 {advance_em:.3} — 독립 Print의 약 0.32em, 한글 반각 약 0.48em"
+    );
+    let following = paragraph
+        .iter()
+        .find(|following| following["charStart"] == 3)
+        .expect("하이픈 다음의 한글 소유 런");
+    assert!(following["text"]
+        .as_str()
+        .unwrap()
+        .starts_with(" 해당 사업자는"));
+    assert_eq!(following["fontFamily"], "휴먼명조");
+    assert_eq!(
+        following["charShapeId"], run["charShapeId"],
+        "같은 원문 글자모양"
+    );
+    assert_eq!(following["y"], run["y"], "하이픈과 뒤 본문은 같은 줄");
+    assert!(
+        (following["x"].as_f64().unwrap() - run["x"].as_f64().unwrap() - advance).abs() / font_size
+            < 0.01,
+        "영문 전진 끝에서 한글 본문을 이어 그린다"
     );
 }

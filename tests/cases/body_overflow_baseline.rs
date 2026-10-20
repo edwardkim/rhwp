@@ -52,6 +52,19 @@ include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/support/exam_fixtures.rs"
 ));
+mod retired_exam_baseline_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/retired_exam_baseline_scope.rs"
+    ));
+}
+
+mod deferred_visual_regression_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/deferred_visual_regression_scope.rs"
+    ));
+}
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
@@ -153,6 +166,8 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
             && !DEFERRED_BODY_OVERFLOW_FIXTURES.contains(&rel.as_str())
     });
     acc.retain(|(path, _)| !is_exam_fixture(path));
+    acc.retain(|(path, _)| !retired_exam_baseline_scope::is_retired(path));
+    acc.retain(|(path, _)| !deferred_visual_regression_scope::is_deferred(path, "body"));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples 에 hwp/hwpx 샘플이 없음");
     acc

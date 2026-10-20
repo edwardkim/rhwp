@@ -21,12 +21,14 @@ impl TypesetEngine {
     ) -> bool {
         let column = st.inline_flow_column();
         let table_text_rows = inline_flow::supports_table_text_rows(para);
+        let picture_rows = inline_flow::supports_picture_rows(para);
         if !inline_flow::supports(para, super::super::px_to_hwpunit(column.width, self.dpi))
             && !inline_flow::supports_plain_text(para)
         {
             return false;
         }
         if !table_text_rows
+            && !picture_rows
             && st.side_wrap_exclusions.is_empty()
             && !para.controls.iter().any(|c| {
                 matches!(c, Control::Picture(p) if !p.common.treat_as_char
@@ -58,7 +60,11 @@ impl TypesetEngine {
             .last()
             .and_then(|item| st.inline_flow_plans.get(&item.para_index()))
             .is_some_and(|previous| (previous.end - st.current_height).abs() < 0.01);
-        if !table_text_rows && !plan.carved && (plan.text_rows.is_none() || !follows_shared_rows) {
+        if !table_text_rows
+            && !picture_rows
+            && !plan.carved
+            && (plan.text_rows.is_none() || !follows_shared_rows)
+        {
             return false;
         }
         if plan.end > st.available_height() + 0.01 {

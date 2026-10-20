@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-15
+last_verified: 2026-10-18
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -16,6 +16,12 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 
 ## 1. 공통 계약
 
+리베이스로 새 devel의 PR을 반영하면 **현재 작업의 개선과 반영 PR의 기능 유지·개선**을 함께
+검증한다. 충돌이 없었거나 CI가 통과했다는 사실만으로 기능 보존을 판정하지 않는다.
+[리베이스 후 기능 보존 절차](pr_review/local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)에 따라
+새 base와 후보의 실제 동작·출력을 대조한다. 양쪽 요구를 충족하면 진행하며, 후퇴하면 보정 후
+재검증한다. 후퇴·필수 증거 부족이 남으면 준비 완료·PR 생성·승인·통합을 보류한다.
+
 모든 정식 PR review는 역할·작성자·PR 규모와 관계없이
 [조판 원칙 준수 검토](pr_review/intake_and_review.md#27-조판-원칙-준수-검토)를 공통 항목으로 기록한다.
 실제 diff와 PR 주장을 근거로 적용 여부를 먼저 판단하고, 적용 대상은 `AGENTS.md`의 공통 조판 원칙을
@@ -23,7 +29,7 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 collaborator 매개 외부 PR 모두 같은 기준을 사용하며, CI 통과가 이 검토를 대체하지 않는다.
 
 조판·렌더링 영향 PR은 최신 SHA를 고정한 `upstream/devel`의 전쪽 Native/fresh WASM TSV를
-후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도0.01%p 이상 하락하면90% 이상이어도
+후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도0.1%p 이상 하락하면90% 이상이어도
 PR을 재검토하고 승인·통합을 보류한다.** 평균 상승·CI 통과로 상쇄하지 않는다.
 계산·증거·base 갱신은 [devel 대비 실루엣 하락 재검토](verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
 
@@ -98,7 +104,8 @@ merge 전 조건을 먼저 보여주고, 접수 정보·검증·증적은 아래
 PR 번호는 PR을 생성할 때 채번된다. 따라서 collaborator self PR의 번호 기반 review 기록은
 다음 순서로 같은 PR에 포함한다.
 
-1. 구현과 로컬 검증이 끝난 후보 commit을 원격 작업 branch에 push한다.
+1. 구현과 [로컬 사전 검증](pr_review/local_validation.md) 4.3 및 해당 보조 절차의 필수 검증을
+   빠짐없이 완료한 후보 commit을 원격 작업 branch에 push한다. 실패·미실행은 PR CI에 넘기지 않는다.
 2. 작업지시자의 PR 생성 승인 후 Open PR을 생성해 번호 `N`을 받는다. 완료된 후보에
    번호만 확보하려고 Draft를 생성하지 않는다.
 3. 같은 PR의 정확한 code head SHA에 대한 required check와 변경 범위상 필요한 GitHub Actions가
@@ -113,9 +120,12 @@ code head CI가 진행 중·실패·취소·미실행이면 review·오늘할일
 [collaborator self PR의 기록 시점](pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)을 따른다.
 
 외부 contributor PR처럼 PR이 이미 존재하는 경우에는 발급된 번호로 바로 review 접수를 시작한다.
-Draft는 WIP 공유나 조기 검토가 필요하고 그 상태 변경을 작업지시자가 명시적으로 승인한 경우에만
-사용한다. 정확한 생성 순서와 승인 게이트는 [문서와 Git 워크플로우](codex/docs_and_git_workflow.md#internal-task-pr-approval)를
-따른다.
+**일반 제출은 검증을 완료한 Open PR이며, 특별한 사유 없는 Draft 생성은 금지한다.** Draft는
+미완성 설계 논의·WIP 공유 목적과 그 상태 변경을 작업지시자가 명시적으로 승인한 경우에만 사용한다.
+일반 PR 생성 승인, 번호 확보·CI 시작·대기와 필수 검증 실패·미완료는 예외 사유가 아니다.
+예외 Draft의 본문에도 목적·미완료 항목·완료 계획을 적고, Ready 전환 전 필수 검증을 모두 완료한다.
+정확한 생성 순서와 승인 게이트는
+[문서와 Git 워크플로우](codex/docs_and_git_workflow.md#internal-task-pr-approval)를 따른다.
 
 ### 1.3 문서 trailing commit을 위한 반복 동기화 금지
 

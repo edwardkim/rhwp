@@ -3,6 +3,10 @@
 //! 섹션 XML의 문단(<hp:p>), 텍스트 런(<hp:run>), 표(<hp:tbl>),
 //! 이미지(<hp:pic>) 등을 기존 Document 모델로 변환한다.
 
+#[path = "note_line_positions.rs"]
+mod note_line_positions;
+use note_line_positions::normalize_hwpx_note_line_vpos;
+
 use quick_xml::events::{BytesRef, Event};
 use quick_xml::Reader;
 
@@ -369,6 +373,10 @@ fn parse_master_page_start(e: &quick_xml::events::BytesStart, master_page: &mut 
         master_page.replace_base = page_duplicate == Some(false);
         master_page.overlap = true;
     }
+    if is_optional_page {
+        master_page.optional_page_number =
+            master_page.hwpx_page_number.filter(|number| *number > 0);
+    }
     master_page.ext_flags = u16::from(master_page.overlap)
         | if master_page.is_extension { 0x02 } else { 0 }
         | if is_optional_page { 0x04 } else { 0 };
@@ -401,7 +409,11 @@ fn build_hwpx_master_page_list_header(master_page: &MasterPage) -> Vec<u8> {
     bytes.extend_from_slice(&master_page.text_height.to_le_bytes());
     bytes.push(master_page.text_ref);
     bytes.push(master_page.num_ref);
-    bytes.extend_from_slice(&master_page.ext_flags.to_le_bytes());
+    let kind = master_page
+        .optional_page_number
+        .and_then(|number| number.checked_add(3))
+        .unwrap_or(master_page.ext_flags);
+    bytes.extend_from_slice(&kind.to_le_bytes());
     bytes.extend_from_slice(&[0u8; 14]);
     bytes
 }
@@ -669,10 +681,9 @@ fn parse_paragraph_body(
     let mut preceding_run_char_shape_id: Option<u32> = None;
     // [#5961] HWP5 문단 축에서만 자리를 차지하는 앞머리 슬롯 수.
     //
-    // 아래 `secPr` arm 이 `\u{0002}` 를 밀어 넣는 슬롯들 — 구역 정의와 그 안에 실려 온
-    // 첫 단 정의 — 은 HWPX 문단에는 대응 요소가 없다(`hp:secPr` 은 구역 머리 run 소속,
-    // secPr 안의 `hp:colPr` 은 템플릿이 흡수). 그 슬롯을 만들어 넣은 주체가 파서
-    // 자신이므로 개수는 추측이 아니라 사실이다.
+    // secPr 안에만 있는 첫 단 정의를 별도 컨트롤로 만든 슬롯과, 명시적인
+    // rhwp-origin 생산자가 템플릿에서 생략한 구역 슬롯만 센다. 일반 한컴 원본의
+    // secPr 존재 자체를 축 생략의 근거로 사용하지 않는다.
     //
     // 이 값은 `text_start` 를 **고치는 데 쓰지 않는다**. `Paragraph::hwpx_axis_shift` 에
     // 실어 두고 읽는 쪽에서만 올려 본다 — 파일 축을 옮기면 재수출이 흘러내린다.
@@ -794,7 +805,12 @@ fn parse_paragraph_body(
                         // 모든 chars 를 line 0 에 packing. \u{0002} 추가로 8 utf16 정합.
                         para.controls.push(Control::SectionDef(Box::new(sd)));
                         text_parts.push("\u{0002}".to_string());
-                        if !HWPX_PARAGRAPH_AXIS.with(|c| c.get()) {
+                        // 명시적 구역 정의는 일반 한컴 저장본에서도 실제 8유닛이다.
+                        // 템플릿 슬롯을 생략한 생산자 마커가 있을 때만 올려 읽는다.
+                        if !HWPX_PARAGRAPH_AXIS.with(|c| c.get())
+                            && (HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get())
+                                || hwpx_hwp3_origin_source())
+                        {
                             hwp5_only_leading_slots += 1;
                         }
                         // colPr이 있으면 ColumnDef 컨트롤 추가 (초기 단 정의) + 8 utf16.
@@ -4152,8 +4168,10 @@ fn parse_line_shape_attr(e: &quick_xml::events::BytesStart) -> ShapeBorderLine {
                     // bit 6 이 endCap(bit 6~9)에 겹쳐 써져 소실됐다(#1531).
                     "NONE" => 0,
                     "SOLID" => 1,
-                    "DASH" => 2,
-                    "DOT" => 3,
+                    // lineShape도 borderFill과 같은 HWP5 선 코드를 사용한다.
+                    // HWPX DASH는 짧은 점(code 3), DOT는 파선(code 2)이다.
+                    "DASH" => 3,
+                    "DOT" => 2,
                     "DASH_DOT" => 4,
                     "DASH_DOT_DOT" => 5,
                     "LONG_DASH" => 6,
@@ -5931,99 +5949,6 @@ impl Drop for Hwp3OriginSourceGuard {
     }
 }
 
-fn is_hwp5_stored_note_zero_vpos(paragraph: &Paragraph) -> bool {
-    // [#4882] HWP5 note sublists preserve vertical_pos=0 on every stored line.
-    paragraph.line_segs.len() > 1 && paragraph.line_segs.iter().all(|seg| seg.vertical_pos == 0)
-}
-
-fn normalize_hwpx_note_line_vpos(paragraph: &mut Paragraph, preserve_all_zero: bool) {
-    // [#4882] HWP5-origin HWPX는 note lineSeg 저장값 전체를 보존한다. marker가
-    // 없는 HWP5 footnote는 all-zero 저장 패턴만 보존하고, 일반 HWPX endnote의
-    // 후속 줄 0은 연속줄 아티팩트라 종전 정규화 계약을 적용한다 (#1692).
-    if HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get())
-        || (preserve_all_zero && is_hwp5_stored_note_zero_vpos(paragraph))
-    {
-        return;
-    }
-    if paragraph.line_segs.len() <= 1 {
-        return;
-    }
-
-    // 자기 쪽 원점에서 시작한 각주는 양수 위치 뒤 다시 시작할 수 있다
-    // (예: 0/1172/0). 이는 각주 영역의 물리 페이지 경계다.
-    // 첫 줄이 이미 양수에서 시작하는 후속0 연속줄 보정과 구분한다.
-    // 반복 페이지 시작0/0/1172도 두 번째 줄을 다음 물리 쪽에 둔다.
-    // 기존 미주 정규화와2344/0 연속줄 보정 계약은 유지한다.
-    if preserve_all_zero
-        && paragraph.line_segs[0].vertical_pos == 0
-        && (paragraph.line_segs.windows(2).any(|lines| {
-            lines[0].vertical_pos > 0
-                && lines[1].vertical_pos == 0
-                && lines.iter().all(|line| line.tag & 0x8000_0000 == 0)
-        }) || (paragraph.line_segs[1].vertical_pos == 0
-            && paragraph.line_segs[..2]
-                .iter()
-                .all(|line| line.tag & 0x8000_0000 == 0)))
-    {
-        return;
-    }
-
-    // [#6495] `vertpos=0` 이 **연속줄 아티팩트**인 문단과 **실제 단/쪽 경계**인 문단을
-    // 가른다 — 판별자는 그 문단의 **0 이 아닌 값들 사이에 되감김이 있는가**다.
-    //
-    // ```text
-    // #1692  SO-SUEOP.hwpx endnote 161   vpos = [v, 0]              0 아닌 값 하나
-    //        → 되감김 없음 = 연속줄 아티팩트, 종전대로 복원
-    //
-    // #6495  3-09월_교육_통합_2023 pi=512
-    //        .hwp   vpos = 65968 / 61499(되감김) / 63001
-    //        .hwpx  vpos = 65968 /      0        / 63001   ← 0 아닌 값이 이미 되감긴다
-    //        → 이 0 도 경계다. 덮으면 65968/67320/63001 이 되어 되감김이 idx=1 에서
-    //          idx=2 로 **한 칸 밀리고** split 이 한 줄 늦어진다.
-    // ```
-    //
-    // 보존하면 `.hwpx` 가 `.hwp` 와 같은 자리에서 끊는다.
-    //
-    // ```text
-    // 3-09월_교육_통합_2022.hwpx  off-canvas 4 → 1   넘침 11 → 4   쪽수 23 불변
-    // 3-09월_교육_통합_2023.hwpx  off-canvas 2 → 0   넘침  6 → 2   쪽수 20 불변
-    // 9쪽 오른쪽 단 최하단  841.17 → 795.09pt (한/글 794.51)
-    // ```
-    let nonzero_rewinds = {
-        let mut prev = None;
-        paragraph.line_segs.iter().any(|seg| {
-            if seg.vertical_pos <= 0 {
-                return false;
-            }
-            let rewound = prev.is_some_and(|p| seg.vertical_pos < p);
-            prev = Some(seg.vertical_pos);
-            rewound
-        })
-    };
-    if nonzero_rewinds {
-        return;
-    }
-
-    let mut expected_vpos = None;
-    for line_seg in &mut paragraph.line_segs {
-        if let Some(expected) = expected_vpos {
-            if line_seg.vertical_pos == 0 && expected > 0 {
-                // HWPX 미주/각주 내부에는 실제 단/쪽 리셋이 아닌 후속 줄
-                // vpos=0이 저장되는 사례가 있다. 본문 의미는 유지하고,
-                // note 내부 연속줄만 이전 줄 advance 기준으로 복원한다.
-                line_seg.vertical_pos = expected;
-            }
-        }
-
-        expected_vpos = Some(
-            line_seg
-                .vertical_pos
-                .saturating_add(line_seg.line_height)
-                .saturating_add(line_seg.line_spacing),
-        );
-    }
-}
-
 /// `<hp:ctrl>` → `<autoNum num="..." numType="...">` + `<autoNumFormat .../>` 자식
 fn parse_ctrl_autonum(
     e: &quick_xml::events::BytesStart,
@@ -6895,7 +6820,9 @@ fn parse_equation(
 
     let mut buf = Vec::new();
     loop {
-        match reader.read_event_into(&mut buf) {
+        let event = reader.read_event_into(&mut buf);
+        let self_closing = matches!(&event, Ok(Event::Empty(_)));
+        match event {
             Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
@@ -6910,10 +6837,10 @@ fn parse_equation(
                         );
                     }
                     b"script" => {
-                        in_script = true;
+                        in_script = !self_closing;
                     }
                     // 수식 설명 (#1392) — 미적재 시 roundtrip 에서 소실
-                    b"shapeComment" => {
+                    b"shapeComment" if !self_closing => {
                         common.description = read_dutmal_text(reader, b"shapeComment")?;
                     }
                     _ => {}
