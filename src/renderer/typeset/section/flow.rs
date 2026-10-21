@@ -330,6 +330,29 @@ impl TypesetEngine {
                 }
             }
         } else {
+            // 쪽 첫 문단이 제목 표(쪽·종이 기준 어울림 표)의 host 이고 그 저장 첫 줄이 표 바깥
+            // 아래에서 시작하면, 한/글처럼 그 줄부터 저장 위치에 둔다. 쪽 원점은 0 이다.
+            if st.current_items.is_empty()
+                && st.col_count == 1
+                && (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+                && !st.profile.session_edited()
+                && crate::renderer::layout::stored_first_line_clears_page_square_table(
+                    paragraphs, para_idx, &st.layout, self.dpi,
+                )
+            {
+                if let Some(first) = para.line_segs.first() {
+                    st.record_vpos_column_anchor(st.current_height);
+                    st.record_vpos_page_origin(Some(0));
+                    st.record_vpos_lazy_origin(None);
+                    st.record_vpos_origin_provenance(true);
+                    // 원점만 바로잡는다. 이 쪽의 저장 사다리는 지금까지처럼 앞 간격 회수나
+                    // 뒤로 스냅하는 근거로 쓰지 않는다(그리는 쪽의 순차 흐름과 같게).
+                    st.record_vpos_ladder_validity(true);
+                    st.align_flow_to(
+                        st.current_height + hwpunit_to_px(first.vertical_pos, self.dpi),
+                    );
+                }
+            }
             // 표 문단: Phase 2에서 전환 예정. 현재는 기존 방식 호환용 stub.
             self.typeset_table_paragraph(
                 st,

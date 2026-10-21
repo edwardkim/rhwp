@@ -4359,6 +4359,26 @@ impl TypesetEngine {
                 if side_wrap_placement.is_none_or(|current| placement.y > current.y) {
                     side_wrap_placement = Some(placement);
                 }
+            } else if side_wrap_placement.is_none() {
+                // 개체 줄이 이미 상자 아래에서 시작해도(쪽 첫 줄이 제목 표 아래인 쪽) 자리를
+                // 확정해 둔다. 확정이 없으면 그리는 쪽은 상자 옆 글 줄을 먼저 그린 뒤 표를
+                // 그 줄 아래에 다시 놓아 줄 하나만큼 내려간다.
+                let top = natural_top.max(st.inline_box_flow_bottom);
+                let slack = (column.width - left - right - advance).max(0.0);
+                let offset =
+                    match style.map_or(crate::model::style::Alignment::Left, |s| s.alignment) {
+                        crate::model::style::Alignment::Right => slack,
+                        crate::model::style::Alignment::Center => slack / 2.0,
+                        _ => 0.0,
+                    };
+                side_wrap_placement = Some(super::float_placement::InlineBoxPlacement {
+                    x: column.x + left + offset,
+                    y: column.y + top,
+                    clearance: (top - natural_top).max(0.0),
+                    advance_end: None,
+                    stored_horizontal_pen: None,
+                    stored_column_frame: None,
+                });
             }
         }
         let clearance = side_wrap_placement.map_or(0.0, |p| p.clearance);
