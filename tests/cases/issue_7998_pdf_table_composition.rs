@@ -575,7 +575,7 @@ fn original_cell_picture_and_solid_nested_owners_remain_valid() {
     }
 }
 #[test]
-fn crossing_and_interleaved_picture_owners_remain_unconsumed() {
+fn crossing_picture_is_retained_and_contained_interleaved_picture_has_one_cell_owner() {
     for (key, tail) in [
         ("cell-picture-crossing", "AFTER"),
         ("cell-picture-overlap", "OVERLAPPING"),
@@ -610,8 +610,34 @@ fn crossing_and_interleaved_picture_owners_remain_unconsumed() {
         ) {
             assert_eq!(
                 table_count(&c.document().sections[0].paragraphs[0].controls),
-                0
+                usize::from(key == "cell-picture-overlap")
             );
+            if key == "cell-picture-overlap" {
+                let table = c.document().sections[0].paragraphs[0]
+                    .controls
+                    .iter()
+                    .find_map(|v| {
+                        if let Control::Table(t) = v {
+                            Some(t)
+                        } else {
+                            None
+                        }
+                    })
+                    .expect("confirmed enclosing table");
+                assert_eq!(table.cells.len(), 4);
+                let cell = &table.cells[0];
+                assert_eq!((cell.row, cell.col), (0, 0));
+                assert_eq!(
+                    cell.paragraphs
+                        .iter()
+                        .map(|p| picture_count(&p.controls))
+                        .sum::<usize>(),
+                    1
+                );
+                let mut owned = Vec::new();
+                model_text(&cell.paragraphs, &mut owned);
+                assert_eq!(owned.into_iter().collect::<String>(), "BEFOREOVERLAPPING");
+            }
             assert_eq!(
                 picture_count(&c.document().sections[0].paragraphs[0].controls),
                 1

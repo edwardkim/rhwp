@@ -78,3 +78,8 @@ checkpoint `7e34a0140`의 병합 3셀·별도 4셀을 **“시각·편집 구조
 후속 P4 절편에서 `unwitnessed-cell.pdf`의 닫힌 빈 단일 tile는 정상 3셀로 수용하고 양 저장을
 재검증했다. 이 입력의 과거 보류 상태는 현재 기대값이 아니며, 자세한 근거는
 [local-regions](local-regions.md)·stage9를 따른다.
+
+2026-10-21 통합 검토: `hidden-separate`의4셀은 실제 행·열 삽입/삭제도 지원한다.
+초기의 미지원 오류 기대를 제거하고 병합 대조군과 같은 실제 명령·원문/셀 소유 보존·
+양 저장 재열기를 검사한다. 입력/양 저장본의 전쪽 Native/fresh WASM은 모두100%다.
+[stage38](../../mydocs/working/task_m100_7998_stage38.md)의 소유 계약과 연결한다.

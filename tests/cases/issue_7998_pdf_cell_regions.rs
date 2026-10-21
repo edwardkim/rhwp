@@ -242,27 +242,14 @@ fn character_and_axis_edits_preserve_merged_content_and_owners() {
         for row in [true, false] {
             let mut c = load(key);
             let ci = root(&c).0;
-            let before_hwp = c.export_hwp_native().unwrap();
-            let before_hwpx = c.export_hwpx_native().unwrap();
-            let before_tree = serde_json::to_value(c.build_page_render_tree(0).unwrap()).unwrap();
             let result = if row {
                 c.insert_table_row_native(0, 0, ci, 0, true)
             } else {
                 c.insert_table_column_native(0, 0, ci, 0, true)
             };
-            // Content/clip evidence proves these cells, but an incomplete
-            // source separator does not authorize inventing structural bands.
-            if key == "hidden-separate" {
-                assert!(result.unwrap_err().to_string().contains("동등성"));
-                assert_eq!(c.export_hwp_native().unwrap(), before_hwp);
-                assert_eq!(c.export_hwpx_native().unwrap(), before_hwpx);
-                assert_eq!(
-                    serde_json::to_value(c.build_page_render_tree(0).unwrap()).unwrap(),
-                    before_tree
-                );
-                roundtrip(&c, want, &addrs);
-                continue;
-            }
+            // Later native cell-border lowering makes hidden-separate an
+            // editable four-cell grid too. Exercise insert/delete and both
+            // saved formats rather than pinning the earlier unsupported state.
             result.unwrap();
             let t = root(&c).1;
             assert_eq!(

@@ -157,11 +157,46 @@ fn active_content_axes_recover_separate_cells_without_inventing_ink() {
     }
 }
 #[test]
+fn enclosed_blank_cells_keep_their_physical_band_and_content() {
+    for (key, text, addrs, blank) in [
+        (
+            "empty-merged-row",
+            "CELL11CELL12CELL31CELL32",
+            vec![
+                (0, 0, 1, 1),
+                (0, 1, 1, 1),
+                (1, 0, 1, 2),
+                (2, 0, 1, 1),
+                (2, 1, 1, 1),
+            ],
+            2,
+        ),
+        (
+            "hidden-blank",
+            "CELL11CELL21CELL22",
+            vec![(0, 0, 1, 1), (0, 1, 1, 1), (1, 0, 1, 1), (1, 1, 1, 1)],
+            1,
+        ),
+        (
+            "local-blank",
+            "CELL11CELL12CELL22",
+            vec![(0, 0, 1, 1), (0, 1, 1, 1), (1, 0, 1, 1), (1, 1, 1, 1)],
+            2,
+        ),
+    ] {
+        let c = load(key);
+        // The independent generator's active cell region preserves a blank
+        // physical band/cell. Missing source ink alone does not merge it.
+        roundtrip(&c, text, &addrs);
+        assert!(root(&c).1.cells[blank]
+            .paragraphs
+            .iter()
+            .all(|p| p.text.is_empty()));
+    }
+}
+#[test]
 fn absent_blank_boundaries_and_dead_or_partial_scopes_preserve_positional_content() {
     for (key, want) in [
-        ("empty-merged-row", "CELL11CELL12CELL31CELL32"),
-        ("hidden-blank", "CELL11CELL21CELL22"),
-        ("local-blank", "CELL11CELL12CELL22"),
         ("local-missing-clip", "CELL11CELL12CELL21CELL22"),
         ("local-restored-clip", "CELL11CELL12CELL21CELL22"),
         ("local-partial-clip", "CELL11CELL12CELL21CELL22"),

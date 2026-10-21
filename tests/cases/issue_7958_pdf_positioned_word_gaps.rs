@@ -66,7 +66,20 @@ fn lines(node: &RenderNode, output: &mut Vec<(String, f64, f64, f64)>) {
     if matches!(node.node_type, RenderNodeType::TextLine(_)) {
         let content = text(node);
         if !content.is_empty() {
-            output.push((content, node.bbox.y, node.bbox.height, node.bbox.width));
+            // TextLine spans the available frame. Its width is not the
+            // source's occupied advance after editable paragraph reflow.
+            fn extent(node: &RenderNode, span: &mut (f64, f64)) {
+                if matches!(node.node_type, RenderNodeType::TextRun(_)) {
+                    span.0 = span.0.min(node.bbox.x);
+                    span.1 = span.1.max(node.bbox.x + node.bbox.width);
+                }
+                for child in &node.children {
+                    extent(child, span);
+                }
+            }
+            let mut span = (f64::INFINITY, f64::NEG_INFINITY);
+            extent(node, &mut span);
+            output.push((content, node.bbox.y, node.bbox.height, span.1 - span.0));
         }
     }
     for child in &node.children {

@@ -37,3 +37,9 @@ fresh Docker WASM SHA-256:
 기준 PDF는 이 독립 원본이며 한컴 열기·인쇄와 최신 devel 비교는 P5에 남는다.
 같은 backend의 이전 P3 PNG 132쪽은 각각 byte-identical이었다. 새 중첩 원본의
 이전 positional 출력 대비 미세 하락은 stage4와 검토 화면에 보존한다.
+
+2026-10-21 통합 검토: 셀 밖을 가로지르는 `cell-picture-crossing`은 계속 보류하고,
+완전히 포함된 `cell-picture-overlap`은 실제 첫 셀에서 BEFORE/그림/OVERLAPPING 내용을
+한 번씩 보존한다. 초기에 두 사례를 모두 보류하던 검사는 소유·편집 후속 보정을 반영하지
+않았다. 기존 회귀의 내용 순서·유일 소유와 그림 containment는 유지하며 두 입력 및 양
+저장본의 전쪽 Native/fresh WASM은 모두100%다. [stage38](../../mydocs/working/task_m100_7998_stage38.md).

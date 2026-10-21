@@ -10,7 +10,8 @@ PDF container ID가 달라질 수 있으므로 아래 hash는 검증한 실제 �
 셀 수는 원본 생성 API의 독립 계약으로 정한다. local-columns/outer-only/l-shape/form은
 별도 4셀, linear-columns/rows는 1행/1열의 2셀, merged-blank/space-cell은 위 두 칸 병합과
 아래 두 칸의 3셀이다. 마지막 입력은 공백 U+0020 하나가 실제 Paragraph에 있어야 한다.
-빈 병합 행·숨긴 변의 빈 셀·죽거나 누락/불완전한 clip·열린 외곽은 근거 부족으로 보류한다.
+빈 병합 행·숨긴 변의 빈 셀은 이후 지역 tiling/빈 셀 보정으로 복원했다.
+죽거나 누락/불완전한 clip·열린 외곽은 근거 부족으로 보류한다.
 출력 선이 없다는 사실만으로 셀을 합치거나 빈 셀을 발명하지 않는다.
 
 `independent-roots.pdf`는 원문 글자·그림/Form·주석·metadata·marked content를 제거하고
@@ -63,3 +64,10 @@ PDF→HWP/HWPX의 일반 지역 격자 전체, source paint 일반 편집 및 P5
 B20 후속 절편은 같은 `independent-roots.pdf`를 재사용하여 하단 19셀도 실제 편집 IR로
 연결했다. 이전의 보류를 영구 기대값으로 고정하지 않았으며, 새 경계 소유·독립 출력·전후
 검사 범위는 [paint 소유 증거](paint-ownership.md)와 [stage10](../../mydocs/working/task_m100_7998_stage10.md)을 따른다.
+
+2026-10-21 제출 통합 검토에서 초기 보류 기대값이 후속 구현과 어긋난 것을 확인했다.
+`empty-merged-row`는3×2 격자의 실제5셀(중간 빈 행은 두 열 병합), `hidden-blank`와
+`local-blank`는 실제4셀로 검증한다. 원 생성 API의 주소/span과 모든 내용의 유일 소유,
+빈 문단 보존·HWP/HWPX 왕복을 기존 회귀 함수에서 확인한다. 미지원 clip 네 대조군의
+거절은 유지한다. 새 Native/fresh WASM의 입력/양 저장 전쪽은 모두100%이며 실행 증거는
+[stage38](../../mydocs/working/task_m100_7998_stage38.md)에 연결한다.
