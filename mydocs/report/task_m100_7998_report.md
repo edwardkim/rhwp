@@ -1,8 +1,10 @@
 # #7998 PDF 의미 표·문단 구현 결과
 
-상태: **원격 devel 통합·필수 로컬 검증 완료, 승인된 Open PR 등록 후보**.
+Issue: #7998. PR: [#8120](https://github.com/edwardkim/rhwp/pull/8120).
+
+상태: **원격 devel 통합·필수 로컬 검증·정확한 code head CI·self-review 완료, 승인된 병합 절차 진행**.
 작업지시자는2026-10-21 최신 원격 devel 병합 후 PR 등록을 지시했다.
-현재는 원격 등록 전이며 self-review·merge·이슈 종료를 완료한 것으로 표시하지 않는다.
+2026-10-21 사용자가 self-review와 병합 진행을 승인했다. 병합과 이슈 종료의 실제 결과는 구분한다.
 
 ## 구현 결과와 기준
 
@@ -174,3 +176,9 @@ LayerNode 목록에 누락된 원인이며 로컬에서도 같은 실패를 재�
 변경하지 않았으며 기존 출력 증거를 재사용한다. 상세 경로·실패/성공 증거는
 [stage38의 보정 기록](../working/task_m100_7998_stage38.md#pr-8120-render-diff-선행-계약-검사-보정)에
 연결한다. 새 head의 실제 Render Diff 결과는 이 로컬 선행 검사와 구분해 확인한다.
+
+후속 code head `7ee8bfb6323a27b7d865e8ae287064278879032d`의 CI·Render Diff·CodeQL·Adapter·
+Proptest는 모두 실제 성공했다. Render Diff의 계약 검사뿐 아니라 실제 Canvas/PDF 비교와
+CanvasKit readiness 단계도 성공했다. [self-review](../pr/archives/pr_8120_review.md)에 실제
+run URL·입력 commit 대조·TSV 재확인과 남은 예외를 기록했다. 문서-only trailing head의
+CI와 최신 병합 조건은 별도로 확인하며 같은 전체 빌드·회귀·캡처를 반복하지 않는다.
