@@ -294,7 +294,10 @@
         },
         "pi": 1
       }
-    ]
+    ],
+    "sourceSha": "97918861741fc45b3370edf0a27929c9fc922ddb",
+    "comparison": "Current font/layout geometry and rendered pixels equal prior qualified input. Frozen runtime production source d1d3091c5; later tests and equivalent PDF-only lint syntax edits do not change the saved HWP/HWPX font input path.",
+    "producerSha256": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad"
   },
   {
     "key": "body-list-noop-hwpx",
@@ -591,7 +594,10 @@
         },
         "pi": 1
       }
-    ]
+    ],
+    "sourceSha": "97918861741fc45b3370edf0a27929c9fc922ddb",
+    "comparison": "Current font/layout geometry and rendered pixels equal prior qualified input. Frozen runtime production source d1d3091c5; later tests and equivalent PDF-only lint syntax edits do not change the saved HWP/HWPX font input path.",
+    "producerSha256": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad"
   },
   {
     "key": "body-list-restored-hwp",
@@ -888,7 +894,10 @@
         },
         "pi": 1
       }
-    ]
+    ],
+    "sourceSha": "97918861741fc45b3370edf0a27929c9fc922ddb",
+    "comparison": "Current font/layout geometry and rendered pixels equal prior qualified input. Frozen runtime production source d1d3091c5; later tests and equivalent PDF-only lint syntax edits do not change the saved HWP/HWPX font input path.",
+    "producerSha256": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad"
   },
   {
     "key": "body-list-restored-hwpx",
@@ -1185,7 +1194,10 @@
         },
         "pi": 1
       }
-    ]
+    ],
+    "sourceSha": "97918861741fc45b3370edf0a27929c9fc922ddb",
+    "comparison": "Current font/layout geometry and rendered pixels equal prior qualified input. Frozen runtime production source d1d3091c5; later tests and equivalent PDF-only lint syntax edits do not change the saved HWP/HWPX font input path.",
+    "producerSha256": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad"
   },
   {
     "key": "body-list-typed-hwp",
@@ -1482,7 +1494,10 @@
         },
         "pi": 1
       }
-    ]
+    ],
+    "sourceSha": "97918861741fc45b3370edf0a27929c9fc922ddb",
+    "comparison": "Current font/layout geometry and rendered pixels equal prior qualified input. Frozen runtime production source d1d3091c5; later tests and equivalent PDF-only lint syntax edits do not change the saved HWP/HWPX font input path.",
+    "producerSha256": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad"
   },
   {
     "key": "body-list-typed-hwpx",
@@ -1779,6 +1794,9 @@
         },
         "pi": 1
       }
-    ]
+    ],
+    "sourceSha": "97918861741fc45b3370edf0a27929c9fc922ddb",
+    "comparison": "Current font/layout geometry and rendered pixels equal prior qualified input. Frozen runtime production source d1d3091c5; later tests and equivalent PDF-only lint syntax edits do not change the saved HWP/HWPX font input path.",
+    "producerSha256": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad"
   }
 ]

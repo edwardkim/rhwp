@@ -1,5 +1,13 @@
 # PDF 표 인식 피드백 수행·구현계획
 
+> 2026-10-21 제출 단계: 원격 devel `2e3b4f880` 병합과 원격 push·Open PR 등록은
+> 작업지시자가 승인했다. 아래 초기 계획의 원격 미승인 표기는 당시 상태다.
+> 추가 승인된 tac-img-02의26·45·53쪽은 보정 후 전쪽 Native/fresh WASM과 메인테이너
+> 시각 판정을 통과했다. 기존 수용 범위를 확장하지 않고 필수 전체 Rust·lint를 마무리한다.
+> 남은 범위는 #8106–#8110과 [백로그](task_m100_7998_backlog.md)에 유지한다.
+> 최종 source·검증·등록 상태는 [stage38](../working/task_m100_7998_stage38.md)과
+> [결과보고](../report/task_m100_7998_report.md)가 우선한다. self-review·merge·close는 별도다.
+
 > 2026-10-21 속도는 “이제 기다릴만하네요”로 수용됐다. 이어 보고한4쪽 `font_metric.pdf`는
 > 세 개 CJK face의 정상 CID/TrueType 확장을 raw decoder 기본10만으로 거절한다.
 > 제품 요청 정책의 유한 font 상한을 조정하고, 선예약·decoded/scan·명시 저한도 거절은 유지한다.

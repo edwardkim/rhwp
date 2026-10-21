@@ -1,5 +1,5 @@
 {
-  "source_sha": "bd707a7af055ebc047e8d360f079f215af5a6a09",
+  "source_sha": "97918861741fc45b3370edf0a27929c9fc922ddb",
   "hwp_sha256": "3b3378f08ebbbc10a5fb185f2302de8f5bd41326b4f98c0d3270c7e1f13c5480",
   "pdf_sha256": "5d499a21278e17c842362e249f15ba8dc758609310da3166d137ad8f8579fbd0",
   "affected_pages": [
@@ -9,7 +9,7 @@
     "pdffonts: embedded CID TrueType Haansoft Batang (independent Hancom2020 Print)"
   ],
   "rhwp_fonts": [
-    "Observed Native Skia renderer snapshot: requested Helvetica; actual system Noto Sans KR. Full trace: native-font-trace-observed.json"
+    "Reused observed Native Skia snapshot: requested Helvetica; actual Noto Sans KR. Font selection code, font supply programs, current geometry and rendered pixels are unchanged. Full trace: native-font-trace-observed.json"
   ],
   "font_supply_attempts": [
     "Existing explicit font directory supplied: Arial arial.ttf, HANBatang.ttf, batang.ttc. Correct directory and readable files verified.",
@@ -17,7 +17,7 @@
     "Original PDF Base14 declaration and saved document font identity checked; published Adobe AFM advances do not supply a Helvetica glyph program."
   ],
   "unresolvable_reason": "Original Helvetica glyph program is absent from the source/save and available supplied fonts. Hancom substitutes Haansoft Batang, Native substitutes Noto Sans KR. Supplying available Arial/Batang files does not bind a missing Helvetica face. Changing declared face or adding an explicit save/fallback mapping is separate implementation tracked in #8109; this evidence does not claim that implementation is complete.",
-  "geometry_review_evidence": "/mnt/e/tmp/issue7998-final-grid/font-boundary/geometry.json; previous/current text, paragraph/line ownership and all bbox values equal; independent Print/source comparison reviewed at the same scale.",
+  "geometry_review_evidence": "mydocs/pr/assets/issue_7998/final-p5/font-evidence/geometry.json; fresh Native producer has the same 26 non-empty geometry nodes and PNG/TSV as the prior qualified input. Original observed font trace reused: font selection and supply programs are unchanged. Later lint-only edits are an equivalent bool/Option match in PDF paint, whitespace, moving an identical BinData lookup body before tests, and an equivalent fixed-count test comparison.",
   "font_issue_unresolvable": true,
   "layout_geometry_matched": true,
   "page_count_matched": true

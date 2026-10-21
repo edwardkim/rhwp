@@ -170,3 +170,116 @@ WASM 영향 범위 재검증과 최종 전체 Rust/lint는 별도로 계속 진�
 동일 공급의 base/후보 Native는 모두 같은10쪽 미달이며0.1%p 이상 하락이 없다. 이는
 이번 tac 원본66쪽의 시각 자격을 대신하는 신규 fixture나 완료 근거가 아니다. 이 문서의
 기존 본문 결함으로 검증 범위를 확대하거나 기존 회귀를 임의 이관하지 않았다.
+
+### 최종 재검증 진행과 메인테이너 판정
+
+메인테이너가 Studio7793의26·45·53쪽 새 탭과
+`E:\tmp\issue7998-three-page-review\index.html`에 **시각 판정 통과**를 주었다.
+같은 제품의 실제 Docker WASM 로드·66쪽·console오류0을 확인했다. Native/fresh WASM
+각169쪽 고정 집합과 추가 실사용138쪽은 RGB 세 채널 비교에서 이전 수용본과 모두 같다.
+RGBA alpha 차이가0인 것을 RGB 동일성의 대용으로 쓰지 않는다.
+
+최초 공급에 실제 맑은고딕 bold를 보완한66쪽 별도 대조도 양쪽90% 이상이다.
+기존64MiB catalog 예산을 유지하며 HCRBatang의 실제 문서 문자열/한글/Latin/기호 부분 집합과
+굴림TTCface0 추출본, 실제 맑은고딕 regular/bold를 공급했다. 선택한15,679자의 advance를
+원본과 대조했으며 font metadata와 원본 glyph를 보존했다. 최초 수용 PNG와 추가 공급의
+RGB 변화는 별도로 기록한다. 글꼴 파일은 커밋하지 않는다. 공개 출처는
+`submission-20261021/tac-baseline/font-programs.json`, 전체 원문 TSV는 같은 폴더다.
+
+정식 회귀/기존 계약 정리 commit은 `73de01f03`, 새 테스트의 rustfmt만 반영한 최종 테스트
+head는 `168e96b86`다. 제품 코드는 `d1d3091c5`와 같다. 뒤의 문서/증거 commit이 이 실행의
+코드를 바꾼 것으로 표시하지 않는다. 최종 release 빌드는1,194.46초에 성공했으며 release
+lib부터 전체 nextest·Native Skia·lint·workspace·doc·Qt FFI를 순차 실행 중이다.
+새 테스트가 generated suite에 연결된 뒤 fmt check가 서식 차이를 검출해 해당 파일만
+rustfmt했다. 의미/제품 변경이 없어 이미 성공한 빌드와 진행 중 lib 검사를 반복하지 않는다.
+
+기존 Native Helvetica6건은 최종 테스트 head의 JSON에 고정하고 실제 도구가6건 모두
+`font_mismatch_exception`을 반환했다. 같은26개 non-empty geometry node와 실제 fallback
+trace 재사용 이유를 공개 증거에 연결했다. 새 CI 조건/허용치 완화는 없다.
+
+읽기 전용으로 대조한 `aift`74쪽의 기존 출력 미달은 동일 원본의 열린
+[#7791](https://github.com/edwardkim/rhwp/issues/7791)에 이미 등록돼 있다. 해당 이슈의 지시대로
+범위 밖의 정상 roundtrip/bookmark/page-number 검사를 유지하며, 이번 tac66쪽 보정의 완료
+근거나 새 정상 fixture로 사용하지 않는다.2022 PDF 진단과 기존2020 Print 증거도 구분한다.
+
+### 앞선 전체 회귀17실패의 처리 근거
+
+이전 `1021f7ab4`의 전체 실행은11,206건 중11,189통과/17실패/기존45skip였다.
+각 검사의 원 해결 commit·PR과 현재 독립 출력을 대조한 뒤 다음과 같이 처리했다.
+이 실패 실행을 최종 성공으로 덮어쓰지 않으며 최종 전체 실행 결과는 별도로 기록한다.
+
+| 범위 | 보정과 유지한 독립 계약 |
+|---|---|
+| #7902·#6655·#4068 그림 원점4건 | 빈 inline 그림에도 표와 같은 source-aware 문단 offset을 적용. paint/hit가 같은 원점을 소비하며 독립 Print의107.14267px±2 기대는 유지 |
+| #7958 공백1건 | 가용 너비가 된 TextLine frame 대신 실제 자식 TextRun 점유폭 비교. positive66.08 > no-gap62.08 > negative61.28 관계를 독립 PDF와 대조 |
+| #4438 passthrough3건 | 3×2라 선언하고 Cell이0개인 수동 입력을6개 실제 빈 셀로 바로잡음. 원본104byte CTRL_DATA/비변경 보존은 유지 |
+| #2724·#6520·#4969 각1건 | SessionState journal-only 분류, 실제 minor29, 명시적 알려진 `paint.textClipPath` wire 이름 반영. 실제 mutator 무효화·control7종·원래 글꼴 payload 예산은 유지 |
+| #7998 포함 그림·빈 지역·숨은 경계 각1건 | 원본 그림/문단의 단일 셀 소유와 실제 행열 편집을 검사. 포함 그림은 실제1표, 교차 그림은0표, 병합 빈 행5셀과 분리 빈 셀4셀. 열린 외곽/clip 반례는 여전히 거절 |
+| #7911 font pool1건 | 실제 run별 선언 face와 글꼴 프로그램 정체성을 확인. family 이름만으로 다른 프로그램을 제품에서 합치지 않음 |
+| #7911 선택 페이지1건 | 연산 상한을 줄였을 때 참조 탐색 상한까지 함께 줄던 계상을 분리. 선택5연산 통과·실제참조>8, 명시 참조상한8 거절·미선택65연산 거절을 각각 확인. 기본 자원 상한 유지 |
+| #6708 기준선1건 | 위66쪽 보정과 원본 저장 줄/독립 Print 관계를 먼저 검증한 뒤 잘못된 수동 TAG 가정과98% 미달 페이지 pin을 수정 |
+
+실제 제품 보정은 `f8bf2a853`, 테스트/입력 계약 보정은 `8f9badd87`·`73de01f03`이다.
+23입력37쪽/backend의 새 [전체 TSV·입력 SHA](../pr/assets/issue_7998/submission-20261021/qualification/README.md)는
+Native 최저97.90355%·fresh WASM97.75192%다. 추가 tac66쪽은 별도 폴더에 보존했다.
+집중11모듈과#4438 직접4건이 통과했으며, old failure·명령·새 결과는
+`pr-registration-20261021/fix17/focused-results.json`과 해당 로그에 연결된다.
+
+최종 release lib는892.96초에 실패0으로 완료됐다. 다음 integration 실행은 최종 테스트
+head `168e96b86`에서 시작했으며 뒤의 필수 검증은 같은 공유 target에서 순차 실행한다.
+
+최종 전체 integration은 **11,209 PASS/실패0/기존45skip**로 완료됐다. 전체959.58초 중
+실제 nextest 실행512.503초이며 최종 테스트 head `168e96b86`다. 앞선17실패를 모두
+해소했고 새 쪽번호/저장 선행 글줄 회귀2건과 기존#6708 다섯 관계 검사도 포함한다.
+Native Skia3종·lint·workspace·doc·FFI/Qt는 이어서 순차 검증한다.
+
+Native Skia lib는4,041 PASS/실패0/기존12 ignored, 공식 그림 placeholder·직접 PDF 검사도
+각각 통과했다. 첫 Native Clippy는 두 lint로 실패했다. `compound.rs`의 attribute 뒤 빈 줄을
+제거하고 `table_paint.rs`의 `!image && orientation.is_some()` + `unwrap`을
+`if let (false, Some(h)) = (image, orientation)`으로 정리한 commit은 `c448e70a4`다.
+`Option<bool>`은 Copy이며 image=true의 세 방향값/false+None에서는 양쪽 모두 비실행,
+false+Some(false/true)에서는 같은 h로 같은 본문을 실행한다. 여섯 조합의 조건·body·순서·
+좌표·자원 tick·소유 계상은 그대로다. 나머지 변경은 attribute 뒤 빈 줄 제거뿐이다.
+
+이는 PDF table paint의 동작 불변 lint 정리이며 전체 회귀·Native 실행·Docker 출력의 기존
+통과를 재사용한다. HWP/HWPX로 저장된 글꼴 예외 입력은 이 PDF import 분기를 소비하지
+않는다. 새 lint head와 앞선 실제 전체 검사 head를 구분하고, Clippy부터 남은 게이트만
+재개했다. 실패 로그/첫 gate 결과는 `clippy-native-before.log`·`gate-results-before-lint.json`에
+보존한다. JSON의 source SHA를 완화하지 않고 정식 글꼴 예외 도구도 이 lint head에 고정했다.
+
+Workspace 빌드 통과 후 all-target Clippy는 추가 lint2건으로 실패했다. `979188617`에서
+`BinData.content_index` 함수 본문을 바꾸지 않고 cfg(test) module 앞으로 옮겼다. 이동 전후
+본문 hash는 `three-page-final/bin-data-lint-body.json`에 보존한다. 고정110,000개의 collection
+검사는 `used >= 110001`과 같은 `used > 110000`으로 표현했다. 기대값·강도·자원 정책·
+제품 로직은 변하지 않는다. 새 formatter와 workspace all-target Clippy가 통과했으며 앞선
+전체 검사/불변 동작 증거를 재사용했다. 실패 로그는 `clippy-workspace-before.log`에 남겼다.
+정식 글꼴 예외 도구는 이 최종 lint head의 JSON/해시에서 다시6건 모두 통과했다.
+
+### 필수 로컬 게이트 최종 결과
+
+동작 불변 lint 정리 이후 새 동작 검사를 확장하지 않았다. 아래 실행 SHA를 구분하며
+전체 실패 로그·원본 명령은 ignored `three-page-final/gates/`에 보존한다.
+
+| 게이트 | 실제 실행 head | exit | 초 |
+|---|---|---:|---:|
+| release-build | `73de01f03` | 0 | 1194.46 |
+| release-lib | `73de01f03` | 0 | 892.96 |
+| integration | `168e96b86` | 0 | 959.58 |
+| native-lib | `168e96b86` | 0 | 238.58 |
+| native-placeholder | `168e96b86` | 0 | 197.32 |
+| native-pdf | `168e96b86` | 0 | 10.93 |
+| clippy-native | `c448e70a4` | 0 | 77.11 |
+| clippy-wasm | `c448e70a4` | 0 | 87.09 |
+| workspace-build | `c448e70a4` | 0 | 131.24 |
+| clippy-workspace | `979188617` | 0 | 95.90 |
+| clippy-root-targets | `979188617` | 0 | 117.93 |
+| doc-tests | `979188617` | 0 | 119.72 |
+| native-ffi-build | `979188617` | 0 | 177.15 |
+| native-qt-smoke | `979188617` | 0 | 2.23 |
+
+formatter도 최종979188617에서 통과했다. 실제 doc/Qt 검사 로그는 같은 폴더에 있으며,
+정상 종료와 Qt screenshot 생성까지 확인했다. 전체 결과를 PR 준비 완료 근거로 사용한다.
+
+Qt smoke는 offscreen 실제 Native render·synthetic Korean IME·clipboard·multi-page·caret·
+save/reopen을 확인했다. 실제 OS IME는 `osIMEVerified=false`이며 이 검사로 검증했다고
+표시하지 않는다. 문서 검사는8 PASS/실패0/기존3 ignored였다.

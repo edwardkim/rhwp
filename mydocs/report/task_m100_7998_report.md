@@ -1,199 +1,168 @@
 # #7998 PDF 의미 표·문단 구현 결과
 
-상태: **표 인식·속도 수용, 추가 글꼴 자원 보정 로컬 검증 완료 — 전체 P5·PR 제출 보류**.
+상태: **원격 devel 통합·필수 로컬 검증 완료, 승인된 Open PR 등록 후보**.
+작업지시자는2026-10-21 최신 원격 devel 병합 후 PR 등록을 지시했다.
+현재는 원격 등록 전이며 self-review·merge·이슈 종료를 완료한 것으로 표시하지 않는다.
 
-2026-10-21 작업지시자가 “이제 기다릴만하네요”로 속도를 수용했다.
-이어 보고한4쪽 `font_metric.pdf`는 기준 devel과 보정 전 후보 모두 기본10만 font metric
-한도로 거절했다. 정상 CJK3개 face의 CID 폭/TrueType 매핑 때문에 첫 쪽에서 발생했으며,
-제품 요청의 유한 상한만100만으로 조정하고 raw decoder·선예약·decoded/scan·호스트 명시
-저한도는 유지했다. 정식 자원124건 PASS, 새 Native4쪽 최저99.88105%이며
-기존162쪽 문서의 HWPX bytes도 보존됐다. 새 fresh WASM4쪽 최저99.80979%, 실제 Studio
-열기2.146초·HWP/HWPX 저장/재열기4쪽·표시 문자 digest 보존을 확인했다.
-기존162쪽은17.707초·첫274셀을 유지했다. 최신 WASM은 Studio7793에 반영했고,
-비교 자료는 `E:\tmp\issue7998-font-metric-20261021\review\index.html`이다.
-이 원본·식별 가능한 이미지·실제 저장본은 개인 정보가 있어 로컬에만 보존한다.
+## 구현 결과와 기준
 
-2026-10-21 메인테이너는 표 인식 해결을 확인했고 속도 개선을 요청했다. 같은 원본에서
-표/셀·문자/저장 계약을 유지하며 정확한 메트릭 재사용과 중복 인식 결과 복사를 줄였다.
-같은162쪽 원본의 Native 가져오기·저장은24.13/25.08초 →19.90/18.45초,
-동일 headless Chrome152 첫 표시는28.27초 →17.82초였다. 실제 Table162/Cell54,938과
-HWPX·진단, 실제 WASM의 양 저장 파일이 이전 복구본과 같고 실제 셀 입력·undo·재열기도 통과했다.
-앞선 성능 보정 제품의 집중47건·Native/fresh WASM 각180쪽을 확인했으며 원본162쪽 PNG는 양쪽 모두 이전과 같다.
-재시험: [Studio7793](http://localhost:7793/?review=issue7998-performance-20261021&lang=ko),
-원본 `/mnt/e/tmp/reousrce_limit.pdf`, 자료 `E:\tmp\issue7998-perf-20261021\review\index.html`.
+PDF의 문자·경계·지역 격자에서 확인한 소유를 실제 Table/Cell과 Paragraph/LineSeg로
+연결했다. 셀 테두리·채우기, 검증한 병합·중첩과 행열/문자 편집, HWP/HWPX 저장·재열기를
+소비 경로까지 연결한다. 불확정 구조는 원문을 단일 소유로 보존하고 보류 이유를 진단한다.
+모든 PDF 작성 객체나 원래 Excel 셀 구조를 완전히 복원했다는 주장은 하지 않는다.
 
-추가 기회 승인 뒤 같은 `reousrce_limit.pdf`에서 실제 Table162/Cell54,938을 생성하고,
-Native 전체 가져오기·저장을76.4→24.1초로 보정했다. 첫 복구본 WASM의 Windows 첫 표시는25.1초였다.
-글자 속성 중복과 저장 후 뒤쪽 스타일 유실도 보정했다. 전쪽 Native/fresh WASM 최저는
-99.56743%/99.56279%이며 실제 셀 키보드 입력·undo·양 저장·재열기와 집중 회귀47건을 확인했다.
-표 인식 복구는 수용됐지만 devel5.7초보다 느리다(해당 devel은 의미 표0개). 전체 P5와 새
-162쪽 저장본의 한컴 열기·인쇄는 미완료다. 정확한 dirty source·runtime·명령·측정 경계와
-잘못된 초기 진단의 제외 사유는 [stage37 재시험 기록](../working/task_m100_7998_stage37.md#재시험용-복구본--메인테이너-수용-대기)을 따른다.
+- 기능 보정 commit: `d1d3091c5`; 전체 테스트 head: `168e96b86`;
+  동작 불변 lint 정리 head: `979188617` (`c448e70a4`의 후속).
+- 최신 통합 devel: `2e3b4f880bd11d35398e6ea0100846611f13a72d` (#7930).
+- 구현 보존 `e58323511` → 충돌 없는 merge `49cd26522` → rustfmt 기록 `d921ccac8` →
+  실제 저장 공백 보정·회귀 `1f24b1526` 이후 실제 그림 배치/독립 선택 페이지 자원 계상과
+  세 쪽 보정을 추가했다. 소스가 달라진 전체 Rust·lint·출력 경로는 새 제품으로 검증한다.
+- 유입 Qt 참조 창·Native clipboard 공백/emoji·빈 clipboard 거절·geometry revision은
+  원 PR과 실제 diff를 대조했다. Qt adapter25검사를 확인했다.
+- 같은 제품 동작의 빌드/판정을 재사용했다. lint-only 차이와 실행 head는 아래에 구분한다.
+  로그·중간 JSON·서비스 응답은 ignored
+  `output/pr-review/issue7998/pr-registration-20261021/`에 보존한다.
 
-2026-10-20 메인테이너는 이전 devel 대비 종합 개선을 확인하지 못했고,
-`reousrce_limit.pdf`의 과도한 지연과 전체 표 인식 실패를 보고했다. 아래169쪽/기존 대조군
-결과를 실사용 개선이나 전체 목표 달성의 근거로 승격하지 않는다. 이 실제 입력을 같은 조건의
-devel/후보에서 재현하며, 최종 전체 검증은 중단했다. 후속 이슈 등록 사실도 이 결함의 해결을 대신하지 않는다.
+구현·독립 근거·반례·사용자 판정의 연결은 단계별 기록을 유지한다.
+최근 통합과 실제 새 제품의 명령/결과는 [stage38](../working/task_m100_7998_stage38.md),
+실사용 복구·성능·추가 입력/캐럿은 [stage37](../working/task_m100_7998_stage37.md)을 따른다.
 
-이전 마감 지시와 범위 기록: 2026-10-20 작업지시자가 현재 구현을
-마감하고 남은 기능은 후속 이슈로 처리하도록 결정했다. PR 생성·병합·이슈 종료는 아직 수행하지 않았다.
+## 실제 문서 개선
 
-## 완료 범위와 후속
+메인테이너의 실제162쪽 문서에서 처음에는 표 인식이 실패하고 지연이 과도했다.
+수용된 복구본은 실제 Table162/Cell54,938을 생성한다. 공통 정확 메트릭 재사용과 중복
+인식 증거 복사 제거로 같은 조건의 Native 가져오기·저장24.13/25.08→19.90/18.45초,
+headless Chrome 첫 표시28.27→17.82초를 관측했다. 당시 저장/문자 계약을 유지했다.
+메인테이너는 표 인식과 “이제 기다릴만하네요”로 속도 개선을 수용했다.
+새 최종 제품의 동시 빌드/캡처 중25.33초는 통제된 성능 재측정이 아니므로 이 값과
+비교해 속도 개선/회귀를 주장하지 않는다.
 
-근거가 확인된 PDF 지역을 실제 Table/Cell과 Paragraph/LineSeg로 소비하고, 셀 테두리·채우기·
-검증한 병합/중첩·행열 편집·문자 편집과 HWP/HWPX 왕복을 연결했다. 원본 공백과 추론한 위치 이동을
-구분한다. 불확정 구조·표현할 수 없는 메트릭은 원문을 단일 소유로 보존하고 이유를 진단한다.
-전체 PDF 작성 객체·원본 Excel의 정확한 셀 수를 복원했다고 주장하지 않는다.
+추가 실사용 입력의 font metric·Table 소유·그림 마스크·XObject·collection 자원 경계와
+회전 글자 열기도 보완했다. 자원 상한/중복 예약·캐시의 실제 범위를 구분했고,
+`parser_allocation_bounds_proven=false`와 나머지 parser 할당 감사 백로그는 유지한다.
+모든 비신뢰 PDF에 대한 안전성 증명이나 배포 준비 완료를 주장하지 않는다.
 
-미완료 구현은 [백로그](../plans/task_m100_7998_backlog.md)에 보존하고 등록했다.
+PDF 글상자 더블클릭은 원래 hit의 path·offset·page를 유지하고 실제 paint와 같은 frame
+변환을 cursor/hit에 적용한다. boolean15쪽과 회전2010글자의 실제 입력·삭제·양 저장을
+확인했으며 메인테이너가 **편집 동작 통과**로 판정했다. 정지 클릭을 resize로 처리하는
+경계와 선택된 반복 바탕쪽의 페이지 이동도 대조했다.
 
-| 후속 | 남은 문제 |
+## 실제 저장·독립 한컴 Print
+
+제출 전 처음 확보한162쪽 저장본의 한컴2020 Print에서43쪽 전각 공백 장평197%가
+부서명 마지막 글자를 다음 줄로 넘기는 결함을 검출했다. 같은 원본의 devel 저장·새 Print는
+정상이라 현재 변환 경로의 결함으로 판정했다. 미수록 U+3000 폭을 반각으로 재고 fit한
+것이 원인이었다. 공통 측정의 미수록 전각 공백만 전각으로 처리하며 실제 metric hit와
+ASCII·NBSP·HWP 고정폭 빈칸 계약을 보존했다. 문서 ID·특정 수치 예외를 추가하지 않았다.
+
+`GlyphWidths::measure → observed_line_text fit → char_width_decision → CHARSHAPE →
+실제 글줄`을 추적했다. 보정 후 literal 공백과 한 문단의 문구를 유지하면서 장평100%를
+저장한다. 독립2020 Print43쪽에서 한 줄 보존을 확인했고 Native99.55895/WASM99.57078%
+및 직접 판독 뒤 정식 관계·Worker 회귀를 추가했다. 동일 실제 Worker 검사에서 수정 전
+동결 WASM은 정확히197% 저장 단언에 실패하고 새 WASM은138검사·실제7 Worker를 통과한다.
+
+새 실제 Studio에서 셀 X 삽입·직접 삭제 후 HWP/HWPX를 저장·재열기했다. Native 무편집
+저장과 section0.xml이 달라 독립 Print를 새로 요청했다. 실제 편집 복원 양 형식 모두
+한컴2024 `13.0.0.3901`·전처리none·Print method0·원본 용지/100%/한 쪽씩162쪽을
+인쇄했다.2020 전체 작업의 worker 종료는 실패로 보존하며2024 성공으로 덮어쓰지 않는다.
+
+| 실제 편집 복원 저장본 | Native 전체 | fresh WASM 전체 | 독립 Print 쪽수 |
+|---|---|---|---|
+| HWP | 162쪽 최저97.08677% | 162쪽 최저97.12104% | 162쪽 일치 |
+| HWPX | 162쪽 최저97.08677% | 162쪽 최저97.12104% | 162쪽 일치 |
+
+누락·90% 미만·쪽수 차이는 없다.43쪽과 최저162쪽을 직접 대조했다. 원본 PDF·rhwp의
+외형과 한컴 재인쇄의 머리행 위 선·일부 제목 줄 표현/선 농도 차이는 B26에 명시한다.
+작업지시자의 잔여 범위 백로그 지시를 유지하며 한컴 완전 호환으로 표시하지 않는다.
+
+## 전쪽 시각·실제 제품 검증
+
+| 고정 범위 | 새 제품 결과 |
 |---|---|
-| [#8106](https://github.com/edwardkim/rhwp/issues/8106) | 내용 증가에 맞춘 보존 테두리 격자 |
-| [#8107](https://github.com/edwardkim/rhwp/issues/8107) | 보고서6쪽 glyph 폭과 문단 승격 |
-| [#8108](https://github.com/edwardkim/rhwp/issues/8108) | 보고서1·4쪽 자간과 문단 승격 |
-| [#8109](https://github.com/edwardkim/rhwp/issues/8109) | Helvetica 저장·재열기·한컴 대체 글꼴 일관성 |
-| [#8110](https://github.com/edwardkim/rhwp/issues/8110) | 의미 표의 가는 선·작은 글자 농도와 PDFium coverage |
+| 기존 Native158입력169쪽 | 일반163쪽 최저92.17391%; 정식 Helvetica 글꼴 예외6쪽 raw최저89.54211% |
+| 같은 fresh Docker WASM169쪽 | 모두90% 이상; 최저90.70673% |
+| 추가 실사용 원본138쪽/backend | 모두 직전 수용 PNG와 동일; 기존 출력 예외 유지 |
+| 실제 편집 복원 양 저장 형식324쪽/backend | 최저97.08677/97.12104%; 누락·쪽수 차이0 |
+| 추가 승인된 tac-img-02 전체66쪽/backend | 최저96.39090/95.51053%;26·45·53쪽 및 직접 확대 판독 통과 |
+| 실제 Worker | 7 Worker/138검사; 원본→양 저장의 공백/문단 계약 포함 |
+| 실제 CanvasKit 강제 경로3쪽 | fallback 없이99.77925/100/99.87775%; 실제 host font provider 사용 |
+| 기존 front-end2348 PASS/2 SKIP·집중6건·TypeScript | 해당 소스 바이트를 확인해 재사용; 새 Worker는 다시 실행 |
 
-기존 승인된 5pt 표준 셀 전체 채움, 비사각 clip의 rhwp 왕복 범위와 B19/B21–B23/B25의
-후속·예외는 유지한다. 이를 해결이나 정상 시각 통과로 바꾸지 않는다. 이전 단계의 “필수 미완료”는
-당시 범위이며 현재 사용자 지시로 범위만 갱신했다. 세부 경로·반례·직접 수용은 기존 stage 보고서를 따른다.
+169쪽은 새 Native/fresh WASM 각각 이전 수용 PNG·공개 원문 TSV와 모두 같다.
+최신 devel2e3의 실제 유입은 Native clipboard/Qt이며 렌더링에 사용한 기준5e2의 경로는
+같아 기준11입력22쪽/backend 증거를 source 범위 대조로 재사용한다. 전체 바이너리가
+같다고 주장하지 않는다. 비공개 견적서 Native1쪽의 devel 대비99.79020→95.16159%
+하락은 기존 승인된#8110 후속이며 devel 무회귀0건으로 바꾸지 않는다.
 
-## 고정 제품과 통합
+추가 입력 중 XObject18쪽의 기존2쪽 글꼴/무늬, collection69쪽의 기존 Native 한글 미표시,
+회전 원본7쪽의 기존7쪽은 사용자가 열기/회전 범위로 한정해 출력 백로그를 승인했다.
+전체 미달 쪽·원문 TSV를 그대로 제출하며 일반90% 통과와 구분한다.
+개인 이력서·비공개 견적서 원문/식별 가능한 이미지는 로컬에만 유지한다.
 
-- code head: `bd707a7af055ebc047e8d360f079f215af5a6a09`
-- 통합 devel: `5e2b9bfbf` (최종 통합 착수 시 fetch한 기준).
-- Native/fresh WASM과 기준 producer의 source·파일 SHA: [producers.tsv](../pr/assets/issue_7998/final-p5/producers.tsv).
-- 병합16파일 충돌의 보정과 셀 줄 폭4 HWPUNIT 규칙은 [stage37](../working/task_m100_7998_stage37.md)에 연결했다.
-  초기/편집 재조판은 같은 소유자 폭을 같은 줄 격자로 발행하고 실제 문단 원점을 보존한다.
-  행/쪽 분할·이어받기 높이는 이 통합 보정에서 바꾸지 않았다.
+[기존 전쪽 TSV·정식 글꼴 예외·입력 대응](../pr/assets/issue_7998/final-p5/README.md)와
+[추가 전쪽 TSV·실제 저장 원본/Print·대표 PNG](../pr/assets/issue_7998/submission-20261021/README.md)를
+보존했다. 원문 TSV의90% 미달·기준값·허용치를 바꾸지 않았다.
 
-## 시각·구조·저장 검증
+## 추가 승인된 기존 세 쪽 보정
 
-| 경로 | 고정 범위 | 결과 |
-|---|---|---|
-| Native | 158입력169쪽 | 누락·쪽수 차이0; 일반163쪽 최저92.17391%; 글꼴 예외6쪽 raw최저89.54211% |
-| fresh Docker WASM | 같은169쪽 | 모두90% 이상; 최저90.70673%; 누락·쪽수 차이0 |
-| devel 공통 대조군 | 11입력22쪽/backend | Native 비공개 견적서1쪽만0.1%p 이상 하락:99.79020→95.16159(-4.62861%p); #8110 후속 |
-| 실제 Studio | PDF/HWP/HWPX15경로 | 삽입·직접 삭제·Snapshot undo/redo·양 저장 통과; PDF route 저장은 Native와 bytes 동일 |
-| 실제 Worker | 7 Worker/123검사 | 렌더·저장·정책·오류 복구 통과 |
-| 실제 문서2개 IR 왕복 | 12쪽/1쪽 | 양 형식의 표·셀 중첩 순서/문자 순서/쪽수 보존 |
+사용자는 그림 기준선 검사 원본의 기존26·45·53쪽도 이번에 수정하도록 지시했다.
+뒤쪽 번호 재시작 제어가 앞쪽 쪽번호 위치까지 숨기던 상태 처리를 고쳤다. 실제 원본
+굴림 프로그램의 하강 메타데이터를 메트릭 별칭을 거쳐 공급하고 Typesetter/Paginator가
+같은 물리 쪽의 제어 이벤트를 소비한다. 표지 감추기와61쪽 번호1 재시작은 보존한다.
+45·53쪽은 선행 글줄을 이미 배치한 뒤 표 줄만의 상한으로 문단 끝을 되감던 결함이다.
+formatter·원본 저장 줄·실제 표 높이·다음 문단의 닫힌 점유가 일치하는 경우 전체 선행
+글줄부터 표 줄까지의 점유를 공유한다. 수정/분할/무효 저장 정보에는 적용하지 않는다.
 
-실물A는 현재 IR에서15표161셀·공백 제외5324문자, 실물B는1표60셀·267문자를 관측했다.
-이 수치는 작성 당시 구조의 독립 정답이 아니다. 비공개 실물B의 원본·식별 가능한 이미지는 로컬에만 보존한다.
+독립 한컴2020 Print66쪽 대비26/45/53쪽은 Native100/99.76853/99.97208%,
+fresh WASM100/99.81509/99.97212%다.66쪽 모두90% 이상이며 실제 굴림·맑은고딕 bold를
+추가 공급한 대조에서도 같은 전쪽 최저를 유지한다. 메인테이너가 **시각 판정 통과**를 주었다.
+글꼴 공급은 기존64MiB 한도 안에서 원본 glyph advance를 보존한 추출/부분 집합으로 준비했고
+상용 글꼴은 커밋하지 않는다. 최초 수용본과 추가 공급의 PNG 차이를 구분해 공개했다.
 
-4 HU 보정 전후 새169쪽 PNG는 Native/WASM 각각 모두 동일하다. 실제 편집 저장30개도
-동일해 확보한 한컴2020 Print를 재사용했다. 전체 TSV는 새 producer에서 산출했다.
-Native Helvetica6건은 원본 glyph program 부재·한컴 Batang 대체와 Native Noto Sans KR 선택을
-실제 observer/글꼴 공급·동일 geometry로 구분한 정식 `font_mismatch_exception`이다.
-raw미달을 그대로 유지하며 일반90% 통과나 새 정상 fixture로 등록하지 않았다.
+두 정식 회귀가 수정 전 실제 producer에서 의도한 원인으로 실패하고 수정 후 통과했다.
+26쪽은 양쪽 raw100%·직접 판독에 근거해 독립 기준선만±2px로 보호하고, 나머지는 내용
+소유·순서·비겹침 관계를 검사한다. 기존#6708의 무효한 TAG 수동 입력 가정을 원 계약과
+독립 출력에 맞춰 수정했으며,98% 미달1쪽의 절대 위치 pin은 원본 줄 정렬 관계로 바꿨다.
+[전체66쪽 TSV·원본 SHA·대표 PNG·공급 근거](../pr/assets/issue_7998/submission-20261021/tac-baseline/README.md).
 
-[증거·입력/PDF 대응·원문 TSV](../pr/assets/issue_7998/final-p5/README.md)와
-[페이지별 devel 비교](../pr/assets/issue_7998/final-p5/devel-comparison.tsv)를 보존했다.
-독립 PDF와 같은 영역의 직접 확대 판독은 표/중첩·문단·탭·글줄·저장 경계와 알려진 글꼴/선 농도를 포함한다.
-0.1%p 하락이나 보이는 차이를 평균값으로 상쇄하지 않는다. #8110은 사용자의 범위 종료 지시에 따른
-후속이며 전체 devel 무회귀를 주장하지 않는다. 앞선 사용자 시각 판정과 이번 작성자의 직접 판독은 구분한다.
+## CI 글꼴·검증 경계
 
-최종 로컬 비교 화면: `E:\tmp\issue7998-final-grid-review\index.html`.
-실행 로그·원본 중간 자료는 ignored `output/pr-review/issue7998/final-integration/`과
-로컬 `E:\tmp\issue7998-final-grid\`에 보존했다. 공개 자료는 원문 TSV·대표 PNG·정식 글꼴 예외와 실제 입력/Print 증거다.
+새 공백 회귀는 OS 글꼴 설치 대신 저장소의 공통 메트릭, literal 공백·문단 단일 소유와
+저장 CHARSHAPE를 검사한다. CI workflow의 중복 호출이나 개인 PC 절대 글꼴 경로를
+추가하지 않았다. 정식 Native Helvetica6건은 source glyph program 부재, 실제 Native의
+Noto Sans KR과 한컴 대체 Batang, 동일한 geometry·해시 고정 증거를 유지한다.
+`font_mismatch_exception`을 일반 통과나 자동 승인으로 표시하지 않는다.
+예외6건은 최종 lint head의 JSON/해시로 실제 도구 판정을 모두 통과했다. 기존169쪽과
+추가138쪽은 RGB 세 채널을 직접 비교해 이전 수용본과 동일함을 확인했다.
 
-## 전체 로컬 검사
+전체 회귀 이후의 변경은 attribute 뒤 빈 줄 제거, Copy인 bool/Option의 동등한 패턴 매칭,
+동일한 데이터 helper 본문을 테스트 앞에 이동, 고정110,000 개수 검사의 동등한 부등호 정리다.
+여섯 조건 조합·함수 본문·좌표·소유·자원 계상과 검증 강도는 변하지 않는다. 기존 성공한
+전체 실행과 동결 producer의 시각 증거를 재사용하며 실제 실행 head와 후속 head를 구분한다.
 
-release 빌드만 통과했다. 메인테이너 실사용 결함 보고 후 release lib 컴파일을 중단했으며,
-남은 nextest·Native Skia·lint·doc test는 실행하지 않았다. 전체 검증 통과나 제출 준비 완료가 아니다.
-통과한 fmt·suite manifest·unit-tier 정책과 변경 없는 TypeScript·Studio Node2342 PASS/2 SKIP,
-package 소비·Visual Sweep 계약173 PASS는 source 해시 대조와 함께 stage37에서 연결했다.
-원격 push·PR 생성은 별도 승인 이후에 수행한다.
+CI와 같은 Studio/Chrome/Firefox/VS Code 배포 빌드를 완료한 뒤 글꼴/라이선스8검사,
+실제 Canvas font binding8검사와 확장 배포3검사를 통과했다. 첫 실행의 dist 부재·Node
+의존성 미설치는 환경 실패로 구분하고 동일 lockfile로 준비한 뒤 같은 검사를 통과했다.
 
+필수 로컬 검증을 완료했다. 실제 실행 head·명령·경과 시간은 [stage38](../working/task_m100_7998_stage38.md)의 최종 게이트 표에 연결한다. 동작 불변 lint-only 차이는 위에 구분했다.
 
-## 후속 실사용 회귀 보정
+| 검증 | 결과 |
+|---|---|
+| release build / release lib | 성공 / 3,984 PASS·실패0·기존12 ignored (workspace package 합계) |
+| 전체 integration nextest | 11,209 PASS·실패0·기존45skip |
+| Native Skia lib / 그림 placeholder / 직접 PDF | 4,041 PASS·실패0·기존12 ignored / 2 PASS / 14 PASS |
+| Rust fmt / Native·WASM·workspace all-target·root all-target Clippy | 모두 성공, 경고 무시나 기준 완화 없음 |
+| workspace build / doc tests / Native FFI build / 실제 Qt smoke | 성공 / 8 PASS·기존3 ignored / 성공 / 성공 |
+| 정식 Native 글꼴 예외 | 최종 lint head의 실제 도구 판정6건 모두 font_mismatch_exception |
 
-stage37의162쪽 표 인식·가져오기 성능과 font_metric4쪽 보정은 메인테이너가 확인했다.
-추가34쪽 `tb_ownership_inf.pdf`는 본문 구역과 인식 검사의 클립 공백 소유 범위 불일치로
-실패했다. 같은 소유 결과를 소비하도록 보정했고 실제 Studio34쪽 열기·양 저장/재열기와
-쪽별 문자 digest를 확인했다. Native/fresh WASM 각37쪽(실물34+대조3)의 미달·누락·쪽수 차이0,
-실물 최저92.89699%/92.38421%다. 고정 devel Native 대비 하락0쪽이다.
-기존162쪽·font_metric4쪽의 Native HWPX는 이전 수용본과 각각 바이트가 같으며, 실제 새
-WASM에서도 정상 열렸다. 원문 표 의미 복원 완료나 기존 글꼴 차이 해소를 주장하지 않는다.
+## 후속 범위와 원격 처리
 
-새 산출물은 `E:\tmp\issue7998-ownership-20261021\`과 ignored
-`output/pr-review/issue7998/tb-ownership-20261021/`에 보존한다. source/실행 해시·전체 TSV·
-재현·정상 대조·집중 회귀의 세부 결과는 [stage37](../working/task_m100_7998_stage37.md)을 따른다.
-공개 PR asset의 옛 P5 제품과 새 uncommitted 보정 제품을 혼용하지 않는다. 전체 P5·한컴
-실사용 저장본 인쇄·원격 제출은 아직 미완료이며 기존 백로그 분리와 승인 범위는 유지한다.
+남은 내용 성장 격자#8106, 보고서6쪽 glyph 폭#8107, 본문1/4쪽 승격#8108,
+Base14 Helvetica#8109, 선·작은 글자 coverage#8110과
+[백로그](../plans/task_m100_7998_backlog.md)를 유지한다.5pt 표준 셀 전체 채움 수용,
+비사각 clip의 rhwp 왕복, 작은 clip 경계와 B26 재인쇄 차이도 해결로 표시하지 않는다.
+미완료 범위는 새 기능을 계속 확장하지 말고 후속으로 처리하라는 지시에 따른다.
 
-추가 소유권 보정의 정식 집중32건·fmt·diff 검사는 모두 PASS했다. 전체 P5 회귀와 구분한다.
-
-
-추가 마스크 입력5쪽의 기존 unsupported도 보정했다. StreamMask의 단일Flate 허용을
-색상 키/stencil과 같은 제한된 lossless sample decoder로 연결했다. 원본4개 차트의 RGB/alpha는
-Native·WASM 및 양 저장 재소비에서 독립 해석 결과와 정확히 같다. 실제 Studio5쪽 열기·
-3/4쪽 차트 표시와 HWP/HWPX 재열기를 확인했다. 자원/마스크 집중133건은 PASS했으며,
-Native/fresh WASM 각10쪽(실물5+기존대조5)은 최저90.25971%/90.46384%·미달/누락/쪽수 차이0이다.
-원본 마스크 없는1/2/5쪽과 기존 대조군5개의 저장 바이트는 수정 전후 같다. 기존 글꼴·미세
-간격 차이, 전체 P5·한컴 인쇄와 원격 반영 미완료를 유지한다. 재시험/전쪽 자료는
-`E:\tmp\issue7998-image-codec02-20261021\review\index.html`이며 source/실행/남은 차이는 stage37을 따른다.
-
-추가 XObject 입력은 18쪽 Native 열기에 성공했고 실제 201,834회 호출을 삭제하지 않았다.
-동일 stencil 연속 배치의 decode/저장 투영과 선택 후 traversal 실효 한도의 소비 연결을
-보정하고 있다. 2쪽 기존 글꼴 굵기 차이(Native raw 88.80969%, 고정 devel과 같은 PNG)와
-새 배경의 미세 무늬 차이는 직접 비교에 공개했으며 예외 수용으로 기록하지 않는다.
-`E:\tmp\issue7998-xobject-20261021\review\index.html`과 stage37에 근거를 연결했다.
-fresh WASM·실제 양 저장 재열기를 완료한 뒤 결과를 추가하며 전체 P5/PR은 미완료로
-유지한다.
-
-XObject 후보의 fresh WASM·실제 Studio 검증을 마쳤다. 원본18쪽은 약4.7초에 열리고
-HWP/HWPX 저장·재열기에서18쪽/표시 문자를 유지했다. 최종 집중143건은 PASS이며 전체
-Native/fresh WASM 각19쪽 TSV의 누락/쪽수 차이는 없다. 다만2쪽 최저88.80969%/88.39467%와
-반복 배경 무늬 차이가 남아 시각 gate는 보류다. 범위 예외를 임의로 수용하지 않았고
-백로그 분리/추가 보정 선택은 대기 중이다. 새 테스트 탭은 Studio7793에 열었으며 비교는
-`E:\tmp\issue7998-xobject-20261021\review\index.html`이다. 소스·실행 지문과 단일 측정의
-범위는 stage37을 따른다. 전체 P5·한컴 저장 호환·원격 등록의 완료 주장은 하지 않는다.
-
-2026-10-21 작업지시자의 **“열기 개선으로 한정·출력 차이는 백로그”** 판정으로 위의
-범위 대기를 종료했다. `xo_visits.pdf`의18쪽 열기·반복 처리 보정은 이번 로컬 범위에서
-수용됐으며, 2쪽 글꼴 굵기와 반복 배경 무늬는 [후속 백로그](../plans/task_m100_7998_backlog.md)에
-남겼다. raw 수치·자동 `re_review_required`는 그대로 보존하고 시각 완료로 바꾸지 않는다.
-제품·검사 소스와 산출물 지문을 확인해 기존143건·Native/fresh WASM 각19쪽·실제 양 저장
-증거를 재사용했다. 전체 P5·한컴 호환·PR/원격 반영은 여전히 미완료다.
-
-추가 `extraction-002.pdf`1쪽의 `PDF_PARSE_FAILED`는 일반 DeviceGray Mask를1비트
-stencil로만 판정한 image_decode 경계였다. 알파/극성·Matte 처리 경계를 구별해 보정했다.
-수정 전 같은 정식 decoded-resource 검사 FAIL, 수정 후 자원132 + 마스크8 =140 PASS다.
-Native/fresh WASM 원본1쪽 raw99.45899%/99.46414%, 별도 자원6쪽은 모두100%이며
-실제 새 WASM1.726초 열기·서명 표시·HWP/HWPX 저장/재열기를 확인했다. 제목 face·
-가는 표선 차이와 이 원본 Table IR0개는 미완료로 명시한다. 이번 결과를 전체 시각·표
-인식·P5 통과로 확대하지 않으며, 한컴의 새 저장본 호환성은 미검증이다.
-비교는 `E:\tmp\issue7998-extraction002-20261021\review\index.html`, 최종 source/빌드·
-실행 근거는 [stage37](../working/task_m100_7998_stage37.md)에 연결했다. 원격은 변경하지 않았다.
-
-
-추가 `coll_entries.pdf`의 collection entries 오류는 선택 쪽수로 문서 공통 구조 예산을
-재축소한 경계였다. 기본 전역400,000·raw100,000·낮은 host cap과 실제 계상을 유지해
-실소비180,625개·69쪽을 수용했다. 집중134건 PASS·fresh Docker WASM 실제 Studio 열기
-단일 계측4.626초이며 HWP/HWPX 저장·재열기69쪽에서 전쪽 문자 digest/표 셀 배열을
-유지했다. Native/fresh WASM 각69쪽의 누락/쪽수 불일치는 없지만 최저49.46762%/
-94.55309%·미달45쪽/0이다. Native의 일부 한글 미표시와 제목 face/간격·영문 표제/표선
-농도 차이는 남는다. 작업지시자의 **“열기 개선으로 한정·출력은 백로그”** 판정으로
-이번 로컬 열기 보정만 수용하고 [후속 출력 백로그](../plans/task_m100_7998_backlog.md)에
-남겼다. 자동 보류를 통과로 바꾸지 않으며 전체 P5/PR·한컴의 새 저장본 호환은 미완료다.
-비교는 `E:\tmp\issue7998-collection-20261021\review\index.html`, 실제 재시험 탭은
-`http://localhost:7793/?review=issue7998-collection&lang=ko`다. 최종 source/실행·TSV·직접
-판독/남은 범위는 stage37을 따르며 원격 변경은 하지 않았다.
-
-
-## 추가 입력 회전 글자 — 2026-10-21
-
-text_not_supported.pdf의 7쪽 열기와 4쪽 45도 연도 레이블 30개의 editable TextBox·
-paint subtree 회전을 보정했다. 최종 raw는 4쪽 Native 97.14196%·fresh WASM
-97.06169%다. Studio 7쪽·HWP/HWPX 왕복의 문자/표/회전 보존과 회전 문자 삽입·삭제,
-독립 회전 대조군 9개 전쪽 및 정식 자원 134건·표/문단 30건의 집중 범위를 확인했다.
-기존 정상 입력의 저장 바이트와 원본 7쪽의 Native 픽셀은 변하지 않았다.
-
-작업지시자의 “열기·회전 보정으로 한정·기존 출력은 백로그”에 따라 기존 7쪽 출력
-차이는 별도 기록했다(Native 80.62888%·WASM 80.69685%). raw 미달·자동 보류와
-전체 P5/PR 미완료를 유지한다. CanvasKit 실제 replay와 새 한컴 저장 호환 등은
-미검증이며 근거·한계는 stage37을 따른다. 새 commit·원격 변경은 수행하지 않았다.
-메인테이너 탭은 Studio 7793 `?review=issue7998-text-rotation&lang=ko`, 비교 자료는
-`E:\tmp\issue7998-text-transform-20261021\review\index.html`이다.
+이 결과보고는 승인된 원격 push·Open PR 등록 직전에 확정했다. 등록 후 정확한 PR head의 CI와
+실제 본문/시각 URL을 다시 확인한다. self-review·merge·관련 이슈 close는 이번 등록
+완료와 구분한다.
