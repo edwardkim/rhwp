@@ -790,6 +790,8 @@ impl TypesetState {
             stored_vpos_base: self.data.vpos_page_base,
             current_footnote_height: self.data.current_footnote_height,
             footnote_safety_margin: self.data.footnote_safety_margin,
+            footnote_separator_overhead: self.data.footnote_separator_overhead,
+            footnote_between_notes_margin: self.data.footnote_between_notes_margin,
             current_zone_y_offset: self.data.current_zone_y_offset,
             current_bottom_fixed_exclusion: self.data.current_bottom_fixed_exclusion,
             next_page_stored_body_origin: self
