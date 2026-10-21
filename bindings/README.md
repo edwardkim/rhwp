@@ -260,3 +260,8 @@ session의 `accessibility` 요청은 `request:{}`를 기본으로 본문·표 �
 요청은 최대 1000 nodes/UTF-8 text 1 MiB/깊이 32/방문 10000개로 제한합니다. `geometry:true`는 기존 core caret/selection query를 사용하며 최대 128 query/256 selection rect와 개별 문단 64 KiB 등 추가 상한을 적용합니다. `complete`, `truncated`, `limitations`를 확인해야 합니다. 노드 key는 revision+주소로 구성되며 revision 사이 identity를 보장하지 않습니다. worker는 완료를 읽을 때까지 snapshot에 8 MiB byte credit을 예약하며 이는 layout/Skia 전체 RSS 상한이 아닙니다.
 
 `native_scalar_to_utf16`/`native_utf16_to_scalar`는 OS adapter offset 변환을 지원하고 surrogate 내부 주소는 거절합니다. 이 API는 OS 접근성 등록이나 screen reader 지원의 증거가 아닙니다. header/footer·notes·shape text·읽기 순서 추론과 OS adapter 연결은 후속입니다.
+
+
+### Native Qt 창 예제 (P63)
+
+[Qt 실행 안내](Native/examples/QT_NATIVE_HOST.md)는 선택 설치하는 PySide6 창과 기존 NativeWorker·Skia RGBA 경로를 연결합니다. Linux에서 실제 QWidget offscreen 렌더·한글 QInputMethodEvent·키보드 이동·undo/redo·새 파일 저장/재열기를 확인했습니다. 실제 OS IME 후보창·compositor와 macOS/Windows 실행은 별도 검증 대상입니다.
