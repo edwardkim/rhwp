@@ -15,7 +15,6 @@ mod stored_intra_paragraph_frame;
 mod stored_nested_frame;
 mod stored_nested_host_flow;
 mod stored_nested_outer_frame;
-mod stored_nested_padding;
 mod stored_nested_source_cut;
 mod stored_nested_text_frames;
 mod stored_ordinary_row_frame;
@@ -6063,26 +6062,6 @@ impl LayoutEngine {
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
     ) -> (f64, f64, f64, f64) {
-        self.resolve_cell_padding_at_height(cell, table, None)
-    }
-
-    /// 온전한 행 조각은 측정에서 확정한 물리 높이로 안 여백을 판단한다.
-    /// 저장된 최소 셀 높이로 다시 축소하면 측정과 글줄 배치가 어긋난다.
-    pub(crate) fn resolve_cell_padding_for_physical_height(
-        &self,
-        cell: &crate::model::table::Cell,
-        table: &crate::model::table::Table,
-        height: f64,
-    ) -> (f64, f64, f64, f64) {
-        self.resolve_cell_padding_at_height(cell, table, Some(height))
-    }
-
-    fn resolve_cell_padding_at_height(
-        &self,
-        cell: &crate::model::table::Cell,
-        table: &crate::model::table::Table,
-        physical_height: Option<f64>,
-    ) -> (f64, f64, f64, f64) {
         // 문단 프레임·높이 측정과 같은 유효 여백을 소비한다.
         // hasMargin=false이면 셀 보존값으로 표 기본 0을 덮어쓰지 않는다.
         let padding = cell.effective_padding(&table.padding);
@@ -6090,30 +6069,6 @@ impl LayoutEngine {
         let pad_right = hwpunit_to_px(padding.right as i32, self.dpi);
         let pad_top = hwpunit_to_px(padding.top as i32, self.dpi);
         let pad_bottom = hwpunit_to_px(padding.bottom as i32, self.dpi);
-        // [Task #501] 한컴 방어 로직 모방 — cell.padding.top + bottom 합산이
-        // cell.height 자체를 초과하면 (mel-001 p2 셀[21]: pad=1700 HU 두 축, h=1280 HU)
-        // 한컴은 자체 가드로 cell 안에 콘텐츠가 들어가도록 처리. cell.height 의 절반까지
-        // 비례 축소 (HWP 스펙 외 한컴 동작 모방).
-        // 발동 기준은 측정(height_measurer)과 공유한다 (#5751).
-        let padding_guard_height = cell.vertical_padding_guard_height_hu(table);
-        let guard_height = physical_height
-            .filter(|height| height.is_finite() && *height > 0.0)
-            .or_else(|| {
-                (padding_guard_height < 0x80000000)
-                    .then(|| hwpunit_to_px(padding_guard_height as i32, self.dpi))
-            });
-        let (pad_top, pad_bottom) = if let Some(cell_h_px) = guard_height {
-            let total_v_pad = pad_top + pad_bottom;
-            if crate::model::table::Cell::vertical_padding_is_abnormal(cell_h_px, total_v_pad) {
-                let max_v_pad = cell_h_px * 0.5;
-                let scale = max_v_pad / total_v_pad;
-                (pad_top * scale, pad_bottom * scale)
-            } else {
-                (pad_top, pad_bottom)
-            }
-        } else {
-            (pad_top, pad_bottom)
-        };
         (pad_left, pad_right, pad_top, pad_bottom)
     }
 
@@ -9945,7 +9900,7 @@ impl LayoutEngine {
 
             // 전체 셀도 부분 컷과 같은 원래 물리 행으로 안 여백을 판단한다.
             let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
-                self.resolve_stored_nested_cell_padding(cell, table, styles);
+                self.resolve_cell_padding(cell, table);
 
             let mut composed_paras: Vec<_> = cell
                 .paragraphs
@@ -18431,7 +18386,7 @@ impl LayoutEngine {
             && cell.height < 0x8000_0000
             && Self::stored_in_paragraph_unit_is_original_restart(cell, next_unit)
         {
-            let (_, _, top, bottom) = self.resolve_stored_nested_cell_padding(cell, table, styles);
+            let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
             let padding = top + bottom;
             let source_ink = hwpunit_to_px(
                 previous_seg
@@ -22510,8 +22465,7 @@ impl LayoutEngine {
             };
             let content: f64 =
                 (units[su..eu].iter().map(|u| u.height).sum::<f64>() - trailing_trim).max(0.0);
-            let (_, _, pad_top, pad_bottom) =
-                self.resolve_stored_nested_cell_padding(cell, table, styles);
+            let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
             let h = content + pad_top + pad_bottom;
             // [#2287 진단] start_cut 적용 잔여 평가 분해 — 동작 불변.
             if std::env::var("RHWP_DIAG_BLKH").is_ok() && !start_cut.is_empty() {
@@ -22665,8 +22619,7 @@ impl LayoutEngine {
             if content <= 0.0 {
                 continue;
             }
-            let (_, _, pad_top, pad_bottom) =
-                self.resolve_stored_nested_cell_padding(cell, table, styles);
+            let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
             let h = content + pad_top + pad_bottom;
             if h > max_h {
                 max_h = h;
@@ -24621,8 +24574,7 @@ impl LayoutEngine {
                         // 측정 단계와 같은 원래 안 여백을 예약한다. 선언 높이에
                         // 종속된 paint padding guard를 전역 변경하지 않는다.
                         let raw = cell.effective_padding(&table.padding);
-                        let (_, _, top, bottom) =
-                            self.resolve_stored_nested_cell_padding(cell, table, styles);
+                        let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
                         recursive_parent_padding = recursive_parent_padding.max(
                             hwpunit_to_px(i32::from(raw.top) + i32::from(raw.bottom), self.dpi)
                                 - top
@@ -25477,8 +25429,7 @@ impl LayoutEngine {
             } else {
                 content
             };
-            let (_, _, pad_top, pad_bottom) =
-                self.resolve_stored_nested_cell_padding(cell, table, styles);
+            let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
             let has_visible_cut = units[su..eu]
                 .iter()
                 .any(|unit| Self::cell_unit_has_visible_content(cell, unit));
@@ -25504,8 +25455,7 @@ impl LayoutEngine {
             // 선언 셀높이 신뢰. (21761835 r0: 선언 3928HU=52.4px = 한글 실측,
             // 재합성 79.3px) 판정 기준은 composer::no_ls_short_label_cell 주석 참조.
             let no_ls_label_cell = cell_h_px > 0.0 && {
-                let (pad_left, pad_right, _, _) =
-                    self.resolve_stored_nested_cell_padding(cell, table, styles);
+                let (pad_left, pad_right, _, _) = self.resolve_cell_padding(cell, table);
                 let cell_w_px = if cell.width < 0x8000_0000 {
                     hwpunit_to_px(cell.width as i32, self.dpi)
                         * self.render_table_width_scale(table)
@@ -25840,8 +25790,7 @@ impl LayoutEngine {
                 padding.push(0.0);
                 continue;
             }
-            let (_, _, pad_top, pad_bottom) =
-                self.resolve_stored_nested_cell_padding(cell, table, styles);
+            let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
             padding.push(pad_top + pad_bottom);
         }
         padding
@@ -25911,10 +25860,7 @@ impl LayoutEngine {
                     .iter()
                     .any(|unit| Self::cell_unit_has_visible_content(cell, unit))
             })
-            .map(|cell| {
-                self.resolve_stored_nested_cell_padding(cell, table, styles)
-                    .2
-            })
+            .map(|cell| self.resolve_cell_padding(cell, table).2)
             .fold(0.0f64, f64::max)
     }
 
