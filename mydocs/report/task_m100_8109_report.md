@@ -5,7 +5,7 @@
 - 기준: `80968497c2c178eeecb3b2e1d04d086ad27a0dc7`; Rust 구현 `5699a3778`와
   본 보고서가 속한 커밋의 Studio 소비 보정·최종 검증 증적.
 - 수행·구현계획, 2단계, 다음 절편 진행 승인을 받아 승인 범위를 완료했다.
-  결과보고 승인과 원격 게시·PR·merge·이슈 close는 별도 게이트다.
+  사용자 지시로 결과보고·미커밋 문서를 포함한 PR 진행 승인을 받았다. merge·이슈 close는 별도 게이트다.
 
 ## 결과
 
@@ -63,7 +63,7 @@ Node WASM의 오래된 ownership 기준, 초기화 순서·공급자 해제 검�
 
 승인된 로컬 기능 검증은 충족했다. 후속 성능 검토에서 확인한 자동 선택 경로의 지연도 보정했다.
 사용자 작성 문서·서버와 공용 빌드 cache를 보존했고,
-원격 push·PR 생성·GitHub 게시·merge·이슈 close는 수행하지 않았다.
+검증 뒤 사용자 승인으로 원격 push·PR 생성을 진행했다. merge·이슈 close는 수행하지 않았다.
 
 ## 후속 성능 검토와 보정 완료
 
@@ -83,3 +83,10 @@ Core·Native의 작은 비용과 WASM 크기 증가도 포함해
 PR 진행 승인을 받았으며 merge·이슈 close는 별도다.
 
 ![실제 Studio의 잘못된 face 보정과 독립 Print 비교](../pr/assets/issue_8109/stage3/studio-zoom.png)
+
+## PR 진행
+
+[PR #8132](https://github.com/edwardkim/rhwp/pull/8132)를 Open 상태로 생성했습니다.
+검토 code SHA `dce8337ecdf34bcb9e2b3d8a69f046f44d1cc500`의 CI·CodeQL·Render Diff·Adapter·Proptest가 모두 성공했습니다.
+같은 PR의 [self-review](../pr/archives/pr_8132_review.md)와 오늘할일을 문서-only trailing 기록으로 추가했습니다.
+최신 trailing head 검증과 merge 승인은 별도이며, merge·이슈 close는 수행하지 않았습니다.
