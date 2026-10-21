@@ -1,8 +1,0 @@
-{
-  "parent": "bd21c14458d138eeb613b5a53710fcb056894a19",
-  "files": {
-    "src/renderer/typeset/table/block/whole_fit.rs": "4efffe2d75e61ccd41fb97034c0e5288dd77d9b067859e82b2bb8b301b916f65"
-  },
-  "patchSha256": "90e7429110c2269ab91258600d2605b26b7d1e49abf74cbc6fbd61bdcb629cf8",
-  "scope": "whole stored RowBreak frame follows layout lineage across HWPX-to-HWP; diagnostic trace removed; not accepted"
-}

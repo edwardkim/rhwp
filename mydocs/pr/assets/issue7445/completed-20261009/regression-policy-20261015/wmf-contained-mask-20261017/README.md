@@ -26,7 +26,7 @@ Native 전64쪽 최저93.07399%,WASM95.87967%,각 미달0·쪽수64/64다.
 18쪽 raw는98.01466/97.96086%이며 분홍색 패널과 소속 마스크를 양쪽 review/overlay에서
 직접 확인했다. 미세 패턴·윤곽 차이는 남는다. 양쪽98%가 아니므로18쪽을 px로 고정하지 않는다.
 19쪽의 기존 중요한 제목은99.43242/99.61477%를 유지하고 새 그림으로 직접 판독했다.
-이전 candidate 전64쪽 대비0.01%p 하락0쪽은 [별도 비교](previous-candidate-comparison.json)이며
+이전 candidate 전64쪽 대비0.01%p 하락0쪽은 [별도 비교](verification.md)이며
 새 upstream과의 비교 통과를 뜻하지 않는다. 새 devel 자체는65쪽이라 전체 비교가 불일치한다.
 
 | 항목 | review | overlay |
@@ -37,7 +37,7 @@ Native 전64쪽 최저93.07399%,WASM95.87967%,각 미달0·쪽수64/64다.
 | Native19쪽 유지 | [review](after-native-p019-review.png) | [overlay](after-native-p019-overlay.png) |
 | WASM19쪽 유지 | [review](after-wasm-p019-review.png) | [overlay](after-wasm-p019-overlay.png) |
 
-[Native 전쪽 TSV](native-all64.tsv) · [WASM 전쪽 TSV](wasm-all64.tsv) · [검증 상태](validation.json)
+[Native 전쪽 TSV](native-all64.tsv) · [WASM 전쪽 TSV](wasm-all64.tsv) · [검증 상태](verification.md)
 
 정식 WMF17검사는 수정 전15PASS/2FAIL(0.137초) → 수정 후17PASS(0.097초)다.
 정상 비checker 바깥 마스크·변경된 XOR·색상 팔레트·중단 연산을 유지하며 새 실물 마스크 소유를 확인했다.

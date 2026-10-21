@@ -37,7 +37,7 @@ Native PNG의 연속 회색 잉크 검사는 변경하지 않았다. 테스트 �
 색 차이가 남으며 raw100%를 RGB 완전 일치라고 쓰지 않는다. 이 결과는 선언 환경66쪽이며
 default 글꼴 환경·다른 문서·actual36 또는 PR 전체 완료를 대신하지 않는다.
 
-[전쪽 TSV·원본/PDF/글꼴/생산자·검사 결과](../pr/assets/issue7445/completed-20261009/stage22-20261021/evidence.json)
+[전쪽 TSV·원본/PDF/글꼴/생산자·검사 결과](../pr/assets/issue7445/completed-20261009/stage22-20261021/verification.md)
 
 [Native28쪽 review](../pr/assets/issue7445/completed-20261009/stage22-20261021/native-p028-review.png) ·
 [overlay](../pr/assets/issue7445/completed-20261009/stage22-20261021/native-p028-overlay.png)

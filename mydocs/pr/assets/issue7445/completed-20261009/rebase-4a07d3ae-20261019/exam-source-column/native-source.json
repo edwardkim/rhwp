@@ -1,8 +1,0 @@
-{
-  "parent": "455aac1ac07f58eac8b4a553a227cf09c0ca2bf1",
-  "files": {
-    "src/renderer/typeset/controls/stored_tac.rs": "c0c00a5f3d4f5dd32aab5e2eb3bfe85e0fd927d2eb0db2dd5f1bcc0ee06ff410"
-  },
-  "patchSha256": "81762297432b9566e870ee0f3f954529d125a16a48833eea0573251122971ba0",
-  "scope": "source-authenticated zero column keeps independent stored object origin across slight text row remeasurement; before/after tests pending"
-}

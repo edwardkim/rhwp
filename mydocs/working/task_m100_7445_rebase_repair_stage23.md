@@ -122,3 +122,7 @@ palette는 통과하지만 PrEP1쪽0.62299%p와 법령2/13/36쪽0.15331/0.18072/
 [안정 Markdown 요약](../pr/assets/issue7445/completed-20261009/stage23-20261021/verification.md)에 남겼다.
 원본·PDF·대표 PNG·전체 TSV·구현·회귀 source는 변경하지 않았다.
 다른 단계의 생성 JSON42개는 소비 경로와 영구 기록 대체를 별도로 확인해야 하며 전체 정리 완료로 보고하지 않는다.
+
+## 생성 결과 원장 정리 후속
+
+2026-10-21의972/978 소비 감사에서 남은 JSON42개 중40개는 생성 결과,2개는 정규 테스트가 읽는 FontEnvironment 입력으로 구분했다. 생성40개는 SHA를 유지해 ignored output978/raw로 옮겼고14개 자산 폴더의 `verification.md`에 당시 source/build·수치·판독 기록과 원문 SHA를 보존했다. PNG·TSV·원본·PDF와 두 정규 글꼴 환경 입력은 변경하지 않았다. 이 정리는 이전 결과를 최신 source 통과로 승격하지 않는다.

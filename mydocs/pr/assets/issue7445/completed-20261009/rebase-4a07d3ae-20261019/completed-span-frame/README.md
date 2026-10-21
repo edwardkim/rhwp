@@ -3,7 +3,7 @@
 원본 `samples/issue1937_rowbreak_footnote_overpagination.hwp`와 같은 바이트의 독립 한컴
 Print50쪽을 사용했습니다. base `4a07d3ae4dd3255a57fb0166b2b2a2dc335a61fa`, parent
 `979dbf4ebd72fbd0f72bb1efd01f882cdd16d7ea`+보정10의 원본 파일·생산 hash는
-[validation.json](validation.json)에 있습니다. Native/fresh WASM 전쪽 원본은
+[validation.json](verification.md)에 있습니다. Native/fresh WASM 전쪽 원본은
 [native.tsv](native.tsv), [wasm.tsv](wasm.tsv)입니다.
 
 192DPI/compat2022·현행 PDFium smooth_rgb_v1·색상 경계 보정 전2px/raw90%입니다.

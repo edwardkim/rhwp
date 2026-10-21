@@ -6,7 +6,7 @@ Issue: #7445
 
 원본 `samples/task2097/75544_pii_bunseok.hwpx`와 한컴2020 Print
 `pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf`의 동일66쪽을 사용했다.
-정확한 입력/PDF/생산자 SHA는 [provenance.json](provenance.json)에 기록했다.
+정확한 입력/PDF/생산자 SHA는 [provenance.json](verification.md)에 기록했다.
 4쪽 오른쪽 셀의 `공개방법 등) ① ---------` 줄은 왼쪽 셀과 같은 글자/문단
 스타일을 사용하지만, 기존 양쪽 정렬은 여유 폭 전부를 대시에 배분했다.
 실제 Canvas trace의 기호 원점539.56CSSpx는 독립 Print544.96CSSpx보다5.4px

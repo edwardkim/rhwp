@@ -35,7 +35,7 @@
 
 원본 직접 실행은2 PASS/5 FAIL이며 실패 위치·실제 기준선을 보존했다. 보정 뒤 직접 실행은7 PASS이고, 정식 현재 manifest에서 footer/1133중첩 표/7336분할/1937원본 묶음은22 PASS/0 FAIL,997선택 제외,exit0이다. 실행시간0.512초/빌드 포함35.374초다. 처음 존재하지 않는case 이름을 지정한 계획 오류는 실제 테스트 시작 전에 고쳐 현재 manifest에서 이름·target을 유도했다. 그 오류를 실패 테스트 수로 합산하거나 최종 통과 증거로 쓰지 않는다.
 
-[전쪽 TSV·대표 review/overlay·독립 숫자 원점·검증 결과](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/validation.json)
+[전쪽 TSV·대표 review/overlay·독립 숫자 원점·검증 결과](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/footer-source-contract/verification.md)
 
 [정식 실행 로그](/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair527-footer-contract-gates/nextest.log)
 

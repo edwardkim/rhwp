@@ -4,8 +4,8 @@
 같은 런의 탭+숫자만0.25em 왼쪽으로 옮기던 공통 측정/문자 위치 감산을 제거했다.
 교차 런·한 런 모두 동일한 정지를 사용하며 리더 여백은 숫자 앵커에 다시 반영하지 않는다.
 
-[검증 신원·전쪽 결과](validation.json), [독립 숫자 끝점](independent-numeric-edges.json),
-[원인·소비 경로](cause.json), [Native 전64쪽](whole64-native.tsv), [fresh WASM 전64쪽](whole64-wasm.tsv).
+[검증 신원·전쪽 결과](verification.md), [독립 숫자 끝점](verification.md),
+[원인·소비 경로](verification.md), [Native 전64쪽](whole64-native.tsv), [fresh WASM 전64쪽](whole64-wasm.tsv).
 수치는 색상 경계 보정 전2px raw다. Native2쪽은98% 미만이므로 새 절대 좌표 검사는 추가하지 않는다.
 기존 완료19쪽의 독립 제목 좌표/내용 소유 검사와 양쪽98% 이상은 유지한다.
 

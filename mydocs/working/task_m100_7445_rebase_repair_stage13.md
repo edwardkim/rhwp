@@ -32,7 +32,7 @@ Native·WASM6/33/40쪽 review를 직접 읽었다. 6쪽 두 수식, 표와 뒤 �
 
 ## 증적과 잔여
 
-- [전쪽 TSV·PNG·독립 관측값·hash](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/hwp3-equation-source/validation.json)
+- [전쪽 TSV·PNG·독립 관측값·hash](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/hwp3-equation-source/verification.md)
 - [직접 실행 로그](/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair521-hwp3-equation-source-contract/after.log)
 - [정식 묶음 로그](/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair522-hwp3-source-contract-gates/nextest.log)
 

@@ -63,7 +63,7 @@ fresh WASM review/overlay를 직접 판독했다. 붙임2 본문과숫자·끝 �
   첫 중복 JS 응답 body 관측 오류를 보존하고 깨끗한 브라우저 재시도에서errors0/초기화true다.
   이 초기화 검사는actual36의 문서 paint/글꼴/CanvasKit 수용이 아니다.
 
-[전쪽 TSV·수정 전후 review/overlay·원본/PDF/빌드 출처·검증 정본](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/zero-size-space/validation.json)
+[전쪽 TSV·수정 전후 review/overlay·원본/PDF/빌드 출처·검증 정본](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/zero-size-space/verification.md)
 
 [정식 묶음 로그](/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair555-zero-size-focused-gates/nextest.log)
 

@@ -62,3 +62,7 @@ Native960은 native-skia release-test/jobs8 재빌드 exit0, frozen CLI SHA `6cf
 최종968은 새 integration2PASS(0.839초), 기존 RowBreak16PASS(0.467초), 캡션 대조3PASS(0.328초), 커서·기존 첫 프레임 계약56PASS(0.665초), 합계77PASS/0FAIL이다. source-side 단위 검사 수는 늘리지 않았고 연속 HWPX assertion은 기존 reset 계약 함수에 보존했다. manifest/check·unit-tier/check(base2e3)·fmt/diff 모두 exit0이다.963 대기 driver는 실행 계획 정정을 위해 시작 전 종료한 기록이며 검사 통과 근거가 아니다. 마지막 cfg(test) 정리의 runtime prefix 동일성은968의 hash로 입증하며 동일 WASM을 중복 빌드하지 않았다.
 
 이 단계 결과는 표 두 입력의 집중 검증이다. 다음 단계의 머리말 그림·품질 하한 등 남은 필수 범위를 해결한 뒤 최신 전체 회귀와 전체 영향 시각/소비 검증을 완료한다.
+
+## 생성 결과 원장 정리 후속
+
+2026-10-21의972/978 소비 감사에서 남은 JSON42개 중40개는 생성 결과,2개는 정규 테스트가 읽는 FontEnvironment 입력으로 구분했다. 생성40개는 SHA를 유지해 ignored output978/raw로 옮겼고14개 자산 폴더의 `verification.md`에 당시 source/build·수치·판독 기록과 원문 SHA를 보존했다. PNG·TSV·원본·PDF와 두 정규 글꼴 환경 입력은 변경하지 않았다. 이 정리는 이전 결과를 최신 source 통과로 승격하지 않는다.

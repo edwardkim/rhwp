@@ -72,7 +72,7 @@ Native 원본3/6쪽·저장본1/3/8/12쪽, WASM 원본4쪽·저장본1/3/8/12쪽
   첫 observer의 중복 JS 요청 body 오류를 보존하고 깨끗한 브라우저 재시도에서 errors0/
   초기화true를 확인했다. 문서 paint/CanvasKit/actual36 수용을 대신하지 않는다.
 
-[전쪽 TSV·대표 review/overlay·입력/PDF/빌드 출처와 검증 정본](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/caption-stored-physical-flow/validation.json)
+[전쪽 TSV·대표 review/overlay·입력/PDF/빌드 출처와 검증 정본](../pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/caption-stored-physical-flow/verification.md)
 
 [정식 회귀 로그](/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair546-caption-physical-flow-gates/nextest.log)
 

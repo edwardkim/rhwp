@@ -51,7 +51,7 @@ Stage20의9/7쪽 실행786은 쪽수 gate에서 실패했으며 유효 전쪽 �
 shortcut Native1·7쪽, WASM7쪽의 review/overlay를 직접 읽었다. 두 단 꼬리·단축키·구분 띠·
 장식 번호7의 내용과 순서는 보존됐고 점선/잉크 가장자리 차이는 남는다. 완전 픽셀 일치 주장이 아니다.
 
-[전쪽 TSV·입력/PDF/생산자·PNG 동일성](../pr/assets/issue7445/completed-20261009/stage21-20261021/evidence.json)
+[전쪽 TSV·입력/PDF/생산자·PNG 동일성](../pr/assets/issue7445/completed-20261009/stage21-20261021/verification.md)
 
 [Native7쪽 review](../pr/assets/issue7445/completed-20261009/stage21-20261021/shortcut-native-p007-review.png) ·
 [overlay](../pr/assets/issue7445/completed-20261009/stage21-20261021/shortcut-native-p007-overlay.png)
