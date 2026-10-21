@@ -100,7 +100,7 @@ impl TypesetState {
                 page_tail_spilled_floats: std::collections::HashSet::new(),
                 endnotes: Vec::new(),
                 endnote_paragraphs: Vec::new(),
-                reissued_endnote_rows: std::collections::HashSet::new(),
+                reissued_endnote_rows: std::collections::HashMap::new(),
                 endnote_para_sources: Vec::new(),
                 endnote_para_base: None,
                 endnote_measured_tables: Vec::new(),

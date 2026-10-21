@@ -260,6 +260,9 @@ pub struct EndnoteParaSource {
     pub cell_path: Vec<TableFootnotePathEntry>,
     /// Endnote 내부 문단 인덱스
     pub note_para_index: usize,
+    /// 줄의 물리 합집합을 재발행하면서 같은 전진 안에서 이미 소비한 후행 간격.
+    /// 원본 파일 속성이 아니라 fit과 배치가 공유하는 미주 끝줄의 투영 결과다.
+    pub tail_leading_consumed_hu: i32,
 }
 
 impl EndnoteParaSource {

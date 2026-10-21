@@ -266,9 +266,10 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [Task #836] 미주 목록 (섹션별 수집, 문서 끝에 렌더).
     pub(in crate::renderer::typeset) endnotes: Vec<EndnoteRef>,
     pub(in crate::renderer::typeset) endnote_paragraphs: Vec<Paragraph>,
-    /// 실제 줄 높이·간격을 다시 계산한 미주 문단의 목록 내 인덱스.
+    /// 실제 줄 높이·간격을 다시 계산한 미주 문단의 목록 내 인덱스와
+    /// 같은 전진 안에서 끝줄 내용 높이가 이미 소비한 후행 간격(HU).
     /// 이 문단의 저장 단 컷은 이전 세로 배치의 캐시이므로 실제 fit을 우선한다.
-    pub(in crate::renderer::typeset) reissued_endnote_rows: std::collections::HashSet<usize>,
+    pub(in crate::renderer::typeset) reissued_endnote_rows: std::collections::HashMap<usize, i32>,
     pub(in crate::renderer::typeset) endnote_para_sources: Vec<EndnoteParaSource>,
     /// 현재 구역의 본문 다음에 등록되는 가상 미주 문단 범위의 시작.
     pub(in crate::renderer::typeset) endnote_para_base: Option<usize>,

@@ -131,6 +131,7 @@ impl TypesetEngine {
                 control_index: en_ref.control_index,
                 cell_path: en_ref.cell_path.clone(),
                 note_para_index: ep_idx,
+                tail_leading_consumed_hu: 0,
             });
             last_render_endnote_para_local_idx = Some(en_para_local_idx);
 
@@ -1451,6 +1452,7 @@ impl TypesetEngine {
                         control_index: en_ref.control_index,
                         cell_path: en_ref.cell_path.clone(),
                         note_para_index: ep_idx + 1,
+                        tail_leading_consumed_hu: 0,
                     });
                     last_render_endnote_para_local_idx = Some(st.endnote_paragraphs.len() - 1);
 

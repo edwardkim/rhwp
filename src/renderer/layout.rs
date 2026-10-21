@@ -3335,6 +3335,8 @@ pub struct LayoutEngine {
     /// [#7665] 미주의 첫 문단(번호 장식을 받는 문단, 조판 `ep_idx == 0`)인 렌더 문단 번호.
     /// 새 문항 제목 판정의 소유 경계 — `set_endnote_para_sources` 에서 한 번 만든다.
     endnote_note_first_paras: std::cell::RefCell<std::sync::Arc<std::collections::HashSet<usize>>>,
+    endnote_tail_leading_hu:
+        std::cell::RefCell<std::sync::Arc<std::collections::HashMap<usize, i32>>>,
     /// [Task #1246] 현재 섹션 미주의 between-notes 마진(HWPUNIT, 0=미적용). HeightCursor 가 미주
     /// 사이 min-gap 보정(gap 부족 시 끌어올림)에 사용한다. 섹션 렌더 셋업마다 갱신.
     endnote_between_notes_hu: std::cell::Cell<i32>,
@@ -3567,6 +3569,7 @@ impl LayoutEngine {
             endnote_para_base: std::cell::Cell::new(usize::MAX),
             endnote_para_sources: std::cell::RefCell::new(Vec::new()),
             endnote_note_first_paras: Default::default(),
+            endnote_tail_leading_hu: Default::default(),
             endnote_between_notes_hu: std::cell::Cell::new(0),
             column_is_endnote_flow: std::cell::Cell::new(false),
             endnote_separator_above_hu: std::cell::Cell::new(0),
@@ -4162,6 +4165,14 @@ impl LayoutEngine {
     pub fn set_endnote_para_sources(&self, base: usize, sources: &[EndnoteParaSource]) {
         self.endnote_para_base.set(base);
         *self.endnote_para_sources.borrow_mut() = sources.to_vec();
+        *self.endnote_tail_leading_hu.borrow_mut() = std::sync::Arc::new(
+            sources
+                .iter()
+                .enumerate()
+                .filter(|(_, source)| source.tail_leading_consumed_hu > 0)
+                .map(|(index, source)| (base + index, source.tail_leading_consumed_hu))
+                .collect(),
+        );
         *self.endnote_note_first_paras.borrow_mut() = std::sync::Arc::new(
             sources
                 .iter()
@@ -7737,6 +7748,7 @@ impl LayoutEngine {
         if col_content.endnote_flow {
             hcursor.endnote_between_notes_hu = self.endnote_between_notes_hu.get();
             hcursor.endnote_note_first_paras = self.endnote_note_first_paras.borrow().clone();
+            hcursor.endnote_tail_leading_hu = self.endnote_tail_leading_hu.borrow().clone();
         }
 
         // 1차 패스: 표, 문단, 텍스트 렌더링 (글상자 제외)
@@ -8226,7 +8238,10 @@ impl LayoutEngine {
                     let origin = super::endnote_spacing::origin_after_gap(
                         y_offset,
                         Some(occupied),
-                        hwpunit_to_px(self.endnote_between_notes_hu.get().max(0), self.dpi),
+                        hcursor.remaining_endnote_gap_px(hwpunit_to_px(
+                            self.endnote_between_notes_hu.get().max(0),
+                            self.dpi,
+                        )),
                     );
                     let head = composed.get(item_para)?.lines.first()?;
                     let spacing_before = paragraphs
@@ -8589,8 +8604,10 @@ impl LayoutEngine {
                 && !endnote_title_bottom_fit_applied
                 && !compacted_equation_tail_title_gap
             {
-                let section_between_notes_gap_px =
-                    hwpunit_to_px(self.endnote_between_notes_hu.get(), self.dpi);
+                let section_between_notes_gap_px = hcursor.remaining_endnote_gap_px(hwpunit_to_px(
+                    self.endnote_between_notes_hu.get(),
+                    self.dpi,
+                ));
                 let zero_between_large_separator_profile =
                     self.current_endnote_zero_between_large_separator_profile();
                 let effective_endnote_title_gap_px = if zero_between_large_separator_profile {
@@ -8731,7 +8748,10 @@ impl LayoutEngine {
             // 실제 앞 미주의 마지막 줄을 소유하면 섹션 설정이 간격의
             // 근거다. 저장 줄에 큰 trailing 마커가 없는 정상 저장본도 있다.
             let owned_endnote_title_gap_px = if complete_note_boundary {
-                hwpunit_to_px(self.endnote_between_notes_hu.get(), self.dpi)
+                hcursor.remaining_endnote_gap_px(hwpunit_to_px(
+                    self.endnote_between_notes_hu.get(),
+                    self.dpi,
+                ))
             } else {
                 prev_endnote_title_gap_px
             };
@@ -8811,7 +8831,10 @@ impl LayoutEngine {
                     .is_some_and(|(cur, prev)| !same_endnote_control(&prev, cur));
             if starts_new_endnote {
                 if let Some(prev_bottom) = last_endnote_content_bottom_y {
-                    let gap = hwpunit_to_px(self.endnote_between_notes_hu.get(), self.dpi);
+                    let gap = hcursor.remaining_endnote_gap_px(hwpunit_to_px(
+                        self.endnote_between_notes_hu.get(),
+                        self.dpi,
+                    ));
                     let target_y = prev_bottom + gap;
                     let delta = target_y - y_offset;
                     if delta > 0.05 {

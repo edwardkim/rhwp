@@ -242,6 +242,7 @@ pub(crate) struct HeightCursor {
     /// 시작하는지(번호 장식 `문1)` 의 대리값)로 읽으면 같은 미주 안 `문서…` 본문도 제목이 된다.
     /// 미주 흐름 단에서만 호출자가 채운다.
     pub endnote_note_first_paras: std::sync::Arc<std::collections::HashSet<usize>>,
+    pub endnote_tail_leading_hu: std::sync::Arc<std::collections::HashMap<usize, i32>>,
     /// [#7702] 쪽/단 첫 항목인 이어지는 부분 문단의 연속 줄이 합성 줄이라 #5820 의 기준을
     /// 그 줄에서 세우지 못했다. 다음 저장 문단이 자기 실제 흐름 위치로 기준을 세운다.
     pub seed_lazy_base_from_next_stored: bool,
@@ -253,6 +254,15 @@ mod lazy_base_rounding;
 mod saved_boundary;
 
 impl HeightCursor {
+    /// fit이 발행한 내용 합집합은 그대로 두고 이미 소비한 빈 간격만 제외한다.
+    pub(crate) fn remaining_endnote_gap_px(&self, gap: f64) -> f64 {
+        let consumed = self
+            .prev_layout_para
+            .and_then(|index| self.endnote_tail_leading_hu.get(&index))
+            .copied()
+            .unwrap_or(0);
+        (gap - hwpunit_to_px(consumed, self.dpi)).max(0.0)
+    }
     /// [#7665] 미주 흐름 문단이 미주의 첫 문단(새 문항 제목)인가 — 소유 경계.
     fn starts_endnote(&self, para_index: usize) -> bool {
         self.endnote_note_first_paras.contains(&para_index)
@@ -300,6 +310,7 @@ impl HeightCursor {
             session_edited: false,
             curr_item_is_table_fragment: false,
             endnote_note_first_paras: Default::default(),
+            endnote_tail_leading_hu: Default::default(),
             seed_lazy_base_from_next_stored: false,
         }
     }
@@ -1756,12 +1767,12 @@ impl HeightCursor {
                 let content_bottom_y = measured_prev_occupied_end_y
                     .map(|y| y.max(prev_content_bottom_y))
                     .unwrap_or(prev_content_bottom_y);
-                let gap_px = compact_between_notes_gap_px(
+                let gap_px = self.remaining_endnote_gap_px(compact_between_notes_gap_px(
                     self.endnote_between_notes_hu,
                     self.dpi,
                     prev_para.text.trim().is_empty()
                         || para_is_treat_as_char_equation_only(prev_para),
-                );
+                ));
                 content_bottom_y + gap_px
             } else if y_offset > self.col_area_y + self.col_area_height * 0.75
                 || prev_para.text.trim().is_empty()

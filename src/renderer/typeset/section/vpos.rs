@@ -59,6 +59,7 @@ impl TypesetEngine {
             curr_item_is_table_fragment: false,
             // 본문 조판: 미주 제목 갈래는 `suppress_large_forward_jump` 아래에서만 발화한다.
             endnote_note_first_paras: Default::default(),
+            endnote_tail_leading_hu: Default::default(),
             seed_lazy_base_from_next_stored: false,
         }
     }

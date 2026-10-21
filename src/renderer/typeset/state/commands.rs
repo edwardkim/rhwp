@@ -581,8 +581,11 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn record_reissued_endnote_rows(
         &mut self,
         local_index: usize,
+        tail_leading_consumed_hu: i32,
     ) {
-        self.data.reissued_endnote_rows.insert(local_index);
+        self.data
+            .reissued_endnote_rows
+            .insert(local_index, tail_leading_consumed_hu);
     }
     pub(in crate::renderer::typeset) fn append_endnote_measured_table(
         &mut self,
@@ -592,8 +595,14 @@ impl TypesetState {
     }
     pub(in crate::renderer::typeset) fn append_endnote_source(
         &mut self,
-        source: crate::renderer::pagination::EndnoteParaSource,
+        mut source: crate::renderer::pagination::EndnoteParaSource,
     ) {
+        source.tail_leading_consumed_hu = self
+            .data
+            .reissued_endnote_rows
+            .get(&self.data.endnote_para_sources.len())
+            .copied()
+            .unwrap_or(0);
         self.data.endnote_para_sources.push(source);
     }
     pub(in crate::renderer::typeset) fn mark_fragment_footnotes_queued(
@@ -829,6 +838,15 @@ impl TypesetState {
         spacing: i32,
         dpi: f64,
     ) -> f64 {
+        // 내용 높이에 옮겨 담은 leading을 새 미주 간격으로 다시 예약하지 않는다.
+        // source vpos의 전체 전진은 보존하며 실제 남은 빈 밴드만 발행한다.
+        let consumed = self
+            .data
+            .reissued_endnote_rows
+            .get(&index)
+            .copied()
+            .unwrap_or(0);
+        let spacing = spacing.saturating_sub(consumed).max(0);
         let Some(paragraph) = self.data.endnote_paragraphs.get_mut(index) else {
             return 0.0;
         };

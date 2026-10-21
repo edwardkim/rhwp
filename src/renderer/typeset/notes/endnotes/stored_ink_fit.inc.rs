@@ -80,7 +80,7 @@ pub(super) fn stored_endnote_column_cut(
         || para_index < paragraphs.len()
         || st
             .reissued_endnote_rows
-            .contains(&(para_index - paragraphs.len()))
+            .contains_key(&(para_index - paragraphs.len()))
         || !endnote_column_starts_at_stored_break(st, paragraphs)
     {
         return None;
@@ -398,6 +398,7 @@ impl TypesetEngine {
             control_index: usize::MAX,
             cell_path: Vec::new(),
             note_para_index: usize::MAX,
+            tail_leading_consumed_hu: 0,
         };
         let successor_source = local_indices
             .last()

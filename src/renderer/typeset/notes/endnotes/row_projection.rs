@@ -58,7 +58,28 @@ pub(super) fn project_equation_rows<'a>(
                             || before.line_spacing != after.line_spacing
                     })
                 {
-                    st.record_reissued_endnote_rows(first_local_index + index);
+                    // 물리 상자 증가가 같은 양의 leading을 소비했을 때만
+                    // 뒤 미주 간격의 사용량으로 전달한다. 실제 전진 증가나
+                    // 다른 줄 소속을 이 값으로 상쇄하지 않는다.
+                    let consumed = source
+                        .line_segs
+                        .last()
+                        .zip(derived.line_segs.last())
+                        .filter(|(before, after)| {
+                            before.text_start == after.text_start
+                                && before
+                                    .line_height
+                                    .checked_add(before.line_spacing)
+                                    .is_some_and(|advance| {
+                                        after.line_height.checked_add(after.line_spacing)
+                                            == Some(advance)
+                                    })
+                                && after.line_height >= before.line_height
+                        })
+                        .map_or(0, |(before, after)| {
+                            after.line_height.saturating_sub(before.line_height)
+                        });
+                    st.record_reissued_endnote_rows(first_local_index + index, consumed);
                 }
             }
             let mut derived = normalized.into_owned();
