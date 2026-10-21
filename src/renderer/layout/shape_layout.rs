@@ -3445,6 +3445,28 @@ impl LayoutEngine {
                         .last()
                         .unwrap_or(0.0);
 
+                    // 저장 줄이 없는 글상자 문단은 vertical_pos 가 없어 위 계산에서 높이가
+                    // 0 이 된다. 그러면 가운데 정렬이 안쪽 높이의 절반만큼 글을 내려 상자
+                    // 아래로 넘친다. 아래 배치가 소비하는 조합 줄의 줄 높이·줄 간격과
+                    // 문단 간격으로 마지막 줄 끝을 세어 같은 높이로 정렬한다.
+                    if textbox_paragraphs[..para_count]
+                        .iter()
+                        .all(|p| p.line_segs.is_empty())
+                    {
+                        let mut cursor = 0.0f64;
+                        let mut flow_bottom = 0.0f64;
+                        for composed in &composed_paras {
+                            let style = styles.para_styles.get(composed.para_style_id as usize);
+                            cursor += style.map(|s| s.spacing_before).unwrap_or(0.0);
+                            for line in &composed.lines {
+                                flow_bottom = cursor + hwpunit_to_px(line.line_height, self.dpi);
+                                cursor = flow_bottom + hwpunit_to_px(line.line_spacing, self.dpi);
+                            }
+                            cursor += style.map(|s| s.spacing_after).unwrap_or(0.0);
+                        }
+                        total_content_height = total_content_height.max(flow_bottom);
+                    }
+
                     for para in &textbox_paragraphs[..para_count] {
                         let para_vpos = para
                             .line_segs
