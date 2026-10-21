@@ -25,6 +25,10 @@ pub struct FontEnvironment {
     /// 설치 증명은 아니며, 생략하면 기존 HFT 호환 메트릭을 유지한다.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     true_type_faces: Vec<String>,
+    /// 자동 공급 선택은 표시 프로그램만 보완한다. 검증된 원본 HFT의
+    /// 조판 폭까지 대체 프로그램의 폭으로 바꾸는 명시적 요청과 구분한다.
+    #[serde(default, skip_serializing_if = "is_false")]
+    preserve_source_metrics: bool,
     /// 호출자가 공급을 확인한 글리프 폴백. 키는 치환 후의 최종 face이며,
     /// 기본 face가 없는 글자만 이 순서로 측정·출력한다. IR에는 저장하지 않는다.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
@@ -86,6 +90,10 @@ struct AvailableFontProgramSnapshot {
 enum AvailableFontProgramInput {
     Snapshot(AvailableFontProgramSnapshot),
     Legacy(Vec<AvailableFontProgram>),
+}
+
+fn is_false(value: &bool) -> bool {
+    !value
 }
 
 fn program_names(name: &str) -> Vec<String> {
@@ -289,6 +297,7 @@ impl FontEnvironment {
         let mut selection_rules = BTreeMap::new();
         let mut true_type_faces = std::collections::BTreeSet::new();
         let mut digest = Sha256::new();
+        digest.update(b"preserve-source-hft-metrics\0");
         for (source, selected) in candidates {
             let Some((selected, rule_id)) = selected else {
                 continue;
@@ -364,6 +373,7 @@ impl FontEnvironment {
             substitutions,
             selection_rules,
             true_type_faces: true_type_faces.into_iter().collect(),
+            preserve_source_metrics: true,
             glyph_fallbacks: BTreeMap::new(),
             document_substitutions,
         };
@@ -587,6 +597,10 @@ impl FontEnvironment {
 
     pub(crate) fn selects_true_type(&self, face: &str) -> bool {
         self.true_type_faces.iter().any(|selected| selected == face)
+    }
+
+    pub(crate) fn preserves_source_metrics(&self) -> bool {
+        self.preserve_source_metrics
     }
 
     pub(crate) fn replacement(&self, face: &str) -> Option<&str> {

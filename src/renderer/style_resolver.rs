@@ -144,8 +144,24 @@ pub(crate) fn resolve_styles_with_environment(
                     // 명시적 프로그램 선택과 독립적으로 검증한 글리프 표가 모두 있어야
                     // TrueType 폭을 사용한다. 선언만으로 임의 face의 표를 신뢰하지 않는다.
                     let target = primary_font_name(&style.font_families[lang]);
-                    let explicit_true_type =
-                        environment.is_some_and(|env| env.selects_true_type(target));
+                    let original = lookup_font_name_decision(&lookup, lang, shape.font_ids[lang]);
+                    // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
+                    let keep_source_metrics = environment.is_some_and(|env| env.preserves_source_metrics())
+                        && original.alt_type == Some(2)
+                        && original.embedded != Some(true)
+                        && original.requested_face.as_deref().is_some_and(|face| {
+                            crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()
+                                || has_own_metric_table(face, shape.bold, shape.italic)
+                                || crate::renderer::font_metrics_data::has_declared_original_glyph_metrics(face)
+                        });
+                    if keep_source_metrics {
+                        style.font_families_metric_face[lang] = original.requested_face.as_deref()
+                            .and_then(|face| crate::renderer::font_metrics_data::legacy_hft_metric_face(face)
+                                .or_else(|| has_own_metric_table(face, shape.bold, shape.italic).then_some(face)))
+                            .map(str::to_owned);
+                    }
+                    let explicit_true_type = !keep_source_metrics
+                        && environment.is_some_and(|env| env.selects_true_type(target));
                     let explicit_replacement = environment.is_some_and(|env| {
                         decision
                             .requested_face
@@ -153,7 +169,7 @@ pub(crate) fn resolve_styles_with_environment(
                             .is_some_and(|face| env.replacement(face).is_some())
                     });
                     // 결측 글리프 체인만 추가한 세션은 원 face의 TTF/HFT 신뢰를 바꾸지 않는다.
-                    if explicit_true_type || explicit_replacement {
+                    if !keep_source_metrics && (explicit_true_type || explicit_replacement) {
                         style.font_families_metric_trusted[lang] = explicit_true_type
                             && (metric_widths_verified_face(target)
                                 || matches!(target, "휴먼명조" | "HumanMyeongJo"));
