@@ -168,6 +168,7 @@ fn build_node(n: &serde_json::Value) -> RenderNode {
         "Group" => RenderNode::new(
             6,
             RenderNodeType::Group(GroupNode {
+                paint_transform: None,
                 section_index: None,
                 para_index: None,
                 control_index: None,

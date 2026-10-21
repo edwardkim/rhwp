@@ -293,6 +293,7 @@ fn text_overlap_uses_the_visible_intersection_of_nested_clips() {
     clipped.bbox.height = 18.0;
     assert_eq!(scan(clipped.clone()), 0, "글상자 자체도 paint clip이다");
     clipped.node_type = RenderNodeType::Group(rhwp::renderer::render_tree::GroupNode {
+        paint_transform: None,
         section_index: None,
         para_index: None,
         control_index: None,
