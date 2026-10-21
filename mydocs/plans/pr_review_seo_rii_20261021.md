@@ -29,7 +29,7 @@ tree는 `fd971bc26bd0961b6123cadcaf61108057f0986a`이며 원 P68 head와 최신 
 
 원 PR의 최신 check는 모두 완료됐고 실패가 없다. P68의 정확한 원 head Full CI는
 32 success·5 skipped다. 과거 본문에 남은 pending 상태 대신 실제 API 결과를 사용한다.
-원 head CI와 통합 후보의 새 CI를 구별하며 아직 수행하지 않은 통합 CI를 통과로 쓰지 않는다.
+원 head CI와 통합 후보의 새 CI를 구별한다. 통합 PR의 실제 CI 결과는 아래에 기록했다.
 
 ## 검토와 검증
 
@@ -61,6 +61,20 @@ off/on9쌍과 실제 software Vulkan probe가 통과했다. Native base/후보 R
 전쪽 TSV의 Native/WASM 최저99.63470%/99.29125%, base 대비 최대 하락0.00000%p다.
 공통 [증거·명령·한계](../pr/assets/issue_536_seo_rii_20261021/README.md)를 연결한다.
 
-원 head의 녹색 CI는 재사용했고, 새 통합 후보의 원격 CI를 실행했다고 쓰지 않는다.
-원격 push·통합 PR 생성 승인 뒤 CI를 확인하고, 같은 통합 PR에만 필요한 trailing 기록을 반영한다.
-아직 push·PR 생성·GitHub approve/comment·원 PR close·merge는 수행하지 않았다.
+## 통합 PR의 실제 CI와 승인
+
+[통합 PR #8135](https://github.com/edwardkim/rhwp/pull/8135)의 정확한 후보
+`c1fff8ce3d5cb1b048a53f04fda16942175760c7`에서 [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/39613689693), [CI](https://github.com/edwardkim/rhwp/actions/runs/39613689636), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/39613689798), [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/39613689949), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/39613689632)가 모두 실제 성공했다.
+CI preflight는 `fast_pass=false reason=no-green-build-candidate`였으며,
+원 fork CI를 통합 PR CI로 대신하지 않고 새 source branch의 Full CI를 완료했다.
+마지막 완료 이벤트의 정책 audit는 GitHub API가 Archive B를 늦게 반영해 pending이었다.
+기존 테스트를 재실행하지 않고 [정책 집계 job](https://github.com/edwardkim/rhwp/actions/runs/39617769583)만
+재실행해 최신 성공 상태로 갱신했다.
+사용자는 push·Open PR 생성·CI 성공 후 병합·원 PR3개 종료와 후속 comment를 승인했다.
+이 기록 뒤 변경은 허용된 mydocs 문서뿐이다. 최신 trailing head의 실제 fast-pass·required
+check와 최신 base의 merge-tree를 확인한 뒤 승인된 병합·후속 처리를 수행한다.
+
+통합 merge·원 PR close·후속 comment는 아직 수행하지 않았다. Draft #7932와 #536은 유지한다.
+후속 정리에서 이번 임시 branch는 삭제하고 사용자 worktree·공유 target은 보존한다.
+루트 output은 다른 작업의 release/POC·공유 글꼴 자료 등이 섞여 있어 현재4.1GiB의
+전체 삭제는 미완료다. 소유·필요 여부가 불명확한 자료를 임의로 제거하지 않는다.
