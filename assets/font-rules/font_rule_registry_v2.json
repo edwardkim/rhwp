@@ -74,6 +74,11 @@
       "changeSetId": "issue-7445.missing-title-public-fallback",
       "path": "assets/font-rules/changes/issue-7445-missing-title-public-fallback.json",
       "sha256": "1a2bd7909e9bcb3b9433a21b6a9ec8ead1499f0c4a3f288fb30936a2473d361f"
+    },
+    {
+      "changeSetId": "issue-7445.document-substitute-lookup",
+      "path": "assets/font-rules/changes/issue-7445-document-substitute-lookup.json",
+      "sha256": "0473dd6a4977413d630c8d9d75af4eb589700a84b18beae74ead8a17b8c20a08"
     }
   ],
   "evidenceRecords": [
@@ -174,6 +179,14 @@
       ],
       "sha256": "9709acc051c695a9769e7ce34bef30fb74c5e9f3f6430856fe1a0c9c764b400c",
       "source": "assets/font-rules/evidence/issue-7445-missing-title-public-fallback.json"
+    },
+    {
+      "evidenceId": "evidence.issue-7445.document-substitute-lookup",
+      "kind": "aggregate-measurement",
+      "licenseOrProvenance": "한컴2020/2024 독립 Print 10조건의 선택 경계 대조. 글꼴·표본·PDF 바이트는 로컬에만 보존하며 SFNT 동일성을 주장하지 않는다.",
+      "parentEvidenceIds": [],
+      "sha256": "edd9d10b2fc62f0ba9a462d8833f697a76aaad26856d36e8e7b66c6be878b75b",
+      "source": "assets/font-rules/evidence/issue-7445-document-substitute-lookup.json"
     }
   ],
   "issue": 5955,
@@ -44180,9 +44193,46 @@
       "status": "active",
       "supply": null,
       "targetFaceOrPolicy": "RHWP Public Batang"
+    },
+    {
+      "conditions": {
+        "altType": "1",
+        "availability": "nonembedded-ttf-document-substitute",
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7445.document-substitute-lookup"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7445.document-substitute-lookup",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 178,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.8f1a484b6e8dff748728",
+      "selectionTupleSha256": "94ad1b492b12f71df012d3caf935ed692a288c9883e31c721c4724966d2d9adf",
+      "sourceBoundaryId": "rust-style-resolution.document-substitute",
+      "sourceFace": "HCR Batang",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Haansoft Batang"
     }
   ],
-  "rulesSha256": "c696247e9b5389f249b74c53a455e33f32b1a24c2a0ef714a9b9804f3ae04ee9",
+  "rulesSha256": "77f5fa6c18d75b3009e0d3d211457152684c4c9fdd742a6e814f597581f17b5c",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
@@ -44194,15 +44244,15 @@
   },
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
   "summary": {
-    "activeRuleCount": 845,
+    "activeRuleCount": 846,
     "countsByProjection": {
       "canvas2d-paint": 281,
       "canvas2d-webfont": 155,
       "canvaskit-sfnt": 160,
       "rust-layout-metric": 71,
-      "rust-layout-name": 178
+      "rust-layout-name": 179
     },
     "retiredRuleCount": 4,
-    "ruleCount": 849
+    "ruleCount": 850
   }
 }

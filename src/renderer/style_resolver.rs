@@ -722,7 +722,9 @@ pub(crate) struct FontNameDecision {
     pub(crate) alt_type: Option<u8>,
     pub(crate) embedded: Option<bool>,
     pub(crate) normalized_face: Option<String>,
+    pub(crate) requested_subst_font: Option<String>,
     pub(crate) subst_font: Option<String>,
+    pub(crate) document_substitute_rule_id: Option<&'static str>,
     pub(crate) css_family_chain: Vec<String>,
     pub(crate) substitution_boundary: Option<FontSubstitutionBoundary>,
     pub(crate) substitution_rule_id: Option<&'static str>,
@@ -820,7 +822,9 @@ pub(crate) fn lookup_font_name_decision(
         alt_type: None,
         embedded: None,
         normalized_face: None,
+        requested_subst_font: None,
         subst_font: None,
+        document_substitute_rule_id: None,
         css_family_chain: Vec::new(),
         substitution_boundary: None,
         substitution_rule_id: None,
@@ -850,9 +854,33 @@ pub(crate) fn lookup_font_name_decision(
                 .filter(|substitute| !substitute.face.trim().is_empty())
                 .filter(|substitute| substitute.face.trim() != resolved)
             {
-                let face = substitute.face.trim().to_string();
+                let requested = substitute.face.trim();
+                decision.requested_subst_font = Some(requested.to_owned());
+                // 대체 필드의 이름 해석은 주 글꼴의 별칭과 별도 계약이다.
+                // 독립 2020/2024 Print: 영문 HCR 대체 필드는 한컴바탕,
+                // 한글 대체 필드와 주 글꼴 HCR은 실제 HCR을 선택한다.
+                let rule = (!font.is_embedded && font.alt_type == 1 && substitute.font_type == 1)
+                    .then(|| {
+                        find_font_rule_layout_name(
+                            "rust-style-resolution.document-substitute",
+                            requested,
+                            lang_index,
+                        )
+                    })
+                    .flatten()
+                    .filter(|rule| {
+                        rule.conditions.alt_type == Some("1")
+                            && rule.conditions.availability
+                                == Some("nonembedded-ttf-document-substitute")
+                    });
+                let face = rule
+                    .map_or(requested, |rule| rule.target_face_or_policy)
+                    .to_owned();
+                decision.document_substitute_rule_id = rule.map(|rule| rule.rule_id);
                 decision.subst_font = Some(face.clone());
-                decision.css_family_chain.push(face);
+                if face != resolved {
+                    decision.css_family_chain.push(face);
+                }
             }
         }
     }

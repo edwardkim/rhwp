@@ -32,7 +32,7 @@ fn supplied_style_program_precedes_the_document_substitute() {
                             ..Default::default()
                         });
                     }
-                    let supplied = json!([{"query":postscript,"family":format!("{prefix}{kind}"),"programId":format!("same-{prefix}-{kind}-{weight}-font-program"),"trueType":true},{"query":"HCR Batang","family":"HCR Batang","programId":"fallback-program","trueType":true}]);
+                    let supplied = json!([{"query":postscript,"family":format!("{prefix}{kind}"),"programId":format!("same-{prefix}-{kind}-{weight}-font-program"),"trueType":true},{"query":"HCR Batang","family":"HCR Batang","programId":"fallback-program","trueType":true},{ "query":"Haansoft Batang","family":"Haansoft Batang","programId":"document-fallback-program","trueType":true}]);
                     if FontEnvironment::from_available_programs(&d.doc_info, &supplied.to_string())
                         .unwrap()
                         .is_some()
@@ -40,7 +40,7 @@ fn supplied_style_program_precedes_the_document_substitute() {
                         errors.push(name.clone());
                     }
                     let wrong_weight = if weight == "Bold" { "Light" } else { "Bold" };
-                    let wrong_program = json!([{"query":format!("{prefix}{ps}{wrong_weight}"),"family":format!("{prefix}{kind}"),"programId":"another-weight-program","trueType":true},{"query":"HCR Batang","family":"HCR Batang","programId":"fallback-program","trueType":true}]);
+                    let wrong_program = json!([{"query":format!("{prefix}{ps}{wrong_weight}"),"family":format!("{prefix}{kind}"),"programId":"another-weight-program","trueType":true},{"query":"HCR Batang","family":"HCR Batang","programId":"fallback-program","trueType":true},{ "query":"Haansoft Batang","family":"Haansoft Batang","programId":"document-fallback-program","trueType":true}]);
                     assert!(
                         FontEnvironment::from_available_programs(
                             &d.doc_info,
@@ -55,7 +55,7 @@ fn supplied_style_program_precedes_the_document_substitute() {
                     } else {
                         "KoPub"
                     };
-                    let other_generation = json!([{"query":format!("{other_prefix}{ps}{weight}"),"family":format!("{other_prefix}{kind}"),"programId":"another-generation-program","trueType":true},{"query":"HCR Batang","family":"HCR Batang","programId":"fallback-program","trueType":true}]);
+                    let other_generation = json!([{"query":format!("{other_prefix}{ps}{weight}"),"family":format!("{other_prefix}{kind}"),"programId":"another-generation-program","trueType":true},{"query":"HCR Batang","family":"HCR Batang","programId":"fallback-program","trueType":true},{ "query":"Haansoft Batang","family":"Haansoft Batang","programId":"document-fallback-program","trueType":true}]);
                     assert!(
                         FontEnvironment::from_available_programs(
                             &d.doc_info,
@@ -65,7 +65,7 @@ fn supplied_style_program_precedes_the_document_substitute() {
                         .is_some(),
                         "KoPub와 KoPubWorld의 서로 다른 프로그램을 합치지 않는다"
                     );
-                    let fallback = json!([{"query":"HCR Batang","family":"HCR Batang","programId":"fallback-program","trueType":true}]);
+                    let fallback = json!([{"query":"HCR Batang","family":"HCR Batang","programId":"fallback-program","trueType":true},{ "query":"Haansoft Batang","family":"Haansoft Batang","programId":"document-fallback-program","trueType":true}]);
                     assert!(
                         FontEnvironment::from_available_programs(
                             &d.doc_info,

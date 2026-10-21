@@ -271,6 +271,47 @@ fn subst_font_provenance(
     .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))
 }
 
+fn document_substitute_lookup_provenance(
+    source: &str,
+    target: &str,
+    language_slot: usize,
+    generated_rule_id: &str,
+) -> Result<ProvenanceDecision, HwpError> {
+    let rule = crate::renderer::font_rule_layout_name_projection::find_font_rule_layout_name(
+        "rust-style-resolution.document-substitute",
+        source,
+        language_slot,
+    )
+    .filter(|rule| {
+        rule.rule_id == generated_rule_id
+            && rule.target_face_or_policy == target
+            && rule.mode == "direct"
+            && rule.conditions.alt_type == Some("1")
+            && rule.conditions.availability == Some("nonembedded-ttf-document-substitute")
+    })
+    .ok_or_else(|| HwpError::RenderError("font trace document substitute rule mismatch".into()))?;
+    let identity = json!({
+        "sourceBoundaryId": rule.source_boundary_id,
+        "candidateKind": "finite-mapping",
+        "sourceFace": source,
+        "targetOrPolicy": target,
+        "conditions": {"languageSlot":"all", "altType":"1", "availability":"nonembedded-ttf-document-substitute"},
+        "order": null,
+    });
+    let candidate_id = crate::renderer::font_decision::candidate_id(identity)
+        .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))?;
+    Ok(ProvenanceDecision {
+        candidate_id,
+        rule_id: Some(rule.rule_id.into()),
+        evidence_anchor: format!("assets/font-rules/font_rule_registry_v2.json#{}", rule.rule_id),
+        source_owner: "rust-style-resolution".into(),
+        relation_type: Some(rule.relation_type.into()),
+        evidence_status: Some("verified-by-test".into()),
+        known_limitations: vec!["Document substitute candidate lookup, not SFNT identity or proof of actual paint supply.".into()],
+        reason: None,
+    })
+}
+
 pub(super) fn metric_alias_relation(source: &str, target: &str) -> (&'static str, &'static str) {
     if source == "HY각헤드라인M" || target == "Pretendard" || target == "Noto Serif KR" {
         ("metric-surrogate", "historical")
@@ -802,6 +843,26 @@ impl DocumentCore {
                 let mut provenance = vec![measurement_provenance()?];
                 let mut name_steps = Vec::new();
                 if let Some(font) = &font_decision {
+                    if let (Some(source), Some(target), Some(rule_id)) = (
+                        font.requested_subst_font.as_deref(),
+                        font.subst_font.as_deref(),
+                        font.document_substitute_rule_id,
+                    ) {
+                        name_steps.push(DecisionStep {
+                            kind: "documentSubstituteLookup".into(),
+                            input: Some(source.into()),
+                            output: Some(target.into()),
+                            reason: Some(
+                                "candidateBeforeProgramAvailabilityAndCallerOverride".into(),
+                            ),
+                        });
+                        provenance.push(document_substitute_lookup_provenance(
+                            source,
+                            target,
+                            font.language_slot,
+                            rule_id,
+                        )?);
+                    }
                     if let Some(profile_id) = &font.environment_profile_id {
                         name_steps.push(DecisionStep {
                             kind: "fontEnvironment".into(),
@@ -945,7 +1006,7 @@ impl DocumentCore {
                         embedded: font_decision.as_ref().and_then(|font| font.embedded),
                         subst_font: font_decision
                             .as_ref()
-                            .and_then(|font| font.subst_font.clone()),
+                            .and_then(|font| font.requested_subst_font.clone()),
                     },
                     layout_name: LayoutNameDecision {
                         requested_face: requested_document_face,
