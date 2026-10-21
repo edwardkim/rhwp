@@ -3,6 +3,12 @@
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
+        "commands/border_paint_edit.rs",
+        "discard_border_paint_undo_native",
+        Exempt::SessionState,
+        "#7998: history 소유 undo journal만 폐기하며 문서 IR·저장 raw stream을 변경하지 않는다. 복원 시 실제 편집은 별도 commit 경로에서 무효화한다.",
+    ),
+    (
         "commands/document/metafile_fonts.rs",
         "register_metafile_font_native",
         Exempt::SessionState,
