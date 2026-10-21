@@ -6,6 +6,7 @@
 cellnotes_{plain|span}_N{NOTE_REP}[_H{ROW_H}][_B][_L{LINES}].hwpx: 채움 문단 FILL 개 뒤에 2열 ROWS 행 표(pageBreak=CELL).
 span 은 왼쪽 열을 10행씩 병합한다. ROW_H 는 행 선언 높이(HU), BODY_NOTE=1 은 표 앞 본문 각주, LINES 는 오른쪽 칸 문단 수(행을 내용으로 채움). 각주는 NOTE_ROWS 행 오른쪽 칸에 하나씩. 저장 줄 없음.
 저장소 입력: 기본값 → cellnotes_span_N2 · ROWS=110 NOTE_ROWS=5,15,50,95 → r110_cellnotes_span_N2(이름 앞 r110_).
+           LINES=7 NOTE_ROWS=1,12,25 → cellnotes_plain_N2_L7(각주 있는 행이 쪽 끝에서 잘린다).
 """
 import os
 import sys
