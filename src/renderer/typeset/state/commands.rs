@@ -302,6 +302,16 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn request_vpos_reset_after_queued_footnote(&mut self) {
         self.data.reset_vpos_after_queued_table_footnote_page = true;
     }
+    /// 이어지는 쪽에서 저장 reset 으로 끝낸 문단 조각을 기록한다(그 안 표시의 각주 소유).
+    pub(in crate::renderer::typeset) fn record_stored_reset_note_fragment(
+        &mut self,
+        para_idx: usize,
+        start_line: usize,
+    ) {
+        self.data
+            .stored_reset_note_fragments
+            .push((para_idx, start_line));
+    }
     pub(in crate::renderer::typeset) fn finish_behind_float_absorption(&mut self) {
         self.data.behind_float_table_para = None;
     }

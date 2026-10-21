@@ -189,6 +189,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 단일 컬럼·caption 보유 picture 형상으로 한정한다.
     pub(in crate::renderer::typeset) deferred_next_page_square_pictures:
         Vec<DeferredSquarePictureControl>,
+    /// 이어지는 쪽에서 저장 reset 으로 끝낸 문단 조각 (문단, 시작 줄). 그 조각 안 표시의
+    /// 본문 각주는 조각 경계 판정이 이미 계상했으므로 표시가 놓인 쪽에 둔다.
+    pub(in crate::renderer::typeset) stored_reset_note_fragments: Vec<(usize, usize)>,
     /// 현재 호스트를 남기고 다음 쪽의 저장 상단 프레임만 이월한다.
     pub(in crate::renderer::typeset) deferred_next_page_stored_frames:
         Vec<crate::renderer::typeset::DeferredStoredFrameControl>,

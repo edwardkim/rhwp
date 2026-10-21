@@ -79,6 +79,7 @@ impl TypesetState {
                 deferred_next_page_square_pictures: Vec::new(),
                 page_start_square_pictures: Vec::new(),
                 deferred_next_page_stored_frames: Vec::new(),
+                stored_reset_note_fragments: Vec::new(),
                 deferred_next_column_stored_frames: Vec::new(),
                 deferred_source_frame_body_pages: std::collections::HashMap::new(),
                 page_start_stored_frames: Vec::new(),

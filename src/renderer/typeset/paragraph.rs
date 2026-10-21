@@ -203,6 +203,43 @@ pub(super) fn place_split_paragraph(
             );
         }
 
+        // 이어지는 쪽에서도 같은 문단의 다음 저장 reset 은 물리 쪽 경계다. 첫 조각과
+        // 같은 원본·흐름 일치 근거(`stored_body_reset_fragment_matches_current_flow`)로
+        // 확인한 다음 reset 만 이 조각의 경계로 쓴다(합성 `cont_reset_F20_L70_N4`: 23줄째와 59줄째 reset).
+        let line_scan_page = st.paragraph_line_scan_page();
+        // 앞 조각이 저장 reset 에서 끝났을 때(이 조각 첫 줄이 reset 줄)만 저장 사다리가 쪽
+        // 경계로 확인된 것이다. 예산으로 끊긴 조각의 다음 쪽은 원본 쪽 소속이 다르다.
+        let continuation_reset_line = (!on_entry_page
+            && cursor_line > 0
+            && para
+                .line_segs
+                .get(cursor_line)
+                .is_some_and(|line| line.vertical_pos == 0)
+            && para.line_segs[cursor_line - 1].vertical_pos > 0
+            && !st.profile.session_edited()
+            && para_has_visible_text(para)
+            && fmt.line_heights.len() == para.line_segs.len())
+        .then(|| {
+            (cursor_line + 1..line_count).find(|&line| {
+                para.line_segs[line].vertical_pos < para.line_segs[line - 1].vertical_pos
+            })
+        })
+        .flatten()
+        .filter(|&break_line| {
+            scan::stored_body_reset_fragment_matches_current_flow(
+                &line_scan_page,
+                para,
+                cursor_line,
+                break_line,
+                fragment_page_vpos_base.unwrap_or(0),
+                0.0,
+                dpi,
+            )
+        });
+        let fragment_forced_break_line = forced_page_break_line
+            .filter(|&line| line > cursor_line)
+            .or(continuation_reset_line);
+
         let scan::LineScanResult {
             end_line,
             cumulative,
@@ -215,11 +252,11 @@ pub(super) fn place_split_paragraph(
             cursor_line,
             line_count,
             avail_for_lines,
-            forced_page_break_line,
+            fragment_forced_break_line,
             native_hwp5_existing_footnote_boundary,
             fragment_page_vpos_base,
             is_tac_picture_stack,
-            &st.paragraph_line_scan_page(),
+            &line_scan_page,
             dpi,
         );
 
@@ -282,6 +319,9 @@ pub(super) fn place_split_paragraph(
             );
         }
         st.commit_split_paragraph_fragment(fragment);
+        if continuation_reset_line == Some(end_line) {
+            st.record_stored_reset_note_fragment(para_idx, cursor_line);
+        }
 
         if end_line >= line_count {
             break;
