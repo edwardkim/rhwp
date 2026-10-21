@@ -66,7 +66,7 @@ PrEP59/65/72/114/124쪽 Native raw100%,125/129/137쪽은99.99727/99.99845/99.996
 24개 긴 괘선은 보존됐고1px 수준의 선 위상 차이가 남는다.15쪽은98.40426/98.40390%이며
 회색 내용 밴드·캡션·후속 본문을 확인했다. 테두리 진하기와 미세 가장자리 차이는 남는다.
 
-[전쪽 TSV·source/입력/PDF/글꼴/producer·회귀 증적](../pr/assets/issue7445/completed-20261009/stage23-20261021/evidence.json)
+[전쪽 TSV·source/입력/PDF/글꼴/producer·회귀 증적](../pr/assets/issue7445/completed-20261009/stage23-20261021/verification.md)
 
 [Native72 review](../pr/assets/issue7445/completed-20261009/stage23-20261021/native-prep-p072-review.png) ·
 [overlay](../pr/assets/issue7445/completed-20261009/stage23-20261021/native-prep-p072-overlay.png) ·
@@ -113,3 +113,12 @@ palette는 통과하지만 PrEP1쪽0.62299%p와 법령2/13/36쪽0.15331/0.18072/
 전체 nextest의 나머지 캡션3건/CSAP 간격/머리말 그림 검사, 과학 기준선과 위4쪽 품질,
 전체 영향 범위의 base/head TSV·필수 lint/build/Skia/manifest/unit tier·실제 소비 검증은 남았다.
 이 단계의6개 정규 검사·215쪽씩 결과를 전체 브랜치 통과로 재인용하지 않는다.
+
+## 생성 산출물 정리
+
+2026-10-21 현재 증적 정책에 따라 이 단계 생성 JSON5개는 ignored output의
+`repair921-stage23-generated-json-relocation/`로 SHA를 유지해 옮겼다.
+최종 지표·소스/입력/PDF/build SHA·품질 보류와 판독 한계는
+[안정 Markdown 요약](../pr/assets/issue7445/completed-20261009/stage23-20261021/verification.md)에 남겼다.
+원본·PDF·대표 PNG·전체 TSV·구현·회귀 source는 변경하지 않았다.
+다른 단계의 생성 JSON42개는 소비 경로와 영구 기록 대체를 별도로 확인해야 하며 전체 정리 완료로 보고하지 않는다.
