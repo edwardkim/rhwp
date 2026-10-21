@@ -333,7 +333,7 @@ pub(super) fn place_fitted_paragraph(
     st.insert_fitted_paragraph(para_idx, defer_preceding_float);
     let stored_successor_flow =
         content::stored_successor_flow(st, para, fmt, paragraphs, styles, para_idx, dpi);
-    if let Some((_, end)) = stored_successor_flow {
+    if let Some(end) = stored_successor_flow.and_then(|flow| flow.paint_end) {
         st.record_stored_paragraph_flow_end(para_idx, end);
     }
     // [Task #391] 다단/단단 분기:
@@ -343,7 +343,7 @@ pub(super) fn place_fitted_paragraph(
     // typeset 누적 시 trailing_ls 인플레이션이 단을 조기 종료시킴.
     let stored_guide_advance = content::stored_overlay_guide_advance(st, fmt, paragraphs, para_idx);
     let advance = stored_successor_flow
-        .map(|(_, end)| end - st.current_height)
+        .map(|flow| flow.advance_end - st.current_height)
         .or(stored_guide_advance)
         .unwrap_or_else(|| {
             fmt.flow_advance_height(
@@ -423,7 +423,7 @@ pub(super) fn place_fitted_paragraph(
                             )
                         })
                 },
-                |(bottom, _)| bottom - st.current_height,
+                |flow| flow.content_bottom - st.current_height,
             ),
             advance,
         );
@@ -511,7 +511,7 @@ pub(super) fn try_place_overflow_paragraph(
         st.begin_atomic_overflow_paragraph(para_idx);
         let stored_flow =
             content::stored_successor_flow(st, para, fmt, paragraphs, styles, para_idx, dpi);
-        if let Some((_, end)) = stored_flow {
+        if let Some(end) = stored_flow.and_then(|flow| flow.paint_end) {
             st.record_stored_paragraph_flow_end(para_idx, end);
         }
         let advance = stored_flow.map_or_else(
@@ -533,7 +533,7 @@ pub(super) fn try_place_overflow_paragraph(
                     false,
                 )
             },
-            |(_, end)| end - st.current_height,
+            |flow| flow.advance_end - st.current_height,
         );
         st.advance_atomic_overflow_paragraph(
             advance,

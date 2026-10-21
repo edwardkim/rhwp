@@ -382,7 +382,10 @@ pub(super) fn stored_successor_flow(
     styles: &ResolvedStyleSet,
     para_idx: usize,
     dpi: f64,
-) -> Option<(f64, f64)> {
+) -> Option<crate::renderer::float_placement::StoredParagraphFlowProjection> {
+    if st.vpos_ladder_dirty {
+        return None;
+    }
     if st.col_count > 1 {
         return stored_multicolumn_tac_successor_flow(
             st,
@@ -392,7 +395,14 @@ pub(super) fn stored_successor_flow(
             paragraphs.get(para_idx + 1)?,
             styles,
             dpi,
-        );
+        )
+        .map(|(content_bottom, end)| {
+            crate::renderer::float_placement::StoredParagraphFlowProjection {
+                content_bottom,
+                advance_end: end,
+                paint_end: Some(end),
+            }
+        });
     }
     if fmt.stored_ladder_is_filler
         || fmt.computed_host_lines.is_some()
