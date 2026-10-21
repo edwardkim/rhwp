@@ -56,12 +56,13 @@ impl Default for PdfImportPolicy {
 
 impl PdfImportPolicy {
     pub(crate) fn for_selected_pages(mut self, pages: usize) -> Self {
-        self.backend.operators = self
-            .backend
-            .operators
-            .min(pages.saturating_mul(100_000).max(250_000));
-        self.backend.xobject_visits = self.backend.xobject_visits.min(self.backend.operators);
-        self.backend.reference_visits = self.backend.reference_visits.min(self.backend.operators);
+        let selected_work_limit = pages.saturating_mul(100_000).max(250_000);
+        self.backend.operators = self.backend.operators.min(selected_work_limit);
+        // Each explicit host cap governs its own counter. A small operator
+        // budget must not also reduce reference/XObject traversal to that
+        // number before even the selected page's content can be visited.
+        self.backend.xobject_visits = self.backend.xobject_visits.min(selected_work_limit);
+        self.backend.reference_visits = self.backend.reference_visits.min(selected_work_limit);
         self.backend.spans = self
             .backend
             .spans

@@ -95,7 +95,7 @@ fn partial_cell_intersects_diagonal_zone(
 ///
 /// 저장 글자처럼 원문 inline 그림에는 위치값을 일반 적용하지 않는다. 문단 기준
 /// offset은 `reclassify_cell_floating_stacks`가 만든 합성 줄에서만 복원한다.
-fn inline_para_horizontal_offset_px(
+pub(super) fn inline_para_horizontal_offset_px(
     common: &CommonObjAttr,
     synthetic_reclassified_stack: bool,
     dpi: f64,

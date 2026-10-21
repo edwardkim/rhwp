@@ -10745,6 +10745,20 @@ impl LayoutEngine {
                                 )
                             };
                             let img_y = base_img_y + sibling_reserved_px + margin_top;
+                            // Normalization preserves the paragraph anchor of
+                            // a floating picture stack. The inline emitter and
+                            // the cell fallback must publish the same origin.
+                            let img_left = img_x
+                                + margin_left
+                                + super::table_partial::inline_para_horizontal_offset_px(
+                                    &pic.common,
+                                    p.line_segs.get(vars.line_idx).is_some_and(|segment| {
+                                        segment.tag
+                                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                            != 0
+                                    }),
+                                    self.dpi,
+                                );
                             let bin_data_id = pic.image_attr.bin_data_id;
                             let image_data = find_bin_data_bytes(bdc, bin_data_id);
                             let crop = pic.render_crop_rect();
@@ -10761,7 +10775,7 @@ impl LayoutEngine {
                                 original_size_hu,
                                 bin_data_id,
                                 image_data,
-                                BoundingBox::new(img_x + margin_left, img_y, pic_w, pic_h),
+                                BoundingBox::new(img_left, img_y, pic_w, pic_h),
                             );
                             self.append_picture_image_node(tree, line_node, pic, img_node);
                             // [Task #418/#376] layout_shape_item 의 Task #347 분기 (빈 문단 +
@@ -10772,7 +10786,7 @@ impl LayoutEngine {
                                 vars.para_index,
                                 tac_ci,
                                 cell_ctx.as_ref(),
-                                img_x + margin_left,
+                                img_left,
                                 img_y,
                             );
                             img_x += tac_w;
