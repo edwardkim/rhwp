@@ -3323,6 +3323,7 @@ pub(crate) fn synthesized_first_margin_hu(
 /// 그 vpos는 쪽 원점부터의 거리다. 한/글은 쪽 위를 차지한 제목 표 아래에서 첫 줄을
 /// 시작한다. 표는 첫 문단부터 저장 사다리가 되감기기 전까지의 몇 문단에서 찾는다
 /// (제목 표 문단 앞에 빈 문단이 있는 쪽도 같다). 합성 줄은 증거로 쓰지 않는다.
+/// #7699 의 상단 예약(`stored_square_top_band`)이 맡는 표는 뺀다.
 pub(crate) fn stored_first_line_clears_page_square_table(
     paragraphs: &[Paragraph],
     first_index: usize,
@@ -3378,6 +3379,18 @@ pub(crate) fn stored_first_line_clears_page_square_table(
             let Some(exclusion) = frame.page_anchored_square_table_exclusion(table) else {
                 continue;
             };
+            // #7699 가 본문 위를 예약하는 상단 전폭 표는 그 예약이 첫 줄을 표 아래로
+            // 내린다. 원점까지 0 으로 두면 두 번 내려간다.
+            if crate::renderer::float_placement::stored_square_top_band(
+                para,
+                control,
+                &layout.body_area,
+                dpi,
+            )
+            .is_some()
+            {
+                continue;
+            }
             if (exclusion.vertical.end - body_top - first_seg.vertical_pos).abs() <= TOLERANCE_HU {
                 return true;
             }
