@@ -136,6 +136,7 @@ impl TypesetState {
                 })
             }),
             profile: self.data.profile,
+            rejected_stored_forward_origin: self.data.rejected_stored_forward_origin,
             current_height: self.data.current_height,
             empty_column: self.data.current_items.is_empty(),
             vpos_col_anchor: self.data.vpos_col_anchor,

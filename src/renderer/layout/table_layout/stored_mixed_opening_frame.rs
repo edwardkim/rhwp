@@ -49,7 +49,6 @@ impl LayoutEngine {
         if !last.mixed_nested_fragment
             || !next.mixed_nested_fragment
             || last.para_idx != next.para_idx
-            || !next.stored_frame_break_before
         {
             return None;
         }
@@ -106,9 +105,8 @@ impl LayoutEngine {
         let child_units = self.cell_units(child_cell, child, styles);
         let child_last = child_units.get(child_end.checked_sub(1)?)?;
         let child_next = child_units.get(child_end)?;
-        if !child_next.stored_frame_break_before && !child_next.page_frame_reset_before {
-            return None;
-        }
+        let child_resets =
+            child_next.stored_frame_break_before || child_next.page_frame_reset_before;
         let mut child_previous_origin = None;
         if child_units[..child_end].iter().any(|unit| {
             unit.mixed_nested_fragment
@@ -170,22 +168,70 @@ impl LayoutEngine {
             + i64::from(last_line.line_height)
             + i64::from(padding.top)
             + i64::from(padding.bottom);
-        if closed_height_hu != i64::from(child.common.height)
-            || last_line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-        {
+        if last_line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+            return None;
+        }
+        let source_origin = hwpunit_to_px(host.line_segs.first()?.vertical_pos, self.dpi);
+        let physical_height = hwpunit_to_px(cell.height as i32, self.dpi);
+        let (_, _, top, bottom) = self.resolve_stored_nested_cell_padding(cell, parent, styles);
+        if !child_resets {
+            // HWPX는 같은 저장 줄을 쪽마다 되감지 않고 하나의 연속 사다리로
+            // 보관할 수 있다. 이때 child 전체 캐시를 첫 조각 높이로 쓰지 않는다.
+            // 온전한 child의 저장 잉크가 선언 상자를 닫는지 먼저 확인하고,
+            // 부모의 선언 첫 상자에 정확히 들어가는 maximal source prefix만
+            // 예약·정렬이 공유한다. 다음 줄도 들어가면 임의 컷이므로 기각한다.
+            let full_ink =
+                crate::renderer::float_placement::stored_plain_cell_ink_height(child_cell)?;
+            if i64::from(full_ink) + i64::from(padding.top) + i64::from(padding.bottom)
+                != i64::from(child.common.height)
+            {
+                return None;
+            }
+            let next_line = child_cell
+                .paragraphs
+                .get(child_next.para_idx)?
+                .line_segs
+                .get(child_next.vis_end.checked_sub(1)?)?;
+            let next_height_hu = i64::from(next_line.vertical_pos)
+                + i64::from(next_line.line_height)
+                + i64::from(padding.top)
+                + i64::from(padding.bottom);
+            let placed_end = |height: i64| {
+                i32::try_from(height).ok().and_then(|height| {
+                    ParagraphFloatPlacement::from_stored_host(
+                        host,
+                        child,
+                        0,
+                        source_origin,
+                        hwpunit_to_px(height, self.dpi),
+                        self.dpi,
+                    )
+                    .map(|placement| placement.occupied_bottom)
+                })
+            };
+            let content_height = placed_end(closed_height_hu)?;
+            let next_content_height = placed_end(next_height_hu)?;
+            return (content_height.is_finite()
+                && content_height > 0.0
+                && content_height + top + bottom <= physical_height
+                && next_content_height + top + bottom > physical_height)
+                .then_some(StoredMixedOpeningFrame {
+                    physical_height,
+                    content_height,
+                });
+        }
+        if closed_height_hu != i64::from(child.common.height) {
             return None;
         }
         // 선언 예산의 maximal prefix가 같은 컷이어야 한다. 임의 쪽 컷이나
         // 전체 셀 높이를 조각 상자로 오인한 wrapper는 다음 유닛도 fit하므로 기각한다.
         let frame = CellCutFrame::new(self, cell, parent, styles, &units, 0);
         let advance = units[..end].iter().map(|unit| unit.height).sum::<f64>();
-        let physical_height = hwpunit_to_px(cell.height as i32, self.dpi);
         if frame.height_without_mixed_opening(end, advance) > physical_height
             || frame.height_without_mixed_opening(end + 1, advance + next.height) <= physical_height
         {
             return None;
         }
-        let source_origin = hwpunit_to_px(host.line_segs.first()?.vertical_pos, self.dpi);
         let child_height = hwpunit_to_px(child.common.height as i32, self.dpi);
         let placement = ParagraphFloatPlacement::from_stored_host(
             host,
@@ -195,7 +241,6 @@ impl LayoutEngine {
             child_height,
             self.dpi,
         )?;
-        let (_, _, top, bottom) = self.resolve_stored_nested_cell_padding(cell, parent, styles);
         let content_height = placement.occupied_bottom;
         (content_height.is_finite()
             && content_height > 0.0

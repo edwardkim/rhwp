@@ -35,6 +35,7 @@ pub(in crate::renderer::typeset) fn inline_text_control(control: &Control) -> bo
 
 pub(in crate::renderer::typeset) struct StoredTacPage {
     pub profile: LayoutCompatibilityProfile,
+    pub rejected_stored_forward_origin: Option<(usize, i32)>,
     pub current_height: f64,
     pub empty_column: bool,
     pub vpos_col_anchor: f64,
@@ -552,6 +553,20 @@ pub(super) fn prepare(
     available_height: impl Fn() -> f64,
     dpi: f64,
 ) -> Option<StoredTacPlan> {
+    // 커서가 이미 거절한 source 원점을 첫 저장 줄/개체의 영점 인증으로
+    // 다시 수용하지 않는다. 일반 TAC 흐름도 같은 수용 원점에서 fit/paint한다.
+    if page
+        .rejected_stored_forward_origin
+        .is_some_and(|(owner, source)| {
+            owner == para_idx
+                && para
+                    .line_segs
+                    .first()
+                    .is_some_and(|line| line.vertical_pos == source)
+        })
+    {
+        return None;
+    }
     // 완전한 저장 줄 계약은 표별 높이를 합산하지 않고, 같은 pen/end를 배치에도 전달한다.
     if !page.profile.session_edited()
         && (page.profile.hwp5_container()

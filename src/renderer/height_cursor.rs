@@ -181,6 +181,9 @@ pub(crate) struct HeightCursor {
     /// HWPX 원본의 일부 LINE_SEG vpos 는 이전 쪽/단 조판 좌표가 남아 페이지 상단 본문을
     /// 과도하게 아래로 밀 수 있다. 원본 IR은 보존하고 조판 커서에서만 제한적으로 접는다.
     pub suppress_hwpx_stale_forward: bool,
+    /// 현재 문단의 저장 forward 원점을 거절했다. 뒤 개체의 저장 줄 단축도
+    /// 이 결정을 소비하며 첫 원점의 인증만으로 같은 좌표를 되살리지 않는다.
+    pub rejected_stored_forward_origin: Option<i32>,
     /// HWP5 컨테이너의 변환 계보도 유효 저장 줄을 가질 수 있다. 재측정된
     /// 수식 줄의 실제 전진은 다음 저장 원점에서 낡은 높이로 되돌리지 않는다.
     pub stored_equation_reflow: bool,
@@ -282,6 +285,7 @@ impl HeightCursor {
             allow_start_height_backtrack,
             suppress_large_forward_jump,
             suppress_hwpx_stale_forward: false,
+            rejected_stored_forward_origin: None,
             stored_equation_reflow: false,
             prev_reissued_equation_rows: false,
             uniform_filler_ladder: false,
@@ -452,6 +456,7 @@ impl HeightCursor {
     ) -> f64 {
         self.last_compacted_endnote_title_gap = false;
         self.stored_boundary_spacing_before = 0.0;
+        self.rejected_stored_forward_origin = None;
         if let Some(owned) = self.owned_origin.take() {
             let origin = owned.y();
             // 측정과 배치가 확인한 점유 경계에는 임의 완충을 추가하지 않는다.
@@ -2093,6 +2098,9 @@ impl HeightCursor {
                 // HWPX는 순차 조판 위치를 유지한다. 그렇지 않으면 앞 줄을 재조판해도
                 // 다음 문단에서 동일한 빈 공간이 다시 복원된다.
                 || (previous_has_stale_hwpx_line_metrics && current_has_visible_text));
+        if hwpx_page_start_stale_forward {
+            self.rejected_stored_forward_origin = curr_first_vpos;
+        }
         let compact_endnote_large_gap_body_stale_forward = self.suppress_large_forward_jump
             && !is_page_path
             && !vpos_rewind
