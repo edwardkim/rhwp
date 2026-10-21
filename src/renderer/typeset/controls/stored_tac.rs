@@ -314,6 +314,7 @@ pub(super) fn prepare_computed(
     para_idx: usize,
     para: &Paragraph,
     next_para: Option<&Paragraph>,
+    next_spacing_before: f64,
     fmt: &FormattedParagraph,
     measured_tables: &[MeasuredTable],
     styles: &crate::renderer::style_resolver::ResolvedStyleSet,
@@ -499,10 +500,28 @@ pub(super) fn prepare_computed(
     } else {
         0.5
     };
-    let end = origin
-        + height
-        + hwpunit_to_px(seg.line_spacing, dpi) * trailing_fraction
-        + fmt.spacing_after;
+    // 현재 줄의 옛 누적 vpos와 다음 원본 줄의 새 로컬 축을 구분한다.
+    // 실제 표 상자도 같은 줄 높이를 소비했을 때만 닫힌 전진 끝을 수용한다.
+    // 이 계획의 end를 fit/축 연결과 paint가 그대로 공유한다.
+    let local_successor_end = crate::renderer::composer::current_tac_local_successor_advance_hu(
+        para,
+        next_para,
+        fmt.spacing_after,
+        next_spacing_before,
+        seg,
+        page.profile,
+        dpi,
+    )
+    .filter(|_| (height - line_height).abs() <= hwpunit_to_px(1, dpi));
+    let end = local_successor_end.map_or_else(
+        || {
+            origin
+                + height
+                + hwpunit_to_px(seg.line_spacing, dpi) * trailing_fraction
+                + fmt.spacing_after
+        },
+        |advance| origin + hwpunit_to_px(advance, dpi),
+    );
     if end > available_height() {
         return None;
     }

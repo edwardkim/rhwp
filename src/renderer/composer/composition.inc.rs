@@ -546,6 +546,73 @@ pub(crate) fn tac_successor_uses_reflow_spacing(
         })
 }
 
+/// 재구성한 표 줄의 옛 vpos와 독립 후속 줄의 새 로컬 축을 구분한다.
+/// 합성 줄을 저장 사다리로 승격하지 않는다. 현재 개체의 전체 바깥 상자와
+/// 다음 원본 줄이 함께 닫은 전진 끝만 측정 상한과 paint가 공유한다.
+pub(crate) fn current_tac_local_successor_advance_hu(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    current_spacing_after_px: f64,
+    next_spacing_before_px: f64,
+    seg: &LineSeg,
+    profile: crate::model::provenance::LayoutCompatibilityProfile,
+    dpi: f64,
+) -> Option<i32> {
+    if !profile.hwpx_stored_layout()
+        || profile.session_edited()
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        || seg.line_spacing < 0
+        || para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001f}' && ch != '\u{fffc}' && !ch.is_whitespace())
+    {
+        return None;
+    }
+    let [line] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let [Control::Table(table)] = para.controls.as_slice() else {
+        return None;
+    };
+    if !std::ptr::eq(line, seg)
+        || table.caption.is_some()
+        || owned_rowbreak_tac_height(para, 0) != Some(seg.line_height)
+        || i64::from(seg.line_height)
+            != i64::from(table.common.height)
+                + i64::from(table.outer_margin_top)
+                + i64::from(table.outer_margin_bottom)
+    {
+        return None;
+    }
+    let next = next_para?;
+    if next.stored_text_partition_is_dirty()
+        || next.cell_format_vpos_dirty
+        || !next.controls.is_empty()
+        || next.raw_break_type != 0
+        || next.column_type != crate::model::paragraph::ColumnBreakType::None
+    {
+        return None;
+    }
+    let first = next.line_segs.first()?;
+    if first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || first.vertical_pos < 0
+        || first.vertical_pos >= seg.vertical_pos
+    {
+        return None;
+    }
+    let unit = hwpunit_to_px(1, dpi);
+    let after = (current_spacing_after_px / unit).round() as i32;
+    let before = (next_spacing_before_px / unit).round() as i32;
+    let end = seg
+        .line_height
+        .checked_add(seg.line_spacing)?
+        .checked_add(after)?;
+    (end.checked_add(before)? == first.vertical_pos).then_some(end)
+}
+
 /// 실제 표 소유 줄의 끝과 다음 저장 줄이 닫히면 후행 간격 전량을 적용한다.
 /// 같은 문단의 내부 줄에는 문단 앞/뒤 간격을 넣지 않고, 마지막 줄은 다음 문단의
 /// 스타일 간격까지 대조한다. 분할 예산의 표 점유는 별도로 센다.

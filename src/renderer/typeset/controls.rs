@@ -527,6 +527,10 @@ pub(super) fn try_place_stored_tac_paragraph(
         para_idx,
         para,
         paragraphs.get(para_idx + 1),
+        paragraphs
+            .get(para_idx + 1)
+            .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
+            .map_or(0.0, |style| style.spacing_before),
         fmt,
         measured_tables,
         styles,

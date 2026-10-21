@@ -30,6 +30,11 @@
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::{
+    model::control::Control,
+    paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile},
+    renderer::render_tree::{RenderNode, RenderNodeType},
+};
 
 /// 양성 — 자식 칸이 TAC 그림만 담은 문단을 갖는다.
 const SAMPLE: &str = "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx";
@@ -118,4 +123,135 @@ fn issue_6776_negative_cell_wrapped_picture_is_not_charged() {
             );
         }
     }
+    assert_generated_tac_local_successor(&core);
+}
+
+// #7445 보정33: 같은 원본 전3쪽 Native/fresh ≥90%,3쪽 양쪽raw100%와 직접 판독.
+// 독립 Print 기준선 ±2CSSpx 및 뒤 문단의 소속·순서·누락·중복을 기존 음성 대조에 보완한다.
+fn nodes<'a>(n: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+    out.push(n);
+    for c in &n.children {
+        nodes(c, out)
+    }
+}
+fn ops<'a>(n: &'a LayerNode, out: &mut Vec<&'a PaintOp>) {
+    match &n.kind {
+        LayerNodeKind::Group { children, .. } => {
+            for c in children {
+                ops(c, out)
+            }
+        }
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            ops(child, out)
+        }
+        LayerNodeKind::Leaf { ops: o } => out.extend(o),
+    }
+}
+fn compact(s: &str) -> String {
+    s.chars()
+        .filter(|c| !c.is_whitespace() && *c != '\u{fffc}')
+        .collect()
+}
+fn assert_generated_tac_local_successor(core: &DocumentCore) {
+    let c = core;
+    let (owner, t) = c.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find_map(|(p, a)| {
+            a.controls.iter().find_map(|v| match v {
+                Control::Table(t)
+                    if t.cells.iter().any(|cell| {
+                        cell.paragraphs.iter().any(|p| p.text.contains("구경산출"))
+                    }) =>
+                {
+                    Some((p, t))
+                }
+                _ => None,
+            })
+        })
+        .unwrap();
+    let host = &c.document().sections[0].paragraphs[owner];
+    let next = &c.document().sections[0].paragraphs[owner + 1];
+    let line = &host.line_segs[0];
+    let gap = (next.line_segs[0].vertical_pos - line.line_height) as f64 / 75.;
+    assert_eq!(gap, line.line_spacing as f64 / 75.);
+    let bottom_margin = f64::from(t.outer_margin_bottom) / 75.;
+    let tree = c.build_page_render_tree(2).unwrap();
+    let mut ns = vec![];
+    nodes(&tree.root, &mut ns);
+    let tables:Vec<_>=ns.iter().filter(|n|matches!(&n.node_type,RenderNodeType::Table(t)if t.para_index==Some(owner)&&t.cell_context.is_none())).collect();
+    let starts: Vec<_> = ns
+        .iter()
+        .filter(
+            |n| matches!(&n.node_type,RenderNodeType::TextLine(t)if t.para_index==Some(owner+1)),
+        )
+        .collect();
+    assert_eq!(tables.len(), 1);
+    assert_eq!(starts.len(), 1);
+    let actual = starts[0].bbox.y - tables[0].bbox.y - tables[0].bbox.height;
+    assert!(
+        (actual - bottom_margin - gap).abs() <= 1. / 75.,
+        "원본 후속 줄이 닫은 표 바깥여백·후행 간격: {actual}/{bottom_margin}/{gap}"
+    );
+    for p in owner + 1..c.document().sections[0].paragraphs.len() {
+        let expected = &c.document().sections[0].paragraphs[p];
+        let mut texts = String::new();
+        let mut pages = vec![];
+        for page in 0..c.page_count() {
+            let t = c.build_page_render_tree(page).unwrap();
+            let mut ns = vec![];
+            nodes(&t.root, &mut ns);
+            let mut lines = 0;
+            for n in ns {
+                match &n.node_type {
+                    RenderNodeType::TextRun(r)
+                        if r.para_index == Some(p) && r.cell_context.is_none() =>
+                    {
+                        texts.push_str(&r.text)
+                    }
+                    RenderNodeType::TextLine(r) if r.para_index == Some(p) => lines += 1,
+                    _ => {}
+                }
+            }
+            if lines > 0 {
+                pages.push((page, lines))
+            }
+        }
+        assert_eq!(
+            compact(&texts),
+            compact(&expected.text),
+            "후속 원문 문단{p} 순서·누락·중복"
+        );
+        assert_eq!(
+            pages,
+            vec![(2, expected.line_segs.len())],
+            "뒤 원문의 쪽·줄 소속"
+        );
+    }
+    let heading = c.document().sections[0]
+        .paragraphs
+        .iter()
+        .position(|p| p.text == "□ 조치의견")
+        .unwrap();
+    let painted = c
+        .build_page_layer_tree_with_profile(2, RenderProfile::Print)
+        .unwrap();
+    let mut all = vec![];
+    ops(&painted.root, &mut all);
+    let hits:Vec<_>=all.into_iter().filter(|op|matches!(op,PaintOp::TextRun{run,..}if run.para_index==Some(heading)&&run.text=="조치의견")).collect();
+    assert_eq!(hits.len(), 1);
+    let op = hits[0];
+    let PaintOp::TextRun { bbox, run, .. } = op else {
+        unreachable!()
+    };
+    let y = bbox.y + run.baseline;
+    let final_y = op
+        .glyph_paint_transform()
+        .map_or(y, |t| t.b * bbox.x + t.d * y + t.f);
+    // 독립 한컴2020 Print3쪽 cm=[.12,0,0,-.12,0,841], tm.y=1979.
+    assert!(
+        (final_y - 1979. * 0.12 * 96. / 72.).abs() <= 2.,
+        "후속 제목 실제 Print 기준선 ±2CSSpx: {final_y}"
+    );
 }
