@@ -9,6 +9,65 @@ use crate::renderer::{
 use pdf_oxide::geometry::Rect;
 use std::{cmp::Ordering, collections::VecDeque};
 
+/// The common composer needs only this paragraph's referenced styles. Resolve
+/// that projection, rather than rebuilding the growing document for every trial.
+/// IDs are local only during composition and restored before publishing the row.
+fn projection(
+    doc: &Document,
+    para: &mut Paragraph,
+) -> Result<(ResolvedStyleSet, Vec<u32>), String> {
+    use crate::model::document::DocInfo;
+    let mut ids = para
+        .char_shapes
+        .iter()
+        .map(|c| c.char_shape_id)
+        .collect::<Vec<_>>();
+    // Paragraph character-unit margins use the document's default style size.
+    if let Some(style) = doc.doc_info.styles.first() {
+        ids.push(u32::from(style.char_shape_id));
+    }
+    ids.sort_unstable();
+    ids.dedup();
+    let mut info = DocInfo {
+        font_faces: doc.doc_info.font_faces.clone(),
+        char_shapes: ids
+            .iter()
+            .map(|&id| {
+                doc.doc_info
+                    .char_shapes
+                    .get(id as usize)
+                    .cloned()
+                    .ok_or_else(|| "missing paragraph character style".to_string())
+            })
+            .collect::<Result<_, _>>()?,
+        para_shapes: vec![doc.doc_info.para_shapes[para.para_shape_id as usize].clone()],
+        styles: doc.doc_info.styles.first().cloned().into_iter().collect(),
+        ..Default::default()
+    };
+    if let Some(style) = info.styles.first_mut() {
+        style.char_shape_id =
+            u16::try_from(ids.binary_search(&u32::from(style.char_shape_id)).unwrap())
+                .map_err(|_| "paragraph default style ID overflow")?;
+    }
+    let shape = &mut info.para_shapes[0];
+    if let Some(tabs) = doc.doc_info.tab_defs.get(shape.tab_def_id as usize) {
+        info.tab_defs.push(tabs.clone());
+    }
+    shape.tab_def_id = 0;
+    let projected = Document {
+        doc_info: info,
+        provenance: doc.provenance.clone(),
+        is_hwp3_variant: doc.is_hwp3_variant,
+        is_hwpx_variant: doc.is_hwpx_variant,
+        ..Default::default()
+    };
+    for run in &mut para.char_shapes {
+        run.char_shape_id = ids.binary_search(&run.char_shape_id).unwrap() as u32;
+    }
+    para.para_shape_id = 0;
+    Ok((resolve_styles_for_document(&projected, 96.), ids))
+}
+
 fn ends(para: &Paragraph) -> Vec<u32> {
     para.line_segs
         .iter()
@@ -147,9 +206,10 @@ pub(super) fn fit(
         // indent edit. Publish it only after the physical source origins agree.
         let mut source = item.paragraph.clone();
         restamp_indentation(&mut source.line_segs, 0, original.indent);
+        let (styles, char_ids) = projection(doc, &mut source)?;
         let mut trial = Trial {
             source: &source,
-            styles: resolve_styles_for_document(doc, 96.),
+            styles,
             owner_width,
             left: original.margin_left / 2,
             centered,
@@ -166,7 +226,7 @@ pub(super) fn fit(
         } else {
             trial.width_for_cuts(lower, upper, &expected)?
         };
-        let para = trial.run(width);
+        let mut para = trial.run(width);
         if ends(&para) != expected || para.line_segs.len() != item.paragraph.line_segs.len() {
             return Err("selected box does not reproduce source cuts".into());
         }
@@ -199,6 +259,10 @@ pub(super) fn fit(
         }
         let (left, right) = trial.margins(width);
         let end = paragraph_flow_end(&para).ok_or("empty common flow result")?;
+        for run in &mut para.char_shapes {
+            run.char_shape_id = char_ids[run.char_shape_id as usize];
+        }
+        para.para_shape_id = item.paragraph.para_shape_id;
         Ok(Some((para, left, right, end, interval)))
     };
     match attempt() {

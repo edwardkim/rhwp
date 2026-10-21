@@ -471,8 +471,10 @@ fn frame_attributes(a: &CommonObjAttr) -> bool {
         && matches!(a.vert_align, super::shape::VertAlign::Top)
 }
 pub(crate) fn is_cell_frame_paint(c: &Control) -> bool {
-    PaintRef::from_control(c)
-        .is_some_and(|p| p.common().cell_frame_paint && frame_attributes(p.common()))
+    PaintRef::from_control(c).is_some_and(|p| is_cell_frame_attributes(p.common()))
+}
+pub(crate) fn is_cell_frame_attributes(a: &CommonObjAttr) -> bool {
+    a.cell_frame_paint && frame_attributes(a)
 }
 fn frame_fingerprint(p: PaintRef<'_>, o: Owner, resources: &mut Resources<'_>) -> Option<[u8; 32]> {
     let a = p.common();

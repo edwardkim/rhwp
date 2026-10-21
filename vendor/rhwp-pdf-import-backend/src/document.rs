@@ -12871,6 +12871,21 @@ impl PdfDocument {
         &self,
         page_index: usize,
     ) -> Result<Vec<(crate::layout::TextSpan, Vec<usize>)>> {
+        self.extract_ordered_painted_spans_with_frames(page_index)
+            .map(|spans| {
+                spans
+                    .into_iter()
+                    .map(|(span, order, _)| (span, order))
+                    .collect()
+            })
+    }
+
+    /// Editable import also needs the unsnapped CTM × Tm linear basis. It is
+    /// captured at the same text-show as paint order, without a second parse.
+    pub fn extract_ordered_painted_spans_with_frames(
+        &self,
+        page_index: usize,
+    ) -> Result<Vec<(crate::layout::TextSpan, Vec<usize>, [f32; 4])>> {
         self.check_import_budget()?;
         let mut orders = HashMap::new();
         let spans = self.extract_spans_impl_with_orders(
@@ -12881,15 +12896,22 @@ impl PdfDocument {
             true,
             Some(&mut orders),
         )?;
+        let mut spans = spans;
+        // Preserve the actual text basis for import, rather than reading-order's
+        // five-degree quadrant snap. Glyph positions must use the same frame.
+        for span in &mut spans {
+            if let Some((_, _, [a, b, _, _])) = orders.get(&span.sequence) {
+                span.rotation_degrees = b.atan2(*a).to_degrees();
+            }
+        }
         let spans = self.postprocess_spans_for_import(page_index, spans)?;
         let result = spans
             .into_iter()
             .map(|span| {
-                let order = orders
+                let (order, _group, frame) = orders
                     .remove(&span.sequence)
-                    .map(|(order, _group)| order)
                     .ok_or_else(|| Error::Unsupported("missing text paint order".into()))?;
-                Ok((span, order))
+                Ok((span, order, frame))
             })
             .collect();
         self.check_import_budget()?;
@@ -13329,10 +13351,13 @@ impl PdfDocument {
             let bottom = lly.min(ury) - EDGE_TOLERANCE_PT;
             let top = lly.max(ury) + EDGE_TOLERANCE_PT;
             spans.retain(|span| {
-                let sx1 = span.bbox.x;
-                let sx2 = span.bbox.x + span.bbox.width;
-                let sy1 = span.bbox.y;
-                let sy2 = span.bbox.y + span.bbox.height;
+                // A run's bbox is in its local writing frame. A baseline
+                // origin outside the page can still rotate visible glyphs in.
+                let frame = span.page_bbox();
+                let sx1 = frame.x;
+                let sx2 = frame.x + frame.width;
+                let sy1 = frame.y;
+                let sy2 = frame.y + frame.height;
                 sx2 > left && sx1 < right && sy2 > bottom && sy1 < top
             });
         }
@@ -17565,7 +17590,7 @@ impl PdfDocument {
         excluded_layers: HashSet<String>,
         excluded_inks: HashSet<String>,
         visible_paint_only: bool,
-        paint_orders: Option<&mut HashMap<usize, (Vec<usize>, usize)>>,
+        paint_orders: Option<&mut HashMap<usize, (Vec<usize>, usize, [f32; 4])>>,
     ) -> Result<Vec<crate::layout::TextSpan>> {
         if self.is_encrypted_unreadable() {
             log::warn!("PDF is encrypted and could not be decrypted; returning no spans");

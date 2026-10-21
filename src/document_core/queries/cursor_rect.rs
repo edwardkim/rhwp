@@ -1506,6 +1506,9 @@ impl DocumentCore {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let tree = self.build_page_tree_cached(page_num)?;
+        if let Some(hit) = super::transformed_text::hit(&tree.root, page_num, x, y) {
+            return Ok(hit);
+        }
 
         // 문자 위치를 미리 계산한 TextRun 정보
         struct RunInfo {
@@ -2820,6 +2823,16 @@ impl DocumentCore {
 
         for &page_num in &pages {
             let tree = self.build_page_tree(page_num)?;
+            if let Some(hit) = super::transformed_text::cursor(
+                &tree.root,
+                section_idx,
+                parent_para_idx,
+                &[(control_idx, cell_idx, cell_para_idx)],
+                char_offset,
+                page_num,
+            ) {
+                return Ok(hit);
+            }
             let cell_bounds =
                 find_table_cell_bounds_in_node(&tree.root, parent_para_idx, control_idx, cell_idx);
             if let Some(hit) = find_cursor_in_cell_node(
@@ -3762,6 +3775,16 @@ impl DocumentCore {
 
         for &page_num in &pages {
             let tree = self.build_page_tree_cached(page_num)?;
+            if let Some(hit) = super::transformed_text::cursor(
+                &tree.root,
+                section_idx,
+                parent_para_idx,
+                &path,
+                char_offset,
+                page_num,
+            ) {
+                return Ok(hit);
+            }
             if let Some((pi, x, y, h, cell_bounds)) = find_cursor_by_path(
                 self,
                 &tree.root,

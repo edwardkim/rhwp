@@ -1742,6 +1742,15 @@ export class CanvasKitLayerRenderer {
   private renderNodeContents(canvas: SkCanvas, node: LayerNode, profile: LayerRenderProfile,
     replayPlane: CanvasKitReplayPlane, inheritedLayer: LayerInfo | null): void {
     const activeLayer = node.layer ?? inheritedLayer;
+    if (node.kind === 'group' && Array.isArray(node.groupKind?.paintTransform)) {
+      const [a,b,c,d,e,f] = node.groupKind.paintTransform as number[];
+      canvas.save();
+      try {
+        canvas.concat([a,c,e,b,d,f,0,0,1]);
+        this.renderNodeContents(canvas, { ...node, groupKind: { ...node.groupKind, paintTransform: undefined } }, profile, replayPlane, inheritedLayer);
+      } finally { canvas.restore(); }
+      return;
+    }
     if (node.kind === 'group') {
       const recordingBounds = this.staticPictureBounds(node);
       if (!this.recordingStaticPicture && this.currentPictureContext && this.currentTreeFingerprint

@@ -1689,6 +1689,9 @@ fn write_group_kind(buf: &mut String, group_kind: &GroupKind) {
         GroupKind::TextBox => buf.push_str("{\"kind\":\"textBox\"}"),
         GroupKind::Group(group) => {
             buf.push_str("{\"kind\":\"group\"");
+            if let Some([a, b, c, d, e, f]) = group.paint_transform {
+                let _ = write!(buf, ",\"paintTransform\":[{a},{b},{c},{d},{e},{f}]");
+            }
             if let Some(section_index) = group.section_index {
                 let _ = write!(buf, ",\"sectionIndex\":{}", section_index);
             }

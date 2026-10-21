@@ -158,6 +158,7 @@ fn divide(
 
 pub(super) fn partition(
     spans: &[TextSpan],
+    span_clips: &[Option<std::sync::Arc<pdf_oxide::elements::PathClip>>],
     indices: &[usize],
     media: (f32, f32, f32, f32),
 ) -> Result<Vec<Partition>, String> {
@@ -170,11 +171,14 @@ pub(super) fn partition(
             let s = &spans[index];
             Item {
                 index,
-                bounds: Rect::new(
-                    s.bbox.x - media.0,
-                    media.3 - s.bbox.y - s.bbox.height,
-                    s.bbox.width,
-                    s.bbox.height,
+                // Partition the same spatial owners that recognition validates.
+                // A clipped blank advance can belong to its source clip rather
+                // than its unpainted, out-of-clip advance box. Neither the source
+                // span nor the glyph/line metrics are changed by this selection.
+                bounds: super::table_detection::span_ownership_bounds(
+                    s,
+                    span_clips.get(index).and_then(|clip| clip.as_deref()),
+                    media,
                 ),
                 baseline: media.3 - s.bbox.y,
                 font: s.font_size,

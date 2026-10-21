@@ -2420,6 +2420,7 @@ fn task1197_paper_nodes_sort_by_plane_z_order_and_stable_index() {
         RenderNode::new(
             id,
             RenderNodeType::Group(GroupNode {
+                paint_transform: None,
                 section_index: Some(0),
                 para_index: Some(0),
                 control_index: Some(control_index),

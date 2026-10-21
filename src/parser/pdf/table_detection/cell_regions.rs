@@ -16,6 +16,36 @@ pub(super) use local_axes::derive as local_axes;
 struct Witness {
     bounds: Rect,
     glyphs: Vec<usize>,
+    orders: std::collections::BTreeSet<Vec<usize>>,
+}
+
+struct Separator {
+    horizontal: bool,
+    at: f32,
+    from: f32,
+    to: f32,
+}
+impl Separator {
+    fn crosses(&self, grid: &Grid, (r, c, rs, cs): (usize, usize, usize, usize)) -> bool {
+        let (lo, hi, start, end) = if self.horizontal {
+            (grid.ys[r], grid.ys[r + rs], grid.xs[c], grid.xs[c + cs])
+        } else {
+            (grid.xs[c], grid.xs[c + cs], grid.ys[r], grid.ys[r + rs])
+        };
+        self.at > lo + EPS && self.at < hi - EPS && self.from < end - EPS && self.to > start + EPS
+    }
+}
+fn separators(grid: &Grid) -> Vec<Separator> {
+    grid.shared_edges
+        .iter()
+        .filter(|e| e["regularizedCoveragePt"].as_f64().unwrap_or(0.) > 0.)
+        .map(|e| Separator {
+            horizontal: e["horizontal"].as_bool().unwrap(),
+            at: e["at"].as_f64().unwrap() as f32,
+            from: e["from"].as_f64().unwrap() as f32,
+            to: e["to"].as_f64().unwrap() as f32,
+        })
+        .collect()
 }
 
 /// Share the actual text-show/clip association between axis proposals and owners.
@@ -37,7 +67,7 @@ fn observe(
     let mut regions: Vec<Witness> = Vec::new();
     let mut work = 0usize;
     for (gi, glyph) in text.glyphs.iter().enumerate() {
-        if glyph.text.is_whitespace() || !super::overlaps(glyph.bounds, outer) {
+        if !super::overlaps(glyph.bounds, outer) {
             continue;
         }
         if glyph.geometry_quality == "uniform_span_approximation"
@@ -53,7 +83,9 @@ fn observe(
             return Err("text has no active cell clip");
         }
         let bounds = effective_clip(clip.as_deref(), media).ok_or("unsupported text clip chain")?;
-        if !super::inside(bounds, outer) || !super::inside(glyph.bounds, bounds) {
+        if !super::inside(bounds, outer)
+            || (!glyph.text.is_whitespace() && !super::inside(glyph.bounds, bounds))
+        {
             return Err("glyph or active clip crosses the local exterior");
         }
         work += regions.len() + 1;
@@ -62,6 +94,7 @@ fn observe(
         }
         if let Some(region) = regions.iter_mut().find(|r| r.bounds == bounds) {
             region.glyphs.push(gi);
+            region.orders.insert(order.clone());
         } else {
             if regions.len() == 512 {
                 return Err("cell region observation count exceeded");
@@ -69,13 +102,17 @@ fn observe(
             regions.push(Witness {
                 bounds,
                 glyphs: vec![gi],
+                orders: [order.clone()].into_iter().collect(),
             });
         }
     }
     Ok(regions)
 }
 
-fn effective_clip(mut clip: Option<&PathClip>, media: (f32, f32, f32, f32)) -> Option<Rect> {
+pub(super) fn effective_clip(
+    mut clip: Option<&PathClip>,
+    media: (f32, f32, f32, f32),
+) -> Option<Rect> {
     let mut bounds = Rect::new(media.0, media.1, media.2 - media.0, media.3 - media.1);
     let mut depth = 0;
     while let Some(current) = clip {
@@ -113,8 +150,44 @@ pub(super) fn select(
     grid.cell_region_evidence = json!({"status":"Deferred", "reason":"incomplete content-backed clip tiling",
         "authoredStructure":"unknown", "alternatives":["connected_faces","separate_cells"]});
     let mut run = || -> Result<_, &'static str> {
-        let observed = observe(grid.bbox, text, orders, clips, media)?;
+        let mut observed = observe(grid.bbox, text, orders, clips, media)?;
+        // A real empty text-show has no glyph entry, but its live cell-sized
+        // clip is still positive region evidence. Only existing axes qualify;
+        // an arbitrary padding/artwork clip must not invent blank-cell axes.
+        let span_orders = orders.iter().collect::<std::collections::BTreeSet<_>>();
+        for (order, clip) in &clips.text_uses {
+            if span_orders.contains(order) {
+                continue;
+            }
+            let Some(bounds) = clip.as_deref().and_then(|c| effective_clip(Some(c), media)) else {
+                continue;
+            };
+            if !super::inside(bounds, grid.bbox)
+                || [bounds.x, bounds.x + bounds.width]
+                    .iter()
+                    .any(|at| grid.xs.iter().all(|v| (*v - at).abs() > EPS))
+                || [bounds.y, bounds.y + bounds.height]
+                    .iter()
+                    .any(|at| grid.ys.iter().all(|v| (*v - at).abs() > EPS))
+            {
+                continue;
+            }
+            if let Some(region) = observed.iter_mut().find(|r| r.bounds == bounds) {
+                region.orders.insert(order.clone());
+            } else {
+                if observed.len() == 512 {
+                    return Err("cell region observation count exceeded");
+                }
+                observed.push(Witness {
+                    bounds,
+                    glyphs: Vec::new(),
+                    orders: [order.clone()].into_iter().collect(),
+                });
+            }
+        }
         let mut faces = BTreeMap::<(usize, usize, usize, usize), Vec<usize>>::new();
+        let separators = separators(grid);
+        let mut clip_orders = BTreeMap::<_, std::collections::BTreeSet<Vec<usize>>>::new();
         let mut work = 0usize;
         for region in observed {
             let bounds = region.bounds;
@@ -138,32 +211,20 @@ pub(super) fn select(
             let address = (r, c, re - r, ce - c);
             // Validate a region once, using all its common glyph observations below.
             // A broad clip cannot erase a positively observed separating rule.
-            for edge in grid
-                .shared_edges
-                .iter()
-                .filter(|_| !faces.contains_key(&address))
-            {
-                work += 1;
+            if !faces.contains_key(&address) {
+                work += separators.len();
                 if work > 1_000_000 {
                     return Err("cell region observation work exceeded");
                 }
-                if edge["regularizedCoveragePt"].as_f64().unwrap_or(0.) <= 0. {
-                    continue;
-                }
-                let horizontal = edge["horizontal"].as_bool().unwrap_or(false);
-                let at = edge["at"].as_f64().unwrap_or(0.) as f32;
-                let from = edge["from"].as_f64().unwrap_or(0.) as f32;
-                let to = edge["to"].as_f64().unwrap_or(0.) as f32;
-                let (lo, hi, start, end) = if horizontal {
-                    (grid.ys[r], grid.ys[re], grid.xs[c], grid.xs[ce])
-                } else {
-                    (grid.xs[c], grid.xs[ce], grid.ys[r], grid.ys[re])
-                };
-                if at > lo + EPS && at < hi - EPS && from < end - EPS && to > start + EPS {
+                if separators.iter().any(|e| e.crosses(grid, address)) {
                     return Err("content clip contradicts a painted separator");
                 }
             }
             faces.entry(address).or_default().extend(region.glyphs);
+            clip_orders
+                .entry(address)
+                .or_default()
+                .extend(region.orders);
         }
         let (rows, cols) = (grid.ys.len() - 1, grid.xs.len() - 1);
         let mut owners = vec![None; rows * cols];
@@ -176,6 +237,15 @@ pub(super) fn select(
                 }
             }
         }
+        let empty_scopes = empty_faces::from_clip_scopes(
+            grid,
+            &mut faces,
+            &mut owners,
+            clips,
+            media,
+            &mut work,
+            &separators,
+        )?;
         empty_faces::complete(grid, &mut faces, &mut owners, &mut work)?;
         if faces.len() < 2 {
             return Err("insufficient independent content regions");
@@ -185,9 +255,10 @@ pub(super) fn select(
             .map_err(|_| "invalid content-backed cell topology")?;
         let evidence = faces.iter().map(|(&(r,c,rs,cs),glyphs)| json!({
             "row":r,"column":c,"rowspan":rs,"colspan":cs,
-            "basis":if glyphs.is_empty() {"closed_paint_face"} else {"active_text_clip"},
+            "basis":if clip_orders.contains_key(&(r,c,rs,cs)) {"active_text_clip"}
+                else if empty_scopes.contains_key(&(r,c,rs,cs)) {"empty_grid_region_clip_scope"} else {"closed_paint_face"},
             "glyphIds":glyphs.iter().map(|i| &text.glyphs[*i].id).collect::<Vec<_>>(),
-            "sourceOrders":glyphs.iter().map(|i| &orders[text.glyphs[*i].source_span]).collect::<std::collections::BTreeSet<_>>()
+            "sourceOrders":clip_orders.get(&(r,c,rs,cs)).or_else(||empty_scopes.get(&(r,c,rs,cs))).cloned().unwrap_or_default()
         })).collect::<Vec<_>>();
         Ok((keys, topology, evidence, owners))
     };
@@ -248,7 +319,7 @@ pub(super) fn select(
                 })
                 .collect();
             grid.topology = topology;
-            grid.cell_region_evidence = json!({"status":"Selected", "basis":"complete content-backed active-clip tiling",
+            grid.cell_region_evidence = json!({"status":"Selected", "basis":"complete content-region tiling with separately identified empty clip scopes",
                 "authoredStructure":"unknown", "alternatives":["connected_faces","separate_cells"],
                 "regions":evidence,"unpaintedSeparatorsRemainUnpainted":true});
         }

@@ -23,6 +23,87 @@ use crate::model::{
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
 
+/// Source spans refer to document IDs, but glyph fitting only reads this page's
+/// source styles. Keep those IDs in the document and resolve a compact view for
+/// the common measurer, without repeatedly copying all earlier pages' styles.
+struct SourceStyles {
+    ids: BTreeMap<u32, u32>,
+    resolved: crate::renderer::style_resolver::ResolvedStyleSet,
+    widths: std::cell::RefCell<BTreeMap<GlyphWidthKey, f64>>,
+}
+
+type GlyphWidthKey = (u32, usize, char, Option<(u8, i8)>);
+
+/// A source style and language slot are immutable for this page. Only the
+/// ordinary ratio/spacing fields vary during fitting. Memoize exact calls to
+/// the common measurer, including the unfitted source style as a distinct key.
+/// No font metric, rounding, search order or candidate tolerance is replaced.
+struct GlyphWidths<'a> {
+    source: &'a SourceStyles,
+    style_id: u32,
+    lang: usize,
+    character: char,
+}
+impl GlyphWidths<'_> {
+    fn measure(&self, style: &crate::renderer::TextStyle, fit: Option<(u8, i8)>) -> f64 {
+        let key = (self.style_id, self.lang, self.character, fit);
+        if let Some(width) = self.source.widths.borrow().get(&key) {
+            return *width;
+        }
+        let mut utf8 = [0; 4];
+        let width = crate::renderer::layout::estimate_text_width_exact(
+            self.character.encode_utf8(&mut utf8),
+            style,
+        );
+        // Bound auxiliary memory independently of input glyph count. Reaching
+        // the memo limit changes only reuse, never acceptance or measurement.
+        let mut widths = self.source.widths.borrow_mut();
+        if widths.len() < 16_384 {
+            widths.insert(key, width);
+        }
+        width
+    }
+}
+impl SourceStyles {
+    fn new(doc: &Document, shapes: &[Option<u32>]) -> Result<Self, String> {
+        let ids = shapes.iter().flatten().copied().collect::<BTreeSet<_>>();
+        let info = crate::model::document::DocInfo {
+            font_faces: doc.doc_info.font_faces.clone(),
+            char_shapes: ids
+                .iter()
+                .map(|&id| {
+                    doc.doc_info
+                        .char_shapes
+                        .get(id as usize)
+                        .cloned()
+                        .ok_or_else(|| "missing PDF source character style".to_string())
+                })
+                .collect::<Result<_, _>>()?,
+            ..Default::default()
+        };
+        Ok(Self {
+            ids: ids
+                .into_iter()
+                .enumerate()
+                .map(|(local, id)| (id, local as u32))
+                .collect(),
+            resolved: crate::renderer::style_resolver::resolve_styles(&info, 96.),
+            widths: Default::default(),
+        })
+    }
+    fn text_style(&self, id: u32, lang: usize) -> Result<crate::renderer::TextStyle, String> {
+        let local = *self
+            .ids
+            .get(&id)
+            .ok_or("missing PDF source style projection")?;
+        Ok(crate::renderer::layout::resolved_to_text_style(
+            &self.resolved,
+            local,
+            lang,
+        ))
+    }
+}
+
 fn source_baseline_position(
     page: &ExtractedPage,
     doc: &Document,
@@ -61,7 +142,7 @@ fn positioned_span_style(
     if let Some(id) = cache.get(&key) {
         return Ok(*id);
     }
-    if doc.doc_info.char_shapes.len() >= u16::MAX as usize {
+    if doc.doc_info.char_shapes.len() >= u32::MAX as usize {
         return Err("PDF character style budget exceeded".into());
     }
     let mut style = base.clone();
@@ -78,18 +159,17 @@ fn positioned_span_style(
 /// the authority for the emitted advance.
 fn fit_spacing(
     style: &mut crate::renderer::TextStyle,
-    text: &str,
+    widths: &GlyphWidths<'_>,
     ratio: u8,
     desired: f64,
 ) -> Option<(i8, f64, f64)> {
-    use crate::renderer::layout::estimate_text_width_exact;
     style.ratio = f64::from(ratio) / 100.;
     style.letter_spacing = 0.;
     if let Some(latin) = &mut style.ascii_punct_latin {
         latin.ratio = style.ratio;
         latin.letter_spacing = 0.;
     }
-    let nominal = estimate_text_width_exact(text, style);
+    let nominal = widths.measure(style, Some((ratio, 0)));
     let guess = (desired / nominal - 1.) * 100.;
     if !nominal.is_finite()
         || nominal <= 0.
@@ -107,7 +187,7 @@ fn fit_spacing(
         if let Some(latin) = &mut style.ascii_punct_latin {
             latin.letter_spacing = style.letter_spacing;
         }
-        let measured = estimate_text_width_exact(text, style);
+        let measured = widths.measure(style, Some((ratio, spacing as i8)));
         let error = (measured - desired).abs();
         if best.is_none_or(|(_, previous, _)| error < previous) {
             best = Some((spacing as i8, error, measured));
@@ -121,12 +201,12 @@ fn fit_spacing(
 /// cannot represent it, rather than requiring ratio alone to own the full gap.
 fn fit_whitespace_advance(
     style: &mut crate::renderer::TextStyle,
-    text: &str,
+    widths: &GlyphWidths<'_>,
     desired: f64,
 ) -> Option<(u8, i8, f64)> {
     let mut best: Option<(u8, i8, f64, f64)> = None;
     for ratio in 50..=200 {
-        let Some((spacing, error, measured)) = fit_spacing(style, text, ratio, desired) else {
+        let Some((spacing, error, measured)) = fit_spacing(style, widths, ratio, desired) else {
             continue;
         };
         let preference = (spacing.unsigned_abs(), ratio.abs_diff(100));
@@ -162,14 +242,11 @@ fn observed_line_text(
     doc: &mut Document,
     line: &TextLine,
     shape_ids: &[Option<u32>],
-    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    styles: &SourceStyles,
     cache: &mut BTreeMap<(u32, u8, i8, i8), u32>,
     owner_x: f32,
 ) -> Result<ObservedLineText, String> {
-    use crate::renderer::{
-        layout::{estimate_text_width_exact, resolved_to_text_style},
-        style_resolver::detect_lang_category,
-    };
+    use crate::renderer::style_resolver::detect_lang_category;
     let content = reconstruct_line(&page.spans, &line.indices)?;
     let mut runs = Vec::new();
     let mut text = String::new();
@@ -198,13 +275,18 @@ fn observed_line_text(
         let (position, baseline_error) =
             source_baseline_position(page, doc, line, glyph.span, base_id)?;
         maximum_baseline_error = maximum_baseline_error.max(baseline_error);
-        let mut style =
-            resolved_to_text_style(styles, base_id, detect_lang_category(glyph.character));
-        let glyph_text = glyph.character.to_string();
+        let lang = detect_lang_category(glyph.character);
+        let mut style = styles.text_style(base_id, lang)?;
+        let widths = GlyphWidths {
+            source: styles,
+            style_id: base_id,
+            lang,
+            character: glyph.character,
+        };
         // Glyph reconstruction and actual run placement must use the same
         // fractional width. Rounding each scalar can invent an unsupported
         // ratio (e.g. a 2.5pt TJ separator measured as 7 instead of 6.667px).
-        let base_width = estimate_text_width_exact(&glyph_text, &style);
+        let base_width = widths.measure(&style, None);
         if !base_width.is_finite() || base_width <= 0. {
             return Err("glyph advance needs separate shaping".into());
         }
@@ -229,13 +311,13 @@ fn observed_line_text(
         // field contract only when that path cannot encode a blank separator.
         let ordinary = (50. ..=200.)
             .contains(&ratio)
-            .then(|| fit_spacing(&mut style, &glyph_text, ratio as u8, desired))
+            .then(|| fit_spacing(&mut style, &widths, ratio as u8, desired))
             .flatten()
             .map(|(s, _, measured)| (ratio as u8, s, measured));
         let mut fit = if let Some(fit) = ordinary {
             Some(fit)
         } else if glyph.character.is_whitespace() {
-            fit_whitespace_advance(&mut style, &glyph_text, desired)
+            fit_whitespace_advance(&mut style, &widths, desired)
         } else {
             None
         };
@@ -246,8 +328,8 @@ fn observed_line_text(
         let mut space_movement = false;
         if fit.is_none() && glyph.source_character.is_some() && glyph.character == ' ' {
             let ordinary_space =
-                resolved_to_text_style(styles, base_id, detect_lang_category(glyph.character));
-            let measured = estimate_text_width_exact(&glyph_text, &ordinary_space);
+                styles.text_style(base_id, detect_lang_category(glyph.character))?;
+            let measured = widths.measure(&ordinary_space, None);
             if measured.is_finite() && measured > 0. && desired > measured {
                 fit = Some((100, 0, measured));
                 space_movement = true;
@@ -309,7 +391,7 @@ fn observed_line_text(
         } else if let Some(id) = cache.get(&key) {
             *id
         } else {
-            if doc.doc_info.char_shapes.len() >= u16::MAX as usize {
+            if doc.doc_info.char_shapes.len() >= u32::MAX as usize {
                 return Err("PDF character style budget exceeded".into());
             }
             let mut character_style = doc.doc_info.char_shapes[base_id as usize].clone();
@@ -625,7 +707,7 @@ fn paragraph(
     cell_box: &Value,
     shape_ids: &[Option<u32>],
     fixed_line_height: bool,
-    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    styles: &SourceStyles,
     typography: &std::cell::RefCell<Vec<Value>>,
 ) -> Result<FlowItem, String> {
     let lines = &proposal.lines;
@@ -922,7 +1004,7 @@ struct TableBuilder<'a> {
     shape_ids: &'a [Option<u32>],
     image_controls: &'a [usize],
     rule_controls: &'a [Option<usize>],
-    styles: &'a crate::renderer::style_resolver::ResolvedStyleSet,
+    styles: &'a SourceStyles,
     typography: &'a std::cell::RefCell<Vec<Value>>,
 }
 
@@ -1175,6 +1257,69 @@ impl TableBuilder<'_> {
                 start_pos: 0,
                 char_shape_id: 0,
             }];
+            let image_ids = refs(&source["imageIndices"])?
+                .into_iter()
+                .map(|i| {
+                    image_controls
+                        .get(i)
+                        .copied()
+                        .ok_or("missing cell image owner")
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            let mut content = refs(&source["spanIndices"])?
+                .into_iter()
+                .filter_map(|i| span_controls[i])
+                .chain(image_ids.iter().copied())
+                .collect::<BTreeSet<_>>();
+            let mixed = image_ids.iter().any(|image| {
+                let a = paint_frame(&controls[*image]).unwrap();
+                content.iter().any(|other| {
+                    let b = paint_frame(&controls[*other]).unwrap();
+                    other != image
+                        && a.vertical_offset < b.vertical_offset + b.height
+                        && b.vertical_offset < a.vertical_offset + a.height
+                })
+            });
+            if mixed && array(&recognized_cell["childTableIndices"])?.is_empty() {
+                // A PDF can interleave text paint and image glyphs within one
+                // row. The cell is known; an inline paragraph is not. Keep the
+                // original editable owners and paint order locally, rather
+                // than rejecting the whole table or rasterizing its text.
+                let mut original = content
+                    .iter()
+                    .map(|&i| controls[i].clone())
+                    .collect::<Vec<_>>();
+                original.sort_by_key(|c| paint_frame(c).unwrap().z_order);
+                let (x, y) = (hu(number(&cb["x"])?)? as i32, hu(number(&cb["y"])?)? as i32);
+                for control in &mut original {
+                    let a = match control {
+                        Control::Shape(s) => s.common_mut(),
+                        Control::Picture(p) => &mut p.common,
+                        _ => unreachable!(),
+                    };
+                    a.horizontal_offset = (a.horizontal_offset as i32 - x) as u32;
+                    a.vertical_offset = (a.vertical_offset as i32 - y) as u32;
+                    a.horz_rel_to = HorzRelTo::Column;
+                    a.vert_rel_to = VertRelTo::Para;
+                    a.flow_with_text = true;
+                    a.treat_as_char = false;
+                    a.text_wrap = TextWrap::InFrontOfText;
+                }
+                let p = &mut cell.paragraphs[0];
+                p.char_count_msb = true;
+                p.control_mask |= 0x800;
+                p.controls = original;
+                p.ctrl_data_records = vec![None; p.controls.len()];
+                p.rebuild_char_offsets(&vec![0; p.controls.len()]);
+                self.typography.borrow_mut().push(
+                    json!({"status":"retained_interleaved_cell_content",
+                    "candidate":candidate,"cell":cell_idx,"sourceControlCount":content.len(),
+                    "paragraphGrouping":"unverified; original editable text owners preserved"}),
+                );
+                removed.append(&mut content);
+                table.cells.push(cell);
+                continue;
+            }
             let mut flow = Vec::new();
             let recognized_text = self
                 .page
@@ -1537,13 +1682,13 @@ pub(super) fn lower(
         }
     }
     let grids = array(&page.snapshot["tableDetection"]["tables"])?;
-    let recognized = array(&page.snapshot["recognition"]["tables"])?;
+    let recognized = array(&page.recognition.report["tables"])?;
     let fragment_ids = std::cell::Cell::new(
         next_id
             .checked_add(u32::try_from(grids.len()).map_err(|e| e.to_string())?)
             .ok_or("table instance ID overflow")?,
     );
-    let styles = crate::renderer::style_resolver::resolve_styles(&doc.doc_info, 96.);
+    let styles = SourceStyles::new(doc, &shape_ids)?;
     let typography = std::cell::RefCell::new(Vec::new());
     let builder = TableBuilder {
         table_id_base: *next_id,

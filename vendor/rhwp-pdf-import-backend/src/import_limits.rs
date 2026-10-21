@@ -226,8 +226,10 @@ pub struct ImportBudget {
     cmap_scanned: AtomicUsize,
     font_entries: AtomicUsize,
     reference_visits: AtomicUsize,
+    reference_limit: AtomicUsize,
     active_references: AtomicUsize,
     xobject_visits: AtomicUsize,
+    xobject_limit: AtomicUsize,
     failed: AtomicBool,
     failure_reason: std::sync::Mutex<Option<ImportLimitFailure>>,
     content_parse_calls: AtomicUsize,
@@ -285,8 +287,10 @@ impl ImportBudget {
             cmap_scanned: AtomicUsize::new(0),
             font_entries: AtomicUsize::new(0),
             reference_visits: AtomicUsize::new(0),
+            reference_limit: AtomicUsize::new(limits.reference_visits),
             active_references: AtomicUsize::new(0),
             xobject_visits: AtomicUsize::new(0),
+            xobject_limit: AtomicUsize::new(limits.xobject_visits),
             codec_scratch: CodecScratch(std::sync::Mutex::new(None)),
             failed: AtomicBool::new(false),
             failure_reason: std::sync::Mutex::new(None),
@@ -330,6 +334,30 @@ impl ImportBudget {
             0,
             self.entry_limit.load(Ordering::Relaxed),
             "collection entries",
+        )
+    }
+
+    /// Narrow traversal work after page selection without forgiving already
+    /// consumed page-tree/object visits. Explicit host limits can never rise.
+    pub fn restrict_traversal_limits(&self, references: usize, xobjects: usize) -> Result<()> {
+        self.check()?;
+        if references == 0 || xobjects == 0 {
+            return Err(self.reject("zero traversal budget"));
+        }
+        self.reference_limit
+            .fetch_min(references, Ordering::Relaxed);
+        self.xobject_limit.fetch_min(xobjects, Ordering::Relaxed);
+        self.charge(
+            &self.reference_visits,
+            0,
+            self.reference_limit.load(Ordering::Relaxed),
+            "reference visits",
+        )?;
+        self.charge(
+            &self.xobject_visits,
+            0,
+            self.xobject_limit.load(Ordering::Relaxed),
+            "XObject visits",
         )
     }
 
@@ -602,7 +630,12 @@ impl ImportBudget {
     }
 
     fn charge_reference_visit(&self) -> Result<()> {
-        self.charge(&self.reference_visits, 1, self.limits.reference_visits, "reference visits")
+        self.charge(
+            &self.reference_visits,
+            1,
+            self.reference_limit.load(Ordering::Relaxed),
+            "reference visits",
+        )
     }
 
     pub(crate) fn enter_reference(&self) -> Result<ReferenceGuard<'_>> {
@@ -617,7 +650,12 @@ impl ImportBudget {
     }
 
     pub(crate) fn xobject_visit(&self) -> Result<()> {
-        self.charge(&self.xobject_visits, 1, self.limits.xobject_visits, "XObject visits")
+        self.charge(
+            &self.xobject_visits,
+            1,
+            self.xobject_limit.load(Ordering::Relaxed),
+            "XObject visits",
+        )
     }
 
     pub(crate) fn form_depth(&self, depth: usize) -> Result<()> {

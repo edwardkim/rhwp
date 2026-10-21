@@ -1123,7 +1123,7 @@ fn whitespace_first_cell(core: &rhwp::DocumentCore) -> &rhwp::model::table::Cell
     &table.cells[0]
 }
 fn whitespace_paint(core: &rhwp::DocumentCore, gap: f64) {
-    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
     fn table(n: &RenderNode) -> Option<&RenderNode> {
         if matches!(n.node_type, RenderNodeType::Table(_)) {
             Some(n)
@@ -1155,18 +1155,49 @@ fn whitespace_paint(core: &rhwp::DocumentCore, gap: f64) {
         .filter(|c| matches!(c.node_type, RenderNodeType::TableCell(_)))
         .collect();
     assert_eq!(cells.len(), 2);
-    let a = run(cells[0], "A").unwrap();
-    let b = run(cells[0], "B").unwrap();
-    let c = run(cells[0], "C").unwrap();
+    // Equal character records may legitimately share one TextRun. Inspect
+    // published glyph positions instead of requiring a style/run split at B.
+    let layout: Value =
+        serde_json::from_str(&core.get_page_text_layout_native(0).unwrap()).unwrap();
+    let glyph = |wanted: char| {
+        layout["runs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find_map(|r| {
+                let x = r["x"].as_f64()?;
+                let y = r["y"].as_f64()?;
+                let owner = &cells[0].bbox;
+                if x < owner.x - 0.1
+                    || y < owner.y - 0.1
+                    || x >= owner.x + owner.width
+                    || y >= owner.y + owner.height
+                {
+                    return None;
+                }
+                let i = r["text"].as_str()?.chars().position(|c| c == wanted)?;
+                let positions = r["charX"].as_array()?;
+                let start = positions.get(i)?.as_f64()?;
+                let end = positions.get(i + 1)?.as_f64()?;
+                Some(BoundingBox {
+                    x: x + start,
+                    y,
+                    width: end - start,
+                    height: r["h"].as_f64()?,
+                })
+            })
+            .unwrap()
+    };
+    let (a, b, c) = (glyph('A'), glyph('B'), glyph('C'));
     // ArialMT A=667/1000em, 12pt; independent TJ/Tw separator, not fitted fields.
     // Source page has 100% raw in both backends; retain inclusion/order too.
-    assert!(((b.bbox.x - a.bbox.x) - (8.004 + gap) * 96. / 72.).abs() <= 2.0);
-    assert!(b.bbox.x >= a.bbox.x + a.bbox.width - 0.5);
-    assert!(c.bbox.y >= a.bbox.y + a.bbox.height - 0.5);
+    assert!(((b.x - a.x) - (8.004 + gap) * 96. / 72.).abs() <= 2.0);
+    assert!(b.x >= a.x + a.width - 0.5);
+    assert!(c.y >= a.y + a.height - 0.5);
     for n in [a, b, c] {
-        assert!(n.bbox.x >= cells[0].bbox.x && n.bbox.y >= cells[0].bbox.y);
-        assert!(n.bbox.x + n.bbox.width <= cells[0].bbox.x + cells[0].bbox.width + 0.5);
-        assert!(n.bbox.y + n.bbox.height <= cells[0].bbox.y + cells[0].bbox.height + 0.5);
+        assert!(n.x >= cells[0].bbox.x && n.y >= cells[0].bbox.y);
+        assert!(n.x + n.width <= cells[0].bbox.x + cells[0].bbox.width + 0.5);
+        assert!(n.y + n.height <= cells[0].bbox.y + cells[0].bbox.height + 0.5);
     }
     let tail = run(&tree.root, "AFTER").unwrap();
     assert!(tail.bbox.y >= t.bbox.y + t.bbox.height);
@@ -1818,6 +1849,375 @@ fn pdf_cell_text_reflow_keeps_source_horizontal_box_through_edits_and_both_saves
                 ink_before,
                 "direct inverse must retain all painted content and order"
             );
+        }
+    }
+}
+
+// Qualification: stage37, ownership-20261021 (Native/fresh WASM).
+#[test]
+fn clipped_blank_body_partition_preserves_source_owners_and_roundtrips() {
+    use rhwp::{model::control::Control, DocumentCore};
+    let content = r"BT /F1 10 Tf 20 170 Td (WIDE SPANNING COLUMNS) Tj ET
+q 20 20 60 120 re W n
+BT /F1 10 Tf 25 125 Td (LEFT) Tj ET
+BT /F1 10 Tf 90 125 Td ( ) Tj ET
+BT /F1 10 Tf 25 60 Td (A) Tj ET
+BT /F1 10 Tf 25 40 Td (B) Tj ET Q
+q 120 20 60 120 re W n
+BT /F1 10 Tf 125 60 Td (C) Tj ET
+BT /F1 10 Tf 125 40 Td (D) Tj ET Q";
+    for source in [
+        content.to_string(),
+        content.replace("BT /F1 10 Tf 90 125 Td ( ) Tj ET", ""),
+        content
+            .replace("q 20 20 60 120 re W n", "q")
+            .replace("q 120 20 60 120 re W n", "q"),
+    ] {
+        let bytes = pdf(&source);
+        let imported = parse_pdf_with_options(
+            &bytes,
+            &PdfImportOptions {
+                include_table_inference: true,
+                ..Default::default()
+            },
+        )
+        .expect("body partition must use the same spatial owner as recognition");
+        let page = &imported.metadata.pages[0];
+        let report = &page.table_inference;
+        let mut owners = BTreeSet::new();
+        for region in report["textRecognition"]["bodyRegions"].as_array().unwrap() {
+            for i in region["spanIndices"].as_array().unwrap() {
+                assert!(
+                    owners.insert(i.as_u64().unwrap()),
+                    "source span must have one owner"
+                );
+            }
+        }
+        assert_eq!(owners, (0..page.source_spans.len() as u64).collect());
+        if source.contains("90 125") {
+            let blank = report["sourceSpans"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|s| s["observation"]["text"] == " ")
+                .unwrap();
+            let observation = &blank["observation"];
+            assert_eq!(observation["bbox"]["x"], 90.0);
+            assert_eq!(observation["char_x_offsets"][0], 90.0);
+            assert!(
+                observation["char_widths"][0].as_f64().unwrap() > 0.0,
+                "ownership selection must not clamp the original blank advance"
+            );
+        }
+        let core = DocumentCore::from_pdf_bytes(&bytes, &Default::default()).unwrap();
+        let groups = |core: &DocumentCore| -> Vec<Vec<String>> {
+            core.document().sections[0]
+                .paragraphs
+                .iter()
+                .flat_map(|p| &p.controls)
+                .filter_map(|c| {
+                    if let Control::Shape(s) = c {
+                        s.drawing()?
+                            .text_box
+                            .as_ref()
+                            .map(|t| t.paragraphs.iter().map(|p| p.text.clone()).collect())
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        };
+        let expected = groups(&core);
+        let text: String = expected
+            .iter()
+            .flatten()
+            .flat_map(|t| t.chars())
+            .filter(|c| !c.is_whitespace())
+            .collect();
+        let mut actual: Vec<_> = text.chars().collect();
+        let mut source: Vec<_> = "WIDESPANNINGCOLUMNSLEFTABCD".chars().collect();
+        actual.sort_unstable();
+        source.sort_unstable();
+        assert_eq!(
+            actual, source,
+            "no source character is dropped or duplicated"
+        );
+        for (first, second) in [("A", "B"), ("C", "D")] {
+            let column = expected
+                .iter()
+                .find(|v| v.iter().any(|t| t == first))
+                .unwrap();
+            let a = column.iter().position(|t| t == first).unwrap();
+            let b = column.iter().position(|t| t == second).unwrap();
+            assert!(a < b, "source line order remains within its column");
+            assert!(
+                !column.iter().any(|t| if first == "A" {
+                    t == "C" || t == "D"
+                } else {
+                    t == "A" || t == "B"
+                }),
+                "distinct source columns cannot be merged into one owner"
+            );
+        }
+        for bytes in [
+            core.export_hwp_native().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+            assert_eq!(reopened.page_count(), 1);
+            assert_eq!(
+                groups(&reopened),
+                expected,
+                "both formats preserve actual paragraph owners"
+            );
+        }
+    }
+}
+
+// Independent matrix/Arial-width PDFs, producer hashes and Native/fresh WASM
+// full-page qualification are recorded in task_m100_7998_stage37.md. Assertions
+// protect editable ownership and the ancestor paint transform, not pixel goldens.
+#[test]
+fn rotated_pdf_text_keeps_editable_owner_and_subtree_transform_after_both_saves() {
+    use rhwp::{
+        model::{control::Control, shape::ShapeObject},
+        DocumentCore,
+    };
+    fn collect<'a>(v: &'a Value, groups: &mut Vec<&'a Value>) {
+        if v.get("groupKind")
+            .and_then(|g| g.get("paintTransform"))
+            .is_some()
+        {
+            groups.push(v);
+        }
+        match v {
+            Value::Object(m) => m.values().for_each(|v| collect(v, groups)),
+            Value::Array(a) => a.iter().for_each(|v| collect(v, groups)),
+            _ => {}
+        }
+    }
+    fn text(v: &Value, out: &mut String) {
+        if v["type"] == "textRun" {
+            out.push_str(v["text"].as_str().unwrap());
+        }
+        match v {
+            Value::Object(m) => m.values().for_each(|v| text(v, out)),
+            Value::Array(a) => a.iter().for_each(|v| text(v, out)),
+            _ => {}
+        }
+    }
+    for (name, ccw) in [
+        ("rotation-2", 2_i32),
+        ("rotation-45", 45),
+        ("rotation--45", -45),
+        ("rotation-90", 90),
+        ("rotation-180", 180),
+        ("rotation-clip", 45),
+        ("rotation-form", 45),
+        ("rotation-outside-origin", 180),
+    ] {
+        let input = std::fs::read(format!(
+            "{}/pdf/issue7998/text-transform/{name}.pdf",
+            env!("CARGO_MANIFEST_DIR")
+        ))
+        .unwrap();
+        let original = DocumentCore::from_pdf_bytes(&input, &PdfImportOptions::default()).unwrap();
+        let files = [
+            original.export_hwp_native().unwrap(),
+            original.export_hwpx_native().unwrap(),
+        ];
+        for c in std::iter::once(original)
+            .chain(files.iter().map(|b| DocumentCore::from_bytes(b).unwrap()))
+        {
+            assert_eq!(c.page_count(), 1);
+            let boxes: Vec<_> = c
+                .document()
+                .sections
+                .iter()
+                .flat_map(|s| &s.paragraphs)
+                .flat_map(|p| &p.controls)
+                .filter_map(|control| match control {
+                    Control::Shape(shape) => match shape.as_ref() {
+                        ShapeObject::Rectangle(r) if r.drawing.text_box.is_some() => Some(r),
+                        _ => None,
+                    },
+                    // Paint images may represent the clipped grey baseline,
+                    // including the MediaBox clip. Do not infer text rasterization
+                    // from unrelated paint; its editable owner is checked below.
+                    _ => None,
+                })
+                .collect();
+            assert_eq!(boxes.len(), 1, "{name}: unique editable text owner");
+            let r = boxes[0];
+            assert_eq!(
+                r.drawing.shape_attr.rotation_angle as i32,
+                (-ccw).rem_euclid(360)
+            );
+            let paragraphs = &r.drawing.text_box.as_ref().unwrap().paragraphs;
+            assert_eq!(
+                paragraphs
+                    .iter()
+                    .map(|p| p.text.as_str())
+                    .collect::<String>(),
+                "ROTATE 45"
+            );
+            assert_eq!(paragraphs.len(), 1);
+            if name == "rotation-clip" {
+                assert!(r.drawing.text_box.as_ref().unwrap().paint_clip.is_some());
+            }
+            let tree: Value =
+                serde_json::from_str(&c.get_page_layer_tree_native(0).unwrap()).unwrap();
+            let mut groups = Vec::new();
+            collect(&tree, &mut groups);
+            assert_eq!(
+                groups.len(),
+                1,
+                "{name}: one ancestor owns glyph and clip rotation"
+            );
+            let m = groups[0]["groupKind"]["paintTransform"].as_array().unwrap();
+            let (sin, cos) = (-f64::from(ccw)).to_radians().sin_cos();
+            for (v, expected) in m.iter().take(4).zip([cos, sin, -sin, cos]) {
+                assert!(
+                    (v.as_f64().unwrap() - expected).abs() < 1e-6,
+                    "{name}: PDF matrix orientation"
+                );
+            }
+            let mut painted = String::new();
+            text(groups[0], &mut painted);
+            assert_eq!(
+                painted, "ROTATE 45",
+                "{name}: glyphs must be inside the transformed subtree exactly once"
+            );
+            let mut whole = String::new();
+            text(&tree, &mut whole);
+            assert_eq!(whole, painted);
+        }
+    }
+}
+
+#[test]
+fn unsupported_pdf_text_frames_are_rejected_without_flattening_or_silently_dropping_text() {
+    for name in ["rejected-shear", "rejected-mirror", "rejected-fraction"] {
+        let bytes = std::fs::read(format!(
+            "{}/pdf/issue7998/text-transform/{name}.pdf",
+            env!("CARGO_MANIFEST_DIR")
+        ))
+        .unwrap();
+        let error = parse_pdf_with_options(&bytes, &PdfImportOptions::default())
+            .err()
+            .expect(name);
+        assert!(
+            format!("{error:?}").contains("PDF_TEXT_UNSUPPORTED"),
+            "{name}: {error:?}"
+        );
+    }
+}
+
+// Same independent 240pt matrix fixtures and full-page qualification as above.
+// The 45-degree page is >99% in both backends; its baseline endpoint uses the
+// PDF's (110,130)pt top-down baseline origin at 96 DPI, with a 2px tolerance. Other cases use only
+// owner, direction, and glyph/caret relationships rather than coordinate pins.
+#[test]
+fn rotated_text_hit_and_cursor_follow_the_painted_frame_through_both_saves() {
+    use rhwp::DocumentCore;
+    for (name, degrees) in [
+        ("rotation-2", -2.0_f64),
+        ("rotation-45", -45.0),
+        ("rotation--45", 45.0),
+        ("rotation-90", -90.0),
+        ("rotation-180", 180.0),
+        ("rotation-form", -45.0),
+        ("rotation-clip", -45.0),
+        ("rotation-outside-origin", 180.0),
+    ] {
+        let source = std::fs::read(format!(
+            "{}/pdf/issue7998/text-transform/{name}.pdf",
+            env!("CARGO_MANIFEST_DIR")
+        ))
+        .unwrap();
+        let original = DocumentCore::from_pdf_bytes(&source, &PdfImportOptions::default()).unwrap();
+        let saved = [
+            original.export_hwp_native().unwrap(),
+            original.export_hwpx_native().unwrap(),
+        ];
+        for core in std::iter::once(original)
+            .chain(saved.iter().map(|b| DocumentCore::from_bytes(b).unwrap()))
+        {
+            let layout: Value =
+                serde_json::from_str(&core.get_page_text_layout_native(0).unwrap()).unwrap();
+            let run = layout["runs"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|r| r["text"] == "ROTATE 45")
+                .unwrap();
+            let ci = run["controlIdx"].as_u64().unwrap() as usize;
+            let points: Vec<Value> = (0..=9)
+                .map(|offset| {
+                    serde_json::from_str(
+                        &core
+                            .get_cursor_rect_in_cell_native(0, 0, ci, 0, 0, offset)
+                            .unwrap(),
+                    )
+                    .unwrap()
+                })
+                .collect();
+            let (sin, cos) = degrees.to_radians().sin_cos();
+            for caret in &points {
+                assert_eq!(caret["pageIndex"], 0);
+                let angle = caret["rotation"]
+                    .as_f64()
+                    .expect("caret must carry its composed frame direction")
+                    .to_radians();
+                assert!(
+                    (angle.cos() - cos).abs() < 1e-6 && (angle.sin() - sin).abs() < 1e-6,
+                    "{name}: independent PDF orientation"
+                );
+            }
+            if name == "rotation-45" {
+                let p = &points[0];
+                let height = p["height"].as_f64().unwrap();
+                let baseline = (
+                    p["x"].as_f64().unwrap() - sin * height * 0.8,
+                    p["y"].as_f64().unwrap() + cos * height * 0.8,
+                );
+                assert!((baseline.0 - 110.0 * 4.0 / 3.0).abs() <= 2.0);
+                assert!((baseline.1 - 130.0 * 4.0 / 3.0).abs() <= 2.0);
+            }
+            for (offset, pair) in points.windows(2).enumerate() {
+                let (p, n) = (&pair[0], &pair[1]);
+                let (x, y) = (p["x"].as_f64().unwrap(), p["y"].as_f64().unwrap());
+                let (dx, dy) = (n["x"].as_f64().unwrap() - x, n["y"].as_f64().unwrap() - y);
+                assert!(
+                    dx * cos + dy * sin > 0.0,
+                    "{name}: logical order must advance in the PDF baseline direction"
+                );
+                assert!(
+                    (dx * sin - dy * cos).abs() < 0.2,
+                    "{name}: advance must stay on that baseline"
+                );
+                let height = p["height"].as_f64().unwrap();
+                let (px, py) = (
+                    x + dx * 0.2 - sin * height * 0.5,
+                    y + dy * 0.2 + cos * height * 0.5,
+                );
+                // Only visible page points are pointer inputs. The outside-origin
+                // fixture deliberately retains a clipped-away leading caret too.
+                if !(0.0..320.0).contains(&px) || !(0.0..320.0).contains(&py) {
+                    continue;
+                }
+                let hit: Value =
+                    serde_json::from_str(&core.hit_test_native(0, px, py).unwrap()).unwrap();
+                assert_eq!(
+                    hit["controlIndex"], ci,
+                    "{name}: transformed hit must retain its TextBox owner"
+                );
+                assert_eq!(
+                    hit["charOffset"], offset,
+                    "{name}: inverse hit must identify the same glyph gap"
+                );
+                assert_eq!(hit["isTextBox"], true);
+            }
         }
     }
 }

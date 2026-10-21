@@ -1,4 +1,4 @@
-//! Supplement a positively closed paint exterior with actual content-clip axes.
+//! Resolve local axes from oriented rules and a complete content-clip tiling.
 use super::*;
 use crate::parser::pdf::table_detection::{
     axes, boundary_contributor, complete, grid_shared_edges, Edge, MAX_TILES,
@@ -32,13 +32,14 @@ pub(in crate::parser::pdf::table_detection) fn derive(
         return Err("no closed paint exterior".into());
     }
     let (x, right, y, bottom) = (xs[0], *xs.last().unwrap(), ys[0], *ys.last().unwrap());
-    if !complete(component, true, y, x, right)
-        || !complete(component, true, bottom, x, right)
-        || !complete(component, false, x, y, bottom)
-        || !complete(component, false, right, y, bottom)
-    {
-        return Err("content clips cannot close an open paint exterior".into());
-    }
+    let paint_exterior_closed = complete(component, true, y, x, right)
+        && complete(component, true, bottom, x, right)
+        && complete(component, false, x, y, bottom)
+        && complete(component, false, right, y, bottom);
+    // A continued cell need not paint the page-fragment's closing edge. Its
+    // active content clip can establish an editable region without inventing
+    // the missing ink. Selection still requires complete, noncompeting tiling
+    // and rejects any clip that crosses a positively painted separator.
     let outer = Rect::new(x, y, right - x, bottom - y);
     let regions = observe(outer, text, orders, clips, media)?;
     if regions.is_empty() {
@@ -100,6 +101,49 @@ pub(in crate::parser::pdf::table_detection) fn derive(
             }
         }
     }
+    // Empty column/row regions can have their own local subdivision. Require
+    // two positively ruled sides and no already-owned content; a glyph inset
+    // or a free artwork clip cannot introduce axes. Selection below still
+    // requires complete, noncompeting empty-region coverage.
+    let mut empty_axis_scopes = Vec::new();
+    if clips.omitted == 0 {
+        for scope in &clips.clips {
+            let Some(b) = effective_clip(Some(&scope.clip), media) else {
+                continue;
+            };
+            if !super::super::inside(b, outer)
+                || regions.iter().any(|r| {
+                    b.x < r.bounds.x + r.bounds.width - EPS
+                        && r.bounds.x < b.x + b.width - EPS
+                        && b.y < r.bounds.y + r.bounds.height - EPS
+                        && r.bounds.y < b.y + b.height - EPS
+                })
+            {
+                continue;
+            }
+            let vertical = complete(component, false, b.x, b.y, b.y + b.height)
+                && complete(component, false, b.x + b.width, b.y, b.y + b.height);
+            let horizontal = complete(component, true, b.y, b.x, b.x + b.width)
+                && complete(component, true, b.y + b.height, b.x, b.x + b.width);
+            if vertical {
+                for at in [b.y, b.y + b.height] {
+                    if ys.iter().all(|v| (*v - at).abs() > EPS) {
+                        ys.push(at);
+                    }
+                }
+            }
+            if horizontal {
+                for at in [b.x, b.x + b.width] {
+                    if xs.iter().all(|v| (*v - at).abs() > EPS) {
+                        xs.push(at);
+                    }
+                }
+            }
+            if vertical || horizontal {
+                empty_axis_scopes.push((b, scope.source_order.clone()));
+            }
+        }
+    }
     let (xs, ys) = (axes(xs), axes(ys));
     let (cols, rows) = (xs.len() - 1, ys.len() - 1);
     if rows
@@ -155,11 +199,16 @@ pub(in crate::parser::pdf::table_detection) fn derive(
                     })
                     .collect::<std::collections::BTreeSet<_>>();
                 json!({"at":at,"kind":"derived","rule":"paint-centerline-or-active-content-clip",
-            "sourceRefs":paint_refs,"activeClipSourceOrders":clip_orders})
+            "sourceRefs":paint_refs,"activeClipSourceOrders":clip_orders,
+            "emptyRegionClipScopes":empty_axis_scopes.iter().filter(|(b,_)| {
+                let (lo,hi)=if horizontal{(b.y,b.y+b.height)}else{(b.x,b.x+b.width)};
+                (lo-at).abs()<=EPS || (hi-at).abs()<=EPS
+            }).map(|(_,order)|order).collect::<std::collections::BTreeSet<_>>()})
             })
             .collect::<Vec<_>>()
     };
-    let axis_evidence = json!({"basis":"paint exterior plus active content clips",
+    let axis_evidence = json!({"basis":"oriented paint axes plus complete active content clips",
+        "paintExteriorClosed":paint_exterior_closed,
         "x":axis_sources(&xs,false),"y":axis_sources(&ys,true),
         "contentRegions":evidence,"paintIsNotInvented":true});
     let mut grid = Grid {
@@ -178,6 +227,11 @@ pub(in crate::parser::pdf::table_detection) fn derive(
         cell_region_evidence: serde_json::Value::Null,
         axis_evidence,
     };
+    grid.source_edges = source
+        .iter()
+        .filter(|e| boundary_contributor(e, &grid, component))
+        .copied()
+        .collect();
     super::select(&mut grid, text, orders, clips, media);
     // A well-formed but incomplete finer proposal must stay visible and
     // deferred. Falling back to a coarser confirmed face would lose the very

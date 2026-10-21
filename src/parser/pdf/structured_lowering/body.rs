@@ -79,7 +79,7 @@ fn prepare<'a>(
     p: &'a ParagraphProposal,
     span_controls: &[Option<usize>],
     shape_ids: &[Option<u32>],
-    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    styles: &SourceStyles,
     typography: &std::cell::RefCell<Vec<Value>>,
     removed: &BTreeSet<usize>,
 ) -> Result<Prepared<'a>, String> {
@@ -247,7 +247,7 @@ pub(super) fn lower(
     controls: &[Control],
     span_controls: &[Option<usize>],
     shape_ids: &[Option<u32>],
-    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    styles: &SourceStyles,
     typography: &std::cell::RefCell<Vec<Value>>,
     removed: &mut BTreeSet<usize>,
     next_id: &mut u32,

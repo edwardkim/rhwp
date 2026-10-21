@@ -1289,8 +1289,20 @@ impl SkiaLayerRenderer {
             LayerNodeKind::Group {
                 children,
                 cache_hint,
-                ..
+                group_kind,
             } => {
+                let _restore = if let crate::paint::GroupKind::Group(group) = group_kind {
+                    group.paint_transform.map(|[a, b, c, d, e, f]| {
+                        let guard = skia_safe::AutoCanvasRestore::guard(canvas, true);
+                        canvas.concat(&skia_safe::Matrix::new_all(
+                            a as f32, c as f32, e as f32, b as f32, d as f32, f as f32, 0.0, 0.0,
+                            1.0,
+                        ));
+                        guard
+                    })
+                } else {
+                    None
+                };
                 let child_context = cache_context.with_hint(*cache_hint);
                 let render_children = |target: &Canvas, next_id: &mut u32| {
                     for child in children {

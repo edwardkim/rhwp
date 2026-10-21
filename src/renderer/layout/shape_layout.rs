@@ -2221,6 +2221,7 @@ impl LayoutEngine {
                 let mut group_node = RenderNode::new(
                     group_id,
                     RenderNodeType::Group(GroupNode {
+                        paint_transform: None,
                         section_index: Some(section_index),
                         para_index: Some(para_index),
                         control_index: Some(control_index),

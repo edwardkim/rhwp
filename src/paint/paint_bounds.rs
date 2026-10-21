@@ -214,10 +214,25 @@ fn collect_visual_bounds(
             .map(PaintOp::visual_bounds)
             .filter(|bounds| valid(*bounds))
             .reduce(union),
-        LayerNodeKind::Group { children, .. } => children
-            .iter()
-            .filter_map(|child| collect_visual_bounds(child, clip_enabled, visit))
-            .reduce(union),
+        LayerNodeKind::Group {
+            children,
+            group_kind,
+            ..
+        } => {
+            let bounds = children
+                .iter()
+                .filter_map(|child| collect_visual_bounds(child, clip_enabled, visit))
+                .reduce(union);
+            bounds.map(|bounds| {
+                let transform = match group_kind {
+                    super::layer_tree::GroupKind::Group(g) => g
+                        .paint_transform
+                        .map(|[a, b, c, d, e, f]| LayerAffineTransform { a, b, c, d, e, f }),
+                    _ => None,
+                };
+                affine_bounds(bounds, transform)
+            })
+        }
         // A conservative visual hull must not pretend that a curved clip is a rectangle.
         LayerNodeKind::ClipPath { child, .. } => collect_visual_bounds(child, clip_enabled, visit),
         LayerNodeKind::ClipRect { clip, child, .. } => {

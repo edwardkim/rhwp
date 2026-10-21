@@ -340,12 +340,13 @@ pub(super) fn lower(
 
     let mut unknown_fonts = 0;
     let mut font_identity_mappings = std::collections::BTreeMap::new();
+    // These are all fields changed from the common scaffold shape below.
+    // Reuse equal source styles within a page instead of allocating one per
+    // PDF text-show. Source spans and paint order remain separately recorded.
+    let mut source_shapes = std::collections::BTreeMap::new();
     for (span_index, span) in page.spans.iter().enumerate() {
         if span.text.is_empty() {
             continue;
-        }
-        if span.rotation_degrees != 0.0 || span.wmode != 0 || span.mirrored {
-            return Err("rotated/vertical/mirrored text requires additional lowering".into());
         }
         let font_name = if span.font_name == "Unknown" || span.font_name.is_empty() {
             unknown_fonts += 1;
@@ -408,8 +409,22 @@ pub(super) fn lower(
                 }
             }
         }
-        let shape = doc.doc_info.char_shapes.len() as u32;
-        doc.doc_info.char_shapes.push(cs);
+        let key = (
+            font_id,
+            cs.base_size,
+            cs.bold,
+            cs.italic,
+            cs.text_color,
+            cs.use_font_space,
+        );
+        let shape = if let Some(&id) = source_shapes.get(&key) {
+            id
+        } else {
+            let id = doc.doc_info.char_shapes.len() as u32;
+            doc.doc_info.char_shapes.push(cs);
+            source_shapes.insert(key, id);
+            id
+        };
         // On the supported unrotated path, bbox.y is a baseline. Exact font metrics remain a limitation.
         let attrs = common(
             span.bbox.x - left,
@@ -424,7 +439,7 @@ pub(super) fn lower(
         let mut paragraph = text_para(&text, shape, width, height);
         paragraph.para_shape_id = single_line_id;
         paragraph.char_count_msb = true;
-        let rect = RectangleShape {
+        let mut rect = RectangleShape {
             common: attrs,
             x_coords: [0, width as i32, width as i32, 0],
             y_coords: [0, 0, height as i32, height as i32],
@@ -446,6 +461,12 @@ pub(super) fn lower(
             },
             ..Default::default()
         };
+        super::rotated_text::apply(
+            &mut rect,
+            span,
+            page.media_box,
+            page.span_clips[span_index].as_deref(),
+        )?;
         paint_orders.push((owner.controls.len(), page.span_orders[span_index].clone()));
         owner
             .controls

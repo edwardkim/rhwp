@@ -108,7 +108,7 @@ impl StreamMask {
             .get("SMask")
             .map(|v| resolve(doc, v, budget))
             .transpose()?;
-        let (object, soft) = match soft {
+        let (object, from_smask) = match soft {
             Some(object) if !matches!(*object, Object::Null) => (object, true),
             _ => match base.get("Mask") {
                 Some(object) => (resolve(doc, object, budget)?, false),
@@ -119,7 +119,7 @@ impl StreamMask {
             return Ok(None);
         }
         let Object::Stream { dict, .. } = &*object else {
-            return Err(if !soft && matches!(*object, Object::Array(_)) {
+            return Err(if !from_smask && matches!(*object, Object::Array(_)) {
                 Error::Unsupported("limited image import colour-key Mask".into())
             } else {
                 Error::Image("image mask must be a stream".into())
@@ -127,6 +127,15 @@ impl StreamMask {
         };
         let entry = |key: &str| dict.get(key).map(|v| resolve(doc, v, budget)).transpose();
         let stencil = entry("ImageMask")?;
+        // Some writers put an ordinary grayscale image under Mask. PDFium's
+        // StartLoadMaskDIB reads that image as alpha, not as an inverse stencil.
+        // Keep true ImageMask polarity and malformed flags on the strict path.
+        let gray_mask = !from_smask
+            && stencil
+                .as_deref()
+                .is_none_or(|v| matches!(v, Object::Null | Object::Boolean(false)))
+            && entry("ColorSpace")?.as_deref().and_then(Object::as_name) == Some("DeviceGray");
+        let soft = from_smask || gray_mask;
         let bpc = entry("BitsPerComponent")?;
         let bpc = if soft {
             if entry("Subtype")?.as_deref().and_then(Object::as_name) != Some("Image")
@@ -191,6 +200,9 @@ impl StreamMask {
         let matte = match entry("Matte")? {
             None => None,
             Some(v) if matches!(*v, Object::Null) => None,
+            // PDFium only unblends Matte for SMask. A grayscale Mask uses its
+            // decoded samples directly; it must not alter the base RGB values.
+            Some(_) if gray_mask => None,
             Some(v) if soft => {
                 // Do not undo preblending after an ICC/CMYK conversion or an
                 // Indexed palette lookup: those are not source RGB samples.
@@ -238,13 +250,6 @@ impl StreamMask {
             },
             Some(_) => return Err(Error::Image("Matte requires SMask".into())),
         };
-        match entry("Filter")?.as_deref() {
-            None | Some(Object::Null) => {},
-            Some(Object::Name(name)) if name == "FlateDecode" => {},
-            Some(Object::Array(names))
-                if names.len() == 1 && names[0].as_name() == Some("FlateDecode") => {},
-            _ => return Err(Error::Unsupported("limited image mask filter".into())),
-        }
         if entry("DecodeParms")?.is_some_and(|v| !matches!(*v, Object::Null)) {
             return Err(Error::Unsupported("limited image mask DecodeParms".into()));
         }
@@ -290,11 +295,10 @@ impl StreamMask {
             .get("Decode")
             .is_some_and(|v| !matches!(v, Object::Null))
             && jpeg_decode.is_none();
-        let samples =
-            doc.decode_stream_with_encryption(&object, crate::object::ObjectRef::new(0, 0))?;
-        if samples.len() != expected {
-            return Err(Error::Image("mask sample length differs from dimensions".into()));
-        }
+        // Stream masks use the same lossless, request-bounded byte filters as
+        // colour-key masks and stencils. Pixel codec bytes are still rejected;
+        // the decoded samples must exactly match the declared packed rows.
+        let samples = super::image_mask_limited_extra::samples(doc, &object, expected, budget)?;
         Ok(Some(Self {
             width,
             height,

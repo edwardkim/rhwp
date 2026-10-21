@@ -196,6 +196,35 @@ impl LayerBuilder {
             return None;
         }
 
+        // A rectangle transform owns its text/clip descendants too. Primitive
+        // paint transforms affect only the outline, so move it to one common
+        // subtree group and clear the primitive transform to avoid double use.
+        if let RenderNodeType::Rectangle(rect) = &node.node_type {
+            if rect.transform.has_transform() && !node.children.is_empty() {
+                let matrix = rect.transform.matrix_about(node.bbox);
+                let mut local = node.clone();
+                if let RenderNodeType::Rectangle(rect) = &mut local.node_type {
+                    rect.transform = Default::default();
+                }
+                let child = self.build_node(&local)?;
+                let mut group = LayerNode::group(
+                    node.bbox,
+                    Some(node.id),
+                    vec![child],
+                    CacheHint::None,
+                    GroupKind::Group(crate::renderer::render_tree::GroupNode {
+                        paint_transform: Some(matrix),
+                        section_index: rect.section_index,
+                        para_index: rect.para_index,
+                        control_index: rect.control_index,
+                    }),
+                )
+                .with_layer(node.layer);
+                group.bounds = group.visual_bounds(true);
+                return Some(group);
+            }
+        }
+
         let own_ops = match &node.node_type {
             RenderNodeType::PageBackground(background) => Some(vec![PaintOp::page_background(
                 node.bbox,

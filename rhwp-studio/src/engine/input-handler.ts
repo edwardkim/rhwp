@@ -470,6 +470,7 @@ export class InputHandler {
     origHeight: number;
     origHorzOffset?: number;
     origVertOffset?: number;
+    pointerMoved?: boolean;
     startClientX: number;
     startClientY: number;
     pageIndex: number;

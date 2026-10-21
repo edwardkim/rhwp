@@ -29,7 +29,7 @@ fn dimension(
 
 /// Only byte-stream filters produce packed PDF samples here. Image codecs
 /// require their own audited source-plane adapter; encoded bytes are not pixels.
-fn samples(
+pub(super) fn samples(
     doc: &PdfDocument,
     object: &Object,
     expected: usize,

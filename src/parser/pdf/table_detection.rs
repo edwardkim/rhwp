@@ -15,6 +15,36 @@ const MAX_EDGES: usize = 512;
 const MAX_SOURCE_EDGES: usize = 20_000;
 const MAX_TILES: usize = 4096;
 
+/// Spatial ownership of a blank advance uses its real source clip. Its full
+/// advance and characters remain untouched for paragraph composition/painting.
+pub(super) fn span_ownership_bounds(
+    span: &TextSpan,
+    clip: Option<&pdf_oxide::elements::PathClip>,
+    media: (f32, f32, f32, f32),
+) -> Rect {
+    let b = Rect::new(
+        span.bbox.x - media.0,
+        media.3 - span.bbox.y - span.bbox.height,
+        span.bbox.width,
+        span.bbox.height,
+    );
+    if !span.text.chars().all(char::is_whitespace) {
+        return b;
+    }
+    let Some(clip) = cell_regions::effective_clip(clip, media) else {
+        return b;
+    };
+    let x = b.x.max(clip.x);
+    let y = b.y.max(clip.y);
+    let right = (b.x + b.width).min(clip.x + clip.width);
+    let bottom = (b.y + b.height).min(clip.y + clip.height);
+    if right > x && bottom > y {
+        Rect::new(x, y, right - x, bottom - y)
+    } else {
+        clip
+    }
+}
+
 #[derive(Clone, Copy)]
 struct Edge {
     horizontal: bool,
@@ -410,7 +440,7 @@ fn boundary_contributor(edge: &Edge, grid: &Grid, component: &[Edge]) -> bool {
     let mut cursor = target_start;
     for (from, to) in intervals {
         let (from, to) = (from.max(target_start), to.min(target_end));
-        if to <= cursor {
+        if to <= from || to <= cursor {
             continue;
         }
         if from > cursor + EPS {
@@ -674,6 +704,11 @@ fn resolved_grid(
 ) -> Result<Grid, String> {
     let original = supported_grid(component, source, logical, true).map(|mut grid| {
         cell_regions::select(&mut grid, text, orders, clips, media);
+        grid.source_edges = source
+            .iter()
+            .filter(|e| boundary_contributor(e, &grid, component))
+            .copied()
+            .collect();
         grid
     });
     if original
@@ -912,6 +947,11 @@ pub fn detect_ruled_tables(
             unassigned.push(json!({"kind":kind,"index":index}));
         }
     };
+    let active_clips = clips
+        .text_uses
+        .iter()
+        .map(|(order, clip)| (order, clip))
+        .collect::<BTreeMap<_, _>>();
     for (i, s) in spans.iter().enumerate() {
         if !s.text.is_empty() {
             if ![s.bbox.x, s.bbox.y, s.bbox.width, s.bbox.height]
@@ -919,22 +959,22 @@ pub fn detect_ruled_tables(
                 .all(|v| v.is_finite())
                 || s.bbox.width < 0.0
                 || s.bbox.height < 0.0
-                || s.rotation_degrees != 0.0
                 || s.wmode != 0
                 || s.mirrored
             {
                 return Err("unsupported text geometry in table detection".into());
             }
-            assign(
-                "span",
-                i,
-                Rect::new(
-                    s.bbox.x - left,
-                    top - s.bbox.y - s.bbox.height,
-                    s.bbox.width,
-                    s.bbox.height,
-                ),
-            );
+            // A rotated run remains an editable positional TextBox. The
+            // horizontal cell paragraph recognizer cannot consume its frame.
+            if s.rotation_degrees != 0.0 {
+                continue;
+            }
+            let clip = span_orders
+                .get(i)
+                .and_then(|order| active_clips.get(order))
+                .and_then(|clip| clip.as_deref());
+            let ownership = span_ownership_bounds(s, clip, media_box);
+            assign("span", i, ownership);
         }
     }
     for (i, image) in images.iter().enumerate() {

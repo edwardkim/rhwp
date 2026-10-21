@@ -2,6 +2,7 @@ mod body_page_fields;
 mod bookmark_query;
 mod cursor_nav;
 mod cursor_rect;
+mod transformed_text;
 pub(crate) mod doc_tree_nav;
 /// [#3828] `explain` 명령 전용 집계(각주/미주 개수) — 다른 조회가 채우지 못하는 구멍.
 pub mod explain;

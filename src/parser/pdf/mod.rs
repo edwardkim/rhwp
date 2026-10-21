@@ -4,11 +4,13 @@
 //! `--no-default-features`. The internal backend limits decoded outputs, but
 //! full codec/font/cache allocation bounds are not yet proven.
 mod body_regions;
+mod char_pool;
 mod extract;
 mod lowering;
 mod path_paint;
 mod policy;
 mod recognition;
+mod rotated_text;
 mod structured_lowering;
 mod table_detection;
 mod table_hierarchy;
@@ -342,6 +344,14 @@ pub fn parse_pdf_with_policy(
         .map_err(|error| {
             PdfImportError::backend(error).at("selection_policy", None, Some(&request))
         })?;
+    request
+        .restrict_traversal_limits(
+            policy.backend.reference_visits,
+            policy.backend.xobject_visits,
+        )
+        .map_err(|error| {
+            PdfImportError::backend(error).at("selection_policy", None, Some(&request))
+        })?;
     let mut document = lowering::new_document().map_err(|_| {
         PdfImportError::new("PDF_LOWERING_FAILED", "IR scaffold initialization failed")
     })?;
@@ -350,6 +360,7 @@ pub fn parse_pdf_with_policy(
         .pop()
         .ok_or_else(|| PdfImportError::new("PDF_LOWERING_FAILED", "IR scaffold has no section"))?;
     let mut next_id = 1;
+    let mut character_pool = char_pool::Pool::new(&document)?;
     let mut budget = Budget {
         policy,
         ..Budget::default()
@@ -402,6 +413,7 @@ pub fn parse_pdf_with_policy(
         }
         let section = document.sections.len();
         document.sections.push(template.clone());
+        let first_character_shape = document.doc_info.char_shapes.len();
         let lowered = structured_lowering::lower(&page, &mut document, &mut next_id);
         pdf.check_import_budget().map_err(|error| {
             PdfImportError::backend(error).at("lower", Some(source_page), Some(&request))
@@ -409,6 +421,7 @@ pub fn parse_pdf_with_policy(
         let report = lowered.map_err(|_| {
             PdfImportError::new("PDF_LOWERING_FAILED", "PDF content could not be lowered")
         })?;
+        character_pool.compact_page(&mut document, first_character_shape, section)?;
         let n = |key: &str| report[key].as_u64().unwrap_or(0) as usize;
         let (left, bottom, right, top) = page.media_box;
         pages.push(PdfPageMetadata {

@@ -153,6 +153,10 @@ impl RenderLayerInfo {
 /// 렌더 노드 (페이지 내 렌더링 가능한 요소)
 #[derive(Debug, Clone, Serialize)]
 pub struct RenderNode {
+    /// Cell-owned paint is edited through the cell, not selected as a drawing.
+    /// Keep its source address for paint ordering; the control query omits it.
+    #[serde(skip)]
+    pub(crate) cell_frame_paint: bool,
     /// Source text clipping in absolute page pixels; not a layout height/cut.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub paint_clip: Option<Vec<crate::model::text_clip::TextClipPath>>,
@@ -195,6 +199,7 @@ pub enum ControlCode {
 impl RenderNode {
     pub fn new(id: NodeId, node_type: RenderNodeType, bbox: BoundingBox) -> Self {
         Self {
+            cell_frame_paint: false,
             id,
             node_type,
             bbox,
@@ -1209,6 +1214,17 @@ pub struct ShapeTransform {
 }
 
 impl ShapeTransform {
+    /// One page-space parent transform for the outline, text, and editor geometry.
+    pub fn matrix_about(&self, bbox: BoundingBox) -> [f64; 6] {
+        let (sin, cos) = self.rotation.to_radians().sin_cos();
+        let sx = if self.horz_flip { -1.0 } else { 1.0 };
+        let sy = if self.vert_flip { -1.0 } else { 1.0 };
+        let (a, b, c, d) = (cos * sx, sin * sx, -sin * sy, cos * sy);
+        let cx = bbox.x + bbox.width / 2.0;
+        let cy = bbox.y + bbox.height / 2.0;
+        [a, b, c, d, cx - a * cx - c * cy, cy - b * cx - d * cy]
+    }
+
     /// 변환이 필요한지 여부
     pub fn has_transform(&self) -> bool {
         self.rotation != 0.0 || self.horz_flip || self.vert_flip
@@ -1622,6 +1638,10 @@ impl ImageNode {
 /// 묶음 개체 노드
 #[derive(Debug, Clone, Serialize)]
 pub struct GroupNode {
+    /// Common layer subtree transform [a,b,c,d,e,f], applied before all children.
+    /// None for ordinary groups whose child geometry is already projected.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paint_transform: Option<[f64; 6]>,
     /// 소속 구역 인덱스
     pub section_index: Option<usize>,
     /// 묶음 개체 컨트롤을 소유한 문단 인덱스

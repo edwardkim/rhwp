@@ -3721,6 +3721,9 @@ impl DocumentCore {
             controls: &mut Vec<String>,
             doc: &crate::model::document::Document,
         ) {
+            if node.cell_frame_paint {
+                return;
+            }
             // [Task #1280 v2] 컨트롤별 plane/zOrder/stableIndex 노출 — 렌더 정렬키
             // `paper_node_sort_key`(layout.rs)를 그대로 재사용해 프런트 히트테스트가
             // 겹침 시 "최상단 개체"를 선택할 수 있게 한다.

@@ -761,6 +761,62 @@ pub(super) fn partition(
         let mut remaining = vec![source];
         let mut owned = 0;
         let mut closed = true;
+        // A native shared border paints its whole pen, across both neighboring
+        // cells. Claim that ink before area partitioning; otherwise an earlier
+        // non-native neighbor retains half of an already represented stroke.
+        if !image && orientation.is_some() {
+            let h = orientation.unwrap();
+            for (ti, cells) in frames.iter().enumerate() {
+                for (ci, cell) in cells.iter().enumerate() {
+                    tick(work)?;
+                    if !targets[ti]
+                        .native_border_controls
+                        .and_then(|v| v.get(ci))
+                        .is_some_and(|set| set.contains(&control))
+                    {
+                        continue;
+                    }
+                    let region = regions[ti];
+                    let mut clip = *cell;
+                    if h {
+                        clip.y = source.y;
+                        clip.bottom = source.bottom;
+                    } else {
+                        clip.x = source.x;
+                        clip.right = source.right;
+                    }
+                    if cell.x == region.x {
+                        clip.x = clip.x.min(source.x);
+                    }
+                    if cell.right == region.right {
+                        clip.right = clip.right.max(source.right);
+                    }
+                    if cell.y == region.y {
+                        clip.y = clip.y.min(source.y);
+                    }
+                    if cell.bottom == region.bottom {
+                        clip.bottom = clip.bottom.max(source.bottom);
+                    }
+                    let pieces = remaining
+                        .iter()
+                        .filter_map(|r| intersection(*r, clip, line))
+                        .collect::<Vec<_>>();
+                    for piece in pieces {
+                        subtract(&mut remaining, piece, line, work)?;
+                        owned += measure(piece, line);
+                        result.native_border_fragments += 1;
+                        count += 1;
+                        if count > MAX_FRAGMENTS {
+                            return Err("cell paint fragment budget exceeded".into());
+                        }
+                    }
+                }
+            }
+            if remaining.is_empty() && owned == measure(source, line) {
+                result.removed.insert(control);
+                continue;
+            }
+        }
         for (ti, cells) in frames.iter().enumerate() {
             let region = regions[ti];
             let on_axis = orientation.filter(|h| {

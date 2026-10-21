@@ -15,8 +15,8 @@ pub struct LayerTreeSchema {
 
 pub const LAYER_TREE_SCHEMA: LayerTreeSchema = LayerTreeSchema {
     schema_version: 1,
-    // 28: editable source text clips plus Print image reconstruction.
-    schema_minor_version: 28,
+    // 29: rectangle-owned affine transforms include editable text descendants.
+    schema_minor_version: 29,
     resource_table_version: 1,
     resource_table_minor_version: 6,
     unit: "px",
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn layer_tree_schema_constants_match_schema() {
-        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 28);
+        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 29);
         assert_eq!(LAYER_TREE_SCHEMA.resource_table_minor_version, 6);
         assert_eq!(
             LAYER_TREE_SCHEMA,

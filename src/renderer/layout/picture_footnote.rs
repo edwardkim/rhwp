@@ -339,6 +339,8 @@ impl LayoutEngine {
             );
             for child in parent_node.children.iter_mut().skip(children_before) {
                 child.set_layer(layer);
+                child.cell_frame_paint =
+                    crate::model::border_paint::is_cell_frame_attributes(&picture.common);
             }
         }
     }

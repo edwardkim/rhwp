@@ -13,12 +13,25 @@ pub(super) fn has_nonrectangular(mut clip: Option<&PathClip>) -> bool {
     false
 }
 pub(super) fn local_paths(
-    mut clip: Option<&PathClip>,
+    clip: Option<&PathClip>,
     x: f32,
     top: f32,
 ) -> Result<Option<Vec<TextClipPath>>, String> {
+    local_paths_mapped(clip, false, |a, b| {
+        (
+            (f64::from(a) - f64::from(x)) * 100.,
+            (f64::from(top) - f64::from(b)) * 100.,
+        )
+    })
+}
+
+pub(super) fn local_paths_mapped(
+    mut clip: Option<&PathClip>,
+    force: bool,
+    at: impl Fn(f32, f32) -> (f64, f64),
+) -> Result<Option<Vec<TextClipPath>>, String> {
     let mut paths = Vec::new();
-    let mut nonrect = false;
+    let mut nonrect = force;
     while let Some(p) = clip {
         if paths.len() == 32 {
             return Err("text clip depth exceeded".into());
@@ -34,12 +47,6 @@ pub(super) fn local_paths(
             return Err("text clip operation budget exceeded".into());
         }
         let mut commands = Vec::new();
-        let at = |a: f32, b: f32| {
-            (
-                (f64::from(a) - f64::from(x)) * 100.,
-                (f64::from(top) - f64::from(b)) * 100.,
-            )
-        };
         for op in &p.operations {
             match *op {
                 P::MoveTo(a, b) => {
@@ -58,12 +65,14 @@ pub(super) fn local_paths(
                 }
                 P::Rectangle(a, b, w, h) => {
                     let (a0, b0) = at(a, b);
-                    let (a1, b1) = at(a + w, b + h);
+                    let (a1, b1) = at(a + w, b);
+                    let (a2, b2) = at(a + w, b + h);
+                    let (a3, b3) = at(a, b + h);
                     commands.extend([
                         C::Move(a0, b0),
-                        C::Line(a1, b0),
                         C::Line(a1, b1),
-                        C::Line(a0, b1),
+                        C::Line(a2, b2),
+                        C::Line(a3, b3),
                         C::Close,
                     ]);
                 }
@@ -76,7 +85,7 @@ pub(super) fn local_paths(
         });
         clip = p.parent.as_deref();
     }
-    if !nonrect {
+    if !nonrect || paths.is_empty() {
         return Ok(None);
     }
     if !crate::model::text_clip::valid(&paths) {

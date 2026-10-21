@@ -122,11 +122,11 @@ fn valid_rect(r: Rect) -> bool {
 fn make_lines(
     observed: &ObservedText,
     spans: &[TextSpan],
+    span_clips: &[Option<std::sync::Arc<pdf_oxide::elements::PathClip>>],
     region: &Region,
     media_box: (f32, f32, f32, f32),
     policy: Policy,
 ) -> Result<Vec<Line>, String> {
-    let (left, _, _, top) = media_box;
     if !valid_rect(region.bbox) || region.span_indices.len() > 20000 {
         return Err("invalid region or span budget".into());
     }
@@ -146,11 +146,10 @@ fn make_lines(
         {
             return Err("unsupported span geometry".into());
         }
-        let b = Rect::new(
-            s.bbox.x - left,
-            top - s.bbox.y - s.bbox.height,
-            s.bbox.width,
-            s.bbox.height,
+        let b = super::table_detection::span_ownership_bounds(
+            s,
+            span_clips.get(*i).and_then(|c| c.as_deref()),
+            media_box,
         );
         if !contains(region.bbox, b) {
             return Err("span does not belong to supplied region".into());
@@ -381,6 +380,7 @@ impl ParagraphMachine {
 fn recognize_region(
     observed: &ObservedText,
     spans: &[TextSpan],
+    span_clips: &[Option<std::sync::Arc<pdf_oxide::elements::PathClip>>],
     region: &Region,
     media_box: (f32, f32, f32, f32),
     policy: Policy,
@@ -407,7 +407,7 @@ fn recognize_region(
     {
         return Err("invalid recognition policy".into());
     }
-    let lines = make_lines(observed, spans, region, media_box, policy)?;
+    let lines = make_lines(observed, spans, span_clips, region, media_box, policy)?;
     let mut machine = ParagraphMachine {
         state: ParagraphState::Idle,
         owner: region.bbox,
@@ -593,6 +593,7 @@ impl TableMachine {
 pub fn recognize_page(
     observed: &ObservedText,
     spans: &[TextSpan],
+    span_clips: &[Option<std::sync::Arc<pdf_oxide::elements::PathClip>>],
     images: &[PdfImage],
     detection: &Value,
     media_box: (f32, f32, f32, f32),
@@ -841,7 +842,7 @@ pub fn recognize_page(
                 span_indices: indices(&c["spanIndices"])?,
                 obstacles,
             };
-            let result = recognize_region(observed, spans, &region, media_box, policy)?;
+            let result = recognize_region(observed, spans, span_clips, &region, media_box, policy)?;
             children
                 .push(json!({"cell":ci,"row":c["row"],"column":c["column"],"imageIndices":c["imageIndices"],"childTableIndices":child_tables,"recognition":result}));
             cells.insert((ti, ci), result);
@@ -851,12 +852,14 @@ pub fn recognize_page(
             "child_contexts_closed",
             json!({"cells":children.len()}),
         )?;
-        tables.push(
-            json!({"candidate":ti,"status":"GeometryConfirmed","semanticStatus":"unverified",
+        let mut table = json!({"candidate":ti,"status":"GeometryConfirmed","semanticStatus":"unverified",
             "parent":placements[ti].parent.map(|(table,cell)|json!({"table":table,"cell":cell})),
-            "depth":placements[ti].depth,
-            "cells":children,"transitions":machine.trace.records}),
-        );
+            "depth":placements[ti].depth});
+        // These JSON trees already own their values. Passing them through
+        // json! serializes and allocates every nested glyph/transition again.
+        table["cells"] = Value::Array(children);
+        table["transitions"] = Value::Array(machine.trace.records);
+        tables.push(table);
     }
     for _ in 0..=16 {
         let mut changed = false;
@@ -885,11 +888,11 @@ pub fn recognize_page(
     let remaining: Vec<_> = spans
         .iter()
         .enumerate()
-        .filter(|(i, s)| !s.text.is_empty() && !reserved.contains(i))
+        .filter(|(i, s)| !s.text.is_empty() && s.rotation_degrees == 0.0 && !reserved.contains(i))
         .map(|(i, _)| i)
         .collect();
     let mut body = Vec::new();
-    let partitions = super::body_regions::partition(spans, &remaining, media_box);
+    let partitions = super::body_regions::partition(spans, span_clips, &remaining, media_box);
     let partition_error = partitions.as_ref().err().cloned();
     let partitions = partitions.unwrap_or_else(|_| {
         if remaining.is_empty() {
@@ -927,7 +930,8 @@ pub fn recognize_page(
             span_indices: partition.spans.clone(),
             obstacles: clipped,
         };
-        let mut recognized = recognize_region(observed, spans, &region, media_box, policy)?;
+        let mut recognized =
+            recognize_region(observed, spans, span_clips, &region, media_box, policy)?;
         if let Some(reason) = &partition_error {
             for p in &mut recognized.paragraphs {
                 p.status = ParagraphState::Deferred;
@@ -941,11 +945,13 @@ pub fn recognize_page(
         });
     }
     regions.extend(body.iter().map(|r| json!(r)));
-    let report = json!({"algorithm":"hierarchical-efsm-v4-body-regions","acceptance":"rule-based proposals, not authored paragraph/table metadata",
+    let mut report = json!({"algorithm":"hierarchical-efsm-v4-body-regions","acceptance":"rule-based proposals, not authored paragraph/table metadata",
         "policy":{"baselineToleranceEm":policy.baseline_tolerance_em,"alignmentToleranceEm":policy.alignment_tolerance_em,
             "paragraphGapEm":policy.paragraph_gap_em,"maxContextDepth":policy.max_context_depth},
-        "tables":tables,"bodyRegions":regions,"unresolvedContent":ambiguous,"emission":"typed proposals; actual IR consumption is reported by lowering",
+        "unresolvedContent":ambiguous,"emission":"typed proposals; actual IR consumption is reported by lowering",
         "limits":["body whitespace partitions require repeated gutter evidence; ambiguous runs retained","nested cell-slot structure inferred; lowering may preserve unresolved content as positioned spans","tagged semantics not reconstructed"]});
+    report["tables"] = Value::Array(tables);
+    report["bodyRegions"] = Value::Array(regions);
     Ok(PageRecognition {
         report,
         cells,

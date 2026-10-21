@@ -68,6 +68,9 @@ export class CaretRenderer {
     this.caretEl.style.left = `${pageLeft + x * zoom}px`;
     this.caretEl.style.top = `${pageOffset + y * zoom}px`;
     this.caretEl.style.height = `${height * zoom}px`;
+    this.caretEl.style.transformOrigin = '0 0';
+    this.caretEl.style.transform = this.currentRect.rotation
+      ? `rotate(${this.currentRect.rotation}deg)` : '';
   }
 
   /** 새 CursorRect로 갱신한다 (깜박임 리셋) */
@@ -122,6 +125,8 @@ export class CaretRenderer {
     this.compEl.style.top = `${top}px`;
     this.compEl.style.width = `${w}px`;
     this.compEl.style.height = `${h}px`;
+    this.compEl.style.transformOrigin = '0 0';
+    this.compEl.style.transform = startRect.rotation ? `rotate(${startRect.rotation}deg)` : '';
     this.compEl.style.fontSize = `${box.h * 0.85 * zoom}px`;
     this.compEl.style.fontFamily = fontFamily || 'sans-serif';
     this.compEl.style.lineHeight = `${h}px`;

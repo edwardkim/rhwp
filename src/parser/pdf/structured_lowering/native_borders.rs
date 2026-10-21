@@ -20,6 +20,46 @@ struct Rule {
     endpoint_extension: f32,
 }
 
+// A neighboring rule's short end extension may fall inside this logical side.
+// It must not impose its style on the entire side when a same-color crossing
+// pen already covers that exact ink. Short independent strokes remain evidence.
+fn covered_join(
+    rules: &[Rule],
+    rule: &Rule,
+    from: f32,
+    to: f32,
+    a: f32,
+    b: f32,
+    work: &mut usize,
+) -> Option<bool> {
+    let boundary = if rule.from < from && rule.to < to {
+        from
+    } else if rule.to > to && rule.from > from {
+        to
+    } else {
+        return Some(false);
+    };
+    for cross in rules {
+        *work += 1;
+        if *work > 1_000_000 {
+            return None;
+        }
+        let half = cross.width as f32 / 200.;
+        let own_half = rule.width as f32 / 200.;
+        if cross.horizontal != rule.horizontal
+            && cross.color == rule.color
+            && (cross.at - boundary).abs() <= 0.0101
+            && a >= cross.at - half - 0.0101
+            && b <= cross.at + half + 0.0101
+            && rule.at - own_half >= cross.from - 0.0101
+            && rule.at + own_half <= cross.to + 0.0101
+        {
+            return Some(true);
+        }
+    }
+    Some(false)
+}
+
 // Compare actual painted intervals, not a regularized carrier or coverage ratio.
 // At least two complete pitches distinguish a native repeat from a single gap.
 fn native_dot_coverage(
@@ -336,6 +376,9 @@ pub(super) fn plan(
                 }
                 let (a, b) = (rule.from.max(from), rule.to.min(to));
                 if b <= a {
+                    continue;
+                }
+                if covered_join(&rules, rule, from, to, a, b, &mut work)? {
                     continue;
                 }
                 segments.push((a, b));

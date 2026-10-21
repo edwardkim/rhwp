@@ -2,6 +2,84 @@
 use super::*;
 type Address = (usize, usize, usize, usize);
 
+/// An exporter may emit an empty cell's rectangular clip scope without any
+/// text-show. Use such scopes only to complete unowned parts of an already
+/// content-backed grid. They cannot add axes, displace content, cross a painted
+/// separator or choose between competing partitions. This is inferred empty
+/// structure, not a claim that a clipping operator is authored table metadata.
+pub(super) fn from_clip_scopes(
+    grid: &Grid,
+    faces: &mut BTreeMap<Address, Vec<usize>>,
+    owners: &mut [Option<usize>],
+    clips: &PathClipObservations,
+    media: (f32, f32, f32, f32),
+    work: &mut usize,
+    separators: &[super::Separator],
+) -> Result<BTreeMap<Address, std::collections::BTreeSet<Vec<usize>>>, &'static str> {
+    if clips.omitted > 0 {
+        return Err("empty clip scope observations incomplete");
+    }
+    let cols = grid.xs.len() - 1;
+    let axis = |vs: &[f32], at: f32| vs.iter().position(|v| (*v - at).abs() <= EPS);
+    let mut proposed = BTreeMap::<Address, std::collections::BTreeSet<Vec<usize>>>::new();
+    for scope in &clips.clips {
+        *work += grid.xs.len() + grid.ys.len();
+        if *work > 1_000_000 {
+            return Err("cell region observation work exceeded");
+        }
+        let Some(b) = super::effective_clip(Some(&scope.clip), media) else {
+            continue;
+        };
+        if !super::super::inside(b, grid.bbox) {
+            continue;
+        }
+        let (Some(c), Some(ce), Some(r), Some(re)) = (
+            axis(&grid.xs, b.x),
+            axis(&grid.xs, b.x + b.width),
+            axis(&grid.ys, b.y),
+            axis(&grid.ys, b.y + b.height),
+        ) else {
+            continue;
+        };
+        if c >= ce || r >= re || (r..re).any(|y| (c..ce).any(|x| owners[y * cols + x].is_some())) {
+            continue;
+        }
+        let crosses = separators
+            .iter()
+            .any(|e| e.crosses(grid, (r, c, re - r, ce - c)));
+        *work += separators.len();
+        if *work > 1_000_000 {
+            return Err("cell region observation work exceeded");
+        }
+        if !crosses {
+            proposed
+                .entry((r, c, re - r, ce - c))
+                .or_default()
+                .insert(scope.source_order.clone());
+        }
+    }
+    let mut pending = vec![None; owners.len()];
+    for (id, &(r, c, rs, cs)) in proposed.keys().enumerate() {
+        for y in r..r + rs {
+            for x in c..c + cs {
+                if pending[y * cols + x].replace(id).is_some() {
+                    return Err("competing empty clip partitions");
+                }
+            }
+        }
+    }
+    for &(r, c, rs, cs) in proposed.keys() {
+        let id = faces.len();
+        faces.insert((r, c, rs, cs), Vec::new());
+        for y in r..r + rs {
+            for x in c..c + cs {
+                owners[y * cols + x] = Some(id);
+            }
+        }
+    }
+    Ok(proposed)
+}
+
 pub(super) fn complete(
     grid: &Grid,
     faces: &mut BTreeMap<Address, Vec<usize>>,
@@ -49,18 +127,34 @@ pub(super) fn complete(
                 return Err("cell region observation work exceeded");
             }
             let h = |row: usize, col: usize| {
-                row == 0
-                    || row == rows
-                    || sides
+                if row == 0 || row == rows {
+                    super::super::complete(
+                        &grid.source_edges,
+                        true,
+                        grid.ys[row],
+                        grid.xs[col],
+                        grid.xs[col + 1],
+                    )
+                } else {
+                    sides
                         .get(&(true, row, col))
                         .is_some_and(|n| *n >= grid.xs[col + 1] - grid.xs[col] - EPS)
+                }
             };
             let v = |row: usize, col: usize| {
-                col == 0
-                    || col == cols
-                    || sides
+                if col == 0 || col == cols {
+                    super::super::complete(
+                        &grid.source_edges,
+                        false,
+                        grid.xs[col],
+                        grid.ys[row],
+                        grid.ys[row + 1],
+                    )
+                } else {
+                    sides
                         .get(&(false, row, col))
                         .is_some_and(|n| *n >= grid.ys[row + 1] - grid.ys[row] - EPS)
+                }
             };
             // Do not join empty tiles through an absent side: a blank merged
             // region and blank cells with hidden sides cannot be distinguished

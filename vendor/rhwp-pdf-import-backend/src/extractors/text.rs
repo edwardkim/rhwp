@@ -1921,6 +1921,7 @@ struct TjBuffer {
     /// Display rotation of this run in degrees, snapped to a quadrant when near
     /// one; `0.0` for ordinary horizontal text (see `snap_run_rotation`).
     rotation_degrees: f32,
+    paint_basis: [f32; 4],
     /// Negative determinant of the composed matrix — mirrored text (see
     /// `run_is_mirrored`), carried onto the emitted span so `page_bbox`
     /// reflects rather than rotates its across-axis.
@@ -2068,6 +2069,7 @@ impl TjBuffer {
             paint_pos_y: paint_pos.y,
             user_h_scale,
             rotation_degrees,
+            paint_basis: [combined.a, combined.b, combined.c, combined.d],
             mirrored: run_is_mirrored(&combined),
             wmode: state.text_wmode,
             text_rise: if state.font_size > 0.0 {
@@ -2290,7 +2292,7 @@ pub struct TextExtractor<'doc> {
     paint_source_order: Vec<usize>,
     /// Adjacent text paints may share word assembly until a non-text mark or Form boundary.
     paint_group: usize,
-    span_paint_orders: HashMap<usize, (Vec<usize>, usize)>,
+    span_paint_orders: HashMap<usize, (Vec<usize>, usize, [f32; 4])>,
     /// Current marked content ID (for Tagged PDFs)
     ///
     /// Tracks the MCID of the currently active marked content sequence.
@@ -3724,7 +3726,12 @@ impl<'doc> TextExtractor<'doc> {
         resource.unwrap_or("Unknown").to_string()
     }
 
-    fn record_span_paint_order(&mut self, sequence: usize, order: Vec<usize>) -> Result<()> {
+    fn record_span_paint_order(
+        &mut self,
+        sequence: usize,
+        order: Vec<usize>,
+        basis: [f32; 4],
+    ) -> Result<()> {
         if self.visible_paint_only {
             if let Some(budget) = self.document.and_then(|doc| doc.import_budget()) {
                 budget.charge_entries(1)?;
@@ -3733,7 +3740,7 @@ impl<'doc> TextExtractor<'doc> {
                     .map_err(|_| budget.reject("text paint order allocation"))?;
             }
             self.span_paint_orders
-                .insert(sequence, (order, self.paint_group));
+                .insert(sequence, (order, self.paint_group, basis));
         }
         Ok(())
     }
@@ -3746,7 +3753,9 @@ impl<'doc> TextExtractor<'doc> {
         Ok(())
     }
 
-    pub(crate) fn take_span_paint_orders(&mut self) -> HashMap<usize, (Vec<usize>, usize)> {
+    pub(crate) fn take_span_paint_orders(
+        &mut self,
+    ) -> HashMap<usize, (Vec<usize>, usize, [f32; 4])> {
         std::mem::take(&mut self.span_paint_orders)
     }
 
@@ -4665,11 +4674,11 @@ impl<'doc> TextExtractor<'doc> {
                     || self
                         .span_paint_orders
                         .get(&current.sequence)
-                        .map(|(_, group)| group)
+                        .map(|(_, group, _)| group)
                         != self
                             .span_paint_orders
                             .get(&span.sequence)
-                            .map(|(_, group)| group))
+                            .map(|(_, group, _)| group))
             {
                 merged.push(current);
                 current_span = Some(span);
@@ -7602,7 +7611,11 @@ impl<'doc> TextExtractor<'doc> {
         self.span_sequence_counter += 1;
 
         if !self.is_content_suppressed() {
-            self.record_span_paint_order(span.sequence, std::mem::take(&mut buffer.source_order))?;
+            self.record_span_paint_order(
+                span.sequence,
+                std::mem::take(&mut buffer.source_order),
+                buffer.paint_basis,
+            )?;
             self.reserve_import_span()?;
             self.spans.push(span);
         }
@@ -8152,7 +8165,12 @@ impl<'doc> TextExtractor<'doc> {
         // Step 6: Increment sequence counter and add to spans
         self.span_sequence_counter += 1;
         if !self.is_content_suppressed() {
-            self.record_span_paint_order(span.sequence, self.paint_order_snapshot()?)?;
+            let matrix = state.ctm.multiply(&state.text_matrix);
+            self.record_span_paint_order(
+                span.sequence,
+                self.paint_order_snapshot()?,
+                [matrix.a, matrix.b, matrix.c, matrix.d],
+            )?;
             self.reserve_import_span()?;
             self.spans.push(span);
         }
@@ -8928,7 +8946,12 @@ impl<'doc> TextExtractor<'doc> {
         log::trace!("PUSH space span with offset_semantic={}", span.offset_semantic);
 
         if !self.is_content_suppressed() {
-            self.record_span_paint_order(span.sequence, self.paint_order_snapshot()?)?;
+            let matrix = state.ctm.multiply(&state.text_matrix);
+            self.record_span_paint_order(
+                span.sequence,
+                self.paint_order_snapshot()?,
+                [matrix.a, matrix.b, matrix.c, matrix.d],
+            )?;
             self.reserve_import_span()?;
             self.spans.push(span);
         }
@@ -9204,6 +9227,7 @@ impl<'doc> TextExtractor<'doc> {
                     self.record_span_paint_order(
                         span.sequence,
                         std::mem::take(&mut buffer.source_order),
+                        buffer.paint_basis,
                     )?;
                     self.reserve_import_span()?;
                     self.spans.push(span);

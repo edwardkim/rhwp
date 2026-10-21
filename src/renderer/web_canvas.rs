@@ -1401,9 +1401,25 @@ impl WebCanvasRenderer {
     fn render_layer_node(&mut self, node: &LayerNode, inherited_layer: Option<RenderLayerInfo>) {
         let active_layer = node.layer.or(inherited_layer);
         match &node.kind {
-            LayerNodeKind::Group { children, .. } => {
+            LayerNodeKind::Group {
+                children,
+                group_kind,
+                ..
+            } => {
+                let transform = if let GroupKind::Group(group) = group_kind {
+                    group.paint_transform
+                } else {
+                    None
+                };
+                if let Some([a, b, c, d, e, f]) = transform {
+                    self.ctx.save();
+                    let _ = self.ctx.transform(a, b, c, d, e, f);
+                }
                 for child in children {
                     self.render_layer_node(child, active_layer);
+                }
+                if transform.is_some() {
+                    self.ctx.restore();
                 }
             }
             LayerNodeKind::ClipPath { paths, child } => {
