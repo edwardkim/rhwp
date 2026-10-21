@@ -25,8 +25,8 @@
 //! 재현물 4개는 실문서(기관 서식, 저장 LINE_SEG 없음)를 글자 치환·그림 교체로 익명화한 것이다.
 //! 같은 파일을 한컴 웹한글기안기로 연 인쇄 출력(PDF)에서:
 //!
-//! - 작은 표가 있는 문서는 5쪽이다. 1쪽 제목은 작은 표 왼쪽에 작은 표와 같은 높이로 놓이고,
-//!   본문 표는 작은 표 아래에서 시작한다.
+//! - 작은 표가 있는 문서는 5쪽이다. 모든 쪽에 작은 표가 오른쪽 위에 있고 본문 표는 그 아래에서
+//!   시작한다. 1쪽 제목은 작은 표 왼쪽에 작은 표와 같은 높이로 놓인다.
 //! - 셀 안 중첩 표 문서에서 중첩 표의 마지막 행 글자는 행 안에 모두 보인다.
 //! - 떠 있는 도형 사이 제목 문서는 4쪽이다. 2쪽 글뒤 그림을 가진 표 host 의 빈 줄이 표 아래에
 //!   놓여 2쪽 마지막 빈 문단이 3쪽 첫 줄이 된다. 3쪽 어울림 표 뒤 안내 줄은 표 바로 아래에 온다.
@@ -196,6 +196,42 @@ fn overlay_sample_keeps_five_pages() {
         5,
         "웹한글기안기 기준 5쪽"
     );
+}
+
+/// 본문 직속 표(셀 안 표 제외)의 (폭, 위치).
+fn top_level_tables(node: &RenderNode, in_table: bool, out: &mut Vec<(f64, Rect)>) {
+    if !in_table && matches!(node.node_type, RenderNodeType::Table(_)) {
+        out.push((node.bbox.width, Rect::of(node)));
+    }
+    let inside = in_table || matches!(node.node_type, RenderNodeType::Table(_));
+    for child in &node.children {
+        top_level_tables(child, inside, out);
+    }
+}
+
+#[test]
+fn every_page_draws_its_overlay_table_above_body_table() {
+    let doc = load(OVERLAY_SAMPLE);
+    for page in 0..doc.page_count() {
+        let tree = doc.build_page_render_tree(page).expect("렌더 트리");
+        let mut tables = Vec::new();
+        top_level_tables(&tree.root, false, &mut tables);
+        tables.sort_by(|a, b| a.0.total_cmp(&b.0));
+        assert_eq!(
+            tables.len(),
+            2,
+            "{}쪽에는 작은 글앞 표와 본문 표가 하나씩 있어야 한다 — 빈 host 문단이 앞 쪽에 \
+             남으면 작은 표가 앞 쪽 아래에 그려진다: {tables:?}",
+            page + 1
+        );
+        let (overlay, body_table) = (tables[0].1, tables[1].1);
+        assert!(
+            body_table.y + 0.5 >= overlay.bottom(),
+            "{}쪽 본문 표는 작은 글앞 표 아래에서 시작해야 한다: 작은 표 {overlay:?}, \
+             본문 표 {body_table:?}",
+            page + 1
+        );
+    }
 }
 
 #[test]
