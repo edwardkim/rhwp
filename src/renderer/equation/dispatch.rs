@@ -34,6 +34,8 @@ pub(crate) enum EqCommandClass {
     Sqrt,
     /// 적분 기호. `BigOp` 보다 먼저 매칭해 nolimits(일반 첨자)로 둔다.
     IntegralNolimits,
+    /// `SMALLPROD` — 본문 크기의 곱 기호와 오른쪽 일반 첨자.
+    SmallOperator,
     /// `SUM`/`PROD` 등 limits 큰 연산자.
     BigOperator,
     /// `lim`/`Lim`. 원문 대소문자를 구분한다.
@@ -99,6 +101,7 @@ pub(crate) fn classify_command(cmd: &str) -> EqCommandClass {
         "SQRT" | "ROOT" => return EqCommandClass::Sqrt,
         "INT" | "INTEGRAL" | "SMALLINT" | "DINT" | "TINT" | "OINT" | "SMALLOINT" | "ODINT"
         | "OTINT" => return EqCommandClass::IntegralNolimits,
+        "SMALLPROD" => return EqCommandClass::SmallOperator,
         _ => {}
     }
 

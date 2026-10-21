@@ -569,6 +569,11 @@ impl EqLayout {
 
     fn layout_math_symbol(&self, text: &str, fs: f64) -> LayoutBox {
         if let Some(layout) =
+            self.layout_hancom_glyphs(text, super::hancom_glyphs::Role::SmallOperator, fs, 0.0)
+        {
+            return layout;
+        }
+        if let Some(layout) =
             self.layout_hancom_glyphs(text, super::hancom_glyphs::Role::Operator, fs, 0.0)
         {
             return layout;

@@ -21,6 +21,7 @@ pub(super) enum Role {
     Operator,
     Greek,
     BigOperator,
+    SmallOperator,
     LegacyLiteral,
 }
 
@@ -107,6 +108,9 @@ fn glyph(ch: char, role: Role) -> Option<(char, u16)> {
             }
         }
         Role::BigOperator if ch == '∑' => (0xe067, 739),
+        // 독립 정상 저장본의 SMALLPROD는 두 수식 face의 Unicode U+220F다.
+        // 큰 연산자용 PUA와 구분하며 본문 크기의 한 em 전진을 소비한다.
+        Role::SmallOperator if ch == '∏' => (0x220f, 1024),
         // A legacy equation's literal triangle and one-dot leader occupy
         // full symbol slots in Hancom Print. The equation font has no U+2024
         // cmap entry; its mathematical dot is U+22C5, with that same advance.
@@ -157,7 +161,11 @@ pub(super) fn measure(
             },
         );
         glyphs.push(rendered);
-        width += if font_family == "HancomEQN" {
+        width += if matches!(role, Role::SmallOperator) {
+            // 두 설치 프로그램의 hmtx=1024/1024 및 Windows의 논리 크기
+            // 2..128 짝수 격자128조건에서 확인한 한 em 전진이다.
+            (logical_size * f64::from(advance) / 1024.0).round() * dpi / 96.0
+        } else if font_family == "HancomEQN" {
             super::hancom_eqn_metrics::advance(rendered, fs, dpi)?
         } else if matches!(role, Role::Variable { italic: false }) {
             // 같은 face의 기존 독립 GDI 전진을 실제 glyph 원점에도 소비한다.
