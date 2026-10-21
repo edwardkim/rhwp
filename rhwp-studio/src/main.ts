@@ -1,5 +1,5 @@
 import { setHostFontProvider, onHostFontsChanged, hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from '@/core/local-fonts';
-import { collectHostFontRequests } from '@/core/host-font-requests';
+import { collectHostFontRequests, resolveDocumentCanvasKitFontFamilies } from '@/core/host-font-requests';
 import { WasmBridge } from '@/core/wasm-bridge';
 import { installDocumentTitle } from '@/ui/document-title';
 import type { DocumentInfo, PageInfo } from '@/core/types';
@@ -522,6 +522,15 @@ async function initialize(): Promise<void> {
     const canvaskitMode = canvaskitModeRequest.mode;
     const canvaskitSurfaceRequest = resolveCanvasKitSurfaceRequest(window.location.search);
     const renderProfile = resolveRenderProfile(window.location.search);
+    const documentFontRequirements = (required: readonly string[]) => {
+      if (!wasm.getDocumentInfo().fontSubstitutions?.length) return required;
+      function* pageTrees() {
+        for (let page = 0; page < wasm.pageCount; page++) {
+          yield wasm.getPageLayerTreeObject(page, renderProfile);
+        }
+      }
+      return resolveDocumentCanvasKitFontFamilies(required, pageTrees());
+    };
     const diagnosticsBackendRequest: EmbedRendererRuntimeRequestV1['backend'] =
       renderBackendRequest.backend === 'auto'
         ? { ...renderBackendRequest, backend: 'canvas2d' }
@@ -558,7 +567,7 @@ async function initialize(): Promise<void> {
       {
         transformCanvasKitPreflight(report) {
           const plan = resolveCanvasKitFontPlan(
-            report.requiredFontFamilies,
+            documentFontRequirements(report.requiredFontFamilies),
             extensionViewerSettings,
           );
           const blockers = plan.unavailableFonts.map(font => `fontUnavailable:${font}`);
@@ -589,15 +598,13 @@ async function initialize(): Promise<void> {
           if (!fontRequirements.complete) {
             throw new Error('CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다');
           }
-          const plan = resolveCanvasKitFontPlan(
-            fontRequirements.requiredFontFamilies,
-            extensionViewerSettings,
-          );
+          let requiredFontFamilies: readonly string[] = fontRequirements.requiredFontFamilies;
           try {
             // 저장된 Local Font Access 권한이 있으면 첫 replay부터 원 face의 SFNT bytes를
             // CanvasKit에 전달한다. CSS local()에서 EBDT face가 두부로 바뀌는 경로를 타지 않는다.
             await loadStoredLocalFonts();
-            await renderer.prepareLocalFonts(fontRequirements.requiredFontFamilies);
+            requiredFontFamilies = documentFontRequirements(fontRequirements.requiredFontFamilies);
+            await renderer.prepareLocalFonts(requiredFontFamilies);
           } catch (error) {
             // 로컬 권한이 만료됐거나 face 읽기에 실패해도 portable bundled face로 계속 연다.
             console.warn(
@@ -605,6 +612,10 @@ async function initialize(): Promise<void> {
               error,
             );
           }
+          const plan = resolveCanvasKitFontPlan(
+            requiredFontFamilies,
+            extensionViewerSettings,
+          );
           const unavailableFonts = plan.unavailableFonts.filter(
             family => !renderer.hasPreparedFontFamily(family),
           );

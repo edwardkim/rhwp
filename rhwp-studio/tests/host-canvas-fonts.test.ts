@@ -52,6 +52,18 @@ test('host aliases exist only in synchronous measurement/paint scope and are rel
   } finally { await f.dispose(); }
 });
 
+test('#8109 a prepared document substitute remains available behind an absent primary', async () => {
+  const f = await fixture();
+  try {
+    await f.session.prepare(f.records());
+    const direct = withHostCanvasFonts(f.session, () => scopedHostCanvasFont('italic 20px "Host Test"'))!;
+    const fallback = withHostCanvasFonts(f.session, () => scopedHostCanvasFont('italic 20px "Missing Source", "Host Test"'))!;
+    assert.match(fallback, /__rhwp_host_face_/);
+    assert.equal(fallback.split(',')[0], direct.split(',')[0], 'both paths consume the same prepared physical face');
+    assert.match(fallback, /"Missing Source", "Host Test"/, 'the original candidate chain is preserved');
+  } finally { await f.dispose(); }
+});
+
 test('late FontFace.load cannot register after a document reset, even if bytes were already read', async () => {
   const f = await fixture();
   try {

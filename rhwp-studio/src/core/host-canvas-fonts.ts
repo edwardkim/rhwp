@@ -99,7 +99,11 @@ export class HostCanvasFontSession {
     const slant = tokens.includes('italic') ? 'italic' : tokens.includes('oblique') ? 'oblique' : 'normal';
     const families = parseCssFontFamilyList(match[3]);
     if (this.aliases.has(families[0])) return cssFont;
-    const record = families[0] ? resolveRendererLocalFont(families[0], { weight, slant }) : null;
+    let record: LocalFontRecord | null = null;
+    for (const family of families) {
+      record = resolveRendererLocalFont(family, { weight, slant });
+      if (record) break;
+    }
     const loaded = record?.hostReference ? this.faces.get(localFontFaceKey(record)) : null;
     return loaded ? `${match[1]}${match[2]} ${formatCssFontFamilyList([loaded.alias, ...families])}` : null;
   }

@@ -4,7 +4,7 @@ import { HostFontSource, type HostFontProvider, type HostFontSnapshot } from '..
 import { setHostFontProvider, prepareHostFontCatalog, resolveRendererLocalFont, resolveLocalFont,
   loadRendererLocalFont, getLocalFontState } from '../src/core/local-fonts.ts';
 import { fontFamilyChainForDisplay } from '../src/core/font-substitution.ts';
-import { collectHostFontRequests } from '../src/core/host-font-requests.ts';
+import { collectHostFontRequests, resolveDocumentCanvasKitFontFamilies } from '../src/core/host-font-requests.ts';
 import type { LayerEquationLayoutBox, PageLayerTree } from '../src/core/types.ts';
 
 function deferred<T>() {
@@ -136,6 +136,27 @@ test('paint requests preserve weight and only read the selected faces', async ()
     assert.equal(f.reads(), 0);
     await loadRendererLocalFont(records[0]);
     assert.equal(f.reads(), 1);
+  } finally { await setHostFontProvider(null); }
+});
+
+test('#8109 document substitute candidates reach preparation without changing other source requirements', async () => {
+  const f = fixture();
+  const bounds = { x: 0, y: 0, width: 200, height: 100 };
+  const tree: PageLayerTree = { pageWidth: 200, pageHeight: 100,
+    root: { kind: 'leaf', bounds, ops: [
+      { type: 'textRun', text: 'fallback', bbox: bounds, style: { fontFamily: 'Missing Source, "Host Only"', bold: true } },
+      { type: 'textRun', text: 'original', bbox: bounds, style: { fontFamily: 'Missing Source' } },
+      { type: 'textRun', text: 'primary', bbox: bounds, style: { fontFamily: '"Host Only", Missing Source' } },
+      { type: 'footnoteMarker', text: '1)', bbox: bounds, fontFamily: 'Missing Marker, "Host Only"' },
+    ] } };
+  try {
+    await setHostFontProvider(f.provider);
+    assert.deepEqual(collectHostFontRequests(tree).map(record => record.hostReference?.face.id), ['bold', 'regular']);
+    assert.deepEqual(resolveDocumentCanvasKitFontFamilies(['Missing Source', 'Unrelated', 'Host Only'], [tree]),
+      ['Host Only', 'Missing Source', 'Unrelated']);
+    assert.equal(tree.root.kind === 'leaf' && tree.root.ops[0].type === 'textRun'
+      ? tree.root.ops[0].style?.fontFamily : null, 'Missing Source, "Host Only"', 'source declaration stays intact');
+    assert.equal(f.reads(), 0, 'metadata selection does not read font programs');
   } finally { await setHostFontProvider(null); }
 });
 

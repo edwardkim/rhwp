@@ -1,33 +1,29 @@
-# #8109 font provenance controls
+# #8109 글꼴 출처 대조군
 
-These handwritten PDF controls test the distinction between a missing standard
-Type1 program and a declared, unreadable, or unknown program. They are synthetic
-resource contracts, not samples saved by Hancom. Each successful PDF is its own
-independent visual reference. `unresolved-descriptor.pdf` intentionally keeps the
-existing bounded parser rejection and is not a renderable fixture.
+수동 작성한 PDF로 표준 Type1 프로그램의 부재, 프로그램 선언은 있으나 읽을 수 없는 상태,
+프로그램 상태를 알 수 없는 경우를 구별한다. 한컴 저장본이 아닌 합성 resource 계약 입력이며,
+성공적으로 열리는 각 PDF 자체가 독립 시각 기준이다. `unresolved-descriptor.pdf`는 기존
+자원 제한 거절을 보호하는 오류 입력이며 렌더링 fixture에 포함하지 않는다.
 
-`generate_controls.py` writes the eleven PDFs using explicit object dictionaries,
-content streams, and xref offsets. It requires fontTools and the system
-`fonts-urw-base35` package. `manifest.json` records the source font and PDF hashes.
-The generator does not write `standard-substitute.hwpx`.
+`generate_controls.py`는 object dictionary·content stream·xref offset을 명시해 PDF11개를
+생성한다. fontTools와 시스템 `fonts-urw-base35` 패키지가 필요하다. `manifest.json`은 원본
+font와 PDF 해시를 기록한다. `standard-substitute.hwpx`는 이 생성기의 산출물이 아니다.
 
-`standard-substitute.hwpx` was made from `pdf/issue7998/body-list.pdf` with the
-pre-fix importer and an explicit model declaration `Helvetica` plus TrueType
-substitute `Arial`. It independently exercises HWP's alternative face/type byte
-and HWPX → HWP → HWPX preservation without relying on the new PDF policy.
-Its generation and independent Hancom 2020 Print are recorded in
-`mydocs/working/task_m100_8109_stage1.md`; current qualification is in
-`mydocs/working/task_m100_8109_stage2.md`.
+`standard-substitute.hwpx`는 수정 전 importer로 `pdf/issue7998/body-list.pdf`를 가져온 뒤
+공통 모델의 `Helvetica` 선언에 TrueType 대체 `Arial`을 명시해 만들었다. 새 PDF 정책에
+의존하지 않고 HWP의 독립 alternative face/type byte와 HWPX → HWP → HWPX 보존을 검사한다.
+생성 절차와 독립 한컴2020 Print는 `mydocs/working/task_m100_8109_stage1.md`, 현행 시각 검증은
+`mydocs/working/task_m100_8109_stage2.md`에 기록했다.
 
-The embedded-program controls include only a CFF program inside their PDF text
-document. Source: Artifex/URW `NimbusSans-Regular.otf`, distributed by Debian's
-`fonts-urw-base35` package, copyright 2015 URW Software and 2013–2014 (URW)++
-Design & Development. License: GNU AGPL version 3 with this font exception:
+프로그램이 있는 대조군은 PDF 텍스트 문서 내부에 CFF 프로그램만 포함한다. 원본은 Debian의
+`fonts-urw-base35` 패키지가 배포하는 Artifex/URW `NimbusSans-Regular.otf`이며 저작권자는
+2015 URW Software 및 2013–2014 (URW)++ Design & Development다. 라이선스는 GNU AGPL
+version3이며 다음 font 예외를 포함한다.
 
 > As a special exception, permission is granted to include these font
 > programs in a Postscript or PDF file that consists of a document that
 > contains text to be displayed or printed using this font, regardless
 > of the conditions or license applying to the document itself.
 
-Upstream source and license: https://github.com/ArtifexSoftware/urw-base35-fonts.
-No standalone font program or commercial font is included.
+원본 소스와 라이선스: https://github.com/ArtifexSoftware/urw-base35-fonts.
+독립 font 프로그램과 상용 font 파일은 포함하지 않았다.

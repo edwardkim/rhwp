@@ -119,3 +119,6 @@ pdf/issue7998/shared-tabs/*.pdf -text -diff
 # #8109 font resource contracts retain PDF xref and HWPX archive bytes.
 pdf/issue8109/*.pdf -text -diff
 pdf/issue8109/*.hwpx -text -diff
+pdf/issue8109/print/*.pdf -text -diff
+tests/fixtures/issue_8109_saved_fonts/*.hwp -text -diff
+tests/fixtures/issue_8109_saved_fonts/*.hwpx -text -diff

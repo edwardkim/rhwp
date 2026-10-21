@@ -1,4 +1,5 @@
 import { CanvasKitBundledFontFamily } from './canvaskit/font-style-selection.ts';
+import { parseCssFontFamilyList } from '../core/font-substitution.ts';
 import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
 import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
@@ -1307,10 +1308,11 @@ export class CanvasKitLayerRenderer {
     const character = record.source.character;
     const requestedFamily = primaryFontFamily(requested);
     const normalized = normalizedFontFamily(requestedFamily);
-    const localRecord = resolveRendererLocalFont(requestedFamily);
+    const prepared = this.findPreparedTypeface(requested);
+    const localRecord = prepared?.record ?? resolveRendererLocalFont(requestedFamily);
     const localKey = localRecord ? localFontFaceKey(localRecord) : '';
-    const local = localKey ? this.localTypefaces.get(localKey) ?? null : null;
-    const bundled = this.findBundledTypeface(normalized);
+    const local = prepared?.record ? prepared : localKey ? this.localTypefaces.get(localKey) ?? null : null;
+    const bundled = prepared && !prepared.record ? prepared : this.findBundledTypeface(normalized);
     const primary = local ?? bundled ?? (
       normalized === normalizedFontFamily(this.defaultFontFamily) || normalized === 'noto sans kr'
         ? (this.defaultTypeface || this.defaultFontManager ? {
@@ -2955,7 +2957,7 @@ export class CanvasKitLayerRenderer {
     const hasLayoutPositions = replayPositions?.length === codePoints.length + 1
       && replayPositions.every(Number.isFinite);
     const requestedFontFamily = primaryFontFamily(style.fontFamily);
-    const preparedTypeface = this.findPreparedTypeface(requestedFontFamily, style);
+    const preparedTypeface = this.findPreparedTypeface(style.fontFamily, style);
     if (requestedFontFamily && !preparedTypeface && this.requirePreparedFontFamilies) {
       throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${requestedFontFamily}`);
     }
@@ -3398,7 +3400,7 @@ export class CanvasKitLayerRenderer {
         : 1;
     const innerFontSize = Math.max(1, fontSize * Math.min(4, Math.max(0.1, rawRatio)));
     const requestedFontFamily = primaryFontFamily(style.fontFamily);
-    const preparedTypeface = this.findPreparedTypeface(requestedFontFamily, style);
+    const preparedTypeface = this.findPreparedTypeface(style.fontFamily, style);
     if (requestedFontFamily && !preparedTypeface && this.requirePreparedFontFamilies) {
       throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${requestedFontFamily}`);
     }
@@ -4001,7 +4003,8 @@ export class CanvasKitLayerRenderer {
   }
 
   private findPreparedTypeface(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface | null {
-    const key = `${normalizedFontFamily(fontFamily)}:${style?.bold === true}:${style?.italic === true}:${getHostFontState().generation}`;
+    const key = JSON.stringify([fontFamily ?? '', style?.bold === true,
+      style?.italic === true, getHostFontState().generation]);
     if (this.fallbackFamilyCache.has(key)) {
       const cached = this.fallbackFamilyCache.get(key)!;
       this.fallbackFamilyCache.delete(key);
@@ -4128,6 +4131,21 @@ export class CanvasKitLayerRenderer {
   }
 
   private resolvePreparedTypeface(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface | null {
+    const families = parseCssFontFamilyList(fontFamily ?? '');
+    if (families.length > 1) {
+      // A document substitute is an actual font candidate. Do not truncate it
+      // before local/host preparation and silently choose a bundled primary alias.
+      for (const family of families) {
+        const record = resolveRendererLocalFont(family, hostFontStyle(style));
+        const prepared = record ? this.localTypefaces.get(localFontFaceKey(record)) : null;
+        if (prepared) return prepared;
+      }
+      for (const family of families) {
+        const prepared = this.resolvePreparedTypeface(family, style);
+        if (prepared) return prepared;
+      }
+      return null;
+    }
     const key = normalizedFontFamily(fontFamily);
     if (!key) return null;
     const record = resolveRendererLocalFont(primaryFontFamily(fontFamily), hostFontStyle(style));

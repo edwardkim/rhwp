@@ -4,7 +4,9 @@
 - 기준: `80968497c2c178eeecb3b2e1d04d086ad27a0dc7`, 브랜치 `task_m100_8109`.
 - 상위: [수행계획](task_m100_8109.md). 상태: 2026-10-21 진행 승인,
   [1단계 진단 완료](../working/task_m100_8109_stage1.md) 뒤 2단계 승인·구현 및 집중 검증 완료.
-  [2단계 보고](../working/task_m100_8109_stage2.md)를 제출하고 최종 3단계 승인 대기.
+  [2단계 보고](../working/task_m100_8109_stage2.md) 후 최종 3단계 진행 승인.
+  `5699a3778`의 전체 lint·회귀·Native/fresh WASM·Studio/시각 검증과 실제 Studio 소비 보정을
+  [3단계](../working/task_m100_8109_stage3.md)에서 완료했다. [결과보고](../report/task_m100_8109_report.md) 승인 대기.
 
 1단계에서 명시적 Arial 대체의 독립 한컴 Print를 확인했다. 2단계는 원본 이름을 유지한
 PDF 대체 정책과 HWP 대체 필드의 공통 모델 정규화를 구현한다. HWPX→HWP→HWPX에서
