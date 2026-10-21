@@ -62,7 +62,7 @@ before 로그의 sharedCalls3에는 앞서 검사한 incomplete 조회1회가 �
   독립 Print와4배 직접 판독해 목록·계속 줄·뒤 본문·네 스타일·간격의 보존을 확인했다.
 - `git diff f1ae43d70 -- src vendor tests scripts Cargo.toml Cargo.lock .github`는 비어 있다.
   Rust source와 모든 Rust test·fixture·manifest·workflow가 동일해3단계의 Rust lint·release·
-  전체 nextest11,215 PASS·Native Skia3종·doc 검증을 재사용한다. 추가 변경은 Studio5개 파일과 문서/증적이다.
+  전체 nextest11,215 PASS·Native Skia3종·doc 검증을 재사용한다. 추가 변경은 Studio5개 파일과 아래 CI 계약 검사1개 및 문서/증적이다.
 - Native CLI `cfb7cb5f91201212f786a061a0a50e880635dda0ce454cfb39d66bfce29a551e`,
   최적화 WASM `b8c20fcfe5952ed2a1d3f4188842438275f4a964bceaa55f1f170fc6d640ffe1`,
   JS `1c40e6aa15e5b87643148b717fba0683ae622910e96e369659465d2c0abfab9a`가 이전과 일치한다.
@@ -79,3 +79,22 @@ before 로그의 sharedCalls3에는 앞서 검사한 incomplete 조회1회가 �
 
 필수 기능·성능 보정과 로컬 검증을 완료했다. PR 생성과 exact-head GitHub CI의 실제 결과는
 생성 이후 별도 기록한다. merge·이슈 close는 수행하지 않는다.
+
+## PR #8132 첫 CI의 source guard 보정
+
+최초 code head `89cf12827`의 Render Diff run39592776418은 픽셀 비교 전
+`renderer-contract.test.mjs:556`에서 실패했다. `prepareLocalFonts(fontRequirements.requiredFontFamilies)`라는
+이전 직접 인자 표기를 고정한 검사였다. 원래 로컬 face 준비는 PR #4517 / 실제 merge `04520749b51b`에 포함된 `e55366cd47d`에서 도입됐고,
+현재 검사식은 #7688의 실제 통합 PR #7697 / `21ed64071f81`에서 당시 변수명에 맞춰 보정됐다.
+원 계약은 첫 replay 전에 저장된 local face를 준비하고 bundled fallback을 이어 준비하는 순서다.
+이번에는 stored snapshot 뒤의 `documentFontRequirements(fontRequirements)` 해소와 그 결과를
+`prepareLocalFonts(requiredFontFamilies)`에 전달하는 경로까지 검사하도록 갱신했다.
+제품 코드는 바꾸지 않았고 실제 물리 face·style·준비 순서의 E2E 증거는 그대로 유지했다.
+
+놓쳤던 Render Diff 사전 계약 검사 경로를 로컬에서 추가 실행했다. 고정 Chromium1660786과
+현재 동일 Native/WASM으로 renderer 계약·폰트 coverage·native diff self-test가 PASS했고,
+Canvas 비교3/3 PASS, 직접 PDF compatibility gate3/3 PASS, auto CanvasKit readiness8/8 PASS였다.
+PDF report-only 비교는4 warning·0 error였으며 Canvas와72DPI PDF의 출력 크기 차이도 보고한다.
+이 report-only 값을 독립 Print의 시각 통과 증거로 사용하지 않는다. golden·threshold·workflow는
+변경하지 않았다. 로그는 `renderer-contract.log`, `font-coverage.log`, `render-diff-local.log`,
+`canvaskit-readiness.log`와 해당 ignored 하위 출력에 보존했다. 보정 commit의 GitHub CI를 다시 확인한다.
