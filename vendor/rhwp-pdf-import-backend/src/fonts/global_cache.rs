@@ -217,6 +217,7 @@ mod tests {
             ascent: 0.95,
             descent: -0.35,
             embedded_font_data: None,
+            embedded_program_present: None,
             truetype_cmap: std::sync::OnceLock::new(),
             import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),

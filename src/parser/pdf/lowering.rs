@@ -10,7 +10,8 @@ use crate::model::{
         TextBox, TextWrap,
     },
     style::{
-        Alignment, Fill, FillType, Font, ShapeBorderLine, SolidFill, PARA_ATTR2_LINE_WRAP_MASK,
+        Alignment, Fill, FillType, Font, ShapeBorderLine, SolidFill, SubstFont,
+        PARA_ATTR2_LINE_WRAP_MASK,
     },
     Point,
 };
@@ -340,6 +341,7 @@ pub(super) fn lower(
 
     let mut unknown_fonts = 0;
     let mut font_identity_mappings = std::collections::BTreeMap::new();
+    let mut font_substitutions = std::collections::BTreeMap::new();
     // These are all fields changed from the common scaffold shape below.
     // Reuse equal source styles within a page instead of allocating one per
     // PDF text-show. Source spans and paint order remain separately recorded.
@@ -357,9 +359,32 @@ pub(super) fn lower(
         if font_name == "Arial" && span.font_name != "Arial" {
             font_identity_mappings.insert(span.font_name.as_str(), font_name);
         }
+        // ISO 32000-1 standard Type1 Helvetica can omit its program. Preserve
+        // that declaration and its AFM advances; make the paint/save fallback
+        // explicit instead of depending on each host's unrelated default face.
+        // FontInfo is the actual scoped resource, not a page-level name guess.
+        let substitute = page.span_fonts[span_index]
+            .as_ref()
+            .filter(|font| {
+                font.subtype == "Type1"
+                    && font.embedded_program_present == Some(false)
+                    && imported_font_family(&font.base_font) == font_name
+                    && matches!(
+                        font_name,
+                        "Helvetica"
+                            | "Helvetica-Bold"
+                            | "Helvetica-Oblique"
+                            | "Helvetica-BoldOblique"
+                    )
+            })
+            .map(|_| SubstFont {
+                face: "Arial".into(),
+                font_type: 1,
+                ..Default::default()
+            });
         let font_id = if let Some(i) = doc.doc_info.font_faces[0]
             .iter()
-            .position(|f| f.name == font_name)
+            .position(|f| f.name == font_name && f.subst_font == substitute)
         {
             i as u16
         } else {
@@ -367,11 +392,21 @@ pub(super) fn lower(
             for group in &mut doc.doc_info.font_faces {
                 group.push(Font {
                     name: font_name.into(),
+                    subst_font: substitute.clone(),
                     ..Default::default()
                 });
             }
             i
         };
+        if let Some(substitute) = &substitute {
+            font_substitutions.insert(
+                font_id,
+                json!({
+                    "sourceFace":font_name, "sourceProgram":"absent",
+                    "substituteFace":substitute.face, "reason":"pdf-base14-without-program",
+                }),
+            );
+        }
         let mut cs = doc.doc_info.char_shapes[0].clone();
         cs.font_ids = [font_id; 7];
         cs.base_size = hu(span.font_size)? as i32;
@@ -514,6 +549,7 @@ pub(super) fn lower(
         "detectedTables":detected, "semanticTables":0,
         "unsupportedPaths":unsupported_paths, "unknownFontSpans":unknown_fonts,
         "fontIdentityMappings":font_identity_mappings,
+        "fontSubstitutions":font_substitutions,
         "compatibilityCorrections":["picture-point-pair-layout", "picture-frame-HWPUNIT", "full-image-crop-extent", "explicit-zero-text-margins", "single-line-span-reflow"],
         "hancomCompatibility":"unverified-awaiting-editor-retest",
         "warnings":warnings

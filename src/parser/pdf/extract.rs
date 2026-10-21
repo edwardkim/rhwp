@@ -46,13 +46,20 @@ pub(super) fn extract(
     }
     let painted = checked(
         pdf,
-        pdf.extract_ordered_painted_spans_with_frames(page),
+        pdf.extract_ordered_painted_spans_with_fonts(page),
         "text",
         page,
     )?;
     let mut spans = Vec::with_capacity(painted.len());
     let mut span_orders = Vec::with_capacity(painted.len());
-    for (span, order, basis) in painted {
+    let mut span_fonts = Vec::with_capacity(painted.len());
+    for painted in painted {
+        let pdf_oxide::layout::text_block::PaintedTextSpan {
+            span,
+            order,
+            basis,
+            font,
+        } = painted;
         super::rotated_text::validate(&span, basis).map_err(|message| {
             PdfImportError::new("PDF_TEXT_UNSUPPORTED", message).at(
                 "text",
@@ -62,6 +69,7 @@ pub(super) fn extract(
         })?;
         spans.push(span);
         span_orders.push(order);
+        span_fonts.push(font);
     }
     let (paths, clips) = checked(pdf, pdf.extract_paths_with_clips(page), "paths", page)?;
     let mut uses = std::collections::BTreeMap::new();
@@ -346,6 +354,7 @@ pub(super) fn extract(
         media_box,
         spans,
         span_orders,
+        span_fonts,
         span_clips,
         images,
         image_orders,

@@ -8,6 +8,19 @@ use crate::geometry::{Point, Rect};
 use crate::structure::McidScope;
 use std::collections::HashMap;
 
+/// A positional span and the font resource active at its text-show. The Arc
+/// retains identity across Form scopes without copying an embedded program.
+pub struct PaintedTextSpan {
+    /// Extracted text and observed glyph positions.
+    pub span: TextSpan,
+    /// Full content-stream paint path, including enclosing Forms.
+    pub order: Vec<usize>,
+    /// Unsnapped CTM × text-matrix linear basis at the text-show.
+    pub basis: [f32; 4],
+    /// Actual scoped font, or unknown when the resource could not be loaded.
+    pub font: Option<std::sync::Arc<crate::fonts::FontInfo>>,
+}
+
 /// A text span (complete string from a Tj/TJ operator).
 ///
 /// This represents text as the PDF specification provides it - complete strings

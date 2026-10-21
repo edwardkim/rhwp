@@ -18,6 +18,14 @@ use crate::fonts::unicode_decode::{fallback_char_to_unicode, DecodePolicy, TextC
 use crate::fonts::FontInfo;
 use crate::geometry::Rect;
 
+#[derive(Debug)]
+pub(crate) struct SpanPaintOrder {
+    pub(crate) order: Vec<usize>,
+    pub(crate) group: usize,
+    pub(crate) basis: [f32; 4],
+    pub(crate) font: Option<std::sync::Arc<FontInfo>>,
+}
+
 /// Decode a show string the way extraction reads it.
 ///
 /// Extraction keeps an unmapped code when the caller asked for it, leaves
@@ -2292,7 +2300,7 @@ pub struct TextExtractor<'doc> {
     paint_source_order: Vec<usize>,
     /// Adjacent text paints may share word assembly until a non-text mark or Form boundary.
     paint_group: usize,
-    span_paint_orders: HashMap<usize, (Vec<usize>, usize, [f32; 4])>,
+    span_paint_orders: HashMap<usize, SpanPaintOrder>,
     /// Current marked content ID (for Tagged PDFs)
     ///
     /// Tracks the MCID of the currently active marked content sequence.
@@ -3731,6 +3739,7 @@ impl<'doc> TextExtractor<'doc> {
         sequence: usize,
         order: Vec<usize>,
         basis: [f32; 4],
+        font: Option<Arc<FontInfo>>,
     ) -> Result<()> {
         if self.visible_paint_only {
             if let Some(budget) = self.document.and_then(|doc| doc.import_budget()) {
@@ -3739,8 +3748,15 @@ impl<'doc> TextExtractor<'doc> {
                     .try_reserve(1)
                     .map_err(|_| budget.reject("text paint order allocation"))?;
             }
-            self.span_paint_orders
-                .insert(sequence, (order, self.paint_group, basis));
+            self.span_paint_orders.insert(
+                sequence,
+                SpanPaintOrder {
+                    order,
+                    group: self.paint_group,
+                    basis,
+                    font,
+                },
+            );
         }
         Ok(())
     }
@@ -3753,10 +3769,21 @@ impl<'doc> TextExtractor<'doc> {
         Ok(())
     }
 
-    pub(crate) fn take_span_paint_orders(
-        &mut self,
-    ) -> HashMap<usize, (Vec<usize>, usize, [f32; 4])> {
+    pub(crate) fn take_span_paint_orders(&mut self) -> HashMap<usize, SpanPaintOrder> {
         std::mem::take(&mut self.span_paint_orders)
+    }
+
+    fn same_painted_font_resource(&self, first: usize, second: usize) -> bool {
+        let font = |sequence| {
+            self.span_paint_orders
+                .get(&sequence)
+                .and_then(|order| order.font.as_ref())
+        };
+        match (font(first), font(second)) {
+            (Some(first), Some(second)) => Arc::ptr_eq(first, second),
+            (None, None) => true,
+            _ => false,
+        }
     }
 
     fn reserve_import_span(&mut self) -> Result<()> {
@@ -4674,11 +4701,12 @@ impl<'doc> TextExtractor<'doc> {
                     || self
                         .span_paint_orders
                         .get(&current.sequence)
-                        .map(|(_, group, _)| group)
+                        .map(|order| order.group)
                         != self
                             .span_paint_orders
                             .get(&span.sequence)
-                            .map(|(_, group, _)| group))
+                            .map(|order| order.group)
+                    || !self.same_painted_font_resource(current.sequence, span.sequence))
             {
                 merged.push(current);
                 current_span = Some(span);
@@ -7615,6 +7643,7 @@ impl<'doc> TextExtractor<'doc> {
                 span.sequence,
                 std::mem::take(&mut buffer.source_order),
                 buffer.paint_basis,
+                buffer.cached_font.clone(),
             )?;
             self.reserve_import_span()?;
             self.spans.push(span);
@@ -8170,6 +8199,11 @@ impl<'doc> TextExtractor<'doc> {
                 span.sequence,
                 self.paint_order_snapshot()?,
                 [matrix.a, matrix.b, matrix.c, matrix.d],
+                state
+                    .font_name
+                    .as_ref()
+                    .and_then(|name| self.fonts.get(name))
+                    .cloned(),
             )?;
             self.reserve_import_span()?;
             self.spans.push(span);
@@ -8951,6 +8985,11 @@ impl<'doc> TextExtractor<'doc> {
                 span.sequence,
                 self.paint_order_snapshot()?,
                 [matrix.a, matrix.b, matrix.c, matrix.d],
+                state
+                    .font_name
+                    .as_ref()
+                    .and_then(|name| self.fonts.get(name))
+                    .cloned(),
             )?;
             self.reserve_import_span()?;
             self.spans.push(span);
@@ -9228,6 +9267,7 @@ impl<'doc> TextExtractor<'doc> {
                         span.sequence,
                         std::mem::take(&mut buffer.source_order),
                         buffer.paint_basis,
+                        buffer.cached_font.clone(),
                     )?;
                     self.reserve_import_span()?;
                     self.spans.push(span);
@@ -9766,6 +9806,7 @@ mod tests {
             ascent: 0.95,
             descent: -0.35,
             embedded_font_data: None,
+            embedded_program_present: None,
             truetype_cmap: std::sync::OnceLock::new(),
             import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),

@@ -486,7 +486,12 @@ pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     w.write_hwp_string(&font.name).unwrap();
 
     if let Some(alt_name) = alt_name {
-        w.write_u8(font.alt_type & 0x03).unwrap();
+        let alt_type = font
+            .subst_font
+            .as_ref()
+            .filter(|substitute| substitute.face == alt_name)
+            .map_or(font.alt_type & 0x03, |substitute| substitute.font_type);
+        w.write_u8(alt_type).unwrap();
         w.write_hwp_string(alt_name).unwrap();
     }
     if let Some(type_info) = font.type_info {

@@ -12886,6 +12886,21 @@ impl PdfDocument {
         &self,
         page_index: usize,
     ) -> Result<Vec<(crate::layout::TextSpan, Vec<usize>, [f32; 4])>> {
+        self.extract_ordered_painted_spans_with_fonts(page_index)
+            .map(|spans| {
+                spans
+                    .into_iter()
+                    .map(|painted| (painted.span, painted.order, painted.basis))
+                    .collect()
+            })
+    }
+
+    /// Import provenance from the same scoped FontInfo that decoded the span.
+    /// A page-level family lookup cannot distinguish same-named Form resources.
+    pub fn extract_ordered_painted_spans_with_fonts(
+        &self,
+        page_index: usize,
+    ) -> Result<Vec<crate::layout::text_block::PaintedTextSpan>> {
         self.check_import_budget()?;
         let mut orders = HashMap::new();
         let spans = self.extract_spans_impl_with_orders(
@@ -12900,7 +12915,11 @@ impl PdfDocument {
         // Preserve the actual text basis for import, rather than reading-order's
         // five-degree quadrant snap. Glyph positions must use the same frame.
         for span in &mut spans {
-            if let Some((_, _, [a, b, _, _])) = orders.get(&span.sequence) {
+            if let Some(crate::extractors::text::SpanPaintOrder {
+                basis: [a, b, _, _],
+                ..
+            }) = orders.get(&span.sequence)
+            {
                 span.rotation_degrees = b.atan2(*a).to_degrees();
             }
         }
@@ -12908,10 +12927,15 @@ impl PdfDocument {
         let result = spans
             .into_iter()
             .map(|span| {
-                let (order, _group, frame) = orders
+                let metadata = orders
                     .remove(&span.sequence)
                     .ok_or_else(|| Error::Unsupported("missing text paint order".into()))?;
-                Ok((span, order, frame))
+                Ok(crate::layout::text_block::PaintedTextSpan {
+                    span,
+                    order: metadata.order,
+                    basis: metadata.basis,
+                    font: metadata.font,
+                })
             })
             .collect();
         self.check_import_budget()?;
@@ -17590,7 +17614,7 @@ impl PdfDocument {
         excluded_layers: HashSet<String>,
         excluded_inks: HashSet<String>,
         visible_paint_only: bool,
-        paint_orders: Option<&mut HashMap<usize, (Vec<usize>, usize, [f32; 4])>>,
+        paint_orders: Option<&mut HashMap<usize, crate::extractors::text::SpanPaintOrder>>,
     ) -> Result<Vec<crate::layout::TextSpan>> {
         if self.is_encrypted_unreadable() {
             log::warn!("PDF is encrypted and could not be decrypted; returning no spans");

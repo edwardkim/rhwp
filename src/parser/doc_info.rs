@@ -294,12 +294,22 @@ pub(crate) fn parse_face_name(data: &[u8]) -> Result<Font, DocInfoError> {
         .read_hwp_string()
         .map_err(|e| DocInfoError::IoError(e.to_string()))?;
 
-    let alt_name = if attr & 0x80 != 0 {
-        let _alt_type = r.read_u8().unwrap_or(0);
-        r.read_hwp_string().ok()
+    let subst_font = if attr & 0x80 != 0 {
+        let font_type = r.read_u8().unwrap_or(0);
+        r.read_hwp_string()
+            .ok()
+            .map(|face| crate::model::style::SubstFont {
+                face,
+                font_type,
+                ..Default::default()
+            })
     } else {
         None
     };
+    // HWP table 19's alternative face has its own type byte. Normalize it at
+    // this producer so layout, paint and HWPX save consume the same fallback.
+    // Keep the existing alt_name API; HWP3 uses that field for source identity.
+    let alt_name = subst_font.as_ref().map(|font| font.face.clone());
 
     let type_info = if attr & 0x40 != 0 {
         let mut bytes = [0u8; 10];
@@ -333,8 +343,7 @@ pub(crate) fn parse_face_name(data: &[u8]) -> Result<Font, DocInfoError> {
         alt_name,
         type_info,
         default_name,
-        // HWP5 FACE_NAME 에는 HWPX substFont 개념이 없다.
-        subst_font: None,
+        subst_font,
     })
 }
 

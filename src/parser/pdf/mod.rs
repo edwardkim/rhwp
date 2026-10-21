@@ -211,6 +211,7 @@ struct ExtractedPage {
     media_box: (f32, f32, f32, f32),
     spans: Vec<TextSpan>,
     span_orders: Vec<Vec<usize>>,
+    span_fonts: Vec<Option<std::sync::Arc<pdf_oxide::fonts::FontInfo>>>,
     span_clips: Vec<Option<std::sync::Arc<pdf_oxide::elements::PathClip>>>,
     images: Vec<PdfImage>,
     image_orders: Vec<Vec<usize>>,
