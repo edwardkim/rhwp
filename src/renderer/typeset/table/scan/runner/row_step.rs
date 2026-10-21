@@ -600,7 +600,7 @@ impl TypesetEngine {
                     let row_needs_whole_band = r == cursor_row
                         && cut_row_h.get(r).copied().unwrap_or(0.0) > avail_for_rows;
                     !(crate::renderer::typeset::none_table_is_atomic_here(table)
-                        || crate::renderer::typeset::cell_unit_row_is_atomic_here(table))
+                        || crate::renderer::typeset::cell_unit_rows_stay_whole(table))
                         || table_storage_declares_splits
                         || row_needs_whole_band
                 },

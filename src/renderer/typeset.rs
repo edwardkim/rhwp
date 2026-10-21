@@ -1913,19 +1913,35 @@ pub(in crate::renderer) fn none_table_is_atomic_here(table: &crate::model::table
 /// `pdf/issue6132/156482639_startup_ir_contest-2020.pdf` 5→6쪽도 항목 7 을 끝내고 6쪽을
 /// 새 행(`8 안산 (주)오토노미아`)으로 시작한다.
 ///
-/// 제외 범위는 값 0 과 같다 — **양수 세로 오프셋의 가시-host 자리차지 float**.
+/// 이 함수는 **표 첫 단위를 다음 쪽으로 이월하는 게이트**(`table/block/prepare.rs`)용이라
+/// 제외 범위가 값 0 과 같다 — **양수 세로 오프셋의 가시-host 자리차지 float**. 표만 다음 쪽으로
+/// 옮기면 저장 사다리를 따르는 뒤 본문과 좌표계가 어긋난다(#7198 축).
 ///
-/// 조회만 한다 — 상태를 쓰지 않는다. 소비자는 `table/block/prepare.rs` 의 이월 게이트와
-/// `table/scan/runner/row_step.rs` 의 행 내부 컷 게이트다.
+/// 이미 시작한 표의 조각을 행 경계에서 끝낼지는 [`cell_unit_rows_stay_whole`] 이 정한다.
+///
+/// 조회만 한다 — 상태를 쓰지 않는다.
 pub(in crate::renderer) fn cell_unit_row_is_atomic_here(
     table: &crate::model::table::Table,
 ) -> bool {
+    cell_unit_rows_stay_whole(table)
+        && !(!table.common.treat_as_char
+            && is_para_topbottom_float(&table.common)
+            && signed_hwpunit(table.common.vertical_offset) > 0)
+}
+
+/// [#7288] 값 1 «셀 단위로 나눔» 표는 조각을 **행 경계에서만** 끝낸다 — 배치 형태와 무관하다.
+///
+/// 이월 게이트의 float 제외는 표를 통째로 옮길 때의 좌표계 문제라 이미 시작한 표의 조각
+/// 끝에는 해당하지 않는다. 한/글 2020·2024 Print(합성 `samples/issue7288/gen_cellbreak_rows.py`,
+/// 2열 30행 표·칸마다 5·7줄)는 값 1 표의 행을 세로 오프셋 0·502HU 모두 쪽 경계에서 자르지
+/// 않고 쪽 바닥을 비운 채 다음 쪽에 통째로 놓는다. 같은 입력의 값 2 «나눔» 은 행 안을 자른다.
+///
+/// 조회만 한다. 소비자는 `table/scan/runner/row_step.rs` 의 행 내부 컷 게이트다.
+pub(in crate::renderer) fn cell_unit_rows_stay_whole(table: &crate::model::table::Table) -> bool {
     matches!(
         table.page_break,
         crate::model::table::TablePageBreak::CellBreak
-    ) && !(!table.common.treat_as_char
-        && is_para_topbottom_float(&table.common)
-        && signed_hwpunit(table.common.vertical_offset) > 0)
+    )
 }
 
 /// RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
