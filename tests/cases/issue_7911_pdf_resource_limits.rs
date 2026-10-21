@@ -21,7 +21,7 @@ fn product_collection_budget_is_shared_by_operand_arrays_not_page_count() {
     let imported = parse_pdf_with_policy(&source, &Default::default(), PdfImportPolicy::default())
         .unwrap_or_else(|e| panic!("shared collection budget: {e:?}"));
     let used = imported.metadata.resource_usage.collection_entries;
-    assert!(used >= count + 1);
+    assert!(used > count);
     assert_eq!(imported.metadata.resource_policy.backend.entries, 400_000);
     assert_eq!(PdfImportLimits::default().entries, 100_000);
     // Text may belong to a body paragraph or a positional TextBox paragraph;

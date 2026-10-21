@@ -320,6 +320,17 @@ impl From<Vec<u8>> for BinDataBytes {
     }
 }
 
+/// Resolve the document-record index first, with sparse storage IDs only as a fallback.
+/// Rendering and editable paint provenance must refer to the same actual bytes.
+pub(crate) fn content_index(contents: &[BinDataContent], id: u16) -> Option<usize> {
+    let index = usize::from(id.checked_sub(1)?);
+    if index < contents.len() {
+        Some(index)
+    } else {
+        contents.iter().position(|c| c.id == id)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -452,16 +463,5 @@ mod tests {
 
         assert!(bytes.load_limited(16).is_none());
         assert_eq!(resolver.requested_limit.load(Ordering::SeqCst), 16);
-    }
-}
-
-/// Resolve the document-record index first, with sparse storage IDs only as a fallback.
-/// Rendering and editable paint provenance must refer to the same actual bytes.
-pub(crate) fn content_index(contents: &[BinDataContent], id: u16) -> Option<usize> {
-    let index = usize::from(id.checked_sub(1)?);
-    if index < contents.len() {
-        Some(index)
-    } else {
-        contents.iter().position(|c| c.id == id)
     }
 }
