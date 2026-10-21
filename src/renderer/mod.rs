@@ -2945,6 +2945,26 @@ fn installed_font_program_aliases(name: &str) -> &'static [&'static str] {
             &["KoPubBatangMedium"]
         }
         "KoPub바탕체 Bold" | "KoPubBatang Bold" | "KoPub Batang Bold" => &["KoPubBatangBold"],
+        // World는 KoPub와 별도 SFNT다. 같은 파일의 전체 이름과 name 6만
+        // 연결하며, 다른 굵기·기존 KoPub·별도 Pro 프로그램으로 대체하지 않는다.
+        "KoPubWorld돋움체 Light" | "KoPubWorldDotum Light" | "KoPubWorld Dotum Light" => {
+            &["KoPubWorldDotumLight"]
+        }
+        "KoPubWorld돋움체 Medium" | "KoPubWorldDotum Medium" | "KoPubWorld Dotum Medium" => {
+            &["KoPubWorldDotumMedium"]
+        }
+        "KoPubWorld돋움체 Bold" | "KoPubWorldDotum Bold" | "KoPubWorld Dotum Bold" => {
+            &["KoPubWorldDotumBold"]
+        }
+        "KoPubWorld바탕체 Light" | "KoPubWorldBatang Light" | "KoPubWorld Batang Light" => {
+            &["KoPubWorldBatangLight"]
+        }
+        "KoPubWorld바탕체 Medium" | "KoPubWorldBatang Medium" | "KoPubWorld Batang Medium" => {
+            &["KoPubWorldBatangMedium"]
+        }
+        "KoPubWorld바탕체 Bold" | "KoPubWorldBatang Bold" | "KoPubWorld Batang Bold" => {
+            &["KoPubWorldBatangBold"]
+        }
         "나눔고딕" => &["NanumGothic"],
         "NanumGothic" => &["나눔고딕"],
         "한컴바탕" => &["Haansoft Batang"],
