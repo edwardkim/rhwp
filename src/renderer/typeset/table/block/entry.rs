@@ -485,26 +485,18 @@ impl TypesetEngine {
                 // 다음 저장 글줄이 그 상자 바로 뒤에서 시작하면
                 // 호스트 줄높이를 흐름에 보존한다.
                 // 표의 배치 하단만으로 끝내면 너무 일찍 종료된다.
-                let saved_host_line_end = paragraphs_all
-                    .get(para_idx + 1)
-                    .and_then(|next| next.line_segs.first())
-                    .filter(|next| {
-                        st.profile.hwpx_stored_layout()
-                            && !is_paper_behind_infront
-                            && is_first_placed
-                            && !para_has_visible_text(para)
-                            && !is_synthetic_line_seg(first_seg)
-                            && !is_synthetic_line_seg(next)
-                            && next.vertical_pos
-                                == first_seg
-                                    .vertical_pos
-                                    .saturating_add(first_seg.line_height)
-                                    .saturating_add(first_seg.line_spacing)
-                    })
-                    .map(|_| {
-                        target_y + hwpunit_to_px(first_seg.line_height, self.dpi)
-                            - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
-                    });
+                let saved_host_line_end = (st.profile.hwpx_stored_layout()
+                    && !is_paper_behind_infront
+                    && is_first_placed
+                    && !para_has_visible_text(para))
+                .then(|| {
+                    crate::renderer::float_placement::stored_host_line_end_hu(
+                        para,
+                        paragraphs_all.get(para_idx + 1),
+                    )
+                })
+                .flatten()
+                .map(|end| hwpunit_to_px(end, self.dpi));
                 // 호스트 본문 lines + 표는 절대 좌표 → cur_h 는 first_vpos + host lines 만 진행.
                 let pre_lines_h = fmt.line_advances_sum(0..fmt.line_heights.len());
                 let can_sync = target_y > st.current_height && target_y + pre_lines_h <= available;

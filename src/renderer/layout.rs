@@ -12756,32 +12756,11 @@ impl LayoutEngine {
                     && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Paper)
                     && !para_has_visible_text(para)
                 {
-                    if let (Some(seg), Some(next)) = (
-                        para.line_segs.first(),
-                        paragraphs
-                            .get(para_index + 1)
-                            .and_then(|p| p.line_segs.first()),
+                    if let Some(end) = crate::renderer::float_placement::stored_host_line_end_hu(
+                        para,
+                        paragraphs.get(para_index + 1),
                     ) {
-                        if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                            == 0
-                            && next.tag
-                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                                == 0
-                            && next.vertical_pos
-                                == seg
-                                    .vertical_pos
-                                    .saturating_add(seg.line_height)
-                                    .saturating_add(seg.line_spacing)
-                        {
-                            y_offset = y_offset.max(
-                                col_area.y
-                                    + hwpunit_to_px(
-                                        seg.vertical_pos.saturating_add(seg.line_height),
-                                        self.dpi,
-                                    )
-                                    - hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi),
-                            );
-                        }
+                        y_offset = y_offset.max(col_area.y + hwpunit_to_px(end, self.dpi));
                     }
                 }
             } else {

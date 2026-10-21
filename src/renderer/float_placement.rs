@@ -73,6 +73,24 @@ pub(crate) use stored_square_top_band::{
     stored_empty_line_has_closed_source_box, stored_square_top_band, table_reserved_height_hu,
 };
 
+/// 다음 저장 줄이 증명한 호스트 줄 상자의 끝이다.
+/// 줄간격은 다음 원점을 증명하지만 현재 줄 상자에는 포함하지 않는다.
+/// 별도 개체의 바깥여백은 이 저장 텍스트 축을 이동시킬 수 없다.
+/// 호출자가 확정한 저장/배치 경로에서 측정과 paint가 같은 값을 소비한다.
+pub(crate) fn stored_host_line_end_hu(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+) -> Option<i32> {
+    let first = para.line_segs.first()?;
+    let next = next_para?.line_segs.first()?;
+    let synthetic = crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    let end = first.vertical_pos.saturating_add(first.line_height);
+    (first.tag & synthetic == 0
+        && next.tag & synthetic == 0
+        && next.vertical_pos == end.saturating_add(first.line_spacing))
+    .then_some(end)
+}
+
 /// Required box for saved text in a cell. The declaration already owns its
 /// padding when the saved line box fills it; otherwise actual text plus active
 /// padding must fit, independently of the number of rows in the table.
