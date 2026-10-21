@@ -317,7 +317,7 @@ for (const sample of rendererBaselineManifest.samples.filter(
 }
 assert.deepEqual(
   layerNodeKindSet,
-  ['clipRect', 'group', 'leaf'],
+  ['clipPath', 'clipRect', 'group', 'leaf'],
   'renderer contract guard should know every LayerNode kind',
 );
 
@@ -331,11 +331,13 @@ requireSnippet(
   /node\.kind === 'group'[\s\S]*?for \(const child of node\.children\)[\s\S]*?this\.renderNode\(canvas, child,[\s\S]*?\}\s*return;/,
   'group nodes should recurse through children',
 );
-requireSnippet(
-  renderNodeContentsBody,
-  /node\.kind === 'clipRect'[\s\S]*?this\.renderClipNode\(canvas, node,[\s\S]*?\);\s*return;/,
-  'clipRect nodes should go through renderClipNode',
-);
+for (const kind of ['clipPath', 'clipRect']) {
+  requireSnippet(
+    renderNodeContentsBody,
+    new RegExp(`node\\.kind === '${kind}'[\\s\\S]*?this\\.renderClipNode\\(canvas, node,[\\s\\S]*?\\);\\s*return;`),
+    `${kind} nodes should go through renderClipNode`,
+  );
+}
 requireSnippet(
   renderNodeContentsBody,
   /this\.renderLeaf\(canvas, node, profile, replayPlane, activeLayer\);/,
@@ -755,6 +757,57 @@ try {
     = await vite.ssrLoadModule('/src/view/glyph-outline-payload-status.ts'));
 } finally {
   await vite.close();
+}
+
+// Source-text clipping remains mandatory even when diagnostic body/cell clips are disabled.
+for (const clipEnabled of [true, false]) {
+  const events = [];
+  const renderer = new CanvasKitLayerRendererRuntime({
+    Path: {
+      MakeFromSVGString(data) {
+        return {
+          setFillType(rule) { events.push(['rule', data, rule]); },
+          delete() { events.push(['delete', data]); },
+        };
+      },
+    },
+    FillType: { EvenOdd: 0, Winding: 1 },
+    ClipOp: { Intersect: 23 },
+  }, 'default', {}, null);
+  const canvas = {
+    save() { events.push(['save']); },
+    clipPath(_path, operation, antialias) { events.push(['clip', operation, antialias]); },
+    restore() { events.push(['restore']); },
+  };
+  const child = { kind: 'leaf', bounds: { x: 0, y: 0, width: 20, height: 20 }, ops: [] };
+  const node = {
+    kind: 'clipPath',
+    bounds: child.bounds,
+    paths: [
+      { commands: [{ Move: [0, 0] }, { Line: [20, 0] }, { Line: [0, 20] }, 'Close'], even_odd: false },
+      { commands: [{ Move: [2, 2] }, { Cubic: [3, 2, 4, 3, 4, 4] }, 'Close'], even_odd: true },
+    ],
+    child,
+  };
+  renderer.currentClipEnabled = clipEnabled;
+  renderer.renderLeaf = (target, leaf) => {
+    assert.equal(target, canvas);
+    assert.equal(leaf, child, 'path clips should retain the editable child node');
+    events.push(['child']);
+  };
+  renderer.renderNode(canvas, node, 'default', 'content');
+  assert.deepEqual(events, [
+    ['save'],
+    ['rule', 'M0 0 L20 0 L0 20 Z', 1], ['clip', 23, true], ['delete', 'M0 0 L20 0 L0 20 Z'],
+    ['rule', 'M2 2 C3 2 4 3 4 4 Z', 0], ['clip', 23, true], ['delete', 'M2 2 C3 2 4 3 4 4 Z'],
+    ['child'], ['restore'],
+  ], `source path intersections and fill rules must survive clipEnabled=${clipEnabled}`);
+
+  events.length = 0;
+  const replayFailure = new Error('synthetic clipped-child failure');
+  renderer.renderLeaf = () => { throw replayFailure; };
+  assert.throws(() => renderer.renderNode(canvas, node, 'default', 'content'), error => error === replayFailure);
+  assert.deepEqual(events.at(-1), ['restore'], 'a failed child must not leak the source clip to later nodes');
 }
 
 function runExecutableTextReplay(op, {

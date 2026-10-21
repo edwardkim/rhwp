@@ -166,3 +166,11 @@ Base14 Helvetica#8109, 선·작은 글자 coverage#8110과
 이 결과보고는 승인된 원격 push·Open PR 등록 직전에 확정했다. 등록 후 정확한 PR head의 CI와
 실제 본문/시각 URL을 다시 확인한다. self-review·merge·관련 이슈 close는 이번 등록
 완료와 구분한다.
+
+등록 head `81de976032`의 [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/39547000125)는
+그림 비교 전 별도 E2E 계약 검사에서 실패했다. #7998에서 추가한 `clipPath`가 기존 전체
+LayerNode 목록에 누락된 원인이며 로컬에서도 같은 실패를 재현했다. 목록·실제 clip 재생
+검증을 보완한 뒤 workflow의 동일 선행 명령12개가 모두 통과했다. 제품·WASM·시각 기준은
+변경하지 않았으며 기존 출력 증거를 재사용한다. 상세 경로·실패/성공 증거는
+[stage38의 보정 기록](../working/task_m100_7998_stage38.md#pr-8120-render-diff-선행-계약-검사-보정)에
+연결한다. 새 head의 실제 Render Diff 결과는 이 로컬 선행 검사와 구분해 확인한다.

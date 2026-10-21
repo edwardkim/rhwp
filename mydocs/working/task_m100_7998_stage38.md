@@ -283,3 +283,27 @@ formatter도 최종979188617에서 통과했다. 실제 doc/Qt 검사 로그는 
 Qt smoke는 offscreen 실제 Native render·synthetic Korean IME·clipboard·multi-page·caret·
 save/reopen을 확인했다. 실제 OS IME는 `osIMEVerified=false`이며 이 검사로 검증했다고
 표시하지 않는다. 문서 검사는8 PASS/실패0/기존3 ignored였다.
+
+### PR #8120 Render Diff 선행 계약 검사 보정
+
+등록 head `81de976032`의 [Render Diff 실행](https://github.com/edwardkim/rhwp/actions/runs/39547000125)은
+`Check render diff script syntax`의 `npm run e2e:renderer-contract`에서 실패했다.
+실제 그림/PDF diff와 90% 판정은 시작되지 않았으며 시각 회귀나 글꼴 오류로 분류하지 않는다.
+일반 `npm test`와 별도로 실행되는 이 E2E 진입점을 로컬 제출 검사에서 누락했다.
+
+기존 guard `ee67eef3635`는 모든 LayerNode 종류를 명시적으로 나열하도록 했다.
+이번 #7998의 `90b4ffbe93`에서 편집 가능한 비사각 텍스트 가림용 `clipPath`를 추가했으나
+이 목록에는 기존 `clipRect/group/leaf`만 남았다. CI와 같은 assertion을 수정 전 로컬에서도
+재현했다. 새 유형을 명시적으로 등록하고 두 clip 종류 모두 실제 dispatcher를 거치는지
+확인한다. 실제 CanvasKit renderer를 Vite SSR로 불러와 경로 교집합·nonzero/evenodd 규칙,
+진단용 clip 비활성화 상태에서도 원본 텍스트 clip 유지, 자식 실패 시 canvas 복원을 검사했다.
+제품 코드·그림 기대값·임계값·workflow는 변경하지 않았다.
+
+수정 후 같은 계약 검사가 통과했다. `.github/workflows/render-diff.yml`의 해당 run 블록을
+그대로 추출해 Node 구문·Native diff self-test·Python 구문·renderer contract·font coverage
+12개 명령을 실행했고 모두 성공했다(2.248초). 수정 전/후 로그와 실제 명령은 ignored
+`pr-registration-20261021/render-diff-ci/`에 보존한다. 실행 환경은 로컬 Node24.15.0,
+실패 CI는 Node22.23.3이며 새 head CI에서 별도로 확인한다.
+
+기존 제품/WASM·전쪽 시각 증거는 제품 무변경으로 재사용한다. 이 선행 검사 통과를 실제
+Render Diff 통과로 표시하지 않으며, 후속 push의 정확한 head 결과를 확인한다.
