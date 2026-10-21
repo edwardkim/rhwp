@@ -31,6 +31,11 @@ driver 계약으로 생성했다. 이전 Print 입력과 바이트가 같은 최
 Print를 재사용했다. source/control의 base 비교는 동일 입력·기준·font 공급·DPI의
 [2단계 before 원문](../stage2/before/)을 재사용했다. 원본/대조군11개에서0.1%p 하락은 없다.
 
+self-review에서 저장·편집 결과26개의 비어 있던 devel 비교를 보완했다. 현재 입력 원장은
+80행 모두 기준 값과 `base_tsv`를 갖는다. [전체 비교](../stage4/devel-comparison.tsv)는
+Native37·WASM37·SVG6 전쪽의 최대 하락0.00000%p와 쪽수 일치를 확인한 최종 기록이다.
+추가 기준 TSV58개는 [4단계 devel 출력](../stage4/devel/)에 생성 원문 그대로 보존했다.
+
 실행은 review worktree에서 DPI96·compat2022·print profile·같은6개 font 프로그램으로 했다.
 상용 font bytes는 포함하지 않고 이름·hash만 기록했다. 재현 명령은 다음과 같다.
 

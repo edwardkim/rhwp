@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**승인 — #8109의 명시적 대체 생산·저장·실제 소비와 성능 보정 범위의 로컬 검증 및 code head CI 충족.**
+**승인 — #8109의 명시적 대체 생산·저장·실제 소비와 성능 보정, 전쪽 devel 비교 및 code head CI 충족.**
 검토 code SHA는 `dce8337ecdf34bcb9e2b3d8a69f046f44d1cc500`다. 원격 merge·이슈 close는 수행하지 않았다.
 남은 merge 조건은 이 문서-only trailing head의 실제 required CI·mergeability 재확인과 작업지시자의
 별도 merge 승인이다. 코드 검증 판정과 원격 승인 권한을 구별한다.
@@ -68,6 +68,35 @@ trailing head의 fast-pass/required check는 push 이후 별도로 확인한다.
 로컬 renderer 계약·폰트 coverage·Canvas3/3·직접 PDF3/3·auto readiness8/8을 통과했고,
 위 최종 code head의 새 CI에서 모두 성공했다. report-only PDF4 warning·0 error는 직접 호환 gate 및
 독립 Print 시각 검증과 구별했다. [4단계 후속 기록](../../working/task_m100_8109_stage4.md#pr-8132-첫-ci의-source-guard-보정)에 연결한다.
+
+## 사용자 승인 뒤 self-review 재확인
+
+검토 문서 head는 `3cb689cc7776af186bfde74820379510ebeb9bf9`다. code head 이후 변경은
+문서4개뿐이며 source·test·fixture·workflow·baseline은 같았다. Type1 program의 삼상태,
+실제 scoped resource 소속, 대체 선언/저장/paint 소비와 report 수명의 WeakMap을 다시 대조했다.
+차단할 코드 결함은 발견하지 못했다.
+
+기존 시각 원장에서 저장·편집 결과26개의 devel 기준 값이 비어 있는 증거 부족을 발견했다.
+고정 devel의 보존된 producer로 Native26·WASM26·SVG6을 같은 입력·독립 Print·글꼴·DPI에서
+추가 실행했다. [기준 TSV58개](../assets/issue_8109/stage4/devel/)와 기존 기준22개를 합친
+[전쪽80행 비교](../assets/issue_8109/stage4/devel-comparison.tsv)는 쪽수1=1,
+최대 하락0.00000%p, 0.1%p 이상 하락0쪽이다. 입력45개는 HEAD blob·실행 파일·SHA가 일치했다.
+원장의 기준 값과 `base_tsv`를 채웠고 후보 TSV·PNG와 구현은 변경하지 않았다.
+
+같은 Rust suite binary의 #8109 집중6개, Studio 집중24개와 실제 Chrome155 글꼴 준비 E2E를
+다시 통과했다. 실제 outline/style·대체/원 face·늦은 local 갱신·선언 공유·새 결정·실패 fallback을
+확인했고 대표 목록/네 style 확대 이미지도 독립 Print와 다시 판독했다. 최초127.0.0.1 접속은
+WASM URL에서 HTML이 반환돼 초기화가 실패했으며, 기존 검증과 같은 localhost에서 정상
+WASM 응답과 전체 E2E 성공을 확인했다. 이 초기화 실패를 제품 회귀 재현으로 세지 않았다.
+
+`3cb689cc7`의 [Build & Test](https://github.com/edwardkim/rhwp/actions/runs/39599138040/job/119219469661)는
+실제 success였다. [CI preflight](https://github.com/edwardkim/rhwp/actions/runs/39599138040/job/119218942447)의
+실제 판정은 `fast_pass=true`, candidate `dce8337ecdf34bcb9e2b3d8a69f046f44d1cc500`다.
+전체 check는12 success·21 skipped, 실패·대기0이었다. 최신 devel은 같은 `80968497c`이며
+merge-tree 종료0·head tree 일치를 확인했다. 광범위 Rust/Native 회귀는 정확한 녹색 code head의
+위 CI와 기존 실행 증거를 재사용했다. 이번 증거·리뷰 기록만 한 번 trailing으로 반영하며,
+문서 기록이나 다른 PR의 merge만을 이유로 code head를 반복 rebase하지 않는다.
+새 trailing head의 required check 확인과 별도 사용자 merge 승인은 여전히 필요하다.
 
 ## 수용 범위와 남은 한계
 

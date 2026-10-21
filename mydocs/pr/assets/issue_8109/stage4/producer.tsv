@@ -14,3 +14,6 @@ fresh-studio-capture-byte-identical-to-stage3	final-canvaskit-styles-page.png	b5
 review-zoom	mydocs/pr/assets/issue_8109/stage4/studio-styles-zoom.png	58f0fba69d6f189309a117cf5e40bad82e36445ccea748c152e18b7b5a72579d
 review-zoom	mydocs/pr/assets/issue_8109/stage4/studio-zoom.png	e62f371c759e2097ebe1e4c94a27f8767f6dc1a73fbe3568e329cb726db85f8c
 ci-contract-test	rhwp-studio/e2e/renderer-contract.test.mjs	2bf97bdad7fd6610e218d1a9bd735afc370b9bf06ae36a91554b1b7a86a44df0
+devel-producer	output/pr-review/issue8109/stage2/before/rhwp	b493a9ad3ea1dc00b373c7d5733197600dfa325c05a53c121a9e50ce06df09bb
+devel-producer	output/pr-review/issue8109/stage2/before/pkg/rhwp_bg.wasm	ec32880a5e176ded1e282cd59be2c0d5be9fd66030b5159aa35db3177322f7b8
+devel-producer	output/pr-review/issue8109/stage2/before/pkg/rhwp.js	1c40e6aa15e5b87643148b717fba0683ae622910e96e369659465d2c0abfab9a

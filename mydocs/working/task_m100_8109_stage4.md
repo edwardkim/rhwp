@@ -5,6 +5,15 @@
 - `pdf_table_inference_feedback_20261017.md`를 원문 그대로 이번 PR에 포함했다.
   그 문서의 표 추론 구현은 이번 범위에 추가하지 않았다.
 
+## Self-review 보완
+
+사용자 self-review 지시 뒤 저장·편집 결과26개의 devel 비교 누락을 확인해 Native26·WASM26·
+SVG6의 기준 TSV58개를 추가했다. 고정 devel의 producer·입력·Print·font·DPI 조건을 유지했고
+[전쪽80행 비교](../pr/assets/issue_8109/stage4/devel-comparison.tsv)의 최대 하락은0.00000%p다.
+입력45개의 HEAD blob·SHA도 일치했다. Rust 집중6개·Studio24개·실제 Chrome155 E2E를
+통과했다. 코드와 후보 출력은 같으며 전체 회귀는 정확한 녹색 code head CI를 재사용했다.
+검토 head·CI·초기 로딩 실패와 정상 재실행·최종 판정은 [self-review](../pr/archives/pr_8132_review.md)에 기록했다.
+
 ## 구현과 수명
 
 `main.ts`의 preflight transform은 `complete=false`이면 원래 report를 즉시 반환한다.
