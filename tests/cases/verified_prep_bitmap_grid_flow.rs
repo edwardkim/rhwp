@@ -14,7 +14,9 @@ fn figures<'a>(node: &'a LayerNode, out: &mut Vec<(BoundingBox, &'a ImageNode)>)
                 figures(child, out);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => figures(child, out),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            figures(child, out)
+        }
         LayerNodeKind::Leaf { ops } => {
             for op in ops {
                 if let PaintOp::Image { bbox, image, .. } = op {
