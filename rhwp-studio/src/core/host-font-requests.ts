@@ -20,12 +20,15 @@ export function resolveLocalFontChain(family: string, style?: LayerTextStyle): L
   return null;
 }
 
-/** preflight의 원래 이름과 실제 paint의 문서 대체 후보를 연결한다. */
-export function resolveDocumentCanvasKitFontFamilies(
-  required: readonly string[], trees: Iterable<PageLayerTree>,
-): string[] {
-  const byPrimary = new Map<string, Set<string>>();
-  const key = (family: string) => primaryHostFontFamily(family).toLocaleLowerCase('en-US');
+export interface DocumentCanvasKitFontUsage {
+  family: string;
+  bold: boolean;
+  italic: boolean;
+}
+
+/** Retain only unique declarations, not page trees or the current host/local selection. */
+export function collectDocumentCanvasKitFontUsage(trees: Iterable<PageLayerTree>): DocumentCanvasKitFontUsage[] {
+  const usages = new Map<string, DocumentCanvasKitFontUsage>();
   for (const tree of trees) {
     const stack: LayerNode[] = [tree.root];
     while (stack.length) {
@@ -37,17 +40,38 @@ export function resolveDocumentCanvasKitFontFamilies(
         const style = op.type === 'footnoteMarker' ? { fontFamily: op.fontFamily } : op.style;
         const family = style?.fontFamily;
         if (!family) continue;
-        const primary = primaryHostFontFamily(family);
-        const selected = parseCssFontFamilyList(family).length > 1
-          ? resolveLocalFontChain(family, style)?.family ?? primary
-          : primary;
-        const choices = byPrimary.get(key(primary)) ?? new Set<string>();
-        choices.add(selected);
-        byPrimary.set(key(primary), choices);
+        const usage = { family, bold: style?.bold === true, italic: style?.italic === true };
+        usages.set(JSON.stringify([family, usage.bold, usage.italic]), usage);
       }
     }
   }
+  return [...usages.values()];
+}
+
+/** Re-resolve current availability after stored local fonts or a host catalog finishes loading. */
+export function resolveDocumentCanvasKitFontUsage(
+  required: readonly string[], usages: readonly DocumentCanvasKitFontUsage[],
+): string[] {
+  const byPrimary = new Map<string, Set<string>>();
+  const key = (family: string) => primaryHostFontFamily(family).toLocaleLowerCase('en-US');
+  for (const usage of usages) {
+    const primary = primaryHostFontFamily(usage.family);
+    const selected = parseCssFontFamilyList(usage.family).length > 1
+      ? resolveLocalFontChain(usage.family, usage)?.family ?? primary
+      : primary;
+    const primaryKey = key(primary);
+    const choices = byPrimary.get(primaryKey) ?? new Set<string>();
+    choices.add(selected);
+    byPrimary.set(primaryKey, choices);
+  }
   return [...new Set(required.flatMap(family => [...(byPrimary.get(key(family)) ?? [family])]))];
+}
+
+/** preflight의 원래 이름과 실제 paint의 문서 대체 후보를 연결한다. */
+export function resolveDocumentCanvasKitFontFamilies(
+  required: readonly string[], trees: Iterable<PageLayerTree>,
+): string[] {
+  return resolveDocumentCanvasKitFontUsage(required, collectDocumentCanvasKitFontUsage(trees));
 }
 
 /** 실제 수식 글리프 런마다 측정에 사용한 face를 준비한다. */

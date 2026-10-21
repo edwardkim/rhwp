@@ -3,7 +3,8 @@
 Rust 생산 커밋은 `5699a377885e3068947400e69a2336af5759112c`, base는
 `80968497c2c178eeecb3b2e1d04d086ad27a0dc7`다. 같은 Rust 코드의 최종 CLI와 최적화 WASM,
 Studio 소비 보정 소스·테스트의 SHA-256은 [producer.tsv](producer.tsv)에 있다.
-최종 소스와 증적을 함께 담은 이 파일의 소속 커밋이 검토 대상이다.
+이 절의 Studio 소스 신원은 `f1ae43d70`의 1차 기능 검증 기록이다.
+성능 보정 뒤 현재 Studio 소스와 새 캡처의 신원은 [4단계](../stage4/README.md)에 있다.
 
 [inputs.tsv](inputs.tsv)는 Native PNG37·fresh WASM Canvas37·SVG 경계6의 전체80행이다.
 검증한 입력·독립 기준 PDF의 저장소 경로와 SHA-256, 전쪽 원문 TSV를 연결한다.

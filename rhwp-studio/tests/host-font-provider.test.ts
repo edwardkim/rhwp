@@ -4,7 +4,7 @@ import { HostFontSource, type HostFontProvider, type HostFontSnapshot } from '..
 import { setHostFontProvider, prepareHostFontCatalog, resolveRendererLocalFont, resolveLocalFont,
   loadRendererLocalFont, getLocalFontState } from '../src/core/local-fonts.ts';
 import { fontFamilyChainForDisplay } from '../src/core/font-substitution.ts';
-import { collectHostFontRequests, resolveDocumentCanvasKitFontFamilies } from '../src/core/host-font-requests.ts';
+import { collectHostFontRequests, collectDocumentCanvasKitFontUsage, resolveDocumentCanvasKitFontUsage, resolveDocumentCanvasKitFontFamilies } from '../src/core/host-font-requests.ts';
 import type { LayerEquationLayoutBox, PageLayerTree } from '../src/core/types.ts';
 
 function deferred<T>() {
@@ -157,6 +157,15 @@ test('#8109 document substitute candidates reach preparation without changing ot
     assert.equal(tree.root.kind === 'leaf' && tree.root.ops[0].type === 'textRun'
       ? tree.root.ops[0].style?.fontFamily : null, 'Missing Source, "Host Only"', 'source declaration stays intact');
     assert.equal(f.reads(), 0, 'metadata selection does not read font programs');
+    const usage = collectDocumentCanvasKitFontUsage([tree, tree]);
+    assert.equal(usage.length, 4, 'repeated runs/pages share family/style declarations');
+    await setHostFontProvider(null);
+    assert.deepEqual(resolveDocumentCanvasKitFontUsage(['Missing Source', 'Unrelated', 'Host Only'], usage),
+      ['Missing Source', 'Unrelated', 'Host Only'], 'a detached provider cannot survive in a cached face choice');
+    await setHostFontProvider(f.provider);
+    assert.deepEqual(resolveDocumentCanvasKitFontUsage(['Missing Source', 'Unrelated', 'Host Only'], usage),
+      ['Host Only', 'Missing Source', 'Unrelated'], 'the same declarations resolve a newly available provider');
+
   } finally { await setHostFontProvider(null); }
 });
 

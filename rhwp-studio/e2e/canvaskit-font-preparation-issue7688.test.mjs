@@ -224,6 +224,40 @@ try {
     assert(late.backend === 'canvaskit' && late.pages === 1 && late.usesSuppliedSerif && late.bytesUnchanged,
       'later local-font refresh consumes the document substitute and preserves the document');
     console.log(JSON.stringify({ lateLocalFontRefresh: late }));
+    const preparationWork = await latePage.evaluate(async () => {
+      const wasm = window.__wasm, options = window.__canvasView.rendererSession.options;
+      const original = wasm.getPageLayerTreeObject;
+      let calls = 0;
+      wasm.getPageLayerTreeObject = function (...args) { calls++; return original.apply(this, args); };
+      try {
+        const report = wasm.getCanvasKitDocumentPreflight();
+        const incomplete = { ...report, complete: false };
+        const rejected = options.transformCanvasKitPreflight(incomplete);
+        const incompleteCalls = calls;
+        const transformed = options.transformCanvasKitPreflight(report);
+        const transformCalls = calls - incompleteCalls;
+        const prepared = [];
+        await options.prepareCanvasKitDocument({
+          prepareLocalFonts: async families => { prepared.push(...families); },
+          prepareBundledFonts: async () => {}, hasPreparedFontFamily: () => true,
+        }, transformed);
+        const sharedCalls = calls;
+        options.transformCanvasKitPreflight(wasm.getCanvasKitDocumentPreflight());
+        return { incompleteCalls, incompletePreserved: rejected === incomplete,
+          transformCalls, sharedCalls, nextDecisionCalls: calls - sharedCalls,
+          pages: wasm.pageCount, prepared };
+      } finally { wasm.getPageLayerTreeObject = original; }
+    });
+    assert(preparationWork.incompletePreserved && preparationWork.incompleteCalls === 0,
+      'incomplete preflight must fall back without exporting any page trees');
+    assert(preparationWork.transformCalls === preparationWork.pages
+      && preparationWork.sharedCalls === preparationWork.pages,
+      'transform and resource preparation share one pass of document font declarations');
+    assert(preparationWork.nextDecisionCalls === preparationWork.pages,
+      'a new preflight decision must collect fresh declarations');
+    assert(preparationWork.prepared.length > 0, 'sharing declarations must still prepare document fonts');
+    console.log(JSON.stringify({ documentFontPreparationWork: preparationWork }));
+
   } finally {
     await latePage.evaluate(async () => {
       const saved = window.__issue8109Late;

@@ -1,8 +1,8 @@
 import { setHostFontProvider, onHostFontsChanged, hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from '@/core/local-fonts';
-import { collectHostFontRequests, resolveDocumentCanvasKitFontFamilies } from '@/core/host-font-requests';
+import { collectHostFontRequests, collectDocumentCanvasKitFontUsage, resolveDocumentCanvasKitFontUsage, type DocumentCanvasKitFontUsage } from '@/core/host-font-requests';
 import { WasmBridge } from '@/core/wasm-bridge';
 import { installDocumentTitle } from '@/ui/document-title';
-import type { DocumentInfo, PageInfo } from '@/core/types';
+import type { CanvasKitDocumentPreflight, DocumentInfo, PageInfo } from '@/core/types';
 import { EventBus } from '@/core/event-bus';
 import { assertRemoteDocumentBytes } from '@/core/document-signature';
 import { CanvasView } from '@/view/canvas-view';
@@ -522,14 +522,24 @@ async function initialize(): Promise<void> {
     const canvaskitMode = canvaskitModeRequest.mode;
     const canvaskitSurfaceRequest = resolveCanvasKitSurfaceRequest(window.location.search);
     const renderProfile = resolveRenderProfile(window.location.search);
-    const documentFontRequirements = (required: readonly string[]) => {
-      if (!wasm.getDocumentInfo().fontSubstitutions?.length) return required;
-      function* pageTrees() {
-        for (let page = 0; page < wasm.pageCount; page++) {
-          yield wasm.getPageLayerTreeObject(page, renderProfile);
+    // Each renderer decision owns a fresh report (document/edit/resource revision).
+    // Share declarations only; local/host availability is resolved again after preparation.
+    const documentFontUsage = new WeakMap<CanvasKitDocumentPreflight, DocumentCanvasKitFontUsage[]>();
+    const documentFontRequirements = (report: CanvasKitDocumentPreflight) => {
+      const required = report.requiredFontFamilies;
+      if (!report.complete || required.length === 0) return required;
+      let usage = documentFontUsage.get(report);
+      if (!usage) {
+        if (!wasm.getDocumentInfo().fontSubstitutions?.length) return required;
+        function* pageTrees() {
+          for (let page = 0; page < wasm.pageCount; page++) {
+            yield wasm.getPageLayerTreeObject(page, renderProfile);
+          }
         }
+        usage = collectDocumentCanvasKitFontUsage(pageTrees());
+        documentFontUsage.set(report, usage);
       }
-      return resolveDocumentCanvasKitFontFamilies(required, pageTrees());
+      return resolveDocumentCanvasKitFontUsage(required, usage);
     };
     const diagnosticsBackendRequest: EmbedRendererRuntimeRequestV1['backend'] =
       renderBackendRequest.backend === 'auto'
@@ -566,15 +576,16 @@ async function initialize(): Promise<void> {
       },
       {
         transformCanvasKitPreflight(report) {
+          if (!report.complete) return report;
           const plan = resolveCanvasKitFontPlan(
-            documentFontRequirements(report.requiredFontFamilies),
+            documentFontRequirements(report),
             extensionViewerSettings,
           );
           const blockers = plan.unavailableFonts.map(font => `fontUnavailable:${font}`);
-          return withCanvasKitSurfaceBlockers(
-            report,
-            blockers,
-          );
+          const transformed = withCanvasKitSurfaceBlockers(report, blockers);
+          const usage = documentFontUsage.get(report);
+          if (usage) documentFontUsage.set(transformed, usage);
+          return transformed;
         },
         async prepareCanvasKitDocument(renderer, report) {
           if (hasHostFontProvider()) {
@@ -603,7 +614,7 @@ async function initialize(): Promise<void> {
             // 저장된 Local Font Access 권한이 있으면 첫 replay부터 원 face의 SFNT bytes를
             // CanvasKit에 전달한다. CSS local()에서 EBDT face가 두부로 바뀌는 경로를 타지 않는다.
             await loadStoredLocalFonts();
-            requiredFontFamilies = documentFontRequirements(fontRequirements.requiredFontFamilies);
+            requiredFontFamilies = documentFontRequirements(fontRequirements);
             await renderer.prepareLocalFonts(requiredFontFamilies);
           } catch (error) {
             // 로컬 권한이 만료됐거나 face 읽기에 실패해도 portable bundled face로 계속 연다.
