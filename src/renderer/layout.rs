@@ -11496,9 +11496,15 @@ impl LayoutEngine {
                             multi_col_width,
                             Some(bin_data_content),
                             ctx.wrap_anchors.get(para_index),
-                            ctx.stored_column_top_spacings
+                            // 분할 자리차지 표 조각 뒤 문단은 typeset 이 확정한 앞 간격을 쓴다.
+                            ctx.float_pushed_line_spacings
                                 .get(para_index)
-                                .map(|frame| frame.before),
+                                .copied()
+                                .or_else(|| {
+                                    ctx.stored_column_top_spacings
+                                        .get(para_index)
+                                        .map(|frame| frame.before)
+                                }),
                         );
                         y_offset = if paint_y < y_offset {
                             y_offset + (flow_end - paint_y).max(0.0)

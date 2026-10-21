@@ -432,6 +432,16 @@ impl TypesetState {
             .float_pushed_line_spacings
             .insert(para_idx, spacing);
     }
+    /// 흐름은 이미 전진한 채로, 출력이 소비할 확정 앞 간격만 남긴다.
+    pub(in crate::renderer::typeset) fn record_float_pushed_line_spacing(
+        &mut self,
+        para_idx: usize,
+        spacing: f64,
+    ) {
+        self.data
+            .float_pushed_line_spacings
+            .insert(para_idx, spacing);
+    }
     pub(in crate::renderer::typeset) fn record_paragraph_float_placement(
         &mut self,
         key: (usize, usize),
