@@ -1763,6 +1763,13 @@ fn char_width_decision_with_hft_tracking<'a>(
         // 원본 HFT 한점 리더의 전진은 전각이다. 폭 표에서 그 글자만 빠졌을 때
         // 일반 반각 폴백으로 좁히면 뒤 글자가 앞당겨진다. 기존 메트릭 hit는 보존한다.
         } else if cluster_len[i] > 1
+            // U+3000 is an ideographic (fullwidth) space. A missing glyph
+            // metric must not turn it into an ASCII half-space: PDF lowering
+            // fits CHARSHAPE ratio against this same advance, so doing that
+            // doubles the saved space when Hancom uses its fullwidth glyph.
+            // Explicit metric hits above, ASCII/NBSP and HWP figure-space
+            // contracts remain unchanged.
+            || c == '\u{3000}'
             || is_cjk_char(c)
             || is_fullwidth_symbol(c)
             || (latin.is_none()
