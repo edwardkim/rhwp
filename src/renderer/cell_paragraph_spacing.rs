@@ -38,3 +38,21 @@ pub(crate) fn paragraph_before(
         stored_lead,
     }
 }
+
+/// 저장 줄이 없는 순수 텍스트 셀은 앞 간격을 흐름에서 소유한다.
+/// 자체 배치 상자가 없는 메타데이터도 같은 텍스트 흐름에 속한다.
+/// 그림/표 등 별도 배치 상자를 소유하는 호스트는 이 텍스트 경로에 합치지 않는다.
+/// 수용·측정의 paragraph_before와 실제 첫 글줄이 동일한 값을 소비한다.
+pub(crate) fn plain_text_before(
+    para: &Paragraph,
+    para_index: usize,
+    spacing_before: f64,
+    dpi: f64,
+) -> Option<CellParagraphBefore> {
+    (para
+        .controls
+        .iter()
+        .all(super::composer::control_is_width_neutral_marker)
+        && super::para_has_no_stored_line_segs(para))
+    .then(|| paragraph_before(para, para_index, spacing_before, dpi))
+}

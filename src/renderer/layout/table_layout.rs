@@ -11461,7 +11461,15 @@ impl LayoutEngine {
             let is_last_para = pi + 1 == total_paras;
             // MeasuredCell 규칙: 첫 문단은 spacing_before 없음, 마지막 문단은 spacing_after 없음
             let raw_spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
-            let spacing_before = if pi > 0 {
+            let spacing_before = if let Some(before) =
+                crate::renderer::cell_paragraph_spacing::plain_text_before(
+                    para,
+                    pi,
+                    raw_spacing_before,
+                    self.dpi,
+                ) {
+                before.flow_before
+            } else if pi > 0 {
                 raw_spacing_before
             } else if raw_spacing_before > 0.0 {
                 let first_vpos = para
@@ -25401,7 +25409,12 @@ impl LayoutEngine {
                 _ => {}
             }
         }
-        Some((physical - selected.iter().map(|unit| unit.height).sum::<f64>()).max(0.0))
+        // 부모 컷은 이어받기 제목행/앞 바깥여백을 이미 별도로 예약한다.
+        // 자식의 물리 상자와 비교할 때 그 예약도 포함해야 같은 시작 띠가
+        // 추가 높이와 부모 높이 양쪽에 다시 들어가지 않는다.
+        let reserved = selected.iter().map(|unit| unit.height).sum::<f64>()
+            + self.nested_continuation_header_height(cell, units, start, styles);
+        Some((physical - reserved).max(0.0))
     }
 
     /// Recursive reflow projects source units, rather than a stored physical

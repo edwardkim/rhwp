@@ -5601,6 +5601,37 @@ impl LayoutEngine {
         vertical_spacing: Option<ParagraphVerticalSpacing>,
         stored_cell_content_origin: Option<f64>,
     ) -> f64 {
+        // 저장 vpos가 없는 것은 첫 문단의 앞 간격이 0이라는 증거가 아니다.
+        // 실제 셀의 순수 재조판 텍스트는 측정/컷 원장과 같은 flow-before를 쓴다.
+        // 원본 저장 줄·개체 호스트와 호출자가 확정한 부분 프레임은 그대로 둔다.
+        let vertical_spacing = vertical_spacing.or_else(|| {
+            if cell_ctx
+                .as_ref()
+                .is_none_or(|context| context.path.is_empty())
+            {
+                return None;
+            }
+            let source = para?;
+            let style = styles.para_styles.get(source.para_shape_id as usize)?;
+            let before = crate::renderer::cell_paragraph_spacing::plain_text_before(
+                source,
+                para_index,
+                style.spacing_before,
+                self.dpi,
+            )?;
+            Some(ParagraphVerticalSpacing {
+                before: if start_line == 0 {
+                    before.flow_before
+                } else {
+                    0.0
+                },
+                after: if !is_last_cell_para && end_line >= composed.lines.len() {
+                    style.spacing_after.max(0.0)
+                } else {
+                    0.0
+                },
+            })
+        });
         let frame_paragraph = para.map(|source| composed.paragraph_with_frame_geometry(source));
         let para = frame_paragraph.as_deref();
         let mut y = y_start;
