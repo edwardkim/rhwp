@@ -327,7 +327,9 @@ fn original_picture_border_bit_survives_save_and_precedes_body_print() {
                     body(child, found);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => body(child, found),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                body(child, found)
+            }
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
                     if let PaintOp::TextRun {

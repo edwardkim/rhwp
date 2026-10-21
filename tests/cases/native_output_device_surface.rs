@@ -290,7 +290,9 @@ fn oversized_jpeg_source_window_fits_the_existing_decode_budget_without_acceptin
     fn first_image(node: &LayerNode) -> Option<&PaintOp> {
         match &node.kind {
             LayerNodeKind::Group { children, .. } => children.iter().find_map(first_image),
-            LayerNodeKind::ClipRect { child, .. } => first_image(child),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                first_image(child)
+            }
             LayerNodeKind::Leaf { ops } => {
                 ops.iter().find(|op| matches!(op, PaintOp::Image { .. }))
             }

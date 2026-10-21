@@ -1359,7 +1359,7 @@ impl SkiaLayerRenderer {
                     canvas,
                     child,
                     output_options,
-                    hft_outline_enabled,
+                    profile,
                     resources,
                     replay_plane,
                     active_layer,

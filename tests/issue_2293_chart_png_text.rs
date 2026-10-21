@@ -98,7 +98,9 @@ fn reduced_scatter_plot_preserves_every_interior_grid_band() {
     fn image_op(node: &LayerNode) -> Option<&PaintOp> {
         match &node.kind {
             LayerNodeKind::Group { children, .. } => children.iter().find_map(image_op),
-            LayerNodeKind::ClipRect { child, .. } => image_op(child),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                image_op(child)
+            }
             LayerNodeKind::Leaf { ops } => {
                 ops.iter().find(|op| matches!(op, PaintOp::Image { .. }))
             }

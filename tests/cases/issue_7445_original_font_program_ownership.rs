@@ -1114,7 +1114,9 @@ fn pii_declared_ttf_closing_angles_keep_source_order_and_independent_ends() {
                     collect(child, out);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => collect(child, out),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                collect(child, out)
+            }
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
                     if let PaintOp::TextRun { bbox, run, .. } = op {

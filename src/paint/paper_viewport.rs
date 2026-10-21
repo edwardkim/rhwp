@@ -66,7 +66,9 @@ impl PagePaintContext {
                         publish(child, table, sx, sy);
                     }
                 }
-                LayerNodeKind::ClipRect { child, .. } => publish(child, table_owned, sx, sy),
+                LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                    publish(child, table_owned, sx, sy)
+                }
                 LayerNodeKind::Leaf { ops } if table_owned => {
                     for op in ops {
                         if let PaintOp::Line { bbox, line } = op {
@@ -136,14 +138,16 @@ impl PagePaintContext {
                         );
                     }
                 }
-                LayerNodeKind::ClipRect { child, .. } => collect(
-                    child,
-                    sources,
-                    rounded,
-                    plane,
-                    active_layer,
-                    hangul2024_print,
-                ),
+                LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                    collect(
+                        child,
+                        sources,
+                        rounded,
+                        plane,
+                        active_layer,
+                        hangul2024_print,
+                    )
+                }
                 LayerNodeKind::Leaf { ops } => {
                     for op in ops {
                         if crate::paint::paint_op_replay_plane_with_layer(op, active_layer) != plane
@@ -176,7 +180,9 @@ impl PagePaintContext {
                         publish(child, sources, transform);
                     }
                 }
-                LayerNodeKind::ClipRect { child, .. } => publish(child, sources, transform),
+                LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                    publish(child, sources, transform)
+                }
                 LayerNodeKind::Leaf { ops } => {
                     for op in ops {
                         match op {
@@ -229,7 +235,7 @@ impl PagePaintContext {
                         .iter()
                         .any(|child| header_footer_fill(child, owned, hangul2024_print))
                 }
-                LayerNodeKind::ClipRect { child, .. } => {
+                LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                     header_footer_fill(child, owned, hangul2024_print)
                 }
                 LayerNodeKind::Leaf { ops } => {
@@ -355,7 +361,7 @@ impl PagePaintContext {
                     Self::publish_decoration_geometry_at(child, sx, sy);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 Self::publish_decoration_geometry_at(child, sx, sy)
             }
             LayerNodeKind::Leaf { ops } => {

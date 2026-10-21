@@ -153,7 +153,9 @@ fn range_tag_markpen_stays_on_screen_without_leaking_into_printed_cell_content()
                 .iter()
                 .map(|child| mark_paints(child, original, color))
                 .sum(),
-            LayerNodeKind::ClipRect { child, .. } => mark_paints(child, original, color),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                mark_paints(child, original, color)
+            }
             LayerNodeKind::Leaf { ops } => ops
                 .iter()
                 .filter(|op| {

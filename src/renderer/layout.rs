@@ -5296,11 +5296,13 @@ impl LayoutEngine {
             font_size * 0.2
         } else {
             let face = super::style_resolver::primary_font_name(
-                style.metric_font_family.as_deref().unwrap_or(&style.font_family),
+                style
+                    .metric_font_family
+                    .as_deref()
+                    .unwrap_or(&style.font_family),
             );
-            let descent_em = source_descent_em.or_else(|| {
-                font_metrics_data::win_descent_em(face, style.bold, style.italic)
-            });
+            let descent_em = source_descent_em
+                .or_else(|| font_metrics_data::win_descent_em(face, style.bold, style.italic));
             font_size * descent_em.unwrap_or(1.0 / 3.0)
         };
         band_bottom - descent
@@ -6173,7 +6175,12 @@ impl LayoutEngine {
             }
             let font_size = page_num_style.font_size;
             let source_descent_em = font_metrics_data::source_descent_em(
-                &page_num_style.font_family,
+                super::style_resolver::primary_font_name(
+                    page_num_style
+                        .metric_font_family
+                        .as_deref()
+                        .unwrap_or(&page_num_style.font_family),
+                ),
                 page_num_style.bold,
                 page_num_style.italic,
             );

@@ -277,7 +277,8 @@ impl LayerBuilder {
                 let frame = self
                     .page_context
                     .map_or(node.bbox, |context| context.image_frame(node, image));
-                let mut ops = if let Some(path) = crate::renderer::pdf_stroke::project(image, frame) {
+                let mut ops = if let Some(path) = crate::renderer::pdf_stroke::project(image, frame)
+                {
                     vec![PaintOp::path(frame, path)]
                 } else {
                     let mut image = image.clone();

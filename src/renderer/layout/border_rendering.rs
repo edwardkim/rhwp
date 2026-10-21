@@ -165,7 +165,11 @@ fn merge_edge_slot(slot: &mut Option<BorderEdge>, border: &BorderLine, side: Bor
     }
     *slot = Some(match *slot {
         Some(existing) => {
-            let line = merge_border(&existing, border, matches!(side, BorderSide::Top | BorderSide::Left));
+            let line = merge_border(
+                &existing,
+                border,
+                matches!(side, BorderSide::Top | BorderSide::Left),
+            );
             let paired_horizontal_sides =
                 horizontal_top.is_some_and(|top| existing.horizontal_top == Some(!top));
             if paired_horizontal_sides

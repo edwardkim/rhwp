@@ -71,7 +71,9 @@ fn matching_paint_strokes<'a>(node: &'a LayerNode, source_id: u32, out: &mut Vec
                 matching_paint_strokes(child, source_id, out);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => matching_paint_strokes(child, source_id, out),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            matching_paint_strokes(child, source_id, out)
+        }
         LayerNodeKind::Leaf { ops } => {
             for op in ops {
                 if let PaintOp::Line { line, .. } = op {
