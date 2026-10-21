@@ -211,6 +211,11 @@ impl LayoutEngine {
             None,
         );
         let already_registered = registered_inline_pos.is_some();
+        // paragraph_layout 은 조합 줄 안에서만 TAC 그림을 그린다. 저장 줄도 글자도 없는
+        // 문단은 조합 줄이 비어 높이만 전진하는 폴백을 타므로, FullParagraph 가 있어도
+        // 그림은 여기서 그려야 한다.
+        let para_path_draws_picture =
+            has_full_para_item && comp.is_some_and(|c| !c.lines.is_empty());
         let effective_pic_y = registered_inline_pos
             .map(|(_, registered_y)| registered_y)
             .unwrap_or(pic_y);
@@ -242,7 +247,7 @@ impl LayoutEngine {
             }
         }
 
-        if !already_registered && !has_full_para_item {
+        if !already_registered && !para_path_draws_picture {
             let bin_data_id = pic.image_attr.bin_data_id;
             let image_data = find_bin_data_bytes(bin_data_content, bin_data_id);
             let crop = pic.render_crop_rect();
