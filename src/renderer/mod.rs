@@ -2929,6 +2929,22 @@ pub fn base_family_without_weight_suffix(font_family: &str) -> Option<String> {
 /// 같은 설치 프로그램의 이름만 제공한다. HFT→TTF 호환 대체·generic·successor는 제외한다.
 fn installed_font_program_aliases(name: &str) -> &'static [&'static str] {
     match name {
+        // 같은 SFNT의 name 1/4에는 굵기가 붙지만 fontdb는 name 16의
+        // typographic family만 노출할 수 있다. name 6으로 같은 face를
+        // 확인하지 않으면 설치된 원본 대신 문서의 HCR 대체를 선택한다.
+        // 서로 다른 굵기나 KoPubWorld 프로그램을 이 별칭으로 합치지 않는다.
+        "KoPub돋움체 Light" | "KoPubDotum Light" | "KoPub Dotum Light" => &["KoPubDotumLight"],
+        "KoPub돋움체 Medium" | "KoPubDotum Medium" | "KoPub Dotum Medium" => {
+            &["KoPubDotumMedium"]
+        }
+        "KoPub돋움체 Bold" | "KoPubDotum Bold" | "KoPub Dotum Bold" => &["KoPubDotumBold"],
+        "KoPub바탕체 Light" | "KoPubBatang Light" | "KoPub Batang Light" => {
+            &["KoPubBatangLight"]
+        }
+        "KoPub바탕체 Medium" | "KoPubBatang Medium" | "KoPub Batang Medium" => {
+            &["KoPubBatangMedium"]
+        }
+        "KoPub바탕체 Bold" | "KoPubBatang Bold" | "KoPub Batang Bold" => &["KoPubBatangBold"],
         "나눔고딕" => &["NanumGothic"],
         "NanumGothic" => &["나눔고딕"],
         "한컴바탕" => &["Haansoft Batang"],
