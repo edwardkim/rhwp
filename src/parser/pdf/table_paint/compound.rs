@@ -45,7 +45,6 @@ fn support(rect: [f64; 4], source: Frame, size: [f64; 2]) -> Frame {
     }
 }
 #[allow(clippy::too_many_arguments)]
-
 pub(super) fn plan(
     original: &Control,
     source: Frame,

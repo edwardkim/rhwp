@@ -764,8 +764,7 @@ pub(super) fn partition(
         // A native shared border paints its whole pen, across both neighboring
         // cells. Claim that ink before area partitioning; otherwise an earlier
         // non-native neighbor retains half of an already represented stroke.
-        if !image && orientation.is_some() {
-            let h = orientation.unwrap();
+        if let (false, Some(h)) = (image, orientation) {
             for (ti, cells) in frames.iter().enumerate() {
                 for (ci, cell) in cells.iter().enumerate() {
                     tick(work)?;
