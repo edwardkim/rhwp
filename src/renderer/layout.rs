@@ -5470,6 +5470,7 @@ impl LayoutEngine {
         footer_area: &LayoutRect,
         font_size: f64,
         source_hft: bool,
+        source_descent_em: Option<f64>,
     ) -> f64 {
         let margin_footer = (layout.page_height - (footer_area.y + footer_area.height)).max(0.0);
         let band_bottom = if margin_footer > 1e-6 {
@@ -5482,11 +5483,12 @@ impl LayoutEngine {
         // 글상자 상단과 기준선을 혼용하지 않고 아래끝에서 기준선 여유를 뺀다.
         // 독립 한컴 Print의 HFT Type3 글상자는 em=1000, yMin=-200이다.
         // TTF의 기존 기준선 여유를 HFT에도 쓰면 자동 번호가 약 0.133em 위에 놓인다.
-        // 글꼴 이름·표시용 대체 face가 아니라 원본 영문 슬롯의 프로그램 종류를 쓴다.
+        // 미수록 TTF는 기존 여유를 유지한다. SFNT 하강 메트릭이 있는 경우
+        // 측정 원본의 값을 쓰며 출력용 대체 face의 메트릭으로 바꾸지 않는다.
         let descent = if source_hft {
             font_size * 0.2
         } else {
-            font_size / 3.0
+            font_size * source_descent_em.unwrap_or(1.0 / 3.0)
         };
         band_bottom - descent
     }
@@ -5497,6 +5499,7 @@ impl LayoutEngine {
         page_border_fill: Option<&PageBorderFill>,
         font_size: f64,
         source_hft: bool,
+        source_descent_em: Option<f64>,
     ) -> Option<f64> {
         let pbf = page_border_fill.filter(|p| p.border_fill_id > 0)?;
         let paper_based = matches!(pbf.basis, PageBorderBasis::PaperBased);
@@ -5504,7 +5507,13 @@ impl LayoutEngine {
             return None;
         }
         // 쪽 테두리 경로도 같은 아래쪽 여백 기준선을 소비한다.
-        Some(self.footer_page_number_y(layout, &layout.footer_area, font_size, source_hft))
+        Some(self.footer_page_number_y(
+            layout,
+            &layout.footer_area,
+            font_size,
+            source_hft,
+            source_descent_em,
+        ))
     }
 
     fn build_page_borders(
@@ -6350,6 +6359,11 @@ impl LayoutEngine {
                 page_num_style.font_size = PAGE_NUMBER_PT * self.dpi / 72.0;
             }
             let font_size = page_num_style.font_size;
+            let source_descent_em = font_metrics_data::source_descent_em(
+                &page_num_style.font_family,
+                page_num_style.bold,
+                page_num_style.italic,
+            );
             // 글줄 정보가 없는 HFT 자동 번호의 숫자·장식은 정렬에 쓴 원본
             // 전진폭으로 그린다. 본문의 저장 줄·기존 글꼴 선택에는 적용하지 않는다.
             page_num_style.fixed_glyph_advances = styles.page_number_font_is_hft;
@@ -6398,6 +6412,7 @@ impl LayoutEngine {
                     target_area,
                     font_size,
                     styles.page_number_font_is_hft,
+                    source_descent_em,
                 )
             } else {
                 target_area.y + target_area.height / 2.0 + font_size / 3.0
@@ -6410,6 +6425,7 @@ impl LayoutEngine {
                     page_border_fill,
                     font_size,
                     styles.page_number_font_is_hft,
+                    source_descent_em,
                 )
                 .filter(|_| border_drawn)
                 .unwrap_or(footer_center)

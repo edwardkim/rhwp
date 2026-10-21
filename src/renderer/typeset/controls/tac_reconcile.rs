@@ -26,6 +26,115 @@ pub(super) struct TacHeightCap {
     pub ladder_omits_spacing: bool,
 }
 
+/// A source frame with a text prefix and a terminal table owns every row,
+/// including the prefix's closing spacing. A table-only cap must not reclaim
+/// rows already admitted by the paragraph formatter and emitted by paint.
+fn complete_stored_prefix_advance(
+    para_idx: usize,
+    para: &Paragraph,
+    next: &Paragraph,
+    fmt: &FormattedParagraph,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    measured_tables: &[MeasuredTable],
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::paragraph::LineSeg;
+    if para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || next.stored_text_partition_is_dirty()
+        || next.cell_format_vpos_dirty
+        || para.line_segs.len() < 2
+        || fmt.line_count() != para.line_segs.len()
+        || !para.controls.iter().all(|control| {
+            matches!(control, Control::Table(_))
+                || crate::renderer::composer::control_is_width_neutral_marker(control)
+        })
+    {
+        return None;
+    }
+    let mut tables = para.controls.iter().enumerate().filter_map(|(i, c)| {
+        if let Control::Table(t) = c {
+            Some((i, t))
+        } else {
+            None
+        }
+    });
+    let (control, table) = tables.next()?;
+    if tables.next().is_some()
+        || !table.common.treat_as_char
+        || table.caption.is_some()
+        || table.cells.iter().any(|cell| cell.dirty_flag)
+        || crate::renderer::composer::control_slot_line_index(para, control)? + 1
+            != para.line_segs.len()
+    {
+        return None;
+    }
+    let measured = measured_tables
+        .iter()
+        .find(|m| m.para_index == para_idx && m.control_index == control)?;
+    if (measured.total_height - hwpunit_to_px(table.common.height as i32, dpi)).abs() > dpi / 7200.0
+    {
+        return None;
+    }
+    for (index, line) in para.line_segs.iter().enumerate() {
+        if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || line.line_height <= 0
+            || line.line_spacing < 0
+            || (fmt.line_heights[index] - hwpunit_to_px(line.line_height, dpi)).abs() > dpi / 7200.0
+            || (fmt.line_spacings[index] - hwpunit_to_px(line.line_spacing, dpi)).abs()
+                > dpi / 7200.0
+        {
+            return None;
+        }
+    }
+    for pair in para.line_segs.windows(2) {
+        if pair[0]
+            .vertical_pos
+            .checked_add(pair[0].line_height)?
+            .checked_add(pair[0].line_spacing)?
+            != pair[1].vertical_pos
+        {
+            return None;
+        }
+    }
+    let first = para.line_segs.first()?;
+    let last = para.line_segs.last()?;
+    let outer_height = i64::from(table.common.height)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    if i64::from(last.line_height) != outer_height || i64::from(last.text_height) != outer_height {
+        return None;
+    }
+    let successor = next.line_segs.first()?;
+    let after = styles
+        .para_styles
+        .get(para.para_shape_id as usize)?
+        .spacing_after;
+    let before = styles
+        .para_styles
+        .get(next.para_shape_id as usize)?
+        .spacing_before;
+    if successor.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || last
+            .vertical_pos
+            .checked_add(last.line_height)?
+            .checked_add(last.line_spacing)?
+            .checked_add(crate::renderer::px_to_hwpunit(after + before, dpi))?
+            != successor.vertical_pos
+    {
+        return None;
+    }
+    Some(
+        hwpunit_to_px(
+            last.vertical_pos
+                .checked_add(last.line_height)?
+                .checked_add(last.line_spacing)?
+                .checked_sub(first.vertical_pos)?,
+            dpi,
+        ) + after,
+    )
+}
+
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure(
     para_idx: usize,
@@ -190,6 +299,31 @@ pub(super) fn measure(
         } else {
             cap
         };
+    let cap = if !profile.session_edited() && tac_count == 1 {
+        next_para
+            .and_then(|next| {
+                complete_stored_prefix_advance(
+                    para_idx,
+                    para,
+                    next,
+                    fmt,
+                    styles,
+                    measured_tables,
+                    dpi,
+                )
+            })
+            .map(|advance| {
+                advance
+                    + if height_before < 1.0 {
+                        0.0
+                    } else {
+                        fmt.spacing_before
+                    }
+            })
+            .unwrap_or(cap)
+    } else {
+        cap
+    };
     // [#2279 누적Δ] 저장 ladder 가 host paraPr spacing 을 누락한 기계생성
     // 결재문서(HWPX, 빈 host TAC 표): 저장 스텝(다음 문단 vpos−현 vpos)이
     // fmt.total_height(sb+lh+ls+sa)보다 짧으면 생성기가 sa/sb 를 좌표에

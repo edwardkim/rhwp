@@ -138,12 +138,14 @@ pub(in crate::renderer::typeset) fn finalize_pages(
         let (current_header, current_footer) = active_hf.active(page_num);
         page.active_header = current_header;
         page.active_footer = current_footer;
-        if !assigner.should_hide_page_number() {
+        if !events.positions.is_empty() {
+            page.page_number_pos = events.active_position(i).cloned();
+        } else if !assigner.should_hide_page_number() {
             page.page_number_pos = page_number_pos.clone();
         }
 
         // 한 컨트롤의 감추기는 소스 위치가 매핑된 한 쪽에만 적용한다.
-        if let Some((_, hide)) = events.hides.iter().find(|(target, _)| *target == i) {
+        if let Some((_, hide)) = events.hides.iter().rev().find(|(target, _)| *target == i) {
             page.page_hide = Some(hide.clone());
         }
     }

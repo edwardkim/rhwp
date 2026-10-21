@@ -48,6 +48,19 @@ pub struct FontMetric {
     pub hangul: Option<&'static HangulMetric>,
 }
 
+/// Source SFNT hhea descent for the Windows Korean UI families. Like the
+/// generated advance tables this is program metadata, independent of an
+/// installed rendering substitute. Gulim.ttc faces 0..=3 have upem=1024 and
+/// descender=-145; provenance is recorded with the TAC baseline qualification.
+/// Other programs retain the caller's existing compatibility fallback.
+pub(crate) fn source_descent_em(name: &str, bold: bool, italic: bool) -> Option<f64> {
+    let metric = find_metric(name, bold, italic)?.metric;
+    match metric.name {
+        "Gulim" | "GulimChe" | "Dotum" | "DotumChe" => Some(145.0 / 1024.0),
+        _ => None,
+    }
+}
+
 #[derive(Debug)]
 pub struct LatinRange {
     pub start: u32,
