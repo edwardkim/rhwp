@@ -1,0 +1,21 @@
+{
+  "originalCorrection": "2cfed9e6e4bf142ff321b68f9ca0fa611ca106f5",
+  "rebaseIntegrationLoss": "4eeea6d7b40a0edf237b24534bbad3999b0cf537",
+  "beforeAcceptedSum": 44.85333333333328,
+  "sourceCellMinimum": 69.62666666666667,
+  "afterOpeningAccepted": 39.40000000000009,
+  "afterRemaining": 30.226666666666574,
+  "sourceCut": [
+    1,
+    1
+  ],
+  "actualPath": [
+    "stored_ordinary_row_cut_has_physical_frame: source minimum + unconsumed content",
+    "stored_ordinary_row_end_frame -> scan accepted row override",
+    "emit partial height and ordinary remainder -> next start row override",
+    "ordinary_rowbreak_fragment_heights + stored_ordinary_row_frame_owns_alignment -> final paint"
+  ],
+  "beforeTrace": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/ordinary-row-frame-cause/before.log",
+  "afterTrace": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/ordinary-row-frame-cause/after.log",
+  "limits": "Native 집중 검증 결과다. fresh WASM과 최종 전체 게이트는 미완료다."
+}

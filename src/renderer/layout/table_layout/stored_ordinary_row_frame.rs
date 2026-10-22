@@ -5,6 +5,33 @@ use crate::model::table::{Cell, Table};
 use crate::renderer::hwpunit_to_px;
 
 impl LayoutEngine {
+    /// 원본 일반 칸의 선언 최소는 내용 컷과 별개의 물리 공간이다.
+    /// 편집·재조판 또는 유효하지 않은 저장 줄은 같은 근거로 사용하지 않는다.
+    fn stored_independent_row_minimum(
+        &self,
+        table: &Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        table
+            .cells
+            .iter()
+            .filter(|cell| {
+                usize::from(cell.row) == row
+                    && cell.row_span == 1
+                    && cell.height > 0
+                    && cell.height <= i32::MAX as u32
+                    && self.stored_plain_text_cell_frame(table, cell)
+            })
+            .filter_map(|cell| {
+                let minimum = hwpunit_to_px(cell.height as i32, self.dpi);
+                let end = self.cell_units(cell, table, styles).len();
+                let content = self.cell_cut_visible_height(cell, table, styles, 0, end);
+                (minimum > content + hwpunit_to_px(2, self.dpi)).then_some(minimum)
+            })
+            .reduce(f64::max)
+    }
+
     /// 원본 일반 행의 물리 최소는 셀 선언이며, 여러 저장 프레임의 내용 합이 아니다.
     /// 병합 칸의 수용 원장이 따로 필요한 행은 이 일반 칸 계약에 포함하지 않는다.
     pub(crate) fn stored_ordinary_row_uses_declared_minimum(
@@ -207,7 +234,7 @@ impl LayoutEngine {
 
     // 문단 간 경계와 문단 내부의 원본 되감김·원점0 경계는 같은 유닛 컷을 소유한다.
     // 이미 출처를 확인한 생산 술어를 재사용하며 문단 간 리셋으로만 소비를 제한하지 않는다.
-    fn stored_ordinary_row_cut_has_boundary(
+    fn stored_ordinary_row_cut_has_physical_frame(
         &self,
         table: &Table,
         row: usize,
@@ -217,6 +244,16 @@ impl LayoutEngine {
     ) -> bool {
         self.row_cut_ends_at_original_plain_text_reset(table, row, start, end, styles)
             || self.row_cut_ends_at_saved_zero_origin_frame(table, row, start, end, styles)
+            // 실제 용량에서 나눈 진행 줄도 독립 선언 최소를 소유한다.
+            // 내용이 앞뒤에 남는 컷만 해당하며, 완료한 원본에 빈 꼬리를 만들지 않는다.
+            || (end
+                .iter()
+                .enumerate()
+                .any(|(index, &to)| to > start.get(index).copied().unwrap_or(0))
+                && !self.row_cut_consumes_all_ordinary_units(table, row, end, styles)
+                && self
+                    .stored_independent_row_minimum(table, row, styles)
+                    .is_some())
     }
 
     /// 저장 쪽 경계에서 선택한 유닛을 실제 마지막 행 상자 안에 놓는다.
@@ -232,7 +269,7 @@ impl LayoutEngine {
         let cells = self.ordinary_row_cells_for_cut(table, row, end, styles)?;
         if !start.is_empty()
             || end.len() != cells.len()
-            || !(self.stored_ordinary_row_cut_has_boundary(table, row, start, end, styles)
+            || !(self.stored_ordinary_row_cut_has_physical_frame(table, row, start, end, styles)
                 || self.row_cut_consumes_all_ordinary_units(table, row, end, styles))
             || !self.row_cut_remaining_is_single_stored_frame(table, row, end, None, styles)
         {
@@ -261,7 +298,7 @@ impl LayoutEngine {
         let cells = self.ordinary_row_cells_for_cut(table, row, cut, styles)?;
         if cut.len() != cells.len()
             || !self.row_cut_remaining_is_single_stored_frame(table, row, cut, None, styles)
-            || !(self.stored_ordinary_row_cut_has_boundary(table, row, &[], cut, styles)
+            || !(self.stored_ordinary_row_cut_has_physical_frame(table, row, &[], cut, styles)
                 || self.stored_single_line_row_is_fragmentable(table, row, styles)
                 || carried.is_some()
                 || self
@@ -441,8 +478,13 @@ impl LayoutEngine {
                     })
                 });
                 !(page_origin_is_shared && has_page_owner)
-                    && (self.stored_ordinary_row_cut_has_boundary(table, row, &[], cut, styles)
-                        || self.stored_single_line_row_is_fragmentable(table, row, styles)
+                    && (self.stored_ordinary_row_cut_has_physical_frame(
+                        table,
+                        row,
+                        &[],
+                        cut,
+                        styles,
+                    ) || self.stored_single_line_row_is_fragmentable(table, row, styles)
                         || self.row_cut_consumes_all_ordinary_units(table, row, cut, styles))
             })
     }
