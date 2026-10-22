@@ -3317,12 +3317,17 @@ pub(crate) fn stored_single_cell_closing_frame_bottom(
     {
         return None;
     }
-    let bottom = if table.outer_margin_bottom == 0 {
-        next.vertical_pos
-    } else {
-        stored_closed_cell_frame::terminal_cell_border_before_successor_hu(table, successor)?
-    };
-    Some(hwpunit_to_px(bottom, dpi))
+    if table.outer_margin_bottom == 0 {
+        return Some(hwpunit_to_px(next.vertical_pos, dpi));
+    }
+    stored_closed_cell_frame::terminal_cell_border_before_successor_hu(table, successor)
+        .map(|bottom| hwpunit_to_px(bottom, dpi))
+        .or_else(|| {
+            // 잉크 끝과 독립 두 프레임의 빈 종료 띠는 서로 다른 소유다.
+            // 실제 한 번의 저장 재시작과 셀 총높이/후속 원점 종료식을 함께 인증한다.
+            stored_two_frame_successor_origin_hu(table, successor)?;
+            stored_single_cell_closing_frame_height(host, successor, table, dpi)
+        })
 }
 
 /// 독립 두 프레임 종료식으로 입증된 종료 조각 본체 높이.

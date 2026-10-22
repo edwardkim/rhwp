@@ -256,6 +256,44 @@ impl LayoutEngine {
                     .is_some())
     }
 
+    /// 단일 칸의 두 원본 물리 프레임이 후속 저장 원점을 함께 닫는다.
+    /// 마지막 줄간격보다 큰 빈 부분도 이 독립 종료식으로 인증할 수 있다.
+    pub(crate) fn stored_single_cell_two_frame_opening(
+        &self,
+        host: &crate::model::paragraph::Paragraph,
+        successor: &crate::model::paragraph::Paragraph,
+        table: &Table,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let profile = self.profile.get();
+        let [cell] = table.cells.as_slice() else {
+            return None;
+        };
+        let [end] = cut else {
+            return None;
+        };
+        if profile.session_edited()
+            || !(profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+            || crate::renderer::float_placement::stored_two_frame_successor_origin_hu(
+                table, successor,
+            )
+            .is_none()
+            || crate::renderer::float_placement::stored_single_cell_closing_frame_height(
+                host, successor, table, self.dpi,
+            )
+            .is_none()
+            || !self.cell_unit_opens_stored_page_frame(cell, table, styles, *end)
+        {
+            return None;
+        }
+        Some(hwpunit_to_px(table.common.height as i32, self.dpi))
+    }
+
     /// 저장 쪽 경계에서 선택한 유닛을 실제 마지막 행 상자 안에 놓는다.
     pub(crate) fn stored_ordinary_row_end_frame(
         &self,

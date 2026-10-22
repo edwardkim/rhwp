@@ -789,6 +789,41 @@ impl TypesetEngine {
                     .min(avail_for_rows)
                     - before_last,
             );
+            // 두 저장 프레임과 후속 원점이 닫은 상자는 쪽의 남는 공간이 아니다.
+            // 이미 늘어난 임시 예약 대신 실제 소유 컷의 내용 하한과 비교한다.
+            let source_opening = (!is_continuation
+                && cursor_row == 0
+                && start_cut.is_empty()
+                && end_row == 1
+                && input.prepared.table_footnotes.is_empty()
+                && std::ptr::eq(table, row_geometry_table))
+            .then(|| {
+                input
+                    .source
+                    .paragraphs_all
+                    .get(para_idx + 1)
+                    .and_then(|next| {
+                        layout_engine.stored_single_cell_two_frame_opening(
+                            input.source.paragraph,
+                            next,
+                            table,
+                            &split_end_cut,
+                            styles,
+                        )
+                    })
+            })
+            .flatten()
+            .filter(|height| {
+                *height
+                    >= layout_engine.row_cut_content_height(
+                        row_geometry_table,
+                        row,
+                        row_start,
+                        &split_end_cut,
+                        styles,
+                    )
+                    && *height <= available
+            });
             // 인라인 프레임의 반복 제목행 계약은 유지한다. 일반 칸의 원본
             // 최소는 제목행 유무와 무관하며, helper가 저장 컷의 유효성을 확인한다.
             let inline_frame = self
@@ -816,7 +851,7 @@ impl TypesetEngine {
                 })
                 .flatten()
                 .filter(|height| *height >= selected);
-            if let Some(height) = inline_frame.or_else(|| {
+            if let Some(height) = source_opening.or(inline_frame).or_else(|| {
                 layout_engine.stored_ordinary_row_end_frame(
                     row_geometry_table,
                     row,
