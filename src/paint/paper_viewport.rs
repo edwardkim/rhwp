@@ -6,13 +6,14 @@ use crate::paint::{
     LayerNode, LayerNodeKind, PaintOp, TextDecorationKind, TextDecorationPaintGeometry,
 };
 use crate::renderer::image_resolver::detect_image_mime_type;
-use crate::renderer::render_tree::{BoundingBox, ImageNode, RenderNode};
+use crate::renderer::render_tree::{BoundingBox, ImageNode, RectangleNode, RenderNode};
 
 #[derive(Clone, Copy)]
 pub(crate) struct PagePaintContext {
     print: bool,
     logical_size: (f64, f64),
     output_size: (f64, f64),
+    axis_aligned_graphics: bool,
 }
 
 impl PagePaintContext {
@@ -28,6 +29,7 @@ impl PagePaintContext {
             } else {
                 (width, height)
             },
+            axis_aligned_graphics: true,
         }
     }
 
@@ -406,6 +408,57 @@ impl PagePaintContext {
                 }
             }
         }
+    }
+
+    /// 회전/affine 아래의 좌표는 최종 장치 좌표가 아니므로 이 계약을 적용하지 않는다.
+    pub(crate) fn without_rectangle_mapping(mut self) -> Self {
+        self.axis_aligned_graphics = false;
+        self
+    }
+
+    /// 정수 장치 좌표 → 물리 종이 viewport의 가로 축 변환.
+    /// 원본 종이/그림자/텍스트 배치나 세로 축을 이 결과로 덮어쓰지 않는다.
+    /// 근거: issue8153의 두 종이·15개 독립 Print 사각형 원시 연산.
+    pub(crate) fn rectangle_frame(
+        self,
+        node: &RenderNode,
+        rect: &mut RectangleNode,
+        device_pixel: Option<f64>,
+    ) -> BoundingBox {
+        let Some(pixel) = device_pixel.filter(|p| p.is_finite() && *p > 0.0) else {
+            return node.bbox;
+        };
+        if !self.print
+            || !self.axis_aligned_graphics
+            || !node.layer.as_ref().is_some_and(|layer| layer.master_page)
+            || rect.transform.has_transform()
+        {
+            return node.bbox;
+        }
+        let bounds = node.bbox;
+        let (width, _) = self.logical_size;
+        let (output_width, _) = self.output_size;
+        if ![bounds.x, bounds.width, width, output_width]
+            .into_iter()
+            .all(f64::is_finite)
+            || bounds.width < 0.0
+            || width <= 0.0
+            || output_width <= 0.0
+        {
+            return bounds;
+        }
+        let device_width = (width / pixel).round();
+        if device_width <= 0.0 {
+            return bounds;
+        }
+        let left = (bounds.x / pixel).round();
+        let right = ((bounds.x + bounds.width) / pixel).round().max(left + 1.0);
+        let unit = output_width / device_width;
+        // 한컴의 퇴화 사각형도 장치의 한 픽셀 폭을 갖는다. 원본의 0폭은 보존한다.
+        if rect.style.stroke_width.is_finite() && rect.style.stroke_width > 0.0 {
+            rect.style.stroke_width = (rect.style.stroke_width / pixel).round().max(1.0) * pixel;
+        }
+        BoundingBox::new(left * unit, bounds.y, (right - left) * unit, bounds.height)
     }
 
     pub(crate) fn image_frame(self, node: &RenderNode, image: &ImageNode) -> BoundingBox {
