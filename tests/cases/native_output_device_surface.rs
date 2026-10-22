@@ -1,6 +1,6 @@
-//! 장치가 확정한 PNG와 원본 bitmap의 재생 소유를 구분한다.
+//! PNG의 생산 장치와 최종 소비 장치의 해상도를 구분한다.
 //! 문서 배치의 px/golden이 아닌 합성 paint 프로토콜 검사다.
-//! 독립 Print 대조와 실제 문서 전쪽 증거: #7445 stage8 C417.
+//! 독립 Print와 출처 태그 대조: #7445 stage56. C417의 무조건 선형 재생 가정을 정정한다.
 #![cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 
 use rhwp::paint::{
@@ -23,8 +23,14 @@ fn device_pattern() -> Vec<u8> {
     encoded.into_inner()
 }
 
-fn replay(renderer: &SkiaLayerRenderer, bytes: &[u8], kind: ResolvedImageKind) -> image::RgbaImage {
-    let bounds = BoundingBox::new(0.0, 0.0, 16.0, 8.0);
+fn replay(
+    renderer: &SkiaLayerRenderer,
+    bytes: &[u8],
+    kind: ResolvedImageKind,
+    width: f64,
+    height: f64,
+) -> image::RgbaImage {
+    let bounds = BoundingBox::new(0.0, 0.0, width, height);
     let op = PaintOp::image(
         bounds.clone(),
         ImageNode::new(1, Some(bytes.to_vec())),
@@ -63,30 +69,141 @@ fn interior_minimum(image: &image::RgbaImage) -> u8 {
 }
 
 #[test]
-fn native_print_preserves_device_samples_without_changing_source_bitmap_reduction() {
+fn native_print_filters_device_png_at_the_consumer_resolution() {
     let bytes = device_pattern();
     let renderer = SkiaLayerRenderer::new();
-    let original = replay(&renderer, &bytes, ResolvedImageKind::FormatConverted);
-    let device = replay(&renderer, &bytes, ResolvedImageKind::OutputDevice);
-    assert!(
-        interior_minimum(&device) < interior_minimum(&original),
-        "장치의 흑색 표본을 일반 원본 bitmap의 구간 평균으로 다시 지우지 않는다"
-    );
-    assert!(
-        interior_minimum(&device) < 8,
-        "최종 장치 패턴의 흑색을 회색 배경으로 바꾸지 않는다"
-    );
-    // 같은 바이트를 두 경로로 재생해도 cache가 원본 bitmap의 필터를 덮지 않는다.
-    assert_eq!(
-        replay(&renderer, &bytes, ResolvedImageKind::FormatConverted),
-        original,
-        "장치 재생 뒤에도 원본 bitmap의 기존 축소를 유지한다"
-    );
-    assert_eq!(
-        replay(&renderer, &bytes, ResolvedImageKind::OutputDevice),
-        device,
-        "같은 장치 표본의 반복 재생"
-    );
+    for (width, height) in [(16.0, 8.0), (64.0, 32.0), (128.0, 64.0)] {
+        let original = replay(
+            &renderer,
+            &bytes,
+            ResolvedImageKind::FormatConverted,
+            width,
+            height,
+        );
+        let device = replay(
+            &renderer,
+            &bytes,
+            ResolvedImageKind::OutputDevice,
+            width,
+            height,
+        );
+        assert_eq!(
+            device, original,
+            "동일 PNG와 최종 장치 사각형은 생산 출처 태그만으로 표본 선택이 바뀌지 않는다"
+        );
+        if width == 16.0 {
+            // 네 source 픽셀마다 흰색이 적어도 하나 있다. 축소 구간의 흰색을
+            // 건너뛰고 검은 점만 택하는 alias를 최종 표본 보존으로 인정하지 않는다.
+            assert!(
+                interior_minimum(&device) > 32,
+                "축소 구간의 흰색 coverage를 보존한다"
+            );
+        } else if width == 64.0 {
+            assert_eq!(
+                device,
+                image::load_from_memory(&bytes).unwrap().to_rgba8(),
+                "소비 장치와 1:1인 PNG는 원래 픽셀을 보존한다"
+            );
+        }
+        assert_eq!(
+            replay(
+                &renderer,
+                &bytes,
+                ResolvedImageKind::FormatConverted,
+                width,
+                height
+            ),
+            original,
+            "장치 경로 뒤에도 원본 경로의 cache와 필터를 보존한다"
+        );
+        assert_eq!(
+            replay(
+                &renderer,
+                &bytes,
+                ResolvedImageKind::OutputDevice,
+                width,
+                height
+            ),
+            device,
+            "같은 장치 표본의 반복 재생"
+        );
+    }
+}
+
+#[test]
+fn transparent_print_reduction_integrates_fractional_coverage_without_hidden_rgb() {
+    // 8×8 source의 왼쪽 절반만 불투명한 빨강이다. 투명한 파랑은
+    // 흰 종이에 기여하지 않는다. 2×2 장치 사각형의 소수 원점에서
+    // 첫 줄의 빨강 coverage는 3/4×3/4와 1/4×3/4로 독립 계산한다.
+    let source = image::RgbaImage::from_fn(8, 8, |x, _| {
+        if x < 4 {
+            image::Rgba([255, 0, 0, 255])
+        } else {
+            image::Rgba([0, 0, 255, 0])
+        }
+    });
+    let mut bytes = std::io::Cursor::new(Vec::new());
+    source
+        .write_to(&mut bytes, image::ImageFormat::Png)
+        .unwrap();
+    let bytes = bytes.into_inner();
+    let renderer = SkiaLayerRenderer::new();
+    let replay = |x: f64, kind: ResolvedImageKind| {
+        let frame = BoundingBox::new(x, 0.25, 2.0, 2.0);
+        let op = PaintOp::image(
+            frame,
+            ImageNode::new(1, Some(bytes.clone())),
+            Some(ResolvedImagePayload {
+                data: bytes.clone(),
+                mime: "image/png",
+                kind,
+                suppress_effects: false,
+            }),
+        );
+        let tree = PageLayerTree::with_profile(
+            4.0,
+            4.0,
+            LayerNode::leaf(BoundingBox::new(0.0, 0.0, 4.0, 4.0), None, vec![op]),
+            RenderProfile::Print,
+        );
+        let result = renderer
+            .render_raster_with_options(
+                &tree,
+                RasterRenderOptions {
+                    transparent: false,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        image::load_from_memory(&result.bytes).unwrap().to_rgba8()
+    };
+    for kind in [
+        ResolvedImageKind::FormatConverted,
+        ResolvedImageKind::OutputDevice,
+    ] {
+        let first = replay(0.25, kind);
+        for (x, expected) in [(0, 112u8), (1, 207u8)] {
+            let pixel = first.get_pixel(x, 0);
+            assert_eq!(pixel[0], 255);
+            assert!(
+                pixel[1].abs_diff(expected) <= 1,
+                "흰 종이 합성에서 실제 coverage를 보존한다: {pixel:?}"
+            );
+            assert_eq!(pixel[1], pixel[2], "투명한 파랑의 숨은 RGB가 새지 않는다");
+        }
+        let shifted = replay(0.75, kind);
+        assert_eq!(
+            shifted.get_pixel(0, 0),
+            first.get_pixel(1, 0),
+            "같은 정수 크기라도 소수 원점이 다르면 cache 표본을 바꾼다"
+        );
+        assert_eq!(shifted.get_pixel(1, 0), first.get_pixel(0, 0));
+        assert_eq!(
+            replay(0.25, kind),
+            first,
+            "반복 요청은 같은 coverage를 보존한다"
+        );
+    }
 }
 
 #[test]

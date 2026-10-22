@@ -24,6 +24,7 @@ struct CacheKey {
     width: u32,
     height: u32,
     print: bool,
+    device_rect: [u64; 4],
 }
 
 #[derive(Default)]
@@ -109,12 +110,21 @@ pub(crate) fn prepare_bitmap(
     }
     let mut hash = std::collections::hash_map::DefaultHasher::new();
     bytes.hash(&mut hash);
+    // 투명 그림의 coverage는 source의 소수 원점과 실제 장치 배율에도
+    // 의존한다. 같은 정수 출력 크기라는 이유로 다른 원점의 표본을 재사용하지 않는다.
+    let device_rect = [
+        a * bbox.x + e - left,
+        d * bbox.y + f - top,
+        a * bbox.width,
+        d * bbox.height,
+    ];
     let key = CacheKey {
         source_hash: hash.finish(),
         source_len: bytes.len(),
         width,
         height,
         print,
+        device_rect: device_rect.map(f64::to_bits),
     };
     let png = CACHE.with(|cache| cache.borrow().entries.get(&key).cloned());
     let png = match png {
@@ -127,17 +137,25 @@ pub(crate) fn prepare_bitmap(
             limits.max_alloc = Some(MAX_PIXELS * 4);
             reader.limits(limits);
             let source = reader.decode().ok()?;
-            // 투명 픽셀을 straight-alpha로 필터링하면 테두리에 색이 번진다.
-            // 이 경로는 불투명 자료만 다루고 투명 자료의 기존 합성을 유지한다.
-            if source.color().has_alpha()
-                && source.to_rgba8().pixels().any(|pixel| pixel.0[3] != 255)
-            {
-                return None;
-            }
+            let transparent = source.color().has_alpha()
+                && source.to_rgba8().pixels().any(|pixel| pixel.0[3] != 255);
             // 독립 Print 표본 C352/C354/C356의 구간 평균을 보존한다.
             // 각 source 픽셀은 정확히 한 장치 구간에 들어간다. Lanczos의
             // 음의 lobe나 새 보간으로 옅은 선의 밝기를 다시 바꾸지 않는다.
-            let resized = if print {
+            let resized = if transparent {
+                // Print의 투명 표본은 실제 소수 장치 사각형에서 coverage를
+                // 적분한다. 숨은 RGB를 먼저 섞거나 투명 가장자리를 정수 box에
+                // 늘리지 않는다. 다른 프로필의 기존 합성은 그대로 둔다.
+                if !print {
+                    return None;
+                }
+                image::DynamicImage::ImageRgba8(transparent_area_downsample(
+                    &source.to_rgba8(),
+                    width,
+                    height,
+                    device_rect,
+                )?)
+            } else if print {
                 image::DynamicImage::ImageRgb8(integer_area_downsample(
                     &source.to_rgb8(),
                     width,
@@ -202,4 +220,79 @@ fn integer_area_downsample(source: &image::RgbImage, width: u32, height: u32) ->
         }
     }
     result
+}
+
+fn transparent_area_downsample(
+    source: &image::RgbaImage,
+    width: u32,
+    height: u32,
+    device_rect: [f64; 4],
+) -> Option<image::RgbaImage> {
+    let [x, y, w, h] = device_rect;
+    let sx = f64::from(source.width()) / w;
+    let sy = f64::from(source.height()) / h;
+    let area = sx * sy;
+    if !device_rect
+        .into_iter()
+        .chain([sx, sy, area])
+        .all(f64::is_finite)
+        || w <= 0.0
+        || h <= 0.0
+        || area <= 0.0
+    {
+        return None;
+    }
+    let spans = |count: u32, source: u32, origin: f64, scale: f64| {
+        (0..count)
+            .map(|i| {
+                let first = (f64::from(i) - origin) * scale;
+                let end = first + scale;
+                (
+                    first.floor().clamp(0.0, f64::from(source)) as u32,
+                    end.ceil().clamp(0.0, f64::from(source)) as u32,
+                    first,
+                    end,
+                )
+            })
+            .collect::<Vec<_>>()
+    };
+    let xs = spans(width, source.width(), x, sx);
+    let ys = spans(height, source.height(), y, sy);
+    let mut output = image::RgbaImage::new(width, height);
+    for (y, &(top, bottom, y0, y1)) in ys.iter().enumerate() {
+        for (x, &(left, right, x0, x1)) in xs.iter().enumerate() {
+            let mut alpha = 0.0;
+            let mut color = [0.0; 3];
+            for iy in top..bottom {
+                let wy = (f64::from(iy + 1).min(y1) - f64::from(iy).max(y0)).max(0.0);
+                for ix in left..right {
+                    let wx = (f64::from(ix + 1).min(x1) - f64::from(ix).max(x0)).max(0.0);
+                    let pixel = source.get_pixel(ix, iy);
+                    let weight = wx * wy * f64::from(pixel[3]);
+                    alpha += weight;
+                    for channel in 0..3 {
+                        color[channel] += f64::from(pixel[channel]) * weight;
+                    }
+                }
+            }
+            let rgb = color.map(|value| {
+                if alpha > 0.0 {
+                    (value / alpha).round().clamp(0.0, 255.0) as u8
+                } else {
+                    0
+                }
+            });
+            output.put_pixel(
+                x as u32,
+                y as u32,
+                image::Rgba([
+                    rgb[0],
+                    rgb[1],
+                    rgb[2],
+                    (alpha / area).round().clamp(0.0, 255.0) as u8,
+                ]),
+            );
+        }
+    }
+    Some(output)
 }
