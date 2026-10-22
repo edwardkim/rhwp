@@ -18984,9 +18984,7 @@ impl LayoutEngine {
             {
                 return true;
             }
-            if !(next.hard_break_before || next.stored_frame_break_before)
-                || closing.vis_start >= closing.vis_end
-            {
+            if !(next.hard_break_before || next.stored_frame_break_before) {
                 return false;
             }
             let (Some(closing_para), Some(next_para)) = (
@@ -18999,7 +18997,8 @@ impl LayoutEngine {
                 seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
             };
             matches!(
-                (closing_para.line_segs.get(closing.vis_end - 1), next_para.line_segs.get(next.vis_start)),
+                (stored_frame_picture_lines::source_physical_lines(closing_para, closing)
+                    .and_then(|lines| lines.last()), next_para.line_segs.get(next.vis_start)),
                 (Some(last), Some(first))
                     if stored(last) && stored(first) && last.vertical_pos >= 0 && first.vertical_pos == 0
                         && last.line_height > 0
@@ -19083,17 +19082,11 @@ impl LayoutEngine {
             }
             let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
             for unit in &units[..end] {
-                if unit.nested_row.is_some()
-                    || unit.non_inline_control_range.is_some()
-                    || unit.vis_start >= unit.vis_end
-                {
-                    return None;
-                }
                 let para = cell.paragraphs.get(unit.para_idx)?;
                 if !stored_frame_picture_lines::source_line_controls_fit(para) {
                     return None;
                 }
-                let lines = para.line_segs.get(unit.vis_start..unit.vis_end)?;
+                let lines = stored_frame_picture_lines::source_physical_lines(para, unit)?;
                 for line in lines {
                     if line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
                         || line.vertical_pos < 0

@@ -4,6 +4,29 @@ use crate::model::control::Control;
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::shape::ShapeObject;
 
+/// 내용 전진에서 접힌 빈 줄도 원본의 물리 프레임 인증에는 남는다.
+/// 원래 줄이 없는 합성 atom이나 개체 소유 유닛을 빈 줄로 승격하지 않는다.
+pub(super) fn source_physical_lines<'a>(
+    paragraph: &'a Paragraph,
+    unit: &super::CellUnit,
+) -> Option<&'a [LineSeg]> {
+    if unit.nested_row.is_some() || unit.non_inline_control_range.is_some() {
+        return None;
+    }
+    if unit.vis_start < unit.vis_end {
+        return paragraph.line_segs.get(unit.vis_start..unit.vis_end);
+    }
+    (unit.vis_start == 0
+        && unit.vis_end == 0
+        && unit.empty_spacer
+        && unit.height == 0.0
+        && !unit.reflowed_line_slot
+        && paragraph.controls.is_empty()
+        && paragraph.text.trim().is_empty()
+        && paragraph.line_segs.len() == 1)
+        .then_some(paragraph.line_segs.as_slice())
+}
+
 /// HWP5 표 62의 줄 상자와 표 69의 개체 크기·바깥여백을 같은 HU로 대조한다.
 /// 별도 캡션이나 흐름 밖 개체는 이 원자 글줄의 높이만으로 인증하지 않는다.
 pub(super) fn source_line_controls_fit(paragraph: &Paragraph) -> bool {
