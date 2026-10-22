@@ -42,11 +42,18 @@ Native 빌드는 exit 0, 10분 36초로 완료했다. 실행 파일과 Native rl
 지문은 `a28c53ac28e6a0e7b73f4f38f3531a7a9964598793e8066be5cae9d2a393dc1c`다.
 동결 CLI SHA-256은 `de6723319a105a43a54ed7d8505d1c7e6a634103f18f5562d0feabf9072b62fb`다.
 
-| 원본 | 실제/Print 쪽수 | Native raw 최저 | raw 100% 쪽수 | 90% 미만 |
+| 원본 | 실제/Print 쪽수 | Native raw 최저 | fresh WASM raw 최저 | 각 backend raw 100% 쪽수 |
 | --- | --- | ---: | ---: | ---: |
-| HWPX | 64/64 | 96.24353% | 4 | 0 |
-| 2024 HWP | 64/64 | 97.73521% | 4 | 0 |
-| 2022 HWP | 64/64 | 95.03337% | 0 | 0 |
+| HWPX | 64/64 | 96.24353% | 96.13140% | 4 |
+| 2024 HWP | 64/64 | 97.73521% | 97.69323% | 4 |
+| 2022 HWP | 64/64 | 95.03337% | 95.08029% | 0 |
+
+최적화 fresh WASM 빌드도 exit 0, 35분 55초로 완료했다. WASM SHA-256은
+`06fd40f347912964abe9b588c2a0e8a1d70fd5fa43a89de7f6ddea367dfec419`이며
+root pkg와 Studio public의 glue·WASM 바이트 일치를 확인했다.
+동결한 base package로 세 문서 각각 64쪽 브라우저 직접 PNG를 산출했고 모두 exit 0이다.
+전쪽 384개 결과 중 90% 미만은 없지만 100% 목표는 미완료다.
+전쪽 WASM TSV·생산 해시는 `../pr/assets/issue_8160/base-wasm-summary.json`에 연결한다.
 
 모든 실행은 직접 Native Skia, print, 96 DPI와 실제 한컴 2020 TTF/KoPub 공급을 사용했다.
 2024 Print 두 입력은 compat 2024, 2020 Print인 2022 저장본은 compat 2022다.
@@ -80,11 +87,13 @@ Native 빌드는 exit 0, 10분 36초로 완료했다. 실행 파일과 Native rl
 
 ## 진행 중인 별도 실행
 
-- 최적화 fresh WASM: 같은 source로 release 컴파일은15분39초에 성공했고 `wasm-opt`가 실행 중이다.
-  전체 빌드·브라우저 전쪽 결과는 아직 성공으로 기록하지 않는다.
+- 최적화 fresh WASM과 전쪽 측정은 위 기록대로 완료했다.
 - 원본 HFT 공급은 `hft_original_font_supply.md`를 따른다. 대상 PDF에서 폰트를 만들지 않는다.
   별도 한양신명조 전체 한글11,172자 표본 job은 `aed935f9-41fd-498e-b21e-f39d6a9145a4`,
   HCI Poppy 전체 ASCII regular/bold 표본 job은 `e33c6bee-6cf4-44ff-a2ab-cc340cf1eab9`다.
-  두 job의 실제 종료 상태·Print 경로·결과를 확인한 뒤에만 원본 프로그램 근거로 사용한다.
+  두 job 모두 실제 succeeded·download success·Print 0을 확인했다.
+  한양신명조 표본은 11,172자 전체 순서 검증을 통과해 원 윤곽·전진폭을 옮겼다.
+  대상 PDF의 두 Type3 subset 193자·51자를 읽기 전용으로 대조해 모두 원 프로그램이 같았다.
+  공개 기록은 `hanyang-original-font-provenance.json`에 두며 글꼴·표본 PDF는 공개하지 않는다.
 - 기존 엔진의 명시 font environment 진단은 HWPX41쪽97.73925%, 2022 HWP40쪽96.08471%다.
   원인은 글꼴 공급 하나로 해소되지 않았으며 이 선택 두 쪽을 전쪽 결과로 쓰지 않는다.

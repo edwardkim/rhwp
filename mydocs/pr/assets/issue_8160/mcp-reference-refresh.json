@@ -1,6 +1,6 @@
 {
   "issue": "https://github.com/edwardkim/rhwp/issues/8160",
-  "branch": "docs/sample16-full-page-target-20261022",
+  "branch": "task/8160-sample16-raw100",
   "client_archive": "tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz",
   "client_archive_sha256": "830b1f7ff3696a9b499d0043e48e3dccfba7817797a698003bd909226f13cf72",
   "base_sha": "605ccfd92f2f12f18e14182548d729f9929fda00",
