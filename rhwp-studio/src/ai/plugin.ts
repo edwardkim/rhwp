@@ -14,6 +14,7 @@ import type { PluginHost, StudioPlugin } from '@/plugin/types';
 import { PLUGIN_API_VERSION } from '@/plugin/types';
 import { t } from '@/i18n/index.ts';
 import { AiContext } from './ai-context.ts';
+import { ChatController } from './agent/chat-controller.ts';
 import { AiPanel } from './ui/ai-panel';
 
 export const AI_PLUGIN_ID = 'ai-assistant';
@@ -27,7 +28,12 @@ export const aiAssistantPlugin: StudioPlugin = {
 
   async activate(host: PluginHost) {
     const ctx = await AiContext.create();
-    const panel = new AiPanel(ctx);
+    const chat = new ChatController(ctx, host);
+    const panel = new AiPanel(ctx, chat, {
+      hasSelection: () => host.getSelectionText() !== null,
+      // 선택이 바뀌면 캐럿이 다시 그려지며 이 이벤트가 난다.
+      onCursorChange: (listener) => host.events.on('cursor-rect-updated', listener),
+    });
 
     host.ui.registerSidePanel({
       id: AI_PANEL_ID,
@@ -61,6 +67,8 @@ export const aiAssistantPlugin: StudioPlugin = {
       selectionText: () => host.getSelectionText(),
       /** 패널 준비 상태(none·locked·consent·ready). 키 원문은 내보내지 않는다. */
       panelState: () => panel.currentState,
+      /** 대화 이력 칸 수와 진행 여부 — e2e 가 화면 대신 상태로 확인하는 자리 */
+      conversation: () => ({ messages: chat.session.messages.length, busy: chat.busy }),
     };
   },
 };
