@@ -848,3 +848,8 @@ Native HWPX83/HWP74쪽, WASM HWPX113/HWP87쪽이 실제 미대응0이다. 남은
 정확한 원문은 `physical-empty-32c679fc12/whole-{native,wasm}-exact-audit.json`과
 `whole-{native,wasm}-summary.json`, 종료 로그는 `logs/physical-empty-exact-driver.log`다.
 32c 검증을 새 글꼴 후보의 검증으로 바꾸지 않으며 전쪽100% 목표는 계속 미완료다.
+
+공급 helper 변경도 재사용 판정에 포함하도록 `font_registration_sha256`을 provenance에
+추가했다. 동일 package라도 helper 또는 관측 파일이 바뀌면 기존 resume이 거부되는 검사를
+기존 generation 계약 파일에 보완했고, 같은 Python 묶음은 34건 통과했다. 새 Native 빌드와
+fresh WASM 실제 검증은 별도 진행 중이다.
