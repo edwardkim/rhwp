@@ -31,10 +31,16 @@ pub(super) fn source_line_controls_fit(paragraph: &Paragraph) -> bool {
             let Some(line) = paragraph.line_segs.get(owner) else {
                 return false;
             };
-            let occupied = i64::from(common.height)
+            // 줄 구성과 실제 배치가 사용하는 동일한 TAC 크기를 소비한다.
+            // 원본 common 크기만 재계산해 확대·저장 프레임 계약을 잃지 않는다.
+            let Some(height) = crate::renderer::tac_object_flow_height_hu(control) else {
+                return false;
+            };
+            let occupied = i64::from(height)
                 + i64::from(common.margin.top)
                 + i64::from(common.margin.bottom);
             line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && height > 0
                 && line.line_height > 0
                 && occupied <= i64::from(line.line_height)
         })
