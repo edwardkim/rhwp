@@ -13476,7 +13476,8 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> bool {
         let (bs, be) = block;
-        if !self.profile.get().hwp5_stored_pagination_layout()
+        if !(self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().hwpx_stored_layout())
             || self.profile.get().session_edited()
             || self
                 .render_normalization
