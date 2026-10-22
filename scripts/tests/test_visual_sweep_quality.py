@@ -1,7 +1,7 @@
-"""Explicit historical #8064 comparison helper contracts.
+"""명시적으로 호출하는 과거 #8064 비교 도구의 계약 검사다.
 
-These standalone checks use existing TSVs, not new renderer goldens. The helper
-is not automatically connected to the default Visual Sweep review gate.
+새 렌더러 golden 대신 기존 TSV를 사용하는 독립 검사다.
+비교 도구는 Visual Sweep의 기본 검토 판정에 자동으로 연결되지 않는다.
 """
 import copy
 import csv
