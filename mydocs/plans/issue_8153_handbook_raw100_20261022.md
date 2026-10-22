@@ -821,3 +821,30 @@ fallback이 발견됐다는 이유로 원 face가 설치됐다고 판정하지 �
 family가 같아야 공통 환경에 반영한다. 내장/HFT·정적 치환·사용자 명시 선택은 건드리지 않는다.
 WASM은 같은 관측을 공통 prepare 함수로 전달하는 API를 사용하며, 원본·공급 프로그램 SHA를
 대조하는 Visual Sweep 어댑터를 이어서 연결한다. 아직 후보 빌드·시각·반례 실행 전이다.
+
+### 실제 공급 관측의 backend 연결과 32c 전쪽 검증 완료
+
+`017e4dee18`의 첫 Native 빌드는 digest 배열에 `LowerHex`가 구현되지 않아 exit101로
+종료했다. 글꼴·입력 SHA를 바이트별 16진수로 직렬화하는 `9fa523e5e3`으로 수정하고 같은
+worktree·공용 target·jobs8에서 다시 빌드 중이다. 실패한 빌드 결과를 시각 통과로 세지 않는다.
+로그는 `logs/host-fonts-native-build.log`와 `logs/host-fonts-native-build-retry.log`다.
+
+WASM 어댑터는 Native JSON의 입력 SHA·사용자 환경을 확인하고, 같은 원본 요청·실제
+글꼴 프로그램 SHA·collection face를 공급할 때만 공통 측정 환경에 관측을 적용한다.
+원 face가 WASM 공급 목록에 있거나 Canvas가 다른 프로그램을 우선하면 실패한다.
+공급 사본의 실제 바이트도 SHA로 확인한다. 선택적 `--observed-font-receipt`와 관측 파일
+해시를 provenance에 추가했으며 관측 유무는 실행 조건으로 구분한다. 기본 경로의 불완전한
+글꼴 목록으로 설치 부재를 추정하는 처리는 추가하지 않았다.
+
+원본/사용자 환경 불일치·collection face 불일치·바이트 변경·선택 순서 충돌·중복/없는 요청·
+동일 프로그램의 설치 후 환경 확정을 포함한 Node17건과 기존 Python 어댑터33건이 통과했다.
+로그는 `logs/host-fonts-adapter-tests.log`, `logs/host-fonts-python-adapter-tests.log`다.
+이는 어댑터 계약 검사이며 실제 fresh WASM·시각 결과로 대신 보고하지 않는다.
+
+이전 32c Native/fresh WASM의 전1532쪽과 PNG 해시·정확한 미대응 검사는 모두 종료했다.
+Native HWPX83/HWP74쪽, WASM HWPX113/HWP87쪽이 실제 미대응0이다. 남은 쪽은 각각
+300/309/270/296쪽으로 총1175쪽이다. WASM248쪽의 base 대비 -0.00001%p와 HWP116쪽의
+직전 후보 대비 -0.01661%p도 원장에 보존했다. 116쪽은 base 값으로 복구된 결과다.
+정확한 원문은 `physical-empty-32c679fc12/whole-{native,wasm}-exact-audit.json`과
+`whole-{native,wasm}-summary.json`, 종료 로그는 `logs/physical-empty-exact-driver.log`다.
+32c 검증을 새 글꼴 후보의 검증으로 바꾸지 않으며 전쪽100% 목표는 계속 미완료다.

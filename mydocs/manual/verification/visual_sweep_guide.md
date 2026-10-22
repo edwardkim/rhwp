@@ -363,6 +363,19 @@ legacy TTF는 종료 비문자만 `.notdef`로 고친 공급 사본을 사용하
 그려 캡처하고, 준비 실패·쪽 누락·중복이면 중단한다. 내장 글꼴은 WASM의 기존 Canvas API가
 소비한다. private 공급 글꼴과 `font_resources`는 공개 증적이나 Git에 포함하지 않는다.
 
+원본의 명시 대체 TTF를 실제 공급자가 선택한 경우, Native `export-png --json`은
+`observedFontFallbacks`에 요청·선택 family·원본 프로그램 SHA-256·collection face index를
+기록한다. 사용자 선언 환경은 `declaredFontEnvironment`, 입력 바이트는 `sourceSha256`으로
+별도 고정한다. WASM 직접 PNG에 같은 관측을 전달하려면 그 JSON을
+`--observed-font-receipt <Native JSON>`으로 지정한다. 입력·사용자 환경과 실제 공급
+프로그램/face가 같고, Canvas가 같은 프로그램을 선택할 때만 WASM의 공통 측정 환경에
+적용한다. 불일치는 실패로 처리하며 원 face를 공급할 수 있는 WASM 환경에는 부재 관측을
+적용하지 않는다. 메트릭 표·부분 글꼴 목록·`document.fonts.check`로 원 face 부재를 추정하지
+않는다. 관측 파일 SHA는 `run_manifest.json`, 작업자별 실제 공급 SHA와 face는
+`wasm-export-complete.json`의 `observedFonts`에 남긴다. 관측을 전달한 실행과 전달하지 않은
+실행은 조건을 구분하고 동일 조건으로 base/head를 비교한다. 이 옵션은 글꼴 예외나 시각
+gate 면제가 아니며, WASM의 쪽수·트리·PNG는 계속 같은 WASM 문서에서 산출한다.
+
 WASM PNG 작업자는 출력 폴더 아래 `chrome-worker-<번호>-*`에 전용 Chrome 프로필을
 만들고, 브라우저 종료를 확인한 뒤 제거한다. Snap Chromium도 host와 같은 경로를
 사용하도록 `/tmp` 대신 이 경로를 사용한다. 시작 실패 시에도 생성한 프로필을 정리하며,
