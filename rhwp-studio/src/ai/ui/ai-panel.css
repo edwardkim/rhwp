@@ -14,3 +14,89 @@
   color: var(--color-text-secondary);
   line-height: 1.5;
 }
+
+.ai-panel-model {
+  margin-bottom: 8px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.ai-panel-notice {
+  margin-bottom: 12px;
+}
+
+.ai-panel-action {
+  align-self: flex-start;
+}
+
+/* AI 설정·잠금 해제 대화상자 */
+.ai-settings-body {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-settings-row .dialog-label {
+  min-width: 72px;
+}
+
+.ai-settings-key {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-settings-key .dialog-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ai-settings-row .dialog-select,
+.ai-settings-row > .dialog-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-settings-key-state,
+.ai-settings-note {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.ai-settings-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-settings-warning {
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-light);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.ai-settings-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ai-settings-status {
+  min-height: 1.4em;
+  font-size: var(--font-size-sm);
+}
+
+.ai-settings-status[data-kind='ok'] {
+  color: var(--color-primary);
+}
+
+.ai-settings-status[data-kind='error'] {
+  color: var(--ui-danger-strong);
+}

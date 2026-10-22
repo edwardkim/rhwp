@@ -1,7 +1,7 @@
 # 구현 계획 — rhwp-studio AI 채팅 P0 (설정·Claude 연결·읽기 전용 대화)
 
 - 작성일: 2026-10-23 KST
-- 상태: **Stage 1 완료 — Stage 2 진행 중**
+- 상태: **Stage 2 완료 — Stage 3 승인 대기**
 - upstream 이슈: 미등록 (등록은 작업지시자 승인 후. 등록 뒤 이 문서 이름과 머리말을 이슈 번호로 갱신한다)
 - base: `devel` `605ccfd92`
 - 후속 단계: P1 문단 교체 쓰기, P2 표·누름틀·서식, P3 OpenAI·Gemini, P4 생성·프록시
@@ -185,7 +185,7 @@ type AiStreamEvent =
 
 ### 3.6 설정과 키 저장
 
-- 비밀이 아닌 설정은 기존 `core/user-settings`에 `ai` 항목으로 넣는다. 제공자, 모델, effort, 키 기억 여부, 동의 시각이 여기에 해당한다.
+- 비밀이 아닌 설정은 studio의 `rhwp-settings`와 따로 `localStorage['rhwp-ai-settings']`에 둔다(`src/ai/settings/ai-settings.ts`). 제공자, 모델, effort, 키 기억 여부, 동의(시각·제공자)가 여기에 해당한다. AI 청크를 뺀 빌드가 이 형태를 알 필요가 없게 하려는 것이다.
 - 키는 `src/ai/settings/key-store.ts`만 다룬다.
 
 | 모드 | 저장 위치 | 다시 시작한 뒤 |
@@ -348,3 +348,27 @@ VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:ai-panel
 | 기존 e2e `plugin-lifecycle` / `hwpctrl-plugin` / `automation-commands` / `responsive` | 21 / 19 / 32 / 2,666 PASS |
 
 - `responsive`의 머리말 preview console.error 1건은 devel `605ccfd92`에서도 같은 1건이다. 이번 변경과 무관하다.
+
+### Stage 2 — 설정·키 보관·동의·연결 테스트 (2026-10-23)
+
+- 승인: 작업지시자 「빌드 끝나면 Stage 1 마무리하고 Stage 2 진행해」.
+- 구현
+  - `@anthropic-ai/sdk` `0.137.0`을 정확한 버전으로 고정했다. 1.x는 2026-10-21에 나온 메이저라 Stage 3에서 API 차이를 확인한 뒤 판단한다. lockfile 추가는 SDK와 그 의존성 7개뿐이고, `npm audit --omit=dev`는 0건이다.
+  - SDK는 `claude-*.js` 청크(314KB)로 분리해 연결 테스트·대화에서 처음 쓸 때 불러온다. 시작 때 자동으로 받는 AI 청크는 16KB다.
+  - `KeyStore`는 세션, 기억(IndexedDB 평문), 기억+암호(PBKDF2-SHA-256 310,000회 → AES-GCM) 세 모드를 지원한다. 저장소가 막히면 세션 모드로 내려가고 그 사실을 화면에 알린다.
+  - 연결 테스트는 `models.retrieve`로 확인해 토큰을 쓰지 않는다. SDK 재시도는 끈다(`maxRetries: 0`). 오류는 갈래(`auth`·`rate` 등)로 바꾸고, 제공자 원문 대신 갈래별 문구를 보인다.
+  - 패널 상태는 `none` / `locked` / `consent` / `ready` 네 가지다. 키가 준비됐는데 동의가 없으면 패널을 처음 열 때 한 번만 묻는다. 거절해도 패널 단추로 다시 동의할 수 있다.
+  - 대화상자 틀은 입력란 keydown 전파를 막는다. 그래서 잠금 해제의 Enter 확인은 form 암묵 제출로 받는다.
+- 검증
+
+| 항목 | 결과 |
+|---|---|
+| `npx tsc --noEmit` | 통과 |
+| `npm test` | 2,388건 중 2,386 통과, 실패 0 (skip 2) |
+| 신규 단위 테스트 (`ai-settings`, `ai-key-store`, `ai-claude-errors`) | 14건 통과. 암호문에 키·암호 원문 없음, salt·iv 매번 다름, 틀린 암호 거절, 저장소 차단 시 세션 모드 포함 |
+| `e2e:ai-settings` (신규, API mock) | 19항목 PASS. 401 문구, 모델 조회만 호출(POST 0), 브라우저 직접 접근 헤더, IndexedDB 암호문, 설정·전역 객체·콘솔에 키 없음, 동의, 새로고침 후 잠김→틀린 암호 거절(Enter)→해제, 키 삭제 |
+| `e2e:side-panel` | 18항목 PASS (활성화가 비동기로 바뀐 뒤 재확인) |
+| `npm run build` / `RHWP_WITHOUT_AI=1` | 성공. 제외 빌드에 `anthropic`·`ai-assistant` 문자열 0건 |
+| 화면 판독 | 설정 대화상자와 준비 상태 패널 스크린샷 확인. API 키 입력란이 좁게 나오던 문제는 CSS로 보정했다 |
+
+- 실제 Claude 키로 하는 확인은 계획대로 Stage 5에서 한다.

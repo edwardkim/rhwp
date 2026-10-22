@@ -13,18 +13,21 @@
 import type { PluginHost, StudioPlugin } from '@/plugin/types';
 import { PLUGIN_API_VERSION } from '@/plugin/types';
 import { t } from '@/i18n/index.ts';
+import { AiContext } from './ai-context.ts';
 import { AiPanel } from './ui/ai-panel';
 
 export const AI_PLUGIN_ID = 'ai-assistant';
 export const AI_PANEL_ID = 'chat';
 export const AI_TOGGLE_COMMAND = 'ext:ai.toggle-panel';
+export const AI_SETTINGS_COMMAND = 'ext:ai.settings';
 
 export const aiAssistantPlugin: StudioPlugin = {
   id: AI_PLUGIN_ID,
   apiVersion: PLUGIN_API_VERSION,
 
-  activate(host: PluginHost) {
-    const panel = new AiPanel();
+  async activate(host: PluginHost) {
+    const ctx = await AiContext.create();
+    const panel = new AiPanel(ctx);
 
     host.ui.registerSidePanel({
       id: AI_PANEL_ID,
@@ -40,6 +43,14 @@ export const aiAssistantPlugin: StudioPlugin = {
       label: t('ai.command.togglePanel'),
       execute: () => { host.ui.toggleSidePanel(AI_PANEL_ID); },
     });
+    host.automation.registerCommand({
+      id: AI_SETTINGS_COMMAND,
+      label: t('ai.command.settings'),
+      opensDialog: true,
+      execute: () => panel.openSettings(),
+    });
+    // 위에서부터 「AI 도우미」, 「AI 설정」 순으로 보이도록 나중 것을 먼저 심는다.
+    host.automation.addMenuItem({ menuId: 'tool', commandId: AI_SETTINGS_COMMAND, position: 'top' });
     host.automation.addMenuItem({ menuId: 'tool', commandId: AI_TOGGLE_COMMAND, position: 'top' });
 
     return {
@@ -48,6 +59,8 @@ export const aiAssistantPlugin: StudioPlugin = {
       togglePanel: (open?: boolean) => host.ui.toggleSidePanel(AI_PANEL_ID, open),
       /** 도구가 읽을 선택 평문 — e2e 가 호스트 계약을 실제 문서로 확인하는 자리 */
       selectionText: () => host.getSelectionText(),
+      /** 패널 준비 상태(none·locked·consent·ready). 키 원문은 내보내지 않는다. */
+      panelState: () => panel.currentState,
     };
   },
 };
