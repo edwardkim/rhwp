@@ -113,6 +113,13 @@ impl<'a> CellCutFrame<'a> {
     }
 
     pub(super) fn height(&self, end: usize, content_advance: f64) -> f64 {
+        let physical = self.height_without_mixed_opening(end, content_advance);
+        self.engine
+            .stored_mixed_opening_frame(self.table, self.cell, self.styles, self.start, end)
+            .map_or(physical, |frame| frame.physical_height)
+    }
+
+    pub(super) fn height_without_mixed_opening(&self, end: usize, content_advance: f64) -> f64 {
         let content = self
             .stored_content_height(end, content_advance)
             .unwrap_or_else(|| self.content_height(end, content_advance));

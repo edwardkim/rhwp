@@ -1,0 +1,126 @@
+{
+  "source": {
+    "parentHead": "66ba7e3cdd80c7bda647cad6bc0060c08e40e35f",
+    "files": {
+      "src/renderer/layout/table_layout.rs": "bc33d6fd5ef23c31829c79c9b629b484b961dc9d1be3b8ba02492a5a835c6b5f",
+      "src/renderer/layout/table_layout/row_block_cut.rs": "82e18c607011c0ca87f90720050e783a05c3109a79d999cfd5ea9d59ffdc651b",
+      "src/renderer/layout/table_partial.rs": "eac71ba1ad488b3f26e99f580ccc366f251637715f068001f68e805ae8bc1792",
+      "src/renderer/layout/table_layout/stored_mixed_opening_frame.rs": "be923a407ec81bf5f2c0dfcc7d6403004470948a56667f1a1235fdc740c372de"
+    },
+    "patchSha256": "0d6b98a64bc00388b597996af8bb4ab6d557cbfb2ee1eb8cc005ef5a6367b577",
+    "cases": [
+      "issue_7445_hft_glyph_paint_frame",
+      "issue_1488_stored_frame_owners",
+      "first_frame_remainder_capped_by_row_box",
+      "issue_7751_separated_cell_text_frames",
+      "stored_zero_origin_later_page_row_fits",
+      "issue_8105_declared_row_blank_tail"
+    ]
+  },
+  "focusResult": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "--test",
+      "regression_suite_002",
+      "--test",
+      "regression_suite_008",
+      "--test",
+      "regression_suite_013",
+      "--test",
+      "regression_suite_018",
+      "--test",
+      "regression_suite_019",
+      "--test",
+      "regression_suite_027",
+      "-E",
+      "test(/(^|::)issue_7445_hft_glyph_paint_frame::/) or test(/(^|::)issue_1488_stored_frame_owners::/) or test(/(^|::)first_frame_remainder_capped_by_row_box::/) or test(/(^|::)issue_7751_separated_cell_text_frames::/) or test(/(^|::)stored_zero_origin_later_page_row_fits::/) or test(/(^|::)issue_8105_declared_row_blank_tail::/)"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 170.66368699073792,
+    "source": {
+      "parentHead": "66ba7e3cdd80c7bda647cad6bc0060c08e40e35f",
+      "files": {
+        "src/renderer/layout/table_layout.rs": "bc33d6fd5ef23c31829c79c9b629b484b961dc9d1be3b8ba02492a5a835c6b5f",
+        "src/renderer/layout/table_layout/row_block_cut.rs": "82e18c607011c0ca87f90720050e783a05c3109a79d999cfd5ea9d59ffdc651b",
+        "src/renderer/layout/table_partial.rs": "eac71ba1ad488b3f26e99f580ccc366f251637715f068001f68e805ae8bc1792",
+        "src/renderer/layout/table_layout/stored_mixed_opening_frame.rs": "be923a407ec81bf5f2c0dfcc7d6403004470948a56667f1a1235fdc740c372de"
+      },
+      "patchSha256": "0d6b98a64bc00388b597996af8bb4ab6d557cbfb2ee1eb8cc005ef5a6367b577",
+      "cases": [
+        "issue_7445_hft_glyph_paint_frame",
+        "issue_1488_stored_frame_owners",
+        "first_frame_remainder_capped_by_row_box",
+        "issue_7751_separated_cell_text_frames",
+        "stored_zero_origin_later_page_row_fits",
+        "issue_8105_declared_row_blank_tail"
+      ]
+    },
+    "logSha256": "cb3d4197f09d1d248a63a54b678d2b755047172f4298e698ca93ef0529db7806"
+  },
+  "artifacts": {
+    "rhwp-native": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/repair-focused-v10c/rhwp-native",
+      "sha256": "66213e861c4e669607c9f11f972b1d9ab1b5b0e28fe8226d8517e56428fb7a96"
+    },
+    "librhwp.rlib": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/repair-focused-v10c/librhwp.rlib",
+      "sha256": "b39f45e1222348b63552cf936344ccb82a4596b50d5e6fbfbd567185bc1d32e8"
+    }
+  },
+  "fontLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/candidate-source.json",
+  "visualToolSha256": "69d9d56394b26fcb7a64b41588a378da745475b3297bae89fd6b4d16903cede4",
+  "pdfRasterizer": {
+    "program": "pypdfium2",
+    "backend": "pdfium",
+    "policy": "pdfium_smooth_rgb_v1",
+    "antialias": {
+      "text": true,
+      "image": true,
+      "path": true
+    },
+    "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+    "available": true,
+    "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+    "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+    "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+    "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+    "version": "152.0.7947.0",
+    "wrapper_version": "5.12.1",
+    "version_exit_code": 0
+  },
+  "dpi": 96,
+  "tolerancePx": 2,
+  "minimumRaw": 90,
+  "captureWorkers": 8,
+  "fullPrAcceptance": false,
+  "cases": [
+    {
+      "key": "rowbreak-hwp",
+      "input": "/Users/tsjang/rhwp-7445-completed-20261009/samples/rowbreak-problem-pages.hwp",
+      "inputSha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+      "pdf": "/Users/tsjang/rhwp-7445-completed-20261009/pdf/rowbreak-problem-pages-hwp-2024.pdf",
+      "pdfSha256": "2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c",
+      "compat": "2024"
+    },
+    {
+      "key": "rowbreak-hwpx",
+      "input": "/Users/tsjang/rhwp-7445-completed-20261009/samples/rowbreak-problem-pages.hwpx",
+      "inputSha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0",
+      "pdf": "/Users/tsjang/rhwp-7445-completed-20261009/pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+      "pdfSha256": "e3dc7bb21707f92e42e83808023bf155f62475fc4eb0e0498709d03986c5afe5",
+      "compat": "2022"
+    }
+  ]
+}

@@ -19,6 +19,7 @@ mod stored_first_line_restart;
 mod stored_inline_closing_frame;
 mod stored_inline_row_frame;
 mod stored_intra_paragraph_frame;
+mod stored_mixed_opening_frame;
 mod stored_nested_frame;
 mod stored_nested_host_flow;
 mod stored_nested_outer_frame;
@@ -21973,6 +21974,21 @@ impl LayoutEngine {
                 // 같은 점유 높이를 쓴다. 중첩 표 atom 의 상자 아래 이송 여백(#5920)은 쪽
                 // 바닥 예산에 들지 않는다 — 편람 289쪽 TAC 4×4 표는 이 여백 17px 때문에만
                 // 남은 공간을 넘어, 한/글이 그 쪽에 앉힌 표를 저장 되감김 자리에서 넘겼다.
+                let source_opening_height = self
+                    .stored_mixed_opening_frame(table, cell, styles, start, j + 1)
+                    .map(|frame| {
+                        let (_, _, top, bottom) =
+                            self.resolve_stored_nested_cell_padding(cell, table, styles);
+                        frame.physical_height - top - bottom
+                    });
+                // 첫 원본 상자의 빈 띠도 내용 수용 전에 같은 예산에서 예약한다.
+                if j > start
+                    && source_opening_height.is_some_and(|height| {
+                        height > avail_height + ROW_CUT_CAPACITY_FP_EPSILON_PX
+                    })
+                {
+                    break;
+                }
                 let unit_fit_height = u.height - self.nested_atom_invisible_tail(cell, u, styles);
                 unit_diagnostics::trace_reset_cut(
                     cell,
@@ -22046,15 +22062,16 @@ impl LayoutEngine {
                         );
                     }
                 }
+                let candidate_height = source_opening_height.unwrap_or(h + u.height);
                 let capacity_tolerance = capacity_tolerance::for_next_unit(
                     cell,
                     u,
                     j.saturating_sub(start) + 1,
-                    h + u.height,
+                    candidate_height,
                     avail_height,
                     ROW_CUT_CAPACITY_FP_EPSILON_PX,
                 );
-                if j > start && h + u.height > avail_height + capacity_tolerance {
+                if j > start && candidate_height > avail_height + capacity_tolerance {
                     if std::env::var("RHWP_DIAG_6368").is_ok() {
                         let over = h + u.height - avail_height;
                         if over <= 2.0 {
@@ -26074,6 +26091,9 @@ impl LayoutEngine {
                 // 분할 행 — cell.height 강제 없음.
                 content + pad_cell
             };
+            let h = self
+                .stored_mixed_opening_frame(table, cell, styles, su, eu)
+                .map_or(h, |frame| frame.physical_height);
             if h > max_h {
                 max_h = h;
             }
