@@ -9,3 +9,5 @@ Issue: #7445. Runtime parent는 `a340511936499170626bef6408a16b419b4466ac`, base
 같은 환경으로 다시 빌드한 fixed base의 Native 전 66쪽과 비교한 결과 41쪽이 99.23712→97.93657%, 1.30055%p 하락하므로 PR 준비를 보류한다. 다른 65쪽에는 0.1%p 이상 하락이 없다. 원래 제출 범위의 최종 시각·전체 nextest·필수 gate는 계속 필요하며, 새 HWP 파일로 보정 범위를 확대하지 않는다.
 
 [전쪽 TSV·Native/fresh WASM review/overlay·회귀와 잔여](../pr/assets/issue7445/completed-20261009/stage54-pii-regression-20261022/verification.md). 실행 로그는 ignored `rebase-8155-20261022/pii65-padding-regression/{before-cargo,after-cargo,final-after-cargo}.log` 및 `final-stage53/fresh-wasm.log`에 보존한다.
+
+후속 정책 검사에서 `canvaskit_policy.rs`의 파일 최상위 테스트 전용 import가 신규 `cfg(test)` support 항목으로 검출됐다. 해당 import를 기존 테스트 모듈 안으로 옮겼고, 정책·허용 기준선이나 Runtime 동작은 바꾸지 않았다. 고정 base 대비 unit-tier 검사는 4101 tests / 296 modules / cfg support items 28로 통과했다. 기존 CanvasKit 정책 검사도 실제 50 PASS / 0 FAIL, 0.095초를 확인했다. 로그는 같은 ignored 디렉터리의 `unit-tiers-after.log`, `canvaskit-policy-tests.log`다. 이는 전체 회귀 통과를 의미하지 않는다.
