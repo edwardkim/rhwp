@@ -2199,6 +2199,7 @@ impl TypesetEngine {
                 ft.effective_height,
                 ft.host_spacing.before,
                 ft.host_spacing.after,
+                self.dpi,
             )
         })();
         let unconstrained_host_placement = empty_sibling_placement.or(unconstrained_host_placement);

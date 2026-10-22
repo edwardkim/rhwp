@@ -588,6 +588,7 @@ pub(super) fn prepare(
                 ft.effective_height,
                 ft.host_spacing.before,
                 ft.host_spacing.after,
+                dpi,
             )
         });
     // 다른 문단의 이미 수용한 밴드도 같은 확정 상자가 통과해야 한다.

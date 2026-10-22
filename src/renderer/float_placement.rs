@@ -5462,6 +5462,7 @@ impl ParagraphFloatPlacement {
 
     /// 빈 호스트의 형제 표는 앞 형제가 확정한 흐름 원점에서 바깥 상자를 점유한다.
     /// lane과 일반 block이 같은 앞·본체·뒤 상자를 예약하고 paint에 전달한다.
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn from_empty_sibling_box(
         para: &Paragraph,
         table: &Table,
@@ -5470,24 +5471,41 @@ impl ParagraphFloatPlacement {
         table_height: f64,
         before: f64,
         after: f64,
+        dpi: f64,
     ) -> Option<Self> {
         if !empty_topbottom_sibling_host(para, table)
-            || ![flow_top, host_origin, table_height, before, after]
+            || ![flow_top, host_origin, table_height, before, after, dpi]
                 .iter()
                 .all(|value| value.is_finite())
+            || dpi <= 0.0
             || table_height <= 0.0
         {
             return None;
         }
         let table_top = flow_top + before;
+        let coanchored = is_textless_coanchored_float_host(para);
+        // 공동 앵커의 호스트 줄은 별도로 진행하므로 문단 뒤 간격과 줄 꼬리는
+        // 개체 배제 띠의 일부가 아니다. 표는 본체와 아래 바깥여백만 점유한다.
+        let occupied_after = if coanchored {
+            hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi)
+        } else {
+            after
+        };
         Some(Self {
-            flow: ParagraphFloatFlow::NextLine,
+            // 공동 앵커의 양수 오프셋 표는 표 사이 본문을 위한 배제 띠다.
+            // 문단 종료의 합집합이 이 표의 하단까지 흐름을 밀지 않도록,
+            // 수용과 배치가 같은 흐름 소유를 전달한다.
+            flow: if coanchored && signed_hwpunit(table.common.vertical_offset) > 0 {
+                ParagraphFloatFlow::Exclusion
+            } else {
+                ParagraphFloatFlow::NextLine
+            },
             anchor_y: host_origin,
             stored_host_origin: None,
             stored_successor_line_origin: None,
             table_left: None,
             table_top,
-            occupied_bottom: table_top + table_height + after,
+            occupied_bottom: table_top + table_height + occupied_after,
         })
     }
 
