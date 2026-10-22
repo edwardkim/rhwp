@@ -24,6 +24,7 @@ mod stored_complete_block_cut;
 mod stored_deferred_picture_frame;
 mod stored_empty_frame_restart;
 mod stored_first_line_restart;
+mod stored_frame_picture_lines;
 mod stored_inline_closing_frame;
 mod stored_inline_row_frame;
 mod stored_intra_paragraph_frame;
@@ -19089,11 +19090,7 @@ impl LayoutEngine {
                     return None;
                 }
                 let para = cell.paragraphs.get(unit.para_idx)?;
-                if para
-                    .controls
-                    .iter()
-                    .any(|c| !matches!(c, Control::Footnote(_) | Control::Endnote(_)))
-                {
+                if !stored_frame_picture_lines::source_line_controls_fit(para) {
                     return None;
                 }
                 let lines = para.line_segs.get(unit.vis_start..unit.vis_end)?;
