@@ -1,0 +1,14 @@
+{
+  "base-science-native.tsv": "c650a43fd83fd0f87bc38b3c4b2893963b19445d8aa05c6eae8d482c36674fa1",
+  "before-science-native.tsv": "5ddac10e0c84846da346a5b5ff778506290906b0bdbd2ba15e7fa224371568a7",
+  "candidate-science-native.tsv": "edd965cdcec157bef49705892f07c7c4345bcb4bbe41b966620b09e496227a93",
+  "cause.json": "6f4405897733ef8a82a0909297bfea436b069454629e578ac3e1c974389085d0",
+  "native-test-result.json": "5b3ec72cdf31d80fbb0c566b62e287eb1b70fc021d95f0f1cbb9a895599ebd21",
+  "native-whole-results.json": "8f94ba4cd2d13060ac128f8b92b3fe4023711d26dadffd364aa1b90b6c6ba710",
+  "page-comparison.json": "a17f96f41bf60a8efb48c818a195b4db4c4e4970aa92e7559a32b310302f3c94",
+  "producer.json": "89b61b686a7d1431988db3eb0dd451b3a04e90b100bf530cc13e297794b54d5a",
+  "science-native-p002-overlay.png": "352b378d7fadaa86b64d9fbad525a9a00757a580e32a34ed9484505cd111725b",
+  "science-native-p002-review.png": "6f70d96e53904f01e2923f0318e5b14e301a83eebd36652549b7246540ceceb4",
+  "science-native-p003-overlay.png": "f1c2793d7d0ee0fe0f45b9a003fac2b4a3c2928cb185850363e41dec55a05499",
+  "science-native-p003-review.png": "d1bdfd9dbb8d0e11ca378b826184330c0814b455f0c6ffbcddbb1013e67b9538"
+}

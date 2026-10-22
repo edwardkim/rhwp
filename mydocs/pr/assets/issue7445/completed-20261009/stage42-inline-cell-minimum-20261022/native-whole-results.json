@@ -1,0 +1,44 @@
+[
+  {
+    "role": "base",
+    "key": "science",
+    "binarySha256": "39beec91d5bdfcc3a356071f3c497efdf8bd3f4cf402df6fa72de7c47a211913",
+    "pages": 4,
+    "counts": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "minimum": "93.18598",
+    "minimumPage": "4",
+    "below90": [],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/inline-cell-native-v8/base/science/silhouette.tsv"
+  },
+  {
+    "role": "before",
+    "key": "science",
+    "binarySha256": "bace0b3cfe2300004ae74113c18c2877c82ebf1eda4de969f1543055f7db5c21",
+    "pages": 4,
+    "counts": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "minimum": "95.90341",
+    "minimumPage": "4",
+    "below90": [],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/inline-cell-native-v8/before/science/silhouette.tsv"
+  },
+  {
+    "role": "candidate",
+    "key": "science",
+    "binarySha256": "a5ddee7d5f1b980664a27b5f4a5999b52fc1e6e945232a1923a846fff98b30cf",
+    "pages": 4,
+    "counts": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "minimum": "96.14438",
+    "minimumPage": "4",
+    "below90": [],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/inline-cell-native-v8/candidate/science/silhouette.tsv"
+  }
+]
