@@ -791,3 +791,33 @@ HWP 최저92.61751%/표시100 74쪽이며 base 대비 하락은 양쪽 0쪽이�
 HWP 116쪽 99.24234→99.23389(-0.00845%p)가 남는다. 이는 8e/cad에서 원본 CENTER 로컬0
 프레임을 복구한 결과이며 base99.23389와 같다. e492의 점수상 상승만으로 잘못된 프레임을
 다시 수용하지 않는다. 독립 Print 원점·116쪽 내용과 최종 WASM에서 계속 대조한다.
+
+
+### 실제 공급 기반 공통 대체 face 전달 계획
+
+다음 구현은 HWP5 표 19·21 대체 글꼴과 HWPX `substFont`의 원본 부재 계약을 따른다.
+정적 메트릭 표가 없다는 이유로 원 글꼴을 없다고 판단하지 않는다. 원본의 TTF·비임베드
+선언과 명시 대체 TTF를 대상으로 실제 공급자가 원 face 부재와 대체 프로그램 선택을 확인한
+경우에만 공통 FontEnvironment로 측정·paint face를 확정한다. 이미 적용한 정적 치환·HFT·
+내장 글꼴·사용자 명시 환경은 보존한다. 같은 source family의 사용 style마다 선택이 일치해야 한다.
+
+생산/소비는 `원본 font/charShape 요청 → 같은 renderer의 실제 공급 snapshot → 공통 host
+font environment → resolve_render_styles의 font family/metric face → composer/줄 폭 →
+paragraph TextRun → 공통 paint/각 backend`다. 사용자 환경과 공급자 관측 환경은 분리하고,
+공급 변경·문서 교체·사용자 환경 변경에서 이전 관측을 재사용하지 않는다. 원본 IR은 수정하지
+않는다. 선행 반례는 원 face가 설치된 경우, 공급 불명, 서로 다른 style 결과, 문서/공급 교체다.
+Native 실제 선택부터 연결하고 WASM도 같은 공급 근거를 전달하도록 이어서 구현·재검증한다.
+현재 32c의 전쪽 검증은 고정 producer/package로 그대로 완료하며 새 소스의 증거로 바꾸지 않는다.
+
+
+실제 구현 후보는 사용자 선언과 host 관측을 별도로 저장한다. 원본 요청이 바뀌면 이전
+관측이 조판에 들어가지 않고, 공급자가 다음 준비에서 원 face 존재/불명(None)을 반환하면
+관측 환경을 제거한다. 문서 교체·사용자 환경 변경도 관측을 폐기한다. 실제 family와 원본
+프로그램 SHA-256·collection face index를 보존하고, Native 출력 JSON의 원본 입력 SHA와
+함께 제공한다. 원 face 부재를 검증하지 않은 플랫폼의 불완전 설치 목록은 사용하지 않는다.
+
+Native PNG는 실제 Skia family/postscript 후보와 공급 SFNT에서 선택한다. generic/legacy
+fallback이 발견됐다는 이유로 원 face가 설치됐다고 판정하지 않는다. 모든 사용 style의 target
+family가 같아야 공통 환경에 반영한다. 내장/HFT·정적 치환·사용자 명시 선택은 건드리지 않는다.
+WASM은 같은 관측을 공통 prepare 함수로 전달하는 API를 사용하며, 원본·공급 프로그램 SHA를
+대조하는 Visual Sweep 어댑터를 이어서 연결한다. 아직 후보 빌드·시각·반례 실행 전이다.

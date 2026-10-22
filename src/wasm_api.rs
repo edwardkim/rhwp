@@ -46,6 +46,7 @@ use crate::renderer::DEFAULT_DPI;
 mod bitmap_raster;
 mod canvas_metrics;
 mod form_action;
+mod host_font_environment;
 mod hyperlink;
 mod layout_generation;
 #[cfg(all(feature = "pdf-import", target_arch = "wasm32"))]

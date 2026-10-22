@@ -130,7 +130,7 @@ fn text_family_candidates_for_weight(requested: &str, bold: bool) -> Vec<String>
     families
 }
 
-fn declared_family_candidates(requested: &str) -> Vec<String> {
+pub(super) fn declared_family_candidates(requested: &str) -> Vec<String> {
     let mut families = Vec::new();
     // CSS 체인을 하나의 family 이름으로 조회하면 설치된 첫 face도 놓친다.
     // SVG/Canvas와 같은 원본 순서·설치 별칭·굵기 접미사 해소를 소비한다.

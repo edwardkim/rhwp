@@ -105,6 +105,35 @@ fn program_names(name: &str) -> Vec<String> {
 }
 
 impl FontEnvironment {
+    pub(crate) fn with_observed_substitutions(
+        base: Option<&Self>,
+        replacements: BTreeMap<String, String>,
+    ) -> Result<Option<Self>, HwpError> {
+        if replacements.is_empty() {
+            return Ok(None);
+        }
+        let mut result = base.cloned().unwrap_or(Self {
+            id: "observed-host-fonts".to_owned(),
+            substitutions: BTreeMap::new(),
+            selection_rules: BTreeMap::new(),
+            true_type_faces: Vec::new(),
+            preserve_source_metrics: false,
+            document_substitutions: Vec::new(),
+            glyph_fallbacks: BTreeMap::new(),
+        });
+        for (family, target) in replacements {
+            if result.substitutions.contains_key(&family) {
+                continue;
+            }
+            result.substitutions.insert(family, target.clone());
+            if !result.true_type_faces.contains(&target) {
+                result.true_type_faces.push(target);
+            }
+        }
+        result.validate()?;
+        Ok(Some(result))
+    }
+
     /// 원본과 문서 지정 내장 프로그램을 같은 이름 집합으로 보존한다.
     pub(crate) fn embedded_program_names(
         doc_info: &crate::model::document::DocInfo,

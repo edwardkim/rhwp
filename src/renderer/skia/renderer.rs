@@ -37,6 +37,8 @@ use super::diagnostics::ReplayDiagnostics;
 use super::equation_conv::{render_equation, EquationFonts};
 use super::fill_shader::shape_fill;
 use super::font_catalog::TypefaceCatalog;
+#[path = "declared_font_fallbacks.rs"]
+mod declared_font_fallbacks;
 #[path = "native_pua_fonts.rs"]
 mod native_pua_fonts;
 use super::font_lookup::{

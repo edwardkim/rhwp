@@ -249,6 +249,24 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
 }
 
 #[cfg(feature = "native-skia")]
+fn png_font_environment_metadata(
+    mut metadata: serde_json::Value,
+    core: &rhwp::DocumentCore,
+    source_data: &[u8],
+) -> serde_json::Value {
+    if let Some(environment) = core.resolved_font_environment() {
+        metadata["fontEnvironment"] = serde_json::json!(environment);
+    }
+    if !core.observed_font_fallbacks().is_empty() {
+        use sha2::{Digest, Sha256};
+        metadata["observedFontFallbacks"] = serde_json::json!(core.observed_font_fallbacks());
+        metadata["declaredFontEnvironment"] = serde_json::json!(core.font_environment());
+        metadata["sourceSha256"] = serde_json::json!(format!("{:x}", Sha256::digest(source_data)));
+    }
+    metadata
+}
+
+#[cfg(feature = "native-skia")]
 pub(crate) fn export_png(args: &[String]) -> i32 {
     use rhwp::document_core::queries::rendering::PngExportOptions;
 
@@ -363,16 +381,20 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         println!(
             "{}",
             rhwp::provenance::marked(
-                serde_json::json!({
-                    "schemaVersion": rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION,
-                    "tool": "export-png",
-                    "backend": "native-skia",
-                    "source": file_path,
-                    "pageCount": page_count,
-                    "renderedCount": 0,
-                    "metadataOnly": true,
-                    "pages": [],
-                }),
+                png_font_environment_metadata(
+                    serde_json::json!({
+                        "schemaVersion": rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION,
+                        "tool": "export-png",
+                        "backend": "native-skia",
+                        "source": file_path,
+                        "pageCount": page_count,
+                        "renderedCount": 0,
+                        "metadataOnly": true,
+                        "pages": [],
+                    }),
+                    &core,
+                    &data
+                ),
                 "export-png"
             )
         );
@@ -456,18 +478,22 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         println!(
             "{}",
             rhwp::provenance::marked(
-                serde_json::json!({
-                    "schemaVersion": rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION,
-                    "tool": "export-png",
-                    "source": file_path,
-                    "backend": "native-skia",
-                    "comparisonProfile": profile,
-                    "layoutGeneration": if hangul2024_compat { "2024" } else { "2022" },
-                    "outputDir": output_dir,
-                    "pageCount": page_count,
-                    "renderedCount": success,
-                    "pages": exported_pages,
-                }),
+                png_font_environment_metadata(
+                    serde_json::json!({
+                        "schemaVersion": rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION,
+                        "tool": "export-png",
+                        "source": file_path,
+                        "backend": "native-skia",
+                        "comparisonProfile": profile,
+                        "layoutGeneration": if hangul2024_compat { "2024" } else { "2022" },
+                        "outputDir": output_dir,
+                        "pageCount": page_count,
+                        "renderedCount": success,
+                        "pages": exported_pages,
+                    }),
+                    &core,
+                    &data
+                ),
                 "export-png"
             )
         );

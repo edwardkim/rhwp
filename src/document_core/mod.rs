@@ -19,7 +19,11 @@ pub use native_pua_fonts::NativePuaFontRequest;
 mod font_environment;
 mod loaded_frame_restore;
 mod table_reflow_owners;
+mod host_font_environment;
 pub use canvas_metric_requests::{CanvasMetricBatch, CanvasMetricReply, CanvasMetricRequest};
+pub use host_font_environment::{
+    DeclaredFontFallbackRequest, ObservedFontFallback, ObservedFontSource,
+};
 mod commands;
 pub use commands::paragraph_block::{
     FillTemplateRequest, FillTemplateResult, ImportParagraphBlockLimits,
@@ -201,6 +205,7 @@ pub struct DocumentCore {
     pub(crate) hft_outline_fonts: crate::renderer::hft_outline::HftOutlineFonts,
     pub(crate) metafile_fonts: crate::paint::metafile_fonts::MetafileFonts,
     pub(crate) font_environment: Option<crate::renderer::font_environment::FontEnvironment>,
+    pub(crate) host_font_environment: Option<host_font_environment::HostFontEnvironment>,
     /// 구역별 구성된 문단 목록
     pub(crate) composed: Vec<Vec<ComposedParagraph>>,
     /// 본문 동적 필드의 쪽 소속/표시값이 수렴하지 않으면 출력을 명시적으로 거부한다.
@@ -408,13 +413,14 @@ impl DocumentCore {
             fonts.insert(default.to_string());
         }
         let mut font_substitutions = std::collections::BTreeSet::new();
+        let environment = self.resolved_font_environment();
         for (lang_idx, lang_fonts) in self.document.doc_info.font_faces.iter().enumerate() {
             for (font_idx, _) in lang_fonts.iter().enumerate() {
                 let decision = lookup_font_name_in_environment(
                     &self.document.doc_info,
                     lang_idx,
                     font_idx as u16,
-                    self.font_environment.as_ref(),
+                    environment,
                 );
                 // 실제 paint가 소비하는 glyph 공급자도 Studio가 준비해야 한다.
                 // primary만 노출하면 측정한 대체 face를 브라우저가 로드하지 못한다.
@@ -507,7 +513,7 @@ impl DocumentCore {
         let mut styles = crate::renderer::style_resolver::resolve_styles_with_environment(
             &self.document,
             self.dpi,
-            self.font_environment.as_ref(),
+            self.resolved_font_environment(),
             self.effective_layout_profile(),
         );
         styles.native_pua_fonts = self.native_pua_fonts.clone();
@@ -570,6 +576,7 @@ impl DocumentCore {
             hft_outline_fonts: Default::default(),
             metafile_fonts: Default::default(),
             font_environment: None,
+            host_font_environment: None,
             composed: Vec::new(),
             body_page_field_error: None,
             render_normalization: RenderNormalizationState::default(),
