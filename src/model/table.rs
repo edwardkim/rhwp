@@ -83,15 +83,16 @@ pub struct Table {
 }
 
 /// 표 쪽 나눔 종류
-/// bit 0-1: 0=나누지 않음, 1=셀 단위로 나눔, 2=나눔(행 단위)
+/// bit 0-1: 0=나누지 않음, 1=셀 단위로 나눔, 2=나눔(글줄부터 이어받기).
+/// 공식 원문의 값 2 중복 기재 정정은 mydocs/tech/hwp_spec_errata.md §35 참조.
 #[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum TablePageBreak {
     /// 나누지 않음 (0)
     #[default]
     None,
-    /// 셀 단위로 나눔 (1) — 행 내부(인트라-로우) 분할 허용
+    /// 셀 단위로 나눔 (1) — 경계에 걸린 셀 전체를 다음 쪽으로 이동(HWPX TABLE)
     CellBreak,
-    /// 나눔 (2) — 행 경계에서만 나눔 (인트라-로우 분할 없음)
+    /// 나눔 (2) — 경계에 걸린 글줄부터 다음 쪽으로 이어받음(HWPX CELL)
     RowBreak,
 }
 crate::storage::clone_copy!(TablePageBreak);

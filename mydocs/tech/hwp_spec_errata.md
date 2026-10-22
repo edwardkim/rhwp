@@ -821,6 +821,53 @@ HWPX 는 같은 현상을 `strikeout shape="3D"` placeholder 로 드러내며, P
 
 ---
 
+## 35. TABLE 쪽 경계 속성 값 2 — 나누지 않음 중복 기재
+
+### 원문과 정정
+
+[공식 HWP5 개정 1.3 PDF](../../pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf)의
+PDF 44쪽 표 76은 TABLE 속성 bit 0~1의 값 0과 2를 모두 `나누지 않음`으로 기재한다.
+값 2의 설명을 **나눔**으로 정정한다. 원문 PDF는 변경하지 않고
+[프로젝트의 사양 설명본](한글문서파일형식_5.0_revision1.3.md)의 표 76을 수정한다.
+
+| 원본 비트 값 | 한컴 UI 의미 | HWPX 속성 | rhwp 내부 이름 |
+| --- | --- | --- | --- |
+| 0 | 나누지 않음 | `NONE` | `None` |
+| 1 | 셀 단위로 나눔: 경계에 걸린 셀 전체를 다음 쪽으로 이동 | `TABLE` | `CellBreak` |
+| 2 | 나눔: 경계에 걸린 글줄부터 다음 쪽으로 이동 | `CELL` | `RowBreak` |
+
+내부 `RowBreak`라는 이름만으로 값 2를 행 경계 전용 정책으로 해석하지 않는다.
+한컴 공식 [표/셀 속성 도움말](https://help.hancom.com/hoffice/multi/ko_kr/hwp/table/tableattribute/table%28table%29.htm)은
+글줄 나눔·셀 전체 이동·나누지 않음을 구분한다.
+[공식 HWPML 문서](../../pdf/hwpspec-2024.pdf)의 TABLE 설명(PDF 149쪽, 인쇄 139쪽)은
+`Table`을 셀을 나누지 않는 표 나눔, `Cell`을 셀 내부 텍스트도 나누는 방식으로 명시한다.
+
+### 교차 확인한 근거
+
+- 선행 해결: Task #1094, `20e532d170f487c7720f35b2fa0d270c37bab4e7`.
+  [완료 보고서 4.2절](../report/archives/task_m100_1094_report.md#42-10페이지-표-나눔)은
+  한컴 정답 HWP의 `0x04000005`와 HWPX `TABLE`의 대응을 바이트 단위로 기록한다.
+- 참조 구현: hwplib
+  [`DivideAtPageBoundary`](https://github.com/neolord0/hwplib/blob/6746c27f17ebf5277493206284aa32044a1839c4/src/main/java/kr/dogfoot/hwplib/object/bodytext/control/table/DivideAtPageBoundary.java)는
+  `NoDivide=0`, `DivideByCell=1`, `Divide=2`를 정의한다. 같은 SHA의 `TableProperty`는
+  bit 0~1을 읽고 bit 2의 제목 반복과 구분한다. 이 라이브러리를 공식 사양으로 부르지 않는다.
+- 현재 원본 바이트 재확인: `samples/2025 행정업무운영 편람(최종).hwp`의
+  `BodyText/Section7`, 최상위 문단 405, TABLE 레코드(해제 스트림 offset 299842)의
+  시작 10바이트는 `06 00 00 00 09 00 03 00 ff 00`이다. attr `0x00000006`의
+  하위 두 비트는 2이며, 같은 문단의 HWPX 표 `id=1612231415`는 `pageBreak="CELL"`,
+  9행·3열·`cellSpacing=255`다. rhwp 모델을 거치지 않은 CFB/레코드 읽기로 확인했다.
+  HWP SHA-256은 `40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f`,
+  HWPX SHA-256은 `c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6`이다.
+- 독립 출력: 기존 `pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf`
+  (SHA-256 `299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e`)
+  240~241쪽에서 같은 표가 이어지고, ⑤ 공개 지표 다음에 ⑥ 활용 지표·⑦ 가점이 보존된다.
+  `나누지 않음`으로 설명할 수 없는 실제 출력이다. 이 사실이 특정 높이 배분식이나 인쇄 장치의
+  해상도까지 입증하는 것은 아니다.
+- 별도 HWP 원본 `samples/2010-01-06.hwp`와
+  `samples/issue2439_zero_offset_coanchored_float_exclusion.hwp`의 Section0에서도
+  TABLE 원시 bit 값 2를 확인했다. 대응 편집·저장 계약은 기존
+  `issue_7288_table_pagebreak_roundtrip`·`issue_7323_table_page_break_save` 검사가 보호한다.
+
 ## 검증 원칙
 
 1. **바이너리 우선**: 스펙 문서보다 실제 바이너리 데이터를 신뢰한다
