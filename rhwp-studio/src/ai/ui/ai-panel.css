@@ -1,0 +1,16 @@
+/* AI 도우미 패널 — 접두어 ai- */
+
+.ai-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  font-size: var(--font-size-base);
+}
+
+.ai-panel-notice {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}

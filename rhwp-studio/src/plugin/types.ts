@@ -47,6 +47,37 @@ export interface PluginCaret {
   field?: { id: number; at: 'inside' | 'before' | 'after' };
 }
 
+/** `getSelectionText` 결과. `truncated` 면 `text` 는 앞쪽 `maxChars` 글자다. */
+export interface PluginSelectionText {
+  text: string;
+  start: PluginCaret;
+  end: PluginCaret;
+  truncated: boolean;
+}
+
+/** 오른쪽 도킹 패널 한 장. */
+export interface PluginSidePanelSpec {
+  /** 패널 식별자. `ext:` 커맨드와 같은 이름 공간을 쓰지 않는다 — 플러그인 안에서만 유일하면 된다. */
+  id: string;
+  title: string;
+  /** 처음 열 때의 폭(px). 사용자가 끌어 바꾼 폭이 있으면 그쪽이 우선한다. */
+  defaultWidth?: number;
+  /** 패널을 처음 열 때 한 번 부른다. 이후 닫았다 열어도 DOM 은 유지된다. */
+  mount(container: HTMLElement): void;
+  /** 등록 해지 때 부른다. */
+  unmount?(): void;
+  /** 열림·닫힘 알림. */
+  onVisibilityChange?(open: boolean): void;
+}
+
+export interface PluginUi {
+  /** 패널을 등록한다. 반환값은 해지 함수다. */
+  registerSidePanel(spec: PluginSidePanelSpec): () => void;
+  /** 패널을 열거나 닫는다. `open` 을 생략하면 뒤집는다. 돌려주는 값은 바뀐 뒤 열림 여부다. */
+  toggleSidePanel(id: string, open?: boolean): boolean;
+  isSidePanelOpen(id: string): boolean;
+}
+
 /** 트랜잭션 안에서만 쥘 수 있는 문서 접근권. */
 export interface Tx {
   /** 유효한 문서 핸들. lease 가 무효면 `DOCUMENT_RELEASED` 를 던진다. */
@@ -103,8 +134,20 @@ export interface PluginHost {
    */
   getCaret(): PluginCaret | null;
 
+  /**
+   * 선택 영역의 평문. 선택이 없거나, 머리말·글상자처럼 본문·표 칸 좌표로 옮길 수 없는 자리이거나,
+   * 서로 다른 표 칸에 걸친 선택이면 `null`. 읽기 전용이며 클립보드를 건드리지 않는다.
+   */
+  getSelectionText(): PluginSelectionText | null;
+
   /** 커맨드·메뉴 조작 표면. */
   readonly automation: StudioAutomation;
+
+  /**
+   * 화면 자리. 등록물은 원장에 적혀 unload 때 호스트가 걷는다.
+   * 화면이 없는 구성(embed 등)에서는 등록이 `UI_UNAVAILABLE` 로 거절된다.
+   */
+  readonly ui: PluginUi;
 
   /** 이벤트 구독. 반환값은 해지 함수이며 호스트가 원장에 담아 unload 시 회수한다. */
   events: { on(name: string, cb: (payload?: unknown) => void): () => void };
@@ -148,6 +191,8 @@ export interface PluginLedger {
   eventUnsubs: Array<() => void>;
   /** `onDocumentSwap` 이 돌려준 해지 함수 */
   swapUnsubs: Array<() => void>;
+  /** `ui.registerSidePanel` 이 돌려준 해지 함수 */
+  uiUnsubs: Array<() => void>;
   /** 진행 중인 트랜잭션 수. 0 이 될 때까지 unload 는 기다린다. */
   activeTx: number;
 }
@@ -159,7 +204,8 @@ export type PluginErrorCode =
   | 'PLUGIN_ACTIVATE_FAILED'
   | 'DOCUMENT_RELEASED'
   | 'NESTED_TX'
-  | 'TX_TIMEOUT';
+  | 'TX_TIMEOUT'
+  | 'UI_UNAVAILABLE';
 
 /** 코드를 실어 나르는 오류. `instanceof` 없이 `code` 로 판별할 수 있게 평범한 필드로 둔다. */
 export interface PluginError extends Error {

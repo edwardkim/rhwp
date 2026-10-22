@@ -1,7 +1,7 @@
 # 구현 계획 — rhwp-studio AI 채팅 P0 (설정·Claude 연결·읽기 전용 대화)
 
 - 작성일: 2026-10-23 KST
-- 상태: **계획 — 구현 승인 대기**
+- 상태: **Stage 1 완료 — Stage 2 진행 중**
 - upstream 이슈: 미등록 (등록은 작업지시자 승인 후. 등록 뒤 이 문서 이름과 머리말을 이슈 번호로 갱신한다)
 - base: `devel` `605ccfd92`
 - 후속 단계: P1 문단 교체 쓰기, P2 표·누름틀·서식, P3 OpenAI·Gemini, P4 생성·프록시
@@ -38,6 +38,7 @@ rhwp-studio 오른쪽에 AI 패널을 붙이고, 사용자가 등록한 Claude A
 | 결정 | 값 | 근거 |
 |---|---|---|
 | 통합 형태 | 번들 내장 플러그인 `ai-assistant` | 코어가 플러그인을 정적으로 참조하지 않는 기존 계약(`src/plugin/types.ts`)을 유지한다. `hwpctrl`처럼 `resolvePlugin` allowlist에 이름을 추가하고 동적 import로 별도 chunk를 만든다 |
+| 자동 로드 범위 | 최상위 창의 full 모드 studio만. embed 모드와 iframe(@rhwp/editor) 안의 studio는 자동으로 올리지 않는다 | 호스트가 고르지 않은 기능·문서 전송 경로가 붙지 않게 한다. 호스트는 `plugins.load('ai-assistant')`로 직접 올릴 수 있다 |
 | 빌드 제외 | `RHWP_WITHOUT_AI=1` → `__RHWP_AI__ = false` | `RHWP_WITHOUT_HWPCTRL`과 같은 방식. AI 없이 배포하는 구성을 보장한다 |
 | 키 저장 | 기본은 세션 메모리. 「키 기억」을 켜면 IndexedDB에 저장. 암호를 지정하면 WebCrypto(PBKDF2 → AES-GCM)로 암호화 | 브라우저 저장 키는 XSS에 노출된다. 설정 화면에 이 위험을 명시한다 |
 | 쓰기 기본값 | P1에서 「제안 → 적용」. P0는 쓰기 없음 | — |
@@ -210,7 +211,7 @@ type AiStreamEvent =
   - 본문: 메시지 목록. 도구 실행은 「개요를 읽는 중」처럼 작은 표시로 보인다.
   - 하단: 입력란(Enter 전송, Shift+Enter 줄바꿈), 전송·중단 버튼, 토큰 사용량
 - **빠른 동작**: 선택 영역이 있을 때만 입력란 위에 「선택 영역 요약」 「선택 영역 설명」 「선택 영역 맞춤법 점검(제안만)」을 보인다.
-- 문구는 `src/i18n/locales/ko.ts`와 `en.ts`에 `ai.*` 키로 추가한다. 스타일은 `src/styles/ai-panel.css`에 둔다. 접두어는
+- 문구는 `src/i18n/locales/ko.ts`와 `en.ts`에 `ai.*` 키로 추가한다. 패널 자리 스타일은 `src/styles/side-panel.css`(`spl-`), AI 스타일은 AI 청크에만 들어가도록 `src/ai/ui/ai-panel.css`(`ai-`)에 둔다. 접두어는
   `mydocs/manual/rhwp_studio_ui_conventions.md`를 확인해 맞춘다.
 
 ## 4. 변경 파일
@@ -232,7 +233,9 @@ type AiStreamEvent =
 | 신규 | `rhwp-studio/src/ai/tools/{read-tools,untrusted,schema-validate}.ts` | 3.4, 3.5 |
 | 신규 | `rhwp-studio/src/ai/settings/{ai-settings,key-store}.ts` | 3.6 |
 | 신규 | `rhwp-studio/src/ai/ui/{ai-panel,ai-settings-dialog,consent-dialog,message-render}.ts` | 3.7 (대화상자는 `ModalDialog` 상속) |
-| 신규 | `rhwp-studio/src/styles/ai-panel.css` | 패널 스타일 |
+| 신규 | `rhwp-studio/src/styles/side-panel.css`, `rhwp-studio/src/ai/ui/ai-panel.css` | 패널 자리·AI 패널 스타일 |
+| 수정 | `rhwp-studio/src/styles/editor.css` | `#editor-area` grid 셋째 열과 눈금자·편집 영역의 명시 배치 |
+| 수정 | `rhwp-chrome/vite.config.ts`, `rhwp-firefox/vite.config.ts` | `__RHWP_AI__ = false` (확장 배포본 제외, 미정의 시 ReferenceError 방지) |
 | 수정 | `rhwp-studio/src/i18n/locales/{ko,en}.ts` | `ai.*` 문구 |
 | 신규 | `rhwp-studio/tests/ai-*.test.ts` | 5.1 단위 테스트 |
 | 신규 | `rhwp-studio/e2e/ai-panel.test.mjs`, `package.json` 스크립트 `e2e:ai-panel` | 5.2 |
@@ -319,3 +322,29 @@ VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:ai-panel
 1. 이 계획대로 Stage 1 착수
 2. upstream 이슈 등록 여부와 시점 (GitHub 게시는 별도 승인)
 3. 기본 모델을 `claude-opus-5-5`로 둘지, 직전 제안의 `claude-sonnet-5-5`로 둘지
+
+## 9. 진행 기록
+
+### Stage 1 — 패널 자리와 플러그인 뼈대 (2026-10-23)
+
+- 승인: 작업지시자 「추천하는 대로 진행해」(기본 모델 `claude-opus-5-5`, Stage 1 착수). 이슈 등록은 별도 승인 대기.
+- 구현
+  - `PluginHost`에 `ui`(패널 등록·토글·열림 조회)와 `getSelectionText`를 추가했다. 패널 해지 함수는 원장 `uiUnsubs`로 회수한다.
+  - 선택 평문은 `copySelection*`가 WASM 내부 클립보드를 덮어쓰므로 쓰지 않는다. 대신 문단·칸 문단 읽기 API로 만든다(`src/plugin/selection-text.ts`).
+  - `#editor-area` grid에 셋째 열을 더했다. 열이 늘면 자동 배치가 눈금자를 밀어내므로 기존 네 칸은 명시 배치로 바꿨다.
+  - 확장 빌드(`rhwp-chrome`·`rhwp-firefox`)는 studio 소스를 자체 vite 설정으로 묶는다. 그래서 `__RHWP_AI__ = 'false'`를 정의했다. 정의하지 않으면 시작 시 ReferenceError가 난다.
+  - 계획 변경: 자동 로드를 최상위 창으로 한정했다(2절 표). `@rhwp/editor` iframe은 full 모드라 embed 검사만으로는 막히지 않기 때문이다.
+  - node 단위 테스트가 타입 제거만으로 읽을 수 있도록 `plugin/host.ts`의 생성자 매개변수 속성을 명시 필드로 바꿨다. 동작 변화는 없다.
+- 검증 (WASM `pkg/rhwp_bg.wasm` sha256 `6fb13bc7d33ca1e2…`, `rhwp-studio/public`과 일치)
+
+| 항목 | 결과 |
+|---|---|
+| `npx tsc --noEmit` | 통과 |
+| `npm test` | 2,374건 중 2,372 통과, 실패 0 (skip 2) |
+| 신규 단위 테스트 (`side-panel-host`, `plugin-selection-text`, `plugin-side-panel`) | 18건 통과 |
+| `npm run build` | AI 코드가 `plugin-*.js/css` 청크로 분리됨 |
+| `RHWP_WITHOUT_AI=1 npm run build` | AI 청크와 `ai-assistant` 문자열 없음 |
+| `e2e:side-panel` (신규) | 18항목 PASS. 열림 시 편집 영역 1260→880px, 눈금자 배치 유지, Esc 후 포커스 복원, 폭 기억, 선택 평문 `다라마`, 내부 클립보드 불변 |
+| 기존 e2e `plugin-lifecycle` / `hwpctrl-plugin` / `automation-commands` / `responsive` | 21 / 19 / 32 / 2,666 PASS |
+
+- `responsive`의 머리말 preview console.error 1건은 devel `605ccfd92`에서도 같은 1건이다. 이번 변경과 무관하다.

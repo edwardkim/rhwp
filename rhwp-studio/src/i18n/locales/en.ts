@@ -1969,6 +1969,10 @@ const catalog = {
   "ui.toolbox.format": "Formatting toolbar",
   "ui.zoom.zoomIn": "Zoom In",
   "ui.zoom.zoomOut": "Zoom Out",
+  "ai.panel.title": "AI Assistant",
+  "ai.command.togglePanel": "AI Assistant",
+  "ai.panel.setupNotice": "Register an API key in AI Settings to ask questions about the current document.",
+  "ui.sidePanel.close": "Close panel",
 } as const;
 
 export default catalog;

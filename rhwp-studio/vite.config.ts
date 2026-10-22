@@ -20,6 +20,11 @@ const useSubsecondWasm = process.env.RHWP_SUBSECOND === '1';
  * `studio-plugin` 청크 자체가 남지 않는다. studio 만 떼어 배포할 때 쓴다.
  */
 const withHwpctrl = process.env.RHWP_WITHOUT_HWPCTRL !== '1';
+/**
+ * AI 도우미 포함 여부. `RHWP_WITHOUT_AI=1` 이면 `main.ts` 의 동적 import 분기가 tree-shake 되어
+ * AI 청크와 제공자 SDK 가 산출물에 남지 않는다.
+ */
+const withAi = process.env.RHWP_WITHOUT_AI !== '1';
 
 export default defineConfig({
   define: {
@@ -30,6 +35,7 @@ export default defineConfig({
       process.env.RHWP_DISABLE_EXTERNAL_WEBFONTS === '1',
     ),
     __RHWP_HWPCTRL__: JSON.stringify(withHwpctrl),
+    __RHWP_AI__: JSON.stringify(withAi),
   },
   resolve: {
     alias: {
