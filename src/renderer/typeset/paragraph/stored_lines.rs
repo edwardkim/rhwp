@@ -559,7 +559,7 @@ pub(in crate::renderer::typeset) fn next_boundary_reverts_spacing_trim(
                 spacing_before_px,
                 dpi,
             )
-            // [#7874] 저장 위치가 이 문단의 아래 간격을 뺐으면 다음 스냅은 끝 줄간격만
+            // [#7874] 저장 위치가 이 문단의 아래 간격만 뺐으면 다음 스냅은 끝 줄간격만
             // 되돌리고 아래 간격은 되돌리지 않는다 — 배치처럼 전체 높이로 전진한다.
             || crate::renderer::height_cursor::stored_ladder_omits_spacing_after(
                 previous,
@@ -568,6 +568,8 @@ pub(in crate::renderer::typeset) fn next_boundary_reverts_spacing_trim(
                     .para_styles
                     .get(previous.para_shape_id as usize)
                     .map_or(0.0, |style| style.spacing_after),
+                spacing_before_px,
+                dpi,
             )
     }) {
         return true;
