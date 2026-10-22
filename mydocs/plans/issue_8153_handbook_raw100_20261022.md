@@ -375,3 +375,25 @@ hwplib의 고정 SHA와 공식 HWPML의 TABLE 설명, 한컴 표 속성 도움�
 원시 바이트 결과는 `spec-table-pagebreak-original-bytes.json`, 독립 PDF 대조는
 `spec-pagebreak-independent-print.json`에 있다. 실행 기록은 `logs/spec-table-policy-audit.log`다.
 이 정정이 표 높이 배분식이나 600dpi·JPEG 색 보정까지 공식화하는 것은 아니다.
+
+### 사양 확인 후 실제 검증
+
+런타임 후보 `b9739125d8ef4ed0a906f58eb43914d9384719e2`의 Native 빌드는
+공용 target·잡 8개로 5분 48초, exit 0이다. 두 편람의 12·46·94·133·163·240·241·375쪽,
+총 16쪽을 기존 동일 Print·글꼴·96dpi로 재출력하고 원본 TSV를 산출했다.
+검증한 16쪽은 고정 base 대비 하락이 없다. 240쪽은 HWPX 99.58234%·HWP 99.58352%이며
+241쪽은 각각 99.97617%·99.93829%로 기준을 유지한다. 전체 1,532건 100%를 뜻하지 않는다.
+
+별도 선행 PR 대조군 심사지표 8쪽도 실제 재출력을 완료했다. C1과 7쪽은 RGB 동일하고
+6쪽은 실제 수용 원장 보정으로 달라졌다. 이를 무회귀로 추정하지 않고 같은 독립 2020 PDF와
+대조한 결과, 해당 6쪽 raw는 61.38979%에서 99.76441%로 개선됐다.
+수정 후 review에서 위 표의 글줄·이어받은 중첩 표·마지막 외곽선 위치를 직접 판독했다.
+이 결과는 대조군 8쪽 전체가 raw 98% 이상이라는 주장이 아니다.
+`span-control-simsa/spec-audited-p006-delta.json`과 `c3/p006-score/review_006.png`를 보존한다.
+
+사양·정오표·계획서 세 문서의 내부 상대 링크 검사는 exit 0이다.
+현재 root `12d0938913f33ee50ce6a43adbcedce6de30b939`는 위 런타임에서 문서와 enum 주석만
+달라진 상태다. 해당 SHA의 fresh WASM은 잡 8개·codegen-units 16으로 별도 빌드 중이며,
+최적화 성공 뒤 영향 16쪽을 실제 실행하도록 controller를 연결했다. 이전 후보의 WASM 결과를
+현재 결과로 사용하지 않는다. 로그는 `logs/spec-audited-fresh-wasm-build.log`와
+`logs/spec-audited-focused-wasm.log`다.
