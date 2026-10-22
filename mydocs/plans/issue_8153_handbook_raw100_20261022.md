@@ -301,8 +301,9 @@ PR #7382의 메인터너 보정 `a17cb22b79f`가 만든 공통 `complete_row_bou
 
 소비 연결은 `cell_units → RowBlockQuery::fragment_height → complete_row_boundary_band의
 요구 높이 → scan_rowspan_block_step의 예약/끝 행 override → emit의 같은 컷·수용 원장 →
-table_partial의 실제 행 상자`다. 컷 유닛이나 내용 순서를 바꾸지 않는다. 예산이 모자라면
-스캔에서 수용하지 않으며 paint 뒤에 상자만 늘리지 않는다. 적용되는 경계의 재출력은
+table_partial의 실제 행 상자`다. 완전 행 경계에서 추가 글줄을 소비하지 않고 빈 띠를 예약한다.
+기존 수용 분기가 컷 표현을 완전 행 경계로 바꾼 뒤 다음 조각의 시작·소유도 실제 출력으로 대조한다.
+예산이 모자라면 스캔에서 수용하지 않으며 paint 뒤에 상자만 늘리지 않는다. 적용되는 경계의 재출력은
 240·241쪽과 정상 완료 쪽, 원 PR의 8쪽 심사지표를 우선 대조한다. 아직 보정 후 검증 전이다.
 
 `c1ca8a7091` Native에서 raw 100%로 표시된 260쪽은 동일 마스크·반경으로 별도 계산한 결과
