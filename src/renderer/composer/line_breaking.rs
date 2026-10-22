@@ -3177,12 +3177,11 @@ pub(super) fn supports_overlay_table_frame_controls(para: &Paragraph) -> bool {
     overlay_tables > 0
 }
 
-/// 표 없이 글앞/글뒤 그림·도형만 가진 저장 줄 없는 **제목** host.
+/// 표 없이 글앞/글뒤 그림·도형만 가진 저장 줄 없는 host.
 ///
-/// 같은 종이층 개체라 줄 폭에 중립이다. 대상은 공백으로 자리 잡은 제목뿐이다 —
-/// 글자의 절반 넘게가 앞 공백이다. 첫 글자부터 본문이 이어지는 문단은 합성 줄바꿈에
-/// 남는다.
-pub(super) fn supports_overlay_shape_title_frame_controls(para: &Paragraph) -> bool {
+/// 같은 종이층 개체라 줄 폭에 중립이다. 개체 없는 저장 줄 없는 문단과 같이 글자만
+/// 실제 폭 프레임으로 조판한다.
+pub(super) fn supports_overlay_shape_frame_controls(para: &Paragraph) -> bool {
     let is_overlay = |common: &crate::model::shape::CommonObjAttr| {
         !common.treat_as_char
             && matches!(
@@ -3192,11 +3191,6 @@ pub(super) fn supports_overlay_shape_title_frame_controls(para: &Paragraph) -> b
             )
     };
     if !para.line_segs.is_empty() {
-        return false;
-    }
-    let total = para.text.chars().count();
-    let leading = para.text.chars().take_while(|c| c.is_whitespace()).count();
-    if leading == total || leading * 2 <= total {
         return false;
     }
     let mut overlay_objects = 0usize;
@@ -3646,7 +3640,7 @@ fn layout_paragraph_in_frame_impl(
                 || supports_cached_body_frame_controls(para)
                 || (para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
                 || (para.line_segs.is_empty() && supports_overlay_table_frame_controls(para))
-                || supports_overlay_shape_title_frame_controls(para)
+                || supports_overlay_shape_frame_controls(para)
         }
         FramePurpose::PictureAnchor => picture_anchor_projection::admits(para),
     };
@@ -4254,7 +4248,7 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     let tac_table_host_fill = para.line_segs.is_empty()
         && (supports_tac_table_band_frame_controls(para)
             || supports_overlay_table_frame_controls(para)
-            || supports_overlay_shape_title_frame_controls(para));
+            || supports_overlay_shape_frame_controls(para));
     if !supports_picture_band_frame_controls(para) && !tac_table_host_fill {
         if !supports_cached_body_frame_controls(para) || (!stale && !para.line_segs.is_empty()) {
             return None;

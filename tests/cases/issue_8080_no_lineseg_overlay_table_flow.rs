@@ -438,3 +438,82 @@ fn picture_cell_row_does_not_widen_gap_below_small_table() {
          — 그림이 앵커된 칸의 행 예약 높이를 문단을 쌓은 값으로 잡으면 5쪽 간격만 벌어진다"
     );
 }
+
+// ── 글앞 도형 host 의 줄 소유는 앞 공백 수와 무관하다 ─────────────────────────────────
+//
+// 글앞/글뒤 도형은 종이층에 놓여 줄 폭에 중립이다. 저장 줄 없는 문단에서 이런 도형만 가진
+// host 는 개체 없는 문단과 같이 실제 폭 프레임이 줄을 나눈다. 같은 폭·같은 글자 모양에서
+// 앞 공백 수만 바꾼 세 변형(24·25·0개 + `가` 24자)은 모두 본문 폭 한 줄에 들어가므로,
+// 줄 수·쪽 수·뒤 표의 쪽 소속이 같아야 한다. 공백 비율로 조판 경로를 고르면 24/25 사이에서
+// 줄 수와 뒤 표의 쪽이 갈린다.
+
+use rhwp::model::control::Control;
+
+/// 4쪽 제목 문단(83)을 같은 문단 모양·글앞 도형 2개를 유지한 채 `앞 공백 n + 가×24` 단일
+/// 글자 모양 글자로 바꾼다.
+fn title_variant(leading_spaces: usize) -> DocumentCore {
+    let mut doc = load(TITLE_SAMPLE);
+    let mut model = doc.document().clone();
+    let para = &mut model.sections[0].paragraphs[TITLE_PARA];
+    let overlay_shapes = para
+        .controls
+        .iter()
+        .filter(|c| matches!(c, Control::Shape(s) if !s.common().treat_as_char))
+        .count();
+    assert_eq!(overlay_shapes, 2, "제목 문단은 글앞 도형 2개를 가진다");
+    let body_char_shape = para.char_shapes.last().expect("글자 모양").char_shape_id;
+    let visible = para.text.chars().count();
+    para.delete_text_at(0, visible);
+    let text = format!("{}{}", " ".repeat(leading_spaces), "가".repeat(24));
+    para.insert_text_at(0, &text);
+    para.apply_char_shape_to_entire_text(body_char_shape);
+    para.line_segs.clear();
+    assert_eq!(para.text, text, "변형 제목 글자");
+    assert_eq!(para.controls.len(), 2, "글앞 도형 2개 유지");
+    doc.set_document(model);
+    doc
+}
+
+/// 변형 제목이 놓인 쪽, 그 쪽의 제목 줄 수, 뒤 본문 표가 놓인 쪽.
+fn title_variant_layout(leading_spaces: usize) -> (u32, usize, u32, u32) {
+    let doc = title_variant(leading_spaces);
+    let pages = doc.page_count();
+    let mut title_page = None;
+    let mut table_page = None;
+    for page in 0..pages {
+        let tree = doc.build_page_render_tree(page).expect("렌더 트리");
+        let mut lines = Vec::new();
+        column_lines(&tree.root, TITLE_PARA, &mut lines);
+        if !lines.is_empty() && title_page.is_none() {
+            title_page = Some((page, lines.len()));
+        }
+        if table_page.is_none() && top_level_table(&tree.root, TITLE_TABLE_PARA, false).is_some() {
+            table_page = Some(page);
+        }
+    }
+    let (page, lines) = title_page.expect("변형 제목 줄");
+    (page, lines, table_page.expect("제목 뒤 본문 표"), pages)
+}
+
+#[test]
+fn overlay_shape_title_line_ownership_ignores_leading_space_count() {
+    let control = title_variant_layout(0);
+    let (page, lines, table_page, pages) = control;
+    assert_eq!(
+        lines, 1,
+        "앞 공백 없는 대조군: 24자는 본문 폭 한 줄 ({control:?})"
+    );
+    assert_eq!(
+        table_page, page,
+        "앞 공백 없는 대조군: 뒤 표는 제목과 같은 쪽 ({control:?})"
+    );
+    for leading in [24, 25] {
+        let variant = title_variant_layout(leading);
+        assert_eq!(
+            variant, control,
+            "앞 공백 {leading}개 변형의 (제목 쪽, 줄 수, 뒤 표 쪽, 전체 쪽수)는 앞 공백 없는 \
+             대조군과 같아야 한다 — 글앞 도형은 줄 폭에 중립이고 두 변형 모두 한 줄에 들어간다"
+        );
+    }
+    assert_eq!(pages, 4, "변형도 원본처럼 4쪽");
+}
