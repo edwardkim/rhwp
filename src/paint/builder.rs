@@ -267,6 +267,38 @@ impl LayerBuilder {
         if let RenderNodeType::Rectangle(rect) = &node.node_type {
             if rect.transform.has_transform() && !node.children.is_empty() {
                 let matrix = rect.transform.matrix_about(node.bbox);
+                if self
+                    .page_context
+                    .is_some_and(|c| c.vector_projection(node).is_some())
+                {
+                    // 도형은 회전 후 물리 종이에 투영하고, 내부 글자는 원본 회전을
+                    // 소비한다. 종이 투영을 회전 안쪽에 넣거나 글줄까지 축소하지 않는다.
+                    let mut primitive = node.clone();
+                    primitive.children.clear();
+                    let outline = self.build_node(&primitive)?;
+                    let content = LayerNode::group(
+                        node.bbox,
+                        Some(node.id),
+                        self.build_children(node),
+                        CacheHint::None,
+                        GroupKind::Group(crate::renderer::render_tree::GroupNode {
+                            paint_transform: Some(matrix),
+                            section_index: rect.section_index,
+                            para_index: rect.para_index,
+                            control_index: rect.control_index,
+                        }),
+                    );
+                    return Some(
+                        LayerNode::group(
+                            node.bbox,
+                            Some(node.id),
+                            vec![outline, content],
+                            CacheHint::None,
+                            self.group_kind_for(&node.node_type),
+                        )
+                        .with_layer(node.layer),
+                    );
+                }
                 let mut local = node.clone();
                 if let RenderNodeType::Rectangle(rect) = &mut local.node_type {
                     rect.transform = Default::default();
@@ -425,6 +457,11 @@ impl LayerBuilder {
         if let Some(ops) = own_ops {
             let own_bounds = ops.first().map_or(node.bbox, PaintOp::bounds);
             let own_leaf = LayerNode::leaf(own_bounds, Some(node.id), ops).with_layer(node.layer);
+            let own_leaf = if let Some(context) = self.page_context {
+                context.project_vector(node, own_leaf)
+            } else {
+                own_leaf
+            };
             // 내부 문단이 없는 사각형도 원본 컨트롤 부호를 출력해야 한다.
             let has_source_marker = self.output_options.show_control_codes
                 && matches!(node.control_code, ControlCode::Rectangle(_));
