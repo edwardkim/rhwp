@@ -54,6 +54,9 @@ impl LayoutEngine {
                 || para.cell_format_vpos_dirty
                 || para.line_segs.is_empty()
                 || para.line_segs.len() != current.lines.len()
+                // 줄 수가 같아도 재조판 프레임이 새 좌표를 소유할 수 있다.
+                // 실제 배치가 소비할 프레임을 원본 저장 줄로 덮지 않는다.
+                || current.frame_geometry.is_some()
             {
                 return None;
             }
