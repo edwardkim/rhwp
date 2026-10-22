@@ -39,7 +39,7 @@ impl LayoutEngine {
         let host = cell.paragraphs.get(para_index)?;
         if host.controls.is_empty()
             || !host.controls.iter().all(|control| {
-                matches!(control, Control::Table(nested) if super::nested_table_is_overlay(nested))
+                matches!(control, Control::Table(nested) if self.nested_table_is_overlay(nested))
             })
         {
             return None;
