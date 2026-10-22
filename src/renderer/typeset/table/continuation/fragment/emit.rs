@@ -1397,7 +1397,7 @@ impl TypesetEngine {
                 .render_normalization
                 .table_text_reflowed(row_geometry_table)
             && mt.allows_row_break_split()
-            && row_geometry_table.cells.iter().any(|cell| {
+            && (row_geometry_table.cells.iter().any(|cell| {
                 cell.row_span > 1
                     && crate::renderer::layout::cell_crosses_fragment_end(
                         cell,
@@ -1405,6 +1405,20 @@ impl TypesetEngine {
                         &split_end_cut,
                     )
             })
+                // [#8105] 걸침 칸이 없어도 내용 컷으로 나뉜 행의 선언 높이가 이 조각 상자보다 크면 그 행
+                // 자신이 쪽 끝 띠를 소유한다 — 한/글은 첫 조각의 아래 괘선을 닫는 선에 긋는다(1342000 94쪽
+                // 행 25 제주 칸: 선언 123.3px, 컷 내용 55.7px, 한/글 괘선 712.7 = 닫는 선; task1749 4쪽
+                // 행 2: 한/글 괘선 1024.0). 저장 행 프레임이 상자를 정한 행은 그 프레임을 따른다.
+                || (split_end_limit > 0.0
+                    && stored_row_frame.is_none()
+                    // 앞 쪽에서 이미 그린 행을 잇는 가운데 조각은 앞 상자들을 장부로 받지 않아 남는
+                    // 몫을 모른다 — 행이 이 조각에서 시작할 때만(편람 214쪽 3쪽짜리 행).
+                    && !(end_row - 1 == cursor_row && !start_cut.is_empty())
+                    && super::physical_rows::declared_row_height(
+                        row_geometry_table,
+                        end_row - 1,
+                        self.dpi,
+                    ) > split_end_reserved.max(split_end_limit) + 0.5))
             && (ledger_page_end_band > 0.0 || reserved_plain_end_band)
         {
             let last_row = end_row - 1;
