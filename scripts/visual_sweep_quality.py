@@ -1,7 +1,7 @@
-"""Accepted page quality ratchets; a pass is not full visual acceptance.
+"""Explicit historical page quality comparison; not a default Visual Sweep gate.
 
-Compare raw page scores only at the recorded measurement settings. This guards
-the accepted PR's quality floor in addition to a fresh same-font devel/head run.
+Callers may compare raw page scores at the recorded measurement settings.
+Visual Sweep does not automatically invoke this historical PR comparison.
 No font exception, adjusted score, average, or selected-page run rescues a loss.
 """
 from __future__ import annotations

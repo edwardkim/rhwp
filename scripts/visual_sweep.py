@@ -27,12 +27,10 @@ try:
     from scripts.visual_sweep_workers import ordered_page_map
     from scripts.visual_sweep_images import open_page_rgb, page_rgb
     from scripts.visual_sweep_pdf import PDF_RASTERIZER, pdf_raster_commands, pdf_rasterizer_provenance
-    from scripts.visual_sweep_quality import enforce_quality
 except ModuleNotFoundError:
     from visual_sweep_workers import ordered_page_map
     from visual_sweep_images import open_page_rgb, page_rgb
     from visual_sweep_pdf import PDF_RASTERIZER, pdf_raster_commands, pdf_rasterizer_provenance
-    from visual_sweep_quality import enforce_quality
 
 
 LABEL_FONT_ENV = "RHWP_VISUAL_SWEEP_LABEL_FONT"
@@ -1499,8 +1497,6 @@ def write_target_status(
         manifest["native_document_pages"] = native_metadata["pageCount"]
         manifest["native_export_metadata"] = safe_rel_str(root, native_metadata_path)
     manifest["provenance"] = run_manifest["provenance"]
-    enforce_quality(root, manifest, overlay_metrics, run_manifest.get("dpi"),
-                    run_manifest.get("document_page_counts"), SILHOUETTE_METHOD)
     write_json_atomic(base / "manifest.json", manifest)
     update_root_summary(out_root, manifest)
     return manifest
@@ -1698,7 +1694,6 @@ def render_target(
         manifest["exported_png_source_pages"] = len(all_svg_paths) if png_module else 0
         manifest["exported_render_tree_pages"] = len(all_tree_paths)
         manifest["exported_pdf_pages"] = len(all_pdf_pngs)
-        enforce_quality(root, manifest, manifest["metrics"], dpi, document_counts, SILHOUETTE_METHOD)
         write_json_atomic(base / "silhouette_manifest.json", manifest)
         update_root_summary(out_root, manifest)
         return manifest

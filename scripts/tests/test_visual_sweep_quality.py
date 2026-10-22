@@ -1,7 +1,7 @@
-"""#8064 accepted whole-page quality must survive the next rebase.
+"""Explicit historical #8064 comparison helper contracts.
 
-Verifier contracts use existing accepted TSVs, not new renderer goldens. Actual
-new captures still have to satisfy the independent visual/fixture gates.
+These standalone checks use existing TSVs, not new renderer goldens. The helper
+is not automatically connected to the default Visual Sweep review gate.
 """
 import copy
 import csv
