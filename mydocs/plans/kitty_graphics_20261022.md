@@ -1,0 +1,143 @@
+# Kitty graphics 출력 지원 계획 초안
+
+- 요청: 기존 Sixel 출력에 이어 Kitty graphics protocol 출력을 지원한다.
+- 기준: `upstream/devel` `2e087a5b4bc1515ad877e8020b30114639a59392`.
+- 계획 브랜치: `plan/kitty-graphics-20261022`. 구현·GitHub 이슈 등록·게시 전이다.
+- 이슈 검색: 2026-10-22 저장소의 `kitty` 검색 결과는 없었다. 번호는 등록 후 정하며 가상 번호를 쓰지 않는다.
+- 선행 작업: [#7820](https://github.com/edwardkim/rhwp/issues/7820),
+  [#7829](https://github.com/edwardkim/rhwp/pull/7829), 실제 통합
+  `f79f2e1d6831a2187657b9c60deabc5d7c8b8e0d`와 현재 코드를 대조했다.
+  [기존 계획](task_m100_7820_sixel.md), [검토](../pr/archives/pr_7829_review.md),
+  [최종 실행 기록](../working/task_m100_7820_stage4.md)을 확인했다.
+
+## 목표와 첫 구현 범위
+
+읽기 전용 `rhwp export-kitty`를 추가한다. 기존 Native Skia가 만든 문서 픽셀을 PNG로 인코딩하고
+Kitty graphics protocol로 보낸다. 터미널에서도 PNG의 색을 유지하며 Sixel의 256색 양자화를 거치지 않는다.
+문서 조판 개선이나 Sixel 대비 속도 향상은 이번 기능의 주장에 포함하지 않는다.
+
+```bash
+rhwp export-kitty document.hwpx --page 0 --width 360
+rhwp export-kitty document.hwp --page 1 --width 720 --profile print
+rhwp export-kitty document.hwpx -o output/kitty --width 720
+rhwp export-kitty document.hwpx -o output/kitty-page -p 2 --width 720
+rhwp export-kitty document.hwpx --width 360 > page.kitty
+cat page.kitty
+ssh -T host 'rhwp export-kitty document.hwpx --page 0 --width 360'
+```
+
+- stdout 모드는 기본 첫 쪽이며 `-p/--page`는 0부터 시작한다.
+- `-o/--output`은 페이지별 `.kitty` 파일을 저장한다. 쪽 생략 시 전쪽, 지정하면 해당 쪽만 저장한다.
+  한 쪽 문서는 `<stem>.kitty`, 여러 쪽 문서는 `<stem>_001.kitty` 형식으로 Sixel의 이름 규칙을 따른다.
+  기존 파일 덮어쓰기와 앞 쪽 저장 후 실패 시 이미 저장한 파일 유지도 Sixel과 같다.
+- 기본 너비는 360px이며 가로·세로에 같은 배율을 적용한다. `--profile`, 반복 가능한 `--font-path`,
+  `--compat 2022|2024`를 기존 Sixel과 같은 의미로 제공한다.
+- 기본 배경은 Sixel처럼 흰색이다. `opaque_rgba_on_white`의 기존 alpha 합성 결과를 PNG로 인코딩한다.
+  기존 `export-png`의 투명도·배경 정책은 변경하지 않는다.
+- `native-skia`가 필요하다. 크기 예산은 기존 래스터의 한 변 16,384px·총 67,108,864픽셀을 유지한다.
+  Sixel 전용 6줄 밴드 반올림은 Kitty에 적용하지 않는다.
+- stdout에는 이미지 APC 청크와 마지막 CRLF만 기록한다. 파일 모드 stdout은 비우고 저장 안내·오류는 stderr다.
+  `--json`은 지원하지 않으며 capabilities에도 이 계약을 명시한다.
+- 종료 코드는 성공 0, 읽기·파싱·렌더·인코딩·쓰기 실패 1, 잘못된 옵션·쪽 범위·feature 누락 2다.
+  렌더·PNG 인코딩 실패는 stdout 출력 전에 판정한다. 쓰기 도중 오류는 이미 전송한 바이트를 되돌릴 수 없으므로
+  실패 코드와 stderr로 알린다. 종료 코드 0은 전송 성공이며 실제 터미널 표시 검증과 구별한다.
+
+## 공통 결과와 실제 소비 경로
+
+현재 `src/cli/outputs/sixel.rs`의 입력 로딩·외부 그림 제한·호환성 설정을 참고한다.
+실제 렌더 경로는 `DocumentCore::render_page_pixels_native_at_width` →
+`build_page_layer_tree_with_profile` → `SkiaLayerRenderer::render_pixels_at_width` →
+RGBA8888 premultiplied `RasterPixels`다.
+
+이 결과를 기존 흰색 합성 helper → 불투명 `RasterPixels` →
+`SkiaLayerRenderer::encode_pixels_png` → Kitty 전송 writer가 소비한다.
+PNG 인코더가 처리하는 stride·채널·alpha 계약을 보존하고 PNG 생성 완료 후 청크를 쓴다.
+새 writer는 PNG 바이트를 입력으로 받으므로 문단·줄 측정, 배치 원점, 글꼴 선택, pagination을 변경하지 않는다.
+기존 PNG/Sixel 명령의 리팩터링은 필요한 공유 부분이 확인된 범위에 한정한다.
+
+현재 `base64 = 0.23` 의존성과 PNG 인코더를 재사용한다. 새 터미널 라이브러리나 외부 `kitten icat`
+실행 의존성은 추가하지 않는다. 라이브러리의 PNG 데이터를 stdout 전송과 파일 저장에서 함께 사용한다.
+
+## 프로토콜 계약
+
+기준은 [Kitty 공식 graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)이다.
+
+- PNG 형식 `f=100`, 직접 전송 `t=d`, 전송과 표시 `a=T`, 응답 억제 `q=2`를 사용한다.
+- Base64 payload는 청크당 최대 4,096바이트다. 중간 청크는 4의 배수로 자르며
+  첫 청크에 형식·동작을 담고 이어지는 청크에는 `m`과 필요한 `q`만 쓴다. 마지막은 `m=0`이다.
+- PNG 원문을 최대 3,072바이트씩 인코딩해 전체 Base64 복사본을 추가로 보유하지 않는다.
+  청크 길이의 정확한 배수인 입력과 마지막 패딩도 검증한다.
+- 파일 경로·공유 메모리 전송을 사용하지 않아 SSH 양 끝의 파일 시스템 공유를 요구하지 않는다.
+- 이미지 ID는 터미널이 관리하도록 생략한다. 기존 이미지를 지우거나 ID를 강제로 재사용하지 않는다.
+  커서 이동은 규격 기본값으로 두고 마지막 CRLF 뒤의 프롬프트가 이미지와 겹치지 않는지 실측한다.
+- 명령은 stdin을 읽거나 terminal 응답을 기다리지 않는다. `TERM`만으로 지원을 추정하지 않는다.
+  Sixel/Kitty 자동 선택, 자동 터미널 설정 변경, tmux/screen 중계, Unicode placeholder와 TUI는 별도 범위다.
+
+## 수정 예상 위치
+
+| 영역 | 작업 |
+| --- | --- |
+| `src/cli/outputs/kitty.rs`, `outputs/mod.rs`, `src/main.rs` | 명령·옵션·쪽 선택·stdout/파일 출력·오류 계약 |
+| Native 전용 Kitty 전송 모듈 | PNG 분할·Base64·APC writer, 기존 래스터/PNG 소비 |
+| `src/cli/catalog.rs`, `metadata/capabilities/extended.rs`, `metadata/help/public.rs` | feature·공개 명령·플래그·도움말·JSON 비지원 정렬 |
+| `tests/cases/` | 프로토콜·CLI 계약 및 기존 PNG/Sixel 무회귀 |
+| `scripts/ci-impact-classifier.cjs` 등 현행 배선 | Native 소유 분류와 실제 테스트 자동 수집·실행 여부 확인 |
+| CLI 매뉴얼·개별 Kitty 가이드·에이전트 명령 지도 | 실제 사용법과 검증한 터미널·SSH·제한 기록 |
+
+Sixel 최초 CI에서 새 출력 어댑터의 impact 분류 누락이 있었음을 확인했다.
+현재 자동 suite와 Native CI 경로를 먼저 조사하고, 실제 누락이 있을 때만 최소 배선을 추가한다.
+개별 호출을 관례적으로 중복 추가하지 않는다.
+
+## 단계와 완료 조건
+
+1. 이 초안과 대상 터미널을 확정하고 이슈 등록 승인 후 정식 번호로 전환한다.
+   해당 이슈의 할당·열린 PR을 확인하고 최신 devel에서 구현 브랜치를 만든다.
+2. 규격에서 독립 기대값을 정한 실패 계약을 실행한 뒤 전송 writer·CLI·자기서술을 구현한다.
+   빈 입력·청크 경계·Base64 패딩·제어문자·마지막 청크·quiet 모드·I/O 오류를 확인한다.
+   CLI의 옵션 위치·값 누락·중복 입력·잘못된 쪽·feature 누락·stdout 분리를 검사한다.
+3. 공개 문서의 한글 본문·표·각주·그림을 360/720px로 출력하고 독립 검사기로 APC를 분리한다.
+   표준 Base64 복원 후 원 PNG와 바이트가 같고, 독립 PNG 디코더의 크기·RGB가 동일한지 확인한다.
+   비교 기준은 같은 `RasterPixels`를 기존 PNG 인코더에 넣어 만든 결과다.
+   PNG/Sixel 전후 무회귀와 전쪽 내용 보존도 확인한다. 새 실물 좌표 pin이나 golden은 추가하지 않는다.
+4. 실제 터미널에서 명령 직접 출력·저장 파일 재표시·SSH를 구분해 확인한다.
+   문서 외곽·한글·표·각주·그림·종횡비·프롬프트 위치를 판독한다.
+   사용자 지정 터미널과 실제 버전·설정·접속 방식을 기록하고 미실행 환경을 통과로 쓰지 않는다.
+   [WezTerm 공식 기능 목록](https://wezterm.org/features.html)에도 Kitty graphics가 있지만
+   해당 설치 버전의 실제 표시를 별도로 확인한다. 현재 기준 터미널·tmux 여부는 사용자 답변 대기다.
+5. 변경 범위별 필수 lint·회귀·Native/fresh WASM·시각 검증을 현행
+   [로컬 검증 4.3](../manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)에 따라 완료한다.
+   렌더 출력에 영향이 있으면 동일 입력·독립 Print의 전쪽 Native/fresh WASM TSV와 확대 판독을 수행한다.
+   공유 엔진을 바꾸지 않은 전송 어댑터 범위와 추가로 변경한 소비 경로를 근거로 적용 범위를 정한다.
+   이 계획 자체는 기존 시각 증거의 현재 head 재사용이나 검증 생략 승인이 아니다.
+6. 단계 보고·최종 보고 후 별도 원격 승인 범위에 따라 PR을 준비한다.
+   GitHub 게시·push·PR 생성·merge는 아직 승인되거나 수행되지 않았다.
+
+공용 Cargo target은 `/home/edward/mygithub/rhwp/target/pr-review`를 순차 사용한다.
+중간 산출물은 필요한 실행 시 ignored `output/`에 만들고, 종료하면 사용자 지시에 따라 불필요한
+검토 브랜치·임시 산출물·중복 보존본을 정리한다. 이번 계획 단계에서는 빌드·제품 코드 변경을 하지 않았다.
+
+## 이슈 등록 초안
+
+### 제목
+
+feat(cli): 기존 래스터 렌더링을 재사용하는 Kitty graphics 출력 지원
+
+### 본문
+
+HWP/HWPX 문서를 Kitty graphics protocol을 지원하는 터미널에서 바로 확인하려고 합니다.
+기존 `export-sixel`에 이어 읽기 전용 `export-kitty`를 추가합니다.
+
+- Native Skia의 공통 래스터와 기존 PNG 인코더를 재사용하고 흰 배경의 PNG를 직접 전송합니다.
+  문서 조판·글꼴 선택이나 기존 PNG/Sixel의 출력 의미는 변경하지 않습니다.
+- 쪽 선택, 픽셀 너비, 출력 디렉터리, profile·font-path·compat 옵션을 기존 Sixel과 맞춥니다.
+  stdout 기본은 첫 쪽이며 디렉터리 출력은 전쪽 또는 지정 쪽을 개별 `.kitty` 파일로 저장합니다.
+- stdout의 그래픽과 stderr 진단을 구분하고, feature 누락·잘못된 옵션·렌더·쓰기 실패를 검사합니다.
+  `--json`은 지원하지 않으며 help·catalog·capabilities와 실제 명령을 함께 등록합니다.
+- [공식 규격](https://sw.kovidgoyal.net/kitty/graphics-protocol/)에 맞는 직접 PNG 전송·청크·응답 억제를
+  구현하고 독립 검사기로 전송 원문과 복원한 PNG를 확인합니다.
+- 기존 PNG/Sixel 회귀, 공개 문서의 한글·표·각주·그림, 실제 터미널의 직접 표시·파일 재표시·SSH를
+  검증합니다. 대상 터미널의 실제 버전·설정과 검증 결과를 기록합니다.
+
+전체 TUI, 문서 편집, 자동 프로토콜 선택, tmux/screen 중계는 별도 범위입니다.
+선행 구현은 [#7820](https://github.com/edwardkim/rhwp/issues/7820)과
+[#7829](https://github.com/edwardkim/rhwp/pull/7829)입니다.
