@@ -2,7 +2,7 @@
 //!
 //! 독립 기준은 `pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf`이다.
 //! 2·3쪽의 현재 Native/fresh WASM raw 99%대와 직접 판독을 근거로 아래 경계를 보호한다.
-//! 전66쪽의 남은 미달과 출처는 stage8 C436 및 pii-independent-row-minimum 증적을 따른다.
+//! 과거 전 66쪽 미달은 stage8 C436에, 현재 90% 이상·65/66쪽 100%는 Stage53·54에 기록한다.
 //! 59쪽은 앞 행, 60쪽은 단기연체정보부터 서명까지의 뒤 행을 소유한다.
 //! 쪽·셀 소속, 포함 및 표 뒤 문단 관계를 유지하고 완료된 2·3쪽만 독립 PDF의 ±2px를 쓴다.
 
@@ -470,6 +470,29 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
     let closing = source_cell(owned_table(&page66.root, 619).expect("뒤 설명 표"), 4, 1);
     let first_child = table_with(opening, "인공지능");
     let last_child = table_with(closing, "맞추어");
+    // 부모 선언이 앞 행 + 자식 첫 프레임 + 부모 상하 안 여백으로 닫힌다.
+    // 인증된 첫 조각에서 아래 안 여백을 열린 컷의 여분으로 회수하지 않는다.
+    let padding = original_cell.effective_padding(&original.padding);
+    let source_opening_height = hwpunit_to_px(
+        i32::try_from(original_child.common.height).expect("원본 첫 자식 상자")
+            + i32::from(padding.top)
+            + i32::from(padding.bottom),
+        DEFAULT_DPI,
+    );
+    assert!(
+        (opening.bbox.height / source_opening_height - 1.0).abs() < FLOAT_EPSILON,
+        "첫 부모 조각이 자식의 원본 상하 여백을 한 번 소유해야 함: 실제 {}, 원본 {}",
+        opening.bbox.height,
+        source_opening_height,
+    );
+    // Native/fresh WASM 전 66쪽 raw 최저 96.57165/96.56850%, 65쪽은 양쪽 100%.
+    // 독립 Print 벡터 선의 행 높이(1011.37337→1041.26131 CSSpx)를 ±2px로 보호한다.
+    // stage53-pii-stored-child-frame-20261022 및 stage54 후속 증적을 참조한다.
+    assert!(
+        (opening.bbox.height - 29.887_939_453_125).abs() <= 2.0,
+        "65쪽 마지막 행 높이: 실제 {}, 독립 Print 29.88794 CSSpx",
+        opening.bbox.height,
+    );
     // 독립 H2GTRM hmtx와 Print는 작은따옴표에 1em을 준다. 실제 잉크가
     // 글리프 오른쪽에 있어 좁힌 전진폭은 뒤 한글과 겹쳐 여는 기호를 숨겼다.
     // 원본 글자모양의 크기·장평과 이웃 원점 관계를 검사하며 절대 px를 고정하지 않는다.
