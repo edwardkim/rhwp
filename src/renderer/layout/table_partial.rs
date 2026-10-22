@@ -4198,6 +4198,14 @@ impl LayoutEngine {
                                                 self.dpi,
                                             )
                                         });
+                                    // 문단 앞/뒤 개체는 글자 뒤 커서가 아닌 문단 앵커를 쓴다.
+                                    // 전체 셀과 같은 query를 소비한다. 부분 컷은 이 문단의
+                                    // 첫 원본 유닛을 소유할 때만 앵커를 새로 연다.
+                                    let overlay_frame = (owns_paragraph_entry && start_line == 0)
+                                        .then(|| crate::renderer::float_placement::nested_overlay_outer_frame(
+                                            nested_table, para_y_before_lines, nested_h, self.dpi,
+                                        ))
+                                        .flatten();
                                     let nested_y = if let Some(owner) = frame_owner {
                                         let base = para
                                             .line_segs
@@ -4214,6 +4222,8 @@ impl LayoutEngine {
                                         stored_host_flow_entry
                                     } else if let Some(frame) = stored_float_frame {
                                         frame.table_top
+                                    } else if let Some(frame) = &overlay_frame {
+                                        frame.start
                                     } else if let Some(offset) = stored_square_offset {
                                         para_y_before_lines + hwpunit_to_px(offset, self.dpi)
                                     } else if let Some((_, lead)) = first_stored_inline_owner_lead
@@ -4687,6 +4697,9 @@ impl LayoutEngine {
                                                     .or_else(|| {
                                                         stored_float_frame
                                                             .map(|f| f.table_top)
+                                                            .or_else(|| overlay_frame.as_ref().map(|frame| {
+                                                                frame.start + hwpunit_to_px(nested_table.outer_margin_top as i32, self.dpi)
+                                                            }))
                                                             .or_else(|| {
                                                                 self.stored_hwpx_cut_owns_outer_frame(para, nested_table).then(|| nested_y + hwpunit_to_px(nested_table.outer_margin_top as i32, self.dpi))
                                                             })
@@ -4853,6 +4866,19 @@ impl LayoutEngine {
                                                 .or_else(|| {
                                                     stored_float_frame
                                                         .map(|f| (f.table_left, f.table_top))
+                                                })
+                                                .or_else(|| {
+                                                    overlay_frame.as_ref().map(|frame| {
+                                                        (
+                                                            None,
+                                                            frame.start
+                                                                + hwpunit_to_px(
+                                                                    nested_table.outer_margin_top
+                                                                        as i32,
+                                                                    self.dpi,
+                                                                ),
+                                                        )
+                                                    })
                                                 })
                                                 .or_else(|| {
                                                     self.reflow_nested_table_origin(
