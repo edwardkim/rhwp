@@ -734,3 +734,35 @@ style53의 원본 10pt·98%로 다시 계산한 Tf83/Tz98.684212는 해당 문�
 이 문단 시점의 두 작업은 실행 중이며, 종료 코드·전쪽 결과·정확한 미대응 0 확인은 아직
 남아 있다. 로그는 `logs/physical-empty-whole-native.log`,
 `logs/physical-empty-fresh-wasm-build.log`, `logs/physical-empty-whole-wasm.log`다.
+
+
+### 다음 원인의 분리 진단: 원본 대체 글꼴과 실제 측정 face
+
+원본 Latin face `Dinbol`은 `한컴바탕`을 대체 TTF로 저장하고 있고, 독립 Print의 133쪽
+번호 125는 실제 HBATANG 프로그램을 사용한다. 기본 후보의 번호 bbox는 x608.9/w20.8px,
+실제 공급을 확인한 `Haansoft Batang`을 기존 FontEnvironment로 명시한 진단은
+x607.2/w24.3px다. 독립 PDF 첫 글자 원점은 x607.19999px다. 원본·PDF·DPI·장평·마스크나
+device 크기를 변경하지 않았으며, 진단에서 Native 133쪽은 실제 미대응 0(raw100)이 됐다.
+기본 실행에서의 실제 paint 선택 프로그램이 동일하다는 증명으로 확대하지 않는다.
+
+이는 **별도 font environment 진단**이다. 기본 설정의 전쪽 TSV와 섞거나 기본 경로가
+해결됐다고 판정하지 않는다. 기본 style resolver는 원본 chain을 넘기지만 실제 host의
+공급 결과를 일반 글자 측정에 확정하는 계약이 아직 없다. 임의 문서별 치환이나
+`메트릭 표 없음 = 글꼴 설치 안 됨` 추정 대신, 공급자가 실제로 선택한 원본/대체 프로그램과
+논리 측정의 face가 같도록 하는 공통 처리가 필요하다. 기존 `FontEnvironment`, Native의
+`NativePngExporter::prepare_document`/Skia 선택, WASM의 실제 FontFace 설치를 소비 지점으로
+확인한다. 현재 루트에 새 글꼴 런타임 코드는 추가하지 않았다.
+
+같은 진단의 Native 375쪽은 raw100 유지, 86쪽은 98.51749→98.51702로 0.00047%p
+감소했다. 기존 e492 package를 사용한 fresh WASM 진단 6쪽도 383쪽을 유지했고,
+133·375쪽은 두 형식 모두 raw100, 86쪽은 둘 다 98.47191%다. 이는 HWPX 기본
+98.47227/HWP 기본98.47246보다 각각 0.00036/0.00055%p 낮다. 이 반례를 생략하지 않으며
+해당 설정을 그대로 전쪽 개선이나 PR 완료로 채택하지 않는다. source 고정과 조건 차이는
+`footer-fallback-diagnostic/`의 명령·TSV·producer 기록, 로그
+`logs/footer-fallback-diagnostic.log`, `logs/footer-fallback-wasm-diagnostic.log`에 있다.
+Native 133쪽의 정확한 미대응 확인은 `p133-exact-audit.json`에 보존한다.
+
+32c 전쪽 HWPX Native 383쪽은 최저 92.61726%, 표시100 83쪽, base·직전 후보 대비
+하락 0쪽으로 종료했다. HWP 전쪽은 실행 중이다. fresh WASM 컴파일은 7분47초·성공이며
+wasm-opt가 실제 실행 중이다. 전쪽 Native/WASM 완료 후 PNG 해시·정확한 미대응 수를
+검사하는 `after_physical_empty_exact.py`를 같은 실행의 종료 코드 확인 뒤 순차 연결했다.
