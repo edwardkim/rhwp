@@ -4,6 +4,8 @@
 - 기준: `upstream/devel` `2e087a5b4bc1515ad877e8020b30114639a59392`.
 - 계획 브랜치: `plan/kitty-graphics-20261022`. 구현·GitHub 이슈 등록·게시 전이다.
 - 이슈 검색: 2026-10-22 저장소의 `kitty` 검색 결과는 없었다. 번호는 등록 후 정하며 가상 번호를 쓰지 않는다.
+- 기준 터미널: 2026-10-22 사용자가 kitty 터미널의 로컬 또는 SSH 사용을 선택했다.
+  로컬 직접 출력과 SSH 원격 출력을 분리해 검증하며, 실제 버전·접속 환경을 실행 시 기록한다.
 - 선행 작업: [#7820](https://github.com/edwardkim/rhwp/issues/7820),
   [#7829](https://github.com/edwardkim/rhwp/pull/7829), 실제 통합
   `f79f2e1d6831a2187657b9c60deabc5d7c8b8e0d`와 현재 코드를 대조했다.
@@ -103,7 +105,8 @@ Sixel 최초 CI에서 새 출력 어댑터의 impact 분류 누락이 있었음�
    문서 외곽·한글·표·각주·그림·종횡비·프롬프트 위치를 판독한다.
    사용자 지정 터미널과 실제 버전·설정·접속 방식을 기록하고 미실행 환경을 통과로 쓰지 않는다.
    [WezTerm 공식 기능 목록](https://wezterm.org/features.html)에도 Kitty graphics가 있지만
-   해당 설치 버전의 실제 표시를 별도로 확인한다. 현재 기준 터미널·tmux 여부는 사용자 답변 대기다.
+   해당 설치 버전의 실제 표시를 별도로 확인한다. 이번 필수 기준 터미널은 사용자가 선택한 kitty다.
+   tmux 사용 여부는 확인되지 않았으며 기존 첫 구현 범위대로 중계 지원은 제외한다.
 5. 변경 범위별 필수 lint·회귀·Native/fresh WASM·시각 검증을 현행
    [로컬 검증 4.3](../manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)에 따라 완료한다.
    렌더 출력에 영향이 있으면 동일 입력·독립 Print의 전쪽 Native/fresh WASM TSV와 확대 판독을 수행한다.
@@ -136,7 +139,8 @@ HWP/HWPX 문서를 Kitty graphics protocol을 지원하는 터미널에서 바�
 - [공식 규격](https://sw.kovidgoyal.net/kitty/graphics-protocol/)에 맞는 직접 PNG 전송·청크·응답 억제를
   구현하고 독립 검사기로 전송 원문과 복원한 PNG를 확인합니다.
 - 기존 PNG/Sixel 회귀, 공개 문서의 한글·표·각주·그림, 실제 터미널의 직접 표시·파일 재표시·SSH를
-  검증합니다. 대상 터미널의 실제 버전·설정과 검증 결과를 기록합니다.
+  검증합니다. 기준 터미널은 kitty이며 로컬 출력과 SSH 출력을 구분합니다.
+  실제 버전·설정과 검증 결과를 기록합니다.
 
 전체 TUI, 문서 편집, 자동 프로토콜 선택, tmux/screen 중계는 별도 범위입니다.
 선행 구현은 [#7820](https://github.com/edwardkim/rhwp/issues/7820)과
