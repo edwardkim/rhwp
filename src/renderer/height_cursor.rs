@@ -81,17 +81,21 @@ pub(crate) fn rebuilt_ladder_omits_spacing_before(
             })
 }
 
-/// [#7874] 저장 사다리가 앞 문단의 아래 간격을 담지 않은 경계.
+/// [#7874] 저장 사다리가 앞 문단의 아래 간격만 담지 않은 경계.
 ///
-/// 한컴 저장 줄 둘이 맞닿아(다음 첫 줄 = 앞 마지막 줄 끝) 있어도 한/글은 앞 문단의 아래
-/// 간격을 둔다(합성 `samples/issue7874` 한/글 2024 Print: 1600 + 568HU 피치). 이 경계의
-/// 저장 위치는 아래 간격만큼 낡았으므로, 앞 문단 흐름에서 깎은 간격을 복원하지 못하고
-/// 그 간격만큼 앞선 흐름을 되감을 근거도 아니다. 조판(트림 복원 판정)과 배치(후방 스냅)가
-/// 같은 판정을 쓴다.
+/// 한/글 저장 사다리의 문단 경계는 `다음 첫 줄 = 앞 마지막 줄 끝 + 앞 아래 간격 + 뒤 위
+/// 간격` 이다. 이 중 아래 간격 항만 빠진 경계(`다음 첫 줄 = 앞 끝 + 뒤 위 간격`)에서도 한/글은
+/// 앞 문단의 아래 간격을 둔다(합성 `samples/issue7874` 한/글 2024 Print: 1600 + 568HU 피치).
+/// 이 경계의 저장 위치는 아래 간격만큼 낡았으므로, 앞 문단 흐름에서 깎은 간격을 복원하지
+/// 못하고 그 간격만큼 앞선 흐름을 되감을 근거도 아니다. 조판(트림 복원 판정)과 배치(후방
+/// 스냅)가 같은 판정을 쓴다. 위 간격까지 빠진 경계는 이 등식의 사례가 아니다 — 위 간격
+/// 누락의 계약(`rebuilt_ladder_omits_spacing_before`·`#6031`)을 따른다.
 pub(crate) fn stored_ladder_omits_spacing_after(
     previous: &Paragraph,
     current: &Paragraph,
     spacing_after: f64,
+    spacing_before: f64,
+    dpi: f64,
 ) -> bool {
     let Some(last) = previous.line_segs.last() else {
         return false;
@@ -106,6 +110,7 @@ pub(crate) fn stored_ladder_omits_spacing_after(
             == i64::from(last.vertical_pos)
                 + i64::from(last.line_height)
                 + i64::from(last.line_spacing)
+                + (spacing_before.max(0.0) * 7200.0 / dpi).round() as i64
         && !previous.stored_text_partition_is_dirty()
         && !previous.cell_format_vpos_dirty
         && !current.stored_text_partition_is_dirty()
@@ -1273,9 +1278,9 @@ impl HeightCursor {
         // preceding flow items. Its absolute origin therefore cannot snap the
         // current item. The accepted previous item's end owns the origin;
         // current paragraph-before spacing will be added by its placement.
-        // [#7874] 저장 사다리가 앞 문단의 아래 간격을 빼먹은 경계(다음 문단 첫 줄 = 앞 문단
-        // 마지막 줄 끝)에서, 흐름이 그 아래 간격만큼 앞서 있는 것은 드리프트가 아니라 간격을
-        // 소비한 것이다. 한/글은 그 간격을 둔다(HWP5-nopassword 2024 PDF: 1600 + 568HU).
+        // [#7874] 저장 사다리가 앞 문단의 아래 간격만 빼먹은 경계(다음 문단 첫 줄 = 앞 문단
+        // 마지막 줄 끝 + 위 간격)에서, 흐름이 그 아래 간격만큼 앞서 있는 것은 드리프트가 아니라
+        // 간격을 소비한 것이다. 한/글은 그 간격을 둔다(HWP5-nopassword 2024 PDF: 1600 + 568HU).
         // 8px 이내라는 이유로 낡은 저장 위치로 되감지 않는다.
         let stored_after_not_consumed = !self.session_edited
             && styles
@@ -1284,7 +1289,9 @@ impl HeightCursor {
                 .is_some_and(|style| {
                     let prev_after = style.spacing_after;
                     if !paragraphs.get(item_para).is_some_and(|current| {
-                        stored_ladder_omits_spacing_after(prev_para, current, prev_after)
+                        stored_ladder_omits_spacing_after(
+                            prev_para, current, prev_after, curr_sb, self.dpi,
+                        )
                     }) {
                         return false;
                     }
