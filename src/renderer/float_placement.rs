@@ -5553,7 +5553,14 @@ impl ParagraphFloatPlacement {
             + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi)
             + hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
         Some(Self {
-            flow: ParagraphFloatFlow::Exclusion,
+            // 폭0의 원본 개체 앵커는 별도 글줄이 아니라 표 상자의 원점이다.
+            // 첫 조각도 이 소유를 받아야 가상의 호스트 줄을 먼저 예약하지 않는다.
+            // 실제 공백·텍스트 줄은 기존 배제 흐름을 유지한다.
+            flow: if object_only_saved_table_anchor(host, table) {
+                ParagraphFloatFlow::EmptyHost
+            } else {
+                ParagraphFloatFlow::Exclusion
+            },
             anchor_y: flow_start,
             stored_host_origin: None,
             stored_successor_line_origin: None,

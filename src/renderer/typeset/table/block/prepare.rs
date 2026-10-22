@@ -531,6 +531,14 @@ impl TypesetEngine {
                 table,
                 fragment_host_placement.as_ref(),
             ) && (source_control_frame.is_none() || para_has_non_whitespace_text(para));
+        if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+            eprintln!(
+                "TABLE_FRAGMENT_HOST pi={para_idx} ci={ctrl_idx} source={source_control_frame:?} placement={fragment_host_placement:?} owns_lines={host_owns_text_lines} line_count={} computed_lines={} flow={:.6} origin={placement_para_start_height:.6}",
+                fmt.line_heights.len(),
+                fmt.computed_host_lines.as_ref().map_or(0, Vec::len),
+                st.current_height,
+            );
+        }
         if host_owns_text_lines
             && fragment_host_placement.is_some()
             && !st.pre_emitted_host_paras.contains(&para_idx)
