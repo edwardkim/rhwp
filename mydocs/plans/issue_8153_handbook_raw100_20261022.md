@@ -568,3 +568,45 @@ section2 p884/885의 `3㎝` 글줄 두 곳만 y 214.6/327.7px → 210.4/323.4px�
 사다리는 기존 공통 정렬 프레임이 계속 소유하도록 한다. 86·87쪽의 실제 양수 저장
 시작과 단순히 같은 캐시로 취급하지 않는다. 문서 ID·4.26px 상수로 분기하지 않는다.
 양수/0 원점의 해당 source·Print 반례를 후속 후보 검증 목록에 함께 포함한다.
+
+### 재검증 큐와 독립 글꼴 수치 확인
+
+`e49286e6ba`의 Native 전 766쪽은 exit 0으로 종료했다. HWPX 116쪽에만 위 0.21773%p
+하락이 있으며 HWP 전쪽은 base·직전 후보 대비 하락 0쪽이다. 최저값은 HWPX
+92.61726%·HWP 92.61751%다. 따라서 이 후보는 승인 대상이 아니다. fresh WASM 빌드는
+컴파일 5분 24초·성공 뒤 최적화 중이며, 이 실행은 첫 후보의 backend별 영향 근거로 보존한다.
+최신 보완 후보 `cad634797d`는 116쪽 로컬 원점 복구, 140쪽 TAC 그림 줄의 물리 프레임 인증,
+공통 `tac_object_flow_height_hu` 소비를 포함한다. 세 변경 Rust 파일의 rustfmt 검사는
+`logs/picture-frame-rustfmt-check.log` exit 0이다. 이 후보의 실제 Native 빌드는 앞서 시작한
+WASM 최적화가 끝난 뒤에 실행한다. 검사 목록은 두 형식 115·116·117·139·140·141쪽 및
+기존 주요 9쪽, 총 30쪽과 독립 대조군 12쪽이다. 아직 실제 개선 완료로 보고하지 않는다.
+실행 전인 기존 빌드 대기 controller만 자식 프로세스가 없음을 확인하고 교체했다.
+실제 렌더러·Cargo·wasm-opt와 해당 증적은 중단하거나 제거하지 않았다.
+
+133쪽 쪽번호의 크기 차이는 임의 배율 대신 원본 글꼴과 Windows API로 확인했다.
+[LOGFONTW](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-logfontw)의
+음수 높이는 character em이며 폭은 평균 글자 폭의 논리 단위다.
+[MulDiv](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-muldiv)는
+가장 가까운 정수로 반올림한다. HWP가 그린 실제 Print의 CTM 0.120pt는 해당 출력의
+600dpi 장치 좌표를 나타낸다. 이 장치 해상도를 HWP 형식 자체의 필수 해상도로 표기하지 않는다.
+
+`win10-ted`(Windows PowerShell)의 실제 `CreateFontW → GetTextMetricsW/GetCharABCWidthsFloatW`
+48개 조합을 실행했다. 9·10·11·15pt와 자연 폭·95·97·100% 요청을 대조했으며 exit 0이다.
+선택된 프로그램을 Windows `GetFontData`에서 메모리로 읽어 SHA만 산출했다. Haansoft Batang,
+KoPubBatang Light, KoPubDotum Light 세 프로그램은 Linux 공급본과 SHA-256이 각각 같다.
+폰트 프로그램을 복사·배포하거나 원격 작업 파일을 만들지 않았다. 초기 긴 EncodedCommand는
+Windows 명령 길이 제한에서 실패해 압축된 bootstrap으로 수정했다. 계정·토큰 정보는 사용하지 않았다.
+
+Haansoft Batang의 실제 unitsPerEm/xAvgCharWidth는 1024/512이며, 11pt의 장치 em 92에서
+Windows 자연 평균 폭은 46이다. 95% 요청의 평균 폭 44와 `44/46 = 95.6521739…%`는
+PDF의 Tz 95.652176%와 수치상 일치한다. 공식 API·실제 글꼴·독립 Print를 교차한 **메커니즘
+후보**이며, 한컴의 호출 자체를 계측했다는 뜻은 아니다. 다른 크기·장평·글꼴과 조판/paint 소비를
+확인한 후 구현 여부를 판단한다. 현재 런타임에 600dpi 글꼴 상수나 이 비율을 추가하지 않았다.
+`gdi-font-metrics-win10-with-font-hashes.json`, `logs/gdi-font-metrics-win10-with-font-hashes.log`
+및 `probe_gdi_font_metrics_with_hashes.py`에 실제 값·명령을 보존한다.
+
+90쪽은 원본 section2 p634의 image365를 실제로 추적했다. 원본 JPEG 1195×1441과
+Print JPEG 870×952의 양자화 표가 다르고, 원본 crop을 이미지 좌표로 환산한 끝점은
+870.947568/952.692227px다. 동일 owner·입력/PDF SHA·JPEG 양자화·메타데이터를
+`p90-source-print-image-program-audit.json`에 보존했다. 재압축 관측을 공식 HWP 색 변환으로
+일반화하지 않으며 수치 맞춤용 tone/마스크 보정을 되살리지 않는다.
