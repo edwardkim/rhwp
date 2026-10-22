@@ -81,18 +81,8 @@ impl RowBlockQuery<'_> {
                 None
             };
         let rowbreak_has_internal_hard_break = rowbreak_hard_break_row.is_some();
-        // 텍스트 병합은 RowBreak의 행/물리 잔여 소유를 취소하지 않는다.
-        // 걸친 개체·중첩 표 유닛은 일반 행의 텍스트 컷에 표현되지 않으므로
-        // 같은 블록 셀 순서의 컷으로 전달한다. 저장 내부 경계는 아래에서
-        // 기존 RowBreak 블록 분할 경로가 소유한다.
         let protected = block_has_protectable_rowspan
-            && (!mt.allows_row_break_split()
-                || (!rowbreak_has_internal_hard_break
-                    && layout_engine
-                        .row_block_has_spanning_object_units(table, b_start, b_end, styles)))
-            && !layout_engine
-                .stored_rowbreak_whole_row_prefix_end(table, &mt.row_heights)
-                .is_some_and(|end| b_start < end && end < b_end);
+            && (!mt.allows_row_break_split() || !rowbreak_has_internal_hard_break);
         // [Task #1086] RowBreak 표는 행 경계 분할 정책이라 보호 블록
         // snap 은 피하지만, rowspan label 이 걸친 블록 안의 큰 row_span==1
         // 셀은 셀 내부 hard-break(vpos reset) 기준으로 쪼갤 수 있어야 한다.
@@ -194,7 +184,7 @@ impl RowBlockQuery<'_> {
             return self.mt.row_heights[row];
         }
         self.layout_engine
-            .row_block_cut_physical_frame(
+            .row_block_cut_physical_height(
                 self.table,
                 (block.b_start, block.b_end),
                 (row, self.mt.row_heights[row]),
@@ -202,7 +192,6 @@ impl RowBlockQuery<'_> {
                 end,
                 self.styles,
             )
-            .map(|frame| frame.height)
             .unwrap_or_else(|| {
                 self.layout_engine.row_block_cut_row_content_height(
                     self.table,

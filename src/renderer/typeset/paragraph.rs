@@ -34,8 +34,7 @@ pub(super) use whole_decision::decide_whole_fit;
 
 use super::{
     is_synthetic_line_seg, missing_lineseg_trailing_line_break,
-    native_hwp5_existing_footnote_reset_overlap_break_line,
-    native_hwp5_first_footnote_overlap_break_line,
+    native_hwp5_existing_footnote_reset_boundary, native_hwp5_first_footnote_overlap_break_line,
     native_hwp5_text_reset_before_large_tac_topbottom_picture_break_line, page_item_vpos_base,
     para_has_non_whitespace_text, para_has_visible_text, para_is_treat_as_char_picture_only,
     preceding_stored_vpos, stored_body_reset_fragment_matches_current_flow, stored_vpos_rewinds,
@@ -99,7 +98,9 @@ pub(super) fn place_split_paragraph(
     base_available: f64,
     safety: SplitSafety,
     forced_page_break_line: Option<usize>,
-    native_hwp5_existing_footnote_reset_line: Option<usize>,
+    native_hwp5_existing_footnote_boundary: Option<
+        super::notes::footnotes::boundary::NativeHwp5FootnoteBodyBoundary,
+    >,
     current_page_vpos_base: Option<i32>,
     is_tac_picture_stack: bool,
     require_full_advance: bool,
@@ -190,7 +191,7 @@ pub(super) fn place_split_paragraph(
             line_count,
             avail_for_lines,
             forced_page_break_line,
-            native_hwp5_existing_footnote_reset_line,
+            native_hwp5_existing_footnote_boundary,
             fragment_page_vpos_base,
             is_tac_picture_stack,
             &st.paragraph_line_scan_page(),
@@ -495,9 +496,10 @@ pub(super) fn try_place_overflow_paragraph(
     available: f64,
     forced_page_break_line: Option<usize>,
     stored_vpos_rewind_overflow_break: bool,
+    current_page_vpos_base: Option<i32>,
     dpi: f64,
 ) -> bool {
-    let page = st.paragraph_overflow_page();
+    let page = st.paragraph_overflow_page(current_page_vpos_base);
     if overflow::atomic_overflow_fits(
         para,
         fmt,
@@ -601,7 +603,9 @@ pub(super) fn place_after_failed_fit(
     stored_vpos_rewind_break: bool,
     stored_vpos_rewind_overflow_break: bool,
     forced_page_break_line: Option<usize>,
-    native_hwp5_existing_footnote_reset_line: Option<usize>,
+    native_hwp5_existing_footnote_boundary: Option<
+        super::notes::footnotes::boundary::NativeHwp5FootnoteBodyBoundary,
+    >,
     current_page_vpos_base: Option<i32>,
     dpi: f64,
 ) {
@@ -710,7 +714,7 @@ pub(super) fn place_after_failed_fit(
         base_available,
         safety,
         forced_page_break_line,
-        native_hwp5_existing_footnote_reset_line,
+        native_hwp5_existing_footnote_boundary,
         current_page_vpos_base,
         is_tac_picture_stack,
         require_full_advance,
@@ -921,7 +925,8 @@ pub(super) struct WholeFitDecision {
 
 /// 기존 각주 경계는 선택된 강제 경계와 별도로 후속 줄 스캔에서도 소비한다.
 pub(super) struct ForcedPageBoundary {
-    pub native_hwp5_existing_footnote_reset_line: Option<usize>,
+    pub native_hwp5_existing_footnote_boundary:
+        Option<super::notes::footnotes::boundary::NativeHwp5FootnoteBodyBoundary>,
     pub current_page_vpos_base: Option<i32>,
     pub forced_page_break_line: Option<usize>,
 }

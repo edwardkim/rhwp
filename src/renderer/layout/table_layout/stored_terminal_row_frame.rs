@@ -93,22 +93,7 @@ impl LayoutEngine {
                 let physical = row_heights[first..row].iter().sum::<f64>()
                     + spacing * (row - first) as f64
                     + remaining;
-                // 여기서 끝나는 병합 칸에는 뒤 행이 물리 잔여를 받을 수 없다.
-                // 글자가 모두 들어갔어도 저장 최소 상자의 빈 띠가 남았다면
-                // 같은 행의 부분 컷으로 이어받아야 한다. 계속되는 병합 칸은
-                // 이후 종료 행의 원장이 그 최소 높이를 소유한다.
-                // HWP5 첫 저장 프레임은 수용한 물리 행 원장이 종료 높이를
-                // 소유한다. nominal span cache를 다시 최소 높이로 강제하면
-                // 그 프레임의 완료 행이 새 쪽에서 중복 시작한다. HWPX의
-                // 입증된 cellSz 최소 상자에는 아래의 종료 잔여 검사를 유지한다.
-                let closes_short_physical_frame = self.profile.get().hwpx_stored_layout()
-                    && cell.row_span > 1
-                    && first + usize::from(cell.row_span) == row + 1
-                    && cell.height <= i32::MAX as u32
-                    && hwpunit_to_px(cell.height as i32, self.dpi)
-                        > physical + ROW_CUT_CAPACITY_FP_EPSILON_PX;
                 !units.is_empty()
-                    && !closes_short_physical_frame
                     && !units
                         .iter()
                         .any(|unit| unit.hard_break_before || unit.page_frame_reset_before)

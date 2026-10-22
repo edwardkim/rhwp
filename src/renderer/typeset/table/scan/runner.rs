@@ -151,37 +151,6 @@ impl TypesetEngine {
                 cs: v.cs,
                 straddle_page_bands,
             };
-            // Consume a carried physical tail before scanning the next row.
-            if r == v.cursor_row {
-                if let Some(height) = v.start_row_height_override.filter(|_| {
-                    !layout_engine.row_uses_reflow_physical_frame(table, r)
-                        && layout_engine.row_cut_units_exhausted(table, r, start_cut, styles)
-                }) {
-                    // 이전 조각의 물리 잔여와 걸친 병합 셀의 남은 내용은 같은
-                    // 시작 행을 소유한다. 이미 넘겨받은 최소 높이를 보존하면서
-                    // paint가 늘리는 내용 높이도 뒤 행 수용 전에 함께 예약한다.
-                    let row = table::scan::row::RowScanQuery {
-                        rows: &block_query,
-                        r,
-                        cursor_row: v.cursor_row,
-                        start_cut,
-                        start_cut_is_block: v.start_cut_is_block,
-                        start_row_height_override: v.start_row_height_override,
-                        rowspan_physical_space,
-                        accepted_rows: &progress.scan.physical_rows,
-                    };
-                    let height = height.max(row.required_height(height, 0.0, 0.0));
-                    if height <= v.avail_for_rows {
-                        progress.scan.consumed += height;
-                        progress.r += 1;
-                        progress.scan.end_row = progress.r;
-                        progress.scan.physical_rows.push((r, height));
-                        continue;
-                    }
-                    // 남은 내용이 안 들어가면 이 행을 소비하지 않고 기존
-                    // 내용 분할·이월 경로에서 수용 여부를 판정한다.
-                }
-            }
             let block = block_query.candidate(r);
             // 이월 게이트(`prepare`)가 확정한 첫 조각의 0행 컷을 그대로 소비한다.
             // 표 중간의 묶음과 잔여에 통째로 드는 묶음은 기존 보호를 그대로 둔다.

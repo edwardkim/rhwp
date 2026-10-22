@@ -2057,8 +2057,7 @@ impl TypesetEngine {
                         // 여백을 빼면 같은 프레임을 다른 원점으로 인증하게 된다.
                         fmt.spacing_before,
                         (table_total - host_spacing_total).max(0.0),
-                        self.dpi,
-                    st.profile.hwpx_stored_layout(),)
+                        self.dpi,)
                 })
                 .flatten()
             })

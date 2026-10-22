@@ -190,10 +190,11 @@ impl TypesetEngine {
         // 같은 저장 단의 구성이 유지되면 물리 여유만으로 다음 단의 소속을 지우지 않는다.
         // 앞 줄의 실제 감소량이 뒤 조각의 전진을 회수한 경우만 전체 수용을 재검증한다.
         let reissued_column = stored_cut.is_some_and(|cut| {
-            paragraph_by_global_index(paragraphs, &st.endnote_paragraphs, en_para_idx)
-                .is_some_and(|paragraph| {
+            paragraph_by_global_index(paragraphs, &st.endnote_paragraphs, en_para_idx).is_some_and(
+                |paragraph| {
                     self.endnote_column_reclaims_saved_tail(st, paragraphs, styles, paragraph, cut)
-                })
+                },
+            )
         });
         if en_ssot_debug() && stored_cut.is_some() {
             eprintln!(
@@ -322,7 +323,6 @@ impl TypesetEngine {
                     row_cursor_is_nested,
                     end_row_height_override,
                     start_row_height_override,
-                    row_height_overrides,
                     straddle_row_relief,
                     straddle_page_bands,
                     fragment_row_heights,
@@ -341,7 +341,6 @@ impl TypesetEngine {
                     row_cursor_is_nested: *row_cursor_is_nested,
                     end_row_height_override: *end_row_height_override,
                     start_row_height_override: *start_row_height_override,
-                    row_height_overrides: row_height_overrides.clone(),
                     straddle_row_relief: straddle_row_relief.clone(),
                     straddle_page_bands: straddle_page_bands.clone(),
                     fragment_row_heights: fragment_row_heights.clone(),

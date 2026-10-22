@@ -953,7 +953,6 @@ pub enum PageItem {
         start_row_height_override: Option<f64>,
         /// 앞 조각의 실제 병합 점유를 반영해 예약에서 확정한 행 높이.
         /// 비어 있으면 기존 측정 경로이며 paint는 확정값을 다시 분배하지 않는다.
-        row_height_overrides: Vec<(usize, f64)>,
         /// [#7531] 쪽을 넘어온 걸침 칸의 끝 행에서 앞 쪽 빈 띠만큼 덜 높이 `(행, px)`.
         /// 조판 scan 이 같은 값으로 행을 쟀으므로 그리기도 이 값을 그대로 적용한다.
         straddle_row_relief: Vec<(usize, f64)>,
@@ -1168,7 +1167,6 @@ impl PageItem {
                 row_cursor_is_nested,
                 end_row_height_override,
                 start_row_height_override,
-                row_height_overrides,
                 straddle_row_relief,
                 straddle_page_bands,
                 fragment_row_heights,
@@ -1187,7 +1185,6 @@ impl PageItem {
                 row_cursor_is_nested: *row_cursor_is_nested,
                 end_row_height_override: *end_row_height_override,
                 start_row_height_override: *start_row_height_override,
-                row_height_overrides: row_height_overrides.clone(),
                 straddle_row_relief: straddle_row_relief.clone(),
                 straddle_page_bands: straddle_page_bands.clone(),
                 fragment_row_heights: fragment_row_heights.clone(),

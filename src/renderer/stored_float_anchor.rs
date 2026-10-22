@@ -62,6 +62,7 @@ pub(crate) fn stored_topbottom_object_span(
     para: &Paragraph,
     next_para: Option<&Paragraph>,
     table: &Table,
+    hwpx_object_frame: bool,
 ) -> (i64, i64) {
     if let Some(outer_box_height) = stored_topbottom_flow_advance_hu(para, next_para, table) {
         // 닫힌 세로 바깥 상자의 위여백은 좌우 여백과 별개다.
@@ -186,7 +187,7 @@ pub(crate) fn stored_ladder_leaves_object_room(
     next_para: Option<&Paragraph>,
     table: &Table,
 ) -> bool {
-    let (_, occupied_bottom) = stored_topbottom_object_span(para, next_para, table);
+    let (_, occupied_bottom) = stored_topbottom_object_span(para, next_para, table, false);
     let need = occupied_bottom.max(0);
     match (stored_vpos(para), next_para.and_then(stored_vpos)) {
         (Some(current), Some(next)) => next - current >= need,
@@ -204,6 +205,7 @@ pub(crate) fn stored_single_topbottom_top_px(
     table: &Table,
     available_px: f64,
     dpi: f64,
+    hwpx_object_frame: bool,
 ) -> Option<f64> {
     // 문단 기준 세로 오프셋이 걸린 개체는 상자 윗변이 `앵커 + 오프셋` 이라 이 산식이
     // 성립하지 않는다. 오프셋을 더해 읽을 근거(정본 실측)가 없으므로 흐름 배치에 맡긴다.
@@ -222,7 +224,7 @@ pub(crate) fn stored_single_topbottom_top_px(
     if !stored_ladder_leaves_object_room(para, next_para, table) {
         return None;
     }
-    let (top_offset, _) = stored_topbottom_object_span(para, next_para, table);
+    let (top_offset, _) = stored_topbottom_object_span(para, next_para, table, hwpx_object_frame);
     let top = hwpunit_to_px((current + top_offset) as i32, dpi);
     let bottom = top + hwpunit_to_px(table.common.height as i32, dpi);
     // 본문 안에 온전히 드는 앵커만 물리 좌표로 읽는다.

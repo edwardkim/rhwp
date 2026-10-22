@@ -231,7 +231,6 @@ pub(super) fn from_stored_ladder(
     spacing_before: f64,
     measured_table_height: f64,
     dpi: f64,
-    hwpx_object_frame: bool,
 ) -> Option<ParagraphFloatPlacement> {
     let paragraph_square = !table.common.treat_as_char
         && table.common.text_wrap == TextWrap::Square
@@ -274,10 +273,8 @@ pub(super) fn from_stored_ladder(
     // 저장 등식이 없는 기존 앵커는 이 경로에 들어오지 않는다.
     let table_top = origin
         + (i64::from(signed_hwpunit(table.common.vertical_offset))
-            + crate::renderer::stored_float_anchor::stored_outer_box_table_top_hu(
-                table,
-                hwpx_object_frame,
-            )) as f64
+            + crate::renderer::stored_float_anchor::stored_outer_box_table_top_hu(table))
+            as f64
             * dpi
             / 7200.0;
     let occupied_bottom = origin + physical_hu as f64 * dpi / 7200.0;

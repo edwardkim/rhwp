@@ -127,6 +127,7 @@ pub(crate) fn resolve_styles_with_environment(
             .iter_mut()
             .zip(&document.doc_info.char_shapes)
         {
+            let mut latin_program_changed = false;
             for lang in 0..LANG_COUNT {
                 let decision = lookup_font_name_in_environment(
                     &lookup,
@@ -136,10 +137,14 @@ pub(crate) fn resolve_styles_with_environment(
                 );
                 if decision.environment_profile_id.is_some() {
                     style.font_families[lang] = decision.css_family_chain.join(",");
-                    style.font_families_glyph_fallback_advance_explicit[lang] =
-                        decision.embedded != Some(true) && environment.is_some_and(|env| {
-                            decision.normalized_face.as_deref()
-                                .and_then(|face| env.glyph_fallbacks(face)).is_some()
+                    style.font_families_glyph_fallback_advance_explicit[lang] = decision.embedded
+                        != Some(true)
+                        && environment.is_some_and(|env| {
+                            decision
+                                .normalized_face
+                                .as_deref()
+                                .and_then(|face| env.glyph_fallbacks(face))
+                                .is_some()
                         });
                     // 명시적 프로그램 선택과 독립적으로 검증한 글리프 표가 모두 있어야
                     // TrueType 폭을 사용한다. 선언만으로 임의 face의 표를 신뢰하지 않는다.
@@ -151,13 +156,20 @@ pub(crate) fn resolve_styles_with_environment(
                         && original.embedded != Some(true)
                         && original.requested_face.as_deref().is_some_and(|face| {
                             crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()
-                                || has_own_metric_table(face, shape.bold, shape.italic)
+                                || has_own_metric_table(&face, style.bold, style.italic)
                                 || crate::renderer::font_metrics_data::has_declared_original_glyph_metrics(face)
                         });
                     if keep_source_metrics {
-                        style.font_families_metric_face[lang] = original.requested_face.as_deref()
-                            .and_then(|face| crate::renderer::font_metrics_data::legacy_hft_metric_face(face)
-                                .or_else(|| has_own_metric_table(face, shape.bold, shape.italic).then_some(face)))
+                        style.font_families_metric_face[lang] = original
+                            .requested_face
+                            .as_deref()
+                            .and_then(|face| {
+                                crate::renderer::font_metrics_data::legacy_hft_metric_face(face)
+                                    .or_else(|| {
+                                        has_own_metric_table(&face, style.bold, style.italic)
+                                            .then_some(face)
+                                    })
+                            })
                             .map(str::to_owned);
                     }
                     let explicit_true_type = !keep_source_metrics
@@ -170,6 +182,7 @@ pub(crate) fn resolve_styles_with_environment(
                     });
                     // 결측 글리프 체인만 추가한 세션은 원 face의 TTF/HFT 신뢰를 바꾸지 않는다.
                     if !keep_source_metrics && (explicit_true_type || explicit_replacement) {
+                        latin_program_changed |= lang == 1;
                         style.font_families_metric_trusted[lang] = explicit_true_type
                             && (metric_widths_verified_face(target)
                                 || matches!(target, "휴먼명조" | "HumanMyeongJo"));
@@ -184,6 +197,15 @@ pub(crate) fn resolve_styles_with_environment(
                 }
             }
             style.font_family = style.font_families[0].clone();
+            if latin_program_changed {
+                style.font_space_em = resolved_space_advance_em(
+                    shape.use_font_space,
+                    &style.font_families,
+                    &style.font_families_original_glyph_metric_face,
+                    style.bold,
+                    style.italic,
+                );
+            }
         }
     }
     styles
@@ -324,6 +346,33 @@ pub(crate) fn declared_space_advance_em(
     Some(f64::from(width) / f64::from(em))
 }
 
+/// 일반 해소와 명시적 프로그램 변경은 같은 최종 공급자의 공백을 소비한다.
+fn resolved_space_advance_em(
+    use_font_space: bool,
+    families: &[String],
+    original_glyph_faces: &[Option<String>],
+    bold: bool,
+    italic: bool,
+) -> Option<f64> {
+    use_font_space
+        .then(|| {
+            original_glyph_faces
+                .get(1)
+                .and_then(Option::as_deref)
+                .and_then(|face| {
+                    crate::renderer::font_metrics_data::declared_original_glyph_advance_em(
+                        face, bold, italic, ' ',
+                    )
+                })
+                .or_else(|| {
+                    families
+                        .get(1)
+                        .and_then(|chain| declared_space_advance_em(chain, bold, italic))
+                })
+        })
+        .flatten()
+}
+
 /// CharShape + FontFace → ResolvedCharStyle 목록
 fn resolve_char_styles(doc_info: &DocInfo, dpi: f64) -> Vec<ResolvedCharStyle> {
     doc_info
@@ -409,11 +458,8 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_families_hft_fullwidth_dot.push(decision.alt_type == Some(2) && !substituted);
         // 독립 Print의 유지된 HFT는 Type3 device 좌표로 그려진다.
         // 명시 TrueType·내장 글꼴·실제 치환 프로그램의 기존 원점을 보존한다.
-        font_families_hft_print_frame.push(
-            decision.alt_type == Some(2)
-                && !substituted
-                && decision.embedded != Some(true),
-        );
+        font_families_hft_print_frame
+            .push(decision.alt_type == Some(2) && !substituted && decision.embedded != Some(true));
         // [#7391] legacy-latin은 선언 face의 기존 표를 사용한다. HFT는
         // 프로그램 자체를 확인한 표만 사용하며 표시용 TTF와 구분한다.
         // HWP3 ASCII 반각 여부는 기존 문서의 저장 줄 증인이 계속 결정한다.
@@ -448,7 +494,8 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         // 실제 선택한 TTF 대체 프로그램은 자기 전진폭을 소유한다. 전체 HFT 표 선택과
         // 실제 type2의 부분 폭은 보존하고 내장 글꼴·호출자 TTF 환경은 승격하지 않는다.
         font_families_original_glyph_metric_face.push(
-            (!document_true_type_substitute && decision.embedded != Some(true)
+            (!document_true_type_substitute
+                && decision.embedded != Some(true)
                 && (decision.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin)
                     || decision.alt_type == Some(2)))
             .then(|| {
@@ -484,24 +531,13 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     // 슬롯은 공백도 그 프로그램의 폭을 소비한다. 표시용 대체 글꼴의 좁은 공백을
     // 섞으면 같은 원본 글꼴의 문자와 들여쓰기 전진폭이 달라진다.
     // 확인하지 못한 원본 공백·명시 TrueType·내장 글꼴은 기존 표시 체인으로 조회한다.
-    let font_space_em = cs
-        .use_font_space
-        .then(|| {
-            font_families_original_glyph_metric_face
-                .get(1)
-                .and_then(Option::as_deref)
-                .and_then(|face| {
-                    crate::renderer::font_metrics_data::declared_original_glyph_advance_em(
-                        face, cs.bold, cs.italic, ' ',
-                    )
-                })
-                .or_else(|| {
-                    font_families
-                        .get(1)
-                        .and_then(|chain| declared_space_advance_em(chain, cs.bold, cs.italic))
-                })
-        })
-        .flatten();
+    let font_space_em = resolved_space_advance_em(
+        cs.use_font_space,
+        &font_families,
+        &font_families_original_glyph_metric_face,
+        cs.bold,
+        cs.italic,
+    );
 
     let ascii_punct_latin_slot = ascii_punctuation::uses_latin_slot(
         &font_families,

@@ -3,14 +3,6 @@
 use super::{CellUnit, LayoutEngine, RowCut, RowCutResult};
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
-/// 블록 컷에서 실제 수용할 행 높이와 독립 원본 최소의 소유 근거.
-/// 스캔은 높이를, paint는 같은 높이와 소유 근거를 함께 소비한다.
-#[derive(Clone, Copy, Debug)]
-pub(crate) struct RowBlockPhysicalFrame {
-    pub(crate) height: f64,
-    pub(crate) source_minimum: bool,
-}
-
 /// 같은 유닛 범위의 내용 전진과 paint의 물리 점유 높이를 구분한다.
 /// 컷 후보와 paint는 저장 줄 끝의 trim과 안여백을 같은 결과에서 받는다.
 pub(super) struct CellCutFrame<'a> {

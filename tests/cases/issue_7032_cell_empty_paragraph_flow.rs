@@ -229,7 +229,6 @@ fn fragment(
         // cut otherwise sizes the fragment to consumed content, unlike uncut.
         end_row_height_override: cut.map(|_| measured.tables[0].row_heights[0]),
         start_row_height_override: None,
-        row_height_overrides: Vec::new(),
         straddle_row_relief: Vec::new(),
         straddle_page_bands: Vec::new(),
         fragment_row_heights: None,
