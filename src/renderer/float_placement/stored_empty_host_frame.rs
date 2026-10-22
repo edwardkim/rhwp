@@ -37,6 +37,39 @@ fn single_flow_table(para: &Paragraph) -> bool {
         })
 }
 
+/// 표 아래 캡션이 바깥 상자에 더하는 세로 높이(HWPUNIT). 캡션이 없으면 0 이다.
+///
+/// 한/글은 아래 캡션을 표 본체와 바깥 아래 여백 사이에 `캡션 간격 + 캡션 줄` 로 둔다
+/// (한글문서파일형식 39쪽 표 235: 저장 델타 10545 = 위 566 + 표 6193 + 간격 852 + 줄 950 +
+/// 아래 1984). 저장 줄이 모두 한컴이 쓴 줄일 때만 그 높이를 읽는다. 위·왼쪽·오른쪽 캡션은
+/// 표 본체 원점이나 폭을 바꾸는 다른 기하라 이 상자로 대체하지 않는다.
+fn stored_bottom_caption_hu(table: &Table) -> Option<i64> {
+    let Some(caption) = table.caption.as_ref() else {
+        return Some(0);
+    };
+    if caption.direction != crate::model::shape::CaptionDirection::Bottom
+        || caption.paragraphs.is_empty()
+    {
+        return None;
+    }
+    let mut height = 0i64;
+    for para in &caption.paragraphs {
+        let (first, last) = (para.line_segs.first()?, para.line_segs.last()?);
+        if para
+            .line_segs
+            .iter()
+            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        {
+            return None;
+        }
+        height = height.max(
+            i64::from(last.vertical_pos) + i64::from(last.line_height)
+                - i64::from(first.vertical_pos.min(0)),
+        );
+    }
+    Some(i64::from(caption.spacing) + height)
+}
+
 fn stored_line(para: &Paragraph) -> Option<i32> {
     let line = para.line_segs.first()?;
     (line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
@@ -288,7 +321,6 @@ fn from_ladder(
         || next.column_type != ColumnBreakType::None
         || table.common.vert_align != VertAlign::Top
         || signed_hwpunit(table.common.vertical_offset) < 0
-        || table.caption.is_some()
         || !origin.is_finite()
         || !spacing_before.is_finite()
         || spacing_before < 0.0
@@ -297,7 +329,11 @@ fn from_ladder(
     {
         return None;
     }
-    let declared = hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, dpi);
+    let caption_hu = stored_bottom_caption_hu(table)?;
+    let declared = hwpunit_to_px(
+        (i64::from(table.common.height.min(i32::MAX as u32)) + caption_hu) as i32,
+        dpi,
+    );
     if !reflowed && (measured_table_height - declared).abs() > 1.0 {
         return None;
     }
@@ -306,10 +342,19 @@ fn from_ladder(
     let physical_hu = i64::from(signed_hwpunit(table.common.vertical_offset))
         + i64::from(table.outer_margin_top)
         + i64::from(table.common.height.min(i32::MAX as u32))
+        + caption_hu
         + i64::from(table.outer_margin_bottom);
     let spacing_before_hu = px_to_hwpunit(spacing_before, dpi) as i64;
     let delta = i64::from(next_vpos) - i64::from(host_vpos);
-    if delta <= 0 || (delta - (physical_hu - spacing_before_hu)).abs() > 2 {
+    if delta <= 0 {
+        return None;
+    }
+    // 원점은 문단 위끝이다. host 앞 간격이 적용되면 저장 줄은 그만큼 아래라 `델타 = 상자 −
+    // 앞 간격` 이다. [#8149] 앞 항목이 자리차지 표 상자로 끝난 host 는 한/글이 앞 간격을 두지
+    // 않아 문단 위끝이 곧 저장 줄이고 `델타 = 상자` 다(한글문서파일형식 39쪽 표 235: 앞은 표
+    // 234 조각, 정본 첫 행 255.4 = 줄 + 위 여백 566HU + 칸 여백). 두 경우 모두 다음 저장 줄이
+    // 상자 바닥이다.
+    if (delta - (physical_hu - spacing_before_hu)).abs() > 2 && (delta - physical_hu).abs() > 2 {
         return None;
     }
     // 점유 하단은 그림 원점이 아니라 다음 저장 줄이 닫는 전체 프레임이다.
