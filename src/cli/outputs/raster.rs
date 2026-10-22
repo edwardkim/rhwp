@@ -261,7 +261,11 @@ fn png_font_environment_metadata(
         use sha2::{Digest, Sha256};
         metadata["observedFontFallbacks"] = serde_json::json!(core.observed_font_fallbacks());
         metadata["declaredFontEnvironment"] = serde_json::json!(core.font_environment());
-        metadata["sourceSha256"] = serde_json::json!(format!("{:x}", Sha256::digest(source_data)));
+        let source_sha256: String = Sha256::digest(source_data)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        metadata["sourceSha256"] = serde_json::json!(source_sha256);
     }
     metadata
 }

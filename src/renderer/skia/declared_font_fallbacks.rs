@@ -43,7 +43,10 @@ impl SkiaLayerRenderer {
             ttf_parser::Face::parse(bytes.as_bytes(), index).ok()?;
             Some(crate::document_core::ObservedFontSource {
                 family: selected.typeface.family_name(),
-                sha256: format!("{:x}", Sha256::digest(bytes.as_bytes())),
+                sha256: Sha256::digest(bytes.as_bytes())
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect(),
                 face_index: index,
             })
         })
