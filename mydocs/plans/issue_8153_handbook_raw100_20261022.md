@@ -397,3 +397,28 @@ hwplib의 고정 SHA와 공식 HWPML의 TABLE 설명, 한컴 표 속성 도움�
 최적화 성공 뒤 영향 16쪽을 실제 실행하도록 controller를 연결했다. 이전 후보의 WASM 결과를
 현재 결과로 사용하지 않는다. 로그는 `logs/spec-audited-fresh-wasm-build.log`와
 `logs/spec-audited-focused-wasm.log`다.
+
+## 일반 셀의 그림 보완 경로와 공식 글줄 원점
+
+133쪽 실제 그림 `image378`은 HWPX section3 문단45, 표1179766190의 2행0열,
+셀 문단7에 있다. 원본 LineSeg는 `vertpos=25376`, `vertsize=textheight=12488`,
+`baseline=10615`이며 그림 `sz.height=12488`, 바깥 여백과 위치 offset은 0이다.
+HWP5 사양 표62는 줄의 세로 위치·높이·베이스라인을 각각 정의한다. 문단 앞 간격까지
+소비한 실제 TextLine의 원점은 약716.7px인데 보완 그림은 조판 전 문단 원점707.4px를
+다시 사용했다. 독립 Print의 그림 상단537.4279785pt는 716.570638px다.
+저장 글줄과 그림이 같은 원점을 가져야 하며, 9.3px를 고정해 더하는 방식으로 보정하지 않는다.
+
+선행 `21d0f27bb1ca1c1aeffacf240c8b74537cbbe198`은 분할 셀의 같은 결함에
+`rendered_picture_paragraph_origin`을 도입했다. `1715d321e2e`는 완전 셀·안내 글줄에서만
+별도로 emitted line box를 소비해 일반 혼합 셀의 첫 그림 줄은 적용 대상이 아니었다.
+또한 PR #7377(`c84a8f8e1a`)의 전체 저장 그림 줄·캡션·폭 초과 계약을 읽었다.
+이번 후보는 기존 공통 원점 helper를 일반 셀 fallback에도 소비하고, 후속 줄 이동은 같은
+원점과 저장 LineSeg 상대 위치를 사용한다. x·너비·높이·crop·베이스라인 계산은 바꾸지 않는다.
+새 수치·장치 해상도·문서 식별 조건을 추가하지 않는다.
+
+생산·소비 연결은 `layout_composed_paragraph_in_frame → 실제 TextLine 원점 →
+rendered_picture_paragraph_origin → 일반/분할 셀 fallback 그림 원점 → layout_picture`다.
+분할 셀은 기존 helper 경로를 유지한다. 뒤에서 완전 프레임/안내 글줄의 실제 상자를 쓰는 기존
+분기도 유지한다. 후보는 아직 재빌드·시각 검증 전이며 133쪽 개선을 확정하지 않는다.
+공용 target의 fresh WASM 검증이 끝난 뒤 Native를 순차 빌드하고, 두 형식133쪽·인접134/135쪽,
+기존133이외 주요 쪽과 #7333·#6122의 그림/폭 초과 대조군을 실제 비교한다.

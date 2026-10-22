@@ -8023,6 +8023,20 @@ impl LayoutEngine {
                                 )
                                 .is_some();
                             if !will_render_inline {
+                                // PARA_LINE_SEG는 글줄의 위치를 정의한다(사양 표 62).
+                                // 조판이 문단 앞 간격까지 반영한 원점을 분할 셀과 공유한다.
+                                // 조판 전 para_y로 되돌리면 글줄과 그림의 원점이 갈라진다.
+                                let picture_paragraph_origin =
+                                    super::table_inline_picture_origin::rendered_picture_paragraph_origin(
+                                        cell_node,
+                                        para,
+                                        section_index,
+                                        cp_idx,
+                                    )
+                                    .unwrap_or(para_y_before_compose + first_para_lead_px);
+                                if current_tac_line == 0 {
+                                    tac_img_y = picture_paragraph_origin;
+                                }
                                 // LINE_SEG 기반 줄 판별
                                 let mut target_line = if all_runs_empty && para.line_segs.len() > 1
                                 {
@@ -8123,7 +8137,7 @@ impl LayoutEngine {
                                             .first()
                                             .map(|f| f.vertical_pos)
                                             .unwrap_or(0);
-                                        tac_img_y = para_y_before_compose
+                                        tac_img_y = picture_paragraph_origin
                                             + hwpunit_to_px(
                                                 seg.vertical_pos - first_vpos,
                                                 self.dpi,
