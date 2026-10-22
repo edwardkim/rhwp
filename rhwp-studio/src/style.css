@@ -3,6 +3,7 @@
 @import './styles/toolbar.css';
 @import './styles/style-bar.css';
 @import './styles/editor.css';
+@import './styles/side-panel.css';
 @import './styles/status-bar.css';
 @import './styles/dialogs.css';
 @import './styles/zoom-dialog.css';

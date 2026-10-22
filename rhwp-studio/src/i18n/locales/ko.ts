@@ -1969,6 +1969,10 @@ const catalog = {
   "ui.toolbox.format": "서식 도구 상자",
   "ui.zoom.zoomIn": "확대",
   "ui.zoom.zoomOut": "축소",
+  "ai.panel.title": "AI 도우미",
+  "ai.command.togglePanel": "AI 도우미",
+  "ai.panel.setupNotice": "AI 설정에서 API 키를 등록하면 현재 문서에 대해 질문할 수 있습니다.",
+  "ui.sidePanel.close": "패널 닫기",
 } as const;
 
 export default catalog;
