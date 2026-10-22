@@ -75,3 +75,13 @@ Sixel 대비 성능 향상이나 한컴과의 새로운 조판 일치를 주장�
 
 승인된 로컬 단계와 문서화를 완료했다. remote push·PR 생성·GitHub comment·merge·이슈 close는
 수행하지 않았으며 후속 원격 작업은 별도 승인 범위를 따른다.
+
+
+## PR 제출과 self-review
+
+2026-10-22 사용자 승인으로 [PR #8154](https://github.com/edwardkim/rhwp/pull/8154)를 devel 대상 Open 상태로 생성했다.
+code head `d030087e240fe851edfe9ad486176bd1624dcf40`의 CI·CodeQL·Render Diff·Adapter·Proptest가 모두 실제 성공했다.
+이후 사용자 지시로 [self-review](../pr/archives/pr_8154_review.md)를 수행해 승인 판정했다.
+검토·오늘할일 기록은 같은 PR의 문서-only trailing으로 반영하며 제품·test·workflow는 변경하지 않는다.
+최신 trailing head의 실제 CI/재사용 판정·merge tree·원격 SHA 확인과 사용자 merge 승인은 남은 조건이다.
+merge·이슈 close는 수행하지 않았다.
