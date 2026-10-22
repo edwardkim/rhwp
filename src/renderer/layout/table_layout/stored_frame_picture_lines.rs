@@ -36,9 +36,8 @@ pub(super) fn source_line_controls_fit(paragraph: &Paragraph) -> bool {
             let Some(height) = crate::renderer::tac_object_flow_height_hu(control) else {
                 return false;
             };
-            let occupied = i64::from(height)
-                + i64::from(common.margin.top)
-                + i64::from(common.margin.bottom);
+            let occupied =
+                i64::from(height) + i64::from(common.margin.top) + i64::from(common.margin.bottom);
             line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                 && height > 0
                 && line.line_height > 0
