@@ -54,6 +54,13 @@
   재검증하고, 같은 PR의 최신 head CI와 충돌 해소를 확인한 뒤 신규 PR을 진행한다.
   메인터너 보정 요청, 다른 작업 보존과 원격 승인 조건은
   [새 PR 생성 전에 확인할 항목](mydocs/manual/codex/docs_and_git_workflow.md#새-pr-생성-전에-확인할-항목)을 따른다.
+- 이슈 작업 브랜치는 **`task/<이슈번호>-<영문 설명>`**으로 명명한다.
+  예: `task/8153-handbook-raw100`. 이슈 번호 생략·날짜 대체·임의 접두사를 사용하지 않는다.
+  세부 적용 범위는 [브랜치 명명 규칙](mydocs/manual/codex/docs_and_git_workflow.md#branch-and-pr-rule)을 따른다.
+- 외부 PR 단독 검토는 `review/pr-<원 PR번호>-<설명>`, 다수 PR 체리픽 통합은
+  `review/integration-<대표 이슈번호>-<설명>`을 사용한다. 대표 이슈가 없으면 이슈 번호 대신
+  `YYYYMMDD`를 쓴다. 원본 head 보존·SHA 기록 등은
+  [체리픽 통합 브랜치 명명](mydocs/manual/codex/docs_and_git_workflow.md#외부-pr-검토와-체리픽-통합-브랜치-명명)을 따른다.
 - **PR 제출 전에는 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md) 4.3과 해당 보조
   절차의 필수 검증을 빠짐없이 완료한다.** 기여자·메인터너·콜라보레이터 모두 적용한다. 실패·미실행
   항목을 PR CI에 넘기거나 Draft로 우회하지 않는다. 일반 제출은 검증을 완료한 Open PR이다.

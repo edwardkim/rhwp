@@ -32,6 +32,17 @@
   별도 정리 지시나 재승인 없이 자동 삭제하며 추가 백업·압축·이관을 하지 않는다. debug는 빌드·테스트 사용 종료 후
   삭제하며, 상세 범위·실제 사용 판정·완료 검증은 [종료 정리](mydocs/manual/pr_review/post_merge.md#77-branch-worktree-검토-전용-target-정리)를 따른다.
 
+## 이슈 작업 브랜치 명명
+
+이슈 작업 브랜치는 **`task/<이슈번호>-<영문 설명>`**으로 명명한다.
+예: `task/8153-handbook-raw100`. 이슈 번호 생략·날짜 대체·임의 접두사를 사용하지 않는다.
+세부 적용 범위는 [브랜치 명명 규칙](mydocs/manual/codex/docs_and_git_workflow.md#branch-and-pr-rule)을 따른다.
+
+외부 PR 단독 검토는 `review/pr-<원 PR번호>-<설명>`, 다수 PR 체리픽 통합은
+`review/integration-<대표 이슈번호>-<설명>`을 사용한다. 대표 이슈가 없으면 이슈 번호 대신
+`YYYYMMDD`를 쓴다. 원본 head 보존·SHA 기록 등은
+[체리픽 통합 브랜치 명명](mydocs/manual/codex/docs_and_git_workflow.md#외부-pr-검토와-체리픽-통합-브랜치-명명)을 따른다.
+
 ## PR 제출 전 검증과 Draft 제한
 
 새 PR 준비·생성 전에는 본인 계정의 열린 PR을 조회한다. **이미 리뷰어가 지정된 PR은 우선

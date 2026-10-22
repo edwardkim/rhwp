@@ -130,7 +130,7 @@ CLI·MCP 계약과 현재 공식 배포 대상의 개선은 rhwp 업스트림에
 
 3. 브랜치 생성 + 작업 — 반드시 최신 upstream/devel 기준
    git fetch upstream
-   git switch -c fix/issue-123 upstream/devel
+   git switch -c task/123-short-description upstream/devel
    (코드 수정 + 관련 focused 테스트)
 
 4. 제출할 원본 파일만 stage + commit
@@ -1142,6 +1142,16 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir outpu
   적용합니다.
 
 ## 브랜치 규칙
+
+이슈 작업 브랜치는 **`task/<이슈번호>-<영문 설명>`** 형식을 사용합니다.
+예: `task/8153-handbook-raw100`. 설명은 소문자 영문·숫자와 하이픈으로 작성하고,
+이슈 번호를 생략하거나 날짜로 대체하거나 임의 접두사를 사용하지 않습니다.
+세부 적용 범위는 [브랜치 명명 규칙](mydocs/manual/codex/docs_and_git_workflow.md#branch-and-pr-rule)을 따릅니다.
+
+외부 PR 단독 검토·체리픽은 `review/pr-<원 PR번호>-<설명>`, 다수 PR 통합은
+`review/integration-<대표 이슈번호>-<설명>`을 사용합니다. 대표 이슈가 없는 통합은 이슈 번호 대신
+`YYYYMMDD`를 사용합니다. 원 PR의 원격 head는 유지하며,
+[체리픽 통합 브랜치 명명](mydocs/manual/codex/docs_and_git_workflow.md#외부-pr-검토와-체리픽-통합-브랜치-명명)을 따릅니다.
 
 | 브랜치 | 용도 | 보호 규칙 |
 |--------|------|----------|
