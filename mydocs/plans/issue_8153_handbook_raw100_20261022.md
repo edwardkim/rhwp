@@ -881,3 +881,35 @@ JSON에 기록된다. 30쪽의 렌더 트리를 비교하면 바뀐 노드는 �
 WASM 전쪽 검증은 그 PNG 직접 판독 뒤 진행한다. 종료 전 빌드를 성공으로 판정하지 않는다.
 로그: `logs/host-fonts-continuation.log`, `logs/host-fonts-whole-native.log`,
 `logs/host-fonts-fresh-wasm-build.log`, `logs/host-fonts-focused-wasm.log`.
+
+### 바탕쪽 사각형 가로 장치 좌표의 독립 선행 근거
+
+9fa Native 전766쪽과 정확한 미대응 검사는 exit0이다. HWPX103/HWP89쪽이 실제 미대응0으로,
+32c의83/74쪽보다 각각20/15쪽 늘었다. fresh WASM 최적화 빌드는1492초·exit0이며 package
+SHA는 `wasm-build-receipt.json`에 있다. WASM PNG15쪽 출력 뒤 임시 진단 driver의 main guard
+누락으로 ProcessPool spawn이 실패했다. guard를 수정했고 동일 source/package/관측 JSON 및
+PNG 해시가 확인된 완료 출력만 재사용해 재개 중이다. 재빌드나 기존 PDF 재출력은 하지 않는다.
+
+남은 공통 차이 중 masterpage0의 사각형1993203321은 `horzRelTo=PAPER`, LEFT,
+offset55559HU, 공통 폭0/원본 폭10HU다. 원본 종이 폭도55559HU이며 Native 논리 x740.8은
+물리 Print 폭740px 밖이다. 독립 Print46쪽은 x555.000pt에 폭0.120pt의 경로와0.360pt pen을
+남긴다. 기존 소수 종이에서 임의 clamp나 고정 오프셋을 더하지 않고 장치 변환을 조사했다.
+
+같은 원본의 도형·사양을 유지하고 x/폭/종이 폭만 달리한 1쪽 입력2개를 output에 만들었다.
+첫 v1은 hp:subList가 빠져 Native에서도 바탕쪽이 없었고 한컴 opening_document가 실패했다.
+이 결과는 검증 근거에서 제외했다. v2는 원본 subList·참조 리소스를 보존하고9개 도형을 Native
+트리에 확인한 뒤 Hancom13.0.0.3901, PrintMethod0, frame_print_to_pdf_ex_one_up으로 각각
+1쪽 Print를 산출했다. 기존 편람 기준 PDF는 계속 그대로 재사용한다.
+
+source x를600dpi 정수 장치 좌표로 반올림하고, 물리 PDF 폭/반올림한 장치 종이 폭의
+window→viewport 변환을 적용하면 소수/정수 종이의15개 실제 출력 도형 모두 x 양 끝점과
+pen 폭이 PDF 원시 연산의0.001pt까지 맞는다. 종이 밖 경로가 생략된 사례도 별도 보존한다.
+기하 좌표·글꼴/본문 흐름과 인쇄 장치 좌표를 구분한다. Microsoft GetDeviceCaps의 장치 종이
+단위 및 SetViewportExtEx의 독립 축 변환 계약을 참조했다. 세로축과 회전은 아직 입증하지 않았다.
+입력/Print 해시·job·생성 코드와 원시 연산은 `paper-zero-width-probes-v2/`, 수학 대조는
+`device-x-viewport-independent-audit.json`, 실행은 `logs/paper-zero-width-independent-print-v2.log`다.
+
+다음 단계는 같은 규칙을 공유하는 2024 Print 바탕쪽 사각형의 공통 가로 paint 변환이다.
+실제 공급 장치 pixel을 소비하고, 자식 글자·논리 조판·원본 소유 정보는 보존한다. 두 종이의
+독립 단쪽·원본46/86/90/94/130/133/140/144/260쪽과 정상 대조군을 먼저 실행하고 직접 판독한다.
+수정 전후 형상과 기존 검사의 독립 기대값을 대조하며, 새 회귀는 양쪽 시각 선행 조건 뒤 등록한다.
