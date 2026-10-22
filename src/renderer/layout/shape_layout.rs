@@ -3424,8 +3424,19 @@ impl LayoutEngine {
             }
         }
 
+        // 저장 줄이 없는 글상자는 세로 정렬에 쓸 줄 끝을 저장 좌표로 알 수 없다. 이때는
+        // 문단을 위쪽 정렬로 실제 배치한 결과의 끝으로 정렬량을 정하고, 배치한 노드를
+        // 그만큼 옮긴다. 측정이 앞 간격·줄 간격 규칙을 따로 흉내 내지 않는다.
+        let align_by_laid_out_flow = matches!(
+            text_box.vertical_align,
+            crate::model::table::VerticalAlign::Center | crate::model::table::VerticalAlign::Bottom
+        ) && textbox_paragraphs[..para_count]
+            .iter()
+            .all(|p| p.line_segs.is_empty());
+
         // 세로 정렬: 전체 콘텐츠 높이를 계산하여 center/bottom 오프셋 적용
-        let vert_offset = {
+        let mut content_height_for_align = 0.0f64;
+        let mut vert_offset = {
             use crate::model::table::VerticalAlign;
             match text_box.vertical_align {
                 VerticalAlign::Center | VerticalAlign::Bottom => {
@@ -3444,28 +3455,6 @@ impl LayoutEngine {
                         })
                         .last()
                         .unwrap_or(0.0);
-
-                    // 저장 줄이 없는 글상자 문단은 vertical_pos 가 없어 위 계산에서 높이가
-                    // 0 이 된다. 그러면 가운데 정렬이 안쪽 높이의 절반만큼 글을 내려 상자
-                    // 아래로 넘친다. 아래 배치가 소비하는 조합 줄의 줄 높이·줄 간격과
-                    // 문단 간격으로 마지막 줄 끝을 세어 같은 높이로 정렬한다.
-                    if textbox_paragraphs[..para_count]
-                        .iter()
-                        .all(|p| p.line_segs.is_empty())
-                    {
-                        let mut cursor = 0.0f64;
-                        let mut flow_bottom = 0.0f64;
-                        for composed in &composed_paras {
-                            let style = styles.para_styles.get(composed.para_style_id as usize);
-                            cursor += style.map(|s| s.spacing_before).unwrap_or(0.0);
-                            for line in &composed.lines {
-                                flow_bottom = cursor + hwpunit_to_px(line.line_height, self.dpi);
-                                cursor = flow_bottom + hwpunit_to_px(line.line_spacing, self.dpi);
-                            }
-                            cursor += style.map(|s| s.spacing_after).unwrap_or(0.0);
-                        }
-                        total_content_height = total_content_height.max(flow_bottom);
-                    }
 
                     for para in &textbox_paragraphs[..para_count] {
                         let para_vpos = para
@@ -3527,17 +3516,24 @@ impl LayoutEngine {
                         }
                     }
 
-                    let free_space = (inner_area.height - total_content_height).max(0.0);
-                    match text_box.vertical_align {
-                        VerticalAlign::Center => free_space / 2.0,
-                        VerticalAlign::Bottom => free_space,
-                        _ => 0.0,
+                    content_height_for_align = total_content_height;
+                    if align_by_laid_out_flow {
+                        0.0
+                    } else {
+                        let free_space = (inner_area.height - total_content_height).max(0.0);
+                        match text_box.vertical_align {
+                            VerticalAlign::Center => free_space / 2.0,
+                            VerticalAlign::Bottom => free_space,
+                            _ => 0.0,
+                        }
                     }
                 }
                 _ => 0.0,
             }
         };
 
+        let flow_first_child = textbox_node.children.len();
+        let flow_first_border_range = self.para_border_ranges.borrow().len();
         let mut para_y = inner_area.y + vert_offset;
         for (tb_para_idx, composed) in composed_paras.iter().enumerate() {
             // vpos 기반 수직 위치: 원본 HWP 파일에서는 vertical_pos가 누적 절대값,
@@ -3595,6 +3591,51 @@ impl LayoutEngine {
                 None,
                 None, // 도형 컨텍스트 — wrap zone 무관
             );
+        }
+
+        if align_by_laid_out_flow {
+            let flow_bottom = textbox_node.children[flow_first_child..]
+                .iter()
+                .map(|node| node.bbox.y + node.bbox.height - inner_area.y)
+                .fold(0.0f64, f64::max);
+            let free_space =
+                (inner_area.height - content_height_for_align.max(flow_bottom)).max(0.0);
+            vert_offset = match text_box.vertical_align {
+                crate::model::table::VerticalAlign::Center => free_space / 2.0,
+                _ => free_space,
+            };
+            if vert_offset > 0.0 {
+                for node in &mut textbox_node.children[flow_first_child..] {
+                    Self::translate_subtree_y(node, vert_offset);
+                }
+                for range in &mut self.para_border_ranges.borrow_mut()[flow_first_border_range..] {
+                    range.2 += vert_offset;
+                    range.4 += vert_offset;
+                    for band in &mut range.10 {
+                        band.top += vert_offset;
+                        band.bottom += vert_offset;
+                        if let Some((_, origin_y)) = band.anchor.as_mut() {
+                            *origin_y += vert_offset;
+                        }
+                    }
+                }
+                let parent_path: Vec<(usize, usize, usize)> = parent_cell_path
+                    .iter()
+                    .map(|e| (e.control_index, e.cell_index, e.cell_para_index))
+                    .collect();
+                tree.translate_inline_shape_positions_y(
+                    |(sec, para, _, path)| {
+                        *sec == section_index
+                            && *para == para_index
+                            && path.len() == parent_path.len() + 1
+                            && path.starts_with(&parent_path)
+                            && path
+                                .last()
+                                .is_some_and(|&(ci, cell, _)| ci == control_index && cell == 0)
+                    },
+                    vert_offset,
+                );
+            }
         }
 
         // 텍스트 박스 내 인라인 도형 컨트롤 렌더링
