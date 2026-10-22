@@ -353,7 +353,8 @@ pub(crate) fn find_metric_decision_for_character<'a>(
     character: char,
 ) -> Option<MetricLookupDecision<'a>> {
     let mut decision = find_metric_decision(name, bold, italic)?;
-    let source = &hci_poppy::METRICS[0];
+    let source_slot = usize::from(bold);
+    let source = &hci_poppy::METRICS[source_slot];
     if decision.alias_resolved_name != source.name
         || bold != source.bold
         || italic != source.italic
@@ -362,12 +363,15 @@ pub(crate) fn find_metric_decision_for_character<'a>(
     {
         return Some(decision);
     }
-    static SOURCE_INDEX: OnceLock<Option<usize>> = OnceLock::new();
-    if let Some(index) = *SOURCE_INDEX.get_or_init(|| {
-        FONT_METRICS
-            .iter()
-            .position(|entry| std::ptr::eq(entry, source))
-    }) {
+    static SOURCE_INDICES: OnceLock<[Option<usize>; 2]> = OnceLock::new();
+    let indices = SOURCE_INDICES.get_or_init(|| {
+        std::array::from_fn(|slot| {
+            FONT_METRICS
+                .iter()
+                .position(|entry| std::ptr::eq(entry, &hci_poppy::METRICS[slot]))
+        })
+    });
+    if let Some(index) = indices[source_slot] {
         // 각 표가 가진 em을 함께 선택한다. em=1000의 폭을 em=2048 표에
         // 정수 반올림해 섞지 않으며 가운뎃점 등 기존 독립 측정도 보존한다.
         decision.metric = source;

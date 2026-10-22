@@ -1,0 +1,36 @@
+{
+  "job_id": "aed935f9-41fd-498e-b21e-f39d6a9145a4",
+  "source": "independent complete modern Hangul alphabet, not target PDF",
+  "input_sha256": "8dfd16631ac3cbbc0c56f667f15dd7863f51d7bd62673df3b48e661de7b0f801",
+  "pdf_sha256": "8fb4d5d37ebed59452b362d9ce9319c59a903f4fabcab7eb92c72cf93867199f",
+  "font_sha256": "0992dd01fef7c1fab36136c85624689026d2d93673a66dfc04933d946bbeb0d2",
+  "glyph_count": 11172,
+  "engine": "2024",
+  "print_method": 0,
+  "target_read_only_program_comparison": [
+    {
+      "pdf": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "font_xref": 13,
+      "compared_hangul": 193,
+      "identical_original_programs": 193
+    },
+    {
+      "pdf": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "font_xref": 763,
+      "compared_hangul": 51,
+      "identical_original_programs": 51
+    },
+    {
+      "pdf": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "font_xref": 13,
+      "compared_hangul": 193,
+      "identical_original_programs": 193
+    },
+    {
+      "pdf": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "font_xref": 763,
+      "compared_hangul": 51,
+      "identical_original_programs": 51
+    }
+  ]
+}
