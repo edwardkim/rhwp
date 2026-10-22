@@ -3,9 +3,12 @@
 Issue: [#8150](https://github.com/edwardkim/rhwp/issues/8150)
 
 [수행 계획](task_m100_8150.md)의 CLI·프로토콜·범위를 유지한다. 초기 base는
-`2e087a5b4bc1515ad877e8020b30114639a59392`이며 계획 문서 2개 commit을 이어받았다.
+`2e087a5b4bc1515ad877e8020b30114639a59392`이며 준비한 계획 문서 commit을 이어받았다.
 
 ## 1단계 — CLI와 전송 계약
+
+완료: [1단계 보고서](../working/task_m100_8150_stage1.md). 구현 전 명령 부재 FAIL과
+구현 후 Native 8건·일반 빌드 3건·기존 Sixel 7건 PASS를 확인했다.
 
 - Native 전용 `renderer::kitty`에 `encode_kitty_png`와 `write_kitty_png`를 둔다.
   전자는 기존 흰색 합성과 Skia PNG 인코더를 사용하고, 후자는 `Write`에 최대 4,096바이트

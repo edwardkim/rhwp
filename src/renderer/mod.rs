@@ -47,6 +47,8 @@ pub(crate) mod image_header;
 pub mod image_resolver;
 pub mod inline_flow;
 pub(crate) mod kerning;
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub mod kitty;
 pub mod layer_renderer;
 pub mod layout;
 pub(crate) mod layout_frame;

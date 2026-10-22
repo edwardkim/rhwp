@@ -38,6 +38,17 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         },
         {
             let mut command = cmd_gated(
+                "export-kitty",
+                "문서를 Kitty graphics stdout 또는 페이지별 파일로 출력 (native-skia)",
+                cfg!(feature = "native-skia"),
+            );
+            command["flags"] = serde_json::json!([
+                "--page", "-p", "--output", "-o", "--width", "--font-path", "--profile", "--compat"
+            ]);
+            command
+        },
+        {
+            let mut command = cmd_gated(
                 "export-sixel",
                 "문서를 Sixel stdout 또는 페이지별 파일로 출력 (native-skia)",
                 cfg!(feature = "native-skia"),

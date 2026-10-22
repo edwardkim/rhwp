@@ -114,6 +114,7 @@ fn main() {
             exit_with(cli::queries::structure::export_structure(&args[2..]))
         }
         Some("export-png") => exit_with(cli::outputs::raster::export_png(&args[2..])),
+        Some("export-kitty") => exit_with(cli::outputs::kitty::export_kitty(&args[2..])),
         Some("export-sixel") => exit_with(cli::outputs::sixel::export_sixel(&args[2..])),
         Some("export-pdf") => exit_with(cli::outputs::pdf::export_pdf(&args[2..])),
         Some("export-text") => exit_with(cli::outputs::text::export_text(&args[2..])),
