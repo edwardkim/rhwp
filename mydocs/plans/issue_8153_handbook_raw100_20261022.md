@@ -853,3 +853,31 @@ Native HWPX83/HWP74쪽, WASM HWPX113/HWP87쪽이 실제 미대응0이다. 남은
 추가했다. 동일 package라도 helper 또는 관측 파일이 바뀌면 기존 resume이 거부되는 검사를
 기존 generation 계약 파일에 보완했고, 같은 Python 묶음은 34건 통과했다. 새 Native 빌드와
 fresh WASM 실제 검증은 별도 진행 중이다.
+
+### 실제 공급 후보의 Native 선행 판독 완료
+
+`9fa523e5e3` Native 빌드는 6분58초·exit0이다. 두 형식의 핵심30쪽은 모두383쪽을
+유지하며 최저98.21626%, 32c 대비 변화는 -0.00067~+0.00109%p다. 대조군12쪽의
+쪽수와 RGB는 모두 같다. `native-focused-vs32c.json`, 대조군
+`overlay-text-controls/after-host-fonts-summary.json`과 driver 종료 표식을 확인했다.
+
+실제 공급자는 원 face가 없고 원본에 `한컴바탕` 대체가 선언된 `Dinbol`·`-윤고딕120`에
+HBATANG 프로그램을 선택했다. 원본 SHA와 사용자 환경 null, 프로그램 SHA·face0이 CLI
+JSON에 기록된다. 30쪽의 렌더 트리를 비교하면 바뀐 노드는 하단 쪽번호 필드의 TextRun뿐이고,
+375쪽은 변하지 않았다. raw text는 공백이지만 `displayText`가 실제 쪽번호인 필드다.
+본문·표·그림의 좌표와 내용 소유는 그대로다. `native-focus-render-tree-delta.json` 참조.
+
+133쪽 필드 `125`는 x608.9/폭20.8에서 x607.2/폭24.3px로 바뀌었다. 독립 PDF의 같은
+`Haansoft Batang` span 원점455.3999939pt는 96dpi에서607.1999919px이며 현재 원점과
+일치한다. 두 형식 모두 정확한 미대응 픽셀이1→0(raw100)이다. review133을 직접 판독했다.
+86·144쪽은 점수가 아주 조금 낮지만 미대응 픽셀704/921개와 전체 미대응 마스크가 각각
+동일하다. 새 미대응 픽셀은0이며 변경된 글꼴의 내용 union 분모 차이로 점수가 바뀐다.
+`independent-print-133-footer.json`, `native-font-focus-exact-audit.json`,
+`font-focus-unmatched-mask-comparison.json`에 입력/PNG/PDF 해시와 실제 관측을 보존했다.
+
+선행 검증 뒤 Native 전766쪽과 정확한 미대응 검사를 연결했다. fresh WASM은 동일 Rust
+소스의 `bfb7ce2e3e`에서 jobs8/codegen16으로 컴파일5분21초를 마쳤고 패키지 생성 중이다.
+최적화 종료 뒤 실제 관측을 전달하는 핵심30쪽 출력·TSV·대표 PNG만 우선 실행하도록 연결했다.
+WASM 전쪽 검증은 그 PNG 직접 판독 뒤 진행한다. 종료 전 빌드를 성공으로 판정하지 않는다.
+로그: `logs/host-fonts-continuation.log`, `logs/host-fonts-whole-native.log`,
+`logs/host-fonts-fresh-wasm-build.log`, `logs/host-fonts-focused-wasm.log`.
