@@ -2999,12 +2999,17 @@ impl LayoutEngine {
                     let wrap_anchor = stored_square_picture_wrap_anchor_for_para(cell, cp_idx);
                     // 측정과 같은 첫 저장 띠를 column-top 경로에서 한 번 소비한다.
                     // 단 설정·책갈피처럼 배치 상자가 없는 메타데이터는 그 소비를 막지 않는다.
+                    // 각주·미주는 별도 흐름을 소유하며 본문에는 표지만 남긴다.
+                    // 표지가 있다는 이유로 셀 본문의 저장 앞 띠를 버리지 않는다.
                     // 별도 저장 원점이 이미 띠를 품는 스냅·선형 셀은 기존 경로를 쓴다.
                     let allow_first_stored_lead = cp_idx == 0
                         && start_line == 0
-                        && source_controls
-                            .iter()
-                            .all(crate::renderer::composer::control_is_width_neutral_marker)
+                        && source_controls.iter().all(|control| {
+                            matches!(control, Control::Footnote(_) | Control::Endnote(_))
+                                || crate::renderer::composer::control_is_width_neutral_marker(
+                                    control,
+                                )
+                        })
                         && single_column_flow.is_none()
                         && !preserve_linear_single_cell_vpos
                         && crate::renderer::cell_paragraph_spacing::paragraph_before(
