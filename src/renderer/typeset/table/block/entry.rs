@@ -1790,12 +1790,21 @@ impl TypesetEngine {
         });
         let unconstrained_host_placement = para_has_non_whitespace_text(para)
             .then(|| {
-                let text_origin = source_text_origin.unwrap_or(placement_para_start_height
+                let para_text_origin = placement_para_start_height
                     + if placement_para_start_height > 0.0 {
                         fmt.spacing_before
                     } else {
                         0.0
-                    });
+                    };
+                let text_origin = source_text_origin.unwrap_or(para_text_origin);
+                // [#8156] 문단 기준 세로 오프셋은 문단 원점에서 잰다. 같은 문단의 앞
+                // 자리차지 표가 흐름을 소비하면 저장 첫 줄은 그 띠 아래로 밀려 저장된다.
+                // 글줄은 그 저장 원점을 따르지만, 표 앵커는 앞 표와 같은 문단 원점을 쓴다.
+                let anchor_text_origin = if has_preceding_coanchored_float {
+                    para_text_origin
+                } else {
+                    text_origin
+                };
                 if let Some(lines) = &fmt.computed_host_lines {
                     crate::renderer::float_placement::ParagraphFloatPlacement::from_computed_host(
                         para,
@@ -1822,7 +1831,7 @@ impl TypesetEngine {
                         para,
                         table,
                         ctrl_idx,
-                        text_origin,
+                        anchor_text_origin,
                         whole_placement_height,
                         self.dpi,
                     )
@@ -1831,9 +1840,13 @@ impl TypesetEngine {
                             para,
                             table,
                             ctrl_idx,
-                            source_text_origin.map_or(placement_para_start_height, |origin| {
-                                origin - if placement_para_start_height > 0.0 { fmt.spacing_before } else { 0.0 }
-                            }),
+                            if has_preceding_coanchored_float {
+                                placement_para_start_height
+                            } else {
+                                source_text_origin.map_or(placement_para_start_height, |origin| {
+                                    origin - if placement_para_start_height > 0.0 { fmt.spacing_before } else { 0.0 }
+                                })
+                            },
                             whole_placement_height,
                             self.dpi,
                         )
