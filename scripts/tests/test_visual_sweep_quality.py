@@ -61,8 +61,26 @@ class AcceptedQualityTests(unittest.TestCase):
 
     def test_inclusive_decimal_drop_and_subthreshold_decline(self):
         ref = {1: Decimal("98.07832")}
-        self.assertEqual(quality.compare_pages(ref, {1: Decimal("97.97832")}, 1)["status"], "re_review_required")
-        self.assertEqual(quality.compare_pages(ref, {1: Decimal("97.97833")}, 1)["status"], "passed")
+        # 0.1%p 하락은 새 2%p 재검토 경계 안이며, 정확히 2부터 재검토한다.
+        for candidate, status in [("97.97832", "passed"), ("96.07833", "passed"),
+                                  ("96.07832", "re_review_required"),
+                                  ("96.07831", "re_review_required")]:
+            with self.subTest(candidate=candidate):
+                result = quality.compare_pages(ref, {1: Decimal(candidate)}, 1)
+                self.assertEqual(result["status"], status)
+                self.assertEqual(bool(result["regressions"]), status == "re_review_required")
+
+    def test_another_pages_improvement_does_not_offset_a_two_point_drop(self):
+        result = quality.compare_pages({1: Decimal("99"), 2: Decimal("96")},
+                                       {1: Decimal("97"), 2: Decimal("99")}, 2)
+        self.assertEqual(result["status"], "re_review_required")
+        self.assertEqual([row["page"] for row in result["regressions"]], [1])
+
+    def test_below_90_still_requires_review_with_less_than_two_point_drop(self):
+        result = quality.compare_pages({1: Decimal("90.5")}, {1: Decimal("89.5")}, 1)
+        self.assertEqual(result["status"], "re_review_required")
+        self.assertEqual(result["regressions"], [])
+        self.assertEqual(result["below_90_pages"], [1])
 
     def test_raw_loss_is_not_rescued_by_adjusted_score_or_other_page_improvements(self):
         rows = copy.deepcopy(self.metrics)

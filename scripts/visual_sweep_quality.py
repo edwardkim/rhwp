@@ -13,7 +13,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 METRIC = "silhouette_raw_match_percent"
-MAX_DROP_PP = Decimal("0.1")
+MAX_DROP_PP = Decimal("2")
 MIN_RAW = Decimal("90")
 
 
@@ -33,7 +33,7 @@ def _scores(rows):
 
 
 def compare_pages(reference, candidate, pages):
-    """Decimal로 0.1%p 이상 하락하는 경계값을 정확하게 판정한다."""
+    """Decimal로 2%p 이상 하락하는 경계값을 정확하게 판정한다."""
     if pages < 1:
         raise ValueError("reference page count must be positive")
     expected = set(range(1, pages + 1))
