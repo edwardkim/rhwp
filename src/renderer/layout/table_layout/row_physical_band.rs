@@ -28,6 +28,36 @@ impl<'a> RowCutCapacity<'a> {
 }
 
 impl LayoutEngine {
+    /// 앞 쪽 꼬리의 무료 spacer는 바로 뒤 저장 프레임이 재시작함을 확인한다.
+    /// 새 조각의 빈 줄은 양의 높이를 가진 상태로 같은 컷의 예약과 paint에 남긴다.
+    pub(super) fn physical_start_after_leading_spacers(
+        &self,
+        cell: &Cell,
+        table: &Table,
+        units: &[CellUnit],
+        start: usize,
+        styles: &ResolvedStyleSet,
+    ) -> usize {
+        if start == 0 {
+            return start;
+        }
+        let mut next = start.min(units.len());
+        while units
+            .get(next)
+            .is_some_and(|unit| self.is_free_leading_spacer(cell, table, unit, styles))
+        {
+            next += 1;
+        }
+        let restarts_after = units.get(next).is_some_and(|unit| {
+            unit.hard_break_before || unit.stored_frame_break_before || unit.page_frame_reset_before
+        });
+        if next > start && restarts_after {
+            next
+        } else {
+            start
+        }
+    }
+
     /// 내용 커서는 무높이 보조 spacer도 소비한다. 이어받은 조각의 실제
     /// 전진 범위는 이 공통 소유 판정으로 컷 선택과 물리 높이 측정에 전달한다.
     /// 다른 컷 경로의 원본 빈 문단 소유까지 이 전진 범위로 대체하지 않는다.
@@ -44,9 +74,9 @@ impl LayoutEngine {
         let mut first = start.min(units.len());
         let mut last = end.clamp(first, units.len());
         if first > 0 {
-            while first < last && self.is_free_leading_spacer(cell, table, &units[first], styles) {
-                first += 1;
-            }
+            first = self
+                .physical_start_after_leading_spacers(cell, table, units, first, styles)
+                .min(last);
             if last == units.len() {
                 while last > first
                     && self.is_free_leading_spacer(cell, table, &units[last - 1], styles)

@@ -195,8 +195,17 @@ impl LayoutEngine {
                         && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                 );
         };
-        if !para.controls.is_empty() || !next.controls.is_empty() {
+        if !para.controls.is_empty() {
             return false;
+        }
+        if !next.controls.is_empty() {
+            // 뒤 개체 앞의 원본 빈 줄도 이미 발행한 저장 전진을 소유한다.
+            // 일반 보조 spacer로 버리면 예약과 실제 조각에서 같은 줄이 사라진다.
+            return crate::renderer::height_measurer::stored_empty_line_successor_advance_hu(
+                cell,
+                unit.para_idx,
+            )
+            .is_some();
         }
         // 원본 쪽 재시작의 빈 줄은 뒤 저장 줄과 같은 전진 상자를 소유한다.
         // 형제 셀이 없어도 이 소유를 잃고 무높이 spacer로 소비하지 않는다.

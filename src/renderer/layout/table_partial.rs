@@ -2819,6 +2819,7 @@ impl LayoutEngine {
                 let cell_context_opt = Some(cell_context.clone());
 
                 // 인라인 이미지가 있는 문단: compose 전 위치를 저장
+                let paragraph_has_preceding_content = has_preceding_text;
                 let para_y_before_compose = para_y;
                 // 이 조각에서 문단이 시작하면 그 첫 줄 상단이 문단 기준 개체의 원점이다.
                 // 저장 줄 사다리·문단 앞 간격으로 생긴 틈은 compose 안에서 더해지므로
@@ -3226,6 +3227,16 @@ impl LayoutEngine {
                     for (ctrl_idx, ctrl) in source_controls.iter().enumerate() {
                         match ctrl {
                             Control::Picture(pic) => {
+                                // 보완 paint도 원본 줄 창의 그림 소유를 소비한다.
+                                // 앞 공백 줄만 선택된 조각은 뒤 줄의 TAC 그림을 그리지 않는다.
+                                if pic.common.treat_as_char
+                                    && stored_control_owned_by_line_window(
+                                        para, ctrl_idx, start_line, end_line,
+                                    )
+                                    .is_some_and(|owned| !owned)
+                                {
+                                    continue;
+                                }
                                 let visible_non_inline_control =
                                     cut_units.map_or(true, |(su, eu)| {
                                         self.cell_cut_starts_non_inline_control(
@@ -3590,10 +3601,59 @@ impl LayoutEngine {
                                             .max(0.0),
                                         ..inner_area
                                     };
+                                    let owns_paragraph_picture_frame =
+                                        paragraph_has_preceding_content
+                                            && cut_units.is_some()
+                                            && visible_non_inline_controls
+                                            && crate::renderer::float_placement::reflow_picture_host_advance(
+                                                para, self.dpi,
+                                            ).is_some()
+                                            && !self.cell_cut_owns_deferred_picture_band(
+                                                cell, table, styles, cut_units, cp_idx,
+                                            );
+                                    // An owned paragraph anchor in this fragment has its
+                                    // own origin. Resolve the complete outer box there,
+                                    // then place the image inside its margins. Cell valign
+                                    // and a deferred next-page band are separate frames.
+                                    let margin_left = if owns_paragraph_picture_frame {
+                                        hwpunit_to_px(i32::from(pic.common.margin.left), self.dpi)
+                                    } else {
+                                        0.0
+                                    };
+                                    let margin_top = if owns_paragraph_picture_frame {
+                                        hwpunit_to_px(i32::from(pic.common.margin.top), self.dpi)
+                                    } else {
+                                        0.0
+                                    };
+                                    let outer_width = pic_w
+                                        + margin_left
+                                        + if owns_paragraph_picture_frame {
+                                            hwpunit_to_px(
+                                                i32::from(pic.common.margin.right),
+                                                self.dpi,
+                                            )
+                                        } else {
+                                            0.0
+                                        };
+                                    let outer_height = pic_h
+                                        + margin_top
+                                        + if owns_paragraph_picture_frame {
+                                            hwpunit_to_px(
+                                                i32::from(pic.common.margin.bottom),
+                                                self.dpi,
+                                            ) + crate::renderer::composer::caption_height_px(
+                                                &pic.caption,
+                                                self.dpi,
+                                            ) + pic.caption.as_ref().map_or(0.0, |caption| {
+                                                hwpunit_to_px(caption.spacing as i32, self.dpi)
+                                            })
+                                        } else {
+                                            0.0
+                                        };
                                     let (pic_x, pic_y) = self.compute_object_position(
                                         square_flow_common.as_ref().unwrap_or(&pic.common),
-                                        pic_w,
-                                        pic_h,
+                                        outer_width,
+                                        outer_height,
                                         &cell_area,
                                         &inner_area,
                                         &inner_area,
@@ -3601,6 +3661,8 @@ impl LayoutEngine {
                                         picture_anchor_y,
                                         para_alignment,
                                     );
+                                    let pic_x = pic_x + margin_left;
+                                    let pic_y = pic_y + margin_top;
                                     // [Issue #2071] 셀 vertical_align 존중 (table_layout.rs 동일 수정).
                                     // 한컴은 셀 앵커 자리차지 그림을 **셀 valign 으로만** 배치하고
                                     // 그림 자체 pos vert_align 은 무시한다. compute_object_position
@@ -3615,6 +3677,7 @@ impl LayoutEngine {
                                     } else if top_and_bottom_para
                                         && pic.common.flow_with_text
                                         && !unrestricted_take_place_cell_float
+                                        && !owns_paragraph_picture_frame
                                     {
                                         let v_off = hwpunit_to_px(
                                             pic.common.vertical_offset as i32,
@@ -4192,6 +4255,16 @@ impl LayoutEngine {
                                         } else {
                                             para_y
                                         }
+                                    } else if nested_table.common.treat_as_char
+                                        && table_host_line_only_fragment
+                                    {
+                                        // 잉크 없는 앞 글줄도 흐름을 소비한다. TAC 표는
+                                        // 자신의 확정 줄 원점에 놓고 바깥 여백은 한 번 적용한다.
+                                        para_y_before_lines
+                                            + stored_nested_table_line_offset_px(
+                                                para, ctrl_idx, start_line, self.dpi,
+                                            )
+                                            .unwrap_or(0.0)
                                     } else {
                                         inner_area.y
                                     };
@@ -4861,7 +4934,20 @@ impl LayoutEngine {
                                                     )
                                             })
                                         })
-                                        .map_or(nested_y + visible_table_h, |frame| {
+                                        .map_or_else(|| {
+                                            // 투영한 유닛의 흐름은 종료 호스트와 여백을 이미 소유한다.
+                                            // 본체 높이만 받은 경로에서만 같은 원본 종료 슬롯을 더한다.
+                                            let trailing_host = (mixed_nested_split.is_none() && nested_cursor_split.is_none()
+                                                && split_info.as_ref().is_none_or(|split| {
+                                                    split.end_row == usize::from(nested_table.row_count)
+                                                        && split.terminal
+                                                }))
+                                            .then(|| crate::renderer::float_placement::block_table_trailing_whitespace_line_hu(para, nested_table, ctrl_idx))
+                                            .flatten();
+                                            nested_y + visible_table_h + trailing_host.map_or(0.0, |h| {
+                                                hwpunit_to_px(i32::from(nested_table.outer_margin_bottom) + h, self.dpi)
+                                            })
+                                        }, |frame| {
                                             if matches!(frame.flow, crate::renderer::float_placement::ParagraphFloatFlow::NextLine) {
                                                 frame.paragraph_end(para_y, 0.0)
                                             } else {
@@ -4889,6 +4975,10 @@ impl LayoutEngine {
                             {
                                 para_y = para_y_before_compose + height;
                             }
+                        } else if let Some(advance) = self
+                            .cell_picture_host_flow_advance(cell, table, styles, cut_units, cp_idx)
+                        {
+                            para_y = para_y_before_compose + advance;
                         } else {
                             para_y += self
                                 .paragraph_top_and_bottom_non_inline_flow_height(&source_controls);

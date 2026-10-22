@@ -102,7 +102,8 @@ impl TypesetEngine {
         let plain_body_band = matches!(
             table.common.text_wrap,
             crate::model::shape::TextWrap::TopAndBottom
-        ) && layout_engine.row_has_plain_line_units(table, r, styles);
+        ) && (layout_engine.row_has_plain_line_units(table, r, styles)
+            || crate::renderer::typeset::is_reparsed_single_column_cell_split_row(table, r));
         let avail_for_rows = v.plain_row_available_height(owns_plain_row_frame, plain_body_band);
         if avail_for_rows < v.avail_for_rows && std::env::var("RHWP_DIAG_SCAN").is_ok() {
             eprintln!(
