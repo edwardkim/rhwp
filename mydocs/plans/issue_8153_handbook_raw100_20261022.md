@@ -610,3 +610,43 @@ Print JPEG 870×952의 양자화 표가 다르고, 원본 crop을 이미지 좌�
 870.947568/952.692227px다. 동일 owner·입력/PDF SHA·JPEG 양자화·메타데이터를
 `p90-source-print-image-program-audit.json`에 보존했다. 재압축 관측을 공식 HWP 색 변환으로
 일반화하지 않으며 수치 맞춤용 tone/마스크 보정을 되살리지 않는다.
+
+### 장치 글꼴 계산의 독립 반례와 수치 예측
+
+`audit_print_font_device_math.py`는 원본 CharShape 높이·언어별 장평, 실제 동일 SHA의 TTF
+unitsPerEm/xAvgCharWidth, 현재 Print CTM에서 읽은 장치 해상도만으로 font Tf/Tz를 예측했다.
+133쪽 바탕쪽 style649, 본문 style220, 86쪽 직인 style697과 이름 style576의 네 조합이
+PDF 원시 연산자와 일치했다. Tz는 PDF에서 관측한 float32의 소수 6자리 표현으로 대조했다.
+점수나 PNG 픽셀을 인자로 쓰지 않았다.
+
+144쪽 source section3 p71 style166(11pt·100% KoPub바탕 Light)을 추가하자 처음 식은
+98.823532%를 예측했지만 PDF는 100%였다. 원본의 100%가 요청한 정상 장평을 무조건
+평균 폭 재계산으로 바꾸는 가정이 틀렸다. 실패 로그 `print-font-device-math-expanded-before.log`
+(exit 1)를 유지한다. 정상 장평은 LOGFONT의 width 0에 대응하는 자연 종횡비 계약으로
+보존하며, 폭 변경을 요청한 경우만 원본 논리 크기와 평균 폭을 정수 장치 폭으로 환산한다.
+이 구분으로 5건을 통과하고, source section3 p72의 실제 문장에 대응하는 145쪽
+style20(11pt·99%)까지 추가해 **6/6·exit 0**을 확인했다.
+
+양수 수치에서 `H = source HU × 언어별 상대 크기`, `E = H × D / 7200`,
+`em = nearest(E)`, `naturalAvg = nearest(em × xAvg / upem)`이다.
+장평 100%는 원래 종횡비를 유지한다. 그 외의 요청 폭은
+`requestedAvg = nearest(E × xAvg / upem × sourceRatio)`이며 출력 장평 후보는
+`requestedAvg / naturalAvg`다. 이 모델은 10pt·98% 바탕 75/76, 11pt·95% 한컴바탕 44/46,
+6pt·98% 돋움 43/44, 11pt·99% 바탕 83/85를 독립 PDF와 일치시켰다.
+한컴의 내부 호출을 직접 계측한 증거는 아니며, 아직 렌더러에 반영하지 않았다.
+결과는 `print-font-device-math-six-cases.json`, 실행은
+`logs/print-font-device-math-six-cases.log`에 있다. 전 383쪽 PDF의 235개 고유 font/Tf/Tz
+관측은 `pdf-font-device-pairs-all383.json`에 별도로 보존하며, 같은 쪽 원본 스타일과 연결하지 않은
+관측까지 위 6건의 정답 증거로 세지 않는다.
+
+실제 소비 경로는 `resolve_single_char_style → font_sizes/ratios → composed run.text_style →
+paragraph_layout의 TextRun/글리프 위치 → LayerBuilder의 text_run_ops 및 글리프 sidecar →
+Native SkiaTextReplay/Canvas`다. 새 구현은 논리 줄 상자·기준선·개체 흐름과 장치의 글리프
+실현 크기를 구분하고, 실제 선택된 프로그램과 같은 글리프 위치 결과를 소비해야 한다.
+backend별 임의 배율이나 glyph source가 다른 fallback의 수치로 대신하지 않는다.
+현재 수정한 물리 프레임 후보의 실제 검증을 먼저 확인하고 이 원인의 보정 범위를 결정한다.
+
+직전 `e49286e6ba` fresh WASM은 최적화 포함 30분 34초·exit 0으로 종료했다.
+현재 `cad634797d` Native 빌드가 공유 target에서 순차 실행 중이고, 앞 후보의 전쪽 WASM은
+별도 고정 package로 실행 중이다. 오래 걸렸다는 이유로 최적화를 생략하거나 기존 package를
+최신 후보의 결과로 사용하지 않았다.
