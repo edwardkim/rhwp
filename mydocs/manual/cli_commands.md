@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-10-16
+last_verified: 2026-10-22
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -56,7 +56,7 @@ rhwp inspect hidden-text --help
 - `-o, --output <폴더>` — 출력 폴더 (기본 `output/`)
 - `-p, --page <번호>` — 특정 페이지만 (0부터). 생략 시 전체
 - `--profile <프로필>` — 출력 프로필: `screen` | `print` | `high-quality` | `fast-preview`
-  (export-svg / export-png / export-pdf 지원, #2297)
+  (export-svg / export-png / export-pdf / export-sixel / export-kitty 지원)
 - 옵션은 파일 앞뒤 어디에 와도 된다 (#3359 — export-svg/png/pdf/markdown/render-tree/
   doclang, export-structure/export-tables 와 동일 규약). 파일 positional 을 두 번 주면 exit 2.
 
@@ -75,8 +75,11 @@ rhwp inspect hidden-text --help
 Kitty graphics를 지원하는 터미널에서
 `rhwp export-kitty 문서.hwp --page 0 --width 360`으로 첫 쪽을 표시한다.
 `rhwp export-kitty 문서.hwp -o output/kitty --width 720`은 전체 쪽을 `.kitty` 파일로 저장한다.
-흰 배경 PNG의 색을 유지하며 `native-skia`가 필요하다.
-옵션·종료 코드·SSH·검증 경로는 [Kitty 출력 가이드](export_kitty_command.md)를 따른다.
+기본 stdout은 첫 쪽만 표시하고, `-p 2`를 지정하면 세 번째 쪽을 선택한다.
+흰 배경 PNG의 색을 유지하며 `native-skia`가 필요하다. 기본 빌드만으로는 사용할 수 없다.
+그래픽은 stdout, 진단은 stderr이며 `--json`은 지원하지 않는다.
+빌드·옵션·종료 코드·kitty/WezTerm SSH·원격 한글 폰트 설정은
+[Kitty 출력 가이드](export_kitty_command.md)를 따른다.
 
 ## Sixel 출력
 
@@ -86,6 +89,15 @@ Sixel을 지원하는 terminal에서 한 쪽을 바로 표시하려면
 `-p 2`를 함께 지정하면 세 번째 쪽만 저장한다.
 기본 첫 쪽만 stdout에 출력하며 흰 배경·256색으로 변환한다. `native-skia`가 필요하다.
 옵션·종료 코드·terminal/SSH 검증은 [Sixel 출력 가이드](export_sixel_command.md)를 따른다.
+
+### 터미널 출력에서 글자가 보이지 않을 때
+
+Sixel과 Kitty 모두 **렌더링 호스트에 글꼴이 필요**하다. SSH이면 원격에 글꼴을 공급하고
+`--font-path /실제/글꼴/디렉터리` 또는 개별 글꼴 파일을 지정한다. 여러 경로는 옵션을 반복한다.
+표·그림이 보이는데 한글만 비면 로컬 터미널 글꼴 설정부터 바꾸지 말고 이 경로를 확인한다.
+글꼴 공급 뒤 `.six`·`.kitty` 저장 파일도 다시 생성한다.
+실행 예시는 [Sixel 글꼴 설정](export_sixel_command.md#한글이나-일부-글자가-보이지-않을-때)과
+[Kitty 글꼴 설정](export_kitty_command.md#ssh와-실제-터미널-확인)을 따른다.
 
 ## PDF 가져오기 (기본 포함)
 

@@ -10,6 +10,24 @@ last_verified: 2026-10-22
 `native-skia` 빌드의 `rhwp export-kitty`는 문서의 Native 래스터를 PNG로 인코딩해
 Kitty graphics protocol로 표시한다. 기본 너비는 360px이며 배경은 흰색이다.
 Sixel처럼 색을 256색으로 양자화하지 않고 PNG의 색을 유지한다.
+지원 범위는 Native CLI다. rhwp-studio의 화면이나 WASM API에 명령을 추가하지 않는다.
+
+## 시작하기
+
+Kitty graphics를 지원하는 터미널에서 실행한다. 소스에서 빌드한다면 저장소 루트에서
+`native-skia`를 켠다. 기본 빌드만 사용하면 실제 내보내기는 종료 코드 2로 끝난다.
+Native 빌드의 준비 사항은 [개발 환경 가이드](dev_environment_guide.md#네이티브-빌드와-테스트)를 따른다.
+
+```bash
+cargo build --locked --release --features native-skia --bin rhwp
+./target/release/rhwp export-kitty --help
+./target/release/rhwp export-kitty samples/hwp_table_test.hwp -p 0 --width 360 --profile print
+```
+
+설치한 바이너리가 PATH에 있으면 아래 예시처럼 `rhwp`로 실행한다.
+Windows의 직접 실행 파일은 `rhwp.exe`다. SSH에서는 원격 호스트에 맞게 빌드한 바이너리를 사용한다.
+
+## 직접 표시와 파일 저장
 
 ```bash
 rhwp export-kitty document.hwp --page 0 --width 360
@@ -30,7 +48,7 @@ rhwp export-kitty document.hwp -p 2 -o output/kitty-page --width 720
 - `--width <픽셀>`은 1..16384 범위다. 가로·세로에 같은 배율을 적용하며 세로는 올림한다.
   한 변 16,384px·전체 67,108,864픽셀 제한을 적용한다. 터미널 창이 작으면 360px부터 확인한다.
 - `--font-path <경로>`는 반복 가능하다. 글꼴 선택과 `--profile screen|print|high-quality|fast-preview`,
-  `--compat 2022|2024`의 의미는 기존 Native 출력과 같다. 기본 프로필은 `screen`이다.
+  `--compat 2022|2024`의 의미는 기존 Native 출력과 같다. 기본 프로필은 `screen`, 호환 옵션은 `2022`다.
 - 일반 실행의 stdout은 그래픽 APC 청크와 마지막 CRLF다. 파일 모드 stdout은 비어 있으며
   저장 안내·오류는 stderr다. `--json`은 지원하지 않는다. `--help`는 텍스트를 출력한다.
 - 성공은 종료 코드 0, 읽기·파싱·렌더·인코딩·쓰기 실패는 1, 잘못된 옵션·쪽 범위·feature 누락은 2다.
@@ -71,10 +89,38 @@ WSL 경유 실패만으로 WezTerm 자체 SSH의 성공·실패를 판정하지 
 이미지의 표·괘선은 보이는데 한글만 비어 있다면 **렌더링하는 원격 호스트의 글꼴**을 확인한다.
 터미널에는 PNG가 전송되므로 로컬 터미널의 한글 폰트 설정으로 원격의 누락 글자를 복원할 수 없다.
 원격에 필요한 글꼴을 공급하고, 필요하면 `--font-path /path/to/fonts`를 지정해 다시 생성한다.
+글꼴 디렉터리 또는 개별 파일을 지정할 수 있으며, 여러 경로는 `--font-path`를 반복한다.
+지정한 경로가 실제로 존재하고 필요한 한글·기호를 포함한 글꼴인지 확인한다.
 저장한 `.kitty` 파일은 이전 이미지이므로 폰트 공급 뒤 다시 내보내야 한다.
 저장소의 `ttfs/opensource`를 배포할 때는 포함된 OFL 라이선스도 함께 둔다.
 상대 경로의 번들 공급에 의존한다면 작업 디렉터리를 확인하고, 다른 디렉터리에서 실행할 때는
 `--font-path`에 절대 경로를 전달한다.
+
+예를 들어 원격 호스트의 `/opt/rhwp/fonts`에 필요한 글꼴과 라이선스를 준비했다면 다음처럼 실행한다.
+
+```bash
+rhwp export-kitty document.hwp -p 0 --width 360 --profile print --font-path /opt/rhwp/fonts
+rhwp export-kitty document.hwp -p 0 --font-path /opt/rhwp/fonts/korean.ttf --font-path /opt/rhwp/fonts/symbols.otf
+ssh -T host 'rhwp export-kitty document.hwp -p 0 --width 360 --font-path /opt/rhwp/fonts'
+rhwp export-kitty document.hwp -p 0 --width 360 --font-path /opt/rhwp/fonts > page.kitty
+cat page.kitty
+```
+
+예시의 경로는 렌더링 호스트의 실제 경로로 바꾼다.
+[Sixel의 글자 누락 해결 방법](export_sixel_command.md#한글이나-일부-글자가-보이지-않을-때)도 같은 원칙을 따른다.
+
+## 문제가 있을 때
+
+| 증상 | 확인할 항목 |
+| --- | --- |
+| `native-skia feature` 오류 | 위의 Native 빌드 방법으로 만든 실행 파일인지 확인한다. |
+| 종료 코드 0인데 이미지가 없음 | Kitty graphics 지원 터미널과 실제 접속 경로를 확인한다. 자동 탐지·Sixel 전환은 없다. |
+| 표·그림은 보이고 한글만 없음 | 렌더링 호스트의 글꼴을 공급하고 `--font-path`를 지정해 다시 출력한다. |
+| 글꼴을 공급해도 저장 파일은 그대로임 | `.kitty`에는 이미 렌더링한 PNG가 들어 있으므로 다시 생성한다. |
+| 이미지가 너무 크거나 잘림 | `--width 360`처럼 너비를 줄인다. 터미널 창에 맞춘 자동 축소는 하지 않는다. |
+
+이 명령의 stdout을 로그나 JSON으로 처리하지 않는다. 파일로 저장할 때는 `>`로 그래픽만 받고,
+진단까지 같은 파일에 합치는 `2>&1`은 사용하지 않는다.
 
 ## 독립 전송 검사
 

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-10-11
+last_verified: 2026-10-22
 ---
 
 # Sixel 터미널·페이지별 파일 출력
@@ -52,6 +52,34 @@ Sixel을 해석하지 않는 terminal에서는 그래픽이 표시되지 않을 
    PTY 변환 없이 바이트를 전송한다. 배너·stdout 로그·tmux/screen 통과 여부도 확인한다.
 
 현재 검증 결과와 미검증 환경은 #7820 작업 기록에 남긴다. 지원 목표를 실행 완료로 해석하지 않는다.
+
+## 한글이나 일부 글자가 보이지 않을 때
+
+표·그림은 보이는데 글자만 비어 있다면 **문서를 렌더링하는 호스트의 글꼴**을 확인한다.
+Sixel에는 이미 그린 픽셀이 들어 있으므로 로컬 터미널의 한글 폰트 설정으로 누락된 글자를
+복원할 수 없다. SSH 출력이면 원격 호스트에 필요한 글꼴이 있어야 한다.
+
+필요한 글꼴을 준비한 뒤 `--font-path`로 글꼴 디렉터리 또는 개별 파일을 지정한다.
+여러 경로는 옵션을 반복한다. 작업 디렉터리에 관계없이 찾도록 절대 경로를 권장한다.
+
+```bash
+rhwp export-sixel document.hwp -p 0 --width 360 --profile print --font-path /opt/rhwp/fonts
+rhwp export-sixel document.hwp -p 0 --font-path /opt/rhwp/fonts/korean.ttf --font-path /opt/rhwp/fonts/symbols.otf
+
+# SSH의 글꼴 경로는 원격 호스트의 경로다.
+ssh -T host 'rhwp export-sixel document.hwp -p 0 --width 360 --font-path /opt/rhwp/fonts'
+
+# 기존 저장 파일도 글꼴 공급 뒤 다시 생성한다.
+rhwp export-sixel document.hwp -p 0 --width 360 --font-path /opt/rhwp/fonts > page.six
+cat page.six
+```
+
+예시의 경로는 실제 존재하는 글꼴 경로로 바꾼다. 파일이 있어도 필요한 한글·기호를 포함하지
+않는 글꼴이면 누락이 해결되지 않으므로 해당 문자 지원과 출력 결과를 함께 확인한다.
+저장소의 `ttfs/opensource` 번들을 별도 배포할 때는 포함된 OFL 라이선스도 함께 둔다.
+이미 저장한 `.six`는 이전 픽셀이므로 글꼴을 설치하거나 경로를 지정한 후 반드시 재생성한다.
+그래픽 파일에 진단이 섞이지 않도록 `2>&1`로 stderr를 합치지 않는다.
+[Kitty 출력의 글꼴 설정](export_kitty_command.md#ssh와-실제-터미널-확인)도 같은 원칙을 따른다.
 
 ## 독립 인코딩 검증
 

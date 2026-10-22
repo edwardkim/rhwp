@@ -121,3 +121,7 @@ PR 제출·push·GitHub comment·merge·이슈 close는 수행하지 않았다.
 
 [단계별 완료보고 규칙](../manual/hyper_waterfall_docs_guide.md#working--단계별-완료보고서)에 따라
 검사 도구·가이드·보고서를 같은 단계 커밋에 기록하고 다음 절편 승인을 받는다.
+
+후속 범위 정정: [3단계](task_m100_8150_stage3.md)에서 사용자 지적과 실제 소비 경로를 확인해
+Native CLI 전용 작업임을 명확히 했다. 위의 포괄적인 fresh WASM 필수 표현은 정정하며,
+공통 Rust lint의 WASM32 Clippy는 수행하고 WASM 재빌드·Studio 실행·WASM 시각 검증은 비해당이다.

@@ -36,8 +36,17 @@ PNG/Sixel 무회귀, kitty 로컬·SSH 표시와 사용자 Windows 11 WezTerm �
 
 ## 3단계 — 제출 전 게이트와 보고
 
-- 다음 절편 진행 승인 뒤 현행 local_validation 4.3의 필수 lint·전체 회귀·Native/WASM·시각 게이트를 완료한다.
-  공유 엔진과 무관한 전송 코드의 범위도 소비 경로로 입증하며 필요한 검증을 CI에 넘기지 않는다.
+완료: [3단계 보고서](../working/task_m100_8150_stage3.md),
+[최종 결과보고](../report/task_m100_8150_report.md). CLI 범위의 전체 회귀·lint·Native 출력 보존과
+Sixel/Kitty 폰트 옵션 사용 문서를 확인했다. 원격 작업은 수행하지 않았다.
+
+- 다음 절편 진행 승인 뒤 현행 local_validation 4.3의 CLI 범위에 해당하는 필수 lint·전체 회귀와
+  Native 출력 계약을 완료한다. Kitty 모듈은 `native-skia`와 비 WASM target으로 제한되며,
+  공통 조판·paint·글꼴·기존 PNG/Sixel producer를 변경하지 않는다. 새 소비자는 Native CLI뿐이다.
+  2026-10-22 사용자의 CLI 범위 지적을 반영해 WASM/Studio 실행을 필수 범위로 적었던 표현을 정정한다.
+  Rust 공통 lint 묶음의 WASM32 Clippy는 수행하고, WASM 재빌드·Studio 실행·WASM Visual Sweep은
+  호출 경로상 비해당으로 구분한다. Native 독립 복원·기존 출력 보존과 직접 표시 검증은 유지한다.
+- CLI 명령 매뉴얼·개별 사용 가이드·문서 지도·생성형 에이전트 명령 장을 실제 help/capabilities와 대조한다.
 - 단계별 결과와 최종 보고를 커밋한다. PR 준비 지시가 있으면 실제 필수 검증·본문·생성 명령을 모두 준비한다.
 - remote push·Open PR 생성은 별도 사용자 승인 뒤 수행한다. 원격 code CI가 녹색인 뒤 self-review와
   필요한 오늘할일을 trailing docs-only commit으로 기록한다. merge·이슈 close도 별도 승인 범위를 따른다.
