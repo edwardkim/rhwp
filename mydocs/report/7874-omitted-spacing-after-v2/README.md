@@ -24,10 +24,11 @@ HWP5-nopassword 는 수정 전후 조판 결과(`dump-pages` 전 쪽)가 같고 
 
 ## 대표 이미지 (1쪽)
 
-| base | head |
-| --- | --- |
-| ![base review](base-review-p1.png) | ![head review](head-review-p1.png) |
-| ![base overlay](base-overlay-p1.png) | ![head overlay](head-overlay-p1.png) |
+| 경로 | review | overlay |
+| --- | --- | --- |
+| base Native | ![base Native review](base-native-review-p1.png) | ![base Native overlay](base-native-overlay-p1.png) |
+| head Native | ![head Native review](head-native-review-p1.png) | ![head Native overlay](head-native-overlay-p1.png) |
+| head fresh WASM | ![head WASM review](head-wasm-review-p1.png) | ![head WASM overlay](head-wasm-overlay-p1.png) |
 
 직접 판독: head 는 1쪽 문단 1~30 이 한/글 PDF 와 같은 줄 위치(28.9px 피치)다. base 는 문단마다 아래
 간격(7.57px)만큼 위로 붙어 문단 30 이 PDF 보다 약 180px 위에 그려진다.
