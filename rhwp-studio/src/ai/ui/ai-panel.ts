@@ -1,34 +1,145 @@
 /**
  * AI 패널 본문.
  *
- * Stage 2 는 준비 상태만 보인다 — 키 없음 / 잠김 / 전송 동의 필요 / 준비됨.
- * 대화 UI 는 Stage 4 에서 「준비됨」 자리에 채운다.
+ * 준비 상태(키 없음 / 잠김 / 전송 동의 필요)에서는 안내와 단추 하나를, 준비되면 대화 화면을 보인다.
+ * 모델 응답은 `message-render.ts` 로만 그린다 — 이 파일은 HTML 문자열을 다루지 않는다.
  */
 import { t } from '@/i18n/index.ts';
 import { showConfirm } from '@/ui/confirm-dialog';
 import type { AiContext } from '../ai-context.ts';
+import type { AgentRunResult } from '../agent/agent-loop.ts';
+import type { ChatController } from '../agent/chat-controller.ts';
 import { modelsOf } from '../provider/models.ts';
-import { AiSettingsDialog } from './ai-settings-dialog.ts';
+import { AiProviderError, EMPTY_USAGE, addUsage, type AiToolCall, type AiUsage } from '../provider/types.ts';
+import { AiSettingsDialog, failureMessage } from './ai-settings-dialog.ts';
 import { AiUnlockDialog } from './ai-unlock-dialog.ts';
+import { renderMarkdown } from './message-render.ts';
 import './ai-panel.css';
 
 export type AiPanelState = 'none' | 'locked' | 'consent' | 'ready';
 
+/** 패널이 쓰는 호스트 표면 — 선택 여부와 커서 이동 알림만. */
+export interface AiPanelHost {
+  hasSelection(): boolean;
+  onCursorChange(listener: () => void): () => void;
+}
+
+/** 빠른 동작. 선택 영역이 있을 때만 보인다. 프롬프트는 사용자 말로 보낸다. */
+const QUICK_ACTIONS = ['summarize', 'explain', 'proofread'] as const;
+
+function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text?: string): HTMLElementTagNameMap[K] {
+  const node = document.createElement(tag);
+  node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function button(className: string, label: string, onClick: () => void): HTMLButtonElement {
+  const node = el('button', className, label);
+  node.type = 'button';
+  node.addEventListener('click', onClick);
+  return node;
+}
+
+/** 응답 하나의 화면 — 회차마다 글 조각, 도구 호출마다 표시. */
+class AssistantView {
+  readonly root = el('div', 'ai-msg ai-msg-assistant');
+  private textPart: { node: HTMLElement; source: string } | null = null;
+  private toolsPart: HTMLElement | null = null;
+  private readonly dirty = new Set<{ node: HTMLElement; source: string }>();
+  private frame = 0;
+  private readonly chips = new Map<string, HTMLElement>();
+
+  constructor() {
+    this.root.setAttribute('aria-busy', 'true');
+    const pending = el('div', 'ai-msg-pending', t('ai.chat.thinking'));
+    this.root.append(pending);
+  }
+
+  turnStart(): void {
+    this.textPart = null;
+    this.toolsPart = null;
+  }
+
+  appendText(delta: string): void {
+    this.root.querySelector('.ai-msg-pending')?.remove();
+    if (!this.textPart) {
+      this.textPart = { node: el('div', 'ai-msg-body'), source: '' };
+      this.root.append(this.textPart.node);
+    }
+    this.textPart.source += delta;
+    this.dirty.add(this.textPart);
+    // 조각마다 다시 그리지 않고 화면 갱신 주기에 한 번 그린다.
+    if (!this.frame) this.frame = requestAnimationFrame(() => this.flush());
+  }
+
+  toolStart(call: AiToolCall): void {
+    this.root.querySelector('.ai-msg-pending')?.remove();
+    if (!this.toolsPart) {
+      this.toolsPart = el('div', 'ai-msg-tools');
+      this.root.append(this.toolsPart);
+    }
+    // 다음 글은 도구 뒤에 새 조각으로 이어진다.
+    this.textPart = null;
+    const chip = el('span', 'ai-tool-chip', t(`ai.tool.${call.name}`));
+    chip.dataset.state = 'running';
+    this.toolsPart.append(chip);
+    this.chips.set(call.id, chip);
+  }
+
+  toolEnd(call: AiToolCall, isError: boolean): void {
+    const chip = this.chips.get(call.id);
+    if (chip) chip.dataset.state = isError ? 'error' : 'done';
+  }
+
+  finish(note: string | null, kind: 'info' | 'error' = 'info'): void {
+    this.flush();
+    this.root.querySelector('.ai-msg-pending')?.remove();
+    this.root.removeAttribute('aria-busy');
+    if (note) {
+      const node = el('div', 'ai-msg-note', note);
+      node.dataset.kind = kind;
+      this.root.append(node);
+    }
+  }
+
+  private flush(): void {
+    if (this.frame) cancelAnimationFrame(this.frame);
+    this.frame = 0;
+    for (const part of this.dirty) renderMarkdown(part.node, part.source);
+    this.dirty.clear();
+  }
+}
+
 export class AiPanel {
   private readonly ctx: AiContext;
+  private readonly chat: ChatController;
+  private readonly host: AiPanelHost;
   private root: HTMLElement | null = null;
+  private status!: HTMLElement;
   private notice!: HTMLParagraphElement;
   private action!: HTMLButtonElement;
   private modelLine!: HTMLElement;
-  private offChange: (() => void) | null = null;
+  private chatView!: HTMLElement;
+  private log!: HTMLElement;
+  private empty!: HTMLElement;
+  private quick!: HTMLElement;
+  private input!: HTMLTextAreaElement;
+  private sendButton!: HTMLButtonElement;
+  private usageLine!: HTMLElement;
+  private offs: Array<() => void> = [];
   private visible = false;
   /** 이번 실행에서 동의 대화상자를 이미 띄웠는가 — 거절한 사람에게 열 때마다 묻지 않는다. */
   private consentAsked = false;
   private state: AiPanelState = 'none';
   private renderSeq = 0;
+  private usage: AiUsage = EMPTY_USAGE;
+  private selectionFrame = 0;
 
-  constructor(ctx: AiContext) {
+  constructor(ctx: AiContext, chat: ChatController, host: AiPanelHost) {
     this.ctx = ctx;
+    this.chat = chat;
+    this.host = host;
   }
 
   get currentState(): AiPanelState {
@@ -36,22 +147,62 @@ export class AiPanel {
   }
 
   mount(container: HTMLElement): void {
-    const root = document.createElement('div');
-    root.className = 'ai-panel';
+    const root = el('div', 'ai-panel');
 
-    this.modelLine = document.createElement('div');
-    this.modelLine.className = 'ai-panel-model';
-    this.notice = document.createElement('p');
-    this.notice.className = 'ai-panel-notice';
-    this.action = document.createElement('button');
-    this.action.type = 'button';
-    this.action.className = 'dialog-btn ai-panel-action';
-    this.action.addEventListener('click', () => { void this.runAction(); });
+    const head = el('div', 'ai-panel-head');
+    this.modelLine = el('div', 'ai-panel-model');
+    const newChat = button('ai-icon-btn ai-new-chat', t('ai.chat.newChat'), () => this.newConversation());
+    const settings = button('ai-icon-btn ai-open-settings', t('ai.command.settings'), () => this.openSettings());
+    head.append(this.modelLine, newChat, settings);
 
-    root.append(this.modelLine, this.notice, this.action);
+    this.status = el('div', 'ai-panel-status');
+    this.notice = el('p', 'ai-panel-notice');
+    this.action = button('dialog-btn ai-panel-action', '', () => { void this.runAction(); });
+    this.status.append(this.notice, this.action);
+
+    this.chatView = el('div', 'ai-chat');
+    this.log = el('div', 'ai-chat-log');
+    this.log.setAttribute('role', 'log');
+    this.log.setAttribute('aria-live', 'polite');
+    this.empty = el('p', 'ai-chat-empty', t('ai.chat.empty'));
+    this.log.append(this.empty);
+
+    this.quick = el('div', 'ai-chat-quick');
+    this.quick.hidden = true;
+    for (const id of QUICK_ACTIONS) {
+      const quickButton = button('ai-quick-btn', t(`ai.quick.${id}`), () => { void this.send(t(`ai.quick.${id}.prompt`)); });
+      quickButton.dataset.action = id;
+      this.quick.append(quickButton);
+    }
+
+    const compose = el('div', 'ai-chat-compose');
+    this.input = el('textarea', 'ai-chat-input');
+    this.input.rows = 3;
+    this.input.placeholder = t('ai.chat.placeholder');
+    this.input.setAttribute('aria-label', t('ai.chat.placeholder'));
+    this.input.addEventListener('keydown', (event) => {
+      // 한글 조합 중의 Enter 는 글자 확정이다 — 보내지 않는다.
+      if (event.key === 'Enter' && !event.shiftKey && !event.isComposing && event.keyCode !== 229) {
+        event.preventDefault();
+        void this.send(this.input.value);
+      }
+    });
+    this.sendButton = button('dialog-btn dialog-btn-primary ai-send-btn', t('ai.chat.send'), () => {
+      if (this.chat.busy) this.chat.stop();
+      else void this.send(this.input.value);
+    });
+    compose.append(this.input, this.sendButton);
+    this.usageLine = el('div', 'ai-chat-usage');
+
+    this.chatView.append(this.log, this.quick, compose, this.usageLine);
+    root.append(head, this.status, this.chatView);
     container.append(root);
     this.root = root;
-    this.offChange = this.ctx.onChange(() => { void this.render(); });
+
+    this.offs.push(this.ctx.onChange(() => { void this.render(); }));
+    this.offs.push(this.chat.onReset(() => this.clearLog(t('ai.chat.documentChanged'))));
+    this.offs.push(this.host.onCursorChange(() => this.scheduleSelectionCheck()));
+    this.renderUsage();
     void this.render();
   }
 
@@ -59,7 +210,13 @@ export class AiPanel {
     this.visible = open;
     if (!this.root) return;
     this.root.dataset.open = open ? 'true' : 'false';
-    if (open) void this.render().then(() => this.maybeAskConsent());
+    if (open) {
+      this.scheduleSelectionCheck();
+      void this.render().then(() => {
+        void this.maybeAskConsent();
+        if (this.state === 'ready') this.input.focus();
+      });
+    }
   }
 
   openSettings(): void {
@@ -67,8 +224,10 @@ export class AiPanel {
   }
 
   dispose(): void {
-    this.offChange?.();
-    this.offChange = null;
+    this.chat.stop();
+    for (const off of this.offs) off();
+    this.offs = [];
+    if (this.selectionFrame) cancelAnimationFrame(this.selectionFrame);
     this.root?.remove();
     this.root = null;
   }
@@ -80,6 +239,7 @@ export class AiPanel {
     // 늦게 끝난 이전 렌더가 새 상태를 덮지 않게 한다.
     if (seq !== this.renderSeq || !this.root) return;
 
+    const previous = this.state;
     this.state = status === 'none' ? 'none'
       : status === 'locked' ? 'locked'
         : this.ctx.hasConsent() ? 'ready' : 'consent';
@@ -89,14 +249,21 @@ export class AiPanel {
     const model = modelsOf(settings.provider).find((m) => m.id === settings.model)?.label ?? settings.model;
     this.modelLine.textContent = t('ai.panel.modelLine', { provider: t(`ai.provider.${settings.provider}`), model });
 
-    const [notice, action] = ({
-      none: ['ai.panel.setupNotice', 'ai.panel.openSettings'],
-      locked: ['ai.panel.lockedNotice', 'ai.panel.unlock'],
-      consent: ['ai.panel.consentNotice', 'ai.panel.giveConsent'],
-      ready: ['ai.panel.readyNotice', 'ai.panel.openSettings'],
-    } as const)[this.state];
-    this.notice.textContent = t(notice);
-    this.action.textContent = t(action);
+    const ready = this.state === 'ready';
+    this.status.hidden = ready;
+    this.chatView.hidden = !ready;
+    // 키 등록·동의·잠금 해제로 막 준비됐으면 바로 물을 수 있게 입력란으로 옮긴다.
+    // 대화상자가 닫히며 편집 영역에 돌려준 포커스보다 뒤에 오므로 이쪽이 남는다.
+    if (ready && previous !== 'ready' && this.visible) this.input.focus();
+    if (!ready) {
+      const [notice, action] = ({
+        none: ['ai.panel.setupNotice', 'ai.panel.openSettings'],
+        locked: ['ai.panel.lockedNotice', 'ai.panel.unlock'],
+        consent: ['ai.panel.consentNotice', 'ai.panel.giveConsent'],
+      } as const)[this.state as Exclude<AiPanelState, 'ready'>];
+      this.notice.textContent = t(notice);
+      this.action.textContent = t(action);
+    }
   }
 
   private async runAction(): Promise<void> {
@@ -127,5 +294,100 @@ export class AiPanel {
       t('ai.consent.message', { provider: t(`ai.provider.${provider}`) }),
     );
     if (agreed) this.ctx.updateSettings({ consent: { at: new Date().toISOString(), provider } });
+  }
+
+  private setBusy(busy: boolean): void {
+    this.sendButton.textContent = busy ? t('ai.chat.stop') : t('ai.chat.send');
+    this.sendButton.classList.toggle('ai-stop-btn', busy);
+    this.root?.toggleAttribute('data-busy', busy);
+    for (const quick of this.quick.querySelectorAll('button')) quick.disabled = busy;
+  }
+
+  private nearBottom(): boolean {
+    return this.log.scrollHeight - this.log.scrollTop - this.log.clientHeight < 40;
+  }
+
+  private scrollToEnd(force = false): void {
+    if (force || this.nearBottom()) this.log.scrollTop = this.log.scrollHeight;
+  }
+
+  async send(rawText: string): Promise<void> {
+    const text = rawText.trim();
+    if (!text || this.chat.busy || this.state !== 'ready') return;
+    this.input.value = '';
+    this.empty.hidden = true;
+    const userView = el('div', 'ai-msg ai-msg-user', text);
+    const answer = new AssistantView();
+    this.log.append(userView, answer.root);
+    this.scrollToEnd(true);
+    this.setBusy(true);
+
+    let result: AgentRunResult | null = null;
+    let failure: unknown = null;
+    try {
+      result = await this.chat.ask(text, {
+        onTurnStart: () => answer.turnStart(),
+        onText: (delta) => { answer.appendText(delta); this.scrollToEnd(); },
+        onToolStart: (call) => { answer.toolStart(call); this.scrollToEnd(); },
+        onToolEnd: (call, toolResult) => answer.toolEnd(call, toolResult.isError),
+      });
+    } catch (error) {
+      failure = error;
+    }
+    this.setBusy(false);
+
+    if (result) {
+      this.usage = addUsage(this.usage, result.usage);
+      this.renderUsage();
+      const note = ({
+        done: null,
+        aborted: t('ai.chat.stopped'),
+        refusal: t('ai.chat.refused'),
+        max_tokens: t('ai.chat.truncated'),
+        round_limit: t('ai.chat.roundLimit'),
+        error: result.error ? failureMessage(result.error.reason, result.error.retryAfterSeconds) : t('ai.error.unknown'),
+      } as const)[result.status];
+      answer.finish(note, result.status === 'error' || result.status === 'refusal' ? 'error' : 'info');
+    } else {
+      const reason = failure instanceof AiProviderError ? failure.reason : 'unknown';
+      answer.finish(failureMessage(reason), 'error');
+      if (!(failure instanceof AiProviderError)) console.error('[AI] 질문 처리 실패', failure);
+    }
+    this.scrollToEnd();
+    if (this.visible) this.input.focus();
+  }
+
+  private newConversation(): void {
+    this.chat.reset();
+    this.clearLog(null);
+    this.input.focus();
+  }
+
+  private clearLog(notice: string | null): void {
+    if (!this.root) return;
+    this.log.replaceChildren(this.empty);
+    this.empty.hidden = false;
+    if (notice) this.log.append(el('p', 'ai-chat-notice', notice));
+    this.usage = EMPTY_USAGE;
+    this.renderUsage();
+    this.setBusy(false);
+  }
+
+  private renderUsage(): void {
+    const fmt = (n: number) => n.toLocaleString();
+    this.usageLine.textContent = t('ai.chat.usage', {
+      input: fmt(this.usage.inputTokens + this.usage.cacheReadTokens + this.usage.cacheWriteTokens),
+      cached: fmt(this.usage.cacheReadTokens),
+      output: fmt(this.usage.outputTokens),
+    });
+  }
+
+  /** 커서가 움직일 때마다가 아니라 화면 갱신 주기에 한 번, 패널이 보일 때만 선택을 확인한다. */
+  private scheduleSelectionCheck(): void {
+    if (!this.visible || this.selectionFrame) return;
+    this.selectionFrame = requestAnimationFrame(() => {
+      this.selectionFrame = 0;
+      this.quick.hidden = !this.host.hasSelection();
+    });
   }
 }

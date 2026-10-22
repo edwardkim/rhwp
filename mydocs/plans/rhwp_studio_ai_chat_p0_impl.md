@@ -1,7 +1,7 @@
 # 구현 계획 — rhwp-studio AI 채팅 P0 (설정·Claude 연결·읽기 전용 대화)
 
 - 작성일: 2026-10-23 KST
-- 상태: **Stage 3 완료 — Stage 4 승인 대기**
+- 상태: **Stage 4 완료 — Stage 5(실제 키 확인) 승인 대기**
 - upstream 이슈: 미등록 (등록은 작업지시자 승인 후. 등록 뒤 이 문서 이름과 머리말을 이슈 번호로 갱신한다)
 - base: `devel` `605ccfd92`
 - 후속 단계: P1 문단 교체 쓰기, P2 표·누름틀·서식, P3 OpenAI·Gemini, P4 생성·프록시
@@ -406,3 +406,30 @@ VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:ai-panel
 | 신규 단위 테스트 | `ai-agent-loop` 11, `ai-read-tools` 13, `ai-untrusted` 3, `ai-message-render` 5, `ai-claude-request` 9 — 모두 통과 |
 | 실제 WASM 문서로 읽기 도구 실행 (`biz_plan.hwp`, `field-01.hwp`, `form-002.hwpx`, 스크래치 스크립트) | 7개 도구 정상. 표 칸 글 포함 확인. 누름틀 4건 등 |
 | `npm run build` / `RHWP_WITHOUT_AI=1` | 성공. 제외 빌드에 AI 문자열 0건 |
+
+### Stage 4 — 대화 화면 (2026-10-23)
+
+- 승인: 작업지시자 「Stage 4 진행해」.
+- 구현
+  - 패널 구성: 머리(모델 표시·새 대화·AI 설정), 준비 안내(키 없음·잠김·동의), 대화 화면(기록·빠른 동작·입력란·보내기/중단·토큰 사용량).
+  - 응답은 회차마다 글 조각과 도구 표시(`쪽 읽기 …` → `✓ 쪽 읽기`)를 차례로 보인다. 글은 화면 갱신 주기에 한 번 `message-render`로 다시 그린다.
+  - 입력란: Enter 보내기, Shift+Enter 줄바꿈. 한글 조합 중의 Enter(`isComposing`·keyCode 229)는 보내지 않는다. 입력란은 기존 단축키 가드(`isTextEditingTarget`)에 걸려 Ctrl+Z가 문서로 새지 않는다.
+  - 빠른 동작(요약·설명·맞춤법 점검)은 선택 영역이 있을 때만 보인다. 선택 확인은 `cursor-rect-updated`마다가 아니라 화면 갱신 주기에 한 번, 패널이 보일 때만 한다.
+  - 결과 표시: 중단·거절·잘림·라운드 상한·오류는 응답 아래 문구로 보인다. 오류는 갈래별 문구이고 제공자 원문은 보이지 않는다.
+  - 문서 교체: 진행 중 질문을 끊고 새 대화를 시작하며 그 사실을 안내한다.
+  - 포커스: 키 등록·동의·잠금 해제로 막 준비되면 입력란으로 포커스를 옮긴다. 대화상자가 닫히며 studio가 편집 영역에 돌려준 포커스보다 뒤에 오므로 입력란이 남는다.
+  - 개발 서버 보정: SDK를 처음 동적 import할 때 Vite가 의존성을 새로 최적화하며 페이지를 새로 고쳤다. 첫 e2e 실행이 「Execution context was destroyed」로 끊긴 원인이다. `optimizeDeps.include`에 SDK 두 진입점을 넣어 시작할 때 묶는다(`RHWP_WITHOUT_AI=1`이면 넣지 않음). `node_modules/.vite`를 지운 처음 상태에서 다시 통과했다.
+- 검증
+
+| 항목 | 결과 |
+|---|---|
+| `npx tsc --noEmit` | 통과 |
+| `npm test` | 2,429건 중 2,427 통과, 실패 0 (skip 2) |
+| `e2e:ai-panel` (신규, SSE mock, `biz_plan.hwp`) | 28항목 PASS |
+| `e2e:ai-panel` 세부 — 요청 형태 | 첫 요청(모델·스트리밍·strict 도구 7개·경계 규칙·서버 대체·effort·thinking 생략), 둘째 요청(첫 응답 tool_use 원형 되돌림, 도구 결과 한 메시지, 경계, 표 칸 글 `OO교육대학교 OXX사업단…` 포함, 이력 접두 유지) |
+| `e2e:ai-panel` 세부 — 화면·안전 | 굵게·목록 렌더, `<script>` 요소 0·실행 없음, 토큰 누적 표시 |
+| `e2e:ai-panel` 세부 — 동작 | 대화 전후 문서 SHA-256 동일, 입력란 Ctrl+Z 격리, 빠른 동작 표시·프롬프트, 중단, 401 문구와 이력 짝, 새 대화·문서 교체 시 이력 비움 |
+| `e2e:ai-settings` / `e2e:side-panel` | 19 / 18항목 PASS |
+| `npm run build` | AI 청크 38KB(시작 때), SDK 청크 318KB(첫 질문·연결 테스트 때) |
+| `RHWP_WITHOUT_AI=1` | AI 문자열 0건 |
+| 화면 판독 | 답변 화면 스크린샷 확인 |

@@ -16,6 +16,7 @@
     "preview": "vite preview",
     "test": "node --test tests/*.test.ts ../npm/editor/tests/*.test.mjs ../rhwp-shared/pdf/*.test.js",
     "gate:bridge": "node ../scripts/gate_bridge.mjs",
+    "e2e:ai-panel": "node e2e/run-with-vite.mjs -- node e2e/ai-panel.test.mjs --mode=headless",
     "e2e:ai-settings": "node e2e/run-with-vite.mjs -- node e2e/ai-settings.test.mjs --mode=headless",
     "e2e:side-panel": "node e2e/run-with-vite.mjs -- node e2e/side-panel.test.mjs --mode=headless",
     "e2e:automation": "node e2e/automation-commands.test.mjs --mode=headless",

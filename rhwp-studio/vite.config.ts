@@ -49,6 +49,11 @@ export default defineConfig({
       '@rhwp/hwpctrl/studio-plugin': resolve(configDir, '..', 'npm', 'hwpctrl-ocx', 'src', 'studio-plugin.mjs'),
     },
   },
+  // AI SDK 는 질문할 때 동적 import 로만 들어온다. 개발 서버가 그때 처음 발견하면 의존성을
+  // 다시 최적화하며 페이지를 새로 고쳐 진행 중인 대화와 열린 문서를 잃는다 — 시작할 때 미리 묶는다.
+  optimizeDeps: withAi
+    ? { include: ['@anthropic-ai/sdk', '@anthropic-ai/sdk/lib/transform-json-schema'] }
+    : {},
   server: {
     host: '127.0.0.1',
     port: 7700,
