@@ -1,5 +1,5 @@
 //! #1749 사회기여 표 HWPX의 첫 합성 문단 간격 소유.
-//! 독립 Print와 C12 Native/fresh WASM 전체 5쪽의 최저 일치율은 97.98406%다.
+//! 독립 Print와 Native(Haansoft Batang·Dotum 실제 공급) 전체 5쪽의 최저 일치율은 hwpx 99.83%·hwp 99.16%다.
 //! 4·5쪽 직접 판독 후 추가하며, 실제 셀의 절대 위치를 고정하지 않는다.
 //! 원본 문단 모양의 앞 간격과 셀 안 여백으로 줄·셀 사이 관계를 검사한다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -182,19 +182,31 @@ fn opening_rowbreak_fragment_keeps_source_first_paragraph_before_space() {
         source.paragraphs[0].text.matches('*').count(),
         "첫 source 문단은 앞 조각에 속한다"
     );
+    // 독립 Print(`pdf/task1749/saved_bounds_cumulative_page_break-hwpx-2020.pdf` 4쪽)의 첫 조각은 내용에
+    // 맞춰 닫지 않는다: 아래 괘선 1024.0px, 끝 별 줄 기준선 1017.29px — 안 여백을 빼고도 줄 아래에
+    // ≈2.3px 가 남고, 가운데 정렬 칸이라 같은 몫이 앞 간격 뒤 위쪽에도 남는다(별 줄 기준선 962.15·993.15).
+    // 내용 높이로 닫던 출력은 아래 몫이 0 이고 별 줄이 2px 높았다(Haansoft Dotum 을 실제 공급한 Native 대조).
+    assert!(matches!(
+        source.vertical_align,
+        rhwp::model::table::VerticalAlign::Center
+    ));
     let before = source_before(&core, 52);
     let padding = source.effective_padding(&table.padding);
-    let top_padding =
-        rhwp::renderer::hwpunit_to_px(i32::from(padding.top), rhwp::renderer::DEFAULT_DPI);
-    let top = coord(first, "y") - coord(cell, "y");
+    let px = |hu| rhwp::renderer::hwpunit_to_px(i32::from(hu), rhwp::renderer::DEFAULT_DPI);
+    let last = lines.last().unwrap();
+    let top = coord(first, "y") - coord(cell, "y") - px(padding.top) - before;
+    let bottom = coord(cell, "y") + coord(cell, "h")
+        - coord(last, "y")
+        - coord(last, "h")
+        - px(padding.bottom);
     let tolerance = coord(first, "h") / 10.0;
     assert!(
-        (top - top_padding - before).abs() <= tolerance,
-        "첫 조각의 줄 원점은 안 여백과 원본 앞 간격을 한 번 소유한다: top={top}, padding={top_padding}, before={before}"
+        top >= 0.0 && bottom >= tolerance / 2.0,
+        "첫 조각은 안 여백과 원본 앞 간격 안쪽에 줄을 담고, 내용 높이로 닫지 않아 줄 아래 몫을 남긴다: \
+         top={top}, bottom={bottom}"
     );
-    let last = lines.last().unwrap();
     assert!(
-        coord(last, "y") + coord(last, "h") <= coord(cell, "y") + coord(cell, "h"),
-        "뒤 조각으로 넘어갈 내용을 여기서 중복하거나 셀 밖으로 밀지 않는다"
+        (top - bottom).abs() <= tolerance,
+        "첫 조각의 남는 높이는 원본 앞 간격을 한 번 소유한 뒤 위아래로 나뉜다(가운데 정렬): top={top}, bottom={bottom}, before={before}"
     );
 }
