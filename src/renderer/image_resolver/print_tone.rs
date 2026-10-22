@@ -1,7 +1,9 @@
 //! 한컴 2024 Print의 보이는 팔레트와 색 확장 bitmap 전달.
 //!
 //! BMP·PNG·JPEG·2020/2024 Print의 독립 대조는 stage2025,
-//! 흑백 예약색·indexed 형식의 추가 경계는 stage2101에 있다. 그림 효과 합성은 별도 계약이다.
+//! 흑백 예약색·indexed 형식의 추가 경계는 stage2101에 있다.
+//! #8153의 독립 형식 대조는 JPEG도 디코드된 가시 색 수로 판정함을 보완한다.
+//! 그림 효과 합성은 별도 계약이다.
 
 use std::collections::HashSet;
 use std::io::Cursor;
@@ -19,7 +21,16 @@ fn is_print_bitmap_candidate(image: &ImageNode) -> bool {
         && image
             .data
             .as_deref()
-            .is_some_and(|data| matches!(detect_image_mime_type(data), "image/bmp" | "image/png"))
+            .is_some_and(|data| bitmap_format(data).is_some())
+}
+
+fn bitmap_format(data: &[u8]) -> Option<image::ImageFormat> {
+    match detect_image_mime_type(data) {
+        "image/bmp" => Some(image::ImageFormat::Bmp),
+        "image/png" => Some(image::ImageFormat::Png),
+        "image/jpeg" => Some(image::ImageFormat::Jpeg),
+        _ => None,
+    }
 }
 
 pub(crate) fn print_bitmap_payload(image: &ImageNode) -> Option<ResolvedImagePayload> {
@@ -93,11 +104,7 @@ pub(super) fn requires_print_bitmap_transfer(image: &ImageNode) -> bool {
         return false;
     }
     memoized(Conversion::Hancom2024BitmapPalette { bounds }, data, || {
-        let format = match detect_image_mime_type(data) {
-            "image/bmp" => image::ImageFormat::Bmp,
-            "image/png" => image::ImageFormat::Png,
-            _ => return None,
-        };
+        let format = bitmap_format(data)?;
         let decoded = decode_image_with_format_limited(data, format)?.to_rgba8();
         let pixels = (bounds[1]..bounds[3]).flat_map(|y| {
             let decoded = &decoded;
@@ -123,11 +130,7 @@ fn exceeds_palette<'a>(pixels: impl Iterator<Item = &'a image::Rgba<u8>>) -> boo
 
 pub(super) fn bitmap_bytes_to_png(data: &[u8]) -> Option<Vec<u8>> {
     memoized(Conversion::Hancom2024Bitmap, data, || {
-        let format = match detect_image_mime_type(data) {
-            "image/bmp" => image::ImageFormat::Bmp,
-            "image/png" => image::ImageFormat::Png,
-            _ => return None,
-        };
+        let format = bitmap_format(data)?;
         let mut decoded = decode_image_with_format_limited(data, format)?.to_rgba8();
         // 한컴의 팔레트 전달은 흑백 두 예약색을 포함한 RGB 색 수로 구분한다.
         // 원본이 255/256색이어도 빠진 예약색을 더하면 팔레트 용량을 넘을 수 있다.
