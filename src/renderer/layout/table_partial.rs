@@ -1534,35 +1534,34 @@ impl LayoutEngine {
                     .is_some();
             let complete_plain_suffix_frame = is_continuation
                 && start_row_height_override.is_none()
-                && cell_row == start_row
+                && is_split_start_row
                 && cell.row_span == 1
-                && !start_cut_is_block
-                && !is_block_split
                 && cell.text_direction == 0
                 && cell
                     .paragraphs
                     .iter()
                     .all(|paragraph| paragraph.controls.is_empty())
-                && start_cut
-                    .get(single_row_cut_index(table, cell))
-                    .is_some_and(|&start| {
-                        let (_, end) = cell_cut_window(
-                            table,
-                            cell,
-                            start_cut_is_block,
-                            is_block_split,
-                            is_split_start_row,
-                            split_start_block,
-                            is_split_end_row,
-                            split_end_block,
-                            start_cut,
-                            end_cut,
-                            None,
-                            start_row,
-                            end_row.saturating_sub(1),
-                        );
-                        start > 0 && end >= self.cell_units(cell, table, styles).len()
-                    });
+                && {
+                    // 남은 내용 전체의 정렬 소유는 컷의 표현 형식과 무관하다.
+                    // 실제 줄 선택과 같은 Query로 행/블록 서수를 함께 해석한다.
+                    let units = self.cell_units(cell, table, styles);
+                    let (start, end) = cell_cut_window(
+                        table,
+                        cell,
+                        start_cut_is_block,
+                        is_block_split,
+                        is_split_start_row,
+                        split_start_block,
+                        is_split_end_row,
+                        split_end_block,
+                        start_cut,
+                        end_cut,
+                        Some(units.len()),
+                        start_row,
+                        end_row.saturating_sub(1),
+                    );
+                    start > 0 && end >= units.len()
+                };
             let frame_owns_alignment = !descendant_owns_closing_band
                 && (ordinary_source_frame_owns_alignment
                     || closing_source_frame_owns_alignment

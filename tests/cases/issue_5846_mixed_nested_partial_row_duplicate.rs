@@ -598,3 +598,69 @@ fn issue_5846_cut_fragment_defers_partial_nested_tail_row() {
         "원본 종료 프레임의 관계 위반: {frame_failures:#?}"
     );
 }
+
+// Stage55: 동일 소스 Native/fresh WASM 전 66쪽 최저 96.57165/96.56850%, 미달 0.
+// 41쪽 99.99530/99.99527%, 42쪽 99.82579/99.82542%와 review/overlay 확대 판독 후 보강한다.
+// 독립 Print의 라벨 소유·순서·Center 정렬과 ±2px 원점을 함께 보호한다.
+#[test]
+fn issue_5846_closed_block_cut_keeps_cost_label_owners_and_alignment() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let mut doc = HwpDocument::from_bytes(&std::fs::read(path).expect("개인정보 원본")).unwrap();
+    let environment_path = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+        "mydocs/pr/assets/issue7445/resolution-20261005/pii5846-reference-font-environment.json",
+    );
+    let environment = rhwp::renderer::font_environment::FontEnvironment::from_json(
+        &std::fs::read_to_string(environment_path).unwrap(),
+    )
+    .unwrap();
+    doc.set_font_environment(Some(environment)).unwrap();
+    assert_eq!(doc.page_count(), 66, "독립 Print와 같은 전쪽 수");
+    // 독립 Print 41→42쪽의 비용편익 라벨: 첫 줄은 앞쪽, 나머지는 뒤쪽에서 한 번만 소유한다.
+    let cost_opening = doc.build_page_render_tree(40).expect("41쪽 비용편익 시작");
+    let cost_closing = doc
+        .build_page_render_tree(41)
+        .expect("42쪽 비용편익 이어받기");
+    let cost_first = source_cell(
+        owned_table(&cost_opening.root, 401).expect("앞 규제 표"),
+        10,
+        1,
+    );
+    let cost_remaining = source_cell(
+        owned_table(&cost_closing.root, 401).expect("뒤 규제 표"),
+        10,
+        1,
+    );
+    assert_eq!(
+        text(cost_first),
+        "11.비용편익",
+        "닫힌 물리 상자에 맞는 첫 줄의 앞쪽 소유"
+    );
+    assert_eq!(
+        text(cost_remaining),
+        "분석(정성분석)",
+        "남은 두 줄의 순서·누락·중복"
+    );
+    let cost_line = line(cost_remaining, "분석").expect("이어받기 첫 라벨 줄");
+    let cost_last_line = line(cost_remaining, "정성분석").expect("이어받기 마지막 라벨 줄");
+    let label_center =
+        (cost_line.bbox.y + cost_last_line.bbox.y + cost_last_line.bbox.height) / 2.0;
+    let cell_center = cost_remaining.bbox.y + cost_remaining.bbox.height / 2.0;
+    assert!(
+        (label_center - cell_center).abs() <= cost_line.bbox.height,
+        "완전히 선택한 이어받기 라벨은 원본 Center 정렬을 유지해야 함"
+    );
+    // 독립 Print PDF에서 추출한 실제 라벨 잉크 상단(CSS96dpi).
+    for (actual, expected) in [
+        (
+            line(cost_first, "11.비용편익").unwrap().bbox.y,
+            1_022.118_896_484_375,
+        ),
+        (cost_line.bbox.y, 194.278_910_319_010_4),
+        (cost_last_line.bbox.y, 222.118_916_829_427_06),
+    ] {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "독립 Print의 비용편익 라벨 원점: 실제 {actual}, 독립 {expected}"
+        );
+    }
+}

@@ -248,11 +248,25 @@ impl LayoutEngine {
             while j < units.len() {
                 let u = &units[j];
                 let next_physical_height = frame.fitting_height(j + 1, h + u.height);
+                // 같은 닫힌 상자도 prefix를 뺀 예산과 유닛을 더한 점유는
+                // 합산 순서에 따른 끝자리 오차가 생긴다. HU/px 여유를 더하지
+                // 않고, 이 walk의 누적 연산 규모 안에 있는 roundoff만 구분한다.
+                let roundoff = f64::EPSILON
+                    * (avail_height.abs()
+                        + row_offset.abs()
+                        + next_physical_height.abs()
+                        + (h + u.height).abs())
+                    .max(1.0)
+                    * (j - start + cell_row.saturating_sub(b_start) + 2) as f64;
+                let exceeds_budget = next_physical_height > cell_budget
+                    && !(next_physical_height.is_finite()
+                        && cell_budget.is_finite()
+                        && next_physical_height - cell_budget <= roundoff);
                 if j > start
                     && u.hard_break_before
                     && (!cell_relaxed
                         || (!u.empty_spacer
-                            && (next_physical_height > cell_budget
+                            && (exceeds_budget
                                 || cell_budget - frame.height(j, h)
                                     <= HARD_BREAK_REMAINING_TOLERANCE_PX)))
                 {
@@ -275,7 +289,7 @@ impl LayoutEngine {
                     hit_hard_break = true;
                     break;
                 }
-                if j > start && next_physical_height > cell_budget {
+                if j > start && exceeds_budget {
                     if Self::rewind_rowbreak_mixed_nested_table_tail_for_fresh_page(
                         table,
                         &units,
@@ -299,7 +313,7 @@ impl LayoutEngine {
                     }
                     break;
                 }
-                if j == start && !allow_force_progress && next_physical_height > cell_budget {
+                if j == start && !allow_force_progress && exceeds_budget {
                     break;
                 }
                 if self.should_defer_overflowing_top_and_bottom_entry(
