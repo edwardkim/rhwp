@@ -4969,8 +4969,10 @@ impl LayoutEngine {
                                                 }))
                                             .then(|| crate::renderer::float_placement::block_table_trailing_whitespace_line_hu(para, nested_table, ctrl_idx))
                                             .flatten();
+                                            // 반환된 표 높이는 바깥여백까지 소유한다.
+                                            // 호스트 글줄만 더하고 아래 여백을 다시 소비하지 않는다.
                                             nested_y + visible_table_h + trailing_host.map_or(0.0, |h| {
-                                                hwpunit_to_px(i32::from(nested_table.outer_margin_bottom) + h, self.dpi)
+                                                hwpunit_to_px(h, self.dpi)
                                             })
                                         }, |frame| {
                                             if matches!(frame.flow, crate::renderer::float_placement::ParagraphFloatFlow::NextLine) {

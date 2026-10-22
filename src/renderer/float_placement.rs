@@ -1159,9 +1159,13 @@ pub(crate) fn block_table_trailing_whitespace_line_hu(
         return None;
     }
     let line = &para.line_segs[0];
+    // 음수 줄간격도 원본 호스트의 다음 줄 전진에 포함된다.
+    // 100% 미만 간격을 0으로 올리면 표 뒤 본문을 불필요하게 밀어낸다.
+    let advance = line.line_height.checked_add(line.line_spacing)?;
     (line.line_height > 0
+        && advance > 0
         && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
-        .then(|| line.line_height.saturating_add(line.line_spacing.max(0)))
+        .then_some(advance)
 }
 
 /// The renderer defers visible TopAndBottom host text unless the saved lines
