@@ -422,3 +422,33 @@ rendered_picture_paragraph_origin → 일반/분할 셀 fallback 그림 원점 �
 분기도 유지한다. 후보는 아직 재빌드·시각 검증 전이며 133쪽 개선을 확정하지 않는다.
 공용 target의 fresh WASM 검증이 끝난 뒤 Native를 순차 빌드하고, 두 형식133쪽·인접134/135쪽,
 기존133이외 주요 쪽과 #7333·#6122의 그림/폭 초과 대조군을 실제 비교한다.
+
+### 공통 원점 후보의 실제 실행 결과
+
+`e4efb59b8c0541e226ad7d83c15a3b6b9c790969`의 Native 빌드는 공용 target·잡8개로
+6분03초, exit0이다. 직전 fresh WASM의 최적화까지22분16초·exit0을 확인한 뒤 순차 시작했고,
+producer를 별도로 보존했다. 원점 후보의 두 형식11쪽씩22쪽을 재출력해 TSV·대표 review를 만들었다.
+고정 base 대비 하락은0쪽이다. 기존 #7333의10쪽과 #6122의6쪽1건은 직전 후보와
+**11쪽 모두 RGB 동일**하고, 원본과 각 독립 PDF의 전체 쪽수도50/12쪽으로 일치했다.
+
+원본 paraPr155의 `HwpUnitChar` case에서 `prev=700`HU(legacy default1400)가 실제
+문단 앞 간격이며96dpi에서9.333…px다. 조판이 이미 소비한 이 원점을 공유한 결과,
+- handbook-hwpx 133쪽: 96.09230% → 99.99947%.
+- handbook-hwp 133쪽: 96.09214% → 99.99947%.
+
+그림의 실제 위쪽과 인접 글줄·다이어그램 경계를 독립 Print review로 직접 판독했다.
+HWPX133쪽의 같은232 임계값·2px 반경 마스크에서 남은 미대응은 **1픽셀**이다.
+좌표(608,918)의 Native RGB255와 PDF RGB231이며 본문 그림이 아닌 바탕쪽 쪽번호 영역이다.
+반올림한 review 표시100.00%를 전쪽100% 달성으로 해석하지 않는다. 마스크·반경을 바꾸거나
+그1픽셀에 맞춘 위치/색 상수로 보정하지 않는다.
+
+검증 로그는 `logs/inline-origin-native-driver.log`, 전체22쪽 결과는
+`inline-origin-e4efb59b8c/summary.json`, 대조군은 `picture-origin-controls/after-summary.json`이다.
+초기 대조군 집계의 multiprocessing 진입점 오류는 main guard로 수정했고, 같은 producer의
+완성된 PNG를 재사용해 집계 재시도 exit0을 확인했다. 실패 로그도 별도로 보존했다.
+이제 같은 producer의 선행11쪽을 재사용하며 두 원본의 전766쪽 Native를 실행 중이다.
+`logs/inline-origin-whole-native.log`를 따른다. 이 후보의 fresh WASM은 아직 빌드 전이며,
+직전12d0938913의 WASM 영향16쪽(하락0쪽)을 새 후보의 결과로 대신하지 않는다.
+
+사용자 요청의 사양 우선·확인된 불일치의 문서 정정 의무는 `6d90a02bf9`에서
+AGENTS·CLAUDE·공통 작업 지침·정오표 검증 원칙에 반영했다. 네 문서 링크 검사는 exit0이다.
