@@ -63,3 +63,25 @@ runtime `d81b8b4410779017d50a8891caa6a83ebec994d6`와 새 base의 실행 소스�
   이 경로는 #8155의 output 전체 제거를 확인한 뒤 새로 생성했다.
 - 최종 TSV·대표 review/overlay·독립 좌표 근거는 검증 완료 후 정식 asset 경로에 보존한다.
 - 현재는 기존 baseline을 재사용한 조사 단계다. 전쪽 100%·전쪽 ±2px 회귀 구축·구현 완료를 주장하지 않는다.
+
+## 첫 원인 조사 — 묶음 그림의 테두리 소비 누락
+
+94쪽은 원본 `section2.xml`의 묶음 `1995777895`, `1995777897`에 각각
+`image372.bmp`(731×238), `image373.bmp`(473×559)를 가진다. 두 그림 모두
+`lineShape style=SOLID, width=0, color=#000000`이다. 독립 Print에는 그림 프레임의
+검은 외곽선이 있지만 Native/fresh WASM의 해당 Image 노드 뒤에는 테두리가 없다.
+Print 이미지 영역은 각각 (118.432,130.907)–(481.400,277.413)pt,
+(127.183,359.725)–(481.400,664.255)pt이며, 별도 검은 외곽 경로가 존재한다.
+
+기존 그림 테두리 공통 helper는 `de57a512423d894b34f257267bcfc109d171b3b0`에서
+TAC 경로를 보완했고 PR #7832(`bfa28a77a2714482f647ee6a7b9aa7f7876d8404`)로 통합됐다.
+묶음 `ShapeObject::Picture` 경로는 crop·효과를 Image에 전달하면서 이 helper를 소비하지 않는다.
+#5568의 원래 crop 해결 `a5c71572e8`도 유지한다. 한컴 Print pen 공통 처리의 별도 계보는
+PR #8064의 `b340c05ce7`이며 기존 일반 선 계약을 임의로 변경하지 않는다.
+
+소비 경로는 `Group`의 저장 affine 행렬 → 자식 위치·크기 확정 →
+`layout_shape_object_with_group_origin(matrix_positioned=true)` → Image bbox/확정 transform →
+Native Skia/Canvas다. 이미 행렬에 반영한 회전·대칭을 테두리에서 원본 속성으로 다시 적용하면 안 된다.
+그림과 테두리가 같은 확정 프레임·transform을 소비하도록 기존 공통 helper를 연결하는 방향을 검증한다.
+그림 내부 crop과 외곽 프레임은 구분하며, 기존 TAC·일반 그림·선 없음과 묶음 경로를 대조한다.
+이는 구현 전 조사 결과이며 아직 보정 후 출력이나 100% 달성을 확인한 결과가 아니다.
