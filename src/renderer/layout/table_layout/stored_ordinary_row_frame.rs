@@ -285,6 +285,26 @@ impl LayoutEngine {
         (available.is_finite() && available >= content).then_some(full.min(available).max(content))
     }
 
+    /// 내용 완료 행도 수용 상자가 독립 최소보다 작으면 같은 행의 물리 컷이다.
+    /// 완전 소비 유닛을 명시해 다음 조각이 내용 대신 남은 빈 상자만 이어받는다.
+    /// 줄 전진 또는 쪽 끝에서 흡수하는 작은 꼬리는 기존 잔여 계약이 제외한다.
+    pub(crate) fn stored_complete_row_physical_tail_cut(
+        &self,
+        table: &Table,
+        row: usize,
+        accepted: f64,
+        styles: &ResolvedStyleSet,
+    ) -> Option<Vec<usize>> {
+        let cut: Vec<_> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .map(|index| self.cell_units(&table.cells[index], table, styles).len())
+            .collect();
+        let remaining =
+            self.stored_ordinary_row_remainder(table, row, &cut, accepted, None, styles)?;
+        (!self.stored_complete_row_tail_is_line_advance(table, row, &cut, remaining, styles))
+            .then_some(cut)
+    }
+
     /// 같은 원본 또는 이어받은 상자에서 이미 수용한 공간을 한 번만 차감한다.
     pub(crate) fn stored_ordinary_row_remainder(
         &self,

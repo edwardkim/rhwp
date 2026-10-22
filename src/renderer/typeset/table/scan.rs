@@ -81,8 +81,14 @@ impl RowBlockQuery<'_> {
                 None
             };
         let rowbreak_has_internal_hard_break = rowbreak_hard_break_row.is_some();
+        // RowBreak의 텍스트 병합 칸은 일반 행의 내용 컷과 물리 잔여를
+        // 함께 소비한다. 그림·중첩 표 유닛만 일반 행 컷으로 표현되지 않아
+        // 블록 셀 순서의 컷을 유지한다. 저장 재시작은 아래 블록 경로 소유다.
         let protected = block_has_protectable_rowspan
-            && (!mt.allows_row_break_split() || !rowbreak_has_internal_hard_break);
+            && (!mt.allows_row_break_split()
+                || (!rowbreak_has_internal_hard_break
+                    && layout_engine
+                        .row_block_has_spanning_object_units(table, b_start, b_end, styles)));
         // [Task #1086] RowBreak 표는 행 경계 분할 정책이라 보호 블록
         // snap 은 피하지만, rowspan label 이 걸친 블록 안의 큰 row_span==1
         // 셀은 셀 내부 hard-break(vpos reset) 기준으로 쪼갤 수 있어야 한다.

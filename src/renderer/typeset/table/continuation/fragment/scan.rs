@@ -896,6 +896,30 @@ impl TypesetEngine {
             }
         }
 
+        // 내용을 완료한 행도 최종 수용한 원본 상자에 물리 잔여가 있을 수 있다.
+        // 유닛과 수용 상자를 여기서 함께 확정해 emit이 빈 컷을 다음 행으로
+        // 해석하면서 독립 최소를 버리지 않게 한다. 블록의 셀 순서 컷과
+        // 기존 부분 내용 컷은 각 원장의 소유를 유지한다.
+        if split_block_start.is_none()
+            && split_end_cut.is_empty()
+            && split_end_limit <= 0.0
+            && end_row > cursor_row
+            && end_row < row_count
+        {
+            if let Some(height) = end_row_height_override {
+                if let Some(cut) = layout_engine.stored_complete_row_physical_tail_cut(
+                    row_geometry_table,
+                    end_row - 1,
+                    height,
+                    styles,
+                ) {
+                    split_end_cut = cut;
+                    split_end_limit = height;
+                    split_end_reserved = height;
+                }
+            }
+        }
+
         BlockTableRowScan {
             source_frame_band,
             plain_cut_owns_blank_band,

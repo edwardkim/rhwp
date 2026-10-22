@@ -12850,6 +12850,28 @@ impl LayoutEngine {
         })
     }
 
+    /// 일반 행의 텍스트 컷으로 표현되지 않는 병합 셀의 개체 유닛 소유.
+    /// 제어 레코드의 존재 대신 현재 공통 조판 유닛을 확인한다.
+    pub(crate) fn row_block_has_spanning_object_units(
+        &self,
+        table: &crate::model::table::Table,
+        start_row: usize,
+        end_row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        Self::row_block_cells(table, start_row, end_row)
+            .into_iter()
+            .filter(|cell| cell.row_span > 1)
+            .any(|cell| {
+                self.cell_units(cell, table, styles).iter().any(|unit| {
+                    unit.non_inline_control_range.is_some()
+                        || unit.nested_row.is_some()
+                        || unit.nested_table_fragment.is_some()
+                        || unit.mixed_nested_fragment
+                })
+            })
+    }
+
     /// 내용이 잘리지 않은 저장 행은 원래 측정한 물리 높이를 보존한다.
     /// 걸침 셀의 일부 유닛이 이 조각에서 잘리면 콘텐츠 컷 높이를 계속 쓴다.
     pub(crate) fn row_block_cut_uses_measured_height(
