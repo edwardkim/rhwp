@@ -1,0 +1,1074 @@
+key	page	nb	nh	wb	wh	doc
+s001	7	99.89	99.95	99.95	99.99	samples/2022년 국립국어원 업무계획.hwp
+s001	19	99.78	99.79	99.80	99.80	samples/2022년 국립국어원 업무계획.hwp
+s001	27	99.96	99.96	99.95	99.96	samples/2022년 국립국어원 업무계획.hwp
+s001	30	99.60	99.60	99.62	99.64	samples/2022년 국립국어원 업무계획.hwp
+s001	31	77.46	77.46	78.06	78.06	samples/2022년 국립국어원 업무계획.hwp
+s001	32	99.94	99.94	100.00	100.00	samples/2022년 국립국어원 업무계획.hwp
+s002	1	98.71	99.91	98.74	100.00	samples/2026_oss_rst.hwp
+s002	2	99.99	99.99	100.00	100.00	samples/2026_oss_rst.hwp
+s002	4	99.99	99.99	100.00	100.00	samples/2026_oss_rst.hwp
+s002	5	99.99	99.99	100.00	100.00	samples/2026_oss_rst.hwp
+s002	6	100.00	100.00	100.00	100.00	samples/2026_oss_rst.hwp
+s003	22	99.88	99.90	99.91	99.91	samples/76076_regulatory_analysis.hwp
+s004	18	99.87	99.87	99.95	99.95	samples/86712_regulatory_analysis.hwp
+s004	19	99.82	99.82	99.97	99.97	samples/86712_regulatory_analysis.hwp
+s004	20	99.87	99.88	99.98	99.98	samples/86712_regulatory_analysis.hwp
+s004	21	61.20	61.04	61.43	61.22	samples/86712_regulatory_analysis.hwp
+s005	5	99.73	99.73	99.80	99.80	samples/KTX.hwp
+s005	6	99.93	99.93	100.00	100.00	samples/KTX.hwp
+s005	9	99.46	99.79	99.54	99.84	samples/KTX.hwp
+s005	10	96.67	96.67	96.88	96.88	samples/KTX.hwp
+s005	11	99.93	99.93	99.95	99.95	samples/KTX.hwp
+s005	12	98.95	99.04	99.08	99.18	samples/KTX.hwp
+s005	14	99.58	99.62	99.84	99.87	samples/KTX.hwp
+s005	17	99.87	99.87	99.94	99.94	samples/KTX.hwp
+s005	18	99.70	99.71	99.90	99.92	samples/KTX.hwp
+s006	7	100.00	100.00	100.00	100.00	samples/aift.hwp
+s007	1	97.73	97.73	97.71	97.71	samples/basic/Worldcup_FIFA2010_32.hwp
+s008	1	98.86	98.87	99.07	99.07	samples/exam_eng.hwp
+s008	4	97.57	97.73	97.02	97.13	samples/exam_eng.hwp
+s009	1	98.96	99.18	99.14	99.33	samples/hcar-001.hwp
+s009	2	99.94	99.94	100.00	100.00	samples/hcar-001.hwp
+s009	3	99.93	99.93	99.96	99.96	samples/hcar-001.hwp
+s009	4	99.84	99.84	99.62	99.61	samples/hcar-001.hwp
+s009	5	33.18	33.18	33.82	33.82	samples/hcar-001.hwp
+s009	6	99.57	99.54	99.63	99.60	samples/hcar-001.hwp
+s010	1	96.62	96.62	96.78	96.78	samples/hwp-multi-001.hwp
+s010	2	97.78	98.04	97.51	97.79	samples/hwp-multi-001.hwp
+s010	3	99.93	99.93	99.93	99.93	samples/hwp-multi-001.hwp
+s010	4	99.92	99.93	99.95	99.95	samples/hwp-multi-001.hwp
+s010	5	99.93	99.93	99.96	99.96	samples/hwp-multi-001.hwp
+s010	6	99.97	99.97	99.97	99.96	samples/hwp-multi-001.hwp
+s010	7	99.95	99.95	99.93	99.94	samples/hwp-multi-001.hwp
+s010	8	99.92	99.92	99.92	99.92	samples/hwp-multi-001.hwp
+s010	9	99.04	99.04	99.15	99.14	samples/hwp-multi-001.hwp
+s011	1	99.88	99.90	100.00	100.00	samples/hwp-multi-002.hwp
+s011	2	82.96	82.93	82.81	82.76	samples/hwp-multi-002.hwp
+s011	3	99.77	99.77	99.80	99.80	samples/hwp-multi-002.hwp
+s011	5	99.65	99.65	99.62	99.62	samples/hwp-multi-002.hwp
+s011	6	99.99	99.99	100.00	100.00	samples/hwp-multi-002.hwp
+s012	1	99.25	99.25	99.06	99.06	samples/hwp3-sample16-hwp5-2022.hwp
+s012	17	96.11	96.14	95.90	95.91	samples/hwp3-sample16-hwp5-2022.hwp
+s012	18	39.61	39.62	39.47	39.48	samples/hwp3-sample16-hwp5-2022.hwp
+s012	19	98.17	98.00	98.10	97.93	samples/hwp3-sample16-hwp5-2022.hwp
+s012	38	96.99	96.96	96.62	96.59	samples/hwp3-sample16-hwp5-2022.hwp
+s012	43	99.74	99.74	99.79	99.79	samples/hwp3-sample16-hwp5-2022.hwp
+s012	55	99.56	99.54	99.56	99.52	samples/hwp3-sample16-hwp5-2022.hwp
+s013	14	99.78	99.81	99.78	99.81	samples/hwp3-sample4-hwp5.hwp
+s014	14	99.78	99.80	99.78	99.80	samples/hwp3-sample4.hwp
+s015	1	73.27	73.27	73.29	73.29	samples/hwpctl_Action_Table__v1.1.hwp
+s015	2	97.84	97.84	97.84	97.84	samples/hwpctl_Action_Table__v1.1.hwp
+s015	3	97.95	97.95	97.95	97.95	samples/hwpctl_Action_Table__v1.1.hwp
+s015	4	97.81	97.81	97.81	97.81	samples/hwpctl_Action_Table__v1.1.hwp
+s015	5	97.89	97.89	97.89	97.89	samples/hwpctl_Action_Table__v1.1.hwp
+s015	6	98.04	98.04	98.08	98.08	samples/hwpctl_Action_Table__v1.1.hwp
+s015	7	98.05	98.05	98.06	98.06	samples/hwpctl_Action_Table__v1.1.hwp
+s015	8	98.02	98.02	98.04	98.04	samples/hwpctl_Action_Table__v1.1.hwp
+s015	9	97.43	97.43	97.45	97.45	samples/hwpctl_Action_Table__v1.1.hwp
+s015	10	97.89	97.89	97.91	97.91	samples/hwpctl_Action_Table__v1.1.hwp
+s015	11	98.00	98.00	98.03	98.04	samples/hwpctl_Action_Table__v1.1.hwp
+s015	12	97.86	97.86	97.87	97.87	samples/hwpctl_Action_Table__v1.1.hwp
+s015	13	97.55	97.55	97.55	97.55	samples/hwpctl_Action_Table__v1.1.hwp
+s015	14	99.20	99.20	99.24	99.24	samples/hwpctl_Action_Table__v1.1.hwp
+s015	15	97.26	97.26	97.25	97.25	samples/hwpctl_Action_Table__v1.1.hwp
+s015	16	99.32	99.32	99.32	99.32	samples/hwpctl_Action_Table__v1.1.hwp
+s016	1	84.57	84.57	84.65	84.65	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	2	97.68	97.68	97.68	97.68	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	3	96.50	96.50	96.59	96.59	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	4	98.81	98.81	98.81	98.81	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	5	95.34	95.34	95.35	95.35	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	6	96.40	96.40	96.40	96.40	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	7	93.80	93.80	93.80	93.80	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	8	95.65	95.65	95.66	95.66	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	9	95.16	95.16	95.19	95.18	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	10	98.15	98.15	98.16	98.16	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	11	97.86	97.86	97.86	97.86	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	12	96.07	96.07	96.08	96.08	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	13	91.35	91.36	91.37	91.37	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	14	96.88	96.88	96.90	96.90	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	15	92.54	92.54	92.55	92.54	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	16	92.63	92.63	92.67	92.66	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	17	97.10	97.10	97.10	97.10	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	18	92.89	92.89	92.91	92.91	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	19	97.13	97.13	97.14	97.14	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	20	97.22	97.22	97.23	97.23	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	21	97.21	97.21	97.22	97.22	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	22	96.00	96.00	96.02	96.02	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	23	93.52	93.52	93.53	93.53	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	24	96.01	96.01	96.01	96.01	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	25	95.25	95.25	95.26	95.26	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	26	94.29	94.29	94.31	94.31	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	27	92.29	92.29	92.29	92.29	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	28	95.16	95.16	95.16	95.16	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	29	93.88	93.88	93.88	93.88	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	30	97.59	97.59	97.59	97.59	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	31	97.31	97.31	97.32	97.32	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	32	92.49	92.49	92.49	92.49	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	33	93.43	93.43	93.47	93.47	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	34	94.28	94.28	94.29	94.29	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	35	96.02	96.02	96.01	96.01	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	36	95.31	95.31	95.30	95.30	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	37	91.42	91.42	91.43	91.43	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	38	93.54	93.54	93.56	93.56	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	39	95.08	95.08	95.08	95.08	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	40	94.78	94.78	94.79	94.79	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	41	97.30	97.30	97.30	97.30	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	42	95.68	95.68	95.70	95.70	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	43	52.81	52.81	52.95	52.94	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	44	21.91	21.91	22.02	22.02	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	45	92.30	92.30	92.32	92.32	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	46	92.25	92.25	92.26	92.26	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	47	95.56	95.56	95.59	95.59	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	48	97.20	97.20	97.20	97.20	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	49	97.18	97.18	97.19	97.19	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	50	98.01	98.01	98.02	98.02	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	51	95.77	95.78	95.78	95.79	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	52	97.36	97.36	97.38	97.38	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	53	97.14	97.14	97.16	97.16	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	54	88.91	88.91	88.94	88.94	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	55	95.94	95.94	95.94	95.94	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	56	93.27	93.27	93.27	93.27	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	57	97.31	97.31	97.32	97.32	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	58	94.29	94.29	94.30	94.30	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	59	98.15	98.15	98.15	98.15	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	60	96.21	96.21	96.21	96.21	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	61	91.45	91.46	91.46	91.46	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	62	92.07	92.07	92.08	92.08	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	63	93.80	93.80	93.79	93.79	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	64	94.11	94.11	94.11	94.10	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	65	95.63	95.63	95.63	95.63	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	66	96.51	96.51	96.51	96.51	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	67	95.86	95.86	95.86	95.86	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	68	95.99	95.99	96.00	96.00	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	69	98.30	98.30	98.33	98.33	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	70	98.41	98.41	98.41	98.41	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	71	97.53	97.53	97.53	97.53	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	72	94.42	94.42	94.50	94.50	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	73	97.57	97.57	97.57	97.57	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s016	74	96.07	96.07	96.08	96.08	samples/hwpctl_ParameterSetID_Item_v1.2.hwp
+s017	1	99.30	99.31	99.36	99.37	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s017	2	98.38	98.59	98.37	98.62	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s017	3	99.74	99.74	99.82	99.82	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s017	4	99.88	99.88	99.90	99.90	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s017	5	99.87	99.87	99.89	99.89	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s017	6	99.94	99.94	99.94	99.94	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s017	7	99.85	99.85	99.87	99.88	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s017	8	99.78	99.78	99.85	99.85	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s017	9	99.04	99.04	99.15	99.15	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s018	1	99.54	99.54	99.53	99.54	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx
+s018	2	97.67	97.89	97.63	97.88	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx
+s018	3	99.74	99.74	99.82	99.82	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx
+s018	4	99.88	99.88	99.90	99.90	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx
+s018	5	99.87	99.87	99.89	99.89	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx
+s018	6	99.94	99.94	99.94	99.94	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx
+s018	7	99.85	99.85	99.87	99.88	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx
+s018	8	99.78	99.78	99.85	99.85	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx
+s018	9	99.04	99.04	99.15	99.15	samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx
+s019	1	97.07	97.07	97.14	97.14	samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx
+s019	2	99.77	100.00	99.74	100.00	samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx
+s019	3	99.56	99.56	99.68	99.68	samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx
+s019	4	99.77	99.77	99.80	99.80	samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx
+s019	5	99.85	99.85	99.88	99.88	samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx
+s019	6	99.71	99.71	99.77	99.77	samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx
+s019	7	99.81	99.81	99.79	99.79	samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx
+s019	8	99.79	99.79	99.85	99.85	samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx
+s019	9	99.04	99.04	99.15	99.14	samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx
+s020	1	99.94	99.94	99.95	99.95	samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx
+s020	2	99.79	99.98	99.79	100.00	samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx
+s020	3	99.42	99.42	99.37	99.37	samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx
+s020	4	99.87	99.87	99.83	99.82	samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx
+s020	5	99.95	99.95	99.93	99.93	samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx
+s020	6	93.00	92.99	92.91	92.89	samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx
+s020	7	91.30	91.29	91.46	91.43	samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx
+s020	8	99.97	99.97	99.96	99.96	samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx
+s020	9	98.73	98.73	98.83	98.82	samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx
+s021	1	96.19	96.19	96.26	96.26	samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx
+s021	2	98.62	98.84	98.60	98.84	samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx
+s021	3	99.75	99.75	99.80	99.80	samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx
+s021	4	99.85	99.86	99.88	99.89	samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx
+s021	5	99.87	99.87	99.91	99.91	samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx
+s021	6	99.93	99.93	99.94	99.94	samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx
+s021	7	99.84	99.84	99.85	99.85	samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx
+s021	8	99.76	99.76	99.82	99.82	samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx
+s021	9	98.46	98.46	98.57	98.56	samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx
+s022	1	92.82	92.81	92.97	92.97	samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx
+s022	2	98.93	99.15	98.91	99.15	samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx
+s022	3	99.29	99.30	99.34	99.34	samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx
+s022	4	99.78	99.78	99.79	99.79	samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx
+s022	5	99.84	99.84	99.86	99.86	samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx
+s022	6	99.73	99.73	99.76	99.76	samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx
+s022	7	99.81	99.81	99.82	99.82	samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx
+s022	8	99.75	99.75	99.78	99.78	samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx
+s022	9	98.73	98.73	98.83	98.82	samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx
+s023	2	99.12	99.41	99.09	99.32	samples/hwpx/20260909-para-table.hwpx
+s023	3	99.81	100.00	99.79	100.00	samples/hwpx/20260909-para-table.hwpx
+s024	1	98.71	99.91	98.74	100.00	samples/hwpx/2026_oss_rst.hwpx
+s024	2	99.99	99.99	100.00	100.00	samples/hwpx/2026_oss_rst.hwpx
+s024	4	99.99	99.99	100.00	100.00	samples/hwpx/2026_oss_rst.hwpx
+s024	5	99.99	99.99	100.00	100.00	samples/hwpx/2026_oss_rst.hwpx
+s024	6	100.00	100.00	100.00	100.00	samples/hwpx/2026_oss_rst.hwpx
+s025	7	100.00	100.00	100.00	100.00	samples/hwpx/aift.hwpx
+s026	1	96.98	96.98	97.02	97.02	samples/hwpx/form-002.hwpx
+s026	2	99.99	99.99	100.00	100.00	samples/hwpx/form-002.hwpx
+s026	3	97.10	97.23	97.19	97.30	samples/hwpx/form-002.hwpx
+s026	4	100.00	100.00	100.00	100.00	samples/hwpx/form-002.hwpx
+s026	5	97.10	97.14	97.17	97.20	samples/hwpx/form-002.hwpx
+s026	6	100.00	100.00	100.00	100.00	samples/hwpx/form-002.hwpx
+s026	7	96.73	97.02	96.76	97.08	samples/hwpx/form-002.hwpx
+s026	8	100.00	100.00	100.00	100.00	samples/hwpx/form-002.hwpx
+s026	9	96.93	97.12	96.98	97.17	samples/hwpx/form-002.hwpx
+s026	10	100.00	100.00	100.00	100.00	samples/hwpx/form-002.hwpx
+s027	1	99.30	99.31	99.36	99.37	samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s027	2	98.38	98.59	98.37	98.62	samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s027	3	99.74	99.74	99.82	99.82	samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s027	4	99.88	99.88	99.90	99.90	samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s027	5	99.87	99.87	99.89	99.89	samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s027	6	99.94	99.94	99.94	99.94	samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s027	7	99.85	99.85	99.87	99.88	samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s027	8	99.78	99.78	99.85	99.85	samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s027	9	99.04	99.04	99.15	99.15	samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp
+s028	1	96.85	96.85	96.98	96.98	samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp
+s028	2	98.14	98.36	97.97	98.20	samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp
+s028	3	99.56	99.56	99.68	99.68	samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp
+s028	4	99.77	99.77	99.80	99.80	samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp
+s028	5	99.85	99.85	99.88	99.88	samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp
+s028	6	99.71	99.71	99.77	99.77	samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp
+s028	7	99.81	99.81	99.79	99.79	samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp
+s028	8	99.79	99.79	99.85	99.85	samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp
+s028	9	99.04	99.04	99.15	99.14	samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp
+s029	1	99.71	99.71	99.75	99.75	samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp
+s029	2	99.79	99.98	99.79	100.00	samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp
+s029	3	99.42	99.42	99.37	99.37	samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp
+s029	4	99.87	99.87	99.83	99.82	samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp
+s029	5	99.95	99.95	99.93	99.93	samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp
+s029	6	93.00	92.99	92.91	92.89	samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp
+s029	7	91.30	91.29	91.46	91.43	samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp
+s029	8	99.97	99.97	99.96	99.96	samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp
+s029	9	98.73	98.73	98.83	98.82	samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp
+s030	1	96.19	96.19	96.26	96.26	samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp
+s030	2	98.62	98.84	98.60	98.84	samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp
+s030	3	99.75	99.75	99.80	99.80	samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp
+s030	4	99.85	99.86	99.88	99.89	samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp
+s030	5	99.87	99.87	99.91	99.91	samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp
+s030	6	99.93	99.93	99.94	99.94	samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp
+s030	7	99.84	99.84	99.85	99.85	samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp
+s030	8	99.76	99.76	99.82	99.82	samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp
+s030	9	98.46	98.46	98.57	98.56	samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp
+s031	1	92.82	92.81	92.97	92.97	samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp
+s031	2	98.93	99.15	98.91	99.15	samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp
+s031	3	99.30	99.31	99.35	99.35	samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp
+s031	4	99.78	99.78	99.79	99.79	samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp
+s031	5	99.84	99.84	99.86	99.86	samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp
+s031	6	99.74	99.74	99.75	99.75	samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp
+s031	7	99.81	99.81	99.82	99.82	samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp
+s031	8	99.75	99.75	99.78	99.78	samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp
+s031	9	98.73	98.73	98.83	98.82	samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp
+s032	1	99.66	99.66	99.84	99.84	samples/hwpx/hancom-hwp/form-002.hwp
+s032	2	99.99	99.99	99.99	99.99	samples/hwpx/hancom-hwp/form-002.hwp
+s032	3	99.51	99.66	99.72	99.85	samples/hwpx/hancom-hwp/form-002.hwp
+s032	4	100.00	100.00	99.99	99.99	samples/hwpx/hancom-hwp/form-002.hwp
+s032	5	99.60	99.66	99.79	99.84	samples/hwpx/hancom-hwp/form-002.hwp
+s032	6	99.99	99.99	99.99	99.99	samples/hwpx/hancom-hwp/form-002.hwp
+s032	7	99.35	99.65	99.49	99.83	samples/hwpx/hancom-hwp/form-002.hwp
+s032	8	100.00	100.00	99.99	99.99	samples/hwpx/hancom-hwp/form-002.hwp
+s032	9	99.46	99.66	99.64	99.84	samples/hwpx/hancom-hwp/form-002.hwp
+s032	10	100.00	100.00	99.99	99.99	samples/hwpx/hancom-hwp/form-002.hwp
+s033	1	97.60	97.60	97.61	97.62	samples/hwpx/hancom-hwp/hwpx-01.hwp
+s033	2	98.38	98.59	98.37	98.62	samples/hwpx/hancom-hwp/hwpx-01.hwp
+s033	3	99.74	99.74	99.82	99.82	samples/hwpx/hancom-hwp/hwpx-01.hwp
+s033	4	99.88	99.88	99.90	99.90	samples/hwpx/hancom-hwp/hwpx-01.hwp
+s033	5	99.87	99.87	99.89	99.89	samples/hwpx/hancom-hwp/hwpx-01.hwp
+s033	6	99.94	99.94	99.94	99.94	samples/hwpx/hancom-hwp/hwpx-01.hwp
+s033	7	99.85	99.85	99.87	99.88	samples/hwpx/hancom-hwp/hwpx-01.hwp
+s033	8	99.78	99.78	99.85	99.85	samples/hwpx/hancom-hwp/hwpx-01.hwp
+s033	9	99.04	99.04	99.15	99.15	samples/hwpx/hancom-hwp/hwpx-01.hwp
+s034	1	99.95	99.95	99.95	99.95	samples/hwpx/hancom-hwp/hwpx-02.hwp
+s034	2	99.79	99.98	99.79	100.00	samples/hwpx/hancom-hwp/hwpx-02.hwp
+s034	3	99.42	99.42	99.37	99.37	samples/hwpx/hancom-hwp/hwpx-02.hwp
+s034	4	99.87	99.87	99.83	99.82	samples/hwpx/hancom-hwp/hwpx-02.hwp
+s034	5	99.95	99.95	99.93	99.93	samples/hwpx/hancom-hwp/hwpx-02.hwp
+s034	6	93.00	92.99	92.91	92.89	samples/hwpx/hancom-hwp/hwpx-02.hwp
+s034	7	91.30	91.29	91.46	91.43	samples/hwpx/hancom-hwp/hwpx-02.hwp
+s034	8	99.97	99.97	99.96	99.96	samples/hwpx/hancom-hwp/hwpx-02.hwp
+s034	9	98.73	98.73	98.83	98.82	samples/hwpx/hancom-hwp/hwpx-02.hwp
+s035	1	97.60	97.60	97.61	97.62	samples/hwpx/hancom-hwp/hwpx-h-01.hwp
+s035	2	98.38	98.59	98.37	98.62	samples/hwpx/hancom-hwp/hwpx-h-01.hwp
+s035	3	99.74	99.74	99.82	99.82	samples/hwpx/hancom-hwp/hwpx-h-01.hwp
+s035	4	99.88	99.88	99.90	99.90	samples/hwpx/hancom-hwp/hwpx-h-01.hwp
+s035	5	99.87	99.87	99.89	99.89	samples/hwpx/hancom-hwp/hwpx-h-01.hwp
+s035	6	99.94	99.94	99.94	99.94	samples/hwpx/hancom-hwp/hwpx-h-01.hwp
+s035	7	99.85	99.85	99.87	99.88	samples/hwpx/hancom-hwp/hwpx-h-01.hwp
+s035	8	99.78	99.78	99.85	99.85	samples/hwpx/hancom-hwp/hwpx-h-01.hwp
+s035	9	99.04	99.04	99.15	99.15	samples/hwpx/hancom-hwp/hwpx-h-01.hwp
+s036	1	92.82	92.81	92.97	92.97	samples/hwpx/hancom-hwp/hwpx-h-02.hwp
+s036	2	98.93	99.15	98.91	99.15	samples/hwpx/hancom-hwp/hwpx-h-02.hwp
+s036	3	99.30	99.31	99.35	99.35	samples/hwpx/hancom-hwp/hwpx-h-02.hwp
+s036	4	99.78	99.78	99.79	99.79	samples/hwpx/hancom-hwp/hwpx-h-02.hwp
+s036	5	99.84	99.84	99.86	99.86	samples/hwpx/hancom-hwp/hwpx-h-02.hwp
+s036	6	99.74	99.74	99.75	99.75	samples/hwpx/hancom-hwp/hwpx-h-02.hwp
+s036	7	99.81	99.81	99.82	99.82	samples/hwpx/hancom-hwp/hwpx-h-02.hwp
+s036	8	99.75	99.75	99.78	99.78	samples/hwpx/hancom-hwp/hwpx-h-02.hwp
+s036	9	98.73	98.73	98.83	98.82	samples/hwpx/hancom-hwp/hwpx-h-02.hwp
+s037	1	96.19	96.19	96.26	96.26	samples/hwpx/hancom-hwp/hwpx-h-03.hwp
+s037	2	98.62	98.84	98.60	98.84	samples/hwpx/hancom-hwp/hwpx-h-03.hwp
+s037	3	99.75	99.75	99.80	99.80	samples/hwpx/hancom-hwp/hwpx-h-03.hwp
+s037	4	99.85	99.86	99.88	99.89	samples/hwpx/hancom-hwp/hwpx-h-03.hwp
+s037	5	99.87	99.87	99.91	99.91	samples/hwpx/hancom-hwp/hwpx-h-03.hwp
+s037	6	99.93	99.93	99.94	99.94	samples/hwpx/hancom-hwp/hwpx-h-03.hwp
+s037	7	99.84	99.84	99.85	99.85	samples/hwpx/hancom-hwp/hwpx-h-03.hwp
+s037	8	99.76	99.76	99.82	99.82	samples/hwpx/hancom-hwp/hwpx-h-03.hwp
+s037	9	98.46	98.46	98.57	98.56	samples/hwpx/hancom-hwp/hwpx-h-03.hwp
+s038	2	99.62	99.62	99.64	99.66	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	5	99.49	99.49	99.51	99.51	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	6	98.42	98.43	98.56	98.57	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	7	99.51	99.51	99.52	99.52	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	8	99.93	99.93	99.94	99.94	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	9	99.83	99.83	99.89	99.89	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	10	99.18	99.18	99.23	99.23	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	11	99.27	99.27	99.25	99.25	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	12	99.59	99.59	99.79	99.79	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	13	99.95	99.95	99.92	99.92	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	14	99.18	99.18	99.18	99.18	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	15	99.97	99.97	99.99	99.99	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	16	99.24	99.24	99.30	99.30	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	17	98.82	98.82	98.85	98.85	samples/hwpx/hancom-hwp/mel-001.hwp
+s038	18	99.60	99.60	99.64	99.64	samples/hwpx/hancom-hwp/mel-001.hwp
+s039	1	93.64	93.78	93.86	93.97	samples/hwpx/hcar-001.hwpx
+s039	2	99.94	99.94	100.00	100.00	samples/hwpx/hcar-001.hwpx
+s039	3	99.93	99.93	99.96	99.96	samples/hwpx/hcar-001.hwpx
+s039	4	99.84	99.84	99.62	99.61	samples/hwpx/hcar-001.hwpx
+s039	5	44.12	44.13	43.65	43.65	samples/hwpx/hcar-001.hwpx
+s039	6	99.57	99.54	99.63	99.60	samples/hwpx/hcar-001.hwpx
+s040	1	97.60	97.60	97.61	97.62	samples/hwpx/hwpx-01.hwpx
+s040	2	98.38	98.59	98.37	98.62	samples/hwpx/hwpx-01.hwpx
+s040	3	99.74	99.74	99.82	99.82	samples/hwpx/hwpx-01.hwpx
+s040	4	99.88	99.88	99.90	99.90	samples/hwpx/hwpx-01.hwpx
+s040	5	99.87	99.87	99.89	99.89	samples/hwpx/hwpx-01.hwpx
+s040	6	99.94	99.94	99.94	99.94	samples/hwpx/hwpx-01.hwpx
+s040	7	99.85	99.85	99.87	99.88	samples/hwpx/hwpx-01.hwpx
+s040	8	99.78	99.78	99.85	99.85	samples/hwpx/hwpx-01.hwpx
+s040	9	99.04	99.04	99.15	99.15	samples/hwpx/hwpx-01.hwpx
+s041	1	97.60	97.60	97.61	97.62	samples/hwpx/hwpx-h-01.hwpx
+s041	2	97.67	97.89	97.63	97.88	samples/hwpx/hwpx-h-01.hwpx
+s041	3	99.74	99.74	99.82	99.82	samples/hwpx/hwpx-h-01.hwpx
+s041	4	99.88	99.88	99.90	99.90	samples/hwpx/hwpx-h-01.hwpx
+s041	5	99.87	99.87	99.89	99.89	samples/hwpx/hwpx-h-01.hwpx
+s041	6	99.94	99.94	99.94	99.94	samples/hwpx/hwpx-h-01.hwpx
+s041	7	99.85	99.85	99.87	99.88	samples/hwpx/hwpx-h-01.hwpx
+s041	8	99.78	99.78	99.85	99.85	samples/hwpx/hwpx-h-01.hwpx
+s041	9	99.04	99.04	99.15	99.15	samples/hwpx/hwpx-h-01.hwpx
+s042	1	92.82	92.82	92.98	92.98	samples/hwpx/hwpx-h-02.hwpx
+s042	2	98.93	99.15	98.91	99.15	samples/hwpx/hwpx-h-02.hwpx
+s042	3	99.29	99.30	99.34	99.34	samples/hwpx/hwpx-h-02.hwpx
+s042	4	99.78	99.78	99.79	99.79	samples/hwpx/hwpx-h-02.hwpx
+s042	5	99.84	99.84	99.86	99.86	samples/hwpx/hwpx-h-02.hwpx
+s042	6	99.73	99.73	99.76	99.76	samples/hwpx/hwpx-h-02.hwpx
+s042	7	99.81	99.81	99.82	99.82	samples/hwpx/hwpx-h-02.hwpx
+s042	8	99.75	99.75	99.78	99.78	samples/hwpx/hwpx-h-02.hwpx
+s042	9	98.73	98.73	98.83	98.82	samples/hwpx/hwpx-h-02.hwpx
+s043	1	96.19	96.19	96.26	96.26	samples/hwpx/hwpx-h-03.hwpx
+s043	2	98.62	98.84	98.60	98.84	samples/hwpx/hwpx-h-03.hwpx
+s043	3	99.75	99.75	99.80	99.80	samples/hwpx/hwpx-h-03.hwpx
+s043	4	99.85	99.86	99.88	99.89	samples/hwpx/hwpx-h-03.hwpx
+s043	5	99.87	99.87	99.91	99.91	samples/hwpx/hwpx-h-03.hwpx
+s043	6	99.93	99.93	99.94	99.94	samples/hwpx/hwpx-h-03.hwpx
+s043	7	99.84	99.84	99.85	99.85	samples/hwpx/hwpx-h-03.hwpx
+s043	8	99.76	99.76	99.82	99.82	samples/hwpx/hwpx-h-03.hwpx
+s043	9	98.46	98.46	98.57	98.56	samples/hwpx/hwpx-h-03.hwpx
+s044	1	97.87	97.86	97.95	97.94	samples/hwpx/issue_1133.hwpx
+s044	2	99.28	99.28	99.30	99.30	samples/hwpx/issue_1133.hwpx
+s045	2	99.62	99.62	99.64	99.66	samples/hwpx/mel-001.hwpx
+s045	5	99.49	99.49	99.51	99.51	samples/hwpx/mel-001.hwpx
+s045	6	98.42	98.43	98.56	98.57	samples/hwpx/mel-001.hwpx
+s045	7	99.51	99.51	99.52	99.52	samples/hwpx/mel-001.hwpx
+s045	8	99.93	99.93	99.94	99.94	samples/hwpx/mel-001.hwpx
+s045	9	99.83	99.83	99.89	99.89	samples/hwpx/mel-001.hwpx
+s045	10	99.18	99.18	99.23	99.23	samples/hwpx/mel-001.hwpx
+s045	11	99.27	99.27	99.25	99.25	samples/hwpx/mel-001.hwpx
+s045	12	99.59	99.59	99.79	99.79	samples/hwpx/mel-001.hwpx
+s045	13	99.95	99.95	99.92	99.92	samples/hwpx/mel-001.hwpx
+s045	14	99.18	99.18	99.18	99.18	samples/hwpx/mel-001.hwpx
+s045	15	99.97	99.97	99.99	99.99	samples/hwpx/mel-001.hwpx
+s045	16	99.24	99.24	99.30	99.30	samples/hwpx/mel-001.hwpx
+s045	17	98.82	98.82	98.85	98.85	samples/hwpx/mel-001.hwpx
+s045	18	99.60	99.60	99.64	99.64	samples/hwpx/mel-001.hwpx
+s046	1	99.88	99.88	99.96	99.96	samples/hwpx/pr-1674.hwpx
+s046	2	99.63	99.60	99.63	99.61	samples/hwpx/pr-1674.hwpx
+s046	3	80.39	80.39	80.09	80.09	samples/hwpx/pr-1674.hwpx
+s046	4	99.40	99.53	99.64	99.71	samples/hwpx/pr-1674.hwpx
+s046	5	99.75	99.75	99.96	99.96	samples/hwpx/pr-1674.hwpx
+s046	6	91.55	91.86	92.67	92.91	samples/hwpx/pr-1674.hwpx
+s046	7	91.28	91.63	91.52	91.84	samples/hwpx/pr-1674.hwpx
+s046	8	94.46	94.64	94.39	94.59	samples/hwpx/pr-1674.hwpx
+s046	10	99.14	99.10	99.11	99.05	samples/hwpx/pr-1674.hwpx
+s046	11	99.45	99.85	99.45	99.81	samples/hwpx/pr-1674.hwpx
+s046	12	99.37	99.37	99.40	99.40	samples/hwpx/pr-1674.hwpx
+s046	14	99.27	99.31	99.23	99.29	samples/hwpx/pr-1674.hwpx
+s046	15	99.51	99.52	99.57	99.58	samples/hwpx/pr-1674.hwpx
+s046	16	99.96	99.96	99.99	99.99	samples/hwpx/pr-1674.hwpx
+s046	17	99.94	99.94	99.99	99.99	samples/hwpx/pr-1674.hwpx
+s046	18	99.93	99.98	99.95	100.00	samples/hwpx/pr-1674.hwpx
+s046	19	99.92	99.92	99.93	99.93	samples/hwpx/pr-1674.hwpx
+s046	20	99.95	99.95	99.98	99.98	samples/hwpx/pr-1674.hwpx
+s046	21	99.93	99.93	99.99	99.99	samples/hwpx/pr-1674.hwpx
+s046	22	99.70	99.70	99.70	99.70	samples/hwpx/pr-1674.hwpx
+s046	23	68.31	68.28	68.55	68.52	samples/hwpx/pr-1674.hwpx
+s046	24	69.83	69.80	69.86	69.83	samples/hwpx/pr-1674.hwpx
+s046	25	99.00	99.12	99.03	99.13	samples/hwpx/pr-1674.hwpx
+s046	26	97.11	97.12	97.23	97.22	samples/hwpx/pr-1674.hwpx
+s046	27	84.47	84.55	84.51	84.58	samples/hwpx/pr-1674.hwpx
+s046	28	99.81	99.94	99.84	99.98	samples/hwpx/pr-1674.hwpx
+s046	29	99.76	99.98	99.75	99.98	samples/hwpx/pr-1674.hwpx
+s046	30	99.95	99.95	99.98	99.98	samples/hwpx/pr-1674.hwpx
+s046	31	99.78	99.78	99.98	99.98	samples/hwpx/pr-1674.hwpx
+s046	32	99.77	99.77	99.79	99.79	samples/hwpx/pr-1674.hwpx
+s046	33	99.96	99.96	99.98	99.98	samples/hwpx/pr-1674.hwpx
+s046	34	99.61	99.61	99.61	99.61	samples/hwpx/pr-1674.hwpx
+s046	35	99.87	99.87	99.85	99.85	samples/hwpx/pr-1674.hwpx
+s047	1	94.84	95.07	95.27	95.52	samples/hwpx_sample2.hwp
+s047	2	99.85	99.69	99.84	99.69	samples/hwpx_sample2.hwp
+s047	3	98.20	98.41	98.33	98.53	samples/hwpx_sample2.hwp
+s047	4	83.36	83.30	82.82	82.76	samples/hwpx_sample2.hwp
+s047	5	99.88	99.89	99.93	99.95	samples/hwpx_sample2.hwp
+s047	6	99.97	99.97	99.99	99.99	samples/hwpx_sample2.hwp
+s047	7	99.95	99.95	99.99	99.99	samples/hwpx_sample2.hwp
+s047	8	47.61	47.59	48.10	48.13	samples/hwpx_sample2.hwp
+s047	9	99.13	99.96	99.12	99.98	samples/hwpx_sample2.hwp
+s047	10	99.85	99.85	99.90	99.90	samples/hwpx_sample2.hwp
+s047	11	99.11	99.97	99.06	99.99	samples/hwpx_sample2.hwp
+s047	12	99.85	99.97	99.84	99.99	samples/hwpx_sample2.hwp
+s047	13	89.45	89.54	89.54	89.60	samples/hwpx_sample2.hwp
+s047	14	56.27	56.25	55.80	55.82	samples/hwpx_sample2.hwp
+s047	15	99.91	99.96	99.95	99.99	samples/hwpx_sample2.hwp
+s047	16	99.90	99.95	99.90	99.96	samples/hwpx_sample2.hwp
+s047	17	99.87	99.96	99.91	99.99	samples/hwpx_sample2.hwp
+s047	18	99.30	99.97	99.28	99.97	samples/hwpx_sample2.hwp
+s047	19	99.96	99.96	99.99	99.99	samples/hwpx_sample2.hwp
+s047	20	99.95	99.95	99.99	99.99	samples/hwpx_sample2.hwp
+s047	21	99.83	99.83	99.96	99.96	samples/hwpx_sample2.hwp
+s047	22	99.76	99.75	99.81	99.80	samples/hwpx_sample2.hwp
+s047	24	99.95	99.95	99.99	99.99	samples/hwpx_sample2.hwp
+s047	25	99.89	99.89	99.99	99.99	samples/hwpx_sample2.hwp
+s047	26	99.94	99.94	99.98	99.98	samples/hwpx_sample2.hwp
+s047	27	99.59	99.59	99.64	99.64	samples/hwpx_sample2.hwp
+s047	29	99.98	100.00	99.98	99.99	samples/hwpx_sample2.hwp
+s048	1	94.77	95.00	94.94	95.18	samples/hwpx_sample2.hwpx
+s048	2	99.85	99.69	99.84	99.69	samples/hwpx_sample2.hwpx
+s048	3	98.20	98.41	98.33	98.53	samples/hwpx_sample2.hwpx
+s048	4	99.96	99.97	99.99	99.99	samples/hwpx_sample2.hwpx
+s048	5	99.88	99.89	99.93	99.95	samples/hwpx_sample2.hwpx
+s048	6	99.97	99.97	99.99	99.99	samples/hwpx_sample2.hwpx
+s048	7	99.95	99.95	99.99	99.99	samples/hwpx_sample2.hwpx
+s048	8	95.45	95.59	95.25	95.43	samples/hwpx_sample2.hwpx
+s048	9	97.29	98.08	97.32	98.14	samples/hwpx_sample2.hwpx
+s048	10	99.85	99.85	99.90	99.90	samples/hwpx_sample2.hwpx
+s048	11	99.11	99.97	99.06	99.99	samples/hwpx_sample2.hwpx
+s048	12	99.85	99.97	99.84	99.99	samples/hwpx_sample2.hwpx
+s048	13	92.98	93.08	93.08	93.14	samples/hwpx_sample2.hwpx
+s048	14	98.48	98.48	98.59	98.59	samples/hwpx_sample2.hwpx
+s048	15	99.91	99.96	99.95	99.99	samples/hwpx_sample2.hwpx
+s048	16	99.90	99.95	99.90	99.96	samples/hwpx_sample2.hwpx
+s048	17	99.87	99.96	99.91	99.99	samples/hwpx_sample2.hwpx
+s048	18	99.30	99.97	99.28	99.97	samples/hwpx_sample2.hwpx
+s048	19	99.96	99.96	99.99	99.99	samples/hwpx_sample2.hwpx
+s048	20	99.95	99.95	99.99	99.99	samples/hwpx_sample2.hwpx
+s048	21	99.27	99.27	99.40	99.40	samples/hwpx_sample2.hwpx
+s048	22	99.76	99.75	99.81	99.80	samples/hwpx_sample2.hwpx
+s048	24	99.95	99.95	99.99	99.99	samples/hwpx_sample2.hwpx
+s048	25	99.89	99.89	99.99	99.99	samples/hwpx_sample2.hwpx
+s048	26	99.94	99.94	99.98	99.98	samples/hwpx_sample2.hwpx
+s048	27	99.59	99.59	99.64	99.64	samples/hwpx_sample2.hwpx
+s048	29	99.98	100.00	99.98	99.99	samples/hwpx_sample2.hwpx
+s049	1	97.88	97.87	97.96	97.95	samples/issue1133/page-number-bottom15.hwpx
+s049	2	97.43	97.42	97.43	97.43	samples/issue1133/page-number-bottom15.hwpx
+s050	1	97.88	97.87	97.96	97.95	samples/issue1133/page-number-footer15.hwpx
+s050	2	97.43	97.42	97.43	97.43	samples/issue1133/page-number-footer15.hwpx
+s051	22	99.90	99.91	99.91	99.91	samples/issue1891/76076_regulatory_analysis.hwpx
+s052	18	97.61	97.61	97.66	97.66	samples/issue1891/86712_regulatory_analysis.hwpx
+s052	19	99.31	99.30	99.43	99.42	samples/issue1891/86712_regulatory_analysis.hwpx
+s052	20	99.20	99.20	99.27	99.27	samples/issue1891/86712_regulatory_analysis.hwpx
+s052	21	59.34	59.17	59.61	59.40	samples/issue1891/86712_regulatory_analysis.hwpx
+s053	14	82.13	82.13	81.93	81.93	samples/issue1921/59043_regulatory_analysis.hwp
+s054	1	98.17	98.17	98.19	98.19	samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp
+s054	2	99.07	100.00	99.03	100.00	samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp
+s054	3	98.30	98.87	98.19	98.78	samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp
+s055	1	98.17	98.17	98.19	98.19	samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwpx
+s055	2	99.07	100.00	99.03	100.00	samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwpx
+s055	3	98.30	98.87	98.19	98.78	samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwpx
+s056	2	99.99	99.99	100.00	100.00	samples/issue2083_hide_fill_page.hwpx
+s057	2	99.50	99.50	99.50	99.50	samples/issue2470/36341511_masked.hwpx
+s058	1	99.88	99.90	100.00	100.00	samples/issue3257/webhangul_product_spec_v1.1.hwp
+s058	2	82.96	82.93	82.81	82.76	samples/issue3257/webhangul_product_spec_v1.1.hwp
+s058	3	99.77	99.77	99.80	99.80	samples/issue3257/webhangul_product_spec_v1.1.hwp
+s058	5	99.65	99.65	99.62	99.62	samples/issue3257/webhangul_product_spec_v1.1.hwp
+s058	6	99.99	99.99	100.00	100.00	samples/issue3257/webhangul_product_spec_v1.1.hwp
+s059	1	94.25	94.30			samples/issue4090/156492236_규제샌드박스_min.hwpx
+s059	2	97.10	97.10			samples/issue4090/156492236_규제샌드박스_min.hwpx
+s059	4	95.59	95.61			samples/issue4090/156492236_규제샌드박스_min.hwpx
+s060	3	99.89	99.90	99.93	99.93	samples/issue5543_carried_anchor_ladder.hwpx
+s060	4	99.91	99.91	99.96	99.96	samples/issue5543_carried_anchor_ladder.hwpx
+s061	1	99.93	99.93	100.00	100.00	samples/issue5584/3232693_employment_support_criteria.hwpx
+s062	3	99.83	99.81	99.87	99.85	samples/issue5755/rewind_overflow_page_break.hwpx
+s063	2	98.90	98.90	98.90	98.90	samples/issue5756/156732409_superscript_advance.hwp
+s064	2	99.96	99.96	100.00	100.00	samples/issue5877/fragment_ghost_vrules.hwp
+s064	3	99.98	99.98	100.00	100.00	samples/issue5877/fragment_ghost_vrules.hwp
+s064	4	99.93	99.93	99.94	99.94	samples/issue5877/fragment_ghost_vrules.hwp
+s064	5	99.94	99.98	99.94	100.00	samples/issue5877/fragment_ghost_vrules.hwp
+s064	6	99.86	99.89	99.90	99.94	samples/issue5877/fragment_ghost_vrules.hwp
+s064	7	99.83	99.85	99.91	99.94	samples/issue5877/fragment_ghost_vrules.hwp
+s064	8	99.30	99.33	99.24	99.26	samples/issue5877/fragment_ghost_vrules.hwp
+s064	9	99.95	99.95	99.95	99.96	samples/issue5877/fragment_ghost_vrules.hwp
+s064	10	99.99	100.00	99.98	100.00	samples/issue5877/fragment_ghost_vrules.hwp
+s064	11	99.92	99.93	99.98	99.99	samples/issue5877/fragment_ghost_vrules.hwp
+s064	12	99.97	99.97	100.00	100.00	samples/issue5877/fragment_ghost_vrules.hwp
+s064	13	99.00	99.00	99.05	99.05	samples/issue5877/fragment_ghost_vrules.hwp
+s064	14	99.89	99.89	99.93	99.93	samples/issue5877/fragment_ghost_vrules.hwp
+s064	15	99.79	99.79	99.83	99.83	samples/issue5877/fragment_ghost_vrules.hwp
+s064	16	99.98	99.98	100.00	100.00	samples/issue5877/fragment_ghost_vrules.hwp
+s064	17	98.19	98.19	98.23	98.23	samples/issue5877/fragment_ghost_vrules.hwp
+s064	18	99.99	99.99	100.00	100.00	samples/issue5877/fragment_ghost_vrules.hwp
+s064	19	97.23	97.24	97.36	97.35	samples/issue5877/fragment_ghost_vrules.hwp
+s064	20	96.14	96.14	95.62	95.62	samples/issue5877/fragment_ghost_vrules.hwp
+s064	21	99.75	99.75	99.78	99.77	samples/issue5877/fragment_ghost_vrules.hwp
+s064	22	99.97	99.97	100.00	100.00	samples/issue5877/fragment_ghost_vrules.hwp
+s064	23	99.97	99.98	99.99	100.00	samples/issue5877/fragment_ghost_vrules.hwp
+s064	24	99.77	99.91	99.76	99.88	samples/issue5877/fragment_ghost_vrules.hwp
+s064	25	99.00	99.97	99.10	100.00	samples/issue5877/fragment_ghost_vrules.hwp
+s064	26	93.18	93.14	93.03	92.97	samples/issue5877/fragment_ghost_vrules.hwp
+s065	1	99.93	99.93	100.00	100.00	samples/issue6025/3232693_employment_support_criteria.hwpx
+s066	4	81.68	81.67	81.42	81.42	samples/issue6044/156513948.hwpx
+s066	5	93.67	93.66	93.71	93.71	samples/issue6044/156513948.hwpx
+s066	7	99.88	99.88	99.87	99.87	samples/issue6044/156513948.hwpx
+s066	8	87.29	87.28	87.14	87.13	samples/issue6044/156513948.hwpx
+s066	9	98.81	98.89	98.84	98.92	samples/issue6044/156513948.hwpx
+s066	20	99.56	99.56	99.59	99.59	samples/issue6044/156513948.hwpx
+s066	21	99.52	99.52	99.68	99.68	samples/issue6044/156513948.hwpx
+s066	23	99.89	99.89	99.89	99.89	samples/issue6044/156513948.hwpx
+s066	28	99.68	99.78	99.76	99.84	samples/issue6044/156513948.hwpx
+s066	29	99.91	99.91	99.94	99.94	samples/issue6044/156513948.hwpx
+s066	30	89.08	89.05	86.19	86.12	samples/issue6044/156513948.hwpx
+s067	3	99.96	99.96	99.96	99.96	samples/issue6060/30307_local_service_reform.hwp
+s068	2	99.99	99.99	100.00	100.00	samples/issue6101/36361137_firefighter_training_plan.hwpx
+s069	1	97.51	97.63	99.11	99.25	samples/issue6101/36501883_approval_doc_body.hwpx
+s070	8	99.79	99.95	99.80	99.97	samples/issue6132/156482639_startup_ir_contest.hwp
+s070	10	99.82	99.82	99.83	99.83	samples/issue6132/156482639_startup_ir_contest.hwp
+s071	3	98.92	98.92	99.34	99.34	samples/issue6145/worklife_balance_index_156607916.hwpx
+s071	4	99.49	99.49	99.57	99.57	samples/issue6145/worklife_balance_index_156607916.hwpx
+s071	5	99.37	99.37	99.39	99.39	samples/issue6145/worklife_balance_index_156607916.hwpx
+s072	1	37.45	37.45	37.84	37.84	samples/issue6196/cell_char_spacing_fit.hwp
+s073	5	96.82	96.82	96.82	96.82	samples/issue6284/child_policy_top_caption_charts.hwpx
+s073	6	95.51	95.51	95.53	95.53	samples/issue6284/child_policy_top_caption_charts.hwpx
+s073	7	94.33	94.31	94.35	94.33	samples/issue6284/child_policy_top_caption_charts.hwpx
+s073	11	82.42	82.40	82.28	82.26	samples/issue6284/child_policy_top_caption_charts.hwpx
+s073	16	95.71	95.71	95.76	95.76	samples/issue6284/child_policy_top_caption_charts.hwpx
+s073	17	84.88	84.86	84.71	84.69	samples/issue6284/child_policy_top_caption_charts.hwpx
+s073	18	76.20	76.18	76.04	76.03	samples/issue6284/child_policy_top_caption_charts.hwpx
+s073	22	54.45	54.45	54.61	54.61	samples/issue6284/child_policy_top_caption_charts.hwpx
+s073	24	74.77	74.69	74.71	74.62	samples/issue6284/child_policy_top_caption_charts.hwpx
+s073	29	87.70	87.70	87.74	87.74	samples/issue6284/child_policy_top_caption_charts.hwpx
+s073	30	94.49	94.49	94.48	94.48	samples/issue6284/child_policy_top_caption_charts.hwpx
+s074	1	99.19	99.77			samples/issue6300/trade_report_forced_break_object.hwp
+s074	2	99.99	99.99			samples/issue6300/trade_report_forced_break_object.hwp
+s074	4	99.92	99.92			samples/issue6300/trade_report_forced_break_object.hwp
+s074	5	98.61	98.64			samples/issue6300/trade_report_forced_break_object.hwp
+s074	6	99.41	99.41			samples/issue6300/trade_report_forced_break_object.hwp
+s074	7	99.53	99.53			samples/issue6300/trade_report_forced_break_object.hwp
+s074	8	99.71	99.71			samples/issue6300/trade_report_forced_break_object.hwp
+s074	9	99.92	99.92			samples/issue6300/trade_report_forced_break_object.hwp
+s074	10	99.80	99.88			samples/issue6300/trade_report_forced_break_object.hwp
+s074	11	99.38	99.80			samples/issue6300/trade_report_forced_break_object.hwp
+s074	13	99.98	99.98			samples/issue6300/trade_report_forced_break_object.hwp
+s074	20	99.26	99.26			samples/issue6300/trade_report_forced_break_object.hwp
+s074	21	99.98	99.98			samples/issue6300/trade_report_forced_break_object.hwp
+s074	22	99.94	99.94			samples/issue6300/trade_report_forced_break_object.hwp
+s074	23	99.99	99.99			samples/issue6300/trade_report_forced_break_object.hwp
+s074	24	99.97	99.97			samples/issue6300/trade_report_forced_break_object.hwp
+s074	25	99.94	99.94			samples/issue6300/trade_report_forced_break_object.hwp
+s074	26	99.97	99.97			samples/issue6300/trade_report_forced_break_object.hwp
+s074	27	99.96	99.96			samples/issue6300/trade_report_forced_break_object.hwp
+s074	28	99.79	99.79			samples/issue6300/trade_report_forced_break_object.hwp
+s074	29	99.97	99.97			samples/issue6300/trade_report_forced_break_object.hwp
+s074	30	25.99	25.98			samples/issue6300/trade_report_forced_break_object.hwp
+s074	31	99.97	99.97			samples/issue6300/trade_report_forced_break_object.hwp
+s074	32	99.93	99.93			samples/issue6300/trade_report_forced_break_object.hwp
+s074	33	99.40	99.48			samples/issue6300/trade_report_forced_break_object.hwp
+s074	34	98.36	98.45			samples/issue6300/trade_report_forced_break_object.hwp
+s074	35	99.76	99.95			samples/issue6300/trade_report_forced_break_object.hwp
+s074	36	99.73	99.82			samples/issue6300/trade_report_forced_break_object.hwp
+s074	37	98.35	98.44			samples/issue6300/trade_report_forced_break_object.hwp
+s074	38	99.79	99.95			samples/issue6300/trade_report_forced_break_object.hwp
+s074	39	98.76	98.76			samples/issue6300/trade_report_forced_break_object.hwp
+s075	1	71.93	72.23	72.25	72.61	samples/issue6312/tab_host_own_line.hwpx
+s076	2	99.98	99.98	99.98	99.98	samples/issue6451/underline_run_fragments.hwpx
+s076	3	99.47	99.49	99.47	99.48	samples/issue6451/underline_run_fragments.hwpx
+s076	4	99.82	99.96	99.82	99.96	samples/issue6451/underline_run_fragments.hwpx
+s076	5	98.62	98.62	98.67	98.67	samples/issue6451/underline_run_fragments.hwpx
+s076	6	98.65	98.65	98.72	98.74	samples/issue6451/underline_run_fragments.hwpx
+s077	11	98.22	98.35	98.14	98.23	samples/issue6469/wmf_fill_shapes.hwpx
+s077	12	99.25	99.56	99.33	99.58	samples/issue6469/wmf_fill_shapes.hwpx
+s077	13	98.54	98.71	98.60	98.73	samples/issue6469/wmf_fill_shapes.hwpx
+s077	14	98.36	98.35	98.35	98.34	samples/issue6469/wmf_fill_shapes.hwpx
+s077	15	98.21	98.20	98.22	98.20	samples/issue6469/wmf_fill_shapes.hwpx
+s078	5	98.28	98.43	98.30	98.47	samples/issue6551/113424_evaluation_guideline.hwpx
+s078	34	99.48	99.49	99.48	99.48	samples/issue6551/113424_evaluation_guideline.hwpx
+s078	35	98.85	98.87	98.82	98.82	samples/issue6551/113424_evaluation_guideline.hwpx
+s079	1	78.68	78.66	79.04	79.04	samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp
+s079	2	97.23	97.22	97.22	97.21	samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp
+s080	9	99.53	99.55	99.51	99.54	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	10	99.87	99.87	99.88	99.88	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	11	91.39	91.38	91.20	91.20	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	12	99.19	99.19	99.21	99.21	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	13	98.98	98.99	98.95	98.98	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	16	98.59	99.10	98.68	99.16	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	17	99.63	99.63	99.62	99.64	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	18	98.54	99.27	98.63	99.32	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	19	99.71	99.72	99.70	99.73	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	20	99.13	99.63	99.18	99.66	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	21	99.72	99.74	99.69	99.73	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	22	99.15	99.68	99.17	99.68	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	23	99.73	99.75	99.53	99.58	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	24	98.74	99.28	98.78	99.29	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	25	98.65	98.65	98.67	98.69	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	26	99.04	99.31	98.94	99.20	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	27	99.49	99.50	99.58	99.61	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	28	97.56	97.99	97.65	98.06	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	29	99.56	99.57	99.59	99.61	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	30	98.89	99.53	99.04	99.65	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	31	98.14	98.15	98.14	98.18	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	32	99.00	99.33	99.05	99.37	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	33	99.41	99.42	99.44	99.47	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	34	98.14	99.40	98.27	99.48	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	35	98.86	98.87	98.86	98.89	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	36	98.06	98.65	98.15	98.73	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	37	99.44	99.46	99.45	99.49	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	38	97.62	98.20	97.83	98.39	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	39	99.79	99.80	99.79	99.83	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	40	98.90	99.52	98.97	99.56	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	41	99.63	99.65	99.63	99.68	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	42	97.03	99.27	97.18	99.36	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	43	99.70	99.72	99.76	99.79	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	44	98.95	99.80	99.00	99.82	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	47	97.79	97.80	97.71	97.74	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	48	91.09	91.08	91.35	91.34	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	49	98.38	98.39	98.33	98.36	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	50	98.70	98.73	98.94	98.96	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	51	97.69	97.69	97.77	97.78	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	52	99.19	99.22	99.44	99.46	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	53	98.58	98.59	98.54	98.57	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	54	99.39	99.40	99.53	99.55	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	55	99.34	99.44	99.17	99.39	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	56	99.29	99.32	99.59	99.62	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	57	99.76	99.77	99.77	99.80	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	58	98.52	98.54	98.69	98.71	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	59	95.33	95.33	95.27	95.29	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	60	98.73	98.75	98.97	98.99	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	61	99.42	99.44	99.36	99.39	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	62	99.18	99.21	99.47	99.49	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	63	98.30	98.31	98.37	98.40	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	64	99.07	99.11	99.48	99.51	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	65	99.24	99.25	99.22	99.25	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	66	99.29	99.32	99.55	99.57	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	67	98.73	98.74	98.75	98.77	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	68	99.44	99.47	99.75	99.77	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	69	99.16	99.25	99.05	99.25	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	70	99.40	99.43	99.70	99.72	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	71	99.79	99.80	99.79	99.82	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	72	97.44	97.57	99.33	99.50	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	75	98.77	98.78	98.75	98.77	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	76	99.39	99.39	99.84	99.84	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	77	99.69	99.71	99.70	99.73	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	78	98.93	98.92	99.83	99.83	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	79	99.39	99.40	99.41	99.44	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	80	99.36	99.36	99.80	99.80	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	81	99.80	99.82	99.80	99.84	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	82	99.34	99.34	99.75	99.75	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	83	99.78	99.79	99.79	99.83	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	84	98.86	98.85	99.28	99.28	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	85	99.68	99.70	99.65	99.71	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	86	99.48	99.48	99.86	99.86	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	87	99.86	99.89	99.82	99.88	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	88	99.40	99.40	99.82	99.82	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	89	99.36	99.38	99.43	99.46	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	90	98.97	98.97	99.28	99.28	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	91	99.67	99.69	99.71	99.75	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	92	99.34	99.33	99.71	99.71	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	93	99.72	99.73	99.71	99.75	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	94	98.99	98.99	99.23	99.23	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	95	99.87	99.89	99.87	99.90	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	96	96.73	96.72	97.13	97.12	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	99	99.58	99.59	99.44	99.47	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	100	98.29	98.31	98.65	98.66	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	101	99.86	99.87	99.86	99.90	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	102	99.26	99.30	99.87	99.88	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	103	99.42	99.43	99.46	99.48	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	104	99.17	99.22	99.84	99.86	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	105	99.84	99.87	99.82	99.88	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	106	99.31	99.35	99.86	99.87	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	107	99.56	99.57	99.61	99.65	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	108	98.20	98.23	98.74	98.75	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	109	99.65	99.66	99.70	99.73	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	110	99.30	99.33	99.77	99.78	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	111	99.71	99.75	99.67	99.76	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	112	99.13	99.17	99.80	99.81	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	113	99.67	99.69	99.67	99.70	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	114	98.36	98.43	99.57	99.59	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	117	99.69	99.71	99.70	99.74	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	118	92.64	92.62	95.31	95.29	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	119	99.30	99.32	99.42	99.46	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	120	97.98	97.97	98.56	98.56	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	121	98.30	98.31	98.07	98.10	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	122	99.32	99.32	99.83	99.83	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	123	99.83	99.85	99.74	99.77	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	124	99.20	99.19	99.83	99.83	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	125	99.37	99.38	99.30	99.33	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	126	99.40	99.39	99.83	99.82	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	127	99.84	99.86	99.77	99.80	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	128	97.62	97.60	98.88	98.87	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	129	99.90	99.91	99.88	99.91	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	133	99.68	99.72	99.64	99.73	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	137	99.46	99.47	99.68	99.69	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	139	99.66	99.66	99.84	99.85	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	141	99.11	99.12	99.22	99.23	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	143	99.56	99.57	99.81	99.82	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	145	99.62	99.63	99.82	99.83	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	147	99.55	99.56	99.78	99.79	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	149	99.54	99.55	99.75	99.76	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	151	99.63	99.64	99.81	99.82	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	153	99.57	99.58	99.82	99.83	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	155	99.61	99.62	99.80	99.81	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	157	99.54	99.55	99.79	99.80	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	159	99.63	99.63	99.84	99.85	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	161	99.57	99.58	99.80	99.81	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	163	99.51	99.52	99.75	99.76	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	165	99.70	99.71	99.86	99.87	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	167	99.57	99.58	99.77	99.78	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	169	98.78	98.80	99.38	99.41	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	171	99.57	99.57	99.81	99.82	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	173	99.72	99.73	99.88	99.89	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	175	99.58	99.58	99.79	99.80	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	177	99.53	99.54	99.79	99.80	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	179	99.49	99.50	99.70	99.71	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	181	59.74	59.65	61.35	61.26	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	183	99.49	99.50	99.73	99.74	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	185	99.74	99.91	99.74	99.94	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	186	99.28	99.43	99.78	99.94	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	187	99.92	99.93	99.91	99.94	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	188	96.83	96.94	97.39	97.48	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	189	49.66	49.56	49.87	49.77	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	190	40.05	40.05	40.50	40.49	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	191	99.88	99.93	99.87	99.93	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	192	99.46	99.46	99.94	99.94	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	193	99.86	99.89	99.83	99.89	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	195	99.63	99.66	99.77	99.80	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	197	99.83	99.85	99.92	99.95	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	199	99.73	99.76	99.81	99.84	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	201	99.85	99.87	99.92	99.95	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s080	203	99.80	99.82	99.79	99.83	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp
+s081	5	99.77	99.77	99.87	99.87	samples/issue6776/78494-virtual-convergence-industry-decree.hwpx
+s081	8	99.80	99.80	99.83	99.83	samples/issue6776/78494-virtual-convergence-industry-decree.hwpx
+s081	15	99.68	99.67	99.75	99.74	samples/issue6776/78494-virtual-convergence-industry-decree.hwpx
+s081	28	99.75	99.75	99.86	99.86	samples/issue6776/78494-virtual-convergence-industry-decree.hwpx
+s081	31	99.66	99.81	99.59	99.70	samples/issue6776/78494-virtual-convergence-industry-decree.hwpx
+s081	40	99.95	99.94	99.92	99.92	samples/issue6776/78494-virtual-convergence-industry-decree.hwpx
+s081	49	99.80	99.80	99.82	99.82	samples/issue6776/78494-virtual-convergence-industry-decree.hwpx
+s081	63	99.82	99.82	99.92	99.92	samples/issue6776/78494-virtual-convergence-industry-decree.hwpx
+s082	1	98.15	98.26	98.03	98.15	samples/issue6862/2249811-vessel-collision-analysis-form.hwp
+s083	11	98.00	98.09	97.88	97.95	samples/issue6866/156627451-quantum-science-press-note.hwpx
+s083	12	99.66	99.82	99.70	99.83	samples/issue6866/156627451-quantum-science-press-note.hwpx
+s083	13	99.17	99.27	99.19	99.27	samples/issue6866/156627451-quantum-science-press-note.hwpx
+s083	14	98.36	98.35	98.35	98.34	samples/issue6866/156627451-quantum-science-press-note.hwpx
+s083	15	98.92	98.91	98.92	98.91	samples/issue6866/156627451-quantum-science-press-note.hwpx
+s084	2	99.88	99.99	99.91	100.00	samples/issue6879/156767332-broadcast-revenue-attachment.hwp
+s084	3	96.84	97.07	97.62	97.80	samples/issue6879/156767332-broadcast-revenue-attachment.hwp
+s084	4	76.34	76.31	77.01	76.92	samples/issue6879/156767332-broadcast-revenue-attachment.hwp
+s084	5	99.64	99.94	99.72	99.98	samples/issue6879/156767332-broadcast-revenue-attachment.hwp
+s084	6	99.82	99.94	99.84	99.94	samples/issue6879/156767332-broadcast-revenue-attachment.hwp
+s084	8	43.39	43.27	43.35	43.25	samples/issue6879/156767332-broadcast-revenue-attachment.hwp
+s085	3	99.48	99.49	99.47	99.47	samples/issue6896/156564340-ip-dispute-mediation.hwpx
+s086	2	100.00	100.00	100.00	100.00	samples/issue6900/156521182-covid-press-clarification.hwp
+s086	3	99.96	99.96	99.92	99.92	samples/issue6900/156521182-covid-press-clarification.hwp
+s087	1	99.95	99.95	99.56	99.56	samples/issue6929/148776468_search_ad_terms_press_release.hwp
+s087	4	99.55	99.55	99.49	99.49	samples/issue6929/148776468_search_ad_terms_press_release.hwp
+s088	1	96.45	96.78	96.47	96.77	samples/issue7062/tac_object_host_line_height.hwp
+s088	2	99.68	99.72	99.67	99.69	samples/issue7062/tac_object_host_line_height.hwp
+s088	3	97.75	97.77	97.73	97.74	samples/issue7062/tac_object_host_line_height.hwp
+s088	4	99.34	99.34	99.34	99.34	samples/issue7062/tac_object_host_line_height.hwp
+s088	5	96.24	96.24	95.93	95.93	samples/issue7062/tac_object_host_line_height.hwp
+s088	6	99.67	99.88	99.73	99.91	samples/issue7062/tac_object_host_line_height.hwp
+s088	7	98.47	98.47	98.49	98.48	samples/issue7062/tac_object_host_line_height.hwp
+s089	9	99.32	99.32	99.29	99.29	samples/issue7196/156760012_page_top_spacing_trim.hwpx
+s089	10	93.73	93.72	93.72	93.72	samples/issue7196/156760012_page_top_spacing_trim.hwpx
+s090	1	91.31	91.31	91.29	91.29	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	5	96.20	96.20	96.25	96.25	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	6	98.79	98.79	98.68	98.68	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	8	98.46	98.46	98.44	98.44	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	9	99.24	99.24	99.40	99.40	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	11	99.39	99.39	99.43	99.43	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	12	99.70	99.70	99.69	99.69	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	13	99.47	99.47	99.48	99.48	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	14	99.65	99.65	99.66	99.66	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	15	99.65	99.65	99.66	99.66	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	17	99.75	99.75	99.76	99.76	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	19	98.50	98.50	98.60	98.60	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	20	99.86	99.86	99.85	99.85	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s090	21	98.50	98.50	98.61	98.61	samples/issue7198/156403546_negative_spacing_host_after_table.hwp
+s091	1	97.21	97.21	96.80	96.80	samples/issue7198/156451317_positive_spacing_host_after_table.hwp
+s091	4	98.47	98.47	98.44	98.44	samples/issue7198/156451317_positive_spacing_host_after_table.hwp
+s092	1	99.95	99.95	99.70	99.70	samples/issue7235/156086935_none_image_fill.hwp
+s092	9	98.81	98.81	98.77	98.77	samples/issue7235/156086935_none_image_fill.hwp
+s093	1	97.24	97.77	97.30	97.82	samples/issue7312/36494702_approval_tac_band.hwpx
+s094	2	100.00	100.00	99.99	99.99	samples/issue7336/nested_table_fragment_cut.hwp
+s094	4	99.90	99.92	99.93	99.96	samples/issue7336/nested_table_fragment_cut.hwp
+s094	5	96.98	97.51	97.32	97.85	samples/issue7336/nested_table_fragment_cut.hwp
+s094	6	99.97	99.97	99.98	99.98	samples/issue7336/nested_table_fragment_cut.hwp
+s095	5	100.00	100.00	100.00	100.00	samples/issue7336/stored_frame_page_larger_rowbreak.hwpx
+s095	6	96.94	96.93	96.30	96.28	samples/issue7336/stored_frame_page_larger_rowbreak.hwpx
+s095	7	97.13	97.12	97.24	97.23	samples/issue7336/stored_frame_page_larger_rowbreak.hwpx
+s096	1	97.87	97.86	97.95	97.94	samples/issue_1133.hwp
+s096	2	99.28	99.28	99.30	99.30	samples/issue_1133.hwp
+s097	3	98.24	98.24	98.28	98.28	samples/issues/2809/jubo_20260104.hwp
+s097	4	98.47	98.47	97.78	97.77	samples/issues/2809/jubo_20260104.hwp
+s098	6	96.45	96.45	96.33	96.33	samples/kps-ai.hwp
+s098	7	99.26	99.75	99.25	99.72	samples/kps-ai.hwp
+s098	8	99.95	99.98	99.95	99.97	samples/kps-ai.hwp
+s098	10	94.28	94.28	93.93	93.93	samples/kps-ai.hwp
+s098	60	99.76	99.95	99.81	99.97	samples/kps-ai.hwp
+s099	2	99.62	99.62	99.64	99.66	samples/mel-001.hwp
+s099	5	99.49	99.49	99.51	99.51	samples/mel-001.hwp
+s099	6	98.42	98.43	98.56	98.57	samples/mel-001.hwp
+s099	7	99.51	99.51	99.52	99.52	samples/mel-001.hwp
+s099	8	99.93	99.93	99.94	99.94	samples/mel-001.hwp
+s099	9	99.83	99.83	99.89	99.89	samples/mel-001.hwp
+s099	10	99.18	99.18	99.23	99.23	samples/mel-001.hwp
+s099	11	99.27	99.27	99.25	99.25	samples/mel-001.hwp
+s099	12	99.59	99.59	99.79	99.79	samples/mel-001.hwp
+s099	13	99.95	99.95	99.92	99.92	samples/mel-001.hwp
+s099	14	99.18	99.18	99.18	99.18	samples/mel-001.hwp
+s099	15	99.97	99.97	99.99	99.99	samples/mel-001.hwp
+s099	16	99.24	99.24	99.30	99.30	samples/mel-001.hwp
+s099	17	98.82	98.82	98.85	98.85	samples/mel-001.hwp
+s099	18	99.60	99.60	99.64	99.64	samples/mel-001.hwp
+s100	2	92.77	92.75	92.97	92.95	samples/multi-table-001.hwp
+s101	2	99.59	99.59	99.61	99.63	samples/multi-table-002.hwp
+s102	1	100.00	100.00	100.00	100.00	samples/nested_tac_table_wrap.hwp
+s102	2	100.00	100.00	100.00	100.00	samples/nested_tac_table_wrap.hwp
+s102	3	99.97	99.97	100.00	100.00	samples/nested_tac_table_wrap.hwp
+s102	4	99.98	99.98	100.00	100.00	samples/nested_tac_table_wrap.hwp
+s102	5	99.92	99.92	100.00	100.00	samples/nested_tac_table_wrap.hwp
+s102	6	100.00	100.00	100.00	100.00	samples/nested_tac_table_wrap.hwp
+s103	1	100.00	100.00	100.00	100.00	samples/pic-in-head-01.hwp
+s103	3	98.69	99.94	98.85	100.00	samples/pic-in-head-01.hwp
+s103	4	99.98	99.98	100.00	100.00	samples/pic-in-head-01.hwp
+s103	5	99.98	99.98	99.98	99.98	samples/pic-in-head-01.hwp
+s103	7	100.00	100.00	100.00	100.00	samples/pic-in-head-01.hwp
+s103	9	99.92	99.92	99.99	99.99	samples/pic-in-head-01.hwp
+s103	11	49.18	49.18	49.16	49.16	samples/pic-in-head-01.hwp
+s103	12	99.98	99.98	100.00	100.00	samples/pic-in-head-01.hwp
+s103	13	99.99	99.99	100.00	100.00	samples/pic-in-head-01.hwp
+s103	14	99.99	99.99	100.00	100.00	samples/pic-in-head-01.hwp
+s103	15	99.99	99.99	100.00	100.00	samples/pic-in-head-01.hwp
+s103	17	99.42	99.42	99.51	99.51	samples/pic-in-head-01.hwp
+s103	18	99.88	99.88	99.93	99.93	samples/pic-in-head-01.hwp
+s104	1	99.80	99.81	99.95	99.95	samples/pic-in-head-02.hwp
+s104	3	99.89	99.89	99.89	99.89	samples/pic-in-head-02.hwp
+s104	4	66.65	66.65	66.81	66.81	samples/pic-in-head-02.hwp
+s104	5	99.78	99.78	99.79	99.79	samples/pic-in-head-02.hwp
+s104	6	99.97	99.97	99.99	99.99	samples/pic-in-head-02.hwp
+s105	1	100.00	100.00	100.00	100.00	samples/pic-in-table-01.hwp
+s105	3	98.69	99.94	98.85	100.00	samples/pic-in-table-01.hwp
+s105	4	99.98	99.98	100.00	100.00	samples/pic-in-table-01.hwp
+s105	5	99.98	99.98	99.98	99.98	samples/pic-in-table-01.hwp
+s105	7	100.00	100.00	100.00	100.00	samples/pic-in-table-01.hwp
+s105	9	99.92	99.92	99.99	99.99	samples/pic-in-table-01.hwp
+s105	11	49.18	49.18	49.16	49.16	samples/pic-in-table-01.hwp
+s105	12	99.98	99.98	100.00	100.00	samples/pic-in-table-01.hwp
+s105	13	99.99	99.99	100.00	100.00	samples/pic-in-table-01.hwp
+s105	14	99.99	99.99	100.00	100.00	samples/pic-in-table-01.hwp
+s105	15	99.99	99.99	100.00	100.00	samples/pic-in-table-01.hwp
+s105	17	99.42	99.42	99.51	99.51	samples/pic-in-table-01.hwp
+s105	18	99.88	99.88	99.93	99.93	samples/pic-in-table-01.hwp
+s106	1	99.88	99.88	99.96	99.96	samples/pr-1674.hwp
+s106	2	99.65	99.62	99.64	99.61	samples/pr-1674.hwp
+s106	3	80.33	80.33	80.18	80.18	samples/pr-1674.hwp
+s106	4	99.40	99.53	99.64	99.71	samples/pr-1674.hwp
+s106	5	99.75	99.75	99.96	99.96	samples/pr-1674.hwp
+s106	6	91.55	91.86	92.67	92.91	samples/pr-1674.hwp
+s106	7	91.28	91.63	91.52	91.84	samples/pr-1674.hwp
+s106	8	94.45	94.64	94.40	94.60	samples/pr-1674.hwp
+s106	10	99.15	99.12	99.13	99.07	samples/pr-1674.hwp
+s106	11	99.46	99.86	99.44	99.80	samples/pr-1674.hwp
+s106	12	99.37	99.37	99.40	99.40	samples/pr-1674.hwp
+s106	14	99.19	99.23	99.15	99.20	samples/pr-1674.hwp
+s106	15	99.51	99.52	99.57	99.58	samples/pr-1674.hwp
+s106	16	99.96	99.96	99.99	99.99	samples/pr-1674.hwp
+s106	17	99.94	99.94	99.99	99.99	samples/pr-1674.hwp
+s106	18	99.93	99.98	99.95	100.00	samples/pr-1674.hwp
+s106	19	96.40	96.40	96.32	96.32	samples/pr-1674.hwp
+s106	20	99.95	99.95	99.98	99.98	samples/pr-1674.hwp
+s106	21	99.93	99.93	99.99	99.99	samples/pr-1674.hwp
+s106	22	99.70	99.70	99.70	99.70	samples/pr-1674.hwp
+s106	23	68.31	68.28	68.55	68.52	samples/pr-1674.hwp
+s106	24	69.83	69.80	69.86	69.83	samples/pr-1674.hwp
+s106	25	99.00	99.12	99.03	99.13	samples/pr-1674.hwp
+s106	26	97.11	97.12	97.23	97.22	samples/pr-1674.hwp
+s106	27	84.47	84.55	84.51	84.58	samples/pr-1674.hwp
+s106	28	99.81	99.94	99.84	99.98	samples/pr-1674.hwp
+s106	29	99.76	99.98	99.75	99.98	samples/pr-1674.hwp
+s106	30	99.95	99.95	99.98	99.98	samples/pr-1674.hwp
+s106	31	99.78	99.78	99.98	99.98	samples/pr-1674.hwp
+s106	32	99.77	99.77	99.79	99.79	samples/pr-1674.hwp
+s106	33	99.96	99.96	99.98	99.98	samples/pr-1674.hwp
+s106	34	99.61	99.61	99.61	99.61	samples/pr-1674.hwp
+s106	35	99.87	99.87	99.85	99.85	samples/pr-1674.hwp
+s107	15	99.93	99.93	99.92	99.91	samples/rowbreak-problem-pages.hwp
+s107	16	91.56	91.54	91.84	91.83	samples/rowbreak-problem-pages.hwp
+s107	18	99.66	99.66	99.64	99.64	samples/rowbreak-problem-pages.hwp
+s108	15	98.77	98.77	98.76	98.76	samples/rowbreak-problem-pages.hwpx
+s108	16	98.48	98.48	98.40	98.40	samples/rowbreak-problem-pages.hwpx
+s108	18	99.66	99.66	99.64	99.64	samples/rowbreak-problem-pages.hwpx
+s109	1	99.77	99.90	99.81	99.91	samples/synam-001.hwp
+s109	2	99.94	99.96	99.95	99.97	samples/synam-001.hwp
+s109	3	99.25	99.63	99.37	99.72	samples/synam-001.hwp
+s109	4	99.83	99.99	99.88	100.00	samples/synam-001.hwp
+s109	5	99.53	99.61	99.56	99.62	samples/synam-001.hwp
+s109	7	99.92	99.92	99.97	99.97	samples/synam-001.hwp
+s109	8	99.58	99.58	99.46	99.46	samples/synam-001.hwp
+s109	9	99.91	99.96	99.94	99.98	samples/synam-001.hwp
+s109	10	99.97	99.97	99.99	99.99	samples/synam-001.hwp
+s109	11	99.66	99.88	99.70	99.92	samples/synam-001.hwp
+s109	12	99.83	99.93	99.91	99.99	samples/synam-001.hwp
+s109	13	83.79	83.79	83.72	83.72	samples/synam-001.hwp
+s109	17	99.92	99.92	99.99	99.99	samples/synam-001.hwp
+s109	18	99.93	99.94	100.00	100.00	samples/synam-001.hwp
+s109	19	99.06	99.04	99.16	99.15	samples/synam-001.hwp
+s109	20	98.13	98.13	98.17	98.17	samples/synam-001.hwp
+s109	21	97.97	97.95	98.06	98.02	samples/synam-001.hwp
+s109	22	97.43	97.42	97.44	97.42	samples/synam-001.hwp
+s109	23	99.96	99.96	100.00	100.00	samples/synam-001.hwp
+s109	24	99.52	99.52	99.55	99.55	samples/synam-001.hwp
+s109	26	99.65	99.64	99.71	99.71	samples/synam-001.hwp
+s109	27	99.90	99.95	99.95	100.00	samples/synam-001.hwp
+s109	28	99.96	99.96	99.96	99.96	samples/synam-001.hwp
+s109	29	99.15	99.70	99.17	99.75	samples/synam-001.hwp
+s109	30	99.67	99.98	99.70	99.99	samples/synam-001.hwp
+s109	33	98.85	98.85	98.90	98.90	samples/synam-001.hwp
+s109	34	99.91	99.88	99.96	99.92	samples/synam-001.hwp
+s109	35	99.51	99.52	99.56	99.56	samples/synam-001.hwp
+s110	5	99.98	99.98	99.98	99.98	samples/table-vpos-01.hwp
+s111	5	99.98	99.98	99.98	99.98	samples/table-vpos-01.hwpx
+s112	2	99.99	99.99	100.00	100.00	samples/tac-img-02.hwp
+s112	4	99.99	99.99	100.00	100.00	samples/tac-img-02.hwp
+s112	19	100.00	100.00	100.00	100.00	samples/tac-img-02.hwp
+s112	22	100.00	100.00	100.00	100.00	samples/tac-img-02.hwp
+s112	23	98.47	98.47	98.46	98.46	samples/tac-img-02.hwp
+s112	25	99.99	99.99	99.99	99.99	samples/tac-img-02.hwp
+s112	27	99.55	99.55	99.54	99.54	samples/tac-img-02.hwp
+s112	28	99.52	99.52	99.53	99.53	samples/tac-img-02.hwp
+s112	31	100.00	100.00	100.00	100.00	samples/tac-img-02.hwp
+s112	33	100.00	100.00	100.00	100.00	samples/tac-img-02.hwp
+s112	34	99.90	99.90	99.97	99.97	samples/tac-img-02.hwp
+s112	35	99.72	99.84	99.86	99.97	samples/tac-img-02.hwp
+s112	36	99.82	99.81	99.93	99.93	samples/tac-img-02.hwp
+s112	37	99.87	99.89	99.99	99.99	samples/tac-img-02.hwp
+s112	38	100.00	100.00	100.00	100.00	samples/tac-img-02.hwp
+s112	39	99.38	99.38	99.35	99.35	samples/tac-img-02.hwp
+s112	40	99.99	99.99	99.99	99.99	samples/tac-img-02.hwp
+s112	41	100.00	100.00	100.00	100.00	samples/tac-img-02.hwp
+s112	42	99.98	99.98	99.98	99.98	samples/tac-img-02.hwp
+s112	43	100.00	100.00	100.00	100.00	samples/tac-img-02.hwp
+s112	44	99.80	99.80	99.80	99.80	samples/tac-img-02.hwp
+s112	45	99.98	99.98	100.00	100.00	samples/tac-img-02.hwp
+s112	46	99.95	99.95	99.98	99.98	samples/tac-img-02.hwp
+s112	47	99.71	99.71	99.77	99.77	samples/tac-img-02.hwp
+s112	48	99.79	99.79	99.81	99.81	samples/tac-img-02.hwp
+s112	49	99.87	99.87	99.89	99.89	samples/tac-img-02.hwp
+s112	50	99.99	99.99	99.98	99.98	samples/tac-img-02.hwp
+s112	51	99.92	99.92	99.87	99.87	samples/tac-img-02.hwp
+s112	52	99.62	99.62	99.63	99.63	samples/tac-img-02.hwp
+s112	53	99.97	99.97	99.97	99.97	samples/tac-img-02.hwp
+s112	56	99.34	99.34	99.34	99.34	samples/tac-img-02.hwp
+s112	57	99.98	99.98	100.00	100.00	samples/tac-img-02.hwp
+s112	58	99.97	99.97	99.97	99.97	samples/tac-img-02.hwp
+s112	59	99.98	99.98	99.98	99.98	samples/tac-img-02.hwp
+s112	60	100.00	100.00	100.00	100.00	samples/tac-img-02.hwp
+s112	61	100.00	100.00	100.00	100.00	samples/tac-img-02.hwp
+s112	62	100.00	100.00	100.00	100.00	samples/tac-img-02.hwp
+s112	63	99.82	100.00	99.82	100.00	samples/tac-img-02.hwp
+s112	64	100.00	100.00	100.00	100.00	samples/tac-img-02.hwp
+s112	65	99.91	99.99	99.91	99.99	samples/tac-img-02.hwp
+s113	2	99.99	99.99	100.00	100.00	samples/tac-img-02.hwpx
+s113	4	99.99	99.99	100.00	100.00	samples/tac-img-02.hwpx
+s113	19	84.01	84.01	84.45	84.44	samples/tac-img-02.hwpx
+s113	22	100.00	100.00	100.00	100.00	samples/tac-img-02.hwpx
+s113	23	98.47	98.47	98.46	98.46	samples/tac-img-02.hwpx
+s113	25	99.99	99.99	99.99	99.99	samples/tac-img-02.hwpx
+s113	27	99.55	99.55	99.54	99.54	samples/tac-img-02.hwpx
+s113	28	99.52	99.52	99.53	99.53	samples/tac-img-02.hwpx
+s113	31	100.00	100.00	100.00	100.00	samples/tac-img-02.hwpx
+s113	33	100.00	100.00	100.00	100.00	samples/tac-img-02.hwpx
+s113	34	99.90	99.90	99.97	99.97	samples/tac-img-02.hwpx
+s113	35	99.72	99.84	99.86	99.97	samples/tac-img-02.hwpx
+s113	36	99.82	99.81	99.93	99.93	samples/tac-img-02.hwpx
+s113	37	99.87	99.89	99.99	99.99	samples/tac-img-02.hwpx
+s113	38	100.00	100.00	100.00	100.00	samples/tac-img-02.hwpx
+s113	39	99.38	99.38	99.35	99.35	samples/tac-img-02.hwpx
+s113	40	99.99	99.99	99.99	99.99	samples/tac-img-02.hwpx
+s113	41	100.00	100.00	100.00	100.00	samples/tac-img-02.hwpx
+s113	42	99.98	99.98	99.98	99.98	samples/tac-img-02.hwpx
+s113	43	100.00	100.00	100.00	100.00	samples/tac-img-02.hwpx
+s113	44	99.80	99.80	99.80	99.80	samples/tac-img-02.hwpx
+s113	45	76.93	76.93	77.18	77.19	samples/tac-img-02.hwpx
+s113	46	84.11	84.10	84.23	84.23	samples/tac-img-02.hwpx
+s113	47	99.71	99.71	99.77	99.77	samples/tac-img-02.hwpx
+s113	48	99.79	99.79	99.81	99.81	samples/tac-img-02.hwpx
+s113	49	99.87	99.87	99.89	99.89	samples/tac-img-02.hwpx
+s113	50	99.99	99.99	99.98	99.98	samples/tac-img-02.hwpx
+s113	51	99.92	99.92	99.87	99.87	samples/tac-img-02.hwpx
+s113	52	99.62	99.62	99.63	99.63	samples/tac-img-02.hwpx
+s113	53	63.16	63.12	63.19	63.14	samples/tac-img-02.hwpx
+s113	56	99.34	99.34	99.34	99.34	samples/tac-img-02.hwpx
+s113	57	99.98	99.98	100.00	100.00	samples/tac-img-02.hwpx
+s113	58	99.97	99.97	99.97	99.97	samples/tac-img-02.hwpx
+s113	59	99.98	99.98	99.98	99.98	samples/tac-img-02.hwpx
+s113	60	100.00	100.00	100.00	100.00	samples/tac-img-02.hwpx
+s113	61	100.00	100.00	100.00	100.00	samples/tac-img-02.hwpx
+s113	62	100.00	100.00	100.00	100.00	samples/tac-img-02.hwpx
+s113	63	99.82	100.00	99.82	100.00	samples/tac-img-02.hwpx
+s113	64	100.00	100.00	100.00	100.00	samples/tac-img-02.hwpx
+s113	65	99.91	99.99	99.91	99.99	samples/tac-img-02.hwpx
+s114	1	100.00	100.00	100.00	100.00	samples/task1749/saved_bounds_cumulative_vpos.hwp
+s115	1	100.00	100.00	100.00	100.00	samples/task1749/saved_bounds_cumulative_vpos.hwpx
+s116	4	100.00	100.00	100.00	100.00	samples/task1753/deferred_takeplace_fill_ahead.hwp
+s116	5	96.81	96.81	96.68	96.68	samples/task1753/deferred_takeplace_fill_ahead.hwp
+s116	7	97.68	97.68	97.71	97.71	samples/task1753/deferred_takeplace_fill_ahead.hwp
+s116	8	56.62	56.62	56.70	56.70	samples/task1753/deferred_takeplace_fill_ahead.hwp
+s117	4	100.00	100.00	100.00	100.00	samples/task1753/deferred_takeplace_fill_ahead.hwpx
+s117	5	96.81	96.81	96.68	96.68	samples/task1753/deferred_takeplace_fill_ahead.hwpx
+s117	7	97.68	97.68	97.71	97.71	samples/task1753/deferred_takeplace_fill_ahead.hwpx
+s117	8	56.62	56.62	56.70	56.70	samples/task1753/deferred_takeplace_fill_ahead.hwpx
+s118	12	68.98	68.99	68.24	68.23	samples/task2093/1192000_hydrogen_policy_research.hwp
+s119	1	98.46	98.88	98.44	98.88	samples/task2097/1741000_project_application.hwp
+s119	2	99.13	99.13	99.16	99.15	samples/task2097/1741000_project_application.hwp
+s120	1	99.50	99.61	99.57	99.66	samples/task2097/21217935_simsa_jipyo.hwp
+s120	2	99.68	99.89	99.83	99.99	samples/task2097/21217935_simsa_jipyo.hwp
+s120	3	96.88	96.96	96.80	96.86	samples/task2097/21217935_simsa_jipyo.hwp
+s120	4	99.96	99.98	99.98	100.00	samples/task2097/21217935_simsa_jipyo.hwp
+s120	5	99.84	99.96	99.91	100.00	samples/task2097/21217935_simsa_jipyo.hwp
+s120	6	61.54	61.52	61.74	61.71	samples/task2097/21217935_simsa_jipyo.hwp
+s120	7	96.51	96.48	96.39	96.35	samples/task2097/21217935_simsa_jipyo.hwp
+s120	8	99.91	99.93	99.98	100.00	samples/task2097/21217935_simsa_jipyo.hwp
+s121	12	99.91	99.92	99.97	99.98	samples/task2097/75544_pii_bunseok.hwpx
+s121	31	99.92	99.93	99.97	99.98	samples/task2097/75544_pii_bunseok.hwpx
+s121	32	97.15	97.14	96.86	96.84	samples/task2097/75544_pii_bunseok.hwpx
+s121	33	99.79	99.80	99.95	99.96	samples/task2097/75544_pii_bunseok.hwpx
+s121	35	99.91	99.93	99.98	99.98	samples/task2097/75544_pii_bunseok.hwpx
+s121	55	99.23	99.91	99.27	99.97	samples/task2097/75544_pii_bunseok.hwpx
+s121	59	45.64	45.45	45.60	45.32	samples/task2097/75544_pii_bunseok.hwpx
+s122	2	99.88	99.89	99.99	99.99	samples/task3236/issue3236_split_table.hwpx
+s123	1	95.92	95.91	95.76	95.74	samples/추진일정.hwp
+s124	9	99.97	99.97	99.99	99.99	samples/issue5941/1480000-201900698-native-neartop-reset.hwp
+s124	122	99.34	99.57	99.87	99.99	samples/issue5941/1480000-201900698-native-neartop-reset.hwp
+s124	134	99.00	99.01	99.48	99.48	samples/issue5941/1480000-201900698-native-neartop-reset.hwp
+s124	153	100.00	100.00	100.00	100.00	samples/issue5941/1480000-201900698-native-neartop-reset.hwp
+s124	157	94.22	94.22	93.95	93.95	samples/issue5941/1480000-201900698-native-neartop-reset.hwp
