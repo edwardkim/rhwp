@@ -22887,6 +22887,145 @@ impl LayoutEngine {
         }
     }
 
+    /// 빈 앞 프레임 뒤에서 다시 시작한 원본 행의 마지막 내용 프레임.
+    /// 빈 슬롯은 앞 프레임 소유이며, 마지막 프레임은 실제 문단 컷과
+    /// 글줄/자리차지 표가 함께 닫는 물리 상자를 반환한다.
+    fn stored_empty_prefix_row_closing_frame(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<(RowCut, f64)> {
+        if !(self.profile.get().hwpx_stored_layout()
+            || self.profile.get().hwp5_stored_pagination_layout())
+            || self.profile.get().session_edited()
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+            || table.common.treat_as_char
+            || table.caption.is_some()
+            || table.page_break != TablePageBreak::RowBreak
+        {
+            return None;
+        }
+        let cells = Self::row_cut_cell_order(table, row);
+        if cells.is_empty() {
+            return None;
+        }
+        let mut cut = Vec::with_capacity(cells.len());
+        let mut height = 0.0f64;
+        for index in cells {
+            let cell = &table.cells[index];
+            if cell.row_span != 1 || cell.text_direction != 0 || cell.dirty_flag {
+                return None;
+            }
+            let groups = stored_cell_fragment_groups(cell);
+            let &(start, end) = groups.last()?;
+            if groups.len() < 2 || start == 0 || end != cell.paragraphs.len() {
+                return None;
+            }
+            let previous = cell.paragraphs[start - 1].line_segs.last()?;
+            let initial = cell.paragraphs[start].line_segs.first()?;
+            if initial.vertical_pos != 0 || previous.vertical_pos <= initial.vertical_pos {
+                return None;
+            }
+            let structural = |paragraph: &Paragraph| {
+                paragraph.text.trim().is_empty()
+                    && paragraph.controls.iter().all(|control| {
+                        matches!(control, Control::ColumnDef(column) if column.column_count == 1)
+                    })
+            };
+            if !cell.paragraphs[..start].iter().all(structural)
+                || cell.paragraphs.iter().any(|paragraph| {
+                    paragraph.stored_text_partition_is_dirty()
+                        || paragraph.cell_format_vpos_dirty
+                        || paragraph.line_segs.is_empty()
+                        || paragraph.line_segs.iter().any(|line| {
+                            line.vertical_pos < 0
+                                || line.line_height <= 0
+                                || line.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    != 0
+                        })
+                })
+            {
+                return None;
+            }
+            let mut before = None;
+            let mut content_end = 0i64;
+            for pi in start..end {
+                let paragraph = &cell.paragraphs[pi];
+                for line in &paragraph.line_segs {
+                    if before.is_some_and(|position| line.vertical_pos < position) {
+                        return None;
+                    }
+                    before = Some(line.vertical_pos);
+                    content_end =
+                        content_end.max(i64::from(line.vertical_pos) + i64::from(line.line_height));
+                }
+                for control in &paragraph.controls {
+                    match control {
+                        Control::ColumnDef(column) if column.column_count == 1 => {}
+                        Control::Table(child) => {
+                            let [anchor] = paragraph.line_segs.as_slice() else {
+                                return None;
+                            };
+                            let next = cell.paragraphs.get(pi + 1)?.line_segs.first()?;
+                            if !paragraph.text.trim().is_empty()
+                                || paragraph
+                                    .controls
+                                    .iter()
+                                    .filter(|control| matches!(control, Control::Table(_)))
+                                    .count()
+                                    != 1
+                                || child.common.treat_as_char
+                                || !child.common.flow_with_text
+                                || child.common.text_wrap != TextWrap::TopAndBottom
+                                || child.common.vert_rel_to != VertRelTo::Para
+                                || child.common.vert_align != VertAlign::Top
+                                || child.common.vertical_offset as i32 != 0
+                                || child.caption.is_some()
+                                || anchor.segment_width != 0
+                            {
+                                return None;
+                            }
+                            let measured = self.nested_table_body_height(child, styles);
+                            let body_hu = crate::renderer::px_to_hwpunit(measured, self.dpi);
+                            if body_hu != child.common.height as i32 {
+                                return None;
+                            }
+                            let bottom = i64::from(anchor.vertical_pos)
+                                + i64::from(child.outer_margin_top)
+                                + i64::from(body_hu)
+                                + i64::from(child.outer_margin_bottom);
+                            if bottom != i64::from(next.vertical_pos) {
+                                return None;
+                            }
+                            content_end = content_end.max(bottom);
+                        }
+                        _ => return None,
+                    }
+                }
+            }
+            let units = self.cell_units(cell, table, styles);
+            let first = units.iter().position(|unit| unit.para_idx == start)?;
+            if units[..first].iter().any(|unit| unit.para_idx >= start)
+                || units[first..].iter().any(|unit| unit.para_idx < start)
+            {
+                return None;
+            }
+            let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
+            let frame = content_end as f64 * self.dpi / 7200.0 + top + bottom;
+            if frame <= 0.0 || frame > hwpunit_to_px(cell.height as i32, self.dpi) {
+                return None;
+            }
+            cut.push(first);
+            height = height.max(frame);
+        }
+        Some((cut, height))
+    }
+
     /// 저장 호스트 줄과 float가 공유하는 중첩 표 원점 및 점유 끝점.
     /// 줄 배치 뒤 커서에 offset을 더하지 않고 제어 문자가 속한 줄을 기준으로 삼는다.
     pub(super) fn stored_nested_float_placement(
@@ -24980,6 +25119,40 @@ impl LayoutEngine {
                     }
                 }
                 let rows = rows;
+                if terminal
+                    && rows.start_row > 0
+                    && rows.end_row == rows.start_row + 1
+                    && cell.paragraphs[para_idx]
+                        .controls
+                        .iter()
+                        .filter(|control| matches!(control, Control::Table(_)))
+                        .count()
+                        == 1
+                {
+                    if let Some((start_cut, height)) =
+                        self.stored_empty_prefix_row_closing_frame(nt, rows.start_row, styles)
+                    {
+                        return Some(NestedTableSplit {
+                            start_row: rows.start_row,
+                            end_row: rows.end_row,
+                            visible_height: height,
+                            flow_height: height,
+                            offset_within_start: 0.0,
+                            content_offset: offset,
+                            force_source_start_cut: false,
+                            replay_terminal_boundary_unit: false,
+                            terminal: true,
+                            recursive_cut: Some(NestedTableCut {
+                                start_row: rows.start_row,
+                                end_row: rows.end_row,
+                                start_cut,
+                                end_cut: Vec::new(),
+                                is_block_split: false,
+                                start_cut_is_block: false,
+                            }),
+                        });
+                    }
+                }
                 // [#3658] 종료 조각: start_row 상단 중 이전 쪽에 이미 보인 밴드만큼
                 // 내부 오프셋을 부여한다. 종전(0.0 고정)에는 종료 조각이 start_row 를
                 // 처음부터 재적층해 행 그리드보다 커지고, 초과한 꼬리 문단이 셀 하단
@@ -26334,6 +26507,15 @@ impl LayoutEngine {
                 self.declared_nested_opening_cut_height(table, start_cut, end_cut, styles)
             {
                 return height;
+            }
+        }
+        if !start_cut.is_empty() && end_cut.is_empty() {
+            if let Some((source_cut, height)) =
+                self.stored_empty_prefix_row_closing_frame(table, row, styles)
+            {
+                if source_cut == start_cut {
+                    return height;
+                }
             }
         }
         let row_cells: Vec<&crate::model::table::Cell> = self
