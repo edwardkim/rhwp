@@ -1,7 +1,7 @@
 # 구현 계획 — rhwp-studio AI 채팅 P0 (설정·Claude 연결·읽기 전용 대화)
 
 - 작성일: 2026-10-23 KST
-- 상태: **Stage 2 완료 — Stage 3 승인 대기**
+- 상태: **Stage 3 완료 — Stage 4 승인 대기**
 - upstream 이슈: 미등록 (등록은 작업지시자 승인 후. 등록 뒤 이 문서 이름과 머리말을 이슈 번호로 갱신한다)
 - base: `devel` `605ccfd92`
 - 후속 단계: P1 문단 교체 쓰기, P2 표·누름틀·서식, P3 OpenAI·Gemini, P4 생성·프록시
@@ -163,7 +163,7 @@ type AiStreamEvent =
 |---|---|---|---|
 | `get_document_info` | 없음 | `getDocumentInfo()`, `pageCount`, `getSectionCount()` | 형식, 쪽 수, 구역 수, 문단 수 |
 | `get_outline` | 없음 | `getOutlineNavigation()` | 개요 항목(수준, 제목, 구역·문단 좌표, 쪽) |
-| `read_page_text` | `page` (1부터) | `getPageText(page-1)` | 쪽 평문 |
+| `read_page_text` | `page` (1부터), `offset?` | `getPageTextLayout(page-1)` | 쪽 평문(표 칸 포함, `[table N / cell M]` 표시) |
 | `read_paragraphs` | `section`, `from`, `count`(≤50) | `getParagraphCount`, `getParagraphLength`, `getTextRange` | 문단 번호와 평문 목록 |
 | `search_text` | `query`, `caseSensitive?` | `searchAllText(query, cs, true)` | 일치 위치와 앞뒤 문맥. 최대 50건, 넘으면 `truncated` |
 | `get_selection` | 없음 | `host.getSelectionText()`, `host.getCaret()` | 선택 평문과 좌표. 없으면 캐럿 위치만 |
@@ -372,3 +372,37 @@ VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:ai-panel
 | 화면 판독 | 설정 대화상자와 준비 상태 패널 스크린샷 확인. API 키 입력란이 좁게 나오던 문제는 CSS로 보정했다 |
 
 - 실제 Claude 키로 하는 확인은 계획대로 Stage 5에서 한다.
+
+### Stage 3 — provider·대화 엔진·읽기 도구·신뢰 경계 (2026-10-23)
+
+- 승인: 작업지시자 「Stage 3 진행해」.
+- 구현
+  - `ClaudeProvider.streamTurn`은 `client.beta.messages.stream()`과 `finalMessage()`로 동작한다.
+    - 요청 본문: `max_tokens` 64000, `output_config.effort`, 최상위 `cache_control`. thinking·`tool_choice`·sampling 값은 보내지 않는다.
+    - 서버 대체(`fallbacks: "default"` + `server-side-fallback-2026-07-01`)는 Opus·Sonnet 5.5에만 보낸다. Haiku 5.5는 서버 대체가 없다.
+  - 도구는 `strict: true`로 보낸다. `eager_input_streaming`은 끈다(P0 도구 입력은 작아 이득이 없고, 끄면 서버가 schema를 검증한다).
+    - strict가 받지 않는 `minimum`·`maxLength`는 SDK 변환기(`transformJSONSchema`)가 description으로 옮긴다. 이 제약은 실행 전 클라이언트 검증이 지킨다.
+  - 응답 중간에 서버 대체가 일어나면, 경계(`fallback` 블록) 앞의 텍스트가 아닌 블록을 응답을 받은 자리에서 한 번만 정리한다(API 계약). 이후 이력은 고치지 않는다.
+  - `ChatSession`은 덧붙이기만 한다. 각 칸을 얼려 넣고 user/assistant 교대를 검사한다. 새 대화는 인스턴스를 바꿔 시작하므로, 끊긴 질문이 뒤늦게 쓰는 칸은 옛 이력으로 간다.
+  - `runAgent` 처리 순서
+    - 도구 결과는 한 user 메시지로 모은다. 라운드 상한은 8이다.
+    - `max_tokens`에서는 도구를 실행하지 않는다. 결과 없는 `tool_use`를 남기지 않는다.
+    - 거절은 부분 응답을 버린다.
+    - 중단·오류·거절은 짧은 assistant 표시로 교대를 지킨다. 도구 실행 중에 중단돼도 모든 `tool_use`에 결과를 채운다.
+    - `pause_turn`은 서버 도구가 없으므로 예상 밖 상태로 끝낸다.
+  - 실제 WASM 문서로 확인하다 결함을 찾았다. `getPageText`와 문단 읽기에는 **표 안의 글이 빠진다**(`form-002.hwpx` 1쪽이 `"\n"`). 그래서 `read_page_text`를 `getPageTextLayout`의 렌더 조각으로 바꿨다.
+    - 조각은 표 칸까지 읽는 순서로 오고 소유 좌표를 가진다. 그래서 문단·칸 문단이 바뀔 때만 줄을 나누고, 칸에 들어설 때 `[table N / cell M]`을 붙인다.
+    - 화면 줄바꿈은 잇는다.
+  - 신뢰 경계: 결과 JSON을 `<document_content id="회차 난수">`로 감싼다. JSON 안의 `<`·`>`·U+2028/2029는 이스케이프해 문서가 경계를 닫지 못하게 한다.
+  - `message-render.ts`는 Markdown 일부만 직접 해석해 정해진 요소와 텍스트 노드만 만든다. `src/ai/**`에는 `innerHTML` 계열이 없다(소스 검사).
+  - `ChatController`가 설정·키·호스트·엔진을 잇는다. SDK는 처음 질문할 때 불러온다. 패널 연결은 Stage 4에서 한다.
+  - SDK 1.x 판단: 1.0.0의 변경은 API 버전 `2026-10-21` 전환이다. P0는 `0.137.0`을 유지하고, API 버전 전환은 별도 후속 작업으로 한다(이 코드는 `temperature` 등 sampling 값을 보내지 않는다).
+- 검증
+
+| 항목 | 결과 |
+|---|---|
+| `npx tsc --noEmit` | 통과 |
+| `npm test` | 2,429건 중 2,427 통과, 실패 0 (skip 2) |
+| 신규 단위 테스트 | `ai-agent-loop` 11, `ai-read-tools` 13, `ai-untrusted` 3, `ai-message-render` 5, `ai-claude-request` 9 — 모두 통과 |
+| 실제 WASM 문서로 읽기 도구 실행 (`biz_plan.hwp`, `field-01.hwp`, `form-002.hwpx`, 스크래치 스크립트) | 7개 도구 정상. 표 칸 글 포함 확인. 누름틀 4건 등 |
+| `npm run build` / `RHWP_WITHOUT_AI=1` | 성공. 제외 빌드에 AI 문자열 0건 |

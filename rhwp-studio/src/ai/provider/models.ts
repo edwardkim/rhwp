@@ -11,14 +11,19 @@ export interface AiModelOption {
   id: string;
   /** 화면 표시용 이름. 제품명이라 번역하지 않는다. */
   label: string;
+  /**
+   * 안전 분류기가 거절하면 서버가 다른 모델로 다시 돌리는 `fallbacks: "default"` 를 받는가.
+   * Haiku 5.5 는 서버 측 대체가 없어 보내면 거절된다.
+   */
+  serverFallback: boolean;
 }
 
 export const AI_PROVIDERS: readonly AiProviderId[] = ['claude'];
 
 export const CLAUDE_MODELS: readonly AiModelOption[] = [
-  { id: 'claude-opus-5-5', label: 'Claude Opus 5.5' },
-  { id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5' },
-  { id: 'claude-haiku-5-5', label: 'Claude Haiku 5.5' },
+  { id: 'claude-opus-5-5', label: 'Claude Opus 5.5', serverFallback: true },
+  { id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5', serverFallback: true },
+  { id: 'claude-haiku-5-5', label: 'Claude Haiku 5.5', serverFallback: false },
 ];
 
 export const AI_EFFORTS: readonly AiEffort[] = ['low', 'medium', 'high'];
