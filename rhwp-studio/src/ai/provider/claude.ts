@@ -15,8 +15,29 @@ import Anthropic, {
   PermissionDeniedError,
   RateLimitError,
 } from '@anthropic-ai/sdk';
+import { transformJSONSchema } from '@anthropic-ai/sdk/lib/transform-json-schema';
 
-import type { AiFailureReason, AiTestResult } from './types.ts';
+import { CLAUDE_MODELS } from './models.ts';
+import {
+  AiProviderError,
+  type AiFailureReason,
+  type AiMessage,
+  type AiProvider,
+  type AiStopReason,
+  type AiStreamEvent,
+  type AiTestResult,
+  type AiToolCall,
+  type AiTurnRequest,
+  type AiTurnResult,
+} from './types.ts';
+
+/** 대화 한 회차의 출력 상한. 스트리밍이라 시간 초과 걱정 없이 넉넉히 둔다. */
+export const CLAUDE_MAX_TOKENS = 64000;
+/** 안전 분류기 거절 시 서버가 권장 모델로 다시 돌리게 하는 beta. `"default"` 형식 전용 헤더다. */
+export const CLAUDE_FALLBACK_BETA = 'server-side-fallback-2026-07-01';
+
+type ClaudeBlock = { type: string; [key: string]: unknown };
+type ClaudeMessageParam = { role: 'user' | 'assistant'; content: ClaudeBlock[] };
 
 export function createClaudeClient(apiKey: string): Anthropic {
   return new Anthropic({
@@ -69,5 +90,152 @@ export async function testClaudeConnection(
     return { ok: true, modelName: info.display_name || model };
   } catch (error) {
     return { ok: false, ...classifyClaudeError(error) };
+  }
+}
+
+/**
+ * 서버 대체(fallback)가 응답 중간에 일어났으면, 되돌릴 때 경계(`fallback` 블록) 앞의
+ * thinking·tool_use 등은 빼고 텍스트만 남긴다 — API 계약이다. 대체가 없으면 원형 그대로다.
+ * 이 정리는 응답을 받은 그 자리에서 한 번만 한다(이후 이력은 고치지 않는다).
+ */
+export function echoableContent(content: readonly ClaudeBlock[]): ClaudeBlock[] {
+  let boundary = -1;
+  content.forEach((block, index) => { if (block.type === 'fallback') boundary = index; });
+  if (boundary < 0) return [...content];
+  return content.filter((block, index) => index >= boundary || block.type === 'text');
+}
+
+function toClaudeMessage(message: AiMessage): ClaudeMessageParam {
+  switch (message.kind) {
+    case 'text':
+      return { role: message.role, content: [{ type: 'text', text: message.text }] };
+    case 'tool_results':
+      return {
+        role: 'user',
+        content: message.results.map((result) => (result.isError
+          ? { type: 'tool_result', tool_use_id: result.id, content: result.content, is_error: true }
+          : { type: 'tool_result', tool_use_id: result.id, content: result.content })),
+      };
+    case 'raw':
+      return { role: 'assistant', content: message.raw as ClaudeBlock[] };
+  }
+}
+
+/**
+ * 요청 본문. 같은 이력이면 같은 바이트가 나와야 prompt cache 가 유지된다 —
+ * 도구 순서·시스템 문구는 호출자가 고정하고, 여기서는 시각·난수를 넣지 않는다.
+ */
+export function buildClaudeRequest(request: AiTurnRequest) {
+  const model = CLAUDE_MODELS.find((m) => m.id === request.model);
+  const params: Record<string, unknown> = {
+    model: request.model,
+    max_tokens: CLAUDE_MAX_TOKENS,
+    // thinking 은 생략한다 — 세 모델 모두 adaptive 로 돈다(Opus 5.5 는 끌 수도 없다).
+    output_config: { effort: request.effort },
+    // 최상위 자동 캐시: 도구 → 시스템 → 지난 대화까지 접두가 같으면 다시 읽는다.
+    cache_control: { type: 'ephemeral' },
+    system: [{ type: 'text', text: request.system }],
+    // tool_choice 는 기본(auto). 이 모델들은 강제 호출(any/tool)을 거절한다.
+    // eager_input_streaming 은 끈다 — P0 도구 입력은 작아 이득이 없고, 끄면 서버가 strict
+    // schema 로 입력을 검증한다. strict 가 받지 않는 제약(minimum·maxLength 등)은 SDK 변환기가
+    // description 으로 옮기므로, 그 제약은 실행 전 클라이언트 검증(`schema-validate.ts`)이 지킨다.
+    tools: request.tools.map((tool) => ({
+      name: tool.name,
+      description: tool.description,
+      input_schema: transformJSONSchema(tool.inputSchema),
+      strict: true,
+    })),
+    messages: request.messages.map(toClaudeMessage),
+  };
+  const betas: string[] = [];
+  if (model?.serverFallback) {
+    params.fallbacks = 'default';
+    betas.push(CLAUDE_FALLBACK_BETA);
+  }
+  if (betas.length > 0) params.betas = betas;
+  return params;
+}
+
+function toStopReason(reason: string | null): AiStopReason {
+  switch (reason) {
+    case 'end_turn':
+    case 'stop_sequence':
+      return 'end';
+    case 'tool_use': return 'tool_use';
+    case 'max_tokens':
+    case 'model_context_window_exceeded':
+      return 'max_tokens';
+    case 'refusal': return 'refusal';
+    case 'pause_turn': return 'pause';
+    default: return 'other';
+  }
+}
+
+interface ClaudeFinalMessage {
+  content: ClaudeBlock[];
+  stop_reason: string | null;
+  usage?: {
+    input_tokens?: number | null;
+    output_tokens?: number | null;
+    cache_read_input_tokens?: number | null;
+    cache_creation_input_tokens?: number | null;
+  };
+}
+
+/** 완성된 응답을 중립 결과로. 스트림 없이 시험할 수 있게 따로 둔다. */
+export function toTurnResult(message: ClaudeFinalMessage): AiTurnResult {
+  const raw = echoableContent(message.content);
+  const toolCalls: AiToolCall[] = raw
+    .filter((block) => block.type === 'tool_use')
+    .map((block) => ({ id: String(block.id), name: String(block.name), input: block.input }));
+  const text = raw
+    .filter((block) => block.type === 'text')
+    .map((block) => String(block.text ?? ''))
+    .join('');
+  const usage = message.usage ?? {};
+  return {
+    stop: toStopReason(message.stop_reason),
+    text,
+    toolCalls,
+    raw,
+    usage: {
+      inputTokens: usage.input_tokens ?? 0,
+      outputTokens: usage.output_tokens ?? 0,
+      cacheReadTokens: usage.cache_read_input_tokens ?? 0,
+      cacheWriteTokens: usage.cache_creation_input_tokens ?? 0,
+    },
+  };
+}
+
+/** 사용자 키로 만든 Claude provider. 키는 생성 시점에 받아 SDK 클라이언트 안에만 둔다. */
+export class ClaudeProvider implements AiProvider {
+  private readonly client: Pick<Anthropic, 'beta'>;
+
+  constructor(apiKey: string, client: Pick<Anthropic, 'beta'> = createClaudeClient(apiKey)) {
+    this.client = client;
+  }
+
+  async streamTurn(
+    request: AiTurnRequest,
+    signal: AbortSignal,
+    onEvent: (event: AiStreamEvent) => void,
+  ): Promise<AiTurnResult> {
+    try {
+      const stream = this.client.beta.messages.stream(
+        buildClaudeRequest(request) as unknown as Parameters<Anthropic['beta']['messages']['stream']>[0],
+        { signal },
+      );
+      stream.on('text', (delta) => onEvent({ type: 'text-delta', text: delta }));
+      stream.on('streamEvent', (event) => {
+        if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {
+          onEvent({ type: 'tool-start', id: event.content_block.id, name: event.content_block.name });
+        }
+      });
+      const message = await stream.finalMessage();
+      return toTurnResult(message as unknown as ClaudeFinalMessage);
+    } catch (error) {
+      if (signal.aborted) throw new AiProviderError({ reason: 'aborted' });
+      throw new AiProviderError(classifyClaudeError(error));
+    }
   }
 }
