@@ -398,6 +398,12 @@ pub(crate) fn layout_for_paint(
         return result;
     }
     let fs = super::hwpunit_to_px(equation.font_size as i32, dpi);
+    if uses_legacy_hft_metrics(equation) && layout::legacy_logical_frame(&result, fs).is_some() {
+        // HFT 논리 글줄은 layout이 이미 내부 표시 원점을 확정했다.
+        // 저장 기준선 비율은 바깥 호스트 상자가 소비하므로 이를 내부 glyph에
+        // 다시 적용하면 기준선만 편집해도 같은 수식 프로그램이 이동한다.
+        return result;
+    }
     let scale = stored_vertical_scale(
         super::hwpunit_to_px(flow_height_hwp(equation) as i32, dpi),
         result.height,
