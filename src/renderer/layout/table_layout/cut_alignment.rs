@@ -36,7 +36,7 @@ impl LayoutEngine {
         }
     }
 
-    /// 마지막 일반 글줄 뒤의 전진 간격은 같은 조각의 가운데 정렬 잉크가 아니다.
+    /// 마지막 저장 글줄 뒤의 전진 간격은 같은 조각의 가운데 정렬 잉크가 아니다.
     /// 선택된 유닛이 원본 줄 높이+간격을 실제로 계상한 경우만 분리한다.
     fn nested_cut_terminal_line_spacing(
         &self,
@@ -64,7 +64,6 @@ impl LayoutEngine {
             || last.nested_table_fragment.is_some()
             || last.mixed_nested_fragment
             || last.mixed_nested_trailing
-            || last.empty_spacer
             || last.vis_end != last.vis_start + 1
             || !paragraph.controls.is_empty()
             || paragraph.stored_text_partition_is_dirty()
@@ -80,6 +79,9 @@ impl LayoutEngine {
         }
         let advance = super::hwpunit_to_px(line.line_height, self.dpi)
             + super::hwpunit_to_px(line.line_spacing, self.dpi);
+        // 글자가 없는 저장 줄도 자기 줄 상자는 내용에 남긴다. 유닛이 실제로
+        // 계상한 줄 상자+뒤 간격이 확인되면, 뒤 간격만 정렬 높이에서 분리한다.
+        // 저장 줄이 없는 보조 spacer는 위의 줄 범위·출처 조건을 통과하지 못한다.
         if (last.height - advance).abs() <= super::hwpunit_to_px(2, self.dpi) {
             super::hwpunit_to_px(line.line_spacing, self.dpi)
         } else {

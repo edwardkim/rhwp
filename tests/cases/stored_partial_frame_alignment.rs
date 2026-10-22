@@ -46,8 +46,20 @@ fn compact(s: &str) -> String {
     s.chars().filter(|c| !c.is_whitespace()).collect()
 }
 fn trees() -> &'static Vec<Value> {
+    trees_with_font_environment(false)
+}
+fn print_trees() -> &'static Vec<Value> {
+    trees_with_font_environment(true)
+}
+fn trees_with_font_environment(print_environment: bool) -> &'static Vec<Value> {
     static TREES: OnceLock<Vec<Value>> = OnceLock::new();
-    TREES.get_or_init(|| {
+    static PRINT_TREES: OnceLock<Vec<Value>> = OnceLock::new();
+    let cache = if print_environment {
+        &PRINT_TREES
+    } else {
+        &TREES
+    };
+    cache.get_or_init(|| {
         let nonce = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -58,13 +70,20 @@ fn trees() -> &'static Vec<Value> {
         std::fs::create_dir(&dir.0).unwrap();
         let binary = std::env::var("CARGO_BIN_EXE_rhwp")
             .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string());
-        let output = Command::new(binary)
-            .arg("export-render-tree")
+        let mut command = Command::new(binary);
+        command.arg("export-render-tree")
             .arg(sample_path())
             .args(["--compat", "2022", "-o"])
-            .arg(&dir.0)
-            .output()
-            .unwrap();
+            .arg(&dir.0);
+        if print_environment {
+            // ±2px를 고정한 전쪽 비교의 명시적 글꼴 환경을 사용한다.
+            command.arg("--font-environment").arg(
+                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+                    "mydocs/pr/assets/semanticist21-20261008/franchise-glyph-fallback-v428/font-environment.json",
+                ),
+            );
+        }
+        let output = command.output().unwrap();
         assert!(output.status.success(), "{output:?}");
         let mut files: Vec<PathBuf> = std::fs::read_dir(&dir.0)
             .unwrap()
@@ -137,6 +156,97 @@ fn check_center(cell: &Value, stored_lead_hu: i32) {
 fn core() -> DocumentCore {
     DocumentCore::from_bytes(&std::fs::read(sample_path()).expect("가맹사업 원본")).unwrap()
 }
+
+// 독립 Print의 기준선이다. 61단계에서 같은 원본 전142쪽 Native/fresh WASM이
+// 모두90% 이상이며, 이 두 쪽은 각각 raw100%와 review/overlay 직접 판독을 마쳤다.
+// 원본 줄의 기준선 거리와 실제 TextLine 상단을 결합해 최종 배치를 검사한다.
+fn check_print_baseline(cell: &Value, paragraph: usize, distance_hu: i32, expected: f64) {
+    let first = cell["children"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|node| node["type"] == "TextLine" && node["pi"] == paragraph)
+        .expect("선택한 원본 문단의 첫 글줄");
+    let actual = number(first, "y") + f64::from(distance_hu) / 75.0;
+    assert!(
+        (actual - expected).abs() <= 2.0,
+        "독립 Print 기준선의 ±2 CSSpx: actual={actual}, expected={expected}"
+    );
+}
+
+#[test]
+fn note_marker_preserves_the_centered_cells_stored_leading_band() {
+    let core = core();
+    let Control::Table(source) = &core.document().sections[0].paragraphs[642].controls[0] else {
+        panic!("원본 판례 표")
+    };
+    let original = source
+        .cells
+        .iter()
+        .find(|cell| cell.row == 1 && cell.col == 1)
+        .unwrap();
+    let paragraph = &original.paragraphs[0];
+    assert!(paragraph
+        .controls
+        .iter()
+        .any(|control| matches!(control, Control::Footnote(_))));
+    let actual = cell(table(&print_trees()[67], 642), 1, 1);
+    assert_eq!(compact(&text(actual)), compact(&paragraph.text));
+    let first = &paragraph.line_segs[0];
+    check_center(actual, first.vertical_pos);
+    check_print_baseline(actual, 0, first.baseline_distance, 796.959961);
+}
+
+#[test]
+fn closing_empty_line_keeps_its_box_without_centering_the_following_advance() {
+    let core = core();
+    let Control::Table(source) = &core.document().sections[0].paragraphs[650].controls[0] else {
+        panic!("원본 심사지침 표")
+    };
+    let original = source
+        .cells
+        .iter()
+        .find(|cell| cell.row == 1 && cell.col == 1)
+        .unwrap();
+    // 독립 Print 70쪽의 첫 본문과 그 다음 저장 재시작 사이가 이 조각이다.
+    // 셀 전체의 마지막 빈 문단은 다음 쪽의 소유자이므로 여기서 고정하지 않는다.
+    let first_index = original
+        .paragraphs
+        .iter()
+        .position(|paragraph| paragraph.text.starts_with("끼워팔기는"))
+        .expect("독립 Print의 첫 본문");
+    let first = &original.paragraphs[first_index].line_segs[0];
+    let next_frame = original.paragraphs[first_index + 1..]
+        .iter()
+        .position(|paragraph| {
+            paragraph
+                .line_segs
+                .first()
+                .is_some_and(|line| line.vertical_pos == first.vertical_pos)
+        })
+        .map(|offset| first_index + 1 + offset)
+        .expect("다음 조각의 저장 원점");
+    let last_index = next_frame - 1;
+    let closing = &original.paragraphs[last_index];
+    assert!(closing.text.is_empty() && closing.controls.is_empty());
+    let last = closing.line_segs.last().unwrap();
+    assert!(last.line_height > 0 && last.line_spacing > 0);
+    let actual = cell(table(&print_trees()[69], 650), 1, 1);
+    let closing_lines: Vec<_> = actual["children"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|node| node["type"] == "TextLine" && node["pi"] == last_index)
+        .collect();
+    assert_eq!(closing_lines.len(), 1, "마지막 빈 줄도 한 번만 소유한다");
+    assert!(
+        (number(closing_lines[0], "h") - f64::from(last.line_height) / 75.0).abs() <= 0.05,
+        "뒤 간격을 분리해도 저장 빈 줄 상자는 보존한다"
+    );
+    check_center(actual, 0);
+    check_print_baseline(actual, first_index, first.baseline_distance, 155.84);
+}
+
 #[test]
 fn complete_centered_cells_own_the_first_stored_before_band() {
     let core = core();
