@@ -70,6 +70,14 @@ rhwp inspect hidden-text --help
 > 한컴은 그림 미지정 placeholder 를 편집기에서만 표시하고 인쇄(및 인쇄 등가
 > 출력)에서는 미출력한다 — rhwp 의 인쇄 등가 프로필이 이 계약을 따른다.
 
+## Kitty graphics 출력
+
+Kitty graphics를 지원하는 터미널에서
+`rhwp export-kitty 문서.hwp --page 0 --width 360`으로 첫 쪽을 표시한다.
+`rhwp export-kitty 문서.hwp -o output/kitty --width 720`은 전체 쪽을 `.kitty` 파일로 저장한다.
+흰 배경 PNG의 색을 유지하며 `native-skia`가 필요하다.
+옵션·종료 코드·SSH·검증 경로는 [Kitty 출력 가이드](export_kitty_command.md)를 따른다.
+
 ## Sixel 출력
 
 Sixel을 지원하는 terminal에서 한 쪽을 바로 표시하려면

@@ -25,6 +25,9 @@ Issue: [#8150](https://github.com/edwardkim/rhwp/issues/8150)
 
 ## 2단계 — 실제 파일과 독립 복원
 
+완료: [2단계 보고서](../working/task_m100_8150_stage2.md). 전쪽 11쪽의 360/720px 복원 22건,
+PNG/Sixel 무회귀, kitty 로컬·SSH 표시와 사용자 Windows 11 WezTerm 직접 SSH의 한글 표시를 확인했다.
+
 - 다음 절편 진행 승인 뒤 공개 문서의 전쪽 360/720px 출력과 독립 APC/Base64/PNG 복원을 대조한다.
   PNG/Sixel의 이전 출력과 같은 조건을 비교하고 원문·producer·font SHA를 기록한다.
 - kitty의 직접 표시·저장 파일 재표시·SSH를 각각 실제로 확인하고 terminal 버전·환경·프롬프트 위치를 기록한다.
