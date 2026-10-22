@@ -1,7 +1,7 @@
 # Issue #8153 — 편람 전쪽 raw 100%와 중요 위치 회귀 검사
 
 - 이슈: https://github.com/edwardkim/rhwp/issues/8153
-- 작업 브랜치: `fix/handbook-raw100-20261022`
+- 작업 브랜치: `task/8153-handbook-raw100`
 - 시작 base: `f7abae4a8e70c062c378db06ad64d2d2eacb88cd` — PR #8155 머지 및 후속 처리 완료 후 최신 devel.
 - 대상: `samples/2025 행정업무운영 편람(최종).{hwp,hwpx}`, 각각 383쪽.
 - 독립 기준: `pdf/2025 행정업무운영 편람(최종)-{hwp,hwpx}-kopub-2024.pdf`.
