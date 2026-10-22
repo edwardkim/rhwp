@@ -2,7 +2,7 @@
 
 use crate::model::control::Control;
 use crate::model::paragraph::LineSeg;
-use crate::model::table::{Cell, Table};
+use crate::model::table::{Cell, Table, VerticalAlign};
 use crate::renderer::px_to_hwpunit;
 
 use super::{ComposedParagraph, LayoutEngine};
@@ -33,6 +33,14 @@ impl LayoutEngine {
                 .table_text_reflowed(table)
             || i64::from(px_to_hwpunit(cell_height, self.dpi)) != i64::from(cell.height)
             || composed.len() != cell.paragraphs.len()
+        {
+            return None;
+        }
+        // 가운데/아래 셀의 0에서 시작한 사다리는 문단 로컬 좌표일 수 있다.
+        // 이를 셀 상단의 절대 좌표로 읽으면 공통 정렬 프레임의 여유 공간이
+        // 사라진다. 양수 시작 위치의 증거가 없으면 기존 정렬이 원점을 소유한다.
+        if cell.vertical_align != VerticalAlign::Top
+            && cell.paragraphs.first()?.line_segs.first()?.vertical_pos == 0
         {
             return None;
         }
