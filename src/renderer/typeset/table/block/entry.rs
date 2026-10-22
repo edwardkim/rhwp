@@ -1672,6 +1672,11 @@ impl TypesetEngine {
             table,
             ft.effective_height,
         );
+        // [#7687] 빈 공동 앵커 host 의 자리차지 표도 글이 있는 host 와 같은 visible float
+        // 배치를 탄다. 그 배치는 표 원점에 바깥 위 여백을, 흐름 끝·배제 띠 끝에 바깥 아래
+        // 여백을 스스로 더하므로 여기서는 표 상자 높이만 넘긴다.
+        let coanchored_visible_float = is_para_topbottom_float(&table.common)
+            && crate::renderer::float_placement::is_textless_coanchored_float_host(para);
         let whole_placement_height = if let Some(placement) = closed_source_frame_placement
             .or(captioned_column_placement)
             .or(consumed_whole_anchor)
@@ -1682,7 +1687,9 @@ impl TypesetEngine {
         } else if let Some(advance) = single_row_object_height_advance {
             advance
         } else if is_para_topbottom_float(&table.common)
-            && (para_has_non_whitespace_text(para) || hwpx_noninline_tac_measured_fit)
+            && (para_has_non_whitespace_text(para)
+                || coanchored_visible_float
+                || hwpx_noninline_tac_measured_fit)
         {
             ft.effective_height
         } else {
@@ -2406,6 +2413,7 @@ impl TypesetEngine {
             // 사라지지 않는다. fit에서는 면제하되, 별도 프레임이 소유하지 않는
             // 순차 배치에서는 마지막 조각과 같이 후속 흐름에 한 번 전달한다.
             let unreserved_flow_tail = if resolved_host_placement.is_none()
+                && !coanchored_visible_float
                 && saved_table_source_frame.is_none()
                 && single_row_object_height_advance.is_none()
                 && matches!(
