@@ -1,0 +1,53 @@
+[
+  {
+    "name": "spaces",
+    "inputSha256": "f5a560d90982cb821a07534d2235a40569e7d9389417dfe6419110296895febc",
+    "pdfSha256": "0200b2f30103eea7f8102ca8d304a36244784c10e84bbba797622d122980f9b3",
+    "metadata": {
+      "confidence": "metadata",
+      "product": "hancom-office-2020",
+      "version": "11.0.0.2129"
+    },
+    "status": "succeeded",
+    "engine": "2020",
+    "hancomVersion": "11.0.0.9136",
+    "pdfPrintMethod": 0,
+    "pdfOutputMode": "hancom2020_pdf_driver_one_up",
+    "pages": 1,
+    "preprocess": null
+  },
+  {
+    "name": "break",
+    "inputSha256": "cd82006863a506574c8911d14b58c05a7a5450fde1fc0779f9a3d7ce5fa78bb1",
+    "pdfSha256": "6aebaa384daa43ffda7911e12f92c794aabd81f4f3166db081ea3cf8ca5b4cdc",
+    "metadata": {
+      "confidence": "metadata",
+      "product": "hancom-office-2020",
+      "version": "11.0.0.2129"
+    },
+    "status": "succeeded",
+    "engine": "2020",
+    "hancomVersion": "11.0.0.9136",
+    "pdfPrintMethod": 0,
+    "pdfOutputMode": "hancom2020_pdf_driver_one_up",
+    "pages": 1,
+    "preprocess": null
+  },
+  {
+    "name": "dot-break",
+    "inputSha256": "d65abc20fcc9963c1d4b8fc90d6b8d1f4aec94c0a1030a6ab9a6e9dc9a71238b",
+    "pdfSha256": "7458501c6297b91058c0969a0e1b0aefdfcb745970e335bfe3d6cfbfd8e36a44",
+    "metadata": {
+      "confidence": "metadata",
+      "product": "hancom-office-2020",
+      "version": "11.0.0.2129"
+    },
+    "status": "succeeded",
+    "engine": "2020",
+    "hancomVersion": "11.0.0.9136",
+    "pdfPrintMethod": 0,
+    "pdfOutputMode": "hancom2020_pdf_driver_one_up",
+    "pages": 1,
+    "preprocess": null
+  }
+]
