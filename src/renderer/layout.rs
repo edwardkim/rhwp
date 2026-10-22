@@ -3551,6 +3551,7 @@ pub(crate) mod table_layout;
 mod table_paragraph_cut;
 pub(crate) use table_host_flow::stored_unconsumed_rowbreak_host_advance_hu;
 mod kopub_symbol_metrics;
+mod leader_tab;
 mod paragraph_frame_widths;
 mod square_host_flow;
 mod table_partial;

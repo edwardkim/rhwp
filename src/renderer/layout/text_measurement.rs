@@ -241,16 +241,9 @@ fn tab_suffix_is_ascii_page_number(chars: &[char], start: usize) -> bool {
     seen_digit
 }
 
-// A right tab anchors the block end. Leader padding belongs to its drawn line,
-// not to the tab stop, including when tab and digits occupy the same run.
 fn right_leader_tab_target_rel(style: &TextStyle) -> Option<f64> {
-    style
-        .tab_stops
-        .iter()
-        .rev()
-        .find(|tab| tab.tab_type == 1 && tab.fill_type != 0)
-        .map(|tab| tab.position - style.line_x_offset)
-        .filter(|target| target.is_finite())
+    super::leader_tab::right_aligned_target(style, !style.inline_tabs.is_empty())
+        .map(|target| target - style.line_x_offset)
 }
 
 fn right_leader_tab_fill(style: &TextStyle) -> Option<u8> {
@@ -607,11 +600,13 @@ impl EmbeddedTextMeasurer {
                         total = (right_edge_rel - seg_w).max(total);
                     } else if inline_type_hi == 0
                         && !has_more_tabs_after
-                        && tab_suffix_is_ascii_page_number(&chars, i + 1)
+                        && (tab_suffix_is_ascii_page_number(&chars, i + 1)
+                            || style.right_tab_block_width_override.is_some())
                     {
                         if let Some(target_rel) = right_leader_tab_target_rel(style) {
-                            let seg_w =
-                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                            let seg_w = style.right_tab_block_width_override.unwrap_or_else(|| {
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
+                            });
                             total = (target_rel - seg_w).max(total);
                         } else {
                             total = tab_target.max(total);
@@ -764,10 +759,13 @@ impl EmbeddedTextMeasurer {
                 x = (body_right_text_rel - seg_w).max(x);
             } else if inline_type_hi == 0
                 && !has_more_tabs_after
-                && tab_suffix_is_ascii_page_number(&chars, i + 1)
+                && (tab_suffix_is_ascii_page_number(&chars, i + 1)
+                    || style.right_tab_block_width_override.is_some())
             {
                 if let Some(target_rel) = right_leader_tab_target_rel(style) {
-                    let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                    let seg_w = style.right_tab_block_width_override.unwrap_or_else(|| {
+                        measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
+                    });
                     x = (target_rel - seg_w).max(x);
                 } else {
                     x = tab_target.max(x);
@@ -2473,8 +2471,8 @@ pub fn forces_halfwidth_cjk_quote(
 
 /// 페인트가 `U+2018..=U+2027` 구두점을 반각 공간에 눌러 그려야 하는지.
 ///
-/// [#7702] 측정이 곡선 따옴표의 글리프 폭을 진짜 값으로 받아들였으면(`quote_width_is_authentic`)
-/// 전진폭이 이미 글리프 폭이므로 누르면 안 된다. 나머지는 종전대로 누른다.
+/// 측정이 선택한 반각·협폭 보정만 paint에서도 적용한다.
+/// 원 프로그램 폭이나 전각 폴백을 쓰는 기호를 별도로 좁히지 않는다.
 pub fn forces_halfwidth_punct_paint(style: &TextStyle, c: char) -> bool {
     if !matches!(c, '\u{2018}'..='\u{2027}') {
         return false;
@@ -2492,15 +2490,12 @@ pub fn forces_halfwidth_punct_paint(style: &TextStyle, c: char) -> bool {
         style.font_metric_trusted,
         style.hft_hangul_face,
     );
-    // 그 글리프의 전진폭을 그대로 썼다면 폭이 전각인지와 관계없이 다시 누르지 않는다.
-    // 휴먼명조의 검증된 프로그램 폭과 Times의 좁은 원 글리프도 같은 계약이다.
-    let authentic_quote = matches!(c, '\u{2018}' | '\u{2019}' | '\u{201C}' | '\u{201D}')
-        && matches!(
-            decision.width_source,
-            "embeddedMetric" | "metricTrueTypeGlyph"
-        )
-        && (style.font_metric_trusted || decision.em_fraction.is_some_and(|em| em >= 1.0));
-    !authentic_quote
+    // 측정이 실제로 좁힌 프로그램만 같은 paint 보정을 소비한다.
+    // 전각 기호의 metric miss나 원 프로그램 폭은 문자 범위만으로 다시 누르지 않는다.
+    matches!(
+        decision.width_source,
+        HALFWIDTH_PUNCTUATION_WIDTH_SOURCE | "metricNarrowPunctuationOverlay"
+    )
 }
 
 /// 3 개 이상 연속하는 dash leader 시퀀스의 일부 여부 (Task #352).

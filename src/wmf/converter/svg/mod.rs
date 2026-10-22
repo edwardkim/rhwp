@@ -2,6 +2,7 @@ mod device_context;
 mod node;
 mod saved_device_context;
 mod ternary_raster_operator;
+mod text_advances;
 mod util;
 
 use crate::wmf::{
@@ -798,6 +799,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 .map_err(|err| PlayError::InvalidRecord {
                     cause: err.to_string(),
                 })?;
+        let explicit = text_advances::explicit_advances(&record, font.charset, &text_content);
         let point = {
             let point = PointS {
                 x: if self.context_current.text_align_update_cp {
@@ -927,7 +929,28 @@ impl crate::wmf::converter::Player for SVGPlayer {
             )
             .set("fill", self.context_current.text_color_as_css_color());
 
-        if record.dx.len() <= 1 {
+        if let Some(advances) = &explicit {
+            // Dx는 font의 자연 폭에 더할 여백이 아니라 원점 사이의 논리 전진이다.
+            // DBCS 바이트 셀을 연결한 결과를 전체 문자열의 정렬 기준에서 소비한다.
+            let alignment = match self.context_current.text_align_horizontal {
+                TextAlignmentMode::TA_CENTER => f64::from(advances.total) / 2.0,
+                TextAlignmentMode::TA_RIGHT => f64::from(advances.total),
+                _ => 0.0,
+            };
+            let window = &self.context_current.window;
+            let reference = if self.context_current.text_align_update_cp {
+                f64::from(point.x)
+            } else {
+                f64::from(window.to_device(f32::from(record.x), 0.0).0)
+            };
+            let zero = window.to_device(0.0, 0.0).0;
+            text = text.set("text-anchor", "start");
+            for (content, advance) in &advances.cells {
+                let logical = (f64::from(*advance) - alignment) as f32;
+                let x = reference + f64::from(window.to_device(logical, 0.0).0 - zero);
+                text = text.add(Node::new("tspan").set("x", x).add(Node::new_text(content)));
+            }
+        } else if record.dx.len() <= 1 {
             text = text.add(Node::new_text(&text_content));
         } else {
             // https://cgit.freedesktop.org/libreoffice/core/tree/emfio/source/reader/wmfreader.cxx?id=c0b14ab9aa4d713a6b718ef07b9e0379b88e97d3#n693
@@ -963,10 +986,23 @@ impl crate::wmf::converter::Player for SVGPlayer {
         }
 
         if self.context_current.text_align_update_cp {
-            let dx = (font.height.saturating_abs() / 2)
-                .saturating_mul(i16::try_from(text_content.width()).unwrap_or(0));
+            let dx = explicit.as_ref().map_or_else(
+                || {
+                    f64::from(
+                        (font.height.saturating_abs() / 2)
+                            .saturating_mul(i16::try_from(text_content.width()).unwrap_or(0)),
+                    )
+                },
+                |advances| {
+                    let window = &self.context_current.window;
+                    f64::from(
+                        window.to_device(advances.total as f32, 0.0).0
+                            - window.to_device(0.0, 0.0).0,
+                    )
+                },
+            );
             let point = PointS {
-                x: point.x.saturating_add(dx),
+                x: (f64::from(point.x) + dx) as i16,
                 y: point.y,
             };
             self.context_current = self.context_current.drawing_position(point);

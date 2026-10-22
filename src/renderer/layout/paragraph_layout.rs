@@ -2013,7 +2013,7 @@ pub(crate) fn right_tab_block_width(
         ts.available_width = available_width;
         // [Task #874] text_start_offset 은 right_tab_block_width 가 측정만 하므로
         // 영향 없음 — 0 그대로.
-        w += estimate_text_width(effective_text_for_metrics(r), &ts);
+        w += estimate_text_width_exact(effective_text_for_metrics(r), &ts);
     }
     let start_pos = line_start
         + runs
@@ -3779,33 +3779,25 @@ impl LayoutEngine {
             .map(|cs| cs.char_shape_id as u32)
             .unwrap_or(0);
 
+        let text_metrics = inline_table_geometry::InlineTableTextMetrics::new(
+            &text_chars,
+            &segments,
+            |ch_idx, lang| {
+                let utf16_pos = offsets[ch_idx];
+                let cs_id = para
+                    .char_shapes
+                    .iter()
+                    .rev()
+                    .find(|cs| cs.start_pos <= utf16_pos)
+                    .map(|cs| cs.char_shape_id as u32)
+                    .unwrap_or(char_style_id);
+                let ts = with_stored_tabs(metric_scope.style(styles, cs_id, lang, ch_idx), ch_idx);
+                estimate_text_width_exact(&map_pua_bullet_char(text_chars[ch_idx]).to_string(), &ts)
+            },
+        );
         let seg_widths: Vec<f64> = segments
             .iter()
-            .map(|(s, e)| {
-                let seg_text: String = text_chars[*s..*e].iter().collect();
-                if seg_text.is_empty() {
-                    return 0.0;
-                }
-                // 세그먼트 내 char_shape 변경을 고려한 폭 계산
-                let mut total = 0.0;
-                for ch_idx in *s..*e {
-                    // 해당 문자의 char_shape 찾기
-                    let utf16_pos = offsets[ch_idx];
-                    let cs_id = para
-                        .char_shapes
-                        .iter()
-                        .rev()
-                        .find(|cs| cs.start_pos <= utf16_pos)
-                        .map(|cs| cs.char_shape_id as u32)
-                        .unwrap_or(char_style_id);
-                    let ch = map_pua_bullet_char(text_chars[ch_idx]);
-                    let lang = super::super::style_resolver::detect_lang_category(ch);
-                    let ts =
-                        with_stored_tabs(metric_scope.style(styles, cs_id, lang, ch_idx), ch_idx);
-                    total += estimate_text_width_exact(&ch.to_string(), &ts);
-                }
-                total
-            })
+            .map(|&(start, end)| text_metrics.width(start, end))
             .collect();
 
         // 5. 총 폭과 정렬 계산 (TAC 표는 outMargin 좌/우 포함 폭 — Issue #3396)
@@ -3852,24 +3844,7 @@ impl LayoutEngine {
                 if n == 0 {
                     return 0.0;
                 }
-                (e - n..e)
-                    .map(|ch_idx| {
-                        let utf16_pos = offsets[ch_idx];
-                        let cs_id = para
-                            .char_shapes
-                            .iter()
-                            .rev()
-                            .find(|cs| cs.start_pos <= utf16_pos)
-                            .map(|cs| cs.char_shape_id as u32)
-                            .unwrap_or(char_style_id);
-                        let lang = super::super::style_resolver::detect_lang_category(' ');
-                        // 세그먼트에 더한 공백과 정렬에서 제외할 공백을 같은 정밀도로 잰다.
-                        estimate_text_width_exact(
-                            " ",
-                            &metric_scope.style(styles, cs_id, lang, ch_idx),
-                        )
-                    })
-                    .sum::<f64>()
+                text_metrics.width(e - n, e)
             })
             .unwrap_or(0.0);
         let total_width: f64 = seg_widths.iter().sum::<f64>() - trailing_space_after_last_table
@@ -4179,17 +4154,12 @@ impl LayoutEngine {
                             .unwrap_or(char_style_id);
 
                         let ch = text_chars[ch_idx];
-                        let lang = if crate::renderer::composer::is_lang_neutral(ch) {
-                            carry_lang
-                        } else {
-                            carry_lang = super::super::style_resolver::detect_lang_category(ch);
-                            carry_lang
-                        };
+                        let (lang, ch_w) = text_metrics.at(ch_idx);
+                        carry_lang = lang;
                         let ts = with_stored_tabs(
                             metric_scope.style(styles, cs_id, lang, ch_idx),
                             ch_idx,
                         );
-                        let ch_w = estimate_text_width_exact(&ch.to_string(), &ts);
 
                         // 글자모양·언어 슬롯의 실제 메트릭 변경 또는 줄바꿈 시 run을 출력
                         // [Task #518] LINE_SEG 기반 줄 나눔: ls[1..] 의 text_start 위치 모두 사용.
@@ -8671,20 +8641,17 @@ impl LayoutEngine {
                     pending_right_leader_digit_render = true;
                 } else {
                     if run.text.trim().chars().all(|ch| ch.is_ascii_digit()) {
-                        if let Some(tab) = tab_stops
-                            .iter()
-                            .rev()
-                            .find(|tab| tab.tab_type == 1 && tab.fill_type != 0)
-                        {
-                            let digit_w = estimate_text_width_exact(run.text.trim(), &text_style);
-                            x = col_area.x
-                                + right_leader_number_origin(
-                                    tab,
-                                    !composed.tab_extended.is_empty(),
-                                    effective_margin_left,
-                                    available_width,
-                                    digit_w,
-                                );
+                        if let Some(target) = super::leader_tab::right_aligned_target(
+                            &text_style,
+                            !composed.tab_extended.is_empty(),
+                        ) {
+                            let digit_w = super::leader_tab::block_width(
+                                &text_style,
+                                comp_line,
+                                run_idx,
+                                styles,
+                            );
+                            x = col_area.x + target - digit_w;
                             resolved_tab_block = true;
                         }
                     }
@@ -8833,38 +8800,13 @@ impl LayoutEngine {
                     .unwrap_or(extra_dash_sp)
             };
             text_style.unjustified_leading_spaces = unjustified_leading_spaces[run_idx];
-            // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
-            // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
-            // run 내부 seg_w 만으로는 우측 정렬 위치가 어긋남. 후속 run 합산을 미리
-            // 계산해 text_style.right_tab_block_width_override 로 주입한다.
-            if auto_tab_right && run.text.contains('\t') && run_idx + 1 < comp_line.runs.len() {
-                let tab_byte = run.text.rfind('\t').unwrap();
-                let post_tab: String = run.text[tab_byte + '\t'.len_utf8()..].to_string();
-                let no_more_tabs_after_in_run = !post_tab.contains('\t');
-                let no_tabs_in_subsequent = comp_line
-                    .runs
-                    .iter()
-                    .skip(run_idx + 1)
-                    .all(|r| !r.text.contains('\t'));
-                if no_more_tabs_after_in_run && no_tabs_in_subsequent {
-                    let mut ts_measure =
-                        text_style.for_text_fragment(run.text[..tab_byte].chars().count() + 1);
-                    ts_measure.right_tab_block_width_override = None;
-                    let post_tab_w = estimate_text_width(&post_tab, &ts_measure);
-                    let subsequent_w = right_tab_block_width(
-                        &comp_line.runs,
-                        run_idx + 1,
-                        styles,
-                        tab_width,
-                        &tab_stops,
-                        auto_tab_right,
-                        available_width,
-                        None,
-                        comp_line.char_start,
-                    );
-                    text_style.right_tab_block_width_override = Some(post_tab_w + subsequent_w);
-                }
-            }
+            super::leader_tab::apply_cross_run_width(
+                &mut text_style,
+                &run.text,
+                comp_line,
+                run_idx,
+                styles,
+            );
             right_tab_fields::apply_block_width(&mut text_style, comp_line, run_idx, para, styles);
             let run_border_fill_id = styles
                 .char_styles
@@ -10673,19 +10615,13 @@ impl LayoutEngine {
                     pending_right_leader_digit_est = true;
                 } else {
                     if run.text.trim().chars().all(|ch| ch.is_ascii_digit()) {
-                        if let Some(tab) = tab_stops
-                            .iter()
-                            .rev()
-                            .find(|tab| tab.tab_type == 1 && tab.fill_type != 0)
-                        {
-                            let digit_w = estimate_text_width_exact(run.text.trim(), &ts);
-                            est_x = right_leader_number_origin(
-                                tab,
-                                !composed.tab_extended.is_empty(),
-                                effective_margin_left,
-                                available_width,
-                                digit_w,
-                            );
+                        if let Some(target) = super::leader_tab::right_aligned_target(
+                            &ts,
+                            !composed.tab_extended.is_empty(),
+                        ) {
+                            let digit_w =
+                                super::leader_tab::block_width(&ts, comp_line, run_idx_est, styles);
+                            est_x = target - digit_w;
                         }
                     }
                     pending_right_leader_digit_est = false;
@@ -10786,40 +10722,13 @@ impl LayoutEngine {
                 remaining_est = effective_text_for_metrics(run).to_string();
             }
             ts.line_x_offset = est_x;
-            // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
-            // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
-            // run 내부 seg_w 만으로는 우측 정렬 위치가 어긋남. 후속 run 합산을 미리
-            // 계산해 ts.right_tab_block_width_override 로 주입한다.
-            if auto_tab_right
-                && remaining_est.contains('\t')
-                && run_idx_est + 1 < comp_line.runs.len()
-            {
-                let tab_byte = remaining_est.rfind('\t').unwrap();
-                let post_tab: String = remaining_est[tab_byte + '\t'.len_utf8()..].to_string();
-                let no_more_tabs_after_in_run = !post_tab.contains('\t');
-                let no_tabs_in_subsequent = comp_line
-                    .runs
-                    .iter()
-                    .skip(run_idx_est + 1)
-                    .all(|r| !r.text.contains('\t'));
-                if no_more_tabs_after_in_run && no_tabs_in_subsequent {
-                    let mut ts_measure = ts.clone();
-                    ts_measure.right_tab_block_width_override = None;
-                    let post_tab_w = estimate_text_width_exact(&post_tab, &ts_measure);
-                    let subsequent_w = right_tab_block_width(
-                        &comp_line.runs,
-                        run_idx_est + 1,
-                        styles,
-                        tab_width,
-                        &tab_stops,
-                        auto_tab_right,
-                        available_width,
-                        None,
-                        comp_line.char_start,
-                    );
-                    ts.right_tab_block_width_override = Some(post_tab_w + subsequent_w);
-                }
-            }
+            super::leader_tab::apply_cross_run_width(
+                &mut ts,
+                &remaining_est,
+                comp_line,
+                run_idx_est,
+                styles,
+            );
             right_tab_fields::apply_block_width(&mut ts, comp_line, run_idx_est, para, styles);
             if !remaining_est.is_empty() {
                 est_x += estimate_text_width_exact(&remaining_est, &ts);
