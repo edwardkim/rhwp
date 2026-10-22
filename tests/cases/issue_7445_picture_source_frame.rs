@@ -211,9 +211,10 @@ fn editing_inline_picture_margins_updates_the_owned_line_and_successor_once() {
         r#"{"treatAsChar":true,"outerMarginTop":2000,"outerMarginBottom":2000}"#,
     )
     .unwrap();
-    let saved = DocumentCore::from_bytes(&core.export_hwpx_native().unwrap()).unwrap();
-    let paragraphs = &saved.document().sections[0].paragraphs;
+    let paragraphs = &core.document().sections[0].paragraphs;
     // 동일 원본의 독립 한컴 재저장: 그림1980 + 위아래4000, 다음 줄은 간격600 뒤다.
+    // 편집으로 합성한 첫 줄 캐시는 HWPX 직렬화에서 생략한다. 편집 결과의
+    // 측정값을 직접 검사하고, 재열기는 실제 후속 본문의 원점으로 대조한다.
     assert_eq!(
         (
             paragraphs[0].line_segs[0].line_height,
@@ -223,6 +224,25 @@ fn editing_inline_picture_margins_updates_the_owned_line_and_successor_once() {
     );
     assert_eq!(paragraphs[1].line_segs[0].vertical_pos, 6580);
     assert_eq!(paragraphs[1].text, "AFTER");
+    let saved = DocumentCore::from_bytes(&core.export_hwpx_native().unwrap()).unwrap();
+    assert_eq!(saved.document().sections[0].paragraphs[1].text, "AFTER");
+    let successor_origin = |document: &DocumentCore| {
+        let tree = document.build_page_render_tree(0).unwrap();
+        let mut all = vec![];
+        nodes(&tree.root, &mut all);
+        let successors: Vec<_> = all
+            .into_iter()
+            .filter(|node| {
+                matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text == "AFTER")
+            })
+            .collect();
+        assert_eq!(successors.len(), 1, "후속 본문은 저장 전후 한 번 소유한다");
+        successors[0].bbox.y
+    };
+    assert!(
+        (successor_origin(&core) - successor_origin(&saved)).abs() < 1e-6,
+        "재열기 후에도 같은 줄 점유가 후속 본문의 실제 원점을 결정한다"
+    );
     core.set_picture_properties_native(
         0,
         0,

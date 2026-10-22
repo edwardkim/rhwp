@@ -1606,7 +1606,18 @@ fn char_width_decision_with_hft_tracking<'a>(
     let (font_size, ratio, _) = style_params(style);
     // 줄 채움의 원문 스칼라와 paint의 확정 표시 기호는 같은 advance를 쓴다.
     // 원문 오프셋과 클러스터 소속은 그대로 유지한다.
-    let c = super::super::composer::single_scalar_display_char(chars[i]);
+    // 실제 공급된 원 PUA 프로그램은 표시용 Unicode 대체보다 먼저 선택한다.
+    // 표시 단계가 원 glyph를 보존해도 여기서 다시 대체하면 원 hmtx가
+    // 도달하지 않아 배치와 paint가 서로 다른 전진폭을 소비한다.
+    let c = if style
+        .native_pua_metrics
+        .as_ref()
+        .is_some_and(|program| program.advance_em(chars[i]).is_some())
+    {
+        super::super::composer::hancom_symbol_display_key(chars[i])
+    } else {
+        super::super::composer::single_scalar_display_char(chars[i])
+    };
     let font_size = if style.layout_half_space && matches!(c, ' ' | '\u{00A0}') {
         reflow_space_font_size(style)
     } else {
