@@ -174,6 +174,7 @@ pub(super) fn prepare(
                 rewound_host_origin.unwrap_or(para_start_height),
                 para_style.map_or(0.0, |style| style.spacing_before),
                 ft.effective_height,
+                false,
                 dpi,
             )
         })

@@ -5967,6 +5967,7 @@ impl ParagraphFloatPlacement {
         origin: f64,
         spacing_before: f64,
         measured_table_height: f64,
+        origin_closes_float_frame: bool,
         dpi: f64,
     ) -> Option<Self> {
         stored_empty_host_frame::from_stored_ladder(
@@ -5976,6 +5977,7 @@ impl ParagraphFloatPlacement {
             origin,
             spacing_before,
             measured_table_height,
+            origin_closes_float_frame,
             dpi,
         )
     }
