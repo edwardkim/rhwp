@@ -140,7 +140,9 @@ pub(crate) fn verified_program_glyph_fallback_families(face: &str) -> &'static [
     // 독립 개인정보 Print의 같은 제목도 휴먼명조 사이에서 이 기호만
     // Haansoft Batang으로 출력한다. 이름 별칭은 기존 메트릭 선택기가 해소한다.
     match find_metric(face, false, false).map(|found| found.metric.name) {
-        Some("HumanMyeongJo" | "DotumChe" | "HYSinMyeongJo-Medium") => &["Haansoft Batang"],
+        Some("HumanMyeongJo" | "DotumChe" | "HYSinMyeongJo-Medium" | "HYHeadLine-Medium") => {
+            &["Haansoft Batang"]
+        }
         // Gulim U+2024의 측정도 아래 verified_missing_glyph_supplier가
         // HDOTUM에 맡긴다. 같은 공급자를 실제 paint 후보에도 전달한다.
         Some("Gulim") => &["Haansoft Dotum"],
@@ -166,6 +168,10 @@ pub(crate) fn verified_missing_glyph_supplier(
         ("HYSinMyeongJo-Medium", 1024, false, false, '\u{2024}' | '\u{2027}') => {
             Some("Haansoft Batang")
         }
+        // H2HDRM의 확인된 U+2024 결측과 독립 한컴2020 Print의 실제 공급자다.
+        // 음영/양각의 세 replay 모두 HBATANG을 사용하며 자연 전진은 기존
+        // 공급 프로그램의 hmtx를 소비한다. 다른 문자·weight는 추정하지 않는다.
+        ("HYHeadLine-Medium", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
         _ => None,
     }
 }
