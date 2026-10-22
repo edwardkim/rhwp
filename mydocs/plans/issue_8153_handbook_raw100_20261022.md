@@ -708,3 +708,29 @@ style53의 원본 10pt·98%로 다시 계산한 Tf83/Tz98.684212는 해당 문�
 `print-font-device-text-linked-audit.json`과 `logs/print-font-device-text-linked.log`다.
 원시 PDF 해독은 `decode_print_text_programs.py`에 보존한다. 같은 숫자 쌍의 존재를
 원본 run 소유 증명으로 대신하지 않았고, 실제 렌더러에는 글꼴 수치 변경을 추가하지 않았다.
+
+
+### 원본 빈 줄 인증 후보의 실제 Native 개선과 전쪽 재검증 시작
+
+`32c679fc12`는 고정 `target/pr-review`, jobs 8의 Native 빌드 6분 50초·exit 0이다.
+선행 두 형식 각 15쪽에서 cad 대비 하락은 0쪽이며 **HWP 140쪽만 96.02275% →
+98.21670%(+2.19395%p)**로 개선됐다. HWPX 140쪽은 98.21693%를 유지하고,
+139·141쪽을 포함한 다른 29쪽은 cad와 RGB가 같다. 두 형식 모두 실제 383쪽이다.
+12쪽 정상 대조군도 모두 RGB가 같고 driver는 exit 0이다. 관련 실행은
+`logs/physical-empty-native-build.log`, `logs/physical-empty-native-driver.log`다.
+
+140쪽 review PNG를 직접 읽어 표 외곽과 하단 괘선이 Print와 대응함을 확인했다.
+렌더 트리에서 변경된 것은 Table·Cell 높이 및 아래/양옆 괘선 5개 노드뿐이다.
+모든 자식 수·글자·그림의 기하는 같고, 원래 셀 내부 (118,152)-(640,846)의 RGB도 같다.
+독립 Print 왼쪽 괘선은 96dpi 환산 y149.2653→884.8734px이며 후보 하단은 약885.0px다.
+독립 PDF의 실제 path, 원본 HU, 두 source SHA와 변경 노드를
+`physical-empty-32c679fc12/p140-physical-frame-evidence.json`에 연결했다.
+스크린샷 색·작은 글자 및 바탕쪽 오른쪽 선은 남아 있어 raw 100% 완료는 아니다.
+
+실제 선행 검증이 끝난 뒤 `post_focus_physical_empty.py`는 전쪽 Native와 fresh WASM을
+시작했다. Native는 같은 producer의 15쪽만 재사용하고 나머지 368쪽을 형식별로 새로
+출력한다. fresh WASM은 같은 32c source·공유 target·jobs 8·codegen 16으로 별도 package를
+빌드하고 최적화 후 766쪽을 출력한다. 다른 source의 PNG·package를 최신 결과로 섞지 않는다.
+이 문단 시점의 두 작업은 실행 중이며, 종료 코드·전쪽 결과·정확한 미대응 0 확인은 아직
+남아 있다. 로그는 `logs/physical-empty-whole-native.log`,
+`logs/physical-empty-fresh-wasm-build.log`, `logs/physical-empty-whole-wasm.log`다.
