@@ -571,7 +571,7 @@ impl TypesetEngine {
         // 일반 행 강제 배치 경로가 통째로 밀어넣어 본문 초과(예: pi=242 vert_off 38px,
         // 잔여 65.4px 로 보였으나 실가용 23.4px < 행0 34.9px). 루프 내 page_avail
         // (host_before_overhead/vert_offset_overhead) 와 동일 overhead 를 가드에도 적용.
-        let first_frag_overhead = {
+        let (first_frag_overhead, first_fragment_outer_bottom) = {
             let (host_before, fragment_outer_bottom) = partial_rowbreak_fragment_spacing_px(
                 table,
                 ft.host_spacing.before,
@@ -595,7 +595,10 @@ impl TypesetEngine {
                     0.0
                 }
             };
-            host_before + vert_off + fragment_outer_bottom
+            (
+                host_before + vert_off + fragment_outer_bottom,
+                fragment_outer_bottom,
+            )
         };
         let remaining_with = |released: f64| {
             fragment_host_placement.map_or_else(
@@ -603,7 +606,9 @@ impl TypesetEngine {
                 |p| {
                     (table_available + released
                         - p.table_top
-                        - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                        // 첫 조각은 실제 분할 예산이 소유하는 아래 여백만 예약한다.
+                        // 통째 표의 종료 여백을 별도로 빼면 수용 가능한 첫 줄도 이월한다.
+                        - first_fragment_outer_bottom
                         - table
                             .caption
                             .as_ref()
