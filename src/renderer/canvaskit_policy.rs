@@ -11,9 +11,9 @@ use crate::paint::{
     PaintOp, PaintReplayPlane, RenderProfile, ResolvedImageKind, ResolvedImagePayload,
     TextDecorationKind, TextVariantKind,
 };
-use crate::renderer::composer::expand_pua_render_text_in_style;
 #[cfg(test)]
 use crate::renderer::composer::expand_pua_render_text;
+use crate::renderer::composer::expand_pua_render_text_in_style;
 use crate::renderer::equation::{
     layout::{LayoutBox, LayoutKind},
     symbols::{DecoKind, FontStyleKind},

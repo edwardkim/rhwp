@@ -4696,7 +4696,7 @@ impl LayoutEngine {
                                         );
                                         rendered_bottom - nested_y
                                     } else {
-                                        self.layout_table(
+                                        let rendered_height = self.layout_table(
                                             tree,
                                             &mut cell_node,
                                             nested_table,
@@ -4797,7 +4797,31 @@ impl LayoutEngine {
                                                 nested_table,
                                                 styles,
                                             ),
-                                        )
+                                        );
+                                        if owns_nested_start {
+                                            if let Some(frame) = stored_float_frame.filter(|frame| {
+                                                matches!(frame.flow, crate::renderer::float_placement::ParagraphFloatFlow::Exclusion)
+                                                    && split_ref.is_none_or(|split| {
+                                                        split.start_row == 0
+                                                            && split.end_row == usize::from(nested_table.row_count)
+                                                            && split.offset_within_start == 0.0
+                                                            && split.content_offset == 0.0
+                                                            && split.recursive_cut.is_none()
+                                                            && frame.table_top + split.visible_height
+                                                                + hwpunit_to_px(i32::from(nested_table.outer_margin_bottom), self.dpi)
+                                                                >= frame.occupied_bottom
+                                                    })
+                                            }) {
+                                                // 온전한 source child의 Exclusion 상자 끝까지
+                                                // clip을 연다. 일부 행/내용 컷의 미소유 꼬리는
+                                                // 이 원본 상자를 소유하지 않으므로 열지 않는다.
+                                                if matches!(&cell_node.node_type, RenderNodeType::TableCell(cell) if cell.clip) {
+                                                    cell_node.bbox.height = cell_node.bbox.height
+                                                        .max(frame.occupied_bottom - cell_node.bbox.y);
+                                                }
+                                            }
+                                        }
+                                        rendered_height
                                     };
                                     let visible_table_h = split_info
                                         .as_ref()

@@ -5386,14 +5386,25 @@ impl LayoutEngine {
             // [#5906] 마지막 행이 저장 선언으로만 잡힌 표의 초과분 회수도 같은
             // 이유로 조판/페인트가 함께 봐야 한다 — typeset 은 줄어든 tail 로
             // 쪽을 잡는데 페인트가 원래 높이를 그리면 표가 본문 밖으로 넘친다.
-            let native_rowbreak_declared_tail =
-                (self.profile.get().hwp5_stored_pagination_layout()
+            let native_rowbreak_declared_tail = !self.profile.get().session_edited()
+                && (self.profile.get().hwp5_stored_pagination_layout()
                     || self.profile.get().hwpx_stored_layout())
-                    && !table.common.treat_as_char
-                    && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
-                    && matches!(table.common.vert_rel_to, VertRelTo::Para)
-                    && matches!(table.page_break, TablePageBreak::RowBreak)
-                    && table.row_count > 1;
+                && !self
+                    .render_normalization
+                    .borrow()
+                    .table_text_reflowed(table)
+                && !self
+                    .render_normalization
+                    .borrow()
+                    .nested_table_has_reflowed_host(table)
+                && !table.common.treat_as_char
+                && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+                && matches!(table.common.vert_rel_to, VertRelTo::Para)
+                && matches!(
+                    table.page_break,
+                    TablePageBreak::RowBreak | TablePageBreak::CellBreak
+                )
+                && table.row_count > 1;
             let tail_fitted = native_rowbreak_nested_tail
                 .then(|| fit_measured_table_nested_tail_to_declared_height(mt, table, self.dpi))
                 .flatten()
@@ -5723,6 +5734,32 @@ impl LayoutEngine {
                 relaxed_pad,
                 true,
             );
+        }
+        // 캐시 없는 중첩 표도 측정 경로와 같은 끝 행의 저장 내용 하한을 쓴다.
+        // 앞 행을 비례 축소하지 않고 선언 총높이 안의 빈 여유만 회수한다.
+        if stored
+            && !self
+                .render_normalization
+                .borrow()
+                .nested_table_has_reflowed_host(table)
+            && !table.common.treat_as_char
+            && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+            && matches!(table.common.vert_rel_to, VertRelTo::Para)
+            && matches!(
+                table.page_break,
+                TablePageBreak::RowBreak | TablePageBreak::CellBreak
+            )
+        {
+            if let Some(fitted) =
+                crate::renderer::height_measurer::fit_stored_declared_tail_row_heights(
+                    &row_heights,
+                    hwpunit_to_px(table.cell_spacing as i32, self.dpi),
+                    table,
+                    self.dpi,
+                )
+            {
+                row_heights = fitted;
+            }
         }
         if fit_common_height {
             self.fit_row_heights_to_common_height(table, &mut row_heights);

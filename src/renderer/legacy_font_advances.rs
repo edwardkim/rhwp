@@ -39,7 +39,9 @@ pub(crate) fn select_native_programs(document: &Document, styles: &mut ResolvedS
                 let metric_face = match face.native_program {
                     Some(NativeFontProgram::HumanMyeongJo) => Some(HUMAN_HFT_METRIC_FACE),
                     Some(NativeFontProgram::HanyangSinMyeongJo) => Some(HANYANG_HFT_METRIC_FACE),
-                    None if source_format == SourceFormat::Hwp3 && face.name == "휴먼명조" => Some(HUMAN_HFT_METRIC_FACE),
+                    None if source_format == SourceFormat::Hwp3 && face.name == "휴먼명조" => {
+                        Some(HUMAN_HFT_METRIC_FACE)
+                    }
                     None => None,
                 };
                 if let Some(metric_face) = metric_face {
