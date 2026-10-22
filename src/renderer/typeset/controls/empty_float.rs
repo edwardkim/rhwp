@@ -413,6 +413,15 @@ pub(super) fn prepare(
     // 바꾸지는 않는다. 이미 수용한 저장 앵커를 먼저 선택하고, 아래 lane의
     // 확정 이동을 같은 placement의 원점·점유 끝·후속 줄에 함께 반영한다.
     let raw_top = saved_page_top
+        .or_else(|| {
+            // 닫힌 상자는 원점 앞의 호스트 간격까지 이미 분리했다.
+            // raw 호스트+오프셋으로 다시 시작하면 같은 간격이 lane의
+            // 예약 끝과 paint에 재가산된다. 별도 ladder 상자는 기존
+            // 자신의 원점 계약을 유지한다.
+            closed_control_frame
+                .filter(|_| closed_source_placement.is_none())
+                .map(|frame| frame.anchor_y)
+        })
         .or(legacy_stored_top)
         .or_else(|| closed_source_placement.map(|placement| placement.table_top))
         .or(stored_single_topbottom_top)
@@ -485,6 +494,12 @@ pub(super) fn prepare(
         ft.effective_height + ft.host_spacing.after_for_fit
     };
     let lane_top = lanes.pushed_top(x_start, x_end, raw_top);
+    if std::env::var_os("RHWP_DIAG_FLOAT_FRAME").is_some() {
+        eprintln!(
+            "DIAG_FLOAT_LANE pi={para_idx} ci={ctrl_idx} raw={raw_top} lane={lane_top} closed={closed_control_frame:?} before={} after={} reserved={reserved_height}",
+            ft.host_spacing.before, ft.host_spacing.after,
+        );
+    }
     let closed_source_resolved = closed_source_placement.map(|mut placement| {
         let shift = lane_top - placement.table_top;
         placement.anchor_y += shift;
@@ -543,33 +558,62 @@ pub(super) fn prepare(
                 occupied_bottom: anchor_y + hwpunit_to_px(occupied_height as i32, dpi),
             }
         });
-    let resolved = square_resolved
-        .or(closed_source_resolved)
+    let control_resolved = control_frame.map(|mut frame| {
+        let lane_shift = lane_top - frame.anchor_y;
+        frame.anchor_y = if closed_control_frame.is_some() && original_frame_follows_body {
+            frame.anchor_y + lane_shift
+        } else if closed_control_frame.is_some() {
+            rewound_host_origin.unwrap_or(para_start_height)
+        } else {
+            para_start_height
+        };
+        frame.table_top += lane_shift;
+        frame.occupied_bottom += lane_shift;
+        // lane 이동은 원본 후속 줄의 앞 간격까지 소비했다는 증거가 아니다.
+        if lane_shift.abs() > frame.anchor_y.abs().max(1.0) * 1e-9 {
+            frame.stored_successor_line_origin = None;
+        }
+        frame
+    });
+    let resolved = closed_source_resolved
+        .or(control_resolved)
+        .or(square_resolved)
         .or(outer_box_resolved)
         .or_else(|| {
-            (page.profile.hwpx_stored_layout()
-                && is_topbottom_para_float
-                && topbottom_float_count >= 2
-                && matches!(
-                    table.common.vert_align,
-                    crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside
-                ))
-            .then(|| {
-                let top = lane_top + ft.host_spacing.before;
-                crate::renderer::float_placement::ParagraphFloatPlacement {
-                    flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
-                    anchor_y: para_start_height,
-                    stored_host_origin: None,
-                    stored_successor_line_origin: None,
-                    table_left: None,
-                    table_top: top,
-                    occupied_bottom: top + ft.effective_height + ft.host_spacing.after,
-                }
-            })
+            crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_sibling_box(
+                para,
+                table,
+                lane_top,
+                para_start_height,
+                ft.effective_height,
+                ft.host_spacing.before,
+                ft.host_spacing.after,
+            )
         });
+    // 다른 문단의 이미 수용한 밴드도 같은 확정 상자가 통과해야 한다.
+    // paint만 다시 피한 뒤 확정 원점으로 덮으면 예약과 출력이 갈라진다.
+    let resolved = resolved.map(|placement| {
+        if !is_topbottom_para_float || table.common.allow_overlap {
+            return placement;
+        }
+        let outer_top = hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+        let mut cleared = placement.clear_occupied_bands(
+            page.visible_float_exclusions
+                .iter()
+                .filter(|zone| zone.para_index < para_idx)
+                .map(|zone| zone.top..zone.bottom + outer_top),
+        );
+        if (cleared.table_top - placement.table_top).abs()
+            > placement.table_top.abs().max(1.0) * 1e-9
+        {
+            cleared.stored_successor_line_origin = None;
+        }
+        cleared
+    });
     let lane_bottom = resolved.map_or(lane_top + reserved_height, |p| {
         if square_resolved.is_some()
             || closed_source_resolved.is_some()
+            || control_resolved.is_some()
             || outer_box_resolved.is_some()
         {
             p.occupied_bottom
