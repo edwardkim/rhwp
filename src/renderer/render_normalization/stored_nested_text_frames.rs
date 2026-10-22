@@ -28,6 +28,8 @@ pub(crate) struct StoredTextFrame {
 pub(crate) struct StoredNestedTextFrames {
     pub units: Vec<StoredTextFrameUnit>,
     pub frames: Vec<StoredTextFrame>,
+    /// 부모 선언이 자식 첫 프레임과 부모 상하 안 여백을 함께 닫는다.
+    pub parent_opening_owns_bottom_padding: bool,
 }
 
 impl StoredNestedTextFrames {
@@ -239,7 +241,82 @@ fn prove(
             });
         }
     }
-    Some(StoredNestedTextFrames { units, frames })
+    Some(StoredNestedTextFrames {
+        units,
+        frames,
+        parent_opening_owns_bottom_padding: false,
+    })
+}
+
+// 기존 부모 행 합과 후속 줄이 닫는 두 프레임을 정규화 원장으로 옮긴다.
+// HWP5 prove의 저장 host 계약을 완화하지 않고 독립된 원본 종료 증명을 사용한다.
+fn prove_parent_closed(
+    owner: &Table,
+    parent: &Cell,
+    child: &Table,
+) -> Option<StoredNestedTextFrames> {
+    let plan = crate::renderer::float_placement::stored_nested_row_frames(owner, parent, child)?;
+    let cell = child.cells.first()?;
+    let padding = cell.effective_padding(&child.padding);
+    let top_pad = i32::from(padding.top);
+    let bottom_pad = i32::from(padding.bottom);
+    let frames = vec![
+        StoredTextFrame {
+            start: 0,
+            end: plan.reset,
+            body_height_hu: plan.opening_height_hu,
+        },
+        StoredTextFrame {
+            start: plan.reset,
+            end: plan.lines.len(),
+            body_height_hu: plan.closing_height_hu,
+        },
+    ];
+    let mut units = Vec::with_capacity(plan.lines.len());
+    for frame in &frames {
+        for index in frame.start..frame.end {
+            let (paragraph, line, top) = plan.lines[index];
+            let starts = index == frame.start;
+            let ends = index + 1 == frame.end;
+            let end = if ends {
+                frame.body_height_hu - top_pad - bottom_pad
+            } else {
+                plan.lines[index + 1].2
+            };
+            let body = end.checked_sub(top)?;
+            if body <= 0 {
+                return None;
+            }
+            let height = body
+                .checked_add(if starts { top.checked_add(top_pad)? } else { 0 })?
+                .checked_add(if ends { bottom_pad } else { 0 })?;
+            if height <= 0 {
+                return None;
+            }
+            units.push(StoredTextFrameUnit {
+                paragraph,
+                line,
+                physical_height_hu: height,
+                starts_frame: starts,
+            });
+        }
+    }
+    // 이 별도 증명은 child의 바깥 여백 0을 요구한다. 각 physical unit과
+    // 실제 child frame의 높이가 정확히 같은 합으로 닫혀야 한다.
+    if frames.iter().any(|frame| {
+        units[frame.start..frame.end]
+            .iter()
+            .map(|unit| i64::from(unit.physical_height_hu))
+            .sum::<i64>()
+            != i64::from(frame.body_height_hu)
+    }) {
+        return None;
+    }
+    Some(StoredNestedTextFrames {
+        units,
+        frames,
+        parent_opening_owns_bottom_padding: true,
+    })
 }
 
 pub(super) fn collect(document: &Document) -> HashMap<usize, Arc<StoredNestedTextFrames>> {
@@ -252,7 +329,19 @@ pub(super) fn collect(document: &Document) -> HashMap<usize, Arc<StoredNestedTex
             for (pi, paragraph) in cell.paragraphs.iter().enumerate() {
                 for control in &paragraph.controls {
                     if let Control::Table(child) = control {
-                        if let Some(frames) = prove(document, table, cell, pi, child) {
+                        let native_frames = document
+                            .layout_profile()
+                            .hwp5_stored_pagination_layout()
+                            .then(|| prove(document, table, cell, pi, child))
+                            .flatten();
+                        // 기존 HWP5 host 증명은 유지한다. 부모 선언/자식 재시작/뒤 줄이
+                        // 함께 닫은 원본 상자도 동일한 유닛·프레임 원장으로 전달한다.
+                        let parent_closed_frames = || {
+                            (pi == 0)
+                                .then(|| prove_parent_closed(table, cell, child))
+                                .flatten()
+                        };
+                        if let Some(frames) = native_frames.or_else(parent_closed_frames) {
                             result
                                 .insert(child.as_ref() as *const Table as usize, Arc::new(frames));
                         }
@@ -264,7 +353,9 @@ pub(super) fn collect(document: &Document) -> HashMap<usize, Arc<StoredNestedTex
     }
     let mut result = HashMap::new();
     let profile = document.layout_profile();
-    if profile.hwp5_stored_pagination_layout() && !profile.session_edited() {
+    if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+        && !profile.session_edited()
+    {
         for section in &document.sections {
             for paragraph in &section.paragraphs {
                 for control in &paragraph.controls {

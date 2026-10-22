@@ -13917,7 +13917,11 @@ impl LayoutEngine {
                         .sum::<f64>(),
                 );
                 if children.len() != 1
-                    || !(eligible || self.native_child_has_stored_frame_boundary(child, styles))
+                    || !(eligible
+                        || self.native_child_has_stored_frame_boundary(child, styles)
+                        || self
+                            .stored_nested_text_frame_fragments(child, styles)
+                            .is_some())
                 {
                     return false;
                 }
@@ -18176,6 +18180,35 @@ impl LayoutEngine {
             }
             let closing = &units[end - 1];
             let next = &units[end];
+            // 재귀 자식의 줄은 부모 host 글줄 범위를 소유하지 않는다. 자식 컷이
+            // 인증된 물리 프레임을 정확히 닫으면 그 경계를 부모의 이월 판정에도
+            // 전달한다. 임의 mixed/reset 유닛만으로 쪽 경계를 승격하지 않는다.
+            if closing.mixed_nested_recursive
+                && next.mixed_nested_recursive
+                && next.stored_frame_break_before
+                && closing.para_idx == next.para_idx
+                && self
+                    .mixed_nested_split_from_cut(cell, table, styles, start, end, closing.para_idx)
+                    .and_then(|split| split.recursive_cut)
+                    .zip(cell.paragraphs[closing.para_idx].controls.iter().find_map(
+                        |control| match control {
+                            Control::Table(child) => Some(child.as_ref()),
+                            _ => None,
+                        },
+                    ))
+                    .is_some_and(|(cut, child)| {
+                        self.stored_nested_text_frame_for_cut(
+                            child,
+                            &cut.start_cut,
+                            &cut.end_cut,
+                            cut.start_cut_is_block,
+                            cut.is_block_split,
+                        )
+                        .is_some()
+                    })
+            {
+                return true;
+            }
             if !(next.hard_break_before || next.stored_frame_break_before)
                 || closing.vis_start >= closing.vis_end
             {

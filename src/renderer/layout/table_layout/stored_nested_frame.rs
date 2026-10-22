@@ -41,6 +41,24 @@ impl LayoutEngine {
         {
             return 0.0;
         }
+        // 부모 선언이 앞 행 + 자식 첫 상자 + 부모 상하 안 여백으로 닫히면,
+        // 이 조각의 아래 안 여백도 원본 물리 상자의 일부다. 열린 프레임이라는
+        // 이유로 회수하면 실제 테두리가 그만큼 짧아진다. 별도 종료 증명이 없는
+        // 기존 중첩 reset은 아래의 열린 컷 계약을 유지한다.
+        if cell.paragraphs[closing.para_idx]
+            .controls
+            .iter()
+            .find_map(|control| match control {
+                crate::model::control::Control::Table(child) => self
+                    .render_normalization
+                    .borrow()
+                    .stored_nested_text_frames(child),
+                _ => None,
+            })
+            .is_some_and(|frames| frames.parent_opening_owns_bottom_padding)
+        {
+            return 0.0;
+        }
         let (_, _, _, bottom) = self.resolve_stored_nested_cell_padding(cell, table, styles);
         bottom.min(closing.height)
     }
