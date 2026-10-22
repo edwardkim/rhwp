@@ -5523,6 +5523,28 @@ impl LayoutEngine {
             None
         };
         let recursive_overlay_frame = self.reflow_recursive_overlay_frame(table, styles);
+        // [#8105] 쪽 위에서 시작하는 첫 조각이 문단 기준 양수 오프셋을 그대로 쓰면, 표 위끝은 문단
+        // 윗변 + 오프셋 + 바깥 위 여백이다. 예산은 첫 조각 host_before 로 그 여백을 이미 예약한다
+        // (`host_spacing.rs` 자리차지 표 before = outer_top). 표 여럿을 담은 빈 앵커(1342000 48쪽
+        // 문단 1.3 ci=0: 정본 146 = 본문 위 132.3 + 752HU + 283HU, 1480000-201900698 11쪽)는 아래
+        // 형상 규칙들이 열지 않는다. 칸 단위로 나누는(CellBreak) 표는 이 원점에 여백을 넣지 않는다
+        // (1480000-201900698 156쪽 정본 표 위 135.5 = 여백 없는 원점).
+        let page_top_offset_first_fragment_outer_top = !is_continuation
+            && start_cut.is_empty()
+            && is_para_flow_table
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && effective_vertical_offset > 0.0
+            && pre_emitted_host_height <= 0.0
+            && resolved_table_top.is_none()
+            && enclosing_cell_ctx.is_none()
+            && col_node.children.is_empty()
+            && (y_start - col_area.y).abs() <= 0.5
+            && paragraphs
+                .get(para_index)
+                .is_some_and(|host| !super::para_has_visible_text(host));
         // 아래 흐름 갈래가 이 조각의 바깥 위 여백을 이미 열었는가. 같은 여백을 다시 여는
         // 조각 형상 규칙(single_cell_page_fragment 등)이 한 번 더 더하지 않게 한다.
         let mut flow_branch_opened_outer_top = false;
@@ -5761,6 +5783,7 @@ impl LayoutEngine {
             && col_node.children.is_empty()
             && (y_start - col_area.y).abs() <= 0.5;
         let y_start = if (single_cell_page_fragment
+            || page_top_offset_first_fragment_outer_top
             || generic_continuation_outer_top
             || consumed_offset_first_fragment_outer_top
             || multirow_reopens_outer_top
