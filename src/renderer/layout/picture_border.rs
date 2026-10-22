@@ -95,9 +95,12 @@ impl LayoutEngine {
         if line_type == 0 {
             return None;
         }
-        let border_w = super::super::stroke_pattern::picture_pen_width_to_px(picture.border_width)
-            * self.dpi
-            / 96.0;
+        let border_w = if picture.border_width > 0 {
+            hwpunit_to_px(picture.border_width, self.dpi)
+        } else {
+            // 기본 선 두께 0.1mm
+            0.1 / 25.4 * self.dpi
+        };
         let stroke_dash = match line_type {
             2 => super::super::StrokeDash::Dot,        // 점선
             3 => super::super::StrokeDash::Dash,       // 긴 점선 (파선)

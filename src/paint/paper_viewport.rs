@@ -3,7 +3,7 @@
 use crate::model::style::UnderlineType;
 use crate::paint::RenderProfile;
 use crate::paint::{
-    CacheHint, GroupKind, LayerNode, LayerNodeKind, PaintOp, TextDecorationKind, TextDecorationPaintGeometry,
+    LayerNode, LayerNodeKind, PaintOp, TextDecorationKind, TextDecorationPaintGeometry,
 };
 use crate::renderer::image_resolver::detect_image_mime_type;
 use crate::renderer::render_tree::{BoundingBox, ImageNode, RenderNode};
@@ -406,57 +406,6 @@ impl PagePaintContext {
                 }
             }
         }
-    }
-
-    pub(crate) fn vector_projection(self, node: &RenderNode) -> Option<[f64; 6]> {
-        if !matches!(
-            node.node_type,
-            RenderNodeType::Line(_)
-                | RenderNodeType::Rectangle(_)
-                | RenderNodeType::Ellipse(_)
-                | RenderNodeType::Path(_)
-        ) {
-            return None;
-        }
-        self.master_projection(node)
-            .map(|(sx, sy)| [sx, 0.0, 0.0, sy, 0.0, 0.0])
-    }
-
-    /// 도형 자체의 paint만 물리 종이에 투영한다. 내부 글줄은 별도 글자 출력 좌표다.
-    pub(crate) fn project_vector(self, node: &RenderNode, leaf: LayerNode) -> LayerNode {
-        let Some(matrix) = self.vector_projection(node) else {
-            return leaf;
-        };
-        let mut projected = LayerNode::group(
-            leaf.bounds,
-            leaf.source_node_id,
-            vec![leaf],
-            CacheHint::None,
-            GroupKind::Group(GroupNode {
-                paint_transform: Some(matrix),
-                section_index: None,
-                para_index: None,
-                control_index: None,
-            }),
-        )
-        .with_layer(node.layer);
-        projected.bounds = projected.visual_bounds(true);
-        projected
-    }
-
-    fn master_projection(self, node: &RenderNode) -> Option<(f64, f64)> {
-        if !self.print || !node.layer.as_ref().is_some_and(|layer| layer.master_page) {
-            return None;
-        }
-        let (width, height) = self.logical_size;
-        let (output_width, output_height) = self.output_size;
-        if ![width, height, output_width, output_height]
-            .iter()
-            .all(|extent| extent.is_finite() && *extent > 0.0)
-        {
-            return None;
-        }
-        Some((output_width / width, output_height / height))
     }
 
     pub(crate) fn image_frame(self, node: &RenderNode, image: &ImageNode) -> BoundingBox {

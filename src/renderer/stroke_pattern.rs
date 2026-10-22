@@ -16,24 +16,9 @@ pub(crate) fn shape_pen_width_to_px(width_hu: i32, line_type: u8) -> f64 {
     if !(1..=7).contains(&line_type) {
         return f64::from(width_hu.max(0)) * STYLE_DPI / 7200.0;
     }
-    physical_pen_width_to_px(f64::from(width_hu.max(0)), line_type > 1)
-}
-
-/// 그림 외곽은 채운 테두리 띠와 한 출력 픽셀의 외곽 pen으로 인쇄된다.
-/// 너비 0의 기본 0.1mm도 같은 장치 양자화를 거친다.
-pub(crate) fn picture_pen_width_to_px(width_hu: i32) -> f64 {
-    let width_hu = if width_hu > 0 {
-        f64::from(width_hu)
-    } else {
-        7200.0 * 0.1 / 25.4
-    };
-    physical_pen_width_to_px(width_hu, true)
-}
-
-fn physical_pen_width_to_px(width_hu: f64, outline: bool) -> f64 {
     let quantum_hu = 7200.0 / HANCOM_PRINT_PEN_DPI;
-    let fill_hu = (width_hu / quantum_hu).round().max(1.0) * quantum_hu;
-    let outline_hu = if outline { quantum_hu } else { 0.0 };
+    let fill_hu = (f64::from(width_hu.max(0)) / quantum_hu).round().max(1.0) * quantum_hu;
+    let outline_hu = if line_type > 1 { quantum_hu } else { 0.0 };
     (fill_hu + outline_hu) * STYLE_DPI / 7200.0
 }
 
