@@ -1649,7 +1649,19 @@ impl LayoutEngine {
                     self.stored_mixed_opening_frame(table, cell, styles, start, end)
                 })
                 .filter(|frame| frame.physical_height == cell_h);
-            let composition_window = if saved_frame_needs_alignment || mixed_opening_frame.is_some()
+            let declared_opening_content_height = (!is_continuation)
+                .then(|| self.declared_nested_opening_cut_height(table, start_cut, end_cut, styles))
+                .flatten()
+                .map(|frame| frame - pad_top - pad_bottom);
+            // 선언된 첫 쪽과 현재 수용 상자가 같은 프레임이면 내용 높이와
+            // 원본 정렬도 그 결과가 소유한다. Top 전용 창으로 다시 판정하지 않는다.
+            let declared_opening_frame_owns_alignment = declared_opening_content_height
+                .is_some_and(|height| {
+                    (height + pad_top + pad_bottom - cell_h).abs() <= hwpunit_to_px(2, self.dpi)
+                });
+            let composition_window = if saved_frame_needs_alignment
+                || mixed_opening_frame.is_some()
+                || declared_opening_frame_owns_alignment
             {
                 None
             } else if let Some(p) = probe.filter(|p| p.windowed) {
@@ -1999,7 +2011,10 @@ impl LayoutEngine {
                 && self.cell_units_content_height(cell, table, styles) > inner_height + 0.5;
             let effective_align = if descendant_owns_closing_band {
                 VerticalAlign::Top
-            } else if frame_owns_alignment || mixed_opening_frame.is_some() {
+            } else if frame_owns_alignment
+                || mixed_opening_frame.is_some()
+                || declared_opening_frame_owns_alignment
+            {
                 // 앞 조각의 빈 공간을 보존한 물리 상자는 이 조각 내용으로 정렬한다.
                 cell.vertical_align
             } else if center_saved_spanning_cell == Some(cell_idx) {
@@ -2026,8 +2041,12 @@ impl LayoutEngine {
                 .filter(|frame| {
                     hwpunit_to_px(frame.content_height_hu, self.dpi) <= inner_height + 0.5
                 });
-            let total_content_height = stored_empty_picture_frame
-                .map(|frame| hwpunit_to_px(frame.content_height_hu, self.dpi))
+            let total_content_height = declared_opening_content_height
+                .filter(|_| declared_opening_frame_owns_alignment)
+                .or_else(|| {
+                    stored_empty_picture_frame
+                        .map(|frame| hwpunit_to_px(frame.content_height_hu, self.dpi))
+                })
                 .unwrap_or(total_content_height);
             // [#3820 Stage 78] RowBreak 마지막 physical tail은 paginator가 정한
             // 정확한 높이(override)를 사용한다. 저장 LINE_SEG가 glyph em보다 작은
@@ -2035,16 +2054,45 @@ impl LayoutEngine {
             // 지나치게 아래로 내려간다. 실제 paint glyph가 차지하는 em은 Center
             // 정렬의 최소 콘텐츠 높이여야 한다. 이 보정은 end-tail을 실제로 소유한
             // 셀에만 적용해 일반 저장 줄높이/행 높이 해석에는 영향을 주지 않는다.
+            // 첫 저장 띠의 소유를 예약에 사용한 문단 메트릭에서 그대로 읽는다.
+            let first_source_lead = cell.paragraphs.first().map_or(0.0, |para| {
+                let owns_first_line = line_ranges.as_ref().is_none_or(|ranges| {
+                    ranges
+                        .first()
+                        .is_some_and(|&(start, end)| start == 0 && end > 0)
+                });
+                if !owns_first_line
+                    || !cut_units.is_none_or(|(start, _)| start == 0)
+                    || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
+                    || para.stored_text_partition_is_dirty()
+                    || self
+                        .render_normalization
+                        .borrow()
+                        .table_text_reflowed(table)
+                    || !para.line_segs.first().is_some_and(|line| {
+                        line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            == 0
+                    })
+                {
+                    return 0.0;
+                }
+                crate::renderer::cell_paragraph_spacing::paragraph_before(
+                    para,
+                    0,
+                    styles
+                        .para_styles
+                        .get(para.para_shape_id as usize)
+                        .map_or(0.0, |style| style.spacing_before),
+                    self.dpi,
+                )
+                .stored_lead
+            });
             let owns_end_tail = end_row_height_override.is_some()
                 && end_row.checked_sub(1).is_some_and(|last_row| {
                     cell_row <= last_row && last_row < cell_row + cell.row_span as usize
                 });
             let selected_frame_owns_alignment =
                 closing_source_frame_owns_alignment || full_width_row_frame_owns_alignment;
-            let declared_opening_content_height = (!is_continuation)
-                .then(|| self.declared_nested_opening_cut_height(table, start_cut, end_cut, styles))
-                .flatten()
-                .map(|frame| frame - pad_top - pad_bottom);
             let stored_page_content_height = cut_units.and_then(|(start, end)| {
                 self.stored_cell_cut_alignment_height(cell, table, styles, start, end)
             });
@@ -2166,6 +2214,9 @@ impl LayoutEngine {
             // 정본은 늘어난 상자 안에서 그 조각을 정렬한다(hwpx_sample2 19쪽: 상자
             // 89.91..1081.39 안에서 칸 내용이 95.06 — 상자 위에서 5.15px).
             let align_inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
+            let first_source_band_owns_position = first_source_lead > 0.0
+                && matches!(effective_align, VerticalAlign::Top)
+                && !matches!(cell.vertical_align, VerticalAlign::Top);
             let text_y_start = match effective_align {
                 VerticalAlign::Top => cell_y + pad_top,
                 VerticalAlign::Center => {
@@ -2195,6 +2246,7 @@ impl LayoutEngine {
                 effective_align,
                 &[
                     ("mixed_declared", mixed_opening_frame.is_some()),
+                    ("declared_opening", declared_opening_frame_owns_alignment),
                     ("frame", frame_owns_alignment),
                     ("ordinary", ordinary_source_frame_owns_alignment),
                     ("opening", align_saved_opening_frame),
@@ -2658,11 +2710,13 @@ impl LayoutEngine {
                                 .get(para.para_shape_id as usize)
                                 .map(|s| s.spacing_before)
                                 .unwrap_or(0.0);
-                            // 저장 줄 상단이 품은 앞 간격은 compose에서 다시 더한다.
-                            // 가운데·아래 정렬도 같은 줄 원점을 소비하므로 선차감한다.
-                            // 첫 원점이 해당 간격을 품지 않은 경우는 그대로 둔다.
+                            // 원본 Center/Bottom이 컷 때문에 Top이 되면 첫 저장 띠와
+                            // 문단 앞 간격을 별도로 보존한다. 정렬을 유지한 셀은
+                            // 기존 저장 스냅과 compose가 간격을 한 번 소비한다.
+                            let keep_source_band = cp_idx == 0 && first_source_band_owns_position;
                             if cp_idx > 0
-                                || (spacing > 0.0
+                                || (!keep_source_band
+                                    && spacing > 0.0
                                     && hwpunit_to_px(seg.vertical_pos - vpos_origin, self.dpi)
                                         >= spacing)
                             {
@@ -2705,7 +2759,15 @@ impl LayoutEngine {
                         {
                             // 저장 원점이 이미 앞 띠를 품는다. compose는 이 위치가
                             // column-top인지 다시 추측하지 않고 선차감한 몫만 돌려놓는다.
-                            stored_linear_spacing_before = Some(snap_spacing_before);
+                            stored_linear_spacing_before =
+                                Some(if first_source_band_owns_position {
+                                    styles
+                                        .para_styles
+                                        .get(para.para_shape_id as usize)
+                                        .map_or(0.0, |style| style.spacing_before)
+                                } else {
+                                    snap_spacing_before
+                                });
                         }
                         if target_top > current_top && !post_table_host_line {
                             para_y += target_top - current_top;
@@ -4995,7 +5057,11 @@ impl LayoutEngine {
             // 않은 꼬리 빈 문단**의 저장 줄 상자를 더한다. 글자가 없어도 줄 상자는 공간을
             // 차지한다 — 정본 4·5·6쪽은 그 빈 줄(p67·p96·p121) 바닥까지를 내용으로 센다.
             let mut placed_dy = 0.0_f64;
-            if centers_pinned_fragment && matches!(effective_align, VerticalAlign::Top) {
+            if centers_pinned_fragment
+                && matches!(effective_align, VerticalAlign::Top)
+                // 이미 첫 원본 띠가 소유한 위치를 남은 여유로 다시 가운데로 옮기지 않는다.
+                && !first_source_band_owns_position
+            {
                 let trailing_empty_extent = cut_units
                     .and_then(|(_, end_unit)| {
                         let units = self.cell_units(cell, table, styles);
