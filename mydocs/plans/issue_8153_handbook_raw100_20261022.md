@@ -679,3 +679,32 @@ backend별 임의 배율이나 glyph source가 다른 fallback의 수치로 대�
 0.19537%p 하락은 위 cad Native에서 복구했으나 새 WASM 검증은 별도로 필요하다.
 248쪽의 양쪽 0.00001%p 감소는 앞선 9f 후보부터 있던 변화이며 이번 새 회귀와 구분한다.
 전쪽 100%와 정확한 미대응 픽셀 0은 아직 달성하지 않았다.
+
+
+### fresh WASM 정확한 미대응 수 확인과 원본 글자 소유 대조 정정
+
+`audit_exact_wasm_overlay_text.py`는 e492 전 766쪽의 PNG·PDF PNG SHA와 반경 2를
+확인하고 고정 마스크 232로 정확한 미대응 수를 계산했다. HWPX 113쪽·HWP 87쪽이
+실제 미대응 0이며, 남은 566쪽의 합계는 각각 114550/116184픽셀이다. 결과는
+`overlay-text-e49286e6ba/whole-wasm-exact-audit.json`과
+`logs/overlay-text-whole-wasm-exact-audit.log`에 보존한다. 최신 런타임 결과로
+대신 보고하지 않으며, 새 head의 116쪽 복구와 물리 프레임 보정은 별도 검증한다.
+
+앞선 글꼴 수치 6건은 같은 쪽에 font/Tf/Tz 쌍이 존재하는지를 확인한 결과였다.
+실제 텍스트와의 소유 대응을 더 강하게 확인하려고 PDF의 ToUnicode와 Tj/TJ를 직접
+해독했다. 4쪽에서 764개 텍스트 연산자를 읽었고, 원본은 run의 직계 `t`만 대조했다.
+이 과정에서 앞서 기록한 section3 p45의 **style220 소유 대응이 잘못됐음**을 확인했다.
+호스트 run의 후손 표·도형 안 텍스트를 호스트 글자모양으로 오인한 것이며, 해당 바탕체
+설명 본문의 실제 글자모양은 **53**이다. `업무관리시스템…은 과제분류체계를`는
+style481의 돋움체 문장이고, 바탕체 style53은 `업무관리시스템…을 활용하려면`이다.
+이전 style220 매핑을 구현이나 사양의 독립 증거로 사용하지 않는다.
+
+style53의 원본 10pt·98%로 다시 계산한 Tf83/Tz98.684212는 해당 문장의 PDF 연산자와
+일치한다. 144쪽 style166, 145쪽 style20, 86쪽 style697/576도 실제 직계 원문을
+해당 PDF 프로그램의 해독 텍스트에서 확인해 5/5 통과했다. 직인·이름은 같은 스타일의
+원본 사용이 여러 곳에 있으므로 이 텍스트 검사만으로 특정 표·문단 소유까지 증명하지 않는다.
+쪽번호는 field 치환이므로 이 5건에 섞지 않으며 기존 바탕쪽 소유 확인을 별도로 유지한다.
+수치 6/6 재검증은 `print-font-device-math-six-cases-source-bound.json`, 텍스트 5/5는
+`print-font-device-text-linked-audit.json`과 `logs/print-font-device-text-linked.log`다.
+원시 PDF 해독은 `decode_print_text_programs.py`에 보존한다. 같은 숫자 쌍의 존재를
+원본 run 소유 증명으로 대신하지 않았고, 실제 렌더러에는 글꼴 수치 변경을 추가하지 않았다.
