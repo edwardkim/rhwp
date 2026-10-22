@@ -41,3 +41,7 @@ fmt·suite manifest·unit tiers·Native build와 정식 장치 계약 5건이 �
 Native/fresh WASM HWP5 18쪽의 review와 overlay를 직접 열어 도해의 거친 표본이 복구된 것을 확인했다. 제목의 굵은 한글 간격과 도형의 세부 차이는 남는다. 전쪽 수치만으로 완료로 판정하지 않는다. 제출용 중간 TSV·대표 PNG는 `mydocs/pr/assets/issue7445/completed-20261009/rebase-605ccfd9-20261022/consumer-resolution/`에 보존한다. 로그·JSON·진단 스크립트는 ignored `sample16-consumer-resolution-v2/`에만 있다.
 
 사용자가 제공한 ubuntu-ted2의 새 PDF 3개도 SHA를 대조해 별도 `pdf/issue7445-sample16-ubuntu-ted2-20261022/`에 복사했다. 기존 동명 PDF는 덮어쓰지 않았다. 2022 HWP·2024 HWP·HWPX 각각의 원본 SHA는 양 호스트가 같으며, 2010 저장 HWP5를 2024 저장 HWP5와 같은 입력으로 바꾸지 않는다. 새 PDF 기준 검증과 현재 후보 전체 검증 완료를 혼동하지 않는다.
+
+새 PDF 기준의 별도 Native/fresh WASM 전쪽도 각 192쪽을 완료했다. Native 최저는 2022 HWP 96.25320%, 2024 HWP 97.09573%, HWPX 95.13828%이며 WASM은 각각 96.16423%, 97.03480%, 95.14423%다. 쪽수는 각64/64, 90% 미만0이다. 새 PDF와 이전 동명 PDF는 2024 HWP/HWPX 각각64쪽의 RGB 픽셀이 모두 동일하다. 2022 HWP는59쪽에서 달라졌으므로 새 PDF로 다시 산출한 값을 사용한다. #8064의 2010 저장 HWP5 입력과 2024 저장 입력은 DocInfo·BodyText도 다르므로 PDF를 서로 바꾸지 않는다.
+
+새 base 605ccfd9와 후보의 실제 `export-kitty` 소비도 기존 HWP5 18쪽·너비360/720에서 네 조건을 실행했다. 두 바이너리 모두 APC 복원 PNG와 같은 배율의 Native PNG 픽셀이 같고 파일 출력과 stdout이 바이트 동일했다. 기존 정식 Kitty 검사8건과 이 전송/PNG 소비4조건을 구분한다. 실제 터미널의 표시 재확인은 이 실행에서 하지 않았다. 근거는 ignored `rebase-605ccfd9/kitty-consumer/`에 있다.
