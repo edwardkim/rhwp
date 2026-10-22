@@ -1,8 +1,8 @@
-"""Explicit historical page quality comparison; not a default Visual Sweep gate.
+"""명시적으로 호출하는 과거 페이지 품질 비교 도구다.
 
-Callers may compare raw page scores at the recorded measurement settings.
-Visual Sweep does not automatically invoke this historical PR comparison.
-No font exception, adjusted score, average, or selected-page run rescues a loss.
+기록된 측정 조건에서 페이지별 raw 점수를 비교한다.
+Visual Sweep의 기본 검토 판정에는 이 과거 PR 비교를 자동으로 연결하지 않는다.
+글꼴 예외·보정값·평균값·일부 페이지 실행으로 품질 하락을 통과시키지 않는다.
 """
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ def _scores(rows):
 
 
 def compare_pages(reference, candidate, pages):
-    """Decimal preserves the exact inclusive 0.1 percentage-point boundary."""
+    """Decimal로 0.1%p 이상 하락하는 경계값을 정확하게 판정한다."""
     if pages < 1:
         raise ValueError("reference page count must be positive")
     expected = set(range(1, pages + 1))
@@ -54,15 +54,15 @@ def compare_pages(reference, candidate, pages):
 
 
 def check_quality(root, provenance, metrics, dpi, radius_px, document_counts, method):
-    """Find protection by input/PDF bytes, not an alias or a minimum-score row."""
+    """별칭이나 최저 점수 행 대신 입력·PDF 바이트로 비교 계약을 찾는다."""
     registry = root / "scripts/visual_sweep_quality_contracts.json"
     if not registry.exists():
         return {"status": "not_registered"}
     checks = []
     try:
         for contract in json.loads(registry.read_text(encoding="utf-8"))["contracts"]:
-            # A contract protects only its explicitly registered output path.
-            # In particular, the #8064 ratchet is Native-only by user request.
+            # 각 계약은 명시적으로 등록된 출력 경로만 비교한다.
+            # 특히 #8064 래칫의 비교 범위는 사용자 요청에 따라 Native로 한정한다.
             if provenance.get("raster_backend") not in contract["backends"]:
                 continue
             summary = root / contract["summary"]
