@@ -36,6 +36,7 @@ mod stored_nested_padding;
 mod stored_nested_source_cut;
 mod stored_nested_text_frames;
 mod stored_ordinary_row_frame;
+mod stored_overlay_text_frame;
 mod stored_page_unit_frames;
 mod stored_plain_cell_minimum;
 mod stored_plain_row_frame;
@@ -7872,9 +7873,25 @@ impl LayoutEngine {
                         None
                     };
                     let composed_for_layout = numbered_comp.as_ref().unwrap_or(composed);
+                    let stored_text_origin = (row_filter.is_none()
+                        && !single_row_fragment
+                        && !single_row_continuation
+                        && effective_valign == cell.vertical_align)
+                        .then(|| {
+                            self.stored_overlay_text_cell_origin(
+                                table,
+                                cell,
+                                composed_paras,
+                                cp_idx,
+                                cell_h,
+                                inner_height,
+                                content_cell_y + pad_top,
+                            )
+                        })
+                        .flatten();
                     // 반환값(다음 문단 y)은 버린다 — 흐름 전진은 저장 vpos 계약 그대로.
                     // 이 문단의 블록 표는 아래 `layout_table` 이 저장 좌표로 배치한다.
-                    let _ = self.layout_composed_paragraph(
+                    let _ = self.layout_composed_paragraph_in_frame(
                         tree,
                         cell_node,
                         composed_for_layout,
@@ -7893,6 +7910,9 @@ impl LayoutEngine {
                         Some(para),
                         Some(bin_data_content),
                         stored_square_picture_wrap_anchor.as_ref(),
+                        false,
+                        None,
+                        stored_text_origin,
                     );
                     has_preceding_text |= host_has_visible_text;
                 }
