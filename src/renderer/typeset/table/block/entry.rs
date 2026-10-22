@@ -1984,6 +1984,18 @@ impl TypesetEngine {
                         // 여백을 빼면 같은 프레임을 다른 원점으로 인증하게 된다.
                         fmt.spacing_before,
                         (table_total - host_spacing_total).max(0.0),
+                        // [#8149] 바로 앞 항목이 앞 문단(빈 host)의 자리차지 표 상자이고
+                        // 커서가 그 끝에 있을 때만 이 host 의 앞 간격 흡수를 인정한다.
+                        para_idx.checked_sub(1).is_some_and(|previous| {
+                            matches!(st.current_items.last(),
+                                Some(PageItem::Table { para_index, .. } | PageItem::PartialTable { para_index, .. })
+                                    if *para_index == previous)
+                                && paragraphs_all.get(previous).is_some_and(|host| {
+                                    !para_has_visible_text(host)
+                                        && host.controls.iter().any(|control| matches!(control,
+                                            Control::Table(t) if is_para_topbottom_float(&t.common)))
+                                })
+                        }),
                         self.dpi,
                     )
                 })

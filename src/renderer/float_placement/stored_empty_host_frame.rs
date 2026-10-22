@@ -263,6 +263,7 @@ pub(super) fn from_stored_ladder(
     origin: f64,
     spacing_before: f64,
     measured_table_height: f64,
+    origin_closes_float_frame: bool,
     dpi: f64,
 ) -> Option<ParagraphFloatPlacement> {
     let paragraph_square = !table.common.treat_as_char
@@ -305,11 +306,15 @@ pub(super) fn from_stored_ladder(
         return None;
     }
     // 원점은 문단 위끝이다. host 앞 간격이 적용되면 저장 줄은 그만큼 아래라 `델타 = 상자 −
-    // 앞 간격` 이다. [#8149] 앞 항목이 자리차지 표 상자로 끝난 host 는 한/글이 앞 간격을 두지
-    // 않아 문단 위끝이 곧 저장 줄이고 `델타 = 상자` 다(한글문서파일형식 39쪽 표 235: 앞은 표
-    // 234 조각, 정본 첫 행 255.4 = 줄 + 위 여백 566HU + 칸 여백). 두 경우 모두 다음 저장 줄이
+    // 앞 간격` 이다. [#8149] 바로 앞 항목이 빈 host 자리차지 표 상자로 끝나 원점이 그 상자
+    // 끝이면, 한/글은 이 host 의 앞 간격을 두지 않아 문단 위끝이 곧 저장 줄이고 `델타 = 상자`
+    // 다(한글문서파일형식 39쪽 표 235: 앞은 표 234 조각, 정본 첫 행 255.4 = 줄 + 위 여백 566HU
+    // + 칸 여백). 원점이 그 상자 끝이 아니면(글 host 의 밴드 뒤 — 156160455 7쪽 pi=71) 커서가
+    // 저장 줄에 있다는 근거가 없으므로 이 등식으로 받지 않는다. 두 경우 모두 다음 저장 줄이
     // 상자 바닥이다.
-    if (delta - (physical_hu - spacing_before_hu)).abs() > 2 && (delta - physical_hu).abs() > 2 {
+    let applied = (delta - (physical_hu - spacing_before_hu)).abs() <= 2;
+    let absorbed = origin_closes_float_frame && (delta - physical_hu).abs() <= 2;
+    if !applied && !absorbed {
         return None;
     }
     // 점유 하단은 그림 원점이 아니라 다음 저장 줄이 닫는 전체 프레임이다.
