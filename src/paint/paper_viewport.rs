@@ -422,6 +422,19 @@ impl PagePaintContext {
         }
     }
 
+    /// 양쪽 backend가 실제로 재생할 그림 frame에서 장치 압축의 너비를 얻는다.
+    pub(crate) fn image_codec_width_points(
+        self,
+        image: &ImageNode,
+        frame: BoundingBox,
+    ) -> Option<f64> {
+        if !self.print || !self.axis_aligned_graphics || image.transform.has_transform() {
+            return None;
+        }
+        let width = image.paint_bbox(&frame).width * 0.75;
+        (width.is_finite() && width > 0.0).then_some(width)
+    }
+
     /// 회전/affine 아래의 좌표는 최종 장치 좌표가 아니므로 이 계약을 적용하지 않는다.
     pub(crate) fn without_rectangle_mapping(mut self) -> Self {
         self.axis_aligned_graphics = false;
