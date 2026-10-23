@@ -20,6 +20,8 @@ function fakeDoc() {
     { fieldId: 13, name: '연락처', value: '' },
   ];
   const calls: string[] = [];
+  /** 문단별 인라인 개체 수(각주·그림 등) — 논리 길이에 더해진다. */
+  const objects: number[] = body.map(() => 0);
   /** 문단별 머리 모양(개요·번호·글머리표). */
   const heads: string[] = body.map(() => 'None');
   // A4 세로, 여백 위 20 아래 15 좌우 18mm, 머리말·꼬리말 15mm (HWPUNIT)
@@ -63,8 +65,11 @@ function fakeDoc() {
     getFieldList: () => JSON.stringify(fields),
     getSectionCount: () => 1,
     getParagraphCount: () => body.length,
+    // 논리 길이 = 글자 + 인라인 개체 수. splitParagraph 의 offset 은 이 축이다.
+    getLogicalLength: (_s, p) => body[p].length + (objects[p] ?? 0),
     splitParagraph: (_s, p, o) => {
       calls.push(`split ${p} ${o}`);
+      o -= Math.min(objects[p] ?? 0, Math.max(0, o - body[p].length)); // 끝에서 나누면 개체 수만큼 빼서 글자 위치로
       heads.splice(p + 1, 0, heads[p]); // 나눈 문단은 앞 문단의 머리 모양을 이어받는다(Enter 와 같다)
       body.splice(p + 1, 0, body[p].slice(o));
       body[p] = body[p].slice(0, o);
@@ -117,6 +122,27 @@ function fakeDoc() {
     getBookmarks: () => JSON.stringify([{ name: '있는 책갈피' }]),
     insertEquation: (_s, p, o, script, size, color) => { calls.push(`eq ${p} ${o} ${script} ${size} ${color}`); return JSON.stringify({ ok: true }); },
     setColumnDef: (sec, n, type, same, gap) => { calls.push(`cols ${sec} ${n} ${type} ${same} ${gap}`); return JSON.stringify({ ok: true }); },
+    insertPicture: (_s, p, o, path, data, w, h, nw, nh, ext) => {
+      calls.push(`picture ${p} ${o} ${path} ${data.length}B ${w}x${h} ${nw}x${nh} ${ext}`);
+      return JSON.stringify({ ok: true, paraIdx: p, controlIdx: 4 });
+    },
+    setPictureProperties: (_s, p, c, json) => { calls.push(`picture-props ${p} ${c} ${json}`); return JSON.stringify({ ok: true }); },
+    createShapeControl: (json) => { calls.push(`shape ${json}`); return JSON.stringify({ ok: true, paraIdx: 0, controlIdx: 6 }); },
+    getDocumentInfo: () => JSON.stringify({ pageCount: 1 }),
+    // 조판 결과: 문단 p 는 y(100 + 30p) ~ +20 px. 표 칸 조각은 본문 위치에 섞이면 안 된다.
+    getPageTextLayout: () => JSON.stringify({ runs: [
+      ...body.map((_t, p) => ({ text: 't', y: 100 + 30 * p, h: 20, secIdx: 0, paraIdx: p })),
+      { text: 'c', y: 10, h: 300, secIdx: 0, paraIdx: 1, cellPath: [{}] },
+    ] }),
+    insertNewNumber: (_s, p, o, n) => { calls.push(`newnum ${p} ${o} ${n}`); return JSON.stringify({ ok: true }); },
+    getPageBorderFill: () => JSON.stringify({ basis: 'page', borderTop: { type: 0, width: 0, color: '#000000' } }),
+    setPageBorderFill: (sec, json) => { calls.push(`page-border ${sec} ${json}`); return JSON.stringify({ ok: true }); },
+    insertClickHereField: (_s, p, o, guide, _m, name, editable) => { calls.push(`field-new ${p} ${o} ${name} ${guide} ${editable}`); return JSON.stringify({ ok: true }); },
+    getChartDataByIndex: (i) => {
+      if (i > 0) throw new Error('범위 초과');
+      return JSON.stringify({ ok: true, plot: 'pie', labels: ['1분기', '2분기'], series: [{ name: '판매', values: ['10', '3'] }, { name: '비용', values: ['4', '1'] }] });
+    },
+    setChartDataByIndex: (i, json) => { calls.push(`chart ${i} ${json}`); return JSON.stringify({ ok: true }); },
     setFieldValue: (id, value) => {
       calls.push(`field ${id} ${value}`);
       fields.find((f) => f.fieldId === id)!.value = value;
@@ -135,7 +161,7 @@ function fakeDoc() {
     },
   };
   return {
-    host, body, cell, fields, calls, heads,
+    host, body, cell, fields, calls, heads, objects,
     transactions: () => transactions,
     cancelBlank: () => { blankAnswer = false; },
   };
@@ -150,6 +176,7 @@ test('쓰기 도구 목록과 이름 판정', () => {
     'delete_paragraph', 'set_list', 'apply_style', 'edit_table', 'set_cell_text', 'set_header_footer', 'insert_footnote',
     'replace_all', 'format_cell', 'page_setup',
     'set_table_border', 'set_cell_size', 'insert_hyperlink', 'add_bookmark', 'insert_equation', 'set_columns',
+    'insert_picture', 'insert_textbox', 'insert_shape', 'new_page_number', 'set_page_border', 'insert_field', 'set_chart_data',
     'create_document',
   ]);
   assert.ok(isWriteTool('replace_text') && isWriteTool('fill_field') && !isWriteTool('read_page_text'));
@@ -533,4 +560,68 @@ test('단 설정은 모든 구역에 보통 단·너비 같게·간격 HWPUNIT',
   assert.deepEqual(proposal.format, { columnCount: 2, gapMm: 8 });
   proposal.apply();
   assert.deepEqual(d.calls, ['cols 0 2 0 1 2268']);
+});
+
+test('그림: 파일을 받기 전에는 적용하지 않고, 본문 폭 안에서 비율을 지켜 글자처럼 넣는다', () => {
+  const d = fakeDoc();
+  const proposal = prepareWrite(d.host, call('insert_picture', { position: 'after', after: '홈페이지', widthMm: 40, purpose: '회사 로고' }));
+  assert.equal(proposal.file?.provided(), false);
+  assert.throws(() => proposal.apply(), refused(/did not choose/));
+  proposal.file!.provide({ name: 'logo.png', bytes: new Uint8Array(10), extension: 'png', naturalWidth: 400, naturalHeight: 200 });
+  proposal.apply();
+  assert.deepEqual(d.calls, ['picture 0 9  10B 11339x5670 400x200 png', 'picture-props 0 4 {"treatAsChar":true}']);
+  // 너비를 안 주면 원본 크기(400px = 30000 HWPUNIT)가 본문 폭(A4 − 좌우 18mm = 49324)보다 작아 그대로
+  const natural = prepareWrite(d.host, call('insert_picture', { position: 'end' }));
+  natural.file!.provide({ name: 'a.jpg', bytes: new Uint8Array(5), extension: 'jpg', naturalWidth: 400, naturalHeight: 100 });
+  natural.apply();
+  assert.match(d.calls.at(-2)!, / 30000x7500 /);
+});
+
+test('글상자·도형은 앵커 문단 뒤 전용 빈 문단에, 앵커 바로 아래 「위아래」 배치로(글자처럼 두면 엔진이 줄 밖에 그린다)', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('insert_textbox', { after: '홈페이지', text: '강조' })).apply();
+  prepareWrite(d.host, call('insert_shape', { after: '과업기간', shape: 'line', widthMm: 50 })).apply();
+  // 앵커 문단 뒤에 빈 문단을 만들고(논리 길이에서 나눔) 그 문단에 붙인다.
+  // 왼쪽 여백 5102, 문단 0 아래 끝 120px → 9000 + 1mm(283)
+  assert.deepEqual(d.calls, [
+    'split 0 14',
+    'shape {"sectionIdx":0,"paraIdx":1,"charOffset":0,"width":17008,"height":5669,"horzOffset":5102,"vertOffset":9283,"treatAsChar":false,"textWrap":"TopAndBottom","shapeType":"textbox"}',
+    'cell-insert c0 0 강조',
+    'split 2 11',
+    // 「과업기간」 은 첫 빈 문단 때문에 문단 2 — 아래 끝 180px → 13500 + 283
+    'shape {"sectionIdx":0,"paraIdx":3,"charOffset":0,"width":14173,"height":0,"horzOffset":5102,"vertOffset":13783,"treatAsChar":false,"textWrap":"TopAndBottom","shapeType":"line"}',
+  ], '표 칸 안의 조각(y10 h300)은 본문 문단 위치에 섞이지 않는다');
+});
+
+test('새 쪽 번호·쪽 테두리·누름틀 만들기', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('new_page_number', { find: '과업기간', start: 3 })).apply();
+  prepareWrite(d.host, call('set_page_border', { style: 'dashed', thicknessMm: 1 })).apply();
+  prepareWrite(d.host, call('insert_field', { after: '홈페이지', name: '사업명', guide: '사업명을 입력' })).apply();
+  const line = '{"type":2,"width":10,"color":"#000000"}';
+  assert.deepEqual(d.calls, [
+    'newnum 1 0 3',
+    `page-border 0 {"basis":"page","borderTop":${line},"borderLeft":${line},"borderRight":${line},"borderBottom":${line}}`,
+    'field-new 0 9 사업명 사업명을 입력 true',
+  ]);
+});
+
+test('차트 데이터: 한 계열만 바꾸고 나머지는 그대로, 범주 수·번호 검사', () => {
+  const d = fakeDoc();
+  const proposal = prepareWrite(d.host, call('set_chart_data', { chart: 1, series: 2, values: ['5', '2.5'] }));
+  assert.deepEqual([proposal.removed, proposal.inserted, proposal.format], ['4, 1', '5, 2.5', { chart: 1, series: '비용' }]);
+  proposal.apply();
+  assert.deepEqual(d.calls, ['chart 0 {"series":[{"values":["10","3"]},{"values":["5","2.5"]}]}']);
+  assert.throws(() => prepareWrite(d.host, call('set_chart_data', { chart: 1, series: 1, values: ['1'] })), refused(/2 categories/));
+  assert.throws(() => prepareWrite(d.host, call('set_chart_data', { chart: 2, series: 1, values: ['1', '2'] })), refused(/There are 1 charts/));
+  assert.throws(() => prepareWrite(d.host, call('set_chart_data', { chart: 1, series: 3, values: ['1', '2'] })), refused(/has 2 series/));
+  assert.throws(() => prepareWrite(d.host, call('set_chart_data', { chart: 1, series: 1, values: ['열', '2'] })), refused(/numbers/));
+});
+
+test('개체가 든 문단 뒤에 문단을 추가해도 마지막 글자가 잘리지 않는다(문단 끝은 논리 길이)', () => {
+  const d = fakeDoc();
+  d.objects[0] = 1; // 「사업명은 홈페이지 구축이다」(14자)에 각주 하나
+  prepareWrite(d.host, call('insert_paragraphs', { position: 'after', after: '홈페이지', paragraphs: ['새 문단'] })).apply();
+  assert.equal(d.calls[0], 'split 0 15', '글자 길이 14 가 아니라 논리 길이 15 에서 나눈다');
+  assert.deepEqual(d.body.slice(0, 2), ['사업명은 홈페이지 구축이다', '새 문단']);
 });

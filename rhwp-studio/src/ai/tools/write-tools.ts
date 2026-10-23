@@ -56,7 +56,13 @@ export interface DocumentWriter {
   setFieldValue(fieldId: number, value: string): string;
   getSectionCount(): number;
   getParagraphCount(section: number): number;
+  /**
+   * 문단을 나눈다. **`offset` 은 논리 위치**(글자와 인라인 개체를 각각 1로 센다) — 다른 편집 API 의 글자 위치와
+   * 축이 다르다(실측: 각주가 든 「…23일」을 글자 길이 12에서 나누면 「일」이 다음 문단으로 넘어감).
+   */
   splitParagraph(section: number, paragraph: number, offset: number): string;
+  /** 논리 길이 — 글자와 인라인 개체(각주·그림·수식·표 등)를 각각 1로 센다. 문단 끝에서 나눌 때 쓴다. */
+  getLogicalLength(section: number, paragraph: number): number;
   insertText(section: number, paragraph: number, offset: number, text: string): string;
   applyCharFormat(section: number, paragraph: number, start: number, end: number, propsJson: string): string;
   applyCharFormatInCell(
@@ -109,6 +115,23 @@ export interface DocumentWriter {
   getBookmarks(): string;
   insertEquation(section: number, paragraph: number, offset: number, script: string, fontSize: number, color: number): string;
   setColumnDef(section: number, count: number, type: number, sameWidth: number, spacing: number): string;
+  insertPicture(
+    section: number, paragraph: number, offset: number, cellPathJson: string, data: Uint8Array,
+    width: number, height: number, naturalWidth: number, naturalHeight: number, extension: string, description: string,
+  ): string;
+  setPictureProperties(section: number, paragraph: number, controlIndex: number, json: string): string;
+  createShapeControl(json: string): string;
+  getDocumentInfo(): string;
+  /** 쪽에 그려진 글 조각(0부터 센 쪽). 개체를 놓을 자리를 실제 조판 위치로 정할 때 쓴다. */
+  getPageTextLayout(page: number): string;
+  insertNewNumber(section: number, paragraph: number, offset: number, start: number): string;
+  getPageBorderFill(section: number): string;
+  setPageBorderFill(section: number, json: string): string;
+  insertClickHereField(
+    section: number, paragraph: number, offset: number, guide: string, memo: string, name: string, editable: boolean,
+  ): string;
+  getChartDataByIndex(index: number): string;
+  setChartDataByIndex(index: number, json: string): string;
   insertTextInFootnote(
     section: number, paragraph: number, controlIndex: number, fnPara: number, offset: number, text: string,
   ): string;
@@ -128,7 +151,9 @@ export type WriteToolName =
   | 'delete_paragraph' | 'set_list' | 'apply_style' | 'edit_table' | 'set_cell_text'
   | 'set_header_footer' | 'insert_footnote'
   | 'replace_all' | 'format_cell' | 'page_setup'
-  | 'set_table_border' | 'set_cell_size' | 'insert_hyperlink' | 'add_bookmark' | 'insert_equation' | 'set_columns';
+  | 'set_table_border' | 'set_cell_size' | 'insert_hyperlink' | 'add_bookmark' | 'insert_equation' | 'set_columns'
+  | 'insert_picture' | 'insert_textbox' | 'insert_shape' | 'new_page_number' | 'set_page_border' | 'insert_field'
+  | 'set_chart_data';
 
 /** 제안 하나. 화면은 `prefix + removed + suffix` 를 「전」, `prefix + inserted + suffix` 를 「후」로 보인다. */
 export interface WriteProposal {
@@ -151,8 +176,22 @@ export interface WriteProposal {
   format?: Record<string, string | number | boolean>;
   /** 적용 결과와 함께 모델에 알릴 말(요청과 다르게 처리한 이유 등) */
   note?: string;
+  /**
+   * 사용자가 파일을 골라야 적용할 수 있는 제안(그림). 화면은 승인 전에 파일을 받아 `provide` 로 넘긴다.
+   * 자동 적용이어도 파일 없이는 적용하지 않는다.
+   */
+  file?: { accept: string; provide(file: PickedFile): void; provided(): boolean };
   /** 승인되면 부른다. 던지면 적용하지 않은 것이다. */
   apply(): void | Promise<void>;
+}
+
+/** 사용자가 고른 파일 — 그림이면 원본 픽셀 크기까지. */
+export interface PickedFile {
+  name: string;
+  bytes: Uint8Array;
+  extension: string;
+  naturalWidth: number;
+  naturalHeight: number;
 }
 
 /** 모델에 돌려줄 수 있는 쓰기 오류(메시지를 모델이 읽는다). */
@@ -460,6 +499,89 @@ const WRITE_SCHEMAS: Record<WriteToolName, ToolSchema> = {
     required: ['count'],
     additionalProperties: false,
   },
+  insert_picture: {
+    type: 'object',
+    properties: {
+      position: { type: 'string', enum: ['end', 'after'], description: 'At the end of the document, or right after the body text `after`.' },
+      after: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'With position "after": exact body text the picture follows.' },
+      widthMm: { type: 'number', minimum: 5, maximum: 400, description: 'Picture width in millimetres (default: original size, at most the text width).' },
+      purpose: { type: 'string', maxLength: 200, description: 'What picture the user should choose (shown to the user).' },
+    },
+    required: ['position'],
+    additionalProperties: false,
+  },
+  insert_textbox: {
+    type: 'object',
+    properties: {
+      after: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact body text; the text box goes just below its paragraph.' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when after occurs more than once.' },
+      text: { type: 'string', maxLength: MAX_REPLACE_CHARS, description: 'Text inside the box (one line).' },
+      widthMm: { type: 'number', minimum: 5, maximum: 400, description: 'Width in millimetres (default 60).' },
+      heightMm: { type: 'number', minimum: 5, maximum: 400, description: 'Height in millimetres (default 20).' },
+    },
+    required: ['after', 'text'],
+    additionalProperties: false,
+  },
+  insert_shape: {
+    type: 'object',
+    properties: {
+      after: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact body text; the shape goes just below its paragraph.' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when after occurs more than once.' },
+      shape: { type: 'string', enum: ['rectangle', 'ellipse', 'line'], description: 'Shape kind.' },
+      widthMm: { type: 'number', minimum: 1, maximum: 400, description: 'Width in millimetres (default 30).' },
+      heightMm: { type: 'number', minimum: 0, maximum: 400, description: 'Height in millimetres (default 15; 0 for a horizontal line).' },
+    },
+    required: ['after', 'shape'],
+    additionalProperties: false,
+  },
+  new_page_number: {
+    type: 'object',
+    properties: {
+      find: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact body text on the page where numbering restarts.' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      start: { type: 'integer', minimum: 1, maximum: 9999, description: 'Page number to restart from.' },
+    },
+    required: ['find', 'start'],
+    additionalProperties: false,
+  },
+  set_page_border: {
+    type: 'object',
+    properties: {
+      style: { type: 'string', enum: ['solid', 'dashed', 'dotted', 'double', 'none'], description: 'Line style around every page.' },
+      thicknessMm: { type: 'number', minimum: 0.1, maximum: 5, description: 'Line thickness in millimetres (default 0.12).' },
+      color: { type: 'string', minLength: 7, maxLength: 7, description: 'Line color as #RRGGBB (default black).' },
+    },
+    required: ['style'],
+    additionalProperties: false,
+  },
+  insert_field: {
+    type: 'object',
+    properties: {
+      after: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact body text; the field goes right after it.' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when after occurs more than once.' },
+      name: { type: 'string', minLength: 1, maxLength: 100, description: 'Field name (used by fill_field and mail merge).' },
+      guide: { type: 'string', maxLength: 200, description: 'Guide text shown in the empty field, for example 이름을 입력하세요.' },
+    },
+    required: ['after', 'name'],
+    additionalProperties: false,
+  },
+  set_chart_data: {
+    type: 'object',
+    properties: {
+      chart: { type: 'integer', minimum: 1, description: 'Chart number from list_charts (1-based).' },
+      series: { type: 'integer', minimum: 1, description: 'Series number within the chart (1-based).' },
+      values: {
+        type: 'array', minItems: 1, maxItems: 200, items: { type: 'string', maxLength: 50 },
+        description: 'New values of the series in category order, as numbers written as text (e.g. "12.5").',
+      },
+      labels: {
+        type: 'array', minItems: 1, maxItems: 200, items: { type: 'string', maxLength: 100 },
+        description: 'Optional new category labels; same count as values.',
+      },
+    },
+    required: ['chart', 'series', 'values'],
+    additionalProperties: false,
+  },
   insert_table: {
     type: 'object',
     properties: {
@@ -630,6 +752,50 @@ export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
     strict: false,
   },
   {
+    name: 'insert_picture',
+    description: 'Insert a picture that the user chooses from their computer (you cannot create images). The approval card asks the user to pick the file; say what picture to choose in purpose.',
+    inputSchema: WRITE_SCHEMAS.insert_picture as unknown as Record<string, unknown>,
+    strict: false,
+  },
+  {
+    name: 'insert_textbox',
+    description: 'Insert a text box with one line of text just below the paragraph containing the given body text (text '
+      + 'flows below the box). Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.insert_textbox as unknown as Record<string, unknown>,
+    strict: false,
+  },
+  {
+    name: 'insert_shape',
+    description: 'Insert a rectangle, ellipse or line just below the paragraph containing the given body text. Shown to '
+      + 'the user for approval.',
+    inputSchema: WRITE_SCHEMAS.insert_shape as unknown as Record<string, unknown>,
+    strict: false,
+  },
+  {
+    name: 'new_page_number',
+    description: 'Restart page numbering from the given number on the page containing the text. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.new_page_number as unknown as Record<string, unknown>,
+    strict: false,
+  },
+  {
+    name: 'set_page_border',
+    description: 'Draw (or remove) a border line around every page. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.set_page_border as unknown as Record<string, unknown>,
+    strict: false,
+  },
+  {
+    name: 'insert_field',
+    description: 'Create a new form field (click-here field) with a name and guide text right after the given body text. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.insert_field as unknown as Record<string, unknown>,
+    strict: false,
+  },
+  {
+    name: 'set_chart_data',
+    description: 'Change the values (and optionally the category labels) of one series of a chart listed by list_charts. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.set_chart_data as unknown as Record<string, unknown>,
+    strict: false,
+  },
+  {
     name: 'create_document',
     description: 'Replace the open document with a new blank document, when the user asks for a new document. '
       + 'The user approves first and is asked to save unsaved changes. Then write content with insert_paragraphs '
@@ -643,6 +809,7 @@ const WRITE_TOOL_NAMES: readonly string[] = [
   'delete_paragraph', 'set_list', 'apply_style', 'edit_table', 'set_cell_text', 'set_header_footer', 'insert_footnote',
   'replace_all', 'format_cell', 'page_setup',
   'set_table_border', 'set_cell_size', 'insert_hyperlink', 'add_bookmark', 'insert_equation', 'set_columns',
+  'insert_picture', 'insert_textbox', 'insert_shape', 'new_page_number', 'set_page_border', 'insert_field', 'set_chart_data',
   'create_document',
 ];
 
@@ -801,7 +968,8 @@ function ok(json: string, what: string): void {
 function appendAfter(doc: DocumentWriter, section: number, paragraph: number, texts: readonly string[]): void {
   let at = paragraph;
   for (const text of texts) {
-    ok(doc.splitParagraph(section, at, doc.getParagraphLength(section, at)), 'splitParagraph');
+    // 문단 끝은 논리 길이다 — 글자 길이로 나누면 개체가 든 문단의 마지막 글자가 잘려 넘어간다.
+    ok(doc.splitParagraph(section, at, doc.getLogicalLength(section, at)), 'splitParagraph');
     at += 1;
     if (text) ok(doc.insertText(section, at, 0, text), 'insertText');
   }
@@ -1692,6 +1860,243 @@ function prepareColumns(host: WriteHost, input: Record<string, unknown>): WriteP
   };
 }
 
+/** 본문 폭(HWPUNIT) — 그림을 이 폭 안에 맞춘다. */
+function bodyWidth(doc: DocumentWriter, section: number): number {
+  const def = JSON.parse(doc.getPageDef(section)) as {
+    width: number; height: number; landscape: boolean; marginLeft: number; marginRight: number; marginGutter: number;
+  };
+  const pageWidth = def.landscape ? def.height : def.width;
+  return Math.max(mmToHwp(10), pageWidth - def.marginLeft - def.marginRight - def.marginGutter);
+}
+
+/** 화면 1px = 75 HWPUNIT(96dpi) — studio 의 그림 끌어놓기와 같다. */
+const PX_TO_HWP = 75;
+
+function preparePicture(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const position = input.position as 'end' | 'after';
+  const after = input.after as string | undefined;
+  const widthMm = input.widthMm as number | undefined;
+  const purpose = (input.purpose as string | undefined) ?? '';
+  if (position === 'after' && !after) throw new WriteRefused('position "after" needs the after text.');
+  let picked: PickedFile | null = null;
+  return host.read((doc) => {
+    const where = position === 'after' ? locate(doc, after!, undefined) : null;
+    if (where) requireBody(where.hit, 'Inserting a picture');
+    return {
+      tool: 'insert_picture',
+      location: where ? hitLocation(where.hit) : { position: 'end' as const },
+      prefix: '', removed: '', inserted: purpose, suffix: '',
+      ...(widthMm !== undefined ? { format: { widthMm } } : {}),
+      file: {
+        accept: 'image/png,image/jpeg,image/gif,image/bmp',
+        provide: (file) => { picked = file; },
+        provided: () => picked !== null,
+      },
+      apply: () => host.transaction('AI: 그림', (tx) => {
+        if (!picked) throw new WriteRefused('The user did not choose a picture file.');
+        const target = tx.doc();
+        if (where) relocate(target, after!, undefined, where);
+        const spot = where
+          ? { section: where.hit.sec, paragraph: where.hit.para, offset: where.hit.charOffset + where.hit.length }
+          : { ...emptyParagraphAt(target, 'end', null), offset: 0 };
+        const naturalW = picked.naturalWidth * PX_TO_HWP;
+        const naturalH = picked.naturalHeight * PX_TO_HWP;
+        const wanted = widthMm !== undefined ? mmToHwp(widthMm) : naturalW;
+        const width = Math.max(1, Math.min(wanted, bodyWidth(target, spot.section)));
+        const height = Math.max(1, Math.round((naturalH * width) / Math.max(1, naturalW)));
+        const description = `그림입니다.\r\n원본 그림의 이름: ${picked.name}\r\n원본 그림의 크기: 가로 ${picked.naturalWidth}pixel, 세로 ${picked.naturalHeight}pixel`;
+        const result = JSON.parse(target.insertPicture(spot.section, spot.paragraph, spot.offset, '', picked.bytes,
+          width, height, picked.naturalWidth, picked.naturalHeight, picked.extension, description)) as {
+          ok?: boolean; paraIdx?: number; controlIdx?: number; error?: string;
+        };
+        if (!result.ok || result.controlIdx === undefined) throw new WriteRefused(`The picture could not be inserted${result.error ? `: ${result.error}` : ''}.`);
+        // 끌어놓기와 같이 글자처럼 취급해 본문 흐름에 둔다.
+        ok(target.setPictureProperties(spot.section, result.paraIdx ?? spot.paragraph, result.controlIdx, JSON.stringify({ treatAsChar: true })), 'setPictureProperties');
+      }),
+    };
+  });
+}
+
+/** 본문 문단의 마지막 줄 아래 끝(쪽 위에서 px)과 그 쪽. 조판 결과의 글 조각에서 읽는다. */
+function paragraphBottom(doc: DocumentWriter, section: number, paragraph: number): { page: number; bottomPx: number } {
+  const pages = (JSON.parse(doc.getDocumentInfo()) as { pageCount?: number }).pageCount ?? 1;
+  let found: { page: number; bottomPx: number } | null = null;
+  for (let page = 0; page < pages; page += 1) {
+    const runs = (JSON.parse(doc.getPageTextLayout(page)) as {
+      runs?: Array<{ y: number; h: number; secIdx?: number; paraIdx?: number; cellPath?: unknown[] }>;
+    }).runs ?? [];
+    for (const run of runs) {
+      if (run.secIdx === section && run.paraIdx === paragraph && !(run.cellPath && run.cellPath.length > 0)) {
+        const bottom = run.y + run.h;
+        // 여러 쪽에 걸친 문단은 마지막 쪽의 마지막 줄을 쓴다.
+        if (!found || page > found.page || (page === found.page && bottom > found.bottomPx)) found = { page, bottomPx: bottom };
+      }
+    }
+  }
+  if (!found) throw new WriteRefused('Could not find where that paragraph is laid out.');
+  return found;
+}
+
+function prepareShape(host: WriteHost, input: Record<string, unknown>, kind: 'textbox' | 'rectangle' | 'ellipse' | 'line'): WriteProposal {
+  const after = input.after as string;
+  const occurrence = input.occurrence as number | undefined;
+  const text = kind === 'textbox' ? (input.text as string) : '';
+  if (FORBIDDEN.test(text)) throw new WriteRefused('text must be one line.');
+  const widthMm = (input.widthMm as number | undefined) ?? (kind === 'textbox' ? 60 : 30);
+  const heightMm = (input.heightMm as number | undefined) ?? (kind === 'textbox' ? 20 : kind === 'line' ? 0 : 15);
+  return host.read((doc) => {
+    const where = locate(doc, after, occurrence);
+    const hit = where.hit;
+    requireBody(hit, 'Inserting a shape');
+    return {
+      tool: kind === 'textbox' ? 'insert_textbox' : 'insert_shape',
+      location: hitLocation(hit),
+      prefix: paragraphText(doc, hit, hit.charOffset - CONTEXT_CHARS, hit.charOffset + hit.length),
+      removed: '', inserted: text, suffix: '',
+      format: { shape: kind, widthMm, heightMm },
+      apply: () => host.transaction(kind === 'textbox' ? 'AI: 글상자' : 'AI: 도형', (tx) => {
+        const target = tx.doc();
+        relocate(target, after, occurrence, where);
+        // 글자처럼 취급한 글상자는 엔진이 줄 밖(위쪽)에 그린다(실측: 줄 y132 인데 상자 y77) — studio 의 글상자
+        // 그리기처럼 떠 있는 개체로, 앵커 문단 바로 아래에 「위아래」 배치로 둔다. 그러면 뒤 글이 상자 아래로 밀려
+        // 겹치지 않는다(실측: 문단 끝 y146 → 상자 y149, 다음 문단 y233). 위치는 그 쪽의 실제 조판 결과에서 읽는다.
+        // 같은 문단에 「위아래」 개체를 두면 엔진이 그 문단의 글자처럼 취급한 그림을 개체 아래로 내려 그린다
+        // (실측: 줄 y132, 그림 y215). 그래서 앵커 문단 뒤에 빈 문단을 만들어 그 문단에 붙인다.
+        appendAfter(target, hit.sec, hit.para, ['']);
+        const spot = paragraphBottom(target, hit.sec, hit.para);
+        const def = JSON.parse(target.getPageDef(hit.sec)) as { marginLeft: number; marginGutter: number };
+        const created = JSON.parse(target.createShapeControl(JSON.stringify({
+          sectionIdx: hit.sec, paraIdx: hit.para + 1, charOffset: 0,
+          width: mmToHwp(widthMm), height: mmToHwp(heightMm),
+          horzOffset: def.marginLeft + def.marginGutter,
+          vertOffset: Math.round(spot.bottomPx * PX_TO_HWP) + mmToHwp(1),
+          treatAsChar: false, textWrap: 'TopAndBottom', shapeType: kind,
+        }))) as { ok?: boolean; paraIdx?: number; controlIdx?: number };
+        if (!created.ok || created.controlIdx === undefined) throw new Error('createShapeControl failed');
+        // 글상자의 글은 칸과 같은 경로(칸 번호 0)로 넣는다.
+        if (text) ok(target.insertTextInCell(hit.sec, created.paraIdx ?? hit.para + 1, created.controlIdx, 0, 0, 0, text), 'insertTextInCell');
+      }),
+    };
+  });
+}
+
+function prepareNewPageNumber(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const start = input.start as number;
+  return host.read((doc) => {
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    requireBody(hit, 'Restarting page numbers');
+    return {
+      tool: 'new_page_number',
+      location: hitLocation(hit),
+      prefix: '', removed: '', inserted: wholeParagraph(doc, hit), suffix: '',
+      format: { start },
+      apply: () => host.transaction('AI: 새 쪽 번호', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        ok(target.insertNewNumber(hit.sec, hit.para, hit.charOffset, start), 'insertNewNumber');
+      }),
+    };
+  });
+}
+
+function preparePageBorder(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const style = input.style as keyof typeof LINE_TYPE;
+  const thickness = (input.thicknessMm as number | undefined) ?? 0.12;
+  const color = (input.color as string | undefined) ?? '#000000';
+  if (!COLOR.test(color)) throw new WriteRefused('color must be #RRGGBB.');
+  const widthIndex = nearestWidthIndex(thickness);
+  return {
+    tool: 'set_page_border',
+    location: {},
+    prefix: '', removed: '', inserted: '', suffix: '',
+    format: { borderStyle: style, ...(style === 'none' ? {} : { thicknessMm: LINE_WIDTH_MM[widthIndex], color }) },
+    apply: () => host.transaction('AI: 쪽 테두리', (tx) => {
+      const target = tx.doc();
+      const line = { type: LINE_TYPE[style], width: widthIndex, color: color.toLowerCase() };
+      // 쪽 테두리 대화상자와 같이 현재 설정을 읽어 네 변만 바꾼다. 모든 구역에 준다.
+      for (let section = 0; section < target.getSectionCount(); section += 1) {
+        const current = JSON.parse(target.getPageBorderFill(section)) as Record<string, unknown>;
+        ok(target.setPageBorderFill(section, JSON.stringify({
+          ...current, borderLeft: line, borderRight: line, borderTop: line, borderBottom: line,
+        })), 'setPageBorderFill');
+      }
+    }),
+  };
+}
+
+function prepareField(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const after = input.after as string;
+  const occurrence = input.occurrence as number | undefined;
+  const name = (input.name as string).trim();
+  const guide = (input.guide as string | undefined) ?? '';
+  if (FORBIDDEN.test(name) || FORBIDDEN.test(guide)) throw new WriteRefused('name and guide must be one line.');
+  return host.read((doc) => {
+    const where = locate(doc, after, occurrence);
+    const hit = where.hit;
+    requireBody(hit, 'Creating a field');
+    return {
+      tool: 'insert_field',
+      location: hitLocation(hit),
+      prefix: paragraphText(doc, hit, hit.charOffset - CONTEXT_CHARS, hit.charOffset + hit.length),
+      removed: '', inserted: guide || name, suffix: '',
+      format: { name },
+      apply: () => host.transaction('AI: 누름틀', (tx) => {
+        const target = tx.doc();
+        relocate(target, after, occurrence, where);
+        ok(target.insertClickHereField(hit.sec, hit.para, hit.charOffset + hit.length, guide, '', name, true), 'insertClickHereField');
+      }),
+    };
+  });
+}
+
+/** 문서의 차트를 순번으로 읽는다(차트 데이터 대화상자와 같은 순번). */
+export function listCharts(doc: Pick<DocumentWriter, 'getChartDataByIndex'>) {
+  const charts: Array<{ chart: number; plot?: string; labels?: string[]; series: Array<{ name?: string | null; values: string[] }> }> = [];
+  for (let index = 0; index < 50; index += 1) {
+    let data: { ok?: boolean; plot?: string; labels?: string[]; series?: Array<{ name?: string | null; values: string[] }> };
+    try { data = JSON.parse(doc.getChartDataByIndex(index)); } catch { break; }
+    if (!data.ok) break;
+    charts.push({ chart: index + 1, plot: data.plot, labels: data.labels, series: data.series ?? [] });
+  }
+  return charts;
+}
+
+function prepareChartData(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const chartNo = input.chart as number;
+  const seriesNo = input.series as number;
+  const values = input.values as string[];
+  const labels = input.labels as string[] | undefined;
+  if (values.some((value) => !/^-?\d+(\.\d+)?$/.test(value.trim()))) throw new WriteRefused('values must be numbers written as text, like "12.5".');
+  return host.read((doc) => {
+    const charts = listCharts(doc);
+    const chart = charts[chartNo - 1];
+    if (!chart) throw new WriteRefused(`There are ${charts.length} charts; call list_charts.`);
+    const series = chart.series[seriesNo - 1];
+    if (!series) throw new WriteRefused(`Chart ${chartNo} has ${chart.series.length} series.`);
+    if (labels && labels.length !== values.length) throw new WriteRefused('labels must have the same count as values.');
+    if (!labels && chart.labels && chart.labels.length !== values.length) {
+      throw new WriteRefused(`The chart has ${chart.labels.length} categories; give that many values or new labels.`);
+    }
+    const edits = {
+      series: chart.series.map((s, i) => ({ values: i === seriesNo - 1 ? values.map((v) => v.trim()) : [...s.values] })),
+      ...(labels ? { labels } : {}),
+    };
+    return {
+      tool: 'set_chart_data',
+      location: {},
+      prefix: '', removed: series.values.join(', '), inserted: values.join(', '), suffix: '',
+      format: { chart: chartNo, series: series.name ?? String(seriesNo) },
+      apply: () => host.transaction('AI: 차트 데이터', (tx) => {
+        const result = JSON.parse(tx.doc().setChartDataByIndex(chartNo - 1, JSON.stringify(edits))) as { ok?: boolean };
+        if (!result.ok) throw new Error('setChartDataByIndex failed');
+      }),
+    };
+  });
+}
+
 function prepareCreate(host: WriteHost): WriteProposal {
   return {
     tool: 'create_document',
@@ -1738,5 +2143,12 @@ export function prepareWrite(host: WriteHost, call: AiToolCall): WriteProposal {
     case 'add_bookmark': return prepareBookmark(host, checked.value);
     case 'insert_equation': return prepareEquation(host, checked.value);
     case 'set_columns': return prepareColumns(host, checked.value);
+    case 'insert_picture': return preparePicture(host, checked.value);
+    case 'insert_textbox': return prepareShape(host, checked.value, 'textbox');
+    case 'insert_shape': return prepareShape(host, checked.value, checked.value.shape as 'rectangle' | 'ellipse' | 'line');
+    case 'new_page_number': return prepareNewPageNumber(host, checked.value);
+    case 'set_page_border': return preparePageBorder(host, checked.value);
+    case 'insert_field': return prepareField(host, checked.value);
+    case 'set_chart_data': return prepareChartData(host, checked.value);
   }
 }

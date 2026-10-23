@@ -36,6 +36,7 @@ function reader(overrides: Partial<DocumentReader> = {}): DocumentReader {
     getFieldList: () => JSON.stringify([{ fieldId: 1, fieldType: 'clickhere', name: '성명', guide: '이름', value: '홍길동' }]),
     getTextInCell: (_s, _pp, _c, _ci, _cp, o, n) => cell[0].slice(o, o + n),
     getCellParagraphLength: () => cell[0].length,
+    getChartDataByIndex: () => { throw new Error('차트 없음'); },
     ...overrides,
   };
 }
@@ -64,10 +65,10 @@ function unwrap(content: string): any {
 
 const call = (name: string, input: unknown = {}) => ({ id: 'c1', name, input });
 
-test('도구 목록은 일곱 개이고 이름 순서가 고정이며 모든 schema 가 닫혀 있다', () => {
+test('읽기 도구 목록은 이름 순서가 고정이며 모든 schema 가 닫혀 있다', () => {
   assert.deepEqual(READ_TOOL_DEFS.map((t) => t.name), [
     'get_document_info', 'get_outline', 'read_page_text', 'read_paragraphs',
-    'search_text', 'get_selection', 'list_fields',
+    'search_text', 'get_selection', 'list_fields', 'list_charts',
   ]);
   for (const tool of READ_TOOL_DEFS) {
     assert.equal(tool.inputSchema.additionalProperties, false, tool.name);

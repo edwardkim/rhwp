@@ -11,6 +11,7 @@ import type { PluginCaret, PluginSelectionText } from '@/plugin/types';
 import type { AiToolCall, AiToolDef, AiToolResult } from '../provider/types.ts';
 import { validateToolInput, type ToolSchema } from './schema-validate.ts';
 import { cleanDocumentText, wrapDocumentContent } from './untrusted.ts';
+import { listCharts } from './write-tools.ts';
 
 /** 한 결과에 담는 문서 텍스트 글자 수 상한 */
 export const MAX_RESULT_CHARS = 12000;
@@ -38,6 +39,7 @@ export interface DocumentReader {
   getCellParagraphLength(
     section: number, parentPara: number, controlIndex: number, cellIndex: number, cellPara: number,
   ): number;
+  getChartDataByIndex(index: number): string;
 }
 
 /** 도구가 쓰는 호스트 표면 — `PluginHost` 의 부분집합. */
@@ -350,6 +352,13 @@ const READ_TOOLS: readonly ReadTool[] = [
       }
       return { fields: out, totalFields: fields.length, truncated };
     }),
+  },
+  {
+    name: 'list_charts',
+    description: 'List the charts in the document (1-based chart number, chart kind, category labels, and each series '
+      + 'with its values). Use before set_chart_data.',
+    schema: NO_INPUT,
+    run: (host) => host.read((doc) => ({ charts: listCharts(doc) })),
   },
 ];
 

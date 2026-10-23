@@ -18,8 +18,11 @@ import {
 } from '../provider/types.ts';
 import type { ChatSession } from './chat-session.ts';
 
-/** 사용자 말 한 번에 허용하는 도구 라운드 수 */
-export const MAX_TOOL_ROUNDS = 8;
+/**
+ * 사용자 말 한 번에 허용하는 도구 라운드 수. 문서를 새로 만드는 작업은 변경 하나하나가 라운드라
+ * 8회로는 중간에 끊겼다(실측: 회의록 양식 만들기가 표를 다듬던 중 멈춤). 끝없는 반복만 막는 값이다.
+ */
+export const MAX_TOOL_ROUNDS = 30;
 
 /** 회차가 정상으로 끝나지 않았을 때 이력에 남기는 표시. 모델이 읽는다. */
 export const INTERRUPTED_MARKERS = {
