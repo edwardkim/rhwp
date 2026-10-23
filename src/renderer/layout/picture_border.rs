@@ -146,6 +146,7 @@ impl LayoutEngine {
         let mut rectangle = RectangleNode::new(0.0, style, None);
         rectangle.picture_border = true;
         rectangle.image_frame_owner = Some(frame.image_frame_owner);
+        rectangle.picture_border_width_hu = Some(picture.border_width);
         rectangle.round_stroke_join = !matches!((picture.border_attr.attr >> 6) & 0x0f, 1 | 2);
         rectangle.transform = transform;
         Some(RenderNode::new(

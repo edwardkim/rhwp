@@ -78,3 +78,30 @@ Print 경로의 양자화·축소 수식을 확정하지 않는다. HWP 사양�
 계약 확인이다. source ID별 분기·품질 상수·픽셀을 지우는 임계값 변경으로 점수를 맞추지 않는다.
 근거를 확보한 공통 경로를 보정한 뒤 원본 영향 쪽과 정상 대조군을 실제 재출력한다.
 최종 승인에 쓰는 축소 입력·기준 PDF는 조사용 output 자료와 구분해 정식 경로에 보존해야 한다.
+
+## 그림 실선의 장치 pen 소비 보정 후보
+
+최적화 fresh WASM `ed630b398e`의 핵심 52쪽은 exit 0으로 완료했다. 두 형식 모두 383쪽이며
+최저 raw는 HWPX 93.24686%, HWP 93.24774%다. 46쪽은 양쪽 WASM에서 100%지만 Native는
+95.74702/95.74674%다. Canvas의 범용 최소 선폭과 Native의 원본 2HU 직접 소비가 서로 다르다.
+이 수치를 양쪽 구현의 일치나 완료로 보고하지 않는다. HWP 205쪽의 backend 차이도 남는다.
+
+실제 원본 46쪽과 기존 폭 15종×ROUND/FLAT 대조군에서 선언 폭 0/1/2HU의 채운 띠는
+장치 한 픽셀이고, 28HU는 두 픽셀, 34/36HU는 세 픽셀이다. 별도 외곽선은 모두 장치 한 픽셀이다.
+0HU를 화면용 기본 0.1mm로 해석한 이전 후보는 이 계약과 다르다. 선언 폭은 HWP/HWPML의
+HU 원본을 보존하고, 인쇄 시 실제 전달된 장치 픽셀에서 띠와 외곽 pen을 합성한다.
+[GDI pen 단위](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-extlogpen)와
+[경로 채움·외곽선](https://learn.microsoft.com/en-us/windows/win32/gdi/path-functions)의 계약은
+장치 단위와 논리 단위, 채움과 현재 pen을 구분한다. 2024 Print의 실제 띠 폭·외곽선 관측은
+공식 HWP 사양 자체가 최소 폭이나 인쇄 해상도를 명시했다는 주장과 구분한다.
+
+값 추적은 `Picture.border_width → RectangleNode의 원본 HU 메타데이터 → LayerBuilder의
+Print 장치 pen → Rectangle PaintOp → Native/Canvas`다. 논리 bbox·style과 문단/쪽 소유는
+유지한다. 화면·2020 호환·일반 도형·점선·회전/affine은 기존 경로를 소비한다. 그림의 실선과
+양수 장치 단위가 실제 공급된 Print 경로에서만 적용한다. 점수용 임의 최소 화면 픽셀을 두지 않는다.
+확정한 실선은 빈 명시적 반복 구간으로 전달해 Canvas의 범용 최소 0.5px 처리가 장치 선폭을
+다시 덮어쓰지 않게 한다. Native와 Canvas의 기존 명시적 구간 재생을 함께 소비한다.
+
+현재 후보는 아직 검증 전이다. 원본 영향 쪽·독립 폭 대조군과 정상 대조군을 먼저 실행해
+실제 PNG, semantic tree, 신규 하락을 확인한다. 확대된 실선이 내용을 가리거나 없는 선을
+추가하면 후보를 보정한다. 정식 회귀 추가와 최종 제출은 Native/fresh WASM 선행 조건 뒤 진행한다.

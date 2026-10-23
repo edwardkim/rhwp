@@ -1469,6 +1469,9 @@ pub struct RectangleNode {
     /// 그림 테두리가 공유하는 원본 이미지 노드. 인쇄 프레임은 paint에서 한 번 결정한다.
     #[serde(skip)]
     pub image_frame_owner: Option<NodeId>,
+    /// 그림 원본의 HU 선폭. 인쇄 장치 pen과 화면용 기본 선폭을 구분한다.
+    #[serde(skip)]
+    pub picture_border_width_hu: Option<i32>,
 }
 
 impl RectangleNode {
@@ -1491,6 +1494,7 @@ impl RectangleNode {
             cell_para_index: None,
             outer_table_control_index: None,
             image_frame_owner: None,
+            picture_border_width_hu: None,
         }
     }
 }

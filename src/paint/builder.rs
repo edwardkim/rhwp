@@ -330,6 +330,9 @@ impl LayerBuilder {
                 let pixel = self
                     .metafile_device_pixel_width
                     .filter(|_| self.hancom2024_print_bitmap);
+                if let Some(context) = self.page_context {
+                    context.picture_border_pen(&mut rect, pixel);
+                }
                 let image_frame = rect
                     .image_frame_owner
                     .and_then(|owner| self.image_frames.get(&owner).copied());
