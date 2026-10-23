@@ -137,15 +137,33 @@ await runTest('#8102 셀 진입·선택 삭제·undo/redo', async ({ page }) => 
       const deleted = read(target.cellPath), neighborAfter = read(neighborPath), outerAfter = read(target.cellPath.slice(0, 1));
       history.undo(bridge); const undone = read(target.cellPath);
       history.redo(bridge); const redone = read(target.cellPath);
+      // 빈 셀에서는 잘못된 주소가 wrap되어도 offset 검사만으로 거부될 수 있다.
+      // 내용을 복원한 뒤 invalid target 자체의 사전 거부를 검증한다.
+      history.undo(bridge);
       const before = Array.from(bridge.exportHwp()); let rejected = 0;
-      for (const p of [
+      let snapshots = 0, mutations = 0;
+      const saveSnapshot = bridge.saveSnapshot.bind(bridge);
+      const deleteRange = bridge.deleteRangeInCellByPath.bind(bridge);
+      bridge.saveSnapshot = (...args) => { snapshots++; return saveSnapshot(...args); };
+      bridge.deleteRangeInCellByPath = (...args) => { mutations++; return deleteRange(...args); };
+      const invalidTargets = [
         { ...target, cellPath: undefined, cellIndex: undefined },
         { ...target, cellPath: [{ controlIndex: 0, cellIndex: -1, cellParaIndex: 0 }] },
         { ...target, cellPath: [{ controlIndex: 0, cellIndex: 999, cellParaIndex: 0 }] },
-      ]) {
+        { ...target, sectionIndex: 0xffff_ffff },
+        { ...target, parentParaIndex: 0xffff_ffff },
+      ];
+      for (const cellPath of [undefined, target.cellPath]) {
+        invalidTargets.push({ ...target, cellPath, sectionIndex: 2 ** 32 });
+        invalidTargets.push({ ...target, cellPath, parentParaIndex: 2 ** 32 });
+      }
+      for (const p of invalidTargets) {
         try { new DeleteSelectionCommand(p, { ...p, charOffset: 1 }).execute(bridge); } catch { rejected++; }
       }
       const unchanged = JSON.stringify(before) === JSON.stringify(Array.from(bridge.exportHwp()));
+      // 아래 정상 글상자 편집은 invalid target의 호출 수에 합산하지 않는다.
+      bridge.saveSnapshot = saveSnapshot;
+      bridge.deleteRangeInCellByPath = deleteRange;
       bridge.createNewDocument();
       const box = bridge.createShapeControl({ sectionIdx: 0, paraIdx: 0, charOffset: 0,
         shapeType: 'textbox', width: 12000, height: 4000 });
@@ -162,7 +180,8 @@ await runTest('#8102 셀 진입·선택 삭제·undo/redo', async ({ page }) => 
       const boxDeleted = boxRead(); boxHistory.undo(bridge); const boxUndone = boxRead();
       boxHistory.redo(bridge); const boxRedone = boxRead();
       return { original, deleted, undone, redone, outer, outerAfter, neighbor, neighborAfter,
-        rejected, unchanged, textbox: { deleted: boxDeleted, undone: boxUndone, redone: boxRedone } };
+        rejected, unchanged, invalidTargetCalls: { snapshots, mutations },
+        textbox: { deleted: boxDeleted, undone: boxUndone, redone: boxRedone } };
     } finally { bridge.releaseDocument(); }
   });
   console.log(JSON.stringify({ rows, contracts, invalidShortcut, errors }, null, 2));
@@ -173,5 +192,7 @@ await runTest('#8102 셀 진입·선택 삭제·undo/redo', async ({ page }) => 
   assert.deepEqual(contracts.undone, contracts.original);
   assert.deepEqual(contracts.neighborAfter, contracts.neighbor); assert.deepEqual(contracts.outerAfter, contracts.outer);
   assert.deepEqual(contracts.textbox, { deleted: '', undone: 'BOX', redone: '' });
-  assert.equal(contracts.rejected, 3); assert.equal(contracts.unchanged, true); assert.deepEqual(errors, []);
+  assert.equal(contracts.rejected, 9); assert.equal(contracts.unchanged, true);
+  assert.deepEqual(contracts.invalidTargetCalls, { snapshots: 0, mutations: 0 });
+  assert.deepEqual(errors, []);
 });

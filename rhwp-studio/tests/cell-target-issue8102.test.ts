@@ -18,7 +18,7 @@ await test('#8102 셀 선택과 삭제의 실제 제품 경로', async (t) => {
   });
   try {
     const { CursorState } = await vite.ssrLoadModule('/src/engine/cursor.ts');
-    const { DeleteSelectionCommand } = await vite.ssrLoadModule('/src/engine/command.ts');
+    const { DeleteSelectionCommand, cellPathForEdit } = await vite.ssrLoadModule('/src/engine/command.ts');
     const { CommandHistory } = await vite.ssrLoadModule('/src/engine/history.ts');
 
     function fixture() {
@@ -109,26 +109,71 @@ await test('#8102 셀 선택과 삭제의 실제 제품 경로', async (t) => {
         assert.equal(f.saves(), 0);
         assert.equal(f.mutations(), 0);
       }
+      const forwardEnd = { ...flat(), charOffset: 1 };
       for (const end of [
-        { ...flat(), cellIndex: 2 }, { ...flat(), sectionIndex: 1 },
-        { ...flat(), parentParaIndex: 4 }, { sectionIndex: 0, paragraphIndex: 0, charOffset: 5 },
-        { ...flat(), charOffset: -1 },
+        { ...forwardEnd, cellIndex: 2 }, { ...forwardEnd, sectionIndex: 1 },
+        { ...forwardEnd, controlIndex: 3 },
+        { ...forwardEnd, parentParaIndex: 4 }, { sectionIndex: 0, paragraphIndex: 0, charOffset: 1 },
+        { ...forwardEnd, charOffset: -1 },
       ]) {
         const f = fixture();
-        assert.throws(() => new DeleteSelectionCommand(flat(1), end).execute(f.wasm));
+        assert.throws(() => new DeleteSelectionCommand(flat(), end).execute(f.wasm));
+        assert.equal(f.saves(), 0);
+        assert.equal(f.mutations(), 0);
+      }
+      const reversed = fixture();
+      assert.throws(() => new DeleteSelectionCommand(flat(1), flat()).execute(reversed.wasm));
+      assert.equal(reversed.saves(), 0);
+      assert.equal(reversed.mutations(), 0);
+    });
+
+    await t.test('중간 경로의 다른 문단·control·셀도 정방향 범위에서 거부한다', () => {
+      const start = { ...flat(), cellPath: [entry(1), { controlIndex: 3, cellIndex: 2, cellParaIndex: 0 }] };
+      for (const changed of [{ cellParaIndex: 2 }, { controlIndex: 4 }, { cellIndex: 2 }]) {
+        const f = fixture();
+        const end = { ...start, charOffset: 1,
+          cellPath: [{ ...start.cellPath[0], ...changed }, { ...start.cellPath[1] }] };
+        assert.throws(() => new DeleteSelectionCommand(start, end).execute(f.wasm));
+        assert.equal(f.saves(), 0);
         assert.equal(f.mutations(), 0);
       }
     });
 
+    await t.test('flat/path 주소가 WASM u32 상한을 넘으면 조회·저장·변경 전에 거부한다', () => {
+      for (const usePath of [false, true]) {
+        for (const field of ['sectionIndex', 'parentParaIndex', 'controlIndex', 'cellIndex', 'cellParaIndex']) {
+          for (const value of [2 ** 32, Number.MAX_SAFE_INTEGER]) {
+            const f = fixture();
+            const pos: DocumentPosition = { ...flat(), [field]: value };
+            if (usePath) pos.cellPath = [{ controlIndex: pos.controlIndex!, cellIndex: pos.cellIndex!, cellParaIndex: pos.cellParaIndex! }];
+            assert.throws(() => new DeleteSelectionCommand(pos, { ...pos, charOffset: 1 }).execute(f.wasm), `${field}=${value}, path=${usePath}`);
+            assert.equal(f.paths.length, 0);
+            assert.equal(f.saves(), 0);
+            assert.equal(f.mutations(), 0);
+            assert.deepEqual(f.text(), ['alpha', 'beta', 'gamma']);
+          }
+        }
+      }
+      const maximum = { sectionIndex: 0xffff_ffff, paragraphIndex: 0, charOffset: 0,
+        parentParaIndex: 0xffff_ffff, controlIndex: 0xffff_ffff, cellIndex: 0xffff_ffff, cellParaIndex: 0xffff_ffff };
+      assert.deepEqual(cellPathForEdit(maximum), [{ controlIndex: 0xffff_ffff, cellIndex: 0xffff_ffff, cellParaIndex: 0xffff_ffff }]);
+    });
+
     await t.test('잘못된 셀 전체 선택은 기존 위치·선택을 변경하지 않는다', () => {
-      const f = fixture();
-      const bad = { ...flat(), cellIndex: undefined };
-      f.cursor.moveTo(bad);
-      f.cursor.setAnchor();
-      const before = f.cursor.getSelection();
-      assert.throws(() => f.cursor.selectAllInCell());
-      assert.deepEqual(f.cursor.getSelection(), before);
-      assert.equal(f.mutations(), 0);
+      for (const bad of [
+        { ...flat(), cellIndex: undefined },
+        { ...flat(), sectionIndex: 2 ** 32 },
+        { ...flat(), parentParaIndex: 2 ** 32 },
+      ]) {
+        const f = fixture();
+        f.cursor.moveTo(bad);
+        f.cursor.setAnchor();
+        const before = f.cursor.getSelection();
+        assert.throws(() => f.cursor.selectAllInCell());
+        assert.deepEqual(f.cursor.getSelection(), before);
+        assert.equal(f.saves(), 0);
+        assert.equal(f.mutations(), 0);
+      }
     });
 
     await t.test('존재하지 않는 문단·오프셋을 변경 전에 거부한다', () => {
@@ -136,6 +181,7 @@ await test('#8102 셀 선택과 삭제의 실제 제품 경로', async (t) => {
         const f = fixture();
         const start = { ...flat(), cellPath: [entry()] };
         assert.throws(() => new DeleteSelectionCommand(start, { ...end, cellPath: [entry(end.cellParaIndex)] }).execute(f.wasm));
+        assert.equal(f.saves(), 0);
         assert.equal(f.mutations(), 0);
         assert.deepEqual(f.text(), ['alpha', 'beta', 'gamma']);
       }

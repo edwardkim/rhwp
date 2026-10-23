@@ -363,8 +363,10 @@ function cellPathJsonForPara(pos: DocumentPosition, cellParaIndex: number): stri
 /** 선택·편집이 공유하는 셀 주소. 완전한 flat 주소만 depth 1로 해석한다.
  * 기존 중첩/글상자 경로가 우선이며 호출자의 경로를 변경하지 않는다. */
 export function cellPathForEdit(pos: DocumentPosition): CellPathEntry[] {
+  // WASM의 u32 인자는 2^32 이상을 하위 32비트로 변환한다. 조회도 같은 주소로
+  // 변환되므로 존재 여부 조회 전에 범위를 검사해 다른 셀로의 alias를 막는다.
   const validIndex = (value: number | undefined): value is number =>
-    Number.isSafeInteger(value) && value! >= 0;
+    Number.isSafeInteger(value) && value! >= 0 && value! <= 0xffff_ffff;
   if (!validIndex(pos.sectionIndex) || !validIndex(pos.parentParaIndex)) {
     throw new Error('유효하지 않은 셀 편집 대상입니다.');
   }
