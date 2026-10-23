@@ -665,8 +665,11 @@ impl TypesetEngine {
         {
             // 유효성이 확인된 첫 개체 상자는 원점과 사용하지 않은 띠를 함께 소유한다.
             // 표 앞에 제목 줄이 있는 경우에도 같은 소유 관계를 적용한다.
-            let top =
-                st.current_height + caption_extra + host_before_overhead + vert_offset_overhead;
+            // [#7732] 원점은 위 캡션을 포함한 개체 상자의 위끝이다. 예산(`budget.rs` 프레임 =
+            // 하단 − 원점 − 캡션), 확정(`commit_fragment` 의 캡션 + 조각 높이)과 그리기
+            // (`table_partial.rs` 표 = 원점 + 캡션 + 간격)가 모두 캡션을 원점 뒤에 한 번 더한다.
+            // 여기서 캡션을 원점에 넣으면 위 캡션 표가 캡션 높이만큼 내려 그려진다(issue1937 20쪽).
+            let top = st.current_height + host_before_overhead + vert_offset_overhead;
             fragment_placement = Some(crate::renderer::float_placement::ParagraphFloatPlacement {
                 flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
                 anchor_y: st.current_height,
