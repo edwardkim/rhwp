@@ -14,6 +14,7 @@ import { validateToolInput, type ToolSchema } from './schema-validate.ts';
 import { cleanDocumentText } from './untrusted.ts';
 
 const MAX_FIND_CHARS = 500;
+const MAX_NEW_PARAGRAPHS = 50;
 const MAX_REPLACE_CHARS = 2000;
 const CONTEXT_CHARS = 30;
 /** 한 문단 안의 글만 바꾼다 — 줄바꿈·제어 문자로 문단을 나누거나 개체 자리를 만들지 않는다. */
@@ -50,31 +51,46 @@ export interface DocumentWriter {
   ): string;
   getFieldList(): string;
   setFieldValue(fieldId: number, value: string): string;
+  getSectionCount(): number;
+  getParagraphCount(section: number): number;
+  splitParagraph(section: number, paragraph: number, offset: number): string;
+  insertText(section: number, paragraph: number, offset: number, text: string): string;
 }
 
 /** 쓰기 도구가 쓰는 호스트 표면 — `PluginHost` 의 부분집합. */
 export interface WriteHost {
   read<T>(fn: (doc: DocumentWriter) => T): T;
   transaction<T>(label: string, fn: (tx: { doc(): DocumentWriter }) => T): T;
+  /** 빈 새 문서로 바꾼다. 저장 안 된 변경 확인에서 사용자가 취소하면 false. */
+  createBlankDocument(): Promise<boolean>;
 }
+
+export type WriteToolName = 'replace_text' | 'fill_field' | 'insert_paragraphs' | 'create_document';
 
 /** 제안 하나. 화면은 `prefix + removed + suffix` 를 「전」, `prefix + inserted + suffix` 를 「후」로 보인다. */
 export interface WriteProposal {
-  tool: 'replace_text' | 'fill_field';
+  tool: WriteToolName;
   /** 어디인가 — 화면 표시용 */
-  location: { section?: number; paragraph?: number; inTable?: boolean; field?: string };
+  location: {
+    section?: number;
+    paragraph?: number;
+    inTable?: boolean;
+    field?: string;
+    /** 문단 추가 자리 */
+    position?: 'start' | 'end' | 'after';
+  };
   prefix: string;
   removed: string;
   inserted: string;
   suffix: string;
   /** 승인되면 부른다. 던지면 적용하지 않은 것이다. */
-  apply(): void;
+  apply(): void | Promise<void>;
 }
 
 /** 모델에 돌려줄 수 있는 쓰기 오류(메시지를 모델이 읽는다). */
 export class WriteRefused extends Error {}
 
-const WRITE_SCHEMAS: Record<'replace_text' | 'fill_field', ToolSchema> = {
+const WRITE_SCHEMAS: Record<WriteToolName, ToolSchema> = {
   replace_text: {
     type: 'object',
     properties: {
@@ -108,6 +124,32 @@ const WRITE_SCHEMAS: Record<'replace_text' | 'fill_field', ToolSchema> = {
     required: ['name', 'value'],
     additionalProperties: false,
   },
+  insert_paragraphs: {
+    type: 'object',
+    properties: {
+      position: {
+        type: 'string', enum: ['start', 'end', 'after'],
+        description: 'Where to add: start or end of the document, or after the body paragraph containing `after`.',
+      },
+      after: {
+        type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS,
+        description: 'With position "after": exact text from the body paragraph to add after (must occur once; not in a table).',
+      },
+      paragraphs: {
+        type: 'array', minItems: 1, maxItems: MAX_NEW_PARAGRAPHS,
+        items: { type: 'string', maxLength: MAX_REPLACE_CHARS },
+        description: 'New paragraphs in order, one string each, without line breaks. Use an empty string for a blank line.',
+      },
+    },
+    required: ['position', 'paragraphs'],
+    additionalProperties: false,
+  },
+  create_document: {
+    type: 'object',
+    properties: {},
+    required: [],
+    additionalProperties: false,
+  },
 };
 
 export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
@@ -124,10 +166,26 @@ export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
       + 'approval like replace_text.',
     inputSchema: WRITE_SCHEMAS.fill_field as unknown as Record<string, unknown>,
   },
+  {
+    name: 'insert_paragraphs',
+    description: 'Write new body paragraphs: at the start or end of the document, or after a paragraph you name by its '
+      + 'text. Use this to write new content (including into a new document). New paragraphs take the style of the '
+      + 'paragraph they are added next to. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.insert_paragraphs as unknown as Record<string, unknown>,
+  },
+  {
+    name: 'create_document',
+    description: 'Replace the open document with a new blank document, when the user asks for a new document. '
+      + 'The user approves first and is asked to save unsaved changes. Then write content with insert_paragraphs '
+      + '(position "end").',
+    inputSchema: WRITE_SCHEMAS.create_document as unknown as Record<string, unknown>,
+  },
 ];
 
-export function isWriteTool(name: string): boolean {
-  return name === 'replace_text' || name === 'fill_field';
+const WRITE_TOOL_NAMES: readonly string[] = ['replace_text', 'fill_field', 'insert_paragraphs', 'create_document'];
+
+export function isWriteTool(name: string): name is WriteToolName {
+  return WRITE_TOOL_NAMES.includes(name);
 }
 
 function sameHit(a: SearchHit, b: SearchHit): boolean {
@@ -261,11 +319,115 @@ function prepareFill(host: WriteHost, input: Record<string, unknown>): WriteProp
   });
 }
 
+function bodyText(doc: DocumentWriter, section: number, paragraph: number): string {
+  const length = doc.getParagraphLength(section, paragraph);
+  return length > 0 ? doc.getTextRange(section, paragraph, 0, length) : '';
+}
+
+function ok(json: string, what: string): void {
+  if (!(JSON.parse(json) as { ok?: boolean }).ok) throw new Error(`${what} failed`);
+}
+
+/** 문단 `paragraph` 뒤에 새 문단들을 차례로 만든다. 나누기는 앞 문단의 모양을 이어받는다. */
+function appendAfter(doc: DocumentWriter, section: number, paragraph: number, texts: readonly string[]): void {
+  let at = paragraph;
+  for (const text of texts) {
+    ok(doc.splitParagraph(section, at, doc.getParagraphLength(section, at)), 'splitParagraph');
+    at += 1;
+    if (text) ok(doc.insertText(section, at, 0, text), 'insertText');
+  }
+}
+
+function prepareInsert(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const position = input.position as 'start' | 'end' | 'after';
+  const after = input.after as string | undefined;
+  const texts = input.paragraphs as string[];
+  if (texts.some((text) => FORBIDDEN.test(text))) {
+    throw new WriteRefused('Each paragraph must be one line: put each paragraph in its own array item.');
+  }
+  if (position === 'after' && !after) throw new WriteRefused('position "after" needs the after text.');
+  if (position !== 'after' && after !== undefined) throw new WriteRefused('after is only used with position "after".');
+
+  const search = (doc: DocumentWriter) => (JSON.parse(doc.searchAllText(after!, true, true)) as SearchHit[]);
+  return host.read((doc) => {
+    let anchor: SearchHit | null = null;
+    let anchorCount = 0;
+    if (position === 'after') {
+      const hits = search(doc);
+      anchorCount = hits.length;
+      anchor = pickHit(hits, after!, undefined);
+      if (anchor.cellContext) throw new WriteRefused('Adding paragraphs inside a table cell is not supported yet.');
+    }
+    const lastSection = doc.getSectionCount() - 1;
+    const location = position === 'after'
+      ? { section: anchor!.sec, paragraph: anchor!.para, position }
+      : position === 'start'
+        ? { section: 0, paragraph: 0, position }
+        : { section: lastSection, paragraph: doc.getParagraphCount(lastSection) - 1, position };
+    return {
+      tool: 'insert_paragraphs',
+      location,
+      prefix: '',
+      removed: '',
+      inserted: texts.join('\n'),
+      suffix: '',
+      apply: () => host.transaction('AI: 문단 추가', (tx) => {
+        const target = tx.doc();
+        if (position === 'after') {
+          const again = search(target);
+          if (again.length !== anchorCount || !sameHit(pickHit(again, after!, undefined), anchor!)) {
+            throw new WriteRefused('The document changed after this was proposed. Read it again and propose a new change.');
+          }
+          appendAfter(target, anchor!.sec, anchor!.para, texts);
+          return;
+        }
+        if (position === 'start') {
+          // 첫 문단을 맨 앞에서 나누면 빈 문단이 앞에 생긴다 — 거기에 첫 글을 넣고 나머지를 잇는다.
+          ok(target.splitParagraph(0, 0, 0), 'splitParagraph');
+          if (texts[0]) ok(target.insertText(0, 0, 0, texts[0]), 'insertText');
+          appendAfter(target, 0, 0, texts.slice(1));
+          return;
+        }
+        const section = target.getSectionCount() - 1;
+        const last = target.getParagraphCount(section) - 1;
+        // 새 문서처럼 마지막 문단이 비어 있으면 그 문단부터 채운다 — 맨 앞에 빈 줄을 남기지 않는다.
+        if (bodyText(target, section, last).length === 0) {
+          if (texts[0]) ok(target.insertText(section, last, 0, texts[0]), 'insertText');
+          appendAfter(target, section, last, texts.slice(1));
+        } else {
+          appendAfter(target, section, last, texts);
+        }
+      }),
+    };
+  });
+}
+
+function prepareCreate(host: WriteHost): WriteProposal {
+  return {
+    tool: 'create_document',
+    location: {},
+    prefix: '',
+    removed: '',
+    inserted: '',
+    suffix: '',
+    apply: async () => {
+      if (!await host.createBlankDocument()) {
+        throw new WriteRefused('The user cancelled creating a new document; the open document is unchanged.');
+      }
+    },
+  };
+}
+
 /** 입력을 검증하고 제안을 만든다. 거절 사유는 `WriteRefused` 로 던진다. */
 export function prepareWrite(host: WriteHost, call: AiToolCall): WriteProposal {
-  const tool = call.name === 'replace_text' || call.name === 'fill_field' ? call.name : null;
-  if (!tool) throw new WriteRefused(`Unknown tool: ${call.name}`);
+  if (!isWriteTool(call.name)) throw new WriteRefused(`Unknown tool: ${call.name}`);
+  const tool = call.name;
   const checked = validateToolInput(WRITE_SCHEMAS[tool], call.input);
   if (!checked.ok) throw new WriteRefused(`Invalid input: ${checked.error}`);
-  return tool === 'replace_text' ? prepareReplace(host, checked.value) : prepareFill(host, checked.value);
+  switch (tool) {
+    case 'replace_text': return prepareReplace(host, checked.value);
+    case 'fill_field': return prepareFill(host, checked.value);
+    case 'insert_paragraphs': return prepareInsert(host, checked.value);
+    case 'create_document': return prepareCreate(host);
+  }
 }

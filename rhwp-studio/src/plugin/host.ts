@@ -46,7 +46,7 @@ export interface PluginHostDeps {
   getInputHandler: () => InputHandler | null;
   /** 문서 교체 위임 — 원자 교체·세대 증가·이전 문서 해제는 studio 가 한다. */
   loadDocument: (bytes: Uint8Array, fileName?: string) => Promise<void>;
-  createBlankDocument: () => void;
+  createBlankDocument: (options?: { confirmUnsaved?: boolean }) => Promise<boolean>;
   /**
    * id 로 플러그인을 가져온다. **allowlist 는 이 훅이 쥔다** — 여기서 거절하면 호스트는
    * `PLUGIN_NOT_ALLOWED` 로 답한다. 임의 URL 로드 경로는 만들지 않는다.
@@ -234,8 +234,8 @@ class PluginHostFacade implements PluginHost {
     await this.deps.loadDocument(bytes, fileName);
   }
 
-  createBlankDocument(): void {
-    this.deps.createBlankDocument();
+  createBlankDocument(options?: { confirmUnsaved?: boolean }): Promise<boolean> {
+    return this.deps.createBlankDocument(options);
   }
 
   /**

@@ -126,7 +126,11 @@ export interface PluginHost {
    * 비동기인 이유는 studio 의 열기 경로가 저장 안 된 변경 확인·복구 흐름을 포함하기 때문이다.
    */
   loadDocument(bytes: Uint8Array, fileName?: string): Promise<void>;
-  createBlankDocument(): void;
+  /**
+   * 빈 문서로 교체한다. 끝날 때까지 기다릴 수 있다. `confirmUnsaved` 면 메뉴의 「새 문서」처럼
+   * 저장 안 된 변경을 먼저 묻는다 — 사용자가 취소하면 `false` 이고 문서는 그대로다.
+   */
+  createBlankDocument(options?: { confirmUnsaved?: boolean }): Promise<boolean>;
 
   /**
    * 사용자 캐럿 위치. 문서가 없거나 캐럿이 머리말·꼬리말·각주·글상자 안이면 `null` —

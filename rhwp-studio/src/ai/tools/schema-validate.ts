@@ -5,7 +5,8 @@
  * 값이고, 다른 제공자는 서버 검증이 없을 수 있다.
  *
  * 지원: `type: object`(properties·required·additionalProperties: false),
- * `integer`(minimum·maximum), `string`(minLength·maxLength), `boolean`.
+ * `integer`(minimum·maximum), `string`(minLength·maxLength·enum), `boolean`,
+ * 문자열 배열 `array`(items·minItems·maxItems).
  */
 export type ToolSchema = {
   type: 'object';
@@ -16,8 +17,15 @@ export type ToolSchema = {
 
 export type PropertySchema =
   | { type: 'integer'; description: string; minimum?: number; maximum?: number }
-  | { type: 'string'; description: string; minLength?: number; maxLength?: number }
-  | { type: 'boolean'; description: string };
+  | { type: 'string'; description: string; minLength?: number; maxLength?: number; enum?: readonly string[] }
+  | { type: 'boolean'; description: string }
+  | {
+    type: 'array';
+    description: string;
+    items: { type: 'string'; maxLength?: number };
+    minItems?: number;
+    maxItems?: number;
+  };
 
 export type ValidationResult =
   | { ok: true; value: Record<string, unknown> }
@@ -55,7 +63,23 @@ export function validateToolInput(schema: ToolSchema, input: unknown): Validatio
         if (prop.maxLength !== undefined && field.length > prop.maxLength) {
           return { ok: false, error: `${key} 는 ${prop.maxLength}자 이하여야 합니다.` };
         }
+        if (prop.enum && !prop.enum.includes(field)) {
+          return { ok: false, error: `${key} 는 ${prop.enum.join(', ')} 중 하나여야 합니다.` };
+        }
         break;
+      case 'array': {
+        if (!Array.isArray(field)) return { ok: false, error: `${key} 는 배열이어야 합니다.` };
+        if (prop.minItems !== undefined && field.length < prop.minItems) {
+          return { ok: false, error: `${key} 는 ${prop.minItems}개 이상이어야 합니다.` };
+        }
+        if (prop.maxItems !== undefined && field.length > prop.maxItems) {
+          return { ok: false, error: `${key} 는 ${prop.maxItems}개 이하여야 합니다.` };
+        }
+        const max = prop.items.maxLength;
+        const bad = field.findIndex((item) => typeof item !== 'string' || (max !== undefined && item.length > max));
+        if (bad >= 0) return { ok: false, error: `${key}[${bad}] 는 ${max ?? ''}자 이하 문자열이어야 합니다.` };
+        break;
+      }
       case 'boolean':
         if (typeof field !== 'boolean') return { ok: false, error: `${key} 는 true/false 여야 합니다.` };
         break;
