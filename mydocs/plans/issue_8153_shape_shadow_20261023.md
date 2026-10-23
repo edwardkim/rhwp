@@ -78,7 +78,9 @@ PDF를 2024 충실도의 증거로 바꾸어 보고하지 않는다. 글꼴 관�
 
 205쪽의 남은 243/252픽셀은 연결선 화살촉 주변에 모인다. 독립 Print보다 큰 화살촉이
 보이므로 99%대라는 이유로 완료 판정하지 않는다. 같은 코드의 최적화 fresh WASM 빌드와
-핵심 52쪽·진단 3쪽을 진행 중이며 아직 완료 결과가 없다. 최종 전쪽 검증·정식 회귀·PR은 미완료다.
+핵심 52쪽·진단 3쪽은 이후 exit 0으로 완료했다. 독립 15조건·그룹 15조건은 fresh WASM에서
+raw 100%이며, 30조건은 97.48586%로 기존 작은 글상자 높이 차이가 남는다.
+최종 전쪽 검증·정식 회귀·PR은 미완료다.
 
 ## 후속 보정: 연결선이 원본 화살촉 크기를 보존
 
@@ -94,6 +96,31 @@ helper → Line/Path → 공통 arrow path`에서 잘못된 크기 덮어쓰기�
 방향 helper를 두 분기가 함께 소비하고, 문서 ID나 새 픽셀 상수를 추가하지 않는다.
 
 원본 205쪽의 수정 전 PNG와 243/252개 미대응, 독립 Print의 작은 화살촉을 보존했다.
-그림자 코드의 fresh WASM 검증이 현재 실행 중이므로 해당 worktree와 빌드는 그대로 둔다.
-이 후속 코드의 Native/fresh WASM, 기존 #7688 검사 및 반례는 아직 실행 전이다.
+그림자 코드의 fresh WASM 검증이 끝난 뒤 같은 검증 worktree를 후속 코드로 전환했다.
+기존 #7688 검사와 연결선 반례의 정식 회귀 검증은 아직 남아 있다.
 제출·완료 판정은 후속 코드의 실제 재검증 결과로 한다.
+
+### 연결선 보정의 Native/fresh WASM 결과
+
+코드 `c6fbb92d3b71d5aaac55807ce5758e6926ddc29a`를 고정했다. Native 빌드는 6분 2초,
+최적화 fresh WASM 빌드는 약 25분 54초에 각각 exit 0으로 끝났다. 공용 `target/pr-review`,
+jobs 8을 사용했고 WASM codegen units는 16이다. 각 backend에서 두 원본의 핵심 26쪽씩을
+실제 실행했다. 두 문서 모두 전체 조판 쪽수는 383쪽이며, 아래 점수는 205쪽의 개별 결과다.
+
+| 형식·backend | 그림자 보정 후 raw | 연결선 보정 후 raw | 정확한 미대응 픽셀 |
+| --- | ---: | ---: | ---: |
+| HWPX Native | 99.85153% | 99.95093% | 243 → 80 |
+| HWP Native | 99.84605% | 99.94542% | 252 → 89 |
+| HWPX fresh WASM | 99.84745% | 99.94610% | 250 → 88 |
+| HWP fresh WASM | 99.84200% | 99.94060% | 259 → 97 |
+
+각 backend의 나머지 50쪽은 직전 코드와 PNG 해시가 같다. Native/fresh WASM 각각의
+이전 출력·현재 출력·독립 PDF raster 해시를 감사했으며, 이번 보정으로 하락한 쪽은 없다.
+Native 2022/2024 호환 대조군 24쪽도 직전 출력과 RGB가 같다. Native와 WASM 사이에
+원래 존재하는 점수 차이를 이번 코드 변경의 하락으로 분류하지 않는다.
+
+현재 Native의 미대응 표시 PNG와 fresh WASM의 205쪽 review를 직접 열어 작은 화살촉을
+확인했다. 남은 N/Y 표기 주변의 미대응과 본문 그림 차이까지 해결한 상태는 아니다.
+검증 자료는 ignored `output/pr-review/issue8153-handbook-raw100-20261022/`의
+`connector-source-size-c6fbb92d3b/{focused-vs-previous-exact,wasm-focused-vs-previous-exact,controls-vs-previous}.json`에 있다.
+52쪽의 통과를 최종 전 1,532개 결과의 raw 100%나 페이지별 ±2px 회귀 구축으로 대신하지 않는다.
