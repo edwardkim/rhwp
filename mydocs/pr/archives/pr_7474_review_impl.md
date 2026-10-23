@@ -20,6 +20,24 @@
 #7488은 Ready를 유지하고, 이슈 #7473은 구현·검증 완료와 실제 병합 대기를 구분해 open으로 유지한다.
 메인테이너 최종 수용 판단과 실제 병합은 별도 단계다. 문서 변경만을 이유로 devel을 반복 merge하지 않는다.
 
+## 2026-10-23 문서 후행 CI 완료와 base 문서 충돌 해소
+
+문서 후행 head `19ca20bc07f6e74614bea27a3c2756ac677e7ddf`의
+[CI](https://github.com/edwardkim/rhwp/actions/runs/39891274013)·
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/39891273868)·
+[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/39891274037)가 Full 실행으로 성공했다.
+check 30 success·7 skipped, CI Impact Policy success를 확인했고 #7474를 Ready로 전환했다.
+후행 Render Diff의 Canvas/direct PDF 각각 3/3, readiness 8/8, 실제 WASM 응답 18건과
+앞선 코드 후보의 JS/WASM 해시 일치도 artifact를 내려받아 확인했다.
+
+검증 중 devel이 #8171의 `7bb143879dbde80a02fb4a63692556ac28fe46ac`로 전진했다.
+변경은 AGENTS·CLAUDE·CONTRIBUTING·리뷰 매뉴얼·오늘할일 문서뿐이다.
+오늘할일 `20261023.md`의 add/add 충돌 때문에 current-base bridge merge가 필요했다.
+#8171 기록 전체를 보존하고 #7473 기록은 그 앞의 section 경계에 배치했다.
+단순 기록 추가를 위한 반복 동기화가 아니라 실제 충돌 해소다. 제품·테스트·workflow·fixture는
+검증한 `19ca20bc07` 이후 바꾸지 않았다. 이 bridge의 최종 head CI는 별도로 확인하고
+완료 결과를 PR 코멘트에 기록한다. Ready 상태를 유지하며 실제 PR 병합·배포·이슈 종료는 수행하지 않는다.
+
 ## 이전 기록
 
 아래 완료·대기 상태와 SHA는 당시 기준이다. 현재 판정은 위 10월 23일 절과 최신 검토 기록을 따른다.

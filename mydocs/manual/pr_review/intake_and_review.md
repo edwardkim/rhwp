@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-18
+last_verified: 2026-10-23
 ---
 
 # PR 접수와 리뷰 기록
@@ -72,7 +72,15 @@ CLI 편집이 실패하면 위 REST POST 경로를 사용한다. reviewer login�
 지정 시각, head repository·branch·SHA를 기존 review 기록에 함께 남긴다.
 
 - 기여자와 그 대행 자동화는 해당 PR head 브랜치에 임의로 추가 커밋을 push하지 않는다.
-  문서 전용 커밋, 최신 devel merge·rebase, amend·force-push도 예외가 아니다.
+  문서 전용 커밋, 최신 devel merge·rebase, amend·force-push도 이 제한에 포함한다.
+- **메인터너가 머지를 보류하고 보정·재작업을 요청한 경우에는 기여자와 그 대행 자동화도
+  요청 범위의 추가 커밋을 같은 PR head 브랜치에 push할 수 있다.** 해당 요청 자체를 보정과
+  새 head 제출의 허용으로 보며, 커밋·push 허가를 별도로 다시 받을 필요는 없다.
+  요청한 보정에 필요한 코드·테스트·문서·검증 증적과 devel 동기화·충돌 해소를 포함하며,
+  필요한 rebase·amend·force-push도 허용한다. 요청과 무관한 변경까지 허용하는 것은 아니다.
+  PR 설명이나 응답 댓글에 요청 링크, 변경 전후 SHA, 보정·충돌 해소 범위와 새 head의 검증
+  결과를 남긴다. reviewer는 새 head SHA를 검토 기준으로 다시 고정하고 필수 검증·최신 CI와
+  보류 해제 조건을 확인해 재리뷰한다. 보정 요청은 승인·merge 허용을 뜻하지 않는다.
 - 메인터너·콜라보레이터는 기존 권한·작업지시자 승인 절차에 따라 같은 PR에 보정 코드·검토
   기록·trailing 커밋을 추가할 수 있다. 별도 통합 PR을 강제하지 않으며 역할별 절차를 따른다.
   변경 전후 SHA와 보정 범위를 기록하고 새 head의 필수 검증·최신 CI를 확인한다.
@@ -81,6 +89,10 @@ CLI 편집이 실패하면 위 REST POST 경로를 사용한다. reviewer login�
 - fetch·로컬 체리픽·통합 브랜치 보정은 원 PR head를 변경하지 않으므로 계속할 수 있다.
   예기치 않은 새 head가 발견되면 이전/새 SHA·추가 커밋·기존 증적의 유효 범위를 기록한다.
   이전 SHA의 검증을 새 head의 통과로 표시하지 않는다.
+
+위 예외는 [PR #8116의 보정 제출 댓글](https://github.com/edwardkim/rhwp/pull/8116#issuecomment-6334757341)과
+[메인터너의 추가 커밋 허용 안내](https://github.com/edwardkim/rhwp/pull/8116#issuecomment-6356232138)에
+따른다.
 
 ## 2.2 기본 metadata
 
