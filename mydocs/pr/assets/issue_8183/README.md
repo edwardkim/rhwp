@@ -12,3 +12,8 @@ compare·standalone overlay·review다. TSV는 작업 원본을 바이트 그대
 ![fresh WASM 전체 스캔](wasm/scan-jpx-200_review.png)
 ![fresh WASM Indexed 색상](wasm/jpx-indexed_review.png)
 ![fresh WASM alpha](wasm/jpx-alpha_review.png)
+
+`base-native/`, `base-wasm/`는 고정 devel `d9fd85ed5`가 같은 HWPX를 렌더링한 전쪽 TSV다.
+[34행 대조](base-comparison.json)에서 최저 100%, 후보 대비 하락 0pp를 확인했다.
+[저장본 한컴 Print 대조](hancom-print/README.md)는 별도다. 작은 반투명 그림 두 쪽의 Print가
+90% 미만이므로 원본 PDF 대조 통과와 한컴 Print 통과를 동일시하지 않는다.

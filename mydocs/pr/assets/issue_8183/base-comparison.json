@@ -1,0 +1,279 @@
+{
+  "base_source": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "candidate_product_source": "cfc5be8fe",
+  "method": "same saved HWPX bytes from corrected candidate input; base lacks opt-in source decoders; render preservation checked with both independent references",
+  "rows": [
+    {
+      "backend": "native",
+      "input": "jbig2-generic_template0",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "45e0c30fce2b35617f0533b2c8eb89c24b02b8a9d289a8e9a74dd22181409deb"
+    },
+    {
+      "backend": "native",
+      "input": "jbig2-mask",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "c0d3750330c0ad12a585294b74ea99aa0a2d91cc17eadd392810c5ed130f2e17"
+    },
+    {
+      "backend": "native",
+      "input": "jbig2-symbol_global",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "287c4743ed4ab8069a889dc4957082faf2fdaf54cd7d96e9f94782a4787666ea"
+    },
+    {
+      "backend": "native",
+      "input": "jbig2",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "4f6e331794387aff9fa6a52b29f774ea67e17b3374dbd8bc9606c509683a1e13"
+    },
+    {
+      "backend": "native",
+      "input": "jpx-alpha",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "8483bf67a0f51cbe387ad5ff4f30b512562c9c9347a9041b6e18596a8b6213ae"
+    },
+    {
+      "backend": "native",
+      "input": "jpx-indexed",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "20ae41151c1359d5ca50c4c48911d67a80f2e28650f216324517013c2dec3f16"
+    },
+    {
+      "backend": "native",
+      "input": "jpx-mask",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "722e6db10f81477308a73dc2f4e8ff96ad585c5ec3061d5018afc04b6870cdc1"
+    },
+    {
+      "backend": "native",
+      "input": "jpx-palette",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "5eab458e56415d7ddf7a757eb15a8d1abe9ad5a1256bbab24b956549b9ec6427"
+    },
+    {
+      "backend": "native",
+      "input": "jpx-premult",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "459a3488ace773ac6ade68d6b14e918551072830c37d2fc039a7baf5d81b1f1d"
+    },
+    {
+      "backend": "native",
+      "input": "jpx-tiles",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "360d480c41faabb1091c1ff1f35cede2725f254847d981fed0501507c42dde2b"
+    },
+    {
+      "backend": "native",
+      "input": "jpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "4f6e331794387aff9fa6a52b29f774ea67e17b3374dbd8bc9606c509683a1e13"
+    },
+    {
+      "backend": "native",
+      "input": "scan-jbig2-200",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "f3cc255ef69e21c4eedf0cd9713f897c2a0b7512082d8a3aefc68a4b8b4d8465"
+    },
+    {
+      "backend": "native",
+      "input": "scan-jbig2",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "e3089722b2bf05d1ad832280760ca596943c9f9304d88ee1c11dbac08db5b3e2"
+    },
+    {
+      "backend": "native",
+      "input": "scan-jpeg-control-200",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "e434f89199e30de3a47666c8813fa4ae465f346c46faa1f2ea9d0238100c9571"
+    },
+    {
+      "backend": "native",
+      "input": "scan-jpeg-control",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "d12d5057619e32ad056d45ac170e8b4b10b407076bcca82cd1580673248f260a"
+    },
+    {
+      "backend": "native",
+      "input": "scan-jpx-200",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "3c502d7b93d9c339ad0b7c83aa575ce5fae6202000d641c8477b3e82689c2ab2"
+    },
+    {
+      "backend": "native",
+      "input": "scan-jpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "84a938da89c3ca93fcbd1f7d8991576774df4d26489250bfce78ecd5be8bc63f"
+    },
+    {
+      "backend": "wasm",
+      "input": "jbig2-generic_template0",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "45e0c30fce2b35617f0533b2c8eb89c24b02b8a9d289a8e9a74dd22181409deb"
+    },
+    {
+      "backend": "wasm",
+      "input": "jbig2-mask",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "c0d3750330c0ad12a585294b74ea99aa0a2d91cc17eadd392810c5ed130f2e17"
+    },
+    {
+      "backend": "wasm",
+      "input": "jbig2-symbol_global",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "287c4743ed4ab8069a889dc4957082faf2fdaf54cd7d96e9f94782a4787666ea"
+    },
+    {
+      "backend": "wasm",
+      "input": "jbig2",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "4f6e331794387aff9fa6a52b29f774ea67e17b3374dbd8bc9606c509683a1e13"
+    },
+    {
+      "backend": "wasm",
+      "input": "jpx-alpha",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "8483bf67a0f51cbe387ad5ff4f30b512562c9c9347a9041b6e18596a8b6213ae"
+    },
+    {
+      "backend": "wasm",
+      "input": "jpx-indexed",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "20ae41151c1359d5ca50c4c48911d67a80f2e28650f216324517013c2dec3f16"
+    },
+    {
+      "backend": "wasm",
+      "input": "jpx-mask",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "722e6db10f81477308a73dc2f4e8ff96ad585c5ec3061d5018afc04b6870cdc1"
+    },
+    {
+      "backend": "wasm",
+      "input": "jpx-palette",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "5eab458e56415d7ddf7a757eb15a8d1abe9ad5a1256bbab24b956549b9ec6427"
+    },
+    {
+      "backend": "wasm",
+      "input": "jpx-premult",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "459a3488ace773ac6ade68d6b14e918551072830c37d2fc039a7baf5d81b1f1d"
+    },
+    {
+      "backend": "wasm",
+      "input": "jpx-tiles",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "360d480c41faabb1091c1ff1f35cede2725f254847d981fed0501507c42dde2b"
+    },
+    {
+      "backend": "wasm",
+      "input": "jpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "4f6e331794387aff9fa6a52b29f774ea67e17b3374dbd8bc9606c509683a1e13"
+    },
+    {
+      "backend": "wasm",
+      "input": "scan-jbig2-200",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "f3cc255ef69e21c4eedf0cd9713f897c2a0b7512082d8a3aefc68a4b8b4d8465"
+    },
+    {
+      "backend": "wasm",
+      "input": "scan-jbig2",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "e3089722b2bf05d1ad832280760ca596943c9f9304d88ee1c11dbac08db5b3e2"
+    },
+    {
+      "backend": "wasm",
+      "input": "scan-jpeg-control-200",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "e434f89199e30de3a47666c8813fa4ae465f346c46faa1f2ea9d0238100c9571"
+    },
+    {
+      "backend": "wasm",
+      "input": "scan-jpeg-control",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "d12d5057619e32ad056d45ac170e8b4b10b407076bcca82cd1580673248f260a"
+    },
+    {
+      "backend": "wasm",
+      "input": "scan-jpx-200",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "3c502d7b93d9c339ad0b7c83aa575ce5fae6202000d641c8477b3e82689c2ab2"
+    },
+    {
+      "backend": "wasm",
+      "input": "scan-jpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": 0.0,
+      "source_hwpx_sha256": "84a938da89c3ca93fcbd1f7d8991576774df4d26489250bfce78ecd5be8bc63f"
+    }
+  ]
+}
