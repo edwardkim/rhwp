@@ -14,6 +14,7 @@ mod image_reduction;
 mod metafile_print;
 #[cfg(target_arch = "wasm32")]
 mod print_jpeg;
+mod print_image_sampling;
 
 #[cfg(target_arch = "wasm32")]
 use base64::Engine;
@@ -439,6 +440,7 @@ pub struct WebCanvasRenderer {
     high_quality_images: bool,
     render_profile: crate::paint::RenderProfile,
     bitmap_paper_grid: Option<super::bitmap_raster::PrintPaperGrid>,
+    print_area_sampling: bool,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -472,6 +474,7 @@ impl WebCanvasRenderer {
             high_quality_images: false,
             render_profile: crate::paint::RenderProfile::Screen,
             bitmap_paper_grid: None,
+            print_area_sampling: false,
         })
     }
 
@@ -884,6 +887,9 @@ impl WebCanvasRenderer {
                 image,
                 resolved,
             } => {
+                let previous_print_area = self.print_area_sampling;
+                self.print_area_sampling =
+                    super::image_resolver::print_area_sampling(image, resolved.as_deref());
                 if let Some(resolved) = resolved.as_deref() {
                     let image = crate::renderer::image_resolver::image_node_with_resolved_payload(
                         image,
@@ -893,6 +899,7 @@ impl WebCanvasRenderer {
                 } else {
                     self.render_image(bbox, image, true);
                 }
+                self.print_area_sampling = previous_print_area;
             }
             PaintOp::Equation { bbox, equation } => {
                 self.render_equation(bbox, equation);
@@ -3232,6 +3239,18 @@ impl Renderer for WebCanvasRenderer {
 
         let decoded = cached_decoded_image_canvas(data, key);
         if let Some(canvas) = decoded {
+            if self.print_area_sampling
+                && self.high_quality_images
+                && print_image_sampling::draw(
+                    &self.ctx,
+                    &canvas,
+                    (x, y, w, h),
+                    (self.width, self.height),
+                    self.scale,
+                )
+            {
+                return;
+            }
             if self.high_quality_images
                 && self.ctx.image_smoothing_enabled()
                 && (super::image_resolver::png_sampling::print_bitmap_reconstruction(data)
@@ -3423,6 +3442,22 @@ impl WebCanvasRenderer {
 
         let decoded = cached_decoded_image_canvas(data, key);
         if let Some(canvas) = decoded {
+            if self.print_area_sampling
+                && self.high_quality_images
+                && sx == 0.0
+                && sy == 0.0
+                && sw == f64::from(canvas.width())
+                && sh == f64::from(canvas.height())
+                && print_image_sampling::draw(
+                    &self.ctx,
+                    &canvas,
+                    (dx, dy, dw, dh),
+                    (self.width, self.height),
+                    self.scale,
+                )
+            {
+                return;
+            }
             let _ = self
                 .ctx
                 .draw_image_with_html_canvas_element_and_sw_and_sh_and_dx_and_dy_and_dw_and_dh(

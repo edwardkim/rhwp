@@ -86,3 +86,41 @@ pub fn resample_print_bitmap_rgba(
     )
     .map(|raster| raster.rgba)
 }
+
+
+
+#[wasm_bindgen(js_name = rasterizePrintImageRGBA)]
+pub fn rasterize_print_image_rgba(
+    rgba: &[u8],
+    source_width: u32,
+    source_height: u32,
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+    page_width: f64,
+    page_height: f64,
+    scale: f64,
+) -> Result<JsValue, JsValue> {
+    let Some(raster) = crate::renderer::print_image_sampling::rasterize(
+        rgba,
+        (source_width, source_height),
+        (x, y, width, height),
+        (page_width, page_height),
+        scale,
+    ) else {
+        return Ok(JsValue::NULL);
+    };
+    let result = js_sys::Object::new();
+    for (name, value) in [
+        ("left", f64::from(raster.left)),
+        ("top", f64::from(raster.top)),
+        ("width", f64::from(raster.width)),
+        ("height", f64::from(raster.height)),
+    ] {
+        js_sys::Reflect::set(&result, &name.into(), &value.into())?;
+    }
+    let data = js_sys::Uint8Array::from(raster.rgba.as_slice());
+    js_sys::Reflect::set(&result, &"data".into(), &data)?;
+    Ok(result.into())
+}

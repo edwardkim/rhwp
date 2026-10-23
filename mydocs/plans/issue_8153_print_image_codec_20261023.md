@@ -46,3 +46,29 @@ Native/fresh WASM의 인코더는 같은 스칼라 정수 연산을 소비한다
    #8153의 나머지 완료 조건을 충족한다. 273쪽의 개선만으로 PR을 제출하지 않는다.
 
 이 문서는 구현 전 계획이다. 새 코드의 실제 결과와 미해결 범위는 실행 후 연결한다.
+
+## 첫 Native 후보 결과와 다음 공통 소비 단계
+
+코드 `f9e31456eb7794073ab74ce0746e5497f9a3f927`의 Native 빌드는 성공했다.
+선정 52쪽에서 미대응 합계는 56,081 → 50,583개로 줄었으며 내용 구조와 관측 글꼴은
+유지됐다. HWPX 273쪽은 raw 98.65734 → 99.08806%, 미대응 2,437 → 1,672개다.
+그러나 두 형식 모두 67쪽 −0.00133%p, 260쪽 −0.05627%p의 하락이 남았다.
+대조군 2020 모드 12쪽은 RGB가 같았으나, 2024 모드에는 하락도 있어 완료로 판정하지 않는다.
+2024 모드를 기존 2020 PDF와 비교한 진단과 같은 버전 출력의 승인 근거를 구분한다.
+
+압축과 화면 축소는 별개다. 공개 PDFium chromium/7999의 `CStretchEngine` 계산을
+독립적으로 구현하고, 기존 Print의 260·273쪽 그림 14개를 각각 메모리 안에서 분리해
+같은 PDFium으로 렌더했다. 16.16 면적 가중치, 축별 채널 절삭, 실제 bitmap/paper 변환을
+따른 Rust 계산 결과는 14개 모두 RGB 바이트 단위로 같았다. 원본 PDF는 수정하지 않았다.
+이 진단은 PDF 안의 JPEG 디코딩 RGB를 사용하므로 제품 입력의 검증을 대신하지 않는다.
+
+공통 소비는 `최종 그림 frame → 실제 장치 변환과 페이지 viewport → 정수 외접 경계 →
+공통 16.16 면적 표본 → Native/Canvas2D/CanvasKit 재생`으로 연결한다. 배율·페이지 크기를
+별도 예측하거나 96dpi를 고정하지 않는다. 처음 입증한 불투명 JPEG의 전체 원본 축소부터
+연결하고, 부분 자르기·alpha·회전 등 다른 계약은 승인 근거를 확보해 계속 처리한다.
+Native·WASM의 수학을 따로 구현하지 않는다. 좌표·쪽·소유·순서는 바꾸지 않고 출력의 장치
+표본만 다룬다. 영향을 받는 본문·대조군을 재출력한 뒤 하락과 실제 확대 출력을 확인한다.
+
+공개 계산 근거: [PDFium chromium/7999 cstretchengine.cpp](https://pdfium.googlesource.com/pdfium/+/refs/heads/chromium/7999/core/fxge/dib/cstretchengine.cpp),
+[고정소수점 정의](https://pdfium.googlesource.com/pdfium/+/refs/heads/chromium/7999/core/fxge/dib/cstretchengine.h).
+한컴 바이너리 분석 자료는 이 문서에 옮기지 않고 ignored `output/`에만 보존한다.

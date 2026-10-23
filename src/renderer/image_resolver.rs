@@ -10,7 +10,7 @@ pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
 pub(crate) use print_jpeg::{encode_print_jpeg, print_jpeg_payload};
 pub(crate) use print_tone::print_bitmap_payload;
 mod print_codec;
-pub(crate) use print_codec::print_device_image_payload;
+pub(crate) use print_codec::{print_area_sampling, print_device_image_payload};
 
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};

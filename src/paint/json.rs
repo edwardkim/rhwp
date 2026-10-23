@@ -1151,7 +1151,9 @@ impl PaintOp {
                         &serde_json::to_string(&image.source_clip_path(bbox).unwrap()).unwrap(),
                     );
                 }
-                if resolved
+                if crate::renderer::image_resolver::print_area_sampling(image, resolved) {
+                    buf.push_str(",\"imageReconstruction\":\"printArea\"");
+                } else if resolved
                     .map(|payload| payload.data.as_slice())
                     .or(image.data.as_deref())
                     .is_some_and(

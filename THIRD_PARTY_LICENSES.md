@@ -446,6 +446,11 @@ GUST Font License를 유지하며 사설 글꼴의 윤곽·바이트는 포함�
 
 ## 직접 포팅한 알고리즘
 
+공통 Print 장치 면적 표본(`src/renderer/print_image_sampling.rs`)은 공개 PDFium
+`chromium/7999`의 CStretchEngine 고정소수점 산술 계약을 적용한다. 원래 PDFium Authors와
+Foxit Software의 저작권 고지 및 BSD-3-Clause 조건은 `licenses/pdfium/LICENSE`에 보존한다.
+이 항목은 Cargo 크레이트 의존성이 아니다. 출처는 `licenses/pdfium/README.md`에 있다.
+
 ### Volexity hwp-extract
 
 - 출처: [volexity/hwp-extract](https://github.com/volexity/hwp-extract), commit

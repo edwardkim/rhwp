@@ -9,6 +9,37 @@ use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
 use crate::renderer::render_tree::ImageNode;
 
+/// 압축 형식과 출력 세대를 확인한 뒤 동일한 장치 표본 계약을 게시한다.
+pub(crate) fn print_area_sampling(
+    image: &ImageNode,
+    resolved: Option<&ResolvedImagePayload>,
+) -> bool {
+    image.hancom2024_print_bitmap
+        && image.effect == ImageEffect::RealPic
+        && image.brightness == 0
+        && image.contrast == 0
+        && image.opacity == 1.0
+        && image.fill_mode.is_none()
+        && !image.transform.has_transform()
+        && image.crop.is_none_or(|(left, top, right, bottom)| {
+            super::image_crop_reference(image).is_some_and(|(width, height)| {
+                left == 0
+                    && top == 0
+                    && i64::from(right) == i64::from(width)
+                    && i64::from(bottom) == i64::from(height)
+            })
+        })
+        && resolved.map_or_else(
+            || {
+                image
+                    .data
+                    .as_deref()
+                    .is_some_and(|data| detect_image_mime_type(data) == "image/jpeg")
+            },
+            |payload| payload.mime == "image/jpeg",
+        )
+}
+
 /// 폭은 최종 paint frame의 point 단위다. 논리 bbox에서 별도로 추정하지 않는다.
 pub(crate) fn print_device_image_payload(
     image: &ImageNode,

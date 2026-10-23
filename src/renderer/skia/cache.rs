@@ -322,6 +322,7 @@ fn decoded_resource_cost(bytes: &[u8], svg_estimate: usize) -> usize {
 pub(super) struct ReplayCacheContext<'a> {
     pub seed: Option<CacheKey>,
     pub page_bounds: skia_safe::Rect,
+    pub page_extent: (f64, f64),
     pub retained_resource_estimate: usize,
     pub policy: ReplayPolicy,
     pub raster_target: bool,
@@ -359,6 +360,7 @@ impl<'a> ReplayCacheContext<'a> {
         Self {
             seed,
             page_bounds: skia_safe::Rect::from_wh(tree.page_width as f32, tree.page_height as f32),
+            page_extent: (tree.page_width, tree.page_height),
             retained_resource_estimate: resources
                 .map_or(usize::MAX, |(_, bytes)| bytes)
                 .saturating_add(svg_estimate),
