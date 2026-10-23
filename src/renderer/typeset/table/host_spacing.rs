@@ -281,6 +281,8 @@ pub(super) fn resolve(
         + stored_empty_anchor_host_line_tail;
     let host_spacing = HostSpacing {
         before,
+        // 위 세 갈래 모두 단 상단에서는 바깥 위 여백만 남는다.
+        column_top_before: outer_top,
         after,
         // 저장 원점이 없는 개체는 뒤 저장 줄로 종료 여백을 복원할 수 없다.
         // 전체 표와 같은 바깥여백을 마지막 조각 뒤 흐름에 한 번 전달한다.
