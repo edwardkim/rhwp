@@ -1135,9 +1135,20 @@ impl TypesetEngine {
                     para_index: para_idx,
                     control_index: ctrl_idx,
                 });
+                // [#8149] 통째 첫 조각도 끝 조각과 같은 점유(아래 캡션·바깥 아래 여백 포함)로
+                // 흐름을 닫는다. 표 행만 더하면 새 쪽 첫머리로 넘긴 표 뒤 제목이 캡션 위에
+                // 놓인다(한글문서파일형식 33쪽 표 199 → 제목 200 이 캡션과 겹침).
                 match whole_successor_flow_end {
                     Some(end) => st.align_flow_to(end),
-                    None => st.advance_flow_by(partial_height + host_spacing_total),
+                    None => st.advance_flow_by(
+                        host_before_overhead
+                            + vert_offset_overhead
+                            + partial_height
+                            + bottom_caption_extra
+                            + terminal_outer_bottom_overhead
+                            + host_spacing_after_only
+                            + terminal_host_spacing,
+                    ),
                 }
             } else {
                 self.record_stored_fragment_rows(

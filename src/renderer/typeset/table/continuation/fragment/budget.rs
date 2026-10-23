@@ -525,30 +525,23 @@ impl TypesetEngine {
                 - vert_offset_overhead
                 - fragment_outer_bottom_overhead
         };
-        // [#8149] 글 없는 host 의 문단 기준 자리차지 표가 쪽 바닥에서 나뉘면 한/글은 첫 조각
-        // 아래에 그 표의 바깥 아래 여백과 (아래 캡션이면) 캡션 자리를 남긴다 — 한/글 2020 저장·
-        // Print 합성 `samples/issue8149/gen_rowfit.py` 16사례: 캡션 없음·여백 0 은 본문 끝까지,
-        // 여백 1984HU 는 여백만, 아래 캡션은 `여백 + 캡션 간격 + 캡션 줄` 을 남긴다. 저장 첫
-        // 프레임이 있으면 그 높이가 같은 컷을 정하므로(합성은 그 경로) 이 예약은 저장 프레임이
-        // 없는 쪽(한글문서파일형식 38쪽 표 234 — 앞에 저장 줄 없는 제목)에만 쓴다.
-        let empty_host_first_fragment_reserve = if !is_continuation
-            && cursor_row == 0
-            && start_cut.is_empty()
-            && fragment_outer_bottom_overhead <= 0.0
-            && input.prepared.source_text_first_frame_height.is_none()
-            && crate::renderer::float_placement::is_para_topbottom_float(&table.common)
-            && crate::renderer::typeset::signed_hwpunit(table.common.vertical_offset) == 0
-            && !para_has_non_whitespace_text(para)
-        {
-            hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi).max(0.0)
-                + if caption_is_top {
-                    0.0
-                } else {
-                    caption_overhead
-                }
-        } else {
-            0.0
-        };
+        // [#8149] 첫 행 이월 판정(prepare)과 같은 예약이다. 저장 첫 프레임이 있으면 그 높이가
+        // 같은 컷을 정하므로(합성은 그 경로) 아래에서 되돌린다 — 한글문서파일형식 38쪽 표 234 는
+        // 앞에 저장 줄 없는 제목이라 이 예약을 쓴다.
+        let empty_host_first_fragment_reserve =
+            if !is_continuation && cursor_row == 0 && start_cut.is_empty() {
+                crate::renderer::typeset::empty_host_float_first_fragment_reserve_px(
+                    para,
+                    table,
+                    fragment_outer_bottom_overhead,
+                    input.prepared.source_text_first_frame_height.is_some(),
+                    caption_overhead,
+                    caption_is_top,
+                    self.dpi,
+                )
+            } else {
+                0.0
+            };
         let page_avail_raw = page_avail_raw - empty_host_first_fragment_reserve;
         // [#8081] 첫 조각은 0 으로 자르기 전 모자란 몫을 함께 넘긴다(FragmentBudget 주석).
         let first_fragment_shortfall = if is_continuation {
