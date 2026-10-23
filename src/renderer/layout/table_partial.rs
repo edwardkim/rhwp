@@ -1824,10 +1824,51 @@ impl LayoutEngine {
                         (start < end).then_some((pi, end.saturating_sub(1)))
                     })
             });
+            let stored_picture_cut_frame = self
+                .stored_picture_cut_frame(cell, table, styles, cut_units)
+                .filter(|frame| {
+                    let partial = cut_units.is_some_and(|(start, end)| {
+                        start > 0 || end < self.cell_units(cell, table, styles).len()
+                    });
+                    let block = split_end_block.or(split_start_block);
+                    let owns_physical_rows = measured_table.is_some()
+                        && block.is_some_and(|block| {
+                            let start = if split_start_block == Some(block) {
+                                start_cut
+                            } else {
+                                &[]
+                            };
+                            let end = if split_end_block == Some(block) {
+                                end_cut
+                            } else {
+                                &[]
+                            };
+                            let first_row = cell_row.max(start_row);
+                            let last_row = (cell_row + usize::from(cell.row_span)).min(end_row);
+                            // 이어받은 블록은 이미 소비한 앞 행을 0 높이로 남긴다.
+                            // 그 행에는 이번 조각의 공간 소유를 다시 요구하지 않는다.
+                            let mut physical_rows = (first_row..last_row)
+                                .filter(|&row| row_heights[row] > 0.0)
+                                .peekable();
+                            physical_rows.peek().is_some()
+                                && physical_rows.all(|row| {
+                                    self.row_block_cut_uses_measured_height(
+                                        table, block, row, start, end, styles,
+                                    )
+                                })
+                        });
+                    // 새 수용 장부의 완전 블록 표시와 구분한다. 부분 그림 컷은
+                    // 예약·행 배치에 쓴 같은 물리 행 질의가 증명하는 띠만 소유한다.
+                    !partial
+                        || (frame.content_height <= inner_height + self.dpi / 7200.0
+                            && owns_physical_rows)
+                });
             // [#4149] windowed 프로브: 아래에서 effective_align 이 Top 으로 확정되므로
             // (cell_was_split=true 사전 증명) total_content_height 는 미사용 — 0 고정.
             let total_content_height = if windowed_composition {
                 0.0
+            } else if let Some(frame) = &stored_picture_cut_frame {
+                frame.content_height
             } else if let Some(ref ranges) = line_ranges {
                 let mut total = 0.0;
                 for (pi, ((comp, para), &(start, end))) in composed_store
@@ -2010,6 +2051,9 @@ impl LayoutEngine {
                 && self.cell_units_content_height(cell, table, styles) > inner_height + 0.5;
             let effective_align = if descendant_owns_closing_band {
                 VerticalAlign::Top
+            } else if stored_picture_cut_frame.is_some() {
+                // 수용한 물리 띠 안에서 이번 컷의 그림과 소유 줄만 정렬한다.
+                cell.vertical_align
             } else if frame_owns_alignment
                 || mixed_opening_frame.is_some()
                 || declared_opening_frame_owns_alignment
@@ -2034,12 +2078,12 @@ impl LayoutEngine {
             };
             // 온전한 셀은 그림 띠와 빈 마지막 줄의 닫힌 원본 프레임을 함께 소비한다.
             // 실제 내용 컷은 그 조각의 기존 유닛 소유를 유지한다.
-            let stored_empty_picture_frame = (!cell_was_split && !is_rowbreak_straddle)
-                .then(|| self.stored_empty_picture_cell_frame(cell, table))
-                .flatten()
-                .filter(|frame| {
-                    hwpunit_to_px(frame.content_height_hu, self.dpi) <= inner_height + 0.5
-                });
+            let stored_empty_picture_frame = (!cell_was_split
+                && !is_rowbreak_straddle
+                && stored_picture_cut_frame.is_none())
+            .then(|| self.stored_empty_picture_cell_frame(cell, table))
+            .flatten()
+            .filter(|frame| hwpunit_to_px(frame.content_height_hu, self.dpi) <= inner_height + 0.5);
             let total_content_height = declared_opening_content_height
                 .filter(|_| declared_opening_frame_owns_alignment)
                 .or_else(|| {
@@ -2095,7 +2139,9 @@ impl LayoutEngine {
             let stored_page_content_height = cut_units.and_then(|(start, end)| {
                 self.stored_cell_cut_alignment_height(cell, table, styles, start, end)
             });
-            let centered_content_height = if let Some(frame) = mixed_opening_frame {
+            let centered_content_height = if let Some(frame) = &stored_picture_cut_frame {
+                frame.content_height
+            } else if let Some(frame) = mixed_opening_frame {
                 // 예약한 상자와 같은 source host/child의 닫힌 점유 끝을 정렬한다.
                 frame.content_height
             } else if let Some(height) = declared_opening_content_height {
@@ -2819,6 +2865,14 @@ impl LayoutEngine {
 
                 // 인라인 이미지가 있는 문단: compose 전 위치를 저장
                 let paragraph_has_preceding_content = has_preceding_text;
+                if start_line < end_line {
+                    if let Some(frame) = &stored_picture_cut_frame {
+                        if let Some(line) = para.line_segs.get(start_line) {
+                            para_y =
+                                text_y_start + frame.line_y(cp_idx, line.vertical_pos, self.dpi);
+                        }
+                    }
+                }
                 let para_y_before_compose = para_y;
                 // 이 조각에서 문단이 시작하면 그 첫 줄 상단이 문단 기준 개체의 원점이다.
                 // 저장 줄 사다리·문단 앞 간격으로 생긴 틈은 compose 안에서 더해지므로
@@ -3825,6 +3879,13 @@ impl LayoutEngine {
                                             cell, table, styles, cut_units, ctrl_idx,
                                         )
                                         .map(|origin| cell_y + pad_top + origin)
+                                        .unwrap_or(pic_y);
+                                    let pic_y = stored_picture_cut_frame
+                                        .as_ref()
+                                        .map(|frame| {
+                                            text_y_start
+                                                + frame.picture_y(cp_idx, ctrl_idx, self.dpi)
+                                        })
                                         .unwrap_or(pic_y);
                                     let pic_area = LayoutRect {
                                         x: pic_x,

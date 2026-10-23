@@ -432,6 +432,14 @@ impl TypesetEngine {
         // 배제 영역을 만들기 전에 변환해 행 예산과 실제 배치에서 함께 소비한다.
         let source_control_frame =
             closed_source_frame_placement.filter(|_| closed_source_frame_key == host_frame);
+        // 계산된 호스트 배치는 이미 현재 글줄의 점유 끝으로 인증됐다.
+        // 저장 줄 전용 질의로 다시 거부하면 편집 후 호스트가 표 뒤에 중복 방출된다.
+        // 빈 개체 앵커는 계산 줄이 있어도 별도 텍스트 공간을 소유하지 않는다.
+        let host_owns_opening_line = (fmt.computed_host_lines.is_some()
+            && para_has_non_whitespace_text(para))
+            || crate::renderer::float_placement::partial_table_opening_host_owns_lead(
+                para, table, ctrl_idx, false,
+            );
         let fragment_host_placement = source_control_frame.or_else(|| {
             unconstrained_host_placement
                 .filter(|_| placement_para_start_height + fmt.height_for_fit <= available)
@@ -454,10 +462,6 @@ impl TypesetEngine {
                     };
                     // 빈 개체 앵커에는 표 앞에서 소비할 독립 글줄이 없다.
                     // 실제 paint와 같은 호스트 소유 질의로 첫 조각의 하한을 정한다.
-                    let host_owns_opening_line =
-                        crate::renderer::float_placement::partial_table_opening_host_owns_lead(
-                            para, table, ctrl_idx, false,
-                        );
                     let host_line_height = if host_owns_opening_line { fmt.computed_host_lines.as_ref().map_or_else(
                         || {
                             para.line_segs
@@ -470,10 +474,14 @@ impl TypesetEngine {
                         crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
                             para, table, Some(&placement),
                         );
-                    let mut fragment = if reflow_empty_host {
-                        // No saved text-line anchor supersedes the formatted
-                        // outer box. Keep the origin accepted by whole fit.
-                        placement
+                    let keeps_empty_outer_box = reflow_empty_host
+                        || (!host_owns_opening_line && !para_has_non_whitespace_text(para));
+                    let mut fragment = if keeps_empty_outer_box {
+                        // 빈 앵커의 앞 간격·바깥 위 여백은 이미 개체 상자에 있다.
+                        // 글줄 하한으로 재변환하면 그 원점을 버리므로 상자를 보존한다.
+                        let mut fragment = placement;
+                        fragment.stored_successor_line_origin = None;
+                        fragment
                     } else {
                         placement.for_first_fragment(
                             table,
@@ -491,7 +499,7 @@ impl TypesetEngine {
                     // 첫 조각 예산(`host_before_overhead`)은 이미 그 여백을 예약하므로 원점도
                     // 같이 연다(70833 12쪽 `pi=83`: 한/글 2020 괘선 275.06px = 제목 줄 상단
                     // 235.6 + 오프셋 23.79 + 바깥 위 1.88 + 캡션 2.67 + 캡션 간격 11.33).
-                    if !reflow_empty_host
+                    if !keeps_empty_outer_box
                         && (crate::renderer::float_placement::stored_hwpx_cut_owns_outer_frame(
                             st.profile.hwpx_stored_layout() && !st.profile.hwp5_origin_hwpx() && !st.profile.session_edited(),
                             para, table,
@@ -531,14 +539,13 @@ impl TypesetEngine {
         });
         // 닫힌 폭0 개체 앵커는 표 공간을 소유하며 별도 빈 글줄을 전진시키지 않는다.
         // 실제 호스트 텍스트가 있는 내부 개체는 그 글줄의 기존 소유를 유지한다.
-        let host_owns_text_lines =
-            crate::renderer::float_placement::partial_table_opening_host_owns_lead(
-                para, table, ctrl_idx, false,
-            ) && !crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
+        let host_owns_text_lines = host_owns_opening_line
+            && !crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
                 para,
                 table,
                 fragment_host_placement.as_ref(),
-            ) && (source_control_frame.is_none() || para_has_non_whitespace_text(para));
+            )
+            && (source_control_frame.is_none() || para_has_non_whitespace_text(para));
         if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
             eprintln!(
                 "TABLE_FRAGMENT_HOST pi={para_idx} ci={ctrl_idx} source={source_control_frame:?} placement={fragment_host_placement:?} owns_lines={host_owns_text_lines} line_count={} computed_lines={} flow={:.6} origin={placement_para_start_height:.6}",

@@ -1827,6 +1827,23 @@ enum RecursiveBlockPreludeRole {
     OneLineHeadingBeforeSingleCellTable,
 }
 
+/// 저장 그림 컷의 같은 내용 프레임을 정렬과 실제 개체 배치에 공유한다.
+pub(super) struct StoredPictureCutFrame {
+    source: crate::renderer::float_placement::StoredPictureCellFlow,
+    shift_hu: f64,
+    pub(super) content_height: f64,
+}
+
+impl StoredPictureCutFrame {
+    pub(super) fn picture_y(&self, paragraph: usize, control: usize, dpi: f64) -> f64 {
+        (f64::from(self.source.picture_start_hu(paragraph, control)) + self.shift_hu) * dpi / 7200.0
+    }
+
+    pub(super) fn line_y(&self, paragraph: usize, stored: i32, dpi: f64) -> f64 {
+        (f64::from(self.source.line_start_hu(paragraph, stored)) + self.shift_hu) * dpi / 7200.0
+    }
+}
+
 /// [Task #993] 한 셀의 콘텐츠 유닛 — 합성 줄 1개 또는 중첩 표 atom 1개.
 #[derive(Clone)]
 pub(super) struct CellUnit {
@@ -13238,6 +13255,73 @@ impl LayoutEngine {
                 .borrow_mut()
                 .insert(owner_table_key, true);
         }
+    }
+
+    /// 선택한 저장 그림과 빈 앵커 줄만 현재 조각의 정렬 높이를 소유한다.
+    pub(super) fn stored_picture_cut_frame(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        cut: Option<(usize, usize)>,
+    ) -> Option<StoredPictureCutFrame> {
+        if !self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().session_edited()
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+        {
+            return None;
+        }
+        let source = crate::renderer::float_placement::stored_picture_cell_flow(cell)?;
+        let units = self.cell_units(cell, table, styles);
+        let (start, end) = cut.unwrap_or((0, units.len()));
+        let (start, end) = (start.min(units.len()), end.min(units.len()));
+        if start >= end {
+            return None;
+        }
+        let consumed_hu =
+            units[..start].iter().map(|unit| unit.height).sum::<f64>() * 7200.0 / self.dpi;
+        // 가운데·아래 정렬은 첫 그림 위의 음수 앵커를 프레임 밖으로 다시 적용하지 않는다.
+        // 위 정렬의 실제 음수 오프셋은 보존한다.
+        let normalized_hu =
+            if matches!(cell.vertical_align, crate::model::table::VerticalAlign::Top) {
+                0.0
+            } else {
+                -f64::from(source.initial_offset_hu)
+            };
+        let shift_hu = normalized_hu - consumed_hu;
+        let mut bottom_hu = 0.0_f64;
+        let mut has_picture = false;
+        for unit in &units[start..end] {
+            let paragraph = &cell.paragraphs[unit.para_idx];
+            for line in paragraph.line_segs.get(unit.vis_start..unit.vis_end)? {
+                bottom_hu = bottom_hu.max(
+                    f64::from(source.line_start_hu(unit.para_idx, line.vertical_pos))
+                        + shift_hu
+                        + f64::from(line.line_height),
+                );
+            }
+            if let Some((first, last)) = unit.non_inline_control_range {
+                for control in first..=last {
+                    let Control::Picture(picture) = paragraph.controls.get(control)? else {
+                        return None;
+                    };
+                    has_picture = true;
+                    bottom_hu = bottom_hu.max(
+                        f64::from(source.picture_start_hu(unit.para_idx, control))
+                            + shift_hu
+                            + f64::from(picture.common.height),
+                    );
+                }
+            }
+        }
+        has_picture.then_some(StoredPictureCutFrame {
+            source,
+            shift_hu,
+            content_height: bottom_hu * self.dpi / 7200.0,
+        })
     }
 
     /// [Task #1949] `cell_units_uncached` 의 메모이즈 래퍼. 거대 셀이 RowBreak 로
