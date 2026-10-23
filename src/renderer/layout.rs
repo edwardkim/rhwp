@@ -4822,7 +4822,7 @@ impl LayoutEngine {
                 inside_textbox: bool,
             ) {
                 // 배치 bbox는 변환 원점을 소유한다. clip만 실제 채움 경로를 포함한다.
-                let mut cb = super::filled_path_bounds::including_filled_path(node);
+                let mut cb = super::filled_path_bounds::including_shape_ink(node);
                 // 위 밑줄·강조점은 글줄 상자 위로 그려져 첫 줄에서 본문 clip 에 잘린다.
                 // 글자 상자는 캐럿/선택이 쓰므로 키우지 않고 clip 에만 잉크를 합친다.
                 // 글상자 안은 글상자 자체 clip 이 자르므로 반영하지 않는다.

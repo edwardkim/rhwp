@@ -1,4 +1,4 @@
-//! 실제 채움 경계를 배치 bbox와 분리해 clip 계산에만 전달한다.
+//! 실제 채움·도형 획 경계를 배치 bbox와 분리해 clip 계산에 전달한다.
 
 use super::render_tree::{BoundingBox, RenderNode, RenderNodeType, ShapeTransform};
 use super::{svg_arc_to_beziers, PathCommand};
@@ -86,15 +86,56 @@ fn transformed(point: Point, bbox: BoundingBox, transform: ShapeTransform) -> Po
     )
 }
 
-/// 원래 배치 범위는 유지하면서 실제 채움이 넘친 쪽만 clip에 반영한다.
-pub(crate) fn including_filled_path(node: &RenderNode) -> BoundingBox {
-    filled_path(node).map_or(node.bbox, |ink| {
-        let left = node.bbox.x.min(ink.x);
-        let top = node.bbox.y.min(ink.y);
-        let right = (node.bbox.x + node.bbox.width).max(ink.x + ink.width);
-        let bottom = (node.bbox.y + node.bbox.height).max(ink.y + ink.height);
-        BoundingBox::new(left, top, right - left, bottom - top)
-    })
+/// 원래 프레임은 유지하고 공통 paint의 중심 정렬 획·실제 채움만 clip에 반영한다.
+pub(crate) fn including_shape_ink(node: &RenderNode) -> BoundingBox {
+    stroked_shape(node)
+        .or_else(|| filled_path(node))
+        .map_or(node.bbox, |ink| {
+            let left = node.bbox.x.min(ink.x);
+            let top = node.bbox.y.min(ink.y);
+            let right = (node.bbox.x + node.bbox.width).max(ink.x + ink.width);
+            let bottom = (node.bbox.y + node.bbox.height).max(ink.y + ink.height);
+            BoundingBox::new(left, top, right - left, bottom - top)
+        })
+}
+
+fn stroked_shape(node: &RenderNode) -> Option<BoundingBox> {
+    use crate::paint::PaintOp;
+
+    if !node.visible {
+        return None;
+    }
+    let style = match &node.node_type {
+        RenderNodeType::Rectangle(rect) => &rect.style,
+        RenderNodeType::Ellipse(ellipse) => &ellipse.style,
+        _ => return None,
+    };
+    if style.stroke_color.is_none()
+        || !style.stroke_width.is_finite()
+        || style.stroke_width <= 0.0
+        || !style.opacity.is_finite()
+        || style.opacity <= 0.0
+    {
+        return None;
+    }
+    let op = match &node.node_type {
+        RenderNodeType::Rectangle(rect) => PaintOp::Rectangle {
+            bbox: node.bbox,
+            rect: Box::new(rect.clone()),
+        },
+        RenderNodeType::Ellipse(ellipse) => PaintOp::Ellipse {
+            bbox: node.bbox,
+            ellipse: Box::new(ellipse.clone()),
+        },
+        _ => return None,
+    };
+    // 프레임은 앵커·배제 영역의 계약이다. 획 때문에 그 프레임을 옮기거나 늘리지 않고,
+    // 실제 replay가 소비하는 변환·반 획·그림자의 공통 paint 경계를 재사용한다.
+    let ink = op.paint_bounds().visual;
+    [ink.x, ink.y, ink.width, ink.height]
+        .into_iter()
+        .all(f64::is_finite)
+        .then_some(ink)
 }
 
 fn filled_path(node: &RenderNode) -> Option<BoundingBox> {
