@@ -55,6 +55,15 @@ export interface PluginSelectionText {
   truncated: boolean;
 }
 
+/** 문서 안의 글 한 곳 — 검색 결과와 같은 좌표(구역·문단·글자, 표 칸이면 칸 좌표). */
+export interface PluginTextRange {
+  section: number;
+  paragraph: number;
+  charOffset: number;
+  length: number;
+  cell?: { parentPara: number; controlIndex: number; cellIndex: number; cellPara: number };
+}
+
 /** 오른쪽 도킹 패널 한 장. */
 export interface PluginSidePanelSpec {
   /** 패널 식별자. `ext:` 커맨드와 같은 이름 공간을 쓰지 않는다 — 플러그인 안에서만 유일하면 된다. */
@@ -143,6 +152,12 @@ export interface PluginHost {
    * 서로 다른 표 칸에 걸친 선택이면 `null`. 읽기 전용이며 클립보드를 건드리지 않는다.
    */
   getSelectionText(): PluginSelectionText | null;
+
+  /**
+   * 편집기에서 글 한 곳을 선택한다(찾기와 같은 이동 규칙). 문서는 바꾸지 않는다 — 이후 커맨드가
+   * 이 선택에 적용된다. 화면이 없는 구성이면 `false`.
+   */
+  selectTextRange(range: PluginTextRange): boolean;
 
   /** 커맨드·메뉴 조작 표면. */
   readonly automation: StudioAutomation;

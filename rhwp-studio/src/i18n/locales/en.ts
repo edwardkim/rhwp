@@ -2133,6 +2133,11 @@ const catalog = {
   "ai.format.kind.header": "Header",
   "ai.format.kind.footer": "Footer",
   "ai.format.keepsObjects": "The paragraph holds objects (section settings, header, table), so only its text is deleted",
+  "ai.change.run_command": "Editor command",
+  "ai.format.command": "Run “{v}”",
+  "ai.tool.list_commands": "Listing commands",
+  "ai.tool.select_text": "Selecting text",
+  "ai.tool.run_command": "Proposing command",
 } as const;
 
 export default catalog;

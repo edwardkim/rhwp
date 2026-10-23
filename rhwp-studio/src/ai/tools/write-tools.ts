@@ -120,7 +120,8 @@ export type WriteToolName =
 
 /** 제안 하나. 화면은 `prefix + removed + suffix` 를 「전」, `prefix + inserted + suffix` 를 「후」로 보인다. */
 export interface WriteProposal {
-  tool: WriteToolName;
+  /** `run_command` 는 명령 통로(`command-tools.ts`)의 제안이다. */
+  tool: WriteToolName | 'run_command';
   /** 어디인가 — 화면 표시용 */
   location: {
     section?: number;
@@ -210,7 +211,8 @@ const WRITE_SCHEMAS: Record<WriteToolName, ToolSchema> = {
     properties: {
       find: {
         type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS,
-        description: 'Exact text to format, copied from the document (one paragraph or table cell paragraph).',
+        description: 'Exactly the text to format — only these characters change. Copy it from the document. If it occurs '
+          + 'more than once, keep it exact and pass occurrence instead of adding neighbouring words.',
       },
       occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
       bold: { type: 'boolean', description: 'Bold on or off.' },
@@ -465,13 +467,20 @@ function paragraphText(doc: DocumentWriter, hit: SearchHit, from: number, to: nu
     : doc.getTextRange(hit.sec, hit.para, start, stop - start));
 }
 
-function pickHit(hits: SearchHit[], find: string, occurrence: number | undefined): SearchHit {
+/**
+ * @param exactRange `find` 가 곧 적용 범위인 도구(글자 모양 등). 더 긴 글로 고르라고 하면 범위가
+ *   넓어지므로(실측: 「RISE」 대신 「RISE사업」을 굵게) occurrence 만 안내한다.
+ */
+function pickHit(hits: SearchHit[], find: string, occurrence: number | undefined, exactRange = false): SearchHit {
   if (hits.length === 0) {
     throw new WriteRefused(`"${find}" was not found. Read the document again and copy the exact text.`);
   }
   if (occurrence === undefined) {
     if (hits.length > 1) {
-      throw new WriteRefused(`"${find}" occurs ${hits.length} times. Use a longer find text or pass occurrence (1-${hits.length}).`);
+      throw new WriteRefused(exactRange
+        ? `"${find}" occurs ${hits.length} times. Keep find exactly the text to change and pass occurrence (1-${hits.length}); `
+          + 'search_text shows the matches in reading order.'
+        : `"${find}" occurs ${hits.length} times. Use a longer find text or pass occurrence (1-${hits.length}).`);
     }
     return hits[0];
   }
@@ -673,9 +682,9 @@ function prepareInsert(host: WriteHost, input: Record<string, unknown>): WritePr
 }
 
 /** 찾을 글로 자리를 정하고, 적용 때 같은 자리인지 다시 확인하는 짝. */
-function locate(doc: DocumentWriter, find: string, occurrence: number | undefined) {
+function locate(doc: DocumentWriter, find: string, occurrence: number | undefined, exactRange = false) {
   const hits = JSON.parse(doc.searchAllText(find, true, true)) as SearchHit[];
-  return { count: hits.length, hit: pickHit(hits, find, occurrence) };
+  return { count: hits.length, hit: pickHit(hits, find, occurrence, exactRange) };
 }
 
 function relocate(doc: DocumentWriter, find: string, occurrence: number | undefined, expected: { count: number; hit: SearchHit }): void {
@@ -701,7 +710,7 @@ function prepareFormatText(host: WriteHost, input: Record<string, unknown>): Wri
     if (format[key] !== undefined && !COLOR.test(format[key] as string)) throw new WriteRefused(`${key} must be #RRGGBB.`);
   }
   return host.read((doc) => {
-    const where = locate(doc, find, occurrence);
+    const where = locate(doc, find, occurrence, true);
     const hit = where.hit;
     return {
       tool: 'format_text',

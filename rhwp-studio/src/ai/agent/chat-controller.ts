@@ -11,6 +11,14 @@ import { AiProviderError } from '../provider/types.ts';
 import { READ_TOOL_DEFS, executeReadTool, type ToolHost } from '../tools/read-tools.ts';
 import { createBoundaryId, wrapDocumentContent } from '../tools/untrusted.ts';
 import {
+  COMMAND_TOOL_DEFS,
+  isCommandTool,
+  listAllowedCommands,
+  prepareCommand,
+  selectText,
+  type CommandHost,
+} from '../tools/command-tools.ts';
+import {
   WRITE_TOOL_DEFS,
   WriteRefused,
   isWriteTool,
@@ -24,8 +32,8 @@ import { AI_SYSTEM_PROMPT } from './system-prompt.ts';
 
 export type ProviderFactory = (apiKey: string) => Promise<AiProvider>;
 
-/** 읽기 다음에 쓰기 — 도구 순서를 고정한다(요청 접두가 같아야 캐시가 유지된다). */
-export const AI_TOOL_DEFS = [...READ_TOOL_DEFS, ...WRITE_TOOL_DEFS];
+/** 읽기 → 쓰기 → 명령 통로 순서를 고정한다(요청 접두가 같아야 캐시가 유지된다). */
+export const AI_TOOL_DEFS = [...READ_TOOL_DEFS, ...WRITE_TOOL_DEFS, ...COMMAND_TOOL_DEFS];
 
 export type ProposalOutcome = 'applied' | 'rejected' | 'stopped' | 'failed';
 
@@ -108,9 +116,11 @@ export class ChatController {
         system: AI_SYSTEM_PROMPT,
         model: settings.model,
         effort: settings.effort,
-        executeTool: (call, boundaryId, signal) => (isWriteTool(call.name)
-          ? this.executeWrite(call, boundaryId, signal)
-          : executeReadTool(toolHost, call, boundaryId)),
+        executeTool: (call, boundaryId, signal) => {
+          if (isWriteTool(call.name)) return this.executeWrite(call, boundaryId, signal, (host) => prepareWrite(host, call));
+          if (isCommandTool(call.name)) return this.executeCommandTool(call, boundaryId, signal);
+          return executeReadTool(toolHost, call, boundaryId);
+        },
         createBoundaryId: () => createBoundaryId(),
       }, text, abort.signal, callbacks);
     } finally {
@@ -122,7 +132,27 @@ export class ChatController {
    * 쓰기 도구 하나 — 제안을 만들고, 사용자가 승인하면 트랜잭션 한 번으로 적용한다.
    * 결과 문구는 모델이 읽는다. 문서에서 온 글은 경계로 감싼다.
    */
-  private async executeWrite(call: AiToolCall, boundaryId: string, signal: AbortSignal): Promise<AiToolResult> {
+  /** 명령 통로: 목록·선택은 바로 하고, 실행은 쓰기와 같은 승인 흐름을 탄다. */
+  private executeCommandTool(call: AiToolCall, boundaryId: string, signal: AbortSignal): AiToolResult | Promise<AiToolResult> {
+    const commandHost: CommandHost = this.host;
+    if (call.name === 'run_command') return this.executeWrite(call, boundaryId, signal, () => prepareCommand(commandHost, call));
+    try {
+      const value = call.name === 'list_commands' ? listAllowedCommands(commandHost) : selectText(commandHost, call);
+      return { id: call.id, content: wrapDocumentContent(value, boundaryId), isError: false };
+    } catch (error) {
+      if (error instanceof WriteRefused) return { id: call.id, content: error.message, isError: true };
+      if (isDocumentReleased(error)) return { id: call.id, content: 'No document is open.', isError: true };
+      console.error('[AI] 명령 도구 실패', call.name, error);
+      return { id: call.id, content: 'The command tool failed.', isError: true };
+    }
+  }
+
+  private async executeWrite(
+    call: AiToolCall,
+    boundaryId: string,
+    signal: AbortSignal,
+    prepare: (host: WriteHost) => WriteProposal,
+  ): Promise<AiToolResult> {
     const fail = (content: string): AiToolResult => ({ id: call.id, content, isError: true });
     const writeHost: WriteHost = {
       read: (fn) => this.host.read(fn),
@@ -138,7 +168,7 @@ export class ChatController {
     };
     let proposal: WriteProposal;
     try {
-      proposal = prepareWrite(writeHost, call);
+      proposal = prepare(writeHost);
     } catch (error) {
       if (error instanceof WriteRefused) return fail(error.message);
       if (isDocumentReleased(error)) return fail('No document is open.');

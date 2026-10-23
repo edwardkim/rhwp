@@ -19,6 +19,7 @@
  * 11. 새 문서 만들기(저장 확인 포함) → 문단 쓰기, 대화는 이어진다
  * 12. 글자·문단 서식과 표 — 한 응답의 여러 변경을 차례로 승인, undo 는 변경마다 한 단계
  * 13. 「확인 없이 바로 적용」 — 목록·스타일·머리말·각주·문단 지우기가 묻지 않고 적용
+ * 14. 명령 통로 — 목록, 글 선택, 허용 명령 실행(위 첨자·쪽 나누기), 허용 밖 명령 거절
  *
  * 계획: mydocs/plans/rhwp_studio_ai_chat_p0_impl.md §5.2
  */
@@ -130,8 +131,8 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(requests.length === 2, `TC1: 요청 2회 (${requests.length})`);
   const [first, second] = requests;
   assert(first.body.model === 'claude-opus-5-5' && first.body.stream === true, 'TC1: 모델·스트리밍');
-  assert(first.body.tools.length === 21 && first.body.tools.filter((t) => t.strict === true).length === 14
-    && first.body.tools.filter((t) => t.strict === true).length <= 20, 'TC1: 도구 21개, strict 는 쓰기 14개(상한 20)');
+  assert(first.body.tools.length === 24 && first.body.tools.filter((t) => t.strict === true).length === 15,
+    'TC1: 도구 24개, strict 는 쓰기 15개(상한 20)');
   assert(first.body.system[0].text.includes('document_content'), 'TC1: 시스템에 문서 경계 규칙');
   assert(first.body.fallbacks === 'default'
     && (first.headers['anthropic-beta'] ?? '').includes('server-side-fallback-2026-07-01'), 'TC1: 서버 대체');
@@ -347,6 +348,47 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(structure.header === '팀 회의록', `TC13: 같은 응답의 문단 지우기 뒤에도 머리말 유지 (${structure.header})`);
   assert(structure.footnote, 'TC13: 각주 글이 쪽에 보임');
   await screenshot(page, 'ai-panel-structure');
+
+  // ── TC14: 명령 통로 — 선택한 뒤 studio 명령 실행(위 첨자, 쪽 나누기) ──
+  queue.push({ body: sse([
+    { type: 'tool_use', id: 'toolu_c1', name: 'list_commands', input: {} },
+    { type: 'tool_use', id: 'toolu_c2', name: 'select_text', input: { find: '23' } },
+    { type: 'tool_use', id: 'toolu_c3', name: 'run_command', input: { command: 'format:superscript' } },
+  ], 'tool_use') });
+  queue.push({ body: sse([
+    { type: 'tool_use', id: 'toolu_c4', name: 'select_text', input: { find: '안건' } },
+    { type: 'tool_use', id: 'toolu_c5', name: 'run_command', input: { command: 'page:break' } },
+    { type: 'tool_use', id: 'toolu_c7', name: 'select_text', input: { find: '안건', place: 'before' } },
+    { type: 'tool_use', id: 'toolu_c8', name: 'run_command', input: { command: 'page:break' } },
+    { type: 'tool_use', id: 'toolu_c6', name: 'run_command', input: { command: 'file:save' } },
+  ], 'tool_use') });
+  queue.push({ body: sse([{ type: 'text', text: '처리했습니다.' }], 'end_turn') });
+  const pagesBefore = await page.evaluate(() => window.__wasm.pageCount);
+  await page.type('.ai-chat-input', '23을 위 첨자로, 안건부터는 다음 쪽으로');
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy, { timeout: 20000 });
+  const listResult = requests.at(-2).body.messages.at(-1).content.find((c) => c.tool_use_id === 'toolu_c1');
+  const listed = JSON.parse(listResult.content.split('\n')[1]);
+  assert(listed.commands.some((c) => c.id === 'format:superscript') && !listed.commands.some((c) => c.id.startsWith('file:')),
+    `TC14: 명령 목록 (${listed.commands.length}개, 파일 명령 없음)`);
+  const commandResults = requests.at(-1).body.messages.at(-1).content;
+  const guarded = commandResults.find((c) => c.tool_use_id === 'toolu_c5');
+  assert(guarded.is_error && guarded.content.includes('place "before" or "after"'),
+    'TC14: 선택이 있는 채 쪽 나누기는 거절하고 place 를 안내');
+  const saveResult = commandResults.find((c) => c.tool_use_id === 'toolu_c6');
+  assert(saveResult.is_error && saveResult.content.includes('not available'), 'TC14: 허용 목록 밖 명령(file:save)은 거절');
+  const after14 = await page.evaluate(() => {
+    const w = window.__wasm;
+    const n = w.getParagraphCount(0);
+    const texts = Array.from({ length: n }, (_, i) => w.getTextRange(0, i, 0, w.getParagraphLength(0, i)));
+    const p = texts.findIndex((text) => text.includes('23일'));
+    const sup = w.getCharPropertiesAt(0, p, texts[p].indexOf('23')).superscript;
+    const plain = w.getCharPropertiesAt(0, p, 0).superscript;
+    return { sup, plain, pages: w.pageCount, agenda: texts.find((text) => text.includes('AI 도우미 시연')) ?? null };
+  });
+  assert(after14.sup === true && !after14.plain, `TC14: 선택한 글만 위 첨자 (${JSON.stringify(after14)})`);
+  assert(after14.pages === pagesBefore + 1, `TC14: 쪽 나누기로 쪽 수 ${pagesBefore} → ${after14.pages}`);
+  assert(after14.agenda === '안건: AI 도우미 시연', `TC14: 선택해 둔 글은 쪽 나누기로 지워지지 않음 (${after14.agenda})`);
 
   // ── TC4: 입력란 Ctrl+Z 격리 ───────────────────────────
   await createNewDocument(page);

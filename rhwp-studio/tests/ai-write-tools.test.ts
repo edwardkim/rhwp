@@ -376,3 +376,11 @@ test('표 칸 안 문단 뒤에 칸 문단을 추가한다', () => {
   proposal.apply();
   assert.deepEqual(d.calls, ['cell-split 1 0 13', 'cell-insert p1 0 칸 둘째 줄'], '칸 문단 0 끝에서 나누고 새 칸 문단 1 에 쓴다');
 });
+
+test('글자 모양은 find 가 곧 범위라, 여러 곳이면 더 긴 글이 아니라 occurrence 를 안내한다', () => {
+  const d = fakeDoc();
+  assert.throws(() => prepareWrite(d.host, call('format_text', { find: '업', bold: true })),
+    refused(/Keep find exactly the text to change and pass occurrence \(1-3\)/));
+  assert.throws(() => prepareWrite(d.host, call('replace_text', { find: '업', replace: 'x' })), refused(/Use a longer find text/),
+    '바꾸기는 긴 글로 골라도 replace 가 그만큼 쓰므로 기존 안내 유지');
+});
