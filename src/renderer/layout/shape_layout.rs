@@ -2,6 +2,7 @@
 
 mod affine_line;
 mod compound_rectangle;
+mod connector_style;
 mod source_line_frame;
 
 use super::super::composer::{
@@ -58,27 +59,12 @@ fn connector_line_style(
     link_type: crate::model::shape::LinkLineType,
 ) -> super::super::LineStyle {
     use super::super::ArrowStyle;
-    use crate::model::shape::LinkLineType;
-    let mut style = drawing_to_line_style(drawing);
+    let style = drawing_to_line_style(drawing);
     if style.start_arrow == ArrowStyle::None && style.end_arrow == ArrowStyle::None {
-        let both = matches!(
-            link_type,
-            LinkLineType::StraightBoth | LinkLineType::StrokeBoth | LinkLineType::ArcBoth
-        );
-        let one = matches!(
-            link_type,
-            LinkLineType::StraightOneWay | LinkLineType::StrokeOneWay | LinkLineType::ArcOneWay
-        );
-        if both {
-            style.start_arrow = ArrowStyle::Arrow;
-            style.start_arrow_size = 4;
-        }
-        if both || one {
-            style.end_arrow = ArrowStyle::Arrow;
-            style.end_arrow_size = 4;
-        }
+        connector_style::with_direction(style, link_type)
+    } else {
+        style
     }
-    style
 }
 
 /// 글상자에 공백이 아닌 실제 텍스트가 한 글자라도 있는지.
