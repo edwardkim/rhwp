@@ -33,8 +33,8 @@ last_verified: 2026-10-23
 
 | 기능 | 적용 범위와 현재 동작 | 사용자가 할 수 있는 조치 |
 | --- | --- | --- |
-| PDF의 JBIG2 그림 디코딩 | Native/WASM PDF 가져오기. backend `rendering`을 활성화하지 않아 해당 그림 디코딩은 오류를 반환한다. PDF 파일 전체가 이 codec을 사용하는 것은 아니다. | 원본 제작 도구에서 지원되는 그림 형식으로 다시 내보내거나 해당 codec이 필요한 입력으로 보고한다. backend 오류의 feature 활성화 안내는 rhwp의 검증된 지원 계약이 아니다. |
-| PDF의 JPEG 2000 그림 디코딩 (`JPXDecode`) | Native/WASM PDF 가져오기. backend `jpeg2000`이 꺼져 있어 해당 그림 디코딩은 오류를 반환한다. | 지원되는 그림 형식으로 원본을 다시 내보낸다. 본체의 `pdf-import`를 다시 켜는 것으로 해결되지 않는다. |
+| PDF의 JBIG2 그림 디코딩 | 기본 빌드에서 비활성. `pdf-jbig2`로 Native/WASM decoder를 개별 선택한다. | [코덱 가이드](pdf_image_codecs.md)에서 현재 산출물 지원을 확인하고 필요한 feature로 빌드한다. 선택 후에도 요청 한도와 mask 조합 제한은 유지한다. |
+| PDF의 JPEG 2000 그림 디코딩 (`JPXDecode`) | 기본 빌드에서 비활성. `pdf-jpeg2000`으로 Native/WASM decoder를 개별 선택한다. | [코덱 가이드](pdf_image_codecs.md)를 따른다. `pdf-import`만 다시 켜는 것으로는 활성화되지 않는다. |
 | PDF의 ICC CMM 색 변환 | PDF backend의 `icc-qcms`·`icc-lcms2`가 꺼져 있다. CMM을 통한 정밀 색 변환을 제공하지 않으며 기존 대체 색 변환 경로를 사용한다. ICC가 있다는 이유만으로 모든 PDF를 거부하는 것은 아니다. | 인쇄 색 충실도가 필요한 입력은 색 변환 차이를 확인한다. 다른 backend feature를 켠 결과에 기존 할당 감사 범위를 적용하지 않는다. |
 | 손상된 PDF의 xref 전체 재구성 | 요청 예산을 사용하는 PDF 열기 경로는 무제한 legacy 복구 대신 오류로 중단한다. | 원본 프로그램에서 정상 저장한 PDF를 사용한다. 일부 PDF를 다른 뷰어가 복구해 연다고 해서 rhwp도 수용한다고 가정하지 않는다. |
 | SVG 글리프의 활성·외부 참조 payload | Native Skia와 Studio CanvasKit의 정적 SVG 글리프 replay 경로는 script·event handler·외부 참조·CSS URL 등을 허용하지 않는다. 정적 부분집합에 들지 않으면 replay 후보에서 제외한다. | 정적 경로로 구성한 글리프를 공급한다. 이 제한을 일반 SVG 파일 전체의 검사·차단 계약으로 확대하지 않는다. |
@@ -42,9 +42,9 @@ last_verified: 2026-10-23
 | 양식 명령 단추 실행 | Studio의 `PushButton` 클릭은 웹 환경의 보안상 무시한다. 체크박스·라디오·입력란 등 다른 양식 조작과 구분한다. | 외부 명령 실행이 필요한 업무는 문서 버튼에 의존하지 않는 별도 절차로 수행한다. |
 | 보호 문서의 평문 복구본 저장 | Studio에서 `requiresPasswordForSave`가 참이면 자동 저장 관리자가 평문 recovery draft를 만들지 않고 기존 draft도 폐기한다. | 명시적인 암호 저장 절차로 파일을 저장한다. 보호 문서 자체의 열기·저장 전체가 차단된 것은 아니다. |
 
-위 codec·CMM 제한은 추가 경로의 전체 메모리 안전성 검증을 뜻하지 않는다. 이를 풀기 위한
-일반 사용자용 우회 옵션은 이 문서에서 제공하지 않는다. codec 추가·feature 통합은 해당
-할당 경계, 정상 입력, 실패 후 다음 요청, Native/WASM의 실제 소비를 검증하는 별도 변경이다.
+코덱 opt-in은 요청 한도를 우회하는 옵션이 아니다. 새 decoder의 입력에 비례하는 저장소와
+논리 작업량을 기존 요청 예산에 연결하지만 전체 parser·font·cache의 할당이나 process RSS·
+wall-clock 상한을 증명하지 않는다. CMM은 여전히 기본 미활성이며 이번 코덱 선택으로 켜지지 않는다.
 
 구현 근거:
 
@@ -102,7 +102,7 @@ PDF의 쪽 선택은 입력 파일 전체를 읽고 컨테이너·공유 자원�
 지원 입력·제한 기능·자원 정책의 선택은 [메인테이너 결정 대장 MD05–MD07](../plans/task_m100_8174_maintainer_decisions.md)에
 기록한다. 이 현황 문서의 제한 목록을 기능 해제 또는 게시 승인으로 해석하지 않는다.
 
-1. 게시용 README·feature 표에 PDF 기본 포함, 제외 빌드, 추가 codec/CMM 미활성,
+1. 게시용 README·feature 표에 PDF 기본 포함, 제외 빌드, 추가 codec 개별 opt-in과 CMM 미활성,
    실험적 가져오기와 전체 할당 증명 미완료를 함께 명시한다. backend의 upstream README에
    나열된 기능을 rhwp의 제공 기능으로 복사하지 않는다.
 2. 저장소 밖 소비 앱에서 지원 입력과 함께 미지원 codec·암호 PDF·손상 xref·자원 초과의

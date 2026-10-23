@@ -261,6 +261,14 @@ pkg/public의 동일 해시만으로 source 일치를 판정하지 않는다. �
 추가·제거 내용을 대조하고, 불일치 산출물은 증거에서 제외한 뒤 변경 패키지의 재컴파일을 확인한다.
 공유 cache 전체를 삭제해 해결하지 않는다.
 
+### PDF 이미지 코덱 선택
+
+기본 PDF 빌드의 JBIG2·JPEG 2000은 비활성입니다. 필요한 것만 `--features pdf-jbig2` 또는
+`--features pdf-jpeg2000`으로 추가합니다. 두 코덱은 `--features pdf-jbig2,pdf-jpeg2000`입니다.
+Native Cargo와 `scripts/wasm-pack-locked.sh` 모두 이 feature 인자를 받습니다.
+`native-skia`·`wasm-api` 선택과 코덱 선택을 구분합니다. 실제 명령, 산출물 지원 확인과
+실패 대응은 [PDF 이미지 코덱 가이드](pdf_image_codecs.md)를 따릅니다.
+
 ### Studio에서 PDF 직접 열기
 
 기본 Native·WASM 빌드는 `pdf-import`를 포함한다. Docker와 호스트 빌드 모두 기본 feature로

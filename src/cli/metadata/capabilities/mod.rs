@@ -647,6 +647,7 @@ pub(crate) fn capabilities_value() -> serde_json::Value {
         "schemaVersion": crate::ENVELOPE_SCHEMA_VERSION,
         "tool": "rhwp",
         "version": rhwp::version(),
+        "pdfImportSupport": rhwp::pdf_support::pdf_import_support(),
         // [#4329 R67×R83] 전 버전 축(봉투·IR·capabilities·plan + crate semver)의
         // 단일 출처 자기서술 — 외부 소비자가 이 한 번의 호출로 상류 버전을 기계
         // 대조한다(#4327 U2). 값의 원천은 rhwp::schema_registry 이고, 여기와

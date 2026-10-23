@@ -56,6 +56,9 @@ last_verified: 2026-10-23
 | rhwp-studio UI 명칭·CSS 접두어 | [rhwp-studio UI 명칭과 CSS 접두어](rhwp_studio_ui_conventions.md) | [개발 환경 가이드](dev_environment_guide.md) |
 | rhwp-studio 테마 토큰·스킨 제작 | [rhwp-studio 테마 토큰과 스킨 제작](rhwp_studio_theming.md) | [rhwp-studio UI 명칭과 CSS 접두어](rhwp_studio_ui_conventions.md) |
 
+PDF 가져오기에서 필요한 JBIG2·JPEG 2000의 선택 빌드와 진단은
+[PDF 이미지 코덱 가이드](pdf_image_codecs.md)를 참고한다.
+
 ## HWP 원격 MCP 선택과 접근 범위
 
 원격 HWP 변환 MCP는 공개 서비스가 아니다. rhwp maintainer, collaborator 또는 MCP 관리자가 별도로

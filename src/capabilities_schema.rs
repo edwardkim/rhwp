@@ -89,6 +89,15 @@ fn capabilities_def() -> Value {
             "tool": prim("string", "도구 이름. 항상 \"rhwp\"."),
             "version": prim("string", "rhwp 버전 — `rhwp --version` 과 같은 원천"),
             "formats": r("Formats"),
+            "pdfImportSupport": object(
+                json!({
+                    "enabled": prim("boolean", "이 산출물의 pdf-import feature 선택."),
+                    "jbig2": prim("boolean", "pdf-jbig2 feature 선택."),
+                    "jpeg2000": prim("boolean", "pdf-jpeg2000 feature 선택."),
+                }),
+                &["enabled", "jbig2", "jpeg2000"],
+                "빌드 시점의 PDF 지원. 모든 입력의 지원이나 안전성 보장은 아니다.",
+            ),
             "exitCodes": r("ExitCodes"),
             "jsonContract": r("JsonContract"),
             "batch": r("BatchContract"),

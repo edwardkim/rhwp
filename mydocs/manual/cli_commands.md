@@ -101,6 +101,11 @@ Sixel과 Kitty 모두 **렌더링 호스트에 글꼴이 필요**하다. SSH이�
 
 ## PDF 가져오기 (기본 포함)
 
+`rhwp capabilities`의 `pdfImportSupport`에서 현재 바이너리의 `enabled`·`jbig2`·`jpeg2000`을
+확인합니다. JBIG2·JPEG 2000은 각각 `pdf-jbig2`·`pdf-jpeg2000`을 빌드 시 선택하며 기본값은
+비활성입니다. 필요한 코덱 식별·선택 설치·실패 진단은 [PDF 이미지 코덱 가이드](pdf_image_codecs.md)를
+따릅니다. 성공한 가져오기의 `diagnostics.pdfImportSupport`도 같은 정보를 제공합니다.
+
 기본 빌드에 포함된 `pdf-import`로 PDF를 공통 Document IR로 가져와 HWPX 또는 HWP로 저장한다.
 devel에서 함께 구현하는 기능이며, parser 전체 할당 경계는 아직 미입증이다.
 기본 요청 정책은 입력 64 MiB, 가져올 쪽 최대 1,024개다. 원본 쪽 인덱스는 선택 쪽수와

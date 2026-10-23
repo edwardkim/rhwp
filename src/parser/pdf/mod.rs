@@ -192,6 +192,7 @@ pub struct PdfPageMetadata {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PdfImportMetadata {
+    pub pdf_import_support: crate::pdf_support::PdfImportSupport,
     pub source_page_count: usize,
     pub pages: Vec<PdfPageMetadata>,
     pub paragraph_policy: &'static str,
@@ -466,6 +467,7 @@ pub fn parse_pdf_with_policy(
     Ok(PdfImportResult {
         document,
         metadata: PdfImportMetadata {
+            pdf_import_support: crate::pdf_support::pdf_import_support(),
             source_page_count: count, pages,
             paragraph_policy: "observed-lines; authored paragraph boundaries are not recovered",
             parser_allocation_bounds_proven: false,

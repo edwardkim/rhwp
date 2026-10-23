@@ -605,7 +605,14 @@ impl HwpDocument {
     /// 현재 WASM 빌드에서 PDF 입력을 사용할 수 있는지 문서 생성 전에 조회한다.
     #[wasm_bindgen(js_name = supportsPdfImport)]
     pub fn supports_pdf_import() -> bool {
-        cfg!(all(feature = "pdf-import", target_arch = "wasm32"))
+        cfg!(target_arch = "wasm32") && crate::pdf_support::pdf_import_support().enabled
+    }
+
+    /// Compile-time support of this artifact, queryable before opening a PDF.
+    #[wasm_bindgen(js_name = getPdfImportSupport)]
+    pub fn get_pdf_import_support() -> String {
+        serde_json::to_string(&crate::pdf_support::pdf_import_support())
+            .expect("compile-time PDF support is serializable")
     }
 
     /// Worker가 입력을 복사하기 전에 제품의 실제 요청 한도를 조회한다.

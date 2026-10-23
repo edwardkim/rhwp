@@ -118,7 +118,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 &["schemaVersion", "source", "output", "format", "bytes", "pageCount", "diagnostics"],
             );
             command["requiresFeature"] = serde_json::json!("pdf-import");
-            command["available"] = serde_json::json!(cfg!(feature = "pdf-import"));
+            command["available"] = serde_json::json!(rhwp::pdf_support::pdf_import_support().enabled);
             command
         },
         cmd_json(
