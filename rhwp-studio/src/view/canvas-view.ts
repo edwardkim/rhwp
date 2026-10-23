@@ -404,7 +404,7 @@ export class CanvasView {
 
   private async refreshPagesForMutation(): Promise<void> {
     const selected = await this.selectMutationRevision();
-    if (!selected || !this.rendererSession.isCurrent(selected.selection)) return;
+    if (this.disposed || !selected || !this.rendererSession.isCurrent(selected.selection)) return;
     this.refreshPages();
     // InputHandler의 mutation 직후 caret 갱신보다 VirtualScroll 재계산이 늦다.
     // 새 page offset을 소비할 수 있는 완료 경계를 별도 이벤트로 알린다.
@@ -451,12 +451,15 @@ export class CanvasView {
     const pinned = this.rendererSession.pinAutoMutationRevision();
     if (!pinned) return this.selectNextDocumentRevision();
 
-    this.rendererSelectionEpoch += 1;
+    const epoch = ++this.rendererSelectionEpoch;
+    const isCurrent = () => !this.disposed
+      && epoch === this.rendererSelectionEpoch
+      && this.rendererSession.isCurrent(pinned);
     const selected = {
       selection: pinned,
-      backendChanged: (await this.wasm.prepareCanvasMetrics(pinned.backend, () => !this.disposed && this.rendererSession.isCurrent(pinned))) || this.zoomRefreshRequired,
+      backendChanged: (await this.wasm.prepareCanvasMetrics(pinned.backend, isCurrent)) || this.zoomRefreshRequired,
     };
-    if (!this.rendererSession.isCurrent(pinned)) return null;
+    if (!isCurrent()) return null;
     selected.backendChanged = this.applyRendererSelection(pinned) || selected.backendChanged;
     this.scheduleAutoRendererReselection();
     return selected;

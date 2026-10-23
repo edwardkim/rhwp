@@ -44,6 +44,7 @@
     "e2e:page-key-scroll": "node e2e/page-key-scroll.test.mjs --mode=headless",
     "e2e:page-break-caret": "node e2e/run-with-vite.mjs -- node e2e/page-break-caret-reveal.test.mjs --mode=headless",
     "e2e:enter-caret": "node e2e/run-with-vite.mjs -- node e2e/enter-caret-reveal-issue7486.test.mjs --mode=headless",
+    "e2e:selection-layout": "node e2e/run-with-vite.mjs -- node e2e/selection-layout-issue8103.test.mjs --mode=headless",
     "e2e:home-end-key": "node e2e/home-end-key.test.mjs --mode=headless",
     "e2e:ime-navigation": "node e2e/run-with-vite.mjs -- node e2e/ime-navigation.test.mjs --mode=headless",
     "e2e:drag-autoscroll": "node e2e/drag-selection-autoscroll.test.mjs",
