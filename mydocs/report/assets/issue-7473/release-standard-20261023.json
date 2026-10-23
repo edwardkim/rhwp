@@ -1,0 +1,362 @@
+{
+  "validation": {
+    "old_head": "fda5fd43acb219083d17f730ea9ec2eabbe13cdd",
+    "base": "605ccfd92f2f12f18e14182548d729f9929fda00",
+    "status": "validation_passed",
+    "published": false,
+    "merged_to_devel": false,
+    "code_head": "df39fb5d7a566ba6a49c2f6a04965616d2c2af73",
+    "local_tests": {
+      "focused_python": 46,
+      "workflow_contracts": 192,
+      "node_contracts": 102,
+      "actionlint": "pass",
+      "diff_check": "pass",
+      "product_tree_matches_devel": true
+    },
+    "runs": {
+      "Publish All Packages": 39885906844,
+      "Deploy to GitHub Pages": 39885887626,
+      "Render Diff": 39885844291,
+      "CodeQL": 39885844317,
+      "CI": 39885844384
+    },
+    "result_comment": "https://github.com/edwardkim/rhwp/pull/7474#issuecomment-6355793528",
+    "checks": {
+      "success": 35,
+      "skipped": 12,
+      "ci_impact_policy": "success"
+    },
+    "mergeable": true,
+    "mergeable_state": "clean"
+  },
+  "builds": [
+    {
+      "source_sha": "ab0049304398b423bc812abdbb0078379ae33e52",
+      "wall_seconds": 717.9,
+      "phase_seconds_approx": {
+        "preparation": 3.487,
+        "cargo": 495.209,
+        "bindgen_setup_and_run": 6.965,
+        "wasm_opt_and_finalize": 212.224,
+        "after_package": 0.014
+      },
+      "cargo_cache_hit": "false",
+      "runner": {
+        "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+        "logical_cpus": 4,
+        "image": "ubuntu24",
+        "image_version": "20261012.334.1",
+        "cpu_model": "AMD EPYC 9V74 80-Core Processor"
+      },
+      "build_configuration": {
+        "profile": "release",
+        "build_mode": "standard",
+        "cdylib_only": "0",
+        "crate_types": "rlib+cdylib",
+        "lto_policy": "manifest",
+        "cache_variant": "release-rlib-cdylib-lto-manifest"
+      },
+      "artifacts": {
+        "rhwp.js": {
+          "sha256": "da00f4937f352731a2d24a1ba4b54629009aa5edc9c929815aed2cd069cca3bc",
+          "bytes": 481233
+        },
+        "rhwp_bg.wasm": {
+          "sha256": "51d6a242d1c076d5fd72e8881dcc1dc8133a47e0c0e596e007b2da1c6312a28f",
+          "bytes": 20488912
+        }
+      },
+      "lane": "render",
+      "consumption_records": 18,
+      "consumption_responses": 18
+    },
+    {
+      "source_sha": "df39fb5d7a566ba6a49c2f6a04965616d2c2af73",
+      "wall_seconds": 677.745,
+      "phase_seconds_approx": {
+        "preparation": 2.451,
+        "cargo": 475.678,
+        "bindgen_setup_and_run": 6.701,
+        "wasm_opt_and_finalize": 192.902,
+        "after_package": 0.013
+      },
+      "cargo_cache_hit": "unknown",
+      "runner": {
+        "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+        "logical_cpus": 4,
+        "image": "ubuntu24",
+        "image_version": "20261012.334.1",
+        "cpu_model": "AMD EPYC 9V74 80-Core Processor"
+      },
+      "build_configuration": {
+        "profile": "release",
+        "build_mode": "standard",
+        "cdylib_only": "0",
+        "crate_types": "rlib+cdylib",
+        "lto_policy": "manifest",
+        "cache_variant": "release-rlib-cdylib-lto-manifest"
+      },
+      "artifacts": {
+        "rhwp.js": {
+          "sha256": "da00f4937f352731a2d24a1ba4b54629009aa5edc9c929815aed2cd069cca3bc",
+          "bytes": 481233
+        },
+        "rhwp_bg.wasm": {
+          "sha256": "51d6a242d1c076d5fd72e8881dcc1dc8133a47e0c0e596e007b2da1c6312a28f",
+          "bytes": 20488912
+        }
+      },
+      "lane": "pages",
+      "consumption_records": 2,
+      "consumption_responses": 2
+    },
+    {
+      "source_sha": "df39fb5d7a566ba6a49c2f6a04965616d2c2af73",
+      "wall_seconds": 682.242,
+      "phase_seconds_approx": {
+        "preparation": 4.305,
+        "cargo": 475.578,
+        "bindgen_setup_and_run": 6.115,
+        "wasm_opt_and_finalize": 196.229,
+        "after_package": 0.015
+      },
+      "cargo_cache_hit": "unknown",
+      "runner": {
+        "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+        "logical_cpus": 4,
+        "image": "ubuntu24",
+        "image_version": "20261012.334.1",
+        "cpu_model": "AMD EPYC 9V74 80-Core Processor"
+      },
+      "build_configuration": {
+        "profile": "release",
+        "build_mode": "standard",
+        "cdylib_only": "0",
+        "crate_types": "rlib+cdylib",
+        "lto_policy": "manifest",
+        "cache_variant": "release-rlib-cdylib-lto-manifest"
+      },
+      "artifacts": {
+        "rhwp.js": {
+          "sha256": "da00f4937f352731a2d24a1ba4b54629009aa5edc9c929815aed2cd069cca3bc",
+          "bytes": 481233
+        },
+        "rhwp_bg.wasm": {
+          "sha256": "51d6a242d1c076d5fd72e8881dcc1dc8133a47e0c0e596e007b2da1c6312a28f",
+          "bytes": 20488912
+        }
+      },
+      "lane": "packages",
+      "consumption_records": 2,
+      "consumption_responses": 2
+    }
+  ],
+  "timings": {
+    "render": {
+      "run": 39885844291,
+      "job": 120193913568,
+      "job_seconds": 1207.0,
+      "step_seconds": {
+        "Build WASM package": 729.0,
+        "Build native CLI for PDF report": 142.0
+      },
+      "conclusion": "success"
+    },
+    "pages": {
+      "run": 39885887626,
+      "job": 120193841106,
+      "job_seconds": 1086.0,
+      "step_seconds": {
+        "Build WASM": 686.0,
+        "Verify the release WASM before packaging": 222.0,
+        "Verify Pages contains the tested WASM": 0.0,
+        "Post Verify the release WASM before packaging": 0.0
+      },
+      "conclusion": "success"
+    },
+    "packages": {
+      "run": 39885906844,
+      "job": 120194504825,
+      "job_seconds": 1072.0,
+      "step_seconds": {
+        "Build WASM": 697.0,
+        "Verify the release WASM before packaging": 208.0,
+        "Post Verify the release WASM before packaging": 0.0
+      },
+      "conclusion": "success"
+    }
+  },
+  "render_results": {
+    "render": {
+      "canvas_pass": 3,
+      "direct_pdf_pass": 3,
+      "report_warnings": 4,
+      "direct_pdf_ratios": {
+        "biz_plan.hwp": 0.01037380469429151,
+        "tac-case-001.hwp": 0.0036710998311334044,
+        "kps-ai.hwp": 0.008687137161642303
+      }
+    },
+    "pages": {
+      "canvas_pass": 3,
+      "direct_pdf_pass": 3,
+      "report_warnings": 4,
+      "direct_pdf_ratios": {
+        "biz_plan.hwp": 0.01037380469429151,
+        "tac-case-001.hwp": 0.0036710998311334044,
+        "kps-ai.hwp": 0.008687137161642303
+      }
+    },
+    "packages": {
+      "canvas_pass": 3,
+      "direct_pdf_pass": 3,
+      "report_warnings": 4,
+      "direct_pdf_ratios": {
+        "biz_plan.hwp": 0.01037380469429151,
+        "tac-case-001.hwp": 0.0036710998311334044,
+        "kps-ai.hwp": 0.008687137161642303
+      }
+    }
+  },
+  "vsix": {
+    "source_sha": "df39fb5d7a566ba6a49c2f6a04965616d2c2af73",
+    "artifact_digest_verified": true,
+    "files": {
+      "rhwp.js": {
+        "sha256": "da00f4937f352731a2d24a1ba4b54629009aa5edc9c929815aed2cd069cca3bc",
+        "bytes": 481233
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "51d6a242d1c076d5fd72e8881dcc1dc8133a47e0c0e596e007b2da1c6312a28f",
+        "bytes": 20488912
+      }
+    },
+    "vsix": "rhwp-vscode-0.8.7.vsix"
+  },
+  "publish_verdict": {
+    "accepted": true,
+    "channels": {
+      "npm-core": {
+        "inputState": "",
+        "jobResult": "skipped",
+        "state": "verify-only"
+      },
+      "npm-editor": {
+        "inputState": "",
+        "jobResult": "skipped",
+        "state": "verify-only"
+      },
+      "open-vsx": {
+        "inputState": "",
+        "jobResult": "skipped",
+        "state": "verify-only"
+      },
+      "vscode-marketplace": {
+        "inputState": "",
+        "jobResult": "skipped",
+        "state": "verify-only"
+      }
+    },
+    "errors": [],
+    "extensionsRequested": true,
+    "gates": {
+      "build-vsix": "success",
+      "build-wasm": "success",
+      "validate-release-source": "success"
+    },
+    "githubSha": "df39fb5d7a566ba6a49c2f6a04965616d2c2af73",
+    "mode": "verify",
+    "refName": "codex/render-diff-release-7473",
+    "schemaVersion": 1,
+    "verdict": "completed"
+  },
+  "fixtures": [
+    {
+      "path": "samples/basic/KTX.hwp",
+      "sha256": "6c1a027d67b33c03f469b56548b4c7d6bca36b1c1190c7cc5eac88e35c403cf1",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/biz_plan.hwp",
+      "sha256": "8b786d6824622afae2220b203beeef6e5592157e1896fea055ebc602817113c1",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/hwp_table_test.hwp",
+      "sha256": "dc3e57d7577447ae4b47f59bdb0f499a5ac29066b62af8a650bcdd8d70eee32a",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/kps-ai.hwp",
+      "sha256": "9b0fceb3d96956f27c893e15a72a1ad94f7ee005bd581381a1aadfcb1f57a7b9",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/lseg-01-basic.hwp",
+      "sha256": "86e607233a2218928fabe5969155116a46d4ab4400db1402fe45b0082149496c",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/lseg-05-tab.hwp",
+      "sha256": "0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/pic-crop-01.hwp",
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/pua-test.hwp",
+      "sha256": "592e00e3e8bc72afef829fd71a13cbc340bff3770425b9d1ee025afc1e1649fa",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/re-font-batang-hancom.hwp",
+      "sha256": "99ec0cd2f55ba45493b97c550333db6d0275831ae6150a041bdbe5e2bd174049",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/render-p35-font-native-bitmap.hwpx",
+      "sha256": "1c902d41d47e532f42d2b24a44058efd370ee6496927c32e76e955029a0b9eec",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/table-004.hwp",
+      "sha256": "451ab7c40d47c4200e98b57b7cb3806e64968c32fa9441fc171e7babf64be915",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/tac-case-001.hwp",
+      "sha256": "c003385b7b3495dd93a2688ea74b8a07848543a6c0128cb693635d8ba6fe43da",
+      "matches_code_commit": true
+    }
+  ],
+  "npm_core": {
+    "package": "@rhwp/core",
+    "version": "0.8.7",
+    "files": 7,
+    "size": 7940506,
+    "sha256": "4fd4544e7cfa2a71935635f624408be1cefbd59bf2c262b4974fd6484752244f",
+    "tested_wasm_and_js_match": true,
+    "source_sha": "df39fb5d7a566ba6a49c2f6a04965616d2c2af73"
+  },
+  "npm_editor": {
+    "package": "@rhwp/editor",
+    "version": "0.8.7",
+    "files": 6,
+    "size": 25362,
+    "sha256": "6ce554fb3736d7a63a6e33009ec97a71828f961e9147852f9d995689a3f541b9",
+    "source_bytes_match": true
+  },
+  "scope": "2026-10-23 code candidate; later documentation head CI is checked separately",
+  "artifact_digests": {
+    "12472814444": "sha256:3659ecb7711eb05d5dacdd124205a215f9a4cf5ef261903211f876284aedadb0",
+    "12473013384": "sha256:e819f373af6273311499bc4868a2b63a13acaf09055c4976243af108ca2eb8b5",
+    "12473725641": "sha256:48caf673d5ecf2c235cf85555dd6b8d1400dfcf3c9a1e951cb35907554d9e83d",
+    "12473392330": "sha256:68850a7665085cb44bfcf5b285b33743f5b93b3ef24c0456e108d4de2a3df05b",
+    "12472939380": "sha256:ca0027fbde11d1f0e1bbf879e3691f9e92a9a179e98e74f34854751cf9651769",
+    "12473238938": "sha256:c764222a8ebe56c86338c308b78aaf6eeb35da2289c9d983eddb3de07fa6c2a4"
+  }
+}

@@ -1,20 +1,21 @@
 # PR #7474 검토 기록 — standard release와 배포 WASM 동일성
 
-## 최종 판정
+## 최종 판정 — 2026-10-23
 
-**승인 — 검증한 코드 후보가 standard release 기본값과 검사한 WASM의 배포 패키지 재사용 요구를 충족한다.**
-이 판정은 작성자 self-review이며 GitHub approve·Ready 전환·merge를 뜻하지 않는다.
-#7474는 Draft를 유지한다. 남은 merge 조건은 문서 후행 head의 최신 CI, 배포 전 검사 비용에 대한
-메인테이너 검토와 실제 병합 승인이다. 이슈는 종료하지 않았다.
+**기술적 수용 권고.** 최신 devel의 standard release 렌더 검사와 패키지 동일성 검증을 완료했고,
+실측 추가 비용을 검토했다. 이 기록은 작성자 self-review이며 GitHub approve나 merge를 뜻하지 않는다.
+문서 후행 head의 CI 성공을 확인한 뒤 Ready로 전환하고 메인테이너 최종 판단을 기다린다.
+code head와 기록 head의 검증을 구분하며 실제 배포·병합·이슈 종료는 이번 승인 범위에 없다.
 
 ## 기준과 절차
 
-- PR #7474, 작성자 postmelee, base devel. 기준 SHA `5e2b9bfbf08573a31fa1e11a2445ff63fc0755c0`.
-- opt-in #7488 head `3bfe08e24a55f16f7408405ead9550ffab925dad`를 이력 보존 통합했다.
-- 검증 code head `1ae9b510a5af0164de45191670e5e895e97270b3`.
-- 기본 경로 collaborator_self_merge, 보조 intake_and_review·local_validation·multi_pr_update_branch·
-  review_only_fast_pass. github_operations와 publish_guide를 함께 적용했다. self PR reviewer는 지정하지 않는다.
-- O3 workflow 실행·artifact 계약 변경이다. 기존 required context·권한·production trigger와 publish=false를 보존했다.
+- base route: collaborator_self_merge. modifiers: intake_and_review, local_validation,
+  multi_pr_update_branch, review_only_fast_pass. 각 자식 문서와 github_operations를 읽고 적용했다.
+- base devel: `605ccfd92f2f12f18e14182548d729f9929fda00`.
+- 검증 code head: `df39fb5d7a566ba6a49c2f6a04965616d2c2af73`.
+- 포함한 #7488 head: `3bfe08e24a55f16f7408405ead9550ffab925dad`. opt-in을 자동 선택하지 않는다.
+- O3 workflow·artifact 계약 변경이다. required context·권한·production trigger·publish=false를 보존했다.
+- 작업지시자는 병합 전 문서·코멘트·이슈 정리와 최종 CI 확인을 승인했고 실제 병합은 제외했다.
 
 ## 코드 검토
 
@@ -31,22 +32,27 @@
 
 ## 완료한 검증
 
-- focused Python 46개, workflow 계약 192개, 정책/provenance Node 102개, actionlint·Python/Node/쉘 관련 구문·공백 검사.
-  테스트 묶음은 중복을 포함하므로 합산하지 않는다. 파일 교체·dirty/stale/dev/cdylib·소비 누락/불일치 반례를 검사했다.
-- [Full CI](https://github.com/edwardkim/rhwp/actions/runs/39380204001),
-  [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/39380203913),
-  [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/39380203897)와 관련 PR checks: 33 success·5 skipped.
-- [Pages](https://github.com/edwardkim/rhwp/actions/runs/39380248603): Build success, Deploy skipped.
-- [Package](https://github.com/edwardkim/rhwp/actions/runs/39380255159): source guard·WASM·VSIX·aggregate success,
-  외부 게시 4채널 skipped, verdict completed/verify-only.
-- 세 경로의 JS/WASM bytes 동일, 실제 WASM 소비 22건 일치, 대표 Canvas/direct PDF 각각 3/3,
-  PR readiness 8/8. artifact ZIP digest를 확인한 뒤 manifest와 package/VSIX bytes를 별도로 재검산했다.
-- #7488 head도 CI 31 success·5 skipped이며 opt-in 제품 코드는 그대로다. Ready·메인테이너 검토 대기다.
+- 로컬 focused Python 46개, workflow 계약 192개, Node 계약 102개, actionlint·공백 검사 통과.
+  중복되는 검사 묶음은 합산하지 않는다. 입력 12개와 code commit blob의 bytes도 일치했다.
+- [Full CI](https://github.com/edwardkim/rhwp/actions/runs/39885844384),
+  [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/39885844317),
+  [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/39885844291), Adapter·Proptest 성공.
+  수동 실행 포함 code head check 35 success·12 skipped, 별도 CI Impact Policy 성공.
+- [Pages](https://github.com/edwardkim/rhwp/actions/runs/39885887626): Build success, Deploy skipped.
+- [Package](https://github.com/edwardkim/rhwp/actions/runs/39885906844): WASM·VSIX·집계 success,
+  외부 게시 4채널 skipped, accepted=true / completed / verify-only.
+- 세 경로 Canvas/direct PDF 각각 3/3, PR readiness 8/8. JS/WASM 해시와 실제 브라우저 응답 22건 일치.
+  artifact ZIP digest와 wasm-pkg·최종 VSIX bytes를 재검산했다. Pages dist는 job 검사로 확인했다.
+- npm core/editor tarball을 게시 없이 생성하고 포함 파일을 확인했다. core 내부 WASM은 검사한 것과 같았다.
+- #7488은 10월 20일 head의 check 30 success·5 skipped와 별도 CI Impact Policy success를 재확인했다.
+  최신 devel과의 병합 충돌이 없고 wrapper·계약 테스트는 이번 #7474에서 검사한 파일과 같다.
+  최신 제품 코드에서 opt-in 성능을 다시 측정했다고 주장하지 않는다.
 
-[보고서](../../report/task_m100_7473_report.md)에 시간·CPU·실제 checkout SHA·hash·원자료 run을 기록했다.
-서로 다른 VM의 n=1 시간을 개선율로 사용하지 않는다. 배포 검증 action은 225/239초의 추가 작업이며,
-release CI 비용은 남는다. report-only PDF 경고 4개는 유지했다. cache 저장은 예산 초과로 거부됐고
-warm-cache 비용 절감을 보장하지 않는다. runtime 성능·전쪽 정확도·실제 registry 게시를 검증했다고 주장하지 않는다.
+추가 검증 action은 222/208초였고 이번 Render Diff는 전체 CI보다 425초 먼저 끝났다.
+추가 runner 비용은 남지만 이를 이유로 더 보류할 근거는 약하다. Pages cache 저장 성공과 package의
+같은 키 예약 거부를 확인했다. warm cache 절감을 보장하지 않는다. report-only PDF 경고 4개와
+대표 문서·쪽 범위를 유지하며 runtime 성능·전체 정확도·실제 게시 성공을 주장하지 않는다.
+[최신 보고서](../../report/task_m100_7473_report.md)에 세부 근거와 역사적 비교를 구분했다.
 
 ## 검증 입력
 
@@ -71,7 +77,8 @@ warm-cache 비용 절감을 보장하지 않는다. runtime 성능·전쪽 정�
 
 ## 후행 기록과 남은 처리
 
-정확한 code head의 CI와 두 verify-only 실행이 모두 성공한 뒤 review·보고서·오늘할일만 후행 커밋으로 추가한다.
-최신 base와의 merge tree, 공백, 변경 링크, 오늘할일의 다른 기록 보존을 확인한 뒤 push한다.
-후행 head의 required check는 별도로 확인하며 기존 code 결과를 자동 통과로 간주하지 않는다.
-[적용 기록](pr_7474_review_impl.md)을 따른다. 실제 배포·approve·merge·이슈 종료는 수행하지 않았다.
+정확한 code head의 CI와 두 verify-only 실행이 모두 성공한 뒤 문서·증적·오늘할일만 후행 커밋으로 추가한다.
+최신 base의 기록 보존, merge tree·공백·링크를 확인하고 push한 뒤 후행 head의 실제 CI 결과를 확인한다.
+문서 전용이라는 이유로 fast-pass나 성공을 가정하지 않는다. 완료 결과와 최종 head는 PR 코멘트에 기록한다.
+Ready 전환 뒤에도 실제 merge는 별도 지시가 필요하며, #7488 → #7474 순서를 권고한다.
+[적용 기록](pr_7474_review_impl.md)을 따른다.

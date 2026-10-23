@@ -1,4 +1,81 @@
-# #7473 standard release 검증과 배포 산출물 재사용 — 2026-10-20
+# #7473 standard release 검증과 배포 산출물 재사용 — 2026-10-23
+
+Issue: [#7473](https://github.com/edwardkim/rhwp/issues/7473).
+[PR #7474](https://github.com/edwardkim/rhwp/pull/7474) · [opt-in PR #7488](https://github.com/edwardkim/rhwp/pull/7488)
+
+## 2026-10-23 최신 devel 검증과 수용 판단
+
+기준 devel `605ccfd92f2f12f18e14182548d729f9929fda00`을 이력 보존 merge로 통합한
+code head `df39fb5d7a566ba6a49c2f6a04965616d2c2af73`의 검증을 완료했다.
+제품 코드·Cargo 입력·Studio·VS Code 확장·기존 fixture는 이 devel과 같다.
+#7488 head `3bfe08e24a55f16f7408405ead9550ffab925dad`는 이미 포함되어 있다.
+아래 결과는 코드 후보의 결과이며, 이 보고서를 추가한 문서 후행 head의 CI는 별도로 확인한다.
+
+**두 PR의 수용을 권고한다.** #7488은 명시적 opt-in 최적화이고 #7474는 standard release와
+실제 패키지의 검증 신뢰도를 높이는 변경이다. 추가 실행 비용만을 이유로 더 보류할 근거는 약하다.
+GitHub 승인·병합·실제 배포·이슈 종료는 수행하지 않았다. 문서 후행 head의 CI 성공 뒤 #7474를
+Ready로 전환하고 메인테이너의 최종 수용 판단을 기다리는 절차다.
+
+### 최신 실행과 산출물
+
+[Full CI](https://github.com/edwardkim/rhwp/actions/runs/39885844384),
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/39885844317),
+[Adapter](https://github.com/edwardkim/rhwp/actions/runs/39885844282),
+[Proptest](https://github.com/edwardkim/rhwp/actions/runs/39885844394), CI Impact Policy가 성공했다.
+수동 실행을 포함한 code head check는 35 success·12 skipped이며, 별도 commit status도 성공했다.
+로컬 focused Python 46개, workflow 계약 192개, Node 계약 102개, actionlint·공백 검사가 통과했다.
+중복되는 검사 묶음은 합산하지 않는다. 기존 12개 입력의 bytes와 code commit blob도 일치했다.
+
+| 경로 | WASM wrapper wall | 해당 빌드 job 전체 | 결과 |
+| --- | ---: | ---: | --- |
+| [PR Render Diff](https://github.com/edwardkim/rhwp/actions/runs/39885844291) | 717.900초 | 1,207초 | Canvas 3/3, direct PDF 3/3, readiness 8/8 |
+| [Pages verify-only](https://github.com/edwardkim/rhwp/actions/runs/39885887626) | 677.745초 | 1,086초 | 렌더·dist 해시·artifact 성공, Deploy skipped |
+| [Package verify-only](https://github.com/edwardkim/rhwp/actions/runs/39885906844) | 682.242초 | WASM job 1,072초 | WASM·VSIX·집계 성공, 외부 게시 4채널 skipped |
+
+모두 EPYC 9V74, 논리 CPU 4개, Ubuntu 24.04 image `20261012.334.1`이지만 서로 다른 VM의 n=1이다.
+Rust 1.93.1, wasm-pack 0.15.0이며 세 경로 모두 release/standard, rlib+cdylib, manifest LTO와
+실제 wasm-opt 실행을 확인했다. 이 표의 차이를 최적화 개선율로 해석하지 않는다.
+
+PR 실제 checkout은 GitHub merge ref `ab0049304398b423bc812abdbb0078379ae33e52`이고
+Pages/package는 위 code head다. 세 경로의 JS/WASM 해시가 각각 같았으며 실제 브라우저 응답
+22건(18+2+2)이 각 manifest와 일치했다. artifact ZIP digest, 내려받은 wasm-pkg, 최종 VSIX
+내부 JS/WASM을 재검산했다. Pages dist는 job의 업로드 직전 검사 성공으로 확인했다.
+Pages 전체 artifact를 로컬에 내려받아 재검산한 것은 아니다.
+
+- JS: 481,233 bytes, `da00f4937f352731a2d24a1ba4b54629009aa5edc9c929815aed2cd069cca3bc`.
+- WASM: 20,488,912 bytes, `51d6a242d1c076d5fd72e8881dcc1dc8133a47e0c0e596e007b2da1c6312a28f`.
+- package 집계는 accepted=true, verdict=completed, mode=verify이며 네 외부 채널은 verify-only다.
+- `publish=false`에서 생략되는 npm 패키징은 로컬 `npm pack --offline --ignore-scripts`로 보완했다.
+  lifecycle 빌드가 없는 `@rhwp/core`·`@rhwp/editor` 0.8.7 tarball을 생성했다. core는 이 run의
+  wasm-pkg와 기존 prepare-npm.sh를 사용했고 내부 JS/WASM이 같았다. editor 포함 파일도 원본과 같았다.
+
+### 비용과 한계
+
+배포 전 검증 action은 Pages 222초, package 208초였다. WASM을 다시 빌드하지 않지만 Native PDF
+참조 CLI·브라우저 준비와 렌더 검사 비용은 추가된다. 이번 Render Diff는 Build & Test보다
+425초 먼저 끝나 이 실행의 PR 전체 완료 시점을 늦추지 않았다. runner 사용량은 증가한다.
+
+최근 7일의 정상 첫 실행 167쌍에 이전 standard 실측을 대입한 비용 모델은 추가 runner 시간 약 6.5%,
+대기 증가 중앙값 0초·P90 약 110초였다. 이는 과거 실행에 대한 추정이며 최신 코드의 대조 실험이나
+향후 대기시간 보장은 아니다. 세 최신 실행 모두 cache miss였다. Pages는 cache 저장에 성공했고
+package는 같은 키의 선행 저장으로 예약이 거부됐다. 이전 예산 초과 오류와 구분한다.
+PR Render Diff는 restore-only이며 이 branch의 저장 성공을 다른 PR의 warm cache 보장으로 확대하지 않는다.
+
+기존 report-only PDF 경고 4개는 각 경로에 남는다. 대표 문서·쪽 범위 검사이며 전체 문서 정확도,
+runtime 성능, 모든 출력의 동등성이나 registry 게시 성공을 검증했다고 주장하지 않는다.
+#7488 Mac 측정은 아래 역사적 기록이며 이번에 opt-in 성능을 다시 측정한 것은 아니다.
+
+현재 devel에서 #7488 → #7474를 merge·squash 방식으로 각각 로컬 시뮬레이션했고 최종 tree는
+모두 검증한 code tree `a03114506d543c95f95c3ed3a1d3fd50115c9182`와 같았다. 실제 ref는 변경하지 않았다.
+향후 base/head 변경이나 문서 추가 뒤에는 해당 최종 상태를 다시 확인한다.
+
+[수치·해시·fixture 요약](assets/issue-7473/release-standard-20261023.json) ·
+[최신 결과 코멘트](https://github.com/edwardkim/rhwp/pull/7474#issuecomment-6355793528) ·
+[검토 기록](../pr/archives/pr_7474_review.md)
+
+## 이전 기록 — 2026-10-20
+
+아래의 SHA·시간·cache 오류와 당시 대기 조건은 역사적 기록이며 현재 판정은 위 10월 23일 결과를 따른다.
 
 [PR #7474](https://github.com/edwardkim/rhwp/pull/7474) · [opt-in PR #7488](https://github.com/edwardkim/rhwp/pull/7488)
 
