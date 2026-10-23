@@ -20,6 +20,11 @@ const useSubsecondWasm = process.env.RHWP_SUBSECOND === '1';
  * `studio-plugin` 청크 자체가 남지 않는다. studio 만 떼어 배포할 때 쓴다.
  */
 const withHwpctrl = process.env.RHWP_WITHOUT_HWPCTRL !== '1';
+/**
+ * AI 도우미 포함 여부. `RHWP_WITHOUT_AI=1` 이면 `main.ts` 의 동적 import 분기가 tree-shake 되어
+ * AI 청크와 제공자 SDK 가 산출물에 남지 않는다.
+ */
+const withAi = process.env.RHWP_WITHOUT_AI !== '1';
 
 export default defineConfig({
   define: {
@@ -30,6 +35,7 @@ export default defineConfig({
       process.env.RHWP_DISABLE_EXTERNAL_WEBFONTS === '1',
     ),
     __RHWP_HWPCTRL__: JSON.stringify(withHwpctrl),
+    __RHWP_AI__: JSON.stringify(withAi),
   },
   resolve: {
     alias: {
@@ -43,6 +49,11 @@ export default defineConfig({
       '@rhwp/hwpctrl/studio-plugin': resolve(configDir, '..', 'npm', 'hwpctrl-ocx', 'src', 'studio-plugin.mjs'),
     },
   },
+  // AI SDK 는 질문할 때 동적 import 로만 들어온다. 개발 서버가 그때 처음 발견하면 의존성을
+  // 다시 최적화하며 페이지를 새로 고쳐 진행 중인 대화와 열린 문서를 잃는다 — 시작할 때 미리 묶는다.
+  optimizeDeps: withAi
+    ? { include: ['@anthropic-ai/sdk', '@anthropic-ai/sdk/lib/transform-json-schema'] }
+    : {},
   server: {
     host: '127.0.0.1',
     port: 7700,

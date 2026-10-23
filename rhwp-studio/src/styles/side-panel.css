@@ -1,0 +1,96 @@
+/* ================================================================
+   오른쪽 패널 자리 (#side-panel-host) — 접두어 spl-
+   ================================================================ */
+
+#side-panel-host {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+#side-panel-host[hidden] {
+  display: none;
+}
+
+.spl-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -3px;
+  width: 6px;
+  cursor: col-resize;
+  z-index: 1;
+}
+
+.spl-resizer:hover {
+  background: var(--resize-handle);
+}
+
+.spl-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 4px 0 12px;
+  border-bottom: 1px solid var(--color-border);
+  flex: none;
+}
+
+.spl-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.spl-close {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.spl-close:hover {
+  background: var(--color-hover-bg);
+}
+
+.spl-close:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.spl-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.spl-panel {
+  height: 100%;
+  overflow: auto;
+}
+
+.spl-panel[hidden] {
+  display: none;
+}
+
+@media print {
+  #side-panel-host {
+    display: none !important;
+  }
+}

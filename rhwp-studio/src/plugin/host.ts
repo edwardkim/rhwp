@@ -15,6 +15,9 @@ import type { StudioAutomation } from '@/automation/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { EventBus } from '@/core/event-bus';
 import type { InputHandler } from '@/engine/input-handler';
+import type { DocumentPosition } from '@/core/types';
+import type { SidePanelRegistry } from '@/view/side-panel-host';
+import { readSelectionText } from './selection-text.ts';
 import {
   PLUGIN_API_VERSION,
   type DocumentLease,
@@ -23,10 +26,13 @@ import {
   type PluginHost,
   type PluginCaret,
   type PluginLedger,
+  type PluginSelectionText,
+  type PluginTextRange,
+  type PluginUi,
   type PluginSurface,
   type StudioPlugin,
   type Tx,
-} from './types';
+} from './types.ts';
 
 export function pluginError(code: PluginErrorCode, message: string): PluginError {
   const error = new Error(message) as PluginError;
@@ -41,13 +47,20 @@ export interface PluginHostDeps {
   getInputHandler: () => InputHandler | null;
   /** 문서 교체 위임 — 원자 교체·세대 증가·이전 문서 해제는 studio 가 한다. */
   loadDocument: (bytes: Uint8Array, fileName?: string) => Promise<void>;
-  createBlankDocument: () => void;
+  createBlankDocument: (options?: { confirmUnsaved?: boolean }) => Promise<boolean>;
   /**
    * id 로 플러그인을 가져온다. **allowlist 는 이 훅이 쥔다** — 여기서 거절하면 호스트는
    * `PLUGIN_NOT_ALLOWED` 로 답한다. 임의 URL 로드 경로는 만들지 않는다.
    */
   resolve: (id: string) => Promise<StudioPlugin>;
+  /** 오른쪽 패널 자리. 화면이 없는 구성에서는 비워 둔다 — 등록이 `UI_UNAVAILABLE` 로 거절된다. */
+  sidePanels?: SidePanelRegistry;
+  /** 편집기 선택 이동. 찾기 대화상자와 같은 경로를 쓰도록 studio 가 넘긴다. */
+  selectTextRange?: (range: PluginTextRange) => boolean;
 }
+
+/** `getSelectionText` 가 한 번에 돌려주는 글자 수 상한. */
+const SELECTION_TEXT_MAX_CHARS = 20000;
 
 /** unload 가 진행 중인 트랜잭션을 기다리는 상한. 넘기면 거절한다(문서는 그대로 남는다). */
 const UNLOAD_TX_WAIT_MS = 2000;
@@ -56,7 +69,7 @@ const UNLOAD_TX_POLL_MS = 20;
 function emptyLedger(): PluginLedger {
   return {
     commands: new Set(), menuItems: new Set(),
-    eventUnsubs: [], swapUnsubs: [], activeTx: 0,
+    eventUnsubs: [], swapUnsubs: [], uiUnsubs: [], activeTx: 0,
   };
 }
 
@@ -75,12 +88,16 @@ interface LoadedPlugin {
  */
 class PluginHostFacade implements PluginHost {
   private swapListeners: Array<(lease: DocumentLease) => void> = [];
+  private readonly pluginId: string;
+  private readonly deps: PluginHostDeps;
+  private readonly ledger: PluginLedger;
 
-  constructor(
-    private readonly pluginId: string,
-    private readonly deps: PluginHostDeps,
-    private readonly ledger: PluginLedger,
-  ) {}
+  // 매개변수 속성을 쓰지 않는다 — node 단위 테스트가 이 파일을 타입 제거만으로 읽는다.
+  constructor(pluginId: string, deps: PluginHostDeps, ledger: PluginLedger) {
+    this.pluginId = pluginId;
+    this.deps = deps;
+    this.ledger = ledger;
+  }
 
   borrowDocument(): DocumentLease | null {
     const handle = this.deps.wasm.borrowDocumentHandle();
@@ -155,37 +172,8 @@ class PluginHostFacade implements PluginHost {
     const ih = this.deps.getInputHandler();
     if (!ih || !this.deps.wasm.borrowDocumentHandle() || ih.isInSeparateCaretSpace()) return null;
     const pos = ih.getCursorPosition();
-    if (pos.isTextBox) return null;
-    let caret: PluginCaret;
-    if (pos.cellPath && pos.cellPath.length > 0) {
-      if (pos.parentParaIndex === undefined) return null;
-      caret = {
-        sectionIndex: pos.sectionIndex,
-        parentParaIndex: pos.parentParaIndex,
-        cellPath: pos.cellPath.map(({ controlIndex, cellIndex, cellParaIndex }) =>
-          ({ controlIndex, cellIndex, cellParaIndex })),
-        charOffset: pos.charOffset,
-      };
-    } else if (pos.parentParaIndex !== undefined && pos.controlIndex !== undefined) {
-      // 레거시 평면 셀 좌표 — 단층 표 칸이다.
-      caret = {
-        sectionIndex: pos.sectionIndex,
-        parentParaIndex: pos.parentParaIndex,
-        cellPath: [{
-          controlIndex: pos.controlIndex,
-          cellIndex: pos.cellIndex ?? 0,
-          cellParaIndex: pos.cellParaIndex ?? 0,
-        }],
-        charOffset: pos.charOffset,
-      };
-    } else {
-      caret = {
-        sectionIndex: pos.sectionIndex,
-        parentParaIndex: pos.paragraphIndex,
-        cellPath: [],
-        charOffset: pos.charOffset,
-      };
-    }
+    const caret = this.toPluginCaret(pos);
+    if (!caret) return null;
     // 누름틀 경계의 같은 글자 번호는 안·밖 두 자리다 — 화면 캐럿이 어느 쪽인지 함께 준다.
     try {
       const fi = this.deps.wasm.getFieldInfoAt(pos);
@@ -198,12 +186,64 @@ class PluginHostFacade implements PluginHost {
     return caret;
   }
 
+  getSelectionText(): PluginSelectionText | null {
+    const ih = this.deps.getInputHandler();
+    if (!ih || !this.deps.wasm.borrowDocumentHandle() || ih.isInSeparateCaretSpace()) return null;
+    const selection = ih.getSelection();
+    if (!selection) return null;
+    const start = this.toPluginCaret(selection.start);
+    const end = this.toPluginCaret(selection.end);
+    if (!start || !end) return null;
+    const result = readSelectionText(this.deps.wasm, selection.start, selection.end, SELECTION_TEXT_MAX_CHARS);
+    if (!result) return null;
+    return { text: result.text, start, end, truncated: result.truncated };
+  }
+
+  selectTextRange(range: PluginTextRange): boolean {
+    if (!this.deps.selectTextRange || !this.deps.wasm.borrowDocumentHandle()) return false;
+    return this.deps.selectTextRange(range);
+  }
+
+  /** studio 좌표 → 플러그인 좌표. 글상자 안이면 `null`. */
+  private toPluginCaret(pos: DocumentPosition): PluginCaret | null {
+    if (pos.isTextBox) return null;
+    if (pos.cellPath && pos.cellPath.length > 0) {
+      if (pos.parentParaIndex === undefined) return null;
+      return {
+        sectionIndex: pos.sectionIndex,
+        parentParaIndex: pos.parentParaIndex,
+        cellPath: pos.cellPath.map(({ controlIndex, cellIndex, cellParaIndex }) =>
+          ({ controlIndex, cellIndex, cellParaIndex })),
+        charOffset: pos.charOffset,
+      };
+    }
+    if (pos.parentParaIndex !== undefined && pos.controlIndex !== undefined) {
+      // 레거시 평면 셀 좌표 — 단층 표 칸이다.
+      return {
+        sectionIndex: pos.sectionIndex,
+        parentParaIndex: pos.parentParaIndex,
+        cellPath: [{
+          controlIndex: pos.controlIndex,
+          cellIndex: pos.cellIndex ?? 0,
+          cellParaIndex: pos.cellParaIndex ?? 0,
+        }],
+        charOffset: pos.charOffset,
+      };
+    }
+    return {
+      sectionIndex: pos.sectionIndex,
+      parentParaIndex: pos.paragraphIndex,
+      cellPath: [],
+      charOffset: pos.charOffset,
+    };
+  }
+
   async loadDocument(bytes: Uint8Array, fileName?: string): Promise<void> {
     await this.deps.loadDocument(bytes, fileName);
   }
 
-  createBlankDocument(): void {
-    this.deps.createBlankDocument();
+  createBlankDocument(options?: { confirmUnsaved?: boolean }): Promise<boolean> {
+    return this.deps.createBlankDocument(options);
   }
 
   /**
@@ -225,6 +265,26 @@ class PluginHostFacade implements PluginHost {
       unregisterCommand: (id) => { base.unregisterCommand(id); ledger.commands.delete(id); },
       addMenuItem: (spec) => { base.addMenuItem(spec); ledger.menuItems.add(spec.commandId); },
       removeMenuItem: (id) => { base.removeMenuItem(id); ledger.menuItems.delete(id); },
+    };
+  }
+
+  /**
+   * 화면 자리 — 등록물을 **원장에 적으면서** 위임한다. 패널 id 는 플러그인 id 로 감싸
+   * 서로 다른 플러그인의 같은 이름이 부딪히지 않게 한다.
+   */
+  get ui(): PluginUi {
+    const panels = this.deps.sidePanels;
+    const ledger = this.ledger;
+    const scoped = (id: string) => `${this.pluginId}:${id}`;
+    return {
+      registerSidePanel: (spec) => {
+        if (!panels) throw pluginError('UI_UNAVAILABLE', '이 구성에는 패널 자리가 없습니다');
+        const off = panels.register({ ...spec, id: scoped(spec.id) });
+        ledger.uiUnsubs.push(off);
+        return off;
+      },
+      toggleSidePanel: (id, open) => (panels ? panels.toggle(scoped(id), open) : false),
+      isSidePanelOpen: (id) => (panels ? panels.isOpen(scoped(id)) : false),
     };
   }
 
@@ -271,8 +331,11 @@ class PluginHostFacade implements PluginHost {
 
 export class PluginHostRegistry {
   private readonly loaded = new Map<string, LoadedPlugin>();
+  private readonly deps: PluginHostDeps;
 
-  constructor(private readonly deps: PluginHostDeps) {}
+  constructor(deps: PluginHostDeps) {
+    this.deps = deps;
+  }
 
   list(): Array<{ id: string; apiVersion: number; active: boolean }> {
     return Array.from(this.loaded.values()).map(({ plugin }) => ({
@@ -369,6 +432,9 @@ export class PluginHostRegistry {
    * 플러그인의 `deactivate()` 성실성에 기대지 않는다 — 기대면 죽은 메뉴 항목이 남는다.
    */
   private reclaim(ledger: PluginLedger): void {
+    for (const off of ledger.uiUnsubs.reverse()) {
+      try { off(); } catch { /* noop */ }
+    }
     for (const off of ledger.swapUnsubs.reverse()) {
       try { off(); } catch { /* noop */ }
     }
@@ -381,6 +447,7 @@ export class PluginHostRegistry {
     for (const commandId of Array.from(ledger.commands)) {
       this.deps.automation.unregisterCommand(commandId);
     }
+    ledger.uiUnsubs.length = 0;
     ledger.swapUnsubs.length = 0;
     ledger.eventUnsubs.length = 0;
     ledger.menuItems.clear();

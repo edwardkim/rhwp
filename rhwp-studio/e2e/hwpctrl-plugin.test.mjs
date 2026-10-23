@@ -130,10 +130,14 @@ runTest('hwpctrl 플러그인', async ({ page }) => {
     let code = null;
     try { window.rhwpStudio.plugins.invoke('hwpctrl', 'invoke', ['PageCount', []]); }
     catch (e) { code = e.code; }
-    return { code, pages: window.__wasm.pageCount, list: window.rhwpStudio.plugins.list().length };
+    return {
+      code, pages: window.__wasm.pageCount,
+      listed: window.rhwpStudio.plugins.list().some(p => p.id === 'hwpctrl'),
+    };
   });
   assert(survived.code === 'PLUGIN_NOT_LOADED', `TC6: unload 후 호출 거절 (${survived.code})`);
-  assert(survived.list === 0, 'TC6: 목록 비워짐');
+  // 내장 플러그인(ai-assistant)은 남아 있을 수 있다 — hwpctrl 이 빠졌는지만 본다.
+  assert(!survived.listed, 'TC6: 목록에서 빠짐');
 
   await typeText(page, '생존');
   await page.evaluate(() => new Promise(r => setTimeout(r, 300)));

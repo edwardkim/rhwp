@@ -111,6 +111,8 @@ import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
 import { enrichFontDecisionTrace } from '@/core/font-decision-trace';
 import { DocumentAgentController } from '@/document-agent/controller';
 import { initI18n, t } from '@/i18n/index.ts';
+import { SidePanelController, createDomSidePanelView } from '@/view/side-panel-host';
+import { navigateToSearchHit } from '@/ui/find-dialog';
 
 // 언어팩 초기화 — 정적 마크업의 라벨을 결정된 로케일로 갱신한다. 카탈로그에 없는 키는
 // 원문(ko)으로 물러나므로 번역이 없는 상태에서도 화면은 도입 전과 같다.
@@ -312,11 +314,27 @@ async function resolvePlugin(id: string): Promise<StudioPlugin> {
     // 번들에 있는 이름만 허용한다. 동적 import 라 올리지 않으면 코드도 로드되지 않는다.
     return (await import('@rhwp/hwpctrl/studio-plugin')).hwpctrlStudioPlugin as StudioPlugin;
   }
+  // `RHWP_WITHOUT_AI=1` 빌드에서는 이 분기와 AI 청크·SDK 가 통째로 사라진다.
+  if (__RHWP_AI__ && id === 'ai-assistant') {
+    return (await import('@/ai/plugin')).aiAssistantPlugin;
+  }
   if (import.meta.env.DEV && id === 'dev-probe') {
     return (await import('@/plugin/dev-probe-plugin')).devProbePlugin;
   }
   throw new Error(`허용되지 않은 플러그인: ${id}`);
 }
+
+/**
+ * 오른쪽 패널 자리. embed 모드에는 두지 않는다 — 문서를 어디로 보낼지는 embed 호스트가 정한다.
+ */
+const sidePanelRoot = document.getElementById('side-panel-host');
+const sidePanels = chromeMode !== 'embed' && sidePanelRoot
+  ? new SidePanelController(createDomSidePanelView(
+    sidePanelRoot,
+    t('ui.sidePanel.close'),
+    () => document.getElementById('scroll-container')?.focus(),
+  ))
+  : undefined;
 
 const plugins = new PluginHostRegistry({
   wasm,
@@ -324,8 +342,30 @@ const plugins = new PluginHostRegistry({
   eventBus,
   getInputHandler: () => inputHandler,
   loadDocument: (bytes, fileName) => loadBytes(bytes, fileName ?? 'document.hwp', null),
-  createBlankDocument: () => { void createNewDocument(); },
+  createBlankDocument: async (options) => {
+    if (options?.confirmUnsaved && !await canReplaceCurrentDocument()) return false;
+    await createNewDocument();
+    return true;
+  },
   resolve: resolvePlugin,
+  sidePanels,
+  selectTextRange: (range) => {
+    if (!inputHandler) return false;
+    navigateToSearchHit(inputHandler, {
+      found: true,
+      sec: range.section,
+      para: range.paragraph,
+      charOffset: range.charOffset,
+      length: range.length,
+      ...(range.cell ? {
+        cellContext: {
+          parentPara: range.cell.parentPara, ctrlIdx: range.cell.controlIndex,
+          cellIdx: range.cell.cellIndex, cellPara: range.cell.cellPara,
+        },
+      } : {}),
+    });
+    return true;
+  },
 });
 (window as any).rhwpStudio.plugins = plugins;
 
@@ -2039,6 +2079,12 @@ const initPromise = initialize();
 void initPromise.then(() => {
   if (!rendererInitialized) return;
   maybeShowSkinOnboarding();
+  // 내장 AI 도우미. 최상위 창의 studio 에서만 자동으로 올린다 — iframe 으로 넣은 studio 는
+  // 호스트가 고른 플러그인만 가진다(`plugins.load('ai-assistant')` 로 직접 올릴 수는 있다).
+  // 실패해도 편집기는 그대로 쓸 수 있어야 하므로 로그만 남긴다.
+  if (__RHWP_AI__ && sidePanels && window.parent === window) {
+    plugins.load('ai-assistant').catch((error) => console.error('[main] AI 도우미 로드 실패', error));
+  }
 });
 
 installEmbedRuntime({
