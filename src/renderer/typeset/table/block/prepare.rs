@@ -594,6 +594,9 @@ impl TypesetEngine {
             table,
             budget_para_start_height,
             st.current_height,
+            st.current_items
+                .iter()
+                .any(|item| item.para_index() == para_idx),
         );
         let remaining_with = |released: f64| {
             fragment_host_placement.map_or_else(

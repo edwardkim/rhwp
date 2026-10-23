@@ -176,19 +176,22 @@ pub(super) fn format(
 /// 첫 조각의 세로 시작 기준(흐름 원점). 빈 호스트의 문단 기준 양수 오프셋 표는
 /// `문단 시작 + 오프셋` 에 놓이므로(#1860), 같은 문단의 앞선 인라인 개체가 흐름을 내려도
 /// 기준은 문단 시작이다. 이월 판정과 분할 예산이 같은 원점을 소비해야 한다(#4599).
-/// 지연 배치로 쪽을 넘긴 뒤의 낡은 문단 시작은 현재 흐름 높이로 상한한다.
+/// 문단 시작은 그 앞선 개체가 현재 단에 놓였을 때만 이 단의 좌표다(`anchor_items_on_frame`).
+/// 지연 배치로 단을 넘긴 표에는 앞 쪽의 낡은 문단 시작이 남아 있어 쓰지 않는다
+/// (1543000 282쪽: 낡은 원점으로 잔여를 과대평가해 남의 표 아래에 첫 조각을 끼워 넣었다).
 pub(super) fn first_fragment_flow_origin(
     para: &Paragraph,
     table: &Table,
     para_start_height: f64,
     current_height: f64,
+    anchor_items_on_frame: bool,
 ) -> f64 {
     use crate::model::shape::VertRelTo;
     let empty_host_para_offset_float = !table.common.treat_as_char
         && matches!(table.common.vert_rel_to, VertRelTo::Para)
         && (table.common.vertical_offset as i32) > 0
         && !para_has_non_whitespace_text(para);
-    if empty_host_para_offset_float {
+    if empty_host_para_offset_float && anchor_items_on_frame {
         para_start_height.min(current_height)
     } else {
         current_height

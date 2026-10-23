@@ -18,6 +18,11 @@
 //! 잔여를 0 으로 보고 표 전체를 다음 쪽으로 넘겼다(원본 65쪽, 이 표본 3쪽). 분할 예산은
 //! 이미 문단 시작 기준(#1860)이어서 두 판정의 원점이 달랐다.
 //!
+//! 같은 쪽에 첫 조각을 두면 드러나는 두 원점 결함도 함께 가드한다. 분할 예산은 바깥 위
+//! 여백(3.0mm)을 빼고 컷을 정했지만 paint 는 여백 없이 그렸고, 이어받기 조각은 예산·paint
+//! 모두 위 여백을 다시 열지 않았다(호스트가 글자처럼 표를 함께 실어 표 하나짜리 문단의
+//! 재개방 계약에서 빠졌다). 한/글 PDF 의 두 쪽 괘선은 모두 위 여백만큼 아래에 있다.
+//!
 //! 검사는 관계로 한다: 전체 쪽수, 첫 조각의 쪽·위치(글자처럼 표 아래, 본문 안),
 //! 셀 문단의 쪽 소속(저장 분할 지점과 같음, 누락·중복 없음), 뒤 문단이 이어받기 조각 아래.
 
@@ -32,6 +37,9 @@ const HOST_PI: u64 = 6;
 const FLOAT_CI: u64 = 0;
 const TAC_CI: u64 = 1;
 const NEXT_PI: u64 = 8;
+/// 오프셋 표의 바깥 위 여백 3.0mm (저장값).
+const OUTER_TOP_HU: f64 = 850.0;
+const HU_PER_PX: f64 = 75.0;
 
 #[derive(Debug, Clone, Copy)]
 struct Bbox {
@@ -161,11 +169,29 @@ fn empty_host_offset_float_starts_below_tac_sibling_on_current_page() {
         head.bottom(),
         body.bottom()
     );
+    // 저장값으로 정해지는 첫 조각 상단: 앵커 줄 vpos + 오프셋 + 바깥 위 여백
+    // (한/글 2020 PDF 1쪽 괘선과 같은 자리). 분할 예산이 이 여백을 빼고 컷을 정하므로
+    // paint 도 같은 원점이어야 한다 — 빠지면 표 전체가 여백만큼 위에 그려진다.
+    let stored_head_top = body.y + (18960.0 + 23973.0 + OUTER_TOP_HU) / HU_PER_PX;
+    assert!(
+        (head.y - stored_head_top).abs() <= 1.0,
+        "첫 조각 상단 {:.1} ≠ 앵커+오프셋+위 여백 {stored_head_top:.1}",
+        head.y
+    );
 
     // 2쪽: 이어받기 조각, 그 아래 뒤 문단.
     let second = page_tree(&document, 1);
     let tail_node = single_table(&second, FLOAT_CI, 1);
     let tail = bbox(tail_node).expect("이어받기 조각 bbox");
+    // 이어받기 조각도 바깥 위 여백을 다시 연다(한/글 2쪽 괘선 = 본문 상단 + 위 여백).
+    // 호스트 줄은 글자처럼 표만 싣고 오프셋 표의 바깥 틀을 소유하지 않는다.
+    let second_body = find_body(&second).expect("2쪽 Body");
+    let stored_tail_top = second_body.y + OUTER_TOP_HU / HU_PER_PX;
+    assert!(
+        (tail.y - stored_tail_top).abs() <= 1.0,
+        "이어받기 조각 상단 {:.1} ≠ 본문 상단+위 여백 {stored_tail_top:.1}",
+        tail.y
+    );
     let mut next = Vec::new();
     body_lines(&second, NEXT_PI, &mut next);
     assert_eq!(next.len(), 1, "뒤 문단 pi={NEXT_PI} 은 2쪽에 한 줄");
