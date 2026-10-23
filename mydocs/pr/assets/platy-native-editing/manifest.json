@@ -18,7 +18,9 @@
     "below_90_pages_wasm": [
       66
     ],
-    "latest_code_not_rerun_on_this_document": true
+    "latest_code_not_rerun_on_this_document": true,
+    "input_path": "rhwp-studio/public/samples/kps-ai.hwp",
+    "input_sha256": "9b0fceb3d96956f27c893e15a72a1ad94f7ee005bd581381a1aadfcb1f57a7b9"
   },
   "unexecuted": [
     "full default-feature test suite",
@@ -268,6 +270,12 @@
       "sha256": "232f1f7c62ddd90da6ca5c2dbd4fb96664fda027d14384ef635b8aae57cea6e1",
       "bytes": 2073,
       "producer": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867"
+    },
+    {
+      "path": "inputs/kps-ai.hwp.hancom.pdf",
+      "sha256": "6d95c2f18c275f77f5294bacec5ec15ead1b7dbbfe4a39d1df586bcaf54a4824",
+      "bytes": 2030250,
+      "producer": "Hancom Print 12.30.0 build 6544"
     }
   ]
 }
