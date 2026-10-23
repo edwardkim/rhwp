@@ -917,26 +917,45 @@ impl TypesetEngine {
         // 오프셋` 아래로 잡는다. paint 도 같은 원점에서 그려야 컷과 괘선이 어긋나지 않는다 —
         // 전달하지 않으면 앞 여백(바깥 위 여백)만큼 위에 그려진다(#4599, 1790387 20쪽).
         // 호스트 프레임을 떠나 이월된 조각은 문단 원점이 그 쪽에 없으므로 대상이 아니다.
+        // 예산의 계산 원점은 호스트 첫 저장 줄을 이 단의 저장 원점으로 옮긴 위치와 같을 때만
+        // 문단 원점으로 인증한다. 앞 내용의 누적 오차로 둘이 다르거나 저장 원점이 없으면 전달하지
+        // 않는다(148751598 1쪽: 저장 원점 없음, 계산 163.5 / 저장 줄 155.5 — 전달하면 괘선이
+        // 정본보다 7.5px 아래).
         let on_host_frame = prepared.host_frame
             == (
                 st.pages.len(),
                 st.current_column,
                 st.current_zone_y_offset.to_bits(),
             );
-        fragment_placement = fragment_placement.or_else(|| {
-            (is_empty_host_column_float && on_host_frame && cursor_row == 0 && start_cut.is_empty())
-                .then(|| {
-                    let top = fragment_flow_origin + host_before_overhead + vert_offset_overhead;
-                    crate::renderer::float_placement::ParagraphFloatPlacement {
-                        flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
-                        anchor_y: fragment_flow_origin,
-                        stored_host_origin: None,
-                        stored_successor_line_origin: None,
-                        table_left: None,
-                        table_top: top,
-                        occupied_bottom: top,
-                    }
+        let flow_origin_matches_stored_line = para.line_segs.first().is_some_and(|line| {
+            st.vpos_page_base
+                .map(|base| (base, st.vpos_col_anchor))
+                .or(st.vpos_stored_column_origin)
+                .and_then(|(base, column_origin)| {
+                    line.vertical_pos.checked_sub(base).map(|position| {
+                        column_origin + crate::renderer::hwpunit_to_px(position, self.dpi)
+                    })
                 })
+                .is_some_and(|origin| (origin - fragment_flow_origin).abs() <= self.dpi / 7200.0)
+        });
+        fragment_placement = fragment_placement.or_else(|| {
+            (is_empty_host_column_float
+                && on_host_frame
+                && flow_origin_matches_stored_line
+                && cursor_row == 0
+                && start_cut.is_empty())
+            .then(|| {
+                let top = fragment_flow_origin + host_before_overhead + vert_offset_overhead;
+                crate::renderer::float_placement::ParagraphFloatPlacement {
+                    flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                    anchor_y: fragment_flow_origin,
+                    stored_host_origin: None,
+                    stored_successor_line_origin: None,
+                    table_left: None,
+                    table_top: top,
+                    occupied_bottom: top,
+                }
+            })
         });
         // 저장 줄 없는 표 전용 호스트는 계산 흐름 원점을 소유한다.
         // 각 조각 예산이 예약한 앞 여백과 오프셋을 paint에도 같은 원점으로 전달한다.
