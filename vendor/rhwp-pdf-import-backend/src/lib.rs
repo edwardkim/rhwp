@@ -165,6 +165,8 @@ pub mod error;
 pub(crate) mod cache;
 
 // Core PDF parsing
+#[cfg(any(feature = "jbig2", feature = "jpeg2000"))]
+mod codec_resource;
 pub mod document;
 pub mod import_limits;
 pub mod lexer;

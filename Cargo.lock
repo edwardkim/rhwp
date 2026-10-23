@@ -2168,10 +2168,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "rhwp-codec-resource"
+version = "0.1.0"
+
+[[package]]
 name = "rhwp-contracts"
 version = "0.1.0"
 dependencies = [
  "serde_json",
+]
+
+[[package]]
+name = "rhwp-hayro-ccitt"
+version = "0.3.0-rhwp.1"
+dependencies = [
+ "rhwp-codec-resource",
+]
+
+[[package]]
+name = "rhwp-hayro-jbig2"
+version = "0.3.0-rhwp.1"
+dependencies = [
+ "rhwp-codec-resource",
+ "rhwp-hayro-ccitt",
+]
+
+[[package]]
+name = "rhwp-hayro-jpeg2000"
+version = "0.4.0-rhwp.1"
+dependencies = [
+ "rhwp-codec-resource",
 ]
 
 [[package]]
@@ -2245,6 +2271,9 @@ dependencies = [
  "phf",
  "quick-xml 0.42.0",
  "regex",
+ "rhwp-codec-resource",
+ "rhwp-hayro-jbig2",
+ "rhwp-hayro-jpeg2000",
  "rhwp-jpeg-decoder",
  "rhwp-zune-jpeg",
  "serde",

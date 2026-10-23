@@ -16,6 +16,7 @@
     {"consumer": "src/mcp_serve.rs", "path": "mydocs/tech/agent_roadmap/atlas_r1_r200.md"},
     {"consumer": "src/mcp_serve.rs", "path": "mydocs/manual/gym_optional_tool.md"},
     {"consumer": "src/renderer/boxed_digit_geometry.rs", "path": "assets/fonts/boxed-digit-metrics.json"},
-    {"consumer": "src/renderer/equation/variable_outline.rs", "path": "assets/fonts/LatinModernMath-VariableOutline-subset.otf"}
+    {"consumer": "src/renderer/equation/variable_outline.rs", "path": "assets/fonts/LatinModernMath-VariableOutline-subset.otf"},
+    {"consumer": "vendor/rhwp-hayro-jpeg2000/src/lib.rs", "path": "vendor/rhwp-hayro-jpeg2000/assets/LAB.icc"}
   ]
 }

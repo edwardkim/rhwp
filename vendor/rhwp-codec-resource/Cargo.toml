@@ -1,0 +1,14 @@
+[package]
+name = "rhwp-codec-resource"
+version = "0.1.0"
+edition = "2021"
+publish = false
+license = "MIT"
+description = "Request-scoped fallible allocation and work hooks for rhwp PDF codecs"
+repository = "https://github.com/edwardkim/rhwp"
+readme = "README.md"
+include = ["/Cargo.toml", "/src/**", "/LICENSE", "/README.md"]
+
+[features]
+default = []
+scoped = []

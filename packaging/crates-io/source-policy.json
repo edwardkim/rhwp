@@ -89,6 +89,78 @@
       "local_dependencies": []
     },
     {
+      "source": "vendor/rhwp-codec-resource",
+      "published_name": "rhwp-codec-resource",
+      "version": "0.1.0",
+      "include": [
+        "Cargo.toml",
+        "src/**",
+        "LICENSE",
+        "README.md"
+      ],
+      "extra_repository_files": {},
+      "local_dependencies": []
+    },
+    {
+      "source": "vendor/rhwp-hayro-ccitt",
+      "published_name": "rhwp-hayro-ccitt",
+      "version": "0.3.0-rhwp.1",
+      "include": [
+        "Cargo.toml",
+        "src/**",
+        "LICENSE-*",
+        "README.md",
+        "NOTICE",
+        "RHWP_PATCHES.md",
+        "UPSTREAM_FILES.json",
+        "upstream/**"
+      ],
+      "extra_repository_files": {},
+      "local_dependencies": [
+        "rhwp-codec-resource"
+      ]
+    },
+    {
+      "source": "vendor/rhwp-hayro-jbig2",
+      "published_name": "rhwp-hayro-jbig2",
+      "version": "0.3.0-rhwp.1",
+      "include": [
+        "Cargo.toml",
+        "src/**",
+        "LICENSE-*",
+        "README.md",
+        "NOTICE",
+        "RHWP_PATCHES.md",
+        "UPSTREAM_FILES.json",
+        "upstream/**"
+      ],
+      "extra_repository_files": {},
+      "local_dependencies": [
+        "rhwp-hayro-ccitt",
+        "rhwp-codec-resource"
+      ]
+    },
+    {
+      "source": "vendor/rhwp-hayro-jpeg2000",
+      "published_name": "rhwp-hayro-jpeg2000",
+      "version": "0.4.0-rhwp.1",
+      "include": [
+        "Cargo.toml",
+        "src/**",
+        "assets/**",
+        "LICENSE-*",
+        "README.md",
+        "NOTICE",
+        "RHWP_PATCHES.md",
+        "UPSTREAM_FILES.json",
+        "upstream/**"
+      ],
+      "extra_repository_files": {},
+      "local_dependencies": [
+        "rhwp-codec-resource"
+      ]
+    },
+    {
       "source": "vendor/rhwp-pdf-import-backend",
       "published_name": "rhwp-pdf-import-backend",
       "version": "0.3.78-rhwp.1",
@@ -108,7 +180,10 @@
       "extra_repository_files": {},
       "local_dependencies": [
         "rhwp-jpeg-decoder",
-        "rhwp-zune-jpeg"
+        "rhwp-zune-jpeg",
+        "rhwp-codec-resource",
+        "rhwp-hayro-jbig2",
+        "rhwp-hayro-jpeg2000"
       ]
     },
     {

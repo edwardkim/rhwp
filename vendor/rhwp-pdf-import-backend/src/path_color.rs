@@ -207,7 +207,7 @@ fn resolve_name(
             }
         }
     }
-    return Ok(PathColorSpace::Unsupported);
+    Ok(PathColorSpace::Unsupported)
 }
 
 struct ColourUpdate {
