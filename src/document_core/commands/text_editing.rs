@@ -3319,6 +3319,7 @@ impl DocumentCore {
                     && p.controls.iter().enumerate().any(|(ci, control)| {
                         Paragraph::is_split_movable_control(control)
                             && logical > text_to_split_logical_offset(p, positions[ci], false)
+                            && logical < text_to_split_logical_offset(p, positions[ci], true)
                             && p.controls.iter().enumerate().any(|(other, control)| {
                                 other != ci
                                     && Paragraph::is_split_movable_control(control)

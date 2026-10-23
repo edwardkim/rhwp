@@ -4,6 +4,101 @@
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 
+fn logical_slot_document(
+    text: &str,
+    offsets: Vec<u32>,
+    controls: Vec<Control>,
+) -> rhwp::wasm_api::HwpDocument {
+    let mut doc = rhwp::wasm_api::HwpDocument::create_empty();
+    let para = &mut doc.document_mut().sections[0].paragraphs[0];
+    para.text = text.into();
+    para.char_offsets = offsets;
+    para.char_count = text.encode_utf16().count() as u32
+        + controls.len() as u32 * rhwp::model::control::CTRL_CHAR_CODE_UNITS
+        + 1;
+    para.controls = controls;
+    para.align_ctrl_data_records();
+    doc
+}
+
+#[test]
+fn char_overlap_offsets_length_and_logical_edits_share_one_slot_axis() {
+    let mut picture = rhwp::model::image::Picture::default();
+    picture.common.treat_as_char = true;
+    let mut doc = logical_slot_document(
+        "A🦦BC",
+        vec![0, 9, 19, 20],
+        vec![
+            Control::CharOverlap(rhwp::model::control::CharOverlap {
+                chars: vec!['가', '나'],
+                ..Default::default()
+            }),
+            Control::Picture(Box::new(picture)),
+        ],
+    );
+    assert_eq!(
+        doc.document().sections[0].paragraphs[0].logical_control_positions(),
+        [1, 3]
+    );
+    assert_eq!(doc.get_logical_length(0, 0).unwrap(), 6);
+    assert_eq!(
+        (0..=6)
+            .map(|i| doc.logical_to_text_offset(0, 0, i).unwrap())
+            .collect::<Vec<_>>(),
+        [0, 1, 1, 2, 2, 3, 4]
+    );
+    for i in 0..=4 {
+        let logical = doc.text_to_logical_offset(0, 0, i).unwrap();
+        assert_eq!(doc.logical_to_text_offset(0, 0, logical).unwrap(), i);
+    }
+    doc.copy_selection_logical_native(0, 0, 2, 0, 3).unwrap();
+    assert_eq!(doc.get_clipboard_text_native(), "🦦");
+    let before = doc.save_snapshot_native();
+    doc.delete_range_logical_native(0, 0, 2, 0, 3).unwrap();
+    assert_eq!(doc.document().sections[0].paragraphs[0].text, "ABC");
+    assert_eq!(doc.document().sections[0].paragraphs[0].controls.len(), 2);
+    doc.restore_snapshot_native(before).unwrap();
+    assert_eq!(doc.get_logical_length(0, 0).unwrap(), 6);
+    assert_eq!(doc.logical_to_text_offset(0, 0, 2).unwrap(), 1);
+}
+
+#[test]
+fn adjacent_inline_slots_do_not_consume_text_and_keep_ambiguous_boundary_guard() {
+    let mut picture = rhwp::model::image::Picture::default();
+    picture.common.treat_as_char = true;
+    let mut doc = logical_slot_document(
+        "가🦦끝",
+        vec![0, 17, 19],
+        vec![
+            Control::Picture(Box::new(picture)),
+            Control::Footnote(Box::default()),
+        ],
+    );
+    assert_eq!(
+        doc.document().sections[0].paragraphs[0].control_text_positions(),
+        [1, 1]
+    );
+    assert_eq!(doc.get_logical_length(0, 0).unwrap(), 5);
+    assert_eq!(
+        (0..=5)
+            .map(|i| doc.logical_to_text_offset(0, 0, i).unwrap())
+            .collect::<Vec<_>>(),
+        [0, 1, 1, 1, 2, 3]
+    );
+    doc.copy_selection_logical_native(0, 0, 3, 0, 4).unwrap();
+    assert_eq!(doc.get_clipboard_text_native(), "🦦");
+    let before = serde_json::to_value(&doc.document().sections[0].paragraphs[0]).unwrap();
+    assert!(doc.delete_range_logical_native(0, 0, 2, 0, 3).is_err());
+    assert_eq!(
+        serde_json::to_value(&doc.document().sections[0].paragraphs[0]).unwrap(),
+        before
+    );
+    assert_eq!(doc.get_clipboard_text_native(), "🦦");
+    doc.delete_range_logical_native(0, 0, 3, 0, 4).unwrap();
+    assert_eq!(doc.document().sections[0].paragraphs[0].text, "가끝");
+    assert_eq!(doc.document().sections[0].paragraphs[0].controls.len(), 2);
+}
+
 fn objects(core: &DocumentCore) -> Vec<String> {
     core.document().sections[0]
         .paragraphs
