@@ -26818,9 +26818,6 @@ impl LayoutEngine {
             self.dpi,
         );
         let mut max_h = 0.0f64;
-        let continuation_without_row_padding = !is_whole_row
-            && start_cut.iter().any(|cut| *cut > 0)
-            && self.has_stored_square_picture_flow_in_row(table, row);
         for (i, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
             let su = start_cut.get(i).copied().unwrap_or(0).min(units.len());
@@ -26887,11 +26884,9 @@ impl LayoutEngine {
                 .iter()
                 .any(|unit| self.empty_unit_owns_flow_line_box(cell, table, unit, styles));
             let pad_cell = if is_whole_row || has_visible_cut || owns_line_box {
-                if continuation_without_row_padding {
-                    0.0
-                } else {
-                    pad_top + pad_bottom
-                }
+                // 각 물리 조각이 실제 paint에서 쓰는 안 여백이다.
+                // 같은 행의 다른 조각이 그림을 소유한다는 이유로 지우지 않는다.
+                pad_top + pad_bottom
             } else {
                 0.0
             };
@@ -27219,14 +27214,6 @@ impl LayoutEngine {
         start_cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> Vec<f64> {
-        if start_cut.iter().any(|cut| *cut > 0)
-            && self.has_stored_square_picture_flow_in_row(table, row)
-        {
-            // 이 형상의 첫 조각이 이미 행의 패딩을 소유한다. continuation에 같은
-            // top/bottom padding을 다시 예약하면 다음 중첩 표 atom이 한 쪽 일찍
-            // 이월되어 한컴보다 물리 쪽 수가 늘어난다.
-            return vec![0.0; self.indexed_row_cut_cell_order(table, row).len()];
-        }
         let row_cells: Vec<&crate::model::table::Cell> = self
             .indexed_row_cut_cell_order(table, row)
             .into_iter()
@@ -27369,24 +27356,6 @@ impl LayoutEngine {
             }
             cut = next;
         }
-    }
-
-    fn has_stored_square_picture_flow_in_row(
-        &self,
-        table: &crate::model::table::Table,
-        row: usize,
-    ) -> bool {
-        self.profile.get().hwp5_stored_pagination_layout()
-            && matches!(table.page_break, TablePageBreak::RowBreak)
-            && table.cells.iter().any(|cell| {
-                cell.row as usize == row
-                    && cell.row_span == 1
-                    && cell.paragraphs.iter().enumerate().any(|(para_idx, para)| {
-                        para.controls.iter().enumerate().any(|(control_idx, _)| {
-                            stored_square_picture_has_adjacent_text(cell, para_idx, control_idx)
-                        })
-                    })
-            })
     }
 
     /// 줄 범위(line_ranges)에 해당하는 셀 콘텐츠의 실제 렌더링 높이를 계산한다.
