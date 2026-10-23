@@ -330,17 +330,25 @@ impl TypesetEngine {
                 }
             }
         } else {
-            // 쪽 첫 문단이 제목 표(쪽·종이 기준 어울림 표)의 host 이고 그 저장 첫 줄이 표 바깥
-            // 아래에서 시작하면, 한/글처럼 그 줄부터 저장 위치에 둔다. 쪽 원점은 0 이다.
-            // 흐름은 host 를 배치한 뒤 그 저장 줄 아래끝으로 맞춘다. 미리 내리면 쪽을 거의
-            // 채운 어울림 표가 내려간 흐름 아래에서 자리를 못 찾아 쪼개진다.
-            let title_page_start = st.current_items.is_empty()
-                && st.col_count == 1
+            // 쪽 첫 저장 줄이 제목 표(쪽·종이 기준 어울림 표) 바깥 아래에서 시작한 쪽은, 한/글처럼
+            // 그 줄부터 저장 위치에 둔다. 쪽 원점은 0 이다. 제목 표 host 가 쪽을 열었든, 앞의
+            // 빈 문단 뒤에 오든 같다. 흐름은 host 를 배치한 뒤 그 저장 줄 아래끝으로 맞춘다.
+            // 미리 내리면 쪽을 거의 채운 어울림 표가 내려간 흐름 아래에서 자리를 못 찾아 쪼개진다.
+            let page_opener = st
+                .current_items
+                .first()
+                .and_then(crate::renderer::typeset::page_item_para_index)
+                .unwrap_or(para_idx);
+            let title_page = st.col_count == 1
                 && (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
                 && !st.profile.session_edited()
                 && crate::renderer::layout::stored_first_line_clears_page_square_table(
-                    paragraphs, para_idx, &st.layout, self.dpi,
+                    paragraphs,
+                    page_opener,
+                    &st.layout,
+                    self.dpi,
                 );
+            let title_page_start = title_page && st.current_items.is_empty();
             if title_page_start {
                 st.record_vpos_column_anchor(st.current_height);
                 st.record_vpos_page_origin(Some(0));
@@ -363,11 +371,19 @@ impl TypesetEngine {
                 paragraphs,
                 composed,
             );
-            // 그 host 의 저장 줄(제목 표 앵커만 든 줄 포함)도 흐름을 차지한다. 그리는 쪽은
-            // 이 줄을 그린 뒤 다음 문단을 잇는다.
-            if title_page_start
-                && matches!(st.current_items.first(),
-                    Some(PageItem::Table { para_index, .. }) if *para_index == para_idx)
+            // 그 쪽 제목 표 host 의 저장 줄(제목 표 앵커만 든 줄 포함)도 흐름을 차지한다. 그리는
+            // 쪽은 이 줄을 그린 뒤 다음 문단을 잇는다.
+            if title_page
+                && st.current_items.iter().any(|item| {
+                    matches!(item, PageItem::Table { para_index, control_index }
+                        if *para_index == para_idx
+                            && matches!(para.controls.get(*control_index),
+                                Some(Control::Table(table))
+                                    if !table.common.treat_as_char
+                                        && matches!(table.common.text_wrap, crate::model::shape::TextWrap::Square)
+                                        && matches!(table.common.vert_rel_to,
+                                            crate::model::shape::VertRelTo::Page | crate::model::shape::VertRelTo::Paper)))
+                })
             {
                 if let Some(last) = para.line_segs.last() {
                     let bottom = last

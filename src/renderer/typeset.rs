@@ -978,9 +978,22 @@ fn para_is_pre_paper_page_square_table_scaffold(para_idx: usize, paragraphs: &[P
         return false;
     }
 
-    paragraphs
+    let Some(next) = paragraphs
         .get(para_idx + 1)
-        .is_some_and(para_is_paper_page_square_empty_table_anchor)
+        .filter(|next| para_is_paper_page_square_empty_table_anchor(next))
+    else {
+        return false;
+    };
+    // 원본 저장 사다리가 이 빈 문단을 지나며 앞으로 나아갔다면 한/글은 이 문단에 줄을
+    // 줬다(표 앞 빈 줄도 본문 흐름을 차지한다). 그 경우는 스캐폴드로 감추지 않는다.
+    // 합성 줄은 이 증거로 쓰지 않는다.
+    !matches!(
+        (para.line_segs.last(), next.line_segs.first()),
+        (Some(own), Some(following))
+            if own.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && following.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && following.vertical_pos > own.vertical_pos
+    )
 }
 
 fn para_is_post_paper_page_square_table_scaffold(
