@@ -9550,18 +9550,26 @@ impl LayoutEngine {
                         y_offset - col_area.y,
                     );
                 // [#8149] 인증 배치가 없는 빈 host 자리차지 표 상자 뒤도 조판과 같은 소비를 한다.
+                // 소비량은 상자 바닥(스냅 전 흐름 끝)에서 잰다. 저장 줄 스냅이 이미 같은 앞 간격을
+                // 되돌렸으면 다시 빼지 않는다.
                 let stored_frame_shared_spacing = if stored_frame_shared_spacing > 0.0 {
                     stored_frame_shared_spacing
                 } else {
-                    crate::renderer::float_placement::empty_host_float_successor_absorbed_spacing_px(
-                        item_ordinal
-                            .checked_sub(1)
-                            .and_then(|index| col_content.items.get(index)),
-                        paragraphs,
-                        item_para,
-                        spacing_before,
-                        self.dpi,
-                    )
+                    let absorbed =
+                        crate::renderer::float_placement::empty_host_float_successor_absorbed_spacing_px(
+                            item_ordinal
+                                .checked_sub(1)
+                                .and_then(|index| col_content.items.get(index)),
+                            paragraphs,
+                            item_para,
+                            spacing_before,
+                            self.dpi,
+                        );
+                    if absorbed > 0.0 {
+                        (y_offset - (y_before_vpos_adjust - absorbed)).clamp(0.0, absorbed)
+                    } else {
+                        0.0
+                    }
                 };
                 y_offset -= stored_frame_shared_spacing;
                 let shared_spacing =
