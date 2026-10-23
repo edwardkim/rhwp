@@ -68,7 +68,21 @@ static RANGES_3: [LatinRange; 1] = [LatinRange {
     widths: &ASCII_3,
 }];
 
-pub(super) static METRICS: [FontMetric; 5] = [
+/// HWP3 시절 `고딕` HFT 프로그램의 ASCII 는 모두 반각(0.5em) 고정폭이다.
+/// 근거: pdf/hwp3-sample11-hwpx-hwpx-2020.pdf · pdf/hwp3-sample11-hwp-2020.pdf (Hwp 2022 Print)
+/// 66쪽 `A.V.Aho, P.J. Weinberger, B. Kernigham` 의 Type3 글꼴 — 문자 코드 0x20–0x7E 의
+/// glyph 폭 95개가 모두 500/1000, 글자 원점 간격도 0.494–0.506em(600dpi 격자). HWP3 원본
+/// 경로(선언 `고딕`, 비HFT)의 반각 측정과 같은 값이다. 굵게는 다른 HFT 프로그램과 같이
+/// 약 0.05em 추가 전진을 받는다(pdf/hwp3-sample4-hwp5-hwp-2020.pdf 3쪽 굵은 한글 1.055em).
+static ASCII_GOTHIC: [u16; 95] = [500; 95];
+const GOTHIC_METRIC_NAME: &str = "고딕 (HFT)";
+static RANGES_GOTHIC: [LatinRange; 1] = [LatinRange {
+    start: 0x0020,
+    end: 0x007e,
+    widths: &ASCII_GOTHIC,
+}];
+
+pub(super) static METRICS: [FontMetric; 6] = [
     FontMetric {
         name: "신명 디나루 (HFT)",
         bold: false,
@@ -101,6 +115,14 @@ pub(super) static METRICS: [FontMetric; 5] = [
         latin_ranges: &RANGES_3,
         hangul: None,
     },
+    FontMetric {
+        name: GOTHIC_METRIC_NAME,
+        bold: false,
+        italic: false,
+        em_size: 1000,
+        latin_ranges: &RANGES_GOTHIC,
+        hangul: None,
+    },
     konghan::METRIC,
 ];
 
@@ -112,6 +134,7 @@ pub(crate) fn metric_face_name(requested: &str) -> Option<&'static str> {
         "신명 디나루" => Some("신명 디나루 (HFT)"),
         "신명 신그래픽" => Some("신명 신그래픽 (HFT)"),
         "중간공한" | "Konghan Normal" => Some("중간공한 (HFT)"),
+        "고딕" => Some(GOTHIC_METRIC_NAME),
         _ => None,
     }
 }

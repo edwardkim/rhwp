@@ -495,6 +495,8 @@ pub struct LatinSlotMetrics {
     pub font_family: String,
     pub metric_font_family: Option<String>,
     pub font_metric_trusted: bool,
+    /// [#8079] 영문 슬롯의 선언 face 가 HFT 프로그램인지 — [`TextStyle::source_font_is_hft`] 와 같은 뜻.
+    pub source_font_is_hft: bool,
     pub letter_spacing: f64,
     pub ratio: f64,
 }

@@ -933,6 +933,7 @@ pub(crate) fn resolved_to_text_style(
                     font_family: cs.font_family_for_lang(1).to_string(),
                     metric_font_family: cs.metric_face_for_lang(1).map(str::to_string),
                     font_metric_trusted: cs.font_metric_trusted_for_lang(1),
+                    source_font_is_hft: cs.source_hft_for_lang(1),
                     letter_spacing: resolved_letter_spacing(styles, char_style_id, 1),
                     ratio: cs.ratio_for_lang(1),
                 })
@@ -1350,11 +1351,17 @@ fn measure_char_width_embedded_decision<'a>(
         font_size,
         false,
         false,
+        false,
     )
 }
 
 /// [#7092] `font_metric_trusted` — 메트릭 표를 그 글꼴 자신의 폭으로 믿을 수 있는지
 /// (TTF 선언 · 대체 없음). 스타일을 모르는 호출은 거짓으로 종전 측정을 따른다.
+///
+/// [#8079] `regular_bold_advance` — 굵은 글자의 전진폭을 같은 family 보통 표에서 읽는다.
+/// 선언 face 가 TrueType 일 때만 참이다(HFT 프로그램은 제 Bold 전진폭을 쓴다).
+/// 스타일을 모르는 호출은 거짓으로 종전 측정을 따른다.
+#[allow(clippy::too_many_arguments)]
 fn measure_char_width_embedded_decision_for_font<'a>(
     font_family: &'a str,
     bold: bool,
@@ -1363,6 +1370,7 @@ fn measure_char_width_embedded_decision_for_font<'a>(
     font_size: f64,
     font_metric_trusted: bool,
     hft_hangul_face: bool,
+    regular_bold_advance: bool,
 ) -> EmbeddedWidthDecision<'a> {
     let primary_name = font_family
         .split(',')
@@ -1422,6 +1430,13 @@ fn measure_char_width_embedded_decision_for_font<'a>(
                 character_match: "miss",
             };
         };
+        // [#8079] 굵은 글자는 Bold 면으로 그리되 전진폭은 같은 family 보통 면의 값이다.
+        // 보통 표에 없는 글자는 Bold 폭을 그대로 쓴다(결측을 0 폭으로 만들지 않는다).
+        let glyph_w = regular_bold_advance
+            .then(|| font_metrics_data::regular_advance_metric(mm.metric))
+            .flatten()
+            .and_then(|regular| regular.get_width(c))
+            .unwrap_or(glyph_w);
         // 검증된 TrueType의 가운뎃점·따옴표는 원 프로그램의 전진폭을 쓴다.
         // 독립 Print의 같은 glyph outline과 이웃 글자 원점도 전각 전진을 입증한다.
         // 같은 이름의 HFT 출력은 좁은 호환 폭을 쓰므로 확인된 프로그램 선택에서만
@@ -1665,6 +1680,9 @@ fn char_width_decision_with_hft_tracking<'a>(
             style.bold,
             style.regenerated_font_metrics,
         );
+        // [#8079] TrueType 로 선언된 face 의 굵은 글자는 보통 면 전진폭으로 잰다.
+        let regular_bold_advance =
+            !latin.map_or(style.source_font_is_hft, |l| l.source_font_is_hft);
         let mut embedded = measure_char_width_embedded_decision_for_font(
             measured_family,
             measured_bold,
@@ -1673,6 +1691,7 @@ fn char_width_decision_with_hft_tracking<'a>(
             font_size,
             latin.map_or(style.font_metric_trusted, |l| l.font_metric_trusted),
             latin.is_none() && style.hft_hangul_face,
+            regular_bold_advance,
         );
         // 부분 표의 미수집은 글리프 부재가 아니다. 확인한 원본 폭이 없으면
         // 기존 표시 face의 폭을 보존한다. ASCII 밖의 전각 괄호도 반각으로 줄이지 않는다.
@@ -1688,6 +1707,7 @@ fn char_width_decision_with_hft_tracking<'a>(
                 font_size,
                 false,
                 false,
+                regular_bold_advance,
             );
             if display_metric.width_px.is_some() {
                 embedded = display_metric;
@@ -1736,6 +1756,7 @@ fn char_width_decision_with_hft_tracking<'a>(
                     font_size,
                     false,
                     false,
+                    regular_bold_advance,
                 );
                 if fallback.width_px.is_some()
                     && fallback.metric.is_some_and(|found| {
@@ -1756,6 +1777,7 @@ fn char_width_decision_with_hft_tracking<'a>(
                         font_size,
                         false,
                         false,
+                        regular_bold_advance,
                     );
                     embedded.width_source = "declaredGlyphFallbackMetric";
                     break;
@@ -2258,6 +2280,7 @@ pub fn forces_halfwidth_punct_paint(style: &TextStyle, c: char) -> bool {
         style.font_size,
         style.font_metric_trusted,
         style.hft_hangul_face,
+        !style.source_font_is_hft,
     );
     // 그 글리프의 전진폭을 그대로 썼다면 폭이 전각인지와 관계없이 다시 누르지 않는다.
     // 휴먼명조의 검증된 프로그램 폭과 Times의 좁은 원 글리프도 같은 계약이다.

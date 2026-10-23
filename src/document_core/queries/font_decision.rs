@@ -394,6 +394,28 @@ fn transform_steps(
             reason: Some("fauxBoldDoesNotChangeLayoutAdvance".into()),
         });
     }
+    // [#8079] 실제 Bold 면도 전진폭은 보통 면에서 — 측정과 같은 조건·helper 로 판정한다.
+    let latin_slot = ch
+        .is_ascii_punctuation()
+        .then_some(run.style.ascii_punct_latin.as_deref())
+        .flatten();
+    let source_font_is_hft =
+        latin_slot.map_or(run.style.source_font_is_hft, |l| l.source_font_is_hft);
+    if !source_font_is_hft
+        && decision.width_source == "embeddedMetric"
+        && decision.metric.is_some_and(|metric| {
+            crate::renderer::font_metrics_data::regular_advance_metric(metric.metric)
+                .and_then(|regular| regular.get_width(ch))
+                .is_some()
+        })
+    {
+        steps.push(DecisionStep {
+            kind: "regularAdvanceForBold".into(),
+            input: Some("bold".into()),
+            output: Some("regularMetricAdvance".into()),
+            reason: Some("boldFaceDrawsAtRegularAdvance".into()),
+        });
+    }
     if (run.style.ratio - 1.0).abs() > f64::EPSILON {
         steps.push(DecisionStep {
             kind: "ratio".into(),

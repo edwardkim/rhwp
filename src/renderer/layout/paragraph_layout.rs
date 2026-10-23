@@ -6956,20 +6956,20 @@ impl LayoutEngine {
                     .map(|(pos, _, _)| *pos)
                     .max(),
             );
-            let soft_wrap_separator_width = if !is_last_line_of_para && !has_forced_break {
-                trailing_space_width_after_last_inline_object(
-                    comp_line,
-                    line_tac_offsets_for_width
-                        .iter()
-                        .map(|(pos, _, _)| *pos)
-                        .max(),
-                    styles,
-                    true,
-                )
-            } else {
-                // 문단 끝·명시 개행의 작성 공백과 밑줄 친 공백은 유지한다.
-                0.0
-            };
+            // 줄 끝 공백은 줄 맞춤(압축) 판정에서 뺀다 — 자동 줄바꿈 구분 공백뿐 아니라
+            // 문단 끝·명시 개행 앞의 작성 공백도 한/글에서는 줄 밖으로 걸친다
+            // (hwpx_sample2 2쪽 `… 충족해야 합니다. `: 저장 줄 sw 52660HU 안에 가시 본문이
+            // 들고 말미 공백만 넘는다. 한컴 Print 는 본문을 압축하지 않고 그린다).
+            // 밑줄 친 공백과 마지막 개체 앞 공백은 helper 가 가시 내용으로 남긴다.
+            let soft_wrap_separator_width = trailing_space_width_after_last_inline_object(
+                comp_line,
+                line_tac_offsets_for_width
+                    .iter()
+                    .map(|(pos, _, _)| *pos)
+                    .max(),
+                styles,
+                true,
+            );
             let (extra_word_sp, extra_char_sp, extra_dash_sp) = if is_hancom_company_pua_logo_line {
                 // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
                 // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
