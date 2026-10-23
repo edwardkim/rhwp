@@ -7,6 +7,8 @@ pub(super) struct SourceWindow {
     pub bounds: [u32; 4],
     pub full_width: u32,
     pub full_height: u32,
+    /// crop 전체가 원본 안에 있을 때만 잘린 바이트로 원본을 대체할 수 있다.
+    pub contained: bool,
 }
 
 impl SourceWindow {
@@ -14,6 +16,7 @@ impl SourceWindow {
         if width == 0 || height == 0 {
             return None;
         }
+        let mut contained = true;
         let bounds = if let Some((left, top, right, bottom)) = image.crop {
             if right.checked_sub(left)? <= 0 || bottom.checked_sub(top)? <= 0 {
                 return None;
@@ -21,19 +24,18 @@ impl SourceWindow {
             if let Some((ref_width, ref_height)) =
                 super::image_crop_reference(image).filter(|&(w, h)| w > 0 && h > 0)
             {
-                // 원본 밖의 여백은 별도 전송 계약이다. 교집합을 frame 전체로 늘리지 않는다.
-                if left < 0
-                    || top < 0
-                    || i64::from(right) > i64::from(ref_width)
-                    || i64::from(bottom) > i64::from(ref_height)
-                {
-                    return None;
-                }
+                // 팔레트는 실제 원본과의 교집합을 센다. 원본 밖 여백이 있으면
+                // 잘린 바이트로 frame을 채우지 않고 기존 crop 전송을 유지한다.
+                contained = left >= 0
+                    && top >= 0
+                    && i64::from(right) <= i64::from(ref_width)
+                    && i64::from(bottom) <= i64::from(ref_height);
                 let edge = |value: i32, pixels: u32, reference: u32, ceil: bool| {
                     let numerator = i64::from(value) * i64::from(pixels);
                     let reference = i64::from(reference);
                     let whole = numerator.div_euclid(reference);
-                    (whole + i64::from(ceil && numerator.rem_euclid(reference) != 0)) as u32
+                    (whole + i64::from(ceil && numerator.rem_euclid(reference) != 0))
+                        .clamp(0, i64::from(pixels)) as u32
                 };
                 [
                     edge(left, width, ref_width, true),
@@ -48,19 +50,16 @@ impl SourceWindow {
                     f64::from(width),
                     f64::from(height),
                 );
-                if ![x, y, w, h].iter().all(|v| v.is_finite())
-                    || x < 0.0
-                    || y < 0.0
-                    || x + w > f64::from(width)
-                    || y + h > f64::from(height)
-                {
+                if ![x, y, w, h].iter().all(|v| v.is_finite()) {
                     return None;
                 }
+                contained =
+                    x >= 0.0 && y >= 0.0 && x + w <= f64::from(width) && y + h <= f64::from(height);
                 [
-                    x.ceil() as u32,
-                    y.ceil() as u32,
-                    (x + w).floor() as u32,
-                    (y + h).floor() as u32,
+                    x.ceil().clamp(0.0, f64::from(width)) as u32,
+                    y.ceil().clamp(0.0, f64::from(height)) as u32,
+                    (x + w).floor().clamp(0.0, f64::from(width)) as u32,
+                    (y + h).floor().clamp(0.0, f64::from(height)) as u32,
                 ]
             }
         } else {
@@ -70,6 +69,7 @@ impl SourceWindow {
             bounds,
             full_width: width,
             full_height: height,
+            contained,
         })
     }
 

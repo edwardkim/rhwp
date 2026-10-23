@@ -34,7 +34,7 @@ pub(crate) fn print_bitmap_payload(image: &ImageNode) -> Option<ResolvedImagePay
     }
     let window = SourceWindow::for_image(image, header.width, header.height)?;
     // 자연 크기·반복 채움은 crop 이후의 반복 단위와 원점을 별도로 소비한다.
-    if window.is_partial() && image.fill_mode.is_none() {
+    if window.contained && window.is_partial() && image.fill_mode.is_none() {
         let bounds = window.bounds;
         let data = memoized(
             Conversion::Hancom2024BitmapWindow { bounds },
