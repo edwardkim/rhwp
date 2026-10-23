@@ -79,7 +79,8 @@ IJG 모듈 이동 후 실제 diagnostic build는 7초·exit 0이다. 공개 참�
 Q 아이콘을 쓰는 페이지가 후퇴했다. 원본 `BinData/image352.jpg`는 일반 bounded decoder에서
 254색·예약색 포함 255색이다. Print IDCT를 먼저 적용하면 256색·예약색 포함 257색이 되어
 팔레트 그림을 RGB555 truecolor로 잘못 분류한다. 독립 한컴 PDF 290쪽의 xref 2138은
-원본 JPEG 전달이며, 이 후보의 대응 그림은 변환 PNG다.
+RGB555 PNG가 아닌 JPEG 압축 전달이며, 이 후보의 대응 그림은 변환 PNG다.
+독립 PDF의 JPEG도 재압축된 결과이므로 원본 파일의 바이트 보존을 기대값으로 삼지 않는다.
 
 보정은 문서나 그림 번호로 분기하지 않는다. `원본 bounded decode → 보이는 창의 팔레트
 판정 → truecolor일 때만 Print decode → 같은 창 → RGB555 → 압축` 순서를 공통화한다.
@@ -89,3 +90,57 @@ Q 아이콘을 쓰는 페이지가 후퇴했다. 원본 `BinData/image352.jpg`�
 독립 PDF의 Q 그림 전달과 90쪽 사진을 함께 검사하고, 기존 crop·예약색·BMP/PNG 경계도
 확인한다. 이후 두 형식의 전쪽 Native/fresh WASM을 다시 비교한다. 이전 766쪽 결과는
 실제 후퇴 증거로 보존하며 새 후보의 검증으로 재사용하지 않는다.
+
+## `2cb8223029`의 실제 Native 재검증
+
+공유 target의 상대 경로 dep-info가 이전 devel의 JPEG 아티팩트를 재사용해 첫 빌드가
+실패했다. 후보의 변경 소스 91개는 내용 해시를 유지한 채 수정 시각을 갱신했고,
+JPEG decoder·encoder·PDF import 패키지의 재컴파일을 확인했다. 다시 실행한
+`release-test` Native 빌드는 jobs 8에서 13분 47초·exit 0이다. 캐시 전체를 삭제하지 않았다.
+
+동일한 원본·기존 2024 Print·96dpi의 Native 전 766쪽에서 입력/PNG/PDF 해시와
+383쪽씩의 대응을 확인했다.
+
+| 입력 | 전쪽 최저 raw % | 미대응 0픽셀 쪽 | 미대응 픽셀 합 |
+| --- | ---: | ---: | ---: |
+| 편람 HWPX | 98.59333 | 190 / 383 | 26294 |
+| 편람 HWP | 98.59338 | 157 / 383 | 25415 |
+
+이전 완료 후보 `fbe2ea2e54`와 비교하면 282–307쪽의 Q 아이콘 구간은 전부 복원됐다.
+90·145쪽은 양쪽 형식 모두 raw 100%이며, 91·246쪽도 개선됐다. 다만 144쪽은 양쪽에서
+미대응 픽셀이 438개에서 439개로 1개 늘었다. 이 차이도 전쪽 100% 목표의 잔여 항목으로
+유지한다. 최신 기준 `d9fd85ed5b`와 비교한 0.1%p 이상 하락은 없다.
+
+원본 두 형식의 Q 전달 검사는 수정 전 2건 실패·수정 후 2건 통과다. 독립 PDF 290쪽의
+Q 그림은 **2개**다. 초기 진단에서 배경 3개와 혼동한 개수 assertion을 독립 PDF의 실제
+인스턴스로 정정했다. 90쪽 최종 Print JPEG의 독립 RGB 대조 2건도 통과했다.
+이 실행은 진단용 consumer 검사이며 정식 회귀 신규 등록을 대신하지 않는다.
+
+## 기존 팔레트 검사 4건의 재검토
+
+`verified_print_bitmap_visible_palette.rs`와 `verified_hancom2024_reserved_palette.rs`의
+4건은 수정 전 `d5050daa77`에서도 동일하게 실패한다. 원본 3개·독립 Print의 Native 점수는
+99.99862%·100%·100%이고 이번 팔레트 순서 수정 전후의 PNG 바이트도 같다.
+
+새 Print 전달은 장치별 JPEG와 잘린 창을 게시하므로, 과거 `catmullRom` 마커·원본 RGBA
+불변·모든 출력의 bin 키 재조회 전제를 그대로 적용할 수 있는지 확인해야 한다.
+독립 PDF의 23개 그림 인스턴스와 최종 payload를 대조하면 22개는 크기와 RGB 전 픽셀이
+같지만 위쪽 crop 1개는 실제 RGB 차이가 남는다. 이 차이를 먼저 보정하고 독립 기대값과
+현재 Native/fresh WASM의 시각 근거로 기존 검사를 정리한다. 실패를 무시하거나 현재
+구현의 값을 그대로 기대값으로 삼지 않는다.
+
+## 기준 WASM과 남은 검증
+
+새 devel `d9fd85ed5b`의 표준 release WASM은 jobs 8·codegen units 16으로 wasm-opt까지
+32분 56초·exit 0이다. 실제 브라우저 전 766쪽과 출력 해시를 확인했다. HWPX/HWP의 최저
+raw는 각각 92.51660% / 92.51694%이며 이전 기준 캐시와 페이지별 점수도 모두 같다.
+devel의 Kitty·Rust 오류 consumer 검사 9건도 통과했다.
+
+후보 `2cb8223029`의 표준 fresh WASM은 현재 실행 중이다. 그 결과와 팔레트 대조군의
+직접 판독, 기존 검사 보정, 전쪽 100%, 페이지별 중요 영역의 ±2px 보호 및 최종 필수
+검증은 완료되지 않았다. 위 Native 중간 결과로 PR 준비 완료를 선언하지 않는다.
+
+TSV·실행 로그·독립 payload 대조와 빌드 receipt는 모두
+`output/pr-review/issue8153-handbook-raw100-20261022/` 아래에 보존한다. 이번 단계의
+Native 원본 TSV는 `palette-order-2cb8223029/native/handbook-{hwp,hwpx}/whole-score/`,
+새 기준 WASM 원본 TSV는 `rebase-d9fd85ed5b-baseline/wasm-whole/handbook-{hwp,hwpx}/whole-score/`다.
