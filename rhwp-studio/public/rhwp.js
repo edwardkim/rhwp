@@ -12091,9 +12091,10 @@ export function init_panic_hook() {
  * @param {Float64Array} destination
  * @param {Float64Array} matrix
  * @param {string} profile
+ * @param {Float64Array | null} [paper_grid]
  * @returns {any}
  */
-export function prepareBitmapRaster(bytes, destination, matrix, profile) {
+export function prepareBitmapRaster(bytes, destination, matrix, profile, paper_grid) {
     const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
     const ptr1 = passArrayF64ToWasm0(destination, wasm.__wbindgen_malloc);
@@ -12102,7 +12103,9 @@ export function prepareBitmapRaster(bytes, destination, matrix, profile) {
     const len2 = WASM_VECTOR_LEN;
     const ptr3 = passStringToWasm0(profile, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len3 = WASM_VECTOR_LEN;
-    const ret = wasm.prepareBitmapRaster(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3);
+    var ptr4 = isLikeNone(paper_grid) ? 0 : passArrayF64ToWasm0(paper_grid, wasm.__wbindgen_malloc);
+    var len4 = WASM_VECTOR_LEN;
+    const ret = wasm.prepareBitmapRaster(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4);
     return ret;
 }
 

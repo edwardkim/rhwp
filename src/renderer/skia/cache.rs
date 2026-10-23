@@ -325,6 +325,7 @@ pub(super) struct ReplayCacheContext<'a> {
     pub retained_resource_estimate: usize,
     pub policy: ReplayPolicy,
     pub raster_target: bool,
+    pub bitmap_paper_grid: Option<crate::renderer::bitmap_raster::PrintPaperGrid>,
     pub diagnostics: &'a RefCell<ReplayDiagnostics>,
 }
 
@@ -363,6 +364,7 @@ impl<'a> ReplayCacheContext<'a> {
                 .saturating_add(svg_estimate),
             policy: ReplayPolicy::new(tree.profile),
             raster_target,
+            bitmap_paper_grid: None,
             diagnostics,
         }
     }

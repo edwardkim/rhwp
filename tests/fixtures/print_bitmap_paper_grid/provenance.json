@@ -1,0 +1,29 @@
+{
+  "cases": [
+    {
+      "key": "phase",
+      "sourceSha256": "1fb99676bd2db73f72b01fea50494a97dcc9c4217bfbff075c78b3f8e0196544",
+      "pdf": "pdf/issue7445-independent-bitmap-phase-20261018-2020.pdf",
+      "pdfSha256": "79200b0d9747d0258e586592c0c07ca10437ccde286349d080dded637b585081",
+      "referencePngSha256": "ba04ca3aca5da1895ebf2b3f519e923970b3bff779b5659f68e5a89cd9e88596"
+    },
+    {
+      "key": "color",
+      "sourceSha256": "c5e9dc0f69cdc9976b459707e0a555da73e70c2e35990b43bf4d55f48f50dd64",
+      "pdf": "pdf/issue7445-independent-bitmap-color-control-20261018-2020.pdf",
+      "pdfSha256": "8eee9c608718417388f58836342d4327439ca512745acd507491bc8070cc3351",
+      "referencePngSha256": "848da7f46b7e1e05d782085153b831a59feaf34361315ad12021585d4d8e3a8e"
+    },
+    {
+      "key": "faint",
+      "sourceSha256": "f55015b6c97f8aa5f2aa27c76e38e4600f5f816e60f7e25d3c8b83f2b506e654",
+      "pdf": "pdf/issue7445-independent-faint-grid-20261018-2020.pdf",
+      "pdfSha256": "094cd94d5f5bff0c1b22af1cf2ea3535ddef7872656bcc5630c5b9cdfe3d0093",
+      "referencePngSha256": "c1a2d1ceddda458c23401947ce41231d31e19a9984c2cd8cffa6fc4d650dbf24"
+    }
+  ],
+  "reference": "기존 독립 한컴 2020 Print PDF. PDFium 152.0.7947.0, pypdfium2 5.12.1, pdfium_smooth_rgb_v1, 96DPI. RHWP 출력을 기대 PNG로 사용하지 않음.",
+  "qualification": "print-paper-grid-final/focus의 Native/fresh WASM 각 3조건 전쪽 100%; 쪽수 각1/1. review/overlay 직접 판독. 구현 후보 부모9bf0391b8c7c1b5fb985e6d6e2a01c3df40cba69 + Rust diff ba7b6de8a6716353ca0ed979c9d12aa0e6b294c028d6d47bf07b6b3202b9e952.",
+  "contract": "기존 raster_options_scale_output_size Native Skia lib 검사에서 2px 이웃/최소채널232미만의 양방향 내용 보존과 98% 문턱을 검사. 기존 CI skia --lib 경로 사용.",
+  "noNewRepairDocuments": true
+}

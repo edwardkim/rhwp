@@ -966,13 +966,33 @@ impl SkiaLayerRenderer {
         let cache_before = self.cache_stats();
         let image_before = self.image_cache.observations();
         // Resource bytes are fingerprinted once per page, not once per group.
-        let cache_context = ReplayCacheContext::new(
+        let mut cache_context = ReplayCacheContext::new(
             tree,
             fallback_raster_scale,
             strict_resource_failures,
             canvas.image_info().color_type() != skia_safe::ColorType::Unknown,
             &diagnostics,
         );
+        let matrix = canvas.local_to_device_as_3x3();
+        if tree.profile == crate::paint::RenderProfile::Print
+            && cache_context.raster_target
+            && !matrix.has_perspective()
+        {
+            cache_context.bitmap_paper_grid = crate::renderer::bitmap_raster::PrintPaperGrid::new(
+                [tree.page_width, tree.page_height],
+                [
+                    matrix.scale_x() as f64,
+                    matrix.skew_y() as f64,
+                    matrix.skew_x() as f64,
+                    matrix.scale_y() as f64,
+                    matrix.translate_x() as f64,
+                    matrix.translate_y() as f64,
+                ],
+            );
+            cache_context.seed = cache_context
+                .seed
+                .and_then(|seed| super::cache::debug_key(&(seed, cache_context.bitmap_paper_grid)));
+        }
         let setup_time = setup_start.elapsed();
         let replay_start = Instant::now();
         for replay_plane in PaintReplayPlane::ORDERED {
@@ -1171,7 +1191,10 @@ impl SkiaLayerRenderer {
                 effect,
                 brightness,
                 contrast,
-                cache_context.policy.image_sampling(),
+                cache_context
+                    .policy
+                    .image_sampling()
+                    .with_paper_grid(cache_context.bitmap_paper_grid),
             )
         };
         let equation_fonts = EquationFonts {
@@ -2874,6 +2897,60 @@ mod tests {
 
         assert_eq!(output.width, 20);
         assert_eq!(output.height, 24);
+
+        // 독립 한컴 Print의 정수 종이 격자와 옅은 선을 실제 PNG 진입점에서 보호한다.
+        // 세 기존 대조군 모두 Native/fresh WASM 전쪽 100% 및 확대 판독 후 고정했다.
+        // 출처·시각 선행 조건은 fixture의 provenance.json에 기록한다.
+        let fixtures = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/print_bitmap_paper_grid");
+        for case in ["phase", "color", "faint"] {
+            let source = std::fs::read(fixtures.join(format!("{case}.hwpx"))).unwrap();
+            let core = crate::document_core::DocumentCore::from_bytes(&source).unwrap();
+            assert_eq!(core.page_count(), 1, "{case}: 그림 소속 쪽 보존");
+            let reference = image::open(fixtures.join(format!("{case}-print-96dpi.png")))
+                .unwrap()
+                .to_rgb8();
+            let png = core
+                .render_page_png_native_with_profile_and_export_options(
+                    0,
+                    RenderProfile::Print,
+                    &crate::document_core::queries::rendering::PngExportOptions {
+                        dpi: Some(96.0),
+                        ..Default::default()
+                    },
+                )
+                .unwrap();
+            let actual = image::load_from_memory(&png).unwrap().to_rgb8();
+            assert_eq!(
+                actual.dimensions(),
+                reference.dimensions(),
+                "{case}: 종이 격자"
+            );
+            let ink = |image: &image::RgbImage, x: u32, y: u32| {
+                image.get_pixel(x, y).0.into_iter().min().unwrap() < 232
+            };
+            let nearby = |image: &image::RgbImage, x: u32, y: u32| {
+                (y.saturating_sub(2)..=(y + 2).min(image.height() - 1)).any(|ny| {
+                    (x.saturating_sub(2)..=(x + 2).min(image.width() - 1))
+                        .any(|nx| ink(image, nx, ny))
+                })
+            };
+            let (mut union, mut missing) = (0u64, 0u64);
+            for y in 0..actual.height() {
+                for x in 0..actual.width() {
+                    let (a, b) = (ink(&actual, x, y), ink(&reference, x, y));
+                    union += u64::from(a || b);
+                    missing += u64::from(
+                        (a && !nearby(&reference, x, y)) || (b && !nearby(&actual, x, y)),
+                    );
+                }
+            }
+            assert!(union > 0, "{case}: 빈 출력·누락된 그림은 통과시키지 않는다");
+            assert!(
+                missing * 100 <= union * 2,
+                "{case}: 독립 Print 대비 2px 내용 보존이 98% 미만: {missing}/{union}"
+            );
+        }
     }
 
     #[test]

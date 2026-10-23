@@ -8,6 +8,7 @@ pub fn prepare_bitmap_raster(
     destination: &[f64],
     matrix: &[f64],
     profile: &str,
+    paper_grid: Option<Vec<f64>>,
 ) -> JsValue {
     let (Ok(destination), Ok(matrix)) = (
         <[f64; 4]>::try_from(destination),
@@ -21,11 +22,19 @@ pub fn prepare_bitmap_raster(
         _ => return JsValue::UNDEFINED,
     };
     let [x, y, width, height] = destination;
+    let paper_grid = paper_grid.and_then(|values| {
+        let values: [f64; 8] = values.try_into().ok()?;
+        crate::renderer::bitmap_raster::PrintPaperGrid::new(
+            [values[0], values[1]],
+            values[2..].try_into().ok()?,
+        )
+    });
     let Some(prepared) = crate::renderer::bitmap_raster::prepare_bitmap(
         bytes,
         crate::renderer::render_tree::BoundingBox::new(x, y, width, height),
         matrix,
         profile,
+        paper_grid,
     ) else {
         return JsValue::UNDEFINED;
     };

@@ -406,6 +406,7 @@ pub struct WebCanvasRenderer {
     hft_outline_enabled: bool,
     high_quality_images: bool,
     render_profile: crate::paint::RenderProfile,
+    bitmap_paper_grid: Option<super::bitmap_raster::PrintPaperGrid>,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -438,6 +439,7 @@ impl WebCanvasRenderer {
             hft_outline_enabled: false,
             high_quality_images: false,
             render_profile: crate::paint::RenderProfile::Screen,
+            bitmap_paper_grid: None,
         })
     }
 
@@ -2492,6 +2494,19 @@ impl Renderer for WebCanvasRenderer {
         if self.scale != 1.0 {
             let _ = self.ctx.scale(self.scale, self.scale);
         }
+        self.bitmap_paper_grid = self.ctx.get_transform().ok().and_then(|matrix| {
+            super::bitmap_raster::PrintPaperGrid::new(
+                [width, height],
+                [
+                    matrix.a(),
+                    matrix.b(),
+                    matrix.c(),
+                    matrix.d(),
+                    matrix.e(),
+                    matrix.f(),
+                ],
+            )
+        });
         if let Some(clip) = self.partial_clip {
             self.ctx.begin_path();
             self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
@@ -3007,6 +3022,7 @@ impl Renderer for WebCanvasRenderer {
                     matrix.f(),
                 ],
                 self.render_profile,
+                self.bitmap_paper_grid,
             )
         });
         let (data, x, y, w, h) = match prepared.as_ref() {

@@ -361,6 +361,7 @@ interface StaticPictureEntry {
   picture: SkPicture;
   treeFingerprint: string;
   diagnostics: StaticPictureDiagnostics;
+  inverseMatrix: number[] | null;
 }
 
 export type CanvasKitReadinessBlocker =
@@ -411,6 +412,7 @@ export class CanvasKitLayerRenderer {
   private currentTreeFingerprint: string | null = null;
   private currentPictureContext: string | null = null;
   private currentPageExtent: LayerBounds | null = null;
+  private currentBitmapPaperGrid: Float64Array | null = null;
   private recordingStaticPicture = false;
   private imageResourceRevision = 0;
   private readonly imageDecodeFailures = new Map<string, CanvasKitImageFailureReason>();
@@ -1045,6 +1047,12 @@ export class CanvasKitLayerRenderer {
       canvas.save();
       canvas.clear(this.color(hasPageBackground ? 'rgba(0,0,0,0)' : '#ffffff'));
       canvas.scale(scale, scale);
+      const pageMatrix = canvas.getTotalMatrix?.();
+      this.currentBitmapPaperGrid = pageMatrix?.length === 9
+        && pageMatrix[6] === 0 && pageMatrix[7] === 0 && pageMatrix[8] === 1
+        ? new Float64Array([tree.pageWidth, tree.pageHeight,
+          pageMatrix[0], pageMatrix[3], pageMatrix[1], pageMatrix[4], pageMatrix[2], pageMatrix[5]])
+        : null;
       for (const replayPlane of CANVASKIT_REPLAY_PLANES) {
         this.renderNode(canvas, tree.root, tree.profile ?? 'screen', replayPlane, null);
       }
@@ -1076,6 +1084,7 @@ export class CanvasKitLayerRenderer {
       this.currentTreeFingerprint = null;
       this.currentPictureContext = null;
       this.currentPageExtent = null;
+      this.currentBitmapPaperGrid = null;
       this.currentOp = null;
       this.currentProfile = 'screen';
       this.preferRasterDepth = 0;
@@ -1759,15 +1768,19 @@ export class CanvasKitLayerRenderer {
     }
     if (node.kind === 'group') {
       const recordingBounds = this.staticPictureBounds(node);
+      // Print 그림 표본은 실제 장치 CTM에 종속된다. Native와 같이 그 CTM에서
+      // 기록하고 재생 때만 역행렬을 상쇄해, cache가 격자를 다시 확대하지 않게 한다.
+      const deviceMatrix = profile === 'print' ? canvas.getTotalMatrix?.() : null;
+      const inverseMatrix = deviceMatrix ? this.canvasKit.Matrix?.invert(deviceMatrix) : null;
       if (!this.recordingStaticPicture && this.currentPictureContext && this.currentTreeFingerprint
         && (node.cacheHint === 'staticSubtree' || node.cacheHint === 'preferVectorRecording')
-        && recordingBounds) {
-        const nodeKey = replayFingerprint([node, activeLayer]);
+        && recordingBounds && (profile !== 'print' || inverseMatrix)) {
+        const nodeKey = replayFingerprint([node, activeLayer, deviceMatrix]);
         if (nodeKey) {
           const key = `${this.currentPictureContext}:${profile}:${replayPlane}:${nodeKey}`;
           const cached = this.staticPictures.get(key);
           if (cached) {
-            canvas.drawPicture(cached.picture);
+            this.replayStaticPicture(canvas, cached.picture, cached.inverseMatrix);
             this.restoreStaticPictureDiagnostics(cached.diagnostics);
             return;
           }
@@ -1779,11 +1792,22 @@ export class CanvasKitLayerRenderer {
             textFailures: this.textFailures.values.length, imageRecoveries: this.imageRecoveries.values.length, patternOps: this.patternReplayOps };
           this.recordingStaticPicture = true;
           try {
-            const recording = recorder.beginRecording(this.rect(recordingBounds));
+            let deviceBounds = recordingBounds;
+            if (deviceMatrix) {
+              const { x, y, width, height } = recordingBounds;
+              const corners = this.canvasKit.Matrix.mapPoints(deviceMatrix,
+                [x, y, x + width, y, x + width, y + height, x, y + height]);
+              const xs = [corners[0], corners[2], corners[4], corners[6]];
+              const ys = [corners[1], corners[3], corners[5], corners[7]];
+              deviceBounds = { x: Math.min(...xs), y: Math.min(...ys),
+                width: Math.max(...xs) - Math.min(...xs), height: Math.max(...ys) - Math.min(...ys) };
+            }
+            const recording = recorder.beginRecording(this.rect(deviceBounds));
+            if (deviceMatrix) recording.concat(deviceMatrix);
             for (const child of node.children) this.renderNode(recording, child, profile, replayPlane, activeLayer);
             picture = recorder.finishRecordingAsPicture();
             finished = true;
-            canvas.drawPicture(picture);
+            this.replayStaticPicture(canvas, picture, inverseMatrix);
             const metadata: StaticPictureDiagnostics = {
               unsupported: [...this.unsupportedOps],
               images: [...this.currentImageFailures],
@@ -1806,7 +1830,8 @@ export class CanvasKitLayerRenderer {
             const bytes = Math.ceil(picture.approximateBytesUsed() + this.imageCachePixels * 4
               + this.mipmapImages.bytes + this.glyphRunFonts.diagnostics().bytes + JSON.stringify(metadata).length * 2);
             if (this.pendingImageLoads.size === 0 && this.localTypefacePending.size === 0
-              && this.staticPictures.set(key, { picture, treeFingerprint: this.currentTreeFingerprint, diagnostics: metadata }, bytes)) {
+              && this.staticPictures.set(key, { picture, treeFingerprint: this.currentTreeFingerprint,
+                diagnostics: metadata, inverseMatrix }, bytes)) {
               picture = null;
             }
           } finally {
@@ -1846,6 +1871,20 @@ export class CanvasKitLayerRenderer {
     const height = Math.max(page.y + page.height, visual.y + visual.height) - y;
     const union = { x, y, width, height };
     return this.boundsAreDrawable(union) ? union : page;
+  }
+
+  private replayStaticPicture(canvas: SkCanvas, picture: SkPicture, inverseMatrix: number[] | null): void {
+    if (!inverseMatrix) {
+      canvas.drawPicture(picture);
+      return;
+    }
+    canvas.save();
+    try {
+      canvas.concat(inverseMatrix);
+      canvas.drawPicture(picture);
+    } finally {
+      canvas.restore();
+    }
   }
 
   private restoreStaticPictureDiagnostics(diagnostics: StaticPictureDiagnostics): void {
@@ -2704,6 +2743,7 @@ export class CanvasKitLayerRenderer {
           const query = (bitmapRasterWasm as unknown as {
             prepareBitmapRaster?: (
               bytes: Uint8Array, destination: Float64Array, matrix: Float64Array, profile: string,
+              paperGrid?: Float64Array | null,
             ) => { bytes: Uint8Array; bbox: Float64Array } | undefined;
           }).prepareBitmapRaster;
           if (typeof query !== 'function') {
@@ -2716,6 +2756,7 @@ export class CanvasKitLayerRenderer {
                 new Float64Array([dstX, dstY, dstW, dstH]),
                 new Float64Array([matrix[0], matrix[3], matrix[1], matrix[4], matrix[2], matrix[5]]),
                 profile,
+                this.currentBitmapPaperGrid,
               );
             } catch {
               this.unsupportedOps.add('image:bitmapRasterPreparationFailed');

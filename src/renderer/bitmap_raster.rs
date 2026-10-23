@@ -42,6 +42,49 @@ pub(crate) struct PreparedBitmap {
     pub bbox: BoundingBox,
 }
 
+/// 논리 종이를 실제 정수 raster viewport에 투영하는 공통 장치 격자.
+/// 배치 bbox는 바꾸지 않으며 쪽 바깥의 정수 이동도 같은 원점에서 보존한다.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) struct PrintPaperGrid {
+    factors: [u64; 2],
+    origin: [u64; 2],
+}
+
+impl PrintPaperGrid {
+    pub(crate) fn new(paper: [f64; 2], matrix: [f64; 6]) -> Option<Self> {
+        let [a, b, c, d, e, f] = matrix;
+        if b != 0.0
+            || c != 0.0
+            || a <= 0.0
+            || d <= 0.0
+            || e.fract() != 0.0
+            || f.fract() != 0.0
+            || !paper.into_iter().chain(matrix).all(f64::is_finite)
+            || paper.into_iter().any(|size| size <= 0.0)
+        {
+            return None;
+        }
+        let extents = [paper[0] * a, paper[1] * d];
+        if extents.iter().any(|size| !size.is_finite() || *size <= 0.0) {
+            return None;
+        }
+        let factors = extents.map(|size| size.ceil() / size);
+        if factors.iter().any(|factor| !factor.is_finite()) {
+            return None;
+        }
+        Some(Self {
+            factors: factors.map(f64::to_bits),
+            origin: [e.to_bits(), f.to_bits()],
+        })
+    }
+
+    fn project(self, [x, y, w, h]: [f64; 4]) -> [f64; 4] {
+        let [sx, sy] = self.factors.map(f64::from_bits);
+        let [ox, oy] = self.origin.map(f64::from_bits);
+        [(x - ox) * sx + ox, (y - oy) * sy + oy, w * sx, h * sy]
+    }
+}
+
 /// `bbox`는 crop/채움/안여백을 해석한 최종 paint 사각형이다. 실제로 잘린
 /// source 사각형은 이 함수에 넘기지 않는다. 실패/비대상은 기존 paint로 돌아간다.
 pub(crate) fn prepare_bitmap(
@@ -49,6 +92,7 @@ pub(crate) fn prepare_bitmap(
     bbox: BoundingBox,
     matrix: [f64; 6],
     profile: RenderProfile,
+    paper_grid: Option<PrintPaperGrid>,
 ) -> Option<PreparedBitmap> {
     let [a, b, c, d, e, f] = matrix;
     if !matches!(profile, RenderProfile::Print | RenderProfile::HighQuality)
@@ -70,10 +114,22 @@ pub(crate) fn prepare_bitmap(
     // 먼저 줄이면 소수 원점에 따라 가는 선의 source 구간까지 달라진다.
     let lower = |x: f64| if print { x.floor() } else { x.round() };
     let upper = |x: f64| if print { x.floor() + 1.0 } else { x.round() };
-    let left = lower(a * bbox.x + e);
-    let right = upper(a * (bbox.x + bbox.width) + e);
-    let top = lower(d * bbox.y + f);
-    let bottom = upper(d * (bbox.y + bbox.height) + f);
+    let rectangle = [
+        a * bbox.x + e,
+        d * bbox.y + f,
+        a * bbox.width,
+        d * bbox.height,
+    ];
+    let rectangle = if print {
+        paper_grid.map_or(rectangle, |grid| grid.project(rectangle))
+    } else {
+        rectangle
+    };
+    let [x, y, w, h] = rectangle;
+    let left = lower(x);
+    let right = upper(x + w);
+    let top = lower(y);
+    let bottom = upper(y + h);
     let (width, height) = (right - left, bottom - top);
     if ![left, right, top, bottom, width, height]
         .into_iter()
@@ -97,7 +153,7 @@ pub(crate) fn prepare_bitmap(
     if super::image_resolver::png_sampling::print_bitmap_reconstruction(bytes)
         && super::cubic_sampling::modest_reduction(
             (f64::from(dimensions.0), f64::from(dimensions.1)),
-            (a * bbox.width, d * bbox.height),
+            (w, h),
         )
     {
         return None;
@@ -112,12 +168,7 @@ pub(crate) fn prepare_bitmap(
     bytes.hash(&mut hash);
     // 투명 그림의 coverage는 source의 소수 원점과 실제 장치 배율에도
     // 의존한다. 같은 정수 출력 크기라는 이유로 다른 원점의 표본을 재사용하지 않는다.
-    let device_rect = [
-        a * bbox.x + e - left,
-        d * bbox.y + f - top,
-        a * bbox.width,
-        d * bbox.height,
-    ];
+    let device_rect = [x - left, y - top, w, h];
     let key = CacheKey {
         source_hash: hash.finish(),
         source_len: bytes.len(),

@@ -26,6 +26,7 @@ pub struct ImageSampling {
     filter_mode: FilterMode,
     mipmap_mode: MipmapMode,
     profile: crate::paint::RenderProfile,
+    paper_grid: Option<crate::renderer::bitmap_raster::PrintPaperGrid>,
 }
 
 impl ImageSampling {
@@ -34,6 +35,7 @@ impl ImageSampling {
             filter_mode: FilterMode::Nearest,
             mipmap_mode: MipmapMode::None,
             profile: crate::paint::RenderProfile::Screen,
+            paper_grid: None,
         }
     }
 
@@ -42,6 +44,7 @@ impl ImageSampling {
             filter_mode: FilterMode::Linear,
             mipmap_mode: MipmapMode::Linear,
             profile: crate::paint::RenderProfile::Screen,
+            paper_grid: None,
         }
     }
 
@@ -50,6 +53,7 @@ impl ImageSampling {
             filter_mode: FilterMode::Linear,
             mipmap_mode: MipmapMode::None,
             profile: crate::paint::RenderProfile::Screen,
+            paper_grid: None,
         }
     }
 
@@ -62,6 +66,14 @@ impl ImageSampling {
 
     pub(super) fn with_profile(mut self, profile: crate::paint::RenderProfile) -> Self {
         self.profile = profile;
+        self
+    }
+
+    pub(super) fn with_paper_grid(
+        mut self,
+        grid: Option<crate::renderer::bitmap_raster::PrintPaperGrid>,
+    ) -> Self {
+        self.paper_grid = grid;
         self
     }
 
@@ -464,6 +476,7 @@ pub(super) fn draw_image_bytes(
                         transform.translate_y() as f64,
                     ],
                     sampling.profile,
+                    sampling.paper_grid,
                 )
             })
             .flatten();
