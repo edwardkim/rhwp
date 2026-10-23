@@ -41,12 +41,14 @@ pub(in crate::renderer::typeset) fn place(
             // [#6175] 유도 밴드의 앵커는 묶음(GroupShape)일 수 있다 — 개체
             // 종류로 흡수/통과를 가르는 이 판정에서 묶음 그림을 표로 오인하면
             // 밴드 옆 본문 문단이 통째로 흡수된다.
-            // 절대 위치 표는 host 본문만 전진시킨다. 문단 상대 표는 표 프레임이
-            // 안내 줄을 소유하며, 현재 단의 square_band_top 유무만으로 이 소유를
-            // 바꿀 수 없다(통째 예약·첫 조각 이후에는 그 밴드가 없을 수도 있다).
+            // 절대 위치 표 뒤의 닫힌 빈 줄은 본문 흐름이다. 문단 상대 표도
+            // 실제 현재 펜에서 시작하는 닫힌 저장 줄 묶음은 아직 소비하지 않았다.
+            // 탭만 있다는 이유로 이를 높이 없는 안내 표시로 흡수하지 않는다.
+            // 이미 예약한 표 프레임이나 불연속·편집 사다리는 이 증거를 대신하지 못한다.
             let profile = engine.profile.get();
-            let absolute_table_empty_flow = is_empty_para
-                && wrap_match::anchor_table_has_absolute_frame(paragraphs, band)
+            let stored_empty_body_flow = is_empty_para
+                && (wrap_match::anchor_table_has_absolute_frame(paragraphs, band)
+                    || st.stored_wrap_rows_start_at_flow_pen(para, engine.dpi))
                 && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
                 && !profile.session_edited()
                 && !engine.uniform_filler_ladder.get()
@@ -54,7 +56,7 @@ pub(in crate::renderer::typeset) fn place(
                 && crate::renderer::float_placement::stored_empty_line_has_closed_source_box(
                     paragraphs, para_idx,
                 );
-            if anchor_is_picture || st.following_wrap_is_derived() || absolute_table_empty_flow {
+            if anchor_is_picture || st.following_wrap_is_derived() || stored_empty_body_flow {
                 let anchor = wrap_match::picture_anchor(paragraphs, band);
                 st.register_following_wrap_anchor(para_idx, anchor);
             } else {

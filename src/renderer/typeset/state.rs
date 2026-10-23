@@ -206,6 +206,23 @@ impl TypesetState {
         }
     }
 
+    /// 저장된 빈 글줄이 현재 단의 아직 소비하지 않은 흐름 펜에서 시작하는가.
+    /// 개체의 가시 영역이나 밴드 부재만으로 빈 줄의 본문 소유를 추정하지 않는다.
+    pub(super) fn stored_wrap_rows_start_at_flow_pen(&self, para: &Paragraph, dpi: f64) -> bool {
+        let Some(base) = self.data.vpos_page_base.or(self.data.vpos_lazy_base) else {
+            return false;
+        };
+        let Some(offset) = para
+            .line_segs
+            .first()
+            .and_then(|line| line.vertical_pos.checked_sub(base))
+        else {
+            return false;
+        };
+        let top = self.data.vpos_col_anchor + crate::renderer::hwpunit_to_px(offset, dpi);
+        (top - self.data.current_height).abs() <= dpi / 7200.0
+    }
+
     pub(super) fn register_following_wrap_anchor(
         &mut self,
         para_idx: usize,

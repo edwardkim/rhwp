@@ -110,7 +110,7 @@ pub(crate) fn table_reserved_height_hu(table: &Table) -> u32 {
     total.max(table.common.height)
 }
 
-/// 저장된 빈 줄의 앞뒤가 줄 높이와 뒤 간격을 정확히 닫는지 확인한다.
+/// 저장된 빈 줄 묶음의 앞뒤와 내부 사다리가 줄 높이·뒤 간격을 정확히 닫는지 확인한다.
 /// 이 관계만으로 본문 흐름의 소유를 판정하지 않는다. 표 프레임의 안내 줄도
 /// 같은 사다리를 가지므로 호출자가 이미 예약된 프레임의 소유를 보존해야 한다.
 pub(crate) fn stored_empty_line_has_closed_source_box(
@@ -120,9 +120,11 @@ pub(crate) fn stored_empty_line_has_closed_source_box(
     let Some(current) = paragraphs.get(index) else {
         return false;
     };
-    let Some(line) = stored_empty_flow_line(current) else {
+    let Some(lines) = stored_empty_flow_lines(current) else {
         return false;
     };
+    let first = &lines[0];
+    let last = &lines[lines.len() - 1];
     let Some(previous) = index.checked_sub(1).and_then(|i| paragraphs.get(i)) else {
         return false;
     };
@@ -155,10 +157,17 @@ pub(crate) fn stored_empty_line_has_closed_source_box(
             .vertical_pos
             .checked_add(before.line_height)
             .and_then(|end| end.checked_add(before.line_spacing))
-            == Some(line.vertical_pos)
-        && line
+            == Some(first.vertical_pos)
+        && lines.windows(2).all(|pair| {
+            pair[0]
+                .vertical_pos
+                .checked_add(pair[0].line_height)
+                .and_then(|end| end.checked_add(pair[0].line_spacing))
+                == Some(pair[1].vertical_pos)
+        })
+        && last
             .vertical_pos
-            .checked_add(line.line_height)
-            .and_then(|end| end.checked_add(line.line_spacing))
+            .checked_add(last.line_height)
+            .and_then(|end| end.checked_add(last.line_spacing))
             == Some(after.vertical_pos)
 }

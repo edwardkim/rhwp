@@ -6981,7 +6981,7 @@ pub(crate) fn nested_table_is_overlay(table: &Table) -> bool {
         )
 }
 
-fn stored_empty_flow_line(para: &Paragraph) -> Option<&crate::model::paragraph::LineSeg> {
+fn stored_empty_flow_lines(para: &Paragraph) -> Option<&[crate::model::paragraph::LineSeg]> {
     use crate::model::paragraph::LineSeg;
     if para_has_non_whitespace_text(para)
         || para.stored_text_partition_is_dirty()
@@ -6989,19 +6989,27 @@ fn stored_empty_flow_line(para: &Paragraph) -> Option<&crate::model::paragraph::
     {
         return None;
     }
-    let [line] = para.line_segs.as_slice() else {
+    let lines = para.line_segs.as_slice();
+    (!lines.is_empty()
+        && lines.iter().all(|line| {
+            line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && line.vertical_pos >= 0
+                && line.line_height > 0
+                && line.text_height > 0
+                && line.text_height <= line.line_height
+                && line.baseline_distance >= 0
+                && line.baseline_distance <= line.line_height
+                && line.line_spacing >= 0
+                && line.segment_width > 0
+        }))
+    .then_some(lines)
+}
+
+fn stored_empty_flow_line(para: &Paragraph) -> Option<&crate::model::paragraph::LineSeg> {
+    let [line] = stored_empty_flow_lines(para)? else {
         return None;
     };
-    (line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-        && line.vertical_pos >= 0
-        && line.line_height > 0
-        && line.text_height > 0
-        && line.text_height <= line.line_height
-        && line.baseline_distance >= 0
-        && line.baseline_distance <= line.line_height
-        && line.line_spacing >= 0
-        && line.segment_width > 0)
-        .then_some(line)
+    Some(line)
 }
 
 /// 비자리차지 부동 개체나 표지는 호스트의 저장 글줄을 지우지 않는다.
