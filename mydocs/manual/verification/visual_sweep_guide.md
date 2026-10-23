@@ -93,6 +93,21 @@ web package를 빌드해야 한다. API가 없는 과거 bundle은 검증을 중
 `--resume`으로 섞을 수 없다. 자세한 세대 근거는
 [CLI 조판 세대](../cli_commands.md#조판-세대---compat)를 따른다.
 
+### PDF 래스터의 물리 DPI와 출력 버퍼
+
+PDF 기준 PNG는 용지의 point 좌표에 양 축 동일한 `dpi/72` 행렬을 적용한다.
+출력 버퍼만 `ceil(page_points*dpi/72)`로 할당하고, 올림한 정수 너비·높이에 맞춰
+용지 전체를 다시 늘리지 않는다. PDFium의 `FPDF_RenderPageBitmapWithMatrix`가
+원본 회전·CropBox의 display matrix 뒤에 이 물리 배율을 결합하며, 기존 RGB·흰 배경·
+annotation 표시·text/image/path antialias 계약은 유지한다.
+
+정책은 `pdfium_smooth_rgb_exact_dpi_v2`다. 이전 `pdfium_smooth_rgb_v1`의 PNG·TSV는
+소수 픽셀 크기의 용지를 축별로 늘렸을 수 있으므로 새 정책의 결과와 섞지 않는다.
+동일한 입력·독립 PDF·RHWP producer 신원을 확인한 기존 RHWP PNG를 재사용하더라도,
+base와 후보의 PDF PNG·TSV·overlay·review는 양쪽 모두 같은 새 정책에서 생성한다.
+이전 증거를 보존하고 정책·helper·실행 라이브러리 SHA를 기록한다. 래스터의 DPI 보정을
+RHWP 조판 개선으로 바꾸어 보고하지 않는다. 실루엣 임계값·2px·제출 gate는 유지한다.
+
 ## 페이지별 TSV와 PR 재검토 필수 조건
 
 조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
