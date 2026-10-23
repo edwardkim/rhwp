@@ -40,5 +40,18 @@ push한다. 주소 표현·검증만 보정하며 #8104·호스트 #594·Rust/co
 - 기존 실제 WASM 경계 회귀는 보정 전 2 FAIL에서 보정 후 2 PASS / 0 FAIL / 0 skip으로 바뀌었다.
   두 경우 모두 snapshot 0회·mutation 0회·HWP bytes 보존이다.
 
-위 결과는 focused 검증이다. 이 code candidate commit에서 전체 npm·production build·fresh web/Node
-WASM 및 관련 E2E 4종을 다시 실행하고, 최종 결과와 재검토를 결과보고서에 기록한 뒤 push한다.
+## 최종 code commit 검증과 재검토
+
+`076c6fd95626e141ff187a30af3ba3ed52286188`에서 fresh web/Node WASM, TypeScript, 전체 npm
+2375 PASS / 0 FAIL / 0 skip, production build, 관련 E2E 4종과 두 diff 검사가 모두 통과했다.
+네 브라우저가 실제 수신한 WASM 해시는 build manifest와 일치했다. #8102 브라우저의 invalid
+target 9건은 snapshot 0회·mutation 0회·HWP bytes 보존이었다. pageerror는 0건이다.
+
+첫 전체 검사의 샌드박스 stdout 전달 실패는 보존하고 최소 재현으로 실행 환경 원인을 확인했다.
+게이트·명령을 바꾸지 않은 재실행 결과만 최종 통과로 집계했다. 기존 E2E 원장의 #7998 행 누락
+1건은 이번에도 같은 실패이며 다른 이슈의 파일을 수정하지 않았다.
+
+P2 상한 누락과 P3 거부 테스트 허점은 재검토에서 해소됐다. 정상 경로의 선택·삭제·undo/redo도
+보존됐고 이 범위의 추가 blocker는 찾지 못했다. 원격 새 head CI와 사용자 실제 문서는 이 로컬
+판정으로 대체하지 않는다. 상세 명령·증적·미검증·사용자 절차는
+[최종 결과보고서](../report/task_m100_8102_report.md)에 갱신했다.
