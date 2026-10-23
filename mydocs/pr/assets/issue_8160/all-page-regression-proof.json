@@ -1,0 +1,48 @@
+{
+  "checker": "scripts/verify_sample16_raw100.py",
+  "before": {
+    "native": "candidate33 (unchanged control)",
+    "wasm": "candidate31 (before common WMF replay)",
+    "exit_code": 1,
+    "raw100": 382,
+    "failed": [
+      {
+        "backend": "wasm",
+        "document": "hwp2022",
+        "page": 18,
+        "candidate_png_sha256": "33de5986792798e8d261c8d30d2dd12077278c0dedc420aecb505fae2eb38f13",
+        "reference_png_sha256": "74046eaea5927ec001c33332a8a53a5bd954fa196edffe2c1a4ca2f947f98b98",
+        "candidate_unmatched": 15,
+        "reference_unmatched": 6,
+        "raw100": false
+      },
+      {
+        "backend": "wasm",
+        "document": "hwp2022",
+        "page": 35,
+        "candidate_png_sha256": "7fd4e44bda6ea6a21dc1748998f8a74fd7d3c127112d60a8dd893b19cf4d8b7b",
+        "reference_png_sha256": "67f5245366e853fb1187d939dc84035434c5f8d63ce0ae36fed8a22469131763",
+        "candidate_unmatched": 0,
+        "reference_unmatched": 67,
+        "raw100": false
+      }
+    ]
+  },
+  "after": {
+    "native": "candidate33",
+    "wasm": "candidate33",
+    "exit_code": 0,
+    "raw100": 384,
+    "failed": []
+  },
+  "semantic_tests": {
+    "file": "tests/cases/verified_sample16_all_pages.rs",
+    "execution": "rustc --test with frozen actual Native rlib 803046519",
+    "exit_code": 0,
+    "tests": 3,
+    "document_pages": 192,
+    "anchors": 572,
+    "seconds": 2.04
+  },
+  "merged_coverage": "Former verified_stored_table_picture_rows moved to shared helper and executed for all three originals."
+}
