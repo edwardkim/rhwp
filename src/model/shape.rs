@@ -348,6 +348,24 @@ pub struct DrawingObjAttr {
     pub caption: Option<Caption>,
 }
 
+impl DrawingObjAttr {
+    /// SHAPE_COMPONENT 저장 워드(`flip`)의 글상자 비트.
+    pub const TEXT_BOX_STORAGE_BIT: u32 = 0x0100_0000;
+
+    /// 글상자 비트를 `text_box` 유무에 맞춘다 (#8172).
+    ///
+    /// 한컴은 글상자가 있는 도형에 이 비트가 없으면 HWP를 손상 문서로 거부하고,
+    /// 글상자 없는 도형에 세워도 거부한다(`hwpx_to_hwp`의 같은 계약). 편집으로
+    /// 글상자를 만들거나 붙이거나 떼는 경로는 이 함수로 비트를 맞춘다.
+    pub fn sync_text_box_storage_bit(&mut self) {
+        if self.text_box.is_some() {
+            self.shape_attr.flip |= Self::TEXT_BOX_STORAGE_BIT;
+        } else {
+            self.shape_attr.flip &= !Self::TEXT_BOX_STORAGE_BIT;
+        }
+    }
+}
+
 /// 글상자 (그리기 개체 내 텍스트)
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct TextBox {

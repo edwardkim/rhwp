@@ -1297,7 +1297,7 @@ impl DocumentCore {
         let has_textbox = shape_type == "textbox";
         let has_fill = shape_type != "line" && !is_connector;
 
-        let drawing = DrawingObjAttr {
+        let mut drawing = DrawingObjAttr {
             shape_attr: ShapeComponentAttr {
                 ctrl_id,
                 is_two_ctrl_id: true,
@@ -1356,6 +1356,7 @@ impl DocumentCore {
             inst_id: (instance_id & 0x3FFFFFFF) + 1,
             ..Default::default()
         };
+        drawing.sync_text_box_storage_bit();
 
         let shape_obj = match shape_type {
             "line"
