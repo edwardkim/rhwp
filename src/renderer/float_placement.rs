@@ -2012,7 +2012,7 @@ pub(crate) fn block_table_caption_host_spacing_px(
 /// 저장 줄의 폭(`segment_width`)이 0 이 아니어도 같다 — 한글문서파일형식 30쪽 표 185 는 host
 /// 줄 폭이 39628 인데 저장 사다리가 다음 host 줄을 `위 + 표 + 캡션 + 아래` 바닥(187.9px)에
 /// 둔다. host 줄간격(600HU)을 캡션에 더하면 상자가 8.0px 길어져 뒤 표가 그만큼 내려갔다.
-fn textless_single_float_host(para: &Paragraph, table: &Table) -> bool {
+pub(crate) fn textless_single_float_host(para: &Paragraph, table: &Table) -> bool {
     !table.common.treat_as_char
         && is_para_topbottom_float(&table.common)
         && para.text.is_empty()
