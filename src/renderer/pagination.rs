@@ -397,7 +397,7 @@ pub struct HeaderFooterRef {
     pub table_path: Vec<HeaderFooterTableStep>,
 }
 
-/// 표 셀 안에 중첩된 Header/Footer 컨트롤을 재귀적으로 수집한다.
+/// 표 셀 안에 중첩된 Header/Footer·쪽 번호 위치 컨트롤을 재귀적으로 수집한다.
 ///
 /// `base_path` 는 바깥 문단에서 `table` 까지 내려온 경로(마지막 단계의 셀/문단은
 /// 이 함수 안에서 채운다). 수집된 항목은 최상위 문단 인덱스 `pi` 를 그대로 써서
@@ -409,6 +409,7 @@ pub(crate) fn collect_nested_header_footer_controls(
     table_control_index: usize,
     base_path: &[HeaderFooterTableStep],
     hf_entries: &mut Vec<(usize, HeaderFooterRef, bool, HeaderFooterApply)>,
+    page_number_pos: &mut Option<crate::model::control::PageNumberPos>,
 ) {
     for (cell_idx, cell) in table.cells.iter().enumerate() {
         for (cpi, cp) in cell.paragraphs.iter().enumerate() {
@@ -454,8 +455,11 @@ pub(crate) fn collect_nested_header_footer_controls(
                             cci,
                             &path,
                             hf_entries,
+                            page_number_pos,
                         );
                     }
+                    // 표 셀 안에 둔 쪽 번호 위치도 최상위 컨트롤처럼 쪽 번호를 켠다.
+                    Control::PageNumberPos(pos) => *page_number_pos = Some(pos.clone()),
                     _ => {}
                 }
             }
