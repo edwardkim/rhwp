@@ -62,13 +62,14 @@ impl NativeEditor {
         let html = if empty_fragment {
             None
         } else {
-            Some(self.session().document().export_selection_html_native(
+            let exported = self.session().document().export_selection_html_native(
                 start.section as usize,
                 start.paragraph as usize,
                 start.scalar_offset as usize,
                 end.paragraph as usize,
                 end.scalar_offset as usize,
-            )?)
+            )?;
+            Some(compact_exported_html(&exported)?.into_owned())
         };
         if plain_text
             .len()
@@ -291,6 +292,42 @@ fn check_text_controls(text: &str) -> Result<(), NativeHostError> {
         ));
     }
     Ok(())
+}
+
+/// The selected paragraphs have no control characters. Line breaks in the
+/// exporter's whitespace-only text tokens are therefore formatting, not content.
+/// Preserve ordinary spaces and attribute values, and leave external HTML alone.
+fn compact_exported_html(html: &str) -> Result<Cow<'_, str>, NativeHostError> {
+    let mut reader = Reader::from_str(html);
+    let mut normalized: Option<String> = None;
+    let mut copy_start = 0;
+    loop {
+        let event_start = reader.buffer_position() as usize;
+        match reader.read_event().map_err(|_| {
+            NativeHostError::Core(crate::HwpError::RenderError(
+                "clipboard exporter returned invalid markup".into(),
+            ))
+        })? {
+            Event::Text(text)
+                if text.as_ref().contains('\n')
+                    && text.as_ref().bytes().all(|byte| byte.is_ascii_whitespace()) =>
+            {
+                normalized
+                    .get_or_insert_with(|| String::with_capacity(html.len()))
+                    .push_str(&html[copy_start..event_start]);
+                copy_start = reader.buffer_position() as usize;
+            }
+            Event::Eof => break,
+            _ => {}
+        }
+    }
+    match normalized {
+        Some(mut normalized) => {
+            normalized.push_str(&html[copy_start..]);
+            Ok(Cow::Owned(normalized))
+        }
+        None => Ok(Cow::Borrowed(html)),
+    }
 }
 
 /// A lexical admission pass, not an HTML sanitizer or a second importer. The

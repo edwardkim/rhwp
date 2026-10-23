@@ -1,0 +1,137 @@
+{
+  "source": "pdf/issue7998/nested-dash-parent.pdf",
+  "sourceSha256": "42f8f3cfd74b3f0f67fd47eff2383b061ac01e75c86981ed92670be9a8c734ac",
+  "inputs": {
+    "compound-alpha.pdf": "33146580a2221af59a70eeeb3b8c093a820022e1e9f9cab63d3a8e0eb0a071d5",
+    "compound-connected-axis.pdf": "90a285db0ac68c8a1ecb4674b88fa85e2ac29f6774d981f5b2089611ea3d501d",
+    "compound-extension.pdf": "9e4a581861b16f40c01d1bcb591617b3c564c569627689cddce454749e507f36",
+    "compound-dash.pdf": "c1b4db7be59661534d434d4f5768fcb23f7a211fa4772c20e3aa4d46be54e9ea",
+    "compound-joined.pdf": "bbaf913af8ba66c1401cda4269b530862362fe92fe40effc9295d44f1b53f949",
+    "compound-interior.pdf": "d8c246bfa4751b62a3062ded08faf237e55066876527e1e96b313b4f0edb332c",
+    "compound-solid.pdf": "0c1d423ee3b7a69db0eedbe86a6fc1557417520b50c9232bd357b937274b2ca4"
+  },
+  "printHwpx": [
+    {
+      "key": "compound-solid-left",
+      "inputSha256": "9d96084db47a6d23aed0ed5de9e917f07e718d452740c65c933aa6565e022c69",
+      "pdfSha256": "953066be2d65ec16359123a2b12ea776a5466d75e2a98df8159dfc53c8209046",
+      "jobId": "485b3a65-cd46-47f8-aef2-3619836ebf60",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "key": "compound-solid-right",
+      "inputSha256": "bc0d5d0fee1b05a929981dd84b2de26e814f166f23ca4f6d0875132c0ae4d436",
+      "pdfSha256": "8e481adfbf08f4785d49955155b5c2269cc6ee437fffd27fbebc191a6425e507",
+      "jobId": "0e42a3c2-0415-4398-b500-92b07e7b8255",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "key": "compound-dash-all",
+      "inputSha256": "9e73a4f4785877d9e24b1a7c94fc7cebe5fd541e82e786c9ece701f5fa62bfe9",
+      "pdfSha256": "f5ebb3aba509dc1f15ca2a38bdf2864bad03cbe0ea026ec9bcc1a6909c87128e",
+      "jobId": "1d923b58-497e-4af2-afb7-9fe630ea9d72",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "key": "compound-dash-right",
+      "inputSha256": "856b30573d2f33de3cf7e4eaa32c59be7408902caab8fa7e88292317b2a61456",
+      "pdfSha256": "fa23d7a12a1a4af0e340267ff82eb03b40b6021681c2d5deb03af58dcd2ed624",
+      "jobId": "bce13b52-2100-4f4e-aada-1525bffdb946",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "key": "compound-alpha-all",
+      "inputSha256": "c6c9f26b2fa33ccd32370a78452e9fbb76e500f89bd3e3388702fd0cdf941121",
+      "pdfSha256": "fcbde0a531a63a78ddd5d52fbd6f0bcecd38b5bcecdf60df9a4fd26d731ca175",
+      "jobId": "bd465ec5-186a-440e-ba7d-d5dd462ff22f",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "key": "compound-alpha-left",
+      "inputSha256": "c92cf28b6cd6673591d7537a312200bb2cfc64cc75e61855cc2bac36d4053f1f",
+      "pdfSha256": "ce4f9e1664fcfb03f3f8bf3043a50bcf462e3c2613c47b3f82a6e7737e9d6dac",
+      "jobId": "b0e0a69e-6857-4843-896f-43e42080ebfd",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    }
+  ],
+  "printHwp": [
+    {
+      "key": "compound-solid-left",
+      "inputSha256": "ee5ca4ccd50a0461cd02d871948b6a984ad58d2d84338be1db5165b3fe0f25df",
+      "pdfSha256": "569c1d18d9b9a699c5d7d3845d76e0e3f02a7344ce173c8f8fe6cfe027e8f28e",
+      "jobId": "f2f2dada-85e5-45fb-a034-e9750abd0f1b",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "key": "compound-solid-right",
+      "inputSha256": "619708133be6394d54f634033db5ff4b5a56032dc133aa4aae923ea165db4cca",
+      "pdfSha256": "30a44741b110de37dbc865f6794d087f30c898545b467f461420e8c52d23114a",
+      "jobId": "72431ce9-cad6-4312-8e00-ebed4784deeb",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "key": "compound-dash-all",
+      "inputSha256": "d3a5fb1622d223e5ebe85e9dcba86282433e958f62b004d2564911bad96ae066",
+      "pdfSha256": "4c5ae926f7952455a2774ed18fc7087da81111f4db91f1308cfb56f2ef24adae",
+      "jobId": "0ea3ac85-65ae-4cf3-8a0d-b93839284f84",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "key": "compound-dash-right",
+      "inputSha256": "578625720c1fbab29977f63b8b71aadedd5f050f02d7a8c9b08c60b3f57edcbd",
+      "pdfSha256": "5a3fb24d53f1362acf569305599a85139cb22152f89936ef270cae43e0472265",
+      "jobId": "c6941eac-e85a-4f38-ae8c-31d24c144e6c",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "key": "compound-alpha-all",
+      "inputSha256": "555c6dcbdea330b2adb33f0cf4058c20d561f62de26f26a1d50cc0b9ecdd84b6",
+      "pdfSha256": "d16151506f9dc26c4bf7e236fddff59a71e8804ae2a55cc8bb488f95e71ffc56",
+      "jobId": "5d5ae106-c8fe-4aff-b7d8-e2cfdd4c9c42",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "key": "compound-alpha-left",
+      "inputSha256": "c888ede76a953dae6112702fe656e1f62e174eaed9b35e42829eb524e8c9c34b",
+      "pdfSha256": "a80593cd0c0c22d90262b0b5ec281ced786e96092984cdeee41e162f2b57c9dc",
+      "jobId": "e4c870e9-9aa5-4823-8da5-98c1d0883639",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    }
+  ]
+}

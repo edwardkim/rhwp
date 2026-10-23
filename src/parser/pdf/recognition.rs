@@ -1,5 +1,9 @@
 //! Hierarchical, evidence-carrying state machines over spatially owned content.
+use super::text_analysis::{
+    line_join, paragraph_layout, LineJoin, ObservedText, ParagraphLayout, TextLine as Line,
+};
 use pdf_oxide::{extractors::PdfImage, geometry::Rect, layout::TextSpan};
+use serde::Serialize;
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -22,14 +26,15 @@ impl Default for Policy {
 }
 
 pub struct Region {
+    pub body: bool,
     pub context: Vec<String>,
     pub bbox: Rect,
     pub span_indices: Vec<usize>,
     pub obstacles: Vec<Rect>,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-enum ParagraphState {
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+pub(super) enum ParagraphState {
     Idle,
     Accumulating,
     BoundaryCandidate,
@@ -75,22 +80,39 @@ impl Trace {
     }
 }
 
-struct Line {
-    indices: Vec<usize>,
-    baseline: f32,
-    left: f32,
-    right: f32,
-    top: f32,
-    bottom: f32,
-    font: f32,
-    disjoint: bool,
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct ParagraphProposal {
+    pub status: ParagraphState,
+    pub reason: String,
+    pub context: Vec<String>,
+    pub lines: Vec<Line>,
+    pub line_joins: Vec<LineJoin>,
+    pub layout: Option<ParagraphLayout>,
+    pub span_indices: Vec<usize>,
 }
-impl Line {
-    fn json(&self, spans: &[TextSpan]) -> Value {
-        json!({"spanIndices":self.indices,"baseline":self.baseline,
-            "bbox":Rect::new(self.left,self.top,self.right-self.left,self.bottom-self.top),
-            "fontSize":self.font,"previewText":self.indices.iter().map(|i|spans[*i].text.as_str()).collect::<String>()})
-    }
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct RegionRecognition {
+    context: Vec<String>,
+    pub paragraphs: Vec<ParagraphProposal>,
+    transitions: Vec<Value>,
+}
+
+pub(super) struct PageRecognition {
+    pub report: Value,
+    pub cells: BTreeMap<(usize, usize), RegionRecognition>,
+    pub body: Vec<BodyRecognition>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct BodyRecognition {
+    pub bbox: Rect,
+    pub span_indices: Vec<usize>,
+    #[serde(flatten)]
+    pub recognition: RegionRecognition,
 }
 
 fn valid_rect(r: Rect) -> bool {
@@ -98,16 +120,17 @@ fn valid_rect(r: Rect) -> bool {
 }
 
 fn make_lines(
+    observed: &ObservedText,
     spans: &[TextSpan],
+    span_clips: &[Option<std::sync::Arc<pdf_oxide::elements::PathClip>>],
     region: &Region,
     media_box: (f32, f32, f32, f32),
     policy: Policy,
 ) -> Result<Vec<Line>, String> {
-    let (left, _, _, top) = media_box;
     if !valid_rect(region.bbox) || region.span_indices.len() > 20000 {
         return Err("invalid region or span budget".into());
     }
-    let mut indices = region.span_indices.clone();
+    let indices = region.span_indices.clone();
     let unique: BTreeSet<_> = indices.iter().copied().collect();
     if unique.len() != indices.len() {
         return Err("duplicate span ownership in region".into());
@@ -123,98 +146,66 @@ fn make_lines(
         {
             return Err("unsupported span geometry".into());
         }
-        let b = Rect::new(
-            s.bbox.x - left,
-            top - s.bbox.y - s.bbox.height,
-            s.bbox.width,
-            s.bbox.height,
+        let b = super::table_detection::span_ownership_bounds(
+            s,
+            span_clips.get(*i).and_then(|c| c.as_deref()),
+            media_box,
         );
         if !contains(region.bbox, b) {
             return Err("span does not belong to supplied region".into());
         }
     }
-    indices.sort_by(|a, b| {
-        spans[*b]
-            .bbox
-            .y
-            .total_cmp(&spans[*a].bbox.y)
-            .then(spans[*a].bbox.x.total_cmp(&spans[*b].bbox.x))
-            .then(a.cmp(b))
-    });
-    let mut groups: Vec<Vec<usize>> = Vec::new();
-    for i in indices {
-        let s = &spans[i];
-        if let Some(g) = groups.last_mut().filter(|g| {
-            let first = &spans[g[0]];
-            (first.bbox.y - s.bbox.y).abs()
-                <= policy.baseline_tolerance_em * first.font_size.min(s.font_size)
-        }) {
-            g.push(i);
-        } else {
-            groups.push(vec![i]);
-        }
-    }
-    let mut lines = Vec::new();
-    for mut group in groups {
-        group.sort_by(|a, b| spans[*a].bbox.x.total_cmp(&spans[*b].bbox.x).then(a.cmp(b)));
-        let font = group
-            .iter()
-            .map(|i| spans[*i].font_size)
-            .fold(0.0, f32::max);
-        let line_left = group
-            .iter()
-            .map(|i| spans[*i].bbox.x - left)
-            .fold(f32::INFINITY, f32::min);
-        let right = group
-            .iter()
-            .map(|i| spans[*i].bbox.x - left + spans[*i].bbox.width)
-            .fold(f32::NEG_INFINITY, f32::max);
-        let line_top = group
-            .iter()
-            .map(|i| top - spans[*i].bbox.y - spans[*i].bbox.height)
-            .fold(f32::INFINITY, f32::min);
-        let bottom = group
-            .iter()
-            .map(|i| top - spans[*i].bbox.y)
-            .fold(f32::NEG_INFINITY, f32::max);
-        // A large horizontal discontinuity requires segmentation, not a guessed reading order.
-        let disjoint = group.windows(2).any(|pair| {
-            let (a, b) = (&spans[pair[0]], &spans[pair[1]]);
-            b.bbox.x - (a.bbox.x + a.bbox.width) > 3.0 * font
-        });
-        lines.push(Line {
-            baseline: top - spans[group[0]].bbox.y,
-            indices: group,
-            left: line_left,
-            right,
-            top: line_top,
-            bottom,
-            font,
-            disjoint,
-        });
-    }
-    Ok(lines)
+    observed.lines(&indices, policy.baseline_tolerance_em)
 }
 
 struct ParagraphMachine {
     state: ParagraphState,
+    owner: Rect,
     trace: Trace,
     pending: Vec<Line>,
-    output: Vec<Value>,
+    output: Vec<ParagraphProposal>,
 }
 impl ParagraphMachine {
     fn transition(&mut self, to: ParagraphState, event: &str, reason: &str, evidence: Value) {
         self.trace.record(self.state, to, event, reason, evidence);
         self.state = to;
     }
-    fn emit(&mut self, spans: &[TextSpan], reason: &str) {
+    fn emit(&mut self, _spans: &[TextSpan], reason: &str) {
         if self.pending.is_empty() {
             return;
         }
-        self.output.push(json!({"status":format!("{:?}",self.state),"reason":reason,
-            "context":self.trace.context,"lines":self.pending.iter().map(|l|l.json(spans)).collect::<Vec<_>>(),
-            "spanIndices":self.pending.iter().flat_map(|l|l.indices.iter().copied()).collect::<Vec<_>>() }));
-        self.pending.clear();
+        let layout = paragraph_layout(&self.pending, self.owner);
+        if layout.is_none() && self.state != ParagraphState::Deferred {
+            self.transition(
+                ParagraphState::Deferred,
+                "HoldLayout",
+                "line_origins_need_additional_paragraph_layout",
+                json!({}),
+            );
+        }
+        let lines = std::mem::take(&mut self.pending);
+        let line_joins = (0..lines.len())
+            .map(|i| {
+                if i == 0 {
+                    LineJoin::Start
+                } else {
+                    line_join(&lines[i - 1].preview_text, &lines[i].preview_text)
+                }
+            })
+            .collect();
+        let span_indices = lines
+            .iter()
+            .flat_map(|l| l.indices.iter().copied())
+            .collect();
+        self.output.push(ParagraphProposal {
+            status: self.state,
+            reason: reason.into(),
+            context: self.trace.context.clone(),
+            lines,
+            line_joins,
+            layout,
+            span_indices,
+        });
     }
     fn feed(&mut self, line: Line, spans: &[TextSpan], region: &Region, policy: Policy) {
         if self.pending.is_empty() {
@@ -236,6 +227,25 @@ impl ParagraphMachine {
             return;
         }
         if self.state == ParagraphState::Deferred {
+            let previous = self.pending.last().unwrap();
+            let clear_boundary = region.body
+                && (line.baseline - previous.baseline
+                    > policy.paragraph_gap_em * previous.font.max(line.font)
+                    || region
+                        .obstacles
+                        .iter()
+                        .any(|b| b.y >= previous.bottom - 0.5 && b.y + b.height <= line.top + 0.5));
+            if clear_boundary {
+                self.emit(spans, "unresolved_region_ended");
+                self.transition(
+                    ParagraphState::Idle,
+                    "ResumeAfterBoundary",
+                    "independent_boundary_after_deferred_content",
+                    json!({}),
+                );
+                self.feed(line, spans, region, policy);
+                return;
+            }
             self.transition(
                 ParagraphState::Deferred,
                 "LineObserved",
@@ -253,8 +263,9 @@ impl ParagraphMachine {
             || (line.right - previous.right).abs() <= tol
             || ((line.left + line.right) - (previous.left + previous.right)).abs() / 2.0 <= tol;
         let first_indent = self.pending.len() == 1
-            && line.left < previous.left
-            && previous.left - line.left <= 2.0 * em;
+            && (region.body || line.left < previous.left)
+            && line.left != previous.left
+            && (previous.left - line.left).abs() <= 2.0 * em;
         let size_change = previous.font.max(line.font) / previous.font.min(line.font) > 1.25;
         let object_boundary = region
             .obstacles
@@ -275,9 +286,18 @@ impl ParagraphMachine {
                 "region_segmentation_unknown",
                 evidence,
             );
-        } else if object_boundary || gap > policy.paragraph_gap_em * em {
+        } else if object_boundary
+            || gap > policy.paragraph_gap_em * em
+            || (region.body && size_change)
+        {
             let reason = if object_boundary {
-                "intervening_image"
+                if region.body {
+                    "intervening_object"
+                } else {
+                    "intervening_image"
+                }
+            } else if region.body && size_change {
+                "body_typographic_boundary"
             } else {
                 "large_baseline_gap"
             };
@@ -329,7 +349,7 @@ impl ParagraphMachine {
         }
         self.pending.push(line);
     }
-    fn finish(mut self, spans: &[TextSpan]) -> Value {
+    fn finish(mut self, spans: &[TextSpan]) -> RegionRecognition {
         if !self.pending.is_empty() {
             if self.state != ParagraphState::Deferred {
                 self.transition(
@@ -348,17 +368,23 @@ impl ParagraphMachine {
             }
             self.emit(spans, "region_end");
         }
-        json!({"context":self.trace.context,"paragraphs":self.output,"transitions":self.trace.records})
+        RegionRecognition {
+            context: self.trace.context,
+            paragraphs: self.output,
+            transitions: self.trace.records,
+        }
     }
 }
 
 /// Processes exactly one spatial owner. Confirmed means a rule-based proposal, not authored PDF metadata.
-pub fn recognize_region(
+fn recognize_region(
+    observed: &ObservedText,
     spans: &[TextSpan],
+    span_clips: &[Option<std::sync::Arc<pdf_oxide::elements::PathClip>>],
     region: &Region,
     media_box: (f32, f32, f32, f32),
     policy: Policy,
-) -> Result<Value, String> {
+) -> Result<RegionRecognition, String> {
     let (left, bottom, right, top) = media_box;
     if ![left, bottom, right, top].iter().all(|v| v.is_finite())
         || right <= left
@@ -381,9 +407,10 @@ pub fn recognize_region(
     {
         return Err("invalid recognition policy".into());
     }
-    let lines = make_lines(spans, region, media_box, policy)?;
+    let lines = make_lines(observed, spans, span_clips, region, media_box, policy)?;
     let mut machine = ParagraphMachine {
         state: ParagraphState::Idle,
+        owner: region.bbox,
         pending: Vec::new(),
         output: Vec::new(),
         trace: Trace {
@@ -564,12 +591,14 @@ impl TableMachine {
 }
 
 pub fn recognize_page(
+    observed: &ObservedText,
     spans: &[TextSpan],
+    span_clips: &[Option<std::sync::Arc<pdf_oxide::elements::PathClip>>],
     images: &[PdfImage],
     detection: &Value,
     media_box: (f32, f32, f32, f32),
     policy: Policy,
-) -> Result<Value, String> {
+) -> Result<PageRecognition, String> {
     let (left, bottom, right, top) = media_box;
     if ![left, bottom, right, top].iter().all(|v| v.is_finite()) || right <= left || top <= bottom {
         return Err("invalid recognition page".into());
@@ -633,6 +662,7 @@ pub fn recognize_page(
     }
     let mut tables = Vec::new();
     let mut regions = Vec::new();
+    let mut cells = BTreeMap::new();
     let mut reserved = BTreeSet::new();
     let mut span_owners = BTreeMap::<usize, usize>::new();
     let mut image_owners = BTreeMap::<usize, usize>::new();
@@ -700,9 +730,9 @@ pub fn recognize_page(
             if let Some(reason) = &placements[ti].deferred {
                 return Err(reason.clone());
             }
-            if (t["rows"] == 1 || t["columns"] == 1) && placements[ti].parent.is_none() {
-                return Err("invalid grid dimensions".into());
-            }
+            // A single row/column is still a table when the same geometry,
+            // topology and unique-content ownership checks hold. The previous
+            // root-only dimension veto discarded valid local cell results.
             if context.len() + 2 > policy.max_context_depth {
                 return Err("recognition context depth exceeded".into());
             }
@@ -806,26 +836,30 @@ pub fn recognize_page(
                 obstacles.push(rect(&candidates[*child]["bbox"])?);
             }
             let region = Region {
+                body: false,
                 context: cell_context,
                 bbox: rect(&c["bbox"])?,
                 span_indices: indices(&c["spanIndices"])?,
                 obstacles,
             };
-            let result = recognize_region(spans, &region, media_box, policy)?;
+            let result = recognize_region(observed, spans, span_clips, &region, media_box, policy)?;
             children
                 .push(json!({"cell":ci,"row":c["row"],"column":c["column"],"imageIndices":c["imageIndices"],"childTableIndices":child_tables,"recognition":result}));
+            cells.insert((ti, ci), result);
         }
         machine.step(
             TableEvent::EndCells,
             "child_contexts_closed",
             json!({"cells":children.len()}),
         )?;
-        tables.push(
-            json!({"candidate":ti,"status":"GeometryConfirmed","semanticStatus":"unverified",
+        let mut table = json!({"candidate":ti,"status":"GeometryConfirmed","semanticStatus":"unverified",
             "parent":placements[ti].parent.map(|(table,cell)|json!({"table":table,"cell":cell})),
-            "depth":placements[ti].depth,
-            "cells":children,"transitions":machine.trace.records}),
-        );
+            "depth":placements[ti].depth});
+        // These JSON trees already own their values. Passing them through
+        // json! serializes and allocates every nested glyph/transition again.
+        table["cells"] = Value::Array(children);
+        table["transitions"] = Value::Array(machine.trace.records);
+        tables.push(table);
     }
     for _ in 0..=16 {
         let mut changed = false;
@@ -854,28 +888,73 @@ pub fn recognize_page(
     let remaining: Vec<_> = spans
         .iter()
         .enumerate()
-        .filter(|(i, s)| !s.text.is_empty() && !reserved.contains(i))
+        .filter(|(i, s)| !s.text.is_empty() && s.rotation_degrees == 0.0 && !reserved.contains(i))
         .map(|(i, _)| i)
         .collect();
-    if !remaining.is_empty() {
+    let mut body = Vec::new();
+    let partitions = super::body_regions::partition(spans, span_clips, &remaining, media_box);
+    let partition_error = partitions.as_ref().err().cloned();
+    let partitions = partitions.unwrap_or_else(|_| {
+        if remaining.is_empty() {
+            Vec::new()
+        } else {
+            vec![super::body_regions::Partition {
+                bounds: page_bounds,
+                spans: remaining,
+            }]
+        }
+    });
+    for (i, partition) in partitions.into_iter().enumerate() {
+        let mut obstacles: Vec<_> = image_boxes.iter().copied().collect();
+        for t in candidates {
+            if let Ok(b) = rect(&t["bbox"]) {
+                obstacles.push(b);
+            }
+        }
+        // Only the geometric intersection belongs to this owner. The original
+        // image/table and its paint are not clipped or modified.
+        let clipped = obstacles
+            .into_iter()
+            .filter_map(|b| {
+                let x = b.x.max(partition.bounds.x);
+                let y = b.y.max(partition.bounds.y);
+                let right = (b.x + b.width).min(partition.bounds.x + partition.bounds.width);
+                let bottom = (b.y + b.height).min(partition.bounds.y + partition.bounds.height);
+                (right > x && bottom > y).then(|| Rect::new(x, y, right - x, bottom - y))
+            })
+            .collect();
         let region = Region {
-            context: vec!["page".into(), "unsegmented-body".into()],
-            bbox: page_bounds,
-            span_indices: remaining,
-            obstacles: image_boxes
-                .iter()
-                .enumerate()
-                .filter(|(i, _)| !image_owners.contains_key(i))
-                .map(|(_, b)| *b)
-                .collect(),
+            body: true,
+            context: vec!["page".into(), format!("body-region:{i}")],
+            bbox: partition.bounds,
+            span_indices: partition.spans.clone(),
+            obstacles: clipped,
         };
-        regions.push(recognize_region(spans, &region, media_box, policy)?);
+        let mut recognized =
+            recognize_region(observed, spans, span_clips, &region, media_box, policy)?;
+        if let Some(reason) = &partition_error {
+            for p in &mut recognized.paragraphs {
+                p.status = ParagraphState::Deferred;
+                p.reason = reason.clone();
+            }
+        }
+        body.push(BodyRecognition {
+            bbox: region.bbox,
+            span_indices: partition.spans,
+            recognition: recognized,
+        });
     }
-    Ok(
-        json!({"algorithm":"hierarchical-efsm-v2","acceptance":"rule-based proposals, not authored paragraph/table metadata",
+    regions.extend(body.iter().map(|r| json!(r)));
+    let mut report = json!({"algorithm":"hierarchical-efsm-v4-body-regions","acceptance":"rule-based proposals, not authored paragraph/table metadata",
         "policy":{"baselineToleranceEm":policy.baseline_tolerance_em,"alignmentToleranceEm":policy.alignment_tolerance_em,
             "paragraphGapEm":policy.paragraph_gap_em,"maxContextDepth":policy.max_context_depth},
-        "tables":tables,"bodyRegions":regions,"unresolvedContent":ambiguous,"renderingIrChanged":false,
-        "limits":["body columns require explicit segmentation; disjoint runs deferred","nested cell-slot structure inferred; lowering may preserve unresolved content as positioned spans","tagged semantics not reconstructed"]}),
-    )
+        "unresolvedContent":ambiguous,"emission":"typed proposals; actual IR consumption is reported by lowering",
+        "limits":["body whitespace partitions require repeated gutter evidence; ambiguous runs retained","nested cell-slot structure inferred; lowering may preserve unresolved content as positioned spans","tagged semantics not reconstructed"]});
+    report["tables"] = Value::Array(tables);
+    report["bodyRegions"] = Value::Array(regions);
+    Ok(PageRecognition {
+        report,
+        cells,
+        body,
+    })
 }

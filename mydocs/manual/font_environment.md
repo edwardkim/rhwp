@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-10-01
+last_verified: 2026-10-20
 ---
 
 # 명시적 조판 폰트 환경
@@ -13,18 +13,17 @@ last_verified: 2026-10-01
 
 ```json
 {
-  "id": "hancom-kopub-unavailable",
+  "id": "explicit-substitution",
   "substitutions": {
-    "KoPub돋움체 Light": "함초롬바탕",
-    "KoPub돋움체 Medium": "함초롬바탕",
-    "KoPub돋움체 Bold": "함초롬바탕"
+    "원본글꼴": "대체글꼴"
   }
 }
 ```
 
-위 예시는 #6389의 KoPub돋움체→바탕 환경 선언이다. 전체 시스템의 폰트 미설치를 자동 재현하는
-프로필이 아니며, 실제 기준 PDF와 대상 글꼴을 확인한 뒤 매핑을 선택한다. 테스트용 설정은
-[`kopub-unavailable.json`](../../tests/fixtures/issue_6389/kopub-unavailable.json)에 있다.
+위 예시는 명시적 글꼴 대체 선언의 형식이다. 실제 원본 face와 설치된 대체 face를 확인해
+이름을 지정하고, 설정 파일은 Git에서 제외된 `output/` 아래에 만든다. 시스템 글꼴 부재의
+자동 재현이나 PDF 일치 인증으로 사용하지 않는다. KoPub 미설치 전용 회귀·프로필은 제거했으며,
+정상 KoPub 환경의 검증은 해당 글꼴과 독립 Print를 공급해 수행한다.
 
 ## CLI와 Visual Sweep
 

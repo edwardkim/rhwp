@@ -153,6 +153,9 @@ impl LayoutEngine {
     }
 
     /// 저장 호스트·개체 높이로 첫 본문 프레임의 종료를 독립적으로 확인한다.
+    /// 호스트 앵커에서 닫히는 상자와 본문 크기로 선언된 뷰포트를 구분한다.
+    /// 호출자는 이어받는 조각에만 사용한다. 첫 앵커와 개체 오프셋은 이미 소비됐어도
+    /// 선언 뷰포트의 상하 여백과 기존 하단 inset은 다음 본문에 남는다.
     /// 내용 높이 또는 현재 출력 좌표를 증거로 쓰지 않는다. 한컴의 정수 HU
     /// 저장 반올림 두 단위만 허용하며, 편집·재조판한 원본에는 적용하지 않는다.
     pub(crate) fn original_body_closed_table_frame(
@@ -161,16 +164,26 @@ impl LayoutEngine {
         table: &Table,
         body_height: f64,
     ) -> bool {
+        self.original_body_closed_table_bottom(host, table, body_height)
+            .is_some()
+    }
+
+    /// 원본 앵커가 증언한 종료선을 예약과 실제 조각에 함께 전달한다.
+    /// 바깥 아래 경계와 추가 100HU가 있는 기존 프레임을 혼동하지 않는다.
+    pub(crate) fn original_body_closed_table_bottom(
+        &self,
+        host: &Paragraph,
+        table: &Table,
+        body_height: f64,
+    ) -> Option<f64> {
         let profile = self.profile.get();
         let [line] = host.line_segs.as_slice() else {
-            return false;
+            return None;
         };
         if !profile.hwp5_stored_pagination_layout()
             || profile.session_edited()
             || host.stored_text_partition_is_dirty()
             || host.cell_format_vpos_dirty
-            || super::super::para_has_non_whitespace_text(host)
-            || !matches!(host.controls.as_slice(), [Control::Table(_)])
             || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
             || line.vertical_pos < 0
             || line.line_height <= 0
@@ -181,7 +194,6 @@ impl LayoutEngine {
             || !table.common.flow_with_text
             || table.common.allow_overlap
             || table.common.vert_align != VertAlign::Top
-            || (table.common.vertical_offset as i32) < 0
             || table.common.height == 0
             || table.common.height > i32::MAX as u32
             || table.row_count <= 1
@@ -198,19 +210,62 @@ impl LayoutEngine {
                     })
             })
         {
-            return false;
+            return None;
         }
         let stored_bottom = i64::from(line.vertical_pos)
             + i64::from(table.common.vertical_offset as i32)
             + i64::from(table.outer_margin_top)
             + i64::from(table.common.height);
+        let outer_bottom = body_height
+            - crate::renderer::hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi);
+        let outer_bottom_hu = (outer_bottom * 7200.0 / self.dpi).round() as i64;
+        let empty_host = !super::super::para_has_non_whitespace_text(host);
+        let single_table_owner = host
+            .controls
+            .iter()
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count()
+            == 1
+            && host.controls.iter().all(|control| {
+                matches!(control, Control::Table(_))
+                    || crate::renderer::composer::control_is_width_neutral_marker(control)
+            });
+        // 제목 글줄과 설정 메타데이터는 표의 독립 앵커를 지우지 않는다.
+        // 원본 offset이 제목의 잉크와 뒤 간격 이후를 가리킬 때만 같은 닫힘을 인증한다.
+        let table_offset = i64::from(table.common.vertical_offset as i32);
+        let host_advance = i64::from(line.line_height) + i64::from(line.line_spacing.max(0));
+        let original_single_host =
+            single_table_owner && table_offset >= 0 && (empty_host || table_offset >= host_advance);
+        if original_single_host && (stored_bottom - outer_bottom_hu).abs() <= 2 {
+            return Some(outer_bottom);
+        }
         let frame_bottom = crate::renderer::float_placement::single_cell_page_fragment_bottom(
             table,
             body_height,
             self.dpi,
         );
         let frame_bottom_hu = (frame_bottom * 7200.0 / self.dpi).round() as i64;
-        (stored_bottom - frame_bottom_hu).abs() <= 2
+        let anchored_frame = original_single_host && (stored_bottom - frame_bottom_hu).abs() <= 2;
+        // 같은 호스트의 흐름 표는 각자 독립된 개체 상자를 갖는다. 앵커의 첫 위치나
+        // 형제 개수로 본문 뷰포트를 부정하지 않으며, 다른 개체·겹침은 추정하지 않는다.
+        let flow_table_host = empty_host
+            && !host.controls.is_empty()
+            && host.controls.iter().all(|control| {
+                matches!(control, Control::Table(peer)
+                    if !peer.common.treat_as_char
+                        && crate::renderer::float_placement::is_para_topbottom_float(&peer.common)
+                        && peer.common.flow_with_text
+                        && !peer.common.allow_overlap)
+            });
+        let declared_frame = i64::from(table.common.height)
+            + i64::from(table.outer_margin_top)
+            + i64::from(table.outer_margin_bottom)
+            + i64::from(
+                crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+            );
+        let body_hu = (body_height * 7200.0 / self.dpi).round() as i64;
+        (anchored_frame || (flow_table_host && (declared_frame - body_hu).abs() <= 2))
+            .then_some(frame_bottom)
     }
 
     /// 미소비 셀 모두가 같은 원본 쪽 경계에서 끝나는지 확인한다.

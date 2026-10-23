@@ -161,6 +161,20 @@ impl LayerBuilder {
     }
 
     fn build_node(&mut self, node: &RenderNode) -> Option<LayerNode> {
+        if let Some(paths) = &node.paint_clip {
+            let mut unclipped = node.clone();
+            unclipped.paint_clip = None;
+            let child = self.build_node(&unclipped)?;
+            return Some(LayerNode {
+                bounds: node.bbox,
+                source_node_id: Some(node.id),
+                layer: node.layer,
+                kind: LayerNodeKind::ClipPath {
+                    paths: paths.clone(),
+                    child: Box::new(child),
+                },
+            });
+        }
         if !self.profile.shows_editor_visuals() {
             if let Some(bbox) = node.print_bbox {
                 let mut print_node = node.clone();
@@ -180,6 +194,35 @@ impl LayerBuilder {
                     && !self.profile.shows_editor_visuals()
         ) {
             return None;
+        }
+
+        // A rectangle transform owns its text/clip descendants too. Primitive
+        // paint transforms affect only the outline, so move it to one common
+        // subtree group and clear the primitive transform to avoid double use.
+        if let RenderNodeType::Rectangle(rect) = &node.node_type {
+            if rect.transform.has_transform() && !node.children.is_empty() {
+                let matrix = rect.transform.matrix_about(node.bbox);
+                let mut local = node.clone();
+                if let RenderNodeType::Rectangle(rect) = &mut local.node_type {
+                    rect.transform = Default::default();
+                }
+                let child = self.build_node(&local)?;
+                let mut group = LayerNode::group(
+                    node.bbox,
+                    Some(node.id),
+                    vec![child],
+                    CacheHint::None,
+                    GroupKind::Group(crate::renderer::render_tree::GroupNode {
+                        paint_transform: Some(matrix),
+                        section_index: rect.section_index,
+                        para_index: rect.para_index,
+                        control_index: rect.control_index,
+                    }),
+                )
+                .with_layer(node.layer);
+                group.bounds = group.visual_bounds(true);
+                return Some(group);
+            }
         }
 
         let own_ops = match &node.node_type {
@@ -205,15 +248,20 @@ impl LayerBuilder {
                 let frame = self
                     .page_context
                     .map_or(node.bbox, |context| context.image_frame(node, image));
-                let mut image = image.clone();
-                image.hancom2024_print_bitmap = self.hancom2024_print_bitmap;
-                let resolved = crate::paint::metafile::image_payload(
-                    &image,
-                    node.bbox,
-                    self.metafile_device_pixel_width,
-                    &self.metafile_fonts,
-                );
-                let mut ops = vec![PaintOp::image(frame, image, resolved)];
+                let mut ops = if let Some(path) = crate::renderer::pdf_stroke::project(image, frame)
+                {
+                    vec![PaintOp::path(frame, path)]
+                } else {
+                    let mut image = image.clone();
+                    image.hancom2024_print_bitmap = self.hancom2024_print_bitmap;
+                    let resolved = crate::paint::metafile::image_payload(
+                        &image,
+                        node.bbox,
+                        self.metafile_device_pixel_width,
+                        &self.metafile_fonts,
+                    );
+                    vec![PaintOp::image(frame, image, resolved)]
+                };
                 if self.output_options.show_control_codes {
                     ops.push(PaintOp::control_label(frame, "[그림]"));
                 }
@@ -418,7 +466,9 @@ fn line_decoration_trim_target(
                     }
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => scan(child, found),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                scan(child, found)
+            }
         }
     }
     let mut found = None;
@@ -448,7 +498,9 @@ fn publish_line_decoration_trims(node: &mut LayerNode) {
                 publish_line_decoration_trims(child);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => publish_line_decoration_trims(child),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            publish_line_decoration_trims(child)
+        }
         LayerNodeKind::Leaf { .. } => {}
     }
 }
@@ -463,7 +515,7 @@ fn set_decoration_trim_for_source(
             LayerNodeKind::Group { children, .. } => {
                 set_decoration_trim_for_source(children, source, trim);
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 set_decoration_trim_for_source(std::slice::from_mut(child), source, trim);
             }
             LayerNodeKind::Leaf { ops } => {

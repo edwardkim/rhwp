@@ -150,6 +150,13 @@ fn declared_family_candidates(requested: &str) -> Vec<String> {
                 families.push(base);
             }
         }
+        // 고정 advance 여부와 무관하게 같은 원 face의 설치 별칭을 먼저 찾는다.
+        // paint와 renderer snapshot 진단이 이 후보 순서를 함께 소비한다.
+        for alias in crate::renderer::installed_render_font_aliases(requested) {
+            if !families.iter().any(|family| family == alias) {
+                families.push((*alias).to_string());
+            }
+        }
     }
     families
 }

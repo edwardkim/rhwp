@@ -141,6 +141,31 @@ pub(super) fn prepare(
 
     let available = available_height();
 
+    // lane 경로도 block·중첩 표와 같은 로컬 저장 상자를 소비한다.
+    // 양수 오프셋은 앞 줄의 높이와 별개로 이 상자에 포함된다.
+    let closed_source_placement = (is_topbottom_para_float
+        && !page.profile.session_edited()
+        && (page.profile.hwp5_stored_pagination_layout() || page.profile.hwpx_stored_layout())
+        && !table_reflowed)
+        .then(|| {
+            crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_stored_ladder_host(
+                para,
+                next_para?,
+                table,
+                para_start_height,
+                para_style.map_or(0.0, |style| style.spacing_before),
+                ft.effective_height,
+                dpi,
+            )
+        })
+        .flatten();
+    if std::env::var_os("RHWP_DIAG_FLOAT_FRAME").is_some() {
+        eprintln!(
+            "DIAG_FLOAT_FRAME pi={para_idx} ci={ctrl_idx} origin={para_start_height} height={} reflowed={table_reflowed} closed={closed_source_placement:?}",
+            ft.effective_height,
+        );
+    }
+
     let v_offset_px = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
     // Square sibling 표는 HWP 페이지 좌표계의 저장 vpos를 공유한다. 이 값을 현재
     // 흐름 cursor에 맞춰 page base만큼 빼면 p14의 두 표가 본문 하단으로 밀리고,
@@ -251,7 +276,12 @@ pub(super) fn prepare(
             top
         }
     });
+    // 닫힌 후속 줄은 프레임의 높이를 증명하며 현재 흐름을 절대 쪽 원점으로
+    // 바꾸지는 않는다. 이미 수용한 저장 앵커를 먼저 선택하고, 아래 lane의
+    // 확정 이동을 같은 placement의 원점·점유 끝·후속 줄에 함께 반영한다.
     let raw_top = saved_page_top
+        .or(legacy_stored_top)
+        .or_else(|| closed_source_placement.map(|placement| placement.table_top))
         .or(stored_single_topbottom_top)
         .unwrap_or_else(|| (para_start_height + v_offset_px).max(para_start_height));
     // [#6795] 같은 문단의 **앞 자리차지 표가 쪽에 걸쳐 쪼개져** 이 쪽을 이미 차지한
@@ -320,6 +350,17 @@ pub(super) fn prepare(
         ft.effective_height + ft.host_spacing.after_for_fit
     };
     let lane_top = lanes.pushed_top(x_start, x_end, raw_top);
+    let closed_source_resolved = closed_source_placement.map(|mut placement| {
+        let shift = lane_top - placement.table_top;
+        placement.anchor_y += shift;
+        placement.table_top = lane_top;
+        placement.occupied_bottom += shift;
+        placement.stored_successor_line_origin = placement
+            .stored_successor_line_origin
+            .map(|origin| origin + shift);
+        placement.flow = crate::renderer::float_placement::ParagraphFloatFlow::NextLine;
+        placement
+    });
     // HWPX의 빈 호스트 형제 표는 각 개체의 바깥 상자를 차례로 점유한다.
     // 위여백을 누락하고 아래여백을 fit 면제와 함께 버리면 뒤 표가 누적해서
     // 올라간다. 마지막 아래여백의 적합성 면제와 형제의 실제 예약을 구분한다.
@@ -364,29 +405,35 @@ pub(super) fn prepare(
                 occupied_bottom: anchor_y + hwpunit_to_px(occupied_height as i32, dpi),
             }
         });
-    let resolved = square_resolved.or(outer_box_resolved).or_else(|| {
-        (page.profile.hwpx_stored_layout()
-            && is_topbottom_para_float
-            && topbottom_float_count >= 2
-            && matches!(
-                table.common.vert_align,
-                crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside
-            ))
-        .then(|| {
-            let top = lane_top + ft.host_spacing.before;
-            crate::renderer::float_placement::ParagraphFloatPlacement {
-                flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
-                anchor_y: para_start_height,
-                stored_host_origin: None,
-                stored_successor_line_origin: None,
-                table_left: None,
-                table_top: top,
-                occupied_bottom: top + ft.effective_height + ft.host_spacing.after,
-            }
-        })
-    });
+    let resolved = square_resolved
+        .or(closed_source_resolved)
+        .or(outer_box_resolved)
+        .or_else(|| {
+            (page.profile.hwpx_stored_layout()
+                && is_topbottom_para_float
+                && topbottom_float_count >= 2
+                && matches!(
+                    table.common.vert_align,
+                    crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside
+                ))
+            .then(|| {
+                let top = lane_top + ft.host_spacing.before;
+                crate::renderer::float_placement::ParagraphFloatPlacement {
+                    flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                    anchor_y: para_start_height,
+                    stored_host_origin: None,
+                    stored_successor_line_origin: None,
+                    table_left: None,
+                    table_top: top,
+                    occupied_bottom: top + ft.effective_height + ft.host_spacing.after,
+                }
+            })
+        });
     let lane_bottom = resolved.map_or(lane_top + reserved_height, |p| {
-        if square_resolved.is_some() || outer_box_resolved.is_some() {
+        if square_resolved.is_some()
+            || closed_source_resolved.is_some()
+            || outer_box_resolved.is_some()
+        {
             p.occupied_bottom
         } else {
             p.table_top + ft.effective_height + ft.host_spacing.after_for_fit

@@ -1,4 +1,4 @@
-//! 저장 줄이 없는 인라인 표 호스트의 개체 슬롯을 프레임 입력으로 투영한다.
+//! 재조판하는 인라인 호스트의 개체 슬롯을 프레임 입력으로 투영한다.
 //! 원본 텍스트·제어문은 바꾸지 않고 원시 UTF-16 경계를 그대로 발행한다.
 
 use super::*;
@@ -15,7 +15,19 @@ pub(super) fn project(
         .zip(source.control_text_positions())
         .zip(source.control_utf16_positions())
         .filter_map(|((control, position), raw)| {
-            let (width, height) = inline_control_occupied_size_hwp(control, styles, dpi)?;
+            let (mut width, mut height) = inline_control_occupied_size_hwp(control, styles, dpi)?;
+            if let Control::Picture(picture) = control {
+                // Paint consumes the box including these outer margins, then
+                // places the original image inside it. Fill must reserve that
+                // same box, rather than just the visible image dimensions.
+                let margin = &picture.common.margin;
+                width = width
+                    .saturating_add(i32::from(margin.left))
+                    .saturating_add(i32::from(margin.right));
+                height = height
+                    .saturating_add(i32::from(margin.top))
+                    .saturating_add(i32::from(margin.bottom));
+            }
             // 글자 없는 원시 문단의 제어문은 서로 다른 UTF-16 슬롯을 갖지만
             // 가시 문자 축에서는 모두 유일한 빈 경계에 속한다. 순차 인덱스
             // 폴백을 가시 글자로 해석하면 두 번째 이후 개체가 입력에서 빠진다.

@@ -1,6 +1,7 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
 import { CanvasMetricSession, withPortableMetrics } from './canvas-metric-session';
 import { HostCanvasFontSession, scopedHostCanvasFont, withHostCanvasFonts } from './host-canvas-fonts';
+import { NativePuaFontSession, type NativePuaFontDocument } from './native-pua-font-session';
 import { CanvasFontResolutionScope } from './canvas-font-resolution-scope';
 import { MetafileFontSession, type MetafileFontDocument } from './metafile-font-session';
 import { hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from './local-fonts';
@@ -316,6 +317,7 @@ export class WasmBridge {
   private doc: HwpDocument | null = null;
   private canvasMetrics = new CanvasMetricSession();
   private readonly hostCanvasFonts = new HostCanvasFontSession();
+  private readonly nativePuaFonts = new NativePuaFontSession();
   private readonly metafileFonts = new MetafileFontSession();
   private canvasFontGeneration = 0;
 
@@ -326,6 +328,7 @@ export class WasmBridge {
   }
 
   invalidateCanvasMetricFonts(): void {
+    this.nativePuaFonts.clear(this.doc as unknown as NativePuaFontDocument | null);
     this.canvasFontGeneration += 1;
     this.invalidateCanvasMetrics();
   }
@@ -356,12 +359,20 @@ export class WasmBridge {
             selected.set(localFontFaceKey(record), record);
           }
         }
+        for (const record of this.nativePuaFonts.records(doc as unknown as NativePuaFontDocument | null)) {
+          selected.set(localFontFaceKey(record), record);
+        }
         return [...selected.values()];
       });
       await this.hostCanvasFonts.prepare(records);
       if (!current() || generation !== getHostFontState().generation) return false;
+      const puaFontGeneration = this.canvasFontGeneration;
+      if (!await this.nativePuaFonts.prepare(doc as unknown as NativePuaFontDocument | null,
+        puaFontGeneration, record => this.hostCanvasFonts.isPrepared(record),
+        () => current() && this.canvasFontGeneration === puaFontGeneration)) return false;
     } else {
       this.hostCanvasFonts.reset();
+      this.nativePuaFonts.clear(doc as unknown as NativePuaFontDocument | null);
     }
     const metricDoc = this.canvasMetricDocument();
     if (!metricDoc || !current()) return false;
@@ -1216,7 +1227,7 @@ export class WasmBridge {
       throw new Error(`[WasmBridge] PageLayerTree JSON shape 오류 (page=${pageNum}): root.kind가 없습니다`);
     }
     const rootKind = (tree.root as { kind?: unknown }).kind;
-    if (rootKind !== 'group' && rootKind !== 'clipRect' && rootKind !== 'leaf') {
+    if (rootKind !== 'group' && rootKind !== 'clipRect' && rootKind !== 'clipPath' && rootKind !== 'leaf') {
       throw new Error(`[WasmBridge] PageLayerTree JSON shape 오류 (page=${pageNum}): 알 수 없는 root.kind=${String(rootKind)}`);
     }
     if (tree.profile !== profile) {
@@ -1963,6 +1974,7 @@ export class WasmBridge {
     }>;
     borderFillLenBefore?: number;
     docInfoDirtyBefore?: boolean;
+    borderPaintUndoId?: number | null;
   } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.setCellProperties(sec, parentPara, controlIdx, cellIdx, JSON.stringify(props)));
@@ -1993,6 +2005,7 @@ export class WasmBridge {
         endCol: number;
         id: number | null;
       }>;
+      borderPaintUndoIds?: number[];
     },
   ): { ok: boolean } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
@@ -2000,6 +2013,11 @@ export class WasmBridge {
       applyCellBorderFillIds(sec: number, parentPara: number, controlIdx: number, json: string): string;
     };
     return JSON.parse(doc.applyCellBorderFillIds(sec, parentPara, controlIdx, JSON.stringify(payload)));
+  }
+
+  discardBorderPaintUndo(id: number): void {
+    const doc = this.doc as unknown as { discardBorderPaintUndo?: (id: number) => void };
+    doc?.discardBorderPaintUndo?.(id);
   }
 
   /**

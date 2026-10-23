@@ -2453,6 +2453,7 @@ export type CellBorderFillTarget =
   | { kind: 'zone'; range: { startRow: number; startCol: number; endRow: number; endCol: number } };
 
 interface CellBorderFillUndoState {
+  borderPaintUndoIds: number[];
   /** cellIdx → 적용 직전 borderFillId(배치 안 첫 기록이 원본이다). */
   cellBefores: Array<{ cellIdx: number; id: number }>;
   /** asOne 적용의 범위 — undo 시 id 원복 또는 신설 제거에 쓴다. */
@@ -2516,6 +2517,7 @@ export class SetCellBorderFillCommand implements EditCommand {
     }
 
     const cellBefores = new Map<number, number>();
+    const borderPaintUndoIds: number[] = [];
     // 같은 rect 여러 전이 중 undo 에 필요한 것은 최초(before 원본) 하나다.
     const zoneBefores = new Map<string, { startRow: number; startCol: number; endRow: number; endCol: number; id: number | null }>();
     let lenBefore = -1;
@@ -2543,14 +2545,27 @@ export class SetCellBorderFillCommand implements EditCommand {
       } else {
         const target = this.target;
         if (target.kind !== 'cells') throw new Error(`${this.type} 잘못된 대상`);
+        // The dialog's untouched preview sides describe the first selected cell.
+        // Send a delta so another cell keeps its own unrelated edges and fill base.
+        const cellProps = { ...this.props };
+        const borderPaintSides = cellProps.borderPaintSides;
+        if (Array.isArray(borderPaintSides)) {
+          const keys = ['borderLeft', 'borderRight', 'borderTop', 'borderBottom'];
+          keys.forEach((key, i) => { if (!borderPaintSides[i]) delete cellProps[key]; });
+          delete cellProps.borderFillId;
+        }
         // 셀 수만큼 setCellProperties 를 호출하므로 재페이지네이션을 묶는다(#4118).
         wasm.runInBatch(() => {
           for (const cellIdx of target.cellIdxes) {
             const r = wasm.setCellProperties(
               this.sec, this.ppi, this.ci, cellIdx,
-              this.props as Partial<CellProperties>,
+              cellProps as Partial<CellProperties>,
             );
             mutated = true;
+            if (r.borderPaintUndoId != null) {
+              borderPaintUndoIds.push(r.borderPaintUndoId);
+              changed = true;
+            }
             if (lenBefore === -1) {
               lenBefore = r.borderFillLenBefore ?? -1;
               dirtyBefore = r.docInfoDirtyBefore ?? false;
@@ -2581,7 +2596,7 @@ export class SetCellBorderFillCommand implements EditCommand {
     } catch (applyError) {
       // 최초 execute 실패 시 지금까지의 기록으로라도 원상 복구를 시도한다(#3350 계열).
       try {
-        this.rollback(wasm, cellBefores, zoneBefores, zoneBeforeId, lenBefore, dirtyBefore, mutated);
+        this.rollback(wasm, cellBefores, zoneBefores, zoneBeforeId, lenBefore, dirtyBefore, mutated, borderPaintUndoIds);
       } catch (rollbackError) {
         console.error(`${this.type} 실패 롤백도 실패:`, rollbackError);
       }
@@ -2597,6 +2612,7 @@ export class SetCellBorderFillCommand implements EditCommand {
     }
 
     this.state = {
+      borderPaintUndoIds,
       cellBefores: [...cellBefores.entries()].map(([cellIdx, id]) => ({ cellIdx, id })),
       zoneRange: this.target.kind === 'zone' ? { ...this.target.range } : null,
       zoneBeforeId,
@@ -2613,6 +2629,7 @@ export class SetCellBorderFillCommand implements EditCommand {
     }
     wasm.applyCellBorderFillIds(this.sec, this.ppi, this.ci, {
       cells: this.state.cellBefores,
+      borderPaintUndoIds: this.state.borderPaintUndoIds,
       zones: [
         ...(this.state.zoneRange
           ? [{ ...this.state.zoneRange, id: this.state.zoneBeforeId }]
@@ -2627,6 +2644,8 @@ export class SetCellBorderFillCommand implements EditCommand {
   }
 
   discard(wasm: WasmBridge): void {
+    for (const id of this.state?.borderPaintUndoIds ?? []) wasm.discardBorderPaintUndo(id);
+    this.state = null;
     if (this.captureId !== null) {
       wasm.discardSectionRaw(this.captureId);
       this.captureId = null;
@@ -2648,6 +2667,7 @@ export class SetCellBorderFillCommand implements EditCommand {
     lenBefore: number,
     dirtyBefore: boolean,
     mutated: boolean,
+    borderPaintUndoIds: number[],
   ): void {
     if (this.captureId === null) return;
     if (!mutated) {
@@ -2659,6 +2679,7 @@ export class SetCellBorderFillCommand implements EditCommand {
     }
     wasm.applyCellBorderFillIds(this.sec, this.ppi, this.ci, {
       cells: [...cellBefores.entries()].map(([cellIdx, id]) => ({ cellIdx, id })),
+      borderPaintUndoIds,
       zones: [
         ...(this.target.kind === 'zone'
           ? [{ ...this.target.range, id: zoneBeforeId }]

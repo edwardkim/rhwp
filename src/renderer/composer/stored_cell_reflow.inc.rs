@@ -113,10 +113,12 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             styles,
             SpaceMetric::KoPubJustified,
         );
-    // 캐시 수용 실패의 처리 정책은 원본 저장 줄을 무효화할 근거가 아니다.
-    // 실제 공백 메트릭이 달라질 때만 어절 꼬리 재구성을 별도로 요청한다.
+    // 캐시 수용 실패 정책이나 줄 수 감소만으로 원본을 무효화하지 않는다.
+    // 본문과 같은 마커 기하 갱신과 실제 공백 메트릭 변경만 공통 프레임에 요청한다.
+    let refreshes_marker_metrics =
+        stored_word_tail::projects_current_marker_geometry(para, &paragraph_box, styles);
     let rejoinable_word_tail = !stored_geometry_policy.preserve_hwp3_origins
-        && regenerated_spaces_change_metrics
+        && (regenerated_spaces_change_metrics || refreshes_marker_metrics)
         && stored_word_tail::can_rejoin_stored_word_tail(
             para,
             &frame,
@@ -132,7 +134,19 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
         || rejoinable_word_tail
         || (stored_rows_untrusted && !para.line_segs.is_empty())
         || stored_rows_are_stale(composed, para, inner_width_px, styles)
-        || line_breaking::remeasured_equation_start_row(para).is_some();
+        || line_breaking::remeasured_equation_start_row(para).is_some()
+        || (stored_geometry_policy.stored_rows_before_hancom_2020
+            && stored_last_row_is_rejoinable_word_tail(composed, para, styles)
+            && fresh_rows_absorb_stored_tail(
+                para,
+                &frame,
+                styles,
+                dpi,
+                stored_geometry_policy.preserve_hwp3_origins,
+                miss_policy,
+                float_carve_evidence,
+                known_square_band,
+            ));
     match line_breaking::resolve_stored_line_segs_in_frame(
         para,
         &mut frame,
@@ -202,6 +216,56 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     }
 }
 
+/// [#7702] 한/글 2020 이전 제품이 저장한 줄이 condense 낱말 흡수 없이 끊겼는가.
+///
+/// 같은 프레임에서 저장 줄을 버리고 다시 끊어 본다. 새 줄 나눔이 저장의 **마지막 줄만 없애고**
+/// 나머지 줄의 시작은 그대로 두면 마지막 낱말 꼬리를 앞 줄이 흡수한 것이다 — 한/글 2020
+/// 인쇄가 그렇게 끊는다(`1342000`, 한/글 2014 저장: 151쪽 `…순서에 맞게 시연하|기`,
+/// 154쪽 `…찬반 토|론`). 판정과 실제 줄은 같은 프레임 결과다.
+///
+/// 앞 줄 경계까지 옮기는 새 줄 나눔은 받지 않는다. 같은 문서 114쪽 `[12융과04-02]` 칸은
+/// 새로 끊으면 `…정보|가` 까지 앞 줄로 당기지만 한/글 2020 은 저장 줄 넷을 모두 따른다 —
+/// 꽉 찬 줄 경계에서 우리 condense 판정이 한/글보다 한 글자 너그럽다. 근거가 있는 것은
+/// 마지막 꼬리뿐이다.
+///
+/// 한/글 2020 으로 저장한 문서는 같은 모양이어도 묻지 않는다 — 한/글이 저장 줄을 따른다
+/// (`21_언어_기출_편집가능본.hwp` 11.0.0.2129 1쪽 `…확인하|십시오.`,
+/// `36388711…청년오피스.hwpx` 11.0.0.8227 1쪽 `…과학|기술(150)`).
+#[allow(clippy::too_many_arguments)]
+fn fresh_rows_absorb_stored_tail(
+    para: &Paragraph,
+    frame: &crate::renderer::layout_frame::LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    legacy_hwp3_stored_geometry: bool,
+    miss_policy: line_breaking::StoredRowMissPolicy,
+    float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
+    known_square_band: bool,
+) -> bool {
+    let mut trial = frame.clone();
+    matches!(
+        line_breaking::resolve_stored_line_segs_in_frame(
+            para,
+            &mut trial,
+            styles,
+            dpi,
+            legacy_hwp3_stored_geometry,
+            miss_policy,
+            true,
+            float_carve_evidence,
+            known_square_band,
+        ),
+        Some(line_breaking::StoredRowResolution::Reflowed)
+    ) && {
+        let fresh = trial.project_line_segs();
+        fresh.len() + 1 == para.line_segs.len()
+            && fresh
+                .iter()
+                .zip(&para.line_segs)
+                .all(|(fresh, stored)| fresh.text_start == stored.text_start)
+    }
+}
+
 /// Read-only projection of the production stored-row cache decision.
 ///
 /// Evidence queries use this entry instead of inferring validity from the mere
@@ -251,8 +315,6 @@ pub(crate) fn probe_stored_row_disposition(
 
     let composed = compose_paragraph_in_context(para, styles);
     let inner_width_px = paragraph_box.width_px(dpi);
-    let stale = stored_geometry_policy.requires_realign
-        || stored_rows_are_stale(&composed, para, inner_width_px, styles);
     // 저장 원점 복원은 측정·배치와 읽기 전용 증거 프로브가 같은 상자를 사용한다.
     let paragraph_box = if stored_geometry_policy.requires_realign {
         paragraph_box
@@ -265,6 +327,20 @@ pub(crate) fn probe_stored_row_disposition(
             .map(|segment| segment.vertical_pos)
             .unwrap_or(0),
     );
+    let stale = stored_geometry_policy.requires_realign
+        || stored_rows_are_stale(&composed, para, inner_width_px, styles)
+        || (stored_geometry_policy.stored_rows_before_hancom_2020
+            && stored_last_row_is_rejoinable_word_tail(&composed, para, styles)
+            && fresh_rows_absorb_stored_tail(
+                para,
+                &frame,
+                styles,
+                dpi,
+                stored_geometry_policy.preserve_hwp3_origins,
+                miss_policy,
+                &[],
+                false,
+            ));
     match line_breaking::resolve_stored_line_segs_in_frame(
         para,
         &mut frame,
@@ -490,9 +566,23 @@ pub fn recompose_cell_lines_in_frame(
 
     let inner_width_px = cell_box.width_px(dpi);
     let rebuilt = if has_authoritative_line_segs {
-        // Authentic rows use the same exact cache key as body rows. A clean
-        // match returns Stored without rebuilding; changed cell geometry or a
-        // mutation-dirty text partition falls through to Frame reflow.
+        // OWPML 셀은 현재 속성의 내용 프레임으로 저장 키의 불일치를 해소한다.
+        // 원 HWP5의 clean miss는 아직 이 프레임이 소유하지 않는 저장 기하다.
+        // 편집 무효화·재정렬 요청은 출처와 별개로 공통 stale 판정을 따른다.
+        // 외부 어울림·다른 물리 쪽 등 계산 불가능한 경로는 resolver가 거절한다.
+        // 같은 셀의 외부 어울림이 정한 원점을 현재 문단 상자로 재현할 수는 없다.
+        // 폭의 소유권만으로 저장 원점까지 덮어쓰지 않는다(#5818 로고 옆 글줄).
+        let cell_box = cell_box.for_stored_body_rows(para);
+        let frame_origin = cell_box.effective().start;
+        let owns_stored_origins = para
+            .line_segs
+            .iter()
+            .all(|line| line.column_start == frame_origin);
+        let miss_policy = if stored_geometry_policy.hwpx_cell_geometry && owns_stored_origins {
+            line_breaking::StoredRowMissPolicy::Reflow
+        } else {
+            line_breaking::StoredRowMissPolicy::UnmodelledUnlessStale
+        };
         recompose_stored_lines_in_frame(
             composed,
             para,
@@ -501,7 +591,7 @@ pub fn recompose_cell_lines_in_frame(
             styles,
             dpi,
             stored_geometry_policy,
-            line_breaking::StoredRowMissPolicy::UnmodelledUnlessStale,
+            miss_policy,
             // 셀 줄의 어울림 배제는 #5818 셀 계약이 따로 소유한다.
             &[],
         )
@@ -641,6 +731,19 @@ pub(crate) fn floored_cell_line_width_padding(
 /// 규칙을 고를 수 없게 한다.
 pub(crate) fn cell_inner_text_width(cell_w: f64, pad_left: f64, pad_right: f64, dpi: f64) -> f64 {
     let (pad_left, pad_right) = floored_cell_line_width_padding(pad_left, pad_right, cell_w, dpi);
+    // 원본 정수 폭과 안 여백은 정수 축에서 먼저 빼고 한 번만 픽셀로 바꾼다.
+    // 각각 정확히 왕복하는 피연산자의 부동소수 뺄셈도 9980HU를 9979HU로
+    // 떨어뜨릴 수 있다. 연속 좌표에는 이 출처를 추정하거나 허용치를 더하지 않는다.
+    let source_units = [cell_w, pad_left, pad_right].map(|value| {
+        let unit = crate::renderer::px_to_hwpunit(value, dpi);
+        (crate::renderer::hwpunit_to_px(unit, dpi).to_bits() == value.to_bits())
+            .then_some(i64::from(unit))
+    });
+    if let [Some(width), Some(left), Some(right)] = source_units {
+        if let Ok(inner) = i32::try_from((width - left - right).max(0)) {
+            return crate::renderer::hwpunit_to_px(inner, dpi);
+        }
+    }
     (cell_w - pad_left - pad_right).max(0.0)
 }
 

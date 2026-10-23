@@ -93,6 +93,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 |---|---|---|---|
 | 쪽을 SVG 로 | `export-svg --json` (`hwp_export_svg`) | `pages[].path`·`renderedCount` | [CLI 매뉴얼](cli_commands.md) §1 |
 | 쪽을 PNG 로 (VLM 입력) | `export-png --json --vlm-target claude` (`hwp_export_png`) | `pages[].path`·`renderedCount` | [export-png 매뉴얼](export_png_command.md) |
+| 터미널에 PNG 표시 | `export-kitty --page 0 --width 360` (Native CLI 전용) | 그래픽 stdout·진단 stderr·종료 코드, JSON 미지원 | [Kitty 출력 가이드](export_kitty_command.md) |
 | 제출용 PDF | `export-pdf --json` (`hwp_export_pdf`) | `output`·`bytes`·`backend` | [CLI 매뉴얼](cli_commands.md) §export-pdf |
 | 바뀐 쪽만 렌더 | 편집 봉투 `changedPages` → `export-svg -p N` | `changedPages[]` | [표면 플레이북 §9](agent_surface_playbook.md) |
 | 세션 안에서 렌더 | `hwp_doc_render_page` (서버 전용) | `bytes`·`output` | [MCP 가이드](mcp_integration_guide.md) |

@@ -253,7 +253,7 @@ pub(in crate::renderer::typeset) fn for_paragraph(
             };
             if crate::renderer::float_placement::para_offset_consumed_by_page_break(
                 para,
-                &first.common,
+                first,
                 column_height,
                 flow.dpi(),
             ) || whole_flow_offset_frame(first, flow.dpi()) <= column_height

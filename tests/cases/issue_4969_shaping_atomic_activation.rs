@@ -113,7 +113,9 @@ fn collect_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>) {
                 collect_text_ops(child, ops);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => collect_text_ops(child, ops),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            collect_text_ops(child, ops)
+        }
         LayerNodeKind::Leaf { ops: leaf_ops } => ops.extend(leaf_ops.iter().filter(|op| {
             matches!(
                 op,
@@ -202,7 +204,7 @@ fn mutate_bounded_vertical_glyph_runs(
                 mutate_bounded_vertical_glyph_runs(child, mutate);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => {
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
             mutate_bounded_vertical_glyph_runs(child, mutate);
         }
         LayerNodeKind::Leaf { ops } => {
@@ -378,7 +380,9 @@ fn find_layer_source_node(node: &LayerNode, source_node_id: u32) -> Option<&Laye
         LayerNodeKind::Group { children, .. } => children
             .iter()
             .find_map(|child| find_layer_source_node(child, source_node_id)),
-        LayerNodeKind::ClipRect { child, .. } => find_layer_source_node(child, source_node_id),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            find_layer_source_node(child, source_node_id)
+        }
         LayerNodeKind::Leaf { .. } => None,
     }
 }
@@ -770,16 +774,17 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
         .map(|(_, bytes)| bytes.len())
         .sum::<usize>();
     assert_eq!(font_payload_bytes, 2_519_996);
-    // P45/P46/P47 add these root knownFeatures capabilities to every export, including
+    // P45/P46/P47 and editable text clipping add these root knownFeatures capabilities to every export, including
     // rejected publication. They describe writer support, not this fixture's
     // glyphs or resources. Account for exactly their JSON strings + separators
     // while retaining the original payload/structure size receipts unchanged.
-    const ADDED_CAPABILITIES: [&str; 5] = [
+    const ADDED_CAPABILITIES: [&str; 6] = [
         "text.glyphOutline.colorLayers.colrV1.sourceOver",
         "text.glyphOutline.colorLayers.colrV1.clip",
         "text.glyphOutline.svgGlyph.fontEmBox",
         "paint.pageBackground.imageEffects",
         "layer.visualBounds",
+        "paint.textClipPath",
     ];
     let capability_wire_bytes = ADDED_CAPABILITIES
         .iter()

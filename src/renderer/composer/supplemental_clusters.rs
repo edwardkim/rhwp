@@ -42,6 +42,8 @@ impl<'a> ParagraphMetricScope<'a> {
             style.supplemental_metrics = None;
         }
         self.1.apply_to_style(&mut style);
+        // 이 scope는 새 줄의 채움·분할·투영을 측정한다.
+        style.regenerated_font_metrics = true;
         style
     }
 }

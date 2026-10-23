@@ -1,6 +1,21 @@
 //! 줄 선두 공백의 소유와 배분 전 자연 전진을 보존한다.
 
 use super::{compute_char_positions, effective_text_for_metrics, ComposedLine, TextStyle};
+use crate::renderer::composer::ComposedTextRun;
+
+/// 표시 확장이 원문의 선두 ASCII 공백을 보존했는지 확인한다.
+/// PUA 표시 확장과 모델 한 칸을 다른 문자열로 바꾸는 필드를 구분한다.
+pub(super) fn source_leading_spaces(run: &ComposedTextRun) -> Option<usize> {
+    if run.char_overlap.is_some() || run.footnote_marker.is_some() || run.inserted_control_text {
+        return None;
+    }
+    let source = run.text.chars().take_while(|&ch| ch == ' ').count();
+    let displayed = effective_text_for_metrics(run)
+        .chars()
+        .take_while(|&ch| ch == ' ')
+        .count();
+    (source == displayed).then_some(source)
+}
 
 pub(super) struct LeadingSpaces {
     by_run: Vec<usize>,
@@ -15,18 +30,10 @@ impl LeadingSpaces {
         for (index, run) in line.runs.iter().enumerate() {
             // 겹쳐 쓰기 그룹은 여러 문자를 포갠 가시 개체다. 그 안의 첫 공백을
             // 줄 들여쓰기로 해석하거나 다음 그룹까지 선두 범위를 늘리지 않는다.
-            if run.char_overlap.is_some()
-                || run.footnote_marker.is_some()
-                || run.inserted_control_text
-                || run.display_text.is_some()
-            {
+            let Some(count) = source_leading_spaces(run) else {
                 break;
-            }
+            };
             let text = effective_text_for_metrics(run);
-            let count = text
-                .chars()
-                .take_while(|&character| character == ' ')
-                .count();
             let owned = count.min(remaining);
             by_run[index] = owned;
             remaining -= owned;

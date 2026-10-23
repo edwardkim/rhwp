@@ -135,6 +135,7 @@ impl TypesetEngine {
                 }) {
                     progress.scan.consumed += height;
                     progress.scan.accepted_end_row_box = Some((r, height));
+                    progress.scan.accepted_start_row_box = Some((r, height));
                     progress.r += 1;
                     progress.scan.end_row = progress.r;
                     continue;
@@ -151,7 +152,17 @@ impl TypesetEngine {
                 straddle_page_bands,
             };
             let block = block_query.candidate(r);
-            let step = if (block.protected || block.rowbreak_rowspan_block) && block.b_start == r {
+            // 이월 게이트(`prepare`)가 확정한 첫 조각의 0행 컷을 그대로 소비한다.
+            // 표 중간의 묶음과 잔여에 통째로 드는 묶음은 기존 보호를 그대로 둔다.
+            let protected_block_cuts_after_first_row = v.opening_block_cuts_after_first_row
+                && r == 0
+                && block.b_start == r
+                && block.protected
+                && !block.rowbreak_rowspan_block;
+            let step = if (block.protected || block.rowbreak_rowspan_block)
+                && block.b_start == r
+                && !protected_block_cuts_after_first_row
+            {
                 self.scan_rowspan_block_step(input, progress, block, cs_before)
             } else {
                 self.scan_ordinary_row_step(input, progress, cs_before)
@@ -194,9 +205,13 @@ impl TypesetEngine {
                 let roundoff = f64::EPSILON
                     * (minimum.abs() + physical.abs()).max(1.0)
                     * (progress.scan.end_row - v.cursor_row + 2) as f64;
-                if minimum - physical > roundoff && minimum <= v.avail_for_rows {
-                    progress.scan.end_row_height_override = Some(height + minimum - physical);
-                    progress.scan.consumed = progress.scan.consumed.max(minimum);
+                // 상자는 예약이 실제로 늘어난 만큼만 키운다. 저장 행 높이 합(`physical`)이 스캔이
+                // 수용한 행 상자 합보다 작으면, 그 차이로 끝 행을 키우는 순간 그린 조각이 예약보다
+                // 커져 쪽 아래를 넘는다(1342000 구역 28 표 42..62행: 4.64px).
+                let grow = minimum - progress.scan.consumed;
+                if minimum - physical > roundoff && grow > roundoff && minimum <= v.avail_for_rows {
+                    progress.scan.end_row_height_override = Some(height + grow);
+                    progress.scan.consumed = minimum;
                     if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                         eprintln!(
                             "DIAG_SCAN SOURCE_SPAN_FRAME rows={}..{} physical={physical:.3} minimum={minimum:.3} last={:.3}",

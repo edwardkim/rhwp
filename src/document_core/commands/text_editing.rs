@@ -1489,13 +1489,104 @@ impl DocumentCore {
         let apply_delete = |para: &mut Paragraph| {
             para.delete_text_at(char_offset, count);
         };
+        self.apply_body_text_edit(section_idx, para_idx, char_offset, &apply_delete)?;
+
+        self.event_log.push(DocumentEvent::TextDeleted {
+            section: section_idx,
+            para: para_idx,
+            offset: char_offset,
+            count,
+        });
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"charOffset\":{}",
+            char_offset
+        )))
+    }
+
+    /// [#7866] 본문 문단의 글자 `char_offset..+length` 를 `text` 로 한 단계에 바꾼다.
+    /// 새 글자는 지운 글자의 글자 모양을 자리대로 잇는다
+    /// ([`Paragraph::replace_text_inheriting_char_shapes`]). 지우기·넣기와 같은 재조판 꼬리를
+    /// 한 번만 거치므로 넣은 글자가 앞 글자의 모양으로 조판됐다가 다시 바뀌는 일이 없다.
+    pub fn replace_text_inheriting_char_shapes_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        length: usize,
+        text: &str,
+    ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
+        self.validate_body_paragraph_index(section_idx, para_idx)?;
+        let new_chars_count = text.chars().count();
+        let apply_replace = |para: &mut Paragraph| {
+            para.replace_text_inheriting_char_shapes(char_offset, length, text);
+        };
+        self.apply_body_text_edit(
+            section_idx,
+            para_idx,
+            char_offset + new_chars_count,
+            &apply_replace,
+        )?;
+
+        self.event_log.push(DocumentEvent::TextDeleted {
+            section: section_idx,
+            para: para_idx,
+            offset: char_offset,
+            count: length,
+        });
+        self.event_log.push(DocumentEvent::TextInserted {
+            section: section_idx,
+            para: para_idx,
+            offset: char_offset,
+            len: new_chars_count,
+        });
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"charOffset\":{}",
+            char_offset + new_chars_count
+        )))
+    }
+
+    fn validate_body_paragraph_index(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+    ) -> Result<(), HwpError> {
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 인덱스 {} 범위 초과 (총 {}개)",
+                section_idx,
+                self.document.sections.len()
+            )));
+        }
+        let section = &self.document.sections[section_idx];
+        if para_idx >= section.paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "문단 인덱스 {} 범위 초과 (총 {}개)",
+                para_idx,
+                section.paragraphs.len()
+            )));
+        }
+        Ok(())
+    }
+
+    /// 본문 문단 글자 편집의 공통 꼬리. 그림 밴드를 거치는 편집이 아니면 raw 스트림을
+    /// 무효화하고 문단에 `apply` 를 적용한 뒤 재조판 → vpos 재계산 → 재구성 → 재페이지네이션을
+    /// 다단 재배치가 수렴할 때까지(최대 3회) 반복한다. 끝으로 `caret_char_offset` 에 캐럿을 둔다.
+    fn apply_body_text_edit(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        caret_char_offset: usize,
+        apply: &dyn Fn(&mut Paragraph),
+    ) -> Result<(), HwpError> {
         let picture_band_applied =
-            self.apply_body_edit_through_picture_band(section_idx, para_idx, &apply_delete)?;
+            self.apply_body_edit_through_picture_band(section_idx, para_idx, apply)?;
 
         if !picture_band_applied {
             // 편집 시 raw 스트림 무효화 (재직렬화 유도)
             self.document.sections[section_idx].raw_stream = None;
-            apply_delete(&mut self.document.sections[section_idx].paragraphs[para_idx]);
+            apply(&mut self.document.sections[section_idx].paragraphs[para_idx]);
 
             // line_segs 재계산 (리플로우) → 재구성 → 재페이지네이션
             // 다단 수렴 루프 (최대 3회)
@@ -1555,8 +1646,8 @@ impl DocumentCore {
 
         // 캐럿 위치 갱신 (DocProperties)
         let para = &self.document.sections[section_idx].paragraphs[para_idx];
-        let caret_utf16_pos = if char_offset < para.char_offsets.len() {
-            para.char_offsets[char_offset]
+        let caret_utf16_pos = if caret_char_offset < para.char_offsets.len() {
+            para.char_offsets[caret_char_offset]
         } else if !para.char_offsets.is_empty() {
             let last = para.char_offsets.len() - 1;
             let last_char = para.text.chars().nth(last);
@@ -1568,17 +1659,7 @@ impl DocumentCore {
             (para.controls.len() as u32) * 8
         };
         self.stamp_caret(section_idx as u32, para_idx as u32, caret_utf16_pos);
-
-        self.event_log.push(DocumentEvent::TextDeleted {
-            section: section_idx,
-            para: para_idx,
-            offset: char_offset,
-            count,
-        });
-        Ok(super::super::helpers::json_ok_with(&format!(
-            "\"charOffset\":{}",
-            char_offset
-        )))
+        Ok(())
     }
 
     /// 지정된 문단의 line_segs를 컬럼 너비 기반으로 재계산한다.
@@ -2217,12 +2298,11 @@ impl DocumentCore {
             }
         }
 
-        let refresh_compat_projection = !paginate_immediately
-            && self
-                .render_normalization
-                .sections
-                .get(section_idx)
-                .is_some_and(|section| section.is_some());
+        let has_compat_projection = self
+            .render_normalization
+            .sections
+            .get(section_idx)
+            .is_some_and(|section| section.is_some());
         self.mark_render_normalization_path_dirty(
             section_idx,
             parent_para_idx,
@@ -2272,8 +2352,13 @@ impl DocumentCore {
 
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변)
         self.document.sections[section_idx].raw_stream = None;
-        if refresh_compat_projection {
+        // Immediate edits need the same revision bump as deferred edits and
+        // insertion. Otherwise pagination can reuse a projection that still
+        // paints text which has already been deleted from the editable IR.
+        if has_compat_projection {
             self.invalidate_render_normalization_section(section_idx);
+        }
+        if has_compat_projection && !paginate_immediately {
             self.compute_render_normalized();
         }
         self.mark_section_pagination_dirty(section_idx);
@@ -2689,9 +2774,10 @@ impl DocumentCore {
             }
         };
         let para_style = styles.para_styles.get(para_shape_id as usize);
-        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-        let final_width = (available_width - margin_left - margin_right).max(0.0);
+        // Keep the style-derived origin as well as the width. The render frame
+        // already consumes this box; passing only its width here published
+        // column_start=0 after an edit despite a nonzero paragraph margin.
+        let paragraph_box = ParagraphBox::content_for_style(available_width, para_style, self.dpi);
 
         // 가변 참조로 리플로우 실행
         match self.document.sections[section_idx].paragraphs[parent_para_idx]
@@ -2728,7 +2814,7 @@ impl DocumentCore {
                         let preserved_prefix =
                             crate::renderer::composer::reflow_line_segs_after_cell_text_edit(
                                 cell_para,
-                                ParagraphBox::content_width_px(final_width, self.dpi),
+                                paragraph_box.clone(),
                                 &styles,
                                 self.dpi,
                                 edit_char_offset,
@@ -2763,7 +2849,7 @@ impl DocumentCore {
                             if let Some(mut candidate) = hwpx_full_reflow_candidate.take() {
                                 reflow_line_segs(
                                     &mut candidate,
-                                    ParagraphBox::content_width_px(final_width, self.dpi),
+                                    paragraph_box.clone(),
                                     &styles,
                                     self.dpi,
                                 );
@@ -2778,17 +2864,12 @@ impl DocumentCore {
                         if split_stale_cell_reflow {
                             crate::renderer::composer::reflow_line_segs_after_cell_split(
                                 cell_para,
-                                ParagraphBox::content_width_px(final_width, self.dpi),
+                                paragraph_box.clone(),
                                 &styles,
                                 self.dpi,
                             );
                         } else {
-                            reflow_line_segs(
-                                cell_para,
-                                ParagraphBox::content_width_px(final_width, self.dpi),
-                                &styles,
-                                self.dpi,
-                            );
+                            reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                         }
                     }
                 }
@@ -2796,24 +2877,14 @@ impl DocumentCore {
             Some(Control::Shape(shape)) => {
                 if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
                     if let Some(cell_para) = tb.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(
-                            cell_para,
-                            ParagraphBox::content_width_px(final_width, self.dpi),
-                            &styles,
-                            self.dpi,
-                        );
+                        reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                     }
                 }
             }
             Some(Control::Picture(pic)) => {
                 if let Some(ref mut cap) = pic.caption {
                     if let Some(cell_para) = cap.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(
-                            cell_para,
-                            ParagraphBox::content_width_px(final_width, self.dpi),
-                            &styles,
-                            self.dpi,
-                        );
+                        reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                     }
                 }
             }
@@ -3085,16 +3156,9 @@ impl DocumentCore {
             return;
         };
         let para_style = styles.para_styles.get(cell_para.para_shape_id as usize);
-        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-        let final_width = (available_width - margin_left - margin_right).max(0.0);
+        let paragraph_box = ParagraphBox::content_for_style(available_width, para_style, dpi);
         // 셀 내용 상자 — 열이 없으므로 미스냅.
-        reflow_line_segs(
-            cell_para,
-            ParagraphBox::content_width_px(final_width, dpi),
-            &styles,
-            dpi,
-        );
+        reflow_line_segs(cell_para, paragraph_box, &styles, dpi);
     }
 
     /// [#2755] path 기반 셀 문단 vpos 재계산 (깊이 ≥ 2 중첩 표 지원).

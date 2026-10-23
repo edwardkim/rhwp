@@ -1,0 +1,2 @@
+# 시각 증거 TSV의 원래 줄바꿈과 바이트를 보존한다.
+*.tsv -text -whitespace

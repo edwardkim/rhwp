@@ -4,13 +4,13 @@ use crate::renderer::{
     typeset::{hwpunit_to_px, TypesetState},
 };
 
-pub(super) struct HostPlacementConstraint<'a> {
-    pub(super) table: &'a crate::model::table::Table,
-    pub(super) has_preceding_coanchored_float: bool,
-    pub(super) dpi: f64,
+pub(in crate::renderer::typeset) struct HostPlacementConstraint<'a> {
+    pub(in crate::renderer::typeset) table: &'a crate::model::table::Table,
+    pub(in crate::renderer::typeset) has_preceding_coanchored_float: bool,
+    pub(in crate::renderer::typeset) dpi: f64,
 }
 impl HostPlacementConstraint<'_> {
-    pub(super) fn constrain(
+    pub(in crate::renderer::typeset) fn constrain(
         &self,
         mut placement: ParagraphFloatPlacement,
         st: &TypesetState,

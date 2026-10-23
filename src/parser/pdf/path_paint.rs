@@ -375,5 +375,76 @@ pub(super) fn lower(
     );
     image.set_bbox(bounds);
     image.set_matrix([bounds.width, 0.0, 0.0, bounds.height, bounds.x, bounds.y]);
-    lower_picture(&image, doc, page.media_box.0, page.media_box.3, id, budget).map(Some)
+    let control = lower_picture(&image, doc, page.media_box.0, page.media_box.3, id, budget)?;
+    // Keep exact disconnected axial Butt paint as a bounded source witness beside the
+    // native bitmap fallback. A curve/fill/transform/complex clip cannot claim it.
+    if path.fill_color.is_none()
+        && path.matrix.is_none()
+        && path.line_cap == LineCap::Butt
+        && matches!(
+            path.paint.clip,
+            pdf_oxide::extractors::image_clip::ImageClip::Unbounded
+                | pdf_oxide::extractors::image_clip::ImageClip::Rectangle(_)
+        )
+    {
+        let segments = path
+            .operations
+            .chunks_exact(2)
+            .map(|ops| match ops {
+                [PathOperation::MoveTo(x, y), PathOperation::LineTo(a, b)]
+                    if (x == a && y != b) || (y == b && x != a) =>
+                {
+                    Some([*x, *y, *a, *b])
+                }
+                _ => None,
+            })
+            .collect::<Option<Vec<_>>>();
+        if let (Some(color), Some(segments)) = (
+            path.stroke_color,
+            segments
+                .filter(|s| !s.is_empty() && s.len() <= 32 && path.operations.len() == s.len() * 2),
+        ) {
+            let mapped = segments
+                .iter()
+                .map(|[x, y, a, b]| {
+                    [
+                        (*x - bounds.x) as f64,
+                        (bounds.y + bounds.height - *y) as f64,
+                        (*a - bounds.x) as f64,
+                        (bounds.y + bounds.height - *b) as f64,
+                    ]
+                })
+                .collect::<Vec<_>>();
+            let stroke = crate::model::pdf_stroke::PdfStroke {
+                frame: [bounds.width as f64, bounds.height as f64],
+                endpoints: mapped[0],
+                width: path.stroke_width as f64,
+                color: rgb(color),
+                alpha: path.paint.stroke_alpha as f64,
+                dash: path
+                    .dash_pattern
+                    .as_ref()
+                    .map(|(d, _)| d.iter().map(|v| f64::from(*v)).collect())
+                    .unwrap_or_default(),
+                phase: path
+                    .dash_pattern
+                    .as_ref()
+                    .map_or(0., |(_, p)| f64::from(*p)),
+                segments: mapped[1..].to_vec(),
+            };
+            if let Control::Picture(p) = &control {
+                let index = crate::model::bin_data::content_index(
+                    &doc.bin_data_content,
+                    p.image_attr.bin_data_id,
+                )
+                .ok_or("stroke resource missing")?;
+                if let crate::model::bin_data::BinDataBytes::Loaded(bytes) =
+                    &mut doc.bin_data_content[index].data
+                {
+                    let _ = stroke.attach(bytes);
+                }
+            }
+        }
+    }
+    Ok(Some(control))
 }

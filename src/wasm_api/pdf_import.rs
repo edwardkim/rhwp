@@ -3,7 +3,9 @@ use crate::parser::pdf::{PdfImportOptions, PdfImportPolicy};
 use wasm_bindgen::{JsCast, JsValue};
 
 pub(super) fn options(value: JsValue) -> Result<PdfImportOptions, JsValue> {
-    let invalid = || JsValue::from_str("PDF_IMPORT_OPTIONS: expected { sourcePages?: number[] }");
+    let invalid = || {
+        JsValue::from_str("PDF_IMPORT_OPTIONS: expected { sourcePages?: number[], includeTableInference?: boolean }")
+    };
     if value.is_undefined() {
         return Ok(PdfImportOptions::default());
     }
@@ -13,14 +15,27 @@ pub(super) fn options(value: JsValue) -> Result<PdfImportOptions, JsValue> {
     // Reject unknown keys rather than silently turning a misspelled selection into all pages.
     let keys = js_sys::Reflect::own_keys(&value).map_err(|_| invalid())?;
     for key in keys.iter() {
-        if key.as_string().as_deref() != Some("sourcePages") {
+        if !matches!(
+            key.as_string().as_deref(),
+            Some("sourcePages" | "includeTableInference")
+        ) {
             return Err(invalid());
         }
     }
+    let inference = js_sys::Reflect::get(&value, &JsValue::from_str("includeTableInference"))
+        .map_err(|_| invalid())?;
+    let include_table_inference = if inference.is_undefined() {
+        false
+    } else {
+        inference.as_bool().ok_or_else(invalid)?
+    };
     let pages =
         js_sys::Reflect::get(&value, &JsValue::from_str("sourcePages")).map_err(|_| invalid())?;
     if pages.is_undefined() {
-        return Ok(PdfImportOptions::default());
+        return Ok(PdfImportOptions {
+            include_table_inference,
+            ..PdfImportOptions::default()
+        });
     }
     let selection_error = || {
         JsValue::from_str("PDF_PAGE_SELECTION: sourcePages must be a nonempty, strictly increasing array of nonnegative page indices")
@@ -51,5 +66,6 @@ pub(super) fn options(value: JsValue) -> Result<PdfImportOptions, JsValue> {
     }
     Ok(PdfImportOptions {
         source_pages: Some(result),
+        include_table_inference,
     })
 }

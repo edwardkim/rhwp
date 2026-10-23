@@ -8,9 +8,42 @@ use pdf_oxide::{
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
 
+mod cell_regions;
+
 const EPS: f32 = 0.5;
 const MAX_EDGES: usize = 512;
+const MAX_SOURCE_EDGES: usize = 20_000;
 const MAX_TILES: usize = 4096;
+
+/// Spatial ownership of a blank advance uses its real source clip. Its full
+/// advance and characters remain untouched for paragraph composition/painting.
+pub(super) fn span_ownership_bounds(
+    span: &TextSpan,
+    clip: Option<&pdf_oxide::elements::PathClip>,
+    media: (f32, f32, f32, f32),
+) -> Rect {
+    let b = Rect::new(
+        span.bbox.x - media.0,
+        media.3 - span.bbox.y - span.bbox.height,
+        span.bbox.width,
+        span.bbox.height,
+    );
+    if !span.text.chars().all(char::is_whitespace) {
+        return b;
+    }
+    let Some(clip) = cell_regions::effective_clip(clip, media) else {
+        return b;
+    };
+    let x = b.x.max(clip.x);
+    let y = b.y.max(clip.y);
+    let right = (b.x + b.width).min(clip.x + clip.width);
+    let bottom = (b.y + b.height).min(clip.y + clip.height);
+    if right > x && bottom > y {
+        Rect::new(x, y, right - x, bottom - y)
+    } else {
+        clip
+    }
+}
 
 #[derive(Clone, Copy)]
 struct Edge {
@@ -21,6 +54,9 @@ struct Edge {
     source_path: usize,
     source_segment: usize,
     stroke_width: f32,
+    source_operation: usize,
+    paint_kind: &'static str,
+    periodic_gap: f32,
 }
 
 struct Sets(Vec<usize>);
@@ -51,108 +87,242 @@ impl Sets {
 }
 
 fn edges(paths: &[PathContent], left: f32, top: f32) -> Result<Vec<Edge>, String> {
+    use pdf_oxide::extractors::image_clip::ImageClip;
     let mut edges = Vec::new();
-    let mut invalid = false;
-    let mut overflow = false;
-    let mut add = |x1: f32, y1: f32, x2: f32, y2: f32, source_path: usize, stroke_width: f32| {
-        if ![x1, y1, x2, y2].iter().all(|v| v.is_finite()) {
-            invalid = true;
-            return;
-        }
-        if edges.len() >= MAX_EDGES {
-            overflow = true;
-            return;
-        }
-        let (x1, x2, y1, y2) = (x1 - left, x2 - left, top - y1, top - y2);
-        let source_segment = edges.len();
-        if (y1 - y2).abs() <= EPS && (x1 - x2).abs() > EPS {
-            edges.push(Edge {
-                horizontal: true,
-                at: (y1 + y2) / 2.0,
-                from: x1.min(x2),
-                to: x1.max(x2),
-                source_path,
-                source_segment,
-                stroke_width,
-            });
-        } else if (x1 - x2).abs() <= EPS && (y1 - y2).abs() > EPS {
-            edges.push(Edge {
-                horizontal: false,
-                at: (x1 + x2) / 2.0,
-                from: y1.min(y2),
-                to: y1.max(y2),
-                source_path,
-                source_segment,
-                stroke_width,
-            });
-        }
-    };
     for (source_path, path) in paths.iter().enumerate() {
-        if path.stroke_color.is_none() || path.matrix.is_some() {
-            continue;
+        let matrix = path.matrix.unwrap_or([1., 0., 0., 1., 0., 0.]);
+        let transform = |x: f32, y: f32| {
+            (
+                matrix[0] * x + matrix[2] * y + matrix[4],
+                matrix[1] * x + matrix[3] * y + matrix[5],
+            )
+        };
+        let mut add = |a: (f32, f32),
+                       b: (f32, f32),
+                       operation: usize,
+                       width: f32,
+                       kind: &'static str|
+         -> Result<(), String> {
+            let (a, b) = (transform(a.0, a.1), transform(b.0, b.1));
+            if ![a.0, a.1, b.0, b.1, width].iter().all(|v| v.is_finite()) {
+                return Err("non-finite rule geometry".into());
+            }
+            // Axis tolerance must not erase short dashes or turn short diagonals into rules.
+            let (dx, dy) = ((a.0 - b.0).abs(), (a.1 - b.1).abs());
+            let horizontal = if dy == 0. && dx > 0. {
+                true
+            } else if dx == 0. && dy > 0. {
+                false
+            } else {
+                return Ok(());
+            };
+            let (at, mut from, mut to) = if horizontal {
+                (top - a.1, a.0.min(b.0) - left, a.0.max(b.0) - left)
+            } else {
+                (a.0 - left, top - a.1.max(b.1), top - a.1.min(b.1))
+            };
+            match path.paint.clip {
+                ImageClip::Empty | ImageClip::Unsupported | ImageClip::Polygon(_) => return Ok(()),
+                ImageClip::Rectangle(clip) => {
+                    let clip = super::table_inference::page_rect(clip, (left, 0., 0., top));
+                    let (lo, hi, start, end) = if horizontal {
+                        (clip.y, clip.y + clip.height, clip.x, clip.x + clip.width)
+                    } else {
+                        (clip.x, clip.x + clip.width, clip.y, clip.y + clip.height)
+                    };
+                    if at < lo || at > hi {
+                        return Ok(());
+                    }
+                    from = from.max(start);
+                    to = to.min(end);
+                }
+                ImageClip::Unbounded => {}
+            }
+            if to <= from {
+                return Ok(());
+            }
+            if edges.len() == MAX_SOURCE_EDGES {
+                return Err("ruled-table source edge budget exceeded".into());
+            }
+            edges.push(Edge {
+                horizontal,
+                at,
+                from,
+                to,
+                source_path,
+                source_segment: edges.len(),
+                stroke_width: width,
+                source_operation: operation,
+                paint_kind: kind,
+                periodic_gap: 0.,
+            });
+            Ok(())
+        };
+        if path.stroke_color.is_some() && path.paint.stroke_alpha > 0. {
+            let stroke_kind = if path.dash_pattern.is_some() {
+                "dash_carrier"
+            } else {
+                "stroke"
+            };
+            let mut cursor = None;
+            let mut start = None;
+            for (oi, op) in path.operations.iter().enumerate() {
+                match *op {
+                    PathOperation::MoveTo(x, y) => {
+                        cursor = Some((x, y));
+                        start = cursor;
+                    }
+                    PathOperation::LineTo(x, y) => {
+                        if let Some(p) = cursor {
+                            add(p, (x, y), oi, path.stroke_width, stroke_kind)?;
+                        }
+                        cursor = Some((x, y));
+                    }
+                    PathOperation::Rectangle(x, y, w, h) => {
+                        for (a, b) in [
+                            ((x, y), (x + w, y)),
+                            ((x + w, y), (x + w, y + h)),
+                            ((x + w, y + h), (x, y + h)),
+                            ((x, y + h), (x, y)),
+                        ] {
+                            add(a, b, oi, path.stroke_width, stroke_kind)?;
+                        }
+                        cursor = Some((x, y));
+                        start = cursor;
+                    }
+                    PathOperation::ClosePath => {
+                        if let (Some(a), Some(b)) = (cursor, start) {
+                            add(a, b, oi, path.stroke_width, stroke_kind)?;
+                        }
+                        cursor = start;
+                    }
+                    PathOperation::CurveTo(..) => {
+                        cursor = None;
+                        start = None;
+                    }
+                }
+            }
         }
-        let mut cursor = None;
-        let mut start = None;
-        for op in &path.operations {
-            match *op {
-                PathOperation::MoveTo(x, y) => {
-                    cursor = Some((x, y));
-                    start = cursor;
-                }
-                PathOperation::LineTo(x, y) => {
-                    if let Some((px, py)) = cursor {
-                        add(px, py, x, y, source_path, path.stroke_width);
-                    }
-                    cursor = Some((x, y));
-                }
-                PathOperation::Rectangle(x, y, w, h) => {
-                    add(x, y, x + w, y, source_path, path.stroke_width);
-                    add(x + w, y, x + w, y + h, source_path, path.stroke_width);
-                    add(x + w, y + h, x, y + h, source_path, path.stroke_width);
-                    add(x, y + h, x, y, source_path, path.stroke_width);
-                    cursor = Some((x, y));
-                    start = cursor;
-                }
-                PathOperation::ClosePath => {
-                    if let (Some((x, y)), Some((sx, sy))) = (cursor, start) {
-                        add(x, y, sx, sy, source_path, path.stroke_width);
-                    }
-                    cursor = start;
-                }
-                PathOperation::CurveTo(..) => {
-                    cursor = None;
-                    start = None;
+        if path.fill_color.is_some() && path.paint.fill_alpha > 0. {
+            if let Some(b) = super::table_inference::rectangle(&path.operations) {
+                // A thin filled band is boundary evidence, not proof of its semantic role.
+                if b.width >= 4. * b.height && b.height <= 2. {
+                    add(
+                        (b.x, b.y + b.height / 2.),
+                        (b.x + b.width, b.y + b.height / 2.),
+                        0,
+                        b.height,
+                        "fill_band",
+                    )?;
+                } else if b.height >= 4. * b.width && b.width <= 2. {
+                    add(
+                        (b.x + b.width / 2., b.y),
+                        (b.x + b.width / 2., b.y + b.height),
+                        0,
+                        b.width,
+                        "fill_band",
+                    )?;
                 }
             }
         }
     }
-    if invalid {
-        return Err("non-finite rule geometry".into());
-    }
-    if overflow {
-        return Err("ruled-table edge budget exceeded".into());
-    }
     Ok(edges)
 }
 
-fn axes(mut values: Vec<f32>) -> Vec<f32> {
-    values.sort_by(f32::total_cmp);
-    let mut groups: Vec<Vec<f32>> = Vec::new();
-    for v in values {
-        if let Some(group) = groups.last_mut().filter(|g| v - g[0] <= EPS) {
-            group.push(v);
+/// Compact geometric duplicates/contiguous paint and separately evidenced periodic runs
+/// before the quadratic grid stage. Original contributors are retained unchanged.
+fn normalize_edges(source: &[Edge]) -> Result<(Vec<Edge>, Vec<Edge>), String> {
+    let mut sorted = source.to_vec();
+    sorted.sort_by(|a, b| {
+        a.horizontal
+            .cmp(&b.horizontal)
+            .then(a.at.total_cmp(&b.at))
+            .then(a.from.total_cmp(&b.from))
+            .then(a.to.total_cmp(&b.to))
+    });
+    let mut lines: Vec<Vec<Edge>> = Vec::new();
+    for edge in sorted {
+        if let Some(line) = lines.last_mut().filter(|line| {
+            line[0].horizontal == edge.horizontal && (line[0].at - edge.at).abs() <= EPS
+        }) {
+            line.push(edge);
         } else {
-            groups.push(vec![v]);
+            lines.push(vec![edge]);
         }
     }
-    groups
+    let mut canonical = Vec::new();
+    for mut line in lines {
+        let at = line[0].at;
+        line.sort_by(|a, b| a.from.total_cmp(&b.from).then(a.to.total_cmp(&b.to)));
+        let mut intervals: Vec<Edge> = Vec::new();
+        for edge in line {
+            if let Some(previous) = intervals.last_mut().filter(|p| edge.from <= p.to) {
+                previous.to = previous.to.max(edge.to);
+            } else {
+                intervals.push(Edge { at, ..edge });
+            }
+        }
+        let mut i = 0;
+        while i < intervals.len() {
+            let first = intervals[i];
+            let mut end = i + 1;
+            if i + 1 < intervals.len() {
+                let length = first.to - first.from;
+                let gap = intervals[i + 1].from - first.to;
+                let same = |a: f32, b: f32| (a - b).abs() <= 0.001_f32.max(b.abs() * 0.05);
+                while end < intervals.len()
+                    && same(intervals[end].to - intervals[end].from, length)
+                    && same(intervals[end].from - intervals[end - 1].to, gap)
+                {
+                    end += 1;
+                }
+            }
+            if end - i >= 4 {
+                canonical.push(Edge {
+                    to: intervals[end - 1].to,
+                    paint_kind: "periodic_carrier",
+                    periodic_gap: intervals[i + 1].from - first.to,
+                    ..first
+                });
+                i = end;
+            } else {
+                canonical.push(first);
+                i += 1;
+            }
+            if canonical.len() > MAX_EDGES {
+                return Err("ruled-table canonical edge budget exceeded".into());
+            }
+        }
+    }
+    let projected: Vec<_> = canonical
         .iter()
-        .map(|g| g.iter().sum::<f32>() / g.len() as f32)
-        .collect()
+        .map(|e| project_junctions(*e, &canonical))
+        .collect();
+    let logical = source
+        .iter()
+        .map(|raw| {
+            canonical
+                .iter()
+                .zip(&projected)
+                .find(|(e, _)| {
+                    e.horizontal == raw.horizontal
+                        && (e.at - raw.at).abs() <= EPS
+                        && raw.from >= e.from - EPS
+                        && raw.to <= e.to + EPS
+                })
+                .map_or(*raw, |(_, e)| Edge {
+                    source_path: raw.source_path,
+                    source_segment: raw.source_segment,
+                    source_operation: raw.source_operation,
+                    ..*e
+                })
+        })
+        .collect();
+    Ok((logical, projected))
 }
 
-fn same_geometry(a: &Edge, b: &Edge) -> bool {
-    a.horizontal == b.horizontal && a.at == b.at && a.from == b.from && a.to == b.to
+fn axes(values: Vec<f32>) -> Vec<f32> {
+    super::table_inference::axes(values)
 }
 
 fn geometry_key(edge: &Edge) -> (bool, u32, u32, u32) {
@@ -170,12 +340,19 @@ fn project_junctions(edge: Edge, source: &[Edge]) -> Edge {
         source
             .iter()
             .filter(|other| {
+                // Endpoints and the measured repeat gap are f32 observations.
+                // Their arithmetic must not reject an exactly touching junction
+                // solely because (edge.to + gap) rounds below the crossing axis.
+                // This is a roundoff bound, not an extra geometric snap radius.
+                let rounding = 2.0
+                    * f32::EPSILON
+                    * (edge.from.abs() + edge.to.abs() + edge.periodic_gap.abs() + other.at.abs());
                 other.horizontal != edge.horizontal
-                    && other.at >= edge.from
-                    && other.at <= edge.to
+                    && other.at >= edge.from - edge.periodic_gap - rounding
+                    && other.at <= edge.to + edge.periodic_gap + rounding
                     && edge.at >= other.from - EPS
                     && edge.at <= other.to + EPS
-                    && (other.at - value).abs() <= other.stroke_width / 2. + EPS
+                    && (other.at - value).abs() <= other.stroke_width / 2. + EPS + edge.periodic_gap
             })
             .min_by(|a, b| {
                 (a.at - value)
@@ -257,13 +434,13 @@ fn boundary_contributor(edge: &Edge, grid: &Grid, component: &[Edge]) -> bool {
     }
     let target_start = edge.from.max(start);
     let target_end = edge.to.min(end);
-    if target_end - target_start <= EPS {
+    if target_end <= target_start {
         return false;
     }
     let mut cursor = target_start;
     for (from, to) in intervals {
         let (from, to) = (from.max(target_start), to.min(target_end));
-        if to <= cursor {
+        if to <= from || to <= cursor {
             continue;
         }
         if from > cursor + EPS {
@@ -285,7 +462,7 @@ fn coverage(edges: &[Edge], horizontal: bool, at: f32, from: f32, to: f32) -> f3
     let mut total = 0.0;
     let mut end = from;
     for (a, b) in intervals {
-        if a > end + EPS {
+        if a > end {
             total += (b - a).max(0.0);
         } else {
             total += (b - end).max(0.0);
@@ -327,6 +504,56 @@ struct Grid {
     topology: Value,
     source_edges: Vec<Edge>,
     search_region: Option<Rect>,
+    shared_edges: Vec<Value>,
+    uncertain_connections: usize,
+    regularized: bool,
+    cell_region_evidence: Value,
+    axis_evidence: Value,
+}
+
+/// Paint observations on a proposed axis set remain distinct from cell ownership.
+fn grid_shared_edges(
+    edges: &[Edge],
+    xs: &[f32],
+    ys: &[f32],
+    allow_partial: bool,
+) -> Result<(Vec<Value>, usize, Sets), String> {
+    let (cols, rows) = (xs.len() - 1, ys.len() - 1);
+    let mut sets = Sets::new(rows * cols);
+    // Connected tiles are only one hypothesis. Missing paint never confirms a passage.
+    let mut uncertain_connections = 0;
+    let mut shared_edges = Vec::new();
+    for row in 0..rows {
+        for col in 0..cols {
+            if col + 1 < cols {
+                let length = ys[row + 1] - ys[row];
+                let covered = coverage(edges, false, xs[col + 1], ys[row], ys[row + 1]);
+                shared_edges.push(json!({"horizontal":false,"at":xs[col+1],"from":ys[row],"to":ys[row+1],
+                    "regularizedCoveragePt":covered,"separatorRole":if covered==0. {"undecided"} else {"separator_candidate"},
+                    "alternatives":if covered==0. {vec!["separate_cells","connected_cells"]} else {vec!["separate_cells"]}}));
+                if covered == 0. {
+                    uncertain_connections += 1;
+                    sets.join(row * cols + col, row * cols + col + 1);
+                } else if !allow_partial && covered < length - EPS {
+                    return Err("partial internal vertical boundary".into());
+                }
+            }
+            if row + 1 < rows {
+                let length = xs[col + 1] - xs[col];
+                let covered = coverage(edges, true, ys[row + 1], xs[col], xs[col + 1]);
+                shared_edges.push(json!({"horizontal":true,"at":ys[row+1],"from":xs[col],"to":xs[col+1],
+                    "regularizedCoveragePt":covered,"separatorRole":if covered==0. {"undecided"} else {"separator_candidate"},
+                    "alternatives":if covered==0. {vec!["separate_cells","connected_cells"]} else {vec!["separate_cells"]}}));
+                if covered == 0. {
+                    uncertain_connections += 1;
+                    sets.join(row * cols + col, (row + 1) * cols + col);
+                } else if !allow_partial && covered < length - EPS {
+                    return Err("partial internal horizontal boundary".into());
+                }
+            }
+        }
+    }
+    Ok((shared_edges, uncertain_connections, sets))
 }
 
 fn grid(edges: &[Edge], allow_linear: bool) -> Result<Grid, String> {
@@ -358,30 +585,8 @@ fn grid(edges: &[Edge], allow_linear: bool) -> Result<Grid, String> {
     {
         return Err("open outer boundary".into());
     }
-    let mut sets = Sets::new(rows * cols);
-    // A missing internal rule joins neighboring tiles; a partial rule is ambiguous, not an invented merge.
-    for row in 0..rows {
-        for col in 0..cols {
-            if col + 1 < cols {
-                let length = ys[row + 1] - ys[row];
-                let covered = coverage(edges, false, xs[col + 1], ys[row], ys[row + 1]);
-                if covered <= EPS {
-                    sets.join(row * cols + col, row * cols + col + 1);
-                } else if covered < length - EPS {
-                    return Err("partial internal vertical boundary".into());
-                }
-            }
-            if row + 1 < rows {
-                let length = xs[col + 1] - xs[col];
-                let covered = coverage(edges, true, ys[row + 1], xs[col], xs[col + 1]);
-                if covered <= EPS {
-                    sets.join(row * cols + col, (row + 1) * cols + col);
-                } else if covered < length - EPS {
-                    return Err("partial internal horizontal boundary".into());
-                }
-            }
-        }
-    }
+    let (shared_edges, uncertain_connections, mut sets) =
+        grid_shared_edges(edges, &xs, &ys, false)?;
     let mut cells = Vec::new();
     for group in sets.groups() {
         let row = group.iter().map(|i| i / cols).min().unwrap();
@@ -436,32 +641,113 @@ fn grid(edges: &[Edge], allow_linear: bool) -> Result<Grid, String> {
         topology,
         source_edges: Vec::new(),
         search_region: None,
+        shared_edges,
+        uncertain_connections,
+        regularized: edges
+            .iter()
+            .any(|e| matches!(e.paint_kind, "periodic_carrier" | "dash_carrier")),
+        cell_region_evidence: Value::Null,
+        axis_evidence: Value::Null,
     })
 }
 
 fn supported_grid(
     component: &[Edge],
     source: &[Edge],
-    logical: &[Edge],
+    _logical: &[Edge],
     allow_linear: bool,
 ) -> Result<Grid, String> {
     let mut g = grid(component, allow_linear)?;
-    let contributors = source
-        .iter()
-        .filter(|edge| {
-            logical.iter().any(|logical| {
-                logical.source_segment == edge.source_segment
-                    && component.iter().any(|other| same_geometry(logical, other))
-            })
-        })
-        .copied()
-        .collect::<Vec<_>>();
-    g.source_edges = contributors
+    let contributors = source.iter().copied().collect::<Vec<_>>();
+    g.source_edges = source
         .iter()
         .filter(|edge| boundary_contributor(edge, &g, &contributors))
         .copied()
         .collect();
+    for shared in &mut g.shared_edges {
+        let horizontal = shared["horizontal"].as_bool().unwrap();
+        let at = shared["at"].as_f64().unwrap() as f32;
+        let from = shared["from"].as_f64().unwrap() as f32;
+        let to = shared["to"].as_f64().unwrap() as f32;
+        let covered = coverage(source, horizontal, at, from, to);
+        let dash_unknown = source.iter().any(|edge| {
+            edge.paint_kind == "dash_carrier"
+                && edge.horizontal == horizontal
+                && (edge.at - at).abs() <= EPS
+                && edge.from < to
+                && edge.to > from
+        });
+        shared["rawCoveragePt"] = json!(if dash_unknown { None } else { Some(covered) });
+        shared["paintPresence"] = json!(if dash_unknown {
+            "unknown_dash_coverage"
+        } else if covered == 0. {
+            "absent"
+        } else if covered >= to - from - 0.0001 {
+            "continuous"
+        } else {
+            "partial"
+        });
+    }
     Ok(g)
+}
+
+/// Preserve paint-qualified candidates. Only a complete, content-backed local
+/// interpretation may rescue a rejected or ambiguous paint component.
+fn resolved_grid(
+    component: &[Edge],
+    source: &[Edge],
+    logical: &[Edge],
+    text: &super::text_analysis::ObservedText,
+    orders: &[Vec<usize>],
+    clips: &pdf_oxide::elements::PathClipObservations,
+    media: (f32, f32, f32, f32),
+) -> Result<Grid, String> {
+    let original = supported_grid(component, source, logical, true).map(|mut grid| {
+        cell_regions::select(&mut grid, text, orders, clips, media);
+        grid.source_edges = source
+            .iter()
+            .filter(|e| boundary_contributor(e, &grid, component))
+            .copied()
+            .collect();
+        grid
+    });
+    if original
+        .as_ref()
+        .is_ok_and(|g| g.cell_region_evidence["status"] == "Selected")
+    {
+        return original;
+    }
+    match cell_regions::local_axes(component, source, text, orders, clips, media) {
+        Ok(candidate) => {
+            // A coarse painted face can contain several directly witnessed
+            // content regions even when its own paint topology has no holes.
+            // Keep an already equivalent paint-qualified result unchanged.
+            if let Ok(grid) = original {
+                let addresses = |g: &Grid| {
+                    g.cells
+                        .iter()
+                        .map(|c| (c.row, c.col, c.rows, c.cols))
+                        .collect::<Vec<_>>()
+                };
+                if grid.xs == candidate.xs
+                    && grid.ys == candidate.ys
+                    && addresses(&grid) == addresses(&candidate)
+                {
+                    return Ok(grid);
+                }
+            }
+            Ok(candidate)
+        }
+        Err(reason) => match original {
+            Ok(mut grid) => {
+                if !grid.cell_region_evidence.is_null() {
+                    grid.cell_region_evidence["localAxisAttempt"] = json!(reason);
+                }
+                Ok(grid)
+            }
+            Err(paint_reason) => Err(format!("{paint_reason}; local content regions: {reason}")),
+        },
+    }
 }
 
 /// Returns geometric table candidates and original content indices, not rhwp Table IR.
@@ -470,6 +756,9 @@ pub fn detect_ruled_tables(
     paths: &[PathContent],
     images: &[PdfImage],
     media_box: (f32, f32, f32, f32),
+    text: &super::text_analysis::ObservedText,
+    span_orders: &[Vec<usize>],
+    clips: &pdf_oxide::elements::PathClipObservations,
 ) -> Result<Value, String> {
     let (left, bottom, right, top) = media_box;
     if ![left, bottom, right, top].iter().all(|v| v.is_finite()) || right <= left || top <= bottom {
@@ -479,27 +768,29 @@ pub fn detect_ruled_tables(
     // Table inference is optional. Stop its work at the existing cap, while
     // preserving original paths/text/images for positional lowering. Invalid
     // source geometry is still fatal; no inferred table is asserted here.
-    let (source_edges, deferred_reason) = match edges(paths, left, top) {
-        Ok(edges) => (edges, None),
-        Err(reason) if reason == "ruled-table edge budget exceeded" => (Vec::new(), Some(reason)),
+    let (source_edges, logical_edges, edges, deferred_reason) = match edges(paths, left, top) {
+        Ok(source) => match normalize_edges(&source) {
+            Ok((logical, canonical)) => (source, logical, canonical, None),
+            Err(reason) => (source, Vec::new(), Vec::new(), Some(reason)),
+        },
+        Err(reason) if reason.contains("budget exceeded") => {
+            (Vec::new(), Vec::new(), Vec::new(), Some(reason))
+        }
         Err(reason) => return Err(reason),
     };
-    let logical_edges = source_edges
-        .iter()
-        .map(|edge| project_junctions(*edge, &source_edges))
-        .collect::<Vec<_>>();
-    let mut edges = Vec::new();
-    // This is geometric coverage normalization, not a claim that distinct paints are interchangeable.
-    for edge in &logical_edges {
-        if !edges.iter().any(|other| same_geometry(edge, other)) {
-            edges.push(*edge);
-        }
-    }
     let mut grids = Vec::new();
     let mut rejected = Vec::new();
     for group in component_groups(&edges) {
         let component: Vec<_> = group.iter().map(|i| edges[*i]).collect();
-        match supported_grid(&component, &source_edges, &logical_edges, false) {
+        match resolved_grid(
+            &component,
+            &source_edges,
+            &logical_edges,
+            text,
+            span_orders,
+            clips,
+            media_box,
+        ) {
             Ok(g) => grids.push(g),
             Err(reason) => rejected.push(json!({"edgeCount":component.len(),"reason":reason})),
         }
@@ -540,7 +831,15 @@ pub fn detect_ruled_tables(
                 .collect::<Vec<_>>();
             for group in component_groups(&local) {
                 let component = group.iter().map(|i| local[*i]).collect::<Vec<_>>();
-                if let Ok(mut g) = supported_grid(&component, &source_edges, &logical_edges, true) {
+                if let Ok(mut g) = resolved_grid(
+                    &component,
+                    &source_edges,
+                    &logical_edges,
+                    text,
+                    span_orders,
+                    clips,
+                    media_box,
+                ) {
                     if !inside(g.bbox, region)
                         || grids.iter().any(|existing| existing.bbox == g.bbox)
                     {
@@ -569,12 +868,41 @@ pub fn detect_ruled_tables(
             .total_cmp(&b.bbox.y)
             .then(a.bbox.x.total_cmp(&b.bbox.x))
     });
-    let placements = super::table_hierarchy::compose(
+    let mut placements = super::table_hierarchy::compose(
         &grids
             .iter()
             .map(|g| (g.bbox, g.cells.iter().map(|c| c.bbox).collect()))
             .collect::<Vec<_>>(),
     )?;
+    for (i, g) in grids.iter().enumerate() {
+        if (g.uncertain_connections > 0 || !g.axis_evidence.is_null())
+            && g.cell_region_evidence["status"] != "Selected"
+        {
+            placements[i].deferred = Some(
+                "absent paint does not establish merged cells; competing separation retained"
+                    .into(),
+            );
+        }
+    }
+    for _ in 0..=16 {
+        let mut changed = false;
+        for i in 0..placements.len() {
+            if let Some((parent, _)) = placements[i].parent {
+                if placements[i].deferred.is_some() != placements[parent].deferred.is_some() {
+                    let held = if placements[i].deferred.is_none() {
+                        i
+                    } else {
+                        parent
+                    };
+                    placements[held].deferred = Some("unresolved table hypothesis family".into());
+                    changed = true;
+                }
+            }
+        }
+        if !changed {
+            break;
+        }
+    }
     let mut unassigned = Vec::new();
     let mut ambiguous = Vec::new();
     let mut assign = |kind: &str, index: usize, bbox: Rect| {
@@ -619,6 +947,11 @@ pub fn detect_ruled_tables(
             unassigned.push(json!({"kind":kind,"index":index}));
         }
     };
+    let active_clips = clips
+        .text_uses
+        .iter()
+        .map(|(order, clip)| (order, clip))
+        .collect::<BTreeMap<_, _>>();
     for (i, s) in spans.iter().enumerate() {
         if !s.text.is_empty() {
             if ![s.bbox.x, s.bbox.y, s.bbox.width, s.bbox.height]
@@ -626,22 +959,22 @@ pub fn detect_ruled_tables(
                 .all(|v| v.is_finite())
                 || s.bbox.width < 0.0
                 || s.bbox.height < 0.0
-                || s.rotation_degrees != 0.0
                 || s.wmode != 0
                 || s.mirrored
             {
                 return Err("unsupported text geometry in table detection".into());
             }
-            assign(
-                "span",
-                i,
-                Rect::new(
-                    s.bbox.x - left,
-                    top - s.bbox.y - s.bbox.height,
-                    s.bbox.width,
-                    s.bbox.height,
-                ),
-            );
+            // A rotated run remains an editable positional TextBox. The
+            // horizontal cell paragraph recognizer cannot consume its frame.
+            if s.rotation_degrees != 0.0 {
+                continue;
+            }
+            let clip = span_orders
+                .get(i)
+                .and_then(|order| active_clips.get(order))
+                .and_then(|clip| clip.as_deref());
+            let ownership = span_ownership_bounds(s, clip, media_box);
+            assign("span", i, ownership);
         }
     }
     for (i, image) in images.iter().enumerate() {
@@ -661,23 +994,22 @@ pub fn detect_ruled_tables(
             return Err("image placement unavailable for table ownership".into());
         }
     }
-    Ok(json!({
-        "algorithm":"ruling-cellular-topology-v2","coordinateSystem":"points, top-left of MediaBox",
-        "deferredReason":deferred_reason,"sourcePathCount":paths.len(),
-        "scope":"stroked axis-aligned ruled grids; geometric candidates, not semantic proof",
-        "tolerancePt":EPS,"edgeCount":source_edges.len(),"canonicalEdgeCount":edges.len(),
-        "boundaryNormalization":"exact geometric duplicates share coverage; original paint contributors retained",
-        "junctionModel":"centerline intersections supported by perpendicular stroke ink and quantization tolerance",
-        "nestedSearch":"verified-parent-cell regions; unclaimed complete evidence only",
-        "tables":grids.iter().enumerate().map(|(gi,g)|json!({
+    let tables = grids.iter().enumerate().map(|(gi,g)|json!({
             "bbox":g.bbox,"rows":g.ys.len()-1,"columns":g.xs.len()-1,
             "xBoundaries":g.xs,"yBoundaries":g.ys,
-            "topology":g.topology,
+            "topology":g.topology,"axisEvidence":g.axis_evidence,
             "searchRegion":g.search_region,
+            "sharedEdges":g.shared_edges,"uncertainConnections":g.uncertain_connections,
+            "regularizedPeriodicBoundary":g.regularized,
+            "cellInterpretation":if g.cell_region_evidence["status"]=="Selected" {
+                "content-backed active-clip tiling; authored structure unknown"
+            } else if !g.axis_evidence.is_null() { "unresolved active-content local grid" }
+            else {"connected-face hypothesis; absent edges retain separation alternative"},
+            "cellRegionEvidence":g.cell_region_evidence,
             "sourceBoundarySegments":g.source_edges.iter().map(|edge|json!({
                 "path":edge.source_path,"segment":edge.source_segment,
                 "horizontal":edge.horizontal,"at":edge.at,"from":edge.from,"to":edge.to,
-                "strokeWidth":edge.stroke_width
+                "strokeWidth":edge.stroke_width,"operation":edge.source_operation,"paintKind":edge.paint_kind
             })).collect::<Vec<_>>(),
             "sourcePathIndices":g.source_edges.iter().map(|edge|edge.source_path)
                 .collect::<std::collections::BTreeSet<_>>().into_iter().filter(|path|
@@ -694,7 +1026,30 @@ pub fn detect_ruled_tables(
                 "childTableIndices":placements.iter().enumerate().filter_map(|(child,p)|
                     (p.parent==Some((gi,ci))).then_some(child)).collect::<Vec<_>>()
             })).collect::<Vec<_>>()
+        })).collect::<Vec<_>>();
+    Ok(json!({
+        "algorithm":"ruling-cellular-topology-v3","coordinateSystem":"points, top-left of MediaBox",
+        "deferredReason":deferred_reason,"sourcePathCount":paths.len(),
+        "scope":"stroke/fill-band geometric hypotheses; missing paint is not a merge proof",
+        "tolerancePt":EPS,"edgeCount":source_edges.len(),"canonicalEdgeCount":edges.len(),
+        "policy":{"maxSourceEdges":MAX_SOURCE_EDGES,"maxCanonicalEdges":MAX_EDGES,
+            "maxFillBandThicknessPt":2.,"minFillBandAspect":4.,"periodicMinimumUnits":4,
+            "periodicRelativeTolerance":0.05,"periodicAbsoluteTolerancePt":0.001},
+        "boundaryNormalization":"exact geometric duplicates share coverage; original paint contributors retained",
+        "boundaryObservations":source_edges.iter().map(|e|json!({
+            "id":format!("boundary:{}",e.source_segment),"path":e.source_path,"operation":e.source_operation,
+            "horizontal":e.horizontal,"at":e.at,"from":e.from,"to":e.to,"paintKind":e.paint_kind
         })).collect::<Vec<_>>(),
+        "logicalBoundaries":edges.iter().enumerate().map(|(i,e)|json!({
+            "id":format!("logical:{i}"),"horizontal":e.horizontal,"at":e.at,"from":e.from,"to":e.to,
+            "paintKind":e.paint_kind,"periodicGapPt":e.periodic_gap,
+            "sourceBoundaryIds":logical_edges.iter().enumerate()
+                .filter(|(_,logical)| geometry_key(logical)==geometry_key(e))
+                .map(|(raw,_)|format!("boundary:{raw}")).collect::<Vec<_>>()
+        })).collect::<Vec<_>>(),
+        "junctionModel":"centerline intersections supported by perpendicular stroke ink and quantization tolerance",
+        "nestedSearch":"verified-parent-cell regions; unclaimed complete evidence only",
+        "tables":tables,
         "contentOrder":"original extraction index; semantic reading order deferred",
         "composition":"guarded cell-slot substitution; affine unit-square embeddings",
         "rejectedComponents":rejected,"unassignedContent":unassigned,"ambiguousContent":ambiguous

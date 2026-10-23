@@ -47,6 +47,8 @@ pub(crate) mod image_header;
 pub mod image_resolver;
 pub mod inline_flow;
 pub(crate) mod kerning;
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub mod kitty;
 pub mod layer_renderer;
 pub mod layout;
 pub(crate) mod layout_frame;
@@ -64,6 +66,7 @@ pub(crate) mod partial_replay;
 pub mod pdf;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf_raster_fidelity;
+mod physical_units;
 pub mod pua_oldhangul;
 pub mod raster_pixels;
 pub(crate) mod reflow_float_host_line;
@@ -86,6 +89,8 @@ pub(crate) mod table_row_frame;
 // layout/publication callers remain closed until their own approved slices.
 #[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
 pub(crate) mod cubic_sampling;
+pub mod native_pua_fonts;
+pub(crate) mod pdf_stroke;
 #[allow(dead_code)]
 pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
@@ -295,6 +300,9 @@ pub(crate) fn glyph_fit_positions<'a>(
 /// 텍스트 렌더링 스타일
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TextStyle {
+    /// 호스트가 실제 paint에 준비한 글꼴의 원 PUA 표시·전진 계약이다.
+    #[serde(skip)]
+    pub native_pua_metrics: Option<std::sync::Arc<native_pua_fonts::NativePuaMetrics>>,
     /// Session-only glyph metrics; never part of document/style serialization.
     #[serde(skip)]
     pub supplemental_metrics:
@@ -452,6 +460,9 @@ pub struct TextStyle {
     /// 줄 구성에서 선택한 반각 공백 규칙. 원문의 useFontSpace와 구별한다.
     #[serde(skip_serializing)]
     pub layout_half_space: bool,
+    /// 실제 새 줄 구성의 메트릭인지. 공백 규칙과 별도로 측정·배치가 공유한다.
+    #[serde(skip_serializing)]
+    pub regenerated_font_metrics: bool,
     /// [#7051] 이 run 의 글꼴이 **HFT 한글 전용 face** 라서 대체됐는지
     /// (`FontSubstitutionBoundary::Hft`). 그런 글꼴의 ASCII 는 한컴이 반각(`em/2`)으로
     /// 전진시키므로 대체 글꼴의 비례 폭을 그대로 쓰면 안 된다. 진짜 영문 HFT
@@ -673,9 +684,11 @@ impl Default for TextStyle {
             strike_color: 0,
             shade_color: 0x00FFFFFF,
             font_metric_trusted: false,
+            native_pua_metrics: None,
             metric_font_family: None,
             font_space_em: None,
             layout_half_space: false,
+            regenerated_font_metrics: false,
             hft_hangul_face: false,
             hft_font_face: false,
             hft_fullwidth_dot: false,
@@ -962,6 +975,10 @@ pub struct LineStyle {
     pub width: f64,
     /// 선 종류
     pub dash: StrokeDash,
+    /// Explicit physical on/off lengths in scene coordinates. A native border
+    /// can have metrics different from the generic shape dash preset.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dash_pattern: Option<Vec<f64>>,
     /// 선 렌더링 종류 (이중선/삼중선 등)
     pub line_type: LineRenderType,
     /// 시작 화살표
@@ -2370,7 +2387,7 @@ pub(crate) fn partial_tac_header_tail_px(
 /// 픽셀을 HWPUNIT으로 변환
 #[inline]
 pub fn px_to_hwpunit(px: f64, dpi: f64) -> i32 {
-    (px * HWPUNIT_PER_INCH / dpi) as i32
+    physical_units::px_to_hwpunit(px, dpi)
 }
 
 /// TAC(글자처럼 취급) 표 한 칸의 유효 높이 — 저장된 line_seg 높이와 실측 표 높이 중
@@ -2895,9 +2912,28 @@ pub fn render_font_family_chain(font_family: &str) -> String {
 
 /// `bold` 이면 ExtraLight 를 빼서 Noto Sans KR Regular/Bold 가 매칭되게 한다 (#3772).
 pub fn render_font_family_chain_for_weight(font_family: &str, bold: bool) -> String {
+    render_font_family_names_for_weight(font_family, bold)
+        .into_iter()
+        .map(|family| {
+            if family == "serif" || family == "sans-serif" || family == "monospace" {
+                family
+            } else {
+                css_single_quoted_font_family(&family)
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(",")
+}
+
+/// 호스트의 실제 face 준비 요청도 paint와 같은 별칭·fallback 순서를 소비한다.
+/// CSS 인용 전 이름을 공유해 호스트의 실제 family 조회에 인용부호가 섞이지 않게 한다.
+pub(crate) fn render_font_family_names_for_weight(font_family: &str, bold: bool) -> Vec<String> {
     let requested = internal_font_family_members(font_family);
     let Some(primary) = requested.first().copied() else {
-        return generic_fallback_for_weight("", bold);
+        return internal_font_family_members(&generic_fallback_for_weight("", bold))
+            .into_iter()
+            .map(|family| family.trim_matches('\'').to_owned())
+            .collect();
     };
     let fb = generic_fallback_for_weight(primary, bold);
     let mut family_names = Vec::new();
@@ -2913,10 +2949,14 @@ pub fn render_font_family_chain_for_weight(font_family: &str, bold: bool) -> Str
     }
     let mut families: Vec<String> = family_names
         .iter()
-        .map(|family| css_single_quoted_font_family(family))
+        .map(|family| family.to_string())
         .collect();
-    families.push(fb);
-    families.join(",")
+    families.extend(
+        internal_font_family_members(&fb)
+            .into_iter()
+            .map(|family| family.trim_matches('\'').to_owned()),
+    );
+    families
 }
 
 /// Canvas 2D 렌더용 인용 font-family 체인.
@@ -3332,12 +3372,13 @@ pub(crate) fn empty_host_line_absorbed_by_topbottom_float(
 ) -> bool {
     use crate::model::shape::{TextWrap, VertRelTo};
 
-    // 띠가 앵커에서 시작할 때만 host 줄이 띠 안에 든다. 양수 세로 오프셋이면 host 줄은 개체 위에
-    // 따로 놓인다(PrEP 3.214: `sw=0` 이지만 오프셋 504HU, 한/글 캡션 위치는 종전 전진과 일치).
+    // 띠가 host 줄 상자 안에서 시작하면 host 줄은 띠 안에 든다. 다음 문단의 저장 vpos 는
+    // 문단 시작 + max(위 간격, 세로 오프셋) + 개체 높이다(hwpspec 구역 3 첫 쪽: 오프셋 115HU,
+    // 0 + 115 + 4428 = 4543 · PrEP 3.214: 위 간격 500·오프셋 504HU, 45884 + 504 + 20145 =
+    // 66533). 오프셋이 줄 상자 아래면 host 줄은 개체 위에 따로 놓인다(#6888).
     if common.treat_as_char
         || !matches!(common.text_wrap, TextWrap::TopAndBottom)
         || !matches!(common.vert_rel_to, VertRelTo::Para)
-        || crate::renderer::float_placement::signed_hwpunit(common.vertical_offset) != 0
     {
         return false;
     }
@@ -3346,8 +3387,34 @@ pub(crate) fn empty_host_line_absorbed_by_topbottom_float(
         return false;
     }
     let seg = &para.line_segs[0];
+    let offset = crate::renderer::float_placement::signed_hwpunit(common.vertical_offset);
     seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && seg.segment_width == 0
+        && (0..seg.line_height.max(1)).contains(&offset)
+}
+
+/// 띠에 흡수된 빈 host 줄([`empty_host_line_absorbed_by_topbottom_float`])이 흐름에서 돌려받는
+/// 높이(px). 문단 측정은 `위 간격 + 줄 높이 + 줄간격` 을 이미 더했고, 띠는 문단 시작에서
+/// `max(위 간격, 세로 오프셋)` 아래에 놓이므로 위 간격을 넘는 오프셋만큼은 돌려주지 않는다.
+pub(crate) fn absorbed_host_line_return_px(
+    para: &crate::model::paragraph::Paragraph,
+    common: &crate::model::shape::CommonObjAttr,
+    spacing_before_px: f64,
+    dpi: f64,
+) -> f64 {
+    if !empty_host_line_absorbed_by_topbottom_float(para, common) {
+        return 0.0;
+    }
+    let Some(seg) = para.line_segs.first() else {
+        return 0.0;
+    };
+    let offset = hwpunit_to_px(
+        crate::renderer::float_placement::signed_hwpunit(common.vertical_offset),
+        dpi,
+    );
+    (hwpunit_to_px(seg.line_height + seg.line_spacing, dpi)
+        - (offset - spacing_before_px.max(0.0)).max(0.0))
+    .max(0.0)
 }
 
 /// [#6888] **자기 앵커보다 아래로 떨어진 자리차지(TopAndBottom) 개체**인가.

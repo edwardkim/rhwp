@@ -1,4 +1,3 @@
-
 fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {
     let mut result = Vec::new();
 
@@ -128,6 +127,7 @@ fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) 
                 supplemental_metrics_blocked: false,
                 inserted_control_text: true,
                 space_metric: crate::renderer::composer::SpaceMetric::Stored,
+                regenerated_font_metrics: text_metric_origin::regenerated_row(para, 0),
             },
         ));
     }
@@ -169,7 +169,7 @@ fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) 
 pub(super) fn insert_control_text_run(
     composed: &mut ComposedParagraph,
     text_pos: usize,
-    overlap_run: ComposedTextRun,
+    mut overlap_run: ComposedTextRun,
 ) {
     let mut char_offset = 0usize;
 
@@ -193,6 +193,7 @@ pub(super) fn insert_control_text_run(
                 }
 
                 let run_chars = line.runs[run_idx].text.chars().count();
+                overlap_run.regenerated_font_metrics = line.runs[run_idx].regenerated_font_metrics;
 
                 if local_pos == run_offset {
                     // 런 앞에 삽입
@@ -224,6 +225,7 @@ pub(super) fn insert_control_text_run(
                             .supplemental_metrics_blocked,
                         inserted_control_text: line.runs[run_idx].inserted_control_text,
                         space_metric: line.runs[run_idx].space_metric,
+                        regenerated_font_metrics: line.runs[run_idx].regenerated_font_metrics,
                     };
 
                     // overlap_run과 after_run을 삽입
@@ -235,7 +237,10 @@ pub(super) fn insert_control_text_run(
                 run_offset += run_chars;
             }
 
-            // 라인 끝에 삽입
+            // 삽입한 표시도 이 물리 줄이 선택한 측정 출처를 따른다.
+            if let Some(last) = line.runs.last() {
+                overlap_run.regenerated_font_metrics = last.regenerated_font_metrics;
+            }
             line.runs.push(overlap_run);
             return;
         }

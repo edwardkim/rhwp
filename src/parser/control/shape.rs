@@ -189,6 +189,9 @@ pub(crate) fn parse_gso_control(ctrl_data: &[u8], child_records: &[Record]) -> C
             text_box.margin_right = lr.read_i16().unwrap_or(0);
             text_box.margin_top = lr.read_i16().unwrap_or(0);
             text_box.margin_bottom = lr.read_i16().unwrap_or(0);
+            // The HWP LIST_HEADER physically stores all four margins. Zero is
+            // explicit too; dropping its presence changes HWPX text layout.
+            text_box.text_margin_explicit = lh_data.len() >= 16;
             text_box.max_width = lr.read_u32().unwrap_or(0);
             // 나머지 바이트 보존 (라운드트립용)
             if lr.remaining() > 0 {
@@ -793,6 +796,7 @@ fn parse_container_children(child_records: &[Record], depth: u32) -> Vec<ShapeOb
                     text_box.margin_right = lr.read_i16().unwrap_or(0);
                     text_box.margin_top = lr.read_i16().unwrap_or(0);
                     text_box.margin_bottom = lr.read_i16().unwrap_or(0);
+                    text_box.text_margin_explicit = lh_data.len() >= 16;
                     text_box.max_width = lr.read_u32().unwrap_or(0);
                     if lr.remaining() > 0 {
                         text_box.raw_list_header_extra =

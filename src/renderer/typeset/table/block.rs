@@ -9,7 +9,7 @@ use crate::renderer::typeset::{
 use host_placement::HostPlacementConstraint;
 
 mod entry;
-mod host_placement;
+pub(in crate::renderer::typeset) mod host_placement;
 mod prepare;
 mod whole_fit;
 

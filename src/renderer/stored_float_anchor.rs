@@ -64,11 +64,8 @@ pub(crate) fn stored_topbottom_object_span(
     table: &Table,
 ) -> (i64, i64) {
     if let Some(outer_box_height) = stored_topbottom_flow_advance_hu(para, next_para, table) {
-        // 사방 균등일 때만 `vpos` 를 상자 위끝으로 읽는다. 저장소의 좁은 술어 셋
-        // (`#6378` · `#3820 Stage 120` · `native_empty_host_physical_outer_box_paint_inset`)
-        // 이 모두 같은 조건을 쓰고, 정본도 같은 말을 한다 —
-        // `76076_regulatory_analysis.hwp` pi=323·324 는 (**0**/**0**/566/566) 이고
-        // 한/글이 여백을 싣지 않는다(정본 괘선 400.52 로 확인).
+        // 닫힌 세로 바깥 상자의 위여백은 좌우 여백과 별개다.
+        // 위·아래가 0인 구분선 표도 같은 값 0을 소비한다.
         let top = stored_outer_box_table_top_hu(table);
         let offset = if offset_float_follows_inline_line(para, table) {
             i64::from(table.common.vertical_offset)
@@ -86,17 +83,9 @@ pub(crate) fn stored_topbottom_object_span(
 }
 
 /// 다음 저장 줄로 인증된 바깥 상자 안에서 표 본체가 시작하는 위치.
-/// 사방 균등 여백의 저장 프레임만 위 여백을 본체 앞에 둔다. 비대칭 여백은
-/// 흐름 점유에 포함되어도 같은 그림 원점을 뜻하지 않는다.
+/// 세로 원점은 원본 위여백을 소비하며, 좌우 여백의 대칭 여부로 바꾸지 않는다.
 pub(crate) fn stored_outer_box_table_top_hu(table: &Table) -> i64 {
-    if table.outer_margin_top == table.outer_margin_bottom
-        && table.outer_margin_top == table.outer_margin_left
-        && table.outer_margin_top == table.outer_margin_right
-    {
-        i64::from(table.outer_margin_top)
-    } else {
-        0
-    }
+    i64::from(table.outer_margin_top)
 }
 
 /// 저장 사다리가 증명한 전체 흐름 상자의 advance. 단순 테두리 원점은

@@ -204,7 +204,7 @@ pub(crate) fn one_to_one_pua_replay_text(text: &str) -> std::borrow::Cow<'_, str
 ///
 /// **정규화는 표에 값이 있을 때만 한다.** 값이 없으면 원문을 그대로 둬서, 미등록 PUA
 /// 축(#5599)이 관측하는 표면을 이 변경이 흔들지 않게 한다.
-fn hancom_symbol_display_key(ch: char) -> char {
+pub(crate) fn hancom_symbol_display_key(ch: char) -> char {
     let Ok(unit) = u16::try_from(ch as u32) else {
         return ch;
     };
@@ -248,13 +248,26 @@ fn tone_mark_display(ch: char) -> Option<char> {
 /// CharOverlap 전용 숫자(`U+F02CE..=U+F02E1`)는 여기서 확장하지 않는다.
 /// 해당 문자는 `pua_to_display_text()`가 글자겹침 렌더러에서만 처리한다.
 pub fn expand_pua_display_text(text: &str) -> String {
+    expand_pua_display_with_program(text, None)
+}
+
+pub fn expand_pua_render_text_in_style(text: &str, style: &TextStyle) -> String {
+    expand_pua_display_with_program(text, style.native_pua_metrics.as_deref())
+}
+
+fn expand_pua_display_with_program(
+    text: &str,
+    program: Option<&super::native_pua_fonts::NativePuaMetrics>,
+) -> String {
     use super::pua_oldhangul::map_pua_old_hangul;
 
     let mut out = String::with_capacity(text.len());
     for ch in text.chars() {
         // [#5800] HWP5 원시 기호값을 먼저 평면-15 키로 정규화한다.
         let ch = hancom_symbol_display_key(ch);
-        if let Some(dot) = tone_mark_display(ch) {
+        if program.is_some_and(|program| program.advance_em(ch).is_some()) {
+            out.push(ch);
+        } else if let Some(dot) = tone_mark_display(ch) {
             out.push(dot);
         } else if let Some(replacement) = pua_render_text_display(ch) {
             out.push_str(replacement);
@@ -404,6 +417,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                             supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                             inserted_control_text: run.inserted_control_text,
                             space_metric: run.space_metric,
+                            regenerated_font_metrics: run.regenerated_font_metrics,
                         });
                         buf.clear();
                     }
@@ -422,6 +436,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                         supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                         inserted_control_text: run.inserted_control_text,
                         space_metric: run.space_metric,
+                        regenerated_font_metrics: run.regenerated_font_metrics,
                     });
                 } else {
                     buf.push(ch);
@@ -441,6 +456,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                     supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                     inserted_control_text: run.inserted_control_text,
                     space_metric: run.space_metric,
+                    regenerated_font_metrics: run.regenerated_font_metrics,
                 });
             }
         }

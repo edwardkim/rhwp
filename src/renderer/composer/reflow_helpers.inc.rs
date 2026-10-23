@@ -617,6 +617,51 @@ pub(crate) fn stored_rows_are_stale(
         .any(|(line, seg)| non_last_overfull(line, seg))
 }
 
+/// [#7702] 저장 줄의 마지막 줄이 **한/글이 다시 나눠 앞 줄에 붙일 수 있는** 낱말 꼬리인가.
+///
+/// 한/글이 그 문단을 저장 줄 대신 새로 나누는 경우만 본다.
+/// - condense 가 있는 문단: 한/글은 공백을 condense% 까지 줄여 이미 시작한 낱말의 글자를
+///   앞 줄에 더 담는다(#7418, 한/글 2024 합성 문단 본문 208/208·칸 211/211 재현).
+/// - [#8105] 문단 머리(번호·글머리표)를 그리는 문단: 한/글 2024 는 폭이 맞는 저장 줄도 쓰지 않고
+///   다시 나눈다(«-»·«^1.» 번호 모두). 번호 없는 문단은 폭이 맞으면 저장 줄을 따른다
+///   (`probes/make_numbered_stale_tail.py`). 1342000(한/글 2014 저장) 의 한/글 2020 Print 도
+///   번호 문단 꼬리 39건을 붙이고 번호 없는 `…제|정]`·`…일|부개정]` 은 두 줄로 둔다.
+///
+/// 이 함수는 **모양**만 본다 — 늘려 채우는 양쪽 정렬 문단에서, 마지막 저장 줄이 앞 줄에서
+/// 시작한 낱말의 나머지(공백 없음, 앞 줄 끝과 이 줄 첫 글자가 모두 한글 음절)뿐인가.
+/// 실제로 붙는지는 호출자가 프레임의 새 줄 나눔으로 정한다(측정 근사를 따로 두지 않는다).
+fn stored_last_row_is_rejoinable_word_tail(
+    composed: &ComposedParagraph,
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    use crate::model::style::Alignment;
+    let n = composed.lines.len();
+    if n < 2 || n != para.line_segs.len() {
+        return false;
+    }
+    let Some(para_style) = styles.para_styles.get(para.para_shape_id as usize) else {
+        return false;
+    };
+    let recomposed_by_hancom = para_style.condense_min_space != 0
+        || para_style.head_type != crate::model::style::HeadType::None;
+    if para_style.alignment != Alignment::Justify || !recomposed_by_hancom {
+        return false;
+    }
+    let (prev, last) = (&composed.lines[n - 2], &composed.lines[n - 1]);
+    if prev.has_line_break {
+        return false;
+    }
+    let is_syllable = |c: char| ('\u{ac00}'..='\u{d7a3}').contains(&c);
+    let prev_text: String = prev.runs.iter().map(|run| run.text.as_str()).collect();
+    let tail_text: String = last.runs.iter().map(|run| run.text.as_str()).collect();
+    let tail = tail_text.trim_end();
+    !tail.is_empty()
+        && !tail.chars().any(char::is_whitespace)
+        && prev_text.chars().last().is_some_and(is_syllable)
+        && tail.chars().next().is_some_and(is_syllable)
+}
+
 /// [#7416] 저장 줄 사다리가 **제 선언 폭과 모순되는** 과소충전.
 ///
 /// `#6102` 의 과밀(줄이 제 폭보다 많이 담았다)과 대칭인 쪽이다. 비말미 저장 줄이

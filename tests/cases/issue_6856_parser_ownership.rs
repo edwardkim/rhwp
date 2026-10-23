@@ -57,7 +57,19 @@ fn hwp_caption_does_not_replace_owned_empty_area() {
         );
         assert_eq!(parsed.drawing.text_box.is_some(), owned);
         if owned {
-            assert_eq!(parsed.drawing.text_box.unwrap().paragraphs.len(), 1);
+            let text_box = parsed.drawing.text_box.unwrap();
+            assert_eq!(text_box.paragraphs.len(), 1);
+            // HWP stores all four margins. Zero is explicit, not absent.
+            assert!(text_box.text_margin_explicit);
+            assert_eq!(
+                [
+                    text_box.margin_left,
+                    text_box.margin_right,
+                    text_box.margin_top,
+                    text_box.margin_bottom,
+                ],
+                [0; 4]
+            );
         }
     }
 }
@@ -89,6 +101,18 @@ fn hwp_group_sibling_textbox_does_not_reclassify_plain_rectangle() {
                 RectangleControlKind::Rectangle
             };
             assert_eq!(rect.control_kind(), expected);
+            if let Some(text_box) = &rect.drawing.text_box {
+                assert!(text_box.text_margin_explicit);
+                assert_eq!(
+                    [
+                        text_box.margin_left,
+                        text_box.margin_right,
+                        text_box.margin_top,
+                        text_box.margin_bottom,
+                    ],
+                    [0; 4]
+                );
+            }
         }
     }
 }

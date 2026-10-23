@@ -135,7 +135,9 @@ fn project_debug_overlay(root: &LayerNode) -> LayerDebugOverlayProjection {
                     visit(projection, child, child_skip_depth);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => visit(projection, child, skip_depth),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                visit(projection, child, skip_depth)
+            }
             LayerNodeKind::Leaf { ops } if skip_depth == 0 => {
                 for op in ops {
                     if let PaintOp::Image { bbox, image, .. } = op {
@@ -223,7 +225,7 @@ impl SvgLayerRenderer {
             LayerNodeKind::Group { children, .. } => children
                 .iter()
                 .any(|child| Self::node_has_plane(child, active_layer, plane)),
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 Self::node_has_plane(child, active_layer, plane)
             }
             LayerNodeKind::Leaf { ops } => ops.iter().any(|op| {
@@ -247,6 +249,14 @@ impl SvgLayerRenderer {
             LayerNodeKind::Group { children, .. } => {
                 for child in children {
                     self.render_node(child, active_layer, plane)?;
+                }
+            }
+            LayerNodeKind::ClipPath { paths, child } => {
+                let id = format!("source-text-clip-{}-{}", self.node_id(node), plane.as_str());
+                self.renderer.begin_layer_path_clip(paths, &id);
+                self.render_node(child, active_layer, plane)?;
+                for _ in paths {
+                    self.renderer.end_layer_clip();
                 }
             }
             LayerNodeKind::ClipRect {

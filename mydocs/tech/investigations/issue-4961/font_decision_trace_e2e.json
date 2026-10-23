@@ -139,7 +139,9 @@
   ],
   "comparisons": {
     "substFeatureDetection": {
-      "withoutSubstFont": "subst-counterpart-hwp",
+      "withoutSubstFont": "exact-face",
+      "withHwpSubstFont": "subst-counterpart-hwp",
+      "expectedHwpSubstFont": "한컴바탕",
       "withSubstFont": "document-substitute-hwpx"
     }
   }

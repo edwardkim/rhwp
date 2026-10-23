@@ -87,6 +87,16 @@ pub(super) fn print() {
     println!("                              qwen-vl:    2240 px (Qwen-VL, 별칭: qwen)");
     println!("                              llava:      672 px (LLaVA / OSS CLIP)");
     println!();
+    println!("  export-kitty <파일.hwp|파일.hwpx> [옵션] (native-skia feature 필요)");
+    println!("      Kitty graphics을 stdout에 직접 표시하거나 페이지별 .kitty 파일로 저장; 오류는 stderr.");
+    println!("      -o, --output <폴더>   출력 폴더 지정 시 전체 쪽 저장, 생략 시 stdout 한 쪽");
+    println!("      -p, --page <번호>     특정 페이지만 (0부터), stdout 기본 첫 쪽");
+    println!("      --width <픽셀>       너비 1..16384 (기본 360), 종횡비 유지");
+    println!("      --font-path <경로>   글꼴 경로, 반복 가능");
+    println!("      --profile <프로필>   screen|print|high-quality|fast-preview");
+    println!("      --compat <2022|2024> 기존 한컴 호환 옵션");
+    println!("      예: rhwp export-kitty 문서.hwp -o output/kitty --width 720");
+    println!();
     println!("  export-sixel <파일.hwp|파일.hwpx> [옵션] (native-skia feature 필요)");
     println!("      Sixel을 stdout에 직접 표시하거나 페이지별 .six 파일로 저장; 오류는 stderr.");
     println!("      -o, --output <폴더>   출력 폴더 지정 시 전체 쪽 저장, 생략 시 stdout 한 쪽");
@@ -261,7 +271,8 @@ pub(super) fn print() {
     );
     println!("      --verify-pages        변환 전/후 렌더 페이지 수를 비교 (불일치 시 exit 4)");
     println!();
-    println!("  import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--json]");
+    println!("  import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--json] [--table-inference]");
+    println!("      --table-inference    --json에 원본 문자를 포함한 표 추론 근거·후보를 추가");
     println!(
         "      PDF 전체 또는 선택 쪽을 가져오기 (기본 포함 pdf-import; 제외 빌드는 재빌드 필요)"
     );

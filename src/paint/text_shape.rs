@@ -154,7 +154,9 @@ impl<'a> TextShapeLowerer<'a> {
                     self.collect_node(child, report);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => self.collect_node(child, report),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                self.collect_node(child, report)
+            }
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
                     if let PaintOp::TextRun { run, .. } = op {
@@ -177,7 +179,7 @@ impl<'a> TextShapeLowerer<'a> {
                     self.lower_node(child, report, next_text_source_id);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 self.lower_node(child, report, next_text_source_id);
             }
             LayerNodeKind::Leaf { ops } => {

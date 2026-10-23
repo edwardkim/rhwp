@@ -2,8 +2,8 @@
 
 use super::RowBlockQuery;
 use crate::model::control::Control;
-use crate::renderer::layout::table_layout::RowCutResult;
-use crate::renderer::typeset::MIN_TOP_KEEP_PX;
+use crate::renderer::layout::{table_layout::RowCutResult, LayoutEngine};
+use crate::renderer::typeset::{MIN_TOP_KEEP_PX, TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX};
 
 pub(in crate::renderer::typeset) struct RowScanQuery<'a> {
     pub(in crate::renderer::typeset) rows: &'a RowBlockQuery<'a>,
@@ -25,6 +25,100 @@ pub(in crate::renderer::typeset) struct RowBandProbe {
 }
 
 impl RowScanQuery<'_> {
+    /// 유닛 소비 완료와 실제 칸 상자의 수용을 구분한다.
+    /// 밴드 컷은 내용과 안 여백이 모두 들어갈 때만 남은 물리 공간을 소유한다.
+    pub(in crate::renderer::typeset) fn complete_cut_band_height(
+        &self,
+        end_cut: &[usize],
+        available: f64,
+    ) -> Option<f64> {
+        let start = if self.r == self.cursor_row {
+            self.start_cut
+        } else {
+            &[]
+        };
+        let occupied = self.rows.layout_engine.row_cut_content_height(
+            self.rows.table,
+            self.r,
+            start,
+            end_cut,
+            self.rows.styles,
+        );
+        (available.is_finite() && available > 0.0 && occupied <= available).then_some(available)
+    }
+
+    /// 문단 유지 계약을 통과한 컷이 실제로 소유할 상자를 수용 전에 확정한다.
+    /// 내용 높이만으로 최소 조각을 검사한 뒤 paint에서 상자를 늘리지 않는다.
+    /// 반환값은 누적 예약과 부분 행 상자에 함께 전달한다.
+    pub(in crate::renderer::typeset) fn plain_cut_physical_height(
+        &self,
+        end_cut: &[usize],
+        visible_height: f64,
+        available_height: f64,
+        owns_minimum: bool,
+        fills_page_end: bool,
+    ) -> Option<f64> {
+        let table = self.rows.table;
+        if fills_page_end
+            && table.cells.iter().any(|cell| {
+                cell.row_span > 1
+                    && crate::renderer::layout::cell_crosses_fragment_end(cell, self.r + 1, end_cut)
+            })
+        {
+            return Some(available_height.max(visible_height));
+        }
+        if !owns_minimum {
+            return None;
+        }
+        let minimum = self.rows.layout_engine.reflow_row_physical_minimum(
+            table,
+            self.r,
+            self.rows.mt.row_heights[self.r],
+            Some(end_cut),
+            self.rows.styles,
+        )?;
+        let remaining = if self.r == self.cursor_row {
+            self.start_row_height_override.unwrap_or(minimum)
+        } else {
+            minimum
+        };
+        Some(if visible_height <= available_height {
+            remaining.min(available_height).max(visible_height)
+        } else {
+            visible_height
+        })
+    }
+
+    /// 통짜/분할 경로가 내용 완결 후 같은 실제 끝 띠를 소비한다.
+    /// 다른 칸의 미래 공간과 이 행에서 닫히는 원본 병합 칸을 구분한다.
+    pub(in crate::renderer::typeset) fn complete_source_band_can_close(
+        &self,
+        row_heights: &[f64],
+        row_total: f64,
+        physical: f64,
+    ) -> bool {
+        let Self {
+            rows,
+            r,
+            cursor_row,
+            ..
+        } = *self;
+        let continues = rows.table.cells.iter().any(|cell| {
+            let first = cell.row as usize;
+            cell.row_span > 1 && first <= r && first + cell.row_span as usize > r + 1
+        });
+        row_total <= physical + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
+            && (!continues
+                || rows.layout_engine.stored_closing_span_content_fits(
+                    rows.table,
+                    r,
+                    cursor_row,
+                    row_heights,
+                    physical,
+                    rows.styles,
+                ))
+    }
+
     /// 앞 행이 실제 수용한 높이를 차감한다. 원본 측정 행과 컷용 행 높이를 합치지 않는다.
     pub(in crate::renderer::typeset) fn required_height(
         &self,
@@ -60,7 +154,9 @@ impl RowScanQuery<'_> {
                 styles,
                 (r + 1, true),
             )
-            .map_or(height, |need| height.max(need - consumed - cs_before))
+            .map_or(height, |need| {
+                height.max(need.required() - consumed - cs_before)
+            })
     }
 
     pub(in crate::renderer::typeset) fn whole_row_height(
@@ -75,6 +171,17 @@ impl RowScanQuery<'_> {
             styles,
             ..
         } = *rows;
+        if r == self.cursor_row {
+            if let Some(height) = LayoutEngine::carried_span_row_physical_height(
+                table,
+                r,
+                row_start_cut,
+                self.start_cut_is_block,
+                self.start_row_height_override,
+            ) {
+                return height;
+            }
+        }
         if row_start_cut.is_empty() {
             whole_row_fit_h[r]
         } else {

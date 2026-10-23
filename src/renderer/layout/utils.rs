@@ -31,16 +31,7 @@ pub(crate) fn find_bin_data_index(
     bin_data_content: &[BinDataContent],
     bin_data_id: u16,
 ) -> Option<usize> {
-    if bin_data_id == 0 {
-        return None;
-    }
-    // 1-indexed 순번으로 BinDataContent 배열 접근
-    let idx = (bin_data_id - 1) as usize;
-    if idx < bin_data_content.len() {
-        return Some(idx);
-    }
-    // 인덱스 범위 밖 (HWPX 차트 sparse id 60000+N 등) — id 직접 검색
-    bin_data_content.iter().position(|c| c.id == bin_data_id)
+    crate::model::bin_data::content_index(bin_data_content, bin_data_id)
 }
 
 /// [#2550] `find_bin_data` + 압축 해제 상한 로드.
@@ -493,6 +484,7 @@ pub(crate) fn drawing_to_line_style(drawing: &crate::model::shape::DrawingObjAtt
         color: border.color,
         width: if width > 0.0 { width } else { 0.5 },
         dash,
+        dash_pattern: None,
         line_type: line_render_type,
         start_arrow,
         end_arrow,

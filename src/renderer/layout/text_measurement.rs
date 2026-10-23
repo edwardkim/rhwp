@@ -862,6 +862,15 @@ pub(crate) fn resolved_to_text_style(
 ) -> TextStyle {
     if let Some(cs) = styles.char_styles.get(char_style_id as usize) {
         TextStyle {
+            native_pua_metrics: (!styles.has_exact_font_source(char_style_id, lang_index))
+                .then(|| {
+                    styles.native_pua_fonts.get(
+                        cs.font_family_for_lang(lang_index),
+                        cs.bold,
+                        cs.italic,
+                    )
+                })
+                .flatten(),
             fixed_glyph_advances: false,
             source_font_is_hft: cs.source_hft_for_lang(lang_index),
             font_family: cs.font_family_for_lang(lang_index).to_string(),
@@ -872,6 +881,7 @@ pub(crate) fn resolved_to_text_style(
             // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
             font_space_em: cs.font_space_em,
             layout_half_space: false,
+            regenerated_font_metrics: false,
             hft_hangul_face: styles.hft_ascii_halfwidth && cs.hft_hangul_face_for_lang(lang_index),
             hft_font_face: cs.hft_hangul_face_for_lang(lang_index),
             hft_fullwidth_dot: cs.hft_fullwidth_dot_for_lang(lang_index),
@@ -1066,8 +1076,15 @@ enum KoPubFamily {
 }
 
 impl KoPubFamily {
+    /// `KoPubWorld돋움체`/`KoPubWorld바탕체` 는 같은 KOPUS 계열의 개정판으로, 글리프
+    /// 전진폭이 KoPub 과 같다. 정본 `pdf/hwpx/hancom-hwp/[2027] 온새미로 1 본교재-hwp-2020.pdf`
+    /// 에 내장된 `KoPubWorldBatangLight`·`KoPubWorldDotumLight` 서브셋의 CIDFont `/W`
+    /// 를 직독하면 한글 936 · 872, 문장부호 312 · 290, 숫자 573 · 563 등 아래 KoPub
+    /// 표와 같은 값만 나온다. 이 이름을 KoPub 으로 읽지 못하면 일반 메트릭 폴백으로
+    /// 한글을 0.953em·공백을 0.457em 으로 재서(정본 0.936·0.5), 그 문서 pi=143 처럼
+    /// 한/글이 한 줄에 담는 줄을 둘로 끊는다.
     fn from_primary(primary_name: &str) -> Option<Self> {
-        let lower = primary_name.to_lowercase();
+        let lower = primary_name.to_lowercase().replace(' ', "");
         // World 배포본은 이름을 달리하지만 독립 Print의 cmap/hmtx와 설치
         // 프로그램의 윤곽·전진이 같다. 바탕 한글은 반올림한0.94 대신936/1000이다.
         if primary_name.contains("KoPubWorld바탕체")
@@ -1080,9 +1097,13 @@ impl KoPubFamily {
             || lower.contains("kopubworlddotum")
         {
             Some(Self::WorldDotum)
-        } else if primary_name.contains("KoPub돋움체") || lower.contains("kopub dotum") {
+        } else if primary_name.contains("KoPub돋움체") || lower.contains("kopubdotum") {
             Some(Self::Dotum)
-        } else if primary_name.contains("KoPub바탕체") || lower.contains("kopub batang") {
+        } else if primary_name.contains("KoPub바탕체")
+            || primary_name.contains("KoPubWorld바탕체")
+            || lower.contains("kopubbatang")
+            || lower.contains("kopubworldbatang")
+        {
             Some(Self::Batang)
         } else {
             None
@@ -1156,6 +1177,11 @@ fn kopub_char_advance_em(primary_name: &str, bold: bool, c: char) -> Option<f64>
             return Some(f64::from(units) / 1000.0);
         }
     }
+    if matches!(family, KoPubFamily::Dotum | KoPubFamily::Batang) {
+        if let Some(em) = super::kopub_symbol_metrics::advance_em(family == KoPubFamily::Dotum, c) {
+            return Some(em);
+        }
+    }
     if matches!(family, KoPubFamily::WorldDotum | KoPubFamily::WorldBatang) {
         // World의 ASCII·현대 한글만 실제 여섯 프로그램에서 확인했다.
         // 다른 기호·CJK 블록에 한글의 고정 전진폭을 확대 적용하지 않는다.
@@ -1189,12 +1215,16 @@ fn kopub_char_advance_em(primary_name: &str, bold: bool, c: char) -> Option<f64>
         // **치환해** 그린 것 — 치환 글꼴(전각 1.0em)의 폭이 KoPub face 상수로
         // 들어와 있었다. 치환 환경 문서군의 폭은 face 상수가 아니라 치환 경로가
         // 소유해야 한다. 그보다 전의 0.84 도 실물(0.872)과 미세하게 어긋나
-        // r27 을 -11줄 과소시켰다. 바탕체 0.94 는 같은 방법 실측 936/1000 과
-        // 사실상 일치해 유지한다.
+        // r27 을 -11줄 과소시켰다. 바탕체는 같은 방법 실측 936/1000 을 쓴다 — 종전
+        // 0.94 는 «사실상 일치» 로 두었지만 글자당 +3.8HU(10pt·장평 95%)라 34자 줄에서
+        // +1.7px 가 되어, 한/글이 한 줄에 담는 줄을 마지막 한 음절에서 끊었다. 정본
+        // `pdf/hwpx/hancom-hwp/[2027] 온새미로 1 본교재-hwp-2020.pdf` 12쪽 `…이루었는데`
+        // (KoPubWorld바탕체 Light, 장평 95%·자간 −1%) 의 한글 평균 전진 878.9HU =
+        // 936×0.95 − 10. 0.94 면 882.
         let factor = if family == KoPubFamily::Dotum {
             0.872
         } else {
-            0.94
+            0.936
         };
         return Some(factor);
     }
@@ -1601,6 +1631,13 @@ fn char_width_decision_with_hft_tracking<'a>(
     let (base_width_raw, width_source, metric, character_match) = if let Some(w) = font_space_width
     {
         (w, "useFontSpace", None, "notApplicable")
+    } else if let Some(em) = style
+        .native_pua_metrics
+        .as_ref()
+        .and_then(|program| program.advance_em(c))
+    {
+        em_exact = Some(em);
+        (font_size * em, "verifiedSourcePua", None, "exact")
     } else if let Some(w) = (c == '\u{318D}')
         .then(|| area_dot_fallback_width(&style.font_family, font_size))
         .flatten()
@@ -1623,9 +1660,14 @@ fn char_width_decision_with_hft_tracking<'a>(
         let measured_family =
             crate::renderer::legacy_font_advances::measurement_face(metric_family);
         source_hft_metric = font_metrics_data::is_legacy_hft_metric_face(measured_family);
+        let measured_bold = crate::renderer::legacy_font_advances::measurement_bold(
+            metric_family,
+            style.bold,
+            style.regenerated_font_metrics,
+        );
         let mut embedded = measure_char_width_embedded_decision_for_font(
             measured_family,
-            style.bold,
+            measured_bold,
             style.italic,
             c,
             font_size,
@@ -1763,6 +1805,13 @@ fn char_width_decision_with_hft_tracking<'a>(
         // 원본 HFT 한점 리더의 전진은 전각이다. 폭 표에서 그 글자만 빠졌을 때
         // 일반 반각 폴백으로 좁히면 뒤 글자가 앞당겨진다. 기존 메트릭 hit는 보존한다.
         } else if cluster_len[i] > 1
+            // U+3000 is an ideographic (fullwidth) space. A missing glyph
+            // metric must not turn it into an ASCII half-space: PDF lowering
+            // fits CHARSHAPE ratio against this same advance, so doing that
+            // doubles the saved space when Hancom uses its fullwidth glyph.
+            // Explicit metric hits above, ASCII/NBSP and HWP figure-space
+            // contracts remain unchanged.
+            || c == '\u{3000}'
             || is_cjk_char(c)
             || is_fullwidth_symbol(c)
             || (latin.is_none()

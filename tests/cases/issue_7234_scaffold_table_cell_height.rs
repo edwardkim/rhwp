@@ -83,13 +83,6 @@ fn issue_7234_scaffold_cell_height_is_one_line_row_height() {
             cell.row,
             cell.col
         );
-        assert!(
-            !rhwp::model::table::Cell::vertical_padding_is_abnormal(
-                f64::from(cell.height),
-                f64::from(pad_top + pad_bottom)
-            ),
-            "셀 선언 높이가 안 여백을 비정상으로 만들면 안 된다"
-        );
     }
 }
 

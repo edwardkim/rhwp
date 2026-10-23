@@ -129,14 +129,14 @@ impl FormattedParagraph {
         para: &Paragraph,
         col_count: u16,
         allow_spacing_before_only: bool,
-        ladder_dirty: bool,
+        spacing_restore_unavailable: bool,
         lazy_base: bool,
     ) -> f64 {
         let advance = self.flow_advance_height(
             para,
             col_count,
             allow_spacing_before_only,
-            ladder_dirty,
+            spacing_restore_unavailable,
             lazy_base,
         );
         if advance + 0.5 >= self.total_height {
@@ -158,7 +158,7 @@ impl FormattedParagraph {
         para: &Paragraph,
         col_count: u16,
         allow_spacing_before_only: bool,
-        ladder_dirty: bool,
+        spacing_restore_unavailable: bool,
         lazy_base: bool,
     ) -> f64 {
         // 빈 저장 글줄도 물리 슬롯을 소유한다. 글자가 없어 뒤의 가시 줄
@@ -214,6 +214,9 @@ impl FormattedParagraph {
         // 복원(스냅)이 성립하지 않는다 — sb-형만 차단, sa-형 트림은 유지
         // (36398700 pi31/35 −13.5px 미복원 실측 vs issue_1853 캡션 문서의
         // sa-형 트림은 정상 복원되어 전면 차단 시 +1쪽 과다 반증).
+        // 아직 page/lazy 원점이 없으면 다음 스냅이 줄간격을 복원한다는
+        // 근거도 없다. 호출자는 원점 미확립을 같은 복원 불가 계약에 포함한다.
+        // 실제 paint가 소비하는 줄·간격을 먼저 보존하고 확립된 축만 트림한다.
         let sa_trim = self.spacing_after > 0.5;
         let sb_trim =
             allow_spacing_before_only && self.spacing_before > 0.5 && !(lazy_base && !sa_trim);
@@ -243,7 +246,7 @@ impl FormattedParagraph {
             });
         if para.controls.is_empty()
             && has_authoritative_seg
-            && !ladder_dirty
+            && !spacing_restore_unavailable
             && !ladder_rebuilt
             && (sa_trim || sb_trim)
             && self.height_for_fit > 0.0

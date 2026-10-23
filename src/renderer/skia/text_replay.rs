@@ -6,7 +6,7 @@ use crate::model::style::UnderlineType;
 use crate::paint::LayerOutputOptions;
 use crate::renderer::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
-    expand_pua_render_text, CharOverlapInfo,
+    expand_pua_render_text_in_style, CharOverlapInfo,
 };
 use crate::renderer::layout::{
     forces_halfwidth_cjk_quote, forces_halfwidth_punct_paint, split_into_clusters,
@@ -276,7 +276,7 @@ impl SkiaTextReplay<'_> {
                     return;
                 }
 
-                let text = expand_pua_render_text(text);
+                let text = expand_pua_render_text_in_style(text, style);
                 let text = text.as_str();
                 let char_positions =
                     crate::renderer::replay_positions_or_compute(text, style, layout_positions);

@@ -1252,7 +1252,8 @@ pub(crate) fn lower_horizontal_shaping_page_sidecars(
                     );
                 }
             }
-            crate::paint::LayerNodeKind::ClipRect { child, .. } => {
+            crate::paint::LayerNodeKind::ClipRect { child, .. }
+            | crate::paint::LayerNodeKind::ClipPath { child, .. } => {
                 lower_node(
                     child,
                     sidecars,

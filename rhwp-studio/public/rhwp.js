@@ -908,6 +908,9 @@ export class HwpDocument {
     clearMetafileFonts() {
         wasm.hwpdocument_clearMetafileFonts(this.__wbg_ptr);
     }
+    clearNativePuaFonts() {
+        wasm.hwpdocument_clearNativePuaFonts(this.__wbg_ptr);
+    }
     /**
      * 셀 블록이 덮은 칸들의 글을 비운다 — `Run("TableDeleteCell")`. 규약은 merge 와 같다.
      * @param {number} list_id
@@ -2143,6 +2146,13 @@ export class HwpDocument {
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
+    }
+    /**
+     * Discard source-border fragments owned by an evicted undo entry.
+     * @param {number} id
+     */
+    discardBorderPaintUndo(id) {
+        wasm.hwpdocument_discardBorderPaintUndo(this.__wbg_ptr, id);
     }
     /**
      * 삭제 조각을 제거하여 메모리를 해제한다 — 히스토리 축출·클리어 시 스냅샷
@@ -4688,6 +4698,27 @@ export class HwpDocument {
         let deferred2_1;
         try {
             const ret = wasm.hwpdocument_getMetafileFontRequests(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    getNativePuaFontRequests() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getNativePuaFontRequests(this.__wbg_ptr);
             var ptr1 = ret[0];
             var len1 = ret[1];
             if (ret[3]) {
@@ -9032,6 +9063,25 @@ export class HwpDocument {
         return ret[0] !== 0;
     }
     /**
+     * @param {string} family
+     * @param {boolean} bold
+     * @param {boolean} italic
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @returns {boolean}
+     */
+    registerNativePuaFont(family, bold, italic, bytes, face_index) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_registerNativePuaFont(this.__wbg_ptr, ptr0, len0, bold, italic, ptr1, len1, face_index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
      * [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목을 절단한다.
      *
      * json: `{"fromLen":12,"dirtyWas":false}` — `from_len` 위 항목을 모두 잘라내고,
@@ -11997,6 +12047,11 @@ export function version() {
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
+        __wbg___wbindgen_boolean_get_c9c83ebd41b34df3: function(arg0) {
+            const v = arg0;
+            const ret = typeof(v) === 'boolean' ? v : undefined;
+            return isLikeNone(ret) ? 0xFFFFFF : ret ? 1 : 0;
+        },
         __wbg___wbindgen_is_function_5e4570eb24ffa122: function(arg0) {
             const ret = typeof(arg0) === 'function';
             return ret;
@@ -12071,6 +12126,9 @@ function __wbg_get_imports() {
         },
         __wbg_clip_11b699e637bb5b4c: function(arg0) {
             arg0.clip();
+        },
+        __wbg_clip_19f3482515ce11e2: function(arg0, arg1) {
+            arg0.clip(__wbindgen_enum_CanvasWindingRule[arg1]);
         },
         __wbg_closePath_c56cc36eea49716f: function(arg0) {
             arg0.closePath();
@@ -12467,6 +12525,7 @@ function __wbg_get_imports() {
     };
 }
 
+const __wbindgen_enum_CanvasWindingRule = ["nonzero", "evenodd"];
 const DocumentExportFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_documentexport_free(ptr, 1));

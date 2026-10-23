@@ -59,7 +59,7 @@ impl EqParser {
                 let node = if super::super::symbols::is_relation_symbol(&val) {
                     EqNode::MathSymbol(val)
                 } else {
-                    literal_font(EqNode::Text(val), roman_literal)
+                    self.styled_literal(EqNode::Text(val), roman_literal)
                 };
                 self.try_parse_scripts(node)
             }
@@ -177,10 +177,12 @@ impl EqParser {
                 }
             }
             TokenType::Number => EqNode::Number(val),
-            TokenType::Text => literal_font(EqNode::Text(val), roman_literal),
+            TokenType::Text => self.styled_literal(EqNode::Text(val), roman_literal),
             TokenType::Quoted => literal_font(EqNode::Quoted(val), roman_literal),
             TokenType::Symbol => EqNode::Symbol(val),
-            _ => EqNode::Text(val),
+            // [#7873] 공백 명령이 단일 인자 자리에 오면 글자가 아니라 간격이다.
+            TokenType::Whitespace => whitespace_node(&val),
+            _ => self.styled_literal(EqNode::Text(val), false),
         }
     }
 }
@@ -194,5 +196,16 @@ pub(super) fn literal_font(node: EqNode, roman_literal: bool) -> EqNode {
         }
     } else {
         node
+    }
+}
+
+/// 공백 명령 토큰 → 간격 노드. 단일 인자 자리와 글꼴 명령 뒤 공백이 같은 표를 쓴다.
+pub(super) fn whitespace_node(val: &str) -> EqNode {
+    match val {
+        "~" => EqNode::Space(SpaceKind::Normal),
+        "`" => EqNode::Space(SpaceKind::Thin),
+        "#" => EqNode::Newline,
+        "&" => EqNode::Space(SpaceKind::Tab),
+        _ => EqNode::Empty,
     }
 }

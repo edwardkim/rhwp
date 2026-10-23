@@ -9,8 +9,7 @@ pub(crate) use stored_nested_text_frames::{StoredNestedTextFrames, StoredTextFra
 
 use crate::model::control::Control;
 use crate::model::document::Document;
-use crate::model::shape::{TextWrap, VertRelTo};
-use crate::model::table::{Cell, Table, TablePageBreak};
+use crate::model::table::{Cell, Table};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
@@ -71,9 +70,8 @@ pub struct NestedTableWidthProjection {
     pub source_width: u32,
     pub effective_width: u32,
     pub width_scale: f64,
-    /// Native HWP5 short RowBreak child는 parent viewport를 content box로도
-    /// 사용한다. 이는 일반 non-TAC nested-table의 저장 cell margin 보존(#2308)과
-    /// 구분되는, owner fragment 전용 projection이다.
+    /// 투영된 표의 내용 상자가 owner viewport를 사용하는지 나타낸다.
+    /// 부모·자식의 선언 높이만으로 이 소유 관계를 추정하지 않는다.
     pub use_owner_content_box: bool,
     table_pointer: usize,
 }
@@ -165,13 +163,7 @@ impl RenderNormalizationOverlay {
                                 .insert(top_path, projection);
                         }
                     }
-                    overlay.collect_nested_tables(
-                        table,
-                        path,
-                        control_index,
-                        hwp5_stored_pagination_layout,
-                        previous,
-                    );
+                    overlay.collect_nested_tables(table, path, control_index, previous);
                 }
             }
         }
@@ -195,7 +187,6 @@ impl RenderNormalizationOverlay {
         owner_table: &Table,
         path: RenderPath,
         owner_control_index: usize,
-        hwp5_stored_pagination_layout: bool,
         previous: &Self,
     ) {
         for (cell_index, cell) in owner_table.cells.iter().enumerate() {
@@ -217,23 +208,14 @@ impl RenderNormalizationOverlay {
                     nested_path.target_control_index = Some(control_index);
 
                     let source_width = nested.common.width;
-                    // 비-TAC nested table은 한컴 PDF가 저장 폭을 유지한다. 단, native
-                    // HWP5 RowBreak parent의 short-tail 1×1 child는 parent cell 폭을
-                    // 쓰는 별도 저장 계약이다(76076 p81). p34의 일반 1×1 child에는
-                    // 적용하지 않도록 구조·viewport·near-fit 조건을 모두 요구한다.
+                    // 비-TAC 중첩 표의 절대 폭은 원본 개체가 소유한다. 부모보다 높은
+                    // 마지막 1×1 자식이라는 형상은 부모 폭으로 늘릴 근거가 아니다.
                     let keeps_legacy_near_fit_projection = !nested.common.treat_as_char
                         && source_width > 0
                         && u64::from(source_width) < u64::from(cell.width)
                         && f64::from(source_width)
                             >= f64::from(cell.width) * NESTED_STRETCH_MIN_RATIO;
-                    let short_rowbreak_child_projection = hwp5_stored_pagination_layout
-                        && Self::is_native_short_rowbreak_child_near_fit(
-                            owner_table,
-                            cell,
-                            nested,
-                            source_width,
-                        );
-                    if keeps_legacy_near_fit_projection || short_rowbreak_child_projection {
+                    if keeps_legacy_near_fit_projection {
                         let effective_width = cell.width;
                         let table_pointer = nested.as_ref() as *const Table as usize;
                         let projection = previous
@@ -242,8 +224,7 @@ impl RenderNormalizationOverlay {
                             .filter(|projection| {
                                 projection.source_width == source_width
                                     && projection.effective_width == effective_width
-                                    && projection.use_owner_content_box
-                                        == short_rowbreak_child_projection
+                                    && !projection.use_owner_content_box
                                     && projection.table_pointer == table_pointer
                             })
                             .map(Arc::clone)
@@ -254,7 +235,7 @@ impl RenderNormalizationOverlay {
                                     effective_width,
                                     width_scale: f64::from(effective_width)
                                         / f64::from(source_width),
-                                    use_owner_content_box: short_rowbreak_child_projection,
+                                    use_owner_content_box: false,
                                     table_pointer,
                                 })
                             });
@@ -264,66 +245,10 @@ impl RenderNormalizationOverlay {
                             .insert(nested_path.clone(), projection);
                     }
 
-                    self.collect_nested_tables(
-                        nested,
-                        nested_path,
-                        control_index,
-                        hwp5_stored_pagination_layout,
-                        previous,
-                    );
+                    self.collect_nested_tables(nested, nested_path, control_index, previous);
                 }
             }
         }
-    }
-
-    /// Native HWP5 `RowBreak` parent의 마지막 1×1 child만 parent cell 폭으로
-    /// 투영한다. 이 source 형상은 `76076_regulatory_analysis` p81에서 child의
-    /// 저장 폭(36,572HU)보다 parent cell 폭(38,245HU)을 line-wrap viewport로
-    /// 사용하는 한컴 PDF 계약이다. 일반 near-fit nested table에는 적용하지 않는다.
-    fn is_native_short_rowbreak_child_near_fit(
-        owner: &Table,
-        host_cell: &Cell,
-        child: &Table,
-        source_width: u32,
-    ) -> bool {
-        let owner_height = owner.common.height;
-        let child_height = child.common.height;
-        !owner.common.treat_as_char
-            && matches!(owner.common.text_wrap, TextWrap::TopAndBottom)
-            && matches!(owner.common.vert_rel_to, VertRelTo::Para)
-            && matches!(owner.page_break, TablePageBreak::RowBreak)
-            && owner.row_count > 1
-            && owner.cells.iter().all(|cell| cell.row_span == 1)
-            && host_cell.row_span == 1
-            && host_cell.row as usize + 1 == owner.row_count as usize
-            && host_cell.paragraphs.first().is_some_and(|host| {
-                host.text.trim().is_empty()
-                    && host
-                        .controls
-                        .iter()
-                        .filter(|control| matches!(control, Control::Table(_)))
-                        .count()
-                        == 1
-            })
-            && host_cell.paragraphs.iter().skip(1).all(|paragraph| {
-                paragraph.text.trim().is_empty()
-                    && paragraph.controls.is_empty()
-                    && paragraph.line_segs.len() <= 1
-            })
-            && !child.common.treat_as_char
-            && child.row_count == 1
-            && child.col_count == 1
-            && child.cells.len() == 1
-            && child.cells[0].paragraphs.len() <= 3
-            && owner_height > 0
-            // 76076 p81 is the only candidate whose stored child viewport
-            // (12,846HU) exceeds its RowBreak parent viewport (8,304HU).
-            // This excludes p33 pi=511 (14,406 <= 24,456) and the p34
-            // stored-width counterexample pi=336 (9,350 <= 19,400).
-            && child_height > owner_height
-            && source_width > 0
-            && source_width < host_cell.width
-            && u64::from(source_width) * 100 >= u64::from(host_cell.width) * 95
     }
 
     #[inline]
@@ -335,9 +260,8 @@ impl RenderNormalizationOverlay {
             .unwrap_or(1.0)
     }
 
-    /// 76076 p81처럼 native HWP5 `RowBreak` parent가 마지막 1×1 child의
-    /// source 폭뿐 아니라 content box를 parent owner viewport로 해석한 경우다.
-    /// 일반 non-TAC child는 false여서 저장된 small cell margin을 계속 보존한다.
+    /// 현재 원본 경로에 등록된 투영의 내용 상자 계약을 조회한다.
+    /// child의 선언 높이·near-fit 비율로 owner 폭을 대신 선택하지 않는다.
     #[inline]
     pub fn uses_owner_content_box(&self, table: &Table) -> bool {
         let key = table as *const Table as usize;
@@ -411,6 +335,8 @@ mod tests {
     use super::*;
     use crate::model::document::Section;
     use crate::model::paragraph::Paragraph;
+    use crate::model::shape::{TextWrap, VertRelTo};
+    use crate::model::table::TablePageBreak;
 
     /// 비-TAC nested table은 근소 미달도 포함해 선언 폭을 유지한다.
     #[test]
@@ -476,17 +402,18 @@ mod tests {
     }
 
     #[test]
-    fn short_native_rowbreak_child_projects_only_inside_short_owner_viewport() {
+    fn parent_and_child_height_order_does_not_expand_absolute_child_width() {
         let document = short_rowbreak_document(1_912, 2_000, 1_000, 2_000);
         let overlay = RenderNormalizationOverlay::from_document(&document);
         let nested = nested_table_at_final_row(&document);
         assert!(overlay
             .projection_for_path(&short_rowbreak_nested_path())
-            .is_some());
-        assert!(overlay.nested_table_width_scale(nested) > 1.0);
-        assert!(overlay.uses_owner_content_box(nested));
+            .is_none());
+        assert_eq!(nested.common.width, 1_912, "원본 절대 폭 보존");
+        assert_eq!(overlay.nested_table_width_scale(nested), 1.0);
+        assert!(!overlay.uses_owner_content_box(nested));
 
-        // p34's long owner viewport is a near-fit 1×1 nested-table counterexample.
+        // 높이의 대소관계를 뒤집어도 자식의 절대 폭 계약은 같다.
         let long_owner = short_rowbreak_document(1_912, 2_000, 5_000, 1_000);
         let overlay = RenderNormalizationOverlay::from_document(&long_owner);
         let nested = nested_table_at_final_row(&long_owner);

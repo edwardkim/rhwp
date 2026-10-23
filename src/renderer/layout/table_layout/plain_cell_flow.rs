@@ -4,12 +4,16 @@ use crate::model::{control::Control, paragraph::Paragraph};
 
 impl super::LayoutEngine {
     /// 내용이 끝난 종료 병합 칸의 미소비 최소 공간만 보존한다.
-    /// 남은 글줄은 기존 유닛 원장과 이어받기 요구가 소유한다.
-    pub(crate) fn reflow_ending_span_minimum_remainder(
+    /// 남은 글줄은 기존 유닛 원장과 이어받기 요구가 소유한다. 저장 줄 칸도 같다 —
+    /// 한/글 2020 1342000 61·62쪽 첫 빈 띠(51.6·84.1px)는 일반 행 꼬리가 아니라 그 행에서
+    /// 끝나는 병합 칸(행 8–17 등)의 남은 선언이다. 저장 줄 칸은 끝 행 내용이 이 조각에서
+    /// 끝난(`complete_end_row`) 경우만 본다 — 블록 컷의 부분 행(1341000 29쪽)은 저장 프레임이 소유한다.
+    pub(crate) fn ending_span_minimum_remainder(
         &self,
         table: &crate::model::table::Table,
         end_row: usize,
         accepted: &[crate::renderer::pagination::StraddleCellCarry],
+        complete_end_row: bool,
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) -> Option<f64> {
         table
@@ -19,7 +23,7 @@ impl super::LayoutEngine {
             .filter(|(_, cell)| {
                 cell.row_span > 1
                     && usize::from(cell.row) + usize::from(cell.row_span) == end_row
-                    && self.cell_uses_plain_reflow_units(cell, table)
+                    && (complete_end_row || self.cell_uses_plain_reflow_units(cell, table))
             })
             .filter_map(|(index, cell)| {
                 let owner = accepted.iter().find(|owner| owner.cell_index == index)?;
@@ -37,11 +41,7 @@ impl super::LayoutEngine {
                 let remaining = minimum - physical;
                 // 종료 병합 칸도 자기 내용이 모두 끝난 작은 빈 꼬리는 흡수한다.
                 // 일반 칸에서 흡수한 공간을 이 원장에서 다시 만들지 않는다.
-                if blank_tail_is_line_sliver(
-                    remaining,
-                    units.last().map_or(0.0, |unit| unit.height),
-                    self.dpi,
-                ) {
+                if complete_row_blank_tail_is_absorbed(remaining, self.dpi) {
                     return None;
                 }
                 (remaining > 0.5).then_some(remaining)
@@ -51,7 +51,7 @@ impl super::LayoutEngine {
 
     /// 내용이 끝난 뒤 한 줄도 되지 않는 최소 공간만 남으면 빈 조각을 만들지 않는다.
     /// 줄이 남은 컷에는 적용하지 않으며, 큰 빈 최소는 기존 물리 원장으로 이어진다.
-    pub(crate) fn reflow_blank_tail_is_line_sliver(
+    pub(crate) fn row_blank_tail_is_line_sliver(
         &self,
         table: &crate::model::table::Table,
         row: usize,
@@ -62,14 +62,32 @@ impl super::LayoutEngine {
             .into_iter()
             .filter_map(|index| {
                 let cell = &table.cells[index];
-                self.cell_uses_plain_reflow_units(cell, table).then(|| {
-                    self.cell_units(cell, table, styles)
-                        .last()
-                        .map_or(0.0, |unit| unit.height)
-                })
+                let stored = self.stored_plain_text_cell_frame(table, cell);
+                if !stored && !self.cell_uses_plain_reflow_units(cell, table) {
+                    return None;
+                }
+                let units = self.cell_units(cell, table, styles);
+                let last = units.last()?;
+                // 마지막 잉크 상자에서는 다음 줄 간격을 이미 접었을 수 있다.
+                // 완료 뒤의 한 줄 경계는 유효한 원본 슬롯을 소비하며,
+                // 새로 조판한 줄에는 그 줄 생산자가 준 현재 높이를 쓴다.
+                let source_slot = (stored && !last.reflowed_line_slot)
+                    .then(|| {
+                        let paragraph = cell.paragraphs.get(last.para_idx)?;
+                        let line = paragraph.line_segs.get(last.vis_end.checked_sub(1)?)?;
+                        line.line_height.checked_add(line.line_spacing)
+                    })
+                    .flatten()
+                    .map_or(0.0, |height| super::hwpunit_to_px(height, self.dpi));
+                Some(last.height.max(source_slot))
             })
             .fold(0.0, f64::max);
         blank_tail_is_line_sliver(tail, line, self.dpi)
+    }
+
+    /// 내용이 끝난 행의 빈 꼬리가 쪽 경계에서 흡수되는가. 저장 줄 행도 같은 상한을 쓴다.
+    pub(crate) fn complete_row_blank_tail_is_absorbed(&self, tail: f64) -> bool {
+        complete_row_blank_tail_is_absorbed(tail, self.dpi)
     }
 
     /// 현재 행을 넘어 계속되는 병합 칸의 독립적인 빈 최소 공간.
@@ -241,9 +259,22 @@ impl super::CellUnit {
     }
 }
 
-/// 흡수 기준은 소유 칸의 마지막 줄과 원본 1HU 반올림이다.
+/// 내용이 모두 끝난 행에서 그린 뒤 남은 빈 꼬리를 쪽 경계에서 흡수하는 상한(HU).
+///
+/// 한/글 2024 합성 사다리(#8105 `probes/make_declared_row_band.py`): 남은 선언이 1275HU(17.0px)
+/// 이면 흡수하고 1290HU(17.2px) 이면 다음 쪽 첫머리 빈 띠로 넘긴다. 시험 행 칸 여백 283·500,
+/// 표 기본 칸 여백 141·400, 칸 글자 10·16pt, 병합 칸·저장 줄 유무와 무관했다 — 칸의 줄 높이가
+/// 기준이 아니다. 한/글 2020 #7642 stage3197 의 13.33px 흡수 · 21.33px 이월과도 맞는다.
+/// 1282HU 는 기본 10pt 줄(1000)과 기본 칸 위아래 여백(141×2)의 합이다.
+const COMPLETE_ROW_BLANK_TAIL_ABSORB_HU: i32 = 1282;
+
+fn complete_row_blank_tail_is_absorbed(tail: f64, dpi: f64) -> bool {
+    tail <= super::hwpunit_to_px(COMPLETE_ROW_BLANK_TAIL_ABSORB_HU, dpi)
+}
+
+/// 흡수 대상은 내용 유닛을 가진 소유 칸의 꼬리다.
 fn blank_tail_is_line_sliver(tail: f64, line: f64, dpi: f64) -> bool {
-    line > 0.0 && tail <= line + super::hwpunit_to_px(1, dpi)
+    line > 0.0 && complete_row_blank_tail_is_absorbed(tail, dpi)
 }
 
 /// 한 단 설정은 이미 선택한 셀 프레임을 바꾸거나 내용 상자를 추가하지 않는다.

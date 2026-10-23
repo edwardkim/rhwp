@@ -24,6 +24,7 @@ pub(crate) fn into_document(mut source: HmlSource) -> Result<Document, HmlError>
             hwp3_lineage: false,
             hwpx_lineage: false,
             hft_ascii_halfwidth_witnessed: false,
+            stored_rows_before_hancom_2020: false,
         },
         ..Default::default()
     };

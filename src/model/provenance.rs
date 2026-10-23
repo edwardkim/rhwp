@@ -43,6 +43,11 @@ pub struct SourceProvenance {
     /// 저장한 파일 등 — 을 위해 `DocumentCore` 가 로드 시 한 번 판정한다
     /// (`renderer::hft_ascii_evidence`). 파서는 `false` 로 둔다.
     pub hft_ascii_halfwidth_witnessed: bool,
+    /// [#7702] 마지막 저장 제품이 한/글 2020(11.x) 보다 앞선다고 문서 메타데이터가 밝힌다.
+    /// 그 저장 줄은 한/글 2020 의 공백 최소값(condense) 낱말 흡수 없이 끊겼을 수 있다.
+    /// 저장 버전을 읽을 수 없으면 `false` 다(제품을 추정하지 않는다). `DocumentCore` 가
+    /// 로드 시 한 번 판정하고 파서는 `false` 로 둔다.
+    pub stored_rows_before_hancom_2020: bool,
 }
 
 /// 저장 줄의 출처 원점과 재정렬 요청을 분리해 측정·배치에 전달한다.
@@ -50,6 +55,11 @@ pub struct SourceProvenance {
 pub struct StoredGeometryPolicy {
     pub(crate) preserve_hwp3_origins: bool,
     pub(crate) requires_realign: bool,
+    /// OWPML 셀의 현재 속성이 계산 가능한 내용 프레임의 폭을 소유한다.
+    /// 원 HWP5와 그 marker HWPX의 저장 행 소유권과 구분한다.
+    pub(crate) hwpx_cell_geometry: bool,
+    /// [#7702] 저장 줄이 한/글 2020 이전 제품의 줄 나눔이다.
+    pub(crate) stored_rows_before_hancom_2020: bool,
 }
 
 impl From<bool> for StoredGeometryPolicy {
@@ -57,6 +67,8 @@ impl From<bool> for StoredGeometryPolicy {
         Self {
             preserve_hwp3_origins,
             requires_realign: false,
+            hwpx_cell_geometry: false,
+            stored_rows_before_hancom_2020: false,
         }
     }
 }
@@ -79,6 +91,7 @@ pub struct LayoutCompatibilityProfile {
     native_hwp5_layout: bool,
     hwp5_container: bool,
     hangul2024_layout: bool,
+    stored_rows_before_hancom_2020: bool,
     /// 이 세션에서 편집 명령이 문서를 변조했다(native HWP5 섹션의 raw_stream 소실).
     /// 저장 시점 형상 전용 보정(선언 높이 fit-down 등)은 편집 문서에서 꺼야 한다 —
     /// 한글 편집기도 편집 중에는 측정 기반으로 재조판한다.
@@ -105,6 +118,7 @@ impl LayoutCompatibilityProfile {
             native_hwp5_layout,
             hwp5_container: native_hwp5_layout,
             hangul2024_layout: false,
+            stored_rows_before_hancom_2020: false,
             session_edited: false,
         }
     }
@@ -156,7 +170,16 @@ impl LayoutCompatibilityProfile {
         StoredGeometryPolicy {
             preserve_hwp3_origins: self.legacy_hwp3_stored_geometry(),
             requires_realign: self.hwp3_external_realign,
+            hwpx_cell_geometry: self.hwpx_stored_layout,
+            stored_rows_before_hancom_2020: self.stored_rows_before_hancom_2020,
         }
+    }
+
+    /// [#7702] 저장 줄이 한/글 2020 이전 제품의 줄 나눔임을 표시한다.
+    /// `Document::layout_profile` 만 [`SourceProvenance`] 에서 이 값을 유도한다.
+    pub(crate) fn with_stored_rows_before_hancom_2020(mut self, enabled: bool) -> Self {
+        self.stored_rows_before_hancom_2020 = enabled;
+        self
     }
 
     /// 원본 헤더가 외부 생성 문서의 재정렬을 요청했다. 저장 폭·배치 캐시의

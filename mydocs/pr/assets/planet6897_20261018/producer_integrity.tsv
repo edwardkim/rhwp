@@ -1,0 +1,5 @@
+condition	actual_source_sha	artifact	sha256	bytes	build_profile
+base/native	a6e9d18fc1061318055b4eb348daec201427ea03	rhwp	1a959d7b2ecff29f111e7977bac84a4dad5cf317f9a73ab2d2a0eab80b990314	69698632	release-test + native-skia
+base/wasm	f45878c7caafb43ca1fd017ddd93484a0acc6ad2	rhwp_bg.wasm	34ea1a570b982394a7bba55b66413a292b50e60f6913573e954ae519785cd459	21574484	wasm-pack release + wasm-opt
+current/native	3cb5a4c290663343123074be1e2fc0dda18d3db4	rhwp	d503a8101a9ceb55699df0b512b34384cadeb57b60e417ba83bbe132e4080173	70124200	release-test + native-skia
+current/wasm	3cb5a4c290663343123074be1e2fc0dda18d3db4	rhwp_bg.wasm	84de7172f160b314962b81a45ece1d572e2b0f6dc8bbf9056334237e640a718d	21742224	wasm-pack release + wasm-opt

@@ -69,7 +69,14 @@ pub(in crate::renderer::typeset) fn place(
         dpi,
     );
 
-    if paragraph::try_absorb_rowbreak_guide(st, prev_is_partial_table, para, paragraphs, para_idx) {
+    if paragraph::try_absorb_rowbreak_guide(
+        st,
+        prev_is_partial_table,
+        para,
+        paragraphs,
+        para_idx,
+        dpi,
+    ) {
         return;
     }
 
@@ -184,6 +191,7 @@ pub(in crate::renderer::typeset) fn place(
         body_bottom_vpos,
         available,
         forced_page_break_line,
+        stored_vpos_rewind_overflow_break,
         dpi,
     ) {
         return;

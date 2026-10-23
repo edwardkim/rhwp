@@ -1,0 +1,52 @@
+[
+  {
+    "input": "samples/issue7702/humanmyeongjo_condense_end_fine.hwpx",
+    "input_sha256": "18e7f00b1a1714e0afdea4b41ee7d87fbcdb1c290e74575082fce574d91f0675",
+    "generator": "mydocs/tech/investigations/issue-7702/probes/make_humanmyeongjo_condense_end.py <m12 template> OUT \"0,1,...,20\"",
+    "template": "samples/issue7418/condense_letter_spacing_m12.hwpx",
+    "pdf": "pdf/issue7702/humanmyeongjo_condense_end_fine-2024.pdf",
+    "pdf_sha256": "2ac26de6d0bf79e486a4ac882bfe8aca751d6121dc028a251e0fb205b3328fb0",
+    "converter": "hwp2024 MCP convert --engine 2024 (한/글 13.0.0.3901)",
+    "job_id": "bf03ac7f-4a3e-4760-a5e7-1f8ed26bffb7"
+  },
+  {
+    "input": "samples/issue7702/humanmyeongjo_condense_end_coarse.hwpx",
+    "input_sha256": "ecc060198d69b59f84b4aa6a644724c8235deae153ceab8484d548ad83a7a329",
+    "generator": "mydocs/tech/investigations/issue-7702/probes/make_humanmyeongjo_condense_end.py <m12 template> OUT \"-120,-80,-60,-40,-20,0,20,40,60,80,100,120,140,160,200,250,300,350,380,420\"",
+    "template": "samples/issue7418/condense_letter_spacing_m12.hwpx",
+    "pdf": "pdf/issue7702/humanmyeongjo_condense_end_coarse-2024.pdf",
+    "pdf_sha256": "b410683bd36c99b76870411acd856465f6d10f87f701515fc6332c1d7ba57a82",
+    "converter": "hwp2024 MCP convert --engine 2024 (한/글 13.0.0.3901)",
+    "job_id": "6aacc757-ad31-4c6d-a1e9-bdb336414bb2"
+  },
+  {
+    "input": "samples/issue7702/humanmyeongjo_ascii_10pt_m10.hwpx",
+    "input_sha256": "367300d79682b5fd3945c6a0a7e40c2591ee8ae71cdaf9397b8a0f3b15ec021b",
+    "generator": "mydocs/tech/investigations/issue-7702/probes/make_humanmyeongjo_ascii_ladder.py <m12 template> OUT 1000 -10",
+    "template": "samples/issue7418/condense_letter_spacing_m12.hwpx",
+    "pdf": "pdf/issue7702/humanmyeongjo_ascii_10pt_m10-2024.pdf",
+    "pdf_sha256": "756902b7490316bf603b0dbf9f9d92b31aed988e5a2b4a23337d0d203dfca06d",
+    "converter": "hwp2024 MCP convert --engine 2024 (한/글 13.0.0.3901)",
+    "job_id": "51e0b083-5fcb-4fca-ad53-e5a60ab9ee5a"
+  },
+  {
+    "input": "samples/issue7702/humanmyeongjo_ascii_10pt.hwpx",
+    "input_sha256": "1e59ce230aa969a1dd8c42f62772035535e60d22efb62d56a8da942399509ffe",
+    "generator": "mydocs/tech/investigations/issue-7702/probes/make_humanmyeongjo_ascii_ladder.py <m12 template> OUT 1000 0",
+    "template": "samples/issue7418/condense_letter_spacing_m12.hwpx",
+    "pdf": "pdf/issue7702/humanmyeongjo_ascii_10pt-2024.pdf",
+    "pdf_sha256": "3133e56871968f031755a1dc2e5df1462222712ee095cefa5754f4d15a38f512",
+    "converter": "hwp2024 MCP convert --engine 2024 (한/글 13.0.0.3901)",
+    "job_id": "f319f49e-c4c5-4847-901a-e036ab2ca9ae"
+  },
+  {
+    "input": "samples/issue7702/humanmyeongjo_ascii_13pt.hwpx",
+    "input_sha256": "352553b8ae35dbbcda81fab24f42a3be9722e671e3543ce261511dd6e6c5ef98",
+    "generator": "mydocs/tech/investigations/issue-7702/probes/make_humanmyeongjo_ascii_ladder.py <m12 template> OUT 1300 0",
+    "template": "samples/issue7418/condense_letter_spacing_m12.hwpx",
+    "pdf": "pdf/issue7702/humanmyeongjo_ascii_13pt-2024.pdf",
+    "pdf_sha256": "ea02dffc9e950cf5d8dc0a2e5e9fc54cda596594db807d7f47c6a8bb51bca878",
+    "converter": "hwp2024 MCP convert --engine 2024 (한/글 13.0.0.3901)",
+    "job_id": "24868f51-1ab2-48cd-8401-5aaa3e3520e8"
+  }
+]

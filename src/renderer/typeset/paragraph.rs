@@ -351,6 +351,7 @@ pub(super) fn place_fitted_paragraph(
                 st.col_count,
                 trim_spacing_before_for_flow,
                 st.vpos_ladder_dirty
+                    || st.vpos_page_base.or(st.vpos_lazy_base).is_none()
                     || !spacing_trim_restorable(paragraphs, para_idx)
                     || next_boundary_reverts_spacing_trim(
                         st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
@@ -384,6 +385,7 @@ pub(super) fn place_fitted_paragraph(
                     st.col_count,
                     trim_spacing_before_for_flow,
                     st.vpos_ladder_dirty
+                        || st.vpos_page_base.or(st.vpos_lazy_base).is_none()
                         || !spacing_trim_restorable(paragraphs, para_idx)
                         || next_boundary_reverts_spacing_trim(
                             st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
@@ -485,10 +487,20 @@ pub(super) fn try_place_overflow_paragraph(
     body_bottom_vpos: Option<i32>,
     available: f64,
     forced_page_break_line: Option<usize>,
+    stored_vpos_rewind_overflow_break: bool,
     dpi: f64,
 ) -> bool {
     let page = st.paragraph_overflow_page();
-    if overflow::atomic_overflow_fits(para, fmt, paragraphs, para_idx, &page, available, dpi) {
+    if overflow::atomic_overflow_fits(
+        para,
+        fmt,
+        paragraphs,
+        para_idx,
+        &page,
+        available,
+        stored_vpos_rewind_overflow_break,
+        dpi,
+    ) {
         st.begin_atomic_overflow_paragraph(para_idx);
         let stored_flow =
             content::stored_successor_flow(st, para, fmt, paragraphs, styles, para_idx, dpi);
@@ -502,6 +514,7 @@ pub(super) fn try_place_overflow_paragraph(
                     st.col_count,
                     trim_spacing_before_for_flow,
                     st.vpos_ladder_dirty
+                        || st.vpos_page_base.or(st.vpos_lazy_base).is_none()
                         || !spacing_trim_restorable(paragraphs, para_idx)
                         || next_boundary_reverts_spacing_trim(
                             st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
@@ -611,6 +624,7 @@ pub(super) fn place_after_failed_fit(
             st.col_count,
             trim_spacing_before_for_flow,
             st.vpos_ladder_dirty
+                || st.vpos_page_base.or(st.vpos_lazy_base).is_none()
                 || !spacing_trim_restorable(paragraphs, para_idx)
                 || next_boundary_reverts_spacing_trim(
                     st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
@@ -627,6 +641,7 @@ pub(super) fn place_after_failed_fit(
                 st.col_count,
                 trim_spacing_before_for_flow,
                 st.vpos_ladder_dirty
+                    || st.vpos_page_base.or(st.vpos_lazy_base).is_none()
                     || !spacing_trim_restorable(paragraphs, para_idx)
                     || next_boundary_reverts_spacing_trim(
                         st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
@@ -774,8 +789,22 @@ pub(super) fn prepare_fit_budget(
         prev_is_partial_table,
         layout_drift_safety_px,
     );
-    let exclusion_probe_height = fit::exclusion_probe_height(fmt, st.profile.hwpx_stored_layout());
-    st.apply_visible_float_exclusions(exclusion_probe_height);
+    let exclusion_probe_height = fit::exclusion_probe_height(fmt);
+    // [#7687] 띠 아래로 보낸 첫 줄은 앞 간격을 띠 안에서 흡수한다 — 저장 사다리가 있는 HWP5
+    // (#6761 90/90)와 저장 줄이 없어 재조판하는 문단(합성 H6 정본). 저장 줄이 있는 HWPX 는
+    // 생성기별로 갈려 종전(미흡수)을 유지한다. 배치 `band_absorbed_spacing_before` 와 같은 조건.
+    let absorbed_spacing_before = if st.profile.hwp5_stored_pagination_layout()
+        || crate::renderer::para_has_no_stored_line_segs(para)
+    {
+        fmt.spacing_before.max(0.0)
+    } else {
+        0.0
+    };
+    st.apply_visible_float_exclusions_absorbing(
+        exclusion_probe_height,
+        absorbed_spacing_before,
+        Some(para_idx),
+    );
     let footnote_margin_addback =
         st.take_paragraph_footnote_margin_addback(strict_after_empty_host_float);
     let tail_overflow =
@@ -802,8 +831,16 @@ pub(super) fn try_absorb_rowbreak_guide(
     para: &Paragraph,
     paragraphs: &[Paragraph],
     para_idx: usize,
+    dpi: f64,
 ) -> bool {
-    if empty::hide_rowbreak_guide(prev_is_partial_table, para, paragraphs, para_idx) {
+    if empty::hide_rowbreak_guide(
+        prev_is_partial_table,
+        para,
+        paragraphs,
+        para_idx,
+        st.current_height,
+        dpi,
+    ) {
         st.hide_empty_paragraph(para_idx);
         return true;
     }

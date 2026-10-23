@@ -6,6 +6,10 @@ use crate::renderer::typeset::{PageItem, Paragraph, TypesetEngine, TypesetState}
 fn stored_row_position(paragraph: &Paragraph, row: usize) -> Option<i32> {
     if paragraph.stored_text_partition_is_dirty()
         || paragraph.cell_format_vpos_dirty
+        // 현재 줄 구성의 공백/개체 원장은 파생 기하의 출처다. 유효한 새 줄도
+        // 원본이 기록한 쪽 경계의 독립 증거로 다시 해석하지 않는다.
+        || !paragraph.layout_space_metrics.is_empty()
+        || paragraph.layout_object_projection
         || paragraph
             .line_segs
             .iter()

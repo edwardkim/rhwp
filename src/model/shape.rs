@@ -29,6 +29,16 @@ pub(crate) mod common_obj_offsets {
 /// 개체 공통 속성 (모든 개체에 공통)
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct CommonObjAttr {
+    /// Producer-owned paint anchored to a cell frame, independent of text edits.
+    /// Persisted by the bounded cell-paint sidecar, not by an invented HWP bit.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub cell_frame_paint: bool,
+    /// Retained drawing's proven cell-border role; visible geometry stays native.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cell_border_paint: Option<super::border_paint::CellBorderPaint>,
+    /// Physical page paint with a proven logical cell-edge editing owner.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub outside_cell_border_paint: Option<super::border_paint::OutsideCellBorderPaint>,
     /// 컨트롤 ID
     pub ctrl_id: u32,
     /// 속성 비트 플래그
@@ -341,6 +351,9 @@ pub struct DrawingObjAttr {
 /// 글상자 (그리기 개체 내 텍스트)
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct TextBox {
+    /// Text-only local HWPUNIT clipping; paragraphs remain editable and untrimmed.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paint_clip: Option<Vec<super::text_clip::TextClipPath>>,
     /// LIST_HEADER list_attr (라운드트립 보존용)
     pub list_attr: u32,
     /// HWPX `textDirection="VERTICALALL"` 구분 보존 (#1379).

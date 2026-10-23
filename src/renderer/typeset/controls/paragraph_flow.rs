@@ -241,6 +241,7 @@ pub(in crate::renderer::typeset) fn place(
                         para,
                         table,
                         next_para,
+                        paragraphs_all,
                         engine.dpi,
                         None,
                         |is_column_top| {

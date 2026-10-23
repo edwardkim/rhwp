@@ -160,7 +160,8 @@ fn expected_kinds_after_replay(tree: &PageLayerTree) -> Vec<&'static str> {
                     walk(child, active, plane, out);
                 }
             }
-            crate::paint::LayerNodeKind::ClipRect { child, .. } => {
+            crate::paint::LayerNodeKind::ClipRect { child, .. }
+            | crate::paint::LayerNodeKind::ClipPath { child, .. } => {
                 walk(child, active, plane, out);
             }
             crate::paint::LayerNodeKind::Leaf { ops } => {

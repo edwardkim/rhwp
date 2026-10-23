@@ -19,6 +19,8 @@ use crate::renderer::font_rule_layout_name_projection::{
 pub const LANG_COUNT: usize = 7;
 
 mod ascii_punctuation;
+mod missing_fonts;
+pub(crate) use missing_fonts::missing_latin_default;
 mod page_number;
 mod resolved;
 pub use resolved::{
@@ -35,7 +37,8 @@ pub fn resolve_styles(doc_info: &DocInfo, dpi: f64) -> ResolvedStyleSet {
 /// is passed separately to consumers that need it.
 pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> ResolvedStyleSet {
     let profile = document.layout_profile();
-    let mut styles = resolve_styles_with_variant(&document.doc_info, dpi, profile.hwp3_layout());
+    let lookup = missing_fonts::lookup_context(document);
+    let mut styles = resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout());
     super::legacy_font_advances::select_native_programs(document, &mut styles);
     // [#7051] 계보 신호가 없는 저장본의 HFT ASCII 반각 판정은 로드 시 한 번 내려 출처에 둔다.
     styles.hft_ascii_halfwidth |= document.provenance.hft_ascii_halfwidth_witnessed;
@@ -118,6 +121,7 @@ pub(crate) fn resolve_styles_with_environment(
         styles.page_number_font_is_hft,
     ) = page_number::resolve(&document.doc_info, profile.hangul2024_layout());
     if environment.is_some() {
+        let lookup = missing_fonts::lookup_context(document);
         for (style, shape) in styles
             .char_styles
             .iter_mut()
@@ -125,7 +129,7 @@ pub(crate) fn resolve_styles_with_environment(
         {
             for lang in 0..LANG_COUNT {
                 let decision = lookup_font_name_in_environment(
-                    &document.doc_info,
+                    &lookup,
                     lang,
                     shape.font_ids[lang],
                     environment,
@@ -179,6 +183,7 @@ pub fn resolve_styles_with_variant(
         page_number::resolve(doc_info, false);
 
     ResolvedStyleSet {
+        native_pua_fonts: Default::default(),
         resolved_dpi: Some(dpi),
         page_number_char_style_id,
         page_number_font_is_hft,
@@ -223,6 +228,43 @@ fn has_own_metric_table(face: &&str, bold: bool, italic: bool) -> bool {
                 && decision.metric.italic == italic
         },
     )
+}
+
+/// [#7092] 한/글이 선언 face 대신 **문서가 적은 대체 TTF** 로 그리는 경우, 그 대체 글꼴.
+///
+/// 한양 계열 이름(`한양중고딕`·`한양신명조`)을 TTF 로 선언한 문서는 같은 이름의 TTF 가 없어
+/// 한/글이 대체 글꼴 자리를 본다. 대체가 **TTF `HY중고딕`·`HY신명조`** 면 그 TrueType 으로
+/// 그리고(정본 PDF 의 `H2gtrM`·`H2mjsM` 자원, `·` 1.0em), 대체가 HFT(같은 이름) 이거나
+/// 없으면 자기 HFT 글리프로 그린다(Type3 자원, `·` 0.38em). 저장소 정본 전수(한양중고딕
+/// 선언 TTF 문서)에서 대체 `HY중고딕` 5문서는 전부 `H2gtrM`, 대체 HFT `한양중고딕`
+/// 9개 출력은 전부 Type3 이고 반례가 없다 — 같은 문서를 2020·2024 엔진으로 뽑아도 같다.
+///
+/// ```text
+///   78494 · issue1891_external_bindata_link · 75544 · 80550 · regulatory_impact_nested_table_escape
+///       한양중고딕 TTF, 대체 TTF HY중고딕      → 정본 H2gtrM  · 1.000~1.010em (n=61·14·26·5·5)
+///   80168(2020·2022·2024 출력) · 86712
+///       한양중고딕 TTF, 대체 HFT 한양중고딕     → 정본 Type3   · 0.381~0.386em
+/// ```
+///
+/// 두 형식 모두 `subst_font`(HWP5 `FACE_NAME` 의 대체 글꼴·유형, HWPX `<hh:substFont>`)를
+/// 보고, 대체가 HFT·임베드가 아니면서 **대체 face 이름이 글꼴 파일로 검증한 TTF 표**
+/// ([`metric_widths_verified_face`])인지로 가른다. 같은 이름의 HFT 대체(`한양중고딕`→
+/// `한양중고딕`)와 검증되지 않은 대체(`한컴바탕`)는 여기 걸리지 않아 종전 HFT 실측 표
+/// (`font_metrics_overlays`)를 그대로 쓴다. 결과는 측정 face(`font_families_metric_face`)와
+/// 신뢰 여부에만 쓰고 표시 체인은 바꾸지 않는다.
+fn verified_ttf_substitute(font: &crate::model::style::Font) -> Option<&str> {
+    if font.alt_type != 1 {
+        return None;
+    }
+    let substitute = match (&font.subst_font, &font.alt_name) {
+        (Some(subst), _) => (subst.font_type != 2 && !subst.is_embedded).then(|| subst.face.trim()),
+        (None, Some(alt_name)) => Some(alt_name.trim()),
+        (None, None) => None,
+    }?;
+    (!substitute.is_empty()
+        && substitute != font.name.trim()
+        && metric_widths_verified_face(substitute))
+    .then_some(substitute)
 }
 
 /// [#7387] CSS 체인의 첫 face 가 **선언한** 공백 글리프 전진폭(em).
@@ -305,13 +347,20 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         if lang == 1 {
             latin_declared_hft = decision.alt_type == Some(2) && !substituted;
         }
+        // [#7092] 문서가 적은 대체 TTF 로 한/글이 실제로 그리는 face — 폭 표도 그 글꼴을 쓴다.
+        let substitute_ttf = doc_info
+            .font_faces
+            .get(lang)
+            .and_then(|faces| faces.get(font_id as usize))
+            .and_then(verified_ttf_substitute);
         font_families_metric_trusted.push(
-            decision.alt_type == Some(1)
-                && !substituted
-                && decision
-                    .requested_face
-                    .as_deref()
-                    .is_some_and(metric_widths_verified_face),
+            substitute_ttf.is_some()
+                || (decision.alt_type == Some(1)
+                    && !substituted
+                    && decision
+                        .requested_face
+                        .as_deref()
+                        .is_some_and(metric_widths_verified_face)),
         );
         font_families_hft_hangul
             .push(decision.substitution_boundary == Some(FontSubstitutionBoundary::Hft));
@@ -319,33 +368,33 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         // [#7391] legacy-latin은 선언 face의 기존 표를 사용한다. HFT는
         // 프로그램 자체를 확인한 표만 사용하며 표시용 TTF와 구분한다.
         // HWP3 ASCII 반각 여부는 기존 문서의 저장 줄 증인이 계속 결정한다.
-        font_families_metric_face.push(
-            if decision.alt_type == Some(2)
-                && decision.requested_face.as_deref().is_some_and(|face| {
-                    crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()
+        font_families_metric_face.push(if let Some(face) = substitute_ttf {
+            Some(face.to_string())
+        } else if decision.alt_type == Some(2)
+            && decision.requested_face.as_deref().is_some_and(|face| {
+                crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()
+            })
+        {
+            // 표시 이름의 치환 여부와 원본 HFT 프로그램의 폭은 별개다.
+            decision
+                .requested_face
+                .as_deref()
+                .and_then(crate::renderer::font_metrics_data::legacy_hft_metric_face)
+                .map(str::to_string)
+        } else {
+            (decision.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin))
+                .then(|| {
+                    decision
+                        .requested_face
+                        .as_deref()
+                        .filter(|face| has_own_metric_table(face, cs.bold, cs.italic))
+                        .filter(|face| {
+                            decision.alt_type == Some(2) || !hft_program_metric_face(face)
+                        })
                 })
-            {
-                // 표시 이름의 치환 여부와 원본 HFT 프로그램의 폭은 별개다.
-                decision
-                    .requested_face
-                    .as_deref()
-                    .and_then(crate::renderer::font_metrics_data::legacy_hft_metric_face)
-                    .map(str::to_string)
-            } else {
-                (decision.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin))
-                    .then(|| {
-                        decision
-                            .requested_face
-                            .as_deref()
-                            .filter(|face| has_own_metric_table(face, cs.bold, cs.italic))
-                            .filter(|face| {
-                                decision.alt_type == Some(2) || !hft_program_metric_face(face)
-                            })
-                    })
-                    .flatten()
-                    .map(str::to_string)
-            },
-        );
+                .flatten()
+                .map(str::to_string)
+        });
         font_families.push(decision.css_family_chain.join(","));
 
         // 굵기의 추가 전진은 측정에서 별도로 소비한다. 음수 자간과 상쇄되는
@@ -600,12 +649,22 @@ pub(crate) struct FontNameDecision {
 ///   682/2048em, 큰따옴표는 909/2048em으로 원래 좁은 글리프다. 이 TTF 선택을 신뢰하지
 ///   않으면 측정한 원 전진폭은 유지하면서 Canvas/Skia만 다시 절반으로 축소한다.
 ///
-/// - `HY중고딕` — 공식 설치 H2GTRM.TTF의 `·‘’“”`는 1024/1024em이다.
-///   법령의 독립 한컴 Print와 내어쓰기 통제 복사본도 가운뎃점의 전각을 입증한다.
-///   글꼴 파일 자체를 저장소에 넣지 않고 프로그램 SHA와 추출 근거를 기록한다.
+/// 글꼴 파일은 배포하지 않고 프로그램 SHA와 독립 출력 근거만 기록한다.
 ///
-/// 아직 넣지 않은 것 — `HY견고딕`·`HY그래픽`(글꼴 파일은 있으나 정본이 사실상 한 문서뿐) ·
-/// `휴먼고딕`(정본 표본이 부족하다).
+/// - `HY중고딕` — Windows `H2GTRM.TTF`(family `HY중고딕`, PostScript `H2gtrM`)가
+///   `periodcentered`(gid 19305, 윤곽선 bbox `(466, 321, 558, 413)`)를 1024/1024 로 갖고
+///   `‘’“”` 도 1024 다. 저장소 한컴 정본 **8개 문서**(78494 n=61 · 76076 2020 출력 n=32 ·
+///   75544 n=26 · issue1891_external_bindata_link n=14 · 80550 · regulatory_impact_nested_table_escape
+///   · 113424 · pr6275)에서 `H2gtrM` 의 `·` 전진폭 중앙값이 1.000em(0.88~1.02, n=145)이다.
+///   이 face 는 직접 선언보다 `한양중고딕` 의 **대체 TTF** 로 더 자주 쓰인다
+///   ([`verified_ttf_substitute`]).
+/// - `HY견고딕` — `H2GTRE.TTF`(bbox `(432, 286, 593, 446)`) 1024/1024, 정본
+///   `trade_report_forced_break_object-2024`(n=1, 1.000) · 같은 문서 2020 출력(0.989).
+/// - `HY그래픽` — `H2GPRM.TTF`(family `HY그래픽M`, bbox `(460, 316, 564, 421)`) 1024/1024,
+///   정본 `press_release_split_cell_nested_table-hwpx-2020`(n=1, 1.000).
+///
+/// 아직 넣지 않은 것 — `휴먼고딕`(글꼴 파일은 512/512 이고 정본 2문서 n=9 가 1.0em 이지만
+/// 저장소에 TTF 로 선언한 짝 표본이 없다).
 fn metric_widths_verified_face(face: &str) -> bool {
     matches!(
         face.trim(),
@@ -617,6 +676,10 @@ fn metric_widths_verified_face(face: &str) -> bool {
             | "HYHeadLine-Medium"
             | "HY울릉도M"
             | "HYwulM"
+            | "HY견고딕"
+            | "HYGothic-Extra"
+            | "HY그래픽"
+            | "HYGraphic-Medium"
             | "휴먼명조"
             | "HumanMyeongJo"
             | "Times New Roman"

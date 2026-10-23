@@ -153,6 +153,13 @@ impl RenderLayerInfo {
 /// 렌더 노드 (페이지 내 렌더링 가능한 요소)
 #[derive(Debug, Clone, Serialize)]
 pub struct RenderNode {
+    /// Cell-owned paint is edited through the cell, not selected as a drawing.
+    /// Keep its source address for paint ordering; the control query omits it.
+    #[serde(skip)]
+    pub(crate) cell_frame_paint: bool,
+    /// Source text clipping in absolute page pixels; not a layout height/cut.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paint_clip: Option<Vec<crate::model::text_clip::TextClipPath>>,
     /// 노드 ID
     pub id: NodeId,
     /// 노드 종류
@@ -192,6 +199,7 @@ pub enum ControlCode {
 impl RenderNode {
     pub fn new(id: NodeId, node_type: RenderNodeType, bbox: BoundingBox) -> Self {
         Self {
+            cell_frame_paint: false,
             id,
             node_type,
             bbox,
@@ -202,6 +210,7 @@ impl RenderNode {
             print_bbox: None,
             control_code: ControlCode::Automatic,
             header_footer_source: None,
+            paint_clip: None,
         }
     }
 
@@ -214,6 +223,16 @@ impl RenderNode {
     /// 기존 노드에 레이어 메타데이터를 부여한다.
     pub fn set_layer(&mut self, layer: RenderLayerInfo) {
         self.layer = Some(layer);
+    }
+
+    /// Move absolute source-paint geometry with its content, independently of
+    /// viewport/bbox expansion. The caller owns the subtree's actual movement.
+    pub(crate) fn translate_paint_clip_y(&mut self, dy: f64) {
+        if let Some(paths) = &mut self.paint_clip {
+            for path in paths {
+                *path = path.map(|x, y| (x, y + dy));
+            }
+        }
     }
 
     /// 출력/인쇄 profile에서 제외할 편집 전용 노드로 표시한다.
@@ -1195,6 +1214,17 @@ pub struct ShapeTransform {
 }
 
 impl ShapeTransform {
+    /// One page-space parent transform for the outline, text, and editor geometry.
+    pub fn matrix_about(&self, bbox: BoundingBox) -> [f64; 6] {
+        let (sin, cos) = self.rotation.to_radians().sin_cos();
+        let sx = if self.horz_flip { -1.0 } else { 1.0 };
+        let sy = if self.vert_flip { -1.0 } else { 1.0 };
+        let (a, b, c, d) = (cos * sx, sin * sx, -sin * sy, cos * sy);
+        let cx = bbox.x + bbox.width / 2.0;
+        let cy = bbox.y + bbox.height / 2.0;
+        [a, b, c, d, cx - a * cx - c * cy, cy - b * cx - d * cy]
+    }
+
     /// 변환이 필요한지 여부
     pub fn has_transform(&self) -> bool {
         self.rotation != 0.0 || self.horz_flip || self.vert_flip
@@ -1608,6 +1638,10 @@ impl ImageNode {
 /// 묶음 개체 노드
 #[derive(Debug, Clone, Serialize)]
 pub struct GroupNode {
+    /// Common layer subtree transform [a,b,c,d,e,f], applied before all children.
+    /// None for ordinary groups whose child geometry is already projected.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paint_transform: Option<[f64; 6]>,
     /// 소속 구역 인덱스
     pub section_index: Option<usize>,
     /// 묶음 개체 컨트롤을 소유한 문단 인덱스
@@ -2241,6 +2275,30 @@ impl PageRenderTree {
                 if plane_a != plane_b {
                     continue;
                 }
+                // Similar x/width is not physical overlap. Adjacent narrow
+                // source crops (e.g. compound stroke pieces) may all be within
+                // the legacy 1px alignment tolerance. They own disjoint ink.
+                // Ignore only floating point roundoff at a shared edge.
+                let epsilon = f64::EPSILON
+                    * 32.0
+                    * [
+                        bbox_a.x.abs(),
+                        bbox_b.x.abs(),
+                        bbox_a.y.abs(),
+                        bbox_b.y.abs(),
+                        bbox_a.width,
+                        bbox_b.width,
+                        bbox_a.height,
+                        bbox_b.height,
+                        1.0,
+                    ]
+                    .into_iter()
+                    .fold(1.0_f64, f64::max);
+                let overlap_x =
+                    (bbox_a.x + bbox_a.width).min(bbox_b.x + bbox_b.width) - bbox_a.x.max(bbox_b.x);
+                if overlap_x <= epsilon {
+                    continue;
+                }
                 // 조건 2/3: x, width 동일 (1px tolerance)
                 if (bbox_a.x - bbox_b.x).abs() > 1.0 {
                     continue;
@@ -2254,7 +2312,7 @@ impl PageRenderTree {
                 }
                 // 조건 5: 세로 겹침 (A.y + A.height > B.y)
                 let a_bottom = bbox_a.y + bbox_a.height;
-                if a_bottom <= bbox_b.y {
+                if a_bottom - bbox_b.y <= epsilon {
                     continue;
                 }
                 // Clip 계산: A 의 new_height = B.y - A.y

@@ -1,0 +1,908 @@
+{
+  "sourceRuntime": {
+    "base": "47f9f57b75e3ee81a680d4c8395c7cd72931daf6",
+    "sources": {
+      "src/document_core/commands/border_paint_bands.rs": "50b894e7e9b8b08996d4ee6dd5bb94273aeb1cf73895fad2672a19246544372d",
+      "src/document_core/commands/border_paint_structure.rs": "28c8f8554c535e2712667fce7a24bcd83b3a8a5dd781dcb52449cefa8a1437f5",
+      "src/parser/control/shape.rs": "0abfea8fa78776802a3baa1f8bfc68bfeaa1116c2c3c63b3926dbcbf8c22df5c"
+    },
+    "nativeSha256": "86652870e8caf3fddc4db1230be93f560794d1f137a9cfc4bc3c62a2eb77410c",
+    "wasmSha256": "72a78d5aa5a552be1b05b0521c56b1c7fa55f1e6cd2301a8819f75c30b71def2",
+    "glueSha256": "5671802fbb89ed060c3bab7a6f458a78833a7e5ca3e7df8e1699d45098cddeb6",
+    "wasmBytes": 19721374
+  },
+  "referenceContract": "Hancom 2020 Print method 0, PDF driver one-up; exact input SHA, unchanged paper and physical origin; 1 page per input",
+  "sourceCellPenOrder": [
+    "left",
+    "right",
+    "top",
+    "bottom"
+  ],
+  "sourceUnits": "0.70/0.90/0.50 PDF pt = 70/90/50 HWPUNIT; existing one-HU crop uncertainty retained",
+  "wholeScope": {
+    "native": {
+      "inputs": 100,
+      "pages": 100,
+      "minimum": 97.45731,
+      "newEditsMinimum": 98.95186,
+      "missing": 0,
+      "pageCountMismatch": 0
+    },
+    "wasm": {
+      "inputs": 100,
+      "pages": 100,
+      "minimum": 96.19767,
+      "newEditsMinimum": 96.69192,
+      "missing": 0,
+      "pageCountMismatch": 0
+    }
+  },
+  "maintainerVerdict": "시각·편집 구조 통과",
+  "entries": [
+    {
+      "key": "h-outer-append-row.hwp",
+      "inputSha256": "5a6da4c52a2e6ce1440cec4a004c592067e7857bdb10acfb975611b17637fb06",
+      "pdfSha256": "b91032b64700f416e51db66ab2815c1797dff9b64f27355a87904bc1e65d5dd1",
+      "jobId": "92203b82-3821-4d97-b314-4d299af2ec24",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-outer-append-row-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.2003,
+        "wasm": 98.31779
+      }
+    },
+    {
+      "key": "h-outer-append-row.hwpx",
+      "inputSha256": "573381cc368918cfbed61b3ba357369b0a38e470b0a6d1ef1a4ef474bfebf0e2",
+      "pdfSha256": "33eaf847f6dc2de7a9235c63f076f899cb718a92f4f1ea86fe83afd1c5893be2",
+      "jobId": "8879ba00-74d6-4fd8-bdae-4223dbe5654a",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-outer-append-row-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.2003,
+        "wasm": 98.31779
+      }
+    },
+    {
+      "key": "h-outer-col-before.hwp",
+      "inputSha256": "5d2b6f0ba4f7add3f2129609bae514478afb3aa335baaaa2fa1101343230978d",
+      "pdfSha256": "a24c4d11f2efac2da10664b501c640b05be9c7e5c81ae5dbc88b8ef44d737455",
+      "jobId": "26281a16-6b94-4426-a7cf-79374c231bfd",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-outer-col-before-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.22654,
+        "wasm": 98.34881
+      }
+    },
+    {
+      "key": "h-outer-col-before.hwpx",
+      "inputSha256": "fe3e7fe446f95567e241de55a909f798e0d4d48a54aef78c5672b8a3ae5b6c3f",
+      "pdfSha256": "15468f4d88b3c47c8d4352e65e5df118b04ea59da98ae6417487f55e8f5f82af",
+      "jobId": "8b82eab1-d7e0-43d7-9c61-26da820ae423",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-outer-col-before-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.22654,
+        "wasm": 98.34881
+      }
+    },
+    {
+      "key": "h-outer-delete-col.hwp",
+      "inputSha256": "5f1b73148c3b884d0d929da8ddc37ecd25a04b851284e10a8545d287e964fc88",
+      "pdfSha256": "5cad11ae58969a48d062173bcf94bb7aeb8e7539a64d1006ab1948cdcebd6e03",
+      "jobId": "9592ba74-9c56-4230-8b81-0ddd30b9f0a2",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-outer-delete-col-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 98.9845,
+        "wasm": 96.71889
+      }
+    },
+    {
+      "key": "h-outer-delete-col.hwpx",
+      "inputSha256": "8dde7268eb9a8aa8999e25024b1d6640d212c28785a013c011908c8ef33162c0",
+      "pdfSha256": "7d4360468d77e69b16c121c6ba9277f584525459251cc50dc35ef8626a0b5bf5",
+      "jobId": "070f1a9e-289e-4651-8e1f-66234c7d9294",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-outer-delete-col-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 98.9845,
+        "wasm": 96.71889
+      }
+    },
+    {
+      "key": "h-outer-row-before.hwp",
+      "inputSha256": "9f2d666b393b46959db65281b144c9d9ce3a8b268c093bdda37fd72360d7c3d3",
+      "pdfSha256": "88c4c55c600a8011f41dcdc65e65a82d8acb219b0f99f26f643cea4b8bfed416",
+      "jobId": "ce69973c-25c4-4a68-9b7a-a1b81a14bac7",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-outer-row-before-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.2003,
+        "wasm": 98.31779
+      }
+    },
+    {
+      "key": "h-outer-row-before.hwpx",
+      "inputSha256": "a080e9e7735fd4aadc0c712f78d046e9c0e12765f0f7e6c7d6f99c79d888a670",
+      "pdfSha256": "ce0d163d74686b1519805c3f7b56e65f4284aa6bd9e99542ccf1114bfc649ebc",
+      "jobId": "ed937384-48d2-4476-8764-82f80e0228de",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-outer-row-before-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.2003,
+        "wasm": 98.31779
+      }
+    },
+    {
+      "key": "h-shared-col-before.hwp",
+      "inputSha256": "5164b69c045d7af316f378f0edf6490a339b43609b74f680a96c5a12d10ffdeb",
+      "pdfSha256": "1c2d5b3205361c857edd312093274993d464d4c1833444d2c2c43695e3fc42a1",
+      "jobId": "64903b22-2022-4b0b-bd68-9f7cb1db8636",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-shared-col-before-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.22654,
+        "wasm": 98.34881
+      }
+    },
+    {
+      "key": "h-shared-col-before.hwpx",
+      "inputSha256": "be0ac6a050af90d7ae89c964370dbcaaef87dc4b4fc5b08666127f6b1d1825c2",
+      "pdfSha256": "6499bea9b6b23715facc5c5e86632e80c8199bea3105091be1016717b7970d25",
+      "jobId": "f7a5d958-388b-464f-ab39-2f7f897d8444",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-shared-col-before-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.22654,
+        "wasm": 98.34881
+      }
+    },
+    {
+      "key": "h-shared-delete-col.hwp",
+      "inputSha256": "0eb7eaa5616501871e97daa31e342b25cebb666e5231515693eb40b667e11faa",
+      "pdfSha256": "f65e5bc001c1ca931ec35ae09df93e7abd16bce3af64359e92aa893d592f606b",
+      "jobId": "6512e8f3-b6c8-4d88-b2e2-03a8589ece4a",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-shared-delete-col-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 98.9845,
+        "wasm": 96.71889
+      }
+    },
+    {
+      "key": "h-shared-delete-col.hwpx",
+      "inputSha256": "e98f9bcb78642fb42ef28316b9fb12cff170fb01ca1827cf58a38970bba7e448",
+      "pdfSha256": "cbc182857fba87a115c9193b9dc92a2446946b07eaa98a573be23f722cab16da",
+      "jobId": "0bdc0863-718b-42d0-905f-da46e2d4fff2",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-shared-delete-col-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 98.9845,
+        "wasm": 96.71889
+      }
+    },
+    {
+      "key": "h-shared-delete-row.hwp",
+      "inputSha256": "31a44447dc9ed3d042af3fe8e74222f52e4e73d0c9a60ce006f9cf4df27dbc12",
+      "pdfSha256": "a1681fc35a00ea1016296cff6b1b508d521e9c789f419fe495ca728ade62dfef",
+      "jobId": "9961d28d-713b-4df0-8f51-eb0316548360",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-shared-delete-row-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 98.95186,
+        "wasm": 96.69192
+      }
+    },
+    {
+      "key": "h-shared-delete-row.hwpx",
+      "inputSha256": "efcdac4c32b70930674eb1f2d28bac8dc3c0c21e38fd3b3952c46c96554683fb",
+      "pdfSha256": "572452fa12ee39015da28f37b67d55d0508906104f9c46d840a30223e38d6578",
+      "jobId": "db0863c2-2132-4091-b756-155aa5ac50d5",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-shared-delete-row-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 98.95186,
+        "wasm": 96.69192
+      }
+    },
+    {
+      "key": "h-shared-row-before.hwp",
+      "inputSha256": "533a0e8e6f3061e326713a2ac4e5e1fb39f2718897b123d6e6df42223e960d0b",
+      "pdfSha256": "0510414a5cfd4a94d35f246b10f0c35ae56a1230b4f771caf6b59c2795f69aa7",
+      "jobId": "e4663b31-f702-4cb4-bac7-862155b18e9d",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-shared-row-before-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.2003,
+        "wasm": 98.31779
+      }
+    },
+    {
+      "key": "h-shared-row-before.hwpx",
+      "inputSha256": "35db0ba7bb84156f46c85b875eaf6a5080711107819607e06563fb0987654b64",
+      "pdfSha256": "f87873f00f74a842d6d66a5b52ae68f61aadb727def4cb3900e3fa97d66d2fc0",
+      "jobId": "7fb151ea-22bc-4aeb-903b-54de0d167173",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-h-shared-row-before-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.2003,
+        "wasm": 98.31779
+      }
+    },
+    {
+      "key": "reopened-h-shared-row-before-from-hwp.hwpx",
+      "inputSha256": "a623bf8a11fb2c0e15338fcec52ee0862488c1c2e5619c7d7e0ae5300671117d",
+      "pdfSha256": "2fc8fd55f97a4ceb91153f02df8f32eaa16bfd2e11ed2f349d0dedb58f926bb9",
+      "jobId": "23e501c9-6b34-4181-929d-e997eb342819",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-reopened-h-shared-row-before-from-hwp-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.04703,
+        "wasm": 97.98645
+      }
+    },
+    {
+      "key": "reopened-h-shared-row-before-from-hwpx.hwpx",
+      "inputSha256": "041138ea235a0ad04111a5e1a8c447e81c41d1f0663b9d417fcaa08fd744bd79",
+      "pdfSha256": "140298b95f42450f188d0b75af1e94689c61f1ed07fb6565323205ca2349f1aa",
+      "jobId": "6a5ab824-6ddf-4edd-b4dd-2e7a0496f420",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-reopened-h-shared-row-before-from-hwpx-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.04703,
+        "wasm": 97.98645
+      }
+    },
+    {
+      "key": "reopened-v-shared-col-before-from-hwp.hwpx",
+      "inputSha256": "3ef77c9a2c5f2b075df352580c39968e004f34f1e4884a16de3c4b4d02619e3e",
+      "pdfSha256": "eac50430205bd2ba2f1837f6d0d976be528b77a2ae7e497a1cd41e83d4461071",
+      "jobId": "a22cb552-581b-4c10-9a00-ef0f6f0abdfc",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-reopened-v-shared-col-before-from-hwp-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.04703,
+        "wasm": 97.98645
+      }
+    },
+    {
+      "key": "reopened-v-shared-col-before-from-hwpx.hwpx",
+      "inputSha256": "14be0f59c436540008f98865abedff5421eda1d94cd119de64993dd9c87407f3",
+      "pdfSha256": "3bf9fb3d2c53ac998e31b79f36857567df79a0c531d69fcc2f1a9be8a3497683",
+      "jobId": "27f423d0-fafe-4564-bfbc-8478fabb7f83",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-reopened-v-shared-col-before-from-hwpx-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.04703,
+        "wasm": 97.98645
+      }
+    },
+    {
+      "key": "v-outer-append-col.hwp",
+      "inputSha256": "3570e22a3bab3f59410acd2bceac37b4559b8b3792dfa7c19e1099334843334d",
+      "pdfSha256": "e6791b74742a8a08711f67db57ad436945108434538183193a1c034e13a895d4",
+      "jobId": "dc7cc126-1cec-40c8-a4b1-a32f06217e11",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-outer-append-col-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.20505,
+        "wasm": 98.32801
+      }
+    },
+    {
+      "key": "v-outer-append-col.hwpx",
+      "inputSha256": "1e4d50cbe03e15f7362575d153d406dd1a8ae847ed8ecf8bafe6160b5421b517",
+      "pdfSha256": "3b367e4cc9e042a9f1ae066afdc9ae580aec227ab46abf74480c5ee1bd2bf463",
+      "jobId": "a997b4b4-84e1-4cee-b077-a27b4a115ae8",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-outer-append-col-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.20505,
+        "wasm": 98.32801
+      }
+    },
+    {
+      "key": "v-outer-col-before.hwp",
+      "inputSha256": "b9a98e0649f392a381e63e274d1a23628fef745cdcb532bf4ce3852db69c073f",
+      "pdfSha256": "21d6e780e1d83b2cc3044f9e4ed1ed7b32f23a3724a88d29c08aa19dffd9c703",
+      "jobId": "b3bd2a93-80fc-4da7-8a35-5fbe761bab22",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-outer-col-before-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.22654,
+        "wasm": 98.34881
+      }
+    },
+    {
+      "key": "v-outer-col-before.hwpx",
+      "inputSha256": "72c2952c105aac2705068fdbdd19812cab32a485d47d02d67b1b56b127de6381",
+      "pdfSha256": "29720825b5155f735661f5b91333d18a06091d5fcd333eacf84dc8017f61eada",
+      "jobId": "ebe562f3-890b-48f2-abdc-3f0b6e3e8a4d",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-outer-col-before-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.22654,
+        "wasm": 98.34881
+      }
+    },
+    {
+      "key": "v-outer-delete-row.hwp",
+      "inputSha256": "065c01649fbb12bbccb250b24d6ef88a336dd3cad5e35f227ce69daf09a27f76",
+      "pdfSha256": "8db0b119a877ed061d1a1d62da9e9b2e907a44fc8d98af0cba92dcf05329a5b8",
+      "jobId": "5687cbf2-0292-4aac-96df-0c557efb0eef",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-outer-delete-row-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 98.95186,
+        "wasm": 96.69192
+      }
+    },
+    {
+      "key": "v-outer-delete-row.hwpx",
+      "inputSha256": "70f613d4fd753377b6614258ffb3dcbaf65b463ac2867a6553c599948b8684e7",
+      "pdfSha256": "7747744a66dcac75609fe6f432dae83637c4d1873842c617fa381623230f888e",
+      "jobId": "a24ec4f5-4528-43a7-9cb7-59115d92116c",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-outer-delete-row-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 98.95186,
+        "wasm": 96.69192
+      }
+    },
+    {
+      "key": "v-outer-row-before.hwp",
+      "inputSha256": "cecdb339eb83f80e7fab21230e62e5fafbe4cbd2d5cc93f69899509dd7bd7bfb",
+      "pdfSha256": "984bf554b8164d035f4fcba829fccea6ecb0c582270ea762c3b8743b8a0c9b3f",
+      "jobId": "c74335a7-9273-457e-abdf-9bde2242ba02",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-outer-row-before-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.2003,
+        "wasm": 98.31779
+      }
+    },
+    {
+      "key": "v-outer-row-before.hwpx",
+      "inputSha256": "3638e4b82032321e88ba0cd2fad61aa8c4d7a153bea0a8d5ee878b85d113cf08",
+      "pdfSha256": "062326086d86a9b038b94d803ababfcd51c2c609957b8c02c3f8bf26a6698fd7",
+      "jobId": "ba8dbe67-e35b-41bb-9e9f-697a604d4eae",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-outer-row-before-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.2003,
+        "wasm": 98.31779
+      }
+    },
+    {
+      "key": "v-shared-col-before.hwp",
+      "inputSha256": "192ec4ce713a1e067c09e44ad7400444b144c4feb257e7813844b1654dcb856c",
+      "pdfSha256": "f7efb097ddc3241ba3130a54fe89144a70d1e916121894d43dfa68ca48980f7b",
+      "jobId": "22836bea-d657-4044-935a-1887bf51f7b1",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-shared-col-before-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.22654,
+        "wasm": 98.34881
+      }
+    },
+    {
+      "key": "v-shared-col-before.hwpx",
+      "inputSha256": "e2db9e25e26c67b833d6c9d57c5ec1f3ed6cea6fafa52222a876856e3564b90f",
+      "pdfSha256": "3237fc3e3711134b234ba8e89737139bba72e4620737497bddd4db44d0932144",
+      "jobId": "c2225fff-ba84-4631-b8f1-4d725b941c29",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-shared-col-before-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.22654,
+        "wasm": 98.34881
+      }
+    },
+    {
+      "key": "v-shared-delete-col.hwp",
+      "inputSha256": "9133e640f0090b886b1f6dfedc18dcfe1f2d1f677984c7d0e4605d86f4ae1a72",
+      "pdfSha256": "282cdb6bdae30b7b4d5e5f8e8f9c5bdd2de4c9317a11dc4a4c9afac9af635e18",
+      "jobId": "07844436-96db-40f7-b000-bde01c171434",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-shared-delete-col-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 98.9845,
+        "wasm": 96.71889
+      }
+    },
+    {
+      "key": "v-shared-delete-col.hwpx",
+      "inputSha256": "e4cf905f8650072d27234b63f1007d23420367c37a2f3408592b77b7eb5fe0d3",
+      "pdfSha256": "509ad60db6b99f5ab65b26b477af91acdb5f1f19f88686df56e4ee25d38eff69",
+      "jobId": "9d11a115-50e3-422d-8761-801495a518e6",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-shared-delete-col-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 98.9845,
+        "wasm": 96.71889
+      }
+    },
+    {
+      "key": "v-shared-delete-row.hwp",
+      "inputSha256": "bedb8ea60407bdd1b04830f9a5c5f297af2d33a6e6da2578f169abd98181263d",
+      "pdfSha256": "e1a2d116b1317eb722a4542c35c6fadf654d3b60914ccb304ed5d9e7e4013556",
+      "jobId": "f66c9ce9-9f05-4186-a503-c1b44b6fdfcc",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-shared-delete-row-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 98.95186,
+        "wasm": 96.69192
+      }
+    },
+    {
+      "key": "v-shared-delete-row.hwpx",
+      "inputSha256": "3a9b5fd213a068d6d3d7bb563ef296e632dac5aa51fb4f7c1ff9fec002c2ff94",
+      "pdfSha256": "c075f739aecc3132242332c7206481296286bd58ae24c7cf393fca6fe52b0705",
+      "jobId": "b746ef64-389a-40ad-9ad6-07965b21cd26",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-shared-delete-row-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 98.95186,
+        "wasm": 96.69192
+      }
+    },
+    {
+      "key": "v-shared-row-before.hwp",
+      "inputSha256": "1e69eb18b8596dd3bf5e8c3a8922ae7211b2f628c5eca8147326d58dd605e933",
+      "pdfSha256": "ccdbdb65f525242a188711fc45ffdee302af30cdf30111d95873c698be65270a",
+      "jobId": "9ffea253-ca71-42c8-8546-a0f26b730186",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-shared-row-before-hwp-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.2003,
+        "wasm": 98.31779
+      }
+    },
+    {
+      "key": "v-shared-row-before.hwpx",
+      "inputSha256": "a28d4cbf1ea66c872e35038846939bcd4cbe57464270fb6f802e0fc3eb80a0ee",
+      "pdfSha256": "4e5692710364614aa9b2fc90adb80aab3c2808df9cc9f676e3fd932ee4832ab3",
+      "jobId": "b8500e22-4489-4cbc-99bb-df6c3456bb10",
+      "printEvidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdfMetadata": {
+        "Creator": "Hwp 2020 452.40628.0.4",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "600 x 720 pts"
+      },
+      "aboveAndAfterPresent": true,
+      "pdfFile": "interval-v-shared-row-before-hwpx-2020.pdf",
+      "silhouetteRawMatchPercent": {
+        "native": 99.2003,
+        "wasm": 98.31779
+      }
+    }
+  ],
+  "maintainerVerdictDate": "2026-10-19"
+}

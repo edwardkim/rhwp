@@ -258,7 +258,7 @@ impl TypesetEngine {
         // [#2243 진단] snap 입출력 — 동작 불변.
         if std::env::var("RHWP_DIAG_SNAPALL").is_ok() {
             eprintln!(
-                "DIAG_SNAPALL sec={} page={} pi={} y_in={:.1} y_out={:.1} base={:?} lazy={:?} anchor={:.1} dirty={}",
+                "DIAG_SNAPALL sec={} page={} pi={} y_in={:.1} y_out={:.1} base={:?} lazy={:?} anchor={:.1} dirty={} source={:?}",
                 st.section_index,
                 st.pages.len(),
                 para_idx,
@@ -268,6 +268,7 @@ impl TypesetEngine {
                 hc.vpos_lazy_base,
                 st.vpos_col_anchor,
                 st.vpos_ladder_dirty,
+                hc.stored_column_origin,
             );
         }
         if std::env::var("RHWP_DIAG_TAC").is_ok() && (y - st.current_height).abs() > 0.05 {
@@ -280,6 +281,34 @@ impl TypesetEngine {
                 hc.vpos_lazy_base,
                 st.vpos_col_anchor,
             );
+        }
+        // 페이지 배분이 확정한 단 상대 흐름 경계는 배치도 그대로 소비한다.
+        // 앞 문단을 완전히 수용한 같은 단에서 다음 시작으로 이동했으면 그
+        // 위치가 앞 문단의 흐름 끝이다. 글자 유무·TAC·개체 조합으로 저장 줄을
+        // 다시 판정하거나 paint에서 별도의 높이를 누적하지 않는다.
+        // 다른 단의 항목이나 부분 문단은 이 전체 문단 완료의 소유자가 아니다.
+        // 같은 원본 HU 좌표의 변환·누적 오차는 흐름 이동이 아니다. f64의
+        // 끝자리 차이로 완료 경계를 새로 기록하면 실제 이동이 없는 문단까지
+        // 다른 저장 원점의 절대 끝으로 되감는다.
+        let flow_moved = crate::renderer::px_to_hwpunit(y, self.dpi)
+            != crate::renderer::px_to_hwpunit(st.current_height, self.dpi);
+        // lazy 역산은 현재 순차 흐름에 저장 사다리를 맞춘 값일 뿐, 단의 실제
+        // 원점을 인증하지 않는다. 수용한 줄/개체가 고정한 축이 있는 경우만
+        // 절대 종료값으로 전달해야 paint의 다른 실제 프레임을 덮어쓰지 않는다.
+        let owns_column_axis = hc.vpos_page_base.is_some()
+            || hc
+                .stored_column_origin
+                .is_some_and(|(base, _)| hc.vpos_lazy_base == Some(base));
+        if flow_moved && owns_column_axis && y >= 0.0 && y <= st.available_height() {
+            if let Some(crate::renderer::typeset::PageItem::FullParagraph {
+                para_index: previous,
+            }) = st.current_items.last()
+            {
+                let previous = *previous;
+                if previous != para_idx && st.vpos_prev_layout_para == Some(previous) {
+                    st.record_stored_paragraph_flow_end(previous, y);
+                }
+            }
         }
         // 재조판 뒤 저장 줄의 원점 연결과 지연 기준 산출을 모두 회수한다.
         st.record_vpos_page_origin(hc.vpos_page_base);

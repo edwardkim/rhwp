@@ -1,0 +1,33 @@
+{
+  "method": "fontTools subset: all characters in every serialized paragraph/control string of the parsed HWP, plus all Hangul syllables, Latin U+0020..00FF and U+2000..33FF. Name/layout records retained. Unused glyph inventory removed to supply actual regular and bold faces within existing 64 MiB catalog budgets.",
+  "source": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+  "sourceCharsetSha256": "2472f916b28ac9f707c9242ebe89c12508dfe2b17672939c0e86248df6134d04",
+  "advancePreservedFor": 15679,
+  "files": [
+    {
+      "name": "HCRBatang-source-subset.ttf",
+      "bytes": 4692472,
+      "sha256": "c59790c06de3e5ecbe1897ad2dab26ac153eacb8291ccc93c9a51a474468589a"
+    },
+    {
+      "name": "arial.ttf",
+      "bytes": 1045720,
+      "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+    },
+    {
+      "name": "gulim-face-0.ttf",
+      "bytes": 13374696,
+      "sha256": "f2d59d46c577c50c1b62aa09f49540511e5923cf2d4daf3994918d6872b7acc8"
+    },
+    {
+      "name": "malgun.ttf",
+      "bytes": 13459196,
+      "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+    },
+    {
+      "name": "malgunbd.ttf",
+      "bytes": 12600392,
+      "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+    }
+  ]
+}

@@ -374,7 +374,9 @@ impl Tokenizer {
         let next = self.peek(1).unwrap_or('\0');
         let third = self.peek(2).unwrap_or('\0');
 
-        // 붙은 ASCII 부호만 축약한다. 공백·Unicode minus·인용은 보존한다.
+        // 붙은 부호와 화살표의 우선순위는 공개 API와 문서 경로가 공유한다.
+        // `+->`는 `±`와 `>`, `<-+`는 아래 화살표 분기의 `<-`와 `+`다.
+        // 공백·Unicode minus·인용은 이 축약에 포함하지 않는다.
         if let Some(symbol) = match (ch, next) {
             ('+', '-') => Some("±"),
             ('-', '+') => Some("∓"),

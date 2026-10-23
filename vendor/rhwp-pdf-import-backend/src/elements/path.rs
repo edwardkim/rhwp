@@ -18,6 +18,32 @@ pub struct PathClip {
     pub parent: Option<std::sync::Arc<PathClip>>,
 }
 
+/// An observed clipping operation, including clips ended by `n` with no paint.
+/// Geometry is in page user space; this is not evidence of a painted border.
+#[derive(Debug, Clone)]
+pub struct PathClipObservation {
+    /// Path-extractor invocation path of the terminating operator.
+    pub source_order: Vec<usize>,
+    /// CTM in effect when the path ended; geometry has already been transformed.
+    pub transform: [f32; 6],
+    /// The observed clip and its prior active clip, without inventing paint.
+    pub clip: std::sync::Arc<PathClip>,
+}
+
+/// Bounded observation ledger, separate from the live graphics state.
+#[derive(Debug, Default)]
+pub struct PathClipObservations {
+    /// Recorded clipping operations, in deterministic extraction order.
+    pub clips: Vec<PathClipObservation>,
+    /// Unrecorded clips remain in the live graphics state; inference is incomplete.
+    pub omitted: usize,
+    /// Clip active at an actual text-show operator, keyed by the full invocation path.
+    /// A preceding clip observation alone cannot establish this relationship (q/Q).
+    pub text_uses: Vec<(Vec<usize>, Option<std::sync::Arc<PathClip>>)>,
+    /// Missing uses disqualify clip-based semantic inference, not live PDF paint.
+    pub text_uses_omitted: usize,
+}
+
 /// Paint metadata retained by the bounded positional importer.
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct PathPaint {

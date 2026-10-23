@@ -1,0 +1,28 @@
+{
+  "source_commit": "5c7f1835b4a045655511c53b24012678531f8cc7",
+  "introducing_integration_commit": "23bbaa45290cb40a36103661dbac703972db29e3",
+  "source_commit_original": "bbd4a09816f733f284a0a11647ab8e56f88d8013",
+  "source_pr": 8012,
+  "source_blob": "0aae47d3dedbec8177f4778c50bb5357f3f114b6",
+  "original_path": "tests/cases/issue_7696_page_anchored_topbottom_band.rs",
+  "preserved_path": "mydocs/pr/assets/issue_7687/offset_picture_guard/issue_7696_page_anchored_topbottom_band.rs.txt",
+  "source_sha256": "dd7bace180ef9188a27074db50fcb811bf2878bce29542220cfe20b302f1f785",
+  "removed_functions": [
+    "empty_host_line_inside_offset_para_picture_band_is_absorbed"
+  ],
+  "retained_functions": [
+    "page_anchored_topbottom_band_reflowed_input",
+    "page_anchored_topbottom_band_hancom_saved_input"
+  ],
+  "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+  "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+  "independent_pdf": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+  "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+  "pdf_pages": 71,
+  "measured_base_sha": "80968497c2c178eeecb3b2e1d04d086ad27a0dc7",
+  "measured_candidate_sha": "ca26039dad8dcb07b182dd60136ae4a2aa533bd0",
+  "base_pages": 72,
+  "candidate_pages": 74,
+  "existing_issue": 7687,
+  "classification": "New reactivation of a previously deferred original; not removal of a guard registered in upstream/devel. No original-output fix or visual pass is claimed."
+}

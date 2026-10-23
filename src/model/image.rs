@@ -15,6 +15,10 @@ pub(crate) fn external_picture_basename(path: &str) -> &str {
 pub struct Picture {
     /// 개체 공통 속성
     pub common: CommonObjAttr,
+    /// Integrity seal for a proven PDF stroke fragment, restored by the bounded sidecar.
+    /// Geometry or resource edits invalidate its authority to delete the picture.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub border_paint_fingerprint: Option<[u8; 32]>,
     /// 개체 요소 속성
     pub shape_attr: ShapeComponentAttr,
     /// 테두리 색

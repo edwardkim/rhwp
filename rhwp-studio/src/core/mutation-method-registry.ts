@@ -102,6 +102,7 @@ export const EXCLUDED_NON_DOCUMENT: readonly string[] = [
   // restoreSectionRaw 는 passthrough 를 되살리지만 SetSectionPropsCommand.undo 단일
   // 경로로 고정돼 있어(restoreDeleteFragment 와 같은 취급) 제외한다. 히스토리 밖 직접 호출 금지.
   'captureSectionRaw', 'restoreSectionRaw', 'discardSectionRaw',
+  'discardBorderPaintUndo', // journal lifetime only; no document mutation
   // [#7002] 스냅샷 API — 위 두 저널의 선례이면서 정작 분류가 빠져 있었다
   // (이 파일의 restoreDeleteFragment 주석이 SnapshotCommand.undo 의 restoreSnapshot 을
   // 근거로 인용한다). save·discard 는 저장소 적재·해제라 IR 비변경이고,

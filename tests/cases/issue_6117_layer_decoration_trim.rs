@@ -69,7 +69,9 @@ fn published_trims(runs: Vec<TextRunNode>) -> Vec<usize> {
                     collect(child, trims);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => collect(child, trims),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                collect(child, trims)
+            }
             LayerNodeKind::Leaf { ops } => trims.extend(ops.iter().filter_map(|op| match op {
                 PaintOp::TextDecoration {
                     trim_trailing_spaces,

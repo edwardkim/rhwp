@@ -19,8 +19,9 @@
 //! 한 문단에 자리차지 표가 여러 개 달리면(co-anchored) 그 쌓임은 `y_start` 가 만든다.
 //! `#1639`(`issue1639_empty_host_negative_offset_float.hwpx`)가 그 순서를 잠그고 있고,
 //! 완화를 넓히면 형제들이 같은 자리로 모여 겹친다. 그래서 **단에 아직 아무것도 안 놓였을
-//! 때**(`col_node.children.is_empty()`)만 앵커를 바닥으로 쓴다. 보이는 host 제목이 있는
-//! `#1549` 형상은 앵커가 단 최상단이어도 제목 줄이 먼저 놓이므로 조건에서 빠진다.
+//! 때**(`col_node.children.is_empty()`)만 앵커를 바닥으로 쓴다.
+//! `#1549` 합성 원본의 제목 순서는 해당 원본의 독립 Print로 확인한다.
+//! 같은 원본은 제목을 세 표 아래에 두므로 제목이 무조건 선행한다고 가정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -179,11 +180,11 @@ fn the_head_table_does_not_reach_into_the_title() {
     );
 }
 
-/// 반례 — 보이는 host 제목이 있으면 표는 제목 **아래**로 간다(`#1549` 계약).
-///
-/// 이 완화가 넓어지면 제목과 표가 같은 자리에서 시작해 겹친다.
+/// 반례 — 가시 host를 단의 빈 앵커처럼 강제로 되감지 않는다.
+/// 정확한 #1549 합성 원본의 Print는 세 표·제목·본문 순서다.
+/// 전쪽 시각 근거와 잘못된 원문 검사는 issue_1549/stored_title_contract에 보존했다.
 #[test]
-fn visible_host_title_still_pushes_its_float_table_down() {
+fn visible_coanchored_host_keeps_the_print_order_after_its_tables() {
     let root = page0("samples/issue1549_multipositive_float_tables.hwpx");
     let mut title = None;
     title_top_of(&root, "MULTI POSITIVE TITLE", &mut title);
@@ -191,9 +192,19 @@ fn visible_host_title_still_pushes_its_float_table_down() {
     let mut table = None;
     head_table(&root, &mut table);
     let (top, _) = table.expect("자리차지 표를 못 찾았습니다");
+    let tables: Vec<_> = body_column(&root)
+        .children
+        .iter()
+        .filter(|node| matches!(node.node_type, RenderNodeType::Table(_)))
+        .collect();
+    assert_eq!(tables.len(), 3, "첫 단의 원본 공동 앵커 표 세 개");
+    let bottom = tables
+        .iter()
+        .map(|node| node.bbox.y + node.bbox.height)
+        .fold(f64::NEG_INFINITY, f64::max);
     assert!(
-        top > title,
-        "보이는 host 제목이 있으면 표가 그 아래여야 합니다 — 제목 {title:.1} · 표 {top:.1}"
+        top < title && bottom <= title + 0.5,
+        "독립 Print의 가시 host는 세 표 뒤: 표 {top:.1}~{bottom:.1}, 제목 {title:.1}"
     );
 }
 

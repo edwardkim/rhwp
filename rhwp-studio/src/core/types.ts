@@ -202,6 +202,8 @@ export interface CursorRect {
   x: number;
   y: number;
   height: number;
+  /** Clockwise angle of the composed TextBox caret about its top endpoint. */
+  rotation?: number;
   /** 표 셀 내부 커서일 때만 제공되는 가시 셀 bbox */
   cellBounds?: { x: number; y: number; w: number; h: number };
   /** 원래 TextRun 좌표가 셀 bbox를 벗어나 보정됐는지 여부 */
@@ -450,6 +452,8 @@ export interface BorderLineInfo {
 
 /** WASM getCellProperties() 반환 타입 — HWPUNIT 원본값 */
 export interface CellProperties {
+  /** Explicit source-paint replacement intent: left, right, top, bottom. */
+  borderPaintSides?: boolean[];
   width: number;
   height: number;
   paddingLeft: number;
@@ -1033,6 +1037,7 @@ export interface LayerTextV2Envelope {
 export type LayerNodeV2 =
   | (Omit<LayerGroupNode, 'children'> & { children: LayerNodeV2[] })
   | (Omit<LayerClipNode, 'child'> & { child: LayerNodeV2 })
+  | (Omit<LayerPathClipNode, 'child'> & { child: LayerNodeV2 })
   | (Omit<LayerLeafNode, 'ops'> & { ops: Array<LayerPaintOp | LayerTextV2Envelope> });
 export type PageLayerTreeV2 = Omit<PageLayerTree, 'root'> & { root: LayerNodeV2 };
 
@@ -1091,7 +1096,7 @@ export interface LayerInfo {
   masterPage?: boolean;
 }
 
-export type LayerNode = LayerGroupNode | LayerClipNode | LayerLeafNode;
+export type LayerNode = LayerGroupNode | LayerClipNode | LayerPathClipNode | LayerLeafNode;
 
 export interface LayerGroupNode {
   kind: 'group';
@@ -1111,6 +1116,12 @@ export interface LayerClipNode {
   layer?: LayerInfo;
   clip: LayerBounds;
   clipKind: 'body' | 'tableCell' | 'textBox' | 'generic';
+  child: LayerNode;
+}
+
+export interface LayerPathClipNode {
+  kind: 'clipPath'; bounds: LayerBounds; visualBounds?: LayerBounds; layer?: LayerInfo;
+  paths: { commands: ({Move:[number,number]} | {Line:[number,number]} | {Cubic:[number,number,number,number,number,number]} | 'Close')[]; even_odd: boolean }[];
   child: LayerNode;
 }
 
@@ -1282,6 +1293,8 @@ export interface LayerLineStyle {
   color?: string;
   width?: number;
   dash?: LayerStrokeDash;
+  /** Physical on/off lengths supplied by the shared border layout. */
+  dashPattern?: number[];
   lineType?: string;
   startArrow?: string;
   endArrow?: string;

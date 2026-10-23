@@ -61,6 +61,12 @@ async function main() {
   const catalogue = JSON.parse(readFileSync(option('--fonts'), 'utf8'));
   if (!['2022', '2024'].includes(settings.compat) || !(settings.scale > 0)
       || !Number.isInteger(settings.workers) || settings.workers < 1) throw Error('PNG 출력 조건이 올바르지 않습니다.');
+  // 문서 초기 파싱·조판도 CDP evaluate에 포함된다. 복잡한 실물 HWPX는
+  // 180초를 넘으므로 유한한 10분을 기본으로 두고 실행 조건에도 보존한다.
+  const protocolTimeout = settings.protocolTimeoutMs ?? 600000;
+  if (!Number.isSafeInteger(protocolTimeout) || protocolTimeout < 1 || protocolTimeout > 2147483647) {
+    throw Error('브라우저 통신 제한 시간은 유효한 양의 밀리초여야 합니다.');
+  }
   const wanted = settings.pages;
   if (wanted !== null && (!Array.isArray(wanted) || !wanted.length || wanted.some(p => !Number.isInteger(p) || p < 1)
       || new Set(wanted).size !== wanted.length)) throw Error('선택 쪽이 올바르지 않습니다.');
@@ -94,12 +100,12 @@ async function main() {
       try {
         browser = await require('puppeteer-core').launch({
           executablePath: findChrome(process.env.VISUAL_SWEEP_CHROME), headless: true,
-          protocolTimeout: 180000, userDataDir,
+          protocolTimeout, userDataDir,
         });
         browsers.add(browser);
         const page = await browser.newPage();
         await page.goto(`http://127.0.0.1:${server.address().port}`);
-        const info = await page.evaluate(async ({compat, environmentJson}) => {
+        const info = await page.evaluate(async ({compat, environmentJson, fonts}) => {
           const module = await import('/rhwp.js');
           await module.default({module_or_path: '/rhwp_bg.wasm'});
           const doc = new module.HwpDocument(new Uint8Array(await (await fetch('/source')).arrayBuffer()));
@@ -131,8 +137,14 @@ async function main() {
               return imageDescriptor.set.call(this, value);
             },
           });
-          return {pageCount: doc.pageCount(), version: module.version()};
-        }, {compat: settings.compat, environmentJson});
+          const {prepareNativePuaFonts} = await import('/font-registration.mjs');
+          const nativePuaFonts = await prepareNativePuaFonts(doc, fonts, async record => {
+            const response = await fetch(record.url);
+            if (!response.ok) throw Error('PUA 공급 글꼴을 읽을 수 없습니다.');
+            return response.arrayBuffer();
+          });
+          return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts};
+        }, {compat: settings.compat, environmentJson, fonts});
         if (!Number.isInteger(info.pageCount) || info.pageCount < 1) throw Error('WASM 전체 쪽수가 올바르지 않습니다.');
         if (pageCount !== undefined && pageCount !== info.pageCount) throw Error('WASM 작업자 간 전체 쪽수가 다릅니다.');
         pageCount = info.pageCount;
@@ -255,7 +267,7 @@ async function main() {
           pageRecords.push({page: number, pngSha256: sha(bytes), width: result.width, height: result.height});
           console.log(`Canvas PNG p${suffix}: worker ${index + 1}`);
         }
-        workers.push({index, pages, fonts: fontInfo, browser: await browser.version()});
+        workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts, browser: await browser.version()});
         await page.evaluate(() => { globalThis.sweepDocument.free(); delete globalThis.sweepDocument; });
       } finally {
         if (browser) {
@@ -269,7 +281,7 @@ async function main() {
     const expected = wanted || Array.from({length: pageCount}, (_, i) => i + 1);
     if (pageRecords.length !== expected.length || new Set(pageRecords.map(p => p.page)).size !== expected.length) throw Error('WASM PNG 쪽 누락·중복');
     writeFileSync(join(output, 'wasm-export-complete.json'), JSON.stringify({
-      pageCount, layoutGeneration: settings.compat, comparisonProfile: 'print', rasterBackend: 'wasm-canvas2d',
+      pageCount, layoutGeneration: settings.compat, comparisonProfile: 'print', rasterBackend: 'wasm-canvas2d', protocolTimeoutMs: protocolTimeout,
       pages: pageRecords.sort((a,b) => a.page-b.page), workers,
     }, null, 2));
   } finally {

@@ -782,6 +782,10 @@ export function updatePictureResizeDrag(this: any, e: MouseEvent): void {
   if (!this.pictureResizeState || !this.pictureObjectRenderer) return;
   const zoom = this.viewportManager.getZoom();
   const state = this.pictureResizeState;
+  // Tiny TextBox handles overlap their text. A click without pointer movement
+  // must not round the stored frame through the rendered selection bbox.
+  if (!state.pointerMoved && e.clientX === state.startClientX && e.clientY === state.startClientY) return;
+  state.pointerMoved = true;
   if (isObjectSizeProtected.call(this, state.ref)) {
     this.cleanupPictureResizeDrag();
     this.renderPictureObjectSelection();
@@ -879,6 +883,11 @@ export function updatePictureResizeDrag(this: any, e: MouseEvent): void {
 export function finishPictureResizeDrag(this: any, e: MouseEvent): void {
   const state = this.pictureResizeState;
   if (!state) { this.cleanupPictureResizeDrag(); return; }
+  if (!state.pointerMoved && e.clientX === state.startClientX && e.clientY === state.startClientY) {
+    this.cleanupPictureResizeDrag();
+    this.renderPictureObjectSelection();
+    return;
+  }
   if (isObjectSizeProtected.call(this, state.ref) ||
       state.multiRefs?.some((r: PictureObjectRef) => isObjectSizeProtected.call(this, r))) {
     this.cleanupPictureResizeDrag();

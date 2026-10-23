@@ -470,6 +470,7 @@ export class InputHandler {
     origHeight: number;
     origHorzOffset?: number;
     origVertOffset?: number;
+    pointerMoved?: boolean;
     startClientX: number;
     startClientY: number;
     pageIndex: number;
@@ -3825,7 +3826,7 @@ export class InputHandler {
           for (const child of node.children) visit(child);
           return;
         }
-        if (node.kind === 'clipRect') {
+        if ((node.kind === 'clipRect' || node.kind === 'clipPath')) {
           visit(node.child);
           return;
         }

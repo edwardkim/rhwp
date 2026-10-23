@@ -2,6 +2,7 @@
 
 mod affine_line;
 mod compound_rectangle;
+mod source_line_frame;
 
 use super::super::composer::{
     compose_paragraph, reflow_line_segs, ComposedParagraph, ParagraphBox,
@@ -1438,7 +1439,8 @@ impl LayoutEngine {
     ) -> (f64, f64) {
         let sa = &line.drawing.shape_attr;
         let uses_signed_affine = !matrix_positioned
-            && (sa.render_sx < 0.0
+            && (source_line_frame::owns_axis_rotation(line)
+                || sa.render_sx < 0.0
                 || sa.render_sy < 0.0
                 || sa.render_b.abs() > 1e-6
                 || sa.render_c.abs() > 1e-6
@@ -1544,7 +1546,14 @@ impl LayoutEngine {
         let transform = if matrix_positioned {
             ShapeTransform::default()
         } else {
-            extract_shape_transform(shape.shape_attr())
+            let mut transform = extract_shape_transform(shape.shape_attr());
+            if matches!(shape, ShapeObject::Line(line) if source_line_frame::owns_axis_rotation(line))
+            {
+                // 점 좌표와 같은 원본 프레임을 소비한다. 이미 세로/가로인
+                // 선을 별도 회전으로 다른 축에 다시 놓지 않는다.
+                transform.rotation = 0.0;
+            }
+            transform
         };
 
         // [Task #1138] 표 셀 내 도형 식별을 위한 cell 정보 추출 (helper)
@@ -2221,6 +2230,7 @@ impl LayoutEngine {
                 let mut group_node = RenderNode::new(
                     group_id,
                     RenderNodeType::Group(GroupNode {
+                        paint_transform: None,
                         section_index: Some(section_index),
                         para_index: Some(para_index),
                         control_index: Some(control_index),
@@ -3053,6 +3063,16 @@ impl LayoutEngine {
                 inner_area.height,
             ),
         );
+
+        if let Some(paths) = &text_box.paint_clip {
+            let scale = self.dpi / 7200.0;
+            textbox_node.paint_clip = Some(
+                paths
+                    .iter()
+                    .map(|p| p.map(|x, y| (base_x + x * scale, base_y + y * scale)))
+                    .collect(),
+            );
+        }
 
         // [Task #874 #3 / #930] shortcut.hwp 1 페이지 우측하단 자동번호 "1" 시각 정합:
         // 도형이 원본 (sa.original_*) 대비 확대된 마스터 페이지 글상자는 한컴이 내부
@@ -4540,6 +4560,13 @@ impl LayoutEngine {
                 // 이 개체들은 앵커 문단의 y_offset에 따라 배치되므로
                 // 미리 공간을 예약하면 y_offset이 이중으로 밀려남
                 if matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para) {
+                    continue;
+                }
+
+                // [#7696] 쪽·종이 기준 자리차지 그림·도형은 앵커 문단에서 점프하는 예약이 아니라
+                // 세로 밴드로 계상한다 — 밴드 안에서 시작하는 문단만 밴드 아래로 간다
+                // (`ObjectPlacementFrame::page_anchored_topbottom_band`, 조판과 같은 계산).
+                if matches!(ctrl, Control::Picture(_) | Control::Shape(_)) {
                     continue;
                 }
 

@@ -196,7 +196,9 @@ pub(super) fn inline_resource_estimate(node: &LayerNode, scale: f32) -> usize {
     while let Some(node) = pending.pop() {
         match &node.kind {
             LayerNodeKind::Group { children, .. } => pending.extend(children),
-            LayerNodeKind::ClipRect { child, .. } => pending.push(child),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                pending.push(child)
+            }
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
                     let payload = match op {

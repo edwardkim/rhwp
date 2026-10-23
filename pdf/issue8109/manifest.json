@@ -1,0 +1,71 @@
+{
+  "fontSource": "fonts-urw-base35 / NimbusSans-Regular.otf",
+  "fontSourceSha256": "7c25be4d78155523080ab85b10277150657ff7dabbcad7037bdd536c9b6d0d08",
+  "purpose": "manual PDF contract controls; original bytes are independent visual references",
+  "cases": [
+    {
+      "name": "absent",
+      "path": "absent.pdf",
+      "sha256": "eee8d96b2c370c0afd0f7f98cf6095e26a2b2b5c047b2d5150b276707b58bef2",
+      "expectArialSubstitute": true
+    },
+    {
+      "name": "inline-absent",
+      "path": "inline-absent.pdf",
+      "sha256": "ba2e0cbbe1427d9aeeebf521cead94cf63a8aa0270e931f6c2a7992131292d0f",
+      "expectArialSubstitute": true
+    },
+    {
+      "name": "indirect-absent",
+      "path": "indirect-absent.pdf",
+      "sha256": "674b0752ffa279e06d80d7ba3388516c8fb83010f553312de59ec66644197164",
+      "expectArialSubstitute": true
+    },
+    {
+      "name": "embedded",
+      "path": "embedded.pdf",
+      "sha256": "2ae3fed0473885c29349979dc188f034ed035ebcc0aec6ec8dab2c7090c796f0",
+      "expectArialSubstitute": false
+    },
+    {
+      "name": "unreadable-program",
+      "path": "unreadable-program.pdf",
+      "sha256": "5ff4090cc03d703bf9b270e61fe38f297b0bc0388af61fce5d58040f289bb871",
+      "expectArialSubstitute": false
+    },
+    {
+      "name": "unresolved-descriptor",
+      "path": "unresolved-descriptor.pdf",
+      "sha256": "36d8eb1b5280e78f732a90dd8c4eff9faf52c85d97f13cdf7e55637409ec1b80",
+      "expectArialSubstitute": false
+    },
+    {
+      "name": "invalid-descriptor",
+      "path": "invalid-descriptor.pdf",
+      "sha256": "e38189fae88a4682dee9a2eed3c8e54ec739ef31b7ce684f08b2089a719c7fe0",
+      "expectArialSubstitute": false
+    },
+    {
+      "name": "arial",
+      "path": "arial.pdf",
+      "sha256": "441805ab15690ea4e520c7777f7fddf4cfdd1cd4e742ad67f9c75cc2f60812df",
+      "expectArialSubstitute": false
+    },
+    {
+      "name": "non-type1",
+      "path": "non-type1.pdf",
+      "sha256": "6c4e0e217afec06edf1d556119cd3bc6c4f90ff733f6e4e2457eb01b80f2623d",
+      "expectArialSubstitute": false
+    },
+    {
+      "name": "styles",
+      "path": "styles.pdf",
+      "sha256": "d8288d53da066cc932cf206b43e39950e2abcab303d6cf86e3f37f92415af144"
+    },
+    {
+      "name": "form-scopes",
+      "path": "form-scopes.pdf",
+      "sha256": "442d5337553f8972564f2843d1cd9b6b9d1636264be4254d442bb8064aa549d3"
+    }
+  ]
+}

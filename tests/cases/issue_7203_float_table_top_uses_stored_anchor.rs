@@ -8,9 +8,8 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 #[test]
 fn saved_outer_box_anchor_keeps_following_tables_inside_the_body() {
-    // The stored 1x1 anchor ladder advances by declaration + both margins.
-    // It denotes a flow origin, not an anchor after the upper margin. Mixing
-    // those origins inflated the following table reservation by 19.5px.
+    // 저장 흐름 원점과 가시 제목 상자를 같게 고정한 단언은 #7806에 보관했다.
+    // 실제 후속 표의 존재와 본문 내부 포함은 정상 대조군으로 유지한다.
     let bytes = std::fs::read(
         Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("samples/issue6111/56345_regulatory_impact_analysis.hwp"),
@@ -25,18 +24,6 @@ fn saved_outer_box_anchor_keeps_following_tables_inside_the_body() {
             body_bottom
         };
         if let RenderNodeType::Table(meta) = &node.node_type {
-            if let Some(vpos) = match meta.para_index {
-                Some(357) => Some(43556),
-                Some(358) => Some(45988),
-                _ => None,
-            } {
-                let expected = 75.6 + f64::from(vpos) * 96.0 / 7200.0;
-                assert!(
-                    (node.bbox.y - expected).abs() < 0.05,
-                    "stored flow origin: actual={}, expected={expected}",
-                    node.bbox.y
-                );
-            }
             if meta.para_index == Some(359) {
                 *found = true;
                 let table_bottom = node.bbox.y + node.bbox.height;

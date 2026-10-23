@@ -228,7 +228,8 @@ pub fn kind_set(tree: &PageLayerTree) -> BTreeMap<&'static str, usize> {
                     walk(child, out);
                 }
             }
-            crate::paint::LayerNodeKind::ClipRect { child, .. } => walk(child, out),
+            crate::paint::LayerNodeKind::ClipRect { child, .. }
+            | crate::paint::LayerNodeKind::ClipPath { child, .. } => walk(child, out),
             crate::paint::LayerNodeKind::Leaf { ops } => {
                 for op in ops {
                     *out.entry(paint_op_kind(op)).or_insert(0) += 1;

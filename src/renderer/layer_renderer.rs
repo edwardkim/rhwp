@@ -591,7 +591,7 @@ fn collect_text_variant_groups(
                 collect_text_variant_groups(child, groups, next_order);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => {
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
             collect_text_variant_groups(child, groups, next_order);
         }
         LayerNodeKind::Leaf { ops } => {

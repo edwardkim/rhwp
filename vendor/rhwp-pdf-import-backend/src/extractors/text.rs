@@ -18,6 +18,14 @@ use crate::fonts::unicode_decode::{fallback_char_to_unicode, DecodePolicy, TextC
 use crate::fonts::FontInfo;
 use crate::geometry::Rect;
 
+#[derive(Debug)]
+pub(crate) struct SpanPaintOrder {
+    pub(crate) order: Vec<usize>,
+    pub(crate) group: usize,
+    pub(crate) basis: [f32; 4],
+    pub(crate) font: Option<std::sync::Arc<FontInfo>>,
+}
+
 /// Decode a show string the way extraction reads it.
 ///
 /// Extraction keeps an unmapped code when the caller asked for it, leaves
@@ -1911,12 +1919,17 @@ struct TjBuffer {
     /// Avoids two transform_point calls per flush.
     user_pos_x: f32,
     user_pos_y: f32,
+    /// Exact paint origin including Ts transformed through text matrix and CTM.
+    /// Reading-order extraction retains its legacy origin separately.
+    paint_pos_x: f32,
+    paint_pos_y: f32,
     /// Pre-computed horizontal scale factor (CTM × text_matrix).
     /// Used to convert accumulated_width from text space to user space for bbox.
     user_h_scale: f32,
     /// Display rotation of this run in degrees, snapped to a quadrant when near
     /// one; `0.0` for ordinary horizontal text (see `snap_run_rotation`).
     rotation_degrees: f32,
+    paint_basis: [f32; 4],
     /// Negative determinant of the composed matrix — mirrored text (see
     /// `run_is_mirrored`), carried onto the emitted span so `page_bbox`
     /// reflects rather than rotates its across-axis.
@@ -2037,6 +2050,10 @@ impl TjBuffer {
         // Pre-compute user-space position: text_matrix origin → CTM transform
         let text_pos = state.text_matrix.transform_point(0.0, 0.0);
         let user_pos = state.ctm.transform_point(text_pos.x, text_pos.y);
+        let paint_text_pos = state.text_matrix.transform_point(0.0, state.text_rise);
+        let paint_pos = state
+            .ctm
+            .transform_point(paint_text_pos.x, paint_text_pos.y);
         Self {
             source_order,
             unicode: String::new(),
@@ -2056,8 +2073,11 @@ impl TjBuffer {
             char_widths: Vec::new(),
             user_pos_x: user_pos.x,
             user_pos_y: user_pos.y,
+            paint_pos_x: paint_pos.x,
+            paint_pos_y: paint_pos.y,
             user_h_scale,
             rotation_degrees,
+            paint_basis: [combined.a, combined.b, combined.c, combined.d],
             mirrored: run_is_mirrored(&combined),
             wmode: state.text_wmode,
             text_rise: if state.font_size > 0.0 {
@@ -2280,7 +2300,7 @@ pub struct TextExtractor<'doc> {
     paint_source_order: Vec<usize>,
     /// Adjacent text paints may share word assembly until a non-text mark or Form boundary.
     paint_group: usize,
-    span_paint_orders: HashMap<usize, (Vec<usize>, usize)>,
+    span_paint_orders: HashMap<usize, SpanPaintOrder>,
     /// Current marked content ID (for Tagged PDFs)
     ///
     /// Tracks the MCID of the currently active marked content sequence.
@@ -3516,7 +3536,11 @@ impl<'doc> TextExtractor<'doc> {
         // glyphs into a separate Y-band above the body, producing
         // output like `"1,2 ★ 3,4 5 / Chibueze, …"` instead of
         // `"Chibueze,1,2★ Caleb,3,4† …"`.
-        self.snap_superscript_baselines();
+        // Reading-order normalization must not destroy source paint geometry.
+        // Positional import groups lines separately and retains each run's origin.
+        if !self.visible_paint_only {
+            self.snap_superscript_baselines();
+        }
 
         self.sort_spans_by_reading_order();
 
@@ -3526,7 +3550,9 @@ impl<'doc> TextExtractor<'doc> {
         }
 
         // Merge adjacent spans on the same line to reconstruct complete words
-        self.merge_adjacent_spans();
+        if !self.visible_paint_only {
+            self.merge_adjacent_spans();
+        }
 
         // Resolve each span's font resource alias (e.g. "F1") to the resolved
         // /BaseFont name (e.g. "Helvetica", "CIDFont+F1") so extract_spans /
@@ -3539,6 +3565,11 @@ impl<'doc> TextExtractor<'doc> {
             .spans
             .iter()
             .map(|s| {
+                if self.visible_paint_only {
+                    // Import spans captured the face in its live resource scope;
+                    // the caller may reuse F1 for a different face after Do.
+                    return None;
+                }
                 self.fonts
                     .get(&s.font_name)
                     .map(|f| f.base_font.clone())
@@ -3629,6 +3660,13 @@ impl<'doc> TextExtractor<'doc> {
                         | Operator::CloseFillStrokeEvenOdd
                         | Operator::Do { .. }
                         | Operator::InlineImage { .. }
+                        // Runs on opposite sides of a graphics-state/clip boundary
+                        // must keep their own source order and active clip witness.
+                        | Operator::SaveState
+                        | Operator::RestoreState
+                        | Operator::ClipNonZero
+                        | Operator::ClipEvenOdd
+                        | Operator::EndPath
                 ) {
                     this.flush_tj_span_buffer()?;
                     this.advance_paint_group()?;
@@ -3687,7 +3725,22 @@ impl<'doc> TextExtractor<'doc> {
         Ok(self.paint_source_order.clone())
     }
 
-    fn record_span_paint_order(&mut self, sequence: usize, order: Vec<usize>) -> Result<()> {
+    fn emitted_font_name(&self, resource: Option<&str>, font: Option<&FontInfo>) -> String {
+        if self.visible_paint_only {
+            if let Some(font) = font.filter(|f| !f.base_font.is_empty()) {
+                return font.base_font.clone();
+            }
+        }
+        resource.unwrap_or("Unknown").to_string()
+    }
+
+    fn record_span_paint_order(
+        &mut self,
+        sequence: usize,
+        order: Vec<usize>,
+        basis: [f32; 4],
+        font: Option<Arc<FontInfo>>,
+    ) -> Result<()> {
         if self.visible_paint_only {
             if let Some(budget) = self.document.and_then(|doc| doc.import_budget()) {
                 budget.charge_entries(1)?;
@@ -3695,8 +3748,15 @@ impl<'doc> TextExtractor<'doc> {
                     .try_reserve(1)
                     .map_err(|_| budget.reject("text paint order allocation"))?;
             }
-            self.span_paint_orders
-                .insert(sequence, (order, self.paint_group));
+            self.span_paint_orders.insert(
+                sequence,
+                SpanPaintOrder {
+                    order,
+                    group: self.paint_group,
+                    basis,
+                    font,
+                },
+            );
         }
         Ok(())
     }
@@ -3709,8 +3769,21 @@ impl<'doc> TextExtractor<'doc> {
         Ok(())
     }
 
-    pub(crate) fn take_span_paint_orders(&mut self) -> HashMap<usize, (Vec<usize>, usize)> {
+    pub(crate) fn take_span_paint_orders(&mut self) -> HashMap<usize, SpanPaintOrder> {
         std::mem::take(&mut self.span_paint_orders)
+    }
+
+    fn same_painted_font_resource(&self, first: usize, second: usize) -> bool {
+        let font = |sequence| {
+            self.span_paint_orders
+                .get(&sequence)
+                .and_then(|order| order.font.as_ref())
+        };
+        match (font(first), font(second)) {
+            (Some(first), Some(second)) => Arc::ptr_eq(first, second),
+            (None, None) => true,
+            _ => false,
+        }
     }
 
     fn reserve_import_span(&mut self) -> Result<()> {
@@ -4628,11 +4701,12 @@ impl<'doc> TextExtractor<'doc> {
                     || self
                         .span_paint_orders
                         .get(&current.sequence)
-                        .map(|(_, group)| group)
+                        .map(|order| order.group)
                         != self
                             .span_paint_orders
                             .get(&span.sequence)
-                            .map(|(_, group)| group))
+                            .map(|order| order.group)
+                    || !self.same_painted_font_resource(current.sequence, span.sequence))
             {
                 merged.push(current);
                 current_span = Some(span);
@@ -5548,6 +5622,9 @@ impl<'doc> TextExtractor<'doc> {
                                 && b == buffer.start_matrix.b
                                 && c == buffer.start_matrix.c
                                 && d == buffer.start_matrix.d
+                                // Reading-order jitter tolerance is not a paint
+                                // origin: retain a changed glyph baseline.
+                                && (!self.visible_paint_only || f == buffer.start_matrix.f)
                                 // The raw-matrix band and forward test are kept
                                 // ANDed with the frame-correct rule rather than
                                 // replaced by it. Substituting reads better and
@@ -5972,6 +6049,9 @@ impl<'doc> TextExtractor<'doc> {
                 self.state_stack.current_mut().leading = leading;
             },
             Operator::Ts { rise } => {
+                if self.visible_paint_only {
+                    self.flush_tj_span_buffer()?;
+                }
                 self.state_stack.current_mut().text_rise = rise;
             },
             Operator::Tr { render } => {
@@ -7459,10 +7539,8 @@ impl<'doc> TextExtractor<'doc> {
         let is_italic_span = buffer.is_italic;
 
         // Move owned strings out of buffer (avoids clone)
-        let font_name_span = buffer
-            .font_name
-            .take()
-            .unwrap_or_else(|| "Unknown".to_string());
+        let font_name_span =
+            self.emitted_font_name(buffer.font_name.as_deref(), buffer.cached_font.as_deref());
 
         // RTL text correction (#826): use the confidence-gated geometric
         // detector (#537) when `char_widths` gives us per-character user-space
@@ -7508,8 +7586,16 @@ impl<'doc> TextExtractor<'doc> {
             provenance: None,
             text,
             bbox: Rect {
-                x: buffer.user_pos_x,
-                y: buffer.user_pos_y,
+                x: if self.visible_paint_only {
+                    buffer.paint_pos_x
+                } else {
+                    buffer.user_pos_x
+                },
+                y: if self.visible_paint_only {
+                    buffer.paint_pos_y
+                } else {
+                    buffer.user_pos_y
+                },
                 width: total_width,
                 height: effective_font_size,
             },
@@ -7553,7 +7639,12 @@ impl<'doc> TextExtractor<'doc> {
         self.span_sequence_counter += 1;
 
         if !self.is_content_suppressed() {
-            self.record_span_paint_order(span.sequence, std::mem::take(&mut buffer.source_order))?;
+            self.record_span_paint_order(
+                span.sequence,
+                std::mem::take(&mut buffer.source_order),
+                buffer.paint_basis,
+                buffer.cached_font.clone(),
+            )?;
             self.reserve_import_span()?;
             self.spans.push(span);
         }
@@ -7925,7 +8016,14 @@ impl<'doc> TextExtractor<'doc> {
         // Per PDF Spec ISO 32000-1:2008 Section 9.4.4
         let text_matrix = state.text_matrix;
         let ctm = state.ctm;
-        let text_pos = text_matrix.transform_point(text_min_x, 0.0);
+        let text_pos = text_matrix.transform_point(
+            text_min_x,
+            if self.visible_paint_only {
+                state.text_rise
+            } else {
+                0.0
+            },
+        );
         let user_pos = ctm.transform_point(text_pos.x, text_pos.y);
 
         // Transform the width as well (accounting for matrix scaling)
@@ -8051,10 +8149,14 @@ impl<'doc> TextExtractor<'doc> {
             provenance: None,
             text: unicode_text,
             bbox,
-            font_name: state
-                .font_name
-                .clone()
-                .unwrap_or_else(|| "Unknown".to_string()),
+            font_name: self.emitted_font_name(
+                state.font_name.as_deref(),
+                state
+                    .font_name
+                    .as_ref()
+                    .and_then(|n| self.fonts.get(n))
+                    .map(AsRef::as_ref),
+            ),
             font_size: cluster[0].font_size,
             font_weight,
             color: Color::new(
@@ -8092,7 +8194,17 @@ impl<'doc> TextExtractor<'doc> {
         // Step 6: Increment sequence counter and add to spans
         self.span_sequence_counter += 1;
         if !self.is_content_suppressed() {
-            self.record_span_paint_order(span.sequence, self.paint_order_snapshot()?)?;
+            let matrix = state.ctm.multiply(&state.text_matrix);
+            self.record_span_paint_order(
+                span.sequence,
+                self.paint_order_snapshot()?,
+                [matrix.a, matrix.b, matrix.c, matrix.d],
+                state
+                    .font_name
+                    .as_ref()
+                    .and_then(|name| self.fonts.get(name))
+                    .cloned(),
+            )?;
             self.reserve_import_span()?;
             self.spans.push(span);
         }
@@ -8775,7 +8887,14 @@ impl<'doc> TextExtractor<'doc> {
 
         // Apply CTM to get position in user space
         // Per PDF Spec ISO 32000-1:2008 Section 9.4.4
-        let text_pos = text_matrix.transform_point(0.0, 0.0);
+        let text_pos = text_matrix.transform_point(
+            0.0,
+            if self.visible_paint_only {
+                state.text_rise
+            } else {
+                0.0
+            },
+        );
         let user_pos = ctm.transform_point(text_pos.x, text_pos.y);
 
         log::trace!(
@@ -8784,10 +8903,14 @@ impl<'doc> TextExtractor<'doc> {
             user_pos.y
         );
 
-        let font_name_space = state
-            .font_name
-            .clone()
-            .unwrap_or_else(|| "Unknown".to_string());
+        let font_name_space = self.emitted_font_name(
+            state.font_name.as_deref(),
+            state
+                .font_name
+                .as_ref()
+                .and_then(|n| self.fonts.get(n))
+                .map(AsRef::as_ref),
+        );
         let is_italic_space = state
             .font_name
             .as_ref()
@@ -8857,7 +8980,17 @@ impl<'doc> TextExtractor<'doc> {
         log::trace!("PUSH space span with offset_semantic={}", span.offset_semantic);
 
         if !self.is_content_suppressed() {
-            self.record_span_paint_order(span.sequence, self.paint_order_snapshot()?)?;
+            let matrix = state.ctm.multiply(&state.text_matrix);
+            self.record_span_paint_order(
+                span.sequence,
+                self.paint_order_snapshot()?,
+                [matrix.a, matrix.b, matrix.c, matrix.d],
+                state
+                    .font_name
+                    .as_ref()
+                    .and_then(|name| self.fonts.get(name))
+                    .cloned(),
+            )?;
             self.reserve_import_span()?;
             self.spans.push(span);
         }
@@ -9019,10 +9152,8 @@ impl<'doc> TextExtractor<'doc> {
                 let is_italic_buf = buffer.is_italic;
 
                 // Move owned strings out of buffer (avoids clone)
-                let font_name_buf = buffer
-                    .font_name
-                    .take()
-                    .unwrap_or_else(|| "Unknown".to_string());
+                let font_name_buf = self
+                    .emitted_font_name(buffer.font_name.as_deref(), buffer.cached_font.as_deref());
 
                 // #537/#826: RTL visual-order detection for the Tj-span
                 // path, via the shared `apply_rtl_verdict` decision point
@@ -9069,8 +9200,16 @@ impl<'doc> TextExtractor<'doc> {
                     provenance: None,
                     text,
                     bbox: Rect {
-                        x: buffer.user_pos_x,
-                        y: buffer.user_pos_y,
+                        x: if self.visible_paint_only {
+                            buffer.paint_pos_x
+                        } else {
+                            buffer.user_pos_x
+                        },
+                        y: if self.visible_paint_only {
+                            buffer.paint_pos_y
+                        } else {
+                            buffer.user_pos_y
+                        },
                         width: total_width,
                         height: effective_font_size,
                     },
@@ -9127,6 +9266,8 @@ impl<'doc> TextExtractor<'doc> {
                     self.record_span_paint_order(
                         span.sequence,
                         std::mem::take(&mut buffer.source_order),
+                        buffer.paint_basis,
+                        buffer.cached_font.clone(),
                     )?;
                     self.reserve_import_span()?;
                     self.spans.push(span);
@@ -9177,7 +9318,14 @@ impl<'doc> TextExtractor<'doc> {
             };
 
             // Calculate character position in user space
-            let text_pos = text_matrix.transform_point(0.0, 0.0);
+            let text_pos = text_matrix.transform_point(
+                0.0,
+                if self.visible_paint_only {
+                    state.text_rise
+                } else {
+                    0.0
+                },
+            );
             let pos = ctm.transform_point(text_pos.x, text_pos.y);
 
             // Calculate effective font size
@@ -9658,6 +9806,7 @@ mod tests {
             ascent: 0.95,
             descent: -0.35,
             embedded_font_data: None,
+            embedded_program_present: None,
             truetype_cmap: std::sync::OnceLock::new(),
             import_budget: None,
             embedded_glyph_names: std::sync::OnceLock::new(),

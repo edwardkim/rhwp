@@ -142,6 +142,7 @@ pub enum FillRule {
 pub struct PathExtractor {
     /// Accumulated complete paths
     paths: Vec<PathContent>,
+    clip_observations: Option<crate::elements::PathClipObservations>,
     pub(crate) paint: crate::elements::PathPaint,
     /// Current path being constructed
     current_operations: Vec<PathOperation>,
@@ -189,6 +190,7 @@ impl PathExtractor {
     pub fn new() -> Self {
         Self {
             paths: Vec::new(),
+            clip_observations: None,
             paint: Default::default(),
             current_operations: Vec::new(),
             current_point: None,
@@ -615,6 +617,7 @@ impl PathExtractor {
                 even_odd,
                 parent: self.paint.clip_path.clone(),
             }));
+            self.record_clip();
         }
         // Clear current path without creating a PathContent
         self.current_operations.clear();
@@ -693,6 +696,7 @@ impl PathExtractor {
                 even_odd,
                 parent: self.paint.clip_path.clone(),
             }));
+            self.record_clip();
         }
         self.paths.push(path);
 
@@ -744,6 +748,69 @@ impl PathExtractor {
     /// Finish extraction and return all extracted paths.
     pub fn finish(self) -> Vec<PathContent> {
         self.paths
+    }
+
+    /// Opt in without changing ordinary path extraction or inventing painted paths.
+    pub fn observe_clips(&mut self) {
+        self.clip_observations = Some(Default::default());
+    }
+
+    /// Record the live graphics-state clip, never the nearest clip in stream order.
+    pub fn record_text_clip(
+        &mut self,
+        budget: Option<&crate::import_limits::ImportBudget>,
+    ) -> crate::error::Result<()> {
+        if let Some(observations) = &mut self.clip_observations {
+            if observations.text_uses.len() == 32_768 {
+                observations.text_uses_omitted += 1;
+                return Ok(());
+            }
+            if let Some(budget) = budget {
+                budget.charge_entries(1)?;
+                budget.charge_cache_copy(
+                    self.paint.source_order.len() * std::mem::size_of::<usize>(),
+                )?;
+                observations
+                    .text_uses
+                    .try_reserve(1)
+                    .map_err(|_| budget.reject("text clip observation allocation"))?;
+            }
+            observations
+                .text_uses
+                .push((self.paint.source_order.clone(), self.paint.clip_path.clone()));
+        }
+        Ok(())
+    }
+
+    /// Whether the caller requested the clip/use observation ledger.
+    pub fn observing_clips(&self) -> bool {
+        self.clip_observations.is_some()
+    }
+
+    fn record_clip(&mut self) {
+        if let (Some(observations), Some(clip)) =
+            (&mut self.clip_observations, &self.paint.clip_path)
+        {
+            // A diagnostic ledger must not retain arbitrarily many otherwise dead clips.
+            if observations.clips.len() == 16_384 {
+                observations.omitted += 1;
+                return;
+            }
+            observations
+                .clips
+                .push(crate::elements::PathClipObservation {
+                    source_order: self.paint.source_order.clone(),
+                    transform: [
+                        self.ctm.a, self.ctm.b, self.ctm.c, self.ctm.d, self.ctm.e, self.ctm.f,
+                    ],
+                    clip: clip.clone(),
+                });
+        }
+    }
+
+    /// Return original paint and the separately requested clipping ledger.
+    pub fn finish_observed(self) -> (Vec<PathContent>, crate::elements::PathClipObservations) {
+        (self.paths, self.clip_observations.unwrap_or_default())
     }
 
     /// Get the number of paths extracted so far.

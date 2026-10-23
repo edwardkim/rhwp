@@ -297,7 +297,7 @@ fn validate_text_visual_node(
                 )?;
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => {
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
             validate_text_visual_node(child, format!("{path}/clip"), show_text_marks)?;
         }
         LayerNodeKind::Leaf { ops } => {
@@ -527,7 +527,7 @@ fn collect_text_runs<'a>(
                 collect_text_runs(child, format!("{path}/group[{index}]"), runs);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => {
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
             collect_text_runs(child, format!("{path}/clip"), runs);
         }
         LayerNodeKind::Leaf { ops } => {
@@ -551,7 +551,7 @@ fn validate_node(
                 validate_node(child, format!("{path}/group[{index}]"), group_leaf_paths)?;
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => {
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
             validate_node(child, format!("{path}/clip"), group_leaf_paths)?;
         }
         LayerNodeKind::Leaf { ops } => {
@@ -683,7 +683,7 @@ fn validate_source_node(
                 validate_source_node(child, format!("{path}/group[{index}]"), text_sources)?;
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => {
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
             validate_source_node(child, format!("{path}/clip"), text_sources)?;
         }
         LayerNodeKind::Leaf { ops } => {

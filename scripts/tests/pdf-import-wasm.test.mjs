@@ -57,6 +57,7 @@ test('Docker product WASM: public API, active document isolation and real Worker
   add('/placements.pdf', join(root, 'pdf/issue7966/image-placement-controls.pdf'), 'application/pdf');
   add('/slides.pdf', join(root, 'pdf/issue7966/exceeds-32.pdf'), 'application/pdf');
   add('/scan-buffers.pdf', join(root, 'pdf/issue7971/scan-jpeg-buffer-controls.pdf'), 'application/pdf');
+  add('/fullwidth-space-source.pdf', join(root, 'samples/issue7957/resource-limit.pdf'), 'application/pdf');
   add('/colour-source.pdf', join(root, 'samples/issue7959/bounded-import-path.pdf'), 'application/pdf');
   add('/control.hwp', join(root, 'samples/hwp_table_test.hwp'), 'application/octet-stream');
   files.set('/synthetic.pdf', ['application/pdf', syntheticPdf()]);
@@ -155,6 +156,47 @@ test('Docker product WASM: public API, active document isolation and real Worker
         check(hasWordColour('Website:', '#000000'), 'black label retains its own source text style');
         check(hasWordColour('https://ostday.kr', '#0563c1'), 'source URL colour survives contiguous text assembly');
       } finally { colourDoc.free(); }
+      // Independent source p43 and Hancom Print: a literal one-em U+3000
+      // stays in the editable cell, with one-em saved advance rather than 197%.
+      // This contract uses serialized font metrics, not host font installation.
+      const resourceBytes = new Uint8Array(await (await fetch('/fullwidth-space-source.pdf')).arrayBuffer());
+      const spaceDoc = wasm.HwpDocument.importPdf(resourceBytes, { sourcePages: [42] });
+      async function zipXml(bytes, name) {
+        const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        let end = bytes.length - 22;
+        while (end >= 0 && view.getUint32(end, true) !== 0x06054b50) end--;
+        check(end >= 0, 'saved HWPX has a ZIP directory');
+        let cursor = view.getUint32(end + 16, true);
+        for (let i = 0; i < view.getUint16(end + 10, true); i++) {
+          const n = view.getUint16(cursor + 28, true), extra = view.getUint16(cursor + 30, true), comment = view.getUint16(cursor + 32, true);
+          if (new TextDecoder().decode(bytes.subarray(cursor + 46, cursor + 46 + n)) === name) {
+            const local = view.getUint32(cursor + 42, true), size = view.getUint32(cursor + 20, true);
+            const start = local + 30 + view.getUint16(local + 26, true) + view.getUint16(local + 28, true);
+            const raw = bytes.subarray(start, start + size), method = view.getUint16(cursor + 10, true);
+            const xml = method === 0 ? raw : new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+            return new DOMParser().parseFromString(new TextDecoder().decode(xml), 'application/xml');
+          }
+          cursor += 46 + n + extra + comment;
+        }
+        throw Error('missing saved XML ' + name);
+      }
+      try {
+        for (const route of ['source', 'hwp', 'hwpx']) {
+          const doc = route === 'source' ? spaceDoc : new wasm.HwpDocument(route === 'hwp' ? spaceDoc.exportHwp() : spaceDoc.exportHwpx());
+          try {
+            const saved = doc.exportHwpx(), header = await zipXml(saved, 'Contents/header.xml'), section = await zipXml(saved, 'Contents/section0.xml');
+            const ownRuns = p => [...p.children].filter(n => n.localName === 'run');
+            const runText = r => [...r.children].filter(n => n.localName === 't').map(n => n.textContent).join('');
+            const owners = [...section.getElementsByTagNameNS('*', 'p')].filter(p => ownRuns(p).map(runText).join('') === '\u3000행정종합관찰관');
+            check(owners.length === 1, `${route}: fullwidth space and label have one editable paragraph owner`);
+            const run = ownRuns(owners[0]).find(r => runText(r).startsWith('\u3000'));
+            const shape = [...header.getElementsByTagNameNS('*', 'charPr')].find(n => n.getAttribute('id') === run.getAttribute('charPrIDRef'));
+            const ratio = Number(shape.getElementsByTagNameNS('*', 'ratio')[0].getAttribute('hangul'));
+            check(ratio >= 95 && ratio <= 105, `${route}: one-em source blank is not saved as two em (${ratio}%)`);
+            check(doc.pageCount() === 1, `${route}: selected source page count survives`);
+          } finally { if (doc !== spaceDoc) doc.free(); }
+        }
+      } finally { spaceDoc.free(); }
       const all = new wasm.HwpDocument(bytes);
       check(all.pageCount() === 3 && all.getSourceFormat() === 'pdf', 'constructor imports all PDF pages');
       all.free();
@@ -163,6 +205,16 @@ test('Docker product WASM: public API, active document isolation and real Worker
       check(selected.pageCount() === 2, 'explicit selection page count');
       check(JSON.stringify(diagnostics.pages.map(p => [p.sourcePage, p.outputSection])) === '[[0,0],[2,1]]', 'source/output section mapping');
       check(diagnostics.parserAllocationBoundsProven === false && diagnostics.paragraphPolicy && diagnostics.warnings.length, 'incomplete bounds and paragraph policy exposed');
+      check(diagnostics.pages.every(p => p.tableInference && !p.tableInference.glyphs), 'default PDF diagnostics omit source glyph ledger');
+      const observed = wasm.HwpDocument.importPdf(bytes, { sourcePages: [0], includeTableInference: true });
+      try {
+        const ledger = JSON.parse(observed.getPdfImportDiagnostics()).pages[0].tableInference;
+        check(ledger.ruleVersion === 'tsg-observations-v1' && ledger.glyphs.map(g => g.text).join('') === 'FIRST', 'opt-in table observations preserve source glyphs');
+        check(new Set(ledger.glyphs.map(g => g.id)).size === ledger.glyphs.length, 'table observation IDs are unique');
+      } finally { observed.free(); }
+      for (const flag of ['true', 1, null, []]) {
+        throwsCode(() => wasm.HwpDocument.importPdf(bytes, { includeTableInference: flag }), 'PDF_IMPORT_OPTIONS');
+      }
       const text = doc => Array.from({ length: doc.pageCount() }, (_, p) => {
         const xml = new DOMParser().parseFromString(doc.renderPageSvg(p), 'image/svg+xml');
         return [...xml.querySelectorAll('text')].map(t => t.textContent).join('');
@@ -246,9 +298,11 @@ test('Docker product WASM: public API, active document isolation and real Worker
         await rejectsCode(session.importPdf(new Uint8Array([0])), 'PDF_INVALID_INPUT');
         await rejectsCode(session.importPdf(new TextEncoder().encode('%PDF-1.4\n')), 'PDF_PARSE_FAILED');
         await rejectsCode(session.importPdf(new Uint8Array(policy.backend.inputBytes + 1)), 'PDF_RESOURCE_LIMIT');
-        const valid = await session.importPdf(real, { sourcePages: [0, 6, 7] }, { timeoutMs: 60_000 });
+        const valid = await session.importPdf(real, { sourcePages: [0, 6, 7], includeTableInference: true }, { timeoutMs: 60_000 });
         check(workers === afterFailureWorkers && valid.pageCount === 3, 'same Worker failure then normal input');
         check(valid.diagnostics.pages.map(p => p.sourcePage).join() === '0,6,7', 'Worker source selection');
+        check(valid.diagnostics.pages.every(p => Array.isArray(p.tableInference.glyphs)
+          && Array.isArray(p.tableInference.candidates)), 'Worker transports opt-in table observations and hypotheses');
         await rejectsCode(session.importPdf(real, {}, { timeoutMs: 1 }), 'PDF_IMPORT_TIMEOUT');
         check((await session.inspect()).pageCount === 3, 'timeout preserves active document');
         // Warm the candidate, then abort a real import attempt (no in-WASM phase timing claim).

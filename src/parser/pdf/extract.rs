@@ -44,11 +44,54 @@ pub(super) fn extract(
             "invalid page dimensions",
         ));
     }
-    let (spans, span_orders): (Vec<_>, Vec<_>) =
-        checked(pdf, pdf.extract_ordered_painted_spans(page), "text", page)?
-            .into_iter()
-            .unzip();
-    let paths = checked(pdf, pdf.extract_paths(page), "paths", page)?;
+    let painted = checked(
+        pdf,
+        pdf.extract_ordered_painted_spans_with_fonts(page),
+        "text",
+        page,
+    )?;
+    let mut spans = Vec::with_capacity(painted.len());
+    let mut span_orders = Vec::with_capacity(painted.len());
+    let mut span_fonts = Vec::with_capacity(painted.len());
+    for painted in painted {
+        let pdf_oxide::layout::text_block::PaintedTextSpan {
+            span,
+            order,
+            basis,
+            font,
+        } = painted;
+        super::rotated_text::validate(&span, basis).map_err(|message| {
+            PdfImportError::new("PDF_TEXT_UNSUPPORTED", message).at(
+                "text",
+                Some(page),
+                pdf.import_budget().map(AsRef::as_ref),
+            )
+        })?;
+        spans.push(span);
+        span_orders.push(order);
+        span_fonts.push(font);
+    }
+    let (paths, clips) = checked(pdf, pdf.extract_paths_with_clips(page), "paths", page)?;
+    let mut uses = std::collections::BTreeMap::new();
+    for (order, clip) in &clips.text_uses {
+        if uses.insert(order, clip).is_some() {
+            return Err(PdfImportError::new(
+                "PDF_TEXT_UNSUPPORTED",
+                "ambiguous text-paint clip witness",
+            ));
+        }
+    }
+    let span_clips = span_orders
+        .iter()
+        .map(|order| {
+            uses.get(order).map(|clip| (*clip).clone()).ok_or_else(|| {
+                PdfImportError::new(
+                    "PDF_TEXT_UNSUPPORTED",
+                    "text-paint clip witness missing or budget exceeded",
+                )
+            })
+        })
+        .collect::<Result<Vec<_>, _>>()?;
     for path in &paths {
         let next = budget
             .path_operations
@@ -109,12 +152,6 @@ pub(super) fn extract(
                 "invalid span metrics",
             ));
         }
-        if span.rotation_degrees != 0. || span.wmode != 0 || span.mirrored {
-            return Err(PdfImportError::new(
-                "PDF_TEXT_UNSUPPORTED",
-                "rotated/vertical/mirrored text is not supported",
-            ));
-        }
     }
     // Inspect declared image extents before pixel decode. Enumerating handles
     // still decompresses content upstream and is not a parser allocation bound.
@@ -137,9 +174,67 @@ pub(super) fn extract(
         );
     }
     budget.image_placements = next;
-    let mut images = Vec::with_capacity(handles.len());
-    let mut image_orders = Vec::with_capacity(handles.len());
-    for handle in handles {
+    // A stencil texture may be emitted as thousands of tiny Do invocations.
+    // Only an uninterrupted image-paint interval may become one raster picture;
+    // text and paths remain separate editable IR and keep their original order.
+    let mut barriers: Vec<_> = span_orders
+        .iter()
+        .cloned()
+        .chain(paths.iter().map(|path| path.paint.source_order.clone()))
+        .collect();
+    barriers.sort();
+    let mut images = Vec::new();
+    let mut image_orders = Vec::new();
+    let mut index = 0;
+    // A rejected run (ordinary 1-bit image, sparse frame, interpolation, etc.)
+    // must fall back linearly, not rescan every remaining suffix.
+    let mut ordinary_until = 0;
+    while index < handles.len() {
+        let handle = &handles[index];
+        let next_barrier = barriers.partition_point(|order| order <= &handle.source_order);
+        let mut end = index + 1;
+        if index >= ordinary_until && handle.bits_per_component == 1 && handle.opacity != 0.0 {
+            while end < handles.len()
+                && handle.same_stencil_tile_source(&handles[end])
+                && barriers
+                    .get(next_barrier)
+                    .is_none_or(|order| order > &handles[end].source_order)
+            {
+                end += 1;
+            }
+        }
+        if end > index + 1 {
+            let source_pixels = handles[index..end]
+                .iter()
+                .try_fold(0u64, |total, h| {
+                    total.checked_add(u64::from(h.width) * u64::from(h.height))
+                })
+                .ok_or_else(|| PdfImportError::budget("image pixel count overflow"))?;
+            let remaining = MAX_DOCUMENT_IMAGE_PIXELS.saturating_sub(budget.image_pixels);
+            if source_pixels > remaining {
+                return Err(PdfImportError::budget(
+                    "declared image pixel budget exceeded",
+                ));
+            }
+            if let Some(image) = checked(
+                pdf,
+                pdf_oxide::extractors::images::PdfImageHandle::decode_stencil_tiles(
+                    &handles[index..end],
+                    remaining,
+                ),
+                "image_decode",
+                page,
+            )? {
+                let output_pixels = u64::from(image.width()) * u64::from(image.height());
+                budget.image_pixels += source_pixels.max(output_pixels);
+                images.push(image);
+                image_orders.push(handle.source_order.clone());
+                index = end;
+                continue;
+            }
+            ordinary_until = end;
+        }
+        index += 1;
         if handle.opacity == 0.0 {
             continue;
         }
@@ -193,33 +288,64 @@ pub(super) fn extract(
         image_orders.push(handle.source_order.clone());
         images.push(image);
     }
-    let detection = table_detection::detect_ruled_tables(&spans, &paths, &images, media_box)
-        .map_err(|_| {
-            PdfImportError::budget("table geometry inference budget or geometry rejected")
-        })?;
+    let mut table_inference = super::table_inference::Ledger::observe(
+        &spans,
+        &span_orders,
+        &images,
+        &image_orders,
+        &clips,
+        media_box,
+    );
+    let detection = table_detection::detect_ruled_tables(
+        &spans,
+        &paths,
+        &images,
+        media_box,
+        &table_inference.text,
+        &span_orders,
+        &clips,
+    )
+    .map_err(|_| PdfImportError::budget("table geometry inference budget or geometry rejected"))?;
     if let Some(tables) = detection["tables"].as_array() {
         for table in tables {
             budget.cells = budget
                 .cells
                 .checked_add(table["cells"].as_array().map_or(0, Vec::len))
                 .ok_or_else(|| PdfImportError::budget("table cell count overflow"))?;
-            if budget.cells > 16_384 {
+            // Every emitted cell requires at least one paragraph resource.
+            // Use the request's finite entry policy and the IR's u16 resource
+            // domain, rather than an unrelated smaller document-wide cap.
+            // Per-page tile/work limits and lowering's pool preflight remain.
+            if budget.cells > budget.policy.backend.entries.min(super::MAX_POOL_ENTRIES) {
                 return Err(PdfImportError::budget(
                     "document inferred cell budget exceeded",
                 ));
             }
         }
     }
-    let recognition = recognition::recognize_page(
-        &spans,
-        &images,
-        &detection,
-        media_box,
-        recognition::Policy::default(),
-    )
-    .map_err(|_| {
-        PdfImportError::new("PDF_RECOGNITION_FAILED", "table ownership inference failed")
-    })?;
+    let recognition =
+        recognition::recognize_page(
+            &table_inference.text,
+            &spans,
+            &span_clips,
+            &images,
+            &detection,
+            media_box,
+            recognition::Policy::default(),
+        )
+        .map_err(|reason| {
+            let mut error =
+                PdfImportError::new("PDF_RECOGNITION_FAILED", "table ownership inference failed")
+                    .at("recognition", Some(page), None);
+            // Retain the failed rule in opt-in diagnostics, not the public message.
+            error.diagnostics.as_mut().unwrap().backend_message = Some(reason);
+            error
+        })?;
+    table_inference.reconcile(&detection);
+    // Move detection into the internal snapshot; recognition already owns its
+    // report and lowering reads it directly. Avoid copying both evidence trees.
+    let mut snapshot = json!({});
+    snapshot["tableDetection"] = detection;
     Ok(ExtractedPage {
         import_budget: pdf
             .import_budget()
@@ -228,9 +354,13 @@ pub(super) fn extract(
         media_box,
         spans,
         span_orders,
+        span_fonts,
+        span_clips,
         images,
         image_orders,
         paths,
-        snapshot: json!({"tableDetection": detection, "recognition": recognition}),
+        snapshot,
+        recognition,
+        table_inference,
     })
 }

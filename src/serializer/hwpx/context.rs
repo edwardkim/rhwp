@@ -166,6 +166,7 @@ pub struct SerializeContext {
     /// ID 풀과 마찬가지로 한 번의 직렬화 생명주기에만 속하며, 완료 시 바이트와 함께
     /// `SerializedDocument`로 이동한다.
     pub content_loss: ContentLossReport,
+    pub(crate) table_row_grids: crate::model::table_row_grid::Writer,
 }
 
 impl Default for SerializeContext {
@@ -188,6 +189,7 @@ impl Default for SerializeContext {
             sub_list_depth: 0,
             body_coldef_template_pending: false,
             content_loss: ContentLossReport::new(SerializedFormat::Hwpx),
+            table_row_grids: Default::default(),
         }
     }
 }

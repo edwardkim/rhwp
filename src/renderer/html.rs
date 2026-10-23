@@ -283,7 +283,7 @@ impl Renderer for HtmlRenderer {
     ) {
         // [Task #509] 한컴은 폰트 지정과 상관없이 PUA 를 자체 처리. 지정 폰트에 글리프
         // 부재 시 한컴 내부 매핑이 발행. rhwp 도 동일 동작 모방 (PR #251 정합).
-        let text = &crate::renderer::composer::expand_pua_render_text(text);
+        let text = &crate::renderer::composer::expand_pua_render_text_in_style(text, style);
 
         let font_size = style.effective_font_size();
         let color = color_to_css(style.color);

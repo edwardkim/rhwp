@@ -125,7 +125,7 @@ impl TypesetEngine {
         let consumed = prior_line_flow
             || placement::para_offset_consumed_by_page_break(
                 para,
-                &table.common,
+                table,
                 st.base_available_height(),
                 self.dpi,
             );
@@ -425,7 +425,7 @@ impl TypesetEngine {
             && st.current_height < 1.0
             && placement::para_offset_consumed_by_page_break(
                 para,
-                &table.common,
+                table,
                 st.base_available_height(),
                 self.dpi,
             );

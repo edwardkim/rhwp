@@ -325,6 +325,7 @@ impl TypesetEngine {
                     straddle_row_relief,
                     straddle_page_bands,
                     fragment_row_heights,
+                    fragment_block_frames,
                     end_row_owns_stored_frame,
                 } => lookup_local(*para_index).map(|l| PageItem::PartialTable {
                     para_index: l + 1,
@@ -342,6 +343,7 @@ impl TypesetEngine {
                     straddle_row_relief: straddle_row_relief.clone(),
                     straddle_page_bands: straddle_page_bands.clone(),
                     fragment_row_heights: fragment_row_heights.clone(),
+                    fragment_block_frames: fragment_block_frames.clone(),
                     end_row_owns_stored_frame: *end_row_owns_stored_frame,
                 }),
                 PageItem::Shape {
@@ -466,6 +468,11 @@ impl TypesetEngine {
                 .float_pushed_line_spacings
                 .iter()
                 .filter_map(|(para, spacing)| to_local(*para).map(|local| (local, *spacing)))
+                .collect(),
+            page_band_flow_starts: st
+                .page_band_flow_starts
+                .iter()
+                .filter_map(|(para, start)| to_local(*para).map(|local| (local, *start)))
                 .collect(),
         };
         let scratch = crate::renderer::layout::LayoutEngine::new(self.dpi);

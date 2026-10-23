@@ -297,13 +297,23 @@ pub(crate) fn caption_height_px_in_context(
 /// 바꾸며, 원문 IR·검색·캐럿 offset은 그대로 보존한다.
 ///
 /// 매핑 표: KTUG HanyangPuaTableProject (Public Domain).
-fn convert_pua_display_text(composed: &mut ComposedParagraph) {
+fn convert_pua_display_text(
+    composed: &mut ComposedParagraph,
+    soft_hyphen_control: bool,
+    styles: Option<&ResolvedStyleSet>,
+) {
     use super::pua_oldhangul::map_pua_old_hangul;
 
     let product_prefix_starts = legacy_hancom_product_prefix_starts(composed);
     let mut run_char_start = 0usize;
     for line in composed.lines.iter_mut() {
-        for run in line.runs.iter_mut() {
+        // [#7993] 제어 표기 소프트 하이픈은 줄 끝에서만 `-` 로 보이고, 줄 중간에서는
+        // 보이지도 폭을 갖지도 않는다(한/글 2020 Print: task1725 162쪽 `<hp:hypen/>` 16개가
+        // 줄 첫머리에 아무 자국도 남기지 않는다). 모델 글자는 offset 공간에 남기고
+        // 표시 문자열만 바꾼다 — 줄 끝 판정은 이 줄의 마지막 모델 글자다.
+        let line_last_run = line.runs.iter().rposition(|run| !run.text.is_empty());
+        for (run_index, run) in line.runs.iter_mut().enumerate() {
+            let program = styles.and_then(|styles| run.text_style(styles).native_pua_metrics);
             let chars: Vec<char> = run.text.chars().collect();
             let run_char_end = run_char_start + chars.len();
             let has_product_projection = product_prefix_starts
@@ -313,7 +323,13 @@ fn convert_pua_display_text(composed: &mut ComposedParagraph) {
                 pua_plain_text_display(*ch).is_some()
                     || map_pua_old_hangul(*ch).is_some()
                     || map_pua_bullet_char(*ch) != *ch
+                    || (soft_hyphen_control && *ch == '\u{00AD}')
             });
+            let line_end_char = if Some(run_index) == line_last_run {
+                chars.len().checked_sub(1)
+            } else {
+                None
+            };
             if !has_product_projection && !has_pua_display {
                 run_char_start = run_char_end;
                 continue;
@@ -332,6 +348,20 @@ fn convert_pua_display_text(composed: &mut ComposedParagraph) {
                     // `ᄒᆞᆫ` 세 자모가 style/line 경계를 넘더라도 첫 위치에만
                     // `한`을 투영한다. 뒤 두 model char는 offset 공간에만 남긴다.
                     changed = true;
+                } else if soft_hyphen_control && ch == '\u{00AD}' {
+                    if line_end_char == Some(index) {
+                        display.push('-');
+                    }
+                    changed = true;
+                } else if program
+                    .as_ref()
+                    .is_some_and(|program| program.advance_em(ch).is_some())
+                {
+                    // 실제 공급한 원 glyph는 Unicode 표시 대체보다 우선한다.
+                    // 측정과 paint가 같은 프로그램의 전진·표시 문자를 소비한다.
+                    let source = hancom_symbol_display_key(ch);
+                    display.push(source);
+                    changed |= source != ch;
                 } else if let Some(replacement) = pua_plain_text_display(ch) {
                     display.push_str(replacement);
                     changed = true;
@@ -351,9 +381,9 @@ fn convert_pua_display_text(composed: &mut ComposedParagraph) {
                 }
             }
             run_char_start = run_char_end;
-            if changed {
-                run.display_text = Some(display);
-            }
+            // 글꼴 공급 뒤 재구성할 때 앞선 일반 compose의 대체 문자열도 폐기한다.
+            // 원 PUA를 그대로 쓰는 결과는 changed=false여도 이전 display와 다르다.
+            run.display_text = changed.then_some(display);
         }
     }
 }
@@ -455,6 +485,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                     supplemental_metrics_blocked: false,
                     inserted_control_text: false,
                     space_metric: crate::renderer::composer::SpaceMetric::Stored,
+                    regenerated_font_metrics: line.runs[ri].regenerated_font_metrics,
                 };
 
                 let mut new_runs = Vec::new();
@@ -473,6 +504,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                                 inserted_control_text: run.inserted_control_text,
                                 space_metric: run.space_metric,
+                                regenerated_font_metrics: run.regenerated_font_metrics,
                             });
                         }
                         new_runs.push(marker_run.clone());
@@ -488,6 +520,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                                 inserted_control_text: run.inserted_control_text,
                                 space_metric: run.space_metric,
+                                regenerated_font_metrics: run.regenerated_font_metrics,
                             });
                         }
                     } else {

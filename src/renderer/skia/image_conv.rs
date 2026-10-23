@@ -654,7 +654,10 @@ pub(super) fn draw_image_bytes(
 /// [#3460] 캔버스 변환에서 래스터 배율을 얻는다 (확대 출력에서 SVG 가 뭉개지지 않게).
 fn canvas_raster_scale(canvas: &skia_safe::Canvas) -> f32 {
     let matrix = canvas.local_to_device_as_3x3();
-    let scale = matrix.scale_x().abs().max(matrix.scale_y().abs());
+    // Host canvases can rotate or shear the page. Diagonal entries alone lose
+    // that scale (a quarter turn has zero diagonals); use the largest stretch
+    // while preserving the existing bounded SVG document rasterization policy.
+    let scale = matrix.max_scale();
     if scale.is_finite() && scale > 0.0 {
         scale.clamp(1.0, 4.0)
     } else {

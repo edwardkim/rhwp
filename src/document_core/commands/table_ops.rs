@@ -78,12 +78,12 @@ impl DocumentCore {
         row_idx: u16,
         below: bool,
     ) -> Result<String, HwpError> {
-        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        table
-            .insert_row(row_idx, below)
-            .map_err(|e| HwpError::RenderError(e))?;
-        let row_count = table.row_count;
-        let col_count = table.col_count;
+        let (row_count, col_count) = self.mutate_table_structure(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            super::border_paint_structure::StructureEdit::InsertRow(row_idx, below),
+        )?;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -109,12 +109,12 @@ impl DocumentCore {
         col_idx: u16,
         right: bool,
     ) -> Result<String, HwpError> {
-        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        table
-            .insert_column(col_idx, right)
-            .map_err(|e| HwpError::RenderError(e))?;
-        let row_count = table.row_count;
-        let col_count = table.col_count;
+        let (row_count, col_count) = self.mutate_table_structure(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            super::border_paint_structure::StructureEdit::InsertColumn(col_idx, right),
+        )?;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -139,12 +139,12 @@ impl DocumentCore {
         control_idx: usize,
         row_idx: u16,
     ) -> Result<String, HwpError> {
-        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        table
-            .delete_row(row_idx)
-            .map_err(|e| HwpError::RenderError(e))?;
-        let row_count = table.row_count;
-        let col_count = table.col_count;
+        let (row_count, col_count) = self.mutate_table_structure(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            super::border_paint_structure::StructureEdit::DeleteRow(row_idx),
+        )?;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -169,12 +169,12 @@ impl DocumentCore {
         control_idx: usize,
         col_idx: u16,
     ) -> Result<String, HwpError> {
-        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        table
-            .delete_column(col_idx)
-            .map_err(|e| HwpError::RenderError(e))?;
-        let row_count = table.row_count;
-        let col_count = table.col_count;
+        let (row_count, col_count) = self.mutate_table_structure(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            super::border_paint_structure::StructureEdit::DeleteColumn(col_idx),
+        )?;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -589,6 +589,7 @@ impl DocumentCore {
         end_row: u16,
         end_col: u16,
     ) -> Result<String, HwpError> {
+        self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .merge_cells(start_row, start_col, end_row, end_col)
@@ -621,6 +622,15 @@ impl DocumentCore {
                     cell_para_idx,
                 );
             }
+            // The paragraphs came from separate cell coordinate frames. Width
+            // reflow alone preserves their old vpos and can overlap them; consume
+            // the same occupied-line ladder used after a cell split.
+            self.rebuild_table_cell_vpos_ladder_native(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+            );
         }
 
         self.document.sections[section_idx].raw_stream = None;
@@ -646,6 +656,7 @@ impl DocumentCore {
         row: u16,
         col: u16,
     ) -> Result<String, HwpError> {
+        self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .split_cell(row, col)
@@ -682,6 +693,9 @@ impl DocumentCore {
         equal_row_height: bool,
         merge_first: bool,
     ) -> Result<String, HwpError> {
+        if n_rows != 1 || m_cols != 1 {
+            self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
+        }
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .split_cell_into(row, col, n_rows, m_cols, equal_row_height, merge_first)
@@ -778,6 +792,9 @@ impl DocumentCore {
         m_cols: u16,
         equal_row_height: bool,
     ) -> Result<String, HwpError> {
+        if n_rows != 1 || m_cols != 1 {
+            self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
+        }
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .split_cells_in_range(
@@ -1292,7 +1309,9 @@ impl DocumentCore {
                 .map(ToOwned::to_owned)
         };
 
-        let has_border_fill_change = json.contains("\"borderLeft\"")
+        let has_border_fill_change = super::border_paint_edit::KEYS
+            .iter()
+            .any(|key| obj.is_some_and(|m| m.contains_key(*key)))
             || json.contains("\"fillType\"")
             || json.contains("\"diagonalLine\"")
             || json.contains("\"diagonalSlash\"")
@@ -1301,16 +1320,115 @@ impl DocumentCore {
             || json.contains("\"diagonalColor\"")
             || json.contains("\"centerLine\"");
         let cell_border_fill_json = if has_border_fill_change {
-            Some(self.normalize_cell_border_fill_json_for_edit(
+            let normalized = self.normalize_cell_border_fill_json_for_edit(
                 section_idx,
                 parent_para_idx,
                 control_idx,
                 cell_idx,
                 json,
-            ))
+            );
+            let mut value: serde_json::Value =
+                serde_json::from_str(&normalized).unwrap_or_default();
+            if value.get("borderFillId").is_none() {
+                let id = self
+                    .get_table_mut(section_idx, parent_para_idx, control_idx)?
+                    .cells
+                    .get(cell_idx)
+                    .ok_or_else(|| HwpError::RenderError("셀 인덱스 범위 초과".into()))?
+                    .border_fill_id;
+                value["borderFillId"] = id.into();
+            }
+            Some(value.to_string())
         } else {
             None
         };
+
+        // A dialog sends all four displayed sides even on a background-only edit.
+        // Explicit UI clicks carry a mask; sparse API patches express intent by key.
+        let mut changed_sides = [false; 4];
+        let mut paint_sides = [false; 4];
+        if let Some(value) = cell_border_fill_json.as_deref() {
+            let value: serde_json::Value = serde_json::from_str(value).unwrap_or_default();
+            let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            let id = table
+                .cells
+                .get(cell_idx)
+                .ok_or_else(|| HwpError::RenderError("셀 인덱스 범위 초과".into()))?
+                .border_fill_id;
+            let bf = self
+                .document
+                .doc_info
+                .border_fills
+                .get(usize::from(id).saturating_sub(1));
+            let keys = super::border_paint_edit::KEYS;
+            let complete = keys.iter().all(|k| value.get(*k).is_some());
+            if let Some(mask) = obj.and_then(|o| o.get("borderPaintSides")) {
+                if mask
+                    .as_array()
+                    .is_none_or(|a| a.len() != 4 || a.iter().any(|v| !v.is_boolean()))
+                {
+                    return Err(HwpError::RenderError(
+                        "borderPaintSides는 네 방향 boolean 배열이어야 합니다".into(),
+                    ));
+                }
+            }
+            for (i, key) in keys.iter().enumerate() {
+                if let Some(b) = value.get(*key) {
+                    let old = bf.map(|v| v.borders[i]).unwrap_or_default();
+                    changed_sides[i] = b.get("type").and_then(|v| v.as_u64())
+                        != Some(u64::from(border_line_type_to_u8_val(old.line_type)))
+                        || b.get("width").and_then(|v| v.as_u64()) != Some(u64::from(old.width))
+                        || b.get("color")
+                            .and_then(|v| v.as_str())
+                            .is_none_or(|v| !v.eq_ignore_ascii_case(&color_ref_to_css(old.color)));
+                    let explicit = obj
+                        .and_then(|o| o.get("borderPaintSides"))
+                        .and_then(|v| v.get(i))
+                        .and_then(|v| v.as_bool());
+                    paint_sides[i] = changed_sides[i] || explicit.unwrap_or(!complete);
+                    changed_sides[i] |= paint_sides[i];
+                }
+            }
+        }
+        let paint_plan = {
+            self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            let parent = &self.document.sections[section_idx].paragraphs[parent_para_idx];
+            let Control::Table(table) = &parent.controls[control_idx] else {
+                unreachable!()
+            };
+            super::border_paint_edit::plan(
+                table,
+                cell_idx,
+                paint_sides,
+                parent,
+                control_idx,
+                &mut crate::model::border_paint::Resources::new(&self.document.bin_data_content),
+            )?
+        };
+        if !paint_plan.is_empty()
+            && (self.border_paint_store.len() >= 4096 || self.next_border_paint_id == u32::MAX)
+        {
+            return Err(HwpError::RenderError(
+                "테두리 조각 undo 보관 한도 초과".into(),
+            ));
+        }
+        if !paint_plan.is_empty()
+            && [
+                "width",
+                "height",
+                "paddingLeft",
+                "paddingRight",
+                "paddingTop",
+                "paddingBottom",
+                "applyInnerMargin",
+            ]
+            .iter()
+            .any(|k| obj.is_some_and(|o| o.contains_key(*k)))
+        {
+            return Err(HwpError::RenderError(
+                "테두리 조각 교체와 셀 크기·안여백 변경은 별도로 적용해야 합니다".into(),
+            ));
+        }
 
         // [#5959] 역연산 기록 기준선 — 스타일 테이블 길이·dirty 플래그는 이 호출이
         // 손대기 전 값이다. 응답으로 돌려 TS 커맨드가 undo 때 원상 복구에 쓴다.
@@ -1510,22 +1628,40 @@ impl DocumentCore {
 
             // 이웃 셀의 공유 엣지 테두리를 갱신
             // borders 배열: [좌(0), 우(1), 상(2), 하(3)]
-            bf_changes.extend(self.update_neighbor_borders(
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                cell_idx,
-                target_row,
-                target_col,
-                target_col_span,
-                target_row_span,
-                &new_borders,
-            ));
+            let neighbors = if changed_sides == [true; 4] {
+                self.update_neighbor_borders(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    target_row,
+                    target_col,
+                    target_col_span,
+                    target_row_span,
+                    &new_borders,
+                )
+            } else {
+                self.update_neighbor_borders_for_sides(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    target_row,
+                    target_col,
+                    target_col_span,
+                    target_row_span,
+                    &new_borders,
+                    &changed_sides,
+                )
+            };
+            bf_changes.extend(neighbors);
             if new_bf_id != target_bf_before {
                 bf_changes.push((cell_idx, target_bf_before, new_bf_id));
             }
         }
 
+        let border_paint_undo_id =
+            self.commit_border_paint_plan((section_idx, parent_para_idx, control_idx), paint_plan);
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -1555,6 +1691,7 @@ impl DocumentCore {
                 .collect::<Vec<_>>(),
             "borderFillLenBefore": border_fill_len_before,
             "docInfoDirtyBefore": doc_info_dirty_before,
+            "borderPaintUndoId": border_paint_undo_id,
         });
         Ok(response.to_string())
     }
@@ -1860,12 +1997,18 @@ impl DocumentCore {
             cells: Vec<CellIdPair>,
             #[serde(default)]
             zones: Vec<ZoneIdEntry>,
+            #[serde(default, rename = "borderPaintUndoIds")]
+            border_paint_undo_ids: Vec<u32>,
         }
 
         let payload: Payload = serde_json::from_str(json)
             .map_err(|e| HwpError::RenderError(format!("border fill ids 파싱 실패: {}", e)))?;
 
         let max_bf = self.document.doc_info.border_fills.len() as u16;
+        let paint_restores = self.border_paint_restores(
+            (section_idx, parent_para_idx, control_idx),
+            &payload.border_paint_undo_ids,
+        )?;
 
         // 1단계 전수 검증 — 하나라도 어긋나면 아무것도 적용하지 않는다.
         {
@@ -1940,6 +2083,18 @@ impl DocumentCore {
                     (None, None) => {}
                 }
             }
+            for ((cell, paragraph), value) in &paint_restores {
+                if let Some(cell) = cell {
+                    table.cells[*cell].paragraphs[*paragraph] = value.clone();
+                }
+            }
+        }
+        if let Some(value) = paint_restores.get(&(None, 0)) {
+            let p = &mut self.document.sections[section_idx].paragraphs[parent_para_idx];
+            *p = super::border_paint_edit::restore_parent(value.clone(), p);
+        }
+        for id in payload.border_paint_undo_ids {
+            self.discard_border_paint_undo_native(id);
         }
         self.rebuild_resolved_styles();
 
@@ -2067,6 +2222,33 @@ impl DocumentCore {
         target_row_span: usize,
         new_borders: &[crate::model::style::BorderLine; 4],
     ) -> Vec<(usize, u16, u16)> {
+        self.update_neighbor_borders_for_sides(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            skip_cell_idx,
+            target_row,
+            target_col,
+            target_col_span,
+            target_row_span,
+            new_borders,
+            &[true; 4],
+        )
+    }
+
+    fn update_neighbor_borders_for_sides(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        skip_cell_idx: usize,
+        target_row: usize,
+        target_col: usize,
+        target_col_span: usize,
+        target_row_span: usize,
+        new_borders: &[crate::model::style::BorderLine; 4],
+        sides: &[bool; 4],
+    ) -> Vec<(usize, u16, u16)> {
         use crate::model::style::BorderLine;
 
         // [#5959] 되돌림 기록 — (셀 인덱스, 이전 id, 새 id). id 이동이 없던 이웃은
@@ -2091,28 +2273,32 @@ impl DocumentCore {
                 let bf = cell.border_fill_id;
 
                 // 대상 셀의 좌측 엣지 공유 → 이웃 우측
-                if cc + cs == target_col
+                if sides[0]
+                    && cc + cs == target_col
                     && cr < target_row + target_row_span
                     && cr + rs > target_row
                 {
                     updates.push((ci, bf, 1, new_borders[0]));
                 }
                 // 대상 셀의 우측 엣지 공유 → 이웃 좌측
-                if cc == target_col + target_col_span
+                if sides[1]
+                    && cc == target_col + target_col_span
                     && cr < target_row + target_row_span
                     && cr + rs > target_row
                 {
                     updates.push((ci, bf, 0, new_borders[1]));
                 }
                 // 대상 셀의 상측 엣지 공유 → 이웃 하측
-                if cr + rs == target_row
+                if sides[2]
+                    && cr + rs == target_row
                     && cc < target_col + target_col_span
                     && cc + cs > target_col
                 {
                     updates.push((ci, bf, 3, new_borders[2]));
                 }
                 // 대상 셀의 하측 엣지 공유 → 이웃 상측
-                if cr == target_row + target_row_span
+                if sides[3]
+                    && cr == target_row + target_row_span
                     && cc < target_col + target_col_span
                     && cc + cs > target_col
                 {

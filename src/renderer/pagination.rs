@@ -690,6 +690,9 @@ pub struct ColumnContent {
     /// 소비하는 문단 앞 간격(px, 0 이상). 측정(typeset)이 확정하고 배치(layout)가 같은 값을
     /// 확정 앞 간격으로 소비한다. 키는 문단 인덱스이며 항목이 없으면 이 계약이 아니다.
     pub float_pushed_line_spacings: std::collections::HashMap<usize, f64>,
+    /// [#7696] 쪽·종이 기준 자리차지 그림·도형의 밴드가 밀어 확정한 문단 시작(단 상대 px).
+    /// 측정(typeset)이 확정하고 배치(layout)가 그 문단의 시작으로 소비한다.
+    pub page_band_flow_starts: std::collections::HashMap<usize, f64>,
     /// #6812: 텍스트와 TAC 표가 공유하는 확정 줄 결과(단 상대 좌표).
     pub inline_flow_plans: std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
     /// #6812: 분할기에서 확정한 단 기준 TAC 배치. 그림 paint 순서와 무관하다.
@@ -745,6 +748,8 @@ pub struct OverlayCut {
     pub end_row: usize,
     pub end_cut: Vec<usize>,
     pub end_row_height: Option<f64>,
+    /// 내용 컷 밖의 물리 띠까지 인증한 원본 프레임의 정렬 소유.
+    pub owns_stored_frame: bool,
 }
 
 /// 한 행의 앞/뒤 조각은 동일한 셀 유닛 컷과 점유 높이를 소비한다.
@@ -753,6 +758,7 @@ pub struct OverlayRowFragment {
     pub end_cut: Vec<usize>,
     pub opening_height: f64,
     pub remaining_height: f64,
+    pub owns_stored_frame: bool,
 }
 
 /// [#4568] 쪽을 넘긴 overlay 표의 잔여 행 조각.
@@ -818,13 +824,29 @@ pub struct WrapAnchorRef {
 #[derive(Debug, Clone, PartialEq)]
 pub struct StraddleCellCarry {
     pub cell_index: usize,
+    /// 원래 측정 행에 추가로 반영하는 저장 프레임 띠. 실제 수용 상자와 구분한다.
     pub physical_height: f64,
+    /// 앞 조각의 실제 빈 상자를 소유한다. 추정 행 높이의 추가 차감량이 아니다.
+    pub owns_blank_band: bool,
     /// 앞 조각들이 실제 수용한 셀 상자 높이의 합. 물리 상자를 알 수 없는 경로는 None.
     pub accepted_physical_height: Option<f64>,
+    /// PageItem에서 현재 조각을 수용하기 직전의 합. incoming carry에서는 None.
+    pub accepted_before_fragment: Option<f64>,
     /// First unconsumed unit at the fragment's incoming boundary.
     pub next_unit: Option<usize>,
     /// Accepted window for this PageItem; cleared when advancing the cursor.
     pub fragment_cut: Option<(usize, usize)>,
+}
+
+impl StraddleCellCarry {
+    /// 수용 후 snapshot도 현재 조각 직전의 물리 prefix를 제공한다.
+    pub(crate) fn accepted_prefix_physical_height(&self) -> Option<f64> {
+        if self.fragment_cut.is_some() {
+            self.accepted_before_fragment
+        } else {
+            self.accepted_physical_height
+        }
+    }
 }
 
 /// 페이지에 배치되는 개별 항목
@@ -907,6 +929,8 @@ pub enum PageItem {
         /// Fragment row geometry with previously accepted physical boxes.
         /// None keeps the ordinary global measured-row contract.
         fragment_row_heights: Option<Vec<f64>>,
+        /// 블록 내용 컷과 독립적으로 수용한 물리 행 상자의 소유 범위.
+        fragment_block_frames: Vec<(usize, usize)>,
         /// 예산에서 인증·수용한 종료 행의 저장 물리 프레임 소유. 배치가 다시 추정하지 않는다.
         end_row_owns_stored_frame: bool,
     },
@@ -1115,6 +1139,7 @@ impl PageItem {
                 straddle_row_relief,
                 straddle_page_bands,
                 fragment_row_heights,
+                fragment_block_frames,
                 end_row_owns_stored_frame,
             } => PageItem::PartialTable {
                 para_index: adjust(*para_index),
@@ -1132,6 +1157,7 @@ impl PageItem {
                 straddle_row_relief: straddle_row_relief.clone(),
                 straddle_page_bands: straddle_page_bands.clone(),
                 fragment_row_heights: fragment_row_heights.clone(),
+                fragment_block_frames: fragment_block_frames.clone(),
                 end_row_owns_stored_frame: *end_row_owns_stored_frame,
             },
             PageItem::Shape {
@@ -1347,6 +1373,13 @@ impl PaginationResult {
                             .iter()
                             .map(|(&pi, &spacing)| {
                                 ((pi as i64 + offset as i64).max(0) as usize, spacing)
+                            })
+                            .collect(),
+                        page_band_flow_starts: cc
+                            .page_band_flow_starts
+                            .iter()
+                            .map(|(&pi, &start)| {
+                                ((pi as i64 + offset as i64).max(0) as usize, start)
                             })
                             .collect(),
                         zone_layout: cc.zone_layout.clone(),

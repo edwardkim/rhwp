@@ -20,6 +20,7 @@ struct RowIndex {
     spanning: Vec<usize>,
     raw_heights: OnceLock<Arc<Vec<HwpUnit>>>,
     declared_shrink: OnceLock<Arc<Vec<HwpUnit>>>,
+    paragraph_widths: OnceLock<Arc<Vec<i32>>>,
 }
 
 impl RowIndex {
@@ -45,6 +46,7 @@ impl RowIndex {
             spanning,
             raw_heights: OnceLock::new(),
             declared_shrink: OnceLock::new(),
+            paragraph_widths: OnceLock::new(),
         }
     }
 }
@@ -85,6 +87,15 @@ impl TableRows<'_> {
             self.index
                 .raw_heights
                 .get_or_init(|| Arc::new(self.table.get_raw_row_heights())),
+        )
+    }
+
+    /// 표 전체에서 해석한 문단 프레임 소유 폭을 같은 borrow 범위에서 재사용한다.
+    pub(super) fn paragraph_widths(&self) -> Arc<Vec<i32>> {
+        Arc::clone(
+            self.index
+                .paragraph_widths
+                .get_or_init(|| Arc::new(self.table.paragraph_frame_owner_widths())),
         )
     }
 

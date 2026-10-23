@@ -38,7 +38,11 @@ pub(super) fn query(
         return None;
     }
     // 강제 진행으로 얻은 컷은 실제 패딩까지 예산 안에 들 때만 수용한다.
-    let opening_height = layout.row_cut_content_height(table, row, &[], &cut.end_cut, styles);
+    let content_height = layout.row_cut_content_height(table, row, &[], &cut.end_cut, styles);
+    let source_frame = layout
+        .stored_inline_opening_row_frame(table, row, &cut.end_cut, &formatted.row_heights, styles)
+        .filter(|height| *height <= available);
+    let opening_height = source_frame.unwrap_or(content_height);
     if opening_height <= 0.0 || opening_height > available {
         return None;
     }
@@ -47,5 +51,6 @@ pub(super) fn query(
         end_cut: cut.end_cut,
         opening_height,
         remaining_height,
+        owns_stored_frame: source_frame.is_some(),
     })
 }

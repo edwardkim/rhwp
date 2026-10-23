@@ -5,6 +5,9 @@ tests/golden_svg/**/*.svg text eol=lf
 assets/fonts/licenses/*.pdf -text -diff
 assets/fonts/licenses/*.txt -text -whitespace
 tests/fixtures/fonts/RHWPEquationFonts.OFL.txt -text -whitespace
+# #7998 Adobe AFM과 CR 전용 개행의 라이선스 전문은 공식 배포 바이트를 보존한다.
+data/font-metrics/adobe-core14/*.afm -text -whitespace
+data/font-metrics/adobe-core14/MustRead.html -text -whitespace
 
 # WMF/EMF 골든도 같은 계약이다. `wmf_emf_goldens` 는 엔진이 LF 로 만든 문자열과 파일을
 # 통째로 비교하는데, `core.autocrlf=true` 로 클론한 Windows 체크아웃에서는 파일만 CRLF 가
@@ -38,6 +41,8 @@ output/poc/**/*.tsv -whitespace
 # 이 파일은 재현용 unified diff 자체다. 내부 hunk의 공백 문맥은 패치 문법이므로
 # Git의 일반 source-whitespace 검사를 적용하지 않는다.
 mydocs/report/task3798/trimcap_experiment.patch -whitespace
+# 이관한 #8028 원본 패치도 문맥 공백과 원문 바이트를 보존한다.
+mydocs/pr/assets/issue7445/deferred-20261020/source-pr8028/source-pr8028.patch -text -whitespace
 
 # [#4659] 운동장 리더보드 — 해시 정합이 생명인 파일들. CRLF 변환은 원장에
 # 박힌 줄-바이트 해시를 깨뜨려 검증을 실패시킨다. LF 고정(-text).
@@ -97,3 +102,25 @@ pdf/two-digits-table-wrap-2020.pdf -text -diff
 # Issue #7333 stored input and visual references are binary evidence.
 samples/issue7333/*.hwp -text -diff
 pdf/issue7333/*.pdf -text -diff
+
+# #7998 독립 PDF 격자의 xref·stream 바이트를 텍스트 변환 없이 보존한다.
+pdf/issue7998/*.pdf -text -diff
+pdf/issue7998/periodic-borders/*.pdf -text -diff
+pdf/issue7998/fill-borders/*.pdf -text -diff
+pdf/issue7998/compound-borders/*.pdf -text -diff
+pdf/issue7998/compound-borders/print/*.pdf -text -diff
+pdf/issue7998/structure-borders/*.pdf -text -diff
+pdf/issue7998/structure-borders/print/*.pdf -text -diff
+pdf/issue7998/retained-border-structure/*.pdf -text -diff
+pdf/issue7998/retained-border-structure/print/*.pdf -text -diff
+
+# #7998 수평 메트릭 독립 PDF의 xref 끝 공백을 포함해 원본 바이트를 보존한다.
+pdf/issue7998/horizontal-metrics/**/*.pdf -text -diff
+pdf/issue7998/shared-tabs/*.pdf -text -diff
+
+# #8109 font resource contracts retain PDF xref and HWPX archive bytes.
+pdf/issue8109/*.pdf -text -diff
+pdf/issue8109/*.hwpx -text -diff
+pdf/issue8109/print/*.pdf -text -diff
+tests/fixtures/issue_8109_saved_fonts/*.hwp -text -diff
+tests/fixtures/issue_8109_saved_fonts/*.hwpx -text -diff

@@ -216,7 +216,7 @@ def font_source_files(directory: Path):
 
 def valid_font_repairs(repairs) -> bool:
     """공급본에 허용한 수정만 캐시에서 수용한다. 다른 손상은 숨기지 않는다."""
-    allowed = {'cmap-format4-terminal-notdef'} | {f'empty-vtt-source-table:TSI{i}' for i in range(6)}
+    allowed = {'cmap-format4-terminal-notdef', 'drop-embedded-bitmap-strikes'} | {f'empty-vtt-source-table:TSI{i}' for i in range(6)}
     return (isinstance(repairs, list) and all(isinstance(value, str) for value in repairs)
             and len(repairs) == len(set(repairs)) and set(repairs) <= allowed)
 
@@ -254,9 +254,13 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                     italic = bool(font['head'].macStyle & 2) if 'head' in font else False
                     path = source
                     repaired_cmap = repair_terminal_cmap(font.reader['cmap'], font['maxp'].numGlyphs) if 'cmap' in font else None
-                    excluded_tables = empty_vtt_tables(font)
+                    vtt_tables = empty_vtt_tables(font)
+                    dropped = embedded_bitmap_strike_tags(font.reader.keys())
+                    excluded_tables = sorted(set(vtt_tables) | dropped)
                     repairs = (['cmap-format4-terminal-notdef'] if repaired_cmap is not None else [])
-                    repairs += [f'empty-vtt-source-table:{tag}' for tag in excluded_tables]
+                    repairs += [f'empty-vtt-source-table:{tag}' for tag in vtt_tables]
+                    if dropped:
+                        repairs.append('drop-embedded-bitmap-strikes')
                     if collection or repaired_cmap is not None or excluded_tables:
                         resource_dir.mkdir(parents=True, exist_ok=True)
                         path = resource_dir / f'{digest}-{index}.ttf'
@@ -321,6 +325,22 @@ def write_font_face(font, path: Path, repaired_cmap: bytes | None, excluded_tabl
         for tag in tags:
             writer[tag] = repaired_cmap if tag == 'cmap' and repaired_cmap is not None else font.reader[tag]
         writer.close()
+
+
+EMBEDDED_BITMAP_STRIKE_TAGS = frozenset({'EBDT', 'EBLC', 'EBSC'})
+
+
+def embedded_bitmap_strike_tags(tags) -> frozenset:
+    """외곽선 글꼴에 함께 든 흑백 비트맵 strike 테이블. 외곽선이 없으면 버리지 않는다.
+
+    한/글 Print PDF와 Native PNG는 외곽선으로 그린다. 브라우저 canvas는 strike가 있는
+    글꼴에서 그 비트맵을 고르고, HBATANG.TTF(한컴바탕, 12·14·16ppem strike)는 한글
+    글자를 빈칸으로 그렸다 — 같은 글꼴의 Latin은 그려져 WASM 쪽만 글자가 사라졌다.
+    """
+    tags = set(tags)
+    if not tags & {'glyf', 'CFF ', 'CFF2'}:
+        return frozenset()
+    return frozenset(tags & EMBEDDED_BITMAP_STRIKE_TAGS)
 
 
 def repair_terminal_cmap(data: bytes, glyph_count: int) -> bytes | None:

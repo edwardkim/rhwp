@@ -1,0 +1,1802 @@
+[
+  {
+    "key": "body-list-noop-hwp",
+    "input": "/mnt/e/tmp/issue7998-stage33-evidence/final-print/print-inputs/body-list-noop.hwp",
+    "pdf": "/mnt/e/tmp/issue7998-stage33-evidence/final-print/print/body-list-noop-hwp-2020.pdf",
+    "inputSha256": "3b3378f08ebbbc10a5fb185f2302de8f5bd41326b4f98c0d3270c7e1f13c5480",
+    "pdfSha256": "5d499a21278e17c842362e249f15ba8dc758609310da3166d137ad8f8579fbd0",
+    "layoutEqual": true,
+    "nodeCount": 26,
+    "geometry": [
+      {
+        "type": "Rect",
+        "text": null,
+        "bbox": {
+          "x": 0.0,
+          "y": 55.3,
+          "w": 533.3,
+          "h": 80.0
+        },
+        "pi": null
+      },
+      {
+        "type": "TextBox",
+        "text": null,
+        "bbox": {
+          "x": 0.0,
+          "y": 55.3,
+          "w": 533.3,
+          "h": 80.0
+        },
+        "pi": null
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 26.7,
+          "y": 55.3,
+          "w": 151.8,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "*",
+        "bbox": {
+          "x": 26.7,
+          "y": 55.3,
+          "w": 5.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 31.8,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "L",
+        "bbox": {
+          "x": 35.6,
+          "y": 55.3,
+          "w": 7.4,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "I",
+        "bbox": {
+          "x": 43.0,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ST",
+        "bbox": {
+          "x": 46.7,
+          "y": 55.3,
+          "w": 17.1,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 63.7,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ENT",
+        "bbox": {
+          "x": 67.4,
+          "y": 55.3,
+          "w": 26.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "R",
+        "bbox": {
+          "x": 94.1,
+          "y": 55.3,
+          "w": 9.5,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "Y ",
+        "bbox": {
+          "x": 103.7,
+          "y": 55.3,
+          "w": 12.6,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 46.7,
+          "y": 74.0,
+          "w": 131.8,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "C",
+        "bbox": {
+          "x": 46.7,
+          "y": 74.0,
+          "w": 9.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "O",
+        "bbox": {
+          "x": 56.3,
+          "y": 74.0,
+          "w": 10.3,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "NTIN",
+        "bbox": {
+          "x": 66.6,
+          "y": 74.0,
+          "w": 31.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "U",
+        "bbox": {
+          "x": 97.8,
+          "y": 74.0,
+          "w": 9.5,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ED",
+        "bbox": {
+          "x": 107.4,
+          "y": 74.0,
+          "w": 18.6,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 125.9,
+          "y": 74.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "I",
+        "bbox": {
+          "x": 129.7,
+          "y": 74.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "TEM",
+        "bbox": {
+          "x": 133.3,
+          "y": 74.0,
+          "w": 28.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 26.7,
+          "y": 122.0,
+          "w": 506.7,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "NEX",
+        "bbox": {
+          "x": 26.7,
+          "y": 122.0,
+          "w": 27.5,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "T",
+        "bbox": {
+          "x": 54.1,
+          "y": 122.0,
+          "w": 8.1,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 62.2,
+          "y": 122.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "ITEM",
+        "bbox": {
+          "x": 65.9,
+          "y": 122.0,
+          "w": 31.9,
+          "h": 13.3
+        },
+        "pi": 1
+      }
+    ],
+    "sourceSha": "97918861741fc45b3370edf0a27929c9fc922ddb",
+    "comparison": "Current font/layout geometry and rendered pixels equal prior qualified input. Frozen runtime production source d1d3091c5; later tests and equivalent PDF-only lint syntax edits do not change the saved HWP/HWPX font input path.",
+    "producerSha256": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad"
+  },
+  {
+    "key": "body-list-noop-hwpx",
+    "input": "/mnt/e/tmp/issue7998-stage33-evidence/final-print/print-inputs/body-list-noop.hwpx",
+    "pdf": "/mnt/e/tmp/issue7998-stage33-evidence/final-print/print/body-list-noop-hwpx-2020.pdf",
+    "inputSha256": "47b8d42e764b9bbaea53a14a99d4ad92c056f978482a4219644a2582206b088c",
+    "pdfSha256": "bf5ccf9a70f4166901a365683a199eb60959f3e9ceadfbbc5b2434fd9f0014ac",
+    "layoutEqual": true,
+    "nodeCount": 26,
+    "geometry": [
+      {
+        "type": "Rect",
+        "text": null,
+        "bbox": {
+          "x": 0.0,
+          "y": 55.3,
+          "w": 533.3,
+          "h": 80.0
+        },
+        "pi": null
+      },
+      {
+        "type": "TextBox",
+        "text": null,
+        "bbox": {
+          "x": 0.0,
+          "y": 55.3,
+          "w": 533.3,
+          "h": 80.0
+        },
+        "pi": null
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 26.7,
+          "y": 55.3,
+          "w": 151.8,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "*",
+        "bbox": {
+          "x": 26.7,
+          "y": 55.3,
+          "w": 5.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 31.8,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "L",
+        "bbox": {
+          "x": 35.6,
+          "y": 55.3,
+          "w": 7.4,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "I",
+        "bbox": {
+          "x": 43.0,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ST",
+        "bbox": {
+          "x": 46.7,
+          "y": 55.3,
+          "w": 17.1,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 63.7,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ENT",
+        "bbox": {
+          "x": 67.4,
+          "y": 55.3,
+          "w": 26.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "R",
+        "bbox": {
+          "x": 94.1,
+          "y": 55.3,
+          "w": 9.5,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "Y ",
+        "bbox": {
+          "x": 103.7,
+          "y": 55.3,
+          "w": 12.6,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 46.7,
+          "y": 74.0,
+          "w": 131.8,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "C",
+        "bbox": {
+          "x": 46.7,
+          "y": 74.0,
+          "w": 9.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "O",
+        "bbox": {
+          "x": 56.3,
+          "y": 74.0,
+          "w": 10.3,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "NTIN",
+        "bbox": {
+          "x": 66.6,
+          "y": 74.0,
+          "w": 31.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "U",
+        "bbox": {
+          "x": 97.8,
+          "y": 74.0,
+          "w": 9.5,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ED",
+        "bbox": {
+          "x": 107.4,
+          "y": 74.0,
+          "w": 18.6,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 125.9,
+          "y": 74.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "I",
+        "bbox": {
+          "x": 129.7,
+          "y": 74.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "TEM",
+        "bbox": {
+          "x": 133.3,
+          "y": 74.0,
+          "w": 28.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 26.7,
+          "y": 122.0,
+          "w": 506.7,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "NEX",
+        "bbox": {
+          "x": 26.7,
+          "y": 122.0,
+          "w": 27.5,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "T",
+        "bbox": {
+          "x": 54.1,
+          "y": 122.0,
+          "w": 8.1,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 62.2,
+          "y": 122.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "ITEM",
+        "bbox": {
+          "x": 65.9,
+          "y": 122.0,
+          "w": 31.9,
+          "h": 13.3
+        },
+        "pi": 1
+      }
+    ],
+    "sourceSha": "97918861741fc45b3370edf0a27929c9fc922ddb",
+    "comparison": "Current font/layout geometry and rendered pixels equal prior qualified input. Frozen runtime production source d1d3091c5; later tests and equivalent PDF-only lint syntax edits do not change the saved HWP/HWPX font input path.",
+    "producerSha256": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad"
+  },
+  {
+    "key": "body-list-restored-hwp",
+    "input": "/mnt/e/tmp/issue7998-stage33-evidence/final-print/print-inputs/body-list-restored.hwp",
+    "pdf": "/mnt/e/tmp/issue7998-stage33-evidence/final-print/print/body-list-restored-hwp-2020.pdf",
+    "inputSha256": "3b3378f08ebbbc10a5fb185f2302de8f5bd41326b4f98c0d3270c7e1f13c5480",
+    "pdfSha256": "5d499a21278e17c842362e249f15ba8dc758609310da3166d137ad8f8579fbd0",
+    "layoutEqual": true,
+    "nodeCount": 26,
+    "geometry": [
+      {
+        "type": "Rect",
+        "text": null,
+        "bbox": {
+          "x": 0.0,
+          "y": 55.3,
+          "w": 533.3,
+          "h": 80.0
+        },
+        "pi": null
+      },
+      {
+        "type": "TextBox",
+        "text": null,
+        "bbox": {
+          "x": 0.0,
+          "y": 55.3,
+          "w": 533.3,
+          "h": 80.0
+        },
+        "pi": null
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 26.7,
+          "y": 55.3,
+          "w": 151.8,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "*",
+        "bbox": {
+          "x": 26.7,
+          "y": 55.3,
+          "w": 5.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 31.8,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "L",
+        "bbox": {
+          "x": 35.6,
+          "y": 55.3,
+          "w": 7.4,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "I",
+        "bbox": {
+          "x": 43.0,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ST",
+        "bbox": {
+          "x": 46.7,
+          "y": 55.3,
+          "w": 17.1,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 63.7,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ENT",
+        "bbox": {
+          "x": 67.4,
+          "y": 55.3,
+          "w": 26.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "R",
+        "bbox": {
+          "x": 94.1,
+          "y": 55.3,
+          "w": 9.5,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "Y ",
+        "bbox": {
+          "x": 103.7,
+          "y": 55.3,
+          "w": 12.6,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 46.7,
+          "y": 74.0,
+          "w": 131.8,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "C",
+        "bbox": {
+          "x": 46.7,
+          "y": 74.0,
+          "w": 9.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "O",
+        "bbox": {
+          "x": 56.3,
+          "y": 74.0,
+          "w": 10.3,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "NTIN",
+        "bbox": {
+          "x": 66.6,
+          "y": 74.0,
+          "w": 31.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "U",
+        "bbox": {
+          "x": 97.8,
+          "y": 74.0,
+          "w": 9.5,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ED",
+        "bbox": {
+          "x": 107.4,
+          "y": 74.0,
+          "w": 18.6,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 125.9,
+          "y": 74.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "I",
+        "bbox": {
+          "x": 129.7,
+          "y": 74.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "TEM",
+        "bbox": {
+          "x": 133.3,
+          "y": 74.0,
+          "w": 28.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 26.7,
+          "y": 122.0,
+          "w": 506.7,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "NEX",
+        "bbox": {
+          "x": 26.7,
+          "y": 122.0,
+          "w": 27.5,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "T",
+        "bbox": {
+          "x": 54.1,
+          "y": 122.0,
+          "w": 8.1,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 62.2,
+          "y": 122.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "ITEM",
+        "bbox": {
+          "x": 65.9,
+          "y": 122.0,
+          "w": 31.9,
+          "h": 13.3
+        },
+        "pi": 1
+      }
+    ],
+    "sourceSha": "97918861741fc45b3370edf0a27929c9fc922ddb",
+    "comparison": "Current font/layout geometry and rendered pixels equal prior qualified input. Frozen runtime production source d1d3091c5; later tests and equivalent PDF-only lint syntax edits do not change the saved HWP/HWPX font input path.",
+    "producerSha256": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad"
+  },
+  {
+    "key": "body-list-restored-hwpx",
+    "input": "/mnt/e/tmp/issue7998-stage33-evidence/final-print/print-inputs/body-list-restored.hwpx",
+    "pdf": "/mnt/e/tmp/issue7998-stage33-evidence/final-print/print/body-list-restored-hwpx-2020.pdf",
+    "inputSha256": "47b8d42e764b9bbaea53a14a99d4ad92c056f978482a4219644a2582206b088c",
+    "pdfSha256": "bf5ccf9a70f4166901a365683a199eb60959f3e9ceadfbbc5b2434fd9f0014ac",
+    "layoutEqual": true,
+    "nodeCount": 26,
+    "geometry": [
+      {
+        "type": "Rect",
+        "text": null,
+        "bbox": {
+          "x": 0.0,
+          "y": 55.3,
+          "w": 533.3,
+          "h": 80.0
+        },
+        "pi": null
+      },
+      {
+        "type": "TextBox",
+        "text": null,
+        "bbox": {
+          "x": 0.0,
+          "y": 55.3,
+          "w": 533.3,
+          "h": 80.0
+        },
+        "pi": null
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 26.7,
+          "y": 55.3,
+          "w": 151.8,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "*",
+        "bbox": {
+          "x": 26.7,
+          "y": 55.3,
+          "w": 5.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 31.8,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "L",
+        "bbox": {
+          "x": 35.6,
+          "y": 55.3,
+          "w": 7.4,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "I",
+        "bbox": {
+          "x": 43.0,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ST",
+        "bbox": {
+          "x": 46.7,
+          "y": 55.3,
+          "w": 17.1,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 63.7,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ENT",
+        "bbox": {
+          "x": 67.4,
+          "y": 55.3,
+          "w": 26.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "R",
+        "bbox": {
+          "x": 94.1,
+          "y": 55.3,
+          "w": 9.5,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "Y ",
+        "bbox": {
+          "x": 103.7,
+          "y": 55.3,
+          "w": 12.6,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 46.7,
+          "y": 74.0,
+          "w": 131.8,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "C",
+        "bbox": {
+          "x": 46.7,
+          "y": 74.0,
+          "w": 9.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "O",
+        "bbox": {
+          "x": 56.3,
+          "y": 74.0,
+          "w": 10.3,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "NTIN",
+        "bbox": {
+          "x": 66.6,
+          "y": 74.0,
+          "w": 31.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "U",
+        "bbox": {
+          "x": 97.8,
+          "y": 74.0,
+          "w": 9.5,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ED",
+        "bbox": {
+          "x": 107.4,
+          "y": 74.0,
+          "w": 18.6,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 125.9,
+          "y": 74.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "I",
+        "bbox": {
+          "x": 129.7,
+          "y": 74.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "TEM",
+        "bbox": {
+          "x": 133.3,
+          "y": 74.0,
+          "w": 28.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 26.7,
+          "y": 122.0,
+          "w": 506.7,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "NEX",
+        "bbox": {
+          "x": 26.7,
+          "y": 122.0,
+          "w": 27.5,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "T",
+        "bbox": {
+          "x": 54.1,
+          "y": 122.0,
+          "w": 8.1,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 62.2,
+          "y": 122.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "ITEM",
+        "bbox": {
+          "x": 65.9,
+          "y": 122.0,
+          "w": 31.9,
+          "h": 13.3
+        },
+        "pi": 1
+      }
+    ],
+    "sourceSha": "97918861741fc45b3370edf0a27929c9fc922ddb",
+    "comparison": "Current font/layout geometry and rendered pixels equal prior qualified input. Frozen runtime production source d1d3091c5; later tests and equivalent PDF-only lint syntax edits do not change the saved HWP/HWPX font input path.",
+    "producerSha256": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad"
+  },
+  {
+    "key": "body-list-typed-hwp",
+    "input": "/mnt/e/tmp/issue7998-stage33-evidence/final-print/print-inputs/body-list-typed.hwp",
+    "pdf": "/mnt/e/tmp/issue7998-stage33-evidence/final-print/print/body-list-typed-hwp-2020.pdf",
+    "inputSha256": "0373e41c402326e6ce51036b13872a0b12b1025d427ed9b1c69572feeb2cf071",
+    "pdfSha256": "86cf9aaa61ec6ee4289ffaef193a90e4159d6c872c44a3b0b3c4d84dda29cf30",
+    "layoutEqual": true,
+    "nodeCount": 26,
+    "geometry": [
+      {
+        "type": "Rect",
+        "text": null,
+        "bbox": {
+          "x": 0.0,
+          "y": 55.3,
+          "w": 533.3,
+          "h": 80.0
+        },
+        "pi": null
+      },
+      {
+        "type": "TextBox",
+        "text": null,
+        "bbox": {
+          "x": 0.0,
+          "y": 55.3,
+          "w": 533.3,
+          "h": 80.0
+        },
+        "pi": null
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 26.7,
+          "y": 55.3,
+          "w": 151.8,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "X*",
+        "bbox": {
+          "x": 26.7,
+          "y": 55.3,
+          "w": 14.1,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 40.7,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "L",
+        "bbox": {
+          "x": 44.5,
+          "y": 55.3,
+          "w": 7.4,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "I",
+        "bbox": {
+          "x": 51.9,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ST",
+        "bbox": {
+          "x": 55.6,
+          "y": 55.3,
+          "w": 17.1,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 72.6,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ENT",
+        "bbox": {
+          "x": 76.3,
+          "y": 55.3,
+          "w": 26.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "R",
+        "bbox": {
+          "x": 103.0,
+          "y": 55.3,
+          "w": 9.5,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "Y ",
+        "bbox": {
+          "x": 112.6,
+          "y": 55.3,
+          "w": 12.6,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 46.7,
+          "y": 74.0,
+          "w": 131.8,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "C",
+        "bbox": {
+          "x": 46.7,
+          "y": 74.0,
+          "w": 9.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "O",
+        "bbox": {
+          "x": 56.3,
+          "y": 74.0,
+          "w": 10.3,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "NTIN",
+        "bbox": {
+          "x": 66.6,
+          "y": 74.0,
+          "w": 31.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "U",
+        "bbox": {
+          "x": 97.8,
+          "y": 74.0,
+          "w": 9.5,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ED",
+        "bbox": {
+          "x": 107.4,
+          "y": 74.0,
+          "w": 18.6,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 125.9,
+          "y": 74.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "I",
+        "bbox": {
+          "x": 129.7,
+          "y": 74.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "TEM",
+        "bbox": {
+          "x": 133.3,
+          "y": 74.0,
+          "w": 28.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 26.7,
+          "y": 122.0,
+          "w": 506.7,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "NEX",
+        "bbox": {
+          "x": 26.7,
+          "y": 122.0,
+          "w": 27.5,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "T",
+        "bbox": {
+          "x": 54.1,
+          "y": 122.0,
+          "w": 8.1,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 62.2,
+          "y": 122.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "ITEM",
+        "bbox": {
+          "x": 65.9,
+          "y": 122.0,
+          "w": 31.9,
+          "h": 13.3
+        },
+        "pi": 1
+      }
+    ],
+    "sourceSha": "97918861741fc45b3370edf0a27929c9fc922ddb",
+    "comparison": "Current font/layout geometry and rendered pixels equal prior qualified input. Frozen runtime production source d1d3091c5; later tests and equivalent PDF-only lint syntax edits do not change the saved HWP/HWPX font input path.",
+    "producerSha256": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad"
+  },
+  {
+    "key": "body-list-typed-hwpx",
+    "input": "/mnt/e/tmp/issue7998-stage33-evidence/final-print/print-inputs/body-list-typed.hwpx",
+    "pdf": "/mnt/e/tmp/issue7998-stage33-evidence/final-print/print/body-list-typed-hwpx-2020.pdf",
+    "inputSha256": "0ed7b1e951cf92bef7577949f62d241f514426ebea09989b3672d14a14185962",
+    "pdfSha256": "2f9d9fc8e61c82276b84aec537c923736d407ccfc904ea982cdc3476e7545ddd",
+    "layoutEqual": true,
+    "nodeCount": 26,
+    "geometry": [
+      {
+        "type": "Rect",
+        "text": null,
+        "bbox": {
+          "x": 0.0,
+          "y": 55.3,
+          "w": 533.3,
+          "h": 80.0
+        },
+        "pi": null
+      },
+      {
+        "type": "TextBox",
+        "text": null,
+        "bbox": {
+          "x": 0.0,
+          "y": 55.3,
+          "w": 533.3,
+          "h": 80.0
+        },
+        "pi": null
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 26.7,
+          "y": 55.3,
+          "w": 151.8,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "X*",
+        "bbox": {
+          "x": 26.7,
+          "y": 55.3,
+          "w": 14.1,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 40.7,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "L",
+        "bbox": {
+          "x": 44.5,
+          "y": 55.3,
+          "w": 7.4,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "I",
+        "bbox": {
+          "x": 51.9,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ST",
+        "bbox": {
+          "x": 55.6,
+          "y": 55.3,
+          "w": 17.1,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 72.6,
+          "y": 55.3,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ENT",
+        "bbox": {
+          "x": 76.3,
+          "y": 55.3,
+          "w": 26.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "R",
+        "bbox": {
+          "x": 103.0,
+          "y": 55.3,
+          "w": 9.5,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "Y ",
+        "bbox": {
+          "x": 112.6,
+          "y": 55.3,
+          "w": 12.6,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 46.7,
+          "y": 74.0,
+          "w": 131.8,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "C",
+        "bbox": {
+          "x": 46.7,
+          "y": 74.0,
+          "w": 9.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "O",
+        "bbox": {
+          "x": 56.3,
+          "y": 74.0,
+          "w": 10.3,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "NTIN",
+        "bbox": {
+          "x": 66.6,
+          "y": 74.0,
+          "w": 31.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "U",
+        "bbox": {
+          "x": 97.8,
+          "y": 74.0,
+          "w": 9.5,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "ED",
+        "bbox": {
+          "x": 107.4,
+          "y": 74.0,
+          "w": 18.6,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 125.9,
+          "y": 74.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "I",
+        "bbox": {
+          "x": 129.7,
+          "y": 74.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextRun",
+        "text": "TEM",
+        "bbox": {
+          "x": 133.3,
+          "y": 74.0,
+          "w": 28.2,
+          "h": 13.3
+        },
+        "pi": 0
+      },
+      {
+        "type": "TextLine",
+        "text": null,
+        "bbox": {
+          "x": 26.7,
+          "y": 122.0,
+          "w": 506.7,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "NEX",
+        "bbox": {
+          "x": 26.7,
+          "y": 122.0,
+          "w": 27.5,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "T",
+        "bbox": {
+          "x": 54.1,
+          "y": 122.0,
+          "w": 8.1,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": " ",
+        "bbox": {
+          "x": 62.2,
+          "y": 122.0,
+          "w": 3.7,
+          "h": 13.3
+        },
+        "pi": 1
+      },
+      {
+        "type": "TextRun",
+        "text": "ITEM",
+        "bbox": {
+          "x": 65.9,
+          "y": 122.0,
+          "w": 31.9,
+          "h": 13.3
+        },
+        "pi": 1
+      }
+    ],
+    "sourceSha": "97918861741fc45b3370edf0a27929c9fc922ddb",
+    "comparison": "Current font/layout geometry and rendered pixels equal prior qualified input. Frozen runtime production source d1d3091c5; later tests and equivalent PDF-only lint syntax edits do not change the saved HWP/HWPX font input path.",
+    "producerSha256": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad"
+  }
+]

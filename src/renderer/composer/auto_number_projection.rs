@@ -96,6 +96,7 @@ pub(super) fn project(composed: &mut ComposedParagraph, para: &Paragraph) {
             footnote_marker: number.superscript.then_some(number.assigned_number),
             inserted_control_text: true,
             space_metric: SpaceMetric::Stored,
+            regenerated_font_metrics: super::text_metric_origin::regenerated_row(para, 0),
             ..Default::default()
         };
         for run in super::split_runs_by_lang(vec![run]) {

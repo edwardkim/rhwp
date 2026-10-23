@@ -1,7 +1,7 @@
 //! [Issue #6389] 편람 p68 본문 표 셀의 `○` 문단 줄들이 셀 우측 테두리를 +72~85px 넘는다.
 //!
 //! 이 셀 문단들의 저장 사다리(2~4줄, 각 `segment_width=37560HU`=셀 안쪽 폭)는
-//! kopub/no-ttf 오라클 PDF 와 문자 단위로 일치한다 — 한글이 이 내용을 이 폭에
+//! KoPub 오라클 PDF와 문자 단위로 일치한다 — 한글이 이 내용을 이 폭에
 //! 담았다는 증언이다. 그런데 내장 KoPub돋움체 한글 진행폭(1.0em)이 오라클
 //! 실측(≈0.83em)보다 넓어 자연 폭이 줄 상자의 1.12~1.17배가 되고, 억제 임계
 //! (1.15)를 넘은 줄은 압축이 꺼져 자연 폭 그대로 칸 밖에 그려졌다.
@@ -14,14 +14,13 @@
 //! 현행 face 폭은 #6484에서 임베드 CIDFont 실측 0.872em으로 수정되었다.
 //! 위 ≈0.83em은 장평·자간 적용 후 유효 폭이다. p68 KoPub 설치 환경 PDF의
 //! 줄 경계도 함께 검증해, 셀 안에 들어오더라도 재조판으로 +1줄이 생기거나
-//! 글자가 누락되는 경우를 잡는다. 명시적 no-ttf 환경에서도 PDF p69의 같은
-//! 저장 줄 경계를 유지해야 한다. 저장 정보가 없는 재조판은 companion 환경 테스트가 검증한다.
+//! 글자가 누락되는 경우를 잡는다. KoPub 미설치 환경의 별도 회귀는 제거하고
+//! 정상 KoPub 환경의 셀 내부 표시·원본 내용·저장 줄 경계 검사는 유지한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
-use rhwp::renderer::font_environment::FontEnvironment;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/2025 행정업무운영 편람(최종).hwp";
@@ -32,29 +31,12 @@ const TRAILING_SPACE_ALLOWANCE_PX: f64 = 8.0;
 
 #[test]
 fn issue_6389_manual_p68_stored_ladder_cell_stays_inside_cell() {
-    check_manual_cell(None);
+    check_manual_cell();
 }
 
-#[test]
-fn issue_6389_manual_no_ttf_preserves_pdf_line_boundaries() {
-    // 독립 기준: 기존 -2010-no-ttf.pdf p69의 Haansoft Batang 및 대상 셀 16줄.
-    // 원본의 저장 줄 경계는 KoPub PDF p68과 같다. 대체 세션은 IR을 바꾸지 않는다.
-    let environment = FontEnvironment::from_json(
-        r#"{"id":"hancom-2010-no-kopub","substitutions":{
-            "KoPub돋움체 Light":"바탕", "KoPub돋움체 Medium":"바탕", "KoPub돋움체 Bold":"바탕",
-            "KoPub바탕체 Light":"바탕", "KoPub바탕체 Medium":"바탕", "KoPub바탕체 Bold":"바탕"
-        }}"#,
-    )
-    .expect("no-ttf environment");
-    check_manual_cell(Some(environment));
-}
-
-fn check_manual_cell(environment: Option<FontEnvironment>) {
+fn check_manual_cell() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let mut core =
-        DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open");
-    core.set_font_environment(environment)
-        .expect("set environment");
+    let core = DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open");
     let page = core.build_page_render_tree(67).expect("p68 render tree");
 
     let mut overflow = Vec::new();

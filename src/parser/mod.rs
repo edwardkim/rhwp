@@ -552,6 +552,7 @@ fn parse_hwp_with_cfb(
             hwp3_lineage: false,
             hwpx_lineage: is_hwpx_variant,
             hft_ascii_halfwidth_witnessed: false,
+            stored_rows_before_hancom_2020: false,
         },
     };
 
@@ -587,6 +588,22 @@ fn parse_hwp_with_cfb(
     // dir 영역 basename 매칭 영역 image 영역 자동 load.
     populate_link_image_paths(&mut doc);
 
+    if let Some(idx) = doc
+        .extra_streams
+        .iter()
+        .position(|(p, _)| p == crate::model::border_paint::HWP_STREAM)
+    {
+        let (_, bytes) = doc.extra_streams.remove(idx);
+        crate::model::border_paint::decode(&mut doc, &bytes);
+    }
+    if let Some(idx) = doc
+        .extra_streams
+        .iter()
+        .position(|(p, _)| p == crate::model::text_clip::HWP_STREAM)
+    {
+        let (_, bytes) = doc.extra_streams.remove(idx);
+        crate::model::text_clip::decode(&mut doc, &bytes);
+    }
     if let Some(idx) = doc
         .extra_streams
         .iter()
@@ -1041,6 +1058,7 @@ fn parse_hwp_with_lenient(
             hwp3_lineage: false,
             hwpx_lineage: false,
             hft_ascii_halfwidth_witnessed: false,
+            stored_rows_before_hancom_2020: false,
         },
     };
 

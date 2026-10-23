@@ -230,6 +230,16 @@ fn font_trace_profiles_follow_source_ownership_and_preserve_font_decisions() {
     let with = traces
         .get(feature["withSubstFont"].as_str().expect("with subst id"))
         .expect("with subst trace");
+    // #8109: the HWP counterpart has standard FACE_NAME alternatives too.
+    // Independent DocInfo bytes show 217 alternative records; the exact-face
+    // fixture has none. Keep this metadata contrast separate from render pins.
+    let counterpart = traces
+        .get(
+            feature["withHwpSubstFont"]
+                .as_str()
+                .expect("HWP counterpart id"),
+        )
+        .expect("HWP counterpart trace");
     assert!(without["records"]
         .as_array()
         .expect("without records")
@@ -240,7 +250,12 @@ fn font_trace_profiles_follow_source_ownership_and_preserve_font_decisions() {
         .expect("with records")
         .iter()
         .any(|record| !record["document"]["substFont"].is_null()));
-    assert_ne!(without["layoutHash"], with["layoutHash"]);
+    assert!(counterpart["records"]
+        .as_array()
+        .expect("HWP alternative records")
+        .iter()
+        .any(|record| record["document"]["substFont"] == feature["expectedHwpSubstFont"]));
+    assert_ne!(counterpart["layoutHash"], with["layoutHash"]);
 }
 
 #[test]

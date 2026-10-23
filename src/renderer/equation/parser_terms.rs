@@ -3,7 +3,18 @@
 use super::{EqNode, EqParser, TokenType};
 
 impl EqParser {
+    /// 원소(항) 하나를 읽는다. 완성한 원소의 시작 위치와 직전 글꼴 상태를
+    /// `last_element` 에 남긴다(중첩 호출이 덮어쓴 값은 바깥 원소가 끝날 때 바깥 값으로
+    /// 되돌아온다) — [#7873] 분수의 분자 재읽기.
     pub(super) fn parse_element(&mut self) -> EqNode {
+        let start = self.pos;
+        let state_before = self.font_state;
+        let node = self.parse_element_term();
+        self.last_element = Some((start, state_before));
+        node
+    }
+
+    fn parse_element_term(&mut self) -> EqNode {
         if self.document_terms && self.pos >= self.term_limit {
             return EqNode::Empty;
         }

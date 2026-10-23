@@ -31,6 +31,69 @@ impl LayoutEngine {
             })
     }
 
+    /// 원본 빈 행의 논리 줄 상자와 활성 여백. 가시 글자의 고아 기준과 구분하되
+    /// 이 상자보다 작은 물리 띠로 행을 완결하지 않는다.
+    pub(crate) fn stored_empty_row_frame_height(
+        &self,
+        table: &Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let owners = self.indexed_row_cut_cell_order(table, row);
+        if owners.is_empty() {
+            return None;
+        }
+        let mut height = 0_i64;
+        for &index in owners.iter() {
+            let cell = &table.cells[index];
+            if cell.row_span != 1
+                || cell.text_direction != 0
+                || cell.height > i32::MAX as u32
+                || !self.stored_plain_text_cell_frame(table, cell)
+            {
+                return None;
+            }
+            let mut end = 0_i64;
+            for para in &cell.paragraphs {
+                if !para.text.is_empty()
+                    || para.has_para_text
+                    || !para.title_marks.is_empty()
+                    || para.column_type != crate::model::paragraph::ColumnBreakType::None
+                    || para
+                        .numbering_marker
+                        .text()
+                        .is_some_and(|text| !text.is_empty())
+                    || !styles
+                        .para_styles
+                        .get(para.para_shape_id as usize)
+                        .is_some_and(|style| style.head_type == crate::model::style::HeadType::None)
+                {
+                    return None;
+                }
+                for line in &para.line_segs {
+                    let top = i64::from(line.vertical_pos);
+                    if top < end {
+                        return None;
+                    }
+                    end = top + i64::from(line.line_height);
+                }
+            }
+            let pad = cell.effective_padding(&table.padding);
+            if pad.top < 0 || pad.bottom < 0 {
+                return None;
+            }
+            let occupied = end + i64::from(pad.top) + i64::from(pad.bottom);
+            if occupied > i64::from(cell.height) {
+                return None;
+            }
+            height = height.max(occupied);
+        }
+        Some(crate::renderer::hwpunit_to_px(
+            i32::try_from(height).ok()?,
+            self.dpi,
+        ))
+    }
+
     pub(crate) fn stored_span_opening_frame(
         &self,
         table: &Table,

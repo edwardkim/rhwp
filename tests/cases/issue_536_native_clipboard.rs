@@ -202,6 +202,28 @@ fn native_clipboard_html_preserves_core_formatting_and_scalar_caret_in_one_undo(
 }
 
 #[test]
+fn native_clipboard_own_html_roundtrip_preserves_text_and_one_undo() {
+    for paragraphs in [&["각"][..], &[" 앞😀 ", "뒤 "][..]] {
+        let last = paragraphs.len() - 1;
+        let range = selection(
+            (0, 0),
+            (last as u32, paragraphs[last].chars().count() as u32),
+        );
+        let mut editor = editor(paragraphs, range);
+        let (payload, cut) = editor.cut_selection(0).unwrap();
+        let after_cut: Vec<String> = texts(&editor).into_iter().map(str::to_owned).collect();
+        let pasted = editor
+            .paste_html(cut.revision, payload.html.as_deref().unwrap())
+            .unwrap();
+        assert_eq!(texts(&editor), paragraphs);
+        editor.undo(pasted.revision).unwrap();
+        assert_eq!(texts(&editor), after_cut);
+        editor.redo(editor.session().revision()).unwrap();
+        assert_eq!(texts(&editor), paragraphs);
+    }
+}
+
+#[test]
 fn native_clipboard_empty_html_restores_parser_metadata_and_preserves_redo() {
     let range = selection((0, 0), (0, 1));
     let mut editor = editor(&["가나"], range.clone());

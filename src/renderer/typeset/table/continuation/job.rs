@@ -164,6 +164,8 @@ impl TypesetEngine {
             control_index: job.control_index,
             paragraph,
             paragraphs_all,
+            // 재개 작업은 host 글이 없는 표만 받는다(`begin_resumable_table_pagination`).
+            composed_all: &[],
             table,
             row_geometry_table: row_geometry_table(table),
             measured_table,

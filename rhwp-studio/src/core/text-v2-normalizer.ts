@@ -2,6 +2,7 @@ import type { LayerNode, LayerPaintOp, LayerTextVariantMeta, PageLayerTree } fro
 
 const TEXT_KINDS = new Set(['textRun', 'glyphRun', 'glyphOutline']);
 const SUPPORTED_FEATURES = new Set([
+  'paint.textClipPath',
   'text.variants', 'text.paintOrderSlot', 'text.strictVisualFallbackFree',
   'fontResources', 'text.glyphRun', 'text.glyphRun.verticalUpright',
   'text.glyphOutline', 'text.outlineGlyph', 'text.glyphOutline.monochromeFill',
@@ -121,7 +122,7 @@ export function normalizeTextV2Tree(input: unknown): PageLayerTree {
         if (!Array.isArray(node.children) || node.children.length > remaining) throw new Error('invalid text v2 group');
         return { ...node, children: node.children.map((child: unknown) => visit(child, depth + 1)) } as LayerNode;
       }
-      if (node.kind === 'clipRect') return { ...node, child: visit(node.child, depth + 1) } as LayerNode;
+      if ((node.kind === 'clipRect' || node.kind === 'clipPath')) return { ...node, child: visit(node.child, depth + 1) } as LayerNode;
       if (node.kind !== 'leaf' || !Array.isArray(node.ops) || node.ops.length > remaining) throw new Error('invalid text v2 leaf');
       return { ...node, ops: node.ops.flatMap(expand) } as LayerNode;
     } finally { activeNodes.delete(node); }

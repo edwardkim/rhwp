@@ -214,10 +214,27 @@ fn collect_visual_bounds(
             .map(PaintOp::visual_bounds)
             .filter(|bounds| valid(*bounds))
             .reduce(union),
-        LayerNodeKind::Group { children, .. } => children
-            .iter()
-            .filter_map(|child| collect_visual_bounds(child, clip_enabled, visit))
-            .reduce(union),
+        LayerNodeKind::Group {
+            children,
+            group_kind,
+            ..
+        } => {
+            let bounds = children
+                .iter()
+                .filter_map(|child| collect_visual_bounds(child, clip_enabled, visit))
+                .reduce(union);
+            bounds.map(|bounds| {
+                let transform = match group_kind {
+                    super::layer_tree::GroupKind::Group(g) => g
+                        .paint_transform
+                        .map(|[a, b, c, d, e, f]| LayerAffineTransform { a, b, c, d, e, f }),
+                    _ => None,
+                };
+                affine_bounds(bounds, transform)
+            })
+        }
+        // A conservative visual hull must not pretend that a curved clip is a rectangle.
+        LayerNodeKind::ClipPath { child, .. } => collect_visual_bounds(child, clip_enabled, visit),
         LayerNodeKind::ClipRect { clip, child, .. } => {
             let child = collect_visual_bounds(child, clip_enabled, visit);
             if clip_enabled {
@@ -734,6 +751,25 @@ fn rotate_text(bounds: BoundingBox, logical: BoundingBox, run: &TextRunNode) -> 
 
 fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
     let (font_size, _) = effective_text_font_size_and_baseline(run);
+    // Character position moves ink, not the line's logical flow box. Keep both
+    // extents in the conservative paint bounds so clipping/cache invalidation
+    // cannot drop a raised/lowered glyph. Rotation still uses the original box.
+    let position_offset = run.style.effective_font_size()
+        * f64::from(run.style.font_position.unwrap_or_default())
+        / 100.0;
+    let positioned = if position_offset == 0.0 {
+        logical
+    } else {
+        union(
+            logical,
+            BoundingBox::new(
+                logical.x,
+                logical.y + position_offset,
+                logical.width,
+                logical.height,
+            ),
+        )
+    };
     let mut padding: f64 = 0.0;
     if run.style.underline != UnderlineType::None || run.style.strikethrough {
         padding = font_size * 0.2;
@@ -744,13 +780,13 @@ fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
     if run.style.emphasis_dot != 0 {
         padding = padding.max(font_size * 0.35);
     }
-    let mut bounds = expand(logical, padding);
+    let mut bounds = expand(positioned, padding);
     if run.style.shadow_type != 0 {
         let offset = BoundingBox::new(
-            logical.x + run.style.shadow_offset_x,
-            logical.y + run.style.shadow_offset_y,
-            logical.width,
-            logical.height,
+            positioned.x + run.style.shadow_offset_x,
+            positioned.y + run.style.shadow_offset_y,
+            positioned.width,
+            positioned.height,
         );
         bounds = union(
             bounds,

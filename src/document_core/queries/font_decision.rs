@@ -318,6 +318,26 @@ fn metric_alias_provenance(
 fn metric_entry_provenance(
     metric: &crate::renderer::font_metrics_data::MetricLookupDecision<'_>,
 ) -> Result<ProvenanceDecision, HwpError> {
+    if let Some((source, symbol)) =
+        crate::renderer::font_metrics_data::core14_metric_source(metric.metric)
+    {
+        let mut provenance = unlinked_provenance(
+            json!({
+                "sourceBoundaryId":"rust-metric.adobe-core14",
+                "candidateKind":"metric-entry", "sourceFace":metric.metric.name,
+                "targetOrPolicy":format!("metric-entry:{}",metric.entry_index),
+                "conditions":{"bold":metric.metric.bold,"italic":metric.metric.italic,
+                    "emSize":metric.metric.em_size,"latinRangeSymbol":symbol,"afmSource":source},
+                "order":null,
+            }),
+            "adobe-core14-afm",
+        )
+        .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))?;
+        provenance.evidence_anchor = source.into();
+        provenance.reason = Some("publishedAfmOutsideHistoricalLedger".into());
+        provenance.known_limitations.push("Published advances do not establish the installed paint font or recover a missing PDF font program.".into());
+        return Ok(provenance);
+    }
     linked_provenance(
         json!({
             "sourceBoundaryId": "rust-metric.metric-table",

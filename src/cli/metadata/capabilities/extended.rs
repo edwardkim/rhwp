@@ -38,6 +38,17 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         },
         {
             let mut command = cmd_gated(
+                "export-kitty",
+                "문서를 Kitty graphics stdout 또는 페이지별 파일로 출력 (native-skia)",
+                cfg!(feature = "native-skia"),
+            );
+            command["flags"] = serde_json::json!([
+                "--page", "-p", "--output", "-o", "--width", "--font-path", "--profile", "--compat"
+            ]);
+            command
+        },
+        {
+            let mut command = cmd_gated(
                 "export-sixel",
                 "문서를 Sixel stdout 또는 페이지별 파일로 출력 (native-skia)",
                 cfg!(feature = "native-skia"),
@@ -103,7 +114,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
             let mut command = cmd_json(
                 "import-pdf",
                 "PDF 전체/선택 쪽을 HWPX 또는 HWP로 가져오기 (pdf-import feature)",
-                &["--source-pages", "--json"],
+                &["--source-pages", "--json", "--table-inference"],
                 &["schemaVersion", "source", "output", "format", "bytes", "pageCount", "diagnostics"],
             );
             command["requiresFeature"] = serde_json::json!("pdf-import");

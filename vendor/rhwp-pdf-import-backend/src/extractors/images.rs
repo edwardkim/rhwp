@@ -19,6 +19,9 @@ mod image_mask_limited;
 #[path = "image_mask_limited_extra.rs"]
 mod image_mask_limited_extra;
 
+#[path = "image_stencil_tiles.rs"]
+mod image_stencil_tiles;
+
 /// A PDF image with metadata and pixel data.
 ///
 /// Represents an image extracted from a PDF, including dimensions,

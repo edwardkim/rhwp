@@ -1,6 +1,7 @@
 //! 양쪽 정렬의 문단 앞 공백과 낱말 사이 공백을 같은 줄 계획에서 구분한다.
 
 use super::super::text_measurement::estimate_text_width_unrounded;
+use super::leading_spaces::source_leading_spaces;
 use crate::renderer::{
     composer::{effective_text_for_metrics, ComposedLine},
     style_resolver::ResolvedStyleSet,
@@ -21,14 +22,9 @@ impl<'a> LeadingSpacePlan<'a> {
         let mut leading_spaces = 0;
         for run in &line.runs {
             // 표시 필드·각주·겹친 글자는 원본 공백 문자열과 다른 흐름 요소다.
-            if run.display_text.is_some()
-                || run.footnote_marker.is_some()
-                || run.char_overlap.is_some()
-                || run.inserted_control_text
-            {
+            let Some(prefix) = source_leading_spaces(run) else {
                 break;
-            }
-            let prefix = run.text.chars().take_while(|&ch| ch == ' ').count();
+            };
             leading_spaces += prefix.min(limit.saturating_sub(leading_spaces));
             if leading_spaces == limit || prefix < run.text.chars().count() {
                 break;
@@ -59,9 +55,11 @@ impl<'a> LeadingSpacePlan<'a> {
             } else {
                 let mut prefix = run.clone();
                 prefix.text.truncate(take);
+                prefix.display_text = run.display_for_model_range(0, take);
                 prepared.runs.push(prefix);
                 let mut rest = run.clone();
                 rest.text = run.text[take..].to_owned();
+                rest.display_text = run.display_for_model_range(take, run.source_scalar_count());
                 prepared.runs.push(rest);
             }
             natural_prefix_runs += 1;

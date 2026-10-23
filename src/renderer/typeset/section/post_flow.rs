@@ -25,6 +25,31 @@ impl TypesetEngine {
         // PartialTable 배치 후 page/lazy base 무효화(LINE_SEG lh 가 개체 높이를
         // 반영 못 해 drift 유발 → 직후 paragraph 는 lazy 역산으로 재산출). 단단 전용.
         if st.col_count == 1 {
+            // 단 첫 개체 줄과 같은 문단의 뒤 본문은 이전 쪽 continuation이 아니다.
+            // 실제 수용한 첫 pen과 원본 줄이 같은 축을 인증할 때만 보존한다.
+            let opening_host_frame = (!st.profile.session_edited()
+                && st.profile.hwp5_stored_pagination_layout()
+                && st.current_start_height == 0.0
+                && !st.current_endnote_flow)
+                .then(|| crate::renderer::composer::stored_tac_host_frame(para))
+                .flatten()
+                .filter(|frame| {
+                    matches!(st.current_items.first(), Some(PageItem::Table {
+                        para_index: owner, control_index,
+                    }) if *owner == para_idx && *control_index == frame.control)
+                        && st
+                            .inline_placements
+                            .get(&(para_idx, frame.control))
+                            .is_some_and(|placement| placement.y.abs() <= self.dpi / 7200.0)
+                });
+            if opening_host_frame.is_some() {
+                let origin = para.line_segs[0].vertical_pos;
+                st.record_vpos_page_origin(Some(origin));
+                st.record_vpos_lazy_origin(None);
+                st.record_vpos_column_anchor(0.0);
+                st.record_vpos_origin_provenance(true);
+                st.record_stored_column_origin(Some((origin, 0.0)));
+            }
             let first_continuation = !st.current_endnote_flow
                 && matches!(st.current_items.first(),
                     Some(PageItem::PartialParagraph { para_index: owner, start_line, .. })

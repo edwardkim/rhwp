@@ -5,7 +5,7 @@
 
 use super::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
-    expand_pua_render_text, CharOverlapInfo,
+    expand_pua_render_text_in_style, CharOverlapInfo,
 };
 pub(crate) use super::image_resolver::{
     bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes,
@@ -561,6 +561,39 @@ impl SvgRenderer {
             .push_str(&format!("<g clip-path=\"url(#{})\">", id));
     }
 
+    pub(super) fn begin_layer_path_clip(
+        &mut self,
+        paths: &[crate::model::text_clip::TextClipPath],
+        id: &str,
+    ) {
+        use crate::model::text_clip::ClipCommand;
+        for (index, path) in paths.iter().enumerate() {
+            let mut d = String::new();
+            for c in &path.commands {
+                use std::fmt::Write;
+                match *c {
+                    ClipCommand::Move(x, y) => {
+                        let _ = write!(d, "M{x} {y} ");
+                    }
+                    ClipCommand::Line(x, y) => {
+                        let _ = write!(d, "L{x} {y} ");
+                    }
+                    ClipCommand::Cubic(a, b, c, d1, e, f) => {
+                        let _ = write!(d, "C{a} {b} {c} {d1} {e} {f} ");
+                    }
+                    ClipCommand::Close => d.push_str("Z "),
+                }
+            }
+            let rule = if path.even_odd { "evenodd" } else { "nonzero" };
+            let name = format!("{id}-{index}");
+            self.defs.push(format!(
+                "<clipPath id=\"{name}\"><path d=\"{d}\" clip-rule=\"{rule}\"/></clipPath>"
+            ));
+            self.output
+                .push_str(&format!("<g clip-path=\"url(#{name})\">"));
+        }
+    }
+
     pub(super) fn end_layer_clip(&mut self) {
         self.output.push_str("</g>\n");
     }
@@ -659,6 +692,17 @@ impl SvgRenderer {
 
     /// 개별 노드를 SVG로 렌더링
     fn render_node(&mut self, node: &RenderNode) {
+        if let Some(paths) = &node.paint_clip {
+            let mut source = node.clone();
+            source.paint_clip = None;
+            self.begin_layer_path_clip(paths, &format!("source-text-{}", node.id));
+            self.render_node(&source);
+            for _ in paths {
+                self.end_layer_clip();
+            }
+            return;
+        }
+
         if !node.visible {
             return;
         }
@@ -1892,6 +1936,10 @@ impl SvgRenderer {
     }
 
     fn render_image_node(&mut self, img: &ImageNode, bbox: &super::render_tree::BoundingBox) {
+        if let Some(path) = super::pdf_stroke::project(img, *bbox) {
+            self.draw_path_with_gradient(&path.commands, &path.style, None);
+            return;
+        }
         let interpolation = img.data.as_deref().and_then(|data| {
             let (width, height) = super::image_resolver::png_sampling::dimensions(data)?;
             let source = img.crop.map_or((width, height), |crop| {
@@ -3192,7 +3240,7 @@ impl Renderer for SvgRenderer {
         // [Task #509] 한컴은 폰트 지정과 상관없이 PUA 를 자체 처리. 지정 폰트에 글리프
         // 부재 시 한컴 내부 매핑이 발행. rhwp 도 동일 동작 모방 — 일반 텍스트도 PUA
         // 변환 적용 (PR #251 정합). 매핑 표는 한컴 PDF 정답지 기준.
-        let text = &expand_pua_render_text(&text);
+        let text = &expand_pua_render_text_in_style(&text, style);
         // [Task #528] Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스.
         // 한/글 2010 이전 옛한글 PUA 인코딩을 표준 자모로 변환 (KTUG 매핑).
         let text = &expand_pua_old_hangul(text);
@@ -3791,7 +3839,18 @@ impl Renderer for SvgRenderer {
             "x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{}\"",
             lx1, ly1, lx2, ly2, color, width,
         );
-        stroke_pattern::append_attrs(&mut attrs, style.dash, width);
+        if let Some(intervals) = &style.dash_pattern {
+            attrs.push_str(&format!(
+                " stroke-dasharray=\"{}\"",
+                intervals
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            ));
+        } else {
+            stroke_pattern::append_attrs(&mut attrs, style.dash, width);
+        }
         attrs.push_str(&marker_start_attr);
         attrs.push_str(&marker_end_attr);
         self.output.push_str(&format!("<line {}/>\n", attrs));

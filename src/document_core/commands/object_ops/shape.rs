@@ -1336,6 +1336,7 @@ impl DocumentCore {
             },
             text_box: if has_textbox {
                 Some(TextBox {
+                    paint_clip: None,
                     list_attr: 0x20,
                     vertical_all: false,
                     text_margin_explicit: false,

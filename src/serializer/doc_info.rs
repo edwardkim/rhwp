@@ -452,8 +452,8 @@ fn measured_default_font_name(name: &str) -> Option<&'static str> {
 pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
-    // 대체 글꼴 이름: HWP5 는 alt_name 한 곳에만 담는다. HWPX 파서는 같은 값을
-    // subst_font(<hh:substFont face=...>)로 채우고 alt_name 은 None 으로 두므로,
+    // 대체 글꼴 이름: HWP5 파서는 alt_name 과 subst_font 에 함께 담고, HWPX 파서는
+    // subst_font(<hh:substFont face=...>)만 채우고 alt_name 은 None 으로 두므로,
     // 여기서 두 출처를 합쳐야 HWPX→HWP5 저장에서 대체 글꼴이 살아남는다.
     // (종전엔 alt_name 만 봐서 HWPX 출처 대체 글꼴이 통째로 유실됐다.)
     let alt_name = font.alt_name.as_deref().or_else(|| {
@@ -486,7 +486,12 @@ pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     w.write_hwp_string(&font.name).unwrap();
 
     if let Some(alt_name) = alt_name {
-        w.write_u8(font.alt_type & 0x03).unwrap();
+        let alt_type = font
+            .subst_font
+            .as_ref()
+            .filter(|substitute| substitute.face == alt_name)
+            .map_or(font.alt_type & 0x03, |substitute| substitute.font_type);
+        w.write_u8(alt_type).unwrap();
         w.write_hwp_string(alt_name).unwrap();
     }
     if let Some(type_info) = font.type_info {

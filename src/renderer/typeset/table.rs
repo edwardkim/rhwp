@@ -60,7 +60,7 @@ pub(super) fn format(
     let mt = measured_tables
         .iter()
         .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx);
-    let fitted_visible_mt = fit_measured_for_host(para, table, mt, dpi, &profile);
+    let fitted_visible_mt = fit_measured_for_host(para, table, mt, dpi, styles, &profile);
     let mt = fitted_visible_mt.as_ref().or(mt);
 
     let is_tac = uses_tac_flow();
@@ -120,20 +120,13 @@ pub(super) fn format(
         )
     };
 
-    let unrestricted_wrapper = crate::renderer::height_measurer::transparent_table_wrapper_child(
+    let effective_height = crate::renderer::height_measurer::whole_table_frame_height(
         table,
-    )
-    .is_some_and(|nested| {
-        crate::renderer::height_measurer::unrestricted_wrapper_frame(table, nested, dpi).is_some()
-    });
-    let effective_height = if profile().hwp5_stored_pagination_layout()
-        || profile().hwpx_stored_layout()
-        || unrestricted_wrapper
-    {
-        crate::renderer::height_measurer::unwrapped_table_whole_height(table, effective_height, dpi)
-    } else {
-        effective_height
-    };
+        effective_height,
+        dpi,
+        profile().hwp5_stored_pagination_layout() || profile().hwpx_stored_layout(),
+        styles,
+    );
     let total_height = effective_height + host_spacing.before + host_spacing.after;
 
     // 표 셀 내 각주 높이 사전 계산 (Paginator engine.rs:565-581 동일)
@@ -187,11 +180,12 @@ pub(super) fn fit_measured_for_host(
     table: &Table,
     mt: Option<&MeasuredTable>,
     dpi: f64,
+    styles: &ResolvedStyleSet,
     profile: impl Fn() -> LayoutCompatibilityProfile,
 ) -> Option<MeasuredTable> {
     // An outer wrapper's height is a physical frame, not a target height for
     // proportional rescaling of the unwrapped child's rows.
-    if crate::renderer::height_measurer::transparent_table_wrapper_child(table).is_some_and(
+    if crate::renderer::height_measurer::transparent_table_wrapper_child(table, styles).is_some_and(
         |nested| {
             profile().hwp5_stored_pagination_layout()
                 || profile().hwpx_stored_layout()

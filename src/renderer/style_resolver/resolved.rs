@@ -449,6 +449,7 @@ impl Default for ResolvedBorderStyle {
 /// 해소된 스타일 세트 (DocInfo에서 변환)
 #[derive(Debug, Default, Clone)]
 pub struct ResolvedStyleSet {
+    pub(crate) native_pua_fonts: std::sync::Arc<crate::renderer::native_pua_fonts::NativePuaFonts>,
     /// px 형태의 해소된 스타일을 원본 HWPUNIT으로 환산할 때의 배율.
     pub(crate) resolved_dpi: Option<f64>,
     /// 문서의 `쪽 번호` 스타일이 참조하는 글자 모양. 자동 쪽번호는 본문
@@ -487,4 +488,18 @@ pub struct ResolvedStyleSet {
     /// remains dormant until the composition-owner handoff qualifies.
     pub(crate) horizontal_shaping_context:
         Option<std::sync::Arc<crate::renderer::shaping_context::HorizontalShapingContext>>,
+}
+
+impl ResolvedStyleSet {
+    /// 명시/내장 슬롯의 실제 프로그램을 외부 family 캐시로 대체하지 않는다.
+    pub(crate) fn has_exact_font_source(&self, char_style_id: u32, lang_index: usize) -> bool {
+        self.kerning_measurement_context
+            .as_ref()
+            .is_some_and(|context| {
+                context.has_font_source(crate::renderer::kerning::ExactFontSlot::new(
+                    char_style_id,
+                    lang_index,
+                ))
+            })
+    }
 }

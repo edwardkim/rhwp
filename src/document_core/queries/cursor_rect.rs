@@ -1506,6 +1506,9 @@ impl DocumentCore {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let tree = self.build_page_tree_cached(page_num)?;
+        if let Some(hit) = super::transformed_text::hit(&tree.root, page_num, x, y) {
+            return Ok(hit);
+        }
 
         // 문자 위치를 미리 계산한 TextRun 정보
         struct RunInfo {
@@ -2820,6 +2823,16 @@ impl DocumentCore {
 
         for &page_num in &pages {
             let tree = self.build_page_tree(page_num)?;
+            if let Some(hit) = super::transformed_text::cursor(
+                &tree.root,
+                section_idx,
+                parent_para_idx,
+                &[(control_idx, cell_idx, cell_para_idx)],
+                char_offset,
+                page_num,
+            ) {
+                return Ok(hit);
+            }
             let cell_bounds =
                 find_table_cell_bounds_in_node(&tree.root, parent_para_idx, control_idx, cell_idx);
             if let Some(hit) = find_cursor_in_cell_node(
@@ -3109,6 +3122,7 @@ impl DocumentCore {
             straddle_row_relief,
             straddle_page_bands,
             fragment_row_heights,
+            fragment_block_frames,
             end_row_owns_stored_frame,
         }) = col.items.first()
         else {
@@ -3154,7 +3168,12 @@ impl DocumentCore {
         // 모든 셀 렌더 후 수행되는 border clip 확장으로 바깥 셀 bbox를 넓힐 수 있다.
         // `cellBounds`도 공개 JSON 계약이므로, 이 형상에서는 대상 셀만 끝까지
         // 렌더해 같은 후처리를 재현한다. 다른 셀과 페이지 트리는 여전히 생략한다.
+        let cell_owns_block_frame = fragment_block_frames.iter().any(|&(first, end)| {
+            first <= usize::from(cell.row)
+                && usize::from(cell.row) + usize::from(cell.row_span) <= end
+        });
         let needs_full_cell_for_bounds = *end_row_owns_stored_frame
+            || cell_owns_block_frame
             || cell
                 .paragraphs
                 .iter()
@@ -3175,7 +3194,11 @@ impl DocumentCore {
         // 대상 셀이 그 행의 유일한 칸일 때만 같은 값을 재현한다 — 그 밖에는 legacy 로
         // 폴백한다. 접는 조각에서는 여분이 실제 배치 커서로 정해지므로 대상 셀을 끝까지
         // 렌더한다(`needs_full_cell_for_bounds` 와 같은 이유·같은 방법).
-        let fragment_may_fold = !*end_row_owns_stored_frame && end_cut.iter().any(|&unit| unit > 0);
+        let fragment_may_fold = !*end_row_owns_stored_frame
+            && !fragment_block_frames
+                .iter()
+                .any(|&(first, end)| first < *end_row && *end_row <= end)
+            && end_cut.iter().any(|&unit| unit > 0);
         if fragment_may_fold {
             let Some(fold_row) = (*end_row).min(table.row_count as usize).checked_sub(1) else {
                 return Ok(Unsupported);
@@ -3328,6 +3351,7 @@ impl DocumentCore {
                 .map(|(measured, rows)| {
                     let mut measured = measured.clone();
                     measured.row_heights = rows.to_vec();
+                    measured.fragment_block_frames = fragment_block_frames.clone();
                     measured
                 });
         let pt_mt = fragment_measurement.as_ref().or(pt_mt);
@@ -3762,6 +3786,16 @@ impl DocumentCore {
 
         for &page_num in &pages {
             let tree = self.build_page_tree_cached(page_num)?;
+            if let Some(hit) = super::transformed_text::cursor(
+                &tree.root,
+                section_idx,
+                parent_para_idx,
+                &path,
+                char_offset,
+                page_num,
+            ) {
+                return Ok(hit);
+            }
             if let Some((pi, x, y, h, cell_bounds)) = find_cursor_by_path(
                 self,
                 &tree.root,

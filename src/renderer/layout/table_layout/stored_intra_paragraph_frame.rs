@@ -78,8 +78,9 @@ impl LayoutEngine {
     }
 
     fn source_first_cell_frame_height(&self, table: &Table, cell: &Cell) -> Option<f64> {
-        if cell.row == 0
-            || !self.stored_plain_text_cell_frame(table, cell)
+        // 첫 행의 원점도 0으로 정규화한다. 원본 줄과 같은 물리 상자를
+        // 인증하는 조건은 아래에서 뒤 행과 동일하게 적용한다.
+        if !self.stored_plain_text_cell_frame(table, cell)
             || table.common.height == 0
             || table.common.height > i32::MAX as u32
         {
@@ -158,14 +159,19 @@ impl LayoutEngine {
         let mut previous: Option<&crate::model::paragraph::LineSeg> = None;
         let mut advance = 0.0;
         for (index, unit) in units.iter().enumerate() {
-            if unit.vis_end != unit.vis_start + 1 {
+            let paragraph = cell.paragraphs.get(unit.para_idx)?;
+            // 글자가 없는 물리 전진 유닛은 가시 줄 범위가 비어 있어도 실제 저장
+            // 줄 하나를 대표할 수 있다. 아래의 원본 원점·높이·간격 대조를 그대로
+            // 통과해야 하며, 높이 없는 보조 꼬리를 근거 없이 인증하지 않는다.
+            let source_only_empty_line = unit.empty_spacer
+                && unit.vis_start == 0
+                && unit.vis_end == 0
+                && paragraph.text.trim().is_empty()
+                && paragraph.line_segs.len() == 1;
+            if unit.vis_end != unit.vis_start + 1 && !source_only_empty_line {
                 return None;
             }
-            let line = cell
-                .paragraphs
-                .get(unit.para_idx)?
-                .line_segs
-                .get(unit.vis_start)?;
+            let line = paragraph.line_segs.get(unit.vis_start)?;
             if let Some(before) = previous {
                 if line.vertical_pos == 0 && before.vertical_pos > 0 {
                     let ink = hwpunit_to_px(
@@ -281,6 +287,46 @@ impl LayoutEngine {
         frame.filter(|height| completed_height <= *height)
     }
 
+    /// 온전한 행의 내용이 개체가 저장한 첫 조각 끝에서 완결되는가.
+    /// 선언 행의 빈 꼬리는 이 첫 상자에 포함되지 않는다. 실제 잔여와
+    /// 저장 상자가 같은 경계를 가리킬 때만 정렬한 내용까지 확인한다.
+    pub(crate) fn completed_row_closes_opening_source_frame(
+        &self,
+        table: &Table,
+        row: usize,
+        end_cut: &[usize],
+        natural_height: f64,
+        available: f64,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let order = Self::row_cut_cell_order(table, row);
+        if order.is_empty() || order.len() != end_cut.len() || !available.is_finite() {
+            return None;
+        }
+        let epsilon = hwpunit_to_px(2, self.dpi);
+        let mut frame: Option<f64> = None;
+        for (&index, &end) in order.iter().zip(end_cut) {
+            let cell = &table.cells[index];
+            let units = self.cell_units(cell, table, styles);
+            if units.is_empty() || end != units.len() {
+                return None;
+            }
+            let height = self.source_first_cell_frame_height(table, cell)?;
+            if (height - available).abs() > epsilon
+                || frame.is_some_and(|before| (height - before).abs() > epsilon)
+            {
+                return None;
+            }
+            frame = Some(height);
+        }
+        let height = frame?;
+        // 내용 완료가 위 정렬 행의 물리 빈 밴드까지 소진한 것은 아니다.
+        // 기존 닫힘 계약이 정렬·패딩·후행 전진을 구분한 점유 끝을 함께 쓴다.
+        let required =
+            self.stored_closing_row_occupancy(table, row, natural_height, height, styles)?;
+        (required <= height).then_some(height)
+    }
+
     pub(super) fn stored_span_partial_first_frame_owner(
         &self,
         table: &Table,
@@ -371,7 +417,21 @@ impl LayoutEngine {
         if (origin + opening - source_end).abs() > epsilon || (accepted - opening).abs() > epsilon {
             return None;
         }
-        let remaining = measured_rows[row] - opening;
+        // 넘길 물리 잔여는 행 **상자**의 남은 몫이다. 측정 행 높이가 선언 상자보다 크면
+        // 그 초과분은 내용(마지막 줄의 줄간격 포함)이 만든 높이라 빈 물리 띠가 아니다 —
+        // 남은 내용은 다음 조각이 제 높이로 재므로 여기서 다시 넘기지 않는다.
+        // 80168 hwp 5쪽: 선언 869px · 측정 929.6px 행의 이어받기가 33.6px(내용 22.4px)로
+        // 늘어 한/글 2024 PDF(≈21px)보다 상자가 11px 길었다.
+        let declared = table
+            .get_raw_row_heights()
+            .get(row)
+            .copied()
+            .filter(|&height| height > 0 && height <= i32::MAX as u32)
+            .map(|height| hwpunit_to_px(height as i32, self.dpi));
+        let physical = declared.map_or(measured_rows[row], |declared| {
+            declared.min(measured_rows[row])
+        });
+        let remaining = physical - opening;
         let content = self.row_cut_content_height(table, row, cut, &[], styles);
         (remaining > content + epsilon).then_some(remaining)
     }

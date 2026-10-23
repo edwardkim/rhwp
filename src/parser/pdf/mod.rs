@@ -3,15 +3,22 @@
 //! `pdf-import` is enabled by default and can be excluded with
 //! `--no-default-features`. The internal backend limits decoded outputs, but
 //! full codec/font/cache allocation bounds are not yet proven.
+mod body_regions;
+mod char_pool;
 mod extract;
 mod lowering;
 mod path_paint;
 mod policy;
 mod recognition;
+mod rotated_text;
 mod structured_lowering;
 mod table_detection;
 mod table_hierarchy;
+mod table_inference;
+mod table_paint;
 mod table_topology;
+mod text_analysis;
+mod text_clip;
 
 use crate::model::document::Document;
 use pdf_oxide::import_limits::{ImportBudget, ImportBudgetSnapshot, ImportLimitFailure};
@@ -34,6 +41,9 @@ const MAX_DOCUMENT_IMAGE_PIXELS: u64 = 64_000_000;
 pub struct PdfImportOptions {
     /// Zero-based, strictly increasing source pages. None imports every page.
     pub source_pages: Option<Vec<usize>>,
+    /// Include page-scoped observations and competing table hypotheses in metadata.
+    /// Contains source text; opt-in, local review only.
+    pub include_table_inference: bool,
 }
 
 #[derive(Debug)]
@@ -176,6 +186,7 @@ pub struct PdfPageMetadata {
     pub nested_tables: usize,
     pub deferred_tables: usize,
     pub unsupported_paths: usize,
+    pub table_inference: Value,
 }
 
 #[derive(Debug, Serialize)]
@@ -200,11 +211,15 @@ struct ExtractedPage {
     media_box: (f32, f32, f32, f32),
     spans: Vec<TextSpan>,
     span_orders: Vec<Vec<usize>>,
+    span_fonts: Vec<Option<std::sync::Arc<pdf_oxide::fonts::FontInfo>>>,
+    span_clips: Vec<Option<std::sync::Arc<pdf_oxide::elements::PathClip>>>,
     images: Vec<PdfImage>,
     image_orders: Vec<Vec<usize>>,
     paths: Vec<PathContent>,
     // Internal structural evidence only, dropped after each page's lowering.
     snapshot: Value,
+    recognition: recognition::PageRecognition,
+    table_inference: table_inference::Ledger,
 }
 
 #[derive(Default)]
@@ -330,6 +345,14 @@ pub fn parse_pdf_with_policy(
         .map_err(|error| {
             PdfImportError::backend(error).at("selection_policy", None, Some(&request))
         })?;
+    request
+        .restrict_traversal_limits(
+            policy.backend.reference_visits,
+            policy.backend.xobject_visits,
+        )
+        .map_err(|error| {
+            PdfImportError::backend(error).at("selection_policy", None, Some(&request))
+        })?;
     let mut document = lowering::new_document().map_err(|_| {
         PdfImportError::new("PDF_LOWERING_FAILED", "IR scaffold initialization failed")
     })?;
@@ -338,6 +361,7 @@ pub fn parse_pdf_with_policy(
         .pop()
         .ok_or_else(|| PdfImportError::new("PDF_LOWERING_FAILED", "IR scaffold has no section"))?;
     let mut next_id = 1;
+    let mut character_pool = char_pool::Pool::new(&document)?;
     let mut budget = Budget {
         policy,
         ..Budget::default()
@@ -390,6 +414,7 @@ pub fn parse_pdf_with_policy(
         }
         let section = document.sections.len();
         document.sections.push(template.clone());
+        let first_character_shape = document.doc_info.char_shapes.len();
         let lowered = structured_lowering::lower(&page, &mut document, &mut next_id);
         pdf.check_import_budget().map_err(|error| {
             PdfImportError::backend(error).at("lower", Some(source_page), Some(&request))
@@ -397,6 +422,7 @@ pub fn parse_pdf_with_policy(
         let report = lowered.map_err(|_| {
             PdfImportError::new("PDF_LOWERING_FAILED", "PDF content could not be lowered")
         })?;
+        character_pool.compact_page(&mut document, first_character_shape, section)?;
         let n = |key: &str| report[key].as_u64().unwrap_or(0) as usize;
         let (left, bottom, right, top) = page.media_box;
         pages.push(PdfPageMetadata {
@@ -422,6 +448,13 @@ pub fn parse_pdf_with_policy(
             nested_tables: n("semanticNestedTables"),
             deferred_tables: report["deferredTables"].as_array().map_or(0, Vec::len),
             unsupported_paths: n("unsupportedPaths"),
+            table_inference: page.table_inference.report(
+                &page.snapshot["tableDetection"],
+                &report,
+                &page.paths,
+                &page.recognition.report,
+                options.include_table_inference,
+            ),
         });
     }
     document.doc_properties.section_count = u16::try_from(document.sections.len())

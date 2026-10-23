@@ -243,6 +243,7 @@ impl TypesetEngine {
                                 == (picture_host_origin.0, picture_host_origin.1))
                             .then_some(picture_host_origin.2);
                         st.register_side_wrap_picture(para_idx, ctrl_idx, para, host_top, styles);
+                        st.register_page_anchored_topbottom_band(para_idx, ctrl_idx, para);
                         // 뒤 저장 어울림 줄이 소유 줄의 그림 프레임을 증명한 경우,
                         // 예약과 실제 출력이 같은 앵커 계획을 소비한다.
                         if !self.profile.get().session_edited()
@@ -403,6 +404,10 @@ impl TypesetEngine {
                         // overflow 로 잘림). pagination 측에서도 layout 과 동일하게
                         // 개체 높이를 current_height 에 누적.
                         use crate::model::shape::{TextWrap, VertRelTo};
+                        let host_spacing_before = styles
+                            .para_styles
+                            .get(para.para_shape_id as usize)
+                            .map_or(0.0, |style| style.spacing_before);
                         // (obj_h, extra=obj_h+margin_bottom, h_left, h_right px)
                         let pushdown_h: Option<(f64, f64, f64, f64)> = match ctrl {
                             Control::Picture(pic)
@@ -417,20 +422,13 @@ impl TypesetEngine {
                                 let hr = hl + hwpunit_to_px(pic.common.width as i32, self.dpi);
                                 // [#7470] 그림 띠에 흡수된 빈 host 줄은 이미 흐름에 더한 문단
                                 // 높이에서 돌려준다(배치 `layout_shape_item` #683 과 같은 판별).
-                                let absorbed_host_line = if pic.caption.is_none()
-                                    && crate::renderer::empty_host_line_absorbed_by_topbottom_float(
+                                let absorbed_host_line = if pic.caption.is_none() {
+                                    crate::renderer::absorbed_host_line_return_px(
                                         para,
                                         &pic.common,
-                                    ) {
-                                    para.line_segs
-                                        .first()
-                                        .map(|seg| {
-                                            hwpunit_to_px(
-                                                seg.line_height + seg.line_spacing,
-                                                self.dpi,
-                                            )
-                                        })
-                                        .unwrap_or(0.0)
+                                        host_spacing_before,
+                                        self.dpi,
+                                    )
                                 } else {
                                     0.0
                                 };
@@ -463,21 +461,12 @@ impl TypesetEngine {
                                 // 문단 측정이 이미 소비한 줄을 다시 예약하면 배치의
                                 // layout_shape_item보다 뒤 콘텐츠의 예산이 작아진다.
                                 let absorbed_host_line =
-                                    if crate::renderer::empty_host_line_absorbed_by_topbottom_float(
-                                        para, cm,
-                                    ) {
-                                        para.line_segs
-                                            .first()
-                                            .map(|seg| {
-                                                hwpunit_to_px(
-                                                    seg.line_height + seg.line_spacing,
-                                                    self.dpi,
-                                                )
-                                            })
-                                            .unwrap_or(0.0)
-                                    } else {
-                                        0.0
-                                    };
+                                    crate::renderer::absorbed_host_line_return_px(
+                                        para,
+                                        cm,
+                                        host_spacing_before,
+                                        self.dpi,
+                                    );
                                 Some((h, (h + mb - absorbed_host_line).max(0.0), hl, hr))
                             }
                             _ => None,

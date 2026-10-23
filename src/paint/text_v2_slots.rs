@@ -149,7 +149,9 @@ impl PageLayerTree {
         while let Some(node) = nodes.pop() {
             match &node.kind {
                 LayerNodeKind::Group { children, .. } => nodes.extend(children),
-                LayerNodeKind::ClipRect { child, .. } => nodes.push(child),
+                LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                    nodes.push(child)
+                }
                 LayerNodeKind::Leaf { ops } => {
                     for op in ops {
                         if let Some(key) = payload_key(op) {
@@ -172,7 +174,7 @@ impl PageLayerTree {
                             .rev(),
                     );
                 }
-                Some("clipRect") => nodes.push(&node["child"]),
+                Some("clipRect") | Some("clipPath") => nodes.push(&node["child"]),
                 Some("leaf") => {
                     for slot in node["ops"].as_array().ok_or_else(projection_issue)? {
                         if slot["type"] != "text" {

@@ -58,7 +58,9 @@ fn image_ops<'a>(node: &'a LayerNode, out: &mut Vec<&'a PaintOp>) {
                 image_ops(child, out)
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => image_ops(child, out),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            image_ops(child, out)
+        }
         LayerNodeKind::Leaf { ops } => {
             out.extend(ops.iter().filter(|op| matches!(op, PaintOp::Image { .. })))
         }

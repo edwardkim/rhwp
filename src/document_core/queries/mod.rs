@@ -7,6 +7,7 @@ pub(crate) mod doc_tree_nav;
 pub mod explain;
 /// [#gym] `explore` 명령의 어포던스 라우터 — 기존 조회 개수에서 문서별 행동 메뉴를 유도.
 pub mod explore;
+mod transformed_text;
 // [#3281] `fields` CLI 가 필드 위치(NestedEntry)를 읽어야 하므로 공개한다.
 // 읽기 전용 질의 모듈이며 `structure`·`rendering` 과 같은 가시성이다.
 pub mod field_query;

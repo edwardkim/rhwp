@@ -295,6 +295,12 @@ fn validate_direct_pdf_tree(
                     validate_node(child, page_index)?;
                 }
             }
+            LayerNodeKind::ClipPath { paths, child } => {
+                if !crate::model::text_clip::valid(paths) {
+                    return Err("invalid text clip path".into());
+                }
+                validate_node(child, page_index)?;
+            }
             LayerNodeKind::ClipRect { clip, child, .. } => {
                 validate_bbox(*clip, page_index, "clip")?;
                 validate_node(child, page_index)?;

@@ -21,7 +21,9 @@ fn visit<'a>(node: &'a LayerNode, out: &mut Vec<(&'a LayerNode, &'a PaintOp)>) {
                 visit(c, out)
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => visit(child, out),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            visit(child, out)
+        }
         LayerNodeKind::Leaf { ops } => {
             for op in ops {
                 out.push((node, op))

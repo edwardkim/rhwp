@@ -337,6 +337,7 @@ impl LayoutEngine {
                 || resolved.engrave
                 || resolved.superscript
                 || resolved.subscript
+                || resolved.font_position_for_lang(source_run.lang_index) != 0
                 || resolved.emphasis_dot != 0
                 || resolved
                     .letter_spacing_for_lang(source_run.lang_index)
@@ -789,17 +790,9 @@ impl LayoutEngine {
             shape_table_cell_ref,
             false,
         );
-        // [#6121] 셀 문단에 앵커된 비-TAC 개체(글 뒤로 제외)에 원본 text_wrap/z_order
-        // 를 layer 로 실어 둔다 — 페이지 조립 후처리
-        // (`lift_cell_anchored_objects_above_text`)가 이 마킹을 소비해 셀 본문
-        // 텍스트 위로 올린다. TAC 는 텍스트 흐름의 일부라 순서를 건드리지 않고,
-        // 글 뒤로(BehindText)는 기존 문단-순서 페인트가 이미 텍스트 아래다.
-        if !child_common.treat_as_char
-            && !matches!(
-                child_common.text_wrap,
-                crate::model::shape::TextWrap::BehindText
-            )
-        {
+        // Cell-local paint order is settled after all paragraphs are assembled.
+        // BehindText must move below even the text emitted before its anchor.
+        if !child_common.treat_as_char {
             let stable_index = table_cell_ctx
                 .map(|(_, _, _, _, cell_para_i, inner_ci)| {
                     Self::object_stable_index(cell_para_i, inner_ci)
@@ -812,6 +805,8 @@ impl LayoutEngine {
             );
             for child in cell_node.children.iter_mut().skip(children_before) {
                 child.set_layer(layer);
+                child.cell_frame_paint =
+                    crate::model::border_paint::is_cell_frame_attributes(child_common);
             }
         }
     }
@@ -845,6 +840,7 @@ impl LayoutEngine {
 
         // 글상자 내부 표: 셀 너비 합이 컨테이너 폭을 초과하면 비례 축소
         let col_sum: f64 = col_widths.iter().sum();
+        let _rows = self.table_rows_scope(table);
         let max_w = {
             let common_w = hwpunit_to_px(table.common.width as i32, self.dpi);
             if common_w > 0.0 && common_w < container.width {
@@ -979,7 +975,10 @@ impl LayoutEngine {
             let cell_y = table_y + row_y[r];
             let end_col = (c + cell.col_span as usize).min(col_count);
             let end_row = (r + cell.row_span as usize).min(row_count);
-            let cell_w = rcx[end_col] - rcx[c] - cell_spacing;
+            let cell_w = row_col_x.cell_width(r, c, end_col, cell_spacing);
+            let frame_cell_w = self
+                .paragraph_frame_width_override(cell, table)
+                .unwrap_or(cell_w);
             let cell_h = row_y[end_row] - row_y[r] - cell_spacing;
 
             let cell_id = tree.next_id();
@@ -1078,7 +1077,10 @@ impl LayoutEngine {
 
             let inner_x = cell_x + pad_left;
             let inner_width = crate::renderer::composer::cell_inner_text_width(
-                cell_w, pad_left, pad_right, self.dpi,
+                frame_cell_w,
+                pad_left,
+                pad_right,
+                self.dpi,
             );
             let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
             let has_nested = cell

@@ -253,14 +253,14 @@ impl ParagraphBox {
     /// | --- | ---: | ---: |
     /// | 한/글 저장 `hp:lineseg` | `39208` | `800` |
     /// | `content_width_px` | `40808` | `0` |
-    /// | 이 함수 | `39206` | `800` |
+    /// | stage30의 구 구현 | `39206` | `800` |
     ///
     /// 여분 1600 HWPUNIT에 줄마다 글자가 하나 더 들어가면서 같은 셀의
     /// 줄 수가 기준 출력보다 세 줄 줄어들었다.
     ///
-    /// 셀 안쪽 폭에는 단 계산의 양자화가 적용되지 않았으므로
-    /// [`ParagraphBox::body`]의 폭 스냅을 적용하지 않는다. 여기서 단 양자화를
-    /// 적용하면 원래 없던 셀 경계를 만들게 된다.
+    /// 셀 내용 폭도 저장 줄의 4 HWPUNIT 격자를 따른다(#7412). 여백을 뺀 두
+    /// 끝점을 각각 스냅하지 않고, `content_width_px`와 같은 원래 내용 폭을
+    /// 먼저 스냅해 문단의 실제 왼쪽 원점을 보존한다.
     pub(crate) fn content_for_style(
         content_width_px: f64,
         style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
@@ -270,7 +270,10 @@ impl ParagraphBox {
         let margin_left = style.map(|s| s.margin_left).unwrap_or(0.0);
         let margin_right = style.map(|s| s.margin_right).unwrap_or(0.0);
         let head_type = style.map(|s| s.head_type).unwrap_or(HeadType::None);
-        let width_hwp = crate::renderer::px_to_hwpunit(content_width_px, dpi);
+        let width_hwp = snap_base_right(
+            crate::renderer::px_to_hwpunit(content_width_px, dpi),
+            COLUMN_WIDTH_QUANTUM_HWP,
+        );
         let margin_left_hwp = crate::renderer::px_to_hwpunit(margin_left, dpi);
         let margin_right_hwp = crate::renderer::px_to_hwpunit(margin_right, dpi);
         Self::content(margin_left_hwp..width_hwp.saturating_sub(margin_right_hwp))

@@ -66,7 +66,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             // 10pt 검정으로 — run 경계 (0,cs_a)(24,cs_b)(26,cs_c) 에서 cs_a 적용).
             // char_offsets 가 있으면 본문 경로와 같은 splitter 로 토큰화하고,
             // 없으면 종전 단일 default_style run 을 유지한다.
-            let fallback_runs = if para.char_offsets.len() == total && !para.char_shapes.is_empty()
+            let mut fallback_runs = if para.char_offsets.len() == total && !para.char_shapes.is_empty()
             {
                 split_by_char_shapes(
                     &line_text,
@@ -87,8 +87,12 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                     supplemental_metrics_blocked: false,
                     inserted_control_text: false,
                     space_metric: crate::renderer::composer::SpaceMetric::Stored,
+                    regenerated_font_metrics: false,
                 }])
             };
+            for run in &mut fallback_runs {
+                run.regenerated_font_metrics = true;
+            }
             lines.push(ComposedLine {
                 runs: fallback_runs,
                 line_height: 400,
@@ -113,10 +117,12 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
     for line_idx in 0..line_seg_count {
         let line_seg = &para.line_segs[line_idx];
         let space_metric = para.line_space_metric(line_idx);
+        let regenerated_font_metrics = text_metric_origin::regenerated_row(para, line_idx);
         let split_row_runs = |text: &str, start, end, offsets: &[u32], shapes: &[CharShapeRef]| {
             let mut runs = split_by_char_shapes(text, start, end, offsets, shapes);
             for run in &mut runs {
                 run.space_metric = space_metric;
+                run.regenerated_font_metrics = regenerated_font_metrics;
             }
             runs
         };
@@ -406,6 +412,7 @@ fn split_by_char_shapes(
             supplemental_metrics_blocked: false,
             inserted_control_text: false,
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
+            regenerated_font_metrics: false,
         }]);
     }
 
@@ -469,6 +476,7 @@ fn split_by_char_shapes(
             supplemental_metrics_blocked: false,
             inserted_control_text: false,
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
+            regenerated_font_metrics: false,
         }]);
     }
 
@@ -499,6 +507,7 @@ fn split_by_char_shapes(
                     supplemental_metrics_blocked: false,
                     inserted_control_text: false,
                     space_metric: crate::renderer::composer::SpaceMetric::Stored,
+                    regenerated_font_metrics: false,
                 });
             }
         }
@@ -523,6 +532,7 @@ fn split_by_char_shapes(
                     supplemental_metrics_blocked: false,
                     inserted_control_text: false,
                     space_metric: crate::renderer::composer::SpaceMetric::Stored,
+                    regenerated_font_metrics: false,
                 },
             );
         }
@@ -541,6 +551,7 @@ fn split_by_char_shapes(
             supplemental_metrics_blocked: false,
             inserted_control_text: false,
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
+            regenerated_font_metrics: false,
         });
     }
 
@@ -631,6 +642,7 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
                         supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                         inserted_control_text: run.inserted_control_text,
                         space_metric: run.space_metric,
+                        regenerated_font_metrics: run.regenerated_font_metrics,
                     });
                 }
                 current_lang = char_lang;
@@ -652,6 +664,7 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
                 supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                 inserted_control_text: run.inserted_control_text,
                 space_metric: run.space_metric,
+                regenerated_font_metrics: run.regenerated_font_metrics,
             });
         }
     }

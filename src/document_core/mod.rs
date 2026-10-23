@@ -9,6 +9,8 @@ pub(crate) use helpers::*;
 pub mod builders;
 mod canvas_metric_requests;
 mod canvas_metrics;
+mod native_pua_fonts;
+pub use native_pua_fonts::NativePuaFontRequest;
 mod font_environment;
 pub use canvas_metric_requests::{CanvasMetricBatch, CanvasMetricReply, CanvasMetricRequest};
 mod commands;
@@ -185,6 +187,7 @@ pub struct DocumentCore {
     pub(crate) pagination: Vec<PaginationResult>,
     /// 해소된 스타일 세트
     pub(crate) styles: ResolvedStyleSet,
+    native_pua_fonts: std::sync::Arc<crate::renderer::native_pua_fonts::NativePuaFonts>,
     pub(crate) canvas_metrics: Option<canvas_metrics::CanvasMetricSession>,
     pub(crate) hft_outline_fonts: crate::renderer::hft_outline::HftOutlineFonts,
     pub(crate) metafile_fonts: crate::paint::metafile_fonts::MetafileFonts,
@@ -293,6 +296,8 @@ pub struct DocumentCore {
     pub(crate) section_raw_store: Vec<(u32, commands::section_raw_journal::SectionRawCapture)>,
     /// 다음 구역 raw 캡처 ID
     pub(crate) next_section_raw_id: u32,
+    pub(crate) border_paint_store: Vec<(u32, commands::border_paint_edit::BorderPaintUndo)>,
+    pub(crate) next_border_paint_id: u32,
     /// 그림 크기 변경의 원본 변환 상태. 문서/이미지 전체는 복제하지 않는다.
     pub(crate) picture_transform_store: Vec<(
         u32,
@@ -387,6 +392,12 @@ impl DocumentCore {
         use crate::renderer::style_resolver::lookup_font_name_in_environment;
 
         let mut fonts = std::collections::BTreeSet::new();
+        if let Some(default) =
+            crate::renderer::style_resolver::missing_latin_default(&self.document)
+        {
+            // 표시·측정에 쓰는 기본 face도 같은 브라우저 준비 경로로 공급한다.
+            fonts.insert(default.to_string());
+        }
         let mut font_substitutions = std::collections::BTreeSet::new();
         for (lang_idx, lang_fonts) in self.document.doc_info.font_faces.iter().enumerate() {
             for (font_idx, _) in lang_fonts.iter().enumerate() {
@@ -481,15 +492,21 @@ impl DocumentCore {
     /// normalization. Layout provenance remains in `Document::layout_profile`
     /// and is passed separately to cache-admission consumers.
     pub(crate) fn resolve_render_styles(&self) -> ResolvedStyleSet {
-        crate::renderer::style_resolver::resolve_styles_with_environment(
+        let mut styles = crate::renderer::style_resolver::resolve_styles_with_environment(
             &self.document,
             self.dpi,
             self.font_environment.as_ref(),
             self.effective_layout_profile(),
-        )
+        );
+        styles.native_pua_fonts = self.native_pua_fonts.clone();
+        styles
     }
 
-    pub(crate) fn rebuild_resolved_styles(&mut self) {
+    pub(crate) fn rebuild_resolved_styles(&mut self) -> bool {
+        let equation_frames_changed = crate::renderer::equation::declared_frame::set_generation(
+            &mut self.document,
+            self.hangul2024_compat,
+        );
         // 정규화한 줄과 인라인 프레임은 현재 글꼴 메트릭·DPI에서 파생된다.
         // source revision이 같아도 스타일 재해소 뒤에는 이전 투영을 재사용하지 않는다.
         self.render_normalization.sections.fill_with(|| None);
@@ -504,6 +521,7 @@ impl DocumentCore {
             &mut self.document.sections,
             &self.styles,
         );
+        equation_frames_changed
     }
 
     /// 한글 2024 계열 조판 에뮬레이션을 켜거나 끈다.
@@ -511,7 +529,9 @@ impl DocumentCore {
     pub fn set_hangul2024_compat(&mut self, enabled: bool) {
         if self.hangul2024_compat != enabled {
             self.hangul2024_compat = enabled;
-            self.rebuild_resolved_styles();
+            if self.rebuild_resolved_styles() {
+                self.recompose_all_with_horizontal_shaping();
+            }
             for d in self.dirty_sections.iter_mut() {
                 *d = true;
             }
@@ -533,6 +553,7 @@ impl DocumentCore {
             document: Document::default(),
             pagination: Vec::new(),
             styles: ResolvedStyleSet::default(),
+            native_pua_fonts: Default::default(),
             canvas_metrics: None,
             hft_outline_fonts: Default::default(),
             metafile_fonts: Default::default(),
@@ -577,6 +598,8 @@ impl DocumentCore {
             next_fragment_id: 0,
             section_raw_store: Vec::new(),
             next_section_raw_id: 0,
+            border_paint_store: Vec::new(),
+            next_border_paint_id: 0,
             picture_transform_store: Vec::new(),
             next_picture_transform_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),

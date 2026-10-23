@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-10-16
+last_verified: 2026-10-22
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -56,7 +56,7 @@ rhwp inspect hidden-text --help
 - `-o, --output <폴더>` — 출력 폴더 (기본 `output/`)
 - `-p, --page <번호>` — 특정 페이지만 (0부터). 생략 시 전체
 - `--profile <프로필>` — 출력 프로필: `screen` | `print` | `high-quality` | `fast-preview`
-  (export-svg / export-png / export-pdf 지원, #2297)
+  (export-svg / export-png / export-pdf / export-sixel / export-kitty 지원)
 - 옵션은 파일 앞뒤 어디에 와도 된다 (#3359 — export-svg/png/pdf/markdown/render-tree/
   doclang, export-structure/export-tables 와 동일 규약). 파일 positional 을 두 번 주면 exit 2.
 
@@ -70,6 +70,17 @@ rhwp inspect hidden-text --help
 > 한컴은 그림 미지정 placeholder 를 편집기에서만 표시하고 인쇄(및 인쇄 등가
 > 출력)에서는 미출력한다 — rhwp 의 인쇄 등가 프로필이 이 계약을 따른다.
 
+## Kitty graphics 출력
+
+Kitty graphics를 지원하는 터미널에서
+`rhwp export-kitty 문서.hwp --page 0 --width 360`으로 첫 쪽을 표시한다.
+`rhwp export-kitty 문서.hwp -o output/kitty --width 720`은 전체 쪽을 `.kitty` 파일로 저장한다.
+기본 stdout은 첫 쪽만 표시하고, `-p 2`를 지정하면 세 번째 쪽을 선택한다.
+흰 배경 PNG의 색을 유지하며 `native-skia`가 필요하다. 기본 빌드만으로는 사용할 수 없다.
+그래픽은 stdout, 진단은 stderr이며 `--json`은 지원하지 않는다.
+빌드·옵션·종료 코드·kitty/WezTerm SSH·원격 한글 폰트 설정은
+[Kitty 출력 가이드](export_kitty_command.md)를 따른다.
+
 ## Sixel 출력
 
 Sixel을 지원하는 terminal에서 한 쪽을 바로 표시하려면
@@ -78,6 +89,15 @@ Sixel을 지원하는 terminal에서 한 쪽을 바로 표시하려면
 `-p 2`를 함께 지정하면 세 번째 쪽만 저장한다.
 기본 첫 쪽만 stdout에 출력하며 흰 배경·256색으로 변환한다. `native-skia`가 필요하다.
 옵션·종료 코드·terminal/SSH 검증은 [Sixel 출력 가이드](export_sixel_command.md)를 따른다.
+
+### 터미널 출력에서 글자가 보이지 않을 때
+
+Sixel과 Kitty 모두 **렌더링 호스트에 글꼴이 필요**하다. SSH이면 원격에 글꼴을 공급하고
+`--font-path /실제/글꼴/디렉터리` 또는 개별 글꼴 파일을 지정한다. 여러 경로는 옵션을 반복한다.
+표·그림이 보이는데 한글만 비면 로컬 터미널 글꼴 설정부터 바꾸지 말고 이 경로를 확인한다.
+글꼴 공급 뒤 `.six`·`.kitty` 저장 파일도 다시 생성한다.
+실행 예시는 [Sixel 글꼴 설정](export_sixel_command.md#한글이나-일부-글자가-보이지-않을-때)과
+[Kitty 글꼴 설정](export_kitty_command.md#ssh와-실제-터미널-확인)을 따른다.
 
 ## PDF 가져오기 (기본 포함)
 
@@ -97,6 +117,9 @@ rhwp import-pdf input.pdf output.hwpx --json
 
 # 원본 1·7·8쪽을 순서대로 가져오기: 0-based, 범위 양 끝 포함
 rhwp import-pdf input.pdf selected.hwp --source-pages 0,6-7 --json
+
+# 원본 문자·클립·표 후보를 포함한 로컬 상세 진단
+rhwp import-pdf input.pdf review.hwpx --json --table-inference
 ```
 
 - 입력·출력 위치 인자 두 개가 필수이며 출력 확장자는 `.hwpx` 또는 `.hwp`다.
@@ -112,6 +135,11 @@ rhwp import-pdf input.pdf selected.hwp --source-pages 0,6-7 --json
   원본 쪽과 가져온 구역의 0-based 대응이며 `pageCount`는 Core가 조판한 쪽수다. 이 둘을 동일한
   값으로 가정하지 않는다. `paragraphPolicy`, `warnings`, `parserAllocationBoundsProven=false`도
   진단에 남긴다. 원본 좌표를 담는 `diagnostics.pages`는 비신뢰 문서 파생 필드로 표시한다.
+- `diagnostics.pages[].tableInference`는 후보 수·검출/생성 보류 이유를 요약한다.
+  `--table-inference`는 `--json`과 함께 사용하며 원본 문자, 초기 내용 묶음, 클립과 paint,
+  후보별 지역 축의 상세 근거를 추가한다. 작성 당시 셀 구조의 정답을 의미하지 않는다.
+  원본 문자가 포함되므로 로컬 검토용이며 자료 공개 여부는 별도로 판단한다.
+  WASM `HwpDocument.importPdf(bytes, { includeTableInference: true })`도 같은 진단을 반환한다.
 - 암호 옵션은 이 명령에서 거부한다. 출력 암호가 필요하면 생성된 파일에 `convert` 또는
   `export-hwpx`의 암호 옵션을 사용한다.
 - `--no-default-features --features wasm-api`로 PDF만 제외한 CLI 빌드에도 도움말·capabilities는 보이며 `available=false`, 실행은

@@ -8,6 +8,20 @@ use crate::renderer::typeset::{
 use super::super::TableContinuationCursor;
 use super::{FragmentBudget, FragmentInput, FragmentProfile};
 
+// 스캔이 실제 수용한 행 상자에는 내용 컷 밖의 여백·빈 띠도 포함된다.
+// 그 행을 내용 높이로 다시 빼면 그 차이가 앞 행 prefix에 중복 계상된다.
+fn accepted_row_box(
+    row: usize,
+    height_override: Option<f64>,
+    partial_row_box: Option<(usize, f64)>,
+) -> Option<f64> {
+    height_override.or_else(|| {
+        partial_row_box
+            .filter(|(owner, _)| *owner == row)
+            .map(|(_, height)| height)
+    })
+}
+
 impl TypesetEngine {
     pub(super) fn scan_table_fragment(
         &self,
@@ -55,6 +69,10 @@ impl TypesetEngine {
             header_overhead,
             avail_for_rows,
             reflow_frame_avail_for_rows,
+            reflow_blank_avail_for_rows,
+            reflow_blank_first_fragment_shortfall,
+            reflow_frame_first_fragment_shortfall,
+            first_fragment_shortfall,
             ..
         } = *budget;
         let source_cut_heights = budget.source_complete_frame_last_row.map(|(row, height)| {
@@ -87,8 +105,11 @@ impl TypesetEngine {
             if (opening || closing) && height <= avail_for_rows {
                 return BlockTableRowScan {
                     source_frame_band: 0.0,
+                    plain_cut_owns_blank_band: false,
                     consumed: height,
                     accepted_end_row_box: None,
+                    accepted_start_row_box: None,
+                    accepted_partial_row_box: None,
                     end_row: 1,
                     split_block_start: None,
                     split_end_cut: if opening {
@@ -97,6 +118,8 @@ impl TypesetEngine {
                         Vec::new()
                     },
                     split_end_limit: if opening { height } else { 0.0 },
+                    split_end_reserved: 0.0,
+                    split_block_physical_height: None,
                     end_row_height_override: Some(height),
                 };
             }
@@ -109,12 +132,17 @@ impl TypesetEngine {
                 if frame.opening_height <= avail_for_rows + 0.5 {
                     return BlockTableRowScan {
                         source_frame_band: 0.0,
+                        plain_cut_owns_blank_band: false,
                         consumed: frame.opening_height,
                         accepted_end_row_box: None,
+                        accepted_start_row_box: None,
+                        accepted_partial_row_box: None,
                         end_row: 1,
                         split_block_start: None,
                         split_end_cut: vec![0],
                         split_end_limit: frame.opening_height,
+                        split_end_reserved: 0.0,
+                        split_block_physical_height: None,
                         end_row_height_override: Some(frame.opening_height),
                     };
                 }
@@ -135,12 +163,17 @@ impl TypesetEngine {
                 if opening <= avail_for_rows + 0.1 {
                     return BlockTableRowScan {
                         source_frame_band: 0.0,
+                        plain_cut_owns_blank_band: false,
                         consumed: opening,
                         accepted_end_row_box: None,
+                        accepted_start_row_box: None,
+                        accepted_partial_row_box: None,
                         end_row: 1,
                         split_block_start: None,
                         split_end_cut: cut,
                         split_end_limit: opening,
+                        split_end_reserved: 0.0,
+                        split_block_physical_height: None,
                         end_row_height_override: Some(opening),
                     };
                 }
@@ -153,12 +186,17 @@ impl TypesetEngine {
                 {
                     return BlockTableRowScan {
                         source_frame_band: 0.0,
+                        plain_cut_owns_blank_band: false,
                         consumed: 0.0,
                         accepted_end_row_box: None,
+                        accepted_start_row_box: None,
+                        accepted_partial_row_box: None,
                         end_row: cursor_row,
                         split_block_start: None,
                         split_end_cut: Vec::new(),
                         split_end_limit: 0.0,
+                        split_end_reserved: 0.0,
+                        split_block_physical_height: None,
                         end_row_height_override: None,
                     };
                 }
@@ -202,8 +240,10 @@ impl TypesetEngine {
             is_continuation,
             avail_for_rows,
             reflow_frame_avail_for_rows,
+            reflow_blank_avail_for_rows,
             header_overhead,
             landscape_rowbreak_bleed,
+            has_table_footnotes: !input.prepared.table_footnotes.is_empty(),
             landscape_whole_row_tolerance,
             landscape_short_row_tolerance,
             landscape_short_row_max_height,
@@ -213,6 +253,17 @@ impl TypesetEngine {
             start_cut_is_block: input.start.start_cut_is_block,
             start_row_height_override,
             source_terminal_suffix_start: input.prepared.source_terminal_suffix_start,
+            opening_block_cuts_after_first_row: input
+                .prepared
+                .opening_rowspan_block_cuts_after_first_row
+                && !is_continuation
+                && cursor_row == 0,
+            source_carried_band_row: budget.source_carried_band_row,
+            unreserved_outer_bottom: (crate::renderer::hwpunit_to_px(
+                i32::from(table.outer_margin_bottom),
+                self.dpi,
+            ) - budget.fragment_outer_bottom_overhead)
+                .max(0.0),
         };
         let run_scan = |vars: BlockRowScanVars| {
             let mut scan = self.scan_block_table_split_rows(
@@ -230,53 +281,53 @@ impl TypesetEngine {
                 vars,
                 BlockTableRowScan {
                     source_frame_band: 0.0,
+                    plain_cut_owns_blank_band: false,
                     consumed: 0.0,
                     accepted_end_row_box: None,
+                    accepted_start_row_box: None,
+                    accepted_partial_row_box: None,
                     end_row: cursor_row,
                     split_block_start: None,
                     split_end_cut: Vec::new(),
                     split_end_limit: 0.0,
+                    split_end_reserved: 0.0,
+                    split_block_physical_height: None,
                     end_row_height_override: None,
                 },
             );
             // 원본 첫 상자가 본문 하단을 닫는 경우, 후속 쪽의 공통 저장 컷은
             // 잉크뿐 아니라 남은 빈 밴드도 소유한다. 각주 재수용도 이 closure를
             // 다시 호출하므로 현재 실제 예산 안에서만 물리 프레임을 수용한다.
-            if is_continuation
-                && scan.split_block_start.is_none()
-                && scan.split_end_limit > 0.0
-                && st.current_zone_y_offset == 0.0
-                && layout_engine.original_body_closed_table_frame(
-                    input.source.paragraph,
-                    table,
-                    st.layout.body_area.height,
-                )
-                && scan.end_row.checked_sub(1).is_some_and(|row| {
-                    layout_engine.row_cut_closes_shared_original_frame(
-                        table,
-                        row,
-                        &scan.split_end_cut,
-                        styles,
-                    ) || layout_engine.row_cut_closes_original_restart_frame(
-                        table,
-                        row,
-                        &scan.split_end_cut,
-                        input.fragment_row_heights.unwrap_or(&mt.row_heights),
-                        styles,
-                    )
-                })
-            {
+            let original_body_frame_bottom = layout_engine.original_body_closed_table_bottom(
+                input.source.paragraph,
+                table,
+                st.layout.body_area.height,
+            );
+            if let Some(frame_bottom) = original_body_frame_bottom.filter(|_| {
+                is_continuation
+                    && scan.split_block_start.is_none()
+                    && scan.split_end_limit > 0.0
+                    && st.current_zone_y_offset == 0.0
+                    && scan.end_row.checked_sub(1).is_some_and(|row| {
+                        layout_engine.row_cut_closes_shared_original_frame(
+                            table,
+                            row,
+                            &scan.split_end_cut,
+                            styles,
+                        ) || layout_engine.row_cut_closes_original_restart_frame(
+                            table,
+                            row,
+                            &scan.split_end_cut,
+                            input.fragment_row_heights.unwrap_or(&mt.row_heights),
+                            styles,
+                        )
+                    })
+            }) {
                 let top = budget.fragment_placement.map_or(
                     st.current_height + budget.host_before_overhead + budget.vert_offset_overhead,
                     |placement| placement.table_top,
                 ) + budget.caption_extra;
-                let frame_height =
-                    crate::renderer::float_placement::single_cell_page_fragment_bottom(
-                        table,
-                        st.layout.body_area.height,
-                        self.dpi,
-                    ) - top
-                        - vars.header_overhead;
+                let frame_height = frame_bottom - top - vars.header_overhead;
                 if frame_height >= scan.consumed && frame_height <= vars.avail_for_rows {
                     let last_height = scan.end_row_height_override.unwrap_or_else(|| {
                         let row = scan.end_row - 1;
@@ -308,12 +359,17 @@ impl TypesetEngine {
         };
         let BlockTableRowScan {
             mut source_frame_band,
+            mut plain_cut_owns_blank_band,
             mut consumed,
             mut accepted_end_row_box,
+            mut accepted_start_row_box,
+            mut accepted_partial_row_box,
             mut end_row,
             mut split_block_start,
             mut split_end_cut,
             mut split_end_limit,
+            mut split_end_reserved,
+            mut split_block_physical_height,
             mut end_row_height_override,
         } = run_scan(scan_vars);
         if let Some(started) = issue2424_scan_started {
@@ -365,7 +421,7 @@ impl TypesetEngine {
                 // paint receives through the last-row override. Otherwise
                 // emit reserves that band a second time as unused page space.
                 let source_frame_height = before_last + end_row_height_override.unwrap_or(0.0);
-                source_frame_band = (source_frame_height - consumed).max(0.0);
+                source_frame_band = (source_frame_band + source_frame_height - consumed).max(0.0);
                 consumed = source_frame_height;
                 // 내용이 끝난 일반 행도 같은 저장 물리 프레임을 사용한다.
                 // 내용 예산으로 빈 밴드를 계산하면 다음 쪽이 그 차이만큼
@@ -435,34 +491,14 @@ impl TypesetEngine {
             && start_cut.is_empty()
             && is_split_fragment
         {
-            let mut anchor_offsets: Vec<f64> = Vec::new();
-            let mut anchor_unresolved = false;
-            for cell in &row_geometry_table.cells {
-                for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
-                    if !cp
-                        .controls
-                        .iter()
-                        .any(|c| matches!(c, Control::Footnote(_)))
-                    {
-                        continue;
-                    }
-                    let row = (cell.row as usize).min(row_count.saturating_sub(1));
-                    let row_prefix: f64 = (0..row).map(|x| cut_row_h[x] + cs).sum();
-                    match layout_engine.cell_para_unit_offset(
-                        cell,
-                        row_geometry_table,
-                        styles,
-                        cp_idx,
-                    ) {
-                        Some(off) => anchor_offsets.push(row_prefix + off),
-                        None => anchor_unresolved = true,
-                    }
-                }
-            }
-            let min_anchor = anchor_offsets.iter().copied().fold(f64::INFINITY, f64::min);
-            let all_beyond =
-                !anchor_unresolved && !anchor_offsets.is_empty() && min_anchor >= consumed - 0.5;
-            if all_beyond {
+            let first_anchor = table::footnotes::first_table_footnote_anchor_offset(
+                layout_engine,
+                row_geometry_table,
+                styles,
+                cut_row_h,
+                cs,
+            );
+            if let Some(min_anchor) = first_anchor.filter(|anchor| *anchor >= consumed - 0.5) {
                 let pad = if mt.allows_row_break_split() {
                     layout_engine.row_remaining_visible_padding_height(
                         row_geometry_table,
@@ -473,11 +509,25 @@ impl TypesetEngine {
                 } else {
                     mt.max_padding_for_row(cursor_row)
                 };
-                let avail_refit = (avail_for_rows + table_fn_reserved).min(min_anchor + pad + 0.1);
+                // [#8081] 0 으로 자른 첫 조각 예산에는 모자란 몫이 빠져 있다 — 되돌린 예약에서
+                // 그 몫을 먼저 갚아야 실제 남은 공간이 된다.
+                let avail_refit = (avail_for_rows + table_fn_reserved - first_fragment_shortfall)
+                    .min(min_anchor + pad + 0.1);
                 if avail_refit > avail_for_rows + 0.5 {
                     let issue2424_refit_started = profile.enabled.then(std::time::Instant::now);
+                    // 일반 행 컷이 따로 쓰는 물리 프레임 상한도 같은 몫을 되돌린다.
+                    let reflow_refit = reflow_frame_avail_for_rows.map(|height| {
+                        height
+                            .max(height + table_fn_reserved - reflow_frame_first_fragment_shortfall)
+                    });
+                    let blank_refit = reflow_blank_avail_for_rows.map(|height| {
+                        height
+                            .max(height + table_fn_reserved - reflow_blank_first_fragment_shortfall)
+                    });
                     let refit = run_scan(BlockRowScanVars {
                         avail_for_rows: avail_refit,
+                        reflow_frame_avail_for_rows: reflow_refit,
+                        reflow_blank_avail_for_rows: blank_refit,
                         ..scan_vars
                     });
                     if let Some(started) = issue2424_refit_started {
@@ -498,13 +548,18 @@ impl TypesetEngine {
                             );
                         }
                         source_frame_band = refit.source_frame_band;
+                        plain_cut_owns_blank_band = refit.plain_cut_owns_blank_band;
                         consumed = refit.consumed;
                         end_row = refit.end_row;
                         split_block_start = refit.split_block_start;
                         split_end_cut = refit.split_end_cut;
                         split_end_limit = refit.split_end_limit;
+                        split_end_reserved = refit.split_end_reserved;
+                        split_block_physical_height = refit.split_block_physical_height;
                         end_row_height_override = refit.end_row_height_override;
                         accepted_end_row_box = refit.accepted_end_row_box;
+                        accepted_start_row_box = refit.accepted_start_row_box;
+                        accepted_partial_row_box = refit.accepted_partial_row_box;
                         if end_row <= cursor_row {
                             end_row = cursor_row + 1;
                         }
@@ -525,6 +580,7 @@ impl TypesetEngine {
                     &split_end_cut,
                     split_block_start,
                     end_row_height_override,
+                    consumed,
                 ))
             && (input.prepared.caption_overhead > 0.0
                 || budget.terminal_outer_bottom_overhead > budget.fragment_outer_bottom_overhead)
@@ -567,12 +623,17 @@ impl TypesetEngine {
                     // 양수 저장 앵커 때문에 이월을 무한 반복하지 않아야 한다.
                     return BlockTableRowScan {
                         source_frame_band: 0.0,
+                        plain_cut_owns_blank_band: false,
                         consumed: 0.0,
                         accepted_end_row_box: None,
+                        accepted_start_row_box: None,
+                        accepted_partial_row_box: None,
                         end_row: cursor_row,
                         split_block_start: None,
                         split_end_cut: Vec::new(),
                         split_end_limit: 0.0,
+                        split_end_reserved: 0.0,
+                        split_block_physical_height: None,
                         end_row_height_override: None,
                     };
                 }
@@ -589,13 +650,18 @@ impl TypesetEngine {
                 });
                 if refit.end_row > cursor_row && refit.consumed > 0.0 {
                     source_frame_band = refit.source_frame_band;
+                    plain_cut_owns_blank_band = refit.plain_cut_owns_blank_band;
                     consumed = refit.consumed;
                     end_row = refit.end_row;
                     split_block_start = refit.split_block_start;
                     split_end_cut = refit.split_end_cut;
                     split_end_limit = refit.split_end_limit;
+                    split_end_reserved = refit.split_end_reserved;
+                    split_block_physical_height = refit.split_block_physical_height;
                     end_row_height_override = refit.end_row_height_override;
                     accepted_end_row_box = refit.accepted_end_row_box;
+                    accepted_start_row_box = refit.accepted_start_row_box;
+                    accepted_partial_row_box = refit.accepted_partial_row_box;
                 }
             }
         }
@@ -651,13 +717,16 @@ impl TypesetEngine {
             } else {
                 &[]
             };
-            let selected = layout_engine.row_cut_content_height(
-                row_geometry_table,
-                row,
-                row_start,
-                &split_end_cut,
-                styles,
-            );
+            let selected = accepted_row_box(row, end_row_height_override, accepted_partial_row_box)
+                .unwrap_or_else(|| {
+                    layout_engine.row_cut_content_height(
+                        row_geometry_table,
+                        row,
+                        row_start,
+                        &split_end_cut,
+                        styles,
+                    )
+                });
             let before_last = consumed - selected;
             let source_frame_available =
                 crate::renderer::float_placement::single_cell_page_fragment_bottom(
@@ -678,16 +747,16 @@ impl TypesetEngine {
             ) {
                 consumed += height - selected;
                 end_row_height_override = Some(height);
+                split_end_reserved = height;
             }
         }
 
-        // 반복 제목행의 원본 쪽 프레임은 refit이 선택한 내용과 같은 물리 상자를 예약한다.
+        // 원본 일반 행의 쪽 프레임은 refit이 선택한 내용과 같은 물리 상자를 예약한다.
         // 내용을 다 소비한 컷에도 마지막 줄 간격만 남은 꼬리를 별도 행으로 세지 않는다.
         if split_block_start.is_none()
             && split_end_limit > 0.0
             && !split_end_cut.is_empty()
             && end_row > cursor_row
-            && self.stored_header_physical_rows(st, input.source)
         {
             let row = end_row - 1;
             let row_start = if row == cursor_row {
@@ -695,15 +764,16 @@ impl TypesetEngine {
             } else {
                 &[]
             };
-            let selected = end_row_height_override.unwrap_or_else(|| {
-                layout_engine.row_cut_content_height(
-                    row_geometry_table,
-                    row,
-                    row_start,
-                    &split_end_cut,
-                    styles,
-                )
-            });
+            let selected = accepted_row_box(row, end_row_height_override, accepted_partial_row_box)
+                .unwrap_or_else(|| {
+                    layout_engine.row_cut_content_height(
+                        row_geometry_table,
+                        row,
+                        row_start,
+                        &split_end_cut,
+                        styles,
+                    )
+                });
             let before_last = consumed - selected;
             let physical = self.stored_header_fragment_row_budget(
                 st,
@@ -712,16 +782,39 @@ impl TypesetEngine {
                 budget.host_before_overhead,
             ) - header_overhead
                 - before_last;
-            let available = physical.min(avail_for_rows - before_last);
-            let inline_frame = layout_engine
-                .stored_inline_restart_row_end_frame(
-                    row_geometry_table,
-                    row,
-                    row_start,
-                    &split_end_cut,
-                    available,
-                    styles,
-                )
+            let available = physical.min(
+                budget
+                    .reflow_blank_avail_for_rows
+                    .unwrap_or(avail_for_rows)
+                    .min(avail_for_rows)
+                    - before_last,
+            );
+            // 인라인 프레임의 반복 제목행 계약은 유지한다. 일반 칸의 원본
+            // 최소는 제목행 유무와 무관하며, helper가 저장 컷의 유효성을 확인한다.
+            let inline_frame = self
+                .stored_header_physical_rows(st, input.source)
+                .then(|| {
+                    layout_engine
+                        .stored_inline_restart_row_end_frame(
+                            row_geometry_table,
+                            row,
+                            row_start,
+                            &split_end_cut,
+                            available,
+                            styles,
+                        )
+                        .or_else(|| {
+                            layout_engine.stored_inline_picture_preceding_row_frame(
+                                row_geometry_table,
+                                row,
+                                row_start,
+                                &split_end_cut,
+                                available,
+                                styles,
+                            )
+                        })
+                })
+                .flatten()
                 .filter(|height| *height >= selected);
             if let Some(height) = inline_frame.or_else(|| {
                 layout_engine.stored_ordinary_row_end_frame(
@@ -738,6 +831,7 @@ impl TypesetEngine {
                 }
                 consumed += height - selected;
                 end_row_height_override = Some(height);
+                split_end_reserved = height;
             }
         }
 
@@ -758,15 +852,16 @@ impl TypesetEngine {
             )
         {
             let row = end_row - 1;
-            let selected = end_row_height_override.unwrap_or_else(|| {
-                layout_engine.row_cut_content_height(
-                    row_geometry_table,
-                    row,
-                    &[],
-                    &split_end_cut,
-                    styles,
-                )
-            });
+            let selected = accepted_row_box(row, end_row_height_override, accepted_partial_row_box)
+                .unwrap_or_else(|| {
+                    layout_engine.row_cut_content_height(
+                        row_geometry_table,
+                        row,
+                        &[],
+                        &split_end_cut,
+                        styles,
+                    )
+                });
             let top = budget.fragment_placement.map_or(
                 st.current_height + budget.host_before_overhead + budget.vert_offset_overhead,
                 |placement| placement.table_top,
@@ -797,17 +892,23 @@ impl TypesetEngine {
             {
                 consumed += physical - selected;
                 end_row_height_override = Some(physical);
+                split_end_reserved = physical;
             }
         }
 
         BlockTableRowScan {
             source_frame_band,
+            plain_cut_owns_blank_band,
             consumed,
             accepted_end_row_box,
+            accepted_start_row_box,
+            accepted_partial_row_box,
             end_row,
             split_block_start,
             split_end_cut,
             split_end_limit,
+            split_end_reserved,
+            split_block_physical_height,
             end_row_height_override,
         }
     }

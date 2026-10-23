@@ -12871,6 +12871,36 @@ impl PdfDocument {
         &self,
         page_index: usize,
     ) -> Result<Vec<(crate::layout::TextSpan, Vec<usize>)>> {
+        self.extract_ordered_painted_spans_with_frames(page_index)
+            .map(|spans| {
+                spans
+                    .into_iter()
+                    .map(|(span, order, _)| (span, order))
+                    .collect()
+            })
+    }
+
+    /// Editable import also needs the unsnapped CTM × Tm linear basis. It is
+    /// captured at the same text-show as paint order, without a second parse.
+    pub fn extract_ordered_painted_spans_with_frames(
+        &self,
+        page_index: usize,
+    ) -> Result<Vec<(crate::layout::TextSpan, Vec<usize>, [f32; 4])>> {
+        self.extract_ordered_painted_spans_with_fonts(page_index)
+            .map(|spans| {
+                spans
+                    .into_iter()
+                    .map(|painted| (painted.span, painted.order, painted.basis))
+                    .collect()
+            })
+    }
+
+    /// Import provenance from the same scoped FontInfo that decoded the span.
+    /// A page-level family lookup cannot distinguish same-named Form resources.
+    pub fn extract_ordered_painted_spans_with_fonts(
+        &self,
+        page_index: usize,
+    ) -> Result<Vec<crate::layout::text_block::PaintedTextSpan>> {
         self.check_import_budget()?;
         let mut orders = HashMap::new();
         let spans = self.extract_spans_impl_with_orders(
@@ -12881,15 +12911,31 @@ impl PdfDocument {
             true,
             Some(&mut orders),
         )?;
+        let mut spans = spans;
+        // Preserve the actual text basis for import, rather than reading-order's
+        // five-degree quadrant snap. Glyph positions must use the same frame.
+        for span in &mut spans {
+            if let Some(crate::extractors::text::SpanPaintOrder {
+                basis: [a, b, _, _],
+                ..
+            }) = orders.get(&span.sequence)
+            {
+                span.rotation_degrees = b.atan2(*a).to_degrees();
+            }
+        }
         let spans = self.postprocess_spans_for_import(page_index, spans)?;
         let result = spans
             .into_iter()
             .map(|span| {
-                let order = orders
+                let metadata = orders
                     .remove(&span.sequence)
-                    .map(|(order, _group)| order)
                     .ok_or_else(|| Error::Unsupported("missing text paint order".into()))?;
-                Ok((span, order))
+                Ok(crate::layout::text_block::PaintedTextSpan {
+                    span,
+                    order: metadata.order,
+                    basis: metadata.basis,
+                    font: metadata.font,
+                })
             })
             .collect();
         self.check_import_budget()?;
@@ -13329,10 +13375,13 @@ impl PdfDocument {
             let bottom = lly.min(ury) - EDGE_TOLERANCE_PT;
             let top = lly.max(ury) + EDGE_TOLERANCE_PT;
             spans.retain(|span| {
-                let sx1 = span.bbox.x;
-                let sx2 = span.bbox.x + span.bbox.width;
-                let sy1 = span.bbox.y;
-                let sy2 = span.bbox.y + span.bbox.height;
+                // A run's bbox is in its local writing frame. A baseline
+                // origin outside the page can still rotate visible glyphs in.
+                let frame = span.page_bbox();
+                let sx1 = frame.x;
+                let sx2 = frame.x + frame.width;
+                let sy1 = frame.y;
+                let sy2 = frame.y + frame.height;
                 sx2 > left && sx1 < right && sy2 > bottom && sy1 < top
             });
         }
@@ -13343,7 +13392,7 @@ impl PdfDocument {
         page_index: usize,
         raw_spans: Vec<crate::layout::TextSpan>,
     ) -> Result<Vec<crate::layout::TextSpan>> {
-        self.postprocess_spans_inner(page_index, raw_spans, true)
+        self.postprocess_spans_inner(page_index, raw_spans, true, false)
     }
 
     fn postprocess_spans_for_import(
@@ -13354,7 +13403,7 @@ impl PdfDocument {
         // Positional import retains painted headers and footers. Semantic
         // artifact classification is unused by lowering and must not extract
         // every unselected source page to classify the requested one.
-        self.postprocess_spans_inner(page_index, raw_spans, false)
+        self.postprocess_spans_inner(page_index, raw_spans, false, true)
     }
 
     fn postprocess_spans_inner(
@@ -13362,6 +13411,7 @@ impl PdfDocument {
         page_index: usize,
         raw_spans: Vec<crate::layout::TextSpan>,
         classify_running_artifacts: bool,
+        preserve_script_glyphs: bool,
     ) -> Result<Vec<crate::layout::TextSpan>> {
         let mut spans = raw_spans;
 
@@ -13380,7 +13430,9 @@ impl PdfDocument {
 
         // Re-attach oversized lone leading capitals to their word before the
         // reading-order sort can strand them (drop-cap / table-title initials).
-        Self::merge_drop_cap_initials(&mut spans);
+        if !preserve_script_glyphs {
+            Self::merge_drop_cap_initials(&mut spans);
+        }
 
         // Apply page /Rotate to span geometry BEFORE reading-order sorting.
         //
@@ -13590,7 +13642,12 @@ impl PdfDocument {
         // ground truth keeps in ASCII; gating on token-internal
         // context keeps the desired cases without regressing the
         // affiliation-block pages.
-        Self::apply_super_sub_script_substitutions(&mut spans);
+        // Positional import preserves the original scalar and its glyph size /
+        // baseline. Replacing "2" by "²" would apply script shaping twice and
+        // alter the editable source text. Search/text extraction keeps its policy.
+        if !preserve_script_glyphs {
+            Self::apply_super_sub_script_substitutions(&mut spans);
+        }
 
         // Fold spacing-diacritic spans (´, `, ^, ~, ¨, …) into the
         // base letter of the following span when the diacritic is
@@ -13607,7 +13664,7 @@ impl PdfDocument {
         // spec-aligned positions instead of drifting prefix-sums. Runs last, on
         // the fully post-processed spans, so alignment sees the same text the
         // consumers do.
-        self.stamp_char_x_offsets(page_index, &mut spans);
+        self.stamp_char_x_offsets(page_index, &mut spans, preserve_script_glyphs);
 
         Ok(spans)
     }
@@ -13655,7 +13712,12 @@ impl PdfDocument {
     /// spans (`rotation_degrees != 0`) have been mapped into the displayed frame
     /// (see `postprocess_spans`) and their glyphs run along a rotated axis, so a
     /// horizontal-x stamp would misalign — those individual spans are skipped.
-    fn stamp_char_x_offsets(&self, page_index: usize, spans: &mut [crate::layout::TextSpan]) {
+    fn stamp_char_x_offsets(
+        &self,
+        page_index: usize,
+        spans: &mut [crate::layout::TextSpan],
+        painted: bool,
+    ) {
         // Horizontal-x offsets only make sense in an unrotated frame; the 180°
         // mirror is the one rotation that leaves ALL spans in the displayed frame.
         if self
@@ -13667,7 +13729,16 @@ impl PdfDocument {
             return;
         }
 
-        let accurate = match self.cached_page_chars(page_index) {
+        // Paint spans include Ts in their origin. Match them against the same
+        // painted glyph geometry, not the search cache's normalized baseline.
+        // Otherwise a raised multi-glyph run loses every horizontal anchor.
+        let characters = if painted {
+            self.extract_chars_impl(page_index, HashSet::new(), HashSet::new(), true)
+                .map(std::sync::Arc::new)
+        } else {
+            self.cached_page_chars(page_index)
+        };
+        let accurate = match characters {
             Ok(chars) if !chars.is_empty() => chars,
             _ => return,
         };
@@ -17543,7 +17614,7 @@ impl PdfDocument {
         excluded_layers: HashSet<String>,
         excluded_inks: HashSet<String>,
         visible_paint_only: bool,
-        paint_orders: Option<&mut HashMap<usize, (Vec<usize>, usize)>>,
+        paint_orders: Option<&mut HashMap<usize, crate::extractors::text::SpanPaintOrder>>,
     ) -> Result<Vec<crate::layout::TextSpan>> {
         if self.is_encrypted_unreadable() {
             log::warn!("PDF is encrypted and could not be decrypted; returning no spans");
@@ -18597,6 +18668,7 @@ impl PdfDocument {
             page_index,
             HashSet::new(),
             HashSet::new(),
+            false,
         )?);
         self.check_import_budget()?;
         self.page_chars_cache
@@ -18618,7 +18690,7 @@ impl PdfDocument {
         excluded_layers: HashSet<String>,
         excluded_inks: HashSet<String>,
     ) -> Result<Vec<crate::layout::TextChar>> {
-        self.extract_chars_impl(page_index, excluded_layers, excluded_inks)
+        self.extract_chars_impl(page_index, excluded_layers, excluded_inks, false)
     }
 
     fn extract_chars_impl(
@@ -18626,6 +18698,7 @@ impl PdfDocument {
         page_index: usize,
         excluded_layers: HashSet<String>,
         excluded_inks: HashSet<String>,
+        visible_paint_only: bool,
     ) -> Result<Vec<crate::layout::TextChar>> {
         use crate::extractors::TextExtractor;
 
@@ -18652,6 +18725,7 @@ impl PdfDocument {
         }
 
         let mut extractor = TextExtractor::new();
+        extractor.set_visible_paint_only(visible_paint_only);
         // Stamp the page index the span path already stamps. The form /BBox
         // clip below resolves the enclosing page through
         // `mcid_scope_stack.first()`, which defaults to `Page(0)`; without this
@@ -19755,7 +19829,24 @@ impl PdfDocument {
     /// # }
     /// ```
     pub fn extract_paths(&self, page_index: usize) -> Result<Vec<crate::elements::PathContent>> {
-        use crate::content::{parse_content_stream_paths_only, Operator};
+        self.extract_paths_observed(page_index, false)
+            .map(|(paths, _)| paths)
+    }
+
+    /// Extract paint and a separate ledger of clip operations. A clip is never paint.
+    pub fn extract_paths_with_clips(
+        &self,
+        page_index: usize,
+    ) -> Result<(Vec<crate::elements::PathContent>, crate::elements::PathClipObservations)> {
+        self.extract_paths_observed(page_index, true)
+    }
+
+    fn extract_paths_observed(
+        &self,
+        page_index: usize,
+        observe_clips: bool,
+    ) -> Result<(Vec<crate::elements::PathContent>, crate::elements::PathClipObservations)> {
+        use crate::content::{parse_content_stream, parse_content_stream_paths_only, Operator};
         use crate::elements::{LineCap, LineJoin};
         use crate::extractors::paths::{FillRule, PathExtractor, PathGraphicsStateStack};
 
@@ -19776,14 +19867,18 @@ impl PdfDocument {
                     page_index,
                     e
                 );
-                return Ok(Vec::new());
+                return Ok((Vec::new(), Default::default()));
             },
         };
 
         let operators = match self.parse_page_import_content(
             page_index,
             &content_data,
-            parse_content_stream_paths_only,
+            if observe_clips {
+                parse_content_stream
+            } else {
+                parse_content_stream_paths_only
+            },
         ) {
             Ok(ops) => ops,
             Err(e) => {
@@ -19793,11 +19888,14 @@ impl PdfDocument {
                     page_index,
                     e
                 );
-                return Ok(Vec::new());
+                return Ok((Vec::new(), Default::default()));
             },
         };
 
         let mut extractor = PathExtractor::new();
+        if observe_clips {
+            extractor.observe_clips();
+        }
         let mut state_stack = PathGraphicsStateStack::new();
         extractor.update_from_path_state(state_stack.current());
 
@@ -19825,6 +19923,15 @@ impl PdfDocument {
             extractor.paint.source_order = vec![ordinal];
             extractor.paint.clip = clips.current().clip;
             clips.apply(&op);
+            if matches!(
+                &op,
+                Operator::Tj { .. }
+                    | Operator::TJ { .. }
+                    | Operator::Quote { .. }
+                    | Operator::DoubleQuote { .. }
+            ) {
+                extractor.record_text_clip(self.import_budget().map(AsRef::as_ref))?;
+            }
             if self.process_path_color_operator(&op, &mut extractor, state_stack.current_mut())? {
                 continue;
             }
@@ -20003,7 +20110,7 @@ impl PdfDocument {
         }
 
         self.check_import_budget()?;
-        Ok(extractor.finish())
+        Ok(extractor.finish_observed())
     }
 
     /// Resolve a `BDC /OC <properties>` property operand to the human-readable
@@ -20277,7 +20384,9 @@ impl PdfDocument {
         state_stack: &mut crate::extractors::paths::PathGraphicsStateStack,
         depth: usize,
     ) -> Result<()> {
-        use crate::content::{parse_content_stream_paths_only, Matrix, Operator};
+        use crate::content::{
+            parse_content_stream, parse_content_stream_paths_only, Matrix, Operator,
+        };
         use crate::elements::{LineCap, LineJoin};
         use crate::extractors::paths::FillRule;
 
@@ -20346,14 +20455,20 @@ impl PdfDocument {
             },
         };
 
-        let operators =
-            match self.parse_import_content(&stream_data, parse_content_stream_paths_only) {
-                Ok(ops) => ops,
-                Err(e) => {
-                    extractor.pop_xobject_failed();
-                    return Err(e);
-                },
-            };
+        let operators = match self.parse_import_content(
+            &stream_data,
+            if extractor.observing_clips() {
+                parse_content_stream
+            } else {
+                parse_content_stream_paths_only
+            },
+        ) {
+            Ok(ops) => ops,
+            Err(e) => {
+                extractor.pop_xobject_failed();
+                return Err(e);
+            },
+        };
 
         // Get transformation matrix (default to identity)
         let matrix = if let Some(matrix_obj) = xobject_dict.get("Matrix") {
@@ -20479,6 +20594,15 @@ impl PdfDocument {
             extractor.paint.source_order.push(ordinal);
             extractor.paint.clip = clips.current().clip;
             clips.apply(&op);
+            if matches!(
+                &op,
+                Operator::Tj { .. }
+                    | Operator::TJ { .. }
+                    | Operator::Quote { .. }
+                    | Operator::DoubleQuote { .. }
+            ) {
+                extractor.record_text_clip(self.import_budget().map(AsRef::as_ref))?;
+            }
             if self.process_path_color_operator(&op, extractor, state_stack.current_mut())? {
                 continue;
             }

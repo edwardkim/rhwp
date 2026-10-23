@@ -125,6 +125,7 @@ impl<'a> PageNumberAssigner<'a> {
 pub(crate) struct PageControlEvents {
     pub new_numbers: Vec<(usize, u16)>,
     pub hides: Vec<(usize, crate::model::control::PageHide)>,
+    pub positions: Vec<(usize, crate::model::control::PageNumberPos)>,
 }
 
 impl PageControlEvents {
@@ -150,16 +151,32 @@ impl PageControlEvents {
             for (ci, control) in para.controls.iter().enumerate() {
                 if matches!(
                     control,
-                    Control::PageHide(_) | Control::NewNumber(_) | Control::Table(_)
+                    Control::PageHide(_)
+                        | Control::NewNumber(_)
+                        | Control::PageNumberPos(_)
+                        | Control::Table(_)
                 ) {
                     let items = by_paragraph.get(&pi).map(Vec::as_slice).unwrap_or(&[]);
                     // 미배치 NewNumber도 남겨 첫 발화 전 번호 숨김 계약을 보존한다.
                     let page = control_page(para, ci, items).unwrap_or(usize::MAX);
-                    events.collect_control(control, page);
+                    if let Control::PageNumberPos(position) = control {
+                        events.positions.push((page, position.clone()));
+                    } else {
+                        events.collect_control(control, page);
+                    }
                 }
             }
         }
         events
+    }
+
+    /// An explicit position is active from its own physical anchor. A later
+    /// NewNumber restarts the counter; it cannot hide an earlier position.
+    pub fn active_position(&self, page: usize) -> Option<&crate::model::control::PageNumberPos> {
+        self.positions
+            .iter()
+            .rev()
+            .find_map(|(target, position)| (*target <= page).then_some(position))
     }
 
     fn collect_control(&mut self, control: &crate::model::control::Control, page: usize) {
@@ -312,6 +329,7 @@ mod tests {
                 stored_column_top_spacings: Default::default(),
                 paragraph_float_placements: Default::default(),
                 float_pushed_line_spacings: Default::default(),
+                page_band_flow_starts: Default::default(),
             }],
             active_header: None,
             active_footer: None,
@@ -425,6 +443,7 @@ mod tests {
             straddle_row_relief: Vec::new(),
             straddle_page_bands: Vec::new(),
             fragment_row_heights: None,
+            fragment_block_frames: Vec::new(),
             end_row_owns_stored_frame: false,
         }]);
         assert_eq!(a.assign(&p1), 1);
@@ -446,6 +465,7 @@ mod tests {
             straddle_row_relief: Vec::new(),
             straddle_page_bands: Vec::new(),
             fragment_row_heights: None,
+            fragment_block_frames: Vec::new(),
             end_row_owns_stored_frame: false,
         }]);
         assert_eq!(a.assign(&p2), 2);

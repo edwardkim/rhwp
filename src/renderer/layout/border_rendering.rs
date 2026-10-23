@@ -31,7 +31,7 @@ impl TableGridTooLarge {
     }
 }
 
-fn merge_border(a: &BorderLine, b: &BorderLine) -> BorderLine {
+fn merge_border(a: &BorderLine, b: &BorderLine, prefer_b_on_tie: bool) -> BorderLine {
     if a.line_type == BorderLineType::None {
         return *b;
     }
@@ -43,6 +43,13 @@ fn merge_border(a: &BorderLine, b: &BorderLine) -> BorderLine {
     let b_w = border_width_to_px(b.width);
     if (a_w - b_w).abs() > 0.01 {
         return if a_w > b_w { *a } else { *b };
+    }
+
+    // Equal-width, equal-type shared edges use the right cell's left border
+    // or the lower cell's top border (independent Hancom Print, #7998).
+    // The owner is geometric, not whichever cell happens to be visited last.
+    if a.line_type == b.line_type {
+        return if prefer_b_on_tie { *b } else { *a };
     }
 
     let priority = |lt: BorderLineType| -> u8 {
@@ -110,15 +117,19 @@ pub(crate) fn mark_cell_span_interior_covered(
 }
 
 /// 엣지 그리드 슬롯에 테두리를 병합 저장
-fn merge_edge_slot(slot: &mut Option<BorderLine>, border: &BorderLine) {
+fn merge_edge_slot(slot: &mut Option<BorderLine>, border: &BorderLine, prefer_on_tie: bool) {
     if border.line_type == BorderLineType::None {
         return;
     }
     *slot = Some(match *slot {
-        Some(existing) => merge_border(&existing, border),
+        Some(existing) => merge_border(&existing, border, prefer_on_tie),
         None => *border,
     });
 }
+
+#[path = "border_rendering/row_column_geometry.rs"]
+mod row_column_geometry;
+pub(crate) use row_column_geometry::RowColumnGeometry;
 
 /// 행별 열 누적 위치를 계산한다.
 /// HWP에서는 각 셀이 독립적인 너비를 가질 수 있어, 같은 열이라도 행마다 열 경계 위치가 다를 수 있다.
@@ -131,7 +142,7 @@ pub(crate) fn build_row_col_x(
     cell_spacing: f64,
     dpi: f64,
     width_scale: f64,
-) -> Result<Vec<Vec<f64>>, TableGridTooLarge> {
+) -> Result<RowColumnGeometry, TableGridTooLarge> {
     use super::super::hwpunit_to_px;
     TableGridTooLarge::check(row_count, col_count)?;
     // 셀 너비 그리드 구축 (O(cells) 탐색 1회)
@@ -182,9 +193,10 @@ pub(crate) fn build_row_col_x(
         (base_rx.last().copied().unwrap_or(0.0) - target_total).abs() <= 0.5;
     if !global_grid_matches_declared {
         let mut declared = vec![base_rx.clone(); row_count];
+        let mut declared_widths = vec![col_widths.to_vec(); row_count];
         let mut any_declared_row = false;
         for (r, row_x) in declared.iter_mut().enumerate().take(row_count) {
-            let Some(candidate) = declared_row_col_x(
+            let Some((candidate, source_widths)) = declared_row_col_x(
                 table,
                 r,
                 col_count,
@@ -206,6 +218,7 @@ pub(crate) fn build_row_col_x(
             }
             any_declared_row = true;
             *row_x = candidate;
+            declared_widths[r] = source_widths;
         }
         if any_declared_row {
             // [#5720] 선언 완결 행이 있는 표에서, 전역 grid 폴백으로 남은 행
@@ -219,7 +232,7 @@ pub(crate) fn build_row_col_x(
             let base_total = base_rx.last().copied().unwrap_or(0.0);
             if target_total > 0.0 && base_total > target_total + 0.5 {
                 let scale = target_total / base_total;
-                for row_x in declared.iter_mut() {
+                for (r, row_x) in declared.iter_mut().enumerate() {
                     let is_base_fallback = row_x
                         .iter()
                         .zip(base_rx.iter())
@@ -228,15 +241,28 @@ pub(crate) fn build_row_col_x(
                         for x in row_x.iter_mut() {
                             *x *= scale;
                         }
+                        // 폴백 경계와 같은 배율의 폭을 유지한다. 간격도 경계와 함께
+                        // 축소되므로 마지막 간격을 빼는 소비 계약까지 반영한다.
+                        for width in &mut declared_widths[r] {
+                            *width = (*width + cell_spacing) * scale - cell_spacing;
+                        }
                     }
                 }
             }
-            return Ok(declared);
+            return Ok(RowColumnGeometry::new(
+                declared,
+                declared_widths,
+                cell_spacing,
+            ));
         }
     }
 
     if table.common.treat_as_char {
-        return Ok(vec![base_rx; row_count]);
+        return Ok(RowColumnGeometry::new(
+            vec![base_rx; row_count],
+            vec![col_widths.to_vec(); row_count],
+            cell_spacing,
+        ));
     }
 
     let has_independent_widths = cell_width_grid.iter().any(|row| {
@@ -246,26 +272,33 @@ pub(crate) fn build_row_col_x(
         })
     });
     if !has_independent_widths {
-        return Ok(vec![base_rx; row_count]);
+        return Ok(RowColumnGeometry::new(
+            vec![base_rx; row_count],
+            vec![col_widths.to_vec(); row_count],
+            cell_spacing,
+        ));
     }
 
     let fallback_w = hwpunit_to_px(1800, dpi);
     let mut row_col_x = vec![vec![cell_spacing; col_count + 1]; row_count];
+    let mut row_widths = vec![vec![0.0; col_count]; row_count];
     for r in 0..row_count {
         for c in 0..col_count {
             let w = cell_width_grid[r][c]
                 .or_else(|| col_widths.get(c).copied())
                 .unwrap_or(fallback_w);
             row_col_x[r][c + 1] = row_col_x[r][c] + w + cell_spacing;
+            row_widths[r][c] = w;
         }
         // 저장 파일의 cell.width는 병합 제약을 풀기 전 보조값일 수 있다.
         // 행별 누적 폭이 표 외곽 폭과 맞지 않으면 독립 segment가 아니라 전역 grid를 따른다.
         // Stage 12의 로컬 segment 리사이즈는 보상 리사이즈로 행 전체 폭을 유지하므로 이 조건을 통과한다.
         if (row_col_x[r][col_count] - target_total).abs() > 0.5 {
             row_col_x[r].clone_from_slice(&base_rx);
+            row_widths[r].clone_from_slice(col_widths);
         }
     }
-    Ok(row_col_x)
+    Ok(RowColumnGeometry::new(row_col_x, row_widths, cell_spacing))
 }
 
 /// [Issue #5590] 한 행이 자기 열 구획을 스스로 완결했는지 보고, 그렇다면 그 행의 x 경계를 만든다.
@@ -286,7 +319,7 @@ fn declared_row_col_x(
     dpi: f64,
     width_scale: f64,
     target_total: f64,
-) -> Option<Vec<f64>> {
+) -> Option<(Vec<f64>, Vec<f64>)> {
     use super::super::hwpunit_to_px;
     let mut row_cells: Vec<_> = table
         .cells
@@ -302,6 +335,7 @@ fn declared_row_col_x(
     row_cells.sort_by_key(|cell| cell.col);
 
     let mut candidate = vec![cell_spacing; col_count + 1];
+    let mut widths = vec![0.0; col_count];
     let mut cursor = cell_spacing;
     let mut next_col = 0usize;
     for cell in row_cells {
@@ -313,6 +347,13 @@ fn declared_row_col_x(
         }
         candidate[c] = cursor;
         let cell_w = hwpunit_to_px(cell.width as i32, dpi) * width_scale;
+        for width in &mut widths[c..end] {
+            *width = if span == 1 {
+                cell_w
+            } else {
+                (cell_w + cell_spacing) / span as f64 - cell_spacing
+            };
+        }
         for inner_col in c + 1..end {
             let ratio = (inner_col - c) as f64 / span as f64;
             candidate[inner_col] = cursor + (cell_w + cell_spacing) * ratio;
@@ -338,8 +379,11 @@ fn declared_row_col_x(
         for x in candidate.iter_mut() {
             *x *= scale;
         }
+        for width in &mut widths {
+            *width = (*width + cell_spacing) * scale - cell_spacing;
+        }
     }
-    Some(candidate)
+    Some((candidate, widths))
 }
 
 /// Separate cells keep their own edges; neighboring sides are not the same line.
@@ -470,25 +514,25 @@ pub(crate) fn collect_cell_borders(
     // 상 테두리
     if row < h_rows {
         for c in col..end_col {
-            merge_edge_slot(&mut h_edges[row][c], &borders[2]);
+            merge_edge_slot(&mut h_edges[row][c], &borders[2], true);
         }
     }
     // 하 테두리
     if end_row < h_rows {
         for c in col..end_col {
-            merge_edge_slot(&mut h_edges[end_row][c], &borders[3]);
+            merge_edge_slot(&mut h_edges[end_row][c], &borders[3], false);
         }
     }
     // 좌 테두리
     if col < v_cols {
         for r in row..end_row {
-            merge_edge_slot(&mut v_edges[col][r], &borders[0]);
+            merge_edge_slot(&mut v_edges[col][r], &borders[0], true);
         }
     }
     // 우 테두리
     if end_col < v_cols {
         for r in row..end_row {
-            merge_edge_slot(&mut v_edges[end_col][r], &borders[1]);
+            merge_edge_slot(&mut v_edges[end_col][r], &borders[1], false);
         }
     }
 }
@@ -1065,7 +1109,11 @@ pub(crate) fn create_border_line_nodes(
         // 단일선 타입들
         _ => {
             if let Some(dash) = border_line_type_to_dash(border.line_type, border.width) {
-                create_single_line(tree, border.color, base_width, dash, x1, y1, x2, y2)
+                with_native_border_pattern(
+                    create_single_line(tree, border.color, base_width, dash, x1, y1, x2, y2),
+                    border.line_type,
+                    border.width,
+                )
             } else {
                 vec![]
             }
@@ -1188,6 +1236,25 @@ fn create_single_line(
     );
     let bbox = line.ink_bbox();
     vec![RenderNode::new(id, RenderNodeType::Line(line), bbox)]
+}
+
+fn with_native_border_pattern(
+    mut nodes: Vec<RenderNode>,
+    kind: BorderLineType,
+    width: u8,
+) -> Vec<RenderNode> {
+    if kind == BorderLineType::Dot {
+        let Some((pattern, _)) = crate::model::style::cell_dot_metrics_pt(width) else {
+            return nodes;
+        };
+        let intervals = pattern.map(|points| points * 96.0 / 72.0).to_vec();
+        for node in &mut nodes {
+            if let RenderNodeType::Line(line) = &mut node.node_type {
+                line.style.dash_pattern = Some(intervals.clone());
+            }
+        }
+    }
+    nodes
 }
 
 fn create_editor_only_line(
@@ -1319,7 +1386,11 @@ fn create_diagonal_line_nodes(
         }
         _ => {
             if let Some(dash) = border_line_type_to_dash(line_type, width_index) {
-                create_single_line(tree, color, base_width, dash, x1, y1, x2, y2)
+                with_native_border_pattern(
+                    create_single_line(tree, color, base_width, dash, x1, y1, x2, y2),
+                    line_type,
+                    width_index,
+                )
             } else {
                 vec![]
             }

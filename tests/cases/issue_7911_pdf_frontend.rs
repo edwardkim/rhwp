@@ -217,7 +217,7 @@ fn all_pages_share_valid_style_pools_and_unique_instance_ids() {
     assert_eq!(document.doc_properties.section_count, 2);
     let mut ids = BTreeSet::new();
     let mut fonts = Vec::new();
-    for section in &document.sections {
+    for (page, section) in document.sections.iter().enumerate() {
         for control in &section.paragraphs[0].controls {
             let Control::Shape(shape) = control else {
                 continue;
@@ -229,11 +229,13 @@ fn all_pages_share_valid_style_pools_and_unique_instance_ids() {
                 assert!(usize::from(paragraph.para_shape_id) < document.doc_info.para_shapes.len());
                 for run in &paragraph.char_shapes {
                     let style = &document.doc_info.char_shapes[run.char_shape_id as usize];
-                    fonts.push(
-                        document.doc_info.font_faces[0][style.font_ids[0] as usize]
-                            .name
-                            .clone(),
-                    );
+                    let font = &document.doc_info.font_faces[0][style.font_ids[0] as usize].name;
+                    assert_eq!(font, if page == 0 { "Helvetica" } else { "Courier" });
+                    // Width/style runs may divide one source line; every run
+                    // must still resolve to the declared font on its own page.
+                    if fonts.last() != Some(font) {
+                        fonts.push(font.clone());
+                    }
                 }
             }
         }
@@ -258,6 +260,7 @@ fn selection_is_explicit_and_keeps_source_page_mapping() {
         &source,
         &PdfImportOptions {
             source_pages: Some(vec![1]),
+            ..PdfImportOptions::default()
         },
     )
     .unwrap();
@@ -270,6 +273,7 @@ fn selection_is_explicit_and_keeps_source_page_mapping() {
             &source,
             &PdfImportOptions {
                 source_pages: Some(pages),
+                ..PdfImportOptions::default()
             },
         )
         .err()
@@ -292,6 +296,7 @@ fn source_indices_are_independent_of_the_selected_page_ceiling() {
         &source,
         &PdfImportOptions {
             source_pages: Some(vec![128, 161]),
+            ..PdfImportOptions::default()
         },
         policy,
     )
@@ -320,7 +325,8 @@ fn source_indices_are_independent_of_the_selected_page_ceiling() {
             parse_pdf_with_policy(
                 &source,
                 &PdfImportOptions {
-                    source_pages: Some(pages)
+                    source_pages: Some(pages),
+                    ..PdfImportOptions::default()
                 },
                 policy
             )
@@ -433,6 +439,7 @@ fn positional_selection_never_extracts_unselected_pages_for_header_classificatio
         &source,
         &PdfImportOptions {
             source_pages: Some(vec![0]),
+            ..PdfImportOptions::default()
         },
         policy,
     )
@@ -440,10 +447,26 @@ fn positional_selection_never_extracts_unselected_pages_for_header_classificatio
     assert_eq!(texts(&result.document), ["SELECTED"]);
     assert_eq!(result.metadata.resource_usage.content_parse_calls, 1);
     assert_eq!(result.metadata.resource_usage.operators, 5);
+    // The operator cap is independent of the explicit reference cap.
+    assert!(result.metadata.resource_usage.reference_visits > policy.backend.operators);
+    let mut reference_policy = policy;
+    reference_policy.backend.reference_visits = 8;
+    let error = parse_pdf_with_policy(
+        &source,
+        &PdfImportOptions {
+            source_pages: Some(vec![0]),
+            ..Default::default()
+        },
+        reference_policy,
+    )
+    .err()
+    .expect("the explicit reference cap still applies");
+    assert_eq!(error.message, "reference visits");
     assert!(parse_pdf_with_policy(
         &source,
         &PdfImportOptions {
-            source_pages: Some(vec![1])
+            source_pages: Some(vec![1]),
+            ..PdfImportOptions::default()
         },
         policy
     )
@@ -517,6 +540,7 @@ fn selected_core_uses_common_loader_and_saved_documents_keep_selected_content() 
     ]);
     let options = PdfImportOptions {
         source_pages: Some(vec![0, 2]),
+        ..PdfImportOptions::default()
     };
     let parsed = parser::parse_pdf_with_metadata(&source, &options).unwrap();
     let mut core = DocumentCore::from_pdf_bytes(&source, &options).unwrap();
@@ -565,6 +589,7 @@ fn common_loader_errors_keep_pdf_codes_and_do_not_poison_later_imports() {
             &source,
             &PdfImportOptions {
                 source_pages: Some(pages),
+                ..PdfImportOptions::default()
             },
         )
         .err()

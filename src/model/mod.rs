@@ -4,6 +4,7 @@
 //! 구조체로 표현한다. 모든 크기 단위는 HWPUNIT(1/7200인치)을 사용한다.
 
 pub mod bin_data;
+pub mod border_paint;
 pub mod color;
 pub mod control;
 pub mod document;
@@ -18,12 +19,15 @@ pub mod image;
 pub mod page;
 pub mod paragraph;
 pub mod path;
+pub(crate) mod pdf_stroke;
 pub mod provenance;
 pub mod raw_provenance;
 pub mod section_tail;
 pub mod shape;
 pub mod style;
 pub mod table;
+pub(crate) mod table_row_grid;
+pub mod text_clip;
 
 /// HWP 내부 단위 (1/7200 인치, 부호 없음)
 pub type HwpUnit = u32;

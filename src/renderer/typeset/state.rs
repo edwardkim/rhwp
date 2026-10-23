@@ -289,7 +289,7 @@ impl TypesetState {
 
     /// 기존 배타 영역을 소비한 뒤 그 시점의 가용 단 너비를 반환한다.
     pub(super) fn prepare_table_paragraph_column(&mut self) -> f64 {
-        self.apply_visible_float_exclusions(0.0);
+        self.apply_visible_float_exclusions(0.0, None);
         self.data
             .layout
             .column_areas
@@ -375,6 +375,7 @@ impl TypesetState {
                 crate::renderer::pagination::OverlayCut {
                     end_row: continuation.first_unfit + usize::from(fragment.is_some()),
                     end_row_height: fragment.as_ref().map(|f| f.opening_height),
+                    owns_stored_frame: fragment.as_ref().is_some_and(|f| f.owns_stored_frame),
                     end_cut: fragment.map_or_else(Vec::new, |f| f.end_cut),
                 },
             ));

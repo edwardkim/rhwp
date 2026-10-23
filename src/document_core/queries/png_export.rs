@@ -17,6 +17,10 @@ pub struct NativePngExporter {
 }
 
 impl NativePngExporter {
+    /// 페이지 수·대상 쪽을 열거하기 전에 현재 renderer의 실제 글꼴 공급을 반영한다.
+    pub fn prepare_document(&self, document: &mut DocumentCore) -> Result<bool, HwpError> {
+        self.renderer.prepare_native_pua_fonts(document)
+    }
     /// 옵션 없는 기존 screen PNG의 시스템 글꼴 경로를 유지한다.
     pub fn system_defaults() -> Self {
         Self {

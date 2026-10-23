@@ -9,6 +9,16 @@ pub struct StoredColumnTopSpacing {
     pub source_origin_hu: i32,
 }
 
+/// 정규화한 연속 좌표와 원본의 쪽 상대 사다리를 섞지 않는다.
+/// 보존한 원본 좌표가 있으면 같은 줄 수의 완전한 원장만 사용한다.
+pub(super) fn source_line_position(para: &Paragraph, index: usize) -> Option<i32> {
+    match &para.source_line_seg_vertical_pos {
+        Some(positions) if positions.len() == para.line_segs.len() => positions.get(index).copied(),
+        Some(_) => None,
+        None => para.line_segs.get(index).map(|line| line.vertical_pos),
+    }
+}
+
 /// 텍스트가 없는 단일 인라인 개체가 저장 줄 상자 전체를 소유하는지 확인한다.
 /// 선언 높이만 같다는 이유로 본문 혼합 줄이나 여러 개체의 원점을 추측하지 않는다.
 pub(super) fn closed_inline_object_line(para: &Paragraph) -> bool {
@@ -71,13 +81,7 @@ pub(crate) fn stored_column_top_spacing_before(
     if !valid(current) || !spacing_before.is_finite() || spacing_before <= 0.0 {
         return None;
     }
-    let source_position = |para: &Paragraph, line: usize| {
-        para.source_line_seg_vertical_pos
-            .as_ref()
-            .and_then(|positions| positions.get(line).copied())
-            .unwrap_or(para.line_segs[line].vertical_pos)
-    };
-    let first = source_position(current, 0);
+    let first = source_line_position(current, 0)?;
     let one_source_unit = dpi / 7200.0;
     let frame = StoredColumnTopSpacing {
         before: spacing_before,
@@ -100,7 +104,7 @@ pub(crate) fn stored_column_top_spacing_before(
     let last_index = previous.line_segs.len() - 1;
     let last = &previous.line_segs[last_index];
     let gap = first
-        .checked_sub(source_position(previous, last_index))?
+        .checked_sub(source_line_position(previous, last_index)?)?
         .checked_sub(last.line_height)?
         .checked_sub(last.line_spacing)?;
     let previous_after = styles

@@ -26,8 +26,9 @@ pub(super) fn trace_units(cell: &Cell, units: &[CellUnit]) {
     for (index, unit) in units.iter().enumerate() {
         let seg = cell.paragraphs[unit.para_idx].line_segs.get(unit.vis_start);
         eprintln!(
-            "DIAG_CELL_UNIT row={} col={} span={} index={} height={:.6} para={} lines={}..{} hard_break={} stored_frame_break={} page_frame_reset={} source={:?} nested_row={:?} nested_cut={:?}",
-            cell.row, cell.col, cell.row_span, index, unit.height, unit.para_idx,
+            "DIAG_CELL_UNIT row={} col={} span={} index={} height={:.6} following={:.6} reflowed_slot={} para={} lines={}..{} hard_break={} stored_frame_break={} page_frame_reset={} source={:?} nested_row={:?} nested_cut={:?}",
+            cell.row, cell.col, cell.row_span, index, unit.height,
+            unit.following_line_advance, unit.reflowed_line_slot, unit.para_idx,
             unit.vis_start, unit.vis_end, unit.hard_break_before,
             unit.stored_frame_break_before, unit.page_frame_reset_before,
             seg.map(|seg| (seg.vertical_pos, seg.line_height, seg.line_spacing)),
@@ -37,6 +38,56 @@ pub(super) fn trace_units(cell: &Cell, units: &[CellUnit]) {
                 &cut.end_cut,
                 cut.terminal,
             )),
+        );
+    }
+}
+
+/// 로컬 원점 복원과 독립적인 물리 페이지 경계의 판정을 구분한다.
+pub(super) fn trace_reset_cut(
+    cell: &Cell,
+    cut: (usize, usize),
+    budget: (f64, f64),
+    unit: &CellUnit,
+    strict: bool,
+    zero_origin: impl FnOnce() -> bool,
+) {
+    if selected(cell) && unit.page_frame_reset_before {
+        eprintln!(
+            "DIAG_RESET_CUT row={} col={} start={} next={} height={:.6} available={:.6} unit_height={:.6} para={} line={} hard={} stored={} strict={} local_zero_origin={}",
+            cell.row, cell.col, cut.0, cut.1, budget.0, budget.1, unit.height,
+            unit.para_idx, unit.vis_start, unit.hard_break_before,
+            unit.stored_frame_break_before, strict, zero_origin(),
+        );
+    }
+}
+
+/// 같은 종료 행의 요구에서 실제 상자와 추정 띠 중 어느 원장을 썼는지 확인한다.
+pub(super) fn trace_span_remainder(
+    cell: &Cell,
+    cursor_row: usize,
+    accepted: Option<f64>,
+    heights: (f64, f64, f64, f64, f64),
+) {
+    if selected(cell) {
+        let (required, estimated_prefix, actual_prefix, band, remaining) = heights;
+        eprintln!(
+            "DIAG_SPAN_REMAINDER row={} col={} cursor={} accepted={accepted:?} required={required:.6} estimated_prefix={estimated_prefix:.6} actual_prefix={actual_prefix:.6} band={band:.6} remaining={remaining:.6}",
+            cell.row, cell.col, cursor_row,
+        );
+    }
+}
+
+/// 수용 전 원장과 현재 PageItem snapshot의 같은 종료 요구를 대조한다.
+pub(super) fn trace_continuation_demand(
+    cell: &Cell,
+    heights: (f64, f64),
+    ledger: (Option<f64>, Option<f64>),
+    snapshot: bool,
+) {
+    if selected(cell) {
+        eprintln!(
+            "DIAG_CONTINUATION_DEMAND row={} col={} content={:.6} physical={:.6} prefix={:?} through={:?} snapshot={snapshot}",
+            cell.row, cell.col, heights.0, heights.1, ledger.0, ledger.1,
         );
     }
 }

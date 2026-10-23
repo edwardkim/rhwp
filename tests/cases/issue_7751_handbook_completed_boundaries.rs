@@ -95,6 +95,15 @@ fn source_shape_text(shape: &ShapeObject) -> String {
 // 이어받기는 반복 머리글 외의 모든 원본 셀 내용을 앞뒤 조각에서 정확히 한 번 보존한다.
 fn assert_cells_preserved(section: usize, para: usize, fragments: &[&RenderNode]) {
     let parsed = rhwp::parser::parse_hwp(&bytes()).expect("원본 셀 내용");
+    assert_document_cells_preserved(&parsed, section, para, fragments);
+}
+
+fn assert_document_cells_preserved(
+    parsed: &rhwp::model::document::Document,
+    section: usize,
+    para: usize,
+    fragments: &[&RenderNode],
+) {
     let source = parsed.sections[section].paragraphs[para]
         .controls
         .iter()
@@ -450,9 +459,12 @@ fn issue_7751_reference_mark_preserves_print_advance_before_year_and_law() {
     near(law.bbox.x, 274.56, "연도 다음 법령명 시작");
 }
 
-#[test]
-fn issue_7751_form_tables_preserve_outer_margins_and_prefix_alignment() {
-    let core = open();
+fn assert_print_form_tables(input: &str) {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(input);
+    let bytes = std::fs::read(path).expect("커밋된 편람 원본");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("편람 로드");
+    core.set_hangul2024_compat(true);
+    assert_eq!(core.page_count(), 383, "같은 원본의 독립 KoPub Print 쪽수");
     let page = core.build_page_render_tree(374).expect("375쪽 서식 두 개");
     let body = descendants(&page.root)
         .into_iter()
@@ -472,7 +484,7 @@ fn issue_7751_form_tables_preserve_outer_margins_and_prefix_alignment() {
     near(left.bbox.y, 96.216, "왼쪽 서식 외곽 y");
     near(right.bbox.x, 526.509333, "오른쪽 서식 외곽 x");
     near(right.bbox.y, 96.216, "오른쪽 서식 외곽 y");
-    let source = rhwp::parser::parse_hwp(&bytes()).expect("원본 서식");
+    let source = rhwp::parse_document(&bytes).expect("원본 서식");
     let Control::Table(left_source) = &source.sections[12].paragraphs[18].controls[0] else {
         panic!("왼쪽 서식");
     };
@@ -482,8 +494,8 @@ fn issue_7751_form_tables_preserve_outer_margins_and_prefix_alignment() {
         (left.bbox.x - column(0).bbox.x - left_margin).abs() < 96.0 / 7200.0,
         "문단 기준 글앞 서식의 선언 바깥여백을 한 번 소비해야 한다"
     );
-    assert_cells_preserved(12, 18, &[left]);
-    assert_cells_preserved(12, 43, &[right]);
+    assert_document_cells_preserved(&source, 12, 18, &[left]);
+    assert_document_cells_preserved(&source, 12, 43, &[right]);
     assert!(
         left.bbox.x + left.bbox.width < right.bbox.x,
         "두 단 서식의 소유·겹침"
@@ -533,6 +545,16 @@ fn issue_7751_form_tables_preserve_outer_margins_and_prefix_alignment() {
             && (left.bbox.height - other.bbox.height).abs() < 1e-9,
         "바깥여백은 원점을 바꾸며 셀 크기를 바꾸지 않는다"
     );
+}
+
+#[test]
+fn issue_7751_form_tables_preserve_outer_margins_and_prefix_alignment() {
+    assert_print_form_tables(INPUT);
+}
+
+#[test]
+fn issue_7752_hwpx_completed_form_tables_preserve_owners_content_and_print_frames() {
+    assert_print_form_tables("samples/2025 행정업무운영 편람(최종).hwpx");
 }
 
 #[test]

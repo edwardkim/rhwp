@@ -92,7 +92,7 @@ fn expand_pua_old_hangul_canvas(text: &str) -> String {
 
 use super::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
-    expand_pua_render_text, CharOverlapInfo,
+    expand_pua_render_text_in_style, CharOverlapInfo,
 };
 #[cfg(target_arch = "wasm32")]
 use super::layout::{
@@ -552,6 +552,16 @@ impl WebCanvasRenderer {
 
     /// 개별 노드 렌더링
     fn render_node(&mut self, node: &RenderNode) {
+        if let Some(paths) = &node.paint_clip {
+            let mut source = node.clone();
+            source.paint_clip = None;
+            self.ctx.save();
+            self.apply_source_clip(paths);
+            self.render_node(&source);
+            self.ctx.restore();
+            return;
+        }
+
         if !node.visible {
             return;
         }
@@ -1092,6 +1102,10 @@ impl WebCanvasRenderer {
     }
 
     fn render_image(&mut self, bbox: &BoundingBox, img: &ImageNode, restore_transform: bool) {
+        if let Some(path) = super::pdf_stroke::project(img, *bbox) {
+            self.render_path(bbox, &path, restore_transform);
+            return;
+        }
         let previous = self.high_quality_images;
         self.high_quality_images &= !matches!(
             img.effect,
@@ -1362,13 +1376,57 @@ impl WebCanvasRenderer {
         self.ctx.set_text_baseline("alphabetic");
     }
 
+    fn apply_source_clip(&self, paths: &[crate::model::text_clip::TextClipPath]) {
+        use crate::model::text_clip::ClipCommand;
+        for path in paths {
+            self.ctx.begin_path();
+            for command in &path.commands {
+                match *command {
+                    ClipCommand::Move(x, y) => self.ctx.move_to(x, y),
+                    ClipCommand::Line(x, y) => self.ctx.line_to(x, y),
+                    ClipCommand::Cubic(a, b, c, d, e, f) => {
+                        self.ctx.bezier_curve_to(a, b, c, d, e, f)
+                    }
+                    ClipCommand::Close => self.ctx.close_path(),
+                }
+            }
+            self.ctx.clip_with_canvas_winding_rule(if path.even_odd {
+                web_sys::CanvasWindingRule::Evenodd
+            } else {
+                web_sys::CanvasWindingRule::Nonzero
+            });
+        }
+    }
+
     fn render_layer_node(&mut self, node: &LayerNode, inherited_layer: Option<RenderLayerInfo>) {
         let active_layer = node.layer.or(inherited_layer);
         match &node.kind {
-            LayerNodeKind::Group { children, .. } => {
+            LayerNodeKind::Group {
+                children,
+                group_kind,
+                ..
+            } => {
+                let transform = if let GroupKind::Group(group) = group_kind {
+                    group.paint_transform
+                } else {
+                    None
+                };
+                if let Some([a, b, c, d, e, f]) = transform {
+                    self.ctx.save();
+                    let _ = self.ctx.transform(a, b, c, d, e, f);
+                }
                 for child in children {
                     self.render_layer_node(child, active_layer);
                 }
+                if transform.is_some() {
+                    self.ctx.restore();
+                }
+            }
+            LayerNodeKind::ClipPath { paths, child } => {
+                self.ctx.save();
+                self.apply_source_clip(paths);
+                self.render_layer_node(child, active_layer);
+                self.ctx.restore();
             }
             LayerNodeKind::ClipRect {
                 clip,
@@ -2195,7 +2253,7 @@ impl Renderer for WebCanvasRenderer {
         }
         // [Task #509] 한컴은 폰트 지정과 상관없이 PUA 를 자체 처리. 지정 폰트에 글리프
         // 부재 시 한컴 내부 매핑이 발행. rhwp 도 동일 동작 모방 (PR #251 정합).
-        let text = &expand_pua_render_text(&text);
+        let text = &expand_pua_render_text_in_style(&text, style);
         // [Task #528] Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스 (KTUG 매핑).
         let text = &expand_pua_old_hangul_canvas(text);
 
@@ -2639,6 +2697,13 @@ impl Renderer for WebCanvasRenderer {
         self.ctx.set_stroke_style_str(&color);
         self.ctx.set_line_width(width);
         self.set_line_dash(&style.dash);
+        if let Some(intervals) = &style.dash_pattern {
+            let pattern = js_sys::Array::new();
+            for value in intervals {
+                pattern.push(&JsValue::from_f64(*value));
+            }
+            let _ = self.ctx.set_line_dash(&pattern);
+        }
 
         // 이중선/삼중선: SVG draw_multi_line과 동일한 오프셋 비율 방식
         // (width_ratio, offset_ratio) — offset은 선 중심으로부터의 거리 비율

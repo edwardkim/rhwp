@@ -25,6 +25,8 @@ const repoDir = join(studioDir, '..');
 // (pkg-node/)으로 리다이렉트한다 — InputHandler 가 참조 그래프에서 요구하는 유일한 wasm 진입점.
 registerHooks({
   resolve(specifier, context, nextResolve) {
+    // JSON 메트릭은 TypeScript 확장자를 붙이지 않고 Node의 import attributes로 읽는다.
+    if (specifier.endsWith('.json')) return nextResolve(specifier, context);
     if (specifier === '@wasm/rhwp.js') {
       return { url: pathToFileURL(join(repoDir, 'pkg-node', 'rhwp.js')).href, shortCircuit: true };
     }
