@@ -3,6 +3,16 @@
 //! Raw BinData preservation keeps this contract through HWP/HWPX save/reopen;
 //! ordinary images without the declaration retain the renderer's profile policy.
 fn declaration(data: &[u8]) -> Option<(u8, u8)> {
+    // JPEG decoder는 이 표식을 무시하고 출력 경로만 재구성 계약을 소비한다.
+    if data.starts_with(&[0xff, 0xd8, 0xff, 0xef, 0, 12]) && data.len() >= 16 {
+        let payload = &data[6..16];
+        return (&payload[..4] == b"rhWP"
+            && matches!(payload[4], 2 | 3)
+            && payload[5] == 1
+            && crc32fast::hash(&payload[..6])
+                == u32::from_be_bytes(payload[6..10].try_into().ok()?))
+        .then_some((payload[4], 1));
+    }
     if data.len() < 47
         || &data[..8] != b"\x89PNG\r\n\x1a\n"
         || data[8..16] != [0, 0, 0, 13, b'I', b'H', b'D', b'R']
@@ -34,6 +44,17 @@ pub(super) fn mark_print_bitmap(data: &mut Vec<u8>) {
     let crc = crc32fast::hash(&chunk[4..10]);
     chunk[10..14].copy_from_slice(&crc.to_be_bytes());
     data.splice(33..33, chunk);
+}
+
+pub(super) fn mark_print_jpeg(data: &mut Vec<u8>, expanded: bool) {
+    if !data.starts_with(&[0xff, 0xd8]) {
+        return;
+    }
+    let mut segment = [0xff, 0xef, 0, 12, b'r', b'h', b'W', b'P', 2, 1, 0, 0, 0, 0];
+    segment[8] = if expanded { 2 } else { 3 };
+    let crc = crc32fast::hash(&segment[4..10]);
+    segment[10..14].copy_from_slice(&crc.to_be_bytes());
+    data.splice(2..2, segment);
 }
 
 pub(crate) fn preserve(source: &[u8], output: &mut Vec<u8>) {

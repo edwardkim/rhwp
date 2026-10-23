@@ -187,6 +187,21 @@
       ]
     },
     {
+      "source": "vendor/rhwp-jpeg-encoder",
+      "published_name": "rhwp-jpeg-encoder",
+      "version": "0.7.1-rhwp.1",
+      "include": [
+        "Cargo.toml",
+        "src/**",
+        "README.md",
+        "RHWP_PATCHES.md",
+        "UPSTREAM.json",
+        "LICENSE-*"
+      ],
+      "extra_repository_files": {},
+      "local_dependencies": []
+    },
+    {
       "source": ".",
       "published_name": "rhwp",
       "version": "0.9.0",
@@ -223,7 +238,8 @@
         "rhwp-ooxml-chart",
         "rhwp-password-crypto",
         "rhwp-svg2pdf",
-        "rhwp-pdf-import-backend"
+        "rhwp-pdf-import-backend",
+        "rhwp-jpeg-encoder"
       ]
     }
   ]

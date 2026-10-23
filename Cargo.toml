@@ -38,7 +38,7 @@ include = [
 ]
 
 [workspace]
-exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder", "vendor/svg2pdf", "vendor/rhwp-codec-resource", "vendor/rhwp-hayro-jbig2", "vendor/rhwp-hayro-jpeg2000", "vendor/rhwp-hayro-ccitt"]
+exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder", "vendor/rhwp-jpeg-encoder", "vendor/svg2pdf", "vendor/rhwp-codec-resource", "vendor/rhwp-hayro-jbig2", "vendor/rhwp-hayro-jpeg2000", "vendor/rhwp-hayro-ccitt"]
 members = ["crates/*", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert", "tools/llm_verifier/verdict_protocol", "tools/llm_verifier/claim_bind", "tools/llm_verifier/criteria_decomp"]
 default-members = [".", "crates/*"]
 resolver = "2"
@@ -331,7 +331,8 @@ strum = { version = "0.28.0", default-features = false, features = ["derive"] }
 unicode-segmentation = "1.12.0"
 unicode-properties = { version = "0.1.4", default-features = false, features = ["general-category"] }
 unicode-width = "0.2.2"
-image = { version = "0.25", default-features = false, features = ["bmp", "jpeg", "png", "tiff"] }
+image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "tiff"] }
+jpeg-encoder = { package = "rhwp-jpeg-encoder", path = "vendor/rhwp-jpeg-encoder", version = "=0.7.1-rhwp.1" }
 tiny-skia = { version = "0.12", optional = true, default-features = false, features = ["std", "simd"] }
 pcx = "0.2"
 serde = { version = "1", features = ["derive"] }

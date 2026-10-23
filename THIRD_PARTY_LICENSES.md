@@ -56,6 +56,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 | strum | 0.28.0 | MIT | Peternator7/strum | enum derive |
 | subsecond | 0.7.10 | MIT OR Apache-2.0 | DioxusLabs/dioxus | 개발 핫패치 (optional) |
 | subsetter | 0.2.6 | MIT OR Apache-2.0 | typst/subsetter | 폰트 subset |
+| rhwp-jpeg-encoder | 0.7.1-rhwp.1 (upstream 0.7.1) | (MIT OR Apache-2.0) AND IJG | vstroebel/jpeg-encoder, rhwp 보정 | Print JPEG의 성분 순서·채널별 sampling·정수 DCT/YCbCr 전달. 원본 및 패치 고지 유지 |
 | rhwp-svg2pdf | 0.13.0-rhwp.1 (upstream 0.13.0) | MIT OR Apache-2.0 | typst/svg2pdf, rhwp 보정 | SVG → PDF. 원저작자·패치 고지 유지 |
 | svgtypes | 0.16.1 | Apache-2.0 OR MIT | linebender/svgtypes | SVG 값 파싱 |
 | ttf-parser | 0.25.1 | MIT OR Apache-2.0 | harfbuzz/ttf-parser | 폰트 파싱 |

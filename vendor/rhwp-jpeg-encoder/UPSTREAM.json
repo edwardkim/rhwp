@@ -1,0 +1,12 @@
+{
+  "upstream_package": "jpeg-encoder",
+  "upstream_version": "0.7.1",
+  "upstream_repository": "https://github.com/vstroebel/jpeg-encoder",
+  "archive_sha256": "a0370574b86f7eca156b9f298392b5e69a23f8c86f3f865add60bbc2e79467a6",
+  "source_archive": "https://static.crates.io/crates/jpeg-encoder/jpeg-encoder-0.7.1.crate",
+  "patches": [
+    "src/quantization.rs: correct exact half-quantum rounding after the reciprocal fast path.",
+    "README.md: remove two trailing spaces; license wording unchanged."
+  ],
+  "license": "(MIT OR Apache-2.0) AND IJG"
+}

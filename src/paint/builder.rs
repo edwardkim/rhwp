@@ -19,6 +19,7 @@ pub struct LayerBuilder {
     output_options: LayerOutputOptions,
     bin_data_epoch: u32,
     page_context: Option<PagePaintContext>,
+    layout_dpi: f64,
     metafile_device_pixel_width: Option<f64>,
     hancom2024_print_bitmap: bool,
     metafile_fonts: super::metafile_fonts::MetafileFonts,
@@ -33,12 +34,21 @@ impl LayerBuilder {
             output_options: LayerOutputOptions::default(),
             bin_data_epoch: 0,
             page_context: None,
+            layout_dpi: crate::renderer::DEFAULT_DPI,
             metafile_device_pixel_width: None,
             hancom2024_print_bitmap: false,
             metafile_fonts: Default::default(),
             prior_print_solid_fill: false,
             hangul2024_print: false,
         }
+    }
+
+    /// 인쇄 품질 계산에 사용할 실제 레이아웃 DPI다.
+    pub(crate) fn with_layout_dpi(mut self, dpi: f64) -> Self {
+        if dpi.is_finite() && dpi > 0.0 {
+            self.layout_dpi = dpi;
+        }
+        self
     }
 
     /// 원본 형식과 분리된 출력 장치 픽셀의 레이아웃 단위 크기다.
@@ -284,12 +294,23 @@ impl LayerBuilder {
                     let mut image = image.clone();
                     image.hancom2024_print_bitmap = self.hancom2024_print_bitmap;
                     crate::renderer::image_resolver::publish_print_jpeg_crop(&mut image);
-                    let mut resolved = crate::paint::metafile::image_payload(
-                        &image,
-                        node.bbox,
-                        self.metafile_device_pixel_width,
-                        &self.metafile_fonts,
-                    );
+                    let mut resolved = (self.profile == RenderProfile::Print)
+                        .then(|| {
+                            crate::renderer::image_resolver::print_jpeg_payload(
+                                &image,
+                                frame,
+                                self.layout_dpi,
+                            )
+                        })
+                        .flatten()
+                        .or_else(|| {
+                            crate::paint::metafile::image_payload(
+                                &image,
+                                node.bbox,
+                                self.metafile_device_pixel_width,
+                                &self.metafile_fonts,
+                            )
+                        });
                     if let Some(window) = crate::renderer::image_resolver::resolve_print_jpeg_window(
                         &mut image,
                         resolved.as_ref(),

@@ -2,8 +2,10 @@ use std::cell::RefCell;
 use std::io::Cursor;
 
 mod print_crop;
+mod print_jpeg;
 mod print_tone;
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
+pub(crate) use print_jpeg::print_jpeg_payload;
 pub(crate) use print_tone::print_bitmap_payload;
 
 use crate::model::image::ImageEffect;
@@ -126,6 +128,10 @@ enum Conversion {
         grayscale: bool,
     },
     Hancom2024Bitmap,
+    PrintJpeg {
+        quality: u8,
+        expand: bool,
+    },
     PrintJpegWindow {
         bounds: [u32; 4],
     },
