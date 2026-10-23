@@ -17,6 +17,9 @@ use crate::model::{image::ImageEffect, style::ImageFillMode};
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
 use crate::renderer::render_tree::{BoundingBox, ImageNode};
 
+#[path = "metafile_masks.rs"]
+mod masks;
+
 const MAX_SVG_BYTES: usize = 32 * 1024 * 1024;
 const MAX_SURFACE_PIXELS: u64 = 67_108_864;
 const MAX_CACHE_BYTES: usize = 32 * 1024 * 1024;
@@ -193,7 +196,11 @@ pub(super) fn payload(
         // 요청 weight와 실제 선택된 SFNT를 같은 공통 판정으로 대조한다.
         // Bold face가 없는 글자는 기존 0.02em 인쇄 획을 사용하며 실제 Bold나
         // 기존 stroke는 다시 굵히지 않는다. 처리 불가한 혼합 스타일은 캐시하지 않는다.
-        let source = std::str::from_utf8(&svg).ok()?;
+        // ROP의 비트맵 패턴 마스크는 원본 정수 격자에서 먼저 합성한다.
+        // 비트 연산 도중 축소 보간하면 흑백 마스크가 회색으로 바뀌어 배경과
+        // 전경의 소속이 달라진다. 텍스트·벡터 형제는 그대로 최종 장치로 전달한다.
+        let mask_grid = masks::flatten_bitmap_masks(&svg);
+        let source = std::str::from_utf8(mask_grid.as_deref().unwrap_or(&svg)).ok()?;
         let (prepared, report) =
             synthetic_bold::prepare_svg_with_synthetic_bold(source, &options).ok()?;
         if report.unsupported_texts > 0 {

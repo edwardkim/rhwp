@@ -605,3 +605,109 @@ fn sample16_pink_panels_preserve_their_original_brush_and_contained_mask() {
         );
     }
 }
+
+/// 원본 1비트의 선택을 끝낸 뒤 장치 표본으로 축소해야 한다.
+/// 문서의 좌표 답안이 아니라 흑/백이 같은 수인 마스크의 면적 법칙이다.
+#[test]
+fn print_device_mask_reduction_preserves_source_bit_coverage() {
+    use rhwp::paint::{
+        LayerBuilder, LayerNode, LayerNodeKind, PaintOp, RenderProfile, ResolvedImageKind,
+    };
+    use rhwp::renderer::render_tree::{
+        BoundingBox, ImageNode, PageRenderTree, RenderNode, RenderNodeType,
+    };
+
+    fn payload(node: &LayerNode) -> &rhwp::paint::ResolvedImagePayload {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                assert_eq!(children.len(), 1, "원본 그림의 단일 소유");
+                payload(&children[0])
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                payload(child)
+            }
+            LayerNodeKind::Leaf { ops } => {
+                assert_eq!(ops.len(), 1, "그림의 누락·중복 방지");
+                let PaintOp::Image {
+                    resolved: Some(resolved),
+                    ..
+                } = &ops[0]
+                else {
+                    panic!("공통 Print 장치 그림을 실제로 소비해야 한다")
+                };
+                assert_eq!(resolved.kind, ResolvedImageKind::OutputDevice);
+                assert_eq!(resolved.mime, "image/png");
+                resolved
+            }
+        }
+    }
+
+    for pattern_bits in [1, 24] {
+        let source = idiom(pattern_bits);
+        for size in [16.0, 20.0, 32.0, 100.0, 200.0] {
+            let frame = BoundingBox::new(0.0, 0.0, size, size);
+            let mut tree = PageRenderTree::new(0, size, size);
+            tree.root.children.push(RenderNode::new(
+                1,
+                RenderNodeType::Image(ImageNode::new(1, Some(source.clone()))),
+                frame,
+            ));
+            let original = serde_json::to_value(&tree.root).unwrap();
+            let mut builder = LayerBuilder::new(RenderProfile::Print)
+                .with_hancom2024_print_bitmap(true)
+                .with_metafile_device_pixel_width(Some(1.0));
+            let layer = builder.build(&tree);
+            let bytes = &payload(&layer.root).data;
+            let image = image::load_from_memory(bytes).unwrap().to_rgba8();
+            assert_eq!(image.dimensions(), (size as u32, size as u32));
+            let mut alpha = 0u64;
+            let mut count = 0u64;
+            for (x, y, pixel) in image.enumerate_pixels() {
+                // 10..60 원본 ROP 영역의 안쪽만 적분해 바깥 경계의 표본 오차와 구별한다.
+                let source_x = (f64::from(x) + 0.5) * 100.0 / size;
+                let source_y = (f64::from(y) + 0.5) * 100.0 / size;
+                if !(20.0..50.0).contains(&source_x) || !(20.0..50.0).contains(&source_y) {
+                    continue;
+                }
+                alpha += u64::from(pixel[3]);
+                count += 1;
+                if pattern_bits == 1 && pixel[3] > 64 {
+                    assert!(
+                        pixel.0[..3].iter().all(|v| {
+                            // PNG의 비곱셈 색을 원래 8비트 premultiplied 단위로 되돌린다.
+                            // 두 번의 정수 변환에서 생길 수 있는 한 단계만 허용한다.
+                            let premultiplied = |channel: u8| {
+                                (u16::from(channel) * u16::from(pixel[3]) + 127) / 255
+                            };
+                            premultiplied(*v).abs_diff(premultiplied(217)) <= 1
+                        }),
+                        "마스크 선택은 원래 브러시 색을 바꾸지 않는다: {pixel:?}"
+                    );
+                }
+            }
+            assert!(count > 0);
+            let coverage = alpha as f64 / (255.0 * count as f64);
+            if pattern_bits == 1 {
+                assert!(
+                    (coverage - 0.5).abs() < 0.08,
+                    "흑백 원본 비트의 50% 피복률 보존: size={size}, coverage={coverage}"
+                );
+            } else {
+                assert!(
+                    (coverage - 1.0).abs() < 0.01,
+                    "다색 패턴은 흑백 마스크로 처리하지 않는다: {coverage}"
+                );
+            }
+            assert_eq!(
+                serde_json::to_value(&tree.root).unwrap(),
+                original,
+                "장치 표본 생산은 원본·배치를 바꾸지 않는다"
+            );
+            assert_eq!(
+                payload(&builder.build(&tree).root).data,
+                *bytes,
+                "반복 조회도 같은 장치 바이트를 전달한다"
+            );
+        }
+    }
+}
