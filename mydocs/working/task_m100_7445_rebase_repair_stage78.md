@@ -29,3 +29,15 @@ Print 크기로 원본 페이지 목록을 교체한 초기 후보와 표면 CSS
 현재 base로의 382개 commit rebase와 Cargo.lock 충돌 보존은 rebase-d9fd85ed-20261023 로그에 있다. 최신 HEAD의 전체 회귀·52조건 Native/fresh WASM 전쪽·패키지/범위 gate는 최종 수용 전 계속 필요하다. sample16 HWP 18·35쪽과 기존 bitmap 대조군 미달도 남아 있다. 미검증을 CI로 넘기지 않으며 새 HWP 보정 대상으로 확대하지 않는다.
 
 [기계 결과와 대표 review/overlay](../pr/assets/issue7445/completed-20261009/rebase-d9fd85ed-20261023/print-raster-ownership/README.md). 원시 로그·기각 후보와 중간 산출물은 ignored `output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/`에만 보존했다.
+
+## 사용자 범위 변경: sample16 HWP5 별도 PR (2026-10-23)
+
+사용자가 `samples/hwp3-sample16-hwp5.hwp`를 별도 PR에서 준비하므로 이 PR의 보정·시각 완료 대상에서 제외하도록 지시했다. 같은 SHA-256 `6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45`를 가진 `hwp3-sample16-hwp5-2010.hwp` 별칭도 중복된 동일 입력이므로 함께 제외했다. 다른 저장본과 HWP3 원본으로 범위를 확대하거나 일괄 제외하지 않았다. 기존 52조건에서 두 조건을 뺀 **50조건·backend당 1,836쪽**이 현재 시각 검증 범위다.
+
+이 입력용으로 실험하던 미커밋 장치 래스터 표본 변경 11개 파일은 producer hash와 실제 dirty 목록을 대조한 뒤 패치·파일별 SHA와 함께 ignored output에 보존하고 HEAD 상태로 복원했다. 사용자 변경은 없었고, 이미 커밋한 공통 수정과 저장소의 기존 정상 회귀 검사는 제거하지 않았다. 원본·PDF·PNG·TSV·로그·글꼴·공유 target도 보존했다.
+
+제외한 실험 후보의 전64쪽 결과는 Native 최저97.96549%, fresh WASM 최저97.99588%였으나, 18쪽 WMF의 작은 글자에 끊긴 획·굵기 차이가 남았다. 이 수치를 시각 완료로 쓰지 않는다. 별도 Studio 6건은 새 장치 표본 선언 assertion에서 실패했으며, 2024 호환 exporter와 기본 Studio 호환 조건의 차이를 해소한 소비 검증도 완료하지 않았다. 해당 실패를 숨기거나 assertion을 완화하지 않고 이 입력의 별도 PR용 이력으로만 보존했다.
+
+보존 위치: `/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/sample16-hwp-scope-exclusion/`. `result.json`에 제외 사유·실험 파일 hash·복원 검증을, `scope50.json`에 이전 scope hash와 현재 목록을 기록했다. 이 폴더의 미커밋 패치는 현재 제품 코드에 적용되어 있지 않다. 앞 절의 52조건 및 sample16 HWP 잔여 설명은 범위 변경 전 이력이다.
+
+나머지 문서의 새 head 전쪽 Native/fresh WASM·base 대비 비교, 전체 회귀와 필수 게이트, 저장 줄 결측 확대 대조군 및 기존 bitmap 대조군 판정은 계속 필요하다. 별도 PR 대상으로 넘긴 입력의 수치로 남은 문서의 완료를 주장하지 않는다.
