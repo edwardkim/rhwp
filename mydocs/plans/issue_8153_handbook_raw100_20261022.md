@@ -913,3 +913,41 @@ pen 폭이 PDF 원시 연산의0.001pt까지 맞는다. 종이 밖 경로가 생
 실제 공급 장치 pixel을 소비하고, 자식 글자·논리 조판·원본 소유 정보는 보존한다. 두 종이의
 독립 단쪽·원본46/86/90/94/130/133/140/144/260쪽과 정상 대조군을 먼저 실행하고 직접 판독한다.
 수정 전후 형상과 기존 검사의 독립 기대값을 대조하며, 새 회귀는 양쪽 시각 선행 조건 뒤 등록한다.
+
+### 바탕쪽 가로 변환의 전쪽 결과와 본문 그림의 독립 근거
+
+`a8119d4885` Native 전766쪽 TSV는 exit0이며 HWPX 최저93.21074%, HWP 최저93.21040%다.
+직전9fa 대비 하락은0쪽이다. 정확한 마스크 검사도 전PNG/PDF raster 해시를 확인해 완료했다.
+실제 미대응0은 HWPX172/HWP143쪽으로,9fa의103/89쪽보다69/54쪽 늘었다. 남은 미대응은
+각68258/67362픽셀이다. 전쪽100% 완료가 아니며 최저 쪽은 두 형식 모두90쪽이다.
+`master-device-a8119d4885/whole-native-exact-audit.json`,
+`logs/master-device-whole-native-exact-resumed.log` 참조. 기존 controller는 전쪽 TSV 완료 뒤
+handle과 실제 프로세스가 모두 사라져 있었다. 완료 PNG를 재출력하지 않고 빠진 정확 검사만
+재개해 exit0을 확인했다. 정상 대조군12쪽은 RGB·쪽수가 동일하다.
+
+실제 글꼴 파일 공급 보정 뒤 기존 fresh WASM package의 핵심30쪽도 완료했다. 두 형식 모두
+383쪽이며 최저는 HWPX98.08337/HWP98.08413%,133쪽은 raw100이다. package 재빌드는
+없다. HWP의 실제 HCR 프로그램8664와 이전 C5 공급은 구분한다. 최종 base/head의 동일
+프로그램 공급과 최종 후보의 전쪽 fresh WASM은 아직 필요하다.
+
+그림 테두리 조사용1쪽 입력은 원본46쪽 그림의 리소스·참조를 보존하고 선 유무/두께만 바꾼
+6개 조건, 이어서15개 두께×ROUND/FLAT의30개 조건이다. 두 입력 모두 Hancom13.0.0.3901,
+PrintMethod0, frame_print_to_pdf_ex_one_up의 실제 출력·해시를 확인했다. 기존 편람 PDF의
+재출력이나 대체가 아니다. lineShape 없음/NONE은 테두리가 없고 SOLID는 외곽선과 채움을
+함께 출력한다. ROUND의16개 path 연산과 FLAT의 채움/선 경로를 분리해 기록했다.
+`picture-pen-probes/{contracts,width-cap}-print-job.json`,
+`width-cap-independent-audit.json`과 관련 로그를 보존했다. 단순 최소 pen 폭 추측으로
+이 경로를 대신하지 않으며 테두리 경로의 수치 계약은 추가 확인한다.
+
+본문 raster 그림36개는 모두 원본 가로 원점과 폭을 각각600dpi 정수 장치 좌표로 반올림한 뒤
+물리 종이555pt/장치 폭4630으로 변환한 값과0.001pt 이내로 일치한다. 사각형의 오른쪽 끝
+반올림과 그림의 폭 반올림은 구분한다. `body-raster-device-x-audit.json` 참조. 세로 축에는
+같은 식이 일치하지 않아 적용하지 않는다. 회전/affine은 별도 좌표계로 유지한다.
+
+다음 보정의 값 추적은 `Image RenderNode의 논리 bbox → PagePaintContext의 가로 인쇄 프레임
+→ Image PaintOp → 그림 테두리 Rectangle의 명시적 image owner → 같은 paint 프레임`이다.
+테두리를 인접 노드의 모양으로 추측하지 않고 실제 원본 그림 노드 ID로 연결한다. 측정·조판·
+semantic bbox·소유 정보와 바탕쪽의 기존 raster 계약은 보존한다. 실제 인쇄 장치 pixel을
+소비하는 공통 paint에서 본문 raster의 가로 축만 변환하고, 그림 테두리가 같은 결과를 소비하게
+한다. 두 진단 입력·편람 핵심 쪽·정상 대조군을 먼저 실행하고 하락/직접 판독을 확인한다.
+새 정식 회귀는 Native/fresh WASM 선행 조건 뒤 추가하며 기존 그림 프레임 관계 검사도 유지한다.
