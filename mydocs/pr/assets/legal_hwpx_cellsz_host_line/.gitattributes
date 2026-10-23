@@ -1,0 +1,5 @@
+# 이 폴더의 입력·기준 PDF·TSV 는 PR 본문의 SHA-256 과 바이트가 같아야 한다.
+# TSV 는 Windows 에서 만든 원본(CRLF)이므로 줄바꿈 변환과 공백 검사를 적용하지 않는다.
+*.tsv -text -whitespace
+*.hwpx -text -diff
+*.pdf -text -diff

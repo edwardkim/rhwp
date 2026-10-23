@@ -337,9 +337,15 @@ impl LayoutEngine {
                             // as samples/복학원서.hwp use an empty first paragraph with a
                             // BehindText logo; preserving the advanced cursor there inserts an
                             // extra line-height before the following table.
+                            //
+                            // Exception: a document with no stored line layout at all (machine
+                            // generated HWPX) has no ladder to testify, so the host line that
+                            // typeset and the FullParagraph path both account for must stay.
                             if matches!(
                                 pic.common.text_wrap,
                                 crate::model::shape::TextWrap::InFrontOfText
+                            ) || textless_synthesized_host_keeps_line_for_behind_text_picture(
+                                para, pic,
                             ) {
                                 result_y = saved_y_offset;
                             }
