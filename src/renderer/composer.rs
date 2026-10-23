@@ -121,6 +121,7 @@ impl ComposedTextRun {
 }
 
 mod auto_number_projection;
+pub(crate) use auto_number_projection::project_caption as project_caption_auto_numbers;
 mod equation_line_metrics;
 mod mapped_symbol_fonts;
 mod stored_row_fragments;

@@ -10964,57 +10964,6 @@ impl LayoutEngine {
 
         Some(modified)
     }
-
-    /// 조합된 문단의 텍스트에 AutoNumber를 적용한다.
-    pub(crate) fn apply_auto_numbers_to_composed(
-        &self,
-        composed: &mut ComposedParagraph,
-        para: &Paragraph,
-        _counter: &mut super::AutoNumberCounter, // 더 이상 사용하지 않음 (파싱 시 할당됨)
-    ) {
-        // AutoNumber 컨트롤이 있는지 확인
-        for ctrl in &para.controls {
-            if let Control::AutoNumber(an) = ctrl {
-                // 파싱 시점에 할당된 번호를 번호 형식에 맞게 변환 + 장식 문자 적용
-                let num_fmt = NumFmt::from_hwp_format(an.format);
-                let num_str = format_number(an.assigned_number, num_fmt);
-                let num_str = if an.prefix_char != '\0' || an.suffix_char != '\0' {
-                    format!(
-                        "{}{}{}",
-                        if an.prefix_char != '\0' {
-                            an.prefix_char.to_string()
-                        } else {
-                            String::new()
-                        },
-                        num_str,
-                        if an.suffix_char != '\0' {
-                            an.suffix_char.to_string()
-                        } else {
-                            String::new()
-                        },
-                    )
-                } else {
-                    num_str
-                };
-
-                // 각 줄의 텍스트에서 AutoNumber 위치를 찾아 번호로 대체
-                // HWP5/HWPX/HWP3 공통: 공백 두 개("  ") 패턴 탐색
-                for line in &mut composed.lines {
-                    for run in &mut line.runs {
-                        if let Some(pos) = run.text.find("  ") {
-                            run.text = format!(
-                                "{}{}{}",
-                                &run.text[..pos + 1],
-                                num_str,
-                                &run.text[pos + 1..]
-                            );
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 /// paragraph 의 sibling controls 중 `wrap=TopAndBottom` +
