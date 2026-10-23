@@ -34,3 +34,28 @@ clip이나 단색 사각형 채움과 다른 소유 정보이며, 그림의 표�
 `diagnose_pdf_image_coverage.py`와 관련 로그에 보존한다. 원본·독립 Print는 재출력하지 않는다.
 제품 보정 후에는 같은 source SHA의 Native/fresh WASM 원본 출력·전체 TSV·확대 판독을
 확보한다. 완료 목표인 전쪽 raw 100%와 실제 미대응 픽셀 0은 아직 달성하지 않았다.
+
+## `d3fdfa0c51`의 실제 소비자 검증
+
+- 고정 `target/pr-review`, jobs 8의 Native 빌드는 8분 13초 후 종료 코드 0이다.
+  새 CLI와 library는 source·파일 SHA를 고정해 작업 자료에 보존했다.
+- 독립 PDF 이미지 20건을 실제 Native 소비자와 RGB 전체로 비교했다. 이전
+  `fca79de4f0`은 2 PASS / 18 FAIL, 새 후보는 20 PASS / 0 FAIL이다. PDF PNG 해시가
+  두 실행에서 동일함도 확인했다. 이는 합성 좌표 계약의 검증이며 원본 문서의 완료가 아니다.
+- 원본 HWPX 288·307쪽의 경계 5곳은 새 제품의 실제 출력에서도 모두 Print와 같은
+  RGB 226이다. 의미 조판을 임시로 수정한 tree가 아닌 새 고정 CLI의 출력이다.
+- 진행 중인 영향 페이지 비교에서 HWPX 282쪽은 99.52972 → 100.00000,
+  288쪽은 98.79794 → 99.97615다. 비교 기준은 같은 DPI 정책의 바로 전 후보
+  `fca79de4f0`이며, 최종 devel 비교·전쪽 판정을 대신하지 않는다. 88·271쪽은
+  100.00000을 유지했다. 이 시점에 영향 36쪽 전체 완료를 선언하지 않았다.
+- 실제 288쪽 확대 crop을 직접 열었다. 그림의 회색 경계는 보정됐지만 셀의 맞닿는
+  x=210, y=307~315에는 Native RGB 248 / Print RGB 255의 가는 세로 이음이 남았다.
+  이는 완료로 판정하지 않고 `remaining-cell-clip-seam.json`에 실제 픽셀을 보존했다.
+  부모 TableCell clip의 부분 alpha를 별도 원인으로 검증하며 raw 점수로 면제하지 않는다.
+- Studio `tsc --noEmit`은 종료 코드 0이다. 같은 후보의 원본 Native 766쪽 TSV·실제
+  미대응 픽셀 검사를 시작했다. 현재 코드의 fresh WASM과 최종 전체 검증은 아직 미완료다.
+
+실행 로그는 `logs/image-coverage-native-{build,focus,whole}.log`,
+`logs/image-coverage-consumer-{before,after}.log`에 있고 producer·원본 경계·소비자 결과는
+`image-coverage-d3fdfa0c51/`와 `image-coverage-d3fdfa0c51-device-contract/`에 있다.
+임계값·2px 반경·기준 PDF는 변경하지 않았다.
