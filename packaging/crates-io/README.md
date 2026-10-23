@@ -1,0 +1,68 @@
+# crates.io 준비용 source 사전 검사
+
+이 도구는 [#8174](https://github.com/edwardkim/rhwp/issues/8174)의 결정 비의존 공통 준비다.
+[결정 대장](../../mydocs/plans/task_m100_8174_maintainer_decisions.md)의 선택을 기다리지 않고
+현재 후보의 누락·의존 구조·재현성을 검사한다. 후보 graph를 입력으로 삼으며 게시 구성을 확정하지 않는다.
+
+## 실행
+
+Python 3.11 이상과 Git을 사용한다. 추가 Python package나 Cargo 빌드는 필요하지 않다.
+저장소 루트에서 실행한다.
+
+```bash
+python3 scripts/crates_io_source_preflight.py \
+  --output-dir output/pr-review/issue8174/source-preflight
+
+python3 -m unittest scripts/tests/test_crates_io_source_preflight.py -v
+```
+
+`--ref <commit>`은 검사할 source를 고정한다. 기본은 `HEAD`다. `--policy`와 `--runtime-files`는
+검사 설정 파일이며, 기본값은 이 디렉터리의 JSON 두 개다. 설정 파일의 제안과 Git source의 실제
+name/version을 결과에서 구분한다. Git commit의 blob으로 archive를 만들므로 미커밋 source와
+untracked 파일은 들어가지 않는다. 변경 source를 검사하려면 해당 변경을 커밋한 ref를 지정한다.
+
+출력은 저장소의 ignored `output/` 아래에만 쓴다. 제품 source·manifest·lock·Cargo cache·
+feature·인증·GitHub 설정을 수정하지 않고 registry에도 접속하지 않는다.
+
+## 검사 범위
+
+- 후보 파일 목록과 실제 source의 path 의존성·root patch를 대조하고 dependency 순서를 구한다.
+  workspace에서 상속한 path 의존성도 확인한다.
+- 패키지 내 라이선스·NOTICE·원본 추적 자료의 누락을 검사한다. 포함되는 글꼴은 기존 canonical
+  font registry의 SHA-256, 라이선스 파일과 파생 provenance가 같은 패키지에 들어가는지 대조한다.
+  저작권·재배포 권한의 법적 판단이나 SPDX 전수 해석을 수행하는 도구는 아니다.
+- `runtime-files.json`에 등록한 외부 내장 파일의 literal include와 archive 안의 실제 상대 경로를
+  확인한다. 현재 등록된 참조는 14개다. Rust cfg parser나 새 include의 자동 전수 수집이 아니므로
+  소비 경로가 바뀌면 등록 자료를 갱신하고 실제 Cargo 소비 검증도 수행한다.
+- 저장소의 `samples/`, `pdf/`, `output/`, `mydocs/privacy/`와 환경 파일이 선택되면 거부한다.
+  이는 로컬 검증 corpus를 source 후보에 넣지 않기 위한 경계다. `saved/blank2010.hwp` 같은
+  실제 내장 입력과 공식 라이선스 PDF는 이 자료와 구분한다.
+- Git symlink/submodule와 archive 경로 이탈을 거부하고, Git의 실행 권한을 보존한다.
+  재현 가능한 gzip tar를 만든 뒤 전 파일의 바이트·모드를 다시 읽어 원장과 대조한다.
+
+로컬 작업 보호용으로 blob 하나 64 MiB·선택한 blob 합계 512 MiB·source archive 하나
+10,000,000바이트 미만을 검사한다. 이 수치를 실제 registry의 최신 정책이나 제품 런타임의
+메모리 한도로 설명하지 않는다.
+
+## 결과 해석
+
+exit 0은 **source 검사 통과**다. 실패는 exit 2이고 기존 성공 보고서도 `failed`로 바꾸므로
+이전 실행의 통과를 새 실행 결과로 오인하지 않는다. `source-preflight.json`과 함께 package별
+`*.files.json`, `*.source.tar.gz`를 생성한다. 출력 파일 symlink를 따라 source를 덮어쓰지 않는다.
+
+보고서에는 source SHA·도구 파일의 SHA-256과 두 입력 JSON의 의미상 digest를 기록한다.
+JSON digest는 `json.dumps(sort_keys=True, ensure_ascii=True)` 결과를 UTF-8로 인코딩해 계산한다.
+
+`manifest_blockers`는 현재 설정에서의 준비 차단점이다. `publish_false`는 6개 내부/fork의 현재
+게시 제한, `path_version_missing`은 registry 버전 병기가 없는 의존성,
+`root_patch_not_propagated`는 root patch가 하위 소비자에게 전달되지 않는 경계다.
+이 목록을 보고 자동으로 version·publish flag·package 이름을 바꾸지 않는다.
+
+모든 성공 보고서도 `publish_ready=false`, `cargo_normalized=false`, `cargo_verified=false`,
+`registry_consumption_verified=false`다. 생성물은 **정규화 전 source 후보**이며 `.crate`나
+`cargo package`/`cargo publish --dry-run`의 성공 증거가 아니다. 정책 선택 뒤 실제 package와
+독립 소비를 검증하고 게시 승인을 따로 받는다.
+
+이 절편의 테스트는 위 명령으로 로컬 실행한다. 기존 Python workflow 계약 검사는 특정 파일명과
+명시적인 CI 호출을 사용하고 이 로컬 도구를 자동 수집하지 않는다. 이 변경에서 CI workflow를
+추가·수정하지 않으며, 게시 경로가 정해질 때 검사 진입점과 필요한 최소 연결을 검토한다.

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "scope": "reviewed literal production includes outside src; not a Rust cfg parser",
+  "font_registry": "assets/fonts/licenses/font-notices.json",
+  "files": [
+    {"consumer": "src/document_core/commands/document.rs", "path": "saved/blank2010.hwp"},
+    {"consumer": "src/mcp_serve.rs", "path": "llms.txt"},
+    {"consumer": "src/mcp_serve.rs", "path": "mydocs/manual/agent_knowledge_map.md"},
+    {"consumer": "src/mcp_serve.rs", "path": "mydocs/manual/agent_troubleshooting_guide.md"},
+    {"consumer": "src/mcp_serve.rs", "path": "mydocs/manual/recipes/01_fill_form_and_submit.md"},
+    {"consumer": "src/mcp_serve.rs", "path": "mydocs/manual/recipes/02_table_csv_roundtrip.md"},
+    {"consumer": "src/mcp_serve.rs", "path": "mydocs/manual/recipes/03_redact_before_sharing.md"},
+    {"consumer": "src/mcp_serve.rs", "path": "mydocs/manual/recipes/04_safety_check_untrusted_doc.md"},
+    {"consumer": "src/mcp_serve.rs", "path": "mydocs/manual/recipes/05_mail_merge_batch_fill.md"},
+    {"consumer": "src/mcp_serve.rs", "path": "mydocs/manual/recipes/06_visual_regression_before_after.md"},
+    {"consumer": "src/mcp_serve.rs", "path": "mydocs/tech/agent_roadmap/atlas_r1_r200.md"},
+    {"consumer": "src/mcp_serve.rs", "path": "mydocs/manual/gym_optional_tool.md"},
+    {"consumer": "src/renderer/boxed_digit_geometry.rs", "path": "assets/fonts/boxed-digit-metrics.json"},
+    {"consumer": "src/renderer/equation/variable_outline.rs", "path": "assets/fonts/LatinModernMath-VariableOutline-subset.otf"}
+  ]
+}

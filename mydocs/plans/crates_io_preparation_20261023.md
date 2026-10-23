@@ -1,7 +1,7 @@
 # crates.io 배포 사전 준비 계획
 
 - 작성일: 2026-10-23
-- 상태: 1단계 조사·보안 현황 정리 완료. 메인테이너 결정 기록 후 2단계 구현 범위를 확정한다.
+- 상태: 1단계 조사와 2단계 공통 선행 절편 C01–C04 완료. 정책 의존 구현은 미착수다.
 - 요청: 다음 릴리즈는 0.9.0이며, crates.io 배포를 미리 준비한다.
 - 착수 기준 SHA: `upstream/devel` `def947c2149df5bc812d801e6e79be19a403b4d1`.
 - 사전 조사 기준 SHA: `605ccfd92f2f12f18e14182548d729f9929fda00`.
@@ -13,10 +13,14 @@
 - [구현 계획](task_m100_8174_impl.md). 단계별 변경을 커밋하고 다음 단계로 전환한다.
 - [1단계 결과](../working/task_m100_8174_stage1.md): 8개 source 후보의 목록·의존 순서·고지·실측을 기록했다.
   본체 8,329,278바이트, PDF backend 6,814,747바이트의 gzip tar이며 정규화·검증된 `.crate`는 아니다.
+- [2단계 공통 결과](../working/task_m100_8174_stage2.md): 정식 source 검사 도구와 18개 계약 검사를
+  추가했다. 누락된 font provenance를 보완한 본체 후보는 8,329,770바이트이며 실제 Cargo 검증과 구분한다.
 - 2026-10-23 추가 요청에 따라 [보안 제한과 기능 사용 범위](../manual/security_feature_limits.md)를
   정리했다. 기능 활성화와 2단계 manifest 변경은 이 현황 정리에 포함하지 않는다.
 - [메인테이너 결정 대장](task_m100_8174_maintainer_decisions.md)의 선택·조건을 기록한 뒤
   구현 범위를 확정한다. 현재 MD01–MD09와 구현 범위 v1은 미확정이다.
+- 추가 착수 지시로 공통 선행 검사 도구·증적은 결정과 무관하게 먼저 준비한다.
+  정책 선택에 의존하는 manifest·기능·게시 변경과 구분한다.
 - 권위 절차: [문서·Git workflow](../manual/codex/docs_and_git_workflow.md),
   [배포 가이드](../manual/publish_guide.md), [GitHub 운영](../manual/github_operations.md).
 
@@ -82,7 +86,8 @@ remote push·PR 생성·workflow 실행·실제 registry 게시의 승인도 각
 
 ### 2단계 — 저장소 밖 소비 검증
 
-- 관련 결정과 구현 범위를 확정하고 단계 진행 승인을 기록한 뒤 시작한다.
+- 공통 선행 작업 C01–C04는 결정 대기 없이 먼저 구현·실행한다.
+- 정책 선택에 의존하는 아래 변경은 관련 결정·구현 범위와 단계 진행 승인을 기록한 뒤 시작한다.
 - 승인된 graph에 맞춰 manifest의 이름·버전·path와 registry 위치를 정리한다.
 - 아직 게시되지 않은 상호 의존 crate는 별도 임시 registry 등으로 **실제 포장한 source**의
   의존성 해석을 검증한다. 부모 저장소 path나 사용자 Cargo 캐시의 직접 수정으로 대체하지 않는다.
