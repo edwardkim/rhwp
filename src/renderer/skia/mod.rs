@@ -15,6 +15,7 @@ mod glyph_replay;
 mod hft_outline;
 mod image_cache;
 mod image_conv;
+mod image_coverage;
 mod image_effect;
 mod line_replay;
 mod metafile_print;

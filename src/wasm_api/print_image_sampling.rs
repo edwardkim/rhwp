@@ -89,6 +89,21 @@ pub fn resample_print_bitmap_rgba(
 
 
 
+#[wasm_bindgen(js_name = mapPrintBitmapImage)]
+pub fn map_print_bitmap_image(rectangle: &[f64], transform: &[f64]) -> JsValue {
+    let (Ok([x, y, width, height]), Ok(matrix)) = (
+        <[f64; 4]>::try_from(rectangle),
+        <[f64; 6]>::try_from(transform),
+    ) else {
+        return JsValue::NULL;
+    };
+    let source = crate::renderer::render_tree::BoundingBox::new(x, y, width, height);
+    let Some(mapped) = crate::paint::device_image::bounds(source, matrix) else {
+        return JsValue::NULL;
+    };
+    js_sys::Float64Array::from([mapped.x, mapped.y, mapped.width, mapped.height].as_slice()).into()
+}
+
 #[wasm_bindgen(js_name = mapPrintRectangleFill)]
 pub fn map_print_rectangle_fill(rectangle: &[f64], transform: &[f64]) -> JsValue {
     let (Ok([x, y, width, height]), Ok(matrix)) = (

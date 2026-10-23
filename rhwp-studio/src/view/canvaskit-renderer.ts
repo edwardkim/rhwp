@@ -12,7 +12,7 @@ import * as bitmapRasterWasm from '@wasm/rhwp.js';
 import { drawAnisotropicPrintImage, drawPrintFrameImage } from './canvaskit/anisotropic-image.ts';
 import { drawPrintMetafile, isPrintMetafile } from './canvaskit/metafile-print.ts';
 import { drawPrintAreaImage } from './canvaskit/print-image-sampling.ts';
-import { printBitmapClip, printRectangleFill } from './canvaskit/print-device-rectangle.ts';
+import { printBitmapClip, printRectangleFill, printBitmapImage } from './canvaskit/print-device-rectangle.ts';
 import CanvasKitInit from 'canvaskit-wasm';
 import { blake3 } from '@noble/hashes/blake3.js';
 import type {
@@ -2847,6 +2847,10 @@ export class CanvasKitLayerRenderer {
     );
     const opacity = Number.isFinite(op.opacity) ? Math.max(0, Math.min(1, op.opacity ?? 1)) : 1;
     const drawImage = (dstX: number, dstY: number, dstW: number, dstH: number) => {
+      if (this.currentProfile === 'print' && op.printImageCoverage === 'device') {
+        const mapped = printBitmapImage(canvas, { x: dstX, y: dstY, width: dstW, height: dstH });
+        dstX = mapped.x; dstY = mapped.y; dstW = mapped.width; dstH = mapped.height;
+      }
       if (op.imageReconstruction === 'printArea' && !crop && opacity === 1
         && this.currentProfile === 'print' && this.preferRasterDepth === 0 && this.currentPageExtent
         && drawPrintAreaImage(this.canvasKit, canvas, image,

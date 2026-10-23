@@ -9,6 +9,8 @@ use super::contextual_text;
 #[cfg(target_arch = "wasm32")]
 mod cubic_reduction;
 #[cfg(target_arch = "wasm32")]
+mod image_coverage;
+#[cfg(target_arch = "wasm32")]
 mod image_reduction;
 #[cfg(target_arch = "wasm32")]
 mod metafile_print;
@@ -903,14 +905,18 @@ impl WebCanvasRenderer {
                 let previous_print_area = self.print_area_sampling;
                 self.print_area_sampling =
                     super::image_resolver::print_area_sampling(image, resolved);
+                // 출력 색의 중복 처리를 막으려고 carrier 표식이 지워지기 전에
+                // 원래 그림 계약과 실제 장치 행렬에서 목적 영역을 확정한다.
+                let bbox =
+                    image_coverage::bounds(&self.ctx, *bbox, image, self.print_stroke_adjustment);
                 if let Some(resolved) = resolved {
                     let image = crate::renderer::image_resolver::image_node_with_resolved_payload(
                         image,
                         Some(resolved),
                     );
-                    self.render_image(bbox, &image, true);
+                    self.render_image(&bbox, &image, true);
                 } else {
-                    self.render_image(bbox, image, true);
+                    self.render_image(&bbox, image, true);
                 }
                 self.print_area_sampling = previous_print_area;
             }

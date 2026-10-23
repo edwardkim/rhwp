@@ -1429,6 +1429,8 @@ export interface LayerImageOp {
   imageReconstruction?: 'catmullRom' | 'printArea';
   imageAnisotropicReduction?: boolean;
   imagePrintFrame?: number[];
+  /** Print bitmap 채움의 실제 장치 외접 영역. 필터 선택과 별개다. */
+  printImageCoverage?: 'device';
   mime?: string;
   base64?: string;
   imageRef?: number | string;

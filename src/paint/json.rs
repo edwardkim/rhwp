@@ -1133,7 +1133,19 @@ impl PaintOp {
                     crate::renderer::image_resolver::image_for_resolved_window(image, resolved);
                 let image = prepared.as_ref();
                 // [#7193] 소비자가 그리는 자리 — 틀에서 그림 안쪽 여백을 뺀 사각형.
-                write_bbox(buf, image.paint_bbox(bbox));
+                let image_bbox = image.paint_bbox(bbox);
+                if ctx.profile == RenderProfile::Print
+                    && crate::paint::device_image::eligible(image)
+                {
+                    let _ = write!(
+                        buf,
+                        "{{\"x\":{},\"y\":{},\"width\":{},\"height\":{}}}",
+                        image_bbox.x, image_bbox.y, image_bbox.width, image_bbox.height
+                    );
+                    buf.push_str(",\"printImageCoverage\":\"device\"");
+                } else {
+                    write_bbox(buf, image_bbox);
+                }
                 buf.push_str(",\"imagePaintBBox\":");
                 write_bbox(buf, image.transformed_paint_bbox(bbox));
                 if image.pre_rotation_ratio.is_some() || image.source_rect.is_some() {

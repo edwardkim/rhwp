@@ -6,7 +6,7 @@ type ClipMapper = (rectangle: Float64Array, transform: Float64Array) => Float64A
 
 /** clip과 채움의 규칙을 섞지 않고 각각의 공통 Rust 결과를 소비한다. */
 function mapRectangle(canvas: Canvas, clip: LayerBounds,
-  name: 'mapPrintBitmapClip' | 'mapPrintRectangleFill'): LayerBounds {
+  name: 'mapPrintBitmapClip' | 'mapPrintRectangleFill' | 'mapPrintBitmapImage'): LayerBounds {
   const m = canvas.getTotalMatrix?.();
   if (!m || m[6] !== 0 || m[7] !== 0 || m[8] !== 1) return clip;
   const mapper = (wasmExports as unknown as Partial<Record<typeof name, ClipMapper>>)[name];
@@ -22,4 +22,8 @@ export function printBitmapClip(canvas: Canvas, clip: LayerBounds): LayerBounds 
 
 export function printRectangleFill(canvas: Canvas, rectangle: LayerBounds): LayerBounds {
   return mapRectangle(canvas, rectangle, 'mapPrintRectangleFill');
+}
+
+export function printBitmapImage(canvas: Canvas, rectangle: LayerBounds): LayerBounds {
+  return mapRectangle(canvas, rectangle, 'mapPrintBitmapImage');
 }

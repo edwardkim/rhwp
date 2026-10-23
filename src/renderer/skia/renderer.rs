@@ -2110,6 +2110,13 @@ impl SkiaLayerRenderer {
                             if image.transform.has_transform() {
                                 open_shape_transform(image.transform, &effective_bbox);
                             }
+                            let effective_bbox = super::image_coverage::bounds(
+                                canvas,
+                                effective_bbox,
+                                image,
+                                cache_context.raster_target
+                                    && cache_context.policy.print_stroke_adjustment(),
+                            );
                             let data = resolved
                                 .map(|payload| &payload.data[..])
                                 .or(image.data.as_deref());
