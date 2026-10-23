@@ -11,21 +11,25 @@ import { AI_EFFORTS, AI_PROVIDERS, modelsOf, type AiEffort, type AiProviderId } 
 import type { AiFailureReason } from '../provider/types.ts';
 import { KeyStoreError, maskKey } from '../settings/key-store.ts';
 
-export function failureMessage(reason: AiFailureReason, retryAfterSeconds?: number): string {
+export function failureMessage(reason: AiFailureReason, retryAfterSeconds?: number, detail?: string): string {
   if (reason === 'rate' && retryAfterSeconds !== undefined) {
     return t('ai.error.rateRetry', { s: Math.ceil(retryAfterSeconds) });
   }
-  return t(`ai.error.${reason}`);
+  const base = t(`ai.error.${reason}`);
+  return detail ? `${base} (${detail})` : base;
 }
 
-function keyStoreMessage(error: unknown): string {
+export function keyStoreMessage(error: unknown): string {
   if (error instanceof KeyStoreError) {
     switch (error.code) {
       case 'INVALID_KEY': return t('ai.settings.invalidKey');
       case 'EMPTY_PASSPHRASE': return t('ai.settings.emptyPassphrase');
       case 'WRONG_PASSPHRASE': return t('ai.unlock.wrong');
+      case 'CRYPTO_UNAVAILABLE': return t('ai.settings.cryptoUnavailable');
     }
   }
+  // 키 원문은 오류에 실리지 않는다(키 보관 모듈이 메시지에 넣지 않는다). 진단을 위해 남긴다.
+  console.error('[AI] 키 보관 실패', error);
   return t('ai.error.unknown');
 }
 
@@ -115,6 +119,16 @@ export class AiSettingsDialog extends ModalDialog {
     this.passphraseInput.autocomplete = 'new-password';
     this.passphraseInput.placeholder = t('ai.settings.passphrasePlaceholder');
     this.passphraseRow = row(t('ai.settings.passphrase'), this.passphraseInput);
+    if (!this.ctx.keyStore.canEncrypt) {
+      // 비보안 출처(http://IP 등)에는 암호화 API 가 없다 — 입력을 받은 뒤 실패시키지 않고 미리 알린다.
+      this.passphraseInput.disabled = true;
+      this.passphraseInput.placeholder = t('ai.settings.cryptoUnavailableShort');
+      const note = document.createElement('p');
+      note.className = 'ai-settings-note ai-settings-crypto-note';
+      note.textContent = t('ai.settings.cryptoUnavailable');
+      this.passphraseRow = Object.assign(document.createElement('div'), { className: 'ai-settings-passphrase' });
+      this.passphraseRow.append(row(t('ai.settings.passphrase'), this.passphraseInput), note);
+    }
 
     const warning = document.createElement('p');
     warning.className = 'ai-settings-warning';
@@ -226,7 +240,7 @@ export class AiSettingsDialog extends ModalDialog {
       const result = await testClaudeConnection(key, this.modelSelect.value, abort.signal);
       if (abort.signal.aborted) return;
       if (result.ok) this.setStatus(t('ai.settings.testOk', { model: result.modelName }), 'ok');
-      else this.setStatus(failureMessage(result.reason, result.retryAfterSeconds), 'error');
+      else this.setStatus(failureMessage(result.reason, result.retryAfterSeconds, result.detail), 'error');
     } finally {
       if (this.testAbort === abort) this.testAbort = null;
       this.testButton.disabled = false;

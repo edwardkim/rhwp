@@ -2047,6 +2047,8 @@ const catalog = {
   "ai.tool.search_text": "문서 검색",
   "ai.tool.get_selection": "선택 영역 확인",
   "ai.tool.list_fields": "누름틀 확인",
+  "ai.settings.cryptoUnavailable": "이 연결(http://IP 주소)에서는 브라우저가 암호화 기능을 막아 암호 보호를 쓸 수 없습니다. https 나 localhost 로 열거나, 암호 없이 기억하세요.",
+  "ai.settings.cryptoUnavailableShort": "이 연결에서는 쓸 수 없음",
 } as const;
 
 export default catalog;

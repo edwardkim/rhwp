@@ -4,7 +4,7 @@
 import { ModalDialog } from '@/ui/dialog';
 import { t } from '@/i18n/index.ts';
 import type { AiContext } from '../ai-context.ts';
-import { KeyStoreError } from '../settings/key-store.ts';
+import { keyStoreMessage } from './ai-settings-dialog.ts';
 
 export class AiUnlockDialog extends ModalDialog {
   private readonly ctx: AiContext;
@@ -62,9 +62,7 @@ export class AiUnlockDialog extends ModalDialog {
       this.hide();
     } catch (error) {
       this.statusLine.dataset.kind = 'error';
-      this.statusLine.textContent = error instanceof KeyStoreError && error.code === 'EMPTY_PASSPHRASE'
-        ? t('ai.settings.emptyPassphrase')
-        : t('ai.unlock.wrong');
+      this.statusLine.textContent = keyStoreMessage(error);
       this.input.select();
     } finally {
       this.busy = false;

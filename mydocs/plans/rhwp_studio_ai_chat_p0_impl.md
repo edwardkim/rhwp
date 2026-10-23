@@ -433,3 +433,24 @@ VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:ai-panel
 | `npm run build` | AI 청크 38KB(시작 때), SDK 청크 318KB(첫 질문·연결 테스트 때) |
 | `RHWP_WITHOUT_AI=1` | AI 문자열 0건 |
 | 화면 판독 | 답변 화면 스크린샷 확인 |
+
+### 사용자 확인 중 보정 1 — 비보안 출처의 암호 저장, 400 사유 표시 (2026-10-23)
+
+- 제보 1: AI 설정에서 암호를 지정해 저장하면 「알 수 없는 오류」가 났다.
+  - 원인: 개발 서버를 `http://192.168.10.71:7700`처럼 IP 주소로 열면 비보안 출처다. 브라우저는 이때 `crypto.subtle`을 주지 않는다. `127.0.0.1`은 `isSecureContext: true`이고, LAN IP는 `false`에 `subtle` 없음을 headless Chrome에서 확인했다. `KeyStore`가 없는 API를 불러 TypeError가 났다.
+  - 수정
+    - `KeyStore`는 `subtle`이 없으면 암호 저장·해제를 `CRYPTO_UNAVAILABLE`로 **아무것도 바꾸기 전에** 거절한다. 세션·암호 없는 기억은 그대로 된다.
+    - 설정 화면은 이 경우 암호 입력란을 막고 이유를 안내한다.
+    - 그 밖의 예상 밖 오류는 콘솔에 남긴다. 키는 오류에 실리지 않는다.
+  - 검증
+    - 새 단위 테스트를 수정 전에 돌려 실패(`canEncrypt` 없음)하는 것을 확인했고, 수정 후 통과했다.
+    - LAN IP로 연 화면에서 입력란이 막히고, 암호 없이 「기억」 저장이 되는 것을 확인했다.
+- 제보 2: AI 도우미에 질문하면 「요청이 거절되었습니다」(HTTP 400)가 났다.
+  - 이 환경에는 API 자격 증명이 없어 재현하지 못했다. 가짜 fetch로 SDK가 실제로 보내는 요청을 잡아 봤고, 형태는 의도대로였다.
+    - 주소: `/v1/messages?beta=true`
+    - 헤더: `anthropic-beta: server-side-fallback-2026-07-01`
+    - 본문 키: `model, max_tokens, output_config, cache_control, system, tools, messages, fallbacks, stream`
+    - 도구는 strict이고, 제약은 description으로 옮겨져 있다.
+  - 400 사유를 숨겨서는 고칠 수 없으므로 표시 방식을 바꿨다. 400과 기타 API 오류는 제공자 사유와 request id를 문구 뒤에 붙여 보이고 콘솔에도 남긴다.
+  - **원인 확정은 사용자가 다시 시도해 알려 줄 사유 문구를 기다린다.**
+- 검증: `tsc` 통과. `npm test` 2,431건 중 2,429 통과, 실패 0. e2e는 `side-panel` 18, `ai-settings` 19, `ai-panel` 29 PASS(400 사유 표시 TC7b 추가). 일반·AI 제외 빌드 모두 성공.
