@@ -1293,7 +1293,7 @@ export class CursorState {
     if (!this.isInCell()) return false;
     const pos = this.position;
     const { sectionIndex: sec, parentParaIndex: ppi } = pos;
-    if (ppi === undefined) return false;
+    if (ppi === undefined) throw new Error('셀 편집 대상의 부모 문단이 없습니다.');
     try {
       const cellPath = cellPathForEdit(pos);
       const outer = cellPath[0];
@@ -1302,7 +1302,9 @@ export class CursorState {
       const paraCount = useCellPath && cellPath
         ? this.wasm.getCellParagraphCountByPath(sec, ppi, JSON.stringify(cellPath))
         : this.wasm.getCellParagraphCount(sec, ppi, outer.controlIndex, outer.cellIndex);
-      if (!Number.isSafeInteger(paraCount) || paraCount < 1) return false;
+      if (!Number.isSafeInteger(paraCount) || paraCount < 1) {
+        throw new Error('셀 편집 대상에 문단이 없습니다.');
+      }
       const lastCpi = paraCount - 1;
       const pathAtCpi = (cpi: number): CellPathEntry[] =>
         cellPath.map((e, i) => i < cellPath.length - 1 ? e : { ...e, cellParaIndex: cpi });
@@ -1328,7 +1330,8 @@ export class CursorState {
       return true;
     } catch (e) {
       console.warn('[CursorState] selectAllInCell 실패:', e);
-      return false;
+      // false는 상위 단축키에서 본문 전체 선택으로 이어진다. 잘못된 셀은 확장하지 않는다.
+      throw e;
     }
   }
 

@@ -93,6 +93,21 @@ await runTest('#8102 셀 진입·선택 삭제·undo/redo', async ({ page }) => 
       rows.push({ mode, before, after, undo: expected, redo: [''], neighbor: 'NEIGHBOR', result: 'PASS' });
     } catch (e) { rows.push({ mode, result: 'FAIL', error: String(e) }); }
   }
+  setTestCase('invalid target shortcut fallback');
+  const invalidShortcut = await page.evaluate(async () => {
+    const ih = window.__inputHandler, w = window.__wasm;
+    const { handleSelectAll } = await import('/src/engine/input-handler-keyboard.ts');
+    const original = ih.cursor.getPosition(), before = Array.from(w.exportHwp());
+    const bad = { ...original, cellPath: undefined, cellIndex: undefined };
+    ih.cursor.clearSelection(); ih.cursor.moveTo(bad);
+    let rejected = false;
+    try { handleSelectAll.call(ih); } catch { rejected = true; }
+    const selected = ih.cursor.hasSelection(), position = ih.cursor.getPosition();
+    const unchanged = JSON.stringify(before) === JSON.stringify(Array.from(w.exportHwp()));
+    ih.cursor.moveTo(original);
+    return { rejected, selected, unchanged, stillInCell: position.parentParaIndex === original.parentParaIndex };
+  });
+  assert.deepEqual(invalidShortcut, { rejected: true, selected: false, unchanged: true, stillInCell: true });
   setTestCase('중첩 셀·invalid target');
   const contracts = await page.evaluate(async () => {
     const { WasmBridge } = await import('/src/core/wasm-bridge.ts');
@@ -150,8 +165,8 @@ await runTest('#8102 셀 진입·선택 삭제·undo/redo', async ({ page }) => 
         rejected, unchanged, textbox: { deleted: boxDeleted, undone: boxUndone, redone: boxRedone } };
     } finally { bridge.releaseDocument(); }
   });
-  console.log(JSON.stringify({ rows, contracts, errors }, null, 2));
-  writeFileSync(`${output}/browser-result.json`, JSON.stringify({ rows, contracts, errors }, null, 2) + '\n');
+  console.log(JSON.stringify({ rows, contracts, invalidShortcut, errors }, null, 2));
+  writeFileSync(`${output}/browser-result.json`, JSON.stringify({ rows, contracts, invalidShortcut, errors }, null, 2) + '\n');
   for (const row of rows) assert.equal(row.result, 'PASS', `${row.mode}: ${row.error}`);
   assert.deepEqual(contracts.original, ['alpha', 'beta', 'gamma']);
   assert.deepEqual(contracts.deleted, ['']); assert.deepEqual(contracts.redone, ['']);

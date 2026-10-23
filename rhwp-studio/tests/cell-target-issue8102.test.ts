@@ -126,7 +126,7 @@ await test('#8102 셀 선택과 삭제의 실제 제품 경로', async (t) => {
       f.cursor.moveTo(bad);
       f.cursor.setAnchor();
       const before = f.cursor.getSelection();
-      assert.equal(f.cursor.selectAllInCell(), false);
+      assert.throws(() => f.cursor.selectAllInCell());
       assert.deepEqual(f.cursor.getSelection(), before);
       assert.equal(f.mutations(), 0);
     });
