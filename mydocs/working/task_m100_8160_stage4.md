@@ -183,3 +183,94 @@ Cargo로 fork 한 개와 root 참조만 추가했고, 다른 의존성 버전은
 state 복원·잘못된 인자의 pixel 보존 세 계약이 모두 PASS다. 실제 GPU 가속의 증거로
 확대하지 않는다(`hardwareAccelerationVerified=false`). 로그는 ignored
 `output/pr-review/issue8160-20261022/logs/skia-probe-host.log`에 있다.
+
+
+## 전체 실행에서 확인한 기존 Poppy 기대값의 정정
+
+최종 source `5f7e7e7f00827a2cf3fc5dffbc4e8be89166b51e`의 전체 nextest에서
+`hci_poppy_unmeasured_ascii_and_unverified_styles_keep_the_display_metric`가 실패했다.
+20pt 굵은 `O/O`의 공개 문자 경계는 원본 경로 `[0, 22.2, 30.0, 52.2]`,
+표시용 Palatino 경로 `[0, 22.2, 30.1, 52.4]`인데 기존 검사는 두 경로의 완전 동일을 요구했다.
+
+이 검사는 도입 commit `a7c518ace2888f414571cb17329aaeb82010ffd6`에서 추가됐으며,
+PR #8064의 실제 merge `9b01d5d1447220b3a7345703e79ad42cf3f502f4`에 포함됐다.
+GitHub commit 연결과 merged 상태, 도입 → merge → 현재 base `d9fd85ed5`의 ancestry를
+확인했다. 당시의 미확인 굵은체 fallback 계약은 유효했지만 이번 독립 증거로 적용 범위가 바뀌었다.
+
+이번 작업의 `poppy-original-widths.json`은 원본 HFT em=512의 일반체 `O=402`,
+`!=142`, 굵은체 `O=426`, `/=151`, `!=142`를 보존한다.
+새 MCP의 별도 ASCII 표본(job `5ea451f8-4b75-4816-84ac-b51474acaf75`)에서
+12·16·20·32·52pt의 실제 전진과 교차 확인한 근거다. Type3 윤곽 Widths를 굵은체
+실제 전진으로 혼동하지 않는다. 원본 HFT와 독립 Print의 해시는 기존 자산에 고정돼 있다.
+
+사용자의 잘못된 회귀 검사 수정 지시에 따라 기존 함수 안에서 일반체·굵은체의 12·20·52pt
+문자 경계를 위 독립 전진으로 확인하도록 정정한다. 허용 정밀도는 공개 charX의 0.1px
+직렬화와 원본 1800dpi 격자를 합한 0.11px다. 미확인 일반/굵은 기울임체의 기존 표시 face
+동일성은 유지한다. test 수를 늘리거나 제품 메트릭을 대체 face로 되돌리지 않는다.
+수정한 검사의 실제 재실행과 최종 전쪽 Native/fresh WASM 검증은 이어서 수행한다.
+
+사용자의 최신 원격 지시는 세 검토 문서의 전쪽 TSV를 다시 검증해 모두 100%이면
+PR 및 후속 처리까지 완료하는 것이다. 이 조건과 정본의 필수 검증을 충족하면 이미 받은
+승인 범위에서 push·Open PR·정확한 head CI·문서 trailing·병합·후속 처리를 진행한다.
+앞 절의 별도 승인 대기 기록은 당시의 지시를 보존한 것이며 최신 실행 조건은 이 절을 따른다.
+
+### 전체 실행의 8개 실패와 직렬화·출력 계약 정정
+
+`5f7e7e7f0`의 전체 nextest(run `8383ccdc-8184-4c77-8dff-5ba47126f320`)는
+11,365개 실행 중 11,357 PASS, 8 FAIL, 45 skipped로 끝났다. 컴파일 11분 50초,
+실제 테스트 2,051.773초이며 종료 코드는 100이다. 실패를 성공으로 재분류하지 않는다.
+
+- Poppy 1개는 위 절의 미확인 굵은체 가정이다.
+- `issue_1116` 1개, `issue_5843_tab_dot_leader_pitch` 2개,
+  `issue_7292_tab_leader_head_gap` 1개는 dash `<line>`만 찾으므로 개별 `<circle>`을
+  출력한 실제 점선 리더를 0개로 해석했다. pitch/diameter 두 검사는 빈 목록으로
+  통과하는 문제도 있어 실제 리더 존재와 같은 줄의 균일 간격을 함께 확인한다.
+- 예약 팔레트 2개와 visible-crop 팔레트 1개는 배치별 JPEG의 원본 RGBA 완전 동일성,
+  또는 배치별 payload에도 BinData source key가 항상 있다는 가정이 잘못됐다.
+
+리더의 선행 해결은 `f341567397c60064c9e0c0586cce68c9569f44a9` → PR #5853의
+merge `0f9ceeb19a7f36efebe77f03a4c7d39fb3f8c83f`, 앞 간격은
+`263ec361330e9888d0cb914be6c17e2eb614c5d8` → PR #7310의
+merge `4c4a3c69f1db5dba8fb95fd30529e97025f99886`다. 실제 GitHub merged 상태와
+commit 연결을 확인했다. 공통 SVG 판독기를 세 검사에 공유하며 개별 원과 기존 dash 선을
+함께 읽는다. 정책 예외나 target을 늘리지 않고 절대 manifest 경로의 `include!`로 재사용한다.
+
+KTX 2쪽의 첫 점은 독립 PDF의 T3 Encoding code00 → HFT1, CharProc xref24에서
+확인했다. 원점 164.28pt, 크기 15pt, glyph 윤곽의 x 중심 192/1000em이므로
+실제 점 중심은 222.88px이다. 기존 219.07px는 glyph advance 원점이며 실제 원의
+왼쪽/중심과 같은 값이 아니다. 현재 실제 SVG 원 중심 222.96px를 같은 물리 좌표로 비교한다.
+
+예약 팔레트 도입 `87af62e58ae3c68ca28747bb745c773f3b76d654`와 visible-crop 도입
+`eef3c95eba09bff5574ceb257eb9ee37ed5d2529`는 PR #8064의 실제 merge
+`9b01d5d1447220b3a7345703e79ad42cf3f502f4`에 포함됐다. 이후 #8120
+`80968497c2c178eeecb3b2e1d04d086ad27a0dc7`의 정식 test 경로 이동도 보존한다.
+
+예약 팔레트의 기존 독립 입력 2개를 새 MCP의 실제 Hancom 2020·2024 Print 0으로
+각각 출력했다. `pdf/issue8160/bitmap-{white-palette,indexed-color}-controls-{2020,2024}.pdf`
+네 파일은 임시 PDF가 아닌 정식 회귀 기준이다. 입력/PDF SHA·job·실제 제품 버전·인쇄 경로는
+`palette-reference-refresh.json`에 보존한다. 한 쪽씩이며 흰색 팔레트는 그림 6개,
+indexed/RGB는 12개다. 모든 그림은 독립 PDF에서 JPEG로 저장되어 있었다.
+
+수정한 검사는 독립 PDF를 직접 읽어 paint 순서의 전체 JPEG 픽셀을 출력 payload와 비교한다.
+과거 계조 두 값만 고르는 대신 실제 전체 색상과 알파·해상도·소유·순서·내용을 확인한다.
+Screen의 원본 RGBA와 일반 source-key 조회 보호는 유지한다. 배치별 OutputDevice 바이트는
+원본 키로 생략하지 않고 inline/omit 요청의 실제 바이트가 동일하게 보존되는지 검사한다.
+
+동일 제품 코드의 동결 source `803046519` Native/표준 WASM 대조군 12쪽을 측정했다.
+예약 팔레트 8개 결과와 기존 기본 HWP5 목차 2개 결과는 raw100이다. KTX 목차는
+Native 99.70954%, WASM 99.68345%다. 이는 최종 제출 빌드의 결과로 바꾸어 적지 않는다.
+최종 코드의 검사 실행과 fresh 출력 대조는 이어서 완료한다.
+
+### 정정한 검사의 실제 실행
+
+여섯 case의 기존 함수 17개를 모두 선택해 실제 generated suite에서 재실행했다.
+`--prepare`로 재수집한 뒤 case별 예상 개수(2·6·4·1·2·2)와 실제 개수가 모두 같았으며
+17/17 PASS, exit 0이다. 컴파일 포함 97.207초, 실제 실행 1.465초다.
+중간의 미완성 타입 오류와 갱신 전 manifest로 10개만 선택한 실행은 최종 PASS에서 제외했다.
+테스트 내용 해시·실행 명령·수정 전 실패와 실제 시각 대조군은
+`regression-expectation-corrections.json`에 기록한다.
+
+KTX 목차의 점 간격·첫 점·숫자와 앞뒤 내용 및 indexed/RGB 팔레트의 실제 Native/PDF/WASM
+동일 배율 비교 PNG도 열어 직접 판독했다. 점선이나 그림의 누락·겹침 없이 순서와 색이 보존됐다.
+이 단계는 제품 코드 변경 없이 잘못된 기존 회귀 계약을 정정한 결과다.
+최종 commit의 전체 Rust 검증·Skia·최적화 fresh WASM·전체 384쪽 재산출과 PR은 이어서 수행한다.

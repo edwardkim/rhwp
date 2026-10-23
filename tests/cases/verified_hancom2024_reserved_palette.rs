@@ -1,7 +1,8 @@
 //! 흑백 예약색과 실제 Print 계조를 공통 그림 payload·조회·프로필 경로에서 보호한다.
 //! 독립 2024 Print와 전쪽 Native/fresh WASM·직접 판독: stage2101, stage2122.
 //! 합성 진단 입력이며 실물 시험지나 WMF의 완료 증거를 대신하지 않는다.
-#![cfg(not(target_arch = "wasm32"))]
+//! 새 독립 PDF를 직접 읽으므로 pdf-import 기능에서 실행한다.
+#![cfg(all(not(target_arch = "wasm32"), feature = "pdf-import"))]
 
 use base64::Engine;
 use rhwp::paint::{
@@ -9,7 +10,7 @@ use rhwp::paint::{
 };
 use rhwp::DocumentCore;
 use serde_json::Value;
-use sha2::Digest;
+use sha2::{Digest, Sha256};
 use std::collections::HashSet;
 
 const DIRECTORY: &str = "pdf/issue7642-metafile-palette-visibility-20261017";
@@ -54,7 +55,7 @@ fn verify_profile(
     core: &DocumentCore,
     profile: RenderProfile,
     expanded: &[bool],
-    oracles: Option<&std::path::Path>,
+    reference: Option<&[image::RgbaImage]>,
 ) -> Vec<String> {
     let tree = core.build_page_layer_tree_with_profile(0, profile).unwrap();
     let mut ops = Vec::new();
@@ -77,7 +78,7 @@ fn verify_profile(
     assert_eq!(source_keys["keys"].as_array().unwrap().len(), ops.len());
 
     let mut owners = HashSet::new();
-    let mut keys = Vec::new();
+    let mut digests = Vec::new();
     for (op, &changes) in ops.iter().zip(expanded) {
         let PaintOp::Image {
             image, resolved, ..
@@ -93,7 +94,7 @@ fn verify_profile(
         let source = image::load_from_memory(source_bytes).unwrap().to_rgba8();
         let emitted_bytes = resolved.as_deref().map_or(source_bytes, |p| &p.data);
         let emitted = image::load_from_memory(emitted_bytes).unwrap().to_rgba8();
-        let index = keys.len();
+        let index = digests.len();
         let original_key = source_keys["keys"][index].as_str().unwrap();
         let original_lookup = core.get_source_image_bytes_native(original_key).unwrap();
         assert_eq!(
@@ -116,54 +117,27 @@ fn verify_profile(
             "알파 보존"
         );
 
-        if changes {
-            // 계조 표본의 존재를 확인하되, JPEG 경계까지 단색으로 가정하지 않는다.
-            // 경계의 색 번짐도 아래 독립 Print JPEG의 전픽셀 대조가 보호한다.
-            for source_gray in [128u8, 240] {
-                assert!(
-                    source.pixels().any(|p| p.0[..3] == [source_gray; 3]),
-                    "Print의 대조 계조가 원본에 실제 존재해야 한다"
-                );
-            }
-        }
-        if profile == RenderProfile::Screen {
-            assert_eq!(emitted, source, "비대상 프로필의 원본색 보존");
-        } else if let Some(directory) = oracles {
-            // 원본색 배열이 아닌 같은 문서의 독립 Print JPEG와 전픽셀을 대조한다.
-            // 참조 JPEG도 같은 decoder로 읽어 decoder 간 반올림 차이를 섞지 않는다.
-            let reference = image::open(directory.join(format!("{index:02}.jpg")))
-                .unwrap()
-                .to_rgba8();
-            assert!(
-                emitted == reference,
-                "owner={owner:?}: 독립 Print payload의 색 보존"
+        let index = digests.len();
+        if let Some(reference) = reference {
+            let expected = &reference[index];
+            assert_eq!(emitted.dimensions(), expected.dimensions());
+            let maximum_error = emitted
+                .as_raw()
+                .iter()
+                .zip(expected.as_raw())
+                .map(|(actual, expected)| actual.abs_diff(*expected))
+                .max()
+                .unwrap();
+            assert!(maximum_error <= 1,
+                "새 독립 Print JPEG의 전체 계조·색상: owner={owner:?}, maximum_error={maximum_error}");
+            assert_eq!(
+                inline_ops[index]["imageReconstruction"].as_str() == Some("catmullRom"),
+                changes
             );
         } else {
-            // 2022 호환 counter는 RGB555 확장이 없어야 한다. JPEG의 DC 양자화
-            // 한 단계와 원본 모델 보존을 구분하며 128→132 같은 명도 확장을 거부한다.
-            for gray in [128u8, 240] {
-                let (mut count, mut sum) = (0u64, [0u64; 3]);
-                for (a, b) in source.pixels().zip(emitted.pixels()) {
-                    if a.0[..3] == [gray; 3] {
-                        count += 1;
-                        for channel in 0..3 {
-                            sum[channel] += u64::from(b[channel]);
-                        }
-                    }
-                }
-                assert!(count > 0);
-                assert!(
-                    sum.into_iter()
-                        .all(|s| s.abs_diff(u64::from(gray) * count) <= count),
-                    "2022 호환은 원본 명도를 확장하지 않는다: {owner:?}, {gray}"
-                );
-            }
+            assert_eq!(emitted.as_raw(), source.as_raw(), "Screen 원본 RGBA 보존");
         }
 
-        assert_eq!(
-            inline_ops[index]["imageReconstruction"] == "catmullRom",
-            changes
-        );
         let inline_bytes = base64::engine::general_purpose::STANDARD
             .decode(inline_ops[index]["base64"].as_str().unwrap())
             .unwrap();
@@ -180,7 +154,6 @@ fn verify_profile(
             assert_eq!(omitted_ops[index]["sourceImageKey"], key);
             assert_eq!(omitted_ops[index]["imageBytesOmitted"], true);
             assert!(omitted_ops[index].get("base64").is_none());
-            keys.push(key.to_owned());
         } else {
             assert!(
                 resolved.as_ref().is_some_and(|p| matches!(
@@ -204,10 +177,58 @@ fn verify_profile(
                 .iter()
                 .map(|byte| format!("{byte:02x}"))
                 .collect();
-            keys.push(format!("inline:{digest}"));
         }
+        digests.push(sha256(&inline_bytes));
     }
-    keys
+    digests
+}
+
+fn sha256(bytes: &[u8]) -> String {
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
+fn independent_print(input: &str, engine: &str, count: usize) -> Vec<image::RgbaImage> {
+    let stem = input.strip_suffix(".hwpx").unwrap();
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(format!("pdf/issue8160/{stem}-{engine}.pdf"));
+    let expected_sha = match (stem, engine) {
+        ("bitmap-white-palette-controls", "2020") => {
+            "55b213c8164c59f4bdda482a4c7bd0756e5b1490db5df8d6f9f47a13af40a99c"
+        }
+        ("bitmap-white-palette-controls", "2024") => {
+            "8cf7dbe4ce8b1cd52c72ddbf9f9177e8c1a70a4fa49bae5e9971510ac84a8750"
+        }
+        ("bitmap-indexed-color-controls", "2020") => {
+            "40e2a63219f62a1bef22c229205e169261bdaeb2b070f2e29b4128ee51325859"
+        }
+        ("bitmap-indexed-color-controls", "2024") => {
+            "7a09f328926e0dccbc5b2a61f0cb8a763cbdaaf0455cc86aca3f789af0ccef63"
+        }
+        _ => panic!("독립 Print 계약에 없는 원본·engine"),
+    };
+    let bytes = std::fs::read(path).unwrap();
+    assert_eq!(sha256(&bytes), expected_sha, "새 MCP Print 원본 해시");
+    let pdf = pdf_oxide::PdfDocument::from_bytes(bytes).unwrap();
+    assert_eq!(pdf.page_count().unwrap(), 1);
+    let handles = pdf.page_image_handles(0).unwrap();
+    assert_eq!(
+        handles.len(),
+        count,
+        "독립 Print의 전체 그림 순서·누락·중복"
+    );
+    handles
+        .iter()
+        .enumerate()
+        .map(|(index, handle)| {
+            assert_eq!(handle.paint_order, index);
+            image::load_from_memory(&handle.raw_compressed_bytes().unwrap())
+                .unwrap()
+                .to_rgba8()
+        })
+        .collect()
 }
 
 fn verify(input: &str, expanded: &[bool]) {
@@ -215,22 +236,31 @@ fn verify(input: &str, expanded: &[bool]) {
         .join(DIRECTORY)
         .join(input);
     let bytes = std::fs::read(path).unwrap();
+    let expected_source_sha = match input {
+        "bitmap-white-palette-controls.hwpx" => {
+            "0460afdbe6ed8f9a4272cac1828645760038421a6aa03338c96d6e730a8cab55"
+        }
+        "bitmap-indexed-color-controls.hwpx" => {
+            "b6e326a5a7b486a85cb49c599611ec80f39e516b3ac2c6a93efaf6241542e04b"
+        }
+        _ => panic!("독립 Print 계약에 없는 입력"),
+    };
+    assert_eq!(sha256(&bytes), expected_source_sha);
     let mut core = DocumentCore::from_bytes(&bytes).unwrap();
     core.set_hangul2024_compat(true);
     assert_eq!(core.page_count(), 1, "독립 Print와 전체 쪽수 일치");
+    let reference2024 = independent_print(input, "2024", expanded.len());
+    let reference2020 = independent_print(input, "2020", expanded.len());
     let unchanged = vec![false; expanded.len()];
-    let oracles = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/print_bitmap_payload_oracles")
-        .join(std::path::Path::new(input).file_stem().unwrap());
     let screen = verify_profile(&core, RenderProfile::Screen, &unchanged, None);
-    let print = verify_profile(&core, RenderProfile::Print, expanded, Some(&oracles));
+    let print = verify_profile(&core, RenderProfile::Print, expanded, Some(&reference2024));
     assert_eq!(
         screen,
         verify_profile(&core, RenderProfile::Screen, &unchanged, None)
     );
     assert_eq!(
         print,
-        verify_profile(&core, RenderProfile::Print, expanded, Some(&oracles))
+        verify_profile(&core, RenderProfile::Print, expanded, Some(&reference2024))
     );
     for ((a, b), changes) in screen.iter().zip(&print).zip(expanded) {
         if *changes {
@@ -238,9 +268,14 @@ fn verify(input: &str, expanded: &[bool]) {
         }
     }
     core.set_hangul2024_compat(false);
-    verify_profile(&core, RenderProfile::Print, &unchanged, None);
+    verify_profile(
+        &core,
+        RenderProfile::Print,
+        &unchanged,
+        Some(&reference2020),
+    );
     core.set_hangul2024_compat(true);
-    verify_profile(&core, RenderProfile::Print, expanded, Some(&oracles));
+    verify_profile(&core, RenderProfile::Print, expanded, Some(&reference2024));
 }
 
 #[test]
