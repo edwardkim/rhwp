@@ -1,6 +1,7 @@
 mod device_context;
 mod node;
 mod saved_device_context;
+mod source_contract;
 mod source_rop_pair;
 mod ternary_raster_operator;
 mod text_advances;
@@ -31,11 +32,19 @@ pub struct SVGPlayer {
     elements: Vec<Node>,
     object_selected: SelectedGraphicsObject,
     current_clip_id: Option<String>,
+    source_contract: Option<source_contract::SourceContract>,
 }
 
 impl SVGPlayer {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// 원본 창·LOGFONT·그리기 순서를 공통 출력 장치가 소비할 때만 보존한다.
+    /// 기본 SVG의 모양과 속성에는 추가 메타데이터를 방출하지 않는다.
+    pub fn with_source_contract(mut self) -> Self {
+        self.source_contract = Some(Default::default());
+        self
     }
 
     #[inline]
@@ -45,6 +54,9 @@ impl SVGPlayer {
 
     #[inline]
     fn push_element(&mut self, record_number: usize, mut element: Node) {
+        if let Some(contract) = &mut self.source_contract {
+            element = contract.element(element, &self.context_current, &self.object_selected.font);
+        }
         if record_number > 0 {
             element = element.set("id", format!("elem{record_number}"));
         }
@@ -77,6 +89,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
             definitions,
             brush_only_rop_sequence,
             elements,
+            source_contract,
             ..
         } = self;
 
@@ -122,6 +135,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
             .set("width", vb_w_i32)
             .set("height", vb_h_i32)
             .set("viewBox", format!("{vb_x} {vb_y} {vb_w_i32} {vb_h_i32}"));
+
+        if let Some(contract) = source_contract {
+            document = contract.document(document, &context_current.window);
+        }
 
         // 외곽 계산은 원래 image 좌표를 소비한 뒤 끝낸다. 반복 비트맵의
         // 바이트만 공유하고 실제 요소의 순서·좌표·클립은 그대로 유지한다.

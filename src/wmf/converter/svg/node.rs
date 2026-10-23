@@ -54,6 +54,10 @@ impl Node {
         self.attrs.get(name).map(String::as_str)
     }
 
+    pub(super) fn has_name(&self, name: &str) -> bool {
+        matches!(&self.typ, NodeType::Node(value) if value == name)
+    }
+
     fn escape_text(value: impl ToString) -> String {
         value
             .to_string()
