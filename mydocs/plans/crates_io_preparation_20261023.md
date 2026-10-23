@@ -1,7 +1,7 @@
 # crates.io 배포 사전 준비 계획
 
 - 작성일: 2026-10-23
-- 상태: 이슈 등록 및 1단계 진행 승인. 실제 registry 게시와 다음 단계 전환은 별도다.
+- 상태: 이슈 등록과 1단계 source 선별·실측 완료. 2단계 구현 및 실제 registry 게시는 다음 게이트다.
 - 요청: 다음 릴리즈는 0.9.0이며, crates.io 배포를 미리 준비한다.
 - 착수 기준 SHA: `upstream/devel` `def947c2149df5bc812d801e6e79be19a403b4d1`.
 - 사전 조사 기준 SHA: `605ccfd92f2f12f18e14182548d729f9929fda00`.
@@ -11,6 +11,8 @@
 - 담당자 `edwardkim`, milestone `v1.0.0`, labels `packaging`·`rust`·`enhancement`.
 - 사용자 승인: 2026-10-23 「이슈로 등록해서 진행하도록 합니다」.
 - [구현 계획](task_m100_8174_impl.md). 단계별 변경을 커밋하고 다음 단계로 전환한다.
+- [1단계 결과](../working/task_m100_8174_stage1.md): 8개 source 후보의 목록·의존 순서·고지·실측을 기록했다.
+  본체 8,329,278바이트, PDF backend 6,814,747바이트의 gzip tar이며 정규화·검증된 `.crate`는 아니다.
 - 권위 절차: [문서·Git workflow](../manual/codex/docs_and_git_workflow.md),
   [배포 가이드](../manual/publish_guide.md), [GitHub 운영](../manual/github_operations.md).
 
