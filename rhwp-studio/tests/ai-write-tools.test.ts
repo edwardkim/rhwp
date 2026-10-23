@@ -34,8 +34,9 @@ function fakeDoc() {
     searchAllText: (q) => JSON.stringify(find(q)),
     getParagraphLength: (_s, p) => body[p].length,
     getTextRange: (_s, p, o, c) => body[p].slice(o, o + c),
-    getCellParagraphLength: () => cell[0].length,
-    getTextInCell: (_s, _pp, _c, _ci, _cp, o, n) => cell[0].slice(o, o + n),
+    // 글이 있는 칸은 칸 1 의 첫 문단뿐이다.
+    getCellParagraphLength: (_s, _pp, _c, ci, cp) => (ci === 1 && cp === 0 ? cell[0].length : 0),
+    getTextInCell: (_s, _pp, _c, ci, cp, o, n) => (ci === 1 && cp === 0 ? cell[0].slice(o, o + n) : ''),
     replaceText: (_s, p, o, l, text) => {
       calls.push(`replace ${p} ${o} ${l} ${text}`);
       body[p] = body[p].slice(0, o) + text + body[p].slice(o + l);
@@ -46,8 +47,8 @@ function fakeDoc() {
       cell[0] = cell[0].slice(0, o) + cell[0].slice(o + n);
       return JSON.stringify({ ok: true });
     },
-    insertTextInCell: (_s, _pp, _c, ci, _cp, o, text) => {
-      calls.push(`cell-insert ${ci === 1 ? '' : `c${ci} `}${o} ${text}`);
+    insertTextInCell: (_s, _pp, _c, ci, cp, o, text) => {
+      calls.push(`cell-insert ${ci === 1 ? '' : `c${ci} `}${cp > 0 ? `p${cp} ` : ''}${o} ${text}`);
       if (ci !== 1) return JSON.stringify({ ok: true });
       cell[0] = cell[0].slice(0, o) + text + cell[0].slice(o);
       return JSON.stringify({ ok: true });
@@ -75,6 +76,29 @@ function fakeDoc() {
       calls.push(`table ${p} ${rows}x${cols}`);
       return JSON.stringify({ ok: true, paraIdx: p, controlIdx: 0 });
     },
+    deleteParagraph: (_s, p) => { calls.push(`delete-para ${p}`); body.splice(p, 1); return JSON.stringify({ ok: true }); },
+    deleteText: (_s, p, o, n) => { calls.push(`delete-text ${p} ${o} ${n}`); body[p] = body[p].slice(0, o) + body[p].slice(o + n); return JSON.stringify({ ok: true }); },
+    // 구역 첫 문단은 구역 설정 컨트롤을 품는다.
+    getControlTextPositions: (_s, p) => JSON.stringify(p === 0 ? [0, 0] : []),
+    ensureDefaultBullet: () => 3,
+    ensureDefaultNumbering: () => 4,
+    getStyleList: () => JSON.stringify([{ id: 0, name: '바탕글', englishName: 'Normal' }, { id: 2, name: '개요 1', englishName: 'Outline 1' }]),
+    applyStyle: (_s, p, id) => { calls.push(`style ${p} ${id}`); return JSON.stringify({ ok: true }); },
+    // 표: 2행 2열, 칸 1 = (0,1) 이 「사 업 …」 칸
+    getTableDimensions: () => JSON.stringify({ rowCount: 2, colCount: 2, cellCount: 4 }),
+    getCellInfo: (_s, _pp, _c, ci) => JSON.stringify({ row: Math.floor(ci / 2), col: ci % 2, rowSpan: 1, colSpan: 1 }),
+    insertTableRow: (_s, _pp, _c, r, below) => { calls.push(`row+ ${r} ${below}`); return JSON.stringify({ ok: true }); },
+    insertTableColumn: (_s, _pp, _c, c, right) => { calls.push(`col+ ${c} ${right}`); return JSON.stringify({ ok: true }); },
+    deleteTableRow: (_s, _pp, _c, r) => { calls.push(`row- ${r}`); return JSON.stringify({ ok: true }); },
+    deleteTableColumn: (_s, _pp, _c, c) => { calls.push(`col- ${c}`); return JSON.stringify({ ok: true }); },
+    mergeTableCells: (_s, _pp, _c, r1, c1, r2, c2) => { calls.push(`merge ${r1},${c1}-${r2},${c2}`); return JSON.stringify({ ok: true }); },
+    splitParagraphInCell: (_s, _pp, _c, ci, cp, o) => { calls.push(`cell-split ${ci} ${cp} ${o}`); return JSON.stringify({ ok: true }); },
+    createHeaderFooter: (_s, h) => { calls.push(`hf-create ${h}`); return JSON.stringify({ ok: true }); },
+    getHeaderFooter: (_s, h) => JSON.stringify(h ? { ok: true, exists: true, text: '옛 머리말' } : { ok: true, exists: false }),
+    insertTextInHeaderFooter: (_s, h, _a, _p, _o, text) => { calls.push(`hf-insert ${h} ${text}`); return JSON.stringify({ ok: true }); },
+    deleteTextInHeaderFooter: (_s, h, _a, _p, o, n) => { calls.push(`hf-delete ${h} ${o} ${n}`); return JSON.stringify({ ok: true }); },
+    insertFootnote: (_s, p, o) => { calls.push(`fn ${p} ${o}`); return JSON.stringify({ ok: true, paraIdx: p, controlIdx: 5 }); },
+    insertTextInFootnote: (_s, p, c, _fp, _o, text) => { calls.push(`fn-text ${p} ${c} ${text}`); return JSON.stringify({ ok: true }); },
     setFieldValue: (id, value) => {
       calls.push(`field ${id} ${value}`);
       fields.find((f) => f.fieldId === id)!.value = value;
@@ -104,7 +128,9 @@ const refused = (pattern: RegExp) => (error: unknown) => error instanceof WriteR
 
 test('쓰기 도구 목록과 이름 판정', () => {
   assert.deepEqual(WRITE_TOOL_DEFS.map((t) => t.name), [
-    'replace_text', 'fill_field', 'insert_paragraphs', 'format_text', 'format_paragraph', 'insert_table', 'create_document',
+    'replace_text', 'fill_field', 'insert_paragraphs', 'format_text', 'format_paragraph', 'insert_table',
+    'delete_paragraph', 'set_list', 'apply_style', 'edit_table', 'set_cell_text', 'set_header_footer', 'insert_footnote',
+    'create_document',
   ]);
   assert.ok(isWriteTool('replace_text') && isWriteTool('fill_field') && !isWriteTool('read_page_text'));
 });
@@ -202,12 +228,11 @@ test('새 문서 만들기를 저장 확인에서 취소하면 거절로 알린�
   assert.equal(d.body[0], '사업명은 홈페이지 구축이다');
 });
 
-test('문단 추가 입력 검증: 줄바꿈·after 짝·표 칸 기준·개수', () => {
+test('문단 추가 입력 검증: 줄바꿈·after 짝·개수', () => {
   const d = fakeDoc();
   assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'end', paragraphs: ['한\n둘'] })), refused(/one line/));
   assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'after', paragraphs: ['x'] })), refused(/needs the after/));
   assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'end', after: '사업', paragraphs: ['x'] })), refused(/only used/));
-  assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'after', after: '수 행', paragraphs: ['x'] })), refused(/table cell/));
   assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'middle', paragraphs: ['x'] })), refused(/Invalid input/));
   assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'end', paragraphs: [] })), refused(/Invalid input/));
 });
@@ -265,4 +290,89 @@ test('표 만들기 입력 검증: 칸 수·줄바꿈·표 칸 기준', () => {
   assert.throws(() => prepareWrite(d.host, call('insert_table', { position: 'end', columns: 2, cells: ['a', 'b', 'c'] })), refused(/multiple of columns/));
   assert.throws(() => prepareWrite(d.host, call('insert_table', { position: 'end', columns: 1, cells: ['a\nb'] })), refused(/line breaks/));
   assert.throws(() => prepareWrite(d.host, call('insert_table', { position: 'after', after: '수 행', columns: 1, cells: ['a'] })), refused(/inside a table cell/));
+});
+
+test('문단 지우기: 본문 문단만, 구역의 마지막 한 문단은 남긴다', () => {
+  const d = fakeDoc();
+  const proposal = prepareWrite(d.host, call('delete_paragraph', { find: '과업기간' }));
+  assert.equal(proposal.removed, '과업기간 X월 20일');
+  proposal.apply();
+  assert.deepEqual(d.calls, ['delete-para 1']);
+  assert.throws(() => prepareWrite(d.host, call('delete_paragraph', { find: '홈페이지' })), refused(/only this paragraph/));
+});
+
+test('개체(구역 설정·머리말·표)를 품은 문단은 통째로 지우지 않고 글만 지운다', () => {
+  const d = fakeDoc();
+  const proposal = prepareWrite(d.host, call('delete_paragraph', { find: '홈페이지' }));
+  assert.deepEqual(proposal.format, { keepsObjects: true });
+  assert.match(proposal.note ?? '', /only its text was deleted/);
+  proposal.apply();
+  assert.deepEqual(d.calls, ['delete-text 0 0 14']);
+  assert.deepEqual(d.body, ['', '과업기간 X월 20일'], '빈 문단은 남는다');
+  assert.throws(() => prepareWrite(d.host, call('delete_paragraph', { find: '수 행' })), refused(/table cell/));
+});
+
+test('글머리표·번호·해제는 studio 명령과 같은 속성으로', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('set_list', { find: '홈페이지', list: 'bullet' })).apply();
+  prepareWrite(d.host, call('set_list', { find: '과업기간', list: 'number' })).apply();
+  prepareWrite(d.host, call('set_list', { find: '수 행', list: 'none' })).apply();
+  assert.deepEqual(d.calls, [
+    'para 0 {"headType":"Bullet","numberingId":3,"paraLevel":0}',
+    'para 1 {"headType":"Number","numberingId":4,"paraLevel":0}',
+    'cell-para 1 {"headType":"None","numberingId":0}',
+  ]);
+});
+
+test('스타일은 이름(또는 영문 이름)으로 고르고, 없으면 목록을 알려 준다', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('apply_style', { find: '홈페이지', style: 'outline 1' })).apply();
+  assert.deepEqual(d.calls, ['style 0 2']);
+  assert.throws(() => prepareWrite(d.host, call('apply_style', { find: '홈페이지', style: '제목' })), refused(/Available: 바탕글, 개요 1/));
+});
+
+test('표 구조: 기준 칸의 행·열로 추가·삭제·병합', () => {
+  const d = fakeDoc();
+  const act = (action: string, extra: Record<string, unknown> = {}) =>
+    prepareWrite(d.host, call('edit_table', { find: '수 행', action, ...extra })).apply();
+  // 기준 칸은 칸 1 = (0행, 1열)
+  act('insert_row_above'); act('insert_row_below'); act('insert_column_left'); act('insert_column_right');
+  act('delete_row'); act('delete_column'); act('merge_down');
+  assert.deepEqual(d.calls, ['row+ 0 false', 'row+ 0 true', 'col+ 1 false', 'col+ 1 true', 'row- 0', 'col- 1', 'merge 0,1-1,1']);
+  assert.throws(() => act('merge_right'), refused(/Only 1 cells to the right/));
+  assert.throws(() => act('insert_row_above', { span: 3 }), refused(/only used with merge/));
+  assert.throws(() => prepareWrite(d.host, call('edit_table', { find: '홈페이지', action: 'delete_row' })), refused(/inside a table cell/));
+});
+
+test('칸 글: 행·열(1부터)로 빈 칸도 채우고, 원래 글은 지운 뒤 넣는다', () => {
+  const d = fakeDoc();
+  const empty = prepareWrite(d.host, call('set_cell_text', { find: '수 행', row: 2, column: 1, text: '합계' }));
+  assert.deepEqual([empty.removed, empty.inserted, empty.format], ['', '합계', { row: 2, column: 1 }]);
+  empty.apply();
+  assert.deepEqual(d.calls, ['cell-insert c2 0 합계']);
+  assert.throws(() => prepareWrite(d.host, call('set_cell_text', { find: '수 행', row: 3, column: 1, text: 'x' })), refused(/2 rows and 2 columns/));
+});
+
+test('머리말은 있으면 첫 줄을 바꾸고, 꼬리말은 없으면 만든다', () => {
+  const d = fakeDoc();
+  const header = prepareWrite(d.host, call('set_header_footer', { kind: 'header', text: '새 머리말' }));
+  assert.deepEqual([header.removed, header.inserted], ['옛 머리말', '새 머리말']);
+  header.apply();
+  prepareWrite(d.host, call('set_header_footer', { kind: 'footer', text: '- 1 -' })).apply();
+  assert.deepEqual(d.calls, ['hf-delete true 0 5', 'hf-insert true 새 머리말', 'hf-create false', 'hf-insert false - 1 -']);
+});
+
+test('각주는 찾은 글 바로 뒤에 표시를 넣고 각주 글을 쓴다', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('insert_footnote', { find: '홈페이지', text: '2026년 기준' })).apply();
+  assert.deepEqual(d.calls, ['fn 0 9', 'fn-text 0 5 2026년 기준']);
+  assert.throws(() => prepareWrite(d.host, call('insert_footnote', { find: '수 행', text: 'x' })), refused(/table cell/));
+});
+
+test('표 칸 안 문단 뒤에 칸 문단을 추가한다', () => {
+  const d = fakeDoc();
+  const proposal = prepareWrite(d.host, call('insert_paragraphs', { position: 'after', after: '수 행', paragraphs: ['칸 둘째 줄'] }));
+  assert.equal(proposal.location.inTable, true);
+  proposal.apply();
+  assert.deepEqual(d.calls, ['cell-split 1 0 13', 'cell-insert p1 0 칸 둘째 줄'], '칸 문단 0 끝에서 나누고 새 칸 문단 1 에 쓴다');
 });

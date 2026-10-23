@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { AI_TOOL_DEFS } from '../src/ai/agent/chat-controller.ts';
 import {
   CLAUDE_FALLBACK_BETA,
+  CLAUDE_MAX_STRICT_TOOLS,
   CLAUDE_MAX_TOKENS,
   ClaudeProvider,
   buildClaudeRequest,
@@ -46,17 +48,25 @@ test('요청 본문: 모델·출력 상한·응답 깊이·캐시·시스템·�
   }
 });
 
-test('도구는 순서대로 strict 로 보내고, strict 가 받지 않는 제약은 설명으로 옮긴다', () => {
-  const tools = (buildClaudeRequest(request()) as Record<string, any>).tools;
-  assert.deepEqual(tools.map((t: { name: string }) => t.name), READ_TOOL_DEFS.map((t) => t.name));
-  assert.ok(tools.every((t: { strict: boolean; eager_input_streaming?: boolean }) =>
-    t.strict === true && t.eager_input_streaming === undefined));
-  const page = tools.find((t: { name: string }) => t.name === 'read_page_text').input_schema.properties.page;
-  assert.equal(page.minimum, undefined);
-  assert.match(page.description, /minimum: 1/);
-  assert.equal(READ_TOOL_DEFS.find((t) => t.name === 'read_page_text')!.inputSchema.properties
-    && (READ_TOOL_DEFS.find((t) => t.name === 'read_page_text')!.inputSchema as any).properties.page.minimum, 1,
-  '원래 정의는 바꾸지 않는다');
+test('쓰기 도구는 strict(제약은 설명으로 옮김), 읽기 도구는 원래 schema 그대로', () => {
+  const tools = (buildClaudeRequest({ ...request(), tools: AI_TOOL_DEFS }) as Record<string, any>).tools;
+  assert.deepEqual(tools.map((t: { name: string }) => t.name), AI_TOOL_DEFS.map((t) => t.name));
+  assert.ok(tools.every((t: { eager_input_streaming?: boolean }) => t.eager_input_streaming === undefined));
+  const read = tools.find((t: { name: string }) => t.name === 'read_page_text');
+  assert.equal(read.strict, undefined);
+  assert.equal(read.input_schema.properties.page.minimum, 1, '읽기 도구는 제약을 그대로 보낸다');
+  const write = tools.find((t: { name: string }) => t.name === 'set_cell_text');
+  assert.equal(write.strict, true);
+  assert.equal(write.input_schema.properties.row.minimum, undefined);
+  assert.match(write.input_schema.properties.row.description, /minimum: 1/);
+  assert.equal((AI_TOOL_DEFS.find((t) => t.name === 'set_cell_text')!.inputSchema as any).properties.row.minimum, 1,
+    '원래 정의는 바꾸지 않는다');
+});
+
+test('strict 도구 수는 API 상한(20) 안이다', () => {
+  const tools = (buildClaudeRequest({ ...request(), tools: AI_TOOL_DEFS }) as Record<string, any>).tools;
+  const strict = tools.filter((t: { strict?: boolean }) => t.strict === true).length;
+  assert.ok(strict <= CLAUDE_MAX_STRICT_TOOLS, `strict ${strict}개`);
 });
 
 test('Haiku 5.5 에는 서버 대체를 보내지 않는다(받지 않는 모델)', () => {

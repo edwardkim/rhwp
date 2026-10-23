@@ -60,6 +60,11 @@ export interface AiToolDef {
   name: string;
   description: string;
   inputSchema: Record<string, unknown>;
+  /**
+   * 제공자 쪽 schema 검증(strict)을 켤까. Claude 는 요청당 strict 도구를 20개까지만 받는다(실측 400) —
+   * 문서를 바꾸는 쓰기 도구에 쓰고, 입력이 작은 읽기 도구는 클라이언트 검증만 한다. 기본은 켬.
+   */
+  strict?: boolean;
 }
 
 export interface AiToolCall {

@@ -54,6 +54,13 @@ function formatSummary(format: Record<string, string | number | boolean>): strin
       case 'alignment': parts.push(t('ai.format.alignment', { v: t(`ai.format.align.${value as string}`) })); break;
       case 'rows': break;
       case 'columns': parts.push(t('ai.format.table', { rows: format.rows as number, columns: value as number })); break;
+      case 'column': parts.push(t('ai.format.cell', { row: format.row as number, column: value as number })); break;
+      case 'row': break;
+      case 'list': parts.push(t(`ai.format.list.${value as string}`)); break;
+      case 'tableAction': parts.push(t(`ai.format.tableAction.${value as string}`)); break;
+      case 'span': parts.push(t('ai.format.span', { v: value as number })); break;
+      case 'kind': parts.push(t(`ai.format.kind.${value as string}`)); break;
+      case 'keepsObjects': parts.push(t('ai.format.keepsObjects')); break;
       default: parts.push(t(`ai.format.${key}`, { v: String(value) }));
     }
   }
@@ -120,7 +127,8 @@ class AssistantView {
     card.dataset.state = 'pending';
     const loc = proposal.location;
     const coords = { section: (loc.section ?? 0) + 1, paragraph: (loc.paragraph ?? 0) + 1 };
-    const where = proposal.tool === 'create_document' ? null
+    // 새 문서와 머리말·꼬리말은 본문 위치가 없다(머리말 종류는 요약에 보인다).
+    const where = proposal.tool === 'create_document' || proposal.tool === 'set_header_footer' ? null
       : loc.field !== undefined ? t('ai.change.field', { name: loc.field })
         : loc.position === 'start' ? t('ai.change.atStart')
           : loc.position === 'end' ? t('ai.change.atEnd')
@@ -140,7 +148,11 @@ class AssistantView {
       card.append(el('div', 'ai-change-line', t('ai.change.createNote')));
     } else if (proposal.tool === 'insert_paragraphs' || proposal.tool === 'insert_table') {
       card.append(line('ai-change-after', '+', 'ins', proposal.inserted));
-    } else if (proposal.tool === 'format_text' || proposal.tool === 'format_paragraph') {
+    } else if (proposal.tool === 'insert_footnote') {
+      card.append(line('ai-change-after', t('ai.change.footnoteLabel'), 'ins', proposal.inserted));
+    } else if (proposal.tool === 'delete_paragraph') {
+      card.append(line('ai-change-before', '−', 'del', proposal.removed));
+    } else if (['format_text', 'format_paragraph', 'set_list', 'apply_style', 'edit_table'].includes(proposal.tool)) {
       const target = el('div', 'ai-change-line ai-change-target');
       target.append(document.createTextNode(proposal.prefix), el('mark', 'ai-change-mark', proposal.inserted),
         document.createTextNode(proposal.suffix));

@@ -31,6 +31,9 @@ import {
   type AiTurnResult,
 } from './types.ts';
 
+/** 요청 하나에 strict 로 보낼 수 있는 도구 수 상한(초과하면 400 「Too many strict tools」). */
+export const CLAUDE_MAX_STRICT_TOOLS = 20;
+
 /** 대화 한 회차의 출력 상한. 스트리밍이라 시간 초과 걱정 없이 넉넉히 둔다. */
 export const CLAUDE_MAX_TOKENS = 64000;
 /** 안전 분류기 거절 시 서버가 권장 모델로 다시 돌리게 하는 beta. `"default"` 형식 전용 헤더다. */
@@ -154,12 +157,14 @@ export function buildClaudeRequest(request: AiTurnRequest) {
     // eager_input_streaming 은 끈다 — P0 도구 입력은 작아 이득이 없고, 끄면 서버가 strict
     // schema 로 입력을 검증한다. strict 가 받지 않는 제약(minimum·maxLength 등)은 SDK 변환기가
     // description 으로 옮기므로, 그 제약은 실행 전 클라이언트 검증(`schema-validate.ts`)이 지킨다.
-    tools: request.tools.map((tool) => ({
-      name: tool.name,
-      description: tool.description,
-      input_schema: transformJSONSchema(tool.inputSchema),
-      strict: true,
-    })),
+    tools: request.tools.map((tool) => (tool.strict === false
+      ? { name: tool.name, description: tool.description, input_schema: tool.inputSchema }
+      : {
+        name: tool.name,
+        description: tool.description,
+        input_schema: transformJSONSchema(tool.inputSchema),
+        strict: true,
+      })),
     messages: request.messages.map(toClaudeMessage),
   };
   const betas: string[] = [];

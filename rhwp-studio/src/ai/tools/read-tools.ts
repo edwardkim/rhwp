@@ -358,6 +358,8 @@ export const READ_TOOL_DEFS: readonly AiToolDef[] = READ_TOOLS.map((tool) => ({
   name: tool.name,
   description: tool.description,
   inputSchema: tool.schema as unknown as Record<string, unknown>,
+  // strict 도구 수 상한(20) 안에 쓰기 도구를 두기 위해 읽기 도구는 끈다. 입력은 실행 전에 검증한다.
+  strict: false,
 }));
 
 /** 문서 해제·미로드 오류인가 — 플러그인 호스트가 `DOCUMENT_RELEASED` 로 던진다. */
