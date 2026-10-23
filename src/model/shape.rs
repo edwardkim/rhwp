@@ -4,6 +4,8 @@ use super::paragraph::Paragraph;
 use super::style::{Fill, ShapeBorderLine};
 use super::*;
 
+pub(crate) mod shadow;
+
 /// `raw_ctrl_data` (CTRL_HEADER) 바이트 오프셋 상수.
 ///
 /// `parse_common_obj_attr` 및 `serialize_common_obj_attr` 과 일치해야 한다.

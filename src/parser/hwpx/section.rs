@@ -4525,15 +4525,7 @@ fn parse_shape_shadow_attr(e: &quick_xml::events::BytesStart) -> (u32, u32, i32,
     for attr in e.attributes().flatten() {
         match attr.key.as_ref().as_bytes() {
             b"type" => {
-                shadow_type = match attr_str(&attr).as_str() {
-                    "NONE" => 0,
-                    "LEFT_TOP" => 1,
-                    "RIGHT_TOP" => 2,
-                    "LEFT_BOTTOM" => 3,
-                    "RIGHT_BOTTOM" => 4,
-                    "CENTER" | "INSIDE" | "OUTSIDE" => 5,
-                    _ => 0,
-                };
+                shadow_type = crate::model::shape::shadow::from_hwpx(&attr_str(&attr));
             }
             b"color" => shadow_color = parse_color(&attr),
             b"offsetX" => shadow_offset_x = parse_i32(&attr),

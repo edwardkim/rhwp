@@ -1468,14 +1468,7 @@ where
     {
         return Ok(());
     }
-    let ty = match d.shadow_type {
-        1 => "LEFT_TOP",
-        2 => "RIGHT_TOP",
-        3 => "LEFT_BOTTOM",
-        4 => "RIGHT_BOTTOM",
-        5 => "CENTER",
-        _ => "NONE",
-    };
+    let ty = crate::model::shape::shadow::to_hwpx(d.shadow_type);
     let color = color_to_hex_with_storage(d.shadow_color, storage)?;
     let ox = xml_value(storage, d.shadow_offset_x)?;
     let oy = xml_value(storage, d.shadow_offset_y)?;

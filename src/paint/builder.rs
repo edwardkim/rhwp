@@ -274,6 +274,24 @@ impl LayerBuilder {
             return None;
         }
 
+        if let Some(parts) = super::parallel_shadow::split(node) {
+            let shadow = self.build_node(&parts.silhouette)?;
+            let body = self.build_node(&parts.body)?;
+            let mut group = LayerNode::group(
+                node.bbox,
+                Some(node.id),
+                vec![
+                    super::parallel_shadow::translated(shadow, parts.offset),
+                    body,
+                ],
+                CacheHint::None,
+                GroupKind::Generic,
+            )
+            .with_layer(node.layer);
+            group.bounds = group.visual_bounds(true);
+            return Some(group);
+        }
+
         // A rectangle transform owns its text/clip descendants too. Primitive
         // paint transforms affect only the outline, so move it to one common
         // subtree group and clear the primitive transform to avoid double use.

@@ -22,6 +22,7 @@ mod metafile_surface;
 mod paint_bounds;
 pub mod paint_op;
 pub(crate) mod paper_viewport;
+mod parallel_shadow;
 pub mod profile;
 pub mod replay_order;
 pub mod resources;

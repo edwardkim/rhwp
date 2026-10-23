@@ -941,7 +941,7 @@ pub struct ShapeStyle {
 /// 도형 그림자 스타일
 #[derive(Debug, Clone, Serialize)]
 pub struct ShadowStyle {
-    /// 그림자 종류 (1~8)
+    /// HWP 도형 그림자 종류 (1~14, HWPX SHADOWTYPE과 대응)
     pub shadow_type: u32,
     /// 그림자 색상
     pub color: ColorRef,
