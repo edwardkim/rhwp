@@ -503,3 +503,17 @@ VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:ai-panel
 | 실제 모델 편집 | 「과업기간 날짜를 2026년 3월 20일 ~ 12월 19일로」 요청에 `search_text` 뒤 `replace_text {find: "XXXX년 X월 20일 ~ X월 19일"}`로 한 번에 적용. 결과 문서에서 새 날짜 1건 |
 
 - 작업지시자 추가 지시(같은 날): 「모든 문서를 편집할 수 있도록, 모든 편집기능 사용 가능하도록, 새로운 문서를 생성해서 작성할 수 있도록」. 같은 틀 위에 5b(새 문서·문단 쓰기), 5c(글자·문단 서식), 5d(표)를 차례로 더한다.
+
+### 10.3 Stage 5b — 새 문서 만들기·문단 쓰기 (2026-10-23)
+
+- 도구
+  - `insert_paragraphs {position: start|end|after, after?, paragraphs[]}`: `splitParagraph` + `insertText`로 문단을 만든다. 새 문단은 이웃 문단의 모양을 이어받는다.
+    - 문서 끝 문단이 비어 있으면(빈 새 문서) 그 문단부터 채워 앞에 빈 줄을 남기지 않는다.
+    - 표 칸 기준 추가는 아직 거절한다.
+  - `create_document`: 메뉴의 「새 문서」처럼 저장 안 된 변경을 먼저 묻는다(`canReplaceCurrentDocument`). 취소하면 모델에 「취소됨, 문서 그대로」를 돌려준다.
+- 호스트 계약: `PluginHost.createBlankDocument(options?)`가 `Promise<boolean>`을 돌려주고 `confirmUnsaved`를 받는다. 기존 호출(`hwpctrl` 어댑터, dev-probe)은 반환값을 쓰지 않아 영향이 없다.
+- AI가 만든 문서 교체로는 대화를 끊지 않는다(`ownSwap`). 사용자가 직접 바꾼 교체는 계속 새 대화로 시작한다.
+- 검증 범위가 「검증 기록」 절에 따로 있다. 이 단계의 결과는 다음과 같다.
+  - `tsc` 통과. `npm test` 2,444건 중 2,442 통과, 실패 0(쓰기 도구 단위 11건).
+  - `e2e:ai-panel` 44 PASS. TC11에서 새 문서 → 저장 확인(「저장 안 함」) → 문단 4개(`회의록`, 빈 줄, `일시…`, `안건…`)가 그대로 쓰였고, 대화가 이어지며, 새 문서 카드는 undo 안내를 하지 않는다.
+  - 일반·AI 제외 빌드 성공.

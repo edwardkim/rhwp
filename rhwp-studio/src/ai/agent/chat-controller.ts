@@ -64,12 +64,16 @@ export class ChatController {
   private running: AbortController | null = null;
   private resetListeners = new Set<() => void>();
   private presenter: ProposalPresenter | null = null;
+  /** AI 가 스스로 새 문서를 만드는 중인가 — 그 교체로는 대화를 끊지 않는다. */
+  private ownSwap = false;
 
   constructor(ctx: AiContext, host: PluginHost, providerFactory: ProviderFactory = defaultProviderFactory) {
     this.ctx = ctx;
     this.host = host;
     this.providerFactory = providerFactory;
-    host.onDocumentSwap(() => this.reset());
+    host.onDocumentSwap(() => {
+      if (!this.ownSwap) this.reset();
+    });
   }
 
   /** 쓰기 제안을 보일 화면을 붙인다. 없으면 쓰기 도구는 거절된다. */
@@ -120,7 +124,18 @@ export class ChatController {
    */
   private async executeWrite(call: AiToolCall, boundaryId: string, signal: AbortSignal): Promise<AiToolResult> {
     const fail = (content: string): AiToolResult => ({ id: call.id, content, isError: true });
-    const writeHost: WriteHost = this.host;
+    const writeHost: WriteHost = {
+      read: (fn) => this.host.read(fn),
+      transaction: (label, fn) => this.host.transaction(label, fn),
+      createBlankDocument: async () => {
+        this.ownSwap = true;
+        try {
+          return await this.host.createBlankDocument({ confirmUnsaved: true });
+        } finally {
+          this.ownSwap = false;
+        }
+      },
+    };
     let proposal: WriteProposal;
     try {
       proposal = prepareWrite(writeHost, call);
@@ -147,7 +162,7 @@ export class ChatController {
       };
     }
     try {
-      proposal.apply();
+      await proposal.apply();
     } catch (error) {
       const message = error instanceof WriteRefused ? error.message
         : isDocumentReleased(error) ? 'Editing is not allowed right now (the document may be closed or in a mode that blocks editing).'

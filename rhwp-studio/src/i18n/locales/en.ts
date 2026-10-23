@@ -2057,7 +2057,6 @@ const catalog = {
   "ai.change.locationTable": "Table in section {section} · paragraph {paragraph}",
   "ai.change.field": "Field “{name}”",
   "ai.change.before": "Before",
-  "ai.change.after": "After",
   "ai.change.apply": "Apply",
   "ai.change.reject": "Reject",
   "ai.change.applied": "Applied. Undo with Ctrl+Z.",
@@ -2066,6 +2065,16 @@ const catalog = {
   "ai.change.failed": "Could not apply",
   "ai.tool.replace_text": "Proposing change",
   "ai.tool.fill_field": "Proposing field value",
+  "ai.change.afterLabel": "After",
+  "ai.change.after": "After section {section} · paragraph {paragraph}",
+  "ai.change.atStart": "Start of document",
+  "ai.change.atEnd": "End of document",
+  "ai.change.insert_paragraphs": "Add paragraphs",
+  "ai.change.create_document": "New document",
+  "ai.change.createNote": "Closes the current document and opens a new blank one. You will be asked to save unsaved changes first.",
+  "ai.tool.insert_paragraphs": "Proposing paragraphs",
+  "ai.tool.create_document": "Proposing new document",
+  "ai.change.createdDocument": "Opened a new document.",
 } as const;
 
 export default catalog;

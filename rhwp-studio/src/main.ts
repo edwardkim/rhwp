@@ -341,7 +341,11 @@ const plugins = new PluginHostRegistry({
   eventBus,
   getInputHandler: () => inputHandler,
   loadDocument: (bytes, fileName) => loadBytes(bytes, fileName ?? 'document.hwp', null),
-  createBlankDocument: () => { void createNewDocument(); },
+  createBlankDocument: async (options) => {
+    if (options?.confirmUnsaved && !await canReplaceCurrentDocument()) return false;
+    await createNewDocument();
+    return true;
+  },
   resolve: resolvePlugin,
   sidePanels,
 });

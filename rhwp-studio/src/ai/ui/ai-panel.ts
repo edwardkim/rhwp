@@ -100,13 +100,16 @@ class AssistantView {
     this.toolsPart = null;
     const card = el('div', 'ai-change-card');
     card.dataset.state = 'pending';
-    const where = proposal.location.field !== undefined
-      ? t('ai.change.field', { name: proposal.location.field })
-      : t(proposal.location.inTable ? 'ai.change.locationTable' : 'ai.change.location', {
-        section: (proposal.location.section ?? 0) + 1,
-        paragraph: (proposal.location.paragraph ?? 0) + 1,
-      });
-    card.append(el('div', 'ai-change-title', `${t(`ai.change.${proposal.tool}`)} · ${where}`));
+    const loc = proposal.location;
+    const coords = { section: (loc.section ?? 0) + 1, paragraph: (loc.paragraph ?? 0) + 1 };
+    const where = proposal.tool === 'create_document' ? null
+      : loc.field !== undefined ? t('ai.change.field', { name: loc.field })
+        : loc.position === 'start' ? t('ai.change.atStart')
+          : loc.position === 'end' ? t('ai.change.atEnd')
+            : loc.position === 'after' ? t('ai.change.after', coords)
+              : t(loc.inTable ? 'ai.change.locationTable' : 'ai.change.location', coords);
+    const title = t(`ai.change.${proposal.tool}`);
+    card.append(el('div', 'ai-change-title', where ? `${title} · ${where}` : title));
     const line = (className: string, label: string, mark: 'del' | 'ins', text: string) => {
       const row = el('div', `ai-change-line ${className}`);
       row.append(el('span', 'ai-change-label', label), document.createTextNode(proposal.prefix));
@@ -115,10 +118,16 @@ class AssistantView {
       row.append(changed, document.createTextNode(proposal.suffix));
       return row;
     };
-    card.append(
-      line('ai-change-before', t('ai.change.before'), 'del', proposal.removed),
-      line('ai-change-after', t('ai.change.after'), 'ins', proposal.inserted),
-    );
+    if (proposal.tool === 'create_document') {
+      card.append(el('div', 'ai-change-line', t('ai.change.createNote')));
+    } else if (proposal.tool === 'insert_paragraphs') {
+      card.append(line('ai-change-after', '+', 'ins', proposal.inserted));
+    } else {
+      card.append(
+        line('ai-change-before', t('ai.change.before'), 'del', proposal.removed),
+        line('ai-change-after', t('ai.change.afterLabel'), 'ins', proposal.inserted),
+      );
+    }
     const actions = el('div', 'ai-change-actions');
     const status = el('div', 'ai-change-status');
     card.append(actions, status);
@@ -145,7 +154,9 @@ class AssistantView {
       decision,
       settle: (outcome: ProposalOutcome, message?: string) => {
         card.dataset.state = outcome;
-        status.textContent = message ? `${t(`ai.change.${outcome}`)} — ${message}` : t(`ai.change.${outcome}`);
+        // 문서 교체는 undo 대상이 아니다 — 「Ctrl+Z 로 되돌릴 수 있음」을 보이지 않는다.
+        const key = outcome === 'applied' && proposal.tool === 'create_document' ? 'ai.change.createdDocument' : `ai.change.${outcome}`;
+        status.textContent = message ? `${t(key)} — ${message}` : t(key);
       },
     };
   }

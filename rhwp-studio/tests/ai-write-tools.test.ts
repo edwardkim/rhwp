@@ -52,6 +52,19 @@ function fakeDoc() {
       return JSON.stringify({ ok: true });
     },
     getFieldList: () => JSON.stringify(fields),
+    getSectionCount: () => 1,
+    getParagraphCount: () => body.length,
+    splitParagraph: (_s, p, o) => {
+      calls.push(`split ${p} ${o}`);
+      body.splice(p + 1, 0, body[p].slice(o));
+      body[p] = body[p].slice(0, o);
+      return JSON.stringify({ ok: true });
+    },
+    insertText: (_s, p, o, text) => {
+      calls.push(`insert ${p} ${text}`);
+      body[p] = body[p].slice(0, o) + text + body[p].slice(o);
+      return JSON.stringify({ ok: true });
+    },
     setFieldValue: (id, value) => {
       calls.push(`field ${id} ${value}`);
       fields.find((f) => f.fieldId === id)!.value = value;
@@ -59,18 +72,28 @@ function fakeDoc() {
     },
   };
   let transactions = 0;
+  let blankAnswer = true;
   const host: WriteHost = {
     read: (fn) => fn(doc),
     transaction: (_label, fn) => { transactions += 1; return fn({ doc: () => doc }); },
+    createBlankDocument: async () => {
+      calls.push('blank');
+      if (blankAnswer) body.splice(0, body.length, '');
+      return blankAnswer;
+    },
   };
-  return { host, body, cell, fields, calls, transactions: () => transactions };
+  return {
+    host, body, cell, fields, calls,
+    transactions: () => transactions,
+    cancelBlank: () => { blankAnswer = false; },
+  };
 }
 
 const call = (name: string, input: unknown) => ({ id: 't', name, input });
 const refused = (pattern: RegExp) => (error: unknown) => error instanceof WriteRefused && pattern.test(error.message);
 
-test('쓰기 도구는 둘이고 이름으로 구분한다', () => {
-  assert.deepEqual(WRITE_TOOL_DEFS.map((t) => t.name), ['replace_text', 'fill_field']);
+test('쓰기 도구 목록과 이름 판정', () => {
+  assert.deepEqual(WRITE_TOOL_DEFS.map((t) => t.name), ['replace_text', 'fill_field', 'insert_paragraphs', 'create_document']);
   assert.ok(isWriteTool('replace_text') && isWriteTool('fill_field') && !isWriteTool('read_page_text'));
 });
 
@@ -134,4 +157,45 @@ test('누름틀은 fieldId 로 지목하고, 같은 이름이 여럿이면 occur
   second.apply();
   assert.equal(d.fields[2].value, '010-1');
   assert.throws(() => prepareWrite(d.host, call('fill_field', { name: '없음', value: 'x' })), refused(/No field/));
+});
+
+test('문단 추가: 끝·앞·지정 문단 뒤, 트랜잭션 한 번', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('insert_paragraphs', { position: 'end', paragraphs: ['끝 하나', '', '끝 둘'] })).apply();
+  assert.deepEqual(d.body, ['사업명은 홈페이지 구축이다', '과업기간 X월 20일', '끝 하나', '', '끝 둘']);
+  prepareWrite(d.host, call('insert_paragraphs', { position: 'start', paragraphs: ['맨 앞'] })).apply();
+  assert.equal(d.body[0], '맨 앞');
+  assert.equal(d.body[1], '사업명은 홈페이지 구축이다', '나눈 뒤 원래 첫 문단은 그대로 뒤에 남는다');
+  const after = prepareWrite(d.host, call('insert_paragraphs', { position: 'after', after: '홈페이지', paragraphs: ['끼운 문단'] }));
+  assert.deepEqual([after.location.position, after.location.paragraph, after.inserted], ['after', 1, '끼운 문단']);
+  after.apply();
+  assert.deepEqual(d.body.slice(0, 4), ['맨 앞', '사업명은 홈페이지 구축이다', '끼운 문단', '과업기간 X월 20일']);
+  assert.equal(d.transactions(), 3);
+});
+
+test('빈 새 문서에 끝으로 쓰면 첫 빈 문단부터 채운다(앞에 빈 줄을 남기지 않는다)', async () => {
+  const d = fakeDoc();
+  const create = prepareWrite(d.host, call('create_document', {}));
+  assert.equal(d.calls.length, 0, '제안만으로는 문서를 바꾸지 않는다');
+  await create.apply();
+  assert.deepEqual(d.body, ['']);
+  prepareWrite(d.host, call('insert_paragraphs', { position: 'end', paragraphs: ['제목', '본문'] })).apply();
+  assert.deepEqual(d.body, ['제목', '본문']);
+});
+
+test('새 문서 만들기를 저장 확인에서 취소하면 거절로 알린다', async () => {
+  const d = fakeDoc();
+  d.cancelBlank();
+  await assert.rejects(Promise.resolve(prepareWrite(d.host, call('create_document', {})).apply()), refused(/cancelled/));
+  assert.equal(d.body[0], '사업명은 홈페이지 구축이다');
+});
+
+test('문단 추가 입력 검증: 줄바꿈·after 짝·표 칸 기준·개수', () => {
+  const d = fakeDoc();
+  assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'end', paragraphs: ['한\n둘'] })), refused(/one line/));
+  assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'after', paragraphs: ['x'] })), refused(/needs the after/));
+  assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'end', after: '사업', paragraphs: ['x'] })), refused(/only used/));
+  assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'after', after: '수 행', paragraphs: ['x'] })), refused(/table cell/));
+  assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'middle', paragraphs: ['x'] })), refused(/Invalid input/));
+  assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'end', paragraphs: [] })), refused(/Invalid input/));
 });

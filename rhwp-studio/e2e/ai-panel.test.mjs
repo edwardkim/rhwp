@@ -16,6 +16,7 @@
  * 8. 새 대화 / 문서 교체는 이력을 비운다
  * 9. 변경 제안 카드 → 적용하면 표 칸 글이 바뀌고 undo 한 번으로 돌아간다
  * 10. 거절하면 문서는 그대로이고 모델에 거절을 알린다
+ * 11. 새 문서 만들기(저장 확인 포함) → 문단 쓰기, 대화는 이어진다
  *
  * 계획: mydocs/plans/rhwp_studio_ai_chat_p0_impl.md §5.2
  */
@@ -127,7 +128,7 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(requests.length === 2, `TC1: 요청 2회 (${requests.length})`);
   const [first, second] = requests;
   assert(first.body.model === 'claude-opus-5-5' && first.body.stream === true, 'TC1: 모델·스트리밍');
-  assert(first.body.tools.length === 9 && first.body.tools.every((t) => t.strict === true), 'TC1: 도구 9개(읽기 7·쓰기 2) strict');
+  assert(first.body.tools.length === 11 && first.body.tools.every((t) => t.strict === true), 'TC1: 도구 11개(읽기 7·쓰기 4) strict');
   assert(first.body.system[0].text.includes('document_content'), 'TC1: 시스템에 문서 경계 규칙');
   assert(first.body.fallbacks === 'default'
     && (first.headers['anthropic-beta'] ?? '').includes('server-side-fallback-2026-07-01'), 'TC1: 서버 대체');
@@ -219,6 +220,45 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(await docHash() === hashBeforeReject, 'TC10: 거절하면 문서 바이트 그대로');
   const rejected = requests.at(-1).body.messages.at(-1).content[0];
   assert(rejected.tool_use_id === 'toolu_edit_2' && rejected.content.includes('rejected'), 'TC10: 모델에 거절 전달');
+
+  // ── TC11: 새 문서 만들기 → 저장 확인 → 문단 쓰기 (대화는 이어진다) ──
+  queue.push({ body: sse([{ type: 'tool_use', id: 'toolu_new_1', name: 'create_document', input: {} }], 'tool_use') });
+  queue.push({ body: sse([{ type: 'tool_use', id: 'toolu_new_2', name: 'insert_paragraphs',
+    input: { position: 'end', paragraphs: ['회의록', '', '일시: 2026년 10월 23일', '안건: AI 도우미 시연'] } }], 'tool_use') });
+  queue.push({ body: sse([{ type: 'text', text: '새 문서에 회의록을 작성했습니다.' }], 'end_turn') });
+  await page.type('.ai-chat-input', '새 문서에 회의록 양식을 써 줘');
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('.ai-change-card[data-state="pending"] .ai-change-apply', { timeout: 15000 });
+  await page.click('.ai-change-card[data-state="pending"] .ai-change-apply');
+  // 고친 뒤 되돌린 문서라 저장 확인이 뜰 수 있다 — 뜨면 저장하지 않고 진행한다.
+  const guard = await page.waitForFunction(() => {
+    const buttons = [...document.querySelectorAll('.modal-overlay .dialog-btn')];
+    return buttons.find((b) => b.textContent === '저장 안 함') ?? document.querySelector('.ai-change-card[data-state="pending"] .ai-change-apply');
+  }, { timeout: 15000 });
+  const guardText = await guard.evaluate((el) => el.textContent);
+  if (guardText === '저장 안 함') await guard.evaluate((el) => el.click());
+  await page.waitForSelector('.ai-change-card[data-state="pending"] .ai-change-apply', { timeout: 15000 });
+  const insertCard = await page.$eval('.ai-change-card[data-state="pending"]', (el) => ({
+    title: el.querySelector('.ai-change-title').textContent,
+    text: el.querySelector('.ai-change-ins').textContent,
+  }));
+  assert(insertCard.title === '문단 추가 · 문서 끝' && insertCard.text.includes('안건: AI 도우미 시연'), `TC11: 문단 추가 카드 (${insertCard.title})`);
+  await page.click('.ai-change-card[data-state="pending"] .ai-change-apply');
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy, { timeout: 15000 });
+  const newDoc = await page.evaluate(() => {
+    const w = window.__wasm;
+    const n = w.getParagraphCount(0);
+    return Array.from({ length: n }, (_, i) => w.getTextRange(0, i, 0, w.getParagraphLength(0, i)));
+  });
+  assert(JSON.stringify(newDoc) === JSON.stringify(['회의록', '', '일시: 2026년 10월 23일', '안건: AI 도우미 시연']),
+    `TC11: 새 문서 문단 (${JSON.stringify(newDoc)})`);
+  const states = await page.$$eval('.ai-change-card', (els) => els.map((el) => el.dataset.state));
+  assert(states.slice(-2).join() === 'applied,applied', `TC11: 두 변경 모두 적용 (${states.join()})`);
+  const createdStatus = await page.$$eval('.ai-change-status', (els) => els.at(-2)?.textContent);
+  assert(createdStatus === '새 문서를 열었습니다.', `TC11: 새 문서 카드는 undo 안내를 하지 않음 (${createdStatus})`);
+  const conv11 = await page.evaluate(() => window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []));
+  assert(conv11.messages > 2, 'TC11: AI 가 만든 새 문서로는 대화가 끊기지 않음');
+  await screenshot(page, 'ai-panel-new-document');
 
   // ── TC4: 입력란 Ctrl+Z 격리 ───────────────────────────
   await createNewDocument(page);

@@ -2057,7 +2057,6 @@ const catalog = {
   "ai.change.locationTable": "구역 {section} · 문단 {paragraph}의 표 안",
   "ai.change.field": "누름틀 「{name}」",
   "ai.change.before": "전",
-  "ai.change.after": "후",
   "ai.change.apply": "적용",
   "ai.change.reject": "거절",
   "ai.change.applied": "적용했습니다. Ctrl+Z 로 되돌릴 수 있습니다.",
@@ -2066,6 +2065,16 @@ const catalog = {
   "ai.change.failed": "적용하지 못했습니다",
   "ai.tool.replace_text": "바꾸기 제안",
   "ai.tool.fill_field": "누름틀 제안",
+  "ai.change.afterLabel": "후",
+  "ai.change.after": "구역 {section} · 문단 {paragraph} 뒤",
+  "ai.change.atStart": "문서 맨 앞",
+  "ai.change.atEnd": "문서 끝",
+  "ai.change.insert_paragraphs": "문단 추가",
+  "ai.change.create_document": "새 문서 만들기",
+  "ai.change.createNote": "지금 문서를 닫고 빈 새 문서를 엽니다. 저장하지 않은 변경이 있으면 먼저 저장 여부를 묻습니다.",
+  "ai.tool.insert_paragraphs": "문단 추가 제안",
+  "ai.tool.create_document": "새 문서 제안",
+  "ai.change.createdDocument": "새 문서를 열었습니다.",
 } as const;
 
 export default catalog;
