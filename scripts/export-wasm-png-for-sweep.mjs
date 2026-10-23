@@ -89,6 +89,19 @@ export function preparePrintReadbackCanvas(canvas) {
   return attributes;
 }
 
+// width/height를 다시 지정해도 Chrome의 이전 paint 이력까지 초기화되지는 않는다.
+// 글꼴·그림 준비는 문서/worker가 소유하고, 실제 쪽 캡처의 backing store만 새로 만든다.
+export async function createPrintCaptureCanvas(page) {
+  await page.evaluate(() => {
+    const previous = document.getElementById('page');
+    if (!(previous instanceof HTMLCanvasElement)) throw Error('Print 캡처 Canvas가 없습니다.');
+    const canvas = document.createElement('canvas');
+    canvas.id = previous.id;
+    previous.replaceWith(canvas);
+  });
+  return page.$eval('#page', preparePrintReadbackCanvas);
+}
+
 async function main() {
   const pkg = option('--pkg'), input = option('--input'), output = option('--out');
   const settings = JSON.parse(readFileSync(option('--options'), 'utf8'));
@@ -294,6 +307,7 @@ async function main() {
           return {requested: [...requested], loaded};
         }, {pages, fonts: workerFonts, scale: settings.scale});
         for (const number of pages) {
+          const captureCanvasContext = await createPrintCaptureCanvas(page);
           const result = await page.evaluate(async ({number, scale}) => {
             const doc = globalThis.sweepDocument, canvas = document.getElementById('page');
             for (let attempt = 0; attempt < 3; attempt++) {
@@ -315,7 +329,8 @@ async function main() {
           const suffix = String(number).padStart(3, '0');
           writeFileSync(join(output, 'rhwp_png', `rhwp_${suffix}.png`), bytes);
           writeFileSync(join(output, 'render_tree', `render_tree_${suffix}.json`), result.tree);
-          pageRecords.push({page: number, pngSha256: sha(bytes), width: result.width, height: result.height});
+          pageRecords.push({page: number, pngSha256: sha(bytes), width: result.width, height: result.height,
+                            canvasContext: captureCanvasContext});
           console.log(`Canvas PNG p${suffix}: worker ${index + 1}`);
         }
         workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts, fontEnvironment: info.fontEnvironment, canvasContext, browser: await browser.version()});
@@ -334,6 +349,7 @@ async function main() {
     writeFileSync(join(output, 'wasm-export-complete.json'), JSON.stringify({
       pageCount, layoutGeneration: settings.compat, comparisonProfile: 'print', rasterBackend: 'wasm-canvas2d', protocolTimeoutMs: protocolTimeout,
       pngBackground: 'opaque-white-print-paper',
+      captureCanvasPolicy: 'fresh-per-page-after-font-and-image-preparation',
       fontEnvironment,
       pages: pageRecords.sort((a,b) => a.page-b.page), workers,
     }, null, 2));
