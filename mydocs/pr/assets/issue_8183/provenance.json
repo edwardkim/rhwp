@@ -1,0 +1,144 @@
+{
+  "product_source": "cfc5be8fe",
+  "inputs": "pdf/issue8183/provenance.json",
+  "scope": "17 complete pages, Native Skia and optimized fresh WASM Canvas, 96 DPI, compat 2022",
+  "references": "Original PDF; three independently re-encoded Ghostscript references with original evidence retained",
+  "tsv": [
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jbig2_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jbig2-generic_template0_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jbig2-mask_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jbig2-symbol_global_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx-alpha_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx-indexed_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx-mask_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx-palette_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx-premult_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx-tiles_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/scan-jbig2_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/scan-jbig2-200_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/scan-jpeg-control_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/scan-jpeg-control-200_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/scan-jpx_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/scan-jpx-200_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jbig2_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jbig2-generic_template0_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jbig2-mask_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jbig2-symbol_global_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx-alpha_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx-indexed_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx-mask_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx-palette_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx-premult_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx-tiles_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/scan-jbig2_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/scan-jbig2-200_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/scan-jpeg-control_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/scan-jpeg-control-200_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/scan-jpx_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/scan-jpx-200_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    }
+  ]
+}

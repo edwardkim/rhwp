@@ -5753,6 +5753,22 @@ export class HwpDocument {
         }
     }
     /**
+     * Compile-time support of this artifact, queryable before opening a PDF.
+     * @returns {string}
+     */
+    static getPdfImportSupport() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.hwpdocument_getPdfImportSupport();
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
      * 그림 컨트롤의 속성을 조회한다.
      *
      * 반환: JSON `{ width, height, treatAsChar, ... }`

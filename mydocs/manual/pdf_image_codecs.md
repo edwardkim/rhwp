@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/pdf_image_codecs.md
+last_verified: 2026-10-24
+---
+
 # PDF 이미지 코덱 선택 빌드
 
 PDF 가져오기는 기본 빌드에 포함됩니다. JBIG2와 JPEG 2000 그림은 필요한 코덱을 빌드 시
@@ -48,7 +55,8 @@ rhwp info imported.hwpx --json
 
 PDF 원본의 선택 쪽은 `--source-pages 0,2-3`처럼 0부터 지정합니다.
 저장한 HWP/HWPX에는 복호화한 그림 리소스를 넣으므로 다시 열 때 원 PDF 코덱은 필요하지 않습니다.
-변환은 원 저작 문단·복잡한 paint를 완전히 복원하는 기능이 아니므로 결과를 확인합니다.
+변환은 원 저작 문단·복잡한 paint를 완전히 복원하는 기능이 아니므로 결과를 확인합니다. 스캔 문자는 그림으로 보존하며 OCR로
+검색·편집 가능한 텍스트를 생성하지 않습니다.
 
 ## Rust 라이브러리
 
@@ -81,6 +89,13 @@ registry 의존·설치는 해당 feature가 들어간 버전이 실제 게시�
 CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 \
 CARGO_TARGET_DIR="${rhwp_review_target_dir:?공용 target의 절대 경로를 먼저 지정하세요}" \
   scripts/wasm-pack-locked.sh --target web --out-dir pkg --features pdf-jbig2,pdf-jpeg2000
+```
+
+위 예제는 POSIX 셸용입니다. Windows PowerShell에서는 개발 환경 가이드의 공용 target·
+환경 변수 설정과 복원 절차를 적용한 뒤 다음 wrapper에 feature를 전달합니다.
+
+```powershell
+.\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg --features 'pdf-jbig2,pdf-jpeg2000'
 ```
 
 기본 feature를 유지하므로 `wasm-api`도 포함됩니다. `--out-dir pkg`가 성공하면 wrapper가
