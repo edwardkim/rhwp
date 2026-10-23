@@ -2169,13 +2169,12 @@ impl WebCanvasRenderer {
             }
         }
         if let Some(label) = drawing.label {
-            let family = label.font_family.replace('\\', "\\\\").replace('\'', "\\'");
             self.ctx.set_font(&format!(
-                "{} {} {}px '{}'",
+                "{} {} {}px {}",
                 if label.italic { "italic" } else { "normal" },
                 if label.bold { "bold" } else { "normal" },
                 label.font_size,
-                family
+                super::canvas_font_family_chain(&label.font_family)
             ));
             self.ctx.set_fill_style_str(&label.color);
             self.ctx.set_text_align("left");

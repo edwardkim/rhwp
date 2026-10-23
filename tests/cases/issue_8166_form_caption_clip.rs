@@ -95,3 +95,25 @@ fn checkbox_caption_is_clipped_when_the_control_only_fits_the_box() {
 fn checkbox_caption_inside_a_wide_control_keeps_the_same_clip_contract() {
     assert_caption_clipped_to_form(9921);
 }
+
+/// 캡션은 본문 글자와 같은 글꼴 대체 목록을 쓴다. 선언 face 하나만 쓰면 그 글꼴이
+/// 없는 환경에서 브라우저 기본 글꼴로 바뀌어 캡션 폭과 잘리는 위치가 달라진다.
+#[test]
+fn checkbox_caption_uses_the_render_font_fallback_chain() {
+    let svg = with_checkbox_width(3000).render_page_svg_native(0).unwrap();
+    let text_at = svg.find(&format!(">{CAPTION}</text>")).unwrap();
+    let tag = &svg[svg[..text_at].rfind("<text ").unwrap()..text_at];
+    let start = tag.find("font-family=\"").unwrap() + "font-family=\"".len();
+    let family = tag[start..start + tag[start..].find('"').unwrap()].replace("&apos;", "'");
+    let declared = family.split(',').next().unwrap().trim_matches('\'');
+    let bold = tag.contains("font-weight=\"bold\"");
+    assert_eq!(
+        family,
+        rhwp::renderer::render_font_family_chain_for_weight(declared, bold),
+        "캡션 글꼴 지정은 선언 face 의 렌더 대체 목록이어야 한다"
+    );
+    assert!(
+        family.contains(','),
+        "대체 글꼴 없이 선언 face 하나만 쓰면 안 된다"
+    );
+}

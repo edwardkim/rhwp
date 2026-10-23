@@ -2862,7 +2862,8 @@ impl SvgRenderer {
             self.output.push_str(&format!(
                 "<text x=\"{:.3}\" y=\"{:.3}\" font-size=\"{:.3}\" fill=\"{}\" font-family=\"{}\" font-weight=\"{}\" font-style=\"{}\">{}</text>\n",
                 label.x, label.baseline, label.font_size, escape_xml(&label.color),
-                escape_xml(&label.font_family), if label.bold { "bold" } else { "normal" },
+                escape_xml(&super::render_font_family_chain_for_weight(&label.font_family, label.bold)),
+                if label.bold { "bold" } else { "normal" },
                 if label.italic { "italic" } else { "normal" }, escape_xml(&label.text)));
         }
         self.end_layer_clip();
