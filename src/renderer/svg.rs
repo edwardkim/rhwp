@@ -3354,7 +3354,7 @@ impl Renderer for SvgRenderer {
             super::glyph_fit_positions(text, style, layout_positions, &char_positions);
         let glyph_advance =
             |char_idx: usize, cluster_str: &str| advance_in(&fit_positions, char_idx, cluster_str);
-        let is_middle_dot = |cluster_str: &str| cluster_str == "\u{00B7}";
+        let is_middle_dot = super::render_tree::is_vector_middle_dot;
         let dot_radius = font_size * super::render_tree::MIDDLE_DOT_RADIUS_EM;
         let dot_cy_offset = -font_size * super::render_tree::MIDDLE_DOT_CY_OFFSET_EM;
 

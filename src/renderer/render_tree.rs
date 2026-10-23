@@ -36,6 +36,15 @@ pub const MIDDLE_DOT_RADIUS_EM: f64 = 0.060;
 /// 실측 중앙값 0.3520~0.3559 로 종전 값이 정확해 유지한다.
 pub const MIDDLE_DOT_CY_OFFSET_EM: f64 = 0.35;
 
+/// 전진 상자 가운데의 벡터 점으로 그리는 가운뎃점 cluster인지.
+///
+/// 한국어 문서는 가운뎃점을 `·`(U+00B7)뿐 아니라 `․`(U+2024, 기호 슬롯)로도 적는다.
+/// 한컴 글꼴은 U+2024를 `·`처럼 x-height 가운데에 그리는데, 대체 글꼴의 U+2024는
+/// 기준선 마침표(ONE DOT LEADER)라 `주거․수도`가 `주거.수도`로 보였다.
+pub fn is_vector_middle_dot(cluster: &str) -> bool {
+    matches!(cluster, "\u{00B7}" | "\u{2024}")
+}
+
 /// [#5698 계열] 탭 점선 리더(채움 종류 3)의 점 간격 / em.
 ///
 /// 한글 2022 정본 실측 — `samples/KTX.hwp` 2쪽 목차의 점 1,435개를 글자 좌표로 뽑아
