@@ -143,6 +143,22 @@ pub(super) fn prepare(
 
     let available = available_height();
 
+    // 앞뒤 저장 줄이 새 쪽 원점을 증명하면 닫힌 사다리 상자도 그 원점에서
+    // 생산한다. 현재 커서에서 먼저 만든 상자가 복구된 프레임보다 우선하면
+    // 앞 표의 paint 여백만 바뀌어도 후속 표의 저장 흐름이 함께 이동한다.
+    let rewound_host_origin =
+        crate::renderer::float_placement::native_empty_topbottom_rewind_anchor_saved_para_y(
+            page.profile.hwp5_stored_pagination_layout(),
+            prev_para,
+            para,
+            next_para,
+            table,
+            column_area.y + para_start_height,
+            &column_area,
+            dpi,
+        )
+        .map(|origin| origin - column_area.y);
+
     // lane 경로도 block·중첩 표와 같은 로컬 저장 상자를 소비한다.
     // 양수 오프셋은 앞 줄의 높이와 별개로 이 상자에 포함된다.
     let closed_source_placement = (is_topbottom_para_float
@@ -154,7 +170,7 @@ pub(super) fn prepare(
                 para,
                 next_para?,
                 table,
-                para_start_height,
+                rewound_host_origin.unwrap_or(para_start_height),
                 para_style.map_or(0.0, |style| style.spacing_before),
                 ft.effective_height,
                 dpi,
@@ -272,18 +288,6 @@ pub(super) fn prepare(
     // lane 예약과 실제 출력에 공유한다. 일반 캡션 측정 원점은 증거가 없을 때 쓴다.
     // 직전 문단의 저장 위치보다 되감긴 호스트는 새 쪽의 저장 원점을 가진다.
     // 닫힌 바깥 상자가 확인된 경우에만 같은 원점을 예약과 출력에 전달한다.
-    let rewound_host_origin =
-        crate::renderer::float_placement::native_empty_topbottom_rewind_anchor_saved_para_y(
-            page.profile.hwp5_stored_pagination_layout(),
-            prev_para,
-            para,
-            next_para,
-            table,
-            column_area.y + para_start_height,
-            &column_area,
-            dpi,
-        )
-        .map(|origin| origin - column_area.y);
     let original_frame_follows_body = page.original_column_origin
         && para.source_line_seg_vertical_pos.is_none()
         && para.column_type == crate::model::paragraph::ColumnBreakType::None
