@@ -112,6 +112,11 @@ function fakeDoc() {
     getPageDef: () => JSON.stringify(pageDef),
     setPageDef: (sec, json) => { calls.push(`page ${sec} ${json}`); Object.assign(pageDef, JSON.parse(json)); return JSON.stringify({ ok: true }); },
     setCellProperties: (_s, _pp, _c, ci, json) => { calls.push(`cell-props ${ci} ${json}`); return JSON.stringify({ ok: true }); },
+    insertHyperlinkEx: (json) => { calls.push(`link ${json}`); return 1; },
+    addBookmark: (_s, p, o, name) => { calls.push(`bookmark ${p} ${o} ${name}`); return JSON.stringify({ ok: true }); },
+    getBookmarks: () => JSON.stringify([{ name: '있는 책갈피' }]),
+    insertEquation: (_s, p, o, script, size, color) => { calls.push(`eq ${p} ${o} ${script} ${size} ${color}`); return JSON.stringify({ ok: true }); },
+    setColumnDef: (sec, n, type, same, gap) => { calls.push(`cols ${sec} ${n} ${type} ${same} ${gap}`); return JSON.stringify({ ok: true }); },
     setFieldValue: (id, value) => {
       calls.push(`field ${id} ${value}`);
       fields.find((f) => f.fieldId === id)!.value = value;
@@ -143,7 +148,9 @@ test('쓰기 도구 목록과 이름 판정', () => {
   assert.deepEqual(WRITE_TOOL_DEFS.map((t) => t.name), [
     'replace_text', 'fill_field', 'insert_paragraphs', 'format_text', 'format_paragraph', 'insert_table',
     'delete_paragraph', 'set_list', 'apply_style', 'edit_table', 'set_cell_text', 'set_header_footer', 'insert_footnote',
-    'replace_all', 'format_cell', 'page_setup', 'create_document',
+    'replace_all', 'format_cell', 'page_setup',
+    'set_table_border', 'set_cell_size', 'insert_hyperlink', 'add_bookmark', 'insert_equation', 'set_columns',
+    'create_document',
   ]);
   assert.ok(isWriteTool('replace_text') && isWriteTool('fill_field') && !isWriteTool('read_page_text'));
 });
@@ -468,4 +475,62 @@ test('표 자리가 개요·번호 모양을 물려받았으면 바탕글로 되
   prepareWrite(outlined.host, call('insert_table', { position: 'after', after: '홈페이지', columns: 1, cells: ['a'] })).apply();
   assert.deepEqual(outlined.calls.slice(0, 3), ['split 0 14', 'style 1 0', 'table 1 1x1'], '개요 뒤면 표 자리를 바탕글로');
   assert.equal(outlined.heads[0], 'Outline', '앞 개요 문단은 그대로');
+});
+
+test('장평·자간은 일곱 언어 칸에 같은 값으로', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('format_text', { find: '홈페이지', charRatio: 80, charSpacing: -5 })).apply();
+  assert.deepEqual(d.calls, ['char 0 5-9 {"ratios":[80,80,80,80,80,80,80],"spacings":[-5,-5,-5,-5,-5,-5,-5]}']);
+});
+
+test('표 테두리: 범위의 칸마다 네 변, 굵기는 가장 가까운 표의 번호', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('set_table_border', { find: '수 행', scope: 'row', style: 'double', thicknessMm: 0.45, color: '#C00000' })).apply();
+  const line = '{"type":8,"width":6,"color":"#c00000"}';
+  const json = `{"borderLeft":${line},"borderRight":${line},"borderTop":${line},"borderBottom":${line}}`;
+  assert.deepEqual(d.calls, [`cell-props 0 ${json}`, `cell-props 1 ${json}`]);
+  assert.throws(() => prepareWrite(d.host, call('set_table_border', { find: '수 행', style: 'solid', color: 'red0000' })), refused(/#RRGGBB/));
+});
+
+test('칸 크기: 같은 열의 칸 모두에 폭, 같은 줄의 칸 모두에 높이(격자를 지킨다)', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('set_cell_size', { find: '수 행', columnWidthMm: 30, rowHeightMm: 12 })).apply();
+  // 기준 칸은 (0행, 1열) — 열 1 = 칸 1·3, 줄 0 = 칸 0·1
+  assert.deepEqual(d.calls, ['cell-props 1 {"width":8504}', 'cell-props 3 {"width":8504}', 'cell-props 0 {"height":3402}', 'cell-props 1 {"height":3402}']);
+  assert.throws(() => prepareWrite(d.host, call('set_cell_size', { find: '수 행' })), refused(/columnWidthMm or rowHeightMm/));
+});
+
+test('하이퍼링크: http(s)·mailto 만, 본문은 빈 cellPath, 칸은 [표, 칸, 칸 문단]', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('insert_hyperlink', { find: '홈페이지', url: 'https://example.com' })).apply();
+  prepareWrite(d.host, call('insert_hyperlink', { find: '계 획', url: 'mailto:a@b.kr' })).apply();
+  assert.deepEqual(d.calls, [
+    'link {"target":{"section":0,"para":0,"cellPath":[]},"start":5,"end":9,"uri":"https://example.com"}',
+    'link {"target":{"section":0,"para":5,"cellPath":[[0,1,0]]},"start":8,"end":11,"uri":"mailto:a@b.kr"}',
+  ]);
+  for (const url of ['javascript:alert(1)', 'example.com', 'https://a b']) {
+    assert.throws(() => prepareWrite(d.host, call('insert_hyperlink', { find: '홈페이지', url })), refused(/http\(s\)/), url);
+  }
+});
+
+test('책갈피는 찾은 글 시작에, 같은 이름은 거절', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('add_bookmark', { find: '과업기간', name: '기간' })).apply();
+  assert.deepEqual(d.calls, ['bookmark 1 0 기간']);
+  assert.throws(() => prepareWrite(d.host, call('add_bookmark', { find: '과업기간', name: '있는 책갈피' })), refused(/already exists/));
+  assert.throws(() => prepareWrite(d.host, call('add_bookmark', { find: '수 행', name: 'x' })), refused(/table cell/));
+});
+
+test('수식은 찾은 글 바로 뒤에, 크기는 HWPUNIT, 색은 검정', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('insert_equation', { after: '홈페이지', script: 'x^2 + y^2 = r^2', fontSize: 12 })).apply();
+  assert.deepEqual(d.calls, ['eq 0 9 x^2 + y^2 = r^2 1200 0']);
+});
+
+test('단 설정은 모든 구역에 보통 단·너비 같게·간격 HWPUNIT', () => {
+  const d = fakeDoc();
+  const proposal = prepareWrite(d.host, call('set_columns', { count: 2 }));
+  assert.deepEqual(proposal.format, { columnCount: 2, gapMm: 8 });
+  proposal.apply();
+  assert.deepEqual(d.calls, ['cols 0 2 0 1 2268']);
 });

@@ -66,6 +66,7 @@ function formatSummary(format: Record<string, string | number | boolean>): strin
       case 'cells': break;
       case 'verticalAlign': parts.push(t(`ai.format.valign.${value as string}`)); break;
       case 'orientation': parts.push(t(`ai.format.orientation.${value as string}`)); break;
+      case 'borderStyle': parts.push(t(`ai.format.border.${value as string}`)); break;
       case 'backgroundColor':
         parts.push(value === 'none' ? t('ai.format.backgroundNone') : t('ai.format.backgroundColor', { v: String(value) }));
         break;
@@ -136,7 +137,8 @@ class AssistantView {
     const loc = proposal.location;
     const coords = { section: (loc.section ?? 0) + 1, paragraph: (loc.paragraph ?? 0) + 1 };
     // 새 문서와 머리말·꼬리말은 본문 위치가 없다(머리말 종류는 요약에 보인다).
-    const where = ['create_document', 'set_header_footer', 'run_command', 'replace_all', 'page_setup'].includes(proposal.tool)
+    const where = ['create_document', 'set_header_footer', 'run_command', 'replace_all', 'page_setup', 'set_columns']
+      .includes(proposal.tool)
       ? null
       : loc.field !== undefined ? t('ai.change.field', { name: loc.field })
         : loc.position === 'start' ? t('ai.change.atStart')
@@ -161,10 +163,12 @@ class AssistantView {
       card.append(line('ai-change-after', t('ai.change.footnoteLabel'), 'ins', proposal.inserted));
     } else if (proposal.tool === 'delete_paragraph') {
       card.append(line('ai-change-before', '−', 'del', proposal.removed));
-    } else if (proposal.tool === 'page_setup') {
+    } else if (proposal.tool === 'page_setup' || proposal.tool === 'set_columns') {
       card.append(el('div', 'ai-change-line', t('ai.change.pageSetupNote')));
-    } else if (['format_text', 'format_paragraph', 'set_list', 'apply_style', 'edit_table', 'run_command', 'format_cell']
-      .includes(proposal.tool)) {
+    } else if (proposal.tool === 'insert_equation') {
+      card.append(line('ai-change-after', t('ai.change.equationLabel'), 'ins', proposal.inserted));
+    } else if (['format_text', 'format_paragraph', 'set_list', 'apply_style', 'edit_table', 'run_command', 'format_cell',
+      'set_table_border', 'set_cell_size', 'insert_hyperlink', 'add_bookmark'].includes(proposal.tool)) {
       const target = el('div', 'ai-change-line ai-change-target');
       target.append(document.createTextNode(proposal.prefix), el('mark', 'ai-change-mark', proposal.inserted),
         document.createTextNode(proposal.suffix));

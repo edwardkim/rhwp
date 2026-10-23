@@ -21,6 +21,7 @@
  * 13. 「확인 없이 바로 적용」 — 목록·스타일·머리말·각주·문단 지우기가 묻지 않고 적용
  * 14. 명령 통로 — 목록, 글 선택, 허용 명령 실행(위 첨자·쪽 나누기), 허용 밖 명령 거절
  * 15. 대화상자 기능 — 모두 바꾸기, 문단 여백·간격, 칸 배경(줄 범위), 가로 용지
+ * 16. 장평, 수식, 하이퍼링크, 책갈피, 표 테두리, 열 폭, 2단
  *
  * 계획: mydocs/plans/rhwp_studio_ai_chat_p0_impl.md §5.2
  */
@@ -132,8 +133,8 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(requests.length === 2, `TC1: 요청 2회 (${requests.length})`);
   const [first, second] = requests;
   assert(first.body.model === 'claude-opus-5-5' && first.body.stream === true, 'TC1: 모델·스트리밍');
-  assert(first.body.tools.length === 27 && first.body.tools.filter((t) => t.strict === true).length === 15,
-    'TC1: 도구 27개, strict 15개(상한 20, 선택 매개변수 상한 24 안)');
+  assert(first.body.tools.length === 33 && first.body.tools.filter((t) => t.strict === true).length === 15,
+    'TC1: 도구 33개, strict 15개(상한 20, 선택 매개변수 상한 24 안)');
   assert(first.body.system[0].text.includes('document_content'), 'TC1: 시스템에 문서 경계 규칙');
   assert(first.body.fallbacks === 'default'
     && (first.headers['anthropic-beta'] ?? '').includes('server-side-fallback-2026-07-01'), 'TC1: 서버 대체');
@@ -435,6 +436,56 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(dialogLike.landscape === true, 'TC15: 가로 용지');
   assert(!/^\d+\.$/.test(dialogLike.beforeCell ?? ''), `TC15: 개요 문단 뒤 표 칸에 번호가 붙지 않음 (앞 조각 ${dialogLike.beforeCell})`);
   await screenshot(page, 'ai-panel-dialog-features');
+
+  // ── TC16: 남은 대화상자 기능 — 장평, 수식, 링크, 책갈피, 테두리, 칸 크기, 단(자동 적용) ──
+  queue.push({ body: sse([
+    { type: 'tool_use', id: 'toolu_r1', name: 'format_text', input: { find: '일시', charRatio: 80 } },
+    { type: 'tool_use', id: 'toolu_r2', name: 'insert_equation', input: { after: '비서 시연', script: 'E = mc^2' } },
+    { type: 'tool_use', id: 'toolu_r3', name: 'insert_hyperlink', input: { find: '안건', url: 'https://example.com' } },
+    { type: 'tool_use', id: 'toolu_r3b', name: 'insert_hyperlink', input: { find: '2026년', url: 'https://example.com' } },
+    { type: 'tool_use', id: 'toolu_r4', name: 'add_bookmark', input: { find: '일시', name: '회의일시' } },
+    { type: 'tool_use', id: 'toolu_r5', name: 'set_table_border', input: { find: '항목', scope: 'table', style: 'double', thicknessMm: 0.5 } },
+    { type: 'tool_use', id: 'toolu_r6', name: 'set_cell_size', input: { find: '항목', columnWidthMm: 40 } },
+    { type: 'tool_use', id: 'toolu_r7', name: 'set_columns', input: { count: 2 } },
+  ], 'tool_use') });
+  queue.push({ body: sse([{ type: 'text', text: '모두 적용했습니다.' }], 'end_turn') });
+  await page.type('.ai-chat-input', '남은 서식들 적용해 줘');
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy, { timeout: 20000 });
+  const rest = await page.evaluate(() => {
+    const w = window.__wasm;
+    const raw = w.doc;
+    const n = w.getParagraphCount(0);
+    const texts = Array.from({ length: n }, (_, i) => w.getTextRange(0, i, 0, w.getParagraphLength(0, i)));
+    const date = texts.findIndex((text) => text.includes('일시'));
+    const agenda = texts.findIndex((text) => text.includes('안건'));
+    const cell = w.searchAllText('항목', true, true)[0].cellContext;
+    const cellProps = (i) => JSON.parse(raw.getCellProperties(0, cell.parentPara, cell.ctrlIdx, i));
+    return {
+      states: [...document.querySelectorAll('.ai-change-card')].slice(-8).map((c) => c.dataset.state),
+      failedStatus: [...document.querySelectorAll('.ai-change-card')].slice(-8)[2]?.querySelector('.ai-change-status')?.textContent,
+      ratio: w.getCharPropertiesAt(0, date, 0).ratios?.[0],
+      link: JSON.parse(raw.getHyperlinkContext(JSON.stringify({ section: 0, para: date, cellPath: [] }))).links[0]?.uri ?? null,
+      bookmark: JSON.parse(raw.getBookmarks()).some((b) => b.name === '회의일시'),
+      equation: JSON.parse(raw.getControlTextPositions(0, agenda)).length,
+      border: cellProps(3).borderTop?.type,
+      widths: [0, 2].map((i) => cellProps(i).width),
+      columns: JSON.parse(raw.getColumnDef(0)).columnCount,
+    };
+  });
+  assert(rest.states.join() === 'applied,applied,failed,applied,applied,applied,applied,applied', `TC16: 여덟 변경 중 하나만 실패 (${rest.states})`);
+  // 개체(각주·수식)가 든 문단의 하이퍼링크는 엔진이 아직 지원하지 않는다 — 실패를 사유와 함께 보이고 모델에 전한다.
+  assert(rest.failedStatus.includes('지원하지 않습니다'), `TC16: 엔진 미지원 사유 표시 (${rest.failedStatus})`);
+  const linkFailure = requests.at(-1).body.messages.at(-1).content.find((c) => c.tool_use_id === 'toolu_r3');
+  assert(linkFailure.is_error && linkFailure.content.includes('지원하지 않습니다'), 'TC16: 모델에도 엔진 사유 전달');
+  assert(rest.ratio === 80, `TC16: 장평 80% (${rest.ratio})`);
+  assert(rest.link === 'https://example.com', `TC16: 개체가 없는 문단의 하이퍼링크 (${rest.link})`);
+  assert(rest.bookmark, 'TC16: 책갈피');
+  assert(rest.equation >= 1, `TC16: 수식 컨트롤 (${rest.equation})`);
+  assert(rest.border === 8, `TC16: 표 전체 이중 실선 (${rest.border})`);
+  assert(rest.widths[0] === 11339 && rest.widths[1] === 11339, `TC16: 열 폭 40mm 가 열의 두 칸 모두에 (${rest.widths})`);
+  assert(rest.columns === 2, 'TC16: 2단');
+  await screenshot(page, 'ai-panel-rest-features');
 
   // ── TC4: 입력란 Ctrl+Z 격리 ───────────────────────────
   await createNewDocument(page);
