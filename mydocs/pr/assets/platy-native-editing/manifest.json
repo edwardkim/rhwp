@@ -1,0 +1,273 @@
+{
+  "code_sha": "bacab82ca657c0351a801c3744b782e55c8f7000",
+  "base_sha": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "status": "review_pending_not_ready_to_merge",
+  "native_sha256": "e18d6fdec95d7ffdd7a824a41d96cbf3f20f8656c5e2e67c39b351e5aa024643",
+  "wasm_sha256": "e9a8dc666d935a09ab568ebf2b0b913c2ccb0ace84b4643ab86047a9d45ad118",
+  "current_head_visual_scope": {
+    "documents": 5,
+    "pages_per_backend": 11,
+    "silhouette_tolerance_px": 2,
+    "minimum_raw_percent": "100.00000",
+    "paragraph_page_ownership": "matches independent Hancom Print PDF"
+  },
+  "earlier_candidate_77_pages": {
+    "code_sha": "4d296dd1d26525ebe25fd981ad32589aa35ec3ff",
+    "native_minimum": "90.52414",
+    "wasm_minimum": "89.81525",
+    "below_90_pages_wasm": [
+      66
+    ],
+    "latest_code_not_rerun_on_this_document": true
+  },
+  "unexecuted": [
+    "full default-feature test suite",
+    "full native-skia regression suite",
+    "workspace all-target clippy",
+    "latest code 77-page full rerun",
+    "complete app migration compatibility rerun"
+  ],
+  "private_font_bytes_included": false,
+  "files": [
+    {
+      "path": "inputs/midrange-three-columns.hwpx",
+      "sha256": "52390726444671ba7155c1167ad8fcb4ad0737ee8745407a0eab31e923da9c93",
+      "bytes": 8143,
+      "producer": "input/Hancom Print 12.30.0 build 6544"
+    },
+    {
+      "path": "inputs/midrange-three-columns.hwpx.hancom.pdf",
+      "sha256": "972a2c39d0c40a9440541efdc0c998e688a009bf8f5e4522cbf0481076a9ecfc",
+      "bytes": 13958,
+      "producer": "input/Hancom Print 12.30.0 build 6544"
+    },
+    {
+      "path": "native/midrange-three-columns-hwpx/silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "bytes": 164,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "wasm/midrange-three-columns-hwpx/silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "bytes": 164,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "inputs/continued-one-to-three-columns.hwpx",
+      "sha256": "192bf8ca81299dd6cf1600b38f5c2a8960cb0ae049d60094e90fe9632bacec61",
+      "bytes": 8543,
+      "producer": "input/Hancom Print 12.30.0 build 6544"
+    },
+    {
+      "path": "inputs/continued-one-to-three-columns.hwpx.hancom.pdf",
+      "sha256": "37aeffeebc1bb88967eceb0d32f3a164a93bfb2990f3433a2ce56a6669c3d2cd",
+      "bytes": 15968,
+      "producer": "input/Hancom Print 12.30.0 build 6544"
+    },
+    {
+      "path": "native/continued-one-to-three-columns-hwpx/silhouette.tsv",
+      "sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
+      "bytes": 190,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "native/continued-one-to-three-columns-hwpx/review_002.png",
+      "sha256": "e828da5a2a31da0244f2dbd0a91dcfc2a46862853244a324db3da58aa14f4a03",
+      "bytes": 322085,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "native/continued-one-to-three-columns-hwpx/overlay_002.png",
+      "sha256": "422ee824997e6b8042fc1894c718f12139482dcb509bd1206a61ec6be99a93b5",
+      "bytes": 119188,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "wasm/continued-one-to-three-columns-hwpx/silhouette.tsv",
+      "sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
+      "bytes": 190,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "wasm/continued-one-to-three-columns-hwpx/review_002.png",
+      "sha256": "132ea6acb4704fc2ee7bb23818c7f3e3d8d08c4c64a7edc1000fb745a9709f60",
+      "bytes": 334150,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "wasm/continued-one-to-three-columns-hwpx/overlay_002.png",
+      "sha256": "4fe837efcf38eeacd23534f08621d323df327f6a74ce7fe2299d1c10de29d4b9",
+      "bytes": 125556,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "inputs/zone-preserve-paragraph-after.hwpx",
+      "sha256": "f6b1517cc2f897d8059c2f2208a4517d36f8c568bac57a6703dacb7d7b0ea304",
+      "bytes": 8109,
+      "producer": "input/Hancom Print 12.30.0 build 6544"
+    },
+    {
+      "path": "inputs/zone-preserve-paragraph-after.hwpx.hancom.pdf",
+      "sha256": "c3aa3e889f4fc45e0d413e88b4bf3605d82a18c0299422d5a89f0f8d5814b37b",
+      "bytes": 13958,
+      "producer": "input/Hancom Print 12.30.0 build 6544"
+    },
+    {
+      "path": "native/zone-preserve-paragraph-after-hwpx/silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "bytes": 164,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "native/zone-preserve-paragraph-after-hwpx/review_001.png",
+      "sha256": "1227f0edcc23c7a3eb3ab36d804aaa81f7c9fbf5899e08aea299a95ed60d1caa",
+      "bytes": 314781,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "native/zone-preserve-paragraph-after-hwpx/overlay_001.png",
+      "sha256": "7e8c637b83eb0e21996a2bfa53520cb105507d554fd9ff9a4faac15a186f08d8",
+      "bytes": 117111,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "wasm/zone-preserve-paragraph-after-hwpx/silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "bytes": 164,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "wasm/zone-preserve-paragraph-after-hwpx/review_001.png",
+      "sha256": "3a5cf14bece30bc57a6e294919e6adf77ef64891ac234776a2509fc497f8d64e",
+      "bytes": 326992,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "wasm/zone-preserve-paragraph-after-hwpx/overlay_001.png",
+      "sha256": "4b7a84de9b0caf58bb9633ed625252cd50bf35394bef33d3048cae8fb1c2adb7",
+      "bytes": 123647,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "inputs/paragraph-after-1800.hwpx",
+      "sha256": "4fe5ac0671e48fba011e612273889643e695054126541bafbda21baa40dc7143",
+      "bytes": 8112,
+      "producer": "input/Hancom Print 12.30.0 build 6544"
+    },
+    {
+      "path": "inputs/paragraph-after-1800.hwpx.hancom.pdf",
+      "sha256": "5bae4d031b26c0b4ae0e4bd9d3cb1eeb109ab54e77309cb7f189467e91b950c9",
+      "bytes": 13958,
+      "producer": "input/Hancom Print 12.30.0 build 6544"
+    },
+    {
+      "path": "native/paragraph-after-1800-hwpx/silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "bytes": 164,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "wasm/paragraph-after-1800-hwpx/silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "bytes": 164,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "inputs/paragraph-after-5000.hwpx",
+      "sha256": "c8c5c1b2ee30faccd795d1d45ab35e354fd851eaf687aebd7f9cd7c1d389cc5a",
+      "bytes": 8112,
+      "producer": "input/Hancom Print 12.30.0 build 6544"
+    },
+    {
+      "path": "inputs/paragraph-after-5000.hwpx.hancom.pdf",
+      "sha256": "299c3b1ff7eb619ed722b778f0df33ab6ccd7068817e194d8b9866646af64f61",
+      "bytes": 13958,
+      "producer": "input/Hancom Print 12.30.0 build 6544"
+    },
+    {
+      "path": "native/paragraph-after-5000-hwpx/silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "bytes": 164,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "native/paragraph-after-5000-hwpx/review_002.png",
+      "sha256": "d657b39410967e45dc1405f1278464329f9eb75e86c8a8f40bb6d525d559ea5a",
+      "bytes": 288817,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "native/paragraph-after-5000-hwpx/overlay_002.png",
+      "sha256": "309fb1017540bf2281002f2190c68debbf2c281541c7ea98700a999a9b472f16",
+      "bytes": 108192,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "wasm/paragraph-after-5000-hwpx/silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "bytes": 164,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "wasm/paragraph-after-5000-hwpx/review_002.png",
+      "sha256": "43dfee0051ae6f1df7cbb468745b7cf760b9688ae64b8eb5d6a8e9b080b03655",
+      "bytes": 300176,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "wasm/paragraph-after-5000-hwpx/overlay_002.png",
+      "sha256": "c5fd0a4626ac115e8b56851f23c74aef74c5c639f33264732aa4f0da67adb2f8",
+      "bytes": 114530,
+      "producer": "bacab82ca657c0351a801c3744b782e55c8f7000"
+    },
+    {
+      "path": "earlier-candidate/native/kps-ai/silhouette.tsv",
+      "sha256": "3a42c940c203c1c4b95b46d288014d737e98784748e17eeec26851ce6cd2f98a",
+      "bytes": 2076,
+      "producer": "4d296dd1d"
+    },
+    {
+      "path": "earlier-candidate/native/kps-ai/review_066.png",
+      "sha256": "9de23201bd447058998cf1ab077d90c25e780ca4aee0bd318c5da01dabc3dc00",
+      "bytes": 262552,
+      "producer": "4d296dd1d"
+    },
+    {
+      "path": "earlier-candidate/native/kps-ai/overlay_066.png",
+      "sha256": "3d45938f45a394da0233b493cd2936bff0b41a275471853407af0d643c1c07fe",
+      "bytes": 97072,
+      "producer": "4d296dd1d"
+    },
+    {
+      "path": "earlier-candidate/wasm/kps-ai/silhouette.tsv",
+      "sha256": "232f1f7c62ddd90da6ca5c2dbd4fb96664fda027d14384ef635b8aae57cea6e1",
+      "bytes": 2073,
+      "producer": "4d296dd1d"
+    },
+    {
+      "path": "earlier-candidate/wasm/kps-ai/review_066.png",
+      "sha256": "e46c85d4c1ce6ebfa5eecfd5fb6f3e368f4f3f1760bc6ea7fbba0602029d96a8",
+      "bytes": 266552,
+      "producer": "4d296dd1d"
+    },
+    {
+      "path": "earlier-candidate/wasm/kps-ai/overlay_066.png",
+      "sha256": "27afe4da6dcc6fcabf3f1b2f9f027471b76af3f176f3044fb3b3941e4d080122",
+      "bytes": 96153,
+      "producer": "4d296dd1d"
+    },
+    {
+      "path": "base/native/kps-ai/silhouette.tsv",
+      "sha256": "6aace377ec5f53947caa25f0538ae0d65d4877a24528a6432dac9e2862796984",
+      "bytes": 2076,
+      "producer": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867"
+    },
+    {
+      "path": "base/wasm/kps-ai/silhouette.tsv",
+      "sha256": "232f1f7c62ddd90da6ca5c2dbd4fb96664fda027d14384ef635b8aae57cea6e1",
+      "bytes": 2073,
+      "producer": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867"
+    }
+  ]
+}
