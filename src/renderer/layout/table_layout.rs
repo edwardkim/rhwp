@@ -16854,7 +16854,19 @@ impl LayoutEngine {
                     0.0
                 } else if line_count == 0 {
                     let h = if nested_h > 0.0 {
+                        // 원자 표도 호스트 글줄의 뒤 간격을 소유한다. 행별 투영과
+                        // 측정·부분 배치에서 쓰는 같은 간격을 한 번 계상한다.
+                        // 조각 끝의 이송 간격 제외는 nested_atom_invisible_tail이
+                        // 이 유닛과 실제 표 상자의 차이로 판정한다.
                         nested_h
+                            + if is_last_para {
+                                0.0
+                            } else {
+                                crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
+                                    p, styles, self.dpi,
+                                )
+                                .unwrap_or(0.0)
+                            }
                     } else if crate::renderer::para_has_no_stored_line_segs(p)
                         && source_controls.is_empty()
                     {
@@ -19244,9 +19256,11 @@ impl LayoutEngine {
         };
         // 원본 NO_LS와 정규화한 synthetic 줄은 같은 재조판 컷이다.
         // 저장 줄이 없는 입력만 예약에서 뒤 간격을 남기면 paint와 높이가 달라진다.
+        // 병렬 셀의 중첩 표는 자기 전진을 소유한다. 그 표가 있다는 이유로
+        // 현재 일반 텍스트 셀의 종료 간격까지 중첩 유닛으로 취급하지 않는다.
         if !plain_cell_flow::paragraph_has_plain_flow(para)
             || !crate::renderer::para_has_no_stored_line_segs(para)
-            || !self.row_has_plain_reflow_line_units(table, usize::from(cell.row), styles)
+            || !self.cell_has_plain_line_units(cell, table, styles)
         {
             return 0.0;
         }
@@ -25770,7 +25784,14 @@ impl LayoutEngine {
                 _ => {}
             }
         }
-        Some((physical - selected.iter().map(|unit| unit.height).sum::<f64>()).max(0.0))
+        // 투영 유닛은 원래 행 안에서 다음 줄까지의 전진을 소유하지만,
+        // 이어받은 자식의 실제 컷은 마지막 줄 상자에서 닫힐 수 있다.
+        // 양의 추가분만 허용하면 이미 예약한 전진을 실제 상자에 남기므로
+        // 같은 자식 컷의 물리 높이와 예약 합의 부호 있는 차이를 공유한다.
+        // 부모가 별도로 합산하는 시작 띠도 이 예약 합에 한 번 포함한다.
+        let reserved = selected.iter().map(|unit| unit.height).sum::<f64>()
+            + self.nested_continuation_header_height(cell, units, start, styles);
+        Some(physical - reserved)
     }
 
     /// Recursive reflow projects source units, rather than a stored physical
@@ -26397,18 +26418,27 @@ impl LayoutEngine {
         }
         let owners = Self::row_cut_cell_order(table, row);
         !owners.is_empty()
-            && owners.iter().all(|&index| {
-                let cell = &table.cells[index];
-                cell.paragraphs
-                    .iter()
-                    .all(plain_cell_flow::paragraph_has_plain_flow)
-                    && self.cell_units(cell, table, styles).iter().all(|unit| {
-                        unit.nested_row.is_none()
-                            && unit.nested_table_fragment.is_none()
-                            && !unit.mixed_nested_fragment
-                            && !unit.top_and_bottom_flow
-                            && unit.non_inline_control_range.is_none()
-                    })
+            && owners
+                .iter()
+                .all(|&index| self.cell_has_plain_line_units(&table.cells[index], table, styles))
+    }
+
+    /// 셀의 원본 유닛 분류는 그 셀이 소유한 내용만으로 판정한다.
+    fn cell_has_plain_line_units(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        cell.paragraphs
+            .iter()
+            .all(plain_cell_flow::paragraph_has_plain_flow)
+            && self.cell_units(cell, table, styles).iter().all(|unit| {
+                unit.nested_row.is_none()
+                    && unit.nested_table_fragment.is_none()
+                    && !unit.mixed_nested_fragment
+                    && !unit.top_and_bottom_flow
+                    && unit.non_inline_control_range.is_none()
             })
     }
 
