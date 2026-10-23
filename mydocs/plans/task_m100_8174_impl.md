@@ -1,0 +1,53 @@
+# #8174 crates.io 배포 준비 구현 계획
+
+Issue: [#8174](https://github.com/edwardkim/rhwp/issues/8174)
+
+- [수행 계획](crates_io_preparation_20261023.md)
+- 기준 source: `def947c2149df5bc812d801e6e79be19a403b4d1`
+- 현재 승인 범위: 이슈 등록과 1단계 사전 준비. 원격 게시·push·PR 생성·실제 릴리즈는 포함하지 않는다.
+
+## 1단계 — 실제 source에서 계약과 패키지 범위 확정
+
+1. Cargo manifest와 `src/lib.rs`의 공개 소비 경로에서 graph·feature·버전·소유 경계를 기록한다.
+   내부 crate를 본체로 흡수하는 대안과 별도 게시를 비교하고, 기존 재사용·보안 경계를 보존하는
+   별도 게시를 우선안으로 구체화한다. 이 단계에서는 제품 manifest·기능을 바꾸지 않는다.
+2. 현재 Cargo 기본 패키지 목록을 재산출하고, 별도 게시 후보 8개 각각의 source 파일 목록을 선별한다.
+   원본 경로·Git blob과 compile-time include를 대조한다. 실행용 문서·템플릿·메트릭·폰트와
+   고지는 보존하며 대형 검증 corpus와 작업 기록은 제외한다.
+3. 선별 source를 실제 gzip tar로 포장해 파일 수·원본/압축 크기·SHA-256을 측정한다.
+   이 archive는 **정규화 전 source 후보**로 명시한다. unpublished dependency와 manifest
+   전환을 마치지 않은 source archive를 Cargo 검증 완료 `.crate`로 부르지 않는다.
+4. 현재 manifest의 `cargo package` 차단점을 확인한다. 임의로 버전·publish flag를 풀거나
+   보안 patch를 제거하지 않고, 2단계에서 바꿀 정확한 파일과 이유를 남긴다.
+5. [1단계 기록](../working/task_m100_8174_stage1.md)에 graph·사용자 여정·실측·미완료 게이트를
+   기록한다. 이번 단계에서 실제 실행하지 않은 소비자 빌드를 PASS로 표시하지 않는다.
+
+제품 소스·Cargo.lock·배포 workflow가 그대로이면 해당 변경의 전체 Rust/WASM 재빌드는
+이 단계 문서·source 목록 검사의 완료 조건이 아니다. 이후 실제 package 소비는 생략하지 않는다.
+
+## 2단계 — 게시용 manifest와 독립 소비
+
+- 본체의 3개 path 의존성에 registry 버전을 병기하고 별도 PDF export fork의 package 이름을 연결한다.
+  내부 crate 0.1.0, 보안 backend/decoder의 upstream 기반 보정 버전과 본체 0.9.0은 구분한다.
+- 승인된 패키지별 include·README·metadata·라이선스 경로를 반영한다. publish flag 해제는
+  패키지 검증과 승인된 범위를 확인하고 수행한다. 이 단계도 실제 업로드를 하지 않는다.
+- 미게시 source는 저장소 밖 임시 registry에 실제 포장해 dependency를 검증한다.
+  repository path fallback이나 사용자 Cargo cache 수정으로 registry 소비를 대신하지 않는다.
+- core HWP/HWPX 왕복, 기본 PDF 입력, CLI 기본/Native 기능, WASM `wasm-api` on/off 소비,
+  docs.rs와 feature 조합을 고정 source에서 실행한다. MSRV는 실제 검사한 버전만 선언한다.
+- 전체 소스·의존성을 바꾸는 후보는 local_validation 4.3의 해당 lint·회귀·fresh WASM 게이트를
+  완료한다. PDF 보안 한도와 기존 수정 출력도 소비자 쪽에서 대조한다.
+- 새 devel의 #7488 opt-in cdylib-only와 #7474 standard release 산출물 동일성 계약을 유지한다.
+  package 검증용 임시 manifest가 root 개발 manifest를 덮어쓰지 않도록 한다.
+
+## 3단계 — 게시 운영과 릴리즈 인계
+
+- exact SHA/version/digest preflight, 자식→부모 게시·이미 게시된 항목 조회·부분 실패 복구를 마련한다.
+- 실제 registry 대상 부모 dry-run은 자식이 아직 없으면 완료할 수 없음을 기록한다.
+  사전 임시 registry 검증과 실제 게시 승인 뒤의 최종 dry-run을 구별한다.
+- 초회 수동 게시와 이후 OIDC 연결, owner·권한·yank 절차를 준비한다. 실제 인증 설정과 게시를
+  단계 검증의 이름으로 실행하지 않는다.
+- workflow·운영 script 변경은 github_operations의 비례 검증을 적용한다. 기존 네 채널을
+  성공으로 오판하거나 새 채널을 태그 생성만으로 활성화하지 않도록 계약을 확인한다.
+
+PR 준비·실제 게시 완료·제품 릴리즈 완료는 각각 해당 검증과 승인 이후에 판정한다.
