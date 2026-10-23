@@ -72,3 +72,25 @@ E2E·문서 링크·manifest·공백 검사를 재실행한다. 기존 실패와
 실행 중인 것을 확인했다. 해당 PR을 수정하지 않았다. 새 PR 생성 전 기존 PR 상태를
 다시 확인하고 저장소 우선순위 절차를 적용한다. 사용자 개인 브라우저의 직접 확인은
 자동 Chromium 검증과 별개로 남는다.
+
+## 보정 code head의 최종 재실행
+
+`9801e5eb929d91a79611f6b0902cae7c39e450ab`에서 fresh dev web·Node WASM을
+순서대로 빌드하고 root/public 해시 일치를 확인했다. TypeScript·production build는 exit 0,
+전체 unit은 2,367 PASS / 0 FAIL / 0 SKIP이다. 새 Canvas2D·auto 브라우저의 확장 선택
+검사는 280 PASS / 0 FAIL / pageerror 0건 / caught console render error 0건, exit 0이다.
+기존 Enter·Undo 계약·전체 선택은 각각 84 / 99 / 63 PASS / 0 FAIL, exit 0이다.
+manifest 166개/166행, 변경 문서 링크와 공백 검사도 통과했다.
+
+첫/중간/마지막 쪽 캡처를 다시 판독했다. 마지막 문단의 음영은 앞 문단의 문단 전체 폭과
+달리 선택된 실제 문자열 폭에 해당한다. 별도 실브라우저 probe에서 마지막 rect·음영 DOM·
+selection 끝 offset과 focus 캐럿 원점을 대조했다. 고정 px assertion을 추가하지 않았다.
+사용자 자신의 브라우저·서체에서의 직접 판정이나 한컴 출력 검증으로 확대하지 않는다.
+
+기존 PR 재조회에서 #8178의 새 head `e32f63d2aac839190d2b8085f0ec5346fa4e0479`는
+`CI Impact Policy` failure, CodeQL JS 실행 중이다. 실패 run `39933707917`의 job API에서
+`Publish exact-head policy status` step 실패를 확인했다. raw 로그 다운로드는 Forbidden이므로
+그 하위 원인을 확인했다고 주장하지 않는다. #8180도 같은 작성자의 새 열린 PR로 확인됐으며
+CI 실행 중이다. 두 PR에 개인/팀 리뷰 요청은 없고, 확인된 리뷰는 보안 봇 COMMENTED뿐이다.
+다른 작업을 수정하거나 reviewer 예외를 임의로 만들지 않았다. 강제 CanvasKit의 미해결
+진단과 기존 PR 상태를 숨기지 않고 신규 PR 생성을 보류한다.
