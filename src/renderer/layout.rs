@@ -14684,9 +14684,14 @@ impl LayoutEngine {
                         // sb 20) 대비 19.8px 위, 9쪽 연속 host 4개(sb 6.7px)는 표당
                         // ~sb 씩 계단 누적. 같은 문단 안의 후속 TAC(vpos 델타 전진이
                         // 간격을 이미 담음)와 구분하기 위해 첫 컨트롤로 한정한다.
+                        // [#8149] HWP5 저장본도 같다 — 저장 사다리가 앞 TAC host 뒤에 이 문단의 위
+                        // 간격을 둔다(한글문서파일형식 25쪽 pi=166→167: 5438 + 15368 + 600 + 500 =
+                        // 21906). 조판은 이 간격을 이미 전진에 넣으므로 배치만 빠뜨려 표마다
+                        // 6.67px 씩 위로 누적됐다.
                         if control_index == 0
                             && !is_column_top
                             && (self.profile.get().hwpx_stored_layout()
+                                || self.profile.get().hwp5_stored_pagination_layout()
                                 || crate::renderer::para_has_no_stored_line_segs(para))
                             && t.common.treat_as_char
                             && matches!(
