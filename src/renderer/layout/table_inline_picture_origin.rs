@@ -56,6 +56,7 @@ fn rendered_line_origin(
     para_index: usize,
     line_index: usize,
 ) -> Option<f64> {
+    let line_index = u32::try_from(line_index).ok()?;
     cell_node.children.iter().find_map(|node| {
         let RenderNodeType::TextLine(line) = &node.node_type else {
             return None;
