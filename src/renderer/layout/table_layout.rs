@@ -4405,10 +4405,22 @@ impl LayoutEngine {
             let zone_idx = (zone.border_fill_id as usize).saturating_sub(1);
             if let Some(zone_bs) = styles.border_styles.get(zone_idx) {
                 // zone 영역의 좌표 계산
+                // 끝 주소는 그리드 좌표가 아니라 칸 주소다(#6619, 테두리와 같은 환산).
+                // 끝 칸이 병합돼 있으면 그 span 끝까지가 배경 영역이다.
+                let end_cell = table.cells.iter().find(|c| {
+                    c.row as usize == zone.end_row as usize
+                        && c.col as usize == zone.end_col as usize
+                });
                 let sc = zone.start_col as usize;
-                let ec = (zone.end_col as usize + 1).min(col_count);
+                let ec = end_cell
+                    .map(|c| c.col as usize + (c.col_span as usize).max(1))
+                    .unwrap_or(zone.end_col as usize + 1)
+                    .min(col_count);
                 let sr = zone.start_row as usize;
-                let er = (zone.end_row as usize + 1).min(row_count);
+                let er = end_cell
+                    .map(|c| c.row as usize + (c.row_span as usize).max(1))
+                    .unwrap_or(zone.end_row as usize + 1)
+                    .min(row_count);
                 if sc < col_count && sr < row_count {
                     let zone_x = table_x
                         + row_col_x
