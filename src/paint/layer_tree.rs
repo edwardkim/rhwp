@@ -359,6 +359,8 @@ pub enum ClipKind {
     TableCell,
     TextBox,
     Generic,
+    /// 원본 물리 clip을 보존하고 raster에서만 장치 픽셀의 포함 경계를 적용한다.
+    PrintBitmapFill,
 }
 
 #[derive(Debug, Clone)]

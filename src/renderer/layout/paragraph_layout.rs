@@ -3881,22 +3881,6 @@ impl LayoutEngine {
             .map(|cs| cs.char_shape_id as u32)
             .unwrap_or(0);
 
-<<<<<<< HEAD
-        let text_metrics = inline_table_geometry::InlineTableTextMetrics::new(
-            &text_chars,
-            &segments,
-            |ch_idx, lang| {
-                let utf16_pos = offsets[ch_idx];
-                let cs_id = para
-                    .char_shapes
-                    .iter()
-                    .rev()
-                    .find(|cs| cs.start_pos <= utf16_pos)
-                    .map(|cs| cs.char_shape_id as u32)
-                    .unwrap_or(char_style_id);
-                let ts = with_stored_tabs(metric_scope.style(styles, cs_id, lang, ch_idx), ch_idx);
-                estimate_text_width_exact(&map_pua_bullet_char(text_chars[ch_idx]).to_string(), &ts)
-=======
         let text_advance = inline_text_advance::InlineTextAdvance::new(
             &text_chars,
             &segments,
@@ -3912,16 +3896,16 @@ impl LayoutEngine {
                     metric_scope.style(styles, style_id, language, ch_idx),
                     ch_idx,
                 )
->>>>>>> 4e13df5681 (보정: 인라인 표 문단의 문자 전진을 측정과 배치에 공유)
             },
+        );
+        let text_metrics = inline_table_geometry::InlineTableTextMetrics::new(
+            &text_chars,
+            &segments,
+            |index, _language| text_advance.advance(index),
         );
         let seg_widths: Vec<f64> = segments
             .iter()
-<<<<<<< HEAD
             .map(|&(start, end)| text_metrics.width(start, end))
-=======
-            .map(|&(start, end)| text_advance.width(start, end))
->>>>>>> 4e13df5681 (보정: 인라인 표 문단의 문자 전진을 측정과 배치에 공유)
             .collect();
 
         // 5. 총 폭과 정렬 계산 (TAC 표는 outMargin 좌/우 포함 폭 — Issue #3396)
@@ -3968,11 +3952,7 @@ impl LayoutEngine {
                 if n == 0 {
                     return 0.0;
                 }
-<<<<<<< HEAD
                 text_metrics.width(e - n, e)
-=======
-                text_advance.width(e - n, e)
->>>>>>> 4e13df5681 (보정: 인라인 표 문단의 문자 전진을 측정과 배치에 공유)
             })
             .unwrap_or(0.0);
         let total_width: f64 = seg_widths.iter().sum::<f64>() - trailing_space_after_last_table
@@ -4283,20 +4263,12 @@ impl LayoutEngine {
                             .unwrap_or(char_style_id);
 
                         let ch = text_chars[ch_idx];
-<<<<<<< HEAD
                         let (lang, ch_w) = text_metrics.at(ch_idx);
                         carry_lang = lang;
-=======
-                        let lang = text_advance.language(ch_idx);
->>>>>>> 4e13df5681 (보정: 인라인 표 문단의 문자 전진을 측정과 배치에 공유)
                         let ts = with_stored_tabs(
                             metric_scope.style(styles, cs_id, lang, ch_idx),
                             ch_idx,
                         );
-<<<<<<< HEAD
-=======
-                        let ch_w = text_advance.advance(ch_idx);
->>>>>>> 4e13df5681 (보정: 인라인 표 문단의 문자 전진을 측정과 배치에 공유)
 
                         // 글자모양·언어 슬롯의 실제 메트릭 변경 또는 줄바꿈 시 run을 출력
                         // [Task #518] LINE_SEG 기반 줄 나눔: ls[1..] 의 text_start 위치 모두 사용.

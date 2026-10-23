@@ -1689,40 +1689,33 @@ impl WebCanvasRenderer {
                     self.render_layer_node(child, active_layer);
                     return;
                 }
-                match clip_kind {
-                    ClipKind::Body => {
-                        self.ctx.save();
-                        self.ctx.begin_path();
-                        self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
-                        self.ctx.clip();
-                        self.render_layer_node(child, active_layer);
-                        self.ctx.restore();
-                    }
-                    ClipKind::TableCell => {
-                        self.ctx.save();
-                        self.ctx.begin_path();
-                        self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
-                        self.ctx.clip();
-                        self.render_layer_node(child, active_layer);
-                        self.ctx.restore();
-                    }
-                    ClipKind::TextBox => {
-                        self.ctx.save();
-                        self.ctx.begin_path();
-                        self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
-                        self.ctx.clip();
-                        self.render_layer_node(child, active_layer);
-                        self.ctx.restore();
-                    }
-                    ClipKind::Generic => {
-                        self.ctx.save();
-                        self.ctx.begin_path();
-                        self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
-                        self.ctx.clip();
-                        self.render_layer_node(child, active_layer);
-                        self.ctx.restore();
-                    }
-                }
+                let clip = if *clip_kind == ClipKind::PrintBitmapFill {
+                    self.ctx
+                        .get_transform()
+                        .ok()
+                        .and_then(|matrix| {
+                            crate::paint::device_clip::bitmap_fill(
+                                *clip,
+                                [
+                                    matrix.a(),
+                                    matrix.b(),
+                                    matrix.c(),
+                                    matrix.d(),
+                                    matrix.e(),
+                                    matrix.f(),
+                                ],
+                            )
+                        })
+                        .unwrap_or(*clip)
+                } else {
+                    *clip
+                };
+                self.ctx.save();
+                self.ctx.begin_path();
+                self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
+                self.ctx.clip();
+                self.render_layer_node(child, active_layer);
+                self.ctx.restore();
             }
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {

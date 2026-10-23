@@ -2222,6 +2222,7 @@ fn clip_kind_detail(clip_kind: ClipKind) -> &'static str {
         ClipKind::TableCell => "tableCell",
         ClipKind::TextBox => "textBox",
         ClipKind::Generic => "generic",
+        ClipKind::PrintBitmapFill => "printBitmapFill",
     }
 }
 

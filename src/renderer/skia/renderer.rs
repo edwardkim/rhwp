@@ -1401,7 +1401,11 @@ impl SkiaLayerRenderer {
                 canvas.restore();
                 result?;
             }
-            LayerNodeKind::ClipRect { clip, child, .. } => {
+            LayerNodeKind::ClipRect {
+                clip,
+                child,
+                clip_kind,
+            } => {
                 if !clip_enabled {
                     return self.render_node(
                         canvas,
@@ -1418,6 +1422,30 @@ impl SkiaLayerRenderer {
                     );
                 }
                 canvas.save();
+                let clip = if *clip_kind == crate::paint::ClipKind::PrintBitmapFill
+                    && cache_context.raster_target
+                {
+                    let matrix = canvas.local_to_device_as_3x3();
+                    (!matrix.has_perspective())
+                        .then(|| {
+                            crate::paint::device_clip::bitmap_fill(
+                                *clip,
+                                [
+                                    matrix.scale_x(),
+                                    matrix.skew_y(),
+                                    matrix.skew_x(),
+                                    matrix.scale_y(),
+                                    matrix.translate_x(),
+                                    matrix.translate_y(),
+                                ]
+                                .map(f64::from),
+                            )
+                        })
+                        .flatten()
+                        .unwrap_or(*clip)
+                } else {
+                    *clip
+                };
                 canvas.clip_rect(
                     Rect::from_xywh(
                         clip.x as f32,

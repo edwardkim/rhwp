@@ -1117,7 +1117,7 @@ export interface LayerClipNode {
   visualBounds?: LayerBounds;
   layer?: LayerInfo;
   clip: LayerBounds;
-  clipKind: 'body' | 'tableCell' | 'textBox' | 'generic';
+  clipKind: 'body' | 'tableCell' | 'textBox' | 'generic' | 'printBitmapFill';
   child: LayerNode;
 }
 

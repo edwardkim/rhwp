@@ -503,9 +503,14 @@ impl LayerBuilder {
             let mut own_leaf =
                 LayerNode::leaf(own_bounds, Some(node.id), ops).with_layer(node.layer);
             if let Some(clip) = image_fill_clip {
-                own_leaf =
-                    LayerNode::clip_rect(clip, Some(node.id), clip, own_leaf, ClipKind::Generic)
-                        .with_layer(node.layer);
+                own_leaf = LayerNode::clip_rect(
+                    clip,
+                    Some(node.id),
+                    clip,
+                    own_leaf,
+                    ClipKind::PrintBitmapFill,
+                )
+                .with_layer(node.layer);
             }
             // 내부 문단이 없는 사각형도 원본 컨트롤 부호를 출력해야 한다.
             let has_source_marker = self.output_options.show_control_codes

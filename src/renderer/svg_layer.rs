@@ -276,6 +276,7 @@ impl SvgLayerRenderer {
                     ClipKind::TableCell => "cell",
                     ClipKind::TextBox => "textbox",
                     ClipKind::Generic => "generic",
+                    ClipKind::PrintBitmapFill => "print-bitmap-fill",
                 };
                 let pass_count = PaintReplayPlane::ORDERED
                     .iter()
