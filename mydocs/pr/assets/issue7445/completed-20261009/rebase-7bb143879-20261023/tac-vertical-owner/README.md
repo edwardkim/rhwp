@@ -4,9 +4,9 @@
 `before-native`는 부모0c94eff7b7, `after`는 보고서의 source/producer로 직접 다시 출력했다.
 `devel-native`는 고정7bb143879와 runtime source가 같은 보존 Native 출력이며 fresh WASM base 대조를 대신하지 않는다.
 
-논문 전7쪽 Native 최저97.75440%, fresh WASM 최저97.70269%다. 5쪽은98.40204%/98.36191%다.
-기존 캡션10조건은 양쪽 모두100% raw이며 RGB 일치는 아니다. 전쪽 TSV를 원본 바이트로 보존했다.
-기존 task1725 전242쪽은201쪽 미달이 남아 있어 전체 PR 수용 증거가 아니다.
+논문 전 7쪽 Native 최저 97.75440%, fresh WASM 최저 97.70269%다. 5쪽은98.40204%/98.36191%다.
+기존 캡션 10조건은 양쪽 모두100% raw이며 RGB 일치는 아니다. 전쪽 TSV를 원본 바이트로 보존했다.
+기존 task1725 전 242쪽은201쪽 미달이 남아 있어 전체 PR 수용 증거가 아니다.
 
 | 출력 | review | overlay |
 | --- | --- | --- |
