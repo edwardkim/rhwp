@@ -231,3 +231,18 @@ DotumChe는 고정 pitch 표식이 없는 다른 프로그램이었으며 원본
 
 사용자의 최신 지시에 따라 계획의 원격 작업 권한도 정정했다. 로컬 단계별 커밋과 필수
 검증을 완료하고 결과를 보고한 뒤, 승인받기 전에는 push·PR 생성을 진행하지 않는다.
+
+
+## 회귀 추가 전의 384개 출력 선행 조건 충족
+
+세 문서×64쪽×Native/fresh 표준 WASM의 **384/384개가 모두 raw 100%**다.
+모든 실제 PNG에서 threshold 232·양방향 2px·흰색 padding의 정수 미대응을 재계산했고
+참조·후보 양쪽 모두 0이다. 반올림 TSV 표시만으로 판정하지 않았다.
+Rust source는 두 producer 모두 `803046519d82d20c71d85937b96a8eefabb200d0`이며,
+뒤의 CanvasKit 준비 보정은 이 Native/Canvas2D 전쪽 출력의 Rust·WASM 바이트를 바꾸지 않는다.
+
+정식 증거 `candidate33-all-backends.json`은 384개 PNG/PDF 해시, 6개 실제 실행 명령·exit 0,
+Native/WASM producer 신원과 페이지별 정수 미대응을 보존한다. 전체 원본 TSV는
+`tsv/candidate33/native/`와 `tsv/candidate33/wasm/`에 있다.
+이 gate를 확인할 때까지 회귀 파일·기대값은 변경하지 않았다. 다음 단계에서 기존
+잘못된 기대값과 중복을 정리하고 전 페이지의 독립 Print 내용·좌표·소유 관계를 보호한다.
