@@ -2,6 +2,8 @@
 
 #[path = "rendering_metafile_fonts.rs"]
 mod metafile_fonts;
+#[path = "rendering_metafile_resources.rs"]
+mod metafile_resources;
 
 use super::super::helpers::color_ref_to_css;
 use crate::document_core::{
@@ -1586,14 +1588,23 @@ impl DocumentCore {
             );
             let mut builder = LayerBuilder::new(profile)
                 .with_layout_dpi(self.dpi)
-                .with_metafile_fonts(&if self.hangul2024_compat
-                    && profile == RenderProfile::Print
+                .with_metafile_fonts(&if profile == RenderProfile::Print
                     && crate::paint::metafile::has_wmf(&tree.root)
                 {
                     metafile_fonts::with_document_fonts(&self.metafile_fonts, &self.document)
                 } else {
                     self.metafile_fonts.clone()
                 })
+                .with_metafile_catalogue(
+                    if !self.hangul2024_compat
+                        && profile == RenderProfile::Print
+                        && crate::paint::metafile::has_wmf(&tree.root)
+                    {
+                        metafile_resources::catalogue(&self.document, &self.pagination)
+                    } else {
+                        None
+                    },
+                )
                 .with_metafile_device_pixel_width(metafile_pixel)
                 .with_hancom2024_print_bitmap(self.hangul2024_compat)
                 .with_output_options(output_options)

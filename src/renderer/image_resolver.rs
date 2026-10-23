@@ -8,7 +8,7 @@ pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
 pub(crate) use print_jpeg::print_jpeg_payload;
 pub(crate) use print_tone::print_bitmap_payload;
 mod print_jpeg;
-pub(crate) use print_jpeg::print_jpeg_payload;
+pub(crate) use print_jpeg::{encode_print_jpeg, print_jpeg_payload};
 
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};

@@ -8,6 +8,7 @@ import { shouldDrawPageMarginGuides } from './page-margin-guides.ts';
 import squareGradientSkSL from '../../../src/renderer/square_gradient.sksl?raw';
 import * as bitmapRasterWasm from '@wasm/rhwp.js';
 import { drawAnisotropicPrintImage, drawPrintFrameImage } from './canvaskit/anisotropic-image.ts';
+import { drawPrintMetafile } from './canvaskit/metafile-print.ts';
 import CanvasKitInit from 'canvaskit-wasm';
 import { blake3 } from '@noble/hashes/blake3.js';
 import type {
@@ -2248,6 +2249,9 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('image:dataMissing');
       return;
     }
+    // 공통 producer가 검증한 SVG만 최종 장치 격자에서 재생한다.
+    // 일반 SVG의 브라우저 decode와 실패 보고는 기존 경로가 소유한다.
+    if (this.renderPrintMetafile(canvas, op)) return;
     const image = this.imageForOp(op);
     if (!image) {
       if (this.pendingImageLoads.size > 0) return;
@@ -2257,6 +2261,25 @@ export class CanvasKitLayerRenderer {
     const paintOp = op.imagePaintBBox ? { ...op, bbox: op.imagePaintBBox } : op;
     this.withImageTransform(canvas, paintOp.bbox, paintOp.transform,
       () => this.drawImageOp(canvas, image, paintOp, undefined, profile));
+  }
+
+  private renderPrintMetafile(canvas: SkCanvas, op: LayerImageOp): boolean {
+    if (op.mime !== 'image/svg+xml' || canvasKitImageEffectKey(op) !== '') return false;
+    try {
+      const index = this.layerResourceIndex(op.imageRef, this.currentResources?.imageKeys,
+        this.currentResources?.images?.length ?? 0);
+      const key = index === null ? undefined : this.currentResources?.imageKeys?.[index];
+      const resource = index === null ? undefined : this.currentResources?.images?.[index];
+      const value = resource ?? op.base64 ?? (op.sourceImageKey
+        ? this.currentImageBytesResolver?.(op.sourceImageKey) ?? undefined : undefined);
+      const bytes = this.imageResourceBytes(value);
+      if (!bytes || (key && !layerResourceKeyMatches('img', key, bytes))) return false;
+      let drawn = false;
+      this.withImageTransform(canvas, op.bbox, op.transform, () => {
+        drawn = drawPrintMetafile(this.canvasKit, canvas, bytes, op.opacity ?? 1);
+      });
+      return drawn;
+    } catch { return false; }
   }
 
   private renderGlyphRun(canvas: SkCanvas, op: LayerGlyphRunOp): void {

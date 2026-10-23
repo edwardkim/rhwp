@@ -46,14 +46,14 @@ pub(super) struct SurfaceCache {
 }
 
 impl SurfaceCache {
-    fn get(&self, key: &[u8; 32]) -> Option<Vec<u8>> {
+    pub(super) fn get(&self, key: &[u8; 32]) -> Option<Vec<u8>> {
         self.entries
             .iter()
             .find(|(k, _)| k == key)
             .map(|(_, data)| data.clone())
     }
 
-    fn insert(&mut self, key: [u8; 32], data: &[u8]) {
+    pub(super) fn insert(&mut self, key: [u8; 32], data: &[u8]) {
         if data.len() > MAX_CACHE_BYTES {
             return;
         }

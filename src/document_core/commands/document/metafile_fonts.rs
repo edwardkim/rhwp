@@ -32,14 +32,11 @@ impl DocumentCore {
     /// Canvas font 요청으로는 관측할 수 없는 SVG 이미지 내부의 family·문자 요구다.
     /// 조판 전에 원본 BinData를 읽으며, unsupported WMF를 성공한 변환으로 바꾸지 않는다.
     pub fn get_metafile_font_requests_native(&self) -> Result<String, HwpError> {
-        if !self.hangul2024_compat {
-            return Ok("[]".into());
-        }
         if let Some(json) = self.metafile_fonts.cached_requests(self.bin_data_epoch) {
             return Ok(json);
         }
         let mut requests = Vec::new();
-        if self.hangul2024_compat {
+        {
             for item in &self.document.bin_data_content {
                 let Some(data) = item
                     .data

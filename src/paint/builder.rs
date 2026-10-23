@@ -28,6 +28,7 @@ pub struct LayerBuilder {
     metafile_fonts: super::metafile_fonts::MetafileFonts,
     prior_print_solid_fill: bool,
     hangul2024_print: bool,
+    metafile_catalogue: Option<std::sync::Arc<super::metafile_print::Catalogue>>,
 }
 
 impl LayerBuilder {
@@ -46,6 +47,7 @@ impl LayerBuilder {
             metafile_fonts: Default::default(),
             prior_print_solid_fill: false,
             hangul2024_print: false,
+            metafile_catalogue: None,
         }
     }
 
@@ -105,12 +107,22 @@ impl LayerBuilder {
         self.build_with_embedded_fonts(tree, &[])
     }
 
+    pub(crate) fn with_metafile_catalogue(
+        mut self,
+        catalogue: Option<std::sync::Arc<super::metafile_print::Catalogue>>,
+    ) -> Self {
+        self.metafile_catalogue = catalogue;
+        self
+    }
+
     pub fn build_with_embedded_fonts(
         &mut self,
         tree: &PageRenderTree,
         fonts: &[EmbeddedFontFace<'_>],
     ) -> PageLayerTree {
-        if self.hancom2024_print_bitmap && !fonts.is_empty() && super::metafile::has_wmf(&tree.root)
+        if self.profile == RenderProfile::Print
+            && !fonts.is_empty()
+            && super::metafile::has_wmf(&tree.root)
         {
             for font in fonts {
                 let _ = self
@@ -323,6 +335,21 @@ impl LayerBuilder {
                             )
                         })
                         .flatten()
+                        .or_else(|| {
+                            if self.profile != RenderProfile::Print || self.hancom2024_print_bitmap
+                            {
+                                return None;
+                            }
+                            super::metafile_print::payload(
+                                &image,
+                                node.bbox,
+                                self.image_page_size,
+                                self.image_reference_origin,
+                                self.layout_dpi,
+                                &self.metafile_fonts,
+                                self.metafile_catalogue.as_deref()?,
+                            )
+                        })
                         .or_else(|| {
                             crate::paint::metafile::image_payload(
                                 &image,

@@ -17,6 +17,7 @@ mod image_cache;
 mod image_conv;
 mod image_effect;
 mod line_replay;
+mod metafile_print;
 mod prepared_page;
 mod region_plan;
 mod renderer;

@@ -8,6 +8,8 @@ mod cubic_reduction;
 #[cfg(target_arch = "wasm32")]
 mod image_reduction;
 #[cfg(target_arch = "wasm32")]
+mod metafile_print;
+#[cfg(target_arch = "wasm32")]
 mod print_jpeg;
 
 #[cfg(target_arch = "wasm32")]
@@ -3051,6 +3053,9 @@ impl Renderer for WebCanvasRenderer {
     }
 
     fn draw_image(&mut self, data: &[u8], x: f64, y: f64, w: f64, h: f64) {
+        if self.high_quality_images && metafile_print::draw(&self.ctx, data) {
+            return;
+        }
         let _sampling = self.image_sampling_scope(data, None, w, h);
         let prepared = self.ctx.get_transform().ok().and_then(|matrix| {
             crate::renderer::bitmap_raster::prepare_bitmap(
