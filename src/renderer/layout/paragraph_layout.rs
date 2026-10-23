@@ -65,6 +65,7 @@ const CAPTION_CELL_SENTINEL: usize = 65534;
 
 mod inline_table_geometry;
 pub(crate) use inline_table_geometry::InlineTableParagraphGeometry;
+mod inline_text_advance;
 mod stored_textbox_frame;
 mod tab_frame;
 /// 분배 정렬도 다음 글자가 없는 마지막 글리프의 실제 점유 끝을 기준으로 한다.
@@ -3880,6 +3881,7 @@ impl LayoutEngine {
             .map(|cs| cs.char_shape_id as u32)
             .unwrap_or(0);
 
+<<<<<<< HEAD
         let text_metrics = inline_table_geometry::InlineTableTextMetrics::new(
             &text_chars,
             &segments,
@@ -3894,11 +3896,32 @@ impl LayoutEngine {
                     .unwrap_or(char_style_id);
                 let ts = with_stored_tabs(metric_scope.style(styles, cs_id, lang, ch_idx), ch_idx);
                 estimate_text_width_exact(&map_pua_bullet_char(text_chars[ch_idx]).to_string(), &ts)
+=======
+        let text_advance = inline_text_advance::InlineTextAdvance::new(
+            &text_chars,
+            &segments,
+            |ch_idx, language| {
+                let utf16_pos = offsets[ch_idx];
+                let style_id = para
+                    .char_shapes
+                    .iter()
+                    .rev()
+                    .find(|shape| shape.start_pos <= utf16_pos)
+                    .map_or(char_style_id, |shape| shape.char_shape_id as u32);
+                with_stored_tabs(
+                    metric_scope.style(styles, style_id, language, ch_idx),
+                    ch_idx,
+                )
+>>>>>>> 4e13df5681 (보정: 인라인 표 문단의 문자 전진을 측정과 배치에 공유)
             },
         );
         let seg_widths: Vec<f64> = segments
             .iter()
+<<<<<<< HEAD
             .map(|&(start, end)| text_metrics.width(start, end))
+=======
+            .map(|&(start, end)| text_advance.width(start, end))
+>>>>>>> 4e13df5681 (보정: 인라인 표 문단의 문자 전진을 측정과 배치에 공유)
             .collect();
 
         // 5. 총 폭과 정렬 계산 (TAC 표는 outMargin 좌/우 포함 폭 — Issue #3396)
@@ -3945,7 +3968,11 @@ impl LayoutEngine {
                 if n == 0 {
                     return 0.0;
                 }
+<<<<<<< HEAD
                 text_metrics.width(e - n, e)
+=======
+                text_advance.width(e - n, e)
+>>>>>>> 4e13df5681 (보정: 인라인 표 문단의 문자 전진을 측정과 배치에 공유)
             })
             .unwrap_or(0.0);
         let total_width: f64 = seg_widths.iter().sum::<f64>() - trailing_space_after_last_table
@@ -4137,7 +4164,6 @@ impl LayoutEngine {
                     // 문자는 앞 글자 언어를 잇는다). run 은 슬롯이 바뀌는 자리에서도 끊고 그
                     // run 의 슬롯으로 잰다. 첫 글자 슬롯으로 run 전체를 재면 `(’24.)` 처럼
                     // 영문 슬롯 따옴표가 한글 슬롯 글꼴 폭으로 잡혀 다음 run 과 겹친다.
-                    let mut carry_lang = 0usize;
                     let mut run_lang: Option<usize> = None;
 
                     for ch_idx in *s..*e {
@@ -4155,7 +4181,7 @@ impl LayoutEngine {
                                     metric_scope.style(
                                         styles,
                                         current_cs_id,
-                                        run_lang.unwrap_or(carry_lang),
+                                        text_advance.language(line_run_start),
                                         line_run_start,
                                     ),
                                     line_run_start,
@@ -4192,7 +4218,9 @@ impl LayoutEngine {
                                             .unwrap_or(0),
                                         baseline: run_bbox_h,
                                         field_marker: FieldMarkerType::None,
-                                        layout_positions: None,
+                                        layout_positions: Some(
+                                            text_advance.positions(line_run_start, ch_idx),
+                                        ),
                                         display_text: None,
                                     }),
                                     BoundingBox::new(line_run_x, current_y, run_width, run_bbox_h),
@@ -4255,12 +4283,20 @@ impl LayoutEngine {
                             .unwrap_or(char_style_id);
 
                         let ch = text_chars[ch_idx];
+<<<<<<< HEAD
                         let (lang, ch_w) = text_metrics.at(ch_idx);
                         carry_lang = lang;
+=======
+                        let lang = text_advance.language(ch_idx);
+>>>>>>> 4e13df5681 (보정: 인라인 표 문단의 문자 전진을 측정과 배치에 공유)
                         let ts = with_stored_tabs(
                             metric_scope.style(styles, cs_id, lang, ch_idx),
                             ch_idx,
                         );
+<<<<<<< HEAD
+=======
+                        let ch_w = text_advance.advance(ch_idx);
+>>>>>>> 4e13df5681 (보정: 인라인 표 문단의 문자 전진을 측정과 배치에 공유)
 
                         // 글자모양·언어 슬롯의 실제 메트릭 변경 또는 줄바꿈 시 run을 출력
                         // [Task #518] LINE_SEG 기반 줄 나눔: ls[1..] 의 text_start 위치 모두 사용.
@@ -4305,6 +4341,7 @@ impl LayoutEngine {
                                 || ts.font_size != run_style.font_size
                                 || ts.ratio != run_style.ratio
                                 || ts.letter_spacing != run_style.letter_spacing
+                                || ts.font_space_em != run_style.font_space_em
                         };
                         let cs_changed = cs_id != current_cs_id
                             || metric_scope.allows(ch_idx) != metric_scope.allows(line_run_start)
@@ -4361,7 +4398,9 @@ impl LayoutEngine {
                                         .unwrap_or(0),
                                     baseline: run_bbox_h,
                                     field_marker: FieldMarkerType::None,
-                                    layout_positions: None,
+                                    layout_positions: Some(
+                                        text_advance.positions(line_run_start, ch_idx),
+                                    ),
                                     display_text: None,
                                 }),
                                 BoundingBox::new(line_run_x, current_y, run_width, run_bbox_h),
@@ -4427,7 +4466,7 @@ impl LayoutEngine {
                         let run_ts = metric_scope.style(
                             styles,
                             current_cs_id,
-                            run_lang.unwrap_or(carry_lang),
+                            text_advance.language(line_run_start),
                             line_run_start,
                         );
                         let run_ts = with_stored_tabs(run_ts, line_run_start);
@@ -4457,7 +4496,7 @@ impl LayoutEngine {
                                     .unwrap_or(0),
                                 baseline: remaining_bbox_h,
                                 field_marker: FieldMarkerType::None,
-                                layout_positions: None,
+                                layout_positions: Some(text_advance.positions(line_run_start, *e)),
                                 display_text: None,
                             }),
                             BoundingBox::new(line_run_x, current_y, run_width, remaining_bbox_h),

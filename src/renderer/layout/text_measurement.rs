@@ -23,10 +23,8 @@ pub trait TextMeasurer {
 
 // ── 공통 헬퍼 ───────────────────────────────────────────────────────
 
-use super::super::conjoining_jamo::{
-    cluster_lengths as build_cluster_len, is_hangul_choseong, is_hangul_jongseong,
-    is_hangul_jungseong,
-};
+pub(super) use super::super::conjoining_jamo::cluster_lengths as build_cluster_len;
+use super::super::conjoining_jamo::{is_hangul_choseong, is_hangul_jongseong, is_hangul_jungseong};
 pub(crate) fn build_cluster_len_with_storage<S: crate::storage::Storage>(
     chars: &[char],
     storage: &S,
