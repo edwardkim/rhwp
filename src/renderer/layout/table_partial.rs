@@ -3771,11 +3771,14 @@ impl LayoutEngine {
                                     // 은 그림 pos vert_align 을 따르므로 콘텐츠 box·그림 높이 기준
                                     // 셀 valign 위치를 강제한다.
                                     let pic_y = if fragment_owned_square_flow {
-                                        // p0처럼 같은 physical fragment가 여러 Square
-                                        // control을 소유할 때, negative saved offset은
-                                        // 이전 source ladder의 값이다. current fragment의
-                                        // flow anchor를 다시 위로 끌어올리지 않는다.
+                                        // 조각의 원점에도 측정이 사용한 양수 흐름 앞 공간을
+                                        // 보존한다. 이전 쪽의 음수 offset만 공통 판정으로
+                                        // 제거하며 원본의 양수 변위를 함께 버리지 않는다.
                                         picture_anchor_y
+                                            + hwpunit_to_px(
+                                                crate::renderer::float_placement::cell_wrap_vertical_offset_hu(&pic.common),
+                                                self.dpi,
+                                            )
                                     } else if top_and_bottom_para
                                         && pic.common.flow_with_text
                                         && !unrestricted_take_place_cell_float

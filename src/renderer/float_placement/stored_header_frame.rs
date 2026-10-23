@@ -58,8 +58,9 @@ pub(crate) fn stored_independent_table_frame_host(para: &Paragraph, table: &Tabl
     let [line] = para.line_segs.as_slice() else {
         return false;
     };
-    super::para_has_non_whitespace_text(para)
-        && single_table_frame_host
+    // 빈 문자열·공백도 유효한 저장 줄 상자를 소유한다. 그 줄 아래에서 시작하는
+    // 개체의 독립 바깥 프레임은 잉크 유무로 사라지지 않는다.
+    single_table_frame_host
         && !para.stored_text_partition_is_dirty()
         && !para.cell_format_vpos_dirty
         && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0

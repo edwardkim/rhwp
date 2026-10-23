@@ -495,7 +495,7 @@ pub(super) fn try_place_overflow_paragraph(
     body_bottom_vpos: Option<i32>,
     available: f64,
     forced_page_break_line: Option<usize>,
-    stored_vpos_rewind_overflow_break: bool,
+    stored_page_boundary_break: bool,
     current_page_vpos_base: Option<i32>,
     dpi: f64,
 ) -> bool {
@@ -507,7 +507,7 @@ pub(super) fn try_place_overflow_paragraph(
         para_idx,
         &page,
         available,
-        stored_vpos_rewind_overflow_break,
+        stored_page_boundary_break,
         dpi,
     ) {
         st.begin_atomic_overflow_paragraph(para_idx);

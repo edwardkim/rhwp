@@ -296,7 +296,8 @@ pub(in crate::renderer::typeset) fn place(
         body_bottom_vpos,
         available,
         forced_page_break_line,
-        stored_vpos_rewind_overflow_break,
+        // 저장 쪽 경계로 전체 fit을 거부했다면 atomic spill이 그 경계를 덮지 않는다.
+        stored_vpos_rewind_break || stored_vpos_rewind_overflow_break,
         current_page_vpos_base,
         dpi,
     ) {

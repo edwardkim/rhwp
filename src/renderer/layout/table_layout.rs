@@ -8332,12 +8332,10 @@ impl LayoutEngine {
                             //   CENTER = content_top + (content_h − pic_h + 흐름 앞 공간)/2
                             //   BOTTOM = content_bottom − pic_h − vOffset
                             let pic_y = if fragment_owned_square_flow {
-                                // partial-table와 같은 source-owner 계약: 현재 cut이
-                                // 소유한 Square flow picture는 page-local flow anchor를
-                                // 쓴다. 이전 source ladder의 negative vOffset을 다시
-                                // 적용하면 같은 paragraph의 후속 control이 fragment 위로
-                                // 빠진다.
-                                picture_anchor_y
+                                // 현재 조각이 소유한 원점에 측정과 같은 흐름 앞 공간을 더한다.
+                                // 이전 쪽의 음수 offset은 공통 판정이 제거하지만 원본의
+                                // 양수 offset까지 없애면 그림이 자기 앞 글줄을 덮는다.
+                                picture_anchor_y + hwpunit_to_px(flow_offset, self.dpi)
                             } else if reset_relocated_stored_picture_offset {
                                 // 이 형상은 cell의 Center 값이 현 물리 페이지의 정렬 계약이
                                 // 아니라 stale 음수 offset과 짝을 이룬 이전 페이지 ladder다.

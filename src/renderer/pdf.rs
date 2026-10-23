@@ -4,6 +4,9 @@
 //! opt-in direct backend records PageLayerTree replay into a Skia PDF canvas.
 //! Both backends support single and multiple pages and are native-only.
 
+// 같은 판정 소스를 각 usvg 버전이 실제 선택한 face에 적용한다.
+use usvg as style_usvg;
+
 #[cfg(not(target_arch = "wasm32"))]
 #[path = "pdf_synthetic_bold.rs"]
 mod synthetic_bold;

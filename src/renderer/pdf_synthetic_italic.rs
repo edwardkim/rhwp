@@ -1,5 +1,7 @@
 //! Synthetic oblique for upright faces selected by the compatibility PDF backend.
 
+use super::style_usvg as usvg;
+
 use std::collections::HashMap;
 
 const SHEAR: f32 = 0.25;
