@@ -1402,6 +1402,8 @@ export class CanvasView {
     if (!page || element.tagName !== 'CANVAS') return;
     const canvas = element as HTMLCanvasElement;
     const dpr = globalThis.devicePixelRatio || 1;
+    const paper = page.printSize && this.pageRenderer.getRenderProfile() === 'print'
+      ? page.printSize : page;
     const ownsDeviceAxis = (actual: number, logical: number): boolean => (
       Number.isFinite(logical) && logical > 0
       && (actual === Math.floor(logical) || actual === Math.ceil(logical))
@@ -1409,8 +1411,10 @@ export class CanvasView {
     // 조판·paint가 장치 해상도로 만든 표본은 소수 CSS 크기에 표시할 때 다시
     // 평균하지 않는다. 정수 축 반올림만 허용하며 실제 축소 예산·미리보기는 보간한다.
     // 논리 page box와 DOM 그림의 원본 필터는 바꾸지 않는다.
-    canvas.style.imageRendering = ownsDeviceAxis(canvas.width, page.width * zoom * dpr)
-      && ownsDeviceAxis(canvas.height, page.height * zoom * dpr) ? 'crisp-edges' : 'auto';
+    // Print의 정수 point 종이와 원본 편집 크기는 다를 수 있다. 표본의
+    // 소유만 공통 paint 종이에 대조하고 CSS·스크롤의 논리 크기는 유지한다.
+    canvas.style.imageRendering = ownsDeviceAxis(canvas.width, paper.width * zoom * dpr)
+      && ownsDeviceAxis(canvas.height, paper.height * zoom * dpr) ? 'crisp-edges' : 'auto';
   }
 
   private pageSurfaceShape(elements: readonly HTMLElement[], mainCanvas: HTMLCanvasElement): string {

@@ -1,0 +1,18 @@
+{
+  "parentHead": "3a09d0df4b01297d101abc6729939f6fcde29220",
+  "sourceFiles": {
+    "src/document_core/queries/rendering.rs": "fa455185d1adc036dff56accb4dcdf4272499eb6477fc33c38b2543f04f7176f",
+    "src/paint/mod.rs": "5a8267330abfdfa1367b0bda178aa26d93db417c149f41c96daaf4605494b3ad",
+    "rhwp-studio/src/core/types.ts": "86a3190234bd79d75070cb2aac9e217c4c4564f9304a9eb32417b02419fa0f5e",
+    "rhwp-studio/src/view/canvas-view.ts": "032fbdfaef6a002633f364cbe9c815d17ac3cc42c3f4e23db136624508572048",
+    "rhwp-studio/tests/canvas-view-surface-cache.test.ts": "267405efe340aa277b12fee3fc4f9459f38e074de526a021d64c5d16c1a3eba6"
+  },
+  "rustBuildReused": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/display-paper-contract",
+  "rustSourceHashesIdentical": true,
+  "wasmHashes": {
+    "rhwp.js": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+    "rhwp_bg.wasm": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024"
+  },
+  "reason": "원본 논리 크기와 DOM 그림은 유지하고 native 표본 소유를 common Print 종이와 대조한다. 낮은 해상도와 zoom preview 보간은 유지한다.",
+  "fullPrAcceptance": false
+}

@@ -3040,6 +3040,14 @@ impl DocumentCore {
         use crate::renderer::hwpunit_to_px;
         use crate::renderer::layout::page_border_rect;
         let (page_content, _, _) = self.find_page(page_num)?;
+        // 표시 크기도 실제 Print paint와 같은 종이 producer를 소비한다.
+        // 별도 레이어 트리·그림·글꼴을 만들지 않고 원본 편집 정보는 유지한다.
+        let (print_width, print_height) = crate::paint::paper_viewport::PagePaintContext::new(
+            crate::paint::RenderProfile::Print,
+            page_content.layout.page_width,
+            page_content.layout.page_height,
+        )
+        .output_size();
         let sec_idx = page_content.section_index;
         let section_def = &self.document.sections[sec_idx].section_def;
         let page_def = &section_def.page_def;
@@ -3088,6 +3096,7 @@ impl DocumentCore {
             .join(",");
         Ok(format!(
             "{{\"pageIndex\":{},\"pageNumber\":{},\"width\":{:.1},\"height\":{:.1},\"sectionIndex\":{},\
+            \"printSize\":{{\"width\":{print_width},\"height\":{print_height}}},\
             \"marginLeft\":{:.1},\"marginRight\":{:.1},\"marginTop\":{:.1},\"marginBottom\":{:.1},\
             \"marginHeader\":{:.1},\"marginFooter\":{:.1},\
             \"headerArea\":{{\"x\":{:.1},\"y\":{:.1},\"width\":{:.1},\"height\":{:.1}}},\
@@ -9249,6 +9258,14 @@ mod tests {
         let print = core
             .build_page_layer_tree_with_profile(0, RenderProfile::Print)
             .expect("print layer tree");
+        let info: serde_json::Value =
+            serde_json::from_str(&core.get_page_info_native(0).expect("쪽 정보"))
+                .expect("쪽 정보 JSON");
+        assert_eq!(info["printSize"]["width"].as_f64(), Some(print.page_width));
+        assert_eq!(
+            info["printSize"]["height"].as_f64(),
+            Some(print.page_height)
+        );
 
         assert!(screen.output_options.show_paragraph_marks);
         assert!(screen.output_options.show_control_codes);

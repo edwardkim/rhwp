@@ -21,6 +21,8 @@ export interface PageInfo {
   pageNumber?: number;
   width: number;
   height: number;
+  /** 공통 Print paint가 발행한 종이 크기. 원본 편집 크기와 구분하며 구 WASM에는 없다. */
+  printSize?: { width: number; height: number };
   sectionIndex: number;
   /** 왼쪽 여백 (px) */
   marginLeft: number;

@@ -20,7 +20,7 @@ mod metafile_print_coverage;
 mod metafile_surface;
 mod paint_bounds;
 pub mod paint_op;
-mod paper_viewport;
+pub(crate) mod paper_viewport;
 pub mod profile;
 pub mod replay_order;
 pub mod resources;

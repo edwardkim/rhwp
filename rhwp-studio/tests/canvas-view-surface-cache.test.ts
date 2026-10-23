@@ -396,3 +396,46 @@ test('deferred DPR 계획 뒤 strict 갱신은 실제 표면 배율을 확인하
     await vite.close();
   }
 });
+
+
+test('CanvasView는 원본 논리 크기를 유지하며 공통 Print 종이 표본의 이중 보간만 피한다', async () => {
+  const studioRoot = fileURLToPath(new URL('..', import.meta.url));
+  const vite = await createServer({ root: studioRoot, appType: 'custom', logLevel: 'silent', server: { middlewareMode: true } });
+  const dprDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'devicePixelRatio');
+  try {
+    Object.defineProperty(globalThis, 'devicePixelRatio', { configurable: true, value: 1 });
+    const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+    const source = Object.freeze({ width: 800.25, height: 1100.75, marginLeft: 50, printSize: Object.freeze({ width: 798.5, height: 1098.25 }) });
+    const view = Object.create(CanvasView.prototype) as Record<string, any>;
+    const main = new FakeCanvas();
+    Object.assign(view, {
+      wasm: { pageCount: 1, getPageInfo: () => source }, pages: [source],
+      viewportManager: { cancelPendingZoomRaster() {} }, recalcLayout() {},
+      cancelPendingTextEditRefresh() {}, cancelTextEditStaticLayerVerification() {},
+      releaseAllRenderedPages() {}, updateVisiblePages() {}, pageSurfaceElements: () => [main],
+    });
+    let profile = 'print';
+    view.pageRenderer = { getRenderProfile: () => profile, cancelAll() {} };
+    view.refreshPages();
+    assert.equal(view.pages[0], source, '원본 논리 크기와 편집 metadata를 덮어쓰지 않는다');
+    main.width = 799; main.height = 1099;
+    view.applyPageSurfaceCssSize(0, main, 1);
+    assert.equal(main.style.width, '800.25px');
+    assert.equal(main.style.height, '1100.75px');
+    assert.equal(main.style.imageRendering, 'crisp-edges', '공통 Print가 발행한 장치 표본은 다시 흐리게 만들지 않는다');
+    main.width = 400; main.height = 550;
+    view.applyPageSurfaceCssSize(0, main, 1);
+    assert.equal(main.style.imageRendering, 'auto', '실제 낮은 해상도 표면은 계속 보간한다');
+    profile = 'screen';
+    main.width = 799; main.height = 1099;
+    view.applyPageSurfaceCssSize(0, main, 1);
+    assert.equal(main.style.imageRendering, 'auto', 'Screen 표본을 Print metadata로 오인하지 않는다');
+    main.width = 801; main.height = 1101;
+    view.applyPageSurfaceCssSize(0, main, 1);
+    assert.equal(main.style.imageRendering, 'crisp-edges');
+  } finally {
+    if (dprDescriptor) Object.defineProperty(globalThis, 'devicePixelRatio', dprDescriptor);
+    else Reflect.deleteProperty(globalThis, 'devicePixelRatio');
+    await vite.close();
+  }
+});
