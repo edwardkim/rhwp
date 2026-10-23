@@ -84,9 +84,10 @@ fn chart_png_renders_text_labels() {
     );
 }
 
-// #7445: 원본 PNG 산점도의 전302쪽 수용 후 추가한 Print 축소 경계.
+// #7445: 원본 산점도의 전 302쪽 수용 후 추가한 Print 축소 경계.
 // 독립 PDF·Native/fresh WASM 전302쪽 및153쪽 raw98.66795%와 review/overlay는
 // mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/bitmap-print-20261018/ 참조.
+// 현재 PDFium 전쪽 재검증과 기존 핀의 정정은 Stage75 기록을 따른다.
 #[test]
 fn reduced_scatter_plot_preserves_every_interior_grid_band() {
     use rhwp::paint::{LayerNode, LayerNodeKind, PageLayerTree, PaintOp, RenderProfile};
@@ -133,19 +134,55 @@ fn reduced_scatter_plot_preserves_every_interior_grid_band() {
         .or(image.data.as_deref())
         .expect("원본 그림 픽셀");
     let source = image::load_from_memory(bytes).unwrap().to_rgb8();
-    // PDF153쪽의 실제 이미지 사각형(pt)을96dpi CSS px로 환산했다.
-    // 그림과 내부 격자를 같은 개체로 식별한 뒤 네 변을 함께 보호한다.
-    let [x, y, width, height] = [121.374664, 146.560018, 558.740000, 430.089315];
-    let reference_edges = [x, y, x + width, y + height];
-    for (actual, reference) in [bbox.x, bbox.y, bbox.x + bbox.width, bbox.y + bbox.height]
-        .into_iter()
-        .zip(reference_edges)
-    {
-        assert!(
-            (actual - reference).abs() <= 2.0,
-            "독립 Print 그림 경계: {actual} vs {reference}"
-        );
+    fn descendants<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        out.push(node);
+        for child in &node.children {
+            descendants(child, out);
+        }
     }
+    let tree = core.build_page_render_tree(152).unwrap();
+    let mut nodes = Vec::new();
+    descendants(&tree.root, &mut nodes);
+    let owners: Vec<_> = nodes
+        .iter()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::Image(owner) if owner.bin_data_id == image.bin_data_id)
+        })
+        .collect();
+    assert_eq!(
+        owners.len(),
+        1,
+        "산점도는 같은 쪽의 원본 그림 한 개에 속한다"
+    );
+    let RenderNodeType::Image(owner) = &owners[0].node_type else {
+        unreachable!()
+    };
+    // 이 쪽은 현재 양 backend 모두 90% 이상이지만 98% 미만이다.
+    // 과거 절대 px 네 변 대신 원본 개체의 쪽·문단·컨트롤 소유와 포함을 보호한다.
+    // Print는 종이·장치 축으로 투영하므로 layout bbox와의 수치 등식은 요구하지 않는다.
+    assert_eq!(
+        (owner.section_index, owner.para_index, owner.control_index),
+        (image.section_index, image.para_index, image.control_index),
+        "질의와 paint는 같은 원본 그림 소유자를 유지한다"
+    );
+    assert!(bbox.x >= 0.0 && bbox.y >= 0.0 && bbox.width > 0.0 && bbox.height > 0.0);
+    assert!(bbox.x + bbox.width <= layer.page_width);
+    assert!(bbox.y + bbox.height <= layer.page_height);
+    let text = |needle: &str| {
+        nodes
+            .iter()
+            .find(|node| {
+                matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text.contains(needle))
+            })
+            .unwrap_or_else(|| panic!("같은 쪽의 원문을 보존한다: {needle}"))
+            .bbox
+    };
+    let source_label = text("OECD Indicators of Employment Protection");
+    let caption_start = text("무기계약 근로자 해고");
+    let caption_end = text("지수의 관계 산포도");
+    assert!(bbox.y + bbox.height <= source_label.y);
+    assert!(source_label.y + source_label.height <= caption_start.y);
+    assert!(caption_start.y + caption_start.height <= caption_end.y);
     let (width, height) = source.dimensions();
     let (first, end) = (width / 4, width * 3 / 4);
     let gray = |p: &image::Rgb<u8>| {
@@ -187,12 +224,13 @@ fn reduced_scatter_plot_preserves_every_interior_grid_band() {
     let sx = bbox.width / f64::from(width);
     let sy = bbox.height / f64::from(height);
     // 첫/끝 줄은 축 테두리다. 내부의 반복 격자를 모두 검사한다.
-    // 독립 Print를 pdftoppm96dpi로 읽은 같은5개 밴드의 명암5/95분위수.
-    // JPEG/축소 위상 때문에 네 번째 줄만 더 옅다. 모든 줄에232를 적용하면
-    // 기준 PDF 자체도198/272열(72.8%)만 통과하므로 잘못된 기대값이다.
-    // 나머지 네 줄의 상한은 기존232보다 엄격하다. 검은 선으로 덮어서
-    // 통과하지 못하도록 중앙값의 하한도 독립 PDF의5분위수로 검사한다.
-    let reference_bands = [(215, 218), (215, 218), (215, 221), (224, 238), (215, 222)];
+    // 같은 독립 Print PDF의 다섯 밴드를 현재 정본 PDFium 153.0.7999.0,
+    // pdfium_smooth_rgb_v1, 96 dpi로 읽은 명암 5/95분위수다. 이전
+    // pdftoppm의 범위는 이 PDFium 기준 그림 자체도 거부하므로 재사용하지 않는다.
+    // JPEG/축소 위상의 차이를 밴드별 독립 관측값으로 구분한다. 열의 90%에서
+    // 표시를 유지하고 검게 덮은 선도 거부하도록 중앙값의 하한을 함께 검사한다.
+    // 측정 원본·명령·전쪽 자격은 Stage75 검증 기록을 따른다.
+    let reference_bands = [(223, 224), (226, 229), (233, 235), (219, 226), (230, 235)];
     for (&y, (dark_limit, light_limit)) in rows
         .iter()
         .skip(1)
