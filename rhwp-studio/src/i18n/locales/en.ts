@@ -2049,6 +2049,7 @@ const catalog = {
   "ai.tool.list_fields": "Checking fields",
   "ai.settings.cryptoUnavailable": "Passphrase protection is unavailable on this connection (plain http on an IP address) because the browser blocks its crypto API. Open via https or localhost, or remember the key without a passphrase.",
   "ai.settings.cryptoUnavailableShort": "Unavailable on this connection",
+  "ai.error.billing": "The API account is out of credits. Add credits under Plans & Billing in the Anthropic Console, then try again.",
 } as const;
 
 export default catalog;

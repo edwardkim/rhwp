@@ -16,7 +16,8 @@ export function failureMessage(reason: AiFailureReason, retryAfterSeconds?: numb
     return t('ai.error.rateRetry', { s: Math.ceil(retryAfterSeconds) });
   }
   const base = t(`ai.error.${reason}`);
-  return detail ? `${base} (${detail})` : base;
+  // 크레딧 부족은 안내 문구로 충분하다 — 같은 뜻의 영문 원문을 덧붙이지 않는다.
+  return detail && reason !== 'billing' ? `${base} (${detail})` : base;
 }
 
 export function keyStoreMessage(error: unknown): string {
