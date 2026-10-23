@@ -82,3 +82,33 @@ exit 0이다. 최종 3개 함수 구성의 정식 실행은 최신 devel 반영 
 CanvasKit 준비 보정까지 포함한 Studio 전체 Node 재실행은 exit 0, 2,363개 중
 2,361 PASS·0 FAIL·2 SKIP, 92.369초다. SKIP은 기존 Node 전용 pkg-node 부재의 두 왕복
 검사이며 실제 fresh web WASM 전쪽 출력과 구분한다.
+
+## 최신 devel #8181 반영
+
+추가 base `d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867`의 패키징 PR #8181을 반영한다.
+기존 단계별 commit과 증거 SHA를 보존해 merge하며, Cargo workspace exclude 충돌은
+이 작업의 JPEG encoder fork와 upstream의 직접 SVG fork를 모두 제외하는 합집합으로 해소한다.
+두 의존성·lock의 자동 병합을 보존한다. 실제 기능 보존과 최종 전쪽 검증은 merge 뒤 실행한다.
+#8181의 표준 Rust Error, CLI 직접 core 로드, dev-tools generator와 package source 사전 검사를
+현재 후보에서 확인하며 패키징 기능을 삭제하거나 이전 root patch를 복원하지 않는다.
+
+### 패키징 기능 보존에서 검출한 누락
+
+merge `b0f745578`의 locked metadata는 통과했으나 실제 source preflight는
+`local dependency outside candidate graph: .: vendor/rhwp-jpeg-encoder`로 실패했다.
+원본 #8181의 후보 그래프에 이번 인코더 fork가 추가되지 않은 것이 원인이다.
+제품 버전·실제 게시 권한을 바꾸지 않고 fork 이름·정확 버전·비게시·include/라이선스와
+9개 source 후보 그래프를 맞춘다. 원본 코드·저작권과 upstream checksum은 그대로 보존한다.
+Rust import alias와 인코딩 구현은 바꾸지 않는다. 보정 후 locked metadata·source 사전 검사와
+필수 기능 검증을 다시 실행한다.
+
+locked offline metadata는 exit 0이며 lock 변경은 JPEG encoder의 이름·버전과 root 참조만
+10줄이다. source preflight의 단위 검사 18개도 PASS(exit 0, 2.599초)다. commit 고정 뒤 실제
+9개 archive 사전 검사를 실행한다.
+
+### 사용자 지시에 따른 리베이스
+
+작업지시자의 최신 지시는 `upstream/devel` 리베이스 후 진행이다. 위 merge 실행 기록은
+당시 사실로 보존하고, 현재 패키징 보완을 일반 commit으로 고정한 뒤 최신 devel 위로
+작업 브랜치를 리베이스한다. 원격 push는 아직 없으며 rebase 전후 SHA·충돌 해소·기능 보존과
+최종 전쪽 검증을 새 head 기준으로 기록한다. 기존 source/산출물 해시를 새 SHA로 덮어쓰지 않는다.

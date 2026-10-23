@@ -1272,10 +1272,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "jpeg-encoder"
-version = "0.7.1"
-
-[[package]]
 name = "js-sys"
 version = "0.3.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2157,7 +2153,6 @@ dependencies = [
  "hmac",
  "icy_sixel",
  "image",
- "jpeg-encoder",
  "js-sys",
  "ml-dsa",
  "ml-kem",

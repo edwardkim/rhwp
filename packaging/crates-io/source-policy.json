@@ -44,6 +44,21 @@
       "local_dependencies": []
     },
     {
+      "source": "vendor/rhwp-jpeg-encoder",
+      "published_name": "rhwp-jpeg-encoder",
+      "version": "0.7.1-rhwp.1",
+      "include": [
+        "Cargo.toml",
+        "src/**",
+        "README.md",
+        "RHWP_PATCHES.md",
+        "UPSTREAM.json",
+        "LICENSE-*"
+      ],
+      "extra_repository_files": {},
+      "local_dependencies": []
+    },
+    {
       "source": "vendor/rhwp-jpeg-decoder",
       "published_name": "rhwp-jpeg-decoder",
       "version": "0.3.2-rhwp.1",
@@ -234,6 +249,7 @@
       ],
       "extra_repository_files": {},
       "local_dependencies": [
+        "rhwp-jpeg-encoder",
         "rhwp-contracts",
         "rhwp-ooxml-chart",
         "rhwp-password-crypto",
