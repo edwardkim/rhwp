@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-10-19
+last_verified: 2026-10-23
 ---
 
 # Documentation And Git Workflow
@@ -328,6 +328,72 @@ pr_{number}_report.md
 ```
 
 PR 댓글 톤은 과장하지 않는다. "정말 감사합니다", "정성스러운 PR" 같은 반복적이고 과한 표현보다 사실 중심으로 쓴다.
+
+## 새 PR 생성 전에 확인할 항목
+
+**새 PR 작업보다 본인이 이미 제출한 미병합 PR의 실패·충돌 해소를 우선한다. 특히 lint 오류가
+남은 기존 PR을 두고 신규 PR을 생성하지 않는다. 단, 이미 리뷰어가 지정된 PR은 이 우선 처리
+규칙의 예외다.** 먼저 리뷰어 지정 여부를 구분한 뒤 나머지 PR의 실패·충돌을 처리한다.
+
+### 1. 본인의 열린 PR 조회와 예외 분류
+
+1. 새 PR 준비를 시작할 때와 실제 생성 직전에 현재 GitHub 인증 계정의 열린 PR을 조회한다.
+   모든 base와 draft를 포함한다. 조회 실패·상태 미확인을 "기존 PR 없음"으로 처리하지 않는다.
+2. 각 PR의 리뷰어 지정 여부, 최신 head/base SHA, `mergeable`·`mergeStateStatus`, required
+   check와 CI 결과를 확인한다. 실패가 있으면 실제 job·step·로그에서 원인을 확인한다.
+3. **이미 개인 또는 팀 리뷰어가 지정된 PR은 자동 우선 처리 대상에서 제외한다.** 해당 PR에
+   lint 실패·충돌이 있더라도 임의로 rebase·보정 커밋·push하지 않으며, 그 PR만을 이유로
+   신규 PR 생성을 막지 않는다. 리뷰 제출 후 `requested_reviewers`가 비는 경우도 있으므로
+   기존 리뷰 기록과 지정 이력을 함께 확인하고, 예외를 만들려고 리뷰어를 추가·제거하지 않는다.
+   작성자의 self-review는 리뷰어 지정으로 세지 않는다.
+4. 메인터너가 머지를 보류하고 보정을 요청했다면
+   [리뷰어 지정 후 커밋 규칙](../pr_review/intake_and_review.md#211-리뷰어-지정-후-추가-커밋-제한)의
+   요청 범위 예외를 적용해 기존 PR을 보정한다. 리뷰어 지정 자체와 보정 요청은 구분한다.
+5. PR 번호·리뷰어 예외 여부·차단 사유·처리 순서를 기존 작업 기록에 짧게 남긴다.
+
+```bash
+gh api user --jq .login
+gh pr list --repo edwardkim/rhwp --state open --author @me --limit 100 \
+  --json number,url,baseRefName,headRefName,headRefOid,isDraft,reviewRequests,mergeable,mergeStateStatus,statusCheckRollup
+```
+
+조회 상한에 도달하면 페이지를 이어서 확인한다. 목록의 요약 상태만으로 리뷰어 지정 이력이나
+실패·충돌 원인을 단정하지 않고 각 PR의 최신 결과를 확인한다.
+
+### 2. 예외를 제외한 기존 PR의 처리 순서
+
+| 기존 PR의 현재 상태 | 새 PR보다 먼저 수행할 작업 |
+| --- | --- |
+| lint 실패: fmt, native·WASM32·workspace Clippy 또는 해당 frontend lint/typecheck | 최우선으로 기존 PR branch에서 원인을 수정·커밋한다. 변경 범위의 필수 lint 전체와 필요한 회귀를 다시 실행하고 최신 head CI의 성공을 확인한다. 다른 새 PR에 수정만 넣어 기존 실패를 남기지 않는다. |
+| 충돌 또는 오래된 base 때문에 병합 불가 | 최신 `upstream/devel`로 기존 PR branch를 rebase한다. 양쪽 변경을 보존해 충돌·호환성 문제를 해결하고 커밋·재검증한다. |
+| 그 밖의 필수 CI 실패 또는 메인터너 보정 요청 | 기존 PR에서 원인을 보정·커밋하고 새 head의 필수 검증과 CI를 완료한다. |
+| CI 실행 중 또는 병합 가능 상태 계산 중 | 완료 후 실패·충돌 여부를 판정한다. 대기 상태를 성공으로 간주하지 않는다. |
+| CI 성공·충돌 없음, 승인 등 외부 조건만 대기 | 실패·충돌 차단 사유가 없음을 기록하고 새 PR 준비를 진행할 수 있다. 단순 devel 전진만으로 반복 rebase하지 않는다. |
+
+lint 실패와 충돌이 함께 있으면 해당 PR 안에서 **rebase·충돌 해소 → lint 원인 보정 → 커밋 →
+필수 검증 → 최신 head CI 확인** 순서로 처리한다. lint 실패가 있는 PR의 최우선 순위는 유지한다.
+
+### 3. 기존 PR 갱신과 새 PR 재개 조건
+
+1. 대상 branch/worktree의 소유·실행 중 작업·미커밋 변경을 확인한다. 다른 세션이 사용 중이면
+   임의로 rebase·reset·force-push하지 않고 조율한다. 다른 작업의 변경과 산출물은 보존한다.
+2. rebase 전 최신 원격 head SHA를 기록하고 `git fetch upstream devel`로 기준을 갱신해 SHA를
+   고정한다. 실제 PR의 head repository·branch를 확인한 뒤 최신 `upstream/devel`로 rebase한다.
+3. 충돌 해소는 `git rebase --continue`로 기존 커밋에 반영하고, 추가 보정은 별도 커밋으로 남긴다.
+   빈 커밋으로 CI만 다시 유발하지 않는다.
+   [리베이스 후 기능 보존](../pr_review/local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)에 따라
+   현재 수정과 새 base에서 반영한 기존 기능을 함께 검증한다.
+4. 승인된 원격 갱신은 **기존 PR의 같은 head branch**에 push한다. 이력 재작성은 확인한 원격
+   SHA를 지정한 `--force-with-lease`로 보호한다. 원격이 전진했으면 다른 변경부터 확인한다.
+   변경 전후 head·base SHA, 보정 범위, 로컬 검증과 CI 결과를 기존 PR 설명 또는 작업 기록에 남긴다.
+5. 예외를 제외한 기존 PR의 lint·필수 CI 실패와 충돌이 해소됐는지 다시 조회한 뒤 신규 PR을
+   생성한다. 이전 head의 성공을 새 head의 성공으로 표시하지 않는다. 선행 처리가 막혔으면
+   사유를 보고하고 신규 PR 생성을 보류한다. 작업지시자가 순서를 명시적으로 바꾼 경우에는
+   그 지시와 남은 PR 상태를 기록하고 진행한다.
+
+이 규칙은 작업 우선순위이며 push·PR 생성·merge의 승인을 새로 부여하지 않는다. 이미 승인된
+범위는 반복 확인하지 않고, 승인되지 않은 원격 작업은 작업지시자 승인을 받은 뒤 진행한다.
+기존 PR의 실제 merge에도 별도의 merge 승인과 해당 절차를 적용한다.
 
 ## Internal Task PR Approval
 

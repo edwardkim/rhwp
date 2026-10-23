@@ -30,6 +30,12 @@
 
 ## PR 제출 전 검증과 Draft 제한
 
+새 PR 준비·생성 전에는 본인 계정의 열린 PR을 조회한다. **이미 리뷰어가 지정된 PR은 우선
+처리 대상에서 제외**하고 임의로 갱신하지 않는다. 나머지 기존 PR의 lint 실패부터 해결한다.
+충돌·base 문제는 최신 `upstream/devel`로 rebase한 뒤 보정·커밋·재검증하고, 같은 PR의 최신
+head CI와 충돌 해소를 확인한 뒤 신규 PR을 진행한다. 메인터너 보정 요청과 원격 승인 등은
+[새 PR 생성 전에 확인할 항목](mydocs/manual/codex/docs_and_git_workflow.md#새-pr-생성-전에-확인할-항목)을 따른다.
+
 기여자·메인터너·콜라보레이터 모두 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)
 4.3과 해당 보조 절차의 필수 검증을 빠짐없이 완료한 뒤 일반 Open PR을 제출한다. 실패·미실행을
 PR CI나 Draft로 우회하지 않는다. Draft는 특별한 조기 논의·WIP 목적을 작업지시자가 명시적으로
