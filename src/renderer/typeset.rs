@@ -306,6 +306,8 @@ struct HostSpacing {
     /// 단 상단에서 열 때의 `before` — 문단 앞 간격 없이 바깥 위 여백만. 앞 쪽에서 포맷한
     /// 표를 이월해 새 단 첫머리에 놓으면 이 값을 쓴다.
     column_top_before: f64,
+    /// `after` 에 든 host 문단 줄간격(표-표 스택 간격, #1133).
+    host_line_spacing: f64,
     /// spacing_after만 (마지막 fragment용 — Paginator와 동일)
     spacing_after_only: f64,
     /// 재조판한 흐름 개체의 마지막 조각 뒤에서 닫을 아래 바깥여백.

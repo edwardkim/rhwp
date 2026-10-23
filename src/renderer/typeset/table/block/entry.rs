@@ -1410,6 +1410,16 @@ impl TypesetEngine {
                 table_total = table_total.max(declared_total);
             }
         }
+        // [#8149] host 문단 앞 간격은 표를 실제로 여는 자리에서 정한다. 앞 쪽에서 포맷한 표를
+        // 선언 높이 이월 등으로 새 단 첫머리에 두면 앞 간격 없이 바깥 위 여백만 쓴다 —
+        // 한글문서파일형식 47쪽 표 297(앞 간격 6.7px 만큼 표와 뒤 표들이 내려갔다).
+        let host_spacing_before = if st.flow_table_column_top() {
+            ft.host_spacing
+                .before
+                .min(ft.host_spacing.column_top_before)
+        } else {
+            ft.host_spacing.before
+        };
 
         let mut original_control_frame = self.query_original_control_table_frame(
             st,
@@ -1616,7 +1626,7 @@ impl TypesetEngine {
             st,
             para,
             table,
-            ft.host_spacing.before,
+            host_spacing_before,
             ft.effective_height,
         );
         let consumed_whole_anchor = self.query_stored_whole_flow_anchor(
@@ -2012,7 +2022,7 @@ impl TypesetEngine {
             )
             .then(|| {
                 let table_top = st.current_height
-                    + ft.host_spacing.before
+                    + host_spacing_before
                     + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), self.dpi);
                 crate::renderer::float_placement::ParagraphFloatPlacement {
                     flow: crate::renderer::float_placement::ParagraphFloatFlow::EmptyHost,
@@ -2040,7 +2050,7 @@ impl TypesetEngine {
                     0.0
                 },
                 ft.effective_height,
-                ft.host_spacing.before,
+                host_spacing_before,
                 ft.host_spacing.after,
                 self.dpi,
             )
@@ -2080,7 +2090,7 @@ impl TypesetEngine {
             st,
             para,
             table,
-            ft.host_spacing.before,
+            host_spacing_before,
             ft.effective_height,
             resolved_host_placement,
         );
@@ -2180,7 +2190,20 @@ impl TypesetEngine {
                         }),
                         applied_spacing_before,
                         ft.effective_height,
-                        ft.host_spacing.after - ft.host_spacing.spacing_after_only,
+                        // [#8149] 글 없이 표 하나만 든 host 의 줄간격은 저장 상자에 들지 않는다.
+                        // 저장 사다리가 다음 빈 host 표의 줄을 `표 + 캡션 + 바깥 아래 여백` 바닥에
+                        // 둔다(한글문서파일형식 33쪽 표 202→203: 다음 줄 vpos 45542 = 상자 바닥,
+                        // host 줄간격 600HU 를 더하면 표 203 이 8.0px 내려간다). 저장 사다리 경로
+                        // (`from_stored_ladder`, 52쪽 표 335~337)도 같은 상자를 쓴다.
+                        ft.host_spacing.after
+                            - ft.host_spacing.spacing_after_only
+                            - if crate::renderer::float_placement::textless_single_float_host(
+                                para, table,
+                            ) {
+                                ft.host_spacing.host_line_spacing
+                            } else {
+                                0.0
+                            },
                         self.dpi,
                     )
                 })
