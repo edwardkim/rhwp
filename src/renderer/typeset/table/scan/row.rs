@@ -306,3 +306,25 @@ fn row_content_is_line_units_only(table: &crate::model::table::Table, row: usize
             )
         })
 }
+
+/// 이 행이 병합 칸의 경계를 갖는다 — 병합 칸이 이 행에서 시작하거나 끝난다. 그런 칸은
+/// 남은 내용을 다음 쪽에서 같은 행의 컷으로 이어야 하므로(한/글도 그 띠를 다음 쪽
+/// 첫머리에 잇는다) 기존 밴드 규칙을 쓴다. 앞 행의 병합 칸 안쪽에만 있는 행이
+/// «남은 높이로 끝내기» 규칙의 대상이다.
+pub(in crate::renderer::typeset) fn row_bounds_a_rowspan(
+    table: &crate::model::table::Table,
+    r: usize,
+) -> bool {
+    table.cells.iter().any(|cell| {
+        let first = cell.row as usize;
+        let last = first + cell.row_span.max(1) as usize - 1;
+        cell.row_span > 1 && (first == r || last == r)
+    })
+}
+
+/// 내용 상자 높이가 남은 높이를 넘지 않는다. 픽셀 미만 허용치는 없다 — 한/글은
+/// 0.04px 넘치는 행도 다음 쪽으로 넘긴다(`samples/table_scattered_header_rowbreak.hwp`
+/// 2쪽 끝 행 61). 부동소수 오차만 받는다.
+pub(in crate::renderer::typeset) fn row_box_fits(height: f64, rest: f64) -> bool {
+    height <= rest + 1e-6
+}
