@@ -1,0 +1,269 @@
+{
+  "parentHead": "c33e8435365395ac72f04400fbb878543b34ba4d",
+  "sourcePatchSha256": "6d5475e2061ed9bfd6018cfea05cea797706b01bc979b50178c777e0478581ea",
+  "sourceFiles": {
+    "rhwp-studio/src/view/canvaskit-renderer.ts": "a7eb2cd4cb0f224c82a2dda51337d29f0b6e21466425fa399bce008a82b2d66a",
+    "rhwp-studio/tests/render-backend.test.ts": "295f71367d1234dc832622afa54ff9e3fa01ed71ac4249e77d3319d8891fb3b4"
+  },
+  "frozenWasmProducer": "fb258e6a6d97e001b180c93e005139e73df6e85e",
+  "frozenWasmSha256": "5f254d76307ba9be5b10f5c81af29c940a51c3ad5523218b6fb0c9169fc4bee1",
+  "frozenJsSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+  "observations": [
+    {
+      "sample": "low-slack-p001",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "pngSha256": "e4ec76d03355f224958512c77f79b8bfe87d4bf3ab94c197710f1f731abd071a",
+      "activeBackend": "canvaskit",
+      "replayItems": 195,
+      "directReplayRequired": true,
+      "hiddenCanvas2dOverlayAllowed": false,
+      "runtimeCompleted": true,
+      "runtimeError": null,
+      "readinessBlockers": [],
+      "responseHashes": [
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "sha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "matchesFrozenBuild": true
+        },
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "sha256": "5f254d76307ba9be5b10f5c81af29c940a51c3ad5523218b6fb0c9169fc4bee1",
+          "matchesFrozenBuild": true
+        }
+      ]
+    },
+    {
+      "sample": "low-slack-p001",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "pngSha256": "a84f6fb93fd22bc7b3151d362a492d4476dda6ee831c7ccb6b42db00f165a48d",
+      "activeBackend": "canvaskit",
+      "replayItems": 195,
+      "directReplayRequired": true,
+      "hiddenCanvas2dOverlayAllowed": false,
+      "runtimeCompleted": true,
+      "runtimeError": null,
+      "readinessBlockers": [],
+      "responseHashes": [
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "sha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "matchesFrozenBuild": true
+        },
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "sha256": "5f254d76307ba9be5b10f5c81af29c940a51c3ad5523218b6fb0c9169fc4bee1",
+          "matchesFrozenBuild": true
+        }
+      ]
+    },
+    {
+      "sample": "low-slack-p001",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "pngSha256": "af9200991c639e9209654397e3da5767a55a1de340932ff592aaf6ecbaa8097e",
+      "activeBackend": "canvaskit",
+      "replayItems": 195,
+      "directReplayRequired": true,
+      "hiddenCanvas2dOverlayAllowed": false,
+      "runtimeCompleted": true,
+      "runtimeError": null,
+      "readinessBlockers": [],
+      "responseHashes": [
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "sha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "matchesFrozenBuild": true
+        },
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "sha256": "5f254d76307ba9be5b10f5c81af29c940a51c3ad5523218b6fb0c9169fc4bee1",
+          "matchesFrozenBuild": true
+        }
+      ]
+    },
+    {
+      "sample": "low-slack-p001",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "pngSha256": "af9200991c639e9209654397e3da5767a55a1de340932ff592aaf6ecbaa8097e",
+      "activeBackend": "canvaskit",
+      "replayItems": 195,
+      "directReplayRequired": true,
+      "hiddenCanvas2dOverlayAllowed": false,
+      "runtimeCompleted": true,
+      "runtimeError": null,
+      "readinessBlockers": [],
+      "responseHashes": [
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "sha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "matchesFrozenBuild": true
+        },
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "sha256": "5f254d76307ba9be5b10f5c81af29c940a51c3ad5523218b6fb0c9169fc4bee1",
+          "matchesFrozenBuild": true
+        }
+      ]
+    },
+    {
+      "sample": "missing-lineseg1-p001",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "pngSha256": "0dd2fe6225898efd649c12d4195b4ec6229ac37e1f7e731088f5f00a65c6924f",
+      "activeBackend": "canvaskit",
+      "replayItems": 163,
+      "directReplayRequired": true,
+      "hiddenCanvas2dOverlayAllowed": false,
+      "runtimeCompleted": true,
+      "runtimeError": null,
+      "readinessBlockers": [],
+      "responseHashes": [
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "sha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "matchesFrozenBuild": true
+        },
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "sha256": "5f254d76307ba9be5b10f5c81af29c940a51c3ad5523218b6fb0c9169fc4bee1",
+          "matchesFrozenBuild": true
+        }
+      ]
+    },
+    {
+      "sample": "missing-lineseg1-p001",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "pngSha256": "0dd2fe6225898efd649c12d4195b4ec6229ac37e1f7e731088f5f00a65c6924f",
+      "activeBackend": "canvaskit",
+      "replayItems": 163,
+      "directReplayRequired": true,
+      "hiddenCanvas2dOverlayAllowed": false,
+      "runtimeCompleted": true,
+      "runtimeError": null,
+      "readinessBlockers": [],
+      "responseHashes": [
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "sha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "matchesFrozenBuild": true
+        },
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "sha256": "5f254d76307ba9be5b10f5c81af29c940a51c3ad5523218b6fb0c9169fc4bee1",
+          "matchesFrozenBuild": true
+        }
+      ]
+    },
+    {
+      "sample": "missing-lineseg1-p001",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "pngSha256": "61c9bea9e6f240507750dc1877beb1679928d301c017c7bce69a40145c63e892",
+      "activeBackend": "canvaskit",
+      "replayItems": 163,
+      "directReplayRequired": true,
+      "hiddenCanvas2dOverlayAllowed": false,
+      "runtimeCompleted": true,
+      "runtimeError": null,
+      "readinessBlockers": [],
+      "responseHashes": [
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "sha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "matchesFrozenBuild": true
+        },
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "sha256": "5f254d76307ba9be5b10f5c81af29c940a51c3ad5523218b6fb0c9169fc4bee1",
+          "matchesFrozenBuild": true
+        }
+      ]
+    },
+    {
+      "sample": "missing-lineseg1-p001",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "pngSha256": "61c9bea9e6f240507750dc1877beb1679928d301c017c7bce69a40145c63e892",
+      "activeBackend": "canvaskit",
+      "replayItems": 163,
+      "directReplayRequired": true,
+      "hiddenCanvas2dOverlayAllowed": false,
+      "runtimeCompleted": true,
+      "runtimeError": null,
+      "readinessBlockers": [],
+      "responseHashes": [
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "sha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "matchesFrozenBuild": true
+        },
+        {
+          "path": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "sha256": "5f254d76307ba9be5b10f5c81af29c940a51c3ad5523218b6fb0c9169fc4bee1",
+          "matchesFrozenBuild": true
+        }
+      ]
+    }
+  ],
+  "scope": "이미 지원하던 두 대조군 × 두 모드 × screen/print다. 중복 import만 복구했으며 fallback 또는 준비 guard를 우회하지 않았다. 캡처·runtime 증거이며 브랜치 전체 PR 수용을 뜻하지 않는다.",
+  "images": {
+    "low-slack-p001-actual-print-overlay.png": "61f90d4436c97db62fffc7042fda9eba512804ff5a405d7f5d9bbbea3c19be9f",
+    "missing-lineseg1-p001-actual-print-review.png": "dde4a40d54c9b08a26ac46fb80047e5ad797baeea09a1012493d344d8a333907",
+    "missing-lineseg1-p001-actual-print-overlay.png": "c6107f2b5034fd925f93d6cd5574172226b7dbe4152bca790da74ab436884c0e",
+    "low-slack-p001-actual-print-review.png": "e8e2aa5c7646c33b84b37ca3883775149049b319d6b61ca2fe31d7c0ded87d0e"
+  },
+  "fullPrAcceptance": false,
+  "directInspection": {
+    "controls": [
+      "low-slack-p001",
+      "missing-lineseg1-p001"
+    ],
+    "observations": 8,
+    "inspectedPrintPairs": 2,
+    "identicalPrintCompatDefaultPngs": true,
+    "uniqueScreenPairsRead": 3,
+    "screenReferenceProfile": "Screen과 Print PDF의 비교는 진단이며 같은 profile의 수치 통과로 사용하지 않는다.",
+    "findings": [
+      "두 모드의 제목·본문·붙임·서명·주소와 표 셀·별표 행이 보존됨",
+      "로고와 실제 글리프가 표시되고 비어 있는 그림·본문이 없음",
+      "낮은 잔여 공간과 저장 줄 결측 대조군의 원점·행·아래 경계가 보존됨",
+      "글자 농도·얇은 괘선과 편집 캐럿의 미세한 차이는 남음"
+    ],
+    "runtime": {
+      "requests": 8,
+      "fallback": 0,
+      "hiddenCanvas2dOverlayAllowed": false,
+      "directReplayRequired": true
+    },
+    "directInspectionComplete": true,
+    "fullPrAcceptance": false
+  },
+  "terminalExitCode": 0,
+  "cleanupQualification": "8건 캡처 후 Chrome은 종료됐으나 crash reporter·GoogleUpdater가 물려받은 stdout/stderr 때문에 정리만 대기했다. 종료된 Chrome의 소유 read pipe만 닫아 exit 0을 받았다. updater는 종료하지 않았고 캡처를 반복하지 않았다.",
+  "testFinalSourceSha256": "295f71367d1234dc832622afa54ff9e3fa01ed71ac4249e77d3319d8891fb3b4",
+  "sourceAndTestPatchSha256": "81004ec5fbe49e5cd142af9c6af75eac65ef6cba9d60deb61413a53fb07f921d",
+  "finalStudioTests": {
+    "total": 2408,
+    "passed": 2406,
+    "failed": 0,
+    "skipped": 2,
+    "seconds": 17.069138875,
+    "testFileSha256": "295f71367d1234dc832622afa54ff9e3fa01ed71ac4249e77d3319d8891fb3b4"
+  },
+  "typescriptExitCode": 0,
+  "extentContractPassed": true,
+  "negativeExtentDiagnostic": "과거 편집 종이 크기 소비로 되돌린 진단에서 기대 451×601, 실제 151×301로 실패했다. 원본 과거 빌드 실행이 아니라 명시적 진단 변형이다."
+}

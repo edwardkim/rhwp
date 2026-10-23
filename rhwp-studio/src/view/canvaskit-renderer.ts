@@ -131,7 +131,6 @@ import {
 import { getLocalFontRecords, loadLocalFontBytesFor, localFontFaceKey, resolveLocalFont, resolveRendererLocalFont,
   hasHostFontProvider, loadRendererLocalFont, getHostFontState, type LocalFontRecord } from '@/core/local-fonts';
 import { hostFontStyle } from '@/core/host-font-requests';
-import { parseCssFontFamilyList } from '@/core/font-substitution';
 import { canvasKitFontFaceData } from './canvaskit/sfnt-face';
 import { projectedSubstituteTargets } from '@/core/font-rule-runtime';
 import type { CanvasKitBundledFontSource } from '@/core/font-loader';
