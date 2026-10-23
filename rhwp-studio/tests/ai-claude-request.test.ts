@@ -188,3 +188,18 @@ test('스트림 실패는 갈래가 붙은 AiProviderError 로, 중단은 aborte
     (error) => error instanceof AiProviderError && error.reason === 'aborted',
   );
 });
+
+test('도구 결과 칸의 note 는 tool_result 뒤 text 블록으로 간다(없으면 붙이지 않는다)', () => {
+  const messages: AiMessage[] = [
+    { role: 'user', kind: 'text', text: '표 만들어 줘' },
+    { role: 'assistant', kind: 'raw', raw: assistantRaw },
+    { role: 'user', kind: 'tool_results', results: [{ id: 'tu_1', content: '{}', isError: false }], note: 'Reminder' },
+  ];
+  const body = buildClaudeRequest({ ...request(), messages }) as Record<string, any>;
+  assert.deepEqual(body.messages[2].content, [
+    { type: 'tool_result', tool_use_id: 'tu_1', content: '{}' },
+    { type: 'text', text: 'Reminder' },
+  ]);
+  const plain = buildClaudeRequest(request()) as Record<string, any>;
+  assert.ok(plain.messages[2].content.every((block: { type: string }) => block.type === 'tool_result'));
+});

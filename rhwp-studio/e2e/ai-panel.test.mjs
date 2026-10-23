@@ -6,7 +6,7 @@
  * 검증 항목:
  * 1. 질문 → 모델이 read_page_text 를 부름 → 결과(표 칸 글 포함, 문서 경계)를 보냄 → 답 표시
  *    - 첫 요청: 모델·도구 7개(strict)·시스템 규칙·서버 대체·스트리밍
- *    - 둘째 요청: 첫 응답을 그대로 되돌리고 도구 결과는 한 user 메시지
+ *    - 둘째 요청: 첫 응답을 그대로 되돌리고 도구 결과는 한 user 메시지(뒤에 응답 언어 상기)
  * 2. 답의 Markdown 은 정해진 요소로, HTML 은 글자로 보인다(<script> 요소 없음)
  * 3. 대화 전후 문서 바이트가 같다(P0 는 읽기 전용)
  * 4. 패널 입력란의 Ctrl+Z 는 문서 undo 로 새지 않는다
@@ -148,8 +148,10 @@ runTest('AI 대화 패널', async ({ page }) => {
     && second.body.messages[1].content.some((b) => b.type === 'tool_use' && b.id === 'toolu_e2e_1'),
   'TC1: 첫 응답(tool_use)을 그대로 되돌림');
   const toolResult = second.body.messages[2].content;
-  assert(toolResult.length === 1 && toolResult[0].type === 'tool_result' && toolResult[0].tool_use_id === 'toolu_e2e_1',
+  assert(toolResult.length === 2 && toolResult[0].type === 'tool_result' && toolResult[0].tool_use_id === 'toolu_e2e_1',
     'TC1: 도구 결과는 한 user 메시지');
+  assert(toolResult[1].type === 'text' && toolResult[1].text.includes('한국어'),
+    'TC1: 한국어 질문이면 결과 뒤에 응답 언어 상기');
   const resultText = toolResult[0].content;
   assert(/^<document_content id="[0-9a-f]{12}">/.test(resultText), 'TC1: 결과는 문서 경계로 감쌈');
   assert(JSON.parse(resultText.split('\n')[1]).text.includes('[table 1 / cell 0] OO교육대학교 OXX사업단 홈페이지 구축 사업'),

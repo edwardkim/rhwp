@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { INTERRUPTED_MARKERS, runAgent, type AgentLoopOptions } from '../src/ai/agent/agent-loop.ts';
+import { INTERRUPTED_MARKERS, replyLanguageNote, runAgent, type AgentLoopOptions } from '../src/ai/agent/agent-loop.ts';
 import { ChatSession } from '../src/ai/agent/chat-session.ts';
 import {
   AiProviderError,
@@ -91,6 +91,7 @@ test('도구 호출 → 모든 결과를 한 user 메시지로 돌려주고 답�
   assert.deepEqual(kinds, ['user:text', 'assistant:raw', 'user:tool_results', 'assistant:raw']);
   const results = session.messages[2] as Extract<AiMessage, { kind: 'tool_results' }>;
   assert.deepEqual(results.results.map((r) => [r.id, r.isError]), [['t1', false], ['t2', true]]);
+  assert.equal(results.note, replyLanguageNote('개요?'), '한국어 요청이면 결과 칸에 응답 언어를 상기한다');
   assert.equal(requests[1].system, 'SYSTEM');
   assert.equal(requests[1].model, 'claude-opus-5-5');
 });
@@ -245,4 +246,11 @@ test('쓰기 승인을 기다리는 동안 중단하면 남은 호출은 실행�
   const results = session.messages[2] as Extract<AiMessage, { kind: 'tool_results' }>;
   assert.deepEqual(results.results.map((r) => [r.id, r.isError]), [['w1', false], ['w2', true]]);
   assertAlternates(session.messages);
+});
+
+test('응답 언어 상기: 한글이 있는 요청에만 붙인다', () => {
+  assert.match(replyLanguageNote('주간 회의록 만들어 줘') ?? '', /한국어/);
+  assert.match(replyLanguageNote('make it 굵게') ?? '', /한국어/);
+  assert.equal(replyLanguageNote('Make a weekly meeting template.'), undefined);
+  assert.equal(replyLanguageNote(''), undefined);
 });
