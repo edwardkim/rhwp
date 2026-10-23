@@ -33,8 +33,8 @@ impl TypesetEngine {
                     .para_styles
                     .get(paragraph.para_shape_id as usize)?
                     .spacing_after;
-                ((bounds.flow_end - bounds.content_bottom - trailing - after).abs() < 1e-6)
-                    .then_some(bounds)
+                let tail = bounds.flow_end - bounds.content_bottom - after;
+                (tail.abs() < 1e-6 || (tail - trailing).abs() < 1e-6).then_some(bounds)
             })
             .flatten();
         st.flush_column();

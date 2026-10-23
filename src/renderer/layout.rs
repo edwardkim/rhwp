@@ -6669,7 +6669,7 @@ impl LayoutEngine {
                 0.0
             };
             // 수용 판정과 같은 저장 내용 하단일 때만 새 텍스트 영역과 겹치는 뒤 여백을 제외한다.
-            let closing_spacing_after = (blank_band_tail.is_none() && apply_trailing_ls_subtract)
+            let closing_content_bottom = (blank_band_tail.is_none() && apply_trailing_ls_subtract)
                 .then(|| {
                     let PageItem::FullParagraph { para_index } = col_content.items.last()? else {
                         return None;
@@ -6694,13 +6694,14 @@ impl LayoutEngine {
                         .para_styles
                         .get(paragraph.para_shape_id as usize)?
                         .spacing_after;
-                    ((y_offset - body_content_bottom - last_para_trailing_ls - after).abs() < 1e-6)
-                        .then_some(after)
+                    let tail = y_offset - body_content_bottom - after;
+                    (tail.abs() < 1e-6 || (tail - last_para_trailing_ls).abs() < 1e-6)
+                        .then_some(body_content_bottom)
                 })
-                .flatten()
-                .unwrap_or(0.0);
-            let y_offset_no_trailing =
-                (y_offset - last_para_trailing_ls - closing_spacing_after).max(0.0);
+                .flatten();
+            let y_offset_no_trailing = closing_content_bottom
+                .unwrap_or(y_offset - last_para_trailing_ls)
+                .max(0.0);
 
             if y_offset_no_trailing > prev_zone_y_end {
                 prev_zone_y_end = y_offset_no_trailing;
