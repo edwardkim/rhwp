@@ -607,11 +607,39 @@ impl TypesetEngine {
                 };
                 let last_range = rows.candidate(row_count - 1);
                 let last = rows.candidate(last_range.b_start);
-                let terminal_start = if last.protected || last.rowbreak_rowspan_block {
-                    last.b_start
-                } else {
-                    row_count - 1
-                };
+                // 아직 소비하지 않은 마지막 병합 블록과 종료 예산이 새 쪽에
+                // 함께 들어가면 한 행만 이월해 소유를 갈라 놓지 않는다.
+                // 새 쪽보다 큰 블록이나 이미 시작한 블록의 내부 컷은 유지한다.
+                let (terminal_note_content, terminal_note_count) = input
+                    .prepared
+                    .table_footnotes
+                    .iter()
+                    .filter(|note| note.row >= last.b_start)
+                    .fold((0.0, 0usize), |(height, count), note| {
+                        (height + note.content_height, count + 1)
+                    });
+                let terminal_note_reservation = st
+                    .projected_fresh_footnote_height(terminal_note_content, terminal_note_count)
+                    + if terminal_note_count > 0 {
+                        st.footnote_safety_margin
+                    } else {
+                        0.0
+                    };
+                let terminal_block_fits = last.block_size > 1
+                    && last.b_start >= cursor_row
+                    && rows.required_height(&last, &[])
+                        + header_overhead
+                        + closing_overhead
+                        + budget.caption_extra
+                        + budget.host_before_overhead
+                        + terminal_note_reservation
+                        <= st.base_available_height();
+                let terminal_start =
+                    if last.protected || last.rowbreak_rowspan_block || terminal_block_fits {
+                        last.b_start
+                    } else {
+                        row_count - 1
+                    };
                 if terminal_start <= cursor_row
                     && st.current_height > 0.0
                     && !st.current_items.is_empty()

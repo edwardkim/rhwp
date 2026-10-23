@@ -318,6 +318,8 @@ fn assert_terminal_caption_budget(
             paragraph.line_segs.clear();
             paragraph.invalidate_layout_inputs();
         }
+        // 셀 삭제·병합 뒤에는 실제 편집 경로처럼 주소 격자도 다시 구성한다.
+        table.rebuild_grid();
     }
     table.outer_margin_bottom = margin;
     table.caption.as_mut().expect("아래 캡션").spacing = gap;

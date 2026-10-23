@@ -84,7 +84,7 @@ impl LayoutEngine {
             .all(|cell| {
                 let first = usize::from(cell.row);
                 if first < first_row
-                    || !self.stored_plain_text_cell_frame(table, cell)
+                    || !self.stored_inline_content_cell_frame(table, cell)
                     || !crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs)
                 {
                     return false;
@@ -94,9 +94,14 @@ impl LayoutEngine {
                     + spacing * (row - first) as f64
                     + remaining;
                 !units.is_empty()
-                    && !units
-                        .iter()
-                        .any(|unit| unit.hard_break_before || unit.page_frame_reset_before)
+                    && !units.iter().any(|unit| {
+                        unit.hard_break_before
+                            || unit.page_frame_reset_before
+                            || unit.non_inline_control_range.is_some()
+                            || unit.nested_row.is_some()
+                            || unit.nested_table_fragment.is_some()
+                            || unit.mixed_nested_fragment
+                    })
                     && self.cell_cut_visible_height(cell, table, styles, 0, units.len()) <= physical
             })
     }

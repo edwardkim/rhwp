@@ -300,20 +300,43 @@ impl TypesetState {
         note_content_height: f64,
         note_count: usize,
     ) -> f64 {
+        self.projected_footnote_height_in_frame(note_content_height, note_count, false)
+    }
+
+    /// 새 쪽의 각주 영역에는 앞 쪽의 본문 각주와 구분선을 이어 붙이지 않는다.
+    pub(in crate::renderer::typeset) fn projected_fresh_footnote_height(
+        &self,
+        note_content_height: f64,
+        note_count: usize,
+    ) -> f64 {
+        self.projected_footnote_height_in_frame(note_content_height, note_count, true)
+    }
+
+    fn projected_footnote_height_in_frame(
+        &self,
+        note_content_height: f64,
+        note_count: usize,
+        fresh: bool,
+    ) -> f64 {
+        let current_height = if fresh {
+            0.0
+        } else {
+            self.data.current_footnote_height
+        };
         if note_count == 0 {
-            return self.data.current_footnote_height;
+            return current_height;
         }
-        let separator = if self.data.current_page_has_footnote_separator {
+        let separator = if !fresh && self.data.current_page_has_footnote_separator {
             0.0
         } else {
             self.data.footnote_separator_overhead
         };
-        let between_count = if self.data.is_first_footnote_on_page {
+        let between_count = if fresh || self.data.is_first_footnote_on_page {
             note_count.saturating_sub(1)
         } else {
             note_count
         };
-        self.data.current_footnote_height
+        current_height
             + separator
             + self.data.footnote_between_notes_margin * between_count as f64
             + note_content_height
