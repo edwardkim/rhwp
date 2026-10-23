@@ -1497,7 +1497,51 @@ impl LayoutEngine {
                     first <= cell_row && cell_row + usize::from(cell.row_span) <= end
                 })
             });
+            // 스캔과 행 배치가 인증한 일반 행의 독립 최소를 그대로 소비한다.
+            // 앞 조각에서 소비한 0 높이 행은 새 정렬 공간이 아니며, 실제 내용 컷이
+            // 끝나지 않았거나 뒤의 선 접기가 상자를 바꾸는 경우에는 인증하지 않는다.
+            let completed_block_frame_owns_alignment = split_start_block.is_some_and(|block| {
+                if !self.stored_plain_text_span_frame(table, cell)
+                    || fold_last_row.is_some_and(|row| cell_row <= row && row < cell_end_row)
+                {
+                    return false;
+                }
+                let units = self.cell_units(cell, table, styles);
+                let (start, end) = cell_cut_window(
+                    table,
+                    cell,
+                    start_cut_is_block,
+                    is_block_split,
+                    is_split_start_row,
+                    split_start_block,
+                    is_split_end_row,
+                    split_end_block,
+                    start_cut,
+                    end_cut,
+                    Some(units.len()),
+                    start_row,
+                    end_row.saturating_sub(1),
+                );
+                let end_units = if split_end_block == Some(block) {
+                    end_cut
+                } else {
+                    &[]
+                };
+                let mut rows = (cell_row.max(start_row)..cell_end_row.min(end_row))
+                    .filter(|&row| row_heights[row] > 0.0)
+                    .peekable();
+                start > 0
+                    && end >= units.len()
+                    && rows.peek().is_some()
+                    && rows.all(|row| {
+                        self.stored_complete_block_row_minimum(
+                            table, block, row, start_cut, end_units, styles,
+                        )
+                        .is_some_and(|minimum| row_heights[row] >= minimum)
+                    })
+            });
             let stored_span_frame_owns_alignment = accepted_block_frame_owns_alignment
+                || completed_block_frame_owns_alignment
                 || stored_restart_span_frame_owns_alignment
                 || is_rowbreak_straddle
                     && cell.row_span > 1

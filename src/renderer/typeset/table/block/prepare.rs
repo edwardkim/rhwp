@@ -368,7 +368,10 @@ impl TypesetEngine {
                 crate::model::table::TablePageBreak::RowBreak
             )
             && !ft.table_footnotes.is_empty()
-            && table.cells.iter().all(|cell| cell.row_span == 1)
+            // 병합 셀 각주의 마지막 조각 소유는 emit의 같은 큐가 판정한다.
+            // 여기서 병합 셀을 제외하면 그 경로에 도달하지 못하고 표 전체
+            // 각주를 첫 조각 예산에서 미리 예약하게 된다.
+            && table.cells.iter().all(|cell| cell.row_span >= 1)
             && ((row_count > 1
                 // 기존 page의 일반 각주는 유지한 채, 표 첫 행만은 실제로 시작할 수 있어야 한다.
                 && no_table_note_available >= st.current_height + cut_row_h[0] + 0.5)
@@ -387,9 +390,23 @@ impl TypesetEngine {
                     st.current_height,
                 );
             }
+            // 이미 이 쪽에 속한 저장 각주는 paint와 같은 선택 줄 상자로 예약한다.
+            // 뒤 표 각주의 큐를 여는 것과 현재 각주 영역의 높이는 별개 소유다.
+            let current_painted_note_height = (st.col_count == 1)
+                .then(|| {
+                    crate::renderer::typeset::notes::footnotes::measure::BodyFootnoteMeasure {
+                        engine: self,
+                        styles,
+                    }
+                    .stored_current_area_height(st, paragraphs_all)
+                })
+                .flatten();
+            if let Some(height) = current_painted_note_height {
+                st.reserve_painted_footnote_area(height);
+            }
             total_footnote = st.projected_footnote_height(0.0, 0);
             fn_margin = if total_footnote > 0.0 {
-                if next_starts_new_page {
+                if next_starts_new_page || current_painted_note_height.is_some() {
                     0.0
                 } else {
                     st.footnote_safety_margin

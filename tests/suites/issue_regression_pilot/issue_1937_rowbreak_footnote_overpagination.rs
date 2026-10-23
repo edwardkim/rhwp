@@ -165,3 +165,86 @@ fn rowbreak_footnote_table_does_not_over_paginate() {
         "마지막 본문 참조의 각주는 독립 Print43쪽에 수용됨"
     );
 }
+
+// #7445 보정67: 같은 원본 전50쪽 Native/fresh WASM raw90% 이상 및38쪽98% 이상,
+// 독립 Print의 review·overlay 직접 판독 뒤 추가한다. PDF의72dpi 괘선 좌표를96dpi로
+// 변환했다. 쪽·원본 표·셀 소속으로 선택하며 절대 영역을 이용해 대상을 찾지 않는다.
+struct NativeSpanPrintOutput(std::path::PathBuf);
+impl NativeSpanPrintOutput {
+    fn new() -> Self {
+        static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("output/pr-review/regression-temp");
+        std::fs::create_dir_all(&root).expect("ignored 회귀 출력 폴더");
+        let path = root.join(format!(
+            "rhwp-1937-print-span-{}-{}",
+            std::process::id(),
+            NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+        ));
+        std::fs::create_dir(&path).expect("이 검사 소유의 Native 출력 폴더");
+        Self(path)
+    }
+}
+impl Drop for NativeSpanPrintOutput {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
+}
+
+fn print_source_node<'a>(
+    node: &'a serde_json::Value,
+    predicate: &impl Fn(&serde_json::Value) -> bool,
+) -> Option<&'a serde_json::Value> {
+    if predicate(node) {
+        return Some(node);
+    }
+    node["children"]
+        .as_array()?
+        .iter()
+        .find_map(|child| print_source_node(child, predicate))
+}
+
+#[test]
+fn native_completed_span_tail_keeps_independent_print_borders() {
+    let binary = std::env::var("CARGO_BIN_EXE_rhwp")
+        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string());
+    let output = NativeSpanPrintOutput::new();
+    let source = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue1937_rowbreak_footnote_overpagination.hwp");
+    let result = std::process::Command::new(binary)
+        .arg("export-render-tree")
+        .arg(source)
+        .arg("-o")
+        .arg(&output.0)
+        .args(["-p", "37", "--compat", "2022"])
+        .output()
+        .expect("Native CLI의 최종 출력 실행");
+    assert!(result.status.success(), "Native 내보내기 실패: {result:?}");
+    let root: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(output.0.join("render_tree_038.json")).expect("독립 Print38쪽 대응 출력"),
+    )
+    .expect("Native RenderTree JSON");
+    let table = print_source_node(&root, &|node| node["type"] == "Table" && node["pi"] == 306)
+        .expect("원본 문단306의 표 소유");
+    let cell = print_source_node(table, &|node| {
+        node["type"] == "Cell" && node["row"] == 45 && node["col"] == 2
+    })
+    .expect("원본 병합 칸45:2의 이어받은 꼬리");
+    let b = &cell["bbox"];
+    let x = b["x"].as_f64().unwrap();
+    let y = b["y"].as_f64().unwrap();
+    let edges = [
+        x,
+        y,
+        x + b["w"].as_f64().unwrap(),
+        y + b["h"].as_f64().unwrap(),
+    ];
+    // 독립 issue1937_rowbreak_footnote_overpagination-2020.pdf38쪽의 괘선 교차점.
+    let expected = [323.825_338, 148.317_301, 395.786_662, 209.530_680];
+    for (actual, expected) in edges.into_iter().zip(expected) {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "완결 병합 꼬리의 독립 Print 괘선: {actual} vs {expected} CSS px"
+        );
+    }
+}

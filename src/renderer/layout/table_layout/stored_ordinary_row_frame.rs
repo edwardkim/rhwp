@@ -5,6 +5,72 @@ use crate::model::table::{Cell, Table};
 use crate::renderer::hwpunit_to_px;
 
 impl LayoutEngine {
+    /// 이어받은 병합 블록에서도 완전한 일반 칸의 선언 공간은 따로 남는다.
+    /// 같은 원본 행 사슬이 병합 상자를 닫고 이번 컷이 일반 칸 전체를 소유할 때만 인증한다.
+    pub(in crate::renderer::layout) fn stored_complete_block_row_minimum(
+        &self,
+        table: &Table,
+        block: (usize, usize),
+        row: usize,
+        start: &[usize],
+        end: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if start.is_empty() || !start.iter().any(|&unit| unit > 0) || !end.is_empty() {
+            return None;
+        }
+        let mut cells = Self::row_block_cells(table, block.0, block.1);
+        cells.sort_by_key(|cell| (cell.row, cell.col));
+        let mut minimum = 0.0_f64;
+        let mut owns_row = false;
+        for (index, cell) in cells
+            .iter()
+            .enumerate()
+            .filter(|(_, cell)| usize::from(cell.row) == row && cell.row_span == 1)
+        {
+            let units = self.cell_units(cell, table, styles);
+            if cell.height == 0
+                || cell.height > i32::MAX as u32
+                || !self.stored_plain_text_cell_frame(table, cell)
+                || !crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs)
+                || units.is_empty()
+                || start.get(index).copied().unwrap_or(0) != 0
+            {
+                return None;
+            }
+            let height = hwpunit_to_px(cell.height as i32, self.dpi);
+            let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
+            let content = self.cell_cut_visible_height(cell, table, styles, 0, units.len());
+            if content + top + bottom > height + hwpunit_to_px(2, self.dpi) {
+                return None;
+            }
+            minimum = minimum.max(height);
+            owns_row = true;
+        }
+        if !owns_row {
+            return None;
+        }
+        let raw = table.get_raw_row_heights();
+        let closed_chain = cells.iter().any(|cell| {
+            let first = usize::from(cell.row);
+            let limit = first + usize::from(cell.row_span);
+            cell.row_span > 1
+                && first <= row
+                && row < limit
+                && cell.height > 0
+                && cell.height <= i32::MAX as u32
+                && self.stored_plain_text_cell_frame(table, cell)
+                && raw.get(first..limit).is_some_and(|rows| {
+                    rows.iter()
+                        .all(|&height| height > 0 && height < 0x8000_0000)
+                        && rows.iter().map(|&height| i64::from(height)).sum::<i64>()
+                            + i64::from(table.cell_spacing) * (rows.len() - 1) as i64
+                            == i64::from(cell.height)
+                })
+        });
+        closed_chain.then_some(minimum)
+    }
+
     /// 원본 일반 칸의 선언 최소는 내용 컷과 별개의 물리 공간이다.
     /// 편집·재조판 또는 유효하지 않은 저장 줄은 같은 근거로 사용하지 않는다.
     fn stored_independent_row_minimum(

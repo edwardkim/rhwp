@@ -12783,6 +12783,13 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
         let (row, measured_height) = row_metric;
+        if let Some(minimum) =
+            self.stored_complete_block_row_minimum(table, block, row, start, end, styles)
+        {
+            let content = self
+                .row_block_cut_row_content_height(table, block.0, block.1, row, start, end, styles);
+            return Some(minimum.max(content));
+        }
         if !self.row_block_cut_uses_measured_height(table, block, row, start, end, styles) {
             return None;
         }
