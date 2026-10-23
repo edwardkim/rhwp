@@ -7,7 +7,7 @@ Issue: [#8174](https://github.com/edwardkim/rhwp/issues/8174)
 - 제품 base: `def947c2149df5bc812d801e6e79be19a403b4d1`. 원격 `devel`과 일치함을 확인했다.
 - 근거: [구조 재조사 A01–A07](../tech/investigations/issue-8174/README.md),
   [결정 대장·범위 v1](../plans/task_m100_8174_maintainer_decisions.md).
-- 상태: **로컬 기술 보완 범위 v1 완료. PR 제출 게이트와 실제 게시 준비 전체의 완료는 아니다.**
+- 상태: **로컬 기술 보완 범위 v1과 PR 제출 전 로컬 게이트 완료. 실제 게시 준비 전체의 완료는 아니다.**
 - 검증한 code head: `9df631769bd668d3e4b86f86d1359689a108759b` (`5cb42af13f`의 보완 구현과 Cargo include anchor 보정).
 
 ## 실행 순서와 완료 조건
@@ -150,5 +150,55 @@ baseline, 출력의 초기 상태와 기존 설치본을 확인하고 이전 결
 기존 lock의 `chacha20 0.10.1` yank 경고도 제거하지 않았다. source/파일 선별 개선을 미실행 감사나
 보안 보증의 대용으로 삼지 않는다.
 
-PR 준비 지시를 받으면 local_validation 4.3의 workspace/all-target lint·전체 회귀와 영향 범위의
-필수 게이트를 완료한다. 이번 focused·registry 검증을 PR 제출 게이트 전체의 완료로 기록하지 않는다.
+## PR 제출 전 로컬 검증 — 2026-10-23
+
+사용자의 「PR 준비 하세요」 지시에 따라 local_validation 4.3의 필수 검증을 실행했다.
+기본 경로는 `collaborator_self_merge`, 보조 경로는 `intake_and_review`, `local_validation`과
+입력 보존을 위한 `visual_fixture_evidence`다. 현재 계정 `edwardkim`의 열린 PR은 없었고,
+fetch한 `upstream/devel`은 기존 base `def947c2149df5bc812d801e6e79be19a403b4d1`과 같았다.
+이번 준비에서 rebase로 추가 반영한 PR은 없다.
+
+별도 review worktree의 검증 head는 `b1a5695479d61322c1b61cc771cfbc2c2b375cb3`다.
+앞서 포장·소비한 code head `9df631769bd668d3e4b86f86d1359689a108759b`와 제품·패키지
+입력의 Git blob 목록이 같음을 확인했다. Cargo는 모두 공용 `target/pr-review`를 사용했고,
+jobs 8과 전체 회귀 test threads 8을 선택했다. 명령·시간·종료 코드는 ignored
+`output/pr-review/issue8174/pr-preparation/*.command.json`과 로그에 남겼다.
+
+| 필수 검사 | 실제 결과 |
+| --- | --- |
+| review 전용 suite 준비·base 비교 | `--prepare`, `--check --base-ref def947c2149df5bc812d801e6e79be19a403b4d1` 통과 |
+| Format | `cargo fmt --all`, `cargo fmt --all -- --check` 통과 |
+| Native Clippy | `cargo clippy --locked -- -D warnings` 통과 |
+| WASM Clippy | `cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings` 통과 |
+| workspace build | `cargo build --locked --workspace` 통과 |
+| workspace all-target Clippy | `cargo clippy --locked --workspace --all-targets -- -D warnings` 통과 |
+| 신규 오류 회귀 | `node scripts/run-rust-test.mjs issue_8174_rust_error_consumer -- --cargo-profile release-test`의 실제 suite 실행에서 1/1 통과 |
+| release-test 전체 | `cargo nextest run --locked --cargo-profile release-test --tests --test-threads 8 --no-fail-fast`: 55개 binary, 11,363/11,363 통과·45개 기존 제외·실패 0. 컴파일 5분 43초, 테스트 669.611초 |
+
+조판 규칙·측정·배치·paint·WASM 출력 동작을 수정하지 않아 Native Skia 3종·fresh WASM
+Canvas·Visual Sweep은 이번 변경의 필수 범위에 해당하지 않는다. 위의 source 동일성,
+SVG formatting 대조와 포장 CLI의 실제 소비 증거를 적용 근거로 삼으며 한컴 충실도 개선을
+주장하지 않는다. 기존 렌더링 회귀·golden·허용치를 변경하지 않았다.
+
+### 재현 입력의 보존과 실제 대조
+
+CLI 비교에서 사용한 합성 자료를 [정식 fixture](../../tests/fixtures/issue8174/README.md)와
+[PDF 입력](../../pdf/issue8174/package-input.pdf)에 보존했다. 암호 HWPX는 같은 공개 빈 문서에
+공개 테스트용 암호를 설정해 다시 생성했다. PDF는 기존 CLI가 만든 입력이며 Producer는 `rhwp`다.
+각 파일의 출처·생성 방식·SHA-256은 fixture README에 기록했다.
+같은 cwd에서 base와 registry 설치본의 SVG PDF를 다시 생성했고, 두 출력과 보존한 PDF의
+바이트가 일치했다. 정확한 생성 인자·cwd·해시는 `pdf-output-parity.json`에 남겼다.
+
+이 정식 경로의 같은 입력으로 기존 CLI와 포장한 registry 설치본을 다시 실행했다.
+텍스트 17개와 PDF 입력 1개, 총 **18개 사례의 exit/stdout/stderr가 일치**했다.
+`cli-parity-final.json`에 실제 인자·입력 해시·두 실행 파일 해시를 남겼다. 이전 output 경로의
+합성 자료를 최종 재현 경로로 쓰지 않는다. 새 입력은 CLI의 구조·오류 계약 자료이며 렌더링
+회귀나 독립 한컴 Print PDF의 역할을 부여하지 않는다.
+
+기존 source 사전 검사 18/18·generator 5/5·suite policy 23/23은 같은 source에서 통과한
+결과를 재사용했다. 변경 Markdown의 상대 링크와 장기 문서 6개의 메타데이터도 확인했다.
+PR 본문·명령 초안은 ignored `output/pr-review/issue8174/pr-preparation/`에 작성했다.
+원격 push·PR 생성은 별도 승인 단계이며 이번 준비에서는 실행하지 않았다.
+
+검증 전용 worktree의 tracked 변경이 없음을 확인한 뒤 제거해 약 6.4 GiB를 회수했다.
+현재 등록된 worktree는 기본 작업공간 하나이며 공용 target·검증 로그는 보존했다.
