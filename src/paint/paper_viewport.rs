@@ -7,6 +7,18 @@ use crate::paint::{
 };
 use crate::renderer::image_resolver::detect_image_mime_type;
 use crate::renderer::render_tree::{BoundingBox, ImageNode, RectangleNode, RenderNode};
+use crate::renderer::{hwpunit_to_px, DEFAULT_DPI, HWPUNIT_PER_INCH};
+
+/// 원래 정수 HU를 정확히 재현하는 px만 정수 단위로 되돌린다.
+/// 역변환 오차로 반 장치 픽셀의 위/아래가 바뀌지 않게 하며 연속 좌표는 보존한다.
+fn source_device_coordinate(px: f64, pixel: f64) -> f64 {
+    let hu = (px * HWPUNIT_PER_INCH / DEFAULT_DPI).round() as i32;
+    if hwpunit_to_px(hu, DEFAULT_DPI).to_bits() == px.to_bits() {
+        f64::from(hu) / (pixel * HWPUNIT_PER_INCH / DEFAULT_DPI)
+    } else {
+        px / pixel
+    }
+}
 
 #[derive(Clone, Copy)]
 pub(crate) struct PagePaintContext {
