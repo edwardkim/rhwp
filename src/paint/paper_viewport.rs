@@ -597,4 +597,56 @@ impl PagePaintContext {
             (bbox.height * device_per_css).round() * sy,
         )
     }
+
+    /// 영역 맞춤 배경의 재생 그림과 원래 채움 clip을 함께 확정한다.
+    pub(super) fn bitmap_fill_frame(
+        self,
+        node: &RenderNode,
+        image: &ImageNode,
+        device_pixel: Option<f64>,
+    ) -> Option<super::bitmap_fill_frame::BitmapFillFrame> {
+        use crate::model::style::ImageFillMode;
+        use crate::renderer::image_header::{
+            canvaskit_encoded_image_header, CanvasKitEncodedImageFormat,
+        };
+        let pixel = device_pixel.filter(|p| p.is_finite() && *p > 0.0)?;
+        if !self.print
+            || !self.axis_aligned_graphics
+            || image.transform.has_transform()
+            || image.crop.is_some()
+            || image.content_inset.is_some()
+            || !matches!(
+                image.fill_mode,
+                Some(ImageFillMode::FitToSize | ImageFillMode::Total)
+            )
+        {
+            return None;
+        }
+        let header = canvaskit_encoded_image_header(image.data.as_deref()?)?;
+        if !header.is_within_decode_limits()
+            || !matches!(
+                header.format,
+                CanvasKitEncodedImageFormat::Bmp
+                    | CanvasKitEncodedImageFormat::Png
+                    | CanvasKitEncodedImageFormat::Jpeg
+            )
+        {
+            return None;
+        }
+        let bounds = node.bbox;
+        super::bitmap_fill_frame::map(
+            BoundingBox::new(
+                source_device_coordinate(bounds.x, pixel).round(),
+                source_device_coordinate(bounds.y, pixel).round(),
+                source_device_coordinate(bounds.width, pixel).round(),
+                source_device_coordinate(bounds.height, pixel).round(),
+            ),
+            (header.width, header.height),
+            (
+                (self.logical_size.0 / pixel).round(),
+                (self.logical_size.1 / pixel).round(),
+            ),
+            self.output_size,
+        )
+    }
 }

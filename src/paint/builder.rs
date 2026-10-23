@@ -327,6 +327,7 @@ impl LayerBuilder {
             }
         }
 
+        let mut image_fill_clip = None;
         let own_ops = match &node.node_type {
             RenderNodeType::PageBackground(background) => Some(vec![PaintOp::page_background(
                 node.bbox,
@@ -369,10 +370,18 @@ impl LayerBuilder {
                 let pixel = self
                     .metafile_device_pixel_width
                     .filter(|_| self.hancom2024_print_bitmap);
-                let mut frame = self
+                let fill = self
                     .page_context
-                    .map_or(node.bbox, |context| context.image_frame(node, image, pixel));
-                if !node.layer.as_ref().is_some_and(|layer| layer.master_page)
+                    .and_then(|context| context.bitmap_fill_frame(node, image, pixel));
+                let mut frame = if let Some(fill) = fill {
+                    image_fill_clip = Some(fill.clip);
+                    fill.image
+                } else {
+                    self.page_context
+                        .map_or(node.bbox, |context| context.image_frame(node, image, pixel))
+                };
+                if image_fill_clip.is_none()
+                    && !node.layer.as_ref().is_some_and(|layer| layer.master_page)
                     && (frame.x != node.bbox.x || frame.width != node.bbox.width)
                 {
                     self.image_frames.insert(node.id, frame);
@@ -491,7 +500,13 @@ impl LayerBuilder {
 
         if let Some(ops) = own_ops {
             let own_bounds = ops.first().map_or(node.bbox, PaintOp::bounds);
-            let own_leaf = LayerNode::leaf(own_bounds, Some(node.id), ops).with_layer(node.layer);
+            let mut own_leaf =
+                LayerNode::leaf(own_bounds, Some(node.id), ops).with_layer(node.layer);
+            if let Some(clip) = image_fill_clip {
+                own_leaf =
+                    LayerNode::clip_rect(clip, Some(node.id), clip, own_leaf, ClipKind::Generic)
+                        .with_layer(node.layer);
+            }
             // 내부 문단이 없는 사각형도 원본 컨트롤 부호를 출력해야 한다.
             let has_source_marker = self.output_options.show_control_codes
                 && matches!(node.control_code, ControlCode::Rectangle(_));
