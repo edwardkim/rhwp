@@ -132,9 +132,12 @@ function toClaudeMessage(message: AiMessage): ClaudeMessageParam {
     case 'tool_results':
       return {
         role: 'user',
-        content: message.results.map((result) => (result.isError
-          ? { type: 'tool_result', tool_use_id: result.id, content: result.content, is_error: true }
-          : { type: 'tool_result', tool_use_id: result.id, content: result.content })),
+        content: [
+          ...message.results.map((result) => (result.isError
+            ? { type: 'tool_result', tool_use_id: result.id, content: result.content, is_error: true }
+            : { type: 'tool_result', tool_use_id: result.id, content: result.content })),
+          ...(message.note ? [{ type: 'text', text: message.note }] : []),
+        ],
       };
     case 'raw':
       return { role: 'assistant', content: message.raw as ClaudeBlock[] };

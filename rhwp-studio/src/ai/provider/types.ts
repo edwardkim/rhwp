@@ -83,7 +83,8 @@ export interface AiToolResult {
  * 대화 이력 한 칸 — 제공자 중립.
  *
  * - `user`/`text`: 사용자가 쓴 말
- * - `user`/`tool_results`: 직전 assistant 의 도구 호출 결과 전부(한 메시지에 모은다)
+ * - `user`/`tool_results`: 직전 assistant 의 도구 호출 결과 전부(한 메시지에 모은다).
+ *   `note` 는 결과 뒤에 붙는 짧은 안내다(응답 언어 상기).
  * - `assistant`/`raw`: 제공자 응답 원형. 다음 요청에 **고치지 않고** 그대로 되돌린다
  *   (thinking 블록이 대화에 묶여 있어 고치면 거절된다).
  * - `assistant`/`text`: 중단·거절·오류로 끝난 회차 자리에 넣는 짧은 표시. 이력의 user/assistant
@@ -91,7 +92,7 @@ export interface AiToolResult {
  */
 export type AiMessage =
   | { role: 'user'; kind: 'text'; text: string }
-  | { role: 'user'; kind: 'tool_results'; results: readonly AiToolResult[] }
+  | { role: 'user'; kind: 'tool_results'; results: readonly AiToolResult[]; note?: string }
   | { role: 'assistant'; kind: 'raw'; raw: unknown }
   | { role: 'assistant'; kind: 'text'; text: string };
 

@@ -69,6 +69,18 @@ export interface AgentLoopOptions {
   maxToolRounds?: number;
 }
 
+/**
+ * 도구 결과 뒤에 붙일 응답 언어 상기. 결과는 영어 JSON 이라 여러 회차를 지나면 모델이 도구 사이
+ * 메모를 영어로 쓴다(실측: 한국어 요청에 「Now formatting: title and headers.」). 시스템 프롬프트는
+ * 캐시 때문에 바꿀 수 없으니 새로 붙는 결과 칸에 싣는다. 상기 문구 자체도 한국어로 쓴다 — 영어 상기문은
+ * 실측 두 번 중 한 번 영어 메모가 남았다. 한글이 없으면 붙이지 않는다.
+ */
+export function replyLanguageNote(userText: string): string | undefined {
+  return /[\u1100-\u11ff\u3130-\u318f\uac00-\ud7a3]/.test(userText)
+    ? '(알림: 도구 사이에 쓰는 짧은 메모와 최종 답 모두 한국어로 쓰세요. 영어로 쓰지 마세요.)'
+    : undefined;
+}
+
 export async function runAgent(
   options: AgentLoopOptions,
   userText: string,
@@ -78,6 +90,7 @@ export async function runAgent(
   const { provider, session } = options;
   const maxRounds = options.maxToolRounds ?? MAX_TOOL_ROUNDS;
   const boundaryId = options.createBoundaryId();
+  const note = replyLanguageNote(userText);
   let usage = EMPTY_USAGE;
   let toolRounds = 0;
   let lastText = '';
@@ -164,6 +177,6 @@ export async function runAgent(
       callbacks.onToolEnd?.(call, result);
       results.push(result);
     }
-    session.append({ role: 'user', kind: 'tool_results', results });
+    session.append({ role: 'user', kind: 'tool_results', results, ...(note ? { note } : {}) });
   }
 }
