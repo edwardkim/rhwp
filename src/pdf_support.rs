@@ -10,11 +10,16 @@ pub struct PdfImportSupport {
     pub jpeg2000: bool,
 }
 
-/// Selected Cargo features; this does not promise support for every PDF input.
+/// Effective compiled support, including dependency feature unification.
+/// This does not promise support for every PDF input.
 pub const fn pdf_import_support() -> PdfImportSupport {
+    #[cfg(feature = "pdf-import")]
+    let (jbig2, jpeg2000) = pdf_oxide::image_codec_support();
+    #[cfg(not(feature = "pdf-import"))]
+    let (jbig2, jpeg2000) = (false, false);
     PdfImportSupport {
         enabled: cfg!(feature = "pdf-import"),
-        jbig2: cfg!(feature = "pdf-jbig2"),
-        jpeg2000: cfg!(feature = "pdf-jpeg2000"),
+        jbig2,
+        jpeg2000,
     }
 }

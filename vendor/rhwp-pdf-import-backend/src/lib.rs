@@ -169,6 +169,12 @@ pub(crate) mod cache;
 mod codec_resource;
 pub mod document;
 pub mod import_limits;
+
+/// Actual decoder features after Cargo dependency feature unification.
+/// The tuple is `(JBIG2, JPEG 2000)`; no document is opened.
+pub const fn image_codec_support() -> (bool, bool) {
+    (cfg!(feature = "jbig2"), cfg!(feature = "jpeg2000"))
+}
 pub mod lexer;
 pub mod object;
 mod object_copy;

@@ -392,3 +392,9 @@ and inline JPEGs consume this same decision. No default limit or bitmap geometry
   this request contract. This is not a total allocator/RSS/CPU-time guarantee.
   `parser_allocation_bounds_proven` stays false. Full Native/fresh WASM products,
   visual evidence, performance and user guides belong to #8183 stage 3.
+
+## #8183 compile-time support disclosure
+
+`image_codec_support()` exposes the actual compiled JBIG2/JPEG 2000 feature flags.
+The RHWP frontend uses this result so a consumer enabling a backend feature through
+another dependency is reflected after Cargo feature unification. This adds no decoding work.

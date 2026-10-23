@@ -69,6 +69,7 @@ let saved = rhwp::serializer::serialize_hwpx(&result.document)?;
 JPEG 2000은 `pdf-jpeg2000`, 양쪽은 두 feature를 함께 지정합니다. 각 코덱은 `pdf-import`도
 포함합니다. JS facade·자동 start는 `wasm-api`를 따로 선택한 경우에만 포함합니다.
 Cargo feature는 합쳐지므로 앱의 다른 의존성이 선택한 기능도 최종 산출물에 포함될 수 있습니다.
+지원 정보는 backend의 실제 합산된 feature를 읽으므로 이 경우도 반영합니다.
 registry 의존·설치는 해당 feature가 들어간 버전이 실제 게시된 뒤 그 버전을 지정합니다.
 
 ## WASM과 Studio
@@ -89,8 +90,10 @@ CARGO_TARGET_DIR="${rhwp_review_target_dir:?공용 target의 절대 경로를 �
 
 초기화한 실제 WASM의 `HwpDocument.getPdfImportSupport()`를 JSON으로 읽으면 문서를 열기 전에
 지원 코덱을 알 수 있습니다. `supportsPdfImport()`는 PDF 입력 자체의 활성 여부만 반환합니다.
-오래된 JS glue와 새로운 WASM을 섞지 않습니다. Worker의 입력 복사 전 정책 조회와
-취소·시간 초과 후 Worker 종료·재생성 계약도 그대로 적용됩니다.
+오래된 JS glue와 새로운 WASM을 섞지 않습니다. 직접 `HwpDocument.importPdf()`와 현재
+Studio의 문서 열기는 동기 호출입니다. UI에서 진행 중인 동기 WASM을 timer로 중단할 수 있다고
+가정하지 않습니다. 별도 Worker를 쓰는 호스트는 공통 `rhwp-shared/pdf/import-session.js`의
+입력 복사 전 정책 조회, 취소·시간 초과 후 Worker 종료·재생성 계약을 사용할 수 있습니다.
 
 ## 오류와 자원 한도
 
