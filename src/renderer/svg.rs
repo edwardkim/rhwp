@@ -2835,6 +2835,9 @@ impl SvgRenderer {
     fn render_form_object(&mut self, form: &FormObjectNode, bbox: &BoundingBox) {
         use super::form_appearance::{form_drawing, FormPrimitive};
         let drawing = form_drawing(form, *bbox);
+        // 컨트롤은 자기 영역 밖을 그리지 않는다. 폭보다 긴 캡션은 영역 경계에서 잘린다.
+        let clip_id = format!("form-clip-{}", self.next_clip_id());
+        self.begin_layer_clip(*bbox, &clip_id);
         for primitive in drawing.primitives {
             match primitive {
                 FormPrimitive::Rect { bbox: b, color } => self.output.push_str(&format!(
@@ -2862,6 +2865,7 @@ impl SvgRenderer {
                 escape_xml(&label.font_family), if label.bold { "bold" } else { "normal" },
                 if label.italic { "italic" } else { "normal" }, escape_xml(&label.text)));
         }
+        self.end_layer_clip();
     }
 
     fn place_debug_label(

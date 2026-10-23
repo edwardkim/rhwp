@@ -2121,6 +2121,10 @@ impl WebCanvasRenderer {
         use super::form_appearance::{form_drawing, FormPrimitive};
         let drawing = form_drawing(form, *bbox);
         self.ctx.save();
+        // 컨트롤은 자기 영역 밖을 그리지 않는다. 폭보다 긴 캡션은 영역 경계에서 잘린다.
+        self.ctx.begin_path();
+        self.ctx.rect(bbox.x, bbox.y, bbox.width, bbox.height);
+        self.ctx.clip();
         for primitive in drawing.primitives {
             match primitive {
                 FormPrimitive::Rect { bbox: b, color } => {

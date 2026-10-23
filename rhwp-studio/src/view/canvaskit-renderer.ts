@@ -4926,6 +4926,17 @@ export class CanvasKitLayerRenderer {
     const rejection = formDrawingReplayRejection(op);
     if (rejection) { this.unsupportedOps.add(`formObject:${rejection}`); return; }
     const drawing = op.drawing!;
+    // 컨트롤은 자기 영역 밖을 그리지 않는다. 폭보다 긴 캡션은 영역 경계에서 잘린다.
+    canvas.save();
+    canvas.clipRect(this.rect(op.bbox), this.canvasKit.ClipOp?.Intersect ?? 0, true);
+    try {
+      this.renderFormDrawing(canvas, drawing);
+    } finally {
+      canvas.restore();
+    }
+  }
+
+  private renderFormDrawing(canvas: SkCanvas, drawing: NonNullable<LayerFormObjectOp['drawing']>): void {
     for (const primitive of drawing.primitives) {
       const paint = primitive.kind === 'polyline' && !primitive.closed
         ? this.makeStrokePaint(primitive.color, primitive.width)
