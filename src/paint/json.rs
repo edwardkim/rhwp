@@ -1684,6 +1684,9 @@ fn write_group_kind(buf: &mut String, group_kind: &GroupKind) {
             if let Some(index) = cell.model_cell_index {
                 let _ = write!(buf, ",\"modelCellIndex\":{}", index);
             }
+            if let Some((start, end)) = cell.model_para_range {
+                let _ = write!(buf, ",\"modelParaRange\":[{start},{end}]");
+            }
             buf.push('}');
         }
         GroupKind::TextBox => buf.push_str("{\"kind\":\"textBox\"}"),

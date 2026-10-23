@@ -994,6 +994,7 @@ impl LayoutEngine {
                     clip: false,
                     page_fragment: false,
                     model_cell_index: Some(cell_enum_idx as u32),
+                    model_para_range: None,
                 }),
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
             );

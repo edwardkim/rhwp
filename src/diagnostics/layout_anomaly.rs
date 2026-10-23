@@ -2131,6 +2131,7 @@ mod tests {
                 clip: false,
                 page_fragment: false,
                 model_cell_index: None,
+                model_para_range: None,
             }),
             BoundingBox::new(0.0, 0.0, 30.0, 10.0),
         );

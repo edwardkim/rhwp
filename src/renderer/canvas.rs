@@ -686,6 +686,7 @@ mod tests {
                 clip: true,
                 page_fragment: false,
                 model_cell_index: Some(0),
+                model_para_range: None,
             }),
             BoundingBox::new(80.0, 100.0, 160.0, 60.0),
         );
