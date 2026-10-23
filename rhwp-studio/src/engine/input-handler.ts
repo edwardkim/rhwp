@@ -707,6 +707,7 @@ export class InputHandler {
       } else {
         // 비동기 시작 시의 선택을 보관하지 않는다. 그동안 변경·해제된 선택도 반영하며
         // anchor/focus와 사용자가 스크롤한 위치는 바꾸지 않는다.
+        this.caret.updatePosition(this.viewportManager.getZoom());
         this.updateSelection();
       }
     });

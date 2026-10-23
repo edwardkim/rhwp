@@ -1,5 +1,14 @@
 /** #8103: 복원된 선택을 확정된 쪽 배치에 투영한다. */
-import { runTest, createNewDocument, assert, screenshot, setTestCase } from './helpers.mjs';
+import { runTest, loadApp, createNewDocument, assert, screenshot, setTestCase } from './helpers.mjs';
+import { readFileSync } from 'node:fs';
+
+const requestedRenderer = process.argv.find(arg => arg.startsWith('--renderer='))?.split('=')[1];
+const renderers = requestedRenderer ? [requestedRenderer] : ['canvas2d', 'auto'];
+const fontCache = process.argv.find(arg => arg.startsWith('--font-cache='))?.slice('--font-cache='.length);
+const fontBytes = fontCache ? readFileSync(fontCache) : null;
+if (renderers.some(renderer => !['canvas2d', 'auto', 'canvaskit'].includes(renderer))) {
+  throw new Error(`지원하지 않는 renderer: ${requestedRenderer}`);
+}
 
 const frames = (page) => page.evaluate(() => new Promise(resolve =>
   requestAnimationFrame(() => requestAnimationFrame(resolve))));
@@ -13,6 +22,36 @@ async function key(page, name, modifier) {
 async function layout(page, count) {
   await page.waitForFunction(n => window.__selectionLayoutCount > n, { timeout: 30_000 }, count);
   await frames(page);
+}
+
+// 직전 mutation의 quiet 예약이 실제로 남은 순간 새 mutation의 metrics 준비를 지연한다.
+async function beginDelayedMutation(page) {
+  await page.evaluate(() => new Promise(resolve => {
+    const w = window.__wasm;
+    const off = window.__eventBus.on('document-layout-refreshed', ({ source }) => {
+      if (source !== 'mutation') return;
+      off();
+      const prepare = w.prepareCanvasMetrics.bind(w);
+      w.prepareCanvasMetrics = async (...args) => {
+        w.prepareCanvasMetrics = prepare;
+        window.__selectionGateFinished = false;
+        await new Promise(release => { window.__releaseSelectionLayout = release; });
+        try { return await prepare(...args); }
+        finally { window.__selectionGateFinished = true; }
+      };
+      window.__eventBus.emit('document-changed');
+      resolve();
+    });
+    window.__eventBus.emit('document-changed');
+  }));
+}
+
+async function settleRenderer(page, renderer) {
+  if (renderer === 'auto') {
+    await page.waitForFunction(() => window.__rendererSelection?.selectionReason !== 'autoRevisionPending',
+      { timeout: 30_000 });
+    await frames(page);
+  }
 }
 
 async function state(page) {
@@ -35,8 +74,15 @@ async function state(page) {
       ih.virtualScroll.getPageOffset(r.pageIndex) + r.y * zoom,
       r.width * zoom, r.height * zoom,
     ]);
+    const caretRect = ih.cursor.getRect();
+    const caretElement = content.querySelector('.caret');
+    const caret = caretRect && caretElement ? {
+      actual: [parseFloat(caretElement.style.left), parseFloat(caretElement.style.top)],
+      projected: [ih.virtualScroll.getPageLeftResolved(caretRect.pageIndex, content.clientWidth) + caretRect.x * zoom,
+        ih.virtualScroll.getPageOffset(caretRect.pageIndex) + caretRect.y * zoom],
+    } : null;
     return {
-      selection, highlights, projected, owners: rects.map(r => r.pageIndex),
+      selection, highlights, projected, caret, owners: rects.map(r => r.pageIndex),
       pages: window.__wasm.pageCount, virtualPages: ih.virtualScroll.pageCount,
       paragraphs: window.__wasm.getParagraphCount(0),
       texts: Array.from({ length: window.__wasm.getParagraphCount(0) }, (_, p) =>
@@ -54,6 +100,7 @@ const near = (a, b) => a.length === b.length && a.every((r, i) =>
 function checkProjection(s, label) {
   assert(s.pages === s.virtualPages, `${label}: 엔진과 VirtualScroll 쪽 수 일치`);
   assert(near(s.highlights, s.projected), `${label}: 모든 음영이 확정 쪽 원점에 투영`);
+  assert(s.caret && near([s.caret.actual], [s.caret.projected]), `${label}: focus 캐럿도 확정 쪽 원점에 투영`);
   for (const owner of [0, Math.floor(s.pages / 2), s.pages - 1]) {
     const indexes = s.owners.flatMap((p, i) => p === owner ? [i] : []);
     assert(indexes.length > 0 && indexes.every(i => s.highlights[i]
@@ -61,9 +108,27 @@ function checkProjection(s, label) {
   }
 }
 
-await runTest('선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencing', async ({ page }) => {
+for (const renderer of renderers) {
+await runTest(`선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencing (${renderer})`, async ({ page }) => {
   const errors = [];
+  let suppliedFonts = 0;
   page.on('pageerror', error => errors.push(String(error)));
+  if (fontBytes) {
+    // TLS 검증으로 내려받은 원본 CDN 바이트를 공급한다. renderer·metrics·선택 rect는 대역하지 않는다.
+    await page.setRequestInterception(true);
+    page.on('request', request => {
+      if (request.url() === 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff') {
+        suppliedFonts++;
+        void request.respond({ status: 200, contentType: 'font/woff',
+          headers: { 'access-control-allow-origin': '*' }, body: fontBytes });
+      } else {
+        void request.continue();
+      }
+    });
+  }
+  await loadApp(page, `?renderer=${renderer}&canvaskitSurface=software`);
+  assert(await page.evaluate(expected => window.__renderBackendRequest.backend === expected, renderer),
+    `${renderer}: 실제 요청 경로 확인`);
   await page.evaluate(() => {
     document.querySelector('.skin-onboarding-card')?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
     [...document.querySelectorAll('button.dialog-btn-primary')].find(el => el.offsetParent !== null)?.click();
@@ -73,7 +138,9 @@ await runTest('선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
   await createNewDocument(page);
   await page.evaluate(() => {
     window.__selectionLayoutCount = 0;
-    window.__eventBus.on('document-layout-refreshed', () => window.__selectionLayoutCount++);
+    window.__eventBus.on('document-layout-refreshed', ({ source }) => {
+      if (source === 'mutation') window.__selectionLayoutCount++;
+    });
     window.__eventBus.emit('page-view-settings-changed', {
       arrangement: { kind: 'single' }, pageMovement: { direction: 'vertical', wheelHorizontal: false },
     });
@@ -89,6 +156,10 @@ await runTest('선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
   await key(page, 'Home', modifier);
   await key(page, 'a', modifier);
   const original = await state(page);
+  if (renderer === 'canvaskit') {
+    assert(await page.evaluate(() => window.__canvasView.getRenderBackend() === 'canvaskit'),
+      '준비된 문서의 CanvasKit 검사를 Canvas2D fallback으로 대체하지 않음');
+  }
   assert(original.paragraphs === 400 && original.pages > 2, '400문단 여러 쪽 fixture');
   const expectedTexts = original.texts;
 
@@ -109,6 +180,8 @@ await runTest('선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
       mismatchedHighlights: restored.projected.filter((r, i) =>
         !restored.highlights[i] || !near([r], [restored.highlights[i]])).length }));
     checkProjection(restored, `${zoom} Undo`);
+    await settleRenderer(page, renderer);
+    checkProjection(await state(page), `${zoom} settled renderer`);
     assert(same(restored.texts, expectedTexts), 'Undo: 원문 400문단 순서·내용 보존');
     assert(same(restored.selection, before.selection), 'Undo: anchor/focus 보존');
 
@@ -121,7 +194,7 @@ await runTest('선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
       const scrolled = await state(page);
       checkProjection(scrolled, `${zoom} scroll p${owner + 1}`);
       assert(same(scrolled.selection, restored.selection), '스크롤: anchor/focus 유지');
-      await screenshot(page, `issue8103-zoom${zoom}-page${owner + 1}`);
+      await screenshot(page, `issue8103-${renderer}-zoom${zoom}-page${owner + 1}`);
     }
     const scrolled = await state(page);
     await key(page, 'a', modifier);
@@ -162,18 +235,70 @@ await runTest('선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
     checkProjection(recovered, `${zoom} Backspace Undo`);
   }
 
-  setTestCase('pending-layout-new-selection');
+  setTestCase('arrangement-resize-smooth-zoom');
+  const beforeViewChange = await state(page);
   await page.evaluate(() => {
-    const w = window.__wasm;
-    const prepare = w.prepareCanvasMetrics.bind(w);
-    window.__releaseSelectionLayout = null;
-    w.prepareCanvasMetrics = async (...args) => {
-      w.prepareCanvasMetrics = prepare;
-      await new Promise(resolve => { window.__releaseSelectionLayout = resolve; });
-      return prepare(...args);
-    };
-    window.__eventBus.emit('document-changed');
+    window.__eventBus.emit('page-view-settings-changed', {
+      arrangement: { kind: 'double' }, pageMovement: { direction: 'vertical', wheelHorizontal: false },
+    });
+    window.__inputHandler.viewportManager.setZoom(0.66);
   });
+  await page.setViewport({ width: 1100, height: 900 });
+  await frames(page);
+  const arranged = await state(page);
+  checkProjection(arranged, '두 쪽 보기·viewport resize');
+  assert(same(arranged.selection, beforeViewChange.selection), '배치·resize 후 anchor/focus 유지');
+  await settleRenderer(page, renderer);
+  await page.evaluate(() => {
+    const ih = window.__inputHandler;
+    const initialSelection = JSON.stringify(ih.cursor.getSelection());
+    const probe = { samples: 0, coherent: true, preserved: true, maxDelta: 0 };
+    const off = window.__eventBus.on('zoom-changed', () => {
+      const selection = ih.cursor.getSelectionOrdered();
+      const rects = window.__wasm.getSelectionRects(selection.start.sectionIndex,
+        selection.start.paragraphIndex, selection.start.charOffset,
+        selection.end.paragraphIndex, selection.end.charOffset);
+      const content = document.getElementById('scroll-content');
+      const zoom = ih.viewportManager.getZoom();
+      const highlights = [...content.querySelectorAll('.selection-highlight')].filter(el => el.style.display !== 'none');
+      probe.samples++;
+      probe.coherent &&= rects.length === highlights.length;
+      for (let i = 0; i < rects.length; i++) {
+        const r = rects[i];
+        const expected = [ih.virtualScroll.getPageLeftResolved(r.pageIndex, content.clientWidth) + r.x * zoom,
+          ih.virtualScroll.getPageOffset(r.pageIndex) + r.y * zoom, r.width * zoom, r.height * zoom];
+        const actual = ['left', 'top', 'width', 'height'].map(k => parseFloat(highlights[i]?.style[k]));
+        const delta = Math.max(...actual.map((v, j) => Math.abs(v - expected[j])));
+        probe.coherent &&= Number.isFinite(delta) && delta < 0.02;
+        probe.maxDelta = Math.max(probe.maxDelta, delta);
+      }
+      probe.preserved &&= JSON.stringify(ih.cursor.getSelection()) === initialSelection;
+      document.getElementById('scroll-container').scrollBy(0, 15);
+    });
+    window.__finishSelectionZoomProbe = () => { off(); return probe; };
+    ih.viewportManager.setScrollTop(ih.virtualScroll.getPageOffset(3));
+    ih.viewportManager.smoothZoomTo(0.9);
+  });
+  let samples = 0;
+  let coherent = true;
+  let preserved = true;
+  for (let frame = 0; frame < 90; frame++) {
+    await frames(page);
+    const moving = await state(page);
+    samples++;
+    coherent &&= near(moving.highlights, moving.projected);
+    preserved &&= same(moving.selection, arranged.selection);
+    await page.evaluate(() => document.getElementById('scroll-container').scrollBy(0, 15));
+    if (!await page.evaluate(() => window.__inputHandler.viewportManager.isZoomAnimating())) break;
+  }
+  const zoomProbe = await page.evaluate(() => window.__finishSelectionZoomProbe());
+  console.log(JSON.stringify({ renderer, zoomProbe, nodeSamples: samples, nodeCoherent: coherent }));
+  assert(zoomProbe.samples > 1 && zoomProbe.coherent && coherent, '실제 smooth zoom·scroll 중 각 관측 프레임의 선택 좌표 일치');
+  assert(preserved && zoomProbe.preserved, 'smooth zoom·scroll 중 anchor/focus 유지');
+  assert(Math.abs((await state(page)).zoom - 0.9) < 0.001, 'smooth zoom이 요청 배율에 도달');
+
+  setTestCase('pending-layout-new-selection');
+  await beginDelayedMutation(page);
   const pending = await state(page);
   const newer = await page.evaluate(() => {
     const ih = window.__inputHandler;
@@ -187,6 +312,8 @@ await runTest('선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
   });
   await frames(page);
   const waiting = await state(page);
+  // 이전 quiet 타이머(300ms)가 발화할 시간을 실제 브라우저에서 지난다.
+  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 450)));
   await page.evaluate(() => window.__releaseSelectionLayout());
   await layout(page, pending.count);
   const settled = await state(page);
@@ -195,16 +322,7 @@ await runTest('선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
   assert(near(settled.highlights, settled.projected), '지연 완료는 현재 선택·배율로 재투영');
 
   setTestCase('pending-layout-cleared-selection');
-  await page.evaluate(() => {
-    const w = window.__wasm;
-    const prepare = w.prepareCanvasMetrics.bind(w);
-    w.prepareCanvasMetrics = async (...args) => {
-      w.prepareCanvasMetrics = prepare;
-      await new Promise(resolve => { window.__releaseSelectionLayout = resolve; });
-      return prepare(...args);
-    };
-    window.__eventBus.emit('document-changed');
-  });
+  await beginDelayedMutation(page);
   const clearing = await state(page);
   await page.evaluate(() => {
     const ih = window.__inputHandler;
@@ -215,7 +333,48 @@ await runTest('선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
   await layout(page, clearing.count);
   const cleared = await state(page);
   assert(cleared.selection === null && cleared.highlights.length === 0, '지연 완료가 해제된 선택을 되살리지 않음');
+
+  setTestCase('pending-layout-new-revision');
+  await page.evaluate(() => {
+    const ih = window.__inputHandler;
+    ih.cursor.selectRange({ sectionIndex: 0, paragraphIndex: 41, charOffset: 4 },
+      { sectionIndex: 0, paragraphIndex: 56, charOffset: 8 });
+    ih.updateCaret(true);
+  });
+  await beginDelayedMutation(page);
+  const obsolete = await state(page);
+  await page.evaluate(() => window.__eventBus.emit('document-changed'));
+  await layout(page, obsolete.count);
+  await settleRenderer(page, renderer);
+  const latest = await state(page);
+  await page.evaluate(() => window.__releaseSelectionLayout());
+  await page.waitForFunction(() => window.__selectionGateFinished);
+  await frames(page);
+  const afterObsolete = await state(page);
+  assert(afterObsolete.count === latest.count, '역순 완료: 이전 revision은 mutation 완료 이벤트를 발행하지 않음');
+  assert(latest.selection !== null && same(afterObsolete.selection, latest.selection) && near(afterObsolete.highlights, latest.highlights)
+    && same(afterObsolete.scroll, latest.scroll), '역순 완료: 최신 선택·음영·스크롤 유지');
+
+  setTestCase('pending-layout-document-switch');
+  await page.evaluate(() => {
+    const ih = window.__inputHandler;
+    ih.cursor.selectRange({ sectionIndex: 0, paragraphIndex: 10, charOffset: 1 },
+      { sectionIndex: 0, paragraphIndex: 20, charOffset: 3 });
+    ih.updateCaret(true);
+  });
+  await beginDelayedMutation(page);
+  await createNewDocument(page);
+  const newDocument = await state(page);
+  await page.evaluate(() => window.__releaseSelectionLayout());
+  await page.waitForFunction(() => window.__selectionGateFinished);
+  await frames(page);
+  const switched = await state(page);
+  assert(switched.pages === 1 && switched.paragraphs === 1 && switched.texts[0] === ''
+    && switched.selection === null && switched.highlights.length === 0, '문서 교체: 이전 선택·음영·내용이 새 문서로 누출되지 않음');
+  assert(switched.count === newDocument.count, '문서 교체 뒤 이전 mutation 완료 이벤트 폐기');
   assert(errors.length === 0, `pageerror 0건: ${JSON.stringify(errors)}`);
-  console.log(JSON.stringify({ pages: original.pages, paragraphs: original.paragraphs,
+  if (fontBytes) assert(suppliedFonts > 0, '다운로드한 실제 원본 글꼴 바이트를 브라우저가 소비');
+  console.log(JSON.stringify({ renderer, pages: original.pages, paragraphs: original.paragraphs,
     highlights: original.highlights.length, staleSelectionPreserved: same(settled.selection, newer) }));
-});
+}, { skipLoadApp: true });
+}

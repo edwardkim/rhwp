@@ -448,6 +448,8 @@ export class CanvasView {
     backendChanged: boolean;
   } | null> {
     if (this.disposed) return null;
+    // 이전 편집의 quiet 재선택이 새 mutation의 metrics await를 선점하지 않게 한다.
+    this.cancelAutoRendererReselection();
     const pinned = this.rendererSession.pinAutoMutationRevision();
     if (!pinned) return this.selectNextDocumentRevision();
 
@@ -470,8 +472,11 @@ export class CanvasView {
     this.autoRendererReselectionTimer = setTimeout(() => {
       this.autoRendererReselectionTimer = null;
       void this.selectNextDocumentRevision().then((selected) => {
-        if (!selected || this.disposed) return;
-        if (selected.backendChanged) this.refreshPages();
+        if (!selected || this.disposed || !this.rendererSession.isCurrent(selected.selection)) return;
+        if (selected.backendChanged) {
+          this.refreshPages();
+          this.eventBus.emit('document-layout-refreshed', { source: 'renderer-reselection' });
+        }
       });
     }, AUTO_RENDERER_RESELECTION_DELAY_MS);
   }
