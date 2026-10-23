@@ -38,7 +38,9 @@ legacy v1·누락·변조·다른 실행·미완료를 pass로 승격하지 않�
 
 초기 새 CLI 검사 실패는 fixture 환경 객체 공유로 인한 테스트 오염이었다. 객체 복사로 수정하고
 전체를 재실행했다. 로그는 ignored `output/pr-review/7449/`에 보존했다. 합성 예제의 SHA·버전·
-화면은 실제 브라우저 실행 증거가 아니다. code SHA는 PR 본문과 번호 확정 뒤 self-review에서 고정한다.
+화면은 실제 브라우저 실행 증거가 아니다. 검증한 code SHA는 `e22fda49fab94fd6bdb64092aed870912ffff9fd`다.
+[PR #8178](https://github.com/edwardkim/rhwp/pull/8178)과
+[self-review](../pr/archives/pr_8178_review.md)에 연결했다.
 
 ## 미검증·비해당
 
