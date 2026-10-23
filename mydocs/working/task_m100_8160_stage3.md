@@ -183,3 +183,31 @@ Skia lib는 exit 0(158.788초)다. 마스크 순서 보정 후 Skia lib도 exit 
 현재 하한 조건·꼬리말 경계·비동기 요청 중복 제거를 포함한 Skia lib Clippy 재실행도
 exit 0(1분 27초)다. 이 연결 단계를 일반 커밋으로 고정한 뒤 clean source의 Native
 실행 파일을 다시 만들고, 18·35쪽부터 실제 전쪽 검증을 계속한다.
+
+
+## clean 후보 33의 Native 전쪽 raw 100% 확인
+
+코드 commit `803046519d82d20c71d85937b96a8eefabb200d0`의 clean Native 빌드는 exit 0,
+455.095초다. CLI SHA-256은 `52e232fba7c9348f875abcd4dde19cb77cb77530c73225ec7a561b9be3f852da`,
+실제로 링크한 rlib는 `33a16a0cb11cae6d8f13bcb4f47aa4b9f1c6d93279ec6158d79968efe3871dde`다.
+18·35쪽 실제 CLI PNG의 양방향 미대응은 모두 0이고 확대 판독도 완료했다.
+
+같은 바이너리로 세 문서의 전쪽을 다시 실행했다. HWPX 64/64쪽, 2024 HWP 64/64쪽,
+2022 HWP 64/64쪽, 합계 192/192쪽 raw 100%다. 모든 PNG에서 threshold 232·양방향
+2px·흰색 padding의 정수 미대응을 다시 계산했고 모두 0이다. 세 실행은 exit 0이며
+각각 74.73/75.99/128.59초다. 전체 PNG/PDF 해시와 실제 실행 신원은
+`candidate33-native.json`, 전쪽 TSV는 `tsv/candidate33/native/`에 보존한다.
+
+같은 clean 코드의 표준 release WASM은 rlib+cdylib·manifest LTO로 컴파일을 마쳤고
+현재 `wasm-opt -O`가 실행 중이다. Native 192쪽만으로 384쪽 완료를 판정하지 않는다.
+회귀 테스트 파일·기대값은 여전히 변경하지 않았다.
+
+Studio 기존 전체 Node 검사는 exit 0이며 2,363개 중 2,361 PASS, 0 FAIL, 2 SKIP이다.
+두 SKIP은 Node 전용 pkg-node가 없는 기존 문서 편집 왕복 검사다. 현재 web 표준 WASM과
+실제 브라우저 전쪽 검증은 별도로 계속한다.
+
+추가 두 family·4개 크기·두 굵기·정역순의 32문자열 대조에서는 원본 TTC를 명시적인
+Native font 등록 API로 공급했다. GulimChe index 1·DotumChe index 3의 실제 프로그램을
+사용한 두 쪽 글자 영역은 양방향 미대응 0이다. 전체 쪽에는 기존 삼각형의 최소 stroke
+차이가 남아 있으므로 이 결과는 글자 전진·윤곽 검증으로 기록한다. 초기 시스템의 동명
+DotumChe는 고정 pitch 표식이 없는 다른 프로그램이었으며 원본 TTC 공급 결과와 구분한다.
