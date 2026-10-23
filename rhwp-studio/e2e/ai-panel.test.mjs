@@ -14,6 +14,8 @@
  * 6. 중단 단추는 진행 중인 요청을 끊고 「중단했습니다」를 보인다
  * 7. 401 이면 키 오류 문구, 400 이면 거절 문구와 제공자 사유
  * 8. 새 대화 / 문서 교체는 이력을 비운다
+ * 9. 변경 제안 카드 → 적용하면 표 칸 글이 바뀌고 undo 한 번으로 돌아간다
+ * 10. 거절하면 문서는 그대로이고 모델에 거절을 알린다
  *
  * 계획: mydocs/plans/rhwp_studio_ai_chat_p0_impl.md §5.2
  */
@@ -125,7 +127,7 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(requests.length === 2, `TC1: 요청 2회 (${requests.length})`);
   const [first, second] = requests;
   assert(first.body.model === 'claude-opus-5-5' && first.body.stream === true, 'TC1: 모델·스트리밍');
-  assert(first.body.tools.length === 7 && first.body.tools.every((t) => t.strict === true), 'TC1: 도구 7개 strict');
+  assert(first.body.tools.length === 9 && first.body.tools.every((t) => t.strict === true), 'TC1: 도구 9개(읽기 7·쓰기 2) strict');
   assert(first.body.system[0].text.includes('document_content'), 'TC1: 시스템에 문서 경계 규칙');
   assert(first.body.fallbacks === 'default'
     && (first.headers['anthropic-beta'] ?? '').includes('server-side-fallback-2026-07-01'), 'TC1: 서버 대체');
@@ -168,6 +170,55 @@ runTest('AI 대화 패널', async ({ page }) => {
 
   // ── TC3: 문서 무변경 ──────────────────────────────────
   assert(await docHash() === hashBefore, 'TC3: 대화 전후 문서 바이트 동일');
+
+  // ── TC9: 문서 변경 제안 → 적용 → 문서 반영 → undo ─────
+  const cellText = () => page.evaluate(() => {
+    const w = window.__wasm;
+    const len = w.getCellParagraphLength(0, 2, 0, 1, 0);
+    return w.getTextInCell(0, 2, 0, 1, 0, 0, len);
+  });
+  assert(await cellText() === '사 업 수 행 계 획 서', 'TC9: 고치기 전 표 칸 글');
+  queue.push({ body: sse([
+    { type: 'tool_use', id: 'toolu_edit_1', name: 'replace_text', input: { find: '사 업 수 행 계 획 서', replace: '사 업 계 획 서' } },
+  ], 'tool_use') });
+  queue.push({ body: sse([{ type: 'text', text: '제목을 바꿨습니다.' }], 'end_turn') });
+  await page.type('.ai-chat-input', '제목을 사업계획서로 바꿔 줘');
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('.ai-change-card[data-state="pending"] .ai-change-apply', { timeout: 15000 });
+  const card = await page.$eval('.ai-change-card', (el) => ({
+    title: el.querySelector('.ai-change-title').textContent,
+    del: el.querySelector('.ai-change-del').textContent,
+    ins: el.querySelector('.ai-change-ins').textContent,
+  }));
+  assert(card.title.startsWith('글 바꾸기') && card.title.includes('표 안'), `TC9: 카드 제목 (${card.title})`);
+  assert(card.del === '사 업 수 행 계 획 서' && card.ins === '사 업 계 획 서', 'TC9: 전·후 표시');
+  assert(await cellText() === '사 업 수 행 계 획 서', 'TC9: 승인 전에는 문서가 그대로');
+  await page.click('.ai-change-apply');
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy
+    && document.querySelector('.ai-change-card')?.dataset.state === 'applied', { timeout: 15000 });
+  assert(await cellText() === '사 업 계 획 서', 'TC9: 적용 후 표 칸 글이 바뀜');
+  const editResult = requests.at(-1).body.messages.at(-1).content[0];
+  assert(editResult.tool_use_id === 'toolu_edit_1' && !editResult.is_error
+    && JSON.parse(editResult.content.split('\n')[1]).applied === true, 'TC9: 모델에 적용 결과 전달');
+  await screenshot(page, 'ai-panel-change');
+  await page.evaluate(() => window.rhwpStudio.automation.execute('edit:undo'));
+  await wait(page, 300);
+  assert(await cellText() === '사 업 수 행 계 획 서', 'TC9: undo 한 번으로 되돌아감');
+
+  // ── TC10: 거절하면 문서는 그대로이고 모델에 거절을 알린다 ──
+  const hashBeforeReject = await docHash();
+  queue.push({ body: sse([
+    { type: 'tool_use', id: 'toolu_edit_2', name: 'replace_text', input: { find: '사 업 수 행 계 획 서', replace: '바꾸면 안 됨' } },
+  ], 'tool_use') });
+  queue.push({ body: sse([{ type: 'text', text: '알겠습니다.' }], 'end_turn') });
+  await page.type('.ai-chat-input', '다른 제목 제안해 줘');
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('.ai-change-card[data-state="pending"] .ai-change-reject', { timeout: 15000 });
+  await page.click('.ai-change-card[data-state="pending"] .ai-change-reject');
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy, { timeout: 15000 });
+  assert(await docHash() === hashBeforeReject, 'TC10: 거절하면 문서 바이트 그대로');
+  const rejected = requests.at(-1).body.messages.at(-1).content[0];
+  assert(rejected.tool_use_id === 'toolu_edit_2' && rejected.content.includes('rejected'), 'TC10: 모델에 거절 전달');
 
   // ── TC4: 입력란 Ctrl+Z 격리 ───────────────────────────
   await createNewDocument(page);

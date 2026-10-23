@@ -8,7 +8,8 @@ import { t } from '@/i18n/index.ts';
 import { showConfirm } from '@/ui/confirm-dialog';
 import type { AiContext } from '../ai-context.ts';
 import type { AgentRunResult } from '../agent/agent-loop.ts';
-import type { ChatController } from '../agent/chat-controller.ts';
+import type { ChatController, ProposalOutcome, ProposalPresenter } from '../agent/chat-controller.ts';
+import type { WriteProposal } from '../tools/write-tools.ts';
 import { modelsOf } from '../provider/models.ts';
 import { AiProviderError, EMPTY_USAGE, addUsage, type AiToolCall, type AiUsage } from '../provider/types.ts';
 import { AiSettingsDialog, failureMessage } from './ai-settings-dialog.ts';
@@ -90,6 +91,63 @@ class AssistantView {
   toolEnd(call: AiToolCall, isError: boolean): void {
     const chip = this.chips.get(call.id);
     if (chip) chip.dataset.state = isError ? 'error' : 'done';
+  }
+
+  /** 변경 제안 카드. 사용자가 고르면(또는 자동 적용이면) `decision` 이 끝난다. */
+  proposal(proposal: WriteProposal, autoApply: boolean, signal: AbortSignal) {
+    this.root.querySelector('.ai-msg-pending')?.remove();
+    this.textPart = null;
+    this.toolsPart = null;
+    const card = el('div', 'ai-change-card');
+    card.dataset.state = 'pending';
+    const where = proposal.location.field !== undefined
+      ? t('ai.change.field', { name: proposal.location.field })
+      : t(proposal.location.inTable ? 'ai.change.locationTable' : 'ai.change.location', {
+        section: (proposal.location.section ?? 0) + 1,
+        paragraph: (proposal.location.paragraph ?? 0) + 1,
+      });
+    card.append(el('div', 'ai-change-title', `${t(`ai.change.${proposal.tool}`)} · ${where}`));
+    const line = (className: string, label: string, mark: 'del' | 'ins', text: string) => {
+      const row = el('div', `ai-change-line ${className}`);
+      row.append(el('span', 'ai-change-label', label), document.createTextNode(proposal.prefix));
+      const changed = el(mark, `ai-change-${mark}`, text);
+      if (text.length === 0) changed.dataset.empty = 'true';
+      row.append(changed, document.createTextNode(proposal.suffix));
+      return row;
+    };
+    card.append(
+      line('ai-change-before', t('ai.change.before'), 'del', proposal.removed),
+      line('ai-change-after', t('ai.change.after'), 'ins', proposal.inserted),
+    );
+    const actions = el('div', 'ai-change-actions');
+    const status = el('div', 'ai-change-status');
+    card.append(actions, status);
+    this.root.append(card);
+
+    let resolve!: (approved: boolean) => void;
+    const decision = new Promise<boolean>((r) => { resolve = r; });
+    const decide = (approved: boolean) => {
+      actions.replaceChildren();
+      signal.removeEventListener('abort', onAbort);
+      resolve(approved);
+    };
+    const onAbort = () => decide(false);
+    if (autoApply) {
+      decide(true);
+    } else {
+      const apply = button('dialog-btn dialog-btn-primary ai-change-apply', t('ai.change.apply'), () => decide(true));
+      const reject = button('dialog-btn ai-change-reject', t('ai.change.reject'), () => decide(false));
+      actions.append(apply, reject);
+      signal.addEventListener('abort', onAbort, { once: true });
+      apply.focus();
+    }
+    return {
+      decision,
+      settle: (outcome: ProposalOutcome, message?: string) => {
+        card.dataset.state = outcome;
+        status.textContent = message ? `${t(`ai.change.${outcome}`)} — ${message}` : t(`ai.change.${outcome}`);
+      },
+    };
   }
 
   finish(note: string | null, kind: 'info' | 'error' = 'info'): void {
@@ -322,6 +380,14 @@ export class AiPanel {
     this.scrollToEnd(true);
     this.setBusy(true);
 
+    const presenter: ProposalPresenter = {
+      present: (proposal, options) => {
+        const handle = answer.proposal(proposal, options.autoApply, options.signal);
+        this.scrollToEnd(true);
+        return handle;
+      },
+    };
+    this.chat.setPresenter(presenter);
     let result: AgentRunResult | null = null;
     let failure: unknown = null;
     try {
@@ -334,6 +400,7 @@ export class AiPanel {
     } catch (error) {
       failure = error;
     }
+    this.chat.setPresenter(null);
     this.setBusy(false);
 
     if (result) {

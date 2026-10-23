@@ -56,8 +56,11 @@ export interface AgentLoopOptions {
   system: string;
   model: string;
   effort: 'low' | 'medium' | 'high';
-  /** 도구 호출 하나를 실행한다. 던지지 않고 결과(오류 포함)를 돌려줘야 한다. */
-  executeTool(call: AiToolCall, boundaryId: string): AiToolResult;
+  /**
+   * 도구 호출 하나를 실행한다. 던지지 않고 결과(오류 포함)를 돌려줘야 한다.
+   * 쓰기 도구는 사용자 승인을 기다리므로 비동기일 수 있다 — `signal` 이 끊기면 기다림을 끝내야 한다.
+   */
+  executeTool(call: AiToolCall, boundaryId: string, signal: AbortSignal): AiToolResult | Promise<AiToolResult>;
   /** 회차마다 새 문서 경계 id 를 만든다. */
   createBoundaryId(): string;
   maxToolRounds?: number;
@@ -146,12 +149,18 @@ export async function runAgent(
     session.append({ role: 'assistant', kind: 'raw', raw: turn.raw });
     toolRounds += 1;
     // tool_use 마다 결과가 하나씩 있어야 한다 — 중단 신호가 와도 모두 채운 뒤 끝낸다.
-    const results: AiToolResult[] = turn.toolCalls.map((call) => {
+    // 차례대로 실행한다: 쓰기 제안은 사용자가 하나씩 보고 고른다.
+    const results: AiToolResult[] = [];
+    for (const call of turn.toolCalls) {
+      if (signal.aborted) {
+        results.push({ id: call.id, content: 'Not run: the user stopped the response.', isError: true });
+        continue;
+      }
       callbacks.onToolStart?.(call);
-      const result = options.executeTool(call, boundaryId);
+      const result = await options.executeTool(call, boundaryId, signal);
       callbacks.onToolEnd?.(call, result);
-      return result;
-    });
+      results.push(result);
+    }
     session.append({ role: 'user', kind: 'tool_results', results });
   }
 }
