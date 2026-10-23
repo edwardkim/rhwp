@@ -7,10 +7,15 @@
 //! # 기대값
 //!
 //! 한컴 정본 `pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf`(Hwp 2020 11.0.0.9136,
-//! KoPub 서브셋 내장, 383쪽)에서 KoPub 글자의 원점 차이(전진)를 **같은 쪽·같은 글꼴·같은
+//! KoPub 서브셋 내장, 383쪽)에서 KoPub 글자의 원점 차이(전진)를 **같은 줄·같은 글꼴·같은
 //! 크기 한글 전진의 중앙값**으로 나눈 비다. 장평·자간이 양쪽에 같이 걸리므로 글꼴 비(900/872
-//! = 1.032 · 900/936 = 0.962 · 450/872 = 0.516 · 450/936 = 0.481) 근처에 모인다(57쪽 `×` 는
-//! 그 쪽 한글 자간이 달라 0.889 지만 글자 자체는 ○·→ 와 같은 0.804em 이다).
+//! = 1.032 · 900/936 = 0.962 · 450/872 = 0.516 · 450/936 = 0.481) 근처에 모인다.
+//!
+//! 기준을 쪽이 아니라 줄로 잡는 이유: 한 쪽에 장평·자간이 다른 문단이 섞이면 쪽 중앙값이 두
+//! 무리 사이에 걸린다. 288쪽은 한/글이 KoPub바탕 Light 를 두 크기(한글 13.92 · 14.40px)로 내고
+//! rhwp 는 한 크기로 묶어, 쪽 중앙값이 0.1px 흔들려도 비가 허용치를 넘나들었다. 57쪽 `×` 도
+//! 쪽 기준으로는 다른 자간의 한글과 섞여 0.889 였고, 같은 줄 기준으로는 글꼴 비 0.962 에 맞는다.
+//! 아래 정본 비는 같은 PDF 에서 같은 줄 기준으로 다시 잰 값이다(57쪽 외에는 쪽 기준과 같다).
 //!
 //! ```text
 //!   쪽    글꼴    글자            n    정본 비
@@ -20,10 +25,10 @@
 //!   177   돋움    ○①→ 등         25    1.0307
 //!   205   돋움    「」『』          6    0.5217
 //!   288   바탕    「」『』          8    0.4778
-//!   57    바탕    × (U+00D7)       4    0.8889   `(×)` — ○·→ 와 같은 0.804em
+//!   57    바탕    × (U+00D7)       4    0.9638   `(×)` — ○·→ 와 같은 0.804em
 //! ```
 //!
-//! rhwp 도 같은 쪽·같은 글꼴·같은 크기의 한글 대비 비를 잰다. 절대 px 이 아니라 비라서 줄
+//! rhwp 도 같은 줄·같은 글꼴·같은 크기의 한글 대비 비를 잰다. 절대 px 이 아니라 비라서 줄
 //! 위치·쪽 배치와 무관하게 전진폭 규칙만 본다. 수정 전에는 첫 사례(38쪽 바탕 한자)부터 1.0070 이다.
 
 #![cfg(not(target_arch = "wasm32"))]
@@ -60,17 +65,17 @@ fn median(mut values: Vec<f64>) -> f64 {
     values[values.len() / 2]
 }
 
-/// 쪽(1-based)의 KoPub run 에서 (돋움 여부, 글자 종류) 별로 «글자 전진 / 같은 글꼴·크기
+/// 쪽(1-based)의 KoPub run 에서 (돋움 여부, 글자 종류) 별로 «글자 전진 / 같은 줄·글꼴·크기
 /// 한글 전진 중앙값» 을 모은다. 한자는 언어 슬롯이 달라 한글과 다른 run 이 되므로, run 이
-/// 아니라 그 쪽의 같은 글꼴 이름·글자 크기에서 한글 기준을 잡는다.
+/// 아니라 같은 줄(run 의 y)·같은 글꼴 이름·글자 크기에서 한글 기준을 잡는다.
 fn ratios(core: &DocumentCore, page: u32) -> BTreeMap<(bool, Class), Vec<f64>> {
     let raw = core
         .get_page_text_layout_native(page - 1)
         .expect("text-layout");
     let layout: serde_json::Value = serde_json::from_str(&raw).expect("text-layout JSON");
-    // (글꼴 첫 이름, 글자 크기 ×100) → (한글 전진들, (돋움 여부, 종류, 전진)들)
+    // (글꼴 첫 이름, 글자 크기 ×100, 줄 y) → (한글 전진들, (돋움 여부, 종류, 전진)들)
     type Samples = (Vec<f64>, Vec<(bool, Class, f64)>);
-    let mut by_face: BTreeMap<(String, i64), Samples> = BTreeMap::new();
+    let mut by_face: BTreeMap<(String, i64, i64), Samples> = BTreeMap::new();
     for run in layout["runs"].as_array().into_iter().flatten() {
         let family = run["fontFamily"].as_str().unwrap_or_default();
         let primary = family
@@ -95,7 +100,8 @@ fn ratios(core: &DocumentCore, page: u32) -> BTreeMap<(bool, Class), Vec<f64>> {
         if size <= 0 || xs.len() < text.len() + 1 {
             continue;
         }
-        let entry = by_face.entry((primary, size)).or_default();
+        let line = run["y"].as_f64().unwrap_or(0.0).round() as i64;
+        let entry = by_face.entry((primary, size, line)).or_default();
         for (i, &c) in text.iter().enumerate() {
             let advance = xs[i + 1] - xs[i];
             if ('\u{AC00}'..='\u{D7A3}').contains(&c) {
@@ -129,7 +135,7 @@ fn kopub_hanja_symbols_and_corner_brackets_follow_the_font_advance() {
         (&[177][..], true, Class::Symbol, 1.0307),
         (&[205][..], true, Class::Quote, 0.5217),
         (&[288][..], false, Class::Quote, 0.4778),
-        (&[57][..], false, Class::Times, 0.8889),
+        (&[57][..], false, Class::Times, 0.9638),
     ] {
         let mut observed = Vec::new();
         for &page in pages {
