@@ -12,6 +12,8 @@ pub(in crate::renderer::typeset) struct SplitEntryPage<'a> {
     pub col_count: u16,
     pub current_height: f64,
     pub current_items: &'a [PageItem],
+    pub zone_y_offset: f64,
+    pub plain_text_zone: bool,
     pub body_height: f64,
     pub stored_ladder_spacing_omitted: bool,
     pub hangul2024_reclaimed: f64,
@@ -23,6 +25,7 @@ pub(in crate::renderer::typeset) struct SplitEntryFit {
     pub hwp_first_line_before_reset_fits: bool,
     pub stored_whole_para_reset: bool,
     pub hangul2024_split_refit: bool,
+    pub empty_zone_first_line_overflows: bool,
 }
 
 /// 구성된 줄이 있을 때만 호출한다. 플래그 기록 전에 관측한 fit 근거를 반환한다.
@@ -54,7 +57,15 @@ pub(in crate::renderer::typeset) fn inspect_entry(
     } else {
         fmt.line_heights[0]
     };
-    let remaining = (available - page.current_height).max(0.0);
+    // 부분 쪽의 빈 단에서도 분할 루프가 소비하는 문단 앞 간격을 한 번 포함한다.
+    let empty_text_zone =
+        page.plain_text_zone && page.current_items.is_empty() && page.zone_y_offset > 0.0;
+    let opening_spacing = if empty_text_zone {
+        fmt.spacing_before
+    } else {
+        0.0
+    };
+    let remaining = (available - page.current_height - opening_spacing).max(0.0);
     // [Task #1086] 단일 단에서도 HWP가 paragraph 내부 page reset 을
     // LINE_SEG(vpos=0) 로 인코딩하는 케이스가 있다(k-water-rfp pi=66).
     // 첫 줄의 HWP 좌표가 본문 안에 있고 다음 줄이 reset 이면, 보수적
@@ -142,6 +153,7 @@ pub(in crate::renderer::typeset) fn inspect_entry(
         hwp_first_line_before_reset_fits,
         stored_whole_para_reset,
         hangul2024_split_refit,
+        empty_zone_first_line_overflows: empty_text_zone && remaining < first_line_h,
     }
 }
 
@@ -161,7 +173,11 @@ pub(in crate::renderer::typeset) fn should_advance(
         hwp_first_line_before_reset_fits,
         stored_whole_para_reset,
         hangul2024_split_refit,
+        empty_zone_first_line_overflows,
     } = *fit;
+    if empty_zone_first_line_overflows {
+        return true;
+    }
     // [#6568] 줄 분할 루프의 넘침 판정에는 `li > cursor_line` 면제가 걸려 있어
     // **조각의 첫 줄은 검사조차 되지 않는다.** 그래서 예산을 넘는 줄이 무조건 그
     // 쪽에 놓인다. 156678235 pi=59 실측:

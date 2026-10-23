@@ -463,7 +463,11 @@ impl SkiaTextReplay<'_> {
                                 if has_ratio {
                                     canvas.scale((ratio, 1.0));
                                 }
-                                canvas.draw_text_blob(&span.blob, (0.0, 0.0), &text_paint);
+                                canvas.draw_text_blob(
+                                    &span.blob,
+                                    (0.0, span.baseline_offset),
+                                    &text_paint,
+                                );
                                 canvas.restore();
                             }
                             continue;

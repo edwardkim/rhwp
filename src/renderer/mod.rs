@@ -55,6 +55,7 @@ pub(crate) mod layout_frame;
 pub(crate) mod legacy_font_advances;
 pub(crate) mod line_style;
 pub(crate) mod metafile_geometry;
+pub(crate) mod note_marker;
 pub(crate) mod note_separator;
 pub(crate) mod object_alignment;
 pub mod page_layout;
@@ -2219,8 +2220,40 @@ pub fn hwpunit_to_px(hwpunit: i32, dpi: f64) -> f64 {
     hwpunit as f64 * dpi / HWPUNIT_PER_INCH
 }
 
-/// 같은 쪽의 단일 단 밴드 사이에는 구역에 저장된 단 사이 간격을 쓴다.
-/// 구역 정보 없는 직접 호출과 다단 전환은 기존 별도 간격 계약을 유지한다.
+/// 개체와 문단 묶음 제약이 없는 단 영역만 실제 첫 줄 높이로 수용한다.
+pub(crate) fn plain_text_column_zone(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    styles: &style_resolver::ResolvedStyleSet,
+) -> bool {
+    paragraphs
+        .iter()
+        .enumerate()
+        .take_while(|(offset, para)| {
+            *offset == 0
+                || (para.column_type != crate::model::paragraph::ColumnBreakType::MultiColumn
+                    && !para
+                        .controls
+                        .iter()
+                        .any(|ctrl| matches!(ctrl, crate::model::control::Control::ColumnDef(_))))
+        })
+        .all(|(_, para)| {
+            para.controls.iter().all(|ctrl| {
+                matches!(
+                    ctrl,
+                    crate::model::control::Control::ColumnDef(_)
+                        | crate::model::control::Control::SectionDef(_)
+                )
+            }) && styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .is_some_and(|style| {
+                    !style.keep_with_next && !style.keep_lines && !style.widow_orphan
+                })
+        })
+}
+
+/// 같은 쪽의 단일 단 뒤에는 구역에 저장된 단 사이 간격을 쓴다.
+/// 구역 정보 없는 직접 호출과 다단 뒤의 전환은 기존 간격 계약을 유지한다.
 pub(crate) fn solo_zone_pad_px(
     entering_solo: bool,
     prior_multicol: bool,
@@ -2228,7 +2261,7 @@ pub(crate) fn solo_zone_pad_px(
     dpi: f64,
 ) -> f64 {
     let spacing = section_spacing_hu
-        .filter(|spacing| entering_solo && !prior_multicol && *spacing >= 0)
+        .filter(|spacing| !prior_multicol && *spacing >= 0)
         .unwrap_or(if entering_solo && prior_multicol {
             1500
         } else {

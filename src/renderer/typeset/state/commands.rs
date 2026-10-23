@@ -541,8 +541,13 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn mark_stored_spacing_omitted(&mut self) {
         self.data.stored_ladder_spacing_omitted = true;
     }
-    pub(in crate::renderer::typeset) fn initialize_zone_spacing(&mut self, spacing: f64) {
+    pub(in crate::renderer::typeset) fn initialize_zone_spacing(
+        &mut self,
+        spacing: f64,
+        plain_text: bool,
+    ) {
         self.data.current_zone_design_spacing_px = spacing;
+        self.data.current_zone_plain_text = plain_text;
     }
     pub(in crate::renderer::typeset) fn record_footer_presence(&mut self, no_footer: bool) {
         self.data.section_has_no_footer = no_footer;

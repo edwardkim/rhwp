@@ -123,6 +123,7 @@ impl TypesetState {
                 current_column_wrap_anchors: std::collections::HashMap::new(),
                 current_zone_column_type: column_type,
                 current_zone_design_spacing_px: 0.0,
+                current_zone_plain_text: false,
                 vpos_page_base: None,
                 vpos_lazy_base: None,
                 vpos_stored_column_origin: None,

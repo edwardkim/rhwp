@@ -122,7 +122,7 @@ impl TypesetEngine {
                 st.mark_stored_spacing_omitted();
             }
         }
-        st.initialize_zone_spacing(column_def_design_spacing_px(column_def, self.dpi));
+        st.initialize_zone_spacing(column_def_design_spacing_px(column_def, self.dpi), false);
 
         // 머리말/꼬리말/쪽 번호/새 번호/감추기 컨트롤 수집
         let (hf_entries, page_number_pos) =

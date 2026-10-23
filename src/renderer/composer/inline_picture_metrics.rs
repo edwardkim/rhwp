@@ -18,3 +18,93 @@ pub(crate) fn inline_picture_ascent_ratio(vertical_alignment: u8) -> f64 {
         _ => 0.85,
     }
 }
+
+/// 저장 줄이 없는 혼합 주석 문단도 기존 줄 소속·탭 배치를 유지하며 그림 상자를 공유한다.
+pub(super) fn refresh_picture_rows(
+    composed: &mut super::ComposedParagraph,
+    para: &crate::model::paragraph::Paragraph,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+) {
+    use crate::model::control::Control;
+    use crate::renderer::{hwpunit_to_px, px_to_hwpunit, DEFAULT_DPI};
+    if !para.line_segs.is_empty() {
+        return;
+    }
+    let Some(style) = styles.para_styles.get(para.para_shape_id as usize) else {
+        return;
+    };
+    // shortcut: 비기본 세로 정렬은 저장 줄과 주석 기준선의 별도 계약을 검증한 뒤 연결한다.
+    if style.vertical_alignment != 0
+        || !para.controls.iter().all(|control| match control {
+            Control::Picture(picture) => picture.common.treat_as_char && picture.caption.is_none(),
+            Control::Footnote(_) | Control::Endnote(_) => true,
+            other => super::control_is_width_neutral_marker(other),
+        })
+    {
+        return;
+    }
+    let dpi = styles.resolved_dpi.unwrap_or(DEFAULT_DPI);
+    let count = composed.lines.len();
+    for index in 0..count {
+        let end = composed
+            .lines
+            .get(index + 1)
+            .map_or(para.text.chars().count(), |line| line.char_start);
+        let line = &mut composed.lines[index];
+        let pictures: Vec<_> = composed
+            .tac_controls
+            .iter()
+            .filter(|(position, _, _)| {
+                *position >= line.char_start
+                    && (*position < end || (*position == end && index + 1 == count))
+            })
+            .filter_map(|(_, _, control)| match para.controls.get(*control)? {
+                Control::Picture(picture) => Some(picture),
+                _ => None,
+            })
+            .collect();
+        if pictures.is_empty() {
+            continue;
+        }
+        let font = crate::renderer::composed_line_max_font_size(line, para, styles);
+        if !font.is_finite() || font <= 0.0 {
+            continue;
+        }
+        let text_height = px_to_hwpunit(font, dpi);
+        let mut ascent = (f64::from(text_height) * 0.85).round() as i32;
+        let mut descent = text_height - ascent;
+        let mut spacing_height = text_height;
+        for picture in pictures {
+            let margin = &picture.common.margin;
+            let height = inline_picture_size_hu(picture)
+                .1
+                .saturating_add(i32::from(margin.top))
+                .saturating_add(i32::from(margin.bottom));
+            let baseline = (f64::from(height)
+                * inline_picture_ascent_ratio(style.vertical_alignment))
+            .round() as i32;
+            ascent = ascent.max(baseline);
+            descent = descent.max(height - baseline);
+            if picture.common.affect_line_spacing {
+                spacing_height = spacing_height.max(height);
+            }
+        }
+        if matches!(
+            style.line_spacing_type,
+            crate::model::style::LineSpacingType::Fixed
+                | crate::model::style::LineSpacingType::Minimum
+        ) {
+            spacing_height = ascent + descent;
+        }
+        let metrics = super::frame_metrics_for_line(
+            hwpunit_to_px(spacing_height, dpi),
+            font,
+            style.line_spacing_type,
+            style.line_spacing,
+            dpi,
+        );
+        line.line_height = ascent + descent;
+        line.baseline_distance = ascent;
+        line.line_spacing = metrics.line_spacing;
+    }
+}

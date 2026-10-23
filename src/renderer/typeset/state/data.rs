@@ -342,6 +342,7 @@ pub(in crate::renderer::typeset) struct StateView {
     /// (이전 zone 디자인 spacing /2) + (새 zone 디자인 spacing /2) 를 zone_y_offset 에
     /// 더한다. 다단(2+) ColumnDef 의 `간격`은 가로 간격이므로 0 으로 둔다.
     pub(in crate::renderer::typeset) current_zone_design_spacing_px: f64,
+    pub(in crate::renderer::typeset) current_zone_plain_text: bool,
     /// [Task #1027 Stage D] 컬럼 단위 vpos 스냅 상태 (렌더러 build_single_column 정합).
     /// current_height 상대공간(col_area_y=0)에서 HeightCursor 를 구동한다.
     pub(in crate::renderer::typeset) vpos_page_base: Option<i32>,

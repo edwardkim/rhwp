@@ -688,7 +688,19 @@ pub(super) fn place_after_failed_fit(
         &st.paragraph_split_entry_page(),
         dpi,
     ) {
-        st.advance_column_or_new_page();
+        if entry_fit.empty_zone_first_line_overflows {
+            // 앞 zone이 쓴 부분 쪽에서는 빈 단도 완전히 빈 쪽처럼 면제하지 않는다.
+            // 같은 높이의 나머지 단을 거쳐도 첫 줄이 들어가지 않으므로 쪽을 넘긴다.
+            let opening_zone = st.current_column == 0;
+            let opening_spacing = st.current_zone_design_spacing_px / 2.0;
+            st.force_new_page();
+            if opening_zone {
+                st.align_zone_origin(opening_spacing);
+                st.restart_zone_columns();
+            }
+        } else {
+            st.advance_column_or_new_page();
+        }
         safety.entry = safety.continuation;
     }
 

@@ -643,6 +643,8 @@ impl TypesetState {
             col_count: self.data.col_count,
             current_height: self.data.current_height,
             current_items: &self.data.current_items,
+            zone_y_offset: self.data.current_zone_y_offset,
+            plain_text_zone: self.data.current_zone_plain_text,
             body_height: self.base_available_height(),
             stored_ladder_spacing_omitted: self.data.stored_ladder_spacing_omitted,
             hangul2024_reclaimed: self.data.hangul2024_reclaimed,
