@@ -18,10 +18,12 @@
  * 10. 거절하면 문서는 그대로이고 모델에 거절을 알린다
  * 11. 새 문서 만들기(저장 확인 포함) → 문단 쓰기, 대화는 이어진다
  * 12. 글자·문단 서식과 표 — 한 응답의 여러 변경을 차례로 승인, undo 는 변경마다 한 단계
+ * 12b. 「이번 응답 모두 적용」 한 번으로 남은 변경 승인, 다음 응답은 다시 묻는다
  * 13. 「확인 없이 바로 적용」 — 목록·스타일·머리말·각주·문단 지우기가 묻지 않고 적용
  * 14. 명령 통로 — 목록, 글 선택, 허용 명령 실행(위 첨자·쪽 나누기), 허용 밖 명령 거절
  * 15. 대화상자 기능 — 모두 바꾸기, 문단 여백·간격, 칸 배경(줄 범위), 가로 용지
  * 16. 장평, 수식, 하이퍼링크, 책갈피, 표 테두리, 열 폭, 2단
+ * 17. 그림(자동 적용이어도 사용자가 파일을 고를 때까지 대기), 글상자, 누름틀 만들기, 쪽 테두리, 새 쪽 번호
  *
  * 계획: mydocs/plans/rhwp_studio_ai_chat_p0_impl.md §5.2
  */
@@ -133,8 +135,8 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(requests.length === 2, `TC1: 요청 2회 (${requests.length})`);
   const [first, second] = requests;
   assert(first.body.model === 'claude-opus-5-5' && first.body.stream === true, 'TC1: 모델·스트리밍');
-  assert(first.body.tools.length === 33 && first.body.tools.filter((t) => t.strict === true).length === 15,
-    'TC1: 도구 33개, strict 15개(상한 20, 선택 매개변수 상한 24 안)');
+  assert(first.body.tools.length === 41 && first.body.tools.filter((t) => t.strict === true).length === 15,
+    'TC1: 도구 41개, strict 15개(상한 20, 선택 매개변수 상한 24 안)');
   assert(first.body.system[0].text.includes('document_content'), 'TC1: 시스템에 문서 경계 규칙');
   assert(first.body.fallbacks === 'default'
     && (first.headers['anthropic-beta'] ?? '').includes('server-side-fallback-2026-07-01'), 'TC1: 서버 대체');
@@ -304,13 +306,41 @@ runTest('AI 대화 패널', async ({ page }) => {
   const afterUndo12 = await page.evaluate(() => window.__wasm.searchAllText('참석자', true, true).length > 0);
   assert(!afterUndo12, 'TC12: undo 한 번으로 표만 사라짐');
 
+  // ── TC12b: 「이번 응답 모두 적용」 — 첫 카드에서 한 번 누르면 이 응답의 남은 변경은 묻지 않는다 ──
+  queue.push({ body: sse([
+    { type: 'tool_use', id: 'toolu_all1', name: 'format_text', input: { find: '안건', italic: true } },
+    { type: 'tool_use', id: 'toolu_all2', name: 'format_text', input: { find: '일시', italic: true } },
+    { type: 'tool_use', id: 'toolu_all3', name: 'format_paragraph', input: { find: '일시', alignment: 'left' } },
+  ], 'tool_use') });
+  queue.push({ body: sse([{ type: 'text', text: '기울였습니다.' }], 'end_turn') });
+  await page.type('.ai-chat-input', '안건과 일시를 기울여 줘');
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('.ai-change-card[data-state="pending"] .ai-change-apply-all', { timeout: 15000 });
+  await page.click('.ai-change-card[data-state="pending"] .ai-change-apply-all');
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy, { timeout: 15000 });
+  const allStates = await page.$$eval('.ai-change-card', (els) => els.slice(-3).map((el) => el.dataset.state));
+  assert(allStates.join() === 'applied,applied,applied', `TC12b: 한 번 눌러 세 변경 모두 적용 (${allStates})`);
+  // 다음 응답에서는 다시 묻는다(이번 응답에만 적용).
+  queue.push({ body: sse([{ type: 'tool_use', id: 'toolu_all4', name: 'format_text', input: { find: '안건', italic: false } }], 'tool_use') });
+  queue.push({ body: sse([{ type: 'text', text: '되돌렸습니다.' }], 'end_turn') });
+  await page.type('.ai-chat-input', '안건 기울임은 풀어 줘');
+  await page.keyboard.press('Enter');
+  const askedAgain = await page.waitForSelector('.ai-change-card[data-state="pending"] .ai-change-apply', { timeout: 15000 })
+    .then(() => true, () => false);
+  assert(askedAgain, 'TC12b: 다음 응답은 다시 카드로 묻는다');
+  await page.click('.ai-change-card[data-state="pending"] .ai-change-apply');
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy, { timeout: 15000 });
+  assert(await page.$eval('.ai-chat-auto-toggle', (el) => el.checked) === false, 'TC12b: 패널의 「변경 바로 적용」은 꺼져 있음');
+
   // ── TC13: 「확인 없이 바로 적용」 + 목록·스타일·문단 지우기·머리말·각주 ──
+  // 패널의 토글로 켠다 — AI 설정의 같은 값과 연동된다.
+  await page.click('.ai-chat-auto-toggle');
+  const autoSynced = await page.evaluate(() => JSON.parse(localStorage.getItem('rhwp-ai-settings') ?? '{}').autoApply === true);
+  assert(autoSynced, 'TC13: 패널 토글로 「변경 바로 적용」 켬');
   await page.click('.ai-open-settings');
   await page.waitForSelector('#ai-settings-auto-apply');
-  await page.click('#ai-settings-auto-apply');
-  await page.type('#ai-settings-key', KEY);
-  await page.click(`${lastDialog} .dialog-btn-primary`);
-  await page.waitForFunction(() => !document.querySelector('#ai-settings-key'));
+  assert(await page.$eval('#ai-settings-auto-apply', (el) => el.checked), 'TC13: AI 설정 대화상자에도 같은 값');
+  await page.click(`${lastDialog} .dialog-close`);
   queue.push({ body: sse([
     { type: 'tool_use', id: 'toolu_s1', name: 'set_list', input: { find: '일시', list: 'bullet' } },
     { type: 'tool_use', id: 'toolu_s2', name: 'apply_style', input: { find: '안건', style: '개요 1' } },
@@ -486,6 +516,53 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(rest.widths[0] === 11339 && rest.widths[1] === 11339, `TC16: 열 폭 40mm 가 열의 두 칸 모두에 (${rest.widths})`);
   assert(rest.columns === 2, 'TC16: 2단');
   await screenshot(page, 'ai-panel-rest-features');
+
+  // ── TC17: 그림(사용자가 파일 고름)·글상자·누름틀·쪽 테두리·새 쪽 번호 ──
+  queue.push({ body: sse([
+    { type: 'tool_use', id: 'toolu_o1', name: 'insert_picture', input: { position: 'after', after: '2026년', widthMm: 30, purpose: '무궁화 사진' } },
+    { type: 'tool_use', id: 'toolu_o2', name: 'insert_textbox', input: { after: '10월', text: '중요' } },
+    { type: 'tool_use', id: 'toolu_o3', name: 'insert_field', input: { after: '23일', name: '장소', guide: '장소를 입력' } },
+    { type: 'tool_use', id: 'toolu_o4', name: 'set_page_border', input: { style: 'solid', thicknessMm: 0.4 } },
+    { type: 'tool_use', id: 'toolu_o5', name: 'new_page_number', input: { find: '안건', start: 10 } },
+  ], 'tool_use') });
+  queue.push({ body: sse([{ type: 'text', text: '넣었습니다.' }], 'end_turn') });
+  await page.type('.ai-chat-input', '사진, 글상자, 장소 칸, 쪽 테두리 넣어 줘');
+  await page.keyboard.press('Enter');
+  // 자동 적용이어도 그림은 파일을 받을 때까지 기다린다.
+  await page.waitForSelector('.ai-change-card[data-state="pending"] .ai-change-pick', { timeout: 15000 });
+  const waitingText = await page.$eval('.ai-change-card[data-state="pending"]', (el) => el.textContent);
+  assert(waitingText.includes('무궁화 사진'), 'TC17: 그림 카드가 고를 그림을 안내');
+  const fileInput = await page.$('.ai-change-card[data-state="pending"] input[type="file"]');
+  await fileInput.uploadFile(new URL('../public/samples/images/moogung.jpg', import.meta.url).pathname);
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy, { timeout: 30000 });
+  const objects = await page.evaluate(() => {
+    const w = window.__wasm;
+    const raw = w.doc;
+    const cards = [...document.querySelectorAll('.ai-change-card')].slice(-5);
+    const runs = [];
+    for (let pg = 0; pg < w.pageCount; pg += 1) runs.push(...JSON.parse(raw.getPageTextLayout(pg)).runs.map((r) => r.text));
+    const n = w.getParagraphCount(0);
+    const texts = Array.from({ length: n }, (_, i) => w.getTextRange(0, i, 0, w.getParagraphLength(0, i)));
+    const date = texts.findIndex((text) => text.includes('2026년'));
+    return {
+      states: cards.map((c) => c.dataset.state),
+      picked: cards[0].querySelector('.ai-change-picked')?.textContent ?? '',
+      dateControls: JSON.parse(raw.getControlTextPositions(0, date)).length,
+      textbox: runs.includes('중요'),
+      field: JSON.parse(raw.getFieldList()).some((f) => f.name === '장소'),
+      border: JSON.parse(raw.getPageBorderFill(0)).borderTop?.type,
+    };
+  });
+  assert(objects.states.join() === 'applied,applied,applied,applied,applied', `TC17: 다섯 변경 적용 (${objects.states})`);
+  assert(objects.picked.includes('moogung.jpg'), `TC17: 고른 파일 표시 (${objects.picked})`);
+  assert(objects.dateControls >= 3, `TC17: 일시 문단에 그림·글상자·누름틀 개체 (${objects.dateControls})`);
+  assert(objects.textbox, 'TC17: 글상자 글이 쪽에 보임');
+  assert(objects.field, 'TC17: 누름틀 「장소」');
+  assert(objects.border === 1, 'TC17: 쪽 테두리 실선');
+  await screenshot(page, 'ai-panel-objects');
+  await page.evaluate(() => { document.getElementById('scroll-container').scrollTop = 0; });
+  await wait(page, 600);
+  await screenshot(page, 'ai-panel-objects-top');
 
   // ── TC4: 입력란 Ctrl+Z 격리 ───────────────────────────
   await createNewDocument(page);

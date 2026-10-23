@@ -74,6 +74,8 @@ export class ChatController {
   private presenter: ProposalPresenter | null = null;
   /** AI 가 스스로 새 문서를 만드는 중인가 — 그 교체로는 대화를 끊지 않는다. */
   private ownSwap = false;
+  /** 사용자가 카드에서 「이번 응답 모두 적용」을 골랐는가. 질문 하나가 끝나면 풀린다. */
+  private applyRestOfRun = false;
 
   constructor(ctx: AiContext, host: PluginHost, providerFactory: ProviderFactory = defaultProviderFactory) {
     this.ctx = ctx;
@@ -106,6 +108,7 @@ export class ChatController {
 
     const abort = new AbortController();
     this.running = abort;
+    this.applyRestOfRun = false;
     try {
       const provider = await this.providerFactory(apiKey);
       const toolHost: ToolHost = this.host;
@@ -177,7 +180,10 @@ export class ChatController {
     }
     if (!this.presenter) return fail('Editing is not available here.');
 
-    const card = this.presenter.present(proposal, { autoApply: this.ctx.settings.autoApply, signal });
+    const card = this.presenter.present(proposal, {
+      autoApply: this.ctx.settings.autoApply || this.applyRestOfRun,
+      signal,
+    });
     const approved = await card.decision;
     if (!approved) {
       if (signal.aborted) {
@@ -213,6 +219,11 @@ export class ChatController {
       }, boundaryId),
       isError: false,
     };
+  }
+
+  /** 이번 응답의 남은 변경은 묻지 않고 적용한다(카드의 「이번 응답 모두 적용」). */
+  approveRestOfRun(): void {
+    this.applyRestOfRun = true;
   }
 
   /** 진행 중인 질문을 끊는다. 이력은 엔진이 유효한 상태로 마무리한다. */

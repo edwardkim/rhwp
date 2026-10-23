@@ -9,7 +9,7 @@ import { showConfirm } from '@/ui/confirm-dialog';
 import type { AiContext } from '../ai-context.ts';
 import type { AgentRunResult } from '../agent/agent-loop.ts';
 import type { ChatController, ProposalOutcome, ProposalPresenter } from '../agent/chat-controller.ts';
-import type { WriteProposal } from '../tools/write-tools.ts';
+import type { PickedFile, WriteProposal } from '../tools/write-tools.ts';
 import { modelsOf } from '../provider/models.ts';
 import { AiProviderError, EMPTY_USAGE, addUsage, type AiToolCall, type AiUsage } from '../provider/types.ts';
 import { AiSettingsDialog, failureMessage } from './ai-settings-dialog.ts';
@@ -67,6 +67,8 @@ function formatSummary(format: Record<string, string | number | boolean>): strin
       case 'verticalAlign': parts.push(t(`ai.format.valign.${value as string}`)); break;
       case 'orientation': parts.push(t(`ai.format.orientation.${value as string}`)); break;
       case 'borderStyle': parts.push(t(`ai.format.border.${value as string}`)); break;
+      case 'shape': parts.push(t(`ai.format.shape.${value as string}`)); break;
+      case 'widthMm': case 'heightMm': parts.push(t(`ai.format.${key}`, { v: value as number })); break;
       case 'backgroundColor':
         parts.push(value === 'none' ? t('ai.format.backgroundNone') : t('ai.format.backgroundColor', { v: String(value) }));
         break;
@@ -74,6 +76,17 @@ function formatSummary(format: Record<string, string | number | boolean>): strin
     }
   }
   return parts.join(' · ');
+}
+
+/** 고른 그림 파일 → 바이트와 원본 픽셀 크기. 그림으로 읽히지 않으면 거절한다. */
+async function readPickedImage(file: File): Promise<PickedFile> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const bitmap = await createImageBitmap(file);
+  const size = { naturalWidth: bitmap.width, naturalHeight: bitmap.height };
+  bitmap.close();
+  const extension = (file.name.split('.').pop() ?? '').toLowerCase()
+    || file.type.replace('image/', '').replace('jpeg', 'jpg');
+  return { name: file.name, bytes, extension, ...size };
 }
 
 /** 응답 하나의 화면 — 회차마다 글 조각, 도구 호출마다 표시. */
@@ -128,7 +141,7 @@ class AssistantView {
   }
 
   /** 변경 제안 카드. 사용자가 고르면(또는 자동 적용이면) `decision` 이 끝난다. */
-  proposal(proposal: WriteProposal, autoApply: boolean, signal: AbortSignal) {
+  proposal(proposal: WriteProposal, autoApply: boolean, signal: AbortSignal, onApplyAll: () => void) {
     this.root.querySelector('.ai-msg-pending')?.remove();
     this.textPart = null;
     this.toolsPart = null;
@@ -137,8 +150,8 @@ class AssistantView {
     const loc = proposal.location;
     const coords = { section: (loc.section ?? 0) + 1, paragraph: (loc.paragraph ?? 0) + 1 };
     // 새 문서와 머리말·꼬리말은 본문 위치가 없다(머리말 종류는 요약에 보인다).
-    const where = ['create_document', 'set_header_footer', 'run_command', 'replace_all', 'page_setup', 'set_columns']
-      .includes(proposal.tool)
+    const where = ['create_document', 'set_header_footer', 'run_command', 'replace_all', 'page_setup', 'set_columns',
+      'set_page_border', 'set_chart_data'].includes(proposal.tool) || (proposal.tool === 'insert_picture' && proposal.location.position === 'end')
       ? null
       : loc.field !== undefined ? t('ai.change.field', { name: loc.field })
         : loc.position === 'start' ? t('ai.change.atStart')
@@ -165,10 +178,22 @@ class AssistantView {
       card.append(line('ai-change-before', '−', 'del', proposal.removed));
     } else if (proposal.tool === 'page_setup' || proposal.tool === 'set_columns') {
       card.append(el('div', 'ai-change-line', t('ai.change.pageSetupNote')));
+    } else if (proposal.tool === 'insert_picture') {
+      card.append(el('div', 'ai-change-line', proposal.inserted ? t('ai.change.picturePurpose', { v: proposal.inserted }) : t('ai.change.pictureNote')));
+    } else if (proposal.tool === 'set_chart_data') {
+      card.append(
+        line('ai-change-before', t('ai.change.before'), 'del', proposal.removed),
+        line('ai-change-after', t('ai.change.afterLabel'), 'ins', proposal.inserted),
+      );
+    } else if (proposal.tool === 'set_page_border') {
+      card.append(el('div', 'ai-change-line', t('ai.change.pageBorderNote')));
+    } else if (proposal.tool === 'insert_textbox' || proposal.tool === 'insert_field') {
+      card.append(line('ai-change-after', '+', 'ins', proposal.inserted));
     } else if (proposal.tool === 'insert_equation') {
       card.append(line('ai-change-after', t('ai.change.equationLabel'), 'ins', proposal.inserted));
     } else if (['format_text', 'format_paragraph', 'set_list', 'apply_style', 'edit_table', 'run_command', 'format_cell',
-      'set_table_border', 'set_cell_size', 'insert_hyperlink', 'add_bookmark'].includes(proposal.tool)) {
+      'set_table_border', 'set_cell_size', 'insert_hyperlink', 'add_bookmark', 'insert_shape', 'new_page_number']
+      .includes(proposal.tool)) {
       const target = el('div', 'ai-change-line ai-change-target');
       target.append(document.createTextNode(proposal.prefix), el('mark', 'ai-change-mark', proposal.inserted),
         document.createTextNode(proposal.suffix));
@@ -193,12 +218,41 @@ class AssistantView {
       resolve(approved);
     };
     const onAbort = () => decide(false);
-    if (autoApply) {
+    if (proposal.file) {
+      // 그림처럼 사용자가 파일을 골라야 하는 제안 — 자동 적용이어도 파일을 받은 뒤에 적용한다.
+      const fileRequest = proposal.file;
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = fileRequest.accept;
+      input.hidden = true;
+      const pick = button('dialog-btn dialog-btn-primary ai-change-pick', t('ai.change.pickFile'), () => input.click());
+      const reject = button('dialog-btn ai-change-reject', t('ai.change.reject'), () => decide(false));
+      const picked = el('div', 'ai-change-picked');
+      input.addEventListener('change', () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        void readPickedImage(file).then((pickedFile) => {
+          fileRequest.provide(pickedFile);
+          picked.textContent = t('ai.change.picked', { name: pickedFile.name, w: pickedFile.naturalWidth, h: pickedFile.naturalHeight });
+          if (autoApply) { decide(true); return; }
+          actions.replaceChildren(
+            button('dialog-btn dialog-btn-primary ai-change-apply', t('ai.change.apply'), () => decide(true)),
+            reject,
+          );
+        }, () => { picked.textContent = t('ai.change.badImage'); });
+      });
+      actions.append(pick, reject, input);
+      card.insertBefore(picked, actions);
+      signal.addEventListener('abort', onAbort, { once: true });
+      pick.focus();
+    } else if (autoApply) {
       decide(true);
     } else {
       const apply = button('dialog-btn dialog-btn-primary ai-change-apply', t('ai.change.apply'), () => decide(true));
+      // 한 응답에 변경이 여러 개면 하나씩 누르기 번거롭다 — 이 응답의 남은 변경까지 한 번에 승인한다.
+      const applyAll = button('dialog-btn ai-change-apply-all', t('ai.change.applyAll'), () => { onApplyAll(); decide(true); });
       const reject = button('dialog-btn ai-change-reject', t('ai.change.reject'), () => decide(false));
-      actions.append(apply, reject);
+      actions.append(apply, applyAll, reject);
       signal.addEventListener('abort', onAbort, { once: true });
       apply.focus();
     }
@@ -248,6 +302,7 @@ export class AiPanel {
   private input!: HTMLTextAreaElement;
   private sendButton!: HTMLButtonElement;
   private usageLine!: HTMLElement;
+  private autoApplyToggle!: HTMLInputElement;
   private offs: Array<() => void> = [];
   private visible = false;
   /** 이번 실행에서 동의 대화상자를 이미 띄웠는가 — 거절한 사람에게 열 때마다 묻지 않는다. */
@@ -296,6 +351,15 @@ export class AiPanel {
       this.quick.append(quickButton);
     }
 
+    // 변경을 묻지 않고 바로 적용할지 — AI 설정의 같은 값. 패널에서 바로 바꿀 수 있게 둔다.
+    const autoRow = el('label', 'ai-chat-auto');
+    this.autoApplyToggle = document.createElement('input');
+    this.autoApplyToggle.type = 'checkbox';
+    this.autoApplyToggle.className = 'ai-chat-auto-toggle';
+    this.autoApplyToggle.addEventListener('change', () => this.ctx.updateSettings({ autoApply: this.autoApplyToggle.checked }));
+    autoRow.append(this.autoApplyToggle, document.createTextNode(t('ai.chat.autoApply')));
+    autoRow.title = t('ai.chat.autoApplyHint');
+
     const compose = el('div', 'ai-chat-compose');
     this.input = el('textarea', 'ai-chat-input');
     this.input.rows = 3;
@@ -315,7 +379,7 @@ export class AiPanel {
     compose.append(this.input, this.sendButton);
     this.usageLine = el('div', 'ai-chat-usage');
 
-    this.chatView.append(this.log, this.quick, compose, this.usageLine);
+    this.chatView.append(this.log, this.quick, autoRow, compose, this.usageLine);
     root.append(head, this.status, this.chatView);
     container.append(root);
     this.root = root;
@@ -370,6 +434,7 @@ export class AiPanel {
     const model = modelsOf(settings.provider).find((m) => m.id === settings.model)?.label ?? settings.model;
     this.modelLine.textContent = t('ai.panel.modelLine', { provider: t(`ai.provider.${settings.provider}`), model });
 
+    this.autoApplyToggle.checked = settings.autoApply;
     const ready = this.state === 'ready';
     this.status.hidden = ready;
     this.chatView.hidden = !ready;
@@ -445,7 +510,7 @@ export class AiPanel {
 
     const presenter: ProposalPresenter = {
       present: (proposal, options) => {
-        const handle = answer.proposal(proposal, options.autoApply, options.signal);
+        const handle = answer.proposal(proposal, options.autoApply, options.signal, () => this.chat.approveRestOfRun());
         this.scrollToEnd(true);
         return handle;
       },

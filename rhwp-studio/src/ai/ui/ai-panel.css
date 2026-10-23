@@ -444,3 +444,13 @@
   color: var(--color-primary);
   font-weight: 600;
 }
+
+.ai-chat-auto {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
