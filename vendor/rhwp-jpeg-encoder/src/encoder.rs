@@ -775,17 +775,21 @@ fn get_block_averaged(
     col_stride: usize,
     row_stride: usize,
     width: usize,
+    height: usize,
 ) -> AlignedBlock {
     let mut block = [0i16; 64];
     let n = col_stride * row_stride;
     // Alternate the rounding bias per column as libjpeg does (see jcsample.c)
     let bias_even = (n - 1) / 2;
     let bias_odd = n / 2;
+    // 마지막 유효 행 그룹을 평균한 뒤 그 출력 행을 반복한다.
+    // 원본 마지막 행만 먼저 반복하면 불완전 iMCU의 색차가 달라진다.
+    let last_group_y = (height - 1) / row_stride * row_stride;
 
     for y in 0..8 {
         for x in 0..8 {
             let ix = start_x + (x * col_stride);
-            let iy = start_y + (y * row_stride);
+            let iy = (start_y + y * row_stride).min(last_group_y);
 
             let mut sum = 0usize;
             for dy in 0..row_stride {
@@ -854,7 +858,7 @@ mod tests {
         }
 
         let nearest = get_block(&data, 0, 0, 2, 2, width);
-        let averaged = get_block_averaged(&data, 0, 0, 2, 2, width);
+        let averaged = get_block_averaged(&data, 0, 0, 2, 2, width, 16);
 
         assert!(nearest.data.iter().all(|&v| v == -128));
         assert!(averaged.data.iter().all(|&v| v == 126 - 128));
@@ -869,7 +873,7 @@ mod tests {
             *v = if (i % width) % 2 == 0 { 1 } else { 2 };
         }
 
-        let averaged = get_block_averaged(&data, 0, 0, 2, 2, width);
+        let averaged = get_block_averaged(&data, 0, 0, 2, 2, width, 16);
         assert_eq!(averaged.data[0], 1 - 128);
         assert_eq!(averaged.data[1], 2 - 128);
         assert_eq!(averaged.data[8], 1 - 128);

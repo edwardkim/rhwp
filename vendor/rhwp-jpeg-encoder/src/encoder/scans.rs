@@ -83,6 +83,8 @@ impl<W: JfifWrite> Encoder<W> {
                                     h_stride,
                                     v_stride,
                                     buffer_width,
+                                    (usize::from(height) - block_y * 8 * max_v_sampling)
+                                        .min(8 * max_v_sampling),
                                 )
                             } else {
                                 get_block(&row[i], bx, by, h_stride, v_stride, buffer_width)
@@ -355,7 +357,15 @@ impl<W: JfifWrite> Encoder<W> {
                     let bx = block_x * 8 * h_scale;
                     let by = block_y * 8 * v_scale;
                     let mut block = if average {
-                        get_block_averaged(&row[i], bx, by, h_scale, v_scale, buffer_width)
+                        get_block_averaged(
+                            &row[i],
+                            bx,
+                            by,
+                            h_scale,
+                            v_scale,
+                            buffer_width,
+                            usize::from(height),
+                        )
                     } else {
                         get_block(&row[i], bx, by, h_scale, v_scale, buffer_width)
                     };

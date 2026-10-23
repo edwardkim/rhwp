@@ -102,3 +102,27 @@ PR #6275 통합 `f8a5524ab404ea80c5f2e4f1e5b3694841237a77`이다. 이 수정의 
 먼저 Native 260쪽과 #6192의 2쪽 독립 Print 대조군을 전후 비교한다. 나머지 편람 선정 쪽과
 정상 대조군, fresh WASM, 최종 전쪽 검증을 이어서 실행한다. 새 관계형 검사는 시각 선행
 조건을 확인해 정식 `tests/cases/`에 포함하며, 기존 #6192 관계 검사를 대체하거나 완화하지 않는다.
+
+
+## 다음 공개 JPEG 경계 계약: 하단 색차 패딩
+
+공개 libjpeg-turbo `jcprepct.c`의 no-context 경로는 원본의 마지막 행 그룹을 먼저
+채워 표본화한 뒤, 마지막 **출력** 행을 iMCU 끝까지 반복한다. 현재 스칼라 인코더는
+원본 마지막 행을 iMCU 전체에 먼저 반복한 뒤 평균을 내므로, 세로 평균 그룹의 끝과
+원본 끝이 일치하지 않는 경우 서로 다른 색차를 만든다. 가로 경계는 `jcsample.c`가
+원본을 먼저 확장하므로 이번 세로 계약과 구분한다. 한컴 비공개 코드를 옮기지 않는다.
+
+공통 평균 블록 계산은 유효 원본 높이를 받아 마지막 유효 그룹의 평균을 반복하도록
+수정한다. interleaved와 최적화 Huffman의 블록 수집 경로가 같은 결과를 소비하게 한다.
+원본 RGB·양자화 표·DCT·가로 bias는 유지한다. 공개 libjpeg/Pillow의 독립 계수와
+짝수·홀수 높이, 완전/불완전 iMCU 경계로 검증한 뒤 실제 Native/fresh WASM을 재검증한다.
+
+근거: [공개 전처리 controller](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/main/src/jcprepct.c),
+[공개 표본화 경로](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/main/src/jcsample.c).
+
+세로 경계 후보의 실제 vendored 인코더를 별도 실행해 공개 Pillow/libjpeg의 계수와
+74건 대조했다. 16/17/19 너비와 1/2/3/14/15/16/17/18/30/31/32/33 높이의 YCbCr,
+877×510 RGB 원본 색 확장 입력에 대해 일반/최적화 Huffman 두 경로를 확인했다.
+기존 후보는 26건 불일치, 수정 후보는 74건 모두 계수가 같았다. 공개 코드만 수정했으며
+이 진단은 실제 문서 Native/fresh WASM·정식 회귀의 완료 증거를 대신하지 않는다.
+후속 Native 집중·정상 대조군과 최적화 fresh WASM을 같은 새 source로 재검증한다.
