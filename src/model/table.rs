@@ -858,6 +858,25 @@ impl Table {
         while h < rc && is_header_row[h] {
             h += 1;
         }
+        // 제목행 블록 안에서 시작한 셀이 블록 아래로 걸치면 그 행까지 블록에 넣는다 — 걸친 셀을
+        // 잘라 반복할 수 없다(1790387 6쪽: 제목 셀 "지표 구분" 은 행 0 만, 같은 행의 "사업지역"·
+        // "권역" 은 2행 걸침 → 한/글은 행 0·1 을 반복).
+        if h > 0 {
+            loop {
+                let closed = self
+                    .cells
+                    .iter()
+                    .filter(|cell| (cell.row as usize) < h)
+                    .map(|cell| (cell.row as usize + (cell.row_span as usize).max(1)).min(rc))
+                    .max()
+                    .unwrap_or(h)
+                    .max(h);
+                if closed == h {
+                    break;
+                }
+                h = closed;
+            }
+        }
         (0..h).collect()
     }
 

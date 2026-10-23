@@ -448,6 +448,33 @@ impl Font {
             ] {
                 font_family.push(fallback.to_string());
             }
+        } else {
+            // 영문 face(예: "Calibri")만 지정된 글자도 미설치 환경에서 renderer 기본 글꼴(명조)로
+            // 떨어지지 않게 LOGFONT 계열로 대체 사슬을 단다. 한글은 Windows 글꼴 연결처럼
+            // 맑은 고딕 계열로 간다(1790387 35쪽 차트: "Calibri" 의 "2018년" — 한/글 PDF 는 고딕).
+            let chain: &[&str] = match self.pitch_and_family.family {
+                FamilyFont::FF_ROMAN => &[
+                    "Times New Roman",
+                    "Batang",
+                    "바탕",
+                    "Noto Serif CJK KR",
+                    "serif",
+                ],
+                FamilyFont::FF_MODERN => &["Courier New", "monospace"],
+                _ => &[
+                    "Arial",
+                    "Malgun Gothic",
+                    "맑은 고딕",
+                    "Apple SD Gothic Neo",
+                    "Noto Sans CJK KR",
+                    "sans-serif",
+                ],
+            };
+            for fallback in chain {
+                if !font_family.iter().any(|existing| existing == fallback) {
+                    font_family.push((*fallback).to_string());
+                }
+            }
         }
 
         elem = elem
