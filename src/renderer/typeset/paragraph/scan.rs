@@ -26,6 +26,10 @@ pub(in crate::renderer::typeset) struct LineScanPage {
     pub stored_vpos_base: Option<i32>,
     pub current_footnote_height: f64,
     pub footnote_safety_margin: f64,
+    /// 이 쪽 첫 각주가 함께 예약하는 구분선 몫.
+    pub footnote_separator_overhead: f64,
+    /// 각주 사이 간격.
+    pub footnote_between_notes_margin: f64,
     pub current_zone_y_offset: f64,
     pub current_bottom_fixed_exclusion: f64,
     pub next_page_stored_body_origin: Option<f64>,
@@ -380,6 +384,73 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
                         - page.current_zone_y_offset
                         - page.current_bottom_fixed_exclusion
             });
+    // 이어지는 조각(앞 reset 줄에서 시작)은 이 문단의 저장 사다리가 이미 앞 쪽 경계로
+    // 확인된 경우다. 그 조각 안에 표시가 있는 본문 각주는 그 쪽 각주 영역에 놓이므로,
+    // 조각의 마지막 잉크 끝이 그 각주들을 뺀 본문 안에 있으면 다음 reset 도 쪽 경계다
+    // (합성 `cont_reset_F20_L70_N4`: 23줄째 reset 뒤 조각과 그 각주, 59줄째 reset).
+    let continuation_start = start_line > 0
+        && para
+            .line_segs
+            .get(start_line)
+            .is_some_and(|seg| seg.vertical_pos == 0)
+        && para
+            .line_segs
+            .get(start_line - 1)
+            .is_some_and(|seg| seg.vertical_pos > 0);
+    let notes_in_prefix_fit_saved_frame = continuation_start
+        && !para.controls.is_empty()
+        && para
+            .controls
+            .iter()
+            .all(|control| matches!(control, crate::model::control::Control::Footnote(_)))
+        && {
+            let prefix_notes: Vec<&crate::model::footnote::Footnote> = para
+                .controls
+                .iter()
+                .enumerate()
+                .filter_map(|(index, control)| match control {
+                    crate::model::control::Control::Footnote(note)
+                        if crate::renderer::composer::control_slot_line_index(para, index)
+                            .is_some_and(|line| line >= start_line && line < break_line) =>
+                    {
+                        Some(note.as_ref())
+                    }
+                    _ => None,
+                })
+                .collect();
+            let prefix_notes_height = if prefix_notes.is_empty() {
+                0.0
+            } else {
+                let separator = if page.current_footnote_height > 0.0 {
+                    0.0
+                } else {
+                    page.footnote_separator_overhead
+                };
+                let between = page.footnote_between_notes_margin
+                    * (prefix_notes.len() - usize::from(page.current_footnote_height <= 0.0))
+                        as f64;
+                separator
+                    + between
+                    + prefix_notes
+                        .iter()
+                        .map(|note| {
+                            crate::renderer::pagination::estimate_footnote_note_height(note, dpi)
+                        })
+                        .sum::<f64>()
+            };
+            break_line
+                .checked_sub(1)
+                .and_then(|line| para.line_segs.get(line))
+                .and_then(|line| line_seg_visible_bounds_px(line, current_page_vpos_base, dpi))
+                .is_some_and(|(_, bottom)| {
+                    bottom
+                        <= page.body_height
+                            - page.current_footnote_height
+                            - prefix_notes_height
+                            - page.current_zone_y_offset
+                            - page.current_bottom_fixed_exclusion
+                })
+        };
     // 먼저 검증된 이월 개체 상자의 하단에서 본문이 재개하는 비영 원점이다.
     // 이 경우 흐름을 밀지 않는 떠 있는 표가 있어도 앞 글줄의 소유는 보존한다.
     let stored_frame_reset = (page.profile.hwpx_stored_layout()
@@ -415,6 +486,7 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
             && !only_bodyless_notes
             && !only_suffix_controls
             && !notes_owned_by_following_frame
+            && !notes_in_prefix_fit_saved_frame
             && !stored_frame_reset)
         || start_line >= break_line
         || break_line >= para.line_segs.len()
@@ -436,10 +508,13 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
         return false;
     }
 
+    // 이어지는 조각은 앞 reset 줄(vpos 0)에서 시작한다 — 그 첫 줄만 0 을 허용하고,
+    // 조각 안에 다른 reset·되감김이 없어야 한다.
     let mut previous_vpos = None;
-    for seg in &para.line_segs[start_line..break_line] {
+    for (offset, seg) in para.line_segs[start_line..break_line].iter().enumerate() {
+        let reset_start = offset == 0 && continuation_start;
         if is_synthetic_line_seg(seg)
-            || seg.vertical_pos <= 0
+            || (seg.vertical_pos <= 0 && !reset_start)
             || previous_vpos.is_some_and(|previous| seg.vertical_pos <= previous)
         {
             return false;
