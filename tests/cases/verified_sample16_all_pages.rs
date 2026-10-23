@@ -1,8 +1,10 @@
 //! #8160: 새 Hancom Print와 Native/fresh 표준 WASM 전 384쪽 raw 100% 뒤 등록.
-//! 세 원본 각각 64쪽의 독립 내용·기준선과 원본 본문/셀/글상자 주소를 보호한다.
+//! 세 원본 각각 64쪽의 내용·기준선·가로 원점과 중요 표·그림·산식·꼬리말의
+//! 독립 px 좌표, 원본 본문/셀/글상자 주소를 함께 보호한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::{control::Control, paragraph::Paragraph, shape::ShapeObject};
+use rhwp::renderer::equation::layout::{LayoutBox, LayoutKind};
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType, TextRunNode};
 use rhwp::DocumentCore;
 use serde::Deserialize;
@@ -26,6 +28,25 @@ struct Contract {
 struct Page {
     page: usize,
     anchors: Vec<Anchor>,
+    origin_x: f64,
+    regions: Vec<Region>,
+    footer: Option<Footer>,
+    price_equations: Option<[[f64; 3]; 2]>,
+}
+
+#[derive(Deserialize)]
+struct Footer {
+    text: String,
+    x: f64,
+    baseline: f64,
+}
+
+#[derive(Deserialize)]
+struct Region {
+    kind: String,
+    owner: [usize; 3],
+    cell: Option<u32>,
+    edges: [f64; 4],
 }
 
 #[derive(Deserialize)]
@@ -147,10 +168,11 @@ fn verify(fixture: &str) {
             "표지·목차·본문·서식 모두 중요 내용 보호"
         );
         let tree = core.build_page_render_tree(index as u32).unwrap();
+        verify_regions(&core, &tree.root, page);
         let mut body = Vec::new();
         lines(&tree.root, false, &mut body);
         let mut previous_baseline = f64::NEG_INFINITY;
-        for anchor in &page.anchors {
+        for (anchor_index, anchor) in page.anchors.iter().enumerate() {
             let found: Vec<_> = body
                 .iter()
                 .copied()
@@ -174,6 +196,19 @@ fn verify(fixture: &str) {
                 anchor.text
             );
             let line = found[0];
+            if anchor_index == 0 {
+                // 선행 공백 런은 PDF의 가시 글자 원점에 포함되지 않는다.
+                let (first, _) = runs(line)
+                    .into_iter()
+                    .find(|(_, run)| !compact(run.display_or_text()).is_empty())
+                    .expect("독립 내용의 첫 가시 런");
+                near(
+                    first.bbox.x,
+                    page.origin_x,
+                    page.page,
+                    "핵심 글줄 가로 원점",
+                );
+            }
             let original = source(&core, anchor);
             let mut prior_end = None;
             for (node, run) in runs(line) {
@@ -223,6 +258,231 @@ fn verify(fixture: &str) {
                 "선정 원문을 다른 쪽에 중복 배치하지 않는다"
             );
         }
+    }
+}
+
+fn near(actual: f64, expected: f64, page: usize, label: &str) {
+    assert!(
+        actual.is_finite() && (actual - expected).abs() <= 2.0,
+        "{page}쪽 {label} ±2px: expected={expected}, actual={actual}"
+    );
+}
+
+fn verify_regions(core: &DocumentCore, root: &RenderNode, page: &Page) {
+    let expected_count = match page.page {
+        6 => 16,
+        18 => 3,
+        35 => 4,
+        38 => 44,
+        58 => 143,
+        _ => 0,
+    };
+    assert_eq!(page.regions.len(), expected_count, "중요 셀·그림 계약 누락");
+    let mut nodes = Vec::new();
+    collect_picture_nodes(root, &mut nodes);
+    assert_eq!(
+        page.price_equations.is_some(),
+        page.page == 6,
+        "중요 산식 좌표 계약 누락"
+    );
+    if let Some(expected) = &page.price_equations {
+        let mut rules = Vec::new();
+        let mut owners = BTreeSet::new();
+        for node in &nodes {
+            let RenderNodeType::Equation(equation) = &node.node_type else {
+                continue;
+            };
+            let owner = (
+                equation.section_index.unwrap(),
+                equation.para_index.unwrap(),
+                equation.control_index.unwrap(),
+            );
+            assert!(owners.insert(owner), "산식 원본 소유 중복 없음");
+            let Control::Equation(source) =
+                &core.document().sections[owner.0].paragraphs[owner.1].controls[owner.2]
+            else {
+                panic!("원본 산식 제어")
+            };
+            assert_eq!(compact(&source.script), compact(&equation.script));
+            assert!(source.common.treat_as_char);
+            let mut fraction = Vec::new();
+            fraction_rules(
+                &equation.layout_box,
+                node.bbox.x,
+                node.bbox.y,
+                &mut fraction,
+            );
+            assert_eq!(fraction.len(), 1, "각 산식의 한 분수선");
+            let first =
+                first_glyph_x(&equation.layout_box, node.bbox.x).expect("산식 첫 가시 글자");
+            rules.push([first, fraction[0][1], fraction[0][2] - fraction[0][0]]);
+        }
+        assert_eq!(owners.len(), 2, "두 원본 산식의 누락 없음");
+        rules.sort_by(|a, b| a[1].total_cmp(&b[1]));
+        assert_eq!(rules.len(), expected.len(), "분수선 누락·중복 없음");
+        for (actual, expected) in rules.iter().zip(expected) {
+            for ((actual, expected), label) in
+                actual
+                    .iter()
+                    .zip(expected)
+                    .zip(["산식 첫 글자", "분수선 높이", "분수선 길이"])
+            {
+                near(*actual, *expected, page.page, label);
+            }
+        }
+    }
+    assert_eq!(
+        page.footer.is_some(),
+        page.page == 38,
+        "중요 꼬리말 계약 누락"
+    );
+    if let Some(footer) = &page.footer {
+        let found: Vec<_> = nodes
+            .iter()
+            .copied()
+            .filter(|node| {
+                matches!(&node.node_type, RenderNodeType::TextRun(run)
+                if compact(run.display_or_text()) == footer.text)
+            })
+            .collect();
+        assert_eq!(found.len(), 1, "꼬리말 내용·누락·중복");
+        let node = found[0];
+        let RenderNodeType::TextRun(run) = &node.node_type else {
+            unreachable!()
+        };
+        assert_eq!(
+            (run.section_index, run.para_index),
+            (None, None),
+            "본문으로 소유 이동 없음"
+        );
+        assert!(run.cell_context.is_none());
+        near(node.bbox.x, footer.x, page.page, "꼬리말 가로 원점");
+        near(
+            node.bbox.y + run.baseline,
+            footer.baseline,
+            page.page,
+            "꼬리말 기준선",
+        );
+    }
+    let mut seen = BTreeSet::new();
+    for region in &page.regions {
+        assert!(seen.insert((region.kind.as_str(), region.owner, region.cell)));
+        let [section, paragraph, control] = region.owner;
+        let owner = (Some(section), Some(paragraph), Some(control));
+        let found: Vec<_> = nodes
+            .iter()
+            .copied()
+            .filter(|node| match &node.node_type {
+                RenderNodeType::Table(table) if region.kind == "cell" => {
+                    (table.section_index, table.para_index, table.control_index) == owner
+                }
+                RenderNodeType::Image(image) if region.kind == "image" => {
+                    (image.section_index, image.para_index, image.control_index) == owner
+                }
+                _ => false,
+            })
+            .collect();
+        assert_eq!(found.len(), 1, "{}쪽 중요 개체의 단일 원본 소유", page.page);
+        let source = &core.document().sections[section].paragraphs[paragraph].controls[control];
+        let node = match source {
+            Control::Table(table) if region.kind == "cell" => {
+                let cell = region.cell.expect("독립 PDF clip과 대응한 원본 셀");
+                let cells: Vec<_> = found[0]
+                    .children
+                    .iter()
+                    .filter(|node| {
+                        matches!(&node.node_type, RenderNodeType::TableCell(c)
+                        if c.model_cell_index == Some(cell))
+                    })
+                    .collect();
+                assert_eq!(cells.len(), 1, "원본 셀의 누락·중복 없음");
+                let original = &table.cells[cell as usize];
+                let RenderNodeType::TableCell(actual) = &cells[0].node_type else {
+                    unreachable!()
+                };
+                assert_eq!(
+                    (actual.row, actual.col, actual.row_span, actual.col_span),
+                    (
+                        original.row,
+                        original.col,
+                        original.row_span,
+                        original.col_span
+                    ),
+                    "병합 셀의 원본 행·열·점유 관계"
+                );
+                cells[0]
+            }
+            Control::Picture(_) if region.kind == "image" => {
+                assert!(region.cell.is_none());
+                found[0]
+            }
+            _ => panic!("독립 중요 영역과 원본 개체 종류 일치"),
+        };
+        let bbox = node.bbox;
+        let actual = [bbox.x, bbox.y, bbox.x + bbox.width, bbox.y + bbox.height];
+        for ((actual, expected), edge) in
+            actual
+                .into_iter()
+                .zip(region.edges)
+                .zip(["왼쪽", "위쪽", "오른쪽", "아래쪽"])
+        {
+            near(actual, expected, page.page, edge);
+        }
+    }
+}
+
+// 원본 글꼴을 공급하지 않는 일반 검사에서도 같은 의미인 첫 가시 글자의 원점.
+fn first_glyph_x(layout: &LayoutBox, x: f64) -> Option<f64> {
+    let x = x + layout.x;
+    match &layout.kind {
+        LayoutKind::Row(children) => children.iter().find_map(|child| first_glyph_x(child, x)),
+        LayoutKind::FontStyle { body, .. }
+        | LayoutKind::Paren { body, .. }
+        | LayoutKind::Color { body, .. } => first_glyph_x(body, x),
+        LayoutKind::HancomGlyphs(run) => run.positions.first().map(|offset| x + offset),
+        LayoutKind::Text(text)
+        | LayoutKind::Number(text)
+        | LayoutKind::Symbol(text)
+        | LayoutKind::MathSymbol(text)
+        | LayoutKind::Function(text)
+        | LayoutKind::FontGlyph { text, .. }
+            if !compact(text).is_empty() =>
+        {
+            Some(x)
+        }
+        _ => None,
+    }
+}
+
+// 최종 EquationNode의 공통 배치가 발행한 분수선. PDF 기대값이나
+// source script로 실제 좌표를 재계산하지 않는다.
+fn fraction_rules(layout: &LayoutBox, x: f64, y: f64, out: &mut Vec<[f64; 3]>) {
+    let (x, y) = (x + layout.x, y + layout.y);
+    match &layout.kind {
+        LayoutKind::Row(children) => {
+            for child in children {
+                fraction_rules(child, x, y, out);
+            }
+        }
+        LayoutKind::Fraction {
+            numer,
+            denom,
+            axis_height,
+            rule_inset,
+            ..
+        } => {
+            out.push([
+                x + rule_inset,
+                y + layout.baseline - axis_height,
+                x + layout.width - rule_inset,
+            ]);
+            fraction_rules(numer, x, y, out);
+            fraction_rules(denom, x, y, out);
+        }
+        LayoutKind::FontStyle { body, .. }
+        | LayoutKind::Paren { body, .. }
+        | LayoutKind::Color { body, .. } => fraction_rules(body, x, y, out),
+        _ => {}
     }
 }
 
