@@ -959,7 +959,11 @@ impl WebCanvasRenderer {
         } else if run.rotation != 0.0 {
             let cx = bbox.x + bbox.width / 2.0;
             let cy = bbox.y + bbox.height / 2.0;
-            let font_weight = if run.style.bold { "bold " } else { "" };
+            let font_weight = if run.style.is_visually_bold() {
+                "bold "
+            } else {
+                ""
+            };
             let font_style_str = if run.style.italic { "italic " } else { "" };
             let font_size = run.style.effective_font_size();
             let font_family = super::canvas_font_family_chain(&run.style.font_family);
@@ -2423,7 +2427,11 @@ impl Renderer for WebCanvasRenderer {
                         let fallback_font = format!(
                             "{}{}{:.3}px 'Malgun Gothic','맑은 고딕',sans-serif",
                             if style.italic { "italic " } else { "" },
-                            if style.bold { "bold " } else { "" },
+                            if style.is_visually_bold() {
+                                "bold "
+                            } else {
+                                ""
+                            },
                             font_size
                         );
                         self.ctx.set_font(&fallback_font);
@@ -3181,7 +3189,11 @@ impl WebCanvasRenderer {
         let box_size = (font_size * 0.72).max(1.0);
         let box_y = baseline_y - font_size * 0.76;
         let color = color_to_css(style.color);
-        let font_weight = if style.bold { "bold " } else { "" };
+        let font_weight = if style.is_visually_bold() {
+            "bold "
+        } else {
+            ""
+        };
         let font_style = if style.italic { "italic " } else { "" };
         let font_family = super::canvas_font_family_chain(&style.font_family);
         let number_font_size = (font_size * 0.5).max(1.0);
@@ -3267,7 +3279,11 @@ impl WebCanvasRenderer {
         };
 
         let font_family = super::canvas_font_family_chain(&style.font_family);
-        let font_weight = if style.bold { "bold " } else { "" };
+        let font_weight = if style.is_visually_bold() {
+            "bold "
+        } else {
+            ""
+        };
         let font_style_str = if style.italic { "italic " } else { "" };
         let font = format!(
             "{}{}{:.3}px {}",
@@ -3444,7 +3460,11 @@ impl WebCanvasRenderer {
             1.0
         };
 
-        let font_weight = if style.bold { "bold " } else { "" };
+        let font_weight = if style.is_visually_bold() {
+            "bold "
+        } else {
+            ""
+        };
         let font_style_str = if style.italic { "italic " } else { "" };
         let font = format!(
             "{}{}{:.3}px {}",

@@ -892,6 +892,8 @@ pub(crate) fn is_heavy_display_face(font_family: &str) -> bool {
             | "HYHeadLine M"
             | "HYHeadLine Medium"
             | "HY견고딕"
+            | "한양견고딕"
+            | "HYGothic-Extra"
             | "HY견명조B"
             | "HY그래픽"
             | "HY그래픽M"

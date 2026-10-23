@@ -25,7 +25,12 @@ impl CanvasTextFont {
         let prefix = format!(
             "{}{}{:.3}px ",
             if style.italic { "italic " } else { "" },
-            if style.bold { "bold " } else { "" },
+            // SVG 와 같이 HY헤드라인M 같은 굵은 표시용 글꼴도 bold 로 그린다.
+            if style.is_visually_bold() {
+                "bold "
+            } else {
+                ""
+            },
             draw_size,
         );
         Self {
