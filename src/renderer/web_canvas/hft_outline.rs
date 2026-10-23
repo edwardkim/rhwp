@@ -4,6 +4,15 @@ use super::WebCanvasRenderer;
 use crate::renderer::{hft_outline::supports_style, PathCommand, TextStyle};
 
 impl WebCanvasRenderer {
+    /// 현재 출력 profile에서 공통 원본 윤곽 계약을 소비한다.
+    pub(super) fn preserves_hft_ink(&self, text: &str, style: &TextStyle) -> bool {
+        self.hft_outline_enabled
+            && self
+                .hft_outline_fonts
+                .as_ref()
+                .is_some_and(|fonts| fonts.preserves_program_ink(text, style))
+    }
+
     pub(super) fn draw_hft_outline(&self, text: &str, style: &TextStyle, font_size: f64) -> bool {
         // 이 cluster는 호출자가 old_hangul_descriptor로 전환해 그린다.
         // 원래 family의 CFF에도 glyph가 있어도 우선 선택된 전용 face를 덮지 않는다.

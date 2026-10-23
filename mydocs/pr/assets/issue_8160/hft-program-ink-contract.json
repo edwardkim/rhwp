@@ -1,0 +1,44 @@
+{
+  "issue": 8160,
+  "status": "production_patch_linted_fresh_wasm_validation_pending",
+  "rule": "A glyph from the supplied original HFT CFF program keeps its ink extent independently of source text advances. A registered contour is required. Explicit fixed glyph advances, old Hangul, multiple-character clusters and absent/rejected source programs retain existing fitting. No document, paragraph, string or coordinate condition.",
+  "source_font": {
+    "sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341",
+    "units_per_em": 1000,
+    "slash_advance_units": 605
+  },
+  "independent_print": {
+    "ascii_pdf_sha256": "ca696a1c97e87b452d0f86d90595ef92950b2353223a7b8f02d3288ca37206dc",
+    "neutral_multisize_pdf_sha256": "8f89e38c0dc209e117b20f9488f4eb54ef80386987054e250d3ef59c297ed5e2",
+    "intrinsic_slash_width_em": 0.605,
+    "regular_bold_programs": "95 ASCII contours and intrinsic widths identical; bold adds .02em stroke",
+    "bold_slash_observed_advances_em": {
+      "minimum": 0.28999905,
+      "maximum": 0.30079847
+    }
+  },
+  "wasm29_runtime_trace": {
+    "source_package_sha256": "89c4205c4a5fcdd74c45c3392dc751c7e833b2df50bd53df2d4a9ce718d2ff39",
+    "font": "bold 21.333px HCI Poppy",
+    "actual_measured_advance": 12.903564453125,
+    "glyph_fit_scale": 0.4877205193042755,
+    "baseline_unmatched": [
+      4,
+      5
+    ],
+    "ink_preservation_diagnostic_unmatched": [
+      0,
+      0
+    ],
+    "diagnostic_scope": "Ignored browser instrumentation with unchanged source package; verifies cause, does not replace fresh optimized WASM validation of production patch."
+  },
+  "native_lib_clippy": {
+    "exit_code": 0,
+    "seconds": 180
+  },
+  "wasm_lib_clippy": {
+    "exit_code": 0,
+    "seconds": 186
+  },
+  "tests_registered": false
+}

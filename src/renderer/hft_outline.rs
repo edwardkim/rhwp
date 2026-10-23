@@ -249,6 +249,23 @@ impl HftOutlineFonts {
         Ok(true)
     }
 
+    /// 원본 윤곽의 잉크 폭과 다음 글자의 전진폭은 독립적이다.
+    /// 실제 공급 프로그램이 소유한 단일 글자는 명시적인 폭 맞춤 요청이
+    /// 없는 한 전진폭 안에 눌러 그리지 않는다. 대체 글꼴은 이 계약 밖이다.
+    pub(crate) fn preserves_program_ink(&self, text: &str, style: &TextStyle) -> bool {
+        if !style.source_font_is_hft
+            || style.fixed_glyph_advances
+            || super::contains_old_hangul_jamo(text)
+        {
+            return false;
+        }
+        let mut chars = text.chars();
+        let Some(character) = chars.next() else {
+            return false;
+        };
+        chars.next().is_none() && self.glyph(&style.font_family, character).is_some()
+    }
+
     pub(crate) fn glyph(&self, family: &str, character: char) -> Option<Arc<[PathCommand]>> {
         let source = self.faces.get(&first_family(family).to_lowercase())?;
         let face = Face::parse(&source.bytes, source.face_index).ok()?;

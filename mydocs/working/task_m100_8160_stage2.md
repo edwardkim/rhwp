@@ -746,3 +746,85 @@ WMF 내부 사진의 JPEG 전달은 일반 raster와 같은 폭 의존 품질을
 확보 중이다. 원본 서버 사진을 표준 q57/420으로 압축하면 한컴 자원의 디코드 픽셀과
 완전히 일치하지만, 이를 SVG에 넣기만 해서는 18쪽의 두 경계 픽셀이 남는다.
 따라서 압축 일치만으로 장치 합성까지 해결됐다고 판정하지 않는다.
+
+### 최신 devel 통합과 표준 WASM 검증 착수
+
+확정한 연속 마스크 합성을 `409184576`에 커밋했다. 이어 최신 devel
+`def947c2149df5bc812d801e6e79be19a403b4d1`을 일반 merge
+`f023d6f5201a589057c5cdadc6bdef627e7761b6`로 통합했다. 새 devel의 4개 PR은
+문서·빌드·CI 변경이며 기존 Native 렌더 source를 바꾸지 않는다. Native lib Clippy는
+exit 0(1분 41초), WASM lib Clippy도 exit 0(4분 41초)이다. 광범위 fmt 검사에서
+기존 파생 suite가 없는 source를 가리키는 실패를 확인했다. 이번 source의 모듈 순서를
+수정했으며, 정식 PR 검증은 review worktree의 suite 준비 후 전체 게이트로 수행한다.
+회귀 source나 기대값은 아직 수정하지 않았다.
+
+동일 head의 별도 worktree `/home/tsjang/rhwp-8160-wasm-candidate29`에서
+`CARGO_TARGET_DIR=/home/tsjang/rhwp/target/pr-review`, jobs=14, release CGU=16으로
+`python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard`를
+실행했다. 실제 wasm-opt `-O` 진입을 확인했고 최적화 종료를 기다린다. opt-in cdylib
+경로는 쓰지 않았다. 첫 실행은 worktree checkout이 끝나기 전에 wrapper 경로를 읽어
+즉시 실패했으며, checkout exit 0을 확인한 후 clean tracked source에서 다시 시작했다.
+
+### 2020 WMF의 독립 전달·출력 상태 진단
+
+새 12개 원본 표본(`wmf-nested-raster-unique-independent.hwpx`, SHA
+`241722af26b96490606f8700be32090bfb2b95e551412fe29ec2821d1a5f5b4c`)에서
+16색 타일은 무손실이고 256색 타일의 JPEG 420 품질은 표시 폭 48/80/120px에서
+40/68/75다. 좌우 반전 모두 같다. 같은 bitmap을 반복한 표본은 첫 작은 배치의 q40을
+공유하며, 배치 순서를 뒤집은 새 표본은 q75를 공유한다. 따라서 문서 출력 자원의
+첫 사용을 보존해야 하고, 같은 사진을 모든 배치마다 다시 압축하면 한컴과 달라진다.
+실제 문서의 18쪽 서버 사진과 35쪽 서버 사진도 동일 자원(xref 358, q57)을 공유한다.
+
+제품 코드에 연결하지 않은 진단에서 원본 그림의 JPEG 전달, 원본 GDI 프레임, 기존
+PDFium 면적/선형 표본, 비트맵 마스크의 개체별 원본 합성, 글꼴의 합성 굵기와 장치
+위상을 함께 소비했다. 18쪽 그림 영역은 양방향 미대응 0을 확인하고 확대 판독했다.
+35쪽은 2픽셀(648,796~797)이 남는다. 이는 별도 합성기 진단이며 Native 전쪽 결과나
+제품의 완료로 합산하지 않는다. broad minimum stroke 확대 시안은 새 오차를 만들므로
+채택하지 않았다. 합성 굵기도 실제 공급 face의 weight를 확인해야 한다.
+
+일반 본문 추가·JPEG/무손실 bitmap 추가·crop reference 변경·비균등 배치·TAC 변경·
+rotateimage 변경·CP949 ExtTextOut만으로는 원본의 소수 3자리 상태를 재현하지 못했다.
+하지만 새 `wmf-polygon-order-independent.hwpx`(SHA
+`9fc8b19be9ee857cca1c2196788fc0ed5891286eb50ac1c2501345b0550cb045`)은
+다각형을 그리기 전의 6자리와 그리기 뒤의 3자리를 재현하며, 다음 WMF에도 상태가
+유지된다. 기존 단순 LineTo 표본에서는 이 전환이 없었다. 이 출력 상태를 문서 ID나
+원본 수치로 추측하지 않고 공통 생산 결과로 마련할 근거를 확보했다.
+
+추가 16개 독립 Dx 표본은 ASCII/CP949·자연/가변 Dx·83/180 높이·일반/굵기를
+교차한다. 실제 PDF의 전진은 원본 Dx를 그대로 더한 값과 일부 차이가 있으므로 실제
+글꼴의 폭·합성 굵기 측정과 출력 상태를 함께 추적한다. 원본 GulimChe의 네 글자
+윤곽·hmtx·hhea는 참조 PDF의 subset TTF와 같음을 읽기 전용으로 확인했다. 앞선
+CIDFontType0/CFF 추측은 틀렸으며 실제 F10은 CIDFontType2/FontFile2다. 이를 근거로
+참조 PDF에서 글꼴을 가져와 제품에 넣거나, 미확인 첫 글자 간격 상수를 추가하지 않는다.
+
+### 후보 29 fresh 표준 WASM 전쪽과 원본 잉크 폭 보정
+
+표준 release 빌드·wasm-opt가 36분 24초에 exit 0으로 완료됐다. manifest의
+source는 clean `f023d6f5201a589057c5cdadc6bdef627e7761b6`이고 rlib+cdylib,
+manifest LTO, standard 모드다. 패키지와 Studio public의 해시 검증도 통과했다.
+JS SHA는 `75dfc2d83b6e133e7e0d1057faa4f560b3a04aed563058d6a7a46f1e9c79da0e`,
+WASM SHA는 `89c4205c4a5fcdd74c45c3392dc751c7e833b2df50bd53df2d4a9ce718d2ff39`다.
+세 WASM 전쪽 실행은 exit 0(109.17/95.86/65.21초)이다. HWPX·2024 HWP는 62/64쪽,
+2022 HWP는 60/64쪽이 raw 100%다. Native 190 + WASM 184 = **374/384쪽**이며
+전쪽 완료로 판정하지 않는다. WASM 공통 38쪽 9픽셀·39쪽 1픽셀이 추가로 남는다.
+
+38쪽은 실제 공급 HCI Poppy CFF가 있는데도 Canvas가 글리프를 원본 전진폭 안에
+축소한 원인이다. 독립 Type3 원 프로그램에서 `/`의 Width는 605/1000em이지만
+굵은 글자의 실제 전진은 약 0.29~0.30em이며, 이 둘은 다른 값이다. 원본 일반/굵은
+ASCII 95개 윤곽이 같고 굵기는 별도 stroke라는 기존 독립 증거도 재확인했다.
+런타임 measureText는 12.903564px, paint scale은 0.4877205였다. Native는 이 일반
+본문의 윤곽을 축소하지 않는다. 브라우저 진단에서 잉크 폭을 보존하면 38쪽 전역의
+양방향 미대응이 0이 된다. 첫 진단 hook은 outline의 em 스케일까지 바꿔 잘못됐고,
+단위 y 축과 글리프 fit 변환만 분리한 교정 hook에서 전역 0을 확인했다.
+
+공통 HFT 프로그램 registry에서 `preserves_program_ink`를 생산하고 Canvas가 소비한다.
+실제 등록 CFF 윤곽·단일 글자·HFT 원본·고정 폭 맞춤 미요청을 확인하며, 글꼴 대체와
+옛한글 등 기존 전용 경로는 보존한다. `/`나 문서·문단·좌표 조건은 제품에 없다.
+Native lib Clippy exit 0(3분), WASM lib Clippy exit 0(3분 6초)이다. 이 제품 변경의
+fresh optimized WASM 전쪽 검증은 아직 하지 않았으므로 진단 결과로 대신하지 않는다.
+
+39쪽은 Canvas가 Rust image/zune로 JPEG를 디코드하지만 Native는 Skia/libjpeg를
+소비하는 차이까지 추적했다. 동일 payload의 decoded RGB/YUV를 독립 비교했으며
+IDCT·chroma upsample 차이가 남는다. 다른 decoder를 단순 교체한 시안도 libjpeg와
+완전히 같지 않아 채택하지 않았다. 새 decoder의 None transform 진단은 라이브러리에서
+panic을 일으켜 그 경로를 중단했다. 제품 decoder나 기준 PDF를 바꾸지는 않았다.
