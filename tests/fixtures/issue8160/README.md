@@ -18,7 +18,7 @@ PDF의 `get_text("dict")` 줄에서 공백·제어 문자만 제외한 문자열
 다시 파싱하고 주소가 가리키는 실제 문단의 문자열과 각 런의 문자 범위를 대조한다.
 같은 문구라도 다른 셀·본문·문단으로 이동하면 실패한다. 독립 기준선 ±2px, 해당 쪽의
 내용·중복·소유, 원문 순서와 전체 쪽수도 함께 검사한다.
-`tests/support/sample16_table_picture_rows.rs`는 이전의 HWPX 18쪽 검사 보호를 세 문서로
+`verified_sample16_all_pages.rs::verify_table_picture_rows`는 이전의 HWPX 18쪽 검사 보호를 세 문서로
 확장해 표·그림·표의 원본 컨트롤과 셀 주소·비겹침을 확인한다. 중복 활성 case는 제거했다.
 
 ## 실제 전 페이지 시각 회귀

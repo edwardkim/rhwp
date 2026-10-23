@@ -130,3 +130,14 @@ preflight가 exit 0이었다. 비게시·미래 제품 버전 blocker는 기존 
 fresh 표준 WASM33에서도 두 쪽 글자 영역 양방향 미대응 0이다. Native API의 같은 결과와
 함께 기록하며 기존 삼각형 stroke 차이가 있는 전체 두 쪽을 raw 100%로 주장하지 않는다.
 원격 push·PR 생성은 최종 결과를 정리하고 승인받은 뒤 진행한다.
+
+### generated suite 준비에서 검출한 target 예산 보정
+
+리베이스 후 review worktree에서 실제 `--prepare`는 49 > 48 target 예산으로 실패했다.
+새 전쪽 case의 `#[path] mod`가 별도 예외 target으로 분류된 것이 원인이다.
+공유 helper를 전쪽 case 내부의 일반 함수로 합쳐 자동 suite 통합을 사용한다.
+기존 18쪽 assertion·세 문서 실행은 유지하며 target 예산이나 정책을 높이지 않는다.
+
+통합 후 같은 동결 실제 엔진으로 세 전쪽 검사를 다시 실행해 모두 PASS(exit 0, 1.50초)다.
+전쪽 case는 343줄이며 18쪽 보호의 모든 기존 assertion을 내부 helper로 보존했다.
+정식 suite 준비·실행은 새 commit을 review worktree에 반영한 뒤 다시 확인한다.

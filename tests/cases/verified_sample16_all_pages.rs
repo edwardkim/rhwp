@@ -10,9 +10,6 @@ use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
 use std::path::Path;
 
-#[path = "../support/sample16_table_picture_rows.rs"]
-mod table_picture_rows;
-
 #[derive(Deserialize)]
 struct Contract {
     sample: String,
@@ -141,7 +138,7 @@ fn verify(fixture: &str) {
         "내용 보존과 함께 확인하는 쪽수"
     );
 
-    table_picture_rows::verify(&core);
+    verify_table_picture_rows(&core);
     let mut seen = BTreeSet::new();
     for (index, page) in contract.pages.iter().enumerate() {
         assert_eq!(page.page, index + 1, "전체 쪽 순서·중복·누락");
@@ -242,4 +239,105 @@ fn hwp2024_all_64_pages_preserve_independent_print_content_and_owners() {
 #[test]
 fn hwp2022_all_64_pages_preserve_independent_print_content_and_owners() {
     verify(include_str!("../fixtures/issue8160/hwp2022.json"));
+}
+
+// 기존 HWPX 18쪽 보호를 전쪽 case에 병합해 세 저장본 모두에서 실행한다.
+fn collect_picture_nodes<'a>(node: &'a RenderNode, nodes: &mut Vec<&'a RenderNode>) {
+    nodes.push(node);
+    for child in &node.children {
+        collect_picture_nodes(child, nodes);
+    }
+}
+fn compact_picture_text(text: &str) -> String {
+    text.chars().filter(|ch| !ch.is_whitespace()).collect()
+}
+fn picture_row_text(node: &RenderNode) -> String {
+    let mut nodes = Vec::new();
+    collect_picture_nodes(node, &mut nodes);
+    nodes
+        .into_iter()
+        .filter_map(|n| match &n.node_type {
+            RenderNodeType::TextRun(run) => Some(run.display_or_text()),
+            _ => None,
+        })
+        .collect()
+}
+
+fn verify_table_picture_rows(core: &DocumentCore) {
+    let source = core.document();
+    let title = "가. 주전산센터 목표시스템 구성(안)";
+    let owners: Vec<_> = source.sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .filter(|(_, p)| {
+            matches!(p.controls.first(),Some(Control::Table(t)) if t.cells.iter().any(|cell|
+            cell.paragraphs.iter().any(|para|compact_picture_text(&para.text)==compact_picture_text(title))))
+        })
+        .collect();
+    assert_eq!(owners.len(), 1, "원본 제목을 소유한 문단은 하나다");
+    let (owner, paragraph) = owners[0];
+    assert_eq!(paragraph.controls.len(), 3, "원본 표·그림·표의 세 컨트롤");
+    assert!(matches!(&paragraph.controls[0],Control::Table(t) if t.common.treat_as_char));
+    assert!(matches!(&paragraph.controls[1],Control::Picture(p) if p.common.treat_as_char));
+    assert!(matches!(&paragraph.controls[2],Control::Table(t) if t.common.treat_as_char));
+    let page = core.build_page_render_tree(17).unwrap();
+    let mut nodes = Vec::new();
+    collect_picture_nodes(&page.root, &mut nodes);
+    let table = |control| {
+        let found:Vec<_>=nodes.iter().copied().filter(|node|matches!(&node.node_type,
+            RenderNodeType::Table(t) if t.section_index==Some(0)&&t.para_index==Some(owner)&&t.control_index==Some(control))).collect();
+        assert_eq!(
+            found.len(),
+            1,
+            "같은 원본 표를 중복 배치하거나 누락하면 안 된다"
+        );
+        found[0]
+    };
+    let first = table(0);
+    let last = table(2);
+    let pictures:Vec<_>=nodes.iter().copied().filter(|node|matches!(&node.node_type,
+        RenderNodeType::Image(p) if p.section_index==Some(0)&&p.para_index==Some(owner)&&p.control_index==Some(1))).collect();
+    assert_eq!(pictures.len(), 1, "그림은 원본 둘째 줄에 한 번만 배치한다");
+    let picture = pictures[0];
+    assert_eq!(
+        compact_picture_text(&picture_row_text(first)),
+        compact_picture_text(title),
+        "글꼴별로 런이 나뉘어도 제목 전체를 보존한다"
+    );
+    assert_eq!(
+        compact_picture_text(&picture_row_text(last)),
+        compact_picture_text("나. 주요 과업내용")
+    );
+    assert!(
+        first.bbox.y + first.bbox.height <= picture.bbox.y,
+        "첫 표 뒤에 그림 줄이 온다"
+    );
+    assert!(
+        picture.bbox.y + picture.bbox.height <= last.bbox.y,
+        "그림 아래에 마지막 표가 온다"
+    );
+    assert!(
+        picture.bbox.x >= page.root.bbox.x
+            && picture.bbox.x + picture.bbox.width <= page.root.bbox.x + page.root.bbox.width
+    );
+    for (table_node, control) in [(first, 0), (last, 2)] {
+        let mut title_nodes = Vec::new();
+        collect_picture_nodes(table_node, &mut title_nodes);
+        let mut end = 0;
+        for node in title_nodes {
+            let RenderNodeType::TextRun(run) = &node.node_type else {
+                continue;
+            };
+            let context = run
+                .cell_context
+                .as_ref()
+                .expect("제목은 원본 표 셀에 속한다");
+            assert_eq!(context.parent_para_index, owner);
+            assert_eq!(context.path[0].control_index, control);
+            let start = run.char_start.expect("원문 문자 시작");
+            assert!(start >= end, "글꼴별 분할 후에도 문자 순서를 유지한다");
+            end = start + run.text.chars().count();
+        }
+    }
 }
