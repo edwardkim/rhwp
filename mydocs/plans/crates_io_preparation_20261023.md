@@ -21,6 +21,9 @@
   구현 범위를 확정한다. 현재 MD01–MD09와 구현 범위 v1은 미확정이다.
 - 추가 착수 지시로 공통 선행 검사 도구·증적은 결정과 무관하게 먼저 준비한다.
   정책 선택에 의존하는 manifest·기능·게시 변경과 구분한다.
+- [CLI·Rust 라이브러리 소비 구조 재조사](../tech/investigations/issue-8174/README.md):
+  공통 엔진은 유지하고 게시 의존성·표준 오류 연동·지원 API/설치 계약을 우선 보완하는 안을 제시했다.
+  실제 path 소비와 CLI 설치 결과를 기록했으며, 정책 선택이나 제품 구현 승인으로 간주하지 않는다.
 - 권위 절차: [문서·Git workflow](../manual/codex/docs_and_git_workflow.md),
   [배포 가이드](../manual/publish_guide.md), [GitHub 운영](../manual/github_operations.md).
 
