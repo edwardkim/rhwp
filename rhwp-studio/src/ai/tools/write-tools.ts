@@ -69,6 +69,39 @@ export interface DocumentWriter {
   ): string;
   findOrCreateFontId(name: string): number;
   createTable(section: number, paragraph: number, offset: number, rows: number, columns: number): string;
+  deleteParagraph(section: number, paragraph: number): string;
+  deleteText(section: number, paragraph: number, offset: number, count: number): string;
+  /** 문단 안 컨트롤(구역 설정·머리말·표·각주 등)의 글자 위치 목록(JSON 배열) */
+  getControlTextPositions(section: number, paragraph: number): string;
+  ensureDefaultBullet(bulletChar: string): number;
+  ensureDefaultNumbering(): number;
+  getStyleList(): string;
+  applyStyle(section: number, paragraph: number, styleId: number): string;
+  getTableDimensions(section: number, parentPara: number, controlIndex: number): string;
+  getCellInfo(section: number, parentPara: number, controlIndex: number, cellIndex: number): string;
+  insertTableRow(section: number, parentPara: number, controlIndex: number, row: number, below: boolean): string;
+  insertTableColumn(section: number, parentPara: number, controlIndex: number, column: number, right: boolean): string;
+  deleteTableRow(section: number, parentPara: number, controlIndex: number, row: number): string;
+  deleteTableColumn(section: number, parentPara: number, controlIndex: number, column: number): string;
+  mergeTableCells(
+    section: number, parentPara: number, controlIndex: number,
+    startRow: number, startCol: number, endRow: number, endCol: number,
+  ): string;
+  splitParagraphInCell(
+    section: number, parentPara: number, controlIndex: number, cellIndex: number, cellPara: number, offset: number,
+  ): string;
+  createHeaderFooter(section: number, isHeader: boolean, applyTo: number): string;
+  getHeaderFooter(section: number, isHeader: boolean, applyTo: number): string;
+  insertTextInHeaderFooter(
+    section: number, isHeader: boolean, applyTo: number, hfPara: number, offset: number, text: string,
+  ): string;
+  deleteTextInHeaderFooter(
+    section: number, isHeader: boolean, applyTo: number, hfPara: number, offset: number, count: number,
+  ): string;
+  insertFootnote(section: number, paragraph: number, offset: number): string;
+  insertTextInFootnote(
+    section: number, paragraph: number, controlIndex: number, fnPara: number, offset: number, text: string,
+  ): string;
 }
 
 /** 쓰기 도구가 쓰는 호스트 표면 — `PluginHost` 의 부분집합. */
@@ -81,7 +114,9 @@ export interface WriteHost {
 
 export type WriteToolName =
   | 'replace_text' | 'fill_field' | 'insert_paragraphs' | 'create_document'
-  | 'format_text' | 'format_paragraph' | 'insert_table';
+  | 'format_text' | 'format_paragraph' | 'insert_table'
+  | 'delete_paragraph' | 'set_list' | 'apply_style' | 'edit_table' | 'set_cell_text'
+  | 'set_header_footer' | 'insert_footnote';
 
 /** 제안 하나. 화면은 `prefix + removed + suffix` 를 「전」, `prefix + inserted + suffix` 를 「후」로 보인다. */
 export interface WriteProposal {
@@ -99,8 +134,10 @@ export interface WriteProposal {
   removed: string;
   inserted: string;
   suffix: string;
-  /** 서식 도구가 바꾸는 속성(화면 요약용). 키는 도구 입력 이름 그대로다. */
+  /** 바꾸는 속성(화면 요약용). 키는 도구 입력 이름 그대로다. */
   format?: Record<string, string | number | boolean>;
+  /** 적용 결과와 함께 모델에 알릴 말(요청과 다르게 처리한 이유 등) */
+  note?: string;
   /** 승인되면 부른다. 던지면 적용하지 않은 것이다. */
   apply(): void | Promise<void>;
 }
@@ -151,7 +188,7 @@ const WRITE_SCHEMAS: Record<WriteToolName, ToolSchema> = {
       },
       after: {
         type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS,
-        description: 'With position "after": exact text from the body paragraph to add after (must occur once; not in a table).',
+        description: 'With position "after": exact text from the paragraph to add after (must occur once; may be inside a table cell).',
       },
       paragraphs: {
         type: 'array', minItems: 1, maxItems: MAX_NEW_PARAGRAPHS,
@@ -202,6 +239,91 @@ const WRITE_SCHEMAS: Record<WriteToolName, ToolSchema> = {
       lineSpacing: { type: 'integer', minimum: 50, maximum: 500, description: 'Line spacing in percent (160 is the usual default).' },
     },
     required: ['find'],
+    additionalProperties: false,
+  },
+  delete_paragraph: {
+    type: 'object',
+    properties: {
+      find: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact text inside the body paragraph to delete.' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+    },
+    required: ['find'],
+    additionalProperties: false,
+  },
+  set_list: {
+    type: 'object',
+    properties: {
+      find: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact text inside the paragraph.' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      list: { type: 'string', enum: ['bullet', 'number', 'none'], description: 'Bullet list, numbered list, or remove the list.' },
+    },
+    required: ['find', 'list'],
+    additionalProperties: false,
+  },
+  apply_style: {
+    type: 'object',
+    properties: {
+      find: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact text inside the body paragraph.' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      style: { type: 'string', minLength: 1, maxLength: 100, description: 'Style name in the document, for example 본문, 개요 1, 바탕글.' },
+    },
+    required: ['find', 'style'],
+    additionalProperties: false,
+  },
+  edit_table: {
+    type: 'object',
+    properties: {
+      find: {
+        type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS,
+        description: 'Exact text inside a cell of the table; that cell is the reference cell.',
+      },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      action: {
+        type: 'string',
+        enum: ['insert_row_above', 'insert_row_below', 'insert_column_left', 'insert_column_right',
+          'delete_row', 'delete_column', 'merge_right', 'merge_down'],
+        description: 'What to do relative to the reference cell.',
+      },
+      span: {
+        type: 'integer', minimum: 2, maximum: 20,
+        description: 'For merge_right / merge_down: how many cells to merge, including the reference cell (default 2).',
+      },
+    },
+    required: ['find', 'action'],
+    additionalProperties: false,
+  },
+  set_cell_text: {
+    type: 'object',
+    properties: {
+      find: {
+        type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS,
+        description: 'Exact text inside any cell of the target table (to identify the table).',
+      },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      row: { type: 'integer', minimum: 1, description: 'Row number, 1-based.' },
+      column: { type: 'integer', minimum: 1, description: 'Column number, 1-based.' },
+      text: { type: 'string', maxLength: MAX_REPLACE_CHARS, description: 'New text for the whole cell (first paragraph). No line breaks.' },
+    },
+    required: ['find', 'row', 'column', 'text'],
+    additionalProperties: false,
+  },
+  set_header_footer: {
+    type: 'object',
+    properties: {
+      kind: { type: 'string', enum: ['header', 'footer'], description: 'Header (top of page) or footer (bottom of page).' },
+      text: { type: 'string', maxLength: MAX_REPLACE_CHARS, description: 'Text for all pages of the first section. Empty clears it.' },
+    },
+    required: ['kind', 'text'],
+    additionalProperties: false,
+  },
+  insert_footnote: {
+    type: 'object',
+    properties: {
+      find: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact body text; the footnote mark goes right after it.' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      text: { type: 'string', minLength: 1, maxLength: MAX_REPLACE_CHARS, description: 'Footnote text. No line breaks.' },
+    },
+    required: ['find', 'text'],
     additionalProperties: false,
   },
   insert_table: {
@@ -267,6 +389,46 @@ export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
     inputSchema: WRITE_SCHEMAS.insert_table as unknown as Record<string, unknown>,
   },
   {
+    name: 'delete_paragraph',
+    description: 'Delete a whole body paragraph (named by text inside it). To delete only some words, use replace_text '
+      + 'with an empty replace. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.delete_paragraph as unknown as Record<string, unknown>,
+  },
+  {
+    name: 'set_list',
+    description: 'Make the paragraph containing the text a bullet list item or numbered list item, or remove its list '
+      + 'marker. Call once per paragraph. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.set_list as unknown as Record<string, unknown>,
+  },
+  {
+    name: 'apply_style',
+    description: 'Apply a paragraph style of the document (such as 개요 1 or 본문) to the body paragraph containing the '
+      + 'text. An unknown name returns the available style names. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.apply_style as unknown as Record<string, unknown>,
+  },
+  {
+    name: 'edit_table',
+    description: 'Change table structure around the cell containing the text: insert or delete a row or column, or merge '
+      + 'cells to the right or downward. New cells are empty; fill them with set_cell_text. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.edit_table as unknown as Record<string, unknown>,
+  },
+  {
+    name: 'set_cell_text',
+    description: 'Set the text of the cell at row/column (1-based) of the table that contains the given text. Works '
+      + 'for empty cells too. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.set_cell_text as unknown as Record<string, unknown>,
+  },
+  {
+    name: 'set_header_footer',
+    description: 'Set the page header or footer text (one line, all pages of the first section). Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.set_header_footer as unknown as Record<string, unknown>,
+  },
+  {
+    name: 'insert_footnote',
+    description: 'Add a footnote after the given body text, with the footnote text. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.insert_footnote as unknown as Record<string, unknown>,
+  },
+  {
     name: 'create_document',
     description: 'Replace the open document with a new blank document, when the user asks for a new document. '
       + 'The user approves first and is asked to save unsaved changes. Then write content with insert_paragraphs '
@@ -276,7 +438,9 @@ export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
 ];
 
 const WRITE_TOOL_NAMES: readonly string[] = [
-  'replace_text', 'fill_field', 'insert_paragraphs', 'format_text', 'format_paragraph', 'insert_table', 'create_document',
+  'replace_text', 'fill_field', 'insert_paragraphs', 'format_text', 'format_paragraph', 'insert_table',
+  'delete_paragraph', 'set_list', 'apply_style', 'edit_table', 'set_cell_text', 'set_header_footer', 'insert_footnote',
+  'create_document',
 ];
 
 export function isWriteTool(name: string): name is WriteToolName {
@@ -451,11 +615,10 @@ function prepareInsert(host: WriteHost, input: Record<string, unknown>): WritePr
       const hits = search(doc);
       anchorCount = hits.length;
       anchor = pickHit(hits, after!, undefined);
-      if (anchor.cellContext) throw new WriteRefused('Adding paragraphs inside a table cell is not supported yet.');
     }
     const lastSection = doc.getSectionCount() - 1;
     const location = position === 'after'
-      ? { section: anchor!.sec, paragraph: anchor!.para, position }
+      ? { ...hitLocation(anchor!), position }
       : position === 'start'
         ? { section: 0, paragraph: 0, position }
         : { section: lastSection, paragraph: doc.getParagraphCount(lastSection) - 1, position };
@@ -472,6 +635,18 @@ function prepareInsert(host: WriteHost, input: Record<string, unknown>): WritePr
           const again = search(target);
           if (again.length !== anchorCount || !sameHit(pickHit(again, after!, undefined), anchor!)) {
             throw new WriteRefused('The document changed after this was proposed. Read it again and propose a new change.');
+          }
+          const cell = anchor!.cellContext;
+          if (cell) {
+            // 표 칸 안: 그 칸 문단 뒤에 칸 문단을 만든다.
+            let at = cell.cellPara;
+            for (const text of texts) {
+              const length = target.getCellParagraphLength(anchor!.sec, cell.parentPara, cell.ctrlIdx, cell.cellIdx, at);
+              ok(target.splitParagraphInCell(anchor!.sec, cell.parentPara, cell.ctrlIdx, cell.cellIdx, at, length), 'splitParagraphInCell');
+              at += 1;
+              if (text) ok(target.insertTextInCell(anchor!.sec, cell.parentPara, cell.ctrlIdx, cell.cellIdx, at, 0, text), 'insertTextInCell');
+            }
+            return;
           }
           appendAfter(target, anchor!.sec, anchor!.para, texts);
           return;
@@ -669,6 +844,264 @@ function prepareTable(host: WriteHost, input: Record<string, unknown>): WritePro
   });
 }
 
+function requireBody(hit: SearchHit, what: string): void {
+  if (hit.cellContext) throw new WriteRefused(`${what} inside a table cell is not supported; name a body paragraph.`);
+}
+
+function wholeParagraph(doc: DocumentWriter, hit: SearchHit): string {
+  return paragraphText(doc, hit, 0, Number.MAX_SAFE_INTEGER);
+}
+
+function prepareDeleteParagraph(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  return host.read((doc) => {
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    requireBody(hit, 'Deleting a paragraph');
+    if (doc.getParagraphCount(hit.sec) <= 1) throw new WriteRefused('The section has only this paragraph; it cannot be deleted.');
+    // 구역 첫 문단은 구역 설정·머리말·꼬리말을, 다른 문단은 표·각주 등을 품을 수 있다. 문단을 통째로
+    // 지우면 그것들이 함께 사라진다(실측: 제목 문단을 지우자 머리말이 없어짐) — 그런 문단은 글만 지운다.
+    const holdsObjects = (JSON.parse(doc.getControlTextPositions(hit.sec, hit.para)) as number[]).length > 0;
+    return {
+      tool: 'delete_paragraph',
+      location: hitLocation(hit),
+      prefix: '', removed: wholeParagraph(doc, hit), inserted: '', suffix: '',
+      ...(holdsObjects ? {
+        format: { keepsObjects: true },
+        note: 'The paragraph holds objects such as section settings, a header/footer or a table, so only its text was '
+          + 'deleted and an empty paragraph remains.',
+      } : {}),
+      apply: () => host.transaction('AI: 문단 지우기', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        if (holdsObjects) {
+          const length = target.getParagraphLength(hit.sec, hit.para);
+          if (length > 0) ok(target.deleteText(hit.sec, hit.para, 0, length), 'deleteText');
+        } else {
+          ok(target.deleteParagraph(hit.sec, hit.para), 'deleteParagraph');
+        }
+      }),
+    };
+  });
+}
+
+function prepareSetList(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const list = input.list as 'bullet' | 'number' | 'none';
+  return host.read((doc) => {
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    return {
+      tool: 'set_list',
+      location: hitLocation(hit),
+      prefix: '', removed: '', inserted: wholeParagraph(doc, hit), suffix: '',
+      format: { list },
+      apply: () => host.transaction('AI: 글머리표·번호', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        // studio 의 글머리표·문단 번호 명령과 같은 속성으로 보낸다.
+        const props = list === 'none'
+          ? { headType: 'None', numberingId: 0 }
+          : list === 'bullet'
+            ? { headType: 'Bullet', numberingId: target.ensureDefaultBullet('●'), paraLevel: 0 }
+            : { headType: 'Number', numberingId: target.ensureDefaultNumbering(), paraLevel: 0 };
+        const json = JSON.stringify(props);
+        const cell = hit.cellContext;
+        ok(cell
+          ? target.applyParaFormatInCell(hit.sec, cell.parentPara, cell.ctrlIdx, cell.cellIdx, cell.cellPara, json)
+          : target.applyParaFormat(hit.sec, hit.para, json), 'applyParaFormat');
+      }),
+    };
+  });
+}
+
+function prepareApplyStyle(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const name = (input.style as string).trim();
+  return host.read((doc) => {
+    const styles = JSON.parse(doc.getStyleList()) as Array<{ id: number; name: string; englishName?: string }>;
+    const style = styles.find((s) => s.name === name)
+      ?? styles.find((s) => s.englishName?.toLowerCase() === name.toLowerCase());
+    if (!style) {
+      throw new WriteRefused(`No style named "${name}". Available: ${styles.slice(0, 40).map((s) => s.name).join(', ')}`);
+    }
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    requireBody(hit, 'Applying a style');
+    return {
+      tool: 'apply_style',
+      location: hitLocation(hit),
+      prefix: '', removed: '', inserted: wholeParagraph(doc, hit), suffix: '',
+      format: { style: style.name },
+      apply: () => host.transaction('AI: 스타일', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        ok(target.applyStyle(hit.sec, hit.para, style.id), 'applyStyle');
+      }),
+    };
+  });
+}
+
+type TableAction = 'insert_row_above' | 'insert_row_below' | 'insert_column_left' | 'insert_column_right'
+  | 'delete_row' | 'delete_column' | 'merge_right' | 'merge_down';
+
+/** 찾은 글이 든 칸과 그 표. 첫 단계 표만 다룬다(중첩 표 칸은 거절). */
+function cellOf(doc: DocumentWriter, hit: SearchHit) {
+  const cell = hit.cellContext;
+  if (!cell) throw new WriteRefused('find must be text inside a table cell.');
+  const info = JSON.parse(doc.getCellInfo(hit.sec, cell.parentPara, cell.ctrlIdx, cell.cellIdx)) as {
+    row: number; col: number; rowSpan: number; colSpan: number;
+  };
+  const dims = JSON.parse(doc.getTableDimensions(hit.sec, cell.parentPara, cell.ctrlIdx)) as {
+    rowCount: number; colCount: number; cellCount: number;
+  };
+  return { cell, info, dims };
+}
+
+function prepareEditTable(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const action = input.action as TableAction;
+  const span = (input.span as number | undefined) ?? 2;
+  if (span !== 2 && action !== 'merge_right' && action !== 'merge_down') throw new WriteRefused('span is only used with merge actions.');
+  return host.read((doc) => {
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    const { cell, info, dims } = cellOf(doc, hit);
+    if (action === 'delete_row' && dims.rowCount <= 1) throw new WriteRefused('The table has only one row.');
+    if (action === 'delete_column' && dims.colCount <= 1) throw new WriteRefused('The table has only one column.');
+    if (action === 'merge_right' && info.col + span > dims.colCount) throw new WriteRefused(`Only ${dims.colCount - info.col} cells to the right, including this one.`);
+    if (action === 'merge_down' && info.row + span > dims.rowCount) throw new WriteRefused(`Only ${dims.rowCount - info.row} cells downward, including this one.`);
+    return {
+      tool: 'edit_table',
+      location: hitLocation(hit),
+      prefix: '', removed: '', inserted: wholeParagraph(doc, hit), suffix: '',
+      format: { tableAction: action, row: info.row + 1, column: info.col + 1, ...(action.startsWith('merge') ? { span } : {}) },
+      apply: () => host.transaction('AI: 표 고치기', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        const args = [hit.sec, cell.parentPara, cell.ctrlIdx] as const;
+        switch (action) {
+          case 'insert_row_above': ok(target.insertTableRow(...args, info.row, false), 'insertTableRow'); break;
+          case 'insert_row_below': ok(target.insertTableRow(...args, info.row + info.rowSpan - 1, true), 'insertTableRow'); break;
+          case 'insert_column_left': ok(target.insertTableColumn(...args, info.col, false), 'insertTableColumn'); break;
+          case 'insert_column_right': ok(target.insertTableColumn(...args, info.col + info.colSpan - 1, true), 'insertTableColumn'); break;
+          case 'delete_row': ok(target.deleteTableRow(...args, info.row), 'deleteTableRow'); break;
+          case 'delete_column': ok(target.deleteTableColumn(...args, info.col), 'deleteTableColumn'); break;
+          case 'merge_right': ok(target.mergeTableCells(...args, info.row, info.col, info.row, info.col + span - 1), 'mergeTableCells'); break;
+          case 'merge_down': ok(target.mergeTableCells(...args, info.row, info.col, info.row + span - 1, info.col), 'mergeTableCells'); break;
+        }
+      }),
+    };
+  });
+}
+
+function prepareSetCellText(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const row = (input.row as number) - 1;
+  const column = (input.column as number) - 1;
+  const text = input.text as string;
+  if (FORBIDDEN.test(text)) throw new WriteRefused('text must not contain line breaks.');
+  return host.read((doc) => {
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    const { cell, dims } = cellOf(doc, hit);
+    if (row >= dims.rowCount || column >= dims.colCount) {
+      throw new WriteRefused(`The table has ${dims.rowCount} rows and ${dims.colCount} columns.`);
+    }
+    // 병합된 표도 다루도록 칸 번호를 행·열로 찾는다(병합 칸은 시작 위치로 지목한다).
+    let cellIndex = -1;
+    for (let index = 0; index < dims.cellCount; index += 1) {
+      const info = JSON.parse(doc.getCellInfo(hit.sec, cell.parentPara, cell.ctrlIdx, index)) as { row: number; col: number };
+      if (info.row === row && info.col === column) { cellIndex = index; break; }
+    }
+    if (cellIndex < 0) throw new WriteRefused(`Row ${row + 1}, column ${column + 1} is covered by a merged cell; name its top-left cell.`);
+    const length = doc.getCellParagraphLength(hit.sec, cell.parentPara, cell.ctrlIdx, cellIndex, 0);
+    const before = cleanDocumentText(length > 0 ? doc.getTextInCell(hit.sec, cell.parentPara, cell.ctrlIdx, cellIndex, 0, 0, length) : '');
+    if (before === text) throw new WriteRefused('The cell already has this text.');
+    return {
+      tool: 'set_cell_text',
+      location: { ...hitLocation(hit), inTable: true },
+      prefix: '', removed: before, inserted: text, suffix: '',
+      format: { row: row + 1, column: column + 1 },
+      apply: () => host.transaction('AI: 칸 글', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        const now = target.getCellParagraphLength(hit.sec, cell.parentPara, cell.ctrlIdx, cellIndex, 0);
+        if (now > 0) ok(target.deleteTextInCell(hit.sec, cell.parentPara, cell.ctrlIdx, cellIndex, 0, 0, now), 'deleteTextInCell');
+        if (text) ok(target.insertTextInCell(hit.sec, cell.parentPara, cell.ctrlIdx, cellIndex, 0, 0, text), 'insertTextInCell');
+      }),
+    };
+  });
+}
+
+/** 머리말·꼬리말은 첫 구역의 「양 쪽」(applyTo 0) 하나를 다룬다. */
+const HEADER_FOOTER_APPLY_TO = 0;
+
+function prepareHeaderFooter(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const isHeader = input.kind === 'header';
+  const text = input.text as string;
+  if (FORBIDDEN.test(text)) throw new WriteRefused('text must be one line.');
+  return host.read((doc) => {
+    const current = JSON.parse(doc.getHeaderFooter(0, isHeader, HEADER_FOOTER_APPLY_TO)) as { exists?: boolean; text?: string };
+    const before = current.exists ? cleanDocumentText(current.text ?? '') : '';
+    if (before === text) throw new WriteRefused(`The ${isHeader ? 'header' : 'footer'} already has this text.`);
+    return {
+      tool: 'set_header_footer',
+      location: {},
+      prefix: '', removed: before, inserted: text, suffix: '',
+      format: { kind: isHeader ? 'header' : 'footer' },
+      apply: () => host.transaction(isHeader ? 'AI: 머리말' : 'AI: 꼬리말', (tx) => {
+        const target = tx.doc();
+        const now = JSON.parse(target.getHeaderFooter(0, isHeader, HEADER_FOOTER_APPLY_TO)) as { exists?: boolean; text?: string };
+        if (!now.exists) {
+          ok(target.createHeaderFooter(0, isHeader, HEADER_FOOTER_APPLY_TO), 'createHeaderFooter');
+        } else if ((now.text ?? '').length > 0) {
+          // 첫 문단만 바꾼다. 여러 문단인 머리말은 나머지를 그대로 둔다.
+          const first = (now.text ?? '').split(/\r?\n/)[0];
+          if (first.length > 0) {
+            ok(target.deleteTextInHeaderFooter(0, isHeader, HEADER_FOOTER_APPLY_TO, 0, 0, first.length), 'deleteTextInHeaderFooter');
+          }
+        }
+        if (text) ok(target.insertTextInHeaderFooter(0, isHeader, HEADER_FOOTER_APPLY_TO, 0, 0, text), 'insertTextInHeaderFooter');
+      }),
+    };
+  });
+}
+
+function prepareFootnote(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const text = input.text as string;
+  if (FORBIDDEN.test(text)) throw new WriteRefused('text must be one line.');
+  return host.read((doc) => {
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    requireBody(hit, 'Adding a footnote');
+    return {
+      tool: 'insert_footnote',
+      location: hitLocation(hit),
+      prefix: paragraphText(doc, hit, hit.charOffset - CONTEXT_CHARS, hit.charOffset + hit.length),
+      removed: '',
+      inserted: text,
+      suffix: '',
+      apply: () => host.transaction('AI: 각주', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        const created = JSON.parse(target.insertFootnote(hit.sec, hit.para, hit.charOffset + hit.length)) as {
+          ok?: boolean; paraIdx?: number; controlIdx?: number;
+        };
+        if (!created.ok || created.controlIdx === undefined) throw new Error('insertFootnote failed');
+        ok(target.insertTextInFootnote(hit.sec, created.paraIdx ?? hit.para, created.controlIdx, 0, 0, text), 'insertTextInFootnote');
+      }),
+    };
+  });
+}
+
 function prepareCreate(host: WriteHost): WriteProposal {
   return {
     tool: 'create_document',
@@ -699,5 +1132,12 @@ export function prepareWrite(host: WriteHost, call: AiToolCall): WriteProposal {
     case 'format_text': return prepareFormatText(host, checked.value);
     case 'format_paragraph': return prepareFormatParagraph(host, checked.value);
     case 'insert_table': return prepareTable(host, checked.value);
+    case 'delete_paragraph': return prepareDeleteParagraph(host, checked.value);
+    case 'set_list': return prepareSetList(host, checked.value);
+    case 'apply_style': return prepareApplyStyle(host, checked.value);
+    case 'edit_table': return prepareEditTable(host, checked.value);
+    case 'set_cell_text': return prepareSetCellText(host, checked.value);
+    case 'set_header_footer': return prepareHeaderFooter(host, checked.value);
+    case 'insert_footnote': return prepareFootnote(host, checked.value);
   }
 }

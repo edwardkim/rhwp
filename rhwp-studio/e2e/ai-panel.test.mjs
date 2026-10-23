@@ -18,6 +18,7 @@
  * 10. 거절하면 문서는 그대로이고 모델에 거절을 알린다
  * 11. 새 문서 만들기(저장 확인 포함) → 문단 쓰기, 대화는 이어진다
  * 12. 글자·문단 서식과 표 — 한 응답의 여러 변경을 차례로 승인, undo 는 변경마다 한 단계
+ * 13. 「확인 없이 바로 적용」 — 목록·스타일·머리말·각주·문단 지우기가 묻지 않고 적용
  *
  * 계획: mydocs/plans/rhwp_studio_ai_chat_p0_impl.md §5.2
  */
@@ -129,7 +130,8 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(requests.length === 2, `TC1: 요청 2회 (${requests.length})`);
   const [first, second] = requests;
   assert(first.body.model === 'claude-opus-5-5' && first.body.stream === true, 'TC1: 모델·스트리밍');
-  assert(first.body.tools.length === 14 && first.body.tools.every((t) => t.strict === true), 'TC1: 도구 14개(읽기 7·쓰기 7) strict');
+  assert(first.body.tools.length === 21 && first.body.tools.filter((t) => t.strict === true).length === 14
+    && first.body.tools.filter((t) => t.strict === true).length <= 20, 'TC1: 도구 21개, strict 는 쓰기 14개(상한 20)');
   assert(first.body.system[0].text.includes('document_content'), 'TC1: 시스템에 문서 경계 규칙');
   assert(first.body.fallbacks === 'default'
     && (first.headers['anthropic-beta'] ?? '').includes('server-side-fallback-2026-07-01'), 'TC1: 서버 대체');
@@ -298,6 +300,53 @@ runTest('AI 대화 패널', async ({ page }) => {
   await wait(page, 300);
   const afterUndo12 = await page.evaluate(() => window.__wasm.searchAllText('참석자', true, true).length > 0);
   assert(!afterUndo12, 'TC12: undo 한 번으로 표만 사라짐');
+
+  // ── TC13: 「확인 없이 바로 적용」 + 목록·스타일·문단 지우기·머리말·각주 ──
+  await page.click('.ai-open-settings');
+  await page.waitForSelector('#ai-settings-auto-apply');
+  await page.click('#ai-settings-auto-apply');
+  await page.type('#ai-settings-key', KEY);
+  await page.click(`${lastDialog} .dialog-btn-primary`);
+  await page.waitForFunction(() => !document.querySelector('#ai-settings-key'));
+  queue.push({ body: sse([
+    { type: 'tool_use', id: 'toolu_s1', name: 'set_list', input: { find: '일시', list: 'bullet' } },
+    { type: 'tool_use', id: 'toolu_s2', name: 'apply_style', input: { find: '안건', style: '개요 1' } },
+    { type: 'tool_use', id: 'toolu_s3', name: 'set_header_footer', input: { kind: 'header', text: '팀 회의록' } },
+    { type: 'tool_use', id: 'toolu_s4', name: 'insert_footnote', input: { find: '시연', text: '사내 시연' } },
+    { type: 'tool_use', id: 'toolu_s5', name: 'delete_paragraph', input: { find: '회의록' } },
+  ], 'tool_use') });
+  queue.push({ body: sse([{ type: 'text', text: '정리했습니다.' }], 'end_turn') });
+  const cardsBefore = await page.$$eval('.ai-change-card', (els) => els.length);
+  await page.type('.ai-chat-input', '목록·스타일·머리말·각주 정리하고 제목은 지워 줘');
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy, { timeout: 20000 });
+  const auto = await page.$$eval('.ai-change-card', (els, from) => els.slice(from).map((el) => ({
+    state: el.dataset.state, buttons: el.querySelectorAll('.ai-change-apply').length,
+  })), cardsBefore);
+  assert(auto.length === 5 && auto.every((c) => c.state === 'applied' && c.buttons === 0),
+    `TC13: 자동 적용 — 카드 5개 모두 적용, 승인 단추 없음 (${JSON.stringify(auto)})`);
+  const structure = await page.evaluate(() => {
+    const w = window.__wasm;
+    const raw = w.doc;
+    const n = w.getParagraphCount(0);
+    const texts = Array.from({ length: n }, (_, i) => w.getTextRange(0, i, 0, w.getParagraphLength(0, i)));
+    const at = (needle) => texts.findIndex((text) => text.includes(needle));
+    return {
+      texts,
+      bullet: w.getParaPropertiesAt(0, at('일시')).headType,
+      style: raw.getStyleAt(0, at('안건')),
+      header: JSON.parse(raw.getHeaderFooter(0, true, 0)).text,
+      footnote: JSON.parse(raw.getPageTextLayout(0)).runs.some((r) => r.text.includes('사내 시연')),
+    };
+  });
+  assert(!structure.texts.includes('회의록'), `TC13: 제목 글 지움 (${JSON.stringify(structure.texts)})`);
+  // 제목은 구역 첫 문단(구역 설정·머리말을 품음)이라 글만 지우고 문단은 남는다 — 머리말이 함께 사라지지 않아야 한다.
+  assert(structure.texts[0] === '', 'TC13: 구역 첫 문단은 빈 문단으로 남음');
+  assert(structure.bullet === 'Bullet', 'TC13: 글머리표');
+  assert(JSON.parse(structure.style).name === '개요 1', `TC13: 스타일 (${structure.style})`);
+  assert(structure.header === '팀 회의록', `TC13: 같은 응답의 문단 지우기 뒤에도 머리말 유지 (${structure.header})`);
+  assert(structure.footnote, 'TC13: 각주 글이 쪽에 보임');
+  await screenshot(page, 'ai-panel-structure');
 
   // ── TC4: 입력란 Ctrl+Z 격리 ───────────────────────────
   await createNewDocument(page);

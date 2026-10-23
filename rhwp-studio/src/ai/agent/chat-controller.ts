@@ -174,7 +174,10 @@ export class ChatController {
     card.settle('applied');
     return {
       id: call.id,
-      content: wrapDocumentContent({ applied: true, location: proposal.location, newText: proposal.inserted }, boundaryId),
+      content: wrapDocumentContent({
+        applied: true, location: proposal.location, newText: proposal.inserted,
+        ...(proposal.note ? { note: proposal.note } : {}),
+      }, boundaryId),
       isError: false,
     };
   }
