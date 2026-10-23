@@ -696,13 +696,19 @@ export class InputHandler {
       requestAnimationFrame(() => this.updateCaret(true));
     });
 
-    // 전체 mutation render는 renderer 선택 때문에 비동기다. 쪽/단 나누기·본문 Enter 직후의 첫
-    // updateCaret은 아직 이전 VirtualScroll을 보므로, 새 쪽 배치가 준비된 이 시점에
-    // page-local rect와 DOM 위치를 다시 계산하고 한컴처럼 대상 쪽을 화면에 드러낸다.
+    // mutation 직후에는 VirtualScroll이 이전 쪽 배치일 수 있다. 완료 시점의 현재 선택을
+    // 다시 투영한다. 선택 삭제 undo도 포함하되, 캐럿 자동 스크롤 예약과는 분리한다.
     eventBus.on('document-layout-refreshed', () => {
-      if (!this.caretLayoutReveal.consume() || !this.active) return;
-      this.cursor.updateRect();
-      this.updateCaret();
+      const revealCaret = this.caretLayoutReveal.consume();
+      if (!this.active) return;
+      if (revealCaret) {
+        this.cursor.updateRect();
+        this.updateCaret();
+      } else {
+        // 비동기 시작 시의 선택을 보관하지 않는다. 그동안 변경·해제된 선택도 반영하며
+        // anchor/focus와 사용자가 스크롤한 위치는 바꾸지 않는다.
+        this.updateSelection();
+      }
     });
 
     // HF 선택은 같은 정의를 쓰는 visible page마다 투영한다. ViewportManager가 scroll
