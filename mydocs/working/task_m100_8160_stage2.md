@@ -828,3 +828,24 @@ fresh optimized WASM 전쪽 검증은 아직 하지 않았으므로 진단 결�
 IDCT·chroma upsample 차이가 남는다. 다른 decoder를 단순 교체한 시안도 libjpeg와
 완전히 같지 않아 채택하지 않았다. 새 decoder의 None transform 진단은 라이브러리에서
 panic을 일으켜 그 경로를 중단했다. 제품 decoder나 기준 PDF를 바꾸지는 않았다.
+
+### Print JPEG 원본 픽셀을 공통 재표본기에 전달
+
+Native/참조와 같은 libjpeg RGB를 브라우저 codec에서도 확인했다. rhwp가 원본에서
+만든 네 Print JPEG(133×40·586×141·859×542·556×1055)의 모든 RGB가 libjpeg와
+완전히 같다. 참조 PDF 픽셀을 제품 입력으로 쓰지 않는다. typed Print JPEG에 한해
+브라우저 decoder가 복원한 원본 canvas를 기존 공통 PrintRasterFrame에 전달한다.
+일반 입력의 decoder·원본 ImageNode·crop·최종 프레임을 바꾸지 않는다.
+
+기존 HTML 그림 cache와 prefetch가 로드를 소유하며 대기 중 None은 영구 실패로
+캐시하지 않는다. 전체/자르기 그림이 중복했던 decoded cache 코드를 하나로 합쳤다.
+source header의 decode 한계와 실제 자연 크기를 확인하고, 복원 canvas가 생긴 뒤
+임시 HTML image는 해제한다. 초기 대기·다시 그리기·crop도 fresh WASM에서 확인한다.
+WASM lib Clippy는 exit 0(1분 49초)이다. 이 제품 변경의 fresh 표준 package·전쪽
+측정은 다음 빌드에서 확인하며, 독립 codec 비교만으로 39쪽 완료를 선언하지 않는다.
+
+MCP 2020의 실제 backend가 32-bit managed direct DLL host·session0임을 재확인했다.
+로컬 Linux HSP font query는 Windows Print의 측정을 입증하지 않는다. GUI/PDF를
+만들지 않은 로컬 font 메타데이터 진단만 수행했고, Windows GDI 쪽을 별도 읽기 전용
+확인한다. win10-ted의 Gulim TTC SHA는 공급 프로그램과 같은
+`4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226`이다.
