@@ -1,11 +1,14 @@
 ---
 kind: investigation
-status: active
+status: historical
 canonical: mydocs/tech/investigations/issue-8174/README.md
 last_verified: 2026-10-23
 ---
 
 # #8174 — CLI·Rust 라이브러리 소비에 대한 구조 재조사
+
+이 문서는 보완 전 `f4342c4f1` 기준 조사 기록이다. 승인 뒤의 실제 수정과 최종 package·registry
+소비 검증은 [2단계 보완 결과](../../../working/task_m100_8174_stage2_corrections.md)에 기록했다.
 
 - Issue: [#8174](https://github.com/edwardkim/rhwp/issues/8174).
 - 요청: crates.io의 주 사용 대상을 CLI·라이브러리 소비자로 볼 때 현재 구조의 적합성과 수정 지점을 검토한다.
