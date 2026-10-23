@@ -169,3 +169,17 @@ BCP는 기존 정정한 검사 안에서 두 줄의 독립 가로 원점·기준
 정식 회귀 기대값이며 검사 코드와 함께 유지한다. 좌표 추출용 임시 Python 도구는
 `output/pr-review/issue8160-20261022/font-diagnostics/`로 옮겼고 커밋하지 않는다.
 직접 실행 로그·중간 PDF clip 목록·진단 소스도 같은 ignored 작업 영역에만 둔다.
+
+### 독립 Skia 도구의 lock 보존
+
+#8181의 독립 workspace인 `tools/skia-surface-probe`에서 실제 locked offline metadata가
+exit 101이었다. root에 추가한 JPEG fork가 도구의 별도 lock에 빠진 것이 원인이다.
+Cargo로 fork 한 개와 root 참조만 추가했고, 다른 의존성 버전은 바뀌지 않았다(5줄 추가).
+보정 후 같은 locked offline metadata는 exit 0이다.
+
+`VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json`, 공용 `target/pr-review`,
+`CARGO_BUILD_JOBS=2`로 실제 `cargo run --locked --manifest-path tools/skia-surface-probe/Cargo.toml`을
+실행해 exit 0을 확인했다. 빌드는 5분 7초이며 llvmpipe Vulkan, scale 1.25에서 내부색·host
+state 복원·잘못된 인자의 pixel 보존 세 계약이 모두 PASS다. 실제 GPU 가속의 증거로
+확대하지 않는다(`hardwareAccelerationVerified=false`). 로그는 ignored
+`output/pr-review/issue8160-20261022/logs/skia-probe-host.log`에 있다.
