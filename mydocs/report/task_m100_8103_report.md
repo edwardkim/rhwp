@@ -6,9 +6,9 @@ Issue: [#8103](https://github.com/edwardkim/rhwp/issues/8103) (참조만 사용,
 
 기준 `upstream/devel`은 `def947c2149df5bc812d801e6e79be19a403b4d1`이다.
 별도 클라우드 환경의 `codex/issue-8103-selection-layout`에서 구현했다.
-제품 코드 커밋은 `6a120a58610d54b52db931006ab0cbbe8800baea`이며,
-후속 변경은 E2E의 실제 Backspace 검증·기존 목록 누락 행·이 보고서다.
-최종 제출 head와 그 head의 재실행 결과는 PR 본문에 기록한다.
+최초 제품 코드 커밋은 `6a120a58610d54b52db931006ab0cbbe8800baea`이며,
+재검토 보정 code head는 `9801e5eb929d91a79611f6b0902cae7c39e450ab`이다.
+아래 최초 검증과 재검토 검증을 구분한다. PR은 아직 생성하지 않았으며 제출 보류 사유도 기록한다.
 
 `InputHandler.afterEdit`은 `document-changed` 뒤 곧바로 `updateCaret`을 실행한다.
 그때 논리 선택과 WASM의 page-local 선택 rect는 복원돼 있지만,
@@ -19,6 +19,7 @@ Issue: [#8103](https://github.com/edwardkim/rhwp/issues/8103) (참조만 사용,
 이제 `refreshPages`의 쪽 정보 수집·`recalcLayout` 완료 뒤 기존
 `document-layout-refreshed` 이벤트에서 **현재 선택**을 다시 읽어 `updateSelection`한다.
 비동기 시작 때 선택을 캡처하거나 anchor/focus를 재설정하지 않는다.
+재검토에서 일반 완료 경계의 focus 캐럿도 기존 `updatePosition`으로 확정 쪽 원점에 재투영했다.
 기존 `CaretLayoutReveal` 예약이 있는 Enter·쪽/단 나누기는 기존 캐럿 갱신과 자동 스크롤을
 유지한다. 일반 선택 재투영은 캐럿 이동·자동 스크롤·문서 mutation을 일으키지 않는다.
 
@@ -31,7 +32,7 @@ metrics 적용과 await 뒤 renderer 적용을 함께 fence하며, 폐기된 뷰
 #3416의 유효 선택 복원과 #7539의 Enter reveal을 유지한다.
 #8102의 셀 경로·#594의 호스트 오류 복구·조판·저장 속성은 변경하지 않았다.
 
-## 수정 전후 재현과 검증
+## 최초 수정 전후 재현과 검증
 
 Linux 클라우드, Rust 1.93.1, wasm-pack 0.15.0, Node 24, 시스템 Chromium의 실제 Studio DOM을
 사용했다. 입력은 E2E의 plain-text paste로 생성한 `P000`~`P399` 400문단이며
@@ -59,6 +60,73 @@ Linux 클라우드, Rust 1.93.1, wasm-pack 0.15.0, Node 24, 시스템 Chromium�
 수정 전 중간 쪽에 본문은 있지만 음영이 없는 캡처와, 수정 후 첫/중간/마지막 쪽에서
 음영이 본문 줄을 따라가는 100%/66% 캡처를 직접 열어 확인했다.
 자동 DOM 검사를 독립 한컴 화면 일치나 사용자 개인 브라우저 확인으로 표시하지 않는다.
+
+## 재검토의 발견과 보정
+
+사용자 재검토 요청에 따라 초기 제출 후보 `cebd9040`의 구현과 검증을 다시 대조했다.
+초기 98개 E2E는 기본 Canvas2D였으며, auto 경로·실제 quiet 타이머·문서 교체·연속 줌의
+검증이 부족했다. [재검토 단계 기록](../working/task_m100_8103_stage2.md)에 사전 가설과
+수정 전 증거를 남겼다. 다음 세 누락을 보정했다.
+
+- 이전 편집의 300ms quiet 타이머가 새 mutation의 metrics await 중 실행되어 최신
+  layout 완료를 폐기했다. 새 mutation 시작 시 이전 예약을 취소하고 최신 완료 후 다시 예약한다.
+  실제 auto 브라우저의 450ms 지연 검사는 보정 전 타임아웃, 보정 후 통과다.
+- quiet 재선택으로 backend/metrics가 변할 때도 배치 확정 후 현재 선택을 재투영한다.
+  완료 직전 current/dispose guard로 오래된 결과의 알림을 막는다. 실제 제품 메서드의
+  quiet 타이머 검사와 알림 검사는 이전 소스에서 실패하고 보정 후 통과했다.
+- 복원 선택의 focus 캐럿은 초기 수정에서도 한 쪽 원점에 남았다. 마지막 쪽의 실제 DOM top
+  772.9와 확정 배치 관계의 기대 top 10975.4가 달랐고, 보정 후 일치했다.
+  이는 진단 관측값이며 테스트는 고정 px 대신 현재 쪽 원점과 page-local rect 관계를 검사한다.
+
+### 재검토 code head의 실행 결과
+
+`9801e5eb929d91a79611f6b0902cae7c39e450ab`에서 fresh dev web/Node WASM을 다시 만들고
+동기화한 뒤 실행했다. Rust/WASM source 변경은 없으므로 산출물 해시는 최초 검증과 같다.
+전체 unit과 병행한 브라우저 초기 응답은 느렸지만 타임아웃 없이 회복하여 끝까지 완료했다.
+
+| 명령·검사 | 결과 |
+| --- | --- |
+| locked wrapper web·Node dev WASM, root pkg/public SHA-256 비교 | 모두 exit 0, JS·WASM 각각 동일 |
+| `npx tsc --noEmit`, `npm --prefix rhwp-studio run build` | 각각 exit 0 |
+| `npm --prefix rhwp-studio test` | 2,367 PASS / 0 FAIL / 0 SKIP, exit 0 |
+| 확장 선택 E2E, 새 Canvas2D·auto 브라우저, 원본 글꼴 공급 | 280 PASS / 0 FAIL / pageerror 0건, exit 0 |
+| 기존 Enter, Undo 계약, 전체 선택 E2E | 각각 84 / 99 / 63 PASS, FAIL 0, exit 0 |
+| manifest·변경 문서 링크·`git diff --check` | 이상 없음 |
+| CanvasKit 강제 모드의 추가 지연 경계 진단 | **타임아웃으로 실패(exit 1), 미해결** |
+
+확장 E2E는 400문단의 100%/66% 복원 선택·첫/중간/마지막 쪽·새 선택 대조군·실제 전체 삭제와
+Redo를 유지한다. focus 캐럿, 두 쪽 보기·viewport resize, 실제 smooth zoom·스크롤,
+지연 중 역방향 새 선택·선택 해제·새 revision의 역순 완료·실제 문서 교체를 추가했다.
+두 backend의 smooth zoom은 각각 브라우저 내 3회 관측에서 anchor/focus를 보존했고,
+최대 투영 반올림 차이는 약 0.004982 CSS px였다. 기존 0.02 허용치는 바꾸지 않았다.
+완료 count는 `source === 'mutation'`만 세어 quiet 알림이 대기를 거짓으로 만족하지 않게 했다.
+해당 280개 실행의 caught console render error도 0건이다.
+
+### CanvasKit 강제 모드의 실패와 검증 한계
+
+클라우드 Chromium의 CDN 글꼴 요청은 직접 fetch 실패와 proxy 인증서 오류였다.
+TLS 검증을 유지한 curl로 공개 원본 `HANBatang.woff`를 내려받아 정확한 URL에 원본 바이트만
+공급했다. 글꼴 SHA-256은 `b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c`다.
+renderer·metrics·선택 rect는 대역하지 않았다. 테스트는 원본 바이트 소비를 검사하며,
+강제 CanvasKit에서는 실제 backend도 검사하므로 fallback을 성공으로 세지 않는다.
+
+이 실제 CanvasKit 실행은 앞선 전체 삭제·Undo·Redo·스크롤·줌 관계 검사 134개를 통과했지만,
+metrics 대기 중 `CanvasKit font family가 준비되지 않았습니다: 함초롬바탕`이 발생하고
+선택 해제 단계의 mutation 완료 대기가 타임아웃됐다. **전체 실행은 실패이며 134개를
+완료 성공으로 합산하지 않는다.** Vite 메모리 내 transform으로 두 제품 파일만 `cebd9040`
+소스로 공급한 대조군도 같은 글꼴 오류와 같은 단계의 타임아웃을 재현했다.
+이는 이전 소스에도 존재한다는 근거이며 해결 완료의 근거가 아니다. 렌더 자원 수명과
+호스트 복구 구현을 이슈 #8103의 수정에 섞지 않았으며 강제 CanvasKit의 해당 경계는 미해결이다.
+
+재실행 명령(글꼴 파일은 커밋하지 않음):
+
+```bash
+curl --fail --location --output work/HANBatang.woff 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff'
+sha256sum work/HANBatang.woff
+(cd rhwp-studio && node e2e/run-with-vite.mjs -- node e2e/selection-layout-issue8103.test.mjs --mode=headless --font-cache=../work/HANBatang.woff)
+# 실패를 확인한 추가 진단. 필수 선택 E2E의 성공과 구분한다.
+(cd rhwp-studio && node e2e/run-with-vite.mjs -- node e2e/selection-layout-issue8103.test.mjs --mode=headless --renderer=canvaskit --font-cache=../work/HANBatang.woff)
+```
 
 ## 실행 명령과 산출물
 
@@ -110,6 +178,22 @@ Native/fresh WASM 문서 Print PDF Visual Sweep·TSV는 비해당이다.
 Rust 전체 lint/integration·release WASM 최적화·한컴 출력 일치를 검증했다고 주장하지 않는다.
 성능 benchmark·Safari/Firefox·macOS의 실제 사용자 브라우저는 미검증이다.
 정확한 PR head의 원격 CI·타인 리뷰는 로컬 검증과 별도 상태로 확인한다.
+
+### PR 제출 보류 상태
+
+재검토 시점의 기존 본인 PR [#8178](https://github.com/edwardkim/rhwp/pull/8178)은
+새 head `e32f63d2aac839190d2b8085f0ec5346fa4e0479`에서 `CI Impact Policy` failure이며
+CodeQL JS가 실행 중이다. [실패 run](https://github.com/edwardkim/rhwp/actions/runs/39933707917)의
+`Publish exact-head policy status` step 실패를 API로 확인했다. raw 로그 다운로드는 Forbidden으로
+하위 원인을 확인하지 못했다. [#8180](https://github.com/edwardkim/rhwp/pull/8180)도 새 열린
+본인 PR이며 CI 실행 중이다. 두 PR의 개인/팀 reviewer 요청은 없고 확인된 리뷰는 보안 봇의
+COMMENTED뿐이다. 다른 세션의 PR은 수정하지 않았다.
+
+[새 PR 생성 전 절차](../manual/codex/docs_and_git_workflow.md#새-pr-생성-전에-확인할-항목)는
+리뷰어 예외가 없는 기존 PR의 실패·진행 중 상태를 성공으로 간주해 새 PR을 만들지 않게 한다.
+사용자 재검토 요청은 이 우선순위 예외 승인이 아니므로 신규 PR을 생성하지 않았다.
+강제 CanvasKit 지연 경계도 미해결 실패로 남는다. 따라서 모든 검증·제출이 완료됐다고
+보고하지 않으며 실제 #8103 PR URL은 아직 없다. merge·release·배포·이슈 종료는 실행하지 않았다.
 
 사용자 직접 확인 절차:
 
