@@ -27,6 +27,7 @@ import {
   type PluginCaret,
   type PluginLedger,
   type PluginSelectionText,
+  type PluginTextRange,
   type PluginUi,
   type PluginSurface,
   type StudioPlugin,
@@ -54,6 +55,8 @@ export interface PluginHostDeps {
   resolve: (id: string) => Promise<StudioPlugin>;
   /** 오른쪽 패널 자리. 화면이 없는 구성에서는 비워 둔다 — 등록이 `UI_UNAVAILABLE` 로 거절된다. */
   sidePanels?: SidePanelRegistry;
+  /** 편집기 선택 이동. 찾기 대화상자와 같은 경로를 쓰도록 studio 가 넘긴다. */
+  selectTextRange?: (range: PluginTextRange) => boolean;
 }
 
 /** `getSelectionText` 가 한 번에 돌려주는 글자 수 상한. */
@@ -194,6 +197,11 @@ class PluginHostFacade implements PluginHost {
     const result = readSelectionText(this.deps.wasm, selection.start, selection.end, SELECTION_TEXT_MAX_CHARS);
     if (!result) return null;
     return { text: result.text, start, end, truncated: result.truncated };
+  }
+
+  selectTextRange(range: PluginTextRange): boolean {
+    if (!this.deps.selectTextRange || !this.deps.wasm.borrowDocumentHandle()) return false;
+    return this.deps.selectTextRange(range);
   }
 
   /** studio 좌표 → 플러그인 좌표. 글상자 안이면 `null`. */

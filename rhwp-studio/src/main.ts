@@ -112,6 +112,7 @@ import { enrichFontDecisionTrace } from '@/core/font-decision-trace';
 import { DocumentAgentController } from '@/document-agent/controller';
 import { initI18n, t } from '@/i18n/index.ts';
 import { SidePanelController, createDomSidePanelView } from '@/view/side-panel-host';
+import { navigateToSearchHit } from '@/ui/find-dialog';
 
 // 언어팩 초기화 — 정적 마크업의 라벨을 결정된 로케일로 갱신한다. 카탈로그에 없는 키는
 // 원문(ko)으로 물러나므로 번역이 없는 상태에서도 화면은 도입 전과 같다.
@@ -348,6 +349,23 @@ const plugins = new PluginHostRegistry({
   },
   resolve: resolvePlugin,
   sidePanels,
+  selectTextRange: (range) => {
+    if (!inputHandler) return false;
+    navigateToSearchHit(inputHandler, {
+      found: true,
+      sec: range.section,
+      para: range.paragraph,
+      charOffset: range.charOffset,
+      length: range.length,
+      ...(range.cell ? {
+        cellContext: {
+          parentPara: range.cell.parentPara, ctrlIdx: range.cell.controlIndex,
+          cellIdx: range.cell.cellIndex, cellPara: range.cell.cellPara,
+        },
+      } : {}),
+    });
+    return true;
+  },
 });
 (window as any).rhwpStudio.plugins = plugins;
 

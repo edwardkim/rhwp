@@ -2133,6 +2133,11 @@ const catalog = {
   "ai.format.kind.header": "머리말",
   "ai.format.kind.footer": "꼬리말",
   "ai.format.keepsObjects": "문단에 구역 설정·머리말·표 같은 개체가 있어 글만 지우고 빈 문단은 남깁니다",
+  "ai.change.run_command": "편집 명령",
+  "ai.format.command": "「{v}」 실행",
+  "ai.tool.list_commands": "명령 목록 확인",
+  "ai.tool.select_text": "글 선택",
+  "ai.tool.run_command": "명령 제안",
 } as const;
 
 export default catalog;
