@@ -128,11 +128,10 @@ fn reduced_scatter_plot_preserves_every_interior_grid_band() {
     else {
         unreachable!()
     };
-    let bytes = resolved
-        .as_deref()
-        .map(|p| p.data.as_slice())
-        .or(image.data.as_deref())
-        .expect("원본 그림 픽셀");
+    // 원본의 7개 선은 편집 원본에서 식별한다. Print JPEG는 이미 압축된
+    // 출력 payload이므로 색 번짐을 원본의 행 개수로 잘못 세지 않는다.
+    // 아래 실제 paint는 resolved를 포함한 op 전체를 계속 사용한다.
+    let bytes = image.data.as_deref().expect("편집 원본 그림 픽셀");
     let source = image::load_from_memory(bytes).unwrap().to_rgb8();
     fn descendants<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
         out.push(node);

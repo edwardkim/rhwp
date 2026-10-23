@@ -4,9 +4,12 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use base64::Engine;
-use rhwp::paint::{LayerJsonOptions, LayerNode, LayerNodeKind, PaintOp, RenderProfile};
+use rhwp::paint::{
+    LayerJsonOptions, LayerNode, LayerNodeKind, PaintOp, RenderProfile, ResolvedImageKind,
+};
 use rhwp::DocumentCore;
 use serde_json::Value;
+use sha2::Digest;
 use std::collections::HashSet;
 
 const DIRECTORY: &str = "pdf/issue7642-metafile-palette-visibility-20261017";
@@ -47,7 +50,12 @@ fn json_images<'a>(value: &'a Value, out: &mut Vec<&'a Value>) {
     }
 }
 
-fn verify_profile(core: &DocumentCore, profile: RenderProfile, expanded: &[bool]) -> Vec<String> {
+fn verify_profile(
+    core: &DocumentCore,
+    profile: RenderProfile,
+    expanded: &[bool],
+    oracles: Option<&std::path::Path>,
+) -> Vec<String> {
     let tree = core.build_page_layer_tree_with_profile(0, profile).unwrap();
     let mut ops = Vec::new();
     image_ops(&tree.root, &mut ops);
@@ -64,6 +72,9 @@ fn verify_profile(core: &DocumentCore, profile: RenderProfile, expanded: &[bool]
     json_images(&omitted, &mut omitted_ops);
     assert_eq!(inline_ops.len(), ops.len());
     assert_eq!(omitted_ops.len(), ops.len());
+    let source_keys: Value =
+        serde_json::from_str(&core.get_page_source_image_keys_native(0).unwrap()).unwrap();
+    assert_eq!(source_keys["keys"].as_array().unwrap().len(), ops.len());
 
     let mut owners = HashSet::new();
     let mut keys = Vec::new();
@@ -82,6 +93,16 @@ fn verify_profile(core: &DocumentCore, profile: RenderProfile, expanded: &[bool]
         let source = image::load_from_memory(source_bytes).unwrap().to_rgba8();
         let emitted_bytes = resolved.as_deref().map_or(source_bytes, |p| &p.data);
         let emitted = image::load_from_memory(emitted_bytes).unwrap().to_rgba8();
+        let index = keys.len();
+        let original_key = source_keys["keys"][index].as_str().unwrap();
+        let original_lookup = core.get_source_image_bytes_native(original_key).unwrap();
+        assert_eq!(
+            image::load_from_memory(&original_lookup.1)
+                .unwrap()
+                .to_rgba8(),
+            source,
+            "Print 전달이 원본 bin 조회의 색을 덮어쓰지 않는다"
+        );
         assert_eq!(
             emitted.dimensions(),
             source.dimensions(),
@@ -96,44 +117,95 @@ fn verify_profile(core: &DocumentCore, profile: RenderProfile, expanded: &[bool]
         );
 
         if changes {
-            // 독립 Print의 JPEG 내부 표본은 128→131, 240→246이다.
-            // JPEG 양자화 한 단계만 허용하며 위치를 골라 기대값을 만들지 않는다.
-            for (source_gray, printed_gray) in [(128u8, 131u8), (240, 246)] {
-                let mut count = 0;
+            // 계조 표본의 존재를 확인하되, JPEG 경계까지 단색으로 가정하지 않는다.
+            // 경계의 색 번짐도 아래 독립 Print JPEG의 전픽셀 대조가 보호한다.
+            for source_gray in [128u8, 240] {
+                assert!(
+                    source.pixels().any(|p| p.0[..3] == [source_gray; 3]),
+                    "Print의 대조 계조가 원본에 실제 존재해야 한다"
+                );
+            }
+        }
+        if profile == RenderProfile::Screen {
+            assert_eq!(emitted, source, "비대상 프로필의 원본색 보존");
+        } else if let Some(directory) = oracles {
+            // 원본색 배열이 아닌 같은 문서의 독립 Print JPEG와 전픽셀을 대조한다.
+            // 참조 JPEG도 같은 decoder로 읽어 decoder 간 반올림 차이를 섞지 않는다.
+            let reference = image::open(directory.join(format!("{index:02}.jpg")))
+                .unwrap()
+                .to_rgba8();
+            assert!(
+                emitted == reference,
+                "owner={owner:?}: 독립 Print payload의 색 보존"
+            );
+        } else {
+            // 2022 호환 counter는 RGB555 확장이 없어야 한다. JPEG의 DC 양자화
+            // 한 단계와 원본 모델 보존을 구분하며 128→132 같은 명도 확장을 거부한다.
+            for gray in [128u8, 240] {
+                let (mut count, mut sum) = (0u64, [0u64; 3]);
                 for (a, b) in source.pixels().zip(emitted.pixels()) {
-                    if a.0[..3] == [source_gray; 3] {
+                    if a.0[..3] == [gray; 3] {
                         count += 1;
-                        assert!(b.0[..3].iter().all(|c| c.abs_diff(printed_gray) <= 1),
-                            "독립 Print 계조 불일치: owner={owner:?}, 원본={source_gray}, 출력={b:?}");
+                        for channel in 0..3 {
+                            sum[channel] += u64::from(b[channel]);
+                        }
                     }
                 }
-                assert!(count > 0, "Print의 대조 계조가 원본에 실제 존재해야 한다");
+                assert!(count > 0);
+                assert!(
+                    sum.into_iter()
+                        .all(|s| s.abs_diff(u64::from(gray) * count) <= count),
+                    "2022 호환은 원본 명도를 확장하지 않는다: {owner:?}, {gray}"
+                );
             }
-        } else {
-            assert_eq!(
-                emitted, source,
-                "팔레트 전달 또는 비대상 프로필의 원본색 보존"
-            );
         }
 
-        let index = keys.len();
-        let key = inline_ops[index]["sourceImageKey"].as_str().unwrap();
-        let lookup = core
-            .get_source_image_bytes_native(key)
-            .expect("바이트 생략 후 재조회");
-        assert_eq!(lookup.0, inline_ops[index]["mime"].as_str().unwrap());
+        assert_eq!(
+            inline_ops[index]["imageReconstruction"] == "catmullRom",
+            changes
+        );
         let inline_bytes = base64::engine::general_purpose::STANDARD
             .decode(inline_ops[index]["base64"].as_str().unwrap())
             .unwrap();
-        assert_eq!(lookup.1, inline_bytes, "직접 payload와 키 조회의 동일 출력");
         assert_eq!(
-            lookup.1, emitted_bytes,
+            inline_bytes, emitted_bytes,
             "공통 paint payload와 JSON의 동일 출력"
         );
-        assert_eq!(omitted_ops[index]["sourceImageKey"], key);
-        assert_eq!(omitted_ops[index]["imageBytesOmitted"], true);
-        assert!(omitted_ops[index].get("base64").is_none());
-        keys.push(key.to_owned());
+        if let Some(key) = inline_ops[index]["sourceImageKey"].as_str() {
+            let lookup = core
+                .get_source_image_bytes_native(key)
+                .expect("바이트 생략 후 재조회");
+            assert_eq!(lookup.0, inline_ops[index]["mime"].as_str().unwrap());
+            assert_eq!(lookup.1, inline_bytes, "직접 payload와 키 조회의 동일 출력");
+            assert_eq!(omitted_ops[index]["sourceImageKey"], key);
+            assert_eq!(omitted_ops[index]["imageBytesOmitted"], true);
+            assert!(omitted_ops[index].get("base64").is_none());
+            keys.push(key.to_owned());
+        } else {
+            assert!(
+                resolved.as_ref().is_some_and(|p| matches!(
+                    p.kind,
+                    ResolvedImageKind::OutputDevice | ResolvedImageKind::SourceWindow
+                )),
+                "배치별 payload만 원본 bin 키를 생략할 수 있다"
+            );
+            assert!(omitted_ops[index].get("sourceImageKey").is_none());
+            assert_ne!(omitted_ops[index]["imageBytesOmitted"], true);
+            let retained = base64::engine::general_purpose::STANDARD
+                .decode(
+                    omitted_ops[index]["base64"]
+                        .as_str()
+                        .expect("재조회 불가 payload의 inline 보존"),
+                )
+                .unwrap();
+            assert_eq!(retained, emitted_bytes);
+            assert_eq!(omitted_ops[index]["mime"], inline_ops[index]["mime"]);
+            let digest: String = sha2::Sha256::digest(emitted_bytes)
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect();
+            keys.push(format!("inline:{digest}"));
+        }
     }
     keys
 }
@@ -147,22 +219,28 @@ fn verify(input: &str, expanded: &[bool]) {
     core.set_hangul2024_compat(true);
     assert_eq!(core.page_count(), 1, "독립 Print와 전체 쪽수 일치");
     let unchanged = vec![false; expanded.len()];
-    let screen = verify_profile(&core, RenderProfile::Screen, &unchanged);
-    let print = verify_profile(&core, RenderProfile::Print, expanded);
+    let oracles = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/print_bitmap_payload_oracles")
+        .join(std::path::Path::new(input).file_stem().unwrap());
+    let screen = verify_profile(&core, RenderProfile::Screen, &unchanged, None);
+    let print = verify_profile(&core, RenderProfile::Print, expanded, Some(&oracles));
     assert_eq!(
         screen,
-        verify_profile(&core, RenderProfile::Screen, &unchanged)
+        verify_profile(&core, RenderProfile::Screen, &unchanged, None)
     );
-    assert_eq!(print, verify_profile(&core, RenderProfile::Print, expanded));
+    assert_eq!(
+        print,
+        verify_profile(&core, RenderProfile::Print, expanded, Some(&oracles))
+    );
     for ((a, b), changes) in screen.iter().zip(&print).zip(expanded) {
         if *changes {
             assert_ne!(a, b, "원본색·Print 전달색의 캐시 신원 분리");
         }
     }
     core.set_hangul2024_compat(false);
-    verify_profile(&core, RenderProfile::Print, &unchanged);
+    verify_profile(&core, RenderProfile::Print, &unchanged, None);
     core.set_hangul2024_compat(true);
-    verify_profile(&core, RenderProfile::Print, expanded);
+    verify_profile(&core, RenderProfile::Print, expanded, Some(&oracles));
 }
 
 #[test]

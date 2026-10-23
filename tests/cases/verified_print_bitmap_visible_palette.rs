@@ -50,7 +50,7 @@ fn print_palette_selection_follows_visible_crop_instead_of_full_source_colors() 
 }
 
 use base64::Engine;
-use rhwp::paint::{LayerJsonOptions, LayerNode, LayerNodeKind, PaintOp};
+use rhwp::paint::{LayerJsonOptions, LayerNode, LayerNodeKind, PaintOp, ResolvedImageKind};
 fn image_ops<'a>(node: &'a LayerNode, out: &mut Vec<&'a PaintOp>) {
     match &node.kind {
         LayerNodeKind::Group { children, .. } => {
@@ -165,18 +165,38 @@ fn print_palette_payload_and_lazy_lookup_preserve_visible_colors_owners_and_sour
                 a[i]["imageReconstruction"].as_str() == Some("catmullRom"),
                 expected[i]
             );
-            let key = a[i]["sourceImageKey"].as_str().unwrap();
-            assert_eq!(b[i]["sourceImageKey"], key);
             assert_eq!(b[i]["imageReconstruction"], a[i]["imageReconstruction"]);
-            assert_eq!(b[i]["imageBytesOmitted"], true);
-            assert!(b[i].get("base64").is_none());
-            let looked = core.get_source_image_bytes_native(key).unwrap();
             let encoded = base64::engine::general_purpose::STANDARD
                 .decode(a[i]["base64"].as_str().unwrap())
                 .unwrap();
-            assert_eq!(looked.0, a[i]["mime"].as_str().unwrap());
-            assert_eq!(looked.1, encoded, "inline과 source key 재조회 동일 바이트");
-            assert_eq!(looked.1, payload, "공통 paint와 재조회 동일 바이트");
+            assert_eq!(encoded, payload, "공통 paint와 inline의 동일 바이트");
+            if let Some(key) = a[i]["sourceImageKey"].as_str() {
+                assert_eq!(b[i]["sourceImageKey"], key);
+                assert_eq!(b[i]["imageBytesOmitted"], true);
+                assert!(b[i].get("base64").is_none());
+                let looked = core.get_source_image_bytes_native(key).unwrap();
+                assert_eq!(looked.0, a[i]["mime"].as_str().unwrap());
+                assert_eq!(looked.1, encoded, "inline과 source key 재조회 동일 바이트");
+            } else {
+                assert!(
+                    resolved.as_ref().is_some_and(|p| matches!(
+                        p.kind,
+                        ResolvedImageKind::OutputDevice | ResolvedImageKind::SourceWindow
+                    )),
+                    "배치별 payload만 원본 bin 키를 생략할 수 있다"
+                );
+                assert!(b[i].get("sourceImageKey").is_none());
+                assert_ne!(b[i]["imageBytesOmitted"], true);
+                let inline = base64::engine::general_purpose::STANDARD
+                    .decode(
+                        b[i]["base64"]
+                            .as_str()
+                            .expect("재조회 불가 payload는 생략하지 않는다"),
+                    )
+                    .unwrap();
+                assert_eq!(inline, payload, "배치별 출력의 inline 바이트 보존");
+                assert_eq!(b[i]["mime"], a[i]["mime"]);
+            }
         }
     }
 }
