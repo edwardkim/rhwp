@@ -710,7 +710,7 @@ impl TextStyle {
     }
 }
 
-/// Canvas 폰트의 실측 폭을 레이아웃 advance에 맞출 때 적용할 배율을 계산한다.
+/// 원본이 명시한 glyph 폭 맞춤의 배율을 계산한다.
 ///
 /// 양수 문자 간격은 다음 cluster의 시작 위치를 바꾸는 값이므로 glyph 폭 맞춤과
 /// 분리한다. 음수 간격은 `glyph_fit_positions`에서 다시 측정한 폭을 사용하고,
@@ -721,6 +721,11 @@ pub(crate) fn canvas_cluster_fit_scale(
     visual_width: f64,
     pin_ascii_advance: bool,
 ) -> Option<f64> {
+    // 글자 원점 사이의 전진과 윤곽의 잉크 폭은 독립적이다. Native와 같은
+    // 명시적 폭 맞춤 요청만 소비하며 일반 본문·대체 face를 전진 안에 누르지 않는다.
+    if !style.fixed_glyph_advances {
+        return None;
+    }
     let cluster_advance =
         style.glyph_fit_advance(layout_cluster_advance)? * style.script_advance_scale();
     if cluster_advance <= 0.0 || visual_width <= 0.0 || style.letter_spacing < 0.0 {

@@ -2805,9 +2805,7 @@ impl Renderer for WebCanvasRenderer {
                         });
                         // Measured fallback advance already includes script size and
                         // document ratio exactly once. Do not fit it a second time.
-                        let fit_scale = if measured_descriptor.is_some()
-                            || self.preserves_hft_ink(cluster_str, style)
-                        {
+                        let fit_scale = if measured_descriptor.is_some() {
                             None
                         } else if cluster_advance > 0.0 {
                             self.ctx

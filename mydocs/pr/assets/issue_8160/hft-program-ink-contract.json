@@ -1,7 +1,6 @@
 {
   "issue": 8160,
-  "status": "production_patch_linted_fresh_wasm_validation_pending",
-  "rule": "A glyph from the supplied original HFT CFF program keeps its ink extent independently of source text advances. A registered contour is required. Explicit fixed glyph advances, old Hangul, multiple-character clusters and absent/rejected source programs retain existing fitting. No document, paragraph, string or coordinate condition.",
+  "status": "superseded_by_shared_explicit_glyph_fit_contract_fresh_wasm_pending",
   "source_font": {
     "sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341",
     "units_per_em": 1000,
@@ -40,5 +39,51 @@
     "exit_code": 0,
     "seconds": 186
   },
-  "tests_registered": false
+  "tests_registered": false,
+  "prior_hft_specific_rule": "A glyph from the supplied original HFT CFF program keeps its ink extent independently of source text advances. A registered contour is required. Explicit fixed glyph advances, old Hangul, multiple-character clusters and absent/rejected source programs retain existing fitting. No document, paragraph, string or coordinate condition.",
+  "rule": "Common glyph fitting consumes only style.fixed_glyph_advances, as Native already does. Nonfixed source or substitute glyph ink remains independent of text advances; document font-type declarations and layout metrics are unchanged. This replaces the partial HFT registry exception.",
+  "candidate30_validation": {
+    "source_sha": "f3408d9cc16a8fac9092946f52d898250b7a3f16",
+    "wasm_sha256": "a2a1abfc1bc43ed7c0fa818907a4de8e582f4dec796ad72da2093640df29d0e6",
+    "hwpx_page38_unmatched": [
+      0,
+      0
+    ],
+    "hwp2024_page38_unmatched": [
+      0,
+      0
+    ],
+    "hwp2022_page38_unmatched": [
+      4,
+      5
+    ],
+    "hwp2022_source_face": {
+      "name": "HCI Poppy",
+      "alt_type": 1,
+      "substitute": "Batang",
+      "source_font_is_hft": false,
+      "fixed_glyph_advances": false
+    },
+    "hwp2022_source_ink_diagnostic": [
+      0,
+      0
+    ],
+    "diagnostic_is_product_completion": false
+  },
+  "history": {
+    "native_fixed_only_introducing_commit": "84764fa21c96cd5f8a0e158658e4162a4fb3ce9e",
+    "merged_pr": 7941,
+    "source_head": "554021bee72b8b5cf30deec20c8ac5a9b15e54c0",
+    "issue2189_actual_fix": "b85f8533d with 04201feb0 integration; layout spacing spillover, not normal-glyph horizontal fitting",
+    "reviewed_remote_issue": "https://github.com/edwardkim/rhwp/issues/2189",
+    "reviewed_remote_pr": "https://github.com/edwardkim/rhwp/pull/7941"
+  },
+  "explicit_fit_native_lib_clippy": {
+    "exit_code": 0,
+    "seconds": 87
+  },
+  "explicit_fit_wasm_lib_clippy": {
+    "exit_code": 0,
+    "seconds": 91
+  }
 }
