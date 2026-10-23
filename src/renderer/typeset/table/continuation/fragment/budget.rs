@@ -450,7 +450,12 @@ impl TypesetEngine {
         // paragraph-relative float anchor. Both capacity boundaries below must
         // consume this same origin, as partial paint's paragraph anchor does.
         let fragment_flow_origin = if is_empty_host_column_float {
-            budget_para_start_height.min(st.current_height)
+            super::super::super::first_fragment_flow_origin(
+                para,
+                table,
+                budget_para_start_height,
+                st.current_height,
+            )
         } else {
             st.current_height
         };

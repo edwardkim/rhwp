@@ -589,9 +589,15 @@ impl TypesetEngine {
             };
             host_before + vert_off + fragment_outer_bottom
         };
+        let first_frag_origin = super::super::first_fragment_flow_origin(
+            para,
+            table,
+            budget_para_start_height,
+            st.current_height,
+        );
         let remaining_with = |released: f64| {
             fragment_host_placement.map_or_else(
-                || (table_available + released - st.current_height - first_frag_overhead).max(0.0),
+                || (table_available + released - first_frag_origin - first_frag_overhead).max(0.0),
                 |p| {
                     (table_available + released
                         - p.table_top
