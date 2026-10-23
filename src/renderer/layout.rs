@@ -7721,6 +7721,7 @@ impl LayoutEngine {
                         });
                         crate::renderer::float_placement::stored_table_column_origin(
                             paragraphs.get(*para_index)?,
+                            paragraphs.get(*para_index + 1),
                             has_host_line,
                             col_content.paragraph_float_placements.get(&(*para_index, *control_index)),
                             self.dpi,

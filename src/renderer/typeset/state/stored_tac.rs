@@ -85,6 +85,7 @@ impl TypesetState {
                 self.data.vpos_page_base = paragraphs.get(*first).and_then(|para| {
                     crate::renderer::float_placement::stored_table_column_origin(
                         para,
+                        paragraphs.get(*first + 1),
                         has_host_line,
                         self.data
                             .paragraph_float_placements
