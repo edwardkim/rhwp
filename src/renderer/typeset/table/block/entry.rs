@@ -2155,15 +2155,25 @@ impl TypesetEngine {
                 && !ft.strict_following_plain_text_fit
                 && legacy_whole_fits)
                 .then(|| {
+                    let applied_spacing_before = if placement_para_start_height > 0.0 {
+                        fmt.spacing_before
+                    } else {
+                        0.0
+                    };
                     crate::renderer::float_placement::ParagraphFloatPlacement::from_saved_whole_empty_host(
                         para,
                         table,
-                        source_host_origin,
-                        if placement_para_start_height > 0.0 {
-                            fmt.spacing_before
-                        } else {
-                            0.0
-                        },
+                        // [#8149] 저장 단 원점을 세우지 못한 쪽(앞이 저장 줄 없는 제목·이어지는
+                        // 표 조각)에서도 한/글은 표를 문단 위끝 + 바깥 위 여백에 둔다. 조판 커서가
+                        // 문단 위끝이므로 거기에 적용한 앞 간격을 더한 줄 위치를 원점으로 쓴다
+                        // (한글문서파일형식 13쪽 표 51: 종전 줄 + 위 여백으로 +6.7px).
+                        // 세로 오프셋이 있는 표는 오프셋이 가리키는 상자 원점이 다른 계약(#4068)이라
+                        // 이 대체 원점을 쓰지 않는다.
+                        source_host_origin.or_else(|| {
+                            (signed_hwpunit(table.common.vertical_offset) == 0)
+                                .then_some(placement_para_start_height + applied_spacing_before)
+                        }),
+                        applied_spacing_before,
                         ft.effective_height,
                         ft.host_spacing.after - ft.host_spacing.spacing_after_only,
                         self.dpi,

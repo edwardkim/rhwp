@@ -1516,6 +1516,7 @@ pub(crate) fn block_table_caption_host_spacing_px(
     dpi: f64,
 ) -> f64 {
     if object_only_saved_table_anchor(para, table)
+        || textless_single_float_host(para, table)
         || saved_inline_sibling_owns_caption_host_line(para, table, dpi)
     {
         0.0
@@ -1524,6 +1525,21 @@ pub(crate) fn block_table_caption_host_spacing_px(
             .first()
             .map_or(0.0, |line| hwpunit_to_px(line.line_spacing, dpi))
     }
+}
+
+/// [#8149] 글자 없이 문단 기준 자리차지 표 하나만 든 host 는 캡션 아래에 둘 글줄이 없다.
+/// 저장 줄의 폭(`segment_width`)이 0 이 아니어도 같다 — 한글문서파일형식 30쪽 표 185 는 host
+/// 줄 폭이 39628 인데 저장 사다리가 다음 host 줄을 `위 + 표 + 캡션 + 아래` 바닥(187.9px)에
+/// 둔다. host 줄간격(600HU)을 캡션에 더하면 상자가 8.0px 길어져 뒤 표가 그만큼 내려갔다.
+fn textless_single_float_host(para: &Paragraph, table: &Table) -> bool {
+    !table.common.treat_as_char
+        && is_para_topbottom_float(&table.common)
+        && para.text.is_empty()
+        && para
+            .controls
+            .iter()
+            .filter(|control| !matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)))
+            .all(|control| matches!(control, Control::Table(t) if std::ptr::eq(t.as_ref(), table)))
 }
 
 /// 원본 한 줄의 높이와 캡션·여백이 인라인 형제의 상자를 정확히 닫으면
@@ -2675,6 +2691,71 @@ pub(crate) fn stored_frame_successor_shared_spacing_px(
                 .then_some(spacing_before)
         })
         .unwrap_or(0.0)
+}
+
+/// [#8149] 글 없는 host 의 문단 기준 자리차지 표 상자 바로 뒤 문단은 한/글이 앞 간격을 그
+/// 표의 바깥 아래 여백 안에서 소비한다 — 다음 글줄이 상자 바닥에 놓인다. 저장 사다리가 상자를
+/// 인증하면 `stored_frame_successor_shared_spacing_px` 가 같은 일을 하므로, 이 함수는 인증
+/// 배치가 없을 때(다음 문단에 저장 줄이 없는 「4.3.x」 제목 등)만 쓴다. 한글문서파일형식 50쪽:
+/// 표 317·321 뒤 제목 318·322 가 앞 간격 13.3px 만큼 내려가 표 323 마지막 행이 넘어갔다.
+///
+/// 소비량은 `min(앞 간격, 바깥 아래 여백)` 이다. 앞 간격이 바깥 아래 여백보다 큰 경우의
+/// 한/글 동작은 확인하지 않았으므로 그 차이는 흐름에 남긴다. 조판과 배치가 같은 직전 항목으로
+/// 판정한다.
+pub(crate) fn empty_host_float_successor_absorbed_spacing_px(
+    previous_item: Option<&crate::renderer::pagination::PageItem>,
+    paragraphs: &[Paragraph],
+    para_index: usize,
+    spacing_before: f64,
+    dpi: f64,
+) -> f64 {
+    use crate::renderer::pagination::PageItem;
+    if spacing_before <= 0.0 {
+        return 0.0;
+    }
+    let (owner, control_index) = match previous_item {
+        Some(PageItem::Table {
+            para_index,
+            control_index,
+        }) => (*para_index, *control_index),
+        Some(PageItem::PartialTable {
+            para_index,
+            control_index,
+            end_row,
+            ..
+        }) => {
+            let complete = paragraphs
+                .get(*para_index)
+                .and_then(|host| host.controls.get(*control_index))
+                .is_some_and(|control| matches!(control, Control::Table(t) if *end_row >= t.row_count as usize));
+            if !complete {
+                return 0.0;
+            }
+            (*para_index, *control_index)
+        }
+        _ => return 0.0,
+    };
+    if owner.checked_add(1) != Some(para_index) {
+        return 0.0;
+    }
+    let Some(host) = paragraphs.get(owner) else {
+        return 0.0;
+    };
+    if host
+        .text
+        .chars()
+        .any(|c| !c.is_whitespace() && c > '\u{001F}' && c != '\u{FFFC}')
+    {
+        return 0.0;
+    }
+    let Some(Control::Table(table)) = host.controls.get(control_index) else {
+        return 0.0;
+    };
+    if !is_para_topbottom_float(&table.common) || signed_hwpunit(table.common.vertical_offset) != 0
+    {
+        return 0.0;
+    }
+    spacing_before.min(hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi).max(0.0))
 }
 
 /// A genuine source ladder and its independently stored successor close the
