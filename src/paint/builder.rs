@@ -10,6 +10,7 @@ use crate::paint::shaping_glyph::lower_horizontal_shaping_page_sidecars;
 use crate::paint::shaping_glyph_vertical::lower_vertical_shaping_page_sidecars;
 use crate::paint::EmbeddedFontFace;
 use crate::renderer::render_tree::{ControlCode, PageRenderTree, RenderNode, RenderNodeType};
+use std::collections::HashMap;
 
 const TEXT_MARK_BODY_CLIP_RIGHT_PAD: f64 = 48.0;
 
@@ -22,6 +23,8 @@ pub struct LayerBuilder {
     output_options: LayerOutputOptions,
     bin_data_epoch: u32,
     page_context: Option<PagePaintContext>,
+    image_frames:
+        HashMap<crate::renderer::render_tree::NodeId, crate::renderer::render_tree::BoundingBox>,
     metafile_device_pixel_width: Option<f64>,
     hancom2024_print_bitmap: bool,
     metafile_fonts: super::metafile_fonts::MetafileFonts,
@@ -40,6 +43,7 @@ impl LayerBuilder {
             output_options: LayerOutputOptions::default(),
             bin_data_epoch: 0,
             page_context: None,
+            image_frames: HashMap::new(),
             metafile_device_pixel_width: None,
             hancom2024_print_bitmap: false,
             metafile_fonts: Default::default(),
@@ -150,6 +154,7 @@ impl LayerBuilder {
         self.image_reference_origin = first_column(&tree.root).unwrap_or((0.0, 0.0));
         let (page_width, page_height) = context.output_size();
         self.page_context = Some(context);
+        self.image_frames.clear();
 
         let root = LayerNode::group(
             tree.root.bbox,
@@ -325,8 +330,13 @@ impl LayerBuilder {
                 let pixel = self
                     .metafile_device_pixel_width
                     .filter(|_| self.hancom2024_print_bitmap);
-                let frame = self.page_context.map_or(node.bbox, |context| {
-                    context.rectangle_frame(node, &mut rect, pixel)
+                let image_frame = rect
+                    .image_frame_owner
+                    .and_then(|owner| self.image_frames.get(&owner).copied());
+                let frame = image_frame.unwrap_or_else(|| {
+                    self.page_context.map_or(node.bbox, |context| {
+                        context.rectangle_frame(node, &mut rect, pixel)
+                    })
                 });
                 Some(vec![PaintOp::rectangle(frame, rect)])
             }
@@ -335,9 +345,17 @@ impl LayerBuilder {
             }
             RenderNodeType::Path(path) => Some(vec![PaintOp::path(node.bbox, path.clone())]),
             RenderNodeType::Image(image) => {
+                let pixel = self
+                    .metafile_device_pixel_width
+                    .filter(|_| self.hancom2024_print_bitmap);
                 let mut frame = self
                     .page_context
-                    .map_or(node.bbox, |context| context.image_frame(node, image));
+                    .map_or(node.bbox, |context| context.image_frame(node, image, pixel));
+                if !node.layer.as_ref().is_some_and(|layer| layer.master_page)
+                    && (frame.x != node.bbox.x || frame.width != node.bbox.width)
+                {
+                    self.image_frames.insert(node.id, frame);
+                }
                 let mut ops = if let Some(path) = crate::renderer::pdf_stroke::project(image, frame)
                 {
                     vec![PaintOp::path(frame, path)]

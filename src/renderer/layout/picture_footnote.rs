@@ -855,6 +855,7 @@ impl LayoutEngine {
             tree,
             parent_node,
             picture,
+            img_id,
             adjusted_pic_x,
             pic_y,
             pic_width,

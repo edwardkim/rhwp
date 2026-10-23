@@ -461,7 +461,12 @@ impl PagePaintContext {
         BoundingBox::new(left * unit, bounds.y, (right - left) * unit, bounds.height)
     }
 
-    pub(crate) fn image_frame(self, node: &RenderNode, image: &ImageNode) -> BoundingBox {
+    pub(crate) fn image_frame(
+        self,
+        node: &RenderNode,
+        image: &ImageNode,
+        _device_pixel: Option<f64>,
+    ) -> BoundingBox {
         let bbox = node.bbox;
         let is_master = node.layer.as_ref().is_some_and(|layer| layer.master_page);
         let raster = image.data.as_deref().is_some_and(|bytes| {

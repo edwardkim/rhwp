@@ -1466,6 +1466,9 @@ pub struct RectangleNode {
     /// [Task #1138] 표 셀 내 도형인 경우: outer paragraph 의 표 control 인덱스
     #[serde(default)]
     pub outer_table_control_index: Option<usize>,
+    /// 그림 테두리가 공유하는 원본 이미지 노드. 인쇄 프레임은 paint에서 한 번 결정한다.
+    #[serde(skip)]
+    pub image_frame_owner: Option<NodeId>,
 }
 
 impl RectangleNode {
@@ -1487,6 +1490,7 @@ impl RectangleNode {
             cell_index: None,
             cell_para_index: None,
             outer_table_control_index: None,
+            image_frame_owner: None,
         }
     }
 }

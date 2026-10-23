@@ -5,7 +5,7 @@ use crate::model::image::Picture;
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::image_geometry::PictureSourceRect;
 use crate::renderer::render_tree::{
-    BoundingBox, PageLayoutContext, RectangleNode, RenderNode, RenderNodeType, ShapeTransform,
+    BoundingBox, NodeId, PageLayoutContext, RectangleNode, RenderNode, RenderNodeType, ShapeTransform,
 };
 
 /// 저장 묶음 행렬이 이미 적용된 그림에 원본 회전·대칭을 다시 적용하지 않는다.
@@ -14,6 +14,7 @@ struct PictureBorderFrame {
     transform: ShapeTransform,
     pre_rotation_ratio: Option<[f64; 2]>,
     source_rect: Option<PictureSourceRect>,
+    image_frame_owner: NodeId,
 }
 
 impl LayoutEngine {
@@ -24,13 +25,14 @@ impl LayoutEngine {
         tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         picture: &crate::model::image::Picture,
+        image_frame_owner: NodeId,
         x: f64,
         y: f64,
         w: f64,
         h: f64,
     ) {
         if let Some(border) =
-            self.make_picture_border_node(tree, picture, BoundingBox::new(x, y, w, h))
+            self.make_picture_border_node(tree, picture, BoundingBox::new(x, y, w, h), image_frame_owner)
         {
             parent.children.push(border);
         }
@@ -54,9 +56,10 @@ impl LayoutEngine {
                     transform: node.transform,
                     pre_rotation_ratio: node.pre_rotation_ratio,
                     source_rect: node.source_rect,
+                    image_frame_owner: image.id,
                 },
             ),
-            _ => self.make_picture_border_node(tree, picture, image.bbox),
+            _ => self.make_picture_border_node(tree, picture, image.bbox, image.id),
         };
         parent.children.push(image);
         if let Some(border) = border {
@@ -69,12 +72,14 @@ impl LayoutEngine {
         tree: &mut PageLayoutContext,
         picture: &crate::model::image::Picture,
         bbox: BoundingBox,
+        image_frame_owner: NodeId,
     ) -> Option<RenderNode> {
         self.make_picture_border_frame(
             tree,
             picture,
             PictureBorderFrame {
                 bbox,
+                image_frame_owner,
                 transform: crate::renderer::image_geometry::picture_transform(picture),
                 pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(
                     picture,
@@ -140,6 +145,7 @@ impl LayoutEngine {
                 .viewport;
         let mut rectangle = RectangleNode::new(0.0, style, None);
         rectangle.picture_border = true;
+        rectangle.image_frame_owner = Some(frame.image_frame_owner);
         rectangle.round_stroke_join = !matches!((picture.border_attr.attr >> 6) & 0x0f, 1 | 2);
         rectangle.transform = transform;
         Some(RenderNode::new(
