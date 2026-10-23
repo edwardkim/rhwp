@@ -13,6 +13,54 @@ pub(in crate::renderer::typeset) struct OwnedRow {
     pub horizontal_pen: f64,
 }
 
+/// 같은 문단의 앞 개체가 실제로 수용한 원점에서 다음 저장 줄의 원점을 잇는다.
+/// 가로 펜만 있는 계획·쪽 재시작·불연속 사다리는 세로 축을 인증하지 않는다.
+pub(in crate::renderer::typeset) fn preceding_owned_row_top(
+    para: &Paragraph,
+    para_index: usize,
+    control: usize,
+    placements: &std::collections::HashMap<
+        (usize, usize),
+        crate::renderer::float_placement::InlineBoxPlacement,
+    >,
+    dpi: f64,
+) -> Option<f64> {
+    let owner = crate::renderer::composer::control_slot_line_index(para, control)?;
+    let line = para.line_segs.get(owner)?;
+    placements
+        .iter()
+        .filter(|((paragraph, previous), placement)| {
+            *paragraph == para_index
+                && *previous < control
+                && placement.stored_horizontal_pen.is_some()
+                && placement.advance_end.is_some()
+        })
+        .filter_map(|((_, previous), placement)| {
+            let first = crate::renderer::composer::control_slot_line_index(para, *previous)?;
+            let prefix = para.line_segs.get(first..=owner)?;
+            if first >= owner
+                || prefix.iter().any(|line| {
+                    line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                        || line.line_height <= 0
+                        || line.line_spacing < 0
+                })
+                || prefix.windows(2).any(|pair| {
+                    i64::from(pair[0].vertical_pos)
+                        + i64::from(pair[0].line_height)
+                        + i64::from(pair[0].line_spacing)
+                        != i64::from(pair[1].vertical_pos)
+                })
+            {
+                return None;
+            }
+            let top = placement.y
+                + hwpunit_to_px(line.vertical_pos.checked_sub(prefix[0].vertical_pos)?, dpi);
+            Some((*previous, top))
+        })
+        .max_by_key(|(previous, _)| *previous)
+        .map(|(_, top)| top)
+}
+
 /// 줄을 앞 글자의 논리 위치로 압축하지 않고 제어 슬롯의 UTF-16 소속을 사용한다.
 /// 같은 줄의 여러 개체나 수정된 줄은 기존 일반 구성 경로가 처리한다.
 pub(in crate::renderer::typeset) fn prepare(

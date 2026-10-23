@@ -12255,10 +12255,11 @@ impl LayoutEngine {
             para_index,
             control_index,
         } = v;
-        let flow_placement = ctx
+        let inline_placement = ctx
             .inline_placements
             .get(&(para_index, control_index))
             .filter(|_| is_tac);
+        let flow_placement = inline_placement.filter(|placement| placement.owns_vertical_frame());
         let mut tac_seg_applied = false;
         let mut para_float_lane_info: Option<(f64, f64, f64, f64, f64, Option<f64>)> = None;
         if let Some(Control::Table(t)) = para.controls.get(control_index) {
@@ -12684,7 +12685,7 @@ impl LayoutEngine {
             } else {
                 None
             };
-            let tbl_inline_x = flow_placement
+            let tbl_inline_x = inline_placement
                 .filter(|placement| {
                     placement.resolved_x || placement.stored_horizontal_pen.is_some()
                 })
@@ -16252,7 +16253,10 @@ impl LayoutEngine {
                                     if !table.common.treat_as_char {
                                         return None;
                                     }
-                                    col_content.inline_placements.get(&(*para_index, index))
+                                    col_content
+                                        .inline_placements
+                                        .get(&(*para_index, index))
+                                        .filter(|placement| placement.owns_vertical_frame())
                                 });
                         let pen = owners.next()?;
                         owners.next().is_none().then_some(col_area.y + pen.y)

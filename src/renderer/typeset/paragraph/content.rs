@@ -238,7 +238,10 @@ fn accepted_tac_column_frame(
             }
         }
         PageItem::Table { control_index, .. } => {
-            let placement = st.inline_placements.get(&(first_owner, *control_index))?;
+            let placement = st
+                .inline_placements
+                .get(&(first_owner, *control_index))
+                .filter(|placement| placement.owns_vertical_frame())?;
             let before = styles
                 .para_styles
                 .get(first.para_shape_id as usize)?

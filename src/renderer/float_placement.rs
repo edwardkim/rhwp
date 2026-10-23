@@ -6505,9 +6505,18 @@ pub struct InlineBoxPlacement {
     /// 저장 TAC 줄이 확정한 다음 흐름 위치(단 상대). 이 경우 x는 기존 표 정렬이 담당한다.
     pub advance_end: Option<f64>,
     /// 원본 개체 줄이 확정한 가로 펜. 없으면 기존 표 정렬을 소비한다.
+    /// advance_end가 없으면 가로 소유만 인증하며 y·세로 전진을 덮어쓰지 않는다.
     pub stored_horizontal_pen: Option<f64>,
     /// 수용한 저장 TAC 줄의 기준값과 단 앵커. 뒤 글줄도 같은 쌍을 소비한다.
     pub stored_column_frame: Option<StoredColumnFrame>,
+}
+
+impl InlineBoxPlacement {
+    /// 회피 배치나 명시적인 줄 끝은 세로 프레임도 소유한다.
+    /// 저장 가로 펜만 인증한 결과는 원본 줄의 세로 배치에 관여하지 않는다.
+    pub(crate) fn owns_vertical_frame(&self) -> bool {
+        self.stored_horizontal_pen.is_none() || self.advance_end.is_some()
+    }
 }
 
 /// 가로 구간에서 원자적 inline 상자가 들어갈 첫 줄을 찾는다.

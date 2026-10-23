@@ -4518,6 +4518,41 @@ impl TypesetEngine {
             st.invalidate_vpos_after_clearance(placement.clearance);
         }
         if let Some(row) = owned_row.filter(|_| side_wrap_placement.is_none()) {
+            // 가로 펜과 점유 높이의 일치는 세로 원점의 증거가 아니다.
+            // 원본 줄과 현재 단의 축이 실제 펜까지 일치할 때만 세로 끝을 발행한다.
+            let stored_vertical_pen =
+                crate::renderer::composer::control_slot_line_index(para, ctrl_idx)
+                    .and_then(|owner| para.line_segs.get(owner))
+                    .filter(|line| {
+                        line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            == 0
+                    })
+                    .and_then(|line| {
+                        let previous = controls::stored_tac::owned_row::preceding_owned_row_top(
+                            para,
+                            para_idx,
+                            ctrl_idx,
+                            &st.inline_placements,
+                            self.dpi,
+                        );
+                        let base = st.vpos_page_base.or(st.vpos_lazy_base).or_else(|| {
+                            (st.current_items.is_empty()
+                                && st.current_height == 0.0
+                                && line.vertical_pos == 0)
+                                .then_some(0)
+                        });
+                        let top = previous.or_else(|| {
+                            Some(
+                                st.vpos_col_anchor
+                                    + hwpunit_to_px(
+                                        line.vertical_pos.checked_sub(base?)?,
+                                        self.dpi,
+                                    ),
+                            )
+                        })?;
+                        ((top - st.current_height).abs() <= self.dpi / 7200.0).then_some(top)
+                    });
+            let owns_vertical_frame = st.profile.session_edited() || stored_vertical_pen.is_some();
             st.record_inline_placement(
                 (para_idx, ctrl_idx),
                 super::float_placement::InlineBoxPlacement {
@@ -4525,7 +4560,7 @@ impl TypesetEngine {
                     resolved_x: false,
                     y: st.current_height,
                     clearance: 0.0,
-                    advance_end: Some(st.current_height + table_height),
+                    advance_end: owns_vertical_frame.then_some(st.current_height + table_height),
                     stored_horizontal_pen: Some(row.horizontal_pen),
                     stored_column_frame: None,
                 },
