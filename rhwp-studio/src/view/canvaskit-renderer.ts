@@ -8,7 +8,7 @@ import { shouldDrawPageMarginGuides } from './page-margin-guides.ts';
 import squareGradientSkSL from '../../../src/renderer/square_gradient.sksl?raw';
 import * as bitmapRasterWasm from '@wasm/rhwp.js';
 import { drawAnisotropicPrintImage, drawPrintFrameImage } from './canvaskit/anisotropic-image.ts';
-import { drawPrintMetafile } from './canvaskit/metafile-print.ts';
+import { drawPrintMetafile, isPrintMetafile } from './canvaskit/metafile-print.ts';
 import CanvasKitInit from 'canvaskit-wasm';
 import { blake3 } from '@noble/hashes/blake3.js';
 import type {
@@ -945,7 +945,7 @@ export class CanvasKitLayerRenderer {
         if (node.kind === 'group') nodes.push(...node.children);
         else if ((node.kind === 'clipRect' || node.kind === 'clipPath')) nodes.push(node.child);
         else for (const op of node.ops) {
-          if (op.type === 'image') this.imageForOp(op);
+          if (op.type === 'image' && !this.printMetafileBytes(op)) this.imageForOp(op);
           else if (op.type === 'pageBackground' && op.image) {
             this.imageForOp(this.pageBackgroundImageOp(op));
           }
@@ -2263,8 +2263,8 @@ export class CanvasKitLayerRenderer {
       () => this.drawImageOp(canvas, image, paintOp, undefined, profile));
   }
 
-  private renderPrintMetafile(canvas: SkCanvas, op: LayerImageOp): boolean {
-    if (op.mime !== 'image/svg+xml' || canvasKitImageEffectKey(op) !== '') return false;
+  private printMetafileBytes(op: LayerImageOp): Uint8Array | null {
+    if (op.mime !== 'image/svg+xml' || canvasKitImageEffectKey(op) !== '') return null;
     try {
       const index = this.layerResourceIndex(op.imageRef, this.currentResources?.imageKeys,
         this.currentResources?.images?.length ?? 0);
@@ -2273,7 +2273,15 @@ export class CanvasKitLayerRenderer {
       const value = resource ?? op.base64 ?? (op.sourceImageKey
         ? this.currentImageBytesResolver?.(op.sourceImageKey) ?? undefined : undefined);
       const bytes = this.imageResourceBytes(value);
-      if (!bytes || (key && !layerResourceKeyMatches('img', key, bytes))) return false;
+      if (!bytes || (key && !layerResourceKeyMatches('img', key, bytes))) return null;
+      return isPrintMetafile(bytes) ? bytes : null;
+    } catch { return null; }
+  }
+
+  private renderPrintMetafile(canvas: SkCanvas, op: LayerImageOp): boolean {
+    const bytes = this.printMetafileBytes(op);
+    if (!bytes) return false;
+    try {
       let drawn = false;
       this.withImageTransform(canvas, op.bbox, op.transform, () => {
         drawn = drawPrintMetafile(this.canvasKit, canvas, bytes, op.opacity ?? 1);

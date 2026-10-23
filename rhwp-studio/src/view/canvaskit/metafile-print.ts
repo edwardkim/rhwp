@@ -7,6 +7,10 @@ type ReplayApi = {
     decode: (jpeg: Uint8Array) => Uint8Array | undefined) => Uint8Array | undefined;
 };
 
+export function isPrintMetafile(source: Uint8Array): boolean {
+  return (wasm as unknown as ReplayApi).isPrintMetafile?.(source) === true;
+}
+
 /** device CTM과 Skia JPEG codec만 제공한다. 글꼴·간격·사진 표본은 Rust가 소유한다. */
 export function drawPrintMetafile(kit: CanvasKit, canvas: Canvas, source: Uint8Array,
   opacity: number): boolean {

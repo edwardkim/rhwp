@@ -211,3 +211,23 @@ Native font 등록 API로 공급했다. GulimChe index 1·DotumChe index 3의 �
 사용한 두 쪽 글자 영역은 양방향 미대응 0이다. 전체 쪽에는 기존 삼각형의 최소 stroke
 차이가 남아 있으므로 이 결과는 글자 전진·윤곽 검증으로 기록한다. 초기 시스템의 동명
 DotumChe는 고정 pitch 표식이 없는 다른 프로그램이었으며 원본 TTC 공급 결과와 구분한다.
+
+
+## CanvasKit 자원 준비 단계의 잘못된 거부 기록 보정
+
+표준 release WASM은 exit 0, 1,683.617초로 완료됐다. 실제 package/public의 JS·WASM 해시를
+대조한 뒤 package를 동결했다. WASM SHA-256은
+`d936eaf728d2938cccf26d5ab6046c8818d72792534d2d16ced8919c6505b122`다.
+세 문서 전쪽 실행도 exit 0(219.16/186.11/283.31초)이며, 384개 PNG의 정수 미대응
+재계산이 진행 중이다. 그 결과가 나오기 전에 회귀 검사·기대값을 바꾸지 않았다.
+
+실제 CanvasKit software surface의 18·35쪽 그림 영역은 독립 PDF 대비 양방향 미대응 0이다.
+그리기 전 `preparePageResources`가 같은 WMF를 일반 SVG 보안 검사로 보내
+`encodedImageRejected`를 기록했다. 이 출력 경계의 판별을 추출해 준비와 replay가 공유한다.
+일반 SVG validator는 그대로 유지한다. 같은 실제 브라우저 재실행에서 준비·replay 실패는
+모두 0, 완료 상태 true이며 두 그림 영역도 미대응 0이다. 기존 crop의 none·zoom·fitToSize·total
+4종은 모두 PASS, `npx tsc --noEmit`도 exit 0이다.
+`candidate33-canvaskit-prepare.json`에 실패 전후와 실제 package 신원을 연결했다.
+
+사용자의 최신 지시에 따라 계획의 원격 작업 권한도 정정했다. 로컬 단계별 커밋과 필수
+검증을 완료하고 결과를 보고한 뒤, 승인받기 전에는 push·PR 생성을 진행하지 않는다.
