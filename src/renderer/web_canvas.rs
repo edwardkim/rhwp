@@ -1263,6 +1263,7 @@ impl WebCanvasRenderer {
                     let ox = nx * off;
                     let oy = ny * off;
                     self.ctx.set_line_width(lw);
+                    self.floor_line_width_to_device();
                     self.ctx.begin_path();
                     self.ctx.move_to(lx1 + ox, ly1 + oy);
                     self.ctx.line_to(lx2 + ox, ly2 + oy);
@@ -1272,6 +1273,7 @@ impl WebCanvasRenderer {
             _ => {
                 // Single line
                 self.ctx.set_line_width(width);
+                self.floor_line_width_to_device();
                 self.ctx.begin_path();
                 self.ctx.move_to(lx1, ly1);
                 self.ctx.line_to(lx2, ly2);
@@ -1827,6 +1829,25 @@ impl WebCanvasRenderer {
         node.bbox.x < body_left || node.bbox.x + node.bbox.width > body_right
     }
 
+    /// raster canvas 의 획은 장치 한 칸보다 가늘게 그리지 않는다(Native `floor_stroke_to_device` 와
+    /// 같은 PDF raster 의 얇은 선 규칙). 현재 변환의 역으로 장치 한 칸의 local 길이를 구하며,
+    /// 조판 좌표·선언 굵기는 바꾸지 않는다. 점선 간격은 하한 전 굵기로 정한 뒤 호출한다.
+    fn floor_line_width_to_device(&self) {
+        let Ok(matrix) = self.ctx.get_transform() else {
+            return;
+        };
+        let det = (matrix.a() * matrix.d() - matrix.b() * matrix.c()).abs();
+        if !det.is_finite() || det == 0.0 {
+            return;
+        }
+        let x_unit = matrix.d().hypot(matrix.b()) / det;
+        let y_unit = matrix.c().hypot(matrix.a()) / det;
+        let device_unit = x_unit.min(y_unit);
+        if device_unit.is_finite() && device_unit > 0.0 && self.ctx.line_width() < device_unit {
+            self.ctx.set_line_width(device_unit);
+        }
+    }
+
     /// 선 대시 패턴 설정
     fn set_line_dash(&self, dash: &StrokeDash) {
         let pattern = js_sys::Array::new();
@@ -2214,6 +2235,7 @@ impl WebCanvasRenderer {
                 self.ctx
                     .set_line_width(style.stroke_dash.canvas_width(style.stroke_width));
                 self.set_line_dash(&style.stroke_dash);
+                self.floor_line_width_to_device();
                 self.ctx.stroke();
                 let _ = self.ctx.set_line_dash(&js_sys::Array::new());
                 self.ctx.set_line_cap("butt");
@@ -2241,6 +2263,7 @@ impl WebCanvasRenderer {
                 self.ctx
                     .set_line_width(style.stroke_dash.canvas_width(style.stroke_width));
                 self.set_line_dash(&style.stroke_dash);
+                self.floor_line_width_to_device();
                 self.ctx.stroke_rect(x, y, w, h);
                 let _ = self.ctx.set_line_dash(&js_sys::Array::new());
                 self.ctx.set_line_cap("butt");
@@ -2294,6 +2317,7 @@ impl WebCanvasRenderer {
             self.ctx
                 .set_line_width(style.stroke_dash.canvas_width(style.stroke_width));
             self.set_line_dash(&style.stroke_dash);
+            self.floor_line_width_to_device();
             self.ctx.stroke();
             let _ = self.ctx.set_line_dash(&js_sys::Array::new());
             self.ctx.set_line_cap("butt");
@@ -2417,6 +2441,7 @@ impl WebCanvasRenderer {
             self.ctx
                 .set_line_width(style.stroke_dash.canvas_width(style.stroke_width));
             self.set_line_dash(&style.stroke_dash);
+            self.floor_line_width_to_device();
             self.ctx.stroke();
             let _ = self.ctx.set_line_dash(&js_sys::Array::new());
             self.ctx.set_line_cap("butt");
