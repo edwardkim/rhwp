@@ -49,3 +49,11 @@ Issue: #8102
   #8102 행/배선은 추가했다. 다른 이슈 구현은 섞지 않고 base/head 오류를 별도 대조한다.
 - 사용자 실제 문서·macOS 네이티브 Command 키는 미검증이다. Linux Chromium의 실제 Ctrl 키와
   아래 사용자 직접 확인 절차를 구분한다.
+
+## 최종 commit 검증
+
+코드 commit `c21f2de99ca59cea254c6c622bb4562254c7d461`에서 fresh web/Node WASM,
+TypeScript, 전체 npm 2373건(skip 0), production build, #8102 및 기존 선택·paste·undo E2E 4종이
+모두 통과했다. 브라우저 수신 WASM SHA-256도 일치했다. 보조 manifest 검사는 base/head 동일한
+기존 누락 1건으로 실패했다. 이를 성공으로 표시하지 않는다.
+명령·원인·수정 전후·사용자 확인 절차는 [최종 보고서](../report/task_m100_8102_report.md)에 기록했다.
