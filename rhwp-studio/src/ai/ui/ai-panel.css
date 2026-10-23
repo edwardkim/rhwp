@@ -352,3 +352,82 @@
 .ai-settings-status[data-kind='error'] {
   color: var(--ui-danger-strong);
 }
+
+/* 변경 제안 카드 */
+.ai-change-card {
+  margin: 6px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised, var(--color-surface));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-change-card[data-state='pending'] {
+  border-color: var(--color-focus-border);
+}
+
+.ai-change-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.ai-change-line {
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.ai-change-label {
+  display: inline-block;
+  min-width: 2em;
+  margin-right: 6px;
+  color: var(--color-text-muted);
+}
+
+.ai-change-del {
+  text-decoration: line-through;
+  color: var(--ui-danger-strong);
+}
+
+.ai-change-ins {
+  text-decoration: none;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.ai-change-del[data-empty='true']::before,
+.ai-change-ins[data-empty='true']::before {
+  content: '∅';
+  opacity: 0.6;
+}
+
+.ai-change-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.ai-change-actions:empty {
+  display: none;
+}
+
+.ai-change-status {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.ai-change-status:empty {
+  display: none;
+}
+
+.ai-change-card[data-state='failed'] .ai-change-status {
+  color: var(--ui-danger-strong);
+}
+
+.ai-change-card[data-state='rejected'],
+.ai-change-card[data-state='stopped'] {
+  opacity: 0.7;
+}

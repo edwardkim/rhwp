@@ -224,3 +224,25 @@ test('세션은 user/assistant 교대가 어긋난 덧붙이기를 거절한다'
   session.append({ role: 'user', kind: 'text', text: 'q' });
   assert.throws(() => session.append({ role: 'user', kind: 'text', text: 'q2' }), /교대/);
 });
+
+test('쓰기 승인을 기다리는 동안 중단하면 남은 호출은 실행하지 않고 결과를 채운다', async () => {
+  const abort = new AbortController();
+  const { provider } = scripted([
+    toolTurn([{ id: 'w1', name: 'replace_text', input: {} }, { id: 'w2', name: 'replace_text', input: {} }]),
+  ]);
+  const session = new ChatSession();
+  const seen: string[] = [];
+  const { opts } = options(provider, session, {
+    executeTool: (call, _b, signal) => new Promise((resolve) => {
+      seen.push(call.id);
+      signal.addEventListener('abort', () => resolve({ id: call.id, content: 'stopped', isError: false }));
+      queueMicrotask(() => abort.abort());
+    }),
+  });
+  const result = await runAgent(opts, '고쳐 줘', abort.signal);
+  assert.equal(result.status, 'aborted');
+  assert.deepEqual(seen, ['w1'], '중단 뒤의 호출은 실행하지 않는다');
+  const results = session.messages[2] as Extract<AiMessage, { kind: 'tool_results' }>;
+  assert.deepEqual(results.results.map((r) => [r.id, r.isError]), [['w1', false], ['w2', true]]);
+  assertAlternates(session.messages);
+});

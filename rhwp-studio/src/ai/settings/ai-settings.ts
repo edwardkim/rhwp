@@ -20,6 +20,8 @@ export interface AiSettings {
   effort: AiEffort;
   /** 키를 다음 실행에도 쓰도록 브라우저에 저장하는가 */
   rememberKey: boolean;
+  /** AI 가 제안한 문서 변경을 확인 없이 바로 적용하는가. 기본은 끔 — 변경마다 사용자가 고른다. */
+  autoApply: boolean;
   /** 문서 내용 전송 동의 — 동의한 시각(ISO)과 그때의 제공자. 제공자가 바뀌면 다시 묻는다. */
   consent: { at: string; provider: AiProviderId } | null;
 }
@@ -29,6 +31,7 @@ export const DEFAULT_AI_SETTINGS: AiSettings = {
   model: 'claude-opus-5-5',
   effort: 'medium',
   rememberKey: false,
+  autoApply: false,
   consent: null,
 };
 
@@ -52,13 +55,14 @@ export function normalizeAiSettings(raw: unknown): AiSettings {
     ? value.effort as AiEffort
     : DEFAULT_AI_SETTINGS.effort;
   const rememberKey = value.rememberKey === true;
+  const autoApply = value.autoApply === true;
   const rawConsent = value.consent as Record<string, unknown> | null | undefined;
   const consent = rawConsent && typeof rawConsent.at === 'string'
       && !Number.isNaN(Date.parse(rawConsent.at))
       && AI_PROVIDERS.includes(rawConsent.provider as AiProviderId)
     ? { at: rawConsent.at, provider: rawConsent.provider as AiProviderId }
     : null;
-  return { provider, model, effort, rememberKey, consent };
+  return { provider, model, effort, rememberKey, autoApply, consent };
 }
 
 export function loadAiSettings(storage: StorageLike | null = defaultStorage()): AiSettings {

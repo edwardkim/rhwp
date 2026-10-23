@@ -67,6 +67,7 @@ export class AiSettingsDialog extends ModalDialog {
   private keyInput!: HTMLInputElement;
   private keyState!: HTMLElement;
   private rememberCheck!: HTMLInputElement;
+  private autoApplyCheck!: HTMLInputElement;
   private passphraseRow!: HTMLElement;
   private passphraseInput!: HTMLInputElement;
   private statusLine!: HTMLElement;
@@ -131,6 +132,14 @@ export class AiSettingsDialog extends ModalDialog {
       this.passphraseRow.append(row(t('ai.settings.passphrase'), this.passphraseInput), note);
     }
 
+    this.autoApplyCheck = document.createElement('input');
+    this.autoApplyCheck.type = 'checkbox';
+    this.autoApplyCheck.id = 'ai-settings-auto-apply';
+    this.autoApplyCheck.checked = settings.autoApply;
+    const autoApplyLabel = document.createElement('label');
+    autoApplyLabel.className = 'ai-settings-check';
+    autoApplyLabel.append(this.autoApplyCheck, document.createTextNode(t('ai.settings.autoApply')));
+
     const warning = document.createElement('p');
     warning.className = 'ai-settings-warning';
     warning.textContent = t('ai.settings.warning');
@@ -165,6 +174,7 @@ export class AiSettingsDialog extends ModalDialog {
       row(t('ai.settings.key'), keyBlock),
       rememberLabel,
       this.passphraseRow,
+      autoApplyLabel,
       warning,
       actions,
       this.statusLine,
@@ -286,6 +296,7 @@ export class AiSettingsDialog extends ModalDialog {
         model: this.modelSelect.value,
         effort: this.effortSelect.value as AiEffort,
         rememberKey: remember && persisted,
+        autoApply: this.autoApplyCheck.checked,
       });
       this.ctx.emit();
       if (!persisted) {
