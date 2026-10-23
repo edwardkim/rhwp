@@ -116,6 +116,7 @@ struct JsonWriteContext<'a> {
     bin_data_epoch: u32,
     options: LayerJsonOptions,
     visual_bounds: &'a HashMap<*const LayerNode, BoundingBox>,
+    profile: RenderProfile,
 }
 
 impl PageLayerTree {
@@ -174,6 +175,7 @@ impl PageLayerTree {
                 bin_data_epoch: self.resources.source_image_epoch(),
                 options,
                 visual_bounds: &visual_bounds,
+                profile: self.profile,
             },
         );
         buf.push_str(",\"textSources\":");
@@ -1043,7 +1045,19 @@ impl PaintOp {
             PaintOp::Rectangle { bbox, rect } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"rectangle\",\"bbox\":");
-                write_bbox(buf, *bbox);
+                let device_fill = ctx.profile == RenderProfile::Print
+                    && crate::paint::device_fill::eligible(rect);
+                if device_fill {
+                    // 장치 픽셀 선택 전에 원본 끝점을 세 자리로 절삭하지 않는다.
+                    let _ = write!(
+                        buf,
+                        "{{\"x\":{},\"y\":{},\"width\":{},\"height\":{}}}",
+                        bbox.x, bbox.y, bbox.width, bbox.height
+                    );
+                    buf.push_str(",\"printFillCoverage\":\"device\"");
+                } else {
+                    write_bbox(buf, *bbox);
+                }
                 let _ = write!(
                     buf,
                     ",\"cornerRadius\":{:.3},\"style\":",

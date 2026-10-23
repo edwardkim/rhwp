@@ -11,6 +11,7 @@ mod bitmap_fill_frame;
 pub mod builder;
 pub mod color_glyph;
 pub(crate) mod device_clip;
+pub(crate) mod device_fill;
 pub mod font;
 pub mod font_glyph;
 mod font_size;

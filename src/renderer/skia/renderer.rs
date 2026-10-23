@@ -1935,10 +1935,19 @@ impl SkiaLayerRenderer {
                                 bbox.width as f32,
                                 bbox.height as f32,
                             );
-                            if let Some(fill) =
+                            if let Some(mut fill) =
                                 shape_fill(bbox, &rect.style, rect.gradient.as_deref(), antialias)
                             {
-                                if rect.corner_radius > 0.0 {
+                                if let Some(fill_rect) = super::rectangle_fill::bounds(
+                                    canvas,
+                                    *bbox,
+                                    rect,
+                                    cache_context.raster_target
+                                        && cache_context.policy.print_stroke_adjustment(),
+                                ) {
+                                    fill.set_anti_alias(false);
+                                    canvas.draw_rect(fill_rect, &fill);
+                                } else if rect.corner_radius > 0.0 {
                                     canvas.draw_round_rect(
                                         sk_rect,
                                         rect.corner_radius as f32,

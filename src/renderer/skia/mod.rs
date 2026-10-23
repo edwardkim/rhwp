@@ -20,6 +20,7 @@ mod line_replay;
 mod metafile_print;
 mod prepared_page;
 mod print_image_sampling;
+mod rectangle_fill;
 mod region_plan;
 mod renderer;
 mod replay_policy;

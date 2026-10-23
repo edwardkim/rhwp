@@ -89,6 +89,24 @@ pub fn resample_print_bitmap_rgba(
 
 
 
+#[wasm_bindgen(js_name = mapPrintRectangleFill)]
+pub fn map_print_rectangle_fill(rectangle: &[f64], transform: &[f64]) -> JsValue {
+    let (Ok([x, y, width, height]), Ok(matrix)) = (
+        <[f64; 4]>::try_from(rectangle),
+        <[f64; 6]>::try_from(transform),
+    ) else {
+        return JsValue::NULL;
+    };
+    let source = crate::renderer::render_tree::BoundingBox::new(x, y, width, height);
+    let Some(rectangle) = crate::paint::device_fill::bounds(source, matrix) else {
+        return JsValue::NULL;
+    };
+    js_sys::Float64Array::from(
+        [rectangle.x, rectangle.y, rectangle.width, rectangle.height].as_slice(),
+    )
+    .into()
+}
+
 /// CanvasKit의 실제 장치 행렬도 Native/Canvas2D와 같은 clip 계산에 전달한다.
 #[wasm_bindgen(js_name = mapPrintBitmapClip)]
 pub fn map_print_bitmap_clip(rectangle: &[f64], transform: &[f64]) -> JsValue {

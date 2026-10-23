@@ -12,7 +12,7 @@ import * as bitmapRasterWasm from '@wasm/rhwp.js';
 import { drawAnisotropicPrintImage, drawPrintFrameImage } from './canvaskit/anisotropic-image.ts';
 import { drawPrintMetafile, isPrintMetafile } from './canvaskit/metafile-print.ts';
 import { drawPrintAreaImage } from './canvaskit/print-image-sampling.ts';
-import { printBitmapClip } from './canvaskit/print-bitmap-clip.ts';
+import { printBitmapClip, printRectangleFill } from './canvaskit/print-device-rectangle.ts';
 import CanvasKitInit from 'canvaskit-wasm';
 import { blake3 } from '@noble/hashes/blake3.js';
 import type {
@@ -2169,13 +2169,15 @@ export class CanvasKitLayerRenderer {
 
   private renderRectangle(canvas: SkCanvas, op: LayerRectangleOp): void {
     this.withImageTransform(canvas, op.bbox, op.transform, () => {
-      this.drawStyledShape(canvas, op.bbox, op.style, (paint) => {
+      const bounds = this.currentProfile === 'print' && op.printFillCoverage === 'device'
+        ? printRectangleFill(canvas, op.bbox) : op.bbox;
+      this.drawStyledShape(canvas, bounds, op.style, (paint) => {
         if (op.strokeJoin === 'round') paint.setStrokeJoin(this.canvasKit.StrokeJoin.Round);
         const cornerRadius = op.cornerRadius ?? 0;
         if (cornerRadius > 0) {
-          canvas.drawRRect(this.canvasKit.RRectXY(this.rect(op.bbox), cornerRadius, cornerRadius), paint);
+          canvas.drawRRect(this.canvasKit.RRectXY(this.rect(bounds), cornerRadius, cornerRadius), paint);
         } else {
-          canvas.drawRect(this.rect(op.bbox), paint);
+          canvas.drawRect(this.rect(bounds), paint);
         }
       }, op.gradient);
     });

@@ -1368,6 +1368,8 @@ export interface LayerRectangleOp {
   cornerRadius?: number;
   style?: LayerShapeStyle;
   gradient?: LayerGradientFill;
+  /** Rust가 판정한 Print 단색 사각형의 장치 채움 정책. */
+  printFillCoverage?: 'device';
 }
 
 export interface LayerEllipseOp {

@@ -15,6 +15,8 @@ mod metafile_print;
 #[cfg(target_arch = "wasm32")]
 mod print_jpeg;
 mod print_image_sampling;
+#[cfg(target_arch = "wasm32")]
+mod rectangle_fill;
 
 #[cfg(target_arch = "wasm32")]
 use base64::Engine;
@@ -1155,11 +1157,13 @@ impl WebCanvasRenderer {
         if rect.round_stroke_join {
             self.ctx.set_line_join("round");
         }
+        let fill_bounds =
+            rectangle_fill::bounds(&self.ctx, *bbox, rect, self.print_stroke_adjustment);
         self.draw_rect_with_gradient(
-            bbox.x,
-            bbox.y,
-            bbox.width,
-            bbox.height,
+            fill_bounds.x,
+            fill_bounds.y,
+            fill_bounds.width,
+            fill_bounds.height,
             rect.corner_radius,
             &rect.style,
             rect.gradient.as_deref(),
