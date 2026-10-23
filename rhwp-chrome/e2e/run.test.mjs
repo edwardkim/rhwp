@@ -77,6 +77,10 @@ test('all suites receive the same selected candidate and an isolated report dire
     calls.push({ args, settings }); return success();
   } });
   assert.equal(report.status, 'pass');
+  assert.match(report.runId, /^[a-f0-9-]{36}$/);
+  assert.equal(report.evidenceVersion, 1);
+  assert.ok(report.results.every(row => row.artifacts.some(a => a.path === `${row.name}.log` && a.runId === report.runId && /^[a-f0-9]{64}$/.test(a.sha256))));
+  assert.ok(calls.every(call => call.settings.env.RHWP_EXTENSION_E2E_RUN_ID === report.runId));
   assert.equal(calls.length, 3);
   const selectedPath = await realpath(options.dist);
   assert.ok(calls.every(call => call.settings.env.RHWP_EXTENSION_DIST_DIR === selectedPath));

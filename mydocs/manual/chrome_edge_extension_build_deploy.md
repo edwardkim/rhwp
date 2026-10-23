@@ -321,6 +321,87 @@ node --test rhwp-chrome/e2e/run.test.mjs rhwp-chrome/e2e/tab-monitor.test.mjs \
   rhwp-chrome/e2e/failure-diagnostics.test.mjs rhwp-chrome/e2e/page-budget.test.mjs
 ```
 
+### 3.10 선택 실행 증적 보고서 (#7449)
+
+별도 의존성 없이 개발자와 에이전트가 같은 명령으로 **선택한 한 결과 폴더**를 읽는다.
+기존 후보를 재빌드하거나 E2E를 다시 실행하지 않는다. 자동 CI·필수 병합 게이트·외부 게시에
+연결하지 않으며, 새 출력 폴더의 부모는 미리 만들어 둔다.
+
+```bash
+node rhwp-chrome/e2e/report.mjs \
+  --input output/chrome-extension-e2e/run-EXAMPLE \
+  --output output/chrome-extension-e2e/report-NEW
+# 릴리즈 기록 등 독립 출처의 값을 알고 있으면 함께 대조한다.
+node rhwp-chrome/e2e/report.mjs \
+  --input output/chrome-extension-e2e/run-EXAMPLE \
+  --output output/chrome-extension-e2e/report-CHECKED \
+  --expect-candidate-sha256 <64자리-SHA256> --expect-tool-sha <40자리-Git-SHA>
+```
+
+| 파일 | 용도와 공유 경계 |
+| --- | --- |
+| `report.html`, `report.json` | 공유 검토용 allowlist 요약. 실행 상태·증적 완전성, 후보·도구 식별, 환경 버전·시각·suite·증적 해시·단계·미검증·수동 기록 |
+| `private.html` | **공유 금지**. 원본 result.json과 검증한 로그·진단 JSON·PNG의 상대 링크 인덱스. 원본 폴더를 옮기면 링크도 함께 확인 |
+
+출력 폴더 전체를 공개하지 않는다. 프로필과 원문 문서를 수집·복사하지 않으며, 로그·진단·PNG도
+보고서 폴더에 복사하지 않는다. 공유 요약은 후보/브라우저 절대 경로, 다운로드 ID·URL,
+오류 stack·원문 로그·자유 텍스트를 제외한다. 단계는 알려진 단계명만 표시한다.
+HTML은 외부 script·font·network 리소스를 사용하지 않는다.
+
+새 실행기는 기존 `schemaVersion: 1`에 `evidenceVersion: 1`, 임의 `runId`, suite별 `artifacts`
+목록(상대 파일명·runId·SHA-256)을 추가한다. 실패 진단 JSON에도 같은 runId를 기록하고 로그 머리말에는 runId와 suite 이름을 넣는다.
+result.json은 임시 파일을 원자적으로 rename하여 갱신한다. 기존 v1 실행 상태는 읽되 이 증거가 없는
+과거 결과는 `incomplete`로 표시하며, 파일명/mtime만으로 같은 실행이라고 추정하지 않는다.
+
+후보 inventory의 경로·파일 해시와 전체 해시를 재계산하고, 도구 SHA 형식·dirty 여부를 검사한다.
+후보 실제 파일을 다시 읽는 검사는 아니며 도구 SHA의 존재·서명 인증도 아니다. 독립 기대값은 위
+`--expect-*`로 대조한다. 도구 checkout SHA를 후보 빌드 SHA로 표시하지 않으며 후보 빌드 SHA는
+미관측으로 남긴다. `sourceSha256`은 선택한 원본 result.json의 바이트 해시다.
+증적 해시와 runId는 내부 일관성 근거이며 악의적으로 함께 수정된 원본의 진위를 인증하지 않는다.
+
+원본 `pass/fail/error/running`과 보고서 상태를 따로 표시한다. 원본이 pass여도 누락·파싱 오류·변조·
+지원하지 않는 스키마·SHA 불일치·미완료이면 보고서는 `incomplete`다. 누락 suite를 pass로 채우지
+않고 `not-run`을 유지한다. fail/error에서 JSON 또는 PNG가 없으면 이유를 표시하고 incomplete로
+남긴다(브라우저 실행 전 오류로 화면을 얻지 못한 경우 포함). 목록 밖 파일은 다른 run 혼입 가능성을
+표시하고, symlink·중복 증적·다른 runId도 거부한다. 정상적인 preflight error는 전체 error와 모든
+suite not-run으로 보존하며 후보/환경이 관측되지 않았음을 null로 표시한다.
+CLI exit 0은 완전한 자동 pass뿐이며 fail/error/incomplete는 1이다. CLI 성공도 수동 확인·배포 승인은 아니다.
+
+**공유 전 수동 절차:**
+
+1. 비공개 `private.html`에서 원본 결과·단계·로그·PNG를 대조한다. 원본 해시가 공유 요약의
+   sourceSha256과 같은지 확인하고, 원본 폴더는 공개하지 않는다.
+2. 공유할 report.html/report.json에서 경로·다운로드 정보·개인 정보가 제외됐는지 직접 검색·판독한다.
+   파일 해시·도구 SHA·환경 버전·실행 시각도 공유 대상 정보이므로 해당 공개 범위가 적절한지 확인한다.
+3. 보고서 읽기 편의성과 정보 제외 결과를 별도 수동 기록으로 남긴다. 기록이 없으면 `미확인`이다.
+   아래 JSON을 로컬에 작성하고 `--manual-review <파일>`을 추가해 **새 폴더**에 재생성할 수 있다.
+   수동 상태는 자동 결과를 덮어쓰지 않으며 사용자 제공 기록임을 표시한다. reviewer 이름·메모는 수집하지 않는다.
+4. 검토한 두 공유 파일만 원하는 증적 저장소에 사람이 게시한다. 이 도구는 업로드·공개 설정을 하지 않는다.
+   원본이 바뀌면 이전 수동 기록은 무효이며 다시 검토한다.
+
+```json
+{
+  "sourceSha256": "원본-result.json의-64자리-SHA256",
+  "checkedAt": "2026-10-23T09:00:00.000Z",
+  "readability": "pass",
+  "sharingExclusions": "pass"
+}
+```
+
+실패한 수동 항목은 `fail`로 기록한다. 검토 전 위 예시의 pass를 복사하지 않는다.
+스토어 설치·업데이트, 사용자 환경, Edge/Firefox, 실제 문서 표시·인쇄 품질은 계속 별도 수동 검증이다.
+
+합성 예제와 계약 검사는 실제 브라우저 검사로 간주하지 않는다. 예제 SHA·버전·PNG는 가짜이며,
+pass/fail/error와 not-run·incomplete를 사람이 비교하는 용도다.
+
+```bash
+mkdir -p output/chrome-extension-e2e
+node rhwp-chrome/e2e/report-fixtures.mjs --output output/chrome-extension-e2e/examples-NEW
+node --test rhwp-chrome/e2e/report.test.mjs rhwp-chrome/e2e/run.test.mjs \
+  rhwp-chrome/e2e/failure-diagnostics.test.mjs rhwp-chrome/e2e/page-budget.test.mjs \
+  rhwp-chrome/e2e/tab-monitor.test.mjs
+```
+
 ## 4. 스토어 배포
 
 ### 4.1 배포 에셋 준비

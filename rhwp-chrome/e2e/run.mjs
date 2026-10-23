@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { execFileSync, spawn } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, readdir, realpath, lstat, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, realpath, lstat, rm, rename, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import path from 'node:path';
 
 const currentFile = fileURLToPath(import.meta.url);
 const root = path.resolve(path.dirname(currentFile), '../..');
-const suites = ['extension-smoke', 'download-interceptor', 'extension-lifecycle'];
+export const suites = ['extension-smoke', 'download-interceptor', 'extension-lifecycle'];
 const selectionVariables = ['RHWP_EXTENSION_SMOKE_REPEAT', 'RHWP_EXTENSION_DOWNLOAD_CASE',
   'RHWP_EXTENSION_LIFECYCLE_REPEAT', 'RHWP_EXTENSION_LIFECYCLE_CASE'];
 const within = (parent, child) => {
@@ -92,12 +92,16 @@ export async function runChecks({ dist, output }, { runner = runSuite, environme
   const explicitOutput = Boolean(output);
   output = output ? path.join(realParent, path.basename(output)) : await mkdtemp(path.join(realParent, 'run-'));
   if (explicitOutput) await mkdir(output); // Never overwrite an earlier run, even an empty directory.
-  const report = { schemaVersion: 1, status: 'running', startedAt: new Date().toISOString(),
+  const report = { schemaVersion: 1, evidenceVersion: 1, runId: randomUUID(), status: 'running', startedAt: new Date().toISOString(),
     candidate: null, environment: null,
     results: suites.map(name => ({ name, status: 'not-run' })),
     limitations: ['Unpacked Chrome for Testing only', 'Store installation and upgrades not tested',
       'Edge/Firefox and real user profiles not tested', 'Visual fidelity and release approval require manual review'] };
-  const save = () => writeFile(path.join(output, 'result.json'), JSON.stringify(report, null, 2) + '\n');
+  const save = async () => {
+    const temporary = path.join(output, '.result.json.tmp');
+    await writeFile(temporary, JSON.stringify(report, null, 2) + '\n');
+    await rename(temporary, path.join(output, 'result.json'));
+  };
   await save();
   try {
     for (const name of selectionVariables) if (env[name]) throw new Error(`${name} must be unset for a complete report`);
@@ -106,13 +110,22 @@ export async function runChecks({ dist, output }, { runner = runSuite, environme
     await save();
     const started = Date.now();
     for (const [index, name] of suites.entries()) {
+      const before = new Set(await readdir(output));
       const { log, ...outcome } = await runner([path.join(root, `rhwp-chrome/e2e/${name}.test.mjs`)], {
-        env: { ...env, RHWP_EXTENSION_DIST_DIR: candidateDirectory, RHWP_EXTENSION_E2E_OUTPUT_DIR: output },
+        env: { ...env, RHWP_EXTENSION_DIST_DIR: candidateDirectory, RHWP_EXTENSION_E2E_OUTPUT_DIR: output, RHWP_EXTENSION_E2E_RUN_ID: report.runId },
         timeoutMs: Math.max(1, 220_000 - (Date.now() - started)),
       });
-      await writeFile(path.join(output, `${name}.log`), log);
+      await writeFile(path.join(output, `${name}.log`), `RHWP E2E RUN ${report.runId} SUITE ${name}\n${log}`);
       const passed = outcome.status === 0 && !outcome.timedOut && !outcome.error;
-      report.results[index] = { name, ...outcome, exitCode: outcome.status, status: passed ? 'pass' : 'fail' };
+      const artifacts = [];
+      for (const file of (await readdir(output)).sort()) {
+        if (before.has(file)) continue;
+        const full = path.join(output, file);
+        if (!(await lstat(full)).isFile()) throw new Error('Evidence must be a regular file');
+        artifacts.push({ path: file, runId: report.runId,
+          sha256: createHash('sha256').update(await readFile(full)).digest('hex') });
+      }
+      report.results[index] = { name, ...outcome, exitCode: outcome.status, status: passed ? 'pass' : 'fail', artifacts };
       await save();
       if (!passed) break;
     }

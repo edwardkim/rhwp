@@ -261,7 +261,7 @@ async function runScenario(scenario, iteration) {
     if (output) {
       await mkdir(output, { recursive: true });
       await within(page?.screenshot({ path: path.join(output, `${scenario.id}-${iteration}.png`) }), 2_000).catch(() => {});
-      await writeFile(path.join(output, `${scenario.id}-${iteration}.json`), JSON.stringify(diagnostic, null, 2));
+      await writeFile(path.join(output, `${scenario.id}-${iteration}.json`), JSON.stringify({ ...diagnostic, runId: process.env.RHWP_EXTENSION_E2E_RUN_ID }, null, 2));
     }
   } finally {
     abort.abort();
