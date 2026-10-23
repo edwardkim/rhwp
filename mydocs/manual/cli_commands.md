@@ -107,6 +107,8 @@ devel에서 함께 구현하는 기능이며, parser 전체 할당 경계는 아
 분리하며, page tree의 유한한 참조 방문 예산 안에서 검증한다. 128쪽 이후를 선택할 수도 있다.
 선택하지 않으면 전체 쪽을 가져오므로 1,024쪽을 초과하는 원본에는 선택 범위를 지정한다.
 실제 operator·decoded·그림·자원 ID 등 다른 요청 한도도 적용하며 암호화 PDF는 지원하지 않는다.
+JBIG2·JPEG 2000·ICC CMM과 손상 파일 복구의 제한은
+[보안 제한과 기능 사용 범위](security_feature_limits.md)에 정리했다.
 
 ```bash
 cargo build --locked --profile release-test --bin rhwp \

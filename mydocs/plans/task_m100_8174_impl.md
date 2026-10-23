@@ -21,6 +21,8 @@ Issue: [#8174](https://github.com/edwardkim/rhwp/issues/8174)
    보안 patch를 제거하지 않고, 2단계에서 바꿀 정확한 파일과 이유를 남긴다.
 5. [1단계 기록](../working/task_m100_8174_stage1.md)에 graph·사용자 여정·실측·미완료 게이트를
    기록한다. 이번 단계에서 실제 실행하지 않은 소비자 빌드를 PASS로 표시하지 않는다.
+6. 추가 요청의 [보안 제한 현황](../manual/security_feature_limits.md)을 코드·feature tree와
+   대조한다. 제한·자원 한도·일반 미지원을 구분하고 현황 정리 중에 feature를 활성화하지 않는다.
 
 제품 소스·Cargo.lock·배포 workflow가 그대로이면 해당 변경의 전체 Rust/WASM 재빌드는
 이 단계 문서·source 목록 검사의 완료 조건이 아니다. 이후 실제 package 소비는 생략하지 않는다.
@@ -35,6 +37,8 @@ Issue: [#8174](https://github.com/edwardkim/rhwp/issues/8174)
   repository path fallback이나 사용자 Cargo cache 수정으로 registry 소비를 대신하지 않는다.
 - core HWP/HWPX 왕복, 기본 PDF 입력, CLI 기본/Native 기능, WASM `wasm-api` on/off 소비,
   docs.rs와 feature 조합을 고정 source에서 실행한다. MSRV는 실제 검사한 버전만 선언한다.
+- 게시용 README에 보안 제한을 반영하고 PDF 미지원 codec·암호·손상 xref·자원 초과의 거부,
+  실패 후 정상 요청을 실제 소비자에서 검사한다. backend upstream 기능 목록을 그대로 지원표로 쓰지 않는다.
 - 전체 소스·의존성을 바꾸는 후보는 local_validation 4.3의 해당 lint·회귀·fresh WASM 게이트를
   완료한다. PDF 보안 한도와 기존 수정 출력도 소비자 쪽에서 대조한다.
 - 새 devel의 #7488 opt-in cdylib-only와 #7474 standard release 산출물 동일성 계약을 유지한다.

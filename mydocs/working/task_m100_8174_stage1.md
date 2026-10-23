@@ -149,3 +149,37 @@ Rust production·Cargo.toml·Cargo.lock·workflow는 변경하지 않았다. 문
 의존하지 않는 소비 검사를 구현한다. 1단계 source 후보를 배포 준비 전체 완료로 처리하지 않고,
 단계 보고와 커밋 후 다음 단계 승인을 받는다. remote push·PR·workflow dispatch·실제 crate
 게시는 수행하지 않았다.
+
+## 보완 — 보안 제한 기능 현황 (2026-10-23)
+
+작업지시자의 보안 제한 기능 정리 요청에 따라
+[보안 제한과 기능 사용 범위](../manual/security_feature_limits.md)를 추가했다. 1단계의 지원 계약
+보완이며 2단계 manifest 변경을 시작하거나 기능을 활성화한 것이 아니다.
+
+- 검토 source: `e5086b4bab13b8267ee5b9d0104afd3c24a9a160`.
+  제품 source는 기존 기준 `def947c21`과 같으며 그 뒤 두 commit은 문서·source 정책 변경이다.
+- 보안 경계: PDF JBIG2·JPEG 2000·ICC CMM feature 미활성, 제한된 constructor의 손상 xref
+  재구성 거부, SVG 글리프의 정적 replay 경계, 링크 URI 제한, Studio 양식 명령 단추와
+  보호 문서의 평문 recovery draft를 실제 소비 위치에서 확인했다.
+- 조건부 거부: PDF·HWP5·HWPX의 자원·깊이 한도를 별도로 기록했다. 암호 PDF·DRM 등 일반
+  지원 경계, `publish=false`, 렌더러 선택, 보고 전용 보안 검사를 보안상 기능 차단과 구분했다.
+- 이력 정정: `git log -S`로 PDF 기본 포함의 원 PR #7953·통합 `b7a538803`을 확인했다.
+  #7911 백로그의 현재 상태에 남아 있던 “기본 비활성” 문구를 정정했다. 당시 단계 기록은 보존했다.
+- 게시 계약: upstream README의 전체 기능 목록을 그대로 보장하지 않으며, 별도 게시될 backend의
+  legacy 무제한 API와 rhwp 요청 예산 경로를 구분한다. 게시용 README와 외부 Native/WASM
+  소비자에서 거부·실패 후 정상 요청을 검증하는 항목을 기존 계획에 연결했다.
+
+실행 결과와 증적은 ignored `output/pr-review/issue8174/security-feature-limits/`에 있다.
+
+| 명령/확인 | 결과 | 증적 |
+| --- | --- | --- |
+| `cargo tree --offline --locked -e features -i rhwp-pdf-import-backend` | exit 0. 본체 기본 `pdf-import` 포함, backend 추가 feature 없음 | `pdf-backend-features.{command.json,stdout.txt,stderr.txt}` |
+| 같은 명령에 `--target wasm32-unknown-unknown` 지정 | exit 0. 기본 WASM도 같은 feature 경계 | `pdf-backend-features-wasm.*` |
+| `node --test rhwp-studio/tests/autosave-manager.test.ts rhwp-studio/tests/static-svg-path-layers.test.ts rhwp-studio/tests/hyperlink-target.test.ts` | exit 0. 22 PASS / 0 FAIL / 0 skip | `studio-security-contracts.*` |
+| `gh api repos/edwardkim/rhwp/issues/8174`의 상태·담당자 조회 | open, `edwardkim`. 읽기 전용 조회 | `issue8174.*` |
+| 새 매뉴얼과 연결 문서 7개의 상대 링크·언어·변경 범위, `git diff --check` | PASS. 별도 canonical 링크 검사도 6개 문서에서 통과 | `document-check.json` |
+
+이 보완은 문서만 바꾸므로 제품 source·Cargo manifest/lock·workflow·패키지 선별 정책은
+그대로다. 1단계 source archive 실측을 변경하지 않는다. 코드/feature 검토와 기존 helper 검사
+22건을 PDF codec·브라우저·전체 보안 감사의 새 실행 결과로 확대하지 않는다. 외부 패키지의
+실제 소비와 잔여 보안 게이트는 다음 단계의 필수 검증으로 유지한다.

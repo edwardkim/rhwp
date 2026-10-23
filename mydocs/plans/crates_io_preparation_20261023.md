@@ -13,6 +13,8 @@
 - [구현 계획](task_m100_8174_impl.md). 단계별 변경을 커밋하고 다음 단계로 전환한다.
 - [1단계 결과](../working/task_m100_8174_stage1.md): 8개 source 후보의 목록·의존 순서·고지·실측을 기록했다.
   본체 8,329,278바이트, PDF backend 6,814,747바이트의 gzip tar이며 정규화·검증된 `.crate`는 아니다.
+- 2026-10-23 추가 요청에 따라 [보안 제한과 기능 사용 범위](../manual/security_feature_limits.md)를
+  정리했다. 기능 활성화와 2단계 manifest 변경은 이 현황 정리에 포함하지 않는다.
 - 권위 절차: [문서·Git workflow](../manual/codex/docs_and_git_workflow.md),
   [배포 가이드](../manual/publish_guide.md), [GitHub 운영](../manual/github_operations.md).
 
@@ -65,6 +67,7 @@ remote push·PR 생성·workflow 실행·실제 registry 게시의 승인도 각
 | PDF export fork | upstream 반영 또는 별도 이름의 게시 의존성으로 수정본을 유지한다. `svg2pdf`의 결정화·그러데이션·텍스트 중복 방지 수정을 보호한다. |
 | 버전·소유 | 본체 0.9.0과 보조 crate의 버전 정책, owner와 보안 업데이트 책임을 정한다. 내부 0.1.0 또는 upstream 기반 보정 버전을 일괄 0.9.0으로 바꾸지 않는다. |
 | MSRV·feature | 현재 고정 툴체인 1.93.1을 기준으로 검증하고 실제 지원할 최소 버전을 정한다. 기본, default 해제, `wasm-api`, `pdf-import`, `native-skia`의 지원 조합을 명시한다. |
+| 보안상 기능 제한 | PDF 기본 포함과 추가 codec/CMM 미활성, 자원 초과 거부, 전체 할당 증명 미완료를 README와 소비 계약에 명시한다. [현황 목록](../manual/security_feature_limits.md)의 각 제한과 일반 미지원을 구분하며, feature를 켜거나 `publish=false`를 푸는 것으로 보안 게이트를 대신하지 않는다. |
 | 배포 채널 | 초기 게시 순서, 실제 게시 시점, 이후 OIDC 전환과 부분 실패 복구·yank 절차를 정한다. 기존 네 채널을 포함한 전체 자동화를 한 번에 바꾸는 것으로 가정하지 않는다. |
 
 ## 단계와 완료 조건
@@ -90,6 +93,9 @@ remote push·PR 생성·workflow 실행·실제 registry 게시의 승인도 각
   WASM 초기화/feature 경계와 Native CLI 설치·이미지/터미널 출력을 실제 실행한다.
 - 현재의 git/path 소비 사례와 같은 입력·출력을 비교한다. 의존성 이름 변경도 보안 patch와
   실제 PDF 출력·자원 제한의 보존을 검증하며, 출력이 바뀌면 적용 시각 게이트를 수행한다.
+- 지원 입력의 성공뿐 아니라 미지원 codec·암호 PDF·손상 xref·자원 초과의 거부와 실패 후
+  정상 요청을 Native/WASM 소비자에서 확인한다. PDF 기본 포함은 전체 할당 증명이나 비신뢰
+  입력 배포 준비의 완료가 아니므로 #7911의 잔여 보안 게이트 처리 방침도 게시 전에 확정한다.
 - docs.rs와 README 예제, `cargo install`의 대상 bin·`native-skia` 옵션을 검증한다.
 - 완료 조건: root checkout 없이 추출 패키지로 지원 사용자 여정이 실행되고 필요한
   Rust/WASM/소비자 검증 및 영향 범위의 출력 비교가 충족된다.
