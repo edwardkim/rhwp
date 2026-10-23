@@ -20,7 +20,7 @@ import { transformJSONSchema } from '@anthropic-ai/sdk/lib/transform-json-schema
 import { CLAUDE_MODELS } from './models.ts';
 import {
   AiProviderError,
-  type AiFailureReason,
+  type AiFailure,
   type AiMessage,
   type AiProvider,
   type AiStopReason,
@@ -48,12 +48,16 @@ export function createClaudeClient(apiKey: string): Anthropic {
   });
 }
 
+/** 400·기타 오류의 제공자 사유. 응답 본문 `{"error":{"message"}}` 와 request id. */
+function errorDetail(error: APIError): string | undefined {
+  const body = error.error as { error?: { message?: unknown } } | undefined;
+  const message = typeof body?.error?.message === 'string' ? body.error.message : undefined;
+  const parts = [message, error.requestID ? `request-id ${error.requestID}` : undefined].filter(Boolean);
+  return parts.length > 0 ? parts.join(' · ') : undefined;
+}
+
 /** SDK 오류를 화면 갈래로 옮긴다. 구체적인 것부터 본다. */
-export function classifyClaudeError(error: unknown): {
-  reason: AiFailureReason;
-  status?: number;
-  retryAfterSeconds?: number;
-} {
+export function classifyClaudeError(error: unknown): AiFailure {
   if (error instanceof APIUserAbortError) return { reason: 'aborted' };
   if (error instanceof APIConnectionError) return { reason: 'network' };
   if (error instanceof AuthenticationError) return { reason: 'auth', status: 401 };
@@ -66,11 +70,19 @@ export function classifyClaudeError(error: unknown): {
       ? { reason: 'rate', status: 429, retryAfterSeconds: seconds }
       : { reason: 'rate', status: 429 };
   }
-  if (error instanceof BadRequestError) return { reason: 'bad-request', status: 400 };
+  if (error instanceof BadRequestError) {
+    const detail = errorDetail(error);
+    return detail ? { reason: 'bad-request', status: 400, detail } : { reason: 'bad-request', status: 400 };
+  }
   if (error instanceof APIError) {
     // 529 overloaded 는 전용 클래스가 없다.
     if (error.status === 529) return { reason: 'overloaded', status: 529 };
-    return error.status === undefined ? { reason: 'unknown' } : { reason: 'unknown', status: error.status };
+    const detail = errorDetail(error);
+    return {
+      reason: 'unknown',
+      ...(error.status !== undefined ? { status: error.status } : {}),
+      ...(detail ? { detail } : {}),
+    };
   }
   if (error instanceof DOMException && error.name === 'AbortError') return { reason: 'aborted' };
   return { reason: 'unknown' };

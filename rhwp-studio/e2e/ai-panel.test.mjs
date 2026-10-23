@@ -12,7 +12,7 @@
  * 4. 패널 입력란의 Ctrl+Z 는 문서 undo 로 새지 않는다
  * 5. 선택 영역이 있으면 빠른 동작이 보이고, 누르면 그 프롬프트로 묻는다
  * 6. 중단 단추는 진행 중인 요청을 끊고 「중단했습니다」를 보인다
- * 7. 401 이면 키 오류 문구
+ * 7. 401 이면 키 오류 문구, 400 이면 거절 문구와 제공자 사유
  * 8. 새 대화 / 문서 교체는 이력을 비운다
  *
  * 계획: mydocs/plans/rhwp_studio_ai_chat_p0_impl.md §5.2
@@ -228,6 +228,17 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(authNote === 'API 키가 올바르지 않습니다.', `TC7: 401 문구 (${authNote})`);
   const conv = await page.evaluate(() => window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []));
   assert(conv.messages % 2 === 0, `TC7: 실패 뒤에도 이력은 user/assistant 짝 (${conv.messages})`);
+
+  // ── TC7b: 400 은 제공자 사유를 함께 보인다 ──────────────
+  queue.push({ status: 400, body: JSON.stringify({ type: 'error',
+    error: { type: 'invalid_request_error', message: 'tools.0: probe reason' } }) });
+  await page.type('.ai-chat-input', '또');
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy
+    && document.querySelectorAll('.ai-msg-note').length >= 3, { timeout: 10000 });
+  const badNote = await page.$$eval('.ai-msg-note', (els) => els.at(-1)?.textContent);
+  assert(badNote.startsWith('요청이 거절되었습니다.') && badNote.includes('tools.0: probe reason'),
+    `TC7b: 400 사유 표시 (${badNote})`);
 
   // ── TC8: 새 대화 ──────────────────────────────────────
   await page.click('.ai-new-chat');

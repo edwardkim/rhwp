@@ -42,7 +42,12 @@ export type KeyStatus =
   /** 암호로 잠긴 키가 저장돼 있다 */
   | 'locked';
 
-export type KeyStoreErrorCode = 'INVALID_KEY' | 'WRONG_PASSPHRASE' | 'EMPTY_PASSPHRASE';
+export type KeyStoreErrorCode =
+  | 'INVALID_KEY'
+  | 'WRONG_PASSPHRASE'
+  | 'EMPTY_PASSPHRASE'
+  /** 암호화 API(`crypto.subtle`)가 없다 — https·localhost 가 아닌 http 출처에서 브라우저가 주지 않는다. */
+  | 'CRYPTO_UNAVAILABLE';
 
 export class KeyStoreError extends Error {
   readonly code: KeyStoreErrorCode;
@@ -92,16 +97,18 @@ function fromBase64(text: string): Uint8Array<ArrayBuffer> {
 export class KeyStore {
   private readonly session = new Map<AiProviderId, string>();
   private readonly backend: KeyBackend | null;
-  private readonly subtle: SubtleCrypto;
+  private readonly subtle: SubtleCrypto | null;
   private readonly iterations: number;
 
   /**
    * @param backend 저장소. `null` 이면 세션 모드만 가능하다.
+   * @param subtle 암호화 API. 비보안 출처(http://IP 등)에서는 브라우저가 주지 않아 `null` 이다 —
+   *   그때는 암호 모드만 막고 세션·기억 모드는 그대로 쓴다.
    * @param iterations PBKDF2 반복 수. 테스트만 낮춘다.
    */
   constructor(
     backend: KeyBackend | null,
-    subtle: SubtleCrypto = globalThis.crypto.subtle,
+    subtle: SubtleCrypto | null = globalThis.crypto?.subtle ?? null,
     iterations: number = PBKDF2_ITERATIONS,
   ) {
     this.backend = backend;
@@ -111,6 +118,11 @@ export class KeyStore {
 
   get canPersist(): boolean {
     return this.backend !== null;
+  }
+
+  /** 암호로 잠근 저장을 쓸 수 있는가 */
+  get canEncrypt(): boolean {
+    return this.subtle !== null;
   }
 
   /** 지금 쓸 수 있는 키. 없거나 잠겨 있으면 `null`. */
@@ -141,6 +153,10 @@ export class KeyStore {
     const key = normalizeKey(rawKey);
     if (options.remember && options.passphrase !== undefined && options.passphrase.length === 0) {
       throw new KeyStoreError('EMPTY_PASSPHRASE', '암호를 입력하세요.');
+    }
+    // 아무것도 바꾸기 전에 거절한다 — 세션 키만 바뀌고 저장은 실패한 어중간한 상태를 남기지 않는다.
+    if (options.remember && options.passphrase && !this.subtle) {
+      throw new KeyStoreError('CRYPTO_UNAVAILABLE', '이 연결에서는 암호 보호를 쓸 수 없습니다.');
     }
     this.session.set(provider, key);
 
@@ -178,6 +194,9 @@ export class KeyStore {
       this.session.set(provider, stored.key);
       return;
     }
+    if (!this.subtle) {
+      throw new KeyStoreError('CRYPTO_UNAVAILABLE', '이 연결에서는 암호로 잠근 키를 열 수 없습니다.');
+    }
     const key = await this.decrypt(stored, passphrase);
     this.session.set(provider, key);
   }
@@ -198,9 +217,15 @@ export class KeyStore {
     try { await this.backend.delete(provider); } catch { /* 저장소가 막혔으면 남은 것도 없다 */ }
   }
 
+  private requireSubtle(): SubtleCrypto {
+    if (!this.subtle) throw new KeyStoreError('CRYPTO_UNAVAILABLE', '이 연결에서는 암호 보호를 쓸 수 없습니다.');
+    return this.subtle;
+  }
+
   private async deriveKey(passphrase: string, salt: Uint8Array<ArrayBuffer>, iterations: number): Promise<CryptoKey> {
-    const material = await this.subtle.importKey('raw', encoder.encode(passphrase), 'PBKDF2', false, ['deriveKey']);
-    return this.subtle.deriveKey(
+    const subtle = this.requireSubtle();
+    const material = await subtle.importKey('raw', encoder.encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+    return subtle.deriveKey(
       { name: 'PBKDF2', hash: 'SHA-256', salt, iterations },
       material,
       { name: 'AES-GCM', length: 256 },
@@ -213,7 +238,7 @@ export class KeyStore {
     const salt = globalThis.crypto.getRandomValues(new Uint8Array(16));
     const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
     const aes = await this.deriveKey(passphrase, salt, this.iterations);
-    const ciphertext = new Uint8Array(await this.subtle.encrypt({ name: 'AES-GCM', iv }, aes, encoder.encode(key)));
+    const ciphertext = new Uint8Array(await this.requireSubtle().encrypt({ name: 'AES-GCM', iv }, aes, encoder.encode(key)));
     return {
       ciphertext: toBase64(ciphertext),
       salt: toBase64(salt),
@@ -225,7 +250,7 @@ export class KeyStore {
   private async decrypt(stored: Extract<StoredKey, { mode: 'encrypted' }>, passphrase: string): Promise<string> {
     try {
       const aes = await this.deriveKey(passphrase, fromBase64(stored.salt), stored.iterations);
-      const plain = await this.subtle.decrypt(
+      const plain = await this.requireSubtle().decrypt(
         { name: 'AES-GCM', iv: fromBase64(stored.iv) }, aes, fromBase64(stored.ciphertext),
       );
       return decoder.decode(plain);

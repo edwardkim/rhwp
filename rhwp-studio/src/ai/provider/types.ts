@@ -17,9 +17,20 @@ export type AiFailureReason =
   | 'bad-request'
   | 'unknown';
 
+/**
+ * 실패 정보. `detail` 은 400 처럼 요청 내용이 원인일 때 제공자가 알려 준 사유와 request id 다 —
+ * 무엇이 거절됐는지 알아야 고칠 수 있으므로 보인다. 제공자는 키를 이 메시지에 싣지 않는다.
+ */
+export interface AiFailure {
+  reason: AiFailureReason;
+  status?: number;
+  retryAfterSeconds?: number;
+  detail?: string;
+}
+
 export type AiTestResult =
   | { ok: true; modelName: string }
-  | { ok: false; reason: AiFailureReason; status?: number; retryAfterSeconds?: number };
+  | ({ ok: false } & AiFailure);
 
 /** 토큰 사용량. 회차마다 더해 패널 하단에 보인다. */
 export interface AiUsage {
@@ -117,12 +128,14 @@ export class AiProviderError extends Error {
   readonly reason: AiFailureReason;
   readonly status?: number;
   readonly retryAfterSeconds?: number;
+  readonly detail?: string;
 
-  constructor(failure: { reason: AiFailureReason; status?: number; retryAfterSeconds?: number }) {
-    super(`AI 요청 실패: ${failure.reason}`);
+  constructor(failure: AiFailure) {
+    super(`AI 요청 실패: ${failure.reason}${failure.detail ? ` — ${failure.detail}` : ''}`);
     this.name = 'AiProviderError';
     this.reason = failure.reason;
     if (failure.status !== undefined) this.status = failure.status;
     if (failure.retryAfterSeconds !== undefined) this.retryAfterSeconds = failure.retryAfterSeconds;
+    if (failure.detail !== undefined) this.detail = failure.detail;
   }
 }

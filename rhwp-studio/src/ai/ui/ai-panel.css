@@ -308,6 +308,17 @@
   color: var(--color-text-muted);
 }
 
+.ai-settings-passphrase {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-settings-passphrase[hidden],
+.ai-settings-row[hidden] {
+  display: none;
+}
+
 .ai-settings-check {
   display: flex;
   align-items: center;

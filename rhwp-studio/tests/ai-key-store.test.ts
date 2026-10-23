@@ -120,3 +120,24 @@ test('가린 표시는 앞 7자와 끝 4자만 보인다', () => {
   assert.equal(maskKey('short-key'), '••••');
   assert.ok(!maskKey(KEY).includes('ABCDEFG'));
 });
+
+test('암호화 API 가 없는 비보안 출처(http://IP)에서는 암호 저장·해제를 이유를 밝혀 거절한다', async () => {
+  // 브라우저는 https·localhost 가 아닌 http 출처에서 crypto.subtle 을 주지 않는다.
+  const backend = createMemoryKeyBackend();
+  const insecure = new KeyStore(backend, null, ITER);
+  assert.equal(insecure.canEncrypt, false);
+  await assert.rejects(insecure.setKey('claude', KEY, { remember: true, passphrase: 'p' }), code('CRYPTO_UNAVAILABLE'));
+  assert.equal(insecure.getKey('claude'), null, '거절하면 세션 키도 바꾸지 않는다');
+  assert.equal(backend.records.size, 0);
+
+  // 암호 없는 기억·세션 모드는 그대로 된다.
+  assert.deepEqual(await insecure.setKey('claude', KEY, { remember: true }), { persisted: true });
+  assert.equal(insecure.getKey('claude'), KEY);
+
+  // 보안 출처에서 암호로 저장한 키를 비보안 출처에서 열려 하면 「암호 틀림」이 아니라 이 이유로 거절한다.
+  const secureBackend = createMemoryKeyBackend();
+  await new KeyStore(secureBackend, undefined, ITER).setKey('claude', KEY, { remember: true, passphrase: 'p' });
+  const reopened = new KeyStore(secureBackend, null, ITER);
+  assert.equal(await reopened.status('claude'), 'locked');
+  await assert.rejects(reopened.unlock('claude', 'p'), code('CRYPTO_UNAVAILABLE'));
+});

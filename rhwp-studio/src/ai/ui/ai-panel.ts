@@ -345,9 +345,13 @@ export class AiPanel {
         refusal: t('ai.chat.refused'),
         max_tokens: t('ai.chat.truncated'),
         round_limit: t('ai.chat.roundLimit'),
-        error: result.error ? failureMessage(result.error.reason, result.error.retryAfterSeconds) : t('ai.error.unknown'),
+        error: result.error
+          ? failureMessage(result.error.reason, result.error.retryAfterSeconds, result.error.detail)
+          : t('ai.error.unknown'),
       } as const)[result.status];
       answer.finish(note, result.status === 'error' || result.status === 'refusal' ? 'error' : 'info');
+      // 원인 진단용. 실패 정보에는 키가 없다.
+      if (result.error) console.error('[AI] 요청 실패', result.error.reason, result.error.status ?? '', result.error.detail ?? '');
     } else {
       const reason = failure instanceof AiProviderError ? failure.reason : 'unknown';
       answer.finish(failureMessage(reason), 'error');

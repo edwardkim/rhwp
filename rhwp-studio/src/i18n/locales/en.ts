@@ -2047,6 +2047,8 @@ const catalog = {
   "ai.tool.search_text": "Searching",
   "ai.tool.get_selection": "Checking selection",
   "ai.tool.list_fields": "Checking fields",
+  "ai.settings.cryptoUnavailable": "Passphrase protection is unavailable on this connection (plain http on an IP address) because the browser blocks its crypto API. Open via https or localhost, or remember the key without a passphrase.",
+  "ai.settings.cryptoUnavailableShort": "Unavailable on this connection",
 } as const;
 
 export default catalog;
