@@ -104,6 +104,11 @@ export interface DocumentWriter {
   getPageDef(section: number): string;
   setPageDef(section: number, json: string): string;
   setCellProperties(section: number, parentPara: number, controlIndex: number, cellIndex: number, json: string): string;
+  insertHyperlinkEx(json: string): number;
+  addBookmark(section: number, paragraph: number, offset: number, name: string): string;
+  getBookmarks(): string;
+  insertEquation(section: number, paragraph: number, offset: number, script: string, fontSize: number, color: number): string;
+  setColumnDef(section: number, count: number, type: number, sameWidth: number, spacing: number): string;
   insertTextInFootnote(
     section: number, paragraph: number, controlIndex: number, fnPara: number, offset: number, text: string,
   ): string;
@@ -122,7 +127,8 @@ export type WriteToolName =
   | 'format_text' | 'format_paragraph' | 'insert_table'
   | 'delete_paragraph' | 'set_list' | 'apply_style' | 'edit_table' | 'set_cell_text'
   | 'set_header_footer' | 'insert_footnote'
-  | 'replace_all' | 'format_cell' | 'page_setup';
+  | 'replace_all' | 'format_cell' | 'page_setup'
+  | 'set_table_border' | 'set_cell_size' | 'insert_hyperlink' | 'add_bookmark' | 'insert_equation' | 'set_columns';
 
 /** 제안 하나. 화면은 `prefix + removed + suffix` 를 「전」, `prefix + inserted + suffix` 를 「후」로 보인다. */
 export interface WriteProposal {
@@ -234,6 +240,8 @@ const WRITE_SCHEMAS: Record<WriteToolName, ToolSchema> = {
       textColor: { type: 'string', minLength: 7, maxLength: 7, description: 'Text color as #RRGGBB.' },
       highlightColor: { type: 'string', minLength: 7, maxLength: 7, description: 'Background (shade) color as #RRGGBB.' },
       fontName: { type: 'string', minLength: 1, maxLength: 100, description: 'Font face name, for example 맑은 고딕.' },
+      charRatio: { type: 'integer', minimum: 50, maximum: 200, description: 'Character width ratio (장평) in percent; 100 is normal.' },
+      charSpacing: { type: 'integer', minimum: -50, maximum: 50, description: 'Character spacing (자간) in percent; 0 is normal.' },
     },
     required: ['find'],
     additionalProperties: false,
@@ -385,6 +393,73 @@ const WRITE_SCHEMAS: Record<WriteToolName, ToolSchema> = {
     required: [],
     additionalProperties: false,
   },
+  set_table_border: {
+    type: 'object',
+    properties: {
+      find: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact text inside a cell of the table (the reference cell).' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      scope: { type: 'string', enum: ['cell', 'row', 'column', 'table'], description: 'Cells to change (default cell).' },
+      style: { type: 'string', enum: ['solid', 'dashed', 'dotted', 'double', 'none'], description: 'Line style for all four sides of each cell.' },
+      thicknessMm: { type: 'number', minimum: 0.1, maximum: 5, description: 'Line thickness in millimetres (default 0.12).' },
+      color: { type: 'string', minLength: 7, maxLength: 7, description: 'Line color as #RRGGBB (default black).' },
+    },
+    required: ['find', 'style'],
+    additionalProperties: false,
+  },
+  set_cell_size: {
+    type: 'object',
+    properties: {
+      find: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact text inside a cell of the table (the reference cell).' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      columnWidthMm: { type: 'number', minimum: 5, maximum: 400, description: 'Width of the reference cell column in millimetres.' },
+      rowHeightMm: { type: 'number', minimum: 3, maximum: 400, description: 'Height of the reference cell row in millimetres.' },
+    },
+    required: ['find'],
+    additionalProperties: false,
+  },
+  insert_hyperlink: {
+    type: 'object',
+    properties: {
+      find: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact text that becomes the link.' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      url: { type: 'string', minLength: 1, maxLength: 2000, description: 'Link target: http(s):// or mailto: address.' },
+    },
+    required: ['find', 'url'],
+    additionalProperties: false,
+  },
+  add_bookmark: {
+    type: 'object',
+    properties: {
+      find: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact body text; the bookmark goes at its start.' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      name: { type: 'string', minLength: 1, maxLength: 100, description: 'Bookmark name (unique in the document).' },
+    },
+    required: ['find', 'name'],
+    additionalProperties: false,
+  },
+  insert_equation: {
+    type: 'object',
+    properties: {
+      after: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact body text; the equation goes right after it.' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when after occurs more than once.' },
+      script: {
+        type: 'string', minLength: 1, maxLength: 2000,
+        description: 'Equation in Hancom equation script, for example "x = {-b +- sqrt {b^2 - 4ac}} over {2a}".',
+      },
+      fontSize: { type: 'number', minimum: 5, maximum: 100, description: 'Font size in points (default 10).' },
+    },
+    required: ['after', 'script'],
+    additionalProperties: false,
+  },
+  set_columns: {
+    type: 'object',
+    properties: {
+      count: { type: 'integer', minimum: 1, maximum: 4, description: 'Number of text columns (1 for a single column).' },
+      gapMm: { type: 'number', minimum: 0, maximum: 50, description: 'Gap between columns in millimetres (default 8).' },
+    },
+    required: ['count'],
+    additionalProperties: false,
+  },
   insert_table: {
     type: 'object',
     properties: {
@@ -431,7 +506,8 @@ export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
   },
   {
     name: 'format_text',
-    description: 'Change character formatting (bold, italic, underline, strikethrough, size, color, highlight, font) of '
+    description: 'Change character formatting (bold, italic, underline, strikethrough, size, color, highlight, font, '
+      + 'width ratio, spacing) of '
       + 'text found by its exact content. Set only the properties to change. Shown to the user for approval.',
     inputSchema: WRITE_SCHEMAS.format_text as unknown as Record<string, unknown>,
     // 선택 매개변수가 많아 strict 예산(전체 24개)을 넘긴다 — 클라이언트 검증만 한다.
@@ -512,6 +588,48 @@ export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
     strict: false,
   },
   {
+    name: 'set_table_border',
+    description: 'Set table border lines (style, thickness, color) on all four sides of the cell containing the text, or of every cell in its row, column or table. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.set_table_border as unknown as Record<string, unknown>,
+    // strict 예산(도구 20개·선택 매개변수 24개)을 넘기지 않도록 클라이언트 검증만 한다.
+    strict: false,
+  },
+  {
+    name: 'set_cell_size',
+    description: 'Set the width of the column and/or the height of the row of the cell containing the text, in millimetres. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.set_cell_size as unknown as Record<string, unknown>,
+    // strict 예산(도구 20개·선택 매개변수 24개)을 넘기지 않도록 클라이언트 검증만 한다.
+    strict: false,
+  },
+  {
+    name: 'insert_hyperlink',
+    description: 'Turn text into a hyperlink to a web or e-mail address. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.insert_hyperlink as unknown as Record<string, unknown>,
+    // strict 예산(도구 20개·선택 매개변수 24개)을 넘기지 않도록 클라이언트 검증만 한다.
+    strict: false,
+  },
+  {
+    name: 'add_bookmark',
+    description: 'Add a named bookmark at the start of the given body text. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.add_bookmark as unknown as Record<string, unknown>,
+    // strict 예산(도구 20개·선택 매개변수 24개)을 넘기지 않도록 클라이언트 검증만 한다.
+    strict: false,
+  },
+  {
+    name: 'insert_equation',
+    description: 'Insert an equation (Hancom equation script) right after the given body text. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.insert_equation as unknown as Record<string, unknown>,
+    // strict 예산(도구 20개·선택 매개변수 24개)을 넘기지 않도록 클라이언트 검증만 한다.
+    strict: false,
+  },
+  {
+    name: 'set_columns',
+    description: 'Set the number of text columns (다단) for the whole document. This reflows the document. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.set_columns as unknown as Record<string, unknown>,
+    // strict 예산(도구 20개·선택 매개변수 24개)을 넘기지 않도록 클라이언트 검증만 한다.
+    strict: false,
+  },
+  {
     name: 'create_document',
     description: 'Replace the open document with a new blank document, when the user asks for a new document. '
       + 'The user approves first and is asked to save unsaved changes. Then write content with insert_paragraphs '
@@ -523,7 +641,9 @@ export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
 const WRITE_TOOL_NAMES: readonly string[] = [
   'replace_text', 'fill_field', 'insert_paragraphs', 'format_text', 'format_paragraph', 'insert_table',
   'delete_paragraph', 'set_list', 'apply_style', 'edit_table', 'set_cell_text', 'set_header_footer', 'insert_footnote',
-  'replace_all', 'format_cell', 'page_setup', 'create_document',
+  'replace_all', 'format_cell', 'page_setup',
+  'set_table_border', 'set_cell_size', 'insert_hyperlink', 'add_bookmark', 'insert_equation', 'set_columns',
+  'create_document',
 ];
 
 export function isWriteTool(name: string): name is WriteToolName {
@@ -805,7 +925,9 @@ function hitLocation(hit: SearchHit) {
   return { section: hit.sec, paragraph: hit.cellContext ? hit.cellContext.parentPara : hit.para, inTable: hit.cellContext !== undefined };
 }
 
-const FORMAT_KEYS = ['bold', 'italic', 'underline', 'strikethrough', 'fontSize', 'textColor', 'highlightColor', 'fontName'] as const;
+const FORMAT_KEYS = [
+  'bold', 'italic', 'underline', 'strikethrough', 'fontSize', 'textColor', 'highlightColor', 'fontName', 'charRatio', 'charSpacing',
+] as const;
 
 function prepareFormatText(host: WriteHost, input: Record<string, unknown>): WriteProposal {
   const find = input.find as string;
@@ -837,6 +959,9 @@ function prepareFormatText(host: WriteHost, input: Record<string, unknown>): Wri
         }
         if (format.fontSize !== undefined) props.fontSize = Math.round((format.fontSize as number) * 100);
         if (format.highlightColor !== undefined) props.shadeColor = format.highlightColor;
+        // 글자 모양 대화상자와 같이 일곱 언어 칸에 같은 값을 준다.
+        if (format.charRatio !== undefined) props.ratios = Array(7).fill(format.charRatio);
+        if (format.charSpacing !== undefined) props.spacings = Array(7).fill(format.charSpacing);
         if (format.fontName !== undefined) {
           const fontId = target.findOrCreateFontId(format.fontName as string);
           if (fontId < 0) throw new WriteRefused(`Font "${format.fontName}" could not be used.`);
@@ -1364,6 +1489,209 @@ function preparePageSetup(host: WriteHost, input: Record<string, unknown>): Writ
   });
 }
 
+/** 테두리 선 종류(셀 테두리/배경 대화상자 번호) */
+const LINE_TYPE = { none: 0, solid: 1, dashed: 2, dotted: 3, double: 8 } as const;
+/** 테두리 굵기 번호 → mm (같은 대화상자의 표) */
+const LINE_WIDTH_MM = [0.1, 0.12, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0];
+
+function nearestWidthIndex(mm: number): number {
+  let best = 0;
+  LINE_WIDTH_MM.forEach((value, index) => { if (Math.abs(value - mm) < Math.abs(LINE_WIDTH_MM[best] - mm)) best = index; });
+  return best;
+}
+
+/** 기준 칸과 범위에 드는 칸 번호들. */
+function cellsInScope(doc: DocumentWriter, hit: SearchHit, scope: 'cell' | 'row' | 'column' | 'table') {
+  const { cell, info, dims } = cellOf(doc, hit);
+  const targets: number[] = [];
+  for (let index = 0; index < dims.cellCount; index += 1) {
+    const other = JSON.parse(doc.getCellInfo(hit.sec, cell.parentPara, cell.ctrlIdx, index)) as { row: number; col: number };
+    if (scope === 'table' || (scope === 'cell' && index === cell.cellIdx)
+      || (scope === 'row' && other.row === info.row) || (scope === 'column' && other.col === info.col)) {
+      targets.push(index);
+    }
+  }
+  return { cell, info, dims, targets };
+}
+
+function prepareTableBorder(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const scope = (input.scope as 'cell' | 'row' | 'column' | 'table' | undefined) ?? 'cell';
+  const style = input.style as keyof typeof LINE_TYPE;
+  const thickness = (input.thicknessMm as number | undefined) ?? 0.12;
+  const color = (input.color as string | undefined) ?? '#000000';
+  if (!COLOR.test(color)) throw new WriteRefused('color must be #RRGGBB.');
+  return host.read((doc) => {
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    const { cell, targets } = cellsInScope(doc, hit, scope);
+    const widthIndex = nearestWidthIndex(thickness);
+    return {
+      tool: 'set_table_border',
+      location: { ...hitLocation(hit), inTable: true },
+      prefix: '', removed: '', inserted: wholeParagraph(doc, hit), suffix: '',
+      format: { scope, cells: targets.length, borderStyle: style, ...(style === 'none' ? {} : { thicknessMm: LINE_WIDTH_MM[widthIndex], color }) },
+      apply: () => host.transaction('AI: 표 테두리', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        const line = { type: LINE_TYPE[style], width: widthIndex, color: color.toLowerCase() };
+        const json = JSON.stringify({ borderLeft: line, borderRight: line, borderTop: line, borderBottom: line });
+        for (const index of targets) ok(target.setCellProperties(hit.sec, cell.parentPara, cell.ctrlIdx, index, json), 'setCellProperties');
+      }),
+    };
+  });
+}
+
+function prepareCellSize(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const widthMm = input.columnWidthMm as number | undefined;
+  const heightMm = input.rowHeightMm as number | undefined;
+  if (widthMm === undefined && heightMm === undefined) throw new WriteRefused('Set columnWidthMm or rowHeightMm.');
+  return host.read((doc) => {
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    // 칸 하나의 폭만 바꾸면 표 격자가 어긋난다(실측: 칸 0 만 10000, 나머지 20977) — 같은 열·줄의
+    // 한 칸짜리 칸 모두에 같은 값을 준다. 여러 열에 걸친 병합 칸은 건드리지 않는다.
+    const { cell, info, dims } = cellOf(doc, hit);
+    const columnCells: number[] = [];
+    const rowCells: number[] = [];
+    for (let index = 0; index < dims.cellCount; index += 1) {
+      const other = JSON.parse(doc.getCellInfo(hit.sec, cell.parentPara, cell.ctrlIdx, index)) as {
+        row: number; col: number; rowSpan: number; colSpan: number;
+      };
+      if (other.col === info.col && other.colSpan === 1) columnCells.push(index);
+      if (other.row === info.row && other.rowSpan === 1) rowCells.push(index);
+    }
+    const format: Record<string, number> = {};
+    if (widthMm !== undefined) format.columnWidthMm = widthMm;
+    if (heightMm !== undefined) format.rowHeightMm = heightMm;
+    return {
+      tool: 'set_cell_size',
+      location: { ...hitLocation(hit), inTable: true },
+      prefix: '', removed: '', inserted: wholeParagraph(doc, hit), suffix: '',
+      format,
+      apply: () => host.transaction('AI: 칸 크기', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        if (widthMm !== undefined) {
+          const json = JSON.stringify({ width: mmToHwp(widthMm) });
+          for (const index of columnCells) ok(target.setCellProperties(hit.sec, cell.parentPara, cell.ctrlIdx, index, json), 'setCellProperties');
+        }
+        if (heightMm !== undefined) {
+          const json = JSON.stringify({ height: mmToHwp(heightMm) });
+          for (const index of rowCells) ok(target.setCellProperties(hit.sec, cell.parentPara, cell.ctrlIdx, index, json), 'setCellProperties');
+        }
+      }),
+    };
+  });
+}
+
+function prepareHyperlink(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const url = (input.url as string).trim();
+  if (!/^(https?:\/\/[^\s]+|mailto:[^\s@]+@[^\s@]+)$/i.test(url)) {
+    throw new WriteRefused('url must be an http(s):// address or a mailto: e-mail address without spaces.');
+  }
+  return host.read((doc) => {
+    const where = locate(doc, find, occurrence, true);
+    const hit = where.hit;
+    return {
+      tool: 'insert_hyperlink',
+      location: hitLocation(hit),
+      prefix: paragraphText(doc, hit, hit.charOffset - CONTEXT_CHARS, hit.charOffset),
+      removed: '', inserted: find,
+      suffix: paragraphText(doc, hit, hit.charOffset + hit.length, hit.charOffset + hit.length + CONTEXT_CHARS),
+      format: { url },
+      apply: () => host.transaction('AI: 하이퍼링크', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        const cell = hit.cellContext;
+        // 하이퍼링크 대화상자와 같은 대상 형식: 본문이면 빈 cellPath, 칸이면 [표, 칸, 칸 문단] 한 단.
+        const linkTarget = cell
+          ? { section: hit.sec, para: cell.parentPara, cellPath: [[cell.ctrlIdx, cell.cellIdx, cell.cellPara]] }
+          : { section: hit.sec, para: hit.para, cellPath: [] };
+        const fieldId = target.insertHyperlinkEx(JSON.stringify({
+          target: linkTarget, start: hit.charOffset, end: hit.charOffset + hit.length, uri: url,
+        }));
+        if (!(fieldId > 0)) throw new Error('insertHyperlinkEx failed');
+      }),
+    };
+  });
+}
+
+function prepareBookmark(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const name = (input.name as string).trim();
+  if (FORBIDDEN.test(name) || name.length === 0) throw new WriteRefused('name must be one line.');
+  return host.read((doc) => {
+    const existing = JSON.parse(doc.getBookmarks()) as Array<{ name: string }>;
+    if (existing.some((bookmark) => bookmark.name === name)) throw new WriteRefused(`A bookmark named "${name}" already exists.`);
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    requireBody(hit, 'Adding a bookmark');
+    return {
+      tool: 'add_bookmark',
+      location: hitLocation(hit),
+      prefix: '', removed: '', inserted: find,
+      suffix: paragraphText(doc, hit, hit.charOffset + hit.length, hit.charOffset + hit.length + CONTEXT_CHARS),
+      format: { name },
+      apply: () => host.transaction('AI: 책갈피', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        ok(target.addBookmark(hit.sec, hit.para, hit.charOffset, name), 'addBookmark');
+      }),
+    };
+  });
+}
+
+function prepareEquation(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const after = input.after as string;
+  const occurrence = input.occurrence as number | undefined;
+  const script = input.script as string;
+  const fontSize = (input.fontSize as number | undefined) ?? 10;
+  if (FORBIDDEN.test(script)) throw new WriteRefused('script must be one line; use the equation script\'s own line commands (#) instead.');
+  return host.read((doc) => {
+    const where = locate(doc, after, occurrence);
+    const hit = where.hit;
+    requireBody(hit, 'Inserting an equation');
+    return {
+      tool: 'insert_equation',
+      location: hitLocation(hit),
+      prefix: paragraphText(doc, hit, hit.charOffset - CONTEXT_CHARS, hit.charOffset + hit.length),
+      removed: '', inserted: script, suffix: '',
+      format: { fontSize },
+      apply: () => host.transaction('AI: 수식', (tx) => {
+        const target = tx.doc();
+        relocate(target, after, occurrence, where);
+        // 수식 넣기 명령과 같은 인자(글자 크기 HWPUNIT, 색 0 = 검정).
+        ok(target.insertEquation(hit.sec, hit.para, hit.charOffset + hit.length, script, Math.round(fontSize * 100), 0), 'insertEquation');
+      }),
+    };
+  });
+}
+
+function prepareColumns(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const count = input.count as number;
+  const gapMm = (input.gapMm as number | undefined) ?? 8;
+  return {
+    tool: 'set_columns',
+    location: {},
+    prefix: '', removed: '', inserted: '', suffix: '',
+    format: { columnCount: count, gapMm },
+    apply: () => host.transaction('AI: 단 설정', (tx) => {
+      const target = tx.doc();
+      // 단 설정 명령과 같은 인자: 보통 단(0), 너비 같게(1), 간격 HWPUNIT. 모든 구역에 준다.
+      for (let section = 0; section < target.getSectionCount(); section += 1) {
+        ok(target.setColumnDef(section, count, 0, 1, mmToHwp(gapMm)), 'setColumnDef');
+      }
+    }),
+  };
+}
+
 function prepareCreate(host: WriteHost): WriteProposal {
   return {
     tool: 'create_document',
@@ -1404,5 +1732,11 @@ export function prepareWrite(host: WriteHost, call: AiToolCall): WriteProposal {
     case 'replace_all': return prepareReplaceAll(host, checked.value);
     case 'format_cell': return prepareFormatCell(host, checked.value);
     case 'page_setup': return preparePageSetup(host, checked.value);
+    case 'set_table_border': return prepareTableBorder(host, checked.value);
+    case 'set_cell_size': return prepareCellSize(host, checked.value);
+    case 'insert_hyperlink': return prepareHyperlink(host, checked.value);
+    case 'add_bookmark': return prepareBookmark(host, checked.value);
+    case 'insert_equation': return prepareEquation(host, checked.value);
+    case 'set_columns': return prepareColumns(host, checked.value);
   }
 }

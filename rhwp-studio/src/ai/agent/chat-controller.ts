@@ -194,9 +194,12 @@ export class ChatController {
     try {
       await proposal.apply();
     } catch (error) {
+      // 편집 엔진이 지원하지 않는 경우(예: 개체가 든 문단의 하이퍼링크)는 엔진 사유를 그대로 전한다 —
+      // 모델이 다른 방법을 고르고, 사용자는 카드에서 이유를 본다. 엔진 사유에는 키가 없다.
+      const engineReason = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
       const message = error instanceof WriteRefused ? error.message
         : isDocumentReleased(error) ? 'Editing is not allowed right now (the document may be closed or in a mode that blocks editing).'
-          : 'Failed to apply the change.';
+          : engineReason ? `Failed to apply the change: ${engineReason.slice(0, 300)}` : 'Failed to apply the change.';
       if (!(error instanceof WriteRefused)) console.error('[AI] 변경 적용 실패', call.name, error);
       card.settle('failed', message);
       return fail(message);
