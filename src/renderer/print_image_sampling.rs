@@ -55,8 +55,8 @@ fn weights(source: u32, destination: u32) -> Option<Vec<Weight>> {
 }
 
 /// 이미 최종 장치 변환을 적용한 사각형을 실제 페이지 bitmap 격자에 대응시킨다.
-/// PDF viewport는 정수 bitmap 전체에 대응하므로 ceil 이후의 축별 배율을 사용한다.
-/// 부분 창 재생에서도 전체 페이지의 격자를 유지한다.
+/// 출력 버퍼의 크기 올림은 물리 배율이 아니다. 변환된 좌표를 다시 늘리지 않는다.
+/// 부분 창 재생에서도 같은 장치 격자를 유지한다.
 pub(crate) fn rasterize(
     rgba: &[u8],
     source: (u32, u32),
@@ -74,13 +74,11 @@ pub(crate) fn rasterize(
     {
         return None;
     }
-    let sx = (page.0 * scale).ceil() / (page.0 * scale);
-    let sy = (page.1 * scale).ceil() / (page.1 * scale);
     let edges = [
-        (x * sx).floor(),
-        (y * sy).floor(),
-        ((x + width) * sx).ceil(),
-        ((y + height) * sy).ceil(),
+        x.floor(),
+        y.floor(),
+        (x + width).ceil(),
+        (y + height).ceil(),
     ];
     if edges
         .iter()

@@ -55,3 +55,27 @@ Native의 PDF·그림 기록 canvas 및 SVG는 원본 물리 clip을 보존한�
 Studio의 실제 `node_modules/.bin/tsc --noEmit`은 종료 코드 0이었다.
 이전 `bea7004f55`의 최적화 WASM 빌드가 실행 중이므로 같은 target에서 새 Rust 빌드를
 겹쳐 실행하지 않았다. 새 후보의 실제 Native·fresh WASM 경계 검증은 다음 필수 단계다.
+
+## 연결된 그림 표본의 이중 장치 변환
+
+앞선 `14940666168501838d3812e40c2385459e8caf29`의 공통 면적 표본은 호출자가
+실제 장치 행렬을 적용한 뒤에도 `ceil(page * scale) / (page * scale)`을 다시 곱했다.
+이는 당시 기준 PDF 래스터의 정수 display viewport를 따라간 처리였으나, 물리 DPI와
+버퍼 크기를 분리하면 이미 변환된 좌표를 다시 확대하는 오류가 된다.
+
+실제 고정된 `b919780c3b` WASM의 공개 `rasterizePrintImageRGBA`를 직접 호출했다.
+48×48px의 불투명 그림은 정수 픽셀 용지에서 48×48px지만, 편람의 소수 픽셀 높이
+용지에서는 48×49px가 됐다. 2배 출력도 96×97px였으며, 소수 너비 용지에서는 두 축이
+늘어났다. 최초 진단 8건은 2 PASS / 6 FAIL이고, 같은 소수 높이 입력 2건이 중복됨을
+기록한다. 별도의 4개 용지 크기·96/192dpi 독립 PDF 8건은 모두 실제 물리 크기를 유지했다.
+
+공통 `rasterize`에서 최종 장치 사각형의 floor/ceil 외접 경계만 소비하도록 보정한다.
+16.16 면적 가중치·축별 절삭·원본 RGB·clip·불투명 원본 축소의 적용 조건과 public ABI는
+바꾸지 않는다. Native/Canvas2D/CanvasKit은 이미 같은 함수를 소비하므로 중복 계산을
+추가하지 않는다. 이 보정과 clip 보정을 함께 새 Native 후보에서 검증한다.
+
+실제 진단은 ignored output의 `print-image-physical-grid-before.json`과
+`pdf-exact-dpi-efd9d52168/image-physical-grid/result.json`에 있다. 원본 288·307쪽의
+경계 픽셀 진단은 이전 후보에서 0 PASS / 10 FAIL이었고, 의미 render tree는 유지됐다.
+그림 clip 조상도 실제 layer tree에서 본문 clip과 채움 자체 clip으로 추적했다.
+새 후보의 개선과 정상 대조군·전체 출력을 실제로 확인하기 전에는 완료로 판정하지 않는다.
