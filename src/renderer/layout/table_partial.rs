@@ -3767,6 +3767,10 @@ impl LayoutEngine {
                                     } else {
                                         para_y
                                     };
+                                    let anchor_y =
+                                        super::table_inline_picture_origin::rendered_overlay_picture_origin(
+                                            &cell_node, para, ctrl_idx, section_index, cp_idx,
+                                        ).unwrap_or(anchor_y);
                                     // 칸 문단 기준 어울림 개체의 음수 오프셋은 측정 프레임 위
                                     // 공간을 만들지 않는다 — 일반 표 경로와 같은 계약
                                     // (`cell_wrap_vertical_offset_hu`).
