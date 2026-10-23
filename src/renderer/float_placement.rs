@@ -4003,6 +4003,7 @@ pub(crate) fn stored_terminal_empty_line_gap(
 /// Source coordinates remain separate from the accepted relative placement.
 pub(crate) fn stored_table_column_origin(
     para: &Paragraph,
+    next: Option<&Paragraph>,
     has_host_line: bool,
     placement: Option<&ParagraphFloatPlacement>,
     dpi: f64,
@@ -4013,8 +4014,52 @@ pub(crate) fn stored_table_column_origin(
             .and_then(|placement| placement.stored_host_origin)
             .map(|origin| source.saturating_sub(super::px_to_hwpunit(origin, dpi)))
     } else {
-        Some(source)
+        Some(stored_textless_float_box_origin(para, next, source).unwrap_or(source))
     }
+}
+
+/// [#8149] 단 첫머리의 글 없는 host 문단 기준 자리차지 표: 저장 host 줄은 문단 앞 간격 뒤에
+/// 있지만 표 상자는 문단 위끝(단 원점)에서 바깥 위 여백만큼 내려 시작한다. 저장 사다리가 다음
+/// 줄을 `원점 + 오프셋 + 위 여백 + 높이 + 아래 캡션 + 아래 여백` 에 두면 그 원점이 단의 저장
+/// 원점이다. 첫 줄 vpos 를 원점으로 쓰면 그 쪽의 저장 앵커가 모두 앞 간격만큼 위로 읽혀 저장
+/// 첫 조각 프레임을 버린다(한글문서파일형식 42쪽: 표 270 줄 500, 다음 줄 18828 =
+/// 0 + 566 + 14476 + 1802 + 1984 → 원점 0, 표 273 첫 조각 234.3px).
+fn stored_textless_float_box_origin(
+    para: &Paragraph,
+    next: Option<&Paragraph>,
+    source: i32,
+) -> Option<i32> {
+    let [Control::Table(table)] = para.controls.as_slice() else {
+        return None;
+    };
+    if !textless_single_float_host(para, table)
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        // 쪽을 넘긴 양수 오프셋 표는 오프셋을 버린다(#4068) — 저장 등식이 이 쪽의 상자가 아니다.
+        || table.common.vertical_offset != 0
+        || table.common.height >= 0x8000_0000
+    {
+        return None;
+    }
+    let next = next?;
+    let next_line = next.line_segs.first().filter(|line| {
+        line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+    })?;
+    if next.stored_text_partition_is_dirty() || next.cell_format_vpos_dirty {
+        return None;
+    }
+    let frame = i64::from(table.common.vertical_offset)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.common.height)
+        + stored_empty_host_frame::stored_bottom_caption_hu(table)?
+        + i64::from(table.outer_margin_bottom);
+    let origin = i64::from(next_line.vertical_pos) - frame;
+    // 저장 host 줄은 앞 간격 뒤, 표 위 바깥 여백 띠 안에서 시작한다(표 아래에 놓인 host 줄은
+    // 원점의 증거가 아니다 — issue7198 첫 쪽).
+    ((0..i64::from(source)).contains(&origin)
+        && i64::from(source) < origin + i64::from(table.outer_margin_top))
+    .then(|| i32::try_from(origin).ok())
+    .flatten()
 }
 
 /// A saved restart at the current paragraph's own before-margin is a page
