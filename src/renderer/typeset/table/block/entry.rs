@@ -2034,6 +2034,11 @@ impl TypesetEngine {
                 table,
                 st.current_height,
                 source_host_origin,
+                if placement_para_start_height > 0.0 {
+                    fmt.spacing_before
+                } else {
+                    0.0
+                },
                 ft.effective_height,
                 ft.host_spacing.before,
                 ft.host_spacing.after,

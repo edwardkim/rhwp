@@ -4050,6 +4050,7 @@ impl ParagraphFloatPlacement {
         table: &Table,
         origin: f64,
         stored_origin: Option<f64>,
+        applied_spacing_before: f64,
         table_height: f64,
         before: f64,
         after: f64,
@@ -4061,9 +4062,12 @@ impl ParagraphFloatPlacement {
         if !(empty_table_host_uses_formatted_box(para, table) || stored_origin.is_some()) {
             return None;
         }
+        // [#8149] 저장 원점은 host 줄 위치(문단 앞 간격 뒤)다. 한/글은 문단 기준 표를 그보다
+        // 위인 문단 윗변에 두므로(`from_saved_whole_empty_host` 와 같은 #7620 규칙) 상자는 적용한
+        // 앞 간격을 뺀 자리에서 세운다(한글문서파일형식 13쪽 표 51: 종전 +6.7px).
         Self::empty_host_box(
             table,
-            stored_origin.unwrap_or(origin),
+            stored_origin.map_or(origin, |stored| stored - applied_spacing_before),
             stored_origin,
             table_height,
             before,

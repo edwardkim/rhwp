@@ -54,7 +54,11 @@ pub(in crate::renderer::typeset) fn inspect_entry(
     } else {
         fmt.line_heights[0]
     };
-    let remaining = (available - page.current_height).max(0.0);
+    // [#8149] 첫 줄은 문단 앞 간격 뒤에 놓인다. 분할 루프 예산(`avail_for_lines`)도 그 간격을
+    // 빼고 재는데 진입 검사만 빼지 않으면, 루프가 면제하는 조각 첫 줄(#6568)이 본문 바닥을
+    // 넘어도 이 쪽에 남는다(한글문서파일형식 13쪽 pi=53: 남은 16.43 − 앞 간격 6.67 = 9.76 <
+    // 첫 줄 13.33, 한/글은 다음 쪽). drift 안전 여백은 여기서 빼지 않는다(#6568 주석).
+    let remaining = (available - page.current_height - fmt.spacing_before.max(0.0)).max(0.0);
     // [Task #1086] 단일 단에서도 HWP가 paragraph 내부 page reset 을
     // LINE_SEG(vpos=0) 로 인코딩하는 케이스가 있다(k-water-rfp pi=66).
     // 첫 줄의 HWP 좌표가 본문 안에 있고 다음 줄이 reset 이면, 보수적
