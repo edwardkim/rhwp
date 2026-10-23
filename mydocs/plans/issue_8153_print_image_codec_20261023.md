@@ -126,3 +126,22 @@ PR #6275 통합 `f8a5524ab404ea80c5f2e4f1e5b3694841237a77`이다. 이 수정의 
 기존 후보는 26건 불일치, 수정 후보는 74건 모두 계수가 같았다. 공개 코드만 수정했으며
 이 진단은 실제 문서 Native/fresh WASM·정식 회귀의 완료 증거를 대신하지 않는다.
 후속 Native 집중·정상 대조군과 최적화 fresh WASM을 같은 새 source로 재검증한다.
+
+
+## 실제 Canvas2D 소비자의 JPEG 스캔 계약
+
+`4d7ffc79d8`의 최적화 WASM 빌드는 성공했지만 원본 HWPX 집중 검증은 실패했다.
+273쪽 raw가 56.98405%이고, 면적 표본 이전의 JPEG 디코딩 RGBA가 이미 녹색 줄무늬다.
+동일 ImageData를 JS 소유 배열로 복사해도 결과가 같아 버퍼 소유 가설은 제외했다.
+실제 Native `image` decoder로 같은 payload를 읽어도 같은 첫 픽셀이 관측되므로
+면적 수학이나 WASM만의 문제라고 판정하지 않는다. Skia의 직접 JPEG 디코딩과 구분한다.
+
+공개 인코더의 Huffman 최적화 경로는 컴포넌트별 순차 scan을 사용한다. 원본 그림 두 개만
+같은 DCT의 interleaved JPEG로 바꾼 별도 진단 입력에서 Native RGB는 기존 출력과 모두
+같았고, 같은 최적화 WASM의 273쪽 raw는 99.99663%로 복구됐다. 이 수동 입력 대조를
+원본 문서의 검증 완료로 올리지 않는다. 원본 두 문서는 변경하지 않았다.
+
+공통 Print payload를 baseline interleaved JPEG로 전달해 Native/Canvas/CanvasKit이
+동일 바이트를 소비하게 한다. backend별 색 보정·그림 ID 분기·점수 보정은 하지 않는다.
+양자화·DCT·원본 RGB는 유지한다. 코드 변경 뒤 원본 입력의 Native/fresh WASM 집중 쪽과
+정상 대조군을 재출력한다. 압축 크기 변화는 별도 전달 비용이며 픽셀 차이로 취급하지 않는다.

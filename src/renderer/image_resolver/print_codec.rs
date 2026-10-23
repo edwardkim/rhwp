@@ -128,7 +128,9 @@ fn encode(payload: &ResolvedImagePayload, quality: u8) -> Option<Vec<u8>> {
     let mut encoder = Encoder::new(&mut data, quality);
     encoder.set_sampling_factor(SamplingFactor::F_2_2);
     encoder.set_chroma_subsampling_method(ChromaSubsamplingMethod::Average);
-    encoder.set_optimized_huffman_tables(true);
+    // 컴포넌트별 순차 scan 대신 baseline interleaved JPEG를 공통 전달한다.
+    // 실제 Canvas 이미지 decoder의 순차 scan 색 오류를 피하며 DCT·양자화는 유지한다.
+    encoder.set_optimized_huffman_tables(false);
     encoder
         .encode(rgb.as_raw(), width, height, ColorType::Rgb)
         .ok()?;
