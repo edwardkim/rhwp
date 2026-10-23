@@ -202,3 +202,34 @@ PR 본문·명령 초안은 ignored `output/pr-review/issue8174/pr-preparation/`
 
 검증 전용 worktree의 tracked 변경이 없음을 확인한 뒤 제거해 약 6.4 GiB를 회수했다.
 현재 등록된 worktree는 기본 작업공간 하나이며 공용 target·검증 로그는 보존했다.
+
+## Self-review 보정 — 독립 Skia host 도구
+
+2026-10-23 「self review 로 진행합니다」 지시에 따라 [PR #8181](https://github.com/edwardkim/rhwp/pull/8181)을
+생성하고 검토했다. 첫 후보 `06886117e5d272134a2108a50d5001075b0ae71d`의 독립 소비 경로에서
+`tools/skia-surface-probe`의 오래된 root patch가 새 fork 이름과 충돌하는 결함을 발견했다.
+
+- 선행 근거: #8097의 host Surface 보완을 통합한 [PR #8135](https://github.com/edwardkim/rhwp/pull/8135),
+  실제 merge `a6e9d18fc1061318055b4eb348daec201427ea03`과
+  [기존 검토의 software Vulkan 증거](../pr/archives/pr_8097_review.md)를 확인했다.
+  당시 독립 workspace의 patch는 root patch가 path 소비자에게 전파되지 않는 구조를 보완했다.
+- 기준 devel `def947c2149df5bc812d801e6e79be19a403b4d1`의 같은 도구는
+  `cargo metadata --locked --offline`에 exit 0이었다. 첫 후보에서는 patch가 `svg2pdf`라는
+  package를 찾지만 해당 경로의 실제 이름이 `rhwp-svg2pdf`여서 exit 101로 실패했다.
+- 이제 rhwp가 fork를 직접 의존하므로 도구의 중복 patch를 제거했다. Cargo가 생성한 도구 lock의
+  변경은 `svg2pdf 0.13.0` → `rhwp-svg2pdf 0.13.0-rhwp.1`뿐이며 다른 package 버전은 같았다.
+- 수정 뒤 같은 `cargo metadata --locked --offline`과 도구의 fmt 검사가 통과했다.
+  `CARGO_TARGET_DIR=/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=8`,
+  `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json`으로
+  `cargo run --locked --manifest-path tools/skia-surface-probe/Cargo.toml`을 실제 실행했다.
+  llvmpipe의 software Vulkan에서 내부색·host state 복원·잘못된 인자의 pixel 보존 3개 계약을
+  모두 통과했고 `status=passed`, `hardwareAccelerationVerified=false`였다.
+
+처음 검토에서 독립 도구의 patch 확인이 누락됐다. 이번 보정은 도구 manifest·lock에 한정하며
+Rust source·기존 회귀·root lock·실제 조판과 렌더링 로직은 변경하지 않았다. 본체 패키지의
+전 파일 Git blob이 검증본과 같으므로 기존 전체 회귀·Rust lint·registry 소비 결과를 재사용한다.
+추가 검증은 실제 결함이 발생한 독립 도구 경로를 대상으로 했고, 새 head의 GitHub CI는 별도로
+확인한다. 이전 후보의 CI 성공으로 새 head를 통과 처리하지 않는다.
+
+수정 전후 명령·종료 코드·tool lock 대조·실제 Surface 결과는 ignored
+`output/pr-review/issue8174/pr-preparation/self-review/`에 보관했다.

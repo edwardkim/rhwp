@@ -1459,6 +1459,7 @@ dependencies = [
  "rhwp-contracts",
  "rhwp-ooxml-chart",
  "rhwp-password-crypto",
+ "rhwp-svg2pdf",
  "roxmltree 0.21.1",
  "rustybuzz",
  "serde",
@@ -1469,7 +1470,6 @@ dependencies = [
  "snafu",
  "strum",
  "subsetter",
- "svg2pdf",
  "svgtypes 0.16.1",
  "ttf-parser",
  "unicode-properties",
@@ -1524,6 +1524,24 @@ dependencies = [
  "rhwp",
  "serde_json",
  "skia-safe",
+]
+
+[[package]]
+name = "rhwp-svg2pdf"
+version = "0.13.0-rhwp.1"
+dependencies = [
+ "fontdb",
+ "image",
+ "log",
+ "miniz_oxide 0.8.9",
+ "once_cell",
+ "pdf-writer",
+ "resvg 0.45.1",
+ "siphasher",
+ "subsetter",
+ "tiny-skia 0.11.4",
+ "ttf-parser",
+ "usvg 0.45.1",
 ]
 
 [[package]]
@@ -1905,24 +1923,6 @@ name = "subtle"
 version = "2.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
-
-[[package]]
-name = "svg2pdf"
-version = "0.13.0"
-dependencies = [
- "fontdb",
- "image",
- "log",
- "miniz_oxide 0.8.9",
- "once_cell",
- "pdf-writer",
- "resvg 0.45.1",
- "siphasher",
- "subsetter",
- "tiny-skia 0.11.4",
- "ttf-parser",
- "usvg 0.45.1",
-]
 
 [[package]]
 name = "svgtypes"

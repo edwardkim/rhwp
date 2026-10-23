@@ -15,6 +15,4 @@ skia-safe = { version = "=0.153.3", default-features = false, features = ["binar
 ash = { version = "=0.38.0", default-features = false, features = ["loaded", "std"] }
 serde_json = "1.0"
 
-# Cargo patches belong to the workspace root; preserve rhwp's existing patch.
-[patch.crates-io]
-svg2pdf = { path = "../../vendor/svg2pdf" }
+# rhwp가 version을 병기한 보정 fork를 직접 의존하므로 별도 root patch가 필요하지 않다.
