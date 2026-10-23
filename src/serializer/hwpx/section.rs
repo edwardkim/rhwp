@@ -522,6 +522,8 @@ pub fn write_section(
     index: usize,
     ctx: &mut SerializeContext,
 ) -> Result<Vec<u8>, SerializeError> {
+    let section = super::super::column_sizes::for_export(section);
+    let section = section.as_ref();
     let mut vert_cursor: u32 = 0;
 
     let first_para = section.paragraphs.first();

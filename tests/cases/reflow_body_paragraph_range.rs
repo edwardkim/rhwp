@@ -4,7 +4,7 @@
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
-use rhwp::model::page::ColumnDef;
+use rhwp::model::page::{ColumnDef, PageDef};
 use rhwp::model::paragraph::ColumnBreakType;
 use rhwp::renderer::page_layout::PageLayoutInfo;
 use serde_json::Value;
@@ -207,6 +207,220 @@ fn unequal_columns_use_the_paragraphs_current_column_and_preserve_outside_lines(
     }
     assert_body_bounds(&core);
     assert!(caret(&core, 50)["x"].as_f64().unwrap() > caret(&core, 40)["x"].as_f64().unwrap());
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let mut reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        let definition = first_definition(&mut reopened);
+        assert!(definition.proportional_widths);
+        assert_eq!(definition.widths, [11560, 19460]);
+        assert_eq!(definition.gaps, [1748, 0]);
+        assert_eq!(reopened.page_count(), core.page_count());
+        for paragraph in [40, 50, 79] {
+            for axis in ["x", "y"] {
+                let before = caret(&core, paragraph)[axis].as_f64().unwrap();
+                let after = caret(&reopened, paragraph)[axis].as_f64().unwrap();
+                assert!(
+                    (before - after).abs() < 0.02,
+                    "{paragraph} {axis}: {before} → {after}"
+                );
+            }
+        }
+    }
+    assert!(!first_definition(&mut core).proportional_widths);
+    assert_eq!(first_definition(&mut core).widths, [15000, 25252]);
+}
+
+fn absolute_columns() -> ColumnDef {
+    ColumnDef {
+        column_count: 2,
+        widths: vec![15000, 25252],
+        gaps: vec![2268],
+        ..Default::default()
+    }
+}
+
+fn serialized(core: &DocumentCore) -> [Vec<u8>; 2] {
+    [
+        rhwp::serializer::serialize_hwp(core.document()).unwrap(),
+        rhwp::serializer::serialize_hwpx(core.document()).unwrap(),
+    ]
+}
+
+fn set_page_definition(core: &mut DocumentCore, page: PageDef) {
+    let section = &mut core.document_mut().sections[0];
+    section.section_def.page_def = page.clone();
+    for control in &mut section.paragraphs[0].controls {
+        if let Control::SectionDef(definition) = control {
+            definition.page_def = page.clone();
+        }
+    }
+}
+
+#[test]
+fn partial_body_and_unrepresentable_absolute_columns_keep_their_wire_values() {
+    let input = source();
+    for definition in [
+        ColumnDef {
+            widths: vec![200, 300],
+            gaps: vec![40],
+            ..absolute_columns()
+        },
+        ColumnDef {
+            widths: vec![15000, 25252, 1],
+            ..absolute_columns()
+        },
+        ColumnDef {
+            gaps: vec![2268, 0, 1],
+            ..absolute_columns()
+        },
+        ColumnDef {
+            column_count: 4,
+            widths: vec![1, 32767, 32767, 32767],
+            gaps: vec![],
+            ..absolute_columns()
+        },
+        ColumnDef {
+            widths: vec![0, 25252],
+            ..absolute_columns()
+        },
+        ColumnDef {
+            gaps: vec![-1],
+            ..absolute_columns()
+        },
+    ] {
+        let mut core = DocumentCore::from_bytes(&input).unwrap();
+        if definition.widths != [200, 300] {
+            let total: i32 = definition
+                .widths
+                .iter()
+                .chain(&definition.gaps)
+                .map(|&value| i32::from(value))
+                .sum();
+            let paper_width = (total + 17008) as u32;
+            let mut page = core.document().sections[0].section_def.page_def.clone();
+            page.width = paper_width;
+            set_page_definition(&mut core, page);
+        }
+        *first_definition(&mut core) = definition;
+        let absolute = serialized(&core);
+        first_definition(&mut core).proportional_widths = true;
+        assert_eq!(
+            serialized(&core),
+            absolute,
+            "지원하지 않는 절대 크기는 재해석하지 않는다"
+        );
+    }
+}
+
+#[test]
+fn invalid_page_definitions_do_not_turn_render_fallbacks_into_stored_proportions() {
+    let input = source();
+    for (page, widths) in [
+        (
+            PageDef {
+                height: 84188,
+                ..Default::default()
+            },
+            vec![29764, 29764],
+        ),
+        (
+            PageDef {
+                width: 59528,
+                ..Default::default()
+            },
+            vec![29764, 29764],
+        ),
+        (
+            PageDef {
+                width: 60000,
+                height: 84188,
+                margin_left: 30000,
+                margin_right: 30000,
+                ..Default::default()
+            },
+            vec![27000, 27000],
+        ),
+    ] {
+        let mut core = DocumentCore::from_bytes(&input).unwrap();
+        set_page_definition(&mut core, page);
+        *first_definition(&mut core) = ColumnDef {
+            widths,
+            gaps: vec![],
+            ..absolute_columns()
+        };
+        let absolute = serialized(&core);
+        first_definition(&mut core).proportional_widths = true;
+        assert_eq!(serialized(&core), absolute);
+    }
+}
+
+#[test]
+fn later_page_definitions_supply_the_body_width_in_both_control_orders() {
+    let input = source();
+    for columns_first in [false, true] {
+        for (widths, expected) in [
+            (vec![15000, 25252], vec![15000, 25252]),
+            (vec![20000, 27732], vec![13107, 18174]),
+        ] {
+            let mut core = DocumentCore::from_bytes(&input).unwrap();
+            let mut next = core.document().sections[0].section_def.clone();
+            next.page_def.width += 7480;
+            let paragraph = &mut core.document_mut().sections[0].paragraphs[40];
+            paragraph.column_type = ColumnBreakType::Section;
+            paragraph.raw_break_type = 0x01;
+            paragraph.controls = vec![
+                Control::SectionDef(Box::new(next)),
+                Control::ColumnDef(ColumnDef {
+                    widths: widths.clone(),
+                    ..absolute_columns()
+                }),
+            ];
+            if columns_first {
+                paragraph.controls.swap(0, 1);
+            }
+            paragraph.align_ctrl_data_records();
+            for offset in &mut paragraph.char_offsets {
+                *offset += 16;
+            }
+            for shape in paragraph
+                .char_shapes
+                .iter_mut()
+                .filter(|shape| shape.start_pos > 0)
+            {
+                shape.start_pos += 16;
+            }
+            paragraph.char_count += 16;
+            for bytes in serialized(&core) {
+                let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+                let columns = reopened
+                    .document()
+                    .sections
+                    .iter()
+                    .flat_map(|section| &section.paragraphs)
+                    .flat_map(|paragraph| &paragraph.controls)
+                    .find_map(|control| match control {
+                        Control::ColumnDef(definition) if !definition.widths.is_empty() => {
+                            Some(definition)
+                        }
+                        _ => None,
+                    })
+                    .unwrap();
+                assert_eq!(columns.widths, expected, "단 정의 우선={columns_first}");
+            }
+            let live = core.document().sections[0].paragraphs[40]
+                .controls
+                .iter()
+                .find_map(|control| match control {
+                    Control::ColumnDef(definition) => Some(definition),
+                    _ => None,
+                })
+                .unwrap();
+            assert_eq!(live.widths, widths);
+            assert!(!live.proportional_widths);
+        }
+    }
 }
 
 #[test]
