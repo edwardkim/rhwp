@@ -455,6 +455,9 @@ impl TypesetEngine {
                 table,
                 budget_para_start_height,
                 st.current_height,
+                st.current_items
+                    .iter()
+                    .any(|item| item.para_index() == para_idx),
             )
         } else {
             st.current_height
@@ -909,6 +912,31 @@ impl TypesetEngine {
                     occupied_bottom: top,
                 }
             })
+        });
+        // 빈 호스트의 문단 기준 오프셋 표(#1860)는 첫 조각 예산을 `문단 시작 + 앞 여백 +
+        // 오프셋` 아래로 잡는다. paint 도 같은 원점에서 그려야 컷과 괘선이 어긋나지 않는다 —
+        // 전달하지 않으면 앞 여백(바깥 위 여백)만큼 위에 그려진다(#4599, 1790387 20쪽).
+        // 호스트 프레임을 떠나 이월된 조각은 문단 원점이 그 쪽에 없으므로 대상이 아니다.
+        let on_host_frame = prepared.host_frame
+            == (
+                st.pages.len(),
+                st.current_column,
+                st.current_zone_y_offset.to_bits(),
+            );
+        fragment_placement = fragment_placement.or_else(|| {
+            (is_empty_host_column_float && on_host_frame && cursor_row == 0 && start_cut.is_empty())
+                .then(|| {
+                    let top = fragment_flow_origin + host_before_overhead + vert_offset_overhead;
+                    crate::renderer::float_placement::ParagraphFloatPlacement {
+                        flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                        anchor_y: fragment_flow_origin,
+                        stored_host_origin: None,
+                        stored_successor_line_origin: None,
+                        table_left: None,
+                        table_top: top,
+                        occupied_bottom: top,
+                    }
+                })
         });
         // 저장 줄 없는 표 전용 호스트는 계산 흐름 원점을 소유한다.
         // 각 조각 예산이 예약한 앞 여백과 오프셋을 paint에도 같은 원점으로 전달한다.
