@@ -43,7 +43,7 @@ fn single_flow_table(para: &Paragraph) -> bool {
 /// (한글문서파일형식 39쪽 표 235: 저장 델타 10545 = 위 566 + 표 6193 + 간격 852 + 줄 950 +
 /// 아래 1984). 저장 줄이 모두 한컴이 쓴 줄일 때만 그 높이를 읽는다. 위·왼쪽·오른쪽 캡션은
 /// 표 본체 원점이나 폭을 바꾸는 다른 기하라 이 상자로 대체하지 않는다.
-fn stored_bottom_caption_hu(table: &Table) -> Option<i64> {
+pub(crate) fn stored_bottom_caption_hu(table: &Table) -> Option<i64> {
     let Some(caption) = table.caption.as_ref() else {
         return Some(0);
     };
