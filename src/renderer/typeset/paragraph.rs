@@ -47,6 +47,28 @@ use crate::renderer::style_resolver::ResolvedStyleSet;
 use metrics::FormattedParagraph;
 use stored_lines::{next_boundary_reverts_spacing_trim, spacing_trim_restorable};
 
+/// 다단 fit은 단별 저장 줄 축에서 후행 간격을 별도로 계상한다.
+/// 전역 본문 축이 없다는 이유만으로 그 간격을 다시 더하면 단이 조기에 닫힌다.
+/// 실제 dirty 사다리·빈 float lane·후속 스냅 철회는 여전히 복원 불가로 소비한다.
+fn spacing_restoration_unavailable(
+    st: &TypesetState,
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    para_idx: usize,
+    dpi: f64,
+) -> bool {
+    st.vpos_ladder_dirty
+        || (st.col_count == 1 && st.vpos_page_base.or(st.vpos_lazy_base).is_none())
+        || !spacing_trim_restorable(paragraphs, para_idx)
+        || next_boundary_reverts_spacing_trim(
+            st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
+            paragraphs,
+            styles,
+            para_idx,
+            dpi,
+        )
+}
+
 fn record_stored_column_top_spacing(
     st: &mut TypesetState,
     paragraphs: &[Paragraph],
@@ -351,16 +373,7 @@ pub(super) fn place_fitted_paragraph(
                 para,
                 st.col_count,
                 trim_spacing_before_for_flow,
-                st.vpos_ladder_dirty
-                    || st.vpos_page_base.or(st.vpos_lazy_base).is_none()
-                    || !spacing_trim_restorable(paragraphs, para_idx)
-                    || next_boundary_reverts_spacing_trim(
-                        st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
-                        paragraphs,
-                        styles,
-                        para_idx,
-                        dpi,
-                    ),
+                spacing_restoration_unavailable(st, paragraphs, styles, para_idx, dpi),
                 st.vpos_page_base.is_none(),
             )
         });
@@ -392,16 +405,7 @@ pub(super) fn place_fitted_paragraph(
                     para,
                     st.col_count,
                     trim_spacing_before_for_flow,
-                    st.vpos_ladder_dirty
-                        || st.vpos_page_base.or(st.vpos_lazy_base).is_none()
-                        || !spacing_trim_restorable(paragraphs, para_idx)
-                        || next_boundary_reverts_spacing_trim(
-                            st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
-                            paragraphs,
-                            styles,
-                            para_idx,
-                            dpi,
-                        ),
+                    spacing_restoration_unavailable(st, paragraphs, styles, para_idx, dpi),
                     st.vpos_page_base.is_none(),
                 )
         };
@@ -522,16 +526,7 @@ pub(super) fn try_place_overflow_paragraph(
                     para,
                     st.col_count,
                     trim_spacing_before_for_flow,
-                    st.vpos_ladder_dirty
-                        || st.vpos_page_base.or(st.vpos_lazy_base).is_none()
-                        || !spacing_trim_restorable(paragraphs, para_idx)
-                        || next_boundary_reverts_spacing_trim(
-                            st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
-                            paragraphs,
-                            styles,
-                            para_idx,
-                            dpi,
-                        ),
+                    spacing_restoration_unavailable(st, paragraphs, styles, para_idx, dpi),
                     false,
                 )
             },
@@ -634,16 +629,7 @@ pub(super) fn place_after_failed_fit(
             para,
             st.col_count,
             trim_spacing_before_for_flow,
-            st.vpos_ladder_dirty
-                || st.vpos_page_base.or(st.vpos_lazy_base).is_none()
-                || !spacing_trim_restorable(paragraphs, para_idx)
-                || next_boundary_reverts_spacing_trim(
-                    st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
-                    paragraphs,
-                    styles,
-                    para_idx,
-                    dpi,
-                ),
+            spacing_restoration_unavailable(st, paragraphs, styles, para_idx, dpi),
             false,
         );
         let trimmed_spacing_before = trimmed_sb_gate
@@ -651,16 +637,7 @@ pub(super) fn place_after_failed_fit(
                 para,
                 st.col_count,
                 trim_spacing_before_for_flow,
-                st.vpos_ladder_dirty
-                    || st.vpos_page_base.or(st.vpos_lazy_base).is_none()
-                    || !spacing_trim_restorable(paragraphs, para_idx)
-                    || next_boundary_reverts_spacing_trim(
-                        st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
-                        paragraphs,
-                        styles,
-                        para_idx,
-                        dpi,
-                    ),
+                spacing_restoration_unavailable(st, paragraphs, styles, para_idx, dpi),
                 false,
             );
         st.apply_full_paragraph_flow(
