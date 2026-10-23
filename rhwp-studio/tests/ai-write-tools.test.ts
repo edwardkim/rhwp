@@ -20,6 +20,13 @@ function fakeDoc() {
     { fieldId: 13, name: '연락처', value: '' },
   ];
   const calls: string[] = [];
+  /** 문단별 머리 모양(개요·번호·글머리표). */
+  const heads: string[] = body.map(() => 'None');
+  // A4 세로, 여백 위 20 아래 15 좌우 18mm, 머리말·꼬리말 15mm (HWPUNIT)
+  const pageDef = {
+    width: 59528, height: 84188, marginLeft: 5102, marginRight: 5102, marginTop: 5669, marginBottom: 4252,
+    marginHeader: 4252, marginFooter: 4252, marginGutter: 0, landscape: false, binding: 0,
+  };
   const find = (q: string) => {
     const hits: unknown[] = [];
     body.forEach((text, para) => {
@@ -58,6 +65,7 @@ function fakeDoc() {
     getParagraphCount: () => body.length,
     splitParagraph: (_s, p, o) => {
       calls.push(`split ${p} ${o}`);
+      heads.splice(p + 1, 0, heads[p]); // 나눈 문단은 앞 문단의 머리 모양을 이어받는다(Enter 와 같다)
       body.splice(p + 1, 0, body[p].slice(o));
       body[p] = body[p].slice(0, o);
       return JSON.stringify({ ok: true });
@@ -83,7 +91,8 @@ function fakeDoc() {
     ensureDefaultBullet: () => 3,
     ensureDefaultNumbering: () => 4,
     getStyleList: () => JSON.stringify([{ id: 0, name: '바탕글', englishName: 'Normal' }, { id: 2, name: '개요 1', englishName: 'Outline 1' }]),
-    applyStyle: (_s, p, id) => { calls.push(`style ${p} ${id}`); return JSON.stringify({ ok: true }); },
+    applyStyle: (_s, p, id) => { calls.push(`style ${p} ${id}`); if (id === 0) heads[p] = 'None'; return JSON.stringify({ ok: true }); },
+    getParaPropertiesAt: (_s, p) => JSON.stringify({ headType: heads[p] ?? 'None' }),
     // 표: 2행 2열, 칸 1 = (0,1) 이 「사 업 …」 칸
     getTableDimensions: () => JSON.stringify({ rowCount: 2, colCount: 2, cellCount: 4 }),
     getCellInfo: (_s, _pp, _c, ci) => JSON.stringify({ row: Math.floor(ci / 2), col: ci % 2, rowSpan: 1, colSpan: 1 }),
@@ -99,6 +108,10 @@ function fakeDoc() {
     deleteTextInHeaderFooter: (_s, h, _a, _p, o, n) => { calls.push(`hf-delete ${h} ${o} ${n}`); return JSON.stringify({ ok: true }); },
     insertFootnote: (_s, p, o) => { calls.push(`fn ${p} ${o}`); return JSON.stringify({ ok: true, paraIdx: p, controlIdx: 5 }); },
     insertTextInFootnote: (_s, p, c, _fp, _o, text) => { calls.push(`fn-text ${p} ${c} ${text}`); return JSON.stringify({ ok: true }); },
+    replaceAll: (q, text, cs) => { calls.push(`replace-all ${q} ${text} ${cs}`); return JSON.stringify({ ok: true, count: 2 }); },
+    getPageDef: () => JSON.stringify(pageDef),
+    setPageDef: (sec, json) => { calls.push(`page ${sec} ${json}`); Object.assign(pageDef, JSON.parse(json)); return JSON.stringify({ ok: true }); },
+    setCellProperties: (_s, _pp, _c, ci, json) => { calls.push(`cell-props ${ci} ${json}`); return JSON.stringify({ ok: true }); },
     setFieldValue: (id, value) => {
       calls.push(`field ${id} ${value}`);
       fields.find((f) => f.fieldId === id)!.value = value;
@@ -117,7 +130,7 @@ function fakeDoc() {
     },
   };
   return {
-    host, body, cell, fields, calls,
+    host, body, cell, fields, calls, heads,
     transactions: () => transactions,
     cancelBlank: () => { blankAnswer = false; },
   };
@@ -130,7 +143,7 @@ test('쓰기 도구 목록과 이름 판정', () => {
   assert.deepEqual(WRITE_TOOL_DEFS.map((t) => t.name), [
     'replace_text', 'fill_field', 'insert_paragraphs', 'format_text', 'format_paragraph', 'insert_table',
     'delete_paragraph', 'set_list', 'apply_style', 'edit_table', 'set_cell_text', 'set_header_footer', 'insert_footnote',
-    'create_document',
+    'replace_all', 'format_cell', 'page_setup', 'create_document',
   ]);
   assert.ok(isWriteTool('replace_text') && isWriteTool('fill_field') && !isWriteTool('read_page_text'));
 });
@@ -265,7 +278,7 @@ test('문단 모양: 정렬과 줄 간격(Percent)을 찾은 글의 문단에', 
   assert.deepEqual([proposal.location.paragraph, proposal.inserted], [1, '과업기간 X월 20일']);
   proposal.apply();
   assert.deepEqual(d.calls, ['para 1 {"alignment":"center","lineSpacing":200,"lineSpacingType":"Percent"}']);
-  assert.throws(() => prepareWrite(d.host, call('format_paragraph', { find: '과업기간' })), refused(/alignment or lineSpacing/));
+  assert.throws(() => prepareWrite(d.host, call('format_paragraph', { find: '과업기간' })), refused(/at least one paragraph property/));
 });
 
 test('표 만들기: 문서 끝 빈 문단 자리에 만들고 칸을 행 우선으로 채운다', async () => {
@@ -383,4 +396,76 @@ test('글자 모양은 find 가 곧 범위라, 여러 곳이면 더 긴 글이 �
     refused(/Keep find exactly the text to change and pass occurrence \(1-3\)/));
   assert.throws(() => prepareWrite(d.host, call('replace_text', { find: '업', replace: 'x' })), refused(/Use a longer find text/),
     '바꾸기는 긴 글로 골라도 replace 가 그만큼 쓰므로 기존 안내 유지');
+});
+
+test('문단 모양 상세: 대화상자와 같은 단위(여백·들여쓰기 pt×200, 문단 간격 pt×100, 내어쓰기는 음수)', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('format_paragraph', {
+    find: '과업기간', leftMargin: 10, rightMargin: 5, firstLineIndent: -12, spaceBefore: 6, spaceAfter: 3.5,
+  })).apply();
+  assert.deepEqual(d.calls, ['para 1 {"marginLeft":2000,"marginRight":1000,"indent":-2400,"spacingBefore":600,"spacingAfter":350}']);
+});
+
+test('모두 바꾸기: 제안 때 셈한 개수가 그대로일 때만 한 번에 바꾼다', () => {
+  const d = fakeDoc();
+  const proposal = prepareWrite(d.host, call('replace_all', { find: '업', replace: '엽' }));
+  assert.deepEqual(proposal.format, { count: 3 });
+  proposal.apply();
+  assert.deepEqual(d.calls, ['replace-all 업 엽 true']);
+  assert.throws(() => prepareWrite(d.host, call('replace_all', { find: '없는 글', replace: 'x' })), refused(/not found/));
+  const stale = prepareWrite(d.host, call('replace_all', { find: '업', replace: '엽' }));
+  d.body[0] += ' 업';
+  assert.throws(() => stale.apply(), refused(/number of matches changed \(3 → 4\)/));
+});
+
+test('칸 속성: 범위(칸·줄·열·표)의 칸마다 대화상자와 같은 속성으로', () => {
+  const d = fakeDoc();
+  // 기준 칸 = 칸 1 (0행 1열), 2×2 표
+  prepareWrite(d.host, call('format_cell', { find: '수 행', backgroundColor: '#FFEEAA', verticalAlign: 'middle' })).apply();
+  const row = prepareWrite(d.host, call('format_cell', { find: '수 행', scope: 'row', backgroundColor: 'none' }));
+  assert.deepEqual(row.format, { scope: 'row', cells: 2, backgroundColor: 'none' });
+  row.apply();
+  prepareWrite(d.host, call('format_cell', { find: '수 행', scope: 'column', verticalAlign: 'bottom' })).apply();
+  assert.deepEqual(d.calls, [
+    'cell-props 1 {"fillType":"solid","fillColor":"#ffeeaa","verticalAlign":1}',
+    'cell-props 0 {"fillType":"none"}', 'cell-props 1 {"fillType":"none"}',
+    'cell-props 1 {"verticalAlign":2}', 'cell-props 3 {"verticalAlign":2}',
+  ]);
+  assert.throws(() => prepareWrite(d.host, call('format_cell', { find: '수 행' })), refused(/backgroundColor or verticalAlign/));
+  assert.throws(() => prepareWrite(d.host, call('format_cell', { find: '수 행', backgroundColor: 'red00' })), refused(/#RRGGBB/));
+});
+
+test('쪽 설정: 용지는 세로 기준 크기로, 방향은 landscape, 여백은 mm→HWPUNIT, 본문이 너무 좁으면 거절', () => {
+  const d = fakeDoc();
+  const proposal = prepareWrite(d.host, call('page_setup', { paper: 'B5', orientation: 'landscape', marginLeft: 25 }));
+  assert.deepEqual(proposal.format, { paper: 'B5', orientation: 'landscape', marginLeft: 25 });
+  proposal.apply();
+  const sent = JSON.parse(d.calls[0].slice('page 0 '.length));
+  assert.deepEqual([sent.width, sent.height, sent.landscape, sent.marginLeft, sent.marginRight], [51591, 72850, true, 7087, 5102]);
+  assert.equal(sent.marginHeader, 4252, '바꾸지 않은 값은 그대로');
+  // A4 세로(210mm)에 좌우 100mm 여백이면 본문 폭이 10mm — 새 문서에서 확인한다.
+  assert.throws(() => prepareWrite(fakeDoc().host, call('page_setup', { marginLeft: 100, marginRight: 100 })), refused(/less than 30 mm/));
+  assert.throws(() => prepareWrite(d.host, call('page_setup', {})), refused(/Set paper/));
+});
+
+test('문단 추가의 style 은 새 문단에만, 이름으로 고른다', () => {
+  const d = fakeDoc();
+  const proposal = prepareWrite(d.host, call('insert_paragraphs', { position: 'after', after: '홈페이지', paragraphs: ['가', '나'], style: 'Normal' }));
+  assert.deepEqual(proposal.format, { style: '바탕글' });
+  proposal.apply();
+  assert.deepEqual(d.calls.filter((c) => c.startsWith('style')), ['style 1 0', 'style 2 0']);
+  assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'end', paragraphs: ['x'], style: '없는 스타일' })),
+    refused(/Available: 바탕글, 개요 1/));
+});
+
+test('표 자리가 개요·번호 모양을 물려받았으면 바탕글로 되돌린 뒤 표를 만든다', () => {
+  const plain = fakeDoc();
+  prepareWrite(plain.host, call('insert_table', { position: 'after', after: '홈페이지', columns: 1, cells: ['a'] })).apply();
+  assert.deepEqual(plain.calls.slice(0, 2), ['split 0 14', 'table 1 1x1'], '보통 문단 뒤면 그대로');
+
+  const outlined = fakeDoc();
+  outlined.heads[0] = 'Outline';
+  prepareWrite(outlined.host, call('insert_table', { position: 'after', after: '홈페이지', columns: 1, cells: ['a'] })).apply();
+  assert.deepEqual(outlined.calls.slice(0, 3), ['split 0 14', 'style 1 0', 'table 1 1x1'], '개요 뒤면 표 자리를 바탕글로');
+  assert.equal(outlined.heads[0], 'Outline', '앞 개요 문단은 그대로');
 });

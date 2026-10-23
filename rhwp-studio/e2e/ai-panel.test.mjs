@@ -20,6 +20,7 @@
  * 12. 글자·문단 서식과 표 — 한 응답의 여러 변경을 차례로 승인, undo 는 변경마다 한 단계
  * 13. 「확인 없이 바로 적용」 — 목록·스타일·머리말·각주·문단 지우기가 묻지 않고 적용
  * 14. 명령 통로 — 목록, 글 선택, 허용 명령 실행(위 첨자·쪽 나누기), 허용 밖 명령 거절
+ * 15. 대화상자 기능 — 모두 바꾸기, 문단 여백·간격, 칸 배경(줄 범위), 가로 용지
  *
  * 계획: mydocs/plans/rhwp_studio_ai_chat_p0_impl.md §5.2
  */
@@ -131,8 +132,8 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(requests.length === 2, `TC1: 요청 2회 (${requests.length})`);
   const [first, second] = requests;
   assert(first.body.model === 'claude-opus-5-5' && first.body.stream === true, 'TC1: 모델·스트리밍');
-  assert(first.body.tools.length === 24 && first.body.tools.filter((t) => t.strict === true).length === 15,
-    'TC1: 도구 24개, strict 는 쓰기 15개(상한 20)');
+  assert(first.body.tools.length === 27 && first.body.tools.filter((t) => t.strict === true).length === 15,
+    'TC1: 도구 27개, strict 15개(상한 20, 선택 매개변수 상한 24 안)');
   assert(first.body.system[0].text.includes('document_content'), 'TC1: 시스템에 문서 경계 규칙');
   assert(first.body.fallbacks === 'default'
     && (first.headers['anthropic-beta'] ?? '').includes('server-side-fallback-2026-07-01'), 'TC1: 서버 대체');
@@ -389,6 +390,51 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(after14.sup === true && !after14.plain, `TC14: 선택한 글만 위 첨자 (${JSON.stringify(after14)})`);
   assert(after14.pages === pagesBefore + 1, `TC14: 쪽 나누기로 쪽 수 ${pagesBefore} → ${after14.pages}`);
   assert(after14.agenda === '안건: AI 도우미 시연', `TC14: 선택해 둔 글은 쪽 나누기로 지워지지 않음 (${after14.agenda})`);
+
+  // ── TC15: 대화상자 기능 — 모두 바꾸기·문단 여백·칸 배경·쪽 설정(자동 적용) ──
+  queue.push({ body: sse([
+    { type: 'tool_use', id: 'toolu_d1', name: 'replace_all', input: { find: 'AI 도우미', replace: 'AI 비서' } },
+    { type: 'tool_use', id: 'toolu_d2', name: 'format_paragraph', input: { find: '일시', leftMargin: 20, spaceBefore: 10 } },
+    { type: 'tool_use', id: 'toolu_d3', name: 'insert_table', input: { position: 'end', columns: 2, cells: ['항목', '값', 'A', '1'] } },
+  ], 'tool_use') });
+  queue.push({ body: sse([
+    { type: 'tool_use', id: 'toolu_d4', name: 'format_cell', input: { find: '항목', scope: 'row', backgroundColor: '#DDEEFF' } },
+    { type: 'tool_use', id: 'toolu_d5', name: 'page_setup', input: { orientation: 'landscape' } },
+  ], 'tool_use') });
+  queue.push({ body: sse([{ type: 'text', text: '바꿨습니다.' }], 'end_turn') });
+  await page.type('.ai-chat-input', '이름을 바꾸고, 일시 문단 들여서, 표 머리 줄 색칠, 가로 용지로');
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy, { timeout: 20000 });
+  const dialogLike = await page.evaluate(() => {
+    const w = window.__wasm;
+    const raw = w.doc;
+    const n = w.getParagraphCount(0);
+    const texts = Array.from({ length: n }, (_, i) => w.getTextRange(0, i, 0, w.getParagraphLength(0, i)));
+    const p = texts.findIndex((text) => text.includes('일시'));
+    const para = w.getParaPropertiesAt(0, p);
+    const cell = w.searchAllText('항목', true, true)[0].cellContext;
+    const fills = [0, 1, 2].map((i) => JSON.parse(raw.getCellProperties(0, cell.parentPara, cell.ctrlIdx, i)).fillColor ?? null);
+    return {
+      renamed: texts.some((text) => text.includes('AI 비서')) && !texts.some((text) => text.includes('AI 도우미')),
+      marginLeft: para.marginLeft, spacingBefore: para.spacingBefore,
+      fills, landscape: JSON.parse(raw.getPageDef(0)).landscape,
+      beforeCell: (() => {
+        const runs = [];
+        for (let pg = 0; pg < w.pageCount; pg += 1) runs.push(...JSON.parse(raw.getPageTextLayout(pg)).runs.map((r) => r.text.trim()).filter(Boolean));
+        return runs[runs.indexOf('항목') - 1] ?? null;
+      })(),
+      states: [...document.querySelectorAll('.ai-change-card')].slice(-5).map((c) => c.dataset.state),
+    };
+  });
+  assert(dialogLike.states.join() === 'applied,applied,applied,applied,applied', `TC15: 다섯 변경 적용 (${dialogLike.states})`);
+  assert(dialogLike.renamed, 'TC15: 모두 바꾸기');
+  assert(Math.abs(dialogLike.marginLeft - 26.7) < 0.2 && Math.abs(dialogLike.spacingBefore - 13.3) < 0.2,
+    `TC15: 문단 여백 20pt·위 10pt (${dialogLike.marginLeft}px, ${dialogLike.spacingBefore}px)`);
+  assert(dialogLike.fills[0] === '#ddeeff' && dialogLike.fills[1] === '#ddeeff' && dialogLike.fills[2] !== '#ddeeff',
+    `TC15: 머리 줄 두 칸만 배경 (${dialogLike.fills})`);
+  assert(dialogLike.landscape === true, 'TC15: 가로 용지');
+  assert(!/^\d+\.$/.test(dialogLike.beforeCell ?? ''), `TC15: 개요 문단 뒤 표 칸에 번호가 붙지 않음 (앞 조각 ${dialogLike.beforeCell})`);
+  await screenshot(page, 'ai-panel-dialog-features');
 
   // ── TC4: 입력란 Ctrl+Z 격리 ───────────────────────────
   await createNewDocument(page);
