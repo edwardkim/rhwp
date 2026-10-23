@@ -33,6 +33,8 @@ import {
 
 /** 요청 하나에 strict 로 보낼 수 있는 도구 수 상한(초과하면 400 「Too many strict tools」). */
 export const CLAUDE_MAX_STRICT_TOOLS = 20;
+/** strict 도구 전체의 선택(optional) 매개변수 합 상한(초과하면 400 「too many optional parameters」). */
+export const CLAUDE_MAX_STRICT_OPTIONAL_PARAMS = 24;
 
 /** 대화 한 회차의 출력 상한. 스트리밍이라 시간 초과 걱정 없이 넉넉히 둔다. */
 export const CLAUDE_MAX_TOKENS = 64000;

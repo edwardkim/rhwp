@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { AI_TOOL_DEFS } from '../src/ai/agent/chat-controller.ts';
 import {
   CLAUDE_FALLBACK_BETA,
+  CLAUDE_MAX_STRICT_OPTIONAL_PARAMS,
   CLAUDE_MAX_STRICT_TOOLS,
   CLAUDE_MAX_TOKENS,
   ClaudeProvider,
@@ -63,10 +64,13 @@ test('쓰기 도구는 strict(제약은 설명으로 옮김), 읽기 도구는 �
     '원래 정의는 바꾸지 않는다');
 });
 
-test('strict 도구 수는 API 상한(20) 안이다', () => {
+test('strict 도구는 API 상한 안이다 — 도구 수 20개, 선택 매개변수 합 24개(둘 다 실제 400 으로 확인)', () => {
   const tools = (buildClaudeRequest({ ...request(), tools: AI_TOOL_DEFS }) as Record<string, any>).tools;
-  const strict = tools.filter((t: { strict?: boolean }) => t.strict === true).length;
-  assert.ok(strict <= CLAUDE_MAX_STRICT_TOOLS, `strict ${strict}개`);
+  const strict = tools.filter((t: { strict?: boolean }) => t.strict === true);
+  assert.ok(strict.length <= CLAUDE_MAX_STRICT_TOOLS, `strict ${strict.length}개`);
+  const optional = strict.reduce((sum: number, t: { input_schema: { properties: object; required?: string[] } }) =>
+    sum + Object.keys(t.input_schema.properties).filter((k) => !(t.input_schema.required ?? []).includes(k)).length, 0);
+  assert.ok(optional <= CLAUDE_MAX_STRICT_OPTIONAL_PARAMS, `선택 매개변수 ${optional}개`);
 });
 
 test('Haiku 5.5 에는 서버 대체를 보내지 않는다(받지 않는 모델)', () => {

@@ -77,6 +77,7 @@ export interface DocumentWriter {
   ensureDefaultNumbering(): number;
   getStyleList(): string;
   applyStyle(section: number, paragraph: number, styleId: number): string;
+  getParaPropertiesAt(section: number, paragraph: number): string;
   getTableDimensions(section: number, parentPara: number, controlIndex: number): string;
   getCellInfo(section: number, parentPara: number, controlIndex: number, cellIndex: number): string;
   insertTableRow(section: number, parentPara: number, controlIndex: number, row: number, below: boolean): string;
@@ -99,6 +100,10 @@ export interface DocumentWriter {
     section: number, isHeader: boolean, applyTo: number, hfPara: number, offset: number, count: number,
   ): string;
   insertFootnote(section: number, paragraph: number, offset: number): string;
+  replaceAll(query: string, text: string, caseSensitive: boolean): string;
+  getPageDef(section: number): string;
+  setPageDef(section: number, json: string): string;
+  setCellProperties(section: number, parentPara: number, controlIndex: number, cellIndex: number, json: string): string;
   insertTextInFootnote(
     section: number, paragraph: number, controlIndex: number, fnPara: number, offset: number, text: string,
   ): string;
@@ -116,7 +121,8 @@ export type WriteToolName =
   | 'replace_text' | 'fill_field' | 'insert_paragraphs' | 'create_document'
   | 'format_text' | 'format_paragraph' | 'insert_table'
   | 'delete_paragraph' | 'set_list' | 'apply_style' | 'edit_table' | 'set_cell_text'
-  | 'set_header_footer' | 'insert_footnote';
+  | 'set_header_footer' | 'insert_footnote'
+  | 'replace_all' | 'format_cell' | 'page_setup';
 
 /** 제안 하나. 화면은 `prefix + removed + suffix` 를 「전」, `prefix + inserted + suffix` 를 「후」로 보인다. */
 export interface WriteProposal {
@@ -196,6 +202,11 @@ const WRITE_SCHEMAS: Record<WriteToolName, ToolSchema> = {
         items: { type: 'string', maxLength: MAX_REPLACE_CHARS },
         description: 'New paragraphs in order, one string each, without line breaks. Use an empty string for a blank line.',
       },
+      style: {
+        type: 'string', minLength: 1, maxLength: 100,
+        description: 'Style for the new paragraphs (for example 바탕글 or 본문). Without it they continue the formatting of '
+          + 'the paragraph they follow, like pressing Enter — so after a heading or list item, pass a body style.',
+      },
     },
     required: ['position', 'paragraphs'],
     additionalProperties: false,
@@ -239,6 +250,14 @@ const WRITE_SCHEMAS: Record<WriteToolName, ToolSchema> = {
         type: 'string', enum: ['left', 'center', 'right', 'justify', 'distribute'], description: 'Paragraph alignment.',
       },
       lineSpacing: { type: 'integer', minimum: 50, maximum: 500, description: 'Line spacing in percent (160 is the usual default).' },
+      leftMargin: { type: 'number', minimum: 0, maximum: 400, description: 'Left margin of the paragraph in points.' },
+      rightMargin: { type: 'number', minimum: 0, maximum: 400, description: 'Right margin of the paragraph in points.' },
+      firstLineIndent: {
+        type: 'number', minimum: -400, maximum: 400,
+        description: 'First line indent in points; negative for a hanging indent. 0 removes it.',
+      },
+      spaceBefore: { type: 'number', minimum: 0, maximum: 400, description: 'Space above the paragraph in points.' },
+      spaceAfter: { type: 'number', minimum: 0, maximum: 400, description: 'Space below the paragraph in points.' },
     },
     required: ['find'],
     additionalProperties: false,
@@ -328,6 +347,44 @@ const WRITE_SCHEMAS: Record<WriteToolName, ToolSchema> = {
     required: ['find', 'text'],
     additionalProperties: false,
   },
+  replace_all: {
+    type: 'object',
+    properties: {
+      find: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Text to find everywhere in the document (including tables).' },
+      replace: { type: 'string', maxLength: MAX_REPLACE_CHARS, description: 'Replacement text. No line breaks. Empty deletes every match.' },
+      caseSensitive: { type: 'boolean', description: 'Match letter case exactly. Defaults to true.' },
+    },
+    required: ['find', 'replace'],
+    additionalProperties: false,
+  },
+  format_cell: {
+    type: 'object',
+    properties: {
+      find: { type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS, description: 'Exact text inside a cell of the table (the reference cell).' },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      scope: {
+        type: 'string', enum: ['cell', 'row', 'column', 'table'],
+        description: 'Apply to the reference cell only (default), its whole row, its whole column, or every cell of the table.',
+      },
+      backgroundColor: { type: 'string', minLength: 4, maxLength: 7, description: 'Cell background as #RRGGBB, or "none" to remove it.' },
+      verticalAlign: { type: 'string', enum: ['top', 'middle', 'bottom'], description: 'Vertical alignment of text in the cells.' },
+    },
+    required: ['find'],
+    additionalProperties: false,
+  },
+  page_setup: {
+    type: 'object',
+    properties: {
+      paper: { type: 'string', enum: ['A4', 'A3', 'B4', 'B5', 'Letter', 'Legal'], description: 'Paper size.' },
+      orientation: { type: 'string', enum: ['portrait', 'landscape'], description: 'Page orientation.' },
+      marginTop: { type: 'number', minimum: 0, maximum: 100, description: 'Top margin in millimetres.' },
+      marginBottom: { type: 'number', minimum: 0, maximum: 100, description: 'Bottom margin in millimetres.' },
+      marginLeft: { type: 'number', minimum: 0, maximum: 100, description: 'Left margin in millimetres.' },
+      marginRight: { type: 'number', minimum: 0, maximum: 100, description: 'Right margin in millimetres.' },
+    },
+    required: [],
+    additionalProperties: false,
+  },
   insert_table: {
     type: 'object',
     properties: {
@@ -377,12 +434,16 @@ export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
     description: 'Change character formatting (bold, italic, underline, strikethrough, size, color, highlight, font) of '
       + 'text found by its exact content. Set only the properties to change. Shown to the user for approval.',
     inputSchema: WRITE_SCHEMAS.format_text as unknown as Record<string, unknown>,
+    // 선택 매개변수가 많아 strict 예산(전체 24개)을 넘긴다 — 클라이언트 검증만 한다.
+    strict: false,
   },
   {
     name: 'format_paragraph',
-    description: 'Change paragraph alignment or line spacing of the paragraph containing the given text. '
-      + 'Shown to the user for approval.',
+    description: 'Change paragraph formatting of the paragraph containing the given text: alignment, line spacing, '
+      + 'left/right margins, first-line or hanging indent, space before/after. Shown to the user for approval.',
     inputSchema: WRITE_SCHEMAS.format_paragraph as unknown as Record<string, unknown>,
+    // 선택 매개변수가 많아 strict 예산(전체 24개)을 넘긴다 — 클라이언트 검증만 한다.
+    strict: false,
   },
   {
     name: 'insert_table',
@@ -431,6 +492,26 @@ export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
     inputSchema: WRITE_SCHEMAS.insert_footnote as unknown as Record<string, unknown>,
   },
   {
+    name: 'replace_all',
+    description: 'Replace every occurrence of a text in the whole document at once (find & replace all). Shows the '
+      + 'number of matches for approval. Use replace_text to change a single place.',
+    inputSchema: WRITE_SCHEMAS.replace_all as unknown as Record<string, unknown>,
+  },
+  {
+    name: 'format_cell',
+    description: 'Set table cell background color or vertical alignment for the cell containing the text, or for its '
+      + 'whole row, column or table. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.format_cell as unknown as Record<string, unknown>,
+  },
+  {
+    name: 'page_setup',
+    description: 'Change paper size, orientation or page margins for the whole document (all sections). This reflows '
+      + 'the document and can change the page count. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.page_setup as unknown as Record<string, unknown>,
+    // 선택 매개변수가 많아 strict 예산(전체 24개)을 넘긴다 — 클라이언트 검증만 한다.
+    strict: false,
+  },
+  {
     name: 'create_document',
     description: 'Replace the open document with a new blank document, when the user asks for a new document. '
       + 'The user approves first and is asked to save unsaved changes. Then write content with insert_paragraphs '
@@ -442,7 +523,7 @@ export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
 const WRITE_TOOL_NAMES: readonly string[] = [
   'replace_text', 'fill_field', 'insert_paragraphs', 'format_text', 'format_paragraph', 'insert_table',
   'delete_paragraph', 'set_list', 'apply_style', 'edit_table', 'set_cell_text', 'set_header_footer', 'insert_footnote',
-  'create_document',
+  'replace_all', 'format_cell', 'page_setup', 'create_document',
 ];
 
 export function isWriteTool(name: string): name is WriteToolName {
@@ -606,8 +687,19 @@ function appendAfter(doc: DocumentWriter, section: number, paragraph: number, te
   }
 }
 
+/** 문서의 스타일을 이름(또는 영문 이름)으로 찾는다. 없으면 목록을 알려 주며 거절한다. */
+function findStyle(doc: DocumentWriter, name: string): { id: number; name: string } {
+  const styles = JSON.parse(doc.getStyleList()) as Array<{ id: number; name: string; englishName?: string }>;
+  const wanted = name.trim();
+  const style = styles.find((s) => s.name === wanted)
+    ?? styles.find((s) => s.englishName?.toLowerCase() === wanted.toLowerCase());
+  if (!style) throw new WriteRefused(`No style named "${wanted}". Available: ${styles.slice(0, 40).map((s) => s.name).join(', ')}`);
+  return style;
+}
+
 function prepareInsert(host: WriteHost, input: Record<string, unknown>): WriteProposal {
   const position = input.position as 'start' | 'end' | 'after';
+  const styleName = input.style as string | undefined;
   const after = input.after as string | undefined;
   const texts = input.paragraphs as string[];
   if (texts.some((text) => FORBIDDEN.test(text))) {
@@ -618,6 +710,7 @@ function prepareInsert(host: WriteHost, input: Record<string, unknown>): WritePr
 
   const search = (doc: DocumentWriter) => (JSON.parse(doc.searchAllText(after!, true, true)) as SearchHit[]);
   return host.read((doc) => {
+    const style = styleName !== undefined ? findStyle(doc, styleName) : null;
     let anchor: SearchHit | null = null;
     let anchorCount = 0;
     if (position === 'after') {
@@ -638,8 +731,19 @@ function prepareInsert(host: WriteHost, input: Record<string, unknown>): WritePr
       removed: '',
       inserted: texts.join('\n'),
       suffix: '',
+      ...(style ? { format: { style: style.name } } : {}),
       apply: () => host.transaction('AI: 문단 추가', (tx) => {
         const target = tx.doc();
+        // 새 문단은 항상 paragraphs 개수만큼 연속으로 생긴다 — 시작 자리만 정하면 된다.
+        const sectionOf = position === 'after' ? anchor!.sec : position === 'start' ? 0 : target.getSectionCount() - 1;
+        const lastBefore = target.getParagraphCount(sectionOf) - 1;
+        const firstNew = position === 'after' ? anchor!.para + 1
+          : position === 'start' ? 0
+            : bodyText(target, sectionOf, lastBefore).length === 0 ? lastBefore : lastBefore + 1;
+        const restyle = () => {
+          if (!style || (position === 'after' && anchor!.cellContext)) return;
+          for (let i = 0; i < texts.length; i += 1) ok(target.applyStyle(sectionOf, firstNew + i, style.id), 'applyStyle');
+        };
         if (position === 'after') {
           const again = search(target);
           if (again.length !== anchorCount || !sameHit(pickHit(again, after!, undefined), anchor!)) {
@@ -658,6 +762,7 @@ function prepareInsert(host: WriteHost, input: Record<string, unknown>): WritePr
             return;
           }
           appendAfter(target, anchor!.sec, anchor!.para, texts);
+          restyle();
           return;
         }
         if (position === 'start') {
@@ -665,6 +770,7 @@ function prepareInsert(host: WriteHost, input: Record<string, unknown>): WritePr
           ok(target.splitParagraph(0, 0, 0), 'splitParagraph');
           if (texts[0]) ok(target.insertText(0, 0, 0, texts[0]), 'insertText');
           appendAfter(target, 0, 0, texts.slice(1));
+          restyle();
           return;
         }
         const section = target.getSectionCount() - 1;
@@ -676,6 +782,7 @@ function prepareInsert(host: WriteHost, input: Record<string, unknown>): WritePr
         } else {
           appendAfter(target, section, last, texts);
         }
+        restyle();
       }),
     };
   });
@@ -750,9 +857,10 @@ function prepareFormatParagraph(host: WriteHost, input: Record<string, unknown>)
   const find = input.find as string;
   const occurrence = input.occurrence as number | undefined;
   const format: Record<string, string | number> = {};
-  if (input.alignment !== undefined) format.alignment = input.alignment as string;
-  if (input.lineSpacing !== undefined) format.lineSpacing = input.lineSpacing as number;
-  if (Object.keys(format).length === 0) throw new WriteRefused('Set alignment or lineSpacing.');
+  for (const key of ['alignment', 'lineSpacing', 'leftMargin', 'rightMargin', 'firstLineIndent', 'spaceBefore', 'spaceAfter'] as const) {
+    if (input[key] !== undefined) format[key] = input[key] as string | number;
+  }
+  if (Object.keys(format).length === 0) throw new WriteRefused('Set at least one paragraph property.');
   return host.read((doc) => {
     const where = locate(doc, find, occurrence);
     const hit = where.hit;
@@ -775,6 +883,13 @@ function prepareFormatParagraph(host: WriteHost, input: Record<string, unknown>)
           props.lineSpacing = format.lineSpacing;
           props.lineSpacingType = 'Percent';
         }
+        // 문단 모양 대화상자와 같은 단위: 여백·들여쓰기는 pt×200(HWPUNIT 2배 저장값), 문단 간격은 pt×100.
+        // 들여쓰기는 양수, 내어쓰기는 음수다.
+        if (format.leftMargin !== undefined) props.marginLeft = Math.round((format.leftMargin as number) * 200);
+        if (format.rightMargin !== undefined) props.marginRight = Math.round((format.rightMargin as number) * 200);
+        if (format.firstLineIndent !== undefined) props.indent = Math.round((format.firstLineIndent as number) * 200);
+        if (format.spaceBefore !== undefined) props.spacingBefore = Math.round((format.spaceBefore as number) * 100);
+        if (format.spaceAfter !== undefined) props.spacingAfter = Math.round((format.spaceAfter as number) * 100);
         const json = JSON.stringify(props);
         ok(cell
           ? target.applyParaFormatInCell(hit.sec, cell.parentPara, cell.ctrlIdx, cell.cellIdx, cell.cellPara, json)
@@ -838,6 +953,10 @@ function prepareTable(host: WriteHost, input: Record<string, unknown>): WritePro
         const target = tx.doc();
         if (where) relocate(target, after!, undefined, where);
         const spot = emptyParagraphAt(target, position, where?.hit ?? null);
+        // 앞 문단을 나눠 만든 자리라 개요·번호·글머리표 모양을 물려받을 수 있다. 그대로 두면 표 칸과
+        // 표 뒤 문단에 번호가 붙는다(실측: 개요 1 뒤의 표 → 「4. 항목」). 그때만 바탕글로 되돌린다.
+        const head = (JSON.parse(target.getParaPropertiesAt(spot.section, spot.paragraph)) as { headType?: string }).headType;
+        if (head && head !== 'None') ok(target.applyStyle(spot.section, spot.paragraph, 0), 'applyStyle');
         const created = JSON.parse(target.createTable(spot.section, spot.paragraph, 0, rows, columns)) as {
           ok?: boolean; paraIdx?: number; controlIdx?: number;
         };
@@ -1111,6 +1230,140 @@ function prepareFootnote(host: WriteHost, input: Record<string, unknown>): Write
   });
 }
 
+function prepareReplaceAll(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const replace = input.replace as string;
+  const caseSensitive = input.caseSensitive !== false;
+  if (FORBIDDEN.test(find) || FORBIDDEN.test(replace)) throw new WriteRefused('find and replace must be one line.');
+  if (find === replace) throw new WriteRefused('replace is the same as find; nothing to change.');
+  return host.read((doc) => {
+    const count = (JSON.parse(doc.searchAllText(find, caseSensitive, true)) as unknown[]).length;
+    if (count === 0) throw new WriteRefused(`"${find}" was not found.`);
+    return {
+      tool: 'replace_all',
+      location: {},
+      prefix: '', removed: find, inserted: replace, suffix: '',
+      format: { count },
+      apply: () => host.transaction('AI: 모두 바꾸기', (tx) => {
+        const target = tx.doc();
+        const now = (JSON.parse(target.searchAllText(find, caseSensitive, true)) as unknown[]).length;
+        if (now !== count) {
+          throw new WriteRefused(`The number of matches changed (${count} → ${now}). Propose the change again.`);
+        }
+        ok(target.replaceAll(find, replace, caseSensitive), 'replaceAll');
+      }),
+    };
+  });
+}
+
+const VALIGN = { top: 0, middle: 1, bottom: 2 } as const;
+
+function prepareFormatCell(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const scope = (input.scope as 'cell' | 'row' | 'column' | 'table' | undefined) ?? 'cell';
+  const background = input.backgroundColor as string | undefined;
+  const valign = input.verticalAlign as keyof typeof VALIGN | undefined;
+  if (background === undefined && valign === undefined) throw new WriteRefused('Set backgroundColor or verticalAlign.');
+  if (background !== undefined && background !== 'none' && !COLOR.test(background)) {
+    throw new WriteRefused('backgroundColor must be #RRGGBB or "none".');
+  }
+  return host.read((doc) => {
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    const { cell, info, dims } = cellOf(doc, hit);
+    const targets: number[] = [];
+    for (let index = 0; index < dims.cellCount; index += 1) {
+      const other = JSON.parse(doc.getCellInfo(hit.sec, cell.parentPara, cell.ctrlIdx, index)) as { row: number; col: number };
+      if (scope === 'table' || (scope === 'cell' && index === cell.cellIdx)
+        || (scope === 'row' && other.row === info.row) || (scope === 'column' && other.col === info.col)) {
+        targets.push(index);
+      }
+    }
+    const format: Record<string, string | number> = { scope, cells: targets.length };
+    if (background !== undefined) format.backgroundColor = background;
+    if (valign !== undefined) format.verticalAlign = valign;
+    return {
+      tool: 'format_cell',
+      location: { ...hitLocation(hit), inTable: true },
+      prefix: '', removed: '', inserted: wholeParagraph(doc, hit), suffix: '',
+      format,
+      apply: () => host.transaction('AI: 칸 속성', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        // 표/칸 속성 대화상자와 같은 속성 이름(배경은 fillType·fillColor, 세로 정렬 0 위 1 가운데 2 아래).
+        const props: Record<string, unknown> = {};
+        if (background !== undefined) {
+          if (background === 'none') props.fillType = 'none';
+          else { props.fillType = 'solid'; props.fillColor = background.toLowerCase(); }
+        }
+        if (valign !== undefined) props.verticalAlign = VALIGN[valign];
+        const json = JSON.stringify(props);
+        for (const index of targets) ok(target.setCellProperties(hit.sec, cell.parentPara, cell.ctrlIdx, index, json), 'setCellProperties');
+      }),
+    };
+  });
+}
+
+/** 용지 크기(세로 기준, mm). HWPUNIT = mm × 7200 / 25.4. */
+const PAPER_MM: Record<string, [number, number]> = {
+  A4: [210, 297], A3: [297, 420], B4: [257, 364], B5: [182, 257], Letter: [215.9, 279.4], Legal: [215.9, 355.6],
+};
+const mmToHwp = (mm: number) => Math.round((mm * 7200) / 25.4);
+/** 여백을 빼고 남는 본문이 이보다 좁으면 거절한다(대화상자는 본문 소멸만 막는다 — AI 는 여유를 둔다). */
+const MIN_BODY_MM = 30;
+
+function preparePageSetup(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const keys = ['paper', 'orientation', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight'] as const;
+  const format: Record<string, string | number> = {};
+  for (const key of keys) if (input[key] !== undefined) format[key] = input[key] as string | number;
+  if (Object.keys(format).length === 0) throw new WriteRefused('Set paper, orientation or a margin.');
+
+  type PageDef = {
+    width: number; height: number; landscape: boolean;
+    marginTop: number; marginBottom: number; marginLeft: number; marginRight: number;
+    marginHeader: number; marginFooter: number; marginGutter: number;
+  };
+  const next = (current: PageDef): PageDef => {
+    const def = { ...current };
+    if (format.paper !== undefined) {
+      const [w, h] = PAPER_MM[format.paper as string];
+      // 쪽 정의는 가로 방향이어도 세로 기준 크기를 저장한다(쪽 설정 대화상자와 같음).
+      def.width = mmToHwp(w);
+      def.height = mmToHwp(h);
+    }
+    if (format.orientation !== undefined) def.landscape = format.orientation === 'landscape';
+    for (const key of ['marginTop', 'marginBottom', 'marginLeft', 'marginRight'] as const) {
+      if (format[key] !== undefined) def[key] = mmToHwp(format[key] as number);
+    }
+    const [pw, ph] = def.landscape ? [def.height, def.width] : [def.width, def.height];
+    const bodyW = pw - def.marginLeft - def.marginRight - def.marginGutter;
+    const bodyH = ph - def.marginTop - def.marginBottom - def.marginHeader - def.marginFooter;
+    if (bodyW < mmToHwp(MIN_BODY_MM) || bodyH < mmToHwp(MIN_BODY_MM)) {
+      throw new WriteRefused(`The margins leave less than ${MIN_BODY_MM} mm for the body text. Use smaller margins.`);
+    }
+    return def;
+  };
+
+  return host.read((doc) => {
+    const sections = doc.getSectionCount();
+    for (let section = 0; section < sections; section += 1) next(JSON.parse(doc.getPageDef(section)) as PageDef);
+    return {
+      tool: 'page_setup',
+      location: {},
+      prefix: '', removed: '', inserted: '', suffix: '',
+      format,
+      apply: () => host.transaction('AI: 쪽 설정', (tx) => {
+        const target = tx.doc();
+        for (let section = 0; section < target.getSectionCount(); section += 1) {
+          const def = next(JSON.parse(target.getPageDef(section)) as PageDef);
+          ok(target.setPageDef(section, JSON.stringify(def)), 'setPageDef');
+        }
+      }),
+    };
+  });
+}
+
 function prepareCreate(host: WriteHost): WriteProposal {
   return {
     tool: 'create_document',
@@ -1148,5 +1401,8 @@ export function prepareWrite(host: WriteHost, call: AiToolCall): WriteProposal {
     case 'set_cell_text': return prepareSetCellText(host, checked.value);
     case 'set_header_footer': return prepareHeaderFooter(host, checked.value);
     case 'insert_footnote': return prepareFootnote(host, checked.value);
+    case 'replace_all': return prepareReplaceAll(host, checked.value);
+    case 'format_cell': return prepareFormatCell(host, checked.value);
+    case 'page_setup': return preparePageSetup(host, checked.value);
   }
 }
