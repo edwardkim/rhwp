@@ -2983,7 +2983,12 @@ impl LayoutEngine {
             || host.cell_format_vpos_dirty
             || next.stored_text_partition_is_dirty()
             || next.cell_format_vpos_dirty
-            || !next.controls.is_empty()
+            // 글자처럼 개체는 다음 문단 자기 저장 줄 안에 놓여 그 줄의 원점을 바꾸지 않는다
+            // (1790387 57쪽: 글자처럼 표 문단 pi238 vpos 15555 = 앞 표 끝 조각 아래 + 바깥 아래 여백).
+            || !next
+                .controls
+                .iter()
+                .all(crate::model::control::Control::is_treat_as_char_object)
             || !matches!(
                 next.column_type,
                 crate::model::paragraph::ColumnBreakType::None

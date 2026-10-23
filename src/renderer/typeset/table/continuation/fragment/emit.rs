@@ -928,10 +928,10 @@ impl TypesetEngine {
                         // 뒤 문단의 저장 줄 윗변(= 흐름 끝 + 그 문단 위 간격)이 상자 아래 이하에
                         // 있으면 그 줄이 문단을 닫는다. 위 간격이 바깥 아래 여백과 겹쳐도 같다
                         // (1613000 59쪽: 상자 아래 226.93, 뒤 빈 줄 vpos 17444 = 232.59).
+                        // 위 간격이 없는 뒤 문단도 같다 — 저장 줄이 상자 아래에서 시작한다고 증언했다
+                        // (1790387 57쪽: 글자처럼 표 문단 pi238 vpos 15555 = 상자 아래 207.4).
                         let successor_line = end + successor_before;
-                        if successor_before > 0.0
-                            && successor_line >= placement.occupied_bottom - 0.5
-                        {
+                        if successor_line >= placement.occupied_bottom - 0.5 {
                             placement.stored_successor_line_origin =
                                 Some(successor_line.max(placement.occupied_bottom));
                         }
