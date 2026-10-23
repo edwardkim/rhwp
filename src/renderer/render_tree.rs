@@ -1972,6 +1972,20 @@ impl PageLayoutContext {
             .copied()
     }
 
+    /// `keep` 이 고른 인라인 Shape 좌표를 `dy` 만큼 세로로 옮긴다. 배치 뒤에 노드를
+    /// 옮기는 정렬이 등록 좌표와 그려진 자리를 같게 유지할 때 쓴다.
+    pub fn translate_inline_shape_positions_y(
+        &mut self,
+        keep: impl Fn(&InlineShapeKey) -> bool,
+        dy: f64,
+    ) {
+        for (key, (_, y)) in self.inline_shape_positions.iter_mut() {
+            if keep(key) {
+                *y += dy;
+            }
+        }
+    }
+
     /// 인라인 Shape 좌표 전체 참조 (hitTest용)
     pub fn inline_shape_positions(&self) -> &std::collections::HashMap<InlineShapeKey, (f64, f64)> {
         &self.inline_shape_positions

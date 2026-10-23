@@ -211,6 +211,18 @@ impl LayoutEngine {
             None,
         );
         let already_registered = registered_inline_pos.is_some();
+        // paragraph_layout 은 줄 안에서만 TAC 그림을 그린다. 저장 줄도 글자도 없는 문단은
+        // 프레임 재조합이 줄을 만들 때만 그림이 그려지고, 재조합이 사양하면 높이만
+        // 전진하는 빈 줄 폴백을 탄다. 그 판정은 문단 경로 안에서 끝나므로, 조합 줄이
+        // 없는 문단은 먼저 지나간 문단 경로가 이 그림을 실제로 그렸는지 단에서 확인한다.
+        let para_path_draws_picture = has_full_para_item
+            && (comp.is_some_and(|c| !c.lines.is_empty())
+                || subtree_has_picture(
+                    col_node,
+                    page_content.section_index,
+                    para_index,
+                    control_index,
+                ));
         let effective_pic_y = registered_inline_pos
             .map(|(_, registered_y)| registered_y)
             .unwrap_or(pic_y);
@@ -242,7 +254,7 @@ impl LayoutEngine {
             }
         }
 
-        if !already_registered && !has_full_para_item {
+        if !already_registered && !para_path_draws_picture {
             let bin_data_id = pic.image_attr.bin_data_id;
             let image_data = find_bin_data_bytes(bin_data_content, bin_data_id);
             let crop = pic.render_crop_rect();
@@ -439,4 +451,16 @@ impl LayoutEngine {
             });
         result_y
     }
+}
+
+/// `node` 아래에 `(section, para, control)` 그림 노드가 이미 있는지 본다.
+fn subtree_has_picture(node: &RenderNode, section: usize, para: usize, control: usize) -> bool {
+    matches!(&node.node_type, RenderNodeType::Image(img)
+        if img.section_index == Some(section)
+            && img.para_index == Some(para)
+            && img.control_index == Some(control))
+        || node
+            .children
+            .iter()
+            .any(|child| subtree_has_picture(child, section, para, control))
 }
