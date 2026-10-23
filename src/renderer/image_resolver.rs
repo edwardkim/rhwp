@@ -9,6 +9,7 @@ mod print_tone;
 pub(crate) use print_alpha::print_alpha_payload;
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
 pub(crate) use print_jpeg::{encode_print_jpeg, print_jpeg_payload};
+mod print_window;
 pub(crate) use print_tone::print_bitmap_payload;
 mod print_codec;
 pub(crate) use print_codec::{print_area_sampling, print_device_image_payload};
@@ -146,6 +147,9 @@ enum Conversion {
         frame: [u64; 8],
     },
     Hancom2024BitmapPalette {
+        bounds: [u32; 4],
+    },
+    Hancom2024BitmapWindow {
         bounds: [u32; 4],
     },
     Hancom2024PrintJpeg {
@@ -553,6 +557,7 @@ pub(crate) fn image_node_with_resolved_payload(
     let mut image = image.clone();
     image.original_size_hu = image_crop_reference(&image);
     if let Some(payload) = resolved {
+        normalize_resolved_image_window(&mut image, payload);
         image.data = Some(payload.data.clone());
         // payload는 이미 출력 색을 가진다. 내부 재생에서 다시 확장하지 않는다.
         image.hancom2024_print_bitmap = false;
@@ -563,6 +568,34 @@ pub(crate) fn image_node_with_resolved_payload(
         }
     }
     image
+}
+
+/// 이미 원본 창을 담은 바이트는 모든 painter에서 한 번만 자른다.
+pub(crate) fn normalize_resolved_image_window(
+    image: &mut ImageNode,
+    payload: &ResolvedImagePayload,
+) {
+    if payload.kind == ResolvedImageKind::OutputDeviceWindow {
+        image.crop = None;
+        image.original_size_hu = None;
+        image.original_size = None;
+    }
+}
+
+/// 직접 조립한 paint op의 지연 payload도 같은 창 정규화를 소비한다.
+pub(crate) fn image_for_resolved_window<'a>(
+    image: &'a ImageNode,
+    resolved: Option<&ResolvedImagePayload>,
+) -> std::borrow::Cow<'a, ImageNode> {
+    if let Some(payload) = resolved.filter(|p| p.kind == ResolvedImageKind::OutputDeviceWindow) {
+        if image.crop.is_some() || image.original_size.is_some() || image.original_size_hu.is_some()
+        {
+            let mut image = image.clone();
+            normalize_resolved_image_window(&mut image, payload);
+            return std::borrow::Cow::Owned(image);
+        }
+    }
+    std::borrow::Cow::Borrowed(image)
 }
 
 /// 공통 producer와 지연 로딩 키가 같은 WMF 실사 효과를 선택하는 단일 판정.

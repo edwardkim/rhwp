@@ -2709,7 +2709,11 @@ impl DocumentCore {
                             if intersect(image_clip, op.visual_bounds()).is_none() {
                                 continue;
                             }
-                            let key = crate::paint::source_image_key(self.epoch, image);
+                            let key = crate::paint::resources::source_image_key_for_payload(
+                                self.epoch,
+                                image,
+                                resolved.as_deref(),
+                            );
                             if key.is_none() {
                                 self.cacheable = false;
                             }

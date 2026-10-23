@@ -6,6 +6,7 @@
 use std::collections::HashSet;
 use std::io::Cursor;
 
+use super::print_window::SourceWindow;
 use super::{decode_image_with_format_limited, detect_image_mime_type, memoized, Conversion};
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
@@ -19,15 +20,55 @@ fn is_print_bitmap_candidate(image: &ImageNode) -> bool {
         && image
             .data
             .as_deref()
-            .is_some_and(|data| matches!(detect_image_mime_type(data), "image/bmp" | "image/png"))
+            .is_some_and(|data| format(data).is_some())
 }
 
 pub(crate) fn print_bitmap_payload(image: &ImageNode) -> Option<ResolvedImagePayload> {
+    if !is_print_bitmap_candidate(image) {
+        return None;
+    }
+    let source = image.data.as_deref()?;
+    let header = super::canvaskit_encoded_image_header(source)?;
+    if !header.is_within_decode_limits() {
+        return None;
+    }
+    let window = SourceWindow::for_image(image, header.width, header.height)?;
+    // 자연 크기·반복 채움은 crop 이후의 반복 단위와 원점을 별도로 소비한다.
+    if window.is_partial() && image.fill_mode.is_none() {
+        let bounds = window.bounds;
+        let data = memoized(
+            Conversion::Hancom2024BitmapWindow { bounds },
+            source,
+            || {
+                let decoded = decode_image_with_format_limited(source, format(source)?)?.to_rgba8();
+                let mut visible = image::imageops::crop_imm(
+                    &decoded,
+                    bounds[0],
+                    bounds[1],
+                    bounds[2] - bounds[0],
+                    bounds[3] - bounds[1],
+                )
+                .to_image();
+                let quantized = exceeds_palette(visible.pixels());
+                if quantized {
+                    let (width, height) = visible.dimensions();
+                    super::print_rgb555::quantize(visible.as_mut(), width, height)?;
+                }
+                to_png(visible, source, quantized)
+            },
+        )?;
+        return Some(ResolvedImagePayload {
+            data,
+            mime: "image/png",
+            kind: ResolvedImageKind::OutputDeviceWindow,
+            suppress_effects: false,
+        });
+    }
     if !requires_print_bitmap_transfer(image) {
         return None;
     }
     Some(ResolvedImagePayload {
-        data: bitmap_bytes_to_png(image.data.as_deref()?)?,
+        data: bitmap_bytes_to_png(source)?,
         mime: "image/png",
         kind: ResolvedImageKind::FormatConverted,
         suppress_effects: false,
@@ -36,7 +77,7 @@ pub(crate) fn print_bitmap_payload(image: &ImageNode) -> Option<ResolvedImagePay
 
 /// 한컴 Print는 잘린 뒤 보이는 원본 픽셀과 흑백 예약색으로 팔레트를 결정한다.
 /// 전체 원본의 색 수만 쓰면 같은 BinData를 다른 창으로 쓸 때 색 전달이 달라진다.
-/// 전달 여부만 창별로 메모하고, 실제 색 변환 바이트는 원본별로 공유한다.
+/// 창을 담은 payload는 원본 bin key 대신 그 바이트로 전달한다.
 pub(super) fn requires_print_bitmap_transfer(image: &ImageNode) -> bool {
     if !is_print_bitmap_candidate(image) {
         return false;
@@ -49,56 +90,12 @@ pub(super) fn requires_print_bitmap_transfer(image: &ImageNode) -> bool {
     else {
         return false;
     };
-    let (width, height) = (header.width, header.height);
-    let bounds = if let Some((left, top, right, bottom)) = image.crop {
-        if right.checked_sub(left).is_none() || bottom.checked_sub(top).is_none() {
-            return false;
-        }
-        let reference = super::image_crop_reference(image).filter(|&(w, h)| w > 0 && h > 0);
-        if let Some((ref_width, ref_height)) = reference {
-            // 원본 정수 비율로 계산해 정확한 끝점이 부동소수점 반올림 때문에
-            // 한 픽셀 안으로 들어오지 않게 한다. 임의 epsilon은 사용하지 않는다.
-            let edge = |value: i32, pixels: u32, reference: u32, ceil: bool| {
-                let numerator = i64::from(value) * i64::from(pixels);
-                let reference = i64::from(reference);
-                let whole = numerator.div_euclid(reference);
-                let rounded = whole + i64::from(ceil && numerator.rem_euclid(reference) != 0);
-                rounded.clamp(0, i64::from(pixels)) as u32
-            };
-            [
-                edge(left, width, ref_width, true),
-                edge(top, height, ref_height, true),
-                edge(right, width, ref_width, false),
-                edge(bottom, height, ref_height, false),
-            ]
-        } else {
-            // imgDim이 없는 원본은 실제 배치와 같은 적응 좌표계 해소를 사용한다.
-            let (x, y, w, h) = crate::renderer::svg::compute_image_crop_src(
-                (left, top, right, bottom),
-                None,
-                f64::from(width),
-                f64::from(height),
-            );
-            [
-                x.ceil().clamp(0.0, f64::from(width)) as u32,
-                y.ceil().clamp(0.0, f64::from(height)) as u32,
-                (x + w).floor().clamp(0.0, f64::from(width)) as u32,
-                (y + h).floor().clamp(0.0, f64::from(height)) as u32,
-            ]
-        }
-    } else {
-        [0, 0, width, height]
-    };
-    if bounds[0] >= bounds[2] || bounds[1] >= bounds[3] {
+    let Some(window) = SourceWindow::for_image(image, header.width, header.height) else {
         return false;
-    }
+    };
+    let bounds = window.bounds;
     memoized(Conversion::Hancom2024BitmapPalette { bounds }, data, || {
-        let format = match detect_image_mime_type(data) {
-            "image/bmp" => image::ImageFormat::Bmp,
-            "image/png" => image::ImageFormat::Png,
-            _ => return None,
-        };
-        let decoded = decode_image_with_format_limited(data, format)?.to_rgba8();
+        let decoded = decode_image_with_format_limited(data, format(data)?)?.to_rgba8();
         let pixels = (bounds[1]..bounds[3]).flat_map(|y| {
             let decoded = &decoded;
             (bounds[0]..bounds[2]).map(move |x| decoded.get_pixel(x, y))
@@ -123,12 +120,7 @@ fn exceeds_palette<'a>(pixels: impl Iterator<Item = &'a image::Rgba<u8>>) -> boo
 
 pub(super) fn bitmap_bytes_to_png(data: &[u8]) -> Option<Vec<u8>> {
     memoized(Conversion::Hancom2024Bitmap, data, || {
-        let format = match detect_image_mime_type(data) {
-            "image/bmp" => image::ImageFormat::Bmp,
-            "image/png" => image::ImageFormat::Png,
-            _ => return None,
-        };
-        let mut decoded = decode_image_with_format_limited(data, format)?.to_rgba8();
+        let mut decoded = decode_image_with_format_limited(data, format(data)?)?.to_rgba8();
         // 한컴의 팔레트 전달은 흑백 두 예약색을 포함한 RGB 색 수로 구분한다.
         // 원본이 255/256색이어도 빠진 예약색을 더하면 팔레트 용량을 넘을 수 있다.
         // 알파는 별도의 투명도이며 RGB 팔레트의 색 수에 합산하지 않는다.
@@ -137,12 +129,27 @@ pub(super) fn bitmap_bytes_to_png(data: &[u8]) -> Option<Vec<u8>> {
         }
         let (width, height) = decoded.dimensions();
         super::print_rgb555::quantize(decoded.as_mut(), width, height)?;
-        let mut output = Vec::new();
-        image::DynamicImage::ImageRgba8(decoded)
-            .write_to(&mut Cursor::new(&mut output), image::ImageFormat::Png)
-            .ok()?;
-        super::png_sampling::mark_print_bitmap(&mut output);
-        super::png_sampling::preserve(data, &mut output);
-        Some(output)
+        to_png(decoded, data, true)
     })
+}
+
+fn format(data: &[u8]) -> Option<image::ImageFormat> {
+    match detect_image_mime_type(data) {
+        "image/bmp" => Some(image::ImageFormat::Bmp),
+        "image/png" => Some(image::ImageFormat::Png),
+        "image/jpeg" => Some(image::ImageFormat::Jpeg),
+        _ => None,
+    }
+}
+
+fn to_png(rgba: image::RgbaImage, source: &[u8], quantized: bool) -> Option<Vec<u8>> {
+    let mut output = Vec::new();
+    image::DynamicImage::ImageRgba8(rgba)
+        .write_to(&mut Cursor::new(&mut output), image::ImageFormat::Png)
+        .ok()?;
+    if quantized {
+        super::png_sampling::mark_print_bitmap(&mut output);
+    }
+    super::png_sampling::preserve(source, &mut output);
+    Some(output)
 }

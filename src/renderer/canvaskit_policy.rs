@@ -2393,6 +2393,7 @@ fn resolved_image_kind_detail(value: ResolvedImageKind) -> &'static str {
         ResolvedImageKind::FormatConverted => "formatConverted",
         ResolvedImageKind::SourceWindow => "sourceWindow",
         ResolvedImageKind::OutputDevice => "outputDevice",
+        ResolvedImageKind::OutputDeviceWindow => "outputDeviceWindow",
         ResolvedImageKind::BakedWatermark => "bakedWatermark",
     }
 }

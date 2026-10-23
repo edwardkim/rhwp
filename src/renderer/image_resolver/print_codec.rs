@@ -57,8 +57,10 @@ pub(crate) fn print_device_image_payload(
         return None;
     }
     let source = image.data.as_deref()?;
-    if !matches!(detect_image_mime_type(source), "image/bmp" | "image/png")
-        || super::png_sampling::interpolation(source).is_some()
+    if !matches!(
+        detect_image_mime_type(source),
+        "image/bmp" | "image/png" | "image/jpeg"
+    ) || super::png_sampling::interpolation(source).is_some()
     {
         return None;
     }
@@ -66,9 +68,15 @@ pub(crate) fn print_device_image_payload(
     if !header.is_within_decode_limits() {
         return None;
     }
-    // 부분 자르기는 source 영역의 정수 전송과 압축 순서를 함께 보존해야 한다.
-    // 전체 원본의 압축을 한 뒤 clip하는 것으로 그 계약을 대신하지 않는다.
-    if let Some((left, top, right, bottom)) = image.crop {
+    // 색 변환과 압축이 같은 창을 소비하며, 색 전달을 다시 적용하지 않는다.
+    let base = super::resolve_image_payload(image).unwrap_or_else(|| ResolvedImagePayload {
+        data: source.to_vec(),
+        mime: detect_image_mime_type(source),
+        kind: ResolvedImageKind::FormatConverted,
+        suppress_effects: false,
+    });
+    if image.crop.is_some() && base.kind != ResolvedImageKind::OutputDeviceWindow {
+        let (left, top, right, bottom) = image.crop?;
         let (width, height) = super::image_crop_reference(image)?;
         if left != 0
             || top != 0
@@ -78,9 +86,12 @@ pub(crate) fn print_device_image_payload(
             return None;
         }
     }
-    let quality = ((width_points as f32 / header.width as f32 * 100.0) as i32).clamp(35, 75) as u8;
-    // 기존 색·형식 resolver의 결과를 압축하므로 색 전달을 다시 적용하지 않는다.
-    let base = super::resolve_image_payload(image)?;
+    let output_header = super::canvaskit_encoded_image_header(&base.data)?;
+    if !output_header.is_within_decode_limits() {
+        return None;
+    }
+    let quality =
+        ((width_points as f32 / output_header.width as f32 * 100.0) as i32).clamp(35, 75) as u8;
     let data = memoized(
         Conversion::Hancom2024PrintJpeg { quality },
         &base.data,
@@ -89,7 +100,11 @@ pub(crate) fn print_device_image_payload(
     Some(ResolvedImagePayload {
         data,
         mime: "image/jpeg",
-        kind: ResolvedImageKind::OutputDevice,
+        kind: if base.kind == ResolvedImageKind::OutputDeviceWindow {
+            ResolvedImageKind::OutputDeviceWindow
+        } else {
+            ResolvedImageKind::OutputDevice
+        },
         suppress_effects: false,
     })
 }
@@ -98,6 +113,7 @@ fn encode(payload: &ResolvedImagePayload, quality: u8) -> Option<Vec<u8>> {
     let format = match payload.mime {
         "image/png" => image::ImageFormat::Png,
         "image/bmp" => image::ImageFormat::Bmp,
+        "image/jpeg" => image::ImageFormat::Jpeg,
         _ => return None,
     };
     let rgba = decode_image_with_format_limited(&payload.data, format)?.to_rgba8();

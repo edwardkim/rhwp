@@ -887,10 +887,17 @@ impl WebCanvasRenderer {
                 image,
                 resolved,
             } => {
+                let fallback = resolved
+                    .is_none()
+                    .then(|| super::image_resolver::resolve_image_payload(image))
+                    .flatten();
+                let resolved = resolved.as_deref().or(fallback.as_ref());
+                let prepared = super::image_resolver::image_for_resolved_window(image, resolved);
+                let image = prepared.as_ref();
                 let previous_print_area = self.print_area_sampling;
                 self.print_area_sampling =
-                    super::image_resolver::print_area_sampling(image, resolved.as_deref());
-                if let Some(resolved) = resolved.as_deref() {
+                    super::image_resolver::print_area_sampling(image, resolved);
+                if let Some(resolved) = resolved {
                     let image = crate::renderer::image_resolver::image_node_with_resolved_payload(
                         image,
                         Some(resolved),

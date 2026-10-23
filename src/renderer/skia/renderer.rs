@@ -2039,6 +2039,11 @@ impl SkiaLayerRenderer {
                                 })
                                 .flatten();
                             let resolved = resolved.as_deref().or(fallback.as_ref());
+                            let prepared =
+                                crate::renderer::image_resolver::image_for_resolved_window(
+                                    image, resolved,
+                                );
+                            let image = prepared.as_ref();
                             let effective_bbox = image.transformed_paint_bbox(bbox);
                             // 저장 viewport는 그림 변환 바깥의 페이지 좌표 clip이다.
                             let _source_clip_restore = image.source_clip_path(bbox).map(|points| {

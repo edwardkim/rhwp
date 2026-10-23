@@ -335,6 +335,26 @@ pub fn source_image_key(
     ))
 }
 
+/// 창·장치별 바이트는 원본 bin 재조회로 복원할 수 없다.
+pub(crate) fn source_image_key_for_payload(
+    bin_data_epoch: u32,
+    image: &crate::renderer::render_tree::ImageNode,
+    resolved: Option<&crate::paint::ResolvedImagePayload>,
+) -> Option<String> {
+    if resolved.is_some_and(|p| {
+        matches!(
+            p.kind,
+            crate::paint::ResolvedImageKind::OutputDevice
+                | crate::paint::ResolvedImageKind::OutputDeviceWindow
+                | crate::paint::ResolvedImageKind::SourceWindow
+        )
+    }) {
+        None
+    } else {
+        source_image_key(bin_data_epoch, image)
+    }
+}
+
 /// `source_image_key` 의 variant — 같은 원본에서 다른 바이트가 나오는 갈림 (Task #3315).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SourceImageVariant {

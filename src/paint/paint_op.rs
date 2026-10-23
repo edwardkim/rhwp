@@ -41,6 +41,8 @@ pub enum ResolvedImageKind {
     SourceWindow,
     /// 출력 크기·장치에 따라 바이트가 달라지는 변환. 원본 bin 키와 구분한다.
     OutputDevice,
+    /// 원본 가시 창을 이미 담은 출력 바이트. painter에서 crop을 다시 적용하지 않는다.
+    OutputDeviceWindow,
     BakedWatermark,
 }
 
@@ -337,6 +339,9 @@ impl PaintOp {
         resolved: Option<ResolvedImagePayload>,
     ) -> Self {
         image.original_size_hu = crate::renderer::image_resolver::image_crop_reference(&image);
+        if let Some(payload) = resolved.as_ref() {
+            crate::renderer::image_resolver::normalize_resolved_image_window(&mut image, payload);
+        }
         Self::Image {
             bbox,
             image: Box::new(image),
