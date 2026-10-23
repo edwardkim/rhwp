@@ -452,5 +452,10 @@ VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:ai-panel
     - 본문 키: `model, max_tokens, output_config, cache_control, system, tools, messages, fallbacks, stream`
     - 도구는 strict이고, 제약은 description으로 옮겨져 있다.
   - 400 사유를 숨겨서는 고칠 수 없으므로 표시 방식을 바꿨다. 400과 기타 API 오류는 제공자 사유와 request id를 문구 뒤에 붙여 보이고 콘솔에도 남긴다.
-  - **원인 확정은 사용자가 다시 시도해 알려 줄 사유 문구를 기다린다.**
-- 검증: `tsc` 통과. `npm test` 2,431건 중 2,429 통과, 실패 0. e2e는 `side-panel` 18, `ai-settings` 19, `ai-panel` 29 PASS(400 사유 표시 TC7b 추가). 일반·AI 제외 빌드 모두 성공.
+  - 원인 확정(2026-10-23): 작업지시자가 준 키로 실제 API를 확인했다.
+    - `models.retrieve`는 성공했다(키·모델 접근 정상).
+    - Messages 요청은 서버 대체·캐시·strict를 각각 뺀 변형과 `model·max_tokens·messages`만 남긴 최소 요청까지 **모두** 같은 400을 받았다. 사유: `Your credit balance is too low to access the Anthropic API…`
+    - 결론: **계정 크레딧 부족이 원인이고, 요청 형식 문제는 아니다.**
+    - 크레딧 없이 쓸 수 있는 `count_tokens`로 도구·시스템 형식을 검증하려 했으나, 세션 권한 검사(자격 증명 사용)가 막아 실행하지 못했다. 서버가 실제 요청 형식을 받아들이는지는 크레딧 충전 뒤 Stage 5에서 확인한다.
+  - 보정: 이 400은 전용 오류 형식 없이 문구로만 온다. 문구를 보고 `billing` 갈래로 옮겨 「API 계정의 크레딧이 부족합니다 … Plans & Billing」을 보인다. 문구가 바뀌면 일반 400과 사유 표시로 물러난다. 단위 테스트와 e2e `TC7c`를 추가했다.
+- 검증: `tsc` 통과. `npm test` 2,432건 중 2,430 통과, 실패 0. e2e는 `side-panel` 18, `ai-settings` 19, `ai-panel` 30 PASS(400 사유 TC7b, 크레딧 부족 TC7c 추가). 일반·AI 제외 빌드는 이 보정 전 상태에서 성공했다.

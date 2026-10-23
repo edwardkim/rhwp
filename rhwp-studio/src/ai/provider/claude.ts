@@ -72,6 +72,9 @@ export function classifyClaudeError(error: unknown): AiFailure {
   }
   if (error instanceof BadRequestError) {
     const detail = errorDetail(error);
+    // 크레딧 부족은 전용 오류 형식이 없고 400 invalid_request_error 의 문구로만 온다.
+    // 문구가 바뀌면 일반 400 으로 물러날 뿐 사유는 그대로 보인다.
+    if (detail && /credit balance is too low/i.test(detail)) return { reason: 'billing', status: 400, detail };
     return detail ? { reason: 'bad-request', status: 400, detail } : { reason: 'bad-request', status: 400 };
   }
   if (error instanceof APIError) {

@@ -9,6 +9,8 @@
 export type AiFailureReason =
   | 'auth'
   | 'permission'
+  /** 계정 크레딧 부족 — 키는 맞지만 요청을 처리하지 않는다(400) */
+  | 'billing'
   | 'model'
   | 'rate'
   | 'overloaded'

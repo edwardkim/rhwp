@@ -46,3 +46,14 @@ test('400 은 무엇이 거절됐는지 알 수 있게 제공자 사유와 reque
     { reason: 'bad-request', status: 400 }, '본문이 없으면 사유도 없다');
   assert.deepEqual(classifyClaudeError(apiError(500)), { reason: 'unknown', status: 500, detail: 'm' });
 });
+
+test('크레딧 부족 400 은 billing 갈래로 옮긴다', () => {
+  const error = APIError.generate(400,
+    { type: 'error', error: { type: 'invalid_request_error',
+      message: 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.' } },
+    undefined, new Headers({ 'request-id': 'req_9' }));
+  const failure = classifyClaudeError(error);
+  assert.equal(failure.reason, 'billing');
+  assert.equal(failure.status, 400);
+  assert.match(failure.detail ?? '', /request-id req_9/);
+});

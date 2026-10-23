@@ -240,6 +240,16 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(badNote.startsWith('요청이 거절되었습니다.') && badNote.includes('tools.0: probe reason'),
     `TC7b: 400 사유 표시 (${badNote})`);
 
+  // ── TC7c: 크레딧 부족은 전용 안내 ──────────────────────
+  queue.push({ status: 400, body: JSON.stringify({ type: 'error', error: { type: 'invalid_request_error',
+    message: 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.' } }) });
+  await page.type('.ai-chat-input', '크레딧');
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy
+    && document.querySelectorAll('.ai-msg-note').length >= 4, { timeout: 10000 });
+  const billingNote = await page.$$eval('.ai-msg-note', (els) => els.at(-1)?.textContent);
+  assert(billingNote.startsWith('API 계정의 크레딧이 부족합니다'), `TC7c: 크레딧 부족 안내 (${billingNote})`);
+
   // ── TC8: 새 대화 ──────────────────────────────────────
   await page.click('.ai-new-chat');
   const cleared = await page.evaluate(() => ({
