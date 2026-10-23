@@ -8,8 +8,10 @@ use std::process::Command;
 fn codec_capabilities_match_selected_features_and_schema() {
     let support = rhwp::pdf_support::pdf_import_support();
     assert_eq!(support.enabled, cfg!(feature = "pdf-import"));
-    assert!(!cfg!(feature = "pdf-jbig2") || support.jbig2);
-    assert!(!cfg!(feature = "pdf-jpeg2000") || support.jpeg2000);
+    #[cfg(feature = "pdf-jbig2")]
+    assert!(support.jbig2);
+    #[cfg(feature = "pdf-jpeg2000")]
+    assert!(support.jpeg2000);
     let expected = json!({
         "enabled": support.enabled,
         "jbig2": support.jbig2,
