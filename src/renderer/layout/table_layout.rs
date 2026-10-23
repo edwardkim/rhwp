@@ -16746,10 +16746,24 @@ impl LayoutEngine {
                         .line_segs
                         .windows(2)
                         .any(|pair| pair[1].vertical_pos < pair[0].vertical_pos);
+                    let stored_square_offset = (self.profile.get().hwp5_stored_pagination_layout()
+                        && is_block_rowbreak
+                        && cell_has_stored_square_picture_flow)
+                        .then(|| {
+                            crate::renderer::height_measurer::stored_square_table_anchor_offset(
+                                cell, pi,
+                            )
+                        })
+                        .flatten();
                     let target_h = if let Some(frame) = stored_float_frame {
                         // 위에서 이미 계상한 호스트 줄과 float의 겹치는 예약을 뺀다.
                         // 이 원장과 paint가 동일한 앵커 줄 및 바깥 여백을 소비한다.
                         frame.occupied_bottom - (unit_cum - before_host_units)
+                    } else if let Some(offset) = stored_square_offset {
+                        // 전체·부분 paint가 사용하는 같은 저장 호스트 원점이다.
+                        // 표의 바깥 여백을 포함한 상자는 offset+nested_h에서 끝난다.
+                        // 호스트 글줄 뒤에 표와 추정 간격을 다시 더하지 않는다.
+                        hwpunit_to_px(offset, self.dpi) + nested_h - (unit_cum - before_host_units)
                     } else if has_internal_line_reset {
                         (nested_h + 4.0 - line_core_height).max(0.0)
                     } else {
