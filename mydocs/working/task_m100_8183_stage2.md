@@ -3,13 +3,15 @@
 Issue: [#8183](https://github.com/edwardkim/rhwp/issues/8183) ·
 [수행 계획](../plans/task_m100_8183.md) · [구현 계획](../plans/task_m100_8183_impl.md)
 
-상태: **구현·focused 검증 완료. 고정 source의 package 선별 확인을 마무리한다.
+상태: **2단계 구현·focused 검증·고정 source 선별 확인 완료. 3단계 승인 대기.
 PR 제출·배포 단계가 아니다.**
 
 작업지시자가 「계획과 2단계 구현 승인」으로 승인했다. 기준 base는
 `d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867`, 선행 조사 커밋은
 `2c304a1367703e142eeac07e780d8480b53fdc14`다. 작업 브랜치는
 `feat/issue8183-pdf-codec-opt-in-20261023`이다. 새 원격 변경은 수행하지 않는다.
+구현 checkpoint는 `0ec4ade2caf9afba21dcbde8060a8e63790e460f`다.
+아래 기록 보충은 계획·결과 문서만 변경하며 검증한 제품 source를 유지한다.
 
 ## 구현한 계약
 
@@ -92,6 +94,7 @@ Rust 파일은 수정 전후 전체 leaf token이 같음을 parser로 확인했�
 | 보정판의 기존 내장 단위 검사 | JBIG2 2/2, JPEG 2000 1/1. CCITT에는 내장 unit이 없으며 실제 MMR 제품 probe로 검사 |
 | 실제 제품 경로의 codec probe | 9/9. 아래 정상·경계·손상·공유 자원·mask·palette·alpha·공개 Rust API 포함 |
 | source policy 도구의 기존 계약 | Python unittest 18/18 |
+| 고정 source package 선별 | checkpoint `0ec4ade2c`의 12개 package·15개 runtime include 확인, `source_check=pass` |
 | 형식·공백 | 네 fork `cargo fmt -- --check`, 변경 backend 파일의 rustfmt, `git diff --check`: 통과 |
 
 Native/WASM 항목은 **library의 컴파일·lint**다. 실제 CLI 실행·fresh WASM binding/
@@ -144,6 +147,12 @@ SMaskInData의 opacity 소비·외부 SMask 제약을 구분한다.
 원본 license/NOTICE와 선택 의존성을 `THIRD_PARTY_LICENSES.md`, source package policy와
 ICC runtime include 목록에 연결했다. 패키지는 게시 전 로컬 후보다. 0.9.0 포함·실제 게시·
 패키지 이름/MSRV의 미결정을 이 단계에서 자동 확정하지 않는다.
+
+`python3 scripts/crates_io_source_preflight.py --ref 0ec4ade2c --output-dir
+output/pr-review/issue8183/stage2/source-preflight`를 실행했다. 고정 Git blob의 선별·고지·
+의존 순서·ICC 포함은 통과했다. 기존 `publish=false` 등의 명시적 게시 차단은 유지되어
+`publish_ready=false`다. 이 검사는 실제 registry 게시·설치 검증을 대신하지 않는다.
+상세 원본은 같은 경로의 `source-preflight.json`에 보존한다.
 
 3단계에는 네 구성의 실제 Native CLI/Rust·fresh WASM/Studio Worker 소비, 실패·취소 뒤 복구,
 저장·재열기와 기존 대조군, 전쪽 TSV·직접 판독, 성능·크기 관측과 사용자 가이드가 남는다.
