@@ -120,7 +120,12 @@ pub(crate) fn stored_host_line_end_hu(
 /// padding when the saved line box fills it; otherwise actual text plus active
 /// padding must fit, independently of the number of rows in the table.
 pub(crate) fn stored_text_cell_required_height(content: f64, declared: f64, padding: f64) -> f64 {
-    if content > declared + 1.5 || (content + 0.5 < declared && content + padding > declared) {
+    // 높이가 없는 셀 선언은 안 여백을 담은 물리 상자를 입증하지 못한다.
+    // 작은 저장 글줄도 유효한 점유이므로 양수 프레임의 허용치로 여백을 생략하지 않는다.
+    if declared <= 0.0
+        || content > declared + 1.5
+        || (content + 0.5 < declared && content + padding > declared)
+    {
         content + padding
     } else {
         content
