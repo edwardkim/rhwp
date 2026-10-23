@@ -1,6 +1,8 @@
 //! #7445 첫 댓글: 로드맵 302쪽 전수 시각 수용 후 원본 행 소속을 복원한다.
 //! 독립 한컴 PDF와 Native/실제 fresh WASM 증적은 resolution-20261005에 있다.
-//! 절대 픽셀 좌표 대신 국가 행의 쪽 소속·셀 누락/중복·끝 출처를 검사한다.
+//! 국가 행의 쪽 소속·셀 누락/중복·끝 출처를 검사한다.
+//! 전쪽 양쪽 90%와 296·297쪽 양쪽 100%를 확인한 뒤 독립 Print의
+//! 표 시작·이어받기 테두리를 ±2CSSpx로 보호한다. Stage69 증적을 따른다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -52,6 +54,27 @@ fn assert_table_owners(host: usize, page_ranges: &[(u32, u16, u16)]) {
     for &(page, first, end) in page_ranges {
         let tree = core.build_page_render_tree(page - 1).expect("PDF 대응 쪽");
         let table = table_for_host(&tree.root, host).expect("같은 쪽의 원본 표 조각");
+        // 96DPI 독립 Print의 외곽 괘선 중심(pt)을 CSSpx로 환산한다.
+        // 행 소속·셀 누락/중복 검사를 유지하며 완료된 두 쪽에만 적용한다.
+        let printed_edges_pt = match (host, page) {
+            (1305, 296) => Some([87.913, 121.427, 507.207, 704.230]),
+            (1305, 297) => Some([87.913, 102.008, 507.207, 735.875]),
+            _ => None,
+        };
+        if let Some(printed) = printed_edges_pt {
+            for (edge, actual, expected_pt) in [
+                ("left", table.bbox.x, printed[0]),
+                ("top", table.bbox.y, printed[1]),
+                ("right", table.bbox.x + table.bbox.width, printed[2]),
+                ("bottom", table.bbox.y + table.bbox.height, printed[3]),
+            ] {
+                let expected = expected_pt * 96.0 / 72.0;
+                assert!(
+                    (actual - expected).abs() <= 2.0,
+                    "완료된 {page}쪽 표 {edge}: 실제 {actual}, 독립 Print {expected}"
+                );
+            }
+        }
         let mut rows = BTreeSet::new();
         for node in &table.children {
             let RenderNodeType::TableCell(cell) = &node.node_type else {

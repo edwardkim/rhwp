@@ -139,9 +139,9 @@ pub(crate) fn prepare_bitmap(
             let source = reader.decode().ok()?;
             let transparent = source.color().has_alpha()
                 && source.to_rgba8().pixels().any(|pixel| pixel.0[3] != 255);
-            // 독립 Print 표본 C352/C354/C356의 구간 평균을 보존한다.
-            // 각 source 픽셀은 정확히 한 장치 구간에 들어간다. Lanczos의
-            // 음의 lobe나 새 보간으로 옅은 선의 밝기를 다시 바꾸지 않는다.
+            // 장치 픽셀이 덮는 원본 구간의 면적을 적분한다. 원본 픽셀을
+            // 정수 경계 한쪽에만 배정하면 비정수 축소에서 가는 선의 밝기가
+            // 구간 위상에 따라 달라진다. 두 축의 겹치는 비율을 함께 소비한다.
             let resized = if transparent {
                 // Print의 투명 표본은 실제 소수 장치 사각형에서 coverage를
                 // 적분한다. 숨은 RGB를 먼저 섞거나 투명 가장자리를 정수 box에
@@ -156,7 +156,7 @@ pub(crate) fn prepare_bitmap(
                     device_rect,
                 )?)
             } else if print {
-                image::DynamicImage::ImageRgb8(integer_area_downsample(
+                image::DynamicImage::ImageRgb8(opaque_area_downsample(
                     &source.to_rgb8(),
                     width,
                     height,
@@ -195,28 +195,52 @@ pub(crate) fn prepare_bitmap(
     })
 }
 
-fn integer_area_downsample(source: &image::RgbImage, width: u32, height: u32) -> image::RgbImage {
-    let mut result = image::RgbImage::new(width, height);
-    let boundary = |index: u32, source_extent: u32, target_extent: u32| {
-        (u64::from(index) * u64::from(source_extent) / u64::from(target_extent)) as u32
-    };
-    for y in 0..height {
-        let top = boundary(y, source.height(), height);
-        let bottom = boundary(y + 1, source.height(), height);
+/// 공통 정수 격자로 구간의 겹침을 표현해 부동소수점 경계 오차를 피한다.
+fn area_span(index: u32, source: u32, target: u32) -> impl Iterator<Item = (u32, u64)> + Clone {
+    let source = u64::from(source);
+    let target = u64::from(target);
+    let start = u64::from(index) * source;
+    let end = start + source;
+    (start / target..end.div_ceil(target)).map(move |pixel| {
+        let overlap = end.min((pixel + 1) * target) - start.max(pixel * target);
+        (pixel as u32, overlap)
+    })
+}
+
+fn opaque_area_downsample(source: &image::RgbImage, width: u32, height: u32) -> image::RgbImage {
+    let mut horizontal = image::RgbImage::new(width, source.height());
+    for y in 0..source.height() {
         for x in 0..width {
-            let left = boundary(x, source.width(), width);
-            let right = boundary(x + 1, source.width(), width);
-            let count = u64::from(bottom - top) * u64::from(right - left);
             let mut sum = [0u64; 3];
-            for source_y in top..bottom {
-                for source_x in left..right {
-                    let pixel = source.get_pixel(source_x, source_y);
-                    for channel in 0..3 {
-                        sum[channel] += u64::from(pixel[channel]);
-                    }
+            for (source_x, weight) in area_span(x, source.width(), width) {
+                let pixel = source.get_pixel(source_x, y);
+                for channel in 0..3 {
+                    sum[channel] += u64::from(pixel[channel]) * weight;
                 }
             }
-            result.put_pixel(x, y, image::Rgb(sum.map(|value| (value / count) as u8)));
+            horizontal.put_pixel(
+                x,
+                y,
+                image::Rgb(sum.map(|value| (value / u64::from(source.width())) as u8)),
+            );
+        }
+    }
+    let mut result = image::RgbImage::new(width, height);
+    for y in 0..height {
+        let span = area_span(y, source.height(), height);
+        for x in 0..width {
+            let mut sum = [0u64; 3];
+            for (source_y, weight) in span.clone() {
+                let pixel = horizontal.get_pixel(x, source_y);
+                for channel in 0..3 {
+                    sum[channel] += u64::from(pixel[channel]) * weight;
+                }
+            }
+            result.put_pixel(
+                x,
+                y,
+                image::Rgb(sum.map(|value| (value / u64::from(source.height())) as u8)),
+            );
         }
     }
     result
