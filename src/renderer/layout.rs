@@ -7762,9 +7762,40 @@ impl LayoutEngine {
                 !self.profile.get().session_edited()
                     && origin.spacing_before.is_finite()
                     && origin.spacing_before >= 0.0
-                    && origin.flow_start.abs() <= self.dpi / 7200.0
-                    && (y_offset - visual_col_y - origin.flow_start).abs() <= self.dpi / 7200.0
+                    && ((origin.flow_start.abs() <= self.dpi / 7200.0
+                        && (y_offset - visual_col_y - origin.flow_start).abs()
+                            <= self.dpi / 7200.0)
+                        || (!col_content.endnote_flow
+                            && col_content.start_height == 0.0
+                            && paragraphs.get(origin.paragraph_index).is_some_and(|para| {
+                                let paper = LayoutRect {
+                                    x: 0.0,
+                                    y: 0.0,
+                                    width: layout.page_width,
+                                    height: layout.page_height,
+                                };
+                                let frame = super::float_placement::ObjectPlacementFrame {
+                                    container: col_area,
+                                    column: col_area,
+                                    body: &layout.body_area,
+                                    paper: &paper,
+                                    paragraph_y: col_area.y,
+                                    alignment: crate::model::style::Alignment::Left,
+                                    dpi: self.dpi,
+                                };
+                                frame
+                                    .stored_topbottom_host_line_origin(para)
+                                    .is_some_and(|line| {
+                                        (line - origin.flow_start - origin.spacing_before).abs()
+                                            <= self.dpi / 7200.0
+                                    })
+                            })))
             });
+        if let Some(origin) = measured_first_origin {
+            // 첫 빈 호스트도 실제로 수용한 자리차지 상자 뒤의 줄을 소유한다.
+            // 뒤 항목에서 다시 lazy 원점을 추측하기 전에 같은 측정 원점으로 시작한다.
+            y_offset = col_area.y + origin.flow_start;
+        }
         let vpos_page_base_init: Option<i32> = if let Some(origin) = measured_first_origin {
             Some(origin.source_vpos_base)
         } else if has_absolute_page_frame {

@@ -64,7 +64,8 @@ pub(in crate::renderer::typeset) fn place(
         layout_drift_safety_px,
         split_safety,
         prev_is_partial_table,
-        available,
+        mut available,
+        footnote_margin_addback,
     } = paragraph::prepare_fit_budget(
         st,
         para_idx,
@@ -156,6 +157,7 @@ pub(in crate::renderer::typeset) fn place(
         native_hwp5_existing_footnote_boundary,
         current_page_vpos_base,
         forced_page_break_line,
+        anchored_stored_body_reset_line,
     } = paragraph::prepare_forced_page_boundary(
         st,
         para_idx,
@@ -168,6 +170,53 @@ pub(in crate::renderer::typeset) fn place(
             styles,
         },
     );
+    // 저장 원점과 현재 흐름이 함께 인증한 본문 prefix는 같은 각주 paint 상자를 쓴다.
+    // 이 prefix에 새 각주 참조가 없으면 기존 선택 조각만 예약하면 된다. 이미 확정된
+    // reset 앞 줄의 수용과 실제 배치가 같은 물리 경계를 소비하도록 한다.
+    if st.col_count == 1
+        && !st.profile.session_edited()
+        && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+    {
+        if let Some(end) =
+            anchored_stored_body_reset_line.filter(|&end| end > 0 && end < fmt.line_count())
+        {
+            let next_text_start = para.utf16_pos_to_char_idx(para.line_segs[end].text_start);
+            let positions = para.control_text_positions();
+            let prefix_has_no_new_note =
+                para.controls.iter().enumerate().all(|(index, control)| {
+                    matches!(control, crate::model::control::Control::Footnote(_))
+                        && positions
+                            .get(index)
+                            .is_some_and(|&position| position >= next_text_start)
+                });
+            if prefix_has_no_new_note {
+                let measure =
+                    crate::renderer::typeset::notes::footnotes::measure::BodyFootnoteMeasure {
+                        engine,
+                        styles,
+                    };
+                if let Some(height) = measure.stored_current_area_height(st, paragraphs) {
+                    let prefix_bottom = st.current_height
+                        + fmt.spacing_before
+                        + fmt.line_advances_sum(0..end - 1)
+                        + fmt.line_heights[end - 1];
+                    let physical_bottom = st.base_available_height()
+                        - height
+                        - st.current_zone_y_offset
+                        - st.current_bottom_fixed_exclusion;
+                    if prefix_bottom <= physical_bottom {
+                        let previous = st.available_height();
+                        st.reserve_painted_footnote_area(height);
+                        // 진입에서 소비한 1회 각주 여백 환급도 함께 정산한다.
+                        // float·본문 여유 등 다른 예약은 기존 예산에 그대로 남는다.
+                        available = (available - footnote_margin_addback + st.available_height()
+                            - previous)
+                            .max(0.0);
+                    }
+                }
+            }
+        }
+    }
     if st.prefilled_line_prefixes.contains_key(&para_idx) {
         // 앞 쪽의 선행 조각이 소유한 줄을 whole-fit으로 다시 배치하지 않는다.
         let base_available = st.base_available_height();

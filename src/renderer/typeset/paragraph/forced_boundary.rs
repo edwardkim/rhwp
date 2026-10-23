@@ -137,5 +137,6 @@ pub(in crate::renderer::typeset) fn prepare_forced_page_boundary(
         native_hwp5_existing_footnote_boundary,
         current_page_vpos_base,
         forced_page_break_line,
+        anchored_stored_body_reset_line,
     }
 }

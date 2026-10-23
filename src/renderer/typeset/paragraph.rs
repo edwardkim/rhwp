@@ -729,6 +729,7 @@ pub(super) struct FitBudget {
     pub split_safety: SplitSafety,
     pub prev_is_partial_table: bool,
     pub available: f64,
+    pub footnote_margin_addback: f64,
 }
 
 /// 저장 꼬리 → 진단 → 편집 그림 이월 → 보정 소비 → float 배제 → 예산 순서를 보존한다.
@@ -832,6 +833,7 @@ pub(super) fn prepare_fit_budget(
         },
         prev_is_partial_table,
         available,
+        footnote_margin_addback,
     }
 }
 
@@ -929,6 +931,7 @@ pub(super) struct ForcedPageBoundary {
         Option<super::notes::footnotes::boundary::NativeHwp5FootnoteBodyBoundary>,
     pub current_page_vpos_base: Option<i32>,
     pub forced_page_break_line: Option<usize>,
+    pub anchored_stored_body_reset_line: Option<usize>,
 }
 
 /// 기존 각주 경계를 먼저 조회하고, 저장/각주/그림 후보를 원래 단락 순서로 선택한다.

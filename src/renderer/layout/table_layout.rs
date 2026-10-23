@@ -21626,7 +21626,7 @@ impl LayoutEngine {
                 .render_normalization
                 .borrow()
                 .table_text_reflowed(table)
-            || !para.controls.is_empty()
+            || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
             || para.stored_text_partition_is_dirty()
             || para.cell_format_vpos_dirty
             || line == 0
@@ -21757,7 +21757,7 @@ impl LayoutEngine {
                 .borrow()
                 .table_text_reflowed(table)
             || [previous, para].iter().any(|p| {
-                !p.controls.is_empty()
+                !crate::renderer::cell_paragraph_has_only_single_column_metadata(p)
                     || p.stored_text_partition_is_dirty()
                     || p.cell_format_vpos_dirty
             })
@@ -21810,7 +21810,7 @@ impl LayoutEngine {
         for cell in cells {
             if cell.row_span != 1
                 || cell.paragraphs.iter().any(|para| {
-                    !para.controls.is_empty()
+                    !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
                         || para.stored_text_partition_is_dirty()
                         || para.cell_format_vpos_dirty
                         || para.line_segs.is_empty()

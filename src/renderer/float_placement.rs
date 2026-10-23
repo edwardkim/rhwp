@@ -6318,10 +6318,17 @@ impl ObjectPlacementFrame<'_> {
             common.width as i32 + i32::from(common.margin.left) + i32::from(common.margin.right),
             self.dpi,
         );
-        let height = hwpunit_to_px(
-            common.height as i32 + i32::from(common.margin.top) + i32::from(common.margin.bottom),
-            self.dpi,
-        );
+        let content_height = hwpunit_to_px(common.height as i32, self.dpi);
+        let caption = match control {
+            Control::Picture(picture) => picture.caption.clone(),
+            Control::Shape(shape) => super::composer::shape_caption_for_layout(shape),
+            _ => None,
+        };
+        let height = super::composer::captioned_shape_height_px(content_height, &caption, self.dpi)
+            + hwpunit_to_px(
+                i32::from(common.margin.top) + i32::from(common.margin.bottom),
+                self.dpi,
+            );
         let (x, y) = self.position(common, width, height);
         if ![x, y].iter().all(|v| v.is_finite())
             || x + width <= self.column.x + 0.5
@@ -6330,6 +6337,43 @@ impl ObjectPlacementFrame<'_> {
             return None;
         }
         Some((y, y + height))
+    }
+
+    /// 자리차지 개체의 완전한 바깥 상자 뒤에 저장된 빈 호스트 줄의 원점.
+    /// 첫 저장 vpos가 개체 뒤의 줄이면 그 값을 쪽 원점으로 빼지 않는다.
+    /// 개체·캡션·바깥 여백과 원본 줄이 같은 경계를 닫을 때만 인증한다.
+    pub(crate) fn stored_topbottom_host_line_origin(&self, para: &Paragraph) -> Option<f64> {
+        use crate::model::paragraph::LineSeg;
+        let [line] = para.line_segs.as_slice() else {
+            return None;
+        };
+        if para.stored_text_partition_is_dirty()
+            || para.cell_format_vpos_dirty
+            || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || line.vertical_pos <= 0
+            || line.line_height <= 0
+            || para
+                .text
+                .chars()
+                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{fffc}')
+        {
+            return None;
+        }
+        let origin = hwpunit_to_px(line.vertical_pos, self.dpi);
+        let mut witnessed = false;
+        for control in &para.controls {
+            match control {
+                Control::SectionDef(_) => continue,
+                Control::ColumnDef(columns) if columns.column_count == 1 => continue,
+                _ => {}
+            }
+            let (_, bottom) = self.page_anchored_topbottom_band(control)?;
+            if (bottom - self.column.y - origin).abs() > self.dpi / 7200.0 {
+                return None;
+            }
+            witnessed = true;
+        }
+        witnessed.then_some(origin)
     }
 
     /// 실제 출력과 같은 여백·캡션 포함 상자. 흐름에 영향을 주는 Square 그림만 등록한다.
