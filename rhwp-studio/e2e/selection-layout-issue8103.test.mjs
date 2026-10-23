@@ -141,7 +141,25 @@ await runTest('선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
       && redone.highlights.length === 0, 'Redo: 실제 전체 삭제 범위·선택 해제 일치');
     await key(page, 'z', modifier);
     await layout(page, redone.count);
-    checkProjection(await state(page), `${zoom} repeat Undo`);
+    const repeated = await state(page);
+    checkProjection(repeated, `${zoom} repeat Undo`);
+    // 새 선택 대조군을 만들지 않은 복원 선택에서, 마지막 쪽을 보며 실제로 삭제한다.
+    await page.evaluate(() => {
+      const ih = window.__inputHandler;
+      ih.viewportManager.setScrollTop(ih.virtualScroll.getPageOffset(window.__wasm.pageCount - 1));
+    });
+    await frames(page);
+    await key(page, 'Backspace');
+    await layout(page, repeated.count);
+    const removed = await state(page);
+    assert(removed.pages === 1 && removed.paragraphs === 1 && removed.texts[0] === ''
+      && removed.selection === null && removed.highlights.length === 0,
+    '재선택 없는 복원 선택: 마지막 쪽에서 Backspace가 전체 음영 범위를 삭제');
+    await key(page, 'z', modifier);
+    await layout(page, removed.count);
+    const recovered = await state(page);
+    assert(same(recovered.texts, expectedTexts), '실제 Backspace의 Undo가 400문단 원문을 복원');
+    checkProjection(recovered, `${zoom} Backspace Undo`);
   }
 
   setTestCase('pending-layout-new-selection');
