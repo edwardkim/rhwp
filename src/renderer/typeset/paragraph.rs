@@ -800,6 +800,11 @@ pub(super) fn prepare_fit_budget(
     } else {
         0.0
     };
+    st.register_own_page_anchored_topbottom_bands(
+        para_idx,
+        para,
+        fmt.line_heights.first().copied().unwrap_or(0.0),
+    );
     st.apply_visible_float_exclusions_absorbing(
         exclusion_probe_height,
         absorbed_spacing_before,
