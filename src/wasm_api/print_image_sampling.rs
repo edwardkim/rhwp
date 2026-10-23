@@ -132,7 +132,7 @@ pub fn map_print_bitmap_clip(rectangle: &[f64], transform: &[f64]) -> JsValue {
         return JsValue::NULL;
     };
     let source = crate::renderer::render_tree::BoundingBox::new(x, y, width, height);
-    let Some(clip) = crate::paint::device_clip::bitmap_fill(source, matrix) else {
+    let Some(clip) = crate::paint::device_clip::rectangle(source, matrix) else {
         return JsValue::NULL;
     };
     js_sys::Float64Array::from([clip.x, clip.y, clip.width, clip.height].as_slice()).into()

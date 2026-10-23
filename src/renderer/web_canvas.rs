@@ -50,8 +50,8 @@ use crate::model::style::UnderlineType;
 use crate::paint::replay_order::layer_node_has_replay_plane;
 use crate::paint::{
     paint_op_replay_plane_with_layer, render_layer_replay_plane, text_visual_replay_role,
-    validate_text_variant_scope, ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree,
-    PaintOp, PaintReplayPlane, TextDecorationKind, TextVisualReplayRole,
+    validate_text_variant_scope, GroupKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp,
+    PaintReplayPlane, TextDecorationKind, TextVisualReplayRole,
 };
 
 const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
@@ -1690,21 +1690,17 @@ impl WebCanvasRenderer {
                 self.render_layer_node(child, active_layer);
                 self.ctx.restore();
             }
-            LayerNodeKind::ClipRect {
-                clip,
-                child,
-                clip_kind,
-            } => {
+            LayerNodeKind::ClipRect { clip, child, .. } => {
                 if !self.layer_clip_enabled {
                     self.render_layer_node(child, active_layer);
                     return;
                 }
-                let clip = if *clip_kind == ClipKind::PrintBitmapFill {
+                let clip = if self.print_stroke_adjustment {
                     self.ctx
                         .get_transform()
                         .ok()
                         .and_then(|matrix| {
-                            crate::paint::device_clip::bitmap_fill(
+                            crate::paint::device_clip::rectangle(
                                 *clip,
                                 [
                                     matrix.a(),

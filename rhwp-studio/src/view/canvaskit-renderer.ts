@@ -12,7 +12,7 @@ import * as bitmapRasterWasm from '@wasm/rhwp.js';
 import { drawAnisotropicPrintImage, drawPrintFrameImage } from './canvaskit/anisotropic-image.ts';
 import { drawPrintMetafile, isPrintMetafile } from './canvaskit/metafile-print.ts';
 import { drawPrintAreaImage } from './canvaskit/print-image-sampling.ts';
-import { printBitmapClip, printRectangleFill, printBitmapImage } from './canvaskit/print-device-rectangle.ts';
+import { printRectangleClip, printRectangleFill, printBitmapImage } from './canvaskit/print-device-rectangle.ts';
 import CanvasKitInit from 'canvaskit-wasm';
 import { blake3 } from '@noble/hashes/blake3.js';
 import type {
@@ -1992,8 +1992,8 @@ export class CanvasKitLayerRenderer {
       return;
     }
     canvas.clipRect(
-      canvasKitCanonicalClipRect(node.clipKind === 'printBitmapFill'
-        ? printBitmapClip(canvas, node.clip) : node.clip, (x, y, width, height) =>
+      canvasKitCanonicalClipRect(profile === 'print'
+        ? printRectangleClip(canvas, node.clip) : node.clip, (x, y, width, height) =>
         this.canvasKit.XYWHRect(x, y, width, height),
       ),
       this.canvasKit.ClipOp?.Intersect ?? 0,

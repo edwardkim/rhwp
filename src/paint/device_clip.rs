@@ -1,10 +1,10 @@
-//! Print bitmap 채움의 사각형 clip을 실제 장치 픽셀의 포함 경계에 대응한다.
+//! Print 사각형 clip을 소유 종류와 무관한 장치 픽셀 포함 경계에 대응한다.
 
 use crate::renderer::render_tree::BoundingBox;
 
 /// 축 정렬 raster에서만 바깥 정수 경계를 구하고 원래 좌표계로 반환한다.
 /// 원본의 물리 clip과 벡터 출력은 바꾸지 않는다. 호출자는 실제 장치 행렬을 전달한다.
-pub(crate) fn bitmap_fill(clip: BoundingBox, [a, b, c, d, e, f]: [f64; 6]) -> Option<BoundingBox> {
+pub(crate) fn rectangle(clip: BoundingBox, [a, b, c, d, e, f]: [f64; 6]) -> Option<BoundingBox> {
     if ![clip.x, clip.y, clip.width, clip.height, a, b, c, d, e, f]
         .into_iter()
         .all(f64::is_finite)

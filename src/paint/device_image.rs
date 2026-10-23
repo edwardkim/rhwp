@@ -35,5 +35,5 @@ pub(crate) fn eligible(image: &ImageNode) -> bool {
 /// 최종 image matrix의 외접 영역을 목적 사각형으로 되돌린다.
 /// clip과 같은 외접 연산을 공유하며 그림 내부의 표본·색·alpha는 변경하지 않는다.
 pub(crate) fn bounds(bbox: BoundingBox, matrix: [f64; 6]) -> Option<BoundingBox> {
-    super::device_clip::bitmap_fill(bbox, matrix)
+    super::device_clip::rectangle(bbox, matrix)
 }

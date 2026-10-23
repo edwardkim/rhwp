@@ -1401,11 +1401,7 @@ impl SkiaLayerRenderer {
                 canvas.restore();
                 result?;
             }
-            LayerNodeKind::ClipRect {
-                clip,
-                child,
-                clip_kind,
-            } => {
+            LayerNodeKind::ClipRect { clip, child, .. } => {
                 if !clip_enabled {
                     return self.render_node(
                         canvas,
@@ -1422,13 +1418,13 @@ impl SkiaLayerRenderer {
                     );
                 }
                 canvas.save();
-                let clip = if *clip_kind == crate::paint::ClipKind::PrintBitmapFill
-                    && cache_context.raster_target
+                let clip = if cache_context.raster_target
+                    && cache_context.policy.print_stroke_adjustment()
                 {
                     let matrix = canvas.local_to_device_as_3x3();
                     (!matrix.has_perspective())
                         .then(|| {
-                            crate::paint::device_clip::bitmap_fill(
+                            crate::paint::device_clip::rectangle(
                                 *clip,
                                 [
                                     matrix.scale_x(),

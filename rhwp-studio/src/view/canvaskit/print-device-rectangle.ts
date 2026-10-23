@@ -16,7 +16,7 @@ function mapRectangle(canvas: Canvas, clip: LayerBounds,
   return mapped ? { x: mapped[0], y: mapped[1], width: mapped[2], height: mapped[3] } : clip;
 }
 
-export function printBitmapClip(canvas: Canvas, clip: LayerBounds): LayerBounds {
+export function printRectangleClip(canvas: Canvas, clip: LayerBounds): LayerBounds {
   return mapRectangle(canvas, clip, 'mapPrintBitmapClip');
 }
 
