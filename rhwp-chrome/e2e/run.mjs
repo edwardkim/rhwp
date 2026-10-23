@@ -9,6 +9,7 @@ import path from 'node:path';
 
 const currentFile = fileURLToPath(import.meta.url);
 const root = path.resolve(path.dirname(currentFile), '../..');
+export const requiredCandidateFiles = ['manifest.json', 'viewer.html', 'wasm/rhwp.js', 'wasm/rhwp_bg.wasm'];
 export const suites = ['extension-smoke', 'download-interceptor', 'extension-lifecycle'];
 const selectionVariables = ['RHWP_EXTENSION_SMOKE_REPEAT', 'RHWP_EXTENSION_DOWNLOAD_CASE',
   'RHWP_EXTENSION_LIFECYCLE_REPEAT', 'RHWP_EXTENSION_LIFECYCLE_CASE'];
@@ -49,7 +50,7 @@ export async function inspectCandidate(directory) {
   await visit();
   const manifest = JSON.parse(await readFile(path.join(directory, 'manifest.json'), 'utf8'));
   if (manifest.manifest_version !== 3 || !manifest.version) throw new Error('Expected a versioned MV3 extension');
-  for (const required of ['viewer.html', 'wasm/rhwp.js', 'wasm/rhwp_bg.wasm']) {
+  for (const required of requiredCandidateFiles) {
     if (!files.some(file => file.path === required)) throw new Error(`Incomplete candidate: ${required}`);
   }
   return { directory, version: manifest.version, manifestVersion: manifest.manifest_version,

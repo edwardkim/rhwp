@@ -61,3 +61,31 @@ HWP/HWPX/PDF 파일을 검사에 사용하지 않았다. GitHub CI 완료는 로
 대조하되 이를 공개하지 않는다. 공유할 두 파일에서 경로·다운로드·개인 정보 제외와 읽기 편의성을
 검토한다. 수동 JSON의 pass/fail을 실제 판정 후 작성하고 `--manual-review`로 새 보고서를 생성한다.
 두 공유 파일만 사람이 게시한다. 새 이슈·자동 CI·merge·release·배포·issue close는 수행하지 않는다.
+
+## 재검토 보정
+
+기존 head `8a478c7562354da86e3a1797c7b288bc656fdb74`의 재검토에서 확인한 네 항목을
+[보정 기록](../working/task_m100_7449_stage2.md)에 따라 수정했다.
+
+| 항목 | 수정 전 | 보정 후 |
+| --- | --- | --- |
+| 서명만 남은 PNG·IEND 누락·끝의 불필요 데이터 | verified | invalid-png / incomplete |
+| 전체 오류 필드가 있는 pass | pass | inconsistent-overall-pass / incomplete |
+| 필수 후보 파일 누락과 재계산한 해시 | pass | candidate-required-files-missing / incomplete |
+| 대문자·혼합 script 태그에 대한 음성 대조 | 검출 실패 | 검사 통과, 실제 DOM에 능동 콘텐츠 없음 |
+
+보정 전 회귀는 32 PASS / 4 FAIL / SKIP 0이었다. 보정 후 아래 명령에서 계약 39개와
+Chromium DOM 검사 1개가 모두 통과했다. 계약은 Node 24.19.0과 Node 22.23.4에서 각각 재검증했다. 기존 32개 결과와 구분하며, 새 code SHA와 원격 CodeQL
+결과는 PR 본문에 고정한다.
+
+```bash
+node --test rhwp-chrome/e2e/report.test.mjs rhwp-chrome/e2e/png-integrity.test.mjs \
+  rhwp-chrome/e2e/run.test.mjs rhwp-chrome/e2e/tab-monitor.test.mjs \
+  rhwp-chrome/e2e/failure-diagnostics.test.mjs rhwp-chrome/e2e/page-budget.test.mjs
+RHWP_REPORT_BROWSER=/usr/bin/chromium node --test rhwp-chrome/e2e/report-browser.test.mjs
+node rhwp-chrome/e2e/report-fixtures.mjs --output output/pr-review/7449/corrected-examples
+```
+
+PNG 구조·CRC·압축 스캔라인 검사에는 외부 의존성이 없다. 압축 해제 데이터는 128 MiB로 제한하며,
+초과는 incomplete다. 픽셀 내용의 시각적 정확성은 판정하지 않는다. 실제 확장 전체 E2E와 사용자
+수동 확인의 미검증 범위는 위와 같다.

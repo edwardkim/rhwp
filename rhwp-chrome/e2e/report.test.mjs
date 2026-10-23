@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { runChecks } from './run.mjs';
 import { generateReport, inspectRun, parseReportArgs } from './report.mjs';
+const assertShareable = bytes => assert.doesNotMatch(bytes, /SECRET|98765|\/private\/|<script>|smoke-0\.png|href=/i);
 const sha = data => createHash('sha256').update(data).digest('hex');
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64');
 const env = { node: 'v24.0.0', platform: 'linux', arch: 'x64', puppeteer: '25.12.0', chrome: '147.0.0.0', executable: '/private/SECRET/chrome', harnessSha: 'a'.repeat(40), harnessDirty: false };
@@ -119,7 +120,7 @@ test('shareable summary excludes free-form diagnostics/paths/IDs; private links 
   await generateReport(f);
   for (const name of ['report.html', 'report.json']) {
     const bytes = await readFile(path.join(f.output, name), 'utf8');
-    assert.doesNotMatch(bytes, /SECRET|98765|\/private\/|<script>|smoke-0\.png|href=/);
+    assertShareable(bytes);
   }
   const privateHtml = await readFile(path.join(f.output, 'private.html'), 'utf8');
   assert.match(privateHtml, /evidence-1/); assert.match(privateHtml, /smoke-0.png/);
@@ -186,4 +187,47 @@ test('malformed artifact metadata is reported instead of crashing the report', a
   const f = await fixture(t, 'fail');
   await update(f, d => { d.results[0].artifacts.push({ path: 123 }); });
   assert.equal((await inspectRun(f.input)).summary.status, 'incomplete');
+});
+
+test('truncated PNG evidence is incomplete even when its manifest hash matches', async t => {
+  for (const bytes of [png.subarray(0, 8), png.subarray(0, -12), Buffer.concat([png, Buffer.from('trailing')])]) {
+    const f = await fixture(t, 'fail');
+    await writeFile(path.join(f.input, 'smoke-0.png'), bytes);
+    await update(f, d => { d.results[0].artifacts.find(a => a.path === 'smoke-0.png').sha256 = sha(bytes); });
+    const { summary, links } = await inspectRun(f.input);
+    assert.equal(summary.sourceStatus, 'fail');
+    assert.equal(summary.status, 'incomplete');
+    assert.ok(summary.issues.includes('invalid-png'));
+    assert.equal(links.some(x => x.kind === 'png'), false);
+  }
+});
+
+test('contradictory overall error cannot coexist with a successful report', async t => {
+  for (const error of ['verification failed', false, 0, {}]) {
+    const f = await fixture(t);
+    await update(f, d => { d.error = error; });
+    const { summary } = await inspectRun(f.input);
+    assert.equal(summary.sourceStatus, 'pass');
+    assert.equal(summary.status, 'incomplete');
+    assert.ok(summary.issues.includes('inconsistent-overall-pass'));
+  }
+});
+
+test('candidate inventories require every runner-required file independently of their hash', async t => {
+  for (const missing of ['manifest.json', 'viewer.html', 'wasm/rhwp.js', 'wasm/rhwp_bg.wasm']) {
+    const f = await fixture(t);
+    await update(f, d => {
+      d.candidate.files = d.candidate.files.filter(file => file.path !== missing);
+      d.candidate.sha256 = sha(JSON.stringify(d.candidate.files));
+    });
+    const { summary } = await inspectRun(f.input);
+    assert.equal(summary.status, 'incomplete');
+    assert.ok(summary.issues.includes('candidate-required-files-missing'));
+  }
+});
+
+test('sharing guard rejects lower, upper and mixed-case script tags', () => {
+  for (const payload of ['<script>alert(1)</script>', '<SCRIPT>alert(1)</SCRIPT>', '<ScRiPt>alert(1)</ScRiPt>']) {
+    assert.throws(() => assertShareable(payload), assert.AssertionError);
+  }
 });

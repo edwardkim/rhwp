@@ -3,7 +3,8 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, lstat, realpath, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { suites } from './run.mjs';
+import { isCompletePng } from './png-integrity.mjs';
+import { requiredCandidateFiles, suites } from './run.mjs';
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const hex = (value, length) => typeof value === 'string' && new RegExp(`^[a-f0-9]{${length}}$`).test(value);
@@ -64,6 +65,7 @@ export async function inspectRun(input, options = {}) {
       paths.add(file.path); return true;
     });
     if (!valid || !hex(c.sha256, 64) || hash(JSON.stringify(files)) !== c.sha256) problem('candidate-inventory-hash-invalid');
+    if (!requiredCandidateFiles.every(file => paths.has(file))) problem('candidate-required-files-missing');
     if (!token(c.version) || c.manifestVersion !== 3) problem('candidate-version-invalid');
     summary.candidate = { sha256: hex(c.sha256, 64) ? c.sha256 : null, version: token(c.version), manifestVersion: c.manifestVersion === 3 ? 3 : null,
       unchanged: typeof data.candidateUnchanged === 'boolean' ? data.candidateUnchanged : null,
@@ -117,14 +119,15 @@ export async function inspectRun(input, options = {}) {
           const stage = diagnostic.stage ?? diagnostic.surface;
           item.stage = typeof stage === 'string' && /^(launch|service-worker|viewer-dark|print|options|content-script|normal-xlsx|misleading-hwp-url|confirmed-hwp|extensionless-hwp|options-save|worker-stop|download-hwpx?|prepare-history-without-extension|verify-persisted-history|transition-(reenter|worker|restart)|own-blob-save)$/.test(stage) ? stage : null;
         }
-        if (item.kind === 'png' && !bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) { problem('invalid-png'); continue; }
+        if (item.kind === 'png' && !isCompletePng(bytes)) { problem('invalid-png'); continue; }
         item.status = 'verified';
         links.push({ id: item.id, full, kind: item.kind });
       } catch { problem('artifact-missing-or-not-regular'); }
     }
   }
   for (const name of await readdir(input)) if (!['result.json', '.result.json.tmp'].includes(name) && !owned.has(name)) problem('unlisted-artifact-possible-mixed-run');
-  if (data.status === 'pass' && (summary.results.some(x => x.status !== 'pass') || data.candidateUnchanged !== true)) problem('inconsistent-overall-pass');
+  const hasOverallError = data.error !== undefined && data.error !== null && data.error !== '';
+  if (data.status === 'pass' && (hasOverallError || summary.results.some(x => x.status !== 'pass') || data.candidateUnchanged !== true)) problem('inconsistent-overall-pass');
   if (data.status === 'fail' && !summary.results.some(x => ['fail', 'error'].includes(x.status))) problem('inconsistent-overall-fail');
   if (options['expect-candidate-sha256'] && options['expect-candidate-sha256'] !== summary.candidate?.sha256) problem('expected-candidate-hash-mismatch');
   if (options['expect-tool-sha'] && options['expect-tool-sha'] !== summary.tool?.sha) problem('expected-tool-sha-mismatch');

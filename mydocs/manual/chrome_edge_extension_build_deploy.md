@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/browser_extension_dev_guide.md
-last_verified: 2026-09-27
+last_verified: 2026-10-23
 ---
 
 # 브라우저 확장 빌드 및 배포 매뉴얼 (Chrome/Edge/Firefox/Safari)
@@ -353,7 +353,8 @@ HTML은 외부 script·font·network 리소스를 사용하지 않는다.
 result.json은 임시 파일을 원자적으로 rename하여 갱신한다. 기존 v1 실행 상태는 읽되 이 증거가 없는
 과거 결과는 `incomplete`로 표시하며, 파일명/mtime만으로 같은 실행이라고 추정하지 않는다.
 
-후보 inventory의 경로·파일 해시와 전체 해시를 재계산하고, 도구 SHA 형식·dirty 여부를 검사한다.
+후보 inventory의 경로·파일 해시와 전체 해시를 재계산하고, 실행기와 같은 필수 파일 목록을
+확인한다. 도구 SHA 형식·dirty 여부도 검사한다.
 후보 실제 파일을 다시 읽는 검사는 아니며 도구 SHA의 존재·서명 인증도 아니다. 독립 기대값은 위
 `--expect-*`로 대조한다. 도구 checkout SHA를 후보 빌드 SHA로 표시하지 않으며 후보 빌드 SHA는
 미관측으로 남긴다. `sourceSha256`은 선택한 원본 result.json의 바이트 해시다.
@@ -362,7 +363,10 @@ result.json은 임시 파일을 원자적으로 rename하여 갱신한다. 기�
 원본 `pass/fail/error/running`과 보고서 상태를 따로 표시한다. 원본이 pass여도 누락·파싱 오류·변조·
 지원하지 않는 스키마·SHA 불일치·미완료이면 보고서는 `incomplete`다. 누락 suite를 pass로 채우지
 않고 `not-run`을 유지한다. fail/error에서 JSON 또는 PNG가 없으면 이유를 표시하고 incomplete로
-남긴다(브라우저 실행 전 오류로 화면을 얻지 못한 경우 포함). 목록 밖 파일은 다른 run 혼입 가능성을
+남긴다(브라우저 실행 전 오류로 화면을 얻지 못한 경우 포함). PNG는 청크 구조·CRC와 압축 스캔라인의 완전성을 확인한다. 서명만 남은 파일·잘린 파일·
+압축 오류는 incomplete다. 압축 해제 데이터가 128 MiB를 넘는 이미지도 검증 제한으로 거부한다.
+화면의 시각적 품질 판정은 별도다. 전체 error 필드와 pass가 모순되는 결과도 incomplete로 처리한다.
+목록 밖 파일은 다른 run 혼입 가능성을
 표시하고, symlink·중복 증적·다른 runId도 거부한다. 정상적인 preflight error는 전체 error와 모든
 suite not-run으로 보존하며 후보/환경이 관측되지 않았음을 null로 표시한다.
 CLI exit 0은 완전한 자동 pass뿐이며 fail/error/incomplete는 1이다. CLI 성공도 수동 확인·배포 승인은 아니다.
@@ -397,10 +401,22 @@ pass/fail/error와 not-run·incomplete를 사람이 비교하는 용도다.
 ```bash
 mkdir -p output/chrome-extension-e2e
 node rhwp-chrome/e2e/report-fixtures.mjs --output output/chrome-extension-e2e/examples-NEW
-node --test rhwp-chrome/e2e/report.test.mjs rhwp-chrome/e2e/run.test.mjs \
+node --test rhwp-chrome/e2e/report.test.mjs rhwp-chrome/e2e/png-integrity.test.mjs \
+  rhwp-chrome/e2e/run.test.mjs \
   rhwp-chrome/e2e/failure-diagnostics.test.mjs rhwp-chrome/e2e/page-budget.test.mjs \
   rhwp-chrome/e2e/tab-monitor.test.mjs
 ```
+
+보고서 HTML의 보안·표시 검사는 Puppeteer와 로컬 브라우저를 준비한 뒤 별도로 실행한다.
+기본 Chrome for Testing을 사용할 때는 환경 변수를 생략한다. 브라우저가 없으면 실패하며 skip하지 않는다.
+실제 확장 E2E와 구분하고 자동 CI에는 연결하지 않는다.
+
+```bash
+RHWP_REPORT_BROWSER=/path/to/chromium node --test rhwp-chrome/e2e/report-browser.test.mjs
+```
+
+이 검사는 CSP에 의존하지 않고 대소문자·혼합 태그와 이벤트 핸들러 입력의 생성 DOM을 확인하며,
+실제 브라우저 스크린샷이 PNG 무결성 검사에서 통과하는지도 확인한다.
 
 ## 4. 스토어 배포
 
