@@ -88,26 +88,22 @@ impl ResourceContainer {
             .entry(reference)
             .or_insert_with(|| {
                 let name = match object_type {
-                    PendingResourceType::XObject => {
-                        self.name_allocator.alloc_x_object_name()
-                    }
-                    PendingResourceType::Pattern => {
-                        self.name_allocator.alloc_pattern_name()
-                    }
+                    PendingResourceType::XObject => self.name_allocator.alloc_x_object_name(),
+                    PendingResourceType::Pattern => self.name_allocator.alloc_pattern_name(),
                     PendingResourceType::GraphicsState => {
                         self.name_allocator.alloc_graphics_state_name()
                     }
-                    PendingResourceType::Shading => {
-                        self.name_allocator.alloc_shading_name()
-                    }
+                    PendingResourceType::Shading => self.name_allocator.alloc_shading_name(),
                     PendingResourceType::Font => self.name_allocator.alloc_font_name(),
-                    PendingResourceType::ColorSpace => {
-                        self.name_allocator.alloc_color_space_name()
-                    }
+                    PendingResourceType::ColorSpace => self.name_allocator.alloc_color_space_name(),
                 };
 
                 let name = Rc::new(name);
-                PendingResource { object_type, reference, name: name.clone() }
+                PendingResource {
+                    object_type,
+                    reference,
+                    name: name.clone(),
+                }
             })
             .name
             .clone()

@@ -665,6 +665,8 @@ JSON의 `tool` 값은 호환성을 위해 예전 이름을 유지한다. 예전 
 ## 10. 빌드 결과와 참고 문서
 
 Cargo의 루트 bin은 `rhwp`, `rhwp-q`, `rhwp-agent`, `font-metric-gen` 네 개다.
+`font-metric-gen`은 저장소 개발 도구이며 `--features dev-tools`를 명시해야 빌드·설치된다.
+주 CLI만 설치하려면 `cargo install rhwp --bin rhwp`로 대상을 선택한다.
 `rhwp-q`는 하위 명령 adapter를 직접 호출하며 예전 실행 파일을 subprocess로 띄우지 않는다.
 기존 CLI 계약 검사도 단일 실행 파일을 사용한다.
 

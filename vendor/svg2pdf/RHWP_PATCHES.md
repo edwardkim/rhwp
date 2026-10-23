@@ -1,5 +1,10 @@
 # rhwp PDF 호환성 패치
 
+- #8174: 외부 소비자가 root patch 없이 같은 보정을 사용하도록 패키지 이름을 `rhwp-svg2pdf`
+  `0.13.0-rhwp.1`로 구분했다. Rust 라이브러리 이름 `svg2pdf`와 기존 기능은 유지한다.
+  직접 path 의존성으로 연결되면서 공통 `cargo fmt --all` 대상에 들어오므로 stable rustfmt를
+  적용했다. 같은 formatter를 적용한 기존 source와 바이트가 일치하며 기능 변경은 없다.
+
 - 출처: https://github.com/edwardkim/svg2pdf/tree/2caeb0a038f9128b79833d803b94c2667565c4da
 - 기존 `determinism-0.13`의 정확한 Cargo.lock revision에서 라이브러리 src·ICC·라이선스·NOTICE를 복사했다.
 - Cargo workspace에서 미포함 CLI/테스트 members만 제외했다. 기존 결정화 수정은 그대로 유지한다.

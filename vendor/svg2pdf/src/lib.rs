@@ -71,10 +71,8 @@ use crate::util::helper::{deflate, ContentExt, RectExt, TransformExt};
 use crate::util::resources::ResourceContainer;
 
 // The ICC profiles.
-static SRGB_ICC_DEFLATED: Lazy<Vec<u8>> =
-    Lazy::new(|| deflate(include_bytes!("icc/sRGB-v4.icc")));
-static GRAY_ICC_DEFLATED: Lazy<Vec<u8>> =
-    Lazy::new(|| deflate(include_bytes!("icc/sGrey-v4.icc")));
+static SRGB_ICC_DEFLATED: Lazy<Vec<u8>> = Lazy::new(|| deflate(include_bytes!("icc/sRGB-v4.icc")));
+static GRAY_ICC_DEFLATED: Lazy<Vec<u8>> = Lazy::new(|| deflate(include_bytes!("icc/sGrey-v4.icc")));
 
 /// Options for the resulting PDF file.
 #[derive(Copy, Clone)]
@@ -210,9 +208,11 @@ pub fn to_pdf(
 
     let dpi_ratio = 72.0 / page_options.dpi;
     let dpi_transform = Transform::from_scale(dpi_ratio, dpi_ratio);
-    let page_size =
-        Size::from_wh(tree.size().width() * dpi_ratio, tree.size().height() * dpi_ratio)
-            .ok_or(UnknownError)?;
+    let page_size = Size::from_wh(
+        tree.size().width() * dpi_ratio,
+        tree.size().height() * dpi_ratio,
+    )
+    .ok_or(UnknownError)?;
 
     let catalog_ref = ctx.alloc_ref();
     let page_tree_ref = ctx.alloc_ref();
@@ -256,7 +256,8 @@ pub fn to_pdf(
     ctx.write_global_objects(&mut pdf)?;
 
     let document_info_id = ctx.alloc_ref();
-    pdf.document_info(document_info_id).producer(TextStr("svg2pdf"));
+    pdf.document_info(document_info_id)
+        .producer(TextStr("svg2pdf"));
 
     Ok(pdf.finish())
 }
@@ -356,10 +357,7 @@ pub fn to_pdf(
 /// std::fs::write("target/embedded.pdf", pdf.finish())?;
 /// # Ok(()) }
 /// ```
-pub fn to_chunk(
-    tree: &Tree,
-    conversion_options: ConversionOptions,
-) -> Result<(Chunk, Ref)> {
+pub fn to_chunk(tree: &Tree, conversion_options: ConversionOptions) -> Result<(Chunk, Ref)> {
     let mut chunk = Chunk::new();
 
     let mut ctx = Context::new(tree, conversion_options)?;

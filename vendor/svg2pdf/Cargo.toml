@@ -4,16 +4,16 @@ default-members = ["."]
 resolver = "2"
 
 [workspace.package]
-version = "0.13.0"
+version = "0.13.0-rhwp.1"
 authors = ["Laurenz Stampfl <laurenz.stampfl@gmail.com>", "Martin Haug <mhaug@live.de>"]
 edition = "2021"
-repository = "https://github.com/typst/svg2pdf"
+repository = "https://github.com/edwardkim/rhwp"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
 log = "0.4"
-svg2pdf = { path = ".", default-features = false, version = "0.13.0" }
+svg2pdf = { package = "rhwp-svg2pdf", path = ".", default-features = false, version = "=0.13.0-rhwp.1" }
 clap = { version = "4.5", features = ["derive"] }
 clap_complete = "4.5"
 clap_mangen = "0.2"
@@ -33,8 +33,17 @@ ttf-parser = { version = "0.25" }
 siphasher = { version = "1.0.1"}
 
 [package]
-name = "svg2pdf"
-description = "Convert SVG files to PDFs."
+include = [
+    "Cargo.toml",
+    "src/**",
+    "README.md",
+    "RHWP_PATCHES.md",
+    "LICENSE-*",
+    "NOTICE"
+]
+name = "rhwp-svg2pdf"
+description = "rhwp SVG-to-PDF compatibility backend based on svg2pdf 0.13.0; not an official upstream release"
+publish = false
 categories = ["encoding", "graphics", "multimedia"]
 keywords = ["svg", "pdf", "vector-graphics", "conversion"]
 version = { workspace = true }
@@ -44,6 +53,7 @@ repository = { workspace = true }
 license = { workspace = true }
 
 [lib]
+name = "svg2pdf"
 bench = false
 
 [features]

@@ -4,6 +4,11 @@
 [결정 대장](../../mydocs/plans/task_m100_8174_maintainer_decisions.md)의 선택을 기다리지 않고
 현재 후보의 누락·의존 구조·재현성을 검사한다. 후보 graph를 입력으로 삼으며 게시 구성을 확정하지 않는다.
 
+이후 승인된 [기술 보완 범위 v1](../../mydocs/working/task_m100_8174_stage2_corrections.md)에서는
+8개 패키지의 source 선별을 Cargo manifest에도 반영한다. 본체는 현재 0.8.7을 유지하고 정책의
+`product_release`·본체 제안 버전 0.9.0과 구분한다. 사용자용 API·feature·설치 안내는
+[패키지 README](README_PACKAGE.md)에 둔다. 이 사전 검사 자체는 실제 Cargo 검증을 실행하지 않는다.
+
 ## 실행
 
 Python 3.11 이상과 Git을 사용한다. 추가 Python package나 Cargo 빌드는 필요하지 않다.
@@ -53,7 +58,7 @@ exit 0은 **source 검사 통과**다. 실패는 exit 2이고 기존 성공 보�
 보고서에는 source SHA·도구 파일의 SHA-256과 두 입력 JSON의 의미상 digest를 기록한다.
 JSON digest는 `json.dumps(sort_keys=True, ensure_ascii=True)` 결과를 UTF-8로 인코딩해 계산한다.
 
-`manifest_blockers`는 현재 설정에서의 준비 차단점이다. `publish_false`는 6개 내부/fork의 현재
+`manifest_blockers`는 현재 설정에서의 준비 차단점이다. `publish_false`는 내부/fork의 현재
 게시 제한, `path_version_missing`은 registry 버전 병기가 없는 의존성,
 `root_patch_not_propagated`는 root patch가 하위 소비자에게 전달되지 않는 경계다.
 이 목록을 보고 자동으로 version·publish flag·package 이름을 바꾸지 않는다.

@@ -1,4 +1,12 @@
 [package]
+include = [
+    "Cargo.toml",
+    "src/**",
+    "README.md",
+    "RHWP_PATCHES.md",
+    "UPSTREAM.json",
+    "LICENSE-*"
+]
 name = "rhwp-zune-jpeg"
 version = "0.5.15-rhwp.1"
 edition = "2021"

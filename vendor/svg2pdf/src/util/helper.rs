@@ -12,7 +12,11 @@ pub trait ColorExt {
 
 impl ColorExt for usvg::Color {
     fn to_pdf_color(&self) -> [f32; 3] {
-        [self.red as f32 / 255.0, self.green as f32 / 255.0, self.blue as f32 / 255.0]
+        [
+            self.red as f32 / 255.0,
+            self.green as f32 / 255.0,
+            self.blue as f32 / 255.0,
+        ]
     }
 }
 
@@ -45,7 +49,12 @@ pub trait RectExt {
 
 impl RectExt for NonZeroRect {
     fn to_pdf_rect(&self) -> Rect {
-        Rect::new(self.x(), self.y(), self.x() + self.width(), self.y() + self.height())
+        Rect::new(
+            self.x(),
+            self.y(),
+            self.x() + self.width(),
+            self.y() + self.height(),
+        )
     }
 }
 

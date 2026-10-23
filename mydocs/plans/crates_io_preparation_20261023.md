@@ -1,7 +1,7 @@
 # crates.io 배포 사전 준비 계획
 
 - 작성일: 2026-10-23
-- 상태: 1단계 조사와 2단계 공통 선행 절편 C01–C04 완료. 정책 의존 구현은 미착수다.
+- 상태: 1단계 조사와 공통 선행 절편 C01–C04 완료. 승인된 2단계 기술 보완 범위 v1을 진행 중이다.
 - 요청: 다음 릴리즈는 0.9.0이며, crates.io 배포를 미리 준비한다.
 - 착수 기준 SHA: `upstream/devel` `def947c2149df5bc812d801e6e79be19a403b4d1`.
 - 사전 조사 기준 SHA: `605ccfd92f2f12f18e14182548d729f9929fda00`.
@@ -18,12 +18,15 @@
 - 2026-10-23 추가 요청에 따라 [보안 제한과 기능 사용 범위](../manual/security_feature_limits.md)를
   정리했다. 기능 활성화와 2단계 manifest 변경은 이 현황 정리에 포함하지 않는다.
 - [메인테이너 결정 대장](task_m100_8174_maintainer_decisions.md)의 선택·조건을 기록한 뒤
-  구현 범위를 확정한다. 현재 MD01–MD09와 구현 범위 v1은 미확정이다.
+  구현 범위를 기록한다. 구조 재조사 뒤 범위 v1 착수를 승인받았으며 MD02–MD04는 해당 기술 범위만 부분 확정이다.
 - 추가 착수 지시로 공통 선행 검사 도구·증적은 결정과 무관하게 먼저 준비한다.
   정책 선택에 의존하는 manifest·기능·게시 변경과 구분한다.
 - [CLI·Rust 라이브러리 소비 구조 재조사](../tech/investigations/issue-8174/README.md):
   공통 엔진은 유지하고 게시 의존성·표준 오류 연동·지원 API/설치 계약을 우선 보완하는 안을 제시했다.
   실제 path 소비와 CLI 설치 결과를 기록했으며, 정책 선택이나 제품 구현 승인으로 간주하지 않는다.
+- 이후 사용자 「수정지점과 우선순위를 착수하는 승인을 합니다」에 따라
+  [2단계 보완](../working/task_m100_8174_stage2_corrections.md)을 실행한다. 기존 기능·보안 경계를
+  유지하면서 실제 Cargo package·소비 검증을 진행하고 제품 버전 전환·실제 게시는 별도로 둔다.
 - 권위 절차: [문서·Git workflow](../manual/codex/docs_and_git_workflow.md),
   [배포 가이드](../manual/publish_guide.md), [GitHub 운영](../manual/github_operations.md).
 

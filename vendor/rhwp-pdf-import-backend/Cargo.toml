@@ -18,19 +18,17 @@ version = "0.3.78-rhwp.1"
 authors = ["Yury Fedoseev <yfedoseev@gmail.com>"]
 build = false
 include = [
-    "/src/**/*",
-    "/benches/**/*",
-    "/Cargo.toml",
-    "/LICENSE-MIT",
-    "/LICENSE-APACHE",
-    "/NOTICE",
-    "/TRADEMARKS.md",
-    "/README.md",
-    "/RHWP_PATCHES.md",
-    "/UPSTREAM_FILES.json",
-    "/upstream/Cargo.toml.orig",
-    "/rustfmt.toml",
-    "/include/**/*",
+    "Cargo.toml",
+    "src/**",
+    "include/**",
+    "README.md",
+    "RHWP_PATCHES.md",
+    "UPSTREAM_FILES.json",
+    "upstream/Cargo.toml.orig",
+    "rustfmt.toml",
+    "LICENSE-*",
+    "NOTICE",
+    "TRADEMARKS.md"
 ]
 autolib = false
 autobins = false

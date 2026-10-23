@@ -2,15 +2,43 @@
 name = "rhwp"
 version = "0.8.7"
 edition = "2021"
-description = "HWP file viewer and editor written in Rust, targeting WebAssembly"
+description = "HWP/HWPX document engine for Rust applications, WebAssembly, and CLI automation"
 license = "MIT"
 repository = "https://github.com/edwardkim/rhwp"
+readme = "packaging/crates-io/README_PACKAGE.md"
 autotests = false
 autoexamples = false
 autobins = false
+include = [
+    "Cargo.toml",
+    "Cargo.lock",
+    "build.rs",
+    "src/**",
+    "LICENSE",
+    "README.md",
+    "README_EN.md",
+    "THIRD_PARTY_LICENSES.md",
+    "llms.txt",
+    "saved/blank2010.hwp",
+    "assets/fonts/boxed-digit-metrics.json",
+    "assets/fonts/LatinModernMath-VariableOutline-subset.otf",
+    "assets/fonts/MANIFEST-RHWP-LMM-VariableOutline.txt",
+    "assets/fonts/licenses/**",
+    "mydocs/manual/agent_knowledge_map.md",
+    "mydocs/manual/agent_troubleshooting_guide.md",
+    "mydocs/manual/gym_optional_tool.md",
+    "mydocs/manual/recipes/01_fill_form_and_submit.md",
+    "mydocs/manual/recipes/02_table_csv_roundtrip.md",
+    "mydocs/manual/recipes/03_redact_before_sharing.md",
+    "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+    "mydocs/manual/recipes/05_mail_merge_batch_fill.md",
+    "mydocs/manual/recipes/06_visual_regression_before_after.md",
+    "mydocs/tech/agent_roadmap/atlas_r1_r200.md",
+    "packaging/crates-io/README_PACKAGE.md"
+]
 
 [workspace]
-exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder"]
+exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder", "vendor/svg2pdf"]
 members = ["crates/*", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert", "tools/llm_verifier/verdict_protocol", "tools/llm_verifier/claim_bind", "tools/llm_verifier/criteria_decomp"]
 default-members = [".", "crates/*"]
 resolver = "2"
@@ -39,6 +67,7 @@ path = "src/bin/rhwp-agent/main.rs"
 [[bin]]
 name = "font-metric-gen"
 path = "src/tools/font_metric_gen.rs"
+required-features = ["dev-tools"]
 
 # BEGIN RHWP GENERATED TEST TARGETS
 # tests/suites/manifest.json에서 생성한다. 직접 수정하지 않는다.
@@ -238,9 +267,9 @@ path = "tests/overflow_cell_baseline.rs"
 # END RHWP GENERATED TEST TARGETS
 
 [dependencies]
-rhwp-contracts = { path = "crates/rhwp-contracts" }
-rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart" }
-rhwp-password-crypto = { path = "crates/rhwp-password-crypto" }
+rhwp-contracts = { path = "crates/rhwp-contracts", version = "0.1.0" }
+rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart", version = "0.1.0" }
+rhwp-password-crypto = { path = "crates/rhwp-password-crypto", version = "0.1.0" }
 pdf_oxide = { package = "rhwp-pdf-import-backend", path = "vendor/rhwp-pdf-import-backend", version = "=0.3.78-rhwp.1", default-features = false, optional = true }
 # pdf_oxide 0.3.78's DocumentIR initializer is incompatible with office_oxide 0.1.13.
 # Keep the compatibility constraint for library consumers that do not use our lockfile.
@@ -330,10 +359,13 @@ pdf-import = ["dep:pdf_oxide", "dep:office_oxide", "dep:tiny-skia"]
 wasm-api = []
 native-skia = ["dep:skia-safe", "dep:icy_sixel"]
 subsecond-dev = ["dep:subsecond"]
+# 릴리즈 CLI 설치에서 제외하는 저장소 개발 도구.
+dev-tools = []
 
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-svg2pdf = "0.13"
+# #8174: root patch는 외부 Rust 소비자에게 전달되지 않는다. 보정 fork를 직접 연결한다.
+svg2pdf = { package = "rhwp-svg2pdf", path = "vendor/svg2pdf", version = "=0.13.0-rhwp.1" }
 usvg = "0.45"
 pdf-writer = "0.12"
 subsetter = "0.2"
@@ -522,10 +554,3 @@ codegen-units = 16
 # 사실상 유일한 공급원이라 삭제 시 빌드가 불능이 된다. 결정화 커밋의 authorship 은
 # 그대로 보존된다(원 작성자 planet6897, 이관 동의 완료).
 #
-# [#2283] krilla-svg 마이그레이션은 하지 않기로 결정했다. 장기 방향은 Skia direct
-# 백엔드 단일화이며, 그 미지원 op 목록(gradient·pattern·shadow·connector 등)이
-# 비는 시점에 재판단한다. 그때까지 이 패치를 유지·관리한다.
-# [#7077] 동일 fork rev의 결정화 패치 위에 PDF stitching 함수 트리 보정을
-# 로컬 vendor로 포함한다. 출처·변경 범위는 vendor/svg2pdf/RHWP_PATCHES.md 참조.
-[patch.crates-io]
-svg2pdf = { path = "vendor/svg2pdf" }

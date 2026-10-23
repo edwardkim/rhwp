@@ -177,19 +177,13 @@ pub(crate) fn stroke(
                 rc,
             );
 
-            if let Some(soft_mask) =
-                gradient::create_shading_soft_mask(paint, chunk, ctx, bbox)
-            {
+            if let Some(soft_mask) = gradient::create_shading_soft_mask(paint, chunk, ctx, bbox) {
                 let soft_mask_name = rc.add_graphics_state(soft_mask);
                 content.set_parameters(soft_mask_name.to_pdf_name());
             }
 
-            let pattern_ref = gradient::create_shading_pattern(
-                paint,
-                chunk,
-                ctx,
-                &accumulated_transform,
-            );
+            let pattern_ref =
+                gradient::create_shading_pattern(paint, chunk, ctx, &accumulated_transform);
             let pattern_name = rc.add_pattern(pattern_ref);
             content.set_stroke_color_space(Pattern);
             content.set_stroke_pattern(None, pattern_name.to_pdf_name());
@@ -217,13 +211,19 @@ pub(crate) fn fill_and_stroke(
     rc: &mut ResourceContainer,
     operation: impl Fn(&mut Content) -> Result<()>,
 ) -> Result<()> {
-    let (Paint::Color(fill_color), Paint::Color(stroke_color)) =
-        (fill.paint(), stroke.paint())
+    let (Paint::Color(fill_color), Paint::Color(stroke_color)) = (fill.paint(), stroke.paint())
     else {
         unreachable!("solid paints checked by caller")
     };
     content.save_state_checked()?;
-    set_opacity_gs(chunk, content, ctx, Some(stroke.opacity()), Some(fill.opacity()), rc);
+    set_opacity_gs(
+        chunk,
+        content,
+        ctx,
+        Some(stroke.opacity()),
+        Some(fill.opacity()),
+        rc,
+    );
     let space = rc.add_color_space(ctx.srgb_ref());
     content.set_fill_color_space(ColorSpaceOperand::Named(space.to_pdf_name()));
     content.set_stroke_color_space(ColorSpaceOperand::Named(space.to_pdf_name()));
@@ -324,19 +324,13 @@ pub(crate) fn fill(
         Paint::LinearGradient(_) | Paint::RadialGradient(_) => {
             set_opacity_gs(chunk, content, ctx, None, Some(fill.opacity()), rc);
 
-            if let Some(soft_mask) =
-                gradient::create_shading_soft_mask(paint, chunk, ctx, bbox)
-            {
+            if let Some(soft_mask) = gradient::create_shading_soft_mask(paint, chunk, ctx, bbox) {
                 let soft_mask_name = rc.add_graphics_state(soft_mask);
                 content.set_parameters(soft_mask_name.to_pdf_name());
             }
 
-            let pattern_ref = gradient::create_shading_pattern(
-                paint,
-                chunk,
-                ctx,
-                &accumulated_transform,
-            );
+            let pattern_ref =
+                gradient::create_shading_pattern(paint, chunk, ctx, &accumulated_transform);
             let pattern_name = rc.add_pattern(pattern_ref);
             content.set_fill_color_space(Pattern);
             content.set_fill_pattern(None, pattern_name.to_pdf_name());

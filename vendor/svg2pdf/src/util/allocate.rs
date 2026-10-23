@@ -10,7 +10,9 @@ pub struct RefAllocator {
 impl RefAllocator {
     /// Create a new allocator with a specific start ID.
     pub fn new() -> Self {
-        Self { ref_alloc: Ref::new(1) }
+        Self {
+            ref_alloc: Ref::new(1),
+        }
     }
 
     /// Allocate a new reference ID.

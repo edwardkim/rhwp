@@ -5,9 +5,7 @@ use crate::util::helper::{deflate, ContentExt, TransformExt};
 use crate::util::resources::ResourceContainer;
 use crate::ConversionError::{self, InvalidFont, SubsetError};
 use crate::Result;
-use pdf_writer::types::{
-    CidFontType, FontFlags, SystemInfo, TextRenderingMode, UnicodeCmap,
-};
+use pdf_writer::types::{CidFontType, FontFlags, SystemInfo, TextRenderingMode, UnicodeCmap};
 use pdf_writer::writers::WMode;
 use pdf_writer::{Chunk, Content, Filter, Finish, Name, Ref, Str};
 use siphasher::sip128::{Hasher128, SipHasher13};
@@ -32,15 +30,10 @@ const SYSTEM_INFO: SystemInfo = SystemInfo {
 };
 
 /// Write all font objects into the chunk.
-pub fn write_font(
-    chunk: &mut Chunk,
-    alloc: &mut RefAllocator,
-    font: &mut Font,
-) -> Result<()> {
+pub fn write_font(chunk: &mut Chunk, alloc: &mut RefAllocator, font: &mut Font) -> Result<()> {
     // We've already parsed all fonts when creating the font objects, so each font
     // should be valid.
-    let ttf = Face::parse(&font.face_data, font.face_index)
-        .map_err(|_| InvalidFont(font.id))?;
+    let ttf = Face::parse(&font.face_data, font.face_index).map_err(|_| InvalidFont(font.id))?;
     let units_per_em = ttf.units_per_em();
 
     let type0_ref = font.reference;
@@ -63,8 +56,11 @@ pub fn write_font(
         .is_some();
 
     let base_font = base_font_name(&ttf, glyph_set);
-    let base_font_type0 =
-        if is_cff { format!("{base_font}-{IDENTITY_H}") } else { base_font.clone() };
+    let base_font_type0 = if is_cff {
+        format!("{base_font}-{IDENTITY_H}")
+    } else {
+        base_font.clone()
+    };
 
     chunk
         .type0_font(type0_ref)
@@ -75,7 +71,11 @@ pub fn write_font(
 
     // Write the CID font referencing the font descriptor.
     let mut cid = chunk.cid_font(cid_ref);
-    cid.subtype(if is_cff { CidFontType::Type0 } else { CidFontType::Type2 });
+    cid.subtype(if is_cff {
+        CidFontType::Type0
+    } else {
+        CidFontType::Type2
+    });
     cid.base_font(Name(base_font.as_bytes()));
     cid.system_info(SYSTEM_INFO);
     cid.font_descriptor(descriptor_ref);
@@ -109,8 +109,7 @@ pub fn write_font(
     let mut flags = FontFlags::empty();
     flags.set(
         FontFlags::SERIF,
-        find_name(&ttf, name_id::POST_SCRIPT_NAME)
-            .is_some_and(|name| name.contains("Serif")),
+        find_name(&ttf, name_id::POST_SCRIPT_NAME).is_some_and(|name| name.contains("Serif")),
     );
     flags.set(FontFlags::FIXED_PITCH, ttf.is_monospaced());
     flags.set(FontFlags::ITALIC, ttf.is_italic());
@@ -129,8 +128,7 @@ pub fn write_font(
 
     let italic_angle = ttf.italic_angle();
     let ascender = convert(ttf.typographic_ascender().unwrap_or(ttf.ascender()) as f32);
-    let descender =
-        convert(ttf.typographic_descender().unwrap_or(ttf.descender()) as f32);
+    let descender = convert(ttf.typographic_descender().unwrap_or(ttf.descender()) as f32);
     let cap_height = ttf
         .capital_height()
         .filter(|&h| h > 0)
@@ -159,7 +157,9 @@ pub fn write_font(
     font_descriptor.finish();
 
     let cmap = create_cmap(glyph_set, glyph_remapper).ok_or(SubsetError(font.id))?;
-    chunk.cmap(cmap_ref, &cmap.finish()).writing_mode(WMode::Horizontal);
+    chunk
+        .cmap(cmap_ref, &cmap.finish())
+        .writing_mode(WMode::Horizontal);
 
     // Subset and write the font's bytes.
     let data = subset_font(&font.face_data, font.face_index, glyph_remapper, font.id)?;
@@ -198,8 +198,7 @@ fn subset_font(
     id: fontdb::ID,
 ) -> Result<Vec<u8>> {
     let data = font_data;
-    let subsetted =
-        subsetter::subset(data, index, glyph_remapper).map_err(|_| SubsetError(id))?;
+    let subsetted = subsetter::subset(data, index, glyph_remapper).map_err(|_| SubsetError(id))?;
     let mut data = subsetted.as_ref();
 
     // Extract the standalone CFF font program if applicable.
@@ -227,7 +226,9 @@ pub fn render(
 
     for span in text.layouted() {
         for glyph in &span.positioned_glyphs {
-            let Some(font) = ctx.font_ref(glyph.font) else { continue };
+            let Some(font) = ctx.font_ref(glyph.font) else {
+                continue;
+            };
             font_names
                 .entry(font.reference)
                 .or_insert_with(|| rc.add_font(font.reference));
@@ -292,11 +293,13 @@ pub fn render(
         content.save_state_checked()?;
         match (span.fill.as_ref(), span.stroke.as_ref()) {
             (Some(fill), Some(stroke))
-                if matches!((fill.paint(), stroke.paint()), (usvg::Paint::Color(_), usvg::Paint::Color(_)))
-                    && (span.paint_order == PaintOrder::FillAndStroke
-                        || (fill.paint() == stroke.paint()
-                            && fill.opacity().get() == 1.0
-                            && stroke.opacity().get() == 1.0)) =>
+                if matches!(
+                    (fill.paint(), stroke.paint()),
+                    (usvg::Paint::Color(_), usvg::Paint::Color(_))
+                ) && (span.paint_order == PaintOrder::FillAndStroke
+                    || (fill.paint() == stroke.paint()
+                        && fill.opacity().get() == 1.0
+                        && stroke.opacity().get() == 1.0)) =>
             {
                 // #6936: one glyph emission keeps text extraction/search exact.
                 // Reversed paint order is equivalent only for the same opaque color.
@@ -522,11 +525,7 @@ pub struct Font {
     pub face_index: u32,
 }
 
-pub fn fill_fonts(
-    group: &Group,
-    ctx: &mut Context,
-    fontdb: &fontdb::Database,
-) -> Result<()> {
+pub fn fill_fonts(group: &Group, ctx: &mut Context, fontdb: &fontdb::Database) -> Result<()> {
     for child in group.children() {
         match child {
             Node::Text(t) => {
@@ -539,9 +538,7 @@ pub fn fill_fonts(
                                     // TODO: Currently, we are parsing each font twice, once here
                                     // and once again when writing the fonts. We should probably
                                     // improve on that...
-                                    if let Ok(ttf) =
-                                        ttf_parser::Face::parse(data, face_index)
-                                    {
+                                    if let Ok(ttf) = ttf_parser::Face::parse(data, face_index) {
                                         let reference = allocator.alloc_ref();
                                         let glyph_set = BTreeMap::new();
                                         let glyph_remapper = GlyphRemapper::new();

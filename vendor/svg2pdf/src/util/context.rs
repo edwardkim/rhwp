@@ -27,10 +27,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(
-        #[allow(unused_variables)] tree: &Tree,
-        options: ConversionOptions,
-    ) -> Result<Self> {
+    pub fn new(#[allow(unused_variables)] tree: &Tree, options: ConversionOptions) -> Result<Self> {
         #[allow(unused_mut)]
         let mut ctx = Self {
             ref_allocator: RefAllocator::new(),

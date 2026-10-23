@@ -24,12 +24,7 @@ pub fn render(
 }
 
 /// Create a mask and return the object reference to it.
-pub fn create(
-    parent: &Group,
-    mask: &Mask,
-    chunk: &mut Chunk,
-    ctx: &mut Context,
-) -> Result<Ref> {
+pub fn create(parent: &Group, mask: &Mask, chunk: &mut Chunk, ctx: &mut Context) -> Result<Ref> {
     let x_ref = ctx.alloc_ref();
     let mut rc = ResourceContainer::new();
 
@@ -79,7 +74,9 @@ pub fn create(
 
     let gs_ref = ctx.alloc_ref();
     let mut gs = chunk.ext_graphics(gs_ref);
-    gs.soft_mask().subtype(mask.kind().to_pdf_mask_type()).group(x_ref);
+    gs.soft_mask()
+        .subtype(mask.kind().to_pdf_mask_type())
+        .group(x_ref);
 
     Ok(gs_ref)
 }

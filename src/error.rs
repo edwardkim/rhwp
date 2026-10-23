@@ -48,6 +48,8 @@ impl std::fmt::Display for HwpError {
     }
 }
 
+impl std::error::Error for HwpError {}
+
 #[cfg(test)]
 mod tests {
     use super::*;

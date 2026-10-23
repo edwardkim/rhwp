@@ -1,4 +1,12 @@
 [package]
+include = [
+    "Cargo.toml",
+    "src/**",
+    "README.md",
+    "RHWP_PATCHES.md",
+    "UPSTREAM.json",
+    "LICENSE-*"
+]
 name = "rhwp-jpeg-decoder"
 version = "0.3.2-rhwp.1"
 edition = "2021"
