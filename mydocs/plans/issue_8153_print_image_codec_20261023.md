@@ -166,3 +166,22 @@ available_width/줄 bbox → 가운데·오른쪽 정렬 원점`이다. 별도�
 현재 문단이 저장 줄 소속을 유지하고 줄 폭·시작이 같은 경우에만 저장 프레임을 사용한다.
 기존 wrap anchor와 오른쪽 여백을 이미 뺀 TAC 프레임은 기존 소유 경로를 유지한다.
 코드 변경 뒤 205쪽·집중 쪽·기존 글상자 대조군의 Native/fresh WASM·원본 Print를 확인한다.
+
+## 공통 장치 색 변환 구현
+
+Print bitmap의 연속적인 채널 밝기 확장을 표준 RGB555 양자화로 교체한다.
+4×4 Bayer 순서 디더링은 원본 raster의 좌표와 bottom-up 행 순서를 소비하며,
+5비트 채널을 비트 복제로 8비트에 전달한다. 알파와 원본 소유·논리 배치는 유지한다.
+팔레트 수용 판정과 다른 호환 모드의 선택 규칙은 같은 공통 resolver에서 소비한다.
+이 계산은 HWP 사양에 명시된 색 보정값이라고 주장하지 않는다.
+
+값 추적은 `원본 RGB → 공통 Print 색 변환 → 기존 PNG payload/재조회 → 공통 JPEG →
+Native·Canvas·CanvasKit의 실제 재생`이다. 문서·그림 ID별 수치나 backend별 색식을
+추가하지 않는다. 부분 자르기의 색 변환 순서·창 신원·압축은 별도 미완료 소비 경계이며,
+전체 원본 경로의 통과로 대신하지 않고 계속 검증·구현한다.
+
+공개 형식 근거: [BITMAPINFOHEADER의 RGB555와 bottom-up 계약](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader),
+[CreateDIBitmap의 장치 형식 변환](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createdibitmap).
+바이너리 분석 자료·함수 주소·호출 기록은 Git에 옮기지 않는다. 새 색 변환의 실제 원본
+Native/fresh WASM 출력과 독립 Print를 먼저 검증하고, 잘못된 기존 평탄색 픽셀 assertion은
+해당 입력의 시각 선행 조건을 확인한 뒤 독립적인 채널 계약에 맞게 정리한다.

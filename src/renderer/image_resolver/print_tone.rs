@@ -1,4 +1,4 @@
-//! 한컴 2024 Print의 보이는 팔레트와 색 확장 bitmap 전달.
+//! 한컴 2024 Print의 보이는 팔레트와 RGB555 bitmap 전달.
 //!
 //! BMP·PNG·JPEG·2020/2024 Print의 독립 대조는 stage2025,
 //! 흑백 예약색·indexed 형식의 추가 경계는 stage2101에 있다. 그림 효과 합성은 별도 계약이다.
@@ -135,11 +135,8 @@ pub(super) fn bitmap_bytes_to_png(data: &[u8]) -> Option<Vec<u8>> {
         if !exceeds_palette(decoded.pixels()) {
             return None;
         }
-        for pixel in decoded.pixels_mut() {
-            for channel in &mut pixel.0[..3] {
-                *channel = channel.saturating_add(*channel >> 5);
-            }
-        }
+        let (width, height) = decoded.dimensions();
+        super::print_rgb555::quantize(decoded.as_mut(), width, height)?;
         let mut output = Vec::new();
         image::DynamicImage::ImageRgba8(decoded)
             .write_to(&mut Cursor::new(&mut output), image::ImageFormat::Png)

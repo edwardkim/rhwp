@@ -4,6 +4,7 @@ use std::io::Cursor;
 mod print_alpha;
 mod print_crop;
 mod print_jpeg;
+mod print_rgb555;
 mod print_tone;
 pub(crate) use print_alpha::print_alpha_payload;
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
