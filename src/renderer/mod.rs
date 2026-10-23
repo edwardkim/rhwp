@@ -3852,6 +3852,7 @@ mod tests {
     #[test]
     fn issue_2809_negative_letter_spacing_does_not_compress_canvas_glyph() {
         let style = TextStyle {
+            fixed_glyph_advances: true,
             letter_spacing: -7.5,
             ..Default::default()
         };
@@ -3861,18 +3862,23 @@ mod tests {
 
     #[test]
     fn non_negative_letter_spacing_keeps_existing_canvas_font_fit_policy() {
-        let style = TextStyle::default();
+        let style = TextStyle {
+            fixed_glyph_advances: true,
+            ..Default::default()
+        };
         assert_eq!(
             canvas_cluster_fit_scale(&style, 7.5, 15.0, false),
             Some(0.5)
         );
         assert_eq!(canvas_cluster_fit_scale(&style, 7.5, 15.0, true), Some(0.5));
         assert_eq!(canvas_cluster_fit_scale(&style, 15.0, 14.9, false), None);
+        ordinary_canvas_glyph_ink_preserves_natural_width_without_explicit_fit();
     }
 
     #[test]
     fn distribution_spacing_does_not_resize_ascii_canvas_glyph() {
         let positive = TextStyle {
+            fixed_glyph_advances: true,
             extra_char_spacing: 12.0,
             ..Default::default()
         };
@@ -3882,6 +3888,7 @@ mod tests {
         );
 
         let negative = TextStyle {
+            fixed_glyph_advances: true,
             extra_char_spacing: -3.0,
             ..Default::default()
         };
@@ -3893,6 +3900,27 @@ mod tests {
             canvas_cluster_fit_scale(&negative, 5.0, 8.0, false),
             Some(0.625)
         );
+    }
+
+    fn ordinary_canvas_glyph_ink_preserves_natural_width_without_explicit_fit() {
+        for (layout, visual, extra, letter) in [
+            (7.5, 15.0, 0.0, 0.0),
+            (20.0, 8.0, 12.0, 0.0),
+            (5.0, 8.0, -3.0, 0.0),
+            (7.5, 15.0, 0.0, -7.5),
+        ] {
+            let style = TextStyle {
+                extra_char_spacing: extra,
+                letter_spacing: letter,
+                ..Default::default()
+            };
+            for pin_ascii in [false, true] {
+                assert_eq!(
+                    canvas_cluster_fit_scale(&style, layout, visual, pin_ascii),
+                    None
+                );
+            }
+        }
     }
 
     #[test]
