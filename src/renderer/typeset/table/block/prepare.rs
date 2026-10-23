@@ -452,14 +452,20 @@ impl TypesetEngine {
                     } else {
                         0.0
                     };
-                    let host_line_height = fmt.computed_host_lines.as_ref().map_or_else(
+                    // 빈 개체 앵커에는 표 앞에서 소비할 독립 글줄이 없다.
+                    // 실제 paint와 같은 호스트 소유 질의로 첫 조각의 하한을 정한다.
+                    let host_owns_opening_line =
+                        crate::renderer::float_placement::partial_table_opening_host_owns_lead(
+                            para, table, ctrl_idx, false,
+                        );
+                    let host_line_height = if host_owns_opening_line { fmt.computed_host_lines.as_ref().map_or_else(
                         || {
                             para.line_segs
                                 .last()
                                 .map_or(0.0, |line| hwpunit_to_px(line.line_height, self.dpi))
                         },
                         |lines| lines.last().map_or(0.0, |line| line.height),
-                    );
+                    ) } else { 0.0 };
                     let reflow_empty_host =
                         crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
                             para, table, Some(&placement),
@@ -526,7 +532,9 @@ impl TypesetEngine {
         // 닫힌 폭0 개체 앵커는 표 공간을 소유하며 별도 빈 글줄을 전진시키지 않는다.
         // 실제 호스트 텍스트가 있는 내부 개체는 그 글줄의 기존 소유를 유지한다.
         let host_owns_text_lines =
-            !crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
+            crate::renderer::float_placement::partial_table_opening_host_owns_lead(
+                para, table, ctrl_idx, false,
+            ) && !crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
                 para,
                 table,
                 fragment_host_placement.as_ref(),

@@ -1828,6 +1828,7 @@ enum RecursiveBlockPreludeRole {
 }
 
 /// [Task #993] 한 셀의 콘텐츠 유닛 — 합성 줄 1개 또는 중첩 표 atom 1개.
+#[derive(Clone)]
 pub(super) struct CellUnit {
     /// 유닛 높이 (px). [#5880] table_partial 의 조각 원점 보정이 소비분 합산에 읽는다.
     pub(super) height: f64,
@@ -12874,6 +12875,28 @@ impl LayoutEngine {
 
     /// 내용이 잘리지 않은 저장 행은 원래 측정한 물리 높이를 보존한다.
     /// 걸침 셀의 일부 유닛이 이 조각에서 잘리면 콘텐츠 컷 높이를 계속 쓴다.
+    pub(crate) fn row_block_cut_has_partial_stored_pictures(
+        &self,
+        table: &crate::model::table::Table,
+        block: (usize, usize),
+        start: &[usize],
+        end: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let mut cells = Self::row_block_cells(table, block.0, block.1);
+        cells.sort_by_key(|cell| (cell.row, cell.col));
+        cells.iter().enumerate().any(|(index, cell)| {
+            let len = self.cell_units(cell, table, styles).len();
+            let su = start.get(index).copied().unwrap_or(0).min(len);
+            let eu = end.get(index).copied().unwrap_or(len).clamp(su, len);
+            cell.row_span > 1
+                && eu > su
+                && eu < len
+                && crate::renderer::float_placement::stored_picture_cell_content_end_hu(cell)
+                    .is_some()
+        })
+    }
+
     pub(crate) fn row_block_cut_uses_measured_height(
         &self,
         table: &crate::model::table::Table,
@@ -12919,6 +12942,29 @@ impl LayoutEngine {
         let (bs, be) = block;
         let mut cells = Self::row_block_cells(table, bs, be);
         cells.sort_by_key(|cell| (cell.row, cell.col));
+        // 그림 앵커의 일부가 남아도 온전히 소비한 형제 행의 빈 공간은 사라지지 않는다.
+        // 같은 저장 사다리의 선택 유닛이 그 행들의 물리 띠 안에 들어갈 때만 보존한다.
+        let picture_band_height = (bs..be).try_fold(0.0, |sum, band_row| {
+            let mut height = 0.0_f64;
+            let mut complete = false;
+            for (index, cell) in cells
+                .iter()
+                .enumerate()
+                .filter(|(_, cell)| cell.row as usize == band_row && cell.row_span == 1)
+            {
+                let len = self.cell_units(cell, table, styles).len();
+                let su = start.get(index).copied().unwrap_or(0).min(len);
+                let eu = end.get(index).copied().unwrap_or(len).clamp(su, len);
+                if eu > su {
+                    if su != 0 || eu != len || cell.height == 0 || cell.height > i32::MAX as u32 {
+                        return None;
+                    }
+                    complete = true;
+                    height = height.max(hwpunit_to_px(cell.height as i32, self.dpi));
+                }
+            }
+            Some(sum + if complete { height } else { 0.0 })
+        });
         cells
             .into_iter()
             .enumerate()
@@ -12926,7 +12972,8 @@ impl LayoutEngine {
                 cell.row as usize <= row && row < cell.row as usize + cell.row_span as usize
             })
             .all(|(index, cell)| {
-                let len = self.cell_units(cell, table, styles).len();
+                let units = self.cell_units(cell, table, styles);
+                let len = units.len();
                 let su = start.get(index).copied().unwrap_or(0).min(len);
                 let eu = end.get(index).copied().unwrap_or(len).clamp(su, len);
                 // Consuming a spanning cell's units does not consume every
@@ -12934,7 +12981,18 @@ impl LayoutEngine {
                 // height of this row, not the spanning cell's whole frame.
                 // Preserve that row band while excluding its spent content;
                 // a partly consumed cell still requires the cut-height path.
-                eu == len && (su == 0 || (cell.row_span > 1 && su == len))
+                (eu == len && (su == 0 || (cell.row_span > 1 && su == len)))
+                    || (cell.row_span > 1
+                        && eu > su
+                        && crate::renderer::float_placement::stored_picture_cell_content_end_hu(
+                            cell,
+                        )
+                        .is_some()
+                        && picture_band_height.is_some_and(|band| {
+                            let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
+                            units[su..eu].iter().map(|unit| unit.height).sum::<f64>() + top + bottom
+                                <= band
+                        }))
             })
     }
 
@@ -17249,6 +17307,78 @@ impl LayoutEngine {
             }
         }
 
+        if self.profile.get().hwp5_stored_pagination_layout()
+            && !self.profile.get().session_edited()
+            && !self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+        {
+            if let Some(flow) = crate::renderer::float_placement::stored_picture_cell_flow(cell) {
+                // 다음 저장 앵커까지의 전진량은 이미 그림과 빈 줄을 함께 담는다.
+                // 내용·그림 소유 유닛은 유지하고 같은 공간을 다시 더한 몫만 회수한다.
+                for (pi, para) in cell.paragraphs.iter().enumerate() {
+                    let origin = flow.paragraph_origins_hu[pi];
+                    let next = flow
+                        .paragraph_origins_hu
+                        .get(pi + 1)
+                        .copied()
+                        .unwrap_or(flow.content_end_hu);
+                    if origin != para.line_segs[0].vertical_pos && para.controls.len() > 1 {
+                        if let Some(template) = units
+                            .iter()
+                            .find(|unit| {
+                                unit.para_idx == pi && unit.non_inline_control_range.is_some()
+                            })
+                            .cloned()
+                        {
+                            // 첫 그림을 이미 담은 앵커는 공간을 다시 점유하지 않는다.
+                            // 서로 다른 원본 그림은 각각의 컷 소유로 유지한다.
+                            let insertion = units
+                                .iter()
+                                .position(|unit| unit.para_idx > pi)
+                                .unwrap_or(units.len());
+                            let mut replacements = Vec::new();
+                            let mut previous_end = 0;
+                            for (control, picture) in para.controls.iter().enumerate() {
+                                let Control::Picture(picture) = picture else {
+                                    unreachable!();
+                                };
+                                let end = flow.control_offsets_hu[pi][control]
+                                    .saturating_add(picture.common.height as i32)
+                                    .max(previous_end);
+                                let mut unit = template.clone();
+                                unit.height = hwpunit_to_px(end - previous_end, self.dpi);
+                                unit.non_inline_control_range = Some((control, control));
+                                replacements.push(unit);
+                                previous_end = end;
+                            }
+                            units.splice(insertion..insertion, replacements);
+                            units.retain_mut(|unit| {
+                                if unit.para_idx == pi && unit.non_inline_control_range.is_none() {
+                                    unit.height = 0.0;
+                                }
+                                unit.para_idx != pi
+                                    || unit.non_inline_control_range
+                                        != template.non_inline_control_range
+                            });
+                        }
+                    }
+                    let mut remaining = hwpunit_to_px(next - origin, self.dpi);
+                    for unit in units.iter_mut().filter(|unit| unit.para_idx == pi) {
+                        let height = unit.height.min(remaining);
+                        remaining -= height;
+                        unit.height = height;
+                    }
+                    if remaining > 0.0 {
+                        if let Some(unit) = units.iter_mut().rev().find(|unit| unit.para_idx == pi)
+                        {
+                            unit.height += remaining;
+                        }
+                    }
+                }
+            }
+        }
         let mut units =
             self.delay_empty_anchor_topandbottom_flow_units_before_hard_break(units, cell, table);
 
