@@ -1863,6 +1863,19 @@ impl SkiaLayerRenderer {
                             if line.transform.has_transform() {
                                 open_shape_transform(line.transform, bbox);
                             }
+                            let minimum_width = cache_context
+                                .policy
+                                .print_stroke_adjustment()
+                                .then(|| canvas.local_to_device_as_3x3())
+                                .filter(|matrix| !matrix.has_perspective())
+                                .and_then(|matrix| {
+                                    crate::renderer::raster_stroke::minimum_width([
+                                        f64::from(matrix.scale_x()),
+                                        f64::from(matrix.skew_y()),
+                                        f64::from(matrix.skew_x()),
+                                        f64::from(matrix.scale_y()),
+                                    ])
+                                });
                             draw_line(
                                 canvas,
                                 line,

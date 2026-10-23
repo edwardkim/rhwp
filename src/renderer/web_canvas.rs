@@ -441,6 +441,7 @@ pub struct WebCanvasRenderer {
     render_profile: crate::paint::RenderProfile,
     bitmap_paper_grid: Option<super::bitmap_raster::PrintPaperGrid>,
     print_area_sampling: bool,
+    print_stroke_adjustment: bool,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -475,6 +476,7 @@ impl WebCanvasRenderer {
             render_profile: crate::paint::RenderProfile::Screen,
             bitmap_paper_grid: None,
             print_area_sampling: false,
+            print_stroke_adjustment: false,
         })
     }
 
@@ -541,11 +543,13 @@ impl WebCanvasRenderer {
     /// 렌더 트리를 Canvas에 렌더링
     pub fn render_tree(&mut self, tree: &PageRenderTree) {
         self.render_profile = crate::paint::RenderProfile::Screen;
+        self.print_stroke_adjustment = false;
         self.render_node(&tree.root);
     }
 
     /// 레이어 트리를 Canvas에 렌더링
     pub fn render_layer_tree(&mut self, tree: &PageLayerTree) {
+        self.print_stroke_adjustment = tree.profile == crate::paint::RenderProfile::Print;
         self.high_quality_images = matches!(
             tree.profile,
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
