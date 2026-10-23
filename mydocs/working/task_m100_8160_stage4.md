@@ -112,3 +112,21 @@ locked offline metadata는 exit 0이며 lock 변경은 JPEG encoder의 이름·�
 당시 사실로 보존하고, 현재 패키징 보완을 일반 commit으로 고정한 뒤 최신 devel 위로
 작업 브랜치를 리베이스한다. 원격 push는 아직 없으며 rebase 전후 SHA·충돌 해소·기능 보존과
 최종 전쪽 검증을 새 head 기준으로 기록한다. 기존 source/산출물 해시를 새 SHA로 덮어쓰지 않는다.
+
+## 리베이스 완료와 최종 검증 기준 고정
+
+사용자 지시대로 최신 `upstream/devel` `d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867` 위로 리베이스했다.
+전 head `67c27cb3b97404d421c8b7431257104b11b4f4dd`, 후 head `2cd7f5dde2ebbd2e6dd1cc7d9dc28663bf0cded5`다.
+전체 파일 tree hash는 양쪽 `b08f7a24e4db6ab5da77738d5ba8450f8a7e7543`로 완전히 같아 구현·입력·증적·계획 누락이 없다.
+Cargo exclude와 단계 기록의 충돌은 기존 두 fork 및 모든 기록을 보존해 해소했다.
+`rebase-d9fd85ed5.json`에 21개 commit의 이전/새 SHA와 로컬 보존 branch를 연결했다.
+작업 트리는 clean이며 이 상태에서 final 검증을 다시 시작한다.
+
+패키징 보완 전 실패를 실제 보완한 뒤 commit `67c27cb3b`에서 9개 source archive의
+preflight가 exit 0이었다. 비게시·미래 제품 버전 blocker는 기존 정책의 의도된 상태이며
+실제 registry 게시를 승인하거나 수행한 결과로 표현하지 않는다. 새 head에서도 재확인한다.
+
+두 family·정역순 글자 정상 대조군은 실제 원본 TTC index 1·3을 web 등록 API로 공급한
+fresh 표준 WASM33에서도 두 쪽 글자 영역 양방향 미대응 0이다. Native API의 같은 결과와
+함께 기록하며 기존 삼각형 stroke 차이가 있는 전체 두 쪽을 raw 100%로 주장하지 않는다.
+원격 push·PR 생성은 최종 결과를 정리하고 승인받은 뒤 진행한다.
