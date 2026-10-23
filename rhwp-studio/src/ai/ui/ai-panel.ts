@@ -42,6 +42,24 @@ function button(className: string, label: string, onClick: () => void): HTMLButt
   return node;
 }
 
+/** 서식 변경 요약 — 「굵게 · 16pt · 글자색 #C00000」 */
+function formatSummary(format: Record<string, string | number | boolean>): string {
+  const parts: string[] = [];
+  for (const [key, value] of Object.entries(format)) {
+    switch (key) {
+      case 'bold': case 'italic': case 'underline': case 'strikethrough':
+        parts.push(t(`ai.format.${key}.${value ? 'on' : 'off'}`));
+        break;
+      case 'fontSize': parts.push(t('ai.format.fontSize', { v: value as number })); break;
+      case 'alignment': parts.push(t('ai.format.alignment', { v: t(`ai.format.align.${value as string}`) })); break;
+      case 'rows': break;
+      case 'columns': parts.push(t('ai.format.table', { rows: format.rows as number, columns: value as number })); break;
+      default: parts.push(t(`ai.format.${key}`, { v: String(value) }));
+    }
+  }
+  return parts.join(' · ');
+}
+
 /** 응답 하나의 화면 — 회차마다 글 조각, 도구 호출마다 표시. */
 class AssistantView {
   readonly root = el('div', 'ai-msg ai-msg-assistant');
@@ -120,14 +138,20 @@ class AssistantView {
     };
     if (proposal.tool === 'create_document') {
       card.append(el('div', 'ai-change-line', t('ai.change.createNote')));
-    } else if (proposal.tool === 'insert_paragraphs') {
+    } else if (proposal.tool === 'insert_paragraphs' || proposal.tool === 'insert_table') {
       card.append(line('ai-change-after', '+', 'ins', proposal.inserted));
+    } else if (proposal.tool === 'format_text' || proposal.tool === 'format_paragraph') {
+      const target = el('div', 'ai-change-line ai-change-target');
+      target.append(document.createTextNode(proposal.prefix), el('mark', 'ai-change-mark', proposal.inserted),
+        document.createTextNode(proposal.suffix));
+      card.append(target);
     } else {
       card.append(
         line('ai-change-before', t('ai.change.before'), 'del', proposal.removed),
         line('ai-change-after', t('ai.change.afterLabel'), 'ins', proposal.inserted),
       );
     }
+    if (proposal.format) card.append(el('div', 'ai-change-summary', formatSummary(proposal.format)));
     const actions = el('div', 'ai-change-actions');
     const status = el('div', 'ai-change-status');
     card.append(actions, status);

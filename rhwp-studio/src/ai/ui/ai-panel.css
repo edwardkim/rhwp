@@ -431,3 +431,16 @@
 .ai-change-card[data-state='stopped'] {
   opacity: 0.7;
 }
+
+.ai-change-mark {
+  background: var(--color-selected-bg);
+  color: inherit;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+.ai-change-summary {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  font-weight: 600;
+}

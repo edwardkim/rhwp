@@ -46,8 +46,9 @@ function fakeDoc() {
       cell[0] = cell[0].slice(0, o) + cell[0].slice(o + n);
       return JSON.stringify({ ok: true });
     },
-    insertTextInCell: (_s, _pp, _c, _ci, _cp, o, text) => {
-      calls.push(`cell-insert ${o} ${text}`);
+    insertTextInCell: (_s, _pp, _c, ci, _cp, o, text) => {
+      calls.push(`cell-insert ${ci === 1 ? '' : `c${ci} `}${o} ${text}`);
+      if (ci !== 1) return JSON.stringify({ ok: true });
       cell[0] = cell[0].slice(0, o) + text + cell[0].slice(o);
       return JSON.stringify({ ok: true });
     },
@@ -64,6 +65,15 @@ function fakeDoc() {
       calls.push(`insert ${p} ${text}`);
       body[p] = body[p].slice(0, o) + text + body[p].slice(o);
       return JSON.stringify({ ok: true });
+    },
+    applyCharFormat: (_s, p, a, b, json) => { calls.push(`char ${p} ${a}-${b} ${json}`); return JSON.stringify({ ok: true }); },
+    applyCharFormatInCell: (_s, _pp, _c, ci, _cp, a, b, json) => { calls.push(`cell-char ${ci} ${a}-${b} ${json}`); return JSON.stringify({ ok: true }); },
+    applyParaFormat: (_s, p, json) => { calls.push(`para ${p} ${json}`); return JSON.stringify({ ok: true }); },
+    applyParaFormatInCell: (_s, _pp, _c, ci, _cp, json) => { calls.push(`cell-para ${ci} ${json}`); return JSON.stringify({ ok: true }); },
+    findOrCreateFontId: (name) => (name === '없는글꼴' ? -1 : 7),
+    createTable: (_s, p, _o, rows, cols) => {
+      calls.push(`table ${p} ${rows}x${cols}`);
+      return JSON.stringify({ ok: true, paraIdx: p, controlIdx: 0 });
     },
     setFieldValue: (id, value) => {
       calls.push(`field ${id} ${value}`);
@@ -93,7 +103,9 @@ const call = (name: string, input: unknown) => ({ id: 't', name, input });
 const refused = (pattern: RegExp) => (error: unknown) => error instanceof WriteRefused && pattern.test(error.message);
 
 test('쓰기 도구 목록과 이름 판정', () => {
-  assert.deepEqual(WRITE_TOOL_DEFS.map((t) => t.name), ['replace_text', 'fill_field', 'insert_paragraphs', 'create_document']);
+  assert.deepEqual(WRITE_TOOL_DEFS.map((t) => t.name), [
+    'replace_text', 'fill_field', 'insert_paragraphs', 'format_text', 'format_paragraph', 'insert_table', 'create_document',
+  ]);
   assert.ok(isWriteTool('replace_text') && isWriteTool('fill_field') && !isWriteTool('read_page_text'));
 });
 
@@ -198,4 +210,59 @@ test('문단 추가 입력 검증: 줄바꿈·after 짝·표 칸 기준·개수'
   assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'after', after: '수 행', paragraphs: ['x'] })), refused(/table cell/));
   assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'middle', paragraphs: ['x'] })), refused(/Invalid input/));
   assert.throws(() => prepareWrite(d.host, call('insert_paragraphs', { position: 'end', paragraphs: [] })), refused(/Invalid input/));
+});
+
+test('글자 모양: 찾은 범위만, studio 단위(크기 HWPUNIT·배경은 shadeColor·글꼴은 id)로 보낸다', () => {
+  const d = fakeDoc();
+  const proposal = prepareWrite(d.host, call('format_text', {
+    find: '홈페이지', bold: true, fontSize: 16.5, textColor: '#C00000', highlightColor: '#FFFF00', fontName: '맑은 고딕',
+  }));
+  assert.deepEqual(proposal.format, { bold: true, fontSize: 16.5, textColor: '#C00000', highlightColor: '#FFFF00', fontName: '맑은 고딕' });
+  assert.equal(proposal.inserted, '홈페이지');
+  proposal.apply();
+  assert.deepEqual(d.calls, ['char 0 5-9 {"bold":true,"textColor":"#C00000","fontSize":1650,"shadeColor":"#FFFF00","fontId":7}']);
+  prepareWrite(d.host, call('format_text', { find: '계 획', italic: true })).apply();
+  assert.equal(d.calls.at(-1), 'cell-char 1 8-11 {"italic":true}', '표 칸은 칸 전용 경로');
+});
+
+test('글자 모양 입력 검증: 속성 없음·색 형식·없는 글꼴', () => {
+  const d = fakeDoc();
+  assert.throws(() => prepareWrite(d.host, call('format_text', { find: '홈페이지' })), refused(/at least one/));
+  assert.throws(() => prepareWrite(d.host, call('format_text', { find: '홈페이지', textColor: 'red0000' })), refused(/#RRGGBB/));
+  assert.throws(() => prepareWrite(d.host, call('format_text', { find: '홈페이지', fontSize: 0 })), refused(/Invalid input/));
+  const missing = prepareWrite(d.host, call('format_text', { find: '홈페이지', fontName: '없는글꼴' }));
+  assert.throws(() => missing.apply(), refused(/could not be used/));
+});
+
+test('문단 모양: 정렬과 줄 간격(Percent)을 찾은 글의 문단에', () => {
+  const d = fakeDoc();
+  const proposal = prepareWrite(d.host, call('format_paragraph', { find: '과업기간', alignment: 'center', lineSpacing: 200 }));
+  assert.deepEqual([proposal.location.paragraph, proposal.inserted], [1, '과업기간 X월 20일']);
+  proposal.apply();
+  assert.deepEqual(d.calls, ['para 1 {"alignment":"center","lineSpacing":200,"lineSpacingType":"Percent"}']);
+  assert.throws(() => prepareWrite(d.host, call('format_paragraph', { find: '과업기간' })), refused(/alignment or lineSpacing/));
+});
+
+test('표 만들기: 문서 끝 빈 문단 자리에 만들고 칸을 행 우선으로 채운다', async () => {
+  const d = fakeDoc();
+  await prepareWrite(d.host, call('create_document', {})).apply();
+  const proposal = prepareWrite(d.host, call('insert_table', { position: 'end', columns: 2, cells: ['항목', '금액', '인건비', ''] }));
+  assert.deepEqual(proposal.format, { rows: 2, columns: 2 });
+  assert.equal(proposal.inserted, '항목 | 금액\n인건비 | ');
+  proposal.apply();
+  assert.deepEqual(d.calls.slice(1), ['table 0 2x2', 'cell-insert c0 0 항목', 'cell-insert 0 금액', 'cell-insert c2 0 인건비'],
+    '빈 칸은 쓰지 않는다');
+});
+
+test('표 만들기: 글이 있는 문서 끝이면 새 문단을 만들어 그 자리에', () => {
+  const d = fakeDoc();
+  prepareWrite(d.host, call('insert_table', { position: 'end', columns: 1, cells: ['하나'] })).apply();
+  assert.deepEqual(d.calls.slice(0, 2), ['split 1 11', 'table 2 1x1']);
+});
+
+test('표 만들기 입력 검증: 칸 수·줄바꿈·표 칸 기준', () => {
+  const d = fakeDoc();
+  assert.throws(() => prepareWrite(d.host, call('insert_table', { position: 'end', columns: 2, cells: ['a', 'b', 'c'] })), refused(/multiple of columns/));
+  assert.throws(() => prepareWrite(d.host, call('insert_table', { position: 'end', columns: 1, cells: ['a\nb'] })), refused(/line breaks/));
+  assert.throws(() => prepareWrite(d.host, call('insert_table', { position: 'after', after: '수 행', columns: 1, cells: ['a'] })), refused(/inside a table cell/));
 });
