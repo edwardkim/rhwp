@@ -116,7 +116,7 @@ fn encode(payload: &ResolvedImagePayload, quality: u8) -> Option<Vec<u8>> {
         "image/jpeg" => image::ImageFormat::Jpeg,
         _ => return None,
     };
-    let rgba = super::print_tone::decode_print_bitmap(&payload.data, format)?.to_rgba8();
+    let (rgba, _) = super::print_tone::decode_transfer_pixels(&payload.data, format, None)?;
     let (width, height) = (
         u16::try_from(rgba.width()).ok()?,
         u16::try_from(rgba.height()).ok()?,

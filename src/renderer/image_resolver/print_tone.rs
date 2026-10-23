@@ -7,7 +7,7 @@ use std::collections::HashSet;
 use std::io::Cursor;
 
 use super::print_window::SourceWindow;
-use super::{detect_image_mime_type, memoized, Conversion};
+use super::{decode_image_with_format_limited, detect_image_mime_type, memoized, Conversion};
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
 use crate::renderer::render_tree::ImageNode;
@@ -44,16 +44,8 @@ pub(crate) fn print_bitmap_payload(image: &ImageNode) -> Option<ResolvedImagePay
             Conversion::Hancom2024BitmapWindow { bounds },
             source,
             || {
-                let decoded = decode_print_bitmap(source, format(source)?)?.to_rgba8();
-                let mut visible = image::imageops::crop_imm(
-                    &decoded,
-                    bounds[0],
-                    bounds[1],
-                    bounds[2] - bounds[0],
-                    bounds[3] - bounds[1],
-                )
-                .to_image();
-                let quantized = exceeds_palette(visible.pixels());
+                let (mut visible, quantized) =
+                    decode_transfer_pixels(source, format(source)?, Some(bounds))?;
                 if quantized {
                     let (width, height) = visible.dimensions();
                     super::print_rgb555::quantize(visible.as_mut(), width, height)?;
@@ -99,7 +91,7 @@ pub(super) fn requires_print_bitmap_transfer(image: &ImageNode) -> bool {
     };
     let bounds = window.bounds;
     memoized(Conversion::Hancom2024BitmapPalette { bounds }, data, || {
-        let decoded = decode_print_bitmap(data, format(data)?)?.to_rgba8();
+        let decoded = decode_image_with_format_limited(data, format(data)?)?.to_rgba8();
         let pixels = (bounds[1]..bounds[3]).flat_map(|y| {
             let decoded = &decoded;
             (bounds[0]..bounds[2]).map(move |x| decoded.get_pixel(x, y))
@@ -124,17 +116,42 @@ fn exceeds_palette<'a>(pixels: impl Iterator<Item = &'a image::Rgba<u8>>) -> boo
 
 pub(super) fn bitmap_bytes_to_png(data: &[u8]) -> Option<Vec<u8>> {
     memoized(Conversion::Hancom2024Bitmap, data, || {
-        let mut decoded = decode_print_bitmap(data, format(data)?)?.to_rgba8();
+        let (mut decoded, quantized) = decode_transfer_pixels(data, format(data)?, None)?;
         // 한컴의 팔레트 전달은 흑백 두 예약색을 포함한 RGB 색 수로 구분한다.
         // 원본이 255/256색이어도 빠진 예약색을 더하면 팔레트 용량을 넘을 수 있다.
         // 알파는 별도의 투명도이며 RGB 팔레트의 색 수에 합산하지 않는다.
-        if !exceeds_palette(decoded.pixels()) {
+        if !quantized {
             return None;
         }
         let (width, height) = decoded.dimensions();
         super::print_rgb555::quantize(decoded.as_mut(), width, height)?;
         to_png(decoded, data, true)
     })
+}
+
+/// 변환 전에 원본 팔레트를 판정하고, 선택한 같은 창만 Print에 전달한다.
+pub(super) fn decode_transfer_pixels(
+    data: &[u8],
+    format: image::ImageFormat,
+    bounds: Option<[u32; 4]>,
+) -> Option<(image::RgbaImage, bool)> {
+    let visible = |decoded: image::DynamicImage| {
+        let rgba = decoded.to_rgba8();
+        match bounds {
+            Some([left, top, right, bottom]) => {
+                image::imageops::crop_imm(&rgba, left, top, right - left, bottom - top).to_image()
+            }
+            None => rgba,
+        }
+    };
+    let mut rgba = visible(decode_image_with_format_limited(data, format)?);
+    let quantized = exceeds_palette(rgba.pixels());
+    if quantized && format == image::ImageFormat::Jpeg {
+        // 팔레트 분류용 버퍼와 Print 디코딩 버퍼를 동시에 보존하지 않는다.
+        drop(rgba);
+        rgba = visible(decode_print_bitmap(data, format)?);
+    }
+    Some((rgba, quantized))
 }
 
 fn format(data: &[u8]) -> Option<image::ImageFormat> {

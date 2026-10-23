@@ -26,7 +26,8 @@ BT.601 색 변환으로 원본 사진 1,721,995픽셀의 RGB가 독립 대조 �
 
 기존 bounded JPEG decoder에 인스턴스별 변환 선택을 추가한다. 기본값은 기존 동작이며
 PDF import와 화면 렌더링의 선택을 바꾸지 않는다. Print JPEG에만 같은 IDCT·보간 결과를
-공급하고, 팔레트 판정·원본 창·RGB555·Print JPEG 재압축이 이 결과를 함께 소비한다.
+공급한다. 팔레트는 변환 전 원본의 보이는 창에서 먼저 판정하고, truecolor 전달로
+선택한 창에만 Print IDCT·RGB555·Print JPEG 재압축 결과를 함께 소비하게 한다.
 Native와 WASM은 같은 안전한 Rust scalar 구현을 사용한다.
 
 일반 bitmap의 8,192축·32M픽셀 제한, fallible allocation 및 요청별 메모리 예산을 유지한다.
@@ -71,3 +72,20 @@ IJG 모듈 이동 후 실제 diagnostic build는 7초·exit 0이다. 공개 참�
 새 devel Native baseline은 같은 `target/pr-review`, jobs 8에서 7분 51초·exit 0으로
 빌드했다. 커밋된 source의 패키지 사전 검사와 새 후보 Native/fresh WASM 출력은 계속
 검증해야 한다. 이번 단계 커밋은 PR 제출·전쪽 100% 완료 판정이 아니다.
+
+## 팔레트 판정 순서의 반례와 보정
+
+`d5050daa77`의 Native 전쪽 검사에서 90쪽 사진은 두 형식 모두 raw 100%로 개선됐지만,
+Q 아이콘을 쓰는 페이지가 후퇴했다. 원본 `BinData/image352.jpg`는 일반 bounded decoder에서
+254색·예약색 포함 255색이다. Print IDCT를 먼저 적용하면 256색·예약색 포함 257색이 되어
+팔레트 그림을 RGB555 truecolor로 잘못 분류한다. 독립 한컴 PDF 290쪽의 xref 2138은
+원본 JPEG 전달이며, 이 후보의 대응 그림은 변환 PNG다.
+
+보정은 문서나 그림 번호로 분기하지 않는다. `원본 bounded decode → 보이는 창의 팔레트
+판정 → truecolor일 때만 Print decode → 같은 창 → RGB555 → 압축` 순서를 공통화한다.
+팔레트 경로의 원본 색과 기본 decoder를 유지하고, 이미 변환한 PNG에 색 전달을 중복 적용하지
+않는다. 재디코딩 전에 앞 버퍼를 해제하며 기존 축·픽셀·할당 제한을 유지한다.
+
+독립 PDF의 Q 그림 전달과 90쪽 사진을 함께 검사하고, 기존 crop·예약색·BMP/PNG 경계도
+확인한다. 이후 두 형식의 전쪽 Native/fresh WASM을 다시 비교한다. 이전 766쪽 결과는
+실제 후퇴 증거로 보존하며 새 후보의 검증으로 재사용하지 않는다.
