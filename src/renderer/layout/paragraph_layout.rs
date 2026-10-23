@@ -35,6 +35,7 @@ use crate::model::paragraph::{LineSeg, MarkerHead, NumberingMarker, Paragraph};
 mod justification_spacing;
 mod leading_justification;
 mod leading_spaces;
+mod trailing_space_fit;
 use leading_spaces::{natural_leading_positions, LeadingSpaces};
 
 mod list_marker_geometry;
@@ -2762,8 +2763,16 @@ fn compute_line_extra_spacing_with_dash_plan(
             }
         }
     } else if fit_width > available_width && fit_char_count > 1 && !has_tabs {
-        // 비정렬(왼쪽/오른쪽/가운데) 텍스트가 오버플로우할 때 글자 간격 압축
-        if suppress_cell_overflow_spacing {
+        // 평문 말미 공백은 전진으로 남지만 앞의 가시 글자를 압축하지 않는다.
+        // 본문·셀의 같은 점유 계약이며 가운데 정렬은 별도의 공통 측정을 쓴다.
+        let plain_tail = if centered_measure.is_none() {
+            trailing_space_fit::plain_trailing_width(comp_line, styles, trailing_space_limit)
+        } else {
+            0.0
+        };
+        let tail_only_overflow = plain_tail > soft_wrap_separator_width
+            && fit_width - (plain_tail - soft_wrap_separator_width) <= available_width;
+        if suppress_cell_overflow_spacing || tail_only_overflow {
             (0.0, 0.0, 0.0)
         } else if converge_auto_shrink_cell || centered_measure.is_some() {
             // [#6303] 칸 폭 자동 축소(#6196) 가 선형 slack/N 한 번이면 목표가

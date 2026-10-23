@@ -505,6 +505,8 @@ pub struct ResolvedStyleSet {
     pub(crate) native_pua_fonts: std::sync::Arc<crate::renderer::native_pua_fonts::NativePuaFonts>,
     /// px 형태의 해소된 스타일을 원본 HWPUNIT으로 환산할 때의 배율.
     pub(crate) resolved_dpi: Option<f64>,
+    /// 한컴 2020의 독립 자모 프로그램. 문서의 글꼴 선언과 구분한다.
+    pub(crate) isolated_jamo_font: Option<&'static str>,
     /// 문서의 `쪽 번호` 스타일이 참조하는 글자 모양. 자동 쪽번호는 본문
     /// 기본 글꼴이 아닌 이 스타일로 출력된다.
     pub page_number_char_style_id: Option<usize>,

@@ -1,4 +1,4 @@
-import { CanvasKitBundledFontFamily } from './canvaskit/font-style-selection.ts';
+import { CanvasKitBundledFontFamily, syntheticItalicSkew } from './canvaskit/font-style-selection.ts';
 import { parseCssFontFamilyList } from '../core/font-substitution.ts';
 import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
 import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
@@ -7,6 +7,7 @@ import { rasterLineEndpoints } from './canvaskit/raster-stroke.ts';
 import { shouldDrawPageMarginGuides } from './page-margin-guides.ts';
 import squareGradientSkSL from '../../../src/renderer/square_gradient.sksl?raw';
 import * as bitmapRasterWasm from '@wasm/rhwp.js';
+import { drawAnisotropicPrintImage, drawPrintFrameImage } from './canvaskit/anisotropic-image.ts';
 import CanvasKitInit from 'canvaskit-wasm';
 import { blake3 } from '@noble/hashes/blake3.js';
 import type {
@@ -2787,7 +2788,9 @@ export class CanvasKitLayerRenderer {
           || imageRectIsReduced(canvas, image, src, this.canvasKit.XYWHRect(dstX, dstY, dstW, dstH)));
       this.drawImageRect(canvas, image, src, this.canvasKit.XYWHRect(dstX, dstY, dstW, dstH), opacity,
         explicitFiltering ?? (binaryEffectWasApplied ? 'nearest' : 'linear'), useMipmaps,
-        op.imageReconstruction === 'catmullRom' && op.imageInterpolation === undefined);
+        op.imageReconstruction === 'catmullRom' && op.imageInterpolation === undefined,
+        op.imageAnisotropicReduction === true && op.imageInterpolation === undefined,
+        op.imagePrintFrame);
     };
 
     const fillMode = op.fillMode ?? 'fitToSize';
@@ -2826,11 +2829,22 @@ export class CanvasKitLayerRenderer {
   }
 
   private drawImageRect(canvas: SkCanvas, image: SkImage, source: Rect, dest: Rect, opacity = 1,
-    filtering: 'nearest' | 'linear' = 'linear', useMipmaps = false, allowCubic = false): void {
+    filtering: 'nearest' | 'linear' = 'linear', useMipmaps = false, allowCubic = false,
+    allowAnisotropic = false, printFrame?: number[]): void {
     const paint = new this.canvasKit.Paint();
     paint.setAntiAlias?.(true);
     if (opacity < 1) {
       paint.setAlphaf(opacity);
+    }
+    if (filtering === 'linear' && this.currentProfile === 'print'
+      && drawPrintFrameImage(this.canvasKit, canvas, image, source, printFrame, paint)) {
+      paint.delete();
+      return;
+    }
+    if (allowAnisotropic && filtering === 'linear' && useMipmaps
+      && drawAnisotropicPrintImage(this.canvasKit, canvas, image, source, dest, paint)) {
+      paint.delete();
+      return;
     }
     if (allowCubic && filtering === 'linear' && useMipmaps
       && imageRectUsesCubic(canvas, image, source, dest)
@@ -3116,7 +3130,7 @@ export class CanvasKitLayerRenderer {
             ?? (style.bold === true && (selected?.hostFace?.weight ?? physical?.weight ?? 400) < 600));
           const physicalItalic = selected?.hostFace
             ? ['italic', 'oblique'].includes(selected.hostFace.slant ?? '') : physical?.italic === true;
-          adjustable.setSkewX?.((selected?.syntheticStyle?.italic ?? (style.italic === true && !physicalItalic)) ? -0.2 : 0);
+          adjustable.setSkewX?.((selected?.syntheticStyle?.italic ?? (style.italic === true && !physicalItalic)) ? syntheticItalicSkew(style) : 0);
           adjustable.setScaleX?.(ratio);
         };
         font = this.makeFont(typeface, fontSize);
@@ -3649,7 +3663,7 @@ export class CanvasKitLayerRenderer {
             setSkewX?: (skew: number) => void;
           };
           adjustable.setEmbolden?.(selected?.syntheticStyle?.bold ?? (style.bold === true && (selected?.hostFace?.weight ?? 0) < 600));
-          adjustable.setSkewX?.((selected?.syntheticStyle?.italic ?? (style.italic === true && !['italic', 'oblique'].includes(selected?.hostFace?.slant ?? ''))) ? -0.2 : 0);
+          adjustable.setSkewX?.((selected?.syntheticStyle?.italic ?? (style.italic === true && !['italic', 'oblique'].includes(selected?.hostFace?.slant ?? ''))) ? syntheticItalicSkew(style) : 0);
         };
         try {
           adjustFont(textFont);
@@ -3820,6 +3834,15 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('tabLeader:invalidGeometry');
       return;
     }
+    if (op.leaders.some(leader => leader.dotCenters !== undefined
+      && (!Array.isArray(leader.dotCenters) || leader.dotCenters.length > 4096
+        || typeof leader.dotRadius !== 'number' || !Number.isFinite(leader.dotRadius)
+        || leader.dotRadius <= 0 || leader.dotRadius > op.fontSize
+        || leader.dotCenters.some(center => !Number.isFinite(center)
+          || center < leader.startX || center > leader.endX)))) {
+      this.unsupportedOps.add('tabLeader:invalidDots');
+      return;
+    }
     let rendered = false;
     const draw = (originX: number, originY: number) => {
       const baselineY = originY + op.baseline;
@@ -3836,7 +3859,17 @@ export class CanvasKitLayerRenderer {
             this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.5, [3, 3]);
             break;
           case 3:
-            this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 1, [0.1, 3], true);
+            if (leader.dotCenters && typeof leader.dotRadius === 'number') {
+              const paint = this.makeFillPaint(op.color);
+              paint.setAntiAlias?.(true);
+              try {
+                for (const center of leader.dotCenters) {
+                  canvas.drawCircle(originX + center, y, leader.dotRadius, paint);
+                }
+              } finally { paint.delete?.(); }
+            } else {
+              this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 1, [0.1, 3], true);
+            }
             break;
           case 4:
             this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.5, [6, 2, 1, 2]);
@@ -4647,7 +4680,7 @@ export class CanvasKitLayerRenderer {
               source: 'equationDeclaredFallback', kind: 'glyphCoverageFallback',
             }),
           }, canvas, layout.kind.text, layout.kind.fontFamily, x, y + layout.baseline,
-          fontSize, color, layout.width);
+          fontSize, color, layout.width, layout.kind.glyphScaleX);
       case 'function':
         return this.drawEquationText(
           canvas,

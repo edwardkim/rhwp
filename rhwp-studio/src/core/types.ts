@@ -1187,6 +1187,8 @@ export interface LayerTextStyle {
   color?: string;
   bold?: boolean;
   italic?: boolean;
+  /** 실제 기울임 face가 없을 때 Rust가 지정한 paint 변환. */
+  syntheticItalicSkew?: number;
   ratio?: number;
   underline?: string;
   underlineShape?: number;
@@ -1223,6 +1225,9 @@ export interface LayerTabLeader {
   startX: number;
   endX: number;
   fillType: number;
+  /** 공통 glyph 원점과 채움 폭에서 만든 run 상대 점 중심·반지름. */
+  dotCenters?: number[];
+  dotRadius?: number;
 }
 
 export type LayerTextControlMarkKind = 'space' | 'tab' | 'paragraphEnd' | 'lineBreakEnd';
@@ -1405,6 +1410,8 @@ export interface LayerImageOp {
   imageInterpolation?: 'nearest' | 'linear';
   /** 실제 Print 색 전달 payload의 축소 재구성 계약. */
   imageReconstruction?: 'catmullRom';
+  imageAnisotropicReduction?: boolean;
+  imagePrintFrame?: number[];
   mime?: string;
   base64?: string;
   imageRef?: number | string;
@@ -1503,7 +1510,7 @@ export type LayerEquationLayoutKind =
   | { type: 'text'; text: string }
   | { type: 'number'; text: string }
   | { type: 'symbol'; text: string }
-  | { type: 'fontGlyph'; text: string; fontFamily: string; outlineGeometry?: LayerFontGlyphGeometry }
+  | { type: 'fontGlyph'; text: string; fontFamily: string; glyphScaleX?: number; outlineGeometry?: LayerFontGlyphGeometry }
   | { type: 'mathSymbol'; text: string; integralGeometry?: LayerIntegralGeometry }
   | { type: 'function'; name: string }
   | { type: 'fraction'; numer: LayerEquationLayoutBox; denom: LayerEquationLayoutBox; axisHeight: number; ruleThickness?: number; ruleStart?: number; ruleEnd?: number }

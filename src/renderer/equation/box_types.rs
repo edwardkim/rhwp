@@ -49,7 +49,7 @@ pub enum LayoutKind {
         font_family: &'static str,
         /// 표시 글꼴의 차이를 배치 단계에서 해소한 공통 공개 윤곽.
         outline: Option<Vec<super::GlyphOutlineCommand>>,
-        /// 일반 윤곽의 fill+stroke 계약. 없는 경우 기존 채우기 경로다.
+        /// 윤곽의 fill+stroke 또는 글꼴 글리프의 가로 변환. 없는 경우 원 배율이다.
         #[serde(skip_serializing_if = "Option::is_none")]
         paint: Option<FontGlyphPaint>,
     },

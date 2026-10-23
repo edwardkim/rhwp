@@ -2934,6 +2934,25 @@ impl Renderer for WebCanvasRenderer {
                 1 => draw_line(&self.ctx, ly, 0.5, &[]),         // 실선
                 2 => draw_line(&self.ctx, ly, 0.5, &[3.0, 3.0]), // 파선
                 3 => {
+                    if let Some(dots) = crate::renderer::tab_leader::dot_geometry(
+                        font_size,
+                        leader.start_x,
+                        leader_end_x,
+                    ) {
+                        self.ctx.set_fill_style_str(&stroke_color);
+                        for center in dots.centers {
+                            self.ctx.begin_path();
+                            let _ = self.ctx.arc(
+                                x + center,
+                                ly,
+                                dots.radius,
+                                0.0,
+                                std::f64::consts::TAU,
+                            );
+                            self.ctx.fill();
+                        }
+                        continue;
+                    }
                     // 점선 ··· — round cap 으로 원형 점 표현 (한컴 동등).
                     // 두께·간격은 폰트 크기를 따른다 (svg.rs 와 같은 출처).
                     let (w, dash, gap) =
@@ -3050,10 +3069,25 @@ impl Renderer for WebCanvasRenderer {
             canvas
         });
         if let Some(canvas) = decoded {
+            if self.high_quality_images && self.ctx.image_smoothing_enabled() {
+                if let Some(frame) = super::print_raster::PrintRasterFrame::read(data) {
+                    if cubic_reduction::draw_print_frame(&self.ctx, &canvas, frame) {
+                        return;
+                    }
+                }
+            }
             if self.high_quality_images
                 && self.ctx.image_smoothing_enabled()
-                && super::image_resolver::png_sampling::print_bitmap_reconstruction(data)
-                && cubic_reduction::draw(&self.ctx, &canvas, key, (x, y, w, h))
+                && (super::image_resolver::png_sampling::print_bitmap_reconstruction(data)
+                    || super::image_resolver::png_sampling::print_jpeg_transfer(data))
+                && cubic_reduction::draw(
+                    &self.ctx,
+                    &canvas,
+                    key,
+                    (x, y, w, h),
+                    super::image_resolver::png_sampling::print_jpeg_transfer(data),
+                    super::image_resolver::png_sampling::print_bitmap_reconstruction(data),
+                )
             {
                 return;
             }

@@ -16,6 +16,9 @@ const TEXT_MARK_BODY_CLIP_RIGHT_PAD: f64 = 48.0;
 /// semantic render tree를 visual layer tree로 내린다.
 pub struct LayerBuilder {
     profile: RenderProfile,
+    layout_dpi: f64,
+    image_reference_origin: (f64, f64),
+    image_page_size: (f64, f64),
     output_options: LayerOutputOptions,
     bin_data_epoch: u32,
     page_context: Option<PagePaintContext>,
@@ -31,6 +34,9 @@ impl LayerBuilder {
     pub fn new(profile: RenderProfile) -> Self {
         Self {
             profile,
+            layout_dpi: crate::renderer::DEFAULT_DPI,
+            image_reference_origin: (0.0, 0.0),
+            image_page_size: (0.0, 0.0),
             output_options: LayerOutputOptions::default(),
             bin_data_epoch: 0,
             page_context: None,
@@ -123,6 +129,15 @@ impl LayerBuilder {
         };
 
         let context = PagePaintContext::new(self.profile, page_width, page_height);
+        self.image_page_size = (page_width, page_height);
+        fn first_column(node: &RenderNode) -> Option<(f64, f64)> {
+            if matches!(node.node_type, RenderNodeType::Column(_)) {
+                Some((node.bbox.x, node.bbox.y))
+            } else {
+                node.children.iter().find_map(first_column)
+            }
+        }
+        self.image_reference_origin = first_column(&tree.root).unwrap_or((0.0, 0.0));
         let (page_width, page_height) = context.output_size();
         self.page_context = Some(context);
 
@@ -170,6 +185,10 @@ impl LayerBuilder {
     }
 
     fn build_children(&mut self, node: &RenderNode) -> Vec<LayerNode> {
+        let previous_origin = self.image_reference_origin;
+        if matches!(node.node_type, RenderNodeType::Column(_)) {
+            self.image_reference_origin = (node.bbox.x, node.bbox.y);
+        }
         let mut children = node
             .children
             .iter()
@@ -192,6 +211,7 @@ impl LayerBuilder {
                 );
             }
         }
+        self.image_reference_origin = previous_origin;
         children
     }
 
@@ -316,6 +336,19 @@ impl LayerBuilder {
                         resolved.as_ref(),
                     ) {
                         resolved = Some(window);
+                    }
+                    if let Some(payload) = resolved.as_mut().filter(|p| {
+                        crate::renderer::image_resolver::png_sampling::print_jpeg_transfer(&p.data)
+                            && !image.transform.has_transform()
+                    }) {
+                        if let Some(frame) = crate::renderer::print_raster::PrintRasterFrame::new(
+                            self.image_page_size,
+                            self.image_reference_origin,
+                            node.bbox,
+                            self.layout_dpi,
+                        ) {
+                            frame.attach(&mut payload.data);
+                        }
                     }
                     vec![PaintOp::image(frame, image, resolved)]
                 };

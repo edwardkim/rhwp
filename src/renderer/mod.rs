@@ -19,6 +19,7 @@ pub mod canvas_text_font;
 pub mod canvaskit_policy;
 pub(crate) mod cell_paragraph_spacing;
 pub mod composer;
+mod conjoining_jamo;
 pub(crate) mod endnote_spacing;
 pub mod equation;
 pub(crate) mod equation_tac_flow;
@@ -90,6 +91,8 @@ mod stroke_pattern;
 pub(crate) mod table_row_frame;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
 // layout/publication callers remain closed until their own approved slices.
+pub(crate) mod anisotropic_sampling;
+pub(crate) mod print_raster;
 #[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
 pub(crate) mod cubic_sampling;
 pub mod native_pua_fonts;
@@ -108,7 +111,9 @@ pub mod supplemental_metrics;
 pub mod svg;
 pub mod svg_fragment;
 pub mod svg_layer;
+pub(crate) mod tab_leader;
 pub(crate) mod text_decoration;
+pub(crate) mod text_transform;
 pub mod typeset;
 #[cfg(target_arch = "wasm32")]
 pub mod web_canvas;
@@ -344,6 +349,9 @@ pub struct TextStyle {
     #[serde(skip)]
     pub supplemental_metrics:
         Option<std::sync::Arc<supplemental_metrics::SupplementalMetricSnapshot>>,
+    /// 출력 세대가 독립 중성·종성에 선택한 무전진 프로그램. 세션 속성이다.
+    #[serde(skip)]
+    pub isolated_jamo_font: Option<&'static str>,
     /// 글꼴 이름
     pub font_family: String,
     /// 글꼴 크기 (px)
@@ -731,6 +739,7 @@ impl Default for TextStyle {
     fn default() -> Self {
         Self {
             supplemental_metrics: None,
+            isolated_jamo_font: None,
             font_family: String::new(),
             font_size: 0.0,
             fixed_glyph_advances: false,

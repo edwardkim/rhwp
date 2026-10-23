@@ -7,6 +7,8 @@ mod print_tone;
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
 pub(crate) use print_jpeg::print_jpeg_payload;
 pub(crate) use print_tone::print_bitmap_payload;
+mod print_jpeg;
+pub(crate) use print_jpeg::print_jpeg_payload;
 
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
@@ -108,6 +110,10 @@ const MAX_MEMO_ENTRIES: usize = 64;
 /// 변환 종류. 같은 바이트라도 어떤 변환을 거쳤느냐에 따라 결과가 다르다.
 #[derive(Clone, Copy, Hash)]
 enum Conversion {
+    PrintJpeg {
+        quality: u8,
+        expand: bool,
+    },
     Bmp,
     CmykJpeg,
     Pcx,

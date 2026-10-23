@@ -16,6 +16,72 @@ thread_local! {
     static CACHE: RefCell<VecDeque<Entry>> = const { RefCell::new(VecDeque::new()) };
 }
 
+pub(super) fn draw_print_frame(
+    context: &CanvasRenderingContext2d,
+    source: &HtmlCanvasElement,
+    frame: super::super::print_raster::PrintRasterFrame,
+) -> bool {
+    let Some(()) = (|| {
+        let m = context.get_transform().ok()?;
+        if m.b() != 0.0 || m.c() != 0.0 || m.e().fract() != 0.0 || m.f().fract() != 0.0 {
+            return None;
+        }
+        let ctx = source
+            .get_context("2d")
+            .ok()??
+            .dyn_into::<CanvasRenderingContext2d>()
+            .ok()?;
+        let pixels = ctx
+            .get_image_data(
+                0.0,
+                0.0,
+                f64::from(source.width()),
+                f64::from(source.height()),
+            )
+            .ok()?;
+        let raster = frame.rasterize(
+            &pixels.data().0,
+            (source.width(), source.height()),
+            [m.a(), m.d(), 0.0, 0.0],
+        )?;
+        let canvas = web_sys::window()?
+            .document()?
+            .create_element("canvas")
+            .ok()?
+            .dyn_into::<HtmlCanvasElement>()
+            .ok()?;
+        canvas.set_width(raster.width);
+        canvas.set_height(raster.height);
+        let target = canvas
+            .get_context("2d")
+            .ok()??
+            .dyn_into::<CanvasRenderingContext2d>()
+            .ok()?;
+        let image = ImageData::new_with_u8_clamped_array_and_sh(
+            Clamped(&raster.rgba),
+            raster.width,
+            raster.height,
+        )
+        .ok()?;
+        target.put_image_data(&image, 0.0, 0.0).ok()?;
+        context.save();
+        let result = context
+            .set_transform(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
+            .and_then(|()| {
+                context.draw_image_with_html_canvas_element(
+                    &canvas,
+                    f64::from(raster.left) + m.e(),
+                    f64::from(raster.top) + m.f(),
+                )
+            });
+        context.restore();
+        result.ok()
+    })() else {
+        return false;
+    };
+    true
+}
+
 fn prepared(
     source: &HtmlCanvasElement,
     key: Key,
@@ -44,32 +110,41 @@ fn prepared(
             f64::from(source.height()),
         )
         .ok()?;
-    let raster = super::super::cubic_sampling::rasterize(
-        &pixels.data().0,
-        (source.width(), source.height()),
-        destination,
-    )?;
+    let mixed = super::super::anisotropic_sampling::mixed_reduction(
+        (f64::from(source.width()), f64::from(source.height())),
+        (destination.2, destination.3),
+    );
+    let (rgba, width, height) = if mixed {
+        let raster = super::super::anisotropic_sampling::rasterize(
+            &pixels.data().0,
+            (source.width(), source.height()),
+            destination,
+        )?;
+        (raster.rgba, raster.width, raster.height)
+    } else {
+        let raster = super::super::cubic_sampling::rasterize(
+            &pixels.data().0,
+            (source.width(), source.height()),
+            destination,
+        )?;
+        (raster.rgba, raster.width, raster.height)
+    };
     let canvas = web_sys::window()?
         .document()?
         .create_element("canvas")
         .ok()?
         .dyn_into::<HtmlCanvasElement>()
         .ok()?;
-    canvas.set_width(raster.width);
-    canvas.set_height(raster.height);
+    canvas.set_width(width);
+    canvas.set_height(height);
     let context = canvas
         .get_context("2d")
         .ok()??
         .dyn_into::<CanvasRenderingContext2d>()
         .ok()?;
-    let image = ImageData::new_with_u8_clamped_array_and_sh(
-        Clamped(&raster.rgba),
-        raster.width,
-        raster.height,
-    )
-    .ok()?;
+    let image = ImageData::new_with_u8_clamped_array_and_sh(Clamped(&rgba), width, height).ok()?;
     context.put_image_data(&image, 0.0, 0.0).ok()?;
-    let bytes = raster.rgba.len();
+    let bytes = rgba.len();
     CACHE.with(|cache| {
         let mut cache = cache.borrow_mut();
         while cache.len() >= 64
@@ -91,6 +166,8 @@ pub(super) fn draw(
     source: &HtmlCanvasElement,
     source_key: u64,
     rectangle: (f64, f64, f64, f64),
+    allow_anisotropic: bool,
+    allow_cubic: bool,
 ) -> bool {
     let Ok(matrix) = context.get_transform() else {
         return false;
@@ -105,10 +182,17 @@ pub(super) fn draw(
         matrix.a() * w,
         matrix.d() * h,
     );
-    if !super::super::cubic_sampling::modest_reduction(
-        (f64::from(source.width()), f64::from(source.height())),
-        (rectangle.2, rectangle.3),
-    ) {
+    if !(allow_anisotropic
+        && super::super::anisotropic_sampling::mixed_reduction(
+            (f64::from(source.width()), f64::from(source.height())),
+            (rectangle.2, rectangle.3),
+        ))
+        && !(allow_cubic
+            && super::super::cubic_sampling::modest_reduction(
+                (f64::from(source.width()), f64::from(source.height())),
+                (rectangle.2, rectangle.3),
+            ))
+    {
         return false;
     }
     if !rectangle.0.is_finite()

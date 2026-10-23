@@ -122,6 +122,13 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
             (equation.common.height as i32).saturating_mul(i32::from(equation.baseline)) / 100,
         );
     }
+    if let Some(intrinsic) = layout::EqLayout::legacy_flow_layout(equation, super::DEFAULT_DPI) {
+        return (
+            super::px_to_hwpunit(intrinsic.width, super::DEFAULT_DPI).max(1) as u32,
+            super::px_to_hwpunit(intrinsic.height, super::DEFAULT_DPI).max(1) as u32,
+            super::px_to_hwpunit(intrinsic.baseline, super::DEFAULT_DPI),
+        );
+    }
     // 표시 내용이 없는 구문과 유효한 빈 템플릿은 다르다. 정상 한컴 저장본의
     // 인자 없는 PILE은 범위 밖 기준선을 가진 무효 캐시를 남기지만, 호스트의
     // 빈 글줄은 여전히 점유한다. 캐시를 표시 상자의 크기로 보정하지 않는다.

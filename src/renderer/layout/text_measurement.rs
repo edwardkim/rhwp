@@ -20,32 +20,10 @@ pub trait TextMeasurer {
 
 // ── 공통 헬퍼 ───────────────────────────────────────────────────────
 
-/// 자모 클러스터 길이 매핑 계산
-///
-/// 한글 자모 조합(초+중+종)을 1개 클러스터로 묶는다.
-/// cluster_len[i] > 0: 클러스터 시작 (길이), 0: 클러스터 내부 (이전 문자와 동일 위치)
-fn build_cluster_len(chars: &[char]) -> Vec<u8> {
-    let char_count = chars.len();
-    let mut cluster_len = vec![0u8; char_count];
-    let mut ci = 0;
-    while ci < char_count {
-        if is_hangul_choseong(chars[ci]) {
-            let start = ci;
-            ci += 1;
-            if ci < char_count && is_hangul_jungseong(chars[ci]) {
-                ci += 1;
-                if ci < char_count && is_hangul_jongseong(chars[ci]) {
-                    ci += 1;
-                }
-            }
-            cluster_len[start] = (ci - start) as u8;
-        } else {
-            cluster_len[ci] = 1;
-            ci += 1;
-        }
-    }
-    cluster_len
-}
+use super::super::conjoining_jamo::{
+    cluster_lengths as build_cluster_len, is_hangul_choseong, is_hangul_jongseong,
+    is_hangul_jungseong,
+};
 
 /// [#2279] 자간(%)의 픽셀 기여 — 한글은 자간을 **해당 글자의 진행폭 비례**로
 /// 적용한다 (fs-비례 아님). 무신축 Justify 마지막 줄 실측(36392557 pi34,
@@ -900,6 +878,16 @@ pub(crate) fn resolved_to_text_style(
             fixed_glyph_advances: false,
             source_font_is_hft: cs.source_hft_for_lang(lang_index),
             hft_print_frame: cs.hft_print_frame_for_lang(lang_index),
+            isolated_jamo_font: styles.isolated_jamo_font.or_else(|| {
+                matches!(
+                    cs.font_family_for_lang(lang_index)
+                        .split(',')
+                        .next()
+                        .map(str::trim),
+                    Some("HCR Dotum" | "HCRDotum" | "함초롬돋움")
+                )
+                .then_some("HCR Dotum")
+            }),
             font_family: cs.font_family_for_lang(lang_index).to_string(),
             supplemental_metrics: styles.supplemental_metrics.clone(),
             font_metric_trusted: cs.font_metric_trusted_for_lang(lang_index),
@@ -1637,6 +1625,22 @@ fn char_width_decision_with_hft_tracking<'a>(
             final_width_px: 0.0,
             bold_tracking_px: 0.0,
             applied_letter_spacing_px: 0.0,
+            metric: None,
+            character_match: "notApplicable",
+            dash_leader: false,
+            negative_spacing_clamped: false,
+        };
+    }
+    if cluster_len[i] == 1
+        && super::super::conjoining_jamo::is_mark(c)
+        && style.isolated_jamo_font == Some("HCR Dotum")
+    {
+        // 독립 2020 Print의 HCRDotum 단독 중성·종성은 표시하되 전진하지 않는다.
+        // 초성으로 시작하는 조합 내부는 위 clusterContinuation 경로가 소유한다.
+        return CharWidthDecision {
+            width_source: "isolatedConjoiningJamo",
+            base_width_px: 0.0,
+            final_width_px: 0.0,
             metric: None,
             character_match: "notApplicable",
             dash_leader: false,
@@ -2551,21 +2555,6 @@ fn is_fullwidth_symbol(c: char) -> bool {
     || ('\u{3200}'..='\u{32FF}').contains(&c) // Enclosed CJK Letters (㉠㉡ 등)
     || ('\u{3300}'..='\u{33FF}').contains(&c) // CJK Compatibility (㎜㎝ 등)
     || ('\u{2160}'..='\u{217F}').contains(&c) // Roman Numerals (Ⅰ Ⅱ Ⅲ 등)
-}
-
-/// 한글 자모 초성 여부 (옛한글 포함)
-fn is_hangul_choseong(c: char) -> bool {
-    ('\u{1100}'..='\u{115F}').contains(&c) || ('\u{A960}'..='\u{A97F}').contains(&c)
-}
-
-/// 한글 자모 중성 여부 (옛한글 포함, ᆞ U+119E 포함)
-fn is_hangul_jungseong(c: char) -> bool {
-    ('\u{1160}'..='\u{11A7}').contains(&c) || ('\u{D7B0}'..='\u{D7C6}').contains(&c)
-}
-
-/// 한글 자모 종성 여부 (옛한글 포함)
-fn is_hangul_jongseong(c: char) -> bool {
-    ('\u{11A8}'..='\u{11FF}').contains(&c) || ('\u{D7CB}'..='\u{D7FB}').contains(&c)
 }
 
 /// 텍스트를 렌더링 클러스터 단위로 분할한다.

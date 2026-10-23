@@ -353,23 +353,27 @@ pub(crate) fn find_metric_decision_for_character<'a>(
     character: char,
 ) -> Option<MetricLookupDecision<'a>> {
     let mut decision = find_metric_decision(name, bold, italic)?;
-    let source_slot = usize::from(bold);
-    let source = &hci_poppy::METRICS[source_slot];
-    if decision.alias_resolved_name != source.name
-        || bold != source.bold
-        || italic != source.italic
-        || character.is_whitespace()
-        || source.get_width(character).is_none()
-    {
+    if character.is_whitespace() {
         return Some(decision);
     }
-    static SOURCE_INDICES: OnceLock<[Option<usize>; 2]> = OnceLock::new();
+    let Some((source_slot, source)) = hci_poppy::METRICS.iter().enumerate().find(|(_, source)| {
+        decision.alias_resolved_name == source.name
+            && bold == source.bold
+            && italic == source.italic
+            && source.get_width(character).is_some()
+    }) else {
+        return Some(decision);
+    };
+    static SOURCE_INDICES: OnceLock<Vec<Option<usize>>> = OnceLock::new();
     let indices = SOURCE_INDICES.get_or_init(|| {
-        std::array::from_fn(|slot| {
-            FONT_METRICS
-                .iter()
-                .position(|entry| std::ptr::eq(entry, &hci_poppy::METRICS[slot]))
-        })
+        hci_poppy::METRICS
+            .iter()
+            .map(|source| {
+                FONT_METRICS
+                    .iter()
+                    .position(|entry| std::ptr::eq(entry, source))
+            })
+            .collect()
     });
     if let Some(index) = indices[source_slot] {
         // 각 표가 가진 em을 함께 선택한다. em=1000의 폭을 em=2048 표에

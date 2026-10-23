@@ -446,6 +446,9 @@ impl TernaryRasterOperator {
                     .set("y", y)
                     .set("width", width)
                     .set("height", height)
+                    // WMF blit은 원본 비율과 무관하게 목적 사각형을 채운다.
+                    // SVG 기본 meet는 여백을 만들고 비트맵을 가운데로 옮긴다.
+                    .set("preserveAspectRatio", "none")
                     .set("href", bitmap.as_data_url());
                 match transform {
                     Some(transform) => image.set("transform", transform),
@@ -546,6 +549,7 @@ impl TernaryRasterOperator {
                     .set("y", y)
                     .set("width", width)
                     .set("height", height)
+                    .set("preserveAspectRatio", "none")
                     .set("href", bitmap.as_data_url());
                 match transform {
                     Some(transform) => image.set("transform", transform),

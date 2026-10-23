@@ -20,6 +20,7 @@ mod hancom_sum;
 mod integral_placement;
 mod ladder_geometry;
 mod left_script_geometry;
+mod legacy;
 mod limit_geometry;
 mod literal_text;
 mod long_div_geometry;
@@ -55,6 +56,7 @@ pub struct EqLayout {
     latin_italic: bool,
     hancom_math_face: bool,
     hancom_eqn: bool,
+    legacy_equation: bool,
     math_digit_advance: Option<u16>,
     variable_italic: bool,
     variable_bold: bool,
@@ -140,6 +142,7 @@ impl EqLayout {
             latin_italic: true,
             hancom_math_face: false,
             hancom_eqn: false,
+            legacy_equation: false,
             math_digit_advance: None,
             variable_italic: true,
             variable_bold: false,
@@ -162,6 +165,7 @@ impl EqLayout {
             latin_italic: true,
             hancom_math_face: equation.font_name.eq_ignore_ascii_case("HYhwpEQ"),
             hancom_eqn: equation.font_name.eq_ignore_ascii_case("HancomEQN"),
+            legacy_equation: legacy::matches_version(equation),
             // 두 face의 수학 PUA 숫자만 같은 512/1024 전진폭이다.
             // 영문·기호는 서로 다르므로 HancomEQN을 HYhwpEQ로 치환하지 않는다.
             math_digit_advance: (equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
@@ -175,9 +179,25 @@ impl EqLayout {
         }
     }
 
+    /// 확인한 옛 수식 문법은 자연 표시 프레임을 흐름에도 그대로 발행한다.
+    pub(super) fn legacy_flow_layout(
+        equation: &crate::model::control::Equation,
+        dpi: f64,
+    ) -> Option<LayoutBox> {
+        if equation.common.size_protect || !legacy::matches_version(equation) {
+            return None;
+        }
+        let ast = super::parser::EqParser::for_document(super::document_script::tokenize(
+            &equation.script,
+        ))
+        .parse();
+        legacy::supports(&ast).then(|| Self::for_equation(equation, dpi).layout(&ast))
+    }
+
     /// AST를 레이아웃 박스로 변환
     pub fn layout(&self, node: &EqNode) -> LayoutBox {
         let root = Self {
+            legacy_equation: self.legacy_equation && legacy::supports(node),
             standalone_eqalign: matrix_geometry::is_standalone_eqalign(node),
             ..*self
         };
@@ -207,7 +227,9 @@ impl EqLayout {
         }
         // 독립 글꼴 프레임을 측정과 표시의 공통 루트에 보존한다.
         // 자식의 기준선 상대 원점은 유지하며 빈 수식을 글줄로 바꾸지 않는다.
-        if (self.hancom_math_face || self.hancom_eqn) && result.height > 0.0 {
+        if root.legacy_equation && result.height > 0.0 {
+            legacy::root(result, self.font_size, self.dpi)
+        } else if (self.hancom_math_face || self.hancom_eqn) && result.height > 0.0 {
             root.matrix_row_box(result, self.font_size)
         } else {
             result
@@ -252,6 +274,25 @@ impl EqLayout {
     }
 
     fn layout_node(&self, node: &EqNode, fs: f64) -> LayoutBox {
+        if self.legacy_equation {
+            match node {
+                EqNode::Text(text)
+                | EqNode::Number(text)
+                | EqNode::Symbol(text)
+                | EqNode::MathSymbol(text) => return legacy::text(text, fs),
+                EqNode::Fraction { numer, denom } => {
+                    return legacy::fraction(
+                        self.layout_node(numer, fs),
+                        self.layout_node(denom, fs),
+                        fs,
+                    );
+                }
+                EqNode::Paren { left, right, body } => {
+                    return legacy::parentheses(left, right, self.layout_node(body, fs), fs);
+                }
+                _ => {}
+            }
+        }
         match node {
             EqNode::Row(children) => self.layout_row(children, fs),
             EqNode::Text(s) => self.layout_text(s, fs),

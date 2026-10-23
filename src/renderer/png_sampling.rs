@@ -3,7 +3,8 @@
 //! Raw BinData preservation keeps this contract through HWP/HWPX save/reopen;
 //! ordinary images without the declaration retain the renderer's profile policy.
 fn declaration(data: &[u8]) -> Option<(u8, u8)> {
-    // JPEG decoder는 이 표식을 무시하고 출력 경로만 재구성 계약을 소비한다.
+    // JPEG APP15도 같은 버전·값과 CRC를 갖는다. 압축 decoder는 이 부가
+    // 표식을 무시하고, 출력 재생만 실제 색 확장의 재구성 계약을 소비한다.
     if data.starts_with(&[0xff, 0xd8, 0xff, 0xef, 0, 12]) && data.len() >= 16 {
         let payload = &data[6..16];
         return (&payload[..4] == b"rhWP"
@@ -34,6 +35,10 @@ pub(crate) fn interpolation(data: &[u8]) -> Option<bool> {
 /// 일반 그림·팔레트 전달·다른 Print 버전의 표본 정책을 바꾸지 않는다.
 pub(crate) fn print_bitmap_reconstruction(data: &[u8]) -> bool {
     declaration(data) == Some((2, 1))
+}
+
+pub(crate) fn print_jpeg_transfer(data: &[u8]) -> bool {
+    data.starts_with(&[0xff, 0xd8]) && matches!(declaration(data), Some((2 | 3, 1)))
 }
 
 pub(super) fn mark_print_bitmap(data: &mut Vec<u8>) {

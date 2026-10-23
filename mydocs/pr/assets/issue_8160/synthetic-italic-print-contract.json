@@ -1,0 +1,172 @@
+{
+  "input_sha256": "9dab270ebc6b9c35359c249687fcd1ba899c82a2362110ff5a869dc0dac8ce7c",
+  "method": "Independent upright/italic pairs: seven source faces, three sizes. Read Print text matrices. Intrinsic Times/Arial Italic programs retain zero synthetic shear. No target document or target PDF used.",
+  "engines": {
+    "2024": {
+      "job_id": "507af5e7-cfa0-4bad-b9d9-34c068bcbd18",
+      "pdf_sha256": "c75b32fcd9b2977349490d2a3b68db42f49d598865cd99f9986cc95754adfc9d",
+      "matrices": [
+        {
+          "font": "INPILL+\u00c8\u00de\u00b8\u00d5\u00b8\u00ed\u00c1\u00b6",
+          "shear": 0.0,
+          "count": 6
+        },
+        {
+          "font": "T2",
+          "shear": 0.0,
+          "count": 6
+        },
+        {
+          "font": "INPILL+Gulim",
+          "shear": 0.0,
+          "count": 6
+        },
+        {
+          "font": "INPILL+HCRDotum",
+          "shear": 0.0,
+          "count": 6
+        },
+        {
+          "font": "INPILL+Haansoft Batang",
+          "shear": 0.0,
+          "count": 9
+        },
+        {
+          "font": "INPILL+TimesNewRomanPSMT",
+          "shear": 0.0,
+          "count": 3
+        },
+        {
+          "font": "T7",
+          "shear": 0.0,
+          "count": 3
+        },
+        {
+          "font": "T8",
+          "shear": 0.0,
+          "count": 3
+        },
+        {
+          "font": "INPILL+\u00c8\u00de\u00b8\u00d5\u00b8\u00ed\u00c1\u00b6",
+          "shear": 0.333,
+          "count": 6
+        },
+        {
+          "font": "T2",
+          "shear": 0.333,
+          "count": 6
+        },
+        {
+          "font": "INPILL+Gulim",
+          "shear": 0.333,
+          "count": 6
+        },
+        {
+          "font": "INPILL+HCRDotum",
+          "shear": 0.333,
+          "count": 6
+        },
+        {
+          "font": "INPILL+Haansoft Batang",
+          "shear": 0.333,
+          "count": 9
+        },
+        {
+          "font": "INPILL+TimesNewRomanPS-ItalicMT",
+          "shear": 0.0,
+          "count": 3
+        },
+        {
+          "font": "T7",
+          "shear": 0.333,
+          "count": 3
+        },
+        {
+          "font": "T8",
+          "shear": 0.333,
+          "count": 3
+        }
+      ]
+    },
+    "2020": {
+      "job_id": "e295c953-a2e3-4987-9499-3570e93e819a",
+      "pdf_sha256": "78d83546a8c3fa812de1692bd7b71731a98827cb682a2a84e972817efca3906f",
+      "matrices": [
+        {
+          "font": "INPILL+Gulim",
+          "shear": 0.0,
+          "count": 12
+        },
+        {
+          "font": "T2",
+          "shear": 0.0,
+          "count": 6
+        },
+        {
+          "font": "INPILL+HCRDotum",
+          "shear": 0.0,
+          "count": 6
+        },
+        {
+          "font": "INPILL+Haansoft Batang",
+          "shear": 0.0,
+          "count": 12
+        },
+        {
+          "font": "INPILL+TimesNewRomanPSMT",
+          "shear": 0.0,
+          "count": 3
+        },
+        {
+          "font": "T6",
+          "shear": 0.0,
+          "count": 3
+        },
+        {
+          "font": "INPILL+Gulim",
+          "shear": 0.333,
+          "count": 9
+        },
+        {
+          "font": "INPILL+Arial-ItalicMT",
+          "shear": 0.0,
+          "count": 6
+        },
+        {
+          "font": "T2",
+          "shear": 0.333,
+          "count": 6
+        },
+        {
+          "font": "INPILL+HCRDotum",
+          "shear": 0.333,
+          "count": 6
+        },
+        {
+          "font": "INPILL+Haansoft Batang",
+          "shear": 0.333,
+          "count": 12
+        },
+        {
+          "font": "INPILL+TimesNewRomanPS-ItalicMT",
+          "shear": 0.0,
+          "count": 3
+        },
+        {
+          "font": "T6",
+          "shear": 0.333,
+          "count": 3
+        }
+      ]
+    }
+  },
+  "intrinsic_italic_counter": {
+    "font_file": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-BoldItalic.ttf",
+    "sha256": "e4662d0bcf9039a5d1fb7b52f964aebdde4563be9e5a8521299936f4818c0ab2",
+    "actual_sfnt_face": "DejaVu Serif Bold Italic",
+    "unobliqued_typeface_returns_none": true,
+    "typeface_identity_preserved": true,
+    "exit_code": 0,
+    "probe_source_sha256": "26a53dc2c508398bb3f5b1f1cc2f40631ea116d7df969da47c07cc56c10ad1ff"
+  }
+}

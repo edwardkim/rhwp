@@ -20,23 +20,36 @@ export function drawDeclaredEquationFontGlyph(
   fontSize: number,
   color: string,
   reservedWidth: number,
+  scaleX = 1,
 ): boolean {
+  if (!Number.isFinite(scaleX) || scaleX <= 0) return false;
   const families = fontFamily.split(',').map(value => value.trim().replace(/^(['"])(.*)\1$/, '$2'));
   const candidates = families.flatMap(family => {
     const typeface = context.lookupTypeface(family);
     return typeface ? [{ family, typeface }] : [];
   });
   // 준비된 선언 후보만 사용한다. 요청 목록 밖의 기본/기호 글꼴은 추가하지 않는다.
-  return drawEquationTextWithFonts({
-    canvasKit: context.canvasKit,
-    typefaces: candidates.map(candidate => candidate.typeface),
-    maxTextLength: context.maxTextLength,
-    makeFillPaint: context.makeFillPaint,
-    onTypefaceSelected(typeface) {
-      const selected = candidates.find(candidate => candidate.typeface === typeface);
-      if (selected && selected.family !== families[0]) {
-        context.onFallback(families[0], selected.family);
-      }
-    },
-  }, canvas, text, x, baseline, fontSize, color, false, false, reservedWidth, false);
+  const transformed = scaleX !== 1;
+  if (transformed) {
+    canvas.save();
+    canvas.translate(x, baseline);
+    canvas.scale(scaleX, 1);
+  }
+  try {
+    return drawEquationTextWithFonts({
+      canvasKit: context.canvasKit,
+      typefaces: candidates.map(candidate => candidate.typeface),
+      maxTextLength: context.maxTextLength,
+      makeFillPaint: context.makeFillPaint,
+      onTypefaceSelected(typeface) {
+        const selected = candidates.find(candidate => candidate.typeface === typeface);
+        if (selected && selected.family !== families[0]) {
+          context.onFallback(families[0], selected.family);
+        }
+      },
+    }, canvas, text, transformed ? 0 : x, transformed ? 0 : baseline,
+    fontSize, color, false, false, reservedWidth / scaleX, false);
+  } finally {
+    if (transformed) canvas.restore();
+  }
 }

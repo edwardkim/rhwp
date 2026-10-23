@@ -2,6 +2,7 @@
 //!
 //! This module is available only with the `native-skia` feature.
 
+mod anisotropic_image;
 mod cache;
 mod diagnostics;
 mod equation_conv;

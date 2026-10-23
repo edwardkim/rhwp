@@ -428,6 +428,13 @@ pub(super) fn draw_image_bytes(
     });
 
     let draw_image_rect = |src: Option<Rect>, dst: Rect| {
+        if sampling.mipmap_mode == MipmapMode::Linear && src.is_none() && !binary_preprocessed {
+            if let Some(frame) = super::super::print_raster::PrintRasterFrame::read(bytes) {
+                if super::anisotropic_image::draw_print_frame(canvas, &image, frame, &paint) {
+                    return;
+                }
+            }
+        }
         let matrix = canvas.local_to_device_as_3x3();
         let scale_x = matrix.scale_x().hypot(matrix.skew_y());
         let scale_y = matrix.skew_x().hypot(matrix.scale_y());
@@ -450,6 +457,14 @@ pub(super) fn draw_image_bytes(
                 None => sampling,
             }
         };
+        if sampling.mipmap_mode == MipmapMode::Linear
+            && src.is_none()
+            && !binary_preprocessed
+            && super::super::image_resolver::png_sampling::print_jpeg_transfer(bytes)
+            && super::anisotropic_image::draw(canvas, &image, dst, &paint)
+        {
+            return;
+        }
         let transform = canvas.local_to_device_as_3x3();
         // SVG는 위에서 이미 실제 장치 크기로 raster했다. 이를 다시 bitmap
         // 축소 경로에 넣으면 벡터의 가는 선까지 두 번 필터링하게 된다.
