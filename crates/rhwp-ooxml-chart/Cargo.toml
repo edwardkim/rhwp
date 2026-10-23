@@ -1,9 +1,9 @@
 [package]
 include = [
-    "Cargo.toml",
-    "src/**",
-    "LICENSE",
-    "README.md"
+    "/Cargo.toml",
+    "/src/**",
+    "/LICENSE",
+    "/README.md"
 ]
 name = "rhwp-ooxml-chart"
 version = "0.1.0"

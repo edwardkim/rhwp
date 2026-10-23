@@ -34,12 +34,12 @@ siphasher = { version = "1.0.1"}
 
 [package]
 include = [
-    "Cargo.toml",
-    "src/**",
-    "README.md",
-    "RHWP_PATCHES.md",
-    "LICENSE-*",
-    "NOTICE"
+    "/Cargo.toml",
+    "/src/**",
+    "/README.md",
+    "/RHWP_PATCHES.md",
+    "/LICENSE-*",
+    "/NOTICE"
 ]
 name = "rhwp-svg2pdf"
 description = "rhwp SVG-to-PDF compatibility backend based on svg2pdf 0.13.0; not an official upstream release"
