@@ -35,7 +35,8 @@
 //!
 //! ## 범위
 //!
-//! 저장 사다리가 **있는** 다단 문단은 종전대로 트림한다(`#391` 의 본래 의도). 저장소 표본
+//! 저장 사다리의 다음 앵커가 간격을 복원할 수 있는 다단 문단은 종전대로 트림한다.
+//! 복원 불가 흐름·독립적으로 인증한 단 영점의 추가 계약은 아래 KTX 셀 검사로 보호한다. 저장소 표본
 //! 370개의 쪽수·off-canvas·overflow·overlap 이 수정 전후로 **전건 동일**하다.
 
 #![cfg(not(target_arch = "wasm32"))]
@@ -162,5 +163,132 @@ fn no_column_holds_more_than_it_can() {
     assert!(
         over.is_empty(),
         "단이 가용 높이보다 많이 담았다 (쪽, 단, 항목합, 본문높이): {over:?}"
+    );
+}
+
+/// 전쪽 Native/fresh WASM이 각각 99.36494/99.38975%이며 셀 배경을 직접 판독했다.
+/// 독립 PDF의 벡터 사각형(pt×4/3)에서 얻은 96DPI 경계다. 후보 좌표를 답안으로 복사하지 않는다.
+/// 출처: task_m100_7445_rebase_repair_stage87.md의 KTX 1쪽·세 셀·입력/PDF SHA.
+#[test]
+fn stored_multicolumn_float_and_tac_cells_match_independent_print_frames() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    use rhwp::DocumentCore;
+    use sha2::{Digest, Sha256};
+
+    fn collect<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        out.push(node);
+        for child in &node.children {
+            collect(child, out);
+        }
+    }
+    fn text(node: &RenderNode) -> String {
+        let mut nodes = Vec::new();
+        collect(node, &mut nodes);
+        nodes
+            .iter()
+            .filter_map(|n| match &n.node_type {
+                RenderNodeType::TextRun(run) => Some(run.display_or_text()),
+                _ => None,
+            })
+            .collect::<String>()
+            .chars()
+            .filter(|c| !c.is_whitespace())
+            .collect()
+    }
+    let input = std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/basic/KTX-003.hwp"),
+    )
+    .expect("독립 Print 대응 원본");
+    assert_eq!(
+        Sha256::digest(&input)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>(),
+        "619bc919de3f2b8113fb9af0fcc808c754dc601ed9e66e49226280fd3d1ae032",
+        "다른 원본을 같은 PDF 좌표로 고정하지 않는다"
+    );
+    let mut core = DocumentCore::from_bytes(&input).unwrap();
+    core.set_hangul2024_compat(false);
+    assert_eq!(core.page_count(), 1);
+    let page = core.build_page_render_tree(0).unwrap();
+    let mut nodes = Vec::new();
+    collect(&page.root, &mut nodes);
+    let mut mismatches = Vec::new();
+    for (paragraph, row, col, expected, expected_text) in [
+        (
+            30,
+            1,
+            0,
+            [
+                530.7799886067709,
+                101.225341796875,
+                581.4440104166666,
+                118.33601888020833,
+            ],
+            "서울",
+        ),
+        (
+            32,
+            2,
+            1,
+            [
+                554.2733154296875,
+                319.0279947916667,
+                587.1973063151041,
+                332.4613444010417,
+            ],
+            "용산",
+        ),
+        (
+            33,
+            2,
+            1,
+            [
+                577.2880045572916,
+                570.7333170572916,
+                641.0586751302084,
+                587.6840006510416,
+            ],
+            "서울",
+        ),
+    ] {
+        let tables: Vec<_> = nodes
+            .iter()
+            .copied()
+            .filter(|node| {
+                matches!(&node.node_type,
+            RenderNodeType::Table(table) if table.section_index == Some(0)
+                && table.para_index == Some(paragraph) && table.control_index == Some(0))
+            })
+            .collect();
+        assert_eq!(tables.len(), 1, "표 원문 소유·누락·중복: {paragraph}");
+        let cells: Vec<_> = tables[0]
+            .children
+            .iter()
+            .filter(|node| {
+                matches!(&node.node_type,
+            RenderNodeType::TableCell(cell) if cell.row == row && cell.col == col)
+            })
+            .collect();
+        assert_eq!(cells.len(), 1, "원본 셀 주소의 단일 소유");
+        let cell = cells[0];
+        assert_eq!(text(cell), expected_text, "PDF 배경과 원문 셀의 내용 소속");
+        let paints: Vec<_> = cell
+            .children
+            .iter()
+            .filter(|node| matches!(&node.node_type, RenderNodeType::Rectangle(_)))
+            .collect();
+        assert_eq!(paints.len(), 1, "셀의 실제 칠 사각형을 검사한다");
+        let b = paints[0].bbox;
+        let actual = [b.x, b.y, b.x + b.width, b.y + b.height];
+        for (axis, (actual, expected)) in actual.into_iter().zip(expected).enumerate() {
+            if (actual - expected).abs() > 1.0 {
+                mismatches.push((paragraph, row, col, axis, actual, expected));
+            }
+        }
+    }
+    assert!(
+        mismatches.is_empty(),
+        "독립 Print 셀 배경의 1px 경계 회귀: {mismatches:?}"
     );
 }

@@ -197,7 +197,10 @@ impl FormattedParagraph {
         let has_authoritative_seg_for_multicolumn = para.line_segs.iter().any(|seg| {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         });
-        if col_count > 1 && has_authoritative_seg_for_multicolumn {
+        // 저장 줄이 있어도 다음 빈 float 호스트가 현재 흐름에서 lane을 예약하면
+        // 뒤의 vpos 스냅이 이 줄간격을 복원하지 않는다. 호출자가 인증한
+        // 복원 불가 판정은 단 수와 관계없이 같은 흐름 계약으로 소비한다.
+        if col_count > 1 && has_authoritative_seg_for_multicolumn && !spacing_restore_unavailable {
             // fit은 마지막 줄의 점유까지만 판정한다. 다음 문단의 원점을
             // 전진시키는 뒤 간격은 수용된 흐름에서 한 번 보존한다.
             return (self.height_for_fit + self.spacing_after).min(self.total_height);
