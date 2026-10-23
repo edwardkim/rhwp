@@ -15,6 +15,9 @@ import { cleanDocumentText } from './untrusted.ts';
 
 const MAX_FIND_CHARS = 500;
 const MAX_NEW_PARAGRAPHS = 50;
+const MAX_TABLE_COLUMNS = 20;
+const MAX_TABLE_CELLS = 400;
+const COLOR = /^#[0-9a-fA-F]{6}$/;
 const MAX_REPLACE_CHARS = 2000;
 const CONTEXT_CHARS = 30;
 /** 한 문단 안의 글만 바꾼다 — 줄바꿈·제어 문자로 문단을 나누거나 개체 자리를 만들지 않는다. */
@@ -55,6 +58,17 @@ export interface DocumentWriter {
   getParagraphCount(section: number): number;
   splitParagraph(section: number, paragraph: number, offset: number): string;
   insertText(section: number, paragraph: number, offset: number, text: string): string;
+  applyCharFormat(section: number, paragraph: number, start: number, end: number, propsJson: string): string;
+  applyCharFormatInCell(
+    section: number, parentPara: number, controlIndex: number, cellIndex: number,
+    cellPara: number, start: number, end: number, propsJson: string,
+  ): string;
+  applyParaFormat(section: number, paragraph: number, propsJson: string): string;
+  applyParaFormatInCell(
+    section: number, parentPara: number, controlIndex: number, cellIndex: number, cellPara: number, propsJson: string,
+  ): string;
+  findOrCreateFontId(name: string): number;
+  createTable(section: number, paragraph: number, offset: number, rows: number, columns: number): string;
 }
 
 /** 쓰기 도구가 쓰는 호스트 표면 — `PluginHost` 의 부분집합. */
@@ -65,7 +79,9 @@ export interface WriteHost {
   createBlankDocument(): Promise<boolean>;
 }
 
-export type WriteToolName = 'replace_text' | 'fill_field' | 'insert_paragraphs' | 'create_document';
+export type WriteToolName =
+  | 'replace_text' | 'fill_field' | 'insert_paragraphs' | 'create_document'
+  | 'format_text' | 'format_paragraph' | 'insert_table';
 
 /** 제안 하나. 화면은 `prefix + removed + suffix` 를 「전」, `prefix + inserted + suffix` 를 「후」로 보인다. */
 export interface WriteProposal {
@@ -83,6 +99,8 @@ export interface WriteProposal {
   removed: string;
   inserted: string;
   suffix: string;
+  /** 서식 도구가 바꾸는 속성(화면 요약용). 키는 도구 입력 이름 그대로다. */
+  format?: Record<string, string | number | boolean>;
   /** 승인되면 부른다. 던지면 적용하지 않은 것이다. */
   apply(): void | Promise<void>;
 }
@@ -150,6 +168,63 @@ const WRITE_SCHEMAS: Record<WriteToolName, ToolSchema> = {
     required: [],
     additionalProperties: false,
   },
+  format_text: {
+    type: 'object',
+    properties: {
+      find: {
+        type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS,
+        description: 'Exact text to format, copied from the document (one paragraph or table cell paragraph).',
+      },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      bold: { type: 'boolean', description: 'Bold on or off.' },
+      italic: { type: 'boolean', description: 'Italic on or off.' },
+      underline: { type: 'boolean', description: 'Underline on or off.' },
+      strikethrough: { type: 'boolean', description: 'Strikethrough on or off.' },
+      fontSize: { type: 'number', minimum: 1, maximum: 300, description: 'Font size in points.' },
+      textColor: { type: 'string', minLength: 7, maxLength: 7, description: 'Text color as #RRGGBB.' },
+      highlightColor: { type: 'string', minLength: 7, maxLength: 7, description: 'Background (shade) color as #RRGGBB.' },
+      fontName: { type: 'string', minLength: 1, maxLength: 100, description: 'Font face name, for example 맑은 고딕.' },
+    },
+    required: ['find'],
+    additionalProperties: false,
+  },
+  format_paragraph: {
+    type: 'object',
+    properties: {
+      find: {
+        type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS,
+        description: 'Exact text inside the paragraph to format, copied from the document.',
+      },
+      occurrence: { type: 'integer', minimum: 1, description: 'Which match, counting from 1, when find occurs more than once.' },
+      alignment: {
+        type: 'string', enum: ['left', 'center', 'right', 'justify', 'distribute'], description: 'Paragraph alignment.',
+      },
+      lineSpacing: { type: 'integer', minimum: 50, maximum: 500, description: 'Line spacing in percent (160 is the usual default).' },
+    },
+    required: ['find'],
+    additionalProperties: false,
+  },
+  insert_table: {
+    type: 'object',
+    properties: {
+      position: {
+        type: 'string', enum: ['start', 'end', 'after'],
+        description: 'Where to add the table: start or end of the document, or after the body paragraph containing `after`.',
+      },
+      after: {
+        type: 'string', minLength: 1, maxLength: MAX_FIND_CHARS,
+        description: 'With position "after": exact text from the body paragraph to add the table after.',
+      },
+      columns: { type: 'integer', minimum: 1, maximum: MAX_TABLE_COLUMNS, description: 'Number of columns.' },
+      cells: {
+        type: 'array', minItems: 1, maxItems: MAX_TABLE_CELLS,
+        items: { type: 'string', maxLength: MAX_REPLACE_CHARS },
+        description: 'Cell texts row by row, left to right (header row first). Its length must be a multiple of columns.',
+      },
+    },
+    required: ['position', 'columns', 'cells'],
+    additionalProperties: false,
+  },
 };
 
 export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
@@ -174,6 +249,24 @@ export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
     inputSchema: WRITE_SCHEMAS.insert_paragraphs as unknown as Record<string, unknown>,
   },
   {
+    name: 'format_text',
+    description: 'Change character formatting (bold, italic, underline, strikethrough, size, color, highlight, font) of '
+      + 'text found by its exact content. Set only the properties to change. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.format_text as unknown as Record<string, unknown>,
+  },
+  {
+    name: 'format_paragraph',
+    description: 'Change paragraph alignment or line spacing of the paragraph containing the given text. '
+      + 'Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.format_paragraph as unknown as Record<string, unknown>,
+  },
+  {
+    name: 'insert_table',
+    description: 'Add a new table with the given cell texts at the start or end of the document, or after a body '
+      + 'paragraph named by its text. Shown to the user for approval.',
+    inputSchema: WRITE_SCHEMAS.insert_table as unknown as Record<string, unknown>,
+  },
+  {
     name: 'create_document',
     description: 'Replace the open document with a new blank document, when the user asks for a new document. '
       + 'The user approves first and is asked to save unsaved changes. Then write content with insert_paragraphs '
@@ -182,7 +275,9 @@ export const WRITE_TOOL_DEFS: readonly AiToolDef[] = [
   },
 ];
 
-const WRITE_TOOL_NAMES: readonly string[] = ['replace_text', 'fill_field', 'insert_paragraphs', 'create_document'];
+const WRITE_TOOL_NAMES: readonly string[] = [
+  'replace_text', 'fill_field', 'insert_paragraphs', 'format_text', 'format_paragraph', 'insert_table', 'create_document',
+];
 
 export function isWriteTool(name: string): name is WriteToolName {
   return WRITE_TOOL_NAMES.includes(name);
@@ -402,6 +497,178 @@ function prepareInsert(host: WriteHost, input: Record<string, unknown>): WritePr
   });
 }
 
+/** 찾을 글로 자리를 정하고, 적용 때 같은 자리인지 다시 확인하는 짝. */
+function locate(doc: DocumentWriter, find: string, occurrence: number | undefined) {
+  const hits = JSON.parse(doc.searchAllText(find, true, true)) as SearchHit[];
+  return { count: hits.length, hit: pickHit(hits, find, occurrence) };
+}
+
+function relocate(doc: DocumentWriter, find: string, occurrence: number | undefined, expected: { count: number; hit: SearchHit }): void {
+  const hits = JSON.parse(doc.searchAllText(find, true, true)) as SearchHit[];
+  if (hits.length !== expected.count || !sameHit(pickHit(hits, find, occurrence), expected.hit)) {
+    throw new WriteRefused('The document changed after this was proposed. Read it again and propose a new change.');
+  }
+}
+
+function hitLocation(hit: SearchHit) {
+  return { section: hit.sec, paragraph: hit.cellContext ? hit.cellContext.parentPara : hit.para, inTable: hit.cellContext !== undefined };
+}
+
+const FORMAT_KEYS = ['bold', 'italic', 'underline', 'strikethrough', 'fontSize', 'textColor', 'highlightColor', 'fontName'] as const;
+
+function prepareFormatText(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const format: Record<string, string | number | boolean> = {};
+  for (const key of FORMAT_KEYS) if (input[key] !== undefined) format[key] = input[key] as string | number | boolean;
+  if (Object.keys(format).length === 0) throw new WriteRefused('Set at least one formatting property.');
+  for (const key of ['textColor', 'highlightColor'] as const) {
+    if (format[key] !== undefined && !COLOR.test(format[key] as string)) throw new WriteRefused(`${key} must be #RRGGBB.`);
+  }
+  return host.read((doc) => {
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    return {
+      tool: 'format_text',
+      location: hitLocation(hit),
+      prefix: paragraphText(doc, hit, hit.charOffset - CONTEXT_CHARS, hit.charOffset),
+      removed: '',
+      inserted: find,
+      suffix: paragraphText(doc, hit, hit.charOffset + hit.length, hit.charOffset + hit.length + CONTEXT_CHARS),
+      format,
+      apply: () => host.transaction('AI: 글자 모양', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        // studio 의 글자 모양 명령과 같은 속성 이름·단위(크기는 HWPUNIT, 1pt = 100)로 보낸다.
+        const props: Record<string, unknown> = {};
+        for (const key of ['bold', 'italic', 'underline', 'strikethrough', 'textColor'] as const) {
+          if (format[key] !== undefined) props[key] = format[key];
+        }
+        if (format.fontSize !== undefined) props.fontSize = Math.round((format.fontSize as number) * 100);
+        if (format.highlightColor !== undefined) props.shadeColor = format.highlightColor;
+        if (format.fontName !== undefined) {
+          const fontId = target.findOrCreateFontId(format.fontName as string);
+          if (fontId < 0) throw new WriteRefused(`Font "${format.fontName}" could not be used.`);
+          props.fontId = fontId;
+        }
+        const json = JSON.stringify(props);
+        const cell = hit.cellContext;
+        ok(cell
+          ? target.applyCharFormatInCell(hit.sec, cell.parentPara, cell.ctrlIdx, cell.cellIdx, cell.cellPara,
+            hit.charOffset, hit.charOffset + hit.length, json)
+          : target.applyCharFormat(hit.sec, hit.para, hit.charOffset, hit.charOffset + hit.length, json), 'applyCharFormat');
+      }),
+    };
+  });
+}
+
+function prepareFormatParagraph(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const find = input.find as string;
+  const occurrence = input.occurrence as number | undefined;
+  const format: Record<string, string | number> = {};
+  if (input.alignment !== undefined) format.alignment = input.alignment as string;
+  if (input.lineSpacing !== undefined) format.lineSpacing = input.lineSpacing as number;
+  if (Object.keys(format).length === 0) throw new WriteRefused('Set alignment or lineSpacing.');
+  return host.read((doc) => {
+    const where = locate(doc, find, occurrence);
+    const hit = where.hit;
+    const cell = hit.cellContext;
+    const full = paragraphText(doc, hit, 0, Number.MAX_SAFE_INTEGER);
+    return {
+      tool: 'format_paragraph',
+      location: hitLocation(hit),
+      prefix: '',
+      removed: '',
+      inserted: full.length > 80 ? `${full.slice(0, 80)}…` : full,
+      suffix: '',
+      format,
+      apply: () => host.transaction('AI: 문단 모양', (tx) => {
+        const target = tx.doc();
+        relocate(target, find, occurrence, where);
+        const props: Record<string, unknown> = {};
+        if (format.alignment !== undefined) props.alignment = format.alignment;
+        if (format.lineSpacing !== undefined) {
+          props.lineSpacing = format.lineSpacing;
+          props.lineSpacingType = 'Percent';
+        }
+        const json = JSON.stringify(props);
+        ok(cell
+          ? target.applyParaFormatInCell(hit.sec, cell.parentPara, cell.ctrlIdx, cell.cellIdx, cell.cellPara, json)
+          : target.applyParaFormat(hit.sec, hit.para, json), 'applyParaFormat');
+      }),
+    };
+  });
+}
+
+/**
+ * 새 빈 문단 하나를 만들어 그 자리를 돌려준다(표를 놓을 자리). 문서 끝 문단이 비어 있으면 그 문단을 쓴다.
+ * 자리 규칙은 `insert_paragraphs` 와 같다.
+ */
+function emptyParagraphAt(doc: DocumentWriter, position: 'start' | 'end' | 'after', anchor: SearchHit | null) {
+  if (position === 'after') {
+    appendAfter(doc, anchor!.sec, anchor!.para, ['']);
+    return { section: anchor!.sec, paragraph: anchor!.para + 1 };
+  }
+  if (position === 'start') {
+    ok(doc.splitParagraph(0, 0, 0), 'splitParagraph');
+    return { section: 0, paragraph: 0 };
+  }
+  const section = doc.getSectionCount() - 1;
+  const last = doc.getParagraphCount(section) - 1;
+  if (bodyText(doc, section, last).length === 0) return { section, paragraph: last };
+  appendAfter(doc, section, last, ['']);
+  return { section, paragraph: last + 1 };
+}
+
+function prepareTable(host: WriteHost, input: Record<string, unknown>): WriteProposal {
+  const position = input.position as 'start' | 'end' | 'after';
+  const after = input.after as string | undefined;
+  const columns = input.columns as number;
+  const cells = input.cells as string[];
+  if (cells.length % columns !== 0) throw new WriteRefused(`cells has ${cells.length} items; it must be a multiple of columns (${columns}).`);
+  if (cells.some((text) => FORBIDDEN.test(text))) throw new WriteRefused('Cell texts must not contain line breaks.');
+  if (position === 'after' && !after) throw new WriteRefused('position "after" needs the after text.');
+  if (position !== 'after' && after !== undefined) throw new WriteRefused('after is only used with position "after".');
+  const rows = cells.length / columns;
+
+  return host.read((doc) => {
+    const where = position === 'after' ? locate(doc, after!, undefined) : null;
+    if (where?.hit.cellContext) throw new WriteRefused('Adding a table inside a table cell is not supported yet.');
+    const lastSection = doc.getSectionCount() - 1;
+    const location = where
+      ? { section: where.hit.sec, paragraph: where.hit.para, position }
+      : position === 'start'
+        ? { section: 0, paragraph: 0, position }
+        : { section: lastSection, paragraph: doc.getParagraphCount(lastSection) - 1, position };
+    const preview: string[] = [];
+    for (let r = 0; r < rows; r += 1) preview.push(cells.slice(r * columns, (r + 1) * columns).join(' | '));
+    return {
+      tool: 'insert_table',
+      location,
+      prefix: '',
+      removed: '',
+      inserted: preview.join('\n'),
+      suffix: '',
+      format: { rows, columns },
+      apply: () => host.transaction('AI: 표 만들기', (tx) => {
+        const target = tx.doc();
+        if (where) relocate(target, after!, undefined, where);
+        const spot = emptyParagraphAt(target, position, where?.hit ?? null);
+        const created = JSON.parse(target.createTable(spot.section, spot.paragraph, 0, rows, columns)) as {
+          ok?: boolean; paraIdx?: number; controlIdx?: number;
+        };
+        if (!created.ok) throw new Error('createTable failed');
+        const parentPara = created.paraIdx ?? spot.paragraph;
+        const control = created.controlIdx ?? 0;
+        // 새 표의 칸은 행 우선 순서로 번호가 붙는다(병합 없음).
+        cells.forEach((text, index) => {
+          if (text) ok(target.insertTextInCell(spot.section, parentPara, control, index, 0, 0, text), 'insertTextInCell');
+        });
+      }),
+    };
+  });
+}
+
 function prepareCreate(host: WriteHost): WriteProposal {
   return {
     tool: 'create_document',
@@ -429,5 +696,8 @@ export function prepareWrite(host: WriteHost, call: AiToolCall): WriteProposal {
     case 'fill_field': return prepareFill(host, checked.value);
     case 'insert_paragraphs': return prepareInsert(host, checked.value);
     case 'create_document': return prepareCreate(host);
+    case 'format_text': return prepareFormatText(host, checked.value);
+    case 'format_paragraph': return prepareFormatParagraph(host, checked.value);
+    case 'insert_table': return prepareTable(host, checked.value);
   }
 }

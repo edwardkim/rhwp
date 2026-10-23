@@ -5,7 +5,7 @@
  * 값이고, 다른 제공자는 서버 검증이 없을 수 있다.
  *
  * 지원: `type: object`(properties·required·additionalProperties: false),
- * `integer`(minimum·maximum), `string`(minLength·maxLength·enum), `boolean`,
+ * `integer`·`number`(minimum·maximum), `string`(minLength·maxLength·enum), `boolean`,
  * 문자열 배열 `array`(items·minItems·maxItems).
  */
 export type ToolSchema = {
@@ -17,6 +17,7 @@ export type ToolSchema = {
 
 export type PropertySchema =
   | { type: 'integer'; description: string; minimum?: number; maximum?: number }
+  | { type: 'number'; description: string; minimum?: number; maximum?: number }
   | { type: 'string'; description: string; minLength?: number; maxLength?: number; enum?: readonly string[] }
   | { type: 'boolean'; description: string }
   | {
@@ -52,6 +53,15 @@ export function validateToolInput(schema: ToolSchema, input: unknown): Validatio
           return { ok: false, error: `${key} 는 ${prop.minimum} 이상이어야 합니다.` };
         }
         if (prop.maximum !== undefined && (field as number) > prop.maximum) {
+          return { ok: false, error: `${key} 는 ${prop.maximum} 이하여야 합니다.` };
+        }
+        break;
+      case 'number':
+        if (typeof field !== 'number' || !Number.isFinite(field)) return { ok: false, error: `${key} 는 숫자여야 합니다.` };
+        if (prop.minimum !== undefined && field < prop.minimum) {
+          return { ok: false, error: `${key} 는 ${prop.minimum} 이상이어야 합니다.` };
+        }
+        if (prop.maximum !== undefined && field > prop.maximum) {
           return { ok: false, error: `${key} 는 ${prop.maximum} 이하여야 합니다.` };
         }
         break;

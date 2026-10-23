@@ -17,6 +17,7 @@
  * 9. 변경 제안 카드 → 적용하면 표 칸 글이 바뀌고 undo 한 번으로 돌아간다
  * 10. 거절하면 문서는 그대로이고 모델에 거절을 알린다
  * 11. 새 문서 만들기(저장 확인 포함) → 문단 쓰기, 대화는 이어진다
+ * 12. 글자·문단 서식과 표 — 한 응답의 여러 변경을 차례로 승인, undo 는 변경마다 한 단계
  *
  * 계획: mydocs/plans/rhwp_studio_ai_chat_p0_impl.md §5.2
  */
@@ -128,7 +129,7 @@ runTest('AI 대화 패널', async ({ page }) => {
   assert(requests.length === 2, `TC1: 요청 2회 (${requests.length})`);
   const [first, second] = requests;
   assert(first.body.model === 'claude-opus-5-5' && first.body.stream === true, 'TC1: 모델·스트리밍');
-  assert(first.body.tools.length === 11 && first.body.tools.every((t) => t.strict === true), 'TC1: 도구 11개(읽기 7·쓰기 4) strict');
+  assert(first.body.tools.length === 14 && first.body.tools.every((t) => t.strict === true), 'TC1: 도구 14개(읽기 7·쓰기 7) strict');
   assert(first.body.system[0].text.includes('document_content'), 'TC1: 시스템에 문서 경계 규칙');
   assert(first.body.fallbacks === 'default'
     && (first.headers['anthropic-beta'] ?? '').includes('server-side-fallback-2026-07-01'), 'TC1: 서버 대체');
@@ -259,6 +260,44 @@ runTest('AI 대화 패널', async ({ page }) => {
   const conv11 = await page.evaluate(() => window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []));
   assert(conv11.messages > 2, 'TC11: AI 가 만든 새 문서로는 대화가 끊기지 않음');
   await screenshot(page, 'ai-panel-new-document');
+
+  // ── TC12: 서식(글자·문단)과 표 — 한 응답의 여러 변경을 차례로 승인 ──
+  queue.push({ body: sse([
+    { type: 'tool_use', id: 'toolu_fmt_1', name: 'format_text', input: { find: '회의록', bold: true, fontSize: 20 } },
+    { type: 'tool_use', id: 'toolu_fmt_2', name: 'format_paragraph', input: { find: '회의록', alignment: 'center' } },
+    { type: 'tool_use', id: 'toolu_tbl_1', name: 'insert_table',
+      input: { position: 'end', columns: 2, cells: ['참석자', '역할', '홍길동', '진행'] } },
+  ], 'tool_use') });
+  queue.push({ body: sse([{ type: 'text', text: '제목을 꾸미고 참석자 표를 넣었습니다.' }], 'end_turn') });
+  await page.type('.ai-chat-input', '제목을 크게 가운데로, 참석자 표도 넣어 줘');
+  await page.keyboard.press('Enter');
+  const summaries = [];
+  for (let i = 0; i < 3; i += 1) {
+    await page.waitForSelector('.ai-change-card[data-state="pending"] .ai-change-apply', { timeout: 15000 });
+    summaries.push(await page.$eval('.ai-change-card[data-state="pending"]', (el) =>
+      `${el.querySelector('.ai-change-title').textContent} / ${el.querySelector('.ai-change-summary')?.textContent ?? ''}`));
+    await page.click('.ai-change-card[data-state="pending"] .ai-change-apply');
+  }
+  await page.waitForFunction(() => !window.rhwpStudio.plugins.invoke('ai-assistant', 'conversation', []).busy, { timeout: 15000 });
+  assert(summaries[0].includes('굵게') && summaries[0].includes('20pt'), `TC12: 글자 모양 카드 (${summaries[0]})`);
+  assert(summaries[1].includes('정렬 가운데'), `TC12: 문단 모양 카드 (${summaries[1]})`);
+  assert(summaries[2].startsWith('표 만들기') && summaries[2].includes('2행 × 2열'), `TC12: 표 카드 (${summaries[2]})`);
+  const formatted = await page.evaluate(() => {
+    const w = window.__wasm;
+    const ch = w.getCharPropertiesAt(0, 0, 0);
+    const para = w.getParaPropertiesAt(0, 0);
+    const inTable = ['참석자', '역할', '홍길동', '진행']
+      .map((cell) => w.searchAllText(cell, true, true).some((hit) => hit.cellContext));
+    return { bold: ch.bold, size: ch.fontSize, align: para.alignment, inTable };
+  });
+  assert(formatted.bold === true && formatted.size === 2000, `TC12: 제목 굵게·20pt (${JSON.stringify(formatted)})`);
+  assert(formatted.align === 'center', 'TC12: 제목 가운데 정렬');
+  assert(formatted.inTable.every(Boolean), `TC12: 네 칸 글이 모두 표 칸 안에 있음 (${formatted.inTable})`);
+  await screenshot(page, 'ai-panel-format-table');
+  await page.evaluate(() => window.rhwpStudio.automation.execute('edit:undo'));
+  await wait(page, 300);
+  const afterUndo12 = await page.evaluate(() => window.__wasm.searchAllText('참석자', true, true).length > 0);
+  assert(!afterUndo12, 'TC12: undo 한 번으로 표만 사라짐');
 
   // ── TC4: 입력란 Ctrl+Z 격리 ───────────────────────────
   await createNewDocument(page);

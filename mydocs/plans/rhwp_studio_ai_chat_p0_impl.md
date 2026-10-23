@@ -513,7 +513,38 @@ VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:ai-panel
   - `create_document`: 메뉴의 「새 문서」처럼 저장 안 된 변경을 먼저 묻는다(`canReplaceCurrentDocument`). 취소하면 모델에 「취소됨, 문서 그대로」를 돌려준다.
 - 호스트 계약: `PluginHost.createBlankDocument(options?)`가 `Promise<boolean>`을 돌려주고 `confirmUnsaved`를 받는다. 기존 호출(`hwpctrl` 어댑터, dev-probe)은 반환값을 쓰지 않아 영향이 없다.
 - AI가 만든 문서 교체로는 대화를 끊지 않는다(`ownSwap`). 사용자가 직접 바꾼 교체는 계속 새 대화로 시작한다.
-- 검증 범위가 「검증 기록」 절에 따로 있다. 이 단계의 결과는 다음과 같다.
+- 검증
   - `tsc` 통과. `npm test` 2,444건 중 2,442 통과, 실패 0(쓰기 도구 단위 11건).
   - `e2e:ai-panel` 44 PASS. TC11에서 새 문서 → 저장 확인(「저장 안 함」) → 문단 4개(`회의록`, 빈 줄, `일시…`, `안건…`)가 그대로 쓰였고, 대화가 이어지며, 새 문서 카드는 undo 안내를 하지 않는다.
   - 일반·AI 제외 빌드 성공.
+
+### 10.4 Stage 5c·5d — 글자·문단 서식과 표 (2026-10-23)
+
+- 도구
+  - `format_text {find, occurrence?, bold, italic, underline, strikethrough, fontSize(pt), textColor, highlightColor, fontName}`
+    - studio 글자 모양 명령과 같은 속성·단위로 `applyCharFormat`(칸은 `applyCharFormatInCell`)에 보낸다.
+    - 단위·이름 변환: 크기는 HWPUNIT(pt×100), 배경은 `shadeColor`, 글꼴은 `findOrCreateFontId`.
+  - `format_paragraph {find, occurrence?, alignment, lineSpacing(%)}`: `applyParaFormat`(칸은 `applyParaFormatInCell`)을 부르고 `lineSpacingType: Percent`로 보낸다.
+  - `insert_table {position, after?, columns, cells[]}`
+    - `insert_paragraphs`와 같은 자리 규칙으로 빈 문단을 만들고 `createTable`을 부른 뒤 칸을 행 우선으로 채운다.
+    - 문서 끝 문단이 비어 있으면 그 자리를 쓴다.
+  - 검증기에 `number`, 문자열 `enum`, 문자열 배열을 더했다.
+- 카드
+  - 서식은 대상 글을 표시하고 요약(「굵게 · 20pt」, 「정렬 가운데」)을 보인다.
+  - 표는 행 미리보기와 「2행 × 2열」을 보인다.
+- 검증
+
+| 항목 | 결과 |
+|---|---|
+| `tsc` | 통과 |
+| `npm test` | 2,450건 중 2,448 통과, 실패 0(쓰기 도구 단위 17건) |
+| `e2e:ai-panel` | 51 PASS. TC12: 한 응답의 세 변경을 차례로 승인. 제목 `bold: true`, `fontSize: 2000`, `alignment: center`. 표 네 칸 글이 모두 칸 안에 있다. undo 한 번에 표만 사라진다 |
+| `e2e:ai-settings` / `e2e:side-panel` | 19 / 18 PASS |
+| 두 빌드 | 일반·AI 제외 빌드 성공. AI 제외 빌드에 AI 문자열 0건 |
+| 실제 모델 | 「새 문서에 개발팀 주간 업무 보고서, 제목 크게 굵게 가운데, 업무 현황 표」를 3회 요청으로 처리했다. 새 문서, 제목(굵게·20pt·가운데), 문단 18개, 3열 6행 표가 쓰였다. 출력 1,280토큰 |
+
+- 남은 차이
+  - `createTable`은 표 문단 뒤에 빈 문단을 하나 더 만든다. 실제 모델 결과에서도 표 뒤 빈 줄이 있다. 한/글에서 표를 넣을 때와 같은 동작인지는 확인하지 않았다.
+- 아직 없는 편집 기능
+  - 문단 삭제, 목록·번호, 표 구조(행·열 추가, 병합)
+  - 그림, 머리말·꼬리말, 각주, 스타일 적용, 쪽 설정
