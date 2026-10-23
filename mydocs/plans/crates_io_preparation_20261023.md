@@ -1,7 +1,7 @@
 # crates.io 배포 사전 준비 계획
 
 - 작성일: 2026-10-23
-- 상태: 이슈 등록과 1단계 source 선별·실측 완료. 2단계 구현 및 실제 registry 게시는 다음 게이트다.
+- 상태: 1단계 조사·보안 현황 정리 완료. 메인테이너 결정 기록 후 2단계 구현 범위를 확정한다.
 - 요청: 다음 릴리즈는 0.9.0이며, crates.io 배포를 미리 준비한다.
 - 착수 기준 SHA: `upstream/devel` `def947c2149df5bc812d801e6e79be19a403b4d1`.
 - 사전 조사 기준 SHA: `605ccfd92f2f12f18e14182548d729f9929fda00`.
@@ -15,6 +15,8 @@
   본체 8,329,278바이트, PDF backend 6,814,747바이트의 gzip tar이며 정규화·검증된 `.crate`는 아니다.
 - 2026-10-23 추가 요청에 따라 [보안 제한과 기능 사용 범위](../manual/security_feature_limits.md)를
   정리했다. 기능 활성화와 2단계 manifest 변경은 이 현황 정리에 포함하지 않는다.
+- [메인테이너 결정 대장](task_m100_8174_maintainer_decisions.md)의 선택·조건을 기록한 뒤
+  구현 범위를 확정한다. 현재 MD01–MD09와 구현 범위 v1은 미확정이다.
 - 권위 절차: [문서·Git workflow](../manual/codex/docs_and_git_workflow.md),
   [배포 가이드](../manual/publish_guide.md), [GitHub 운영](../manual/github_operations.md).
 
@@ -60,15 +62,10 @@ remote push·PR 생성·workflow 실행·실제 registry 게시의 승인도 각
 
 ## 구현 전에 확정할 사항
 
-| 결정 | 검토할 내용 |
-| --- | --- |
-| Rust 지원 계약 | HWP/HWPX 파싱·Document IR·저장/내보내기·PDF 입력 중 지원할 사용자 여정, 공개 API와 0.9.x 호환성 정책을 명시한다. 현재 `pub` 표면 전체의 안정성이 확정됐다고 가정하지 않는다. |
-| 의존성 게시 방식 | 내부 3개와 보안 fork를 별도로 게시하는 전략을 우선 비교한다. 기존 모듈을 본체에 흡수하는 대안은 경계·검증 비용을 함께 평가한다. |
-| PDF export fork | upstream 반영 또는 별도 이름의 게시 의존성으로 수정본을 유지한다. `svg2pdf`의 결정화·그러데이션·텍스트 중복 방지 수정을 보호한다. |
-| 버전·소유 | 본체 0.9.0과 보조 crate의 버전 정책, owner와 보안 업데이트 책임을 정한다. 내부 0.1.0 또는 upstream 기반 보정 버전을 일괄 0.9.0으로 바꾸지 않는다. |
-| MSRV·feature | 현재 고정 툴체인 1.93.1을 기준으로 검증하고 실제 지원할 최소 버전을 정한다. 기본, default 해제, `wasm-api`, `pdf-import`, `native-skia`의 지원 조합을 명시한다. |
-| 보안상 기능 제한 | PDF 기본 포함과 추가 codec/CMM 미활성, 자원 초과 거부, 전체 할당 증명 미완료를 README와 소비 계약에 명시한다. [현황 목록](../manual/security_feature_limits.md)의 각 제한과 일반 미지원을 구분하며, feature를 켜거나 `publish=false`를 푸는 것으로 보안 게이트를 대신하지 않는다. |
-| 배포 채널 | 초기 게시 순서, 실제 게시 시점, 이후 OIDC 전환과 부분 실패 복구·yank 절차를 정한다. 기존 네 채널을 포함한 전체 자동화를 한 번에 바꾸는 것으로 가정하지 않는다. |
+[메인테이너 결정 문서](task_m100_8174_maintainer_decisions.md)에 선택지·권고·구현 영향과
+결정 대장을 모은다. 먼저 MD05–MD07의 보안 경계를 정하고, 배포 시점·패키지/API·지원 환경·
+운영 책임·자동화의 결정을 연결한다. 선택 결과를 중복 기록하지 않고 결정 ID로 참조한다.
+아래 2·3단계 항목은 이 결정에 맞춰 확정할 구현 후보이며, 권고안을 승인으로 간주하지 않는다.
 
 ## 단계와 완료 조건
 
@@ -85,6 +82,7 @@ remote push·PR 생성·workflow 실행·실제 registry 게시의 승인도 각
 
 ### 2단계 — 저장소 밖 소비 검증
 
+- 관련 결정과 구현 범위를 확정하고 단계 진행 승인을 기록한 뒤 시작한다.
 - 승인된 graph에 맞춰 manifest의 이름·버전·path와 registry 위치를 정리한다.
 - 아직 게시되지 않은 상호 의존 crate는 별도 임시 registry 등으로 **실제 포장한 source**의
   의존성 해석을 검증한다. 부모 저장소 path나 사용자 Cargo 캐시의 직접 수정으로 대체하지 않는다.

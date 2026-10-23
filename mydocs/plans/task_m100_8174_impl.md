@@ -5,6 +5,8 @@ Issue: [#8174](https://github.com/edwardkim/rhwp/issues/8174)
 - [수행 계획](crates_io_preparation_20261023.md)
 - 기준 source: `def947c2149df5bc812d801e6e79be19a403b4d1`
 - 현재 승인 범위: 이슈 등록과 1단계 사전 준비. 원격 게시·push·PR 생성·실제 릴리즈는 포함하지 않는다.
+- 추가 문서 작업: [메인테이너 결정 대장](task_m100_8174_maintainer_decisions.md)을 작성하고
+  선택·조건·근거를 기록해 구현 범위를 확정한다. 현재 기술 선택과 2단계 범위는 미확정이다.
 
 ## 1단계 — 실제 source에서 계약과 패키지 범위 확정
 
@@ -29,6 +31,9 @@ Issue: [#8174](https://github.com/edwardkim/rhwp/issues/8174)
 
 ## 2단계 — 게시용 manifest와 독립 소비
 
+아래 항목은 1단계 권고안에 따른 후보 목록이다. 관련 MD 결정과 범위 버전·단계 진행 승인을
+기록한 뒤 선택된 항목을 구현한다. 미결정 항목에 의존하는 변경을 먼저 시작하지 않는다.
+
 - 본체의 3개 path 의존성에 registry 버전을 병기하고 별도 PDF export fork의 package 이름을 연결한다.
   내부 crate 0.1.0, 보안 backend/decoder의 upstream 기반 보정 버전과 본체 0.9.0은 구분한다.
 - 승인된 패키지별 include·README·metadata·라이선스 경로를 반영한다. publish flag 해제는
@@ -45,6 +50,8 @@ Issue: [#8174](https://github.com/edwardkim/rhwp/issues/8174)
   package 검증용 임시 manifest가 root 개발 manifest를 덮어쓰지 않도록 한다.
 
 ## 3단계 — 게시 운영과 릴리즈 인계
+
+MD01·MD08·MD09와 확정한 범위에 따라 수동 게시 준비 또는 자동화 구현을 선택한다.
 
 - exact SHA/version/digest preflight, 자식→부모 게시·이미 게시된 항목 조회·부분 실패 복구를 마련한다.
 - 실제 registry 대상 부모 dry-run은 자식이 아직 없으면 완료할 수 없음을 기록한다.
