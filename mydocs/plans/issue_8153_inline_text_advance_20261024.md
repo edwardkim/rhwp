@@ -40,4 +40,21 @@ Native의 첫 경계 156.133px는 독립 152.475px보다 약 3.7px 오른쪽이�
 4. 두 편람 전쪽·PR8148 corpus를 같은 PDF 물리 DPI에서 base와 대조한다. 현재 후보의
    하락을 기준값으로 숨기지 않는다. 이후 최종 회귀·lint·Skia·Studio·WASM과 PR 절차를 마친다.
 
-현재 원인 추적과 구현 계획 단계이며, 후보 구현·최종 시각·정식 회귀는 아직 완료되지 않았다.
+## 후보 구현과 Native 확인
+
+후보 `bea7004f55`는 기존 문자/클러스터 전진을 문단당 한 번 계산하고 측정·정렬·줄바꿈·
+실제 배치·TextRun 문자 경계에 공유한다. Native 빌드는 종료 코드 0, 6분 36초였다.
+이전 producer의 소비 경계 진단은 9 PASS / 1 FAIL이었고, 새 후보는 10 PASS였다.
+두 형식 모두 공백의 glyph 끝과 bbox가 52.053333px로 일치하며, 뒤 표의 첫 경계는
+152.186667px로 독립 Print의 152.474667px에서 ±2px 이내다.
+
+동일한 물리 DPI 정책 `pdfium_smooth_rgb_exact_dpi_v2`의 Native 영향 페이지 36건 중
+88·271쪽은 HWP/HWPX 모두 raw 100%로 개선됐고, 나머지 32건은 하락 없이 유지됐다.
+271쪽 overlay를 직접 열어 표의 경계·앞뒤 본문·오른쪽 바탕쪽 내용을 대조했다.
+각각 전체 383쪽이 유지됨도 실제 export receipt로 확인했다.
+
+작업 증거는 ignored `output/pr-review/issue8153-handbook-raw100-20261022/`의
+`logs/inline-text-consumer-{before,after}.log`, `inline-text-bea7004f55/native-consumer-result.json`,
+`inline-text-bea7004f55-focus/summary.json`과 Native compare·overlay·review에 있다.
+새 후보의 Native 전쪽 검증과 표준 최적화 fresh WASM 빌드는 진행 중이다.
+이 결과는 정식 회귀 등록·전쪽 100%·최종 PR 검증의 완료가 아니다.
