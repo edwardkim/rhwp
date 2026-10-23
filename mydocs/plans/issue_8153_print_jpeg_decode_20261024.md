@@ -129,18 +129,43 @@ Q 그림은 **2개**다. 초기 진단에서 배경 3개와 혼동한 개수 ass
 현재 Native/fresh WASM의 시각 근거로 기존 검사를 정리한다. 실패를 무시하거나 현재
 구현의 값을 그대로 기대값으로 삼지 않는다.
 
-## 기준 WASM과 남은 검증
+## 기준과 후보의 전쪽 Native/fresh WASM 검증
 
 새 devel `d9fd85ed5b`의 표준 release WASM은 jobs 8·codegen units 16으로 wasm-opt까지
 32분 56초·exit 0이다. 실제 브라우저 전 766쪽과 출력 해시를 확인했다. HWPX/HWP의 최저
 raw는 각각 92.51660% / 92.51694%이며 이전 기준 캐시와 페이지별 점수도 모두 같다.
 devel의 Kitty·Rust 오류 consumer 검사 9건도 통과했다.
 
-후보 `2cb8223029`의 표준 fresh WASM은 현재 실행 중이다. 그 결과와 팔레트 대조군의
-직접 판독, 기존 검사 보정, 전쪽 100%, 페이지별 중요 영역의 ±2px 보호 및 최종 필수
-검증은 완료되지 않았다. 위 Native 중간 결과로 PR 준비 완료를 선언하지 않는다.
+후보 `2cb8223029`의 표준 release fresh WASM도 jobs 8·codegen units 16으로 wasm-opt까지
+29분 35초·exit 0이다. 빌드 뒤 갱신되는 Studio JavaScript를 소스 변경으로 오인한 진단
+wrapper의 보존 단계를 정정했다. 변경 파일이 측정한 `pkg/rhwp.js`와 바이트까지 같음을
+확인하고 패치를 보존한 뒤 검증 checkout의 추적 파일을 복원했다. 재빌드 없이 manifest의
+SHA와 일치하는 패키지를 고정했으며, 검증 checkout은 clean이다.
+
+같은 원본·독립 Print·96dpi의 후보 전 1,532쪽에서 입력/PNG/PDF 해시와 원본별 383쪽을
+확인했다. 모든 TSV 원문과 정수 오차 픽셀 감사를 대조했다.
+
+| 입력 | backend | 전쪽 최저 raw % | 미대응 0픽셀 쪽 | 미대응 픽셀 합 |
+| --- | --- | ---: | ---: | ---: |
+| 편람 HWPX | Native | 98.59333 | 190 / 383 | 26294 |
+| 편람 HWP | Native | 98.59338 | 157 / 383 | 25415 |
+| 편람 HWPX | fresh WASM | 98.60005 | 208 / 383 | 26473 |
+| 편람 HWP | fresh WASM | 98.60022 | 186 / 383 | 24991 |
+
+고정한 새 devel `d9fd85ed5b`보다 0.1%p 이상 하락한 쪽은 네 경로 모두 없다. 새 devel에서
+실제로 다시 산출한 Native/fresh WASM TSV도 과거 기준 캐시와 전 1,532쪽의 점수가 같다.
+후보의 raw 100%·미대응 0픽셀은 741 / 1,532쪽이며 이전 후보의 735쪽보다 6쪽 늘었다.
+나머지 791쪽은 전쪽 100% 목표의 잔여 범위다.
+
+기존 팔레트 대조군 3개도 같은 패키지로 fresh WASM을 실행하고 review PNG를 직접 확인했다.
+최저 raw는 Native와 동일한 99.99862%·100%·100%다. 높은 점수가 위쪽 crop의 남은 차이를
+면제하지 않는다. 기존 검사 4건의 보정, 전쪽 100%, 페이지별 중요 영역의 ±2px 보호와 최종
+필수 검증은 아직 완료되지 않았다. 이 중간 검증으로 PR 준비 완료를 선언하지 않는다.
 
 TSV·실행 로그·독립 payload 대조와 빌드 receipt는 모두
 `output/pr-review/issue8153-handbook-raw100-20261022/` 아래에 보존한다. 이번 단계의
 Native 원본 TSV는 `palette-order-2cb8223029/native/handbook-{hwp,hwpx}/whole-score/`,
+후보 WASM 원본 TSV는 `palette-order-2cb8223029/wasm-whole/handbook-{hwp,hwpx}/whole-score/`,
 새 기준 WASM 원본 TSV는 `rebase-d9fd85ed5b-baseline/wasm-whole/handbook-{hwp,hwpx}/whole-score/`다.
+통합 검증 receipt는 `palette-order-2cb8223029/validation-summary.json`이며, 후보 WASM
+실행 로그는 `logs/palette-order-fresh-wasm-whole.log`다.
