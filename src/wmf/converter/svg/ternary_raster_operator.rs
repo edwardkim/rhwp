@@ -367,6 +367,22 @@ impl TernaryRasterOperator {
         (x, y, width, height, transform)
     }
 
+    pub(super) fn image_node(rect: BlitDestRect, data_url: String) -> Node {
+        let (x, y, width, height, transform) =
+            Self::new(TernaryRasterOperation::SRCCOPY, rect).normalized_rect();
+        let image = Node::new("image")
+            .set("x", x)
+            .set("y", y)
+            .set("width", width)
+            .set("height", height)
+            .set("preserveAspectRatio", "none")
+            .set("href", data_url);
+        match transform {
+            Some(transform) => image.set("transform", transform),
+            None => image,
+        }
+    }
+
     pub fn brush(mut self, brush: Brush) -> Self {
         self.brush = brush.into();
         self

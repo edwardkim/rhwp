@@ -1,6 +1,7 @@
 mod device_context;
 mod node;
 mod saved_device_context;
+mod source_rop_pair;
 mod ternary_raster_operator;
 mod text_advances;
 mod util;
@@ -26,6 +27,7 @@ pub struct SVGPlayer {
     definitions: Vec<Node>,
     /// [#6469] 브러시 전용 ROP 근사의 짧은 PATINVERT → DPA → PATINVERT 상태.
     brush_only_rop_sequence: BrushOnlyRopSequence,
+    source_rop_pair: Option<source_rop_pair::PendingSourcePair>,
     elements: Vec<Node>,
     object_selected: SelectedGraphicsObject,
     current_clip_id: Option<String>,
@@ -319,6 +321,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 dest_width,
                 y_dest,
                 x_dest,
+                src_width,
+                src_height,
+                x_src,
+                y_src,
                 target,
                 ..
             } => {
@@ -326,6 +332,39 @@ impl crate::wmf::converter::Player for SVGPlayer {
                     self.context_current
                         .blit_dest_rect(x_dest, y_dest, dest_width, dest_height);
                 let mut operator = TernaryRasterOperator::new(raster_operation, rect);
+
+                if matches!(
+                    raster_operation,
+                    TernaryRasterOperation::SRCPAINT | TernaryRasterOperation::SRCAND
+                ) {
+                    let bitmap = crate::wmf::converter::Bitmap::from((*target).clone());
+                    let composed = source_rop_pair::PendingSourcePair::observe(
+                        &mut self.source_rop_pair,
+                        source_rop_pair::SourceBlit {
+                            record: record_number,
+                            element: self.elements.len(),
+                            operation: raster_operation,
+                            destination: rect,
+                            source: [x_src, y_src, src_width, src_height],
+                            bitmap: &bitmap,
+                        },
+                    );
+                    if let Some(composed) = composed {
+                        if let Some(previous) = self.elements.get_mut(composed.previous_element) {
+                            use base64::{engine::general_purpose::STANDARD, Engine};
+                            *previous = Node::new("g");
+                            let uri =
+                                format!("data:image/png;base64,{}", STANDARD.encode(composed.png));
+                            self.push_element(
+                                record_number,
+                                TernaryRasterOperator::image_node(rect, uri),
+                            );
+                            return Ok(self);
+                        }
+                    }
+                } else {
+                    self.source_rop_pair = None;
+                }
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());

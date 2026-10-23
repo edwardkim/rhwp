@@ -1344,7 +1344,7 @@ pub fn is_displayable_image_data(data: &[u8]) -> bool {
     }
 }
 
-fn decode_image_with_format_limited(
+pub(crate) fn decode_image_with_format_limited(
     data: &[u8],
     format: image::ImageFormat,
 ) -> Option<image::DynamicImage> {
