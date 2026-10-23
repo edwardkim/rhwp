@@ -415,7 +415,22 @@ test('CanvasView는 원본 논리 크기를 유지하며 공통 Print 종이 표
       releaseAllRenderedPages() {}, updateVisiblePages() {}, pageSurfaceElements: () => [main],
     });
     let profile = 'print';
-    view.pageRenderer = { getRenderProfile: () => profile, cancelAll() {} };
+    let rasterContent = true;
+    let rawSvgCount = 0;
+    let backgroundComplex = false;
+    let summaryAvailable = true;
+    const { PageRenderer } = await vite.ssrLoadModule('/src/view/page-renderer.ts');
+    const contentRenderer = Object.create(PageRenderer.prototype) as Record<string, any>;
+    Object.assign(contentRenderer, {
+      layerSummaryCache: new Map(),
+      wasm: { getPageOverlayImages: () => {
+        if (!summaryAvailable) throw new Error('메타데이터 확인 불가');
+        return JSON.stringify({ hasBehind: false, hasFront: false,
+          imageCount: rasterContent ? 1 : 0, rawSvgCount, pageBackgroundComplex: backgroundComplex });
+      }, getPageLayerTree: () => JSON.stringify({ root: null }) },
+    });
+    view.pageRenderer = { getRenderProfile: () => profile,
+      hasRasterContent: (page: number) => contentRenderer.hasRasterContent(page), cancelAll() {} };
     view.refreshPages();
     assert.equal(view.pages[0], source, '원본 논리 크기와 편집 metadata를 덮어쓰지 않는다');
     main.width = 799; main.height = 1099;
@@ -423,6 +438,24 @@ test('CanvasView는 원본 논리 크기를 유지하며 공통 Print 종이 표
     assert.equal(main.style.width, '800.25px');
     assert.equal(main.style.height, '1100.75px');
     assert.equal(main.style.imageRendering, 'crisp-edges', '공통 Print가 발행한 장치 표본은 다시 흐리게 만들지 않는다');
+    rasterContent = false;
+    view.applyPageSurfaceCssSize(0, main, 1);
+    assert.equal(main.style.imageRendering, 'auto', '그림이 없는 Print 쪽의 선과 글자는 compositor의 면적 coverage를 유지한다');
+    rawSvgCount = 1;
+    view.applyPageSurfaceCssSize(0, main, 1);
+    assert.equal(main.style.imageRendering, 'crisp-edges', 'raw SVG도 실제 재생 시 raster가 되므로 표본 소유를 보존한다');
+    rawSvgCount = 0;
+    backgroundComplex = true;
+    view.applyPageSurfaceCssSize(0, main, 1);
+    assert.equal(main.style.imageRendering, 'crisp-edges', '본문 image 수가 0이어도 복합 쪽 배경은 그림 표본을 소유할 수 있다');
+    backgroundComplex = false;
+    summaryAvailable = false;
+    view.applyPageSurfaceCssSize(0, main, 1);
+    assert.equal(main.style.imageRendering, 'crisp-edges', '확인할 수 없는 메타데이터를 그림이 없다는 증거로 쓰지 않는다');
+    summaryAvailable = true;
+    rasterContent = true;
+    view.applyPageSurfaceCssSize(0, main, 1);
+    assert.equal(main.style.imageRendering, 'crisp-edges', '같은 논리 크기의 그림 쪽으로 바뀌면 장치 표본을 다시 보존한다');
     main.width = 400; main.height = 550;
     view.applyPageSurfaceCssSize(0, main, 1);
     assert.equal(main.style.imageRendering, 'auto', '실제 낮은 해상도 표면은 계속 보간한다');

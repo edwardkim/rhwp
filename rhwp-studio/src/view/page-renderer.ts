@@ -309,6 +309,15 @@ export class PageRenderer {
     return this.renderProfile;
   }
 
+  /** 본문뿐 아니라 쪽 배경의 그림도 포함하며, 확인할 수 없으면 null을 반환한다. */
+  hasRasterContent(pageIdx: number): boolean | null {
+    const layers = this.layerSummaryCache.get(pageIdx)?.summary
+      ?? this.getLayerPlaneSummaryFromOverlayImages(pageIdx)
+      ?? this.getLayerPlaneSummaryFromTree(pageIdx);
+    if (layers.signature === 'empty') return null;
+    return layers.imageCount > 0 || layers.rawSvgCount > 0 || layers.pageBackgroundComplex;
+  }
+
   /**
    * 해당 페이지가 만들 수 있는 Canvas surface 수를 콘텐츠 plane 구성에서 계산한다.
    * 아직 렌더하지 않은 retained 페이지도 전역 예산에 넣을 수 있도록 zoom과 독립적으로 캐시한다.

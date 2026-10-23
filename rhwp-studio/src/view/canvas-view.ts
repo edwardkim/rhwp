@@ -1404,6 +1404,8 @@ export class CanvasView {
     const dpr = globalThis.devicePixelRatio || 1;
     const paper = page.printSize && this.pageRenderer.getRenderProfile() === 'print'
       ? page.printSize : page;
+    const preserveRasterSamples = this.pageRenderer?.getRenderProfile?.() !== 'print'
+      || this.pageRenderer.hasRasterContent(pageIdx) !== false;
     const ownsDeviceAxis = (actual: number, logical: number): boolean => (
       Number.isFinite(logical) && logical > 0
       && (actual === Math.floor(logical) || actual === Math.ceil(logical))
@@ -1413,7 +1415,10 @@ export class CanvasView {
     // 논리 page box와 DOM 그림의 원본 필터는 바꾸지 않는다.
     // Print의 정수 point 종이와 원본 편집 크기는 다를 수 있다. 표본의
     // 소유만 공통 paint 종이에 대조하고 CSS·스크롤의 논리 크기는 유지한다.
-    canvas.style.imageRendering = ownsDeviceAxis(canvas.width, paper.width * zoom * dpr)
+    // 그림이 없는 Print 쪽은 선과 글자만 raster한 표면이다. 소수 CSS 합성에서
+    // 최근접 표본을 복제하면 가는 괘선의 coverage가 달라지므로 일반 보간을 유지한다.
+    canvas.style.imageRendering = preserveRasterSamples
+      && ownsDeviceAxis(canvas.width, paper.width * zoom * dpr)
       && ownsDeviceAxis(canvas.height, paper.height * zoom * dpr) ? 'crisp-edges' : 'auto';
   }
 
