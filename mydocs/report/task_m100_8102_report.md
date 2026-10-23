@@ -5,7 +5,7 @@ Issue: #8102 — https://github.com/edwardkim/rhwp/issues/8102
 ## 범위와 원인
 
 기준 `upstream/devel`: `def947c2149df5bc812d801e6e79be19a403b4d1`.
-검증한 제품 코드 commit: `c21f2de99ca59cea254c6c622bb4562254c7d461`.
+검증한 최종 제품 코드 commit: `7ab412becb03a8db55d4c01f33020f103349a838`.
 브랜치: `codex/issue-8102-cell-target`.
 
 표 생성 직후의 위치는 flat 셀 좌표만 가지고 있었다. 셀 전체 선택은 flat 조회로 성공했지만
@@ -16,7 +16,8 @@ Issue: #8102 — https://github.com/edwardkim/rhwp/issues/8102
 경로를 우선하며 원본을 복사한다. 선택 조회와 편집 직렬화·문단별 경로가 같은 정규화를 쓴다.
 표 생성도 처음부터 경로를 제공한다. 중첩 전체 선택은 최내곽 문단을 변경하면서 최외곽 flat
 문단을 보존한다. 선택 삭제는 서로 다른 셀·잘못된 순서·누락 좌표·범위 초과를 snapshot 및
-mutation 전에 거부한다. redo는 기존 스냅샷 복원 계약을 유지한다.
+mutation 전에 거부한다. 셀 전체 선택의 잘못된 대상은 오류를 전달해 상위 단축키가 본문 전체 선택으로
+확장하지 않게 한다. redo는 기존 스냅샷 복원 계약을 유지한다.
 
 호스트 #594 및 rhwp #8104의 오류 payload·복구 계약, 전역 오류 정책, core 삭제 알고리즘은
 수정하지 않았다. 다른 미병합 PR의 코드를 사용하지 않았다. 이 PR에 이슈 종료 명령을 넣지 않는다.
@@ -39,7 +40,9 @@ mutation 전에 거부한다. redo는 기존 스냅샷 복원 계약을 유지�
 수정 후 여섯 UI 시나리오 모두 인접 셀 `NEIGHBOR`를 보존했다. 별도 브라우저 WasmBridge의
 실제 CursorState/CommandHistory를 통해 중첩 세 문단 삭제, 바깥 셀 `OUTER` 및 인접 셀 보존,
 글상자 `BOX` 삭제·undo/redo도 확인했다. invalid target 3건은 모두 거부됐고 HWP export 바이트는
-변하지 않았다. 최종 #8102 브라우저 검사에서 pageerror는 0건이다.
+변하지 않았다. 실제 `handleSelectAll`의 invalid target도 수정 전에는 본문 선택으로 확장됐지만,
+수정 후에는 오류를 전달하고 셀 위치·문서 바이트를 보존하며 선택을 만들지 않았다.
+최종 #8102 브라우저 검사에서 pageerror는 0건이다.
 
 기존 `select-all-cmd-a` E2E에서도 실제 Studio의 중첩 셀·글상자 선택 삭제와 undo가 통과했다.
 셀 선택 삭제 undo 시 선택 하이라이트 복원은 기존 UI가 제공하지 않으므로 이 수정의 완료 주장에
@@ -74,8 +77,10 @@ JS SHA-256: `bafa900f2814ed17312932aa6ca88f2d8dc57123998f313d637d1f7e5ecb7ec4`.
 루트 `pkg`와 Studio `public` 해시가 각각 일치했다. 네 E2E에서 초기화 중 실제 수신한 WASM
 응답 바이트의 해시도 위 값과 일치했다. 이후 문서 기록 commit은 제품 source·검사 source를 바꾸지 않는다.
 
-보존한 로컬 증적은 ignored `output/pr-review/issue-8102/`의 `logs/`, `wasm-build.json`,
-`consumption/*.json`, `browser-before.json`, `browser-final.json`이다. 임시 로그·JSON·생성 WASM은
+최종 commit에서 모든 명령을 다시 실행했다. 보존한 최종 로컬 증적은 ignored
+`output/pr-review/issue-8102/final/`의 `logs/`, `wasm-build.json`, `consumption/*.json`,
+`browser.json`, `result.txt`이다. 수정 전 결과는 상위 폴더의 `browser-before.json`과
+`logs/invalid-shortcut-before.log`에 보존했다. 임시 로그·JSON·생성 WASM은
 커밋하지 않았다. 재현 fixture 생성식은 정식 E2E source에 포함했다.
 
 ## 보조 검사 실패와 미검증 범위
@@ -101,3 +106,5 @@ JS SHA-256: `bafa900f2814ed17312932aa6ca88f2d8dc57123998f313d637d1f7e5ecb7ec4`.
    확인한다. 원본은 덮어쓰지 않고 검토용 사본에서 실행한다.
 
 [1단계 분석·구현 기록](../working/task_m100_8102_stage1.md)
+
+[2단계 invalid target 호출 경로 검증](../working/task_m100_8102_stage2.md)

@@ -24,3 +24,10 @@ Issue: #8102
   중첩·글상자·invalid target도 모두 통과했고 pageerror 0건이었다.
 - 최종 commit의 package 전체 검증과 관련 네 E2E를 재실행할 예정이다. 이 기록은 focused 결과이며
   1단계 전체 검증을 새 코드의 최종 검증으로 재사용하지 않는다.
+
+## 최종 commit 검증
+
+`7ab412becb03a8db55d4c01f33020f103349a838`에서 fresh web/Node WASM, TypeScript,
+전체 npm 2373 PASS / 0 FAIL / 0 skip, production build, 관련 E2E 4종과 두 diff 공백 검사가
+모두 통과했다. 네 E2E의 실제 WASM 응답 해시는 모두 빌드 manifest와 일치했다.
+최종 기록은 [결과보고서](../report/task_m100_8102_report.md)에 반영했다.
