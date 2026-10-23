@@ -3,7 +3,8 @@
 Upstream: zune-jpeg **0.5.15** (licenses and original manifest retained;
 per-file source hashes in `UPSTREAM.json`). Local package: `rhwp-zune-jpeg`
 **0.5.15-rhwp.1**, `publish = ["crates-io"]`. zune-core remains **0.5.3**.
-This is a separate dependency of the optional PDF importer. The ordinary image
+This is a separate dependency of the optional PDF importer and the Print JPEG
+transfer. The ordinary image
 crate continues to use registry zune-jpeg. No decoder feature or SIMD algorithm
 was removed. Source formatting follows the enclosing rhwp workspace.
 
@@ -65,3 +66,20 @@ See `mydocs/working/task_m100_8174_t06_completion.md` for source lineage, actual
 Native/WASM product and independent-consumer verification, pixel comparisons,
 resource failure/recovery and visual evidence. Interpolation/IDCT differences
 from djpeg are reported separately from sampling geometry and content retention.
+## Print 인스턴스의 선택 변환 (#8153)
+
+기본 decoder의 IDCT·보간 선택은 유지한다. `set_transforms`를 헤더 파싱 전에 호출한
+인스턴스만 호출자가 제공한 IDCT와 보간을 사용한다. 같은 IDCT를 DC/저주파 shortcut에도
+설치하며, 원래의 metadata/MCU/progressive 할당 예산을 그대로 사용한다.
+
+선택 보간에는 패딩 폭이 아닌 실제 성분 폭을 전달한다. 마지막 실제 성분 행을 MCU 패딩에
+복제한 뒤, 기존의 MCU 간 문맥·출력 버퍼를 사용한다. 선택하지 않은 인스턴스는 그 버퍼와
+기존 함수만 사용하며 끝 표본 복제를 추가하지 않는다. 기본 PDF importer는 이 API를 호출하지 않는다.
+
+`decoder.rs`의 헤더 정보 타입을 `image_info.rs`로 옮겼지만 기존 타입 경로를 재수출한다.
+보간 설정과 선택 호출은 `transforms.rs`로 분리해 수정 파일을 1000줄 이하로 유지했다.
+공개 IJG 보간을 Rust로 재표현한 제품 소스는
+`src/ijg_upsampler.rs`이며, 원 배포의 README와 고지는
+이 디렉터리의 `README.ijg` 및 해당 소스에 보존한다.
+
+This software is based in part on the work of the Independent JPEG Group.

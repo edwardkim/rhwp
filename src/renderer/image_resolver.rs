@@ -3,12 +3,12 @@ use std::io::Cursor;
 
 mod print_alpha;
 mod print_crop;
-mod print_jpeg;
+mod print_jpeg_encode;
 mod print_rgb555;
 mod print_tone;
 pub(crate) use print_alpha::print_alpha_payload;
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
-pub(crate) use print_jpeg::{encode_print_jpeg, print_jpeg_payload};
+pub(crate) use print_jpeg_encode::{encode_print_jpeg, print_jpeg_payload};
 mod print_window;
 pub(crate) use print_tone::print_bitmap_payload;
 mod print_codec;

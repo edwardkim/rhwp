@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 use jpeg_encoder::{ChromaSubsamplingMethod, ColorType, Encoder, SamplingFactor};
 
-use super::{decode_image_with_format_limited, detect_image_mime_type, memoized, Conversion};
+use super::{detect_image_mime_type, memoized, Conversion};
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
 use crate::renderer::render_tree::ImageNode;
@@ -116,7 +116,7 @@ fn encode(payload: &ResolvedImagePayload, quality: u8) -> Option<Vec<u8>> {
         "image/jpeg" => image::ImageFormat::Jpeg,
         _ => return None,
     };
-    let rgba = decode_image_with_format_limited(&payload.data, format)?.to_rgba8();
+    let rgba = super::print_tone::decode_print_bitmap(&payload.data, format)?.to_rgba8();
     let (width, height) = (
         u16::try_from(rgba.width()).ok()?,
         u16::try_from(rgba.height()).ok()?,

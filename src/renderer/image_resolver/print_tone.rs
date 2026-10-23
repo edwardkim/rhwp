@@ -7,10 +7,14 @@ use std::collections::HashSet;
 use std::io::Cursor;
 
 use super::print_window::SourceWindow;
-use super::{decode_image_with_format_limited, detect_image_mime_type, memoized, Conversion};
+use super::{detect_image_mime_type, memoized, Conversion};
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
 use crate::renderer::render_tree::ImageNode;
+
+#[path = "print_jpeg.rs"]
+mod print_jpeg;
+pub(super) use print_jpeg::decode as decode_print_bitmap;
 
 fn is_print_bitmap_candidate(image: &ImageNode) -> bool {
     image.hancom2024_print_bitmap
@@ -40,7 +44,7 @@ pub(crate) fn print_bitmap_payload(image: &ImageNode) -> Option<ResolvedImagePay
             Conversion::Hancom2024BitmapWindow { bounds },
             source,
             || {
-                let decoded = decode_image_with_format_limited(source, format(source)?)?.to_rgba8();
+                let decoded = decode_print_bitmap(source, format(source)?)?.to_rgba8();
                 let mut visible = image::imageops::crop_imm(
                     &decoded,
                     bounds[0],
@@ -95,7 +99,7 @@ pub(super) fn requires_print_bitmap_transfer(image: &ImageNode) -> bool {
     };
     let bounds = window.bounds;
     memoized(Conversion::Hancom2024BitmapPalette { bounds }, data, || {
-        let decoded = decode_image_with_format_limited(data, format(data)?)?.to_rgba8();
+        let decoded = decode_print_bitmap(data, format(data)?)?.to_rgba8();
         let pixels = (bounds[1]..bounds[3]).flat_map(|y| {
             let decoded = &decoded;
             (bounds[0]..bounds[2]).map(move |x| decoded.get_pixel(x, y))
@@ -120,7 +124,7 @@ fn exceeds_palette<'a>(pixels: impl Iterator<Item = &'a image::Rgba<u8>>) -> boo
 
 pub(super) fn bitmap_bytes_to_png(data: &[u8]) -> Option<Vec<u8>> {
     memoized(Conversion::Hancom2024Bitmap, data, || {
-        let mut decoded = decode_image_with_format_limited(data, format(data)?)?.to_rgba8();
+        let mut decoded = decode_print_bitmap(data, format(data)?)?.to_rgba8();
         // 한컴의 팔레트 전달은 흑백 두 예약색을 포함한 RGB 색 수로 구분한다.
         // 원본이 255/256색이어도 빠진 예약색을 더하면 팔레트 용량을 넘을 수 있다.
         // 알파는 별도의 투명도이며 RGB 팔레트의 색 수에 합산하지 않는다.

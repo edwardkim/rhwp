@@ -410,6 +410,11 @@ pub(crate) fn upsample(
     has_vertical_sample: bool,
     allocation: crate::allocation::Allocator<'_>,
 ) -> Result<(), DecodeErrors> {
+    let sampler = component.up_sampler;
+    let bounded = component.bounded_upsampler;
+    if let Some(bounds) = bounded {
+        crate::transforms::extend_bottom_edge(component, bounds, i)?;
+    }
     match component.sample_ratio {
         SampleRatios::V | SampleRatios::HV => {
             /*
@@ -451,7 +456,15 @@ pub(crate) fn upsample(
                 let row = &component.row[..];
                 let row_up = &component.row_up[..];
                 let row_down = &component.raw_coeff[0..stride];
-                (component.up_sampler)(row, row_up, row_down, upsampler_scratch_space, dest);
+                crate::transforms::upsample(
+                    sampler,
+                    bounded,
+                    row,
+                    row_up,
+                    row_down,
+                    upsampler_scratch_space,
+                    dest,
+                );
             }
 
             // we have the Y component width stride.
@@ -526,7 +539,9 @@ pub(crate) fn upsample(
 
                 if upsample {
                     // upsample
-                    (component.up_sampler)(
+                    crate::transforms::upsample(
+                        sampler,
+                        bounded,
                         curr_row,
                         row_up,
                         row_down,
@@ -584,7 +599,15 @@ pub(crate) fn upsample(
             {
                 // upsample using the fn pointer, should only be H, so no need for
                 // row up and row down
-                (component.up_sampler)(single_row, &[], &[], &mut [], output_stride);
+                crate::transforms::upsample(
+                    sampler,
+                    bounded,
+                    single_row,
+                    &[],
+                    &[],
+                    &mut [],
+                    output_stride,
+                );
             }
         }
         SampleRatios::Generic(h, v) => {
@@ -597,7 +620,7 @@ pub(crate) fn upsample(
             //     .chunks_exact(size)
             //     .zip(dest_coeff.chunks_exact_mut(component.width_stride * h))
             // {
-            //     (component.up_sampler)(single_row, &[], &[], &mut [], output_stride);
+            //     crate::transforms::upsample(sampler, bounded, single_row, &[], &[], &mut [], output_stride);
             //
             // }
             for (single_row, output_stride) in raw_coeff
@@ -605,7 +628,15 @@ pub(crate) fn upsample(
                 .zip(dest_coeff.chunks_exact_mut(component.width_stride * h * v))
             {
                 for row in output_stride.chunks_exact_mut(component.width_stride * h) {
-                    (component.up_sampler)(single_row, &[], &[], &mut [], row);
+                    crate::transforms::upsample(
+                        sampler,
+                        bounded,
+                        single_row,
+                        &[],
+                        &[],
+                        &mut [],
+                        row,
+                    );
                 }
             }
         }

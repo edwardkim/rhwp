@@ -8,6 +8,11 @@ Copyright © 2024 Unicode, Inc.이며 [Unicode License v3](assets/licenses/Unico
 원문 SHA-256은 `764f420cedfc8b43d9fec251c957a5d55fc45d40f6573f162990ed1dce7e36e0`이다.
 
 Print JPEG 인코더의 원래 라이선스·저작권 고지는 `vendor/rhwp-jpeg-encoder/LICENSE-*`에 있다.
+Print JPEG 디코더의 선택 변환은 공개 Intel MediaSDK 정수 IDCT(MIT)를 Rust로 번역하고,
+IJG 보간 규칙을 재표현한다. Intel 저작권·MIT 고지는
+`src/renderer/image_resolver/print_jpeg_idct.rs`, IJG 원문과 배포 조건은
+`vendor/rhwp-zune-jpeg/README.ijg`, 해당 구현은 `vendor/rhwp-zune-jpeg/src/ijg_upsampler.rs`,
+변경 설명은 `vendor/rhwp-zune-jpeg/RHWP_PATCHES.md`에 있다.
 This software is based in part on the work of the Independent JPEG Group.
 
 기준 파일:
@@ -45,6 +50,7 @@ This software is based in part on the work of the Independent JPEG Group.
 | getrandom | 0.4.3 | MIT OR Apache-2.0 | rust-random/getrandom | 서명 키 난수 생성 |
 | hmac | 0.13.0 | MIT OR Apache-2.0 | RustCrypto/MACs | HWPX 무결성 |
 | image | 0.25.10 | MIT OR Apache-2.0 | image-rs/image | BMP/JPEG/PNG 디코딩 |
+| rhwp-zune-jpeg | 0.5.15-rhwp.1 | (MIT OR Apache-2.0 OR Zlib) AND IJG | etemesi254/zune-image, IJG | 요청별 할당 예산·인스턴스별 Print 변환; 기본 PDF import decoder는 원래 변환 유지 |
 | rhwp-jpeg-encoder | 0.7.1-rhwp.1 | (MIT OR Apache-2.0) AND IJG | vstroebel/jpeg-encoder | Print의 공통 스칼라 JPEG 인코딩; 원본·변경 내역은 `vendor/rhwp-jpeg-encoder/` |
 | js-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM JS interop |
 | office_oxide | 0.1.9 | MIT OR Apache-2.0 | yfedoseev/office_oxide | `pdf-import` optional 호환성 제약; PDF 전이 의존성 |

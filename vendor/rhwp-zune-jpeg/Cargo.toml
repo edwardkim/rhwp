@@ -3,6 +3,7 @@ include = [
     "/Cargo.toml",
     "/src/**",
     "/README.md",
+    "/README.ijg",
     "/RHWP_PATCHES.md",
     "/UPSTREAM.json",
     "/LICENSE-*"
@@ -12,7 +13,7 @@ version = "0.5.15-rhwp.1"
 edition = "2021"
 rust-version = "1.93.1"
 publish = ["crates-io"]
-license = "MIT OR Apache-2.0 OR Zlib"
+license = "(MIT OR Apache-2.0 OR Zlib) AND IJG"
 description = "Request-bounded security patch of zune-jpeg for rhwp PDF import"
 [workspace]
 [lib]
