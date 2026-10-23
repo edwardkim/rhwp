@@ -87,7 +87,12 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
         // 실측 인라인 표의 현재 프레임은 글자 없는 host와 여러 표도 구성한다.
         // 나머지 경로는 기존의 보이는 글자+단일 TAC 표 수용 계약을 유지한다.
         || ((!measured_inline_table_heights.is_empty() || single_tac_table_with_text)
-            && line_breaking::supports_tac_table_band_frame_controls(para));
+            && line_breaking::supports_tac_table_band_frame_controls(para))
+        // 저장 줄 없는 문단의 글앞/글뒤 표·그림·도형은 종이층에 놓여 줄 폭에 중립이다.
+        // 개체 없는 저장 줄 없는 문단과 같이 실제 폭 프레임이 줄을 소유한다.
+        || (crate::renderer::para_has_no_stored_line_segs(para)
+            && (line_breaking::supports_overlay_table_frame_controls(para)
+                || line_breaking::supports_overlay_shape_frame_controls(para)));
     if !paragraph_box.is_usable() || !frame_admits_controls {
         return None;
     }

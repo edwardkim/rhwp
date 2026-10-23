@@ -171,6 +171,98 @@ pub(in crate::renderer::typeset) fn place(
     );
 
     st.ensure_page();
+    // 저장 줄 없는 글앞/글뒤 표 host(서식 머리의 제목과 작은 표)는 자기 줄과 거기 앵커된
+    // 표가 함께 남은 자리에 들어가야 한다. 데코 경로는 표·host 줄을 fit 없이 방출하므로
+    // 쪽 끝에서 host 만 남으면 표가 꼬리 글자와 겹치거나 작은 표의 행이 쪽 경계에서
+    // 쪼개진다. 한/글은 이 블록을 통째로 다음 쪽에 둔다. 표가 쪽 하나보다 크면 넘겨도
+    // 들어가지 않으므로 그 자리에 둔다.
+    // 묶음은 host 줄 안에서 시작하는 표만이다 — 문단에서 멀리 떨어진 위치 지정 표는
+    // host 줄과 한 블록이 아니어서 그 높이로 host 를 새 쪽으로 밀면 한/글에 없는 쪽이
+    // 생긴다.
+    if crate::renderer::para_is_unstored_overlay_table_host(para)
+        && st.table_control_page().has_items
+    {
+        let need = para
+            .controls
+            .iter()
+            .filter_map(|c| match c {
+                Control::Table(t)
+                    if matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+                        && crate::renderer::hwpunit_to_px(
+                            t.common.vertical_offset as i32,
+                            engine.dpi,
+                        ) < fmt.height_for_fit =>
+                {
+                    Some(crate::renderer::hwpunit_to_px(
+                        t.common.vertical_offset as i32 + t.common.height as i32,
+                        engine.dpi,
+                    ))
+                }
+                _ => None,
+            })
+            .fold(fmt.height_for_fit, f64::max);
+        if st.decoration_table_flow_height() + need > st.available_height()
+            && need <= st.base_available_height()
+        {
+            st.advance_column_or_new_page();
+        }
+    }
+    // 같은 서식 머리의 자리차지 작은 표(2행 이하, host 줄 바로 아래에서 시작)도 host 줄과
+    // 한 블록이다. 쪽 끝에서 블록이 안 들어가면 표만 다음 쪽으로 넘어가 host 줄(제목)이
+    // 어느 쪽에도 발행되지 않거나, 작은 표의 행이 쪽 경계에서 쪼개진다. 한/글은 제목과
+    // 작은 표를 통째로 다음 쪽 위에 둔다. 여러 행 본문 표는 행 단위 분할이 정본이므로
+    // 이 묶음에 넣지 않는다.
+    // 묶음은 표가 host 줄 높이 아래(오프셋 ≥ 줄 fit 높이)에서 시작해 줄과 표가 세로로
+    // 쌓이는 형상만이다. 표가 host 줄과 겹쳐 시작하면 표 경로가 이미 통째로 넘기므로,
+    // 여기서 앞서 쪽을 넘기면 다음 서식 머리 표의 행이 쪽 끝에서 쪼개진다.
+    // host 가 제목 글자를 가질 때만 묶는다. 빈 host 줄은 앞 쪽 끝에 남고 작은 표만 다음 쪽
+    // 맨 위(본문 상단 + 바깥여백)로 간다 — 빈 줄까지 넘기면 표가 오프셋만큼 내려가 뒤
+    // 본문 표가 쪽을 넘는다.
+    if !has_tac
+        && para.text.chars().any(|c| !c.is_whitespace())
+        && crate::renderer::para_has_no_stored_line_segs(para)
+        && st.table_control_page().has_items
+    {
+        let px = |hu: i32| crate::renderer::hwpunit_to_px(hu, engine.dpi);
+        let block_tables: Vec<_> = para
+            .controls
+            .iter()
+            .filter_map(|c| match c {
+                Control::Table(t) => Some(t),
+                _ => None,
+            })
+            .collect();
+        let header_block_need = if block_tables.is_empty() {
+            None
+        } else {
+            block_tables.iter().try_fold(fmt.height_for_fit, |need, t| {
+                let v_off = px(t.common.vertical_offset as i32);
+                (!t.common.treat_as_char
+                    && matches!(
+                        t.common.text_wrap,
+                        crate::model::shape::TextWrap::TopAndBottom
+                    )
+                    && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+                    && t.row_count <= 2
+                    && (fmt.height_for_fit..fmt.total_height).contains(&v_off))
+                .then(|| {
+                    need.max(
+                        v_off
+                            + px(t.outer_margin_top as i32)
+                            + px(t.common.height as i32)
+                            + px(t.outer_margin_bottom as i32),
+                    )
+                })
+            })
+        };
+        if let Some(need) = header_block_need {
+            if st.decoration_table_flow_height() + need > st.available_height()
+                && need <= st.base_available_height()
+            {
+                st.advance_column_or_new_page();
+            }
+        }
+    }
 
     // A candidate rejected in the previous column does not describe the new
     // column. Recompose at its origin so fit and paint still consume one plan.

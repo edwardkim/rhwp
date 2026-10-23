@@ -2841,6 +2841,47 @@ impl HeightMeasurer {
         )
     }
 
+    /// 셀 첫 문단의 글앞/글뒤 비-TAC 중첩 표 바닥(바깥여백 포함) 중 최댓값.
+    ///
+    /// 이 표는 셀 맨 위(첫 문단 시작)에 앵커되고 글줄을 밀지 않는다. 가산 경로는
+    /// 이 표를 합에서 빼므로(`unabsorbed_nested_tables_height`) 셀이 표 바닥보다
+    /// 낮아질 수 있다 — 한/글은 셀이 이 표를 감싼다.
+    ///
+    /// 뒤 문단에 글자가 있으면 0 — 그 글자는 표 아래로 내려 그려지고 가산 경로가 담는다.
+    fn leading_overlay_nested_tables_extent(
+        &self,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        depth: usize,
+    ) -> f64 {
+        let Some((first, rest)) = paragraphs.split_first() else {
+            return 0.0;
+        };
+        if rest
+            .iter()
+            .any(|p| !p.text.trim().is_empty() || !p.controls.is_empty())
+        {
+            return 0.0;
+        }
+        first
+            .controls
+            .iter()
+            .filter_map(|ctrl| match ctrl {
+                Control::Table(t)
+                    if crate::renderer::float_placement::nested_table_is_overlay(t) =>
+                {
+                    let stretch = self.render_normalization.nested_table_width_scale(t);
+                    let mt = self.measure_table_impl(t, 0, 0, styles, depth + 1, stretch);
+                    let declared = hwpunit_to_px(t.common.height as i32, self.dpi);
+                    let om = hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+                        + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
+                    Some(mt.total_height.max(declared) + om)
+                }
+                _ => None,
+            })
+            .fold(0.0, f64::max)
+    }
+
     fn cell_nested_controls_bottom(
         &self,
         cell: &crate::model::table::Cell,
@@ -3604,7 +3645,9 @@ impl HeightMeasurer {
                         styles,
                         depth,
                     );
-                    text_height + nested_sum + outgrown
+                    let overlay_bottom =
+                        self.leading_overlay_nested_tables_extent(&cell.paragraphs, styles, depth);
+                    (text_height + nested_sum + outgrown).max(overlay_bottom)
                 } else if has_nested_table_in_cell {
                     // 마지막 문단의 마지막 LINE_SEG의 vpos + line_height
                     let last_seg_end: i32 = cell

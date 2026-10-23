@@ -72,6 +72,20 @@ pub(super) fn plan(
                 content_height: None,
             });
         }
+        // 저장 줄이 없는 빈 글앞/글뒤 표 host 는 증언할 사다리가 없다. 한/글은
+        // 이 문단에 자기 em 줄(`format` 의 빈 문단 줄박스)을 주므로 그대로 낸다 — 렌더도
+        // 같은 판별로 같은 높이를 전진한다.
+        if crate::renderer::para_is_unstored_empty_overlay_table_host(para)
+            && !fmt.line_heights.is_empty()
+        {
+            return Some(ParagraphFragment {
+                item: PageItem::FullParagraph {
+                    para_index: para_idx,
+                },
+                height: fmt.total_height,
+                content_height: None,
+            });
+        }
     }
     None
 }

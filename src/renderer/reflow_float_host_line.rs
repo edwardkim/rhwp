@@ -6,14 +6,14 @@ use crate::model::shape::VertAlign;
 use crate::model::table::Table;
 
 use super::composer::ComposedParagraph;
-use super::float_placement::{is_para_topbottom_float, signed_hwpunit};
+use super::float_placement::{is_non_flow_decoration, is_para_topbottom_float, signed_hwpunit};
 use super::style_resolver::ResolvedStyleSet;
 
 /// 양수 첫줄 들여쓰기는 텍스트 없이도 줄 안쪽을 차지한다.
 /// 왼쪽 여백과 내어쓰기는 줄 밖의 기하이며, 빈 개체 줄을 만들지 않는다.
 /// 자리차지 밴드 위에 줄 높이가 들어가면 그 줄은 표 뒤 꼬리가 아니다.
 /// 공백을 포함한 실제 텍스트는 별도 문단 조각이 이미 소유한다. 표 꼬리에
-/// 그 줄을 더하지 않는다. 저장 줄·여러 개체도 기존 줄/밴드 경로를 유지한다.
+/// 그 줄을 더하지 않는다. 저장 줄·글앞/글뒤 장식 외의 다른 개체도 기존 줄/밴드 경로를 유지한다.
 pub(crate) fn trailing_advance(
     para: &Paragraph,
     table: &Table,
@@ -30,7 +30,7 @@ pub(crate) fn trailing_advance(
             !matches!(
                 control,
                 Control::Table(_) | Control::SectionDef(_) | Control::ColumnDef(_)
-            )
+            ) && !is_non_flow_decoration(control)
         })
         || para
             .controls
@@ -43,7 +43,11 @@ pub(crate) fn trailing_advance(
     }
     let style_id = composed.map_or(para.para_shape_id, |paragraph| paragraph.para_style_id);
     let style = styles.para_styles.get(style_id as usize)?;
-    if style.indent <= 0.0 {
+    // 글앞·글뒤 장식을 함께 가진 빈 문단은 표만 가진 개체 앵커가 아니라 자기 빈 줄을 갖는다.
+    // 음수 오프셋 표는 host 원점 위로 올라가 재조판 표 상자 계약(오프셋 ≥ 0) 밖이다.
+    let owns_line = signed_hwpunit(table.common.vertical_offset) >= 0
+        && para.controls.iter().any(is_non_flow_decoration);
+    if style.indent <= 0.0 && !owns_line {
         return Some(0.0);
     }
     // 종단 글자 모양이 빈 줄 상자를 소유한다. 개체 제어 문자의

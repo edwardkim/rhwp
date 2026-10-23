@@ -121,6 +121,11 @@ fn empty_paragraph_fallback_line_metrics(
     // 부여한다 (사용안내 실측: Square 그림 앵커 빈 문단 pi1/pi6 이 0~5.3px 로 붕괴
     // → 한글은 27.7px(base 1300 × 160%) 부여 — PrvImage 줄 좌표 대조). 자리차지
     // (TopAndBottom)는 흐름 소비 계약이 별도라 제외를 유지한다.
+    // 저장 줄 없는 빈 글앞/글뒤 표 host 도 같은 em 줄박스를 갖는다(흐름 전진은
+    // decoration_host 가 낸다). typeset 은 본문 문단만 다룬다.
+    if crate::renderer::para_is_unstored_empty_overlay_table_host(para) {
+        return crate::renderer::unstored_overlay_table_host_line_metrics(para, styles, para_style);
+    }
     let controls_flow_neutral = crate::renderer::empty_host_controls_are_flow_neutral(para);
     // char_count == 0 배제는 순수 빈 문단(컨트롤 없음)에만 유지한다 — 글앞/글뒤
     // 도형·그림 앵커 문단은 char_count 0 으로 저장되는 경우가 있고(사용안내 pi1/pi6
@@ -4844,6 +4849,25 @@ impl TypesetEngine {
             && is_first_table
             && pre_height <= 0.0
             && (fmt.square_host_plan.is_some() || no_lineseg_square_band.is_some());
+        // 저장 줄이 없는 **빈** host 의 전폭 Square 표: 표는 오프셋·바깥여백 위 아래에
+        // 놓이고 host 빈 줄은 표 아래로 내려간다(layout 과 같은 helper).
+        let empty_square_host_geometry = (is_wrap_around_table && is_first_table)
+            .then(|| {
+                let col_w_px = st
+                    .layout
+                    .column_areas
+                    .get(st.current_column as usize)
+                    .map_or(st.layout.body_area.width, |area| area.width);
+                crate::renderer::unstored_empty_square_table_host_geometry_px(
+                    para,
+                    table,
+                    col_w_px,
+                    styles,
+                    styles.para_styles.get(para.para_shape_id as usize),
+                    self.dpi,
+                )
+            })
+            .flatten();
         if no_lineseg_band_host {
             let v_off_px = crate::renderer::hwpunit_to_px(signed_vertical_offset, self.dpi);
             let host_h = if fmt.square_host_plan.is_some() {
@@ -4862,6 +4886,8 @@ impl TypesetEngine {
                 plan.relative_to(0.0, -host_origin);
                 st.record_square_host_flow(para_idx, plan);
             }
+        } else if let Some((table_top, below)) = empty_square_host_geometry {
+            st.advance_flow_by(pre_height + table_top + table_total_height + below);
         } else if page_anchored_square {
             // [#7548] 쪽·종이 기준 어울림 표는 앵커 흐름 밖(절대 위치)에 놓인다 — 흐름에는
             // host 본문만 전진하고 표 높이를 예약하지 않는다(layout 의 절대 배치와 짝).
@@ -5290,6 +5316,24 @@ impl TypesetEngine {
                 let extra = step - table_total_height;
                 if extra > 0.5 {
                     st.advance_flow_by(extra);
+                }
+            }
+            // 저장 줄 없는 host 의 글줄이 같은 문단 자리차지 표 아래에서 시작하는 형상은
+            // 자기 표의 배제 구간 바닥에서 줄을 놓는다(layout 과 같은 판별).
+            if is_visible_para_float
+                && !has_preceding_coanchored_float
+                && crate::renderer::unstored_host_text_follows_topbottom_table(
+                    para, styles, self.dpi,
+                )
+            {
+                if let Some(bottom) = st
+                    .visible_float_exclusions
+                    .iter()
+                    .filter(|zone| zone.para_index == para_idx)
+                    .map(|zone| zone.bottom)
+                    .reduce(f64::max)
+                {
+                    st.align_flow_to(st.current_height.max(bottom));
                 }
             }
             // [#2808] 소비 조건을 layout 의 same_owner_table_precedes 와 동일하게

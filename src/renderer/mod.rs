@@ -1772,6 +1772,294 @@ pub(crate) fn empty_host_controls_are_flow_neutral(
     })
 }
 
+/// 저장 LINE_SEG 가 없는 문단이 글자 없이(공백뿐) 글앞/글뒤 표를 host 하는지.
+///
+/// 작은 표나 제목 표를 얹은 서식 머리 문단이다. 한/글은 이 문단에도 자기 글자 모양의
+/// 줄 하나(줄높이 + 줄간격)를 주고, 글앞/글뒤 개체는 그 줄을 밀지도 지우지도 않는다.
+/// 이 줄이 없으면 뒤 문단에 묶인 표가 em 줄만큼 위로 올라 앞 표와 겹친다. 구역 첫
+/// 문단만의 규칙이 아니다 — 구역 중간의 host 도 같은 줄을 가진다.
+///
+/// 판별은 문단만 보므로 셀 문단도 해당될 수 있다. 셀 높이 측정은 별도 경로라 이
+/// em 줄을 모른다 — 본문 흐름(typeset·본문 layout) 호출부에서만 쓴다.
+pub(crate) fn para_is_unstored_empty_overlay_table_host(
+    p: &crate::model::paragraph::Paragraph,
+) -> bool {
+    p.text.trim().is_empty() && para_is_unstored_overlay_table_host(p)
+}
+
+/// 저장 LINE_SEG 가 없는 문단이 글앞/글뒤 개체만 갖고 그중 표가 하나 이상인지(글자 유무 무관).
+pub(crate) fn para_is_unstored_overlay_table_host(p: &crate::model::paragraph::Paragraph) -> bool {
+    use crate::model::control::Control;
+    use crate::model::shape::{CommonObjAttr, TextWrap};
+    let overlay = |c: &CommonObjAttr| {
+        !c.treat_as_char && matches!(c.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
+    };
+    p.line_segs.is_empty()
+        && p.controls
+            .iter()
+            .any(|c| matches!(c, Control::Table(t) if overlay(&t.common)))
+        && p.controls.iter().all(|c| match c {
+            Control::Table(t) => overlay(&t.common),
+            Control::Picture(pic) => overlay(&pic.common),
+            Control::Shape(s) => overlay(s.common()),
+            // 머리말/꼬리말은 자기 영역의 별도 흐름이라 이 줄을 차지하지 않는다.
+            Control::SectionDef(_)
+            | Control::ColumnDef(_)
+            | Control::Header(_)
+            | Control::Footer(_) => true,
+            _ => false,
+        })
+}
+
+/// [`para_is_unstored_empty_overlay_table_host`] 중 구역 정의를 가진 구역 첫 문단.
+pub(crate) fn para_is_unstored_section_head_overlay_table_host(
+    p: &crate::model::paragraph::Paragraph,
+) -> bool {
+    use crate::model::control::Control;
+    para_is_unstored_empty_overlay_table_host(p)
+        && p.controls
+            .iter()
+            .any(|c| matches!(c, Control::SectionDef(_)))
+}
+
+/// [`para_is_unstored_empty_overlay_table_host`] 문단의 em 줄 `(줄높이, 줄간격)` px.
+/// typeset(빈 문단 줄박스)과 본문 layout(흐름 전진)이 같은 값을 쓴다.
+pub(crate) fn unstored_overlay_table_host_line_metrics(
+    p: &crate::model::paragraph::Paragraph,
+    styles: &style_resolver::ResolvedStyleSet,
+    para_style: Option<&style_resolver::ResolvedParaStyle>,
+) -> Option<(f64, f64)> {
+    let font_size = section_head_overlay_host_font_size(p, styles)?;
+    if font_size <= 0.0 {
+        return None;
+    }
+    Some(corrected_line_metrics(
+        0.0,
+        0.0,
+        font_size,
+        para_style.map_or(crate::model::style::LineSpacingType::Percent, |s| {
+            s.line_spacing_type
+        }),
+        para_style.map_or(160.0, |s| s.line_spacing),
+    ))
+}
+
+/// 저장 줄 없는 문단에 앵커된 문단 기준 글앞/글뒤 표의 바깥여백 `(왼쪽, 위)` px.
+///
+/// 한/글의 문단 기준 오프셋은 **바깥여백 상자**의 모서리를 가리킨다 — 표 자신은
+/// 거기서 `outMargin` 만큼 안쪽이다(#6598 세로 실측, #7063 가로 규칙). 저장 줄 있는
+/// 문단은 별도 앵커 경로가 이를 다루고, 이 함수는 저장 줄 없는 host 의 글앞/글뒤 표를
+/// 맡는다. 왼쪽·위 정렬 축만 받는다.
+///
+/// 가로 기준은 문단, 또는 글자 없는 구역 첫 host
+/// ([`para_is_unstored_section_head_overlay_table_host`])의 단 기준 표로 한정한다.
+/// 구역 첫 빈 host 의 단 기준 표는 한/글에서 바깥여백 왼·위를 양 축 모두 받는다.
+/// 글자를 가진 host·구역 첫 문단이 아닌 host 의 단 기준 작은 표는 바깥여백을 받지 않는다.
+pub(crate) fn unstored_para_overlay_table_outer_margin_px(
+    p: &crate::model::paragraph::Paragraph,
+    t: &crate::model::table::Table,
+    next_table: Option<&crate::model::table::Table>,
+    dpi: f64,
+) -> (f64, f64) {
+    use crate::model::shape::{HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
+    if !para_has_no_stored_line_segs(p)
+        || t.common.treat_as_char
+        || !matches!(
+            t.common.text_wrap,
+            TextWrap::InFrontOfText | TextWrap::BehindText
+        )
+        || !(matches!(t.common.horz_rel_to, HorzRelTo::Para)
+            || (matches!(t.common.horz_rel_to, HorzRelTo::Column)
+                && para_is_unstored_section_head_overlay_table_host(p)))
+    {
+        return (0.0, 0.0);
+    }
+    let left = if matches!(t.common.horz_align, HorzAlign::Left | HorzAlign::Inside) {
+        hwpunit_to_px(t.outer_margin_left as i32, dpi)
+    } else {
+        0.0
+    };
+    // 제목 글자를 가진 host 는 문서 순서상 다음 표가 자리차지 표면 위 축을 받지 않는다.
+    // 그 표의 바깥여백 위는 흐름이 계상하지 않아 om 만큼 위에 놓이므로, 이 표만
+    // om_top 을 더하면 둘이 겹친다. 다음 표도 글앞/글뒤 표면 둘 다 바깥여백 상자 규칙으로
+    // 놓여 간격이 한/글과 같다.
+    let next_is_flow_table = next_table.is_some_and(|n| {
+        !n.common.treat_as_char
+            && matches!(n.common.text_wrap, TextWrap::TopAndBottom)
+            && n.outer_margin_top > 0
+    });
+    let top = if (p.text.trim().is_empty() || !next_is_flow_table)
+        && matches!(t.common.vert_rel_to, VertRelTo::Para)
+        && matches!(t.common.vert_align, VertAlign::Top | VertAlign::Inside)
+    {
+        hwpunit_to_px(t.outer_margin_top as i32, dpi)
+    } else {
+        0.0
+    };
+    (left, top)
+}
+
+/// 저장 줄 없는 host 의 글줄이 같은 문단의 자리차지 표 **아래**에서 시작하는지.
+///
+/// 자리차지 표는 자기 세로 구간에 글줄을 두지 않는다. 표 컨트롤이 글자보다 앞에 있고
+/// 표 상자(오프셋 + 바깥여백 위)가 첫 줄 높이 안에서 시작하면, 그 줄은 표 위에 들어갈
+/// 자리가 없어 표 아래로 내려간다.
+/// 표가 글자 뒤에 있거나 오프셋이 첫 줄보다 깊으면 글줄은 표 위(앵커)에 남는다(#1549).
+pub(crate) fn unstored_host_text_follows_topbottom_table(
+    p: &crate::model::paragraph::Paragraph,
+    styles: &style_resolver::ResolvedStyleSet,
+    dpi: f64,
+) -> bool {
+    use crate::model::control::Control;
+    use crate::model::shape::{TextWrap, VertAlign, VertRelTo};
+    if !para_has_no_stored_line_segs(p) {
+        return false;
+    }
+    let Some(first_ink) = p.text.chars().position(|c| !c.is_whitespace()) else {
+        return false;
+    };
+    let mut tables = p.controls.iter().enumerate().filter_map(|(i, c)| match c {
+        Control::Table(t) => Some((i, t)),
+        _ => None,
+    });
+    let (Some((table_index, t)), None) = (tables.next(), tables.next()) else {
+        return false;
+    };
+    let v_off = t.common.vertical_offset as i32;
+    if t.common.treat_as_char
+        || !matches!(t.common.text_wrap, TextWrap::TopAndBottom)
+        || !matches!(t.common.vert_rel_to, VertRelTo::Para)
+        || !matches!(t.common.vert_align, VertAlign::Top)
+        || v_off <= 0
+        || p.control_text_positions()
+            .get(table_index)
+            .is_none_or(|&pos| pos > first_ink)
+    {
+        return false;
+    }
+    section_head_overlay_host_font_size(p, styles)
+        .is_some_and(|font_size| hwpunit_to_px(v_off + t.outer_margin_top as i32, dpi) < font_size)
+}
+
+/// 저장 줄 없는 **빈** host 의 단독 어울림(Square) 표 기하 `(표 상단, 표 아래 추가분)` px.
+///
+/// 표 상단은 host 시작에서 `세로 오프셋 + 바깥여백 위` 아래다(오프셋은 바깥여백 상자의
+/// 모서리). 표만 가진 빈 host 는 개체 앵커라 자기 빈 줄이 없어 표 바닥 뒤 흐름이
+/// `바깥여백 아래` 만큼만 전진한다. 글앞·글뒤 장식을 함께 가진 host 는 빈 줄을 갖고,
+/// 표가 단 폭을 채워 옆에 글자 띠가 없으면 그 줄은 표 밴드와 겹치는 자리에 들어갈 수
+/// 없어 표 **아래**로 내려가므로, 표 바닥 뒤 흐름은 `바깥여백 아래 + host 줄(lh+ls)`
+/// 만큼 더 전진한다.
+///
+/// 줄이 오프셋 위 틈에 들어가는 경우(오프셋 ≥ 줄 높이)와 옆 띠가 있는 경우는 None 으로
+/// 일반 어울림 표 경로에 남긴다. typeset(흐름 전진)과 layout(표 위치·뒤 흐름)이
+/// 같은 값을 쓴다.
+pub(crate) fn unstored_empty_square_table_host_geometry_px(
+    p: &crate::model::paragraph::Paragraph,
+    t: &crate::model::table::Table,
+    column_width_px: f64,
+    styles: &style_resolver::ResolvedStyleSet,
+    para_style: Option<&style_resolver::ResolvedParaStyle>,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    use crate::model::control::Control;
+    use crate::model::shape::{
+        CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo,
+    };
+    // 글자 하나가 들어갈 최소 띠 — `no_lineseg_square_table_host_band` 와 같은 값.
+    const MIN_BAND_HU: i32 = 2000;
+
+    let is_square_float =
+        |c: &CommonObjAttr| !c.treat_as_char && matches!(c.text_wrap, TextWrap::Square);
+    let is_overlay = |c: &CommonObjAttr| {
+        !c.treat_as_char && matches!(c.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
+    };
+    if !para_has_no_stored_line_segs(p)
+        || !p.text.trim().is_empty()
+        || !is_square_float(&t.common)
+        || !matches!(t.common.vert_rel_to, VertRelTo::Para)
+        || !matches!(t.common.vert_align, VertAlign::Top)
+        || !matches!(t.common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
+        || !matches!(t.common.horz_align, HorzAlign::Left)
+        || (t.common.vertical_offset as i32) < 0
+    {
+        return None;
+    }
+    let mut square_floats = 0usize;
+    let mut has_overlay = false;
+    for control in &p.controls {
+        let common = match control {
+            Control::Table(table) => &table.common,
+            Control::Picture(pic) => &pic.common,
+            Control::Shape(shape) => shape.common(),
+            _ => return None,
+        };
+        if is_square_float(common) {
+            square_floats += 1;
+        } else if is_overlay(common) {
+            has_overlay = true;
+        } else {
+            return None;
+        }
+    }
+    if square_floats != 1 {
+        return None;
+    }
+
+    let column_width_hu = px_to_hwpunit(column_width_px, dpi);
+    let offset = t.common.horizontal_offset as i32;
+    let obj_left = offset - t.outer_margin_left as i32;
+    let obj_right = offset + t.common.width as i32 + t.outer_margin_right as i32;
+    if obj_left.max(0) >= MIN_BAND_HU || column_width_hu - obj_right >= MIN_BAND_HU {
+        return None;
+    }
+
+    let char_shape_id =
+        p.char_shape_id_at(0)
+            .or_else(|| p.char_shapes.first().map(|cs| cs.char_shape_id))? as usize;
+    let font_size = styles.char_styles.get(char_shape_id)?.font_size;
+    if font_size <= 0.0 {
+        return None;
+    }
+    let (line_height, line_spacing) = corrected_line_metrics(
+        0.0,
+        0.0,
+        font_size,
+        para_style.map_or(crate::model::style::LineSpacingType::Percent, |s| {
+            s.line_spacing_type
+        }),
+        para_style.map_or(160.0, |s| s.line_spacing),
+    );
+    let line_advance = line_height + line_spacing;
+    let v_off = hwpunit_to_px(t.common.vertical_offset as i32, dpi);
+    if v_off >= line_advance {
+        return None;
+    }
+    let table_top = v_off + hwpunit_to_px(t.outer_margin_top as i32, dpi);
+    let outer_bottom = hwpunit_to_px(t.outer_margin_bottom as i32, dpi);
+    if !has_overlay {
+        return Some((table_top, outer_bottom));
+    }
+    Some((table_top, outer_bottom + line_advance))
+}
+
+/// [`para_is_unstored_empty_overlay_table_host`] 문단의 em 줄 글자 크기.
+///
+/// 이 문단의 한 줄에는 컨트롤 문자(구역·단 정의, 표)와 공백이 함께 놓인다. 줄 높이는
+/// 그 줄 글자들의 최대 글자 크기다 — 첫 글자(공백)의 모양만 보면 컨트롤 문자 구간의
+/// 더 큰 모양이 빠진다.
+fn section_head_overlay_host_font_size(
+    p: &crate::model::paragraph::Paragraph,
+    styles: &style_resolver::ResolvedStyleSet,
+) -> Option<f64> {
+    p.char_shapes
+        .iter()
+        .filter_map(|r| styles.char_styles.get(r.char_shape_id as usize))
+        .map(|s| s.font_size)
+        .fold(None, |acc: Option<f64>, size| {
+            Some(acc.map_or(size, |a| a.max(size)))
+        })
+}
+
 /// 합성 Square 구간은 시작 위치까지의 왼쪽 여백을 이미 차지한다.
 /// 이를 본문 상자의 폭으로 환산해 측정과 배치가 같은 프레임을 사용하게 하며,
 /// 글꼴별 임의 허용 폭은 더하지 않는다.
