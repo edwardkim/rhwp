@@ -39,7 +39,7 @@ pub(crate) use reflow_block_cell::{
     reflow_host_line_height, supports_reflow_external_table_frame, ReflowBlockCellFlow,
     ReflowBlockOrigin, ReflowExternalTableFlow,
 };
-mod stored_empty_host_frame;
+pub(crate) mod stored_empty_host_frame;
 mod stored_nested_before_host;
 mod stored_nested_closing_host;
 mod stored_nested_terminal_line;

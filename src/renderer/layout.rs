@@ -11753,10 +11753,41 @@ impl LayoutEngine {
                                                     .get(*para_index + 1)
                                                     .and_then(|next| next.line_segs.first())
                                                     .is_some_and(|next| {
-                                                        i64::from(next.vertical_pos)
-                                                            - i64::from(seg.vertical_pos)
-                                                            == i64::from(seg.line_height)
-                                                                + i64::from(seg.line_spacing)
+                                                        // [#8149] 사다리 경계는 `줄 + 줄간격 + 이
+                                                        // 문단 아래 간격 + 다음 문단 위 간격` 이다.
+                                                        // 문단 간격이 있어도 줄간격 전진은 같다
+                                                        // (한글문서파일형식 21쪽 pi=140: 18340 + 15255
+                                                        // + 628 + 700 + 500 = 35423).
+                                                        let line_advance =
+                                                            i64::from(seg.line_height)
+                                                                + i64::from(seg.line_spacing);
+                                                        let gap = i64::from(next.vertical_pos)
+                                                            - i64::from(seg.vertical_pos);
+                                                        let next_before = paragraphs
+                                                            .get(*para_index + 1)
+                                                            .and_then(|next_para| {
+                                                                styles.para_styles.get(
+                                                                    next_para.para_shape_id
+                                                                        as usize,
+                                                                )
+                                                            })
+                                                            .map_or(0, |style| {
+                                                                i64::from(px_to_hwpunit(
+                                                                    style.spacing_before.max(0.0),
+                                                                    self.dpi,
+                                                                ))
+                                                            });
+                                                        let own_after = i64::from(px_to_hwpunit(
+                                                            sa.max(0.0),
+                                                            self.dpi,
+                                                        ));
+                                                        gap == line_advance
+                                                            || (gap
+                                                                - (line_advance
+                                                                    + own_after
+                                                                    + next_before))
+                                                                .abs()
+                                                                <= 2
                                                     }) =>
                                         {
                                             hwpunit_to_px(seg.line_spacing, self.dpi)
@@ -14671,7 +14702,7 @@ impl LayoutEngine {
                         // 3.8px 위로 앉아 직전 표 괘선과 4.2px 겹친다 (156505870
                         // 연달은 자리차지 표 4개 중 2~4번째, 한글 이중 괘선 간격
                         // 0.4px vs rhwp 4.3px).
-                        if Self::tac_stored_band_is_outer_box(para, t)
+                        if Self::tac_stored_band_is_captioned_outer_box(para, t)
                             || crate::renderer::para_has_no_stored_line_segs(para)
                         {
                             y_offset += hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
