@@ -65,6 +65,7 @@ const CAPTION_CELL_SENTINEL: usize = 65534;
 
 mod inline_table_geometry;
 pub(crate) use inline_table_geometry::InlineTableParagraphGeometry;
+mod stored_textbox_frame;
 mod tab_frame;
 /// 분배 정렬도 다음 글자가 없는 마지막 글리프의 실제 점유 끝을 기준으로 한다.
 /// 마지막 개체 앞 공백과 표시/중첩/주석 제어가 소유한 폭은 일반 글자의 자간으로
@@ -6767,7 +6768,12 @@ impl LayoutEngine {
             let stored_geometry_source = para
                 .map(|p| !crate::renderer::para_has_no_stored_line_segs(p))
                 .unwrap_or(false);
+            let stored_textbox_line = cell_ctx.as_ref().is_some_and(|ctx| ctx.in_textbox)
+                && wrap_anchor.is_none()
+                && !inline_tac_segment_is_paragraph_width
+                && stored_textbox_frame::owns_frame(para, composed, line_idx);
             let uses_stored_segment_geometry = physical_frame_rows
+                || stored_textbox_line
                 || (stored_geometry_source
                     && (has_picture_shape_square_wrap
                         || (line_has_inline_tac_table && !inline_tac_segment_is_paragraph_width)
