@@ -90,6 +90,7 @@
     "e2e:issue-6557-merged-row": "node e2e/run-with-vite.mjs -- node e2e/merged-cell-row-boundary-drag.test.mjs --mode=headless",
     "e2e:issue-7403-canvas2d": "node e2e/run-with-vite.mjs -- node e2e/host-font-provider-issue7403.test.mjs --mode=headless --renderer=canvas2d",
     "e2e:issue-7403": "node e2e/run-with-vite.mjs -- node e2e/host-font-provider-issue7403.test.mjs --mode=headless",
+    "e2e:issue-8102": "node e2e/run-with-vite.mjs -- node e2e/cell-target-issue8102.test.mjs --mode=headless",
     "e2e:select-all-cmd-a": "node e2e/run-with-vite.mjs -- node e2e/select-all-cmd-a.test.mjs --mode=headless",
     "e2e:glyph-outline-portable-geometry": "node e2e/run-with-vite.mjs -- node e2e/glyph-outline-portable-geometry.test.mjs"
   },
