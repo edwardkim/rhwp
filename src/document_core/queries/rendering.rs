@@ -3604,6 +3604,24 @@ impl DocumentCore {
 
                 let escaped_text = super::super::helpers::json_escape(&text_run.text);
 
+                // 표시 문자열은 모델 오프셋과 별도 공간이다 (#7909).
+                // 기존 text/charX/charStart 계약은 그대로 두고, 표시가 있는 런에만
+                // renderer와 같은 run-relative 경계를 함께 내보낸다.
+                let display_info = if let Some(display) = &text_run.display_text {
+                    let display_x: Vec<String> = text_run
+                        .replay_positions_for(display)
+                        .iter()
+                        .map(|v| format!("{:.1}", v))
+                        .collect();
+                    format!(
+                        ",\"displayText\":\"{}\",\"displayCharX\":[{}]",
+                        super::super::helpers::json_escape(display),
+                        display_x.join(","),
+                    )
+                } else {
+                    String::new()
+                };
+
                 // 문서 좌표 (편집용)
                 let doc_coords = match (
                     text_run.section_index,
@@ -3669,7 +3687,7 @@ impl DocumentCore {
                 };
 
                 runs.push(format!(
-                    "{{\"text\":\"{}\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"charX\":[{}]{}{}{}{}{}}}",
+                    "{{\"text\":\"{}\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"charX\":[{}]{}{}{}{}{}{}}}",
                     escaped_text,
                     node.bbox.x,
                     node.bbox.y,
@@ -3681,6 +3699,7 @@ impl DocumentCore {
                     shape_ids,
                     doc_coords,
                     cell_coords,
+                    display_info,
                 ));
             }
             for child in &node.children {
