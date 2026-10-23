@@ -79,3 +79,19 @@ Studio의 실제 `node_modules/.bin/tsc --noEmit`은 종료 코드 0이었다.
 경계 픽셀 진단은 이전 후보에서 0 PASS / 10 FAIL이었고, 의미 render tree는 유지됐다.
 그림 clip 조상도 실제 layer tree에서 본문 clip과 채움 자체 clip으로 추적했다.
 새 후보의 개선과 정상 대조군·전체 출력을 실제로 확인하기 전에는 완료로 판정하지 않는다.
+
+## 후보의 실제 실행과 다음 소비 지점
+
+`afd8d95856`의 Native 빌드는 10분 39초·종료 코드 0이었다. 실제 공통 Rust 코드를
+독립 PDF의 사각형 clip 16건·그림 크기 8건·affine 비적용 조건과 대조한 진단 3개도
+통과했다. 이 결과를 원본 문서의 시각 통과로 대신하지 않았다.
+
+Native 영향 페이지 36건의 실제 출력에서 1쪽 표지는 양쪽 형식 모두 raw 100%로
+개선됐으나, 295·299쪽 등에는 최대 0.2771%p 하락이 남았다. 288·307쪽의 경계 색상
+10건은 여전히 독립 Print의 회색 226과 다르고, render tree는 앞 후보와 같았다.
+실제 layer tree에서 그림 clip 이후의 흰색 셀 사각형 채움이 같은 픽셀에 부분 alpha를
+덮어쓰는 경로를 확인했다. clip helper의 통과만으로 완료 처리하지 않고, 사각형 채움의
+공통 장치 규칙을 다음 단계에서 보정한다. 이 후보의 최종 PR gate는 통과하지 않았다.
+
+실제 자료는 ignored 작업 경로의 `bitmap-clip-afd8d95856/device-contract-result.json`,
+`native-focus-result.json`, `bitmap-clip-boundary-after-afd8d95856.json`과 페이지별 PNG에 있다.

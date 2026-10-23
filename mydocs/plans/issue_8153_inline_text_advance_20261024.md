@@ -78,3 +78,18 @@ Native의 첫 경계 156.133px는 독립 152.475px보다 약 3.7px 오른쪽이�
 근거는 같은 ignored 작업 경로의 `inline-text-bea7004f55/whole-native-result.json`,
 `whole-native-exact-audit.json`, `whole-native-tsv-delta.json`과 형식별 전쪽 TSV다.
 345/766쪽의 미대응 0은 Native 중간 결과이며, fresh WASM과 전쪽 100% 목표의 완료가 아니다.
+
+## 표준 최적화 fresh WASM의 영향 페이지
+
+같은 `bea7004f55`의 표준 release WASM 빌드는 43분 4초·종료 코드 0으로 완료됐다.
+jobs 8·codegen-units 16이며 `wasm-opt`를 실제 실행했다. 동결 WASM의 SHA-256은
+`7629d15d3dfe26a6a7f55ed21d129be543b6c120c34a78050d8a8d0be4b67036`이다.
+그림 대조군 3건은 raw 100%·미대응 0이며, 새 캡처의 전체 RGBA가 앞서 판독한 자료와 같다.
+그 대조군의 기존 Native receipt는 글꼴·입력 공급 근거로만 사용하고, 현재 WASM producer와
+그 Native 공급자의 source·실행 파일 해시를 각각 구분했다.
+
+원본 영향 페이지 36건도 종료 코드 0이다. HWPX 18쪽 최저 98.81605%·미대응 0인 3쪽,
+HWP 18쪽 최저 98.81623%·미대응 0인 4쪽이다. 두 형식의 88·271쪽은 모두 미대응 0이다.
+HWPX 271쪽의 새 WASM overlay를 직접 열어 표 경계와 앞뒤 본문을 확인했다.
+근거는 `inline-text-bea7004f55/wasm-build-receipt.json`, `wasm-control-result.json`,
+`wasm-focus-result.json`과 새 캡처다. 이 영향 페이지 결과는 전쪽 WASM 검증이 아니다.
