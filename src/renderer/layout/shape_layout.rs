@@ -3,6 +3,7 @@
 mod affine_line;
 mod compound_rectangle;
 mod connector_style;
+mod curve_geometry;
 mod line_direction;
 mod path_stroke_arrows;
 mod source_line_frame;
@@ -1318,45 +1319,20 @@ impl LayoutEngine {
             }
             ShapeObject::Curve(curve) => {
                 let (style, gradient) = drawing_to_shape_style(&curve.drawing, self.dpi);
-                let mut commands = Vec::new();
-                let mut min_x = f64::MAX;
-                let mut min_y = f64::MAX;
-                let mut max_x = f64::MIN;
-                let mut max_y = f64::MIN;
-                let points = &curve.points;
-                if !points.is_empty() {
-                    let (px, py) = transform_pt(points[0].x as f64, points[0].y as f64);
-                    commands.push(PathCommand::MoveTo(px, py));
-                    min_x = min_x.min(px);
-                    min_y = min_y.min(py);
-                    max_x = max_x.max(px);
-                    max_y = max_y.max(py);
-                    let mut i = 1;
-                    while i + 2 < points.len() {
-                        let (cx1, cy1) = transform_pt(points[i].x as f64, points[i].y as f64);
-                        let (cx2, cy2) =
-                            transform_pt(points[i + 1].x as f64, points[i + 1].y as f64);
-                        let (ex, ey) = transform_pt(points[i + 2].x as f64, points[i + 2].y as f64);
-                        commands.push(PathCommand::CurveTo(cx1, cy1, cx2, cy2, ex, ey));
-                        for &(px, py) in &[(cx1, cy1), (cx2, cy2), (ex, ey)] {
-                            min_x = min_x.min(px);
-                            min_y = min_y.min(py);
-                            max_x = max_x.max(px);
-                            max_y = max_y.max(py);
-                        }
-                        i += 3;
-                    }
-                }
-                let bbox_w = (max_x - min_x).max(0.0);
-                let bbox_h = (max_y - min_y).max(0.0);
+                let commands = curve_geometry::commands(curve, |ox, oy| {
+                    // 보간한 원본 단위를 정수로 잘라 접선과 변환 배율을 바꾸지 않는다.
+                    (
+                        group_origin_x + (a * ox + b * oy + tx) * self.dpi / 7200.0,
+                        group_origin_y + (c * ox + d * oy + ty) * self.dpi / 7200.0,
+                    )
+                });
+                let Some(bbox) = curve_geometry::control_bounds(&commands) else {
+                    return;
+                };
                 let node_id = tree.next_id();
                 let mut path_node = PathNode::new(commands, style, gradient);
                 path_stroke_arrows::publish(&mut path_node, &curve.drawing);
-                let node = RenderNode::new(
-                    node_id,
-                    RenderNodeType::Path(path_node),
-                    BoundingBox::new(min_x, min_y, bbox_w, bbox_h),
-                );
+                let node = RenderNode::new(node_id, RenderNodeType::Path(path_node), bbox);
                 parent.children.push(node);
             }
             ShapeObject::Rectangle(rect) => {
@@ -4612,48 +4588,12 @@ impl LayoutEngine {
         sx: f64,
         sy: f64,
     ) -> Vec<PathCommand> {
-        let mut commands = Vec::new();
-        if curve.points.is_empty() {
-            return commands;
-        }
-
-        let pts: Vec<(f64, f64)> = curve
-            .points
-            .iter()
-            .map(|p| {
-                (
-                    base_x + hwpunit_to_px(p.x, self.dpi) * sx,
-                    base_y + hwpunit_to_px(p.y, self.dpi) * sy,
-                )
-            })
-            .collect();
-
-        commands.push(PathCommand::MoveTo(pts[0].0, pts[0].1));
-
-        let mut i = 1;
-        let mut seg_idx = 0;
-        while i < pts.len() {
-            let seg_type = curve.segment_types.get(seg_idx).copied().unwrap_or(0);
-            if seg_type == 1 && i + 2 < pts.len() {
-                // 베지어 곡선: 제어점 2개 + 끝점 1개
-                commands.push(PathCommand::CurveTo(
-                    pts[i].0,
-                    pts[i].1,
-                    pts[i + 1].0,
-                    pts[i + 1].1,
-                    pts[i + 2].0,
-                    pts[i + 2].1,
-                ));
-                i += 3;
-            } else {
-                // 직선
-                commands.push(PathCommand::LineTo(pts[i].0, pts[i].1));
-                i += 1;
-            }
-            seg_idx += 1;
-        }
-
-        commands
+        curve_geometry::commands(curve, |x, y| {
+            (
+                base_x + x * self.dpi / 7200.0 * sx,
+                base_y + y * self.dpi / 7200.0 * sy,
+            )
+        })
     }
 
     /// TopAndBottom 모드 글상자들의 앵커 문단별 예약 높이 계산

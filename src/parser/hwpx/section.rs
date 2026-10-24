@@ -4683,6 +4683,7 @@ fn parse_shape_object(
     // [Task #1067] polygon / curve 의 가변 꼭짓점 `<hc:pt x=... y=.../>` 누적.
     // 기존 pt0/pt1/pt2/pt3 (rect 의 4 꼭짓점) 와 별개.
     let mut polygon_points: Vec<crate::model::Point> = Vec::new();
+    let mut curve_segment_types = Vec::new();
     // [Task #1598] ellipse / arc 전용 지오메트리 (`<hc:center>`/`<hc:ax1>`/...).
     // 미적재 시 한글이 타원/호를 다르게 렌더 → 누적 레이아웃 변동 → 페이지 붕괴(#1589 잔여).
     let mut e_center = crate::model::Point::default();
@@ -4804,15 +4805,19 @@ fn parse_shape_object(
                     }
                     // [#1200] curve 의 가변 꼭짓점이 `<hp:seg x1 y1 x2 y2>` (점-대-점 chain)
                     // 으로 인코딩된 경우. `<hc:pt>` 미사용 curve 는 이 경로로 점을 채운다.
-                    // seg 는 제어점이 아닌 sampled 꼭짓점이므로 폴리라인(LineTo)으로 재구성:
-                    // 첫 seg 의 시작점 1회 + 각 seg 의 끝점.
+                    // 첫 시작점과 각 끝점을 보존하고 구간 종류를 별도로 읽는다.
+                    // HWP5와 같은 점 체인이며 cubic 제어점 배열이 아니다.
                     b"seg" => {
                         let mut x1: i32 = 0;
                         let mut y1: i32 = 0;
                         let mut x2: i32 = 0;
                         let mut y2: i32 = 0;
+                        let mut segment_type = 0;
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref().as_bytes() {
+                                b"type" => {
+                                    segment_type = u8::from(attr_str(&attr) == "CURVE");
+                                }
                                 b"x1" => x1 = parse_i32(&attr),
                                 b"y1" => y1 = parse_i32(&attr),
                                 b"x2" => x2 = parse_i32(&attr),
@@ -4824,6 +4829,7 @@ fn parse_shape_object(
                             polygon_points.push(crate::model::Point { x: x1, y: y1 });
                         }
                         polygon_points.push(crate::model::Point { x: x2, y: y2 });
+                        curve_segment_types.push(segment_type);
                     }
                     b"startPt" => {
                         for attr in ce.attributes().flatten() {
@@ -5002,10 +5008,8 @@ fn parse_shape_object(
             drawing,
             // CurveShape 도 동일 패턴 — 누락 시 곡선 미표시.
             points: polygon_points,
-            // HWPX `hp:seg type="CURVE"`는 점-대-점 체인의 표기일 뿐 HWP5 `1`이 요구하는
-            // 베지어 제어점 2개를 담지 않는다. 그대로 옮기면 renderer가 세 점씩 소비하므로
-            // 비워서 기존의 LineTo 체인 렌더 계약을 유지한다(#1200, #4676).
-            segment_types: Vec::new(),
+            // 각 인접한 점 사이의 LINE/CURVE를 HWP5와 동일한 종류로 보존한다.
+            segment_types: curve_segment_types,
         }),
         _ => ShapeObject::Rectangle(RectangleShape {
             common,
@@ -8599,10 +8603,9 @@ mod tests {
     }
 
     /// [#1200, #4676] curve 도형의 geometry 가 `<hp:seg x1 y1 x2 y2>` (점-대-점 chain)
-    /// 으로 인코딩된 경우 CurveShape.points 가 채워져야 한다. HWPX CURVE 타입은 HWP5
-    /// 베지어 제어점 규약과 다르므로 segment_types를 비워 LineTo 체인으로 렌더한다.
+    /// 으로 인코딩된 경우 점과 각 구간의 LINE/CURVE 종류를 함께 보존한다.
     #[test]
-    fn test_parse_curve_seg_populates_points_without_hwp5_bezier_types() {
+    fn test_parse_curve_seg_preserves_points_and_segment_types() {
         // seg chain: (10,10)->(90,10)->(90,90)->(10,10) (폐곡선)
         let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
 <hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
@@ -8639,11 +8642,7 @@ mod tests {
         // 첫 seg 시작점 + 각 seg 끝점 = 4점 chain
         let pts: Vec<(i32, i32)> = curve.points.iter().map(|p| (p.x, p.y)).collect();
         assert_eq!(pts, vec![(10, 10), (90, 10), (90, 90), (10, 10)]);
-        assert!(
-            curve.segment_types.is_empty(),
-            "HWPX CURVE 타입은 HWP5 베지어 제어점 규약으로 매핑하면 안 됨: {:?}",
-            curve.segment_types
-        );
+        assert_eq!(curve.segment_types, vec![1, 0, 1], "원본 구간 종류 보존");
     }
 
     #[test]

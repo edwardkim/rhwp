@@ -4443,9 +4443,8 @@ where
 /// <hp:seg type="LINE"  x1="10440" y1="0" x2="20940" y2="1800"/>
 /// ```
 ///
-/// `segment_types[i]` 는 HWP5의 구간 종류(0: 직선, 1: 곡선)다. HWPX의 `hp:seg type`은
-/// HWP5 `1`이 기대하는 베지어 제어점 두 개를 담지 않으므로 파서는 이 필드에 옮기지 않는다.
-/// 비어 있으면 한글 호환을 위해 CURVE로 방출한다.
+/// `segment_types[i]`는 인접한 두 점 사이의 구간 종류(0: 직선, 1: 곡선)다.
+/// HWP5와 HWPX가 같은 점 체인을 보존하며, 비어 있으면 기존 한글 호환 CURVE로 방출한다.
 fn curve_segs_xml(points: &[crate::model::Point], segment_types: &[u8]) -> String {
     curve_segs_xml_with_storage(points, segment_types, &crate::storage::Unbounded)
         .expect("unbounded object XML")
@@ -6217,12 +6216,10 @@ mod tests {
         assert_eq!(xml.matches("<hp:seg ").count(), 2, "{xml}");
     }
 
-    /// [#4676] HWPX `hp:seg type="CURVE"`는 HWP5의 cubic Bezier 구간 타입이 아니다.
-    /// XML → IR → XML 경계에서 `segment_types=1`로 오매핑하면 renderer가 제어점 둘과
-    /// 끝점을 한 구간으로 소비한다. HWPX 점 체인은 빈 HWP5 구간 타입으로 유지하면서
-    /// 한글 호환 `hp:seg` 출력만 보존해야 한다.
+    /// [#4676, #8153] XML → IR → XML 경계에서 점과 구간 종류를 보존한다.
+    /// 한컴이 읽는 `hp:seg` 형식도 유지하며 `hc:pt`로 되돌리지 않는다.
     #[test]
-    fn issue4676_hwpx_curve_chain_never_becomes_hwp5_bezier_segments() {
+    fn issue4676_hwpx_curve_chain_preserves_segment_types() {
         use crate::parser::hwpx::section::parse_hwpx_section;
 
         let source = r##"<?xml version="1.0" encoding="UTF-8"?>
@@ -6274,11 +6271,7 @@ mod tests {
             })
             .expect("curve shape");
         assert_eq!(curve.points.len(), 4, "첫 점과 세 segment 끝점이 남아야 함");
-        assert!(
-            curve.segment_types.is_empty(),
-            "HWPX CURVE를 HWP5 Bezier 타입으로 재도입하면 안 됨: {:?}",
-            curve.segment_types
-        );
+        assert_eq!(curve.segment_types, vec![1, 1, 1], "원본 CURVE 구간 보존");
     }
 
     /// [#2779] 각주 코드 2(가장 오른쪽 단)는 각주 전용 토큰이 있으나, 미주에는 스키마상
