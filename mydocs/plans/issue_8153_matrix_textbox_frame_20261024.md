@@ -52,3 +52,21 @@ HWP 5.0 revision 1.3의 표 90·줄 세그먼트 정보와 프로젝트의 공�
 완료되지 않았다. 자료는 ignored 작업 루트의 `pr1681-original-20261024.json`,
 `rectangle-overlap-934aae310d/p161-remaining-spacing-textbox-source.json`,
 `p161-remaining-spacing-textbox-consumer.json`, `p161-remaining-title-review.png`에 둔다.
+
+## 실제 출력에서 기각된 수용 조건과 보정
+
+`e43f45a4f8`의 합성 계약 3건은 통과했지만 실제 42쪽 비교에서 161쪽은
+HWP 99.78294%에서 98.75880%로 하락했다. 같은 가로 프레임이라는 이유로
+저장 구분을 수용한 결과 `민원인 기재란`, `9pt, 돋움체` 등도 과거의 두 줄을
+유지했다. 독립 Print에서는 이 문구들이 한 줄이다. 원본과 독립 한컴 2024
+재저장본의 해당 LineSeg가 같다는 점도 확인했으므로, 재저장 여부와 가로 키
+일치만으로 최종 출력의 유효한 글자 구분이라고 판정할 수 없다.
+
+현재 호출 경계는 이미 그룹 행렬·높이 변화로 재조판을 선택한 경로다. 그 안에서
+가로 키만으로 저장 구분을 재수용한 새 처리를 제거하고 공통 `reflow_line_segs`로
+실제 문단 상자·글자 폭을 소비하게 한다. 3px의 별도 한 줄 fit 여유도 복구하지 않는다.
+이 잘못된 재수용을 고정한 신규 합성 검사 2건은 제거하며, 기존 폭 변경 검사는
+유지한다. 실제 출력의 새 검증을 마치기 전에는 개선으로 판정하지 않는다.
+
+실제 자료: ignored 작업 루트의 `textbox-frame-e43f45a4f8/p161-textbox-differences.json`,
+`textbox-source-original-versus-2024-save.json`, `logs/textbox-frame-native-focus.log`.

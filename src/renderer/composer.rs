@@ -329,7 +329,7 @@ pub(crate) use line_breaking::try_reflow_line_segs;
 mod picture_anchor_projection;
 pub(crate) use line_breaking::{
     control_is_width_neutral_marker, frame_metrics_for_line, paragraph_end_font_size_px,
-    stored_rows_reproduce_frame_expectation, text_word_ranges, text_word_ranges_with_storage,
+    text_word_ranges, text_word_ranges_with_storage,
 };
 pub mod lineseg_compare;
 
