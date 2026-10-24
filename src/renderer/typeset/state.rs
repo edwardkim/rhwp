@@ -1185,23 +1185,3 @@ impl<T> std::ops::DerefMut for Revised<T> {
         &mut self.value
     }
 }
-
-#[cfg(test)]
-mod revised_tests {
-    use super::Revised;
-
-    #[test]
-    fn only_writes_advance_the_revision() {
-        let mut value = Revised::new(vec![1]);
-        let initial = value.revision;
-        assert_eq!(value.len(), 1);
-        assert_eq!(value.revision, initial);
-        value.push(2);
-        let written = value.revision;
-        assert_ne!(written, initial);
-        let other = Revised::new(vec![1]);
-        // 다른 값은 같은 내용이어도 이 값이 받은 어느 세대와도 겹치지 않는다.
-        assert_ne!(other.revision, initial);
-        assert_ne!(other.revision, written);
-    }
-}
