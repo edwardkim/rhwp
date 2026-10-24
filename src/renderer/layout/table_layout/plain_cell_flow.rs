@@ -58,7 +58,8 @@ impl super::LayoutEngine {
         tail: f64,
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) -> bool {
-        let line = Self::row_cut_cell_order(table, row)
+        let line = self
+            .indexed_row_cut_cell_order(table, row)
             .into_iter()
             .filter_map(|index| {
                 let cell = &table.cells[index];
@@ -222,7 +223,7 @@ impl super::LayoutEngine {
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) -> bool {
         if table.page_break != crate::model::table::TablePageBreak::RowBreak
-            || !Self::row_cut_cell_order(table, row).is_empty()
+            || !self.indexed_row_cut_cell_order(table, row).is_empty()
         {
             return false;
         }

@@ -463,8 +463,8 @@ pub(crate) fn stored_plain_object_row_frame_heights(table: &Table) -> Option<Vec
         || table.page_break != TablePageBreak::RowBreak
         || !is_para_topbottom_float(&table.common)
         || table.common.height > i32::MAX as u32
-        || !stored_complete_column_frame(table)
         || table.cells.iter().any(|cell| cell.row_span != 1)
+        || !stored_complete_column_frame(table)
     {
         return None;
     }

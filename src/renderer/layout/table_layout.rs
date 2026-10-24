@@ -2583,7 +2583,6 @@ impl LayoutEngine {
                 .render_normalization
                 .borrow()
                 .row_frame_reflowed(table, usize::from(cell.row))
-            || !Self::stored_row_boxes_exceed_object_frame(table)
         {
             return None;
         }
@@ -2633,9 +2632,12 @@ impl LayoutEngine {
             }
             columns += usize::from(peer.col_span);
         }
+        // 표 전체 행 상자를 훑는 조각 판정은 이 행이 후보일 때만 한다.
+        // 셀마다 불리므로 앞에서 하면 표 크기의 제곱이 된다.
         (in_paragraph_restart && columns == usize::from(table.col_count))
             .then_some(target)
             .flatten()
+            .filter(|_| self.indexed_stored_row_boxes_exceed_object_frame(table))
     }
 
     /// The first jointly reset row ends the saved opening object frame. Its
@@ -2701,7 +2703,7 @@ impl LayoutEngine {
                 .borrow()
                 .table_text_reflowed(table)
             && crate::renderer::float_placement::stored_complete_column_frame(table)
-            && Self::stored_row_boxes_exceed_object_frame(table)
+            && self.indexed_stored_row_boxes_exceed_object_frame(table)
             && table.cells.iter().all(|cell| {
                 !cell.dirty_flag
                     && cell.text_direction == 0
@@ -2901,7 +2903,7 @@ impl LayoutEngine {
         self.native_stored_table_has_text_frame_boundaries(table, styles)
             || (self.profile.get().hwpx_stored_layout()
                 && !self.profile.get().session_edited()
-                && Self::stored_row_boxes_exceed_object_frame(table)
+                && self.indexed_stored_row_boxes_exceed_object_frame(table)
                 && table.cells.iter().any(|cell| {
                     cell.row_span == 1
                         && !self
@@ -19178,7 +19180,7 @@ impl LayoutEngine {
             || cell.dirty_flag
             || table.common.treat_as_char
             || table.page_break != TablePageBreak::RowBreak
-            || !Self::stored_row_boxes_exceed_object_frame(table)
+            || !self.indexed_stored_row_boxes_exceed_object_frame(table)
             || self
                 .render_normalization
                 .borrow()
@@ -23602,7 +23604,7 @@ impl LayoutEngine {
         {
             return None;
         }
-        let cells = Self::row_cut_cell_order(table, row);
+        let cells = self.indexed_row_cut_cell_order(table, row);
         if cells.is_empty() {
             return None;
         }
@@ -24304,7 +24306,7 @@ impl LayoutEngine {
         end_cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> bool {
-        Self::row_cut_cell_order(table, row)
+        self.indexed_row_cut_cell_order(table, row)
             .into_iter()
             .enumerate()
             .filter_map(|(index, cell_index)| table.cells.get(cell_index).map(|cell| (index, cell)))
@@ -27158,12 +27160,15 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> bool {
         self.row_has_plain_line_units(table, row, styles)
-            && Self::row_cut_cell_order(table, row).iter().any(|&index| {
-                table.cells[index]
-                    .paragraphs
-                    .iter()
-                    .any(crate::renderer::para_has_no_stored_line_segs)
-            })
+            && self
+                .indexed_row_cut_cell_order(table, row)
+                .iter()
+                .any(|&index| {
+                    table.cells[index]
+                        .paragraphs
+                        .iter()
+                        .any(crate::renderer::para_has_no_stored_line_segs)
+                })
     }
 
     /// 일반 글줄은 저장 여부와 무관하게 같은 물리 본문 하단을 쓴다.
@@ -27181,7 +27186,7 @@ impl LayoutEngine {
         {
             return false;
         }
-        let owners = Self::row_cut_cell_order(table, row);
+        let owners = self.indexed_row_cut_cell_order(table, row);
         !owners.is_empty()
             && owners
                 .iter()
@@ -27223,13 +27228,15 @@ impl LayoutEngine {
         if Self::row_has_prior_rowspan_cover(table, row)
             && accepted_cut.is_some_and(|cut| {
                 cut.is_empty()
-                    || Self::row_cut_cell_order(table, row).iter().enumerate().all(
-                        |(slot, &index)| {
+                    || self
+                        .indexed_row_cut_cell_order(table, row)
+                        .iter()
+                        .enumerate()
+                        .all(|(slot, &index)| {
                             cut.get(slot).is_none_or(|&end| {
                                 end >= self.cell_units(&table.cells[index], table, styles).len()
                             })
-                        },
-                    )
+                        })
             })
         {
             return None;
@@ -27331,15 +27338,15 @@ impl LayoutEngine {
                 .borrow()
                 .table_text_reflowed(table)
         {
-            if let Some(height) =
-                crate::renderer::float_placement::stored_plain_object_row_frame_heights(table)
-                    .or_else(|| {
-                        self.render_normalization
-                            .borrow()
-                            .stored_opening_row_frame(table)
-                            .map(|frame| frame.row_heights)
-                    })
-                    .and_then(|rows| rows.get(row).copied())
+            if let Some(height) = self
+                .indexed_stored_plain_object_row_frame_heights(table)
+                .or_else(|| {
+                    self.render_normalization
+                        .borrow()
+                        .stored_opening_row_frame(table)
+                        .map(|frame| std::sync::Arc::new(frame.row_heights))
+                })
+                .and_then(|rows| rows.get(row).copied())
             {
                 return hwpunit_to_px(height, self.dpi);
             }

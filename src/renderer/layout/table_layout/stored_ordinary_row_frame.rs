@@ -105,7 +105,7 @@ impl LayoutEngine {
         table: &Table,
         row: usize,
     ) -> bool {
-        let owners = Self::row_cut_cell_order(table, row);
+        let owners = self.indexed_row_cut_cell_order(table, row);
         !owners.is_empty()
             && !table.cells.iter().any(|cell| {
                 cell.row_span > 1
@@ -162,7 +162,8 @@ impl LayoutEngine {
         if !self.stored_row_boxes_exceed_first_frame(table) {
             return None;
         }
-        let cells: Vec<_> = Self::row_cut_cell_order(table, row)
+        let cells: Vec<_> = self
+            .indexed_row_cut_cell_order(table, row)
             .into_iter()
             .filter_map(|index| table.cells.get(index))
             .collect();
@@ -399,7 +400,8 @@ impl LayoutEngine {
         accepted: f64,
         styles: &ResolvedStyleSet,
     ) -> Option<Vec<usize>> {
-        let cut: Vec<_> = Self::row_cut_cell_order(table, row)
+        let cut: Vec<_> = self
+            .indexed_row_cut_cell_order(table, row)
             .into_iter()
             .map(|index| self.cell_units(&table.cells[index], table, styles).len())
             .collect();

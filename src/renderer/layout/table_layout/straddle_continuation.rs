@@ -48,20 +48,23 @@ impl LayoutEngine {
                 let cell_end = cell_row + cell.row_span as usize;
                 // 같은 행 재개도 남은 물리 띠를 소유한다. 예약과 paint는
                 // 동일한 원본 셀·내용 창과 수용 전 prefix를 소비한다.
-                let resumes_own_row = super::super::table_partial::resumes_inside_own_start_row(
-                    table,
-                    cell,
-                    start_row,
-                    start_cut,
-                    start_cut_is_block,
-                    start_row_height_override,
-                    straddle_page_bands,
-                );
+                // 표 전체 셀을 찾는 재개 판정은 이 행에서 닫히는 후보에만 한다.
+                let resumes_own_row = || {
+                    super::super::table_partial::resumes_inside_own_start_row(
+                        table,
+                        cell,
+                        start_row,
+                        start_cut,
+                        start_cut_is_block,
+                        start_row_height_override,
+                        straddle_page_bands,
+                    )
+                };
                 cell.row_span > 1
-                    && (cell_row < start_row || resumes_own_row)
                     && cell_end > start_row
                     && cell_end == row + 1
                     && (cell_end < end_row || (cell_end == end_row && end_cut_is_empty))
+                    && (cell_row < start_row || resumes_own_row())
             })
             .map(|cell| {
                 let (su, eu) = self.rowbreak_straddle_cut_units(

@@ -26,7 +26,7 @@ impl LayoutEngine {
                     .borrow()
                     .table_text_reflowed(table),
             )
-            && Self::stored_row_boxes_exceed_object_frame(table)
+            && self.indexed_stored_row_boxes_exceed_object_frame(table)
     }
 
     /// 부모의 저장 조각 좌표계가 남아 있는가. 옛 컷의 수용 가능 여부와는 별도다.
@@ -207,7 +207,7 @@ impl LayoutEngine {
                     .cell_frame_reflowed(table, cell),
             )
             && stored_text_paragraphs_share_vpos_frame(cell, styles, self.dpi)
-            && (Self::stored_row_boxes_exceed_object_frame(table)
+            && (self.indexed_stored_row_boxes_exceed_object_frame(table)
                 || opening_text_frame_end_hu(cell, table, styles, self.dpi)
                     .is_some_and(|end| (end - i64::from(table.common.height)).abs() <= 2))
     }

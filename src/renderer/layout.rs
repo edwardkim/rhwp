@@ -3767,6 +3767,29 @@ impl LayoutEngine {
         )
     }
 
+    fn indexed_stored_plain_object_row_frame_heights(
+        &self,
+        table: &crate::model::table::Table,
+    ) -> Option<std::sync::Arc<Vec<i32>>> {
+        self.table_row_index_cache.lookup(table).map_or_else(
+            || {
+                crate::renderer::float_placement::stored_plain_object_row_frame_heights(table)
+                    .map(std::sync::Arc::new)
+            },
+            |rows| rows.plain_object_row_frames(),
+        )
+    }
+
+    fn indexed_stored_row_boxes_exceed_object_frame(
+        &self,
+        table: &crate::model::table::Table,
+    ) -> bool {
+        self.table_row_index_cache.lookup(table).map_or_else(
+            || Self::stored_row_boxes_exceed_object_frame(table),
+            |rows| rows.row_boxes_exceed_object_frame(),
+        )
+    }
+
     fn indexed_raw_row_heights(
         &self,
         table: &crate::model::table::Table,
