@@ -3057,6 +3057,18 @@ impl Renderer for WebCanvasRenderer {
             return;
         }
         let _sampling = self.image_sampling_scope(data, None, w, h);
+        // 독립 Print의 장치 프레임이 표본을 소유하면 그 프레임을 먼저 재생한다.
+        // 일반 비트맵 준비가 JPEG를 PNG로 바꾸면 프레임 선언까지 사라진다.
+        // Native Skia와 같은 순서이며, 재생할 수 없는 변환은 기존 경로로 간다.
+        if self.high_quality_images && self.ctx.image_smoothing_enabled() {
+            if let Some(frame) = super::print_raster::PrintRasterFrame::read(data) {
+                if let Some(canvas) = cached_decoded_image_canvas(data, hash_bytes(data)) {
+                    if cubic_reduction::draw_print_frame(&self.ctx, &canvas, frame) {
+                        return;
+                    }
+                }
+            }
+        }
         let prepared = self.ctx.get_transform().ok().and_then(|matrix| {
             crate::renderer::bitmap_raster::prepare_bitmap(
                 data,
@@ -3087,13 +3099,6 @@ impl Renderer for WebCanvasRenderer {
 
         let decoded = cached_decoded_image_canvas(data, key);
         if let Some(canvas) = decoded {
-            if self.high_quality_images && self.ctx.image_smoothing_enabled() {
-                if let Some(frame) = super::print_raster::PrintRasterFrame::read(data) {
-                    if cubic_reduction::draw_print_frame(&self.ctx, &canvas, frame) {
-                        return;
-                    }
-                }
-            }
             if self.high_quality_images
                 && self.ctx.image_smoothing_enabled()
                 && (super::image_resolver::png_sampling::print_bitmap_reconstruction(data)

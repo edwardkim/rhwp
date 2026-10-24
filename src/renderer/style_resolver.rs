@@ -190,6 +190,12 @@ pub(crate) fn resolve_styles_with_environment(
                     style.font_families_preserve_glyph_ink[lang] = (explicit_true_type
                         || explicit_replacement)
                         && environment.is_some_and(|env| !env.preserves_source_metrics());
+                    // 프로그램·메트릭을 직접 선택한 자연 잉크에 이전 슬롯의
+                    // HFT 종이 프레임을 상속하지 않는다. 원본 메트릭을 유지하는
+                    // 자동 표시용 공급은 기존 인쇄 프레임을 그대로 소비한다.
+                    if style.font_families_preserve_glyph_ink[lang] {
+                        style.font_families_hft_print_frame[lang] = false;
+                    }
                     // 결측 글리프 체인만 추가한 세션은 원 face의 TTF/HFT 신뢰를 바꾸지 않는다.
                     if !keep_source_metrics && (explicit_true_type || explicit_replacement) {
                         latin_program_changed |= lang == 1;
