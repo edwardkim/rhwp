@@ -40,6 +40,18 @@ struct OriginalGlyphMetric {
 // 슬래시 네 군데의 /Widths와 CharProc d1이 모두 605/1000이다.
 // 표시 폴백 Palatino의 656/2048은 원본 HFT 글리프의 폭이 아니다.
 static ORIGINAL_GLYPH_METRICS: &[OriginalGlyphMetric] = &[
+    // 80168 구판 HWPX의 한컴2020 Print 30쪽 T10(Type3, xref348):
+    // ToUnicode1630의 code79→00B7, Widths1629=384, FontMatrix.001.
+    // 대체 TTF가 실제 선택되지 않은 type1도 이 원본 기호 폭을 유지한다.
+    // 원본 후보의 존재만으로 전체 HCI ASCII 표를 선택하지 않는다.
+    OriginalGlyphMetric {
+        face: "HCI Poppy",
+        bold: false,
+        italic: false,
+        character: '·',
+        advance_units: 384,
+        em_units: 1000,
+    },
     // 별도 ASCII95 ×6크기 한컴2020 Print의 일반 HCI Poppy:
     // <=>도 각각 Widths605, FontMatrix.001, CharProc d1=605다.
     // 굵기별로 확인한 원 프로그램만 선택하며 명시 TTF의 폭은 유지한다.

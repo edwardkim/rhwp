@@ -251,8 +251,8 @@ pub fn resolve_styles_with_variant(
 /// 치환 대상의 표와 다를 바 없어서 되돌릴 근거가 못 된다.
 /// [#7702] rhwp 의 폭 표가 한/글 **HFT 글리프**를 잰 값인 face.
 ///
-/// HFT 선언은 자기 프로그램을 사용한다. TTF 선언도 선택할 대체 TTF가 없으면
-/// 한/글이 원 HFT를 사용할 수 있다. 선언 유형만으로 표시용 별칭의 폭으로 바꾸지 않는다.
+/// 전체 HFT 표는 HFT 선언에서 사용한다. type1에서도 독립 Print가 확인한 원본
+/// 글리프는 개별 폭 경로로 보존하며, 그 증거를 전체 ASCII 표의 승격으로 넓히지 않는다.
 ///
 /// ```text
 ///   HCI Poppy  alt_type=2  k-water-rfp 등 50여 문서   정본 `·` = Type3 0.38 em
@@ -485,12 +485,9 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                         .as_deref()
                         .filter(|face| has_own_metric_table(face, cs.bold, cs.italic))
                         .filter(|face| {
-                            decision.alt_type == Some(2)
-                                || !hft_program_metric_face(face)
-                                // 실제 선택한 대체 TTF는 자기 전진폭을 소유한다.
-                                // 대체 선언이 없는 원 HFT의 표시 별칭은 그 증거가 아니다.
-                                || (!document_true_type_substitute
-                                    && decision.embedded != Some(true))
+                            // type1에서 확인한 원본 글리프는 아래의 개별 폭 경로가
+                            // 소유한다. 전체 HFT 표의 승격은 미측정 ASCII도 바꾼다.
+                            decision.alt_type == Some(2) || !hft_program_metric_face(face)
                         })
                 })
                 .flatten()

@@ -48,6 +48,13 @@ impl LayoutEngine {
         {
             return None;
         }
+        // 셀 전체의 연속 저장 좌표가 마지막 줄 상자를 증명하면 뒤 줄간격은
+        // 다음 소유자의 전진이다. 선언 높이에 남은 빈 밴드는 내용 컷과
+        // 독립적으로 나눌 수 있으므로 그 간격으로 마지막 줄을 밀지 않는다.
+        // 문단별 좌표가 재시작해 전체 종점이 없는 경우에만 슬롯을 예약한다.
+        if crate::renderer::float_placement::stored_plain_cell_ink_height(cell).is_some() {
+            return None;
+        }
         let last = units.last()?;
         let para = cell.paragraphs.get(last.para_idx)?;
         if last.empty_spacer

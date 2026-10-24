@@ -122,12 +122,21 @@ fn measured_original_glyph_survives_legacy_type1_display_fallback() {
             // 기존4HU 장치 격자의 반 격자만 허용하며 전체 HFT 표를 승격하지 않는다.
             assert!((advance(&slash) - 7500.0 * 0.605).abs() <= 2.0);
         }
-        for character in ["A", "·"] {
-            assert_eq!(
-                advance(&record(&program, character)),
-                advance(&record(&fallback, character)),
-                "미측정 글자는 표시 프로그램에 남는다:{alternate:?}/{character}"
-            );
+        assert_eq!(
+            advance(&record(&program, "A")),
+            advance(&record(&fallback, "A")),
+            "미측정 글자는 표시 프로그램에 남는다:{alternate:?}/A"
+        );
+        let dot = record(&program, "·");
+        if alternate == Some("Palatino Linotype") {
+            assert_eq!(advance(&dot), advance(&record(&fallback, "·")));
+            assert_ne!(dot["layoutMetric"]["widthSource"], "measuredOriginalGlyph");
+        } else {
+            // 80168 동일 원본의 독립 한컴2020 Print30쪽 Type3의 Widths는
+            // 384/1000em이다. 전156쪽 Native/fresh WASM 검증 뒤 확인한
+            // 이 개별 글리프만 원본 폭을 쓰며 A 등 전체 표로 확대하지 않는다.
+            assert_eq!(dot["layoutMetric"]["widthSource"], "measuredOriginalGlyph");
+            assert!((advance(&dot) - 7500.0 * 0.384).abs() <= 2.0);
         }
         assert_eq!(
             program.export_hwpx_native().unwrap(),
