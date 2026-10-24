@@ -485,10 +485,38 @@ fn canonical_layout_name_projection_reaches_public_trace() {
                     .unwrap(),
             )
             .unwrap();
-            assert!(
-                kept.is_null(),
-                "원본 프로그램이 있으면 조건부 공개 규칙은 적용하지 않음"
-            );
+            // 원본 주 TTF 인증과 조건부 공개 대체 선택은 다른 계약이다.
+            // 동일 face의 신원을 전달해도 공개 규칙·target으로 바뀌면 안 된다.
+            assert_eq!(kept["substitutions"][source], source);
+            assert!(kept["selectionRules"].is_null());
+            assert!(kept["substitutions"]
+                .as_object()
+                .unwrap()
+                .values()
+                .all(|face| face != target));
+            let serialized = core.export_hwpx_native().unwrap();
+            core.set_font_environment(Some(FontEnvironment::from_json(&kept.to_string()).unwrap()))
+                .unwrap();
+            let kept_trace: serde_json::Value = serde_json::from_str(
+                &core
+                    .get_font_decision_trace_native(0, r#"{"maxCharacters":16}"#)
+                    .unwrap(),
+            )
+            .unwrap();
+            let kept_record = kept_trace["records"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|record| record["source"]["character"] == "가")
+                .unwrap();
+            assert_eq!(kept_record["document"]["face"], source);
+            assert_eq!(kept_record["layoutName"]["normalizedFace"], source);
+            assert!(kept_record["provenance"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|entry| entry["ruleId"] != rule["ruleId"]));
+            assert_eq!(core.export_hwpx_native().unwrap(), serialized);
             observed.insert(rule["ruleId"].as_str().unwrap());
             continue;
         }

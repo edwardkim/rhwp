@@ -56,7 +56,29 @@ fn missing_source_uses_the_supplied_public_program_and_preserves_serialized_sour
 }
 #[test]
 fn available_original_program_precedes_the_public_program() {
-    assert!(select(&core(), json!([program(PUBLIC), program(SOURCE)])).is_null());
+    let mut original = core();
+    let saved = original.export_hwp_native().unwrap();
+    let selected = select(&original, json!([program(PUBLIC), program(SOURCE)]));
+    // 같은 주 TTF의 공급 신원은 보존하지만 공개 대체 규칙은 적용하지 않는다.
+    // 환경의 null 여부는 주 프로그램 인증 전 표현이므로 선택의 의미와 구분한다.
+    assert_eq!(selected["substitutions"][SOURCE], SOURCE);
+    assert!(selected["selectionRules"].is_null());
+    assert_eq!(selected["trueTypeFaces"], json!([SOURCE]));
+    assert!(selected["substitutions"]
+        .as_object()
+        .unwrap()
+        .values()
+        .all(|face| face != PUBLIC));
+    original
+        .set_font_environment(Some(
+            FontEnvironment::from_json(&selected.to_string()).unwrap(),
+        ))
+        .unwrap();
+    assert_eq!(original.export_hwp_native().unwrap(), saved);
+
+    let mut presence_only = program(SOURCE);
+    presence_only["trueType"] = false.into();
+    assert!(select(&core(), json!([program(PUBLIC), presence_only])).is_null());
 }
 #[test]
 fn document_declared_program_precedes_the_public_program() {
