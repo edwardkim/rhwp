@@ -2155,6 +2155,7 @@ fn char_width_decision_with_hft_tracking<'a>(
                 font_size,
                 latin.map_or(style.font_metric_trusted, |l| l.font_metric_trusted),
                 latin.is_none() && style.hft_hangul_face,
+                regular_bold_advance,
             );
             if fallback.width_px.is_some() {
                 embedded = fallback;
