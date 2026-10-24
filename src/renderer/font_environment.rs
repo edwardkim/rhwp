@@ -118,7 +118,8 @@ impl FontEnvironment {
             substitutions: BTreeMap::new(),
             selection_rules: BTreeMap::new(),
             true_type_faces: Vec::new(),
-            preserve_source_metrics: false,
+            // 공급자의 자동 관측은 호출자의 명시적 메트릭 교체 요청이 아니다.
+            preserve_source_metrics: true,
             document_substitutions: Vec::new(),
             glyph_fallbacks: BTreeMap::new(),
         });

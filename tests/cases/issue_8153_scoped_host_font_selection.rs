@@ -77,7 +77,7 @@ fn observed_host_fallback_still_selects_an_unclaimed_source() {
         "선택하지 않은 원본 대체 요청은 공급자가 확인한다"
     );
     let expected = FontEnvironment::from_json(
-        r#"{"id":"observed-host-fonts","substitutions":{"RHWP Scoped Fixture":"Observed Fixture"},"trueTypeFaces":["Observed Fixture"]}"#,
+        r#"{"id":"observed-host-fonts","substitutions":{"RHWP Scoped Fixture":"Observed Fixture"},"trueTypeFaces":["Observed Fixture"],"preserveSourceMetrics":true}"#,
     )
     .unwrap();
     assert_eq!(core.resolved_font_environment(), Some(&expected));
