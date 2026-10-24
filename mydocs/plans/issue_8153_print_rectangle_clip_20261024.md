@@ -53,7 +53,13 @@ jobs 8·고정 `target/pr-review` Native 빌드는 12분 25초 후 종료 코드
 `original-hwpx-boundary-and-seam.json`과 `cell-clip-consumer-diagnostic/result.json`에
 source·픽셀·PNG SHA를 보존했다. Studio `tsc --noEmit`도 종료 코드 0이다.
 
-이 시점의 원본 영향 36쪽 비교는 진행 중이며, 새 후보의 전쪽·fresh WASM 검증과
-전체 100% 완료를 선언하지 않는다. 이전 그림 후보 `d3fdfa0c51`의 별도 전쪽 감사는
+원본 영향 36쪽 비교는 이후 종료 코드 0으로 완료했다. 직전 그림 후보 대비 최대 하락은
+0.00072%p다. 두 포맷의 288·307쪽은 모두 raw 100%로 개선됐고, 304쪽은 각각
+99.29280 → 99.64546, 99.29279 → 99.64545다. source·PNG SHA를 확인한 별도
+감사에서도 원본 288·307쪽 양쪽 포맷 4건의 실제 미대응 픽셀은 모두 0이다.
+Screen과 clipping 비활성의 실제 이전/새 Native 32개 대조군도 RGBA 전체가 동일했다.
+
+새 후보의 전쪽·fresh WASM 검증과 전체 100% 완료를 선언하지 않는다.
+이전 그림 후보 `d3fdfa0c51`의 별도 전쪽 감사는
 HWPX 188/383쪽·HWP 159/383쪽의 실제 미대응 픽셀 0, 총 미대응 픽셀 각각
 17,837·17,410을 확인했다. 이 결과를 새 clip 후보의 전쪽 결과로 혼용하지 않는다.
