@@ -72,8 +72,29 @@ jobs 8·공용 `target/pr-review`의 Native 빌드는 7분 41초·exit 0이다.
 입력·producer sidecar·PNG manifest로 연결한다. 비교 디렉터리 누락과 이 스키마 가정을
 고친 진단 드라이버의 실패 기록도 보존했으며 제품 컴파일 실패와 구분한다.
 
-최적화 fresh WASM과 전쪽 Native는 실행 중이다. WASM 빌드 후 실제 Canvas2D 대조군·
-영향 페이지를 캡처하는 후속 실행도 연결했다. 새 렌더링 회귀는 양쪽 시각 선행 조건을
-확인한 뒤 등록하며, 현재 기록으로 fresh WASM·전쪽 raw100·전체 회귀의 완료를 선언하지 않는다.
+같은 source의 표준 release fresh WASM 빌드는 종료 코드 0이다. Cargo jobs 8,
+codegen-units 16, wasm-bindgen과 `wasm-opt -O`를 거쳤으며 실제 WASM SHA-256은
+`4aa0d44e4ad5e3d780b24280c4d47d171ef156c51b5a70962c638e6599ee26c3`이다.
+Canvas2D의 일반·그룹 곡선 16개도 raw100·미대응 0이며 Native와 RGBA 전체가 같다.
+두 review와 원본 161쪽의 Print/Native/WASM 확대를 직접 판독했다. 161쪽의 미대응
+1픽셀은 두 형식·양쪽 backend 모두 남아 있으며 완료로 바꾸지 않는다.
+
+원본 두 형식의 Native 766쪽과 최적화 fresh WASM 766쪽 검사가 각각 종료 코드 0으로
+끝났다. 같은 입력·독립 PDF·정확한 DPI 래스터의 SHA를 확인했고, 모든 PNG를 실제 재생했다.
+
+| 형식 | backend | 쪽수 | 최저 raw % | 미대응 0인 쪽수 | 미대응 픽셀 합 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| HWPX | Native | 383 | 99.35532 | 197 | 15,201 |
+| HWP | Native | 383 | 99.35539 | 168 | 14,792 |
+| HWPX | fresh WASM | 383 | 99.24378 | 218 | 15,615 |
+| HWP | fresh WASM | 383 | 99.24402 | 202 | 14,748 |
+
+총 1,532개 중 미대응 0은 785개이며 잔여는 60,356픽셀이다. 이 수치는 곡선 보정 source
+`dd8ea4e054`의 결과이고, 후속 앵커 표 보정 source의 결과와 섞지 않는다. Native는 이전
+`919780b`와 대조해 두 형식의 161쪽만 개선됐고 나머지 764쪽은 같으며 하락은 없다.
+WASM의 이전 source 대비 전쪽 변화는 이 Native 비교로 대신하지 않는다.
+전쪽 TSV와 exact audit는 위 작업 루트의 `native/<문서>/whole-score/`,
+`wasm-whole/<문서>/whole-score/`, `whole-{native,wasm}-exact-audit.json`에 있다.
+새 회귀 등록·전체 raw100·최종 전체 회귀와 PR 제출 gate는 아직 완료하지 않았다.
 새 base PR #8190의 Native CLI 기본 capabilities는 `enabled=true`, `jbig2=false`,
 `jpeg2000=false`를 실제 확인했다. 개별·동시 opt-in과 자원 예산·저장·WASM 검증은 남아 있다.
