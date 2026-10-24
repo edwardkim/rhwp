@@ -111,3 +111,32 @@ ignored 작업 루트의 `table-fill-physical-order-dd8ea4e054/`와
 공유 frame은 다시 변환하지 않는다. 회전/아핀 하위나 stroke·gradient·pattern·shadow·alpha의
 별도 paint 계약은 이 단색 채움 실험으로 확장하지 않는다. 이러한 적용·비적용 범위와
 72/96/144/192dpi·정상 대조군은 실제 새 source에서 검증한다.
+
+## 제품 코드 Native 선행 검증
+
+제품 source `51a0d436b5c83c1c613db0eafafe539f98107588`을 별도 검증 worktree에서
+빌드했다. `release-test`, `native-skia`, `CARGO_BUILD_JOBS=8`, 고정 `target/pr-review`이며
+실제 종료 코드 0, 6분 1초다. 실행 파일 SHA-256은
+`33a3876910707930276eeaae27de0b381ef85ba8416596b568768929f9c75940`이다.
+앞선 `8b77ab8f9e`의 누락된 `RectangleNode` import 오류는 별도 커밋으로 보정했으며
+실패 실행을 성공으로 재분류하지 않았다.
+
+원본 HWP/HWPX의 8·161·284·296·300·288·307쪽, 총 14개 페이지/형식 조합을 새 실행
+파일로 출력했다. 두 형식 모두 284쪽은 미대응 504→0, 296쪽은 482→0이다. 288·307쪽은
+0을 유지하며 8쪽 724, 161쪽 1, 300쪽 688은 이전과 같다. 14개 조합에서 raw 점수 하락은
+없다. 100% 표시의 반올림만 확인한 것이 아니라 실제 PNG SHA를 대조하고 미대응 픽셀 수를
+다시 세었다. HWP 284쪽과 HWPX 296쪽의 전체 review 및 284쪽 경계의 Print/이전/현재
+2배 확대를 직접 판독해 회색 가로선 복원, Q 배지·본문·후속 내용 보존을 확인했다.
+
+일반 곡선 8개와 그룹 변환 곡선 8개의 Native 독립 Print 대조는 모두 raw100, 미대응 0을
+유지했다. 두 review에서 직선/곡선 연결·끝점·닫힘·회전을 직접 판독했다. 별도 단색 사각형
+대조군은 Screen RGBA가 이전과 정확히 같다. Print에서 검은 채움 경계의 축별 최대 오차는
+8개 중 기존 3px·9px인 두 경우가 각각 0px로 개선됐고, 기존 1px인 경우는 1px를 유지했다.
+나머지 노출 영역은 0px를 유지한다. 72·96·144·192dpi 실제 layer dump도 산출했으나,
+덤프 생성 자체를 각 DPI의 독립 Print 일치 판정으로 바꾸어 기록하지 않는다.
+
+증거는 ignored 작업 루트의 `column-table-fill-51a0d436b5/`에 있는
+`native-focus-exact-audit.json`, `native-focus-direct-inspection.json`, `native-controls-*`,
+`native-dpi-control-process-result.json`과 `rectangle-overlap-controls/column-table-fill-51a0d436b5/`에
+보존했다. 이 선행 검증 뒤 같은 source의 Native 전쪽 검사와 표준 최적화 fresh WASM 빌드를
+시작했다. 그 결과, 전체 1,532개 raw100, 정식 회귀·corpus·필수 gate는 아직 완료하지 않았다.
