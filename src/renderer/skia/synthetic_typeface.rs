@@ -1,3 +1,4 @@
+use super::line_replay::floor_stroke_to_device;
 use skia_safe::{
     font_arguments::VariationPosition, Canvas, Data, Font, FontArguments, FontMgr, Paint, Point,
     Typeface,
@@ -42,14 +43,7 @@ pub(super) fn draw_synthetic_bold_paths(
         stroke.set_style(skia_safe::paint::Style::Stroke);
         // PDF의 얇은 획은 raster 장치의 한 단위보다 작게 소비하지 않는다.
         // 조판 좌표나 원래 em 획은 바꾸지 않고 현재 장치 변환만 사용한다.
-        if let Some(inverse) = canvas.local_to_device_as_3x3().invert() {
-            let x_unit = inverse.map_vector((1.0, 0.0)).length();
-            let y_unit = inverse.map_vector((0.0, 1.0)).length();
-            let device_unit = x_unit.min(y_unit);
-            if device_unit.is_finite() && device_unit > 0.0 {
-                stroke.set_stroke_width(stroke.stroke_width().max(device_unit));
-            }
-        }
+        floor_stroke_to_device(canvas, &mut stroke, true);
         (fill, stroke)
     });
     for (path, position) in paths.iter().zip(positions) {

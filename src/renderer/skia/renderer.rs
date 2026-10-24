@@ -49,7 +49,7 @@ use super::glyph_replay::{
 };
 use super::image_cache::ImageResourceCache;
 use super::image_conv::{draw_image_bytes, draw_svg_fragment};
-use super::line_replay::draw_line;
+use super::line_replay::{draw_line, floor_stroke_to_device};
 use super::text_replay::SkiaTextReplay;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -1062,6 +1062,7 @@ impl SkiaLayerRenderer {
         let active_layer = node.layer.or(inherited_layer);
         let clip_enabled = output_options.clip_enabled;
         let antialias = cache_context.policy.antialias();
+        let raster_target = cache_context.raster_target;
         let apply_dash = |paint: &mut Paint, dash: StrokeDash| {
             let mut intervals = dash.intervals(f64::from(paint.stroke_width()));
             // 기존 범용 Skia 패턴은 종전 선 굵기 배율을 유지한다.
@@ -1094,6 +1095,7 @@ impl SkiaLayerRenderer {
             });
             paint.set_color(colorref_to_skia(style.stroke_color?, style.opacity as f32));
             apply_dash(&mut paint, style.stroke_dash);
+            floor_stroke_to_device(canvas, &mut paint, raster_target);
             Some(paint)
         };
         let make_line_paint = |style: &LineStyle| {
@@ -1111,6 +1113,7 @@ impl SkiaLayerRenderer {
                 let intervals = intervals.iter().map(|v| *v as f32).collect::<Vec<_>>();
                 paint.set_path_effect(PathEffect::dash(&intervals, 0.0));
             }
+            floor_stroke_to_device(canvas, &mut paint, raster_target);
             paint
         };
         let draw_placeholder = |bbox: crate::renderer::render_tree::BoundingBox, label: &str| {
@@ -1668,6 +1671,7 @@ impl SkiaLayerRenderer {
                                 } else {
                                     1.0
                                 });
+                                floor_stroke_to_device(canvas, &mut paint, raster_target);
                                 paint.set_color(colorref_to_skia(color, 1.0));
                                 canvas.draw_rect(rect, &paint);
                             }
@@ -1801,7 +1805,13 @@ impl SkiaLayerRenderer {
                             if line.transform.has_transform() {
                                 open_shape_transform(line.transform, bbox);
                             }
-                            draw_line(canvas, line, &make_line_paint(&line.style), antialias);
+                            draw_line(
+                                canvas,
+                                line,
+                                &make_line_paint(&line.style),
+                                antialias,
+                                raster_target,
+                            );
                             draw_arrow_heads(
                                 canvas,
                                 &crate::renderer::arrow::line_heads(
