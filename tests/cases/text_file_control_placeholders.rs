@@ -26,13 +26,14 @@ fn source(text: &str, offsets: Vec<u32>, count: u32, controls: Vec<Control>) -> 
     core.create_blank_document_native().expect("빈 문서");
     let section = &mut core.document_mut().sections[0];
     section.raw_stream = None;
-    section.paragraphs = vec![Paragraph {
+    section.paragraphs.truncate(1);
+    section.paragraphs.push(Paragraph {
         text: text.into(),
         char_offsets: offsets,
         char_count: count,
         controls,
         ..Paragraph::new_empty()
-    }];
+    });
     core
 }
 
@@ -68,11 +69,11 @@ fn owned_markers_are_not_reemitted_after_nested_content_or_shared_anchors() {
         ),
     ];
     for core in cases {
-        let before = core.document().sections[0].paragraphs[0].text.clone();
+        let before = core.document().sections[0].paragraphs[1].text.clone();
         let extracted = text(&core);
         assert!(!extracted.contains('\u{fffc}'), "{extracted:?}");
         assert_eq!(extracted.matches("첫 표").count(), 1);
-        assert_eq!(core.document().sections[0].paragraphs[0].text, before);
+        assert_eq!(core.document().sections[0].paragraphs[1].text, before);
         let scan = core.scan_items_json();
         assert!(!scan.contains('\u{fffc}'), "{scan}");
         let reopened = DocumentCore::from_bytes(&core.export_hwp_native().expect("HWP 저장"))
