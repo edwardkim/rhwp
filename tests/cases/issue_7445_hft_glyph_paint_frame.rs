@@ -178,6 +178,105 @@ fn original_hft_glyph_paint_has_its_print_frame_without_moving_source() {
         "확정 첫 프레임의 위 바깥여백을 한 번 보존: source={source_top}, paint={}",
         table_node.bbox.y
     );
+
+    // #8160 새 2024 Print 5쪽: 본문과 달리 자동 번호는 독립 배치 원점을
+    // 사용한다. 본문용 종이 CTM을 중복 적용하면 숫자 아래에 미대응 1px가 남는다.
+    let mut core = load("samples/hwp3-sample16-hwp5.hwpx");
+    core.set_hangul2024_compat(true);
+    core.set_font_environment(Some(
+        rhwp::renderer::font_environment::FontEnvironment::from_json(
+            r#"{"id":"original-page-number-program","substitutions":{"한양신명조":"한양신명조"}}"#,
+        )
+        .unwrap(),
+    ))
+    .unwrap();
+    let (source, paint) = pair(&core, 4, "- 3 -", "한양신명조");
+    assert_eq!(
+        origin(&source),
+        origin(&paint),
+        "자동 번호의 원본 전진·배치에 본문 HFT 프레임을 중복 적용하지 않는다"
+    );
+
+    // 명시한 원 프로그램은 이전 슬롯의 HFT 프레임을 상속하지 않는다.
+    // 기본/자동 공급은 독립 Print로 입증한 기존 HFT 프레임을 유지한다.
+    for preserves_source in [true, false] {
+        let mut program = load("samples/hwp3-sample16-hwp5.hwpx");
+        program.set_hangul2024_compat(true);
+        program
+            .set_font_environment(Some(
+                rhwp::renderer::font_environment::FontEnvironment::from_json(
+                    &serde_json::json!({
+                        "id":"selected-original-program-print-frame",
+                        "substitutions":{"한양신명조":"한양신명조"},
+                        "preserveSourceMetrics":preserves_source
+                    })
+                    .to_string(),
+                )
+                .unwrap(),
+            ))
+            .unwrap();
+        let owners: Vec<_> = program
+            .document()
+            .sections
+            .iter()
+            .enumerate()
+            .flat_map(|(si, s)| {
+                s.paragraphs.iter().enumerate().filter_map(move |(pi, p)| {
+                    let compact: String = p.text.chars().filter(|c| !c.is_whitespace()).collect();
+                    (compact.starts_with("【별첨2】") && compact.contains("기술제안서작성양식"))
+                        .then_some((si, pi))
+                })
+            })
+            .collect();
+        assert_eq!(owners.len(), 1, "독립 Print의 별첨 제목 원본 소유");
+        let owner_key = format!("section:{}/para:{}/", owners[0].0, owners[0].1);
+        let owned_bracket = |value: &Value| {
+            let mut runs = vec![];
+            texts(value, &mut runs);
+            let runs: Vec<_> = runs
+                .into_iter()
+                .filter(|v| {
+                    v["text"].as_str().is_some_and(|s| s.contains('】'))
+                        && v["source"]["stableSourceKey"]
+                            .as_str()
+                            .is_some_and(|s| s.starts_with(&owner_key))
+                })
+                .collect();
+            assert_eq!(runs.len(), 1, "제목의 닫는 괄호 내용·소유·중복");
+            runs[0].clone()
+        };
+        let source: Value = serde_json::from_str(
+            &program
+                .get_page_layer_tree_with_profile_native(1, RenderProfile::Screen)
+                .unwrap(),
+        )
+        .unwrap();
+        let print: Value = serde_json::from_str(
+            &program
+                .get_page_layer_tree_with_profile_native(1, RenderProfile::Print)
+                .unwrap(),
+        )
+        .unwrap();
+        let (source, print) = (owned_bracket(&source), owned_bracket(&print));
+        assert_eq!(source["text"], print["text"]);
+        assert_eq!(
+            source["source"]["stableSourceKey"],
+            print["source"]["stableSourceKey"]
+        );
+        assert_eq!(source["bbox"], print["bbox"]);
+        if preserves_source {
+            assert!(
+                origin(&print).1 < origin(&source).1,
+                "자동 공급의 원본 HFT 프레임 보존"
+            );
+        } else {
+            assert_eq!(
+                origin(&print),
+                origin(&source),
+                "선택한 원 프로그램에 과거 슬롯의 HFT 프레임을 중첩하지 않음"
+            );
+        }
+    }
 }
 
 #[test]
@@ -202,6 +301,69 @@ fn substituted_hwp3_program_keeps_its_existing_origin() {
         origin(&paint),
         "치환 프로그램은 검증된 인쇄 원점을 보존한다"
     );
+
+    // 동일 Print의 자동 대체 세션과 실제 원 프로그램 선택을 구분한다.
+    // source 메트릭을 보존하는 공급의 윤곽을 자연 폭으로 승격하지 않는다.
+    fn supplied_runs(node: &rhwp::paint::layer_tree::LayerNode, preserves_source: bool) -> usize {
+        use rhwp::paint::{layer_tree::LayerNodeKind, paint_op::PaintOp};
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => children
+                .iter()
+                .map(|n| supplied_runs(n, preserves_source))
+                .sum(),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                supplied_runs(child, preserves_source)
+            }
+            LayerNodeKind::Leaf { ops } => {
+                let mut count = 0;
+                for op in ops {
+                    if let PaintOp::TextRun { run, .. } = op {
+                        if run
+                            .style
+                            .font_family
+                            .split(',')
+                            .next()
+                            .unwrap_or_default()
+                            .trim()
+                            == "RHWP Public Batang"
+                            && !run.text.is_empty()
+                        {
+                            assert_eq!(
+                                run.style.preserve_glyph_ink, !preserves_source,
+                                "자동 표시용 공급은 기존 glyph fit, 명시 원 프로그램은 자연 윤곽"
+                            );
+                            count += 1;
+                        }
+                    }
+                }
+                count
+            }
+        }
+    }
+    for preserves_source in [true, false] {
+        let mut program = load("samples/hwp3-sample11.hwp");
+        program
+            .set_font_environment(Some(
+                rhwp::renderer::font_environment::FontEnvironment::from_json(
+                    &serde_json::json!({
+                        "id": "original-or-display-only-program-contract",
+                        "substitutions": {"하이텔울릉도제목체": "RHWP Public Batang"},
+                        "trueTypeFaces": ["RHWP Public Batang"],
+                        "preserveSourceMetrics": preserves_source
+                    })
+                    .to_string(),
+                )
+                .unwrap(),
+            ))
+            .unwrap();
+        let paint = program
+            .build_page_layer_tree_with_profile(0, RenderProfile::Print)
+            .unwrap();
+        assert!(
+            supplied_runs(&paint.root, preserves_source) > 0,
+            "실제 공급 런 없이 검사 통과 금지"
+        );
+    }
 }
 
 /// C278: 같은 원본/독립 Print의 Native/fresh WASM 전18쪽 최저92.87548/92.86964%.

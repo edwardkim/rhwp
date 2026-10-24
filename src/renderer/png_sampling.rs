@@ -3,7 +3,8 @@
 //! Raw BinData preservation keeps this contract through HWP/HWPX save/reopen;
 //! ordinary images without the declaration retain the renderer's profile policy.
 fn declaration(data: &[u8]) -> Option<(u8, u8)> {
-    // JPEG decoder는 이 표식을 무시하고 출력 경로만 재구성 계약을 소비한다.
+    // JPEG APP15도 같은 버전·값과 CRC를 갖는다. 압축 decoder는 이 부가
+    // 표식을 무시하고, 출력 재생만 실제 색 확장의 재구성 계약을 소비한다.
     if data.starts_with(&[0xff, 0xd8, 0xff, 0xef, 0, 12]) && data.len() >= 16 {
         let payload = &data[6..16];
         return (&payload[..4] == b"rhWP"
@@ -17,7 +18,7 @@ fn declaration(data: &[u8]) -> Option<(u8, u8)> {
         || &data[..8] != b"\x89PNG\r\n\x1a\n"
         || data[8..16] != [0, 0, 0, 13, b'I', b'H', b'D', b'R']
         || data[33..41] != [0, 0, 0, 2, b'r', b'h', b'W', b'P']
-        || !matches!(data[41], 1 | 2)
+        || !matches!(data[41], 1 | 2 | 4)
         || data[42] > 1
     {
         return None;
@@ -34,6 +35,25 @@ pub(crate) fn interpolation(data: &[u8]) -> Option<bool> {
 /// 일반 그림·팔레트 전달·다른 Print 버전의 표본 정책을 바꾸지 않는다.
 pub(crate) fn print_bitmap_reconstruction(data: &[u8]) -> bool {
     declaration(data) == Some((2, 1))
+}
+
+pub(crate) fn print_jpeg_transfer(data: &[u8]) -> bool {
+    data.starts_with(&[0xff, 0xd8]) && matches!(declaration(data), Some((2 | 3, 1)))
+}
+
+/// 최종 인쇄 장치에서 합성한 WMF 표본. 원본 비트맵 격자 준비와 구분한다.
+pub(crate) fn metafile_surface(data: &[u8]) -> bool {
+    declaration(data) == Some((4, 1))
+}
+
+pub(crate) fn mark_metafile_surface(data: &mut Vec<u8>) {
+    if data.len() < 33 || &data[..8] != b"\x89PNG\r\n\x1a\n" {
+        return;
+    }
+    let mut chunk = [0, 0, 0, 2, b'r', b'h', b'W', b'P', 4, 1, 0, 0, 0, 0];
+    let crc = crc32fast::hash(&chunk[4..10]);
+    chunk[10..14].copy_from_slice(&crc.to_be_bytes());
+    data.splice(33..33, chunk);
 }
 
 pub(super) fn mark_print_bitmap(data: &mut Vec<u8>) {

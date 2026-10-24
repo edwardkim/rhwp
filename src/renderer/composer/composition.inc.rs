@@ -384,6 +384,9 @@ fn compose_paragraph_scoped(
     }
 
     mapped_symbol_fonts::split_mapped_symbol_font_runs(&mut composed);
+    if let Some(styles) = metric_styles {
+        conjoining_jamo::split_runs(&mut composed, styles);
+    }
     resolved_fields::apply(para, &mut composed);
 
     composed

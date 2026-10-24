@@ -21,59 +21,18 @@ fn load_doc(rel_path: &str) -> rhwp::wasm_api::HwpDocument {
         .unwrap_or_else(|e| panic!("parse {rel_path}: {e:?}"))
 }
 
-/// 점선 리더를 **모양으로** 가려낸다 — 값으로 가리면 안 된다.
-///
-/// 종전에는 `stroke-dasharray="0.1 3"` 리터럴을 찾았는데, 그 값은 글꼴 크기와 무관한
-/// 고정값이었고 #5843 에서 폰트 비례(`0.100 <간격>`)로 바뀌었다. 값에 묶인 탐지기는
-/// 리더를 0개로 세어 아래 `>= 20` 단정을 엉뚱하게 깨뜨린다 — 이 시험이 지키려는 계약은
-/// 리더의 **끝 x** 이지 점 간격이 아니다.
-///
-/// 그래서 (a) 둥근 끝(`stroke-linecap="round"`) 과 (b) 첫 dash 가 점만큼 짧은
-/// 2단 dasharray 로 판별한다. 파선·쇄선(첫 dash 가 길다)과 표 괘선(둥근 끝이 없다)은
-/// 걸리지 않는다.
+mod svg_tab_leaders {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/common/svg_tab_leaders.rs"
+    ));
+}
+
 fn extract_dotted_horizontal_lines(svg: &str) -> Vec<(f64, f64, f64)> {
-    let mut lines = Vec::new();
-    let mut search_from = 0;
-    while let Some(rel) = svg[search_from..].find("<line ") {
-        let start = search_from + rel;
-        search_from = start + 6;
-        let Some(close_rel) = svg[start..].find("/>") else {
-            break;
-        };
-        let attrs = &svg[start..start + close_rel];
-        if !attrs.contains("stroke-linecap=\"round\"") {
-            continue;
-        }
-        let dashes: Vec<f64> = attrs
-            .find("stroke-dasharray=\"")
-            .map(|at| &attrs[at + 18..])
-            .and_then(|tail| tail.find('"').map(|end| &tail[..end]))
-            .map(|v| {
-                v.split_whitespace()
-                    .filter_map(|p| p.parse().ok())
-                    .collect()
-            })
-            .unwrap_or_default();
-        if dashes.len() != 2 || dashes[0] > 0.5 || dashes[1] <= 0.0 {
-            continue;
-        }
-        let Some(x1) = attr_f64(attrs, "x1") else {
-            continue;
-        };
-        let Some(x2) = attr_f64(attrs, "x2") else {
-            continue;
-        };
-        let Some(y1) = attr_f64(attrs, "y1") else {
-            continue;
-        };
-        let Some(y2) = attr_f64(attrs, "y2") else {
-            continue;
-        };
-        if (y1 - y2).abs() < 0.1 {
-            lines.push((x1, x2, y1));
-        }
-    }
-    lines
+    svg_tab_leaders::dot_leaders(svg)
+        .into_iter()
+        .map(|leader| (leader.start, leader.end, leader.y))
+        .collect()
 }
 
 fn toc_page_number_right_edges(svg: &str) -> Vec<f64> {

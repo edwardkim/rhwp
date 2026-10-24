@@ -423,3 +423,114 @@ fn original_hwp3_toc_preserves_owned_page_numbers_and_relative_right_alignment()
         "목차 페이지 번호의 상대 오른쪽 정렬: {right_edges:?}"
     );
 }
+
+// 독립 2020 Print 40쪽의 U+119E는 다음 박과 같은 원점을 쓰고 전문인까지 같은 줄이다.
+// 원본 저장 컷·문자 IR을 고치지 않고 선택 프로그램의 줄 소속을 함께 갱신해야 한다.
+#[test]
+fn selected_jamo_program_keeps_print_word_partition_and_source_ownership() {
+    let mut core = load();
+    core.set_hangul2024_compat(false);
+    // None은 portable default다. 실제 Print와 같이 2020 프로그램 선택 세션을 연다.
+    core.set_font_environment(Some(
+        rhwp::renderer::font_environment::FontEnvironment::from_json(
+            r#"{"id":"hancom-2020-jamo-program-selection","substitutions":{}}"#,
+        )
+        .unwrap(),
+    ))
+    .unwrap();
+    let sources: Vec<_> = core
+        .document()
+        .sections
+        .iter()
+        .enumerate()
+        .flat_map(|(section, body)| {
+            body.paragraphs
+                .iter()
+                .enumerate()
+                .filter_map(move |(paragraph, source)| {
+                    source
+                        .text
+                        .contains("100여명의 석ᆞ박사급 전문인력")
+                        .then_some((section, paragraph))
+                })
+        })
+        .collect();
+    assert_eq!(sources.len(), 1, "원본 자모 문단의 고유 소유");
+    let source = sources[0];
+    let original = &core.document().sections[source.0].paragraphs[source.1];
+    let authored = original.text.clone();
+    let stored: Vec<_> = original
+        .line_segs
+        .iter()
+        .map(|line| (line.text_start, line.vertical_pos))
+        .collect();
+    let page = core.build_page_render_tree(39).unwrap();
+    let mut found = Vec::new();
+    lines(&page.root, source, &mut found);
+    assert_eq!(found.len(), 6, "같은 원본 문단의 여섯 글줄·누락·중복");
+    let rendered: Vec<_> = found
+        .iter()
+        .map(|line| {
+            let mut value = String::new();
+            text(line, &mut value);
+            value
+        })
+        .collect();
+    assert_eq!(
+        normalized(&rendered.concat()),
+        normalized(&authored),
+        "원문 문자·순서·소유 보존"
+    );
+    assert!(
+        rendered[2].trim_end().ends_with("석ᆞ박사급 전문인"),
+        "독립 Print의 같은 줄 끝: {rendered:?}"
+    );
+    assert!(
+        rendered[3].starts_with("력이 수자원의"),
+        "무전진 자모 뒤 현재 줄 소속"
+    );
+    assert!(rendered[4].starts_with("로 수행하고"));
+    assert!(rendered[5].starts_with("는 보조 및"));
+    for pair in found.windows(2) {
+        assert!(
+            pair[0].bbox.y + pair[0].bbox.height <= pair[1].bbox.y,
+            "새 글줄의 순서와 비겹침"
+        );
+    }
+    for line in &found {
+        for child in &line.children {
+            if let RenderNodeType::TextRun(run) = &child.node_type {
+                assert_eq!(
+                    (run.section_index, run.para_index),
+                    (Some(source.0), Some(source.1))
+                );
+                assert!(
+                    run.cell_context.is_none(),
+                    "본문 자모의 소유를 셀로 옮기지 않음"
+                );
+                let start = run.char_start.expect("같은 원문의 문자 시작");
+                assert_eq!(
+                    run.text,
+                    authored
+                        .chars()
+                        .skip(start)
+                        .take(run.text.chars().count())
+                        .collect::<String>()
+                );
+            }
+        }
+    }
+    assert_eq!(
+        core.document().sections[source.0].paragraphs[source.1].text,
+        authored
+    );
+    assert_eq!(
+        core.document().sections[source.0].paragraphs[source.1]
+            .line_segs
+            .iter()
+            .map(|line| (line.text_start, line.vertical_pos))
+            .collect::<Vec<_>>(),
+        stored,
+        "파생 줄은 원본 저장 IR을 덮어쓰지 않는다"
+    );
+}

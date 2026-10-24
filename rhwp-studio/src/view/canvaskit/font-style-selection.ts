@@ -1,3 +1,4 @@
+import type { LayerTextStyle } from '../../core/types.ts';
 import type { CanvasKit, FontStyle, Typeface, TypefaceFontProvider } from 'canvaskit-wasm';
 
 /** Select actual faces sharing one alias instead of keeping the last loaded URL. */
@@ -44,4 +45,11 @@ export class CanvasKitBundledFontFamily {
     this.matches.clear();
     this.provider.delete();
   }
+}
+
+/** 합성 기울임의 공통 paint 값을 소비한다. 이전 replay payload는 기존 값을 쓴다. */
+export function syntheticItalicSkew(style: LayerTextStyle): number {
+  const skew = style.syntheticItalicSkew;
+  return typeof skew === 'number' && Number.isFinite(skew) && skew >= -1 && skew <= 0
+    ? skew : -0.2;
 }

@@ -73,6 +73,7 @@ pub(crate) fn normalize(
     styles: &ResolvedStyleSet,
     page: &PageDef,
     initial_columns: &ColumnDef,
+    refresh_markers: bool,
     dpi: f64,
 ) -> Option<Vec<Paragraph>> {
     normalize_flow(
@@ -81,6 +82,7 @@ pub(crate) fn normalize(
         uniform_column_width(page, initial_columns, dpi),
         Some(page),
         true,
+        refresh_markers,
         dpi,
     )
 }
@@ -93,6 +95,7 @@ fn normalize_flow(
     mut width: Option<f64>,
     body_page: Option<&PageDef>,
     refresh_text: bool,
+    refresh_markers: bool,
     dpi: f64,
 ) -> Option<Vec<Paragraph>> {
     let mut shift = 0_i32;
@@ -158,9 +161,15 @@ fn normalize_flow(
                     cell.height
                 };
                 let stale = stored_text_exceeds_frame(cell, frame, &padding);
-                if let Some(projected) =
-                    normalize_flow(&cell.paragraphs, styles, Some(inner), None, stale, dpi)
-                {
+                if let Some(projected) = normalize_flow(
+                    &cell.paragraphs,
+                    styles,
+                    Some(inner),
+                    None,
+                    stale,
+                    refresh_markers,
+                    dpi,
+                ) {
                     cell.paragraphs = projected;
                     changed = true;
                 }
@@ -197,20 +206,27 @@ fn normalize_flow(
             // 해소한 실제 기하를 갱신해야 하며, 같은 결과가 채움·높이에 참여한다.
             let spans_physical_frames =
                 crate::renderer::composer::stored_rows_cross_physical_frame(&paragraph);
-            if (refresh_text || spans_physical_frames)
-                && projects_current_marker_geometry(&paragraph, &box_, styles)
-            {
+            let selected_program_rows =
+                crate::renderer::composer::project_stored_rows_with_selected_program(
+                    &paragraph, &box_, styles, dpi,
+                );
+            let marker_rows = || {
+                if !refresh_markers
+                    || !(refresh_text || spans_physical_frames)
+                    || !projects_current_marker_geometry(&paragraph, &box_, styles)
+                {
+                    return None;
+                }
                 let first = paragraph.line_segs[0].vertical_pos;
                 let frame = box_.frame(first);
-                if let Some((lines, spaces)) =
-                    project_stored_soft_wraps(&paragraph, &frame, styles, dpi, false)
-                {
-                    let old_advance = frame_advance(&paragraph.line_segs)?;
-                    let new_advance = frame_advance(&lines)?;
-                    shift = shift.checked_add(new_advance.checked_sub(old_advance)?)?;
-                    paragraph.replace_line_segs_with_space_metrics(lines, spaces);
-                    changed = true;
-                }
+                project_stored_soft_wraps(&paragraph, &frame, styles, dpi, false)
+            };
+            if let Some((lines, spaces)) = selected_program_rows.or_else(marker_rows) {
+                let old_advance = frame_advance(&paragraph.line_segs)?;
+                let new_advance = frame_advance(&lines)?;
+                shift = shift.checked_add(new_advance.checked_sub(old_advance)?)?;
+                paragraph.replace_line_segs_with_space_metrics(lines, spaces);
+                changed = true;
             }
         }
         result.push(paragraph);

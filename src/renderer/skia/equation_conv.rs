@@ -191,12 +191,21 @@ fn render_box(
                 super::equation_glyph::draw_outline(canvas, commands, x, y, color, *paint);
                 return;
             }
+            let scale_x = paint.map_or(1.0, |p| p.scale_x);
+            let (glyph_x, glyph_baseline) = if scale_x != 1.0 {
+                canvas.save();
+                canvas.translate((x as f32, (y + lb.baseline) as f32));
+                canvas.scale((scale_x as f32, 1.0));
+                (0.0, 0.0)
+            } else {
+                (x, y + lb.baseline)
+            };
             draw_text_with_family(
                 canvas,
                 fonts,
                 text,
-                x,
-                y + lb.baseline,
+                glyph_x,
+                glyph_baseline,
                 fs,
                 false,
                 false,
@@ -204,6 +213,9 @@ fn render_box(
                 false,
                 Some(font_family),
             );
+            if scale_x != 1.0 {
+                canvas.restore();
+            }
         }
         LayoutKind::MathSymbol(text) => {
             // Task #1317: 적분 기호(∫)는 폰트 text 가 아닌 stroke path 로 렌더(geom SSOT,

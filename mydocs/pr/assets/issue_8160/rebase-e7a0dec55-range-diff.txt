@@ -1,0 +1,39 @@
+1:  fa509c042 =  1:  aa0c29094 문서: #8160 새 Print 기준과 Native 전쪽 진단 고정
+ 2:  b12ddcdb5 =  2:  55ece1f83 문서: Native 진단 TSV 줄바꿈과 빈 좌표 표기 정리
+ 3:  f1b1cd9b6 =  3:  723d91b3f 문서: #8160 fresh WASM 전쪽 기준 측정 기록
+ 4:  7265ab38b =  4:  80034d8e8 수정: HCI Poppy 굵은 기호의 원본 전진폭 선택
+ 5:  fbf97c8d3 =  5:  e2f941604 수정: #8160 탭·표 전진과 원본 기호 배치의 공통 소비 정리
+ 6:  43ee2d7de =  6:  451be907f fix: 원본 BCP 문단의 두 줄을 숨기는 예외 제거
+ 7:  c797b083e !  7:  bd8c4fca2 수정: 원본 글꼴 배치와 Print 그림의 공통 전달 복원
+    @@ Cargo.toml: include = [
+      ]
+
+      [workspace]
+    --exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder", "vendor/svg2pdf"]
+    -+exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder", "vendor/rhwp-jpeg-encoder", "vendor/svg2pdf"]
+    +-exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder", "vendor/svg2pdf", "vendor/rhwp-codec-resource", "vendor/rhwp-hayro-jbig2", "vendor/rhwp-hayro-jpeg2000", "vendor/rhwp-hayro-ccitt"]
+    ++exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder", "vendor/rhwp-jpeg-encoder", "vendor/svg2pdf", "vendor/rhwp-codec-resource", "vendor/rhwp-hayro-jbig2", "vendor/rhwp-hayro-jpeg2000", "vendor/rhwp-hayro-ccitt"]
+      members = ["crates/*", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert", "tools/llm_verifier/verdict_protocol", "tools/llm_verifier/claim_bind", "tools/llm_verifier/criteria_decomp"]
+      default-members = [".", "crates/*"]
+      resolver = "2"
+ 8:  343302c43 =  8:  26371a67b 수정: WMF 연속 OR·AND 마스크의 투명 영역 보존
+ 9:  4779dcaba =  9:  4c84ce33d 수정: 공급된 HFT 윤곽의 잉크 폭을 Canvas에서도 보존
+10:  e730b81e3 = 10:  90fc2ce4c 수정: 인쇄 JPEG의 브라우저 복원을 공통 프레임에 연결
+11:  19c45ea7a = 11:  6d7611dd6 기능: WMF 장치 재생에 원본 창과 글꼴 계약 전달
+12:  c1e971ba1 = 12:  6f0f1ed44 수정: 명시적인 글자 폭 맞춤만 공통 paint에서 소비
+13:  de045f000 = 13:  b55b5a3a7 기능: WMF 공통 인쇄 재생기를 세 출력 경로에 연결
+14:  9ed150978 = 14:  0f948b548 문서: sample16 Native 전쪽 192쪽 raw 100% 검증 기록
+15:  b7f1c34fc = 15:  47c6a3afa 수정: CanvasKit WMF 자원 준비와 재생의 판별을 공유
+16:  2fb755719 = 16:  26569841e 검증: sample16 Native와 표준 WASM 전 384쪽 raw 100% 확정
+17:  a2c4d2b20 = 17:  21b1f0aa8 검사: BCP 원본 두 줄과 후속 문단 소유로 기대값 정정
+18:  f4ce4a86b = 18:  1bc12c5d0 검사: sample16 전 192쪽 계약과 384개 실제 출력 회귀 통합
+19:  9f90c051b = 19:  3f7d3c93e 증적: 독립 인쇄 계약의 원본과 새 MCP PDF 보존
+20:  bdbb8f232 = 20:  c8f454346 검사: 명시 폭 맞춤과 일반 글자 폭 보존의 기대값 통합
+21:  2cd7f5dde = 21:  7c5cfaec4 수정: 인쇄 JPEG fork를 최신 패키징 후보와 고지에 연결
+22:  5de17d5ed = 22:  1a9f1d61f 문서: 최신 devel 리베이스와 전체 tree 보존 근거 기록
+23:  871b47043 = 23:  8ca5cd4c8 검사: 전쪽 case에 그림 행 보호를 통합해 suite 예산 유지
+24:  810048723 = 24:  730fbea62 검사: 전쪽 핵심 글줄과 중요 셀·그림의 px 좌표 보호
+25:  5f7e7e7f0 = 25:  44d9ebd33 수정: 독립 Skia 도구의 JPEG fork lock과 실제 host 기능 보존
+26:  0c3148ab5 = 26:  2e8be887f 검사: 독립 인쇄로 Poppy·점선·팔레트의 잘못된 기대값 정정
+27:  801531454 = 27:  78c346b8d 검증: sample16 최종 384쪽 raw100과 전쪽 회귀 증거 보존
+28:  fbb42fbe6 = 28:  a41ae037a 수정: VS Code 공유 CanvasKit의 WASM 모듈 경로 연결

@@ -1,7 +1,10 @@
 mod device_context;
 mod node;
 mod saved_device_context;
+mod source_contract;
+mod source_rop_pair;
 mod ternary_raster_operator;
+mod text_advances;
 mod util;
 
 use crate::wmf::{
@@ -25,14 +28,23 @@ pub struct SVGPlayer {
     definitions: Vec<Node>,
     /// [#6469] 브러시 전용 ROP 근사의 짧은 PATINVERT → DPA → PATINVERT 상태.
     brush_only_rop_sequence: BrushOnlyRopSequence,
+    source_rop_pair: Option<source_rop_pair::PendingSourcePair>,
     elements: Vec<Node>,
     object_selected: SelectedGraphicsObject,
     current_clip_id: Option<String>,
+    source_contract: Option<source_contract::SourceContract>,
 }
 
 impl SVGPlayer {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// 원본 창·LOGFONT·그리기 순서를 공통 출력 장치가 소비할 때만 보존한다.
+    /// 기본 SVG의 모양과 속성에는 추가 메타데이터를 방출하지 않는다.
+    pub fn with_source_contract(mut self) -> Self {
+        self.source_contract = Some(Default::default());
+        self
     }
 
     #[inline]
@@ -42,6 +54,9 @@ impl SVGPlayer {
 
     #[inline]
     fn push_element(&mut self, record_number: usize, mut element: Node) {
+        if let Some(contract) = &mut self.source_contract {
+            element = contract.element(element, &self.context_current, &self.object_selected.font);
+        }
         if record_number > 0 {
             element = element.set("id", format!("elem{record_number}"));
         }
@@ -74,6 +89,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
             definitions,
             brush_only_rop_sequence,
             elements,
+            source_contract,
             ..
         } = self;
 
@@ -119,6 +135,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
             .set("width", vb_w_i32)
             .set("height", vb_h_i32)
             .set("viewBox", format!("{vb_x} {vb_y} {vb_w_i32} {vb_h_i32}"));
+
+        if let Some(contract) = source_contract {
+            document = contract.document(document, &context_current);
+        }
 
         // 외곽 계산은 원래 image 좌표를 소비한 뒤 끝낸다. 반복 비트맵의
         // 바이트만 공유하고 실제 요소의 순서·좌표·클립은 그대로 유지한다.
@@ -318,6 +338,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 dest_width,
                 y_dest,
                 x_dest,
+                src_width,
+                src_height,
+                x_src,
+                y_src,
                 target,
                 ..
             } => {
@@ -325,6 +349,39 @@ impl crate::wmf::converter::Player for SVGPlayer {
                     self.context_current
                         .blit_dest_rect(x_dest, y_dest, dest_width, dest_height);
                 let mut operator = TernaryRasterOperator::new(raster_operation, rect);
+
+                if matches!(
+                    raster_operation,
+                    TernaryRasterOperation::SRCPAINT | TernaryRasterOperation::SRCAND
+                ) {
+                    let bitmap = crate::wmf::converter::Bitmap::from((*target).clone());
+                    let composed = source_rop_pair::PendingSourcePair::observe(
+                        &mut self.source_rop_pair,
+                        source_rop_pair::SourceBlit {
+                            record: record_number,
+                            element: self.elements.len(),
+                            operation: raster_operation,
+                            destination: rect,
+                            source: [x_src, y_src, src_width, src_height],
+                            bitmap: &bitmap,
+                        },
+                    );
+                    if let Some(composed) = composed {
+                        if let Some(previous) = self.elements.get_mut(composed.previous_element) {
+                            use base64::{engine::general_purpose::STANDARD, Engine};
+                            *previous = Node::new("g");
+                            let uri =
+                                format!("data:image/png;base64,{}", STANDARD.encode(composed.png));
+                            self.push_element(
+                                record_number,
+                                TernaryRasterOperator::image_node(rect, uri),
+                            );
+                            return Ok(self);
+                        }
+                    }
+                } else {
+                    self.source_rop_pair = None;
+                }
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -798,6 +855,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 .map_err(|err| PlayError::InvalidRecord {
                     cause: err.to_string(),
                 })?;
+        let explicit = text_advances::explicit_advances(&record, font.charset, &text_content);
         let point = {
             let point = PointS {
                 x: if self.context_current.text_align_update_cp {
@@ -927,7 +985,28 @@ impl crate::wmf::converter::Player for SVGPlayer {
             )
             .set("fill", self.context_current.text_color_as_css_color());
 
-        if record.dx.len() <= 1 {
+        if let Some(advances) = &explicit {
+            // Dx는 font의 자연 폭에 더할 여백이 아니라 원점 사이의 논리 전진이다.
+            // DBCS 바이트 셀을 연결한 결과를 전체 문자열의 정렬 기준에서 소비한다.
+            let alignment = match self.context_current.text_align_horizontal {
+                TextAlignmentMode::TA_CENTER => f64::from(advances.total) / 2.0,
+                TextAlignmentMode::TA_RIGHT => f64::from(advances.total),
+                _ => 0.0,
+            };
+            let window = &self.context_current.window;
+            let reference = if self.context_current.text_align_update_cp {
+                f64::from(point.x)
+            } else {
+                f64::from(window.to_device(f32::from(record.x), 0.0).0)
+            };
+            let zero = window.to_device(0.0, 0.0).0;
+            text = text.set("text-anchor", "start");
+            for (content, advance) in &advances.cells {
+                let logical = (f64::from(*advance) - alignment) as f32;
+                let x = reference + f64::from(window.to_device(logical, 0.0).0 - zero);
+                text = text.add(Node::new("tspan").set("x", x).add(Node::new_text(content)));
+            }
+        } else if record.dx.len() <= 1 {
             text = text.add(Node::new_text(&text_content));
         } else {
             // https://cgit.freedesktop.org/libreoffice/core/tree/emfio/source/reader/wmfreader.cxx?id=c0b14ab9aa4d713a6b718ef07b9e0379b88e97d3#n693
@@ -963,10 +1042,23 @@ impl crate::wmf::converter::Player for SVGPlayer {
         }
 
         if self.context_current.text_align_update_cp {
-            let dx = (font.height.saturating_abs() / 2)
-                .saturating_mul(i16::try_from(text_content.width()).unwrap_or(0));
+            let dx = explicit.as_ref().map_or_else(
+                || {
+                    f64::from(
+                        (font.height.saturating_abs() / 2)
+                            .saturating_mul(i16::try_from(text_content.width()).unwrap_or(0)),
+                    )
+                },
+                |advances| {
+                    let window = &self.context_current.window;
+                    f64::from(
+                        window.to_device(advances.total as f32, 0.0).0
+                            - window.to_device(0.0, 0.0).0,
+                    )
+                },
+            );
             let point = PointS {
-                x: point.x.saturating_add(dx),
+                x: (f64::from(point.x) + dx) as i16,
                 y: point.y,
             };
             self.context_current = self.context_current.drawing_position(point);

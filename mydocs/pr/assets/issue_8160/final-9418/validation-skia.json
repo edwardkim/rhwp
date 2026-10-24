@@ -1,0 +1,94 @@
+{
+  "source_sha": "ef69d163e05062f9c281968a0f9e0884a616aec3",
+  "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "phase": "skia",
+  "steps": [
+    {
+      "name": "skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads=12"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final43-skia-lib.log",
+      "build_jobs": "4",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 629.215
+    },
+    {
+      "name": "skia-missing-picture",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final43-skia-missing-picture.log",
+      "build_jobs": "4",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 486.051
+    },
+    {
+      "name": "skia-direct-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final43-skia-direct-pdf.log",
+      "build_jobs": "4",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 37.986
+    },
+    {
+      "name": "skia-restored-2022-border",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7642_sample16_2022_paragraph_relations",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final43-skia-restored-2022-border.log",
+      "build_jobs": "4",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 66.886
+    }
+  ],
+  "status": "passed"
+}

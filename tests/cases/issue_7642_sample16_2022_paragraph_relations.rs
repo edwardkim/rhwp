@@ -1,7 +1,6 @@
-//! 2022 저장본의 전64쪽 Native/fresh WASM 최저94.14342/94.60213%와 Print 쪽수를 확인했다.
+//! #8160: 2022 저장본 전 64쪽 Native/fresh 표준 WASM raw 100%, 정수 미대응 0.
 //! 고정 화면 위치 대신 원본 문단·표 소유, 꼬리 내용과 포함·겹침을 검사한다.
 //! 표 경계 검사는 source5ac의 실제 출력에서 앞 문단과의 겹침을 검출한다.
-//! BCP 3쪽은 양쪽 raw99.48430/99.81839%와 확대 판독 후 독립 기준선도 ±2px로 보호한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -11,8 +10,9 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 fn load() -> DocumentCore {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("samples/hwp3-sample16-hwp5-2022.hwp");
-    let core = DocumentCore::from_bytes(&std::fs::read(path).expect("독립 Print 대응 원본"))
+    let mut core = DocumentCore::from_bytes(&std::fs::read(path).expect("독립 Print 대응 원본"))
         .expect("2022 저장본 로드");
+    core.set_hangul2024_compat(false);
     assert_eq!(core.page_count(), 64, "독립 Print 전체 쪽수");
     core
 }
@@ -62,7 +62,7 @@ fn owned_lines<'a>(lines: &[&'a RenderNode], owner: (usize, usize)) -> Vec<&'a R
 }
 
 #[test]
-fn sample16_2022_bcp_tail_keeps_print_line_ownership_and_source_successor() {
+fn sample16_2022_bcp_keeps_both_authored_rows_and_owned_successor() {
     let core = load();
     let sources: Vec<_> = core
         .document()
@@ -86,42 +86,67 @@ fn sample16_2022_bcp_tail_keeps_print_line_ownership_and_source_successor() {
     let mut lines = Vec::new();
     body_lines(&page.root, false, &mut lines);
     let bcp = owned_lines(&lines, (section, paragraph));
-    // 독립 한컴2020 Print의 실제 경계는 `수|립`이다. 이전 한 줄 기대값은
-    // 이 문구만 합치던 예외의 출력을 옮긴 것이므로 원본 저장 줄과 Print를 보호한다.
-    // PDF SHA6737b57a, 원본 SHAfec3671c; stage8 C432의 전쪽 TSV·확대 PNG 참조.
-    assert_eq!(bcp.len(), 2, "독립 Print의 같은 원본 문단 두 줄 소유");
-    let actual_text: String = bcp.iter().map(|line| text(line)).collect();
     assert_eq!(
-        normalized(&actual_text),
+        source
+            .line_segs
+            .iter()
+            .map(|seg| seg.text_start)
+            .collect::<Vec<_>>(),
+        [0, 64],
+        "원본 두 줄 레코드의 문자 경계"
+    );
+    assert_eq!(bcp.len(), 2, "새 한컴 Print와 같은 원본 두 줄");
+    let actual: String = bcp.iter().map(|line| text(line)).collect();
+    assert_eq!(
+        normalized(&actual),
         normalized(&source.text),
         "원본 내용 순서·누락·중복"
     );
     assert_eq!(
-        normalized(&text(bcp[0])),
-        normalized(&source.text)
-            .strip_suffix('립')
-            .expect("원본 꼬리"),
-        "Print 첫 줄은 `수`까지 보존한다"
+        normalized(&text(bcp[1])),
+        "립",
+        "Print 두 번째 줄의 끝 글자"
     );
-    assert_eq!(normalized(&text(bcp[1])), "립", "Print 둘째 줄의 꼬리 소유");
-    assert!(
-        bcp[0].bbox.y + bcp[0].bbox.height <= bcp[1].bbox.y,
-        "같은 문단 두 줄의 점유가 겹치지 않는다"
-    );
-    // PDF text origin(기준선)의 pt / 0.75를 CSS px로 환산한다.
-    // 잉크 bbox 상단을 글줄 상단과 비교하지 않는다. 192DPI raster는 CSS의 2배다.
-    for (line, baseline_css_px) in bcp.iter().zip([903.20, 930.88]) {
-        let RenderNodeType::TextLine(owner) = &line.node_type else {
+    assert!(normalized(&text(bcp[0])).ends_with('수'));
+    // 새 Hancom 2020 Print 3쪽 span origin × 96/72. 논리 글상자 높이와
+    // PDF 글자 잉크 높이를 섞지 않고 실제 가시 런의 원점·기준선을 비교한다.
+    let print_origins = [(109.919993, 903.199951), (143.359996, 930.879964)];
+    let mut baselines = Vec::new();
+    for (line, (x, baseline)) in bcp.iter().zip(print_origins) {
+        let first = line
+            .children
+            .iter()
+            .find(|node| {
+                matches!(&node.node_type,
+            RenderNodeType::TextRun(run) if !normalized(run.display_or_text()).is_empty())
+            })
+            .expect("BCP 두 줄의 첫 가시 런");
+        let RenderNodeType::TextRun(run) = &first.node_type else {
             unreachable!()
         };
-        assert!(
-            (line.bbox.y + owner.baseline - baseline_css_px).abs() <= 2.0,
-            "독립 Print BCP 기준선 ±2 CSS px"
-        );
+        let actual_baseline = first.bbox.y + run.baseline;
+        assert!((first.bbox.x - x).abs() <= 2.0, "BCP 가로 원점 ±2px");
+        assert!((actual_baseline - baseline).abs() <= 2.0, "BCP 기준선 ±2px");
+        baselines.push(actual_baseline);
     }
     assert!(
-        (bcp[1].bbox.x - 143.36).abs() <= 2.0,
-        "독립 Print의 이어지는 글줄 원점 ±2 CSS px"
+        ((baselines[1] - baselines[0]) - 27.680013).abs() <= 2.0,
+        "독립 Print 두 줄의 기준선 간격 ±2px"
+    );
+    for line in &bcp {
+        for node in &line.children {
+            if let RenderNodeType::TextRun(run) = &node.node_type {
+                assert_eq!(
+                    (run.section_index, run.para_index),
+                    (Some(section), Some(paragraph))
+                );
+                assert!(run.cell_context.is_none(), "두 줄 모두 원본 본문 소유");
+            }
+        }
+    }
+    assert!(
+        bcp[0].bbox.y + bcp[0].bbox.height <= bcp[1].bbox.y,
+        "두 원본 줄 비겹침"
     );
     let successor = owned_lines(&lines, (section, paragraph + 1));
     assert!(
@@ -234,126 +259,16 @@ fn sample16_2022_continuation_table_clears_predecessor_and_preserves_owned_rows(
             "원본 표가 내부 줄의 실제 점유를 포함한다"
         );
     }
-
-    // #8160과 같이 독립 그림 행 case를 제거하되 기존 원문 소유 검사는 유지한다.
-    // 이 브랜치에는 #8160 전쪽 case가 아직 없으므로 같은 표 관계 검사에서 실행한다.
-    let path =
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-sample16-hwp5.hwpx");
-    let mut hwpx = DocumentCore::from_bytes(&std::fs::read(path).expect("독립 Print 대응 원본"))
-        .expect("HWPX 원본 로드");
-    hwpx.set_hangul2024_compat(true);
-    verify_table_picture_rows(&hwpx);
-}
-
-fn collect_picture_nodes<'a>(node: &'a RenderNode, nodes: &mut Vec<&'a RenderNode>) {
-    nodes.push(node);
-    for child in &node.children {
-        collect_picture_nodes(child, nodes);
-    }
-}
-
-fn compact_picture_text(text: &str) -> String {
-    text.chars().filter(|ch| !ch.is_whitespace()).collect()
-}
-
-fn picture_row_text(node: &RenderNode) -> String {
-    let mut nodes = Vec::new();
-    collect_picture_nodes(node, &mut nodes);
-    nodes
-        .into_iter()
-        .filter_map(|n| match &n.node_type {
-            RenderNodeType::TextRun(run) => Some(run.display_or_text()),
-            _ => None,
-        })
-        .collect()
-}
-
-fn verify_table_picture_rows(core: &DocumentCore) {
-    let source = core.document();
-    let title = "가. 주전산센터 목표시스템 구성(안)";
-    let owners: Vec<_> = source.sections[0]
-        .paragraphs
-        .iter()
-        .enumerate()
-        .filter(|(_, p)| {
-            matches!(p.controls.first(),Some(Control::Table(t)) if t.cells.iter().any(|cell|
-            cell.paragraphs.iter().any(|para|compact_picture_text(&para.text)==compact_picture_text(title))))
-        })
-        .collect();
-    assert_eq!(owners.len(), 1, "원본 제목을 소유한 문단은 하나다");
-    let (owner, paragraph) = owners[0];
-    assert_eq!(paragraph.controls.len(), 3, "원본 표·그림·표의 세 컨트롤");
-    assert!(matches!(&paragraph.controls[0],Control::Table(t) if t.common.treat_as_char));
-    assert!(matches!(&paragraph.controls[1],Control::Picture(p) if p.common.treat_as_char));
-    assert!(matches!(&paragraph.controls[2],Control::Table(t) if t.common.treat_as_char));
-    let page = core.build_page_render_tree(17).unwrap();
-    let mut nodes = Vec::new();
-    collect_picture_nodes(&page.root, &mut nodes);
-    let table = |control| {
-        let found:Vec<_>=nodes.iter().copied().filter(|node|matches!(&node.node_type,
-            RenderNodeType::Table(t) if t.section_index==Some(0)&&t.para_index==Some(owner)&&t.control_index==Some(control))).collect();
-        assert_eq!(
-            found.len(),
-            1,
-            "같은 원본 표를 중복 배치하거나 누락하면 안 된다"
-        );
-        found[0]
-    };
-    let first = table(0);
-    let last = table(2);
-    let pictures:Vec<_>=nodes.iter().copied().filter(|node|matches!(&node.node_type,
-        RenderNodeType::Image(p) if p.section_index==Some(0)&&p.para_index==Some(owner)&&p.control_index==Some(1))).collect();
-    assert_eq!(pictures.len(), 1, "그림은 원본 둘째 줄에 한 번만 배치한다");
-    let picture = pictures[0];
-    assert_eq!(
-        compact_picture_text(&picture_row_text(first)),
-        compact_picture_text(title),
-        "글꼴별로 런이 나뉘어도 제목 전체를 보존한다"
-    );
-    assert_eq!(
-        compact_picture_text(&picture_row_text(last)),
-        compact_picture_text("나. 주요 과업내용")
-    );
-    assert!(
-        first.bbox.y + first.bbox.height <= picture.bbox.y,
-        "첫 표 뒤에 그림 줄이 온다"
-    );
-    assert!(
-        picture.bbox.y + picture.bbox.height <= last.bbox.y,
-        "그림 아래에 마지막 표가 온다"
-    );
-    assert!(
-        picture.bbox.x >= page.root.bbox.x
-            && picture.bbox.x + picture.bbox.width <= page.root.bbox.x + page.root.bbox.width
-    );
-    for (table_node, control) in [(first, 0), (last, 2)] {
-        let mut title_nodes = Vec::new();
-        collect_picture_nodes(table_node, &mut title_nodes);
-        let mut end = 0;
-        for node in title_nodes {
-            let RenderNodeType::TextRun(run) = &node.node_type else {
-                continue;
-            };
-            let context = run
-                .cell_context
-                .as_ref()
-                .expect("제목은 원본 표 셀에 속한다");
-            assert_eq!(context.parent_para_index, owner);
-            assert_eq!(context.path[0].control_index, control);
-            let start = run.char_start.expect("원문 문자 시작");
-            assert!(start >= end, "글꼴별 분할 후에도 문자 순서를 유지한다");
-            end = start + run.text.chars().count();
-        }
-    }
 }
 
 #[cfg(feature = "native-skia")]
 #[test]
 fn sample16_2022_compound_page_border_keeps_both_print_coverage_bands() {
     let core = load();
-    // 같은 source/Print 전64쪽: Native/fresh WASM 최저94.59411/94.60213%.
-    // 63쪽99.80596/99.80728%, 64쪽99.66659/99.67064%를 확대 판독했다.
-    // source SHAfec3671c / Print SHA6737b57a; stage8 C433의 전체 TSV·PNG 참조.
+    // #8191에서 추가한 기존 검사를 BCP 파일 병합 중 누락해 복원한다.
+    // source5df·원본 SHAfec3671c·새 Print SHAc4e05635 전64쪽 양쪽 raw100.
+    // 새 독립 Print63/64쪽을 192DPI로 다시 읽어 기존 두 띠 기대값을 확인했다.
+    // 임계값·좌표·두 픽셀 이상 coverage와 본문 소유 검사는 변경하지 않는다.
     for (page_index, owner_text) in [
         (62, "공동수급체는공동수급체구성원을위원으로하는운영위원회를"),
         (63, "합의각서"),

@@ -1,0 +1,478 @@
+{
+  "method": "Read-only original Han Unified Font File header and complete width table; no outline bytes copied. The independent Type3 Widths are floor(rawWidth*1000/originalEm), which loses original fractions.",
+  "width_provenance": [
+    {
+      "font": "HMEPO.HFT",
+      "sha256": "222fceeeffb111c095a760ee178e7c7aebf8d334cf91706658bccb4e2b1d01d4",
+      "bytes": 11503,
+      "em_size": 512,
+      "em_offset": 378,
+      "width_table_offset": 640,
+      "width_table_length": 214,
+      "first": 32,
+      "last": 133,
+      "kind": 1,
+      "ascii": {
+        " ": 128,
+        "!": 142,
+        "\"": 189,
+        "#": 310,
+        "$": 255,
+        "%": 430,
+        "&": 398,
+        "'": 142,
+        "(": 170,
+        ")": 170,
+        "*": 199,
+        "+": 310,
+        ",": 127,
+        "-": 170,
+        ".": 127,
+        "/": 310,
+        "0": 255,
+        "1": 255,
+        "2": 255,
+        "3": 255,
+        "4": 255,
+        "5": 255,
+        "6": 255,
+        "7": 255,
+        "8": 255,
+        "9": 255,
+        ":": 127,
+        ";": 127,
+        "<": 310,
+        "=": 310,
+        ">": 310,
+        "?": 227,
+        "@": 382,
+        "A": 398,
+        "B": 312,
+        "C": 362,
+        "D": 396,
+        "E": 312,
+        "F": 284,
+        "G": 390,
+        "H": 425,
+        "I": 172,
+        "J": 170,
+        "K": 372,
+        "L": 312,
+        "M": 484,
+        "N": 425,
+        "O": 402,
+        "P": 309,
+        "Q": 402,
+        "R": 342,
+        "S": 269,
+        "T": 314,
+        "U": 398,
+        "V": 370,
+        "W": 511,
+        "X": 342,
+        "Y": 342,
+        "Z": 342,
+        "[": 170,
+        "\\": 310,
+        "]": 170,
+        "^": 310,
+        "_": 255,
+        "`": 142,
+        "a": 255,
+        "b": 283,
+        "c": 227,
+        "d": 312,
+        "e": 245,
+        "f": 170,
+        "g": 284,
+        "h": 298,
+        "i": 149,
+        "j": 119,
+        "k": 284,
+        "l": 149,
+        "m": 452,
+        "n": 298,
+        "o": 280,
+        "p": 307,
+        "q": 287,
+        "r": 202,
+        "s": 217,
+        "t": 166,
+        "u": 309,
+        "v": 289,
+        "w": 426,
+        "x": 264,
+        "y": 284,
+        "z": 255,
+        "{": 170,
+        "|": 310,
+        "}": 170,
+        "~": 310
+      },
+      "independent_print_crosscheck": {
+        "font": "T1",
+        "groups": 462,
+        "maximum_distance_from_observed_interval_pt": 0.12045461103000006,
+        "outside_tolerance": 0
+      }
+    },
+    {
+      "font": "HMEPOB.HFT",
+      "sha256": "8ef8ac0225caa8d6599b27976ea8ab8a5141c86f7a68b45f33bcc705e1044d7c",
+      "bytes": 12744,
+      "em_size": 512,
+      "em_offset": 378,
+      "width_table_offset": 640,
+      "width_table_length": 214,
+      "first": 32,
+      "last": 133,
+      "kind": 1,
+      "ascii": {
+        " ": 128,
+        "!": 142,
+        "\"": 205,
+        "#": 310,
+        "$": 255,
+        "%": 455,
+        "&": 426,
+        "'": 142,
+        "(": 170,
+        ")": 170,
+        "*": 227,
+        "+": 310,
+        ",": 127,
+        "-": 170,
+        ".": 127,
+        "/": 151,
+        "0": 255,
+        "1": 255,
+        "2": 255,
+        "3": 255,
+        "4": 255,
+        "5": 255,
+        "6": 255,
+        "7": 255,
+        "8": 255,
+        "9": 255,
+        ":": 127,
+        ";": 127,
+        "<": 310,
+        "=": 310,
+        ">": 310,
+        "?": 227,
+        "@": 382,
+        "A": 398,
+        "B": 342,
+        "C": 370,
+        "D": 426,
+        "E": 312,
+        "F": 284,
+        "G": 426,
+        "H": 426,
+        "I": 199,
+        "J": 199,
+        "K": 398,
+        "L": 312,
+        "M": 511,
+        "N": 426,
+        "O": 426,
+        "P": 312,
+        "Q": 426,
+        "R": 370,
+        "S": 312,
+        "T": 342,
+        "U": 398,
+        "V": 398,
+        "W": 511,
+        "X": 342,
+        "Y": 342,
+        "Z": 342,
+        "[": 170,
+        "\\": 310,
+        "]": 170,
+        "^": 310,
+        "_": 255,
+        "`": 142,
+        "a": 255,
+        "b": 312,
+        "c": 227,
+        "d": 312,
+        "e": 255,
+        "f": 199,
+        "g": 284,
+        "h": 312,
+        "i": 170,
+        "j": 170,
+        "k": 312,
+        "l": 170,
+        "m": 455,
+        "n": 312,
+        "o": 284,
+        "p": 312,
+        "q": 312,
+        "r": 199,
+        "s": 227,
+        "t": 170,
+        "u": 312,
+        "v": 284,
+        "w": 426,
+        "x": 255,
+        "y": 284,
+        "z": 255,
+        "{": 158,
+        "|": 310,
+        "}": 158,
+        "~": 310
+      },
+      "independent_print_crosscheck": {
+        "font": "T2",
+        "groups": 465,
+        "maximum_distance_from_observed_interval_pt": 0.11383553960999994,
+        "outside_tolerance": 0
+      }
+    }
+  ],
+  "independent_print_observations": "poppy-ascii-neutral-advances.tsv",
+  "observation_tolerance_pt": 0.13,
+  "observation_tolerance_reason": "One 600dpi position step (0.12pt), plus PDF extraction precision. No document-target positions used.",
+  "mixed_frontier_crosscheck": {
+    "input_sha256": "03ce9a277b3d209c592ef7bdd13e7df60992b9a752e817b1f9d42123f968d303",
+    "job_id": "42b54b3a-75fd-4bc6-b4ff-f20f6bd1ea42",
+    "cases": 21,
+    "tracking_percent": -20,
+    "size_hu": 1300,
+    "uppercase_additional_hu": 0,
+    "lowercase_additional_hu": 12,
+    "mixed_case_additional_hu": 8,
+    "explanation": "Compared with normalized PDF widths: b/e/j each gain one 1800dpi step (4 HU). All three independent Print fit thresholds agree."
+  },
+  "independent_math_fallback": {
+    "job_id": "02109100-49e8-461c-a3b2-a8bc03fbc880",
+    "input_sha256": "530d31df7872c76ae918674a1767e9c20ecb2d7988b1ba9de851a36323f20ded",
+    "pdf_sha256": "8e37787a811c9952a7bccc8985d98daabd97669db1ed16404683ceab2ab02bbe",
+    "source": "Independent blank document with A-math-A neighbors, five sizes, regular and bold. Type3 Widths 616 and 623 at em 1000. No target document or target PDF input.",
+    "implementation_scope": "Regular intrinsic widths only; existing bold path is preserved because it has a separate tracking contract.",
+    "observations": [
+      {
+        "size_pt": 8,
+        "bold": false,
+        "observations": [
+          {
+            "character": "×",
+            "actual_pt": 4.917335510253906,
+            "intrinsic_em": 0.616,
+            "bold_tracking_em": 0,
+            "expected_pt": 4.928,
+            "absolute_error_pt": 0.010664489746093686
+          },
+          {
+            "character": "÷",
+            "actual_pt": 5.0372772216796875,
+            "intrinsic_em": 0.623,
+            "bold_tracking_em": 0,
+            "expected_pt": 4.984,
+            "absolute_error_pt": 0.053277221679687514
+          }
+        ]
+      },
+      {
+        "size_pt": 8,
+        "bold": true,
+        "observations": [
+          {
+            "character": "×",
+            "actual_pt": 5.2771453857421875,
+            "intrinsic_em": 0.616,
+            "bold_tracking_em": 0.05,
+            "expected_pt": 5.328,
+            "absolute_error_pt": 0.05085461425781279
+          },
+          {
+            "character": "÷",
+            "actual_pt": 5.397071838378906,
+            "intrinsic_em": 0.623,
+            "bold_tracking_em": 0.05,
+            "expected_pt": 5.384,
+            "absolute_error_pt": 0.013071838378905909
+          }
+        ]
+      },
+      {
+        "size_pt": 10,
+        "bold": false,
+        "observations": [
+          {
+            "character": "×",
+            "actual_pt": 6.1166839599609375,
+            "intrinsic_em": 0.616,
+            "bold_tracking_em": 0,
+            "expected_pt": 6.16,
+            "absolute_error_pt": 0.04331604003906264
+          },
+          {
+            "character": "÷",
+            "actual_pt": 6.2366180419921875,
+            "intrinsic_em": 0.623,
+            "bold_tracking_em": 0,
+            "expected_pt": 6.23,
+            "absolute_error_pt": 0.006618041992187074
+          }
+        ]
+      },
+      {
+        "size_pt": 10,
+        "bold": true,
+        "observations": [
+          {
+            "character": "×",
+            "actual_pt": 6.596427917480469,
+            "intrinsic_em": 0.616,
+            "bold_tracking_em": 0.05,
+            "expected_pt": 6.66,
+            "absolute_error_pt": 0.06357208251953139
+          },
+          {
+            "character": "÷",
+            "actual_pt": 6.716361999511719,
+            "intrinsic_em": 0.623,
+            "bold_tracking_em": 0.05,
+            "expected_pt": 6.73,
+            "absolute_error_pt": 0.013638000488281676
+          }
+        ]
+      },
+      {
+        "size_pt": 13,
+        "bold": false,
+        "observations": [
+          {
+            "character": "×",
+            "actual_pt": 8.03564453125,
+            "intrinsic_em": 0.616,
+            "bold_tracking_em": 0,
+            "expected_pt": 8.008,
+            "absolute_error_pt": 0.02764453125000088
+          },
+          {
+            "character": "÷",
+            "actual_pt": 8.155586242675781,
+            "intrinsic_em": 0.623,
+            "bold_tracking_em": 0,
+            "expected_pt": 8.099,
+            "absolute_error_pt": 0.05658624267578105
+          }
+        ]
+      },
+      {
+        "size_pt": 13,
+        "bold": true,
+        "observations": [
+          {
+            "character": "×",
+            "actual_pt": 8.635322570800781,
+            "intrinsic_em": 0.616,
+            "bold_tracking_em": 0.05,
+            "expected_pt": 8.658000000000001,
+            "absolute_error_pt": 0.02267742919922
+          },
+          {
+            "character": "÷",
+            "actual_pt": 8.755256652832031,
+            "intrinsic_em": 0.623,
+            "bold_tracking_em": 0.05,
+            "expected_pt": 8.749,
+            "absolute_error_pt": 0.006256652832030696
+          }
+        ]
+      },
+      {
+        "size_pt": 20,
+        "bold": false,
+        "observations": [
+          {
+            "character": "×",
+            "actual_pt": 12.233367919921875,
+            "intrinsic_em": 0.616,
+            "bold_tracking_em": 0,
+            "expected_pt": 12.32,
+            "absolute_error_pt": 0.08663208007812528
+          },
+          {
+            "character": "÷",
+            "actual_pt": 12.473251342773438,
+            "intrinsic_em": 0.623,
+            "bold_tracking_em": 0,
+            "expected_pt": 12.46,
+            "absolute_error_pt": 0.013251342773436647
+          }
+        ]
+      },
+      {
+        "size_pt": 20,
+        "bold": true,
+        "observations": [
+          {
+            "character": "×",
+            "actual_pt": 13.312782287597656,
+            "intrinsic_em": 0.616,
+            "bold_tracking_em": 0.05,
+            "expected_pt": 13.32,
+            "absolute_error_pt": 0.007217712402344034
+          },
+          {
+            "character": "÷",
+            "actual_pt": 13.552658081054688,
+            "intrinsic_em": 0.623,
+            "bold_tracking_em": 0.05,
+            "expected_pt": 13.46,
+            "absolute_error_pt": 0.09265808105468665
+          }
+        ]
+      },
+      {
+        "size_pt": 26,
+        "bold": false,
+        "observations": [
+          {
+            "character": "×",
+            "actual_pt": 16.0712890625,
+            "intrinsic_em": 0.616,
+            "bold_tracking_em": 0,
+            "expected_pt": 16.016,
+            "absolute_error_pt": 0.05528906250000176
+          },
+          {
+            "character": "÷",
+            "actual_pt": 16.19122314453125,
+            "intrinsic_em": 0.623,
+            "bold_tracking_em": 0,
+            "expected_pt": 16.198,
+            "absolute_error_pt": 0.006776855468750398
+          }
+        ]
+      },
+      {
+        "size_pt": 26,
+        "bold": true,
+        "observations": [
+          {
+            "character": "×",
+            "actual_pt": 17.390579223632812,
+            "intrinsic_em": 0.616,
+            "bold_tracking_em": 0.05,
+            "expected_pt": 17.316000000000003,
+            "absolute_error_pt": 0.07457922363281
+          },
+          {
+            "character": "÷",
+            "actual_pt": 17.510513305664062,
+            "intrinsic_em": 0.623,
+            "bold_tracking_em": 0.05,
+            "expected_pt": 17.498,
+            "absolute_error_pt": 0.012513305664061392
+          }
+        ]
+      }
+    ]
+  }
+}

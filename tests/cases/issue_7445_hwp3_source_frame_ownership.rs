@@ -255,14 +255,54 @@ fn inline_equations_keep_source_size_baseline_and_single_line_ownership() {
         };
         let svg = format!("<svg>{}</svg>", paint.svg_content);
         let svg = roxmltree::Document::parse(&svg).expect("실제 수식 SVG");
+        let glyphs: Vec<_> = svg
+            .descendants()
+            .filter(|n| n.has_tag_name("text") && n.text().is_some())
+            .collect();
+        let hangul = |text: &str| {
+            text.chars()
+                .filter(|ch| ('가'..='힣').contains(ch))
+                .collect::<String>()
+        };
+        assert_eq!(
+            glyphs
+                .iter()
+                .map(|glyph| hangul(glyph.text().unwrap()))
+                .collect::<String>(),
+            hangul(&equation.script),
+            "원본 수식 한글의 내용·순서·누락·중복"
+        );
         for &(text, occurrence, x, y) in expected {
-            let glyph = svg
-                .descendants()
-                .filter(|n| n.has_tag_name("text") && n.text() == Some(text))
+            // 원 프로그램의 글자별 전진은 한 단어를 여러 SVG text로 그릴 수 있다.
+            // SVG 직렬화의 단어 묶음 대신 원문으로 연속 글리프를 선택한다.
+            let glyphs = (0..glyphs.len())
+                .filter_map(|start| {
+                    let mut content = String::new();
+                    for (offset, glyph) in glyphs[start..].iter().enumerate() {
+                        content.push_str(glyph.text().unwrap());
+                        if content == text {
+                            return Some(&glyphs[start..=start + offset]);
+                        }
+                        if !text.starts_with(&content) {
+                            break;
+                        }
+                    }
+                    None
+                })
                 .nth(occurrence)
-                .expect("원본 내용으로 선택한 수식 글리프");
-            assert!(glyph.attribute("transform").is_none(), "직접 한글 원점");
-            let local = |axis| glyph.attribute(axis).unwrap().parse::<f64>().unwrap();
+                .expect("원본 내용으로 선택한 연속 수식 글리프");
+            let local = |glyph: &roxmltree::Node<'_, '_>, axis| {
+                assert!(glyph.attribute("transform").is_none(), "직접 한글 원점");
+                glyph.attribute(axis).unwrap().parse::<f64>().unwrap()
+            };
+            for pair in glyphs.windows(2) {
+                assert!((local(&pair[0], "y") - local(&pair[1], "y")).abs() < 1e-6);
+                assert!(
+                    local(&pair[0], "x") < local(&pair[1], "x"),
+                    "한글 전진 순서"
+                );
+            }
+            let local = |axis| local(&glyphs[0], axis);
             for (actual, expected) in [(node.bbox.x + local("x"), x), (node.bbox.y + local("y"), y)]
             {
                 assert!(

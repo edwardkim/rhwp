@@ -250,6 +250,13 @@ pub(super) fn draw_image_bytes(
     if !is_valid_destination_rect(x, y, width, height) {
         return false;
     }
+    if effect == ImageEffect::RealPic
+        && brightness == 0
+        && contrast == 0
+        && super::metafile_print::draw(canvas, bytes)
+    {
+        return true;
+    }
     // [#3460] HWPX BinData 는 SVG 를 그대로 담는다(`<hc:img>` → `Format="svg"`). skia 디코더는
     // SVG 를 읽지 못해 종전에는 회색 자리표시자만 남았다. 같은 모듈의 resvg 로 목적지 크기에
     // 맞춰 먼저 래스터화하면 이후 크롭·채움·효과 경로를 그대로 탈 수 있다.
@@ -428,6 +435,13 @@ pub(super) fn draw_image_bytes(
     });
 
     let draw_image_rect = |src: Option<Rect>, dst: Rect| {
+        if sampling.mipmap_mode == MipmapMode::Linear && src.is_none() && !binary_preprocessed {
+            if let Some(frame) = super::super::print_raster::PrintRasterFrame::read(bytes) {
+                if super::anisotropic_image::draw_print_frame(canvas, &image, frame, &paint) {
+                    return;
+                }
+            }
+        }
         let matrix = canvas.local_to_device_as_3x3();
         let scale_x = matrix.scale_x().hypot(matrix.skew_y());
         let scale_y = matrix.skew_x().hypot(matrix.scale_y());
@@ -450,6 +464,14 @@ pub(super) fn draw_image_bytes(
                 None => sampling,
             }
         };
+        if sampling.mipmap_mode == MipmapMode::Linear
+            && src.is_none()
+            && !binary_preprocessed
+            && super::super::image_resolver::png_sampling::print_jpeg_transfer(bytes)
+            && super::anisotropic_image::draw(canvas, &image, dst, &paint)
+        {
+            return;
+        }
         let transform = canvas.local_to_device_as_3x3();
         // SVG는 위에서 이미 실제 장치 크기로 raster했다. 이를 다시 bitmap
         // 축소 경로에 넣으면 벡터의 가는 선까지 두 번 필터링하게 된다.

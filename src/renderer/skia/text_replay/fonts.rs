@@ -2,7 +2,7 @@
 use super::super::font_lookup::{
     select_typeface_for_character, supplied_family_names, TypefaceCandidate,
 };
-use super::super::synthetic_typeface::unemboldened_typeface;
+use super::super::synthetic_typeface::{unemboldened_typeface, unobliqued_typeface};
 use crate::renderer::{internal_font_family_members, TextStyle};
 use skia_safe::{font, Font, FontMgr, Typeface};
 use std::{cell::RefCell, collections::HashMap};
@@ -67,6 +67,11 @@ pub(super) fn for_text(
 }
 
 fn finish(tf: Typeface, size: f32, style: &TextStyle, font_mgr: &FontMgr) -> Font {
+    let tf = if style.italic {
+        unobliqued_typeface(font_mgr, &tf).unwrap_or(tf)
+    } else {
+        tf
+    };
     let owns_heavy = owns_intrinsic_heavy_face(&tf, style);
     let tf = if owns_heavy {
         // source의 bold가 아닌 fallback 보완 weight다. fontconfig가 붙인
@@ -92,7 +97,7 @@ fn finish(tf: Typeface, size: f32, style: &TextStyle, font_mgr: &FontMgr) -> Fon
     // 한컴 Print의 직립 프로그램 합성은 x/y shear 1/3이다.
     // 실제 기울임 face에는 중복 shear를 적용하지 않는다.
     if style.italic && !is_slanted_face {
-        font.set_skew_x(-1.0 / 3.0);
+        font.set_skew_x(crate::renderer::text_transform::SYNTHETIC_ITALIC_SKEW as f32);
     }
     font
 }

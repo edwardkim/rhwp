@@ -116,6 +116,11 @@ pub(crate) fn resolve_styles_with_environment(
     profile: crate::model::provenance::LayoutCompatibilityProfile,
 ) -> ResolvedStyleSet {
     let mut styles = resolve_styles_for_document(document, dpi);
+    // 독립 동일 입력의 2020은 HCRDotum을 강제하고, 2024는 원 face/대체 face의
+    // 자모 전진을 유지한다. 세대는 기존 명시적 출력 profile에서만 받는다.
+    styles.isolated_jamo_font = (!profile.hangul2024_layout()
+        && document.provenance.format != crate::model::provenance::SourceFormat::Pdf)
+        .then_some("HCR Dotum");
     (
         styles.page_number_char_style_id,
         styles.page_number_font_is_hft,
@@ -180,6 +185,17 @@ pub(crate) fn resolve_styles_with_environment(
                             .as_deref()
                             .is_some_and(|face| env.replacement(face).is_some())
                     });
+                    // 원본 메트릭을 유지하는 표시용 대체는 기존 paint 폭 맞춤도 유지한다.
+                    // 원 프로그램의 자연 윤곽은 그 메트릭까지 선택한 세션만 보존한다.
+                    style.font_families_preserve_glyph_ink[lang] = (explicit_true_type
+                        || explicit_replacement)
+                        && environment.is_some_and(|env| !env.preserves_source_metrics());
+                    // 프로그램·메트릭을 직접 선택한 자연 잉크에 이전 슬롯의
+                    // HFT 종이 프레임을 상속하지 않는다. 원본 메트릭을 유지하는
+                    // 자동 표시용 공급은 기존 인쇄 프레임을 그대로 소비한다.
+                    if style.font_families_preserve_glyph_ink[lang] {
+                        style.font_families_hft_print_frame[lang] = false;
+                    }
                     // 결측 글리프 체인만 추가한 세션은 원 face의 TTF/HFT 신뢰를 바꾸지 않는다.
                     if !keep_source_metrics && (explicit_true_type || explicit_replacement) {
                         latin_program_changed |= lang == 1;
@@ -193,6 +209,17 @@ pub(crate) fn resolve_styles_with_environment(
                         style.font_families_metric_face[lang] = None;
                         style.font_families_hft_print_frame[lang] = false;
                         style.font_families_original_glyph_metric_face[lang] = None;
+                    } else if explicit_replacement {
+                        // TTF로 기록한 옛 face도 호출자가 원 HFT 프로그램을
+                        // 공급하면 그 프로그램의 폭을 사용한다. 독립 2020 Print의
+                        // TTF 선언 한양신명조도 U+2024를 같은 Type3 전각으로 그린다.
+                        // 원본 선언(source_hft)은 바꾸지 않는다.
+                        if let Some(metric) =
+                            super::font_metrics_data::legacy_hft_metric_face(target)
+                        {
+                            style.font_families_metric_face[lang] = Some(metric.to_owned());
+                            style.font_families_hft_fullwidth_dot[lang] = true;
+                        }
                     }
                 }
             }
@@ -207,6 +234,17 @@ pub(crate) fn resolve_styles_with_environment(
                 );
             }
         }
+    }
+    // 쪽번호도 명시적으로 공급한 원 HFT 폭 표를 소비한다. TTF로 적힌
+    // 한양신명조를 원 프로그램으로 선택했는데 원 선언만 보면, 폭은 HFT로
+    // 재면서 기준선은 TTF의 1/3em 여유를 적용해 위로 이동한다.
+    if let Some(style) = styles
+        .page_number_char_style_id
+        .and_then(|id| styles.char_styles.get(id))
+    {
+        styles.page_number_font_is_hft |= style
+            .metric_face_for_lang(1)
+            .is_some_and(super::font_metrics_data::is_legacy_hft_metric_face);
     }
     styles
 }
@@ -230,6 +268,7 @@ pub fn resolve_styles_with_variant(
     ResolvedStyleSet {
         native_pua_fonts: Default::default(),
         resolved_dpi: Some(dpi),
+        isolated_jamo_font: None,
         page_number_char_style_id,
         page_number_font_is_hft,
         char_styles,
@@ -585,6 +624,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_families_hft_hangul,
         font_families_source_hft,
         font_families_hft_print_frame,
+        font_families_preserve_glyph_ink: vec![false; LANG_COUNT],
         font_families_hft_fullwidth_dot,
         ascii_punct_latin_slot,
         explicit_latin_slot,
@@ -662,6 +702,15 @@ pub fn detect_lang_category(ch: char) -> usize {
         // 슬롯을 쓴다. 한글/영문/기호 face를 교차한 한컴2020 출력으로 확인했다.
         // 본문 face의 결측 여부로 소유 슬롯을 추정하지 않는다.
         0x2024 | 0x2027 => 5,
+
+        // 전각 ASCII와 통화 기호도 기호 슬롯을 쓴다. 2020/2024 독립
+        // 103자 표본에서 슬롯별 상대 크기를 달리해 같은 선택을 확인했다.
+        // 한글 슬롯으로 묶으면 FF5E 물결표 등이 다른 프로그램으로 그려진다.
+        0xFF01..=0xFF60 | 0xFFE0..=0xFFE6 => 5,
+
+        // 로마 숫자도 기호 슬롯을 선택한다. 서로 다른 슬롯 크기를 준
+        // 독립 41자 표본에서 2020/2024 모두 같은 선택을 확인했다.
+        0x2160..=0x2188 => 5,
 
         // 한국어: Hangul Jamo, Compatibility Jamo, Syllables
         0x1100..=0x11FF | 0x3130..=0x318F | 0xAC00..=0xD7AF |

@@ -921,7 +921,23 @@ impl SkiaTextReplay<'_> {
                         1 => draw_styled_line(x1, line_y, x2, color, 0.5, &[], false),
                         2 => draw_styled_line(x1, line_y, x2, color, 0.5, &[3.0, 3.0], false),
                         3 => {
-                            // 점선 — 두께·간격은 폰트 크기를 따른다 (svg.rs 와 같은 출처).
+                            if let Some(dots) = crate::renderer::tab_leader::dot_geometry(
+                                font_size as f64,
+                                leader.start_x,
+                                leader_end_x,
+                            ) {
+                                let mut paint = Paint::default();
+                                paint.set_anti_alias(true);
+                                paint.set_color(color);
+                                for center in dots.centers {
+                                    canvas.draw_circle(
+                                        ((bbox.x + center) as f32, line_y),
+                                        dots.radius as f32,
+                                        &paint,
+                                    );
+                                }
+                                continue;
+                            }
                             let (w, dash, gap) =
                                 crate::renderer::render_tree::tab_dot_leader_stroke(
                                     font_size as f64,
