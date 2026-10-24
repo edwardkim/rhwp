@@ -445,9 +445,13 @@ impl LayerBuilder {
                         })
                         .or_else(|| {
                             pixel
-                                .and_then(|_| self.page_context?.image_codec_width_points(&image, frame))
+                                .and_then(|_| {
+                                    self.page_context?.image_codec_width_points(&image, frame)
+                                })
                                 .and_then(|width| {
-                                    crate::renderer::image_resolver::print_device_image_payload(&image, width)
+                                    crate::renderer::image_resolver::print_device_image_payload(
+                                        &image, width,
+                                    )
                                 })
                         })
                         .or_else(|| {

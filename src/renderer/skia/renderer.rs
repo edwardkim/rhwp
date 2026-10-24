@@ -1197,15 +1197,15 @@ impl SkiaLayerRenderer {
                 effect,
                 brightness,
                 contrast,
-                cache_context.policy.image_sampling()
+                cache_context
+                    .policy
+                    .image_sampling()
                     .with_paper_grid(cache_context.bitmap_paper_grid)
-                    .with_print_page(
-                        (print_area && cache_context.raster_target).then_some((
-                            cache_context.page_extent.0,
-                            cache_context.page_extent.1,
-                            f64::from(fallback_raster_scale),
-                        )),
-                    ),
+                    .with_print_page((print_area && cache_context.raster_target).then_some((
+                        cache_context.page_extent.0,
+                        cache_context.page_extent.1,
+                        f64::from(fallback_raster_scale),
+                    ))),
             )
         };
         let equation_fonts = EquationFonts {
