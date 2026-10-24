@@ -25,6 +25,8 @@ pub struct ResolvedCharStyle {
     /// 대체 여부와 무관하게 보존하는 원본 프로그램 종류다.
     pub font_families_source_hft: Vec<bool>,
     pub font_families_hft_print_frame: Vec<bool>,
+    /// 세션이 명시적으로 선택한 프로그램의 자연 윤곽 폭을 보존한다.
+    pub font_families_preserve_glyph_ink: Vec<bool>,
     /// 언어 슬롯이 대체되지 않은 원본 HFT 기호 전각 폭을 갖는지.
     pub font_families_hft_fullwidth_dot: Vec<bool>,
     /// [#7418] 한/글이 한글 뒤 ASCII 구두점도 **영문 슬롯** 글꼴로 재고 그리는가.
@@ -137,6 +139,7 @@ impl Default for ResolvedCharStyle {
             font_families_hft_hangul: Vec::new(),
             font_families_source_hft: Vec::new(),
             font_families_hft_print_frame: Vec::new(),
+            font_families_preserve_glyph_ink: Vec::new(),
             font_families_hft_fullwidth_dot: Vec::new(),
             ascii_punct_latin_slot: false,
             explicit_latin_slot: false,

@@ -878,6 +878,11 @@ pub(crate) fn resolved_to_text_style(
             fixed_glyph_advances: false,
             source_font_is_hft: cs.source_hft_for_lang(lang_index),
             hft_print_frame: cs.hft_print_frame_for_lang(lang_index),
+            preserve_glyph_ink: cs
+                .font_families_preserve_glyph_ink
+                .get(lang_index)
+                .copied()
+                .unwrap_or(false),
             isolated_jamo_font: styles.isolated_jamo_font.or_else(|| {
                 matches!(
                     cs.font_family_for_lang(lang_index)

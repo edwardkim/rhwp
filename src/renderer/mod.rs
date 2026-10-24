@@ -373,6 +373,9 @@ pub struct TextStyle {
     /// 유지된 원본 HFT의 인쇄 paint 좌표 계약. 논리 조판/전진 폭과 별개다.
     #[serde(skip_serializing)]
     pub hft_print_frame: bool,
+    /// 명시적으로 선택한 실제 프로그램의 잉크 폭. 논리 전진과 구분한다.
+    #[serde(skip_serializing)]
+    pub preserve_glyph_ink: bool,
     /// 글자 색상
     pub color: ColorRef,
     /// 진하게
@@ -721,9 +724,9 @@ pub(crate) fn canvas_cluster_fit_scale(
     visual_width: f64,
     pin_ascii_advance: bool,
 ) -> Option<f64> {
-    // 원 HFT의 인쇄 프레임과 검증된 TTF 프로그램은 전진과 잉크 폭을 구분한다.
-    // 일반 대체 face에는 기존 조판 전진에 맞추는 정책을 계속 적용한다.
-    if !style.fixed_glyph_advances && (style.hft_print_frame || style.font_metric_trusted) {
+    // 호출자가 선택한 프로그램은 전진과 잉크 폭을 구분한다. 원본 HFT 선언이나
+    // 폭 표의 신뢰만으로 일반 대체 face의 기존 맞춤까지 차단하지 않는다.
+    if !style.fixed_glyph_advances && style.preserve_glyph_ink {
         return None;
     }
     let cluster_advance =
@@ -752,6 +755,7 @@ impl Default for TextStyle {
             resolved_font_size: false,
             font_position: None,
             hft_print_frame: false,
+            preserve_glyph_ink: false,
             color: 0,
             bold: false,
             italic: false,
@@ -3912,7 +3916,7 @@ mod tests {
             (7.5, 15.0, 0.0, -7.5),
         ] {
             let style = TextStyle {
-                hft_print_frame: true,
+                preserve_glyph_ink: true,
                 extra_char_spacing: extra,
                 letter_spacing: letter,
                 ..Default::default()

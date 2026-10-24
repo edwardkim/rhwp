@@ -185,7 +185,7 @@ fn original_hft_glyph_paint_has_its_print_frame_without_moving_source() {
     core.set_hangul2024_compat(true);
     core.set_font_environment(Some(
         rhwp::renderer::font_environment::FontEnvironment::from_json(
-            r#"{"substitutions":{"한양신명조":"한양신명조"}}"#,
+            r#"{"id":"original-page-number-program","substitutions":{"한양신명조":"한양신명조"}}"#,
         )
         .unwrap(),
     ))

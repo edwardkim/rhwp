@@ -185,6 +185,8 @@ pub(crate) fn resolve_styles_with_environment(
                             .as_deref()
                             .is_some_and(|face| env.replacement(face).is_some())
                     });
+                    style.font_families_preserve_glyph_ink[lang] =
+                        explicit_true_type || explicit_replacement;
                     // 결측 글리프 체인만 추가한 세션은 원 face의 TTF/HFT 신뢰를 바꾸지 않는다.
                     if !keep_source_metrics && (explicit_true_type || explicit_replacement) {
                         latin_program_changed |= lang == 1;
@@ -613,6 +615,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_families_hft_hangul,
         font_families_source_hft,
         font_families_hft_print_frame,
+        font_families_preserve_glyph_ink: vec![false; LANG_COUNT],
         font_families_hft_fullwidth_dot,
         ascii_punct_latin_slot,
         explicit_latin_slot,
