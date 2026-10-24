@@ -12970,6 +12970,9 @@ impl LayoutEngine {
                             para_y_for_table - col_area.y - spacing_before,
                             spacing_before,
                             mt.map_or(declared_height, |measured| measured.total_height),
+                            // 조판이 정한 배치가 없을 때의 출력 폴백이다. 앞 간격 흡수 판정(#8149)은
+                            // 조판(`entry.rs`)이 앞 항목으로 정하므로 여기서는 종전대로 받는다.
+                            true,
                             self.dpi,).map(|placement| col_area.y + placement.table_top)
                     });
                     let stored_flow_advance = stored_top.and_then(|_| {
