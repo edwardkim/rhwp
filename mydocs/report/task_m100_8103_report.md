@@ -353,3 +353,33 @@ replay·역순 완료와 같은 backend의 deferred repaint를 검사한다. 전
 문서 교체 fixture가 `prepareDocumentLoad` 이후 renderer 적용을 생략한 실패 1건을 확인했다.
 실제 `applyRendererSelection`을 호출하게 보완하고 기존 surface 3개·새 문서 key 기대값은 유지했다.
 최종 head의 전체 재검증 결과는 후속 기록으로 확정한다.
+
+### 기본 GPU surface 전환의 추가 원인
+
+software 모드 E2E 통과 후 실제 `?renderer=auto` UI에서는 WebGL → Canvas2D 전환 때
+`Failed to get 2d context`가 발생했다. 동일 흐름을 `--surface=auto`와 Chromium SwiftShader
+WebGL로 자동 재현했다(`gpu-before.log`). 준비 순서 문제와 별개로, CanvasPool의 width/height
+초기화는 HTML canvas의 context 종류를 해제하지 않는데 backend가 바뀌어도 익명 pool을
+재사용했다. 기존 CanvasKit의 software fallback은 한 방향만 새 canvas로 교체한다.
+
+관련 원 구현 `75592f856533a3d1d8bea4ca296dbf40ca082343`와 #6637 구현 검토의 active/LRU/pool
+소유권·동일 key 재사용·새 문서 callback 차단 계약을 확인했다. 기존 세 backend 검증이
+WebGL context에서 Canvas2D로 돌아오는 경계를 보호한 것은 아니다.
+`applyRendererSelection`의 실제 configure 변경 때 LRU 반환 후 active/available canvas를 함께
+폐기한다. 동일 backend의 정상 pool 재사용은 유지하며 새 unit으로 양쪽을 확인한다.
+E2E에 surface 인자를 추가하고 실제 CanvasKit replay와 WebGL default surface를 확인한다.
+콘솔 오류 0건만으로 화면 재개가 빠진 구현을 통과시키지 않는다.
+
+### 붙여넣기 지연 조사 — 별도 성능 범위
+
+Canvas2D + 같은 fresh **dev WASM**의 실제 paste 이벤트를 계측했다. 10/100/400문단의 동기
+paste 시간은 각각 101.6ms / 1791.0ms / 14615.8ms이며 편집 명령은 19/199/799개였다.
+400문단에서 executeOperation 누적은 14611.3ms로 거의 전부를 차지했다.
+원문·문단 수는 보존됐다. 로그와 실행 스크립트는
+`output/pr-review/8103/local/verified-paste-profile.log`, `paste-profile.mjs`다.
+`input-handler-keyboard.ts::pastePlainText`가 줄마다 InsertText와 SplitParagraph를 실행한다.
+CanvasKit 없이도 동기 구간에서 발생하므로 선택 음영/renderer 준비 오류와 별도 성능 이슈로
+추적하는 것이 적절하다. batching은 Undo 단위·셀/본문·서식·부분 실패 계약까지 별도 검증해야 한다.
+이번 수정에 넣지 않으며 release WASM의 최종 성능 수치로 해석하지 않는다. 기존 이슈 검색에서
+#1211 전체 visible repaint, #4118 셀 뮤테이터, #5769/#3230 Undo 비용을 확인했으나 같은
+400문단 본문 붙여넣기 증상으로 단정하지 않았다. 별도 이슈 게시나 성능 구현은 하지 않았다.

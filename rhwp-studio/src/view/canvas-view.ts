@@ -532,6 +532,9 @@ export class CanvasView {
           || selection.diagnostics.fallbackReason === 'canvaskitRuntimeFailed'
         ),
     );
+    // width/height 초기화로는 WebGL canvas를 2D context로 전환할 수 없다.
+    // LRU는 위에서 반환됐으므로 active/익명 pool도 함께 비운다.
+    if (changed) this.canvasPool?.discardAll();
     if (decisionChanged && !changed) this.pageRenderer.invalidateDocumentRevision();
     this.activeRendererDecisionKey = selection.diagnostics.decisionKey;
     this.rendererSelectionPending = false;

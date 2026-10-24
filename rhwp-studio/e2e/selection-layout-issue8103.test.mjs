@@ -6,6 +6,7 @@ let currentCase = 'initialization';
 function setTestCase(name) { currentCase = name; setReporterTestCase(name); }
 
 const requestedRenderer = process.argv.find(arg => arg.startsWith('--renderer='))?.split('=')[1];
+const surface = process.argv.find(arg => arg.startsWith('--surface='))?.split('=')[1] ?? 'software';
 const renderers = requestedRenderer ? [requestedRenderer] : ['canvas2d', 'auto'];
 const fontCache = process.argv.find(arg => arg.startsWith('--font-cache='))?.slice('--font-cache='.length);
 const fontBytes = fontCache ? readFileSync(fontCache) : null;
@@ -142,7 +143,7 @@ await runTest(`선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
       }
     });
   }
-  await loadApp(page, `?renderer=${renderer}&canvaskitSurface=software`);
+  await loadApp(page, `?renderer=${renderer}&canvaskitSurface=${surface}`);
   assert(await page.evaluate(expected => window.__renderBackendRequest.backend === expected, renderer),
     `${renderer}: 실제 요청 경로 확인`);
   await page.evaluate(() => {
@@ -197,6 +198,19 @@ await runTest(`선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
         !restored.highlights[i] || !near([r], [restored.highlights[i]])).length }));
     checkProjection(restored, `${zoom} Undo`);
     await settleRenderer(page, renderer);
+    await page.waitForFunction(() => [...document.querySelectorAll('canvas.document-page-canvas')]
+      .some(canvas => canvas.width > 0 && canvas.height > 0 && canvas.dataset.rhwpRenderedZoom));
+    if (renderer !== 'canvas2d') {
+      const replay = await page.evaluate(() => ({
+        backend: window.__canvasView.getRenderBackend(),
+        surfaces: Array.from({ length: window.__wasm.pageCount }, (_, p) =>
+          window.__canvasView.getCanvasKitRenderDiagnostics(p)?.surfaceBackend).filter(Boolean),
+      }));
+      console.log(JSON.stringify({ renderer, surface, zoom, replay }));
+      assert(replay.backend === 'canvaskit' && replay.surfaces.length > 0,
+        '준비 완료 후 실제 CanvasKit surface replay 확인');
+      if (surface === 'webgl') assert(replay.surfaces.includes('default'), 'WebGL surface를 software fallback으로 대체하지 않음');
+    }
     checkProjection(await state(page), `${zoom} settled renderer`);
     assert(same(restored.texts, expectedTexts), 'Undo: 원문 400문단 순서·내용 보존');
     assert(same(restored.selection, before.selection), 'Undo: anchor/focus 보존');

@@ -680,6 +680,7 @@ test('문서 교체는 구 zoom 큐·surface·미시작 이미지 작업을 버�
   };
   f.view.virtualScroll.reset = () => {};
   f.view.canvasPool.releaseAll = () => f.surfaces.clear();
+  f.view.canvasPool.discardAll = () => f.surfaces.clear();
   f.view.pageSurfaceLru.clear = () => {};
   try {
     f.view.renderSettledZoom();

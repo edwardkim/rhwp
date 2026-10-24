@@ -85,6 +85,12 @@ export class CanvasPool {
     }
   }
 
+  /** backend 전환에서는 context 종류가 고정된 canvas를 재사용할 수 없다. */
+  discardAll(): void {
+    this.releaseAll();
+    this.available = [];
+  }
+
   /** 현재 사용 중인 페이지 인덱스 목록 */
   get activePages(): number[] {
     return Array.from(this.inUse.keys());
