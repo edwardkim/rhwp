@@ -191,13 +191,24 @@ impl EqLayout {
             &equation.script,
         ))
         .parse();
-        legacy::supports(&ast).then(|| Self::for_equation(equation, dpi).layout(&ast))
+        if !legacy::supports(&ast) || !legacy::compound_frame(&ast) {
+            return None;
+        }
+        let intrinsic = Self::for_equation(equation, dpi).layout(&ast);
+        let intrinsic_width = super::super::px_to_hwpunit(intrinsic.width, dpi).max(1) as u32;
+        let intrinsic_height = super::super::px_to_hwpunit(intrinsic.height, dpi).max(1) as u32;
+        // 자연 표시가 이미 들어가는 선언 상자를 축소하지 않는다.
+        // 작아진 옛 캐시만 같은 복합 프레임의 측정 결과로 보충한다.
+        (equation.common.width < intrinsic_width || equation.common.height < intrinsic_height)
+            .then_some(intrinsic)
     }
 
     /// AST를 레이아웃 박스로 변환
     pub fn layout(&self, node: &EqNode) -> LayoutBox {
         let root = Self {
-            legacy_equation: self.legacy_equation && legacy::supports(node),
+            legacy_equation: self.legacy_equation
+                && legacy::supports(node)
+                && legacy::compound_frame(node),
             standalone_eqalign: matrix_geometry::is_standalone_eqalign(node),
             ..*self
         };
@@ -411,7 +422,8 @@ impl EqLayout {
 
         let mut x = 0.0;
         for index in 0..boxes.len() {
-            if self.legacy_hft_metrics && index > 0 {
+            // 복합 경로의 row_children이 이미 생산한 연산자 여백을 다시 더하지 않는다.
+            if self.legacy_hft_metrics && !self.legacy_equation && index > 0 {
                 // Glyph projection changes paint data, not the AST operator's
                 // logical slot or the source-owned contextual spacing.
                 x += legacy_operator_gap(source_nodes[index - 1], source_nodes[index], fs);

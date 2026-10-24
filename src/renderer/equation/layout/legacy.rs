@@ -76,6 +76,26 @@ pub(super) fn supports(node: &EqNode) -> bool {
     }
 }
 
+// 단독 HFT 글줄·분수는 기존의 등록 원점과 선언 프레임을 소유한다.
+// 괄호가 감싼 복합 분수만 독립 Print로 확인한 옛 편집기의 연속 전진을 쓴다.
+// 문자열이나 문서 식별자가 아니라 AST의 프레임 소유 구조로 구분한다.
+pub(super) fn compound_frame(node: &EqNode) -> bool {
+    fn fraction(node: &EqNode) -> bool {
+        match node {
+            EqNode::Fraction { .. } => true,
+            EqNode::Row(items) => items.iter().any(fraction),
+            EqNode::Paren { body, .. } | EqNode::FontStyle { body, .. } => fraction(body),
+            _ => false,
+        }
+    }
+    match node {
+        EqNode::Paren { body, .. } => fraction(body),
+        EqNode::Row(items) => items.iter().any(compound_frame),
+        EqNode::FontStyle { body, .. } => compound_frame(body),
+        _ => false,
+    }
+}
+
 fn line_frame(fs: f64) -> (f64, f64) {
     let height = fs * 1.2;
     (height, height * 0.84)
