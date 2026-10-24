@@ -1,5 +1,7 @@
 # Stage107: 기존 범위의 최종 로컬 검증과 제출 증적
 
+> **후속 검증:** 이 문서의 수치는 이전 source/base의 이력이다. e7 리베이스 검증과 사용자 지정 HWPX 제외 후 49조건 제출 집계는 [Stage127](task_m100_7445_rebase_repair_stage127.md)을 따른다.
+
 Issue: #7445. 제품 실행 HEAD는 `1f54c3df17747b71c8be9b47b3198add4fa4fd3b`,
 base는 `d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867`이다. 이후 Rust 차이는
 [Stage101](task_m100_7445_rebase_repair_stage101.md)의 진단 속성 두 개뿐이다.

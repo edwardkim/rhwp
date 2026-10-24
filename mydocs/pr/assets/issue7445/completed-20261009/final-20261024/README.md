@@ -1,5 +1,7 @@
 # 최종 전쪽 검증 증적 (2026-10-24)
 
+> **검증 이력:** 아래 50조건·74관측은 이전 source/base의 보존 기록이다. 사용자 지시로 sample16 HWPX를 별도 PR 범위에서 처리하며, 현재 49조건·72관측 및 e7 리베이스 검증은 [Stage127](../../../../../working/task_m100_7445_rebase_repair_stage127.md)에 기록했다.
+
 제품 실행 HEAD: `1f54c3df17747b71c8be9b47b3198add4fa4fd3b`. 고정 base: `d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867`.
 
 기존 50조건을 각 backend 1,836쪽씩 비교했다. 후보 Native/fresh WASM 총 3,672쪽은 누락·중복 없이
