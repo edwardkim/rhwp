@@ -24,10 +24,12 @@ fn uses_image_pattern(group: &usvg::Group) -> bool {
 }
 
 /// 반환 PNG의 크기는 종전 요청과 같다. crop·fill·최종 배치의 좌표 계약은 유지한다.
+/// `transform`은 문서 좌표를 `width`×`height` 목적지 픽셀로 옮긴다.
 pub(super) fn rasterize_before_reduction(
     tree: &usvg::Tree,
     width: u32,
     height: u32,
+    transform: tiny_skia::Transform,
     pixel_limit: u64,
 ) -> Option<Vec<u8>> {
     let size = tree.size();
@@ -39,17 +41,22 @@ pub(super) fn rasterize_before_reduction(
     {
         return None;
     }
-    let source_width = (size.width().ceil() as u64).max(u64::from(width));
-    let source_height = (size.height().ceil() as u64).max(u64::from(height));
+    if !(transform.sx > 0.0 && transform.sy > 0.0) {
+        return None;
+    }
+    // 목적지 창이 덮는 문서 범위를 문서 1단위=1표본으로 그린다. 위상도 정수 표본으로 옮겨
+    // 8px 무늬 타일이 소수 배율·소수 이동으로 재표본되어 옅어지지 않게 한다.
+    let source_width = ((width as f32 / transform.sx).ceil() as u64).max(u64::from(width));
+    let source_height = ((height as f32 / transform.sy).ceil() as u64).max(u64::from(height));
     if source_width.checked_mul(source_height)? > pixel_limit {
         return None;
     }
     let source_width = u32::try_from(source_width).ok()?;
     let source_height = u32::try_from(source_height).ok()?;
     let mut pixmap = tiny_skia::Pixmap::new(source_width, source_height)?;
-    let transform = tiny_skia::Transform::from_scale(
-        source_width as f32 / size.width(),
-        source_height as f32 / size.height(),
+    let transform = tiny_skia::Transform::from_translate(
+        (transform.tx / transform.sx).round(),
+        (transform.ty / transform.sy).round(),
     );
     // 반복 타일을 목적지의 작은 정수 격자로 먼저 뭉개지 않는다.
     // 흑백 마스크와 앞뒤 칠을 원래 표본에서 합성한 뒤에만 재표본한다.

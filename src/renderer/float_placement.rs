@@ -6017,15 +6017,27 @@ fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
 
 /// A saved empty line that ends before a paragraph-relative table offset
 /// does not own the table's outer frame. Continuations reopen that frame too.
+///
+/// 저장 줄이 같은 문단의 글자처럼 표를 싣는 경우도 같다 — 그 표는 줄 안에 있고 오프셋 표의
+/// 바깥 틀을 소유하지 않는다(#4599, 1790387 21쪽: 이어받기 조각 괘선 = 본문 상단 + 위 여백).
 pub(crate) fn stored_empty_offset_rowbreak_fragment_repeats_outer_margin(
     stored_layout: bool,
     para: &Paragraph,
     table: &Table,
 ) -> bool {
+    let float_then_inline_tables =
+        match para.controls.split_first() {
+            Some((Control::Table(first), rest)) => rest.is_empty()
+                || (std::ptr::eq(first.as_ref(), table)
+                    && rest.iter().all(
+                        |control| matches!(control, Control::Table(t) if t.common.treat_as_char),
+                    )),
+            _ => false,
+        };
     stored_layout
         && table.page_break == TablePageBreak::RowBreak
         && !para_has_non_whitespace_text(para)
-        && matches!(para.controls.as_slice(), [Control::Table(_)])
+        && float_then_inline_tables
         && !para.cell_format_vpos_dirty
         && para
             .line_segs

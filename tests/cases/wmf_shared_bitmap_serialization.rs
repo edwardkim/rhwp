@@ -153,12 +153,17 @@ fn wmf_png_serialization_keeps_distinct_size_and_bitmap_payloads() {
 }
 
 fn font_diagram(face: &[u8], charset: u8) -> String {
+    font_diagram_with_family(face, charset, 0)
+}
+
+/// `pitch_and_family`: LOGFONT 상위 니블이 FamilyFont(0x10 ROMAN, 0x20 SWISS, 0x30 MODERN).
+fn font_diagram_with_family(face: &[u8], charset: u8, pitch_and_family: u8) -> String {
     let mut bytes = header();
     let mut font = Vec::new();
     for value in [-12i16, 0, 0, 0, 400] {
         font.extend_from_slice(&value.to_le_bytes());
     }
-    font.extend_from_slice(&[0, 0, 0, charset, 0, 0, 0, 0]);
+    font.extend_from_slice(&[0, 0, 0, charset, 0, 0, 0, pitch_and_family]);
     let mut name = [0; 32];
     name[..face.len()].copy_from_slice(face);
     font.extend_from_slice(&name);
@@ -203,6 +208,33 @@ fn wmf_font_without_alias_keeps_its_original_family_and_text() {
     let svg = font_diagram(b"Arial", 0);
     let doc = roxmltree::Document::parse(&svg).unwrap();
     let text = doc.descendants().find(|n| n.has_tag_name("text")).unwrap();
-    assert_eq!(text.attribute("font-family"), Some("'Arial'"));
+    // 별칭은 넣지 않는다: 원래 이름이 맨 앞에 한 번, 그 뒤는 계열 대체 사슬뿐이다.
+    let families: Vec<_> = text.attribute("font-family").unwrap().split(',').collect();
+    assert_eq!(families.first(), Some(&"'Arial'"));
+    assert_eq!(families.iter().filter(|f| **f == "'Arial'").count(), 1);
+    assert_eq!(families.last(), Some(&"'sans-serif'"));
     assert_eq!(text.text(), Some("ABC"));
+}
+
+#[test]
+fn wmf_latin_only_face_falls_back_by_logfont_family() {
+    // 차트 WMF 의 "Calibri" 만 지정된 글자(1790387 35쪽 "2018년")는 미설치 환경에서 renderer
+    // 기본 명조로 떨어지면 안 된다 — 한/글 PDF 는 고딕. SWISS 는 고딕 사슬, ROMAN 은 명조 사슬.
+    let families_of = |svg: String| -> Vec<String> {
+        let doc = roxmltree::Document::parse(&svg).unwrap();
+        let text = doc.descendants().find(|n| n.has_tag_name("text")).unwrap();
+        text.attribute("font-family")
+            .unwrap()
+            .split(',')
+            .map(str::to_owned)
+            .collect()
+    };
+    let swiss = families_of(font_diagram_with_family(b"Calibri", 0, 0x22));
+    assert_eq!(swiss.first().map(String::as_str), Some("'Calibri'"));
+    assert!(swiss.iter().any(|f| f == "'Malgun Gothic'"));
+    assert_eq!(swiss.last().map(String::as_str), Some("'sans-serif'"));
+
+    let roman = families_of(font_diagram_with_family(b"Cambria", 0, 0x12));
+    assert_eq!(roman.first().map(String::as_str), Some("'Cambria'"));
+    assert_eq!(roman.last().map(String::as_str), Some("'serif'"));
 }
