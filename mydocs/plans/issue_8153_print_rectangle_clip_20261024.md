@@ -39,3 +39,21 @@ ignored 작업 경로의 `image-coverage-d3fdfa0c51/cell-clip-consumer-diagnosti
 현재 `d3fdfa0c51` Native 전쪽 검증은 독립 실행 중이며 고정 producer와 결과를 보존한다.
 진행 중인 결과를 새 clip 후보의 검증으로 혼용하지 않는다. 전쪽 raw 100%·실제 미대응
 픽셀 0·직접 판독·최종 회귀와 PR 절차가 끝나야 전체 목표를 완료한다.
+
+## `e8ec8c9845`의 실제 제품 소비자
+
+jobs 8·고정 `target/pr-review` Native 빌드는 12분 25초 후 종료 코드 0이다.
+새 고정 library를 사용한 실제 Native 소비자의 사각형 clip 16건은 별도 tree 보정 없이
+16건 모두 독립 PDF PNG와 RGB 전체가 일치했다. 이전 후보의 2 PASS / 14 FAIL과
+구분하며, 같은 clip을 다시 대응한 진단도 16건이 일치해 반복 대응의 결과를 확인했다.
+
+새 고정 CLI의 원본 HWPX 288·307쪽에서 기존 회색 경계 5곳과 세로 이음 3곳을 직접
+비교했다. 8곳 모두 Print와 RGB가 같다. 특히 x=210, y=307·310·315는 이전 248에서
+독립 Print의 255로 일치했다. 원본·Print를 바꾸거나 재출력하지 않았다.
+`original-hwpx-boundary-and-seam.json`과 `cell-clip-consumer-diagnostic/result.json`에
+source·픽셀·PNG SHA를 보존했다. Studio `tsc --noEmit`도 종료 코드 0이다.
+
+이 시점의 원본 영향 36쪽 비교는 진행 중이며, 새 후보의 전쪽·fresh WASM 검증과
+전체 100% 완료를 선언하지 않는다. 이전 그림 후보 `d3fdfa0c51`의 별도 전쪽 감사는
+HWPX 188/383쪽·HWP 159/383쪽의 실제 미대응 픽셀 0, 총 미대응 픽셀 각각
+17,837·17,410을 확인했다. 이 결과를 새 clip 후보의 전쪽 결과로 혼용하지 않는다.
