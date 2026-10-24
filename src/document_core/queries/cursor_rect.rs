@@ -5769,18 +5769,32 @@ impl DocumentCore {
         para_idx: usize,
         control_idx: usize,
         note_para_idx: usize,
-    ) -> Option<(u32, usize, usize)> {
-        let pr = self.pagination.get(section_idx)?;
-        let local_idx = pr.endnote_para_sources.iter().position(|src| {
-            src.section_index == section_idx
-                && src.cell_path.is_empty()
-                && src.para_index == para_idx
-                && src.control_index == control_idx
-                && src.note_para_index == note_para_idx
-        })?;
-        let virtual_para_idx =
-            self.document.sections.get(section_idx)?.paragraphs.len() + local_idx;
-        let page_base = self.global_page_base_for_section(section_idx);
+    ) -> Option<(u32, usize, usize, usize)> {
+        // 미주는 원본 구역이 아니라 모아 찍는 구역(문서 끝이면 마지막 구역)의 페이지에
+        // 그려진다. 그래서 모든 구역의 미주 출처에서 원본 위치를 찾고, 가상 문단 번호와
+        // 페이지는 그 미주를 그린 구역 기준으로 계산한다.
+        let (render_section_idx, pr, local_idx) =
+            self.pagination
+                .iter()
+                .enumerate()
+                .find_map(|(render_section_idx, pr)| {
+                    let local_idx = pr.endnote_para_sources.iter().position(|src| {
+                        src.section_index == section_idx
+                            && src.cell_path.is_empty()
+                            && src.para_index == para_idx
+                            && src.control_index == control_idx
+                            && src.note_para_index == note_para_idx
+                    })?;
+                    Some((render_section_idx, pr, local_idx))
+                })?;
+        let virtual_para_idx = self
+            .document
+            .sections
+            .get(render_section_idx)?
+            .paragraphs
+            .len()
+            + local_idx;
+        let page_base = self.global_page_base_for_section(render_section_idx);
         for (local_page_idx, page) in pr.pages.iter().enumerate() {
             if page
                 .column_contents
@@ -5792,6 +5806,7 @@ impl DocumentCore {
                     page_base + local_page_idx as u32,
                     local_idx,
                     virtual_para_idx,
+                    render_section_idx,
                 ));
             }
         }
@@ -5828,7 +5843,7 @@ impl DocumentCore {
                 ))
             }
             Control::Endnote(_) => {
-                let (page_num, endnote_index, virtual_para_idx) = self
+                let (page_num, endnote_index, virtual_para_idx, _) = self
                     .find_endnote_edit_target(section_idx, para_idx, control_idx, 0)
                     .ok_or_else(|| {
                         HwpError::RenderError("미주 렌더 위치를 찾을 수 없습니다".to_string())
@@ -5878,7 +5893,7 @@ impl DocumentCore {
                 )
             }
             Control::Endnote(endnote) => {
-                let (page_num, _, virtual_para_idx) = self
+                let (page_num, _, virtual_para_idx, render_section_idx) = self
                     .find_endnote_edit_target(section_idx, para_idx, control_idx, note_para_idx)
                     .ok_or_else(|| {
                         HwpError::RenderError("미주 렌더 위치를 찾을 수 없습니다".to_string())
@@ -5890,7 +5905,7 @@ impl DocumentCore {
                 };
                 self.cursor_rect_for_render_paragraph(
                     page_num,
-                    section_idx,
+                    render_section_idx,
                     virtual_para_idx,
                     render_char_offset,
                 )?
