@@ -1303,7 +1303,7 @@ struct RunEmitVars<'a> {
     alignment: crate::model::style::Alignment,
     auto_tab_right: bool,
     available_width: f64,
-    effective_margin_left: f64,
+    text_start_offset: f64,
     end: usize,
     extra_char_sp: f64,
     extra_dash_sp: f64,
@@ -7044,6 +7044,10 @@ impl LayoutEngine {
                         - inline_offset
                         - num_offset,
                 );
+            // 번호·인라인 선행 요소는 줄 앞을 소비하지만 탭 정지는 단 기준이다.
+            // 남은 폭과 같은 실제 줄 원점을 측정·방출에 함께 전달해야 오른쪽
+            // 정지에서 마커 폭을 다시 빼거나 이미 지난 정지로 오인하지 않는다.
+            let text_start_offset = line_node.bbox.x - col_area.x + inline_offset + num_offset;
             // 측정·가용폭·실제 원점은 이미 해소한 같은 들여쓰기를 한 번 소비한다.
             let equation_first_effective_margin_left =
                 crate::renderer::equation_tac_flow::paragraph_effective_margin_left(
@@ -7178,7 +7182,7 @@ impl LayoutEngine {
             // treat_as_char 이미지 폭도 포함하여 정확한 폭 산출
             // [Task #604 Stage 2] wrap_anchor 가 있는 줄: line_cs_offset 을 est_x 기준점에
             // 포함 (line_x_offset 은 col_area.x 기준 상대좌표).
-            let est_x_start = effective_margin_left + line_cs_offset + inline_offset;
+            let est_x_start = text_start_offset;
             let line_width_est = self.estimate_line_run_widths(
                 comp_line,
                 composed,
@@ -7188,7 +7192,7 @@ impl LayoutEngine {
                 tab_width,
                 auto_tab_right,
                 &line_tac_offsets_for_width,
-                effective_margin_left,
+                text_start_offset,
                 available_width,
                 start_line,
                 line_idx,
@@ -7461,7 +7465,7 @@ impl LayoutEngine {
                         ts.tab_stops = tab_stops.clone();
                         ts.auto_tab_right = auto_tab_right;
                         ts.available_width = available_width;
-                        ts.text_start_offset = effective_margin_left;
+                        ts.text_start_offset = text_start_offset;
                         ts.inline_tabs = composed.tab_extended.clone();
                         ts.extra_char_spacing = extra_char_sp;
                         if r.char_overlap.is_some() {
@@ -7792,7 +7796,7 @@ impl LayoutEngine {
                     alignment,
                     auto_tab_right,
                     available_width,
-                    effective_margin_left,
+                    text_start_offset,
                     end,
                     extra_char_sp,
                     extra_dash_sp,
@@ -8528,7 +8532,7 @@ impl LayoutEngine {
             alignment,
             auto_tab_right,
             available_width,
-            effective_margin_left,
+            text_start_offset,
             end,
             extra_char_sp,
             extra_dash_sp,
@@ -8666,7 +8670,7 @@ impl LayoutEngine {
                 .filter(|style| style.auto_tab_left && style.indent < 0.0)
                 .map(|style| style.margin_left - style.indent);
             text_style.available_width = available_width;
-            text_style.text_start_offset = effective_margin_left;
+            text_style.text_start_offset = text_start_offset;
             // 저장 탭의 순번은 런과 글자 모양 경계를 넘어 이어진다.
             text_style.inline_tabs = tab_frame::geometry_inline_tabs(
                 &composed.tab_extended,
@@ -8689,7 +8693,7 @@ impl LayoutEngine {
                                 + right_leader_number_origin(
                                     tab,
                                     !composed.tab_extended.is_empty(),
-                                    effective_margin_left,
+                                    text_start_offset,
                                     available_width,
                                     digit_w,
                                 );
@@ -10642,7 +10646,7 @@ impl LayoutEngine {
         tab_width: f64,
         auto_tab_right: bool,
         line_tac_offsets_for_width: &[(usize, f64, usize)],
-        effective_margin_left: f64,
+        text_start_offset: f64,
         available_width: f64,
         start_line: usize,
         line_idx: usize,
@@ -10670,7 +10674,7 @@ impl LayoutEngine {
             ts.tab_stops = tab_stops.to_vec();
             ts.auto_tab_right = auto_tab_right;
             ts.available_width = available_width;
-            ts.text_start_offset = effective_margin_left;
+            ts.text_start_offset = text_start_offset;
             ts.inline_tabs = tab_frame::geometry_inline_tabs(
                 &composed.tab_extended,
                 inline_tab_cursor_est,
@@ -10690,7 +10694,7 @@ impl LayoutEngine {
                             est_x = right_leader_number_origin(
                                 tab,
                                 !composed.tab_extended.is_empty(),
-                                effective_margin_left,
+                                text_start_offset,
                                 available_width,
                                 digit_w,
                             );
