@@ -239,6 +239,9 @@ registry 게시·모든 CPU의 실행 검증을 대신하지 않으며, 릴리�
 제출 경로는 `collaborator_self_merge`, 보조 절차는 `local_validation`·`visual_fixture_evidence`다.
 제출 전 fetch의 devel은 `d9fd85ed5`이며, 같은 시점의 조회에서 본인 열린 PR은 없었다. 제품 source·test·manifest가 최종 검증
 이후 동일하므로 완료한 로컬 검증을 재사용하고 결정·문서·표시 자료 변경만 검사한다.
+제출 전 전체 diff 검사에서 손상 입력 PDF 두 개의 고정 폭 xref 패딩이 공백 오류로 잡혀
+`.gitattributes`에 #8183 PDF의 `-text -diff`를 지정했다. PDF 바이트와 hash는 그대로이며
+플랫폼 개행 변환도 방지한다.
 정확한 PR head의 GitHub CI가 성공한 뒤 정식 self-review·오늘할일 기록을 진행하며 merge는
 별도 승인 뒤 수행한다.
 코덱 선택 빌드는 #8174의 배포·MSRV 결정, crates.io 게시, 0.9.0 릴리스를 자동으로 완료하지 않는다.
