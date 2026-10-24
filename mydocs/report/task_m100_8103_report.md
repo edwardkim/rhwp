@@ -4,8 +4,8 @@ Issue: [#8103](https://github.com/edwardkim/rhwp/issues/8103) (참조만 사용,
 
 ## 현재 로컬 상태 (2026-10-24)
 
-최신 제품 head는 `1cdb915fa7994c890c7b03dfb37472a766ecf90b`, base는
-`60972534680a0c5e51e54ec189b92e252e81a867`이다. 아래 클라우드·중간 보류 기록은
+최신 제품 head는 `8fab40f7b6245e2f55e9e4b9afbb7e8d11e7e3ae`, base는
+`9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`이다. 아래 클라우드·중간 보류 기록은
 당시 실행 이력이다. 후속 승인으로 renderer 준비 중 replay와 backend 간 canvas context
 재사용을 보정했고, 최종 로컬 결과는 문서 마지막 절에 기록한다.
 
@@ -419,3 +419,28 @@ in-app browser 기본 `?renderer=auto`에서 400문단 전체 삭제/Undo·66%·
 `9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`로 전진했다. 위 결과는 이전 base의
 완료 증거이며 새 base의 결과로 재사용해 표시하지 않는다. 입력 처리 경로가 교차하므로
 최신 base로 리베이스 후 선택·renderer 회귀와 새 명령 오류 계약을 함께 재검증한다.
+
+## 최신 devel 리베이스 후 최종 검증
+
+base `9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`, 실행 head
+`8dd800b4e970f1172463c3dfb40ed97fe9ba814e`에서 전체 적용 범위를 다시 검증했다.
+제품 head는 `8fab40f7b6245e2f55e9e4b9afbb7e8d11e7e3ae`이며 두 head 사이에는
+보고서·공개 합성 PNG만 있다. 리베이스 range-diff의 9개 패치는 모두 동일했다.
+
+- fresh dev web/Node WASM, production TypeScript/build, CI unit TypeScript 통과.
+- 전체 unit: **2446 PASS / 0 FAIL / 0 SKIP**.
+- 선택 Canvas2D+auto software 298, CanvasKit software 151, auto WebGL 152: **601 PASS / 0 FAIL**.
+- 각 선택 실행의 pageerror·caught console render error 0건.
+- renderer contract, Enter 84, Undo 99, select-all 63, zoom 37, cell-target, font fallback 1 모두 통과.
+- 새 base에 병합된 #8195/#8104 명령 오류 계약은 base/후보 모두 exit 0.
+  base 대조는 Vite pre-transform으로 input-handler/canvas-view/canvas-pool의 base 소스를 공급했다.
+  Rust/Cargo 입력은 같아서 동일 fresh WASM을 사용했으며 별도 base WASM 빌드로 표시하지 않는다.
+- 실제 in-app browser 기본 auto GPU에서도 400문단 삭제/Undo, 재선택 없는 스크롤·66%,
+  마지막 쪽 삭제·Undo·Redo가 정상이며 콘솔 오류 0건이다. PNG는 이 head에서 새로 캡처했다.
+  붙여넣기 중 자동화 호출 timeout 뒤 UI가 10쪽으로 완료된 것을 확인하고 후속 동작을 실행했다.
+  앞 절의 14.6초 측정은 이전 base의 dev WASM 진단값이다.
+
+로그: `output/pr-review/8103/local/rebased-*.log`. web JS SHA-256은
+`4c8a5ff1ff30987c07cbce6b88d35d8487b067d274475c8b9946b5f9d5b21332`, WASM은
+`27a0fee1ad2875cfe8423ee43667b2411c9f040a3b4c8c43d92bbbca114fa5f1`이다.
+이후 제출 커밋은 이 기록과 최신 PNG만 갱신한다. 생성 wrapper는 커밋하지 않는다.
