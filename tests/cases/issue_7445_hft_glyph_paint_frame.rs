@@ -409,3 +409,54 @@ fn stored_mixed_opening_centers_the_source_frame_and_preserves_continuation() {
         "앞 조각과 다음 조각을 합치면 같은 source 문단이 순서대로 한 번 보존된다"
     );
 }
+
+#[test]
+fn primary_program_availability_keeps_the_source_print_frame() {
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "가").unwrap();
+    let mut source = core.document().clone();
+    for font in source.doc_info.font_faces.iter_mut().flatten() {
+        font.name = "휴먼명조".into();
+        font.alt_type = 2;
+        font.native_program = None;
+    }
+    for shape in &mut source.doc_info.char_shapes {
+        shape.bold = false;
+        shape.base_size = 7500;
+        shape.ratios = [100; 7];
+        shape.spacings = [0; 7];
+        shape.relative_sizes = [100; 7];
+    }
+    core.set_document(source);
+    let original = core.export_hwpx_native().unwrap();
+    let (_, before) = pair(&core, 0, "가", "휴먼명조");
+    assert!(
+        before["paintTransform"].is_object(),
+        "원 HFT Print 프레임이 실제 활성인 대조군"
+    );
+    let snapshot = serde_json::json!([{
+        "query":"휴먼명조", "family":"휴먼명조", "programId":"primary-availability-contract", "trueType":true
+    }]);
+    let available =
+        FontEnvironment::from_available_programs(&core.document().doc_info, &snapshot.to_string())
+            .unwrap()
+            .expect("같은 주 프로그램의 실제 공급 선언");
+    core.set_font_environment(Some(available)).unwrap();
+    let (_, after) = pair(&core, 0, "가", "휴먼명조");
+    assert_eq!(before["source"], after["source"]);
+    assert_eq!(before["bbox"], after["bbox"], "일반 한글의 같은 논리 상자");
+    assert_eq!(
+        before["paintTransform"], after["paintTransform"],
+        "실제 주 프로그램 인증은 원문이 소유한 물리 종이 프레임의 변경 요청이 아니다"
+    );
+    assert_eq!(core.export_hwpx_native().unwrap(), original);
+
+    // 호출자가 TTF 전진·프레임을 명시적으로 선택하는 기존 override와 구분한다.
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"explicit-ttf-frame-control","substitutions":{},"trueTypeFaces":["휴먼명조"]}"#,
+    ).unwrap())).unwrap();
+    let (_, explicit) = pair(&core, 0, "가", "휴먼명조");
+    assert!(explicit["paintTransform"].is_null());
+}

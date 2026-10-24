@@ -211,7 +211,14 @@ pub(crate) fn resolve_styles_with_environment(
                         style.font_families_hft_hangul[lang] = false;
                         style.font_families_hft_fullwidth_dot[lang] = false;
                         style.font_families_metric_face[lang] = None;
-                        style.font_families_hft_print_frame[lang] = false;
+                        // 같은 주 프로그램의 가용성 인증은 저장 HFT의 물리 Print
+                        // 종이 프레임을 바꾸는 요청이 아니다. 전진 프로그램과
+                        // source가 소유한 paint 프레임을 별개로 보존한다.
+                        if !primary_true_type_program
+                            || !environment.is_some_and(|env| env.preserves_source_metrics())
+                        {
+                            style.font_families_hft_print_frame[lang] = false;
+                        }
                         style.font_families_original_glyph_metric_face[lang] = None;
                     }
                 }
