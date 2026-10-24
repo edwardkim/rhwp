@@ -2086,6 +2086,38 @@ pub(crate) fn stored_float_frame_before_tac_line(
     })
 }
 
+/// 위/아래 캡션은 본체와 같은 수직 개체 상자를 소유한다(높이 + 캡션 간격, HWPUNIT).
+/// 캡션이 없으면 0, 저장 줄이 없거나 편집된 캡션이면 저장 상자의 증거가 아니다.
+fn stored_vertical_caption_extent_hu(table: &Table, dpi: f64) -> Option<f64> {
+    use crate::model::paragraph::LineSeg;
+    use crate::model::shape::CaptionDirection;
+    let Some(caption) = &table.caption else {
+        return Some(0.0);
+    };
+    if !matches!(
+        caption.direction,
+        CaptionDirection::Top | CaptionDirection::Bottom
+    ) || caption.spacing < 0
+        || caption.paragraphs.is_empty()
+        || caption.paragraphs.iter().any(|para| {
+            para.stored_text_partition_is_dirty()
+                || para.cell_format_vpos_dirty
+                || !para.controls.is_empty()
+                || para.line_segs.is_empty()
+                || para.line_segs.iter().any(|line| {
+                    line.line_height <= 0 || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                })
+        })
+    {
+        return None;
+    }
+    let height = super::composer::caption_height_px(&table.caption, dpi);
+    if height <= 0.0 || !height.is_finite() {
+        return None;
+    }
+    Some(height * 7200.0 / dpi + f64::from(caption.spacing))
+}
+
 /// 빈 호스트와 다음 저장 줄이 전체 개체 바깥 상자를 정확히 닫는다.
 /// 실측 본체·수직 캡션이 전체 선언 프레임과 같을 때 오프셋·양쪽 여백을 한 번 소비한다.
 /// 분할 조각의 선언 높이, 편집 뒤 캐시, 합성 줄은 이 원점의 증거가 아니다.
@@ -2104,7 +2136,9 @@ pub(crate) fn stored_empty_control_table_frame(
         return None;
     };
     let next = successor.line_segs.first()?;
-    let offset = signed_hwpunit(table.common.vertical_offset);
+    // 흐름이 쓰는 오프셋이다. 위 캡션을 단 흐름 표의 음수 오프셋은 이미 받은 흐름 원점
+    // 앞으로 상자를 올리지 못하므로 0 이고, 출력(`compute_table_y_position`)도 같은 값을 쓴다.
+    let offset = captioned_table_flow_vertical_offset_hu(table);
     // 구역 재계산이 만든 누적 vpos와 원본 쪽 상대 프레임을 섞지 않는다.
     // 실제 저장본 스냅샷이 있으면 호스트와 후속 닫힘을 같은 원본 축으로 읽는다.
     let anchor_vpos = ladder_vpos(host, 0, anchor.vertical_pos);
@@ -2143,36 +2177,7 @@ pub(crate) fn stored_empty_control_table_frame(
     {
         return None;
     }
-    // 위/아래 캡션은 본체와 같은 수직 개체 상자를 소유한다. 측정·배치가
-    // 공유하는 캡션 높이와 저장 후속 줄이 모두 일치할 때만 원점을 재사용한다.
-    let caption_extent = if let Some(caption) = &table.caption {
-        use crate::model::shape::CaptionDirection;
-        if !matches!(
-            caption.direction,
-            CaptionDirection::Top | CaptionDirection::Bottom
-        ) || caption.spacing < 0
-            || caption.paragraphs.is_empty()
-            || caption.paragraphs.iter().any(|para| {
-                para.stored_text_partition_is_dirty()
-                    || para.cell_format_vpos_dirty
-                    || !para.controls.is_empty()
-                    || para.line_segs.is_empty()
-                    || para.line_segs.iter().any(|line| {
-                        line.line_height <= 0
-                            || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-                    })
-            })
-        {
-            return None;
-        }
-        let height = super::composer::caption_height_px(&table.caption, dpi);
-        if height <= 0.0 || !height.is_finite() {
-            return None;
-        }
-        height * 7200.0 / dpi + f64::from(caption.spacing)
-    } else {
-        0.0
-    };
+    let caption_extent = stored_vertical_caption_extent_hu(table, dpi)?;
     let measured_extent = (measured_height * 7200.0 / dpi).round();
     if measured_extent != (f64::from(table.common.height) + caption_extent).round() {
         return None;
@@ -2250,6 +2255,8 @@ pub(crate) fn stored_adjacent_line_table_frame(
                 line.line_height > 0 && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
             })
     };
+    // 흐름 오프셋 — 위 캡션 흐름 표의 음수 오프셋은 0 이다(출력과 같은 값).
+    let offset = captioned_table_flow_vertical_offset_hu(table);
     if !valid(previous)
         || !valid(host)
         || !valid(successor)
@@ -2260,33 +2267,45 @@ pub(crate) fn stored_adjacent_line_table_frame(
         || anchor_vpos <= 0
         || before_vpos <= 0
         || after_vpos != 0
-        || i64::from(anchor_vpos)
-            != i64::from(before_vpos)
-                + i64::from(before.line_height)
-                + i64::from(before.line_spacing)
         || table.common.treat_as_char
         || !table.common.flow_with_text
         || !is_para_topbottom_float(&table.common)
         || table.common.horz_rel_to != HorzRelTo::Column
         || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
         || table.page_break != TablePageBreak::RowBreak
-        || table.caption.is_some()
-        || signed_hwpunit(table.common.vertical_offset) < 0
+        || offset < 0
         || table.common.height == 0
         || !measured_height.is_finite()
         || dpi <= 0.0
-        || (measured_height * 7200.0 / dpi).round() != f64::from(table.common.height)
     {
         return None;
     }
-    let anchor_y = hwpunit_to_px(anchor_vpos, dpi);
+    let caption_extent = stored_vertical_caption_extent_hu(table, dpi)?;
+    let measured_extent = (measured_height * 7200.0 / dpi).round();
+    if measured_extent != (f64::from(table.common.height) + caption_extent).round() {
+        return None;
+    }
+    let before_end =
+        i64::from(before_vpos) + i64::from(before.line_height) + i64::from(before.line_spacing);
+    let object_extent = i64::from(offset)
+        + i64::from(table.outer_margin_top)
+        + measured_extent as i64
+        + i64::from(table.outer_margin_bottom);
+    // 바깥 상자는 앞 글줄의 전진 끝에서 시작한다. 빈 호스트 줄은 그 자리에 저장되거나
+    // (상자 위끝), 상자를 다 지난 자리에 저장된다(상자 아래끝). 두 사다리 모두 같은 상자를
+    // 인증하며, 그 밖의 간격은 이 원점의 증거가 아니다.
+    let host_line_closes_box = i64::from(anchor_vpos) == before_end + object_extent;
+    if i64::from(anchor_vpos) != before_end && !host_line_closes_box {
+        return None;
+    }
+    let anchor_y = hwpunit_to_px(before_end as i32, dpi);
     let table_top = anchor_y
-        + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi)
+        + hwpunit_to_px(offset, dpi)
         + hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
     Some(ParagraphFloatPlacement {
         flow: ParagraphFloatFlow::NextLine,
         anchor_y,
-        stored_host_origin: Some(anchor_y),
+        stored_host_origin: (!host_line_closes_box).then_some(anchor_y),
         stored_successor_line_origin: None,
         table_left: None,
         table_top,

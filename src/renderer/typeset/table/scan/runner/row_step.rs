@@ -1086,6 +1086,37 @@ impl TypesetEngine {
                     }
                     return false;
                 }
+                // 위 밴드 컷이 받지 않은 행 중, 앞 행의 병합 칸 안쪽에만 있는 행은 글줄과
+                // 안 여백이 남은 높이에 다 들어가면 이 쪽에서 남은 높이로 끝난다. 다음
+                // 쪽은 다음 행이 선언 높이로 시작하고, 남는 빈 띠의 크기는 조건이 아니다
+                // (한/글 2020 합성 `samples/rowspan-band-fit`: 줄간격·안 여백·글자 크기를 바꾼
+                // 네 계열에서 문턱은 늘 «내용 + 안 여백 ≤ 남은 높이»). 병합 칸이 이 행에서
+                // 시작하거나 끝나면 그 칸의 남은 내용을 같은 행의 컷으로 이어야 하므로 제외한다.
+                let band_rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                let covered_row_closes = rowspan_touched[r]
+                    && !table::scan::row::row_bounds_a_rowspan(table, r)
+                    && mt.allows_row_break_split()
+                    && r > cursor_row
+                    && res.fully_consumed
+                    && !res.end_cut.is_empty()
+                    && row_total > band_rest + 0.5
+                    && table::scan::row::row_box_fits(res.consumed_height + padding, band_rest);
+                if covered_row_closes {
+                    consumed += cs_before + band_rest;
+                    r += 1;
+                    end_row = r;
+                    end_row_height_override = Some(band_rest);
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN COVERED_ROW_CLOSE r={} rest={:.1} content={:.1} row_total={:.1}",
+                            r - 1,
+                            band_rest,
+                            res.consumed_height,
+                            row_total
+                        );
+                    }
+                    return false;
+                }
                 // A terminal response immediately followed by a no-text/no-control row can
                 // exceed the composed row metric only by the measured-versus-stored
                 // row drift.  Use that exact drift rather than a template allowance.
