@@ -131,7 +131,31 @@ fresh WASM 37개 집중 조건도 완료했으며 원본 두 형식 각 383쪽�
 프로그램 ID와 브라우저 catalogue의 원본 바이트·face index, 실제 loaded 영수증을
 대조했으며 다른 폰트를 복사해 공급하지 않았다.
 
-현재 코드 기준은 `c6fbb92d3b71d5aaac55807ce5758e6926ddc29a`다. 기존 편람의 입력과
+### Canvas의 실제 원본 표본 소비 순서
+
+같은 고정 source `04437c268a`에서 Native와 WASM의 273쪽 의미 tree의 그림·그룹·본문
+위치는 같다. 실제 브라우저의 `getImageData`·`drawImage` 인자만 관측한 캡처는 앞선
+WASM PNG와 SHA까지 같다. Print 원본 JPEG는 877×510·777×522인데 공통 표본
+함수가 읽은 canvas는 이미 499×282·523×326이다. 디코더나 글꼴 문제로 먼저 추측하지
+않고 실제 소비 전에 실행된 `bitmap_raster::prepare_bitmap`을 원인으로 구분한다.
+
+Native의 실제 호출은 `원본 decode → 공통 Print 표본 → 비대상일 때 일반 bitmap 준비`다.
+Canvas는 `일반 bitmap 준비와 종이 투영 → 준비한 PNG decode → 공통 Print 표본`으로
+달랐다. 같은 helper 이름을 사용해도 같은 원본·격자를 소비한 상태가 아니었다.
+
+Canvas도 원본 decode 캐시를 공통으로 사용하고, 원본에서 Print 표본을 먼저 시도한다.
+미지원 계약에서만 기존 일반 준비·재생으로 돌아간다. crop 전체 원본의 기존 위임과
+부분 crop·alpha·아핀의 비적용 계약은 유지한다. backend별 보간 수학·문서 ID 분기나
+새 좌표 오프셋을 추가하지 않는다. 앞선 후보의 Native 산출물은 동결한 뒤 수정한다.
+
+새 최적화 fresh WASM에서 같은 쪽의 실제 표본 입력 크기·PNG·source와 공급 프로그램을
+다시 확인하고, 90·92·95·161·163·273쪽과 정상 쪽 및 기존 bitmap 대조군을 실행한다.
+이후 원본 전쪽 및 필수 게이트를 완료한다. 자료는
+`handbook-palette-04437c268a/canvas-observation-p273/`에 있다. 관측 driver의 외부
+exit code는 보존하지 못했으므로 이를 정식 회귀 검사 통과로 쓰지 않으며, 실제
+PNG 동일성·읽기/그리기 인자·원본 payload 진단으로만 사용한다.
+
+아래 초기 진단의 코드 기준은 `c6fbb92d3b71d5aaac55807ce5758e6926ddc29a`다. 기존 편람의 입력과
 383쪽 독립 Print PDF는 그대로 재사용한다. 273쪽의 877×510 / 777×522 원본 BMP는
 PDF 안에서 각각 JPEG로 전달되지만 현재 paint는 무손실 PNG를 사용한다. 페이지의 좌표와
 원본 픽셀 전달, 손실 압축을 서로 다른 계약으로 검증한다.

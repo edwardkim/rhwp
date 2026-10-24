@@ -3,6 +3,18 @@
 use wasm_bindgen::{Clamped, JsCast};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, ImageData};
 
+/// 일반 bitmap 전처리 전에 실제 원본 canvas를 공통 표본에 전달한다.
+pub(super) fn draw_encoded(
+    context: &CanvasRenderingContext2d,
+    bytes: &[u8],
+    rectangle: (f64, f64, f64, f64),
+    page: (f64, f64),
+    scale: f64,
+) -> bool {
+    super::cached_image_canvas(bytes)
+        .is_some_and(|source| draw(context, &source, rectangle, page, scale))
+}
+
 pub(super) fn draw(
     context: &CanvasRenderingContext2d,
     source: &HtmlCanvasElement,

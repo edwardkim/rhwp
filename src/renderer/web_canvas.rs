@@ -186,6 +186,11 @@ fn cached_decoded_image_canvas(data: &[u8], key: u64) -> Option<HtmlCanvasElemen
     })
 }
 
+#[cfg(target_arch = "wasm32")]
+fn cached_image_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
+    cached_decoded_image_canvas(data, hash_bytes(data))
+}
+
 /// 빠른 해시 (FNV-1a 64비트)
 #[cfg(target_arch = "wasm32")]
 fn hash_bytes(data: &[u8]) -> u64 {
@@ -3219,6 +3224,14 @@ impl Renderer for WebCanvasRenderer {
                 }
             }
         }
+        if self.print_area_sampling
+            && self.high_quality_images
+            && print_image_sampling::draw_encoded(
+                &self.ctx, data, (x, y, w, h), (self.width, self.height), self.scale,
+            )
+        {
+            return;
+        }
         let prepared = self.ctx.get_transform().ok().and_then(|matrix| {
             crate::renderer::bitmap_raster::prepare_bitmap(
                 data,
@@ -3249,18 +3262,6 @@ impl Renderer for WebCanvasRenderer {
 
         let decoded = cached_decoded_image_canvas(data, key);
         if let Some(canvas) = decoded {
-            if self.print_area_sampling
-                && self.high_quality_images
-                && print_image_sampling::draw(
-                    &self.ctx,
-                    &canvas,
-                    (x, y, w, h),
-                    (self.width, self.height),
-                    self.scale,
-                )
-            {
-                return;
-            }
             if self.high_quality_images
                 && self.ctx.image_smoothing_enabled()
                 && (super::image_resolver::png_sampling::print_bitmap_reconstruction(data)
