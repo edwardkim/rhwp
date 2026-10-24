@@ -22657,6 +22657,7 @@ impl LayoutEngine {
                     .get(para.para_shape_id as usize)
                     .map_or(0.0, |style| style.spacing_before),
                 body_height,
+                false,
                 self.dpi,
             )
         })

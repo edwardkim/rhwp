@@ -505,6 +505,24 @@ impl TypesetEngine {
                 - vert_offset_overhead
                 - fragment_outer_bottom_overhead
         };
+        // [#8149] 첫 행 이월 판정(prepare)과 같은 예약이다. 저장 첫 프레임이 있으면 그 높이가
+        // 같은 컷을 정하므로(합성은 그 경로) 아래에서 되돌린다 — 한글문서파일형식 38쪽 표 234 는
+        // 앞에 저장 줄 없는 제목이라 이 예약을 쓴다.
+        let empty_host_first_fragment_reserve =
+            if !is_continuation && cursor_row == 0 && start_cut.is_empty() {
+                crate::renderer::typeset::empty_host_float_first_fragment_reserve_px(
+                    para,
+                    table,
+                    fragment_outer_bottom_overhead,
+                    input.prepared.source_text_first_frame_height.is_some(),
+                    caption_overhead,
+                    caption_is_top,
+                    self.dpi,
+                )
+            } else {
+                0.0
+            };
+        let page_avail_raw = page_avail_raw - empty_host_first_fragment_reserve;
         // [#8081] 첫 조각은 0 으로 자르기 전 모자란 몫을 함께 넘긴다(FragmentBudget 주석).
         let first_fragment_shortfall = if is_continuation {
             0.0
@@ -1034,6 +1052,7 @@ impl TypesetEngine {
             (boundary
                 - p.table_top
                 - caption_extra
+                - empty_host_first_fragment_reserve
                 - if captioned_object_frame {
                     // 종료 캡션 여백은 마지막 유닛에만 속한다.
                     // 스캔에서 해당 유닛을 수용할 때 함께 예약한다.
@@ -1151,7 +1170,27 @@ impl TypesetEngine {
                             frame_height, placed_frame_fits,
                         );
                     }
-                    ((anchor_px - actual_anchor).abs() <= 0.5
+                    // [#8149] 저장 앵커는 host 의 **줄** 위치(앞 간격 뒤)다. 배치 계획이 없는
+                    // 흐름 원점은 앞 간격 전의 문단 위끝이라, 그 간격을 더해 같은 줄 위치끼리
+                    // 견준다(한글문서파일형식 38쪽 표 234: 저장 681.03 = 흐름 674.41 + 6.67).
+                    // 이 차이로 저장 첫 조각 프레임(선언 높이 = 첫 조각, #7147)을 버려 한/글보다
+                    // 한 행을 더 받았다.
+                    let host_line_anchor = if fragment_placement
+                        .and_then(|placement| placement.stored_host_origin)
+                        .is_some()
+                    {
+                        actual_anchor
+                    } else {
+                        actual_anchor
+                            + input
+                                .source
+                                .styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map_or(0.0, |style| style.spacing_before.max(0.0))
+                    };
+                    (((anchor_px - actual_anchor).abs() <= 0.5
+                        || (anchor_px - host_line_anchor).abs() <= 0.5)
                         && flow_bottom_px <= source_first_fragment_flow_bottom + 0.5
                         && placed_frame_fits)
                         .then_some((frame_height, flow_bottom_px))
@@ -1336,6 +1375,14 @@ impl TypesetEngine {
             } else {
                 0.0
             };
+        // [#8149] 저장 첫 조각 프레임(선언 개체 높이 = 한/글이 정한 첫 조각, #7147)이 이 쪽
+        // 원점에서 인정되면 그 프레임이 컷의 증거다. 위의 쪽 바닥 예약은 저장 근거가 없을 때의
+        // 규칙이므로 되돌린다(한글문서파일형식 26쪽 표 174: 선언 240.2px = 15행).
+        let page_avail = if saved_first_fragment_source_frame.is_some() {
+            page_avail + empty_host_first_fragment_reserve
+        } else {
+            page_avail
+        };
         let avail_for_rows = {
             // [Task #1831] 단 상단에서 시작하는 첫 fragment 가 표 **전체** 기준
             // 근소(≤2px) 오차로만 넘치면 전체 배치를 허용한다 — 행높이 측정
@@ -1632,6 +1679,16 @@ impl TypesetEngine {
                     .stored_plain_fragment_table(table)
             })
             .map(|(height, _)| height);
+        // [#8149] 단순 조각 표가 아니어도 선언 개체 높이가 행 경계에 정확히(1px) 걸리면 그
+        // 높이가 한/글이 정한 첫 조각이다(#7147 «행 경계 적중» 판별). 그 행 끝을 넘겨 받지 않는다
+        // (한글문서파일형식 38쪽 표 234: 선언 194.7 = 7행 → 한/글 7행, 종전 8행).
+        let accepted_source_frame_limit = accepted_source_frame_limit.or_else(|| {
+            let (frame_height, _) = saved_first_fragment_source_frame?;
+            let row_end = source_first_fragment_row_end?;
+            let rows_height =
+                cut_row_h.iter().take(row_end).sum::<f64>() + cs * row_end.saturating_sub(1) as f64;
+            ((rows_height - frame_height).abs() <= 1.0).then_some(rows_height.max(frame_height))
+        });
         let avail_for_rows =
             accepted_source_frame_limit.map_or(avail_for_rows, |height| avail_for_rows.min(height));
         if accepted_source_frame_limit.is_some() {

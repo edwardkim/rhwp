@@ -303,6 +303,11 @@ struct HostSpacing {
     before: f64,
     /// 표 뒤 spacing (spacing_after + outer_margin_bottom + host_line_spacing)
     after: f64,
+    /// 단 상단에서 열 때의 `before` — 문단 앞 간격 없이 바깥 위 여백만. 앞 쪽에서 포맷한
+    /// 표를 이월해 새 단 첫머리에 놓으면 이 값을 쓴다.
+    column_top_before: f64,
+    /// `after` 에 든 host 문단 줄간격(표-표 스택 간격, #1133).
+    host_line_spacing: f64,
     /// spacing_after만 (마지막 fragment용 — Paginator와 동일)
     spacing_after_only: f64,
     /// 재조판한 흐름 개체의 마지막 조각 뒤에서 닫을 아래 바깥여백.
@@ -608,6 +613,39 @@ fn partial_rowbreak_fragment_spacing_px(
         0.0
     };
     (before, bottom)
+}
+
+/// [#8149] 글 없는 host 의 문단 기준 자리차지 표가 쪽 바닥에서 나뉘면 한/글은 첫 조각
+/// 아래에 그 표의 바깥 아래 여백과 (아래 캡션이면) 캡션 자리를 남긴다 — 한/글 2020 저장·
+/// Print 합성 `samples/issue8149/gen_rowfit.py` 16사례: 캡션 없음·여백 0 은 본문 끝까지,
+/// 여백 1984HU 는 여백만, 아래 캡션은 `여백 + 캡션 간격 + 캡션 줄` 을 남긴다. 첫 행이
+/// 들어가는지 보는 이월 판정과 첫 조각 행 예산이 같은 값을 쓴다 — 한글문서파일형식 32쪽
+/// 표 199 는 제목 행 19.5px 만 남은 22px 에 들어가 보였지만 이 예약 50.5px 를 넣으면 들지
+/// 않아 한/글처럼 표 전체가 33쪽으로 넘어간다. 조각마다 반복하는 바깥 아래 여백
+/// (`fragment_outer_bottom`)이 이미 있거나 원본 글 프레임이 첫 조각을 정하면 쓰지 않는다.
+fn empty_host_float_first_fragment_reserve_px(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    fragment_outer_bottom: f64,
+    has_source_text_first_frame: bool,
+    caption_overhead: f64,
+    caption_is_top: bool,
+    dpi: f64,
+) -> f64 {
+    if fragment_outer_bottom > 0.0
+        || has_source_text_first_frame
+        || !is_para_topbottom_float(&table.common)
+        || signed_hwpunit(table.common.vertical_offset) != 0
+        || para_has_non_whitespace_text(para)
+    {
+        return 0.0;
+    }
+    hwpunit_to_px(table.outer_margin_bottom as i32, dpi).max(0.0)
+        + if caption_is_top {
+            0.0
+        } else {
+            caption_overhead
+        }
 }
 
 /// [Task #853] ColumnDef 의 "디자인 spacing"(px): 1단이면 `간격`, 다단이면 0.

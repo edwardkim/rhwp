@@ -2782,6 +2782,23 @@ impl LayoutEngine {
         Self::tac_band_covers_height(para, tbl, i64::from(tbl.common.height.min(i32::MAX as u32)))
     }
 
+    /// [#8149] 배치가 TAC 표 상단을 «줄 상단 + om_top» 에 둘지 정할 때만 쓰는 판정 — 아래 캡션은
+    /// 표 본체와 바깥 아래 여백 사이에 놓여 저장 밴드에 포함된다(한글문서파일형식 62쪽 표 397:
+    /// 9363 = 566 + 5011 + 캡션 1802 + 1984). 조판의 후속 원점 판정
+    /// (`tac_stored_band_is_outer_box`)은 캡션이 섞인 줄을 표 원점으로 쓰지 않으므로 바꾸지 않는다.
+    pub(crate) fn tac_stored_band_is_captioned_outer_box(
+        para: &Paragraph,
+        tbl: &crate::model::table::Table,
+    ) -> bool {
+        let declared = i64::from(tbl.common.height.min(i32::MAX as u32));
+        Self::tac_band_covers_height(para, tbl, declared)
+            || crate::renderer::float_placement::stored_empty_host_frame::stored_bottom_caption_hu(
+                tbl,
+            )
+            .filter(|caption| *caption > 0)
+            .is_some_and(|caption| Self::tac_band_covers_height(para, tbl, declared + caption))
+    }
+
     fn tac_band_covers_height(
         para: &Paragraph,
         tbl: &crate::model::table::Table,
