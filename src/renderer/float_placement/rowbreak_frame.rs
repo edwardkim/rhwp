@@ -21,10 +21,24 @@ pub(crate) fn rowbreak_fragment_bounds(
     } else {
         single_cell_page_fragment_bottom(table, body_bottom, dpi)
     };
+    // 분할 저장된 한 열 본문의 복제 빈 peer는 독립 내용 프레임이 아니다.
+    // 원본 폭·문단 복제 출처를 인증한 소유자는 같은 쪽 조각의 물리 하단을 쓴다.
+    // 일반 두 열 격자에는 이 출처 판별이 적용되지 않는다.
+    let reparsed_body_owner = table.col_count == 2
+        && table.cells.iter().any(|cell| {
+            cell.col == 1
+                && cell.paragraphs.len() == 1
+                && cell.paragraphs[0].text.is_empty()
+                && cell.paragraphs[0].controls.is_empty()
+                && crate::renderer::typeset::is_reparsed_single_column_cell_split_row(
+                    table,
+                    usize::from(cell.row),
+                )
+        });
     RowbreakFragmentBounds {
-        // 단독 셀은 쪽 조각 자체가 이 프레임을 소유한다. 일반 격자의 실제
-        // 글줄에는 빈 종료 띠를 위한 추가 inset을 수용 예산으로 중복 적용하지 않는다.
-        content_bottom: if table.row_count == 1 && table.col_count == 1 {
+        // 단독 셀과 출처가 인증된 분할 본문은 쪽 조각 자체가 이 프레임을 소유한다.
+        // 일반 격자의 글줄에는 빈 종료 띠의 inset을 수용 예산으로 중복 적용하지 않는다.
+        content_bottom: if (table.row_count == 1 && table.col_count == 1) || reparsed_body_owner {
             blank_bottom
         } else {
             outer_bottom

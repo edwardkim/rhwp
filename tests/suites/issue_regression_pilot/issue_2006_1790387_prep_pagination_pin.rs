@@ -1,38 +1,68 @@
-//! Issue #2006 — 1790387 HIV PrEP 최종결과보고서의 140쪽 검사.
+//! #2006: PrEP의 독립 한컴 2024 Print 140쪽과 내용 소속을 함께 검증한다.
 //!
-//! 원본 `samples/issue2006/1790387_prep_final_report.hwpx`는 한컴2024 저장본이다.
-//! 같은 원본을 HWP MCP `--engine 2024`로 출력한 독립 기준은
-//! `pdf/issue2006/1790387_prep_final_report-2024.pdf`의 140쪽이다.
-//! 원본/PDF SHA와 변환 출처는 `mydocs/pr/archives/pr_7406_review.md`에 있다.
-//!
-//! KoPub이 내장된 기존 2020 PDF도 140쪽이며 보조 대조군으로 보존한다.
-//! KoPub이 없는 2022 PDF의 146쪽은 다른 글꼴 환경의 출력이므로 기준으로
-//! 사용하지 않는다. PDF Producer의 연도나 writer 이름만으로 고르지 않는다.
-//!
-//! PR #2082의 130→141쪽은 당시 개선 결과이며 현재 기준값이 아니다.
-//! 보정59는 본문 표의 물리 안 여백과 그림/빈 후속 줄의 저장 프레임을 복원했다.
-//! 동일 원본 전체 140쪽의 Native/fresh WASM 최저 90% 이상을 확인한 근거는
-//! `mydocs/pr/assets/pr7382_20260926/stage59_prep2006_validation.json`에 있다.
-//! 기존 140쪽 기대값과 검사 함수 수는 유지한다.
+//! 정본은 같은 원본의 `pdf/issue2006/1790387_prep_final_report-2024.pdf`다.
+//! 원본/PDF 출처는 `mydocs/pr/archives/pr_7406_review.md`, 기존 96dpi 전쪽
+//! Native/fresh WASM 최저 91.93033% 증거는 완료 후보의 stored-anchor-repair
+//! 요약에 연결한다. 쪽수만 맞는 잘못된 분할을 통과시키지 않는다.
 
-use std::fs;
-use std::path::Path;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+use rhwp::DocumentCore;
 
-fn page_count_of(rel: &str) -> u32 {
-    let repo_root = env!("CARGO_MANIFEST_DIR");
-    let path = Path::new(repo_root).join(rel);
-    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .unwrap_or_else(|e| panic!("parse {}: {:?}", rel, e));
-    doc.page_count()
+fn text(node: &RenderNode) -> String {
+    let own = match &node.node_type {
+        RenderNodeType::TextRun(run) => run.display_or_text().to_owned(),
+        _ => String::new(),
+    };
+    own + &node.children.iter().map(text).collect::<String>()
+}
+
+fn has_budget_table(node: &RenderNode) -> bool {
+    matches!(&node.node_type, RenderNodeType::Table(data)
+        if data.para_index == Some(336) && data.row_count == 20 && data.col_count == 6)
+        || node.children.iter().any(has_budget_table)
 }
 
 #[test]
-fn prep_1790387_page_count_pin() {
-    let pages = page_count_of("samples/issue2006/1790387_prep_final_report.hwpx");
+fn prep_1790387_page_count_and_boundary_content() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue2006/1790387_prep_final_report.hwpx");
+    let core =
+        DocumentCore::from_bytes(&std::fs::read(path).expect("PrEP 정식 원본")).expect("문서 로드");
+    assert_eq!(core.page_count(), 140, "독립 한컴 2024 Print의 전체 쪽수");
+    let first = core.build_page_render_tree(0).expect("표지");
+    let cover: String = text(&first.root)
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
+    assert!(cover.contains("HIV노출전예방요법(PrEP)수요자타당도검증및질병부담연구"));
+    let last = core.build_page_render_tree(139).expect("마지막 주의 사항");
+    let final_text: String = text(&last.root)
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
+    for needle in [
+        "정책연구용역사업의최종결과보고서",
+        "연구결과임을밝혀야합니다.",
+        "발표또는공개하여서는아니됩니다.",
+    ] {
+        assert!(
+            final_text.contains(needle),
+            "마지막 주의 사항 보존: {needle}"
+        );
+    }
+    let owners: Vec<_> = (0..core.page_count())
+        .filter(|page| {
+            has_budget_table(
+                &core
+                    .build_page_render_tree(*page)
+                    .expect("전쪽 내용 소속")
+                    .root,
+            )
+        })
+        .collect();
     assert_eq!(
-        pages, 140,
-        "issue2006 1790387 동일 원본 한컴2024 PDF 140쪽과 달라짐: 실제 {}쪽",
-        pages
+        owners,
+        [104],
+        "완결 연구비 표는 Print 105쪽에만 있다. 뒤쪽 빈 조각·중복으로 쪽수를 맞추지 않는다"
     );
 }

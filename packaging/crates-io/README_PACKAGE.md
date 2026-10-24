@@ -76,6 +76,7 @@ core를 열면 스타일 해소·줄 구성·페이지 계산을 수행합니다
 | 기본값 | `console_error_panic_hook`, `pdf-import`, `wasm-api` |
 | `default-features = false` | 기본 PDF 입력·JS facade/start를 제외. renderer와 Native PDF 출력 의존성은 남으므로 parser-only 빌드가 아닙니다. |
 | `pdf-import` | 현재 보안 제한과 자원 정책을 적용하는 PDF 가져오기 |
+| `pdf-jbig2` / `pdf-jpeg2000` | PDF 입력과 해당 이미지 코덱을 개별 opt-in. 기본 비활성 |
 | `wasm-api` | JS facade·export·자동 초기화. 현재 주 CLI도 필요로 합니다. |
 | `native-skia` | Native PNG·direct PDF·Sixel·Kitty 출력 |
 | `dev-tools` | 저장소 개발 도구 `font-metric-gen` 빌드. 일반 제품 CLI 설치에는 필요하지 않습니다. |
@@ -119,3 +120,10 @@ PDF 입력은 기본 포함이지만 일부 codec·손상 구조 복구·색 변
 
 MIT 라이선스와 포함된 font·fork의 고지를 함께 확인하세요. 본체와 보정 fork의 source 출처·고지를
 유지하며, 공식 upstream 패키지와 rhwp의 보정 패키지를 구분합니다.
+
+PDF 이미지 코덱은 필요한 것만 선택합니다. 로컬 source CLI 설치 예는
+`cargo install --path . --locked --features pdf-jbig2`입니다.
+Rust 앱의 로컬 의존은 `rhwp = { path = "/path/to/rhwp", default-features = false, features = ["pdf-jpeg2000"] }`처럼
+선택합니다. 해당 feature를 포함한 버전의 실제 registry 게시 뒤에만 `path`를 게시 버전으로
+대체합니다. 코덱 선택은 기존 요청 한도와 `parserAllocationBoundsProven=false`를 바꾸지 않습니다.
+자세한 설치·WASM·오류 안내는 [PDF 이미지 코덱 가이드](../../mydocs/manual/pdf_image_codecs.md)를 참고하세요.

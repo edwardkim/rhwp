@@ -6,13 +6,14 @@ use super::super::pagination::{FootnoteFragment, FootnoteRef, FootnoteSource};
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{
-    format_number, hwpunit_to_px, AutoNumberCounter, LineStyle, NumberFormat as NumFmt, StrokeDash,
-    TextStyle,
+    format_number, hwpunit_to_px, AutoNumberCounter, LineStyle, NumberFormat as NumFmt,
+    PathCommand, StrokeDash, TextStyle,
 };
 use super::border_rendering::border_width_to_px;
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::{
-    extract_shape_transform, find_bin_data_bytes, picture_data_is_unusable, picture_display_size_hu,
+    extract_picture_transform, find_bin_data_bytes, picture_data_is_unusable,
+    picture_display_size_hu,
 };
 use super::{footnote_separator_length_px, LayoutEngine, ParagraphVerticalSpacing};
 use crate::model::bin_data::BinDataContent;
@@ -22,6 +23,13 @@ use crate::model::paragraph::Paragraph;
 use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, TextWrap, VertAlign, VertRelTo,
 };
+
+/// 본문 그림의 표시 끝과 후속 흐름 원점은 서로 다른 소유를 가진다.
+pub(crate) struct BodyPicturePlacement {
+    pub flow_end: f64,
+    pub content_bottom: f64,
+}
+
 use crate::model::style::{Alignment, LineSpacingType};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -84,7 +92,12 @@ fn compose_footnote_paragraph(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> crate::renderer::composer::ComposedParagraph {
-    if para.line_segs.is_empty() && !para.text.is_empty() && content_width_px > 0.0 {
+    // 저장 줄이 없는 실제 빈 각주 문단도 원본 글자모양의 줄 상자를 소유한다.
+    // 본문은 같은 재조판 경로를 쓰는데, 각주만 400HU로 줄이면 앞 각주의
+    // 예약 높이와 구분선 원점까지 작아진다. 문단 자체가 없는 입력은 제외한다.
+    let has_paragraph_line =
+        !para.text.is_empty() || (para.char_count > 0 && para.controls.is_empty());
+    if para.line_segs.is_empty() && has_paragraph_line && content_width_px > 0.0 {
         let para_style = styles.para_styles.get(para.para_shape_id as usize);
         let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
         let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
@@ -577,7 +590,7 @@ impl LayoutEngine {
                 contrast: picture.image_attr.contrast,
                 opacity: picture.image_attr.opacity(),
                 text_wrap: Some(picture.common.text_wrap),
-                transform: extract_shape_transform(&picture.shape_attr),
+                transform: extract_picture_transform(picture),
                 external_path: picture.image_attr.external_path.clone(),
                 content_inset: crate::renderer::layout::utils::picture_content_inset(picture),
                 header_footer_ref: header_footer_ref.clone(),
@@ -591,7 +604,7 @@ impl LayoutEngine {
             rotated_frame_node_box(pic_x, pic_y, pic_width, pic_height, node_box_size),
         );
 
-        parent_node.children.push(img_node);
+        self.append_picture_image_node(tree, parent_node, picture, img_node);
 
         // [#6284] 캡션 렌더링 — 기하는 위에서 예약한 띠와 같은 산식이다
         // (`layout_body_picture` 의 캡션 방출부와 같은 규칙).
@@ -670,16 +683,7 @@ impl LayoutEngine {
             }
         }
 
-        // 그림 테두리(선) 렌더링
-        self.render_picture_border(
-            tree,
-            parent_node,
-            picture,
-            pic_x,
-            pic_y,
-            pic_width,
-            pic_height,
-        );
+        // 그림과 외곽선은 위 append_picture_image_node에서 한 번 발행했다.
     }
 
     /// 개체(Picture/Shape)의 절대 좌표 (x, y)를 계산한다.
@@ -739,7 +743,7 @@ impl LayoutEngine {
         .position(common, obj_width, obj_height)
     }
 
-    /// 본문 그림(Picture) 개체를 레이아웃하고 업데이트된 y_offset을 반환한다.
+    /// 본문 그림을 배치하고, 같은 확정 원점에서 표시 하단과 흐름 끝을 반환한다.
     pub(crate) fn layout_body_picture(
         &self,
         tree: &mut PageLayoutContext,
@@ -760,7 +764,7 @@ impl LayoutEngine {
         // 그림을 그 gap 안(바닥이 그림 para 줄에 정렬)에 그리고 flow 를 그림 높이만큼 추가
         // 진행하지 않는다. 이중 계상(gap + draw-advance) 방지.
         vpos_accounts_for_height: bool,
-    ) -> f64 {
+    ) -> BodyPicturePlacement {
         // 그림 크기 (HWPUNIT → 픽셀)
         // [Issue #1230] 측면흐름 wrap 은 common(개체 틀) 프레임으로 그린다.
         let (pic_width_hu, pic_height_hu) = super::utils::picture_flow_frame_size_hu(picture);
@@ -778,12 +782,16 @@ impl LayoutEngine {
         // 캡션을 포함한 전체 크기 계산 (위치 결정에 사용)
         let (total_width, total_height) = if let Some(ref caption) = picture.caption {
             match caption.direction {
-                CaptionDirection::Top | CaptionDirection::Bottom => {
-                    (pic_width, pic_height + caption_height + caption_spacing)
-                }
+                CaptionDirection::Top | CaptionDirection::Bottom => (
+                    pic_width,
+                    super::super::composer::captioned_picture_height_px(picture, self.dpi),
+                ),
                 CaptionDirection::Left | CaptionDirection::Right => {
                     let cw = hwpunit_to_px(caption.width as i32, self.dpi);
-                    (pic_width + cw + caption_spacing, pic_height)
+                    (
+                        pic_width + cw + caption_spacing,
+                        super::super::composer::captioned_picture_height_px(picture, self.dpi),
+                    )
                 }
             }
         } else {
@@ -913,7 +921,7 @@ impl LayoutEngine {
                 contrast: picture.image_attr.contrast,
                 opacity: picture.image_attr.opacity(),
                 text_wrap: Some(picture.common.text_wrap),
-                transform: extract_shape_transform(&picture.shape_attr),
+                transform: extract_picture_transform(picture),
                 external_path: picture.image_attr.external_path.clone(),
                 content_inset: crate::renderer::layout::utils::picture_content_inset(picture),
                 ..ImageNode::new(bin_data_id, image_data)
@@ -926,6 +934,7 @@ impl LayoutEngine {
         );
 
         parent_node.children.push(img_node);
+        let mut content_bottom = pic_y + pic_height;
 
         // 그림 테두리(선) 렌더링
         self.render_picture_border(
@@ -966,6 +975,7 @@ impl LayoutEngine {
                 }
             };
 
+            content_bottom = content_bottom.max(cap_y + caption_height);
             let cell_ctx = super::CellContext {
                 in_textbox: false,
                 parent_para_index: para_index,
@@ -1004,13 +1014,17 @@ impl LayoutEngine {
         // 상자 하단(잉크 + 위·아래 여백) y가 된다. y_offset(앵커 단락 y) 대신 base_y를
         // 기준으로 반환해야 vert_offset이 있는 혼합 단락(텍스트+그림)에서 후속 단락이
         // 그림 위로 겹치지 않는다.
-        match (picture.common.vert_rel_to, picture.common.text_wrap) {
+        let flow_end = match (picture.common.vert_rel_to, picture.common.text_wrap) {
             (VertRelTo::Para, TextWrap::BehindText | TextWrap::InFrontOfText) => y_offset,
             // [Task #1079] 파일 vpos 가 그림 공간을 이미 반영하면 그림은 gap 안에 그려졌고
             // 후속 문단은 파일 vpos(그림 para 줄)로 흐르므로 추가 진행 없이 base_y 반환.
             (VertRelTo::Para, _) if vpos_accounts_for_height => base_y,
             (VertRelTo::Para, _) => base_y + box_height,
             (VertRelTo::Page | VertRelTo::Paper, _) => y_offset,
+        };
+        BodyPicturePlacement {
+            flow_end,
+            content_bottom,
         }
     }
 
@@ -1892,6 +1906,7 @@ impl LayoutEngine {
                         Some(bin_data_content),
                         None, // 각주 컨텍스트 — wrap zone 무관
                         false,
+                        false,
                         Some(placement.spacing),
                         None,
                     );
@@ -2516,9 +2531,22 @@ impl LayoutEngine {
             shadow: None,
         };
         let border_id = tree.next_id();
-        let transform = extract_shape_transform(&picture.shape_attr);
+        let transform = extract_picture_transform(picture);
         let bbox = transform.effective_image_bbox(&bbox);
+        // 독립 Print의 그림 외곽선은 한 화면 픽셀까지 그림 안에 겹치고
+        // 나머지 굵기는 바깥으로 자란다. 중앙 stroke로 그리면 굵은 선이
+        // 그림 전체를 덮는다. source 그림·점유 프레임은 바꾸지 않는다.
+        let overlap = border_w.min(hwpunit_to_px(75, self.dpi));
+        let outset = border_w / 2.0 - overlap;
+        let bbox = BoundingBox::new(
+            bbox.x - outset,
+            bbox.y - outset,
+            bbox.width + 2.0 * outset,
+            bbox.height + 2.0 * outset,
+        );
         let mut rectangle = RectangleNode::new(0.0, style, None);
+        rectangle.picture_border = true;
+        rectangle.round_stroke_join = !matches!((picture.border_attr.attr >> 6) & 0x0f, 1 | 2);
         rectangle.transform = transform;
         Some(RenderNode::new(
             border_id,

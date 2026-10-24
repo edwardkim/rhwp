@@ -45,6 +45,102 @@ fn saved_cross_paragraph_reset_keeps_the_first_line_on_page_one() {
         !page_text(&doc, 1).contains(FIRST_LINE),
         "이어지는 쪽에 첫 줄을 중복하지 않는다"
     );
+    // 원본 table.sz는 첫 물리 프레임이다. 내용 컷 이후의 빈 공간도
+    // 같은 프레임에 속하며, 본문을 가진 호스트라는 이유로 접지 않는다.
+    let rhwp::model::control::Control::Table(source) =
+        &doc.document().sections[0].paragraphs[3].controls[0]
+    else {
+        panic!("원본 표")
+    };
+    let page = doc.build_page_render_tree(0).unwrap();
+    let table = find_node(&page.root, &|node| {
+        matches!(&node.node_type,
+        RenderNodeType::Table(t) if t.para_index == Some(3) && t.control_index == Some(0))
+    })
+    .unwrap();
+    let source_height = f64::from(source.common.height) * 96.0 / 7200.0;
+    let last_cell = find_node(table, &|node| {
+        matches!(&node.node_type,
+        RenderNodeType::TableCell(cell) if cell.row == source.row_count - 1 && cell.col == 0)
+    })
+    .unwrap();
+    // 표 노드 bbox에는 괘선의 반폭도 포함될 수 있다. 물리 프레임의
+    // 끝점은 선 바깥이 아니라 마지막 셀의 논리 상자로 확인한다.
+    let frame_height = last_cell.bbox.y + last_cell.bbox.height - table.bbox.y;
+    assert!(
+        (frame_height - source_height).abs() <= 2.0 * 96.0 / 7200.0,
+        "저장된 물리 프레임: 실제{} vs 원본{}",
+        frame_height,
+        source_height
+    );
+    let label = find_node(last_cell, &|node| {
+        matches!(&node.node_type,
+        RenderNodeType::TextRun(run) if run.text == "데이터")
+    })
+    .unwrap();
+    assert!(
+        (label.bbox.y + label.bbox.height / 2.0 - last_cell.bbox.y - last_cell.bbox.height / 2.0)
+            .abs()
+            < 0.1,
+        "가운데 정렬 라벨은 같은 실제 프레임을 소비한다"
+    );
+    let (cell_index, source_content) = source
+        .cells
+        .iter()
+        .enumerate()
+        .find(|(_, cell)| cell.row == source.row_count - 1 && cell.col == 1)
+        .unwrap();
+    let expected = source_content
+        .paragraphs
+        .iter()
+        .map(|para| para.text.as_str())
+        .collect::<String>();
+    let mut painted = String::new();
+    for page in 0..doc.page_count() {
+        collect_owned_text(
+            &doc.build_page_render_tree(page).unwrap().root,
+            cell_index,
+            &mut painted,
+        );
+    }
+    let compact = |s: &str| {
+        s.chars()
+            .filter(|ch| !ch.is_whitespace())
+            .collect::<String>()
+    };
+    assert_eq!(
+        compact(&painted),
+        compact(&expected),
+        "첫 컷과 이어받기에서 마지막 셀의 모든 원문을 순서대로 한 번만 소유한다"
+    );
+}
+
+fn collect_owned_text(node: &RenderNode, cell_index: usize, out: &mut String) {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        if run.cell_context.as_ref().is_some_and(|owner| {
+            owner.parent_para_index == 3
+                && owner.path.len() == 1
+                && owner.path[0].control_index == 0
+                && owner.path[0].cell_index == cell_index
+        }) {
+            out.push_str(&run.text);
+        }
+    }
+    for child in &node.children {
+        collect_owned_text(child, cell_index, out);
+    }
+}
+
+fn find_node<'a>(
+    node: &'a RenderNode,
+    predicate: &impl Fn(&RenderNode) -> bool,
+) -> Option<&'a RenderNode> {
+    if predicate(node) {
+        return Some(node);
+    }
+    node.children
+        .iter()
+        .find_map(|child| find_node(child, predicate))
 }
 
 #[test]

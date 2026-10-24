@@ -149,6 +149,15 @@ impl TypesetState {
                 .deferred_source_frame_body_pages
                 .insert(index, self.data.pages.len() + 2);
         }
+        if matches!(
+            picture.kind,
+            super::super::DeferredStoredFrameKind::AbsoluteShape
+        ) {
+            // 원래 호스트에 도달하기 전 쪽 시작에서 이미 소유한 개체다.
+            self.data
+                .page_tail_spilled_floats
+                .insert((picture.para_index, picture.control_index));
+        }
         self.data.deferred_next_page_stored_frames.push(picture);
     }
     /// OLE를 넘기더라도 현재 단의 뒤 본문은 남은 예산을 계속 소비한다.
@@ -332,11 +341,84 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn record_vpos_lazy_origin(&mut self, value: Option<i32>) {
         self.data.vpos_lazy_base = value;
     }
+    pub(in crate::renderer::typeset) fn record_rejected_stored_forward_origin(
+        &mut self,
+        value: Option<(usize, i32)>,
+    ) {
+        self.data.rejected_stored_forward_origin = value;
+    }
     pub(in crate::renderer::typeset) fn record_stored_column_origin(
         &mut self,
         value: Option<(i32, f64)>,
     ) {
         self.data.vpos_stored_column_origin = value;
+    }
+    /// 수용한 줄의 구성 결과를 같은 단의 실제 배치에 전달한다.
+    pub(in crate::renderer::typeset) fn record_computed_paragraph(
+        &mut self,
+        index: usize,
+        composed: &crate::renderer::composer::ComposedParagraph,
+    ) {
+        self.data
+            .computed_paragraphs
+            .insert(index, composed.clone());
+    }
+    pub(in crate::renderer::typeset) fn discard_pending_paragraph_origins(&mut self) {
+        self.data.pending_paragraph_origins.clear();
+    }
+    /// 같은 단에서 실제로 이웃한 전체 문단만 하나의 미확정 소비로 이어 받는다.
+    pub(in crate::renderer::typeset) fn queue_paragraph_origin(
+        &mut self,
+        paragraph_index: usize,
+        spacing_before: f64,
+        advance: f64,
+        tolerance: f64,
+    ) {
+        let continues = self.data.pending_paragraph_origins.last().is_some_and(|last| {
+            last.paragraph_index.checked_add(1) == Some(paragraph_index)
+                && (last.flow_end - self.data.current_height).abs() <= tolerance
+                && self.data.current_items.len().checked_sub(2).is_some_and(|index| {
+                    matches!(self.data.current_items.get(index), Some(PageItem::FullParagraph { para_index })
+                        if *para_index == last.paragraph_index)
+                })
+        });
+        if !continues {
+            self.data.pending_paragraph_origins.clear();
+        }
+        self.data
+            .pending_paragraph_origins
+            .push(super::data::PendingParagraphOrigin {
+                paragraph_index,
+                spacing_before,
+                flow_start: self.data.current_height,
+                flow_end: self.data.current_height + advance,
+            });
+    }
+    /// 후속 원본 줄이 연속 소비를 입증한 뒤에만 배치 결과로 공개한다.
+    pub(in crate::renderer::typeset) fn confirm_pending_paragraph_origins(&mut self, base: i32) {
+        for pending in std::mem::take(&mut self.data.pending_paragraph_origins) {
+            self.record_paragraph_origin(crate::renderer::pagination::ParagraphOrigin {
+                paragraph_index: pending.paragraph_index,
+                spacing_before: pending.spacing_before,
+                source_vpos_base: base,
+                flow_start: pending.flow_start,
+                flow_end: pending.flow_end,
+            });
+        }
+    }
+    /// fit 뒤 확정한 문단 소비와 원본 단 축을 함께 기록한다.
+    pub(in crate::renderer::typeset) fn record_paragraph_origin(
+        &mut self,
+        origin: crate::renderer::pagination::ParagraphOrigin,
+    ) {
+        self.data
+            .paragraph_origins
+            .insert(origin.paragraph_index, origin);
+        self.data.vpos_page_base = Some(origin.source_vpos_base);
+        self.data.vpos_lazy_base = None;
+        self.data.vpos_col_anchor = 0.0;
+        self.data.vpos_page_base_stored = true;
+        self.data.vpos_ladder_dirty = false;
     }
     pub(in crate::renderer::typeset) fn record_vpos_page_origin(&mut self, value: Option<i32>) {
         self.data.vpos_page_base = value;
@@ -499,8 +581,11 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn record_reissued_endnote_rows(
         &mut self,
         local_index: usize,
+        tail_leading_consumed_hu: i32,
     ) {
-        self.data.reissued_endnote_rows.insert(local_index);
+        self.data
+            .reissued_endnote_rows
+            .insert(local_index, tail_leading_consumed_hu);
     }
     pub(in crate::renderer::typeset) fn append_endnote_measured_table(
         &mut self,
@@ -510,8 +595,14 @@ impl TypesetState {
     }
     pub(in crate::renderer::typeset) fn append_endnote_source(
         &mut self,
-        source: crate::renderer::pagination::EndnoteParaSource,
+        mut source: crate::renderer::pagination::EndnoteParaSource,
     ) {
+        source.tail_leading_consumed_hu = self
+            .data
+            .reissued_endnote_rows
+            .get(&self.data.endnote_para_sources.len())
+            .copied()
+            .unwrap_or(0);
         self.data.endnote_para_sources.push(source);
     }
     pub(in crate::renderer::typeset) fn mark_fragment_footnotes_queued(
@@ -752,6 +843,15 @@ impl TypesetState {
         spacing: i32,
         dpi: f64,
     ) -> f64 {
+        // 내용 높이에 옮겨 담은 leading을 새 미주 간격으로 다시 예약하지 않는다.
+        // source vpos의 전체 전진은 보존하며 실제 남은 빈 밴드만 발행한다.
+        let consumed = self
+            .data
+            .reissued_endnote_rows
+            .get(&index)
+            .copied()
+            .unwrap_or(0);
+        let spacing = spacing.saturating_sub(consumed).max(0);
         let Some(paragraph) = self.data.endnote_paragraphs.get_mut(index) else {
             return 0.0;
         };

@@ -1,0 +1,122 @@
+{
+  "source": {
+    "parentHead": "e7b50eb8b0c731f676f26b7c4fdb42096a62a268",
+    "files": {
+      "src/renderer/font_metrics_data.rs": "81759c7ddbaa91f175e6cf34aa39be7157914fd87193ad95cf8e98f513ada65a",
+      "src/renderer/font_metrics_technical_symbols.rs": "cd362c8647f0973feddca64ddf23d38f16810d21663b32113bcc0a86cc3a7827"
+    },
+    "patchSha256": "38ad36756901de80c0d503709acbaeb38971dd2022866d90f2e25ddfc5b67ac9",
+    "cases": [
+      "issue_4068_reclassified_float_offset",
+      "issue_4962_font_metric_coverage",
+      "issue_7092_curly_quote_latin_slot",
+      "issue_6802_cell_leader_fill_stored_line",
+      "issue_7445_dash_leader_word_spacing",
+      "issue_7445_original_font_program_ownership",
+      "issue_7445_reference_font_slot_ownership"
+    ]
+  },
+  "focusResult": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "--test",
+      "regression_suite_002",
+      "--test",
+      "regression_suite_005",
+      "--test",
+      "regression_suite_012",
+      "--test",
+      "regression_suite_023",
+      "--test",
+      "regression_suite_027",
+      "-E",
+      "test(/(^|::)issue_4068_reclassified_float_offset::/) or test(/(^|::)issue_4962_font_metric_coverage::/) or test(/(^|::)issue_7092_curly_quote_latin_slot::/) or test(/(^|::)issue_6802_cell_leader_fill_stored_line::/) or test(/(^|::)issue_7445_dash_leader_word_spacing::/) or test(/(^|::)issue_7445_original_font_program_ownership::/) or test(/(^|::)issue_7445_reference_font_slot_ownership::/)"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 158.2728991508484,
+    "source": {
+      "parentHead": "e7b50eb8b0c731f676f26b7c4fdb42096a62a268",
+      "files": {
+        "src/renderer/font_metrics_data.rs": "81759c7ddbaa91f175e6cf34aa39be7157914fd87193ad95cf8e98f513ada65a",
+        "src/renderer/font_metrics_technical_symbols.rs": "cd362c8647f0973feddca64ddf23d38f16810d21663b32113bcc0a86cc3a7827"
+      },
+      "patchSha256": "38ad36756901de80c0d503709acbaeb38971dd2022866d90f2e25ddfc5b67ac9",
+      "cases": [
+        "issue_4068_reclassified_float_offset",
+        "issue_4962_font_metric_coverage",
+        "issue_7092_curly_quote_latin_slot",
+        "issue_6802_cell_leader_fill_stored_line",
+        "issue_7445_dash_leader_word_spacing",
+        "issue_7445_original_font_program_ownership",
+        "issue_7445_reference_font_slot_ownership"
+      ]
+    },
+    "logSha256": "8690fae3ea61c599af2b658d70df2e014f1b902089d1b1b5440175c932b482cf"
+  },
+  "artifacts": {
+    "rhwp-native": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/repair-focused-v5/rhwp-native",
+      "sha256": "85a41e9c20d4b2441e9af95cf40020e9fc2ffa03efc9ddfaf3c665689186eb32"
+    },
+    "librhwp.rlib": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/repair-focused-v5/librhwp.rlib",
+      "sha256": "9df9c6d6dbd384ed95d72bece7140a3c2503b9db862c56b1671a23e63fc50113"
+    }
+  },
+  "fontLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/candidate-source.json",
+  "visualToolSha256": "69d9d56394b26fcb7a64b41588a378da745475b3297bae89fd6b4d16903cede4",
+  "pdfRasterizer": {
+    "program": "pypdfium2",
+    "backend": "pdfium",
+    "policy": "pdfium_smooth_rgb_v1",
+    "antialias": {
+      "text": true,
+      "image": true,
+      "path": true
+    },
+    "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+    "available": true,
+    "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+    "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+    "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+    "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+    "version": "152.0.7947.0",
+    "wrapper_version": "5.12.1",
+    "version_exit_code": 0
+  },
+  "dpi": 96,
+  "tolerancePx": 2,
+  "minimumRaw": 90,
+  "captureWorkers": 8,
+  "fullPrAcceptance": false,
+  "cases": [
+    {
+      "key": "image-stack",
+      "input": "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue2004_cell_image_stack.hwp",
+      "inputSha256": "c633fd086323075ab25777d8ee10357869d037bd17c9e74d444d5b8297c40d50",
+      "pdf": "/Users/tsjang/rhwp-7445-completed-20261009/pdf/issue2004_cell_image_stack-hwp-2020.pdf",
+      "pdfSha256": "b5e2f962620d8d7cdd2ec8b10571c53fbe959eb9ce7b3428ff09a595f12fee90",
+      "compat": "2022"
+    },
+    {
+      "key": "regulatory17",
+      "input": "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue7445/80250_regulatory_analysis.hwp",
+      "inputSha256": "e68d903c20e89ed1325b3a5633c3c0606d21b042345b76a1785cad1e1eca8589",
+      "pdf": "/Users/tsjang/rhwp-7445-completed-20261009/pdf/80250_regulatory_analysis-hwp-2024.pdf",
+      "pdfSha256": "65bbfb5a1ae7c4a71774cda4c91156990edd8a41177b6509109ee08ec286f286",
+      "compat": "2024"
+    }
+  ]
+}

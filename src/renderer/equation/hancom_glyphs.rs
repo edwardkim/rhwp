@@ -21,6 +21,8 @@ pub(super) enum Role {
     Operator,
     Greek,
     BigOperator,
+    SmallOperator,
+    LegacyLiteral,
 }
 
 pub(super) fn is_operator(text: &str) -> bool {
@@ -106,6 +108,22 @@ fn glyph(ch: char, role: Role) -> Option<(char, u16)> {
             }
         }
         Role::BigOperator if ch == '∑' => (0xe067, 739),
+        // 독립 정상 저장본의 SMALLPROD는 두 수식 face의 Unicode U+220F다.
+        // 큰 연산자용 PUA와 구분하며 본문 크기의 한 em 전진을 소비한다.
+        Role::SmallOperator if ch == '∏' => (0x220f, 1024),
+        // A legacy equation's literal triangle and one-dot leader occupy
+        // full symbol slots in Hancom Print. The equation font has no U+2024
+        // cmap entry; its mathematical dot is U+22C5, with that same advance.
+        // Keep this projection in the shared glyph result, not in a painter.
+        Role::LegacyLiteral => match ch {
+            '△' => (0x25b3, 1024),
+            '․' => (0x22c5, 1024),
+            // The legacy equation percent is the mathematical PUA glyph,
+            // not ASCII percent or a generic italic text fallback. Its HFT
+            // logical slot is one em, distinct from the TTF hmtx853/1024.
+            '%' => (0xe042, 1024),
+            _ => return None,
+        },
         _ => return None,
     };
     Some((char::from_u32(code)?, advance))
@@ -143,7 +161,11 @@ pub(super) fn measure(
             },
         );
         glyphs.push(rendered);
-        width += if font_family == "HancomEQN" {
+        width += if matches!(role, Role::SmallOperator) {
+            // 두 설치 프로그램의 hmtx=1024/1024 및 Windows의 논리 크기
+            // 2..128 짝수 격자128조건에서 확인한 한 em 전진이다.
+            (logical_size * f64::from(advance) / 1024.0).round() * dpi / 96.0
+        } else if font_family == "HancomEQN" {
             super::hancom_eqn_metrics::advance(rendered, fs, dpi)?
         } else if matches!(role, Role::Variable { italic: false }) {
             // 같은 face의 기존 독립 GDI 전진을 실제 glyph 원점에도 소비한다.
@@ -169,6 +191,9 @@ pub(super) fn measure(
         // 정체·ASCII 연산자의 glyph 기준선과 수식 기준선을 구분한다.
         // 저장 컨트롤의 기준선 이동은 개체 전체에 별도로 적용한다.
         baseline_shift: if matches!(role, Role::Variable { italic: false })
+            // The PUA percent shares the number glyphs' mathematical baseline.
+            // The Unicode triangle/dot literals retain the Roman ascent path.
+            || matches!(role, Role::LegacyLiteral) && text != "%"
             || matches!(role, Role::Operator) && text.is_ascii()
         {
             fs * if font_family == "HancomEQN" {

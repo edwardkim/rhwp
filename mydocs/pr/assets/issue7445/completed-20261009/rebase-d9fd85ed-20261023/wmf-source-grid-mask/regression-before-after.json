@@ -1,0 +1,38 @@
+{
+  "test": "issue_6865_wmf_monochrome_mask_rop::print_device_mask_reduction_preserves_source_bit_coverage",
+  "before": {
+    "run": 18,
+    "passed": 17,
+    "failed": 1,
+    "seconds": 0.265,
+    "failedCoverage": 0.20784313725490197
+  },
+  "after": {
+    "run": 18,
+    "passed": 18,
+    "failed": 0,
+    "seconds": 0.173
+  },
+  "experiment": {
+    "steps": [
+      {
+        "label": "before-final",
+        "exitCode": 100,
+        "seconds": 125.6044180393219,
+        "sourceSha256": "7480ba9b94b38b68ae59ae60fe903d418241d58cd45cdddbbf78ce94e4bf8bac"
+      },
+      {
+        "label": "after-final",
+        "exitCode": 0,
+        "seconds": 130.892719745636,
+        "sourceSha256": "7b87a2d2ca815205989abf9da355b3a67200bd4d1ae89d6a3a9a9b14a3b50c86"
+      }
+    ],
+    "originalRestored": true,
+    "testExpectationsUnchangedBetweenRuns": true
+  },
+  "testSourceSha256": "55fec03d0afc550b1e767fa7d197dd4aede7796cf254ff6bb0731387924a739c",
+  "expectation": "Independent equal black/white source-bit area and original brush; original frame/bytes/repeated queries; multicolor counterexample",
+  "initialDiagnosticFailures": "v1 and v2 used overly strict straight/continuous channel quantization. Final test compares rounded 8-bit premultiplied channel within one unit; before/after expectations identical.",
+  "fullNextestCompletedThisStage": false
+}

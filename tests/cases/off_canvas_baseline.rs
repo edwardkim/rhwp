@@ -87,6 +87,12 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
     // #7445: upstream 74f9b71b1, 확인 6쪽 최저29.76551%. 실패한 이 원장만 이관.
     "hwpspec.hwp",
+    // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
+    "table_giant_cell_overfill.hwpx",
+    "issue5792/2700727_animal_facility_standards.hwpx",
+    "2025 행정업무운영 편람(최종).hwpx",
+    // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
+    "issue6035/cgmp_evaluation_table.hwpx",
     // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
     "issue5699/37787_regulatory_impact.hwp",
     // #7445: 전52쪽 최저39.97%, 렌더링 회귀는 전체 피델리티 개선 후 복원.
@@ -99,13 +105,11 @@ const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
     "hwpx/156160455-social-pig-farm-income.hwpx",
     // #7445: 전31쪽 최저16.17%, 15쪽 본문 누락을 확인한 규제영향분석서.
     "issue3637/regulatory_impact_nested_table_escape.hwpx",
+    // #7749: 위 원본과 SHA-256이 같은 80550 경로. 사용자 요청으로 렌더링 회귀를 이관한다.
+    "issue6697/80550-agricultural-machinery-act-amendment.hwpx",
     // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
     "86712_regulatory_analysis.hwp",
     "issue1891/86712_regulatory_analysis.hwpx",
-    "issue6031/3249937_asset_management_rules.hwpx",
-    "hwp3-sample16-hwp5-2022.hwp",
-    "hwp3-sample16-hwp5.hwp",
-    "hwp3-sample16-hwp5-2010.hwp",
     "issue6892/156726122-recycling-press-release.hwpx",
     "HWP5-nopassword-123456.hwpx",
     "basic/issue2007_nested_cell_pagination_42065.hwp",

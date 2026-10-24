@@ -3,9 +3,11 @@
 //! 입력 SHA-256: 40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f.
 //! 기준: pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf
 //! SHA-256: 3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593.
-//! 96dpi, 좌상단 CSS px. 0206db466의 전383쪽 raw 최저 Native93.07066%,
-//! fresh WASM92.98362%; 130쪽 Native98.69152%, WASM98.45828%와 직접 판독.
-//! 종이 밖으로 나가는 그림의 포함 관계는 보정 전 FAIL / 보정 후 PASS다.
+//! 96dpi, 좌상단 CSS px. Stage30 전383쪽 raw 최저 Native92.33793%,
+//! fresh WASM92.35482%; 130쪽 Native98.96134%, WASM98.79901%와 직접 판독.
+//! Print는 crop을 자원에 소비한다. 원본 crop으로 대상 그림을 찾은 뒤 source_node_id로
+//! 같은 실제 Print 소유자를 검사하며, 같은 자원을 쓰는 잘린 머리말은 제외한다.
+//! 종이 경계·본문 WMF·동적 머리말의 기존 기대값은 유지한다.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::document_core::DocumentCore;
 use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile};
@@ -63,6 +65,16 @@ fn master_raster_print_frame_preserves_paper_border_and_unrelated_source_frames(
                 .zip(image.original_size_hu)
                 .is_some_and(|(c, s)| c == (0, 0, s.0 as i32, s.1 as i32))
     };
+    let source_masters: Vec<_> = src
+        .iter()
+        .filter(|node| matches!(&node.node_type, RenderNodeType::Image(image) if full(image)))
+        .collect();
+    assert_eq!(
+        source_masters.len(),
+        1,
+        "원본의 전체 바탕쪽 그림 소유자는 하나다"
+    );
+    let source_master_id = source_masters[0].id;
     let original: Vec<_> = screen_ops
         .iter()
         .filter_map(|(_, op)| match op {
@@ -78,7 +90,13 @@ fn master_raster_print_frame_preserves_paper_border_and_unrelated_source_frames(
     let found: Vec<_> = print_ops
         .iter()
         .filter_map(|(leaf, op)| match op {
-            PaintOp::Image { bbox, image, .. } if full(image) => Some((*leaf, *bbox)),
+            PaintOp::Image { bbox, image, .. }
+                if leaf.source_node_id == Some(source_master_id) && image.bin_data_id == 355 =>
+            {
+                // Print가 crop을 자원에 소비한 뒤에도 원문 소유자로 같은 그림을 찾는다.
+                // 같은 bin_data_id를 쓰는 잘린 머리말 그림은 다른 source id를 가진다.
+                Some((*leaf, *bbox))
+            }
             _ => None,
         })
         .collect();

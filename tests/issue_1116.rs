@@ -158,16 +158,33 @@ fn sample16_hwp5_toc_leaders_stop_before_page_numbers() {
         leaders.len()
     );
 
-    let max_x2 = leaders
-        .iter()
-        .map(|(_, x2, _)| *x2)
-        .fold(f64::NEG_INFINITY, f64::max);
-
-    assert!(
-        max_x2 < 650.0,
-        "목차 leader가 페이지 번호 뒤로 과도하게 연장됨: max x2={max_x2:.1}. \
-         정상은 페이지 번호 시작 직전(x≈610~631)에서 멈춰야 함"
-    );
+    // 같은 원본의 독립 Print와 새 Native/fresh WASM 전64쪽을 먼저 확인했다.
+    // 2쪽은 Native raw98% 미만이므로 과거 x650 경계로 배치를 고정하지 않는다.
+    // SVG가 내보내는 실제 숫자 glyph와 리더의 같은 글줄·앞뒤 관계를 보호한다.
+    let numbers: Vec<_> = ('0'..='9')
+        .flat_map(|digit| extract_text_attrs(&svg, &digit.to_string()))
+        .filter_map(|attrs| {
+            Some((
+                attr_f64(&attrs, "x")?,
+                attr_f64(&attrs, "y")?,
+                attr_f64(&attrs, "font-size")?,
+            ))
+        })
+        .collect();
+    for (start, end, leader_y) in leaders {
+        let number_left = numbers
+            .iter()
+            .filter(|(x, baseline, em)| {
+                *x >= start && *baseline >= leader_y && *baseline - *em <= leader_y
+            })
+            .map(|(x, _, _)| *x)
+            .min_by(f64::total_cmp)
+            .expect("각 목차 리더 뒤 같은 글줄에 쪽번호가 있어야 함");
+        assert!(
+            end <= number_left,
+            "리더 끝은 같은 줄 쪽번호의 첫 glyph를 침범하지 않아야 함: {end} > {number_left}"
+        );
+    }
 }
 
 #[test]

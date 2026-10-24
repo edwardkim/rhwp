@@ -62,12 +62,16 @@ impl TypesetState {
                 side_wrap_exclusions: std::collections::BTreeMap::new(),
                 inline_placements: std::collections::HashMap::new(),
                 inline_flow_plans: std::collections::HashMap::new(),
+                paragraph_origins: Default::default(),
+                computed_paragraphs: Default::default(),
+                pending_paragraph_origins: Vec::new(),
                 stored_paragraph_flow_ends: std::collections::HashMap::new(),
                 stored_column_top_spacings: std::collections::HashMap::new(),
                 paragraph_float_placements: std::collections::HashMap::new(),
                 float_pushed_line_spacings: std::collections::HashMap::new(),
                 inline_box_flow_bottom: 0.0,
                 deferred_table_controls: Vec::new(),
+                deferred_column_shapes: Vec::new(),
                 deferred_table_successor_start: None,
                 pending_table_terminal_gap: None,
                 deferred_next_page_square_pictures: Vec::new(),
@@ -96,7 +100,7 @@ impl TypesetState {
                 page_tail_spilled_floats: std::collections::HashSet::new(),
                 endnotes: Vec::new(),
                 endnote_paragraphs: Vec::new(),
-                reissued_endnote_rows: std::collections::HashSet::new(),
+                reissued_endnote_rows: std::collections::HashMap::new(),
                 endnote_para_sources: Vec::new(),
                 endnote_para_base: None,
                 endnote_measured_tables: Vec::new(),
@@ -125,12 +129,14 @@ impl TypesetState {
                 current_zone_design_spacing_px: 0.0,
                 current_zone_plain_text: false,
                 vpos_page_base: None,
+                stored_paragraph_boundary_carry: None,
                 vpos_lazy_base: None,
                 vpos_stored_column_origin: None,
                 vpos_page_base_stored: false,
                 vpos_ladder_dirty: false,
                 vpos_compacted_stored_delta: 0.0,
                 vpos_snapped_flow_start: None,
+                rejected_stored_forward_origin: None,
                 vpos_prev_layout_para: None,
                 vpos_prev_partial_table: false,
                 vpos_col_anchor: 0.0,
@@ -158,6 +164,7 @@ impl TypesetState {
     /// 렌더러 build_single_column 진입 정합: page/lazy base·prev 초기화,
     /// anchor 를 현 current_height(컬럼 시작값)로 설정.
     pub(in crate::renderer::typeset) fn reset_vpos_cursor(&mut self) {
+        self.data.stored_paragraph_boundary_carry = None;
         self.data.vpos_prev_trimmed_sb_px = 0.0;
         self.data.vpos_page_base = None;
         self.data.vpos_lazy_base = None;
@@ -165,6 +172,7 @@ impl TypesetState {
         self.data.vpos_page_base_stored = false;
         self.data.vpos_ladder_dirty = false;
         self.data.vpos_compacted_stored_delta = 0.0;
+        self.data.rejected_stored_forward_origin = None;
         self.data.vpos_prev_layout_para = None;
         self.data.vpos_prev_partial_table = false;
         self.data.vpos_col_anchor = self.data.current_height;
@@ -173,6 +181,8 @@ impl TypesetState {
     /// 사용 가능한 본문 높이 (각주, 존 오프셋 차감)
     pub(in crate::renderer::typeset) fn available_height(&self) -> f64 {
         let base = self.base_available_height();
+        // 실제 각주 조판 높이를 예약한 경우에는 추정 오차용 버퍼를 또 빼지 않는다.
+        // 같은 물리 높이가 본문과 paint의 경계이며 꼬리말 회수도 이미 금지돼 있다.
         let fn_margin = if self.data.current_footnote_height > 0.0
             && !self.data.current_footnote_body_bottom_reserved
         {
@@ -459,6 +469,7 @@ impl TypesetState {
 
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
     pub(in crate::renderer::typeset) fn flush_column(&mut self) {
+        self.data.pending_paragraph_origins.clear();
         // [#4090] 쪽이 끝나면 어울림 밴드도 끝난다 — 개체 높이를 used 에 반영한다.
         self.close_square_band();
         self.data.inline_box_flow_bottom = 0.0;
@@ -470,6 +481,8 @@ impl TypesetState {
             return;
         }
         let col_content = ColumnContent {
+            paragraph_origins: std::mem::take(&mut self.data.paragraph_origins),
+            computed_paragraphs: std::mem::take(&mut self.data.computed_paragraphs),
             column_index: self.data.current_column,
             start_height: self.data.current_start_height,
             endnote_flow: self.data.current_endnote_flow,
@@ -531,10 +544,13 @@ impl TypesetState {
             std::mem::take(&mut self.data.page_start_stored_frames)
                 .into_iter()
                 .map(|deferred| match deferred.kind {
-                    crate::renderer::typeset::DeferredStoredFrameKind::Picture => PageItem::Shape {
-                        para_index: deferred.para_index,
-                        control_index: deferred.control_index,
-                    },
+                    crate::renderer::typeset::DeferredStoredFrameKind::Picture
+                    | crate::renderer::typeset::DeferredStoredFrameKind::AbsoluteShape => {
+                        PageItem::Shape {
+                            para_index: deferred.para_index,
+                            control_index: deferred.control_index,
+                        }
+                    }
                     crate::renderer::typeset::DeferredStoredFrameKind::Table => PageItem::Table {
                         para_index: deferred.para_index,
                         control_index: deferred.control_index,
@@ -547,8 +563,11 @@ impl TypesetState {
 
     /// 비어있어도 flush
     pub(in crate::renderer::typeset) fn flush_column_always(&mut self) {
+        self.data.pending_paragraph_origins.clear();
         self.data.inline_box_flow_bottom = 0.0;
         let col_content = ColumnContent {
+            paragraph_origins: std::mem::take(&mut self.data.paragraph_origins),
+            computed_paragraphs: std::mem::take(&mut self.data.computed_paragraphs),
             column_index: self.data.current_column,
             start_height: self.data.current_start_height,
             endnote_flow: self.data.current_endnote_flow,
@@ -724,6 +743,11 @@ impl TypesetState {
             self.data.column_had_compact_endnote_rewind = false;
             self.reset_vpos_cursor();
             self.activate_next_column_stored_frames();
+            // 예약한 개체 상자와 항목을 같은 단에서 확정한다. 본문은 그 뒤에 이어진다.
+            for (para_idx, ctrl_idx, flow) in std::mem::take(&mut self.data.deferred_column_shapes)
+            {
+                self.commit_table_host_shape(para_idx, ctrl_idx, flow, None);
+            }
         } else {
             self.push_new_page();
         }
@@ -731,6 +755,7 @@ impl TypesetState {
 
     /// 강제 새 페이지
     pub(in crate::renderer::typeset) fn force_new_page(&mut self) {
+        self.finish_deferred_column_shapes();
         self.flush_column();
         self.push_new_page();
     }
@@ -745,6 +770,10 @@ impl TypesetState {
     /// 새 페이지 push + 상태 리셋
     pub(in crate::renderer::typeset) fn push_new_page(&mut self) {
         self.finish_next_column_stored_frames();
+        if !self.data.deferred_column_shapes.is_empty() {
+            self.finish_deferred_column_shapes();
+            self.flush_column();
+        }
         self.data
             .layout
             .apply_column_page_number(self.data.pages.len() as u32 + 1);
@@ -771,6 +800,9 @@ impl TypesetState {
         for deferred in std::mem::take(&mut self.data.deferred_next_page_stored_frames) {
             let next_flow_y = match deferred.placement.flow {
                 crate::renderer::float_placement::ParagraphFloatFlow::StoredPicture {
+                    next_flow_y,
+                }
+                | crate::renderer::float_placement::ParagraphFloatFlow::StoredPictureGroup {
                     next_flow_y,
                 } => next_flow_y,
                 _ => deferred.placement.occupied_bottom,

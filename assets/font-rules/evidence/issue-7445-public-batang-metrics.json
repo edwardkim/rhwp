@@ -1,0 +1,25 @@
+{
+  "kind": "공개 글꼴 프로그램과 기존 폭 표의 대조",
+  "sourceUrl": "https://raw.githubusercontent.com/google/fonts/main/ofl/batang/Batang-Regular.ttf",
+  "sourceSha256": "0929031e799b2feadda22208c58f503515e6f8fa2eaba75acd2e6847d73fc54b",
+  "license": "SIL OFL1.1",
+  "renamedFamily": "RHWP Public Batang",
+  "renamedProgramSha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78",
+  "renaming": "OFL 배포본과 OS 바탕의 이름 충돌 방지. name/head 이외의 원본 테이블은 보존.",
+  "metricEntry": "Batang regular",
+  "checkedEntries": 11636,
+  "matchingEntries": 11635,
+  "mismatches": [
+    {
+      "codePoint": 160,
+      "metricWidth": 512,
+      "metricEm": 1024,
+      "fontWidth": 341,
+      "fontEm": 1024
+    }
+  ],
+  "nbspContract": "U+00A0은 공통 측정에서 U+0020으로 정규화한다(#6646). 직접 표 값512와 프로그램 값341의 차이는 정규화 후 사용하지 않는 항목이며 U+0020은341/1024로 일치한다.",
+  "asciiMatch": true,
+  "hangulMatch": true,
+  "scope": "기존 Batang regular 표의 검증된 사용 범위를 별도 공개 프로그램 이름에도 연결한다. 역사적595개 전체의 계보를 승격하거나 원본 하이텔 서체와의 동일성을 주장하지 않는다."
+}

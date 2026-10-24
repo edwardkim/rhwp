@@ -256,6 +256,30 @@ fn font_trace_profiles_follow_source_ownership_and_preserve_font_decisions() {
         .iter()
         .any(|record| record["document"]["substFont"] == feature["expectedHwpSubstFont"]));
     assert_ne!(counterpart["layoutHash"], with["layoutHash"]);
+    // HWP5 표 20의 0x80 선언과 HWPX substFont를 각각 보존한다.
+    // HWP에도 대체 선언이 있으므로 형식만으로 null을 기대하지 않는다.
+    for declaration in manifest["comparisons"]["documentSubstituteDeclarations"]
+        .as_array()
+        .expect("문서 대체 선언")
+    {
+        let trace = traces
+            .get(declaration["documentId"].as_str().expect("선언 문서 ID"))
+            .expect("선언 문서 trace");
+        let slots = declaration["languageSlots"].as_array().expect("언어 슬롯");
+        let records: Vec<_> = trace["records"]
+            .as_array()
+            .expect("선언 records")
+            .iter()
+            .filter(|record| {
+                record["document"]["face"] == declaration["face"]
+                    && slots.contains(&record["document"]["languageSlot"])
+            })
+            .collect();
+        assert!(!records.is_empty(), "선언 대상 글꼴 record가 있어야 한다");
+        assert!(records
+            .iter()
+            .all(|record| { record["document"]["substFont"] == declaration["substFont"] }));
+    }
 }
 
 #[test]
@@ -265,7 +289,7 @@ fn stage4_public_trace_limit_and_unsupported_backends_fail_closed() {
         .as_array()
         .expect("공개 문서")
         .iter()
-        .find(|doc| doc["id"] == "exact-face")
+        .find(|document| document["id"] == "exact-face")
         .expect("exact-face 입력 유지");
     let trace = public_trace(
         document["path"].as_str().expect("document path"),

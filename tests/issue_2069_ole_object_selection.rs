@@ -787,12 +787,14 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
         .paragraphs
         .first()
         .unwrap_or_else(|| panic!("OLE caption paragraph missing for {}", rel));
-    assert_eq!(cap_para.text, "그림  ", "OLE caption text prefix");
+    assert_eq!(cap_para.text, "그림  ", "OLE 캡션 접두어");
     assert_eq!(
         cap_para.char_offsets,
-        vec![0, 1, 2, 11],
-        "OLE caption AutoNumber placeholder offsets"
+        vec![0, 1, 2, 3],
+        "OLE 캡션의 자동번호 자리 원시 위치"
     );
+    assert_eq!(cap_para.char_count, 12, "접두어 3 + 번호 8 + 문단 끝 1");
+    assert_eq!(cap_para.control_text_positions(), vec![3]);
     let auto_number = cap_para
         .controls
         .iter()
@@ -842,7 +844,7 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
     let rendered_text = text_runs
         .iter()
         .filter_map(|node| match &node.node_type {
-            RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+            RenderNodeType::TextRun(run) => Some(run.display_or_text()),
             _ => None,
         })
         .collect::<String>();
@@ -852,15 +854,35 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
             matches!(
                 &node.node_type,
                 RenderNodeType::TextRun(run)
-                    if run.text.contains("그림") && run.text.contains("1.")
+                    if run.display_or_text() == "1."
             )
         })
         .unwrap_or_else(|| {
             panic!(
-                "OLE caption should render as visible figure text for {}: rendered={:?}",
+                "OLE 캡션의 표시 번호가 있어야 함 {}: 표시 문자열={:?}",
                 rel, rendered_text
             )
         });
+    assert!(
+        rendered_text.contains("그림 1."),
+        "접두어와 번호가 올바른 순서로 표시되어야 함: {rendered_text:?}"
+    );
+    let RenderNodeType::TextRun(number_run) = &caption_run.node_type else {
+        unreachable!();
+    };
+    assert_eq!(number_run.text, " ", "모델의 번호 공백 한 자리를 보존");
+    let svg = core.render_page_svg_native(0).expect("OLE 캡션 SVG");
+    let svg_document = roxmltree::Document::parse(&svg).expect("SVG XML");
+    let visible_text = svg_document
+        .descendants()
+        .filter(|node| node.has_tag_name("text"))
+        .flat_map(|node| node.descendants().filter(|child| child.is_text()))
+        .filter_map(|node| node.text())
+        .collect::<String>();
+    assert!(
+        visible_text.contains("그림1."),
+        "SVG의 글자별 출력에도 접두어와 번호가 순서대로 있어야 함: {visible_text:?}"
+    );
     assert!(
         caption_run.bbox.x > ole_right,
         "OLE right caption should render to the right of the OLE preview for {}: caption={:?}, ole={}",

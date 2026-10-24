@@ -11,7 +11,7 @@
  */
 
 import { getDetectedOSFonts, REGISTERED_FONTS } from './font-loader.ts';
-import { resolveLocalFont } from './local-fonts.ts';
+import { getLocalFontState, resolveLocalFont } from './local-fonts.ts';
 
 import {
   FONT_RULE_DISPLAY_CHAIN_POLICY_IDS,
@@ -97,6 +97,11 @@ export function setDocumentFontSubstitutions(
     next.set(key, families);
   }
   documentFontSubstitutions = next;
+}
+
+/** 엔진이 준 언어별 체인과 대조할 선언 대체 후보를 반환한다. */
+export function documentSubstituteFamilies(fontName: string): readonly string[] {
+  return documentFontSubstitutions.get(normalizedFamilyKey(fontName)) ?? [];
 }
 
 function confirmedFontName(
@@ -200,6 +205,10 @@ function installedFaceName(
     // 이전 문서의 전역 감지 결과를 다시 사용하면 설치되지 않은 face가 선택될 수 있다.
     return null;
   }
+  // A width-only presence probe can also see the platform's LastResort font.
+  // With an authorized catalog available, an unmatched name is unverified;
+  // do not promote that probe to the selected original program.
+  if (getLocalFontState().source === 'local-font-access') return null;
   return detectedOSFontIndex().get(normalizedFamilyKey(fontName)) ?? null;
 }
 
@@ -442,11 +451,11 @@ export function fontFamilyCandidatesForDisplayWithRules(
   const originalAllowed =
     options.includeUnconfirmedOriginal === true ||
     REGISTERED_FONTS.has(fontName) ||
-    installedOriginal !== null ||
-    confirmedLocalFontSet.has(fontName.toLocaleLowerCase('en-US'));
+    confirmedLocalFontSet.has(fontName.toLocaleLowerCase('en-US')) ||
+    installedOriginal !== null;
 
   if (!localRecord) {
-    const substitute = installedFaceName(fontName, options.confirmedLocalFonts) === null
+    const substitute = installedOriginal === null
       ? installedSubstituteFace(fontName, altType, langId, options.confirmedLocalFonts)
       : null;
     if (substitute) {
@@ -460,6 +469,8 @@ export function fontFamilyCandidatesForDisplayWithRules(
     pushUniqueFontFamily(families, localRecordCssFamily(fontName, localRecord));
     ruleIds.push(FONT_RULE_DISPLAY_CHAIN_POLICY_IDS['style-fallback']);
   } else if (originalAllowed) {
+    // A loaded local program is already the selected face. Do not drop it
+    // merely because it is absent from the bundled web-font catalog.
     pushUniqueFontFamily(families, installedOriginal ?? fontName);
     ruleIds.push(FONT_RULE_DISPLAY_CHAIN_POLICY_IDS['style-fallback']);
   }

@@ -77,6 +77,9 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     z.write_deflated("Contents/header.xml", &header_xml)?;
     let mut hwp3_page_ownership =
         crate::model::hwp3_page_ownership::PageOwnership::for_document(doc, &header_xml);
+    if let Some(bytes) = crate::model::native_font_program::encode(&doc.doc_info, &header_xml) {
+        z.write_deflated(crate::model::native_font_program::HWPX_ENTRY, &bytes)?;
+    }
 
     // 4. Contents/section{N}.xml — 실제 섹션만큼, 없으면 0개
     let section_hrefs: Vec<String> = (0..doc.sections.len())

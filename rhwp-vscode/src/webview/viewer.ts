@@ -103,6 +103,7 @@ const vscodeBundledFontFiles = new Set([
   "NanumMyeongjo-Regular.woff2",
   "GowunBatang-Regular.woff2",
   "GowunDodum-Regular.woff2",
+  "RHWPPublicBatang-Regular.woff2",
 ]);
 const canvasKitFontPlan = (requiredFontFamilies: readonly string[]) => resolveCanvasKitFontPlan(
   requiredFontFamilies,

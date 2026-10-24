@@ -55,6 +55,7 @@ pub(in crate::renderer::typeset) struct WholeFitPage<'a> {
 }
 
 pub(super) struct WholeFitEvidence {
+    pub stored_first_line_bottom_outside_body: bool,
     pub saved_single_line_bottom_fits: bool,
     pub saved_list_tail_body_vpos_fits: bool,
     pub page_end_fit_height: f64,
@@ -80,6 +81,29 @@ pub(super) fn inspect(
     dpi: f64,
     available_height: impl Fn() -> f64,
 ) -> WholeFitEvidence {
+    // 일반 본문의 저장 span은 앞간격을 제외할 수 있다. 현재 배치 원점과
+    // 저장 첫 줄이 같은 상자로 닫히면 축소 fit으로 본문 밖 줄을 수용하지 않는다.
+    // 개체의 여백 spill과 편집 후 재조판은 별도 배치 계약을 유지한다.
+    let stored_first_line_bottom_outside_body = page.col_count == 1
+        && (page.profile.hwp5_stored_pagination_layout() || page.profile.hwpx_stored_layout())
+        && !page.profile.session_edited()
+        && para.controls.is_empty()
+        && !page.current_items.is_empty()
+        && current_page_vpos_base.is_some_and(|base| {
+            para.line_segs
+                .first()
+                .and_then(|line| line_seg_visible_bounds_px(line, base, dpi))
+                .is_some_and(|(top, _)| {
+                    (top - page.current_height - fmt.spacing_before).abs() <= dpi / 7200.0
+                })
+                && super::split_entry::stored_first_line_bottom_outside_body(
+                    para,
+                    base,
+                    page.current_height,
+                    page.body_height,
+                    dpi,
+                )
+        });
     // [#2279 OMIT-fit] spacing-누락 문서군에서 **저장 리셋 직전의 페이지말
     // 빈 문단**은 다음 쪽 상단 귀속이다 — 한글 fresh 는 누락 spacing 을
     // 재가산해 이 빈 문단을 다음 쪽으로 넘긴다(36392557 pi14: 저장 bottom
@@ -266,6 +290,7 @@ pub(super) fn inspect(
         };
     let stored_vpos_rewind_break = stored_vpos_rewind_break && !hangul2024_rewind_override;
     WholeFitEvidence {
+        stored_first_line_bottom_outside_body,
         saved_single_line_bottom_fits,
         saved_list_tail_body_vpos_fits,
         page_end_fit_height,

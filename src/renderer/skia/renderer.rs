@@ -966,13 +966,33 @@ impl SkiaLayerRenderer {
         let cache_before = self.cache_stats();
         let image_before = self.image_cache.observations();
         // Resource bytes are fingerprinted once per page, not once per group.
-        let cache_context = ReplayCacheContext::new(
+        let mut cache_context = ReplayCacheContext::new(
             tree,
             fallback_raster_scale,
             strict_resource_failures,
             canvas.image_info().color_type() != skia_safe::ColorType::Unknown,
             &diagnostics,
         );
+        let matrix = canvas.local_to_device_as_3x3();
+        if tree.profile == crate::paint::RenderProfile::Print
+            && cache_context.raster_target
+            && !matrix.has_perspective()
+        {
+            cache_context.bitmap_paper_grid = crate::renderer::bitmap_raster::PrintPaperGrid::new(
+                [tree.page_width, tree.page_height],
+                [
+                    matrix.scale_x() as f64,
+                    matrix.skew_y() as f64,
+                    matrix.skew_x() as f64,
+                    matrix.scale_y() as f64,
+                    matrix.translate_x() as f64,
+                    matrix.translate_y() as f64,
+                ],
+            );
+            cache_context.seed = cache_context
+                .seed
+                .and_then(|seed| super::cache::debug_key(&(seed, cache_context.bitmap_paper_grid)));
+        }
         let setup_time = setup_start.elapsed();
         let replay_start = Instant::now();
         for replay_plane in PaintReplayPlane::ORDERED {
@@ -983,10 +1003,7 @@ impl SkiaLayerRenderer {
                 canvas,
                 &tree.root,
                 &tree.output_options,
-                matches!(
-                    tree.profile,
-                    crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
-                ),
+                tree.profile,
                 &tree.resources,
                 replay_plane,
                 None,
@@ -1027,7 +1044,7 @@ impl SkiaLayerRenderer {
             PaintOp::GlyphRun { run, .. } => {
                 prepare_native_glyph_run(run, resources, &self.font_mgr).1?
             }
-            PaintOp::GlyphOutline { outline, bbox } => {
+            PaintOp::GlyphOutline { outline, bbox, .. } => {
                 prepare_glyph_outline(outline, *bbox, resources, scale)?
             }
             _ => return None,
@@ -1045,7 +1062,7 @@ impl SkiaLayerRenderer {
         canvas: &Canvas,
         node: &LayerNode,
         output_options: &LayerOutputOptions,
-        hft_outline_enabled: bool,
+        profile: crate::paint::RenderProfile,
         resources: &ResourceArena,
         replay_plane: PaintReplayPlane,
         inherited_layer: Option<RenderLayerInfo>,
@@ -1059,6 +1076,10 @@ impl SkiaLayerRenderer {
             diagnostics.output.layer_nodes_replayed =
                 diagnostics.output.layer_nodes_replayed.saturating_add(1);
         }
+        let hft_outline_enabled = matches!(
+            profile,
+            crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
+        );
         let active_layer = node.layer.or(inherited_layer);
         let clip_enabled = output_options.clip_enabled;
         let antialias = cache_context.policy.antialias();
@@ -1170,7 +1191,10 @@ impl SkiaLayerRenderer {
                 effect,
                 brightness,
                 contrast,
-                cache_context.policy.image_sampling(),
+                cache_context
+                    .policy
+                    .image_sampling()
+                    .with_paper_grid(cache_context.bitmap_paper_grid),
             )
         };
         let equation_fonts = EquationFonts {
@@ -1234,7 +1258,7 @@ impl SkiaLayerRenderer {
                             target,
                             child,
                             output_options,
-                            hft_outline_enabled,
+                            profile,
                             resources,
                             replay_plane,
                             active_layer,
@@ -1354,7 +1378,7 @@ impl SkiaLayerRenderer {
                     canvas,
                     child,
                     output_options,
-                    hft_outline_enabled,
+                    profile,
                     resources,
                     replay_plane,
                     active_layer,
@@ -1372,7 +1396,7 @@ impl SkiaLayerRenderer {
                         canvas,
                         child,
                         output_options,
-                        hft_outline_enabled,
+                        profile,
                         resources,
                         replay_plane,
                         active_layer,
@@ -1397,7 +1421,7 @@ impl SkiaLayerRenderer {
                     canvas,
                     child,
                     output_options,
-                    hft_outline_enabled,
+                    profile,
                     resources,
                     replay_plane,
                     active_layer,
@@ -1579,6 +1603,18 @@ impl SkiaLayerRenderer {
                         diagnostics.output.paint_ops_replayed =
                             diagnostics.output.paint_ops_replayed.saturating_add(1);
                     }
+                    if !op.glyph_paint_transform_is_valid() {
+                        return Err(crate::error::HwpError::RenderError(
+                            "invalid glyph paint transform".to_string(),
+                        ));
+                    }
+                    let _glyph_frame_guard = op.glyph_paint_transform().map(|t| {
+                        let guard = skia_safe::AutoCanvasRestore::guard(canvas, true);
+                        canvas.concat(&skia_safe::Matrix::from_affine(&[
+                            t.a as f32, t.b as f32, t.c as f32, t.d as f32, t.e as f32, t.f as f32,
+                        ]));
+                        guard
+                    });
                     match op {
                         PaintOp::PageBackground { bbox, background } => {
                             let rect = Rect::from_xywh(
@@ -1681,7 +1717,12 @@ impl SkiaLayerRenderer {
                             if role == TextVisualReplayRole::SuppressedFallback {
                                 continue;
                             }
-                            let mut projected = run.as_ref().clone();
+                            let decoration_replay = op.decoration_replay();
+                            let (bbox, run) = decoration_replay
+                                .as_ref()
+                                .map(|(bbox, run)| (*bbox, run.as_ref()))
+                                .unwrap_or((*bbox, run.as_ref()));
+                            let mut projected = run.clone();
                             projected.char_overlap = None;
                             projected.style.tab_leaders.clear();
                             projected.style.underline = UnderlineType::None;
@@ -1730,8 +1771,8 @@ impl SkiaLayerRenderer {
                                 crate::renderer::render_tree::FieldMarkerType::None
                             );
                             text_replay.draw_text(
-                                projected.display_or_text(),
-                                *bbox,
+                                projected.metric_or_display_text(),
+                                bbox,
                                 &projected.style,
                                 projected.baseline,
                                 projected.rotation,
@@ -1801,7 +1842,13 @@ impl SkiaLayerRenderer {
                             if line.transform.has_transform() {
                                 open_shape_transform(line.transform, bbox);
                             }
-                            draw_line(canvas, line, &make_line_paint(&line.style), antialias);
+                            draw_line(
+                                canvas,
+                                line,
+                                &make_line_paint(&line.style),
+                                antialias,
+                                profile,
+                            );
                             draw_arrow_heads(
                                 canvas,
                                 &crate::renderer::arrow::line_heads(
@@ -1839,7 +1886,10 @@ impl SkiaLayerRenderer {
                                     canvas.draw_rect(sk_rect, &fill);
                                 }
                             }
-                            if let Some(stroke) = make_stroke_paint(&rect.style) {
+                            if let Some(mut stroke) = make_stroke_paint(&rect.style) {
+                                if rect.round_stroke_join {
+                                    stroke.set_stroke_join(skia_safe::paint::Join::Round);
+                                }
                                 if rect.corner_radius > 0.0 {
                                     canvas.draw_round_rect(
                                         sk_rect,
@@ -2001,7 +2051,7 @@ impl SkiaLayerRenderer {
                                     image.fill_mode,
                                     image.original_size,
                                     image.crop,
-                                    image.original_size_hu,
+                                    crate::renderer::image_resolver::resolved_image_crop_reference_size(image),
                                     effect,
                                     if suppress_effects {
                                         0
@@ -2306,6 +2356,7 @@ fn draw_arrow_heads(
 
 #[cfg(test)]
 mod tests {
+    use super::super::image_conv::ImageSampling;
     use super::*;
     use crate::model::control::FormType;
     use crate::model::shape::TextWrap;
@@ -2846,6 +2897,60 @@ mod tests {
 
         assert_eq!(output.width, 20);
         assert_eq!(output.height, 24);
+
+        // 독립 한컴 Print의 정수 종이 격자와 옅은 선을 실제 PNG 진입점에서 보호한다.
+        // 세 기존 대조군 모두 Native/fresh WASM 전쪽 100% 및 확대 판독 후 고정했다.
+        // 출처·시각 선행 조건은 fixture의 provenance.json에 기록한다.
+        let fixtures = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/print_bitmap_paper_grid");
+        for case in ["phase", "color", "faint"] {
+            let source = std::fs::read(fixtures.join(format!("{case}.hwpx"))).unwrap();
+            let core = crate::document_core::DocumentCore::from_bytes(&source).unwrap();
+            assert_eq!(core.page_count(), 1, "{case}: 그림 소속 쪽 보존");
+            let reference = image::open(fixtures.join(format!("{case}-print-96dpi.png")))
+                .unwrap()
+                .to_rgb8();
+            let png = core
+                .render_page_png_native_with_profile_and_export_options(
+                    0,
+                    RenderProfile::Print,
+                    &crate::document_core::queries::rendering::PngExportOptions {
+                        dpi: Some(96.0),
+                        ..Default::default()
+                    },
+                )
+                .unwrap();
+            let actual = image::load_from_memory(&png).unwrap().to_rgb8();
+            assert_eq!(
+                actual.dimensions(),
+                reference.dimensions(),
+                "{case}: 종이 격자"
+            );
+            let ink = |image: &image::RgbImage, x: u32, y: u32| {
+                image.get_pixel(x, y).0.into_iter().min().unwrap() < 232
+            };
+            let nearby = |image: &image::RgbImage, x: u32, y: u32| {
+                (y.saturating_sub(2)..=(y + 2).min(image.height() - 1)).any(|ny| {
+                    (x.saturating_sub(2)..=(x + 2).min(image.width() - 1))
+                        .any(|nx| ink(image, nx, ny))
+                })
+            };
+            let (mut union, mut missing) = (0u64, 0u64);
+            for y in 0..actual.height() {
+                for x in 0..actual.width() {
+                    let (a, b) = (ink(&actual, x, y), ink(&reference, x, y));
+                    union += u64::from(a || b);
+                    missing += u64::from(
+                        (a && !nearby(&reference, x, y)) || (b && !nearby(&actual, x, y)),
+                    );
+                }
+            }
+            assert!(union > 0, "{case}: 빈 출력·누락된 그림은 통과시키지 않는다");
+            assert!(
+                missing * 100 <= union * 2,
+                "{case}: 독립 Print 대비 2px 내용 보존이 98% 미만: {missing}/{union}"
+            );
+        }
     }
 
     #[test]
@@ -3226,35 +3331,207 @@ mod tests {
         assert_channel(line_pixel, 0, 180, 255);
     }
 
-    #[test]
-    fn renders_arc_path_segments_as_ink() {
-        let path = PathNode::new(
-            vec![
-                PathCommand::MoveTo(4.0, 12.0),
-                PathCommand::ArcTo(8.0, 8.0, 0.0, false, true, 20.0, 12.0),
-            ],
-            ShapeStyle {
-                stroke_color: Some(0x000000ff),
-                stroke_width: 2.0,
-                ..Default::default()
-            },
-            None,
-        );
-        let tree = PageLayerTree::new(
-            24.0,
-            18.0,
-            LayerNode::leaf(
-                BoundingBox::new(0.0, 0.0, 24.0, 18.0),
-                None,
-                vec![PaintOp::path(BoundingBox::new(4.0, 4.0, 16.0, 12.0), path)],
-            ),
-        );
-        let output = SkiaLayerRenderer::new()
-            .render_raster_with_options(&tree, RasterRenderOptions::default())
-            .expect("render arc path");
-        let image = decode_rgba(&output.bytes);
+    // 합성 스타일 fixture: 기존 OFL 글꼴의 윤곽/advance는 그대로 두고
+    // 선언 weight·style만 Bold로 바꾼다. 원하는 style의 프로그램 선택을 검증한다.
+    fn synthetic_bold_font(mut bytes: Vec<u8>) -> Vec<u8> {
+        fn u16_at(b: &[u8], p: usize) -> u16 {
+            u16::from_be_bytes(b[p..p + 2].try_into().unwrap())
+        }
+        fn u32_at(b: &[u8], p: usize) -> u32 {
+            u32::from_be_bytes(b[p..p + 4].try_into().unwrap())
+        }
+        let count = usize::from(u16_at(&bytes, 4));
+        let records: Vec<_> = (0..count)
+            .map(|i| {
+                let r = 12 + i * 16;
+                (
+                    r,
+                    bytes[r..r + 4].to_vec(),
+                    u32_at(&bytes, r + 8) as usize,
+                    u32_at(&bytes, r + 12) as usize,
+                )
+            })
+            .collect();
+        let head = records.iter().find(|r| r.1 == b"head").unwrap().2;
+        let os2 = records.iter().find(|r| r.1 == b"OS/2").unwrap().2;
+        bytes[os2 + 4..os2 + 6].copy_from_slice(&700u16.to_be_bytes());
+        let selection = (u16_at(&bytes, os2 + 62) & !0x40) | 0x20;
+        bytes[os2 + 62..os2 + 64].copy_from_slice(&selection.to_be_bytes());
+        let mac_style = u16_at(&bytes, head + 44) | 1;
+        bytes[head + 44..head + 46].copy_from_slice(&mac_style.to_be_bytes());
+        let name = records.iter().find(|r| r.1 == b"name").unwrap().2;
+        let pool = name + usize::from(u16_at(&bytes, name + 4));
+        let names = usize::from(u16_at(&bytes, name + 2));
+        for i in 0..names {
+            let r = name + 6 + i * 12;
+            if ![2, 4, 6, 17].contains(&u16_at(&bytes, r + 6)) {
+                continue;
+            }
+            let start = pool + usize::from(u16_at(&bytes, r + 10));
+            let len = usize::from(u16_at(&bytes, r + 8));
+            let unicode = [0, 3].contains(&u16_at(&bytes, r));
+            let text = if unicode {
+                String::from_utf16(
+                    &bytes[start..start + len]
+                        .chunks_exact(2)
+                        .map(|x| u16::from_be_bytes([x[0], x[1]]))
+                        .collect::<Vec<_>>(),
+                )
+                .unwrap()
+            } else {
+                String::from_utf8_lossy(&bytes[start..start + len]).into_owned()
+            };
+            if !text.contains("Regular") {
+                continue;
+            }
+            let replacement = text.replace("Regular", "Bold");
+            let replacement: Vec<u8> = if unicode {
+                replacement
+                    .encode_utf16()
+                    .flat_map(u16::to_be_bytes)
+                    .collect()
+            } else {
+                replacement.into_bytes()
+            };
+            assert!(replacement.len() <= len);
+            bytes[start..start + replacement.len()].copy_from_slice(&replacement);
+            bytes[r + 8..r + 10].copy_from_slice(&(replacement.len() as u16).to_be_bytes());
+        }
+        bytes[head + 8..head + 12].fill(0);
+        let checksum = |data: &[u8]| {
+            data.chunks(4).fold(0u32, |sum, c| {
+                let mut word = [0u8; 4];
+                word[..c.len()].copy_from_slice(c);
+                sum.wrapping_add(u32::from_be_bytes(word))
+            })
+        };
+        for (r, _, off, len) in records {
+            let sum = checksum(&bytes[off..off + len]);
+            bytes[r + 4..r + 8].copy_from_slice(&sum.to_be_bytes());
+        }
+        let adjustment = 0xB1B0_AFBAu32.wrapping_sub(checksum(&bytes));
+        bytes[head + 8..head + 12].copy_from_slice(&adjustment.to_be_bytes());
+        bytes
+    }
 
-        assert!(count_ink(&image) > 8);
+    #[test]
+    fn svg_images_and_raw_fragments_keep_bounded_input_and_raster_area() {
+        let mut surface = surfaces::raster_n32_premul((8, 8)).unwrap();
+        let canvas = surface.canvas();
+        let cache = super::super::image_cache::ImageResourceCache::new(8, 1024 * 1024);
+        let image = |bytes: &[u8], width, height| {
+            draw_image_bytes(
+                canvas,
+                &cache,
+                bytes,
+                0.0,
+                0.0,
+                width,
+                height,
+                None,
+                None,
+                None,
+                None,
+                ImageEffect::RealPic,
+                0,
+                0,
+                ImageSampling::linear(),
+            )
+        };
+        assert!(!image(&vec![b' '; 16 * 1024 * 1024 + 1], 8.0, 8.0));
+        assert!(!draw_svg_fragment(
+            canvas,
+            &cache,
+            &" ".repeat(4 * 1024 * 1024 + 1),
+            0.0,
+            0.0,
+            8.0,
+            8.0,
+            ImageSampling::linear(),
+            1.0
+        ));
+        let svg = br#"<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8" fill="red"/></svg>"#;
+        assert!(!image(svg, 10000.0, 10000.0));
+        assert!(!image(svg, f32::NAN, 8.0));
+        assert!(!draw_svg_fragment(
+            canvas,
+            &cache,
+            "<rect width=\"8\" height=\"8\"/>",
+            0.0,
+            0.0,
+            10000.0,
+            10000.0,
+            ImageSampling::linear(),
+            1.0
+        ));
+    }
+
+    #[test]
+    fn custom_font_paths_select_style_within_the_first_family_owner() {
+        let regular = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("ttfs/opensource/NotoSansKR-Regular.ttf"),
+        )
+        .unwrap();
+        let bold = synthetic_bold_font(regular.clone());
+        let root = std::env::temp_dir().join(format!(
+            "rhwp-native-font-style-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let bold_dir = root.join("complete-family-first");
+        let regular_dir = root.join("regular-second");
+        std::fs::create_dir_all(&bold_dir).unwrap();
+        std::fs::create_dir_all(&regular_dir).unwrap();
+        std::fs::write(bold_dir.join("01-bold.ttf"), &bold).unwrap();
+        std::fs::write(bold_dir.join("02-regular.ttf"), &regular).unwrap();
+        std::fs::write(regular_dir.join("regular.ttf"), &regular).unwrap();
+        let renderer =
+            SkiaLayerRenderer::new().with_font_paths(&[bold_dir.clone(), regular_dir.clone()]);
+        let declared_bold = renderer
+            .font_mgr
+            .new_from_data(skia_safe::Data::new_copy(&bold), None)
+            .unwrap();
+        assert_eq!(
+            *declared_bold.font_style().weight(),
+            700,
+            "합성 입력은 실제 Bold 선언을 갖는다"
+        );
+        for wanted in [FontStyle::normal(), FontStyle::bold()] {
+            let (_, chain) = crate::renderer::skia::font_lookup::text_typeface_candidates(
+                &renderer.font_mgr,
+                &renderer.system_families,
+                &renderer.custom_typefaces,
+                &renderer.bundled_typefaces,
+                "Noto Sans KR",
+                wanted,
+            );
+            assert_eq!(
+                *chain[0].typeface.font_style().weight(),
+                *wanted.weight(),
+                "파일 순서로 요청 굵기를 바꾸지 않는다"
+            );
+            assert_eq!(chain[0].source, "custom");
+        }
+        // upstream P47의 첫 경로 family 소유권을 유지한다. 첫 경로에 없는
+        // 스타일을 뒤 경로의 동명 프로그램으로 보충하지 않는다.
+        std::fs::remove_file(bold_dir.join("02-regular.ttf")).unwrap();
+        let renderer = SkiaLayerRenderer::new().with_font_paths(&[bold_dir, regular_dir]);
+        let selected = match_supplied_family(
+            &renderer.custom_typefaces,
+            "Noto Sans KR",
+            FontStyle::normal(),
+        )
+        .expect("첫 경로의 family 공급");
+        assert_eq!(
+            *selected.font_style().weight(),
+            700,
+            "뒤 경로의 가까운 스타일이 첫 family 소유자를 덮어쓰지 않는다"
+        );
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[test]
@@ -4077,38 +4354,6 @@ mod tests {
 
         assert!(count_ink(&decode_rgba(&screen.bytes)) > 40);
         assert_eq!(count_ink(&decode_rgba(&print.bytes)), 0);
-    }
-
-    #[test]
-    fn renders_raw_svg_fragment_as_colored_ink() {
-        let tree = PageLayerTree::new(
-            32.0,
-            24.0,
-            LayerNode::leaf(
-                BoundingBox::new(0.0, 0.0, 32.0, 24.0),
-                None,
-                vec![PaintOp::raw_svg(
-                    BoundingBox::new(4.0, 4.0, 18.0, 12.0),
-                    RawSvgNode::new(
-                        "<rect x=\"0\" y=\"0\" width=\"18\" height=\"12\" fill=\"#00ff00\"/>"
-                            .to_string(),
-                    ),
-                )],
-            ),
-        );
-        let output = SkiaLayerRenderer::new()
-            .render_raster_with_options(&tree, RasterRenderOptions::default())
-            .expect("render raw svg");
-        let image = decode_rgba(&output.bytes);
-        let green_ink = image
-            .pixels()
-            .filter(|pixel| pixel[0] < 48 && pixel[1] > 180 && pixel[2] < 48 && pixel[3] > 0)
-            .count();
-
-        assert!(
-            green_ink > 100,
-            "raw SVG fragment should render as green ink"
-        );
     }
 
     #[test]

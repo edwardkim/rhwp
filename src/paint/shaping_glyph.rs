@@ -1266,7 +1266,10 @@ pub(crate) fn lower_horizontal_shaping_page_sidecars(
             crate::paint::LayerNodeKind::Leaf { ops } => {
                 let mut lowered = Vec::with_capacity(ops.len());
                 for op in ops.drain(..) {
-                    if let crate::paint::PaintOp::TextRun { bbox, run, source } = op {
+                    if let crate::paint::PaintOp::TextRun {
+                        bbox, run, source, ..
+                    } = op
+                    {
                         let source = source.unwrap_or_else(|| {
                             crate::paint::TextSourceSpan::for_text_run(*next_text_source_id, &run)
                         });
@@ -1283,6 +1286,7 @@ pub(crate) fn lower_horizontal_shaping_page_sidecars(
                             prepared_sources,
                         );
                         lowered.push(crate::paint::PaintOp::TextRun {
+                            paint_transform: None,
                             bbox,
                             run,
                             source: Some(source),
@@ -1293,10 +1297,12 @@ pub(crate) fn lower_horizontal_shaping_page_sidecars(
                                     (report.glyph_run, report.glyph_outline)
                                 {
                                     lowered.push(crate::paint::PaintOp::GlyphRun {
+                                        paint_transform: None,
                                         bbox,
                                         run: Box::new(glyph_run),
                                     });
                                     lowered.push(crate::paint::PaintOp::GlyphOutline {
+                                        paint_transform: None,
                                         bbox,
                                         outline: Box::new(glyph_outline),
                                     });
@@ -1304,6 +1310,7 @@ pub(crate) fn lower_horizontal_shaping_page_sidecars(
                                 }
                             } else if let Some(glyph_run) = report.glyph_run {
                                 lowered.push(crate::paint::PaintOp::GlyphRun {
+                                    paint_transform: None,
                                     bbox,
                                     run: Box::new(glyph_run),
                                 });

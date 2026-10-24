@@ -112,7 +112,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
     }
 
     let mut lines: Vec<ComposedLine> = Vec::new();
-    let line_seg_count = effective_line_seg_count(para);
+    let line_seg_count = para.line_segs.len();
 
     for line_idx in 0..line_seg_count {
         let line_seg = &para.line_segs[line_idx];
@@ -308,55 +308,6 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
     }
 
     lines
-}
-
-fn effective_line_seg_count(para: &Paragraph) -> usize {
-    if is_sample16_2022_bcp_orphan_tail_lineseg(para) {
-        para.line_segs.len().saturating_sub(1)
-    } else {
-        para.line_segs.len()
-    }
-}
-
-/// [#4384 조사] 이 문단 텍스트 리터럴을 IR 속성 판정으로 일반화할 수 있는지 조사했으나
-/// 안전하게 일반화할 신호를 찾지 못했다 — 아래는 기각한 가설과 근거다.
-///
-/// 1. **LINE_SEG tag bit 17/18(첫/마지막 세그먼트)**: `hwp3-sample16-hwp5-2022.hwp`
-///    p83 실측 — 두 LINE_SEG 모두 `tag=0x00060000`/`0x00160000`으로 bit17+18
-///    (`LineSeg::TAG_SINGLE_SEGMENT_LINE`)을 함께 켜고 있다. 즉 한컴 인코더 자신도
-///    이 둘을 "한 줄이 세그먼트 2개로 쪼개진 것"이 아니라 "완결된 줄 2개"로
-///    표시했다 — 세그먼트 비트로는 이 문서조차 구분되지 않는다.
-/// 2. **bit 20(indentation 적용) 차이**: 유일하게 다른 비트가 bit20(ls[1]에만 설정)
-///    이다. 그러나 이 문단의 ParaShape는 `indent=-5000`(내어쓰기, 번호/글머리
-///    스타일)이고, bit20은 내어쓰기 문단의 "이어지는 줄"에 일반적으로 켜지는
-///    비트라 — 이 신호로 판정하면 내어쓰기 문단의 정상적인 2번째 줄 전부가
-///    (합쳐지면 안 되는데도) 접혀버린다. 오탐 범위가 이 문서 하나가 아니라
-///    "내어쓰기 문단 + 짧은 마지막 줄" 전체로 넓어진다.
-/// 3. **"마지막 줄이 짧다"는 기하 조건 단독**: 문단이 줄바꿈 후 마지막 줄에 단어
-///    1~2개만 남는 것은 지극히 흔한 정상 조판 결과다(orphan/widow 자체가 아니라
-///    그냥 마지막 줄). 이 조건만으로 접으면 정상적으로 2줄이어야 하는 문단들을
-///    광범위하게 회귀시킨다.
-///
-/// 즉 이 오프셋/피치 조건은 이미 `hwp3-sample16-hwp5-2022.hwp` 문서 안에서도
-/// "정상적인 마지막 짧은 줄"과 "한컴이 인코딩은 2줄로 했지만 실제로는 1줄로
-/// 그리는 이 특정 문단"을 IR 필드만으로 구분하지 못한다 — 텍스트 리터럴이 사실상
-/// 유일하게 안전한 좁힘 조건이다. 회귀 fixture: `tests/issue_1116.rs`
-/// (`sample16_hwp5_2022_page3_bcp_tail_paragraph_folds_orphan_lineseg` 등).
-fn is_sample16_2022_bcp_orphan_tail_lineseg(para: &Paragraph) -> bool {
-    if para.line_segs.len() != 2 {
-        return false;
-    }
-    if !para.text.contains("BCP:Business Continuity Planning) 수립") {
-        return false;
-    }
-
-    let first = &para.line_segs[0];
-    let last = &para.line_segs[1];
-    // [#5961] `char_count` 는 HWP5 축이므로 `text_start` 도 올려서 견준다.
-    if para.line_seg_text_start(1) < para.char_count.saturating_sub(2) {
-        return false;
-    }
-    last.vertical_pos == first.vertical_pos + first.line_height + first.line_spacing
 }
 
 /// UTF-16 위치 범위를 텍스트 문자 인덱스 범위로 변환한다.
@@ -775,6 +726,22 @@ pub(crate) fn composed_tac_line_assignment(
 /// 보이는 다음 글자와 확장 제어 슬롯이 같은 논리 위치여도 원시 줄 소속은 다를 수 있다.
 /// 저장/현재 재조판 사다리의 UTF-16 경계로 조회하며 높이의 우연한 일치는 사용하지 않는다.
 pub(crate) fn control_slot_line_index(para: &Paragraph, control_index: usize) -> Option<usize> {
+    control_slot_line_index_with_starts(
+        para,
+        control_index,
+        (0..para.line_segs.len()).map(|line| para.line_seg_text_start(line)),
+    )
+}
+
+/// 저장 줄과 새로 발행할 줄은 같은 원시 제어 슬롯 경계로 소유를 판정한다.
+pub(super) fn control_slot_line_index_with_starts(
+    para: &Paragraph,
+    control_index: usize,
+    starts: impl Iterator<Item = u32>,
+) -> Option<usize> {
     let start = *para.control_utf16_positions().get(control_index)?;
-    (0..para.line_segs.len()).rfind(|&line| para.line_seg_text_start(line) <= start)
+    starts
+        .enumerate()
+        .filter_map(|(line, pos)| (pos <= start).then_some(line))
+        .last()
 }

@@ -149,6 +149,10 @@ export class HwpDocument {
      * `kind` 는 `page`·`column`·`colDef`·`section`.
      */
     breakAtCursor(list_id: number, para_in_list: number, pos: number, kind: string): string;
+    /**
+     * 실제 공급된 프로그램으로 측정·표시의 공통 환경을 계산한다.
+     */
+    buildFontEnvironmentFromAvailablePrograms(json: string): string;
     cancelDeferredPagination(): boolean;
     canvasMetricsActive(): boolean;
     /**
@@ -845,6 +849,10 @@ export class HwpDocument {
      * Home/End가 이 API로 시각 줄 affinity를 명시한다.
      */
     getCursorRectOnLine(section_idx: number, para_idx: number, line_index: number, at_end: boolean, parent_para_idx: number, control_idx: number, cell_idx: number, cell_para_idx: number): string;
+    /**
+     * 문서가 선언한 실제 프로그램 후보와 현재 환경을 호스트에 전달한다.
+     */
+    getDocumentFontSelectionPlan(): string;
     /**
      * 문서 정보를 JSON 문자열로 반환한다.
      */
@@ -2300,7 +2308,7 @@ export class HwpDocument {
      */
     setFileName(name: string): void;
     /**
-     * Set an explicit layout/paint font environment. None restores the default.
+     * 명시적인 조판·표시 글꼴 환경을 설정한다. None이면 기본 환경으로 돌아간다.
      */
     setFontEnvironment(json?: string | null): boolean;
     /**
@@ -2634,6 +2642,8 @@ export function extractThumbnail(data: Uint8Array): any;
  */
 export function init_panic_hook(): void;
 
+export function prepareBitmapRaster(bytes: Uint8Array, destination: Float64Array, matrix: Float64Array, profile: string): any;
+
 export function version(): string;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -2671,6 +2681,7 @@ export interface InitOutput {
     readonly hwpdocument_beginBatch: (a: number) => [number, number, number, number];
     readonly hwpdocument_beginDeferredPagination: (a: number, b: number) => [number, number, number, number];
     readonly hwpdocument_breakAtCursor: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
+    readonly hwpdocument_buildFontEnvironmentFromAvailablePrograms: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_cancelDeferredPagination: (a: number) => number;
     readonly hwpdocument_canvasMetricsActive: (a: number) => number;
     readonly hwpdocument_captureDeleteRange: (a: number, b: number, c: number, d: number) => [number, number, number];
@@ -2809,6 +2820,7 @@ export interface InitOutput {
     readonly hwpdocument_getCursorRectInHeaderFooter: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
     readonly hwpdocument_getCursorRectInNote: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_getCursorRectOnLine: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
+    readonly hwpdocument_getDocumentFontSelectionPlan: (a: number) => [number, number];
     readonly hwpdocument_getDocumentInfo: (a: number) => [number, number];
     readonly hwpdocument_getDpi: (a: number) => number;
     readonly hwpdocument_getEndnoteShape: (a: number, b: number) => [number, number, number, number];
@@ -3150,6 +3162,7 @@ export interface InitOutput {
     readonly hwpviewer_setZoom: (a: number, b: number) => void;
     readonly hwpviewer_updateViewport: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly hwpviewer_visiblePages: (a: number) => [number, number];
+    readonly prepareBitmapRaster: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => any;
     readonly version: () => [number, number];
     readonly init_panic_hook: () => void;
     readonly hwpviewer_pageCount: (a: number) => number;

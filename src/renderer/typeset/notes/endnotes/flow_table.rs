@@ -155,6 +155,7 @@ impl TypesetEngine {
                         &formatted_table.row_heights,
                         origin,
                         self.dpi,
+                        st.profile.hwpx_stored_layout(),
                     )
                 })
                 .flatten();

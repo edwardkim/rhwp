@@ -235,8 +235,7 @@ pub(super) fn construct_glyph_font(
     {
         return Err(vec![FontFailure::GlyphIdOutOfRange]);
     }
-    let mut typeface = font_mgr
-        .new_from_data(skia_safe::Data::new_copy(bytes), Some(face.face_index))
+    let mut typeface = super::font_catalog::typeface_from_data(font_mgr, bytes, face.face_index)
         .ok_or_else(unavailable)?;
     if !instance.variations.is_empty() {
         if instance.variations.len() > 16 {

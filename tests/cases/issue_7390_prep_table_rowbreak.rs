@@ -14,22 +14,132 @@ use rhwp::DocumentCore;
 
 const SAMPLE: &str = "samples/issue2006/1790387_prep_final_report.hwpx";
 
+// 2024 Print 전체 140쪽의 기존 96dpi Native/fresh WASM 최저 91.93033%를
+// 확인하고 대응 review를 직접 판독했다. 절대 위치 대신 실제 소유 영역과
+// 앞뒤 내용 관계를 보호한다. 원본 여백·저장 줄의 간격 계약은 유지한다.
+fn find<'a>(
+    node: &'a RenderNode,
+    predicate: &impl Fn(&RenderNode) -> bool,
+) -> Option<&'a RenderNode> {
+    if predicate(node) {
+        return Some(node);
+    }
+    node.children
+        .iter()
+        .find_map(|child| find(child, predicate))
+}
+
+fn text(node: &RenderNode) -> String {
+    let mut value = String::new();
+    line_text(node, &mut value);
+    value
+}
+
+fn line<'a>(root: &'a RenderNode, needle: &str) -> &'a RenderNode {
+    find(root, &|node| {
+        matches!(node.node_type, RenderNodeType::TextLine(_)) && text(node).contains(needle)
+    })
+    .unwrap_or_else(|| panic!("대응 줄: {needle}"))
+}
+
+fn body(root: &RenderNode) -> &RenderNode {
+    find(root, &|node| {
+        matches!(node.node_type, RenderNodeType::Body { .. })
+    })
+    .expect("본문 영역")
+}
+
+fn owner<'a>(node: &'a RenderNode, needle: &str, cell: bool) -> Option<&'a RenderNode> {
+    // 중첩 표에서는 가장 안쪽의 실제 소유 칸을 선택한다.
+    node.children
+        .iter()
+        .find_map(|child| owner(child, needle, cell))
+        .or_else(|| {
+            let kind = if cell {
+                matches!(node.node_type, RenderNodeType::TableCell(_))
+            } else {
+                matches!(node.node_type, RenderNodeType::Table(_))
+            };
+            (kind && text(node).contains(needle)).then_some(node)
+        })
+}
+
+fn inside_y(inner: &RenderNode, outer: &RenderNode) {
+    let epsilon = outer.bbox.height.max(1.0) * 1e-9;
+    assert!(
+        inner.bbox.y >= outer.bbox.y - epsilon
+            && inner.bbox.y + inner.bbox.height <= outer.bbox.y + outer.bbox.height + epsilon,
+        "내용 {:?}은 소유 영역 {:?} 안에 있어야 한다",
+        inner.bbox,
+        outer.bbox
+    );
+}
+
+fn before(first: &RenderNode, next: &RenderNode) {
+    let epsilon = first.bbox.height.max(next.bbox.height).max(1.0) * 1e-9;
+    assert!(
+        first.bbox.y + first.bbox.height <= next.bbox.y + epsilon,
+        "앞 내용 {:?}이 뒤 내용 {:?}을 덮는다",
+        first.bbox,
+        next.bbox
+    );
+}
+
+fn saved_distance(core: &DocumentCore, first: &RenderNode, next: &RenderNode) {
+    let source = |node: &RenderNode| {
+        let RenderNodeType::TextLine(data) = &node.node_type else {
+            panic!("저장 본문 글줄")
+        };
+        assert!(
+            data.caption_owner.is_none(),
+            "개체 캡션의 로컬 축과 본문 축을 섞지 않는다"
+        );
+        let section = data.section_index.expect("구역 소유");
+        let para = data.para_index.expect("문단 소유");
+        let index = data.line_index.expect("저장 줄 소유") as usize;
+        core.document().sections[section].paragraphs[para].line_segs[index].vertical_pos
+    };
+    let expected = f64::from(source(next) - source(first)) / 75.0;
+    let actual = next.bbox.y - first.bbox.y;
+    assert!(
+        (actual - expected).abs() <= expected.abs().max(1.0) * 1e-9,
+        "같은 쪽의 두 원본 줄 사이 간격 {expected}와 실제 상대 간격 {actual}이 다르다"
+    );
+}
+
 #[test]
 fn prep_page_76_single_cell_does_not_reserve_last_line_spacing() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
     let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
     let page = core.build_page_render_tree(75).expect("물리 76쪽");
-    let first = line_top_containing(&page.root, "대상자 1 (30대 후반").expect("표 첫 줄");
-    let following = line_top_containing(&page.root, "다양한 트랜지션 과정을").expect("표 뒤 본문");
-    // 한컴 PDF bbox yMin 113.232/494.568pt, 96dpi. 저장 표 높이는
-    // 37100HU = 마지막 줄 끝(34400+1000) + 위아래 여백(850+850).
-    // 마지막 줄의 후행 600HU는 이 완결 프레임 뒤에 다시 더하지 않는다.
-    assert!((first - 150.976).abs() <= 1.5, "표 첫 줄: {first:.3}");
-    assert!(
-        (following - 659.424).abs() <= 1.5,
-        "표 뒤 본문: {following:.3}"
+    let first = line(&page.root, "대상자 1 (30대 후반");
+    let table = owner(&page.root, "대상자 1 (30대 후반", false).expect("심층 인터뷰 표");
+    let last = line(&page.root, "대상자 9 (30대 후반");
+    let following = line(&page.root, "다양한 트랜지션 과정을");
+    inside_y(
+        first,
+        owner(&page.root, "대상자 1 (30대 후반", true).unwrap(),
     );
+    inside_y(last, table);
+    before(table, following);
+    assert!(
+        text(table).contains("성확정 수술을 하지 못했음"),
+        "마지막 응답 보존"
+    );
+    // 원본 선언 높이는 마지막 줄 끝과 칸 여백으로 닫힌다. 후행 줄간격을 재예약하지 않는다.
+    let rhwp::model::control::Control::Table(source) =
+        &core.document().sections[match &table.node_type {
+            RenderNodeType::Table(meta) => meta.section_index.expect("표 구역 소유"),
+            _ => unreachable!(),
+        }]
+        .paragraphs[14]
+            .controls[0]
+    else {
+        panic!("원본 단일 셀 표")
+    };
+    let declared = f64::from(source.common.height) / 75.0;
+    assert!((table.bbox.height - declared).abs() <= declared * 1e-9);
 }
 
 fn target_table(node: &RenderNode) -> Option<&RenderNode> {
@@ -145,20 +255,18 @@ fn prep_single_cell_continuation_keeps_vertical_padding_and_following_flow() {
     let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
     let first = core.build_page_render_tree(38).expect("물리 39쪽");
     let next = core.build_page_render_tree(39).expect("물리 40쪽");
-    // 독립 한컴 2024 PDF bbox: p39 A1 y=81.552pt, p40 A8의 두 번째
-    // 선택지 y=79.872pt, 뒤 본문 y=165.648pt. 96dpi로 환산했다.
-    let a1 = line_top_containing(&first.root, "A1. 귀하의 출생년도를").expect("A1 첫 줄");
-    let a8_tail = line_top_containing(&next.root, "2) 없다").expect("A8 이어지는 선택지");
-    let following = line_top_containing(&next.root, "관심집단과 대조군은").expect("표 뒤 본문");
-    assert!((a1 - 108.736).abs() <= 1.5, "39쪽 첫 줄: {a1:.1}");
-    assert!(
-        (a8_tail - 106.496).abs() <= 1.5,
-        "40쪽 이어지는 줄: {a8_tail:.1}"
+    let a1 = line(&first.root, "A1. 귀하의 출생년도를");
+    let a8_tail = line(&next.root, "2) 없다");
+    let following = line(&next.root, "관심집단과 대조군은");
+    inside_y(
+        a1,
+        owner(&first.root, "A1. 귀하의 출생년도를", true).unwrap(),
     );
-    assert!(
-        (following - 220.864).abs() <= 1.5,
-        "표 뒤 본문: {following:.1}"
-    );
+    inside_y(a8_tail, owner(&next.root, "2) 없다", true).unwrap());
+    let table = owner(&next.root, "A9. 지난 1년간", false).expect("질문 이어받기 표");
+    assert!(!text(&first.root).contains("A9. 지난 1년간"));
+    before(table, following);
+    assert!(!text(&next.root).contains("A1. 귀하의 출생년도를"));
 }
 
 #[test]
@@ -171,8 +279,11 @@ fn prep_intra_paragraph_cell_split_keeps_last_line_on_page_34() {
     // 원본 1×1 CELL 표의 마지막 문단은 저장 두 줄의 vertpos가
     // 28200/29800HU이다. 한컴 PDF p34는 두 번째 줄을 표 하단에 두고,
     // p35는 바로 (4) Jenness 항목으로 시작한다.
-    let tail = line_top_containing(&first.root, "는 경향을 보임").expect("34쪽 마지막 줄");
-    assert!((tail - 993.696).abs() <= 1.5, "34쪽 마지막 줄 y: {tail:.2}");
+    let tail = line(&first.root, "는 경향을 보임");
+    inside_y(
+        tail,
+        owner(&first.root, "는 경향을 보임", true).expect("마지막 줄 소유 칸"),
+    );
     fn find_cell_table(node: &RenderNode) -> Option<&RenderNode> {
         if let RenderNodeType::Table(table) = &node.node_type {
             if table.row_count == 1
@@ -198,10 +309,10 @@ fn prep_intra_paragraph_cell_split_keeps_last_line_on_page_34() {
         table.bbox.y + table.bbox.height
     );
     assert!(line_top_containing(&next.root, "는 경향을 보임").is_none());
-    let next_item = line_top_containing(&next.root, "(4) Jenness").expect("35쪽 첫 항목");
-    assert!(
-        (next_item - 106.496).abs() <= 1.5,
-        "35쪽 첫 항목 y: {next_item:.2}"
+    let next_item = line(&next.root, "(4) Jenness");
+    inside_y(
+        next_item,
+        owner(&next.root, "(4) Jenness", true).expect("이어지는 원본 칸"),
     );
 }
 
@@ -247,14 +358,23 @@ fn prep_centered_inline_table_uses_host_paragraph_margin() {
         node.children.iter().find_map(demographic_table)
     }
     let table = demographic_table(&page.root).expect("성별 정체성 표");
-    // 한컴 2024 PDF p57의 표 좌우 괘선은 96dpi에서 x=206/599px.
-    // 원본 host의 1000HU 왼쪽 여백을 가운데 정렬 폭에도 반영해야 한다.
+    let column = find(&page.root, &|node| {
+        matches!(node.node_type, RenderNodeType::Column { .. })
+    })
+    .expect("표 소유 단");
+    let doc = core.document();
+    let source = &doc.sections[0].paragraphs[535];
+    let shape = &doc.doc_info.para_shapes[source.para_shape_id as usize];
+    assert_eq!(shape.alignment, rhwp::model::style::Alignment::Center);
+    let left_gap = table.bbox.x - column.bbox.x;
+    let right_gap = column.bbox.x + column.bbox.width - table.bbox.x - table.bbox.width;
+    let margin_difference = f64::from(shape.margin_left - shape.margin_right) / 150.0;
     assert!(
-        (table.bbox.x - 206.0).abs() <= 1.5,
-        "표 왼쪽: {:.2}",
-        table.bbox.x
+        (left_gap - right_gap - margin_difference).abs() <= column.bbox.width * 1e-9,
+        "가운데 표의 좌우 공간은 원본 문단 여백 차이를 반영한다"
     );
-    assert!((table.bbox.x + table.bbox.width - 599.0).abs() <= 1.5);
+    inside_y(table, column);
+    assert!(text(table).contains("성별 정체성") && text(table).contains("414"));
 }
 
 #[test]
@@ -275,23 +395,29 @@ fn prep_paragraph_relative_chart_image_uses_host_left_margin() {
         node.children.iter().find_map(chart_image)
     }
     let image = chart_image(&page.root).expect("성 파트너 수 분포 그림");
-    // 한컴 2024 PDF p61의 그림 원점은 96dpi에서 x=110.3px.
-    // 같은 TIFF가 rhwp에서는 문단 왼쪽 여백 1000HU를 빠뜨려 x=96.9px였다.
+    let column = find(&page.root, &|node| {
+        matches!(node.node_type, RenderNodeType::Column { .. })
+    })
+    .unwrap();
+    let doc = core.document();
+    let host = &doc.sections[1].paragraphs[7];
+    let shape = &doc.doc_info.para_shapes[host.para_shape_id as usize];
+    let rhwp::model::control::Control::Picture(source) = &host.controls[0] else {
+        panic!("원본 분포 그림")
+    };
+    let expected_offset =
+        f64::from(shape.margin_left) / 150.0 + f64::from(source.common.horizontal_offset) / 75.0;
     assert!(
-        (image.bbox.x - 110.3).abs() <= 1.5,
-        "그림 x: {:.2}",
-        image.bbox.x
+        (image.bbox.x - column.bbox.x - expected_offset).abs() <= column.bbox.width * 1e-9,
+        "문단 기준 그림은 소유 문단의 왼쪽 여백과 개체 오프셋을 반영한다"
     );
-    // 캡션 뒤 본문은 저장 vpos=43579HU에서 곧바로 시작한다.
-    // 한컴 PDF 첫 줄/다음 문단은 각각 676.2/762.0px이다.
-    let next =
-        line_top_containing(&page.root, "HIV 검사를 한 적 있는 사람은").expect("그림 뒤 첫 문단");
-    let following = line_top_containing(&page.root, "성연결망 분석은").expect("그림 뒤 둘째 문단");
-    assert!((next - 676.2).abs() <= 1.5, "그림 뒤 첫 문단 y: {next:.2}");
-    assert!(
-        (following - 762.0).abs() <= 1.5,
-        "그림 뒤 둘째 문단 y: {following:.2}"
-    );
+    let caption = line(&page.root, "[그림 11]");
+    let next = line(&page.root, "HIV 검사를 한 적 있는 사람은");
+    let following = line(&page.root, "성연결망 분석은");
+    before(image, caption);
+    before(caption, next);
+    before(next, following);
+    saved_distance(&core, next, following);
 }
 
 #[test]
@@ -315,19 +441,21 @@ fn prep_page_90_keeps_saved_leading_spacing_after_page_start() {
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
     let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
     let page = core.build_page_render_tree(89).expect("물리 90쪽");
-    // 한컴 2024 PDF p90: 첫 문단의 500HU 앞 간격은 첫 줄 vpos에도
-    // 들어 있고, 뒤 문단 사이의 500HU 간격도 보존된다.
-    let first =
-        line_top_containing(&page.root, "전파경로에 대한 응답률이 적어").expect("90쪽 첫 문단");
-    let next =
-        line_top_containing(&page.root, "HIV 감염인 대상으로 감염 경로 확인").expect("뒤 소제목");
-    let heading = line_top_containing(&page.root, "3. 생존 HIV 감염인의 인구학적 특성")
-        .expect("다음 절 제목");
-    let caption = line_top_containing(&page.root, "<표 37> 2024년 HIV 내국인").expect("표 37 캡션");
-    assert!((first - 101.8).abs() <= 1.5, "첫 문단 y: {first:.1}");
-    assert!((next - 161.2).abs() <= 1.5, "소제목 y: {next:.1}");
-    assert!((heading - 346.5).abs() <= 1.5, "절 제목 y: {heading:.1}");
-    assert!((caption - 456.9).abs() <= 1.5, "표 캡션 y: {caption:.1}");
+    let first = line(&page.root, "전파경로에 대한 응답률이 적어");
+    let next = line(&page.root, "HIV 감염인 대상으로 감염 경로 확인");
+    let heading = line(&page.root, "3. 생존 HIV 감염인의 인구학적 특성");
+    let caption = line(&page.root, "<표 37> 2024년 HIV 내국인");
+    inside_y(first, body(&page.root));
+    before(first, next);
+    before(next, heading);
+    before(heading, caption);
+    saved_distance(&core, first, next);
+    saved_distance(&core, heading, caption);
+    let source = &core.document().sections[3].paragraphs[189];
+    let shape = &core.document().doc_info.para_shapes[source.para_shape_id as usize];
+    // 원본의 앞 간격(문단모양은 2 HU 단위)과 본문 시작 사이의 관계를 보존한다.
+    let expected = f64::from(shape.spacing_before) / 150.0;
+    assert!((first.bbox.y - body(&page.root).bbox.y - expected).abs() <= expected.max(1.0) * 1e-9);
 }
 
 #[test]
@@ -359,11 +487,16 @@ fn prep_page_92_caption_keeps_saved_negative_empty_line_advance() {
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
     let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
     let page = core.build_page_render_tree(91).expect("물리 92쪽");
-    // 한컴 2024 PDF 92쪽 캡션 상자: 742.872pt × 96/72 = 990.496px.
-    // 저장 빈 문단(66533HU) 뒤 캡션은 67163HU: 1050HU 줄 상자와
-    // -420HU 간격의 630HU 전진을 보존한다. 빈 글자와 0 높이는 다르다.
-    let caption = line_top_containing(&page.root, "[그림 14] QUANTPrEP을").expect("그림 14 캡션");
-    assert!((caption - 990.496).abs() <= 1.5, "캡션 y: {caption:.3}");
+    let caption = line(&page.root, "[그림 14] QUANTPrEP을");
+    let empty = find(&page.root, &|node| matches!(&node.node_type,
+        RenderNodeType::TextLine(data) if data.section_index == Some(3) && data.para_index == Some(215)))
+        .expect("그림 뒤 원본 빈 줄");
+    saved_distance(&core, empty, caption);
+    let source = &core.document().sections[3].paragraphs[215].line_segs[0];
+    assert!(source.line_spacing < 0, "원본 음수 후행 간격");
+    let expected = f64::from(source.line_height + source.line_spacing) / 75.0;
+    assert!((caption.bbox.y - empty.bbox.y - expected).abs() <= expected * 1e-9);
+    inside_y(caption, body(&page.root));
 }
 
 #[test]
@@ -372,15 +505,17 @@ fn prep_page_93_caption_starts_after_saved_picture_bottom() {
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
     let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
     let page = core.build_page_render_tree(92).expect("물리 93쪽");
-    // 한컴 2024 PDF p93 bbox(72dpi → 96dpi): 그림 15 캡션 572.1px,
-    // 뒤 첫 문단 613.0px, CDC 문단 685.8px.
-    let caption = line_top_containing(&page.root, "[그림 15] QUANTPrEP을").expect("그림 15 캡션");
-    let first = line_top_containing(&page.root, "2024년 주민등록연앙인구를 활용하였을 때")
-        .expect("그림 뒤 첫 문단");
-    let cdc = line_top_containing(&page.root, "다음으로 미국 CDC에서").expect("CDC 문단");
-    assert!((caption - 572.1).abs() <= 1.5, "캡션 y: {caption:.1}");
-    assert!((first - 613.0).abs() <= 1.5, "그림 뒤 문단 y: {first:.1}");
-    assert!((cdc - 685.8).abs() <= 1.5, "CDC 문단 y: {cdc:.1}");
+    let caption = line(&page.root, "[그림 15] QUANTPrEP을");
+    let first = line(&page.root, "2024년 주민등록연앙인구를 활용하였을 때");
+    let cdc = line(&page.root, "다음으로 미국 CDC에서");
+    let image = find(&page.root, &|node| matches!(&node.node_type,
+        RenderNodeType::Image(data) if data.para_index == Some(218) && data.control_index == Some(0)))
+        .expect("그림 15 원본 그림");
+    before(image, caption);
+    before(caption, first);
+    before(first, cdc);
+    saved_distance(&core, caption, first);
+    saved_distance(&core, first, cdc);
 }
 
 #[test]
@@ -398,27 +533,37 @@ fn prep_page_105_merged_budget_table_keeps_saved_row_boundaries() {
         node.children.iter().find_map(budget_table)
     }
     let table = budget_table(&page.root).expect("연구비 사용 내역 표");
-    let row_top = |row| {
-        table
-            .children
-            .iter()
-            .find_map(|child| match &child.node_type {
-                RenderNodeType::TableCell(cell) if cell.row == row && cell.col == 3 => {
-                    Some(child.bbox.y)
-                }
-                _ => None,
-            })
-    };
-    // 한컴 2024 PDF p105의 수평 괘선(96dpi): 첫 행 243/279px,
-    // 중간 10행 634px, 끝에서 둘째 행 975px, 표 끝 1019px.
-    for (row, expected) in [(1, 279.0), (10, 634.0), (19, 975.0)] {
-        let actual = row_top(row).expect("해당 행의 세로 병합 없는 셀");
+    let cells: Vec<_> = table
+        .children
+        .iter()
+        .filter_map(|child| match &child.node_type {
+            RenderNodeType::TableCell(cell) if cell.col == 3 => Some((cell.row, child)),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(
+        cells.iter().map(|(row, _)| *row).collect::<Vec<_>>(),
+        (0..20).collect::<Vec<_>>(),
+        "금액 열의 원본 20행을 같은 쪽에 한 번씩 보존"
+    );
+    for (_, cell) in &cells {
+        inside_y(cell, table);
+    }
+    for pair in cells.windows(2) {
+        before(pair[0].1, pair[1].1);
+        let gap = pair[1].1.bbox.y - pair[0].1.bbox.y - pair[0].1.bbox.height;
         assert!(
-            (actual - expected).abs() <= 2.0,
-            "행 {row} 괘선: 실제 {actual:.1}, PDF {expected:.1}"
+            gap.abs() <= table.bbox.height * 1e-9,
+            "행 괘선은 빈 밴드 없이 이어진다"
         );
     }
-    assert!((table.bbox.y + table.bbox.height - 1019.0).abs() <= 2.0);
+    inside_y(table, body(&page.root));
+    assert!(text(table).contains("4,447,084") && text(table).contains("95,000,000"));
+    let next = core.build_page_render_tree(105).expect("연구비 뒤 다음 쪽");
+    assert!(
+        budget_table(&next.root).is_none(),
+        "완결 연구비 표를 다음 쪽에 중복하지 않는다"
+    );
 }
 
 #[test]
@@ -428,12 +573,18 @@ fn prep_footnote_four_starts_on_next_physical_page() {
     let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
     let marker_page = core.build_page_render_tree(66).expect("물리 67쪽");
     let note_page = core.build_page_render_tree(67).expect("물리 68쪽");
-    let chart_caption_y = line_top_containing(&note_page.root, "연도별 성주체성장애 진단 건수")
-        .expect("68쪽 차트 캡션");
-    assert!(
-        (chart_caption_y - 705.7).abs() <= 1.5,
-        "한컴 2024 PDF 68쪽 차트 캡션 y=705.7px, 실제={chart_caption_y:.1}"
-    );
+    let chart_caption = line(&note_page.root, "연도별 성주체성장애 진단 건수");
+    let chart = find(&note_page.root, &|node| {
+        matches!(&node.node_type,
+        RenderNodeType::Image(data) if data.para_index == Some(20) && data.control_index == Some(0))
+    })
+    .expect("각주 앞 진단 건수 차트");
+    before(chart, chart_caption);
+    let notes = find(&note_page.root, &|node| {
+        matches!(node.node_type, RenderNodeType::FootnoteArea)
+    })
+    .expect("독립 Print의 각주 영역");
+    before(chart_caption, notes);
     let marker_page_notes = footnote_text(&marker_page.root).unwrap_or_default();
     let next_page_notes = footnote_text(&note_page.root).unwrap_or_default();
     assert!(

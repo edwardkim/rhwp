@@ -250,7 +250,9 @@ impl StreamMask {
             },
             Some(_) => return Err(Error::Image("Matte requires SMask".into())),
         };
-        if entry("DecodeParms")?.is_some_and(|v| !matches!(*v, Object::Null)) {
+        if entry("DecodeParms")?.is_some_and(|v| !matches!(*v, Object::Null))
+            && !super::image_mask_limited_extra::codec_decode_parms_allowed(doc, dict, budget)?
+        {
             return Err(Error::Unsupported("limited image mask DecodeParms".into()));
         }
         // The raw extractor folds Decode into samples; its JPEG pass-through
@@ -295,9 +297,8 @@ impl StreamMask {
             .get("Decode")
             .is_some_and(|v| !matches!(v, Object::Null))
             && jpeg_decode.is_none();
-        // Stream masks use the same lossless, request-bounded byte filters as
-        // colour-key masks and stencils. Pixel codec bytes are still rejected;
-        // the decoded samples must exactly match the declared packed rows.
+        // Byte filters and opted-in codec adapters supply packed source rows.
+        // Encoded image bytes must never reach the raw sample reader.
         let samples = super::image_mask_limited_extra::samples(doc, &object, expected, budget)?;
         Ok(Some(Self {
             width,

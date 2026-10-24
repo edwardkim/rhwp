@@ -36,9 +36,35 @@ pub const MIDDLE_DOT_RADIUS_EM: f64 = 0.060;
 /// 실측 중앙값 0.3520~0.3559 로 종전 값이 정확해 유지한다.
 pub const MIDDLE_DOT_CY_OFFSET_EM: f64 = 0.35;
 
+/// 독립 Print의 전각 한점 리더 잉크. 원 프로그램의 결측을 전각으로
+/// 해소한 공통 전진 결정만 소비하며 실제 공급자의 자연 글리프는 보존한다.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct PointInk {
+    pub center_x: f64,
+    pub above_baseline: f64,
+    pub radius_x: f64,
+    pub radius_y: f64,
+}
+
+pub(crate) fn fullwidth_onepoint_ink(style: &TextStyle, draw_font_size: f64) -> Option<PointInk> {
+    let advance = super::layout::char_width_decision(&['․'], &[1], 0, style, true);
+    if advance.width_source != "heuristicFullwidth" {
+        return None;
+    }
+    // 한컴 Print T1/T2의 중심(500,347.5)/1000와 대칭 cubic의 극값.
+    // 굵은 프로그램만20/1000 stroke가 있어 반폭10/1000을 더한다.
+    let outline = if style.bold { 0.01 } else { 0.0 };
+    Some(PointInk {
+        center_x: draw_font_size * style.ratio * 0.5,
+        above_baseline: draw_font_size * 0.3475,
+        radius_x: draw_font_size * style.ratio * (0.07575 + outline),
+        radius_y: draw_font_size * (0.0725 + outline),
+    })
+}
+
 /// [#5698 계열] 탭 점선 리더(채움 종류 3)의 점 간격 / em.
 ///
-/// 한글 2022 정본 실측 — `samples/KTX.hwp` 2쪽 목차의 점 1,435개를 글자 좌표로 뽑아
+/// 한글 2022 정본 실측 — `mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp` 2쪽 목차의 점 1,435개를 글자 좌표로 뽑아
 /// 줄마다 이웃 간격을 셌다: 글꼴 14.04pt 줄에서 3.48pt, 15.00pt 줄에서 3.72pt →
 /// **두 크기 모두 0.248 em** 이다(잔여 폭을 채우느라 줄마다 3.48~3.84 로 늘어난다).
 ///
@@ -1083,6 +1109,11 @@ impl TextRunNode {
         self.display_text.as_deref().unwrap_or(&self.text)
     }
 
+    /// 표시 모양은 display_or_text로, 일대일 투영의 물리 폭은 원문으로 전달한다.
+    pub(crate) fn metric_or_display_text(&self) -> &str {
+        super::composer::display_projection_metric_text(&self.text, self.display_or_text())
+    }
+
     /// Replay 대상 문자열에 대해 layout positions가 안전한 경우에만 빌려준다.
     ///
     /// Backend가 PUA 확장·inline placeholder 제거 등으로 다른 문자열을 그리면
@@ -1214,6 +1245,10 @@ pub struct ShapeTransform {
     pub horz_flip: bool,
     /// 상하 대칭
     pub vert_flip: bool,
+    /// 그림의 회전 전 표시 크기 / 회전 후 선언 프레임 크기.
+    /// 흐름·선택 bbox는 유지하고 모든 paint 소비자가 같은 잉크 상자를 구한다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image_frame_ratio: Option<[f64; 2]>,
 }
 
 impl ShapeTransform {
@@ -1242,6 +1277,14 @@ impl ShapeTransform {
     /// bbox 위에 동일 rotation transform 을 적용하면 한컴 정답지와 정합한다.
     /// cx, cy 는 swap 전후 동일하므로 rotate 식 자체는 그대로 둔다.
     pub fn effective_image_bbox(&self, bbox: &BoundingBox) -> BoundingBox {
+        if let Some([width, height]) = self.image_frame_ratio {
+            return BoundingBox::new(
+                bbox.x + bbox.width * (1.0 - width) / 2.0,
+                bbox.y + bbox.height * (1.0 - height) / 2.0,
+                bbox.width * width,
+                bbox.height * height,
+            );
+        }
         let r = self.rotation.rem_euclid(360.0);
         let is_perpendicular = (r - 90.0).abs() < 1.0 || (r - 270.0).abs() < 1.0;
         if !is_perpendicular {
@@ -1266,6 +1309,10 @@ pub struct LineNode {
     pub y2: f64,
     /// 선 스타일
     pub style: LineStyle,
+    /// 공유 경계에서 최종 획보다 먼저 그린 동일 형태의 이웃 획 색상.
+    /// 논리 소유 노드는 하나이며 각 backend는 같은 순서의 paint를 소비한다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub underpaint_color: Option<u32>,
     /// 소속 구역 인덱스
     pub section_index: Option<usize>,
     /// 도형 컨트롤을 소유한 문단 인덱스
@@ -1293,6 +1340,7 @@ impl LineNode {
             x2,
             y2,
             style,
+            underpaint_color: None,
             section_index: None,
             para_index: None,
             control_index: None,
@@ -1301,6 +1349,23 @@ impl LineNode {
             cell_para_index: None,
             outer_table_control_index: None,
         }
+    }
+
+    /// 하나의 논리 선을 원본의 아래 획 → 최종 획 순서로 낮춘다.
+    pub(crate) fn paint_strokes(&self) -> impl Iterator<Item = Self> {
+        let mut primary = self.clone();
+        primary.underpaint_color = None;
+        // 덧그리는 두 획은 하나의 복합 coverage를 만든다. 각 획을 따로
+        // 픽셀 중심에 모으면 아래 획의 원본 가장자리를 과도하게 지운다.
+        if self.underpaint_color.is_some() {
+            primary.style.compound_component = true;
+        }
+        let underpaint = self.underpaint_color.map(|color| {
+            let mut stroke = primary.clone();
+            stroke.style.color = color;
+            stroke
+        });
+        underpaint.into_iter().chain(std::iter::once(primary))
     }
 
     /// 이 선이 실제로 칠하는 **잉크**의 경계 상자. (#6269)
@@ -1342,6 +1407,14 @@ pub struct RectangleNode {
     pub style: ShapeStyle,
     /// 그라데이션 채우기 (style.fill_color보다 우선)
     pub gradient: Option<Box<GradientFillInfo>>,
+    /// Picture outlines are emitted as filled outline polygons by the Print
+    /// driver, including dotted/dashed outlines. Preserve that source role even
+    /// when a backend draws the equivalent outline with a stroke.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub picture_border: bool,
+    /// Source pen이 ROUND인 닫힌 그림 외곽선의 모서리 연결.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub round_stroke_join: bool,
     /// 소속 구역 인덱스
     pub section_index: Option<usize>,
     /// 도형 컨트롤을 소유한 문단 인덱스
@@ -1371,6 +1444,8 @@ impl RectangleNode {
             corner_radius,
             style,
             gradient,
+            picture_border: false,
+            round_stroke_join: false,
             section_index: None,
             para_index: None,
             control_index: None,

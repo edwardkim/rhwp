@@ -45,10 +45,10 @@
 - Pretendard 9개, Cafe24 2개, Happiness 4개, Spoqa Han Sans 1개 WOFF2는 공식 배포 파일과
   바이트가 일치한다. 고운 글꼴의 OFL에는 Reserved Font Name 선언이 없으며 원본 저작권·OFL을 보존한다.
   Noto 파생본도 원문에 명시된 예약 이름 `Source`를 primary 이름에 사용하지 않는다.
-- 목록의 `repositoryOnlyFonts` 24개는 공개 GitHub에 포함되는 테스트·Native 원본과
+- 목록의 `repositoryOnlyFonts` 26개는 공개 GitHub에 포함되는 테스트·Native 원본과
   PDF backend의 내장 폰트다. 직접 생성한 합성 fixture에는 저장소 MIT 전문이 적용되며,
   외부 폰트는 각 항목에 명시한 원 라이선스를 따른다.
-  canonical 폰트 37개와 합쳐 독립 폰트 파일 61개를 모두 SHA와 고지에 연결한다.
+  canonical 폰트 38개와 합쳐 독립 폰트 파일 64개를 모두 SHA와 고지에 연결한다.
 - PDF backend의 DejaVu Sans 두 파일은 내장 name table의 Bitstream Vera·Arev 고지 전문을
   `vendor/rhwp-pdf-import-backend/src/fonts/assets/LICENSE-DejaVu`에 보존한다.
   Droid Sans Fallback은 backend 루트의 `LICENSE-APACHE`와 원 저작권 고지에,
@@ -72,3 +72,9 @@ python3 scripts/restore-official-font-webfonts.py --source-dir /path/to/official
 
 Safari는 Chrome 배포 폴더 전체를 복사하므로 이 `fonts/licenses/`도 전달된다. Xcode의 fonts resource는
 폴더 단위로 포함한다. 데스크톱 UI는 자체 폰트 파일을 번들하지 않는다.
+
+`RHWP Public Batang`은 공식 Google Fonts Batang 원본의 이름을 변경한 전체 프로그램이다.
+Native TTF와 웹 WOFF2는 동일한 윤곽·문자 매핑·폭·기능을 공급하고 `RHWPPublicBatang-OFL.txt`를
+동봉한다. 파생 이름과 원본 SHA·변환 검증은 `issue-7445-public-batang-webfont.json`에 기록한다.
+`sourceProgram`은 저장소의 이름 변경된 TTF를 가리키며, 공식 무수정 원본을 뜻하는
+`officialProgram`과 구분한다.

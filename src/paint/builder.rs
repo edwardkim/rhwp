@@ -19,9 +19,12 @@ pub struct LayerBuilder {
     output_options: LayerOutputOptions,
     bin_data_epoch: u32,
     page_context: Option<PagePaintContext>,
+    layout_dpi: f64,
     metafile_device_pixel_width: Option<f64>,
     hancom2024_print_bitmap: bool,
     metafile_fonts: super::metafile_fonts::MetafileFonts,
+    prior_print_solid_fill: bool,
+    hangul2024_print: bool,
 }
 
 impl LayerBuilder {
@@ -31,10 +34,21 @@ impl LayerBuilder {
             output_options: LayerOutputOptions::default(),
             bin_data_epoch: 0,
             page_context: None,
+            layout_dpi: crate::renderer::DEFAULT_DPI,
             metafile_device_pixel_width: None,
             hancom2024_print_bitmap: false,
             metafile_fonts: Default::default(),
+            prior_print_solid_fill: false,
+            hangul2024_print: false,
         }
+    }
+
+    /// 인쇄 품질 계산에 사용할 실제 레이아웃 DPI다.
+    pub(crate) fn with_layout_dpi(mut self, dpi: f64) -> Self {
+        if dpi.is_finite() && dpi > 0.0 {
+            self.layout_dpi = dpi;
+        }
+        self
     }
 
     /// 원본 형식과 분리된 출력 장치 픽셀의 레이아웃 단위 크기다.
@@ -65,6 +79,20 @@ impl LayerBuilder {
     ) -> Self {
         self.metafile_fonts = fonts.clone();
         self
+    }
+
+    pub(crate) fn with_prior_print_solid_fill(mut self, filled: bool) -> Self {
+        self.prior_print_solid_fill = filled;
+        self
+    }
+
+    pub(crate) fn with_hangul2024_print(mut self, enabled: bool) -> Self {
+        self.hangul2024_print = enabled;
+        self
+    }
+
+    pub(crate) fn page_has_print_solid_fill(tree: &PageRenderTree, hangul2024_print: bool) -> bool {
+        PagePaintContext::node_has_print_solid_fill(&tree.root, hangul2024_print)
     }
 
     pub fn build(&mut self, tree: &PageRenderTree) -> PageLayerTree {
@@ -130,6 +158,13 @@ impl LayerBuilder {
             &mut layer_tree.resources,
             fonts,
             &claimed_glyph_run_sources,
+        );
+        context.publish_table_border_geometry(&mut layer_tree.root);
+        context.publish_decoration_geometry(&mut layer_tree.root);
+        context.publish_glyph_geometry(
+            &mut layer_tree.root,
+            self.prior_print_solid_fill,
+            self.hangul2024_print,
         );
         layer_tree
     }
@@ -236,7 +271,11 @@ impl LayerBuilder {
             RenderNodeType::FootnoteMarker(marker) => {
                 Some(vec![PaintOp::footnote_marker(node.bbox, marker.clone())])
             }
-            RenderNodeType::Line(line) => Some(vec![PaintOp::line(node.bbox, line.clone())]),
+            RenderNodeType::Line(line) => Some(
+                line.paint_strokes()
+                    .map(|stroke| PaintOp::line(node.bbox, stroke))
+                    .collect(),
+            ),
             RenderNodeType::Rectangle(rect) => {
                 Some(vec![PaintOp::rectangle(node.bbox, rect.clone())])
             }
@@ -254,12 +293,30 @@ impl LayerBuilder {
                 } else {
                     let mut image = image.clone();
                     image.hancom2024_print_bitmap = self.hancom2024_print_bitmap;
-                    let resolved = crate::paint::metafile::image_payload(
-                        &image,
-                        node.bbox,
-                        self.metafile_device_pixel_width,
-                        &self.metafile_fonts,
-                    );
+                    crate::renderer::image_resolver::publish_print_jpeg_crop(&mut image);
+                    let mut resolved = (self.profile == RenderProfile::Print)
+                        .then(|| {
+                            crate::renderer::image_resolver::print_jpeg_payload(
+                                &image,
+                                frame,
+                                self.layout_dpi,
+                            )
+                        })
+                        .flatten()
+                        .or_else(|| {
+                            crate::paint::metafile::image_payload(
+                                &image,
+                                node.bbox,
+                                self.metafile_device_pixel_width,
+                                &self.metafile_fonts,
+                            )
+                        });
+                    if let Some(window) = crate::renderer::image_resolver::resolve_print_jpeg_window(
+                        &mut image,
+                        resolved.as_ref(),
+                    ) {
+                        resolved = Some(window);
+                    }
                     vec![PaintOp::image(frame, image, resolved)]
                 };
                 if self.output_options.show_control_codes {

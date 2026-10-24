@@ -1,5 +1,7 @@
 //! PDF-only faux bold for the actual regular face selected by usvg.
 
+use super::style_usvg as usvg;
+
 use super::synthetic_italic::{attribute_position, insertions};
 use std::{borrow::Cow, collections::HashMap};
 

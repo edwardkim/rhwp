@@ -1557,27 +1557,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
 
 [[package]]
-name = "hayro-ccitt"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f4d0e94ddd48749f06bbe4e5389fb9799a0c45bcaf00495042076ef05e3241a"
-
-[[package]]
-name = "hayro-jbig2"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "69374b3668dd45aeb3d3145cda68f2c7b4f223aaa2511e67d076f1c7d741388d"
-dependencies = [
- "hayro-ccitt",
-]
-
-[[package]]
-name = "hayro-jpeg2000"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bab0c77d09c0d9b144d429d0bf0fcd4c63c01d5f6c33f9b8ed501283e0f1ef76"
-
-[[package]]
 name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3452,6 +3431,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "47b34b781b31e5d73e9fbc8689c70551fd1ade9a19e3e28cfec8580a79290cc4"
 
 [[package]]
+name = "rhwp-codec-resource"
+version = "0.1.0"
+
+[[package]]
+name = "rhwp-hayro-ccitt"
+version = "0.3.0-rhwp.1"
+dependencies = [
+ "rhwp-codec-resource",
+]
+
+[[package]]
+name = "rhwp-hayro-jbig2"
+version = "0.3.0-rhwp.1"
+dependencies = [
+ "rhwp-codec-resource",
+ "rhwp-hayro-ccitt",
+]
+
+[[package]]
+name = "rhwp-hayro-jpeg2000"
+version = "0.4.0-rhwp.1"
+dependencies = [
+ "rhwp-codec-resource",
+]
+
+[[package]]
 name = "rhwp-jpeg-decoder"
 version = "0.3.2-rhwp.1"
 dependencies = [
@@ -3489,8 +3494,6 @@ dependencies = [
  "getrandom 0.3.4",
  "getrandom 0.4.3",
  "harfrust",
- "hayro-jbig2",
- "hayro-jpeg2000",
  "hex-literal",
  "image",
  "jpeg-decoder",
@@ -3521,6 +3524,9 @@ dependencies = [
  "quick-xml 0.42.0",
  "rayon",
  "regex",
+ "rhwp-codec-resource",
+ "rhwp-hayro-jbig2",
+ "rhwp-hayro-jpeg2000",
  "rhwp-jpeg-decoder",
  "rhwp-zune-jpeg",
  "rsa",

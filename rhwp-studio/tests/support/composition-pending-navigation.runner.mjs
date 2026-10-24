@@ -3,6 +3,9 @@ import { registerHooks } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+// Linux fcitx의 Ctrl 탐색 계약을 검사하므로 Node 실행 호스트의 키맵에 의존하지 않는다.
+globalThis.__rhwpTestPlatformKind = 'other';
+
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'src');
 registerHooks({
   resolve(specifier, context, nextResolve) {

@@ -365,3 +365,36 @@ and inline JPEGs consume this same decision. No default limit or bitmap geometry
 - Public source controls and inventories: `pdf/issue7974/`. Implementation and
   validation boundaries: `mydocs/working/task_m100_7974_stage1.md` and
   `mydocs/working/task_m100_7974_stage2.md`.
+
+
+### #8183: independent opt-in image codecs
+
+- `jbig2` is separate from `rendering`; `rendering` still includes it. `jpeg2000`
+  keeps its own switch. Both select version+path internal hayro forks with
+  default features disabled, plus the synchronous `rhwp-codec-resource` scope.
+- The original import request charges input-sized decoder reservations before
+  fallible growth, including dictionaries, bitmap/component/tile storage, copies,
+  wavelet scratch and explicit stable-sort index buffers. Codec work consumes a
+  finite logical counter (`codec_work_units`, default 1,000,000,000), separate
+  from operators and stream bytes. A nested codec scope cannot reset counters.
+- Codec header dimensions are checked against the PDF declaration before pixel
+  allocation. JBIG2 uses a preallocated, exact-row collector and resolves indirect
+  filter-position DecodeParms/JBIG2Globals. JPX retains raw Indexed samples,
+  embedded palette resolution, source colour-channel counts and eight-bit output.
+  SMaskInData 1/2 preserves straight/premultiplied Gray/RGB alpha. Unsupported
+  embedded alpha combinations return a typed error, never silently discard alpha.
+- Bounded mask readers use the same source-sample adapters. Source mask depth must
+  agree with the supported packed sample contract; unsupported mixed depths are
+  explicit errors. Other byte-filter, Matte, interpolation, ownership and geometry
+  contracts retain their prior semantics. No encoded bytes become raw mask data.
+- Fixed-size Rc/Arc/iterator metadata still uses normal Rust allocation. Legacy
+  calls without a request and unused optional image/SIMD integrations are outside
+  this request contract. This is not a total allocator/RSS/CPU-time guarantee.
+  `parser_allocation_bounds_proven` stays false. Full Native/fresh WASM products,
+  visual evidence, performance and user guides belong to #8183 stage 3.
+
+## #8183 compile-time support disclosure
+
+`image_codec_support()` exposes the actual compiled JBIG2/JPEG 2000 feature flags.
+The RHWP frontend uses this result so a consumer enabling a backend feature through
+another dependency is reflected after Cargo feature unification. This adds no decoding work.

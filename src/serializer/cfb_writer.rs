@@ -265,6 +265,10 @@ fn serialize_hwp_inner(
             b"1".to_vec(),
         ));
     }
+    extra_streams.retain(|(path, _)| path != crate::model::native_font_program::HWP_STREAM);
+    if let Some(bytes) = crate::model::native_font_program::encode(&doc.doc_info, &doc_info_bytes) {
+        extra_streams.push((crate::model::native_font_program::HWP_STREAM.into(), bytes));
+    }
     extra_streams.retain(|(path, _)| path != crate::model::hyperlink_format::HWP_STREAM);
     if let Some(bytes) = crate::model::hyperlink_format::encode(doc) {
         extra_streams.push((crate::model::hyperlink_format::HWP_STREAM.into(), bytes));

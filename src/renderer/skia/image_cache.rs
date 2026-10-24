@@ -3,7 +3,7 @@
 use std::cell::{Cell, RefCell};
 use std::sync::Arc;
 
-use skia_safe::{ColorFilter, Image};
+use skia_safe::{ColorFilter, Data, Image};
 
 use super::cache::{BoundedCache, CacheKey, NativeSkiaCacheUsage};
 
@@ -11,6 +11,7 @@ use super::cache::{BoundedCache, CacheKey, NativeSkiaCacheUsage};
 pub(super) enum CachedImageResource {
     Decoded {
         image: Image,
+        encoded: Data,
         binary_requested: bool,
         binary_preprocessed: bool,
     },

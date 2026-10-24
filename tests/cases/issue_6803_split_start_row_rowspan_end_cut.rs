@@ -100,6 +100,31 @@ fn worst_text_line_overhang(node: &RenderNode, bottom: f64) -> f64 {
     worst
 }
 
+fn source_table_fragment(node: &RenderNode) -> Option<&RenderNode> {
+    if let RenderNodeType::Table(meta) = &node.node_type {
+        if meta.section_index == Some(0)
+            && meta.para_index == Some(6)
+            && meta.control_index == Some(0)
+            && meta.cell_context.is_none()
+        {
+            return Some(node);
+        }
+    }
+    node.children.iter().find_map(source_table_fragment)
+}
+
+fn painted_text(node: &RenderNode, out: &mut String) {
+    if !node.visible || node.editor_only {
+        return;
+    }
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        out.push_str(&run.text);
+    }
+    for child in &node.children {
+        painted_text(child, out);
+    }
+}
+
 /// 원본 표 소속의 이 셀이 전쪽에서 그린 문단 인덱스 — 실제 paint 순서.
 fn fragment_ranges() -> Vec<Vec<usize>> {
     let path = document_path();
@@ -113,7 +138,9 @@ fn fragment_ranges() -> Vec<Vec<usize>> {
 
     (0..core.page_count())
         .map(|page| {
-            let tree = core.build_page_render_tree(page).expect("render tree");
+            let tree = core
+                .build_page_render_tree(page as u32)
+                .expect("render tree");
             let mut pis = Vec::new();
             tall_cell_para_indices(&tree.root, &mut pis);
             pis
@@ -130,6 +157,22 @@ fn fragment_ranges() -> Vec<Vec<usize>> {
 /// 이 하나로 양쪽이 잠긴다 — 늦게 끊으면 **중복**이, 일찍 끊으면 **구멍**이 생긴다.
 #[test]
 fn the_fragments_partition_the_cell_exactly_once() {
+    let original = rhwp::parse_document(&std::fs::read(document_path()).expect("원본 읽기"))
+        .expect("독립 원본 모델");
+    let rhwp::model::control::Control::Table(source) =
+        &original.sections[0].paragraphs[6].controls[0]
+    else {
+        panic!("분할 표의 원본 소속");
+    };
+    let source_cell = source
+        .cells
+        .iter()
+        .find(|cell| {
+            cell.row == TALL_CELL_ROW
+                && cell.col == TALL_CELL_COL
+                && cell.row_span == TALL_CELL_ROW_SPAN
+        })
+        .expect("병합 셀의 원본 소속");
     let ranges = fragment_ranges();
     let mut seen: Vec<usize> = ranges.iter().flatten().copied().collect();
     let total = seen.len();
@@ -155,8 +198,65 @@ fn the_fragments_partition_the_cell_exactly_once() {
     // 문단들이 누락된 경우와 조각 내부의 역순도 함께 검출한다.
     assert_eq!(
         ranges.iter().flatten().copied().collect::<Vec<_>>(),
-        (0..67).collect::<Vec<_>>(),
+        (0..source_cell.paragraphs.len()).collect::<Vec<_>>(),
         "원본의 모든 문단을 순서대로 한 번씩 보존해야 한다"
+    );
+
+    // 전쪽 90% 이상 확인 뒤 같은 표 종료를 검증할 수 있는 완료 페이지 중
+    // Native/fresh WASM 양쪽 100%인 5쪽을 선택했다(96CSS DPI, compat2022).
+    // 독립 Print의 실제 외곽 path 좌표다. bbox 측정값에서 기대값을 만들지 않는다.
+    // 증적: regression-policy-20261015/land-default-environment-20261016/README.md.
+    let core = DocumentCore::from_bytes(&std::fs::read(document_path()).expect("원본 읽기"))
+        .expect("마지막 조각 문서");
+    let tree = core
+        .build_page_render_tree((core.page_count() - 1) as u32)
+        .expect("마지막 쪽 실제 배치");
+    let fragment = source_table_fragment(&tree.root).expect("같은 원본 표의 종료 조각");
+    for (edge, actual, expected) in [
+        ("left", fragment.bbox.x, 58.368),
+        ("top", fragment.bbox.y, 92.538656),
+        ("right", fragment.bbox.x + fragment.bbox.width, 698.663981),
+        ("bottom", fragment.bbox.y + fragment.bbox.height, 376.068034),
+    ] {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "독립 Print 5쪽 종료 표의 {edge}: expected={expected}, actual={actual}"
+        );
+    }
+    let last_source_cell = source
+        .cells
+        .iter()
+        .max_by_key(|cell| (cell.row, cell.col))
+        .expect("원본 마지막 셀");
+    let last_paragraph = last_source_cell
+        .paragraphs
+        .iter()
+        .rev()
+        .find(|paragraph| !paragraph.text.trim().is_empty())
+        .expect("원본의 마지막 내용");
+    let last_cell = fragment
+        .children
+        .iter()
+        .find(|node| {
+            matches!(&node.node_type, RenderNodeType::TableCell(cell)
+            if cell.row == last_source_cell.row && cell.col == last_source_cell.col)
+        })
+        .expect("종료 조각 안의 같은 원본 셀");
+    assert!(
+        last_cell.bbox.y >= fragment.bbox.y
+            && last_cell.bbox.y + last_cell.bbox.height <= fragment.bbox.y + fragment.bbox.height,
+        "마지막 셀은 종료 조각 안에 포함돼야 한다"
+    );
+    let mut text = String::new();
+    painted_text(last_cell, &mut text);
+    let compact = |text: &str| {
+        text.chars()
+            .filter(|character| !character.is_whitespace())
+            .collect::<String>()
+    };
+    assert!(
+        compact(&text).ends_with(&compact(&last_paragraph.text)),
+        "종료 위치만 맞추고 원본 마지막 문단을 잘라서는 안 된다"
     );
 }
 
@@ -187,11 +287,14 @@ fn no_text_line_falls_off_the_paper() {
 
     let mut worst = 0.0f64;
     let mut worst_page = 0u32;
+    let mut coordinate_scale = 1.0f64;
     for page in 0..core.page_count() {
         let tree = core
             .build_page_render_tree(page as u32)
             .expect("render tree");
-        let overhang = worst_text_line_overhang(&tree.root, paper_bottom(&tree.root));
+        let bottom = paper_bottom(&tree.root);
+        coordinate_scale = coordinate_scale.max(bottom.abs());
+        let overhang = worst_text_line_overhang(&tree.root, bottom);
         if overhang > worst {
             worst = overhang;
             worst_page = page as u32 + 1;
@@ -199,7 +302,7 @@ fn no_text_line_falls_off_the_paper() {
     }
 
     assert!(
-        worst <= 0.5,
+        worst <= f64::EPSILON * 64.0 * coordinate_scale,
         "글줄이 용지 밖으로 나갔다 — #6803 회귀          (최대 초과 {worst:.1}px @ {worst_page}쪽; 수정 전 +1,015.1px @ 3쪽)"
     );
 }
@@ -257,4 +360,96 @@ fn closing_row_stays_inside_the_original_body_frame() {
         ending_bottom <= frame_end + source_unit,
         "끝 행 상자가 원본 본문 프레임 밖의 빈 띠를 다시 수용했다: end={ending_bottom:.8}, frame={frame_end:.8} (원본1HU 허용)"
     );
+}
+
+/// 독립 Print 1쪽의 결측 U+2024는 한컴바탕 글리프의 자연 폭을 쓴다.
+/// 이 쪽의 Native/fresh WASM은 192DPI 98% 이상과 확대 판독을 확인했다.
+/// source 기호 소속·전진 관계와 독립 Print의 후속 항목 원점을 함께 보호한다.
+#[test]
+fn title_missing_dot_uses_the_print_supplier_advance() {
+    let core = DocumentCore::from_bytes(&std::fs::read(document_path()).expect("정식 sample"))
+        .expect("문서 로드");
+    let layout: serde_json::Value = serde_json::from_str(
+        &core
+            .get_page_text_layout_native(0)
+            .expect("1쪽 공개 글자 배치"),
+    )
+    .expect("공개 배치 JSON");
+    let expected = "근린생활시설용지 건축물 용도 ․ 건폐율 ․ 용적률 ․ 높이";
+    let runs = layout["runs"].as_array().expect("runs");
+    let anchors: Vec<_> = runs
+        .iter()
+        .filter(|run| {
+            run["parentParaIdx"].is_null()
+                && run["text"]
+                    .as_str()
+                    .is_some_and(|text| text.starts_with("근린생활시설용지 건축물 용도 "))
+        })
+        .collect();
+    assert_eq!(anchors.len(), 1, "제목 원문의 누락·중복이 없어야 한다");
+    let anchor = anchors[0];
+    let start = anchor["charStart"].as_u64().expect("제목 원문 시작");
+    let end = start + expected.chars().count() as u64;
+    // 기호 슬롯 경계는 별도 run일 수 있다. 원문 소유를 따라 이어 붙이고
+    // 한 run이라는 구현 형태 대신 내용·연속 소속·실제 전진을 검증한다.
+    let title_runs: Vec<_> = runs
+        .iter()
+        .filter(|run| {
+            run["parentParaIdx"].is_null()
+                && run["secIdx"] == anchor["secIdx"]
+                && run["paraIdx"] == anchor["paraIdx"]
+                && run["charStart"]
+                    .as_u64()
+                    .is_some_and(|position| (start..end).contains(&position))
+        })
+        .collect();
+    let mut cursor = start;
+    let mut characters = Vec::new();
+    for run in title_runs {
+        assert_eq!(
+            run["charStart"].as_u64(),
+            Some(cursor),
+            "제목 원문 소속의 틈·중복"
+        );
+        assert_eq!(run["y"], anchor["y"], "제목은 같은 글줄에 있어야 한다");
+        let text = run["text"].as_str().expect("제목 조각");
+        let positions = run["charX"].as_array().expect("source scalar 전진");
+        assert_eq!(positions.len(), text.chars().count() + 1);
+        let origin = run["x"].as_f64().expect("조각 원점");
+        let font_size = run["fontSize"].as_f64().expect("글자 크기");
+        for (index, ch) in text.chars().enumerate() {
+            let x = positions[index].as_f64().unwrap();
+            let advance = positions[index + 1].as_f64().unwrap() - x;
+            characters.push((ch, origin + x, advance, font_size));
+        }
+        cursor += text.chars().count() as u64;
+    }
+    assert_eq!(cursor, end);
+    assert_eq!(
+        characters.iter().map(|item| item.0).collect::<String>(),
+        expected
+    );
+    let mut dots = 0;
+    for (index, &(ch, _, advance, font_size)) in characters.iter().enumerate() {
+        if ch != '․' {
+            continue;
+        }
+        dots += 1;
+        let &(next, _, next_space, _) = characters.get(index + 1).expect("기호 뒤 공백");
+        assert_eq!(next, ' ');
+        assert!(advance > 0.0 && advance < next_space && advance < font_size / 4.0,
+            "기호를 전각으로 늘리면 안 된다: 기호={advance}, 이웃 공백={next_space}, em={font_size}");
+    }
+    assert_eq!(dots, 3);
+    // Print trace의 원점×(.119935pt/HU)×(96/72). 구현 결과에서 역산하지 않는다.
+    for (label, pdf_css_x) in [("건폐율", 357.566), ("용적률", 418.813), ("높이", 479.900)]
+    {
+        let byte_index = expected.find(label).expect("후속 항목 보존");
+        let index = expected[..byte_index].chars().count();
+        let actual = characters[index].1;
+        assert!(
+            (actual - pdf_css_x).abs() <= 2.0,
+            "독립 Print의 {label} 원점: expected={pdf_css_x}, actual={actual}"
+        );
+    }
 }

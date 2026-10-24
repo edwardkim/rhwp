@@ -12,7 +12,7 @@ fn summary_mode_categorizes_diffs() {
         .args([
             "ir-diff",
             "samples/hwpx/aift.hwpx",
-            "samples/aift.hwp",
+            "mydocs/pr/assets/issue7445/aift74/aift.hwp",
             "--summary",
         ])
         .output()
@@ -68,7 +68,7 @@ fn max_lines_truncates() {
         .args([
             "ir-diff",
             "samples/hwpx/aift.hwpx",
-            "samples/aift.hwp",
+            "mydocs/pr/assets/issue7445/aift74/aift.hwp",
             "--max-lines",
             "20",
         ])
@@ -94,7 +94,11 @@ fn no_flags_preserves_full_output() {
     // 회귀 가드: --summary / --max-lines 없으면 기존 출력 형식 보존
     let exe = rhwp_bin();
     let output = Command::new(exe)
-        .args(["ir-diff", "samples/hwpx/aift.hwpx", "samples/aift.hwp"])
+        .args([
+            "ir-diff",
+            "samples/hwpx/aift.hwpx",
+            "mydocs/pr/assets/issue7445/aift74/aift.hwp",
+        ])
         .output()
         .expect("rhwp ir-diff 실행 실패");
 

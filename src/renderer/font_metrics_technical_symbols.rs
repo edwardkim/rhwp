@@ -98,6 +98,25 @@ fn verified_technical_symbol_entry(metric: &FontMetric, ch: char) -> Option<(boo
 }
 
 pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Option<bool> {
+    // 같은 등록 프로그램의 cmap 결측이다. 폭 표에 없다는 사실만으로
+    // 결측을 추정하지 않으며, 다른 weight/style 프로그램에는 적용하지 않는다.
+    // U+2027도 같은 원 프로그램에서 결측이고 Haansoft Batang이 공급한다.
+    // 설치 프로그램 HMKMM d033df71/HBATANG bef63718의 cmap으로 확인했으며,
+    // 자연 전진은 기존 메트릭의 178/1024em이며, 독립 Print의 다음 글자 원점으로 대조했다.
+    if matches!(ch, '\u{2024}' | '\u{2027}') {
+        match (metric.name, metric.em_size, metric.bold, metric.italic) {
+            ("HumanMyeongJo", 1024, false, false) => return Some(false),
+            // H2HDRM.TTF e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831:
+            // 원 프로그램 cmap의 확인된 결측이다. 폭 표의 미수집을 뜻하지 않는다.
+            ("HYHeadLine-Medium", 1024, false, false) if ch == '\u{2024}' => return Some(false),
+            // H2MJSM.TTF/gulim.TTC의 실제 cmap 결측. 서로 다른 기호
+            // 슬롯을 교차한 Print에서 각각 HBATANG/HDOTUM 공급도 확인했다.
+            ("HYSinMyeongJo-Medium" | "Gulim", 1024, false, false) => return Some(false),
+            ("Haansoft Batang", 1024, false, false) => return Some(true),
+            ("Haansoft Dotum", 1024, false, false) => return Some(true),
+            _ => {}
+        }
+    }
     verified_technical_symbol_entry(metric, ch).map(|(present, _)| present)
 }
 
@@ -115,11 +134,21 @@ pub(crate) fn verified_program_punctuation_width(metric: &FontMetric, ch: char) 
         metric.italic,
         ch as u32,
     ) {
+        // HMKMG.TTF SHA-256 9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280.
+        // cmap의 periodcentered gid12190과 hmtx512/unitsPerEm512를 직접 확인했다.
+        // 80250 독립 Print p10의 같은 face·이웃 원점도 전각을 입증한다.
+        ("휴먼고딕", 512, false, false, 183) => Some(512),
+        // H2GTRM.TTF SHA-256 0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5.
+        // periodcentered/quoteleft/quoteright의 hmtx는 각각 1024/unitsPerEm1024다.
+        // 실제 SVG 프로그램의 glyf/hmtx/cmap이 원 파일과 같고, 독립 개인정보 Print
+        // 전 66쪽의 가운데점 29개·작은따옴표 8개도 1em이다. HFT 표에는 적용하지 않는다.
+        ("HYGothic-Medium", 1024, false, false, 183 | 8216 | 8217) => Some(1024),
         ("Haansoft Batang", 1024, false, false, 183) => Some(341),
         ("Haansoft Batang", 1024, false, false, 8216) => Some(276),
         ("Haansoft Batang", 1024, false, false, 8217) => Some(276),
         ("Haansoft Batang", 1024, false, false, 8220) => Some(379),
         ("Haansoft Batang", 1024, false, false, 8221) => Some(379),
+        ("Haansoft Batang", 1024, false, false, 8228) => Some(178),
         ("HumanMyeongJo", 1024, false, false, 183) => Some(1024),
         ("HumanMyeongJo", 1024, false, false, 8216) => Some(1024),
         ("HumanMyeongJo", 1024, false, false, 8217) => Some(1024),
@@ -127,7 +156,7 @@ pub(crate) fn verified_program_punctuation_width(metric: &FontMetric, ch: char) 
         ("HumanMyeongJo", 1024, false, false, 8221) => Some(1024),
         // 공식 H2GTRM.TTF: SHA 0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5.
         // 원본 한컴 Print와 같은 periodcentered·곡선 따옴표의 실제 hmtx다.
-        ("HYGothic-Medium", 1024, false, false, 183 | 8216 | 8217 | 8220 | 8221) => Some(1024),
+        ("HYGothic-Medium", 1024, false, false, 8220 | 8221) => Some(1024),
         _ => None,
     }
 }

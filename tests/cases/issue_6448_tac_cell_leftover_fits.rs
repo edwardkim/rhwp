@@ -30,6 +30,43 @@ fn issue_6448_tac_cell_uses_measured_band_and_moves_tail_to_page3() {
          오인하면 1쪽 또는 2쪽으로 축소된다"
     );
 
+    let rhwp::model::control::Control::Table(table) =
+        &doc.document().sections[0].paragraphs[1].controls[0]
+    else {
+        panic!("원본 글자처럼 표");
+    };
+    // 맞는 글자 높이 캐시는 보존하고 옛 크기가 남은 두 셀만 현재 글자모양으로 구성한다.
+    for cell in &table.cells {
+        let paragraph = &cell.paragraphs[0];
+        let style =
+            &doc.document().doc_info.char_shapes[paragraph.char_shapes[0].char_shape_id as usize];
+        let current_height = style.base_size * i32::from(style.relative_sizes[0]) / 100;
+        assert_eq!(paragraph.line_segs[0].text_height, current_height);
+        assert_eq!(
+            paragraph.line_segs[0].tag
+                & rhwp::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                != 0,
+            cell.row != 0,
+            "정상 큰 행의 캐시는 보존하고 모순된 작은 행의 캐시만 재구성"
+        );
+    }
+    let tree = doc.build_page_render_tree(1).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&tree.root.to_json()).unwrap();
+    fn first_cell(node: &serde_json::Value) -> Option<&serde_json::Value> {
+        if node["type"] == "Cell" && node["row"] == 0 && node["col"] == 0 {
+            return Some(node);
+        }
+        node["children"].as_array()?.iter().find_map(first_cell)
+    }
+    let first = first_cell(&json).expect("큰 첫 행의 단일 셀");
+    let source = table.cells.iter().find(|cell| cell.row == 0).unwrap();
+    let height = first["bbox"]["h"].as_f64().unwrap();
+    let unit = 96.0 / 7200.0;
+    assert!(
+        height + unit >= f64::from(source.height) * unit,
+        "작은 셀의 옛 캐시 때문에 첫 행의 원본 공간을 회수하지 않음"
+    );
+
     let page1 = doc.dump_page_items(Some(0));
     assert!(
         !page1.contains("Table") && page1.contains("pi=0"),

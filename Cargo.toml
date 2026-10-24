@@ -38,7 +38,7 @@ include = [
 ]
 
 [workspace]
-exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder", "vendor/svg2pdf"]
+exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder", "vendor/rhwp-jpeg-encoder", "vendor/svg2pdf", "vendor/rhwp-codec-resource", "vendor/rhwp-hayro-jbig2", "vendor/rhwp-hayro-jpeg2000", "vendor/rhwp-hayro-ccitt"]
 members = ["crates/*", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert", "tools/llm_verifier/verdict_protocol", "tools/llm_verifier/claim_bind", "tools/llm_verifier/criteria_decomp"]
 default-members = [".", "crates/*"]
 resolver = "2"
@@ -331,7 +331,8 @@ strum = { version = "0.28.0", default-features = false, features = ["derive"] }
 unicode-segmentation = "1.12.0"
 unicode-properties = { version = "0.1.4", default-features = false, features = ["general-category"] }
 unicode-width = "0.2.2"
-image = { version = "0.25", default-features = false, features = ["bmp", "jpeg", "png", "tiff"] }
+image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "tiff"] }
+jpeg-encoder = { package = "rhwp-jpeg-encoder", path = "vendor/rhwp-jpeg-encoder", version = "=0.7.1-rhwp.1" }
 tiny-skia = { version = "0.12", optional = true, default-features = false, features = ["std", "simd"] }
 pcx = "0.2"
 serde = { version = "1", features = ["derive"] }
@@ -349,6 +350,8 @@ subsecond = { version = "=0.7.10", optional = true }
 [features]
 default = ["console_error_panic_hook", "pdf-import", "wasm-api"]
 pdf-import = ["dep:pdf_oxide", "dep:office_oxide", "dep:tiny-skia"]
+pdf-jbig2 = ["pdf-import", "pdf_oxide/jbig2"]
+pdf-jpeg2000 = ["pdf-import", "pdf_oxide/jpeg2000"]
 # 브라우저 JS 바인딩(`wasm_api`)과 자동 panic hook 초기화·`version` export.
 # npm 패키지·Studio·CLI·Native FFI는 기본값을 사용한다. 다른 wasm-bindgen 앱이
 # 라이브러리로 링크할 때는 `default-features = false`로 facade와 자동 start를 제외한다.
@@ -362,13 +365,14 @@ subsecond-dev = ["dep:subsecond"]
 # 릴리즈 CLI 설치에서 제외하는 저장소 개발 도구.
 dev-tools = []
 
-# PDF 내보내기 (네이티브 전용, Task #21)
+# PDF 내보내기·SVG 웹폰트 부분집합 (네이티브 전용)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # #8174: root patch는 외부 Rust 소비자에게 전달되지 않는다. 보정 fork를 직접 연결한다.
 svg2pdf = { package = "rhwp-svg2pdf", path = "vendor/svg2pdf", version = "=0.13.0-rhwp.1" }
 usvg = "0.45"
 pdf-writer = "0.12"
-subsetter = "0.2"
+read-fonts = "0.45"
+skera = "0.8"
 skia-safe = { version = "0.153.2", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
 icy_sixel = { version = "=0.7.0", optional = true }
 
@@ -377,6 +381,9 @@ icy_sixel = { version = "=0.7.0", optional = true }
 web-sys = { version = "0.3", features = [
     "CanvasRenderingContext2d",
     "CanvasWindingRule",
+    "DomMatrix",
+    "CanvasGradient",
+    "CanvasPattern",
     "DomMatrix",
     "DomMatrixReadOnly",
     "CanvasGradient",

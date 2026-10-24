@@ -465,29 +465,18 @@ fn stored_layout_relocated_picture_caption_uses_next_saved_flow_anchor() {
         height: 900.0,
     };
 
-    let flow_top = stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
-        true,
-        &host,
-        &table,
-        Some(&next),
-        &col,
-        96.0,
-    )
-    .expect("이월 그림의 다음 저장 anchor");
+    let flow_top =
+        stored_relocated_picture_successor_origin(true, &host, &table, Some(&next), 96.0)
+            .filter(|origin| *origin <= col.height)
+            .map(|origin| col.y + origin)
+            .expect("이월 그림의 다음 저장 원점");
     assert!(
         (flow_top - 488.386_666_7).abs() < 0.001,
         "flow_top={flow_top}"
     );
     assert!(
-        stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
-            false,
-            &host,
-            &table,
-            Some(&next),
-            &col,
-            96.0,
-        )
-        .is_none()
+        stored_relocated_picture_successor_origin(false, &host, &table, Some(&next), 96.0)
+            .is_none()
     );
 }
 
@@ -582,6 +571,8 @@ fn test_build_page_with_paragraph() {
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -668,6 +659,8 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -789,6 +782,8 @@ fn test_layout_with_composed_styles() {
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -935,6 +930,8 @@ fn test_layout_multi_run_x_position() {
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -1337,6 +1334,8 @@ fn test_layout_table_basic() {
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -1499,6 +1498,8 @@ fn test_layout_table_cell_positions() {
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,

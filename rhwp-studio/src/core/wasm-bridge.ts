@@ -220,6 +220,7 @@ export interface DeferredPaginationResult {
 
 import {
   fontFamilyCandidatesForDisplay,
+  documentSubstituteFamilies,
   formatCssFontFamilyList,
   parseCssFontFamilyList,
   resolveFont,
@@ -258,7 +259,10 @@ function substituteCssFontFamily(cssFont: string): string {
   const primary = incoming[0];
   if (!primary) return cssFont;
 
-  const studioChain = fontFamilyCandidatesForDisplay(primary, 0, 0);
+  // 같은 원 이름의 언어 슬롯에 다른 대체가 있으면 엔진이 지정한 체인을 따른다.
+  const declaredTargets = documentSubstituteFamilies(primary).filter(target => incoming.includes(target));
+  const studioChain = fontFamilyCandidatesForDisplay(primary, 0, 0,
+    declaredTargets.length ? { documentFallbackFamilies: declaredTargets } : {});
   const merged: string[] = [];
   const seen = new Set<string>();
   const push = (name: string) => {
@@ -311,6 +315,14 @@ function installCanvasFontSubstitution(): void {
     },
   });
   canvasFontSubstitutionInstalled = true;
+}
+
+import { prepareDeclaredFontPrograms, type DocumentFontSelectionPlan } from './declared-font-environment';
+
+interface DocumentFontEnvironmentApi {
+  getDocumentFontSelectionPlan(): string;
+  buildFontEnvironmentFromAvailablePrograms(snapshot: string): string;
+  setFontEnvironment(environment?: string): boolean;
 }
 
 export class WasmBridge {
@@ -950,6 +962,34 @@ export class WasmBridge {
       (this.doc as any).refreshLayout?.();
     } catch (e) {
       console.warn('[WasmBridge] refreshLayout failed:', e);
+    }
+  }
+
+  /** 기본 브라우저의 실제 local 프로그램을 측정·paint의 같은 환경으로 선택한다. */
+  async prepareDeclaredFontEnvironment(backend = 'canvas2d'): Promise<boolean> {
+    const doc = this.doc;
+    // CanvasKit/host는 CSS local() 프로그램을 소비하지 않으므로 이 증명으로 선택하지 않는다.
+    if (!doc || backend !== 'canvas2d' || hasHostFontProvider()) return false;
+    const api = doc as unknown as Partial<DocumentFontEnvironmentApi>;
+    if (typeof api.getDocumentFontSelectionPlan !== 'function'
+      || typeof api.buildFontEnvironmentFromAvailablePrograms !== 'function'
+      || typeof api.setFontEnvironment !== 'function') return false;
+    const generation = this._documentGeneration;
+    const current = () => this.doc === doc && this._documentGeneration === generation;
+    const plan = JSON.parse(api.getDocumentFontSelectionPlan()) as DocumentFontSelectionPlan;
+    // 사용자 명시 환경을 자동 선택으로 덮어쓰지 않는다.
+    if (plan.environmentId !== null) return false;
+    const programs = await prepareDeclaredFontPrograms(plan, current);
+    if (!current()) return false;
+    try {
+      const environment = api.buildFontEnvironmentFromAvailablePrograms(JSON.stringify(programs));
+      const changed = environment !== 'null' && api.setFontEnvironment(environment);
+      this.invalidateCanvasMetricFonts();
+      return changed;
+    } catch (error) {
+      // 유효하지 않은 공급 snapshot으로 문서 로드를 중단하거나 기존 환경을 바꾸지 않는다.
+      console.warn('[WasmBridge] 선언 글꼴 환경을 적용하지 못했습니다', error);
+      return false;
     }
   }
 

@@ -155,15 +155,17 @@ fn verified_exam_original_font_position_keeps_body_and_punctuation_baselines() {
             let RenderNodeType::TextRun(r) = &n.node_type else {
                 continue;
             };
-            if !matches!(r.style.font_family.as_str(), "HY신명조" | "한양신명조")
-                || r.text.trim().is_empty()
+            // 표시 대체 체인의 추가가 원본 첫 face의 소유를 없애지는 않는다.
+            let source_face =
+                rhwp::renderer::style_resolver::primary_font_name(&r.style.font_family);
+            if !matches!(source_face, "HY신명조" | "한양신명조") || r.text.trim().is_empty()
             {
                 continue;
             }
             assert!(!r.style.superscript && !r.style.subscript);
             assert_eq!(r.style.font_position, Some(-10));
-            body |= r.style.font_family == "HY신명조";
-            punctuation |= r.style.font_family == "한양신명조";
+            body |= source_face == "HY신명조";
+            punctuation |= source_face == "한양신명조";
             baselines.push(
                 r.style
                     .script_draw_metrics(r.style.font_size, n.bbox.y + r.baseline)

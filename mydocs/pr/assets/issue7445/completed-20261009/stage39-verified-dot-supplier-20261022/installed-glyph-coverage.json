@@ -1,0 +1,22 @@
+[
+  {
+    "path": "/Users/tsjang/Library/Fonts/H2HDRM.TTF",
+    "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+    "family": "HYHeadLine-Medium",
+    "postScript": "H2hdrM",
+    "upem": 1024,
+    "codePoint": "U+2024",
+    "glyph": null,
+    "advance": null
+  },
+  {
+    "path": "/Users/tsjang/Library/Fonts/HBATANG.TTF",
+    "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+    "family": "Haansoft Batang",
+    "postScript": "Haansoft Batang",
+    "upem": 1024,
+    "codePoint": "U+2024",
+    "glyph": "onedotenleader",
+    "advance": 178
+  }
+]

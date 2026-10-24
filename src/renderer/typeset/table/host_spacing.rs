@@ -220,12 +220,22 @@ pub(super) fn resolve(
         .unwrap_or(false);
     let suppress_empty_anchor_spacing = is_topbottom_empty_anchor && !next_is_empty_table_anchor;
 
+    // 같은 빈 호스트의 흐름 표는 각 개체의 바깥 여백을 소유하지만,
+    // 호스트 줄간격은 마지막 흐름 표 뒤에서 한 번만 소비한다.
+    let has_following_host_float = is_empty_host_float
+        && para.controls.iter().skip(ctrl_idx + 1).any(|control| {
+            matches!(control, crate::model::control::Control::Table(following)
+                if is_para_topbottom_float(&following.common))
+        });
     let reflow_host_tail = crate::renderer::reflow_float_host_line::trailing_advance(
         para, table, composed, styles, dpi,
     );
     let host_line_spacing = if let Some(advance) = reflow_host_tail {
         advance
-    } else if suppress_empty_anchor_spacing || absolute_table_with_post_text {
+    } else if suppress_empty_anchor_spacing
+        || absolute_table_with_post_text
+        || has_following_host_float
+    {
         0.0
     } else if !is_tac && !is_single_cell_placeholder {
         para.line_segs
@@ -274,11 +284,14 @@ pub(super) fn resolve(
         .map(|line_advance| hwpunit_to_px(line_advance, dpi))
         .unwrap_or(0.0)
     };
-    let after = sa
-        + outer_bottom
-        + host_line_spacing
-        + positive_empty_host_rowbreak_tail
-        + stored_empty_anchor_host_line_tail;
+    // 저장 사다리가 전체 호스트 줄 진행을 증명하면 표 스택의 기존 줄간격을
+    // 그 진행량으로 대체한다. 줄간격은 LH+LS 안에 이미 포함되어 있다.
+    let host_line_tail = if stored_empty_anchor_host_line_tail > 0.0 {
+        stored_empty_anchor_host_line_tail
+    } else {
+        host_line_spacing
+    };
+    let after = sa + outer_bottom + host_line_tail + positive_empty_host_rowbreak_tail;
     let host_spacing = HostSpacing {
         before,
         after,

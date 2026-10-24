@@ -252,6 +252,13 @@ impl TypesetEngine {
                     );
                     let mut source = owner.clone();
                     source.note_para_index += offset + 1;
+                    // 임시 측정도 해당 문단이 실제로 투영한 간격만 소비한다.
+                    // 앞 문단의 소유 주소를 복제하면서 그 간격까지 상속하지 않는다.
+                    source.tail_leading_consumed_hu = st
+                        .reissued_endnote_rows
+                        .get(&(para_index - paragraphs.len()))
+                        .copied()
+                        .unwrap_or(0);
                     sources.push(source);
                     local_items.push(PageItem::FullParagraph { para_index });
                     for (control_index, control) in paragraph.controls.iter().enumerate() {
@@ -279,6 +286,11 @@ impl TypesetEngine {
                     if last.note_para_index + 1 < note.paragraphs.len() {
                         let mut next = last;
                         next.note_para_index += 1;
+                        next.tail_leading_consumed_hu = st
+                            .reissued_endnote_rows
+                            .get(&sources.len())
+                            .copied()
+                            .unwrap_or(0);
                         sources.push(next);
                     }
                 }
@@ -305,6 +317,8 @@ impl TypesetEngine {
                 float_pushed_line_spacings: st.float_pushed_line_spacings.clone(),
                 page_band_flow_starts: st.page_band_flow_starts.clone(),
                 paragraph_float_placements: st.paragraph_float_placements.clone(),
+                paragraph_origins: st.paragraph_origins.clone(),
+                computed_paragraphs: st.computed_paragraphs.clone(),
             };
             let mut col_area = st.inline_flow_column();
             col_area.width = en_col_w;
@@ -771,6 +785,7 @@ impl TypesetEngine {
             None, // multi_col_width_hu: 렌더 미주 body-flow 경로와 동일(None)
             None, // bin_data_content: Stage 1 POC — None
             None, // wrap_anchor: 미주 단 내부 wrap-around 없음
+            None,
         );
         (y_after - y_start).max(0.0)
     }

@@ -392,7 +392,21 @@ pub(super) fn place_table_host_shape(
     if st.defer_table_host_ole_to_next_column(para_idx, ctrl_idx, ctrl, dpi) {
         return;
     }
-    if flow.needs_advance(st.table_host_shape_page(), || st.available_height()) {
+    while flow.needs_advance(st.table_host_shape_page(), || st.available_height()) {
+        // 단 기준 개체가 다음 단에 들어가면 개체만 이월한다. 뒤 본문은 남은
+        // 현재 단을 채우며, 저장 줄의 단 경계에서 예약 개체 뒤로 이어진다.
+        let common = match ctrl {
+            Control::Shape(shape) => Some(shape.common()),
+            Control::Picture(picture) => Some(&picture.common),
+            _ => None,
+        };
+        let column_frame = common.is_some_and(|common| {
+            matches!(common.horz_rel_to, crate::model::shape::HorzRelTo::Column)
+                && common.width as f64 <= st.layout.column_width_hu() as f64
+        });
+        if column_frame && st.defer_table_host_shape_to_next_column(para_idx, ctrl_idx, flow) {
+            return;
+        }
         st.advance_column_or_new_page();
     }
     let accepted_frame = flow.accepted_shape_frame(ctrl, st.current_height);
@@ -410,10 +424,12 @@ pub(super) fn try_place_empty_para_float_table(
     table: &crate::model::table::Table,
     ft: &FormattedTable,
     composed: Option<&ComposedParagraph>,
+    prev_para: Option<&Paragraph>,
     next_para: Option<&Paragraph>,
     styles: &ResolvedStyleSet,
     para_start_height: f64,
     lanes: &mut FloatLaneSet,
+    paragraphs: &[Paragraph],
     table_reflowed: bool,
     dpi: f64,
 ) -> bool {
@@ -424,11 +440,12 @@ pub(super) fn try_place_empty_para_float_table(
         table,
         ft,
         composed,
+        prev_para,
         next_para,
         styles,
         para_start_height,
         lanes,
-        st.empty_float_page(),
+        st.empty_float_page(paragraphs),
         table_reflowed,
         || st.empty_float_available_height(ft.table_footnote_height, ft.table_footnote_count),
         dpi,
@@ -510,6 +527,10 @@ pub(super) fn try_place_stored_tac_paragraph(
         para_idx,
         para,
         paragraphs.get(para_idx + 1),
+        paragraphs
+            .get(para_idx + 1)
+            .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
+            .map_or(0.0, |style| style.spacing_before),
         fmt,
         measured_tables,
         styles,

@@ -19,10 +19,21 @@ impl TypesetEngine {
         para_style_break: bool,
         force_page_break: bool,
     ) -> bool {
-        st.prepare_saved_empty_run(para_idx, paragraphs, self.dpi);
+        // 이 단계에서는 이미 확정한 각주 영역의 기존 빈 줄 이월만 준비한다.
+        // 새 물리 예약은 뒤의 실제 문단 원점 선택 후 paragraph::flow에서 조회한다.
+        st.prepare_saved_empty_run(para_idx, paragraphs, self.dpi, |_| None);
         if st.saved_empty_run_contains(para_idx) {
             // 실제 줄 상자를 fit/이월한다. 저장 reset 앞이라는 이유로
             // 줄의 물리 점유를 감추지 않는다.
+            return false;
+        }
+        // 이어받기 컷이 이미 다음 쪽을 열었다면 빈 줄도 그 쪽의 점유다.
+        // 뒤의 같은 저장 리셋을 앞 쪽 꼬리로 해석해 줄 상자를 숨기지 않는다.
+        if para.text.is_empty()
+            && para.controls.is_empty()
+            && para_idx + 1 < paragraphs.len()
+            && st.stored_paragraph_boundary_already_open(paragraphs, para_idx + 1)
+        {
             return false;
         }
         // [Task #359] 단독 항목 페이지 차단:

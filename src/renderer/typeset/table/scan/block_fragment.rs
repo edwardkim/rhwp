@@ -193,6 +193,42 @@ impl<'a> SelectedBlockCut<'a> {
             .then_some(band)
     }
 
+    /// 저장 그림 칸이 이어지며 형제 행의 물리 공간을 보존하는 컷의 예약 높이.
+    pub(in crate::renderer::typeset) fn stored_picture_frame_height(
+        &self,
+        rows: &RowBlockQuery<'_>,
+        block: &RowBlockCandidate,
+        start: &[usize],
+        end_row: usize,
+    ) -> Option<f64> {
+        if !self.use_offsets {
+            return None;
+        }
+        let partial_picture = rows
+            .layout_engine
+            .row_block_cut_has_partial_stored_pictures(
+                rows.table,
+                (block.b_start, block.b_end),
+                start,
+                &self.cut_res.end_cut,
+                rows.styles,
+            );
+        let owns_physical_row = (block.b_start..end_row).any(|row| {
+            rows.layout_engine.row_block_cut_uses_measured_height(
+                rows.table,
+                (block.b_start, block.b_end),
+                row,
+                start,
+                &self.cut_res.end_cut,
+                rows.styles,
+            )
+        });
+        (partial_picture && owns_physical_row).then(|| {
+            rows.fragment_height(block, end_row, start, &self.cut_res.end_cut)
+                .max(self.cut_res.consumed_height)
+        })
+    }
+
     /// 부모가 끝 컷을 기록한 뒤 원래 시점에 호출한다. 측정을 select 시점으로 앞당기지 않는다.
     pub(in crate::renderer::typeset) fn occupied_height(
         &self,
@@ -201,6 +237,11 @@ impl<'a> SelectedBlockCut<'a> {
         blk_start_cut: &[usize],
         end_row: usize,
     ) -> f64 {
+        // 수용한 같은 컷의 그림 내용과 완전 형제 행의 물리 공간을 함께 예약한다.
+        if let Some(height) = self.stored_picture_frame_height(rows, block, blk_start_cut, end_row)
+        {
+            return height;
+        }
         let Self {
             cut_res,
             use_offsets,

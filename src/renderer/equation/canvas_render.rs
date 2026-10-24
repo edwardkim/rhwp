@@ -178,6 +178,8 @@ fn render_box(
             denom,
             axis_height,
             rule_thickness,
+            rule_start,
+            rule_end,
         } => {
             render_box(ctx, numer, x, y, color, fs, italic, bold);
             // 분수선 — baseline에서 axis_height 위에 배치 (SVG 경로와 동일)
@@ -186,8 +188,8 @@ fn render_box(
             ctx.set_stroke_style_str(color);
             ctx.set_line_width(line_thick);
             ctx.begin_path();
-            ctx.move_to(x + fs * 0.05, line_y);
-            ctx.line_to(x + lb.width - fs * 0.05, line_y);
+            ctx.move_to(x + rule_start, line_y);
+            ctx.line_to(x + rule_end, line_y);
             ctx.stroke();
             render_box(ctx, denom, x, y, color, fs, italic, bold);
         }

@@ -9,6 +9,7 @@ pub(in crate::renderer::typeset) struct TableHostShapePage {
     pub current_height: f64,
 }
 
+#[derive(Clone, Copy)]
 pub(in crate::renderer::typeset) struct TableHostShapeFlow {
     pub tac_separate_line_h: Option<f64>,
     pub non_tac_pushdown_h: Option<f64>,
@@ -66,14 +67,26 @@ pub(super) fn prepare(
                     && matches!(p.common.text_wrap, TextWrap::TopAndBottom)
                     && matches!(p.common.vert_rel_to, VertRelTo::Para) =>
             {
-                topbottom_pushdown_height(&p.common, dpi)
+                topbottom_pushdown_height(&p.common, dpi).map(|height| {
+                    height - hwpunit_to_px(p.common.height as i32, dpi)
+                        + crate::renderer::composer::captioned_picture_height_px(p, dpi)
+                })
             }
             Control::Shape(s)
                 if !s.common().treat_as_char
                     && matches!(s.common().text_wrap, TextWrap::TopAndBottom)
                     && matches!(s.common().vert_rel_to, VertRelTo::Para) =>
             {
-                topbottom_pushdown_height(s.common(), dpi)
+                let common = s.common();
+                topbottom_pushdown_height(common, dpi).map(|height| {
+                    let shape_height = hwpunit_to_px(common.height as i32, dpi);
+                    height - shape_height
+                        + crate::renderer::composer::captioned_shape_height_px(
+                            shape_height,
+                            &crate::renderer::composer::shape_caption_for_layout(s),
+                            dpi,
+                        )
+                })
             }
             _ => None,
         }

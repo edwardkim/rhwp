@@ -144,7 +144,7 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
     let v2_rules = v2["rules"].as_array().expect("current v2 rules");
 
     assert_eq!(v1_rules.len(), 830);
-    assert_eq!(v2["summary"]["activeRuleCount"], 841);
+    assert_eq!(v2["summary"]["activeRuleCount"], 846);
     assert_eq!(v2["summary"]["retiredRuleCount"], 4);
 
     let mut expected_semantics: BTreeMap<_, _> = v1_rules
@@ -243,6 +243,36 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
             ),
             "rust-layout-metric",
         ),
+        (
+            include_str!(
+                "../../assets/font-rules/changes/issue-7445-public-batang-metric-name.json"
+            ),
+            "rust-layout-metric",
+        ),
+        (
+            include_str!(
+                "../../assets/font-rules/changes/issue-7445-public-batang-webfont-supply.json"
+            ),
+            "canvas2d-webfont",
+        ),
+        (
+            include_str!(
+                "../../assets/font-rules/changes/issue-7445-public-batang-canvaskit-supply.json"
+            ),
+            "canvaskit-sfnt",
+        ),
+        (
+            include_str!(
+                "../../assets/font-rules/changes/issue-7445-missing-title-public-fallback.json"
+            ),
+            "rust-layout-name",
+        ),
+        (
+            include_str!(
+                "../../assets/font-rules/changes/issue-7445-document-substitute-lookup.json"
+            ),
+            "rust-layout-name",
+        ),
     ] {
         // 공개 프로그램 공급 두 건도 기록된 add-rule만 의미 비교에 반영한다.
         let addition: serde_json::Value =
@@ -320,7 +350,7 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
 fn canonical_layout_name_projection_reaches_public_trace() {
     let registry = registry();
     let rules = projection_rules(&registry, "rust-layout-name");
-    assert_eq!(rules.len(), 177);
+    assert_eq!(rules.len(), 179);
 
     let legacy_keys: BTreeSet<(&str, &str)> = rules
         .iter()
@@ -341,6 +371,127 @@ fn canonical_layout_name_projection_reaches_public_trace() {
             continue;
         }
 
+        if boundary == "rust-style-resolution.document-substitute" {
+            use rhwp::model::style::SubstFont;
+            use rhwp::renderer::font_environment::FontEnvironment;
+            assert_eq!(slot, "all");
+            assert_eq!(rule["conditions"]["altType"], "1");
+            assert_eq!(
+                rule["conditions"]["availability"],
+                "nonembedded-ttf-document-substitute"
+            );
+            // 독립 Print에서 확인한 대체 필드의 영문 이름 경로다.
+            // 원본 이름에 적용하는 일반 alias와 구분해 공개 API를 통과시킨다.
+            let source = source_face(rule);
+            let target = rule["targetFaceOrPolicy"].as_str().unwrap();
+            let mut core = public_blank_with_font_text("__font_rule_missing_primary__", 1, "가");
+            let mut document = core.document().clone();
+            for font in document.doc_info.font_faces.iter_mut().flatten() {
+                font.subst_font = Some(SubstFont {
+                    face: source.to_owned(),
+                    font_type: 1,
+                    ..Default::default()
+                });
+            }
+            core.set_document(document);
+            let programs = serde_json::json!([
+                {"query":target,"family":target,"programId":"substitute-target","trueType":true},
+                {"query":source,"family":source,"programId":"primary-name-control","trueType":true}
+            ]);
+            let selected = core
+                .build_font_environment_from_available_programs(&programs.to_string())
+                .unwrap();
+            core.set_font_environment(Some(FontEnvironment::from_json(&selected).unwrap()))
+                .unwrap();
+            let trace: serde_json::Value = serde_json::from_str(
+                &core
+                    .get_font_decision_trace_native(0, r#"{"maxCharacters":16}"#)
+                    .unwrap(),
+            )
+            .unwrap();
+            let record = trace["records"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|record| record["source"]["character"] == "가")
+                .unwrap();
+            assert_eq!(record["document"]["substFont"], source);
+            assert_eq!(record["layoutName"]["normalizedFace"], target);
+            assert!(record["layoutName"]["steps"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|step| step["kind"] == "documentSubstituteLookup"
+                    && step["input"] == source
+                    && step["output"] == target));
+            assert!(record["provenance"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|entry| entry["ruleId"] == rule["ruleId"]));
+            assert_eq!(
+                public_trace_record(source, 1, "가")["layoutName"]["normalizedFace"],
+                source,
+                "원본 이름은 문서 대체 필드 규칙의 대상이 아니다"
+            );
+            observed.insert(rule["ruleId"].as_str().unwrap());
+            continue;
+        }
+        if boundary == "rust-style-resolution.missing-program" {
+            use rhwp::renderer::font_environment::FontEnvironment;
+            assert_eq!(slot, "all");
+            assert_eq!(
+                rule["conditions"]["availability"],
+                "primary-and-document-substitute-missing"
+            );
+            let source = source_face(rule);
+            let target = rule["targetFaceOrPolicy"].as_str().unwrap();
+            let mut core = public_blank_with_font_text(source, 2, "가");
+            let programs = serde_json::json!([{
+                "query":target,"family":target,"programId":"canonical-conditional-protocol-control","trueType":true
+            }]);
+            let selected = core
+                .build_font_environment_from_available_programs(&programs.to_string())
+                .unwrap();
+            let environment: serde_json::Value = serde_json::from_str(&selected).unwrap();
+            assert_eq!(environment["selectionRules"][source], rule["ruleId"]);
+            core.set_font_environment(Some(FontEnvironment::from_json(&selected).unwrap()))
+                .unwrap();
+            let trace: serde_json::Value = serde_json::from_str(
+                &core
+                    .get_font_decision_trace_native(0, r#"{"maxCharacters":16}"#)
+                    .unwrap(),
+            )
+            .unwrap();
+            let record = trace["records"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|record| record["source"]["character"] == "가")
+                .unwrap();
+            assert_eq!(record["layoutName"]["normalizedFace"], target);
+            assert!(record["provenance"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|entry| entry["ruleId"] == rule["ruleId"]));
+            let primary = serde_json::json!([
+                {"query":target,"family":target,"programId":"public-control","trueType":true},
+                {"query":source,"family":source,"programId":"original-control","trueType":true}
+            ]);
+            let kept: serde_json::Value = serde_json::from_str(
+                &core
+                    .build_font_environment_from_available_programs(&primary.to_string())
+                    .unwrap(),
+            )
+            .unwrap();
+            assert!(
+                kept.is_null(),
+                "원본 프로그램이 있으면 조건부 공개 규칙은 적용하지 않음"
+            );
+            observed.insert(rule["ruleId"].as_str().unwrap());
+            continue;
+        }
         let (alt_type, text) = match (boundary, slot) {
             ("rust-style-resolution.legacy-latin", "1") => (1, "A"),
             ("rust-style-resolution.hft", "all") => (2, "가"),
@@ -367,7 +518,7 @@ fn canonical_layout_name_projection_reaches_public_trace() {
         observed.insert(rule["ruleId"].as_str().expect("ruleId"));
     }
 
-    assert_eq!(observed.len() + priority_shadowed.len(), 177);
+    assert_eq!(observed.len() + priority_shadowed.len(), 179);
     assert_eq!(priority_shadowed.len(), 34);
 
     let sentinel = public_trace_record("__rhwp_w7_unregistered_font__", 1, "가");
@@ -385,12 +536,59 @@ fn canonical_layout_name_projection_reaches_public_trace() {
 fn canonical_layout_metric_projection_reaches_public_lookup() {
     let registry = registry();
     let rules = projection_rules(&registry, "rust-layout-metric");
-    assert_eq!(rules.len(), 70);
+    assert_eq!(rules.len(), 71);
 
     for rule in rules {
         let source = source_face(rule);
         let target = rule["targetFaceOrPolicy"].as_str().expect("metric target");
         assert_eq!(source_boundary(rule), "rust-metric.metric-alias");
+        // v2 규칙 ID는 명시적 변경 원장에서 발급한 식별자다. 기존 hash ID뿐
+        // 아니라 추가된 서술형 ID도 실제 선택된 projection과 trace가 연결돼야 한다.
+        // 이름 정규화를 우회하되 IR은 그대로인 명시 환경으로 metric 경계를 직접 검사한다.
+        let mut core = public_blank_with_font_text(source, 1, "A");
+        let environment = serde_json::json!({
+            "id":"metric-projection-trace-contract",
+            "substitutions": {source: source},
+            "trueTypeFaces": [source]
+        });
+        core.set_font_environment(Some(
+            rhwp::renderer::font_environment::FontEnvironment::from_json(&environment.to_string())
+                .unwrap(),
+        ))
+        .unwrap();
+        let trace: serde_json::Value = serde_json::from_str(
+            &core
+                .get_font_decision_trace_native(0, r#"{"maxCharacters":16}"#)
+                .unwrap(),
+        )
+        .unwrap();
+        let record = trace["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|record| record["source"]["character"] == "A")
+            .unwrap();
+        assert_eq!(record["layoutMetric"]["requestedFace"], source);
+        assert_eq!(record["layoutMetric"]["aliasResolvedFace"], target);
+        assert!(
+            record["layoutMetric"]["metricEntry"].is_number(),
+            "실제 metric entry를 관측해야 함"
+        );
+        let reported = record["provenance"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| entry["ruleId"] == rule["ruleId"]);
+        if source == target {
+            // D2Coding 등의 identity 보존 규칙은 별칭 변경이 아니다. 존재하지 않는
+            // alias step을 요구하지 않고 위에서 같은 face의 실제 metric 선택을 확인한다.
+            assert!(
+                !reported,
+                "identity mapping must not invent an alias transition"
+            );
+        } else {
+            assert!(reported, "metric trace {}", rule["ruleId"]);
+        }
         for bold in [false, true] {
             for italic in [false, true] {
                 let selected = find_metric(source, bold, italic).unwrap_or_else(|| {

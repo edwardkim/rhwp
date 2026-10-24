@@ -5,6 +5,99 @@ use crate::model::table::{Cell, Table};
 use crate::renderer::hwpunit_to_px;
 
 impl LayoutEngine {
+    /// 이어받은 병합 블록에서도 완전한 일반 칸의 선언 공간은 따로 남는다.
+    /// 같은 원본 행 사슬이 병합 상자를 닫고 이번 컷이 일반 칸 전체를 소유할 때만 인증한다.
+    pub(in crate::renderer::layout) fn stored_complete_block_row_minimum(
+        &self,
+        table: &Table,
+        block: (usize, usize),
+        row: usize,
+        start: &[usize],
+        end: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if start.is_empty() || !start.iter().any(|&unit| unit > 0) || !end.is_empty() {
+            return None;
+        }
+        let mut cells = Self::row_block_cells(table, block.0, block.1);
+        cells.sort_by_key(|cell| (cell.row, cell.col));
+        let mut minimum = 0.0_f64;
+        let mut owns_row = false;
+        for (index, cell) in cells
+            .iter()
+            .enumerate()
+            .filter(|(_, cell)| usize::from(cell.row) == row && cell.row_span == 1)
+        {
+            let units = self.cell_units(cell, table, styles);
+            if cell.height == 0
+                || cell.height > i32::MAX as u32
+                || !self.stored_plain_text_cell_frame(table, cell)
+                || !crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs)
+                || units.is_empty()
+                || start.get(index).copied().unwrap_or(0) != 0
+            {
+                return None;
+            }
+            let height = hwpunit_to_px(cell.height as i32, self.dpi);
+            let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
+            let content = self.cell_cut_visible_height(cell, table, styles, 0, units.len());
+            if content + top + bottom > height + hwpunit_to_px(2, self.dpi) {
+                return None;
+            }
+            minimum = minimum.max(height);
+            owns_row = true;
+        }
+        if !owns_row {
+            return None;
+        }
+        let raw = table.get_raw_row_heights();
+        let closed_chain = cells.iter().any(|cell| {
+            let first = usize::from(cell.row);
+            let limit = first + usize::from(cell.row_span);
+            cell.row_span > 1
+                && first <= row
+                && row < limit
+                && cell.height > 0
+                && cell.height <= i32::MAX as u32
+                && self.stored_plain_text_cell_frame(table, cell)
+                && raw.get(first..limit).is_some_and(|rows| {
+                    rows.iter()
+                        .all(|&height| height > 0 && height < 0x8000_0000)
+                        && rows.iter().map(|&height| i64::from(height)).sum::<i64>()
+                            + i64::from(table.cell_spacing) * (rows.len() - 1) as i64
+                            == i64::from(cell.height)
+                })
+        });
+        closed_chain.then_some(minimum)
+    }
+
+    /// 원본 일반 칸의 선언 최소는 내용 컷과 별개의 물리 공간이다.
+    /// 편집·재조판 또는 유효하지 않은 저장 줄은 같은 근거로 사용하지 않는다.
+    fn stored_independent_row_minimum(
+        &self,
+        table: &Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        table
+            .cells
+            .iter()
+            .filter(|cell| {
+                usize::from(cell.row) == row
+                    && cell.row_span == 1
+                    && cell.height > 0
+                    && cell.height <= i32::MAX as u32
+                    && self.stored_plain_text_cell_frame(table, cell)
+            })
+            .filter_map(|cell| {
+                let minimum = hwpunit_to_px(cell.height as i32, self.dpi);
+                let end = self.cell_units(cell, table, styles).len();
+                let content = self.cell_cut_visible_height(cell, table, styles, 0, end);
+                (minimum > content + hwpunit_to_px(2, self.dpi)).then_some(minimum)
+            })
+            .reduce(f64::max)
+    }
+
     /// 원본 일반 행의 물리 최소는 셀 선언이며, 여러 저장 프레임의 내용 합이 아니다.
     /// 병합 칸의 수용 원장이 따로 필요한 행은 이 일반 칸 계약에 포함하지 않는다.
     pub(crate) fn stored_ordinary_row_uses_declared_minimum(
@@ -207,7 +300,7 @@ impl LayoutEngine {
 
     // 문단 간 경계와 문단 내부의 원본 되감김·원점0 경계는 같은 유닛 컷을 소유한다.
     // 이미 출처를 확인한 생산 술어를 재사용하며 문단 간 리셋으로만 소비를 제한하지 않는다.
-    fn stored_ordinary_row_cut_has_boundary(
+    fn stored_ordinary_row_cut_has_physical_frame(
         &self,
         table: &Table,
         row: usize,
@@ -217,6 +310,54 @@ impl LayoutEngine {
     ) -> bool {
         self.row_cut_ends_at_original_plain_text_reset(table, row, start, end, styles)
             || self.row_cut_ends_at_saved_zero_origin_frame(table, row, start, end, styles)
+            // 실제 용량에서 나눈 진행 줄도 독립 선언 최소를 소유한다.
+            // 내용이 앞뒤에 남는 컷만 해당하며, 완료한 원본에 빈 꼬리를 만들지 않는다.
+            || (end
+                .iter()
+                .enumerate()
+                .any(|(index, &to)| to > start.get(index).copied().unwrap_or(0))
+                && !self.row_cut_consumes_all_ordinary_units(table, row, end, styles)
+                && self
+                    .stored_independent_row_minimum(table, row, styles)
+                    .is_some())
+    }
+
+    /// 단일 칸의 두 원본 물리 프레임이 후속 저장 원점을 함께 닫는다.
+    /// 마지막 줄간격보다 큰 빈 부분도 이 독립 종료식으로 인증할 수 있다.
+    pub(crate) fn stored_single_cell_two_frame_opening(
+        &self,
+        host: &crate::model::paragraph::Paragraph,
+        successor: &crate::model::paragraph::Paragraph,
+        table: &Table,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let profile = self.profile.get();
+        let [cell] = table.cells.as_slice() else {
+            return None;
+        };
+        let [end] = cut else {
+            return None;
+        };
+        if profile.session_edited()
+            || !(profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+            || crate::renderer::float_placement::stored_two_frame_successor_origin_hu(
+                table, successor,
+            )
+            .is_none()
+            || crate::renderer::float_placement::stored_single_cell_closing_frame_height(
+                host, successor, table, self.dpi,
+            )
+            .is_none()
+            || !self.cell_unit_opens_stored_page_frame(cell, table, styles, *end)
+        {
+            return None;
+        }
+        Some(hwpunit_to_px(table.common.height as i32, self.dpi))
     }
 
     /// 저장 쪽 경계에서 선택한 유닛을 실제 마지막 행 상자 안에 놓는다.
@@ -232,7 +373,7 @@ impl LayoutEngine {
         let cells = self.ordinary_row_cells_for_cut(table, row, end, styles)?;
         if !start.is_empty()
             || end.len() != cells.len()
-            || !(self.stored_ordinary_row_cut_has_boundary(table, row, start, end, styles)
+            || !(self.stored_ordinary_row_cut_has_physical_frame(table, row, start, end, styles)
                 || self.row_cut_consumes_all_ordinary_units(table, row, end, styles))
             || !self.row_cut_remaining_is_single_stored_frame(table, row, end, None, styles)
         {
@@ -248,6 +389,26 @@ impl LayoutEngine {
         (available.is_finite() && available >= content).then_some(full.min(available).max(content))
     }
 
+    /// 내용 완료 행도 수용 상자가 독립 최소보다 작으면 같은 행의 물리 컷이다.
+    /// 완전 소비 유닛을 명시해 다음 조각이 내용 대신 남은 빈 상자만 이어받는다.
+    /// 줄 전진 또는 쪽 끝에서 흡수하는 작은 꼬리는 기존 잔여 계약이 제외한다.
+    pub(crate) fn stored_complete_row_physical_tail_cut(
+        &self,
+        table: &Table,
+        row: usize,
+        accepted: f64,
+        styles: &ResolvedStyleSet,
+    ) -> Option<Vec<usize>> {
+        let cut: Vec<_> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .map(|index| self.cell_units(&table.cells[index], table, styles).len())
+            .collect();
+        let remaining =
+            self.stored_ordinary_row_remainder(table, row, &cut, accepted, None, styles)?;
+        (!self.stored_complete_row_tail_is_line_advance(table, row, &cut, remaining, styles))
+            .then_some(cut)
+    }
+
     /// 같은 원본 또는 이어받은 상자에서 이미 수용한 공간을 한 번만 차감한다.
     pub(crate) fn stored_ordinary_row_remainder(
         &self,
@@ -261,7 +422,7 @@ impl LayoutEngine {
         let cells = self.ordinary_row_cells_for_cut(table, row, cut, styles)?;
         if cut.len() != cells.len()
             || !self.row_cut_remaining_is_single_stored_frame(table, row, cut, None, styles)
-            || !(self.stored_ordinary_row_cut_has_boundary(table, row, &[], cut, styles)
+            || !(self.stored_ordinary_row_cut_has_physical_frame(table, row, &[], cut, styles)
                 || self.stored_single_line_row_is_fragmentable(table, row, styles)
                 || carried.is_some()
                 || self
@@ -441,8 +602,13 @@ impl LayoutEngine {
                     })
                 });
                 !(page_origin_is_shared && has_page_owner)
-                    && (self.stored_ordinary_row_cut_has_boundary(table, row, &[], cut, styles)
-                        || self.stored_single_line_row_is_fragmentable(table, row, styles)
+                    && (self.stored_ordinary_row_cut_has_physical_frame(
+                        table,
+                        row,
+                        &[],
+                        cut,
+                        styles,
+                    ) || self.stored_single_line_row_is_fragmentable(table, row, styles)
                         || self.row_cut_consumes_all_ordinary_units(table, row, cut, styles))
             })
     }

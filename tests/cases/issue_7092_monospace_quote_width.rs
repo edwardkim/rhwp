@@ -87,7 +87,15 @@ fn advances_for(font: &str, samples: &[(&str, u32)]) -> Vec<f64> {
         out.extend(
             quote_advances(sample, *pages)
                 .into_iter()
-                .filter(|(f, _)| f == font)
+                // paint의 CSS 대체 목록은 원본 face 식별자를 대체하지 않는다.
+                // 첫 family로 원본을 선택하고, 아래 전진폭 관계는 그대로 검사한다.
+                .filter(|(family, _)| {
+                    family
+                        .split(',')
+                        .next()
+                        .map(|primary| primary.trim().trim_matches(['\"', '\'']))
+                        == Some(font)
+                })
                 .map(|(_, adv)| adv),
         );
     }

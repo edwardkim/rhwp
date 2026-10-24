@@ -776,6 +776,31 @@ export class HwpDocument {
         }
     }
     /**
+     * 실제 공급된 프로그램으로 측정·표시의 공통 환경을 계산한다.
+     * @param {string} json
+     * @returns {string}
+     */
+    buildFontEnvironmentFromAvailablePrograms(json) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_buildFontEnvironmentFromAvailablePrograms(this.__wbg_ptr, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * @returns {boolean}
      */
     cancelDeferredPagination() {
@@ -3918,6 +3943,22 @@ export class HwpDocument {
         }
     }
     /**
+     * 문서가 선언한 실제 프로그램 후보와 현재 환경을 호스트에 전달한다.
+     * @returns {string}
+     */
+    getDocumentFontSelectionPlan() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.hwpdocument_getDocumentFontSelectionPlan(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
      * 문서 정보를 JSON 문자열로 반환한다.
      * @returns {string}
      */
@@ -5745,6 +5786,22 @@ export class HwpDocument {
         let deferred1_1;
         try {
             const ret = wasm.hwpdocument_getPdfImportPolicy();
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Compile-time support of this artifact, queryable before opening a PDF.
+     * @returns {string}
+     */
+    static getPdfImportSupport() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.hwpdocument_getPdfImportSupport();
             deferred1_0 = ret[0];
             deferred1_1 = ret[1];
             return getStringFromWasm0(ret[0], ret[1]);
@@ -10636,7 +10693,7 @@ export class HwpDocument {
         wasm.hwpdocument_setFileName(this.__wbg_ptr, ptr0, len0);
     }
     /**
-     * Set an explicit layout/paint font environment. None restores the default.
+     * 명시적인 조판·표시 글꼴 환경을 설정한다. None이면 기본 환경으로 돌아간다.
      * @param {string | null} [json]
      * @returns {boolean}
      */
@@ -12030,6 +12087,29 @@ export function init_panic_hook() {
 }
 
 /**
+ * @param {Uint8Array} bytes
+ * @param {Float64Array} destination
+ * @param {Float64Array} matrix
+ * @param {string} profile
+ * @param {Float64Array | null} [paper_grid]
+ * @returns {any}
+ */
+export function prepareBitmapRaster(bytes, destination, matrix, profile, paper_grid) {
+    const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(destination, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passArrayF64ToWasm0(matrix, wasm.__wbindgen_malloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ptr3 = passStringToWasm0(profile, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len3 = WASM_VECTOR_LEN;
+    var ptr4 = isLikeNone(paper_grid) ? 0 : passArrayF64ToWasm0(paper_grid, wasm.__wbindgen_malloc);
+    var len4 = WASM_VECTOR_LEN;
+    const ret = wasm.prepareBitmapRaster(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4);
+    return ret;
+}
+
+/**
  * @returns {string}
  */
 export function version() {
@@ -12290,6 +12370,13 @@ function __wbg_get_imports() {
             const ret = arg0.length;
             return ret;
         },
+        __wbg_lineJoin_acc09cfa011cacd3: function(arg0, arg1) {
+            const ret = arg1.lineJoin;
+            const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+            getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+        },
         __wbg_lineTo_9495a068a4f48283: function(arg0, arg1, arg2) {
             arg0.lineTo(arg1, arg2);
         },
@@ -12330,6 +12417,10 @@ function __wbg_get_imports() {
         },
         __wbg_new_from_slice_3eea173078478cfe: function(arg0, arg1) {
             const ret = new Uint8Array(getArrayU8FromWasm0(arg0, arg1));
+            return ret;
+        },
+        __wbg_new_from_slice_f6e95bc2809a2b07: function(arg0, arg1) {
+            const ret = new Float64Array(getArrayF64FromWasm0(arg0, arg1));
             return ret;
         },
         __wbg_new_with_length_2ccc5dbfb4541247: function(arg0) {
@@ -12548,6 +12639,11 @@ function _assertClass(instance, klass) {
     }
 }
 
+function getArrayF64FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getFloat64ArrayMemory0().subarray(ptr / 8, ptr / 8 + len);
+}
+
 function getArrayU32FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return getUint32ArrayMemory0().subarray(ptr / 4, ptr / 4 + len);
@@ -12569,6 +12665,14 @@ function getDataViewMemory0() {
         cachedDataViewMemory0 = new DataView(wasm.memory.buffer);
     }
     return cachedDataViewMemory0;
+}
+
+let cachedFloat64ArrayMemory0 = null;
+function getFloat64ArrayMemory0() {
+    if (cachedFloat64ArrayMemory0 === null || cachedFloat64ArrayMemory0.byteLength === 0) {
+        cachedFloat64ArrayMemory0 = new Float64Array(wasm.memory.buffer);
+    }
+    return cachedFloat64ArrayMemory0;
 }
 
 function getStringFromWasm0(ptr, len) {
@@ -12615,6 +12719,13 @@ function isLikeNone(x) {
 function passArray8ToWasm0(arg, malloc) {
     const ptr = malloc(arg.length * 1, 1) >>> 0;
     getUint8ArrayMemory0().set(arg, ptr / 1);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
+function passArrayF64ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 8, 8) >>> 0;
+    getFloat64ArrayMemory0().set(arg, ptr / 8);
     WASM_VECTOR_LEN = arg.length;
     return ptr;
 }
@@ -12697,6 +12808,7 @@ function __wbg_finalize_init(instance, module) {
     wasm = instance.exports;
     wasmModule = module;
     cachedDataViewMemory0 = null;
+    cachedFloat64ArrayMemory0 = null;
     cachedUint32ArrayMemory0 = null;
     cachedUint8ArrayMemory0 = null;
     cachedUint8ClampedArrayMemory0 = null;

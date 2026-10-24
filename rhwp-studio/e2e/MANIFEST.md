@@ -14,6 +14,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 
 | 파일 | 분류 | 상태 | 용도 | 샘플 | 배선 | 비고 |
 |------|------|------|------|------|------|------|
+| `cell-target-issue8102.test.mjs` | 상시 | active | #8102 생성·클릭·키보드·undo 진입 선택 삭제, 다중 문단·중첩·인접 셀·invalid target | 편집 API 합성 | npm e2e:issue-8102 | fresh WASM·Studio 실제 입력 |
 | `automation-commands.test.mjs` | 상시 | active | studio 자동화 표면 — 커맨드 질의·실행·메뉴 모델·드리프트 가드·다이얼로그 정책·`insert:field` 매개변수 삽입 | — | npm e2e:automation |  |
 | `enter-caret-reveal-issue7486.test.mjs` | 상시 | active | #7486 본문 Enter 새 쪽의 DOM 캐럿·viewport 및 Undo/Redo, 100%/66% 배율·160/200/300% 줄간격 | 편집 API 합성 | npm e2e:enter-caret | 추가 입력 없이 layout 완료 경계 검사 |
 | `autosave-recovery.test.mjs` | 상시 | active | Task #1448 — 미저장 문서 자동 백업 복구 E2E | — | 수동 |  |
@@ -25,6 +26,10 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `canvas-metric-recovery.test.mjs` | 상시 | active | #7084 실제 CanvasView descriptor 오류의 1회 자동 복구·지속 오류 제한·오래된 view 거부·일반 오류 분리 | issue3587/c-form-labnote-001-stage11-filled.hwp/.hwpx | npm e2e:canvas-metric-recovery | 통제 오류 주입, 자연 발생 폰트 장애와 구분 |
 | `canvaskit-font-coverage.test.mjs` | 상시 | active | CanvasKit 번들 폰트와 exact TTC GlyphRun 등록/픽셀 replay 검증 | — | npm+CI |  |
 | `canvaskit-font-preparation-issue7688.test.mjs` | 상시 | active | #7688 명시 CanvasKit의 문서 글꼴 준비·Regular/Bold 실제 outline 선택·자원 실패 Canvas2D fallback | group-drawing-02.hwp, 번들 NotoSerifKR | npm e2e:issue-7688-fonts | software surface, 두 face 공급 순서와 screen/print 대조 |
+| `canvaskit-font-family-fallback-issue7445.test.mjs` | 상시 | active | #7445 선언 글꼴 후보의 glyph coverage·선택 순서·기본 face 소유·결측 진단 | 합성 LayerTree, 공개 NotoSansKR/Pretendard/NanumGothic | npm e2e:issue-7445-font-family | 실제 software CanvasKit의 screen/print를 독립 face 대조군과 비교 |
+| `footnote-marker-replay-contract.mjs` | 유틸 | active | 각주 표식의 저장 기준선과 기존 fallback 소비 계약 | 합성 footnoteMarker | 수동 | `renderer-contract.test.mjs`에서 간접 import |
+| `pattern-image-replay-api.mjs` | 유틸 | active | 반복 이미지 shader의 생성·소유·해제 계약용 API 모형 | 합성 pattern image | 수동 | `renderer-contract.test.mjs`에서 간접 import |
+| `middle-dot-canvas-paint.test.mjs` | 상시 | active | 가운뎃점의 실제 Canvas 원형 경로와 앞뒤 내용 소유 | k-water-rfp.hwp | npm e2e:middle-dot-canvas-paint | 원본 공개 WASM·Canvas paint 소비 검사 |
 | `canvaskit-cropped-contain.test.mjs` | 상시 | active | #7235 crop 이후 이미지 비율과 letterbox의 실제 CanvasKit replay 검사 | 합성 이미지 | 수동 | run-with-vite.mjs 경유 |
 | `glyph-outline-portable-geometry.test.mjs` | 상시 | active | #536 strict outline의 유효 좌표 replay와 f32 범위 초과 시 전체 TextRun fallback 픽셀 보존 | 합성 outline·TextRun | npm e2e:glyph-outline-portable-geometry | Chromium software CanvasKit, run-with-vite.mjs 경유 |
 | `issue-7442-nested-table-pointer.test.mjs` | 상시 | active | #7442 F5 선택 후 드래그·일반 hover/resize·Undo·블록 선택·외곽선 클릭 | basic/issue1994_behindtext_table_20200830.hwp | 수동 | fresh WASM 필수 |
@@ -133,7 +138,6 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `report-generator.mjs` | 유틸 | active | E2E 테스트 HTML 보고서 생성기 | — | 수동 |  |
 | `responsive.test.mjs` | 상시 | active | #6118 서식 바 경계·문단 더보기, #6138 도구 한 줄 스크롤, #6187 모든 너비·낮은 높이의 눈금자 표시와 grid 정렬 검증 (resize 프레임 공백 검증은 별도) | — | npm e2e:responsive + CI |  |
 | `ruler-document-switch.test.mjs` | 상시 | active | 문서를 바꿔 열면 눈금자가 새 문서의 쪽을 다시 그린다 (`document-view-loaded`) — 문단 여백이 같은 문서를 잇달아 열 때 앞 문서 눈금이 남는 회귀 가드 | 누름틀-2024.hwp · 253E164F57A1BC6934-empty.hwp | npm e2e:ruler-document-switch |  |
-| `ruler-resize.test.mjs` | 유틸 | active | #6187 resize 화면 판독 driver·snapshot helper; 시험지 실행 진입점 제거 | — | 수동 | legacy-name · 파일과 공통 helper 보존 |
 | `page-virtualization-image-failure.test.mjs` | 상시 | active | #6042 실제 Chromium에서 첫 embedded-image decode 실패를 주입하고 PageRenderer fallback 뒤 scheduler·image job·flow layer 정착을 검사 | test-image.hwp | 수동 |  |
 | `run-render-diff.mjs` | 유틸 | active | render-diff CI 러너 (canvas/pdf diff 오케스트레이션) | — | npm+CI |  |
 | `run-with-vite.mjs` | 유틸 | active | Vite dev server 기동 + 임의 명령 실행 공용 러너 (VITE_URL 주입, 종료 코드 전파) | — | npm e2e:undo-depth |  |
@@ -181,3 +185,5 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `host-font-provider-issue7403.test.mjs` | 상시 | active | #7403 호스트 face 선택·동명 교체·실패 복구·저장 이름/dirty 보존 | 새 문서·합성 TTC·번들 Noto·basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-7403 / e2e:issue-7403-canvas2d | 명시적 CanvasKit/Canvas2D, 측정·paint·SVG 경계 포함 |
 
 | `issue-7593-dyad-display.test.mjs` | 상시 | active | dyad와 복합 수식의 실제 표시·CanvasKit 누락 방지 | `samples/issue7593/` 2개 | 수동 | `VITE_URL=… node e2e/issue-7593-dyad-display.test.mjs --mode=headless`; Native/fresh WASM 전쪽90% 선행 확인; 실제 WASM 바이트·내용·replay 진단 |
+
+| `ruler-resize-support.mjs` | 유틸 | active | 시험지 실행을 제외한 ruler 상태 조회 보조 함수 | — | — | 회귀 실행 진입점 없음 |

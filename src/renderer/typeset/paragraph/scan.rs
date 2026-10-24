@@ -3,6 +3,7 @@
 //! 저장 줄/각주 fit 정책은 여기서 읽기 전용으로 평가한다. 페이지 전환과 결과 적용은
 //! 호출자의 책임이며, 기존 정책의 순서·상수·예외 의미는 변경하지 않는다.
 
+use super::super::notes::footnotes::boundary::NativeHwp5FootnoteBodyBoundary;
 use super::super::{
     is_synthetic_line_seg, line_seg_visible_bounds_px,
     para_has_only_treat_as_char_picture_or_shape, para_near_rowbreak_table,
@@ -49,7 +50,7 @@ pub(in crate::renderer::typeset) fn scan_lines(
     line_count: usize,
     avail_for_lines: f64,
     forced_page_break_line: Option<usize>,
-    native_hwp5_existing_footnote_reset_line: Option<usize>,
+    native_hwp5_existing_footnote_boundary: Option<NativeHwp5FootnoteBodyBoundary>,
     current_page_vpos_base: Option<i32>,
     is_tac_picture_stack: bool,
     page: &LineScanPage,
@@ -193,21 +194,18 @@ pub(in crate::renderer::typeset) fn scan_lines(
                         dpi,
                     )
             });
-            // native HWP5가 문단 중간 reset 직전의 연속 줄들을 기존 각주
-            // 바로 위에 저장한 경우에는, 40px safety margin 때문에 그 줄을
-            // 조기 이월하지 않는다. 일반 body height가 아니라 실제
-            // FootnoteArea top을 넘지 않는지, 현재 flow tail과 저장 top이
-            // 일치하는지, reset 전 범위인지까지 모두 확인한다. 표·그림·각주
-            // control과 reset 뒤의 줄은 종전 보수 budget을 유지한다.
+            // 저장 경계 조회가 확정한 같은 각주 영역을 줄 배치에서도 소비한다.
+            // 앞쪽 참조의 새 각주까지 포함한 높이이므로 별도 빠른 추정값으로
+            // 되돌리지 않는다. 저장 원점·현재 흐름과 경계 앞의 소속을 확인한다.
             let native_hwp5_reset_tail_fits_actual_footnote_boundary = page
                 .profile
                 .hwp5_stored_pagination_layout()
                 && page.col_count == 1
                 && page.current_footnote_height > 0.0
-                && para.controls.is_empty()
                 && page.has_items
-                && native_hwp5_existing_footnote_reset_line
-                    .is_some_and(|break_line| cursor_line < break_line && li < break_line)
+                && native_hwp5_existing_footnote_boundary.is_some_and(|boundary| {
+                    cursor_line < boundary.break_line && li < boundary.break_line
+                })
                 && para
                     .line_segs
                     .get(cursor_line)
@@ -217,18 +215,20 @@ pub(in crate::renderer::typeset) fn scan_lines(
                     .is_some_and(|bounds| {
                         saved_bounds_overlap_current_flow(bounds, page.current_height)
                     })
-                && saved_line_range_fits_body_tail(
-                    para,
-                    cursor_line,
-                    li + 1,
-                    (page.body_height
-                        - page.current_footnote_height
-                        - page.current_zone_y_offset
-                        - page.current_bottom_fixed_exclusion)
-                        .max(0.0),
-                    current_page_vpos_base.unwrap_or(0),
-                    dpi,
-                );
+                && native_hwp5_existing_footnote_boundary.is_some_and(|boundary| {
+                    saved_line_range_fits_body_tail(
+                        para,
+                        cursor_line,
+                        li + 1,
+                        (page.body_height
+                            - boundary.footnote_area_height
+                            - page.current_zone_y_offset
+                            - page.current_bottom_fixed_exclusion)
+                            .max(0.0),
+                        current_page_vpos_base.unwrap_or(0),
+                        dpi,
+                    )
+                });
             // [#4054] 각주 안전마진(40px = 3000 HWPUNIT)은 각주 영역과 본문 꼬리가
             // 겹칠 위험을 상수로 막는다. 그런데 저장 LineSeg 가 이 줄을 **각주 영역
             // 위**에 두고 있고 흐름 커서가 그 좌표보다 위에 있으면, 겹침은 rhwp·한글
@@ -311,7 +311,8 @@ pub(in crate::renderer::typeset) fn scan_lines(
 /// 원본 문단 내부 `vpos=0` reset은, reset 직전 fragment가 현재 flow 앵커에서
 /// 시작할 때에만 다음 물리 쪽의 시작을 뜻한다. 이 경우 reset 전 줄들은 저장된
 /// 현재 쪽 fragment의 owner이므로, 일반 줄 높이 예산만으로 중간 쪽으로 분리하지
-/// 않는다. 표·개체·다단·local cursor rewind는 이 계약 밖에 둔다.
+/// 않는다. 본문을 밀지 않는 용지 기준 그림은 앵커 줄의 쪽 소유를 공유한다.
+/// 흐름을 소비하는 개체·다단·로컬 원점 되감김은 이 계약 밖에 둔다.
 pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_flow(
     page: &LineScanPage,
     para: &Paragraph,
@@ -321,9 +322,31 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
     spacing_before: f64,
     dpi: f64,
 ) -> bool {
-    let only_bodyless_notes = !para.controls.is_empty() && para.controls.iter().all(|control| {
-        matches!(control, crate::model::control::Control::Footnote(note) if crate::renderer::stored_footnote_is_bodyless(note))
-    });
+    // 개체가 보이는지와 본문 흐름을 전진시키는지는 다르다. 용지 기준의
+    // 글 앞/뒤 그림은 앵커 줄의 소유 쪽에 등록되며 본문 줄의 저장 경계를 막지 않는다.
+    // 문단 기준 개체와 TAC·어울림·자리차지는 별도 흐름 배치 계약을 유지한다.
+    let only_bodyless_controls = !para.controls.is_empty()
+        && para.controls.iter().all(|control| {
+            use crate::model::{
+                control::Control,
+                shape::{TextWrap, VertRelTo},
+            };
+            let common = match control {
+                Control::Field(_) | Control::Hyperlink(_) => return true,
+                Control::Footnote(note) => {
+                    return crate::renderer::stored_footnote_is_bodyless(note);
+                }
+                Control::Picture(picture) => &picture.common,
+                Control::Shape(shape) => shape.common(),
+                _ => return false,
+            };
+            !common.treat_as_char
+                && matches!(common.vert_rel_to, VertRelTo::Paper)
+                && matches!(
+                    common.text_wrap,
+                    TextWrap::BehindText | TextWrap::InFrontOfText
+                )
+        });
     // A note or paragraph-relative floating picture whose marker belongs after
     // the stored page reset cannot change the control-free prefix's owner. Use the same codepoint space
     // as control_text_positions; LineSeg.text_start is an original UTF-16 slot.
@@ -393,6 +416,13 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
                 })
         })
         && para.controls.iter().all(|control| {
+            if matches!(
+                control,
+                crate::model::control::Control::Field(_)
+                    | crate::model::control::Control::Hyperlink(_)
+            ) {
+                return true;
+            }
             matches!(control,
             crate::model::control::Control::Table(table)
                 if !table.common.treat_as_char && table.common.allow_overlap
@@ -400,6 +430,59 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
                         | crate::model::shape::TextWrap::BehindText
                         | crate::model::shape::TextWrap::InFrontOfText))
         });
+    // 뒤 조각 텍스트 아래에서 그 쪽 안에 닫히는 그림은 앞 조각의 줄 소유를 바꾸지 않는다.
+    // 실제 컨트롤 배치는 마지막 문단 조각에 그림을 등록하므로 같은 저장 경계를 공유한다.
+    let continuation_pictures = para.line_segs.get(break_line).is_some_and(|first| {
+        if first.vertical_pos != 0 {
+            return false;
+        }
+        let mut previous_bottom = 0;
+        for line in &para.line_segs[break_line..] {
+            if is_synthetic_line_seg(line)
+                || line.line_height <= 0
+                || line.vertical_pos < previous_bottom
+            {
+                return false;
+            }
+            previous_bottom = line.vertical_pos.saturating_add(line.line_height);
+        }
+        para.controls
+            .iter()
+            .any(|control| matches!(control, crate::model::control::Control::Picture(_)))
+            && para.controls.iter().all(|control| {
+                use crate::model::{
+                    control::Control,
+                    shape::{TextWrap, VertAlign, VertRelTo},
+                };
+                match control {
+                    Control::Field(_) | Control::Hyperlink(_) => true,
+                    Control::Picture(picture) => {
+                        let common = &picture.common;
+                        let top = super::super::super::float_placement::signed_hwpunit(
+                            common.vertical_offset,
+                        );
+                        let end = crate::renderer::hwpunit_to_px(
+                            top.saturating_add(
+                                i32::from(common.margin.top) + i32::from(common.margin.bottom),
+                            ),
+                            dpi,
+                        ) + crate::renderer::composer::captioned_picture_height_px(
+                            picture, dpi,
+                        );
+                        !common.treat_as_char
+                            && common.flow_with_text
+                            && common.vert_rel_to == VertRelTo::Para
+                            && common.vert_align == VertAlign::Top
+                            && common.text_wrap == TextWrap::TopAndBottom
+                            && top >= previous_bottom
+                            && end <= page.body_height
+                    }
+                    _ => false,
+                }
+            })
+    });
+    // 저장 조각과 현재 흐름의 일치가 물리 경계를 입증한다. HWP3 유래라는
+    // 이유로 뒤 조각의 그림까지 요구하면 정상 본문의 쪽 재시작도 놓친다.
     if page.profile.session_edited()
         // 앞선 재조판 이력만으로 현재 저장 조각의 소유를 버리지 않는다.
         // 아래에서 현재 실제 원점과 저장 첫 줄의 일치, 편집되지 않은
@@ -412,10 +495,11 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
         || para.cell_format_vpos_dirty
         || page.col_count != 1
         || (!para.controls.is_empty()
-            && !only_bodyless_notes
+            && !only_bodyless_controls
             && !only_suffix_controls
             && !notes_owned_by_following_frame
-            && !stored_frame_reset)
+            && !stored_frame_reset
+            && !continuation_pictures)
         || start_line >= break_line
         || break_line >= para.line_segs.len()
     {

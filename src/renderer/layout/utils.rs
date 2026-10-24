@@ -309,7 +309,27 @@ pub(crate) fn extract_shape_transform(
         rotation: sa.rotation_angle as f64,
         horz_flip: sa.horz_flip,
         vert_flip: sa.vert_flip,
+        image_frame_ratio: None,
     }
+}
+
+/// Common은 회전 후 점유 프레임, current는 회전 전 표시 크기다.
+/// 기존 그림 레이아웃의 같은 source 계약을 paint에도 보존한다.
+pub(crate) fn extract_picture_transform(picture: &Picture) -> ShapeTransform {
+    let mut transform = extract_shape_transform(&picture.shape_attr);
+    let shape = &picture.shape_attr;
+    if shape.rotation_angle.rem_euclid(360) != 0
+        && shape.current_width > 0
+        && shape.current_height > 0
+        && picture.common.width > 0
+        && picture.common.height > 0
+    {
+        transform.image_frame_ratio = Some([
+            f64::from(shape.current_width) / f64::from(picture.common.width),
+            f64::from(shape.current_height) / f64::from(picture.common.height),
+        ]);
+    }
+    transform
 }
 
 pub(crate) fn drawing_to_shape_style(
@@ -486,6 +506,7 @@ pub(crate) fn drawing_to_line_style(drawing: &crate::model::shape::DrawingObjAtt
         dash,
         dash_pattern: None,
         line_type: line_render_type,
+        compound_component: false,
         start_arrow,
         end_arrow,
         start_arrow_size,

@@ -251,8 +251,12 @@ const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
     // 실패한 목차2쪽은98.09696%; 사용자 지정 문서 최저값 기준으로 이관.
     "pic-in-head-01.hwp",
     "pic-in-table-01.hwp",
-    // #7445: 이 통합 브랜치의 신규 겹침2건과 Native 전1쪽78.18921%를 이관한다.
-    "basic/KTX-003.hwp",
+    // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
+    "table_giant_cell_overfill.hwpx",
+    "issue5792/2700727_animal_facility_standards.hwpx",
+    "2025 행정업무운영 편람(최종).hwpx",
+    // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
+    "issue6035/cgmp_evaluation_table.hwpx",
     // #7445: 신규 겹침1건, Native 전10쪽 중8쪽 미달·최저0%; 다른 검사는 유지한다.
     "issue2439/issue2439_repeat_table_overlap.hwp",
     // #7445: 정확한 한컴2020 정본 전82쪽 중43쪽 미달, 최저14.15%; 6쪽 쪽번호 겹침.
@@ -269,6 +273,8 @@ const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
     "hwpx/156160455-social-pig-farm-income.hwpx",
     // #7445: 전31쪽 최저16.17%, 15쪽 본문 누락을 확인한 규제영향분석서.
     "issue3637/regulatory_impact_nested_table_escape.hwpx",
+    // #7749: 위 원본과 SHA-256이 같은 80550 경로. 사용자 요청으로 렌더링 회귀를 이관한다.
+    "issue6697/80550-agricultural-machinery-act-amendment.hwpx",
     // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
     "86712_regulatory_analysis.hwp",
     // #7445 동일 원문 피델리티 이관 및 사용자 지시: 렌더링 회귀에서 제외한다.
@@ -282,10 +288,6 @@ const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
     "issue6776/78494-virtual-convergence-industry-decree.hwpx",
     "한글문서파일형식_5.0_revision1.3.hwp",
     "rowbreak-problem-pages.hwpx",
-    "hwp3-sample16-hwp5-2022.hwp",
-    "hwp3-sample16-hwp5.hwp",
-    "hwp3-sample16-hwp5-2010.hwp",
-    "issue5941/1480000-201900698-native-neartop-reset.hwp",
     "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
     "issue6795/1341000-201100013-cyber-university-application.hwp",
     "task2319/20544835_jinan_apt_form.hwp",

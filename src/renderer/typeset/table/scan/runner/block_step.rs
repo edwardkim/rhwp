@@ -249,6 +249,17 @@ impl TypesetEngine {
                     &band_fill,
                 );
                 end_row = selected.end_row(&block_query, &block, blk_start_cut);
+                // 내용 컷이 들어가도 그림 소유 행의 실제 상자가 넘으면 앞 행만 수용한다.
+                // 첫 행은 기존 진행 보장 경로를 유지한다.
+                if r > cursor_row
+                    && selected
+                        .stored_picture_frame_height(&block_query, &block, blk_start_cut, end_row)
+                        .is_some_and(|height| height > budget)
+                {
+                    end_row = r;
+                    return false;
+                }
+
                 let complete_row_band = selected.complete_row_boundary_band(
                     &block_query,
                     &block,

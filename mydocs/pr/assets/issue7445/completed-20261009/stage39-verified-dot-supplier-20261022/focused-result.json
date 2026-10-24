@@ -1,0 +1,49 @@
+{
+  "command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "/Users/tsjang/rhwp/target/pr-review",
+    "--features",
+    "native-skia",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "--test",
+    "regression_suite_002",
+    "--test",
+    "regression_suite_005",
+    "--test",
+    "regression_suite_012",
+    "--test",
+    "regression_suite_023",
+    "--test",
+    "regression_suite_027",
+    "-E",
+    "test(/(^|::)issue_4068_reclassified_float_offset::/) or test(/(^|::)issue_4962_font_metric_coverage::/) or test(/(^|::)issue_7092_curly_quote_latin_slot::/) or test(/(^|::)issue_6802_cell_leader_fill_stored_line::/) or test(/(^|::)issue_7445_dash_leader_word_spacing::/) or test(/(^|::)issue_7445_original_font_program_ownership::/) or test(/(^|::)issue_7445_reference_font_slot_ownership::/)"
+  ],
+  "exitCode": 0,
+  "elapsedSeconds": 158.2728991508484,
+  "source": {
+    "parentHead": "e7b50eb8b0c731f676f26b7c4fdb42096a62a268",
+    "files": {
+      "src/renderer/font_metrics_data.rs": "81759c7ddbaa91f175e6cf34aa39be7157914fd87193ad95cf8e98f513ada65a",
+      "src/renderer/font_metrics_technical_symbols.rs": "cd362c8647f0973feddca64ddf23d38f16810d21663b32113bcc0a86cc3a7827"
+    },
+    "patchSha256": "38ad36756901de80c0d503709acbaeb38971dd2022866d90f2e25ddfc5b67ac9",
+    "cases": [
+      "issue_4068_reclassified_float_offset",
+      "issue_4962_font_metric_coverage",
+      "issue_7092_curly_quote_latin_slot",
+      "issue_6802_cell_leader_fill_stored_line",
+      "issue_7445_dash_leader_word_spacing",
+      "issue_7445_original_font_program_ownership",
+      "issue_7445_reference_font_slot_ownership"
+    ]
+  },
+  "logSha256": "8690fae3ea61c599af2b658d70df2e014f1b902089d1b1b5440175c932b482cf"
+}

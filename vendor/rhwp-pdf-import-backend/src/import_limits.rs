@@ -85,6 +85,8 @@ pub struct PdfImportLimits {
     pub stream_bytes: usize,
     /// Maximum requested bytes in one private codec scratch allocation.
     pub codec_allocation_bytes: usize,
+    /// Maximum cumulative work units in opted-in image decoders.
+    pub codec_work_units: usize,
     /// Cumulative decoded/copy/predictor bytes, including failed attempts.
     pub decoded_bytes: usize,
     /// Maximum number of filters in one pipeline.
@@ -129,6 +131,7 @@ impl Default for PdfImportLimits {
             input_bytes: DEFAULT_INPUT_BYTES,
             stream_bytes: 32 * 1024 * 1024,
             codec_allocation_bytes: 32 * 1024 * 1024,
+            codec_work_units: 1_000_000_000,
             decoded_bytes: 256 * 1024 * 1024,
             filters: 8,
             nesting: 16,
@@ -180,6 +183,8 @@ pub struct ImportBudgetSnapshot {
     pub decoded_bytes: usize,
     /// Cumulative private codec storage requested, including released blocks.
     pub codec_allocated_bytes: usize,
+    /// Work units consumed by opted-in image decoders, not CPU time.
+    pub codec_work_units: usize,
     /// Parsed object values charged by this request.
     pub parsed_objects: usize,
     /// Collection and xref entries charged by this request.
@@ -217,6 +222,7 @@ pub struct ImportBudget {
     span_limit: AtomicUsize,
     entry_limit: AtomicUsize,
     codec_allocated: AtomicUsize,
+    codec_work: AtomicUsize,
     objects: AtomicUsize,
     entries: AtomicUsize,
     operators: AtomicUsize,
@@ -247,6 +253,7 @@ impl ImportBudget {
             limits.input_bytes,
             limits.stream_bytes,
             limits.codec_allocation_bytes,
+            limits.codec_work_units,
             limits.decoded_bytes,
             limits.filters,
             limits.nesting,
@@ -278,6 +285,7 @@ impl ImportBudget {
             span_limit: AtomicUsize::new(limits.spans),
             entry_limit: AtomicUsize::new(limits.entries),
             codec_allocated: AtomicUsize::new(0),
+            codec_work: AtomicUsize::new(0),
             objects: AtomicUsize::new(0),
             entries: AtomicUsize::new(0),
             operators: AtomicUsize::new(0),
@@ -428,6 +436,7 @@ impl ImportBudget {
         ImportBudgetSnapshot {
             decoded_bytes: read(&self.decoded),
             codec_allocated_bytes: read(&self.codec_allocated),
+            codec_work_units: read(&self.codec_work),
             parsed_objects: read(&self.objects),
             collection_entries: read(&self.entries),
             operators: read(&self.operators),
@@ -505,6 +514,11 @@ impl ImportBudget {
         {
             *slot = Some(buffer);
         }
+    }
+
+    #[cfg(any(feature = "jbig2", feature = "jpeg2000"))]
+    pub(crate) fn charge_codec_work(&self, units: usize) -> Result<()> {
+        self.charge(&self.codec_work, units, self.limits.codec_work_units, "codec work units")
     }
 
     pub(crate) fn charge_codec_allocation(&self, amount: usize) -> Result<()> {

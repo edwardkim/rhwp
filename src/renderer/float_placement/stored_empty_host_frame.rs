@@ -6,7 +6,7 @@ use crate::model::{
     shape::{CommonObjAttr, HorzRelTo, TextWrap, VertAlign, VertRelTo},
     table::Table,
 };
-use crate::renderer::{hwpunit_to_px, px_to_hwpunit, stored_float_anchor};
+use crate::renderer::{hwpunit_to_px, px_to_hwpunit};
 
 use super::{is_para_topbottom_float, signed_hwpunit, ParagraphFloatFlow, ParagraphFloatPlacement};
 
@@ -268,10 +268,13 @@ pub(super) fn from_stored_ladder(
         return None;
     }
     // 점유 하단은 그림 원점이 아니라 다음 저장 줄이 닫는 전체 프레임이다.
-    // 비대칭 여백의 본체 원점도 기존 저장 앵커와 같은 규칙으로 읽는다.
+    // 닫힌 등식과 동일한 저장 출처를 사용해 실제 본체 윗변을 정한다.
+    // HWP5 앵커의 원점을 HWPX object frame의 위 여백으로 바꾸지 않는다.
+    // 저장 등식이 없는 기존 앵커는 이 경로에 들어오지 않는다.
     let table_top = origin
         + (i64::from(signed_hwpunit(table.common.vertical_offset))
-            + stored_float_anchor::stored_outer_box_table_top_hu(table)) as f64
+            + crate::renderer::stored_float_anchor::stored_outer_box_table_top_hu(table))
+            as f64
             * dpi
             / 7200.0;
     let occupied_bottom = origin + physical_hu as f64 * dpi / 7200.0;

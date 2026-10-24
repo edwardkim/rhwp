@@ -25,7 +25,11 @@ impl CanvasTextFont {
         let prefix = format!(
             "{}{}{:.3}px ",
             if style.italic { "italic " } else { "" },
-            if style.bold { "bold " } else { "" },
+            if style.bold && super::faux_bold_stroke_width(style, draw_size).is_none() {
+                "bold "
+            } else {
+                ""
+            },
             draw_size,
         );
         Self {

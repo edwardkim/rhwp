@@ -65,6 +65,9 @@ pub enum LayoutKind {
         axis_height: f64,
         /// 실제 수식 face의 괘선 두께. 출력 경로가 일반 MATH 비율로 덮어쓰지 않는다.
         rule_thickness: f64,
+        /// 피연산자의 등록 여백과 구분한 괘선의 수평 시작·끝. 모든 paint가 공유한다.
+        rule_start: f64,
+        rule_end: f64,
     },
     /// 위아래 배치 (분수선 없음)
     Atop {

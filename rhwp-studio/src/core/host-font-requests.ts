@@ -140,8 +140,10 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
       const style = op.type === 'footnoteMarker' ? { fontFamily: op.fontFamily } : op.style;
       const family = style?.fontFamily;
       if (!family) continue;
-      const record = resolveLocalFontChain(family, style);
-      if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+      for (const candidate of parseCssFontFamilyList(family)) {
+        const record = resolveRendererLocalFont(candidate, hostFontStyle(style));
+        if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+      }
       if ([...op.text].some(character => {
         const code = character.codePointAt(0) ?? 0;
         return code >= 0xf02b0 && code <= 0xf02b9;

@@ -29,3 +29,31 @@ pub(super) fn paint(
         ctx.stroke();
     }
 }
+
+pub(super) fn paint_onepoint(
+    ctx: &CanvasRenderingContext2d,
+    style: &crate::renderer::TextStyle,
+    font_size: f64,
+    x: f64,
+    y: f64,
+    stroke: bool,
+) -> bool {
+    let Some(ink) = super::super::render_tree::fullwidth_onepoint_ink(style, font_size) else {
+        return false;
+    };
+    ctx.begin_path();
+    let _ = ctx.ellipse(
+        x + ink.center_x,
+        y - ink.above_baseline,
+        ink.radius_x,
+        ink.radius_y,
+        0.0,
+        0.0,
+        std::f64::consts::TAU,
+    );
+    ctx.fill();
+    if stroke {
+        ctx.stroke();
+    }
+    true
+}

@@ -4942,6 +4942,7 @@ fn parse_shape_object(
             // [Task #1067] HWPX `<hc:pt>` 점들을 PolygonShape::points 로 매핑.
             // 누락 시 polygon path 가 빈 상태로 렌더링되어 도형 미표시 (rhwp-studio + 한컴 둘 다).
             points: polygon_points,
+            affine_edit_reference: None,
             raw_trailing: Vec::new(),
         }),
         b"curve" => ShapeObject::Curve(CurveShape {

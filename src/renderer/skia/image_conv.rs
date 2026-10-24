@@ -15,12 +15,18 @@ use crate::model::style::ImageFillMode;
 use crate::renderer::image_resolver::{detect_image_mime_type, grayscale_jpeg_bytes_to_png_bytes};
 
 const MAX_SVG_FRAGMENT_BYTES: usize = 4 * 1024 * 1024;
+// 완결된 WMF/EMF/EPS 그림은 내장 래스터를 data URI로 포함한다.
+// 조각과 별도 예산을 사용하며 EPS 변환기의 16MiB 출력 범위도 수용한다.
+// 조각 상한과 래스터 픽셀 상한은 유지한다.
+const MAX_SVG_DOCUMENT_BYTES: usize = 16 * 1024 * 1024;
 const MAX_SVG_RASTER_PIXELS: u64 = 67_108_864;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ImageSampling {
     filter_mode: FilterMode,
     mipmap_mode: MipmapMode,
+    profile: crate::paint::RenderProfile,
+    paper_grid: Option<crate::renderer::bitmap_raster::PrintPaperGrid>,
 }
 
 impl ImageSampling {
@@ -28,6 +34,8 @@ impl ImageSampling {
         Self {
             filter_mode: FilterMode::Nearest,
             mipmap_mode: MipmapMode::None,
+            profile: crate::paint::RenderProfile::Screen,
+            paper_grid: None,
         }
     }
 
@@ -35,6 +43,8 @@ impl ImageSampling {
         Self {
             filter_mode: FilterMode::Linear,
             mipmap_mode: MipmapMode::Linear,
+            profile: crate::paint::RenderProfile::Screen,
+            paper_grid: None,
         }
     }
 
@@ -42,7 +52,29 @@ impl ImageSampling {
         Self {
             filter_mode: FilterMode::Linear,
             mipmap_mode: MipmapMode::None,
+            profile: crate::paint::RenderProfile::Screen,
+            paper_grid: None,
         }
+    }
+
+    pub fn for_profile(profile: crate::paint::RenderProfile) -> Self {
+        Self {
+            profile,
+            ..Self::linear()
+        }
+    }
+
+    pub(super) fn with_profile(mut self, profile: crate::paint::RenderProfile) -> Self {
+        self.profile = profile;
+        self
+    }
+
+    pub(super) fn with_paper_grid(
+        mut self,
+        grid: Option<crate::renderer::bitmap_raster::PrintPaperGrid>,
+    ) -> Self {
+        self.paper_grid = grid;
+        self
     }
 
     pub(super) fn options(self) -> SamplingOptions {
@@ -229,13 +261,14 @@ pub(super) fn draw_image_bytes(
     let tone = (brightness != 0 || contrast != 0).then_some((effect, brightness, contrast));
     let key = byte_key(b"decoded-image", bytes, &(svg_size, binary_effect, tone));
     let cached = cache.get(key, binary_effect.is_some());
-    let (image, binary_preprocessed) = if let Some(CachedImageResource::Decoded {
+    let (image, binary_preprocessed, encoded) = if let Some(CachedImageResource::Decoded {
         image,
+        encoded,
         binary_preprocessed,
         ..
     }) = cached
     {
-        (image, binary_preprocessed)
+        (image, binary_preprocessed, encoded)
     } else {
         let svg_raster = svg_size.and_then(|(width, height, scale)| {
             rasterize_svg_document_to_png(bytes, width, height, scale)
@@ -278,7 +311,10 @@ pub(super) fn draw_image_bytes(
         // raster-specific dither cannot leak to a differently sized placement.
         let binary_png = binary_effect.and_then(|effect| binary_effect_png(encoded_bytes, effect));
         let encoded_bytes = binary_png.as_deref().unwrap_or(encoded_bytes);
-        let Some(image) = Image::from_encoded(Data::new_copy(encoded_bytes)) else {
+        // 디코더와 캐시가 같은 immutable Data를 공유한다. 캐시 hit도 실제
+        // 정규화·전처리된 바이트를 전달해 원본/색조 전 바이트로 되돌리지 않는다.
+        let encoded = Data::new_copy(encoded_bytes);
+        let Some(image) = Image::from_encoded(encoded.clone()) else {
             if binary_effect.is_some() {
                 cache.record_preprocessing(None);
             }
@@ -301,13 +337,14 @@ pub(super) fn draw_image_bytes(
                 key,
                 CachedImageResource::Decoded {
                     image: image.clone(),
+                    encoded: encoded.clone(),
                     binary_requested: binary_effect.is_some(),
                     binary_preprocessed: binary_png.is_some(),
                 },
                 cost,
             );
         }
-        (image, binary_png.is_some())
+        (image, binary_png.is_some(), encoded)
     };
 
     // Interpolation after source-pixel thresholding would reintroduce gray
@@ -408,14 +445,60 @@ pub(super) fn draw_image_bytes(
             sampling
         } else {
             match interpolation {
-                Some(false) => ImageSampling::nearest(),
-                Some(true) => ImageSampling::linear(),
+                Some(false) => ImageSampling::nearest().with_profile(sampling.profile),
+                Some(true) => ImageSampling::linear().with_profile(sampling.profile),
                 None => sampling,
             }
         };
+        let transform = canvas.local_to_device_as_3x3();
+        // SVG는 위에서 이미 실제 장치 크기로 raster했다. 이를 다시 bitmap
+        // 축소 경로에 넣으면 벡터의 가는 선까지 두 번 필터링하게 된다.
+        let prepared = (src.is_none()
+            && svg_size.is_none()
+            && !binary_preprocessed
+            && !matrix.has_perspective()
+            && sampling.filter_mode != FilterMode::Nearest)
+            .then(|| {
+                crate::renderer::bitmap_raster::prepare_bitmap(
+                    encoded.as_bytes(),
+                    crate::renderer::render_tree::BoundingBox::new(
+                        dst.x() as f64,
+                        dst.y() as f64,
+                        dst.width() as f64,
+                        dst.height() as f64,
+                    ),
+                    [
+                        transform.scale_x() as f64,
+                        transform.skew_y() as f64,
+                        transform.skew_x() as f64,
+                        transform.scale_y() as f64,
+                        transform.translate_x() as f64,
+                        transform.translate_y() as f64,
+                    ],
+                    sampling.profile,
+                    sampling.paper_grid,
+                )
+            })
+            .flatten();
+        let filtered = prepared
+            .as_ref()
+            .and_then(|prepared| Image::from_encoded(Data::new_copy(prepared.bytes.as_slice())));
+        let (image, dst) = match (filtered.as_ref(), prepared.as_ref()) {
+            (Some(image), Some(prepared)) => (
+                image,
+                Rect::from_xywh(
+                    prepared.bbox.x as f32,
+                    prepared.bbox.y as f32,
+                    prepared.bbox.width as f32,
+                    prepared.bbox.height as f32,
+                ),
+            ),
+            _ => (&image, dst),
+        };
         // 전체 원본의 축소에는 가는 선을 보존하는 저역 통과를 적용한다.
         // crop의 strict 경계와 binary·빠른 미리보기의 명시적 nearest를 유지한다.
-        let cubic = sampling.mipmap_mode == MipmapMode::Linear
+        let cubic = filtered.is_none()
+            && sampling.mipmap_mode == MipmapMode::Linear
             && src.is_none()
             && !binary_preprocessed
             && super::super::image_resolver::png_sampling::print_bitmap_reconstruction(bytes)
@@ -431,7 +514,8 @@ pub(super) fn draw_image_bytes(
                     f64::from(dst.height() * scale_y),
                 ),
             );
-        let reduced = (!cubic
+        let reduced = (filtered.is_none()
+            && !cubic
             && sampling.filter_mode != FilterMode::Nearest
             && src.is_none()
             && !binary_preprocessed
@@ -442,8 +526,10 @@ pub(super) fn draw_image_bytes(
                 || image.height() as f32 > dst.height() * scale_y))
             .then(|| image.with_default_mipmaps())
             .flatten();
-        let actual_image = reduced.as_ref().unwrap_or(&image);
-        let options = if cubic {
+        let actual_image = reduced.as_ref().unwrap_or(image);
+        let options = if filtered.is_some() {
+            SamplingOptions::new(FilterMode::Nearest, MipmapMode::None)
+        } else if cubic {
             SamplingOptions::from(CubicResampler::catmull_rom())
         } else if reduced.is_some() {
             SamplingOptions::new(FilterMode::Linear, MipmapMode::Linear)
@@ -676,7 +762,7 @@ fn rasterize_svg_document_to_png(
     raster_scale: f32,
 ) -> Option<Vec<u8>> {
     if bytes.is_empty()
-        || bytes.len() > MAX_SVG_FRAGMENT_BYTES
+        || bytes.len() > MAX_SVG_DOCUMENT_BYTES
         || !width.is_finite()
         || !height.is_finite()
         || !raster_scale.is_finite()

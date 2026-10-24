@@ -182,6 +182,8 @@ fn render_box(
             denom,
             axis_height,
             rule_thickness,
+            rule_start,
+            rule_end,
         } => {
             // 분자
             render_box(svg, numer, x, y, color, fs, italic, bold);
@@ -190,8 +192,8 @@ fn render_box(
             let line_thick = rule_thickness;
             svg.push_str(&format!(
                 "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
-                x + fs * 0.05, line_y,
-                x + lb.width - fs * 0.05, line_y,
+                x + rule_start, line_y,
+                x + rule_end, line_y,
                 color, line_thick,
             ));
             // 분모

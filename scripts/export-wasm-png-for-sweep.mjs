@@ -55,6 +55,53 @@ export function createSweepBrowserProfile(output, index) {
   return mkdtempSync(join(resolve(output), `chrome-worker-${index}-`));
 }
 
+// Print PNG는 투명 Canvas를 종이의 흰 배경에 합성한다.
+// ceil로 늘어난 마지막 픽셀의 투명 RGB를 검정 잉크로 해석하지 않게 한다.
+export function encodeCanvasOnWhitePaper(canvasId) {
+  const source = document.getElementById(canvasId);
+  const paper = document.createElement('canvas');
+  paper.width = source.width; paper.height = source.height;
+  const sourceContext = source.getContext('2d');
+  if (sourceContext.isContextLost?.()) throw Error('Canvas context가 유실되어 PNG를 내보낼 수 없습니다.');
+  // 실제 RGBA를 동기 readback한 뒤 흰 종이에 합성한다.
+  const pixels = sourceContext.getImageData(0, 0, source.width, source.height);
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    const alpha = pixels.data[i + 3];
+    if (alpha === 255) continue;
+    for (let channel = 0; channel < 3; channel++) {
+      pixels.data[i + channel] = Math.round((pixels.data[i + channel] * alpha + 255 * (255 - alpha)) / 255);
+    }
+    pixels.data[i + 3] = 255;
+  }
+  paper.getContext('2d', {alpha: false}).putImageData(pixels, 0, 0);
+  return paper.toDataURL('image/png').split(',')[1];
+}
+
+// getImageData 반복 뒤 Chrome이 readback 경로를 바꾸면 같은 paint 명령도
+// 단독/전쪽 캡처에서 다른 glyph raster가 된다. 첫 context부터 조건을 고정한다.
+// 이미 만든 context에는 뒤의 options가 무시되므로 실제 속성도 확인한다.
+export function preparePrintReadbackCanvas(canvas) {
+  const context = canvas.getContext('2d', {willReadFrequently: true});
+  const attributes = context?.getContextAttributes?.();
+  if (attributes?.willReadFrequently !== true) {
+    throw Error('Print 캡처 Canvas의 최초 2D context에 반복 readback 조건을 적용하지 못했습니다.');
+  }
+  return attributes;
+}
+
+// width/height를 다시 지정해도 Chrome의 이전 paint 이력까지 초기화되지는 않는다.
+// 글꼴·그림 준비는 문서/worker가 소유하고, 실제 쪽 캡처의 backing store만 새로 만든다.
+export async function createPrintCaptureCanvas(page) {
+  await page.evaluate(() => {
+    const previous = document.getElementById('page');
+    if (!(previous instanceof HTMLCanvasElement)) throw Error('Print 캡처 Canvas가 없습니다.');
+    const canvas = document.createElement('canvas');
+    canvas.id = previous.id;
+    previous.replaceWith(canvas);
+  });
+  return page.$eval('#page', preparePrintReadbackCanvas);
+}
+
 async function main() {
   const pkg = option('--pkg'), input = option('--input'), output = option('--out');
   const settings = JSON.parse(readFileSync(option('--options'), 'utf8'));
@@ -77,6 +124,7 @@ async function main() {
     ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
     ['/source', ['application/octet-stream', readFileSync(input)]],
     ['/font-registration.mjs', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-registration.mjs'))]],
+    ['/sweep-font-environment.js', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-environment.mjs'))]],
   ]);
   // 실제 공급 목록만 HTTP로 읽을 수 있다. 요청 URL을 파일시스템 경로로 변환하지 않는다.
   const fonts = catalogue.faces.map((face, index) => ({...face, url: `/font/${index}`}));
@@ -87,6 +135,8 @@ async function main() {
   });
   const require = createRequire(join(root, 'rhwp-studio/package.json'));
   let pageCount;
+  let environmentSignature;
+  let fontEnvironment;
   const browsers = new Set();
   const pageRecords = [];
   const workers = [];
@@ -105,13 +155,17 @@ async function main() {
         browsers.add(browser);
         const page = await browser.newPage();
         await page.goto(`http://127.0.0.1:${server.address().port}`);
+        const canvasContext = await page.$eval('#page', preparePrintReadbackCanvas);
         const info = await page.evaluate(async ({compat, environmentJson, fonts}) => {
           const module = await import('/rhwp.js');
           await module.default({module_or_path: '/rhwp_bg.wasm'});
           const doc = new module.HwpDocument(new Uint8Array(await (await fetch('/source')).arrayBuffer()));
           if (typeof doc.renderPageToCanvasFilteredWithProfile !== 'function') throw Error('Print Canvas API가 없는 이전 WASM입니다.');
           doc.setHangul2024Compat(compat === '2024');
-          if (environmentJson !== null) doc.setFontEnvironment(environmentJson);
+          const {applySweepFontEnvironment, loadSweepFontPrograms} = await import('/sweep-font-environment.js');
+          // 실제 프로그램을 준비하고 공통 선택을 적용한 다음에 첫 pageCount를 계산한다.
+          const fontEnvironment = await applySweepFontEnvironment(doc, environmentJson,
+            plan => loadSweepFontPrograms(plan, fonts));
           globalThis.sweepDocument = doc;
           globalThis.sweepRequestedFonts = new Set();
           globalThis.sweepImages = new Set();
@@ -143,8 +197,12 @@ async function main() {
             if (!response.ok) throw Error('PUA 공급 글꼴을 읽을 수 없습니다.');
             return response.arrayBuffer();
           });
-          return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts};
+          return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts, fontEnvironment};
         }, {compat: settings.compat, environmentJson, fonts});
+        const signature = JSON.stringify(info.fontEnvironment);
+        if (environmentSignature !== undefined && environmentSignature !== signature) throw Error('WASM 작업자의 실제 글꼴 환경이 다릅니다.');
+        environmentSignature = signature;
+        fontEnvironment = info.fontEnvironment;
         if (!Number.isInteger(info.pageCount) || info.pageCount < 1) throw Error('WASM 전체 쪽수가 올바르지 않습니다.');
         if (pageCount !== undefined && pageCount !== info.pageCount) throw Error('WASM 작업자 간 전체 쪽수가 다릅니다.');
         pageCount = info.pageCount;
@@ -231,10 +289,15 @@ async function main() {
             if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
             const bytes = await response.arrayBuffer();
             for (const family of selected) {
-              try { await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc, metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`)); }
+              // 실제 family 등록과 HFT 원본 윤곽 바인딩을 같은 helper가 소유한다.
+              let font;
+              try {
+                font = await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc, metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`));
+                if (font.family !== family) throw Error(`Canvas 글꼴의 등록 이름이 다릅니다: ${family} → ${font.family}`);
+              }
               catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
               supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}`);
-              loaded.push({family, sourceSha256: record.sourceSha256, sha256: record.sha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
+              loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
             }
           }
           await document.fonts.ready;
@@ -244,6 +307,7 @@ async function main() {
           return {requested: [...requested], loaded};
         }, {pages, fonts: workerFonts, scale: settings.scale});
         for (const number of pages) {
+          const captureCanvasContext = await createPrintCaptureCanvas(page);
           const result = await page.evaluate(async ({number, scale}) => {
             const doc = globalThis.sweepDocument, canvas = document.getElementById('page');
             for (let attempt = 0; attempt < 3; attempt++) {
@@ -254,9 +318,10 @@ async function main() {
               if (attempt === 2) throw Error('Canvas 그림 캐시가 안정되지 않아 PNG 캡처를 중단합니다.');
             }
             await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-            return {png: canvas.toDataURL('image/png').split(',')[1], width: canvas.width, height: canvas.height,
+            return {width: canvas.width, height: canvas.height,
                     tree: doc.getPageRenderTree(number - 1)};
           }, {number, scale: settings.scale});
+          result.png = await page.evaluate(encodeCanvasOnWhitePaper, 'page');
           const tree = JSON.parse(result.tree);
           if (!tree.type || !tree.bbox || !(result.width > 0 && result.height > 0)) throw Error(`p${number} Canvas 산출물 손상`);
           const bytes = Buffer.from(result.png, 'base64');
@@ -264,10 +329,11 @@ async function main() {
           const suffix = String(number).padStart(3, '0');
           writeFileSync(join(output, 'rhwp_png', `rhwp_${suffix}.png`), bytes);
           writeFileSync(join(output, 'render_tree', `render_tree_${suffix}.json`), result.tree);
-          pageRecords.push({page: number, pngSha256: sha(bytes), width: result.width, height: result.height});
+          pageRecords.push({page: number, pngSha256: sha(bytes), width: result.width, height: result.height,
+                            canvasContext: captureCanvasContext});
           console.log(`Canvas PNG p${suffix}: worker ${index + 1}`);
         }
-        workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts, browser: await browser.version()});
+        workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts, fontEnvironment: info.fontEnvironment, canvasContext, browser: await browser.version()});
         await page.evaluate(() => { globalThis.sweepDocument.free(); delete globalThis.sweepDocument; });
       } finally {
         if (browser) {
@@ -282,6 +348,9 @@ async function main() {
     if (pageRecords.length !== expected.length || new Set(pageRecords.map(p => p.page)).size !== expected.length) throw Error('WASM PNG 쪽 누락·중복');
     writeFileSync(join(output, 'wasm-export-complete.json'), JSON.stringify({
       pageCount, layoutGeneration: settings.compat, comparisonProfile: 'print', rasterBackend: 'wasm-canvas2d', protocolTimeoutMs: protocolTimeout,
+      pngBackground: 'opaque-white-print-paper',
+      captureCanvasPolicy: 'fresh-per-page-after-font-and-image-preparation',
+      fontEnvironment,
       pages: pageRecords.sort((a,b) => a.page-b.page), workers,
     }, null, 2));
   } finally {
@@ -290,5 +359,10 @@ async function main() {
   }
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  main().catch(error => { console.error(error.stack || error); process.exitCode = 1; });
+  // main이 모든 쪽의 hash 기록과 browser/server 종료를 마친 뒤에만 성공한다.
+  // 종료된 Chrome의 pipe handle이 Node를 붙잡아 완료된 캡처가 대기하지 않게 한다.
+  main().then(() => process.exit(0), error => {
+    console.error(error.stack || error);
+    process.exit(1);
+  });
 }

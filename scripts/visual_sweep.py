@@ -1150,6 +1150,18 @@ def review_gate_reason(gate: dict[str, object]) -> str:
     counts = gate.get("document_page_counts")
     if gate.get("page_count_mismatch") and isinstance(counts, dict):
         reasons.append(f"전체 쪽수 불일치: RHWP {counts.get('rhwp')}쪽 / PDF {counts.get('pdf')}쪽")
+    quality = gate.get("quality_regression")
+    if isinstance(quality, dict) and quality.get("status") == "re_review_required":
+        for check in quality.get("checks", []):
+            label = f"{check.get('contract')}/{check.get('condition', '')}"
+            if check.get("reason"):
+                reasons.append(f"{label}: {check['reason']}")
+            for loss in check.get("regressions", []):
+                reasons.append(f"{label} p{loss['page']}: {loss['drop_pp']}%p 하락")
+            if check.get("missing_pages"):
+                reasons.append(f"{label}: 미검증 쪽 {check['missing_pages']}")
+        if not quality.get("checks"):
+            reasons.append(f"품질 회귀 증거 오류: {quality.get('error', quality.get('reason'))}")
     return ", ".join(reasons) or "검증 지표 부족"
 
 
@@ -1484,6 +1496,7 @@ def write_target_status(
         native_metadata = load_json_object(native_metadata_path, "Native export")
         manifest["native_document_pages"] = native_metadata["pageCount"]
         manifest["native_export_metadata"] = safe_rel_str(root, native_metadata_path)
+    manifest["provenance"] = run_manifest["provenance"]
     write_json_atomic(base / "manifest.json", manifest)
     update_root_summary(out_root, manifest)
     return manifest

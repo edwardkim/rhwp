@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_METRIC_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_METRIC_INPUT_SHA256: &str =
-    "668129ddc73e3787dae29a48bb01151898e6c7bbc5e5799c038ca27d4325853d";
+    "973c76f7c6563021deaee513cf9b2e8949268aadaeb8809278056da0e902a6ce";
 pub(crate) const FONT_RULE_LAYOUT_METRIC_PROJECTION_SHA256: &str =
-    "b36c884e942ec501bde20a9dbf8f09fb06d2fed3638e06020a754fb7ad669ef8";
+    "fdca67b63b5f10b2f89fcf991e9d4d633461c1f1052dcc397884408af0e736ba";
 
 pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -1319,6 +1319,23 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
             "font-metric.a04310c5f53100889fc3",
         ],
     },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-metric.issue-7445.public-batang-name",
+        source_boundary_id: "rust-metric.metric-alias",
+        relation_type: "metric-surrogate",
+        decision_plane: "layout-metric",
+        source_face: Some("RHWP Public Batang"),
+        target_face_or_policy: "Batang",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: None,
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &["font-metric.edec2573883b7b4dc023"],
+    },
 ];
 
 #[rustfmt::skip]
@@ -1535,6 +1552,9 @@ pub(crate) fn find_font_rule_layout_metric(
         }
         "Arial Bold" => {
             Some(&FONT_RULE_LAYOUT_METRIC_RULES[69])
+        }
+        "RHWP Public Batang" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[70])
         }
         _ => None,
     }

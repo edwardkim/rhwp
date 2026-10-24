@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "contracts": [
+    {
+      "id": "pr8064-issue7642",
+      "source_head": "d7d4d2ea6ed427f2f3bc8b59a936a5f99aca852b",
+      "summary": "mydocs/pr/assets/issue7642/final_sweep_20261019/summary.tsv",
+      "summary_sha256": "14b4b5b0b13ed1fa15d92d820d2f37010773beae7dbbc6fe1e6dadfcd6aae685",
+      "conditions": 179,
+      "pages": 2082,
+      "backends": {
+        "native-skia": "native"
+      },
+      "measurement": {
+        "dpi": 96,
+        "radius_px": 2,
+        "profile": "print",
+        "method": "threshold_boundary_color_support_v1",
+        "pdf_policy": "pdfium_smooth_rgb_v1",
+        "pdf_version": "153.0.7999.0"
+      }
+    }
+  ]
+}

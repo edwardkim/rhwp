@@ -69,6 +69,7 @@ const webviewConfig = {
         "webview",
         "canvaskit-wasm-url.ts"
       ),
+      "@wasm": path.resolve(__dirname, "..", "pkg"),
       "canvaskit-wasm$": path.resolve(
         __dirname,
         "node_modules",
@@ -89,6 +90,11 @@ const webviewConfig = {
           loader: "ts-loader",
           options: { configFile: "tsconfig.webview.json" },
         },
+      },
+      {
+        test: /\.sksl$/,
+        resourceQuery: /raw/,
+        type: "asset/source",
       },
       {
         test: /\.wasm$/,
@@ -134,6 +140,7 @@ const webviewConfig = {
           "NotoSansMath-Regular.woff2",
           "NanumGothic-Regular.woff2", "NanumMyeongjo-Regular.woff2",
           "GowunBatang-Regular.woff2", "GowunDodum-Regular.woff2",
+          "RHWPPublicBatang-Regular.woff2",
         ].map(f => ({
           from: path.resolve(__dirname, "..", "assets", "fonts", f),
           to: path.resolve(__dirname, "dist", "media", "fonts", f),

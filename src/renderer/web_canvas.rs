@@ -95,9 +95,7 @@ use super::composer::{
     expand_pua_render_text_in_style, CharOverlapInfo,
 };
 #[cfg(target_arch = "wasm32")]
-use super::layout::{
-    forces_halfwidth_cjk_quote, forces_halfwidth_punct_paint, split_into_clusters,
-};
+use super::layout::split_into_clusters;
 
 #[cfg(target_arch = "wasm32")]
 mod hft_outline;
@@ -407,6 +405,8 @@ pub struct WebCanvasRenderer {
     hft_outline_fonts: Option<super::hft_outline::HftOutlineFonts>,
     hft_outline_enabled: bool,
     high_quality_images: bool,
+    render_profile: crate::paint::RenderProfile,
+    bitmap_paper_grid: Option<super::bitmap_raster::PrintPaperGrid>,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -438,6 +438,8 @@ impl WebCanvasRenderer {
             hft_outline_fonts: None,
             hft_outline_enabled: false,
             high_quality_images: false,
+            render_profile: crate::paint::RenderProfile::Screen,
+            bitmap_paper_grid: None,
         })
     }
 
@@ -503,6 +505,7 @@ impl WebCanvasRenderer {
 
     /// 렌더 트리를 Canvas에 렌더링
     pub fn render_tree(&mut self, tree: &PageRenderTree) {
+        self.render_profile = crate::paint::RenderProfile::Screen;
         self.render_node(&tree.root);
     }
 
@@ -512,6 +515,7 @@ impl WebCanvasRenderer {
             tree.profile,
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
         );
+        self.render_profile = tree.profile;
         self.hft_outline_enabled = matches!(
             tree.profile,
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
@@ -785,6 +789,21 @@ impl WebCanvasRenderer {
     }
 
     fn render_paint_op(&mut self, op: &PaintOp) {
+        assert!(
+            op.glyph_paint_transform_is_valid(),
+            "invalid glyph paint transform"
+        );
+        if let Some(t) = op.glyph_paint_transform() {
+            self.ctx.save();
+            let _ = self.ctx.transform(t.a, t.b, t.c, t.d, t.e, t.f);
+            self.render_paint_op_untransformed(op);
+            self.ctx.restore();
+        } else {
+            self.render_paint_op_untransformed(op);
+        }
+    }
+
+    fn render_paint_op_untransformed(&mut self, op: &PaintOp) {
         match op {
             PaintOp::PageBackground { .. } if !self.should_render_page_background() => {}
             PaintOp::PageBackground { bbox, background } => {
@@ -794,18 +813,25 @@ impl WebCanvasRenderer {
             | PaintOp::CharOverlap { bbox, run, .. }
             | PaintOp::TextControlMark { bbox, run, .. }
             | PaintOp::TabLeader { bbox, run, .. }
-            | PaintOp::TextDecoration { bbox, run, .. } => self.render_layer_text_visual(
-                bbox,
-                run,
-                text_visual_replay_role(op),
-                match op {
-                    PaintOp::TextDecoration {
-                        trim_trailing_spaces,
-                        ..
-                    } => *trim_trailing_spaces,
-                    _ => 0,
-                },
-            ),
+            | PaintOp::TextDecoration { bbox, run, .. } => {
+                let decoration_replay = op.decoration_replay();
+                let (bbox, run) = decoration_replay
+                    .as_ref()
+                    .map(|(bbox, run)| (bbox, run.as_ref()))
+                    .unwrap_or((bbox, run.as_ref()));
+                self.render_layer_text_visual(
+                    bbox,
+                    run,
+                    text_visual_replay_role(op),
+                    match op {
+                        PaintOp::TextDecoration {
+                            trim_trailing_spaces,
+                            ..
+                        } => *trim_trailing_spaces,
+                        _ => 0,
+                    },
+                );
+            }
             PaintOp::FootnoteMarker { bbox, marker } => {
                 self.render_footnote_marker(bbox, marker);
             }
@@ -978,7 +1004,7 @@ impl WebCanvasRenderer {
             self.ctx.restore();
         } else {
             self.draw_text_positioned(
-                run.display_or_text(),
+                run.metric_or_display_text(),
                 bbox.x,
                 bbox.y + run.baseline,
                 &run.style,
@@ -1057,6 +1083,10 @@ impl WebCanvasRenderer {
         restore_transform: bool,
     ) {
         self.open_shape_transform(&rect.transform, bbox);
+        let previous_join = self.ctx.line_join();
+        if rect.round_stroke_join {
+            self.ctx.set_line_join("round");
+        }
         self.draw_rect_with_gradient(
             bbox.x,
             bbox.y,
@@ -1066,6 +1096,7 @@ impl WebCanvasRenderer {
             &rect.style,
             rect.gradient.as_deref(),
         );
+        self.ctx.set_line_join(&previous_join);
         if restore_transform {
             self.close_shape_transform_if_needed(&rect.transform);
         }
@@ -1073,10 +1104,147 @@ impl WebCanvasRenderer {
 
     fn render_line(&mut self, bbox: &BoundingBox, line: &LineNode, restore_transform: bool) {
         self.open_shape_transform(&line.transform, bbox);
-        self.draw_line(line.x1, line.y1, line.x2, line.y2, &line.style);
+        // PageRenderTree 직결 경로도 LayerBuilder와 같은 순서·coverage를 소비한다.
+        // 이미 낮춘 PaintOp는 underpaint가 없으므로 한 번만 그린다.
+        for stroke in line.paint_strokes() {
+            let paint_width = stroke.style.dash.canvas_width(stroke.style.width);
+            let (x1, y1, x2, y2) = self
+                .ctx
+                .get_transform()
+                .map(|transform| {
+                    super::raster_stroke::raster_line_endpoints(
+                        &stroke,
+                        [
+                            transform.a(),
+                            transform.b(),
+                            transform.c(),
+                            transform.d(),
+                            transform.e(),
+                            transform.f(),
+                        ],
+                        self.render_profile,
+                        paint_width,
+                    )
+                })
+                .unwrap_or((stroke.x1, stroke.y1, stroke.x2, stroke.y2));
+            self.draw_line_with_resolved_width(x1, y1, x2, y2, &stroke.style, paint_width);
+        }
         if restore_transform {
             self.close_shape_transform_if_needed(&line.transform);
         }
+    }
+
+    fn draw_line_with_resolved_width(
+        &mut self,
+        x1: f64,
+        y1: f64,
+        x2: f64,
+        y2: f64,
+        style: &LineStyle,
+        width: f64,
+    ) {
+        let color = color_to_css(style.color);
+        let (lx1, ly1, lx2, ly2) = (x1, y1, x2, y2);
+        let dx = x2 - x1;
+        let dy = y2 - y1;
+        let line_len = dx.hypot(dy);
+
+        // 그림자
+        if let Some(ref shadow) = style.shadow {
+            let opacity = if shadow.alpha > 0 {
+                1.0 - (shadow.alpha as f64 / 255.0)
+            } else {
+                1.0
+            };
+            let r = shadow.color & 0xFF;
+            let g = (shadow.color >> 8) & 0xFF;
+            let b = (shadow.color >> 16) & 0xFF;
+            self.ctx
+                .set_shadow_color(&format!("rgba({},{},{},{:.2})", r, g, b, opacity));
+            self.ctx.set_shadow_offset_x(shadow.offset_x);
+            self.ctx.set_shadow_offset_y(shadow.offset_y);
+            self.ctx.set_shadow_blur(2.0);
+        }
+
+        self.ctx.set_stroke_style_str(&color);
+        self.set_line_dash(&style.dash);
+        if let Some(intervals) = &style.dash_pattern {
+            let pattern = js_sys::Array::new();
+            for value in intervals {
+                pattern.push(&JsValue::from_f64(*value));
+            }
+            let _ = self.ctx.set_line_dash(&pattern);
+        }
+
+        // 이중선/삼중선: SVG draw_multi_line과 동일한 오프셋 비율 방식
+        // (width_ratio, offset_ratio) — offset은 선 중심으로부터의 거리 비율
+        match style.line_type {
+            super::LineRenderType::Double
+            | super::LineRenderType::ThickThinDouble
+            | super::LineRenderType::ThinThickDouble
+            | super::LineRenderType::ThinThickThinTriple => {
+                let lines: Vec<(f64, f64)> = match style.line_type {
+                    super::LineRenderType::Double => {
+                        vec![(0.30, -0.35), (0.30, 0.35)]
+                    }
+                    super::LineRenderType::ThickThinDouble => {
+                        // 굵은선(위)-얇은선(아래)
+                        vec![(0.4, -0.30), (0.2, 0.40)]
+                    }
+                    super::LineRenderType::ThinThickDouble => {
+                        // 얇은선(위)-굵은선(아래)
+                        vec![(0.2, -0.40), (0.4, 0.30)]
+                    }
+                    super::LineRenderType::ThinThickThinTriple => {
+                        vec![(0.15, -0.425), (0.30, 0.0), (0.15, 0.425)]
+                    }
+                    _ => vec![],
+                };
+
+                let (nx, ny) = if line_len > 0.0 {
+                    (-dy / line_len, dx / line_len)
+                } else {
+                    (0.0, 1.0)
+                };
+
+                for (width_ratio, offset_ratio) in &lines {
+                    let lw = (width * width_ratio).max(0.3);
+                    let off = width * offset_ratio;
+                    let ox = nx * off;
+                    let oy = ny * off;
+                    self.ctx.set_line_width(lw);
+                    self.ctx.begin_path();
+                    self.ctx.move_to(lx1 + ox, ly1 + oy);
+                    self.ctx.line_to(lx2 + ox, ly2 + oy);
+                    self.ctx.stroke();
+                }
+            }
+            _ => {
+                // Single line
+                self.ctx.set_line_width(width);
+                self.ctx.begin_path();
+                self.ctx.move_to(lx1, ly1);
+                self.ctx.line_to(lx2, ly2);
+                self.ctx.stroke();
+            }
+        }
+
+        let _ = self.ctx.set_line_dash(&js_sys::Array::new());
+        self.ctx.set_line_cap("butt");
+
+        // 그림자 해제
+        if style.shadow.is_some() {
+            self.ctx.set_shadow_color("transparent");
+            self.ctx.set_shadow_offset_x(0.0);
+            self.ctx.set_shadow_offset_y(0.0);
+            self.ctx.set_shadow_blur(0.0);
+        }
+        draw_arrow_heads(
+            &self.ctx,
+            &super::arrow::line_heads((x1, y1, x2, y2), style),
+            &color,
+            width,
+        );
     }
 
     fn render_ellipse(
@@ -1229,7 +1397,7 @@ impl WebCanvasRenderer {
                 img.fill_mode,
                 img.original_size,
                 img.crop,
-                img.original_size_hu,
+                crate::renderer::image_resolver::resolved_image_crop_reference_size(img),
             );
             if combined_opacity < 1.0 {
                 self.ctx.set_global_alpha(1.0);
@@ -1611,17 +1779,6 @@ impl WebCanvasRenderer {
         let _ = self.ctx.set_line_dash(&pattern);
     }
 
-    /// HWP 각도(도) → Canvas linearGradient 좌표 변환
-    /// 사각형 (x, y, w, h) 기준으로 (x0, y0, x1, y1) 반환
-    /// [#6845] 그러데이션 축은 SVG 와 **같은 계산**을 쓴다.
-    ///
-    /// 종전에는 방향을 `(sin·w/2, cos·h/2)` 로 축별 배율해 가로세로비만큼 각도가 눕고
-    /// (SVG 의 `objectBoundingBox` 와 같은 왜곡), `cos` 부호가 뒤집혀 `angle=0` 의
-    /// 위아래가 반대였다. 두 렌더러가 규칙을 두 벌로 갖고 있던 것도 함께 없앤다.
-    fn angle_to_canvas_coords(angle: i16, x: f64, y: f64, w: f64, h: f64) -> (f64, f64, f64, f64) {
-        crate::renderer::linear_gradient_axis(angle, x, y, w, h)
-    }
-
     /// PatternFillInfo → Canvas createPattern으로 패턴 채우기 적용
     /// 오프스크린 캔버스에 6×6 타일 생성 후 반복 패턴으로 설정
     /// 반환값: true이면 패턴이 적용됨
@@ -1771,9 +1928,12 @@ impl WebCanvasRenderer {
         if grad.colors.len() < 2 {
             return false;
         }
+        if grad.gradient_type == 4 {
+            return self.apply_square_gradient_fill(grad, x, y, w, h);
+        }
 
         let canvas_grad = match grad.gradient_type {
-            2..=4 => {
+            2..=3 => {
                 // Radial / Conical / Square → radialGradient
                 let Some((cx, cy, r)) = super::gradient_geometry::radial_circle(
                     (x, y, w, h),
@@ -1796,7 +1956,8 @@ impl WebCanvasRenderer {
             }
             _ => {
                 // Linear (1 또는 기본값)
-                let (x0, y0, x1, y1) = Self::angle_to_canvas_coords(grad.angle, x, y, w, h);
+                let (x0, y0, x1, y1) =
+                    crate::renderer::linear_gradient_axis_for_fill(grad, x, y, w, h);
                 self.ctx.create_linear_gradient(x0, y0, x1, y1)
             }
         };
@@ -1808,6 +1969,126 @@ impl WebCanvasRenderer {
         }
 
         self.ctx.set_fill_style_canvas_gradient(&canvas_grad);
+        true
+    }
+
+    /// Canvas2D에는 사각 거리 shader가 없으므로 현재 물리 해상도의 제한된
+    /// 타일에 같은 max(|회전 x|, |회전 y|) 색 램프를 표집한다. 도형의 경로,
+    /// clip·회전·불투명도는 기존 소비자가 그대로 적용한다.
+    fn apply_square_gradient_fill(
+        &self,
+        grad: &GradientFillInfo,
+        x: f64,
+        y: f64,
+        w: f64,
+        h: f64,
+    ) -> bool {
+        let Some(document) = web_sys::window().and_then(|window| window.document()) else {
+            return false;
+        };
+        let Ok(transform) = self.ctx.get_transform() else {
+            return false;
+        };
+        let scale = transform
+            .a()
+            .hypot(transform.b())
+            .max(transform.c().hypot(transform.d()));
+        if ![x, y, w, h, scale].iter().all(|value| value.is_finite())
+            || w <= 0.0
+            || h <= 0.0
+            || scale <= 0.0
+        {
+            return false;
+        }
+        let pw = (w * scale).ceil();
+        let ph = (h * scale).ceil();
+        // 한 채우기에서 최대 16Mi 픽셀. 실패를 다른 거리 함수로 바꾸지 않는다.
+        if pw < 1.0 || ph < 1.0 || pw * ph > 16.0 * 1024.0 * 1024.0 {
+            return false;
+        }
+        let (pw, ph) = (pw as u32, ph as u32);
+        let (cx, cy, radius, cos, sin) = super::square_gradient_geometry(grad, x, y, w, h);
+        if !radius.is_finite() || radius <= 0.0 {
+            return false;
+        }
+        let (colors, stops) = super::linear_gradient_color_stops(grad, x, y, w, h);
+        let mut bytes = Vec::with_capacity(pw as usize * ph as usize * 4);
+        for row in 0..ph {
+            for col in 0..pw {
+                let dx = x + (f64::from(col) + 0.5) * w / f64::from(pw) - cx;
+                let dy = y + (f64::from(row) + 0.5) * h / f64::from(ph) - cy;
+                let distance = (dx * cos + dy * sin)
+                    .abs()
+                    .max((-dx * sin + dy * cos).abs())
+                    / radius;
+                let color = super::sample_ramp(&colors, &stops, distance.clamp(0.0, 1.0));
+                bytes.extend_from_slice(&[
+                    color as u8,
+                    (color >> 8) as u8,
+                    (color >> 16) as u8,
+                    255,
+                ]);
+            }
+        }
+        let Ok(image) = web_sys::ImageData::new_with_u8_clamped_array_and_sh(
+            wasm_bindgen::Clamped(&bytes),
+            pw,
+            ph,
+        ) else {
+            return false;
+        };
+        let Some(tile) = document
+            .create_element("canvas")
+            .ok()
+            .and_then(|element| element.dyn_into::<HtmlCanvasElement>().ok())
+        else {
+            return false;
+        };
+        tile.set_width(pw);
+        tile.set_height(ph);
+        let Some(ctx) = tile
+            .get_context("2d")
+            .ok()
+            .flatten()
+            .and_then(|ctx| ctx.dyn_into::<CanvasRenderingContext2d>().ok())
+        else {
+            return false;
+        };
+        if ctx.put_image_data(&image, 0.0, 0.0).is_err() {
+            return false;
+        }
+        let Some(pattern) = self
+            .ctx
+            .create_pattern_with_html_canvas_element(&tile, "no-repeat")
+            .ok()
+            .flatten()
+        else {
+            return false;
+        };
+        let matrix = js_sys::Object::new();
+        for (key, value) in [
+            ("a", w / f64::from(pw)),
+            ("d", h / f64::from(ph)),
+            ("e", x),
+            ("f", y),
+        ] {
+            if js_sys::Reflect::set(&matrix, &JsValue::from_str(key), &JsValue::from_f64(value))
+                .is_err()
+            {
+                return false;
+            }
+        }
+        let Some(set_transform) =
+            js_sys::Reflect::get(&pattern, &JsValue::from_str("setTransform"))
+                .ok()
+                .and_then(|method| method.dyn_into::<js_sys::Function>().ok())
+        else {
+            return false;
+        };
+        if set_transform.call1(&pattern, &matrix).is_err() {
+            return false;
+        }
+        self.ctx.set_fill_style_canvas_pattern(&pattern);
         true
     }
 
@@ -2213,6 +2494,19 @@ impl Renderer for WebCanvasRenderer {
         if self.scale != 1.0 {
             let _ = self.ctx.scale(self.scale, self.scale);
         }
+        self.bitmap_paper_grid = self.ctx.get_transform().ok().and_then(|matrix| {
+            super::bitmap_raster::PrintPaperGrid::new(
+                [width, height],
+                [
+                    matrix.a(),
+                    matrix.b(),
+                    matrix.c(),
+                    matrix.d(),
+                    matrix.e(),
+                    matrix.f(),
+                ],
+            )
+        });
         if let Some(clip) = self.partial_clip {
             self.ctx.begin_path();
             self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
@@ -2247,7 +2541,8 @@ impl Renderer for WebCanvasRenderer {
     ) {
         // [Task #1067] inline 컨트롤 placeholder (U+FFFC OBJECT REPLACEMENT CHARACTER) skip.
         // svg.rs::draw_text 와 동일 정합.
-        let text: String = text.chars().filter(|&c| c != '\u{FFFC}').collect();
+        let metric_source: String = text.chars().filter(|&c| c != '\u{FFFC}').collect();
+        let text = metric_source.as_str();
         if text.is_empty() {
             return;
         }
@@ -2271,10 +2566,12 @@ impl Renderer for WebCanvasRenderer {
         let clusters = split_into_clusters(text);
 
         // 레이아웃 메트릭 기준으로 글자 위치 계산 (줄바꿈 결정과 동일한 메트릭 사용)
-        let char_positions = super::replay_positions_or_compute(text, style, layout_positions);
+        let metric_text = super::composer::display_projection_metric_text(&metric_source, text);
+        let char_positions =
+            super::replay_positions_or_compute(metric_text, style, layout_positions);
         // 글리프 폭은 커닝 전 advance에 맞춘다. 자리는 char_positions가 정한다.
         let fit_positions =
-            super::glyph_fit_positions(text, style, layout_positions, &char_positions);
+            super::glyph_fit_positions(metric_text, style, layout_positions, &char_positions);
 
         if !self.suppress_text_glyphs {
             // 형광펜 배경 (CharShape.shade_color 기반 — 편집기에서 적용한 형광펜)
@@ -2371,6 +2668,11 @@ impl Renderer for WebCanvasRenderer {
 
                     let ch = cluster_str.chars().next().unwrap_or(' ');
 
+                    if cluster_str == "․"
+                        && middle_dot::paint_onepoint(&self.ctx, style, font_size, char_x, y, false)
+                    {
+                        continue;
+                    }
                     if cluster_str == "\u{00B7}" {
                         middle_dot::paint(
                             &self.ctx,
@@ -2433,22 +2735,36 @@ impl Renderer for WebCanvasRenderer {
                         continue;
                     }
 
-                    // 반각 강제 구두점: 폰트 글리프가 전각이지만 반각 공간에 배치
-                    let needs_halfwidth_scale = (forces_halfwidth_punct_paint(style, ch)
-                        || forces_halfwidth_cjk_quote(
-                            &style.font_family,
-                            style.bold,
-                            style.italic,
-                            ch,
-                            style.font_size,
-                        ))
-                        && !has_ratio;
+                    // Same decision as layout: retain the compatibility paint
+                    // scale only while its narrow/halfwidth overlay owns advance.
+                    // Measured or verified natural glyphs must not be shrunk a
+                    // second time merely because they belong to a Unicode range.
+                    let needs_halfwidth_scale = !has_ratio
+                        // Candidate filter only; width ownership decides scaling.
+                        && matches!(ch, '\u{2018}'..='\u{2027}' | '\u{00B7}' | '\u{300C}' | '\u{300D}')
+                        && matches!(
+                            super::layout::char_width_decision(
+                                &[ch],
+                                &[1],
+                                0,
+                                style,
+                                cluster_str.chars().count() == 1,
+                            ).width_source,
+                            "metricNarrowPunctuationOverlay" | "metricHalfwidthPunctuationOverlay"
+                        );
 
                     if needs_halfwidth_scale {
                         self.ctx.save();
                         self.ctx.translate(char_x, y).unwrap_or(());
                         self.ctx.scale(0.5, 1.0).unwrap_or(());
-                        let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
+                        Self::fill_positioned_text(
+                            &self.ctx,
+                            cluster_str,
+                            0.0,
+                            0.0,
+                            style,
+                            font_size,
+                        );
                         self.ctx.restore();
                     } else {
                         let cluster_advance = {
@@ -2490,7 +2806,14 @@ impl Renderer for WebCanvasRenderer {
                             .scale(ratio * fit_scale.unwrap_or(1.0), 1.0)
                             .unwrap_or(());
                         if !self.draw_hft_outline(cluster_str, style, font_size) {
-                            let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
+                            Self::fill_positioned_text(
+                                &self.ctx,
+                                cluster_str,
+                                0.0,
+                                0.0,
+                                style,
+                                font_size,
+                            );
                         }
                         self.ctx.restore();
                     }
@@ -2670,109 +2993,13 @@ impl Renderer for WebCanvasRenderer {
     }
 
     fn draw_line(&mut self, x1: f64, y1: f64, x2: f64, y2: f64, style: &LineStyle) {
-        let color = color_to_css(style.color);
-        let width = style.dash.canvas_width(style.width);
-        let (lx1, ly1, lx2, ly2) = (x1, y1, x2, y2);
-        let dx = x2 - x1;
-        let dy = y2 - y1;
-        let line_len = dx.hypot(dy);
-
-        // 그림자
-        if let Some(ref shadow) = style.shadow {
-            let opacity = if shadow.alpha > 0 {
-                1.0 - (shadow.alpha as f64 / 255.0)
-            } else {
-                1.0
-            };
-            let r = shadow.color & 0xFF;
-            let g = (shadow.color >> 8) & 0xFF;
-            let b = (shadow.color >> 16) & 0xFF;
-            self.ctx
-                .set_shadow_color(&format!("rgba({},{},{},{:.2})", r, g, b, opacity));
-            self.ctx.set_shadow_offset_x(shadow.offset_x);
-            self.ctx.set_shadow_offset_y(shadow.offset_y);
-            self.ctx.set_shadow_blur(2.0);
-        }
-
-        self.ctx.set_stroke_style_str(&color);
-        self.ctx.set_line_width(width);
-        self.set_line_dash(&style.dash);
-        if let Some(intervals) = &style.dash_pattern {
-            let pattern = js_sys::Array::new();
-            for value in intervals {
-                pattern.push(&JsValue::from_f64(*value));
-            }
-            let _ = self.ctx.set_line_dash(&pattern);
-        }
-
-        // 이중선/삼중선: SVG draw_multi_line과 동일한 오프셋 비율 방식
-        // (width_ratio, offset_ratio) — offset은 선 중심으로부터의 거리 비율
-        match style.line_type {
-            super::LineRenderType::Double
-            | super::LineRenderType::ThickThinDouble
-            | super::LineRenderType::ThinThickDouble
-            | super::LineRenderType::ThinThickThinTriple => {
-                let lines: Vec<(f64, f64)> = match style.line_type {
-                    super::LineRenderType::Double => {
-                        vec![(0.30, -0.35), (0.30, 0.35)]
-                    }
-                    super::LineRenderType::ThickThinDouble => {
-                        // 굵은선(위)-얇은선(아래)
-                        vec![(0.4, -0.30), (0.2, 0.40)]
-                    }
-                    super::LineRenderType::ThinThickDouble => {
-                        // 얇은선(위)-굵은선(아래)
-                        vec![(0.2, -0.40), (0.4, 0.30)]
-                    }
-                    super::LineRenderType::ThinThickThinTriple => {
-                        vec![(0.15, -0.425), (0.30, 0.0), (0.15, 0.425)]
-                    }
-                    _ => vec![],
-                };
-
-                let (nx, ny) = if line_len > 0.0 {
-                    (-dy / line_len, dx / line_len)
-                } else {
-                    (0.0, 1.0)
-                };
-
-                for (width_ratio, offset_ratio) in &lines {
-                    let lw = (width * width_ratio).max(0.3);
-                    let off = width * offset_ratio;
-                    let ox = nx * off;
-                    let oy = ny * off;
-                    self.ctx.set_line_width(lw);
-                    self.ctx.begin_path();
-                    self.ctx.move_to(lx1 + ox, ly1 + oy);
-                    self.ctx.line_to(lx2 + ox, ly2 + oy);
-                    self.ctx.stroke();
-                }
-            }
-            _ => {
-                // Single line
-                self.ctx.set_line_width(width);
-                self.ctx.begin_path();
-                self.ctx.move_to(lx1, ly1);
-                self.ctx.line_to(lx2, ly2);
-                self.ctx.stroke();
-            }
-        }
-
-        let _ = self.ctx.set_line_dash(&js_sys::Array::new());
-        self.ctx.set_line_cap("butt");
-
-        // 그림자 해제
-        if style.shadow.is_some() {
-            self.ctx.set_shadow_color("transparent");
-            self.ctx.set_shadow_offset_x(0.0);
-            self.ctx.set_shadow_offset_y(0.0);
-            self.ctx.set_shadow_blur(0.0);
-        }
-        draw_arrow_heads(
-            &self.ctx,
-            &super::arrow::line_heads((x1, y1, x2, y2), style),
-            &color,
-            width,
+        self.draw_line_with_resolved_width(
+            x1,
+            y1,
+            x2,
+            y2,
+            style,
+            style.dash.canvas_width(style.width),
         );
     }
 
@@ -2782,6 +3009,32 @@ impl Renderer for WebCanvasRenderer {
 
     fn draw_image(&mut self, data: &[u8], x: f64, y: f64, w: f64, h: f64) {
         let _sampling = self.image_sampling_scope(data, None, w, h);
+        let prepared = self.ctx.get_transform().ok().and_then(|matrix| {
+            crate::renderer::bitmap_raster::prepare_bitmap(
+                data,
+                BoundingBox::new(x, y, w, h),
+                [
+                    matrix.a(),
+                    matrix.b(),
+                    matrix.c(),
+                    matrix.d(),
+                    matrix.e(),
+                    matrix.f(),
+                ],
+                self.render_profile,
+                self.bitmap_paper_grid,
+            )
+        });
+        let (data, x, y, w, h) = match prepared.as_ref() {
+            Some(prepared) => (
+                prepared.bytes.as_slice(),
+                prepared.bbox.x,
+                prepared.bbox.y,
+                prepared.bbox.width,
+                prepared.bbox.height,
+            ),
+            None => (data, x, y, w, h),
+        };
         let key = hash_bytes(data);
 
         let decoded = DECODED_CANVAS_CACHE.with(|cache| {
@@ -2961,6 +3214,16 @@ impl WebCanvasRenderer {
         dw: f64,
         dh: f64,
     ) {
+        // None/Zoom도 잘리지 않은 전체 source를 선택할 수 있다. 이 경우
+        // 같은 draw_image 경로를 사용해 Native와 한 번만 축소한 결과를 공유한다.
+        if let Some((width, height)) =
+            crate::renderer::image_resolver::render_image_dimensions(data)
+        {
+            if sx == 0.0 && sy == 0.0 && sw == width && sh == height {
+                self.draw_image(data, dx, dy, dw, dh);
+                return;
+            }
+        }
         let _sampling = self.image_sampling_scope(data, Some((sw, sh)), dw, dh);
         let key = hash_bytes(data);
 
@@ -3005,6 +3268,24 @@ impl WebCanvasRenderer {
         self.draw_image(data, dx, dy, dw, dh);
     }
 
+    fn fill_positioned_text(
+        ctx: &web_sys::CanvasRenderingContext2d,
+        text: &str,
+        x: f64,
+        y: f64,
+        style: &TextStyle,
+        font_size: f64,
+    ) {
+        let _ = ctx.fill_text(text, x, y);
+        if let Some(width) = super::faux_bold_stroke_width(style, font_size) {
+            ctx.save();
+            ctx.set_stroke_style_str(&color_to_css(style.color));
+            ctx.set_line_width(width);
+            let _ = ctx.stroke_text(text, x, y);
+            ctx.restore();
+        }
+    }
+
     /// 텍스트 변형 효과 렌더링 (외곽선/그림자/양각/음각)
     fn draw_text_with_effects(
         &self,
@@ -3030,9 +3311,15 @@ impl WebCanvasRenderer {
                            stroke_color: &str,
                            line_width: f64| {
             ctx.set_fill_style_str(fill_color);
-            if stroke {
-                ctx.set_stroke_style_str(stroke_color);
-                ctx.set_line_width(line_width);
+            let faux_width = super::faux_bold_stroke_width(style, font_size);
+            let paint_stroke = stroke || faux_width.is_some();
+            if paint_stroke {
+                ctx.set_stroke_style_str(if stroke { stroke_color } else { fill_color });
+                ctx.set_line_width(if stroke {
+                    line_width
+                } else {
+                    faux_width.unwrap_or(0.0)
+                });
             }
             for (char_idx, cluster_str) in clusters {
                 let cs: &str = cluster_str;
@@ -3064,6 +3351,11 @@ impl WebCanvasRenderer {
                 let char_x = x + char_positions[*char_idx] + dx;
                 let char_y = y + dy;
 
+                if cs == "․"
+                    && middle_dot::paint_onepoint(ctx, style, font_size, char_x, char_y, stroke)
+                {
+                    continue;
+                }
                 if cs == "\u{00B7}" {
                     middle_dot::paint(
                         ctx,
@@ -3082,13 +3374,13 @@ impl WebCanvasRenderer {
                     ctx.translate(char_x, char_y).unwrap_or(());
                     ctx.scale(ratio, 1.0).unwrap_or(());
                     let _ = ctx.fill_text(cs, 0.0, 0.0);
-                    if stroke {
+                    if paint_stroke {
                         let _ = ctx.stroke_text(cs, 0.0, 0.0);
                     }
                     ctx.restore();
                 } else {
                     let _ = ctx.fill_text(cs, char_x, char_y);
-                    if stroke {
+                    if paint_stroke {
                         let _ = ctx.stroke_text(cs, char_x, char_y);
                     }
                 }

@@ -202,7 +202,7 @@ pub(super) fn inline_resource_estimate(node: &LayerNode, scale: f32) -> usize {
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
                     let payload = match op {
-                        PaintOp::GlyphOutline { bbox, outline } => {
+                        PaintOp::GlyphOutline { bbox, outline, .. } => {
                             if let Some(graph) = outline
                                 .color_layers
                                 .as_ref()
@@ -325,6 +325,7 @@ pub(super) struct ReplayCacheContext<'a> {
     pub retained_resource_estimate: usize,
     pub policy: ReplayPolicy,
     pub raster_target: bool,
+    pub bitmap_paper_grid: Option<crate::renderer::bitmap_raster::PrintPaperGrid>,
     pub diagnostics: &'a RefCell<ReplayDiagnostics>,
 }
 
@@ -363,6 +364,7 @@ impl<'a> ReplayCacheContext<'a> {
                 .saturating_add(svg_estimate),
             policy: ReplayPolicy::new(tree.profile),
             raster_target,
+            bitmap_paper_grid: None,
             diagnostics,
         }
     }

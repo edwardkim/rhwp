@@ -141,10 +141,24 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         } else {
             None
         };
-        // Stored vpos spans cover line boxes, not the paragraph's outside
-        // spacing. Paint consumes these bands at the accepted flow origin.
+        // 원본 스냅샷이 있다는 사실과 사다리가 실제로 재구성됐다는 사실은
+        // 다르다. 저장 축이 그대로면 span 밖의 앞 간격을 fit에도 예약한다.
+        // 실제로 정규화한 소비 축만 수용한 흐름 원점에서 시작한다.
+        let ladder_rebuilt = para
+            .source_line_seg_vertical_pos
+            .as_ref()
+            .is_some_and(|source| {
+                source.len() != para.line_segs.len()
+                    || source
+                        .iter()
+                        .zip(&para.line_segs)
+                        .any(|(vpos, line)| *vpos != line.vertical_pos)
+            });
         vpos_metric
-            .map(|v| metric.min(spacing_before + v))
+            .map(|v| {
+                let outside_before = if ladder_rebuilt { 0.0 } else { spacing_before };
+                metric.min(outside_before + v)
+            })
             .unwrap_or(metric)
     };
 
@@ -221,9 +235,34 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
                         && line_spacings[index] == hwpunit_to_px(line.line_spacing, ctx.dpi())
                 })
         });
+    // 원본 줄/개체의 별도 점유가 없는 재조판 본문은 실제 줄 결과를 전달한다.
+    // 측정 메트릭과 다른 구성에는 추정 여백을 제거할 근거가 없다.
+    let computed_paragraph = recomposed
+        .as_ref()
+        .filter(|comp| {
+            crate::renderer::para_has_no_stored_line_segs(para)
+                && para.controls.is_empty()
+                && !para.stored_text_partition_is_dirty()
+                && !para.cell_format_vpos_dirty
+                && !comp.lines.is_empty()
+                && comp.lines.len() == line_heights.len()
+                && comp.lines.len() == line_spacings.len()
+                && comp
+                    .lines
+                    .iter()
+                    .zip(line_heights.iter().zip(&line_spacings))
+                    .all(|(line, (&height, &spacing))| {
+                        (hwpunit_to_px(line.line_height, ctx.dpi()) - height).abs()
+                            <= ctx.dpi() / 7200.0
+                            && (hwpunit_to_px(line.line_spacing, ctx.dpi()) - spacing).abs()
+                                <= ctx.dpi() / 7200.0
+                    })
+        })
+        .cloned();
     FormattedParagraph {
         stored_ladder_is_filler: ctx.uniform_filler_ladder(),
         exact_reflow_text_box,
+        computed_paragraph,
         tail_line_remaining_width,
         computed_host_lines,
         square_host_plan: None,

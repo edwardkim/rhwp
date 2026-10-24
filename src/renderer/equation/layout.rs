@@ -61,6 +61,7 @@ pub struct EqLayout {
     source_variable_glyphs: bool,
     /// 다른 수식 구조에 속하지 않는 정렬 묶음의 자체 leading.
     standalone_eqalign: bool,
+    legacy_hft_metrics: bool,
 }
 
 /// 비율 상수
@@ -125,6 +126,10 @@ pub(crate) const AXIS_HEIGHT: f64 = 0.25;
 /// 텍스트 기본 baseline 비율 (상단에서 baseline까지)
 const TEXT_BASELINE: f64 = 0.8;
 
+pub(super) fn legacy_logical_frame(value: &LayoutBox, fs: f64) -> Option<(f64, f64)> {
+    fraction_geometry::legacy_operand_frame(value, fs)
+}
+
 impl EqLayout {
     pub fn new(font_size: f64) -> Self {
         Self {
@@ -140,6 +145,7 @@ impl EqLayout {
             variable_bold: false,
             source_variable_glyphs: true,
             standalone_eqalign: false,
+            legacy_hft_metrics: false,
         }
     }
 
@@ -165,6 +171,7 @@ impl EqLayout {
             variable_bold: false,
             source_variable_glyphs: true,
             standalone_eqalign: false,
+            legacy_hft_metrics: super::uses_legacy_hft_metrics(equation),
         }
     }
 
@@ -175,6 +182,29 @@ impl EqLayout {
             ..*self
         };
         let result = root.layout_node(node, self.font_size);
+        if self.legacy_hft_metrics && result.width > 0.0 {
+            // The same HFT line/fraction frame owns both root paint and edited
+            // size. A display glyph's ink box is not the logical font line.
+            let (height, baseline) = legacy_logical_frame(&result, self.font_size)
+                .unwrap_or((result.height, result.baseline));
+            let mut body = result;
+            let inset = if standalone_cjk_fraction_owns_inset(node) {
+                0.0
+            } else {
+                self.font_size * 0.22
+            };
+            body.x = inset;
+            body.y = baseline - body.baseline;
+            return LayoutBox {
+                font_size: self.font_size,
+                x: 0.0,
+                y: 0.0,
+                width: body.width + inset,
+                height,
+                baseline,
+                kind: LayoutKind::Row(vec![body]),
+            };
+        }
         // 독립 글꼴 프레임을 측정과 표시의 공통 루트에 보존한다.
         // 자식의 기준선 상대 원점은 유지하며 빈 수식을 글줄로 바꾸지 않는다.
         if (self.hancom_math_face || self.hancom_eqn) && result.height > 0.0 {
@@ -182,6 +212,43 @@ impl EqLayout {
         } else {
             result
         }
+    }
+
+    fn text_width(&self, text: &str, fs: f64, italic: bool) -> f64 {
+        if !self.legacy_hft_metrics {
+            return estimate_text_width(text, fs, italic);
+        }
+        text.chars()
+            .map(|ch| match ch {
+                '0'..='9' => fs * 0.5,
+                '=' | '+' | '-' | '%' => fs,
+                '×' => fs * 0.68,
+                _ => estimate_text_width(&ch.to_string(), fs, italic),
+            })
+            .sum()
+    }
+
+    fn layout_fraction_operand(&self, node: &EqNode, fs: f64) -> (LayoutBox, f64) {
+        let mut body = self.layout_node(node, fs);
+        if !self.legacy_hft_metrics || !operand_starts_cjk(node) {
+            return (body, 0.0);
+        }
+        // 구형 수식의 한글 대체 face가 피연산자 프레임을 시작할 때의 전진이다.
+        // 숫자 피연산자나 같은 줄의 뒤 한글 run에는 반복해서 넣지 않는다.
+        let inset = fs * 0.22;
+        body.x = inset;
+        (
+            LayoutBox {
+                font_size: fs,
+                x: 0.0,
+                y: 0.0,
+                width: body.width + inset,
+                height: body.height,
+                baseline: body.baseline,
+                kind: LayoutKind::Row(vec![body]),
+            },
+            inset,
+        )
     }
 
     fn layout_node(&self, node: &EqNode, fs: f64) -> LayoutBox {
@@ -275,11 +342,11 @@ impl EqLayout {
             };
         }
 
-        let mut boxes: Vec<LayoutBox> = self
-            .row_children(children, fs)
-            .into_iter()
-            .filter(|b| b.width > 0.0 || matches!(b.kind, LayoutKind::Newline))
-            .collect();
+        let (source_nodes, mut boxes): (Vec<&EqNode>, Vec<LayoutBox>) = children
+            .iter()
+            .zip(self.row_children(children, fs))
+            .filter(|(_, b)| b.width > 0.0 || matches!(b.kind, LayoutKind::Newline))
+            .unzip();
 
         if boxes.is_empty() {
             return LayoutBox {
@@ -302,7 +369,13 @@ impl EqLayout {
         let total_height = max_ascent + max_descent;
 
         let mut x = 0.0;
-        for b in &mut boxes {
+        for index in 0..boxes.len() {
+            if self.legacy_hft_metrics && index > 0 {
+                // Glyph projection changes paint data, not the AST operator's
+                // logical slot or the source-owned contextual spacing.
+                x += legacy_operator_gap(source_nodes[index - 1], source_nodes[index], fs);
+            }
+            let b = &mut boxes[index];
             b.x = x;
             b.y = max_ascent - b.baseline;
             x += b.width;
@@ -320,6 +393,13 @@ impl EqLayout {
     }
 
     fn layout_text(&self, text: &str, fs: f64) -> LayoutBox {
+        if self.legacy_hft_metrics {
+            if let Some(layout) =
+                self.layout_hancom_glyphs(text, super::hancom_glyphs::Role::LegacyLiteral, fs, 0.0)
+            {
+                return layout;
+            }
+        }
         if let Some(layout) = self.layout_hancom_glyphs(
             text,
             super::hancom_glyphs::Role::Variable {
@@ -374,7 +454,7 @@ impl EqLayout {
             glyph_advances::text_width(&display_text, fs)
                 .unwrap_or_else(|| estimate_text_width(text, fs, self.variable_italic))
         } else {
-            estimate_text_width(text, fs, false)
+            self.text_width(text, fs, !has_cjk)
         };
         LayoutBox {
             font_size: fs,
@@ -394,20 +474,23 @@ impl EqLayout {
             return layout;
         }
         // 기본 수학 face와 HYhwpEQ의 수학 숫자는 모두 반각 전진폭을 갖는다.
-        let w = text
-            .chars()
-            .map(|ch| {
-                if ch.is_ascii_digit() {
-                    if let Some(advance) = self.math_digit_advance {
-                        source_font_text::logical_advance(advance, fs, self.dpi)
+        let w = if self.legacy_hft_metrics {
+            self.text_width(text, fs, false)
+        } else {
+            text.chars()
+                .map(|ch| {
+                    if ch.is_ascii_digit() {
+                        if let Some(advance) = self.math_digit_advance {
+                            source_font_text::logical_advance(advance, fs, self.dpi)
+                        } else {
+                            fs * 0.5
+                        }
                     } else {
-                        fs * 0.5
+                        estimate_text_width(&ch.to_string(), fs, false)
                     }
-                } else {
-                    estimate_text_width(&ch.to_string(), fs, false)
-                }
-            })
-            .sum();
+                })
+                .sum()
+        };
         LayoutBox {
             font_size: fs,
             x: 0.0,
@@ -425,7 +508,7 @@ impl EqLayout {
         {
             return layout;
         }
-        if self.hancom_math_face {
+        if self.hancom_math_face && !self.legacy_hft_metrics {
             if !self.variable_bold {
                 if let Some(result) =
                     source_font_symbol::layout_operator_outline(text, fs, self.dpi)
@@ -438,17 +521,22 @@ impl EqLayout {
             }
         }
         // 수식의 빼기 기호는 문장용 하이픈과 다른 글리프다.
-        let display = match text {
-            "-" => "−",
-            // 인용 문자열과 달리 수식 기호의 작은따옴표는 미분 prime이다.
-            "'" => "′",
-            _ => text,
+        let display = if self.legacy_hft_metrics {
+            text
+        } else {
+            match text {
+                "-" => "−",
+                // 인용 문자열과 달리 수식 기호의 작은따옴표는 미분 prime이다.
+                "'" => "′",
+                _ => text,
+            }
         };
-        let source_operator = self
-            .hancom_math_face
+        let source_operator = (self.hancom_math_face && !self.legacy_hft_metrics)
             .then(|| source_font_symbol::operator_metrics(display, fs, self.dpi))
             .flatten();
-        let w = if self.hancom_math_face && matches!(text, "(" | ")") {
+        let w = if self.legacy_hft_metrics {
+            self.text_width(text, fs, false)
+        } else if self.hancom_math_face && matches!(text, "(" | ")") {
             source_font_advance::paren(fs, self.dpi)
         } else {
             source_operator
@@ -456,7 +544,9 @@ impl EqLayout {
                 .unwrap_or_else(|| estimate_text_width(display, fs, false))
         };
         // 연산자 좌우 여백
-        let pad = if source_operator.is_some() {
+        let pad = if self.legacy_hft_metrics && matches!(text, "+" | "-" | "=") {
+            0.0
+        } else if source_operator.is_some() {
             0.0
         } else if super::symbols::is_binary_symbol(text) || matches!(text, "=" | "<" | ">") {
             fs * 0.15
@@ -478,6 +568,11 @@ impl EqLayout {
     }
 
     fn layout_math_symbol(&self, text: &str, fs: f64) -> LayoutBox {
+        if let Some(layout) =
+            self.layout_hancom_glyphs(text, super::hancom_glyphs::Role::SmallOperator, fs, 0.0)
+        {
+            return layout;
+        }
         if let Some(layout) =
             self.layout_hancom_glyphs(text, super::hancom_glyphs::Role::Operator, fs, 0.0)
         {
@@ -679,6 +774,74 @@ impl EqLayout {
 /// 적분 기호 여부 판별
 pub(crate) fn is_integral_symbol(symbol: &str) -> bool {
     matches!(symbol, "∫" | "∬" | "∭" | "∮" | "∯" | "∰")
+}
+
+fn operand_starts_cjk(node: &EqNode) -> bool {
+    match node {
+        EqNode::Text(text) => text
+            .chars()
+            .next()
+            .is_some_and(|ch| super::text_has_cjk(&ch.to_string())),
+        EqNode::Row(children) => children.first().is_some_and(operand_starts_cjk),
+        EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => operand_starts_cjk(body),
+        _ => false,
+    }
+}
+
+// A standalone CJK fraction already introduces the fallback face in its
+// numerator. In a larger expression the outer row has its own registration.
+// Independent 9/12/18pt Print controls distinguish the two expression scopes.
+fn standalone_cjk_fraction_owns_inset(node: &EqNode) -> bool {
+    match node {
+        EqNode::Fraction { numer, .. } => operand_starts_cjk(numer),
+        EqNode::Row(children) if children.len() == 1 => {
+            standalone_cjk_fraction_owns_inset(&children[0])
+        }
+        EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => {
+            standalone_cjk_fraction_owns_inset(body)
+        }
+        _ => false,
+    }
+}
+
+fn legacy_operator(node: &EqNode) -> Option<&str> {
+    match node {
+        EqNode::Symbol(symbol) | EqNode::MathSymbol(symbol)
+            if matches!(symbol.as_str(), "=" | "+" | "-" | "×") =>
+        {
+            Some(symbol)
+        }
+        EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => legacy_operator(body),
+        _ => None,
+    }
+}
+
+fn legacy_operator_gap(previous: &EqNode, current: &EqNode, fs: f64) -> f64 {
+    let before = if legacy_operator(previous).is_none() {
+        match legacy_operator(current) {
+            Some("=") => 0.14,
+            Some("-") => 0.11,
+            Some("+") => 0.10,
+            _ => 0.0,
+        }
+    } else {
+        0.0
+    };
+    let after = match legacy_operator(previous) {
+        Some("=") => 0.17,
+        Some("-") => 0.11,
+        Some("+") => 0.10,
+        _ => 0.0,
+    };
+    fs * (before + after)
+}
+
+fn legacy_delimiter_width(delimiter: &str, fs: f64) -> Option<f64> {
+    match delimiter {
+        "(" | ")" => Some(fs * 0.375),
+        "[" | "]" => Some(fs * 0.387),
+        _ => None,
+    }
 }
 
 /// 텍스트 폭 추정

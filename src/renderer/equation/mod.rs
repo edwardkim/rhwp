@@ -94,9 +94,26 @@ pub fn intrinsic_size_hwp(script: &str, font_size: u32) -> (u32, u32) {
     )
 }
 
+/// Legacy edits must produce the logical HFT frame used by their painter.
+/// The modern editor's existing sizing contract remains unchanged.
+pub(crate) fn edited_size_hwp(equation: &crate::model::control::Equation) -> (u32, u32) {
+    if !uses_legacy_hft_metrics(equation) {
+        return intrinsic_size_hwp(&equation.script, equation.font_size);
+    }
+    let ast = parser::EqParser::new(tokenizer::tokenize(&equation.script)).parse();
+    let layout = layout::EqLayout::for_equation(equation, super::DEFAULT_DPI).layout(&ast);
+    (
+        super::px_to_hwpunit(layout.width, super::DEFAULT_DPI).max(1) as u32,
+        super::px_to_hwpunit(layout.height, super::DEFAULT_DPI).max(1) as u32,
+    )
+}
+
 /// 수학 글꼴 HYhwpEQ에는 한글 cmap이 없으므로 한글은 본문 대체 글꼴로 그린다.
 /// 일반 수식의 저장 프레임과 보호된 크기는 유지한다. 독립 한컴 출력에서
 /// 확인한 글자 줄·윗줄·단일 위첨자·BOX의 낡은 캐시만 논리 상자로 재발행한다.
+/// 보호된 크기와 한글 대체가 없는 수식은 저장 상자 계약을 유지한다.
+/// legacy HFT 글리프 메트릭 선택 자체는 이 물리 상자의 재조판 증거가 아니다.
+/// 대체 경로는 폭·높이·기준선을 같은 AST에서 얻어 측정과 paint가 함께 소비한다.
 pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u32, u32, i32) {
     if declared_frame::retains_unpositioned_host_frame(equation) {
         return (
@@ -120,7 +137,14 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
     if let Some(metrics) = uncached_flow_metrics::metrics(equation) {
         return metrics;
     }
+    // An HFT control's declared logical slot remains authoritative when its
+    // CJK paint uses another face. Missing frames still need intrinsic sizing;
+    // actual legacy edits refresh the slot in their producer, not during paint.
+    let stored_legacy_frame = uses_legacy_hft_metrics(equation)
+        && equation.common.width > 0
+        && equation.common.height > 0;
     if !equation.common.size_protect
+        && !stored_legacy_frame
         && equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
         && equation
             .script
@@ -150,7 +174,8 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
         (
             equation.common.width,
             equation.common.height,
-            (equation.common.height as i32).saturating_mul(i32::from(equation.baseline)) / 100,
+            (f64::from(equation.common.height) * f64::from(equation.baseline) / 100.0).round()
+                as i32,
         )
     }
 }
@@ -160,7 +185,13 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
 pub(crate) fn normalized_simple_math_metrics(
     equation: &crate::model::control::Equation,
 ) -> Option<(u32, u32, i32)> {
-    if equation.common.size_protect
+    // A valid legacy logical frame is shared by flow and HFT paint. Modern
+    // simple-math cache normalization must not replace that stored owner;
+    // editing refreshes the legacy frame before this query is called.
+    if (uses_legacy_hft_metrics(equation)
+        && equation.common.width > 0
+        && equation.common.height > 0)
+        || equation.common.size_protect
         || equation.attr & 1 != 0
         || equation.font_size == 0
         || !equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
@@ -283,6 +314,12 @@ fn is_simple_box_expression(value: &layout::LayoutBox) -> bool {
     }
 }
 
+/// 버전이 없는 기존 수식은 한컴에서 HFT 메트릭으로 출력된다.
+/// 명시적인 현대 버전과 다른 글꼴은 기존 경로를 유지한다.
+pub(crate) fn uses_legacy_hft_metrics(equation: &crate::model::control::Equation) -> bool {
+    equation.version_info.trim().is_empty() && equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
+}
+
 pub(crate) fn flow_width_hwp(equation: &crate::model::control::Equation) -> u32 {
     flow_metrics_hwp(equation).0
 }
@@ -361,6 +398,12 @@ pub(crate) fn layout_for_paint(
         return result;
     }
     let fs = super::hwpunit_to_px(equation.font_size as i32, dpi);
+    if uses_legacy_hft_metrics(equation) && layout::legacy_logical_frame(&result, fs).is_some() {
+        // HFT 논리 글줄은 layout이 이미 내부 표시 원점을 확정했다.
+        // 저장 기준선 비율은 바깥 호스트 상자가 소비하므로 이를 내부 glyph에
+        // 다시 적용하면 기준선만 편집해도 같은 수식 프로그램이 이동한다.
+        return result;
+    }
     let scale = stored_vertical_scale(
         super::hwpunit_to_px(flow_height_hwp(equation) as i32, dpi),
         result.height,

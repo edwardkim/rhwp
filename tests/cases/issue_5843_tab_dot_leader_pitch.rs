@@ -6,7 +6,7 @@
 //! 이 저장소가 가운뎃점용으로 실측 보정해 둔 0.12 em(≈2.24px)의 절반이 안 된다.
 //! 그래서 목차 점선이 점이 아니라 가는 실선으로 보였다.
 //!
-//! 오라클은 `pdf/KTX-2022.pdf` 2쪽이다 — 한글이 낱개 `·` 글리프로 그린 점 1,435개를
+//! 오라클은 `mydocs/pr/assets/issue7445/ktx-toc27/KTX-2022.pdf` 2쪽이다 — 한글이 낱개 `·` 글리프로 그린 점 1,435개를
 //! 좌표로 재면 글꼴 14.04pt 에서 3.48pt, 15.00pt 에서 3.72pt → **두 크기 모두 0.248 em**.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -24,7 +24,7 @@ fn repo_root() -> std::path::PathBuf {
 
 /// 목차가 있는 쪽. `-p` 는 0 기준이라 이 값이 문서 2쪽이다.
 const PAGE_ARG: &str = "1";
-const SAMPLE: &str = "samples/KTX.hwp";
+const SAMPLE: &str = "mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp";
 
 fn render_toc_page() -> String {
     static SEQ: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);

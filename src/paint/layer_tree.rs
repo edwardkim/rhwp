@@ -230,8 +230,11 @@ pub(crate) fn bind_text_run_sources(node: &mut LayerNode, next_id: &mut u32) {
                         bbox,
                         run,
                         source: Some(source),
+                        ..
                     } => active_fallback = Some((*bbox, run.clone(), source.clone())),
-                    PaintOp::CharOverlap { bbox, run, source }
+                    PaintOp::CharOverlap {
+                        bbox, run, source, ..
+                    }
                     | PaintOp::TextControlMark { bbox, run, source }
                     | PaintOp::TabLeader { bbox, run, source }
                     | PaintOp::TextDecoration {

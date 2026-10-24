@@ -14,6 +14,9 @@ pub(in crate::renderer::typeset) struct FormattedParagraph {
     pub(in crate::renderer::typeset) stored_ladder_is_filler: bool,
     /// 물리 개체 없는 재조판 줄의 높이·간격을 배치와 동일하게 수용한 결과다.
     pub(in crate::renderer::typeset) exact_reflow_text_box: bool,
+    /// 같은 폭에서 재구성하고 줄 메트릭까지 확인한 일반 본문 결과.
+    pub(in crate::renderer::typeset) computed_paragraph:
+        Option<crate::renderer::composer::ComposedParagraph>,
     /// Measured remaining inline space on the composed tail line. None means
     /// that this path has no reliable width result (not an implicit overflow).
     pub(in crate::renderer::typeset) tail_line_remaining_width: Option<f64>,
@@ -194,7 +197,10 @@ impl FormattedParagraph {
         let has_authoritative_seg_for_multicolumn = para.line_segs.iter().any(|seg| {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         });
-        if col_count > 1 && has_authoritative_seg_for_multicolumn {
+        // 저장 줄이 있어도 다음 빈 float 호스트가 현재 흐름에서 lane을 예약하면
+        // 뒤의 vpos 스냅이 이 줄간격을 복원하지 않는다. 호출자가 인증한
+        // 복원 불가 판정은 단 수와 관계없이 같은 흐름 계약으로 소비한다.
+        if col_count > 1 && has_authoritative_seg_for_multicolumn && !spacing_restore_unavailable {
             // fit은 마지막 줄의 점유까지만 판정한다. 다음 문단의 원점을
             // 전진시키는 뒤 간격은 수용된 흐름에서 한 번 보존한다.
             return (self.height_for_fit + self.spacing_after).min(self.total_height);
@@ -290,7 +296,18 @@ pub(in crate::renderer::typeset) fn flow_hints(
     });
     // HWP3-origin 변환본은 spacing_before 누적을 보존해야 dump-pages 요약과
     // 실제 한컴 줄 흐름이 유지된다(#1116).
+    // A rewind starts a different saved coordinate frame. Its first paragraph
+    // still advances from the accepted physical pen; a later lazy origin must
+    // not be derived from an already shortened advance. Keep that paragraph's
+    // complete flow until the new source frame has an actual successor anchor.
+    let starts_new_stored_origin = para_idx
+        .checked_sub(1)
+        .and_then(|previous| paragraphs.get(previous))
+        .is_some_and(|previous| {
+            crate::renderer::height_cursor::paragraph_origin_rewinds(previous, para)
+        });
     let trim_spacing_before_for_flow = !profile.hwp3_layout()
+        && !starts_new_stored_origin
         && !para_near_rowbreak_table(paragraphs, para_idx)
         // [#5801] 저장 사다리가 문단 위 간격을 안 담았으면 트림의 전제가 깨진다 —
         // 트림하면 쪽 채움을 문단마다 sb 만큼 짧게 센다.

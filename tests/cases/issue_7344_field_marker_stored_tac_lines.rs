@@ -27,6 +27,16 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 const SAMPLE: &str = "samples/issue7344/36494836_field_marker_tac_lines.hwpx";
 const HU_PER_PX: f64 = 75.0;
 
+/// 96dpi CSS 좌표. 독립 Print 괘선의 PDF pt × 96/72가 기대값이며,
+/// 검증한 완료 페이지의 Native/fresh WASM 98% 조건은
+/// mydocs/pr/assets/issue7445/completed-20261009/pixel-regression-20261014/evidence.json에 연결한다.
+fn assert_completed_page_css_px(actual: f64, independent: f64, owner: &str) {
+    assert!(
+        (actual - independent).abs() <= 2.0,
+        "{owner}: 독립 Print {independent:.6} CSS px, 실제 {actual:.6} CSS px (허용 ±2px)"
+    );
+}
+
 fn load() -> DocumentCore {
     let p = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     DocumentCore::from_bytes(&std::fs::read(&p).expect("표본 읽기")).expect("문서 로드")
@@ -91,6 +101,10 @@ fn field_begin_marker_keeps_the_stored_tac_line_origins() {
     let next = &core.document().sections[0].paragraphs[5];
     let stored_next = f64::from(next.line_segs[0].vertical_pos - segs[1].vertical_pos) / HU_PER_PX;
     let next_top = top_of(&tops, 5, 0);
+    // 독립 PDF의 보고 내용 표 위 괘선 y=395.807pt. 앞 표와의 저장 사다리
+    // 관계 검사도 아래에서 유지하므로 쪽 전체가 함께 이동하는 회귀를 숨기지 않는다.
+    assert_completed_page_css_px(next_top, 527.7426666666667, "1쪽 보고 내용 표 상단");
+
     assert!(
         (next_top - large - stored_next).abs() <= 0.5,
         "pi=5 표 상단 간격 {:.2}px 가 저장 사다리 {stored_next:.2}px 와 다르다",
@@ -150,19 +164,68 @@ fn centered_inline_table_after_tabs_uses_stored_tab_widths() {
         .iter()
         .find(|n| matches!(n.node_type, RenderNodeType::Column(_)))
         .expect("단");
-    let table_x = nodes
+    let table = nodes
         .iter()
         .find_map(|n| match &n.node_type {
             RenderNodeType::Table(tn) if tn.para_index == Some(2) && tn.cell_context.is_none() => {
-                Some(n.bbox.x)
+                Some(*n)
             }
             _ => None,
         })
         .expect("pi=2 표");
-    let expected = col.bbox.x + (col.bbox.width - tab_px - outer).max(0.0) / 2.0 + tab_px + om_left;
+    let tab_runs: Vec<_> = nodes
+        .iter()
+        .filter(|n| {
+            matches!(&n.node_type, RenderNodeType::TextRun(run)
+                if run.para_index == Some(2)
+                    && run.cell_context.is_none()
+                    && !run.text.is_empty()
+                    && run.text.chars().all(|ch| ch == '\t'))
+        })
+        .collect();
+    assert_eq!(
+        tab_runs.len(),
+        1,
+        "선행 탭은 표 앞의 같은 텍스트 줄에 한 번만 남는다"
+    );
+    let tabs_node = tab_runs[0];
+    let RenderNodeType::TextRun(tabs_run) = &tabs_node.node_type else {
+        unreachable!();
+    };
+    assert_eq!(
+        tabs_run.text.chars().count(),
+        tabs,
+        "원본의 선행 탭을 모두 보존한다"
+    );
+
+    // 독립 Print 결재란의 왼쪽 수직 괘선 x=245.508pt, 상단 y=144.562pt.
+    // px 영역으로 표를 찾지 않고 원본 문단·컨트롤 및 결재 내용으로 소유자를 확인한다.
+    let mut approval_nodes = Vec::new();
+    collect(table, &mut approval_nodes);
+    let approval_text: String = approval_nodes
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+            _ => None,
+        })
+        .collect();
+    assert!(approval_text.contains("주무관") && approval_text.contains("시설운영팀장"));
+    assert_completed_page_css_px(table.bbox.x, 327.344, "1쪽 결재란 왼쪽");
+    assert_completed_page_css_px(table.bbox.y, 192.74933333333334, "1쪽 결재란 상단");
+    let advanced = table.bbox.x - om_left - tabs_node.bbox.x;
     assert!(
-        (table_x - expected).abs() <= 1.0,
-        "결재란 표 왼쪽 {table_x:.2}px 가 저장 탭 폭·말미 공백 제외 가운데 정렬값 {expected:.2}px 와 다르다"
+        (advanced / tab_px - 1.0).abs() < 1e-6,
+        "탭 뒤 표의 상대 전진은 원본 저장 탭 폭의 합과 같다: {advanced}/{tab_px}"
+    );
+    let left_free = tabs_node.bbox.x - col.bbox.x;
+    let right_free = col.bbox.x + col.bbox.width - (tabs_node.bbox.x + tab_px + outer);
+    assert!(
+        left_free > 0.0 && right_free > 0.0,
+        "가운데 정렬한 탭·표는 단 안에 포함된다"
+    );
+    assert!(
+        (left_free / (left_free + right_free) - 0.5).abs() < 1e-6,
+        "말미 공백을 제외한 탭·표의 왼쪽과 오른쪽 빈 공간은 같은 비율이다: {left_free}/{right_free}"
     );
 }
 
@@ -194,6 +257,15 @@ fn broken_cell_ladder_centers_the_stacked_lines() {
         .iter()
         .filter(|c| matches!(c.node_type, RenderNodeType::TextLine(_)))
         .collect();
+
+    // 독립 Print 내용 칸의 위·아래 괘선 y=615.527/714.538pt.
+    // 같은 4개 글줄의 셀 소유 및 위·아래 여백 관계는 함께 검사한다.
+    assert_completed_page_css_px(cell.bbox.y, 820.7026666666667, "1쪽 내용 칸 상단");
+    assert_completed_page_css_px(
+        cell.bbox.y + cell.bbox.height,
+        952.7173333333334,
+        "1쪽 내용 칸 하단",
+    );
     let top_gap = lines[0].bbox.y - cell.bbox.y;
     let last = lines.last().unwrap();
     let bottom_gap = cell.bbox.y + cell.bbox.height - (last.bbox.y + last.bbox.height);

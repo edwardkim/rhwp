@@ -169,6 +169,25 @@ test('#8109 document substitute candidates reach preparation without changing ot
   } finally { await setHostFontProvider(null); }
 });
 
+test('paint requests prepare declared family fallbacks with the same style and no duplicate reads', async () => {
+  const f = fixture();
+  f.replace({ revision: 'family-chain', faces: [...f.snapshot().faces, {
+    id: 'fallback', family: 'Host Fallback', fullName: 'Host Fallback Bold',
+    postscriptName: 'HostFallback-Bold', style: 'Bold', weight: 700, slant: 'normal',
+  }] });
+  const bounds = { x: 0, y: 0, width: 200, height: 100 };
+  const tree: PageLayerTree = { pageWidth: 200, pageHeight: 100,
+    root: { kind: 'leaf', bounds, ops: [{ type: 'textRun', text: '․', bbox: bounds,
+      style: { fontFamily: '"Host Only", "Host Fallback", "Host Only", "Unavailable"', bold: true },
+    }] } };
+  try {
+    await setHostFontProvider(f.provider);
+    const records = collectHostFontRequests(tree);
+    assert.deepEqual(records.map(record => record.hostReference?.face.id), ['bold', 'fallback']);
+    assert.equal(f.reads(), 0, 'enumeration must remain metadata-only');
+  } finally { await setHostFontProvider(null); }
+});
+
 test('Hancom equation glyphs request their actual regular host face without reading bytes', async () => {
   const f = fixture();
   const equationFace = { id: 'equation', family: 'HyhwpEQ', fullName: 'HyhwpEQ',

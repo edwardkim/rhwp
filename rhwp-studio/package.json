@@ -71,6 +71,7 @@
     "e2e:issue-4224": "node e2e/issue-4224-pua-f02fb-small-right-triangle-canvas2d.test.mjs --mode=headless",
     "e2e:canvaskit-font-coverage": "node e2e/canvaskit-font-coverage.test.mjs",
     "e2e:issue-7688-fonts": "node e2e/canvaskit-font-preparation-issue7688.test.mjs --mode=headless",
+    "e2e:issue-7445-font-family": "node e2e/run-with-vite.mjs -- node e2e/canvaskit-font-family-fallback-issue7445.test.mjs --mode=headless",
     "e2e:issue-4969": "node e2e/issue-4969-shaping-replay.test.mjs",
     "e2e:embed": "node e2e/embed-transport.test.mjs --mode=headless",
     "e2e:document-agent": "node e2e/document-agent-command.test.mjs --mode=headless",
@@ -90,6 +91,7 @@
     "e2e:issue-6557-merged-row": "node e2e/run-with-vite.mjs -- node e2e/merged-cell-row-boundary-drag.test.mjs --mode=headless",
     "e2e:issue-7403-canvas2d": "node e2e/run-with-vite.mjs -- node e2e/host-font-provider-issue7403.test.mjs --mode=headless --renderer=canvas2d",
     "e2e:issue-7403": "node e2e/run-with-vite.mjs -- node e2e/host-font-provider-issue7403.test.mjs --mode=headless",
+    "e2e:issue-8102": "node e2e/run-with-vite.mjs -- node e2e/cell-target-issue8102.test.mjs --mode=headless",
     "e2e:select-all-cmd-a": "node e2e/run-with-vite.mjs -- node e2e/select-all-cmd-a.test.mjs --mode=headless",
     "e2e:glyph-outline-portable-geometry": "node e2e/run-with-vite.mjs -- node e2e/glyph-outline-portable-geometry.test.mjs"
   },

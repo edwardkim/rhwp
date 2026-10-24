@@ -8,9 +8,7 @@ use crate::renderer::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
     expand_pua_render_text_in_style, CharOverlapInfo,
 };
-use crate::renderer::layout::{
-    forces_halfwidth_cjk_quote, forces_halfwidth_punct_paint, split_into_clusters,
-};
+use crate::renderer::layout::split_into_clusters;
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::{boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, TextStyle};
 
@@ -276,18 +274,22 @@ impl SkiaTextReplay<'_> {
                     return;
                 }
 
+                let metric_source = text;
                 let text = expand_pua_render_text_in_style(text, style);
                 let text = text.as_str();
-                let char_positions =
-                    crate::renderer::replay_positions_or_compute(text, style, layout_positions);
-                let fit_positions = style.fixed_glyph_advances.then(|| {
-                    crate::renderer::glyph_fit_positions(
-                        text,
-                        style,
-                        layout_positions,
-                        &char_positions,
-                    )
-                });
+                let metric_text =
+                    crate::renderer::composer::display_projection_metric_text(metric_source, text);
+                let char_positions = crate::renderer::replay_positions_or_compute(
+                    metric_text,
+                    style,
+                    layout_positions,
+                );
+                let fit_positions = crate::renderer::glyph_fit_positions(
+                    metric_text,
+                    style,
+                    layout_positions,
+                    &char_positions,
+                );
                 let clusters = split_into_clusters(text);
                 let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();
                 let trim = trim_trailing_spaces.min(trailing);
@@ -296,7 +298,7 @@ impl SkiaTextReplay<'_> {
                     .copied()
                     .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0))
                     as f32;
-                // SVG·Canvas와 같은 글꼴 출처별 장평 변환을 소비한다.
+                // 장평은 가로에만 적용한다. 세로 크기와 공통 그리기 비율을 함께 소비한다.
                 let (font_size, ratio) = {
                     let (fs, r) = style.ratio_draw_params(font_size as f64);
                     (fs as f32, r as f32)
@@ -526,6 +528,28 @@ impl SkiaTextReplay<'_> {
                             );
                             continue;
                         }
+                        if cluster == "․" {
+                            if let Some(ink) = crate::renderer::render_tree::fullwidth_onepoint_ink(
+                                style,
+                                font_size as f64,
+                            ) {
+                                let cx = bbox.x
+                                    + char_positions.get(*char_idx).copied().unwrap_or(0.0)
+                                    + ink.center_x
+                                    + dx as f64;
+                                let cy = y + dy as f64 - ink.above_baseline;
+                                canvas.draw_oval(
+                                    Rect::from_xywh(
+                                        (cx - ink.radius_x) as f32,
+                                        (cy - ink.radius_y) as f32,
+                                        (2.0 * ink.radius_x) as f32,
+                                        (2.0 * ink.radius_y) as f32,
+                                    ),
+                                    &text_paint,
+                                );
+                                continue;
+                            }
+                        }
                         if is_middle_dot(cluster) {
                             let advance = cluster_advance(*char_idx, cluster);
                             let cx = bbox.x as f32
@@ -668,21 +692,28 @@ impl SkiaTextReplay<'_> {
                                 + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
                                 + dx;
                             let char_y = y as f32 + dy;
-                            // 반각 강제 구두점: 측정은 반각(0.3~0.5em)인데 폰트
-                            // 글리프가 전각인 문자(휴먼명조 U+2018 등)를 그대로
-                            // 그리면 다음 글자와 겹친다. web_canvas 와 동일하게
-                            // 0.5× 수평 축소로 반각 공간에 배치 (한글은 자체
-                            // 내장 협폭 글리프로 렌더 — 오라클 PDF Type3 실측).
-                            let needs_halfwidth_scale = cluster.chars().next().is_some_and(|ch| {
-                                forces_halfwidth_punct_paint(style, ch)
-                                    || forces_halfwidth_cjk_quote(
-                                        &style.font_family,
-                                        style.bold,
-                                        style.italic,
+                            // 측정에서 폭을 소유한 경로가 paint의 축소도 결정한다.
+                            // Unicode 범위만으로 이미 좁은 자연 글리프를 다시 줄이지 않는다.
+                            let needs_halfwidth_scale = !has_ratio
+                                && cluster.chars().next().is_some_and(|ch| {
+                                    matches!(
                                         ch,
-                                        style.font_size,
+                                        '\u{2018}'
+                                            ..='\u{2027}' | '\u{00B7}' | '\u{300C}' | '\u{300D}'
+                                    ) && matches!(
+                                        crate::renderer::layout::char_width_decision(
+                                            &[ch],
+                                            &[1],
+                                            0,
+                                            style,
+                                            cluster.chars().count() == 1,
+                                        )
+                                        .width_source,
+                                        "metricNarrowPunctuationOverlay"
+                                            | "metricHalfwidthPunctuationOverlay"
                                     )
-                            }) && !has_ratio;
+                                })
+                                && !has_ratio;
                             if needs_halfwidth_scale {
                                 if synthetic_bold {
                                     // 글자 윤곽선만 반각으로 하고 사용자 좌표 획은 유지한다.
@@ -711,20 +742,25 @@ impl SkiaTextReplay<'_> {
                                 canvas.restore();
                                 continue;
                             }
-                            // 생성자가 원본 폭을 명시한 텍스트만 같은 커닝 전
-                            // 경계를 소비한다. 본문을 일괄 축소·확대하지 않는다.
+                            // 위치와 윤곽 폭을 분리한 공통 경계를 Canvas와 같이 쓴다.
+                            // 양수 자간·굵기 tracking은 글리프를 늘리지 않으며,
+                            // 확정 원점은 char_positions에 그대로 남는다.
+                            let pin_ascii_advance = cluster.chars().any(|ch| {
+                                ch.is_ascii_alphanumeric()
+                                    || (style.fixed_glyph_advances && ch.is_ascii_graphic())
+                            });
                             let fit_scale = fit_positions
-                                .as_deref()
-                                .and_then(|positions| {
+                                .get(*char_idx)
+                                .and_then(|start| {
                                     let end = *char_idx + cluster.chars().count();
-                                    let advance = positions.get(end)? - positions.get(*char_idx)?;
+                                    let advance = fit_positions.get(end)? - start;
                                     let natural_width =
                                         f64::from(font.measure_str(cluster, None).0);
                                     crate::renderer::canvas_cluster_fit_scale(
                                         style,
                                         advance,
                                         natural_width * f64::from(ratio),
-                                        cluster.chars().any(|ch| ch.is_ascii_graphic()),
+                                        pin_ascii_advance,
                                     )
                                 })
                                 .unwrap_or(1.0) as f32;
@@ -743,10 +779,11 @@ impl SkiaTextReplay<'_> {
                                 }
                                 continue;
                             }
+                            let scale = ratio * fit_scale;
                             if has_ratio || (fit_scale - 1.0).abs() > f32::EPSILON {
                                 canvas.save();
                                 canvas.translate((char_x, char_y));
-                                canvas.scale((ratio * fit_scale, 1.0));
+                                canvas.scale((scale, 1.0));
                                 if !hft_outline.as_ref().is_some_and(|outline| {
                                     outline.draw(canvas, cluster, &font, (0.0, 0.0), glyph_paint)
                                 }) {

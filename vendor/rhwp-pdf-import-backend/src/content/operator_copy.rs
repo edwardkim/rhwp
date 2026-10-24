@@ -24,6 +24,9 @@ fn values<T: Copy>(s: &[T], b: &ImportBudget) -> Result<Vec<T>> {
     v.extend_from_slice(s);
     Ok(v)
 }
+// Operator keeps boxed names to preserve its <=40-byte storage contract.
+// This copier must retain that representation and its request reservations.
+#[allow(clippy::box_collection)]
 fn name(s: &Option<Box<String>>, b: &ImportBudget) -> Result<Option<Box<String>>> {
     s.as_ref().map(|s| string(s, b).map(Box::new)).transpose()
 }

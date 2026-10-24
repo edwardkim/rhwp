@@ -39,6 +39,7 @@ impl TypesetEngine {
         let caption_overhead = input.prepared.caption_overhead;
         let queue_table_footnotes = input.prepared.queue_table_footnotes;
         let table_footnotes = &input.prepared.table_footnotes;
+        let table_footnotes_follow_terminal = table.cells.iter().any(|cell| cell.row_span > 1);
         let host_spacing_total = input.prepared.host_spacing_total;
         let terminal_host_spacing = input.prepared.terminal_host_spacing;
         let relax_terminal_table_footnote_fit = input.prepared.relax_terminal_table_footnote_fit;
@@ -739,35 +740,22 @@ impl TypesetEngine {
             && start_cut.is_empty()
             && end_row == 1
             && row_count == 1
-            && split_end_cut.len() == 1
-            && !st.profile.session_edited()
-            && (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
-            && !self.render_normalization.table_text_reflowed(table)
             && table_footnotes.is_empty()
-            && two_frame_successor_origin.is_some()
             && input
                 .source
                 .paragraphs_all
                 .get(para_idx + 1)
                 .is_some_and(|next| {
-                    crate::renderer::float_placement::stored_single_cell_closing_frame_height(
-                        input.source.paragraph,
-                        next,
-                        table,
-                        self.dpi,
-                    )
-                    .is_some()
-                })
-            && table.cells.first().is_some_and(|cell| {
-                layout_engine.cell_unit_opens_stored_page_frame(
-                    cell,
-                    table,
-                    styles,
-                    split_end_cut[0],
-                )
-            })
-            && hwpunit_to_px(table.common.height as i32, self.dpi) >= partial_height
-            && hwpunit_to_px(table.common.height as i32, self.dpi) <= avail_for_rows;
+                    layout_engine
+                        .stored_single_cell_two_frame_opening(
+                            input.source.paragraph,
+                            next,
+                            table,
+                            &split_end_cut,
+                            styles,
+                        )
+                        .is_some_and(|height| height >= partial_height && height <= avail_for_rows)
+                });
         let declared_opening_frame = (single_cell_fragment_shape
             && two_frame_successor_origin.is_some()
             && !is_continuation
@@ -1220,6 +1208,7 @@ impl TypesetEngine {
                     end_row,
                     start_cut,
                     true,
+                    table_footnotes_follow_terminal,
                     relax_terminal_table_footnote_fit && is_continuation,
                     false,
                 );
@@ -1249,6 +1238,7 @@ impl TypesetEngine {
                         end_row,
                         start_cut,
                         true,
+                        table_footnotes_follow_terminal,
                         relax_terminal_table_footnote_fit && is_continuation,
                         true,
                     );
@@ -1719,6 +1709,7 @@ impl TypesetEngine {
             // 걸침 칸·나뉜 행의 몫으로 쪽 끝 띠까지 수용한 끝 행 상자도 원본 프레임이다.
             // 배치는 이 상자를 끝 줄간격 접기로 다시 줄이지 않는다.
             end_row_owns_stored_frame: source_frame_band > 0.0
+                || original_single_cell_opening_frame
                 || source_single_cell_band.is_some()
                 || (is_continuation && stored_complete_extent.is_some())
                 || span_band_owns_end_row
@@ -1867,7 +1858,10 @@ impl TypesetEngine {
             && !is_continuation
             && cursor_row == 0
             && table_footnotes.len() >= 8;
-        if queue_table_footnotes && !defer_large_first_fragment_notes {
+        if queue_table_footnotes
+            && !defer_large_first_fragment_notes
+            && !table_footnotes_follow_terminal
+        {
             self.register_queued_table_footnotes(
                 st,
                 continuation,
@@ -1883,6 +1877,7 @@ impl TypesetEngine {
                 end_row,
                 start_cut,
                 false,
+                table_footnotes_follow_terminal,
                 false,
                 false,
             );

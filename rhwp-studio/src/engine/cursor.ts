@@ -1,7 +1,7 @@
 import type { DocumentPosition, CursorRect, LineInfo, CellPathEntry, NavContextEntry, CellBbox } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 // [#2756] 셀 좌표 축 헬퍼는 command.ts 와 단일 정의를 공유한다(축 유도 복제 금지).
-import { cellAxisPath, type FocusedCellCursorGeometry } from './command';
+import { cellAxisPath, cellPathForEdit, type FocusedCellCursorGeometry } from './command';
 // 제외 셀 Set 의 키 형식은 조립하는 쪽과 조회하는 쪽이 반드시 같아야 한다 → 단일 정의.
 import { excludedCellKey } from './cell-block-format';
 import type { CellSelectionPhase, CellSelectionPoint } from './cell-selection-phase';
@@ -1292,26 +1292,32 @@ export class CursorState {
   selectAllInCell(): boolean {
     if (!this.isInCell()) return false;
     const pos = this.position;
-    const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellIndex: cei, cellPath } = pos;
-    if (ppi === undefined) return false;
-    // 글상자(1-depth)는 flat 축, 표 셀·중첩은 경로 기반 — moveToCellByIndex 와 같은 규약.
-    const useCellPath = (cellPath?.length ?? 0) > 1 || ((cellPath?.length ?? 0) > 0 && !this.isInTextBox());
+    const { sectionIndex: sec, parentParaIndex: ppi } = pos;
+    if (ppi === undefined) throw new Error('셀 편집 대상의 부모 문단이 없습니다.');
     try {
+      const cellPath = cellPathForEdit(pos);
+      const outer = cellPath[0];
+      // 글상자(1-depth)는 flat 조회 규약을 보존하되 선택 주소는 같은 경로를 가진다.
+      const useCellPath = cellPath.length > 1 || !this.isInTextBox();
       const paraCount = useCellPath && cellPath
         ? this.wasm.getCellParagraphCountByPath(sec, ppi, JSON.stringify(cellPath))
-        : this.wasm.getCellParagraphCount(sec, ppi, ci!, cei!);
-      const lastCpi = Math.max(0, paraCount - 1);
-      const pathAtCpi = (cpi: number): CellPathEntry[] | undefined => cellPath
-        ? cellPath.map((e, i) => i < cellPath.length - 1 ? e : { ...e, cellParaIndex: cpi })
-        : cellPath;
+        : this.wasm.getCellParagraphCount(sec, ppi, outer.controlIndex, outer.cellIndex);
+      if (!Number.isSafeInteger(paraCount) || paraCount < 1) {
+        throw new Error('셀 편집 대상에 문단이 없습니다.');
+      }
+      const lastCpi = paraCount - 1;
+      const pathAtCpi = (cpi: number): CellPathEntry[] =>
+        cellPath.map((e, i) => i < cellPath.length - 1 ? e : { ...e, cellParaIndex: cpi });
       const lastPath = pathAtCpi(lastCpi);
       const lastLen = lastPath && useCellPath
         ? this.wasm.getCellParagraphLengthByPath(sec, ppi, JSON.stringify(lastPath))
-        : this.wasm.getCellParagraphLength(sec, ppi, ci!, cei!, lastCpi);
+        : this.wasm.getCellParagraphLength(sec, ppi, outer.controlIndex, outer.cellIndex, lastCpi);
       const atCpi = (cpi: number, charOffset: number): DocumentPosition => ({
         ...pos,
         paragraphIndex: cpi,
-        cellParaIndex: cpi,
+        controlIndex: outer.controlIndex,
+        cellIndex: outer.cellIndex,
+        cellParaIndex: cellPath.length === 1 ? cpi : outer.cellParaIndex,
         charOffset,
         cellPath: pathAtCpi(cpi),
       });
@@ -1324,7 +1330,8 @@ export class CursorState {
       return true;
     } catch (e) {
       console.warn('[CursorState] selectAllInCell 실패:', e);
-      return false;
+      // false는 상위 단축키에서 본문 전체 선택으로 이어진다. 잘못된 셀은 확장하지 않는다.
+      throw e;
     }
   }
 

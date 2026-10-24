@@ -27,6 +27,7 @@ pub(in crate::renderer::typeset) struct EmptyFloatPage<'a> {
     pub current_height: f64,
     pub current_items: &'a [PageItem],
     pub visible_float_exclusions: &'a [super::super::VisibleFloatExclusion],
+    pub original_column_origin: bool,
 }
 
 pub(in crate::renderer::typeset) struct EmptyFloatPlacement {
@@ -46,6 +47,7 @@ pub(super) fn prepare(
     table: &crate::model::table::Table,
     ft: &FormattedTable,
     composed: Option<&ComposedParagraph>,
+    prev_para: Option<&Paragraph>,
     next_para: Option<&Paragraph>,
     styles: &ResolvedStyleSet,
     para_start_height: f64,
@@ -141,6 +143,22 @@ pub(super) fn prepare(
 
     let available = available_height();
 
+    // 앞뒤 저장 줄이 새 쪽 원점을 증명하면 닫힌 사다리 상자도 그 원점에서
+    // 생산한다. 현재 커서에서 먼저 만든 상자가 복구된 프레임보다 우선하면
+    // 앞 표의 paint 여백만 바뀌어도 후속 표의 저장 흐름이 함께 이동한다.
+    let rewound_host_origin =
+        crate::renderer::float_placement::native_empty_topbottom_rewind_anchor_saved_para_y(
+            page.profile.hwp5_stored_pagination_layout(),
+            prev_para,
+            para,
+            next_para,
+            table,
+            column_area.y + para_start_height,
+            &column_area,
+            dpi,
+        )
+        .map(|origin| origin - column_area.y);
+
     // lane 경로도 block·중첩 표와 같은 로컬 저장 상자를 소비한다.
     // 양수 오프셋은 앞 줄의 높이와 별개로 이 상자에 포함된다.
     let closed_source_placement = (is_topbottom_para_float
@@ -152,7 +170,7 @@ pub(super) fn prepare(
                 para,
                 next_para?,
                 table,
-                para_start_height,
+                rewound_host_origin.unwrap_or(para_start_height),
                 para_style.map_or(0.0, |style| style.spacing_before),
                 ft.effective_height,
                 dpi,
@@ -215,20 +233,42 @@ pub(super) fn prepare(
     // `높이 + 아래여백 − 위여백`, `vpos − 위여백` 이라 같은 표에서 두 경로가 갈렸다.
     let legacy_stored_top =
         (is_topbottom_para_float && topbottom_float_count == 1 && is_stored_anchor_table)
-            .then(|| stored_single_topbottom_top_px(para, next_para, table, available, dpi))
+            .then(|| {
+                stored_single_topbottom_top_px(
+                    para,
+                    next_para,
+                    table,
+                    available,
+                    dpi,
+                    page.profile.hwpx_stored_layout(),
+                )
+            })
             .flatten();
     // 다음 저장 위치와의 차이는 높이 증거이며 절대 쪽 원점의 증거가 아니다.
     // 새로 수용하는 바깥 상자는 현재 문단의 흐름 원점에서 배치한다.
+    let mut restored_stored_outer_box = false;
     let outer_box_flow_top = stored_outer_box.then(|| {
         let (top_offset, _) = crate::renderer::stored_float_anchor::stored_topbottom_object_span(
-            para, next_para, table,
+            para,
+            next_para,
+            table,
+            page.profile.hwpx_stored_layout(),
         );
         let flow_top = para_start_height + hwpunit_to_px(top_offset as i32, dpi);
         // 전체 상자 뒤의 저장 줄이 높이를 증명해도 현재 커서는 앞 float의
         // 점유 영역 안에 남을 수 있다. 저장 host가 앞 밴드 끝을 벗어나는 경우일
         // 때만 원점을 복구하고, 예약과 출력에 같은 확정 상자를 전달한다.
         let saved_top = (page.layout.column_areas.len() == 1)
-            .then(|| stored_single_topbottom_top_px(para, next_para, table, available, dpi))
+            .then(|| {
+                stored_single_topbottom_top_px(
+                    para,
+                    next_para,
+                    table,
+                    available,
+                    dpi,
+                    page.profile.hwpx_stored_layout(),
+                )
+            })
             .flatten();
         saved_top
             .filter(|top| {
@@ -240,10 +280,107 @@ pub(super) fn prepare(
                         && host + 0.5 >= zone.bottom
                 })
             })
+            .inspect(|_| restored_stored_outer_box = true)
             .unwrap_or(flow_top)
     });
     let stored_single_topbottom_top = legacy_stored_top.or(outer_box_flow_top);
-    if is_topbottom_para_float && topbottom_float_count < 2 && stored_single_topbottom_top.is_none()
+    // 원본 후속 줄이 본체·캡션·양쪽 여백의 바깥 상자를 정확히 닫으면 그 원점·끝을
+    // lane 예약과 실제 출력에 공유한다. 일반 캡션 측정 원점은 증거가 없을 때 쓴다.
+    // 직전 문단의 저장 위치보다 되감긴 호스트는 새 쪽의 저장 원점을 가진다.
+    // 닫힌 바깥 상자가 확인된 경우에만 같은 원점을 예약과 출력에 전달한다.
+    let original_frame_follows_body = page.original_column_origin
+        && para.source_line_seg_vertical_pos.is_none()
+        && para.column_type == crate::model::paragraph::ColumnBreakType::None
+        // 앞뒤 줄이 서로 다른 쪽에 속하면 닫힌 상자는 새 쪽 원점이다.
+        // 이전 본문 뒤의 호스트라는 사실만으로 현재 쪽에 수용할 수 없다.
+        && para.line_segs.first().is_some_and(|host| {
+            next_para.is_some_and(|next| {
+                next.source_line_seg_vertical_pos.is_none()
+                    && next.line_segs.first().is_some_and(|after| {
+                        after.vertical_pos > host.vertical_pos
+                    })
+            })
+        })
+        && prev_para.is_some_and(|previous| {
+            previous.controls.is_empty()
+                && !previous.stored_text_partition_is_dirty()
+                && previous.source_line_seg_vertical_pos.is_none()
+                && previous
+                    .line_segs
+                    .last()
+                    .zip(para.line_segs.first())
+                    .is_some_and(|(before, host)| {
+                        !is_synthetic_line_seg(before)
+                            && !is_synthetic_line_seg(host)
+                            && i64::from(before.vertical_pos) + i64::from(before.line_height)
+                                <= i64::from(host.vertical_pos)
+                    })
+        });
+    let closed_control_frame = (!page.profile.session_edited()
+        && (page.profile.hwp5_stored_pagination_layout() || page.profile.hwpx_stored_layout())
+        && page.layout.column_areas.len() == 1
+        && !table_reflowed)
+        .then(|| {
+            // 스냅샷 부재만으로 현재 저장 좌표가 이 쪽의 물리 원점이라고
+            // 판단할 수 없다. 앞 본문과 후속 줄이 같은 원본 축에서 닫히는
+            // 경우에만 block 경로의 원본 프레임을 사용한다. 그 외에는
+            // 원본 호스트 기준 상자를 현재 흐름에 평행 이동한다.
+            // 선행 밴드와 뒤 저장 줄이 복구한 원본 상자를 증명한 경우는
+            // 이미 쪽 원점이 확정됐다. 이를 이전 호스트 흐름에 다시 옮기면
+            // 표 뒤의 저장 줄·앞 간격도 원본 프레임과 갈라진다.
+            let uses_host_flow_origin = table.caption.is_none()
+                && para.column_type == crate::model::paragraph::ColumnBreakType::None
+                && !original_frame_follows_body
+                && !restored_stored_outer_box;
+            let frame_vpos = if uses_host_flow_origin {
+                para.source_line_seg_vertical_pos
+                    .as_ref()
+                    .and_then(|source| source.first().copied())
+                    .or_else(|| para.line_segs.first().map(|line| line.vertical_pos))?
+            } else {
+                0
+            };
+            let mut frame = crate::renderer::float_placement::stored_empty_control_table_frame(
+                para,
+                next_para?,
+                table,
+                ft.effective_height,
+                para_style.map_or(0.0, |style| style.spacing_before),
+                frame_vpos,
+                dpi,
+                page.profile.hwpx_stored_layout(),
+            )?;
+            if uses_host_flow_origin {
+                let host_origin = rewound_host_origin.unwrap_or(para_start_height);
+                frame.anchor_y += host_origin;
+                frame.table_top += host_origin;
+                frame.occupied_bottom += host_origin;
+                frame.stored_successor_line_origin =
+                    frame.stored_successor_line_origin.map(|y| y + host_origin);
+            }
+            Some(frame)
+        })
+        .flatten();
+    if !original_frame_follows_body
+        && closed_control_frame.is_some_and(|frame| frame.table_top + 0.5 < page.current_height)
+    {
+        // 새 쪽의 닫힌 상자를 현재 쪽 위에 겹쳐 놓지 않는다. block의 기존
+        // 저장 프레임 이월·통째 fit 경로가 같은 상자로 쪽 전이를 확정한다.
+        return None;
+    }
+    let control_frame = closed_control_frame.or_else(|| {
+        crate::renderer::float_placement::captioned_para_table_frame(
+            table,
+            (para_start_height + v_offset_px).max(para_start_height),
+            ft.host_spacing.before,
+            ft.effective_height,
+            ft.host_spacing.after,
+        )
+    });
+    if is_topbottom_para_float
+        && topbottom_float_count < 2
+        && stored_single_topbottom_top.is_none()
+        && control_frame.is_none()
     {
         return None;
     }
@@ -280,6 +417,15 @@ pub(super) fn prepare(
     // 바꾸지는 않는다. 이미 수용한 저장 앵커를 먼저 선택하고, 아래 lane의
     // 확정 이동을 같은 placement의 원점·점유 끝·후속 줄에 함께 반영한다.
     let raw_top = saved_page_top
+        .or_else(|| {
+            // 닫힌 상자는 원점 앞의 호스트 간격까지 이미 분리했다.
+            // raw 호스트+오프셋으로 다시 시작하면 같은 간격이 lane의
+            // 예약 끝과 paint에 재가산된다. 별도 ladder 상자는 기존
+            // 자신의 원점 계약을 유지한다.
+            closed_control_frame
+                .filter(|_| closed_source_placement.is_none())
+                .map(|frame| frame.anchor_y)
+        })
         .or(legacy_stored_top)
         .or_else(|| closed_source_placement.map(|placement| placement.table_top))
         .or(stored_single_topbottom_top)
@@ -344,12 +490,20 @@ pub(super) fn prepare(
     // Square float의 native HWP LINE_SEG는 도형 선언 높이를 anchor와 함께 보존한다.
     // 셀 내용 재측정/host trailing spacing은 block flow에서만 쓰며, lane 예약에 더하면
     // p14처럼 실제로 들어가는 pair를 1~수십 px 초과로 오판한다.
-    let reserved_height = if is_square_sibling_float || stored_single_topbottom_top.is_some() {
+    let reserved_height = if let Some(frame) = control_frame {
+        frame.occupied_bottom - frame.anchor_y
+    } else if is_square_sibling_float || stored_single_topbottom_top.is_some() {
         hwpunit_to_px(table.common.height as i32, dpi).max(0.0)
     } else {
         ft.effective_height + ft.host_spacing.after_for_fit
     };
     let lane_top = lanes.pushed_top(x_start, x_end, raw_top);
+    if std::env::var_os("RHWP_DIAG_FLOAT_FRAME").is_some() {
+        eprintln!(
+            "DIAG_FLOAT_LANE pi={para_idx} ci={ctrl_idx} raw={raw_top} lane={lane_top} closed={closed_control_frame:?} before={} after={} reserved={reserved_height}",
+            ft.host_spacing.before, ft.host_spacing.after,
+        );
+    }
     let closed_source_resolved = closed_source_placement.map(|mut placement| {
         let shift = lane_top - placement.table_top;
         placement.anchor_y += shift;
@@ -386,7 +540,10 @@ pub(super) fn prepare(
         (stored_outer_box && stored_single_topbottom_top.is_some()).then(|| {
             let (top_offset, occupied_height) =
                 crate::renderer::stored_float_anchor::stored_topbottom_object_span(
-                    para, next_para, table,
+                    para,
+                    next_para,
+                    table,
+                    page.profile.hwpx_stored_layout(),
                 );
             let anchor_y = lane_top - hwpunit_to_px(top_offset as i32, dpi);
             crate::renderer::float_placement::ParagraphFloatPlacement {
@@ -405,33 +562,63 @@ pub(super) fn prepare(
                 occupied_bottom: anchor_y + hwpunit_to_px(occupied_height as i32, dpi),
             }
         });
-    let resolved = square_resolved
-        .or(closed_source_resolved)
+    let control_resolved = control_frame.map(|mut frame| {
+        let lane_shift = lane_top - frame.anchor_y;
+        frame.anchor_y = if closed_control_frame.is_some() && original_frame_follows_body {
+            frame.anchor_y + lane_shift
+        } else if closed_control_frame.is_some() {
+            rewound_host_origin.unwrap_or(para_start_height)
+        } else {
+            para_start_height
+        };
+        frame.table_top += lane_shift;
+        frame.occupied_bottom += lane_shift;
+        // lane 이동은 원본 후속 줄의 앞 간격까지 소비했다는 증거가 아니다.
+        if lane_shift.abs() > frame.anchor_y.abs().max(1.0) * 1e-9 {
+            frame.stored_successor_line_origin = None;
+        }
+        frame
+    });
+    let resolved = closed_source_resolved
+        .or(control_resolved)
+        .or(square_resolved)
         .or(outer_box_resolved)
         .or_else(|| {
-            (page.profile.hwpx_stored_layout()
-                && is_topbottom_para_float
-                && topbottom_float_count >= 2
-                && matches!(
-                    table.common.vert_align,
-                    crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside
-                ))
-            .then(|| {
-                let top = lane_top + ft.host_spacing.before;
-                crate::renderer::float_placement::ParagraphFloatPlacement {
-                    flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
-                    anchor_y: para_start_height,
-                    stored_host_origin: None,
-                    stored_successor_line_origin: None,
-                    table_left: None,
-                    table_top: top,
-                    occupied_bottom: top + ft.effective_height + ft.host_spacing.after,
-                }
-            })
+            crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_sibling_box(
+                para,
+                table,
+                lane_top,
+                para_start_height,
+                ft.effective_height,
+                ft.host_spacing.before,
+                ft.host_spacing.after,
+                dpi,
+            )
         });
+    // 다른 문단의 이미 수용한 밴드도 같은 확정 상자가 통과해야 한다.
+    // paint만 다시 피한 뒤 확정 원점으로 덮으면 예약과 출력이 갈라진다.
+    let resolved = resolved.map(|placement| {
+        if !is_topbottom_para_float || table.common.allow_overlap {
+            return placement;
+        }
+        let outer_top = hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+        let mut cleared = placement.clear_occupied_bands(
+            page.visible_float_exclusions
+                .iter()
+                .filter(|zone| zone.para_index < para_idx)
+                .map(|zone| zone.top..zone.bottom + outer_top),
+        );
+        if (cleared.table_top - placement.table_top).abs()
+            > placement.table_top.abs().max(1.0) * 1e-9
+        {
+            cleared.stored_successor_line_origin = None;
+        }
+        cleared
+    });
     let lane_bottom = resolved.map_or(lane_top + reserved_height, |p| {
         if square_resolved.is_some()
             || closed_source_resolved.is_some()
+            || control_resolved.is_some()
             || outer_box_resolved.is_some()
         {
             p.occupied_bottom

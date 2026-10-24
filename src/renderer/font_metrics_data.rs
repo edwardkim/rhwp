@@ -8,6 +8,10 @@ use std::sync::OnceLock;
 
 use crate::renderer::font_rule_layout_metric_projection::find_font_rule_layout_metric;
 
+#[path = "font_metrics_vertical.rs"]
+mod vertical;
+pub(crate) use vertical::win_descent_em;
+
 #[path = "font_metric_han_santteut.rs"]
 mod han_santteut;
 
@@ -128,6 +132,48 @@ pub(crate) fn verified_named_program_has_glyph(
 ) -> Option<bool> {
     math_alphabet::primary_has_glyph(family, bold, italic, ch)
         .or_else(|| cjk_punctuation::primary_has_glyph(family, bold, italic, ch))
+}
+
+/// 확인한 원 프로그램의 결측 글리프 공급 체인. 기본 face의 폭 계약은 바꾸지 않는다.
+pub(crate) fn verified_program_glyph_fallback_families(face: &str) -> &'static [&'static str] {
+    // HMKMM.TTF의 cmap에는 U+2024가 없고 HBATANG.TTF에는 있다.
+    // 독립 개인정보 Print의 같은 제목도 휴먼명조 사이에서 이 기호만
+    // Haansoft Batang으로 출력한다. 이름 별칭은 기존 메트릭 선택기가 해소한다.
+    match find_metric(face, false, false).map(|found| found.metric.name) {
+        Some("HumanMyeongJo" | "DotumChe" | "HYSinMyeongJo-Medium" | "HYHeadLine-Medium") => {
+            &["Haansoft Batang"]
+        }
+        // Gulim U+2024의 측정도 아래 verified_missing_glyph_supplier가
+        // HDOTUM에 맡긴다. 같은 공급자를 실제 paint 후보에도 전달한다.
+        Some("Gulim") => &["Haansoft Dotum"],
+        _ => &[],
+    }
+}
+
+/// 원 프로그램의 결측과 독립 Print의 공급 face를 함께 확인한 기호만 해소한다.
+/// 폭 표의 누락만으로 공급자를 추측하지 않으며, HFT 호환 폭과의 경계는 호출자가 지킨다.
+pub(crate) fn verified_missing_glyph_supplier(
+    metric: &FontMetric,
+    ch: char,
+) -> Option<&'static str> {
+    match (metric.name, metric.em_size, metric.bold, metric.italic, ch) {
+        // gulim.TTC의 DotumChe cmap에는 U+2024가 없다(SHA ed750275…776c).
+        // 근린생활시설 표의 독립 Print는 HBATANG의 0.173em 글리프로 출력하며,
+        // HBATANG.TTF의 hmtx 178/1024도 같은 자연 전진을 확인한다.
+        ("DotumChe", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
+        // 법원 서식 Print의 Haansoft Dotum CID 3과 HDOTUM hmtx의 대응.
+        ("Gulim", 1024, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Dotum"),
+        // 기호 슬롯을 HY신명조 TTF로 지정한 독립2020 Print의 두 점은
+        // HBATANG이다. HFT 한양신명조의 전진은 해당 overlay가 보존한다.
+        ("HYSinMyeongJo-Medium", 1024, false, false, '\u{2024}' | '\u{2027}') => {
+            Some("Haansoft Batang")
+        }
+        // H2HDRM의 확인된 U+2024 결측과 독립 한컴2020 Print의 실제 공급자다.
+        // 음영/양각의 세 replay 모두 HBATANG을 사용하며 자연 전진은 기존
+        // 공급 프로그램의 hmtx를 소비한다. 다른 문자·weight는 추정하지 않는다.
+        ("HYHeadLine-Medium", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
+        _ => None,
+    }
 }
 
 /// find_metric의 반환값: 메트릭 + 폴백 정보

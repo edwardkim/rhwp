@@ -125,6 +125,7 @@ impl LayoutEngine {
                             None,
                             Some(bin_data_content),
                             None, // 표 호스트 어울림 문단 — 별도 wrap_anchor 메커니즘
+                            Some(comp),
                         ));
                         self.border_box_override.set(prev_override);
                         // 어울림 문단은 항상 ↵ 표시 필요 — 부분 렌더링 시 is_para_end 강제 설정
@@ -251,6 +252,7 @@ impl LayoutEngine {
                     None,
                     Some(bin_data_content),
                     None, // 표 호스트 어울림 문단 — 별도 wrap_anchor 메커니즘
+                    None,
                 );
                 // 어울림 문단은 항상 ↵ 표시 필요
                 force_para_end_on_last_run(col_node);

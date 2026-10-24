@@ -131,6 +131,24 @@ pub(super) fn recalculate_cell_paragraph_vpos(
     );
 }
 
+/// Shared line/object flow end used when publishing a cell vpos ladder.
+fn cell_paragraph_flow_end(para: &Paragraph, dpi: f64) -> Option<i32> {
+    let first = para.line_segs.first()?;
+    let last = para.line_segs.last()?;
+    let line_end = last
+        .vertical_pos
+        .saturating_add(last.line_height)
+        .saturating_add(last.line_spacing);
+    let picture_end = crate::renderer::float_placement::reflow_picture_host_advance(para, dpi)
+        .map(|advance| {
+            first
+                .vertical_pos
+                .saturating_add(crate::renderer::px_to_hwpunit(advance, dpi))
+        })
+        .unwrap_or(line_end);
+    Some(line_end.max(picture_end))
+}
+
 /// [#4138] `[start_para, stop_para)` 구간의 셀 문단 vpos 사다리를 문단 간격·줄간격
 /// 계산으로 재배치한다. `recalculate_cell_paragraph_vpos` 의 적용 루프를 분리한 것으로,
 /// 호출자가 정지 지점(stop_para)을 결정한다 — 텍스트 편집 경로는 RowBreak 조각 경계를
@@ -169,15 +187,8 @@ fn apply_cell_vpos_ladder(
 
     let mut next_vpos = if start_para > 0 {
         let previous = &paragraphs[start_para - 1];
-        previous
-            .line_segs
-            .last()
-            .map(|seg| {
-                seg.vertical_pos
-                    + seg.line_height
-                    + seg.line_spacing
-                    + boundary_gaps[start_para - 1]
-            })
+        cell_paragraph_flow_end(previous, dpi)
+            .map(|end| end.saturating_add(boundary_gaps[start_para - 1]))
             .unwrap_or(0)
     } else {
         paragraphs[0]
@@ -194,8 +205,8 @@ fn apply_cell_vpos_ladder(
             for seg in &mut para.line_segs {
                 seg.vertical_pos += delta;
             }
-            if let Some(last) = para.line_segs.last() {
-                next_vpos = last.vertical_pos + last.line_height + last.line_spacing;
+            if let Some(end) = cell_paragraph_flow_end(para, dpi) {
+                next_vpos = end;
             }
         }
         if let Some(gap) = boundary_gaps.get(para_idx) {

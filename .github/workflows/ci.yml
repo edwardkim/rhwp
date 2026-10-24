@@ -809,7 +809,7 @@ jobs:
             printf '| classification_status | %s |\n' "${CLASSIFICATION_STATUS}"
             printf '| classifier_version | %s |\n' "${CLASSIFIER_VERSION}"
             printf '| reason | %s |\n' "${IMPACT_REASON}"
-            printf '| security_sweep_samples_json | `%s` |\n' "${SECURITY_SWEEP_SAMPLES_JSON}"
+            printf '| security_sweep_samples_json | %s |\n' "\`${SECURITY_SWEEP_SAMPLES_JSON}\`"
           } >> "${GITHUB_STEP_SUMMARY}"
 
   # A new reusable adapter can be verified before registration on main through
@@ -1411,7 +1411,11 @@ jobs:
           npm --prefix rhwp-vscode ci --no-audit --prefer-offline
 
       - name: Verify WASM bindings and editor embed contract
-        run: node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
+        # 아래 trace 검사는 Studio 단위 검사나 Rust suite에서 자동 수집하지 않는다.
+        # 같은 fresh WASM을 재사용하며 별도 빌드나 job을 만들지 않는다.
+        run: |
+          node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
+          node --test scripts/tests/font_decision_trace_contract.test.mjs scripts/tests/font_decision_trace_e2e.test.mjs
 
       - name: Verify build dependency compatibility
         run: |

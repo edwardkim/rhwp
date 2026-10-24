@@ -290,7 +290,9 @@ impl TypesetEngine {
             // (p178 note 240). p30처럼 본문 자체가 이미 split된 두 줄 각주는
             // 기존 collision route가 맡는다.
             let current_page_reset_fragments = source_reset_fragments.filter(|split| {
-                split.force_next_page
+                // 각주 내부 저장 재시작과 다음 본문 쪽 경계가 함께 확인되면,
+                // 전체 각주 이월보다 저장된 앞/뒤 조각의 소속을 먼저 보존한다.
+                (split.force_next_page || move_to_next_reset_page)
                     && body_tail_reset.is_none()
                     && native_hwp5_footnote_break.is_none()
                     && crate::renderer::pagination::find_inline_control_target_page(

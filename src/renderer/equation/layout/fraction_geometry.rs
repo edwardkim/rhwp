@@ -4,7 +4,7 @@
 //! 1177d9025d1e797c54b3c7676976365abd90f903423091de7f0f4e7a4b372162.
 //! 배치 계약: https://www.w3.org/TR/mathml-core/#fraction-with-nonzero-line-thickness
 
-use super::LayoutBox;
+use super::{LayoutBox, FRAC_LINE_THICK};
 
 fn hancom_position(
     numer: &mut LayoutBox,
@@ -71,8 +71,42 @@ use super::{
     EqLayout, EqNode, LayoutKind, AXIS_HEIGHT, FRAC_LINE_PAD, RADICAL_DEGREE_SCALE, SQRT_PAD,
 };
 
+// HFT line/fraction frames independently regenerated at 9, 12 and 18pt:
+// line 1.2em/84%, fraction 2.34em/67%. The display font's glyph bounds are
+// separate from these logical slots. Do not substitute the modern math face's
+// different frame table for the versionless source program.
+pub(super) fn legacy_operand_frame(value: &LayoutBox, fs: f64) -> Option<(f64, f64)> {
+    match &value.kind {
+        LayoutKind::Text(_)
+        | LayoutKind::Number(_)
+        | LayoutKind::Symbol(_)
+        | LayoutKind::MathSymbol(_)
+        | LayoutKind::Function(_)
+        | LayoutKind::FontGlyph { .. }
+        | LayoutKind::HancomGlyphs(_) => Some((fs * 1.2, fs * 1.2 * 0.84)),
+        LayoutKind::Fraction { .. } => Some((value.height, value.baseline)),
+        LayoutKind::Color { body, .. }
+        | LayoutKind::FontStyle { body, .. }
+        | LayoutKind::Paren { body, .. } => legacy_operand_frame(body, fs),
+        LayoutKind::Row(items) if !items.is_empty() => {
+            let mut ascent = 0.0_f64;
+            let mut descent = 0.0_f64;
+            for item in items {
+                let (height, baseline) = legacy_operand_frame(item, fs)?;
+                ascent = ascent.max(baseline);
+                descent = descent.max(height - baseline);
+            }
+            Some((ascent + descent, ascent))
+        }
+        _ => None,
+    }
+}
+
 impl EqLayout {
     pub(super) fn layout_fraction(&self, numer: &EqNode, denom: &EqNode, fs: f64) -> LayoutBox {
+        if self.legacy_hft_metrics {
+            return self.layout_legacy_fraction(numer, denom, fs);
+        }
         let n = self.layout_node(numer, fs);
         let d = self.layout_node(denom, fs);
 
@@ -112,6 +146,8 @@ impl EqLayout {
                 numer: Box::new(n_box),
                 denom: Box::new(d_box),
                 axis_height,
+                rule_start: fs * 0.05,
+                rule_end: w - fs * 0.05,
                 // HancomEQN의 U+E06D bbox 높이는 UPM 1024에서 32다.
                 rule_thickness: fs
                     * if self.hancom_eqn {
@@ -273,5 +309,82 @@ fn ends_round_delimiter(value: &LayoutBox) -> bool {
         }
         LayoutKind::Row(items) => items.last().is_some_and(ends_round_delimiter),
         _ => false,
+    }
+}
+
+impl EqLayout {
+    fn layout_legacy_fraction(&self, numer: &EqNode, denom: &EqNode, fs: f64) -> LayoutBox {
+        let (n, n_registration) = self.layout_fraction_operand(numer, fs);
+        let (d, d_registration) = self.layout_fraction_operand(denom, fs);
+
+        let pad = fs * FRAC_LINE_PAD;
+        let side_pad = if self.legacy_hft_metrics {
+            fs * 0.24
+        } else {
+            pad
+        };
+        let line_thick = fs * FRAC_LINE_THICK;
+        let mut axis = fs * AXIS_HEIGHT;
+        let w = n.width.max(d.width) + side_pad * 2.0;
+
+        let numer_h = n.height + pad;
+        let denom_h = d.height + pad;
+
+        // TeX 방식: 분수선은 baseline에서 axis_height 위에 배치
+        // baseline(상단에서) = 분자높이 + 분수선두께/2 + axis_height
+        // 즉, 분수선 y = baseline - axis_height (상단 기준)
+        let frac_line_from_top = numer_h + line_thick / 2.0;
+        let mut baseline = frac_line_from_top + axis;
+        let mut total_h = numer_h + line_thick + denom_h;
+
+        let mut n_box = n;
+        n_box.x = (w - n_box.width) / 2.0;
+        n_box.y = pad;
+
+        let mut d_box = d;
+        d_box.x = (w - d_box.width) / 2.0;
+        d_box.y = numer_h + line_thick;
+
+        if let (Some((nh, nb)), Some((dh, db))) = (
+            legacy_operand_frame(&n_box, fs),
+            legacy_operand_frame(&d_box, fs),
+        ) {
+            let line_height = fs * 1.2;
+            let above = (nh - line_height).max(0.0);
+            let below = (dh - line_height).max(0.0);
+            total_h = fs * 2.34 + above + below;
+            let percent = ((fs * 2.34 * 0.67 + above) / total_h * 100.0).round();
+            baseline = total_h * percent / 100.0;
+            n_box.y = nb - n_box.baseline;
+            d_box.y = total_h - dh + db - d_box.baseline;
+            // The first logical line closes at the fraction rule. The common
+            // axis is consumed unchanged by SVG, Canvas and Native paint.
+            axis = baseline - line_height - above;
+        }
+
+        // Independent HFT Print at 9/12/18pt places the rule around the operand
+        // content with 0.18em side space (subject to the source print grid).
+        // A CJK run's registration inset advances its glyph, not the rule start.
+        // Keep the existing logical frame and glyph origins; only paint's rule
+        // bounds consume this separate content extent.
+        let rule_start = (n_box.x + n_registration).min(d_box.x + d_registration) - fs * 0.18;
+        let rule_end = (n_box.x + n_box.width).max(d_box.x + d_box.width) + fs * 0.18;
+
+        LayoutBox {
+            font_size: fs,
+            x: 0.0,
+            y: 0.0,
+            width: w,
+            height: total_h,
+            baseline,
+            kind: LayoutKind::Fraction {
+                axis_height: axis,
+                rule_thickness: line_thick,
+                rule_start,
+                rule_end,
+                numer: Box::new(n_box),
+                denom: Box::new(d_box),
+            },
+        }
     }
 }

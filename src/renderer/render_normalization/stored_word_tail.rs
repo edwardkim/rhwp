@@ -31,6 +31,43 @@ fn frame_advance(lines: &[LineSeg]) -> Option<i32> {
         .checked_sub(first.vertical_pos)
 }
 
+/// 셀 선언보다 긴 정상 저장 줄들도 표 전체의 선언 상자를 정확히 닫을 수 있다.
+/// 온전한 원본 격자의 실제 줄 끝·안 여백으로 닫히는 행은 짧은 셀 선언만으로
+/// 낡은 캐시라고 판정하지 않는다. 쪽 재시작·병합·편집 셀은 이 인증을 갖지 않는다.
+fn stored_closed_table_row_frames(
+    table: &crate::model::table::Table,
+) -> Option<std::collections::HashMap<u16, u32>> {
+    if table.common.height == 0
+        || !crate::renderer::float_placement::stored_complete_column_frame(table)
+    {
+        return None;
+    }
+    let mut rows = std::collections::HashMap::<u16, u32>::new();
+    for cell in &table.cells {
+        if cell.row_span != 1 || cell.line_wrap != 0 {
+            return None;
+        }
+        let padding = cell.effective_padding(&table.padding);
+        if padding.top < 0 || padding.bottom < 0 {
+            return None;
+        }
+        let ink = crate::renderer::float_placement::stored_plain_cell_ink_height(cell)?;
+        let end = u32::try_from(ink)
+            .ok()?
+            .checked_add(padding.top as u32)?
+            .checked_add(padding.bottom as u32)?;
+        let height = rows.entry(cell.row).or_default();
+        *height = (*height).max(cell.height).max(end);
+    }
+    let total = (0..table.row_count).try_fold(0_u64, |sum, row| {
+        sum.checked_add(u64::from(*rows.get(&row)?))
+    })?;
+    let spacing = u64::try_from(table.cell_spacing)
+        .ok()?
+        .checked_mul(u64::from(table.row_count.saturating_sub(1)))?;
+    (total.checked_add(spacing)? == u64::from(table.common.height)).then_some(rows)
+}
+
 pub(crate) fn normalize(
     original: &[Paragraph],
     styles: &ResolvedStyleSet,
@@ -88,6 +125,9 @@ fn normalize_flow(
                     let height = row_frames.entry(cell.row).or_default();
                     *height = (*height).max(cell.height);
                 }
+            }
+            if let Some(closed) = stored_closed_table_row_frames(table) {
+                row_frames = closed;
             }
             for cell in &mut table.cells {
                 if cell.text_direction != 0 || cell.line_wrap != 0 {

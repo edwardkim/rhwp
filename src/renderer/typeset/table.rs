@@ -175,7 +175,7 @@ pub(super) fn format(
 
 /// 기존 측정값에 대한 보정 후보를 반환한다. 원본 fallback과 결과 수명은 호출자가 관리한다.
 /// profile 관측은 기존 guard의 단락 평가 위치를 보존한다.
-pub(super) fn fit_measured_for_host(
+pub(crate) fn fit_measured_for_host(
     para: &Paragraph,
     table: &Table,
     mt: Option<&MeasuredTable>,
@@ -258,6 +258,25 @@ pub(super) fn fit_measured_for_host(
             {
                 return measured.clone();
             }
+            // The host's caption does not change the physical row frame.
+            // Use the same authenticated closing-row plan for text and empty
+            // hosts before proportional fitting can compress earlier rows.
+            let stored_declared_tail = !profile().session_edited()
+                && (profile().hwp5_stored_pagination_layout()
+                    || profile().hwpx_stored_layout())
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                        | crate::model::table::TablePageBreak::CellBreak
+                )
+                && table.row_count > 1;
+            if (shrunk || shrink_blocked_by_content) && stored_declared_tail {
+                if let Some(closed) =
+                    fit_measured_table_declared_tail_to_declared_height(measured, table, dpi)
+                {
+                    return closed;
+                }
+            }
             if (shrunk || shrink_blocked_by_content) && !para_has_non_whitespace_text(para) {
                 // HWP5 빈 TopAndBottom host의 다행 RowBreak 표는 통상 콘텐츠가
                 // 선언높이를 넘으면 축소하지 않는다. 다만 마지막 행 하나가 비-TAC
@@ -274,34 +293,11 @@ pub(super) fn fit_measured_for_host(
                     )
                     && table.row_count > 1
                     && table.cells.iter().all(|cell| cell.row_span == 1);
-                // [#5906] 위 helper 가 못 잡는 형상이라도, 마지막 행이 저장
-                // 선언(cellSz)으로만 잡혀 여유가 남아 있으면 그 행에서만 초과분을
-                // 회수한다. 페인트 경로가 이미 반대 방향(부족분 → 마지막 행)으로
-                // 하는 일과 같다 (float-stack-defer 2쪽 표 3쪽 분열).
-                // 저장 표 선언 높이와 셀 저장 줄 사다리라는 같은 증거는 원본 HWPX 에도
-                // 있다 — 한/글은 형식으로 조판을 가르지 않는다(편람 hwp·hwpx 정본 동일).
-                let native_empty_rowbreak = (profile().hwp5_stored_pagination_layout()
-                    || profile().hwpx_stored_layout())
-                    && !table.common.treat_as_char
-                    && matches!(
-                        table.page_break,
-                        crate::model::table::TablePageBreak::RowBreak
-                    )
-                    && table.row_count > 1;
                 native_empty_rowbreak_nested_tail
                     .then(|| {
                         fit_measured_table_nested_tail_to_declared_height(measured, table, dpi)
                     })
                     .flatten()
-                    .or_else(|| {
-                        native_empty_rowbreak
-                            .then(|| {
-                                fit_measured_table_declared_tail_to_declared_height(
-                                    measured, table, dpi,
-                                )
-                            })
-                            .flatten()
-                    })
                     .unwrap_or_else(|| measured.clone())
             } else {
                 fitted

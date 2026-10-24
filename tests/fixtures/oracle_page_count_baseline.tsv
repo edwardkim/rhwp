@@ -111,8 +111,11 @@ samples/hwp3-sample13-hwp5.hwpx	3	3
 samples/hwp3-sample14-hwp5.hwp	11	11
 samples/hwp3-sample14-hwp5.hwpx	11	11
 samples/hwp3-sample14.hwp	11	11
+samples/hwp3-sample16-hwp5.hwp	64	64
+samples/hwp3-sample16-hwp5-2010.hwp	64	64
 samples/hwp3-sample16-hwp5-2018.hwp	64	64
 samples/hwp3-sample16-hwp5-2024.hwp	64	64
+samples/hwp3-sample16-hwp5.hwpx	64	64
 samples/hwp3-sample16.hwp	64	64
 samples/hwp3-sample19-hwp5.hwp	2	2
 samples/hwp3-sample4-hwp5.hwp	36	36
@@ -211,7 +214,7 @@ samples/issue3587/d-pi2-import.hwp	1	1
 samples/issue3587/d-pi2-import.hwpx	1	1
 samples/issue3587/d-pi4-import.hwp	1	1
 samples/issue3587/d-pi4-import.hwpx	1	1
-samples/issue3637/press_release_split_cell_nested_table.hwpx	12	13
+samples/issue3637/press_release_split_cell_nested_table.hwpx	12	12
 samples/issue3765/zone_switch_ladder_understates_page.hwpx	2	2
 samples/issue3837/stored_vpos_rewind_form.hwp	4	4
 samples/issue4514/sample1-repro.hwp	46	46
@@ -525,6 +528,7 @@ samples/issue7626/sample-document.hwpx	2	2
 samples/issue7626/hancom-resaved.hwp	2	2
 samples/issue7626/end-run-two-lines.hwpx	2	2
 samples/issue7626/end-run-two-lines.hwp	2	2
+samples/hwp3-sample16-hwp5-2022.hwp	64	64
 # #7622: 실제 한컴 저장 대조군의 대응 2020 1-up Print 전 1쪽, Native/fresh WASM 99.01152%.
 samples/issue7622/curly_quote_tac_native.hwpx	1	1
 
@@ -537,3 +541,15 @@ samples/issue7593/repro-dyad-min-no-script.hwpx	1	1
 samples/issue7593/repro-equation-issue7593.hwpx	1	1
 # 독립 한컴2024 Print 합성 대조군: samples 밖이므로 명시 등록.
 pdf/issue7642-bitmap-crop-palette-print-20261019/bitmap-crop-palette-controls.hwpx	1	1
+
+# Stage24: 공개 API 작성 캡션10조건, 독립 Hancom2020 Print 각1쪽. fixture README의 SHA/출처 참조.
+tests/fixtures/issue1470_authored_caption_numbering/tables-all.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-all.hwp	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-caption-removed.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-caption-removed.hwp	1	1
+tests/fixtures/issue1470_authored_caption_numbering/pictures-all.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/pictures-all.hwp	1	1
+tests/fixtures/issue1470_authored_caption_numbering/pictures-caption-removed.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/pictures-caption-removed.hwp	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-caption-left.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-caption-left.hwp	1	1

@@ -325,8 +325,12 @@ fn issue_6812_multiple_picture_boundaries_are_consumed_before_placing_table() {
     let Control::Picture(second) = &core.document().sections[0].paragraphs[0].controls[4] else {
         panic!("두 번째 그림");
     };
-    let required_top =
-        (f64::from(second.common.vertical_offset + second.common.height) + 141.0) / 75.0;
+    let Control::Table(source) = &core.document().sections[0].paragraphs[0].controls[5] else {
+        panic!("두 그림 뒤 원본 표");
+    };
+    let required_top = (f64::from(second.common.vertical_offset + second.common.height)
+        + f64::from(source.outer_margin_top))
+        / 75.0;
     let tree = core.build_page_render_tree(0).unwrap();
     let mut tables = Vec::new();
     table_box_for_control(&tree.root, 5, &mut tables);
@@ -382,15 +386,51 @@ fn issue_6812_following_table_preserves_the_preceding_table_flow_bottom() {
 fn issue_6812_following_text_respects_column_bottom_after_multiple_pictures() {
     let core = multiple_pictures();
     let mut lines = Vec::new();
+    fn collect_owned_content(node: &RenderNode, owners: &mut Vec<u32>, text: &mut String) {
+        if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+            return;
+        }
+        match &node.node_type {
+            RenderNodeType::TextLine(line) if line.para_index == Some(8) => {
+                owners.push(line.line_index.expect("원본 문단 줄 소유"));
+            }
+            RenderNodeType::TextRun(run) if run.para_index == Some(8) => {
+                text.push_str(&run.text);
+            }
+            _ => {}
+        }
+        for child in &node.children {
+            collect_owned_content(child, owners, text);
+        }
+    }
+    let (mut owners, mut content) = (Vec::new(), String::new());
     for page in 0..core.page_count() {
         let tree = core.build_page_render_tree(page).unwrap();
         collect_body_lines(&tree.root, None, &mut lines);
+        collect_owned_content(&tree.root, &mut owners, &mut content);
     }
+    let source = &core.document().sections[0].paragraphs[8];
     let target: Vec<_> = lines.iter().filter(|(pi, _, _)| *pi == 8).collect();
     assert_eq!(
         target.len(),
-        3,
+        source.line_segs.len(),
         "문단의 세 줄을 쪽을 넘어도 누락/중복하지 않는다"
+    );
+    assert_eq!(
+        owners,
+        (0..source.line_segs.len() as u32).collect::<Vec<_>>(),
+        "원본 줄의 순서와 단일 소유를 보존한다"
+    );
+    let compact = |value: &str| {
+        value
+            .chars()
+            .filter(|c| !c.is_whitespace())
+            .collect::<String>()
+    };
+    assert_eq!(
+        compact(&content),
+        compact(&source.text),
+        "뒤 본문 내용 보존"
     );
     for (_, line, bottom) in target {
         assert!(
@@ -429,13 +469,28 @@ fn issue_6812_future_picture_does_not_reposition_an_already_placed_table() {
     let mut doc = core.document().clone();
     doc.sections[0].paragraphs[0].controls.swap(3, 4);
     core.set_document(doc);
-    let tree = core.build_page_render_tree(0).unwrap();
+    let with_future_picture = core.build_page_render_tree(0).unwrap();
     let mut tables = Vec::new();
-    table_box_for_control(&tree.root, 3, &mut tables);
+    table_box_for_control(&with_future_picture.root, 3, &mut tables);
     assert_eq!(tables.len(), 1);
+
+    // 동일한 표 앞 입력을 유지한 채 뒤 그림만 제거한 대조군과 비교한다.
+    // 과거 81.24px 원점은 문서/여백이 바뀌어도 지켜야 할 계약이 아니다.
+    let mut without_future = core.document().clone();
+    assert!(matches!(
+        without_future.sections[0].paragraphs[0].controls.remove(4),
+        Control::Picture(_)
+    ));
+    core.set_document(without_future);
+    let baseline = core.build_page_render_tree(0).unwrap();
+    let mut baseline_tables = Vec::new();
+    table_box_for_control(&baseline.root, 3, &mut baseline_tables);
+    assert_eq!(baseline_tables.len(), 1, "대조군에서도 앞 표를 보존한다");
     assert!(
-        (tables[0].y - 81.24).abs() < 0.5,
-        "뒤에서 등장한 그림을 미리 예약하면 안 된다"
+        (tables[0].y - baseline_tables[0].y).abs() < 0.5,
+        "뒤 그림의 존재가 앞 표의 배치를 바꾸면 안 된다: with={:?}, without={:?}",
+        tables[0],
+        baseline_tables[0]
     );
 }
 
@@ -459,7 +514,14 @@ fn issue_6812_clearance_participates_in_page_fit_and_expires_at_page_boundary() 
     assert!(old.is_empty(), "표가 첫 쪽에 중복/넘침 배치되면 안 된다");
     assert_eq!(moved.len(), 1);
     assert!(
-        (moved[0].y - layout.body_area.y - 141.0 / 75.0).abs() < 0.5,
+        (moved[0].y
+            - layout.body_area.y
+            - match &core.document().sections[0].paragraphs[0].controls[4] {
+                Control::Table(table) => f64::from(table.outer_margin_top) / 75.0,
+                _ => panic!("새 쪽을 소유한 원본 표"),
+            })
+        .abs()
+            < 0.5,
         "앞 쪽의 그림 회피를 새 쪽에 중복 가산하면 안 된다: {:?}",
         moved[0]
     );
@@ -670,8 +732,13 @@ fn issue_6812_inline_flow_page_fit_drops_previous_page_exclusion() {
     assert!(first.is_empty());
     assert_eq!(second.len(), 1);
     let (_, _, table) = second[0];
+    let new_layout = PageLayoutInfo::from_page_def(
+        &core.document().sections[0].section_def.page_def,
+        &Default::default(),
+        96.0,
+    );
     assert!(
-        table.y + table.height <= layout.body_area.y + 100.0 + 0.5,
+        table.y + table.height <= new_layout.body_area.y + new_layout.body_area.height + 0.5,
         "새 쪽의 실제 본문 하단 안에 배치"
     );
     let Control::Picture(picture) = &core.document().sections[0].paragraphs[0].controls[3] else {

@@ -56,6 +56,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 | strum | 0.28.0 | MIT | Peternator7/strum | enum derive |
 | subsecond | 0.7.10 | MIT OR Apache-2.0 | DioxusLabs/dioxus | 개발 핫패치 (optional) |
 | subsetter | 0.2.6 | MIT OR Apache-2.0 | typst/subsetter | 폰트 subset |
+| rhwp-jpeg-encoder | 0.7.1-rhwp.1 (upstream 0.7.1) | (MIT OR Apache-2.0) AND IJG | vstroebel/jpeg-encoder, rhwp 보정 | Print JPEG의 성분 순서·채널별 sampling·정수 DCT/YCbCr 전달. 원본 및 패치 고지 유지 |
 | rhwp-svg2pdf | 0.13.0-rhwp.1 (upstream 0.13.0) | MIT OR Apache-2.0 | typst/svg2pdf, rhwp 보정 | SVG → PDF. 원저작자·패치 고지 유지 |
 | svgtypes | 0.16.1 | Apache-2.0 OR MIT | linebender/svgtypes | SVG 값 파싱 |
 | ttf-parser | 0.25.1 | MIT OR Apache-2.0 | harfbuzz/ttf-parser | 폰트 파싱 |
@@ -67,6 +68,25 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 | wasm-bindgen-test | 0.3.75 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM 테스트 |
 | web-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | Web API binding |
 | zip | 8.6.0 | MIT | zip-rs/zip2 | HWPX ZIP 처리 |
+
+### PDF opt-in 코덱의 내부 보정판 (#8183)
+
+기본 빌드에는 다음 코덱을 포함하지 않는다. `pdf-jbig2`는 JBIG2와 내부 MMR 처리용
+CCITT를, `pdf-jpeg2000`은 JPEG 2000을 선택한다. backend의 전체 rendering은 켜지 않는다.
+
+| 내부 패키지 | 원본 버전 | 라이선스 | 보완 범위 |
+| --- | --- | --- | --- |
+| `rhwp-hayro-jbig2` `0.3.0-rhwp.1` | `hayro-jbig2` `0.3.0` | Apache-2.0 OR MIT | 사전·segment·bitmap의 예약과 반복 작업 |
+| `rhwp-hayro-ccitt` `0.3.0-rhwp.1` | `hayro-ccitt` `0.3.0` | Apache-2.0 OR MIT | JBIG2 MMR의 changing-line 저장과 디코딩 작업 |
+| `rhwp-hayro-jpeg2000` `0.4.0-rhwp.1` | `hayro-jpeg2000` `0.4.0` | Apache-2.0 OR MIT | tile·component·wavelet 저장과 디코딩 작업 |
+| `rhwp-codec-resource` `0.1.0` | RHWP 자체 코드 | MIT | 동기 요청의 fallible 예약·논리 작업량 연결 |
+
+원저작자는 Laurenz Stampfl이며 원본은 [LaurenzV/hayro](https://github.com/LaurenzV/hayro)이다.
+각 `vendor/rhwp-hayro-*/`의 `NOTICE`, `LICENSE-*`, `UPSTREAM_FILES.json`에 원본 고지와
+공식 `.crate` archive SHA-256·파일별 원본 해시를 보존했다. JPEG 2000의 ICC 자료 고지는
+`vendor/rhwp-hayro-jpeg2000/assets/README.md`와 `assets/LICENSE.txt`를 함께 배포한다.
+이는 RHWP 보정판이며 공식 hayro 릴리스가 아니다. 패키지는 게시 전 로컬 후보이고
+실제 crates.io 게시 승인·이름 확정은 #8174의 절차를 따른다.
 
 ### 전체 Rust 의존성 요약
 

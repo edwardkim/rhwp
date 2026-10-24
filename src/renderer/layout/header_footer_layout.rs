@@ -366,6 +366,7 @@ impl LayoutEngine {
                             bin_data_content,
                             &std::collections::HashMap::new(),
                             is_header,
+                            None,
                         );
                     }
                 }
@@ -426,6 +427,7 @@ impl LayoutEngine {
                             bin_data_content,
                             &std::collections::HashMap::new(),
                             is_header,
+                            None,
                         );
                     }
                 }

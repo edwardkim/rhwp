@@ -1,0 +1,19 @@
+{
+  "parentHead": "3dada4386c000fbec6510aca204f660a1ae19ff8",
+  "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "productionDiffSha256": "a7b05083dfcf907da9dcbb89d8128fa878392838dbe215f181c3b20253f436a3",
+  "sourceFiles": {
+    "src/paint/metafile_surface.rs": "7b87a2d2ca815205989abf9da355b3a67200bd4d1ae89d6a3a9a9b14a3b50c86",
+    "src/paint/metafile_masks.rs": "4e66a8a239f6afa7d026eeffaa672e17d15ef726647040aecaccf12e78818e11"
+  },
+  "sourceState": "Uncommitted shared bitmap-mask grid correction; no document selector or threshold change",
+  "remoteReference": {
+    "host": "ubuntu-ted2",
+    "sourceHead": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+    "sourcePath": "src/paint/metafile_print/masks.rs",
+    "sha256": "4e66a8a239f6afa7d026eeffaa672e17d15ef726647040aecaccf12e78818e11",
+    "remoteReadOnly": true,
+    "applied": false
+  },
+  "fullPrAcceptance": false
+}

@@ -55,17 +55,16 @@ fn test_svg_draw_text_medium_weight() {
 
 #[test]
 fn legacy_hanyang_faces_have_portable_local_aliases() {
-    // HWPX가 저장한 legacy face와 한컴 2020 PDF가 실제로 대체해 출력한 family가
-    // 다르다. `--font-style` SVG가 이 순서를 잃으면 검증 host에서 무관한 폴백 또는
-    // 두부(□)로 rasterize되어 PDF 대조 증적이 무효해진다.
+    // 원본 outline을 먼저 찾고 실제로 없는 경우에만 대체한다.
+    // 한컴 버전만으로 원본 프로그램을 HCR로 덮어쓰지 않는다.
     assert_eq!(
         font_local_aliases("한양중고딕"),
         vec![
-            "HCR Dotum",
-            "함초롬돋움",
             "한양중고딕",
             "HY중고딕",
             "HYGothic-Medium",
+            "HCR Dotum",
+            "함초롬돋움",
         ]
     );
     assert_eq!(
@@ -102,8 +101,8 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
     );
     assert_eq!(
         known_font_filenames("한양중고딕").first(),
-        Some(&"HANDotum.ttf"),
-        "한컴 2020 PDF와 같은 HCR Dotum을 full embed에서 먼저 찾아야 함"
+        Some(&"H2GTRM.TTF"),
+        "Full embed도 같은 원본 outline 프로그램을 먼저 찾아야 함"
     );
     assert_eq!(
         known_font_filenames("휴먼명조").first(),
@@ -272,8 +271,13 @@ fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
         .find(|line| line.contains("font-family: \"한양중고딕\""))
         .expect("한양중고딕 style rule");
     assert!(
-        hanyang_jung.contains("local(\"HCR Dotum\"), local(\"함초롬돋움\"), local(\"한양중고딕\")"),
-        "한컴 PDF 대체 고딕이 legacy local face보다 앞서야 함"
+        hanyang_jung
+            .find("local(\"HY중고딕\")")
+            .expect("원본 outline 별칭")
+            < hanyang_jung
+                .find("local(\"HCR Dotum\")")
+                .expect("대체 outline 폴백"),
+        "실제 CSS에서도 정상 원본 outline이 대체 고딕보다 앞서야 함"
     );
     let human_gothic = css
         .lines()
@@ -577,7 +581,7 @@ fn extra_char_spacing_does_not_expand_ascii_glyph_width() {
 }
 
 #[test]
-fn negative_extra_char_spacing_preserves_existing_svg_glyph_fit() {
+fn negative_extra_char_spacing_moves_origins_without_compressing_svg_glyphs() {
     let base_style = TextStyle {
         font_size: 20.0,
         font_family: "돋움".to_string(),
@@ -605,8 +609,8 @@ fn negative_extra_char_spacing_preserves_existing_svg_glyph_fit() {
         let base_length = text_length_of(base_output, glyph);
         let spaced_length = text_length_of(spaced_output, glyph);
         assert!(
-            (spaced_length - (base_length - 2.0)).abs() < 0.001,
-            "음수 셀 보정은 기존 SVG glyph-fit 폭을 유지해야 함: \
+            (spaced_length - base_length).abs() < 0.001,
+            "음수 배분 간격은 글리프의 자연 폭을 유지해야 함: \
              glyph={glyph}, base={base_length}, spaced={spaced_length}"
         );
     }
@@ -663,8 +667,8 @@ fn test_svg_draw_text_corner_quote_uses_halfwidth_text_length() {
     let base_quote_length = text_length_of(&base_output, "「");
     let negative_quote_length = text_length_of(&negative_output, "「");
     assert!(
-        (negative_quote_length - (base_quote_length - 2.0)).abs() < 0.001,
-        "음수 셀 보정은 낫표의 기존 SVG glyph-fit 폭을 유지해야 함: \
+        (negative_quote_length - base_quote_length).abs() < 0.001,
+        "음수 배분 간격은 낫표의 자연 glyph-fit 폭을 줄이면 안 됨: \
          base={base_quote_length}, negative={negative_quote_length}"
     );
     assert!(

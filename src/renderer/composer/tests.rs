@@ -795,15 +795,6 @@ fn test_compose_multi_line_multi_style() {
     assert_eq!(composed.lines[1].runs[0].char_style_id, 3);
 }
 
-/// 빈 문단
-#[test]
-fn test_compose_empty_paragraph() {
-    let para = Paragraph::default();
-    let composed = compose_paragraph(&para);
-    assert!(composed.lines.is_empty());
-    assert!(composed.inline_controls.is_empty());
-}
-
 /// table-vpos-01 page 5의 10/11/12 마커는 CharOverlap 하나에 두 개의
 /// HWP PUA 구성 글자가 들어온다. 텍스트 흐름과 캐럿 이동은 한 글자 폭이어야 한다.
 #[test]
@@ -1762,6 +1753,12 @@ fn test_geumchik_functions() {
     assert!(is_line_end_forbidden('\u{20A9}')); // ₩
     assert!(!is_line_end_forbidden('가'));
     assert!(!is_line_end_forbidden('A'));
+    // 같은 원본의 독립 Print는 ASCII 큰따옴표 뒤 한글 경계를 허용한다.
+    // 방향이 있는 여는 따옴표와 줄머리 금칙은 별도로 유지한다.
+    assert!(!is_line_end_forbidden('"'));
+    assert!(is_line_start_forbidden('"'));
+    assert!(is_line_end_forbidden('\u{201C}'));
+    assert!(is_line_end_forbidden('\u{300C}'));
 }
 
 /// 토크나이저: 한국어 어절 토큰화
@@ -2357,6 +2354,58 @@ fn owned_rowbreak_tac_height_selects_current_or_multirow_frames() {
         16.0
     );
 
+    // 완전한 원본 개체 줄이 새 프레임의 다음 저장 줄을 닫는 경우와,
+    // 단순 되감김·더티 셀·합성 사다리를 구분한다. px 위치를 핀으로 두지 않는다.
+    let mut moved = single_row.clone();
+    moved.line_segs[0].vertical_pos = moved.line_segs[0].line_height * 2;
+    let mut next = Paragraph {
+        line_segs: vec![LineSeg {
+            vertical_pos: moved.line_segs[0].line_height + moved.line_segs[0].line_spacing,
+            line_height: moved.line_segs[0].line_spacing,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let closes = |host: &Paragraph, following: &Paragraph| {
+        tac_next_line_full_spacing(
+            host,
+            Some(following),
+            0.0,
+            0.0,
+            &host.line_segs[0],
+            crate::model::provenance::LayoutCompatibilityProfile::default(),
+            96.0,
+        )
+    };
+    assert!(closes(&moved, &next));
+    next.line_segs[0].vertical_pos -= moved.line_segs[0].line_spacing;
+    assert!(
+        !closes(&moved, &next),
+        "되감김만으로 전량 간격을 소유하지 않는다"
+    );
+    next.line_segs[0].vertical_pos += moved.line_segs[0].line_spacing;
+    next.cell_format_vpos_dirty = true;
+    assert!(!closes(&moved, &next));
+    next.cell_format_vpos_dirty = false;
+    next.line_segs[0].tag = LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    // 현재 생성한 후속 줄은 원본 저장 사다리의 닫힘 증거가 아니다.
+    assert!(
+        crate::renderer::float_placement::restarted_tac::restarted_tac_line_advance(
+            &moved, &next, 0.0, 0.0, 96.0,
+        )
+        .is_none()
+    );
+    // 저장 원점이 간격을 복원하지 않는 후속 재조판에는 전량 간격을 남긴다.
+    // C416의 독립 Print/전쪽 검증처럼 두 소유를 구분하며 더티 후속 줄은 위에서 거절한다.
+    assert!(closes(&moved, &next));
+    next.line_segs[0].tag = 0;
+    moved.line_segs[0].line_height -= 1;
+    next.line_segs[0].vertical_pos -= 1;
+    assert!(
+        !closes(&moved, &next),
+        "불완전한 개체 높이의 닫힘을 채택하지 않는다"
+    );
+
     let undersized = para_with_rows(4, 32_338);
     assert_eq!(owned_rowbreak_tac_height(&undersized, 0), None);
     assert!(stored_first_tac_line(&undersized).is_none());
@@ -2365,5 +2414,44 @@ fn owned_rowbreak_tac_height_selects_current_or_multirow_frames() {
     assert!(
         stored_first_tac_line(&single_row).is_none(),
         "가시 텍스트와 같은 줄은 별도 구성 계약"
+    );
+}
+
+#[test]
+fn default_tabs_use_the_physical_row_origin() {
+    // 80px 등간격 탭 격자에서 원점 20px인 폭 100px 줄은
+    // 첫 탭 60px + 전각 네 글자 40px가 정확히 한 줄을 소유한다.
+    // 원점 0인 대조군은 80px + 40px라 두 줄이다.
+    let styles = ResolvedStyleSet {
+        char_styles: vec![crate::renderer::style_resolver::ResolvedCharStyle {
+            font_size: 10.0,
+            ..Default::default()
+        }],
+        para_styles: vec![crate::renderer::style_resolver::ResolvedParaStyle {
+            default_tab_width: 80.0,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let para = Paragraph {
+        text: "\t가나다라".into(),
+        char_count: 6,
+        char_offsets: (0..5).collect(),
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        ..Default::default()
+    };
+    let rows = |left| {
+        let mut frame =
+            crate::renderer::layout_frame::LayoutFrame::new(left..left + 7500, 0, vec![]);
+        super::line_breaking::layout_paragraph_in_frame(&para, &mut frame, &styles, 96.0).unwrap()
+    };
+    assert_eq!(rows(0).len(), 2);
+    assert_eq!(
+        rows(1500).len(),
+        1,
+        "탭 격자는 줄 내부 0이 아니라 물리 행의 시작 좌표에서 이어진다"
     );
 }

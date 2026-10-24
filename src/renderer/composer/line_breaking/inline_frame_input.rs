@@ -15,19 +15,9 @@ pub(super) fn project(
         .zip(source.control_text_positions())
         .zip(source.control_utf16_positions())
         .filter_map(|((control, position), raw)| {
-            let (mut width, mut height) = inline_control_occupied_size_hwp(control, styles, dpi)?;
-            if let Control::Picture(picture) = control {
-                // Paint consumes the box including these outer margins, then
-                // places the original image inside it. Fill must reserve that
-                // same box, rather than just the visible image dimensions.
-                let margin = &picture.common.margin;
-                width = width
-                    .saturating_add(i32::from(margin.left))
-                    .saturating_add(i32::from(margin.right));
-                height = height
-                    .saturating_add(i32::from(margin.top))
-                    .saturating_add(i32::from(margin.bottom));
-            }
+            // 공통 크기는 그림 본체와 바깥여백을 이미 포함한다.
+            // 투영 슬롯은 같은 점유를 소비하며 여백을 다시 합산하지 않는다.
+            let (width, height) = inline_control_occupied_size_hwp(control, styles, dpi)?;
             // 글자 없는 원시 문단의 제어문은 서로 다른 UTF-16 슬롯을 갖지만
             // 가시 문자 축에서는 모두 유일한 빈 경계에 속한다. 순차 인덱스
             // 폴백을 가시 글자로 해석하면 두 번째 이후 개체가 입력에서 빠진다.
@@ -62,6 +52,7 @@ pub(super) fn project(
                 width_hwp: width,
                 height_hwp: height,
                 baseline_distance_hwp: flow_inline_baseline_hwp(control, height),
+                spacing_height_hwp: inline_control_spacing_height_hwp(control),
             });
             scalar_index += 1;
             represented |= chars.get(position) == Some(&'\u{FFFC}')

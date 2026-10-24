@@ -832,6 +832,7 @@ mod tests {
 
     fn glyph_op(variant: PaintVariantMeta) -> PaintOp {
         PaintOp::GlyphRun {
+            paint_transform: None,
             bbox: bbox(),
             run: Box::new(LayerGlyphRunPaint {
                 source: TextSourceSpan {
@@ -902,6 +903,7 @@ mod tests {
 
     fn glyph_outline_op(variant: PaintVariantMeta) -> PaintOp {
         PaintOp::GlyphOutline {
+            paint_transform: None,
             bbox: bbox(),
             outline: Box::new(LayerGlyphOutlinePaint {
                 source: TextSourceSpan {

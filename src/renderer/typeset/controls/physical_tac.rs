@@ -79,6 +79,7 @@ pub(in crate::renderer::typeset) fn prepare(
             // paint가 위 바깥 여백을 소비하므로 metadata에는 pen만 전달한다.
             y: origin,
             clearance: 0.0,
+            resolved_x: false,
             advance_end: Some(end),
             stored_horizontal_pen: None,
             stored_column_frame: None,

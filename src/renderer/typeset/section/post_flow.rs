@@ -4,6 +4,68 @@ use crate::renderer::typeset::{
     Issue2424TypesetProfile, MeasuredTable, PageDef, PageItem, Paragraph, ResolvedStyleSet,
     TypesetEngine, TypesetState,
 };
+// 저장된 TAC 줄의 끝뿐 아니라 다음 원본 줄의 앞 간격도 같은 축에서
+// 실제 수용 끝을 인증해야 한다. 단순 advance_end는 축 보존의 근거가 아니다.
+fn stored_tac_successor_keeps_axis(
+    host: &Paragraph,
+    next: &Paragraph,
+    placement: &crate::renderer::float_placement::InlineBoxPlacement,
+    source_base: Option<i32>,
+    next_spacing_before: f64,
+    current_height: f64,
+    dpi: f64,
+) -> bool {
+    use crate::model::paragraph::LineSeg;
+    use crate::renderer::hwpunit_to_px;
+    let Some(base) = source_base else {
+        return false;
+    };
+    let ([line], Some(successor)) = (host.line_segs.as_slice(), next.line_segs.first()) else {
+        return false;
+    };
+    let ([Control::Table(table)], [Control::Table(next_table)]) =
+        (host.controls.as_slice(), next.controls.as_slice())
+    else {
+        return false;
+    };
+    if !table.common.treat_as_char
+        || !next_table.common.treat_as_char
+        || table.caption.is_some()
+        || !host.text.trim().is_empty()
+        || !next.text.trim().is_empty()
+        || [host, next].iter().any(|para| {
+            para.stored_text_partition_is_dirty()
+                || para.cell_format_vpos_dirty
+                || para
+                    .source_line_seg_vertical_pos
+                    .as_ref()
+                    .is_some_and(|source| {
+                        source.first() != para.line_segs.first().map(|seg| &seg.vertical_pos)
+                    })
+        })
+        || [line, successor]
+            .iter()
+            .any(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 || seg.line_height <= 0)
+        || successor.vertical_pos <= line.vertical_pos
+        || i64::from(line.line_height)
+            != i64::from(table.common.height)
+                + i64::from(table.outer_margin_top)
+                + i64::from(table.outer_margin_bottom)
+        || !next_spacing_before.is_finite()
+        || next_spacing_before < 0.0
+    {
+        return false;
+    }
+    let host_pen = hwpunit_to_px(line.vertical_pos.saturating_sub(base), dpi);
+    let successor_flow =
+        hwpunit_to_px(successor.vertical_pos.saturating_sub(base), dpi) - next_spacing_before;
+    let epsilon = dpi / 7200.0;
+    (host_pen - placement.y).abs() <= epsilon
+        && placement.advance_end.is_some_and(|end| {
+            (end - current_height).abs() <= epsilon && (successor_flow - end).abs() <= epsilon
+        })
+}
+
 impl TypesetEngine {
     #[allow(clippy::too_many_arguments)]
     pub(super) fn finish_paragraph_anchor_state(
@@ -103,7 +165,9 @@ impl TypesetEngine {
                 // v0 로의 **역스냅**은 성장분을 뭉갠다 (36398599: p33~36 누락 구간
                 // fresh +4320HU → 한글 4쪽 vs 역스냅 3쪽). dirty 이후 스냅은 전방만
                 // 허용한다. 합성-앵커(전면 NO_LS 문서)는 자기정합이므로 무관.
+                // 다음 원본 줄로 실제 소비를 확인한 경계는 줄 부재만으로 무효화하지 않는다.
                 if st.vpos_page_base_stored
+                    && !st.paragraph_origins.contains_key(&para_idx)
                     && paragraphs.get(para_idx).is_some_and(|p| {
                         p.line_segs.first().map_or(true, |s| {
                             s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
@@ -172,25 +236,50 @@ impl TypesetEngine {
                         };
                     // 확정 인라인 끝점은 이미 간격을 소비한 현재 흐름과 연결돼 있다.
                     // 후처리에서 그 기준을 지우면 다음 lazy 역산이 같은 간격을 재가산한다.
-                    // TAC의 advance_end는 흐름 끝만 확정하며 다음 문단의 source
-                    // 좌표 축을 인증하지 않는다. paint도 TAC 완료 뒤 축을 종료한다.
+                    // TAC의 advance_end만으로 다음 원본 축을 인증하지 않는다.
+                    // 원본 외곽·수용 pen·다음 TAC의 앞 간격까지 같은 축으로 닫힐
+                    // 때만 유지해 후속 paint에도 확정 inline placement를 전달한다.
                     let resolved_inline_end = match last {
                         Some(PageItem::Table {
                             para_index,
                             control_index,
-                        }) if paragraphs
-                            .get(*para_index)
-                            .and_then(|host| host.controls.get(*control_index))
-                            .is_some_and(|control| {
-                                matches!(control, Control::Table(table)
-                                if !table.common.treat_as_char)
-                            }) =>
-                        {
-                            st.inline_placements
-                                .get(&(*para_index, *control_index))
-                                .and_then(|placement| placement.advance_end)
-                                .is_some_and(|end| (end - st.current_height).abs() < 0.01)
-                        }
+                        }) => paragraphs.get(*para_index).is_some_and(|host| {
+                            host.controls.get(*control_index).is_some_and(|control| {
+                                let Control::Table(table) = control else {
+                                    return false;
+                                };
+                                st.inline_placements
+                                    .get(&(*para_index, *control_index))
+                                    .is_some_and(|placement| {
+                                        if !table.common.treat_as_char {
+                                            return placement.advance_end.is_some_and(|end| {
+                                                (end - st.current_height).abs() < 0.01
+                                            });
+                                        }
+                                        !st.profile.session_edited()
+                                            && paragraphs.get(*para_index + 1).is_some_and(|next| {
+                                                let style_id = composed
+                                                    .get(*para_index + 1)
+                                                    .map_or(next.para_shape_id as usize, |para| {
+                                                        para.para_style_id as usize
+                                                    });
+                                                let before = styles
+                                                    .para_styles
+                                                    .get(style_id)
+                                                    .map_or(0.0, |style| style.spacing_before);
+                                                stored_tac_successor_keeps_axis(
+                                                    host,
+                                                    next,
+                                                    placement,
+                                                    st.vpos_page_base.or(st.vpos_lazy_base),
+                                                    before,
+                                                    st.current_height,
+                                                    self.dpi,
+                                                )
+                                            })
+                                    })
+                            })
+                        }),
                         _ => false,
                     };
                     // 저장 컷으로 본문을 나눈 어울림 표는 마지막 글줄의 실제

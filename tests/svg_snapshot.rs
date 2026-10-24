@@ -176,6 +176,226 @@ fn form_002_page_0() {
     }
 }
 
+#[test]
+fn table_text_page_0() {
+    use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    use serde_json::Value;
+
+    fn collect_nodes<'a>(node: &'a RenderNode, output: &mut Vec<&'a RenderNode>) {
+        output.push(node);
+        for child in &node.children {
+            collect_nodes(child, output);
+        }
+    }
+
+    fn visible_end(node: &RenderNode) -> f64 {
+        let RenderNodeType::TextRun(run) = &node.node_type else {
+            panic!("글자 런이어야 한다");
+        };
+        let last = run
+            .display_or_text()
+            .chars()
+            .last()
+            .expect("빈 런이 아니다");
+        let glyph = last.to_string();
+        let mut natural = run.style.clone();
+        natural.letter_spacing = 0.0;
+        natural.extra_char_spacing = 0.0;
+        // bbox의 전진 폭에는 마지막 글자 뒤의 자간도 들어간다.
+        // 음수 자간의 cursor 끝과 마지막 가시 글자의 끝을 구분한다.
+        let positions = |text: &str, style: &rhwp::renderer::TextStyle| {
+            EmbeddedTextMeasurer.compute_char_positions(text, style)
+        };
+        let overhang = (positions(&glyph, &natural)[1] - positions(&glyph, &run.style)[1]).max(0.0);
+        node.bbox.x + node.bbox.width + overhang
+    }
+
+    // 한컴2020 정본의 전1쪽 Native·WASM 시각 검증을 마친 표다.
+    // 글자 간격의 정당한 변화가 표의 내용·셀 소유 검사를 깨지 않게 한다.
+    // 한컴 Print 전1쪽과 현재 Native/fresh WASM을 대조한 기부 통계 표다.
+    // 전진 상자와 실제 글자 점유를 구분해 내용·셀 소유·정렬 관계를 검사한다.
+    fn collect<'a>(node: &'a Value, kind: &str, output: &mut Vec<&'a Value>) {
+        if node["type"] == kind {
+            output.push(node);
+        }
+        if let Some(children) = node["children"].as_array() {
+            for child in children {
+                collect(child, kind, output);
+            }
+        }
+    }
+
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwpx/table-text.hwpx");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&fs::read(path).expect("원문 읽기"))
+        .expect("원문 열기");
+    assert_eq!(doc.page_count(), 1, "정본의 전체 쪽수");
+    let source_table = doc
+        .document()
+        .sections
+        .iter()
+        .flat_map(|section| &section.paragraphs)
+        .flat_map(|para| &para.controls)
+        .find_map(|control| match control {
+            rhwp::model::control::Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("원문의 기부 통계 표");
+    let tree: Value = serde_json::from_str(&doc.get_page_render_tree(0).expect("1쪽 렌더 트리"))
+        .expect("렌더 트리 JSON");
+    let full_tree = doc
+        .build_page_render_tree(0)
+        .expect("스타일을 포함한 원본 트리");
+    let mut full_nodes = Vec::new();
+    collect_nodes(&full_tree.root, &mut full_nodes);
+    let mut tables = Vec::new();
+    collect(&tree, "Table", &mut tables);
+    assert_eq!(tables.len(), 1, "기부 통계 표 하나");
+    assert_eq!(tables[0]["rows"], 3);
+    assert_eq!(tables[0]["cols"], 8);
+    let mut cells = Vec::new();
+    collect(tables[0], "Cell", &mut cells);
+    assert_eq!(cells.len(), 18, "상단 병합 두 칸과 하단 두 행의16칸");
+    let expected = [
+        (0, 0, "기부 금액(원, %)"),
+        (0, 4, "기부 건수(건, %)"),
+        (1, 0, "2023년"),
+        (1, 1, "2024년"),
+        (1, 2, "2025년"),
+        (1, 3, "2024년 대비 증감"),
+        (1, 4, "2023년"),
+        (1, 5, "2024년"),
+        (1, 6, "2025년"),
+        (1, 7, "2024년 대비 증감"),
+        (2, 0, "65,063,026,600"),
+        (2, 1, "87,804,677,338"),
+        (2, 2, "151,459,074,040"),
+        (2, 3, "72.5"),
+        (2, 4, "526.278"),
+        (2, 5, "772,712"),
+        (2, 6, "1,391,874"),
+        (2, 7, "80.0"),
+    ];
+    let metric = |node: &Value, key: &str| node["bbox"][key].as_f64().expect("상자 좌표");
+    for (row, col, text) in expected {
+        let owners: Vec<_> = cells
+            .iter()
+            .copied()
+            .filter(|cell| cell["row"] == row && cell["col"] == col)
+            .collect();
+        assert_eq!(owners.len(), 1, "({row},{col}) 칸이 한 번만 출력된다");
+        let cell = owners[0];
+        let mut runs = Vec::new();
+        collect(cell, "TextRun", &mut runs);
+        let full_cell = full_nodes
+            .iter()
+            .copied()
+            .find(|node| matches!(&node.node_type, RenderNodeType::TableCell(c) if c.row == row && c.col == col))
+            .expect("가시 폭을 검사할 소유 칸");
+        let mut cell_nodes = Vec::new();
+        collect_nodes(full_cell, &mut cell_nodes);
+        let paint_runs: Vec<_> = cell_nodes
+            .into_iter()
+            .filter(|node| matches!(node.node_type, RenderNodeType::TextRun(_)))
+            .collect();
+        assert_eq!(
+            paint_runs.len(),
+            runs.len(),
+            "두 트리의 글자 런 소유가 같다"
+        );
+        for (run, paint) in runs.iter().zip(&paint_runs) {
+            let RenderNodeType::TextRun(paint) = &paint.node_type else {
+                unreachable!()
+            };
+            assert_eq!(
+                run["text"].as_str(),
+                Some(paint.text.as_str()),
+                "런 순서가 같다"
+            );
+        }
+        let content: String = runs
+            .iter()
+            .map(|run| run["text"].as_str().expect("글자"))
+            .collect();
+        assert_eq!(content.trim(), text, "({row},{col}) 칸의 내용과 순서");
+        let tolerance = metric(cell, "w").min(metric(cell, "h")) * 0.005;
+        for run in &runs {
+            for (origin, extent) in [("x", "w"), ("y", "h")] {
+                assert!(
+                    metric(run, origin) >= metric(cell, origin) - tolerance
+                        && metric(run, origin) + metric(run, extent)
+                            <= metric(cell, origin) + metric(cell, extent) + tolerance,
+                    "({row},{col}) 글자가 소유 칸 내부에 표시된다: {run}"
+                );
+            }
+        }
+        for run in &paint_runs {
+            assert!(
+                visible_end(run) <= metric(cell, "x") + metric(cell, "w") + tolerance,
+                "({row},{col}) 마지막 글자의 가시 끝도 소유 칸 내부다"
+            );
+        }
+        if row == 2 || (row == 1 && (col == 3 || col == 7)) {
+            let left = runs
+                .iter()
+                .map(|run| metric(run, "x"))
+                .fold(f64::INFINITY, f64::min);
+            let mut right = runs
+                .iter()
+                .map(|run| metric(run, "x") + metric(run, "w"))
+                .fold(f64::NEG_INFINITY, f64::max);
+            {
+                let source_cell = source_table
+                    .cells
+                    .iter()
+                    .find(|cell| cell.row == row && cell.col == col)
+                    .expect("원문의 가운데 정렬 칸");
+                let shape_id = source_cell.paragraphs[0]
+                    .char_shapes
+                    .last()
+                    .expect("원문 말미 글자 모양")
+                    .char_shape_id as usize;
+                let shape = &doc.document().doc_info.char_shapes[shape_id];
+                // 자간은 다음 글자의 원점 간격이다.
+                // 음수 말미 자간으로 줄어든 전진폭을 글리프 점유 끝으로 취급하지 않는다.
+                // HWPUNIT와 원문 장평·상대 크기로 정하며 배치 helper를 기대값으로 쓰지 않는다.
+                let (language, advance_em) = if row == 1 {
+                    assert!(text.ends_with('감'));
+                    (0, 1.0)
+                } else {
+                    assert!(text.ends_with(['0', '8', '5', '2', '4']));
+                    let font_id = usize::from(shape.font_ids[1]);
+                    assert_eq!(
+                        doc.document().doc_info.font_faces[1][font_id].name,
+                        "맑은 고딕"
+                    );
+                    // 독립 malgun.ttf hmtx: 숫자 전진 1128 / unitsPerEm 2048.
+                    // 위치를 고정하지 않고 원문의 음수 자간만 글자 점유로 환산한다.
+                    (1, 1128.0 / 2048.0)
+                };
+                let glyph_width = f64::from(shape.base_size) * 96.0 / 7200.0
+                    * f64::from(shape.relative_sizes[language])
+                    / 100.0
+                    * f64::from(shape.ratios[language])
+                    / 100.0
+                    * advance_em;
+                let terminal_tracking = glyph_width * f64::from(shape.spacings[language]) / 100.0;
+                right -= terminal_tracking.min(0.0);
+            }
+            assert!(
+                left >= metric(cell, "x") - tolerance
+                    && right <= metric(cell, "x") + metric(cell, "w") + tolerance,
+                "({row},{col}) 정렬된 글자 점유가 소유 칸 내부에 있다"
+            );
+            let center = metric(cell, "x") + metric(cell, "w") / 2.0;
+            assert!(
+                ((left + right) / 2.0 - center).abs() <= tolerance,
+                "({row},{col}) 수치와 증감 제목을 소유 칸 가운데 정렬한다"
+            );
+        }
+    }
+}
+
 /// Issue #157: 비-TAC wrap=위아래 표 out-of-flow 배치 — 표가 텍스트와 중첩되지 않음
 #[test]
 fn issue_157_page_1() {

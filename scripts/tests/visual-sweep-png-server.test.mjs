@@ -4,7 +4,7 @@ import {mkdtempSync, rmSync, writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import test from 'node:test';
-import {createSweepServer, registerCanvasFont} from '../export-wasm-png-for-sweep.mjs';
+import {createSweepServer, registerCanvasFont, preparePrintReadbackCanvas} from '../export-wasm-png-for-sweep.mjs';
 
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 
@@ -30,6 +30,33 @@ test('Canvas 공급은 family 이름과 원본 바이트를 보존한다', async
     assert.deepEqual(face.descriptors, {weight: '400', style: 'normal'});
     assert.equal(supplied.at(-1), face);
   }
+});
+
+// HTMLCanvasElement은 첫 getContext의 options만 적용하고 같은 context를 돌려준다.
+function canvasFixture() {
+  let context;
+  return {
+    getContext(kind, options = {}) {
+      assert.equal(kind, '2d');
+      context ??= {getContextAttributes: () => ({
+        alpha: true, willReadFrequently: options.willReadFrequently === true,
+      })};
+      return context;
+    },
+  };
+}
+
+test('readback 조건이 이후 WASM의 기본 getContext 호출에도 유지된다', () => {
+  const canvas = canvasFixture();
+  const attributes = preparePrintReadbackCanvas(canvas);
+  assert.deepEqual(canvas.getContext('2d').getContextAttributes(), attributes);
+  assert.equal(attributes.willReadFrequently, true);
+});
+
+test('이미 만든 기본 context를 반복 readback context로 오인하지 않는다', () => {
+  const canvas = canvasFixture();
+  canvas.getContext('2d');
+  assert.throws(() => preparePrintReadbackCanvas(canvas), /최초 2D context/);
 });
 
 async function withServer(t, fonts = new Map()) {

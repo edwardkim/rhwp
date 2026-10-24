@@ -102,7 +102,7 @@ pub(in crate::renderer::typeset) fn refine_split_boundary(
     //      "별도 기계가 다룬다"며 통째로 배제했는데, 그 별도 기계 둘이
     //      **네이티브 HWP5 + 각주 없음** 조합에서는 모두 꺼진다
     //      (`internal_vpos_page_break_line` 은 호출부가 네이티브 HWP5 를 목록에
-    //      넣지 않고, `native_hwp5_existing_footnote_reset_overlap_break_line` 은
+    //      넣지 않고, `native_hwp5_existing_footnote_reset_boundary` 은
     //      각주가 없으면 즉시 반환). 27469 는 6개 쪽에서 본문 16줄이 하한을 넘고
     //      8쪽 마지막 줄은 용지 밖(+121.2px)으로 나간다.
     //

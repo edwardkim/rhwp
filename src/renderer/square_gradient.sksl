@@ -1,0 +1,8 @@
+uniform float2 center;
+uniform float2 axis;
+uniform shader ramp;
+half4 main(float2 position) {
+    float2 d = position - center;
+    float2 q = float2(dot(d, axis), dot(d, float2(-axis.y, axis.x)));
+    return ramp.eval(float2(max(abs(q.x), abs(q.y)), 0));
+}

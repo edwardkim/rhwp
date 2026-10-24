@@ -26,6 +26,7 @@ import { imageCropSelectionIsEmpty, imageCropSourceRect } from './image-crop-sca
 import { magnificationFiltering } from './image-sampling.ts';
 import {
   drawPageMarginGuides,
+  shouldDrawPageMarginGuides,
   type PageMarginGuideEdges,
   type PageSpaceRect,
 } from './page-margin-guides';
@@ -308,6 +309,15 @@ export class PageRenderer {
     return this.renderProfile;
   }
 
+  /** 본문뿐 아니라 쪽 배경의 그림도 포함하며, 확인할 수 없으면 null을 반환한다. */
+  hasRasterContent(pageIdx: number): boolean | null {
+    const layers = this.layerSummaryCache.get(pageIdx)?.summary
+      ?? this.getLayerPlaneSummaryFromOverlayImages(pageIdx)
+      ?? this.getLayerPlaneSummaryFromTree(pageIdx);
+    if (layers.signature === 'empty') return null;
+    return layers.imageCount > 0 || layers.rawSvgCount > 0 || layers.pageBackgroundComplex;
+  }
+
   /**
    * 해당 페이지가 만들 수 있는 Canvas surface 수를 콘텐츠 plane 구성에서 계산한다.
    * 아직 렌더하지 않은 retained 페이지도 전역 예산에 넣을 수 있도록 zoom과 독립적으로 캐시한다.
@@ -437,14 +447,13 @@ export class PageRenderer {
     let renderStarted = false;
     try {
       const pageInfo = this.wasm.getPageInfo(pageIdx);
-      // WASM Canvas2D 경로와 같은 bitmap 경계 규칙을 쓴다. A4처럼 분수 CSS px인
-      // 페이지를 절사하면 CanvasKit 쪽만 우·하단 한 줄이 빠져 backend parity가
-      // 깨진다. 콘텐츠 좌표의 scale은 유지하고 bitmap 크기만 올림한다.
-      const width = Math.max(1, Math.ceil(pageInfo.width * renderScale));
-      const height = Math.max(1, Math.ceil(pageInfo.height * renderScale));
+      const tree = this.wasm.getPageLayerTreeObject(pageIdx, this.renderProfile);
+      // 인쇄 종이는 원본 조판 상자와 다를 수 있다. Canvas2D와 같은 공통
+      // paint 결과의 크기를 소비하고, 편집·여백 정보는 원본 pageInfo로 유지한다.
+      const width = Math.max(1, Math.ceil(tree.pageWidth * renderScale));
+      const height = Math.max(1, Math.ceil(tree.pageHeight * renderScale));
       if (canvas.width !== width) canvas.width = width;
       if (canvas.height !== height) canvas.height = height;
-      const tree = this.wasm.getPageLayerTreeObject(pageIdx, this.renderProfile);
       renderStarted = true;
       const renderedCanvas = this.canvaskitRenderer.renderPage(
         tree,
@@ -670,10 +679,13 @@ export class PageRenderer {
       // 페인터(`effective_image_bbox`)와 같은 규약 — 90/270° 는 프레임을 회전 **전**
       // 치수(가로세로 swap)로 만들고 같은 중심에서 rotate 해 외접 상자를 복원한다.
       const quarterTurned = ((image.rotation % 180) + 180) % 180 === 90;
-      const frameWidth = quarterTurned ? image.bbox.height : image.bbox.width;
-      const frameHeight = quarterTurned ? image.bbox.width : image.bbox.height;
-      const frameX = image.bbox.x + (image.bbox.width - frameWidth) / 2;
-      const frameY = image.bbox.y + (image.bbox.height - frameHeight) / 2;
+      // The producer resolves source current/common sizes for every angle.
+      // Retain the quarter-turn fallback for older WASM responses only.
+      const paintFrame = image.imagePaintBBox;
+      const frameWidth = paintFrame?.width ?? (quarterTurned ? image.bbox.height : image.bbox.width);
+      const frameHeight = paintFrame?.height ?? (quarterTurned ? image.bbox.width : image.bbox.height);
+      const frameX = paintFrame?.x ?? image.bbox.x + (image.bbox.width - frameWidth) / 2;
+      const frameY = paintFrame?.y ?? image.bbox.y + (image.bbox.height - frameHeight) / 2;
       const frame = document.createElement('div');
       frame.style.position = 'absolute';
       frame.style.left = `${(frameX - (needsClipWrapper ? visibleBbox.x : 0)) * displayScale}px`;
@@ -1109,6 +1121,7 @@ export class PageRenderer {
     clip?: PageSpaceRect,
     displayScale = 1,
   ): void {
+    if (!shouldDrawPageMarginGuides(this.renderProfile)) return;
     drawPageMarginGuides(
       this.wasm.getPageInfo(pageIdx),
       canvas,

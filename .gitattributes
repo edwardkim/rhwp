@@ -124,3 +124,7 @@ pdf/issue8109/*.hwpx -text -diff
 pdf/issue8109/print/*.pdf -text -diff
 tests/fixtures/issue_8109_saved_fonts/*.hwp -text -diff
 tests/fixtures/issue_8109_saved_fonts/*.hwpx -text -diff
+
+# #8183 PDF xref의 고정 폭 패딩과 codec stream의 원본 바이트를 보존한다.
+pdf/issue8183/*.pdf -text -diff
+pdf/issue8183/**/*.pdf -text -diff

@@ -379,6 +379,16 @@ impl LayoutEngine {
     /// 저장 줄의 유효성은 같은 계약으로 확인하되, 기존 순수 글줄 소비자는 위의
     /// 더 엄격한 컨트롤 없음 조건을 유지한다.
     pub(super) fn stored_body_text_cell_frame(&self, table: &Table, cell: &Cell) -> bool {
+        self.stored_cell_content_frame(table, cell, false)
+    }
+
+    /// 글줄 안의 개체도 같은 저장 슬롯과 조판 유닛으로 완결을 확인한다.
+    /// 중첩 표는 별도의 재귀 컷 영역이므로 이 인증으로 포함하지 않는다.
+    pub(super) fn stored_inline_content_cell_frame(&self, table: &Table, cell: &Cell) -> bool {
+        self.stored_cell_content_frame(table, cell, true)
+    }
+
+    fn stored_cell_content_frame(&self, table: &Table, cell: &Cell, inline_objects: bool) -> bool {
         let profile = self.profile.get();
         (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             && !profile.session_edited()
@@ -398,7 +408,9 @@ impl LayoutEngine {
                             control,
                             crate::model::control::Control::Header(_)
                                 | crate::model::control::Control::Footer(_)
-                        )
+                        ) || (inline_objects
+                            && control.is_treat_as_char_object()
+                            && !matches!(control, crate::model::control::Control::Table(_)))
                     })
                     && !para.line_segs.is_empty()
                     && para.line_segs.iter().all(|line| {

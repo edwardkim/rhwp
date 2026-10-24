@@ -128,7 +128,11 @@ pub(crate) enum BreakToken {
         inline_width: f64,
     },
     /// 탭 (줄 바꿈 가능 지점, 폭은 줄 위치에 따라 동적)
-    Tab { idx: usize, max_font_size: f64 },
+    Tab {
+        idx: usize,
+        max_font_size: f64,
+        auto_left_target: Option<f64>,
+    },
     /// 강제 줄 바꿈 (\n)
     LineBreak { idx: usize },
 }
@@ -147,6 +151,9 @@ struct FlowInlineControl {
     /// Equation supplies an object-owned baseline for the physical row. Other
     /// inline objects keep the text metrics already selected by the caller.
     baseline_distance_hwp: Option<i32>,
+    /// Source-owned participation in paragraph line spacing is separate from
+    /// the object's occupied height. A larger non-participant must not enlarge it.
+    spacing_height_hwp: Option<i32>,
 }
 
 /// 줄 채움 결과
@@ -240,28 +247,46 @@ pub(crate) fn is_line_start_forbidden(ch: char) -> bool {
 ///
 /// 직전 글자가 공백이면 이미 공백 토큰이 줄 끝 후보이고, 줄 끝 금칙 문자(`(`·`「` 등)면
 /// 줄 끝에 둘 수 없다. 직전이 한글이면 그 글자 뒤로 이미 등록된 같은 자리다.
-fn break_before_hangul_char(
+fn break_before_text_token(
     text_chars: &[char],
     start_idx: usize,
     line_start_idx: usize,
     korean_break_unit: u8,
 ) -> bool {
+    if start_idx <= line_start_idx || start_idx >= text_chars.len() {
+        return false;
+    }
+    let previous = text_chars[start_idx - 1];
+    // 수식 뒤 단위의 곱셈점도 낱말 경계다. 독립 Print의 `(kN․|m)`처럼
+    // 앞쪽 단위가 물리 폭 안에 들면 공백/수식 앞까지 되감지 않는다.
+    if matches!(previous, '\u{2024}' | '\u{2219}')
+        && !is_line_start_forbidden(text_chars[start_idx])
+    {
+        return true;
+    }
+    // A'·AA'의 prime/닫는 따옴표는 여는 작은따옴표와 문자값이 같다.
+    // 실제 앞 글자를 확인해 닫힌 낱말 뒤 한글 경계를 허용한다. 공백 뒤의
+    // 여는 따옴표와 방향이 명시된 여는 괄호/따옴표는 기존 금칙을 유지한다.
+    let closing_apostrophe =
+        previous == '\'' && start_idx >= 2 && text_chars[start_idx - 2].is_alphanumeric();
     // [#2185] bit7=1 = 글자 단위
     korean_break_unit == 1
         && start_idx > line_start_idx
         && text_chars.get(start_idx).is_some_and(|c| is_hangul(*c))
-        && text_chars
-            .get(start_idx - 1)
-            .is_some_and(|prev| !prev.is_whitespace() && !is_line_end_forbidden(*prev))
+        && text_chars.get(start_idx - 1).is_some_and(|prev| {
+            !prev.is_whitespace() && (!is_line_end_forbidden(*prev) || closing_apostrophe)
+        })
 }
 
 pub(crate) fn is_line_end_forbidden(ch: char) -> bool {
+    // ASCII 큰따옴표는 여는/닫는 모양이 같아 문자값만으로 줄끝 금칙으로
+    // 분류할 수 없다. 독립 Print에서도 큰따옴표 뒤 한글 경계가 줄끝이 된다.
+    // 방향이 명시된 여는 따옴표·괄호와 기존 줄머리 금칙은 별도로 유지한다.
     matches!(
         ch,
         '(' | '['
             | '{'
             | '\''
-            | '"'
             | '\u{300A}'
             | '\u{300C}'
             | '\u{300E}'
@@ -462,6 +487,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
             tokens.push(BreakToken::Tab {
                 idx: i,
                 max_font_size: font_size,
+                auto_left_target: None,
             });
             i += 1;
             continue;
@@ -1526,9 +1552,11 @@ fn resolved_letter_spacing_px(
     char_offsets: &[u32],
     char_shapes: &[CharShapeRef],
     styles: &ResolvedStyleSet,
+    space_metric: SpaceMetric,
 ) -> Vec<f64> {
     let mut lang = 0usize;
-    let metric_scope = ParagraphMetricScope::new(text_chars, styles);
+    let metric_scope =
+        ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
     text_chars
         .iter()
         .enumerate()
@@ -1553,9 +1581,15 @@ fn resolved_paragraph_letter_spacing(
     para: &Paragraph,
     text_chars: &[char],
     styles: &ResolvedStyleSet,
+    space_metric: SpaceMetric,
 ) -> Vec<f64> {
-    let mut values =
-        resolved_letter_spacing_px(text_chars, &para.char_offsets, &para.char_shapes, styles);
+    let mut values = resolved_letter_spacing_px(
+        text_chars,
+        &para.char_offsets,
+        &para.char_shapes,
+        styles,
+        space_metric,
+    );
     for (position, value) in &para.layout_field_values {
         if let Some(spacing) = values.get_mut(*position) {
             let shape = para.char_shape_id_at(*position).unwrap_or(0);
@@ -1681,6 +1715,8 @@ struct FillCursor {
     word_gap_natural_hwp: Option<i32>,
     /// 물리 프레임의 폭이 확정되면 추정 메트릭의 초과 허용을 얹지 않는다.
     allow_metric_tolerance: bool,
+    /// 등간격 탭 격자가 속한 단/셀 좌표계의 현재 줄 원점.
+    tab_grid_origin_px: Option<f64>,
     finished: bool,
     emitted_any: bool,
 }
@@ -1703,6 +1739,7 @@ impl FillCursor {
             fs_at_last_break: 0.0,
             word_gap_natural_hwp: None,
             allow_metric_tolerance: true,
+            tab_grid_origin_px: None,
             finished: false,
             emitted_any: false,
         }
@@ -1785,9 +1822,9 @@ impl<'a> TabFill<'a> {
     }
 
     /// 줄 안 위치 `lw_hwp` 의 탭이 끝나는 줄 안 위치(HWPUNIT).
-    fn next_hwp(&self, lw_hwp: i32, first_line: bool) -> i32 {
+    fn next_hwp(&self, lw_hwp: i32, first_line: bool, origin_override: Option<f64>) -> i32 {
         let lw_px = lw_hwp as f64 / 75.0;
-        let origin = self.line_origin_px[usize::from(!first_line)];
+        let origin = origin_override.unwrap_or(self.line_origin_px[usize::from(!first_line)]);
         let (position, tab_type, _) = crate::renderer::layout::find_next_tab_stop(
             origin + lw_px,
             self.stops,
@@ -1804,6 +1841,25 @@ impl<'a> TabFill<'a> {
     }
 }
 
+/// 내어쓰기 자동 탭의 문단 기준 도착점을 줄 채우기 토큰에 전달한다.
+fn apply_auto_left_tab_targets(
+    tokens: &mut [BreakToken],
+    style: Option<&super::super::style_resolver::ResolvedParaStyle>,
+) {
+    let target = style
+        .filter(|style| style.auto_tab_left)
+        .map(|style| -style.indent)
+        .filter(|target| *target > 0.0);
+    for token in tokens {
+        if let BreakToken::Tab {
+            auto_left_target, ..
+        } = token
+        {
+            *auto_left_target = target;
+        }
+    }
+}
+
 /// Fill all scalar intervals through the resumable greedy continuation.
 fn fill_lines(
     tokens: &[BreakToken],
@@ -1816,9 +1872,11 @@ fn fill_lines(
     letter_spacing_px: &[f64],
     initial_start_idx: usize,
     initial_is_first_line: bool,
+    allow_metric_tolerance: bool,
     mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
 ) -> Vec<LineBreakResult> {
     let mut cursor = FillCursor::new(initial_start_idx, initial_is_first_line);
+    cursor.allow_metric_tolerance = allow_metric_tolerance;
     let mut results = Vec::new();
 
     while let Some(interval) = fill_one_interval(
@@ -1992,9 +2050,28 @@ fn fill_one_interval(
                     termination: FillTermination::ForcedBreak,
                 });
             }
-            BreakToken::Tab { idx, max_font_size } => {
+            BreakToken::Tab {
+                idx,
+                max_font_size,
+                auto_left_target,
+            } => {
                 cursor.word_gap_natural_hwp = None;
-                let next_tab_hwp = tabs.next_hwp(cursor.lw, cursor.is_first_line);
+                let origin_override = cursor.tab_grid_origin_px.map(|origin| {
+                    origin
+                        + if (indent_px > 0.0 && cursor.is_first_line)
+                            || (indent_px < 0.0 && !cursor.is_first_line)
+                        {
+                            indent_px.abs()
+                        } else {
+                            0.0
+                        }
+                });
+                let next_tab_hwp = auto_left_target
+                    .filter(|target| cursor.is_first_line && to_hwp(*target) > cursor.lw)
+                    .map(to_hwp)
+                    .unwrap_or_else(|| {
+                        tabs.next_hwp(cursor.lw, cursor.is_first_line, origin_override)
+                    });
                 if *max_font_size > cursor.line_max_fs {
                     cursor.line_max_fs = *max_font_size;
                 }
@@ -2026,7 +2103,13 @@ fn fill_one_interval(
                     };
                     cursor.is_first_line = false;
                     cursor.last_break_token_idx = None;
-                    cursor.lw = tabs.next_hwp(cursor.lw, cursor.is_first_line);
+                    cursor.lw = tabs.next_hwp(
+                        cursor.lw,
+                        cursor.is_first_line,
+                        cursor
+                            .tab_grid_origin_px
+                            .map(|origin| origin + (-indent_px).max(0.0)),
+                    );
                     cursor.token_index += 1;
                     cursor.emitted_any = true;
                     return Some(FilledInterval {
@@ -2202,7 +2285,7 @@ fn fill_one_interval(
                     continue;
                 }
 
-                if break_before_hangul_char(
+                if break_before_text_token(
                     text_chars,
                     *start_idx,
                     cursor.line_start_idx,
@@ -2489,7 +2572,9 @@ fn fill_lines_before_cursor(
                 is_first_line = false;
                 last_break_token_idx = None;
             }
-            BreakToken::Tab { idx, max_font_size } => {
+            BreakToken::Tab {
+                idx, max_font_size, ..
+            } => {
                 // 탭 계산은 px로 수행 후 HWPUNIT 변환 (정밀도 유지)
                 let lw_px = lw as f64 / 75.0;
                 let next_tab_px = ((lw_px / tab_w_px).floor() + 1.0) * tab_w_px;
@@ -2565,7 +2650,7 @@ fn fill_lines_before_cursor(
                 ref char_widths,
                 ..
             } => {
-                if break_before_hangul_char(
+                if break_before_text_token(
                     text_chars,
                     *start_idx,
                     line_start_idx,
@@ -2850,6 +2935,20 @@ fn paragraph_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> Option
         })
 }
 
+/// 표시되지 않는 문단 끝 문자도 마지막 줄의 글자모양 높이를 소유한다.
+/// 문자 수는 확장 제어를 포함한 원본 UTF-16 축이므로 표시 문자열 길이로 대신하지 않는다.
+fn paragraph_end_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> f64 {
+    let Some(end_pos) = para.char_count.checked_sub(1) else {
+        return 0.0;
+    };
+    let id = find_active_char_shape(&para.char_shapes, end_pos);
+    styles
+        .char_styles
+        .get(id as usize)
+        .map(|style| style.font_size)
+        .unwrap_or(0.0)
+}
+
 /// 비-글자취급 개체(표·그림·도형)의 기준 문자 위치(텍스트 문자 인덱스)와 그 문자의 글꼴 크기(px).
 ///
 /// 개체가 글자처럼 흐르지 않아도 기준 문자는 문단 텍스트의 한 글자이고, 한컴은 그 글자의
@@ -2908,7 +3007,7 @@ fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
         .iter()
         .filter_map(|ctrl| match ctrl {
             Control::Picture(pic) if pic.common.treat_as_char => {
-                Some(super::inline_picture_size_hu(pic).1)
+                Some(super::inline_picture_occupied_size_hu(pic).1)
             }
             Control::Shape(shape) if shape.common().treat_as_char => Some(shape.flow_height_hu()),
             Control::Table(table) if table.common.treat_as_char => Some(table.common.height as i32),
@@ -2924,7 +3023,9 @@ fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
 
 fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
     let (width, height) = match ctrl {
-        Control::Picture(pic) if pic.common.treat_as_char => super::inline_picture_size_hu(pic),
+        Control::Picture(pic) if pic.common.treat_as_char => {
+            super::inline_picture_occupied_size_hu(pic)
+        }
         Control::Shape(shape) if shape.common().treat_as_char => (
             (shape.common().width as i32).max(shape.shape_attr().current_width as i32),
             shape.flow_height_hu(),
@@ -2963,10 +3064,9 @@ fn inline_control_occupied_size_hwp(
         let measured = crate::renderer::height_measurer::HeightMeasurer::new(dpi)
             .with_session_edited(true)
             .measure_table(table, 0, 0, styles);
-        height = height.max(px_to_hwpunit(
-            measured.total_height - measured.caption_height,
-            dpi,
-        ));
+        // 위/아래 캡션도 인라인 개체가 소유하는 물리 상자다. 표 본체만
+        // 발행하면 캡션 글줄에 다음 개체가 놓이고 저장 줄도 그 높이로 굳는다.
+        height = height.max(px_to_hwpunit(measured.total_height, dpi));
         width = width
             .saturating_add(i32::from(table.outer_margin_left))
             .saturating_add(i32::from(table.outer_margin_right));
@@ -2975,6 +3075,17 @@ fn inline_control_occupied_size_hwp(
             .saturating_add(i32::from(table.outer_margin_bottom));
     }
     Some((width, height))
+}
+
+fn inline_control_spacing_height_hwp(control: &Control) -> Option<i32> {
+    match control {
+        Control::Equation(equation)
+            if equation.common.treat_as_char && equation.common.affect_line_spacing =>
+        {
+            Some(crate::renderer::equation::flow_height_hwp(equation) as i32)
+        }
+        _ => None,
+    }
 }
 
 /// [#7160] 프레임 채움 전용 — **글자처럼 취급 표**도 인라인 토큰으로 싣는다.
@@ -3011,6 +3122,7 @@ fn flow_inline_controls_with_tac_tables(
             width_hwp,
             height_hwp,
             baseline_distance_hwp: None,
+            spacing_height_hwp: inline_control_spacing_height_hwp(control),
         });
     }
     controls.sort_by_key(|control| control.char_position);
@@ -3367,6 +3479,88 @@ fn baseline_distance_hwp(line_height_hwp: i32) -> i32 {
     (line_height_hwp as f64 * 0.85).round() as i32
 }
 
+/// 셀 폭 변경 후 확정한 원시 줄 소유에서 수식의 물리 메트릭을 발행한다.
+/// 공백 scalar의 줄 끝 제외와 원시 수식 슬롯의 줄 소유는 다르다. paint와 같은
+/// 슬롯 질의를 사용하며, affectLineSpacing은 개체 높이를 퍼센트 간격의 기준으로 삼는다.
+fn apply_reflowed_equation_row_metrics(
+    para: &Paragraph,
+    segments: &mut [LineSeg],
+    styles: &ResolvedStyleSet,
+    spacing_type: LineSpacingType,
+    spacing_value: f64,
+    dpi: f64,
+) {
+    let mut equations = vec![Vec::new(); segments.len()];
+    for (ci, control) in para.controls.iter().enumerate() {
+        let Control::Equation(equation) = control else {
+            continue;
+        };
+        if !equation.common.treat_as_char {
+            continue;
+        }
+        if let Some(line) = super::control_slot_line_index_with_starts(
+            para,
+            ci,
+            segments.iter().map(|seg| seg.text_start),
+        ) {
+            equations[line].push(equation.as_ref());
+        }
+    }
+    let chars: Vec<_> = para.text.chars().collect();
+    for line in 0..segments.len() {
+        if equations[line].is_empty() {
+            continue;
+        }
+        let start = segments[line].text_start;
+        let end = segments
+            .get(line + 1)
+            .map_or(u32::MAX, |seg| seg.text_start);
+        let mut text_baseline = 0;
+        let mut spacing_height = 0;
+        for (index, ch) in chars.iter().enumerate() {
+            let offset = char_index_to_utf16_offset(para, index);
+            if offset < start || offset >= end || *ch == '\u{fffc}' {
+                continue;
+            }
+            let shape = find_active_char_shape(&para.char_shapes, offset);
+            let height = font_size_to_line_height(token_line_font_size(styles, shape), dpi);
+            spacing_height = spacing_height.max(height);
+            if ch.is_whitespace() || ch.is_control() {
+                continue;
+            }
+            text_baseline = text_baseline.max(baseline_distance_hwp(height));
+        }
+        if spacing_height == 0 {
+            spacing_height =
+                font_size_to_line_height(paragraph_font_size_px(para, styles).unwrap_or(12.0), dpi);
+        }
+        let mut equation_baseline = 0;
+        let mut affects_spacing = false;
+        let seg = &mut segments[line];
+        for equation in &equations[line] {
+            let (_, height, baseline) = crate::renderer::equation::flow_metrics_hwp(equation);
+            let height = height as i32;
+            seg.line_height = seg.line_height.max(height);
+            seg.text_height = seg.text_height.max(height);
+            equation_baseline = equation_baseline.max(baseline);
+            if equation.common.affect_line_spacing {
+                affects_spacing = true;
+                // 같은 줄의 큰 수식이 간격 계산에서 제외돼 있으면 작은 참여
+                // 수식 때문에 그 높이까지 간격 기준으로 승격하지 않는다.
+                // 줄의 점유 높이·기준선과 간격에 참여하는 높이는 다른 값이다.
+                spacing_height = spacing_height.max(height);
+            }
+        }
+        if equation_baseline > 0 {
+            seg.baseline_distance = text_baseline.max(equation_baseline);
+        }
+        if affects_spacing {
+            seg.line_spacing =
+                compute_line_spacing_hwp(spacing_type, spacing_value, spacing_height, dpi);
+        }
+    }
+}
+
 fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
     if height_hwp > seg.line_height {
         seg.line_height = height_hwp;
@@ -3678,6 +3872,7 @@ fn layout_paragraph_in_frame_impl(
                 width_hwp: px_to_hwpunit(prefix.advance, dpi),
                 height_hwp: px_to_hwpunit(prefix.height, dpi),
                 baseline_distance_hwp: Some(px_to_hwpunit(prefix.baseline, dpi)),
+                spacing_height_hwp: None,
             });
             inline_controls.sort_by_key(|control| control.char_position);
         }
@@ -3708,6 +3903,7 @@ fn layout_paragraph_in_frame_impl(
         para.control_mask & (1 << 0x18) != 0,
     );
     apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
+    apply_auto_left_tab_targets(&mut tokens, para_style);
     let prepared_kerning = allow_kerning
         .then(|| {
             prepare_paragraph_kerning(para, &text_chars, styles, space_metric, &inline_controls)
@@ -3751,9 +3947,11 @@ fn layout_paragraph_in_frame_impl(
             para.control_mask & (1 << 0x18) != 0,
         );
         apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
+        apply_auto_left_tab_targets(&mut tokens, para_style);
         tokens
     });
-    let mut letter_spacing_px = resolved_paragraph_letter_spacing(para, &text_chars, styles);
+    let mut letter_spacing_px =
+        resolved_paragraph_letter_spacing(para, &text_chars, styles, space_metric);
     if projected.is_some() {
         for control in &inline_controls {
             letter_spacing_px[control.char_position] = 0.0;
@@ -3794,6 +3992,12 @@ fn layout_paragraph_in_frame_impl(
             Some((height_hwp, baseline_distance_hwp))
         })
         .flatten();
+    let terminal_inline_spacing_height = terminal_inline_metrics.and_then(|_| {
+        para.controls
+            .iter()
+            .filter_map(inline_control_spacing_height_hwp)
+            .max()
+    });
     // Fresh rows inherit only provenance. Page/column-first, empty, indent,
     // paragraph-head, and FIRST/LAST are properties of the newly projected
     // physical row and must not leak from the cached first row.
@@ -3851,6 +4055,9 @@ fn layout_paragraph_in_frame_impl(
                 };
                 let mut inline_metrics = (frame.row_count() == first_row)
                     .then_some(terminal_inline_metrics)
+                    .flatten();
+                let mut inline_spacing_height = (frame.row_count() == first_row)
+                    .then_some(terminal_inline_spacing_height)
                     .flatten();
                 let mut row_terminated = false;
                 let interval_width = |index: usize, interval: &std::ops::Range<i32>| {
@@ -3910,6 +4117,13 @@ fn layout_paragraph_in_frame_impl(
                             }
                         }
                     }
+                    let tab_grid_origin_px = crate::renderer::hwpunit_to_px(interval.start, dpi)
+                        + if interval_index == 0 {
+                            marker_hang_px
+                        } else {
+                            0.0
+                        };
+                    cursor.tab_grid_origin_px = Some(tab_grid_origin_px);
                     let terminal = terminal_tokens.as_ref().and_then(|terminal_tokens| {
                         let mut replay = FillCursor::replay_from_boundary(
                             terminal_tokens,
@@ -3917,6 +4131,7 @@ fn layout_paragraph_in_frame_impl(
                             cursor.is_first_line,
                         );
                         replay.allow_metric_tolerance = false;
+                        replay.tab_grid_origin_px = Some(tab_grid_origin_px);
                         let filled = fill_one_interval(
                             terminal_tokens,
                             &text_chars,
@@ -3974,6 +4189,8 @@ fn layout_paragraph_in_frame_impl(
                     for control in inline_controls.iter().filter(|control| {
                         inline_control_flow::owns_line(control, line, text_chars.len())
                     }) {
+                        inline_spacing_height =
+                            inline_spacing_height.max(control.spacing_height_hwp);
                         inline_metrics = match inline_metrics {
                             Some((height_hwp, baseline_distance_hwp))
                                 if height_hwp > control.height_hwp =>
@@ -4010,6 +4227,12 @@ fn layout_paragraph_in_frame_impl(
                     }
                 }
 
+                // 문단 끝까지 채운 물리 줄에서만 종료 문자의 높이를 반영한다.
+                // 같은 값으로 carve를 다시 수행해 측정과 실제 배치의 행 높이를 일치시킨다.
+                if cursor.finished {
+                    maximum_font_size =
+                        maximum_font_size.max(paragraph_end_font_size_px(para, styles));
+                }
                 let mut metrics = frame_metrics_for_line(
                     maximum_font_size,
                     fallback_font_size,
@@ -4017,6 +4240,16 @@ fn layout_paragraph_in_frame_impl(
                     line_spacing_value,
                     dpi,
                 );
+                if let Some(height) = inline_spacing_height {
+                    // Match scalar reflow: only participating objects enlarge
+                    // the line-spacing basis, alongside this row's text strut.
+                    metrics.line_spacing = compute_line_spacing_hwp(
+                        line_spacing_type,
+                        line_spacing_value,
+                        metrics.line_height.max(height),
+                        dpi,
+                    );
+                }
                 if let Some((height_hwp, baseline_distance_hwp)) = inline_metrics {
                     let inline_owns_row_height = height_hwp > metrics.line_height;
                     apply_inline_control_frame_height(&mut metrics, height_hwp);
@@ -4773,15 +5006,8 @@ fn reflow_line_segs_impl(
                 Some((start, ctrl))
             })
             .filter_map(|(start, ctrl)| {
-                inline_control_size_hwp(ctrl).map(|(width, height)| {
-                    let height = match ctrl {
-                        Control::Table(table) => height
-                            .saturating_add(i32::from(table.outer_margin_top))
-                            .saturating_add(i32::from(table.outer_margin_bottom)),
-                        _ => height,
-                    };
-                    (start, (width, height))
-                })
+                inline_control_occupied_size_hwp(ctrl, styles, dpi)
+                    .map(|occupied| (start, occupied))
             })
             .collect::<Vec<_>>();
         if !inline_sizes.is_empty() {
@@ -4844,6 +5070,16 @@ fn reflow_line_segs_impl(
                 new_line_segs.push(seg);
             }
 
+            if split_stale_cell_reflow {
+                apply_reflowed_equation_row_metrics(
+                    para,
+                    &mut new_line_segs,
+                    styles,
+                    ls_type,
+                    ls_value,
+                    dpi,
+                );
+            }
             let mut vpos = orig.as_ref().map(|ls| ls.vertical_pos).unwrap_or(0);
             for seg in &mut new_line_segs {
                 seg.vertical_pos = vpos;
@@ -4919,6 +5155,7 @@ fn reflow_line_segs_impl(
         para.control_mask & (1 << 0x18) != 0,
     );
     apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
+    apply_auto_left_tab_targets(&mut tokens, para_style);
     let prepared_kerning = prepare_paragraph_kerning(
         para,
         &text_chars,
@@ -5045,9 +5282,13 @@ fn reflow_line_segs_impl(
         TabFill::for_paragraph(para_style, indent_px, available_width_px),
         korean_break_unit,
         condense_min_space,
-        &resolved_paragraph_letter_spacing(para, &text_chars, styles),
+        &resolved_paragraph_letter_spacing(para, &text_chars, styles, reflow_space_metric),
         reflow_start_idx,
         reflow_is_first_line,
+        // A split supplies the new cell's physical box, just like Frame fill.
+        // The legacy scalar estimate tolerance must not admit a token beyond
+        // that box and change the persisted logical row partition.
+        !split_stale_cell_reflow,
         kerning_break_session.as_mut(),
     );
     let kerning_failed = kerning_break_session
@@ -5065,9 +5306,10 @@ fn reflow_line_segs_impl(
             TabFill::for_paragraph(para_style, indent_px, available_width_px),
             korean_break_unit,
             condense_min_space,
-            &resolved_paragraph_letter_spacing(para, &text_chars, styles),
+            &resolved_paragraph_letter_spacing(para, &text_chars, styles, reflow_space_metric),
             reflow_start_idx,
             reflow_is_first_line,
+            !split_stale_cell_reflow,
             None,
         );
     }
@@ -5141,14 +5383,32 @@ fn reflow_line_segs_impl(
             lb.end_idx == text_len,
             text_len,
         ));
+        let fs = if line_idx + 1 == line_breaks.len() {
+            fs.max(paragraph_end_font_size_px(para, styles))
+        } else {
+            fs
+        };
         let mut text_seg = make_line_seg(utf16_start, fs);
+        // A control assigned its own row after this text prefix owns that
+        // row's height only. A terminal anchor can also equal text_len; the
+        // general last-line ownership rule must not reserve it in both rows.
+        let control_after_text = forced_inline_line.is_some_and(|(position, ..)| {
+            position > lb.start_idx
+                && (position < lb.end_idx
+                    || (position == lb.end_idx && line_idx + 1 == line_breaks.len()))
+        });
         if forced_inline_line.is_some_and(|(position, ..)| position == lb.start_idx) {
             let (_, _, height_hwp, _) = forced_inline_line.expect("checked inline control");
             apply_inline_control_line_height(&mut text_seg, height_hwp);
         }
         if let Some(control) = inline_controls
             .iter()
-            .filter(|control| inline_control_flow::owns_line(control, lb, text_len))
+            .filter(|control| {
+                inline_control_flow::owns_line(control, lb, text_len)
+                    && !(control_after_text
+                        && forced_inline_line
+                            .is_some_and(|(position, ..)| position == control.char_position))
+            })
             .max_by_key(|control| (control.height_hwp, control.baseline_distance_hwp))
         {
             let inline_owns_row_height = control.height_hwp > text_seg.line_height;
@@ -5164,11 +5424,6 @@ fn reflow_line_segs_impl(
         // control이 text line 한가운데/끝에 있으면 먼저 text prefix를 확정하고,
         // control offset에서 다음 LineSeg를 삽입한다. 단순히 vector 끝에 붙이면
         // 중간 nested table 뒤의 text가 control보다 앞에서 그려진다.
-        let control_after_text = forced_inline_line.is_some_and(|(position, ..)| {
-            position > lb.start_idx
-                && (position < lb.end_idx
-                    || (position == lb.end_idx && line_idx + 1 == line_breaks.len()))
-        });
         if control_after_text {
             let (_, control_start, height_hwp, _) =
                 forced_inline_line.expect("checked inline control");
@@ -5205,6 +5460,17 @@ fn reflow_line_segs_impl(
                 apply_inline_control_line_height(seg, height_hwp);
             }
         }
+    }
+
+    if split_stale_cell_reflow {
+        apply_reflowed_equation_row_metrics(
+            para,
+            &mut new_line_segs,
+            styles,
+            ls_type,
+            ls_value,
+            dpi,
+        );
     }
 
     // vertical_pos 누적 계산 (각 줄의 문단 내 Y 오프셋)
@@ -5587,6 +5853,7 @@ mod fill_cursor_tests {
             &[],
             initial_start_idx,
             initial_is_first_line,
+            true,
             None,
         );
         let resumed = collect_one_interval_at_a_time(
@@ -5735,6 +6002,7 @@ mod fill_cursor_tests {
             BreakToken::Tab {
                 idx: 4,
                 max_font_size: 12.0,
+                auto_left_target: None,
             },
             BreakToken::Text {
                 start_idx: 5,

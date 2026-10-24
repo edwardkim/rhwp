@@ -467,6 +467,12 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         .is_some_and(physical_para_margin_units_from_version);
     let (mut doc_info, doc_properties) =
         header::parse_hwpx_header_with_plain_margin_units(&header_xml, physical_plain_margin)?;
+    if let Ok(bytes) = reader.read_file_bytes_limited(
+        crate::model::native_font_program::HWPX_ENTRY,
+        crate::model::native_font_program::MAX_BYTES,
+    ) {
+        crate::model::native_font_program::decode(&mut doc_info, header_xml.as_bytes(), &bytes);
+    }
     resolve_embedded_font_references(&mut doc_info, &package_info.bin_data_items);
 
     // [Task #1608] head version("1.4")은 HWPML **스키마 버전**일 뿐 HWP3→HWPX 변환 지표가
@@ -785,6 +791,9 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     {
         crate::model::hyperlink_format::decode(&mut doc, &bytes);
     }
+    // 개체 번호는 autoNum 필드의 저장 캐시나 필드 개수가 아니라 실제 소유 개체의
+    // numberingType과 순번에서 결정한다. 각주·쪽 번호의 별도 저장 계약은 유지한다.
+    super::auto_numbers::assign_object_numbers(&mut doc);
     Ok(doc)
 }
 

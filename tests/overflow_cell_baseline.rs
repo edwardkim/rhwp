@@ -47,6 +47,10 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// #7445 및 cgmp6035_cell_blocking_scope_validation.json에 근거를 보존한다.
 /// 원문과 수집/분할은 유지하여 다른 입력의 소속과 원장 관측값을 바꾸지 않는다.
 const DEFERRED_CELL_OVERFLOW_FIXTURES: &[&str] = &[
+    // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
+    "table_giant_cell_overfill.hwpx",
+    "issue5792/2700727_animal_facility_standards.hwpx",
+    "2025 행정업무운영 편람(최종).hwpx",
     "issue6035/cgmp_evaluation_table.hwpx",
     // #7445 / #7749: 같은 80550 원본의 두 경로. 원문은 보존하고 실패한 셀 넘침 판정만 이관.
     "issue3637/regulatory_impact_nested_table_escape.hwpx",
@@ -95,7 +99,11 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
     }
     let mut acc = Vec::new();
     walk(Path::new(SAMPLES_ROOT), Path::new(SAMPLES_ROOT), &mut acc);
-    acc.retain(|(_, rel)| !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str()));
+    acc.retain(|(_, rel)| {
+        !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str())
+            // 다른 작업이 보정하는 CGMP는 사용자 요청으로 렌더링 실행도 제외한다.
+            && rel != "issue6035/cgmp_evaluation_table.hwpx"
+    });
     acc.retain(|(path, _)| !is_exam_fixture(path));
     acc.retain(|(path, _)| !deferred_visual_regression_scope::is_deferred(path, "overflow_cell"));
     acc.sort_by(|a, b| a.1.cmp(&b.1));

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -11,6 +12,10 @@ import { enrichFontDecisionTrace } from '../../rhwp-studio/src/core/font-decisio
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INVESTIGATION = path.join(ROOT, 'mydocs', 'tech', 'investigations', 'issue-4961');
+const Ajv = createRequire(path.join(ROOT, 'rhwp-studio/package.json'))('ajv/dist/2020.js');
+const validateSchema = new Ajv({ allErrors: true }).compile(JSON.parse(fs.readFileSync(
+  path.join(INVESTIGATION, 'font_decision_trace.schema.json'), 'utf8',
+)));
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(
   INVESTIGATION,
   'font_decision_trace_e2e.json',
@@ -24,10 +29,13 @@ function readTrace(document, maxCharacters = MANIFEST.options.maxCharacters) {
   const bytes = new Uint8Array(fs.readFileSync(path.join(ROOT, document.path)));
   const hwp = new wasmModule.HwpDocument(bytes);
   try {
-    return JSON.parse(hwp.getFontDecisionTrace(
+    const trace = JSON.parse(hwp.getFontDecisionTrace(
       document.page,
       JSON.stringify({ maxCharacters }),
     ));
+    const layout = JSON.parse(hwp.getPageTextLayout(document.page));
+    assert.equal(trace.counts.runsSeen, layout.runs.length, `${document.id}: public run count`);
+    return trace;
   } finally {
     hwp.free();
   }
@@ -80,12 +88,14 @@ test('공개 HWP/HWPX fixture의 exact, missing, substFont 계보가 WASM에서 
     const first = readTrace(document);
     const second = readTrace(document);
     assert.deepEqual(first, second, `${document.id}: repeat trace`);
+    assert.equal(validateSchema(first), true,
+      `${document.id}: ${JSON.stringify(validateSchema.errors)}`);
     assert.deepEqual(validateTraceEnvelope(first), [], document.id);
     assert.equal(first.status, document.expectedStatus, document.id);
     const deferredPins = new Set(document.renderPinsDeferredToIssue7445 ?? []);
     if (!deferredPins.has('expectedCounts')) {
       for (const [key, value] of Object.entries(document.expectedCounts)) {
-        assert.equal(first.counts[key], value, `${document.id}: ${key}`);
+        assert.deepEqual(first.counts[key], value, `${document.id}: ${key}`);
       }
       if (document.validateRunOwnership) {
         const core = new wasmModule.HwpDocument(new Uint8Array(fs.readFileSync(path.join(ROOT, document.path))));
@@ -150,8 +160,17 @@ test('공개 HWP/HWPX fixture의 exact, missing, substFont 계보가 WASM에서 
   assert.ok(withSubstitution.records.some(record => record.document.substFont !== null));
   assert.ok(hwpCounterpart.records.some(record => record.document.substFont === feature.expectedHwpSubstFont));
   assert.notEqual(hwpCounterpart.layoutHash.value, withSubstitution.layoutHash.value);
-});
+  for (const declaration of MANIFEST.comparisons.documentSubstituteDeclarations) {
+    const trace = traces.get(declaration.documentId);
+    const records = trace.records.filter(record => (
+      record.document.face === declaration.face
+      && declaration.languageSlots.includes(record.document.languageSlot)
+    ));
+    assert.ok(records.length > 0, `${declaration.documentId}: 선언 대상 글꼴`);
+    assert.ok(records.every(record => record.document.substFont === declaration.substFont));
+  }
 
+});
 
 test('WASM 상한과 backend 미지원은 silent clamp나 빈 성공 없이 fail-closed한다', () => {
   const document = MANIFEST.documents.find(candidate => candidate.id === 'exact-face');

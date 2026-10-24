@@ -75,7 +75,9 @@ test('공급한 family가 실제 Canvas advance와 글리프를 결정한다', a
       let left = Infinity, right = -1, top = Infinity, bottom = -1;
       for (let y = 0; y < pixels.height; y++) {
         for (let x = 0; x < pixels.width; x++) {
-          if (!pixels.data[(y * pixels.width + x) * 4 + 3]) continue;
+          // 합성 직사각형의 본체를 측정한다. 가장자리의 옅은 AA 픽셀은
+          // Chrome/Skia 버전에 따라 한 픽셀 더 생겨도 실제 advance를 바꾸지 않는다.
+          if (pixels.data[(y * pixels.width + x) * 4 + 3] < 128) continue;
           left = Math.min(left, x); right = Math.max(right, x);
           top = Math.min(top, y); bottom = Math.max(bottom, y);
         }

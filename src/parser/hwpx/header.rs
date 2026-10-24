@@ -1245,7 +1245,8 @@ fn parse_para_shape_margin_value_child(ce: &quick_xml::events::BytesStart, ps: &
         let raw = parse_i32(&attr);
         let value = match unit.as_deref() {
             Some("HWPUNIT") if ps.hwpx_plain_para_margin_physical => raw.saturating_mul(2),
-            // CHAR는 반 단위가 남는 홀수 IR 값의 보존 표기다.
+            // IR 하위 비트는 CHAR/HWPUNIT 단위 선택을 보존한다.
+            // CHAR의 물리 값은 렌더러가 문서 기본 스타일의 em으로 해소한다.
             Some("CHAR") if ps.hwpx_plain_para_margin_physical => {
                 raw.saturating_mul(2).saturating_add(1)
             }
@@ -1344,10 +1345,10 @@ fn parse_para_shape_switch(
                         b"margin" | b"intent" | b"left" | b"right" | b"prev" | b"next" => {
                             // margin 하위 요소들: <left value="..." />, <prev value="..." /> 등
                             let tag_name = local;
-                            // [#6875] HwpUnitChar `case` 의 `unit="CHAR"` 는 저장값이
-                            // **홀수**여서 절반이 정수로 안 떨어진다는 표시다. 그 자리를
-                            // 무시하면 왕복에서 최하위 비트가 사라지고 한/글이 문단 간격을
-                            // 작게 잡는다(07939: 558 → 545쪽). `value` 보다 먼저 읽는다.
+                            // [#6875] HwpUnitChar case의 CHAR는 IR 하위 비트1이다.
+                            // 이는 소수 정밀도가 아니라 기본 스타일 em에 대한 상대 단위다.
+                            // 비트를 잃으면 왕복 뒤 절대 HWPUNIT 간격으로 바뀐다
+                            // (07939: 558 → 545쪽). `value`보다 먼저 읽어 보존한다.
                             let char_unit = ce.attributes().flatten().any(|attr| {
                                 attr.key.as_ref().as_bytes() == b"unit"
                                     && attr.value.as_ref() == "CHAR"

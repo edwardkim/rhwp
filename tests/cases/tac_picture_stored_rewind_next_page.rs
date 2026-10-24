@@ -161,3 +161,144 @@ fn sample_1480000_figure_6_starts_page_20() {
     assert!(page_has_paragraph(&core, 19, 88));
     assert!(page_has_paragraph(&core, 19, 89));
 }
+
+fn biotoxin_core() -> DocumentCore {
+    use sha2::{Digest, Sha256};
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue5941/1480000-201900698-native-neartop-reset.hwp");
+    let bytes = std::fs::read(path).expect("독립 Print에 대응하는 원본");
+    assert_eq!(
+        Sha256::digest(&bytes)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>(),
+        "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a"
+    );
+    DocumentCore::from_bytes(&bytes).expect("생물독소 원본 로드")
+}
+
+fn visible_nodes(
+    node: &rhwp::renderer::render_tree::RenderNode,
+) -> Vec<&rhwp::renderer::render_tree::RenderNode> {
+    if !node.visible || node.editor_only {
+        return Vec::new();
+    }
+    std::iter::once(node)
+        .chain(node.children.iter().flat_map(visible_nodes))
+        .collect()
+}
+
+/// 전체 크기는 쪽 안에 들어가는 작은 그림도 유효한 저장 쪽 경계를 지킨다.
+/// 전205쪽 Native/fresh WASM 최저 98.42761/98.42748%, 확대 판독 후 추가했다.
+#[test]
+fn sample_1480000_small_rewound_picture_keeps_its_page_and_caption() {
+    use rhwp::renderer::render_tree::RenderNodeType;
+    let core = biotoxin_core();
+    let paragraphs = &core.document().sections[6].paragraphs;
+    let Control::Picture(picture) = &paragraphs[19].controls[0] else {
+        panic!("원문 그림 37");
+    };
+    assert!(picture.common.treat_as_char);
+    assert!(picture.common.height < PICTURE_HEIGHT as u32);
+    assert!(paragraphs[19].line_segs[0].vertical_pos < paragraphs[18].line_segs[0].vertical_pos);
+    assert!(page_has_paragraph(&core, 78, 18));
+    assert!(
+        !page_has_paragraph(&core, 78, 19),
+        "그림을 앞 쪽 여백에 스필하지 않는다"
+    );
+    assert!(page_has_paragraph(&core, 79, 19));
+    assert!(page_has_paragraph(&core, 79, 20));
+    let page = core.build_page_render_tree(79).expect("그림 37의 쪽");
+    let nodes = visible_nodes(&page.root);
+    let images: Vec<_> = nodes
+        .iter()
+        .copied()
+        .filter(|node| {
+            matches!(&node.node_type,
+        RenderNodeType::Image(image) if image.section_index == Some(6)
+            && image.para_index == Some(19) && image.control_index == Some(0))
+        })
+        .collect();
+    assert_eq!(images.len(), 1, "그림의 원문 소유·중복·누락");
+    let image = images[0];
+    assert!(
+        matches!(&image.node_type, RenderNodeType::Image(i) if i.bin_data_id == picture.image_attr.bin_data_id)
+    );
+    let caption: Vec<_> = nodes
+        .iter()
+        .copied()
+        .filter(|node| {
+            matches!(&node.node_type,
+        RenderNodeType::TextRun(run) if run.section_index == Some(6) && run.para_index == Some(20))
+        })
+        .collect();
+    assert!(!caption.is_empty(), "같은 쪽에 원문 캡션을 보존한다");
+    assert!(
+        caption
+            .iter()
+            .all(|node| node.bbox.y >= image.bbox.y + image.bbox.height),
+        "그림 뒤에 캡션이 온다"
+    );
+    // 독립 한컴 2020 Print PDF(fe01f1dd…)의 80쪽 Image XObject 경계, 96 CSS px.
+    // 같은 쪽 Native/fresh WASM raw 99.99%이며 관계 검사와 함께 ±2px로 보호한다.
+    for (actual, expected) in [
+        (image.bbox.x, 262.098674),
+        (image.bbox.y, 90.779968),
+        (image.bbox.x + image.bbox.width, 548.663981),
+        (image.bbox.y + image.bbox.height, 336.271973),
+    ] {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "그림 경계 {actual} / 독립 Print {expected}"
+        );
+    }
+}
+
+/// 잉크가 없는 저장 호스트도 글줄·표 바깥 여백의 독립 프레임을 소유한다.
+#[test]
+fn sample_1480000_empty_host_keeps_the_table_outer_frame() {
+    use rhwp::renderer::render_tree::RenderNodeType;
+    let core = biotoxin_core();
+    let host = &core.document().sections[3].paragraphs[0];
+    let Control::Table(source) = &host.controls[2] else {
+        panic!("빈 호스트의 원문 표");
+    };
+    assert!(host.text.trim().is_empty());
+    assert_eq!(host.line_segs.len(), 1);
+    assert!(host.line_segs[0].line_height > 0);
+    assert!(source.common.vertical_offset >= host.line_segs[0].line_height as u32);
+    assert!(source.common.margin.top > 0);
+    let page = core.build_page_render_tree(10).expect("표 2의 쪽");
+    let nodes = visible_nodes(&page.root);
+    let tables: Vec<_> = nodes
+        .iter()
+        .copied()
+        .filter(|node| {
+            matches!(&node.node_type,
+        RenderNodeType::Table(table) if table.section_index == Some(3)
+            && table.para_index == Some(0) && table.control_index == Some(2))
+        })
+        .collect();
+    assert_eq!(tables.len(), 1, "빈 호스트에서도 표를 한 번만 배치한다");
+    let table = tables[0];
+    let mut lines: Vec<_> = visible_nodes(table)
+        .into_iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::Line(line)
+                if (line.y1 - line.y2).abs() < 0.01
+                    && (line.x2 - line.x1).abs() > table.bbox.width * 0.9 =>
+            {
+                Some(line.y1)
+            }
+            _ => None,
+        })
+        .collect();
+    lines.sort_by(f64::total_cmp);
+    let top = *lines.first().expect("표의 실제 상단 괘선");
+    // 독립 한컴 Print PDF의 11쪽 상단 괘선 중심. 양 backend raw 100%, 확대 판독 완료.
+    assert!(
+        (top - 134.413330078125).abs() <= 2.0,
+        "빈 줄의 바깥 프레임: {top}"
+    );
+    assert!(table.bbox.y <= top + 2.0);
+}

@@ -13,6 +13,17 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use super::TextStyle;
 
+/// Unverified width guesses may use a prepared measurement from the active
+/// backend. Authentic glyph advances and explicit HWP width rules stay intact.
+/// The narrow overlay is a compatibility guess, not evidence of a selected
+/// program's advance. A Canvas measurement does not promote its format to TTF.
+pub(crate) fn accepts_prepared_glyph_advance(width_source: &str) -> bool {
+    matches!(
+        width_source,
+        "heuristicHalfwidth" | "metricNarrowPunctuationOverlay"
+    )
+}
+
 pub const MAX_SUPPLEMENTAL_ENTRIES: usize = 4096;
 pub const MAX_SUPPLEMENTAL_KEY_BYTES: usize = 4 * 1024 * 1024;
 const MAX_FONT_BYTES: usize = 32 * 1024 * 1024;

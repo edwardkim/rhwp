@@ -27,6 +27,8 @@ const LEDGER_PATH = path.join(
 );
 const EVIDENCE_PREFIX =
   'mydocs/tech/investigations/issue-4939/font_rule_candidates.json#';
+const REGISTRY_EVIDENCE_PATH = 'assets/font-rules/font_rule_registry_v2.json';
+let directRegistryRules;
 
 export const DEFAULT_CHARACTER_LIMIT = 1024;
 export const MAX_CHARACTER_LIMIT = 4096;
@@ -336,6 +338,31 @@ function validateBackendDecision(value, location, errors) {
   }
 }
 
+function matchesDirectRegistryEvidence(entry) {
+  if (entry.evidenceAnchor !== `${REGISTRY_EVIDENCE_PATH}#${entry.ruleId}`) return false;
+  // 현재 직접 투영의 근거를 과거 W1 후보 파일에 있다고 가장하지 않는다.
+  // URL 형식만 허용하지 않고 활성 규칙과 실제 선택 튜플의 ID를 대조한다.
+  directRegistryRules ??= new Map(readJson(path.join(REPOSITORY_ROOT, REGISTRY_EVIDENCE_PATH))
+    .rules.filter(rule => rule.status === 'active'
+      && rule.projections.some(projection => projection.mode === 'direct'))
+    .map(rule => [rule.ruleId, rule]));
+  const rule = directRegistryRules.get(entry.ruleId);
+  if (!rule || entry.reason !== null || entry.relationType !== rule.relationType) return false;
+  try {
+    const link = buildCandidateLink({
+      sourceBoundaryId: rule.sourceBoundaryId,
+      candidateKind: 'finite-mapping',
+      sourceFace: rule.sourceFace,
+      targetOrPolicy: rule.targetFaceOrPolicy,
+      conditions: rule.conditions,
+      order: rule.order,
+    }, entry.sourceOwner);
+    return link.candidateId === entry.candidateId;
+  } catch {
+    return false;
+  }
+}
+
 function validateRecord(record, index, errors) {
   const location = `records[${index}]`;
   if (!isObject(record)) {
@@ -368,14 +395,16 @@ function validateRecord(record, index, errors) {
         errors.push(`${provenanceLocation}.candidateId is invalid`);
         return;
       }
-      if (entry.ruleId !== null && !RULE_PATTERN.test(entry.ruleId ?? '')) {
+      const directRegistryEvidence = matchesDirectRegistryEvidence(entry);
+      if (entry.ruleId !== null && !RULE_PATTERN.test(entry.ruleId ?? '')
+          && !directRegistryEvidence) {
         errors.push(`${provenanceLocation}.ruleId is invalid`);
       }
       if (entry.ruleId === null && entry.reason !== 'ledgerRuleMissing') {
         errors.push(`${provenanceLocation}.ruleId null requires ledgerRuleMissing`);
       }
-      if (!entry.evidenceAnchor?.endsWith(`#${entry.candidateId}`)) {
-        errors.push(`${provenanceLocation}.evidenceAnchor does not match candidateId`);
+      if (entry.evidenceAnchor !== `${EVIDENCE_PREFIX}${entry.candidateId}` && !directRegistryEvidence) {
+        errors.push(`${provenanceLocation}.evidenceAnchor does not match candidateId or an active registry rule`);
       }
     });
   }

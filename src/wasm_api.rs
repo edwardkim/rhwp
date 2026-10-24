@@ -42,6 +42,8 @@ use crate::renderer::style_resolver::{
 use crate::renderer::svg::SvgRenderer;
 use crate::renderer::DEFAULT_DPI;
 
+#[cfg(target_arch = "wasm32")]
+mod bitmap_raster;
 mod canvas_metrics;
 mod hyperlink;
 mod layout_generation;
@@ -605,7 +607,14 @@ impl HwpDocument {
     /// 현재 WASM 빌드에서 PDF 입력을 사용할 수 있는지 문서 생성 전에 조회한다.
     #[wasm_bindgen(js_name = supportsPdfImport)]
     pub fn supports_pdf_import() -> bool {
-        cfg!(all(feature = "pdf-import", target_arch = "wasm32"))
+        cfg!(target_arch = "wasm32") && crate::pdf_support::pdf_import_support().enabled
+    }
+
+    /// Compile-time support of this artifact, queryable before opening a PDF.
+    #[wasm_bindgen(js_name = getPdfImportSupport)]
+    pub fn get_pdf_import_support() -> String {
+        serde_json::to_string(&crate::pdf_support::pdf_import_support())
+            .expect("compile-time PDF support is serializable")
     }
 
     /// Worker가 입력을 복사하기 전에 제품의 실제 요청 한도를 조회한다.
@@ -1192,7 +1201,24 @@ impl HwpDocument {
         self.core.rebuild_derived_state();
     }
 
-    /// Set an explicit layout/paint font environment. None restores the default.
+    /// 문서가 선언한 실제 프로그램 후보와 현재 환경을 호스트에 전달한다.
+    #[wasm_bindgen(js_name = getDocumentFontSelectionPlan)]
+    pub fn get_document_font_selection_plan(&self) -> String {
+        self.core.get_document_font_selection_plan()
+    }
+
+    /// 실제 공급된 프로그램으로 측정·표시의 공통 환경을 계산한다.
+    #[wasm_bindgen(js_name = buildFontEnvironmentFromAvailablePrograms)]
+    pub fn build_font_environment_from_available_programs(
+        &self,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .build_font_environment_from_available_programs(json)
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    /// 명시적인 조판·표시 글꼴 환경을 설정한다. None이면 기본 환경으로 돌아간다.
     #[wasm_bindgen(js_name = setFontEnvironment)]
     pub fn set_font_environment_json(&mut self, json: Option<String>) -> Result<bool, JsValue> {
         let environment = json
@@ -1390,7 +1416,10 @@ impl HwpDocument {
 
     /// 특정 페이지의 텍스트 레이아웃 정보를 JSON 문자열로 반환한다.
     ///
-    /// 각 TextRun의 위치, 텍스트, 글자별 X 좌표 경계값을 포함한다.
+    /// 각 TextRun의 위치, 모델 `text`, 모델 경계 `charX`와 `charStart`를 포함한다.
+    /// 표시 치환이 있는 런에는 `displayText`와 `displayCharX`가 추가된다.
+    /// 두 X 배열은 런 원점 기준 Unicode scalar 경계(N+1개)이며,
+    /// 표시 인덱스는 선택·커서·편집 오프셋으로 사용할 수 없다 (#7909).
     #[wasm_bindgen(js_name = getPageTextLayout)]
     pub fn get_page_text_layout(&self, page_num: u32) -> Result<String, JsValue> {
         self.get_page_text_layout_native(page_num)

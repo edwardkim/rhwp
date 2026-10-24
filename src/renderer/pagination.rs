@@ -45,31 +45,24 @@ pub fn footnote_between_notes_margin_px(shape: &FootnoteShape, dpi: f64) -> f64 
     super::hwpunit_to_px(shape.between_notes_margin_hu() as i32, dpi)
 }
 
-/// Infer the source fragment boundary for a visible paragraph whose stored
-/// LineSegs disappeared during conversion.
-///
-/// Both pagination engines call this function. Geometry proximity alone is
-/// insufficient: the source-format reset provenance is what permits turning a
-/// near-page-end fit into a physical fragment boundary.
+/// 저장 줄이 없는 문단의 기존 inline field reset 경계를 두 엔진이 공유한다.
+/// HWP3 계보는 field reset 인코딩의 근거가 아니므로 경계를 합성하지 않는다.
+/// 해당 문단은 실제 구성 줄과 가용 공간에 따른 일반 fit/분할을 소비한다.
 pub(crate) fn missing_lineseg_fragment_boundary(
     para: &Paragraph,
     line_count: usize,
     current_height: f64,
     available: f64,
-    trailing_line_spacing: f64,
+    _trailing_line_spacing: f64,
     source_uses_inline_field_reset: bool,
     hwp3_converted_missing_lineseg: bool,
 ) -> Option<usize> {
-    let minimum_fill_ratio = if hwp3_converted_missing_lineseg {
-        1.0 - 1.0 / line_count as f64
-    } else {
-        0.75
-    };
-    let fill_height = if hwp3_converted_missing_lineseg {
-        current_height + trailing_line_spacing.max(0.0)
-    } else {
-        current_height
-    };
+    // 줄 부재와 채움 비율로 HWP5 문단의 절반을 다른 쪽 소유로 바꾸지 않는다.
+    if hwp3_converted_missing_lineseg {
+        return None;
+    }
+    let minimum_fill_ratio = 0.75;
+    let fill_height = current_height;
     let has_visible_text = para
         .text
         .chars()
@@ -88,11 +81,7 @@ pub(crate) fn missing_lineseg_fragment_boundary(
         return None;
     }
 
-    if hwp3_converted_missing_lineseg {
-        Some((line_count + 1) / 2)
-    } else {
-        Some(line_count - 1)
-    }
+    Some(line_count - 1)
 }
 
 /// 미주 참조
@@ -271,6 +260,9 @@ pub struct EndnoteParaSource {
     pub cell_path: Vec<TableFootnotePathEntry>,
     /// Endnote 내부 문단 인덱스
     pub note_para_index: usize,
+    /// 줄의 물리 합집합을 재발행하면서 같은 전진 안에서 이미 소비한 후행 간격.
+    /// 원본 파일 속성이 아니라 fit과 배치가 공유하는 미주 끝줄의 투영 결과다.
+    pub tail_leading_consumed_hu: i32,
 }
 
 impl EndnoteParaSource {
@@ -395,6 +387,29 @@ pub struct HeaderFooterRef {
     /// 제목표(1x1 표) 셀 안에 정의하기도 한다. 이 경로가 없으면 그 머리말이
     /// 수집되지 않아 4쪽 쪽번호가 2쪽 머리말로 대체돼 잘못 표시된다.
     pub table_path: Vec<HeaderFooterTableStep>,
+}
+
+/// 두 조판 경로가 공유하는 구역의 마지막 쪽번호 위치 선언이다.
+pub(crate) fn collect_page_number_pos(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+) -> Option<crate::model::control::PageNumberPos> {
+    // 쪽번호 위치는 표 셀 안에 저장돼도 구역의 출력 컨트롤이다.
+    // 최상위 문단의 기존 마지막 선언 선택을 셀의 소스 순서까지 확장한다.
+    // 머리말/꼬리말 내용 자체를 구역 선언으로 끌어올리지는 않는다.
+    paragraphs.iter().rev().find_map(|para| {
+        para.controls
+            .iter()
+            .rev()
+            .find_map(|control| match control {
+                Control::PageNumberPos(pos) => Some(pos.clone()),
+                Control::Table(table) => table
+                    .cells
+                    .iter()
+                    .rev()
+                    .find_map(|cell| collect_page_number_pos(&cell.paragraphs)),
+                _ => None,
+            })
+    })
 }
 
 /// 표 셀 안에 중첩된 Header/Footer 컨트롤을 재귀적으로 수집한다.
@@ -673,9 +688,23 @@ pub struct FootnoteRef {
     pub fragment: Option<FootnoteFragment>,
 }
 
+/// 다음 원본 저장 줄이 확인한 재조판 문단의 실제 소비와 단 원점.
+#[derive(Debug, Clone, Copy)]
+pub struct ParagraphOrigin {
+    pub paragraph_index: usize,
+    pub spacing_before: f64,
+    pub source_vpos_base: i32,
+    pub flow_start: f64,
+    pub flow_end: f64,
+}
+
 /// 한 단(Column)에 배치될 콘텐츠
 #[derive(Debug, Clone)]
 pub struct ColumnContent {
+    /// 측정이 확정한 문단 원점/간격. paint는 원본 줄 부재를 다시 추정하지 않는다.
+    pub paragraph_origins: std::collections::HashMap<usize, ParagraphOrigin>,
+    /// 실제 fit에 사용한 일반 본문 구성. 전체/부분 배치가 같은 줄을 소비한다.
+    pub computed_paragraphs: std::collections::HashMap<usize, super::composer::ComposedParagraph>,
     /// 저장 사다리의 기준을 수용할 때 확정한 문단 끝(단 상대 좌표).
     /// 배치는 이후의 cursor 기준으로 같은 사다리를 다시 투영하지 않는다.
     pub stored_paragraph_flow_ends: std::collections::HashMap<usize, f64>,
@@ -922,6 +951,8 @@ pub enum PageItem {
         /// 직전 조각에서 내용이 모두 소비된 시작 행의 남은 빈 물리 밴드 높이(px).
         /// `start_cut`은 해당 셀 내용을 숨기고 이 값은 테두리/셀 기하만 보존한다.
         start_row_height_override: Option<f64>,
+        /// 앞 조각의 실제 병합 점유를 반영해 예약에서 확정한 행 높이.
+        /// 비어 있으면 기존 측정 경로이며 paint는 확정값을 다시 분배하지 않는다.
         /// [#7531] 쪽을 넘어온 걸침 칸의 끝 행에서 앞 쪽 빈 띠만큼 덜 높이 `(행, px)`.
         /// 조판 scan 이 같은 값으로 행을 쟀으므로 그리기도 이 값을 그대로 적용한다.
         straddle_row_relief: Vec<(usize, f64)>,
@@ -1331,6 +1362,27 @@ impl PaginationResult {
                     .column_contents
                     .iter()
                     .map(|cc| ColumnContent {
+                        computed_paragraphs: cc
+                            .computed_paragraphs
+                            .iter()
+                            .map(|(&owner, comp)| {
+                                ((owner as i64 + offset as i64).max(0) as usize, comp.clone())
+                            })
+                            .collect(),
+                        paragraph_origins: cc
+                            .paragraph_origins
+                            .iter()
+                            .map(|(&owner, &origin)| {
+                                let shifted = (owner as i64 + offset as i64).max(0) as usize;
+                                (
+                                    shifted,
+                                    ParagraphOrigin {
+                                        paragraph_index: shifted,
+                                        ..origin
+                                    },
+                                )
+                            })
+                            .collect(),
                         column_index: cc.column_index,
                         start_height: cc.start_height,
                         endnote_flow: cc.endnote_flow,

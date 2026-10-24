@@ -39,6 +39,70 @@ class TerminalCmapTests(unittest.TestCase):
             self.assertIsNone(png.repair_terminal_cmap(self.cmap()[:end], 3))
 
 
+class LegacyProfileHeaderTests(unittest.TestCase):
+    def test_header_repair_preserves_the_valid_program_and_records_provenance(self):
+        from fontTools.ttLib import TTFont
+        fixture = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf'
+        data = bytearray(fixture.read_bytes())
+        records = {data[12+i*16:16+i*16].decode('latin1'): struct.unpack_from('>II', data, 20+i*16)
+                   for i in range(struct.unpack_from('>H', data, 4)[0])}
+        cmap, _ = records['cmap']; maxp, _ = records['maxp']
+        sub = cmap + struct.unpack_from('>I', data, cmap + 8)[0]
+        self.assertEqual(struct.unpack_from('>H', data, sub + 2)[0], 32)
+        struct.pack_into('>H', data, sub + 2, 31)
+        struct.pack_into('>H', data, maxp + 14, 4)
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder); inputs = root / 'inputs'; inputs.mkdir()
+            source = inputs / 'legacy.ttf'; source.write_bytes(data)
+            vs = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                sha256_file=sweep.sha256_file, write_json_atomic=sweep.write_json_atomic)
+            record = json.loads(png.font_catalog(vs, root, [inputs], root).read_text())['faces'][0]
+            with TTFont(record['path']) as fixed, TTFont(fixture) as original:
+                self.assertEqual(fixed['maxp'].maxZones, 2)
+                self.assertEqual(fixed.getBestCmap(), original.getBestCmap())
+                for tag in original.reader.keys():
+                    if tag == 'head': continue
+                    self.assertEqual(fixed.reader[tag], original.reader[tag], tag)
+            self.assertEqual(source.read_bytes(), data)
+            self.assertIn('cmap-format4-minimum-length', record['repairs'])
+            self.assertIn('maxp-zone-count', record['repairs'])
+
+
+class FontNameCatalogueTests(unittest.TestCase):
+    def test_invalid_legacy_name_preserves_valid_face_and_records_provenance(self):
+        from fontTools.ttLib.tables._n_a_m_e import NameRecord
+        valid = NameRecord()
+        valid.nameID, valid.platformID, valid.platEncID, valid.langID = 1, 3, 1, 0x409
+        valid.string = 'Independent Family'.encode('utf-16-be')
+        invalid = NameRecord()
+        invalid.nameID, invalid.platformID, invalid.platEncID, invalid.langID = 1, 3, 5, 0x412
+        invalid.string = b'\xd3'
+        class Font(dict):
+            def close(self):
+                pass
+        font = Font(name=SimpleNamespace(names=[invalid, valid]),
+                    head=SimpleNamespace(macStyle=0))
+        font.flavor = None
+        font.reader = SimpleNamespace(tables={}, keys=lambda: font.keys())
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'legacy.ttf').write_bytes(b'font resource identity')
+            vs = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                                 sha256_file=sweep.sha256_file,
+                                 write_json_atomic=sweep.write_json_atomic)
+            with patch('fontTools.ttLib.TTFont', return_value=font):
+                path = png.font_catalog(vs, root, [root], root)
+            face = json.loads(path.read_text())['faces'][0]
+            self.assertEqual(face['families'], ['Independent Family'])
+            self.assertEqual(face['sourceSha256'], sweep.sha256_file(root / 'legacy.ttf'))
+            self.assertEqual(face['nameDecodeWarnings'][0]['platformID'], 3)
+            self.assertEqual(face['nameDecodeWarnings'][0]['platEncID'], 5)
+            font['name'].names = [invalid]
+            (root / 'legacy.ttf').write_bytes(b'invalid name-only font resource identity')
+            with patch('fontTools.ttLib.TTFont', return_value=font), self.assertRaisesRegex(SystemExit, 'family 이름'):
+                png.font_catalog(vs, root, [root], root)
+
+
 class PngExportTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
@@ -266,6 +330,38 @@ class EmbeddedFontCatalogueTests(unittest.TestCase):
             second = json.loads(png.font_catalog(adapter, root, [sources], root).read_text())
             self.assertNotEqual(first['faces'][0]['sourceSha256'], second['faces'][0]['sourceSha256'])
             self.assertEqual(second['faces'][0]['weight'], 700)
+    def test_empty_vtt_source_record_is_omitted_without_recompiling_runtime_tables(self):
+        from fontTools.ttLib import TTFont
+        from fontTools.ttLib.sfnt import SFNTWriter, calcChecksum
+        import hashlib
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            inputs = root / 'input'
+            inputs.mkdir()
+            fixture = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf'
+            source = inputs / 'empty-source.ttf'
+            with TTFont(fixture, lazy=True) as font, source.open('wb') as output:
+                writer = SFNTWriter(output, len(font.reader.keys()) + 2, font.sfntVersion)
+                for tag in sorted(font.reader.keys()):
+                    writer[tag] = font.reader[tag]
+                writer['TSI3'] = b''
+                writer['TSI5'] = b'\0\0\0\0'
+                writer.close()
+            adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                sha256_file=lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest(),
+                write_json_atomic=lambda p, v: p.write_text(json.dumps(v)))
+            face = json.loads(png.font_catalog(adapter, root, [inputs], root).read_text())['faces'][0]
+            self.assertEqual(face['repairs'], ['empty-vtt-source-table:TSI3'])
+            prepared = Path(face['path'])
+            self.assertEqual(face['sourceSha256'], hashlib.sha256(source.read_bytes()).hexdigest())
+            self.assertEqual(calcChecksum(prepared.read_bytes()), 0xB1B0AFBA)
+            with TTFont(source, lazy=True) as before, TTFont(prepared, lazy=True) as after:
+                self.assertEqual(set(after.reader.keys()), set(before.reader.keys()) - {'TSI3'})
+                for tag in after.reader.keys():
+                    original, actual = before.reader[tag], after.reader[tag]
+                    if tag == 'head':
+                        original, actual = original[:8] + original[12:], actual[:8] + actual[12:]
+                    self.assertEqual(actual, original, tag)
 
     def test_selected_ttc_face_keeps_document_family_alias(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -367,6 +463,44 @@ class EmbeddedFontCatalogueTests(unittest.TestCase):
                     if tag == 'head':
                         before, after = before[:8] + before[12:], after[:8] + after[12:]
                     self.assertEqual(after, before, tag)
+
+    def test_unaligned_standalone_tables_preserve_payloads_and_metrics(self):
+        from fontTools.ttLib import TTFont
+        from fontTools.ttLib.sfnt import calcChecksum
+        import hashlib
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            inputs = root / 'input'
+            inputs.mkdir()
+            fixture = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf'
+            data = fixture.read_bytes()
+            count = struct.unpack_from('>H', data, 4)[0]
+            directory_end = 12 + 16 * count
+            shifted = bytearray(data[:directory_end] + b'\0' + data[directory_end:])
+            for index in range(count):
+                record = 12 + 16 * index
+                offset = struct.unpack_from('>I', data, record + 8)[0]
+                struct.pack_into('>I', shifted, record + 8, offset + 1)
+            source = inputs / 'unaligned.ttf'
+            source.write_bytes(shifted)
+            adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                sha256_file=lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest(),
+                write_json_atomic=lambda p, v: p.write_text(json.dumps(v)))
+            catalogue = json.loads(png.font_catalog(adapter, root, [inputs], root).read_text())
+            record = catalogue['faces'][0]
+            self.assertEqual(record['repairs'], ['sfnt-table-alignment'])
+            self.assertEqual(record['sourceSha256'], hashlib.sha256(shifted).hexdigest())
+            prepared = Path(record['path'])
+            self.assertEqual(calcChecksum(prepared.read_bytes()), 0xB1B0AFBA)
+            with TTFont(source, lazy=True) as before, TTFont(prepared, lazy=True) as after:
+                self.assertEqual(set(before.reader.keys()), set(after.reader.keys()))
+                for tag in before.reader.keys():
+                    self.assertEqual(after.reader.tables[tag].offset % 4, 0, tag)
+                    original, actual = before.reader[tag], after.reader[tag]
+                    if tag == 'head':
+                        original, actual = original[:8] + original[12:], actual[:8] + actual[12:]
+                    self.assertEqual(actual, original, tag)
+
 
     def test_outline_face_drops_embedded_bitmap_strikes_only(self):
         from fontTools.ttLib import TTFont

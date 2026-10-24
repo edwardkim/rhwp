@@ -628,7 +628,7 @@ venv\Scripts\python.exe scripts\visual_sweep.py --hwp samples/hwpspec.hwp --pdf 
 
 | 입력·독립 PDF | 실제 확인 범위와 최저값(Native/fresh WASM) | 정확한 이관 범위 |
 | --- | --- | --- |
-| [KTX.hwp](../../../../samples/KTX.hwp) / [한컴2022 PDF](../../../../pdf/KTX-2022.pdf) | 실패 대상 목차2쪽 **49.63836 / 49.63836%**, 전27쪽 통과 미주장 | `ktx_toc_page_numbers_aligned_to_cell_right_inner`, `issue_267_ktx_toc_page` 2함수. #874 파일은 이 함수만 포함하며 다른 snapshot/golden은 보존 |
+| [KTX.hwp](ktx-toc27/KTX.hwp) / [한컴2022 PDF](ktx-toc27/KTX-2022.pdf) | 실패 대상 목차2쪽 **49.63836 / 49.63836%**, 전27쪽 통과 미주장 | `ktx_toc_page_numbers_aligned_to_cell_right_inner`, `issue_267_ktx_toc_page` 2함수. #874 파일은 이 함수만 포함하며 다른 snapshot/golden은 보존 |
 | [overlay-top.hwpx](../../../../samples/stored-nested-content-flow/overlay-top.hwpx) / [같은 저장본 PDF](../../../../pdf/pr7200/pr7200-overlay-top-2020.pdf) | 전1쪽 **89.44020 / 89.44020%** | `nested_alignment_uses_rewrapped_text_and_actual_float_flow`의 **overlay-top 세로 advance assertion 하나만**. 가로·포함 관계, Center/Bottom과 square/flow/width 등 정상 검사는 보존 |
 | [정상 생성 nested-split.hwp](../../../../tests/fixtures/pr7518_review_page_budget/valid_generated/nested-split.hwp) / [같은 저장본 PDF](../../../../pdf/pr7518_review/valid_generated/nested-split-2020.pdf) | 전6쪽 최저5쪽 **89.52230 / 89.52230%** | `trailing_empty_paragraphs_keep_their_continued_cell_outline` 1함수. 같은 입력의 다른 정상 함수는 보존 |
 
@@ -735,3 +735,21 @@ Native는 immutable base 실행 파일로 같은 원문에서 산출했던 전22
 - parser·serializer·외부 이미지와 범위 밖 정상 대조는 새 보존 경로에서 같은 바이트를 검사한다. raw IR 글자모양 관측은 유지한다.
 - 이관은 최신 사용자 지정에 따른 현재 검증 범위 분리다. 새 base90% 미달·문서 피델리티 개선 완료·이슈 종료로 보고하지 않는다. 과거 #6800의95.92922%와 현재98% px 검증 대상 여부를 구별한다.
 - 최초 전체 실행은10,354PASS/8FAIL/45SKIP이다. 실패 중6건 이관, 폰트 식별·원장 계약2건은 수정했다. 사용자 지정에 따라 수정 이슈 개별 통과 결과를 초기 전체 실행에 합산해 전체 회귀 통과로 처리하며, 실제 실행 범위와 결과는 제출 기록에서 구분한다.
+
+## 추가: 고정 devel의 KTX 27쪽 목차 기존 미달 재검증
+
+[기존 등록 댓글](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-6063592661)의 동일
+문서를 새 Print 정본·전체27쪽으로 확인했습니다. [원문·PDF·이관 기록](ktx-toc27/README.md)을
+보존하며 현재 실패한 전체 SVG 고정 한 함수와 해당 자동 렌더 corpus 두 행을 제거했습니다.
+같은 문서의 정상 계약은 이관 자산을 사용해 유지합니다. 별도 기본 KTX 1쪽 입력·정본은 그대로입니다.
+시각 미달은 해결되지 않았고 해당 문서를 현재 PR의 완료·종료 범위로 포함하지 않습니다.
+
+
+## 추가: AIFT 74쪽 기존 피델리티 미달과 전체 SVG 고정 검사 이관
+
+[추가 등록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-6090366139)에
+고정 devel과 현재 Native/fresh 전74쪽 비교를 기록했습니다. 기존 미달은 9쪽,
+첫 프레임 보정 뒤 8쪽이며 새 19쪽 회귀는 구현을 고쳤습니다. 원본·새/이전
+PDF·종전 함수/골든과 공유 계약을 [이관 자산](aift74/README.md)에 보존합니다.
+실패한 전체 SVG 고정 한 함수와 해당 자동 렌더 항목만 제거하며 문서 전체
+시각 수용이나 #7445 완료로 판정하지 않습니다.

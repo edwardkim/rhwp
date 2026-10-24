@@ -56,6 +56,7 @@ pub(crate) fn normalized_empty_control_frame(
     rows: &[f64],
     flow_origin: f64,
     dpi: f64,
+    hwpx_object_frame: bool,
 ) -> Option<ParagraphFloatPlacement> {
     if !stored_rows_own_body(table, rows, dpi)
         || table.caption.is_some()
@@ -85,6 +86,7 @@ pub(crate) fn normalized_empty_control_frame(
         0.0,
         source_origin,
         dpi,
+        hwpx_object_frame,
     )?;
     let change = body - declared;
     frame.anchor_y += flow_origin;

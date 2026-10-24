@@ -2,6 +2,7 @@ import test from 'node:test';
 import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { stripTypeScriptTypes } from 'node:module';
 
 import {
   clampRenderScale,
@@ -251,8 +252,13 @@ test('CanvasKit contains malformed images and bounds both decode caches', () => 
 
 test('CanvasKit translates a present missing-picture op without a profile gate', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
-  assert.match(codeOnly(source), /op\.kind === 'missingPicture'/);
-  assert.doesNotMatch(codeOnly(source), /profile === 'print' \|\| profile === 'highQuality'/);
+  const code = codeOnly(source);
+  const placeholder = code.slice(code.indexOf('private renderPlaceholder('), code.indexOf('private drawStyledShape('));
+  assert.match(placeholder, /private renderPlaceholder\(canvas: SkCanvas, op: LayerPlaceholderOp\): void/);
+  assert.match(placeholder, /op\.kind === 'missingPicture'/);
+  // Other paint operations may use the print profile. Missing-picture replay
+  // itself has no profile input and must keep its geometry in every profile.
+  assert.doesNotMatch(placeholder, /profile === 'print' \|\| profile === 'highQuality'/);
   assert.match(codeOnly(source), /this\.renderPlaceholder\(canvas, op\)/);
   assert.match(codeOnly(source), /MAX_PLACEHOLDER_DASH_SEGMENTS_PER_AXIS = 2048/);
   assert.match(source, /\.every\(Number\.isFinite\)/);
@@ -373,14 +379,59 @@ test('[#5763] PageRenderer skips the flow-static split when an opaque flow fill 
   assert.match(source, /scan\.opaqueFlowFills\.some\(/);
 });
 
-test('CanvasKit and comparison canvas bitmap extents preserve fractional page edges', () => {
+test('CanvasKit은 공통 인쇄 종이의 소수 경계를 보존하고 편집 좌표는 원본으로 전달한다', () => {
   const pageRenderer = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
   const compareResult = readFileSync(new URL('../src/ui/compare-result-window.ts', import.meta.url), 'utf8');
 
-  assert.match(pageRenderer, /const width\s*=\s*Math\.max\(1,\s*Math\.ceil\(pageInfo\.width \* renderScale\)\)/);
-  assert.match(pageRenderer, /const height\s*=\s*Math\.max\(1,\s*Math\.ceil\(pageInfo\.height \* renderScale\)\)/);
-  assert.match(pageRenderer, /if \(canvas\.width !== width\) canvas\.width = width/);
-  assert.match(pageRenderer, /if \(canvas\.height !== height\) canvas\.height = height/);
+  // 제품 메서드를 그대로 실행한다. 조판 종이와 실제 인쇄 종이가 다른 경우도
+  // 포함해, 변수 이름이 아니라 표면의 우·하단 보존과 원본 좌표 전달을 검사한다.
+  const start = pageRenderer.indexOf('  private renderPageCanvasKit(');
+  const end = pageRenderer.indexOf('\n  /**', start);
+  assert(start >= 0 && end > start);
+  const executable = stripTypeScriptTypes(
+    `class Renderer {\n${pageRenderer.slice(start, end)}\n}`,
+    { mode: 'strip' },
+  );
+  const Renderer = new Function(`${executable}\nreturn Renderer;`)();
+  const cases = [
+    { profile: 'screen', layout: [100.25, 200.125], paper: [100.25, 200.125], scale: 1, pixels: [101, 201] },
+    { profile: 'print', layout: [100.25, 200.125], paper: [300.125, 400.25], scale: 1.5, pixels: [451, 601] },
+    { profile: 'print', layout: [300, 500], paper: [100.25, 200.125], scale: 2, pixels: [201, 401] },
+  ];
+  for (const item of cases) {
+    const pageInfo = { width: item.layout[0], height: item.layout[1] };
+    const tree = { pageWidth: item.paper[0], pageHeight: item.paper[1] };
+    const canvas = { width: 0, height: 0, parentElement: null };
+    const renderer = new Renderer();
+    renderer.renderProfile = item.profile;
+    renderer.canvaskitDiagnosticsByPage = new Map();
+    renderer.imageRetryCounts = new Map();
+    renderer.cancelReRender = () => {};
+    renderer.wasm = {
+      getPageInfo: (page: number) => { assert.equal(page, 7); return pageInfo; },
+      getPageLayerTreeObject: (page: number, profile: string) => {
+        assert.equal(page, 7);
+        assert.equal(profile, item.profile);
+        return tree;
+      },
+    };
+    let rendered = false;
+    renderer.canvaskitRenderer = {
+      diagnostics: () => ({}),
+      recordRenderFailure: (error: unknown) => { throw error; },
+      renderPage: (paint: unknown, target: unknown, scale: number, editPage: unknown) => {
+        assert.equal(paint, tree);
+        assert.equal(target, canvas);
+        assert.equal(scale, item.scale);
+        assert.equal(editPage, pageInfo);
+        assert.deepEqual([canvas.width, canvas.height], item.pixels, item.profile);
+        rendered = true;
+        return canvas;
+      },
+    };
+    assert.equal(renderer.renderPageCanvasKit(7, canvas, item.scale), canvas);
+    assert(rendered);
+  }
   assert.match(compareResult, /canvas\.width\s*=\s*Math\.max\(1,\s*Math\.ceil\(info\.width \* scale\)\)/);
   assert.match(compareResult, /canvas\.height\s*=\s*Math\.max\(1,\s*Math\.ceil\(info\.height \* scale\)\)/);
 });

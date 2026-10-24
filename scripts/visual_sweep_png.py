@@ -10,6 +10,8 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+VTT_SOURCE_TABLES = frozenset({'TSI0', 'TSI1', 'TSI2', 'TSI3', 'TSI5'})
+
 
 def png_backend(wasm_package: Path | None) -> str:
     return 'wasm-canvas2d' if wasm_package else 'native-skia'
@@ -249,36 +251,55 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
             cached_records = []
             try:
                 for index, font in enumerate(fonts):
-                    names, name_errors = font_family_names(font)
+                    try:
+                        names, name_errors = font_family_names(font)
+                    except ValueError as error:
+                        raise SystemExit(f'공급 글꼴의 유효한 family 이름이 없습니다: {source} face={index}: {error}') from error
+                    name_warnings = [{'nameID': item['nameID'],
+                                      'platformID': item['platformID'],
+                                      'platEncID': item['encodingID'],
+                                      'langID': item['languageID'],
+                                      'error': item['reason']} for item in name_errors]
                     weight = font['OS/2'].usWeightClass if 'OS/2' in font else 400
                     italic = bool(font['head'].macStyle & 2) if 'head' in font else False
                     path = source
-                    repaired_cmap = repair_terminal_cmap(font.reader['cmap'], font['maxp'].numGlyphs) if 'cmap' in font else None
+                    raw_cmap = font.reader['cmap'] if 'cmap' in font else None
+                    length_cmap = repair_minimal_format4_length(raw_cmap, font['maxp'].numGlyphs) if raw_cmap is not None else None
+                    terminal_cmap = repair_terminal_cmap(length_cmap or raw_cmap, font['maxp'].numGlyphs) if raw_cmap is not None else None
+                    repaired_cmap = terminal_cmap or length_cmap
+                    repaired_maxp = repair_true_type_zone_count(font.reader['maxp']) if 'maxp' in font and 'glyf' in font else None
                     vtt_tables = empty_vtt_tables(font)
                     dropped = embedded_bitmap_strike_tags(font.reader.keys())
                     excluded_tables = sorted(set(vtt_tables) | dropped)
-                    repairs = (['cmap-format4-terminal-notdef'] if repaired_cmap is not None else [])
+                    repairs = (['cmap-format4-terminal-notdef'] if terminal_cmap is not None else [])
+                    repairs += ['cmap-format4-minimum-length'] if length_cmap is not None else []
+                    repairs += ['maxp-zone-count'] if repaired_maxp is not None else []
                     repairs += [f'empty-vtt-source-table:{tag}' for tag in vtt_tables]
                     if dropped:
                         repairs.append('drop-embedded-bitmap-strikes')
-                    if collection or repaired_cmap is not None or excluded_tables:
+                    # Preserve original SFNT payloads while aligning browser tables.
+                    misaligned_sfnt = font.flavor is None and any(
+                        table.offset % 4 for table in font.reader.tables.values())
+                    repairs += ['sfnt-table-alignment'] if misaligned_sfnt else []
+                    if collection or repaired_cmap is not None or excluded_tables or misaligned_sfnt or repaired_maxp is not None:
                         resource_dir.mkdir(parents=True, exist_ok=True)
                         path = resource_dir / f'{digest}-{index}.ttf'
                         temporary = resource_dir / f'.{digest}-{index}-{os.getpid()}-{uuid.uuid4().hex}.ttf'
                         try:
                             # 원본 SFNT 테이블을 보존하고 완성한 face만 원자적으로 공개한다.
-                            write_font_face(font, temporary, repaired_cmap, excluded_tables)
+                            write_font_face(font, temporary, repaired_cmap, excluded_tables, repaired_maxp=repaired_maxp)
                             os.replace(temporary, path)
                         finally:
                             temporary.unlink(missing_ok=True)
                     face = {'path': str(path.resolve()), 'source': str(source.resolve()),
                                     'sourceSha256': digest, 'sha256': vs.sha256_file(path),
                                     'faceIndex': index, 'families': names, 'weight': weight,
+                                    'nameDecodeWarnings': name_warnings,
                                     'style': 'italic' if italic else 'normal',
                                     'nameRecordErrors': name_errors,
                                     'repairs': repairs}
                     records.append(face)
-                    cached_records.append({**face, 'cacheKind': 'derived' if collection or repaired_cmap is not None or excluded_tables else 'source'})
+                    cached_records.append({**face, 'cacheKind': 'derived' if collection or repaired_cmap is not None or excluded_tables or misaligned_sfnt or repaired_maxp is not None else 'source'})
                 resource_dir.mkdir(parents=True, exist_ok=True)
                 vs.write_json_atomic(resource_dir / f'{digest}.json',
                                      {'schemaVersion': 1, 'sourceSha256': digest,
@@ -314,7 +335,7 @@ def font_family_names(font) -> tuple[list[str], list[dict]]:
     return sorted(names), errors
 
 
-def write_font_face(font, path: Path, repaired_cmap: bytes | None, excluded_tables=()) -> None:
+def write_font_face(font, path: Path, repaired_cmap: bytes | None, excluded_tables=(), *, repaired_maxp=None) -> None:
     """원본 SFNT 테이블을 복사한다. 글리프·메트릭·경계·날짜를 재컴파일하지 않는다."""
     from fontTools.ttLib.sfnt import SFNTWriter
     # TTFont.save는 읽어 둔 테이블을 재컴파일하고 CFF 전체의 bbox를 계산한다.
@@ -323,7 +344,12 @@ def write_font_face(font, path: Path, repaired_cmap: bytes | None, excluded_tabl
     with path.open('wb') as output:
         writer = SFNTWriter(output, len(tags), font.sfntVersion)
         for tag in tags:
-            writer[tag] = repaired_cmap if tag == 'cmap' and repaired_cmap is not None else font.reader[tag]
+            if tag == 'cmap' and repaired_cmap is not None:
+                writer[tag] = repaired_cmap
+            elif tag == 'maxp' and repaired_maxp is not None:
+                writer[tag] = repaired_maxp
+            else:
+                writer[tag] = font.reader[tag]
         writer.close()
 
 
@@ -341,6 +367,59 @@ def embedded_bitmap_strike_tags(tags) -> frozenset:
     if not tags & {'glyf', 'CFF ', 'CFF2'}:
         return frozenset()
     return frozenset(tags & EMBEDDED_BITMAP_STRIKE_TAGS)
+
+
+def repair_true_type_zone_count(data: bytes) -> bytes | None:
+    """OpenType maxp의 Z0/Z1 메모리 개수만 정정하고 실행 힌팅은 보존한다."""
+    if len(data) < 32 or struct.unpack_from('>I', data)[0] != 0x00010000:
+        return None
+    if struct.unpack_from('>H', data, 14)[0] <= 2:
+        return None
+    out = bytearray(data)
+    struct.pack_into('>H', out, 14, 2)
+    return bytes(out)
+
+
+def repair_minimal_format4_length(data: bytes, glyph_count: int) -> bytes | None:
+    """상수 delta 배열이 완전할 때만 한 바이트 짧은 최소 길이 선언을 정정한다."""
+    if len(data) < 4 or glyph_count <= 0:
+        return None
+    count = struct.unpack_from('>H', data, 2)[0]
+    header = 4 + count * 8
+    if header > len(data):
+        return None
+    offsets = sorted({struct.unpack_from('>I', data, 8 + index * 8)[0] for index in range(count)})
+    output = None
+    for subtable_index, offset in enumerate(offsets):
+        if offset < header or offset + 14 > len(data) or struct.unpack_from('>H', data, offset)[0] != 4:
+            continue
+        read = lambda pos: struct.unpack_from('>H', data, pos)[0]
+        doubled = read(offset + 6)
+        segments = doubled // 2
+        minimum = 16 + 8 * segments
+        limit = min(len(data), offsets[subtable_index + 1] if subtable_index + 1 < len(offsets) else len(data))
+        if doubled % 2 or segments < 1 or minimum > 65535 or offset + minimum != limit:
+            continue
+        if read(offset + 2) + 1 != minimum or read(offset + 14 + 2 * segments) != 0:
+            continue
+        previous = -1
+        valid = True
+        for index in range(segments):
+            end = read(offset + 14 + 2 * index)
+            start = read(offset + 16 + 2 * segments + 2 * index)
+            delta = read(offset + 16 + 4 * segments + 2 * index)
+            if (start > end or start <= previous
+                    or read(offset + 16 + 6 * segments + 2 * index) != 0
+                    or (index == segments - 1 and (start != 65535 or end != 65535))
+                    or any(((code + delta) & 65535) >= glyph_count for code in range(start, end + 1))):
+                valid = False
+                break
+            previous = end
+        if valid:
+            if output is None:
+                output = bytearray(data)
+            struct.pack_into('>H', output, offset + 2, minimum)
+    return bytes(output) if output is not None else None
 
 
 def repair_terminal_cmap(data: bytes, glyph_count: int) -> bytes | None:

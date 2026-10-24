@@ -3,6 +3,13 @@ use crate::renderer::typeset::{
     ColumnType, DeferredSquarePictureControl, DeferredTableControl, EndnoteParaSource, EndnoteRef,
     FootnoteRef, PageContent, PageItem, PageLayoutInfo, Paragraph, VisibleFloatExclusion,
 };
+/// 후속 원본 줄로 확인하기 전의 실제 문단 소비. 단 밖으로 공개하지 않는다.
+pub(super) struct PendingParagraphOrigin {
+    pub(super) paragraph_index: usize,
+    pub(super) spacing_before: f64,
+    pub(super) flow_start: f64,
+    pub(super) flow_end: f64,
+}
 pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) deferred_table_successor_start: Option<usize>,
     pub(super) pending_table_terminal_gap: Option<DeferredTableTerminalGap>,
@@ -10,6 +17,8 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) pages: Vec<PageContent>,
     /// 현재 단에 쌓이는 항목
     pub(in crate::renderer::typeset) current_items: Vec<PageItem>,
+    /// 이전 본문 밖의 저장 글줄을 이어받으며 이미 연 쪽 경계의 (문단, 시작 컷).
+    pub(in crate::renderer::typeset) stored_paragraph_boundary_carry: Option<(usize, usize)>,
     /// 수용한 본문 조각의 (문단, 끝 줄)별 점유 하단·흐름 끝·검증된 저장 축.
     pub(in crate::renderer::typeset) paragraph_fragment_content_bottoms: std::collections::HashMap<
         (usize, usize),
@@ -141,6 +150,12 @@ pub(in crate::renderer::typeset) struct StateView {
     >,
     pub(in crate::renderer::typeset) inline_flow_plans:
         std::collections::HashMap<usize, crate::renderer::inline_flow::InlineFlowPlan>,
+    /// 재조판 문단의 확정 간격/원점을 현재 단과 함께 전달한다.
+    pub(in crate::renderer::typeset) computed_paragraphs:
+        std::collections::HashMap<usize, crate::renderer::composer::ComposedParagraph>,
+    pub(in crate::renderer::typeset) paragraph_origins:
+        std::collections::HashMap<usize, crate::renderer::pagination::ParagraphOrigin>,
+    pub(super) pending_paragraph_origins: Vec<PendingParagraphOrigin>,
     pub(in crate::renderer::typeset) stored_paragraph_flow_ends:
         std::collections::HashMap<usize, f64>,
     /// 쪽 상단의 첫 문단이 이미 예약한 저장 앞 간격.
@@ -158,6 +173,12 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를
     /// 후속 섹션 블록 뒤로 잠시 미루기 위한 큐.
     pub(in crate::renderer::typeset) deferred_table_controls: Vec<DeferredTableControl>,
+    /// 같은 호스트의 부동 개체만 다음 단으로 이월하고 현재 단 본문은 계속 채운다.
+    pub(in crate::renderer::typeset) deferred_column_shapes: Vec<(
+        usize,
+        usize,
+        crate::renderer::typeset::controls::shape_flow::TableHostShapeFlow,
+    )>,
     /// native HWP5 page-tail Square 그림을 다음 physical page의 시작에 넣는 큐.
     /// 단일 컬럼·caption 보유 picture 형상으로 한정한다.
     pub(in crate::renderer::typeset) deferred_next_page_square_pictures:
@@ -245,9 +266,10 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [Task #836] 미주 목록 (섹션별 수집, 문서 끝에 렌더).
     pub(in crate::renderer::typeset) endnotes: Vec<EndnoteRef>,
     pub(in crate::renderer::typeset) endnote_paragraphs: Vec<Paragraph>,
-    /// 실제 줄 높이·간격을 다시 계산한 미주 문단의 목록 내 인덱스.
+    /// 실제 줄 높이·간격을 다시 계산한 미주 문단의 목록 내 인덱스와
+    /// 같은 전진 안에서 끝줄 내용 높이가 이미 소비한 후행 간격(HU).
     /// 이 문단의 저장 단 컷은 이전 세로 배치의 캐시이므로 실제 fit을 우선한다.
-    pub(in crate::renderer::typeset) reissued_endnote_rows: std::collections::HashSet<usize>,
+    pub(in crate::renderer::typeset) reissued_endnote_rows: std::collections::HashMap<usize, i32>,
     pub(in crate::renderer::typeset) endnote_para_sources: Vec<EndnoteParaSource>,
     /// 현재 구역의 본문 다음에 등록되는 가상 미주 문단 범위의 시작.
     pub(in crate::renderer::typeset) endnote_para_base: Option<usize>,
@@ -362,6 +384,8 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 저장 vpos 스냅(VPOS_CORR)을 마친 문단 시작 커서 `(문단, y)`.
     /// 측정 누적의 sb·trailing_ls drift 가 걷힌 실제 앞 커서다.
     pub(in crate::renderer::typeset) vpos_snapped_flow_start: Option<(usize, f64)>,
+    /// 공통 vpos 질의가 현재 문단에서 거절한 저장 원점 `(문단, source HU)`.
+    pub(in crate::renderer::typeset) rejected_stored_forward_origin: Option<(usize, i32)>,
     pub(in crate::renderer::typeset) vpos_prev_layout_para: Option<usize>,
     pub(in crate::renderer::typeset) vpos_prev_partial_table: bool,
     /// 컬럼 시작 시점의 current_height (page_path anchor — 렌더러 col_anchor_y 대응).

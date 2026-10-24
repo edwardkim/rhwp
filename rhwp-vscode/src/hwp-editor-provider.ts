@@ -210,6 +210,7 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
       ['나눔명조', `${fontsBase}/NanumMyeongjo-Regular.woff2`, 'woff2'],
       ['고운바탕', `${fontsBase}/GowunBatang-Regular.woff2`, 'woff2'],
       ['고운돋움', `${fontsBase}/GowunDodum-Regular.woff2`, 'woff2'],
+      ['RHWP Public Batang', `${fontsBase}/RHWPPublicBatang-Regular.woff2`, 'woff2'],
       // HY 폰트 → Noto 대체
       ['HY헤드라인M', `${fontsBase}/NotoSansKR-Bold.woff2`, 'woff2'],
       ['HY견명조', `${fontsBase}/NotoSerifKR-Bold.woff2`, 'woff2'],

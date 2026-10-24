@@ -1561,34 +1561,14 @@ pub fn extract_image_from_xobject_at(
 
     let width = dimension("Width")?;
     let height = dimension("Height")?;
-    let filter_names = if let Some(filter_obj) = dict.get("Filter") {
-        match filter_obj {
-            Object::Name(name) => vec![name.clone()],
-            Object::Array(filters) => filters
-                .iter()
-                .filter_map(|f| f.as_name().map(String::from))
-                .collect(),
-            _ => vec![],
-        }
-    } else {
-        vec![]
-    };
-
-    let has_dct = filter_names.iter().any(|name| name == "DCTDecode");
-    let is_jpeg_only = has_dct && filter_names.len() == 1;
-    let is_jpeg_chain = has_dct && filter_names.len() > 1;
-
-    let is_jbig2 = filter_names
-        .iter()
-        .any(|n| n.eq_ignore_ascii_case("JBIG2Decode"));
-
-    let is_jpx = filter_names
-        .iter()
-        .any(|n| n.eq_ignore_ascii_case("JPXDecode"));
-
-    let is_ccitt = filter_names
-        .iter()
-        .any(|n| n.eq_ignore_ascii_case("CCITTFaxDecode"));
+    // Enumeration and materialization consume the same resolved filter chain.
+    let filter_chain = parse_filter_chain(dict, doc)?;
+    let has_dct = filter_chain.contains(&PdfFilter::DCTDecode);
+    let is_jpeg_only = has_dct && filter_chain.len() == 1;
+    let is_jpeg_chain = has_dct && filter_chain.len() > 1;
+    let is_jbig2 = filter_chain.contains(&PdfFilter::JBIG2Decode);
+    let is_jpx = filter_chain.contains(&PdfFilter::JPXDecode);
+    let is_ccitt = filter_chain.contains(&PdfFilter::CCITTFaxDecode);
 
     // Match the actual storage branch below. JPEG keeps encoded bytes here;
     // its RGB/CMYK decoder, conversions and PNG writer reserve real buffers.
@@ -1631,15 +1611,7 @@ pub fn extract_image_from_xobject_at(
     // pixel format from the codestream's own component count, so the
     // placeholder below is never read for that path — it exists only to
     // satisfy the shared prologue.
-    let jpx_without_color_space = dict.get("ColorSpace").is_none()
-        && match dict.get("Filter") {
-            Some(Object::Name(n)) => n.eq_ignore_ascii_case("JPXDecode"),
-            Some(Object::Array(fs)) => fs
-                .iter()
-                .filter_map(|f| f.as_name())
-                .any(|n| n.eq_ignore_ascii_case("JPXDecode")),
-            _ => false,
-        };
+    let jpx_without_color_space = dict.get("ColorSpace").is_none() && is_jpx;
     let device_rgb = Object::Name("DeviceRGB".to_string());
     let color_space_obj = match dict.get("ColorSpace") {
         Some(cs) => cs,
@@ -1791,6 +1763,9 @@ pub fn extract_image_from_xobject_at(
         }
         let (data, dec_w, dec_h) =
             decode_jpx_image(xobject, obj_ref, doc, &color_space, indexed, target)?;
+        if bits_per_component != 8 {
+            samples_are_raw = false;
+        }
         jpx_decoded_dims = Some((dec_w, dec_h));
         data
     } else if encoded_jpeg {
@@ -1812,9 +1787,9 @@ pub fn extract_image_from_xobject_at(
                 if bits_per_component != 1 {
                     return Err(Error::Image("CCITT requires one-bit image samples".into()));
                 }
-                let index = filter_names
+                let index = filter_chain
                     .iter()
-                    .position(|name| name.eq_ignore_ascii_case("CCITTFaxDecode"))
+                    .position(|name| *name == PdfFilter::CCITTFaxDecode)
                     .unwrap();
                 let params = limited_ccitt_parameters(
                     doc.unwrap(),
@@ -2042,7 +2017,7 @@ pub fn extract_image_from_xobject_at(
     // 16-bit samples were collapsed to their high byte above (and an Indexed
     // base always expands to 8-bit RGB), so the stored pixels are 8-bit per
     // component in those cases too.
-    let effective_bpc = if is_jbig2 || bits_per_component == 16 {
+    let effective_bpc = if is_jbig2 || is_jpx || bits_per_component == 16 {
         8
     } else {
         stored_bpc
@@ -2059,6 +2034,21 @@ pub fn extract_image_from_xobject_at(
     // advertises; the buffer's geometry is what the samples actually are.
     let (width, height) = jpx_decoded_dims.unwrap_or((width, height));
 
+    let color_space = if jpx_without_color_space {
+        match &data {
+            ImageData::Raw {
+                format: PixelFormat::Grayscale,
+                ..
+            } => ColorSpace::DeviceGray,
+            ImageData::Raw {
+                format: PixelFormat::CMYK,
+                ..
+            } => ColorSpace::DeviceCMYK,
+            _ => ColorSpace::DeviceRGB,
+        }
+    } else {
+        color_space
+    };
     let mut image = PdfImage::new(width, height, color_space, effective_bpc, data);
     image.set_samples_are_raw(samples_are_raw);
     image.set_decode_folded_in(decode_folded_in);
@@ -2088,9 +2078,9 @@ pub fn extract_image_from_xobject_at(
         // coverage 0.00988, where the ink derivable from the file is 0.07980
         // and all four reference renderers report 0.08004-0.08297.
         let params = if let Some(doc) = doc.filter(|doc| doc.import_budget().is_some()) {
-            let index = filter_names
+            let index = filter_chain
                 .iter()
-                .position(|name| name.eq_ignore_ascii_case("CCITTFaxDecode"))
+                .position(|name| *name == PdfFilter::CCITTFaxDecode)
                 .unwrap();
             Some(limited_ccitt_parameters(doc, dict.get("DecodeParms"), index, width, height)?)
         } else {
@@ -3185,7 +3175,7 @@ fn save_raw_as_jpeg(
 /// that loop unchanged: almost every sample fell past the end of the buffer
 /// and the mask was silently ignored, so a scanned page rendered as the raw
 /// grey scan with no text knocked out.
-#[cfg(feature = "rendering")]
+#[cfg(feature = "jbig2")]
 pub(crate) fn decode_jbig2_stencil(
     stream: &crate::object::Object,
     obj_ref: Option<ObjectRef>,
@@ -3204,22 +3194,27 @@ pub(crate) fn decode_jbig2_stencil(
     // 0xFF = every sample 1 = "leave the previous contents unchanged", so a
     // row the decoder did not reach masks nothing out rather than erasing the
     // base image.
-    let mut packed = vec![0xFFu8; row_bytes * height as usize];
-    for y in 0..height as usize {
-        for x in 0..width as usize {
-            let Some(&g) = pixels.get(y * width as usize + x) else {
-                continue;
-            };
-            if g < 128 {
-                // black -> sample 0
-                packed[y * row_bytes + x / 8] &= !(0x80 >> (x % 8));
+    let budget = doc.and_then(|d| d.import_budget());
+    crate::codec_resource::decode(budget, || {
+        let count = rhwp_codec_resource::product(&[row_bytes, height as usize])
+            .map_err(|_| Error::Image("JBIG2 stencil size".into()))?;
+        let mut packed = rhwp_codec_resource::filled(0xFFu8, count)
+            .map_err(|_| Error::Image("JBIG2 stencil allocation".into()))?;
+        rhwp_codec_resource::work(pixels.len())
+            .map_err(|_| Error::Image("JBIG2 stencil work".into()))?;
+        for (y, row) in pixels.chunks_exact(width as usize).enumerate() {
+            for (x, &g) in row.iter().enumerate() {
+                if g < 128 {
+                    // black -> sample 0
+                    packed[y * row_bytes + x / 8] &= !(0x80 >> (x % 8));
+                }
             }
         }
-    }
-    Ok(packed)
+        Ok(packed)
+    })
 }
 
-#[cfg(feature = "rendering")]
+#[cfg(feature = "jbig2")]
 fn decode_jbig2_image(
     xobject: &crate::object::Object,
     obj_ref: Option<ObjectRef>,
@@ -3228,67 +3223,135 @@ fn decode_jbig2_image(
     width: u32,
     height: u32,
 ) -> Result<ImageData> {
-    // The Jbig2Decoder in src/decoders/jbig2.rs is a pass-through: it returns
-    // the raw compressed bitstream unchanged, which is exactly what hayro-jbig2
-    // needs as input.
-    let jbig2_bytes: Vec<u8> = if let (Some(d), Some(ref_id)) = (doc.as_ref(), obj_ref) {
-        d.decode_stream_with_encryption(xobject, ref_id)?
-    } else {
-        xobject.decode_stream_data()?
-    };
+    crate::codec_resource::decode(doc.and_then(|d| d.import_budget()), || {
+        use rhwp_codec_resource as resource;
+        let jbig2_bytes = if let (Some(d), Some(id)) = (doc, obj_ref) {
+            d.decode_stream_with_encryption(xobject, id)?
+        } else {
+            xobject.decode_stream_data()?
+        };
 
-    // Load optional JBIG2Globals (shared symbol dictionaries referenced by multiple
-    // embedded JBIG2 streams in the same PDF).
-    let globals: Option<Vec<u8>> = (|| -> Option<Vec<u8>> {
-        let dp = dict.get("DecodeParms")?.as_dict()?;
-        let globals_ref = dp.get("JBIG2Globals")?.as_reference()?;
-        let d = doc.as_ref()?;
-        let globals_obj = d.load_object(globals_ref).ok()?;
-        d.decode_stream_with_encryption(&globals_obj, globals_ref)
-            .ok()
-    })();
-
-    let image = hayro_jbig2::Image::new_embedded(&jbig2_bytes, globals.as_deref())
-        .map_err(|e| Error::Image(format!("JBIG2 decode error: {e}")))?;
-
-    struct PixelCollector {
-        pixels: Vec<u8>,
-        row_buf: Vec<u8>,
-    }
-
-    impl hayro_jbig2::Decoder for PixelCollector {
-        fn push_pixel(&mut self, black: bool) {
-            self.row_buf.push(if black { 0 } else { 255 });
+        // DecodeParms follows the same filter position as JBIG2Decode, and may
+        // be indirect. A present but broken globals stream must not disappear.
+        let mut globals = None;
+        if let Some(d) = doc {
+            if let Some(parms) = dict.get("DecodeParms") {
+                let parms = resolve_image_object(doc, parms)?;
+                let selected;
+                let parms = if let Some(array) = parms.as_array() {
+                    let filters = parse_filter_chain(dict, doc)?;
+                    let index = filters
+                        .iter()
+                        .position(|f| *f == PdfFilter::JBIG2Decode)
+                        .unwrap_or(0);
+                    selected = array
+                        .get(index)
+                        .map(|v| resolve_image_object(doc, v))
+                        .transpose()?;
+                    selected.as_deref()
+                } else {
+                    Some(&*parms)
+                };
+                if let Some(value) = parms
+                    .and_then(|p| p.as_dict())
+                    .and_then(|p| p.get("JBIG2Globals"))
+                {
+                    let id = value.as_reference().ok_or_else(|| {
+                        Error::Image("JBIG2Globals must reference a stream".into())
+                    })?;
+                    let object = resolve_image_object(doc, value)?;
+                    if !matches!(&*object, crate::object::Object::Stream { .. }) {
+                        return Err(Error::Image("JBIG2Globals must resolve to a stream".into()));
+                    }
+                    globals = Some(d.decode_stream_with_encryption(&object, id)?);
+                }
+            }
         }
 
-        // chunk_count is the number of 8-pixel groups, not individual pixels.
-        fn push_pixel_chunk(&mut self, black: bool, chunk_count: u32) {
-            let v = if black { 0u8 } else { 255u8 };
-            let n = chunk_count as usize * 8;
-            self.row_buf.extend(std::iter::repeat_n(v, n));
+        let image = hayro_jbig2::Image::new_embedded(&jbig2_bytes, globals.as_deref())
+            .map_err(|e| Error::Image(format!("JBIG2 decode error: {e}")))?;
+        if image.width() != width || image.height() != height {
+            return Err(Error::Image("JBIG2 dimensions differ from PDF image".into()));
         }
-
-        fn next_line(&mut self) {
-            self.pixels.append(&mut self.row_buf);
+        // The callback cannot return errors. Allocate once, never grow in it,
+        // and verify every row and the complete sample count after decode.
+        struct Collector {
+            pixels: Vec<u8>,
+            width: usize,
+            x: usize,
+            y: usize,
+            invalid: bool,
         }
-    }
-
-    let mut collector = PixelCollector {
-        pixels: Vec::with_capacity((width * height) as usize),
-        row_buf: Vec::with_capacity(width as usize),
-    };
-
-    image
-        .decode(&mut collector)
-        .map_err(|e| Error::Image(format!("JBIG2 pixel decode error: {e}")))?;
-
-    Ok(ImageData::Raw {
-        pixels: collector.pixels,
-        format: PixelFormat::Grayscale,
+        impl hayro_jbig2::Decoder for Collector {
+            fn push_pixel(&mut self, black: bool) {
+                self.write(black, 1);
+            }
+            fn push_pixel_chunk(&mut self, black: bool, chunks: u32) {
+                match (chunks as usize).checked_mul(8) {
+                    Some(count) => self.write(black, count),
+                    None => self.invalid = true,
+                }
+            }
+            fn next_line(&mut self) {
+                self.invalid |= self.x != self.width;
+                self.x = 0;
+                self.y = self.y.saturating_add(1);
+            }
+        }
+        impl Collector {
+            fn write(&mut self, black: bool, count: usize) {
+                if self.invalid {
+                    return;
+                }
+                let Some(end) = self.x.checked_add(count).filter(|&e| e <= self.width) else {
+                    self.invalid = true;
+                    return;
+                };
+                let Some(start) = self
+                    .y
+                    .checked_mul(self.width)
+                    .and_then(|n| n.checked_add(self.x))
+                else {
+                    self.invalid = true;
+                    return;
+                };
+                let Some(stop) = start.checked_add(count) else {
+                    self.invalid = true;
+                    return;
+                };
+                let Some(output) = self.pixels.get_mut(start..stop) else {
+                    self.invalid = true;
+                    return;
+                };
+                output.fill(if black { 0 } else { 255 });
+                self.x = end;
+            }
+        }
+        let count = resource::product(&[width as usize, height as usize])
+            .map_err(|_| Error::Image("JBIG2 sample size overflow".into()))?;
+        let pixels = resource::filled(255, count)
+            .map_err(|_| Error::Image("JBIG2 sample allocation".into()))?;
+        let mut collector = Collector {
+            pixels,
+            width: width as usize,
+            x: 0,
+            y: 0,
+            invalid: false,
+        };
+        image
+            .decode(&mut collector)
+            .map_err(|e| Error::Image(format!("JBIG2 pixel decode error: {e}")))?;
+        if collector.invalid || collector.x != 0 || collector.y != height as usize {
+            return Err(Error::Image("JBIG2 incomplete or excess pixel rows".into()));
+        }
+        Ok(ImageData::Raw {
+            pixels: collector.pixels,
+            format: PixelFormat::Grayscale,
+        })
     })
 }
 
-#[cfg(not(feature = "rendering"))]
+#[cfg(not(feature = "jbig2"))]
 fn decode_jbig2_image(
     _xobject: &crate::object::Object,
     _obj_ref: Option<ObjectRef>,
@@ -3298,14 +3361,14 @@ fn decode_jbig2_image(
     _height: u32,
 ) -> Result<ImageData> {
     Err(Error::UnsupportedFilter(
-        "JBIG2Decode — rebuild with the `rendering` feature to decode".to_string(),
+        "JBIG2Decode disabled: enable RHWP `pdf-jbig2` (backend `jbig2`) at build time".to_string(),
     ))
 }
 
 /// Decode a JPEG 2000 (`/JPXDecode`) image stream into raw interleaved samples.
 ///
 /// `JpxDecoder` is a pass-through, so `decode_stream_*` yields the raw JPEG 2000
-/// codestream, which OpenJPEG (`decoders::jpx::decode_jpx`) decodes to 8-bit
+/// codestream, which hayro-jpeg2000 (`decoders::jpx`) decodes to 8-bit
 /// component-interleaved samples.
 #[cfg(feature = "jpeg2000")]
 fn decode_jpx_image(
@@ -3316,109 +3379,205 @@ fn decode_jpx_image(
     indexed: Option<(&IndexedResolution, Option<&crate::color::Transform>)>,
     target: Option<(u32, u32)>,
 ) -> Result<(ImageData, u32, u32)> {
-    let codestream: Vec<u8> = if let (Some(d), Some(ref_id)) = (doc.as_ref(), obj_ref) {
-        d.decode_stream_with_encryption(xobject, ref_id)?
-    } else {
-        xobject.decode_stream_data()?
-    };
+    crate::codec_resource::decode(doc.and_then(|d| d.import_budget()), || {
+        let dict = xobject
+            .as_dict()
+            .ok_or_else(|| Error::Image("JPX image dictionary".into()))?;
+        let entry = |key: &str| {
+            dict.get(key)
+                .map(|v| resolve_image_object(doc, v))
+                .transpose()
+        };
+        let smask_entry = entry("SMaskInData")?;
+        let smask = match smask_entry.as_deref() {
+            None | Some(crate::object::Object::Integer(0)) => 0,
+            Some(crate::object::Object::Integer(v @ (1 | 2))) => *v,
+            _ => return Err(Error::Image("invalid JPX SMaskInData".into())),
+        };
+        if smask != 0
+            && entry("SMask")?
+                .as_deref()
+                .is_some_and(|v| !matches!(v, crate::object::Object::Null))
+        {
+            return Err(Error::Image("JPX SMaskInData forbids an external SMask".into()));
+        }
+        let dimension = |key: &str| {
+            entry(key)?
+                .as_deref()
+                .and_then(|v| v.as_integer())
+                .and_then(|v| u32::try_from(v).ok())
+                .filter(|&v| v > 0)
+                .ok_or_else(|| Error::Image(format!("invalid JPX {key}")))
+        };
+        let expected = doc
+            .and_then(|d| d.import_budget())
+            .map(|_| Ok::<_, Error>((dimension("Width")?, dimension("Height")?)))
+            .transpose()?;
+        let codestream: Vec<u8> = if let (Some(d), Some(ref_id)) = (doc.as_ref(), obj_ref) {
+            d.decode_stream_with_encryption(xobject, ref_id)?
+        } else {
+            xobject.decode_stream_data()?
+        };
 
-    // An /Indexed dictionary space makes the codestream's one component a
-    // table index, and §7.4.9 (pdf.md:3143) has the dictionary decide how the
-    // samples are read: "the colour space specifications in the JPEG2000 data
-    // shall be ignored". A JP2 file can carry a palette of its own for those
-    // indices; letting the decoder resolve it produced three colour
-    // components for a space that declares one, and the red channel was then
-    // taken as a grey level. The indices come back unscaled, one byte each,
-    // so the dictionary's table is read at 8 bits per index whatever
-    // /BitsPerComponent says the codestream packed them at.
-    if let Some((ir, transform)) = indexed {
-        let img = crate::decoders::jpx::decode_jpx_indices_at(&codestream, target)?;
-        let expanded = expand_indexed_to_rgb_with_transform(
-            &img.samples,
-            &ir.palette,
-            ir.base_fmt,
-            img.width,
-            img.height,
-            8,
-            transform,
-        )?;
-        return Ok((
+        // An /Indexed dictionary space makes the codestream's one component a
+        // table index, and §7.4.9 (pdf.md:3143) has the dictionary decide how the
+        // samples are read: "the colour space specifications in the JPEG2000 data
+        // shall be ignored". A JP2 file can carry a palette of its own for those
+        // indices; letting the decoder resolve it produced three colour
+        // components for a space that declares one, and the red channel was then
+        // taken as a grey level. The indices come back unscaled, one byte each,
+        // so the dictionary's table is read at 8 bits per index whatever
+        // /BitsPerComponent says the codestream packed them at.
+        if let Some((ir, transform)) = indexed {
+            if smask != 0 {
+                return Err(Error::Unsupported("Indexed JPX embedded soft mask".into()));
+            }
+            let img =
+                crate::decoders::jpx::decode_jpx_for_pdf(&codestream, target, false, expected)?;
+            if let Some(budget) = doc.and_then(|d| d.import_budget()) {
+                budget.charge_codec_allocation(
+                    img.samples
+                        .len()
+                        .checked_mul(3)
+                        .ok_or_else(|| budget.reject("JPX palette bytes"))?,
+                )?;
+            }
+            let expanded = expand_indexed_to_rgb_with_transform(
+                &img.samples,
+                &ir.palette,
+                ir.base_fmt,
+                img.width,
+                img.height,
+                8,
+                transform,
+            )?;
+            return Ok((
+                ImageData::Raw {
+                    pixels: expanded,
+                    format: PixelFormat::RGB,
+                },
+                img.width,
+                img.height,
+            ));
+        }
+
+        let img = crate::decoders::jpx::decode_jpx_for_pdf(&codestream, target, true, expected)?;
+
+        // A JPX codestream may carry an opacity channel alongside its colour
+        // channels — a greyscale image decodes to two components, an RGB one to
+        // four. Table 89's /SMaskInData entry (`docs/spec/pdf.md`:14527) governs
+        // that channel and defaults to 0:
+        //
+        //   0  If present, encoded soft-mask image information shall be ignored.
+        //
+        // So unless the image asks otherwise, the extra channel is dropped and the
+        // image is painted from its colour channels alone. Refusing to decode it —
+        // which is what an unrecognised component count used to do — loses the
+        // whole image: one real file is a single 551x337 grey+alpha JPX covering
+        // the page, and rejecting it rendered the page blank.
+        //
+        // How many of the decoded components are colour comes from the dictionary
+        // when it says, per the same table's /ColorSpace entry (pdf.md:14487):
+        // "If ColorSpace is present, any colour space specifications in the
+        // JPEG2000 data shall be ignored."
+        let declared = color_space.components();
+        let decoded = usize::from(img.num_components);
+        let colour_components = if dict.contains_key("ColorSpace") {
+            declared
+        } else {
+            usize::from(img.colour_components)
+        };
+        if colour_components == 0 || decoded < colour_components || decoded > colour_components + 1
+        {
+            return Err(Error::Image("JPX components differ from the PDF colour space".into()));
+        }
+
+        if smask != 0 {
+            if decoded != colour_components + 1 || !matches!(colour_components, 1 | 3) {
+                return Err(Error::Unsupported(
+                    "JPX embedded alpha requires Gray+alpha or RGB+alpha".into(),
+                ));
+            }
+            let count = rhwp_codec_resource::product(&[img.width as usize, img.height as usize, 4])
+                .map_err(|_| Error::Image("JPX alpha size".into()))?;
+            let mut rgba = rhwp_codec_resource::filled(0u8, count)
+                .map_err(|_| Error::Image("JPX alpha allocation".into()))?;
+            for (source, output) in img
+                .samples
+                .chunks_exact(decoded)
+                .zip(rgba.chunks_exact_mut(4))
+            {
+                let alpha = source[colour_components];
+                for c in 0..3 {
+                    let value = source[if colour_components == 1 { 0 } else { c }];
+                    output[c] = if smask == 2 && alpha != 0 {
+                        ((u32::from(value) * 255 + u32::from(alpha) / 2) / u32::from(alpha))
+                            .min(255) as u8
+                    } else if smask == 2 {
+                        0
+                    } else {
+                        value
+                    };
+                }
+                output[3] = alpha;
+            }
+            return Ok((
+                ImageData::Raw {
+                    pixels: rgba,
+                    format: PixelFormat::RGBA,
+                },
+                img.width,
+                img.height,
+            ));
+        }
+
+        let format = match colour_components {
+            1 => PixelFormat::Grayscale,
+            3 => PixelFormat::RGB,
+            4 => PixelFormat::CMYK,
+            n => {
+                return Err(Error::UnsupportedFilter(format!(
+                    "JPXDecode: unsupported JPEG 2000 component count {n}"
+                )))
+            },
+        };
+
+        // Drop the trailing opacity channel(s) if the decode produced more
+        // components than the colour space accounts for.
+        let samples = if colour_components == decoded {
+            img.samples
+        } else {
+            let px = img.samples.len() / decoded.max(1);
+            let mut out = rhwp_codec_resource::capacity(
+                rhwp_codec_resource::product(&[px, colour_components])
+                    .map_err(|_| Error::Image("JPX colour size".into()))?,
+            )
+            .map_err(|_| Error::Image("JPX colour allocation".into()))?;
+            rhwp_codec_resource::work(img.samples.len())
+                .map_err(|_| Error::Image("JPX colour work".into()))?;
+            for i in 0..px {
+                let base = i * decoded;
+                out.extend_from_slice(&img.samples[base..base + colour_components]);
+            }
+            log::debug!(
+                "JPXDecode: {decoded} components decoded, {colour_components} are colour; \
+             dropping the opacity channel per /SMaskInData default 0"
+            );
+            out
+        };
+
+        // The decoder may have chosen a lower resolution level than the `/Width`
+        // and `/Height` in the dictionary, so the caller must take the geometry
+        // from what came back rather than from the dictionary.
+        Ok((
             ImageData::Raw {
-                pixels: expanded,
-                format: PixelFormat::RGB,
+                pixels: samples,
+                format,
             },
             img.width,
             img.height,
-        ));
-    }
-
-    let img = crate::decoders::jpx::decode_jpx_at(&codestream, target)?;
-
-    // A JPX codestream may carry an opacity channel alongside its colour
-    // channels — a greyscale image decodes to two components, an RGB one to
-    // four. Table 89's /SMaskInData entry (`docs/spec/pdf.md`:14527) governs
-    // that channel and defaults to 0:
-    //
-    //   0  If present, encoded soft-mask image information shall be ignored.
-    //
-    // So unless the image asks otherwise, the extra channel is dropped and the
-    // image is painted from its colour channels alone. Refusing to decode it —
-    // which is what an unrecognised component count used to do — loses the
-    // whole image: one real file is a single 551x337 grey+alpha JPX covering
-    // the page, and rejecting it rendered the page blank.
-    //
-    // How many of the decoded components are colour comes from the dictionary
-    // when it says, per the same table's /ColorSpace entry (pdf.md:14487):
-    // "If ColorSpace is present, any colour space specifications in the
-    // JPEG2000 data shall be ignored."
-    let declared = color_space.components();
-    let decoded = usize::from(img.num_components);
-    let colour_components = if declared > 0 && declared <= decoded {
-        declared
-    } else {
-        decoded
-    };
-
-    let format = match colour_components {
-        1 => PixelFormat::Grayscale,
-        3 => PixelFormat::RGB,
-        4 => PixelFormat::CMYK,
-        n => {
-            return Err(Error::UnsupportedFilter(format!(
-                "JPXDecode: unsupported JPEG 2000 component count {n}"
-            )))
-        },
-    };
-
-    // Drop the trailing opacity channel(s) if the decode produced more
-    // components than the colour space accounts for.
-    let samples = if colour_components == decoded {
-        img.samples
-    } else {
-        let px = img.samples.len() / decoded.max(1);
-        let mut out = Vec::with_capacity(px * colour_components);
-        for i in 0..px {
-            let base = i * decoded;
-            out.extend_from_slice(&img.samples[base..base + colour_components]);
-        }
-        log::debug!(
-            "JPXDecode: {decoded} components decoded, {colour_components} are colour; \
-             dropping the opacity channel per /SMaskInData default 0"
-        );
-        out
-    };
-
-    // The decoder may have chosen a lower resolution level than the `/Width`
-    // and `/Height` in the dictionary, so the caller must take the geometry
-    // from what came back rather than from the dictionary.
-    Ok((
-        ImageData::Raw {
-            pixels: samples,
-            format,
-        },
-        img.width,
-        img.height,
-    ))
+        ))
+    })
 }
 
 #[cfg(not(feature = "jpeg2000"))]
@@ -3431,7 +3590,8 @@ fn decode_jpx_image(
     _target: Option<(u32, u32)>,
 ) -> Result<(ImageData, u32, u32)> {
     Err(Error::UnsupportedFilter(
-        "JPXDecode (JPEG 2000) — rebuild with the `jpeg2000` feature to decode".to_string(),
+        "JPXDecode disabled: enable RHWP `pdf-jpeg2000` (backend `jpeg2000`) at build time"
+            .to_string(),
     ))
 }
 
@@ -4114,7 +4274,18 @@ pub enum PdfFilter {
 impl PdfFilter {
     /// Map a PDF filter name (or its abbreviated form) to a `PdfFilter` variant.
     pub fn from_name(name: &str) -> Self {
-        match name {
+        match Self::try_from_name(name, |value| Ok::<_, std::convert::Infallible>(value.to_owned()))
+        {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    fn try_from_name<E>(
+        name: &str,
+        copy: impl FnOnce(&str) -> std::result::Result<String, E>,
+    ) -> std::result::Result<Self, E> {
+        Ok(match name {
             "DCTDecode" | "DCT" => PdfFilter::DCTDecode,
             "JPXDecode" => PdfFilter::JPXDecode,
             "FlateDecode" | "Fl" => PdfFilter::FlateDecode,
@@ -4125,8 +4296,8 @@ impl PdfFilter {
             "ASCII85Decode" | "A85" => PdfFilter::ASCII85Decode,
             "RunLengthDecode" | "RL" => PdfFilter::RunLengthDecode,
             "Crypt" => PdfFilter::Crypt,
-            other => PdfFilter::Other(other.to_string()),
-        }
+            other => PdfFilter::Other(copy(other)?),
+        })
     }
 }
 
@@ -4136,17 +4307,52 @@ impl PdfFilter {
 /// (`[/ASCII85Decode /FlateDecode]`).
 pub(crate) fn parse_filter_chain(
     dict: &std::collections::HashMap<String, crate::object::Object>,
-) -> Vec<PdfFilter> {
+    doc: Option<&crate::document::PdfDocument>,
+) -> Result<Vec<PdfFilter>> {
     use crate::object::Object;
-    match dict.get("Filter") {
-        Some(Object::Name(n)) => vec![PdfFilter::from_name(n)],
-        Some(Object::Array(arr)) => arr
-            .iter()
-            .filter_map(|o| o.as_name())
-            .map(PdfFilter::from_name)
-            .collect(),
-        _ => vec![],
+    let Some(source) = dict.get("Filter") else {
+        return Ok(Vec::new());
+    };
+    let source = resolve_image_object(doc, source)?;
+    let values = match &*source {
+        Object::Null => return Ok(Vec::new()),
+        Object::Array(values) => values.as_slice(),
+        value => std::slice::from_ref(value),
+    };
+    let budget = doc.and_then(|d| d.import_budget());
+    if let Some(budget) = budget {
+        if values.len() > budget.limits.filters {
+            return Err(budget.reject("image filter count"));
+        }
+        budget.charge_entries(values.len())?;
+        budget.charge_decoded(
+            values
+                .len()
+                .checked_mul(std::mem::size_of::<PdfFilter>())
+                .ok_or_else(|| budget.reject("image filter storage"))?,
+        )?;
     }
+    let mut output = Vec::new();
+    output
+        .try_reserve_exact(values.len())
+        .map_err(|_| match budget {
+            Some(b) => b.reject("image filter allocation"),
+            None => Error::Image("image filter allocation".into()),
+        })?;
+    for value in values {
+        let value = resolve_image_object(doc, value)?;
+        let name = value
+            .as_name()
+            .ok_or_else(|| Error::Image("image Filter must contain names".into()))?;
+        output.push(PdfFilter::try_from_name(name, |name| -> Result<String> {
+            match budget {
+                Some(b) => String::from_utf8(b.copy_bytes(name.as_bytes())?)
+                    .map_err(|_| Error::Image("invalid filter name".into())),
+                None => Ok(name.to_owned()),
+            }
+        })?);
+    }
+    Ok(output)
 }
 
 /// Internal image source stored inside a [`PdfImageHandle`].
@@ -4672,7 +4878,7 @@ pub(crate) fn image_handle_from_xobject<'doc>(
         .filter(|&n| n >= 0)
         .map(|n| n as u64)
         .unwrap_or(0);
-    let filter_chain = parse_filter_chain(xobject_dict);
+    let filter_chain = parse_filter_chain(xobject_dict, Some(doc)).ok()?;
 
     // Resolve the reported colour space via the shared helper: resource-name →
     // map entry, one indirect-ref hop, and `[/Indexed base ...]` (§8.6.6.3) →
@@ -4746,7 +4952,7 @@ pub(crate) fn image_handle_from_inline<'doc>(
         .and_then(|o| o.as_integer())
         .unwrap_or(8) as u8;
     let byte_size = data.len() as u64;
-    let filter_chain = parse_filter_chain(&expanded);
+    let filter_chain = parse_filter_chain(&expanded, Some(doc)).ok()?;
 
     // Resolve the reported colour space via the same shared helper as the
     // XObject path so the two agree. For inline images a resource-name

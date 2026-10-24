@@ -10,6 +10,8 @@ use crate::model::paragraph::LineSeg;
 use crate::model::style::{LineSpacingType, UnderlineType};
 
 pub(crate) mod arrow;
+#[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
+pub(crate) mod bitmap_raster;
 pub(crate) mod blank_band;
 pub(crate) mod boxed_digit_geometry;
 pub mod canvas;
@@ -70,6 +72,7 @@ pub mod pdf_raster_fidelity;
 mod physical_units;
 pub mod pua_oldhangul;
 pub mod raster_pixels;
+pub(crate) mod raster_stroke;
 pub(crate) mod reflow_float_host_line;
 pub(crate) mod reflow_spacing;
 pub mod render_normalization;
@@ -278,24 +281,58 @@ pub(crate) fn replay_positions_or_compute<'a>(
 
 /// 글리프 폭 맞춤(SVG `textLength`, Canvas `scaleX`)에 쓸 문자 경계를 돌려준다.
 ///
-/// 커닝은 글자 사이만 좁힌다. 커닝한 경계로 폭을 맞추면 쌍의 앞 글자가 커닝만큼
-/// 눌린다. 커닝을 요청한 run이 layout positions로 그려지면 커닝 전 경계로 폭을
-/// 맞추고, 그리는 자리는 호출자의 layout positions를 그대로 쓴다.
+/// 커닝과 음수 배분 간격은 글자 사이만 좁힌다. 그 경계로 폭을 맞추면 글리프도
+/// 눌리므로, 폭 맞춤에는 해당 간격 전의 경계를 사용한다. 음수 간격의 최소 전진폭
+/// clamp를 역산하지 않고 같은 측정기로 다시 계산하며, 그리는 원점은 보존한다.
 pub(crate) fn glyph_fit_positions<'a>(
     replay_text: &str,
     style: &TextStyle,
     layout_positions: Option<&[f64]>,
     char_positions: &'a [f64],
 ) -> std::borrow::Cow<'a, [f64]> {
+    if legacy_font_advances::has_fixed_ascii_bold_tracking(style) {
+        // 원점은 확정 layout positions를 그대로 쓴다. 윤곽 폭만 측정이 실제
+        // 적용한 tracking 기여를 제외하며, 다른 언어 슬롯·탭·음수 자간도
+        // 같은 CharWidthDecision 결과에서 소비한다.
+        let mut fit_style = style.clone();
+        fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
+        let decisions = layout::trace_char_width_decisions(replay_text, &fit_style);
+        let mut positions = Vec::with_capacity(decisions.len() + 1);
+        let mut x = 0.0;
+        positions.push(x);
+        for decision in decisions {
+            x += decision.final_width_px - decision.bold_tracking_px;
+            positions.push(x);
+        }
+        return std::borrow::Cow::Owned(positions);
+    }
     if layout::has_hft_bold_tracking(style) {
         // 원본 HFT의 굵기 간격은 글자 원점만 전진시키며 intrinsic 폭은 유지한다.
         // backend는 원래 char_positions를 위치로, 이 경계를 glyph-fit 폭으로 쓴다.
-        std::borrow::Cow::Owned(layout::compute_glyph_fit_positions(replay_text, style))
-    } else if style.kerning && validated_replay_positions(replay_text, layout_positions).is_some() {
-        std::borrow::Cow::Owned(layout::compute_char_positions(replay_text, style))
+        {
+            let mut fit_style = style.clone();
+            fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
+            std::borrow::Cow::Owned(layout::compute_glyph_fit_positions(replay_text, &fit_style))
+        }
+    } else if (style.kerning && validated_replay_positions(replay_text, layout_positions).is_some())
+        || style.extra_char_spacing < 0.0
+        || legacy_font_advances::has_bold_tracking(style)
+    {
+        let mut fit_style = style.clone();
+        fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
+        if legacy_font_advances::has_bold_tracking(style) {
+            // 원점만 전진시키는 옛 프로그램의 굵은 자간을 글리프 확대에 쓰지 않는다.
+            // 표시 글꼴·굵기와 자연 메트릭은 유지한다.
+            fit_style.metric_font_family = None;
+        }
+        std::borrow::Cow::Owned(layout::compute_char_positions(replay_text, &fit_style))
     } else {
         std::borrow::Cow::Borrowed(char_positions)
     }
+}
+
+fn has_no_unjustified_leading_spaces(count: &usize) -> bool {
+    *count == 0
 }
 
 /// 텍스트 렌더링 스타일
@@ -326,6 +363,9 @@ pub struct TextStyle {
     /// 원본 언어 슬롯의 글자 위치(%). 0은 기존 직렬화와 같이 생략한다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub font_position: Option<i8>,
+    /// 유지된 원본 HFT의 인쇄 paint 좌표 계약. 논리 조판/전진 폭과 별개다.
+    #[serde(skip_serializing)]
+    pub hft_print_frame: bool,
     /// 글자 색상
     pub color: ColorRef,
     /// 진하게
@@ -353,6 +393,9 @@ pub struct TextStyle {
     pub tab_stops: Vec<TabStop>,
     /// 문단 오른쪽 끝 자동 탭 여부
     pub auto_tab_right: bool,
+    /// 문단 왼쪽 자동 탭의 단 기준 위치. 저장 hint와 줄 채움이 같은 정지를 쓴다.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub auto_left_tab_position: Option<f64>,
     /// 사용 가능 너비 (px, auto_tab_right 계산용)
     pub available_width: f64,
     /// 단 시작으로부터 run 시작 위치 (탭 절대좌표 변환용)
@@ -376,6 +419,10 @@ pub struct TextStyle {
     pub inline_tabs: Vec<[u16; 7]>,
     /// 양쪽 정렬용: 공백 문자당 추가 간격 (px)
     pub extra_word_spacing: f64,
+    /// 이 런 앞부분의 분배 제외 문자 수. 선행 공백과 자동 탭 앞 항목 번호는
+    /// 원래 전진 폭을 보존하며 뒤 본문의 양쪽 정렬 여분을 받지 않는다.
+    #[serde(skip_serializing_if = "has_no_unjustified_leading_spaces")]
+    pub unjustified_leading_spaces: usize,
     /// 배분/나눔 정렬용: 글자당 추가 간격 (px)
     pub extra_char_spacing: f64,
     /// Task #352: dash leader (3+ 연속 '-') 시퀀스의 글자당 추가 간격 (px).
@@ -418,6 +465,9 @@ pub struct TextStyle {
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
     pub font_metric_trusted: bool,
+    /// 명시된 glyphFallbacks의 자연 전진폭 선택. 기본 paint 공급은 해당하지 않는다.
+    #[serde(skip_serializing)]
+    pub glyph_fallback_advance_explicit: bool,
     /// [#7391] 폭을 잴 때만 `font_family` 대신 쓸 face 이름.
     ///
     /// legacy-latin 폴백은 표시할 글꼴이 없는 환경을 위해 라틴 face 를 한글 face 로
@@ -428,6 +478,10 @@ pub struct TextStyle {
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
     pub metric_font_family: Option<String>,
+    /// 확인된 원본 글리프만 사용하는 부분 메트릭. 미확인 글자는 표시 face에 남는다.
+    /// 불변 이름을 공유하여 런 복제와 enum의 인라인 메모리를 줄인다.
+    #[serde(skip_serializing)]
+    pub original_glyph_metric_family: Option<std::sync::Arc<String>>,
     /// [#7387] 명시적으로 확인한 공백 전진폭(em). 주로
     /// `CharShape.use_font_space`가 켜진 run의 **영문 슬롯** 글꼴 폭이며,
     /// 저장 문서의 독립 출력에서 다른 폭이 확인되면 프로필이 덮어쓸 수 있다.
@@ -495,6 +549,9 @@ pub struct TextStyle {
 pub struct LatinSlotMetrics {
     pub font_family: String,
     pub metric_font_family: Option<String>,
+    /// 확인된 원본 글리프만 사용하는 부분 메트릭. 미확인 글자는 표시 face에 남는다.
+    /// 불변 이름을 공유하여 런 복제와 enum의 인라인 메모리를 줄인다.
+    pub original_glyph_metric_family: Option<std::sync::Arc<String>>,
     pub font_metric_trusted: bool,
     pub letter_spacing: f64,
     pub ratio: f64,
@@ -507,6 +564,31 @@ pub const SUPERSCRIPT_RISE_EM: f64 = 0.3;
 /// 아래첨자 baseline 하향 이동량 (본문 글꼴 크기 대비 em).
 pub const SUBSCRIPT_DROP_EM: f64 = 0.15;
 
+/// 합성 볼드 획 굵기(px) — 실제 Bold 메트릭이 없는 face 의 볼드 요청에만.
+///
+/// 한/글 2022 는 Bold face 가 없는 face 의 볼드를 PDF `2 Tr`(fill+stroke)로
+/// 내보내고 선 굵기를 **글꼴·크기 불문 `0.02 em`** 으로 준다. 표본
+/// `pdf/issue2470/36382471_masked-2022.pdf` 1쪽의 `Tr 2` run 은 전부
+/// `w / Tf` 가 0.0200 이다 — 굴림체 `1.66/83`, HY헤드라인M `3.50/175`,
+/// HY견명조 `4.34/217`. `font-weight="bold"` 만 넘기면 굵히는 양이 받는 쪽
+/// 몫이라 Chromium 은 이보다 굵게 만든다(#7151).
+///
+/// 메트릭 DB 에 Bold 항목이 있는 face 는 배치 advance 도 Bold 메트릭으로
+/// 잡았으므로 종전대로 그 face 를 요청한다. DB 에 없는 face 는 어느 쪽인지
+/// 알 근거가 없어 건드리지 않는다.
+pub(crate) fn faux_bold_stroke_width(style: &TextStyle, font_size: f64) -> Option<f64> {
+    /// 한/글 2022 PDF 실측 — `w / Tf`.
+    const HANCOM_FAUX_BOLD_STROKE_EM: f64 = 0.02;
+
+    if !style.bold {
+        return None;
+    }
+    let primary = style_resolver::primary_font_name(&style.font_family);
+    font_metrics_data::find_metric(primary, true, style.italic)?
+        .bold_fallback
+        .then_some(font_size * HANCOM_FAUX_BOLD_STROKE_EM)
+}
+
 impl TextStyle {
     /// 원본의 0 크기를 보존한다. 해소되지 않은 기본 스타일에만 기존 폴백을 쓴다.
     pub(crate) fn effective_font_size(&self) -> f64 {
@@ -515,6 +597,14 @@ impl TextStyle {
         } else {
             12.0
         }
+    }
+
+    /// 런을 각주·인라인 개체 경계에서 나눠도 같은 공백 구간을 이어받는다.
+    pub(crate) fn for_text_fragment(&self, scalar_start: usize) -> Self {
+        let mut style = self.clone();
+        style.unjustified_leading_spaces =
+            self.unjustified_leading_spaces.saturating_sub(scalar_start);
+        style
     }
 
     /// 위첨자/아래첨자 run 의 **그리기** 글꼴 크기와 baseline 을 계산한다.
@@ -562,9 +652,8 @@ impl TextStyle {
     /// 폭에 포함하면 영문·숫자 glyph 자체가 가로로 늘어난다. 문자 위치 계산은
     /// 그대로 두고, glyph 맞춤 단계에서만 이 간격을 제외한다.
     ///
-    /// 음수 값은 셀 오버플로우 보정(#2189)에서 glyph까지 layout advance에
-    /// 맞추는 기존 계약이므로 그대로 유지한다. 최소 advance clamp 때문에
-    /// intrinsic 폭을 안전하게 역산할 수도 없다. 따라서 양수 간격만 제외한다.
+    /// 음수 간격은 `glyph_fit_positions`에서 간격 전의 폭을 다시 측정한다.
+    /// 그 결과를 이곳에서 다시 늘리지 않는다. 양수 간격만 여기서 제외한다.
     pub(crate) fn glyph_fit_advance(&self, layout_cluster_advance: f64) -> Option<f64> {
         if !layout_cluster_advance.is_finite() || !self.extra_char_spacing.is_finite() {
             return None;
@@ -617,8 +706,8 @@ impl TextStyle {
 /// Canvas 폰트의 실측 폭을 레이아웃 advance에 맞출 때 적용할 배율을 계산한다.
 ///
 /// 양수 문자 간격은 다음 cluster의 시작 위치를 바꾸는 값이므로 glyph 폭 맞춤과
-/// 분리한다. 음수 간격은 #2189 셀 오버플로우 보정의 기존 glyph-fit 계약을
-/// 유지하고, 양수 배분 간격만 `glyph_fit_advance`로 제외한다.
+/// 분리한다. 음수 간격은 `glyph_fit_positions`에서 다시 측정한 폭을 사용하고,
+/// 양수 배분 간격만 `glyph_fit_advance`로 제외한다.
 pub(crate) fn canvas_cluster_fit_scale(
     style: &TextStyle,
     layout_cluster_advance: f64,
@@ -649,6 +738,7 @@ impl Default for TextStyle {
             source_font_is_hft: false,
             resolved_font_size: false,
             font_position: None,
+            hft_print_frame: false,
             color: 0,
             bold: false,
             italic: false,
@@ -660,6 +750,7 @@ impl Default for TextStyle {
             default_tab_width: 0.0,
             tab_stops: Vec::new(),
             auto_tab_right: false,
+            auto_left_tab_position: None,
             available_width: 0.0,
             line_x_offset: 0.0,
             text_start_offset: 0.0,
@@ -667,6 +758,7 @@ impl Default for TextStyle {
             tab_leaders: Vec::new(),
             inline_tabs: Vec::new(),
             extra_word_spacing: 0.0,
+            unjustified_leading_spaces: 0,
             extra_char_spacing: 0.0,
             extra_dash_advance: 0.0,
             outline_type: 0,
@@ -686,7 +778,9 @@ impl Default for TextStyle {
             shade_color: 0x00FFFFFF,
             font_metric_trusted: false,
             native_pua_metrics: None,
+            glyph_fallback_advance_explicit: false,
             metric_font_family: None,
+            original_glyph_metric_family: None,
             font_space_em: None,
             layout_half_space: false,
             regenerated_font_metrics: false,
@@ -967,6 +1061,54 @@ pub(crate) fn linear_gradient_color_stops(
     (colors, stops)
 }
 
+/// 원본 중심은 공통 색상 스톱에서 반영한다. 축을 다시 뒤집지 않는다.
+pub fn linear_gradient_axis_for_fill(
+    grad: &GradientFillInfo,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+) -> (f64, f64, f64, f64) {
+    linear_gradient_axis(grad.angle, x, y, w, h)
+}
+
+/// 원형 채우기를 상자의 가장 먼 모서리까지 펼친다.
+/// 상자 정규화 좌표로 원을 만들면 비정사각형 도형에서 타원으로 왜곡된다.
+pub fn radial_gradient_geometry(
+    grad: &GradientFillInfo,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+) -> (f64, f64, f64) {
+    let cx = x + w * f64::from(grad.center_x) / 100.0;
+    let cy = y + h * f64::from(grad.center_y) / 100.0;
+    let dx = (cx - x).abs().max((x + w - cx).abs());
+    let dy = (cy - y).abs().max((y + h - cy).abs());
+    (cx, cy, dx.hypot(dy))
+}
+
+/// 사각 채우기의 중심·회전축·반변 길이. 중심에서 원본 상자 네 변까지의
+/// 가장 긴 거리를 회전 전의 정사각형 반변으로 쓴다. 회전 후 모서리를 덮도록
+/// 반변을 다시 늘리면 원본의 색 띠 폭이 달라진다. 정사각형 밖은 마지막 색이다.
+pub fn square_gradient_geometry(
+    grad: &GradientFillInfo,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+) -> (f64, f64, f64, f64, f64) {
+    let cx = x + w * f64::from(grad.center_x) / 100.0;
+    let cy = y + h * f64::from(grad.center_y) / 100.0;
+    let radius = (cx - x)
+        .abs()
+        .max((x + w - cx).abs())
+        .max((cy - y).abs())
+        .max((y + h - cy).abs());
+    let angle = f64::from(grad.angle).to_radians();
+    (cx, cy, radius, angle.cos(), angle.sin())
+}
+
 /// 선 렌더링 스타일
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct LineStyle {
@@ -982,6 +1124,10 @@ pub struct LineStyle {
     pub dash_pattern: Option<Vec<f64>>,
     /// 선 렌더링 종류 (이중선/삼중선 등)
     pub line_type: LineRenderType,
+    /// 부모의 다중선 기하 또는 겹쳐 칠하는 순서를 분해한 구성 획이다.
+    /// 각 획을 다시 픽셀 중심에 옮기면 공통 간격과 복합 coverage가 바뀐다.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub compound_component: bool,
     /// 시작 화살표
     pub start_arrow: ArrowStyle,
     /// 끝 화살표
@@ -1672,18 +1818,14 @@ pub fn corrected_line_height_for_variant_synthetic(
     }
 }
 
-/// [Task #1116] HWP3-origin HWP5 변환본의 문단 앞 간격 보정.
+/// 해소된 문단 앞 간격을 측정·배치·편집 호출에 그대로 전달한다.
 ///
-/// 기존 style resolver는 변환본의 ParaShape spacing 계열을 절반으로 줄인다.
-/// 이는 페이지 수 회귀를 막기 위해 유지하되, 본문 흐름에서 다음 문단을
-/// 배치할 때 쓰는 `spacing_before`는 한컴 PDF의 3mm 격자와 같이 원래 값을 쓴다.
+/// HWP5 원시 간격을 parser에서 반감한 뒤 배치만 다시 두 배로 늘리던
+/// 보정은 제거했다. 계보와 관계없이 공통 style resolver의 물리 값을 한 번 소비한다.
+/// 기존 내부 호출의 인자 형태는 유지하지만 추가 스케일은 적용하지 않는다.
 #[inline]
-pub(crate) fn hwp3_variant_flow_spacing_before(base: f64, is_hwp3_variant: bool) -> f64 {
-    if is_hwp3_variant {
-        base * 2.0
-    } else {
-        base
-    }
+pub(crate) fn hwp3_variant_flow_spacing_before(base: f64, _is_hwp3_variant: bool) -> f64 {
+    base
 }
 
 /// [#6630] 셀 첫 문단의 위 여백(px) — 저장 첫 줄 `LINE_SEG.vertical_pos` 를 상한으로 둔 값.
@@ -1710,6 +1852,18 @@ pub(crate) fn cell_first_para_stored_lead(
         return 0.0;
     }
     spacing_before_px.min(vpos)
+}
+
+/// 셀 안의 단일 단 정의는 글자·개체를 그리거나 세로 흐름을 전진하지 않는다.
+/// 원본 HWP는 텍스트 셀 문단에도 이 메타데이터를 보존할 수 있다.
+/// 여러 단 정의와 실제 개체 컨트롤은 일반 plain 글줄로 재분류하지 않는다.
+pub(crate) fn cell_paragraph_has_only_single_column_metadata(
+    para: &crate::model::paragraph::Paragraph,
+) -> bool {
+    para.controls.iter().all(|control| {
+        matches!(control, crate::model::control::Control::ColumnDef(columns)
+            if columns.column_count == 1)
+    })
 }
 
 /// Stored cell starts already express their lead in the saved frame. Reflow
@@ -2364,6 +2518,51 @@ pub(crate) fn solo_title_exit_pad_px(
     )
 }
 
+/// 단일 단 구간의 확정 텍스트 끝에서 다음 구간 간격과 중복되는 후행 줄간격.
+/// 구조 제어만 가진 빈 줄도 줄 상자는 보존하며, 개체·부분 문단·재조판 줄은 제외한다.
+pub(crate) fn solo_zone_trailing_spacing_px(
+    items: &[pagination::PageItem],
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    column_count: usize,
+    dpi: f64,
+) -> f64 {
+    use crate::model::control::Control;
+    if column_count != 1 {
+        return 0.0;
+    }
+    let Some(pagination::PageItem::FullParagraph { para_index }) = items.last() else {
+        return 0.0;
+    };
+    let Some(para) = paragraphs.get(*para_index) else {
+        return 0.0;
+    };
+    if para.stored_text_partition_is_dirty()
+        || para.layout_only_fill_lines > 0
+        || para.controls.iter().any(|control| {
+            matches!(
+                control,
+                Control::Table(_)
+                    | Control::Shape(_)
+                    | Control::Picture(_)
+                    | Control::Equation(_)
+                    | Control::Form(_)
+                    | Control::Unknown(_)
+            )
+        })
+        || (para.text.trim_start().starts_with('<')
+            && para.controls.iter().any(|control| {
+                matches!(control, Control::ColumnDef(cd)
+                    if cd.column_count.max(1) <= 1 && cd.spacing <= 283)
+            }))
+    {
+        return 0.0;
+    }
+    para.line_segs
+        .last()
+        .filter(|line| line.line_height > 0 && line.line_spacing > 0)
+        .map_or(0.0, |line| hwpunit_to_px(line.line_spacing, dpi))
+}
+
 /// 같은 저장 줄을 끝으로 갖는 다단에서 빈 마지막 문단의 추가 줄간격.
 /// 글자가 있는 다른 단의 줄 상자는 유지하고, 빈 단의 뒤쪽 여백만 다음 구역에서 제외한다.
 pub(crate) fn parallel_blank_tail_spacing_excess_px(
@@ -2782,16 +2981,92 @@ pub fn base_family_without_weight_suffix(font_family: &str) -> Option<String> {
 ///
 /// 다만 이름을 그대로 넣는 것만으로는 Windows(DirectWrite/Chrome)에서 안 잡히는
 /// face 가 있다. 아래 중고딕 arm 의 주석을 볼 것.
+/// 같은 설치 프로그램의 이름만 제공한다. HFT→TTF 호환 대체·generic·successor는 제외한다.
+fn installed_font_program_aliases(name: &str) -> &'static [&'static str] {
+    match name {
+        // 같은 SFNT의 name 1/4에는 굵기가 붙지만 fontdb는 name 16의
+        // typographic family만 노출할 수 있다. name 6으로 같은 face를
+        // 확인하지 않으면 설치된 원본 대신 문서의 HCR 대체를 선택한다.
+        // 서로 다른 굵기나 KoPubWorld 프로그램을 이 별칭으로 합치지 않는다.
+        "KoPub돋움체 Light" | "KoPubDotum Light" | "KoPub Dotum Light" => &["KoPubDotumLight"],
+        "KoPub돋움체 Medium" | "KoPubDotum Medium" | "KoPub Dotum Medium" => {
+            &["KoPubDotumMedium"]
+        }
+        "KoPub돋움체 Bold" | "KoPubDotum Bold" | "KoPub Dotum Bold" => &["KoPubDotumBold"],
+        "KoPub바탕체 Light" | "KoPubBatang Light" | "KoPub Batang Light" => {
+            &["KoPubBatangLight"]
+        }
+        "KoPub바탕체 Medium" | "KoPubBatang Medium" | "KoPub Batang Medium" => {
+            &["KoPubBatangMedium"]
+        }
+        "KoPub바탕체 Bold" | "KoPubBatang Bold" | "KoPub Batang Bold" => &["KoPubBatangBold"],
+        // World는 KoPub와 별도 SFNT다. 같은 파일의 전체 이름과 name 6만
+        // 연결하며, 다른 굵기·기존 KoPub·별도 Pro 프로그램으로 대체하지 않는다.
+        "KoPubWorld돋움체 Light" | "KoPubWorldDotum Light" | "KoPubWorld Dotum Light" => {
+            &["KoPubWorldDotumLight"]
+        }
+        "KoPubWorld돋움체 Medium" | "KoPubWorldDotum Medium" | "KoPubWorld Dotum Medium" => {
+            &["KoPubWorldDotumMedium"]
+        }
+        "KoPubWorld돋움체 Bold" | "KoPubWorldDotum Bold" | "KoPubWorld Dotum Bold" => {
+            &["KoPubWorldDotumBold"]
+        }
+        "KoPubWorld바탕체 Light" | "KoPubWorldBatang Light" | "KoPubWorld Batang Light" => {
+            &["KoPubWorldBatangLight"]
+        }
+        "KoPubWorld바탕체 Medium" | "KoPubWorldBatang Medium" | "KoPubWorld Batang Medium" => {
+            &["KoPubWorldBatangMedium"]
+        }
+        "KoPubWorld바탕체 Bold" | "KoPubWorldBatang Bold" | "KoPubWorld Batang Bold" => {
+            &["KoPubWorldBatangBold"]
+        }
+        "나눔고딕" => &["NanumGothic"],
+        "NanumGothic" => &["나눔고딕"],
+        "한컴바탕" => &["Haansoft Batang"],
+        "함초롬바탕" => &["HCR Batang"],
+        "함초롬돋움" => &["HCR Dotum"],
+        "맑은 고딕" => &["Malgun Gothic"],
+        "바탕" => &["Batang"],
+        "바탕체" => &["BatangChe"],
+        "돋움" => &["Dotum"],
+        "돋움체" => &["DotumChe"],
+        "굴림" => &["Gulim"],
+        "굴림체" => &["GulimChe"],
+        "궁서" => &["Gungsuh"],
+        "궁서체" => &["GungsuhChe"],
+        "HY신명조" => &["HYSinMyeongJo", "HYSinMyeongJo-Medium"],
+        "HY중고딕" => &["HYGothic", "HYGothic-Medium"],
+        "HY견고딕" => &["HYGothic-Extra"],
+        "HY견명조" => &["HYMyeongJo-Extra"],
+        "HY헤드라인M" => &["HYHeadLine", "HYHeadLine-Medium"],
+        "HY그래픽M" => &["HYGraphic", "HYGraphic-Medium"],
+        "휴먼명조" => &["HumanMyeongJo"],
+        "한컴 고딕" => &["Hancom Gothic", "Hancom Gothic Regular"],
+        "한컴 윤고딕 240" => &["Haan YGodic 240"],
+        _ => &[],
+    }
+}
+
 pub(crate) fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
     match font_family {
+        // 같은 gulim.TTC의 face 2도 한국어/영문 family 이름이 공존한다.
+        // 이 별칭이 빠지면 Native는 설치된 돋움 대신 맑은 고딕을 선택한다.
+        "돋움" => &["Dotum"],
+        "Dotum" => &["돋움"],
+        // gulim.TTC collection face 3의 name ID 1은 같은 프로그램을
+        // 한국어 '돋움체'와 영문 'DotumChe'로 등록한다. 영문 이름만 노출하는
+        // Native fontdb에서도 원 face를 선언 glyph 대체보다 먼저 공급한다.
+        "돋움체" => &["DotumChe"],
+        "DotumChe" => &["돋움체"],
+        "나눔고딕" => &["NanumGothic"],
+        "NanumGothic" => &["나눔고딕"],
+        "한컴바탕" => &["Haansoft Batang"],
         // 같은 SFNT의 PostScript 이름(name 6)과 실제 family 이름(name 1)이다.
         "HCRBatang" => &["HCR Batang"],
         "HCRDotum" => &["HCR Dotum"],
         // 공식 설치 글꼴의 한국어 이름과 영문 family 이름을 함께 조회한다.
         "굴림" => &["Gulim"],
         "굴림체" => &["GulimChe"],
-        "돋움" => &["Dotum"],
-        "돋움체" => &["DotumChe"],
         "바탕" => &["Batang"],
         "바탕체" => &["BatangChe"],
         // [#6171] 이름 셋 중 `HYGothic` 만 Windows 에서 해석된다. headless Chrome

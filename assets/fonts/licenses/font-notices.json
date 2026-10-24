@@ -552,6 +552,22 @@
         "sha256": "6568bf80b50c14f2e54f56f2c07e668416f39f880baf5ea2825d315767f98f69",
         "byteIdentical": true
       }
+    },
+    {
+      "file": "RHWPPublicBatang-Regular.woff2",
+      "sha256": "20d454f45cdf29cc4619e769f1f59f3b8920941b6b274a530e82d3b75e24dbfb",
+      "copyrightNotices": [
+        "Copyright 2024 The Batang and Gungsuh Project Authors (https://github.com/googlefonts/batang)"
+      ],
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "RHWPPublicBatang-OFL.txt"
+      ],
+      "sourceProgram": {
+        "repositoryPath": "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+        "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78",
+        "provenance": "assets/font-rules/evidence/issue-7445-public-batang-webfont.json"
+      }
     }
   ],
   "notices": [
@@ -644,6 +660,11 @@
       "file": "NotoSansMath-OFL.txt",
       "sha256": "4fbd190167f23b4c0e2368160f412bf2d1fade887b78b6aec66689ce31698e8b",
       "sourceUrl": "https://github.com/google/fonts/blob/main/ofl/notosansmath/OFL.txt"
+    },
+    {
+      "file": "RHWPPublicBatang-OFL.txt",
+      "sha256": "cc115f501827fffddcbf1ef86e5248ee55e40f0c3fb9725173b248ccc2d5df51",
+      "sourceRepositoryPath": "ttfs/opensource/RHWPPublicBatang-OFL.txt"
     }
   ],
   "repositoryOnlyFonts": [
@@ -935,6 +956,28 @@
       ],
       "copyrightNotices": [
         "Copyright (c) 2025-2026 Edward Kim"
+      ]
+    },
+    {
+      "repositoryPath": "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+      "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78",
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "ttfs/opensource/RHWPPublicBatang-OFL.txt"
+      ],
+      "copyrightNotices": [
+        "Copyright 2024 The Batang and Gungsuh Project Authors (https://github.com/googlefonts/batang)"
+      ]
+    },
+    {
+      "repositoryPath": "tests/fixtures/native_inline_placeholder/placeholder-contract.ttf",
+      "sha256": "9d3e046441b985a80e69d4bc78d567a9bcfde5ab7dcba59607591adf638007e9",
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "tests/fixtures/native_inline_placeholder/OFL.txt"
+      ],
+      "copyrightNotices": [
+        "(c) 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
       ]
     }
   ]

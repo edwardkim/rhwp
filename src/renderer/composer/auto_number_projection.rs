@@ -1,4 +1,4 @@
-//! note 본문 밖의 자동 번호를 해당 control의 원문 위치에 표시한다.
+//! note 표제와 개체 자동 번호를 해당 control의 원문 위치에 표시한다.
 
 use super::{insert_control_text_run, ComposedParagraph, ComposedTextRun, SpaceMetric};
 use crate::model::{
@@ -75,7 +75,11 @@ pub(super) fn project(composed: &mut ComposedParagraph, para: &Paragraph) {
         };
         if !matches!(
             number.number_type,
-            AutoNumberType::Footnote | AutoNumberType::Endnote
+            AutoNumberType::Footnote
+                | AutoNumberType::Endnote
+                | AutoNumberType::Picture
+                | AutoNumberType::Table
+                | AutoNumberType::Equation
         ) {
             continue;
         }

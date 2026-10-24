@@ -61,8 +61,8 @@ const FONT_LIST: readonly FontEntry[] = FONT_RULE_WEBFONT_ENTRIES;
 /** @font-face에 등록된 폰트 이름 Set */
 export const REGISTERED_FONTS = new Set(FONT_LIST.map(f => f.name));
 
-/** 초기 렌더링에 필수인 폰트 (대부분의 HWP 문서 기본 서체) */
-const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움']);
+/** 문서 기본 서체와 Canvas 옛한글 paint가 직접 요청하는 공급 자원. */
+const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움', 'RHWP Old Hangul']);
 
 /** CSS @font-face에 등록한 글꼴 (문서 요청 단위로 누적) */
 const registeredFontFaces: FontEntry[] = [];
@@ -160,6 +160,15 @@ const OS_FONT_CANDIDATES = [
 ];
 const detectedOSFonts = new Set<string>();
 const detectedOSFontFamilies = new Set<string>();
+
+/** 실제 local() 프로그램 로드가 끝난 face만 공급하고 CDN 덮어쓰기를 막는다. */
+export function registerLoadedLocalFontFace(face: FontFace): void {
+  if (face.status !== 'loaded') throw new Error('로컬 글꼴 프로그램이 로드되지 않았습니다');
+  document.fonts.add(face);
+  const name = face.family.replace(/^['"]|['"]$/g, '');
+  detectedOSFonts.add(name);
+  detectedOSFontFamilies.add(normalizeFontFamily(name));
+}
 
 /**
  * 등록 전 시스템 글꼴을 generic fallback과의 폭 비교로 감지한다.

@@ -8,7 +8,7 @@ use super::paint_op::{
 };
 use super::{LayerNode, LayerNodeKind, PageLayerTree, MAX_POSITIONED_CONTROL_MARKS_PER_RUN};
 use crate::model::style::UnderlineType;
-use crate::renderer::composer::expand_pua_display_text;
+use crate::renderer::composer::expand_pua_render_text;
 use crate::renderer::render_tree::{BoundingBox, ShapeTransform, TextRunNode};
 use crate::renderer::{
     clamp_tab_leader_end_x, svg_arc_to_beziers, LineRenderType, LineStyle, PathCommand, ShadowStyle,
@@ -89,7 +89,13 @@ impl PaintOp {
                 kind,
                 trim_trailing_spaces,
                 ..
-            } => decoration_bounds(logical, run, *kind, *trim_trailing_spaces),
+            } => {
+                let (bbox, run) = self.decoration_replay().expect("decoration replay");
+                union(
+                    logical,
+                    decoration_bounds(bbox, &run, *kind, *trim_trailing_spaces),
+                )
+            }
             Self::FootnoteMarker { marker, .. } => expand(logical, marker.base_font_size * 0.15),
             Self::Line { line, .. } => {
                 let base = arrow_bounds(
@@ -151,6 +157,7 @@ impl PaintOp {
             | Self::Placeholder { .. }
             | Self::RawSvg { .. } => logical,
         };
+        let visual = affine_bounds(visual, self.glyph_paint_transform());
         PaintBounds { logical, visual }
     }
 
@@ -872,7 +879,7 @@ fn decoration_bounds(
             if run.style.underline == UnderlineType::Top {
                 baseline - font_size + 1.0
             } else {
-                baseline + 2.0
+                baseline + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO
             },
             1.0,
         ),
@@ -905,7 +912,7 @@ pub(super) fn bounded_text_prefix(text: &str) -> (String, bool) {
 
 pub(super) fn bounded_display_text_for_run(run: &TextRunNode) -> (String, bool) {
     let (source_prefix, source_complete) = bounded_text_prefix(run.display_or_text());
-    let display_text = expand_pua_display_text(&source_prefix);
+    let display_text = expand_pua_render_text(&source_prefix);
     let (display_prefix, display_complete) = bounded_text_prefix(&display_text);
     (display_prefix, source_complete && display_complete)
 }

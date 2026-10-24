@@ -5,7 +5,7 @@
 //! 담는 `HWPTAG_CTRL_DATA` 는 `ClickHere`(누름틀)에만 붙었으므로 **이름 없는 책갈피**가
 //! 저장됐다 — 상호참조·하이퍼링크가 가리킬 대상이 없어진다.
 //!
-//! 정답지는 같은 문서의 한컴 저작본이다. `samples/aift.hwp` 의 `%bmk` 아래에는
+//! 정답지는 같은 문서의 한컴 저작본이다. `mydocs/pr/assets/issue7445/aift74/aift.hwp` 의 `%bmk` 아래에는
 //! `ParameterSet ps_id=0x021b · item id=0x4000(String) = "_top"` 이 있고, 이는 누름틀
 //! 경로가 이미 쓰던 바이트 모양과 같다(스펙 §4.2.10.11 "책갈피는 이름 밖에 없다").
 #![cfg(not(target_arch = "wasm32"))]
@@ -106,9 +106,10 @@ fn bookmark_name_survives_hwpx_to_hwp_and_matches_the_oracle() {
     let converted = convert_hwpx_to_hwp_bytes("samples/hwpx/aift.hwpx");
     let ours = bookmark_ctrl_data(&converted);
 
-    let oracle_bytes =
-        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/aift.hwp"))
-            .expect("정답지 읽기");
+    let oracle_bytes = std::fs::read(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("mydocs/pr/assets/issue7445/aift74/aift.hwp"),
+    )
+    .expect("정답지 읽기");
     let oracle = bookmark_ctrl_data(&oracle_bytes);
 
     assert_eq!(

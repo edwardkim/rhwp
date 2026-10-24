@@ -11,11 +11,10 @@
 //! 통째로 끄고 `samples/**` 전수를 재면 겹침이 4건 늘고, 그 넷이 전부 **줄바꿈 결과가
 //! 행 높이를 넘는** 자리였다.
 //!
-//! ```text
-//! 20099369_yeongwol_forms 3쪽   칸 w=41.9 h=43.6 가 2줄 45px 를 요구
-//! issue5169 12쪽 Cell5          칸 h=59.2 가 4줄 83.2px (바닥 21.1px 초과)
-//! issue5169 12쪽 Cell51         칸 h=29.4 가 2줄 46.7px (17.3px 초과)
-//! ```
+//! 기존 영월군 검사는 `월별누계`를 한 줄로 요구했다. 원본 HWP3의 해당 줄은
+//! 시작·좌표·구분 정보가 모두 비어 있는 글자 높이 레코드라 저장 줄 구성의 근거가 아니다.
+//! 독립 한컴 2020 Print와 같은 원본의 한컴 HWPX 변환본은 `월별` / `누계` 두 줄이다.
+//! 마지막 줄 뒤 간격을 제외한 두 줄은 원본 셀 높이에 들어간다.
 //!
 //! 그래서 묻는 것을 바꿨다 — **줄바꿈한 결과가 칸 높이를 넘는가.** 넘지 않으면 줄바꿈이
 //! 답이고 선언 여백을 그대로 둔다.
@@ -72,35 +71,146 @@ fn cell_text_extents(
 /// 줄바꿈으로 해결되는 칸은 선언 안 여백을 지킨다.
 #[test]
 fn a_cell_that_wraps_within_its_height_keeps_its_declared_padding() {
-    let core = load(FITS);
-    let page = core.build_page_render_tree(0).expect("1쪽 render tree");
-    let mut rows = Vec::new();
-    cell_text_extents(&page.root, None, &mut rows);
+    use rhwp::model::control::Control;
+    use rhwp::renderer::{hwpunit_to_px, DEFAULT_DPI};
 
-    // 대상 칸: 숫자 한 줄이 들어가는 폭 76.4px 칸.
-    let target: Vec<_> = rows
+    fn text(node: &RenderNode) -> String {
+        if !node.visible || node.editor_only {
+            return String::new();
+        }
+        let mut out = match &node.node_type {
+            RenderNodeType::TextRun(run) => run.display_or_text().to_owned(),
+            _ => String::new(),
+        };
+        for child in &node.children {
+            out.push_str(&text(child));
+        }
+        out
+    }
+    fn find_table(node: &RenderNode, owner: (usize, usize, usize)) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::Table(meta)
+            if (meta.section_index, meta.para_index, meta.control_index)
+                == (Some(owner.0), Some(owner.1), Some(owner.2)) && meta.cell_context.is_none())
+        {
+            return Some(node);
+        }
+        node.children
+            .iter()
+            .find_map(|child| find_table(child, owner))
+    }
+    fn cell_nodes<'a>(node: &'a RenderNode, index: usize, out: &mut Vec<&'a RenderNode>) {
+        if matches!(&node.node_type, RenderNodeType::TableCell(meta)
+            if meta.model_cell_index == Some(index as u32))
+        {
+            out.push(node);
+            return;
+        }
+        for child in &node.children {
+            cell_nodes(child, index, out);
+        }
+    }
+    fn text_extents(node: &RenderNode, out: &mut Vec<(f64, f64)>) {
+        if !node.visible || node.editor_only {
+            return;
+        }
+        if matches!(&node.node_type, RenderNodeType::TextRun(run) if !run.display_or_text().trim().is_empty())
+        {
+            out.push((node.bbox.x, node.bbox.x + node.bbox.width));
+        }
+        for child in &node.children {
+            text_extents(child, out);
+        }
+    }
+
+    let bytes = std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(FITS)).unwrap();
+    let source = rhwp::parse_document(&bytes).expect("원본 표 속성");
+    let mut owners = Vec::new();
+    for (si, section) in source.sections.iter().enumerate() {
+        for (pi, para) in section.paragraphs.iter().enumerate() {
+            for (ci, control) in para.controls.iter().enumerate() {
+                if let Control::Table(table) = control {
+                    if let Some(amount) = table.cells.iter().find(|cell| {
+                        cell.paragraphs
+                            .iter()
+                            .map(|p| p.text.as_str())
+                            .collect::<String>()
+                            == "65,063,026,600"
+                    }) {
+                        owners.push(((si, pi, ci), table, amount.col));
+                    }
+                }
+            }
+        }
+    }
+    assert_eq!(owners.len(), 1, "독립 Print의 첫 금액 열 소유가 유일하다");
+    let (owner, table, column) = owners[0];
+    let targets: Vec<_> = table
+        .cells
         .iter()
-        .filter(|(cx, cw, ..)| (*cx - 115.30).abs() < 0.2 && (*cw - 76.40).abs() < 0.2)
+        .enumerate()
+        .filter(|(_, cell)| cell.col == column && cell.col_span == 1)
         .collect();
-    assert!(
-        !target.is_empty(),
-        "정답지 전제가 깨졌다 — 대상 칸(x=115.30, w=76.40)을 못 찾았다. 쪽 구성이 바뀌었으면          이 검사의 좌표부터 다시 정해야 한다."
+    assert_eq!(
+        targets
+            .iter()
+            .map(|(_, cell)| cell
+                .paragraphs
+                .iter()
+                .map(|p| p.text.as_str())
+                .collect::<String>())
+            .collect::<Vec<_>>(),
+        ["2023년", "65,063,026,600"],
+        "연도와 금액의 원본 순서"
     );
-
-    let left = target
-        .iter()
-        .map(|(_, _, x0, _)| *x0)
-        .fold(f64::MAX, f64::min);
-    let right = target
-        .iter()
-        .map(|(_, _, _, x1)| *x1)
-        .fold(f64::MIN, f64::max);
-    let (cx, cw) = (target[0].0, target[0].1);
-    let pad_left = left - cx;
-    let pad_right = cx + cw - right;
-
-    assert!(
-        pad_left > 3.0 && pad_right > 3.0,
-        "줄바꿈이 칸 높이에 들어가는데도 안 여백이 깎였다 — 축소 하한(1.0px)까지 내려가면          여기서 1.0 근처가 나온다. 좌 {pad_left:.2}px / 우 {pad_right:.2}px"
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    assert_eq!(
+        core.page_count(),
+        1,
+        "독립 Print와 같은 한 쪽에 표가 완결된다"
     );
+    let page = core.build_page_render_tree(0).expect("원문 표의 소속 쪽");
+    let painted_table = find_table(&page.root, owner).expect("실제 paint의 원본 표 소유");
+    for (index, original) in targets {
+        let mut cells = Vec::new();
+        cell_nodes(painted_table, index, &mut cells);
+        assert_eq!(cells.len(), 1, "대상 셀의 누락·중복이 없다");
+        let cell = cells[0];
+        let expected: String = original
+            .paragraphs
+            .iter()
+            .map(|p| p.text.as_str())
+            .collect();
+        assert_eq!(text(cell), expected, "셀 원문의 내용·순서를 보존한다");
+        // 독립 한컴 Print의 clip/괘선 사각형(pt)을 96DPI CSS px로 변환했다.
+        // 해당 1쪽의 Native/fresh WASM 전쪽 98% 이상·확대 판독을 확인한 px 계약이다.
+        // 위치로 대상을 선택하지 않으며 위의 원문·셀 소속·순서 검사를 함께 유지한다.
+        let expected_y = if expected == "2023년" {
+            165.4186666666666
+        } else {
+            201.85866666666666
+        };
+        for (actual, independent) in [
+            (cell.bbox.x, 115.29733333333333),
+            (cell.bbox.y, expected_y),
+            (cell.bbox.width, 76.28),
+            (cell.bbox.height, 36.44),
+        ] {
+            assert!(
+                (actual - independent).abs() <= 2.0,
+                "독립 Print 셀 상자의 ±2 CSSpx 계약: 실제={actual}, 독립={independent}"
+            );
+        }
+        let padding = original.effective_padding(&table.padding);
+        let left = cell.bbox.x + hwpunit_to_px(i32::from(padding.left), DEFAULT_DPI);
+        let right =
+            cell.bbox.x + cell.bbox.width - hwpunit_to_px(i32::from(padding.right), DEFAULT_DPI);
+        let mut extents = Vec::new();
+        text_extents(cell, &mut extents);
+        assert!(!extents.is_empty(), "셀 안에 실제 글자가 있어야 한다");
+        let source_unit = hwpunit_to_px(1, DEFAULT_DPI);
+        for (start, end) in extents {
+            assert!(start + source_unit >= left && end <= right + source_unit,
+                "줄이 셀에 들어가면 선언 안 여백을 줄이지 않는다: 글자={start}..{end}, 원본 내부={left}..{right}");
+        }
+    }
 }

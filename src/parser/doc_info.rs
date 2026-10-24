@@ -344,6 +344,7 @@ pub(crate) fn parse_face_name(data: &[u8]) -> Result<Font, DocInfoError> {
         type_info,
         default_name,
         subst_font,
+        native_program: None,
     })
 }
 

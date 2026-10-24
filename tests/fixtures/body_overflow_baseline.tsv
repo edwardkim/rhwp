@@ -25,6 +25,7 @@
 # 값으로 올려 적는다.
 #
 # 0 행은 그대로 둔다 — 값 0 과 행 삭제는 이 게이트에서 같은 판정(증가 / 신규 발생)이다.
+issue3637/press_release_split_cell_nested_table.hwpx	0
 issue6782/1480000-201900042-chemical-product-labeling-study.hwp	6
 issue6921/148733091-briefing-stenographic-record.hwp	0
 156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	1
@@ -35,7 +36,6 @@ issue6921/148733091-briefing-stenographic-record.hwp	0
 76076_regulatory_analysis.hwp	1
 80168_regulatory_analysis.hwp	1
 HWP5-nopassword-123456.hwpx	24
-KTX.hwp	1
 basic/issue1994_behindtext_table_20200830.hwp	1
 basic/sungeo.hwp	4
 byeolpyo1.hwp	2
@@ -110,7 +110,6 @@ issue5877/fragment_ghost_vrules.hwp	2
 issue5941/1480000-201900698-native-neartop-reset.hwp	19
 issue5941/3240179_efficiency_test_orgs.hwpx	4
 issue5966/1130000-202100008_franchise_review_report.hwp	8
-issue6035/cgmp_evaluation_table.hwpx	2
 issue6036/156509073_police_press_release.hwpx	0
 issue6044/156513948.hwpx	1
 issue6086/30098_resident_registration_reform.hwp	2
@@ -135,7 +134,6 @@ issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 �
 issue6718/27469-child-allowance-retroactive-support.hwp	0
 issue6782/1480000-201900042-chemical-labeling-standards.hwp	6
 issue6795/1341000-201100013-cyber-university-application.hwp	4
-issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx	0
 issue6879/156767332-broadcast-revenue-attachment.hwp	2
 issue6882/synth_cell_enter_table_growth.hwp	0
 issue6888/156730935-marine-mobility-expo.hwpx	1
@@ -205,3 +203,5 @@ issue6465/press_release_footer_logos.hwpx	1
 # 마지막 문단(위 간격 133.3px)을 1쪽에 둔다(한/글 정본은 2쪽). 수정 전 devel 에서도 같은 문서를 짝수
 # 저장값(20000 = 133.3px)으로 만들면 똑같이 37.8px 넘친다 — 홀수 값이 이제 실제 간격으로 읽혀 드러났을 뿐이다. 별도 이슈 #7824.
 issue7816/odd_spacing_prev.hwpx	2
+issue6031/3249937_asset_management_rules.hwpx	0
+hwp3-sample16-hwp5-2022.hwp	0

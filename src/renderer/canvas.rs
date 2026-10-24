@@ -137,7 +137,9 @@ impl CanvasRenderer {
             }
             RenderNodeType::Line(line) => {
                 self.open_shape_transform(&line.transform, &node.bbox);
-                self.draw_line(line.x1, line.y1, line.x2, line.y2, &line.style);
+                for stroke in line.paint_strokes() {
+                    self.draw_line(stroke.x1, stroke.y1, stroke.x2, stroke.y2, &stroke.style);
+                }
             }
             RenderNodeType::Ellipse(ellipse) => {
                 self.open_shape_transform(&ellipse.transform, &node.bbox);
@@ -721,6 +723,7 @@ mod tests {
             rotation: 15.0,
             horz_flip: true,
             vert_flip: false,
+            ..Default::default()
         };
         tree.root.children.push(RenderNode::new(
             1,
@@ -741,6 +744,7 @@ mod tests {
             rotation: 45.0,
             horz_flip: false,
             vert_flip: true,
+            ..Default::default()
         };
         tree.root.children.push(RenderNode::new(
             2,

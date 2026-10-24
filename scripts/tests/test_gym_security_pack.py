@@ -136,9 +136,15 @@ class SecurityTaskContractTests(unittest.TestCase):
         for path in task_paths():
             task = read_json(path)
             rel = task["input"]
-            self.assertTrue(rel.startswith("samples/"), task["id"])
+            # 기존 공개 문서를 이슈 자산으로 옮겨도 같은 입력 계약을 유지한다.
+            # 사설 경로·저장소 밖 경로·없는 파일을 허용하지 않는다.
+            self.assertTrue(
+                rel.startswith(("samples/", "mydocs/pr/assets/issue7445/")),
+                task["id"],
+            )
             abs_path = REPO_ROOT / rel
-            if not abs_path.exists():
+            self.assertTrue(abs_path.resolve().is_relative_to(REPO_ROOT.resolve()), task["id"])
+            if not abs_path.is_file():
                 missing.append(f"{task['id']}:{rel}")
         self.assertEqual(missing, [], f"없는 표본: {missing}")
 

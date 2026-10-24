@@ -55,6 +55,7 @@ use std::time::{Duration, Instant};
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::document::print_method_implies_nup;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const BASELINE_PATH: &str = "tests/fixtures/oracle_page_count_baseline.tsv";
 const PARTITIONS: usize = 16;
@@ -117,7 +118,104 @@ fn measure(path: &Path) -> Option<(u32, bool)> {
     let bytes = std::fs::read(path).ok()?;
     let doc = DocumentCore::from_bytes(&bytes).ok()?;
     let nup = print_method_implies_nup(doc.document().doc_info.print_method);
+    if path.ends_with("samples/basic/KTX-003.hwp") {
+        verify_ktx_single_page_content(&doc);
+    }
+    if path.ends_with("samples/hwpx/hancom-hwp/issue_157.hwp") {
+        verify_shareholder_forms_content(&doc);
+    }
     Some((doc.page_count(), nup))
+}
+
+/// 독립 Print의 소집공고·참석장과 마지막 날짜·주의 문구가 실제 두 쪽에
+/// 각각 한 번 남아 있어야 한다. 내용 손실로 쪽수만 맞추는 통과를 막는다.
+fn verify_shareholder_forms_content(doc: &DocumentCore) {
+    assert_eq!(doc.page_count(), 2, "독립 Print의 두 주주총회 서식");
+    let mut owners = BTreeMap::<String, Vec<u32>>::new();
+    fn collect(node: &RenderNode, page: u32, owners: &mut BTreeMap<String, Vec<u32>>) {
+        if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            let text = node
+                .children
+                .iter()
+                .filter_map(|child| match &child.node_type {
+                    RenderNodeType::TextRun(run) => Some(run.display_or_text()),
+                    _ => None,
+                })
+                .collect::<String>();
+            owners.entry(text).or_default().push(page);
+        }
+        for child in &node.children {
+            collect(child, page, owners);
+        }
+    }
+    for page in 0..doc.page_count() {
+        let tree = doc
+            .build_page_render_tree(page)
+            .expect("주주총회 서식 실제 쪽");
+        collect(&tree.root, page, &mut owners);
+    }
+    for (text, page) in [
+        ("주주총회 소집공고", 0),
+        ("주주총회 참석장", 1),
+        ("2026년       월       일", 1),
+        ("※ 주주총회 참석자는 신분증을 필히 지참하시기 바랍니다.", 1),
+    ] {
+        assert_eq!(
+            owners.get(text).map(Vec::as_slice),
+            Some([page].as_slice()),
+            "서식 내용의 쪽 소속·누락·중복: {text}"
+        );
+    }
+}
+
+/// 독립 PDF의 지도·시간표·운임표·주의 문구 관계를 기존 동일 원본 검사에서 보호한다.
+fn verify_ktx_single_page_content(doc: &DocumentCore) {
+    assert_eq!(
+        doc.page_count(),
+        1,
+        "독립 PDF의 전체 내용은 같은 한 쪽에 속한다"
+    );
+    let tree = doc.build_page_render_tree(0).expect("KTX 원본 첫 쪽");
+    fn collect<'a>(node: &'a RenderNode, lines: &mut Vec<(String, &'a RenderNode)>) {
+        if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            let text = node
+                .children
+                .iter()
+                .filter_map(|child| match &child.node_type {
+                    RenderNodeType::TextRun(run) => Some(run.display_or_text()),
+                    _ => None,
+                })
+                .collect::<String>();
+            lines.push((text, node));
+        }
+        for child in &node.children {
+            collect(child, lines);
+        }
+    }
+    let mut lines = Vec::new();
+    collect(&tree.root, &mut lines);
+    let line = |text: &str| {
+        let hits: Vec<_> = lines.iter().filter(|(value, _)| value == text).collect();
+        assert_eq!(hits.len(), 1, "KTX 내용의 누락·중복: {text}");
+        hits[0].1
+    };
+    let map = line("KTX 노선도");
+    let time = line("KTX 소요시간");
+    let fare = line("KTX 운임안내");
+    let minimum = line("최저운임");
+    let honam = line("호남선 (단위:원)");
+    let gyeongbu = line("경부선 (단위:원)");
+    let notice = line("※ KTX 소요 시간과 운임은 철도청의 사정에 따라 변동할 수 있습니다.");
+    assert!(
+        map.bbox.x < time.bbox.x,
+        "지도 제목은 시간표의 왼쪽 단에 속한다"
+    );
+    for pair in [time, fare, minimum, honam, gyeongbu, notice].windows(2) {
+        assert!(
+            pair[0].bbox.y + pair[0].bbox.height <= pair[1].bbox.y,
+            "시간표·운임 제목·최저운임·두 노선표·마지막 주의 문구의 순서와 비겹침을 유지한다"
+        );
+    }
 }
 
 /// 정답지와의 거리. 여러 정답지가 있으면 가장 가까운 것을 쓴다.

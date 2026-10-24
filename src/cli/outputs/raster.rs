@@ -299,9 +299,12 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
     if hangul2024_compat {
         core.set_hangul2024_compat(true);
     }
-    if let Err(e) = core.set_font_environment(font_environment) {
-        eprintln!("오류: 폰트 환경을 적용할 수 없습니다: {e}");
-        return EXIT_USAGE;
+    // 실제 공급 글꼴은 SVG/PDF와 같은 환경에서 측정·쪽수·paint에 사용한다.
+    // Skia에만 font_paths를 넘기면 원본 HFT 호환 폭으로 조판한 뒤 TrueType
+    // 글리프를 그려, 전각 작은따옴표의 잉크가 뒤 글자와 겹칠 수 있다.
+    if let Err(e) = super::apply_font_environment(&mut core, font_environment, &font_paths) {
+        eprintln!("오류: PNG 글꼴 환경을 적용할 수 없습니다: {e}");
+        return EXIT_RUNTIME;
     }
 
     // [#3302] 외부 연결 그림(HWP3 pic_type=0 등)의 같은 디렉터리 자동 적재 — export-svg
@@ -482,5 +485,93 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         EXIT_OK
     } else {
         EXIT_RUNTIME
+    }
+}
+
+#[cfg(all(test, feature = "native-skia"))]
+mod tests {
+    use super::*;
+    use rhwp::document_core::queries::rendering::PngExportOptions;
+    use rhwp::renderer::font_environment::FontEnvironment;
+    use rhwp::{paint::RenderProfile, DocumentCore};
+
+    #[test]
+    fn export_png_preserves_the_callers_explicit_font_environment() {
+        let directory = std::env::temp_dir().join(format!(
+            "rhwp-png-caller-environment-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir(&directory).unwrap();
+        struct OwnedDirectory(std::path::PathBuf);
+        impl Drop for OwnedDirectory {
+            fn drop(&mut self) {
+                let _ = fs::remove_dir_all(&self.0);
+            }
+        }
+        let _cleanup = OwnedDirectory(directory.clone());
+        let mut document = DocumentCore::new_empty();
+        document.create_blank_document_native().unwrap();
+        document
+            .insert_text_native(0, 0, 0, "가나다MiWiilMW123")
+            .unwrap();
+        let bytes = document.export_hwp_native().unwrap();
+        let input = directory.join("caller-environment.hwp");
+        fs::write(&input, &bytes).unwrap();
+        let environment = r#"{"id":"explicit-png-caller","substitutions":{"함초롬바탕":"Noto Sans KR","함초롬돋움":"Noto Sans KR"},"trueTypeFaces":["Noto Sans KR"]}"#;
+        let environment_path = directory.join("environment.json");
+        fs::write(&environment_path, environment).unwrap();
+        let fonts = Path::new(env!("CARGO_MANIFEST_DIR")).join("ttfs/opensource");
+        let options = PngExportOptions {
+            scale: Some(1.0),
+            font_paths: vec![fonts.clone()],
+            ..Default::default()
+        };
+        let mut expected_document = DocumentCore::from_bytes(&bytes).unwrap();
+        let default_png = expected_document
+            .render_page_png_native_with_profile_and_export_options(
+                0,
+                RenderProfile::Print,
+                &options,
+            )
+            .unwrap();
+        expected_document
+            .set_font_environment(Some(FontEnvironment::from_json(environment).unwrap()))
+            .unwrap();
+        let expected_png = expected_document
+            .render_page_png_native_with_profile_and_export_options(
+                0,
+                RenderProfile::Print,
+                &options,
+            )
+            .unwrap();
+        assert!(
+            default_png != expected_png,
+            "대조군: 명시한 환경이 출력에 영향을 준다"
+        );
+        let output = directory.join("cli");
+        let args = vec![
+            input.to_str().unwrap().into(),
+            "--font-environment".into(),
+            environment_path.to_str().unwrap().into(),
+            "--font-path".into(),
+            fonts.to_str().unwrap().into(),
+            "--profile".into(),
+            "print".into(),
+            "--scale".into(),
+            "1".into(),
+            "--json".into(),
+            "-o".into(),
+            output.to_str().unwrap().into(),
+        ];
+        assert_eq!(export_png(&args), EXIT_OK);
+        let actual_png = fs::read(output.join("caller-environment.png")).unwrap();
+        assert!(
+            actual_png == expected_png,
+            "CLI는 호출자가 선택한 환경을 Core와 동일하게 적용하며 자동 탐색으로 덮어쓰지 않는다"
+        );
     }
 }

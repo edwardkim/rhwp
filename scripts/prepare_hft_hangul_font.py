@@ -13,6 +13,7 @@ import zipfile
 import xml.etree.ElementTree as ET
 import pymupdf
 from fontTools.fontBuilder import FontBuilder
+from fontTools.cffLib import PrivateDict
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.misc.roundTools import otRound
 
@@ -104,7 +105,11 @@ def restore_outline(stream):
         operands = []
     if pen is None or operands:
         raise ValueError('Incomplete glyph program')
-    return width, pen.getCharString()
+    charstring = pen.getCharString()
+    charstring.private = PrivateDict()
+    if charstring.calcBounds(None) is None:
+        raise ValueError('Empty source glyph outline; text mapping and advance alone are not a font source')
+    return width, charstring
 
 
 def validate_face(face):
@@ -114,10 +119,25 @@ def validate_face(face):
     return face
 
 
-def restore(specimen_pdf, output_font, face='한양신명조'):
+# 표준 글머리 기호 집합이다. 특정 문서의 문자 목록이나 좌표에서 만들지 않는다.
+# 별도의 독립 전체 한글 표본 끝에 원문 그대로 넣고 같은 Print의 윤곽만 소비한다.
+BULLET_CHARACTERS = '·•∙○◦'
+ARROW_CHARACTERS = '←↑→↓➜'
+
+
+def specimen_characters(include_bullets=False, include_arrows=False):
+    return (''.join(chr(value) for value in range(0xAC00, 0xD7A4))
+            + (BULLET_CHARACTERS if include_bullets else '')
+            + (ARROW_CHARACTERS if include_arrows else ''))
+
+
+def restore(specimen_pdf, output_font, face="한양신명조", include_bullets=False, symbols_only=False, include_arrows=False):
     face = validate_face(face)
+    if symbols_only and not (include_bullets or include_arrows):
+        raise ValueError('Symbol-only supply still requires the complete alphabet-with-bullets specimen')
     document = pymupdf.open(specimen_pdf)
-    expected_text = ''.join(chr(value) for value in range(0xAC00, 0xD7A4))
+    expected_text = specimen_characters(include_bullets, include_arrows)
+    expected = set(map(ord, expected_text))
     observed = ''.join(ch for page in document for ch in page.get_text() if not ch.isspace())
     if observed != expected_text:
         raise ValueError('Only the independent complete alphabet specimen is accepted; target document PDFs are not font sources')
@@ -130,15 +150,20 @@ def restore(specimen_pdf, output_font, face='한양신명조'):
         encoding = font_encoding(document, font_reference(body, 'Encoding'))
         procedures = {name: int(value) for name, value in re.findall(r'/([^\s/]+)\s+(\d+)\s+0\s+R', document.xref_object(font_reference(body, 'CharProcs')))}
         for code, scalar in mapped_characters(document, font_reference(body, 'ToUnicode')):
-            if not 0xAC00 <= scalar <= 0xD7A3:
+            if scalar not in expected:
                 continue
             stream = document.xref_stream(procedures[encoding[code]]).decode('ascii')
             if scalar in glyphs and glyphs[scalar] != stream:
                 raise ValueError(f'Conflicting source glyph U+{scalar:04X}')
             glyphs[scalar] = stream
-    expected = set(range(0xAC00, 0xD7A4))
     if set(glyphs) != expected:
-        raise ValueError(f'Complete original alphabet required: {len(glyphs)}/11172 glyphs')
+        raise ValueError(f'Complete original alphabet required: {len(glyphs)}/{len(expected)} glyphs')
+    # 독립 표본 전체의 순서와 글리프 집합을 확인한 뒤에만 별도 기호 face를
+    # 만들 수 있다. 나머지 글자의 기존 공급자를 대체하지 않는 명시적 부분 공급이다.
+    if symbols_only:
+        selected_symbols = ((BULLET_CHARACTERS if include_bullets else '')
+                            + (ARROW_CHARACTERS if include_arrows else ''))
+        glyphs = {scalar: stream for scalar, stream in glyphs.items() if chr(scalar) in selected_symbols}
     order = ['.notdef'] + [f'uni{value:04X}' for value in sorted(glyphs)]
     builder = FontBuilder(1000, isTTF=False)
     builder.setupGlyphOrder(order)
@@ -155,15 +180,16 @@ def restore(specimen_pdf, output_font, face='한양신명조'):
         source_hashes[f'{value:04X}'] = hashlib.sha256(stream.encode()).hexdigest()
     builder.setupHorizontalMetrics(widths)
     builder.setupHorizontalHeader(ascent=1000, descent=-200)
+    suffix = 'Symbols' if symbols_only else 'HangulSymbols' if include_arrows else 'HangulBullets' if include_bullets else 'Hangul'
     # 요청 이름은 프로그램 동일성 판정이 아니다. 다른 face를 한양신명조로 명명하지 않는다.
     identity = hashlib.sha256(face.encode('utf-8')).hexdigest()[:16]
-    ps_name = ('HanyangSinMyeongJo-OriginalHFT-Hangul' if face == '한양신명조'
-               else f'OriginalHFT-{identity}-Hangul')
+    ps_name = (f'HanyangSinMyeongJo-OriginalHFT-{suffix}' if face == '한양신명조'
+               else f'OriginalHFT-{identity}-{suffix}')
     unique_id = ('OriginalHFT-HGSMJ-IndependentAlphabet' if face == '한양신명조'
                  else f'OriginalHFT-{identity}-IndependentAlphabet')
     builder.setupNameTable({'familyName': face, 'styleName': 'Regular',
                            'uniqueFontIdentifier': unique_id,
-                           'fullName': f'{face} Original HFT Hangul',
+                           'fullName': f'{face} Original HFT {suffix}',
                            'psName': ps_name,
                            'version': 'Version 1.000'})
     builder.setupOS2(sTypoAscender=1000, sTypoDescender=-200, usWinAscent=1000, usWinDescent=200)
@@ -179,7 +205,11 @@ def restore(specimen_pdf, output_font, face='한양신명조'):
     record = {'source': str(specimen_pdf), 'sourceSha256': hashlib.sha256(specimen_pdf.read_bytes()).hexdigest(),
               'font': str(output_font), 'fontSha256': hashlib.sha256(output_font.read_bytes()).hexdigest(),
               'requestedFace': face,
-              'scope': 'Complete modern Hangul alphabet only; ASCII intentionally absent and uses the existing supplied chain',
+              'scope': ('Independent selected standard symbols only; complete alphabet and all requested symbols validated' if symbols_only else 'Complete modern Hangul alphabet and independently printed standard symbols' if include_arrows or include_bullets else 'Complete modern Hangul alphabet only; ASCII intentionally absent and uses the existing supplied chain'),
+              'symbolsOnly': symbols_only,
+              'validatedSourceGlyphs': len(expected),
+              'standardBullets': BULLET_CHARACTERS if include_bullets else '',
+              'standardArrows': ARROW_CHARACTERS if include_arrows else '',
               'glyphs': len(glyphs), 'sourceGlyphSha256': source_hashes, 'fontMatrix': [0.001, 0, 0, 0.001, 0, 0],
               'glyphTransform': 'identity; no score-dependent shift, scale, hinting or contour changes',
               'horizontalMetrics': 'original advance and rounded CFF xMin; outlines are not translated'}
@@ -187,7 +217,7 @@ def restore(specimen_pdf, output_font, face='한양신명조'):
     print(json.dumps({key: value for key, value in record.items() if key != 'sourceGlyphSha256'}, ensure_ascii=True))
 
 
-def create_specimen(template, output, face='한양신명조'):
+def create_specimen(template, output, face="한양신명조", include_bullets=False, include_arrows=False):
     """한컴 빈 HWPX의 쪽/스타일을 쓰되 저장 줄과 기존 내용을 보존하지 않는다."""
     face = validate_face(face)
     hp = 'http://www.hancom.co.kr/hwpml/2011/paragraph'
@@ -208,7 +238,7 @@ def create_specimen(template, output, face='한양신명조'):
         for child in list(paragraph):
             if child.tag != '{' + hp + '}run':
                 paragraph.remove(child)
-        characters = ''.join(chr(value) for value in range(0xAC00, 0xD7A4))
+        characters = specimen_characters(include_bullets, include_arrows)
         run = ET.SubElement(paragraph, '{' + hp + '}run', {'charPrIDRef': '0'})
         ET.SubElement(run, '{' + hp + '}t').text = characters
         section.remove(section[0])
@@ -227,7 +257,9 @@ def create_specimen(template, output, face='한양신명조'):
     record = {'purpose': 'Independent complete Hangul alphabet, no target document data',
               'template': str(template), 'templateSha256': hashlib.sha256(template.read_bytes()).hexdigest(),
               'input': str(output), 'inputSha256': hashlib.sha256(output.read_bytes()).hexdigest(),
-              'requestedFace': face, 'requestedFontType': 'HFT', 'characters': len(characters)}
+              'requestedFace': face, 'requestedFontType': 'HFT', 'characters': len(characters),
+              'standardBullets': BULLET_CHARACTERS if include_bullets else '',
+              'standardArrows': ARROW_CHARACTERS if include_arrows else ''}
     output.with_suffix('.provenance.json').write_text(json.dumps(record, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(record, ensure_ascii=True))
 
@@ -243,11 +275,15 @@ def main():
     recover.add_argument('--specimen-pdf', type=Path, required=True)
     recover.add_argument('--out', type=Path, required=True)
     recover.add_argument('--face', default='한양신명조', help='독립 표본에서 요청한 동일 HFT face')
+    for command in [create, recover]:
+        command.add_argument('--with-bullets', action='store_true', help='독립 전체 한글과 표준 글머리 기호도 함께 보존')
+        command.add_argument('--with-arrows', action='store_true', help='독립 전체 한글과 표준 화살표도 함께 보존')
+    recover.add_argument('--symbols-only', action='store_true', help='전체 표본 검증 후 표준 기호만 별도 공급; 한글 공급자는 유지')
     args = parser.parse_args()
     if args.command == 'create-specimen':
-        create_specimen(args.template, args.out, args.face)
+        create_specimen(args.template, args.out, args.face, args.with_bullets, args.with_arrows)
     else:
-        restore(args.specimen_pdf, args.out, args.face)
+        restore(args.specimen_pdf, args.out, args.face, args.with_bullets, args.symbols_only, args.with_arrows)
 
 
 if __name__ == '__main__':

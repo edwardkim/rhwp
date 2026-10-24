@@ -1,5 +1,5 @@
-//! #7084 A: controlled provider contracts, not a Hancom visual oracle.
-//! Advances below are independent provider inputs; no universal emoji width.
+//! #7084 A: 측정 공급자의 합성 계약 검사다. 실물 한컴 출력 수용을 주장하지 않는다.
+//! 전진 폭은 독립 공급자 입력값이며 이모지의 보편적인 폭을 가정하지 않는다.
 use std::sync::Arc;
 
 use rhwp::renderer::canvas_text_font::CanvasTextFont;
@@ -93,6 +93,10 @@ fn canvas_measured_advance_receives_declared_horizontal_ratio_once() {
                 ..style()
             };
             let font = CanvasTextFont::for_positioned_text(&s, 0.0);
+            near(
+                font.draw_size(),
+                s.font_size * if script { 0.7 } else { 1.0 },
+            );
             let entry = SupplementalMetric::from_canvas_measurement(
                 &s,
                 "😀",
@@ -103,6 +107,28 @@ fn canvas_measured_advance_receives_declared_horizontal_ratio_once() {
             .unwrap();
             let _store = bound(&mut s, vec![entry]);
             near(positions("😀", &s)[1], 27.531 * paint_scale);
+            // CSS local()의 형식이 미확인이어도 실제 Canvas 공급자가 잰 폭은
+            // 같은 backend에서 소비한다. 가족 이름으로 TrueType을 선언하지 않는다.
+            for punctuation in ["‘", "’", "·"] {
+                let mut local = TextStyle {
+                    font_family: "HYGothic-Medium".into(),
+                    supplemental_metrics: None,
+                    ..s.clone()
+                };
+                assert!(!local.font_metric_trusted);
+                let setup = CanvasTextFont::for_positioned_text(&local, 0.0);
+                let measured = setup.draw_size(); // 독립 공급자 입력: 한글과 같은 1em.
+                let entry = SupplementalMetric::from_canvas_measurement(
+                    &local,
+                    punctuation,
+                    setup.descriptor(),
+                    setup.descriptor().into(),
+                    measured,
+                )
+                .unwrap();
+                let _store = bound(&mut local, vec![entry]);
+                near(positions(punctuation, &local)[1], measured * paint_scale);
+            }
         }
     }
 }
@@ -295,6 +321,49 @@ fn unknown_non_emoji_glyph_uses_provider_width_not_square_rule() {
     let entry = measured(&prepared, "𝄞", 11.25);
     let _store = bound(&mut prepared, vec![entry]);
     near(positions("𝄞", &prepared)[1], 11.25);
+    // 같은 검증 regular 프로그램의 faux bold도 cmap 소유가 바뀌지 않는다.
+    // 검증한 TrueType 환경은 결측 기호 공급자의 자연 폭을 소비한다.
+    // 형식 미확인의 한글 슬롯은 독립 sample16 Print의 전각 호환 폭을
+    // 보존한다. 글리프 프로그램이 있다는 사실로 폭 계약을 승격하지 않는다.
+    for (bold, font_metric_trusted, glyph_fallback_advance_explicit) in [
+        (false, false, false),
+        (false, true, false),
+        (true, false, false),
+        (true, true, false),
+        (false, false, true),
+        (true, false, true),
+    ] {
+        let declared = TextStyle {
+            font_family: "휴먼명조,Haansoft Batang".into(),
+            font_metric_trusted,
+            glyph_fallback_advance_explicit,
+            bold,
+            ..style()
+        };
+        let p = positions("용․편", &declared);
+        if font_metric_trusted || glyph_fallback_advance_explicit {
+            assert!(p[2] - p[1] > 0.0 && p[2] - p[1] < (p[3] - p[2]) / 2.0);
+        } else {
+            near(p[2] - p[1], p[3] - p[2]);
+        }
+        for (hft_hangul_face, hft_fullwidth_dot, italic) in [
+            (true, false, false),
+            (false, true, false),
+            (false, false, true),
+        ] {
+            let protected = TextStyle {
+                hft_hangul_face,
+                hft_fullwidth_dot,
+                italic,
+                ..declared.clone()
+            };
+            let p = positions("용․편", &protected);
+            assert!(
+                p[2] - p[1] >= (p[3] - p[2]) / 2.0,
+                "HFT 또는 확인하지 않은 style 프로그램의 glyph 부재를 추정하지 않음"
+            );
+        }
+    }
 }
 
 #[test]
@@ -311,6 +380,29 @@ fn existing_metrics_and_explicit_hwp_rules_are_not_overridden() {
     let _store = bound(&mut prepared, entries);
     assert_eq!(positions(text, &original), positions(text, &prepared));
     assert_eq!(positions("A\t가", &original), positions("A\t가", &prepared));
+    // 확인된 실제 프로그램과 고정폭 원 글리프, 명시적 반각 규칙은
+    // 임의 공급자 폭으로 바꾸지 않는다. 형식 미확인의 좁힘 추정과 구분한다.
+    for (family, trusted, punctuation) in [
+        ("HYGothic-Medium", true, "‘’·"),
+        ("굴림체", false, "‘’"),
+        ("HYGothic-Medium", false, "“”"),
+    ] {
+        let original = TextStyle {
+            font_family: family.into(),
+            font_metric_trusted: trusted,
+            ..style()
+        };
+        let entries = punctuation
+            .chars()
+            .map(|ch| measured(&original, &ch.to_string(), original.font_size * 3.0))
+            .collect();
+        let mut prepared = original.clone();
+        let _store = bound(&mut prepared, entries);
+        assert_eq!(
+            positions(punctuation, &original),
+            positions(punctuation, &prepared)
+        );
+    }
 }
 
 #[test]
@@ -602,5 +694,56 @@ fn verified_source_uses_real_hmtx_and_preserves_source_identity() {
     assert_eq!(
         SupplementalMetric::from_font(&style(), "\u{10FFFF}", bytes, 0),
         Err(MetricError::MissingGlyph)
+    );
+}
+
+/// 독립 한컴 Print의 DotumChe 합성 굵게는 같은 정규 프로그램의 채움+획이다.
+/// 획은 advance를 바꾸지 않으며, 실제 Bold face의 요청은 별도로 남아야 한다.
+#[test]
+fn faux_bold_uses_the_regular_canvas_measurement_without_changing_metric_ownership() {
+    let regular = TextStyle {
+        font_family: "DotumChe".into(),
+        ..style()
+    };
+    let bold = TextStyle {
+        bold: true,
+        ..regular.clone()
+    };
+    let regular_font = CanvasTextFont::for_positioned_text(&regular, 0.0);
+    let bold_font = CanvasTextFont::for_positioned_text(&bold, 0.0);
+    assert_eq!(
+        regular_font.descriptor(),
+        bold_font.descriptor(),
+        "PDF의 같은 정규 face를 측정하며 굵은 획은 paint가 담당한다"
+    );
+    let entry = SupplementalMetric::from_canvas_measurement(
+        &bold,
+        "😀",
+        regular_font.descriptor(),
+        regular_font.descriptor().into(),
+        27.5,
+    )
+    .expect("실제 그리는 정규 프로그램의 advance 등록");
+    let mut measured_bold = bold.clone();
+    let _store = bound(&mut measured_bold, vec![entry]);
+    near(positions("😀", &measured_bold)[1], 27.5);
+    assert_ne!(
+        positions("😀", &regular)[1],
+        27.5,
+        "동일 face를 사용해도 보충 메트릭의 원본 style 소유는 분리한다"
+    );
+    let real_bold = TextStyle {
+        font_family: "Malgun Gothic".into(),
+        bold: true,
+        ..regular.clone()
+    };
+    let real_regular = TextStyle {
+        bold: false,
+        ..real_bold.clone()
+    };
+    assert_ne!(
+        CanvasTextFont::for_positioned_text(&real_bold, 0.0).descriptor(),
+        CanvasTextFont::for_positioned_text(&real_regular, 0.0).descriptor(),
+        "실제 Bold 메트릭이 있는 face는 bold 요청을 유지한다"
     );
 }

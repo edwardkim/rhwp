@@ -13,6 +13,7 @@ impl TypesetEngine {
         page_def: &PageDef,
         styles: &ResolvedStyleSet,
     ) {
+        st.finish_deferred_column_shapes();
         let closing_column_type = st
             .current_items
             .last()
@@ -61,13 +62,24 @@ impl TypesetEngine {
             .flatten()
             .filter(|spacing| *spacing <= st.current_height)
             .unwrap_or(0.0);
-        let closing_content_height = if blank_tail_spacing == 0.0 {
-            closing_text_bounds
-                .filter(|bounds| bounds.flow_end == st.current_height)
-                .map_or(st.current_height, |bounds| bounds.content_bottom)
-        } else {
-            st.current_height - blank_tail_spacing
-        };
+        let trailing_spacing = st
+            .pages
+            .last()
+            .and_then(|page| page.column_contents.last())
+            .map_or(0.0, |column| {
+                crate::renderer::solo_zone_trailing_spacing_px(
+                    &column.items,
+                    paragraphs,
+                    usize::from(st.col_count),
+                    self.dpi,
+                )
+            });
+        // 두 값은 같은 후행 띠의 대안 증거다. 중복 차감하지 않는다.
+        let closing_content_height =
+            (st.current_height - blank_tail_spacing.max(trailing_spacing)).max(0.0);
+        let closing_content_height = closing_text_bounds
+            .filter(|bounds| blank_tail_spacing == 0.0 && bounds.flow_end == st.current_height)
+            .map_or(closing_content_height, |bounds| bounds.content_bottom);
 
         // [Task #874 Case 5] leaving zone 의 height 계산 시 마지막 라인의 trailing
         // line_spacing 을 제외한다. zone 간 gap 은 design_spacing/2 + solo_zone_pad 가
@@ -361,6 +373,7 @@ impl TypesetEngine {
         para_idx: usize,
         paragraphs: &[Paragraph],
     ) {
+        st.finish_deferred_column_shapes();
         st.flush_column();
 
         // 새 밴드로 들어갈 콘텐츠에 떠다니는(글자처럼 취급이 아닌) 개체가 있으면

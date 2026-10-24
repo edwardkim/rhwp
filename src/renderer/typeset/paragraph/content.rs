@@ -238,7 +238,10 @@ fn accepted_tac_column_frame(
             }
         }
         PageItem::Table { control_index, .. } => {
-            let placement = st.inline_placements.get(&(first_owner, *control_index))?;
+            let placement = st
+                .inline_placements
+                .get(&(first_owner, *control_index))
+                .filter(|placement| placement.owns_vertical_frame())?;
             let before = styles
                 .para_styles
                 .get(first.para_shape_id as usize)?
@@ -318,6 +321,61 @@ pub(super) fn stored_overlay_guide_advance(
     .then_some(fmt.total_height)
 }
 
+/// 다단의 다음 TAC가 소유한 물리 줄 원점을 앞 문단의 점유 끝과 연결한다.
+/// 일반 문단의 fit 전진은 저장 사다리의 절대 좌표로 대체하지 않는다.
+/// 줄 상자가 겹쳐도 최대 점유 끝과 뒤 간격이 다음 개체 원점에서 닫혀야 한다.
+#[allow(clippy::too_many_arguments)]
+fn stored_multicolumn_tac_successor_flow(
+    st: &TypesetState,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    paragraphs: &[Paragraph],
+    next: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    if st.col_count <= 1
+        || fmt.stored_ladder_is_filler
+        || fmt.computed_host_lines.is_some()
+        || para.controls.iter().any(|control| {
+            !super::super::controls::stored_tac::inline_text_control(control)
+                && !matches!(control, Control::Table(table) if table.common.treat_as_char)
+                && !crate::renderer::composer::control_is_width_neutral_marker(control)
+        })
+    {
+        return None;
+    }
+    // 저장된 마지막 간격은 일반 본문의 쪽말 fit과 같은 값이 아니다.
+    // 실제로 그 간격을 소유할 다음 원본 개체 줄을 함께 인증한다.
+    let next_line = crate::renderer::composer::stored_first_tac_line(next)?;
+    if next.cell_format_vpos_dirty
+        || next.line_segs.len() != 1
+        || next.column_type != crate::model::paragraph::ColumnBreakType::None
+    {
+        return None;
+    }
+    let last = para.line_segs.last()?;
+    let own_after = crate::renderer::px_to_hwpunit(fmt.spacing_after, dpi);
+    let next_before = styles
+        .para_styles
+        .get(next.para_shape_id as usize)?
+        .spacing_before;
+    let source_next = last
+        .vertical_pos
+        .checked_add(last.line_height)?
+        .checked_add(last.line_spacing)?
+        .checked_add(own_after)?
+        .checked_add(crate::renderer::px_to_hwpunit(next_before, dpi))?;
+    if source_next != next_line.vertical_pos {
+        return None;
+    }
+    let bottom = stored_content_bottom(st, para, fmt, paragraphs, styles, dpi)?;
+    let trailing = *fmt.line_spacings.last()?;
+    let end = bottom + trailing + fmt.spacing_after;
+    (trailing >= 0.0 && fmt.spacing_after >= 0.0 && end.is_finite() && bottom >= st.current_height)
+        .then_some((bottom, end))
+}
+
 #[allow(clippy::too_many_arguments)]
 pub(super) fn stored_successor_flow(
     st: &TypesetState,
@@ -327,9 +385,29 @@ pub(super) fn stored_successor_flow(
     styles: &ResolvedStyleSet,
     para_idx: usize,
     dpi: f64,
-) -> Option<(f64, f64)> {
-    if st.col_count != 1
-        || fmt.stored_ladder_is_filler
+) -> Option<crate::renderer::float_placement::StoredParagraphFlowProjection> {
+    if st.vpos_ladder_dirty {
+        return None;
+    }
+    if st.col_count > 1 {
+        return stored_multicolumn_tac_successor_flow(
+            st,
+            para,
+            fmt,
+            paragraphs,
+            paragraphs.get(para_idx + 1)?,
+            styles,
+            dpi,
+        )
+        .map(|(content_bottom, end)| {
+            crate::renderer::float_placement::StoredParagraphFlowProjection {
+                content_bottom,
+                advance_end: end,
+                paint_end: Some(end),
+            }
+        });
+    }
+    if fmt.stored_ladder_is_filler
         || fmt.computed_host_lines.is_some()
         || fmt.line_count() != para.line_segs.len()
     {

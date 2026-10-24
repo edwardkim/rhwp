@@ -482,10 +482,12 @@ fn issue_4969_q3_c_variable_outline_is_selected_only_on_proven_shadow_backends()
         vec![
             PaintOp::text_run(bbox, run),
             PaintOp::GlyphRun {
+                paint_transform: None,
                 bbox,
                 run: Box::new(glyph_run),
             },
             PaintOp::GlyphOutline {
+                paint_transform: None,
                 bbox,
                 outline: Box::new(glyph_outline),
             },
@@ -574,6 +576,7 @@ fn issue_4969_q3_e4_incomplete_or_malformed_outline_falls_back_atomically() {
         vec![
             PaintOp::text_run(bbox, run.clone()),
             PaintOp::GlyphRun {
+                paint_transform: None,
                 bbox,
                 run: Box::new(glyph_run.clone()),
             },
@@ -589,10 +592,12 @@ fn issue_4969_q3_e4_incomplete_or_malformed_outline_falls_back_atomically() {
         vec![
             PaintOp::text_run(bbox, run),
             PaintOp::GlyphRun {
+                paint_transform: None,
                 bbox,
                 run: Box::new(glyph_run),
             },
             PaintOp::GlyphOutline {
+                paint_transform: None,
                 bbox,
                 outline: Box::new(malformed_outline),
             },
@@ -1198,6 +1203,7 @@ fn issue_4969_q3_e5_instance_run_payload_matrix_is_resource_bounded() {
                     let reject_diagnostic = format!("{:?}", report.reject_reason);
                     ops.push(PaintOp::text_run(bbox, run));
                     ops.push(PaintOp::GlyphRun {
+                        paint_transform: None,
                         bbox,
                         run: Box::new(report.glyph_run.unwrap_or_else(|| {
                             panic!(
@@ -1206,6 +1212,7 @@ fn issue_4969_q3_e5_instance_run_payload_matrix_is_resource_bounded() {
                         })),
                     });
                     ops.push(PaintOp::GlyphOutline {
+                        paint_transform: None,
                         bbox,
                         outline: Box::new(report.glyph_outline.unwrap_or_else(|| {
                             panic!(

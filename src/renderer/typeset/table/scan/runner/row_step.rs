@@ -102,7 +102,8 @@ impl TypesetEngine {
         let plain_body_band = matches!(
             table.common.text_wrap,
             crate::model::shape::TextWrap::TopAndBottom
-        ) && layout_engine.row_has_plain_line_units(table, r, styles);
+        ) && (layout_engine.row_has_plain_line_units(table, r, styles)
+            || crate::renderer::typeset::is_reparsed_single_column_cell_split_row(table, r));
         let avail_for_rows = v.plain_row_available_height(owns_plain_row_frame, plain_body_band);
         if avail_for_rows < v.avail_for_rows && std::env::var("RHWP_DIAG_SCAN").is_ok() {
             eprintln!(
@@ -1473,6 +1474,16 @@ impl TypesetEngine {
             let split_total = plain_cut_frame.unwrap_or(split_total);
             let row_split_min_keep_uses_painted_height =
                 row_split_min_keep_uses_painted_height || plain_cut_frame.is_some();
+            let stored_page_reset_keep = mt.allows_row_break_split()
+                && !table.common.treat_as_char
+                && res.consumed_height > 0.5
+                && layout_engine.row_cut_ends_at_stored_page_reset(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    styles,
+                );
             // 저장된 물리 컷 근거가 없는 다줄 행에서 현재 쪽에 첫 유닛 하나만
             // 남고 행 전체가 새 쪽에 들어가면 행 경계에서 이월한다. 내용 높이가
             // 25px을 조금 넘는다는 이유만으로 첫 줄을 떼면 한컴의 행 시작과
@@ -1514,6 +1525,9 @@ impl TypesetEngine {
                 && !landscape_boundary_band_keep
                 && !stored_zero_origin_rewind_keep
                 && !stored_restart_capacity_keep
+                // 인증된 자식 물리 프레임도 이 컷의 저장 쪽 경계다. 일반
+                // 단일 유닛 휴리스틱이 그 소유를 다시 통째로 이월하지 않는다.
+                && !stored_page_reset_keep
                 && !uses_source_frame_tail
                 && !rowbreak_row_has_internal_saved_vpos_reset(table, r)
                 && !row_has_stored_cross_paragraph_zero_reset(table, r);
@@ -1521,16 +1535,6 @@ impl TypesetEngine {
                 && layout_engine.row_cut_ends_at_closed_paragraph_restart(
                     table,
                     r,
-                    &res.end_cut,
-                    styles,
-                );
-            let stored_page_reset_keep = mt.allows_row_break_split()
-                && !table.common.treat_as_char
-                && res.consumed_height > 0.5
-                && layout_engine.row_cut_ends_at_stored_page_reset(
-                    table,
-                    r,
-                    row_start_cut,
                     &res.end_cut,
                     styles,
                 );

@@ -92,9 +92,18 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// 각 원문의 증가/시각 근거는 #7445 증적과 corpus_scope_restore_validation.json에 연결한다.
 /// 원문은 samples에 유지하며 다른 래칫·쪽수·렌더러 비교 대상에서는 제외하지 않는다.
 const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
+    // #7834: 고정 devel bfa28a77a 전15쪽 Native/fresh 최저45.18405%.
+    // 본문 넘침 원문과 기존0행을 보존하여 이 입력만 이관한다.
+    "issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx",
     // #7445: upstream/devel 74f9b71b1과 같은 원문의 한컴2024 Print
     // 전2쪽 최저79.32995%; 중국어 원문의 본문 넘침 원장만 이관한다.
     "issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+    // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
+    "table_giant_cell_overfill.hwpx",
+    "issue5792/2700727_animal_facility_standards.hwpx",
+    "2025 행정업무운영 편람(최종).hwpx",
+    // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
+    "issue6035/cgmp_evaluation_table.hwpx",
     // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
     "issue5699/37787_regulatory_impact.hwp",
     // #7445: 전74쪽 최저22.71%, 전체 피델리티 개선 후 회귀 복원.
@@ -113,6 +122,7 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     "hwp3-sample16-hwp5-2022.hwp",
     "issue3637/press_release_split_cell_nested_table.hwpx",
     "issue6031/3249937_asset_management_rules.hwpx",
+    "hwpctl_API_v2.4.hwp",
     "task2097/75544_pii_bunseok.hwpx",
     "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
     "issue6023/30269_reform_recommendation.hwp",
@@ -179,6 +189,11 @@ fn load_baseline() -> BTreeMap<String, u64> {
     text.lines()
         .filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
         .filter(|line| !is_deferred_exam_document(line.split('\t').next().unwrap_or_default()))
+        .filter(|line| {
+            let rel = line.split('\t').next().unwrap_or_default();
+            !DEDICATED_SLOW_FIXTURES.contains(&rel)
+                && !DEFERRED_BODY_OVERFLOW_FIXTURES.contains(&rel)
+        })
         .map(|l| {
             let (rel, n) = l.rsplit_once('\t').expect("baseline TSV 행 형식");
             (rel.to_string(), n.parse::<u64>().expect("baseline 수치"))

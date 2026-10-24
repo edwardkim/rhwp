@@ -111,6 +111,10 @@ impl EqParser {
                     self.finish_command_atom(node, attach_scripts)
                 }
             }
+            EqCommandClass::SmallOperator => {
+                let symbol = lookup_symbol(cu).unwrap_or("?").to_string();
+                self.finish_command_atom(EqNode::MathSymbol(symbol), attach_scripts)
+            }
             EqCommandClass::BigOperator => {
                 let symbol = if is_big_operator(cu) {
                     lookup_symbol(cu).unwrap_or("?").to_string()

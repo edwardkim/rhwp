@@ -80,7 +80,7 @@ pub(super) fn stored_endnote_column_cut(
         || para_index < paragraphs.len()
         || st
             .reissued_endnote_rows
-            .contains(&(para_index - paragraphs.len()))
+            .contains_key(&(para_index - paragraphs.len()))
         || !endnote_column_starts_at_stored_break(st, paragraphs)
     {
         return None;
@@ -190,10 +190,11 @@ impl TypesetEngine {
         // 같은 저장 단의 구성이 유지되면 물리 여유만으로 다음 단의 소속을 지우지 않는다.
         // 앞 줄의 실제 감소량이 뒤 조각의 전진을 회수한 경우만 전체 수용을 재검증한다.
         let reissued_column = stored_cut.is_some_and(|cut| {
-            paragraph_by_global_index(paragraphs, &st.endnote_paragraphs, en_para_idx)
-                .is_some_and(|paragraph| {
+            paragraph_by_global_index(paragraphs, &st.endnote_paragraphs, en_para_idx).is_some_and(
+                |paragraph| {
                     self.endnote_column_reclaims_saved_tail(st, paragraphs, styles, paragraph, cut)
-                })
+                },
+            )
         });
         if en_ssot_debug() && stored_cut.is_some() {
             eprintln!(
@@ -396,6 +397,7 @@ impl TypesetEngine {
             control_index: usize::MAX,
             cell_path: Vec::new(),
             note_para_index: usize::MAX,
+            tail_leading_consumed_hu: 0,
         };
         let successor_source = local_indices
             .last()

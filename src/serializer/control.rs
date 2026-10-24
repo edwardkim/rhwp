@@ -162,7 +162,7 @@ pub fn serialize_control(
             // 오는데, 종전에는 ClickHere 만 CTRL_DATA 를 냈으므로 **책갈피 이름이 저장에서
             // 통째로 사라졌다**(이름 없는 책갈피는 상호참조·하이퍼링크의 대상이 못 된다).
             //
-            // 정답지 `samples/aift.hwp`(한컴 저작)는 같은 문서의 `%bmk` 컨트롤 아래에
+            // 정답지 `mydocs/pr/assets/issue7445/aift74/aift.hwp`(한컴 저작)는 같은 문서의 `%bmk` 컨트롤 아래에
             // `ParameterSet ps_id=0x021b · item id=0x4000(String) = "_top"` 을 싣는다 —
             // 위 ClickHere 구조와 **같은 바이트 모양**이다. 스펙(§4.2.10.11)도 책갈피는
             // "책갈피 이름 밖에 없다"고 못박으므로 item ID 를 새로 발명할 필요가 없다
@@ -2570,7 +2570,18 @@ fn write_shape_component_base(
     w.write_i32(attr.rotation_center.x).unwrap();
     w.write_i32(attr.rotation_center.y).unwrap();
 
-    // Rendering 정보 (원본이 있으면 복원, 없으면 적절한 행렬 생성)
+    w.write_bytes(&shape_rendering_bytes(attr)).unwrap();
+}
+
+/// HWP와 HWPX가 같은 저장 변환을 소비한다. 원본 행렬은 그대로 보존하고,
+/// 편집으로 raw 캐시가 사라진 개체는 기존 HWP 계약으로 회전·축척을 발행한다.
+pub(crate) fn shape_rendering_bytes(attr: &ShapeComponentAttr) -> Vec<u8> {
+    let mut writer = ByteWriter::new();
+    write_shape_rendering(&mut writer, attr);
+    writer.into_bytes()
+}
+
+fn write_shape_rendering(w: &mut ByteWriter, attr: &ShapeComponentAttr) {
     if !attr.raw_rendering.is_empty() {
         w.write_bytes(&attr.raw_rendering).unwrap();
     } else if attr.rotation_angle.rem_euclid(360) != 0 {
@@ -2715,6 +2726,13 @@ fn write_generated_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAtt
         write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
         write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
     }
+}
+
+/// 편집으로 합성한 행렬을 HWP 저장 rendering 블록으로 만든다.
+pub(crate) fn serialize_affine_rendering(attr: &ShapeComponentAttr) -> Vec<u8> {
+    let mut writer = ByteWriter::new();
+    write_parsed_rendering_matrix(&mut writer, attr);
+    writer.into_bytes()
 }
 
 fn write_parsed_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) {

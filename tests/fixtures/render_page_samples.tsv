@@ -2,8 +2,6 @@ rel	hangul_pages	rhwp_pages_baseline	delta
 samples/2010-01-06.hwp	6	6	0
 samples/20250130-hongbo.hwp	4	4	0
 samples/80168_regulatory_analysis.hwp	157	157	0
-samples/KTX.hwp	27	27	0
-samples/aift.hwp	74	74	0
 samples/atop-equation-01.hwp	1	1	0
 samples/basic/BlogForm_BookReview.hwp	1	1	0
 samples/basic/BlogForm_MovieReview.hwp	1	1	0
@@ -103,7 +101,7 @@ samples/issue2817/paper_anchor_infront_pic.hwpx	1	1	0
 samples/issue3239/evaluation_form_200dpi_scan.hwp	1	1	0
 samples/issue3257/webhangul_product_spec_v1.1.hwp	6	6	0
 samples/issue3460/svg_picture_repro.hwpx	3	3	0
-samples/issue3637/press_release_split_cell_nested_table.hwpx	12	13	1
+samples/issue3637/press_release_split_cell_nested_table.hwpx	12	12	0
 samples/issue3637/press_release_topbottom_float.hwpx	2	3	1
 samples/issue3765/zone_switch_ladder_understates_page.hwpx	2	2	0
 samples/issue3837/stored_vpos_rewind_form.hwp	4	4	0

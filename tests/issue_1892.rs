@@ -239,44 +239,138 @@ fn issue_1892_hwp3_tab_roundtrip_render_is_self_consistent() {
     assert_roundtrip_render_self_consistent(SAMPLE_TAB);
 }
 
-/// 자식의 원본 상대 오프셋은 상위 묶음 원점에 누적된다. 중첩 묶음과
-/// Absolute 크기 기준을 보존하며 메타데이터 오프셋을 행렬에 두 번 더하지 않는다.
+/// 메타데이터 상대 오프셋과 실제 그리기 행렬은 별도 계약이다.
+/// 독립 한컴 재저장/Print와 대조한 구조 묶음 identity·자식 affine·물리 끝점을 보존한다.
 #[test]
 fn issue_1892_group_roundtrip_preserves_source_offsets_and_group_hierarchy() {
     let doc_a = parse_document(&read_sample(SAMPLE_GROUP)).expect("원본 파싱");
     let doc_b = parse_document(&serialize_document(&doc_a).expect("저장")).expect("재파싱");
-    fn verify(
-        node: &ShapeObject,
-        parent: (f64, f64),
-        depth: u16,
-        nested: &mut usize,
-        moved: &mut usize,
-    ) {
-        let attr = node.shape_attr();
-        let origin = if depth == 0 {
-            (0.0, 0.0)
-        } else {
-            (
-                parent.0 + f64::from(attr.offset_x),
-                parent.1 + f64::from(attr.offset_y),
-            )
-        };
+    fn verify(a: &ShapeObject, b: &ShapeObject, depth: u16, nested: &mut usize, moved: &mut usize) {
+        let left = a.shape_attr();
+        let right = b.shape_attr();
         assert_eq!(
-            (attr.render_tx, attr.render_ty),
-            origin,
-            "소스 상대 오프셋의 누적 원점"
+            std::mem::discriminant(a),
+            std::mem::discriminant(b),
+            "도형 종류 보존"
         );
-        assert_eq!(attr.group_level, depth, "소유 묶음 깊이");
-        if depth > 0 && (attr.offset_x != 0 || attr.offset_y != 0) {
+        assert_eq!(
+            (left.offset_x, left.offset_y),
+            (right.offset_x, right.offset_y),
+            "원본 상대 위치 메타데이터 보존"
+        );
+        assert_eq!(
+            (left.group_level, right.group_level),
+            (depth, depth),
+            "소유 묶음 깊이"
+        );
+        assert_eq!(
+            (
+                left.original_width,
+                left.original_height,
+                left.current_width,
+                left.current_height
+            ),
+            (
+                right.original_width,
+                right.original_height,
+                right.current_width,
+                right.current_height
+            ),
+            "자식 원본·현재 크기 보존"
+        );
+        if let Some(drawing) = a.drawing() {
+            let saved_drawing = b.drawing().expect("그리기 속성 보존");
+            assert_eq!(
+                drawing.fill, saved_drawing.fill,
+                "채우기 의미를 HWP5 왕복에서 바꾸지 않는다"
+            );
+            if let Some(text) = &drawing.text_box {
+                assert_eq!(
+                    text.vertical_align,
+                    rhwp::model::table::VerticalAlign::Center,
+                    "표69 bit4와 독립 한컴 재저장의 가운데 정렬"
+                );
+                assert_eq!(
+                    saved_drawing
+                        .text_box
+                        .as_ref()
+                        .expect("글상자")
+                        .vertical_align,
+                    text.vertical_align
+                );
+                if let Some(solid) = drawing.fill.solid {
+                    assert_eq!(
+                        solid.pattern_type, -1,
+                        "무늬 없는 면을 저장 뒤 수평 hatch로 바꾸지 않는다"
+                    );
+                }
+            }
+        }
+        let affine = |s: &ShapeObject| {
+            let x = s.shape_attr();
+            [
+                x.render_sx,
+                x.render_b,
+                x.render_tx,
+                x.render_c,
+                x.render_sy,
+                x.render_ty,
+            ]
+        };
+        let before = affine(a);
+        let after = affine(b);
+        assert!(before.iter().chain(after.iter()).all(|x| x.is_finite()));
+        for (x, y) in before.into_iter().zip(after) {
+            assert!(
+                (x - y).abs() <= f64::EPSILON,
+                "전체 source affine 왕복 보존: {x} vs {y}"
+            );
+        }
+        if depth > 0 && (left.offset_x != 0 || left.offset_y != 0) {
             *moved += 1;
         }
-        if let ShapeObject::Group(group) = node {
-            if depth > 0 {
-                *nested += 1;
+        match (a, b) {
+            (ShapeObject::Group(ga), ShapeObject::Group(gb)) => {
+                // 자식 absolute_pos가 이미 소유 묶음 이동을 포함한다.
+                // 구조 묶음의 relative_pos를 paint에 다시 더하지 않는다.
+                assert_eq!(
+                    before,
+                    [1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+                    "구조 묶음에는 두 번째 이동을 만들지 않는다"
+                );
+                assert_eq!(
+                    ga.children.len(),
+                    gb.children.len(),
+                    "자식 개수·순서·빈 묶음 보존"
+                );
+                if depth > 0 {
+                    *nested += 1;
+                }
+                for (x, y) in ga.children.iter().zip(&gb.children) {
+                    verify(x, y, depth + 1, nested, moved);
+                }
             }
-            for child in &group.children {
-                verify(child, origin, depth + 1, nested, moved);
+            (ShapeObject::Line(line), _)
+                if left.render_b == 0.0
+                    && left.render_c == 0.0
+                    && left.render_sx >= 0.0
+                    && left.render_sy >= 0.0 =>
+            {
+                // 표74 object_size/shape_info의 실제 끝점은 독립 한컴 재저장과도
+                // 원본 한 단위(4HU) 이내였다. 과거 평행사변형의 크기로 재확대하지 않는다.
+                for (span, scale) in [
+                    (f64::from(line.end.x - line.start.x), left.render_sx),
+                    (f64::from(line.end.y - line.start.y), left.render_sy),
+                ] {
+                    if scale > 0.0 {
+                        assert!(
+                            (span * scale - span).abs() <= f64::EPSILON,
+                            "직선의 물리 끝점 길이를 한 번만 적용"
+                        );
+                    }
+                }
             }
+            _ => {}
         }
     }
     fn groups(doc: &rhwp::model::document::Document) -> Vec<&ShapeObject> {
@@ -338,13 +432,9 @@ fn issue_1892_group_roundtrip_preserves_source_offsets_and_group_hierarchy() {
     let mut total_nested = 0;
     for (a, b) in original.into_iter().zip(saved) {
         let mut original_nested = 0;
-        let mut saved_nested = 0;
         let mut original_moved = 0;
-        let mut saved_moved = 0;
-        verify(a, (0.0, 0.0), 0, &mut original_nested, &mut original_moved);
-        verify(b, (0.0, 0.0), 0, &mut saved_nested, &mut saved_moved);
-        assert_eq!(original_nested, saved_nested, "중첩 묶음 소유 보존");
-        assert_eq!(original_moved, saved_moved, "비영 상대 오프셋 보존");
+        verify(a, b, 0, &mut original_nested, &mut original_moved);
+        assert!(original_moved > 0, "비영 상대 위치를 가진 실제 원본");
         total_nested += original_nested;
         assert_eq!(
             (a.common().width, a.common().height),
@@ -358,6 +448,239 @@ fn issue_1892_group_roundtrip_preserves_source_offsets_and_group_hierarchy() {
         );
     }
     assert!(total_nested > 0, "중첩 묶음이 있는 원본");
+    // 전2쪽 N/W와 p1>=98%·직접 판독을 확인한 동일 원본의 핵심 치수선.
+    // PDF의 채워진 화살촉 끝점(96.668,671.146)/(96.668,127.301)pt를
+    // 841pt 용지의 상단 기준96dpi CSS px로 환산했다. shaft 끝과 혼동하지 않는다.
+    fn painted(node: &RenderNode, visible: &mut Vec<(f64, f64, f64, f64)>, invisible: &mut usize) {
+        match &node.node_type {
+            RenderNodeType::Line(line)
+                if (line.section_index, line.para_index, line.control_index)
+                    == (Some(0), Some(2), Some(1)) =>
+            {
+                assert_eq!(
+                    line.style.color >> 24,
+                    0,
+                    "선 없음 sentinel이 검정 선으로 부활하지 않는다"
+                );
+                visible.push((line.x1, line.y1, line.x2, line.y2));
+            }
+            RenderNodeType::Path(path)
+                if (path.section_index, path.para_index, path.control_index)
+                    == (Some(0), Some(2), Some(1)) =>
+            {
+                assert!(
+                    path.style.stroke_color.is_none()
+                        && path.style.stroke_width == 0.0
+                        && path.line_style.is_none(),
+                    "비표시 선·화살촉은 소유 경로만 보존"
+                );
+                *invisible += 1;
+            }
+            _ => {}
+        }
+        for child in &node.children {
+            painted(child, visible, invisible);
+        }
+    }
+    let Control::Shape(source) = &doc_a.sections[0].paragraphs[2].controls[1] else {
+        panic!("소속 묶음")
+    };
+    let ShapeObject::Group(outer) = source.as_ref() else {
+        panic!("원본 묶음")
+    };
+    let ShapeObject::Group(inner) = &outer.children[0] else {
+        panic!("중첩 묶음")
+    };
+    assert_eq!(inner.children.len(), 2);
+    assert_eq!(
+        inner.children[0]
+            .drawing()
+            .expect("원본 선")
+            .border_line
+            .attr
+            & 0x3f,
+        0,
+        "원본 비표시 선"
+    );
+    assert_ne!(
+        inner.children[1]
+            .drawing()
+            .expect("원본 선")
+            .border_line
+            .attr
+            & 0x3f,
+        0,
+        "원본 가시 선"
+    );
+    let mut original = DocumentCore::from_bytes(&read_sample(SAMPLE_GROUP)).expect("원본");
+    let saved = original.export_hwp_with_adapter().expect("공개 저장");
+    for core in [original, DocumentCore::from_bytes(&saved).expect("재열기")] {
+        let tree = core.build_page_render_tree(0).expect("치수선 소속 쪽");
+        let mut lines = Vec::new();
+        let mut invisible = 0;
+        painted(&tree.root, &mut lines, &mut invisible);
+        assert_eq!(lines.len(), 1, "같은 묶음의 가시 치수선 누락·중복 방지");
+        assert_eq!(invisible, 1, "선 없음 개체의 소유는 삭제하지 않는다");
+        let (x1, y1, x2, y2) = lines[0];
+        assert!(y1 < y2, "윗 화살촉·아랫 화살촉의 순서");
+        for (actual, expected) in [
+            (x1, 96.668 * 4.0 / 3.0),
+            (y1, (841.0 - 671.146) * 4.0 / 3.0),
+            (x2, 96.668 * 4.0 / 3.0),
+            (y2, (841.0 - 127.301) * 4.0 / 3.0),
+        ] {
+            assert!(
+                (actual - expected).abs() <= 2.0,
+                "독립 Print 화살촉 끝점 ±2CSSpx: {actual} vs {expected}"
+            );
+        }
+    }
+}
+
+// 공개 저장 경로로 만든 동일 편집본을 독립 Hancom2020 Print와 전2쪽 N/W 대조한다.
+// source control points는 원본 로컬 크기의 분수로 만들며 관측 px를 복사하지 않는다.
+fn curved_visibility_variant(visible: bool) -> Vec<u8> {
+    use rhwp::model::shape::{ConnectorControlPoint, ConnectorData, LinkLineType};
+    let mut core = DocumentCore::from_bytes(&read_sample(SAMPLE_GROUP)).expect("원본");
+    let doc = core.document_mut();
+    let Control::Shape(shape) = &mut doc.sections[0].paragraphs[2].controls[1] else {
+        panic!("원본 묶음")
+    };
+    let ShapeObject::Group(group) = shape.as_mut() else {
+        panic!("원본 묶음")
+    };
+    let ShapeObject::Group(group) = &mut group.children[0] else {
+        panic!("중첩 묶음")
+    };
+    let ShapeObject::Line(line) = &mut group.children[0] else {
+        panic!("원본 비표시 선")
+    };
+    assert_eq!(line.drawing.border_line.attr & 63, 0);
+    let w = line.drawing.shape_attr.original_width as i32;
+    let h = line.drawing.shape_attr.original_height as i32;
+    line.connector = Some(ConnectorData {
+        link_type: LinkLineType::ArcBoth,
+        control_points: vec![
+            ConnectorControlPoint {
+                x: w / 3,
+                y: h / 3,
+                point_type: 2,
+            },
+            ConnectorControlPoint {
+                x: w * 2 / 3,
+                y: h * 2 / 3,
+                point_type: 2,
+            },
+        ],
+        ..Default::default()
+    });
+    if visible {
+        line.drawing.border_line.attr |= 1;
+        line.drawing.border_line.color = 0;
+    }
+    core.export_hwp_with_adapter()
+        .expect("동일 편집의 공개 HWP 저장")
+}
+
+#[test]
+fn issue_1892_invisible_connector_keeps_its_curve_and_selection_endpoints() {
+    use rhwp::renderer::{render_tree::PathNode, PathCommand};
+    fn paths<'a>(node: &'a RenderNode, out: &mut Vec<&'a PathNode>) {
+        if let RenderNodeType::Path(path) = &node.node_type {
+            if (path.section_index, path.para_index, path.control_index)
+                == (Some(0), Some(2), Some(1))
+            {
+                out.push(path);
+            }
+        }
+        for child in &node.children {
+            paths(child, out);
+        }
+    }
+    let mut geometry = None;
+    for visible in [false, true] {
+        let mut original =
+            DocumentCore::from_bytes(&curved_visibility_variant(visible)).expect("편집본");
+        assert_eq!(original.page_count(), 2, "동일 편집 독립 Print 전체 쪽수");
+        let saved = original.export_hwp_with_adapter().expect("다시 저장");
+        let reopened = DocumentCore::from_bytes(&saved).expect("다시 열기");
+        assert_eq!(reopened.page_count(), original.page_count());
+        for page in 0..original.page_count() {
+            let a = original.build_page_render_tree(page).expect("편집 쪽");
+            let b = reopened.build_page_render_tree(page).expect("저장 쪽");
+            assert_eq!(
+                owned_content(&a.root),
+                owned_content(&b.root),
+                "편집 뒤 쪽·문단·셀 내용 소속/순서·누락·중복"
+            );
+            assert_eq!(
+                owned_tables(&a.root),
+                owned_tables(&b.root),
+                "편집 뒤 표 소유"
+            );
+        }
+        for core in [original, reopened] {
+            let tree = core.build_page_render_tree(0).expect("연결선 소속 쪽");
+            let mut owned = Vec::new();
+            paths(&tree.root, &mut owned);
+            assert_eq!(owned.len(), 1, "같은 source 소속의 연결선 누락·중복");
+            let path = owned[0];
+            assert!(
+                path.connector_endpoints.is_some(),
+                "비표시에도 선택 끝점을 보존"
+            );
+            let commands: Vec<_> = path
+                .commands
+                .iter()
+                .map(|command| match command {
+                    PathCommand::MoveTo(x, y) => (0, vec![*x, *y]),
+                    PathCommand::CurveTo(a, b, c, d, x, y) => (1, vec![*a, *b, *c, *d, *x, *y]),
+                    _ => panic!("원본 cubic 연결선을 직선이나 다른 경로로 바꾸지 않는다"),
+                })
+                .collect();
+            assert_eq!(
+                commands.iter().map(|(kind, _)| *kind).collect::<Vec<_>>(),
+                vec![0, 1],
+                "원본 두 제어점의 cubic 경로"
+            );
+            let actual = (commands, path.connector_endpoints);
+            if let Some(expected) = &geometry {
+                assert_eq!(
+                    &actual, expected,
+                    "가시성/재저장이 경로·선택 끝점을 바꾸지 않는다"
+                );
+            } else {
+                geometry = Some(actual);
+            }
+            if visible {
+                assert_eq!(path.style.stroke_color, Some(0));
+                assert!(
+                    path.style.stroke_width > 0.0 && path.line_style.is_some(),
+                    "가시 대조군의 획과 저장된 화살촉 유지"
+                );
+                let style = path.line_style.as_ref().expect("저장된 끝 화살촉");
+                assert_eq!(
+                    style.start_arrow,
+                    rhwp::renderer::ArrowStyle::None,
+                    "ARC_BOTH가 원본에 없는 시작 화살촉을 만들지 않는다"
+                );
+                assert_eq!(
+                    style.end_arrow,
+                    rhwp::renderer::ArrowStyle::OpenArrow,
+                    "명시된 SPEAR를 일반 삼각형으로 바꾸지 않는다"
+                );
+                assert_eq!(style.end_arrow_size, 0, "원본의 작은 화살촉 크기");
+            } else {
+                assert!(
+                    path.style.stroke_color.is_none()
+                        && path.style.stroke_width == 0.0
+                        && path.style.fill_color.is_none()
+                        && path.line_style.is_none(),
+                    "선 없음은 획·채움·화살촉을 그리지 않는다"
+                );
+            }
+        }
+    }
 }
 
 /// IR 핀: tab_extended 없는 탭이 직렬화→재파스 후에도 tab_extended 를 만들지

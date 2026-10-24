@@ -1,0 +1,35 @@
+[
+  {
+    "step": "native-build-v2",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--jobs",
+      "8"
+    ],
+    "exitCode": 0,
+    "seconds": 125.83995485305786
+  },
+  {
+    "step": "fresh-wasm-v2",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "exitCode": 0,
+    "seconds": 231.860848903656
+  }
+]

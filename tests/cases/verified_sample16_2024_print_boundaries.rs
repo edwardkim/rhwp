@@ -1,7 +1,7 @@
 //! sample16 한컴 2024 저장본의 제목·BCP 꼬리·후속 본문을 보호한다.
-//! 독립 Print와 전 64쪽 최저 Native 96.22428%, fresh WASM 96.07248%.
-//! 3쪽은 각각 99.92012%, 99.90360%이며 확대 판독을 완료했다.
-//! 입력/PDF SHA·96dpi 좌표·쪽 선정·TSV·PNG: task_m100_7642_stage1351.md.
+//! 검사 도입 시 전64쪽 최저 Native96.22428%, fresh WASM96.07248%,
+//! 3쪽99.92012/99.90360%의 근거: task_m100_7642_stage1351.md.
+//! 현재 전64쪽·입력/PDF SHA·쪽별 점수와 재검토: task_m100_7445_rebase_repair_stage8.md C419–C420.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::control::Control;
@@ -318,5 +318,147 @@ fn sample16_2024_page_tail_preserves_owned_paragraphs_and_empty_line_without_ove
             );
         }
         previous_end = Some(line.bbox.y + line.bbox.height);
+    }
+}
+
+/// The absorbed blank paragraph still belongs to the native editor caret API.
+#[test]
+fn sample16_2024_empty_tail_keeps_its_editor_caret_owner() {
+    let core = load();
+    let end = source_owner(
+        &core,
+        "활용가능기존장비는용도변경및재해복구센터(DR)활용방안수립",
+    );
+    let blank = (end.0, end.1 + 1);
+    assert!(core.document().sections[blank.0].paragraphs[blank.1]
+        .text
+        .trim()
+        .is_empty());
+    let layout: serde_json::Value = serde_json::from_str(
+        &core
+            .get_page_text_layout_native(2)
+            .expect("원본 후행 빈 문단의 편집 좌표"),
+    )
+    .unwrap();
+    let carets: Vec<_> = layout["runs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|run| {
+            run["secIdx"] == blank.0 && run["paraIdx"] == blank.1 && run["cellIdx"].is_null()
+        })
+        .collect();
+    assert_eq!(carets.len(), 1, "빈 문단의 편집 소유 누락·중복 방지");
+    assert_eq!(carets[0]["charStart"], 0);
+    assert_eq!(carets[0]["text"], "");
+    // The empty line's hit-test frame may cover its available width. Its
+    // character advances, rather than that frame, own the zero-length caret.
+    assert_eq!(carets[0]["charX"], serde_json::json!([0.0]));
+    assert!(carets[0]["h"].as_f64().unwrap() > 0.0);
+    let page = core.build_page_render_tree(2).unwrap();
+    let line = single_line(body(&page.root), blank);
+    assert!(line.bbox.height > 0.0, "빈 원본 줄도 편집 공간을 가진다");
+    let cursor: serde_json::Value = serde_json::from_str(
+        &core
+            .get_cursor_rect_native(blank.0, blank.1, 0)
+            .expect("빈 원본 문단의 실제 커서 질의"),
+    )
+    .unwrap();
+    assert_eq!(cursor["pageIndex"], 2, "원본 후행 문단의 쪽 소유");
+    assert_eq!(cursor["x"], carets[0]["x"]);
+    assert_eq!(cursor["y"], carets[0]["y"]);
+    assert_eq!(cursor["height"], carets[0]["h"]);
+}
+
+#[test]
+fn completed_page_six_keeps_the_evaluation_table_and_its_source_neighbors_in_the_print_frame() {
+    // C417: 전64쪽 Native/fresh WASM >=90%, p6=98.16591/98.56406%, 직접 review/overlay.
+    // 같은 원본/PDF SHA·192DPI PNG·96CSSpx 좌표·독립 PDF path 근거: stage8 C419.
+    let core = load();
+    let mut owners = Vec::new();
+    for (section, data) in core.document().sections.iter().enumerate() {
+        for (paragraph, para) in data.paragraphs.iter().enumerate() {
+            for (control, item) in para.controls.iter().enumerate() {
+                let Control::Table(table) = item else {
+                    continue;
+                };
+                let content: String = table
+                    .cells
+                    .iter()
+                    .flat_map(|cell| &cell.paragraphs)
+                    .map(|para| normalized(&para.text))
+                    .collect();
+                if content.contains("기술능력평가")
+                    && content.contains("입찰가격평가")
+                    && content.contains("제출한가격입찰서")
+                {
+                    owners.push((section, paragraph, control));
+                }
+            }
+        }
+    }
+    assert_eq!(owners.len(), 1, "내용으로 식별한 평가 비율 표의 원본 소유");
+    let (section, paragraph, control) = owners[0];
+    let paragraphs = &core.document().sections[section].paragraphs;
+    assert!(
+        normalized(&paragraphs[paragraph - 1].text).contains("기술제안서평가및입찰가격평가비율")
+    );
+    assert!(normalized(&paragraphs[paragraph + 1].text).contains("입찰가격평점산식"));
+
+    fn collect<'a>(
+        node: &'a RenderNode,
+        owner: (usize, usize, usize),
+        out: &mut Vec<&'a RenderNode>,
+    ) {
+        if matches!(&node.node_type, RenderNodeType::Table(table)
+            if (table.section_index, table.para_index, table.control_index)
+                == (Some(owner.0), Some(owner.1), Some(owner.2))
+                && table.cell_context.is_none())
+        {
+            out.push(node);
+        }
+        for child in &node.children {
+            collect(child, owner, out);
+        }
+    }
+
+    let owner = (section, paragraph, control);
+    let mut page_owners = Vec::new();
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).unwrap();
+        let mut found = Vec::new();
+        collect(body(&tree.root), owner, &mut found);
+        page_owners.extend(std::iter::repeat_n(page, found.len()));
+    }
+    assert_eq!(page_owners, [5], "독립 Print 6쪽의 표 소유·누락·중복 방지");
+    let tree = core.build_page_render_tree(5).unwrap();
+    let container = body(&tree.root);
+    let mut found = Vec::new();
+    collect(container, owner, &mut found);
+    let table = found[0];
+    let caption = single_line(container, (section, paragraph - 1));
+    let following = single_line(container, (section, paragraph + 1));
+    assert!(caption.bbox.y + caption.bbox.height <= table.bbox.y);
+    assert!(table.bbox.y + table.bbox.height <= following.bbox.y);
+    assert!(
+        table.bbox.x >= container.bbox.x
+            && table.bbox.x + table.bbox.width <= container.bbox.x + container.bbox.width
+    );
+    // PDF의 표 외곽 stroke 중심(pt→96CSSpx). 그림/글자 ROI로 대상을 선택하지 않는다.
+    for (name, actual, expected) in [
+        ("평가 비율 표 왼쪽", table.bbox.x, 117.697337),
+        ("평가 비율 표 위쪽", table.bbox.y, 603.340007),
+        (
+            "평가 비율 표 오른쪽",
+            table.bbox.x + table.bbox.width,
+            709.218669,
+        ),
+        (
+            "평가 비율 표 아래쪽",
+            table.bbox.y + table.bbox.height,
+            733.277344,
+        ),
+    ] {
+        near_print(actual, expected, name);
     }
 }

@@ -27,3 +27,8 @@ fn hwp3_sample16_hwp5_2018_page_count_64() {
 fn hwp3_sample16_hwp5_2024_page_count_64() {
     assert_sample16_hwp5_page_count_64("samples/hwp3-sample16-hwp5-2024.hwp", "sample16-hwp5-2024");
 }
+
+#[test]
+fn hwp3_sample16_hwp5_2022_page_count_64() {
+    assert_sample16_hwp5_page_count_64("samples/hwp3-sample16-hwp5-2022.hwp", "sample16-hwp5-2022");
+}

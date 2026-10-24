@@ -547,6 +547,17 @@ pub(super) fn capped_bottom(
     cap: f64,
     page: TacHeightPage<'_>,
 ) -> f64 {
+    // 같은 문단의 실제 수용 끝은 줄간격과 문단 위 간격도 이미 소비했다.
+    // 선언 높이의 상한으로 다시 역산하면 첫 줄의 원점과 뒤 흐름이 갈라진다.
+    if let Some(end) = page
+        .inline_placements
+        .iter()
+        .filter(|((pi, _), _)| *pi == para_idx)
+        .filter_map(|(_, placement)| placement.advance_end)
+        .reduce(f64::max)
+    {
+        return end.max(page.inline_box_flow_bottom);
+    }
     let side_wrap_clearance: f64 = page
         .inline_placements
         .iter()

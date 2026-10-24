@@ -8,7 +8,6 @@ import {createHash} from 'node:crypto';
 import {spawn} from 'node:child_process';
 import {mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
-import {tmpdir} from 'node:os';
 import {dirname, join, resolve} from 'node:path';
 import test from 'node:test';
 import {fileURLToPath} from 'node:url';
@@ -29,8 +28,10 @@ function run(args) {
   });
 }
 
-test('공급한 실제 font program을 Canvas PNG가 대체 글꼴 없이 사용한다', async t => {
-  const folder = mkdtempSync(join(tmpdir(), 'rhwp-sweep-font-binding-'));
+test('공급한 실제 font program을 사용하고 워밍업 Canvas 상태를 캡처에 이어받지 않는다', async t => {
+  const output = join(root, 'output/pr-review');
+  mkdirSync(output, {recursive: true});
+  const folder = mkdtempSync(join(output, 'rhwp-sweep-font-binding-'));
   t.after(() => rmSync(folder, {recursive: true, force: true}));
   const pkg = join(folder, 'pkg');
   mkdirSync(pkg);
@@ -41,11 +42,20 @@ test('공급한 실제 font program을 Canvas PNG가 대체 글꼴 없이 사용
     export const version=()=> 'canvas-font-contract-adapter';
     export class HwpDocument {
       pageCount(){return 1;} setHangul2024Compat(){} free(){}
+      getDocumentFontSelectionPlan(){return '{"environmentId":null,"requests":[]}';}
+      buildFontEnvironmentFromAvailablePrograms(programs){
+        if(programs!=='[]')throw Error('Canvas adapter has no document substitutions');
+        return 'null';
+      }
+      setFontEnvironment(){throw Error('Canvas adapter must retain its original environment');}
       getPageLayerTreeWithProfile(){return '{"fontResources":{"faces":[],"blobs":[]}}';}
       getPageRenderTree(){return '{"type":"Page","bbox":{"x":0,"y":0,"w":500,"h":70}}';}
       renderPageToCanvasFilteredWithProfile(_page,canvas){
+        // 실제 Chrome의 워밍업 횟수에 따른 backing store 차이는 별도 실물 대조로
+        // 확인했다. adapter에서는 그 상태 소유를 관측 가능하게 만들어 재사용을 검출한다.
+        const painted=canvas.dataset.painted==='yes';canvas.dataset.painted='yes';
         canvas.width=500;canvas.height=70;const c=canvas.getContext('2d');
-        c.fillStyle='white';c.fillRect(0,0,500,70);c.fillStyle='black';
+        c.fillStyle='white';c.fillRect(0,0,500,70);c.fillStyle=painted?'#808080':'black';
         c.font='20px SweepFontProbe';c.fillText(${JSON.stringify(sampleText)},10,35);
       }
     }
@@ -60,9 +70,9 @@ test('공급한 실제 font program을 Canvas PNG가 대체 글꼴 없이 사용
     sourceSha256: sha(font), source: fontPath, families: ['SweepFontProbe'],
     weight: 400, style: 'normal', faceIndex: 0, repairs: []}]}));
   writeFileSync(options, JSON.stringify({compat: '2022', scale: 1, workers: 1, pages: [1], fontEnvironment: null}));
-  const output = join(folder, 'output');
+  const captureOutput = join(folder, 'output');
   await run([join(root, 'scripts/export-wasm-png-for-sweep.mjs'), '--pkg', pkg,
-    '--input', input, '--out', output, '--fonts', fonts, '--options', options]);
+    '--input', input, '--out', captureOutput, '--fonts', fonts, '--options', options]);
   const browser = await require('puppeteer-core').launch({
     executablePath: findChrome(process.env.VISUAL_SWEEP_CHROME), headless: true,
   });
@@ -73,11 +83,11 @@ test('공급한 실제 font program을 Canvas PNG가 대체 글꼴 없이 사용
     const face = new FontFace('IndependentFontReference', bytes);
     await face.load();document.fonts.add(face);
     const canvas = document.createElement('canvas');canvas.width=500;canvas.height=70;
-    const c=canvas.getContext('2d');c.fillStyle='white';c.fillRect(0,0,500,70);
+    const c=canvas.getContext('2d',{willReadFrequently:true});c.fillStyle='white';c.fillRect(0,0,500,70);
     c.fillStyle='black';c.font='20px IndependentFontReference';c.fillText(text,10,35);
     return canvas.toDataURL('image/png').split(',')[1];
   }, {base64: font.toString('base64'), text: sampleText});
-  const actual = readFileSync(join(output, 'rhwp_png/rhwp_001.png'));
+  const actual = readFileSync(join(captureOutput, 'rhwp_png/rhwp_001.png'));
   assert.deepEqual(actual, Buffer.from(expected, 'base64'),
     '적재 성공 표기만으로 통과하지 않고, 독립 등록한 동일 program의 실제 PNG와 비교한다');
 });

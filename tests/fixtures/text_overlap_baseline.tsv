@@ -72,6 +72,9 @@ issue1949_giant_cell_nested_tables_perf.hwpx	8
 issue2006/1790387_prep_final_report.hwpx	1
 issue2470/36341511_masked.hwpx	4
 issue2559/1341000_research_report_footnotes.hwp	16
+# 독립 Print에서도 두 사진 칸의 2매와 ㊞ 도장이 겹친다. 전4쪽 Native/fresh WASM
+# 검증 및 tests/issue_3837_stored_vpos_rewind_page_break.rs의 원본 칸·도장 소속 검사 참조.
+issue3837/stored_vpos_rewind_form.hwp	4
 issue4599/36374873_night_guard_log.hwpx	10
 issue5169_viewtext_changetracking.hwp	17
 issue5714/1490000-200800034_vietnam_labor_report.hwp	3
@@ -79,10 +82,10 @@ issue5788/tac_table_missing_anchor_line_spacing.hwp	5
 issue5793/pua_f0827_double_rule.hwp	1
 issue5870/empty_host_float_flow_advance.hwp	2
 issue5877/fragment_ghost_vrules.hwp	6
-issue5966/1130000-202100008_franchise_review_report.hwp	33
+issue5941/1480000-201900698-native-neartop-reset.hwp	4
+issue5966/1130000-202100008_franchise_review_report.hwp	26
 issue6030/2386771_agritech_review_form.hwp	2
 issue6031/3249937_asset_management_rules.hwpx	1
-issue6035/cgmp_evaluation_table.hwpx	1
 issue6036/156509073_police_press_release.hwpx	1
 issue6060/30307_local_service_reform.hwp	2
 issue6121/156531618_police_press_header.hwpx	1
@@ -138,3 +141,4 @@ task2430/1382000_domestic_violence_survey.hwp	1
 # 이후 표 조판 묶음으로 37 까지 내려갔다. 33쪽 겹침은 0 이다. 여유 없이 실측으로 조인다.
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	53
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx	218
+hwp3-sample16-hwp5-2022.hwp	0

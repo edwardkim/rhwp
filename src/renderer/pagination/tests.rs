@@ -32,14 +32,21 @@ fn missing_lineseg_fragment_boundary_is_identical_in_both_paginators() {
         text: "visible converted paragraph".to_string(),
         ..Default::default()
     };
-    let operands = (6, 797.973, 967.253, 10.4);
+    // 실물 문서의 픽셀 좌표 대신 줄 단위로 가용 공간을 구성한다.
+    let line_count = 6;
+    let line_unit = 1.0;
+    let available = line_count as f64 * line_unit * 8.0;
+    let operands = (line_count, available * 4.0 / 5.0, available, line_unit);
     let typeset = crate::renderer::typeset::missing_lineseg_trailing_line_break(
         &para, operands.0, operands.1, operands.2, operands.3, true, true,
     );
     let fallback = super::engine::missing_lineseg_trailing_line_break(
         &para, operands.0, operands.1, operands.2, operands.3, true, true,
     );
-    assert_eq!(typeset, Some(3));
+    assert_eq!(
+        typeset, None,
+        "저장 줄 부재와 변환 계보는 문단의 절반을 다음 쪽 소유로 바꾸는 근거가 아니다"
+    );
     assert_eq!(fallback, typeset);
 
     let hwpx_typeset = crate::renderer::typeset::missing_lineseg_trailing_line_break(
@@ -48,7 +55,11 @@ fn missing_lineseg_fragment_boundary_is_identical_in_both_paginators() {
     let hwpx_fallback = super::engine::missing_lineseg_trailing_line_break(
         &para, operands.0, operands.1, operands.2, operands.3, true, false,
     );
-    assert_eq!(hwpx_typeset, Some(5));
+    assert_eq!(
+        hwpx_typeset,
+        Some(line_count - 1),
+        "명시된 inline field reset은 마지막 줄의 경계 소유를 보존한다"
+    );
     assert_eq!(hwpx_fallback, hwpx_typeset);
 
     assert_eq!(
@@ -129,6 +140,8 @@ fn tac_picture_and_shape_require_partial_paragraph_page_routing() {
         section_index: 0,
         layout: layout.clone(),
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,

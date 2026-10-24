@@ -230,6 +230,7 @@ impl TypesetEngine {
         // sample16-2022 pi=118 (content, sb=284) skip ✓
         // sample16-2022 pi=316 (content, sb=0) skip ✓
         let variant_vpos_reset_break = profile.hwp3_layout()
+            && !st.stored_paragraph_boundary_already_open(paragraphs, para_idx)
             && self.judge_hwp3_variant_vpos_reset_break(
                 para,
                 paragraphs,

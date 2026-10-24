@@ -143,6 +143,7 @@ pub(in crate::renderer::typeset) fn place(
         }
         fmt.use_square_host_plan(plan, engine.dpi);
     }
+    engine.observe_stored_table_origin(st, para_idx, paragraphs_all, composed_all, styles);
     if controls::try_place_stored_tac_paragraph(
         st,
         para_idx,
@@ -180,6 +181,7 @@ pub(in crate::renderer::typeset) fn place(
 
     // pre-fit가 단을 넘겼으면 그 단의 원점·예산으로 확정 줄 배치를 다시 계산한다.
     // 앞 단에서 거절된 후보를 이유로 새 단에서도 legacy 높이 상한을 쓰지 않는다.
+    engine.observe_stored_table_origin(st, para_idx, paragraphs_all, composed_all, styles);
     if controls::try_place_stored_tac_paragraph(
         st,
         para_idx,
@@ -312,7 +314,13 @@ pub(in crate::renderer::typeset) fn place(
                     para_idx,
                     ctrl_idx,
                     |st, footnote, source| {
-                        engine.register_unqueued_table_footnote(st, footnote, source);
+                        engine.register_unqueued_table_footnote(
+                            st,
+                            footnote,
+                            source,
+                            paragraphs_all,
+                            styles,
+                        );
                     },
                 );
                 if break_after_current_table {

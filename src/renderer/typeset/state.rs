@@ -206,6 +206,23 @@ impl TypesetState {
         }
     }
 
+    /// 저장된 빈 글줄이 현재 단의 아직 소비하지 않은 흐름 펜에서 시작하는가.
+    /// 개체의 가시 영역이나 밴드 부재만으로 빈 줄의 본문 소유를 추정하지 않는다.
+    pub(super) fn stored_wrap_rows_start_at_flow_pen(&self, para: &Paragraph, dpi: f64) -> bool {
+        let Some(base) = self.data.vpos_page_base.or(self.data.vpos_lazy_base) else {
+            return false;
+        };
+        let Some(offset) = para
+            .line_segs
+            .first()
+            .and_then(|line| line.vertical_pos.checked_sub(base))
+        else {
+            return false;
+        };
+        let top = self.data.vpos_col_anchor + crate::renderer::hwpunit_to_px(offset, dpi);
+        (top - self.data.current_height).abs() <= dpi / 7200.0
+    }
+
     pub(super) fn register_following_wrap_anchor(
         &mut self,
         para_idx: usize,
@@ -458,8 +475,46 @@ impl TypesetState {
         }
     }
 
+    /// 현재 단을 비우지 않고 다음 단의 실제 개체 상자만 예약한다.
+    pub(super) fn defer_table_host_shape_to_next_column(
+        &mut self,
+        para_idx: usize,
+        ctrl_idx: usize,
+        flow: TableHostShapeFlow,
+    ) -> bool {
+        let Some(height) = flow.non_tac_pushdown_h else {
+            return false;
+        };
+        if self.data.current_column + 1 >= self.data.col_count {
+            return false;
+        }
+        let reserved: f64 = self
+            .data
+            .deferred_column_shapes
+            .iter()
+            .filter_map(|(_, _, flow)| flow.non_tac_pushdown_h)
+            .sum();
+        if self.data.pending_body_wide_top_reserve + reserved + height > self.available_height() {
+            return false;
+        }
+        self.data
+            .deferred_column_shapes
+            .push((para_idx, ctrl_idx, flow));
+        true
+    }
+
+    /// 구역 종료·강제 쪽 전환에서도 예약 개체를 기존 쪽의 다음 단에 남긴다.
+    pub(in crate::renderer::typeset) fn finish_deferred_column_shapes(&mut self) {
+        if !self.data.deferred_column_shapes.is_empty() {
+            self.advance_column_or_new_page();
+        }
+    }
+
     /// Lane 조회용 페이지 관측값. 예산은 별도 지연 조회로 제공한다.
-    pub(super) fn empty_float_page(&self) -> EmptyFloatPage<'_> {
+    pub(super) fn empty_float_page(
+        &self,
+        paragraphs: &[crate::model::paragraph::Paragraph],
+    ) -> EmptyFloatPage<'_> {
         EmptyFloatPage {
             layout: &self.data.layout,
             current_column: self.data.current_column,
@@ -467,6 +522,22 @@ impl TypesetState {
             current_height: self.data.current_height,
             current_items: &self.data.current_items,
             visible_float_exclusions: &self.data.visible_float_exclusions,
+            // 원본 0 줄이 실제 첫 완전한 본문 항목으로 수용된 단만 원점을
+            // 증명한다. 이어받기 조각·첫 표·추가 zone의 raw vpos는 다른 축이다.
+            original_column_origin: self.data.current_zone_y_offset == 0.0
+                && self.data.vpos_col_anchor == 0.0
+                && self.data.current_items.first().is_some_and(|item| {
+                    let PageItem::FullParagraph { para_index } = item else { return false; };
+                    paragraphs.get(*para_index).is_some_and(|first| {
+                        first.controls.is_empty()
+                            && !first.stored_text_partition_is_dirty()
+                            && first.source_line_seg_vertical_pos.is_none()
+                            && first.line_segs.first().is_some_and(|line| {
+                                line.vertical_pos == 0
+                                    && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                            })
+                    })
+                }),
         }
     }
 
@@ -611,6 +682,7 @@ impl TypesetState {
             body_height: self.base_available_height(),
             current_zone_y_offset: self.data.current_zone_y_offset,
             current_footnote_height: self.data.current_footnote_height,
+            painted_footnote_area_reserved: self.data.current_footnote_body_bottom_reserved,
         }
     }
 
@@ -657,7 +729,10 @@ impl TypesetState {
     }
 
     /// 넘침 판단에 필요한 읽기 전용 값만 전달한다. base 높이 조회에는 부수효과가 없다.
-    pub(super) fn paragraph_overflow_page(&self) -> OverflowPage {
+    pub(super) fn paragraph_overflow_page(
+        &self,
+        current_page_vpos_base: Option<i32>,
+    ) -> OverflowPage {
         OverflowPage {
             col_count: self.data.col_count,
             current_height: self.data.current_height,
@@ -665,7 +740,46 @@ impl TypesetState {
             body_height: self.base_available_height(),
             body_area_height: self.data.layout.body_area.height,
             hwp3_layout: self.data.profile.hwp3_layout(),
+            // 변환 계보의 호환 profile로 실제 저장 줄 상자를 제외하지 않는다.
+            // 문단의 dirty 여부와 구현 생성 태그는 소비 지점에서 함께 확인한다.
+            stored_layout_valid: !self.data.profile.session_edited(),
+            current_page_vpos_base,
         }
+    }
+
+    pub(super) fn record_stored_paragraph_boundary_carry(
+        &mut self,
+        para: usize,
+        start_line: usize,
+    ) {
+        self.data.stored_paragraph_boundary_carry = Some((para, start_line));
+    }
+
+    /// 저장 본문 밖의 줄을 이어받은 쪽에는 뒤의 같은 추론 경계를 다시 발행하지 않는다.
+    /// 선언된 나누기와 다른 실내용이 소비된 쪽의 경계는 유지한다.
+    pub(super) fn stored_paragraph_boundary_already_open(
+        &self,
+        paragraphs: &[Paragraph],
+        para_idx: usize,
+    ) -> bool {
+        let Some((owner, cut)) = self.data.stored_paragraph_boundary_carry else {
+            return false;
+        };
+        self.data.col_count == 1
+            && !self.data.profile.session_edited()
+            && owner < para_idx
+            && paragraphs[para_idx].column_type == super::ColumnBreakType::None
+            && paragraphs[owner + 1..para_idx]
+                .iter()
+                .all(|p| p.controls.is_empty() && p.text.trim().is_empty())
+            && matches!(self.data.current_items.first(), Some(PageItem::PartialParagraph {
+                para_index, start_line, ..
+            }) if *para_index == owner && *start_line == cut)
+            && self.data.current_items.iter().skip(1).all(|item| {
+                super::page_item_para_index(item)
+                    .and_then(|idx| paragraphs.get(idx))
+                    .is_some_and(|p| p.controls.is_empty() && p.text.trim().is_empty())
+            })
     }
 
     /// atomic 항목을 먼저 넣고 조정자가 기존 flow 메트릭을 계산하게 한다.
@@ -770,12 +884,15 @@ impl TypesetState {
     /// [Task #2320] 마지막 단에서의 분할은 새 페이지 단 0으로 진행한다.
     /// 중간 단에서는 기존 flush → 단 증가 → 높이 초기화 순서를 유지한다.
     pub(super) fn advance_after_multicolumn_fragment(&mut self) {
-        if self.data.current_column + 1 < self.data.col_count {
+        if self.data.current_column + 1 < self.data.col_count
+            && self.data.deferred_column_shapes.is_empty()
+        {
             self.flush_column();
             self.data.current_column += 1;
             self.data.current_height = 0.0;
             self.activate_next_column_stored_frames();
         } else {
+            // 예약 개체가 있으면 공통 전환이 같은 항목·상자를 새 단에 발행한다.
             self.advance_column_or_new_page();
         }
     }
@@ -798,10 +915,29 @@ impl TypesetState {
                 .data
                 .deferred_next_page_stored_frames
                 .iter()
-                .filter(|frame| matches!(frame.kind, super::DeferredStoredFrameKind::Table))
+                .filter(|frame| {
+                    matches!(
+                        frame.kind,
+                        super::DeferredStoredFrameKind::Table
+                            | super::DeferredStoredFrameKind::AbsoluteShape
+                    )
+                })
                 .map(|frame| frame.placement.occupied_bottom)
                 .reduce(f64::max),
         }
+    }
+
+    /// 완전한 저장 그림 행의 다음 쪽 하단이 이 본문 재시작과 같은지 조회한다.
+    pub(super) fn has_pending_picture_group_reset(&self, origin: f64, dpi: f64) -> bool {
+        self.data
+            .deferred_next_page_stored_frames
+            .iter()
+            .any(|frame| {
+                matches!(
+                    frame.placement.flow,
+                    crate::renderer::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. }
+                ) && (frame.placement.occupied_bottom - origin).abs() <= dpi / 7200.0
+            })
     }
 
     pub(super) fn inline_flow_column(&self) -> LayoutRect {
@@ -946,7 +1082,9 @@ impl TypesetState {
             0.0
         } else if self.data.skip_footnote_margin_once {
             self.data.skip_footnote_margin_once = false;
-            if self.data.current_footnote_height > 0.0 {
+            if self.data.current_footnote_height > 0.0
+                && !self.data.current_footnote_body_bottom_reserved
+            {
                 self.data.footnote_safety_margin
             } else {
                 0.0

@@ -2,12 +2,37 @@
 
 use std::collections::{HashSet, VecDeque};
 
+use resvg::usvg as style_usvg;
 use resvg::{tiny_skia, usvg};
+
+// PDF(usvg 0.45)와 메타파일(resvg의 usvg 0.47)은 타입이 다르다.
+// 판정 구현은 한 소스를 공유하되 각 소비자의 실제 선택 글꼴로 실행한다.
+#[cfg_attr(
+    not(target_arch = "wasm32"),
+    expect(
+        clippy::duplicate_mod,
+        reason = "PDF는 usvg 0.45, 메타파일은 usvg 0.47의 서로 다른 타입으로 같은 판정 소스를 인스턴스화한다"
+    )
+)]
+#[path = "../renderer/pdf_synthetic_bold.rs"]
+mod synthetic_bold;
+#[cfg_attr(
+    not(target_arch = "wasm32"),
+    expect(
+        clippy::duplicate_mod,
+        reason = "PDF는 usvg 0.45, 메타파일은 usvg 0.47의 서로 다른 타입으로 같은 판정 소스를 인스턴스화한다"
+    )
+)]
+#[path = "../renderer/pdf_synthetic_italic.rs"]
+mod synthetic_italic;
 
 use super::metafile_fonts::{requests, MetafileFonts};
 use crate::model::{image::ImageEffect, style::ImageFillMode};
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
 use crate::renderer::render_tree::{BoundingBox, ImageNode};
+
+#[path = "metafile_masks.rs"]
+mod masks;
 
 const MAX_SVG_BYTES: usize = 32 * 1024 * 1024;
 const MAX_SURFACE_PIXELS: u64 = 67_108_864;
@@ -182,7 +207,20 @@ pub(super) fn payload(
             },
             ..Default::default()
         };
-        let tree = usvg::Tree::from_data(&svg, &options).ok()?;
+        // 요청 weight와 실제 선택된 SFNT를 같은 공통 판정으로 대조한다.
+        // Bold face가 없는 글자는 기존 0.02em 인쇄 획을 사용하며 실제 Bold나
+        // 기존 stroke는 다시 굵히지 않는다. 처리 불가한 혼합 스타일은 캐시하지 않는다.
+        // ROP의 비트맵 패턴 마스크는 원본 정수 격자에서 먼저 합성한다.
+        // 비트 연산 도중 축소 보간하면 흑백 마스크가 회색으로 바뀌어 배경과
+        // 전경의 소속이 달라진다. 텍스트·벡터 형제는 그대로 최종 장치로 전달한다.
+        let mask_grid = masks::flatten_bitmap_masks(&svg);
+        let source = std::str::from_utf8(mask_grid.as_deref().unwrap_or(&svg)).ok()?;
+        let (prepared, report) =
+            synthetic_bold::prepare_svg_with_synthetic_bold(source, &options).ok()?;
+        if report.unsupported_texts > 0 {
+            return None;
+        }
+        let tree = usvg::Tree::from_str(&prepared, &options).ok()?;
         let mut pixmap = tiny_skia::Pixmap::new(width, height)?;
         let scale = tiny_skia::Transform::from_scale(
             width as f32 / tree.size().width(),

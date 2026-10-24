@@ -16,7 +16,7 @@
         "wasm"
       ],
       "id": "aift",
-      "path": "samples/aift.hwp",
+      "path": "mydocs/pr/assets/issue7445/aift74/aift.hwp",
       "purpose": "native-wasm-svg-byte-parity",
       "sha256": "a3e94e613a7d3dad0ee11e2df8f9572a5b7c2d704602960c2075b5fd22df995c"
     },
@@ -69,7 +69,7 @@
       "status": "required"
     },
     {
-      "command": "node scripts/svg_native_wasm_diff.mjs samples/synam-001.hwp samples/aift.hwp samples/2010-01-06.hwp",
+      "command": "node scripts/svg_native_wasm_diff.mjs samples/synam-001.hwp mydocs/pr/assets/issue7445/aift74/aift.hwp samples/2010-01-06.hwp",
       "evidence": "mydocs/working/task_m100_4939_stage2.md",
       "id": "native-wasm-public-parity",
       "status": "required"

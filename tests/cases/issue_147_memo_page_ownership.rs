@@ -12,7 +12,8 @@ use std::path::Path;
 
 #[test]
 fn issue_147_aift_page3() {
-    let file = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/aift.hwp");
+    let file =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("mydocs/pr/assets/issue7445/aift74/aift.hwp");
     let core = DocumentCore::from_bytes(&std::fs::read(file).expect("original aift fixture"))
         .expect("parse original aift fixture");
     let tree = core.build_page_render_tree(3).expect("original TOC page4");

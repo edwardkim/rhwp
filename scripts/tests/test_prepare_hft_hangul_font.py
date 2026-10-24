@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 import zipfile
 
 try:
@@ -67,6 +68,13 @@ class OriginalHftFontTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Unsupported glyph operator'):
             self.tool.restore_outline('1000 0 0 -200 1000 1000 d1 2 0 0 2 0 0 cm')
 
+    def test_width_only_type3_cannot_supply_an_original_glyph_outline(self):
+        # 한컴 Print는 실제 글자를 별도 이미지로 그리고 검색용 Type3에는
+        # 전진폭·문자 매핑만 남길 수 있다. 이 스트림으로 빈 글꼴을 만들면
+        # 실제 원본 글꼴을 공급했다고 오판하고 정상 한글까지 지워 버린다.
+        with self.assertRaisesRegex(ValueError, 'Empty source glyph outline'):
+            self.tool.restore_outline('1000 0 0 -200 1000 1000 d1 f')
+
     def test_horizontal_bearing_keeps_original_outline_origin(self):
         for left, expected in [('10.25', 10), ('-12.75', -13)]:
             width, charstring = self.tool.restore_outline(
@@ -91,9 +99,59 @@ class OriginalHftFontTests(unittest.TestCase):
             source = root / 'target.pdf'
             document.save(source)
             output = root / 'should-not-exist.otf'
-            with self.assertRaisesRegex(ValueError, 'independent complete alphabet'):
-                self.tool.restore(source, output)
+            for include_bullets in [False, True]:
+                with self.assertRaisesRegex(ValueError, 'independent complete alphabet'):
+                    self.tool.restore(source, output, include_bullets=include_bullets)
             self.assertFalse(output.exists())
+
+    def test_arrows_require_the_complete_independent_alphabet_and_all_requested_symbols(self):
+        alphabet = ''.join(chr(i) for i in range(0xAC00, 0xD7A4))
+        self.assertEqual(self.tool.specimen_characters(), alphabet)
+        self.assertEqual(self.tool.specimen_characters(True), alphabet + '·•∙○◦')
+        self.assertEqual(self.tool.specimen_characters(True, True), alphabet + '·•∙○◦←↑→↓➜')
+        template = Path(__file__).resolve().parents[2] / 'samples/hwpx/blank_hwpx.hwpx'
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            specimen = root / 'independent-arrows.hwpx'
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.tool.create_specimen(template, specimen, include_bullets=True, include_arrows=True)
+            with zipfile.ZipFile(specimen) as archive:
+                import xml.etree.ElementTree as ET
+                section = ET.fromstring(archive.read('Contents/section0.xml'))
+                text = ''.join(n.text or '' for n in section.iter() if n.tag.endswith('}t'))
+                self.assertEqual(text, alphabet + '·•∙○◦←↑→↓➜')
+
+            class Page:
+                def get_text(self):
+                    # 전체 한글이 있어도 요청한 마지막 화살표 하나가 빠지면 거부한다.
+                    return alphabet + '·•∙○◦←↑→↓'
+
+            with patch.object(self.tool.pymupdf, 'open', return_value=[Page()]):
+                with self.assertRaisesRegex(ValueError, 'independent complete alphabet'):
+                    self.tool.restore(root / 'incomplete.pdf', root / 'bad.otf', include_bullets=True, symbols_only=True, include_arrows=True)
+            self.assertFalse((root / 'bad.otf').exists())
+
+    def test_bullet_mode_keeps_complete_alphabet_and_rejects_missing_symbol(self):
+        with self.assertRaisesRegex(ValueError, 'complete alphabet-with-bullets'):
+            self.tool.restore(Path('not-opened.pdf'), Path('not-created.otf'), symbols_only=True)
+        template = Path(__file__).resolve().parents[2] / 'samples/hwpx/blank_hwpx.hwpx'
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / 'alphabet-bullets.hwpx'
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.tool.create_specimen(template, output, include_bullets=True)
+            with zipfile.ZipFile(output) as archive:
+                import xml.etree.ElementTree as ET
+                section = ET.fromstring(archive.read('Contents/section0.xml'))
+                text = ''.join(n.text or '' for n in section.iter() if n.tag.endswith('}t'))
+                self.assertEqual(text[:11172], ''.join(chr(i) for i in range(0xAC00, 0xD7A4)))
+                self.assertEqual(text[11172:], '·•∙○◦')
+            class Page:
+                def get_text(self):
+                    return text[:-1]
+            with patch.object(self.tool.pymupdf, 'open', return_value=[Page()]):
+                with self.assertRaisesRegex(ValueError, 'independent complete alphabet'):
+                    self.tool.restore(Path('incomplete.pdf'), Path(directory) / 'bad.otf', include_bullets=True)
+            self.assertFalse((Path(directory) / 'bad.otf').exists())
 
     def test_specimen_has_entire_alphabet_hft_face_and_no_saved_lines(self):
         template = Path(__file__).resolve().parents[2] / 'samples/hwpx/blank_hwpx.hwpx'

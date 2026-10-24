@@ -21,6 +21,8 @@ export interface PageInfo {
   pageNumber?: number;
   width: number;
   height: number;
+  /** 공통 Print paint가 발행한 종이 크기. 원본 편집 크기와 구분하며 구 WASM에는 없다. */
+  printSize?: { width: number; height: number };
   sectionIndex: number;
   /** 왼쪽 여백 (px) */
   marginLeft: number;
@@ -1236,6 +1238,8 @@ export interface LayerTextControlMark {
 }
 
 export interface LayerTextRunOp {
+  /** Glyph-only output frame; source bbox/placement stay logical. */
+  paintTransform?: LayerAffineTransform;
   type: 'textRun';
   bbox: LayerBounds;
   text: string;
@@ -1296,6 +1300,8 @@ export interface LayerLineStyle {
   /** Physical on/off lengths supplied by the shared border layout. */
   dashPattern?: number[];
   lineType?: string;
+  /** A decomposed multiple/overpainted stroke keeps its parent's subpixel geometry. */
+  compoundComponent?: boolean;
   startArrow?: string;
   endArrow?: string;
   startArrowSize?: number;
@@ -1343,6 +1349,8 @@ export interface LayerLineOp {
 export interface LayerRectangleOp {
   type: 'rectangle';
   bbox: LayerBounds;
+  transform?: LayerPathTransform;
+  strokeJoin?: 'round';
   cornerRadius?: number;
   style?: LayerShapeStyle;
   gradient?: LayerGradientFill;
@@ -1391,6 +1399,8 @@ export interface LayerPathOp {
 export interface LayerImageOp {
   type: 'image';
   bbox: LayerBounds;
+  /** Shared producer result before rotation; bbox remains the occupied frame. */
+  imagePaintBBox?: LayerBounds;
   /** Explicit source sampling; absent preserves the output profile policy. */
   imageInterpolation?: 'nearest' | 'linear';
   /** 실제 Print 색 전달 payload의 축소 재구성 계약. */
@@ -1496,7 +1506,7 @@ export type LayerEquationLayoutKind =
   | { type: 'fontGlyph'; text: string; fontFamily: string; outlineGeometry?: LayerFontGlyphGeometry }
   | { type: 'mathSymbol'; text: string; integralGeometry?: LayerIntegralGeometry }
   | { type: 'function'; name: string }
-  | { type: 'fraction'; numer: LayerEquationLayoutBox; denom: LayerEquationLayoutBox; axisHeight: number; ruleThickness?: number }
+  | { type: 'fraction'; numer: LayerEquationLayoutBox; denom: LayerEquationLayoutBox; axisHeight: number; ruleThickness?: number; ruleStart?: number; ruleEnd?: number }
   | { type: 'atop'; top: LayerEquationLayoutBox; bottom: LayerEquationLayoutBox }
   | { type: 'sqrt'; body: LayerEquationLayoutBox; index?: LayerEquationLayoutBox }
   | { type: 'superscript'; base: LayerEquationLayoutBox; sup: LayerEquationLayoutBox }
@@ -1600,6 +1610,8 @@ export interface LayerTabLeaderOp {
 }
 
 export interface LayerCharOverlapOp {
+  /** Glyph-only output frame; source bbox/placement stay logical. */
+  paintTransform?: LayerAffineTransform;
   type: 'charOverlap';
   bbox: LayerBounds;
   text: string;
@@ -1614,6 +1626,8 @@ export interface LayerCharOverlapOp {
 }
 
 export interface LayerGlyphRunOp {
+  /** Glyph-only output frame; source bbox/placement stay logical. */
+  paintTransform?: LayerAffineTransform;
   type: 'glyphRun';
   bbox: LayerBounds;
   source: LayerTextSourceSpan;
@@ -1634,6 +1648,8 @@ export interface LayerGlyphRunOp {
 }
 
 export interface LayerGlyphOutlineOp {
+  /** Glyph-only output frame; source bbox/placement stay logical. */
+  paintTransform?: LayerAffineTransform;
   type: 'glyphOutline';
   bbox: LayerBounds;
   variant?: LayerTextVariantMeta;

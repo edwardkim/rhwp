@@ -69,7 +69,7 @@ after(() => {
   }
 });
 
-test('five backend projections are deterministic and close all 841 active registry rules', () => {
+test('five backend projections are deterministic and close all 846 active registry rules', () => {
   const registry = readRegistry();
   const first = buildProjectionBundle(registry);
   const second = buildProjectionBundle(registry);
@@ -81,14 +81,14 @@ test('five backend projections are deterministic and close all 841 active regist
     registry,
   ), []);
   assert.equal(first.manifest.summary.outputCount, 5);
-  assert.equal(first.manifest.summary.activeRuleCount, 841);
+  assert.equal(first.manifest.summary.activeRuleCount, 846);
   assert.equal(first.manifest.summary.retiredRuleCount, registry.rules.filter(rule => rule.status === 'retired').length);
   assert.deepEqual(first.manifest.summary.countsByProjection, {
     'canvas2d-paint': 281,
-    'canvas2d-webfont': 154,
-    'canvaskit-sfnt': 159,
-    'rust-layout-metric': 70,
-    'rust-layout-name': 177,
+    'canvas2d-webfont': 155,
+    'canvaskit-sfnt': 160,
+    'rust-layout-metric': 71,
+    'rust-layout-name': 179,
   });
   assert.deepEqual(
     Object.fromEntries(first.outputs.map(output => [
@@ -98,12 +98,13 @@ test('five backend projections are deterministic and close all 841 active regist
     { ...SEALED_PROJECTION_SHA256,
       // Issue-scoped replacements preserve the sealed historical hashes above.
       // Existing #4969 supply rules were already active before #7958.
-      'canvas2d-webfont': '74158e11fbaeabda7894841a43751aa2724842bd140e2ed48cdc7dd4ce362435',
-      'canvaskit-sfnt': 'b118ebc3e757da4ec107fbb80cf8aeee6c64e30601113b86492eda3b888e4e8e',
-      // #7196 / #7966: preserve same-program metric identities, including styled PDF faces.
-      'rust-layout-metric': 'b36c884e942ec501bde20a9dbf8f09fb06d2fed3638e06020a754fb7ad669ef8',
+      'canvas2d-webfont': '1fe89c01aa989f9449c736e0f73c4d448a0176c863edcb9bb66cb849b306beee',
+      'canvaskit-sfnt': '1a5cff1a44450170dafa2ad157b8938cec3024df8bf3e2037c005c6cdb838bc5',
+      // #7196 / #7966 / #7445: add only the verified public Batang metric identity.
+      'rust-layout-metric': 'fdca67b63b5f10b2f89fcf991e9d4d633461c1f1052dcc397884408af0e736ba',
       // #7958 / #7959 / #7966 preserve PostScript name and full-face identities.
-      'rust-layout-name': '399777eec1e7e184aef01d8b5bba4ef58e9a5a9ea121da94bed922fcf616bbd6',
+      // #7445 adds a document-substitute field rule without changing primary aliases.
+      'rust-layout-name': '749f9cefc71c00116a80b475324d8abbf2a0d43ad3709a5a45f813f50a642c1f',
     },
   );
 });
@@ -221,7 +222,7 @@ test('retired rules remain in the registry but never reach runtime projections',
   const paint = bundle.outputs.find(output => output.projectionId === 'canvas2d-paint');
   assert.equal(paint.ruleCount, 280);
   assert.equal(paint.rows.some(row => row.ruleId === retired.ruleId), false);
-  assert.equal(bundle.manifest.summary.activeRuleCount, 840);
+  assert.equal(bundle.manifest.summary.activeRuleCount, 845);
   assert.equal(bundle.manifest.summary.retiredRuleCount, previousRetiredCount + 1);
 });
 
@@ -370,4 +371,18 @@ test('layout-name rule IDs remain joinable by the public font decision trace', (
       `rule.rust-style-resolution.${sha256Text(canonicalJson(identity)).slice(0, 20)}`,
       rule.sourceFace);
   }
+});
+
+
+test('missing-source public fallback is conditional and never an unconditional style alias', () => {
+  const active = readRegistry().rules.filter(rule => rule.status === 'active'
+    && rule.sourceFace === '하이텔울릉도제목체');
+  assert.equal(active.length, 1);
+  const [rule] = active;
+  assert.equal(rule.sourceBoundaryId, 'rust-style-resolution.missing-program');
+  assert.equal(rule.decisionPlane, 'layout-name');
+  assert.equal(rule.targetFaceOrPolicy, 'RHWP Public Batang');
+  assert.deepEqual(rule.conditions, {
+    availability: 'primary-and-document-substitute-missing', languageSlot: 'all',
+  });
 });

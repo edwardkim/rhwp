@@ -1,6 +1,7 @@
 //! 임시 저장 원점이 물리 쪽 경계로 승격되어 본문 꼬리를 이월하지 않도록 한다.
 //! 전쪽 Native/fresh WASM 90% 및 41쪽 양쪽 98% 선행 증거와 독립 PDF의
 //! 좌표는 mydocs/working/task_m100_7642_stage3508.md에 기록한다.
+//! 실제 공급 이름 경로의 재검증은 #7445 stage34에 연결한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -66,12 +67,47 @@ fn collect<'a>(
 
 #[test]
 fn provisional_source_origin_keeps_fitting_tail_on_its_print_page() {
-    for (extension, compat2024) in [("hwp", false), ("hwpx", true)] {
+    for (extension, compat2024, supplied_programs) in [
+        ("hwp", false, false),
+        ("hwpx", true, false),
+        ("hwp", false, true),
+        ("hwpx", true, true),
+    ] {
         let input = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("samples")
             .join(format!("[2027] 온새미로 1 본교재.{extension}"));
         let mut core = DocumentCore::from_bytes(&std::fs::read(input).unwrap()).unwrap();
         core.set_hangul2024_compat(compat2024);
+        if supplied_programs {
+            // Native 호스트가 실제 공급하는 것과 같은 전체 이름/name6 요청을
+            // 결정적인 호출자 snapshot으로 전달한다. 설치 유무에 기대지 않는다.
+            let mut programs = Vec::new();
+            for prefix in ["KoPub", "KoPubWorld"] {
+                for family in ["Batang", "Dotum"] {
+                    for weight in ["Light", "Medium", "Bold"] {
+                        programs.push(serde_json::json!({
+                            "query": format!("{prefix}{family}{weight}"),
+                            "family": format!("{prefix}{family} {weight}"),
+                            "programId": format!("supplied-{prefix}-{family}-{weight}"),
+                            "trueType": true
+                        }));
+                    }
+                }
+            }
+            for family in ["HCR Batang", "Haansoft Batang"] {
+                programs.push(serde_json::json!({
+                    "query": family, "family": family,
+                    "programId": format!("supplied-{family}"), "trueType": true
+                }));
+            }
+            let environment =
+                rhwp::renderer::font_environment::FontEnvironment::from_available_programs(
+                    &core.document().doc_info,
+                    &serde_json::to_string(&programs).unwrap(),
+                )
+                .unwrap();
+            core.set_font_environment(environment).unwrap();
+        }
         let owners: Vec<_> = core
             .document()
             .sections

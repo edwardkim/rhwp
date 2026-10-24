@@ -79,7 +79,29 @@ impl Picture {
     /// HWPX `imgClip`은 디코딩된 비트맵 픽셀과 항상 75 HU/px 관계가 아니며,
     /// 이 경우 `imgDim`이 실제 좌표 범위를 보존한다.
     pub fn crop_reference_size(&self) -> Option<(u32, u32)> {
-        (self.img_dim.0 > 0 && self.img_dim.1 > 0).then_some(self.img_dim)
+        if self.img_dim.0 > 0 && self.img_dim.1 > 0 {
+            return Some(self.img_dim);
+        }
+        // 원본 개체 좌표와 crop이 같은 전체 창이면 별도 imgDim이 없어도
+        // 전체 그림임을 source가 증명한다. 디코딩 픽셀의 두 축에서 배율을
+        // 추정하면 저장 단위의 반올림 차이가 거짓 부분 crop으로 바뀐다.
+        // 실제 부분 선택과 원본 크기를 현재 크기로 보충한 개체는 기존
+        // crop 추론을 유지하며, 명시된 imgDim을 덮어쓰지 않는다.
+        let attr = &self.shape_attr;
+        if attr.original_width_was_zero || attr.original_height_was_zero {
+            return None;
+        }
+        let (width, height) = (attr.original_width, attr.original_height);
+        if width == 0 || height == 0 {
+            return None;
+        }
+        let full = (
+            0,
+            0,
+            i32::try_from(width).ok()?,
+            i32::try_from(height).ok()?,
+        );
+        (self.render_crop_rect()? == full).then_some((width, height))
     }
 }
 

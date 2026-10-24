@@ -2627,7 +2627,7 @@ impl DocumentCore {
             .set_column_widths(&widths)
             .map_err(HwpError::RenderError)?;
         let col_count = table.col_count;
-        let total: u32 = table.get_column_widths().iter().sum();
+        let total = table.common.width;
 
         // 폭이 바뀐 셀의 모든 문단을 재배치(line_segs 재계산)한다.
         let reflow: Vec<(usize, usize)> = {
@@ -2711,7 +2711,7 @@ impl DocumentCore {
 
         let new_total: u32 = {
             let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-            table.get_column_widths().iter().sum()
+            table.common.width
         };
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"colCount\":{},\"tableWidth\":{},\"pageContentWidth\":{},\"changed\":true",
@@ -3242,23 +3242,15 @@ impl DocumentCore {
                     number_type: crate::model::control::AutoNumberType::Table,
                     ..Default::default()
                 };
-                let mut cap_para = crate::model::paragraph::Paragraph::new_empty();
                 // 한컴 표 캡션은 AutoNumber 앞에 "표" 접두어를 함께 표시한다.
-                cap_para.text = "표  ".to_string();
-                cap_para.char_count = 13;
-                cap_para.char_count_msb = true;
-                cap_para.control_mask = 1u32 << 0x12;
-                cap_para.char_offsets = vec![0, 1, 2, 11];
+                let mut cap_para =
+                    crate::model::paragraph::Paragraph::new_auto_number_caption("표 ", an);
                 cap_para.style_id = caption_style_id;
                 cap_para.para_shape_id = caption_para_shape_id;
                 cap_para.char_shapes = vec![crate::model::paragraph::CharShapeRef {
                     start_pos: 0,
                     char_shape_id: caption_char_shape_id,
                 }];
-                cap_para
-                    .controls
-                    .push(crate::model::control::Control::AutoNumber(an));
-                cap_para.ctrl_data_records.push(None);
                 // max_width = 표 전체 폭 (열 폭 합산)
                 let total_width: u32 = table
                     .cells
@@ -3338,7 +3330,7 @@ impl DocumentCore {
         }
 
         // 캡션 생성/수정/삭제 후에는 문서 전체 AutoNumber를 다시 배정한다.
-        // 중간 표 캡션 삭제 시 남은 표 번호가 한컴처럼 1부터 이어지도록 보장한다.
+        // 번호 종류를 가진 표는 캡션을 지워도 개체 순번을 계속 소유한다.
         if caption_created || caption_changed {
             crate::parser::assign_auto_numbers(&mut self.document);
             if let Some(crate::model::control::Control::Table(ref mut tbl)) =
@@ -3372,6 +3364,29 @@ impl DocumentCore {
             }
         }
 
+        if (caption_created || caption_changed)
+            && self
+                .get_table_mut(section_idx, parent_para_idx, control_idx)?
+                .common
+                .treat_as_char
+        {
+            // 캡션 문단만 다시 조판하면 host의 저장 줄은 옛 상자 높이를
+            // 유지한다. 인라인 표의 점유 결과를 본문 줄과 후속 문단도 소비한다.
+            let stored_end = crate::renderer::composer::paragraph_flow_end(
+                &self.document.sections[section_idx].paragraphs[parent_para_idx],
+            );
+            self.reflow_paragraph(section_idx, parent_para_idx);
+            let hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[section_idx].paragraphs,
+                parent_para_idx,
+                None,
+                stored_end,
+                &self.styles,
+                self.dpi,
+                hwp3_layout,
+            );
+        }
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();

@@ -35,6 +35,7 @@ pub(in crate::renderer::typeset) fn inline_text_control(control: &Control) -> bo
 
 pub(in crate::renderer::typeset) struct StoredTacPage {
     pub profile: LayoutCompatibilityProfile,
+    pub rejected_stored_forward_origin: Option<(usize, i32)>,
     pub current_height: f64,
     pub empty_column: bool,
     pub vpos_col_anchor: f64,
@@ -48,6 +49,8 @@ pub(in crate::renderer::typeset) struct StoredTacPage {
     pub stored_table_column_base: Option<i32>,
     /// 원본 단 첫 글줄과 물리 앵커가 함께 인증한 영점 축.
     pub stored_zero_column_origin: bool,
+    /// 첫 원본 TAC의 확정 배치와 저장 줄이 현재 단 원점에서 일치하는가.
+    pub original_object_column_origin: bool,
 }
 
 pub(super) struct StoredTacPlan {
@@ -61,6 +64,88 @@ pub(in crate::renderer::typeset) struct StoredTacControlPlacement {
     pub inline: InlineBoxPlacement,
     pub end: f64,
     pub rebase_line_origin: bool,
+}
+
+/// 어울림 회피 프레임에서 온전히 소유한 단일 원본 표 줄의 점유와 전진량.
+/// 원본 줄 높이가 실제 외곽 상자를 닫는 경우만 수용한다. 앞뒤 글줄,
+/// 캡션·각주 또는 다른 흐름 개체는 각자의 일반 분할 경로를 유지한다.
+#[allow(clippy::too_many_arguments)]
+pub(in crate::renderer::typeset) fn side_wrap_row(
+    para: &Paragraph,
+    control_index: usize,
+    table: &crate::model::table::Table,
+    measured_body_height: f64,
+    fmt: &FormattedParagraph,
+    next_para: Option<&Paragraph>,
+    next_spacing_before: f64,
+    profile: LayoutCompatibilityProfile,
+    owns_exclusion_row: bool,
+    reflowed: bool,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    // 다른 세로 밴드의 그림이 단에 남아 있는 것만으로 이 줄의 원점을
+    // 인증할 수 없다. 실제 carve가 같은 줄의 상자를 배치했을 때만 공유한다.
+    if !owns_exclusion_row
+        || !profile.hwp5_stored_pagination_layout()
+        || profile.session_edited()
+        || reflowed
+        || para.cell_format_vpos_dirty
+        || para.line_segs.len() != 1
+        || fmt.line_count() != 1
+        || table_has_notes(table)
+        || para.controls.iter().enumerate().any(|(index, control)| {
+            if index == control_index {
+                return false;
+            }
+            match control {
+                Control::Picture(picture) => {
+                    picture.common.treat_as_char
+                        || picture.common.vert_rel_to != crate::model::shape::VertRelTo::Paper
+                }
+                Control::SectionDef(_)
+                | Control::ColumnDef(_)
+                | Control::Header(_)
+                | Control::Footer(_)
+                | Control::PageNumberPos(_)
+                | Control::PageHide(_) => false,
+                _ => true,
+            }
+        })
+    {
+        return None;
+    }
+    let line = crate::renderer::composer::stored_first_tac_line(para)?;
+    if crate::renderer::layout::control_line_seg_index(para, control_index) != Some(0)
+        || line.line_spacing < 0
+        || (measured_body_height - hwpunit_to_px(table.common.height as i32, dpi)).abs()
+            > dpi / 7200.0
+    {
+        return None;
+    }
+    let trailing = if crate::renderer::composer::tac_next_line_full_spacing(
+        para,
+        next_para,
+        fmt.spacing_after,
+        next_spacing_before,
+        line,
+        profile,
+        dpi,
+    ) {
+        hwpunit_to_px(line.line_spacing, dpi)
+    } else {
+        crate::renderer::composer::tac_host_trailing_spacing(
+            para,
+            control_index,
+            line,
+            false,
+            true,
+            dpi,
+        )
+    };
+    Some((
+        hwpunit_to_px(line.line_height, dpi),
+        trailing + fmt.spacing_after,
+    ))
 }
 
 /// 같은 문단의 float가 저장 밴드 밖에서 시작해도 TAC 줄은 독립된 흐름을 소유한다.
@@ -213,6 +298,7 @@ pub(super) fn prepare_coanchored_first_line(
             x: 0.0,
             y: origin + hwpunit_to_px(i32::from(table.outer_margin_top), dpi),
             clearance: 0.0,
+            resolved_x: false,
             advance_end: Some(end),
             stored_horizontal_pen: None,
             stored_column_frame: None,
@@ -228,6 +314,7 @@ pub(super) fn prepare_computed(
     para_idx: usize,
     para: &Paragraph,
     next_para: Option<&Paragraph>,
+    next_spacing_before: f64,
     fmt: &FormattedParagraph,
     measured_tables: &[MeasuredTable],
     styles: &crate::renderer::style_resolver::ResolvedStyleSet,
@@ -413,10 +500,28 @@ pub(super) fn prepare_computed(
     } else {
         0.5
     };
-    let end = origin
-        + height
-        + hwpunit_to_px(seg.line_spacing, dpi) * trailing_fraction
-        + fmt.spacing_after;
+    // 현재 줄의 옛 누적 vpos와 다음 원본 줄의 새 로컬 축을 구분한다.
+    // 실제 표 상자도 같은 줄 높이를 소비했을 때만 닫힌 전진 끝을 수용한다.
+    // 이 계획의 end를 fit/축 연결과 paint가 그대로 공유한다.
+    let local_successor_end = crate::renderer::composer::current_tac_local_successor_advance_hu(
+        para,
+        next_para,
+        fmt.spacing_after,
+        next_spacing_before,
+        seg,
+        page.profile,
+        dpi,
+    )
+    .filter(|_| (height - line_height).abs() <= hwpunit_to_px(1, dpi));
+    let end = local_successor_end.map_or_else(
+        || {
+            origin
+                + height
+                + hwpunit_to_px(seg.line_spacing, dpi) * trailing_fraction
+                + fmt.spacing_after
+        },
+        |advance| origin + hwpunit_to_px(advance, dpi),
+    );
     if end > available_height() {
         return None;
     }
@@ -426,6 +531,7 @@ pub(super) fn prepare_computed(
             x: 0.0,
             y: origin,
             clearance: 0.0,
+            resolved_x: false,
             advance_end: Some(end),
             stored_horizontal_pen: None,
             stored_column_frame: None,
@@ -466,6 +572,20 @@ pub(super) fn prepare(
     available_height: impl Fn() -> f64,
     dpi: f64,
 ) -> Option<StoredTacPlan> {
+    // 커서가 이미 거절한 source 원점을 첫 저장 줄/개체의 영점 인증으로
+    // 다시 수용하지 않는다. 일반 TAC 흐름도 같은 수용 원점에서 fit/paint한다.
+    if page
+        .rejected_stored_forward_origin
+        .is_some_and(|(owner, source)| {
+            owner == para_idx
+                && para
+                    .line_segs
+                    .first()
+                    .is_some_and(|line| line.vertical_pos == source)
+        })
+    {
+        return None;
+    }
     // 완전한 저장 줄 계약은 표별 높이를 합산하지 않고, 같은 pen/end를 배치에도 전달한다.
     if !page.profile.session_edited()
         && (page.profile.hwp5_container()
@@ -675,7 +795,17 @@ pub(super) fn prepare(
                 let unreserved_origin =
                     page.current_height + fmt.spacing_before - shared_spacing_before;
                 let same_frame = (saved_origin - page.current_height).abs() <= dpi / 7200.0
-                    || (saved_origin - unreserved_origin).abs() <= dpi / 7200.0;
+                    || (saved_origin - unreserved_origin).abs() <= dpi / 7200.0
+                    || (page.original_object_column_origin
+                        && para.source_line_seg_vertical_pos.is_none())
+                    // 단의 첫 원본 글줄이 영점을 이미 인증했고 활성 축도 그대로면,
+                    // 독립 저장 개체의 원점은 앞 텍스트의 실측 높이와 별개다.
+                    // 작은 줄 높이 증가를 전체 개체 축의 이동으로 전파하지 않는다.
+                    // 전역 텍스트 축이 아직 없더라도 이 독립 영점 인증은 유효하다.
+                    // 이미 다른 축이 확립된 경우는 원본 영점으로 덮어쓰지 않는다.
+                    || (page.stored_zero_column_origin
+                        && page.vpos_page_base.or(page.vpos_lazy_base).is_none_or(|base| base == 0)
+                        && para.source_line_seg_vertical_pos.is_none());
                 // 앞 저장 글줄의 후행 간격은 표의 진입 밴드다. 수용 커서가
                 // 그 글줄의 내용 끝에 있으면 같은 좌표축에서 표 원점까지 연결한다.
                 let inherited_origin = previous_para.and_then(|previous| {
@@ -840,6 +970,7 @@ impl StoredTacPlan {
                 x: 0.0,
                 y: self.origin + hwpunit_to_px(line.top, dpi),
                 clearance: 0.0,
+                resolved_x: false,
                 advance_end: Some(end),
                 stored_horizontal_pen: None,
                 stored_column_frame: self.source_frame,

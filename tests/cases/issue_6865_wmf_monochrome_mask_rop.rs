@@ -1,9 +1,13 @@
 //! [#6865] `PATINVERT → DPa → PATINVERT`의 마스크는 바탕과 브러시 색을 선택한다.
 //!
-//! **증상.** 156627451 3쪽 WMF 도해의 옅은 회색 패널이 흑백 체커보드(50% 회색)로 칠해져
-//! 그 위 글자가 배경에 묻힌다. 7쪽 배너는 그러데이션 자리에 디더 띠 220개가 깔린다.
+//! `PATINVERT → DPa → PATINVERT`의 비트 연산은 `(D XOR G) AND M XOR G`다.
+//! M이 검정이면 G, 흰색이면 원래 D가 남는다. 흑백 패턴은 직접 덮어 칠하지 않고
+//! 반전한 휘도 mask에서만 소비하며, 실제 브러시 paint는 그 mask를 한 번 참조한다.
 //!
-//! **레코드 실측** — `BinData/image4.wmf`:
+//! 과거 PATCOPY 근사에서는 mask를 없앴지만, 원본 mask 선택을 보존하는 SVG가
+//! 패턴 정의를 가지는 것은 정상이다. 정의의 문자열 부재로 보이는 칠을 판정하지 않는다.
+//! 합성 레코드의 자원 소유·참조·반전 계약과 실제 WMF curve 바이트의 기존 검사를 유지한다.
+//! HWP 전체 페이지·글꼴·그림 위치의 한컴 피델리티를 이 단위 계약으로 대신하지 않는다.
 //!
 //! ```text
 //!   36 CreateBrushIndirect   style=SOLID color=#D9D9D9
@@ -472,6 +476,15 @@ fn issue_6865_reversed_palette_reverses_brush_and_destination_selection() {
 /// 합성 WMF에 기록한 실제 연산 영역과 DIB 비트로 기대 색을 계산한다.
 /// 실물 문서의 화면 좌표 핀이 아니라 GDI 비트 연산의 독립 계약이다.
 fn assert_xor_pattern_pixels(svg: &str, middle: [i32; 4], reversed: bool) {
+    assert_xor_pattern_pixels_with_source_row(svg, middle, reversed, false);
+}
+
+fn assert_xor_pattern_pixels_with_source_row(
+    svg: &str,
+    middle: [i32; 4],
+    reversed: bool,
+    zero_bottom_row: bool,
+) {
     use resvg::tiny_skia::{Color, Pixmap, Transform};
     let tree = resvg::usvg::Tree::from_str(svg, &resvg::usvg::Options::default())
         .expect("WMF 변환 SVG 해석");
@@ -489,7 +502,11 @@ fn assert_xor_pattern_pixels(svg: &str, middle: [i32; 4], reversed: bool) {
             let masked = (left..left + width).contains(&x) && (top..top + height).contains(&y);
             // DIB는 bottom-up이다. 첫 저장 행은 0x55, 맨 위 행은 0xAA이므로
             // 기본 팔레트에서 x+y가 짝수인 비트가 흰색이다.
-            let mask = if ((x + y) % 2 == 0) ^ reversed {
+            // The non-checker control changes DIB bottom row zero to all black.
+            // DIB is bottom-up, so its device-space row is y mod 8 == 7.
+            let mask = if zero_bottom_row && y % 8 == 7 {
+                0
+            } else if ((x + y) % 2 == 0) ^ reversed {
                 255
             } else {
                 0
@@ -518,6 +535,179 @@ fn assert_xor_pattern_pixels(svg: &str, middle: [i32; 4], reversed: bool) {
                      reversed={reversed}, actual={actual:?}, expected={expected}"
                 );
             }
+        }
+    }
+}
+
+/// 마스크 밖은 두 XOR이 상쇄된다. 안쪽 흑백 무늬가 checker일 필요는 없다.
+#[test]
+fn contained_non_checker_mask_keeps_the_original_brush_as_its_only_paint() {
+    let mut pattern = dib_pattern_brush(1);
+    pattern[6 + 2 + 2 + 40 + 8] = 0;
+    // 완전 안쪽·한쪽 경계 공유·8단위보다 작은 마스크에도 같은 비트 항등식이다.
+    for rect in [[14, 15, 30, 20], [11, 10, 49, 50], [31, 25, 2, 3]] {
+        let [x, y, width, height] = rect;
+        let middle = blit_rect(DPA, x, y, width, height);
+        let svg = finish_sequence(
+            mask_prefix(pattern.clone(), middle),
+            &[select_object(0), brush_blit(PATINVERT)],
+        );
+        assert_xor_pattern_pixels_with_source_row(&svg, rect.map(i32::from), false, true);
+    }
+}
+
+/// 사용자 제공 한컴2024 Print64쪽과 Windows GDI+에서 확인한 분홍색 패널이다.
+/// 좌표를 고정하지 않고 실물 WMF의 브러시와 역흑백 mask 소유를 검사한다.
+#[test]
+fn sample16_pink_panels_preserve_their_original_brush_and_contained_mask() {
+    let input = std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-sample16-hwp5.hwp"),
+    )
+    .expect("원본 HWP");
+    let document = rhwp::parser::parse_hwp(&input).expect("원본 파싱");
+    let image = document
+        .bin_data_content
+        .iter()
+        .find(|data| data.id == 3 && data.extension.eq_ignore_ascii_case("wmf"))
+        .expect("원본 서버 도해 BIN0003.WMF");
+    let svg = to_svg(&image.data.load());
+    let xml = roxmltree::Document::parse(&svg).expect("변환 SVG");
+    let paints: Vec<_> = xml
+        .descendants()
+        .filter(|node| {
+            node.attribute("fill") == Some("#FFCCFF")
+                && !node.ancestors().any(|owner| owner.has_tag_name("defs"))
+        })
+        .collect();
+    assert!(!paints.is_empty(), "독립 출력의 원본 분홍색 paint 보존");
+    for paint in paints {
+        // A contained ROP may apply the mask once to a viewport that owns both
+        // the black backing and the original brush. SVG masks are inherited
+        // through that ancestor's compositing, not copied onto every paint.
+        let reference = paint
+            .ancestors()
+            .find_map(|owner| owner.attribute("mask"))
+            .expect("분홍색 paint의 실제 합성 소유자가 역마스크를 적용한다");
+        let id = reference
+            .strip_prefix("url(#")
+            .and_then(|value| value.strip_suffix(')'))
+            .expect("소유 mask 참조");
+        let mask = xml
+            .descendants()
+            .find(|node| node.attribute("id") == Some(id))
+            .expect("같은 SVG의 mask");
+        assert!(mask.has_tag_name("mask"));
+        assert_eq!(mask.attribute("mask-type"), Some("luminance"));
+        assert!(
+            mask.descendants()
+                .any(|node| node.attribute("filter").is_some()),
+            "검정 비트가 원본 브러시를 선택하도록 역마스크 보존"
+        );
+    }
+}
+
+/// 원본 1비트의 선택을 끝낸 뒤 장치 표본으로 축소해야 한다.
+/// 문서의 좌표 답안이 아니라 흑/백이 같은 수인 마스크의 면적 법칙이다.
+#[test]
+fn print_device_mask_reduction_preserves_source_bit_coverage() {
+    use rhwp::paint::{
+        LayerBuilder, LayerNode, LayerNodeKind, PaintOp, RenderProfile, ResolvedImageKind,
+    };
+    use rhwp::renderer::render_tree::{
+        BoundingBox, ImageNode, PageRenderTree, RenderNode, RenderNodeType,
+    };
+
+    fn payload(node: &LayerNode) -> &rhwp::paint::ResolvedImagePayload {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                assert_eq!(children.len(), 1, "원본 그림의 단일 소유");
+                payload(&children[0])
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                payload(child)
+            }
+            LayerNodeKind::Leaf { ops } => {
+                assert_eq!(ops.len(), 1, "그림의 누락·중복 방지");
+                let PaintOp::Image {
+                    resolved: Some(resolved),
+                    ..
+                } = &ops[0]
+                else {
+                    panic!("공통 Print 장치 그림을 실제로 소비해야 한다")
+                };
+                assert_eq!(resolved.kind, ResolvedImageKind::OutputDevice);
+                assert_eq!(resolved.mime, "image/png");
+                resolved
+            }
+        }
+    }
+
+    for pattern_bits in [1, 24] {
+        let source = idiom(pattern_bits);
+        for size in [16.0, 20.0, 32.0, 100.0, 200.0] {
+            let frame = BoundingBox::new(0.0, 0.0, size, size);
+            let mut tree = PageRenderTree::new(0, size, size);
+            tree.root.children.push(RenderNode::new(
+                1,
+                RenderNodeType::Image(ImageNode::new(1, Some(source.clone()))),
+                frame,
+            ));
+            let original = serde_json::to_value(&tree.root).unwrap();
+            let mut builder = LayerBuilder::new(RenderProfile::Print)
+                .with_hancom2024_print_bitmap(true)
+                .with_metafile_device_pixel_width(Some(1.0));
+            let layer = builder.build(&tree);
+            let bytes = &payload(&layer.root).data;
+            let image = image::load_from_memory(bytes).unwrap().to_rgba8();
+            assert_eq!(image.dimensions(), (size as u32, size as u32));
+            let mut alpha = 0u64;
+            let mut count = 0u64;
+            for (x, y, pixel) in image.enumerate_pixels() {
+                // 10..60 원본 ROP 영역의 안쪽만 적분해 바깥 경계의 표본 오차와 구별한다.
+                let source_x = (f64::from(x) + 0.5) * 100.0 / size;
+                let source_y = (f64::from(y) + 0.5) * 100.0 / size;
+                if !(20.0..50.0).contains(&source_x) || !(20.0..50.0).contains(&source_y) {
+                    continue;
+                }
+                alpha += u64::from(pixel[3]);
+                count += 1;
+                if pattern_bits == 1 && pixel[3] > 64 {
+                    assert!(
+                        pixel.0[..3].iter().all(|v| {
+                            // PNG의 비곱셈 색을 원래 8비트 premultiplied 단위로 되돌린다.
+                            // 두 번의 정수 변환에서 생길 수 있는 한 단계만 허용한다.
+                            let premultiplied = |channel: u8| {
+                                (u16::from(channel) * u16::from(pixel[3]) + 127) / 255
+                            };
+                            premultiplied(*v).abs_diff(premultiplied(217)) <= 1
+                        }),
+                        "마스크 선택은 원래 브러시 색을 바꾸지 않는다: {pixel:?}"
+                    );
+                }
+            }
+            assert!(count > 0);
+            let coverage = alpha as f64 / (255.0 * count as f64);
+            if pattern_bits == 1 {
+                assert!(
+                    (coverage - 0.5).abs() < 0.08,
+                    "흑백 원본 비트의 50% 피복률 보존: size={size}, coverage={coverage}"
+                );
+            } else {
+                assert!(
+                    (coverage - 1.0).abs() < 0.01,
+                    "다색 패턴은 흑백 마스크로 처리하지 않는다: {coverage}"
+                );
+            }
+            assert_eq!(
+                serde_json::to_value(&tree.root).unwrap(),
+                original,
+                "장치 표본 생산은 원본·배치를 바꾸지 않는다"
+            );
+            assert_eq!(
+                payload(&builder.build(&tree).root).data,
+                *bytes,
+                "반복 조회도 같은 장치 바이트를 전달한다"
+            );
         }
     }
 }

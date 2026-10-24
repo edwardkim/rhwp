@@ -607,11 +607,39 @@ impl TypesetEngine {
                 };
                 let last_range = rows.candidate(row_count - 1);
                 let last = rows.candidate(last_range.b_start);
-                let terminal_start = if last.protected || last.rowbreak_rowspan_block {
-                    last.b_start
-                } else {
-                    row_count - 1
-                };
+                // 아직 소비하지 않은 마지막 병합 블록과 종료 예산이 새 쪽에
+                // 함께 들어가면 한 행만 이월해 소유를 갈라 놓지 않는다.
+                // 새 쪽보다 큰 블록이나 이미 시작한 블록의 내부 컷은 유지한다.
+                let (terminal_note_content, terminal_note_count) = input
+                    .prepared
+                    .table_footnotes
+                    .iter()
+                    .filter(|note| note.row >= last.b_start)
+                    .fold((0.0, 0usize), |(height, count), note| {
+                        (height + note.content_height, count + 1)
+                    });
+                let terminal_note_reservation = st
+                    .projected_fresh_footnote_height(terminal_note_content, terminal_note_count)
+                    + if terminal_note_count > 0 {
+                        st.footnote_safety_margin
+                    } else {
+                        0.0
+                    };
+                let terminal_block_fits = last.block_size > 1
+                    && last.b_start >= cursor_row
+                    && rows.required_height(&last, &[])
+                        + header_overhead
+                        + closing_overhead
+                        + budget.caption_extra
+                        + budget.host_before_overhead
+                        + terminal_note_reservation
+                        <= st.base_available_height();
+                let terminal_start =
+                    if last.protected || last.rowbreak_rowspan_block || terminal_block_fits {
+                        last.b_start
+                    } else {
+                        row_count - 1
+                    };
                 if terminal_start <= cursor_row
                     && st.current_height > 0.0
                     && !st.current_items.is_empty()
@@ -789,6 +817,41 @@ impl TypesetEngine {
                     .min(avail_for_rows)
                     - before_last,
             );
+            // 두 저장 프레임과 후속 원점이 닫은 상자는 쪽의 남는 공간이 아니다.
+            // 이미 늘어난 임시 예약 대신 실제 소유 컷의 내용 하한과 비교한다.
+            let source_opening = (!is_continuation
+                && cursor_row == 0
+                && start_cut.is_empty()
+                && end_row == 1
+                && input.prepared.table_footnotes.is_empty()
+                && std::ptr::eq(table, row_geometry_table))
+            .then(|| {
+                input
+                    .source
+                    .paragraphs_all
+                    .get(para_idx + 1)
+                    .and_then(|next| {
+                        layout_engine.stored_single_cell_two_frame_opening(
+                            input.source.paragraph,
+                            next,
+                            table,
+                            &split_end_cut,
+                            styles,
+                        )
+                    })
+            })
+            .flatten()
+            .filter(|height| {
+                *height
+                    >= layout_engine.row_cut_content_height(
+                        row_geometry_table,
+                        row,
+                        row_start,
+                        &split_end_cut,
+                        styles,
+                    )
+                    && *height <= available
+            });
             // 인라인 프레임의 반복 제목행 계약은 유지한다. 일반 칸의 원본
             // 최소는 제목행 유무와 무관하며, helper가 저장 컷의 유효성을 확인한다.
             let inline_frame = self
@@ -816,7 +879,7 @@ impl TypesetEngine {
                 })
                 .flatten()
                 .filter(|height| *height >= selected);
-            if let Some(height) = inline_frame.or_else(|| {
+            if let Some(height) = source_opening.or(inline_frame).or_else(|| {
                 layout_engine.stored_ordinary_row_end_frame(
                     row_geometry_table,
                     row,
@@ -893,6 +956,30 @@ impl TypesetEngine {
                 consumed += physical - selected;
                 end_row_height_override = Some(physical);
                 split_end_reserved = physical;
+            }
+        }
+
+        // 내용을 완료한 행도 최종 수용한 원본 상자에 물리 잔여가 있을 수 있다.
+        // 유닛과 수용 상자를 여기서 함께 확정해 emit이 빈 컷을 다음 행으로
+        // 해석하면서 독립 최소를 버리지 않게 한다. 블록의 셀 순서 컷과
+        // 기존 부분 내용 컷은 각 원장의 소유를 유지한다.
+        if split_block_start.is_none()
+            && split_end_cut.is_empty()
+            && split_end_limit <= 0.0
+            && end_row > cursor_row
+            && end_row < row_count
+        {
+            if let Some(height) = end_row_height_override {
+                if let Some(cut) = layout_engine.stored_complete_row_physical_tail_cut(
+                    row_geometry_table,
+                    end_row - 1,
+                    height,
+                    styles,
+                ) {
+                    split_end_cut = cut;
+                    split_end_limit = height;
+                    split_end_reserved = height;
+                }
             }
         }
 

@@ -32,6 +32,7 @@ export const hwpdocument_attachCaptionAt: (a: number, b: number, c: number) => [
 export const hwpdocument_beginBatch: (a: number) => [number, number, number, number];
 export const hwpdocument_beginDeferredPagination: (a: number, b: number) => [number, number, number, number];
 export const hwpdocument_breakAtCursor: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
+export const hwpdocument_buildFontEnvironmentFromAvailablePrograms: (a: number, b: number, c: number) => [number, number, number, number];
 export const hwpdocument_cancelDeferredPagination: (a: number) => number;
 export const hwpdocument_canvasMetricsActive: (a: number) => number;
 export const hwpdocument_captureDeleteRange: (a: number, b: number, c: number, d: number) => [number, number, number];
@@ -170,6 +171,7 @@ export const hwpdocument_getCursorRectInFootnote: (a: number, b: number, c: numb
 export const hwpdocument_getCursorRectInHeaderFooter: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
 export const hwpdocument_getCursorRectInNote: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
 export const hwpdocument_getCursorRectOnLine: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
+export const hwpdocument_getDocumentFontSelectionPlan: (a: number) => [number, number];
 export const hwpdocument_getDocumentInfo: (a: number) => [number, number];
 export const hwpdocument_getDpi: (a: number) => number;
 export const hwpdocument_getEndnoteShape: (a: number, b: number) => [number, number, number, number];
@@ -511,6 +513,7 @@ export const hwpviewer_renderPageSvgWithProfile: (a: number, b: number, c: numbe
 export const hwpviewer_setZoom: (a: number, b: number) => void;
 export const hwpviewer_updateViewport: (a: number, b: number, c: number, d: number, e: number) => void;
 export const hwpviewer_visiblePages: (a: number) => [number, number];
+export const prepareBitmapRaster: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => any;
 export const version: () => [number, number];
 export const init_panic_hook: () => void;
 export const hwpviewer_pageCount: (a: number) => number;

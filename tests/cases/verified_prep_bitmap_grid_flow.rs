@@ -7,21 +7,21 @@ use std::collections::BTreeMap;
 fn compact(text: &str) -> String {
     text.chars().filter(|c| !c.is_whitespace()).collect()
 }
-fn figures<'a>(node: &'a LayerNode, out: &mut Vec<(BoundingBox, &'a ImageNode)>) {
+fn figures<'a>(node: &'a LayerNode, bin_data_id: u16, out: &mut Vec<(BoundingBox, &'a ImageNode)>) {
     match &node.kind {
         LayerNodeKind::Group { children, .. } => {
             for child in children {
-                figures(child, out);
+                figures(child, bin_data_id, out);
             }
         }
         LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
-            figures(child, out)
+            figures(child, bin_data_id, out)
         }
         LayerNodeKind::Leaf { ops } => {
             for op in ops {
                 if let PaintOp::Image { bbox, image, .. } = op {
-                    // 원본 BinData 4는 독립 Print의 [그림 2]이며 위치로 선택하지 않는다.
-                    if image.bin_data_id == 4 {
+                    // 원문 BinData로 선택하며 출력 좌표로 대상을 고르지 않는다.
+                    if image.bin_data_id == bin_data_id {
                         out.push((
                             image
                                 .transform
@@ -103,7 +103,7 @@ fn prep_bitmap_grid_keeps_owned_page_caption_and_following_body() {
             .build_page_layer_tree_with_profile(page, RenderProfile::Print)
             .unwrap();
         let mut images = Vec::new();
-        figures(&tree.root, &mut images);
+        figures(&tree.root, 4, &mut images);
         for (bbox, image) in images {
             assert!(
                 image.para_index.is_some() && image.control_index.is_some(),
@@ -115,6 +115,19 @@ fn prep_bitmap_grid_keeps_owned_page_caption_and_following_body() {
     assert_eq!(found.len(), 1, "차트의 누락·중복 방지");
     let (page, bounds) = found[0];
     assert_eq!(page, 14, "독립 Print의 물리 15쪽");
+    // 전140쪽 양쪽90% 이상·15쪽 양쪽98% 이상과 직접 판독 뒤 추가한
+    // 독립 Print의 image Do 프레임이다. 캡션/후속 본문 관계와 잉크 검사도 유지한다.
+    for (actual, expected) in [
+        (bounds.x, 144.7226666667),
+        (bounds.y, 98.132),
+        (bounds.width, 503.7293333333),
+        (bounds.height, 285.448),
+    ] {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "독립 Print 그림2 프레임에서2CSSpx 초과: {actual} vs {expected}"
+        );
+    }
     let tree = core.build_page_render_tree(page).unwrap();
     let mut paras = BTreeMap::new();
     paragraphs(&tree.root, &mut paras);
@@ -146,5 +159,104 @@ fn prep_bitmap_grid_keeps_owned_page_caption_and_following_body() {
             .unwrap();
         let output = image::load_from_memory(&bytes).unwrap().to_rgba8();
         assert_print_grid_bands(&output, bounds);
+    }
+}
+
+// 전140쪽 Native/fresh WASM 모두90% 이상, 72쪽은 두 경로 모두98% 이상인
+// source에만 추가한다. 독립 Print96dpi의 image Do 행렬과24개 긴 괘선에서
+// 얻은 위치다. stage23 qualification/TSV/review 증거를 함께 보존한다.
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[test]
+fn prep_large_table_preserves_source_owner_print_frame_and_each_vertical_grid_line() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue2006/1790387_prep_final_report.hwpx");
+    let mut core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+    core.set_hangul2024_compat(true);
+    assert_eq!(core.page_count(), 140);
+    fn count(node: &RenderNode) -> usize {
+        let own = if let RenderNodeType::Image(image) = &node.node_type {
+            if image.bin_data_id == 20 {
+                assert_eq!(image.section_index, Some(2));
+                assert_eq!(image.para_index, Some(48));
+                assert_eq!(image.control_index, Some(0));
+                1
+            } else {
+                0
+            }
+        } else {
+            0
+        };
+        own + node.children.iter().map(count).sum::<usize>()
+    }
+    let mut pages = Vec::new();
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).unwrap();
+        pages.extend(std::iter::repeat_n(page, count(&tree.root)));
+    }
+    assert_eq!(
+        pages,
+        [71],
+        "원문 표 그림은 독립 Print72쪽에 한 번만 속한다"
+    );
+    let tree = core
+        .build_page_layer_tree_with_profile(71, RenderProfile::Print)
+        .unwrap();
+    let mut selected = Vec::new();
+    figures(&tree.root, 20, &mut selected);
+    assert_eq!(selected.len(), 1);
+    let (bounds, image) = selected[0];
+    assert_eq!(
+        (image.section_index, image.para_index, image.control_index),
+        (Some(2), Some(48), Some(0))
+    );
+    for (actual, expected) in [
+        (bounds.x, 88.752),
+        (bounds.y, 94.2973333333),
+        (bounds.width, 648.7706666667),
+        (bounds.height, 914.9986666667),
+    ] {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "독립 Print의 그림 프레임에서2CSSpx 초과: {actual} vs {expected}"
+        );
+    }
+    let bytes = core
+        .render_page_png_native_with_profile_and_export_options(
+            71,
+            RenderProfile::Print,
+            &rhwp::document_core::queries::rendering::PngExportOptions {
+                dpi: Some(96.),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    let output = image::load_from_memory(&bytes).unwrap().to_rgba8();
+    // 96dpi 독립 PDF에서 gray<=180이 세로 영역의90% 이상 이어지는24개 선.
+    // 인접 두 pixel인 선은 중심을 쓴다. 각 선의±2CSSpx 안에서 실제 잉크를
+    // 검사해 missing stroke를 전체 페이지의 높은 평균으로 숨기지 않는다.
+    let reference_x: [f64; 24] = [
+        114.5, 158., 182., 206., 230., 254., 278., 302., 326., 350., 374., 398., 422., 446., 470.,
+        494., 518., 542., 566., 590., 614., 637.5, 673., 707.,
+    ];
+    let (top, bottom) = (95, 1009);
+    assert!(bottom <= output.height());
+    for x in reference_x {
+        assert!(bounds.x <= x && x <= bounds.x + bounds.width);
+        let left = (x - 2.).ceil() as u32;
+        let right = (x + 2.).floor() as u32;
+        assert!(right < output.width());
+        let ink_rows = (top..bottom)
+            .filter(|&y| {
+                (left..=right).any(|pixel_x| {
+                    let p = output.get_pixel(pixel_x, y);
+                    p[0].max(p[1]).max(p[2]) <= 180
+                })
+            })
+            .count();
+        assert!(
+            ink_rows * 10 >= (bottom - top) as usize * 9,
+            "독립 Print 괘선 x={x}±2CSSpx의 연속 잉크가 부족하다: {ink_rows}/{}",
+            bottom - top
+        );
     }
 }

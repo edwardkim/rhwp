@@ -38,6 +38,10 @@ pub struct JpxImage {
     /// `width * height * num_components` bytes, component-interleaved (row-major).
     pub samples: Vec<u8>,
     pub num_components: u8,
+    /// Colour channels from JP2 metadata, excluding an encoded opacity channel.
+    pub colour_components: u8,
+    /// Uniform source depth, or None for mixed component precisions.
+    pub source_bit_depth: Option<u8>,
     /// Dimensions of the samples actually decoded. When `decode_jpx_at` was
     /// given a target resolution these may be smaller than the `/Width` and
     /// `/Height` of the image dictionary, so callers must take the geometry
@@ -53,7 +57,7 @@ pub struct JpxImage {
 /// Components are assumed to share the image dimensions (no chroma subsampling) —
 /// the common case for PDF image XObjects; a subsampled component is rejected with a
 /// typed error rather than producing misaligned output.
-#[cfg(feature = "jpeg2000")]
+#[cfg(all(feature = "jpeg2000", test))]
 /// Decode a JP2/J2K codestream, optionally at no more than `target` resolution.
 ///
 /// JPEG 2000 is inherently multi-resolution: the codestream stores successive
@@ -72,7 +76,7 @@ pub struct JpxImage {
 /// still covers it, so the result is never smaller than requested and may be
 /// larger.
 pub fn decode_jpx_at(bytes: &[u8], target: Option<(u32, u32)>) -> Result<JpxImage> {
-    decode_jpx_with(bytes, target, true)
+    decode_jpx_with(bytes, target, true, None)
 }
 
 /// Decode a JP2/J2K codestream to its palette *indices*, one byte per pixel.
@@ -92,9 +96,19 @@ pub fn decode_jpx_at(bytes: &[u8], target: Option<(u32, u32)>) -> Result<JpxImag
 /// are refused: an `/Indexed` table is indexed by 0..`hival` and "`hival`
 /// shall be no greater than 255" (§8.6.6.3, pdf.md:10992), so a component
 /// deeper than 8 bits cannot be one.
-#[cfg(feature = "jpeg2000")]
+#[cfg(all(feature = "jpeg2000", test))]
 pub fn decode_jpx_indices_at(bytes: &[u8], target: Option<(u32, u32)>) -> Result<JpxImage> {
-    decode_jpx_with(bytes, target, false)
+    decode_jpx_with(bytes, target, false, None)
+}
+
+#[cfg(feature = "jpeg2000")]
+pub(crate) fn decode_jpx_for_pdf(
+    bytes: &[u8],
+    target: Option<(u32, u32)>,
+    palette: bool,
+    expected: Option<(u32, u32)>,
+) -> Result<JpxImage> {
+    decode_jpx_with(bytes, target, palette, expected)
 }
 
 #[cfg(feature = "jpeg2000")]
@@ -102,22 +116,34 @@ fn decode_jpx_with(
     bytes: &[u8],
     target: Option<(u32, u32)>,
     resolve_palette_indices: bool,
+    expected: Option<(u32, u32)>,
 ) -> Result<JpxImage> {
     use hayro_jpeg2000::{DecodeSettings, DecoderContext, Image};
 
     let settings = DecodeSettings {
         target_resolution: target,
         resolve_palette_indices,
-        ..DecodeSettings::default()
+        strict: expected.is_some(),
     };
 
     let image = Image::new(bytes, &settings).map_err(|e| {
         Error::UnsupportedFilter(format!("JPXDecode: JPEG 2000 decode failed: {e:?}"))
     })?;
 
+    if image.num_components() > 5 {
+        return Err(Error::Unsupported("JPX encoded component count exceeds PDF support".into()));
+    }
+    let colour_components = image.color_space().num_channels();
     let width = image.width();
     let height = image.height();
-    let npix = width as usize * height as usize;
+    if expected.is_some_and(|dims| dims != (width, height)) {
+        return Err(Error::Image("JPX dimensions differ from PDF image".into()));
+    }
+    let npix = rhwp_codec_resource::product(&[width as usize, height as usize])
+        .map_err(|_| Error::Image("JPX dimensions overflow".into()))?;
+    if expected.is_some() && npix > 16_000_000 {
+        return Err(Error::Image("JPX image exceeds pixel limit".into()));
+    }
 
     let mut ctx = DecoderContext::default();
     let decoded = image.decode(&mut ctx).map_err(|e| {
@@ -130,12 +156,24 @@ fn decode_jpx_with(
             "JPXDecode: JPEG 2000 image has no components".to_string(),
         ));
     }
+    let source_bit_depth = comps
+        .iter()
+        .all(|c| c.bit_depth() == comps[0].bit_depth())
+        .then(|| comps[0].bit_depth());
     let num_components = comps.len();
+    if num_components > 5 {
+        return Err(Error::Unsupported(
+            "JPX PDF component count exceeds supported colour+alpha".into(),
+        ));
+    }
 
     // Palette indices are wanted as they are: the decoder's own interleave
     // would rescale a 4-bit index to the 8-bit range (0..15 → 0..255), and a
     // lookup table cannot be read with that.
     if !resolve_palette_indices {
+        if comps.len() != 1 {
+            return Err(Error::Image("JPX Indexed requires exactly one component".into()));
+        }
         let comp = &comps[0];
         if comp.bit_depth() > 8 {
             return Err(Error::UnsupportedFilter(format!(
@@ -150,13 +188,14 @@ fn decode_jpx_with(
                 s.len()
             )));
         }
-        let samples = s
-            .iter()
-            .map(|&v| v.round().clamp(0.0, 255.0) as u8)
-            .collect();
+        let samples =
+            rhwp_codec_resource::collect(s.iter().map(|&v| v.round().clamp(0.0, 255.0) as u8))
+                .map_err(|_| Error::Image("JPX index allocation".into()))?;
         return Ok(JpxImage {
             samples,
             num_components: 1,
+            colour_components: 1,
+            source_bit_depth,
             width,
             height,
         });
@@ -166,8 +205,12 @@ fn decode_jpx_with(
     // decoder's own interleave.
     if comps.iter().all(|c| c.samples().len() == npix) {
         return Ok(JpxImage {
-            samples: decoded.data_u8(),
+            samples: decoded
+                .try_data_u8()
+                .map_err(|e| Error::Image(format!("JPX samples: {e}")))?,
             num_components: num_components as u8,
+            colour_components,
+            source_bit_depth,
             width,
             height,
         });
@@ -181,7 +224,8 @@ fn decode_jpx_with(
     // are then interleaved manually since `data_u8` assumes equal plane sizes.
     let (w, h) = (width as usize, height as usize);
     let (sw, sh) = (width.div_ceil(2) as usize, height.div_ceil(2) as usize);
-    let mut planes: Vec<Vec<u8>> = Vec::with_capacity(num_components);
+    let mut planes: Vec<Vec<u8>> = rhwp_codec_resource::capacity(num_components)
+        .map_err(|_| Error::Image("JPX planes allocation".into()))?;
     for (ci, comp) in comps.iter().enumerate() {
         if comp.bit_depth() != 8 {
             return Err(Error::UnsupportedFilter(format!(
@@ -191,11 +235,10 @@ fn decode_jpx_with(
         }
         let s = comp.samples();
         let plane = if s.len() == npix {
-            s.iter()
-                .map(|&v| v.round().clamp(0.0, 255.0) as u8)
-                .collect()
+            rhwp_codec_resource::collect(s.iter().map(|&v| v.round().clamp(0.0, 255.0) as u8))
+                .map_err(|_| Error::Image("JPX plane allocation".into()))?
         } else if s.len() == sw * sh {
-            upsample_nearest_u8(s, sw, sh, w, h)
+            upsample_nearest_u8(s, sw, sh, w, h)?
         } else {
             return Err(Error::UnsupportedFilter(format!(
                 "JPXDecode: subsampled component {ci} ({} samples) — only 2×2 (4:2:0) \
@@ -206,7 +249,10 @@ fn decode_jpx_with(
         planes.push(plane);
     }
 
-    let mut samples = vec![0u8; npix * num_components];
+    let count = rhwp_codec_resource::product(&[npix, num_components])
+        .map_err(|_| Error::Image("JPX sample size".into()))?;
+    let mut samples = rhwp_codec_resource::filled(0u8, count)
+        .map_err(|_| Error::Image("JPX samples allocation".into()))?;
     for (ci, plane) in planes.iter().enumerate() {
         for (i, &px) in plane.iter().enumerate() {
             samples[i * num_components + ci] = px;
@@ -217,13 +263,18 @@ fn decode_jpx_with(
         width,
         height,
         num_components: num_components as u8,
+        colour_components,
+        source_bit_depth,
     })
 }
 
 /// Nearest-neighbour upsample of an `sw×sh` f32 sample plane to `fw×fh` u8.
 #[cfg(feature = "jpeg2000")]
-fn upsample_nearest_u8(sub: &[f32], sw: usize, sh: usize, fw: usize, fh: usize) -> Vec<u8> {
-    let mut out = vec![0u8; fw * fh];
+fn upsample_nearest_u8(sub: &[f32], sw: usize, sh: usize, fw: usize, fh: usize) -> Result<Vec<u8>> {
+    let count = rhwp_codec_resource::product(&[fw, fh])
+        .map_err(|_| Error::Image("JPX upsample size".into()))?;
+    let mut out = rhwp_codec_resource::filled(0u8, count)
+        .map_err(|_| Error::Image("JPX upsample allocation".into()))?;
     for y in 0..fh {
         let sy = (y * sh / fh).min(sh.saturating_sub(1));
         for x in 0..fw {
@@ -231,7 +282,7 @@ fn upsample_nearest_u8(sub: &[f32], sw: usize, sh: usize, fw: usize, fh: usize) 
             out[y * fw + x] = sub[sy * sw + sx].round().clamp(0.0, 255.0) as u8;
         }
     }
-    out
+    Ok(out)
 }
 
 #[cfg(all(test, feature = "jpeg2000"))]
