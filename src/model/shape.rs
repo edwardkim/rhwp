@@ -424,6 +424,22 @@ impl ShapeObject {
         }
     }
 
+    /// 개체 캡션 참조 반환 (차트·OLE 는 개체 캡션이 없으면 그리기 개체 캡션)
+    pub fn caption(&self) -> Option<&Caption> {
+        match self {
+            ShapeObject::Line(s) => s.drawing.caption.as_ref(),
+            ShapeObject::Rectangle(s) => s.drawing.caption.as_ref(),
+            ShapeObject::Ellipse(s) => s.drawing.caption.as_ref(),
+            ShapeObject::Arc(s) => s.drawing.caption.as_ref(),
+            ShapeObject::Polygon(s) => s.drawing.caption.as_ref(),
+            ShapeObject::Curve(s) => s.drawing.caption.as_ref(),
+            ShapeObject::Group(s) => s.caption.as_ref(),
+            ShapeObject::Picture(s) => s.caption.as_ref(),
+            ShapeObject::Chart(s) => s.caption.as_ref().or(s.drawing.caption.as_ref()),
+            ShapeObject::Ole(s) => s.caption.as_ref().or(s.drawing.caption.as_ref()),
+        }
+    }
+
     /// 공통 속성 가변 참조 반환
     pub fn common_mut(&mut self) -> &mut CommonObjAttr {
         match self {

@@ -67,18 +67,7 @@ fn textbox_contains_non_tac_picture(text_box: &TextBox) -> bool {
 }
 
 pub(super) fn shape_caption_for_layout(shape: &ShapeObject) -> Option<Caption> {
-    match shape {
-        ShapeObject::Line(s) => s.drawing.caption.clone(),
-        ShapeObject::Rectangle(s) => s.drawing.caption.clone(),
-        ShapeObject::Ellipse(s) => s.drawing.caption.clone(),
-        ShapeObject::Arc(s) => s.drawing.caption.clone(),
-        ShapeObject::Polygon(s) => s.drawing.caption.clone(),
-        ShapeObject::Curve(s) => s.drawing.caption.clone(),
-        ShapeObject::Group(s) => s.caption.clone(),
-        ShapeObject::Picture(s) => s.caption.clone(),
-        ShapeObject::Chart(s) => s.caption.clone().or_else(|| s.drawing.caption.clone()),
-        ShapeObject::Ole(s) => s.caption.clone().or_else(|| s.drawing.caption.clone()),
-    }
+    shape.caption().cloned()
 }
 
 fn textbox_vpos_origin_hu(common: &CommonObjAttr, matrix_positioned: bool) -> Option<i32> {
@@ -988,6 +977,29 @@ impl LayoutEngine {
             return;
         }
 
+        use crate::model::shape::CaptionDirection;
+
+        // 캡션 높이 및 간격 계산
+        let caption_opt = shape_caption_for_layout(shape);
+        let caption = caption_opt.as_ref();
+        let caption_height = self.calculate_caption_height(&caption_opt, styles);
+        let caption_spacing = caption
+            .map(|c| hwpunit_to_px(c.spacing as i32, self.dpi))
+            .unwrap_or(0.0);
+
+        // 캡션 방향에 따라 도형 위치 오프셋 계산
+        let (caption_top_offset, caption_left_offset) = if let Some(c) = caption {
+            match c.direction {
+                CaptionDirection::Top => (caption_height + caption_spacing, 0.0),
+                CaptionDirection::Left => {
+                    let cw = hwpunit_to_px(c.width as i32, self.dpi);
+                    (0.0, cw + caption_spacing)
+                }
+                _ => (0.0, 0.0),
+            }
+        } else {
+            (0.0, 0.0)
+        };
         // 통합 좌표 계산 (layout_body_picture와 동일 로직)
         let shape_container = LayoutRect {
             x: col_area.x + para_margin_left,
@@ -995,13 +1007,39 @@ impl LayoutEngine {
             width: col_area.width - para_margin_left - para_margin_right,
             height: col_area.height - (para_y - col_area.y).max(0.0),
         };
+        // 위·아래 캡션은 세로 상자에 속한다(그림 경로와 같은 상자).
+        let caption_box_height = match caption {
+            Some(c)
+                if caption_height > 0.0
+                    && matches!(
+                        c.direction,
+                        CaptionDirection::Top | CaptionDirection::Bottom
+                    ) =>
+            {
+                caption_height + caption_spacing
+            }
+            _ => 0.0,
+        };
+        // [#6596] 바깥 여백은 개체 상자의 일부다. 한/글은 여백을 포함한 상자를 오프셋·정렬
+        // 자리에 놓고 잉크를 그 안쪽 위 여백 아래에 그린다. 그림 경로(layout_body_picture)와
+        // 같은 세로 규칙이며 도형·묶음도 같다 — 용지 기준 자리차지 사각형(위 여백 1417 HU,
+        // 세로 오프셋 8000 HU)을 한/글 2020 은 125.1px(= 106.7 + 18.9)에 그린다.
+        // 가로는 종전 계약(#5808 Square 왼쪽 여백)을 유지한다.
+        let (margin_top, margin_bottom) = if common.treat_as_char {
+            (0.0, 0.0)
+        } else {
+            (
+                hwpunit_to_px(i32::from(common.margin.top), self.dpi),
+                hwpunit_to_px(i32::from(common.margin.bottom), self.dpi),
+            )
+        };
         let (shape_x, shape_y) = if let Some((ix, iy)) = inline_pos {
             (ix, iy)
         } else {
-            let (mut x, y) = self.compute_object_position(
+            let (mut x, box_y) = self.compute_object_position(
                 common_for_position,
                 shape_w,
-                shape_h,
+                shape_h + caption_box_height + margin_top + margin_bottom,
                 &shape_container,
                 col_area,
                 body_area,
@@ -1024,6 +1062,7 @@ impl LayoutEngine {
             {
                 x += hwpunit_to_px(i32::from(common.margin.left), self.dpi);
             }
+            let y = box_y + margin_top;
             // 자리차지 OLE의 위 여백은 잉크 원점과 본문 예약 높이에 함께 속한다.
             // 일반 문단도 단 이월과 동일한 확정 프레임을 소비한다.
             let y = crate::renderer::float_placement::column_ole_placement(shape, para_y, self.dpi)
@@ -1031,29 +1070,6 @@ impl LayoutEngine {
             (x, y)
         };
 
-        // 캡션 높이 및 간격 계산
-        let caption_opt = shape_caption_for_layout(shape);
-        let caption = caption_opt.as_ref();
-        let caption_height = self.calculate_caption_height(&caption_opt, styles);
-        let caption_spacing = caption
-            .map(|c| hwpunit_to_px(c.spacing as i32, self.dpi))
-            .unwrap_or(0.0);
-
-        use crate::model::shape::CaptionDirection;
-
-        // 캡션 방향에 따라 도형 위치 오프셋 계산
-        let (caption_top_offset, caption_left_offset) = if let Some(c) = caption {
-            match c.direction {
-                CaptionDirection::Top => (caption_height + caption_spacing, 0.0),
-                CaptionDirection::Left => {
-                    let cw = hwpunit_to_px(c.width as i32, self.dpi);
-                    (0.0, cw + caption_spacing)
-                }
-                _ => (0.0, 0.0),
-            }
-        } else {
-            (0.0, 0.0)
-        };
         // [Issue #2075] restrictInPage(flow_with_text, HWP5 attr bit 13) 하단 클램프.
         // layout_body_picture(PR #2033, 이슈 #2032)에는 이 클램프가 있으나 도형 경로엔
         // 빠져 있었다("layout_body_picture와 동일 로직" 주석과 달리 미갱신). vert=Para +
@@ -1078,7 +1094,7 @@ impl LayoutEngine {
                 } else {
                     0.0
                 };
-            let body_bottom = col_area.y + col_area.height - total_h;
+            let body_bottom = col_area.y + col_area.height - total_h - margin_bottom;
             shape_y.min(body_bottom.max(col_area.y))
         } else {
             shape_y

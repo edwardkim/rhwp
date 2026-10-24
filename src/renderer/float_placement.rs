@@ -4398,9 +4398,9 @@ impl ObjectPlacementFrame<'_> {
     /// 조판(흐름 배제 구간)과 배치(문단 시작 점프)가 이 한 계산을 공유한다.
     /// 단과 가로로 겹치지 않거나 문단 기준·글자처럼 취급 개체면 `None`.
     pub(crate) fn page_anchored_topbottom_band(&self, control: &Control) -> Option<(f64, f64)> {
-        let common = match control {
-            Control::Picture(picture) => &picture.common,
-            Control::Shape(shape) => shape.common(),
+        let (common, caption) = match control {
+            Control::Picture(picture) => (&picture.common, picture.caption.as_ref()),
+            Control::Shape(shape) => (shape.common(), shape.caption()),
             _ => return None,
         };
         if common.treat_as_char
@@ -4411,14 +4411,32 @@ impl ObjectPlacementFrame<'_> {
         {
             return None;
         }
-        let width = hwpunit_to_px(
+        let mut width = hwpunit_to_px(
             common.width as i32 + i32::from(common.margin.left) + i32::from(common.margin.right),
             self.dpi,
         );
-        let height = hwpunit_to_px(
+        let mut height = hwpunit_to_px(
             common.height as i32 + i32::from(common.margin.top) + i32::from(common.margin.bottom),
             self.dpi,
         );
+        // 캡션도 개체 상자에 속해 본문을 받지 않는다. 한/글 2020: 용지 기준 자리차지 사각형에
+        // 아래 캡션(간격 850 HU, 한 줄)을 달면 뒤 본문이 캡션 아래(+24.6px)에서 시작한다.
+        if let Some(caption) = caption {
+            use crate::model::shape::CaptionDirection;
+            let caption_height =
+                super::composer::caption_height_px(&Some(caption.clone()), self.dpi);
+            if caption_height > 0.0 {
+                let spacing = hwpunit_to_px(caption.spacing as i32, self.dpi);
+                match caption.direction {
+                    CaptionDirection::Top | CaptionDirection::Bottom => {
+                        height += caption_height + spacing;
+                    }
+                    CaptionDirection::Left | CaptionDirection::Right => {
+                        width += hwpunit_to_px(caption.width as i32, self.dpi) + spacing;
+                    }
+                }
+            }
+        }
         let (x, y) = self.position(common, width, height);
         if ![x, y].iter().all(|v| v.is_finite())
             || x + width <= self.column.x + 0.5
