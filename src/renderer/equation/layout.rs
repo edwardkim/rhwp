@@ -191,7 +191,9 @@ impl EqLayout {
             &equation.script,
         ))
         .parse();
-        if !legacy::supports(&ast) || !legacy::compound_frame(&ast) {
+        if !legacy::supports(&ast)
+            || (super::uses_legacy_hft_metrics(equation) && !legacy::compound_frame(&ast))
+        {
             return None;
         }
         let intrinsic = Self::for_equation(equation, dpi).layout(&ast);
@@ -208,7 +210,7 @@ impl EqLayout {
         let root = Self {
             legacy_equation: self.legacy_equation
                 && legacy::supports(node)
-                && legacy::compound_frame(node),
+                && (!self.legacy_hft_metrics || legacy::compound_frame(node)),
             standalone_eqalign: matrix_geometry::is_standalone_eqalign(node),
             ..*self
         };

@@ -64,3 +64,6 @@ HWPUNIT 측정으로 판정한다. 문서명·쪽 번호·특정 본문 문자�
 `/home/tsjang/rhwp-local-verification/issue8160/history/old-candidates-1-30/evidence.tar.zst`에
 보존했다. 압축본 전체의 개별 SHA를 다시 검증하고 사용 종료·소유와 원본 SHA를 재확인한 뒤
 중복 output만 정리했다. 공유 Cargo cache·사용자 서버·원본/PDF·폰트와31 이후 증적은 보존했다.
+
+충돌이 없는 `HancomEQN` face의 기존 단독/복합 경로는 유지한다. 위 프레임 소유 분리는
+두 구현이 겹친 versionless `HYhwpEQ`의 HFT 경계에만 적용하며 명시 현대 버전은 바꾸지 않는다.
