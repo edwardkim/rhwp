@@ -299,3 +299,47 @@ fn the_last_small_row_stays_before_the_nested_explanation_continuation() {
         .all(|n| n["row"] == 4));
     assert_eq!(text(cell(next, 4, 0)), "근거설명");
 }
+
+/// 독립 한컴 Print의 벡터 테두리 중심선을 96 DPI CSS px로 환산한다.
+/// 입력 SHA: 1e00b54e1139515258260a657217e0b3baa0b1b652a2cd28dd4b9bc48aa262fe.
+/// PDF SHA: 88996e41ed3e68b15a3cd0eb4eda98845d34225c5dcd2ca547c80ab6e1242744.
+/// 전156쪽 양쪽 raw90% 이상, 이 완료 쪽들은 양쪽98% 이상 및 직접 review/overlay 확인.
+/// 기존 문단 소유·원문 보존·다음 쪽 이어받기 관계 검사는 함께 유지한다.
+#[test]
+fn completed_table_edges_follow_independent_print_within_two_css_pixels() {
+    // p104 두 상자는 양쪽100%, p56은100/99.99745%, p101은99.99195/99.98924%.
+    // 각 상자는 그 내용의 소유 문단으로 선택한다. 좌표로 개체를 고르지 않는다.
+    let expected = [
+        (
+            104,
+            911,
+            "매도청구소송",
+            [77.2387, 240.2174, 712.2573, 496.896],
+        ),
+        (104, 923, "재산권", [77.2387, 577.448, 712.2573, 834.128]),
+        (56, 481, "제21조", [96.108, 392.8507, 731.2867, 623.6373]),
+        (101, 890, "추진일정", [79.1573, 534.136, 714.176, 628.912]),
+    ];
+    for (page, paragraph, owner_text, edges) in expected {
+        let owner = table(page, paragraph);
+        assert!(
+            normalized(&text(owner)).contains(owner_text),
+            "p{page} 원본 문단{paragraph}의 내용 소유"
+        );
+        let bbox = &owner["bbox"];
+        let left = bbox["x"].as_f64().unwrap();
+        let top = bbox["y"].as_f64().unwrap();
+        let actual = [
+            left,
+            top,
+            left + bbox["w"].as_f64().unwrap(),
+            top + bbox["h"].as_f64().unwrap(),
+        ];
+        for (edge, (observed, expected)) in actual.into_iter().zip(edges).enumerate() {
+            assert!(
+                (observed - expected).abs() <= 2.0,
+                "p{page} 문단{paragraph} 테두리{edge}: 독립 Print {expected}px, 실제 {observed}px"
+            );
+        }
+    }
+}
