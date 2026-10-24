@@ -71,5 +71,22 @@
     {"page":62,"anchors":[{"text":"제8조(거래계좌)기성대가등은공동수급체의대표자또는각구성원의다음계좌로지급","section":0,"paragraph":969,"parent":969,"path":[],"textbox":false,"start":0,"baseline":92.0},{"text":"가없으면입찰및당해계약의이행을완료하는날까지탈퇴할수없다.다만,공동수급","section":0,"paragraph":985,"parent":985,"path":[],"textbox":false,"start":49,"baseline":692.319987},{"text":"는연대하여책임을진다.","section":0,"paragraph":990,"parent":990,"path":[],"textbox":false,"start":49,"baseline":1039.680013}],"origin_x":89.919993,"regions":[]},
     {"page":63,"anchors":[{"text":"제14조(운영위원회)①공동수급체는공동수급체구성원을위원으로하는운영위원회를","section":0,"paragraph":992,"parent":992,"path":[],"textbox":false,"start":0,"baseline":119.200002},{"text":"②이협정서에규정되지아니한사항은운영위원회에서정한다.","section":0,"paragraph":993,"parent":993,"path":[],"textbox":false,"start":0,"baseline":169.919993},{"text":"동수급체구성원이기명날인하여각자보관한다.","section":0,"paragraph":995,"parent":995,"path":[],"textbox":false,"start":48,"baseline":247.839986}],"origin_x":89.919993,"regions":[]},
     {"page":64,"anchors":[{"text":"[별지제3호서식]","section":0,"paragraph":1025,"parent":1025,"path":[],"textbox":false,"start":0,"baseline":92.0},{"text":"로입찰하겠으며,낙찰시모든구성원은대표자가투찰한입찰금액으로이의없이계약체","section":0,"paragraph":1031,"parent":1031,"path":[],"textbox":false,"start":94,"baseline":356.800008},{"text":"공동수급체구성원","section":0,"paragraph":1041,"parent":1041,"path":[],"textbox":false,"start":0,"baseline":652.799967}],"origin_x":56.639999,"regions":[]}
+  ],
+  "browser_raster_regions": [
+    {
+      "id": "header-jpeg-print-frame",
+      "page": 1,
+      "box": [
+        52,
+        64,
+        185,
+        102
+      ],
+      "oracle": "tests/fixtures/issue8160/hwp2022-header-logo.png",
+      "oracle_sha256": "18521b9bee58b9000c5886974abf10ecdffe54bafb557ee22ca72b612f7b2a67",
+      "reference_page_png_sha256": "6052593e338fb506d8a33a03fe01f3790515a87ef1238b4ea98053bc822ba596",
+      "threshold": 232,
+      "symmetric_radius_pixels": 2
+    }
   ]
 }

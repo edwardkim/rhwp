@@ -260,3 +260,114 @@ fn sample16_2022_continuation_table_clears_predecessor_and_preserves_owned_rows(
         );
     }
 }
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn sample16_2022_compound_page_border_keeps_both_print_coverage_bands() {
+    let core = load();
+    // #8191에서 추가한 기존 검사를 BCP 파일 병합 중 누락해 복원한다.
+    // source5df·원본 SHAfec3671c·새 Print SHAc4e05635 전64쪽 양쪽 raw100.
+    // 새 독립 Print63/64쪽을 192DPI로 다시 읽어 기존 두 띠 기대값을 확인했다.
+    // 임계값·좌표·두 픽셀 이상 coverage와 본문 소유 검사는 변경하지 않는다.
+    for (page_index, owner_text) in [
+        (62, "공동수급체는공동수급체구성원을위원으로하는운영위원회를"),
+        (63, "합의각서"),
+    ] {
+        let sources: Vec<_> = core
+            .document()
+            .sections
+            .iter()
+            .enumerate()
+            .flat_map(|(section, data)| {
+                data.paragraphs
+                    .iter()
+                    .enumerate()
+                    .filter_map(move |(paragraph, source)| {
+                        (if page_index == 63 {
+                            normalized(&source.text) == owner_text
+                        } else {
+                            normalized(&source.text).contains(owner_text)
+                        })
+                        .then_some((section, paragraph, source))
+                    })
+            })
+            .collect();
+        assert_eq!(sources.len(), 1, "같은 Print 쪽 본문 문단의 원본 소유");
+        let (section, paragraph, source) = sources[0];
+        let id = core.document().sections[section]
+            .section_def
+            .page_border_fill
+            .border_fill_id;
+        let border = &core.document().doc_info.border_fills
+            [usize::from(id.checked_sub(1).expect("원본 쪽 테두리"))];
+        assert_eq!(
+            border.borders[3].line_type,
+            rhwp::model::style::BorderLineType::Double,
+            "원본 아래 테두리는 이중선"
+        );
+        let tree = core.build_page_render_tree(page_index).unwrap();
+        let mut lines = Vec::new();
+        body_lines(&tree.root, false, &mut lines);
+        let body = owned_lines(&lines, (section, paragraph));
+        assert!(!body.is_empty(), "같은 Print 쪽에 원본 문단이 보존된다");
+        let actual: String = body.iter().map(|line| text(line)).collect();
+        assert_eq!(
+            normalized(&actual),
+            normalized(&source.text),
+            "같은 Print 쪽 본문 내용 순서·누락·중복"
+        );
+
+        // 독립 Print63/64쪽의 아래 이중선: 192DPI 2127/2128행과2130/2131행.
+        // 원본 중간의 빈 띠와 각 획의 이웃 픽셀 coverage를 보존한다.
+        // 이중선을 분해한 뒤 각 획을 픽셀 중심에 재배치하면 한 행씩으로 줄어 실패한다.
+        let bytes = core
+            .render_page_png_native_with_profile_and_export_options(
+                page_index,
+                rhwp::paint::RenderProfile::Print,
+                &rhwp::document_core::queries::rendering::PngExportOptions {
+                    dpi: Some(192.0),
+                    scale: Some(2.0),
+                    ..Default::default()
+                },
+            )
+            .expect("Native Print PNG");
+        let pixels = image::load_from_memory(&bytes).unwrap().to_rgb8();
+        let x = pixels.width() / 2;
+        let mut bands: Vec<Vec<u32>> = Vec::new();
+        // 독립 PDF 좌표 ±2 CSSpx = ±4 raster pixels를 포함한다.
+        for y in 2123..=2135 {
+            if pixels
+                .get_pixel(x, y)
+                .0
+                .into_iter()
+                .any(|value| value < 232)
+            {
+                if bands
+                    .last()
+                    .and_then(|band| band.last())
+                    .is_some_and(|last| *last + 1 == y)
+                {
+                    bands.last_mut().unwrap().push(y);
+                } else {
+                    bands.push(vec![y]);
+                }
+            }
+        }
+        assert_eq!(
+            bands.len(),
+            2,
+            "독립 Print의 분리된 두 coverage 띠: {bands:?}"
+        );
+        for (band, center_css) in bands.iter().zip([1063.75_f64, 1065.25]) {
+            assert!(
+                band.len() >= 2,
+                "이중선 각 획은 독립 Print처럼 이웃 픽셀에 coverage를 보존한다: {bands:?}"
+            );
+            let actual_css = f64::from(band[0] + band[band.len() - 1]) / 4.0;
+            assert!(
+                (actual_css - center_css).abs() <= 2.0,
+                "독립 Print 선 띠 중심 ±2 CSSpx"
+            );
+        }
+    }
+}

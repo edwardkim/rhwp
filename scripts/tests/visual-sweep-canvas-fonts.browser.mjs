@@ -1,3 +1,4 @@
+import './print-jpeg-frame.browser.mjs';
 import './picture-tones.browser.mjs';
 import './hft-outline-font-selection.browser.mjs';
 import './wmf-picture-crop.browser.mjs';

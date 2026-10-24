@@ -49,3 +49,23 @@ candidate33 Native/표준 WASM은 384/384, exit 0이다. 실제 실패 페이지
 [회귀 검출 증거](../../../mydocs/pr/assets/issue_8160/all-page-regression-proof.json)에 있다.
 음성 실행의 Native는 동일 대조군으로 유지했으며 이를 같은 source의 수정 전 전체 실행으로
 표기하지 않는다. 라이선스가 있는 설치 글꼴은 fixture에 복제하지 않는다.
+
+
+## 리베이스 후 Print 환경과 JPEG 경계
+
+제품 source `5df67d3299befb467a49dc4eaafd12d6e1877e2d`에서 세 파일 각각 Native와
+fresh 표준 최적화 WASM 64/64쪽 raw100·실제 양방향 정수 미대응 0/0을 재확인했다.
+[단계 8](../../../mydocs/working/task_m100_8160_stage8.md)의 재측정·직접 판독 기록을 따른다.
+좌표 검사는 이 독립 Print와 전쪽 PNG의 프로그램 선택 환경을 사용한다. 기존 572개
+앵커·630개 영역의 기대값과 ±2px 공차는 유지한다. 글꼴 바이트를 fixture에 복제하지 않는다.
+
+`hwp2022-header-logo.png`는 같은 새 MCP PDF의 1쪽 96 DPI raster에서
+`[52, 64, 185, 102]`를 잘라 얻은 133×38px 독립 기대값이다. 원본/PDF 해시는
+`hwp2022.json`의 기존 필드를, 영역·PNG 해시·원래 전쪽 PNG 해시·임계값 232·대칭 2px는
+같은 파일의 `browser_raster_regions`를 따른다. 기존 64쪽의 좌표 행은 바꾸지 않았다.
+
+[`print-jpeg-frame.browser.mjs`](../../../scripts/tests/print-jpeg-frame.browser.mjs)는 실제
+WASM과 Canvas로 같은 표지를 그리고 원본 그림 두 개·JPEG 인쇄 프레임·64쪽·decode 성공을
+확인한 뒤 이 독립 영역과 양방향 정수 미대응 0/0을 검사한다. 설치 글꼴은 필요하지 않다.
+기존 `visual-sweep-canvas-fonts.browser.mjs`의 import로 수집하며 CI 개별 호출을 늘리지 않는다.
+임시 추출·진단 도구는 정식 검사에 포함하지 않는다.

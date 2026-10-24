@@ -152,6 +152,31 @@ fn verify(fixture: &str) {
     assert_eq!(sha256(&pdf), contract.pdf_sha256);
     let mut core = DocumentCore::from_bytes(&bytes).unwrap();
     core.set_hangul2024_compat(contract.compat2024);
+    // 좌표의 독립 Print·전쪽 PNG를 산출한 세션과 같은 프로그램 선택이다.
+    // 실제 글꼴 바이트의 공급·paint는 별도 Native/fresh WASM 검증으로 확인한다.
+    // 기본 대체 환경의 가운데 정렬 폭을 원본 프로그램의 PDF 좌표로 고정하지 않는다.
+    let body_program = if contract.compat2024 {
+        "휴먼명조"
+    } else {
+        "Gulim"
+    };
+    core.set_font_environment(Some(
+        rhwp::renderer::font_environment::FontEnvironment::from_json(
+            &serde_json::json!({
+                "id": "sample16-independent-print-coordinate-programs",
+                "substitutions": {
+                    "한양신명조": "한양신명조",
+                    "휴먼명조": body_program,
+                    "HCI Poppy": "HCI Poppy"
+                },
+                "trueTypeFaces": [body_program],
+                "glyphFallbacks": { (body_program): ["Haansoft Batang"] }
+            })
+            .to_string(),
+        )
+        .unwrap(),
+    ))
+    .unwrap();
     assert_eq!(contract.pages.len(), 64, "독립 PDF의 전쪽 계약 누락 없음");
     assert_eq!(
         core.page_count() as usize,
