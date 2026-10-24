@@ -44,3 +44,36 @@ CURVE-LINE-CURVE, LINE-CURVE-CURVE, 닫힌 곡선·혼합 구간, 두 점 퇴화
    `tests/cases/`에 실제 소비 경로의 관계 검사를 추가한다. helper만 검사하고 끝내지 않는다.
 5. 전쪽 TSV·PR8148 corpus·새 base PR #8190 기능 보존과 필수 전체 검증을 계속한다.
    최종 목표인 1532개 raw 100%와 페이지별 중요 경계 ±2px는 부분 통과로 완료하지 않는다.
+
+## 실제 공통 코드의 Native 검증
+
+구현 source는 `dd8ea4e0544481994cf8a61a0e93f24ee5896052`다. format 검사는 exit 0,
+jobs 8·공용 `target/pr-review`의 Native 빌드는 7분 41초·exit 0이다.
+첫 실행은 컴파일 오류 없이 SIGTERM(143)으로 끝났다. 종료된 Cargo/rustc를 확인하고
+그 로그·캐시를 보존한 뒤 실행 세션과 분리해 재실행했으며, 성공한 producer만 고정했다.
+
+| 실제 출력 범위 | 결과 |
+| --- | --- |
+| 일반 점 체인의 열린 끝·직선·혼합·닫힘·두 점 8개 | raw 100%, 미대응 0픽셀 |
+| 같은 8개를 그룹 항등·90도 회전 경로로 소비 | raw 100%, 미대응 0픽셀 |
+| 편람 HWP/HWPX 각각 161쪽 | raw 99.98609% → 99.99934%, 미대응 21 → 1픽셀 |
+| 편람 양쪽 형식의 8·288·307쪽 | raw 유지: 99.73850%·100%·100% |
+
+위 대조군의 compare·overlay·review PNG와 편람의 Print/이전/현재 곡선 확대를 직접
+판독했다. HWP와 HWPX의 현재 161쪽 해당 crop은 RGB도 같다. 남은 1픽셀은 `(282,471)`이며
+100%로 반올림 처리하지 않았다. 이 결과는 시제품이 아니라 실제 parser·공통 converter·
+일반/그룹 배치·LayerTree·Native renderer를 거친 출력이다.
+
+자료는 ignored 작업 루트의 `curve-chain-dd8ea4e054/`와
+`curve-chain-dd8ea4e054-focus/`에 있다. Native binary SHA-256은
+`fcb9c0a2f580c8ca045dc10298fc70ddb83041f555307527adac799c59428e43`이며,
+입력·PDF·PNG·직접 판독의 해시도 producer/manifest/inspection 기록에 고정했다.
+그림뿐인 입력의 CLI JSON에는 글꼴 관측에 따른 `sourceSha256` 필드가 없으므로 실제
+입력·producer sidecar·PNG manifest로 연결한다. 비교 디렉터리 누락과 이 스키마 가정을
+고친 진단 드라이버의 실패 기록도 보존했으며 제품 컴파일 실패와 구분한다.
+
+최적화 fresh WASM과 전쪽 Native는 실행 중이다. WASM 빌드 후 실제 Canvas2D 대조군·
+영향 페이지를 캡처하는 후속 실행도 연결했다. 새 렌더링 회귀는 양쪽 시각 선행 조건을
+확인한 뒤 등록하며, 현재 기록으로 fresh WASM·전쪽 raw100·전체 회귀의 완료를 선언하지 않는다.
+새 base PR #8190의 Native CLI 기본 capabilities는 `enabled=true`, `jbig2=false`,
+`jpeg2000=false`를 실제 확인했다. 개별·동시 opt-in과 자원 예산·저장·WASM 검증은 남아 있다.
