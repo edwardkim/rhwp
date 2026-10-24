@@ -5500,12 +5500,15 @@ impl HeightMeasurer {
                     };
             }
         }
+        // 측정 셀마다 표 전체를 찾지 않도록 (행, 열)의 첫 셀을 한 번 색인한다.
+        let mut cell_at = std::collections::HashMap::with_capacity(table.cells.len());
+        for cell in &table.cells {
+            cell_at
+                .entry((cell.row as usize, cell.col as usize))
+                .or_insert(cell);
+        }
         for mc in &mut measured_cells {
-            let Some(cell) = table
-                .cells
-                .iter()
-                .find(|c| c.row as usize == mc.row && c.col as usize == mc.col)
-            else {
+            let Some(&cell) = cell_at.get(&(mc.row, mc.col)) else {
                 continue;
             };
             let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles);
