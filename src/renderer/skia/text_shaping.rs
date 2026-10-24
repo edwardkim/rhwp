@@ -65,7 +65,7 @@ pub(super) fn prepare_shaped_spans(
                 || character == '\u{FFFC}'
                 || matches!(character, '\u{00ad}' | '\u{00b7}' | '\u{2018}'..='\u{2027}'
                     | '\u{203b}' | '\u{2460}'..='\u{27bf}')
-                || crate::renderer::boxed_pua_number(character).is_some()
+                || crate::renderer::enclosed_pua(character).is_some()
         })
     };
     let fonts: Vec<_> = clusters.iter().map(|(_, text)| make_font(text)).collect();

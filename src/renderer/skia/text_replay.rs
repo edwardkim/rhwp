@@ -573,26 +573,27 @@ impl SkiaTextReplay<'_> {
                             );
                             continue;
                         }
-                        // [#6127] 한컴 사각 안 숫자(U+F02B1~F02C4) 평문 폴백 —
-                        // web_canvas·SVG 와 같은 bounded vector 합성(상자 0.72em,
-                        // 숫자 0.5em). raw PUA 는 함초롬 확장 글꼴이 없으면 빈칸.
+                        // [#6127] 한컴 합성 PUA 기호(사각 안 숫자 등) 평문 폴백 —
+                        // web_canvas·SVG 와 같은 동봉 em 기하의 bounded vector 합성.
+                        // raw PUA 는 함초롬 확장 글꼴이 없으면 빈칸.
                         if cluster.chars().count() == 1 {
-                            if let Some(number) = cluster
+                            if let Some(glyph) = cluster
                                 .chars()
                                 .next()
-                                .and_then(crate::renderer::boxed_pua_number)
+                                .and_then(crate::renderer::enclosed_pua)
                             {
+                                let inner_text = glyph.inner_text();
                                 let baseline_y = y as f32 + dy;
-                                if let Some(g) = crate::renderer::boxed_digit_geometry::single_digit(
-                                    number,
+                                if let Some(g) = crate::renderer::enclosed_pua_geometry::geometry(
+                                    glyph,
                                     f64::from(font_size),
                                 ) {
                                     let family = format!(
                                         "{},{}",
-                                        crate::renderer::boxed_digit_geometry::number_face(),
+                                        crate::renderer::enclosed_pua_geometry::inner_face(),
                                         style.font_family
                                     );
-                                    let (_, number_faces) = text_typeface_candidates(
+                                    let (_, inner_faces) = text_typeface_candidates(
                                         self.font_mgr,
                                         self.system_families,
                                         self.custom_typefaces,
@@ -600,15 +601,15 @@ impl SkiaTextReplay<'_> {
                                         &family,
                                         FontStyle::normal(),
                                     );
-                                    if let Some(face) = select_typeface_for_character(
-                                        &number_faces,
-                                        char::from_digit(number, 10).unwrap(),
-                                    ) {
-                                        let mut number_font =
+                                    let inner_char = inner_text.chars().next();
+                                    if let Some(face) = inner_char.and_then(|character| {
+                                        select_typeface_for_character(&inner_faces, character)
+                                    }) {
+                                        let mut inner_font =
                                             Font::new(face.typeface.clone(), font_size);
-                                        number_font.set_edging(font::Edging::AntiAlias);
+                                        inner_font.set_edging(font::Edging::AntiAlias);
                                         fonts::preserve_geometry(
-                                            &mut number_font,
+                                            &mut inner_font,
                                             self.geometric_text,
                                         );
                                         let mut frame_paint = Paint::default();
@@ -627,17 +628,17 @@ impl SkiaTextReplay<'_> {
                                         );
                                         canvas.save();
                                         canvas.translate((
-                                            char_x + g.number_x as f32,
-                                            baseline_y + g.number_y as f32,
+                                            char_x + g.inner_x as f32,
+                                            baseline_y + g.inner_y as f32,
                                         ));
                                         canvas.scale((
-                                            g.number_scale_x as f32,
-                                            g.number_scale_y as f32,
+                                            g.inner_scale_x as f32,
+                                            g.inner_scale_y as f32,
                                         ));
                                         canvas.draw_str(
-                                            number.to_string(),
+                                            &inner_text,
                                             (0.0, 0.0),
-                                            &number_font,
+                                            &inner_font,
                                             &text_paint,
                                         );
                                         canvas.restore();
@@ -655,13 +656,12 @@ impl SkiaTextReplay<'_> {
                                     skia_safe::Rect::from_xywh(char_x, box_y, box_size, box_size),
                                     &box_paint,
                                 );
-                                let number_str = number.to_string();
                                 let number_size = (font_size * 0.5).max(1.0);
-                                if let Some(number_font) = font_for_text(&number_str, number_size) {
+                                if let Some(number_font) = font_for_text(&inner_text, number_size) {
                                     let width =
-                                        number_font.measure_str(&number_str, Some(&text_paint)).0;
+                                        number_font.measure_str(&inner_text, Some(&text_paint)).0;
                                     canvas.draw_str(
-                                        &number_str,
+                                        &inner_text,
                                         (
                                             char_x + (box_size - width) / 2.0,
                                             box_y + box_size * 0.72,

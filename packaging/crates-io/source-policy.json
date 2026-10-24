@@ -253,7 +253,7 @@
         "THIRD_PARTY_LICENSES.md",
         "llms.txt",
         "saved/blank2010.hwp",
-        "assets/fonts/boxed-digit-metrics.json",
+        "assets/fonts/enclosed-pua-metrics.json",
         "assets/fonts/LatinModernMath-VariableOutline-subset.otf",
         "assets/fonts/MANIFEST-RHWP-LMM-VariableOutline.txt",
         "assets/fonts/licenses/**",

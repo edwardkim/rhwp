@@ -1,12 +1,13 @@
 // Rust와 같은 동봉 em 메트릭을 소비한다. 화면 px 핀이나 사유 글리프는 포함하지 않는다.
-import metrics from '../../../../assets/fonts/boxed-digit-metrics.json' with { type: 'json' };
+import { enclosedPuaMetrics as metrics, type EnclosedPua } from '../../core/enclosed-pua.ts';
 
-export function singleDigitGeometry(number: number, fontSize: number,
+export function enclosedPuaGeometry(glyph: EnclosedPua, fontSize: number,
   sourceInkBounds?: readonly number[]) {
-  const digit = metrics.digits[number];
-  if (!digit) return null;
-  const [left, bottom, right, top] = digit.source;
-  const [targetLeft, targetBottom, targetRight, targetTop] = digit.target;
+  const frame = metrics.boxedDigit.frame;
+  const inner = metrics.boxedDigit.digits[glyph.number];
+  if (!inner) return null;
+  const [left, bottom, right, top] = inner.source;
+  const [targetLeft, targetBottom, targetRight, targetTop] = inner.target;
   const unit = fontSize / metrics.unitsPerEm;
   const scaleX = (targetRight - targetLeft) / (right - left);
   const scaleY = (targetTop - targetBottom) / (top - bottom);
@@ -20,16 +21,16 @@ export function singleDigitGeometry(number: number, fontSize: number,
   const actualScaleY = hasActualBounds
     ? (targetTop - targetBottom) * unit / (actual[3] - actual[1]) : scaleY;
   return {
-    face: metrics.numberFace,
-    frameX: metrics.frame[0] * unit,
-    frameY: metrics.frame[1] * unit,
-    frameWidth: metrics.frame[2] * unit,
-    frameHeight: metrics.frame[3] * unit,
-    strokeWidth: metrics.frame[4] * unit,
+    face: metrics.innerFace,
+    frameX: frame[0] * unit,
+    frameY: frame[1] * unit,
+    frameWidth: frame[2] * unit,
+    frameHeight: frame[3] * unit,
+    strokeWidth: frame[4] * unit,
     scaleX: actualScaleX, scaleY: actualScaleY,
-    numberX: hasActualBounds
+    innerX: hasActualBounds
       ? targetLeft * unit - actual[0] * actualScaleX : (targetLeft - left * scaleX) * unit,
-    numberY: hasActualBounds
+    innerY: hasActualBounds
       ? -targetBottom * unit - actual[3] * actualScaleY : (-targetBottom + bottom * scaleY) * unit,
   };
 }

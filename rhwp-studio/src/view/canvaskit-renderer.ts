@@ -3,7 +3,8 @@ import { compatibilityGlyphView } from './canvaskit/compatibility-glyph-view.ts'
 import { CanvasKitBundledFontFamily, syntheticItalicSkew } from './canvaskit/font-style-selection.ts';
 import { ordinaryTextFontFamilies, parseCssFontFamilyList } from '../core/font-substitution.ts';
 import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
-import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
+import { enclosedPua, enclosedPuaInnerText } from '../core/enclosed-pua.ts';
+import { enclosedPuaGeometry } from './canvaskit/enclosed-pua-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
 import { rasterLineGeometry } from './canvaskit/raster-stroke.ts';
 import { textShadowOffsets } from './canvaskit/text-shadow.ts';
@@ -3385,7 +3386,7 @@ export class CanvasKitLayerRenderer {
             }
             const candidateIndex = candidateGlyphIds.findIndex(ids => (ids[index] ?? 0) !== 0);
             if (candidateIndex >= 0) return candidateIndex;
-            return code >= 0xF02B0 && code <= 0xF02C4 ? -1 : 0;
+            return enclosedPua(code) ? -1 : 0;
           });
           for (const fontIndex of new Set(selectedFontIndices)) {
             if (fontIndex > 0) {
@@ -3531,38 +3532,38 @@ export class CanvasKitLayerRenderer {
               continue;
             }
             if (fontIndex === -1) {
-              const codePoint = codePoints[runStart].codePointAt(0) ?? 0;
-              const displayNumber = String(codePoint - 0xF02B0);
-              let geometry = singleDigitGeometry(codePoint - 0xF02B0, fontSize);
+              const glyph = enclosedPua(codePoints[runStart].codePointAt(0) ?? 0)!;
+              const displayNumber = enclosedPuaInnerText(glyph);
+              let geometry = enclosedPuaGeometry(glyph, fontSize);
               if (geometry) {
                 const measuredFace = this.findPreparedTypeface(geometry.face)?.typeface;
-                // 숫자는 본문 regular face를 먼저 사용한다. 기호 글꼴의 사선 0을
+                // 안쪽 글자는 본문 regular face를 먼저 사용한다. 기호 글꼴의 사선 0을
                 // 선택하거나 그 윤곽에 다른 face의 source bounds를 적용하지 않는다.
-                const numberFace = measuredFace
+                const innerFace = measuredFace
                   ?? this.findPreparedTypeface(requestedFontFamily,
                     { bold: false, italic: false })?.typeface
                   ?? this.defaultTypeface ?? typeface ?? this.symbolFallbackTypeface;
-                const numberFont = new this.canvasKit.Font(numberFace, fontSize);
+                const innerFont = new this.canvasKit.Font(innerFace, fontSize);
                 const framePaint = this.makeStrokePaint(style.color ?? '#000000', geometry.strokeWidth);
                 try {
                   if (!measuredFace) {
-                    const glyphs = numberFont.getGlyphIDs(displayNumber, displayNumber.length);
-                    const bounds = numberFont.getGlyphBounds(glyphs);
-                    geometry = singleDigitGeometry(codePoint - 0xF02B0, fontSize, Array.from(bounds))!;
+                    const glyphs = innerFont.getGlyphIDs(displayNumber, displayNumber.length);
+                    const bounds = innerFont.getGlyphBounds(glyphs);
+                    geometry = enclosedPuaGeometry(glyph, fontSize, Array.from(bounds))!;
                   }
                   canvas.drawRect(this.canvasKit.XYWHRect(
                     originX + replayPositions![runStart] + offsetX + geometry.frameX,
                     originY + baselineShift + offsetY + geometry.frameY,
                     geometry.frameWidth, geometry.frameHeight), framePaint);
                   canvas.save();
-                  canvas.translate(originX + replayPositions![runStart] + offsetX + geometry.numberX,
-                    originY + baselineShift + offsetY + geometry.numberY);
+                  canvas.translate(originX + replayPositions![runStart] + offsetX + geometry.innerX,
+                    originY + baselineShift + offsetY + geometry.innerY);
                   canvas.scale(geometry.scaleX, geometry.scaleY);
-                  canvas.drawText(displayNumber, 0, 0, fillPaint, numberFont);
+                  canvas.drawText(displayNumber, 0, 0, fillPaint, innerFont);
                   canvas.restore();
                 } finally {
                   framePaint.delete();
-                  numberFont.delete();
+                  innerFont.delete();
                 }
                 continue;
               }

@@ -3239,22 +3239,23 @@ impl SvgRenderer {
 
         self.output.push_str("</g>\n");
     }
-    /// [#6127] 한컴 사각 안 숫자(U+F02B1~F02C4) 벡터 합성 — web_canvas
-    /// `draw_boxed_pua_number` 와 같은 기하(상자 0.72em, 숫자 0.5em, 중앙 정렬).
-    fn draw_boxed_pua_number(
+    /// [#6127] 한컴 합성 PUA 기호 벡터 합성 — web_canvas `draw_enclosed_pua` 와 같은
+    /// 동봉 em 기하. 메트릭이 없는 다자리 네모 숫자는 상자 0.72em, 숫자 0.5em 폴백이다.
+    fn draw_enclosed_pua(
         &mut self,
-        number: u32,
+        glyph: super::EnclosedPua,
         x: f64,
         baseline_y: f64,
         style: &TextStyle,
         font_size: f64,
     ) {
-        if let Some(g) = super::boxed_digit_geometry::single_digit(number, font_size) {
-            let face = super::boxed_digit_geometry::number_face();
+        let inner_text = glyph.inner_text();
+        if let Some(g) = super::enclosed_pua_geometry::geometry(glyph, font_size) {
+            let face = super::enclosed_pua_geometry::inner_face();
             self.font_codepoints
                 .entry(face.to_string())
                 .or_default()
-                .extend(number.to_string().chars());
+                .extend(inner_text.chars());
             let family = format!(
                 "'{face}',{}",
                 super::render_font_family_chain_for_weight(
@@ -3269,8 +3270,9 @@ impl SvgRenderer {
                 color, g.stroke_width));
             self.output.push_str(&format!(
                 "<text transform=\"matrix({} 0 0 {} {} {})\" x=\"0\" y=\"0\" font-family=\"{}\" font-size=\"{}\" fill=\"{}\">{}</text>\n",
-                g.number_scale_x, g.number_scale_y, x + g.number_x,
-                baseline_y + g.number_y, escape_xml(&family), font_size, color, number));
+                g.inner_scale_x, g.inner_scale_y, x + g.inner_x,
+                baseline_y + g.inner_y, escape_xml(&family), font_size, color,
+                escape_xml(&inner_text)));
             return;
         }
         let box_size = (font_size * 0.72).max(1.0);
@@ -3298,7 +3300,7 @@ impl SvgRenderer {
             escape_xml(&font_family),
             number_font_size,
             color,
-            number,
+            inner_text,
         ));
     }
 
@@ -3722,17 +3724,15 @@ impl Renderer for SvgRenderer {
                         continue;
                     }
                 }
-                // [#6127] 한컴 사각 안 숫자(U+F02B1~F02C4) 평문 폴백 — web_canvas
-                // (`draw_boxed_pua_number`)와 동일한 bounded vector 합성. raw PUA 를
+                // [#6127] 한컴 합성 PUA 기호(사각 안 숫자 등) 평문 폴백 — web_canvas
+                // (`draw_enclosed_pua`)와 동일한 bounded vector 합성. raw PUA 를
                 // 흘리면 함초롬 확장 글꼴이 없는 소비자(브라우저·PyMuPDF)에서 빈칸이
                 // 된다(2599643 "②⓪⓪" 소실). CharOverlap 경로의 #4158 합성과 같은
                 // 의미이고, 백엔드 간 패리티를 맞춘다.
                 if cluster_str.chars().count() == 1 {
-                    if let Some(number) =
-                        cluster_str.chars().next().and_then(super::boxed_pua_number)
-                    {
+                    if let Some(glyph) = cluster_str.chars().next().and_then(super::enclosed_pua) {
                         let char_x = x + cluster_x(*char_idx, cluster_str);
-                        self.draw_boxed_pua_number(number, char_x, y, style, font_size);
+                        self.draw_enclosed_pua(glyph, char_x, y, style, font_size);
                         continue;
                     }
                 }

@@ -2760,18 +2760,18 @@ impl Renderer for WebCanvasRenderer {
                     font,
                     old_hangul_font,
                 );
-                // 효과 pass에서는 raw PUA를 건너뛰고, 사각 안 숫자는 한 번만 합성한다.
+                // 효과 pass에서는 raw PUA를 건너뛰고, 합성 PUA 기호는 한 번만 합성한다.
                 // CanvasKit도 이 대역에 글리프가 없을 때 동일한 bounded vector fallback을 쓴다.
                 for (char_idx, cluster_str) in &clusters {
                     if cluster_str.chars().count() != 1 {
                         continue;
                     }
-                    let Some(number) = cluster_str.chars().next().and_then(super::boxed_pua_number)
+                    let Some(glyph) = cluster_str.chars().next().and_then(super::enclosed_pua)
                     else {
                         continue;
                     };
-                    self.draw_boxed_pua_number(
-                        number,
+                    self.draw_enclosed_pua(
+                        glyph,
                         x + cluster_x(*char_idx, cluster_str),
                         y,
                         style,
@@ -2882,8 +2882,8 @@ impl Renderer for WebCanvasRenderer {
                     }
 
                     if cluster_str.chars().count() == 1 {
-                        if let Some(number) = super::boxed_pua_number(ch) {
-                            self.draw_boxed_pua_number(number, char_x, y, style, font_size);
+                        if let Some(glyph) = super::enclosed_pua(ch) {
+                            self.draw_enclosed_pua(glyph, char_x, y, style, font_size);
                             continue;
                         }
                     }
@@ -3635,11 +3635,7 @@ impl WebCanvasRenderer {
                     continue;
                 }
                 if cs.chars().count() == 1
-                    && cs
-                        .chars()
-                        .next()
-                        .and_then(super::boxed_pua_number)
-                        .is_some()
+                    && cs.chars().next().and_then(super::enclosed_pua).is_some()
                 {
                     continue;
                 }
@@ -3753,20 +3749,21 @@ impl WebCanvasRenderer {
         }
     }
 
-    /// CanvasKit의 missing-glyph 경로와 같은 사각 안 숫자 벡터 폴백.
-    fn draw_boxed_pua_number(
+    /// CanvasKit의 missing-glyph 경로와 같은 합성 PUA 기호 벡터 폴백.
+    fn draw_enclosed_pua(
         &self,
-        number: u32,
+        glyph: super::EnclosedPua,
         x: f64,
         baseline_y: f64,
         style: &TextStyle,
         font_size: f64,
     ) {
-        if let Some(g) = super::boxed_digit_geometry::single_digit(number, font_size) {
+        let inner_text = glyph.inner_text();
+        if let Some(g) = super::enclosed_pua_geometry::geometry(glyph, font_size) {
             let color = color_to_css(style.color);
             let family = format!(
                 "'{}',{}",
-                super::boxed_digit_geometry::number_face(),
+                super::enclosed_pua_geometry::inner_face(),
                 super::canvas_text_font::family_chain(style)
             );
             self.ctx.save();
@@ -3780,17 +3777,17 @@ impl WebCanvasRenderer {
                 g.frame_height,
             );
             let _ = self.ctx.transform(
-                g.number_scale_x,
+                g.inner_scale_x,
                 0.0,
                 0.0,
-                g.number_scale_y,
-                x + g.number_x,
-                baseline_y + g.number_y,
+                g.inner_scale_y,
+                x + g.inner_x,
+                baseline_y + g.inner_y,
             );
             self.ctx.set_font(&format!("{font_size}px {family}"));
             self.ctx.set_text_align("left");
             self.ctx.set_text_baseline("alphabetic");
-            let _ = self.ctx.fill_text(&number.to_string(), 0.0, 0.0);
+            let _ = self.ctx.fill_text(&inner_text, 0.0, 0.0);
             self.ctx.restore();
             return;
         }
@@ -3817,11 +3814,9 @@ impl WebCanvasRenderer {
         ));
         self.ctx.set_text_align("center");
         self.ctx.set_text_baseline("alphabetic");
-        let _ = self.ctx.fill_text(
-            &number.to_string(),
-            x + box_size / 2.0,
-            box_y + box_size * 0.72,
-        );
+        let _ = self
+            .ctx
+            .fill_text(&inner_text, x + box_size / 2.0, box_y + box_size * 0.72);
         self.ctx.restore();
     }
 
