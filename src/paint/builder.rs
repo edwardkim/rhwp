@@ -9,7 +9,9 @@ use crate::paint::profile::RenderProfile;
 use crate::paint::shaping_glyph::lower_horizontal_shaping_page_sidecars;
 use crate::paint::shaping_glyph_vertical::lower_vertical_shaping_page_sidecars;
 use crate::paint::EmbeddedFontFace;
-use crate::renderer::render_tree::{ControlCode, PageRenderTree, RenderNode, RenderNodeType};
+use crate::renderer::render_tree::{
+    ControlCode, PageRenderTree, RectangleNode, RenderNode, RenderNodeType,
+};
 use std::collections::HashMap;
 
 const TEXT_MARK_BODY_CLIP_RIGHT_PAD: f64 = 48.0;
