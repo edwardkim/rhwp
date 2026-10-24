@@ -696,6 +696,10 @@ test('문서 교체는 구 zoom 큐·surface·미시작 이미지 작업을 버�
     assert.equal(f.view.pages.length, 0);
     assert.equal(decodeStarted, 0);
     assert(oldWork.every((work: any) => !work.isValid()));
+    // prepareDocumentLoad만으로는 새 renderer가 준비되지 않는다. 실제 적용 경계를 거친다.
+    f.view.applyRendererSelection({ backend: 'canvas2d', diagnostics: {
+      decisionKey: 'b', renderProfile: 'screen',
+    } });
     f.view.pages = f.visible.map(() => ({ width: 800, height: 1100 }));
     f.view.renderSettledZoom();
     while (f.host.frames.size) f.host.runFrame();
