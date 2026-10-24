@@ -868,6 +868,48 @@ PDF 44쪽 표 76은 TABLE 속성 bit 0~1의 값 0과 2를 모두 `나누지 않�
   TABLE 원시 bit 값 2를 확인했다. 대응 편집·저장 계약은 기존
   `issue_7288_table_pagebreak_roundtrip`·`issue_7323_table_page_break_save` 검사가 보호한다.
 
+## 36. SHAPE_COMPONENT_CURVE (표 103) — 점 개수·좌표 배열·후행 필드
+
+- **발견일**: 2026-10-24, 이슈 #8153의 161쪽 곡선 조사.
+- **원문**: 보존한 [공식 revision 1.3 PDF](../../pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf)
+  51쪽, 표 103. SHA-256은
+  `1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782`다.
+  점 개수를 `INT16`, 좌표를 x 배열 뒤 y 배열로 기술하며 후행 4바이트를 생략한다.
+- **확인한 구조**: 5.1.1.0 저장본에서 `INT32 cnt` → `(INT32 x, INT32 y) × cnt` →
+  `BYTE × max(cnt-1, 0)` 구간 종류 → 후행 4바이트다. 음수 개수는 유효한 점 배열이 아니다.
+  후행 필드의 상세 의미는 확정하지 않으며, 확인한 원본 값은 모두 0이다.
+  [사양 설명본 표 103](한글문서파일형식_5.0_revision1.3.md#표-103-곡선-개체-속성)을 함께 정정한다.
+
+### 교차 확인한 근거
+
+1. 원본 `samples/2025 행정업무운영 편람(최종).hwp`
+   (SHA-256 `40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f`)의
+   해제한 `BodyText/Section4`, 0부터 센 레코드 1940·2179는 tag 83이다.
+   두 레코드 모두 점 3개·구간 종류 `[1,1]`·34바이트이며 첫 payload는 다음과 같다.
+
+   ```text
+   03000000 9206000000000000 0600000056150000 c1080000662b0000 0101 00000000
+   ```
+
+   4바이트 개수 뒤의 좌표 쌍은 `(1682,0)`, `(6,5462)`, `(2241,11110)`이다.
+   16비트 개수·분리 배열로 읽으면 이 좌표와 구간 신원을 재현할 수 없다.
+2. 대응 HWPX 원본의 SHA-256은
+   `c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6`이다.
+   `Contents/section4.xml`의 curve `instid=568445306`은 같은 세 좌표를 잇는
+   `hp:seg type="CURVE"` 두 개를 보존한다. 두 번째 curve도 양쪽 형식의 점이 같다.
+3. 같은 HWPX를 `engine: 2024`로 별도 HWP 저장한 5.1.1.0 진단 입력
+   (SHA-256 `e78be46ad9c15cec5a1bbed72de88ea2715e04347c43d6f963beb448bc019d58`)에서도
+   두 curve는 모두 같은 34바이트 구조다. 이 진단 입력으로 원본이나 기준 PDF를 대체하지 않는다.
+4. 독립 참조 구현 hwplib의 고정 SHA `6746c27f17ebf5277493206284aa32044a1839c4`에서
+   [reader](https://github.com/neolord0/hwplib/blob/6746c27f17ebf5277493206284aa32044a1839c4/src/main/java/kr/dogfoot/hwplib/reader/bodytext/paragraph/control/gso/ForControlCurve.java)는
+   `readSInt4` 개수와 좌표 쌍, 구간 종류, `skip(4)`를 사용한다.
+   [writer](https://github.com/neolord0/hwplib/blob/6746c27f17ebf5277493206284aa32044a1839c4/src/main/java/kr/dogfoot/hwplib/writer/bodytext/paragraph/control/gso/ForControlCurve.java)도
+   같은 필드를 쓰고 4바이트를 0으로 채운다. 이 구현을 한컴 공식 사양으로 부르지 않는다.
+
+이번 정정은 저장 구조에 관한 것이다. 구간 1을 베지어 제어점 세 개씩의 배열로 해석하거나,
+HWPX에서 구간 종류를 버리는 동작은 별도의 구현 오류다. 보간식·열린 끝·닫힌 곡선의
+동작은 이 표만으로 확정하지 않고 독립 한컴 Print와 정상 대조군으로 검증한다.
+
 ## 검증 원칙
 
 1. **사양 우선·불일치 교차 검증**: 공식 사양의 단위·속성·규칙을 먼저 따른다. 실제 결과가
