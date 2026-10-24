@@ -74,3 +74,14 @@ JPEG에도 그 가장자리 차이가 있다. 이는 원본 투명도·정상 �
 `visible-control-independent-image-placement.json`에 보존했다. 실제 한컴 재출력은
 `visible-control-repeat-print-20261024/`에만 보존한다. 이 단계는 미대응 0 복구나
 최종 검증 완료가 아니다.
+
+### 같은 원본의 독립 Print 반복 확인
+
+job `d1653a0a-9ead-4e9b-a651-a625f2b11ef2`는 실제 한컴 2024
+13.0.0.3901의 `PrintMethod=0`, `frame_print_to_pdf_ex_one_up`으로 1쪽·17,234바이트를
+출력했다. 입력 전처리는 없다. 반복 PDF의 SHA-256은
+`53b04c50b5e887cddf02b45061343a67b116fa53b199a0085840434028a34cbf`다.
+기존 PDF와 여섯 이미지·mask의 압축/디코딩 스트림이 모두 같았다. 특히 세 번째
+그림의 1bit mask도 그대로 재현됐다. 따라서 일시적 기준 손상으로 분류하거나
+새 PDF로 기준을 교체하지 않는다. 투명도·JPEG 전달과 실제 source window의 관계를
+계속 추적해야 한다. 반복 PDF와 상태·비교 해시는 앞 절의 ignored 경로에만 보존했다.
