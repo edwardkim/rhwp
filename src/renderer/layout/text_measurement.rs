@@ -1547,6 +1547,25 @@ fn measure_char_width_embedded_decision<'a>(
     )
 }
 
+/// CSS 글꼴 체인의 첫 face 이름(따옴표·앞뒤 공백 제외).
+///
+/// 글자마다 불리므로 대부분인 단일 이름은 그대로 돌려준다. 결과는 분리·다듬기와 같다.
+fn css_primary_face(font_family: &str) -> &str {
+    let plain = !font_family.contains([',', '\'', '"'])
+        && !font_family.starts_with(char::is_whitespace)
+        && !font_family.ends_with(char::is_whitespace);
+    if plain {
+        return font_family;
+    }
+    font_family
+        .split(',')
+        .next()
+        .unwrap_or(font_family)
+        .trim()
+        .trim_matches('\'')
+        .trim_matches('"')
+}
+
 /// [#7092] `font_metric_trusted` — 메트릭 표를 그 글꼴 자신의 폭으로 믿을 수 있는지
 /// (TTF 선언 · 대체 없음). 스타일을 모르는 호출은 거짓으로 종전 측정을 따른다.
 fn measure_char_width_embedded_decision_for_font<'a>(
@@ -1558,13 +1577,7 @@ fn measure_char_width_embedded_decision_for_font<'a>(
     font_metric_trusted: bool,
     hft_hangul_face: bool,
 ) -> EmbeddedWidthDecision<'a> {
-    let primary_name = font_family
-        .split(',')
-        .next()
-        .unwrap_or(font_family)
-        .trim()
-        .trim_matches('\'')
-        .trim_matches('"');
+    let primary_name = css_primary_face(font_family);
     if let Some(em) = font_metrics_data::original_glyph_advance_em(primary_name, bold, italic, c) {
         return EmbeddedWidthDecision {
             width_px: Some(quantize_hwp_px(font_size * em)),
