@@ -397,52 +397,6 @@ impl TypesetState {
         }) {
             return;
         }
-        let Some((top, bottom)) = self.page_anchored_band_in_column(control) else {
-            return;
-        };
-        if bottom <= self.data.current_height + 0.5 {
-            return;
-        }
-        self.push_page_anchored_band(para_index, top, bottom);
-    }
-
-    /// 앵커 문단 자신의 첫 줄도 자기 쪽·종이 기준 자리차지 밴드를 피한다. 한/글은 구역 첫
-    /// 빈 문단이 용지 기준 사각형을 소유해도 그 문단 줄을 사각형 아래에 저장한다
-    /// (stored_reset_float 대조군: 첫 문단 vpos 30915 = 밴드 하단, 뒤 문단은 그 아래).
-    /// 밴드는 흐름과 무관한 절대 위치라 문단 배치 전에 정해진다. 밴드 아래에서 첫 줄이 이
-    /// 단에 들어갈 때만 미리 등록한다 — 못 들어가면 줄과 개체의 쪽 소속은 종전 규칙이 정한다.
-    pub(in crate::renderer::typeset) fn register_own_page_anchored_topbottom_bands(
-        &mut self,
-        para_index: usize,
-        para: &Paragraph,
-        first_line_height: f64,
-    ) {
-        for control in &para.controls {
-            let Some((top, bottom)) = self.page_anchored_band_in_column(control) else {
-                continue;
-            };
-            // 저장 첫 줄이 밴드 앞에 있는 경우에는 그 원점을 먼저 수용한다.
-            // 용지 좌표 안에 들어간다는 사실만으로 개체의 실제 쪽 소속까지
-            // 확정되지는 않는다. 문단 분할 뒤 실제로 라우팅한 개체의 밴드는
-            // register_page_anchored_topbottom_band가 등록한다.
-            let stored_line_precedes_band = !para.stored_text_partition_is_dirty()
-                && !para.cell_format_vpos_dirty
-                && para.line_segs.first().is_some_and(|line| {
-                    line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                        && hwpunit_to_px(line.vertical_pos, self.data.layout.dpi) < bottom - 0.5
-                });
-            if stored_line_precedes_band
-                || bottom <= self.data.current_height + 0.5
-                || bottom + first_line_height > self.available_height() + 0.5
-            {
-                continue;
-            }
-            self.push_page_anchored_band(para_index, top, bottom);
-        }
-    }
-
-    /// 현재 단 기준(단 상대 px) 쪽·종이 기준 자리차지 밴드.
-    fn page_anchored_band_in_column(&self, control: &Control) -> Option<(f64, f64)> {
         let column = self.inline_flow_column();
         let paper = crate::renderer::page_layout::LayoutRect {
             x: 0.0,
@@ -459,25 +413,20 @@ impl TypesetState {
             alignment: crate::model::style::Alignment::Left,
             dpi: self.data.layout.dpi,
         };
-        let (top, bottom) = frame.page_anchored_topbottom_band(control)?;
-        Some((top - column.y, bottom - column.y))
-    }
-
-    fn push_page_anchored_band(&mut self, para_index: usize, top: f64, bottom: f64) {
-        let registered = self.data.page_anchored_bands.iter().any(|zone| {
-            zone.para_index == para_index
-                && (zone.top - top).abs() < 0.01
-                && (zone.bottom - bottom).abs() < 0.01
-        });
-        if !registered {
-            self.data
-                .page_anchored_bands
-                .push(crate::renderer::typeset::VisibleFloatExclusion {
-                    para_index,
-                    top,
-                    bottom,
-                });
+        let Some((top, bottom)) = frame.page_anchored_topbottom_band(control) else {
+            return;
+        };
+        let (top, bottom) = (top - column.y, bottom - column.y);
+        if bottom <= self.data.current_height + 0.5 {
+            return;
         }
+        self.data
+            .page_anchored_bands
+            .push(crate::renderer::typeset::VisibleFloatExclusion {
+                para_index,
+                top,
+                bottom,
+            });
     }
 
     /// [#7548] 저장 줄이 없는 host 의 쪽·종이 기준 어울림 표를 뒤 재조판 문단의 배제
@@ -982,20 +931,6 @@ impl TypesetState {
             self.data.current_height = jump_to;
             if let Some(para_index) = para_index.filter(|_| pushed_by_page_band) {
                 self.data.page_band_flow_starts.insert(para_index, jump_to);
-                // 단 첫 문단의 저장 vpos 는 밴드가 민 시작이다. 단 원점을 그 문단 vpos 로 잡은
-                // 쪽 기준(`vpos_snap_current_height`)을 민 거리만큼 되돌려 뒤 저장 줄과 같은 축에 둔다.
-                if self.data.current_items.is_empty() {
-                    if let Some(base) = self.data.vpos_page_base.filter(|base| *base > 0) {
-                        let pushed = crate::renderer::px_to_hwpunit(
-                            jump_to - current_height,
-                            self.data.layout.dpi,
-                        );
-                        let base = (base - pushed).max(0);
-                        self.data.vpos_page_base = Some(base);
-                        self.data.vpos_stored_column_origin =
-                            Some((base, self.data.vpos_col_anchor));
-                    }
-                }
             }
         }
     }
