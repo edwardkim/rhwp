@@ -7897,6 +7897,36 @@ pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
 /// (156721992 1쪽: 한글 27.0pt 자리, rhwp 0). 같은 사다리 등식
 /// `next.vpos - host.vpos == lh+ls` 가 표 높이를 접었다는 뜻이라 표 높이를
 /// 다시 더하지 않는다(#4090 이중 계상 차단과 같은 축).
+/// 양수 오프셋 자리차지(vert=문단) 표 위에 host 글줄이 들어갈 자리가 없으면 글은 표
+/// 아래에서 시작한다(#7418 계약: 줄이 오프셋 안에 들어가면 표 위 제목, 아니면 표 아래).
+/// 저장 사다리도 같은 말을 해야 한다 — 다음 문단이 host 마지막 줄 바로 뒤(lh+ls)에서
+/// 시작하면 표 밴드는 그 줄 앞에 있다(학교 급식 안내문: 줄 69438 = 문단 상단 + 오프셋 +
+/// 표 높이, 다음 문단 71014 = 줄 + 1576). 조판과 출력이 같은 판정을 쓴다.
+pub(crate) fn visible_host_text_flows_below_offset_float(
+    para: &Paragraph,
+    table: &Table,
+    next_vpos: Option<i32>,
+) -> bool {
+    let offset = signed_hwpunit(table.common.vertical_offset);
+    let stored = |seg: &&crate::model::paragraph::LineSeg| seg.tag & 0x8000_0000 == 0;
+    offset > 0
+        && is_para_topbottom_float(&table.common)
+        && para
+            .line_segs
+            .first()
+            .filter(stored)
+            .is_some_and(|first| first.line_height > offset)
+        && para
+            .line_segs
+            .last()
+            .filter(stored)
+            .zip(next_vpos)
+            .is_some_and(|(last, next)| {
+                i64::from(next) - i64::from(last.vertical_pos)
+                    == i64::from(last.line_height) + i64::from(last.line_spacing)
+            })
+}
+
 pub(crate) fn stored_visible_anchor_band_host_line_advance_hu(
     stored_layout: bool,
     para: &Paragraph,

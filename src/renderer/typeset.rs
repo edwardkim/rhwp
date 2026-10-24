@@ -5515,6 +5515,27 @@ impl TypesetEngine {
             // [#2808] 소비 조건을 layout 의 same_owner_table_precedes 와 동일하게
             // 다중 co-anchored float host 로 한정 — 단일 표 host post-text 는 기존
             // 앵커 유지(#1549) 경로로 남긴다.
+            // 오프셋 안에 글줄이 들어가지 않는 host 는 표 아래에서 글을 잇는다 —
+            // 출력(layout)의 같은 판정과 함께 표 점유 끝으로 흐름을 옮긴다.
+            if is_visible_para_float
+                && crate::renderer::float_placement::visible_host_text_flows_below_offset_float(
+                    para,
+                    table,
+                    st.next_para_first_stored_vpos,
+                )
+            {
+                if let Some(bottom) = st
+                    .visible_float_exclusions
+                    .iter()
+                    .filter(|zone| zone.para_index == para_idx)
+                    .map(|zone| zone.bottom)
+                    .reduce(f64::max)
+                {
+                    if bottom > st.current_height {
+                        st.align_flow_to(bottom);
+                    }
+                }
+            }
             if is_visible_para_float && has_preceding_coanchored_float {
                 // [#2439] 다중 visible-host float 의 host 텍스트가 마지막 표 뒤에서
                 // emit 되는 경우, 같은 문단 소유 exclusion 도 post-text 에는 적용한다.
