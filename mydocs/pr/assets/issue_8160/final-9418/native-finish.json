@@ -1,0 +1,339 @@
+{
+  "source_sha": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "status": "passed",
+  "steps": [
+    {
+      "name": "original16-precheck",
+      "command": [
+        "/usr/bin/python3",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/incoming8191_precheck43_original16.py"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/original16-precheck.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 44.379
+    },
+    {
+      "name": "after-jamo-regression-compile",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/proposed-original-jamo-regression.rs",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/native/librhwp.rlib",
+        "--extern",
+        "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-4ff737955f43c990.rlib",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/after-jamo-regression"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/after-jamo-regression-compile.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 2.947
+    },
+    {
+      "name": "after-jamo-regression",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/after-jamo-regression",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/after-jamo-regression.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 5.517
+    },
+    {
+      "name": "legacy-contract-compile",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/home/tsjang/rhwp/tests/cases/issue_7445_legacy_equation_source_contract.rs",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/native/librhwp.rlib",
+        "--extern",
+        "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-4ff737955f43c990.rlib",
+        "--extern",
+        "roxmltree=/home/tsjang/rhwp/target/pr-review/release-test/deps/libroxmltree-5f6c7c0edbfb5bd5.rlib",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/existing-legacy-contract-tests"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/legacy-contract-compile.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 2.458
+    },
+    {
+      "name": "legacy-contract-11",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/existing-legacy-contract-tests",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/legacy-contract-11.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 0.344
+    },
+    {
+      "name": "mask-contract18-compile",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/home/tsjang/rhwp/tests/cases/issue_6865_wmf_monochrome_mask_rop.rs",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/native/librhwp.rlib",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/mask-contract18",
+        "--extern",
+        "resvg=/home/tsjang/rhwp/target/pr-review/release-test/deps/libresvg-ed7772e9a9cdbb7e.rlib",
+        "--extern",
+        "roxmltree=/home/tsjang/rhwp/target/pr-review/release-test/deps/libroxmltree-5f6c7c0edbfb5bd5.rlib",
+        "--extern",
+        "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-4ff737955f43c990.rlib",
+        "--extern",
+        "image=/home/tsjang/rhwp/target/pr-review/release-test/deps/libimage-52c0e78fd7345e26.rlib"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/mask-contract18-compile.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 2.867
+    },
+    {
+      "name": "mask-contract18",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/mask-contract18",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/mask-contract18.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 1.121
+    },
+    {
+      "name": "png-contract3-compile",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/home/tsjang/rhwp/tests/cases/verified_png_sampling_contracts.rs",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/native/librhwp.rlib",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/png-contract3",
+        "--extern",
+        "image=/home/tsjang/rhwp/target/pr-review/release-test/deps/libimage-52c0e78fd7345e26.rlib",
+        "--extern",
+        "crc32fast=/home/tsjang/rhwp/target/pr-review/release-test/deps/libcrc32fast-322e9f4c513aacd1.rlib"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/png-contract3-compile.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 1.327
+    },
+    {
+      "name": "png-contract3",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/png-contract3",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/png-contract3.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 0.008
+    },
+    {
+      "name": "hft-frame5-compile",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/proposed-hft-program-selection.rs",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/native/librhwp.rlib",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/hft-frame5",
+        "--extern",
+        "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-4ff737955f43c990.rlib"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/hft-frame5-compile.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 2.963
+    },
+    {
+      "name": "hft-frame5",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/hft-frame5",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/hft-frame5.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 12.353
+    },
+    {
+      "name": "sample16-allpage3-compile",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate40/proposed-allpage-coordinate-environment.rs",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/native/librhwp.rlib",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/sample16-allpage3",
+        "--extern",
+        "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-4ff737955f43c990.rlib",
+        "--extern",
+        "serde=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde-8ee0a640560b2e53.rlib",
+        "--extern",
+        "sha2=/home/tsjang/rhwp/target/pr-review/release-test/deps/libsha2-bfcd8951ccf68b55.rlib"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/sample16-allpage3-compile.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 2.889
+    },
+    {
+      "name": "sample16-allpage3",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/sample16-allpage3",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/sample16-allpage3.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 5.154
+    },
+    {
+      "name": "target-hwpx",
+      "command": [
+        "python3",
+        "-u",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/run_original_font_sweep.py",
+        "candidate43",
+        "native",
+        "hwpx",
+        "--tag",
+        "final-full",
+        "--legacy-font",
+        "--symbol-fonts",
+        "--pua-programs"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/target-hwpx.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 77.923
+    },
+    {
+      "name": "target-hwp2024",
+      "command": [
+        "python3",
+        "-u",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/run_original_font_sweep.py",
+        "candidate43",
+        "native",
+        "hwp2024",
+        "--tag",
+        "final-full",
+        "--legacy-font",
+        "--symbol-fonts",
+        "--pua-programs"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/target-hwp2024.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 75.331
+    },
+    {
+      "name": "target-hwp2022",
+      "command": [
+        "python3",
+        "-u",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/run_original_font_sweep.py",
+        "candidate43",
+        "native",
+        "hwp2022",
+        "--tag",
+        "final-full",
+        "--legacy-font",
+        "--symbol-fonts",
+        "--pua-programs"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/target-hwp2022.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 93.381
+    },
+    {
+      "name": "target-native-integer-check",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "-u",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/native_exact43.py"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/target-native-integer-check.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 9.579
+    },
+    {
+      "name": "incoming49-native",
+      "command": [
+        "/usr/bin/python3",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/incoming8191_capture43.py",
+        "head",
+        "native"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/incoming49-native.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 3385.095
+    },
+    {
+      "name": "incoming49-native-comparison",
+      "command": [
+        "/usr/bin/python3",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/incoming8191_compare43.py",
+        "native"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/incoming49-native-comparison.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 41.071
+    }
+  ],
+  "incoming49_native_passed": true
+}

@@ -69,3 +69,8 @@ WASM과 Canvas로 같은 표지를 그리고 원본 그림 두 개·JPEG 인쇄 
 확인한 뒤 이 독립 영역과 양방향 정수 미대응 0/0을 검사한다. 설치 글꼴은 필요하지 않다.
 기존 `visual-sweep-canvas-fonts.browser.mjs`의 import로 수집하며 CI 개별 호출을 늘리지 않는다.
 임시 추출·진단 도구는 정식 검사에 포함하지 않는다.
+
+
+최신 리베이스 후에도 같은 독립 기대값으로 전쪽을 재검증했다.
+[현재 6개 전쪽 TSV·실제 PNG 정수 0/0·정식 검사 결과](../../../mydocs/pr/assets/issue_8160/final-9418/README.md)를
+따르며 위 candidate33은 이전 검증 이력이다. 현재 제품과 정식 테스트의 source를 구분해 보존한다.

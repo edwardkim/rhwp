@@ -1,0 +1,70 @@
+{
+  "actual_render_producer": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "prior_test_head_sha": "72c144f49c2531ee49fe9fd1b3b626052a7ee8e7",
+  "corrected_test_head_sha": "ef69d163e05062f9c281968a0f9e0884a616aec3",
+  "original_solution_commit": "fd42be4af17e452e7b5587b36b15b43620a3cf9a",
+  "incoming_integration": "60972534680a0c5e51e54ec189b92e252e81a867",
+  "before": {
+    "tests": 11574,
+    "passed": 11573,
+    "failed": 1,
+    "skipped": 45,
+    "failure": "inline_equations_keep_source_size_baseline_and_single_line_ownership",
+    "reason": "single SVG text node required for a source word",
+    "archive": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/attempt72",
+    "full_log_sha256": "80a7c587da060fc82f078a8a35c879197503a71c274262ce34c7357e462e388e"
+  },
+  "independent_pdf": {
+    "path": "pdf/hwp3-sample16-current-print-20261017-2020.pdf",
+    "sha256": "8f0bfd27ae567481e244f39de6f7b596b3afa8b227dce895d4ebf9cebc416bd0",
+    "page": 6,
+    "origins_css_px": [
+      [
+        146.0799967448,
+        828.7999674479
+      ],
+      [
+        288.1599934896,
+        930.399983724
+      ],
+      [
+        248.3199869792,
+        948.6399739583
+      ]
+    ],
+    "expected_coordinates_changed": false,
+    "tolerance_changed": false
+  },
+  "current_page_raw_percent": {
+    "native": "99.97285",
+    "wasm": "99.97688"
+  },
+  "directly_read": [
+    "original-p6-native-compare.png",
+    "original-p6-wasm-compare.png"
+  ],
+  "correction": "select contiguous glyphs by source word; retain independent origins and source ownership; assert full Hangul content/order and shared baseline/forward advance",
+  "after_private_current_default": {
+    "linked_library_source_sha": "72c144f49c2531ee49fe9fd1b3b626052a7ee8e7",
+    "tests_passed": 3,
+    "failed": 0,
+    "log_sha256": "b3ad2aacef9bc38429cb88ff804a6d0e206f279e85244d65b48dfa596d3eb8c5"
+  },
+  "failed_frozen_rlib_compile_not_counted": true,
+  "product_ui_changed": false,
+  "full_new_head_validation": "passed",
+  "actual_full_validation": "validation-full.json",
+  "after_registered_full": {
+    "test_head_sha": "ef69d163e05062f9c281968a0f9e0884a616aec3",
+    "tests": 11574,
+    "passed": 11574,
+    "failed": 0,
+    "log_sha256": "aa78aef2de44c59af3be595dc677bcc76f2844ecd4c1d13f0105370dc10261ed"
+  },
+  "after_registered_focused": {
+    "test_head_sha": "ef69d163e05062f9c281968a0f9e0884a616aec3",
+    "tests": 70,
+    "passed": 70,
+    "failed": 0
+  }
+}

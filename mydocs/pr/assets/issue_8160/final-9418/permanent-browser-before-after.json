@@ -1,0 +1,22 @@
+{
+  "test": "scripts/tests/print-jpeg-frame.browser.mjs",
+  "test_sha256": "06e21e535da45ca83000b2bc10907af949dd37757a7fadb7674cc79533057c5e",
+  "before_producer": "cfad19a23c44d4e70e155643db42519530a6c5e3",
+  "before_actual": [
+    18,
+    0
+  ],
+  "before_exit": 1,
+  "after_producer": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "after_actual": [
+    0,
+    0
+  ],
+  "after_aggregate_passed": 9,
+  "after_aggregate_failed": 0,
+  "metric": {
+    "threshold": 232,
+    "symmetric_radius_pixels": 2
+  },
+  "oracle_sha256": "18521b9bee58b9000c5886974abf10ecdffe54bafb557ee22ca72b612f7b2a67"
+}
