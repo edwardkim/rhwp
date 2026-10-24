@@ -29,3 +29,12 @@
 - [전체 검사 모듈과 helper](../tests/issue_7874_stored_ladder_omitted_spacing_after.rs.txt), 이관 전 commit `91ce04bdf0ac285d5e53a88f15a3e690baca2575`, SHA-256 `734726858ce3d0bea4860b2d0e80a29a3c9821bb3d9eb676476e66919028cacb`.
 - 함수: `paragraphs_keep_spacing_after_omitted_by_stored_ladder`.
 - 처리: 활성 검사 1건 제거; 원문 보존. [복원 원장](../transfer-inventory.json)의 경로·blob·해시를 대조한다.
+
+## 복원 (#7874 재수정)
+
+`fix/7874-omitted-spacing-after-v2`(code `5caaf011e`, base `605ccfd92`)에서 조판의 트림 복원 판정과
+배치의 후방 스냅이 같은 술어 `stored_ladder_omits_spacing_after` 를 쓰도록 고쳐 1쪽이 Native/fresh WASM
+raw 100% 가 됐다. 입력·PDF 를 원래 경로 `samples/issue7874/omitted-spacing-after.hwpx`·
+`pdf/issue7874/omitted-spacing-after-2024.pdf` 로 되돌리고(SHA-256 위와 동일) 이관 전 검사 원문을
+수정 없이 `tests/cases/issue_7874_stored_ladder_omitted_spacing_after.rs` 로 복원했다.
+증적: `mydocs/report/7874-omitted-spacing-after-v2/`.
