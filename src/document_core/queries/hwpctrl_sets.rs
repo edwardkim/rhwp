@@ -1666,6 +1666,7 @@ impl DocumentCore {
             drawing.text_box.take().is_some()
         };
         if changed {
+            drawing.sync_text_box_storage_bit();
             section.raw_stream = None;
         }
         Ok(format!("{{\"ok\":{}}}", changed))
