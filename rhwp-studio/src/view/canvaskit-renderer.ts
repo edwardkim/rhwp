@@ -463,6 +463,8 @@ export class CanvasKitLayerRenderer {
   private currentShowParagraphMarks = false;
   private currentShowControlCodes = false;
   private currentClipEnabled = true;
+  // Page-space length of one device pixel at the current scale; the floor for shape/line strokes (#8125).
+  private currentDeviceStrokeFloor = 0;
   private currentReplayFeatureCounts: CanvasKitReplayFeatureCounts = {
     dashedStrokes: 0,
     glyphRuns: 0,
@@ -1013,8 +1015,10 @@ export class CanvasKitLayerRenderer {
       this.selectedTextVariantOps = new WeakSet<LayerPaintOp>();
       this.selectTextVariants(tree.root, canvas);
       this.currentTreeFingerprint = replayFingerprint(tree);
+      this.currentDeviceStrokeFloor = Number.isFinite(scale) && scale > 0 ? 1 / scale : 0;
+      // The stroke floor follows the scale, so static pictures are recorded per scale.
       this.currentPictureContext = this.currentTreeFingerprint
-        ? `${this.currentTreeFingerprint}:${this.documentGeneration}:${this.localFontRevision}:${this.imageResourceRevision}:${JSON.stringify(this.glyphRunFonts.diagnostics())}`
+        ? `${this.currentTreeFingerprint}:${scale}:${this.documentGeneration}:${this.localFontRevision}:${this.imageResourceRevision}:${JSON.stringify(this.glyphRunFonts.diagnostics())}`
         : null;
       if (this.currentTreeFingerprint) {
         const fingerprints = this.treeFingerprints.get(inputTree as PageLayerTree) ?? new Set<string>();
@@ -1071,6 +1075,7 @@ export class CanvasKitLayerRenderer {
     } finally {
       this.currentTreeFingerprint = null;
       this.currentPictureContext = null;
+      this.currentDeviceStrokeFloor = 0;
       this.currentPageExtent = null;
       this.currentOp = null;
       this.currentProfile = 'screen';
@@ -5039,7 +5044,7 @@ export class CanvasKitLayerRenderer {
       draw(shadowPaint);
       shadowPaint.delete?.();
       if (style?.strokeColor && (style.strokeWidth ?? 0) > 0) {
-        const shadowStroke = this.makeStrokePaint(shadow.color, style.strokeWidth ?? 1, shadow.opacity);
+        const shadowStroke = this.makeStrokePaint(shadow.color, this.deviceStrokeWidth(style.strokeWidth ?? 1), shadow.opacity);
         try {
           this.drawStrokeWithDash(style.strokeDash, shadowStroke, () => draw(shadowStroke));
         } finally {
@@ -5066,7 +5071,7 @@ export class CanvasKitLayerRenderer {
       paint.delete?.();
     }
     if (style?.strokeColor && (style.strokeWidth ?? 0) > 0) {
-      const paint = this.makeStrokePaint(style.strokeColor, style.strokeWidth ?? 1, style.opacity);
+      const paint = this.makeStrokePaint(style.strokeColor, this.deviceStrokeWidth(style.strokeWidth ?? 1), style.opacity);
       try {
         this.drawStrokeWithDash(style.strokeDash, paint, () => draw(paint));
       } finally {
@@ -5244,7 +5249,7 @@ export class CanvasKitLayerRenderer {
     const nx = lineLen > 0 ? -dy / lineLen : 0;
     const ny = lineLen > 0 ? dx / lineLen : 1;
     for (const [widthRatio, offsetRatio] of this.compoundLineSegments(style.lineType)) {
-      const paint = this.makeStrokePaint(color, Math.max(0.3, width * widthRatio), opacity);
+      const paint = this.makeStrokePaint(color, this.deviceStrokeWidth(Math.max(0.3, width * widthRatio)), opacity);
       const ox = nx * width * offsetRatio;
       const oy = ny * width * offsetRatio;
       try {
@@ -5590,6 +5595,16 @@ export class CanvasKitLayerRenderer {
     paint.setStyle(this.canvasKit.PaintStyle.Fill);
     paint.setColor(this.color(color, opacity));
     return paint;
+  }
+
+  /**
+   * Shape and line strokes thinner than one device pixel are drawn one pixel wide (#8125).
+   * A Hancom print raster fills a whole device pixel even for 0.1 mm table rules; anti-aliasing
+   * the declared width leaves them faint. Same rule as Canvas2D `floor_line_width_to_device`
+   * and Native Skia.
+   */
+  private deviceStrokeWidth(width: number): number {
+    return Math.max(width, this.currentDeviceStrokeFloor);
   }
 
   private makeStrokePaint(color: string, width: number, opacity = 1): SkPaint {
