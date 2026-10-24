@@ -146,7 +146,9 @@ test('exact SFNT maxp proof distinguishes the selected TTC face and rejects malf
     if (view.getUint32(record, false) === 0x6d61_7870) view.setUint32(record + 8, malformed.byteLength - 2, false);
   }
   assert.equal(canvasKitSfntGlyphCount(malformed), null);
-  const woff = readFileSync(new URL('../public/fonts/D2Coding-Regular.woff2', import.meta.url));
+  // `public/fonts` is a symlink to `assets/fonts`; read the target so a checkout without
+  // symlink support (Windows `core.symlinks=false`) still finds the bundled font.
+  const woff = readFileSync(new URL('../../assets/fonts/D2Coding-Regular.woff2', import.meta.url));
   assert.equal(canvasKitSfntGlyphCount(woff.buffer.slice(woff.byteOffset, woff.byteOffset + woff.byteLength)), null);
 });
 
