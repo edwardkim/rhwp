@@ -599,6 +599,10 @@ impl LayerBuilder {
                 )
             }
             RenderNodeType::TextBox => {
+                let clip = node
+                    .print_clip_bbox
+                    .filter(|_| !self.profile.shows_editor_visuals())
+                    .unwrap_or(node.bbox);
                 let child = LayerNode::group(
                     node.bbox,
                     Some(node.id),
@@ -607,14 +611,8 @@ impl LayerBuilder {
                     GroupKind::TextBox,
                 );
                 Some(
-                    LayerNode::clip_rect(
-                        node.bbox,
-                        Some(node.id),
-                        node.bbox,
-                        child,
-                        ClipKind::TextBox,
-                    )
-                    .with_layer(node.layer),
+                    LayerNode::clip_rect(node.bbox, Some(node.id), clip, child, ClipKind::TextBox)
+                        .with_layer(node.layer),
                 )
             }
             _ => Some(

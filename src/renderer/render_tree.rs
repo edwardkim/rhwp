@@ -211,6 +211,10 @@ pub struct RenderNode {
     /// 인쇄 레이어는 같은 줄 구성의 이 상자를 소비한다.
     #[serde(skip)]
     pub print_bbox: Option<BoundingBox>,
+    /// 내용 배치·편집용 bbox와 구분한 원본 도형의 인쇄 텍스트 경계.
+    /// 공통 paint builder가 TextBox clip에만 적용하며 글줄 원점은 바꾸지 않는다.
+    #[serde(skip)]
+    pub print_clip_bbox: Option<BoundingBox>,
     /// 원본 컨트롤의 식별 결과. 내부 레이아웃 노드 이름과 조판부호를 분리한다.
     #[serde(skip)]
     pub control_code: ControlCode,
@@ -239,6 +243,7 @@ impl RenderNode {
             visible: true,
             editor_only: false,
             print_bbox: None,
+            print_clip_bbox: None,
             control_code: ControlCode::Automatic,
             header_footer_source: None,
             paint_clip: None,

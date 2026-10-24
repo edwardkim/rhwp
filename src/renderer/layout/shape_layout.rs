@@ -3101,24 +3101,15 @@ impl LayoutEngine {
         })
     }
 
-    /// [#6174] 글상자 clip 이 **자기 내용을** 세로로 자르지 않게 한다.
+    /// [#6174·#8153] 편집용 내용 영역과 실제 Print clip을 구분한다.
     ///
-    /// `TextBox` 노드의 bbox 를 두 백엔드가 그대로 clip 사각형으로 쓴다
-    /// (SVG `textbox-clip-*`, paint `ClipKind::TextBox`). 그 값은 상자 − `textMargin`
-    /// 이라 줄 높이가 안쪽 영역보다 크면 글자가 잘린다 — 156661338·156601658 1쪽의
-    /// 기관명 글상자는 clip 11.41px 안에 16px 줄이 놓여, baseline(130.69)이 clip
-    /// 하단(128.51) 밖으로 2.19px 나가고 `경 찰 청` 받침이 통째로 지워졌다.
-    ///
-    /// 한글은 이 글상자에서 세로로 자르지 않는다 — 잉크가 상자 하단(132.28)보다
-    /// 아래인 132.81 까지 그려진다. 그래서 clip 을 상자 크기로 넓히는 것만으로는
-    /// 부족하고, 표시 영역에 놓인 글줄의 잉크까지 세로 clip을 넓혀야 한다.
-    /// 영역 밖에서 시작하는 후속 줄은 넘친 내용이며, 그 줄까지 넓히면
-    /// 선언된 글상자가 숨기는 뒤 문단과 출처까지 잘못 표시한다.
-    ///
-    /// 가로 clip 은 그대로 둔다 — 줄바꿈 폭 경계라 의미가 있다. 그리는 상자
-    /// (`shape_node`)도 건드리지 않는다 — 한글도 상자는 그대로 두고 잉크만 넘긴다.
-    /// 이 점이 `expand_inline_textbox_to_content`(상자까지 키운다)와 다르다.
-    fn relax_textbox_clip_to_content(textbox_node: &mut RenderNode) {
+    /// 편집용 bbox는 원래 표시 영역과 겹치는 줄의 잉크만 포함한다.
+    /// 영역 밖 후속 줄은 새로 수용하지 않는다. Print는 독립 도형 경계를
+    /// 별도 소비하며 명시적인 원본 paint clip을 덮어쓰지 않는다.
+    fn settle_textbox_clip(textbox_node: &mut RenderNode, shape_bounds: BoundingBox) {
+        if textbox_node.paint_clip.is_none() {
+            textbox_node.print_clip_bbox = Some(shape_bounds);
+        }
         let clip_top = textbox_node.bbox.y;
         let clip_bottom = clip_top + textbox_node.bbox.height;
         let mut new_top = clip_top;
@@ -3462,7 +3453,7 @@ impl LayoutEngine {
                         &mut textbox_node,
                         margin_bottom,
                     );
-                    Self::relax_textbox_clip_to_content(&mut textbox_node);
+                    Self::settle_textbox_clip(&mut textbox_node, shape_node.bbox);
                 }
                 shape_node.children.push(textbox_node);
             }
@@ -3529,7 +3520,7 @@ impl LayoutEngine {
                         &mut textbox_node,
                         margin_bottom,
                     );
-                    Self::relax_textbox_clip_to_content(&mut textbox_node);
+                    Self::settle_textbox_clip(&mut textbox_node, shape_node.bbox);
                 }
                 shape_node.children.push(textbox_node);
             }
@@ -4307,7 +4298,7 @@ impl LayoutEngine {
                     &mut textbox_node,
                     margin_bottom,
                 );
-                Self::relax_textbox_clip_to_content(&mut textbox_node);
+                Self::settle_textbox_clip(&mut textbox_node, shape_node.bbox);
             }
             shape_node.children.push(textbox_node);
         }
