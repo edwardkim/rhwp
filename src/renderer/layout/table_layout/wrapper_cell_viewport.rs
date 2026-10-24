@@ -24,6 +24,7 @@ pub(super) fn retain(
             clip: true,
             page_fragment: false,
             model_cell_index: None,
+            model_para_range: None,
         }),
         bounds,
     );

@@ -1,8 +1,8 @@
 //! 구역 columns 책임. 기존 조건과 호출 순서를 보존한다.
 use crate::renderer::typeset::{
     column_def_design_spacing_px, hwpunit_to_px, paper_overlay_object_bottom_abs_px,
-    ColumnBreakType, Control, PageDef, PageItem, PageLayoutInfo, Paragraph, TypesetEngine,
-    TypesetState,
+    ColumnBreakType, Control, PageDef, PageItem, PageLayoutInfo, Paragraph, ResolvedStyleSet,
+    TypesetEngine, TypesetState,
 };
 impl TypesetEngine {
     pub(in crate::renderer::typeset) fn process_multicolumn_break(
@@ -11,8 +11,43 @@ impl TypesetEngine {
         para_idx: usize,
         paragraphs: &[Paragraph],
         page_def: &PageDef,
+        styles: &ResolvedStyleSet,
     ) {
         st.finish_deferred_column_shapes();
+        let closing_column_type = st
+            .current_items
+            .last()
+            .map(PageItem::para_index)
+            .and_then(|index| crate::renderer::declared_column_type_at(paragraphs, index))
+            .filter(|kind| *kind == st.current_zone_column_type);
+        let plain_text_zone = crate::renderer::plain_text_column_zone(
+            paragraphs,
+            para_idx,
+            closing_column_type,
+            styles,
+        );
+        // 저장 줄의 내용 하단을 인증한 경우에만 영역 간격과 겹치는 문단 꼬리 여백을 제외한다.
+        let closing_text_bounds = (st.col_count == 1 && plain_text_zone)
+            .then(|| {
+                let PageItem::FullParagraph { para_index } = st.current_items.last()? else {
+                    return None;
+                };
+                let paragraph = paragraphs.get(*para_index)?;
+                if !paragraph.controls.is_empty() {
+                    return None;
+                }
+                let bounds = *st
+                    .paragraph_fragment_content_bottoms
+                    .get(&(*para_index, paragraph.line_segs.len()))?;
+                let trailing = hwpunit_to_px(paragraph.line_segs.last()?.line_spacing, self.dpi);
+                let after = styles
+                    .para_styles
+                    .get(paragraph.para_shape_id as usize)?
+                    .spacing_after;
+                let tail = bounds.flow_end - bounds.content_bottom - after;
+                (tail.abs() < 1e-6 || (tail - trailing).abs() < 1e-6).then_some(bounds)
+            })
+            .flatten();
         st.flush_column();
         let blank_tail_spacing = (st.col_count == 1)
             .then(|| {
@@ -42,6 +77,9 @@ impl TypesetEngine {
         // 두 값은 같은 후행 띠의 대안 증거다. 중복 차감하지 않는다.
         let closing_content_height =
             (st.current_height - blank_tail_spacing.max(trailing_spacing)).max(0.0);
+        let closing_content_height = closing_text_bounds
+            .filter(|bounds| blank_tail_spacing == 0.0 && bounds.flow_end == st.current_height)
+            .map_or(closing_content_height, |bounds| bounds.content_bottom);
 
         // [Task #874 Case 5] leaving zone 의 height 계산 시 마지막 라인의 trailing
         // line_spacing 을 제외한다. zone 간 gap 은 design_spacing/2 + solo_zone_pad 가
@@ -242,9 +280,15 @@ impl TypesetEngine {
         // 그 zone 의 콘텐츠(헤더 띠 ~47px 또는 본문 줄들)가 body 하단을 넘어 렌더되므로 다음
         // 페이지로 넘긴다. (shortcut.hwp 3쪽~6쪽 — 다단 zone 다수 누적 시 잔여 콘텐츠가
         // 본문영역을 넘어 바닥 여백에 그려지던 결함)
-        let one_line = hwpunit_to_px(1500, self.dpi);
+        // 제약 없는 텍스트 zone은 실제 format 결과의 첫 줄 수용 판정을 사용한다.
+        // 개체·keep 제약을 포함한 zone의 기존 밴드 예약은 유지한다.
+        let reserved_height = if plain_text_zone {
+            0.0
+        } else {
+            hwpunit_to_px(6000, self.dpi)
+        };
         if paper_overlay_tail_overflows_page
-            || candidate_offset > st.base_available_height() - 4.0 * one_line
+            || candidate_offset > st.base_available_height() - reserved_height
         {
             st.push_new_page();
             // 새 페이지 첫 zone: 새 zone 디자인 spacing /2 만 (이전 zone 은 이전 페이지).
@@ -252,7 +296,7 @@ impl TypesetEngine {
         } else {
             st.align_zone_origin(candidate_offset);
         }
-        st.initialize_zone_spacing(new_ds);
+        st.initialize_zone_spacing(new_ds, plain_text_zone);
         st.restart_zone_columns();
 
         for ctrl in &paragraphs[para_idx].controls {

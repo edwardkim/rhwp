@@ -706,12 +706,12 @@ impl Paragraph {
 
     /// 문단 나누기 offset(캐럿 축)에서 한 칸을 차지하는 컨트롤인가.
     ///
-    /// 캐럿은 글자처럼 취급하는 개체와 각주·미주([`Control::is_logical_inline`]), 그리고
-    /// 조판에서 한 글자 칸인 글자겹침을 한 칸씩 지난다. 떠 있는 개체는 칸이 없고, 자동 번호는
+    /// 캐럿은 [`Control::is_logical_inline`]과 같은 개체·각주·미주·글자겹침을 센다.
+    /// 떠 있는 개체는 칸이 없고, 자동 번호는
     /// 자리표 글자가 이미 한 칸이다. 이들까지 세면 그 뒤에서 한 글자씩 앞에서 나눈다.
     /// 어느 문단으로 옮길지는 [`Self::is_split_movable_control`] 이 따로 정한다.
     pub(crate) fn occupies_split_slot(ctrl: &Control) -> bool {
-        ctrl.is_logical_inline() || matches!(ctrl, Control::CharOverlap(_))
+        ctrl.is_logical_inline()
     }
 
     fn control_mask_bit(ctrl: &Control) -> u32 {
