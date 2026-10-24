@@ -216,6 +216,36 @@ sample11·sample16의 추가 구현은 진행하지 않고 원래 편람 두 형
 현재 `f79c4cc68c`의 차이는 계획 문서뿐이며, 코드·입력의 동일성을 실행 전에 확인했다.
 이 실행을 새로운 Native 빌드나 fresh WASM 전쪽 완료로 표시하지 않는다.
 
+## 2026-10-25: 원본 용지에서 공통 EMF 참조 프레임 생산
+
+### 독립 근거와 반례
+
+원본 HU를 바로 PDF point로 내린 현재 viewport는 참조 DC의 물리 크기와 EMF frame을
+생략한다. `source-paper-print-reference-units-audit.json`의 별도 한컴 Print 4개는
+원본 용지 → DEVMODE 0.1mm → 참조 장치 픽셀·정수 mm → EMF 0.01mm → PDF 정수 point
+계산으로 용지 크기가 모두 일치했다. HU 높이 75420의 독립 PDF는 753pt이므로
+단순 `floor(HU / 100)`의 754pt가 반례다. 장치 정수 원점 12개의 최대 오차는
+PDF의 0.001pt 표기 정밀도 이내인 0.000419pt다.
+
+`so-analysis-20261025-paper-units/{,width/}printer-extent-result.json`의 공개 GDI 호출은
+0.5mm 경계 12조건을 확인했다. 정수 mm는 DEVMODE에서 반올림해야 하며, 이미 반올림한
+장치 픽셀에서 mm를 역산하면 266.5mm·196.5mm 경계에서 다르다. DEVMODE는 메모리에서만
+검증했고 프린터 설정을 바꾸지 않았다. 600dpi는 확인한 Print 장치 계약이며 raster 출력 DPI와
+구분한다. 이는 HWP 사양 오류가 아니라 사양 밖 인쇄 장치의 단위 변환 누락이다.
+
+### 소비 경로와 보정 범위
+
+`print_paper`에서 용지별 출력 크기·장치 한 픽셀의 CSS 길이를 한 번 생산하고
+`PagePaintContext`가 표 괘선·HFT 정밀 글자·밑줄·단색 채움·바탕쪽 사각형·그림 및
+bitmap fill의 기존 물리 프레임 소비 지점에 전달한다. `LayerBuilder`의 기존
+`hangul2024_print` 계약에서만 선택한다. Screen·2022 경로와 논리 조판 소속·높이는 보존한다.
+도형 끝점·그림 원점의 반올림 규칙은 별도 반례가 있으므로 이 변경으로 바꾸지 않는다.
+문서 ID·쪽 번호·관측 배율을 조건이나 상수로 넣지 않는다.
+
+먼저 단위 산술·유효성 및 독립 용지 4개를 확인하고, 편람의 그림·채움 영향 페이지를
+고정 4319 Native 및 5cf7 optimized WASM과 대조한다. 방향 확인 뒤 새 source의 전쪽
+Native/fresh WASM과 필수 게이트를 완료한다. 현재 이 절은 구현 전 계획이며 통과 기록이 아니다.
+
 단색 채움 변환은 논리 종이를 바로 최근접 장치 크기로 나눈다. 그러나 EMF의 물리
 프레임은 정수 0.01mm이고 참조 장치의 pixel/mm와 별개다. 공개 `GetDeviceCaps`로 확인한
 참조 DC는 가로 4,630pixel/196mm, 세로 6,283pixel/266mm다. 원본 종이의 출력용 장치
