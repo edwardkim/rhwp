@@ -981,7 +981,12 @@ fn assign_master_pages_for_section(
     }
 
     let mps = &section.section_def.master_pages;
-    if mps.is_empty() {
+    // 바탕쪽이 없는 구역은 앞 구역의 바탕쪽을 잇는다. 한/글은 구역을 나눈 뒤 바탕쪽을
+    // 따로 만들지 않은 구역에도 앞 구역의 바탕쪽을 그린다(한/글 2024 가 저장한 HWPX 도 그
+    // 구역의 `masterPageCnt` 가 0 이다). 종전에는 여기서 끝나, 첫 구역에만 바탕쪽을 둔
+    // 문서의 나머지 구역 모든 쪽에서 쪽 아래 띠와 쪽 번호가 빠졌다. 아래 선택은 이 구역
+    // 바탕쪽이 없으면 이미 carry 로 넘어가고, 첫 쪽 감추기도 그대로 따른다.
+    if mps.is_empty() && carry_master_odd.is_none() && carry_master_even.is_none() {
         return;
     }
 
