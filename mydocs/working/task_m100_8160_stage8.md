@@ -222,3 +222,21 @@ fmt, Native/WASM Clippy, workspace build/all-targets Clippy 및 base 비교 정�
 아직 활성 회귀 경로에 등록하지 않았다. 이 보정의 fresh 최적화 WASM을 한 번 검증하기
 위해 이전 중간 source의 빌드는 소유 프로세스 종료 후 중단 사유를 보존했다. 최적화
 시간 초과나 제품 실패로 판정한 것이 아니며 중간 package는 검증에 사용하지 않는다.
+
+49조건·1772쪽의 `58ed9576c` Native 비교를 완료했다. 새 base 대비125쪽 하락·213쪽
+개선·1434쪽 동일이며, 최저92.50545%, 90% 미만은 없다. 사용자0.1%p 기준의 미달은
+원본 sample16 40쪽(-0.61485%p)과 원본 sample11 1쪽(-0.12027%p) 두 곳이다.
+전쪽 판정 파일은 `candidate40/incoming8191-native-comparison.json`이다.
+
+sample11 첫 쪽의 base/head RenderTree는 완전히 같았다. 자동 프로그램 공급 환경은
+`preserve_source_metrics=true`인 표시용 대체이지만, `569f30d8e`의 명시 프로그램 분류가
+자동 공급의`substitutions/trueTypeFaces`까지 자연 윤곽 보존으로 승격했다. 실제7개 런의
+flag만 해제한 읽기 전용 paint 진단에서 98.58074% → 98.70101%로 복원됐고, 수정하지
+않은 진단RGB는 실제 후보PNG와, 해제한 진단RGB는 실제basePNG와 각각 완전히 같았다.
+PNG 파일SHA가 다른 것은 metadata/encoding 차이이므로 RGB 바이트를 따로 대조했다.
+원본 메트릭을 유지하는 공급 세션에는 기존폭맞춤을 복원하고, 실제 원본 프로그램의
+메트릭까지 선택한 명시환경은 기존 자연윤곽 정책을 유지한다. 기대값·0.1%p 기준은 낮추지 않는다.
+
+자모 보정의 Native 제품은 `056fcf76d2b2f0c88d5a07425ff766229554eaff`로 빌드 완료했고,
+원본/관계/정상 대조 검사 중이다. 새 자동 공급 경계 보정을 합친 제품에서 최종검증한다.
+해당 제품의 WASM은 대기 coordinator만 종료했으며 실제 빌드는 시작하지 않았다.

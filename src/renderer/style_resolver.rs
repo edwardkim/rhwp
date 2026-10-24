@@ -185,8 +185,11 @@ pub(crate) fn resolve_styles_with_environment(
                             .as_deref()
                             .is_some_and(|face| env.replacement(face).is_some())
                     });
-                    style.font_families_preserve_glyph_ink[lang] =
-                        explicit_true_type || explicit_replacement;
+                    // 원본 메트릭을 유지하는 표시용 대체는 기존 paint 폭 맞춤도 유지한다.
+                    // 원 프로그램의 자연 윤곽은 그 메트릭까지 선택한 세션만 보존한다.
+                    style.font_families_preserve_glyph_ink[lang] = (explicit_true_type
+                        || explicit_replacement)
+                        && environment.is_some_and(|env| !env.preserves_source_metrics());
                     // 결측 글리프 체인만 추가한 세션은 원 face의 TTF/HFT 신뢰를 바꾸지 않는다.
                     if !keep_source_metrics && (explicit_true_type || explicit_replacement) {
                         latin_program_changed |= lang == 1;
