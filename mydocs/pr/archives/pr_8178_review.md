@@ -2,13 +2,23 @@
 
 ## 최종 판정
 
-**머지 보류** — 실제 Chrome 확장 전체 E2E는 브라우저 준비 문제로 완료하지 못했다.
-가독성과 공유 정보 제외는 2026-10-24 사용자 위임에 따라 에이전트가 보정 후 통과로 판정했다.
-사용자 본인의 직접 판정으로 기록하지 않는다. 현재 code candidate의 로컬 계약 40개와 HTML 검사
-1개는 통과했다. 원격 결과는 아래 정확한 code SHA와 연결한다.
+**승인 — 로컬 실제 확장 E2E 통과로 기존 보류 사유를 해소했다.**
+검토·실행 소스는 `955fa1125fce67b9a5ad8db09ed8780a9eb1caab`다. 아래 기존 클라우드 실패는
+이력으로 보존하며, 최신 성공은 [로컬 공유 증적](../../report/assets/issue7449/local-e2e-20261024/README.md)에 연결한다.
+새 actionable code finding은 없다. 같은 head의 계약 40 PASS·Chrome HTML 1 PASS를 재사용했다.
+실제 Chrome for Testing 155.0.8059.79의 smoke·download·lifecycle 3개 모두 최초 실행에 PASS,
+exit 0·timeout 0·not-run 0이다. 정확한 소스에서 release 최적화·wasm-opt를 포함해 fresh WASM과
+확장 후보를 빌드했고 후보 해시가 검사 전후 동일했다. 실행기 dirty=false다.
 
-보류 해제에는 실행 가능한 Chrome for Testing 환경에서 전체 확장 E2E를 완료한 증적과
-최신 PR head의 required checks 확인이 필요하다. 병합은 이번 보정 범위에 포함하지 않는다.
+가독성과 공유 정보 제외는 새 원본 해시에 묶인 delegated pass/pass다. 사용자 본인의 판정이나
+자동 인증으로 기록하지 않는다. 1200px·390px 최종 보고서 화면도 직접 확인했다.
+[리뷰 코멘트](https://github.com/edwardkim/rhwp/pull/8178#issuecomment-6380534004)를 게시했다.
+
+사용자는 같은 브랜치의 문서·증적 반영, 최신 CI 확인 후 merge를 명시적으로 승인했다.
+현재 검증 head의 [CI](https://github.com/edwardkim/rhwp/actions/runs/40061085074)는 성공이며,
+preflight가 code candidate `393a59dc5e3991a1b90ac15589322eab53e90b8b` 성공을 재사용했다.
+이 후행 문서 commit은 제품 코드·테스트를 바꾸지 않는다. 새 head CI·정책·mergeability를
+확인한 뒤 일반 squash merge하며 self-APPROVE·admin bypass·운영 배포는 하지 않는다.
 
 ## 접수와 범위
 
@@ -47,7 +57,7 @@
 - 다른 세션에서 e32f63d2a의 계약 39 PASS와 Chrome 155 HTML 검사 1 PASS가 전달됐다.
   이는 이전 head의 참고 결과이며 본 세션의 최신 코드 직접 검증과 구분했다.
 
-## 실제 확장 E2E 시도와 환경 제한
+## 이전 클라우드 실제 확장 E2E 시도와 환경 제한 (이력)
 
 - 실제 후보: 버전 0.8.7, inventory SHA-256
   `8ccccb9e9ee3a802f6436b7fe0615bc1af93ada2d0039c38c58f2d0ffe600295`.
@@ -94,7 +104,21 @@ code candidate와 최신 비교 base의 merge-tree는 exit 0이며 tree는
 - 조판 원칙: 비해당. 보고서 표시·수동 기록·관련 테스트만 바꾸며 제품 렌더·조판·baseline을 바꾸지 않았다.
 - 검증 입력 커밋 확인: 실제 smoke 서버가 읽은 기존 samples/hwp3-pagedef-1915.hwp는 HEAD와 동일하다.
   SHA-256은 `b272fdd218b4e91355167e63438a1605ef6902d75970c4ff5b8bae67087122d0`다.
-  브라우저 실행 전 중단돼 문서 품질을 확인하지 못했다. 합성 계약은 원문 입력을 사용하지 않는다.
+  이전 클라우드 시도는 브라우저 실행 전 중단됐다. 로컬에서는 두 실제 fixture와 실행을 확인했다.
+  합성 계약은 원문 입력을 사용하지 않으며, 문서의 독립 한컴 PDF 시각 일치는 이번 검사의 범위가 아니다.
 - Cargo·fresh WASM·Native/Visual Sweep: 이번 소스 변경의 게이트로는 비해당. 실제 후보 WASM의 출처
-  한계와 전체 확장 E2E 미완료는 별도로 남겼다.
+  한계는 과거 클라우드 이력이다. 로컬 fresh WASM 빌드와 전체 확장 E2E는 완료했으며
+  제품 조판 변경이 없어 독립 PDF Visual Sweep은 비해당이다.
 - 스토어·Edge/Firefox·실제 사용자 환경·문서 표시/인쇄 품질·배포 판단은 미검증이다.
+
+## Merge 후 contributor PR comment 계획
+
+병합 완료 후 실제 merge SHA와 최종 head CI, fast-pass의 candidate SHA 및 heavy job skip을
+구분해 기록한다. 위 로컬 공유 증적을 merge SHA로 고정해 연결하고 report-desktop.png를
+Markdown 이미지로 표시한다. 실제 E2E 3 PASS·보고서 pass/issues 0·수동 delegated pass/pass와
+스토어/다른 브라우저/문서 출력 품질 미검증을 명시한다. 이슈 상태를 조회하고 별도 승인 없는
+수동 종료는 하지 않는다. duration 갱신의 성공 또는 자료 부족에 따른 보류를 확인한다.
+문서·증적은 이 PR에 포함하므로 병합 뒤 추가 문서 commit은 만들지 않는다.
+검토 worktree는 clean 확인 후 archive한다. 클라우드 세션 소유 원격 브랜치와 공유 target은
+보존한다. 기본 checkout의 output은 다른 작업 자료의 소유·필요 여부가 불명확하므로 보존하고
+output 정리는 미완료로 보고한다.

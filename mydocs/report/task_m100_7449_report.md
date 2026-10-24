@@ -106,13 +106,23 @@ code candidate `393a59dc5e3991a1b90ac15589322eab53e90b8b`의 [Build & Test](http
 최신 base와 code candidate의 merge-tree exit 0, merge tree 공백·문서 링크·base 오늘할일 보존을
 확인했다. review 문서-only trailing head의 CI와 mergeability는 push 후 별도로 확인한다.
 
-## 미검증·비해당과 보류
+## 로컬 실제 E2E 완료와 최종 검토
 
-실제 확장 동작·다운로드·수명주기 전체 E2E는 환경 제한으로 미완료다. 실행 가능한 Chrome for
-Testing과 후보 출처를 준비해 새 결과 폴더에서 재실행해야 한다. 현재 PR 판정은
-[검토 기록](../pr/archives/pr_8178_review.md)의 **머지 보류**다.
+2026-10-24 로컬 macOS arm64에서 Chrome for Testing 155.0.8059.79를 사용해 전체 확장 E2E를
+완료했다. 검증 source SHA는 `955fa1125fce67b9a5ad8db09ed8780a9eb1caab`이며 fresh release
+WASM·wasm-opt와 확장 빌드를 마친 후보를 실제 실행했다. smoke 2.425초, download 15.012초,
+lifecycle 34.116초 모두 PASS, 첫 공식 실행 1회·exit 0·재시도/timeout/not-run 0이다.
+원본 결과에서 최신 보고서를 생성한 결과도 pass/issues 0/exit 0이다.
 
-Rust·Studio·제품 렌더·워크플로우를 바꾸지 않아 이번 변경의 Cargo/fresh WASM/Visual Sweep
-게이트는 비해당이다. 실제 smoke 서버가 읽은 기존 HWP는 HEAD의 동일 바이트로 확인했으나
-브라우저 실행 전 중단되어 문서 품질은 검사하지 못했다. 스토어·Edge/Firefox·실제 사용자 환경·
-문서 표시/인쇄 품질·배포 판단은 별도 미검증이다.
+[공유 HTML·JSON·ZIP, 1200px·390px 화면과 해시·명령](assets/issue7449/local-e2e-20261024/README.md)에
+증거를 모았다. 후보 해시가 검사 전후 동일하고 실행기 dirty=false다. 새 원본 해시에 묶인
+delegated 가독성/공유 제외 판정도 pass/pass다. 이전 클라우드 실패 이력은 그대로 보존한다.
+[최종 검토](../pr/archives/pr_8178_review.md)는 승인이다. 사용자가 최신 CI 확인 후 merge까지
+승인했으며, 이 문서-only 후행 commit의 CI는 push 후 별도로 확인한다.
+
+## 미검증·비해당
+
+Rust·Studio·제품 렌더·워크플로우를 바꾸지 않아 Rust lint·독립 한컴 PDF Visual Sweep은
+이번 변경의 게이트로 비해당이다. 실제 E2E용 fresh WASM은 별도로 빌드했다.
+print surface의 통과를 문서 출력 품질 검증으로 확대하지 않는다. 스토어 설치/업데이트,
+Edge/Firefox, 실제 사용자 프로필, 문서 표시·인쇄 품질은 미검증이다. 운영 배포는 하지 않는다.
