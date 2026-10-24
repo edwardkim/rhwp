@@ -1,0 +1,56 @@
+{
+  "old_base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "old_code_head": "fbb42fbe649b8a1b592edca5107624d68d8ffb92",
+  "new_base": "e7a0dec55c6c6c6365e4ff50babe7583e1cf1c70",
+  "rebased_code_head": "a41ae037ab5413036bae3544326ce9beddf693df",
+  "old_commit_count": 28,
+  "new_commit_count": 28,
+  "hwp_product_and_regression_paths_unchanged": [
+    "src/renderer",
+    "src/paint",
+    "src/wmf",
+    "rhwp-studio/src",
+    "tests/cases/verified_sample16_all_pages.rs",
+    "tests/fixtures/issue8160",
+    "samples/hwp3-sample16-hwp5.hwpx",
+    "samples/hwp3-sample16-hwp5-2024.hwp",
+    "samples/hwp3-sample16-hwp5-2022.hwp"
+  ],
+  "range_diff": "/home/tsjang/rhwp-local-verification/issue8160/remote/rebase-e7-range-diff.txt",
+  "expected_merge_tree": "c51fcffc97eff3591972671068ce860120dffeb4",
+  "actual_rebased_tree": "c51fcffc97eff3591972671068ce860120dffeb4",
+  "only_manual_resolution": "Cargo.toml workspace exclude union",
+  "metadata_checks": [
+    {
+      "name": "root-metadata",
+      "command": [
+        "cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1",
+        "--no-deps"
+      ],
+      "exit_code": 0,
+      "seconds": 0.297
+    },
+    {
+      "name": "skia-tool-metadata",
+      "command": [
+        "cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "tools/skia-surface-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "seconds": 3.477
+    }
+  ],
+  "validation": "pending; historical outputs and CI not relabeled",
+  "public_range_diff_note": "Only trailing whitespace in context lines removed in the public copy; original raw range-diff is archived at range_diff."
+}
