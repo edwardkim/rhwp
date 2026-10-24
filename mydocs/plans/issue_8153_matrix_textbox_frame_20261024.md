@@ -70,3 +70,22 @@ HWP 99.78294%에서 98.75880%로 하락했다. 같은 가로 프레임이라는 
 
 실제 자료: ignored 작업 루트의 `textbox-frame-e43f45a4f8/p161-textbox-differences.json`,
 `textbox-source-original-versus-2024-save.json`, `logs/textbox-frame-native-focus.log`.
+
+## 厳密な共通再조판의 실제 Native 확인
+
+후보 `8164250673a91b03157ba9c9d8ebb0870ddf2fee`의 Native 빌드는 jobs 8, 고정 `target/pr-review`,
+`release-test` + `native-skia`에서 375.84초·exit 0이다. 원본 두 형식의
+8·161·288·307쪽 8개를 같은 독립 PDF·96dpi로 비교했다. 161쪽은 HWPX
+99.78293% → 99.94507%, HWP 99.78294% → 99.94507%로 개선됐고 다른
+6개 결과는 같았다. 288·307쪽의 양쪽 raw 100%는 유지됐다.
+
+HWPX 161쪽의 정확한 미대응은 329 → 83픽셀이다. 확대 판독에서 줄 구분과
+앞뒤 문구는 개선됐지만, 독립 Print가 잘라 내는 `1㎜`를 현재는 온전히 보여 주는
+잔여를 확인했다. 기존 #6174의 clip 확대와 실제 PDF의 shape clip을 다음 원인으로
+대조한다. 8쪽과 crop 대조군의 기존 잔여도 유지하며 raw 100%·fresh WASM·최종
+정식 검증을 완료했다고 보고하지 않는다.
+
+실행·입력/PNG 해시는 ignored 작업 루트의 `textbox-strict-8164250673/`와
+`textbox-strict-8164250673-focus/`, 로그는 `logs/textbox-strict-native-*.log`다.
+`p161-direct-comparison.png`를 실제 화면으로 확인했으며 표식·글자 잘림의 남은
+차이를 높은 점수로 면제하지 않는다.
