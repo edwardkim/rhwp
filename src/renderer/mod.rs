@@ -2220,23 +2220,31 @@ pub fn hwpunit_to_px(hwpunit: i32, dpi: f64) -> f64 {
     hwpunit as f64 * dpi / HWPUNIT_PER_INCH
 }
 
-/// 개체와 문단 묶음 제약이 없는 단 영역만 실제 첫 줄 높이로 수용한다.
-pub(crate) fn plain_text_column_zone(
+/// 해당 문단까지 명시한 마지막 단 종류를 읽는다. 정의가 없거나 주소가 잘못되면 추정하지 않는다.
+pub(crate) fn declared_column_type_at(
     paragraphs: &[crate::model::paragraph::Paragraph],
-    start: usize,
-    styles: &style_resolver::ResolvedStyleSet,
-) -> bool {
-    let Some(prefix) = paragraphs.get(..=start) else {
-        return false;
-    };
-    // 배분·평행 단은 밴드 전체를 예약한다. 단 정의가 불명확한 경우도 기존 계약을 유지한다.
-    let column_type = prefix.iter().rev().find_map(|para| {
+    index: usize,
+) -> Option<crate::model::page::ColumnType> {
+    paragraphs.get(..=index)?.iter().rev().find_map(|para| {
         para.controls.iter().find_map(|control| match control {
             crate::model::control::Control::ColumnDef(definition) => Some(definition.column_type),
             _ => None,
         })
-    });
-    if column_type != Some(crate::model::page::ColumnType::Normal) {
+    })
+}
+
+/// 개체와 문단 묶음 제약이 없는 일반 단 사이에서만 실제 첫 줄 높이로 수용한다.
+pub(crate) fn plain_text_column_zone(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    start: usize,
+    closing_column_type: Option<crate::model::page::ColumnType>,
+    styles: &style_resolver::ResolvedStyleSet,
+) -> bool {
+    // 닫히는 배분·평행 밴드도 기존 여유를 예약해야 다음 소제목이 실제 배치에서 넘치지 않는다.
+    if closing_column_type != Some(crate::model::page::ColumnType::Normal)
+        || declared_column_type_at(paragraphs, start)
+            != Some(crate::model::page::ColumnType::Normal)
+    {
         return false;
     }
     paragraphs[start..]
