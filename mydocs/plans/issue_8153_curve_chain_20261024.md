@@ -75,7 +75,9 @@ jobs 8·공용 `target/pr-review`의 Native 빌드는 7분 41초·exit 0이다.
 같은 source의 표준 release fresh WASM 빌드는 종료 코드 0이다. Cargo jobs 8,
 codegen-units 16, wasm-bindgen과 `wasm-opt -O`를 거쳤으며 실제 WASM SHA-256은
 `4aa0d44e4ad5e3d780b24280c4d47d171ef156c51b5a70962c638e6599ee26c3`이다.
-Canvas2D의 일반·그룹 곡선 16개도 raw100·미대응 0이며 Native와 RGBA 전체가 같다.
+Canvas2D의 일반·그룹 곡선 16개도 raw100·미대응 0이며 Native와 RGB 전체가 같다.
+별도 엄격 대조에서 페이지 오른쪽 마지막 열의 alpha 차이가 확인돼 RGBA 전체 동일이라는
+초기 기록을 정정했다. 이 차이는 곡선 보정 전후 각 backend 안에서는 변하지 않았다.
 두 review와 원본 161쪽의 Print/Native/WASM 확대를 직접 판독했다. 161쪽의 미대응
 1픽셀은 두 형식·양쪽 backend 모두 남아 있으며 완료로 바꾸지 않는다.
 

@@ -180,3 +180,30 @@ HWPX 최저 raw는 99.35532→99.19189%, HWP는 99.35539→99.19185%다. 두 형
 `table-fill-regression-four-way-result.json`과 현재 source의 `p282-regression-review.png`에 있다.
 fresh WASM은 동일 source의 표준 최적화 빌드를 계속하며, 영향 캡처를 두 형식 각 12쪽으로
 늘려 위 회귀 4쪽도 포함했다. 알려진 회귀를 해결하기 전 새 PR이나 시각 기대값 갱신은 하지 않는다.
+
+## 같은 source의 최적화 fresh WASM 확인
+
+표준 release 빌드는 21분 51초·종료 코드 0이며 wasm-bindgen과 `wasm-opt -O`를 모두
+실행했다. jobs 8·codegen-units 16, dirty source 없음과 실제 실행 패키지의 SHA를 확인했다.
+WASM SHA-256은 `49df66ef17e6931354a5e832f4d6b04f4052eb5e903aa516016ee80f4760845c`다.
+실제 Canvas2D로 두 형식의 8·161·282·283·284·285·288·289·296·298·300·307쪽,
+총 24개 조합을 캡처·측정했고 실행 종료 코드 0이다.
+
+284·296쪽은 양쪽 형식 모두 raw100·미대응 0으로 개선됐다. 285쪽도 WASM에서는
+미대응 0이다. 그러나 282·283·289·298쪽의 새 회귀도 재현되므로 WASM 완료가 제출
+승인을 뜻하지 않는다. 현재 WASM 전쪽 766개를 추가 실행해 알려진 회귀를 반복하기 전에
+원인 보정을 계속한다. 최종 source의 전쪽 Native/fresh WASM 검증 의무는 그대로 유지한다.
+
+현재 source의 일반·그룹 곡선 16개는 fresh WASM에서도 raw100·미대응 0이다. Native와
+RGB는 정확히 같다. 페이지 오른쪽 마지막 열의 alpha는 다르므로 RGBA 전체 동일로
+보고하지 않는다. 두 곡선 review와 원본 284·282쪽의 같은 Print/Native/WASM 경계를
+직접 판독했다. 284쪽 개선과 282쪽의 불필요한 가로선을 모두 확인했다.
+`wasm-curve-controls-direct-inspection.json`에는 곡선 통과와
+`accepted_for_original_whole_sweep=false`를 구분해 기록했다.
+
+독립 한컴 출력의 별도 순수 사각형 9개 대조군도 산출했다. 원본과 같은 물리 용지에서
+짝수·홀수 정수 장치 좌표 양쪽의 반 픽셀 경계를 비교해 현재 `.round()`와 다른 원점
+반올림을 확인했다. 텍스트의 자동 크기 증가와 순수 도형 좌표를 구분하려고 drawText를
+제거한 v2를 별도로 출력했으며 원본 책의 입력·PDF는 바꾸지 않았다. 이 대조군과 정확한
+현재 Native 72·96·144·192dpi layer는 `solid-fill-device-controls-v2/`에 있다.
+아직 새 변환식을 확정하지 않았고 관측값을 맞추는 scale 상수나 문서 예외도 추가하지 않았다.
