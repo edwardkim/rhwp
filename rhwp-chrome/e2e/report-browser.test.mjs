@@ -52,9 +52,25 @@ test('generated public and private HTML has no active content for hostile input'
   await page.setViewport({ width: 1200, height: 900 });
   await page.setContent(await readFile(path.join(fixtures, 'pass-report/report.html'), 'utf8'));
   assert.equal(isCompletePng(Buffer.from(await page.screenshot())), true, 'real Chromium screenshot');
-  for (const width of [1200, 390]) {
-    await page.setViewport({ width, height: 900 });
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  for (const fixture of ['pass', 'fail', 'error', 'not-run', 'incomplete']) {
+    await page.setContent(await readFile(path.join(fixtures, `${fixture}-report/report.html`), 'utf8'));
+    await page.setViewport({ width: 1200, height: 900 });
+    const layout = await page.evaluate(() => {
+      const details = document.querySelector('details');
+      const table = document.querySelector('table');
+      const summary = document.querySelector('[aria-label="결과 요약"]');
+      return { collapsed: !details.open, resultsAboveMetadata: table.getBoundingClientRect().top < details.getBoundingClientRect().top,
+        statusesVisible: summary.getBoundingClientRect().bottom <= innerHeight,
+        resultsVisible: table.getBoundingClientRect().top < innerHeight };
+    });
+    assert.deepEqual(layout, { collapsed: true, resultsAboveMetadata: true, statusesVisible: true, resultsVisible: true }, fixture);
+    for (const width of [1200, 390]) {
+      await page.setViewport({ width, height: 900 });
+      for (const open of [false, true]) {
+        await page.$$eval('details', (items, open) => items.forEach(item => { item.open = open; }), open);
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${fixture}: ${width}px, details=${open}`);
+      }
+    }
   }
   console.log(`Report browser validation: ${await browser.version()}`);
 });

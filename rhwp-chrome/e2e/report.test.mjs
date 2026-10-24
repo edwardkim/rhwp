@@ -167,6 +167,28 @@ test('independent expected candidate/tool hashes and source-bound manual review'
   assert.equal((await inspectRun(f.input, { 'manual-review': manualPath })).summary.status, 'incomplete');
 });
 
+test('delegated manual review is explicit, source-bound and never promotes a failed run', async t => {
+  const f = await fixture(t, 'fail');
+  const { summary } = await inspectRun(f.input);
+  const manualPath = path.join(f.directory, 'delegated.json');
+  const manual = { sourceSha256: summary.sourceSha256, checkedAt: '2026-10-24T03:00:00.000Z',
+    readability: 'pass', sharingExclusions: 'pass', reviewMode: 'delegated', reviewer: 'SECRET' };
+  await writeFile(manualPath, JSON.stringify(manual));
+  const result = await generateReport({ ...f, 'manual-review': manualPath });
+  assert.equal(result.status, 'fail');
+  assert.equal(result.manualReview.reviewMode, 'delegated');
+  const html = await readFile(path.join(f.output, 'report.html'), 'utf8');
+  assert.match(html, /사용자 위임에 따른 검토/);
+  assertShareable(html);
+  for (const reviewMode of ['SECRET', '<SCRIPT>SECRET</SCRIPT>', null]) {
+    await writeFile(manualPath, JSON.stringify({ ...manual, reviewMode }));
+    const { summary: invalid } = await inspectRun(f.input, { 'manual-review': manualPath });
+    assert.equal(invalid.status, 'incomplete');
+    assert.ok(invalid.issues.includes('manual-review-invalid-or-wrong-source'));
+    assert.doesNotMatch(JSON.stringify(invalid.manualReview), /SECRET/);
+  }
+});
+
 test('CLI keeps an incomplete otherwise-pass run nonzero', async t => {
   const f = await fixture(t);
   await rm(path.join(f.input, 'extension-smoke.log'));

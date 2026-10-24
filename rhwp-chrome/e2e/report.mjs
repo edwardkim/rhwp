@@ -134,8 +134,8 @@ export async function inspectRun(input, options = {}) {
   if (options['manual-review']) {
     try {
       const manual = JSON.parse(await readFile(options['manual-review'], 'utf8'));
-      if (manual.sourceSha256 !== summary.sourceSha256 || !date(manual.checkedAt) || !['pass', 'fail'].includes(manual.readability) || !['pass', 'fail'].includes(manual.sharingExclusions)) throw new Error('invalid manual record');
-      summary.manualReview = { status: '사용자 제공 기록 (자동 검증 아님)', checkedAt: manual.checkedAt, readability: manual.readability, sharingExclusions: manual.sharingExclusions };
+      if (manual.sourceSha256 !== summary.sourceSha256 || !date(manual.checkedAt) || !['pass', 'fail'].includes(manual.readability) || !['pass', 'fail'].includes(manual.sharingExclusions) || (manual.reviewMode !== undefined && !['direct', 'delegated'].includes(manual.reviewMode))) throw new Error('invalid manual record');
+      summary.manualReview = { status: '입력된 수동 검토 기록 (자동 검증 아님)', reviewMode: manual.reviewMode ?? 'unspecified', checkedAt: manual.checkedAt, readability: manual.readability, sharingExclusions: manual.sharingExclusions };
     } catch { problem('manual-review-invalid-or-wrong-source'); }
   }
   if (!issues.length) summary.status = summary.sourceStatus;
@@ -144,16 +144,68 @@ export async function inspectRun(input, options = {}) {
 }
 
 function render(summary) {
+  const statuses = { pass: '통과', fail: '실패', error: '오류', 'not-run': '미실행', running: '진행 중', incomplete: '증적 불완전', unknown: '미확인' };
+  const badge = value => `<strong class="badge ${Object.hasOwn(statuses, value) ? value : 'unknown'}">${escape(statuses[value] ?? value)} <small>${escape(value)}</small></strong>`;
+  const value = item => item === null || item === undefined ? '미관측' : escape(item);
+  const fields = entries => `<dl>${entries.map(([label, item]) => `<dt>${escape(label)}</dt><dd>${value(item)}</dd>`).join('')}</dl>`;
+  const issues = {
+    'result-json-parse-error': '원본 결과 JSON을 읽을 수 없습니다.',
+    'invalid-result': '원본 결과 형식이 올바르지 않습니다.',
+    'invalid-status': '원본 실행 상태를 확인할 수 없습니다.',
+    'unsupported-schemaVersion': '지원하지 않는 결과 스키마입니다.',
+    'unbound-legacy-or-invalid-evidence': '실행 ID 또는 증적 소속 정보가 없어 같은 실행의 자료인지 확인할 수 없습니다.',
+    'invalid-startedAt': '실행 시작 시각이 올바르지 않습니다.',
+    'unfinished-run': '실행이 끝나지 않았습니다. 미실행 검사가 남아 있습니다.',
+    'invalid-time-order': '종료 시각이 시작 시각보다 빠릅니다.',
+    'candidate-inventory-hash-invalid': '후보 파일 목록이나 해시가 일치하지 않습니다.',
+    'candidate-required-files-missing': '확장 후보의 필수 파일이 빠져 있습니다.',
+    'candidate-version-invalid': '후보 버전 정보를 확인할 수 없습니다.',
+    'candidate-missing': '검사한 확장 후보 정보가 없습니다.',
+    'tool-provenance-unverified': '검사 도구 SHA 또는 변경 여부를 확인할 수 없습니다.',
+    'environment-incomplete': '실행 환경 기록이 불완전합니다.',
+    'environment-missing': '실행 환경 기록이 없습니다.',
+    'invalid-suite-list': '검사 목록이 올바르지 않습니다.',
+    'missing-or-duplicate-suite': '검사가 누락됐거나 중복돼 있습니다.',
+    'invalid-suite-status': '개별 검사 상태를 확인할 수 없습니다.',
+    'inconsistent-suite-pass': '통과로 기록된 검사에 오류나 비정상 종료가 함께 있습니다.',
+    'suite-log-missing': '실행한 검사의 로그가 증적 목록에 없습니다.',
+    'not-run-with-evidence': '미실행 검사에 증적이 연결돼 있습니다.',
+    'failure-json-missing': '실패 진단 JSON이 증적 목록에 없습니다.',
+    'failure-png-missing': '실패 화면 PNG가 없습니다. 브라우저 실행 전 실패한 경우에도 화면 증거는 미확인입니다.',
+    'invalid-or-duplicate-artifact': '증적 항목이 올바르지 않거나 중복돼 있습니다.',
+    'artifact-binding-invalid': '증적의 실행 ID나 해시 형식이 올바르지 않습니다.',
+    'artifact-hash-mismatch': '증적 파일의 내용이 기록된 해시와 다릅니다.',
+    'log-run-or-suite-mismatch': '로그의 실행 ID 또는 검사 이름이 원본 결과와 다릅니다.',
+    'diagnostic-json-parse-error': '실패 진단 JSON을 읽을 수 없습니다.',
+    'diagnostic-run-mismatch': '실패 진단이 다른 실행에 속합니다.',
+    'invalid-png': 'PNG가 손상됐거나 지원하는 검증 한도를 초과했습니다.',
+    'artifact-missing-or-not-regular': '증적 파일이 없거나 일반 파일이 아닙니다.',
+    'unlisted-artifact-possible-mixed-run': '목록에 없는 파일이 있어 다른 실행의 자료가 섞였을 수 있습니다.',
+    'inconsistent-overall-pass': '전체 통과 기록이 오류·개별 검사·후보 변경 정보와 모순됩니다.',
+    'inconsistent-overall-fail': '전체 실패 기록에 대응하는 실패 검사가 없습니다.',
+    'expected-candidate-hash-mismatch': '후보 해시가 별도로 지정한 기대값과 다릅니다.',
+    'expected-tool-sha-mismatch': '검사 도구 SHA가 별도로 지정한 기대값과 다릅니다.',
+    'manual-review-invalid-or-wrong-source': '수동 검토 기록이 올바르지 않거나 다른 원본에 대한 기록입니다.',
+  };
+  const stages = { launch: '브라우저 실행', 'service-worker': '서비스 워커', 'options-save': '설정 저장', 'viewer-dark': '뷰어·다크 모드', print: '인쇄', options: '설정', 'content-script': '콘텐츠 스크립트' };
+  const evidence = row => row.evidence.length ? `<ul class="evidence">${row.evidence.map(e => `<li>${escape(e.id)} · ${escape(e.kind)} · ${e.status === 'verified' ? '파일 검증됨' : '파일 미검증'}${e.stage ? `<br>단계: ${escape(stages[e.stage] ?? e.stage)} <code>${escape(e.stage)}</code>` : ''}</li>`).join('')}</ul>` : row.status === 'not-run' ? '검사를 실행하지 않아 증적이 없습니다.' : '확인할 증적이 없습니다.';
+  const count = summary.results.filter(row => row.status === 'not-run').length;
+  const explanation = summary.issues.length ? '누락·불일치 또는 미완료 기록이 있습니다. 원본 실행 상태와 아래 확인할 문제를 함께 검토하세요.'
+    : summary.status === 'pass' ? '기록된 검사가 모두 통과했고 증적의 내부 일관성을 확인했습니다. 수동 검토와 미검증 범위도 확인하세요.'
+      : '원본의 실패·오류 상태를 보존했습니다. 증적에서 누락·불일치는 발견하지 못했으며, 검사 성공을 뜻하지 않습니다.';
+  const review = summary.manualReview;
+  const reviewMode = { direct: '직접 검토', delegated: '사용자 위임에 따른 검토', unspecified: '검토 방식 미기록' };
   return `<!doctype html><html lang="ko"><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><meta name="viewport" content="width=device-width"><title>확장 E2E 증적 보고서</title>
-<style>body{font:16px/1.6 system-ui;max-width:1100px;margin:2em auto;padding:0 1em}table{border-collapse:collapse;width:100%}td,th{border:1px solid #aaa;padding:.5em;text-align:left}pre{white-space:pre-wrap;overflow-wrap:anywhere}code{overflow-wrap:anywhere}</style>
-<h1>확장 E2E 증적 보고서</h1><p>보고서 상태: <strong>${escape(summary.status)}</strong> · 원본 실행 상태: <strong>${escape(summary.sourceStatus)}</strong></p>
-<p>증적 해시 일치는 기록의 내부 일관성 검사이며 서명·독립 출처 인증이 아닙니다.</p>
-<h2>실행 식별·후보·검사 도구</h2><pre>${escape(JSON.stringify({ sourceSha256: summary.sourceSha256, schemaVersion: summary.sourceSchemaVersion, evidenceVersion: summary.evidenceVersion, runId: summary.runId, candidate: summary.candidate, tool: summary.tool, environment: summary.environment, startedAt: summary.startedAt, finishedAt: summary.finishedAt }, null, 2))}</pre>
-<h2>Suite 결과</h2><table><tr><th>Suite</th><th>상태</th><th>종료 코드 / timeout</th><th>증적·단계</th></tr>${summary.results.map(row => `<tr><td>${escape(row.name)}</td><td>${escape(row.status)}</td><td>${escape(row.exitCode)} / ${escape(row.timedOut)}</td><td>${row.evidence.map(e => `${escape(e.id)} (${escape(e.kind)}): ${escape(e.status)} ${escape(e.stage ?? '')}`).join('<br>')}</td></tr>`).join('')}</table>
-<h2>누락·오류·미완료</h2><pre>${escape(JSON.stringify(summary.issues, null, 2))}</pre>
-<h2>검증 범위와 미검증 범위</h2><p>선택 실행의 smoke → download → lifecycle 결과를 표시합니다. 실행하지 않은 suite는 not-run입니다.</p><ul>${summary.limitations.map(x => `<li>${escape(x)}</li>`).join('')}</ul>
-<h2>별도 수동 확인</h2><pre>${escape(JSON.stringify(summary.manualReview, null, 2))}</pre>
-<h2>공유 전 제외 정보</h2><ul>${summary.excluded.map(x => `<li>${escape(x)}</li>`).join('')}</ul><p>원본 증적은 복사하지 않았습니다. 비공개 검토는 생성 폴더의 private.html에서 원본을 여세요. 공유 대상은 report.html과 report.json 두 파일뿐이며 수동 검토·게시가 필요합니다.</p></html>\n`;
+<style>*{box-sizing:border-box}body{font:16px/1.6 system-ui,sans-serif;color:#172033;background:#f5f7fa;max-width:1100px;margin:2em auto;padding:0 1em}h1{font-size:1.8em;margin:.2em 0}h2{font-size:1.2em;margin:0 0 .7em}p{margin:.6em 0}.muted,small{color:#526078}section,details{background:#fff;border:1px solid #d5dce6;border-radius:10px;padding:1.1em;margin:1em 0}.overview{display:grid;grid-template-columns:1fr 1fr;gap:1em}.overview p{margin:0 0 .4em}.badge{display:inline-block;border-radius:5px;padding:.2em .5em;background:#edf0f5}.badge small{font-weight:normal;color:inherit}.pass{background:#dff3e7;color:#14532d}.fail,.error{background:#fee2e2;color:#881337}.incomplete,.running{background:#fff0cd;color:#713f12}.problems{padding-left:1.4em}.problems li{margin:.5em 0}code,dd{overflow-wrap:anywhere}code{font-size:.85em}table{border-collapse:collapse;width:100%;table-layout:fixed}td,th{border-bottom:1px solid #d5dce6;padding:.65em;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#f5f7fa}.evidence{padding-left:1.1em;margin:0}.evidence li{margin-bottom:.4em}summary{cursor:pointer;font-weight:700}dl{display:grid;grid-template-columns:12em 1fr;gap:.5em 1em}dt{color:#526078}dd{margin:0;min-width:0}footer{font-size:.9em;color:#526078;margin:1.5em 0}@media(max-width:640px){body{margin:1em auto}.overview{grid-template-columns:1fr}dl{grid-template-columns:1fr;gap:.2em}dd{margin-bottom:.6em}thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}tbody,tr,td{display:block}tr{border:1px solid #d5dce6;border-radius:6px;margin:.7em 0}td{border:0}td::before{content:attr(data-label);display:block;font-size:.8em;color:#526078}td:first-child{font-weight:700}}</style>
+<header><p class="muted">공유 전 검토용 요약</p><h1>확장 E2E 증적 보고서</h1><p class="muted">후보 버전 ${value(summary.candidate?.version)} · 시작 ${value(summary.startedAt)}</p></header>
+<section aria-label="결과 요약"><div class="overview"><div><p>원본 실행 상태</p>${badge(summary.sourceStatus)}</div><div><p>보고서 판정</p>${badge(summary.status)}</div></div><p>${explanation}</p><p>전체 ${summary.results.length}개 검사 · 미실행 ${count}개</p></section>
+<section><h2>확인할 문제</h2>${summary.issues.length ? `<ul class="problems">${summary.issues.map(code => `<li>${escape(issues[code] ?? '기록을 확인해야 합니다.')}<br><code>${escape(code)}</code></li>`).join('')}</ul>` : '<p>증적의 누락·불일치가 발견되지 않았습니다.</p>'}</section>
+<section><h2>검사별 결과</h2><table><thead><tr><th scope="col">검사</th><th scope="col">상태</th><th scope="col">종료</th><th scope="col">증적·실패 단계</th></tr></thead><tbody>${summary.results.map(row => `<tr><td data-label="검사">${escape(row.name)}</td><td data-label="상태">${badge(row.status)}</td><td data-label="종료">코드 ${row.exitCode === null ? '—' : value(row.exitCode)}<br>시간 초과 ${row.timedOut === null ? '미관측' : row.timedOut ? '있음' : '없음'}</td><td data-label="증적·실패 단계">${evidence(row)}</td></tr>`).join('')}</tbody></table><p class="muted">파일 검증은 증적의 해시·실행 소속 확인입니다. 검사 통과나 화면 품질 판정과는 별개입니다.</p></section>
+<details><summary>실행 식별·후보·검사 도구 상세</summary>${fields([['원본 SHA-256', summary.sourceSha256], ['실행 ID', summary.runId], ['결과 스키마', summary.sourceSchemaVersion], ['증적 버전', summary.evidenceVersion], ['후보 버전', summary.candidate?.version], ['후보 inventory SHA-256', summary.candidate?.sha256], ['후보 검사 전후 동일', summary.candidate?.unchanged === null || summary.candidate?.unchanged === undefined ? null : summary.candidate.unchanged ? '예' : '아니요'], ['후보 빌드 SHA', summary.candidate?.buildSha], ['검사 도구 SHA', summary.tool?.sha], ['도구 변경 사항', summary.tool?.dirty === null || summary.tool?.dirty === undefined ? null : summary.tool.dirty ? '있음' : '없음'], ['Node', summary.environment.node], ['운영체제 / 아키텍처', [summary.environment.platform, summary.environment.arch].filter(Boolean).join(' / ') || null], ['Puppeteer', summary.environment.puppeteer], ['Chrome 설치 대상 버전', summary.environment.chrome], ['시작 시각 (UTC)', summary.startedAt], ['종료 시각 (UTC)', summary.finishedAt]])}<p class="muted">Chrome 값은 실행기가 기록한 설치 대상 버전이며 브라우저 실행을 증명하지 않습니다. 증적 해시 일치는 내부 일관성 검사이며 서명·독립 출처 인증이 아닙니다.</p></details>
+<section><h2>별도 수동 확인</h2>${fields([['읽기 편의성', statuses[review.readability] ?? review.readability], ['공유 정보 제외', statuses[review.sharingExclusions] ?? review.sharingExclusions], ['기록 상태', review.status], ...(review.reviewMode ? [['검토 방식', reviewMode[review.reviewMode]]] : []), ...(review.checkedAt ? [['검토 시각 (UTC)', review.checkedAt]] : [])])}<p class="muted">입력된 수동 판정은 자동 검사 결과를 바꾸지 않습니다.</p></section>
+<details><summary>검증 범위와 미검증 범위</summary><p>smoke → download → lifecycle 순서의 선택 실행 결과입니다. 미실행 검사는 not-run으로 남습니다.</p><ul>${summary.limitations.map(x => `<li>${escape(x)}</li>`).join('')}</ul></details>
+<details><summary>공유 전 제외 정보와 원본 확인 방법</summary><ul>${summary.excluded.map(x => `<li>${escape(x)}</li>`).join('')}</ul><p>공유 대상은 report.html과 report.json 두 파일입니다. SHA·버전·실행 시각의 공개 범위도 검토하세요. 원본 증적은 비공개 private.html에서 확인하며, 이 요약에는 복사하지 않았습니다.</p></details>
+<footer>비공개 private.html과 원본 결과 폴더는 공유하지 마세요.</footer></html>\n`;
 }
 
 export async function generateReport({ input, output, ...options }) {
