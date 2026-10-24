@@ -77,6 +77,30 @@ test('late FontFace.load cannot register after a document reset, even if bytes w
   } finally { await f.dispose(); }
 });
 
+test('host 글꼴의 누락 글리프를 위해 준비한 뒤쪽 후보도 같은 순서로 전달한다', async () => {
+  const f = await fixture();
+  try {
+    const snapshot = await f.provider.getSnapshot();
+    await setHostFontProvider({ ...f.provider, async getSnapshot() {
+      return { revision: 'fallback-chain', faces: [...snapshot.faces, {
+        id: 'fallback', family: 'Host Fallback', fullName: 'Host Fallback Italic',
+        postscriptName: 'HostFallback-Italic', style: 'Italic', weight: 400, slant: 'italic' as const,
+      }] };
+    } });
+    const style = { weight: 400, slant: 'italic' as const };
+    await f.session.prepare(['Host Test', 'Host Fallback'].map(name => resolveRendererLocalFont(name, style)!));
+    const resolve = (families: string) => withHostCanvasFonts(f.session,
+      () => scopedHostCanvasFont(`italic 20px ${families}`))!;
+    const primary = resolve('"Host Test"').split(',')[0];
+    const fallback = resolve('"Host Fallback"').split(',')[0].replace('italic 20px ', '');
+    const chain = resolve('"Host Test", "Host Fallback", serif');
+    assert(chain.startsWith(primary), '주 글꼴의 선택과 스타일을 유지한다');
+    assert(chain.includes(fallback), '첫 글꼴에 없는 글리프를 뒤쪽의 실제 공급 face가 표시할 수 있어야 한다');
+    assert(chain.indexOf(fallback) < chain.indexOf('"Host Test"'), '준비한 물리 face는 기존 표시 후보보다 먼저 전달한다');
+    assert.match(chain, /"Host Test", "Host Fallback", serif$/, '원래 후보 체인도 보존한다');
+  } finally { await f.dispose(); }
+});
+
 test('failed loads are bounded within a generation and retry after replacement', async () => {
   const f = await fixture();
   try {
