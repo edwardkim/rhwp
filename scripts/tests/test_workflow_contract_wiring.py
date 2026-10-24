@@ -112,6 +112,21 @@ class WorkflowContractWiringTests(unittest.TestCase):
         self.assertIn("test_visual_sweep_alpha.py", discovered)
         self.assertIn("test_visual_sweep_workers.py", discovered)
 
+    def test_font_trace_contracts_reuse_the_existing_fresh_wasm_job(self):
+        frontend_job = re.search(
+            r"(?ms)^  frontend-package-gates:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\Z)",
+            self.ci,
+        )
+        self.assertIsNotNone(frontend_job)
+        body = frontend_job.group(0)
+        build_position = body.index("wasm-pack build --target web --dev")
+        for name in ["font_decision_trace_contract.test.mjs", "font_decision_trace_e2e.test.mjs"]:
+            invocation = f"scripts/tests/{name}"
+            self.assertEqual(body.count(invocation), 1, "동일 검사를 중복 실행하지 않는다")
+            self.assertGreater(body.index(invocation), build_position, "fresh WASM 이후 실행한다")
+        self.assertIn("contents: read", body)
+        self.assertNotIn("contents: write", body)
+
 
 if __name__ == "__main__":
     unittest.main()

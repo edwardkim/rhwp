@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -11,6 +12,10 @@ import { enrichFontDecisionTrace } from '../../rhwp-studio/src/core/font-decisio
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INVESTIGATION = path.join(ROOT, 'mydocs', 'tech', 'investigations', 'issue-4961');
+const Ajv = createRequire(path.join(ROOT, 'rhwp-studio/package.json'))('ajv/dist/2020.js');
+const validateSchema = new Ajv({ allErrors: true }).compile(JSON.parse(fs.readFileSync(
+  path.join(INVESTIGATION, 'font_decision_trace.schema.json'), 'utf8',
+)));
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(
   INVESTIGATION,
   'font_decision_trace_e2e.json',
@@ -83,6 +88,8 @@ test('공개 HWP/HWPX fixture의 exact, missing, substFont 계보가 WASM에서 
     const first = readTrace(document);
     const second = readTrace(document);
     assert.deepEqual(first, second, `${document.id}: repeat trace`);
+    assert.equal(validateSchema(first), true,
+      `${document.id}: ${JSON.stringify(validateSchema.errors)}`);
     assert.deepEqual(validateTraceEnvelope(first), [], document.id);
     assert.equal(first.status, document.expectedStatus, document.id);
     const deferredPins = new Set(document.renderPinsDeferredToIssue7445 ?? []);

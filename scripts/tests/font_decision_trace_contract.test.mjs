@@ -209,6 +209,68 @@ test('observed glyph miss requires an explicit failure instead of a guessed face
   assert.match(validateTraceEnvelope(trace).join('\n'), /observed without a resolved face/);
 });
 
+function traceWithDirectRegistryRule(sourceBoundaryId, sourceFace, sourceOwner) {
+  const registry = readJson(path.join(ROOT, 'assets/font-rules/font_rule_registry_v2.json'));
+  const rule = registry.rules.find(candidate => candidate.status === 'active'
+    && candidate.sourceBoundaryId === sourceBoundaryId && candidate.sourceFace === sourceFace);
+  assert.ok(rule, '현재 활성 레지스트리가 직접 규칙의 근거다');
+  const link = buildCandidateLink({
+    sourceBoundaryId, candidateKind: 'finite-mapping', sourceFace,
+    targetOrPolicy: rule.targetFaceOrPolicy, conditions: rule.conditions, order: rule.order,
+  }, sourceOwner);
+  const trace = validTrace();
+  trace.records[0].provenance.push({
+    candidateId: link.candidateId, ruleId: rule.ruleId,
+    evidenceAnchor: `assets/font-rules/font_rule_registry_v2.json#${rule.ruleId}`,
+    sourceOwner, relationType: rule.relationType, evidenceStatus: 'unknown',
+    knownLimitations: ['선택 규칙의 출처이며 실제 paint 글꼴이나 윤곽 동일성의 증명이 아니다.'],
+    reason: null,
+  });
+  return trace;
+}
+
+function refreshTraceHashes(trace) {
+  trace.layoutHash.value = portableLayoutHash(trace);
+  trace.normalizedHash.value = normalizedTraceHash(trace);
+}
+
+test('활성 v2 직접 규칙의 앵커는 과거 W1 후보 링크와 구분해 검증한다', () => {
+  for (const [boundary, face, owner] of [
+    ['rust-style-resolution.document-substitute', 'HCR Batang', 'rust-style-resolution'],
+    ['rust-metric.metric-alias', 'RHWP Public Batang', 'rust-metric'],
+  ]) {
+    const trace = traceWithDirectRegistryRule(boundary, face, owner);
+    refreshTraceHashes(trace);
+    assert.deepEqual(validateTraceEnvelope(trace), [], face);
+  }
+});
+
+test('v2 앵커의 후보·규칙·소유자·관계가 바뀌거나 비활성 규칙이면 거절한다', () => {
+  const original = traceWithDirectRegistryRule(
+    'rust-style-resolution.document-substitute', 'HCR Batang', 'rust-style-resolution',
+  );
+  const registry = readJson(path.join(ROOT, 'assets/font-rules/font_rule_registry_v2.json'));
+  const retired = registry.rules.find(rule => rule.status === 'retired');
+  assert.ok(retired);
+  for (const mutate of [
+    entry => { entry.candidateId = 'candidate.00000000000000000000'; },
+    entry => { entry.ruleId = 'rule.rust-style-resolution.00000000000000000000';
+      entry.evidenceAnchor = `assets/font-rules/font_rule_registry_v2.json#${entry.ruleId}`; },
+    entry => { entry.evidenceAnchor = `other.json#${entry.ruleId}`; },
+    entry => { entry.evidenceAnchor = `other.json#${entry.candidateId}`; },
+    entry => { entry.evidenceAnchor = `assets/font-rules/font_rule_registry_v2.json#${entry.candidateId}`; },
+    entry => { entry.sourceOwner = 'rust-metric'; },
+    entry => { entry.relationType = 'identity-alias'; },
+    entry => { entry.ruleId = retired.ruleId;
+      entry.evidenceAnchor = `assets/font-rules/font_rule_registry_v2.json#${retired.ruleId}`; },
+  ]) {
+    const trace = structuredClone(original);
+    mutate(trace.records[0].provenance.at(-1));
+    refreshTraceHashes(trace);
+    assert.match(validateTraceEnvelope(trace).join('\n'), /provenance/);
+  }
+});
+
 test('W1 source digest drift is detected without exposing an absolute checkout path', () => {
   const snapshot = readJson(path.join(
     ROOT,
@@ -314,6 +376,14 @@ test('schema fixes v1 enums and the 4096 hard record limit', () => {
   assert.equal(schema.properties.records.maxItems, MAX_CHARACTER_LIMIT);
   assert.equal(schema.$defs.limits.properties.maxCharacters.default, DEFAULT_CHARACTER_LIMIT);
   assert.equal(schema.$defs.limits.properties.maxCharacters.maximum, MAX_CHARACTER_LIMIT);
+  const ruleIdPattern = new RegExp(schema.$defs.provenance.properties.ruleId.oneOf[0].pattern);
+  for (const id of ['rule.rust-style-resolution.8f1a484b6e8dff748728',
+    'rule.rust-metric.ygodic230-name', 'rule.rust-metric.issue-7445.public-batang-name']) {
+    assert.equal(ruleIdPattern.test(id), true, id);
+  }
+  for (const id of ['rule.', 'rule.Owner.name', 'rule.rust-metric..name', 'other.rust-metric.name']) {
+    assert.equal(ruleIdPattern.test(id), false, id);
+  }
   assert.deepEqual(schema.$defs.traceStatus.enum, [
     'complete',
     'truncated',
