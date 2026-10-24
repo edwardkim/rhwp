@@ -1171,18 +1171,70 @@ impl Paragraph {
             }
             None => 0,
         };
-        let slot_end = gap_start + CTRL_CHAR_CODE_UNITS;
-        if gap_end < slot_end {
+        if gap_end < gap_start + CTRL_CHAR_CODE_UNITS {
             return;
         }
-        for offset in &mut self.char_offsets[char_idx..] {
-            *offset -= CTRL_CHAR_CODE_UNITS;
+        self.remove_stream_slot(gap_start);
+    }
+
+    /// `controls[control_idx]` 를 빼고 그 8유닛 자리를 걷어낸다.
+    ///
+    /// 그림·도형·수식·표 삭제 경로가 함께 쓴다. 자리 뒤의 글자·글자모양·영역 태그·줄 시작·
+    /// 형광펜 표지를 모두 8유닛 당기고, 뒤 누름틀 범위의 컨트롤 번호도 하나씩 줄인다.
+    /// 종전에는 경로마다 `char_offsets` 만 당겨 개체 뒤 글자모양 경계가 8유닛 뒤에 남았다.
+    pub(crate) fn remove_control(&mut self, control_idx: usize) -> Control {
+        // serialize_para_text 와 같은 순서로 control_idx 번째 컨트롤의 자리를 찾는다.
+        let text_chars: Vec<char> = self.text.chars().collect();
+        let mut ci = 0usize;
+        let mut prev_end: u32 = 0;
+        let mut slot_start: Option<u32> = None;
+        'outer: for (i, &ch) in text_chars.iter().enumerate() {
+            let offset = self.char_offsets.get(i).copied().unwrap_or(prev_end);
+            while prev_end + CTRL_CHAR_CODE_UNITS <= offset && ci < self.controls.len() {
+                if ci == control_idx {
+                    slot_start = Some(prev_end);
+                    break 'outer;
+                }
+                ci += 1;
+                prev_end += CTRL_CHAR_CODE_UNITS;
+            }
+            prev_end = offset + Self::char_stream_len(ch);
+        }
+        // 텍스트 뒤에 놓인 컨트롤
+        if slot_start.is_none() && control_idx >= ci {
+            slot_start = Some(prev_end + (control_idx - ci) as u32 * CTRL_CHAR_CODE_UNITS);
+        }
+        if let Some(start) = slot_start {
+            self.remove_stream_slot(start);
+        }
+
+        let removed = self.controls.remove(control_idx);
+        if control_idx < self.ctrl_data_records.len() {
+            self.ctrl_data_records.remove(control_idx);
+        }
+        for range in &mut self.field_ranges {
+            if range.control_idx > control_idx {
+                range.control_idx -= 1;
+            }
+        }
+        self.char_count = self.char_count.saturating_sub(CTRL_CHAR_CODE_UNITS);
+        removed
+    }
+
+    /// `slot_start` 에서 시작하는 8유닛 자리를 스트림에서 걷어내고 같은 좌표를 쓰는
+    /// 문단 메타데이터를 당긴다.
+    fn remove_stream_slot(&mut self, slot_start: u32) {
+        let slot_end = slot_start + CTRL_CHAR_CODE_UNITS;
+        for offset in &mut self.char_offsets {
+            if *offset >= slot_end {
+                *offset -= CTRL_CHAR_CODE_UNITS;
+            }
         }
         let pull = |pos: &mut u32| {
             if *pos >= slot_end {
                 *pos -= CTRL_CHAR_CODE_UNITS;
-            } else if *pos > gap_start {
-                *pos = gap_start;
+            } else if *pos > slot_start {
+                *pos = slot_start;
             }
         };
         for shape in &mut self.char_shapes {

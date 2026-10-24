@@ -1004,63 +1004,8 @@ impl DocumentCore {
             ));
         }
 
-        // char_offsets 조정 (delete_picture_control_native와 동일)
-        let text_chars: Vec<char> = para.text.chars().collect();
-        let mut ci = 0usize;
-        let mut prev_end: u32 = 0;
-        let mut gap_start: Option<u32> = None;
-        'outer: for i in 0..text_chars.len() {
-            let offset = if i < para.char_offsets.len() {
-                para.char_offsets[i]
-            } else {
-                prev_end
-            };
-            while prev_end + 8 <= offset && ci < para.controls.len() {
-                if ci == control_idx {
-                    gap_start = Some(prev_end);
-                    break 'outer;
-                }
-                ci += 1;
-                prev_end += 8;
-            }
-            let char_size: u32 = if text_chars[i] == '\t' {
-                8
-            } else if text_chars[i].len_utf16() == 2 {
-                2
-            } else {
-                1
-            };
-            prev_end = offset + char_size;
-        }
-        if gap_start.is_none() {
-            while ci < para.controls.len() {
-                if ci == control_idx {
-                    gap_start = Some(prev_end);
-                    break;
-                }
-                ci += 1;
-                prev_end += 8;
-            }
-        }
-        if let Some(gs) = gap_start {
-            let threshold = gs + 8;
-            for offset in para.char_offsets.iter_mut() {
-                if *offset >= threshold {
-                    *offset -= 8;
-                }
-            }
-        }
-
-        para.controls.remove(control_idx);
-        if control_idx < para.ctrl_data_records.len() {
-            para.ctrl_data_records.remove(control_idx);
-        }
-        // 컨트롤 배열이 줄어도 뒤 누름틀의 범위는 같은 필드를 가리켜야 한다.
-        for range in &mut para.field_ranges {
-            if range.control_idx > control_idx {
-                range.control_idx -= 1;
-            }
-        }
+        para.remove_control(control_idx);
+        // 컨트롤 배열이 줄어도 활성 누름틀은 같은 필드를 가리켜야 한다.
         if let Some(active) = self.active_field.as_mut() {
             if active.section_idx == section_idx
                 && active.para_idx == parent_para_idx
@@ -1069,9 +1014,6 @@ impl DocumentCore {
             {
                 active.control_idx -= 1;
             }
-        }
-        if para.char_count >= 8 {
-            para.char_count -= 8;
         }
 
         // line_segs 재계산: 도형 높이가 반영된 line_segs를 텍스트 기반으로 리셋
@@ -2109,60 +2051,7 @@ impl DocumentCore {
         for &(pi, ci) in &sorted_targets {
             let para = &mut self.document.sections[section_idx].paragraphs[pi];
 
-            // char_offsets 조정
-            let text_chars: Vec<char> = para.text.chars().collect();
-            let mut ctrl_ci = 0usize;
-            let mut prev_end: u32 = 0;
-            let mut gap_start: Option<u32> = None;
-            'outer: for i in 0..text_chars.len() {
-                let offset = if i < para.char_offsets.len() {
-                    para.char_offsets[i]
-                } else {
-                    prev_end
-                };
-                while prev_end + 8 <= offset && ctrl_ci < para.controls.len() {
-                    if ctrl_ci == ci {
-                        gap_start = Some(prev_end);
-                        break 'outer;
-                    }
-                    ctrl_ci += 1;
-                    prev_end += 8;
-                }
-                let char_size: u32 = if text_chars[i] == '\t' {
-                    8
-                } else if text_chars[i].len_utf16() == 2 {
-                    2
-                } else {
-                    1
-                };
-                prev_end = offset + char_size;
-            }
-            if gap_start.is_none() {
-                while ctrl_ci < para.controls.len() {
-                    if ctrl_ci == ci {
-                        gap_start = Some(prev_end);
-                        break;
-                    }
-                    ctrl_ci += 1;
-                    prev_end += 8;
-                }
-            }
-            if let Some(gs) = gap_start {
-                let threshold = gs + 8;
-                for offset in para.char_offsets.iter_mut() {
-                    if *offset >= threshold {
-                        *offset -= 8;
-                    }
-                }
-            }
-
-            para.controls.remove(ci);
-            if ci < para.ctrl_data_records.len() {
-                para.ctrl_data_records.remove(ci);
-            }
-            if para.char_count >= 8 {
-                para.char_count -= 8;
-            }
+            para.remove_control(ci);
         }
 
         // 5) 삽입 위치 인덱스 재계산 (제거 후 인덱스가 변했을 수 있음)
