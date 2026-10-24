@@ -2402,6 +2402,10 @@ impl WebCanvasRenderer {
         use super::form_appearance::{form_drawing, FormPrimitive};
         let drawing = form_drawing(form, *bbox);
         self.ctx.save();
+        // 컨트롤은 자기 영역 밖을 그리지 않는다. 폭보다 긴 캡션은 영역 경계에서 잘린다.
+        self.ctx.begin_path();
+        self.ctx.rect(bbox.x, bbox.y, bbox.width, bbox.height);
+        self.ctx.clip();
         for primitive in drawing.primitives {
             match primitive {
                 FormPrimitive::Rect { bbox: b, color } => {
@@ -2446,13 +2450,12 @@ impl WebCanvasRenderer {
             }
         }
         if let Some(label) = drawing.label {
-            let family = label.font_family.replace('\\', "\\\\").replace('\'', "\\'");
             self.ctx.set_font(&format!(
-                "{} {} {}px '{}'",
+                "{} {} {}px {}",
                 if label.italic { "italic" } else { "normal" },
                 if label.bold { "bold" } else { "normal" },
                 label.font_size,
-                family
+                super::canvas_font_family_chain(&label.font_family)
             ));
             self.ctx.set_fill_style_str(&label.color);
             self.ctx.set_text_align("left");

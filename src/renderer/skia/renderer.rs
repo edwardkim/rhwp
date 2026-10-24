@@ -2198,6 +2198,18 @@ impl SkiaLayerRenderer {
     ) {
         use crate::renderer::form_appearance::{form_drawing, FormPrimitive};
         let drawing = form_drawing(form, bbox);
+        // 컨트롤은 자기 영역 밖을 그리지 않는다. 폭보다 긴 캡션은 영역 경계에서 잘린다.
+        canvas.save();
+        canvas.clip_rect(
+            Rect::from_xywh(
+                bbox.x as f32,
+                bbox.y as f32,
+                bbox.width as f32,
+                bbox.height as f32,
+            ),
+            None,
+            Some(true),
+        );
         for primitive in drawing.primitives {
             let mut paint = Paint::default();
             paint.set_anti_alias(true);
@@ -2283,6 +2295,7 @@ impl SkiaLayerRenderer {
                 &paint,
             );
         }
+        canvas.restore();
     }
 }
 

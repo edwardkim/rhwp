@@ -5103,31 +5103,38 @@ export class CanvasKitLayerRenderer {
     const rejection = formDrawingReplayRejection(op);
     if (rejection) { this.unsupportedOps.add(`formObject:${rejection}`); return; }
     const drawing = op.drawing!;
-    for (const primitive of drawing.primitives) {
-      const paint = primitive.kind === 'polyline' && !primitive.closed
-        ? this.makeStrokePaint(primitive.color, primitive.width)
-        : this.makeFillPaint(primitive.color);
-      try {
-        if (primitive.kind === 'rect') {
-          canvas.drawRect(this.rect(primitive.bbox), paint);
-        } else if (primitive.kind === 'circle') {
-          canvas.drawCircle(primitive.x, primitive.y, primitive.radius, paint);
-        } else if (primitive.points.length > 0) {
-          const path = this.createCommandPath([
-            { type: 'moveTo', x: primitive.points[0][0], y: primitive.points[0][1] },
-            ...primitive.points.slice(1).map(([x, y]) => ({ type: 'lineTo' as const, x, y })),
-            ...(primitive.closed ? [{ type: 'closePath' as const }] : []),
-          ]);
-          try { canvas.drawPath(path, paint); } finally { path.delete(); }
-        }
-      } finally { paint.delete(); }
+    // 컨트롤은 자기 영역 밖을 그리지 않는다. 폭보다 긴 캡션은 영역 경계에서 잘린다.
+    canvas.save();
+    canvas.clipRect(this.rect(op.bbox), this.canvasKit.ClipOp?.Intersect ?? 0, true);
+    try {
+      for (const primitive of drawing.primitives) {
+        const paint = primitive.kind === 'polyline' && !primitive.closed
+          ? this.makeStrokePaint(primitive.color, primitive.width)
+          : this.makeFillPaint(primitive.color);
+        try {
+          if (primitive.kind === 'rect') {
+            canvas.drawRect(this.rect(primitive.bbox), paint);
+          } else if (primitive.kind === 'circle') {
+            canvas.drawCircle(primitive.x, primitive.y, primitive.radius, paint);
+          } else if (primitive.points.length > 0) {
+            const path = this.createCommandPath([
+              { type: 'moveTo', x: primitive.points[0][0], y: primitive.points[0][1] },
+              ...primitive.points.slice(1).map(([x, y]) => ({ type: 'lineTo' as const, x, y })),
+              ...(primitive.closed ? [{ type: 'closePath' as const }] : []),
+            ]);
+            try { canvas.drawPath(path, paint); } finally { path.delete(); }
+          }
+        } finally { paint.delete(); }
+      }
+      const label = drawing.label;
+      if (label?.text && !this.drawStaticControlText(canvas, label.text, {
+        x: label.x, y: label.baseline, fontSize: label.fontSize, color: label.color,
+        bold: label.bold, italic: label.italic,
+        fontFamilies: [label.fontFamily, 'Noto Sans KR', 'Noto Sans CJK KR'],
+      })) this.unsupportedOps.add('formObject:textReplayFailed');
+    } finally {
+      canvas.restore();
     }
-    const label = drawing.label;
-    if (label?.text && !this.drawStaticControlText(canvas, label.text, {
-      x: label.x, y: label.baseline, fontSize: label.fontSize, color: label.color,
-      bold: label.bold, italic: label.italic,
-      fontFamilies: [label.fontFamily, 'Noto Sans KR', 'Noto Sans CJK KR'],
-    })) this.unsupportedOps.add('formObject:textReplayFailed');
   }
 
   private renderPlaceholder(canvas: SkCanvas, op: LayerPlaceholderOp): void {
