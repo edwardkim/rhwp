@@ -1193,3 +1193,92 @@ fn pii_declared_ttf_closing_angles_keep_source_order_and_independent_ends() {
         }
     }
 }
+
+#[test]
+fn exact_primary_program_certificate_preserves_native_program_boundaries() {
+    // 설치 여부가 아니라 실제 공급한 동일 TTF 프로그램의 신원을 전달한다.
+    // 원본 HFT 프로그램 출처가 있는 슬롯은 같은 표시 family에도 남아야 한다.
+    let snapshot = serde_json::json!([{
+        "query":"휴먼명조", "family":"휴먼명조",
+        "programId":"verified-primary-human-program", "trueType":true
+    }]);
+    let source_document = |text: &str, native_latin: bool| {
+        let mut program = core("휴먼명조", text, None);
+        let mut source = program.document().clone();
+        for font in source.doc_info.font_faces.iter_mut().flatten() {
+            font.alt_type = 2;
+        }
+        for shape in &mut source.doc_info.char_shapes {
+            shape.bold = true;
+        }
+        if native_latin {
+            for font in &mut source.doc_info.font_faces[1] {
+                font.native_program = Some(rhwp::model::style::NativeFontProgram::HumanMyeongJo);
+            }
+        }
+        program.set_document(source);
+        program
+    };
+    let mut primary = source_document("가", false);
+    let original = primary.export_hwpx_native().unwrap();
+    let selected = FontEnvironment::from_available_programs(
+        &primary.document().doc_info,
+        &snapshot.to_string(),
+    )
+    .unwrap()
+    .expect("주 프로그램의 실제 신원을 스타일 해소에 전달");
+    primary.set_font_environment(Some(selected)).unwrap();
+    assert!(
+        (advance(&record(&primary, "가")) - 7500.0).abs() <= 2.0,
+        "주 TTF 프로그램에 원 HFT 굵게 추적을 덧붙이지 않는다"
+    );
+    assert_eq!(primary.export_hwpx_native().unwrap(), original);
+
+    // 단일 언어 run으로 실제 원 프로그램을 선택한다. 혼합 run의 언어 병합과
+    // 메트릭 조회 이름의 정규화 차이를 프로그램 소유 검증에 혼동하지 않는다.
+    let mut native = source_document("A", true);
+    let native_before = record(&native, "A")["layoutMetric"].clone();
+    let original_native = native.export_hwpx_native().unwrap();
+    let selected = FontEnvironment::from_available_programs(
+        &native.document().doc_info,
+        &snapshot.to_string(),
+    )
+    .unwrap()
+    .expect("다른 슬롯의 TTF 인증은 유지");
+    native.set_font_environment(Some(selected)).unwrap();
+    let native_after = record(&native, "A")["layoutMetric"].clone();
+    // 요청 이름의 한글/영문 alias 표기 대신 실제 해소 프로그램과 전진을 비교한다.
+    for field in [
+        "aliasResolvedFace",
+        "metricEntry",
+        "widthSource",
+        "baseAdvanceHwpunit",
+        "finalAdvanceHwpunit",
+        "transforms",
+    ] {
+        assert_eq!(
+            native_after[field], native_before[field],
+            "다른 슬롯의 TTF 인증은 원 프로그램의 실제 메트릭을 바꾸지 않는다:{field}"
+        );
+    }
+    assert_eq!(native.export_hwpx_native().unwrap(), original_native);
+
+    let mut presence_only = snapshot.clone();
+    presence_only[0]["trueType"] = false.into();
+    assert!(FontEnvironment::from_available_programs(
+        &primary.document().doc_info,
+        &presence_only.to_string(),
+    )
+    .unwrap()
+    .is_none());
+    let mut source = native.document().clone();
+    for font in source.doc_info.font_faces.iter_mut().flatten() {
+        font.native_program = Some(rhwp::model::style::NativeFontProgram::HumanMyeongJo);
+    }
+    assert!(
+        FontEnvironment::from_available_programs(&source.doc_info, &snapshot.to_string())
+            .unwrap()
+            .is_none(),
+        "원 프로그램 출처가 있는 문서는 설치된 TTF로 승격하지 않는다"
+    );
+}

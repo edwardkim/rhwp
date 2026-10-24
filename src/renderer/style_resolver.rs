@@ -150,8 +150,24 @@ pub(crate) fn resolve_styles_with_environment(
                     // TrueType 폭을 사용한다. 선언만으로 임의 face의 표를 신뢰하지 않는다.
                     let target = primary_font_name(&style.font_families[lang]);
                     let original = lookup_font_name_decision(&lookup, lang, shape.font_ids[lang]);
+                    // 같은 이름의 실제 주 TrueType 프로그램은 표시용 대체가 아니다.
+                    // 검증된 폭과 실제 선택을 확인한 경우 그 프로그램이 전진을 소유한다.
+                    // 원 HFT 프로그램 출처가 있거나 치환 경계를 건넌 대체 face는 보존한다.
+                    let source_font = document
+                        .doc_info
+                        .font_faces
+                        .get(lang)
+                        .and_then(|faces| faces.get(shape.font_ids[lang] as usize));
+                    let primary_true_type_program = environment
+                        .is_some_and(|env| env.selects_true_type(target))
+                        && original.substitution_boundary.is_none()
+                        && original.normalized_face.as_deref() == Some(target)
+                        && source_font.is_some_and(|face| face.native_program.is_none())
+                        && (metric_widths_verified_face(target)
+                            || matches!(target, "휴먼명조" | "HumanMyeongJo"));
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
-                    let keep_source_metrics = environment.is_some_and(|env| env.preserves_source_metrics())
+                    let keep_source_metrics = !primary_true_type_program
+                        && environment.is_some_and(|env| env.preserves_source_metrics())
                         && original.alt_type == Some(2)
                         && original.embedded != Some(true)
                         && original.requested_face.as_deref().is_some_and(|face| {
@@ -159,7 +175,11 @@ pub(crate) fn resolve_styles_with_environment(
                                 || has_own_metric_table(&face, style.bold, style.italic)
                                 || crate::renderer::font_metrics_data::has_declared_original_glyph_metrics(face)
                         });
-                    if keep_source_metrics {
+                    // 원 프로그램 선택이 이미 지정한 메트릭 face는 같은 표시
+                    // family의 다른 슬롯이 공급한 TTF 인증으로 다시 추측하지 않는다.
+                    if keep_source_metrics
+                        && source_font.is_none_or(|face| face.native_program.is_none())
+                    {
                         style.font_families_metric_face[lang] = original
                             .requested_face
                             .as_deref()
@@ -949,8 +969,11 @@ pub(crate) fn lookup_font_name_in_environment(
                 .and_then(|face| env.replacement_for(face, lang_index, font_id))
                 .map(|target| (env, target))
         }) {
-            decision.normalized_face = Some(target.to_string());
-            decision.css_family_chain = vec![target.to_string()];
+            // 같은 주 프로그램의 신원 인증은 준비된 glyph fallback 체인을 바꾸지 않는다.
+            if decision.normalized_face.as_deref() != Some(target) {
+                decision.normalized_face = Some(target.to_string());
+                decision.css_family_chain = vec![target.to_string()];
+            }
             let canonical_rule = decision.requested_face.as_deref().and_then(|source| {
                 environment.canonical_selection_rule_for(source, lang_index, font_id)
             });

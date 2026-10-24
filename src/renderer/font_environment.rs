@@ -216,8 +216,20 @@ impl FontEnvironment {
         let embedded = Self::embedded_program_names(doc_info);
         let mut slot_candidates = Vec::new();
         for (language_slot, font_id, request) in Self::document_requests_with_slots(doc_info) {
-            let candidate = if request.primary.iter().any(|name| resolve(name).is_some()) {
-                None
+            let primary = request.primary.iter().find_map(|name| resolve(name));
+            let candidate = if let Some(program) = primary {
+                // 원본 선언은 HFT지만 실제로 준비된 동일 주 프로그램은 TTF일 수 있다.
+                // 존재 확인으로 끝내지 않고 프로그램 신원을 공통 스타일 해소에 전달한다.
+                // 치환 family와 원 HFT 프로그램 출처는 이 주 프로그램 인증이 아니다.
+                let source = doc_info
+                    .font_faces
+                    .get(language_slot)
+                    .and_then(|faces| faces.get(font_id as usize));
+                (program.true_type
+                    && program.query == request.source
+                    && source
+                        .is_some_and(|font| font.alt_type == 2 && font.native_program.is_none()))
+                .then_some((program, None))
             } else {
                 request
                     .substitute
@@ -443,9 +455,14 @@ impl FontEnvironment {
         font_paths: &[std::path::PathBuf],
     ) -> Result<Option<Self>, HwpError> {
         use sha2::{Digest, Sha256};
-        if !Self::document_requests(doc_info)
-            .iter()
-            .any(|request| !request.substitute.is_empty() || !request.public_fallback.is_empty())
+        let needs_primary_program_identity =
+            doc_info.font_faces.iter().flatten().any(|font| {
+                !font.is_embedded && font.alt_type == 2 && font.native_program.is_none()
+            });
+        if !needs_primary_program_identity
+            && !Self::document_requests(doc_info).iter().any(|request| {
+                !request.substitute.is_empty() || !request.public_fallback.is_empty()
+            })
         {
             return Ok(None);
         }

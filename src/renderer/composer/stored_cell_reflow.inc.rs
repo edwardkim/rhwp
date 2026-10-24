@@ -126,11 +126,12 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
         );
     // 캐시 수용 실패 정책이나 줄 수 감소만으로 원본을 무효화하지 않는다.
     // 본문과 같은 마커 기하 갱신과 실제 공백 메트릭 변경만 공통 프레임에 요청한다.
-    // 원 HWP 셀의 clean geometry miss는 이 지역 상자가 소유하지 않는다.
-    // 마커가 보인다는 이유만으로 저장 줄을 버리지 않으며, 셀의 물리 프레임을
-    // 아는 공통 정규화가 인증한 변경 또는 기존 실제 stale 판정을 소비한다.
-    let refreshes_marker_metrics = miss_policy == line_breaking::StoredRowMissPolicy::Reflow
-        && stored_word_tail::projects_current_marker_geometry(para, &paragraph_box, styles);
+    // 일반 geometry miss와 원문 밖 목록 마커의 기하 갱신은 별개다.
+    // 같은 가로 상자·현재 마커와 실제 어절 흡수는 아래 공통 인증이 확인한다.
+    // 명시적 물리 경계·외부 어울림·원문 축은 can_rejoin/project 경로에서
+    // 보존하며, 저장 세대나 셀의 일반 miss 정책만으로 이 계약을 끄지 않는다.
+    let refreshes_marker_metrics =
+        stored_word_tail::projects_current_marker_geometry(para, &paragraph_box, styles);
     let rejoinable_word_tail = !stored_geometry_policy.preserve_hwp3_origins
         && (regenerated_spaces_change_metrics || refreshes_marker_metrics)
         && stored_word_tail::can_rejoin_stored_word_tail(
