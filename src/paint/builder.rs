@@ -162,7 +162,8 @@ impl LayerBuilder {
             _ => (tree.root.bbox.width, tree.root.bbox.height),
         };
 
-        let context = PagePaintContext::new(self.profile, page_width, page_height);
+        let context = PagePaintContext::new(self.profile, page_width, page_height)
+            .with_hangul2024_print(self.hangul2024_print);
         self.image_page_size = (page_width, page_height);
         fn first_column(node: &RenderNode) -> Option<(f64, f64)> {
             if matches!(node.node_type, RenderNodeType::Column(_)) {

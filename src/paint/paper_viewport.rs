@@ -26,6 +26,7 @@ pub(crate) struct PagePaintContext {
     logical_size: (f64, f64),
     output_size: (f64, f64),
     axis_aligned_graphics: bool,
+    print_paper: Option<super::print_paper::PrintPaper>,
 }
 
 impl PagePaintContext {
@@ -42,7 +43,19 @@ impl PagePaintContext {
                 (width, height)
             },
             axis_aligned_graphics: true,
+            print_paper: None,
         }
+    }
+
+    pub(crate) fn with_hangul2024_print(mut self, enabled: bool) -> Self {
+        if self.print && enabled {
+            self.print_paper =
+                super::print_paper::PrintPaper::from_css(self.logical_size.0, self.logical_size.1);
+            if let Some(paper) = self.print_paper {
+                self.output_size = paper.size;
+            }
+        }
+        self
     }
 
     pub(crate) fn output_size(self) -> (f64, f64) {
@@ -59,7 +72,15 @@ impl PagePaintContext {
         let ratio = |extent: f64| {
             (extent * 0.75 + 1e-9).floor() / (extent * 600.0 / 96.0).round() * (600.0 / 72.0)
         };
-        let (sx, sy) = (ratio(self.logical_size.0), ratio(self.logical_size.1));
+        let (sx, sy) = self.print_paper.map_or_else(
+            || (ratio(self.logical_size.0), ratio(self.logical_size.1)),
+            |paper| {
+                (
+                    paper.device_units.0 * (600.0 / 96.0),
+                    paper.device_units.1 * (600.0 / 96.0),
+                )
+            },
+        );
         if ![sx, sy]
             .into_iter()
             .all(|value| value.is_finite() && value > 0.0)
@@ -117,7 +138,15 @@ impl PagePaintContext {
         }
         let ratio =
             |px: f64| (px * 0.75 + 1e-9).floor() / (px * 600.0 / 96.0).round() * (600.0 / 72.0);
-        let (sx, sy) = (ratio(self.logical_size.0), ratio(self.logical_size.1));
+        let (sx, sy) = self.print_paper.map_or_else(
+            || (ratio(self.logical_size.0), ratio(self.logical_size.1)),
+            |paper| {
+                (
+                    paper.device_units.0 * (600.0 / 96.0),
+                    paper.device_units.1 * (600.0 / 96.0),
+                )
+            },
+        );
         if ![sx, sy].iter().all(|v| v.is_finite() && *v > 0.0) {
             return;
         }
@@ -360,8 +389,15 @@ impl PagePaintContext {
             let point_extent = (px * 0.75 + 1e-9).floor();
             point_extent / device_extent * (600.0 / 72.0)
         };
-        let sx = ratio(self.logical_size.0);
-        let sy = ratio(self.logical_size.1);
+        let (sx, sy) = self.print_paper.map_or_else(
+            || (ratio(self.logical_size.0), ratio(self.logical_size.1)),
+            |paper| {
+                (
+                    paper.device_units.0 * (600.0 / 96.0),
+                    paper.device_units.1 * (600.0 / 96.0),
+                )
+            },
+        );
         if ![sx, sy].iter().all(|x| x.is_finite() && *x > 0.0) {
             return;
         }
@@ -488,8 +524,13 @@ impl PagePaintContext {
         {
             return bounds;
         }
-        let x_unit = self.output_size.0 / devices.0;
-        let y_unit = self.output_size.1 / devices.1;
+        let (x_unit, y_unit) = self.print_paper.map_or(
+            (
+                self.output_size.0 / devices.0,
+                self.output_size.1 / devices.1,
+            ),
+            |paper| paper.device_units,
+        );
         let (x, width) = if x_is_physical {
             // 바탕쪽의 가로 프레임은 rectangle_frame에서 이미 확정했다.
             (bounds.x, bounds.width)
@@ -571,7 +612,9 @@ impl PagePaintContext {
         }
         let left = (bounds.x / pixel).round();
         let right = ((bounds.x + bounds.width) / pixel).round().max(left + 1.0);
-        let unit = output_width / device_width;
+        let unit = self
+            .print_paper
+            .map_or(output_width / device_width, |paper| paper.device_units.0);
         // 한컴의 퇴화 사각형도 장치의 한 픽셀 폭을 갖는다. 원본의 0폭은 보존한다.
         if rect.style.stroke_width.is_finite() && rect.style.stroke_width > 0.0 {
             rect.style.stroke_width = (rect.style.stroke_width / pixel).round().max(1.0) * pixel;
@@ -633,7 +676,10 @@ impl PagePaintContext {
         let device_per_css = 600.0 / 96.0;
         let point_to_css = 96.0 / 72.0;
         let ctm = |extent: f64| (extent * 0.75 + 1e-9).floor() / (extent * device_per_css).round();
-        let (sx, sy) = (ctm(width) * point_to_css, ctm(height) * point_to_css);
+        let (sx, sy) = self.print_paper.map_or_else(
+            || (ctm(width) * point_to_css, ctm(height) * point_to_css),
+            |paper| paper.device_units,
+        );
         if ![sx, sy]
             .into_iter()
             .all(|value| value.is_finite() && value > 0.0)
@@ -709,6 +755,7 @@ impl PagePaintContext {
                 (self.logical_size.1 / pixel).round(),
             ),
             self.output_size,
+            self.print_paper.map(|paper| paper.device_units),
         )
     }
 }

@@ -27,6 +27,7 @@ mod paint_bounds;
 pub mod paint_op;
 pub(crate) mod paper_viewport;
 mod parallel_shadow;
+mod print_paper;
 pub mod profile;
 mod rectangle_fill;
 pub mod replay_order;

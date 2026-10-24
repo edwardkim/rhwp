@@ -34,6 +34,7 @@ pub(super) fn map(
     source: (u32, u32),
     device_page: (f64, f64),
     output_page: (f64, f64),
+    device_units: Option<(f64, f64)>,
 ) -> Option<BitmapFillFrame> {
     if ![device.x, device.y, device.width, device.height]
         .into_iter()
@@ -46,8 +47,8 @@ pub(super) fn map(
     {
         return None;
     }
-    let x_unit = output_page.0 / device_page.0;
-    let y_unit = output_page.1 / device_page.1;
+    let (x_unit, y_unit) =
+        device_units.unwrap_or((output_page.0 / device_page.0, output_page.1 / device_page.1));
     let width = replay_extent(source.0, device.width, 1024, 271)?;
     let height = replay_extent(source.1, device.height, 768, 203)?;
     Some(BitmapFillFrame {
