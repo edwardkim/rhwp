@@ -36,3 +36,31 @@ single-open-path 전달의 대상이 아니다. 빈 경로·stroke 없음·원�
 
 작업 자료는 ignored `source-line-ff722d79ef-open-path-arrow-oracle.json`과
 `remaining-layer-ff722d79ef/p161-layer.json`, 실제 Print/이전/이후 PNG에 연결한다.
+
+## 실제 Native 소비자 검증
+
+`9906f3425e`를 별도 검증 worktree에서 고정 `target/pr-review`와 빌드 잡 8개로
+빌드했다. `release-test` Native CLI 빌드는 5분 56초에 exit 0으로 끝났다.
+동일 라이브러리 SHA를 검증한 진단 실행에서 원본 HWPX의 실제 Print layer를
+다시 만들었다. 다각형 화살촉은 수정 전 0 PASS / 5 FAIL에서 수정 후
+5 PASS / 0 FAIL로 바뀌었다. 독립 PDF polygon의 끝점을 기준으로 대조했으며,
+앞서 보정한 직선 방향 4곳도 4 PASS / 0 FAIL로 유지됐다.
+
+83쪽 139개·149쪽 245개 출력 요소는 이전과 같았다. 161쪽 170개 중 원본
+화살표가 있는 다각형 5개에만 `lineStyle`·`connectorEndpoints`·`arrowHeads`가
+추가됐다. 원래 경로 점·bbox·스타일과 나머지 165개 출력 요소는 동일하다.
+독립 Print/이전/이후 확대 PNG에서도 누락됐던 L자 화살촉의 표시·방향을 확인했다.
+
+HWP/HWPX 영향 18쪽씩 총 36쪽의 Native 검증은 exit 0으로 끝났다.
+161쪽 raw는 HWPX 99.30697% → 99.32745%, HWP 99.30698% → 99.32746%로
+각각 0.02048%p 개선됐다. 나머지 34쪽은 raw 변화가 없으며, 288·307쪽의
+양쪽 형식 100%도 유지됐다. 새 source의 fresh WASM은 아직 실행하지 않았다.
+
+ignored 작업 루트의 `open-path-9906f3425e/producer/receipt.json`,
+`open-path-9906f3425e-open-path-arrow-oracle.json`,
+`open-path-9906f3425e-line-direction-oracle.json`,
+`open-path-9906f3425e/preserved-path-consumers.json`,
+`open-path-9906f3425e/native-focus-result.json`과
+`open-path-9906f3425e/p161-open-path-arrow-review.png`에 결과를 보존했다.
+제목 상자 채움 경계와 얇은 선 차이가 남아 있어 이 개선을 161쪽 또는 목표의
+100% 완료로 판정하지 않는다. 전쪽 Native/fresh WASM과 정식 회귀·제출 게이트는 계속한다.
