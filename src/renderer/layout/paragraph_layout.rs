@@ -12393,8 +12393,24 @@ mod issue_1151_v3_helper_tests {
         // scenario-a-after.hwp 의 표: 13630×12498, outer_margin (top=283, bottom=283).
         // 합산 = 12498 + 283 + 283 = 13064 HU.
         let table = make_table(13630, 12498, TextWrap::TopAndBottom, false);
-        let controls = vec![Control::Table(Box::new(table))];
+        let controls = vec![Control::Table(Box::new(table.clone()))];
         assert_eq!(calc_sibling_topandbottom_reserved_hu(&controls, 0), 13064);
+
+        // [#8168] 쪽·종이 기준 위아래 개체는 문단 흐름 시작에 놓이지 않으므로 예약하지 않는다.
+        let mut paper = table.clone();
+        paper.common.vert_rel_to = VertRelTo::Paper;
+        let controls = vec![Control::Table(Box::new(paper))];
+        assert_eq!(calc_sibling_topandbottom_reserved_hu(&controls, 0), 0);
+
+        // [#8168] 문단 기준이어도 띠가 그림 줄보다 아래에서 시작하면 예약하지 않는다.
+        let mut below = table;
+        below.common.vertical_offset = 15000;
+        let controls = vec![Control::Table(Box::new(below))];
+        assert_eq!(calc_sibling_topandbottom_reserved_hu(&controls, 0), 0);
+        assert_eq!(
+            calc_sibling_topandbottom_reserved_hu(&controls, 15000),
+            13064
+        );
     }
 
     #[test]
@@ -12447,28 +12463,6 @@ mod issue_1151_v3_helper_tests {
         let controls = vec![Control::Table(Box::new(t1)), Control::Table(Box::new(t2))];
         // (10000 + 283 + 283) + (5000 + 283 + 283) = 10566 + 5566 = 16132
         assert_eq!(calc_sibling_topandbottom_reserved_hu(&controls, 0), 16132);
-    }
-
-    /// [#8168] 쪽·종이 기준 위아래 개체는 문단 흐름 시작에 놓이지 않으므로 예약하지 않는다.
-    #[test]
-    fn topandbottom_reserved_excludes_paper_relative_object() {
-        let mut table = make_table(13630, 12498, TextWrap::TopAndBottom, false);
-        table.common.vert_rel_to = VertRelTo::Paper;
-        let controls = vec![Control::Table(Box::new(table))];
-        assert_eq!(calc_sibling_topandbottom_reserved_hu(&controls, 0), 0);
-    }
-
-    /// [#8168] 문단 기준이어도 띠가 그림 줄보다 아래에서 시작하면 예약하지 않는다.
-    #[test]
-    fn topandbottom_reserved_excludes_object_below_the_line() {
-        let mut table = make_table(13630, 12498, TextWrap::TopAndBottom, false);
-        table.common.vertical_offset = 15000;
-        let controls = vec![Control::Table(Box::new(table))];
-        assert_eq!(calc_sibling_topandbottom_reserved_hu(&controls, 0), 0);
-        assert_eq!(
-            calc_sibling_topandbottom_reserved_hu(&controls, 15000),
-            13064
-        );
     }
 }
 
