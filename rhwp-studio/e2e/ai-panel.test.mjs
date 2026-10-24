@@ -550,6 +550,7 @@ runTest('AI 대화 패널', async ({ page }) => {
       states: cards.map((c) => c.dataset.state),
       picked: cards[0].querySelector('.ai-change-picked')?.textContent ?? '',
       dateControls: JSON.parse(raw.getControlTextPositions(0, date)).length,
+      textboxAfterDate: raw.getTextBoxControlIndex(0, date + 1),
       textbox: runs.includes('중요'),
       field: JSON.parse(raw.getFieldList()).some((f) => f.name === '장소'),
       border: JSON.parse(raw.getPageBorderFill(0)).borderTop?.type,
@@ -557,7 +558,9 @@ runTest('AI 대화 패널', async ({ page }) => {
   });
   assert(objects.states.join() === 'applied,applied,applied,applied,applied', `TC17: 다섯 변경 적용 (${objects.states})`);
   assert(objects.picked.includes('moogung.jpg'), `TC17: 고른 파일 표시 (${objects.picked})`);
-  assert(objects.dateControls >= 3, `TC17: 일시 문단에 그림·글상자·누름틀 개체 (${objects.dateControls})`);
+  // 글상자는 그림이 든 앵커를 아래로 밀지 않도록 바로 다음 전용 문단에 둔다.
+  assert(objects.dateControls >= 2 && objects.textboxAfterDate >= 0,
+    `TC17: 일시 문단의 그림·누름틀과 다음 문단의 글상자 소유 보존 (${objects.dateControls}, ${objects.textboxAfterDate})`);
   assert(objects.textbox, 'TC17: 글상자 글이 쪽에 보임');
   assert(objects.field, 'TC17: 누름틀 「장소」');
   assert(objects.border === 1, 'TC17: 쪽 테두리 실선');

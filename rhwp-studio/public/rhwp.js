@@ -5599,7 +5599,10 @@ export class HwpDocument {
     /**
      * 특정 페이지의 텍스트 레이아웃 정보를 JSON 문자열로 반환한다.
      *
-     * 각 TextRun의 위치, 텍스트, 글자별 X 좌표 경계값을 포함한다.
+     * 각 TextRun의 위치, 모델 `text`, 모델 경계 `charX`와 `charStart`를 포함한다.
+     * 표시 치환이 있는 런에는 `displayText`와 `displayCharX`가 추가된다.
+     * 두 X 배열은 런 원점 기준 Unicode scalar 경계(N+1개)이며,
+     * 표시 인덱스는 선택·커서·편집 오프셋으로 사용할 수 없다 (#7909).
      * @param {number} page_num
      * @returns {string}
      */

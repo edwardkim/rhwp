@@ -5,6 +5,7 @@
  * 이전 문서의 내용이 새 문서의 대화에 섞이지 않게 하기 위해서다.
  */
 import type { PluginHost } from '@/plugin/types';
+import { StudioCommandError } from '../../core/command-error.ts';
 import type { AiContext } from '../ai-context.ts';
 import type { AiProvider, AiToolCall, AiToolResult } from '../provider/types.ts';
 import { AiProviderError } from '../provider/types.ts';
@@ -200,9 +201,13 @@ export class ChatController {
     try {
       await proposal.apply();
     } catch (error) {
+      // 명령 경계는 롤백·화면 복구를 비동기로 확인한다. 보고가 끝나기 전에
+      // 다음 도구를 실행하면 복구 중인 세션이 같은 실패로 후속 편집까지 거절한다.
+      if (error instanceof StudioCommandError) await error.report;
       // 편집 엔진이 지원하지 않는 경우(예: 개체가 든 문단의 하이퍼링크)는 엔진 사유를 그대로 전한다 —
       // 모델이 다른 방법을 고르고, 사용자는 카드에서 이유를 본다. 엔진 사유에는 키가 없다.
-      const engineReason = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+      const cause = error instanceof StudioCommandError ? error.cause : error;
+      const engineReason = cause instanceof Error ? cause.message : typeof cause === 'string' ? cause : '';
       const message = error instanceof WriteRefused ? error.message
         : isDocumentReleased(error) ? 'Editing is not allowed right now (the document may be closed or in a mode that blocks editing).'
           : engineReason ? `Failed to apply the change: ${engineReason.slice(0, 300)}` : 'Failed to apply the change.';

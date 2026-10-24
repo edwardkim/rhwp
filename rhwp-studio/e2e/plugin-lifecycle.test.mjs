@@ -76,17 +76,22 @@ runTest('플러그인 호스트', async ({ page }) => {
     `TC3: undo 1회로 배치 전체 복원 ("${textAfterUndo}" === "${textBefore}")`);
 
   // ── TC4: 중첩 트랜잭션 거절 ────────────────────────────
-  const nested = await page.evaluate(() => {
+  const nested = await page.evaluate(async () => {
     try { window.rhwpStudio.plugins.invoke('dev-probe', 'nestedTransaction', []); return null; }
-    catch (e) { return e.code; }
+    catch (e) {
+      return { name: e.name, cause: e.cause?.code, report: await e.report };
+    }
   });
-  assert(nested === 'NESTED_TX', `TC4: 중첩 트랜잭션 거절 (${nested})`);
+  assert(nested?.name === 'StudioCommandError' && nested.cause === 'NESTED_TX',
+    `TC4: 명령 경계가 중첩 트랜잭션 거절 원인을 보존 (${JSON.stringify(nested)})`);
+  assert(nested?.report?.recovery === 'succeeded' && nested.report.checks.ready,
+    'TC4: 중첩 트랜잭션 거절의 복구 완료 뒤 후속 명령 실행');
 
   // ── TC5: 본문이 던지면 롤백 ────────────────────────────
   const beforeThrow = await paraText(page);
-  const threw = await page.evaluate(() => {
+  const threw = await page.evaluate(async () => {
     try { window.rhwpStudio.plugins.invoke('dev-probe', 'throwingTransaction', ['롤백대상']); return null; }
-    catch (e) { return e.message; }
+    catch (e) { await e.report; return e.message; }
   });
   await page.evaluate(() => new Promise(r => setTimeout(r, 300)));
   const afterThrow = await paraText(page);
