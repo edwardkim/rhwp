@@ -721,9 +721,9 @@ pub(crate) fn canvas_cluster_fit_scale(
     visual_width: f64,
     pin_ascii_advance: bool,
 ) -> Option<f64> {
-    // 글자 원점 사이의 전진과 윤곽의 잉크 폭은 독립적이다. Native와 같은
-    // 명시적 폭 맞춤 요청만 소비하며 일반 본문·대체 face를 전진 안에 누르지 않는다.
-    if !style.fixed_glyph_advances {
+    // 원 HFT의 인쇄 프레임과 검증된 TTF 프로그램은 전진과 잉크 폭을 구분한다.
+    // 일반 대체 face에는 기존 조판 전진에 맞추는 정책을 계속 적용한다.
+    if !style.fixed_glyph_advances && (style.hft_print_frame || style.font_metric_trusted) {
         return None;
     }
     let cluster_advance =
@@ -3862,17 +3862,19 @@ mod tests {
 
     #[test]
     fn non_negative_letter_spacing_keeps_existing_canvas_font_fit_policy() {
-        let style = TextStyle {
-            fixed_glyph_advances: true,
-            ..Default::default()
-        };
-        assert_eq!(
-            canvas_cluster_fit_scale(&style, 7.5, 15.0, false),
-            Some(0.5)
-        );
-        assert_eq!(canvas_cluster_fit_scale(&style, 7.5, 15.0, true), Some(0.5));
-        assert_eq!(canvas_cluster_fit_scale(&style, 15.0, 14.9, false), None);
-        ordinary_canvas_glyph_ink_preserves_natural_width_without_explicit_fit();
+        for fixed_glyph_advances in [false, true] {
+            let style = TextStyle {
+                fixed_glyph_advances,
+                ..Default::default()
+            };
+            assert_eq!(
+                canvas_cluster_fit_scale(&style, 7.5, 15.0, false),
+                Some(0.5)
+            );
+            assert_eq!(canvas_cluster_fit_scale(&style, 7.5, 15.0, true), Some(0.5));
+            assert_eq!(canvas_cluster_fit_scale(&style, 15.0, 14.9, false), None);
+        }
+        verified_font_glyph_ink_preserves_natural_width_without_explicit_fit();
     }
 
     #[test]
@@ -3902,7 +3904,7 @@ mod tests {
         );
     }
 
-    fn ordinary_canvas_glyph_ink_preserves_natural_width_without_explicit_fit() {
+    fn verified_font_glyph_ink_preserves_natural_width_without_explicit_fit() {
         for (layout, visual, extra, letter) in [
             (7.5, 15.0, 0.0, 0.0),
             (20.0, 8.0, 12.0, 0.0),
@@ -3910,6 +3912,7 @@ mod tests {
             (7.5, 15.0, 0.0, -7.5),
         ] {
             let style = TextStyle {
+                hft_print_frame: true,
                 extra_char_spacing: extra,
                 letter_spacing: letter,
                 ..Default::default()
