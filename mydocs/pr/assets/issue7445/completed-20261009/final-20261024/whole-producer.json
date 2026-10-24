@@ -1,0 +1,48 @@
+{
+  "headAtStart": "1f54c3df17747b71c8be9b47b3198add4fa4fd3b",
+  "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "candidateCoreProducer": "1f54c3df17747b71c8be9b47b3198add4fa4fd3b",
+  "baselineBuiltSource": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "binaries": {
+    "base": {
+      "native": "70329e18e0f3ac4e9edae611594d87b2142af0001d50e81fea89678f522da510",
+      "js": "da00f4937f352731a2d24a1ba4b54629009aa5edc9c929815aed2cd069cca3bc",
+      "wasm": "6cc9def065ba80ff8e27d2cc6fe2a3be6191ab189328025dcfb20fc09b24f515"
+    },
+    "head": {
+      "native": "abff5056fe395c6527dc6d8528c22c42281c9947d5f4bf6bc3e3ccc62fca06a6",
+      "js": "56b2836e71bbbde64097476cb009303b8eeff61777c480cae82a238cf4d47af3",
+      "wasm": "4af5842b5d9c612d4b30caea794a6666c0a32c728d442ddcd68693a81b567ce4"
+    }
+  },
+  "toolHashes": {
+    "scripts/visual_sweep.py": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1",
+    "scripts/visual_sweep_pdf.py": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+    "scripts/visual_sweep_png.py": "cdd15626217bec7bcfa475ac618847200770cfc13f670867c5bc95c10fbeee80",
+    "scripts/export-wasm-png-for-sweep.mjs": "b723139a685d823e485054fab5341257eabc4e3a42768c94baa0a1918c35f7c2",
+    "scripts/export-wasm-for-sweep.mjs": "480f5d7c8b8463058e12958fed013ad2c011ea59f41f0b0706ee4bc0c3f2c218",
+    "scripts/visual-sweep-font-environment.mjs": "7bfd1d694d68c71371f880064b28ffd249cd816fb198f9a378233b97523ec354",
+    "scripts/rasterize-svg-webfonts.mjs": "1d56c41b0b7dcb8b8d6da9c90c9105456c21a09d01c4068e6a958d2653a1d219"
+  },
+  "python": "/Users/tsjang/rhwp/venv/bin/python",
+  "chromeVersion": "Google Chrome 155.0.8059.85",
+  "fontPaths": [
+    "/Users/tsjang/rhwp-7445-completed-20261009/ttfs/opensource",
+    "/Users/tsjang/Library/Fonts"
+  ],
+  "fontProgramsSha256": "9874ac3b0296013b93f7e1af62d16a11b21582c778453dc5c6a9751c440e5d67",
+  "scopeSha256": "5a773d7459c7bdd9b6aac39c04307e23b8efa71a2b3c51b0d942ab819c25c529",
+  "captureWorkers": 8,
+  "dpi": 96,
+  "threshold": "raw2px90%; devel decrease>=2pp requires review",
+  "fontCondition": "Current repository open-source fonts and installed user fonts. Historical partial HFT/ASCII test supplies are not injected or claimed equivalent. Fresh base/head under identical inventory; actual selected face remains independently auditable.",
+  "referencePolicy": "Canonical actual PDFium152.0.7947.0 smooth RGB v1; library identity in every manifest. No historical different-rasterizer/dpi TSV reuse",
+  "purpose": "User-frozen existing50 conditions after sample16 HWP exclusion,1836 reference pages each backend and role. Numeric lows/count mismatches preserved; measurement completion is not acceptance. Per-batch shared capture lock. No engine or test mutations.",
+  "fullPrAcceptance": false,
+  "baselineReuse": {
+    "conditions": 100,
+    "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage83-whole50/producer.json",
+    "reason": "Exact fixed base with identical font and canonical tool inventories; all head pages rendered afresh"
+  },
+  "candidateArtifactProducer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage94-restoration-focus/source-producer.json"
+}

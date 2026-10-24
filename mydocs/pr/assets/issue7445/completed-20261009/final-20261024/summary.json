@@ -1,0 +1,143 @@
+{
+  "productionHead": "1f54c3df17747b71c8be9b47b3198add4fa4fd3b",
+  "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "scopeHistoricalMetadata": "scope50 origin fields inherited; actual run producer pins current base/head. Inputs unchanged.",
+  "backendSummary": {
+    "native": {
+      "conditions": 50,
+      "pages": 1836,
+      "minimum": 93.06876,
+      "below90": 0,
+      "countMismatches": 0,
+      "develDeclinesAtLeast2pp": 0
+    },
+    "wasm": {
+      "conditions": 50,
+      "pages": 1836,
+      "minimum": 92.99291,
+      "below90": 0,
+      "countMismatches": 0,
+      "develDeclinesAtLeast2pp": 0
+    }
+  },
+  "baseCountMismatchConditions": [
+    {
+      "case": "roadmap302",
+      "backend": "native",
+      "actual": 299,
+      "reference": 302,
+      "pairedPagesMeasured": 299,
+      "unpairedReferencePages": [
+        300,
+        301,
+        302
+      ],
+      "unpairedSourcePages": []
+    },
+    {
+      "case": "roadmap302",
+      "backend": "wasm",
+      "actual": 299,
+      "reference": 302,
+      "pairedPagesMeasured": 299,
+      "unpairedReferencePages": [
+        300,
+        301,
+        302
+      ],
+      "unpairedSourcePages": []
+    },
+    {
+      "case": "low-slack6535",
+      "backend": "native",
+      "actual": 2,
+      "reference": 1,
+      "pairedPagesMeasured": 1,
+      "unpairedReferencePages": [],
+      "unpairedSourcePages": [
+        2
+      ]
+    },
+    {
+      "case": "low-slack6535",
+      "backend": "wasm",
+      "actual": 2,
+      "reference": 1,
+      "pairedPagesMeasured": 1,
+      "unpairedReferencePages": [],
+      "unpairedSourcePages": [
+        2
+      ]
+    },
+    {
+      "case": "press12",
+      "backend": "native",
+      "actual": 13,
+      "reference": 12,
+      "pairedPagesMeasured": 12,
+      "unpairedReferencePages": [],
+      "unpairedSourcePages": [
+        13
+      ]
+    },
+    {
+      "case": "press12",
+      "backend": "wasm",
+      "actual": 13,
+      "reference": 12,
+      "pairedPagesMeasured": 12,
+      "unpairedReferencePages": [],
+      "unpairedSourcePages": [
+        13
+      ]
+    },
+    {
+      "case": "court2",
+      "backend": "native",
+      "actual": 1,
+      "reference": 2,
+      "pairedPagesMeasured": 1,
+      "unpairedReferencePages": [
+        2
+      ],
+      "unpairedSourcePages": []
+    },
+    {
+      "case": "court2",
+      "backend": "wasm",
+      "actual": 1,
+      "reference": 2,
+      "pairedPagesMeasured": 1,
+      "unpairedReferencePages": [
+        2
+      ],
+      "unpairedSourcePages": []
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "native",
+      "actual": 196,
+      "reference": 197,
+      "pairedPagesMeasured": 196,
+      "unpairedReferencePages": [
+        197
+      ],
+      "unpairedSourcePages": []
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "wasm",
+      "actual": 196,
+      "reference": 197,
+      "pairedPagesMeasured": 196,
+      "unpairedReferencePages": [
+        197
+      ],
+      "unpairedSourcePages": []
+    }
+  ],
+  "sameNumericPageDoesNotProveBaseContentAlignment": true,
+  "candidateNeedsExistingContentOwnershipRegressionsAndDirectReview": true,
+  "fullPrAcceptance": false,
+  "initialAuditError": "Initial draft looked for seeded base PNGs in TSV-only directory, then expected unpaired reference PNGs from base. Corrected to actual stage83 producer and paired pages; head entire reference coverage asserted separately. No missing capture inferred from draft error."
+}
