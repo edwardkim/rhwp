@@ -47,21 +47,24 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     // 여기서 사양하면 45자 합성 줄바꿈이 그대로 남아 감폭된 상자 폭을 넘는다
     // (아이콘 옆 설명 한 줄이 열 밖까지 이어지는 형상). 저장 행이 있는 문단의
     // 소유권 계약은 종전대로 본문 게이트만 통과한다.
-    let has_kopub_face = para.char_shapes.iter().any(|reference| {
-        styles
-            .char_styles
-            .get(reference.char_shape_id as usize)
-            .is_some_and(|style| {
-                style.font_families.iter().any(|face| {
-                    face.contains("KoPub돋움체")
-                        || face.contains("KoPub바탕체")
-                        || face.to_lowercase().contains("kopub dotum")
-                        || face.to_lowercase().contains("kopub batang")
+    // 글꼴 이름 검사는 HWPX 저장 배치일 때만 결과가 쓰이므로 그때만 한다.
+    let has_kopub_face = || {
+        para.char_shapes.iter().any(|reference| {
+            styles
+                .char_styles
+                .get(reference.char_shape_id as usize)
+                .is_some_and(|style| {
+                    style.font_families.iter().any(|face| {
+                        face.contains("KoPub돋움체")
+                            || face.contains("KoPub바탕체")
+                            || face.to_lowercase().contains("kopub dotum")
+                            || face.to_lowercase().contains("kopub batang")
+                    })
                 })
-            })
-    });
+        })
+    };
     let justified_kopub = hwpx_stored_layout
-        && has_kopub_face
+        && has_kopub_face()
         && styles
             .para_styles
             .get(para.para_shape_id as usize)
