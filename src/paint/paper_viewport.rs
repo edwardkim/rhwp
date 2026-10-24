@@ -441,6 +441,19 @@ impl PagePaintContext {
         self
     }
 
+    /// 원래 글상자·테두리 프레임과 별개로 Print 단색 채움의 중첩을 결정한다.
+    pub(crate) fn rectangle_fill_frame(
+        self,
+        frame: BoundingBox,
+        rect: &RectangleNode,
+        device_pixel: Option<f64>,
+    ) -> Option<BoundingBox> {
+        if !self.print || !self.axis_aligned_graphics {
+            return None;
+        }
+        super::rectangle_fill::frame(frame, rect, device_pixel?)
+    }
+
     /// 독립 Print의 실선 그림 테두리는 채운 띠와 장치 한 픽셀의 외곽 pen을 갖는다.
     /// 원본 HU·논리 프레임은 유지하고 양쪽 backend가 소비할 인쇄 선폭만 만든다.
     pub(crate) fn picture_border_pen(self, rect: &mut RectangleNode, pixel: Option<f64>) {

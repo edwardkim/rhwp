@@ -1472,6 +1472,9 @@ pub struct RectangleNode {
     /// 그림 원본의 HU 선폭. 인쇄 장치 pen과 화면용 기본 선폭을 구분한다.
     #[serde(skip)]
     pub picture_border_width_hu: Option<i32>,
+    /// 일반 사각형의 NORMAL 테두리 원본 폭. 선 생략과 채움 중첩을 구분한다.
+    #[serde(skip)]
+    pub drawing_border_width_hu: Option<i32>,
 }
 
 impl RectangleNode {
@@ -1495,6 +1498,7 @@ impl RectangleNode {
             outer_table_control_index: None,
             image_frame_owner: None,
             picture_border_width_hu: None,
+            drawing_border_width_hu: None,
         }
     }
 }

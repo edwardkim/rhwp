@@ -28,6 +28,7 @@ pub mod paint_op;
 pub(crate) mod paper_viewport;
 mod parallel_shadow;
 pub mod profile;
+mod rectangle_fill;
 pub mod replay_order;
 pub mod resources;
 pub mod schema;

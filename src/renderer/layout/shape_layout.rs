@@ -1739,6 +1739,9 @@ impl LayoutEngine {
                         cell_index,
                         cell_para_index,
                         outer_table_control_index,
+                        drawing_border_width_hu: (rect.drawing.border_line.outline_style == 0
+                            && rect.drawing.fill.image.is_none())
+                        .then_some(rect.drawing.border_line.width),
                         ..RectangleNode::new(round_px, style, gradient)
                     }),
                     BoundingBox::new(render_x, render_y, render_w, render_h),

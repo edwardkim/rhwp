@@ -360,7 +360,18 @@ impl LayerBuilder {
                         context.rectangle_frame(node, &mut rect, pixel)
                     })
                 });
-                Some(vec![PaintOp::rectangle(frame, rect)])
+                let fill_frame = self
+                    .page_context
+                    .and_then(|context| context.rectangle_fill_frame(frame, &rect, pixel));
+                if let Some(fill_frame) = fill_frame {
+                    let fill = super::rectangle_fill::take_fill(&mut rect);
+                    Some(vec![
+                        PaintOp::rectangle(fill_frame, fill),
+                        PaintOp::rectangle(frame, rect),
+                    ])
+                } else {
+                    Some(vec![PaintOp::rectangle(frame, rect)])
+                }
             }
             RenderNodeType::Ellipse(ellipse) => {
                 Some(vec![PaintOp::ellipse(node.bbox, ellipse.clone())])
