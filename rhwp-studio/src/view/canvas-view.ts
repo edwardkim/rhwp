@@ -145,6 +145,9 @@ export class CanvasView {
   private textEditRefreshRafId: number | null = null;
   private textEditStaticLayerVerifyTimers = new Map<number, ReturnType<typeof setTimeout>>();
   private rendererSelectionEpoch = 0;
+  /** 자원 무효화부터 최신 renderer/metrics 적용까지 이전 renderer로 replay하지 않는다. */
+  private rendererSelectionPending = false;
+  private rendererRefreshDeferred = false;
   private rendererFallbackScheduled = false;
   private canvasMetricRecovery = new CanvasMetricRecovery();
   private activeRendererDecisionKey: string | null = null;
@@ -330,6 +333,7 @@ export class CanvasView {
   prepareDocumentLoad(): void {
     if (this.disposed) return;
     this.rendererSelectionEpoch += 1;
+    this.rendererSelectionPending = true;
     this.documentLoadPrepared = true;
     this.cancelAutoRendererReselection();
     this.rendererFallbackScheduled = false;
@@ -404,7 +408,7 @@ export class CanvasView {
 
   private async refreshPagesForMutation(): Promise<void> {
     const selected = await this.selectMutationRevision();
-    if (!selected || !this.rendererSession.isCurrent(selected.selection)) return;
+    if (this.disposed || !selected || !this.rendererSession.isCurrent(selected.selection)) return;
     this.refreshPages();
     // InputHandler의 mutation 직후 caret 갱신보다 VirtualScroll 재계산이 늦다.
     // 새 page offset을 소비할 수 있는 완료 경계를 별도 이벤트로 알린다.
@@ -448,15 +452,21 @@ export class CanvasView {
     backendChanged: boolean;
   } | null> {
     if (this.disposed) return null;
+    // 이전 편집의 quiet 재선택이 새 mutation의 metrics await를 선점하지 않게 한다.
+    this.cancelAutoRendererReselection();
+    this.rendererSelectionPending = true;
     const pinned = this.rendererSession.pinAutoMutationRevision();
     if (!pinned) return this.selectNextDocumentRevision();
 
-    this.rendererSelectionEpoch += 1;
+    const epoch = ++this.rendererSelectionEpoch;
+    const isCurrent = () => !this.disposed
+      && epoch === this.rendererSelectionEpoch
+      && this.rendererSession.isCurrent(pinned);
     const selected = {
       selection: pinned,
-      backendChanged: (await this.wasm.prepareCanvasMetrics(pinned.backend, () => !this.disposed && this.rendererSession.isCurrent(pinned))) || this.zoomRefreshRequired,
+      backendChanged: (await this.wasm.prepareCanvasMetrics(pinned.backend, isCurrent)) || this.zoomRefreshRequired,
     };
-    if (!this.rendererSession.isCurrent(pinned)) return null;
+    if (!isCurrent()) return null;
     selected.backendChanged = this.applyRendererSelection(pinned) || selected.backendChanged;
     this.scheduleAutoRendererReselection();
     return selected;
@@ -467,8 +477,11 @@ export class CanvasView {
     this.autoRendererReselectionTimer = setTimeout(() => {
       this.autoRendererReselectionTimer = null;
       void this.selectNextDocumentRevision().then((selected) => {
-        if (!selected || this.disposed) return;
-        if (selected.backendChanged) this.refreshPages();
+        if (!selected || this.disposed || !this.rendererSession.isCurrent(selected.selection)) return;
+        if (selected.backendChanged) {
+          this.refreshPages();
+          this.eventBus.emit('document-layout-refreshed', { source: 'renderer-reselection' });
+        }
       });
     }, AUTO_RENDERER_RESELECTION_DELAY_MS);
   }
@@ -486,6 +499,7 @@ export class CanvasView {
     if (this.disposed) return null;
     this.zoomRefreshRequired = this.viewportManager.cancelPendingZoomRaster() || this.zoomRefreshRequired;
     const epoch = ++this.rendererSelectionEpoch;
+    this.rendererSelectionPending = true;
     this.rendererSession.invalidateDocument({ resetResources });
     await Promise.resolve();
     if (this.disposed || epoch !== this.rendererSelectionEpoch) return null;
@@ -518,10 +532,16 @@ export class CanvasView {
           || selection.diagnostics.fallbackReason === 'canvaskitRuntimeFailed'
         ),
     );
+    // width/height 초기화로는 WebGL canvas를 2D context로 전환할 수 없다.
+    // LRU는 위에서 반환됐으므로 active/익명 pool도 함께 비운다.
+    if (changed) this.canvasPool?.discardAll();
     if (decisionChanged && !changed) this.pageRenderer.invalidateDocumentRevision();
     this.activeRendererDecisionKey = selection.diagnostics.decisionKey;
+    this.rendererSelectionPending = false;
+    const deferred = this.rendererRefreshDeferred;
+    this.rendererRefreshDeferred = false;
     this.eventBus.emit('renderer-selection-changed', selection.diagnostics);
-    return changed || this.zoomRefreshRequired;
+    return changed || this.zoomRefreshRequired || deferred;
   }
 
   /** DEV baseline이 pool 소유권을 바꾸지 않고 현재 페이지를 즉시 다시 그린다. */
@@ -603,6 +623,7 @@ export class CanvasView {
 
   /** 호출 이유별 동기 계약을 보존하며 보이는 페이지를 갱신한다. */
   private updateVisiblePages(reason: VisibilityUpdateReason = 'strict'): void {
+    if (this.deferRenderUntilRendererReady()) return;
     if (reason === 'strict' && this.viewportManager.isZoomRasterPending()) {
       this.viewportManager.finishPendingZoomRaster();
       // ready는 이제 visible을 예약한다. strict 호출은 이어서 최신 surface를 동기 완료한다.
@@ -1597,8 +1618,15 @@ export class CanvasView {
     return this.pageRenderScheduler.snapshot();
   }
 
+  private deferRenderUntilRendererReady(): boolean {
+    if (!this.rendererSelectionPending) return false;
+    this.rendererRefreshDeferred = true;
+    return true;
+  }
+
   /** 단일 페이지를 렌더링하거나 정확한 detached bundle을 재부착한다. */
   private renderPage(pageIdx: number): void {
+    if (this.deferRenderUntilRendererReady()) return;
     const descriptor = this.pageSurfaceDescriptor(pageIdx);
     if (descriptor) {
       const cached = this.pageSurfaceLru.takeLookup(descriptor.lookupKey);
@@ -1625,6 +1653,7 @@ export class CanvasView {
     canvas: HTMLCanvasElement,
     renderContext: PageRenderContext = {},
   ): boolean {
+    if (this.deferRenderUntilRendererReady()) return true;
     const zoom = this.viewportManager.getZoom();
     const rawDpr = window.devicePixelRatio || 1;
 
@@ -1649,6 +1678,7 @@ export class CanvasView {
     let renderResult: PageRenderResult = { needsTextEditStaticLayerVerification: false };
     let renderedCanvas = canvas;
     const rendererDecisionKey = this.activeRendererDecisionKey;
+    const rendererEpoch = this.rendererSelectionEpoch;
     try {
       if (this.pageRenderer.getBackend() === 'canvaskit') {
         let preparation = this.canvasKitResourcePreparations.get(canvas);
@@ -1660,7 +1690,8 @@ export class CanvasView {
           if (pending) {
             const expected = preparation;
             const finish = () => {
-              if (this.canvasKitResourcePreparations.get(canvas) !== expected) return;
+              if (this.disposed || rendererEpoch !== this.rendererSelectionEpoch
+                || this.canvasKitResourcePreparations.get(canvas) !== expected) return;
               expected.ready = true;
               if (this.activeRendererDecisionKey === rendererDecisionKey
                 && this.canvasPool.getCanvas(pageIdx) === canvas && canvas.parentElement) {
@@ -2290,6 +2321,7 @@ export class CanvasView {
     if (this.disposed) return;
     this.disposed = true;
     this.rendererSelectionEpoch += 1;
+    this.rendererSelectionPending = true;
     this.documentLoadPrepared = false;
     this.cancelAutoRendererReselection();
     this.reset();
@@ -2409,7 +2441,12 @@ export class CanvasView {
       this.releaseAllRenderedPages();
       this.pageRenderer.cancelAll();
     }
-    if (layoutChanged) this.updateVisiblePages('zoom-settled');
+    if (layoutChanged) {
+      this.updateVisiblePages('zoom-settled');
+      // transaction 내부 zoom-changed는 이전 쪽 원점을 소비한다. 최종 배치와
+      // 스크롤 앵커를 확정한 뒤 현재 선택·focus 캐럿을 다시 투영한다.
+      this.eventBus.emit('document-layout-refreshed', { source: 'page-view-settings' });
+    }
     if (zoomEventFailure) throw zoomEventFailure.error;
     return true;
   }
