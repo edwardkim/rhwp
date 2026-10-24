@@ -3,6 +3,7 @@
 mod affine_line;
 mod compound_rectangle;
 mod connector_style;
+mod line_direction;
 mod source_line_frame;
 
 use super::super::composer::{
@@ -1600,7 +1601,8 @@ impl LayoutEngine {
         sy: f64,
         matrix_positioned: bool,
     ) -> ((f64, f64), (f64, f64)) {
-        (
+        line_direction::endpoints(
+            line.started_right_or_bottom,
             self.line_point_in_rendering_frame(
                 line,
                 render_x,

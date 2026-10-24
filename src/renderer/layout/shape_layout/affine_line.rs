@@ -7,6 +7,7 @@ pub(super) fn rendered_line(
     end: (f64, f64),
     dpi: f64,
 ) -> (RenderNodeType, BoundingBox) {
+    let (start, end) = line_direction::endpoints(line.started_right_or_bottom, start, end);
     let (x1, y1) = start;
     let (x2, y2) = end;
     if line.drawing.border_line.attr & 0x3F != 0 {
