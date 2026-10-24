@@ -1535,6 +1535,26 @@ impl DocumentCore {
         }
         self.shift_active_field_for_control_insert(section_idx, para_idx, insert_ctrl_idx);
 
+        // [#8167] 글자처럼 취급한 개체는 자기 줄의 높이를 바꾼다. 저장 줄을 그대로 두면
+        // 줄은 글자 높이로 남고 개체만 줄 위로 넘쳐 그려진다. 글자 입력과 같은 순서로 host
+        // 문단의 줄을 다시 나누고(개체 높이는 줄 나눔이 잰다) 뒤 문단의 세로 위치를 잇는다.
+        if treat_as_char {
+            let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+                &self.document.sections[section_idx].paragraphs[para_idx],
+            );
+            self.reflow_paragraph(section_idx, para_idx);
+            let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[section_idx].paragraphs,
+                para_idx,
+                None,
+                stored_end_for_reset,
+                &self.styles,
+                self.dpi,
+                doc_hwp3_layout,
+            );
+        }
+
         // 리플로우 + 페이지네이션
         self.recompose_section(section_idx);
         self.paginate_if_needed();
