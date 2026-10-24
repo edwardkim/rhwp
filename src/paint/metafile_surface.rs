@@ -7,8 +7,22 @@ use resvg::{tiny_skia, usvg};
 
 // PDF(usvg 0.45)와 메타파일(resvg의 usvg 0.47)은 타입이 다르다.
 // 판정 구현은 한 소스를 공유하되 각 소비자의 실제 선택 글꼴로 실행한다.
+#[cfg_attr(
+    not(target_arch = "wasm32"),
+    expect(
+        clippy::duplicate_mod,
+        reason = "PDF는 usvg 0.45, 메타파일은 usvg 0.47의 서로 다른 타입으로 같은 판정 소스를 인스턴스화한다"
+    )
+)]
 #[path = "../renderer/pdf_synthetic_bold.rs"]
 mod synthetic_bold;
+#[cfg_attr(
+    not(target_arch = "wasm32"),
+    expect(
+        clippy::duplicate_mod,
+        reason = "PDF는 usvg 0.45, 메타파일은 usvg 0.47의 서로 다른 타입으로 같은 판정 소스를 인스턴스화한다"
+    )
+)]
 #[path = "../renderer/pdf_synthetic_italic.rs"]
 mod synthetic_italic;
 
