@@ -125,6 +125,7 @@ impl ComposedTextRun {
 
 mod auto_number_projection;
 mod conjoining_jamo;
+pub(crate) use conjoining_jamo::project_stored_rows_with_selected_program;
 mod equation_line_metrics;
 mod mapped_symbol_fonts;
 mod stored_row_fragments;

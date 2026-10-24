@@ -13,6 +13,13 @@ pub(crate) fn projects_current_marker_geometry(
     box_: &ParagraphBox,
     styles: &ResolvedStyleSet,
 ) -> bool {
+    stored_rows_match_paragraph_box(para, box_)
+        && crate::renderer::layout::list_marker_geometry(para, styles)
+            .is_some_and(|marker| marker.marker_visible)
+}
+
+/// 현재 문단 상자와 같은 원본 가로 프레임인지 인증한다.
+pub(super) fn stored_rows_match_paragraph_box(para: &Paragraph, box_: &ParagraphBox) -> bool {
     let extent = box_.effective();
     // 셀의 문단 여백 경로는 실제 폭을 유지하고, 저장 줄의 오른쪽 끝은
     // content_width_px와 같은 4 HWPUNIT 격자에 놓인다. 격자에서 접힌
@@ -30,8 +37,6 @@ pub(crate) fn projects_current_marker_geometry(
                 && (line.segment_width == extent.end - extent.start
                     || line.segment_width == stored_right - extent.start)
         })
-        && crate::renderer::layout::list_marker_geometry(para, styles)
-            .is_some_and(|marker| marker.marker_visible)
 }
 
 /// 앞선 물리 경계가 없는 마지막 자동 어절의 캐시 원점 되감김인가.
