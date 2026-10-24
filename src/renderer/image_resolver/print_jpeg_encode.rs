@@ -90,18 +90,25 @@ pub(crate) fn encode_print_jpeg(data: &[u8], quality: u8, expand: bool) -> Optio
     let (width, height) = (header.width, header.height);
     memoized(Conversion::PrintJpeg { quality, expand }, data, || {
         let mut decoded = decode_image_with_format_limited(data, format)?.to_rgba8();
-        let mut colors = HashSet::with_capacity(257);
+        // RGB555 전달과 JPEG 품질은 서로 다른 팔레트 경계를 소비한다.
+        // 변환 전 원본에서 큰 경계까지 세고 알파 검사는 모든 픽셀에서 유지한다.
+        let mut colors = HashSet::with_capacity(1025);
         for pixel in decoded.pixels() {
             if pixel[3] != 255 {
                 return None;
             }
-            if colors.len() <= 256 {
+            if colors.len() <= 1024 {
                 colors.insert([pixel[0], pixel[1], pixel[2]]);
             }
         }
         if colors.len() < 32 {
             return None;
         }
+        let quality = if expand {
+            super::print_codec::quality_for_palette(quality, colors.len())
+        } else {
+            quality
+        };
         colors.extend([[0, 0, 0], [255, 255, 255]]);
         let reconstruction = expand && colors.len() > 256;
         if reconstruction {

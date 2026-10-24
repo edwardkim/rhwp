@@ -9,6 +9,16 @@ use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
 use crate::renderer::render_tree::ImageNode;
 
+/// 기본 Print 압축의 고색수 품질 판정은 원본 팔레트와 요청 품질을 소비한다.
+/// 사전 RGB555 변환이나 다른 인코더 진입점이 이 판정을 대신하지 않는다.
+pub(super) fn quality_for_palette(quality: u8, source_colors: usize) -> u8 {
+    if source_colors > 1024 && quality > 70 {
+        (f64::from(quality) * 0.7) as u8
+    } else {
+        quality
+    }
+}
+
 /// 압축 형식과 출력 세대를 확인한 뒤 동일한 장치 표본 계약을 게시한다.
 pub(crate) fn print_area_sampling(
     image: &ImageNode,
@@ -92,6 +102,30 @@ pub(crate) fn print_device_image_payload(
     }
     let quality =
         ((width_points as f32 / output_header.width as f32 * 100.0) as i32).clamp(35, 75) as u8;
+    // 압축 전의 같은 가시 창에서 색 수를 센다. base가 이미 RGB555 PNG면
+    // 그 변환으로 줄어든 팔레트가 원본의 고색수 품질 계약을 바꾸지 않아야 한다.
+    let quality = if quality > 70 {
+        let format = match detect_image_mime_type(source) {
+            "image/bmp" => image::ImageFormat::Bmp,
+            "image/png" => image::ImageFormat::Png,
+            "image/jpeg" => image::ImageFormat::Jpeg,
+            _ => return None,
+        };
+        let window =
+            super::print_window::SourceWindow::for_image(image, header.width, header.height)?;
+        let (visible, _) =
+            super::print_tone::decode_transfer_pixels(source, format, Some(window.bounds))?;
+        let mut colors = HashSet::with_capacity(1025);
+        for pixel in visible.pixels() {
+            colors.insert([pixel[0], pixel[1], pixel[2]]);
+            if colors.len() > 1024 {
+                break;
+            }
+        }
+        quality_for_palette(quality, colors.len())
+    } else {
+        quality
+    };
     let data = memoized(
         Conversion::Hancom2024PrintJpeg { quality },
         &base.data,
@@ -134,11 +168,6 @@ fn encode(payload: &ResolvedImagePayload, quality: u8) -> Option<Vec<u8>> {
     if colors.len() < 32 {
         return None;
     }
-    let quality = if colors.len() > 1024 && quality > 70 {
-        (f64::from(quality) * 0.7) as u8
-    } else {
-        quality
-    };
     let rgb = image::DynamicImage::ImageRgba8(rgba).to_rgb8();
     let mut data = Vec::new();
     let mut encoder = Encoder::new(&mut data, quality);
