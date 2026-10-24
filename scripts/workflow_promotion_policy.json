@@ -278,6 +278,33 @@
         "Build & Test",
         "release-operations-contracts / Release operations contracts"
       ]
+    },
+    ".github/workflows/native-host-package.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": [
+        "matrix",
+        "artifact"
+      ],
+      "requiredJobs": [
+        "CI preflight",
+        "Build & Test",
+        "native-host-package / Package linux-x86_64",
+        "native-host-package / Package macos-aarch64",
+        "native-host-package / Package windows-x86_64"
+      ],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [
+        "rhwp-native-host-linux-x86_64",
+        "rhwp-native-host-macos-aarch64",
+        "rhwp-native-host-windows-x86_64"
+      ],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ],
+      "evidencePath": ".github/workflows/ci.yml"
     }
   }
 }

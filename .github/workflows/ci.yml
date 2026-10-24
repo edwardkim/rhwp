@@ -29,6 +29,11 @@ on:
         required: true
         default: false
         type: boolean
+      native_host_package:
+        description: Build and exercise all three native host packages at this commit.
+        required: false
+        default: false
+        type: boolean
 
 env:
   CARGO_TERM_COLOR: always
@@ -818,6 +823,14 @@ jobs:
     uses: ./.github/workflows/release-operations-contracts.yml
     needs: [preflight]
     if: github.event_name == 'workflow_dispatch' && needs.preflight.result == 'success'
+    permissions:
+      contents: read
+
+  # Bootstrap the new packaging workflow from this registered manual caller.
+  native-host-package:
+    uses: ./.github/workflows/native-host-package.yml
+    needs: [preflight]
+    if: github.event_name == 'workflow_dispatch' && inputs.native_host_package && needs.preflight.result == 'success'
     permissions:
       contents: read
 

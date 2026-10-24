@@ -415,6 +415,7 @@ mutation이므로 메인테이너 승인 뒤에만 실행한다. inventory에 �
 | CodeQL | `gh workflow run codeql.yml --ref devel` | direct, JavaScript/TypeScript·Python·Rust·Actions 네 분석 job success 필수 |
 | Pages | `gh workflow run deploy-pages.yml --ref devel` | verify-only, Deploy job skipped |
 | Gym | `gh workflow run gym-release-gate.yml --ref devel -f mode=contracts` | contracts-only, full benchmark skipped |
+| Native host package | `gh workflow run ci.yml --ref devel -f release_grade=false -f native_host_package=true` | direct, 같은 commit의 reusable 호출, 3개 플랫폼 package job·artifact success 필수 |
 | Oracle advisory | `gh workflow run oracle-public-advisory.yml --ref devel` | verdict artifact 필수 |
 | Proptest roundtrip | `gh workflow run proptest-roundtrip.yml --ref devel` | direct |
 | Release Binary | `gh workflow run release-binary.yml --ref devel -f tag=test` | verify-only, Release·외부 publish skipped, 5-platform·package artifact 필수 |
@@ -423,6 +424,11 @@ mutation이므로 메인테이너 승인 뒤에만 실행한다. inventory에 �
 | Release operations contracts | 위 `gh workflow run ci.yml --ref devel -f release_grade=false`의 reusable job | contracts-only, issue label·duration refresh·trusted reuse의 실제 스크립트/API 실패 계약 |
 
 `build-nextest-archives.yml`과 `run-nextest-archives.yml`은 독립 dispatch 대신 같은 exact SHA의 CI caller run을 증적으로 쓴다. 각각 네 archive build/worker job과 CI preflight·Build & Test의 success를 모두 요구한다. metadata workflow 세 개와 `release-operations-contracts.yml`도 등록된 CI의 manual caller run을 사용하며, `CI preflight`, `Build & Test`, `release-operations-contracts / Release operations contracts`의 success를 모두 요구한다. 새 adapter를 main에 먼저 등록하지 않아도 같은 commit의 local reusable 호출로 검증할 수 있다. PR/push에서는 이 job을 실행하지 않는다. 원래 label/metrics 쓰기 이벤트를 실행하지 않으며, 공유 caller/adapter run에서도 각 변경 파일의 hash·mode·필수 job을 개별 유지한다. contracts-only는 실제 repository metadata 쓰기 성공의 증거와 구분한다. 독립 dispatch 표면은 10개다.
+
+Native host package는 기본값 false인 수동 입력을 켰을 때만 CI caller에서 실행한다. 새 workflow의
+기본 브랜치 등록 전에도 이 caller로 실행 증거를 만들며, PR/push와 일반 수동 CI에서는 package job을
+생략한다. promotion은 CI run의 `CI preflight`·`Build & Test`와
+`native-host-package / Package <platform>` 세 job 및 세 artifact를 함께 확인한다.
 
 `workflow_dispatch` API의 `ref`는 branch 또는 tag이므로 명령에 commit SHA를 직접 넘겨 exact성을
 보장하지 않는다. 따라서 dispatch 직전의 `candidate_sha`를 기록하고, 생성된 모든 run의
