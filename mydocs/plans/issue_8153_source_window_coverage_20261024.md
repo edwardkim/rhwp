@@ -1,4 +1,7 @@
-# #8153: 그림 장치 영역의 원본 창 자격 보존
+# #8153: crop 대조군 실패의 원본 창 가설과 실제 원인 추적
+
+> 아래 원본 창 가설은 실제 소비자 추적으로 기각했다. 그 가설에 따른 코드 변경은
+> 적용하지 않았다. 최신 판정은 마지막 절을 따른다.
 
 ## 독립 실패와 원인 경로
 
@@ -41,3 +44,33 @@ crop·원본 크기를 비운다. 이 정규화 자체는 필요한 소비 계�
 `wasm-visible-control-current-reference.json`, `native-visible-control/exact-audit.json`,
 `wasm-visible-control-boundary-review.png`와 actual PNG/입력/PDF 해시에 보존했다.
 이 계획 단계에서 원인 보정·미대응 0 복구·최종 제출 완료를 판정하지 않는다.
+
+## 실제 소비자에서 기각한 원본 창 가설
+
+고정 producer `b919780c3b`, `afd8d95856`, `d3fdfa0c51`, `e8ec8c9845`,
+`934aae310d`로 같은 입력을 다시 실행했다. B의 PNG는 이전 PNG와 바이트까지 같고,
+B는 raw 100%, afd 이후 후보는 99.98976%였다. 실패는 device image 보정 이전부터
+있었으므로 `d3fdfa0c51`의 자격 판정이 원인이라는 앞선 결론을 철회한다.
+
+실제 B/D의 layer tree는 schema minor를 제외하고 같았다. 그림 5개는 모두
+`fill_mode=None`으로 `device_image::eligible`의 대상이 아니다. 이 경로에는
+`PaintOp::image`의 공통 창 정규화도 이미 적용된다. 재생 창을 원본으로 오인하는
+일반 가능성과 이 실패의 실제 원인을 구분하며, 근거 없이 새 필드·예외를 넣지 않는다.
+
+직접 실행한 변경점은 `afd8d95856`의 물리 DPI 표본 계약이다. 그 변경을 되돌리면
+소수 종이에서 48px 그림을 49px로 늘리는 이미 입증한 이중 변환을 복구하게 되므로
+37픽셀만 보고 되돌리지 않는다. 전체 가로·세로 프레임 투영만 바꾼 진단도 같은
+37픽셀을 남겼다. crop 대상의 면적 표본을 끈 진단은 32픽셀을 남겼으므로 그것도
+해결로 채택하지 않는다.
+
+독립 PDF의 세 번째 그림은 원본에 없는 1bit `/Mask`를 함께 가진다. 원본 BMP는
+모든 픽셀 alpha=255지만 PDF mask는 첫 열의 3, 7, 11…507행에 비트를 가진다.
+JPEG에도 그 가장자리 차이가 있다. 이는 원본 투명도·정상 불투명 그림 축소와
+구분해야 하는 실제 관측이며, 원인을 확정하기 전 같은 원본의 1쪽 Print 재현성을
+확인한다. 기존 독립 PDF를 덮어쓰거나 기준·반경·임계값을 바꾸지 않는다.
+
+진단·원본·후보 PNG와 layer는 ignored 작업 루트의 `visible-layer-*-diagnostic/`,
+`visible-y-projection-diagnostic/`, 각 producer의 `native-visible-control/`,
+`visible-control-independent-image-placement.json`에 보존했다. 실제 한컴 재출력은
+`visible-control-repeat-print-20261024/`에만 보존한다. 이 단계는 미대응 0 복구나
+최종 검증 완료가 아니다.
