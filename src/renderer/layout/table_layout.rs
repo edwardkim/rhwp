@@ -6043,27 +6043,8 @@ impl LayoutEngine {
             let h = if crate::renderer::para_has_no_stored_line_segs(para)
                 && para.controls.is_empty()
             {
-                let fs = para
-                    .char_shapes
-                    .first()
-                    .and_then(|cs| styles.char_styles.get(cs.char_shape_id as usize))
-                    .map(|cs| cs.font_size)
-                    .unwrap_or(0.0);
-                if fs <= 0.0 {
-                    hwpunit_to_px(400, self.dpi)
-                } else if is_last_para {
-                    fs
-                } else {
-                    match para_style {
-                        Some(ps) => crate::renderer::corrected_line_height(
-                            hwpunit_to_px(400, self.dpi),
-                            fs,
-                            ps.line_spacing_type,
-                            ps.line_spacing,
-                        ),
-                        None => fs,
-                    }
-                }
+                self.reflow_empty_cell_line_metrics(para, styles, para_style, is_last_para)
+                    .0
             } else {
                 hwpunit_to_px(400, self.dpi)
             };
@@ -17039,27 +17020,8 @@ impl LayoutEngine {
                         // [#2169] NO_LS 순수 빈 문단 = 완전한 em 줄박스 (한글 공식:
                         // 80168 r4 c2 = 10줄×em + 9gap 정확). 비마지막 문단은
                         // fs×ls%(gap 포함 동치), 셀 마지막 문단은 em.
-                        let fs = p
-                            .char_shapes
-                            .first()
-                            .and_then(|cs| styles.char_styles.get(cs.char_shape_id as usize))
-                            .map(|cs| cs.font_size)
-                            .unwrap_or(0.0);
-                        if fs <= 0.0 {
-                            hwpunit_to_px(400, self.dpi)
-                        } else if is_last_para {
-                            fs
-                        } else {
-                            match para_style {
-                                Some(ps) => crate::renderer::corrected_line_height(
-                                    hwpunit_to_px(400, self.dpi),
-                                    fs,
-                                    ps.line_spacing_type,
-                                    ps.line_spacing,
-                                ),
-                                None => fs,
-                            }
-                        }
+                        self.reflow_empty_cell_line_metrics(p, styles, para_style, is_last_para)
+                            .0
                     } else {
                         hwpunit_to_px(400, self.dpi)
                     };
@@ -17136,6 +17098,14 @@ impl LayoutEngine {
                     p.line_segs
                         .last()
                         .map_or(0.0, |line| hwpunit_to_px(line.line_spacing, self.dpi))
+                } else if line_count == 0
+                    && source_controls.is_empty()
+                    && p.text.is_empty()
+                    && crate::renderer::para_has_no_stored_line_segs(p)
+                    && !collapse_empty_rowbreak_spacer
+                {
+                    self.reflow_empty_cell_line_metrics(p, styles, para_style, is_last_para)
+                        .1
                 } else if source_controls.is_empty()
                     && para_has_visible_text
                     && stored_empty_successor_advance.is_none()

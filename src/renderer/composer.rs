@@ -26,6 +26,7 @@ pub(crate) use nested_table_frames::{
 mod inline_frame_admission;
 mod inline_picture_metrics;
 mod resolved_fields;
+pub(crate) mod stored_margin_context;
 mod stored_marker_frames;
 mod stored_tac_host_frame;
 mod stored_word_tail;

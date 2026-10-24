@@ -23,9 +23,12 @@ fn rhwp_bin() -> String {
 struct TempDir(PathBuf);
 impl TempDir {
     fn new() -> Self {
+        // macOS 시계의 같은 tick에서 여러 검사가 시작해도 출력 경로를 공유하지 않는다.
+        static NEXT_ID: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
         let path = std::env::temp_dir().join(format!(
-            "rhwp-7518-{}-{}",
+            "rhwp-7518-{}-{}-{}",
             std::process::id(),
+            NEXT_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()

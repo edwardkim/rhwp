@@ -570,7 +570,16 @@ pub(super) fn try_place_overflow_paragraph(
         let within_limit = if tail_allowance.requires_whole_line {
             overflow <= 0.0
         } else {
-            overflow < first_line_advance
+            // 글자 있는 마지막 줄의 시작점도 본문 안에 있어야 한다. 줄간격을
+            // 포함한 한 걸음보다 초과량이 작아도 새 줄 전체가 밖에서 시작할 수
+            // 있다. 그 줄은 글꼴 잉크의 미세한 spill이 아니라 다음 쪽 소속이다.
+            // 잉크 없는 꼬리의 별도 저장 경계 계약은 유지한다.
+            let last_line_starts_inside = para.text.trim().is_empty()
+                || fmt.line_count().checked_sub(1).is_some_and(|last| {
+                    st.current_height + fmt.spacing_before + fmt.line_advances_sum(0..last)
+                        < true_available
+                });
+            overflow < first_line_advance && last_line_starts_inside
         };
         if within_limit {
             st.commit_tail_overflow_paragraph(para_idx, fmt.total_height, body_bottom_vpos);

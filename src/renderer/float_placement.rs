@@ -1196,15 +1196,14 @@ pub(crate) fn partial_table_opening_host_owns_lead(
         && para.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
 }
 
-/// On reflow, an adjustable multi-row table is constrained by its physical
-/// row declarations and content, rather than by scaling every row to a cached
-/// object bounding height. A single row can consume the object-height minimum
-/// directly; protected/noAdjust and stored-line tables retain their frame.
+/// 조정 가능한 재조판 표는 셀의 선언 최소 높이와 현재 내용으로 행을 구성한다.
+/// 단일 행도 개체의 이전 바깥 높이를 최소값으로 다시 받으면 줄 수가 줄어든 뒤
+/// 빈 공간과 Center 이동이 남는다. 보호·noAdjust·저장 줄 표는 원래 프레임을 쓴다.
 pub(crate) fn reflow_table_uses_row_height_constraints(table: &Table) -> bool {
     !table.common.treat_as_char
         && !table.common.size_protect
         && table.raw_table_record_attr & 0x08 == 0
-        && table.row_count > 1
+        && table.row_count > 0
         && !table.cells.is_empty()
         && table.cells.iter().all(|cell| {
             !cell.paragraphs.is_empty()
@@ -1213,6 +1212,19 @@ pub(crate) fn reflow_table_uses_row_height_constraints(table: &Table) -> bool {
                     .iter()
                     .all(crate::renderer::para_has_no_stored_line_segs)
         })
+}
+
+/// 부모의 중첩 표 예약도 자식 행 배치와 같은 최소 높이 소유자를 사용한다.
+/// 재조판 행이 이미 셀 선언과 내용을 담았다면 옛 개체 상자로 다시 늘리지 않는다.
+pub(crate) fn table_body_height_with_declared_floor(table: &Table, measured: f64, dpi: f64) -> f64 {
+    if reflow_table_uses_row_height_constraints(table) {
+        measured
+    } else {
+        measured.max(crate::renderer::hwpunit_to_px(
+            table.common.height as i32,
+            dpi,
+        ))
+    }
 }
 
 /// 자리차지 개체가 흐름에 추가하는 문단 기준 앞 공간.

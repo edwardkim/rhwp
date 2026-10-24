@@ -2838,10 +2838,15 @@ impl HeightMeasurer {
                 {
                     return None;
                 }
-                let declared = hwpunit_to_px(nested.common.height as i32, self.dpi);
                 let om = hwpunit_to_px(nested.outer_margin_top as i32, self.dpi)
                     + hwpunit_to_px(nested.outer_margin_bottom as i32, self.dpi);
-                Some(mt.total_height.max(declared) + om)
+                Some(
+                    crate::renderer::float_placement::table_body_height_with_declared_floor(
+                        nested,
+                        mt.total_height,
+                        self.dpi,
+                    ) + om,
+                )
             })
             .sum()
     }
@@ -3070,8 +3075,11 @@ impl HeightMeasurer {
                             };
                             // 셀 배치의 calc_nested_controls_bottom_height와 같은
                             // 개체 바깥 상자와 마지막 문단 앵커 오프셋을 소비한다.
-                            body_height
-                                .max(hwpunit_to_px(nested.common.height as i32, self.dpi))
+                            crate::renderer::float_placement::table_body_height_with_declared_floor(
+                                nested,
+                                body_height,
+                                self.dpi,
+                            )
                                 + outer_margin
                                 + lead
                         } else {

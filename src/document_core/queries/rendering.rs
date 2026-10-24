@@ -5988,22 +5988,37 @@ impl DocumentCore {
                 math_tables.as_deref().unwrap_or(&section.paragraphs),
                 &self.styles,
             );
-            let stored_word_tails = (profile.hwp5_stored_pagination_layout()
-                || profile.hwpx_stored_layout())
-            .then_some(())
-            .filter(|_| !profile.session_edited() && !profile.legacy_hwp3_stored_geometry())
-            .and_then(|_| {
-                crate::renderer::render_normalization::stored_word_tail::normalize(
-                    math_textboxes
-                        .as_deref()
-                        .or(math_tables.as_deref())
-                        .unwrap_or(&section.paragraphs),
-                    &self.styles,
-                    pd,
-                    &Self::find_initial_column_def(&section.paragraphs),
-                    self.dpi,
-                )
-            });
+            let stored_word_tails =
+                (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+                    .then_some(())
+                    .filter(|_| !profile.session_edited() && !profile.legacy_hwp3_stored_geometry())
+                    .and_then(|_| {
+                        // 구판 자체 변환본은 원 HWP의 줄을 보존했지만 XML 1.2의
+                        // 여백 단위는 달라졌다. marker 2 이후와 한컴 원본은 제외한다.
+                        let previous_margins = (self.document.hwpx_aux_entry(
+                    crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH,
+                ) == Some(b"1")
+                    && self.document.doc_info.hwpml_version.as_deref() == Some("1.2"))
+                .then(|| {
+                    crate::renderer::composer::stored_margin_context::previous_margin_styles(
+                        &self.document.doc_info,
+                        &self.styles,
+                        self.dpi,
+                    )
+                })
+                .flatten();
+                        crate::renderer::render_normalization::stored_word_tail::normalize(
+                            math_textboxes
+                                .as_deref()
+                                .or(math_tables.as_deref())
+                                .unwrap_or(&section.paragraphs),
+                            &self.styles,
+                            pd,
+                            &Self::find_initial_column_def(&section.paragraphs),
+                            self.dpi,
+                            previous_margins.as_ref(),
+                        )
+                    });
             let paragraph_geometry_changed =
                 stored_word_tails.is_some() || math_textboxes.is_some() || math_tables.is_some();
             let unplaced_rows =

@@ -89,6 +89,49 @@ fn closed_stored_empty_line_owns_advance(
 }
 
 impl LayoutEngine {
+    /// 저장 줄 없는 빈 셀 문단의 현재 전진과 뒤 간격을 함께 발행한다.
+    /// 단락 안에서는 전진 전체를 쓰고 물리 컷에서는 줄 상자를 남긴다.
+    pub(super) fn reflow_empty_cell_line_metrics(
+        &self,
+        para: &Paragraph,
+        styles: &ResolvedStyleSet,
+        para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+        is_last_para: bool,
+    ) -> (f64, f64) {
+        let fallback = crate::renderer::hwpunit_to_px(400, self.dpi);
+        let fs = para
+            .char_shapes
+            .first()
+            .and_then(|shape| styles.char_styles.get(shape.char_shape_id as usize))
+            .map_or(0.0, |style| style.font_size);
+        if fs <= 0.0 {
+            return (fallback, 0.0);
+        }
+        if is_last_para {
+            return (fs, 0.0);
+        }
+        let Some(style) = para_style else {
+            return (fs, 0.0);
+        };
+        let advance = crate::renderer::corrected_line_height(
+            fallback,
+            fs,
+            style.line_spacing_type,
+            style.line_spacing,
+        );
+        let following = if fs > fallback
+            && matches!(
+                style.line_spacing_type,
+                crate::model::style::LineSpacingType::Percent
+                    | crate::model::style::LineSpacingType::SpaceOnly
+            ) {
+            (advance - fs).max(0.0)
+        } else {
+            0.0
+        };
+        (advance, following)
+    }
+
     /// 다음 원본 프레임 직전의 빈 줄도 앞 저장 슬롯이 정확히 닫으면 자기 높이를 소유한다.
     /// 프레임 경계는 호출자가 실제 컷과 같은 판별자로 확인해 전달한다.
     pub(super) fn stored_closing_empty_line_advance_hu(

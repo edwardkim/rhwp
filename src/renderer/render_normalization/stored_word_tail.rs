@@ -74,6 +74,7 @@ pub(crate) fn normalize(
     page: &PageDef,
     initial_columns: &ColumnDef,
     dpi: f64,
+    previous_margin_styles: Option<&ResolvedStyleSet>,
 ) -> Option<Vec<Paragraph>> {
     normalize_flow(
         original,
@@ -82,6 +83,7 @@ pub(crate) fn normalize(
         Some(page),
         true,
         dpi,
+        previous_margin_styles,
     )
 }
 
@@ -94,6 +96,7 @@ fn normalize_flow(
     body_page: Option<&PageDef>,
     refresh_text: bool,
     dpi: f64,
+    previous_margin_styles: Option<&ResolvedStyleSet>,
 ) -> Option<Vec<Paragraph>> {
     let mut shift = 0_i32;
     let mut previous_source_vpos = None;
@@ -157,10 +160,31 @@ fn normalize_flow(
                 } else {
                     cell.height
                 };
+                if let Some(previous) = previous_margin_styles {
+                    if let Some(projected) =
+                        crate::renderer::composer::stored_margin_context::project_cell(
+                            &cell.paragraphs,
+                            inner,
+                            styles,
+                            previous,
+                            dpi,
+                        )
+                    {
+                        cell.paragraphs = projected;
+                        changed = true;
+                        continue;
+                    }
+                }
                 let stale = stored_text_exceeds_frame(cell, frame, &padding);
-                if let Some(projected) =
-                    normalize_flow(&cell.paragraphs, styles, Some(inner), None, stale, dpi)
-                {
+                if let Some(projected) = normalize_flow(
+                    &cell.paragraphs,
+                    styles,
+                    Some(inner),
+                    None,
+                    stale,
+                    dpi,
+                    previous_margin_styles,
+                ) {
                     cell.paragraphs = projected;
                     changed = true;
                 }
@@ -186,6 +210,19 @@ fn normalize_flow(
             paragraph.source_line_seg_vertical_pos = None;
         }
         if let Some(width) = width {
+            if let Some(previous) = previous_margin_styles.filter(|_| body_page.is_some()) {
+                if let Some(projected) =
+                    crate::renderer::composer::stored_margin_context::project_body(
+                        &paragraph, width, styles, previous, dpi,
+                    )
+                {
+                    let old_advance = frame_advance(&paragraph.line_segs)?;
+                    let new_advance = frame_advance(&projected.line_segs)?;
+                    shift = shift.checked_add(new_advance.checked_sub(old_advance)?)?;
+                    paragraph = projected;
+                    changed = true;
+                }
+            }
             let style = styles.para_styles.get(paragraph.para_shape_id as usize);
             let box_ = if body_page.is_some() {
                 ParagraphBox::body_for_style(width, style, dpi)

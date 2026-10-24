@@ -32,6 +32,13 @@ use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::{LineSeg, MarkerHead, NumberingMarker, Paragraph};
 
+/// 전체 조판 결과와 확정된 부분 컷은 서로 다른 소유 범위다.
+#[derive(Clone, Copy)]
+pub(crate) enum ParagraphLineRange {
+    Whole,
+    Partial { start: usize, end: usize },
+}
+
 mod justification_spacing;
 mod leading_justification;
 mod leading_spaces;
@@ -4697,11 +4704,7 @@ impl LayoutEngine {
         wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
         measured: Option<&ComposedParagraph>,
     ) -> f64 {
-        let end_line = measured
-            .or(composed)
-            .map(|c| c.lines.len())
-            .unwrap_or(para.line_segs.len());
-        self.layout_partial_paragraph(
+        self.layout_partial_paragraph_with_spacing_before(
             tree,
             col_node,
             para,
@@ -4710,13 +4713,13 @@ impl LayoutEngine {
             styles.hwp3_variant && self.endnote_para_source_for(para_index).is_none(),
             col_area,
             y_start,
-            0,
-            end_line,
+            ParagraphLineRange::Whole,
             section_index,
             para_index,
             multi_col_width_hu,
             bin_data_content,
             wrap_anchor,
+            None,
             measured,
         )
     }
@@ -4814,8 +4817,10 @@ impl LayoutEngine {
             hwp3_body_reflow,
             col_area,
             y_start,
-            start_line,
-            end_line,
+            ParagraphLineRange::Partial {
+                start: start_line,
+                end: end_line,
+            },
             section_index,
             para_index,
             multi_col_width_hu,
@@ -4840,8 +4845,7 @@ impl LayoutEngine {
         hwp3_body_reflow: bool,
         col_area: &LayoutRect,
         y_start: f64,
-        start_line: usize,
-        end_line: usize,
+        line_range: ParagraphLineRange,
         section_index: usize,
         para_index: usize,
         multi_col_width_hu: Option<i32>,
@@ -4850,6 +4854,12 @@ impl LayoutEngine {
         confirmed_spacing_before: Option<f64>,
         measured: Option<&ComposedParagraph>,
     ) -> f64 {
+        let (start_line, end_line) = match line_range {
+            ParagraphLineRange::Whole => {
+                (0, composed.map_or(para.line_segs.len(), |c| c.lines.len()))
+            }
+            ParagraphLineRange::Partial { start, end } => (start, end),
+        };
         if let Some(comp) = composed {
             // [Task #1042 Stage 6b] 본문 paragraph 의 line_segs.empty case 의 wrap 정합 —
             // compose_lines fallback (CHARS_PER_LINE=45 heuristic) 결과를 column inner width
@@ -4927,15 +4937,13 @@ impl LayoutEngine {
                     .para_styles
                     .get(comp.para_style_id as usize)
                     .is_some_and(|style| style.spacing_before > 0.0);
-            // [#2279] 전체-문단 요청(start=0, end=원본 줄수 이상)은 재래핑 후 줄수로
-            // 확장한다. 종전에는 재래핑이 줄수를 늘린 문단(45자 폴백 3줄 → 실폭 4줄,
-            // 86712 pi=22)에서 원본 줄수로 클램프되어 마지막 줄이 렌더에서 소실됐다
-            // (측정 4줄 fit vs 렌더 3줄 — maintainer PR #2284 리뷰 p10 픽셀 하락과
-            // 정합). 분할(partial) 요청의 라인 범위는 종전 클램프 유지.
-            let end_line_adjusted = if start_line == 0 && end_line >= comp.lines.len() {
-                comp_ref.lines.len()
-            } else {
-                end_line.min(comp_ref.lines.len()).max(start_line)
+            // 전체 요청은 재조판 꼬리까지 소비한다(#2284). 부분 요청은 조판이
+            // 발행한 컷을 보존한다. 초기 폴백 줄 수로 두 소유 범위를 추측하지 않는다.
+            let end_line_adjusted = match line_range {
+                ParagraphLineRange::Whole => comp_ref.lines.len(),
+                ParagraphLineRange::Partial { end, .. } => {
+                    end.min(comp_ref.lines.len()).max(start_line)
+                }
             };
             let vertical_spacing =
                 confirmed_spacing_before
