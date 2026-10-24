@@ -29,16 +29,19 @@
 //!
 //! ## 다이제스트 규약
 //!
-//! serde 직렬화(JSON 인코딩)를 blake3 로 해시한다 — `Debug`/`DefaultHasher`/
-//! 재귀 `Clone` 스냅샷에 의존하지 않는다. serde_json 은 구조체 필드를 선언
-//! 순서로, 숫자·float 를 결정적 표기(ryu/itoa)로 방출하므로 같은 프로세스에서
-//! 항상 같은 바이트를 낸다. DocInfo 트리에는 순회 순서가 비결정적인 맵 타입이
+//! serde 직렬화를 이진 인코딩([`digest_encoding`])으로 blake3 에 넘긴다 —
+//! `Debug`/`DefaultHasher`/재귀 `Clone` 스냅샷에 의존하지 않는다. 인코딩은 구조체
+//! 필드를 선언 순서로, 숫자·float 를 고정 바이트로 방출하므로 같은 프로세스에서
+//! 항상 같은 바이트를 낸다. 다이제스트는 같은 프로세스의 같은 타입 값끼리만
+//! 비교하며 저장하지 않는다. DocInfo 트리에는 순회 순서가 비결정적인 맵 타입이
 //! 없다(생기면 이 모듈에서 정렬 직렬화로 감싸야 한다). 봉인 대상 필드는
 //! [`doc_info_model_digest`] 가 **전수 구조분해**로 나열한다 — 필드 추가 시
 //! 컴파일 오류로 목록 갱신을 강제한다.
 //!
 //! Section(`raw_stream`)·본문 컨트롤 raw 레코드의 같은 계약은 #4488·#4495 가
 //! 별도로 다룬다 — 스트림·소유자가 다르다.
+
+mod digest_encoding;
 
 use serde::Serialize;
 
@@ -76,18 +79,11 @@ pub fn bytes_digest(bytes: &[u8]) -> [u8; 32] {
     *blake3::hash(bytes).as_bytes()
 }
 
-/// 모델 값의 JSON 직렬화 바이트 다이제스트.
-///
-/// serde_json 은 필드·구두점마다 작은 조각을 쓴다. 조각마다 해시에 넘기면 호출당 비용이
-/// 직렬화보다 커지므로 버퍼에 모아 큰 덩어리로 넘긴다. 해시하는 바이트 열은 같다.
-pub(crate) fn json_digest<T: Serialize + ?Sized>(value: &T, context: &str) -> [u8; 32] {
-    use std::io::Write;
-    let mut hasher = blake3::Hasher::new();
-    let mut writer = std::io::BufWriter::with_capacity(64 * 1024, &mut hasher);
-    serde_json::to_writer(&mut writer, value).expect(context);
-    writer.flush().expect(context);
-    drop(writer);
-    *hasher.finalize().as_bytes()
+/// 모델 값의 다이제스트 — serde 직렬화를 [`digest_encoding`] 의 이진 인코딩으로 해시한다.
+pub(crate) fn value_digest<T: Serialize + ?Sized>(value: &T, context: &str) -> [u8; 32] {
+    let mut writer = digest_encoding::DigestWriter::new();
+    value.serialize(&mut writer).expect(context);
+    writer.finish()
 }
 
 /// 레코드(직렬화 가능한 모델 값) 하나의 다이제스트.
@@ -96,7 +92,7 @@ pub(crate) fn json_digest<T: Serialize + ?Sized>(value: &T, context: &str) -> [u
 /// `raw_data` 는 파싱 시점 그대로이므로 판정에 영향이 없고, `raw_data` 만 바꿔치기
 /// 하는 변경도 불일치로 떨어져 승인되지 않는다.
 pub fn record_digest<T: Serialize>(record: &T) -> [u8; 32] {
-    json_digest(
+    value_digest(
         record,
         "레코드 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)",
     )
@@ -195,7 +191,7 @@ pub fn doc_info_model_digest(doc_info: &DocInfo, doc_props: &DocProperties) -> [
         props: doc_props,
     };
 
-    json_digest(
+    value_digest(
         &fp,
         "모델 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)",
     )
@@ -281,7 +277,7 @@ pub fn section_model_digest(section: &crate::model::document::Section) -> [u8; 3
         trailing_lists: &'a Option<crate::model::section_tail::SectionTail>,
     }
 
-    json_digest(
+    value_digest(
         &Fingerprint {
             section_def,
             paragraphs,

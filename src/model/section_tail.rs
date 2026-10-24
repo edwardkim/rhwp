@@ -99,7 +99,7 @@ pub(crate) fn projection_digest(doc: &Document) -> [u8; 32] {
             }
         }
     }
-    crate::model::raw_provenance::json_digest(
+    crate::model::raw_provenance::value_digest(
         &(masters, memos),
         "구역 끝 모델 투영은 메모리에서 직렬화한다",
     )
