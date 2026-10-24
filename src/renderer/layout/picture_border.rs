@@ -106,8 +106,13 @@ impl LayoutEngine {
             // 기본 선 두께 0.1mm
             0.1 / 25.4 * self.dpi
         };
-        // 그림도 표 87의 공통 도형 선 종류·반복 구간을 소비한다.
-        let stroke_dash = crate::renderer::line_style::hwp_shape_line_type(line_type as u8).0;
+        let stroke_dash = match line_type {
+            2 => super::super::StrokeDash::Dot,
+            3 => super::super::StrokeDash::Dash,
+            4 => super::super::StrokeDash::DashDot,
+            5 => super::super::StrokeDash::DashDotDot,
+            _ => super::super::StrokeDash::Solid,
+        };
         let style = super::super::ShapeStyle {
             fill_color: None,
             pattern: None,
