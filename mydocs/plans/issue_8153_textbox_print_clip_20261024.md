@@ -55,3 +55,46 @@ clip 소비로 연결한다. 레이아웃·문단 측정·글줄 원점·후속 
 전쪽 Native/fresh WASM과 PR8148 corpus를 비교한다. 추가·변경할 정식 회귀는 각 원본의
 시각 선행 조건과 독립 기대값을 확인한 뒤 등록하며, 최종 1,532개 raw 100%와 전체 페이지
 중요 경계의 ±2px 검사를 부분 진단의 높은 점수로 대신하지 않는다.
+
+## 구현 후 실제 검증과 새 devel
+
+고정 source `919a09e50325c611aa948b3dad22e84c6226b6d3`의 실제 Native 빌드는
+jobs 8·공용 `target/pr-review`에서 6분 16초·exit 0이다. 원본 전 766쪽의 입력·PDF·PNG
+해시와 쪽수를 확인했다. 이전 `934aae310d`에 비해 두 형식의 8·161쪽만 개선됐고,
+나머지 762쪽의 raw는 같았다. 하락은 없다.
+
+| 입력 | Native 전쪽 최저 raw % | 미대응 0픽셀 쪽 | 미대응 픽셀 합 |
+| --- | ---: | ---: | ---: |
+| 편람 HWPX | 99.35532 | 197 / 383 | 15221 |
+| 편람 HWP | 99.35539 | 168 / 383 | 14812 |
+
+미대응 합은 30749 → 30033이다. 실제 Native의 편람 161쪽과 경찰청 1쪽은 앞선
+도형 외곽 clip 진단 PNG와 RGB 전체가 같았다. 경찰청 받침과 편람의 `1㎜` 표시
+경계를 확대 판독했다. 이전의 내용 노출을 정상 출력으로 고정하지 않는다.
+
+같은 source의 표준 release fresh WASM은 `wasm-opt`까지 31분 1초·exit 0이며
+jobs 8·codegen units 16을 사용했다. 실제 Canvas2D로 두 형식 각 8·161·288·307쪽을
+다시 출력했다. 161쪽은 양쪽 raw 99.98614%, 정확한 미대응 21픽셀이고 Native와
+잔여 위치가 같다. 288·307쪽은 양쪽 모두 미대응 0이다. 나머지 곡선 잔여를
+반올림해 100%로 처리하지 않는다. 이 source의 WASM 전 766쪽은 시작하지 않았다.
+
+예약색·indexed·crop 대조군 3개의 WASM도 실제 재출력했다. crop의 37픽셀 차이는
+별도 원인 추적 중이며 이 기록으로 해결 처리하지 않는다. 대표 PNG의 추가 판독과
+최종 source의 필수 회귀·lint·Skia·Studio 및 전쪽 검증은 계속해야 한다.
+
+이 검증 중 새 devel의 PR #8190이 들어와 `e7a0dec55c6c6c6365e4ff50babe7583e1cf1c70`
+위로 리베이스했다. 기존 114개 commit은 모두 유지됐고 range-diff에서 바뀐 patch는
+workspace 제외 목록 충돌을 합친 JPEG encoder commit 하나다. 새 PDF 코덱 vendor와
+기존 JPEG encoder·lock·개별 opt-in feature를 모두 유지했다. 사양 정정까지 반영한
+리베이스 직후 head는 `7eb7185721a61e2abb0227259e39047ec6f9947f`다.
+
+위 Native/WASM 수치는 리베이스 전 고정 producer의 결과다. 새 base/후보 검증으로
+옮겨 표시하지 않는다. PR #8190의 default 비활성·개별/동시 opt-in, capabilities와
+가져오기 예산·그림/alpha 보존을 실제 테스트·소비 경로로 대조해야 한다.
+`issue_8183_pdf_codec_capabilities`·`issue_8183_pdf_codecs`와
+[새 PDF 코덱 가이드](../manual/pdf_image_codecs.md)의 feature 조건을 사용한다.
+기존 PR의 한컴 Print alpha 판단은 명시된 두 입력의 결정이며 다른 문서의 gate 예외가 아니다.
+
+작업 증거는 ignored 작업 루트의 `textbox-print-clip-919a09e503/`,
+`rebase-e7a0dec55c-result.json`, `rebase-e7a0dec55c-range-diff.txt`와 관련 로그에 있다.
+전 1532개 raw 100%·전체 페이지 중요 경계 ±2px·새 base 기능 보존은 아직 완료하지 않았다.
