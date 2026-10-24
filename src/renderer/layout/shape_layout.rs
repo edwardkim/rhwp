@@ -6,6 +6,7 @@ mod connector_style;
 mod line_direction;
 mod path_stroke_arrows;
 mod source_line_frame;
+mod textbox_reflow;
 
 use super::super::composer::{
     captioned_shape_height_px, compose_paragraph, reflow_line_segs, shape_caption_for_layout,
@@ -654,7 +655,6 @@ fn should_reflow_matrix_textbox_lines(
 fn reflow_matrix_textbox_para(
     para: &mut Paragraph,
     available_width: f64,
-    _available_height: f64,
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
@@ -662,28 +662,7 @@ fn reflow_matrix_textbox_para(
         return;
     }
 
-    const MATRIX_TEXT_FIT_TOLERANCE_PX: f64 = 3.0;
-    let composed = crate::renderer::composer::compose_paragraph_in_context(para, styles);
-    let text_len = para.text.chars().count();
-    let full_width = measure_composed_text_range_width(&composed, styles, 0, text_len, None);
-
-    if full_width <= available_width + MATRIX_TEXT_FIT_TOLERANCE_PX {
-        if let Some(first_seg) = para.line_segs.first().cloned() {
-            let mut line_seg = first_seg;
-            line_seg.text_start = 0;
-            line_seg.segment_width = px_to_hwpunit(available_width, dpi);
-            para.line_segs = vec![line_seg];
-            return;
-        }
-    }
-
-    // 도형/글상자 내용 상자 — 도형은 자기 열이 없으므로 미스냅.
-    reflow_line_segs(
-        para,
-        ParagraphBox::content_width_px(available_width, dpi),
-        styles,
-        dpi,
-    );
+    textbox_reflow::in_frame(para, available_width, styles, dpi);
 }
 
 impl LayoutEngine {
@@ -3353,7 +3332,6 @@ impl LayoutEngine {
                 reflow_matrix_textbox_para(
                     &mut paragraphs[index],
                     inner_area.width,
-                    inner_area.height,
                     styles,
                     self.dpi,
                 );
@@ -5051,7 +5029,7 @@ mod tests {
     }
 
     #[test]
-    fn matrix_textbox_para_collapses_imported_lines_that_overflow_height() {
+    fn matrix_textbox_para_reflows_imported_lines_when_frame_width_changed() {
         let mut para = Paragraph {
             char_count: 2,
             text: "AB".to_string(),
@@ -5072,7 +5050,7 @@ mod tests {
         });
         styles.para_styles.push(ResolvedParaStyle::default());
 
-        reflow_matrix_textbox_para(&mut para, 80.0, 30.0, &styles, 96.0);
+        reflow_matrix_textbox_para(&mut para, 80.0, &styles, 96.0);
 
         assert_eq!(para.line_segs.len(), 1);
         assert_eq!(para.line_segs[0].text_start, 0);
