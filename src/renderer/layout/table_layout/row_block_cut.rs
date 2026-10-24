@@ -144,7 +144,13 @@ impl<'a> CellCutFrame<'a> {
     /// 실제 글줄 상자까지 수용하면 뒤 줄간격은 다음 소유자로 넘길 수 있다.
     /// 빈 줄·개체 등 분리한 간격이 없는 유닛은 종전의 전체 슬롯을 예약한다.
     pub(super) fn fitting_height(&self, end: usize, content_advance: f64) -> f64 {
-        let physical = self.height(end, content_advance);
+        let physical = self.height(end, content_advance).max(
+            self.engine
+                .stored_complete_cell_slot_capacity(
+                    self.cell, self.table, self.units, self.start, end,
+                )
+                .unwrap_or(0.0),
+        );
         if self.preserves_line_slots && end > self.start && end < self.units.len() {
             let following_advance = self.engine.stored_span_cut_closing_advance(
                 self.table,

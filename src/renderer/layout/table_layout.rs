@@ -26957,6 +26957,14 @@ impl LayoutEngine {
                 // 분할 행 — cell.height 강제 없음.
                 content + pad_cell
             };
+            let h = if matches!(purpose, row_physical_band::CutHeight::Capacity) {
+                h.max(
+                    self.stored_complete_cell_slot_capacity(cell, table, &units, su, eu)
+                        .unwrap_or(0.0),
+                )
+            } else {
+                h
+            };
             let h = self
                 .stored_mixed_opening_frame(table, cell, styles, su, eu)
                 .map_or(h, |frame| frame.physical_height);
