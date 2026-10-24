@@ -96,7 +96,8 @@ fn is_false(value: &bool) -> bool {
     !value
 }
 
-fn program_names(name: &str) -> Vec<String> {
+/// 같은 프로그램의 이름만 조회한다. 화면용 호환 fallback은 설치 증거가 아니다.
+pub(crate) fn program_names(name: &str) -> Vec<String> {
     std::iter::once(name)
         .chain(super::installed_font_program_aliases(name).iter().copied())
         .filter(|name| FontEnvironment::valid_name(name))

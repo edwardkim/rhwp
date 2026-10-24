@@ -1,8 +1,6 @@
 //! 이미 적재한 실제 SFNT 공급에서 원본 face 부재와 대체 face를 확인한다.
 
-use super::super::font_lookup::{
-    declared_family_candidates, font_style_for_text, typeface_candidates_for_families,
-};
+use super::super::font_lookup::{font_style_for_text, typeface_candidates_for_families};
 use super::SkiaLayerRenderer;
 use crate::{document_core::DocumentCore, renderer::TextStyle, HwpError};
 use sha2::{Digest, Sha256};
@@ -14,7 +12,7 @@ impl SkiaLayerRenderer {
     ) -> Result<bool, HwpError> {
         core.prepare_declared_font_fallbacks_with(|request| {
             let lookup = |family: &str| {
-                let families = declared_family_candidates(family);
+                let families = crate::renderer::font_environment::program_names(family);
                 let style = font_style_for_text(&TextStyle {
                     font_family: family.to_owned(),
                     bold: request.bold,
