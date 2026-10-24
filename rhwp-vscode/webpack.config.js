@@ -63,6 +63,7 @@ const webviewConfig = {
     },
     alias: {
       "@rhwp-wasm": path.resolve(__dirname, "..", "pkg"),
+      "@wasm": path.resolve(__dirname, "..", "pkg"),
       "@/view/canvaskit-wasm-url$": path.resolve(
         __dirname,
         "src",
