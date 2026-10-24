@@ -45,3 +45,22 @@ backend별 확장식이나 문서 ID·검은색·페이지 조건은 추가하�
 작업 루트는 `output/pr-review/issue8153-handbook-raw100-20261022/`이며,
 `black-rect-no-stroke-probe/observations.json`·`stroke-and-fill-bounds.json`에
 Print 수치를, `so-analysis-20261024-table-width/`에 비공개 분석·호출 결과를 둔다.
+
+## 구현과 장치 단위 확인
+
+`f087833d6c`에서 원본 NORMAL 폭을 일반 Rectangle의 내부 메타데이터로
+보존하고, 공통 paint builder가 채움과 원래 테두리의 op를 분리하도록 구현했다.
+이미지 채움과 별도 그림 테두리는 이 경로에서 제외했다. metadata는 렌더 트리
+직렬화에 추가하지 않으며, 기존 paint op와 backend를 사용한다.
+
+추가 검토에서 장치 선폭은 PNG 출력 dpi와 독립적인 600dpi/HWPUNIT 변환으로
+계산해야 함을 확인했다. 원본 폭을 먼저 96dpi px로 바꾼 뒤 실제 dpi의 장치
+픽셀로 나누면 192dpi 등에서 양자화 폭을 잘못 선택한다. 따라서 600/7200으로
+장치 폭을 정하고 최종 중첩에만 현재 dpi의 장치 픽셀 크기를 곱하도록 보정했다.
+96dpi 결과는 동일하며, 비기본 dpi도 별도 검증한다.
+
+비공개 호출 자료의 EMF 상태·선택 brush/pen·실제 polygon 점과 독립 Print를
+대조한 진단은 8 PASS / 0 FAIL이었다. 폭 0의 무확장과 NONE/SOLID의 동일한
+채움 확장을 실제 출력에서 확인했다. 이 결과는 rhwp의 실제 Native/WASM
+소비자 검증을 대신하지 않으며, `f087833d6c`의 96dpi 빌드와 영향 36쪽 검증은
+계속 실행 중이다. 새 장치 단위 보정의 최종 source도 이후 재검증한다.

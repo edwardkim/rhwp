@@ -5,7 +5,7 @@
 //! 근거: mydocs/plans/issue_8153_rectangle_fill_coverage_20261024.md.
 
 use crate::renderer::render_tree::{BoundingBox, RectangleNode};
-use crate::renderer::{hwpunit_to_px, DEFAULT_DPI};
+use crate::renderer::HWPUNIT_PER_INCH;
 
 pub(super) fn frame(bounds: BoundingBox, rect: &RectangleNode, pixel: f64) -> Option<BoundingBox> {
     let width_hu = rect.drawing_border_width_hu?;
@@ -28,7 +28,11 @@ pub(super) fn frame(bounds: BoundingBox, rect: &RectangleNode, pixel: f64) -> Op
     {
         return None;
     }
-    let pen = (hwpunit_to_px(width_hu, DEFAULT_DPI) / pixel).round();
+    // 선폭의 장치 양자화는 출력 PNG 배율과 독립적이다. pixel에는 실제
+    // 문서 dpi가 반영되어 있으므로 96dpi로 환산한 폭을 다시 나누지 않는다.
+    let pen = (f64::from(width_hu) * super::metafile::HANCOM_2024_PRINT_DEVICE_DPI
+        / HWPUNIT_PER_INCH)
+        .round();
     let overlap = (pen * 0.4).trunc() * pixel;
     if overlap <= 0.0 || !overlap.is_finite() {
         return None;
