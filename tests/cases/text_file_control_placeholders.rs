@@ -8,13 +8,14 @@ fn table(label: &str) -> Control {
     Control::Table(Box::new(Table {
         row_count: 1,
         col_count: 1,
+        row_sizes: vec![1],
         cells: vec![Cell {
             paragraphs: vec![Paragraph {
                 text: label.into(),
                 char_count: label.chars().count() as u32 + 1,
                 ..Paragraph::new_empty()
             }],
-            ..Default::default()
+            ..Cell::new_empty(0, 0, 1000, 1000, 0)
         }],
         ..Default::default()
     }))
@@ -23,7 +24,9 @@ fn table(label: &str) -> Control {
 fn source(text: &str, offsets: Vec<u32>, count: u32, controls: Vec<Control>) -> DocumentCore {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().expect("빈 문서");
-    core.document_mut().sections[0].paragraphs = vec![Paragraph {
+    let section = &mut core.document_mut().sections[0];
+    section.raw_stream = None;
+    section.paragraphs = vec![Paragraph {
         text: text.into(),
         char_offsets: offsets,
         char_count: count,
