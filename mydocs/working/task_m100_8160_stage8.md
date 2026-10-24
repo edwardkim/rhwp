@@ -110,3 +110,23 @@ advance 맞춤을 유지한다. 원 HFT 인쇄 프레임 또는 검증된 TTF �
 모듈 경로 오류로 실패했다. 이 결과를 fmt 통과로 기록하지 않으며, 파생 suite는 정본 절차에
 따라 검토 worktree에서 재생성한 뒤 전체 lint에 사용한다. 현재 변경한 생산 소스는
 `rustfmt --config skip_children=true`로 직접 정리했다.
+
+## 자동 쪽번호의 별도 배치와 시험 스키마 보정
+
+Native 후보 `0e27910e680c71846e637d4612639be3cc1c908d`의 빌드가 exit 0으로 끝났다.
+새 base의 표준 최적화 WASM 빌드는 Native 동결 뒤 같은 공유 target에서 순차 시작했다.
+이 후보의 WMF·글꼴 집중 검사는 진행 중이며 최종 전쪽 검증은 아니다.
+
+고정된 `6af4e7d03` 제품 rlib의 실제 렌더 트리를 복제해 자동 쪽번호의 본문 HFT frame만
+비활성화하는 인과 대조를 했다. 동일한 원본·PDF·글꼴에서 5쪽은 미대응 0/1에서 0/0으로
+바뀌었다. 두 SVG의 쪽번호 원점과 textLength는 같고 새 base가 추가한 paper CTM만 달랐다.
+자동 번호 생성 지점에서 이 본문용 frame을 해제하며 본문 HFT 처리·원본 글꼴·번호 전진폭은
+유지한다. 기존 HFT 인쇄 frame 검사에 같은 입력의 자동 번호 정상 대조를 보완했다.
+이 대조는 새 제품의 전쪽 통과를 대신하지 않는다.
+
+전쪽 회귀의 분수선 조회도 새 base의 `rule_start/rule_end` schema로 연결했다. 기대 px·
+허용치와 원본 소유는 그대로이며 제거된 `rule_inset` 필드를 참조하는 컴파일 오류를 고쳤다.
+
+실제 이번 Linux manifest는 PDFium 153.0.7999.0 / pypdfium2 5.13.0을 사용한다. 완료 중간
+83개 manifest의 동일 library SHA를 대조했다. #8191의 과거 Mac 152/5.12.1과 같은 producer라고
+표시하지 않으며, 새 base/후보는 같은 현재 producer에서 비교한다. 공유 Python 환경은 변경하지 않았다.

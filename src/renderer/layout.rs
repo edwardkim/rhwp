@@ -6281,6 +6281,9 @@ impl LayoutEngine {
             // 글줄 정보가 없는 HFT 자동 번호의 숫자·장식은 정렬에 쓴 원본
             // 전진폭으로 그린다. 본문의 저장 줄·기존 글꼴 선택에는 적용하지 않는다.
             page_num_style.fixed_glyph_advances = styles.page_number_font_is_hft;
+            // 자동 번호는 저장 본문 줄의 원점을 쓰지 않고 위 target_area에서
+            // 독립 배치한다. 본문 HFT의 종이 CTM을 다시 적용하지 않는다.
+            page_num_style.hft_print_frame = false;
 
             // [#3048] 폭은 실제 폰트 메트릭으로 잰다. 종전 `문자수 × 크기 × 0.6` 은
             // 장식 공백이 든 `- 1 -`(5자)을 30pt 로 과대평가해(실측 24.8pt) 가운데·

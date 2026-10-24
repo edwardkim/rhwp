@@ -178,6 +178,24 @@ fn original_hft_glyph_paint_has_its_print_frame_without_moving_source() {
         "확정 첫 프레임의 위 바깥여백을 한 번 보존: source={source_top}, paint={}",
         table_node.bbox.y
     );
+
+    // #8160 새 2024 Print 5쪽: 본문과 달리 자동 번호는 독립 배치 원점을
+    // 사용한다. 본문용 종이 CTM을 중복 적용하면 숫자 아래에 미대응 1px가 남는다.
+    let mut core = load("samples/hwp3-sample16-hwp5.hwpx");
+    core.set_hangul2024_compat(true);
+    core.set_font_environment(Some(
+        rhwp::renderer::font_environment::FontEnvironment::from_json(
+            r#"{"substitutions":{"한양신명조":"한양신명조"}}"#,
+        )
+        .unwrap(),
+    ))
+    .unwrap();
+    let (source, paint) = pair(&core, 4, "- 3 -", "한양신명조");
+    assert_eq!(
+        origin(&source),
+        origin(&paint),
+        "자동 번호의 원본 전진·배치에 본문 HFT 프레임을 중복 적용하지 않는다"
+    );
 }
 
 #[test]

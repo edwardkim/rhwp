@@ -468,13 +468,14 @@ fn fraction_rules(layout: &LayoutBox, x: f64, y: f64, out: &mut Vec<[f64; 3]>) {
             numer,
             denom,
             axis_height,
-            rule_inset,
+            rule_start,
+            rule_end,
             ..
         } => {
             out.push([
-                x + rule_inset,
+                x + rule_start,
                 y + layout.baseline - axis_height,
-                x + layout.width - rule_inset,
+                x + rule_end,
             ]);
             fraction_rules(numer, x, y, out);
             fraction_rules(denom, x, y, out);
