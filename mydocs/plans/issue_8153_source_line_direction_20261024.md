@@ -40,3 +40,26 @@ Print를 다시 비교하고 161쪽 원본 PNG·확대 판독·raw와 실제 미
 `rectangle-clip-e8ec8c9845-line-direction-oracle.json`, `remaining-layer-e8ec8c9845/`,
 `image-coverage-d3fdfa0c51/p161-source-line-matrices.json` 등에 보존했다.
 새 head의 전쪽·fresh WASM·최종 회귀와 전쪽 100%는 아직 미완료다.
+
+## `ff722d79ef`의 실제 결과
+
+Native 빌드는 jobs 8·고정 target에서 6분 4초 후 종료 코드 0이다. 같은 제품 library로
+원본 161쪽 layer를 다시 생성했고, 같은 독립 Print polygon에 대한 실제 화살촉 대조는
+0 PASS / 4 FAIL → 4 PASS / 0 FAIL이다. source·library·진단 실행 파일·글꼴 환경·layer
+SHA를 영수증에 보존했다. 기존 후보와 leaf paint op를 순서대로 비교해 변경은 정확히
+해당 선 4개, 다른 선 10개와 선 이외 op 156개는 바이트 단위로 동일함을 확인했다.
+
+원본 영향 36쪽 비교도 종료 코드 0이며, 직전 clip 후보 대비 최대 하락은 0.00006%p다.
+161쪽 raw는 HWPX 99.28019 → 99.30697, HWP 99.28020 → 99.30698이다.
+288·307쪽의 양쪽 포맷 raw 100%도 유지했다. 실제 Print/수정 전/수정 후 확대 PNG에서
+위·아래 및 왼쪽 화살표의 방향을 직접 확인했다. 작은 점수 변화로 실제 방향의 보정을
+무의미하다고 판단하지 않으며, 이 결과를 쪽 전체 100%나 fresh WASM 통과로 바꾸어 쓰지 않는다.
+
+같은 확대에서 L자 개체의 화살촉은 아직 없었다. 원본을 추적하니 해당 개체는 연결선
+컨트롤이 아니라 끝 화살표 속성을 가진 열린 다각형이다. 현재 다각형 생산자는 이 속성을
+공통 화살촉 소비자에게 전달하지 않는다. 저장 직선 방향과 별개인 이 전달 누락을 이어서
+보정한다. 기존 공통 화살촉 형상·크기 계약은 유지한다.
+
+증거: `source-line-ff722d79ef-line-direction-oracle.json`,
+`source-line-ff722d79ef/p161-preserved-consumers.json`, `p161-arrow-direction-review.png`,
+`remaining-layer-ff722d79ef/receipt.json`, `logs/source-line-native-*.log`.
