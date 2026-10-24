@@ -8,6 +8,10 @@
 //! 종전 `(인)` 세 글자 표시 투영은 기호 하나를 약 두 글자 폭으로 늘려 같은 칸 끝 글자를
 //! 셀 경계로 밀었다. 이 검사는 화면 절대 좌표가 아니라 **같은 run 안의 전진 관계**와
 //! **seal 전진 상자 안의 도형·글자 소속**을 본다.
+//!
+//! HWP5 원시 `0xA12B` 의 평면 15 정규화는 `issue_5800_hwp5_pua_plane15` 가 지킨다. 그 합성
+//! fixture 는 독립 한컴 PDF 가 없어 시각 회귀 신규 추가의 선행 조건을 만족하지 못하므로
+//! 여기서 렌더링 회귀로 고정하지 않는다.
 
 use rhwp::renderer::composer::{
     char_overlap_display_text, expand_pua_render_text, pua_to_display_text, pua_to_text_surface,
@@ -19,8 +23,6 @@ use std::path::Path;
 
 const ISSUE_FORM: &str = "samples/issue8201/seal-delegation-form.hwp";
 const BOKHAK: &str = "samples/복학원서.hwp";
-/// `tools/fixture_generators/build_issue_5800_fixture.rs` — HWP5 원시 `0xA12B` 도장란.
-const HWP5_SYMBOL: &str = "samples/issue5800-hancom-symbol.hwp";
 
 const SEAL: char = '\u{F012B}';
 const HWP5_SEAL: char = '\u{A12B}';
@@ -36,8 +38,6 @@ struct TextRun {
     x: f64,
     y: f64,
     height: f64,
-    font_size: f64,
-    ratio: f64,
     chars: Vec<char>,
     positions: Vec<f64>,
 }
@@ -81,8 +81,6 @@ fn collect_text_runs(value: &Value, out: &mut Vec<TextRun>) {
                     x: number(&bbox["x"]),
                     y: number(&bbox["y"]),
                     height: number(&bbox["height"]),
-                    font_size: number(&op["style"]["fontSize"]),
-                    ratio: number(&op["style"]["ratio"]),
                     chars: op["text"].as_str().expect("textRun text").chars().collect(),
                     positions,
                 });
@@ -304,23 +302,6 @@ fn bokhakwonseo_signature_seal_is_painted_as_circled_in() {
     assert_seal_box_is_circled_in(&doc, 0, &run, index);
     // 한컴 PDF 는 날인선 가운데에도 같은 타원 안 '인' 글리프를 찍는다.
     assert_seal_box_is_circled_in(&doc, 0, &receipt, receipt.index_of(SEAL));
-}
-
-#[test]
-fn hwp5_raw_seal_unit_takes_the_same_glyph() {
-    let doc = load(HWP5_SYMBOL);
-    let run = run_containing(&doc, 0, HWP5_SEAL);
-    let index = run.index_of(HWP5_SEAL);
-    // 빈 문서 기본 글자모양(자간 0)으로 만든 합성 fixture 다. 한컴은 이 기호를 문서 글꼴이
-    // 아니라 Haansoft Batang 1em 글리프로 그리므로, 문서 글꼴의 한글 전진과는 같을 이유가
-    // 없고 1em × 장평이어야 한다.
-    let seal = run.advance(index);
-    let em = run.font_size * run.ratio;
-    assert!(
-        (seal - em).abs() < 0.01,
-        "HWP5 0xA12B 도 1em 전진이어야 함: seal={seal:.3} 1em={em:.3}"
-    );
-    assert_seal_box_is_circled_in(&doc, 0, &run, index);
 }
 
 /// 반례: 텍스트 표면과 글자겹침 안쪽 표시는 종전 읽기 문자열을 유지하고,
