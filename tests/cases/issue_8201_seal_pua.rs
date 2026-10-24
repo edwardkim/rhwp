@@ -36,6 +36,8 @@ struct TextRun {
     x: f64,
     y: f64,
     height: f64,
+    font_size: f64,
+    ratio: f64,
     chars: Vec<char>,
     positions: Vec<f64>,
 }
@@ -79,6 +81,8 @@ fn collect_text_runs(value: &Value, out: &mut Vec<TextRun>) {
                     x: number(&bbox["x"]),
                     y: number(&bbox["y"]),
                     height: number(&bbox["height"]),
+                    font_size: number(&op["style"]["fontSize"]),
+                    ratio: number(&op["style"]["ratio"]),
                     chars: op["text"].as_str().expect("textRun text").chars().collect(),
                     positions,
                 });
@@ -113,23 +117,25 @@ fn run_starting_with(doc: &HwpDocument, page: u32, prefix: &str) -> TextRun {
         .unwrap_or_else(|| panic!("{prefix:?} 로 시작하는 textRun 이 없음"))
 }
 
-fn run_containing(doc: &HwpDocument, page: u32, ch: char) -> TextRun {
-    let mut matching = page_text_runs(doc, page)
+fn runs_containing(doc: &HwpDocument, page: u32, ch: char) -> Vec<TextRun> {
+    let runs: Vec<TextRun> = page_text_runs(doc, page)
         .into_iter()
-        .filter(|run| run.chars.contains(&ch));
-    let run = matching
-        .next()
-        .unwrap_or_else(|| panic!("{ch:?} 를 가진 textRun 이 없음"));
-    assert!(
-        matching.next().is_none(),
-        "{ch:?} 를 가진 textRun 은 한 개여야 함"
-    );
-    assert_eq!(
-        run.positions.len(),
-        run.chars.len() + 1,
-        "positions 는 원문 글자 기준이어야 함"
-    );
-    run
+        .filter(|run| run.chars.contains(&ch))
+        .collect();
+    for run in &runs {
+        assert_eq!(
+            run.positions.len(),
+            run.chars.len() + 1,
+            "positions 는 원문 글자 기준이어야 함"
+        );
+    }
+    runs
+}
+
+fn run_containing(doc: &HwpDocument, page: u32, ch: char) -> TextRun {
+    let mut runs = runs_containing(doc, page, ch);
+    assert_eq!(runs.len(), 1, "{ch:?} 를 가진 textRun 은 한 개여야 함");
+    runs.remove(0)
 }
 
 /// SVG 의 그리기 요소. 좌표는 페이지 px 이다.
@@ -273,7 +279,20 @@ fn issue_form_seal_is_painted_as_circled_in() {
 #[test]
 fn bokhakwonseo_signature_seal_is_painted_as_circled_in() {
     let doc = load(BOKHAK);
-    let run = run_containing(&doc, 0, SEAL);
+    // 서명란 기호와, 접수증 위 F081C 채움줄에 심긴 기호로 만든 날인선 두 곳이다(#4384).
+    let mut runs = runs_containing(&doc, 0, SEAL);
+    assert_eq!(
+        runs.len(),
+        2,
+        "서명란과 접수증 날인선에 기호가 하나씩 있어야 함"
+    );
+    let receipt_index = runs
+        .iter()
+        .position(|run| run.chars.contains(&'-'))
+        .expect("접수증 날인선 run");
+    let receipt = runs.remove(receipt_index);
+    let run = runs.remove(0);
+    assert_eq!(run.chars, [SEAL], "서명란 기호는 단독 run 이어야 함");
     let index = run.index_of(SEAL);
     // `(` 는 다른 글자모양의 별도 run 이다(한컴 PDF 에서도 다른 글꼴로 찍힌다).
     let signature = run_starting_with(&doc, 0, "Signature)");
@@ -283,6 +302,8 @@ fn bokhakwonseo_signature_seal_is_painted_as_circled_in() {
         "서명란 기호 뒤 같은 줄에 `(Signature)` 가 겹치지 않고 이어져야 함"
     );
     assert_seal_box_is_circled_in(&doc, 0, &run, index);
+    // 한컴 PDF 는 날인선 가운데에도 같은 타원 안 '인' 글리프를 찍는다.
+    assert_seal_box_is_circled_in(&doc, 0, &receipt, receipt.index_of(SEAL));
 }
 
 #[test]
@@ -290,12 +311,15 @@ fn hwp5_raw_seal_unit_takes_the_same_glyph() {
     let doc = load(HWP5_SYMBOL);
     let run = run_containing(&doc, 0, HWP5_SEAL);
     let index = run.index_of(HWP5_SEAL);
-    if let Some(hangul) = run.chars.iter().position(|ch| ('가'..='힣').contains(ch)) {
-        assert!(
-            (run.advance(index) - run.advance(hangul)).abs() < 0.01,
-            "HWP5 0xA12B 도 같은 1em 전진이어야 함"
-        );
-    }
+    // 빈 문서 기본 글자모양(자간 0)으로 만든 합성 fixture 다. 한컴은 이 기호를 문서 글꼴이
+    // 아니라 Haansoft Batang 1em 글리프로 그리므로, 문서 글꼴의 한글 전진과는 같을 이유가
+    // 없고 1em × 장평이어야 한다.
+    let seal = run.advance(index);
+    let em = run.font_size * run.ratio;
+    assert!(
+        (seal - em).abs() < 0.01,
+        "HWP5 0xA12B 도 1em 전진이어야 함: seal={seal:.3} 1em={em:.3}"
+    );
     assert_seal_box_is_circled_in(&doc, 0, &run, index);
 }
 

@@ -3770,12 +3770,27 @@ impl WebCanvasRenderer {
             self.ctx.set_stroke_style_str(&color);
             self.ctx.set_fill_style_str(&color);
             self.ctx.set_line_width(g.stroke_width);
-            self.ctx.stroke_rect(
-                x + g.frame_x,
-                baseline_y + g.frame_y,
-                g.frame_width,
-                g.frame_height,
-            );
+            match g.frame_shape {
+                super::enclosed_pua_geometry::FrameShape::Rect => self.ctx.stroke_rect(
+                    x + g.frame_x,
+                    baseline_y + g.frame_y,
+                    g.frame_width,
+                    g.frame_height,
+                ),
+                super::enclosed_pua_geometry::FrameShape::Ellipse => {
+                    self.ctx.begin_path();
+                    let _ = self.ctx.ellipse(
+                        x + g.frame_x + g.frame_width / 2.0,
+                        baseline_y + g.frame_y + g.frame_height / 2.0,
+                        g.frame_width / 2.0,
+                        g.frame_height / 2.0,
+                        0.0,
+                        0.0,
+                        std::f64::consts::TAU,
+                    );
+                    self.ctx.stroke();
+                }
+            }
             let _ = self.ctx.transform(
                 g.inner_scale_x,
                 0.0,

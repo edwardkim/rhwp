@@ -69,6 +69,12 @@ Haansoft Batang `/W` 1000 근거). supplemental metric 제외(같은 파일 2063
 
 다자리 네모 숫자의 기존 0.72em 폴백은 `BoxedNumber`에만 남긴다. CharOverlap 경로는 바꾸지 않는다.
 
+## 접수증 날인선 (#2020/#4384)
+
+`layout.rs`의 `receipt_seal_line_text`는 F081C 채움줄에 심긴 U+F012B 자리를 `----(인)----`
+리터럴로 합성했다. `pdf/복학원서-2022.pdf`는 이 점선 가운데에도 서명란과 같은 타원 안 '인'을
+찍으므로, 합성 문자열 가운데에 원 기호 U+F012B를 넣어 같은 합성 경로가 측정·paint를 소유하게 한다.
+
 ## 테스트
 
 새 integration: `tests/cases/issue_8201_seal_pua.rs` (공개 API만 사용).
@@ -86,10 +92,15 @@ Haansoft Batang `/W` 1000 근거). supplemental metric 제외(같은 파일 2063
 
 - `tests/issue_937.rs`: 표시 문자열 → 합성 기호·SVG 타원 검사.
 - `tests/issue_948.rs`: displayText 계약 예시를 F081C 채움 run으로 교체(의도 유지).
-- `tests/golden_svg/issue-677/bokhakwonseo-page1.svg`: 재생성, 변경 노드 기록.
-- `tests/issue_3216_hf_field_display_space.rs`, `canvaskit_policy.rs` 테스트, `paint/json.rs` 테스트,
-  `tests/cases/issue_5800_*`: F012B를 "다문자 확장" 예시로 쓴 픽스처를 옛한글 PUA 등 같은 성격의
-  N:1 투영으로 바꾸거나 새 계약으로 교정.
+- `tests/issue_2020.rs`: 날인선 `(인)` 텍스트 검사 → 날인선 run(U+F012B) 상자 안 타원 검사.
+- `tests/golden_svg/issue-677/bokhakwonseo-page1.svg`: 이 golden을 읽는 검사가 현재 없다
+  (`svg_snapshot.rs`에 `issue_677` 항목 없음). 소비자가 없는 파일이라 바꾸지 않는다.
+- `tests/issue_3216_hf_field_display_space.rs`: 투영 기호를 U+F02FB(`▸`)로 바꾸고, PUA 조각의
+  자기 표시값을 단언해 검사 전제를 고정한다.
+- `paint/json.rs` 테스트 2개, `canvaskit_policy.rs` work-unit 테스트: 1→3 투영 예시를 옛한글
+  PUA U+E0BC(자모 셋)로 바꾼다. `shaped_script…` 목록의 F012B는 합성 기호의 direct replay
+  계약으로 그대로 둔다.
+- `tests/cases/issue_5800_*`: `0xA12B`가 평면 15 키 U+F012B로 정규화되는 계약으로 교정.
 - TS: `rhwp-studio/e2e/renderer-contract.test.mjs`에 seal replay(drawOval + '인') 추가.
 
 ## 검증
@@ -98,3 +109,10 @@ CONTRIBUTING·AGENTS의 Rust lint 묶음(fmt, native/WASM/workspace Clippy, mani
 `cargo nextest` 전체, 코퍼스 래칫 일곱과 보안 입력(`samples/issue8201/*.hwp`), `oracle_page_count`
 원장 등록, Studio `tsc`·관련 e2e, fresh WASM, Native/fresh WASM Visual Sweep(이슈 서식 2쪽,
 복학원서 1쪽, `issue5800-hancom-symbol.hwp`, 네모 숫자 대조군)과 seal 칸 확대 직접 판독.
+
+### 검증 환경 주의 (이 Mac)
+
+사용자 `~/Library/Fonts/NanumMyeongjo.ttf`와 시스템 자산 `NanumMyeongjo.ttc`가 PostScript 이름을
+공유해 Native Skia가 cmap과 윤곽을 서로 다른 파일에서 가져온다. 명조 대체 체인의 한글이 두 글리프씩
+밀린다(복학원서 수정 전 Native PNG "본 인"→"볶 읶"). 코드와 무관한 환경 결함이므로 Native 측정은
+수정 전·후 모두 시스템 ttc 사본을 `RHWP_FONT_PATH`로 공급해 다시 잰다. 초기 95.40706%는 오염값이다.

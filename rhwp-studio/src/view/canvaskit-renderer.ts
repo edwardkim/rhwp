@@ -3551,10 +3551,12 @@ export class CanvasKitLayerRenderer {
                     const bounds = innerFont.getGlyphBounds(glyphs);
                     geometry = enclosedPuaGeometry(glyph, fontSize, Array.from(bounds))!;
                   }
-                  canvas.drawRect(this.canvasKit.XYWHRect(
+                  const frame = this.canvasKit.XYWHRect(
                     originX + replayPositions![runStart] + offsetX + geometry.frameX,
                     originY + baselineShift + offsetY + geometry.frameY,
-                    geometry.frameWidth, geometry.frameHeight), framePaint);
+                    geometry.frameWidth, geometry.frameHeight);
+                  if (geometry.ellipse) canvas.drawOval(frame, framePaint);
+                  else canvas.drawRect(frame, framePaint);
                   canvas.save();
                   canvas.translate(originX + replayPositions![runStart] + offsetX + geometry.innerX,
                     originY + baselineShift + offsetY + geometry.innerY);

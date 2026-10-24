@@ -3974,8 +3974,9 @@ mod tests {
             font_size: 16.0,
             ..Default::default()
         };
-        let text = "\u{F012B}(Signature)";
-        let display_text = "(인)(Signature)";
+        // Hanyang PUA 옛한글 한 글자가 자모 셋으로 펼쳐지는 1→N 표시 투영이다.
+        let text = "\u{E0BC}(Signature)";
+        let display_text = "\u{115F}\u{1161}\u{11AE}(Signature)";
         let source_positions = compute_char_positions(text, &style);
         let display_positions = compute_char_positions(display_text, &style);
         let text_run = PaintOp::text_run(
@@ -4246,7 +4247,7 @@ mod tests {
     #[test]
     fn decoration_uses_display_positions_and_script_metrics() {
         let run = TextRunNode {
-            text: "\u{F012B}".to_string(),
+            text: "\u{E0BC}".to_string(),
             style: TextStyle {
                 font_family: "Noto Sans".to_string(),
                 font_size: 20.0,

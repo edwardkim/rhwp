@@ -465,8 +465,8 @@ fn para_border_can_use_rect_stroke(
 /// 서명/날인 자리를 필요로 하는지 판정했다. 그러나 실측(`samples/복학원서.hwp`
 /// 문단 16)에서 F081C 채움 안에 U+F012B 한 글자가 실제로 섞여 저장돼 있음을 확인했다
 /// — 한컴이 서명/날인 자리를 만들 때 채움 문자 사이에 이 PUA 를 심어 저장하는 게
-/// 원인이다(`issue_937`: U+F012B 는 어디서나 `(인)` 으로 렌더돼야 하는 범용 한컴
-/// 서명/날인 기호). 표 제목 문구는 사용자가 언제든 편집해 사라지지만, 이 PUA 는
+/// 원인이다(U+F012B 는 한컴이 어디서나 타원 안 '인' 한 글자로 그리는 범용 서명/날인
+/// 기호, #8201). 표 제목 문구는 사용자가 언제든 편집해 사라지지만, 이 PUA 는
 /// 문서가 실제로 서명/날인 자리를 저장했다는 구조적 사실 자체라 편집으로 없어지지
 /// 않는다. 10,000건 실 문서 코퍼스에서 이 F081C+F012B 조합을 쓰는 문서는
 /// `samples/복학원서.hwp` 계열 외에 없었다(#4384 조사) — 문구 매칭보다 좁으면 좁았지
@@ -542,8 +542,10 @@ fn receipt_seal_line_text(
     available_width: f64,
 ) -> (String, f64) {
     let mut side_count = (filler_count.saturating_sub(3) / 2).clamp(8, 96);
+    // 가운데 기호는 원 U+F012B 그대로 둔다. 한컴 PDF 도 이 자리에 서명란과 같은
+    // 타원 안 '인' 글리프를 찍으며, 측정·paint 는 합성 기호 경로가 소유한다(#8201).
     let build =
-        |count: usize| -> String { format!("{}(인){}", "-".repeat(count), "-".repeat(count)) };
+        |count: usize| -> String { format!("{}\u{F012B}{}", "-".repeat(count), "-".repeat(count)) };
     let mut text = build(side_count);
     let mut width = estimate_text_width(&text, style);
 

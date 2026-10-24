@@ -35,7 +35,7 @@ fn collect_text_runs<'a>(value: &'a Value, out: &mut Vec<&'a Map<String, Value>>
 }
 
 #[test]
-fn issue_948_layer_tree_text_run_exposes_signature_display_text() {
+fn issue_948_layer_tree_text_run_exposes_core_display_text() {
     let bytes = read_bokhakwonseo();
     let doc = HwpDocument::from_bytes(&bytes).expect("parse samples/복학원서.hwp");
     let json = doc
@@ -55,41 +55,41 @@ fn issue_948_layer_tree_text_run_exposes_signature_display_text() {
         "page layer tree should contain textRun ops"
     );
 
-    let signature_run = runs
-        .iter()
-        .find(|run| {
-            run.get("text")
-                .and_then(Value::as_str)
-                .is_some_and(|text| text.contains('\u{F012B}'))
-        })
-        .expect("signature source textRun should preserve U+F012B in text");
+    let text_of = |run: &Map<String, Value>| -> String {
+        run.get("text")
+            .and_then(Value::as_str)
+            .unwrap_or_default()
+            .to_string()
+    };
 
-    let source_text = signature_run
-        .get("text")
-        .and_then(Value::as_str)
-        .expect("signature textRun should have text");
-    let display_text = signature_run
+    // 하단 안내줄의 한컴 점선 조각 U+F081C 는 core 가 `┈` 로 투영한다.
+    let projected_run = runs
+        .iter()
+        .find(|run| text_of(run).contains('\u{F081C}'))
+        .expect("dotted filler source textRun should preserve U+F081C in text");
+
+    let source_text = text_of(projected_run);
+    let display_text = projected_run
         .get("displayText")
         .and_then(Value::as_str)
-        .expect("signature textRun should expose displayText");
-    let source_positions = signature_run
+        .expect("projected textRun should expose displayText");
+    let source_positions = projected_run
         .get("positions")
         .and_then(Value::as_array)
-        .expect("signature textRun should have source positions");
-    let display_positions = signature_run
+        .expect("projected textRun should have source positions");
+    let display_positions = projected_run
         .get("displayPositions")
         .and_then(Value::as_array)
-        .expect("signature textRun should have display positions");
+        .expect("projected textRun should have display positions");
 
-    assert!(source_text.contains('\u{F012B}'));
     assert!(
-        display_text.contains("(인)"),
-        "displayText should expose the core-rendered signature seal text. got: {:?}",
+        display_text.contains('┈'),
+        "displayText should expose the core-rendered dotted filler. got: {:?}",
         display_text,
     );
     assert!(
-        !display_text.contains('\u{F012B}') && !display_text.contains('\u{F081C}'),
-        "displayText should not leak source PUA/filler characters. got: {:?}",
+        !display_text.contains('\u{F081C}'),
+        "displayText should not leak source PUA filler characters. got: {:?}",
         display_text,
     );
     assert_eq!(
@@ -103,13 +103,22 @@ fn issue_948_layer_tree_text_run_exposes_signature_display_text() {
         "displayPositions should be displayText based",
     );
 
+    // [#8201] 서명란 U+F012B 는 표시 문자열 투영이 아니라 렌더러 합성 기호다(네모 숫자와
+    // 같은 계약). 원문 text 를 그대로 싣고 displayText 를 만들지 않는다.
+    let signature_run = runs
+        .iter()
+        .find(|run| text_of(run) == "\u{F012B}")
+        .expect("signature source textRun should preserve U+F012B in text");
+    assert!(
+        signature_run.get("displayText").is_none(),
+        "synthesized seal run should not expose a projected displayText",
+    );
+
     assert!(
         runs.iter().any(|run| {
             run.get("displayText").is_none()
-                && run
-                    .get("text")
-                    .and_then(Value::as_str)
-                    .is_some_and(|text| !text.contains('\u{F012B}') && !text.contains('\u{F081C}'))
+                && !text_of(run).contains('\u{F012B}')
+                && !text_of(run).contains('\u{F081C}')
         }),
         "ordinary textRun ops should keep using text/positions fallback without displayText",
     );

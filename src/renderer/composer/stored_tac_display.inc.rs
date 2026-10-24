@@ -336,11 +336,11 @@ pub(crate) fn captioned_shape_height_px(
 /// 보유하나, OFL 폰트 (Noto Serif KR / Source Han Serif K 등) 는 KS X 1026-1
 /// 자모 영역만 지원하므로 PUA → 자모 변환 후 합자 렌더링이 필요.
 ///
-/// `U+F012B` 같은 한컴 전용 PUA 기호는 표준 Unicode 단일 문자 대응이 없어서
-/// 표시 문자열(`(인)`)로 확장한다. 본 함수는 `run.text` 를 변경하지 않고
-/// `run.display_text` 에만 변환 결과를 저장한다. 이는 `char_offsets`,
-/// `line.char_start`, `line_chars` 등 인덱싱 불변성을 유지하기 위함이다
-/// (PUA 1 char = display N chars).
+/// 표준 Unicode 단일 문자 대응이 없는 한컴 전용 PUA 기호는 검증된 표시 문자열로
+/// 확장한다. 본 함수는 `run.text` 를 변경하지 않고 `run.display_text` 에만 변환
+/// 결과를 저장한다. 이는 `char_offsets`, `line.char_start`, `line_chars` 등 인덱싱
+/// 불변성을 유지하기 위함이다(PUA 1 char = display N chars). `U+F012B` 서명·날인
+/// 기호처럼 렌더러가 합성하는 기호(`EnclosedPua`)는 원 키를 유지한다(#8201).
 ///
 /// 1990년대 한컴 제품 설명서는 `ᄒᆞᆫ글`·`ᄒᆞᆫ메일`처럼 제품명을 옛한글 자모로
 /// 저장했지만, 한컴 PDF는 이를 각각 `한글`·`한메일`로 인쇄한다. 이것은 일반
@@ -411,9 +411,10 @@ fn try_convert_pua_display_text<S: crate::storage::Storage>(
                 } else if program
                     .as_ref()
                     .is_some_and(|program| program.advance_em(ch).is_some())
+                    || super::enclosed_pua(hancom_symbol_display_key(ch)).is_some()
                 {
-                    // 실제 공급한 원 glyph는 Unicode 표시 대체보다 우선한다.
-                    // 측정과 paint가 같은 프로그램의 전진·표시 문자를 소비한다.
+                    // 실제 공급한 원 glyph와 렌더러 합성 기호(#8201)는 Unicode 표시 대체보다
+                    // 우선한다. 측정과 paint가 같은 원 키의 전진·표시를 소비한다.
                     let source = hancom_symbol_display_key(ch);
                     storage.push_char(&mut display, source)?;
                     changed |= source != ch;

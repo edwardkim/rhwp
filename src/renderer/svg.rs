@@ -3264,10 +3264,17 @@ impl SvgRenderer {
                 )
             );
             let color = color_to_svg(style.color);
-            self.output.push_str(&format!(
-                "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{}\"/>\n",
-                x + g.frame_x, baseline_y + g.frame_y, g.frame_width, g.frame_height,
-                color, g.stroke_width));
+            match g.frame_shape {
+                super::enclosed_pua_geometry::FrameShape::Rect => self.output.push_str(&format!(
+                    "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{}\"/>\n",
+                    x + g.frame_x, baseline_y + g.frame_y, g.frame_width, g.frame_height,
+                    color, g.stroke_width)),
+                super::enclosed_pua_geometry::FrameShape::Ellipse => self.output.push_str(&format!(
+                    "<ellipse cx=\"{}\" cy=\"{}\" rx=\"{}\" ry=\"{}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{}\"/>\n",
+                    x + g.frame_x + g.frame_width / 2.0,
+                    baseline_y + g.frame_y + g.frame_height / 2.0,
+                    g.frame_width / 2.0, g.frame_height / 2.0, color, g.stroke_width)),
+            }
             self.output.push_str(&format!(
                 "<text transform=\"matrix({} 0 0 {} {} {})\" x=\"0\" y=\"0\" font-family=\"{}\" font-size=\"{}\" fill=\"{}\">{}</text>\n",
                 g.inner_scale_x, g.inner_scale_y, x + g.inner_x,

@@ -14,12 +14,22 @@ struct BoxedDigit {
     frame: [f64; 5],
     digits: Vec<InnerBounds>,
 }
+/// [#8201] 서명·날인 기호 U+F012B. Haansoft Batang GID 3(타원 안 '인')의 윤곽 경계와
+/// 같은 프로그램의 일반 '인' 경계에서 정했다(두 독립 한컴 출력에서 동일).
+#[derive(serde::Deserialize)]
+struct CircledSeal {
+    text: String,
+    frame: [f64; 5],
+    #[serde(flatten)]
+    inner: InnerBounds,
+}
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Metrics {
     units_per_em: f64,
     inner_face: String,
     boxed_digit: BoxedDigit,
+    circled_seal: CircledSeal,
 }
 fn metrics() -> &'static Metrics {
     static METRICS: std::sync::OnceLock<Metrics> = std::sync::OnceLock::new();
@@ -34,7 +44,20 @@ pub(crate) fn inner_face() -> &'static str {
     &metrics().inner_face
 }
 
+/// 서명·날인 기호의 안쪽 글자.
+pub(crate) fn circled_seal_text() -> &'static str {
+    &metrics().circled_seal.text
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum FrameShape {
+    Rect,
+    Ellipse,
+}
+
 pub(crate) struct EnclosedGeometry {
+    /// frame 상자에 내접하는 테두리 모양.
+    pub(crate) frame_shape: FrameShape,
     pub(crate) frame_x: f64,
     pub(crate) frame_y: f64,
     pub(crate) frame_width: f64,
@@ -49,13 +72,23 @@ pub(crate) struct EnclosedGeometry {
 /// 글자 원점·baseline 기준 기하. 동봉 메트릭이 없는 다자리 네모 숫자는 `None`이다.
 pub(crate) fn geometry(glyph: EnclosedPua, font_size: f64) -> Option<EnclosedGeometry> {
     let metrics = metrics();
-    let EnclosedPua::BoxedNumber(number) = glyph;
-    let frame = &metrics.boxed_digit.frame;
-    let InnerBounds { source, target } = metrics.boxed_digit.digits.get(number as usize)?;
+    let (frame_shape, frame, InnerBounds { source, target }) = match glyph {
+        EnclosedPua::BoxedNumber(number) => (
+            FrameShape::Rect,
+            &metrics.boxed_digit.frame,
+            metrics.boxed_digit.digits.get(number as usize)?,
+        ),
+        EnclosedPua::CircledSeal => (
+            FrameShape::Ellipse,
+            &metrics.circled_seal.frame,
+            &metrics.circled_seal.inner,
+        ),
+    };
     let unit = font_size / metrics.units_per_em;
     let scale_x = (target[2] - target[0]) / (source[2] - source[0]);
     let scale_y = (target[3] - target[1]) / (source[3] - source[1]);
     Some(EnclosedGeometry {
+        frame_shape,
         // 바깥/안쪽 테두리 경계의 중간에 stroke 중심선을 둔다.
         frame_x: frame[0] * unit,
         frame_y: frame[1] * unit,

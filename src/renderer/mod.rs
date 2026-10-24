@@ -3722,23 +3722,31 @@ pub(crate) fn boxed_pua_number(ch: char) -> Option<u32> {
 pub(crate) enum EnclosedPua {
     /// 사각 안 숫자 0~20 (#6127).
     BoxedNumber(u32),
+    /// 서명·날인 기호 U+F012B — 타원 안 '인' (#8201).
+    CircledSeal,
 }
 
 pub(crate) fn enclosed_pua(ch: char) -> Option<EnclosedPua> {
+    if ch == '\u{F012B}' {
+        return Some(EnclosedPua::CircledSeal);
+    }
     boxed_pua_number(ch).map(EnclosedPua::BoxedNumber)
 }
 
 impl EnclosedPua {
     /// 테두리 안에 그리는 일반 글자.
     pub(crate) fn inner_text(self) -> String {
-        let EnclosedPua::BoxedNumber(number) = self;
-        number.to_string()
+        match self {
+            EnclosedPua::BoxedNumber(number) => number.to_string(),
+            EnclosedPua::CircledSeal => enclosed_pua_geometry::circled_seal_text().to_owned(),
+        }
     }
 
     /// 1em 전진을 정한 근거. 글꼴 결정 진단의 `reason`으로도 노출된다.
     pub(crate) fn width_source(self) -> &'static str {
         match self {
             EnclosedPua::BoxedNumber(_) => "boxedPuaFullwidth",
+            EnclosedPua::CircledSeal => "circledSealPuaFullwidth",
         }
     }
 }

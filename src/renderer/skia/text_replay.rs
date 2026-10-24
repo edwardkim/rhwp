@@ -617,15 +617,20 @@ impl SkiaTextReplay<'_> {
                                         frame_paint.set_style(paint::Style::Stroke);
                                         frame_paint.set_stroke_width(g.stroke_width as f32);
                                         frame_paint.set_color(color);
-                                        canvas.draw_rect(
-                                            Rect::from_xywh(
-                                                char_x + g.frame_x as f32,
-                                                baseline_y + g.frame_y as f32,
-                                                g.frame_width as f32,
-                                                g.frame_height as f32,
-                                            ),
-                                            &frame_paint,
+                                        let frame = Rect::from_xywh(
+                                            char_x + g.frame_x as f32,
+                                            baseline_y + g.frame_y as f32,
+                                            g.frame_width as f32,
+                                            g.frame_height as f32,
                                         );
+                                        match g.frame_shape {
+                                            crate::renderer::enclosed_pua_geometry::FrameShape::Rect => {
+                                                canvas.draw_rect(frame, &frame_paint);
+                                            }
+                                            crate::renderer::enclosed_pua_geometry::FrameShape::Ellipse => {
+                                                canvas.draw_oval(frame, &frame_paint);
+                                            }
+                                        }
                                         canvas.save();
                                         canvas.translate((
                                             char_x + g.inner_x as f32,

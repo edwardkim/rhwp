@@ -3,8 +3,9 @@ import { enclosedPuaMetrics as metrics, type EnclosedPua } from '../../core/encl
 
 export function enclosedPuaGeometry(glyph: EnclosedPua, fontSize: number,
   sourceInkBounds?: readonly number[]) {
-  const frame = metrics.boxedDigit.frame;
-  const inner = metrics.boxedDigit.digits[glyph.number];
+  const ellipse = glyph.kind === 'circledSeal';
+  const frame = ellipse ? metrics.circledSeal.frame : metrics.boxedDigit.frame;
+  const inner = ellipse ? metrics.circledSeal : metrics.boxedDigit.digits[glyph.number];
   if (!inner) return null;
   const [left, bottom, right, top] = inner.source;
   const [targetLeft, targetBottom, targetRight, targetTop] = inner.target;
@@ -22,6 +23,8 @@ export function enclosedPuaGeometry(glyph: EnclosedPua, fontSize: number,
     ? (targetTop - targetBottom) * unit / (actual[3] - actual[1]) : scaleY;
   return {
     face: metrics.innerFace,
+    // true면 frame 상자에 내접하는 타원 테두리, 아니면 사각 테두리다.
+    ellipse,
     frameX: frame[0] * unit,
     frameY: frame[1] * unit,
     frameWidth: frame[2] * unit,

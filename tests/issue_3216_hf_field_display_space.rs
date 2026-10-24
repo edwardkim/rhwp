@@ -145,8 +145,9 @@ fn split_pieces_do_not_inherit_the_whole_run_display_text() {
     doc.set_file_name("F.hwp");
     doc.create_header_footer_native(0, true, 0)
         .expect("create header");
-    // 표시 확장이 있는 PUA 글자(U+F012B → "(인)")와 필드 마커를 한 런에 둔다.
-    doc.insert_text_in_header_footer_native(0, true, 0, 0, 0, "󰄫Z")
+    // 표시 투영이 있는 PUA 글자(U+F02FB → "▸")와 필드 마커를 한 런에 둔다.
+    // (종전 U+F012B 는 #8201 부터 합성 기호라 원 키를 유지해 표시 문자열을 만들지 않는다.)
+    doc.insert_text_in_header_footer_native(0, true, 0, 0, 0, "󰋻Z")
         .expect("header text");
 
     let json = doc.get_page_layer_tree_native(0).expect("layer tree");
@@ -185,5 +186,9 @@ fn split_pieces_do_not_inherit_the_whole_run_display_text() {
     assert!(
         displays.iter().any(|d| d == "F.hwp"),
         "필드 조각의 표시값: {displays:?}"
+    );
+    assert!(
+        displays.iter().any(|d| d == "▸"),
+        "PUA 조각은 자기 표시 투영을 가져야 검사 전제가 성립한다: {displays:?}"
     );
 }
