@@ -433,6 +433,18 @@ impl TypesetState {
         if !crate::renderer::para_has_no_stored_line_segs(para) {
             return;
         }
+        if let Some(exclusion) = self.page_anchored_square_table_exclusion(table) {
+            self.data
+                .side_wrap_exclusions
+                .insert((para_index, control_index), exclusion);
+        }
+    }
+
+    /// 쪽·종이 기준 어울림 표의 상자. 위치가 host 흐름과 무관하므로 단 원점만 쓴다.
+    fn page_anchored_square_table_exclusion(
+        &self,
+        table: &crate::model::table::Table,
+    ) -> Option<crate::renderer::layout_frame::FrameExclusion> {
         let column = self.inline_flow_column();
         let paper = crate::renderer::page_layout::LayoutRect {
             x: 0.0,
@@ -449,11 +461,42 @@ impl TypesetState {
             alignment: crate::model::style::Alignment::Left,
             dpi: self.data.layout.dpi,
         };
-        if let Some(exclusion) = frame.page_anchored_square_table_exclusion(table) {
-            self.data
-                .side_wrap_exclusions
-                .insert((para_index, control_index), exclusion);
-        }
+        frame.page_anchored_square_table_exclusion(table)
+    }
+
+    /// 같은 host 의 쪽·종이 기준 어울림 표 상자 중 아직 등록되지 않은 것.
+    ///
+    /// 저장 host 는 뒤 문단을 위해 이 상자를 등록하지 않는다 — 뒤 문단의 위치는 저장
+    /// vpos 가 증언한다(#7548). 그러나 host 자신의 글자처럼 취급 개체 줄도 이 상자를
+    /// 피해야 한다. 한글은 옆에 들어갈 폭이 없으면 그 줄을 상자 아래에 둔다(저장
+    /// vpos 가 상자 바닥과 같다). 이 줄의 배치에만 쓰고 뒤 문단의 저장 경로는 바꾸지 않는다.
+    /// 지금 단에 통째로 놓인 표만 본다. 여러 쪽에 걸친 표나 앞 쪽에 놓인 표의 상자는
+    /// 쪽마다 같은 자리로 계산되지만 이 쪽을 차지하지 않는다.
+    pub(in crate::renderer::typeset) fn host_page_anchored_square_exclusions(
+        &self,
+        para_index: usize,
+        para: &Paragraph,
+        control_index: usize,
+    ) -> Vec<crate::renderer::layout_frame::FrameExclusion> {
+        para.controls
+            .iter()
+            .enumerate()
+            .filter(|(index, _)| {
+                *index != control_index
+                    && !self
+                        .data
+                        .side_wrap_exclusions
+                        .contains_key(&(para_index, *index))
+                    && self.data.current_items.iter().any(|item| {
+                        matches!(item, PageItem::Table { para_index: p, control_index: c }
+                            if *p == para_index && *c == *index)
+                    })
+            })
+            .filter_map(|(_, control)| match control {
+                Control::Table(table) => self.page_anchored_square_table_exclusion(table),
+                _ => None,
+            })
+            .collect()
     }
 
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
