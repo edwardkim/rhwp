@@ -1,0 +1,247 @@
+{
+  "code_commit": "9816b97360b99cd7d04abd146007ba123f6a06ee",
+  "base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "scope": "sample2 HWP 전29쪽의 물리 행·정렬·내용 소유 검증. 브랜치 전체36조건·전체 회귀·필수 게이트·실제 소비 검증 완료를 뜻하지 않는다.",
+  "input": {
+    "path": "samples/hwpx_sample2.hwp",
+    "sha256": "ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f"
+  },
+  "independent_pdf": {
+    "path": "pdf/hwpx_sample2-hwp-2024.pdf",
+    "sha256": "1b2e13e966787f6b91f590c8901dcb988e73ac7063d5e1cb95c8952400fd9a47",
+    "pages": 29
+  },
+  "original_solution": {
+    "commit": "30bb77d6aacd7f00b75f4a8dcb212d9ddbb54cc8",
+    "integration_pr": 7568,
+    "original_container": "samples/hwpx_sample2.hwpx",
+    "same_current_hwp_source_geometry_hu": {
+      "first_frame": 40685,
+      "before_split_row": 24937,
+      "split_row": 21514,
+      "opening_split_part": 15748,
+      "remaining_split_part": 5766
+    }
+  },
+  "source_files": {
+    "src/renderer/layout/table_layout.rs": "01f027f17b4fba7b407e433dedc6f13d269ab0bfb3a156fbfa9cea2660d5121c",
+    "src/renderer/layout/table_partial.rs": "7a29bb4f45671737d945d22552399dfefab794588aea6a99042819f9852b01ca",
+    "src/renderer/typeset/table/scan.rs": "6081448f1913890eab7072751f12cd8dbf31aec81dd0c903a230e730e79d967e",
+    "src/renderer/typeset/table/scan/runner.rs": "caab95876d21db5c430d01293a20f3a1e407db77c369eca43da7a655e791f2be",
+    "src/renderer/typeset/table/scan/runner/block_step.rs": "45ef38d0c0ce1e3a7b399fe98c66660bc8318923d1feeae572f2a9b4f951b3f6",
+    "src/renderer/typeset/table/scan/runner/row_step.rs": "6934df2d615c96e8e81c17e7851ee64fdd2d0249075d4e065b9eb8890240794e",
+    "src/renderer/typeset/table/continuation/fragment/scan.rs": "37c8395a93b705735356b169c86c7bff0f3ec0db45ef8957cf98e8a0d3049447",
+    "src/renderer/composer/stored_cell_reflow.inc.rs": "190041edc5e969849fda7cfa3f4dcd5f4b1cea0b1de35f5247a46420f641d60b",
+    "src/renderer/font_environment.rs": "d7f8e9737b29524f1fdd94d6c409bc356cac2f8cc9b9f39ec28859a8c0b97e57",
+    "src/renderer/style_resolver.rs": "f815dbc3292ff2bb5348b7f134d0a3e427de0cbdbd3d3533c681f91df2a0fd40",
+    "src/renderer/layout/paragraph_layout.rs": "3a1609b973f2ca4874631a9cbfd70a3cf5d82314883f7096bd4740c198403116",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "420971482b3c3e0d58039d9de47604937593a76b4fc0901abb14a6ba13d50dff"
+  },
+  "native_sha256": "cd77cb8af7f52575805a33a1fd49a30e82e74df9fc4cfccd8d32a2795053b291",
+  "wasm_files": {
+    "rhwp.js": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+    "rhwp_bg.wasm": "a3e10510f21cef012bbcfb0dea6c32ce738989d2a19b541db303a4de7c341265"
+  },
+  "wasm_mode": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 통과 아님.",
+  "root_pkg_and_studio_public_hash_match": true,
+  "actual_browser_initialization_hash_verified": false,
+  "visual_sweep": "canonical PDFium /96CSSpx/2px tolerance; raw 90%; devel decline 0.1%p",
+  "whole": [
+    {
+      "backend": "native",
+      "pages": 29,
+      "minimum": 95.83018,
+      "minimum_pages": [
+        8
+      ],
+      "below_90": [],
+      "tsv": "native-silhouette.tsv",
+      "tsv_sha256": "3b23d58e46258f63a936e8f68a087e70d5f47c414323814a96738fa3f47d2ff3",
+      "selected_raw": {
+        "4": 99.98491,
+        "8": 95.83018,
+        "13": 99.21715,
+        "14": 97.47552
+      }
+    },
+    {
+      "backend": "wasm",
+      "pages": 29,
+      "minimum": 95.82665,
+      "minimum_pages": [
+        8
+      ],
+      "below_90": [],
+      "tsv": "wasm-silhouette.tsv",
+      "tsv_sha256": "1776a06cf2002dc2ab34d7dde73bb77bf1f1107f7b504653d8f7b676a897496d",
+      "selected_raw": {
+        "4": 99.9843,
+        "8": 95.82665,
+        "13": 99.21853,
+        "14": 97.48097
+      }
+    }
+  ],
+  "reviews": [
+    {
+      "backend": "native",
+      "page": 4,
+      "raw": 99.98491,
+      "source_png_sha256": "153777414aa3d5cda64a25ca3d092f608e9ad46f26c1cb48561c746a04667cc2",
+      "pdf_png_sha256": "3db9d861fef171414b5ca046e63e5328880a45c07ce2703cf5350f80df5c0024",
+      "review": "native-p004-review.png",
+      "review_sha256": "ca03f76f178fe0c81362471cf81c561ea54c6de3ba08e2ca24e082f3f89fc494",
+      "overlay": "native-p004-overlay.png",
+      "overlay_sha256": "1cd77b79660c5fb233a398d698f4225c24aeca2c7ea15038f76381d1d1ef05d0"
+    },
+    {
+      "backend": "native",
+      "page": 8,
+      "raw": 95.83018,
+      "source_png_sha256": "7a8feaba4df690ca1b62ea7971c6af58889833f28b11601e93048fa253268023",
+      "pdf_png_sha256": "21e26c5d573a72d72c1ca9b66ab20d81f1680e1b03d26c801fbbf1292cf35363",
+      "review": "native-p008-review.png",
+      "review_sha256": "99a3f8b5865b5334de9143e629cbe1f80ab10f90ade13f6986e416dd25931b58",
+      "overlay": "native-p008-overlay.png",
+      "overlay_sha256": "dab9be4a5848cb6f841a49bb5a1dc003ab99bde43eec126d7acce85ca63af93e"
+    },
+    {
+      "backend": "native",
+      "page": 13,
+      "raw": 99.21715,
+      "source_png_sha256": "2d1eeaa508397f8074e88b86b87e791163a366ed6adc4bfb5e0d3e8cdd977eea",
+      "pdf_png_sha256": "307271a34a31270b530e59122fbdb40230e7eef2ed2ae00ac725ee0223aba9b8",
+      "review": "native-p013-review.png",
+      "review_sha256": "743dc73c9db7f0c9224283d044018892f4f2d4a5b670c2bf2507db1cb5e81cd9",
+      "overlay": "native-p013-overlay.png",
+      "overlay_sha256": "d895e5dfb9ce0e09083986b765aeebc706383bff33fcbd92430baaca607f720f"
+    },
+    {
+      "backend": "native",
+      "page": 14,
+      "raw": 97.47552,
+      "source_png_sha256": "3b114b62a3ce6a22951977a88f22338eac26c65b4b9988a2e0f6bef355d5376b",
+      "pdf_png_sha256": "263206f4cf98ad99e201e0e3c7d6ef5a35c52c33aaf6186d1bd82c3726f1673a",
+      "review": "native-p014-review.png",
+      "review_sha256": "0bb92ea4262e2c2d8cd5c42abe6f433e612c91629bf9a992dea9e452b85037ea",
+      "overlay": "native-p014-overlay.png",
+      "overlay_sha256": "de77475a96860d6594604cde37070c3930beab764ddea4c0b6defd9ce0f65728"
+    },
+    {
+      "backend": "wasm",
+      "page": 4,
+      "raw": 99.9843,
+      "source_png_sha256": "4e6f4e0e8093437c63a958d4632a5c04e1e9efbd2e3e87bd263d7da72086eeee",
+      "pdf_png_sha256": "3db9d861fef171414b5ca046e63e5328880a45c07ce2703cf5350f80df5c0024",
+      "review": "wasm-p004-review.png",
+      "review_sha256": "457743153ea191b75b8475030a4fcd32c9911639300a40eb230f4fcc47a1ca7f",
+      "overlay": "wasm-p004-overlay.png",
+      "overlay_sha256": "c265a6886319256055281eb46deb78af5b2e37d81e0b41184f0b954082ebadcb"
+    },
+    {
+      "backend": "wasm",
+      "page": 8,
+      "raw": 95.82665,
+      "source_png_sha256": "8f4185fd62d7ce3ae2eca2a5b33f37f4674353489811ff9af31b605d5bc13991",
+      "pdf_png_sha256": "21e26c5d573a72d72c1ca9b66ab20d81f1680e1b03d26c801fbbf1292cf35363",
+      "review": "wasm-p008-review.png",
+      "review_sha256": "4fdcce22b98ef903dfcef6f9e96e63b19ce16cf682f2feaf112e9423186d79ac",
+      "overlay": "wasm-p008-overlay.png",
+      "overlay_sha256": "c7cce2235367f07cf8c4823d8296ed89ac3b2cee8caab14870e1f3e5daed43f1"
+    },
+    {
+      "backend": "wasm",
+      "page": 13,
+      "raw": 99.21853,
+      "source_png_sha256": "1a993f2c6a90e36151a2a9859ad8a25783f55c412a59cecb2bd05ca4cb02f060",
+      "pdf_png_sha256": "307271a34a31270b530e59122fbdb40230e7eef2ed2ae00ac725ee0223aba9b8",
+      "review": "wasm-p013-review.png",
+      "review_sha256": "be4c7d68361d51c184bd120a0804bd1886f92c28e73ea97cbd6932c333989539",
+      "overlay": "wasm-p013-overlay.png",
+      "overlay_sha256": "a710349cd91d252dbb2e3b66493637e3af16eb9949ac6f46cde0edd0925b8bd4"
+    },
+    {
+      "backend": "wasm",
+      "page": 14,
+      "raw": 97.48097,
+      "source_png_sha256": "11ef3f39ea7dcd076181f04ddf324fe096989a2634da6af83fa023babdb17d78",
+      "pdf_png_sha256": "263206f4cf98ad99e201e0e3c7d6ef5a35c52c33aaf6186d1bd82c3726f1673a",
+      "review": "wasm-p014-review.png",
+      "review_sha256": "89ca2117182197657c2b5e34ec39561ed97bd7b943666c629546187801a6d913",
+      "overlay": "wasm-p014-overlay.png",
+      "overlay_sha256": "537456de13e16f0c9df99d906a2c20b8ba3243577469430764484361d7e219e6"
+    }
+  ],
+  "independent_line_tops": {
+    "pdf": "pdf/hwpx_sample2-hwp-2024.pdf",
+    "pdf_sha256": "1b2e13e966787f6b91f590c8901dcb988e73ac7063d5e1cb95c8952400fd9a47",
+    "method": "독립 Print PDF의 pdftotext -bbox-layout 줄 경계 pt를96 CSS px로 환산. 래스터 비교는 PDFium을 유지.",
+    "lines": [
+      {
+        "page": 4,
+        "text": "▪ 단 아래에 해당하는 사람은 자격검증대상(세대구성원)에 포함합니다.",
+        "bbox_pdf_points": {
+          "xMin": 100.32,
+          "yMin": 54.4932,
+          "xMax": 428.59956,
+          "yMax": 64.752
+        },
+        "top_css_px": 72.6576
+      },
+      {
+        "page": 13,
+        "text": "․ 「공공주택 특별법 시행규칙」 별표3 제1호 가목 내지 마목, 사목, 아목, 자목 및 카목에 해당하는 자",
+        "bbox_pdf_points": {
+          "xMin": 106.08,
+          "yMin": 659.00196,
+          "xMax": 544.56,
+          "yMax": 668.952
+        },
+        "top_css_px": 878.6692800000001
+      }
+    ]
+  },
+  "related_regression": {
+    "passed": 52,
+    "failed": 0,
+    "summary": "52 tests run: 52 passed, 2109 skipped",
+    "source": "현재 제품 후보의 related-nextest 실행"
+  },
+  "new_regression": {
+    "test_source": "tests/cases/issue_8152_completed_sample2_source_frame.rs",
+    "test_source_sha256": "2236dcd4b90a93e0ae4262e72b0d6592b4967b5d30b9c1db7f4382cf10f43e2c",
+    "suite_sha256": "e8227d705b83998f4cf3fe809555c9aed4a514ddfbfc14cb31bc50df82087c7e",
+    "nextest": {
+      "passed": 3,
+      "failed": 0
+    },
+    "same_suite_cli_swaps": [
+      {
+        "name": "formal-before-v16",
+        "native_sha256": "cc67b7c8e167b29664d05aec956d7fa077dd0e573c467e5917c32e07929e1073",
+        "exit_code": 101,
+        "actual_summary": "test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 255 filtered out; finished in 1.73s"
+      },
+      {
+        "name": "formal-before-v19",
+        "native_sha256": "4e84b7c3c1bf94bbc05036964330b443329579c8ca25c8424bab85f3a46b3726",
+        "exit_code": 101,
+        "actual_summary": "test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 255 filtered out; finished in 3.75s"
+      },
+      {
+        "name": "formal-after-v20",
+        "native_sha256": "cd77cb8af7f52575805a33a1fd49a30e82e74df9fc4cfccd8d32a2795053b291",
+        "exit_code": 0,
+        "actual_summary": "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 255 filtered out; finished in 2.09s"
+      }
+    ]
+  },
+  "direct_reading": {
+    "p4": "개체가 포함된 셀 꼬리의 첫 실질 줄·후속 줄과 셀 테두리가 Print 위치로 복원됨. 양쪽98% 이상, 독립 줄 top의2px 좌표 검사 적용.",
+    "p13": "원본 첫 프레임의 Center 정렬이 복원됨. 첫 줄 Native877.96px, Print878.66928px. 줄 소속·순서와 뒤쪽 유닛을 유지. 양쪽98% 이상.",
+    "p14": "잔여 행76.88px와 뒤 행·부양가족 수·미성년 자녀수 표의 순서/비겹침을 복원. 98% 미만이므로2px 절대 위치 검사는 추가하지 않음.",
+    "p8_residual": "기준 devel과 같은 최저 쪽이다. 마지막 굵은 안내 줄이 Print보다 위에 남는다. 이번 보정으로 해결했다고 주장하거나 좌표 핀으로 고정하지 않음. 전체 raw는Native95.83018%/WASM95.82665%.",
+    "pixel_identity": false
+  },
+  "branch_submission_ready": false
+}
