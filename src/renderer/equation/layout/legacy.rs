@@ -56,6 +56,7 @@ fn line_node(node: &EqNode) -> bool {
             style: FontStyleKind::Roman,
             body,
         } => line_node(body),
+        EqNode::Color { body, .. } => line_node(body),
         EqNode::Empty => true,
         _ => false,
     }
@@ -72,6 +73,7 @@ pub(super) fn supports(node: &EqNode) -> bool {
             style: FontStyleKind::Roman,
             body,
         } => supports(body),
+        EqNode::Color { body, .. } => supports(body),
         _ => line_node(node),
     }
 }
@@ -84,14 +86,16 @@ pub(super) fn compound_frame(node: &EqNode) -> bool {
         match node {
             EqNode::Fraction { .. } => true,
             EqNode::Row(items) => items.iter().any(fraction),
-            EqNode::Paren { body, .. } | EqNode::FontStyle { body, .. } => fraction(body),
+            EqNode::Paren { body, .. }
+            | EqNode::FontStyle { body, .. }
+            | EqNode::Color { body, .. } => fraction(body),
             _ => false,
         }
     }
     match node {
         EqNode::Paren { body, .. } => fraction(body),
         EqNode::Row(items) => items.iter().any(compound_frame),
-        EqNode::FontStyle { body, .. } => compound_frame(body),
+        EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => compound_frame(body),
         _ => false,
     }
 }
@@ -175,6 +179,7 @@ pub(super) fn text(text: &str, fs: f64) -> LayoutBox {
 fn operator(node: &EqNode) -> Option<&str> {
     match node {
         EqNode::Symbol(text) | EqNode::MathSymbol(text) => Some(text),
+        EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => operator(body),
         _ => None,
     }
 }

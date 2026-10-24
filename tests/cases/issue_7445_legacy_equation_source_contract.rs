@@ -441,3 +441,17 @@ fn compound_fraction_preserves_a_declared_frame_that_contains_its_natural_paint(
         "size protection does not choose another reservation when the source frame already fits"
     );
 }
+
+#[test]
+fn compound_fraction_color_keeps_the_same_frame_and_advance() {
+    let mut source = equation();
+    source.script = "가 TIMES LEFT ( {나} over {다} RIGHT )".into();
+    let plain = rendered(&document(source.clone())).1.layout_box;
+    source.script = format!("COLOR{{255,0,0}}{{{}}}", source.script);
+    let colored = rendered(&document(source)).1.layout_box;
+    assert_eq!(
+        (plain.width, plain.height, plain.baseline),
+        (colored.width, colored.height, colored.baseline),
+        "a transparent paint wrapper does not choose another compound frame"
+    );
+}
