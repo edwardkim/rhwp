@@ -1576,18 +1576,17 @@ impl LayoutEngine {
                         styles,
                     )
                     .is_some();
-            let complete_plain_suffix_frame = is_continuation
+            let complete_suffix_frame = is_continuation
                 && start_row_height_override.is_none()
                 && is_split_start_row
                 && cell.row_span == 1
                 && cell.text_direction == 0
-                && cell
-                    .paragraphs
-                    .iter()
-                    .all(|paragraph| paragraph.controls.is_empty())
                 && {
                     // 남은 내용 전체의 정렬 소유는 컷의 표현 형식과 무관하다.
                     // 실제 줄 선택과 같은 Query로 행/블록 서수를 함께 해석한다.
+                    // 이미 소비한 개체나 완결된 현재 개체가 있다는 이유로
+                    // 현재 꼬리까지 Top으로 바꾸지 않는다. 부분 유닛 컷과
+                    // 하위 행의 닫는 띠 소유는 각각의 기존 계약이 처리한다.
                     let units = self.cell_units(cell, table, styles);
                     let (start, end) = cell_cut_window(
                         table,
@@ -1609,7 +1608,7 @@ impl LayoutEngine {
             let frame_owns_alignment = !descendant_owns_closing_band
                 && (ordinary_source_frame_owns_alignment
                     || closing_source_frame_owns_alignment
-                    || complete_plain_suffix_frame
+                    || complete_suffix_frame
                     || heading_frame_owns_alignment
                     || self
                         .stored_nested_text_frame_for_cut(
