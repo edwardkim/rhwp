@@ -70,6 +70,54 @@ pub(in crate::renderer::typeset) struct ControlPlacementOrder {
     pub last_placed_table: Option<usize>,
 }
 
+/// 공백과 표의 원시 슬롯이 문단을 빠짐없이 소유할 때만 저장 줄 순서를 쓴다.
+pub(in crate::renderer::typeset) fn complete_whitespace_table_stream(para: &Paragraph) -> bool {
+    if para.text.is_empty()
+        || !para.text.chars().all(char::is_whitespace)
+        || para.text.chars().count() != para.char_offsets.len()
+        || !para
+            .controls
+            .iter()
+            .all(|control| matches!(control, Control::Table(_)))
+        || !para.title_marks.is_empty()
+        || !para.field_ranges.is_empty()
+        || !para.orphan_field_ends.is_empty()
+    {
+        return false;
+    }
+    let slots = para.control_utf16_positions();
+    if slots.len() != para.controls.len() {
+        return false;
+    }
+    let ranges = para
+        .char_offsets
+        .iter()
+        .copied()
+        .zip(para.text.chars())
+        .map(|(start, ch)| {
+            start
+                .checked_add(Paragraph::char_stream_len(ch))
+                .map(|end| (start, end))
+        })
+        .chain(slots.into_iter().map(|start| {
+            start
+                .checked_add(crate::model::control::CTRL_CHAR_CODE_UNITS)
+                .map(|end| (start, end))
+        }))
+        .collect::<Option<Vec<_>>>();
+    let Some(mut ranges) = ranges else {
+        return false;
+    };
+    ranges.sort_by_key(|range| range.0);
+    ranges
+        .into_iter()
+        .try_fold(0, |end, (start, next)| {
+            (start == end && next > start).then_some(next)
+        })
+        .and_then(|end| end.checked_add(1))
+        == Some(para.char_count)
+}
+
 /// 세로 오프셋 키가 꺼져도 기존 TAC/비-TAC 보조 키는 유지한다.
 /// 같은 키의 선언 순서는 sort_by_key의 안정 정렬로 보존한다.
 pub(in crate::renderer::typeset) fn for_paragraph(
@@ -214,9 +262,13 @@ pub(in crate::renderer::typeset) fn for_paragraph(
     // 원본 빈 carrier의 서로 다른 저장 줄은 같은 앵커가 아니다. TAC 보조 키가
     // 앞 줄의 표를 뒤 줄 float 뒤로 보내지 않도록 paint와 같은 줄 소속을 먼저 쓴다.
     // 같은 줄 안의 기존 정렬과 편집·합성 줄의 기존 경로는 유지한다.
-    let stored_control_lines = (!flow.session_edited()
-        && !para.stored_text_partition_dirty
-        && para.empty_control_stream_position(0).is_some()
+    let stored_control_lines = (!para.stored_text_partition_dirty
+        && ((!flow.session_edited() && para.empty_control_stream_position(0).is_some())
+            || (!has_negative_para_float
+                && !para.cell_format_vpos_dirty
+                && fmt.computed_host_lines.is_none()
+                && !para.line_segs.is_empty()
+                && complete_whitespace_table_stream(para)))
         && para.line_segs.iter().all(|seg| {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         }))

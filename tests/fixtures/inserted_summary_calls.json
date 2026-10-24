@@ -1,0 +1,566 @@
+[
+  {
+    "name": "saveSnapshot",
+    "args": []
+  },
+  {
+    "name": "splitParagraph",
+    "args": [
+      0,
+      0,
+      8,
+      null
+    ]
+  },
+  {
+    "name": "saveSnapshot",
+    "args": []
+  },
+  {
+    "name": "splitParagraph",
+    "args": [
+      0,
+      0,
+      8,
+      null
+    ]
+  },
+  {
+    "name": "createTable",
+    "args": [
+      0,
+      1,
+      0,
+      6,
+      3
+    ]
+  },
+  {
+    "name": "insertTextInCellDeferredPagination",
+    "args": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      "항목"
+    ]
+  },
+  {
+    "name": "flushDeferredPagination",
+    "args": []
+  },
+  {
+    "name": "insertTextInCellDeferredPagination",
+    "args": [
+      0,
+      1,
+      0,
+      1,
+      0,
+      0,
+      "내용"
+    ]
+  },
+  {
+    "name": "flushDeferredPagination",
+    "args": []
+  },
+  {
+    "name": "insertTextInCellDeferredPagination",
+    "args": [
+      0,
+      1,
+      0,
+      2,
+      0,
+      0,
+      "확인할 일"
+    ]
+  },
+  {
+    "name": "insertTextInCellDeferredPagination",
+    "args": [
+      0,
+      1,
+      0,
+      3,
+      0,
+      0,
+      "사업 목적"
+    ]
+  },
+  {
+    "name": "flushDeferredPagination",
+    "args": []
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      4,
+      0,
+      0,
+      "실세계에서 사람의 개입 없이 자율·능동적으로 임무 설정→판단→행동이 가능한 에이전틱 AI 핵심기술 확보 및 실증"
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      5,
+      0,
+      0,
+      "공고 1쪽 ‘사업목적’ 확인"
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      6,
+      0,
+      0,
+      "지원 대상 과제 (4개 분야)"
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      7,
+      0,
+      0,
+      "① 의료 초음파: 환자 의료 초음파 실시간 검사·분석 에이전틱AI 기술개발"
+    ]
+  },
+  {
+    "name": "splitParagraphInCell",
+    "args": [
+      0,
+      1,
+      0,
+      7,
+      0,
+      41,
+      null
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      7,
+      1,
+      0,
+      "② 업무혁신: 목표 지향 장기 맥락 추론 기반의 전사 업무 혁신 에이전틱AI 기술개발"
+    ]
+  },
+  {
+    "name": "splitParagraphInCell",
+    "args": [
+      0,
+      1,
+      0,
+      7,
+      1,
+      47,
+      null
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      7,
+      2,
+      0,
+      "③ 국민일상 지원: 개인 정서·생활 지원을 위한 일상 동행·공감형 에이전틱AI 기술개발"
+    ]
+  },
+  {
+    "name": "splitParagraphInCell",
+    "args": [
+      0,
+      1,
+      0,
+      7,
+      2,
+      48,
+      null
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      7,
+      3,
+      0,
+      "④ 물리세계 시뮬레이터: 물리해석 시뮬레이션 자동 수행 에이전틱AI 기술개발"
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      8,
+      0,
+      0,
+      "IRIS에서 세부사업명·내역사업명·RFP명 확인 후 해당 RFP에 접수"
+    ]
+  },
+  {
+    "name": "insertTextInCellDeferredPagination",
+    "args": [
+      0,
+      1,
+      0,
+      9,
+      0,
+      0,
+      "접수 마감"
+    ]
+  },
+  {
+    "name": "flushDeferredPagination",
+    "args": []
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      10,
+      0,
+      0,
+      "공고기간: 2026. 3. 19.(목) ~ 2026. 4. 27.(월) 15시까지 (40일간)"
+    ]
+  },
+  {
+    "name": "splitParagraphInCell",
+    "args": [
+      0,
+      1,
+      0,
+      10,
+      0,
+      52,
+      null
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      10,
+      1,
+      0,
+      "전산접수기간: 2026. 3. 23.(월) ~ 2026. 4. 27.(월) 15시까지 (IRIS 시스템 시간 기준)"
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      11,
+      0,
+      0,
+      "마감 시각 이후 수정·전산등록 불가. 마감일에는 접속 폭주로 접수지연·장애가 생길 수 있으므로 사전 접수 요망"
+    ]
+  },
+  {
+    "name": "insertTextInCellDeferredPagination",
+    "args": [
+      0,
+      1,
+      0,
+      12,
+      0,
+      0,
+      "접수 방법"
+    ]
+  },
+  {
+    "name": "flushDeferredPagination",
+    "args": []
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      13,
+      0,
+      0,
+      "범부처통합연구지원시스템(www.iris.go.kr)에 기본사항을 전산 등록한 후 신청서(연구개발계획서 및 제출서류)를 첨부하여 전산접수 완료. 주관기관 연구책임자가 로그인하여 등록"
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      14,
+      0,
+      0,
+      "IRIS 회원가입·기관등록에 약 반일~1일 소요. 접수 전 ‘연구개발과제 접수 전 필수 이행 사항’ 매뉴얼 확인"
+    ]
+  },
+  {
+    "name": "insertTextInCellDeferredPagination",
+    "args": [
+      0,
+      1,
+      0,
+      15,
+      0,
+      0,
+      "필수 제출서류"
+    ]
+  },
+  {
+    "name": "flushDeferredPagination",
+    "args": []
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      0,
+      0,
+      "① 연구개발계획서 (주관기관, 신청 시)"
+    ]
+  },
+  {
+    "name": "splitParagraphInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      0,
+      22,
+      null
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      1,
+      0,
+      "② 신청자격 적정성 및 자기진단서 (모든 신청기관)"
+    ]
+  },
+  {
+    "name": "splitParagraphInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      1,
+      28,
+      null
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      2,
+      0,
+      "③ 연구개발기관 대표 참여의사 확인서 및 기관 정보활용 동의서 (모든 신청기관)"
+    ]
+  },
+  {
+    "name": "splitParagraphInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      2,
+      44,
+      null
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      3,
+      0,
+      "④ 참여연구자 개인정보 및 과세정보 수집·이용·제공 동의서 (모든 신청기관 책임자)"
+    ]
+  },
+  {
+    "name": "splitParagraphInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      3,
+      46,
+      null
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      4,
+      0,
+      "⑤ 국세·지방세 완납 증명서 또는 세금 분납 계획서 (영리기관만)"
+    ]
+  },
+  {
+    "name": "splitParagraphInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      4,
+      36,
+      null
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      5,
+      0,
+      "⑥ 회계감사 보고서 및 재무제표 (영리기관만)"
+    ]
+  },
+  {
+    "name": "splitParagraphInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      5,
+      25,
+      null
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      6,
+      0,
+      "⑦ 기술기여도 산정 근거 (기술료 등 납부의무기관만)"
+    ]
+  },
+  {
+    "name": "splitParagraphInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      6,
+      29,
+      null
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      7,
+      0,
+      "⑧ 우대사항 증빙서류 (해당 신청기관만, 선택)"
+    ]
+  },
+  {
+    "name": "splitParagraphInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      7,
+      26,
+      null
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      16,
+      8,
+      0,
+      "⑨ 연구개발기관의 연구개발비 사용 신청서 (해당 시 필수)"
+    ]
+  },
+  {
+    "name": "insertTextInCell",
+    "args": [
+      0,
+      1,
+      0,
+      17,
+      0,
+      0,
+      "1·2·3·4·7·9번은 공고에서 제공한 양식 사용. 8번은 선택, 9번은 해당 시에만 제출. 계획서: 정부지원연구개발비 5억원 이상 50쪽 이내, 5억원 미만 30쪽 이내"
+    ]
+  }
+]

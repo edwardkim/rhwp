@@ -2623,6 +2623,44 @@ pub(crate) fn stored_float_frame_before_tac_line(
     })
 }
 
+/// 편집 세션에서도 원본 일반 셀의 저장 줄을 재사용할 자격만 확인한다.
+/// 원점·높이·분할 경계의 인증은 각 배치 계획이 별도로 수행한다.
+pub(crate) fn stored_plain_table_source_is_current(table: &Table) -> bool {
+    table
+        .raw_ctrl_seal
+        .is_some_and(|sealed| sealed == crate::model::raw_provenance::record_digest(&table.common))
+        && table.caption.is_none()
+        && !table.cells.is_empty()
+        && table.cells.iter().all(|cell| {
+            !cell.dirty_flag
+                && !cell.paragraphs.is_empty()
+                && cell.paragraphs.iter().all(|para| {
+                    !para.stored_text_partition_is_dirty()
+                        && !para.cell_format_vpos_dirty
+                        // 하이퍼링크 필드는 본문 글줄을 꾸미며 별도 배치 상자를 만들지 않는다.
+                        && para.controls.iter().all(|control| matches!(control,
+                            Control::Field(field) if field.field_type == crate::model::control::FieldType::Hyperlink))
+                        && !para.line_segs.is_empty()
+                        && para.line_segs.iter().all(|line| {
+                            line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                                && line.vertical_pos >= 0
+                                && line.line_height > 0
+                                && line.line_spacing >= 0
+                        })
+                        && para
+                            .source_line_seg_vertical_pos
+                            .as_ref()
+                            .is_none_or(|source| {
+                                source
+                                    .iter()
+                                    .copied()
+                                    .eq(para.line_segs.iter().map(|line| line.vertical_pos))
+                            })
+                })
+        })
+}
+
 /// 빈 호스트와 다음 저장 줄이 전체 개체 바깥 상자를 정확히 닫는다.
 /// 실측 본체·수직 캡션이 전체 선언 프레임과 같을 때 오프셋·양쪽 여백을 한 번 소비한다.
 /// 분할 조각의 선언 높이, 편집 뒤 캐시, 합성 줄은 이 원점의 증거가 아니다.
