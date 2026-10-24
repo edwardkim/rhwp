@@ -70,7 +70,8 @@ smoke 서버가 읽은 기존 입력 samples/hwp3-pagedef-1915.hwp는 HEAD의 �
 
 산출물은 ignored `output/pr-review/7449/user-review-20261024/`에 보존한다. 공유 ZIP은 두 요약만,
 비공개 ZIP은 원본 결과·로그·진단·private.html을 상대 위치 그대로 담는다. 이 세션에는 attach_artifact
-도구가 없어 파일 링크와 화면 캡처로 제시했다. 사용자 측 링크 열기 성공은 별도 확인되지 않았다.
+도구가 없어 파일 링크와 화면 캡처로 제시했다. 검토한 공유본·ZIP과 보고서 화면은
+[공유 증적](../report/assets/issue7449/README.md)에도 포함했다. 비공개 원본은 저장소에 게시하지 않았다.
 
 ## 재현 명령
 
