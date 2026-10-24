@@ -553,3 +553,5 @@ tests/fixtures/issue1470_authored_caption_numbering/pictures-caption-removed.hwp
 tests/fixtures/issue1470_authored_caption_numbering/pictures-caption-removed.hwp	1	1
 tests/fixtures/issue1470_authored_caption_numbering/tables-caption-left.hwpx	1	1
 tests/fixtures/issue1470_authored_caption_numbering/tables-caption-left.hwp	1	1
+samples/issue4599/1790387_policy_progress.hwpx	64	64
+samples/issue8141/1342000_math_textbook_field_review.hwp	49	49
