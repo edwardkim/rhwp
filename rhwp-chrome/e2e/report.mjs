@@ -15,7 +15,8 @@ const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', 
 const token = value => typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9 ._()+-]{0,79}$/.test(value) ? value : null;
 const inside = (parent, child) => { const rel = path.relative(parent, child); return !rel || (!rel.startsWith('..') && !path.isAbsolute(rel)); };
 const limitations = ['Unpacked Chrome for Testing only', '스토어 설치·업데이트, Edge/Firefox 미검증',
-  '실제 사용자 환경·문서 표시·인쇄 품질 미검증', '자동 검사 결과는 배포 승인이 아님'];
+  '실제 사용자 환경·문서 표시·인쇄 품질 미검증', '자동 검사 결과는 배포 승인이 아님',
+  'Chrome 버전은 실행기의 설치 대상 기록이며 브라우저 실행을 증명하지 않음'];
 
 export function parseReportArgs(args) {
   const options = {};
