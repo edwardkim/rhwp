@@ -70,6 +70,10 @@ test('running, legacy, missing suite, malformed and unsupported results never pa
   const f = await fixture(t);
   await writeFile(path.join(f.input, 'result.json'), '{');
   assert.deepEqual((await inspectRun(f.input)).summary.issues, ['result-json-parse-error']);
+  await generateReport(f);
+  const html = await readFile(path.join(f.output, 'report.html'), 'utf8');
+  assert.match(html, /시간 초과 미관측/);
+  assert.doesNotMatch(html, /시간 초과 없음/);
 });
 
 test('candidate inventory and tool SHA validation cannot be replaced by success flags', async t => {
