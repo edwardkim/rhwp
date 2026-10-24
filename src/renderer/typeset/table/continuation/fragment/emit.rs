@@ -1397,7 +1397,7 @@ impl TypesetEngine {
                 .render_normalization
                 .table_text_reflowed(row_geometry_table)
             && mt.allows_row_break_split()
-            && row_geometry_table.cells.iter().any(|cell| {
+            && (row_geometry_table.cells.iter().any(|cell| {
                 cell.row_span > 1
                     && crate::renderer::layout::cell_crosses_fragment_end(
                         cell,
@@ -1405,6 +1405,20 @@ impl TypesetEngine {
                         &split_end_cut,
                     )
             })
+                // [#8105] 걸침 칸이 없어도 내용 컷으로 나뉜 행의 선언 높이가 이 조각 상자보다 크면 그 행
+                // 자신이 쪽 끝 띠를 소유한다 — 한/글은 첫 조각의 아래 괘선을 닫는 선에 긋는다(1342000 94쪽
+                // 행 25 제주 칸: 선언 123.3px, 컷 내용 55.7px, 한/글 괘선 712.7 = 닫는 선; task1749 4쪽
+                // 행 2: 한/글 괘선 1024.0). 저장 행 프레임이 상자를 정한 행은 그 프레임을 따른다.
+                || (split_end_limit > 0.0
+                    && stored_row_frame.is_none()
+                    // 앞 쪽에서 이미 그린 행을 잇는 가운데 조각은 앞 상자들을 장부로 받지 않아 남는
+                    // 몫을 모른다 — 행이 이 조각에서 시작할 때만(편람 214쪽 3쪽짜리 행).
+                    && !(end_row - 1 == cursor_row && !start_cut.is_empty())
+                    && super::physical_rows::declared_row_height(
+                        row_geometry_table,
+                        end_row - 1,
+                        self.dpi,
+                    ) > split_end_reserved.max(split_end_limit) + 0.5))
             && (ledger_page_end_band > 0.0 || reserved_plain_end_band)
         {
             let last_row = end_row - 1;
@@ -2280,7 +2294,61 @@ impl TypesetEngine {
                 // 측정 내용 합이나 이미 닫힌 프레임의 간격을 다시 넘기지 않는다.
                 .filter(|_| !layout_engine.stored_ordinary_row_uses_declared_minimum(table, row))
                 .and_then(|rows| rows.get(row).copied());
-            let full = carried.or(resolved).or_else(|| {
+            // [#8105] 행 안 내용 컷으로 나뉜 행의 남는 몫은 그 행 자신의 칸 선언 높이에서 센다. 측정·저장
+            // 행 높이는 내용으로 자란 행 전체(줄 사이 간격 포함)라 그것에서 이번 상자를 빼면 남은 내용에
+            // 컷 줄의 줄간격까지 얹은 빈 띠가 된다(한/글 2020: 1613000 141·142쪽 행 88 — 칸 선언 1282HU
+            // = 17.1px, 측정 행 38.4px; 한/글은 두 조각 모두 내용 17.1px). 남은 내용은 다음 스캔이 잰다.
+            // 이 행에서 끝나는 병합 칸의 선언이 지나는 행들의 칸 선언 합보다 크면 남는 몫이 측정 행
+            // 높이에 실린다 — 그 행은 공통 계획 높이를 그대로 쓴다(1342000 127·128쪽 행 78–80 칸
+            // 263.3px). 선언이 행 합과 같으면 행 자신의 선언으로 잰다(1613000 143·144쪽 행 121–122 칸
+            // 2564HU = 1282 × 2).
+            let row_declared_hu = |r: usize| {
+                table
+                    .cells
+                    .iter()
+                    .filter(|cell| usize::from(cell.row) == r && cell.row_span == 1)
+                    .filter(|cell| cell.height <= i32::MAX as u32)
+                    .map(|cell| u64::from(cell.height))
+                    .max()
+                    .unwrap_or(0)
+            };
+            let span_ends_on_row = table.cells.iter().any(|cell| {
+                cell.row_span > 1
+                    && usize::from(cell.row) + usize::from(cell.row_span) == row + 1
+                    && u64::from(cell.height)
+                        > (usize::from(cell.row)..=row).map(row_declared_hu).sum::<u64>()
+            });
+            // 개체를 담은 칸의 행은 공통 계획 높이를 그대로 쓴다 — 개체 높이는 칸 선언 밖에서 자라고
+            // 그 남은 몫은 내용 측정이 따로 잰다(86712 27·28쪽 행 27: 칸 선언 5.9px, 개체 글상자 칸).
+            let row_cells_are_plain_text = table
+                .cells
+                .iter()
+                .filter(|cell| usize::from(cell.row) == row && cell.row_span == 1)
+                .all(|cell| cell.paragraphs.iter().all(|para| para.controls.is_empty()));
+            let row_cell_declared = (split_end_limit > 0.0
+                && !span_ends_on_row
+                && row_cells_are_plain_text)
+                .then(|| {
+                    table
+                        .cells
+                        .iter()
+                        .filter(|cell| usize::from(cell.row) == row && cell.row_span == 1)
+                        .filter(|cell| cell.height <= i32::MAX as u32)
+                        .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
+                        .reduce(f64::max)
+                })
+                .flatten();
+            // 앞 조각이 이미 그린 행을 다시 잇는 조각은 앞 상자들을 장부로 받지 않았으면(`carried` 없음)
+            // 행 전체 높이에서 이번 상자만 빼서는 안 된다 — 앞 쪽들이 그린 몫까지 넘긴다(86712 32–34쪽
+            // 행 1: 측정 2262.5px − 이 쪽 929.6px = 1332.8px 를 34쪽에 실어 34쪽이 아래로 밀렸다).
+            if carried.is_none()
+                && row_cell_declared.is_none()
+                && row == cursor_row
+                && !start_cut.is_empty()
+            {
+                return None;
+            }
+            let full = carried.or(row_cell_declared).or(resolved).or_else(|| {
                 let declared = *table.get_raw_row_heights().get(row)?;
                 (declared <= i32::MAX as u32)
                     .then(|| hwpunit_to_px(declared as i32, self.dpi))

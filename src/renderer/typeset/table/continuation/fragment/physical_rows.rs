@@ -18,7 +18,7 @@ pub(super) struct StoredFragmentEnd<'a> {
     pub(super) restart_frame_closes_body: bool,
 }
 
-fn declared_row_height(table: &crate::model::table::Table, row: usize, dpi: f64) -> f64 {
+pub(super) fn declared_row_height(table: &crate::model::table::Table, row: usize, dpi: f64) -> f64 {
     table
         .cells
         .iter()

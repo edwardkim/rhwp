@@ -26842,7 +26842,15 @@ impl LayoutEngine {
                 .clamp(su, units.len());
             let mixed_nested_extra =
                 self.mixed_nested_flow_extra_for_height(cell, table, styles, su, eu, purpose);
-            let flow_range = self.cell_cut_flow_range(cell, table, &units, su, eu, styles);
+            let mut flow_range = self.cell_cut_flow_range(cell, table, &units, su, eu, styles);
+            // [#8105] 행을 닫는 조각(끝 컷 없음)의 칸 끝 빈 문단은 그리기처럼 줄 상자를 차지한다.
+            // 끝까지 소비한 무소유 빈 꼬리를 물리 범위에서 빼는 것은 행이 다음 쪽으로 이어질 때
+            // (다른 칸이 아직 끝나지 않은 컷)뿐이다. 86712 21쪽 1×1 표 끝 조각: 칸 끝 빈 문단
+            // 16px 를 빼면 조각 높이 330.2 < 그린 상자 344.3 이라 뒤 문단 «3» 이 표 안에 겹쳤다
+            // (정본 한/글 2024 는 빈 줄까지 상자에 담고 «3» 을 그 아래에 둔다).
+            if end_cut.is_empty() && !start_cut.is_empty() {
+                flow_range.end = eu;
+            }
             let trailing_trim = if is_whole_row {
                 0.0
             } else {

@@ -1018,6 +1018,34 @@ impl TypesetEngine {
                     end_row_height_override = Some(squeeze_rest);
                     return true;
                 }
+                // [#8105] 병합 칸이 닿지 않는 일반 행은 내용이 쪽 끝 공간에 다 들면 선언 높이가 넘쳐도
+                // 이 쪽에 둔다 — 한/글은 행 수용을 선언이 아니라 내용으로 정하고 그 상자를 닫는 선까지
+                // 그린다(한/글 2020: 1613000 188쪽 행 26 «6. 모니터링» 선언 2614HU 34.9px, 남은 29.9px —
+                // 아래 괘선 1040.6 = 닫는 선, 189쪽은 행 27 부터). 남는 선언 몫은 다음 조각이 행 자신의
+                // 칸 선언으로 다시 재고, 1280HU 이하이면 쪽 경계에서 버린다.
+                let declared_overflow_rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                if mt.allows_row_break_split()
+                    && r > cursor_row
+                    && !rowspan_touched[r]
+                    && row_start_cut.is_empty()
+                    && !res.end_cut.is_empty()
+                    && row_total > declared_overflow_rest + 0.5
+                    && res.consumed_height + padding <= declared_overflow_rest + 0.5
+                    && declared_overflow_rest >= MIN_TOP_KEEP_PX
+                {
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN DECLARED_OVERFLOW_ROW r={} rest={:.1} row_total={:.1} content={:.1}",
+                            r, declared_overflow_rest, row_total, res.consumed_height
+                        );
+                    }
+                    consumed += cs_before + declared_overflow_rest;
+                    end_row = r + 1;
+                    split_end_cut = res.end_cut;
+                    split_end_limit = declared_overflow_rest;
+                    end_row_height_override = Some(declared_overflow_rest);
+                    return false;
+                }
                 // [#2236] rowspan 블록 중간 행 밴드 컷: 행 자체 콘텐츠는 예산 안에
                 // 전부 들어가지만(fully_consumed) 행 높이가 rowspan 이웃/선언으로
                 // 늘어나 행 전체는 예산 초과인 경우, 한글은 쪽 경계에서 행 밴드를
