@@ -263,6 +263,7 @@ pub(super) fn draw_image_bytes(
     // 소수 좌표에 다시 놓으면 재표본이 0.5px 선과 작은 글자를 이웃 두 픽셀로 흐린다.
     // crop·타일·정렬 배치와 원본 픽셀을 바꾸는 이진·색조 효과는 기존 경로를 유지한다.
     let svg_device_window = svg_size
+        .filter(|_| !is_raster_only_svg(bytes))
         .filter(|_| {
             binary_effect.is_none()
                 && tone.is_none()
@@ -862,6 +863,54 @@ fn rasterize_svg_document_to_png(
         transform,
         raster_scale,
     )
+}
+
+/// 실제 paint가 래스터 그림뿐이면 기존 비트맵 재표본 경로를 유지한다.
+/// 설명·미사용 정의·그룹 유무로 작은 로고의 표본 위상을 바꾸지 않는다.
+fn is_raster_only_svg(bytes: &[u8]) -> bool {
+    if bytes.len() > MAX_SVG_DOCUMENT_BYTES {
+        return false;
+    }
+    let Ok(xml) = std::str::from_utf8(bytes) else {
+        return false;
+    };
+    let Ok(document) = roxmltree::Document::parse(xml) else {
+        return false;
+    };
+    let root = document.root_element();
+    if root.tag_name().name() != "svg" {
+        return false;
+    }
+    let mut work = vec![root];
+    let mut has_raster = false;
+    while let Some(node) = work.pop() {
+        match node.tag_name().name() {
+            "svg" | "g" => work.extend(node.children().filter(|child| child.is_element())),
+            // use와 별도 vector paint는 아래에서 제외하므로 미사용 정의는 내용이 아니다.
+            "defs" | "title" | "desc" | "metadata" | "style" => {}
+            "image" => {
+                let href = node
+                    .attribute("href")
+                    .or_else(|| node.attribute(("http://www.w3.org/1999/xlink", "href")))
+                    .unwrap_or_default();
+                if ![
+                    "data:image/png;base64,",
+                    "data:image/jpeg;base64,",
+                    "data:image/gif;base64,",
+                    "data:image/webp;base64,",
+                ]
+                .iter()
+                .any(|prefix| href.starts_with(prefix))
+                    || node.children().any(|child| child.is_element())
+                {
+                    return false;
+                }
+                has_raster = true;
+            }
+            _ => return false,
+        }
+    }
+    has_raster
 }
 
 /// 축 정렬 캔버스에서 그림 목적지를 덮는 장치 픽셀 창과 그 안의 소수 위상.

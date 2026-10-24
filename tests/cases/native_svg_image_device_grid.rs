@@ -48,3 +48,47 @@ fn stretched_svg_line_on_a_device_row_stays_on_that_row() {
     let rows = row_alpha(BoundingBox::new(4.25, 6.525, 95.0, 19.0), 10.5, 1.0 / 0.95);
     assert_single_row(&rows, 16, "배율 0.95·소수 원점");
 }
+
+/// SVG의 설명·미사용 정의·단순 그룹은 같은 래스터 그림의 표본 위상을 바꾸지 않는다.
+/// 특정 문서 좌표나 현재 출력을 golden으로 삼지 않는 SVG 의미 보존 검사다.
+#[test]
+fn raster_wrapper_metadata_does_not_change_sampling() {
+    use base64::Engine;
+    let source = image::RgbaImage::from_fn(64, 32, |x, y| {
+        let v = if (x + y) % 3 == 0 { 255 } else { 0 };
+        image::Rgba([v, v, v, 255])
+    });
+    let mut buffer = std::io::Cursor::new(Vec::new());
+    source
+        .write_to(&mut buffer, image::ImageFormat::Png)
+        .unwrap();
+    let data = base64::engine::general_purpose::STANDARD.encode(buffer.into_inner());
+    let picture = format!(r#"<image width="64" height="32" href="data:image/png;base64,{data}"/>"#);
+    let render = |content: &str| {
+        let svg = format!(
+            r#"<svg xmlns="http://www.w3.org/2000/svg" width="64" height="32" viewBox="0 0 64 32">{content}</svg>"#
+        );
+        let bounds = BoundingBox::new(4.25, 6.5, 64.0, 32.0);
+        let op = PaintOp::image(bounds, ImageNode::new(1, Some(svg.into_bytes())), None);
+        let tree = PageLayerTree::new(80.0, 48.0, LayerNode::leaf(bounds, Some(1), vec![op]));
+        image::load_from_memory(&SkiaLayerRenderer::new().render_png(&tree).unwrap())
+            .unwrap()
+            .to_rgba8()
+    };
+    let plain = render(&picture);
+    for wrapped in [
+        format!("<title>같은 비트맵</title>{picture}"),
+        format!("<defs/><g>{picture}</g>"),
+    ] {
+        let decorated = render(&wrapped);
+        let changed = plain
+            .pixels()
+            .zip(decorated.pixels())
+            .filter(|(a, b)| a != b)
+            .count();
+        assert_eq!(
+            changed, 0,
+            "그림 내용이 같은데 구조 요소로 {changed}픽셀의 표본이 달라졌다"
+        );
+    }
+}
