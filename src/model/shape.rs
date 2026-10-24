@@ -557,8 +557,30 @@ impl ShapeObject {
     /// (`shape_attr.current_height`)는 어긋날 수 있다 — 한글은 둘 중 큰 값을
     /// 조판 높이로 쓴다. 조판·측정·렌더가 각자 이 식을 다시 쓰면 같은 속성에
     /// 정의가 여러 벌 생기므로(#4333) 이 메서드가 유일한 정의다.
+    ///
+    /// [#8167] HWPX `<hp:curSz height="0">` 를 파서가 `orgSz` 로 채운 값
+    /// (`current_height_was_zero`)은 `renderingInfo` 배율을 적용하기 전 원본 크기라
+    /// 실제 표시 높이가 아니다. 이때는 저장 프레임만 쓴다 — 한/글은 `sz` 1284HU ·
+    /// `orgSz` 6768HU 인 글자처럼 글상자를 1284HU 줄에 놓는다(HWP5-nopassword hwpx 18쪽).
     pub fn flow_height_hu(&self) -> i32 {
-        (self.common().height as i32).max(self.shape_attr().current_height as i32)
+        let attr = self.shape_attr();
+        let current = if attr.current_height_was_zero {
+            0
+        } else {
+            attr.current_height as i32
+        };
+        (self.common().height as i32).max(current)
+    }
+
+    /// 도형이 줄 흐름에서 차지하는 가로 범위 (HWPUNIT). [`Self::flow_height_hu`] 와 같은 규칙.
+    pub fn flow_width_hu(&self) -> i32 {
+        let attr = self.shape_attr();
+        let current = if attr.current_width_was_zero {
+            0
+        } else {
+            attr.current_width as i32
+        };
+        (self.common().width as i32).max(current)
     }
 
     /// 개체 요소 속성 가변 참조 반환

@@ -3016,6 +3016,19 @@ fn floating_anchor_font_size_px(
         .fold(0.0, f64::max)
 }
 
+/// [#8167] 글자처럼 취급한 도형이 줄에서 차지하는 상자(HU) — 도형 크기에 바깥 여백을 더한다.
+/// 한/글 저장 줄은 이 상자 높이를 줄 높이로 쓴다(samples HWPX 의 바깥 여백 있는 글자처럼
+/// 사각형 78줄 전부 `vertsize = 높이 + 위 + 아래 여백`). 배치도 같은 상자로 줄 안 폭과
+/// 기준선 자리를 센다(`tac_object_outer_margins_px`).
+fn tac_shape_box_hu(shape: &crate::model::shape::ShapeObject) -> (i32, i32) {
+    let common = shape.common();
+    let margin = &common.margin;
+    (
+        shape.flow_width_hu() + i32::from(margin.left) + i32::from(margin.right),
+        shape.flow_height_hu() + i32::from(margin.top) + i32::from(margin.bottom),
+    )
+}
+
 fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
     para.controls
         .iter()
@@ -3023,7 +3036,9 @@ fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
             Control::Picture(pic) if pic.common.treat_as_char => {
                 Some(super::inline_picture_occupied_size_hu(pic).1)
             }
-            Control::Shape(shape) if shape.common().treat_as_char => Some(shape.flow_height_hu()),
+            Control::Shape(shape) if shape.common().treat_as_char => {
+                Some(tac_shape_box_hu(shape).1)
+            }
             Control::Table(table) if table.common.treat_as_char => Some(table.common.height as i32),
             Control::Equation(eq) if eq.common.treat_as_char => {
                 Some(crate::renderer::equation::flow_height_hwp(eq) as i32)
@@ -3040,10 +3055,7 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
         Control::Picture(pic) if pic.common.treat_as_char => {
             super::inline_picture_occupied_size_hu(pic)
         }
-        Control::Shape(shape) if shape.common().treat_as_char => (
-            (shape.common().width as i32).max(shape.shape_attr().current_width as i32),
-            shape.flow_height_hu(),
-        ),
+        Control::Shape(shape) if shape.common().treat_as_char => tac_shape_box_hu(shape),
         Control::Table(table) if table.common.treat_as_char => {
             // [#5785 후속] 선언 폭 우선 — 원시 열 합은 행별 구획이 다른 표에서 과대집계된다.
             let width = table.flow_width_hu() as i32;
