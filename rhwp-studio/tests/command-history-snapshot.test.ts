@@ -135,7 +135,7 @@ test('[#3350] 최초 execute 실패는 before 스냅샷 복원 후 ID를 해제�
   // inner catch 가 닫힌 **뒤** discard → rethrow 가 이어지는지 확인해 성공 경로에 고정한다.
   assert.match(
     catchBody,
-    /\}\s*this\.discard\(wasm\);\s*throw operationError;/,
+    /\}\s*this\.discard\(wasm\);\s*this\.failure = 'restored';\s*throw operationError;/,
     'rollback 성공 시 before/after 를 해제한 뒤 원래 operation 오류를 전파해야 함',
   );
 

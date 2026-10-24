@@ -120,6 +120,96 @@ export class CursorState {
 
   constructor(private wasm: WasmBridge) {}
 
+  /** 실패한 명령의 논리 편집 상태. WASM handle과 파생 geometry는 복제하지 않는다. */
+  recoveryCheckpoint(): { restore(): void; unchanged(): boolean } {
+    const read = () => ({
+      position: this.position,
+      preferredX: this.preferredX,
+      atLineEnd: this.atLineEnd,
+      anchor: this.anchor,
+      fnAnchor: this.fnAnchor,
+      hfAnchor: this.hfAnchor,
+      _headerFooterMode: this._headerFooterMode,
+      _hfSectionIdx: this._hfSectionIdx,
+      _hfApplyTo: this._hfApplyTo,
+      _hfParaIdx: this._hfParaIdx,
+      _hfCharOffset: this._hfCharOffset,
+      _hfPreviewPage: this._hfPreviewPage,
+      _savedBodyPosition: this._savedBodyPosition,
+      _footnoteMode: this._footnoteMode,
+      _fnParaIdx: this._fnParaIdx,
+      _fnControlIdx: this._fnControlIdx,
+      _fnInnerParaIdx: this._fnInnerParaIdx,
+      _fnCharOffset: this._fnCharOffset,
+      _fnPageNum: this._fnPageNum,
+      _fnFootnoteIndex: this._fnFootnoteIndex,
+      _fnSectionIdx: this._fnSectionIdx,
+      _cellSelectionMode: this._cellSelectionMode,
+      _cellSelectionPhase: this._cellSelectionPhase,
+      _cellSelectionReason: this._cellSelectionReason,
+      cellAnchor: this.cellAnchor,
+      cellFocus: this.cellFocus,
+      cellTableCtx: this.cellTableCtx,
+      _blockSelectionMode: this._blockSelectionMode,
+      _expandPhase: this._expandPhase,
+      _tableObjectSelected: this._tableObjectSelected,
+      selectedTableRef: this.selectedTableRef,
+      _pictureObjectSelected: this._pictureObjectSelected,
+      selectedPictureRef: this.selectedPictureRef,
+      selectedPictureRefs: this.selectedPictureRefs,
+      excludedCells: [...this.excludedCells],
+    });
+    const saved = structuredClone(read());
+    const signature = JSON.stringify(saved);
+    return {
+      restore: () => {
+        const state = structuredClone(saved);
+        this.position = state.position;
+        this.preferredX = state.preferredX;
+        this.atLineEnd = state.atLineEnd;
+        this.anchor = state.anchor;
+        this.fnAnchor = state.fnAnchor;
+        this.hfAnchor = state.hfAnchor;
+        this._headerFooterMode = state._headerFooterMode;
+        this._hfSectionIdx = state._hfSectionIdx;
+        this._hfApplyTo = state._hfApplyTo;
+        this._hfParaIdx = state._hfParaIdx;
+        this._hfCharOffset = state._hfCharOffset;
+        this._hfPreviewPage = state._hfPreviewPage;
+        this._savedBodyPosition = state._savedBodyPosition;
+        this._footnoteMode = state._footnoteMode;
+        this._fnParaIdx = state._fnParaIdx;
+        this._fnControlIdx = state._fnControlIdx;
+        this._fnInnerParaIdx = state._fnInnerParaIdx;
+        this._fnCharOffset = state._fnCharOffset;
+        this._fnPageNum = state._fnPageNum;
+        this._fnFootnoteIndex = state._fnFootnoteIndex;
+        this._fnSectionIdx = state._fnSectionIdx;
+        this._cellSelectionMode = state._cellSelectionMode;
+        this._cellSelectionPhase = state._cellSelectionPhase;
+        this._cellSelectionReason = state._cellSelectionReason;
+        this.cellAnchor = state.cellAnchor;
+        this.cellFocus = state.cellFocus;
+        this.cellTableCtx = state.cellTableCtx;
+        this._blockSelectionMode = state._blockSelectionMode;
+        this._expandPhase = state._expandPhase;
+        this._tableObjectSelected = state._tableObjectSelected;
+        this.selectedTableRef = state.selectedTableRef;
+        this._pictureObjectSelected = state._pictureObjectSelected;
+        this.selectedPictureRef = state.selectedPictureRef;
+        this.selectedPictureRefs = state.selectedPictureRefs;
+        this.excludedCells = new Set(state.excludedCells);
+        this.focusedGeometryValid = false;
+        this.focusedGeometryRevision = null;
+        this.preparedFocusedGeometry = null;
+        this.updateRect(true);
+      },
+      unchanged: () => JSON.stringify(read()) === signature,
+    };
+  }
+
+
+
   // ─── Selection (선택 영역) ──────────────────────────────
 
   /** 선택 영역이 있는지 반환한다 */
@@ -1354,7 +1444,7 @@ export class CursorState {
   // ─── 캐럿 좌표 갱신 ───────────────────────────────────
 
   /** WASM에서 캐럿 좌표를 갱신한다 */
-  updateRect(): void {
+  updateRect(strict = false): void {
     try {
       // 머리말/꼬리말 편집 모드
       if (this._headerFooterMode !== 'none') {
@@ -1417,6 +1507,7 @@ export class CursorState {
       // WASM 결과가 hitTest의 cursorRect와 페이지가 다르면 잘못된 좌표 → 폴백
       if (this.rect && this.position.cursorRect &&
           this.rect.pageIndex !== this.position.cursorRect.pageIndex) {
+        if (strict) throw new Error('복구한 커서 페이지를 확인할 수 없습니다.');
         console.warn('[CursorState] 캐럿 페이지 불일치 (WASM=%d, hitTest=%d) → hitTest 폴백',
           this.rect.pageIndex, this.position.cursorRect.pageIndex);
         this.rect = { ...this.position.cursorRect };
@@ -1425,6 +1516,7 @@ export class CursorState {
       this.focusedGeometryRevision = null;
     } catch (e) {
       this.invalidateFocusedCellCursorGeometry();
+      if (strict) throw e;
       // getCursorRect 실패 시 hitTest에서 전달된 cursorRect 폴백
       const pos = this.position;
       if (pos.cursorRect) {

@@ -2,6 +2,7 @@ import type { WasmBridge } from '@/core/wasm-bridge';
 import type { DocumentPosition } from '@/core/types';
 import { NO_TEXT_MUTATION_EFFECTS } from './command';
 import type { EditCommand, TextMutationEffects } from './command';
+import type { RollbackOutcome } from '../core/command-error';
 
 /** 스택 내 모든 명령의 discard()를 호출하여 리소스 해제 */
 function discardAll(stack: EditCommand[], wasm: WasmBridge): void {
@@ -41,6 +42,15 @@ function snapshotIdBudget(wasm: WasmBridge): number {
 
 /** Undo/Redo 히스토리 관리 */
 export class CommandHistory {
+  lastFailureRecovery: RollbackOutcome = 'unknown';
+
+  /** 동일 엔트리·순서의 양 스택을 확인한다. counts만으로 redo 파괴를 숨기지 않는다. */
+  recoveryCheckpoint(): () => boolean {
+    const undo = [...this.undoStack], redo = [...this.redoStack];
+    return () => undo.length === this.undoStack.length && redo.length === this.redoStack.length
+      && undo.every((entry, i) => entry === this.undoStack[i])
+      && redo.every((entry, i) => entry === this.redoStack[i]);
+  }
   private undoStack: EditCommand[] = [];
   private redoStack: EditCommand[] = [];
   private maxSize = 1000;
@@ -104,11 +114,13 @@ export class CommandHistory {
 
   /** 명령 실행 + 히스토리 기록. 실행 후 커서 위치 반환 */
   execute(command: EditCommand, wasm: WasmBridge): DocumentPosition {
+    this.lastFailureRecovery = 'unknown';
     this.lastExecutionEffects = NO_TEXT_MUTATION_EFFECTS;
     let cursorAfter: DocumentPosition;
     try {
       cursorAfter = command.execute(wasm);
     } catch (error) {
+      this.lastFailureRecovery = command.failureRecovery?.() ?? 'unknown';
       // 부분 변경이 남았으면 복원 정보를 보존하여 Undo로 재시도한다.
       if (command.retainOnFailure?.()) this.recordWithoutExecute(command, wasm);
       throw error;

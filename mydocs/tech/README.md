@@ -31,6 +31,7 @@ last_verified: 2026-09-03
 | 표 레이아웃 | [표 레이아웃 규칙](table_layout_rules.md) | [HWP 표 렌더링](hwp_table_rendering.md), [Issue #101 부분 표 흐름 조사](investigations/issue-101/README.md) |
 | 레이아웃 이상탐지(overflow/overlap/empty_page) | [레이아웃 이상탐지 — 세 번째 층](layout_anomaly_detection.md) | CLI `layout-anomaly`, `render_geom_diff`(변위 비교)와의 관계 |
 | 폰트 대체와 충실도 | [폰트 fallback 전략](font_fallback_strategy.md) | [Issue #124 캔버스·폰트 측정 조사](investigations/issue-124/README.md), [Issue #2125 font ownership 조사](investigations/issue-2125/README.md) |
+| Studio 명령 오류·복구 | [Studio 명령 오류 계약 v1](studio_command_error_contract.md) | #8104, 호스트 capability·문서 세션·rollback 검증·오류 전달 |
 | 편집 undo/redo | [편집 action undo/redo 아키텍처](edit_action_undo_redo_architecture.md) | 이슈별 실동작 조사 문서 |
 | 기술 채택·비채택 | [ThorVG 결정 기록](thorvg_decision.md) | [Issue #112-115 ThorVG PoC 조사](investigations/issue-112/README.md) |
 | 초소형 모델용 매크로 도구 축 | [초소형 모델용 매크로 도구 축 설계 결정](tiny_model_macro_tools.md) | 계약 테스트 `tests/digest_macro_contract.rs`, CLI 명령은 [CLI 명령 레퍼런스](../manual/cli_commands.md) 재확인 |

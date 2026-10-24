@@ -62,6 +62,7 @@ test('embed protocol은 capability를 포함한 v1 connect와 session-bound requ
     'target-navigation-v1',
     'document-change-events-v1',
     'field-focus-events-v1',
+    'command-error-v1',
   ]);
 
   assert.equal(isRequestEnvelope({

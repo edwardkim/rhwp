@@ -32,6 +32,7 @@ export interface EmbedNotifySavedResult {
 }
 
 export interface EmbedRpcHandlers {
+  getCommandErrorState?(): Promise<unknown>;
   ready(): Promise<boolean>;
   loadFile(
     data: Uint8Array,
@@ -134,6 +135,9 @@ export async function routeEmbedRequest(
         params.skipUnsavedGuard === true,
         params.suppressDialogs === true,
       );
+    case 'getCommandErrorState':
+      if (!handlers.getCommandErrorState) throw new Error('command-error-v1 is unavailable');
+      return handlers.getCommandErrorState();
     case 'pageCount': return handlers.pageCount();
     case 'getRendererDiagnostics': {
       const page = params.page ?? 0;

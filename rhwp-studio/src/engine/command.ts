@@ -13,9 +13,11 @@ import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
 import { setObjectProps, type ObjectPropsRef } from './object-props';
 import { CharFormatError, CharFormatRecoveryError, isCharFormatError } from '../core/char-format-error';
+import type { RollbackOutcome } from '../core/command-error';
 
 /** 편집 명령 공통 인터페이스 */
 export interface EditCommand {
+  failureRecovery?(): RollbackOutcome;
   readonly type: string;
   readonly timestamp: number;
   /** 명령 실행 — 실행 후 커서 위치 반환 */
@@ -1125,6 +1127,7 @@ export class DeleteSelectionCommand implements EditCommand {
   private readonly fragment: FragmentDeleteCommand | null;
   private readonly snapshot: SnapshotCommand | null;
   private validateTarget: ((wasm: WasmBridge) => void) | null = null;
+  private targetRejected = false;
   private readonly selection: {
     start: DocumentPosition;
     end: DocumentPosition;
@@ -1197,8 +1200,14 @@ export class DeleteSelectionCommand implements EditCommand {
     }
   }
 
+  failureRecovery(): RollbackOutcome {
+    return this.targetRejected ? 'rejected' : this.snapshot?.failureRecovery() ?? 'unknown';
+  }
+
   execute(wasm: WasmBridge): DocumentPosition {
-    this.validateTarget?.(wasm);
+    this.targetRejected = false;
+    try { this.validateTarget?.(wasm); }
+    catch (error) { this.targetRejected = true; throw error; }
     const result = this.fragment
       ? this.fragment.execute(wasm)
       : this.snapshot!.execute(wasm);
@@ -3024,6 +3033,8 @@ export class SetFormValueCommand implements EditCommand {
  * 치환이라 문서 충실도는 달라지지 않는다.
  */
 export class SnapshotCommand implements EditCommand {
+  private failure: RollbackOutcome = 'unknown';
+  failureRecovery(): RollbackOutcome { return this.failure; }
   readonly type: string;
   readonly timestamp = Date.now();
 
@@ -3061,6 +3072,7 @@ export class SnapshotCommand implements EditCommand {
   selectionBefore(): EditSelectionSnapshot | null { return this.undoSelection; }
 
   execute(wasm: WasmBridge): DocumentPosition {
+    this.failure = 'unknown';
     if (this.executed) {
       // Redo: undo 시점에 잡아 둔 after 로 복원하고 **그 스냅샷을 즉시 반환한다** —
       // 복원 뒤 이 명령은 undo 스택으로 돌아가고, 그러면 after 는 다시 "현재 문서" 와
@@ -3098,6 +3110,7 @@ export class SnapshotCommand implements EditCommand {
         this.cursorAfter = result;
       }
     } catch (operationError) {
+      this.failure = 'failed';
       // [#3350] 최초 execute 가 실패하면 명령 전체를 원자적으로 되돌린다. 이 커맨드는
       // history 에 push 되기 전이므로 before 스냅샷을 가진 SnapshotCommand만 rollback을
       // 수행할 수 있다.
@@ -3113,6 +3126,7 @@ export class SnapshotCommand implements EditCommand {
         );
       }
       this.discard(wasm);
+      this.failure = 'restored';
       throw operationError;
     }
 

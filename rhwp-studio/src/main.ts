@@ -1,3 +1,4 @@
+import { installCommandErrorGlobalRouting, StudioCommandError, inspectCommandError, type CommandErrorV1 } from '@/core/command-error';
 import { setHostFontProvider, onHostFontsChanged, hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from '@/core/local-fonts';
 import { collectHostFontRequests, collectDocumentCanvasKitFontUsage, resolveDocumentCanvasKitFontUsage, type DocumentCanvasKitFontUsage } from '@/core/host-font-requests';
 import { WasmBridge } from '@/core/wasm-bridge';
@@ -120,6 +121,14 @@ const wasm = new WasmBridge();
 installDocumentTitle(wasm);
 const eventBus = new EventBus();
 const documentState = new DocumentDirtyState(eventBus);
+installCommandErrorGlobalRouting(window);
+// WKWebView 등 직접 호스트는 EventTarget을 구독하고 이 조회로 현재 문서 세션을 확인한다.
+Object.defineProperty(window, 'rhwpCommandErrors', { value: Object.freeze({
+  capability: 'command-error-v1',
+  isHandledError: (error: unknown) => error instanceof StudioCommandError,
+  inspect: inspectCommandError,
+  getState: () => inputHandler?.getCommandErrorState() ?? null,
+}), configurable: true });
 documentState.installBeforeUnload(window);
 const autosaveManager = new AutosaveManager({
   exportBytes: () => wasm.exportHwp(),
@@ -671,6 +680,18 @@ async function initialize(): Promise<void> {
       canvasView.getVirtualScroll(),
       canvasView.getViewportManager(),
     );
+    inputHandler.configureCommandErrors({
+      isDirty: () => documentState.isDirty(),
+      render: () => canvasView!.refreshDocumentAgentMutation(),
+      publish: (payload: CommandErrorV1) => {
+        window.dispatchEvent(new CustomEvent('rhwp-command-error', { detail: payload }));
+        eventBus.emit('command-error', payload);
+        if (payload.documentSessionId !== inputHandler?.getCommandErrorState()?.documentSessionId) return;
+        showToast({ message: payload.recovery === 'succeeded'
+          ? '명령을 완료하지 못했습니다. 편집 상태를 복구했습니다.'
+          : '편집 상태를 확인할 수 없습니다. 문서를 다시 열어 주세요.' });
+      },
+    });
     inputHandler.setEditMode(editMode);
     documentAgent?.dispose();
     documentAgent = new DocumentAgentController({
@@ -2049,6 +2070,7 @@ void initPromise.then(() => {
 installEmbedRuntime({
   hostWindow: window,
   parentWindow: window.parent,
+  subscribeCommandError: (listener) => eventBus.on('command-error', listener),
   subscribeDocumentChanged: (listener) => eventBus.on('document-agent-changed', listener),
   subscribeFieldChanged: (listener) => {
     // 연결마다 새로 센다 — 직전 누름틀 기억이 다른 세션으로 새지 않게.
@@ -2072,6 +2094,10 @@ installEmbedRuntime({
       }
       await loadBytes(data, fileName, null, undefined, { suppressDialogs });
       return { pageCount: wasm.pageCount };
+    },
+    async getCommandErrorState() {
+      await initPromise;
+      return inputHandler?.getCommandErrorState() ?? null;
     },
     async pageCount() {
       await initPromise;

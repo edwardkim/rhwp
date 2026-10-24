@@ -1,3 +1,4 @@
+import { StudioCommandError } from '../core/command-error.ts';
 import {
   EMBED_PROTOCOL_VERSION,
   EMBED_CAPABILITIES,
@@ -15,12 +16,13 @@ interface EmbedRuntimeOptions {
   hostWindow: Window;
   parentWindow: Window;
   handlers: EmbedRpcHandlers;
+  subscribeCommandError?: (listener: (payload: unknown) => void) => () => void;
   subscribeDocumentChanged?: (listener: (payload: unknown) => void) => () => void;
   /** 누름틀 진입·이탈. 클라이언트가 `field-focus-events-v1` 을 협상했을 때만 구독한다. */
   subscribeFieldChanged?: (listener: (payload: unknown) => void) => () => void;
 }
 
-type EventSubscriptions = Partial<Record<'documentChanged' | 'fieldChanged',
+type EventSubscriptions = Partial<Record<'documentChanged' | 'fieldChanged' | 'commandError',
   (listener: (payload: unknown) => void) => () => void>>;
 
 function errorText(error: unknown): string {
@@ -72,6 +74,7 @@ function bindPort(
       return;
     }
     const requiredCapability = {
+      getCommandErrorState: 'command-error-v1',
       getDocumentState: 'document-state-v1',
       getSelectionContext: 'selection-context-v1',
       applyTextCommand: 'document-agent-command-v1',
@@ -90,8 +93,11 @@ function bindPort(
       response.result = await routeEmbedRequest(data.method, data.params, handlers);
     } catch (error) {
       const documentAgentError = isDocumentAgentError(error) ? error : null;
+      const commandError = error instanceof StudioCommandError && clientCapabilities.includes('command-error-v1')
+        ? await error.report : undefined;
       response.error = {
-        code: documentAgentError?.code ?? 'RPC_ERROR',
+        ...(commandError ? { commandError } : {}),
+        code: commandError?.code ?? documentAgentError?.code ?? 'RPC_ERROR',
         message: errorText(error),
         ...(typeof documentAgentError?.recovered === 'boolean'
           ? { recovered: documentAgentError.recovered }
@@ -201,6 +207,9 @@ export function installEmbedRuntime(options: EmbedRuntimeOptions): () => void {
       ports.add(port);
       const capabilities = event.data.capabilities;
       const subscriptions: EventSubscriptions = {};
+      if (capabilities.includes('command-error-v1') && options.subscribeCommandError) {
+        subscriptions.commandError = options.subscribeCommandError;
+      }
       if (capabilities.includes('document-change-events-v1') && options.subscribeDocumentChanged) {
         subscriptions.documentChanged = options.subscribeDocumentChanged;
       }

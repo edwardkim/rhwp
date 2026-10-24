@@ -17,6 +17,7 @@ export const EMBED_CAPABILITIES = [
   'target-navigation-v1',
   'document-change-events-v1',
   'field-focus-events-v1',
+  'command-error-v1',
 ] as const;
 
 export interface EmbedConnectAttempt {
@@ -65,6 +66,7 @@ export interface EmbedProtocolError {
   message: string;
   supportedVersions?: number[];
   recovered?: boolean;
+  commandError?: import('../core/command-error').CommandErrorV1;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

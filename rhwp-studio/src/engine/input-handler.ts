@@ -1,3 +1,4 @@
+import { CommandErrorBoundary, type CommandErrorV1 } from '../core/command-error';
 import { isBodyControl } from './picture-hit-policy';
 import { showToast } from '@/ui/toast';
 import { t } from '@/i18n/index';
@@ -2949,44 +2950,48 @@ export class InputHandler {
 
   /** Undo 처리 */
   private handleUndo(): void {
-    this.flushDeferredPaginationIfNeeded('before-undo', false);
-    let newPos: DocumentPosition | null;
-    try { newPos = this.history.undo(this.wasm); }
-    catch (error) { this.handleCharFormatError(error); return; }
-    if (newPos) {
-      this.prepareTextMutationBeforeCursor(IMMEDIATE_TEXT_MUTATION_EFFECTS);
-      this.clearTableResizeRuntimeCache();
-      this.resetDerivedStateAfterHistoryJump();
-      // [Task #2337] 방금 되돌린 커맨드가 HF/FN 편집이면 그 커서 모드로 복원(본문 moveTo 대신).
-      this.restoreEditContextAfterHistory(this.history.peekRedoTop(), newPos);
-      // [Task #3416] 그 위에 "지우기 전 선택" 을 되살린다 — 커서 위치가 정해진 뒤라야
-      // anchor 만 더해 범위가 완성된다. redo 쪽에는 두지 않는다(한컴도 redo 는 해제).
-      this.restoreSelectionAfterUndo(this.history.peekRedoTop());
-      this.caretLayoutReveal.requestFor(this.history.peekRedoTop()?.type ?? '');
-      this.afterEdit();
-    }
+    this.withCommandErrorBoundary('undo', () => {
+      this.flushDeferredPaginationIfNeeded('before-undo', false);
+      let newPos: DocumentPosition | null;
+      try { newPos = this.history.undo(this.wasm); }
+      catch (error) { this.handleCharFormatError(error); return; }
+      if (newPos) {
+        this.prepareTextMutationBeforeCursor(IMMEDIATE_TEXT_MUTATION_EFFECTS);
+        this.clearTableResizeRuntimeCache();
+        this.resetDerivedStateAfterHistoryJump();
+        // [Task #2337] 방금 되돌린 커맨드가 HF/FN 편집이면 그 커서 모드로 복원(본문 moveTo 대신).
+        this.restoreEditContextAfterHistory(this.history.peekRedoTop(), newPos);
+        // [Task #3416] 그 위에 "지우기 전 선택" 을 되살린다 — 커서 위치가 정해진 뒤라야
+        // anchor 만 더해 범위가 완성된다. redo 쪽에는 두지 않는다(한컴도 redo 는 해제).
+        this.restoreSelectionAfterUndo(this.history.peekRedoTop());
+        this.caretLayoutReveal.requestFor(this.history.peekRedoTop()?.type ?? '');
+        this.afterEdit();
+      }
+    });
   }
 
   /** Redo 처리 */
   private handleRedo(): void {
-    this.flushDeferredPaginationIfNeeded('before-redo', false);
-    let newPos: DocumentPosition | null;
-    try { newPos = this.history.redo(this.wasm); }
-    catch (error) { this.handleCharFormatError(error); return; }
-    if (newPos) {
-      const boundaryHandled = this.prepareTextMutationBeforeCursor(
-        this.history.consumeLastExecutionEffects(),
-      );
-      this.clearTableResizeRuntimeCache();
-      this.resetDerivedStateAfterHistoryJump();
-      // [Task #2337] 방금 다시 실행한 커맨드가 HF/FN 편집이면 그 커서 모드로 복원.
-      this.restoreEditContextAfterHistory(this.history.peekUndoTop(), newPos);
-      // HF 부분 서식은 redo 뒤에도 같은 논리 선택을 유지한다. 삭제·치환은 metadata가 없어
-      // 해제된 상태로 남는다.
-      this.restoreSelectionAfterRedo(this.history.peekUndoTop());
-      this.caretLayoutReveal.requestFor(this.history.peekUndoTop()?.type ?? '');
-      this.afterEdit(!boundaryHandled);
-    }
+    this.withCommandErrorBoundary('redo', () => {
+      this.flushDeferredPaginationIfNeeded('before-redo', false);
+      let newPos: DocumentPosition | null;
+      try { newPos = this.history.redo(this.wasm); }
+      catch (error) { this.handleCharFormatError(error); return; }
+      if (newPos) {
+        const boundaryHandled = this.prepareTextMutationBeforeCursor(
+          this.history.consumeLastExecutionEffects(),
+        );
+        this.clearTableResizeRuntimeCache();
+        this.resetDerivedStateAfterHistoryJump();
+        // [Task #2337] 방금 다시 실행한 커맨드가 HF/FN 편집이면 그 커서 모드로 복원.
+        this.restoreEditContextAfterHistory(this.history.peekUndoTop(), newPos);
+        // HF 부분 서식은 redo 뒤에도 같은 논리 선택을 유지한다. 삭제·치환은 metadata가 없어
+        // 해제된 상태로 남는다.
+        this.restoreSelectionAfterRedo(this.history.peekUndoTop());
+        this.caretLayoutReveal.requestFor(this.history.peekUndoTop()?.type ?? '');
+        this.afterEdit(!boundaryHandled);
+      }
+    });
   }
 
   /**
@@ -3154,7 +3159,68 @@ export class InputHandler {
    * 호출부는 OperationDescriptor로 "무엇을 하려는가"만 서술하고,
    * 라우터가 적절한 Undo 전략을 자동 선택한다.
    */
+  private commandErrors: CommandErrorBoundary | null = null;
+  private readCommandDirty: (() => boolean) | null = null;
+  private insideCommandBoundary = false;
+
+  configureCommandErrors(options: { isDirty(): boolean; render(): Promise<void>; publish(payload: CommandErrorV1): void }): void {
+    this.readCommandDirty = options.isDirty;
+    this.commandErrors = new CommandErrorBoundary({
+      generation: () => this.wasm.documentGeneration,
+      refresh: async () => {
+        await options.render();
+        this.updateCaret();
+        this.updateViewportOverlayPositions();
+      },
+      probe: () => {
+        if (this.wasm.pageCount < 1 || this.wasm.getSectionCount() < 1) throw new Error('Document unavailable');
+        this.cursor.updateRect(true);
+        if (!this.cursor.getRect()) throw new Error('Cursor geometry unavailable');
+      },
+      publish: options.publish,
+    });
+  }
+
+  getCommandErrorState() { return this.commandErrors?.state() ?? null; }
+
+  private withCommandErrorBoundary(operation: string, run: () => void): void {
+    if (!this.commandErrors || this.insideCommandBoundary) { run(); return; }
+    const boundary = this.commandErrors;
+    boundary.assertReady();
+    const sessionId = boundary.sessionId();
+    const cursor = this.cursor.recoveryCheckpoint();
+    const historyUnchanged = this.history.recoveryCheckpoint();
+    const dirty = this.readCommandDirty!();
+    const readEditing = () => ({
+      pendingCharShape: this.pendingCharShape, pendingCharShapeAnchor: this.pendingCharShapeAnchor,
+      fieldStartExitKey: this.fieldStartExitKey, fieldEndExitKey: this.fieldEndExitKey,
+      pastedFieldEndOutsidePending: this.pastedFieldEndOutsidePending,
+    });
+    const editing = structuredClone(readEditing());
+    // IME와 지연 pagination의 실행 중 상태는 v1의 성공 증거에 포함되지 않는다.
+    const eligible = !this.isComposing && !this.deferredPaginationPending;
+    this.history.lastFailureRecovery = 'unknown';
+    this.insideCommandBoundary = true;
+    try { run(); }
+    catch (cause) {
+      throw boundary.fail(operation, cause, eligible ? this.history.lastFailureRecovery : 'unknown', {
+        restoreEditing: () => {
+          cursor.restore();
+          Object.assign(this, structuredClone(editing));
+          this.pendingFocusedPagePatch = null;
+          this.lastCellKey = null;
+          this.protectedCellHitCache = null;
+          this.clearTableResizeRuntimeCache();
+        },
+        editingUnchanged: () => cursor.unchanged() && JSON.stringify(readEditing()) === JSON.stringify(editing),
+        historyUnchanged,
+        dirtyUnchanged: () => this.readCommandDirty!() === dirty,
+      }, sessionId);
+    } finally { this.insideCommandBoundary = false; }
+  }
+
   private handleCharFormatError(error: unknown): void {
+    if (this.commandErrors) throw error;
     if (!isCharFormatError(error)) throw error;
     console.error(error);
     if (error instanceof CharFormatRecoveryError) {
@@ -3167,106 +3233,112 @@ export class InputHandler {
   }
 
   executeOperation(desc: OperationDescriptor): void {
-    if (!this.isOperationAllowedInEditMode(desc)) return;
-    switch (desc.kind) {
-      case 'command': {
-        const beforePos = this.cursor.getPosition();
-        const beforePageIndex = this.cursor.getRect()?.pageIndex;
-        const keepFieldStartOutside = (desc.command.type === 'insertText' || desc.command.type === 'deleteText')
-          && this.isExitedFieldStartPosition(beforePos);
-        if (keepFieldStartOutside) {
-          this.wasm.clearActiveField();
-        }
-        let newPos: DocumentPosition;
-        try { newPos = this.history.execute(desc.command, this.wasm); }
-        catch (error) { this.handleCharFormatError(error); return; }
-        const boundaryHandled = this.prepareTextMutationBeforeCursor(
-          this.history.consumeLastExecutionEffects(),
-        );
-        // 글자/문단 서식 변경은 문서 구조 불변 → 선택 영역 유지
-        if (desc.command.type !== 'applyCharFormat' && desc.command.type !== 'applyParaFormat') {
-          this.cursor.moveTo(newPos);
-          this.cursor.resetPreferredX();
-        }
-        // [#4162] 삽입으로 캐럿이 전진한 것은 "이동"이 아니므로 예약을 이어간다.
-        if (desc.command.type === 'insertText') {
-          this.advancePendingCharShapeAnchor(beforePos, newPos);
-        }
-        if (keepFieldStartOutside) {
-          this.markCurrentFieldStartOutside();
-        }
-        this.caretLayoutReveal.requestFor(desc.command.type);
-        this.refreshAfterOperation(desc.meta?.refresh, 'auto', desc.command.type, beforePos, newPos, {
-          ...desc.command.getPageLocalTextEditOptions?.(),
-          beforePageIndex,
-          afterPageIndex: this.cursor.getRect()?.pageIndex,
-        }, boundaryHandled);
-        break;
+    this.withCommandErrorBoundary(desc.kind === 'snapshot' ? desc.operationType : desc.command.type, () => {
+      if (!this.isOperationAllowedInEditMode(desc)) {
+        if (!this.commandErrors) return;
+        this.history.lastFailureRecovery = 'rejected';
+        throw new Error('현재 편집 모드에서는 명령을 실행할 수 없습니다.');
       }
-      case 'snapshot': {
-        const cursorBefore = this.cursor.getPosition();
-        // 일반 snapshot은 구조 편집의 본문 복귀 의미를 유지한다. HF/FN 안에서만
-        // 문맥을 보존하는 전용 명령을 써서 undo/redo의 대상 범위를 호출부가 드러낸다.
-        const hasSelectionContext = desc.editContext !== undefined
-          && (
-            desc.editContextAfter !== undefined
-            || desc.selectionBefore !== undefined
-            || desc.selectionAfter !== undefined
+      switch (desc.kind) {
+        case 'command': {
+          const beforePos = this.cursor.getPosition();
+          const beforePageIndex = this.cursor.getRect()?.pageIndex;
+          const keepFieldStartOutside = (desc.command.type === 'insertText' || desc.command.type === 'deleteText')
+            && this.isExitedFieldStartPosition(beforePos);
+          if (keepFieldStartOutside) {
+            this.wasm.clearActiveField();
+          }
+          let newPos: DocumentPosition;
+          try { newPos = this.history.execute(desc.command, this.wasm); }
+          catch (error) { this.handleCharFormatError(error); return; }
+          const boundaryHandled = this.prepareTextMutationBeforeCursor(
+            this.history.consumeLastExecutionEffects(),
           );
-        const cmd = desc.editContext
-          ? hasSelectionContext
-            ? new SubmodeSelectionSnapshotCommand(
-                desc.operationType,
-                cursorBefore,
-                cursorBefore,
-                desc.operation,
-                desc.editContext,
-                desc.editContextAfter ?? desc.editContext,
-                desc.selectionBefore ?? null,
-                desc.selectionAfter ?? null,
-              )
-            : new SubmodeSnapshotCommand(
-                desc.operationType,
-                cursorBefore,
-                cursorBefore,
-                desc.operation,
-                desc.editContext,
-              )
-          : new SnapshotCommand(
-              desc.operationType,
-              cursorBefore,
-              cursorBefore,
-              desc.operation,
-              desc.selectionBefore ?? null,
+          // 글자/문단 서식 변경은 문서 구조 불변 → 선택 영역 유지
+          if (desc.command.type !== 'applyCharFormat' && desc.command.type !== 'applyParaFormat') {
+            this.cursor.moveTo(newPos);
+            this.cursor.resetPreferredX();
+          }
+          // [#4162] 삽입으로 캐럿이 전진한 것은 "이동"이 아니므로 예약을 이어간다.
+          if (desc.command.type === 'insertText') {
+            this.advancePendingCharShapeAnchor(beforePos, newPos);
+          }
+          if (keepFieldStartOutside) {
+            this.markCurrentFieldStartOutside();
+          }
+          this.caretLayoutReveal.requestFor(desc.command.type);
+          this.refreshAfterOperation(desc.meta?.refresh, 'auto', desc.command.type, beforePos, newPos, {
+            ...desc.command.getPageLocalTextEditOptions?.(),
+            beforePageIndex,
+            afterPageIndex: this.cursor.getRect()?.pageIndex,
+          }, boundaryHandled);
+          break;
+        }
+        case 'snapshot': {
+          const cursorBefore = this.cursor.getPosition();
+          // 일반 snapshot은 구조 편집의 본문 복귀 의미를 유지한다. HF/FN 안에서만
+          // 문맥을 보존하는 전용 명령을 써서 undo/redo의 대상 범위를 호출부가 드러낸다.
+          const hasSelectionContext = desc.editContext !== undefined
+            && (
+              desc.editContextAfter !== undefined
+              || desc.selectionBefore !== undefined
+              || desc.selectionAfter !== undefined
             );
-        const newPos = this.history.execute(cmd, this.wasm);
-        const markPastedFieldEndOutside = this.pastedFieldEndOutsidePending;
-        // 무변경 경로에서도 pending 플래그는 소비한다 — 남겨 두면 다음 연산으로 샌다.
-        this.pastedFieldEndOutsidePending = false;
-        // [Task #2370] operation 이 무변경(null)을 알리면 기록도 리프레시도 없다.
-        // 문서가 그대로이므로 다시 그릴 것이 없고, 커서도 움직이지 않았다.
-        if (cmd.isNoOp()) break;
-        if (cmd instanceof SubmodeSelectionSnapshotCommand) {
-          this.restoreEditContextAfterHistory(cmd, newPos);
-          this.restoreSelectionAfterRedo(cmd);
-        } else {
-          this.cursor.moveTo(newPos);
-          this.cursor.resetPreferredX();
+          const cmd = desc.editContext
+            ? hasSelectionContext
+              ? new SubmodeSelectionSnapshotCommand(
+                  desc.operationType,
+                  cursorBefore,
+                  cursorBefore,
+                  desc.operation,
+                  desc.editContext,
+                  desc.editContextAfter ?? desc.editContext,
+                  desc.selectionBefore ?? null,
+                  desc.selectionAfter ?? null,
+                )
+              : new SubmodeSnapshotCommand(
+                  desc.operationType,
+                  cursorBefore,
+                  cursorBefore,
+                  desc.operation,
+                  desc.editContext,
+                )
+            : new SnapshotCommand(
+                desc.operationType,
+                cursorBefore,
+                cursorBefore,
+                desc.operation,
+                desc.selectionBefore ?? null,
+              );
+          const newPos = this.history.execute(cmd, this.wasm);
+          const markPastedFieldEndOutside = this.pastedFieldEndOutsidePending;
+          // 무변경 경로에서도 pending 플래그는 소비한다 — 남겨 두면 다음 연산으로 샌다.
+          this.pastedFieldEndOutsidePending = false;
+          // [Task #2370] operation 이 무변경(null)을 알리면 기록도 리프레시도 없다.
+          // 문서가 그대로이므로 다시 그릴 것이 없고, 커서도 움직이지 않았다.
+          if (cmd.isNoOp()) break;
+          if (cmd instanceof SubmodeSelectionSnapshotCommand) {
+            this.restoreEditContextAfterHistory(cmd, newPos);
+            this.restoreSelectionAfterRedo(cmd);
+          } else {
+            this.cursor.moveTo(newPos);
+            this.cursor.resetPreferredX();
+          }
+          this.caretLayoutReveal.requestFor(desc.operationType);
+          if (markPastedFieldEndOutside) {
+            this.markCurrentFieldEndOutside();
+          }
+          this.refreshAfterOperation(desc.meta?.refresh, 'full', desc.operationType, cursorBefore, newPos);
+          break;
         }
-        this.caretLayoutReveal.requestFor(desc.operationType);
-        if (markPastedFieldEndOutside) {
-          this.markCurrentFieldEndOutside();
+        case 'record': {
+          const pos = this.cursor.getPosition();
+          this.history.recordWithoutExecute(desc.command, this.wasm);
+          this.refreshAfterOperation(desc.meta?.refresh, 'none', desc.command.type, pos, pos);
+          break;
         }
-        this.refreshAfterOperation(desc.meta?.refresh, 'full', desc.operationType, cursorBefore, newPos);
-        break;
       }
-      case 'record': {
-        const pos = this.cursor.getPosition();
-        this.history.recordWithoutExecute(desc.command, this.wasm);
-        this.refreshAfterOperation(desc.meta?.refresh, 'none', desc.command.type, pos, pos);
-        break;
-      }
-    }
+    });
   }
 
   /**
