@@ -359,3 +359,34 @@ crop 창의 좌표와 높이는 자른 뒤 raster를 기준으로 하며 원본 
 90쪽과 기존 전체 그림·가시 팔레트 대조군의 실제 Native/fresh WASM·확대 판독을 먼저
 진행하고, 잘못된 기존 평탄색·해상도·재조회 전제도 해당 검증 후 정리한다. 최종 1,532개
 raw100·정확한 미대응 0개와 전체 페이지 ±2px 검사를 이 단계의 부분 통과로 대신하지 않는다.
+
+## 2026-10-25: Canvas 원본 소비와 전쪽 검증 결과
+
+`5cf7e68e14`의 표준 최적화 fresh WASM은 build exit 0, 33분 39초로 완료했다.
+`Canvas getImageData`의 실제 입력은 원래 877×510·777×522이며, 관측 실행도 exit 0이다.
+원본을 먼저 소비하는 수정은 확인했으나 전체 목표 통과를 뜻하지 않는다.
+
+같은 독립 Print·96dpi·정확한 DPI 행렬·threshold 232·radius 2에서 두 원본 전쪽을 산출했다.
+Native 생산 source는 `4319f3ff38`, WASM은 `5cf7e68e14`다. 두 source의 Native 생산 코드가
+같다는 근거는 `native-4319-wasm-5cf7-source-equivalence.json`이다.
+
+| 입력 | backend | 쪽수 | 최저 raw | 정확한 미대응 0 쪽수 | 전체 미대응 픽셀 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| HWPX | Native | 383 | 99.02830% | 244 | 15478 |
+| HWP | Native | 383 | 98.93537% | 254 | 14399 |
+| HWPX | optimized fresh WASM | 383 | 99.03050% | 239 | 16132 |
+| HWP | optimized fresh WASM | 383 | 98.93468% | 248 | 14978 |
+
+전쪽 실행은 모두 완료했으며 쪽수는 독립 PDF의 383쪽과 같다. Native 자료는
+`handbook-upscale-4319f3ff38/{whole-native-result,whole-native-exact-audit}.json`,
+WASM 자료는 `handbook-canvas-source-5cf7e68e14/{whole-wasm-result,whole-wasm-exact-audit}.json`과
+각 `whole-score/silhouette.tsv`다. 모두 작업 output 아래에 있다. 이 결과는 이후 공통 용지
+프레임 후보 `0732c75ca7`의 검증으로 재사용하지 않는다.
+
+이전 `04437c268a`의 집중 WASM과 비교하면 92·161·273쪽의 미대응은 줄었지만
+90쪽은 2→547, 163쪽은 3→728로 늘었다. 전처리 제거만으로 회귀가 없다고 판정하지 않는다.
+90쪽의 실제 payload는 독립 PDF의 870×952 그림과 JPEG 양자화 표 및 복호화 RGB가 같다.
+`handbook-p090-payload-comparison.json`에 근거를 남겼으며 배치·래스터 경계 보정을 계속한다.
+
+현재 보정 범위는 편람 HWP·HWPX다. sample11·sample16의 추가 구현은 수행하지 않는다.
+100% 전쪽·직접 판독·페이지별 중요 영역 회귀·최종 전체 게이트가 남아 있으므로 PR 준비 완료가 아니다.
