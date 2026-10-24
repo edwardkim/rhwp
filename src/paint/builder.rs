@@ -10,11 +10,30 @@ use crate::paint::shaping_glyph::lower_horizontal_shaping_page_sidecars;
 use crate::paint::shaping_glyph_vertical::lower_vertical_shaping_page_sidecars;
 use crate::paint::EmbeddedFontFace;
 use crate::renderer::render_tree::{
-    ControlCode, PageRenderTree, RectangleNode, RenderNode, RenderNodeType,
+    BoundingBox, ControlCode, NodeId, PageRenderTree, RectangleNode, RenderNode, RenderNodeType,
 };
 use std::collections::HashMap;
 
 const TEXT_MARK_BODY_CLIP_RIGHT_PAD: f64 = 48.0;
+
+#[derive(Clone, Copy)]
+struct ImagePaintFrame {
+    source: BoundingBox,
+    paint: BoundingBox,
+}
+
+impl ImagePaintFrame {
+    fn border_frame(self, border: BoundingBox) -> BoundingBox {
+        // 외곽선의 원본 여백은 선폭에서 결정된다. 그림의 인쇄 프레임을
+        // 따라 이동하되, 바깥으로 확장된 테두리를 그림 크기로 덮어쓰지 않는다.
+        BoundingBox::new(
+            self.paint.x + (border.x - self.source.x),
+            self.paint.y + (border.y - self.source.y),
+            self.paint.width + (border.width - self.source.width),
+            self.paint.height + (border.height - self.source.height),
+        )
+    }
+}
 
 /// semantic render tree를 visual layer tree로 내린다.
 pub struct LayerBuilder {
@@ -25,8 +44,7 @@ pub struct LayerBuilder {
     output_options: LayerOutputOptions,
     bin_data_epoch: u32,
     page_context: Option<PagePaintContext>,
-    image_frames:
-        HashMap<crate::renderer::render_tree::NodeId, crate::renderer::render_tree::BoundingBox>,
+    image_frames: HashMap<NodeId, ImagePaintFrame>,
     metafile_device_pixel_width: Option<f64>,
     hancom2024_print_bitmap: bool,
     metafile_fonts: super::metafile_fonts::MetafileFonts,
@@ -354,7 +372,8 @@ impl LayerBuilder {
                 }
                 let image_frame = rect
                     .image_frame_owner
-                    .and_then(|owner| self.image_frames.get(&owner).copied());
+                    .and_then(|owner| self.image_frames.get(&owner))
+                    .map(|frame| frame.border_frame(node.bbox));
                 let frame = image_frame.unwrap_or_else(|| {
                     self.page_context.map_or(node.bbox, |context| {
                         context.rectangle_frame(node, &mut rect, pixel)
@@ -408,9 +427,18 @@ impl LayerBuilder {
                 };
                 if image_fill_clip.is_none()
                     && !node.layer.as_ref().is_some_and(|layer| layer.master_page)
-                    && (frame.x != node.bbox.x || frame.width != node.bbox.width)
+                    && (frame.x != node.bbox.x
+                        || frame.y != node.bbox.y
+                        || frame.width != node.bbox.width
+                        || frame.height != node.bbox.height)
                 {
-                    self.image_frames.insert(node.id, frame);
+                    self.image_frames.insert(
+                        node.id,
+                        ImagePaintFrame {
+                            source: node.bbox,
+                            paint: frame,
+                        },
+                    );
                 }
                 let mut ops = if let Some(path) = crate::renderer::pdf_stroke::project(image, frame)
                 {
