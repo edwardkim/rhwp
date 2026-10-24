@@ -17,8 +17,9 @@ use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, px_to_hwpunit};
 use super::border_rendering::{
-    build_row_col_x, collect_cell_borders, mark_cell_span_interior_covered, render_cell_diagonal,
-    render_edge_borders, render_spaced_cell_borders, render_transparent_borders,
+    apply_table_border_overrides, build_row_col_x, collect_cell_borders,
+    mark_cell_span_interior_covered, render_cell_diagonal, render_edge_borders,
+    render_spaced_cell_borders, render_transparent_borders,
 };
 use super::table_layout::{
     border_style_has_diagonal, calc_nested_split_rows, effective_margin_left_line,
@@ -7291,6 +7292,68 @@ impl LayoutEngine {
                     );
                 }
             }
+        }
+
+        // cellzone·표 외곽 테두리 덮어쓰기를 비분할 표와 같게 적용한다. 아래의 조각 경계
+        // 지우기보다 먼저 해야 열린 윗변·아랫변이 되살아나지 않는다. 그리드는 조각-지역
+        // 행(`render_rows` 순서)이므로 칸·zone 행 주소를 그 공간으로 옮긴다.
+        {
+            // 원본 행 [row, end) 중 이 조각에 그려지는 첫·끝 조각-지역 행
+            let local_rows = |row: usize, end: usize| {
+                let first = render_rows.iter().position(|&r| r >= row && r < end)?;
+                let last = render_rows.iter().rposition(|&r| r >= row && r < end)?;
+                Some((first, last))
+            };
+            let fragment_cells: Vec<Cell> = table
+                .cells
+                .iter()
+                .filter_map(|cell| {
+                    let row = cell.row as usize;
+                    let (first, last) = local_rows(row, row + (cell.row_span as usize).max(1))?;
+                    Some(Cell {
+                        row: first as u16,
+                        row_span: (last + 1 - first) as u16,
+                        col: cell.col,
+                        col_span: cell.col_span,
+                        border_fill_id: cell.border_fill_id,
+                        ..Default::default()
+                    })
+                })
+                .collect();
+            let fragment_zones: Vec<_> = table
+                .zones
+                .iter()
+                .filter_map(|zone| {
+                    // 끝 주소는 칸 주소라 병합 span 끝까지가 zone 이다 (#6619).
+                    let end_cell = table
+                        .cells
+                        .iter()
+                        .find(|c| c.row == zone.end_row && c.col == zone.end_col);
+                    let (end_row, end_col) = end_cell.map_or(
+                        (zone.end_row as usize + 1, zone.end_col as usize + 1),
+                        |c| {
+                            (
+                                c.row as usize + (c.row_span as usize).max(1),
+                                c.col as usize + (c.col_span as usize).max(1),
+                            )
+                        },
+                    );
+                    let (first, last) = local_rows(zone.start_row as usize, end_row)?;
+                    let mut zone = zone.clone();
+                    zone.start_row = first as u16;
+                    zone.end_row = last as u16;
+                    zone.end_col = end_col.saturating_sub(1) as u16;
+                    Some(zone)
+                })
+                .collect();
+            apply_table_border_overrides(
+                &mut h_edges,
+                &mut v_edges,
+                table.border_fill_id,
+                &fragment_zones,
+                &fragment_cells,
+                styles,
+            );
         }
 
         // 어울림 표가 행 안에서 다음 쪽으로 이어지면 새 물리 조각의 맨 위는
