@@ -4299,69 +4299,6 @@ mod tests {
     }
 
     #[test]
-    fn plain_text_zone_requires_an_explicit_effective_normal_column() {
-        use super::style_resolver::{ResolvedParaStyle, ResolvedStyleSet};
-        use crate::model::control::Control;
-        use crate::model::page::{ColumnDef, ColumnType};
-        use crate::model::paragraph::Paragraph;
-
-        let styles = ResolvedStyleSet {
-            para_styles: vec![ResolvedParaStyle::default()],
-            ..Default::default()
-        };
-        let define = |column_type| Paragraph {
-            controls: vec![Control::ColumnDef(ColumnDef {
-                column_type,
-                ..Default::default()
-            })],
-            ..Default::default()
-        };
-        for (column_type, expected) in [
-            (ColumnType::Normal, true),
-            (ColumnType::Distribute, false),
-            (ColumnType::Parallel, false),
-        ] {
-            let paragraphs = [define(column_type), Paragraph::default()];
-            assert_eq!(
-                super::plain_text_column_zone(&paragraphs, 0, &styles),
-                expected
-            );
-            assert_eq!(
-                super::plain_text_column_zone(&paragraphs, 1, &styles),
-                expected
-            );
-        }
-        let paragraphs = [
-            define(ColumnType::Normal),
-            define(ColumnType::Distribute),
-            define(ColumnType::Normal),
-            Paragraph::default(),
-        ];
-        assert!(!super::plain_text_column_zone(&paragraphs, 1, &styles));
-        assert!(super::plain_text_column_zone(&paragraphs, 3, &styles));
-        let mut duplicate = define(ColumnType::Distribute);
-        duplicate
-            .controls
-            .push(Control::ColumnDef(ColumnDef::default()));
-        assert!(!super::plain_text_column_zone(&[duplicate], 0, &styles));
-        assert!(!super::plain_text_column_zone(
-            &[Paragraph::default()],
-            0,
-            &styles
-        ));
-        assert!(!super::plain_text_column_zone(
-            &paragraphs,
-            paragraphs.len(),
-            &styles
-        ));
-        assert!(!super::plain_text_column_zone(
-            &paragraphs,
-            usize::MAX,
-            &styles
-        ));
-    }
-
-    #[test]
     fn test_format_number_hangul() {
         for (number, expected) in [(1, "ㄱ"), (2, "ㄴ"), (4, "ㄹ"), (14, "ㅎ")] {
             assert_eq!(format_number(number, NumberFormat::HangulJamo), expected);

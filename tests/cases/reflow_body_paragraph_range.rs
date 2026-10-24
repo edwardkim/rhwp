@@ -510,3 +510,33 @@ fn empty_or_invalid_ranges_preserve_model_events_render_and_snapshots() {
     assert_eq!(layout(&core), before);
     assert_eq!(core.serialize_event_log(), events);
 }
+
+#[test]
+fn distributed_and_parallel_columns_preserve_canonical_reflow_and_saved_content() {
+    use rhwp::model::page::ColumnType;
+
+    let bytes = source();
+    for (kind, column_type) in [(1, ColumnType::Distribute), (2, ColumnType::Parallel)] {
+        let mut expected = DocumentCore::from_bytes(&bytes).unwrap();
+        expected
+            .set_column_def_native(0, 2, kind, true, 2268)
+            .unwrap();
+        let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+        equal_columns(&mut core);
+        first_definition(&mut core).column_type = column_type;
+        core.reflow_body_paragraph_range_native(0, 0..PARAGRAPHS)
+            .unwrap();
+        assert_eq!(layout(&core), layout(&expected));
+        assert_eq!(core.page_count(), expected.page_count());
+        assert_body_bounds(&core);
+        for bytes in [
+            core.export_hwp_native().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            let mut reopened = DocumentCore::from_bytes(&bytes).unwrap();
+            assert_eq!(first_definition(&mut reopened).column_type, column_type);
+            assert_eq!(reopened.page_count(), core.page_count());
+            assert_body_bounds(&reopened);
+        }
+    }
+}
