@@ -192,22 +192,16 @@ pub(crate) fn resolve_styles_with_environment(
                         && (metric_widths_verified_face(target)
                             || matches!(target, "휴먼명조" | "HumanMyeongJo"));
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
-                    let keep_original_glyph_metrics = environment
-                        .is_some_and(|env| env.preserves_source_metrics())
-                        && style.font_families_original_glyph_metric_face[lang].is_some();
-                    let keep_source_metrics = keep_original_glyph_metrics
-                        || (!primary_true_type_program
-                            && environment.is_some_and(|env| env.preserves_source_metrics())
-                            && original.alt_type == Some(2)
-                            && original.embedded != Some(true)
-                            && original.requested_face.as_deref().is_some_and(|face| {
-                                crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()
-                                    || has_own_metric_table(&face, style.bold, style.italic)
-                                    || crate::renderer::font_metrics_data::has_declared_original_glyph_metrics(face)
-                            }));
-                    if keep_source_metrics && !keep_original_glyph_metrics
-                        && source_font.is_none_or(|face| face.native_program.is_none())
-                    {
+                    let keep_source_metrics = !primary_true_type_program
+                        && environment.is_some_and(|env| env.preserves_source_metrics())
+                        && original.alt_type == Some(2)
+                        && original.embedded != Some(true)
+                        && original.requested_face.as_deref().is_some_and(|face| {
+                            crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()
+                                || has_own_metric_table(&face, style.bold, style.italic)
+                                || crate::renderer::font_metrics_data::has_declared_original_glyph_metrics(face)
+                        });
+                    if keep_source_metrics && source_font.is_none_or(|face| face.native_program.is_none()) {
                         style.font_families_metric_face[lang] = original
                             .requested_face
                             .as_deref()
