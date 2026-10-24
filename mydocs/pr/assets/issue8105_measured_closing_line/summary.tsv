@@ -1,20 +1,20 @@
 key	input	pdf_pages	devel_native_pages	head_native_pages	head_wasm_pages	devel_native_min	devel_native_lt90	head_native_min	head_native_lt90	head_wasm_min	head_wasm_lt90	pages_up_ge0.1	pages_down_ge0.1	down_list
-d5941	samples/issue5941/1480000-201900698-native-neartop-reset.hwp	205	205	205	205	16.22	21	16.22	20	16.39	20	1	0	
-d2176	samples/hwpx/21761835_jeonjik_exemption_table.hwpx	6	6	6	6	96.34	0	96.34	0	95.75	0	0	0	
+d5941	samples/issue5941/1480000-201900698-native-neartop-reset.hwp	205	205	205	205	16.22	21	16.22	20	16.39	20	1	0	""
+d2176	samples/hwpx/21761835_jeonjik_exemption_table.hwpx	6	6	6	6	96.34	0	96.34	0	95.75	0	0	0	""
 d1613	samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	204	204	204	204	37.94	15	88.26	4	88.31	4	12	2	p165:99.33->99.18 p173:99.40->99.22
-d17253	samples/issue6756/17253153-traffic-safety-designated-routes.hwp	5	5	5	5	94.93	0	94.93	0	94.41	0	0	0	
-d80168	samples/80168_regulatory_analysis.hwp	157	157	157	157	93.90	0	93.90	0	91.67	0	0	0	
-d1853	samples/issue1853_caption_precedes_body_split.hwpx	52	52	52	52	94.55	0	94.55	0	94.75	0	0	0	
-d1342	mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp	415	415	415	415	95.73	0	95.73	0	95.76	0	0	0	
-d1880	samples/issue1880_takeplace_host_before.hwpx	10	10	10	10	43.96	1	43.96	1	44.34	1	0	0	
-d5169	samples/issue5169_viewtext_changetracking.hwp	6	6	6	6	98.23	0	98.23	0	99.38	0	0	0	
-hfine	samples/issue7702/humanmyeongjo_condense_end_fine.hwpx	2	2	2	2	100.00	0	100.00	0	100.00	0	0	0	
-ha10m	samples/issue7702/humanmyeongjo_ascii_10pt_m10.hwpx	3	3	3	3	100.00	0	100.00	0	100.00	0	0	0	
-dband	samples/issue8105/declared_row_band.hwpx	12	12	12	12	99.88	0	99.88	0	99.50	0	0	0	
-hs2	samples/hwpx_sample2.hwp	29	29	29	29	47.40	4	47.40	4	47.77	4	0	0	
-k86712	samples/86712_regulatory_analysis.hwp	64	64	64	64	60.57	5	85.06	3	85.23	3	4	0	
-k1130	samples/issue5966/1130000-202100008_franchise_review_report.hwp	142	142	142	142	32.11	6	89.02	1	89.29	1	5	0	
-k1487	samples/issue6924/148751598-briefing.hwp	6	6	6	6	95.77	0	95.77	0	95.75	0	0	0	
-t1749x	samples/task1749/saved_bounds_cumulative_page_break.hwpx	5	5	5	5	71.02	1	99.83	0	99.83	0	2	0	
-t1749h	samples/task1749/saved_bounds_cumulative_page_break.hwp	5	5	5	5	99.16	0	99.16	0	99.15	0	0	0	
-d80168x	samples/issue1891/80168_regulatory_analysis.hwpx	156	156	156	156	1.93	104	1.93	104	1.98	104	0	0	
+d17253	samples/issue6756/17253153-traffic-safety-designated-routes.hwp	5	5	5	5	94.93	0	94.93	0	94.41	0	0	0	""
+d80168	samples/80168_regulatory_analysis.hwp	157	157	157	157	93.90	0	93.90	0	91.67	0	0	0	""
+d1853	samples/issue1853_caption_precedes_body_split.hwpx	52	52	52	52	94.55	0	94.55	0	94.75	0	0	0	""
+d1342	mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp	415	415	415	415	95.73	0	95.73	0	95.76	0	0	0	""
+d1880	samples/issue1880_takeplace_host_before.hwpx	10	10	10	10	43.96	1	43.96	1	44.34	1	0	0	""
+d5169	samples/issue5169_viewtext_changetracking.hwp	6	6	6	6	98.23	0	98.23	0	99.38	0	0	0	""
+hfine	samples/issue7702/humanmyeongjo_condense_end_fine.hwpx	2	2	2	2	100.00	0	100.00	0	100.00	0	0	0	""
+ha10m	samples/issue7702/humanmyeongjo_ascii_10pt_m10.hwpx	3	3	3	3	100.00	0	100.00	0	100.00	0	0	0	""
+dband	samples/issue8105/declared_row_band.hwpx	12	12	12	12	99.88	0	99.88	0	99.50	0	0	0	""
+hs2	samples/hwpx_sample2.hwp	29	29	29	29	47.40	4	47.40	4	47.77	4	0	0	""
+k86712	samples/86712_regulatory_analysis.hwp	64	64	64	64	60.57	5	85.06	3	85.23	3	4	0	""
+k1130	samples/issue5966/1130000-202100008_franchise_review_report.hwp	142	142	142	142	32.11	6	89.02	1	89.29	1	5	0	""
+k1487	samples/issue6924/148751598-briefing.hwp	6	6	6	6	95.77	0	95.77	0	95.75	0	0	0	""
+t1749x	samples/task1749/saved_bounds_cumulative_page_break.hwpx	5	5	5	5	71.02	1	99.83	0	99.83	0	2	0	""
+t1749h	samples/task1749/saved_bounds_cumulative_page_break.hwp	5	5	5	5	99.16	0	99.16	0	99.15	0	0	0	""
+d80168x	samples/issue1891/80168_regulatory_analysis.hwpx	156	156	156	156	1.93	104	1.93	104	1.98	104	0	0	""
