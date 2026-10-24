@@ -1888,6 +1888,48 @@ pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragrap
     p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
 }
 
+/// 본문 글자가 없는 표 host 문단에서 표 줄(`table_line`) 뒤의 저장 줄들이 차지하는 높이(HU).
+///
+/// 쪽 번호 감추기 같은 컨트롤만 남은 줄도 한/글은 줄 상자(높이+간격)를 쌓는다.
+/// 본문 줄이 없어 post-text 로 나가지 않으므로 조판과 그리기가 이 값을 함께 더한다.
+/// 한/글이 계산한 저장 줄이 끊김 없이 이어질 때만 값을 돌려준다.
+pub(crate) fn tac_host_control_only_tail_hu(
+    p: &crate::model::paragraph::Paragraph,
+    table_line: usize,
+) -> Option<i32> {
+    use crate::model::{control::Control, paragraph::LineSeg};
+    let tail = p
+        .line_segs
+        .get(table_line + 1..)
+        .filter(|t| !t.is_empty())?;
+    let contiguous = p.line_segs[table_line..]
+        .windows(2)
+        .all(|w| w[1].vertical_pos == w[0].vertical_pos + w[0].line_height + w[0].line_spacing);
+    // 표 말고 다른 개체가 있으면 뒤 줄은 그 개체의 줄이다(개체 배치가 높이를 쌓는다).
+    let only_one_object = p
+        .controls
+        .iter()
+        .filter(|c| {
+            matches!(
+                c,
+                Control::Table(_)
+                    | Control::Shape(_)
+                    | Control::Picture(_)
+                    | Control::Equation(_)
+                    | Control::Form(_)
+            )
+        })
+        .count()
+        == 1;
+    (contiguous
+        && only_one_object
+        && p.text.is_empty()
+        && p.line_segs
+            .iter()
+            .all(|s| s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0))
+    .then(|| tail.iter().map(|s| s.line_height + s.line_spacing).sum())
+}
+
 /// These controls do not replace the empty host paragraph's own text line.
 /// Square tables have a separate exclusion/flow owner and are not included.
 /// 별도 머리말/꼬리말 프레임의 표지는 본문 줄의 폭·높이를 소유하지 않는다.
