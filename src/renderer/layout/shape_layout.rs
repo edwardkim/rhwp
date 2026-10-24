@@ -4,6 +4,7 @@ mod affine_line;
 mod compound_rectangle;
 mod connector_style;
 mod line_direction;
+mod path_stroke_arrows;
 mod source_line_frame;
 
 use super::super::composer::{
@@ -1313,9 +1314,11 @@ impl LayoutEngine {
                 let bbox_w = (max_x - min_x).max(0.0);
                 let bbox_h = (max_y - min_y).max(0.0);
                 let node_id = tree.next_id();
+                let mut path_node = PathNode::new(commands, style, gradient);
+                path_stroke_arrows::publish(&mut path_node, &poly.drawing);
                 let node = RenderNode::new(
                     node_id,
-                    RenderNodeType::Path(PathNode::new(commands, style, gradient)),
+                    RenderNodeType::Path(path_node),
                     BoundingBox::new(min_x, min_y, bbox_w, bbox_h),
                 );
                 parent.children.push(node);
@@ -1368,9 +1371,11 @@ impl LayoutEngine {
                 let bbox_w = (max_x - min_x).max(0.0);
                 let bbox_h = (max_y - min_y).max(0.0);
                 let node_id = tree.next_id();
+                let mut path_node = PathNode::new(commands, style, gradient);
+                path_stroke_arrows::publish(&mut path_node, &curve.drawing);
                 let node = RenderNode::new(
                     node_id,
-                    RenderNodeType::Path(PathNode::new(commands, style, gradient)),
+                    RenderNodeType::Path(path_node),
                     BoundingBox::new(min_x, min_y, bbox_w, bbox_h),
                 );
                 parent.children.push(node);
@@ -2282,6 +2287,7 @@ impl LayoutEngine {
                     };
                 let node_id = tree.next_id();
                 let mut path_node = PathNode::new(commands, style, gradient);
+                path_stroke_arrows::publish(&mut path_node, &poly.drawing);
                 path_node.section_index = Some(section_index);
                 path_node.para_index = Some(para_index);
                 path_node.control_index = Some(control_index);
@@ -2353,6 +2359,7 @@ impl LayoutEngine {
                 let commands = self.curve_to_path_commands_scaled(curve, point_x, point_y, sx, sy);
                 let node_id = tree.next_id();
                 let mut path_node = PathNode::new(commands, style, gradient);
+                path_stroke_arrows::publish(&mut path_node, &curve.drawing);
                 path_node.section_index = Some(section_index);
                 path_node.para_index = Some(para_index);
                 path_node.control_index = Some(control_index);
