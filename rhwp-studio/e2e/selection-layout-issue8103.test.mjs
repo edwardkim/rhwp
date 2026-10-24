@@ -28,6 +28,7 @@ async function layout(page, count) {
 async function beginDelayedMutation(page) {
   await page.evaluate(() => new Promise(resolve => {
     const w = window.__wasm;
+    window.__selectionGateEntered = false;
     const off = window.__eventBus.on('document-layout-refreshed', ({ source }) => {
       if (source !== 'mutation') return;
       off();
@@ -35,6 +36,7 @@ async function beginDelayedMutation(page) {
       w.prepareCanvasMetrics = async (...args) => {
         w.prepareCanvasMetrics = prepare;
         window.__selectionGateFinished = false;
+        window.__selectionGateEntered = true;
         await new Promise(release => { window.__releaseSelectionLayout = release; });
         try { return await prepare(...args); }
         finally { window.__selectionGateFinished = true; }
@@ -44,6 +46,9 @@ async function beginDelayedMutation(page) {
     });
     window.__eventBus.emit('document-changed');
   }));
+  // CanvasKit은 resolve에서 실제 글꼴 준비를 await한다. 이전 gate의 release를
+  // 호출하거나 준비 전 renderer를 사용하는 대신 이번 metrics 대기 진입을 확인한다.
+  await page.waitForFunction(() => window.__selectionGateEntered === true);
 }
 
 async function settleRenderer(page, renderer) {
@@ -111,6 +116,10 @@ function checkProjection(s, label) {
 for (const renderer of renderers) {
 await runTest(`선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencing (${renderer})`, async ({ page }) => {
   const errors = [];
+  const renderErrors = [];
+  page.on('console', message => {
+    if (message.type() === 'error' && /CanvasView|CanvasKit|렌더|font family/.test(message.text())) renderErrors.push(message.text());
+  });
   let suppliedFonts = 0;
   page.on('pageerror', error => errors.push(String(error)));
   if (fontBytes) {
@@ -234,6 +243,20 @@ await runTest(`선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
     assert(same(recovered.texts, expectedTexts), '실제 Backspace의 Undo가 400문단 원문을 복원');
     checkProjection(recovered, `${zoom} Backspace Undo`);
   }
+
+  setTestCase('zoom-dialog-transaction');
+  const beforeDialog = await state(page);
+  await page.click('#sb-zoom-display');
+  await page.click('input[name="zoom-choice"][value="custom"]');
+  const customZoom = await page.$('input[aria-describedby="zoom-dialog-custom-error"]');
+  await customZoom.evaluate(input => { input.value = '80'; input.dispatchEvent(new Event('input', { bubbles: true })); });
+  await page.click('.dialog-btn-primary');
+  await frames(page);
+  const afterDialog = await state(page);
+  console.log(JSON.stringify({ dialogZoom: afterDialog.zoom, beforeZoom: beforeDialog.zoom }));
+  assert(Math.abs(afterDialog.zoom - 0.8) < 0.001, '대화상자에서 요청한 80% 배율 적용');
+  checkProjection(afterDialog, '실제 줌 대화상자의 최종 배치');
+  assert(same(afterDialog.selection, beforeDialog.selection), '줌 대화상자는 복원 선택을 보존');
 
   setTestCase('arrangement-resize-smooth-zoom');
   const beforeViewChange = await state(page);
@@ -373,6 +396,7 @@ await runTest(`선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
     && switched.selection === null && switched.highlights.length === 0, '문서 교체: 이전 선택·음영·내용이 새 문서로 누출되지 않음');
   assert(switched.count === newDocument.count, '문서 교체 뒤 이전 mutation 완료 이벤트 폐기');
   assert(errors.length === 0, `pageerror 0건: ${JSON.stringify(errors)}`);
+  assert(renderErrors.length === 0, `caught render error 0건: ${JSON.stringify(renderErrors)}`);
   if (fontBytes) assert(suppliedFonts > 0, '다운로드한 실제 원본 글꼴 바이트를 브라우저가 소비');
   console.log(JSON.stringify({ renderer, pages: original.pages, paragraphs: original.paragraphs,
     highlights: original.highlights.length, staleSelectionPreserved: same(settled.selection, newer) }));

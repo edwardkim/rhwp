@@ -2422,7 +2422,12 @@ export class CanvasView {
       this.releaseAllRenderedPages();
       this.pageRenderer.cancelAll();
     }
-    if (layoutChanged) this.updateVisiblePages('zoom-settled');
+    if (layoutChanged) {
+      this.updateVisiblePages('zoom-settled');
+      // transaction 내부 zoom-changed는 이전 쪽 원점을 소비한다. 최종 배치와
+      // 스크롤 앵커를 확정한 뒤 현재 선택·focus 캐럿을 다시 투영한다.
+      this.eventBus.emit('document-layout-refreshed', { source: 'page-view-settings' });
+    }
     if (zoomEventFailure) throw zoomEventFailure.error;
     return true;
   }
