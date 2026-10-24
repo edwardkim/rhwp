@@ -1128,6 +1128,27 @@ impl KoPubFamily {
     /// 한글을 0.953em·공백을 0.457em 으로 재서(정본 0.936·0.5), 그 문서 pi=143 처럼
     /// 한/글이 한 줄에 담는 줄을 둘로 끊는다.
     fn from_primary(primary_name: &str) -> Option<Self> {
+        // 글자마다 불리므로 이름 판정은 최근 글꼴 이름 몇 개에 대해 한 번만 한다.
+        const RECENT: usize = 8;
+        thread_local! {
+            static RECENT_NAMES: std::cell::RefCell<Vec<(Box<str>, Option<KoPubFamily>)>> =
+                const { std::cell::RefCell::new(Vec::new()) };
+        }
+        RECENT_NAMES.with(|recent| {
+            let mut recent = recent.borrow_mut();
+            if let Some((_, family)) = recent.iter().find(|(name, _)| **name == *primary_name) {
+                return *family;
+            }
+            let family = Self::classify(primary_name);
+            if recent.len() >= RECENT {
+                recent.remove(0);
+            }
+            recent.push((primary_name.into(), family));
+            family
+        })
+    }
+
+    fn classify(primary_name: &str) -> Option<Self> {
         let lower = primary_name.to_lowercase().replace(' ', "");
         // World 배포본은 이름을 달리하지만 독립 Print의 cmap/hmtx와 설치
         // 프로그램의 윤곽·전진이 같다. 바탕 한글은 반올림한0.94 대신936/1000이다.
