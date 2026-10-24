@@ -7914,6 +7914,7 @@ impl LayoutEngine {
                         Some(bin_data_content),
                         stored_square_picture_wrap_anchor.as_ref(),
                         false,
+                        false,
                         None,
                         stored_text_origin,
                     );
