@@ -144,21 +144,20 @@ impl TypesetState {
         &mut self,
         picture: crate::renderer::typeset::DeferredStoredFrameControl,
     ) {
+        let data = &mut *self.data;
         if let Some(index) = picture.following_body_para_index {
-            self.data
-                .deferred_source_frame_body_pages
-                .insert(index, self.data.pages.len() + 2);
+            data.deferred_source_frame_body_pages
+                .insert(index, data.pages.len() + 2);
         }
         if matches!(
             picture.kind,
             super::super::DeferredStoredFrameKind::AbsoluteShape
         ) {
             // 원래 호스트에 도달하기 전 쪽 시작에서 이미 소유한 개체다.
-            self.data
-                .page_tail_spilled_floats
+            data.page_tail_spilled_floats
                 .insert((picture.para_index, picture.control_index));
         }
-        self.data.deferred_next_page_stored_frames.push(picture);
+        data.deferred_next_page_stored_frames.push(picture);
     }
     /// OLE를 넘기더라도 현재 단의 뒤 본문은 남은 예산을 계속 소비한다.
     pub(in crate::renderer::typeset) fn defer_table_host_ole_to_next_column(
@@ -374,24 +373,24 @@ impl TypesetState {
         advance: f64,
         tolerance: f64,
     ) {
-        let continues = self.data.pending_paragraph_origins.last().is_some_and(|last| {
+        let data = &mut *self.data;
+        let continues = data.pending_paragraph_origins.last().is_some_and(|last| {
             last.paragraph_index.checked_add(1) == Some(paragraph_index)
-                && (last.flow_end - self.data.current_height).abs() <= tolerance
-                && self.data.current_items.len().checked_sub(2).is_some_and(|index| {
-                    matches!(self.data.current_items.get(index), Some(PageItem::FullParagraph { para_index })
+                && (last.flow_end - data.current_height).abs() <= tolerance
+                && data.current_items.len().checked_sub(2).is_some_and(|index| {
+                    matches!(data.current_items.get(index), Some(PageItem::FullParagraph { para_index })
                         if *para_index == last.paragraph_index)
                 })
         });
         if !continues {
-            self.data.pending_paragraph_origins.clear();
+            data.pending_paragraph_origins.clear();
         }
-        self.data
-            .pending_paragraph_origins
+        data.pending_paragraph_origins
             .push(super::data::PendingParagraphOrigin {
                 paragraph_index,
                 spacing_before,
-                flow_start: self.data.current_height,
-                flow_end: self.data.current_height + advance,
+                flow_start: data.current_height,
+                flow_end: data.current_height + advance,
             });
     }
     /// 후속 원본 줄이 연속 소비를 입증한 뒤에만 배치 결과로 공개한다.
@@ -560,11 +559,12 @@ impl TypesetState {
         content_height: f64,
         flow_advance: f64,
     ) {
-        self.data.paragraph_fragment_content_bottoms.insert(
+        let data = &mut *self.data;
+        data.paragraph_fragment_content_bottoms.insert(
             key,
             super::paragraph_fragment::ParagraphFragmentBounds {
-                content_bottom: self.data.current_height + content_height,
-                flow_end: self.data.current_height + flow_advance,
+                content_bottom: data.current_height + content_height,
+                flow_end: data.current_height + flow_advance,
                 stored_frame: None,
             },
         );
@@ -771,20 +771,21 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn into_result(
         self,
     ) -> crate::renderer::pagination::PaginationResult {
+        let data = self.data.value;
         PaginationResult {
-            pages: self.data.pages,
+            pages: data.pages,
             wrap_around_paras: Vec::new(),
-            hidden_empty_paras: self.data.hidden_empty_paras,
-            pre_emitted_host_paras: self.data.pre_emitted_host_paras,
-            pre_emitted_host_heights: self.data.pre_emitted_host_heights,
-            pre_emitted_host_content_heights: self.data.pre_emitted_host_content_heights,
-            endnotes: self.data.endnotes,
-            endnote_paragraphs: self.data.endnote_paragraphs,
-            endnote_para_sources: self.data.endnote_para_sources,
-            endnote_measured_tables: self.data.endnote_measured_tables,
-            endnote_between_notes_hu: self.data.endnote_between_notes_hu,
-            endnote_separator_above_hu: self.data.endnote_separator_above_hu,
-            endnote_separator_below_hu: self.data.endnote_separator_below_hu,
+            hidden_empty_paras: data.hidden_empty_paras,
+            pre_emitted_host_paras: data.pre_emitted_host_paras,
+            pre_emitted_host_heights: data.pre_emitted_host_heights,
+            pre_emitted_host_content_heights: data.pre_emitted_host_content_heights,
+            endnotes: data.endnotes,
+            endnote_paragraphs: data.endnote_paragraphs,
+            endnote_para_sources: data.endnote_para_sources,
+            endnote_measured_tables: data.endnote_measured_tables,
+            endnote_between_notes_hu: data.endnote_between_notes_hu,
+            endnote_separator_above_hu: data.endnote_separator_above_hu,
+            endnote_separator_below_hu: data.endnote_separator_below_hu,
         }
     }
 }
@@ -889,7 +890,8 @@ impl TypesetState {
         para_idx: usize,
         spacing_after: f64,
     ) {
-        for (&(owner, _), placement) in &self.data.paragraph_float_placements {
+        let data = &mut *self.data;
+        for (&(owner, _), placement) in &data.paragraph_float_placements {
             if owner == para_idx
                 && matches!(
                     placement.flow,
@@ -897,10 +899,8 @@ impl TypesetState {
                         | crate::renderer::float_placement::ParagraphFloatFlow::EmptyHost
                 )
             {
-                self.data.current_height =
-                    placement.paragraph_end(self.data.current_height, spacing_after);
-                self.data.ladder_band_floor =
-                    self.data.ladder_band_floor.max(self.data.current_height);
+                data.current_height = placement.paragraph_end(data.current_height, spacing_after);
+                data.ladder_band_floor = data.ladder_band_floor.max(data.current_height);
             }
         }
     }

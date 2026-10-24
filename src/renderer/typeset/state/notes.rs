@@ -263,7 +263,8 @@ impl TypesetState {
         fragment: FootnoteFragment,
         content_height: f64,
     ) -> bool {
-        let Some(page) = self.data.pages.get_mut(page_idx) else {
+        let data = &mut *self.data;
+        let Some(page) = data.pages.get_mut(page_idx) else {
             return false;
         };
         let first = page.footnotes.is_empty();
@@ -281,12 +282,12 @@ impl TypesetState {
         });
         let added_height = content_height
             + if fragment.draw_separator && !has_separator {
-                self.data.footnote_separator_overhead
+                data.footnote_separator_overhead
             } else {
                 0.0
             }
             + if !first {
-                self.data.footnote_between_notes_margin
+                data.footnote_between_notes_margin
             } else {
                 0.0
             };
@@ -343,12 +344,13 @@ impl TypesetState {
     }
 
     pub(in crate::renderer::typeset) fn sync_current_page_footnote_area(&mut self) {
-        if self.data.current_footnote_height <= 0.0 {
+        let data = &mut *self.data;
+        if data.current_footnote_height <= 0.0 {
             return;
         }
-        if let Some(page) = self.data.pages.last_mut() {
+        if let Some(page) = data.pages.last_mut() {
             page.layout
-                .update_footnote_area(self.data.current_footnote_height);
+                .update_footnote_area(data.current_footnote_height);
         }
     }
 }

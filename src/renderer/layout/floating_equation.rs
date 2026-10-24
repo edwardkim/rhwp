@@ -45,15 +45,12 @@ impl LayoutEngine {
             alignment,
         );
 
-        let ast = equation::parser::EqParser::for_document(equation::document_script::tokenize(
-            &eq.script,
-        ))
-        .parse();
         let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
-        let layout_box = equation::layout_for_paint(eq, &ast, self.dpi);
-        let color_str = equation::svg_render::eq_color_to_svg(eq.color);
-        let svg_content =
-            equation::svg_render::render_equation_svg(&layout_box, &color_str, font_size_px);
+        let equation::PaintParts {
+            layout_box,
+            color_str,
+            svg_content,
+        } = equation::paint_parts(eq, self.dpi);
         parent.children.push(RenderNode::new(
             tree.next_id(),
             RenderNodeType::Equation(EquationNode {

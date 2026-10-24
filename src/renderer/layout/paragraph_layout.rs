@@ -5396,19 +5396,12 @@ impl LayoutEngine {
             }
             if let Some(p) = para {
                 if let Some(Control::Equation(eq)) = p.controls.get(tac_ci) {
-                    let tokens = crate::renderer::equation::document_script::tokenize(&eq.script);
-                    let ast =
-                        crate::renderer::equation::parser::EqParser::for_document(tokens).parse();
                     let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
-                    let layout_box =
-                        crate::renderer::equation::layout_for_paint(eq, &ast, self.dpi);
-                    let color_str =
-                        crate::renderer::equation::svg_render::eq_color_to_svg(eq.color);
-                    let svg_content = crate::renderer::equation::svg_render::render_equation_svg(
-                        &layout_box,
-                        &color_str,
-                        font_size_px,
-                    );
+                    let crate::renderer::equation::PaintParts {
+                        layout_box,
+                        color_str,
+                        svg_content,
+                    } = crate::renderer::equation::paint_parts(eq, self.dpi);
                     let hwp_eq_h = hwpunit_to_px(
                         crate::renderer::equation::flow_height_hwp(eq) as i32,
                         self.dpi,
@@ -9714,22 +9707,12 @@ impl LayoutEngine {
                     if let Some(p) = para {
                         if let Some(Control::Equation(eq)) = p.controls.get(tac_ci) {
                             // 수식 스크립트 → AST → 레이아웃 → SVG 조각
-                            let tokens =
-                                crate::renderer::equation::document_script::tokenize(&eq.script);
-                            let ast =
-                                crate::renderer::equation::parser::EqParser::for_document(tokens)
-                                    .parse();
                             let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
-                            let layout_box =
-                                crate::renderer::equation::layout_for_paint(eq, &ast, self.dpi);
-                            let color_str =
-                                crate::renderer::equation::svg_render::eq_color_to_svg(eq.color);
-                            let svg_content =
-                                crate::renderer::equation::svg_render::render_equation_svg(
-                                    &layout_box,
-                                    &color_str,
-                                    font_size_px,
-                                );
+                            let crate::renderer::equation::PaintParts {
+                                layout_box,
+                                color_str,
+                                svg_content,
+                            } = crate::renderer::equation::paint_parts(eq, self.dpi);
                             // HWP 저장 높이를 우선 사용 (한컴 조판 결과 기준)
                             let hwp_eq_h = hwpunit_to_px(
                                 crate::renderer::equation::flow_height_hwp(eq) as i32,

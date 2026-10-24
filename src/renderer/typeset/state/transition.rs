@@ -1,5 +1,6 @@
 //! 쪽/단의 확정·전이·초기화. 기존 실행 순서를 보존한다.
 use super::data::StateView;
+use super::Revised;
 use crate::renderer::typeset::{
     hwpunit_to_px, ColumnContent, ColumnType, Control, PageContent, PageItem, PageLayoutInfo,
     Paragraph, ResolvedStyleSet, TypesetState,
@@ -15,7 +16,7 @@ impl TypesetState {
         column_type: ColumnType,
     ) -> Self {
         Self {
-            data: StateView {
+            data: Revised::new(StateView {
                 pages: Vec::new(),
                 current_items: Vec::new(),
                 saved_empty_run: None,
@@ -141,7 +142,7 @@ impl TypesetState {
                 vpos_col_anchor: 0.0,
                 skip_spacing_before_prededuct: false,
                 vpos_prev_trimmed_sb_px: 0.0,
-            },
+            }),
         }
     }
 
@@ -506,15 +507,15 @@ impl TypesetState {
         if let Some(page) = self.data.pages.last_mut() {
             page.column_contents.push(col_content);
         } else {
-            self.data
-                .pages
-                .push(self.new_page_content(vec![col_content]));
+            let page = self.new_page_content(vec![col_content]);
+            self.data.pages.push(page);
         }
         // [#5699 H1] 이번 단에서 발동한 사다리-미계상 표를 소속 쪽에 기록.
         if !self.data.current_ladder_band_tables.is_empty() {
-            if let Some(page) = self.data.pages.last_mut() {
+            let data = &mut *self.data;
+            if let Some(page) = data.pages.last_mut() {
                 page.ladder_band_tables
-                    .append(&mut self.data.current_ladder_band_tables);
+                    .append(&mut data.current_ladder_band_tables);
             } else {
                 self.data.current_ladder_band_tables.clear();
             }
@@ -591,15 +592,15 @@ impl TypesetState {
         if let Some(page) = self.data.pages.last_mut() {
             page.column_contents.push(col_content);
         } else {
-            self.data
-                .pages
-                .push(self.new_page_content(vec![col_content]));
+            let page = self.new_page_content(vec![col_content]);
+            self.data.pages.push(page);
         }
         // [#5699 H1] 이번 단에서 발동한 사다리-미계상 표를 소속 쪽에 기록.
         if !self.data.current_ladder_band_tables.is_empty() {
-            if let Some(page) = self.data.pages.last_mut() {
+            let data = &mut *self.data;
+            if let Some(page) = data.pages.last_mut() {
                 page.ladder_band_tables
-                    .append(&mut self.data.current_ladder_band_tables);
+                    .append(&mut data.current_ladder_band_tables);
             } else {
                 self.data.current_ladder_band_tables.clear();
             }
@@ -762,7 +763,8 @@ impl TypesetState {
     /// 페이지 보장
     pub(in crate::renderer::typeset) fn ensure_page(&mut self) {
         if self.data.pages.is_empty() {
-            self.data.pages.push(self.new_page_content(Vec::new()));
+            let page = self.new_page_content(Vec::new());
+            self.data.pages.push(page);
         }
     }
 
@@ -773,10 +775,10 @@ impl TypesetState {
             self.finish_deferred_column_shapes();
             self.flush_column();
         }
-        self.data
-            .layout
-            .apply_column_page_number(self.data.pages.len() as u32 + 1);
-        self.data.pages.push(self.new_page_content(Vec::new()));
+        let page_number = self.data.pages.len() as u32 + 1;
+        self.data.layout.apply_column_page_number(page_number);
+        let page = self.new_page_content(Vec::new());
+        self.data.pages.push(page);
         // 합성 어울림 배제 사각형은 쪽 단위 — 새 쪽에서 비운다.
         self.data.wrap_synth_rects.clear();
         self.reset_for_new_page();
@@ -821,8 +823,9 @@ impl TypesetState {
         // z-layer 장식이고, 항목으로 섞으면 이 조각이 단의 첫 항목이 되어
         // `items.first()` 를 보는 휴리스틱이 조각을 본문으로 읽는다.
         let mut overlay_top_reserve = 0.0f64;
-        self.data.current_column_overlay_continuations.extend(
-            std::mem::take(&mut self.data.pending_overlay_continuations)
+        let data = &mut *self.data;
+        data.current_column_overlay_continuations.extend(
+            std::mem::take(&mut data.pending_overlay_continuations)
                 .into_iter()
                 .inspect(|continuation| {
                     overlay_top_reserve = overlay_top_reserve.max(continuation.reserve_px);
@@ -947,9 +950,10 @@ impl TypesetState {
             return;
         }
 
+        let current_height = self.data.current_height;
         self.data
             .visible_float_exclusions
-            .retain(|zone| self.data.current_height < zone.bottom - 0.5);
+            .retain(|zone| current_height < zone.bottom - 0.5);
         let mut jump_to = self.data.current_height;
         for zone in &self.data.visible_float_exclusions {
             let natural_top = jump_to + natural_top_lead;
@@ -982,9 +986,10 @@ impl TypesetState {
         if self.data.visible_float_exclusions.is_empty() || probe_height <= 0.5 {
             return;
         }
+        let current_height = self.data.current_height;
         self.data
             .visible_float_exclusions
-            .retain(|zone| self.data.current_height < zone.bottom - 0.5);
+            .retain(|zone| current_height < zone.bottom - 0.5);
 
         let mut jump_to = self.data.current_height;
         for zone in &self.data.visible_float_exclusions {

@@ -27,11 +27,12 @@ impl TypesetState {
         let content_height = fmt.line_content_height(range.clone(), 0.0);
         let advance = fmt.line_advances_sum(range.clone());
         let stored_frame = self.host_fragment_stored_frame(range.clone(), para, fmt, dpi);
+        let current_height = self.data.current_height;
         self.data.paragraph_fragment_content_bottoms.insert(
             (owner, range.end),
             ParagraphFragmentBounds {
-                content_bottom: self.data.current_height + content_height,
-                flow_end: self.data.current_height + advance,
+                content_bottom: current_height + content_height,
+                flow_end: current_height + advance,
                 stored_frame,
             },
         );

@@ -4096,22 +4096,12 @@ impl LayoutEngine {
                                 (x, inline_obj_y)
                             };
 
-                            let tokens =
-                                super::super::equation::document_script::tokenize(&eq.script);
-                            let ast =
-                                super::super::equation::parser::EqParser::for_document(tokens)
-                                    .parse();
                             let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
-                            let layout_box =
-                                super::super::equation::layout_for_paint(eq, &ast, self.dpi);
-                            let color_str =
-                                super::super::equation::svg_render::eq_color_to_svg(eq.color);
-                            let svg_content =
-                                super::super::equation::svg_render::render_equation_svg(
-                                    &layout_box,
-                                    &color_str,
-                                    font_size_px,
-                                );
+                            let super::super::equation::PaintParts {
+                                layout_box,
+                                color_str,
+                                svg_content,
+                            } = super::super::equation::paint_parts(eq, self.dpi);
 
                             let eq_node = RenderNode::new(
                                 tree.next_id(),

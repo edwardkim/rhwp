@@ -242,6 +242,39 @@ impl TypesetEngine {
         if st.current_items.is_empty() {
             return None;
         }
+        let query = super::measure_memo::ExtentQuery::new(
+            paragraphs,
+            styles,
+            available,
+            en_col_w,
+            extra_item,
+            self.section_column_spacing_hu.get(),
+        );
+        let revision = st.revision();
+        if let Some(extent) = self
+            .endnote_measure_memo
+            .borrow_mut()
+            .extent(revision, &query)
+        {
+            return extent;
+        }
+        let extent =
+            self.replay_endnote_column_extent(st, paragraphs, styles, available, en_col_w, extra_item);
+        self.endnote_measure_memo
+            .borrow_mut()
+            .store_extent(revision, query, extent);
+        extent
+    }
+
+    fn replay_endnote_column_extent(
+        &self,
+        st: &TypesetState,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        available: f64,
+        en_col_w: f64,
+        extra_item: Option<&PageItem>,
+    ) -> Option<(f64, Option<f64>)> {
         let ssot_debug = en_ssot_debug();
         // 본문 항목이 함께 있는 단은 렌더처럼 본문·구분선부터 단 위에서 차례로 그린다 — 누계가
         // 기록한 미주 시작점(`current_start_height`)은 본문 마지막 줄 간격 등을 렌더와 다르게

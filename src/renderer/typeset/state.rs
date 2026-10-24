@@ -1131,12 +1131,77 @@ mod stored_tac;
 mod transition;
 
 pub(super) struct TypesetState {
-    data: data::StateView,
+    data: Revised<data::StateView>,
 }
 
 impl std::ops::Deref for TypesetState {
     type Target = data::StateView;
     fn deref(&self) -> &Self::Target {
         &self.data
+    }
+}
+
+impl TypesetState {
+    /// 상태 내용의 세대. 같은 값이면 마지막 조회 이후 어떤 필드도 쓰지 않았다.
+    pub(in crate::renderer::typeset) fn revision(&self) -> u64 {
+        self.data.revision
+    }
+}
+
+/// 쓰기 접근마다 프로세스 전역에서 새 세대를 받는 값.
+///
+/// 상태의 쓰기는 모두 `DerefMut`를 거치므로 세대가 같은 두 시점의 내용은 같다.
+/// 복제본도 다음 쓰기에서 다른 세대를 받으므로 서로의 세대와 겹치지 않는다.
+struct Revised<T> {
+    value: T,
+    revision: u64,
+}
+
+static NEXT_STATE_REVISION: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+
+fn next_state_revision() -> u64 {
+    NEXT_STATE_REVISION.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+}
+
+impl<T> Revised<T> {
+    fn new(value: T) -> Self {
+        Self {
+            value,
+            revision: next_state_revision(),
+        }
+    }
+}
+
+impl<T> std::ops::Deref for Revised<T> {
+    type Target = T;
+    fn deref(&self) -> &T {
+        &self.value
+    }
+}
+
+impl<T> std::ops::DerefMut for Revised<T> {
+    fn deref_mut(&mut self) -> &mut T {
+        self.revision = next_state_revision();
+        &mut self.value
+    }
+}
+
+#[cfg(test)]
+mod revised_tests {
+    use super::Revised;
+
+    #[test]
+    fn only_writes_advance_the_revision() {
+        let mut value = Revised::new(vec![1]);
+        let initial = value.revision;
+        assert_eq!(value.len(), 1);
+        assert_eq!(value.revision, initial);
+        value.push(2);
+        let written = value.revision;
+        assert_ne!(written, initial);
+        let other = Revised::new(vec![1]);
+        // 다른 값은 같은 내용이어도 이 값이 받은 어느 세대와도 겹치지 않는다.
+        assert_ne!(other.revision, initial);
+        assert_ne!(other.revision, written);
     }
 }

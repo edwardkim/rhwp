@@ -66,36 +66,36 @@ impl TypesetState {
         para_index: usize,
         paragraphs: &[Paragraph],
     ) {
-        if let Some(PageItem::Table {
+        if let Some(&PageItem::Table {
             para_index: first,
             control_index,
         }) = self.data.current_items.first()
         {
-            if *first == para_index {
+            if first == para_index {
                 let has_host_line = self.data.current_items.iter().any(|item| {
                     matches!(
                         item,
                         PageItem::FullParagraph { para_index: owner }
                             | PageItem::PartialParagraph { para_index: owner, start_line: 0, .. }
-                            if owner == first
+                            if *owner == first
                     )
                 }) || paragraphs
-                    .get(*first)
+                    .get(first)
                     .is_some_and(crate::renderer::typeset::para_has_visible_text);
-                self.data.vpos_page_base = paragraphs.get(*first).and_then(|para| {
+                self.data.vpos_page_base = paragraphs.get(first).and_then(|para| {
                     crate::renderer::float_placement::stored_table_column_origin(
                         para,
                         has_host_line,
                         self.data
                             .paragraph_float_placements
-                            .get(&(*first, *control_index)),
+                            .get(&(first, control_index)),
                         self.data.layout.dpi,
                     )
                 });
                 self.data.vpos_lazy_base = None;
                 self.data.vpos_page_base_stored = self.data.vpos_page_base.is_some()
                     && paragraphs
-                        .get(*first)
+                        .get(first)
                         .and_then(|para| para.line_segs.first())
                         .is_some_and(|line| !crate::renderer::typeset::is_synthetic_line_seg(line));
                 self.data.vpos_stored_column_origin = self

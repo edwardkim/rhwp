@@ -333,6 +333,8 @@ pub struct TypesetEngine {
     format_next_stored_vpos: std::cell::Cell<Option<i32>>,
     render_normalization:
         std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
+    /// 같은 상태 세대에서 반복된 미주 단 측정 결과.
+    endnote_measure_memo: std::cell::RefCell<notes::endnotes::measure_memo::EndnoteMeasureMemo>,
 }
 
 /// 조판 중 현재 페이지/단 상태
@@ -3298,6 +3300,7 @@ impl TypesetEngine {
             render_normalization: std::sync::Arc::new(
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             ),
+            endnote_measure_memo: Default::default(),
         }
     }
 

@@ -11,6 +11,7 @@ use crate::renderer::typeset::{
 };
 
 /// 같은 단 배치에서 생산한 흐름 예약 끝과 실제 줄·내용의 점유 끝이다.
+#[derive(Clone, Copy)]
 pub(super) struct EndnoteColumnGeometry {
     pub(super) flow_bottom: f64,
     pub(super) occupied_bottom: Option<f64>,
@@ -159,6 +160,68 @@ impl TypesetEngine {
         if st.current_items.is_empty() {
             return None;
         }
+        // 실제 배치 재생만 같은 세대의 질의 결과를 재사용한다.
+        if !(en_ssot_level() >= EnSsotLevel::A3 || sequential_compact_rewind) {
+            return self.replay_endnote_column(
+                st,
+                paragraphs,
+                styles,
+                available,
+                en_col_w,
+                extra_items,
+                sequential_compact_rewind,
+                future,
+                measured_tables,
+            );
+        }
+        let query = super::measure_memo::ColumnQuery::new(
+            paragraphs,
+            styles,
+            available,
+            en_col_w,
+            extra_items,
+            sequential_compact_rewind,
+            future,
+            measured_tables,
+        );
+        let revision = st.revision();
+        if let Some(geometry) = self
+            .endnote_measure_memo
+            .borrow_mut()
+            .column(revision, &query)
+        {
+            return geometry;
+        }
+        let geometry = self.replay_endnote_column(
+            st,
+            paragraphs,
+            styles,
+            available,
+            en_col_w,
+            extra_items,
+            sequential_compact_rewind,
+            future,
+            measured_tables,
+        );
+        self.endnote_measure_memo
+            .borrow_mut()
+            .store_column(revision, query, geometry);
+        geometry
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn replay_endnote_column(
+        &self,
+        st: &TypesetState,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        available: f64,
+        en_col_w: f64,
+        extra_items: &[PageItem],
+        sequential_compact_rewind: bool,
+        future: Option<(&[Paragraph], i32, bool)>,
+        measured_tables: &[MeasuredTable],
+    ) -> Option<EndnoteColumnGeometry> {
         // 앞 미주에서 방출한 표 조각도 최종 paint와 같은 행 측정을 받는다.
         // caller가 본문 측정만 전달하는 준비 조회에서는 소유 원장을 보충한다.
         let mut measured_tables = std::borrow::Cow::Borrowed(measured_tables);
