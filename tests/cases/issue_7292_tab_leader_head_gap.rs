@@ -15,7 +15,8 @@ mod svg_tab_leaders {
 
 #[test]
 fn toc_first_dot_center_preserves_independent_head_gap() {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp");
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp");
     let bytes = std::fs::read(&path).expect("KTX.hwp");
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("문서 로드");
     let svg = doc.render_page_svg_native(1).expect("목차 쪽 SVG");

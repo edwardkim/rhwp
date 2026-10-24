@@ -1641,6 +1641,8 @@ fn char_width_decision_with_hft_tracking<'a>(
             width_source: "isolatedConjoiningJamo",
             base_width_px: 0.0,
             final_width_px: 0.0,
+            bold_tracking_px: 0.0,
+            applied_letter_spacing_px: 0.0,
             metric: None,
             character_match: "notApplicable",
             dash_leader: false,

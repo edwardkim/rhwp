@@ -149,7 +149,6 @@ impl EqLayout {
                 rule_start: fs * 0.05,
                 rule_end: w - fs * 0.05,
                 // HancomEQN의 U+E06D bbox 높이는 UPM 1024에서 32다.
-                rule_inset: fs * 0.05,
                 rule_thickness: fs
                     * if self.hancom_eqn {
                         32.0 / 1024.0

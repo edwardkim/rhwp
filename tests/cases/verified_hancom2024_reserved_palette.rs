@@ -117,7 +117,6 @@ fn verify_profile(
             "알파 보존"
         );
 
-        let index = digests.len();
         if let Some(reference) = reference {
             let expected = &reference[index];
             assert_eq!(emitted.dimensions(), expected.dimensions());
@@ -173,10 +172,6 @@ fn verify_profile(
                 .unwrap();
             assert_eq!(retained, emitted_bytes);
             assert_eq!(omitted_ops[index]["mime"], inline_ops[index]["mime"]);
-            let digest: String = sha2::Sha256::digest(emitted_bytes)
-                .iter()
-                .map(|byte| format!("{byte:02x}"))
-                .collect();
         }
         digests.push(sha256(&inline_bytes));
     }

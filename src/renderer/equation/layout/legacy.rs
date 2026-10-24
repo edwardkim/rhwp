@@ -232,7 +232,8 @@ pub(super) fn fraction(mut numer: LayoutBox, mut denom: LayoutBox, fs: f64) -> L
             denom: Box::new(denom),
             axis_height: fs * 5.0 / 12.0,
             rule_thickness: fs * 0.04,
-            rule_inset: fs * 0.125,
+            rule_start: fs * 0.125,
+            rule_end: width - fs * 0.125,
         },
     }
 }
