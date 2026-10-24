@@ -31,9 +31,12 @@ impl LayoutEngine {
         let box_w = pic_w + margin_left + margin_right;
         let box_h = pic_h + margin_top + margin_bottom;
         // 같은 paragraph 의 sibling wrap=TopAndBottom 개체(tac=false)가
-        // 차지하는 vertical 영역만큼 picture y 보정.
+        // 차지하는 vertical 영역만큼 picture y 보정. 이 경로의 그림 y 는 문단 시작 기준이다.
         let sibling_reserved_hu =
-            super::layout::paragraph_layout::calc_sibling_topandbottom_reserved_hu(&para.controls);
+            super::layout::paragraph_layout::calc_sibling_topandbottom_reserved_hu(
+                &para.controls,
+                0,
+            );
         let sibling_reserved_px = hwpunit_to_px(sibling_reserved_hu, self.dpi);
 
         // [Task #1151 v9 결함 D] sibling TAC picture 시퀀스 위치 판별.
