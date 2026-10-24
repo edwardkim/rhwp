@@ -29,6 +29,9 @@ mod math_symbols;
 #[path = "font_metric_cjk_punctuation.rs"]
 mod cjk_punctuation;
 
+#[path = "font_metric_math_symbol_blocks.rs"]
+mod math_symbol_blocks;
+
 pub(crate) use legacy_hft::{
     is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
 };
@@ -106,6 +109,7 @@ impl FontMetric {
         verified_technical_symbol_width(self, ch)
             .or_else(|| math_symbols::width(self, ch))
             .or_else(|| math_alphabet::width(self, ch))
+            .or_else(|| math_symbol_blocks::width(self, ch))
     }
 }
 
@@ -117,6 +121,7 @@ pub(crate) fn verified_metric_has_glyph(metric: &FontMetric, ch: char) -> Option
         .or_else(|| math_symbols::has_glyph(metric, ch))
         .or_else(|| math_alphabet::entry(metric, ch).map(|(present, _)| present))
         .or_else(|| cjk_punctuation::primary_has_glyph(metric.name, metric.bold, metric.italic, ch))
+        .or_else(|| math_symbol_blocks::entry(metric, ch).map(|(present, _)| present))
 }
 
 /// DB 항목이 없어도 확인한 원 face의 cmap은 독립적으로 조회한다.
