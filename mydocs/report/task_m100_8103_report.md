@@ -209,3 +209,43 @@ COMMENTED뿐이다. 다른 세션의 PR은 수정하지 않았다.
 
 자동 검증은 이 경로를 Chromium에서 확인했으며 위 절차의 사용자 환경 직접 판정은 남아 있다.
 이번 요청은 PR 생성까지이며 merge·release·배포·이슈 종료는 실행하지 않는다.
+
+
+## 로컬 인계 검증 (2026-10-24, 진행 중)
+
+클라우드 수치와 아래 macOS 실행을 구분한다. 인계 원격 head는
+`a6753b509844c7c99c3bd8cafc6fce7af43d82c5` 그대로였으며, 기본 작업공간의 #8104
+미커밋 변경은 보존하고 별도 worktree에서 진행했다. 최신 base는
+`60972534680a0c5e51e54ec189b92e252e81a867`, 자동 리베이스 후보는
+`f9e30f048574c15bb28bd5ef92b5c7d6d1e9fa2e`다. range-diff에서 제품 패치는 동일하고
+manifest 문맥만 달라졌다. #8178·#8180은 병합됐으며 인증 계정의 열린 PR은 없었다.
+
+### 실제 UI에서 추가 발견한 배치 경계
+
+400문단을 실제 붙여넣고 전체 삭제→Undo 후 재선택 없이 중간 쪽을 확인했다.
+100%에서는 본문과 음영이 일치했지만 확대/축소 대화상자로 66%를 적용하자 음영이
+이전 쪽 원점을 사용했다. 마지막 음영이 새 문서 높이 밖으로 남아 스크롤 영역도 늘어났다.
+입력은 공개 합성 문자열이며 사용자 문서를 사용하지 않았다.
+
+경로는 `ZoomDialog.onConfirm → page-view-settings-changed → setPageViewSettings →
+setZoom(zoom-changed) → InputHandler.updateViewportOverlayPositions → recalcLayout`이다.
+transaction 중 CanvasView의 일반 zoom listener는 억제되므로 InputHandler가 이전 원점을
+소비한다. 최종 `recalcLayout`·앵커 복원·visible 갱신 뒤 기존 완료 이벤트를 발행해
+현재 선택과 캐럿을 재투영한다. 논리 선택·문서 조판·renderer 자원 복구는 바꾸지 않는다.
+기존 #6987의 실제 merge `ffc88e54fd17be9432d7985cd1c7ffa9aae39d3b`와 리뷰 기록의
+transaction/줌 보존 검증을 확인했다. 이 경계의 기존 검사는 복원된 전체 선택을 다루지 않았다.
+
+실제 대화상자 E2E는 제품 보정 전 요청 배율 80% 적용을 확인한 상태에서 선택 전체·focus
+캐럿·첫/중간/마지막 쪽 관계 5건이 실패했다. 처음 추가한 숫자 입력은 배율이 변하지 않아
+재현 증거에서 제외했고, 요청 배율 assertion을 추가했다. 기대값은 확정 쪽 원점과 page-local
+rect 관계이며 허용치를 변경하지 않았다. 보정 후 결과는 최종 실행 뒤 아래에 기록한다.
+
+### CanvasKit 지연 장치의 경합
+
+로컬 강제 CanvasKit도 선택 해제 단계에서 30초 timeout으로 실패했다. 기존
+`beginDelayedMutation`은 새 mutation을 emit한 즉시 반환했으나 CanvasKit은 renderer resolve에서
+실제 글꼴 준비를 await한다. 따라서 새 metrics gate 진입 전에 이전 release 함수를 호출하거나
+준비 중 renderer를 사용하는 경합이 있었다. 매 회차 진입 표식을 초기화하고 이번
+`prepareCanvasMetrics` 호출에 실제로 진입했는지 기다린다. renderer·metrics·선택 rect를
+대역하지 않고 현재 메서드 실행을 지연시키는 기존 계약을 유지한다. 제품 글꼴 복구 코드는
+변경하지 않는다. 보정 전 실패를 성공으로 합산하지 않는다.
