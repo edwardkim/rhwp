@@ -95,3 +95,8 @@ GitHub CI·머지·후속 처리가 끝났다고 선언하는 묶음은 아니�
 
 이 디렉터리에는 최종 TSV·대표 PNG·정리한 JSON만 보존한다. 원 로그·실행 script·전체 PNG·중간
 파일은 ignored output에 보존하며 새 지침·문턱·예외를 추가하지 않았다.
+
+[과거 TSV 보존 형식 영수증](historical-tsv-curation.json)은 제출 점검에서 CRLF를 LF로 정리한
+과거36개 사본의 원 commit·원 SHA·현재 SHA와 셀 값/순서 동일성을 연결한다. 과거 metadata의
+hash는 원 바이트의 hash이며 현재 정리한 사본의 hash와 구분한다. 이 묶음의 전쪽200 TSV와
+실제 실행 output, 측정값·문턱은 변경하지 않았다.

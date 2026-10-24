@@ -102,6 +102,12 @@ base/후보200 TSV, 대표 review/overlay, 입력·생산자·실행·실제 소
 커밋하지 않았다. 종료한 소유 Chromium 프로필3개만 manifest 뒤 정리해578,953,216바이트를
 확보했고 PNG·TSV·실행 로그·원본·PDF·공유 target은 보존했다.
 
+제출 전 base 대비 전체 `git diff --check`에서 과거 보존 TSV36개의 CRLF와 OFL 텍스트의
+줄 끝 공백1건을 확인했다. 저장소의 과거 TSV 사본만 LF로 정리하고 모든 셀 값·행 순서가
+같음을 CSV 파서로 대조했다. 최종 전쪽200 TSV와 원 실행 output은 바꾸지 않았다. OFL의
+단어·순서도 같다. `final-20261024/historical-tsv-curation.json`에 원 commit·원 바이트 SHA와
+정리한 사본 SHA를 연결했으며 과거 원장 hash를 새 사본의 바이트 hash라고 재표기하지 않는다.
+
 사용자 초안은 기존 보존 stash에 남기며 소스 커밋에 섞지 않는다. 새 지침을 수정하지 않았다.
 기존2%p 지침 변경은 사용자 승인 커밋 `4a03cec05c`의 기록이다.
 커밋한 후보의 source packaging preflight, 최신 upstream/open PR을 확인한 뒤 승인된 PR을 진행한다.
