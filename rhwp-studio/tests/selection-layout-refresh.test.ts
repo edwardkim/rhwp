@@ -164,3 +164,58 @@ test('quiet 재선택의 최신 배치 완료만 선택 재투영에 전달한�
     await vite.close();
   }
 });
+
+test('자원 준비 중의 viewport·page replay는 최신 revision 준비 뒤에만 재개한다', async () => {
+  const vite = await createServer({
+    root: fileURLToPath(new URL('..', import.meta.url)),
+    appType: 'custom', logLevel: 'silent', server: { middlewareMode: true },
+  });
+  try {
+    const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+    const first = deferred<boolean>();
+    const second = deferred<boolean>();
+    let revision = 0;
+    let prepares = 0;
+    let configured = 0;
+    const view = Object.assign(Object.create(CanvasView.prototype), {
+      disposed: false, rendererSelectionEpoch: 0, zoomRefreshRequired: false,
+      rendererSelectionPending: false, rendererRefreshDeferred: false,
+      viewportManager: {
+        cancelPendingZoomRaster: () => false,
+        isZoomAnimating: () => assert.fail('자원 준비 전에 viewport replay가 시작됨'),
+      },
+      rendererSession: {
+        invalidateDocument: () => { revision++; },
+        resolve: async () => ({ backend: 'canvaskit', diagnostics: {
+          decisionKey: String(revision), renderProfile: 'screen',
+        } }),
+        isCurrent: (selection: any) => selection.diagnostics.decisionKey === String(revision),
+      },
+      wasm: { prepareCanvasMetrics: () => (++prepares === 1 ? first : second).promise },
+      pageRenderer: {
+        configure: () => { configured++; return false; },
+        invalidateDocumentRevision() {},
+      },
+      eventBus: { emit() {} },
+    });
+    const old = view.selectNextDocumentRevision();
+    await Promise.resolve(); await Promise.resolve();
+    // 이전 쪽 목록과 폐기된 renderer 자원에는 접근 자체를 하지 않아야 한다.
+    view.updateVisiblePages('scroll');
+    view.renderPage(9);
+    assert.equal(view.renderCanvas(9, {}), true, '대기 중에는 기존 surface를 유지한다');
+    const latest = view.selectNextDocumentRevision();
+    await Promise.resolve(); await Promise.resolve();
+    first.resolve(false);
+    assert.equal(await old, null);
+    assert.equal(configured, 0, '오래된 완료는 replay를 재개하지 않는다');
+    view.updateVisiblePages('resize');
+    second.resolve(false);
+    const selected = await latest;
+    assert.equal(configured, 1);
+    assert.equal(selected.backendChanged, true, 'backend가 같아도 대기 중 viewport 요청을 다시 그린다');
+    assert.equal(view.deferRenderUntilRendererReady(), false, '최신 자원 준비 후에는 replay를 허용한다');
+  } finally {
+    await vite.close();
+  }
+});

@@ -145,6 +145,9 @@ export class CanvasView {
   private textEditRefreshRafId: number | null = null;
   private textEditStaticLayerVerifyTimers = new Map<number, ReturnType<typeof setTimeout>>();
   private rendererSelectionEpoch = 0;
+  /** 자원 무효화부터 최신 renderer/metrics 적용까지 이전 renderer로 replay하지 않는다. */
+  private rendererSelectionPending = false;
+  private rendererRefreshDeferred = false;
   private rendererFallbackScheduled = false;
   private canvasMetricRecovery = new CanvasMetricRecovery();
   private activeRendererDecisionKey: string | null = null;
@@ -330,6 +333,7 @@ export class CanvasView {
   prepareDocumentLoad(): void {
     if (this.disposed) return;
     this.rendererSelectionEpoch += 1;
+    this.rendererSelectionPending = true;
     this.documentLoadPrepared = true;
     this.cancelAutoRendererReselection();
     this.rendererFallbackScheduled = false;
@@ -450,6 +454,7 @@ export class CanvasView {
     if (this.disposed) return null;
     // 이전 편집의 quiet 재선택이 새 mutation의 metrics await를 선점하지 않게 한다.
     this.cancelAutoRendererReselection();
+    this.rendererSelectionPending = true;
     const pinned = this.rendererSession.pinAutoMutationRevision();
     if (!pinned) return this.selectNextDocumentRevision();
 
@@ -494,6 +499,7 @@ export class CanvasView {
     if (this.disposed) return null;
     this.zoomRefreshRequired = this.viewportManager.cancelPendingZoomRaster() || this.zoomRefreshRequired;
     const epoch = ++this.rendererSelectionEpoch;
+    this.rendererSelectionPending = true;
     this.rendererSession.invalidateDocument({ resetResources });
     await Promise.resolve();
     if (this.disposed || epoch !== this.rendererSelectionEpoch) return null;
@@ -528,8 +534,11 @@ export class CanvasView {
     );
     if (decisionChanged && !changed) this.pageRenderer.invalidateDocumentRevision();
     this.activeRendererDecisionKey = selection.diagnostics.decisionKey;
+    this.rendererSelectionPending = false;
+    const deferred = this.rendererRefreshDeferred;
+    this.rendererRefreshDeferred = false;
     this.eventBus.emit('renderer-selection-changed', selection.diagnostics);
-    return changed || this.zoomRefreshRequired;
+    return changed || this.zoomRefreshRequired || deferred;
   }
 
   /** DEV baseline이 pool 소유권을 바꾸지 않고 현재 페이지를 즉시 다시 그린다. */
@@ -611,6 +620,7 @@ export class CanvasView {
 
   /** 호출 이유별 동기 계약을 보존하며 보이는 페이지를 갱신한다. */
   private updateVisiblePages(reason: VisibilityUpdateReason = 'strict'): void {
+    if (this.deferRenderUntilRendererReady()) return;
     if (reason === 'strict' && this.viewportManager.isZoomRasterPending()) {
       this.viewportManager.finishPendingZoomRaster();
       // ready는 이제 visible을 예약한다. strict 호출은 이어서 최신 surface를 동기 완료한다.
@@ -1605,8 +1615,15 @@ export class CanvasView {
     return this.pageRenderScheduler.snapshot();
   }
 
+  private deferRenderUntilRendererReady(): boolean {
+    if (!this.rendererSelectionPending) return false;
+    this.rendererRefreshDeferred = true;
+    return true;
+  }
+
   /** 단일 페이지를 렌더링하거나 정확한 detached bundle을 재부착한다. */
   private renderPage(pageIdx: number): void {
+    if (this.deferRenderUntilRendererReady()) return;
     const descriptor = this.pageSurfaceDescriptor(pageIdx);
     if (descriptor) {
       const cached = this.pageSurfaceLru.takeLookup(descriptor.lookupKey);
@@ -1633,6 +1650,7 @@ export class CanvasView {
     canvas: HTMLCanvasElement,
     renderContext: PageRenderContext = {},
   ): boolean {
+    if (this.deferRenderUntilRendererReady()) return true;
     const zoom = this.viewportManager.getZoom();
     const rawDpr = window.devicePixelRatio || 1;
 
@@ -1657,6 +1675,7 @@ export class CanvasView {
     let renderResult: PageRenderResult = { needsTextEditStaticLayerVerification: false };
     let renderedCanvas = canvas;
     const rendererDecisionKey = this.activeRendererDecisionKey;
+    const rendererEpoch = this.rendererSelectionEpoch;
     try {
       if (this.pageRenderer.getBackend() === 'canvaskit') {
         let preparation = this.canvasKitResourcePreparations.get(canvas);
@@ -1668,7 +1687,8 @@ export class CanvasView {
           if (pending) {
             const expected = preparation;
             const finish = () => {
-              if (this.canvasKitResourcePreparations.get(canvas) !== expected) return;
+              if (this.disposed || rendererEpoch !== this.rendererSelectionEpoch
+                || this.canvasKitResourcePreparations.get(canvas) !== expected) return;
               expected.ready = true;
               if (this.activeRendererDecisionKey === rendererDecisionKey
                 && this.canvasPool.getCanvas(pageIdx) === canvas && canvas.parentElement) {
@@ -2298,6 +2318,7 @@ export class CanvasView {
     if (this.disposed) return;
     this.disposed = true;
     this.rendererSelectionEpoch += 1;
+    this.rendererSelectionPending = true;
     this.documentLoadPrepared = false;
     this.cancelAutoRendererReselection();
     this.reset();

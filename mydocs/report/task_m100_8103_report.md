@@ -316,3 +316,40 @@ getSelectionRects 경로와 다르고 해당 소스를 변경하지 않았다. p
 확인하도록 안내했다. **필수 E2E 오류가 남아 push·PR 생성은 보류한다.** 사용자 지시에서 제외한
 다른 이슈의 renderer 자원 복구 구현으로 확장하지 않았다. merge·release·배포·이슈 종료도
 실행하지 않았다. 선택 투영 개선과 별개인 렌더 오류의 해결 범위가 남아 있다.
+
+### 사용자 확인과 CanvasKit 후속 보정 (2026-10-24)
+
+사용자는 안내한 선택·스크롤·줌·삭제·Undo/Redo 절차에서 문제가 없다고 확인했다.
+다만 auto는 보기의 쪽 모양 자동으로 해석해 확인했으므로 renderer=auto 사용자 판정으로
+계상하지 않는다. 400문단 붙여넣기의 큰 지연도 보고했다. 사용자는 남은 CanvasKit 오류의
+원인 확인·필요한 수정·전체 검증을 추가 승인했다. 앞 절의 범위 제한/제출 보류는 당시 상태다.
+
+원 해결 계보는 #2394의 document-scoped selection(`f0c5a5f728`, `edf8824e21`,
+merge `0a4caf020cdb8d1c2ece40d0182a36ed4bcf3aee`)과 #7891 원 commit
+`9c20ab17c08806fea8327eafdfc53775f18ee9e7` → #7969 통합
+`27d05a639c210112f6731a8dccdf2f72db3e6953` → merge
+`04f8c2bd1617f0dbec6f10543913391ff088c4a7`이다. 원 PR 본문, #2394 검토의
+opt-in 유지·stale 차단 계약, #7891 적용 기록과 통합 8단계의 독립 실행 근거를 확인했다.
+기존 검증은 이번 대기 중 스크롤/쪽 수 감소의 안전성을 입증하지 않는다.
+
+실제 원인은 `selectMutationRevision/selectNextDocumentRevision → invalidateDocument →
+resetDocumentResources → await resolve/prepareCanvasMetrics` 동안 이전 active renderer와
+쪽 목록이 여전히 replay에 사용된 것이다. `updateVisiblePages/renderPage/renderCanvas`와
+이전 page-resource promise 완료가 이 구간에 진입할 수 있었다. 초기화된 font family 조회와
+전체 삭제 뒤 없어진 쪽 조회가 각각 실패한다. resource 완료 callback은 이전 decision key가
+아직 active인 동안만 검사하므로 새 선택 epoch도 검사해야 한다.
+
+공통 CanvasView 준비 상태에서 replay를 보류하고, 최신 epoch/current 검사를 통과한
+`applyRendererSelection`에서만 재개한다. 대기 중 viewport 요청이 있었으면 backend가 같아도
+완료 뒤 최신 페이지를 다시 그린다. 기존 canvas는 준비 중 유지하며 stale 완료가 재개하지 않는다.
+이전 image resource callback은 epoch/dispose도 확인한다. 글꼴 공급·fallback 정책·조판·paint의
+기하/글자 모양은 바꾸지 않는다. 따라서 이 변경은 비동기 화면 갱신 수명 계약이며 Native/PDF
+조판 변경의 Visual Sweep 결과를 새로 주장하지 않는다.
+
+최초 집중 재검증에서 auto와 강제 CanvasKit 각각 모든 선택 관계 및 console render error 0건이
+통과했다(`ready-auto2.log`, `ready-canvaskit.log`). 코드 반영 중 시작됐던 이전 auto 실행은
+reload/대기 timeout으로 끝나 판정에서 제외한다. 새 경계 unit은 준비 중 스크롤·이전 쪽 번호
+replay·역순 완료와 같은 backend의 deferred repaint를 검사한다. 전체 unit에서 기존 zoom
+문서 교체 fixture가 `prepareDocumentLoad` 이후 renderer 적용을 생략한 실패 1건을 확인했다.
+실제 `applyRendererSelection`을 호출하게 보완하고 기존 surface 3개·새 문서 key 기대값은 유지했다.
+최종 head의 전체 재검증 결과는 후속 기록으로 확정한다.
