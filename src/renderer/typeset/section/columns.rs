@@ -13,8 +13,7 @@ impl TypesetEngine {
         page_def: &PageDef,
         styles: &ResolvedStyleSet,
     ) {
-        let plain_text_zone =
-            crate::renderer::plain_text_column_zone(&paragraphs[para_idx..], styles);
+        let plain_text_zone = crate::renderer::plain_text_column_zone(paragraphs, para_idx, styles);
         // 저장 줄의 내용 하단을 인증한 경우에만 영역 간격과 겹치는 문단 꼬리 여백을 제외한다.
         let closing_text_bounds = (st.col_count == 1 && plain_text_zone)
             .then(|| {

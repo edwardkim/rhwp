@@ -6687,7 +6687,7 @@ impl LayoutEngine {
                         | PageItem::PartialParagraph { para_index, .. } => *para_index,
                         _ => return None,
                     };
-                    if !super::plain_text_column_zone(paragraphs.get(next_para..)?, styles) {
+                    if !super::plain_text_column_zone(paragraphs, next_para, styles) {
                         return None;
                     }
                     let after = styles

@@ -2223,9 +2223,23 @@ pub fn hwpunit_to_px(hwpunit: i32, dpi: f64) -> f64 {
 /// 개체와 문단 묶음 제약이 없는 단 영역만 실제 첫 줄 높이로 수용한다.
 pub(crate) fn plain_text_column_zone(
     paragraphs: &[crate::model::paragraph::Paragraph],
+    start: usize,
     styles: &style_resolver::ResolvedStyleSet,
 ) -> bool {
-    paragraphs
+    let Some(prefix) = paragraphs.get(..=start) else {
+        return false;
+    };
+    // 배분·평행 단은 밴드 전체를 예약한다. 단 정의가 불명확한 경우도 기존 계약을 유지한다.
+    let column_type = prefix.iter().rev().find_map(|para| {
+        para.controls.iter().find_map(|control| match control {
+            crate::model::control::Control::ColumnDef(definition) => Some(definition.column_type),
+            _ => None,
+        })
+    });
+    if column_type != Some(crate::model::page::ColumnType::Normal) {
+        return false;
+    }
+    paragraphs[start..]
         .iter()
         .enumerate()
         .take_while(|(offset, para)| {
@@ -4282,6 +4296,69 @@ mod tests {
         };
         assert_eq!(bold.css_font_weight(), Some("bold"));
         assert!(bold.is_visually_bold());
+    }
+
+    #[test]
+    fn plain_text_zone_requires_an_explicit_effective_normal_column() {
+        use super::style_resolver::{ResolvedParaStyle, ResolvedStyleSet};
+        use crate::model::control::Control;
+        use crate::model::page::{ColumnDef, ColumnType};
+        use crate::model::paragraph::Paragraph;
+
+        let styles = ResolvedStyleSet {
+            para_styles: vec![ResolvedParaStyle::default()],
+            ..Default::default()
+        };
+        let define = |column_type| Paragraph {
+            controls: vec![Control::ColumnDef(ColumnDef {
+                column_type,
+                ..Default::default()
+            })],
+            ..Default::default()
+        };
+        for (column_type, expected) in [
+            (ColumnType::Normal, true),
+            (ColumnType::Distribute, false),
+            (ColumnType::Parallel, false),
+        ] {
+            let paragraphs = [define(column_type), Paragraph::default()];
+            assert_eq!(
+                super::plain_text_column_zone(&paragraphs, 0, &styles),
+                expected
+            );
+            assert_eq!(
+                super::plain_text_column_zone(&paragraphs, 1, &styles),
+                expected
+            );
+        }
+        let paragraphs = [
+            define(ColumnType::Normal),
+            define(ColumnType::Distribute),
+            define(ColumnType::Normal),
+            Paragraph::default(),
+        ];
+        assert!(!super::plain_text_column_zone(&paragraphs, 1, &styles));
+        assert!(super::plain_text_column_zone(&paragraphs, 3, &styles));
+        let mut duplicate = define(ColumnType::Distribute);
+        duplicate
+            .controls
+            .push(Control::ColumnDef(ColumnDef::default()));
+        assert!(!super::plain_text_column_zone(&[duplicate], 0, &styles));
+        assert!(!super::plain_text_column_zone(
+            &[Paragraph::default()],
+            0,
+            &styles
+        ));
+        assert!(!super::plain_text_column_zone(
+            &paragraphs,
+            paragraphs.len(),
+            &styles
+        ));
+        assert!(!super::plain_text_column_zone(
+            &paragraphs,
+            usize::MAX,
+            &styles
+        ));
     }
 
     #[test]
