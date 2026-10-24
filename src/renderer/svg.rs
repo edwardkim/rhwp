@@ -1368,7 +1368,12 @@ impl SvgRenderer {
         // 동일 의미. 같은 plane 내부는 안정 정렬로 기존 트리 순서를 보존한다.
         // (PNG=native Skia / 웹캔버스=CanvasKit 는 PaintOp replay plane 으로 이미
         //  정정됨 — PR #1163 / #1017. 본 변경은 SVG 경로 정합.)
-        if Self::children_need_plane_reorder(node) {
+        if matches!(node.node_type, RenderNodeType::Column(_)) {
+            // 본문은 LayerBuilder와 같은 흐름/앵커 순서를 소비한다.
+            for child in crate::renderer::paint_order::children(node) {
+                self.render_node(child);
+            }
+        } else if Self::children_need_plane_reorder(node) {
             let mut ordered: Vec<&RenderNode> = node.children.iter().collect();
             ordered.sort_by_key(|c| Self::node_z_sort_key(c));
             for child in ordered {

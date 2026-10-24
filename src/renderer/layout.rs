@@ -5,6 +5,7 @@
 
 mod auto_number_positions;
 mod decorated_tac_frame;
+mod table_paint_order;
 mod textless_shape_host;
 use decorated_tac_frame::tac_has_only_in_front_decoration_shapes_before;
 pub(crate) use decorated_tac_frame::{

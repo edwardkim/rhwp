@@ -211,9 +211,7 @@ impl LayerBuilder {
                 .page_context
                 .map(PagePaintContext::without_rectangle_mapping);
         }
-        let mut children = node
-            .children
-            .iter()
+        let mut children = crate::renderer::paint_order::children(node)
             .filter_map(|child| self.build_node(child))
             .collect::<Vec<_>>();
         self.page_context = previous_context;
@@ -363,14 +361,29 @@ impl LayerBuilder {
                 let fill_frame = self
                     .page_context
                     .and_then(|context| context.rectangle_fill_frame(frame, &rect, pixel));
+                // 이미 확정한 그림 테두리 frame은 다시 투영하지 않는다.
+                let map_fill = |bounds, rect: &RectangleNode| {
+                    if image_frame.is_some() {
+                        bounds
+                    } else {
+                        self.page_context.map_or(bounds, |context| {
+                            context.solid_fill_frame(
+                                bounds,
+                                rect,
+                                pixel,
+                                node.layer.is_some_and(|layer| layer.master_page),
+                            )
+                        })
+                    }
+                };
                 if let Some(fill_frame) = fill_frame {
                     let fill = super::rectangle_fill::take_fill(&mut rect);
                     Some(vec![
-                        PaintOp::rectangle(fill_frame, fill),
+                        PaintOp::rectangle(map_fill(fill_frame, &fill), fill),
                         PaintOp::rectangle(frame, rect),
                     ])
                 } else {
-                    Some(vec![PaintOp::rectangle(frame, rect)])
+                    Some(vec![PaintOp::rectangle(map_fill(frame, &rect), rect)])
                 }
             }
             RenderNodeType::Ellipse(ellipse) => {

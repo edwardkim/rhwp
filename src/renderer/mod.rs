@@ -69,6 +69,7 @@ pub(crate) mod object_alignment;
 pub mod page_layout;
 pub mod page_number;
 pub mod pagination;
+pub(crate) mod paint_order;
 #[cfg(any(target_arch = "wasm32", test))]
 pub(crate) mod partial_replay;
 #[cfg(not(target_arch = "wasm32"))]

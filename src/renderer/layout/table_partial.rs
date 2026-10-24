@@ -7161,6 +7161,8 @@ impl LayoutEngine {
             BoundingBox::new(table_x, table_y, table_width, partial_table_height),
         );
 
+        Self::publish_table_paint_layer(table, &mut table_node);
+
         // ── 5-1. 표 배경 렌더링 (표 > 배경 > 색 > 면색) ──
         if parent_owned && table.border_fill_id > 0 {
             let tbl_idx = (table.border_fill_id as usize).saturating_sub(1);

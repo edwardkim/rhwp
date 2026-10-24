@@ -454,6 +454,55 @@ impl PagePaintContext {
         super::rectangle_fill::frame(frame, rect, device_pixel?)
     }
 
+    /// 불투명 단색 채움의 최종 끝점을 Print 장치에서 물리 종이에 대응한다.
+    /// NORMAL 선의 채움 중첩 이후에 소비하며 원래 조판·테두리·텍스트 상자는 유지한다.
+    pub(crate) fn solid_fill_frame(
+        self,
+        bounds: BoundingBox,
+        rect: &RectangleNode,
+        device_pixel: Option<f64>,
+        x_is_physical: bool,
+    ) -> BoundingBox {
+        let Some(pixel) = device_pixel.filter(|p| p.is_finite() && *p > 0.0) else {
+            return bounds;
+        };
+        if !self.print
+            || !self.axis_aligned_graphics
+            || rect.transform.has_transform()
+            || !super::device_fill::eligible(rect)
+            || ![bounds.x, bounds.y, bounds.width, bounds.height]
+                .into_iter()
+                .all(f64::is_finite)
+            || bounds.width <= 0.0
+            || bounds.height <= 0.0
+        {
+            return bounds;
+        }
+        let devices = (
+            (self.logical_size.0 / pixel).round(),
+            (self.logical_size.1 / pixel).round(),
+        );
+        if ![devices.0, devices.1, self.output_size.0, self.output_size.1]
+            .into_iter()
+            .all(|extent| extent.is_finite() && extent > 0.0)
+        {
+            return bounds;
+        }
+        let x_unit = self.output_size.0 / devices.0;
+        let y_unit = self.output_size.1 / devices.1;
+        let (x, width) = if x_is_physical {
+            // 바탕쪽의 가로 프레임은 rectangle_frame에서 이미 확정했다.
+            (bounds.x, bounds.width)
+        } else {
+            let left = source_device_coordinate(bounds.x, pixel).round();
+            let right = source_device_coordinate(bounds.x + bounds.width, pixel).round();
+            (left * x_unit, (right - left) * x_unit)
+        };
+        let top = source_device_coordinate(bounds.y, pixel).round();
+        let bottom = source_device_coordinate(bounds.y + bounds.height, pixel).round();
+        BoundingBox::new(x, top * y_unit, width, (bottom - top) * y_unit)
+    }
+
     /// 독립 Print의 실선 그림 테두리는 채운 띠와 장치 한 픽셀의 외곽 pen을 갖는다.
     /// 원본 HU·논리 프레임은 유지하고 양쪽 backend가 소비할 인쇄 선폭만 만든다.
     pub(crate) fn picture_border_pen(self, rect: &mut RectangleNode, pixel: Option<f64>) {
