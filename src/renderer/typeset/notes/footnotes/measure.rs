@@ -49,6 +49,24 @@ impl BodyFootnoteMeasure<'_> {
                 0.0,
             )
     }
+
+    /// 앵커 쪽에 반드시 남는 각주 첫 줄의 높이. 한/글은 각주를 줄 단위로 다음 쪽에
+    /// 이어 놓을 수 있어 앵커 줄이 들어가는지는 이 높이로 판정한다.
+    pub fn first_line_content_height(&self, st: &TypesetState, footnote: &Footnote) -> f64 {
+        self.configured_layout(st)
+            .footnote_paragraphs_content_height(
+                &footnote.paragraphs,
+                self.styles,
+                st.layout.body_area.width,
+                Some(FootnoteFragment {
+                    start_line: 0,
+                    end_line: 1,
+                    draw_separator: true,
+                    draw_number: true,
+                }),
+                0.0,
+            )
+    }
 }
 
 impl crate::renderer::typeset::TypesetEngine {

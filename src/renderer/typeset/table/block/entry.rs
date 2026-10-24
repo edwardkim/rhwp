@@ -373,10 +373,23 @@ impl TypesetEngine {
                 && st.current_height >= st.base_available_height() * 0.5
                 && table.cells.iter().all(|cell| cell.row_span == 1)
                 && next_rewinds_after_table;
+        // [#7732] 쪽 나눔 표에 자기 각주가 없고 이 쪽의 각주가 이미 정해졌으면 각주 영역
+        // 경계는 확정이다. 한/글 2024 는 그 경계 바로 위까지 행을 놓고(합성
+        // `samples/issue1937/gen_row_trim.py` NOTE=1: 표 하단 993.3 · 각주 구분선 1005.9 ·
+        // 간격 12.6px) 40px 여유를 두지 않는다. 위 두 갈래는 이 규칙의 특수형이다.
+        let rowbreak_page_footnote_boundary_known = !table.common.treat_as_char
+            && is_para_topbottom_float(&table.common)
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && ft.table_footnotes.is_empty()
+            && st.current_footnote_height > 0.0;
         let mut fn_margin = if total_footnote > 0.0 {
             if next_starts_new_page
                 || internal_reset_tail_uses_actual_footnote_boundary
                 || native_single_rowbreak_full_table_fits_actual_footnote_boundary
+                || rowbreak_page_footnote_boundary_known
             {
                 0.0
             } else {

@@ -478,91 +478,66 @@ impl TypesetEngine {
         // 줄+각주 크기 실측 정합). 앵커 전부가 조각 밖이면 예약을 해제하되
         // 첫 앵커 직전을 예산 상한으로 재스캔한다 (앵커 줄은 자기 각주와
         // 함께 다음 조각으로 — 한글 규칙).
-        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0)
-            + if st.current_footnote_height <= 0.0 {
-                fn_margin
-            } else {
-                0.0
-            };
+        // [#7732] 표 각주를 이 쪽에서 빼면 남는 각주는 이미 정해진 쪽 각주뿐이라 경계가 확정이다.
+        // 그 경계를 지키는 40px 여유도 함께 되돌린다(한/글은 각주 구분선 바로 위까지 행을 놓는다).
+        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0) + fn_margin;
         let is_split_fragment = end_row < row_count || split_end_limit > 0.0;
+        // [#7732] 앵커 줄이 자기 각주와 함께 다음 조각으로 간다는 #2097 가정은 한/글 출력과
+        // 다르다. 한/글은 칸 각주 때문에 행을 줄이지 않고, 앵커가 이 조각에 있어도 각주는
+        // 조각 뒤 남는 공간이나 표가 끝나는 쪽에 놓는다(합성 `gen_cell_notes_multipage.py`).
+        // 그래서 표가 이 쪽에서 끝나지 않는 한 예약 전체를 되돌리고 앵커 위치로 상한을 두지 않는다.
         if table_fn_reserved > 0.5
             && !is_continuation
             && cursor_row == 0
             && start_cut.is_empty()
             && is_split_fragment
         {
-            let first_anchor = table::footnotes::first_table_footnote_anchor_offset(
-                layout_engine,
-                row_geometry_table,
-                styles,
-                cut_row_h,
-                cs,
-            );
-            if let Some(min_anchor) = first_anchor.filter(|anchor| *anchor >= consumed - 0.5) {
-                let pad = if mt.allows_row_break_split() {
-                    layout_engine.row_remaining_visible_padding_height(
-                        row_geometry_table,
-                        cursor_row,
-                        &[],
-                        styles,
-                    )
-                } else {
-                    mt.max_padding_for_row(cursor_row)
-                };
-                // [#8081] 0 으로 자른 첫 조각 예산에는 모자란 몫이 빠져 있다 — 되돌린 예약에서
-                // 그 몫을 먼저 갚아야 실제 남은 공간이 된다.
-                let avail_refit = (avail_for_rows + table_fn_reserved - first_fragment_shortfall)
-                    .min(min_anchor + pad + 0.1);
-                if avail_refit > avail_for_rows + 0.5 {
-                    let issue2424_refit_started = profile.enabled.then(std::time::Instant::now);
-                    // 일반 행 컷이 따로 쓰는 물리 프레임 상한도 같은 몫을 되돌린다.
-                    let reflow_refit = reflow_frame_avail_for_rows.map(|height| {
-                        height
-                            .max(height + table_fn_reserved - reflow_frame_first_fragment_shortfall)
-                    });
-                    let blank_refit = reflow_blank_avail_for_rows.map(|height| {
-                        height
-                            .max(height + table_fn_reserved - reflow_blank_first_fragment_shortfall)
-                    });
-                    let refit = run_scan(BlockRowScanVars {
-                        avail_for_rows: avail_refit,
-                        reflow_frame_avail_for_rows: reflow_refit,
-                        reflow_blank_avail_for_rows: blank_refit,
-                        ..scan_vars
-                    });
-                    if let Some(started) = issue2424_refit_started {
-                        profile.refit.0 += started.elapsed();
-                        profile.refit.1 += 1;
+            // [#8081] 0 으로 자른 첫 조각 예산에는 모자란 몫이 빠져 있다 — 되돌린 예약에서
+            // 그 몫을 먼저 갚아야 실제 남은 공간이 된다.
+            let avail_refit = avail_for_rows + table_fn_reserved - first_fragment_shortfall;
+            if avail_refit > avail_for_rows + 0.5 {
+                let issue2424_refit_started = profile.enabled.then(std::time::Instant::now);
+                // 일반 행 컷이 따로 쓰는 물리 프레임 상한도 같은 몫을 되돌린다.
+                let reflow_refit = reflow_frame_avail_for_rows.map(|height| {
+                    height.max(height + table_fn_reserved - reflow_frame_first_fragment_shortfall)
+                });
+                let blank_refit = reflow_blank_avail_for_rows.map(|height| {
+                    height.max(height + table_fn_reserved - reflow_blank_first_fragment_shortfall)
+                });
+                let refit = run_scan(BlockRowScanVars {
+                    avail_for_rows: avail_refit,
+                    reflow_frame_avail_for_rows: reflow_refit,
+                    reflow_blank_avail_for_rows: blank_refit,
+                    ..scan_vars
+                });
+                if let Some(started) = issue2424_refit_started {
+                    profile.refit.0 += started.elapsed();
+                    profile.refit.1 += 1;
+                }
+                // 되돌린 예산으로 표가 이 쪽에서 끝나면 각주도 이 쪽 몫이라 예약을 유지한다.
+                let refit_continues = refit.end_row < row_count || refit.split_end_limit > 0.0;
+                if refit.consumed > consumed + 0.5 && refit_continues {
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN FN_REFIT pi={} consumed {:.1} -> {:.1} reserved={:.1}",
+                            para_idx, consumed, refit.consumed, table_fn_reserved,
+                        );
                     }
-                    // 재스캔 조각도 앵커 미포함일 때만 채택 (상한이 보증하나
-                    // squeeze 허용치로 소폭 넘을 수 있어 재확인).
-                    if refit.consumed > consumed + 0.5 && refit.consumed <= min_anchor + pad + 0.5 {
-                        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
-                            eprintln!(
-                                "DIAG_SCAN FN_REFIT pi={} consumed {:.1} -> {:.1} reserved={:.1} min_anchor={:.1}",
-                                para_idx,
-                                consumed,
-                                refit.consumed,
-                                table_fn_reserved,
-                                min_anchor
-                            );
-                        }
-                        source_frame_band = refit.source_frame_band;
-                        plain_cut_owns_blank_band = refit.plain_cut_owns_blank_band;
-                        consumed = refit.consumed;
-                        end_row = refit.end_row;
-                        split_block_start = refit.split_block_start;
-                        split_end_cut = refit.split_end_cut;
-                        split_end_limit = refit.split_end_limit;
-                        split_end_reserved = refit.split_end_reserved;
-                        split_block_physical_height = refit.split_block_physical_height;
-                        end_row_height_override = refit.end_row_height_override;
-                        accepted_end_row_box = refit.accepted_end_row_box;
-                        accepted_start_row_box = refit.accepted_start_row_box;
-                        accepted_partial_row_box = refit.accepted_partial_row_box;
-                        if end_row <= cursor_row {
-                            end_row = cursor_row + 1;
-                        }
+                    source_frame_band = refit.source_frame_band;
+                    plain_cut_owns_blank_band = refit.plain_cut_owns_blank_band;
+                    consumed = refit.consumed;
+                    end_row = refit.end_row;
+                    split_block_start = refit.split_block_start;
+                    split_end_cut = refit.split_end_cut;
+                    split_end_limit = refit.split_end_limit;
+                    split_end_reserved = refit.split_end_reserved;
+                    split_block_physical_height = refit.split_block_physical_height;
+                    end_row_height_override = refit.end_row_height_override;
+                    accepted_end_row_box = refit.accepted_end_row_box;
+                    accepted_start_row_box = refit.accepted_start_row_box;
+                    accepted_partial_row_box = refit.accepted_partial_row_box;
+                    if end_row <= cursor_row {
+                        end_row = cursor_row + 1;
                     }
                 }
             }
