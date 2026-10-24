@@ -11,6 +11,9 @@ Issue: [#8183](https://github.com/edwardkim/rhwp/issues/8183) ·
 미달이므로 구현 완료·PR 제출 판정은 보류한다.**
 원본 PDF 기준의 정상 결과로 Print 미달을 상쇄하지 않는다. 아래 수치는 검증한 경로에만 적용한다.
 
+**메인테이너 시각 확인:** [반투명 이미지 비교판·확대 뷰어](task_m100_8183_alpha_visual_review.md).
+기존 캡처의 표시 자료이며 Print 미달·보류 판정을 바꾸지 않는다.
+
 ## source와 산출물
 
 - base: `d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867` (`upstream/devel` 확인 후 고정).
