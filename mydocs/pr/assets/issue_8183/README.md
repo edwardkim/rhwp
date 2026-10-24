@@ -19,3 +19,9 @@ compare·standalone overlay·review다. TSV는 작업 원본을 바이트 그대
 [34행 대조](base-comparison.json)에서 최저 100%, 후보 대비 하락 0pp를 확인했다.
 [저장본 한컴 Print 대조](hancom-print/README.md)는 별도다. 작은 반투명 그림 두 쪽의 Print가
 90% 미만이므로 원본 PDF 대조 통과와 한컴 Print 통과를 동일시하지 않는다.
+
+## 2026-10-24 메인테이너 결정
+
+2026-10-24 메인테이너가 두 4×2 반투명 사례의 RHWP 처리를 정답으로 판정하고 PR 진행을 결정했다.
+Print의 미달 수치·TSV·원본은 보존하고 해당 두 Print를 alpha 정답지로 사용하지 않는다.
+수치 임계값·제품 alpha·회귀 기대값은 바꾸지 않는다.

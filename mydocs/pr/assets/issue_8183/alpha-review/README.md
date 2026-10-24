@@ -15,4 +15,10 @@ Chrome 154·viewport 2020px·deviceScaleFactor 1·확대 200%에서 캡처했다
 파일별 출처·원본 해시는 [provenance.json](provenance.json)에 있다.
 
 독립 기준과 RHWP가 연속 alpha를 표시하는 데 비해 한컴 Print는 1비트 mask를 만든다.
-기존 Print 미달 판정은 유지한다. 메인테이너의 직접 판정은 별도 확인 뒤 기록한다.
+Print 미달 수치는 유지한다. 메인테이너의 직접 수용 결정은 아래에 기록했다.
+
+## 2026-10-24 메인테이너 결정
+
+2026-10-24 메인테이너가 두 4×2 반투명 사례의 RHWP 처리를 정답으로 판정하고 PR 진행을 결정했다.
+Print의 미달 수치·TSV·원본은 보존하고 해당 두 Print를 alpha 정답지로 사용하지 않는다.
+수치 임계값·제품 alpha·회귀 기대값은 바꾸지 않는다.

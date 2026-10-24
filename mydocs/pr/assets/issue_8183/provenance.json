@@ -356,7 +356,9 @@
         "path": "mydocs/pr/assets/issue_8183/hancom-print/wasm/scan-jpx-200.tsv",
         "sha256": "1529b3129873e7a3d32300496ae7467d3ffab5835fc65dcbe9255d7d49ce580f"
       }
-    ]
+    ],
+    "maintainer_disposition": "reference_defect_accepted_for_two_alpha_cases",
+    "blocks_submission_after_maintainer_decision": false
   },
   "performance": {
     "source": "cfc5be8fe",
@@ -403,5 +405,19 @@
         "sha256": "a16bca7f45d20ab6e805aaad31753827c3f3105d6da9bb0efa9d6898199991f9"
       }
     ]
+  },
+  "maintainer_decision": {
+    "date": "2026-10-24",
+    "authority": "maintainer instruction in this session",
+    "scope": [
+      "jpx-alpha.pdf p1",
+      "jpx-premult.pdf p1"
+    ],
+    "product_source": "cfc5be8fe",
+    "disposition": "rhwp_correct_hancom_print_reference_defect",
+    "pr_submission_authorized": true,
+    "merge_authorized": false,
+    "numeric_results_changed": false,
+    "evidence": "mydocs/working/task_m100_8183_alpha_visual_review.md"
   }
 }

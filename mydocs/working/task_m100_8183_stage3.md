@@ -5,14 +5,15 @@ Issue: [#8183](https://github.com/edwardkim/rhwp/issues/8183) ·
 [2단계 결과](task_m100_8183_stage2.md) · [사용자 가이드](../manual/pdf_image_codecs.md)
 
 2026-10-23 작업지시자가 「3단계 진행 승인」으로 실제 CLI·fresh WASM/Studio, 시각·성능,
-빌드·사용자 가이드 검증을 승인했다. 원격 게시·push·PR 생성·merge·close는 하지 않았다.
+빌드·사용자 가이드 검증을 승인했다. 2026-10-24 메인테이너가 반투명 비교판 확인 뒤
+RHWP 처리를 수용하고 push·Open PR 제출을 승인했다. merge·close는 승인하지 않았다.
 
-**상태: 3단계의 검증 실행·성능 관측·가이드 보강을 마쳤다. 한컴 Print alpha 두 쪽은
-미달이므로 구현 완료·PR 제출 판정은 보류한다.**
-원본 PDF 기준의 정상 결과로 Print 미달을 상쇄하지 않는다. 아래 수치는 검증한 경로에만 적용한다.
+**상태: 구현·3단계 검증과 가이드 완료. 메인테이너가 두 alpha 사례의 RHWP 표현을 정답으로
+수용해 PR 제출을 승인했다.** Print 미달 수치와 도구 상태는 보존하며 원본 PDF와 한컴 Print를
+구분한다. [범위가 한정된 결정](task_m100_8183_alpha_visual_review.md#메인테이너-결정--2026-10-24)을 따른다.
 
 **메인테이너 시각 확인:** [반투명 이미지 비교판·확대 뷰어](task_m100_8183_alpha_visual_review.md).
-기존 캡처의 표시 자료이며 Print 미달·보류 판정을 바꾸지 않는다.
+기존 캡처의 표시 자료와 2026-10-24 메인테이너의 직접 확인·수용 결정을 함께 기록했다.
 
 ## source와 산출물
 
@@ -111,7 +112,7 @@ PDF Indexed가 JP2 palette를 덮어쓰는 사양상 lookup도 원래 blue/cyan�
 근거: [PDF 1.7 Table 89](https://opensource.adobe.com/dc-acrobat-sdk-docs/standards/pdfstandards/pdf/PDF32000_2008.pdf),
 [PDFium의 해당 미구현 기록](https://pdfium.googlesource.com/pdfium.git/+/b18d018b2f9aa2913cc435b5ccdd59d0a5856ad8).
 
-## 저장본의 한컴 Print — 미달을 유지
+## 저장본의 한컴 Print — 수치 보존과 메인테이너 수용
 
 [한컴 Print 원본과 재저장 대조군](../../pdf/issue8183/hancom-print/README.md),
 [양쪽 TSV·픽셀 증거](../pr/assets/issue_8183/hancom-print/README.md)를 확인한다.
@@ -125,9 +126,11 @@ PDF Indexed가 JP2 palette를 덮어쓰는 사양상 lookup도 원래 blue/cyan�
 제한이다. Native/fresh WASM과 base의 HWPX 렌더링은 원본 PDF의 연속 alpha를 보존한다.
 이를 맞추기 위해 source alpha를 버리거나 decoder·저장 PNG를 확대하지 않았다.
 
-이 원인 확인은 미달 비교를 통과로 바꾸거나 예외를 승인한 것이 아니다.
-**Print 대조의 `re_review_required`를 남기며 PR 제출·완료 판정을 보류한다.**
-일반 PDF 가져오기 정확성과 한컴의 모든 인쇄 경로 호환성을 구분해 사용자 가이드에도 기록했다.
+최초 조사 때는 Print 미달로 제출을 보류했다. 2026-10-24 메인테이너가 비교판을 확인해
+이번 두 사례는 한컴 Print의 반투명 처리 한계이며 RHWP가 정답이라고 판정했다.
+**도구의 `re_review_required`·미달 수치는 보존하고, 이 두 사례의 PR 보류는 해제한다.**
+정답지는 원본 RGBA·PDF alpha 의미와 독립 PDF 기준으로 정한다. 다른 사례의 일반 gate를
+면제하지 않으며 자세한 승인 범위는 위 결정에 연결했다.
 
 ## 회귀와 검증 명령
 
@@ -137,7 +140,8 @@ PDF Indexed가 JP2 palette를 덮어쓰는 사양상 lookup도 원래 blue/cyan�
 검증은 이번 단계의 명시적 로컬 feature 실행이며, 기존 CI가 이를 모두 실행한다고 주장하지 않는다.
 source sample·전체 bitmap, 리소스·쪽 소유와 저장 후 보존을 검사하며 절대 배치 좌표·SVG hash를
 고정하지 않는다. 스캔 생성기는 격리 경로에서 입력 PDF 20개를 바이트 단위로 재현했다.
-Print 미달이 남아 있으므로 편입한 회귀도 현재 작업 브랜치의 WIP이며 제출 완료로 간주하지 않는다.
+메인테이너의 수용 뒤 편입한 회귀를 제출 후보에 유지한다. Print 미달에 맞춰 alpha를 손실시키거나
+원래 기대값·측정 임계값을 변경하지 않았다.
 
 실행 명령·시간·종료 코드는 `rust-gates.json`, `focused-gates.json`과 각 `gate-*.log`에 보존한다.
 Native·WASM 원본 소비는 `native-matrix-corrected-inputs.json`, `wasm-*-probe.json`,
@@ -229,8 +233,12 @@ WASM은 같은 패키지의 `HwpDocument.importPdf(bytes, {})` 전후 `performan
 이 경고를 무시한 배포 안전 판정은 하지 않는다. source preflight 통과나 위 설치 검증은
 registry 게시·모든 CPU의 실행 검증을 대신하지 않으며, 릴리스 전에 기존 lock의 검토가 필요하다.
 
-## 남은 조건
+## PR 제출과 이후 조건
 
-한컴 Print alpha 두 쪽의 미달 판정은 유지한다. 별도 이슈로 분류하거나 원본 PDF 대조 점수로
-제출 조건을 대체하지 않았다. 이 결과를 포함한 검토가 필요하며 원격 PR은 열지 않았다.
+두 Print 미달은 삭제·재계산하지 않고 메인테이너의 직접 수용 판단과 함께 PR 본문에 공개한다.
+제출 경로는 `collaborator_self_merge`, 보조 절차는 `local_validation`·`visual_fixture_evidence`다.
+제출 전 fetch의 devel은 `d9fd85ed5`이며, 같은 시점의 조회에서 본인 열린 PR은 없었다. 제품 source·test·manifest가 최종 검증
+이후 동일하므로 완료한 로컬 검증을 재사용하고 결정·문서·표시 자료 변경만 검사한다.
+정확한 PR head의 GitHub CI가 성공한 뒤 정식 self-review·오늘할일 기록을 진행하며 merge는
+별도 승인 뒤 수행한다.
 코덱 선택 빌드는 #8174의 배포·MSRV 결정, crates.io 게시, 0.9.0 릴리스를 자동으로 완료하지 않는다.

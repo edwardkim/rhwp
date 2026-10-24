@@ -30,3 +30,9 @@ alpha 두 쪽은 Print 대조가 미달이다. 이 표는 원본 PDF 기준의 1
 [원본 Print·한컴 재저장 대조군](../../../../../pdf/issue8183/hancom-print/README.md),
 [원본 PDF 기준 alpha](../wasm/jpx-alpha_review.png),
 [3단계 판정](../../../../working/task_m100_8183_stage3.md)을 참고한다.
+
+## 2026-10-24 메인테이너 결정
+
+2026-10-24 메인테이너가 두 4×2 반투명 사례의 RHWP 처리를 정답으로 판정하고 PR 진행을 결정했다.
+Print의 미달 수치·TSV·원본은 보존하고 해당 두 Print를 alpha 정답지로 사용하지 않는다.
+수치 임계값·제품 alpha·회귀 기대값은 바꾸지 않는다.

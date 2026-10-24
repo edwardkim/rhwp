@@ -189,11 +189,11 @@
     "files": [
       {
         "path": "mydocs/pr/assets/issue_8183/alpha-review/viewer.html",
-        "sha256": "c0d69769c018be5c63add04dbff79f983077a502aebeb7694d95d4a82e682b9b"
+        "sha256": "6764ec70fee232bf6de7a4d505377cea1513f3cdfd8a23bbc6284a5bd9af9e50"
       },
       {
         "path": "mydocs/pr/assets/issue_8183/alpha-review/overview.png",
-        "sha256": "e1833be1bb9bd4cc3ad4f0b6f808b791ccd52b5ec53a28e89b062e1b1fa9fe8a"
+        "sha256": "40e310c3118cde4f44cec690c141e0c234d1cf4560661a368184ab7450437499"
       },
       {
         "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-alpha-comparison.png",
@@ -207,8 +207,22 @@
     "local_review_pdf": {
       "path": "output/pr-review/issue8183/alpha-review/alpha-review.pdf",
       "pages": 2,
-      "sha256": "c1b65343f4e1f6a0badc93678e776c2006bf225c5399adef739ace184752f0f8",
+      "sha256": "8d1ecc9e6998c7d3bb8f35a888e22ac3a4e6de009aca10422f6048cc23ca3d8f",
       "role": "review-board-not-reference"
     }
+  },
+  "maintainer_decision": {
+    "date": "2026-10-24",
+    "authority": "maintainer instruction in this session",
+    "scope": [
+      "jpx-alpha.pdf p1",
+      "jpx-premult.pdf p1"
+    ],
+    "product_source": "cfc5be8fe",
+    "disposition": "rhwp_correct_hancom_print_reference_defect",
+    "pr_submission_authorized": true,
+    "merge_authorized": false,
+    "numeric_results_changed": false,
+    "evidence": "mydocs/working/task_m100_8183_alpha_visual_review.md"
   }
 }
