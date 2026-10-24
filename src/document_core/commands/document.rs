@@ -193,11 +193,8 @@ impl DocumentCore {
 
     fn from_bytes_inner(data: &[u8], password: Option<&[u8]>) -> Result<DocumentCore, HwpError> {
         let source_format = crate::parser::detect_format(data);
-        let parsed = match password {
-            Some(pwd) => crate::parser::parse_document_with_metadata_password(data, pwd),
-            None => crate::parser::parse_document_with_metadata(data),
-        }
-        .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+        let parsed = crate::parser::parse_document_for_core(data, password)
+            .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
         Self::from_parsed_document(parsed, source_format)
     }
 

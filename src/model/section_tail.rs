@@ -99,10 +99,10 @@ pub(crate) fn projection_digest(doc: &Document) -> [u8; 32] {
             }
         }
     }
-    let mut hasher = blake3::Hasher::new();
-    serde_json::to_writer(&mut hasher, &(masters, memos))
-        .expect("구역 끝 모델 투영은 메모리에서 직렬화한다");
-    *hasher.finalize().as_bytes()
+    crate::model::raw_provenance::json_digest(
+        &(masters, memos),
+        "구역 끝 모델 투영은 메모리에서 직렬화한다",
+    )
 }
 
 pub(crate) fn validate_preservation(doc: &Document) -> Result<(), String> {

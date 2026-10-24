@@ -1381,7 +1381,20 @@ fn parse_document_inner(
     parse_document_inner_unsealed(data, password).map(seal_parsed_document)
 }
 
-fn seal_parsed_document(mut parsed: ParsedDocument) -> ParsedDocument {
+/// `DocumentCore` 로 여는 경로 전용 — DocInfo 만 봉인하고 본문 봉인은 호출자에게 맡긴다.
+///
+/// `DocumentCore::from_parsed_document` 는 로드 픽스업과 첫 paginate 뒤 본문을 다시
+/// 봉인하고, 그 사이에는 본문 봉인 값을 읽지 않는다(편집 신호는 봉인 유무와
+/// `raw_stream` 유무만 보는데 로드 픽스업은 `raw_stream` 을 지우지 않는다). 파서 말미의
+/// 본문 봉인은 덮어써질 뿐이므로 본문 전체 직렬화·해시를 한 번 줄인다.
+pub(crate) fn parse_document_for_core(
+    data: &[u8],
+    password: Option<&[u8]>,
+) -> Result<ParsedDocument, ParseError> {
+    parse_document_inner_unsealed(data, password).map(seal_parsed_doc_info)
+}
+
+fn seal_parsed_doc_info(mut parsed: ParsedDocument) -> ParsedDocument {
     // [#4493] 파싱과 모든 load fixup 이 끝난 마지막 지점에서 DocInfo raw 출처를
     // 봉인한다 — 이보다 앞(포맷별 파서 내부)에서 봉인하면 HWP3-변환본 spacing
     // 반감 같은 로드 보정이 봉인을 깨서, 무변경 문서의 원본 바이트 통과가 죽는다.
@@ -1390,9 +1403,14 @@ fn seal_parsed_document(mut parsed: ParsedDocument) -> ParsedDocument {
         .document
         .doc_info
         .seal_raw_provenance(&parsed.document.doc_properties);
+    parsed
+}
+
+fn seal_parsed_document(parsed: ParsedDocument) -> ParsedDocument {
+    let mut parsed = seal_parsed_doc_info(parsed);
     // [#4488/#4495] 본문 Section raw_stream 과 하위 컨트롤 raw 레코드도 같은
-    // 지점에서 봉인한다. DocumentCore 로 열리는 경로는 from_bytes 의 로드 픽스업
-    // (손상 lineseg 제거 등) 뒤에 다시 봉인된다.
+    // 지점에서 봉인한다. DocumentCore 로 열리는 경로는 이 봉인을 건너뛰고
+    // (`parse_document_for_core`) from_bytes 의 로드 픽스업 뒤에 한 번 봉인한다.
     parsed.document.seal_body_raw_provenance();
     parsed
 }
