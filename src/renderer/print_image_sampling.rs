@@ -1,7 +1,8 @@
-//! Print 그림의 장치 면적 표본. 조판 좌표와 원본 픽셀은 변경하지 않는다.
+//! Print 그림의 공통 장치 표본. 조판 좌표와 원본 픽셀은 변경하지 않는다.
 //!
 //! 공개 PDFium chromium/7999 CStretchEngine의 16.16 면적 계약과 독립 Print를
-//! 대조했다. 각 축에서 채널을 절삭하며, 한 번에 2차원 평균을 내는 식과 다르다.
+//! 대조했다. 확대는 같은 공개 경로의 표본 중심 보간을 소비한다. 각 축에서 채널을
+//! 절삭하며, 한 번에 2차원 평균을 내는 식과 다르다.
 //
 // Arithmetic adapted from PDFium CStretchEngine (BSD-style license).
 // Copyright 2017 The PDFium Authors.
@@ -25,13 +26,33 @@ struct Weight {
     values: Vec<u32>,
 }
 
-fn weights(source: u32, destination: u32) -> Option<Vec<Weight>> {
-    if destination == 0 || destination > source {
+fn weights(source: u32, destination: u32, bilinear: bool) -> Option<Vec<Weight>> {
+    if source == 0 || destination == 0 {
         return None;
     }
     let scale = f64::from(source) / f64::from(destination);
     let mut result = Vec::with_capacity(destination as usize);
     for pixel in 0..destination {
+        if scale < 1.0 {
+            let center = (f64::from(pixel) + 0.5) * scale;
+            if bilinear {
+                let first = ((center - 0.5).floor() as i64).max(0) as usize;
+                let last = ((center + 0.5).floor() as usize).min(source as usize - 1);
+                let values = if first >= last {
+                    vec![ONE]
+                } else {
+                    let second = ((center - first as f64 - 0.5) * f64::from(ONE)).round() as u32;
+                    vec![ONE - second, second]
+                };
+                result.push(Weight { first, values });
+            } else {
+                result.push(Weight {
+                    first: (center.floor() as usize).min(source as usize - 1),
+                    values: vec![ONE],
+                });
+            }
+            continue;
+        }
         let start = f64::from(pixel) * scale;
         let end = start + scale;
         let first = start.floor() as usize;
@@ -93,28 +114,39 @@ pub(crate) fn rasterize(
         top: edges[1] as i32,
         width: dw,
         height: dh,
-        rgba: reduce_opaque_rgba(rgba, source, (dw, dh))?,
+        rgba: resample_opaque_rgba(rgba, source, (dw, dh))?,
     })
 }
 
-/// 불투명 전체 원본의 축소만 담당한다. alpha·crop·회전은 별도 계약이다.
-pub(crate) fn reduce_opaque_rgba(
+/// 불투명 전체 원본의 장치 표본. alpha·crop·회전은 별도 계약이다.
+pub(crate) fn resample_opaque_rgba(
     source: &[u8],
     (width, height): (u32, u32),
     (dw, dh): (u32, u32),
 ) -> Option<Vec<u8>> {
     let (w, h, dx, dy) = (width as usize, height as usize, dw as usize, dh as usize);
     let pixels = w.checked_mul(h)?;
-    if width > MAX_DIMENSION
+    if width == 0
+        || height == 0
+        || dw == 0
+        || dh == 0
+        || width > MAX_DIMENSION
         || height > MAX_DIMENSION
+        || dw > MAX_DIMENSION
+        || dh > MAX_DIMENSION
         || pixels > MAX_PIXELS
+        || dx.checked_mul(h)? > MAX_PIXELS
+        || dx.checked_mul(dy)? > MAX_PIXELS
         || pixels.checked_mul(4)? != source.len()
         || source.chunks_exact(4).any(|p| p[3] != 255)
     {
         return None;
     }
-    let horizontal = weights(width, dw)?;
-    let vertical = weights(height, dh)?;
+    // 공개 CStretchEngine의 기본 smoothing 선택이다. 각 축의 확대 가중치는
+    // 표본 중심을 사용하고 축소는 기존 면적 가중치를 그대로 소비한다.
+    let bilinear = u64::from(dh) / 8 < u64::from(width) * u64::from(height) / u64::from(dw);
+    let horizontal = weights(width, dw, bilinear)?;
+    let vertical = weights(height, dh, bilinear)?;
     let mut intermediate = vec![0u8; dx.checked_mul(h)?.checked_mul(3)?];
     for y in 0..h {
         for (x, weight) in horizontal.iter().enumerate() {
@@ -142,4 +174,55 @@ pub(crate) fn reduce_opaque_rgba(
         }
     }
     Some(output)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::resample_opaque_rgba;
+
+    fn gray(values: &[u8]) -> Vec<u8> {
+        values.iter().flat_map(|v| [*v, *v, *v, 255]).collect()
+    }
+
+    #[test]
+    fn print_upscale_uses_pixel_centers_and_clips_edge_neighbors() {
+        // 2→4의 표본 중심은 0.25·0.75·1.25·1.75다. 가장자리 이웃을
+        // 자른 뒤 내부 두 표본은 각각 3/4:1/4와 1/4:3/4로 결합한다.
+        let source = gray(&[0, 100, 0, 100]);
+        assert_eq!(
+            resample_opaque_rgba(&source, (2, 2), (4, 2)),
+            Some(gray(&[0, 25, 75, 100, 0, 25, 75, 100]))
+        );
+    }
+
+    #[test]
+    fn print_mixed_axes_keep_area_downscale_and_center_upscale() {
+        let source = gray(&[0, 100, 40, 140, 80, 180, 120, 220]);
+        // 세로 4→2는 각 두 행의 면적 평균, 가로 2→4는 위 중심 보간이다.
+        assert_eq!(
+            resample_opaque_rgba(&source, (2, 4), (4, 2)),
+            Some(gray(&[20, 45, 95, 120, 100, 125, 175, 200]))
+        );
+    }
+
+    #[test]
+    fn print_large_upscale_keeps_public_nearest_sample_policy() {
+        let source = gray(&[0, 80, 160, 240]);
+        let actual = resample_opaque_rgba(&source, (2, 2), (16, 16)).unwrap();
+        for y in 0..16 {
+            for x in 0..16 {
+                assert_eq!(
+                    actual[(y * 16 + x) * 4],
+                    [0, 80, 160, 240][y / 8 * 2 + x / 8]
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn print_resampling_rejects_unsupported_alpha_and_oversized_output() {
+        assert!(resample_opaque_rgba(&[0, 0, 0, 128], (1, 1), (2, 2)).is_none());
+        assert!(resample_opaque_rgba(&gray(&[0]), (1, 1), (8193, 1)).is_none());
+        assert!(resample_opaque_rgba(&gray(&[0]), (1, 1), (1, 0)).is_none());
+    }
 }
