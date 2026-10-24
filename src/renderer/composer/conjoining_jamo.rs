@@ -101,7 +101,10 @@ pub(crate) fn project_stored_rows_with_selected_program(
     {
         return None;
     }
-    let mut frame = box_.for_stored_body_rows(para).frame(first.vertical_pos);
+    let mut frame = box_
+        .clone()
+        .for_stored_body_rows(para)
+        .frame(first.vertical_pos);
     let rows = super::line_breaking::layout_paragraph_in_frame(para, &mut frame, styles, dpi)?;
     // 줄 수가 같아도 프로그램 교체 뒤 글자의 줄 소속은 달라질 수 있다.
     (rows
