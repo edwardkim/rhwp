@@ -17,6 +17,19 @@ tests/fixtures/m09x_wmf_emf/*.golden text eol=lf
 # Cargo의 generated test target 블록은 플랫폼과 무관하게 LF로 체크아웃한다.
 /Cargo.toml text eol=lf
 
+# 테스트가 원문을 읽어 `\n` 을 포함한 패턴으로 검사하는 소스다(Studio 계약 검사의 정규식·
+# 음성 대조 주입 위치, `src/*.rs` 함수 본문 발췌, `Cargo.lock` 패키지 블록). Windows
+# `core.autocrlf=true` 체크아웃에서는 CRLF 가 되어 같은 커밋이 Windows 에서만 실패한다.
+# 저장소의 이 파일들은 모두 LF 라 인덱스는 바뀌지 않는다.
+*.rs text eol=lf
+*.ts text eol=lf
+/Cargo.lock text eol=lf
+
+# PDF 는 텍스트 개행으로 보이는 구간이 있어도 xref 오프셋이 바이트를 가리키는 이진 형식이다.
+# 자동 감지가 텍스트로 보면 Windows 체크아웃에서 LF→CRLF 로 바뀌어 파싱이 깨진다
+# (예: `pdf/issue7966/close-stroke-controls.pdf` 가 `ImportResourceLimit` 로 실패).
+*.pdf -text -diff
+
 # Lawful HML corpus — preserve provenance bytes (BOM/CRLF/trailing spaces) and verify by SHA
 samples/hml/*.hml -text -diff
 
