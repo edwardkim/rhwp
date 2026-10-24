@@ -1978,6 +1978,25 @@ pub(crate) fn stored_square_sibling_outer_frame(para: &Paragraph) -> bool {
     })
 }
 
+/// 빈 개체 앵커의 줄·흐름에 아무것도 더하지 않는 제어인가.
+///
+/// 구역·단 설정과, 쪽·종이 기준으로 떠 있는 그림·도형은 앵커 줄을 차지하지도
+/// 그 줄 위치에 기대지도 않는다. 표 셀에 그림을 넣으면 그림이 표 문단의 형제
+/// 제어로 붙는데(#1151), 이것 때문에 문단이 표 하나만 든 앵커가 아니게 되면
+/// 표 바깥 여백 상자가 흐름에서 빠져 표와 뒤 문단이 여백만큼 올라간다.
+fn control_leaves_table_anchor_empty(control: &Control) -> bool {
+    match control {
+        Control::SectionDef(_) | Control::ColumnDef(_) => true,
+        Control::Picture(picture) => detached_from_anchor_line(&picture.common),
+        Control::Shape(shape) => detached_from_anchor_line(shape.common()),
+        _ => false,
+    }
+}
+
+fn detached_from_anchor_line(common: &crate::model::shape::CommonObjAttr) -> bool {
+    !common.treat_as_char && matches!(common.vert_rel_to, VertRelTo::Paper | VertRelTo::Page)
+}
+
 /// 자리차지하지 않는 표 하나만 든 폭0 저장 줄은 그 개체의 앵커다.
 /// 이 문단의 줄 간격을 개체의 캡션 간격으로 사용하지 않는다.
 pub(crate) fn object_only_saved_table_anchor(para: &Paragraph, table: &Table) -> bool {
@@ -1991,11 +2010,9 @@ pub(crate) fn object_only_saved_table_anchor(para: &Paragraph, table: &Table) ->
                 && line.segment_width == 0
                 && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
     let mut objects = para.controls.iter().filter(|control| {
-        !allow_frame_settings
-            || !matches!(
-                control,
-                Control::SectionDef(_) | Control::ColumnDef(_) | Control::PageNumberPos(_)
-            )
+        !(allow_frame_settings
+            && (matches!(control, Control::PageNumberPos(_))
+                || control_leaves_table_anchor_empty(control)))
     });
     let only_table = matches!(objects.next(), Some(Control::Table(_))) && objects.next().is_none();
     !table.common.treat_as_char
@@ -7535,7 +7552,7 @@ pub(crate) fn reflow_empty_table_host(para: &Paragraph, table: &Table) -> bool {
     let mut objects = para
         .controls
         .iter()
-        .filter(|control| !matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)));
+        .filter(|control| !control_leaves_table_anchor_empty(control));
     let only_table = matches!(objects.next(), Some(Control::Table(_))) && objects.next().is_none();
     para.text.is_empty()
         // An implementation-tagged LineSeg still describes a computed line.
@@ -7615,7 +7632,7 @@ pub(crate) fn empty_table_anchor_ladder_lacks_outer_box(
     let mut objects = para
         .controls
         .iter()
-        .filter(|control| !matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)));
+        .filter(|control| !control_leaves_table_anchor_empty(control));
     let only_table = matches!(objects.next(), Some(Control::Table(_))) && objects.next().is_none();
     let outer_box = i32::from(table.outer_margin_top)
         .saturating_add(signed_hwpunit(table.common.height))
