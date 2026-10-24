@@ -7,7 +7,7 @@
 검토한 head는 `a46cf501d38e5f900360044b24d75169ded07e19`, base는
 `def947c2149df5bc812d801e6e79be19a403b4d1`이다. 최종 기록 commit 뒤에는 새 head의
 required check를 별도로 확인해야 한다. 실제 API 소비자의 표시/편집 인덱스 검토는 사용자 확인으로 남는다.
-merge·release·배포·이슈 종료는 승인 범위에 포함되지 않는다.
+최초 재검토 당시 merge·release·배포·이슈 종료는 승인 범위 밖이었다. 2026-10-24 사용자가 리뷰 기록 반영과 최신 CI 확인 후 merge를 추가 승인했다. release·운영 배포·수동 이슈 종료는 수행하지 않는다.
 
 ## 접수와 변경 범위
 
@@ -77,4 +77,46 @@ merge·release·배포·이슈 종료는 승인 범위에 포함되지 않는다
 선택·커서·삽입에는 기존 hit-test의 모델 오프셋을 사용해 앱에서 확인해야 한다.
 [계약 문서](../../tech/text_layout_display_contract.md)와 [입력 출처](../../../tests/fixtures/issue7909/README.md)를 따른다.
 
-원격 approve/comment·merge·close·release·배포는 수행하지 않는다.
+최초 작성 세션은 원격 approve/comment·merge·close·release·배포를 수행하지 않았다. 아래는 추가 사용자 지시에 따른 후속 검토 기록이다.
+
+## 2026-10-24 독립 재검토
+
+## 검토한 구현과 검증
+
+
+### 확인한 코드
+
+동작 변경은 get_page_text_layout_native의 optional displayText/displayCharX export다. 기존 text/charX/charStart/bbox/셀 주소 직렬화는 그대로이고, displayCharX는 TextRunNode.replay_positions_for(display)를 소비한다. helper의 layout_positions 검증 및 fallback, Unicode scalar 경계, 기존 JSON escaping, 빈 표시값과 모델 오프셋 구분을 확인했다. wasm_api 변경은 계약 주석이다. 조판·paint·저장 모델 변경이 아니다. 새 actionable code finding 없음.
+
+### 이번 직접 실행
+
+```sh
+node scripts/rust-test-suite-manifest.mjs --prepare
+node scripts/rust-test-suite-manifest.mjs --check --base-ref def947c2149df5bc812d801e6e79be19a403b4d1
+node scripts/run-rust-test.mjs issue_7909_text_layout_display -- --cargo-profile release-test --target-dir /Users/melee/Documents/projects/forks/rhwp/target/pr-review --no-fail-fast
+```
+
+- Native focused: **7 PASS / 0 FAIL**. 같은 suite의 다른 255개 검사는 focused filter로 제외했다.
+- PR base를 고정한 manifest 정책 검사: PASS.
+- 공개 원본·번호 없는 음성 대조·번호를 유지한 그림 없는 생성 HWP/HWPX, 일반 문구, 모델 선택/커서/편집 유지 검사를 실제 실행했다.
+- fixture 4개 SHA-256이 README와 일치하며 검토 head의 Git blob에 포함됨을 확인했다. no-picture 원본에는 자동번호도 없으므로 이를 양성 대조로 오해하지 않았다.
+- 이번에 전체 Rust/Skia/WASM 빌드를 반복하지 않았다. [정확한 code candidate CI](https://github.com/edwardkim/rhwp/actions/runs/39943620439)의 PR #8182, head a46cf501d38e5f900360044b24d75169ded07e19, source branch, 성공 상태를 확인했다. lint·Native Skia·archive A/B/C/D·frontend package가 실제 success다.
+- candidate와 현재 head 사이 diff는 mydocs/orders/20261023.md 및 pr_8182_review.md뿐이다. 최신 head CI preflight 로그에서 그 candidate의 성공 결과를 재사용했음을 확인했다. skipped worker를 재실행 성공으로 세지 않았다.
+- 실제 외부 소비자 앱 연동, HWP3 별도 focused, 비공개 HWPX, 독립 한컴 Print PDF 일치는 미검증이다. 읽기 전용 export 수용을 배치 품질 보증으로 확대하지 않는다.
+
+사용자 확인: displayText ?? text와 displayCharX ?? charX로 표시하되, 파일명처럼 한 모델 문자가 여러 표시 문자로 늘어나는 필드 뒤의 선택·삽입은 기존 hit-test가 반환하는 모델 오프셋으로 실행한다.
+
+## 2026-10-24 병합 승인과 검토 범위
+
+- 검토 head: `d097a922ae469778d4860816c747512e059754b6`. 검토 base: `def947c2149df5bc812d801e6e79be19a403b4d1`.
+- 문서 반영 전 최신 devel: `e7a0dec55c6c6c6365e4ff50babe7583e1cf1c70`.
+- 사용자가 각 PR의 리뷰 코멘트, 같은 source branch의 리뷰 문서 반영, 최신 CI 확인 후 merge를 명시적으로 승인했다. 운영 배포는 승인 범위에서 제외했다.
+- [게시한 리뷰 코멘트](https://github.com/edwardkim/rhwp/pull/8182#issuecomment-6379332092). collaborator self 경로이며 GitHub APPROVE 이벤트를 제출하지 않는다.
+- 사용자 실제 환경 확인은 미검증으로 유지한다. 이를 자동 검사로 대체하거나 완료로 표시하지 않는다. 사용자의 이번 병합 지시에 따라 검증된 변경 범위의 수용과 후속 사용자 확인을 구분한다.
+- 이번 후행 변경은 리뷰·오늘할일 문서뿐이다. source/test/fixture/workflow/baseline을 변경하지 않는다. 최신 devel을 source branch에 merge/rebase하지 않는다.
+- 코드 검토와 실행에서 추가 결함 없음. 조판/측정/paint/페이지 분할/저장 LineSeg 및 기준값 변경은 비해당이다. Visual Sweep을 실행했거나 한컴 출력과 일치한다고 주장하지 않는다.
+- push 전 고정한 base/head의 merge-tree, 문서 상대 링크, 공백, 양쪽 오늘할일 기록 보존을 확인한다. 새 trailing head의 CI·실제 fast-pass·mergeability·head SHA를 다시 확인한 뒤에만 squash merge한다. 검사 실패·pending을 우회하지 않는다.
+
+## Merge 후 contributor PR comment 계획
+
+merge 후 실제 merge SHA와 이 리뷰 문서의 영구 링크, 마지막 head의 CI URL 및 fast-pass/reused candidate를 코멘트에 기록한다. 이번 직접 실행과 작성 세션의 기존 검증을 구분하며 미검증 범위를 그대로 남긴다. 연결 이슈 [#7909](https://github.com/edwardkim/rhwp/issues/7909)의 실제 상태를 조회해 기록하되 이슈 수동 종료·운영 배포는 수행하지 않는다. 별도의 후속 문서 PR은 만들지 않는다. 이번 검토 전용 clean worktree는 정리하고 다른 세션의 source branch와 공유 target은 보존한다.
