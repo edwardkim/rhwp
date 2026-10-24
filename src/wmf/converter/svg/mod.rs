@@ -137,7 +137,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
             .set("viewBox", format!("{vb_x} {vb_y} {vb_w_i32} {vb_h_i32}"));
 
         if let Some(contract) = source_contract {
-            document = contract.document(document, &context_current.window);
+            document = contract.document(document, &context_current);
         }
 
         // 외곽 계산은 원래 image 좌표를 소비한 뒤 끝낸다. 반복 비트맵의

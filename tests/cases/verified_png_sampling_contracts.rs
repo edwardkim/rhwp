@@ -26,6 +26,17 @@ fn print_transfer_marker_keeps_source_color_alpha_and_dimensions() {
         image::load_from_memory(&source).unwrap().to_rgba8(),
         "표식은 실제 색·알파·해상도를 바꾸면 안 된다",
     );
+    let mut surface = source.clone();
+    mark_metafile_surface(&mut surface);
+    assert!(metafile_surface(&surface));
+    assert!(!print_bitmap_reconstruction(&surface));
+    assert!(!metafile_surface(&printed));
+    assert_eq!(interpolation(&surface), None);
+    assert_eq!(
+        image::load_from_memory(&surface).unwrap().to_rgba8(),
+        image::load_from_memory(&source).unwrap().to_rgba8(),
+        "최종 장치 표본 표식도 색·알파·해상도를 보존한다",
+    );
 }
 
 #[test]

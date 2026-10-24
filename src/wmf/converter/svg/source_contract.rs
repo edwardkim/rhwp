@@ -9,6 +9,7 @@ use crate::wmf::parser::Font;
 #[derive(Default)]
 pub(super) struct SourceContract {
     polygon_seen: bool,
+    non_pixel_units_seen: bool,
 }
 
 fn window(element: Node, source: &Window) -> Node {
@@ -35,6 +36,7 @@ impl SourceContract {
         context: &DeviceContext,
         font: &Font,
     ) -> Node {
+        self.non_pixel_units_seen |= context.map_mode != crate::wmf::parser::MapMode::MM_TEXT;
         // 이 상태는 그래픽 DC의 Save/Restore와 별개인 source 그리기 순서다.
         // 출력 쪽이 이를 숫자 직렬화 계약으로 해석하며 여기서는 반올림하지 않는다.
         if element.has_name("polygon") {
@@ -69,9 +71,16 @@ impl SourceContract {
         element
     }
 
-    pub(super) fn document(self, element: Node, source: &Window) -> Node {
-        window(element, source)
+    pub(super) fn document(self, element: Node, context: &DeviceContext) -> Node {
+        window(element, &context.window)
             .set("data-rhwp-wmf-source-contract", "1")
             .set("data-rhwp-wmf-polygon-seen", u8::from(self.polygon_seen))
+            .set(
+                "data-rhwp-wmf-pixel-grid",
+                u8::from(
+                    !self.non_pixel_units_seen
+                        && context.map_mode == crate::wmf::parser::MapMode::MM_TEXT,
+                ),
+            )
     }
 }

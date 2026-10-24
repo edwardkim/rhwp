@@ -159,7 +159,9 @@ fn transmission(pixmap: tiny_skia::Pixmap) -> Option<Vec<u8>> {
     image::DynamicImage::ImageRgba8(image)
         .write_to(&mut png, image::ImageFormat::Png)
         .ok()?;
-    Some(png.into_inner())
+    let mut png = png.into_inner();
+    crate::renderer::image_resolver::png_sampling::mark_metafile_surface(&mut png);
+    Some(png)
 }
 
 pub(super) fn payload(
@@ -176,7 +178,12 @@ pub(super) fn payload(
     if crate::parser::ole_container::emf_from_wmf_comment_chunks(source).is_some() {
         return None;
     }
-    let svg = crate::renderer::svg::convert_wmf_to_svg(source)?;
+    let svg = crate::wmf::converter::WMFConverter::new(
+        source,
+        crate::wmf::converter::SVGPlayer::new().with_source_contract(),
+    )
+    .run()
+    .ok()?;
     if svg.len() > MAX_SVG_BYTES {
         return None;
     }
@@ -213,7 +220,16 @@ pub(super) fn payload(
         // ROP의 비트맵 패턴 마스크는 원본 정수 격자에서 먼저 합성한다.
         // 비트 연산 도중 축소 보간하면 흑백 마스크가 회색으로 바뀌어 배경과
         // 전경의 소속이 달라진다. 텍스트·벡터 형제는 그대로 최종 장치로 전달한다.
-        let mask_grid = masks::flatten_bitmap_masks(&svg);
+        // 한 논리 단위가 한 장치 픽셀인 MM_TEXT만 원본 정수 격자를 소유한다.
+        // MM_ANISOTROPIC은 기존 2024 경로와 같은 최종 장치에서 합성한다.
+        let source_pixel_grid = roxmltree::Document::parse(std::str::from_utf8(&svg).ok()?)
+            .ok()?
+            .root_element()
+            .attribute("data-rhwp-wmf-pixel-grid")
+            == Some("1");
+        let mask_grid = source_pixel_grid
+            .then(|| masks::flatten_bitmap_masks(&svg))
+            .flatten();
         let source = std::str::from_utf8(mask_grid.as_deref().unwrap_or(&svg)).ok()?;
         let (prepared, report) =
             synthetic_bold::prepare_svg_with_synthetic_bold(source, &options).ok()?;

@@ -18,7 +18,7 @@ fn declaration(data: &[u8]) -> Option<(u8, u8)> {
         || &data[..8] != b"\x89PNG\r\n\x1a\n"
         || data[8..16] != [0, 0, 0, 13, b'I', b'H', b'D', b'R']
         || data[33..41] != [0, 0, 0, 2, b'r', b'h', b'W', b'P']
-        || !matches!(data[41], 1 | 2)
+        || !matches!(data[41], 1 | 2 | 4)
         || data[42] > 1
     {
         return None;
@@ -39,6 +39,21 @@ pub(crate) fn print_bitmap_reconstruction(data: &[u8]) -> bool {
 
 pub(crate) fn print_jpeg_transfer(data: &[u8]) -> bool {
     data.starts_with(&[0xff, 0xd8]) && matches!(declaration(data), Some((2 | 3, 1)))
+}
+
+/// 최종 인쇄 장치에서 합성한 WMF 표본. 원본 비트맵 격자 준비와 구분한다.
+pub(crate) fn metafile_surface(data: &[u8]) -> bool {
+    declaration(data) == Some((4, 1))
+}
+
+pub(crate) fn mark_metafile_surface(data: &mut Vec<u8>) {
+    if data.len() < 33 || &data[..8] != b"\x89PNG\r\n\x1a\n" {
+        return;
+    }
+    let mut chunk = [0, 0, 0, 2, b'r', b'h', b'W', b'P', 4, 1, 0, 0, 0, 0];
+    let crc = crc32fast::hash(&chunk[4..10]);
+    chunk[10..14].copy_from_slice(&crc.to_be_bytes());
+    data.splice(33..33, chunk);
 }
 
 pub(super) fn mark_print_bitmap(data: &mut Vec<u8>) {

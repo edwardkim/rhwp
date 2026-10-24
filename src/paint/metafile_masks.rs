@@ -67,10 +67,6 @@ pub(super) fn flatten_bitmap_masks(svg: &[u8]) -> Option<Vec<u8>> {
     let mut encoded_bytes = 0usize;
     for node in root.children().filter(|n| {
         n.is_element()
-            // 내포 SVG는 자체 viewport에서 clip·마스크를 합성한다. 이를 부모
-            // 논리 격자의 PNG로 바꾸면 최종 장치 축소 전에 별도 보간이 추가되어
-            // 원래 ROP 무늬의 피복률이 달라진다. 해당 소유자는 SVG 재생에 맡긴다.
-            && !n.descendants().any(|child| child.has_tag_name("svg"))
             && n.attribute("mask")
                 .and_then(reference)
                 .is_some_and(|id| masks.contains(id))
