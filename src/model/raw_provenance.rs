@@ -76,16 +76,30 @@ pub fn bytes_digest(bytes: &[u8]) -> [u8; 32] {
     *blake3::hash(bytes).as_bytes()
 }
 
+/// 모델 값의 JSON 직렬화 바이트 다이제스트.
+///
+/// serde_json 은 필드·구두점마다 작은 조각을 쓴다. 조각마다 해시에 넘기면 호출당 비용이
+/// 직렬화보다 커지므로 버퍼에 모아 큰 덩어리로 넘긴다. 해시하는 바이트 열은 같다.
+pub(crate) fn json_digest<T: Serialize + ?Sized>(value: &T, context: &str) -> [u8; 32] {
+    use std::io::Write;
+    let mut hasher = blake3::Hasher::new();
+    let mut writer = std::io::BufWriter::with_capacity(64 * 1024, &mut hasher);
+    serde_json::to_writer(&mut writer, value).expect(context);
+    writer.flush().expect(context);
+    drop(writer);
+    *hasher.finalize().as_bytes()
+}
+
 /// 레코드(직렬화 가능한 모델 값) 하나의 다이제스트.
 ///
 /// 레코드의 `raw_data` 필드도 다이제스트에 포함된다 — 모델 필드가 변하지 않는 한
 /// `raw_data` 는 파싱 시점 그대로이므로 판정에 영향이 없고, `raw_data` 만 바꿔치기
 /// 하는 변경도 불일치로 떨어져 승인되지 않는다.
 pub fn record_digest<T: Serialize>(record: &T) -> [u8; 32] {
-    let mut hasher = blake3::Hasher::new();
-    serde_json::to_writer(&mut hasher, record)
-        .expect("레코드 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)");
-    *hasher.finalize().as_bytes()
+    json_digest(
+        record,
+        "레코드 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)",
+    )
 }
 
 /// 봉인 컨테이너에서 `idx` 레코드의 raw 재사용 허용 여부.
@@ -181,10 +195,10 @@ pub fn doc_info_model_digest(doc_info: &DocInfo, doc_props: &DocProperties) -> [
         props: doc_props,
     };
 
-    let mut hasher = blake3::Hasher::new();
-    serde_json::to_writer(&mut hasher, &fp)
-        .expect("모델 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)");
-    *hasher.finalize().as_bytes()
+    json_digest(
+        &fp,
+        "모델 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)",
+    )
 }
 
 /// 레코드 봉인 묶음 계산 — 봉인 시점의 목록 순서 그대로.
@@ -267,17 +281,14 @@ pub fn section_model_digest(section: &crate::model::document::Section) -> [u8; 3
         trailing_lists: &'a Option<crate::model::section_tail::SectionTail>,
     }
 
-    let mut hasher = blake3::Hasher::new();
-    serde_json::to_writer(
-        &mut hasher,
+    json_digest(
         &Fingerprint {
             section_def,
             paragraphs,
             trailing_lists,
         },
+        "모델 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)",
     )
-    .expect("모델 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)");
-    *hasher.finalize().as_bytes()
 }
 
 impl crate::model::document::Section {
