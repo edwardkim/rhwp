@@ -176,8 +176,22 @@ try {
           fileHandle: null, skipUnsavedGuard: true, requestId: 'issue8109-late' });
       });
       const info = wasm.getDocumentInfo();
-      if (info.fontsUsed.length !== 1 || info.fontsUsed[0] !== 'Helvetica') {
-        throw Error('the counterexample must not have a separate substitute font entry');
+      // fontsUsed는 실제 paint 준비 목록이라 #8191 이후 대체 Arial도 포함한다.
+      // 원본에 Arial 별도 선언이 없는 경계는 원본 선언 계획으로 확인한다.
+      const { HwpDocument } = wasm.getWasmModuleExports();
+      const declarationCore = new HwpDocument(bytes);
+      let declarations;
+      try { declarations = JSON.parse(declarationCore.getDocumentFontSelectionPlan()); }
+      finally { declarationCore.free(); }
+      if (declarations.requests.length !== 7 || declarations.requests.some(request =>
+        request.source !== 'Helvetica' || request.primary.length !== 1
+          || request.primary[0] !== 'Helvetica' || request.substitute.length !== 1
+          || request.substitute[0] !== 'Arial')) {
+        throw Error('the counterexample must have only seven source Helvetica declarations with Arial substitutes');
+      }
+      if (info.fontsUsed.length !== 2 || !info.fontsUsed.includes('Helvetica')
+        || !info.fontsUsed.includes('Arial')) {
+        throw Error('the preparation list must include the source and its actual paint substitute');
       }
       if (!info.fontSubstitutions.some(([source, target]) => source === 'Helvetica' && target === 'Arial')) {
         throw Error('the imported document lost its substitute declaration');
