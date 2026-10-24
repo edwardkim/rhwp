@@ -604,6 +604,12 @@ impl TypesetEngine {
                     rowspan_touched,
                     cs,
                     straddle_page_bands: &input.start.straddle_page_bands,
+                    carried_row_box: input
+                        .start
+                        .start_cut_is_block
+                        .then_some(start_row_height_override)
+                        .flatten()
+                        .map(|height| (cursor_row, height)),
                 };
                 let last_range = rows.candidate(row_count - 1);
                 let last = rows.candidate(last_range.b_start);

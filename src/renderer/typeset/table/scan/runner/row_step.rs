@@ -80,6 +80,10 @@ impl TypesetEngine {
             rowspan_touched,
             cs,
             straddle_page_bands,
+            carried_row_box: start_cut_is_block
+                .then_some(start_row_height_override)
+                .flatten()
+                .map(|height| (cursor_row, height)),
         };
         let scan_start_row = r;
         let consumed_before_row = consumed;

@@ -149,6 +149,11 @@ impl TypesetEngine {
                 cut_row_h,
                 rowspan_touched,
                 cs: v.cs,
+                carried_row_box: v
+                    .start_cut_is_block
+                    .then_some(v.start_row_height_override)
+                    .flatten()
+                    .map(|height| (v.cursor_row, height)),
                 straddle_page_bands,
             };
             let block = block_query.candidate(r);

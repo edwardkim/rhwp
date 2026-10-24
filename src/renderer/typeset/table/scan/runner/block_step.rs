@@ -44,7 +44,7 @@ impl TypesetEngine {
             strict_painted_bottom_fit,
             source_first_fragment_overflow_allowance,
             source_first_fragment_row_end,
-            start_cut_is_block: _,
+            start_cut_is_block,
             start_row_height_override,
             ..
         } = v;
@@ -76,6 +76,10 @@ impl TypesetEngine {
             cut_row_h,
             rowspan_touched,
             cs,
+            carried_row_box: start_cut_is_block
+                .then_some(start_row_height_override)
+                .flatten()
+                .map(|height| (cursor_row, height)),
             straddle_page_bands,
         };
         let table::scan::RowBlockCandidate {

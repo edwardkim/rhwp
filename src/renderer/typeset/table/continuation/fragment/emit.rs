@@ -1723,6 +1723,7 @@ impl TypesetEngine {
             // 걸침 칸·나뉜 행의 몫으로 쪽 끝 띠까지 수용한 끝 행 상자도 원본 프레임이다.
             // 배치는 이 상자를 끝 줄간격 접기로 다시 줄이지 않는다.
             end_row_owns_stored_frame: source_frame_band > 0.0
+                || first_fragment_blank_band
                 || original_single_cell_opening_frame
                 || source_single_cell_band.is_some()
                 || (is_continuation && stored_complete_extent.is_some())

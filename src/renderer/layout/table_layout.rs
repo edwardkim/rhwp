@@ -20577,7 +20577,10 @@ impl LayoutEngine {
         cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
-        if !self.profile.get().hwpx_stored_layout()
+        // 컨테이너가 아니라 아래 원본 행·걸침 선언·저장 재시작이 물리
+        // 프레임을 증명한다. Native HWP5도 같은 저장 계약을 소비한다.
+        if !(self.profile.get().hwpx_stored_layout()
+            || self.profile.get().hwp5_stored_pagination_layout())
             || self.profile.get().session_edited()
             || self
                 .render_normalization

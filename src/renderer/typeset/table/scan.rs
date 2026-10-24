@@ -26,6 +26,7 @@ pub(in crate::renderer::typeset) struct RowBlockQuery<'a> {
     pub(in crate::renderer::typeset) cut_row_h: &'a [f64],
     pub(in crate::renderer::typeset) rowspan_touched: &'a [bool],
     pub(in crate::renderer::typeset) cs: f64,
+    pub(in crate::renderer::typeset) carried_row_box: Option<(usize, f64)>,
     pub(in crate::renderer::typeset) straddle_page_bands:
         &'a [crate::renderer::pagination::StraddleCellCarry],
 }
@@ -180,35 +181,47 @@ impl RowBlockQuery<'_> {
         start: &[usize],
         end: &[usize],
     ) -> f64 {
-        if !start.is_empty()
+        let height = if !start.is_empty()
             && end.is_empty()
             && self
                 .mt
                 .fragment_block_frames
                 .contains(&(block.b_start, block.b_end))
         {
-            return self.mt.row_heights[row];
-        }
-        self.layout_engine
-            .row_block_cut_physical_height(
-                self.table,
-                (block.b_start, block.b_end),
-                (row, self.mt.row_heights[row]),
-                start,
-                end,
-                self.styles,
-            )
-            .unwrap_or_else(|| {
-                self.layout_engine.row_block_cut_row_content_height(
+            self.mt.row_heights[row]
+        } else {
+            self.layout_engine
+                .row_block_cut_physical_height(
                     self.table,
-                    block.b_start,
-                    block.b_end,
-                    row,
+                    (block.b_start, block.b_end),
+                    (row, self.mt.row_heights[row]),
                     start,
                     end,
                     self.styles,
                 )
-            })
+                .unwrap_or_else(|| {
+                    self.layout_engine.row_block_cut_row_content_height(
+                        self.table,
+                        block.b_start,
+                        block.b_end,
+                        row,
+                        start,
+                        end,
+                        self.styles,
+                    )
+                })
+        };
+        // 내용 컷은 앞 조각에서 소비한 유닛만 나타낸다. 그 조각이 넘긴
+        // 물리 잔여 상자는 현재 첫 행이 완결될 때도 소유하므로, 행 원점·
+        // 블록 요구 높이·흐름 예약이 그리기와 같은 높이를 사용한다.
+        // 다시 잘리는 행은 끝 컷이 수용한 상자만 사용한다.
+        if !start.is_empty() && end.is_empty() {
+            self.carried_row_box
+                .filter(|(owner, _)| *owner == row)
+                .map_or(height, |(_, physical)| height.max(physical))
+        } else {
+            height
+        }
     }
 
     pub(in crate::renderer::typeset) fn fragment_height(

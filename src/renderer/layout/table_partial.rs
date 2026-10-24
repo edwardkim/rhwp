@@ -1489,8 +1489,6 @@ impl LayoutEngine {
             let closing_source_frame_owns_alignment = end_row_owns_stored_frame
                 && cell.row_span == 1
                 && cell_row + 1 == end_row
-                && !is_block_split
-                && !start_cut_is_block
                 && end_row_height_override.is_some();
             let accepted_block_frame_owns_alignment = measured_table.is_some_and(|measured| {
                 measured.fragment_block_frames.iter().any(|&(first, end)| {
