@@ -18,7 +18,7 @@ fn refresh_rows(
     styles: &ResolvedStyleSet,
     regenerated: bool,
 ) {
-    append_missing_single_equation_row(composed, para, styles);
+    append_missing_single_tac_row(composed, para, styles);
     let positions = para.control_text_positions();
     let dpi = styles.resolved_dpi.unwrap_or(DEFAULT_DPI);
     let tac_offsets_px: Vec<_> = composed
@@ -284,15 +284,22 @@ fn source_inline_box_height(
         .filter(|height| *height > 0)
 }
 
-/// 줄 캐시가 없는 단일 TAC 수식 호스트의 같은 구성 결과를 세 소비자에 공급한다.
-fn append_missing_single_equation_row(
+/// 줄 캐시가 없는 단일 TAC 수식·양식 개체 호스트의 같은 구성 결과를 세 소비자에 공급한다.
+///
+/// rhwp가 합성한 줄은 HWPX에 저장하지 않으므로, 양식 개체만 든 문단을 저장했다가 다시 열면
+/// 줄이 하나도 없어 개체가 그려지지 않았다. 양식 개체 줄은 재조판처럼 개체 높이를 줄 높이로 쓴다.
+fn append_missing_single_tac_row(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
     styles: &ResolvedStyleSet,
 ) {
+    let form_height = match para.controls.as_slice() {
+        [Control::Equation(e)] if e.common.treat_as_char => 0,
+        [Control::Form(f)] if f.common.treat_as_char => f.height as i32,
+        _ => return,
+    };
     if !composed.lines.is_empty()
         || !para.line_segs.is_empty()
-        || !matches!(para.controls.as_slice(), [Control::Equation(e)] if e.common.treat_as_char)
         || para
             .text
             .chars()
@@ -317,8 +324,10 @@ fn append_missing_single_equation_row(
     );
     composed.lines.push(ComposedLine {
         runs: Vec::new(),
-        line_height: metrics.line_height,
-        baseline_distance: metrics.baseline_distance,
+        line_height: metrics.line_height.max(form_height),
+        baseline_distance: metrics
+            .baseline_distance
+            .max(super::line_breaking::baseline_distance_hwp(form_height)),
         segment_width: 0,
         column_start: 0,
         line_spacing: metrics.line_spacing,

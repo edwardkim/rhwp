@@ -3363,7 +3363,7 @@ fn line_start_utf16_offset(
 /// and `make_line_seg`'s output is written to the file. Any half-point font
 /// size split them — 10.5pt gives `1050 * 0.85 = 892.5`, so one published 893
 /// and the other 892.
-fn baseline_distance_hwp(line_height_hwp: i32) -> i32 {
+pub(super) fn baseline_distance_hwp(line_height_hwp: i32) -> i32 {
     (line_height_hwp as f64 * 0.85).round() as i32
 }
 
