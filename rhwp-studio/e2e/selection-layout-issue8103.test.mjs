@@ -1,6 +1,9 @@
 /** #8103: 복원된 선택을 확정된 쪽 배치에 투영한다. */
-import { runTest, loadApp, createNewDocument, assert, screenshot, setTestCase } from './helpers.mjs';
+import { runTest, loadApp, createNewDocument, assert, screenshot, setTestCase as setReporterTestCase } from './helpers.mjs';
 import { readFileSync } from 'node:fs';
+
+let currentCase = 'initialization';
+function setTestCase(name) { currentCase = name; setReporterTestCase(name); }
 
 const requestedRenderer = process.argv.find(arg => arg.startsWith('--renderer='))?.split('=')[1];
 const renderers = requestedRenderer ? [requestedRenderer] : ['canvas2d', 'auto'];
@@ -115,10 +118,14 @@ function checkProjection(s, label) {
 
 for (const renderer of renderers) {
 await runTest(`선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencing (${renderer})`, async ({ page }) => {
+  currentCase = 'initialization';
   const errors = [];
   const renderErrors = [];
   page.on('console', message => {
-    if (message.type() === 'error' && /CanvasView|CanvasKit|렌더|font family/.test(message.text())) renderErrors.push(message.text());
+    if (message.type() === 'error' && /CanvasView|CanvasKit|렌더|font family/.test(message.text())) {
+      renderErrors.push({ phase: currentCase, message: message.text() });
+      console.log(`[render-error:${currentCase}] ${message.text()}`);
+    }
   });
   let suppliedFonts = 0;
   page.on('pageerror', error => errors.push(String(error)));

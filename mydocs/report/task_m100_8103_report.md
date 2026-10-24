@@ -211,7 +211,7 @@ COMMENTED뿐이다. 다른 세션의 PR은 수정하지 않았다.
 이번 요청은 PR 생성까지이며 merge·release·배포·이슈 종료는 실행하지 않는다.
 
 
-## 로컬 인계 검증 (2026-10-24, 진행 중)
+## 로컬 인계 검증 (2026-10-24, PR 제출 보류)
 
 클라우드 수치와 아래 macOS 실행을 구분한다. 인계 원격 head는
 `a6753b509844c7c99c3bd8cafc6fce7af43d82c5` 그대로였으며, 기본 작업공간의 #8104
@@ -238,7 +238,7 @@ transaction/줌 보존 검증을 확인했다. 이 경계의 기존 검사는 �
 실제 대화상자 E2E는 제품 보정 전 요청 배율 80% 적용을 확인한 상태에서 선택 전체·focus
 캐럿·첫/중간/마지막 쪽 관계 5건이 실패했다. 처음 추가한 숫자 입력은 배율이 변하지 않아
 재현 증거에서 제외했고, 요청 배율 assertion을 추가했다. 기대값은 확정 쪽 원점과 page-local
-rect 관계이며 허용치를 변경하지 않았다. 보정 후 결과는 최종 실행 뒤 아래에 기록한다.
+rect 관계이며 허용치를 변경하지 않았다. 보정 후 Canvas2D·auto·강제 CanvasKit에서 해당 5건과 요청 배율 검사가 모두 통과했다.
 
 ### CanvasKit 지연 장치의 경합
 
@@ -249,3 +249,70 @@ rect 관계이며 허용치를 변경하지 않았다. 보정 후 결과는 최�
 `prepareCanvasMetrics` 호출에 실제로 진입했는지 기다린다. renderer·metrics·선택 rect를
 대역하지 않고 현재 메서드 실행을 지연시키는 기존 계약을 유지한다. 제품 글꼴 복구 코드는
 변경하지 않는다. 보정 전 실패를 성공으로 합산하지 않는다.
+
+
+### 로컬 실행 결과와 남은 차단 조건
+
+검증 제품 head는 `19f943d9c171d23043dfbcfddd5457a68642fd70`이다. 이후 변경은
+E2E 콘솔 오류의 발생 단계 기록과 이 보고서뿐이며 제품 소스는 동일하다.
+기본 작업공간과 별개인 `/Users/melee/.codex/worktrees/issue-8103-selection-layout/rhwp`에서
+fresh web·Node WASM을 locked wrapper로 순차 빌드했다. 공통 절대 target은
+`/Users/melee/Documents/projects/forks/rhwp/target/pr-review`다. pkg/public의 JS SHA-256은
+`4c8a5ff1ff30987c07cbce6b88d35d8487b067d274475c8b9946b5f9d5b21332`, WASM SHA-256은
+`27a0fee1ad2875cfe8423ee43667b2411c9f040a3b4c8c43d92bbbca114fa5f1`로 각각 일치했다.
+생성된 `public/rhwp.js`는 커밋하지 않는다.
+
+| 검증 | 로컬 결과 |
+|---|---|
+| fresh dev web·Node WASM | 둘 다 성공 |
+| `npx tsc --noEmit`, `npm test`, `npm run build` | 성공, unit 2427 PASS / 0 FAIL / 0 SKIP |
+| selection-layout Canvas2D·auto | 합계 295 PASS / 1 FAIL, auto의 caught render error 검사 실패 |
+| selection-layout 강제 CanvasKit | 148 PASS / 1 FAIL, caught render error 검사 실패 |
+| Enter caret / Undo contracts / select-all | 84 / 99 / 63 PASS, 각각 FAIL 0 |
+| zoom-dialog-transaction | 37 PASS / 0 FAIL |
+| cell-target-issue8102 | exit 0, 오류 배열 비어 있음 |
+| canvaskit-font-family-fallback-issue7445 | 1 PASS / 0 FAIL |
+| manifest / Markdown 링크 / diff 공백 | 168개·168행 / 637문서·9변경 / 통과 |
+
+브라우저 명령은 Studio 디렉터리에서
+`CHROME_PATH='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+VITE_URL=http://127.0.0.1:7700 node e2e/selection-layout-issue8103.test.mjs --mode=headless`이며,
+강제 경로는 `--renderer=canvaskit`을 추가했다. 원본 글꼴 cache 대역 옵션 없이 로컬 CDN을
+사용했다. 실제 backend 확인 assertion을 유지한다. 다른 E2E도 같은 환경에서 해당 `.test.mjs`를
+실행했다. 로그는 ignored `output/pr-review/8103/local/final-*.log`에 보존한다.
+
+지연 장치의 gate 진입 확인으로 기존 30초 timeout은 해소됐지만, **전체 CanvasKit 통과는 아니다.**
+최종 실행에서 좌표·선택 보존·역순 완료·문서 교체 검사와 pageerror 0건은 통과했다.
+별도로 console.error를 수집하자 auto에서 `함초롬바탕` family 미준비 오류 4건이 검출됐다.
+강제 CanvasKit에서는 66% 삭제/복원 단계의 이전 페이지 조회 오류 1건과 인위적 지연 단계의
+family 미준비 오류 2건이 검출됐다. 발생 단계는 `final-canvaskit.log`에 보존했다.
+콘솔 오류 assertion을 제거하거나 skip하지 않는다.
+
+최신 base `60972534680a0c5e51e54ec189b92e252e81a867`의 두 제품 파일
+`input-handler.ts`·`canvas-view.ts`를 `git show`로 읽어 별도 Vite pre-transform에서 공급하는
+7701 대조 서버를 실행했다. 다른 제품 파일과 Rust/WASM 입력은 base와 동일함을 diff로 확인했다.
+소스 파일을 바꾸거나 다른 checkout의 WASM을 복사하지 않았으며, 별도 Vite cache를 사용했다.
+대조 서버 정의는 `output/pr-review/8103/local/base-server.mjs`다.
+base auto에서도 초기화 중 같은 family 미준비 오류 2건이 발생했고, 원래 선택 투영 검사도
+실패했다. base 실행은 후반 지연 검사에서 timeout으로 끝났으므로 전체 성공 대조군으로 쓰지 않는다.
+근거는 `base-auto-diagnostic.log`다. 이는 클라우드의 검토 전 코드 대조와 별개로 확보한 최신
+upstream/devel 재현 증거다. 강제 CanvasKit의 모든 오류가 base와 같다고 확대 해석하지 않는다.
+
+리베이스로 들어온 #8180 셀 target과 #7445 font fallback, 기존 줌 transaction 검사는
+base·후보 양쪽에서 각각 exit 0이었다. #8182 page text layout API는 선택 overlay의
+getSelectionRects 경로와 다르고 해당 소스를 변경하지 않았다. packaging·PDF codec·기존 검증
+문서 변경은 이번 DOM overlay 수정과 교차하지 않는다. 이 결과를 문서 렌더링 전반의 시각
+동일성 증거로 확대하지 않는다. 본 수정은 문서 조판·paint를 변경하지 않는 선택/캐럿 DOM 배치다.
+
+실제 로컬 UI에서도 400문단 붙여넣기 → 전체 삭제 → Undo → 재선택 없는 스크롤 → 확대/축소
+대화상자 66% → 마지막 쪽을 확인했다. 보정 뒤 음영·마지막 짧은 문단·캐럿이 일치했고,
+본문 재클릭 없이 Backspace로 빈 한 쪽, Undo로 전체 복원, Redo로 빈 한 쪽을 확인했다.
+보정 전후 화면은 기본 작업공간의 ignored
+`output/pr-review/8103/local/dialog-before.png`와 `dialog-after.png`에 보존했다.
+이는 에이전트의 실제 UI 관측이며 사용자 본인의 판정은 아직 받지 않았다.
+
+로컬 7700 서버는 유지한다. 사용자에게 Canvas2D·auto URL과 400문단 텍스트 파일, 상세 조작
+순서를 전달했다. 사용자에게는 재선택하지 않는 스크롤·66% 배율·Backspace·Undo/Redo의 결과를
+확인하도록 안내했다. **필수 E2E 오류가 남아 push·PR 생성은 보류한다.** 사용자 지시에서 제외한
+다른 이슈의 renderer 자원 복구 구현으로 확장하지 않았다. merge·release·배포·이슈 종료도
+실행하지 않았다. 선택 투영 개선과 별개인 렌더 오류의 해결 범위가 남아 있다.
