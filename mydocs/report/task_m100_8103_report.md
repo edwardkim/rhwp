@@ -2,6 +2,13 @@
 
 Issue: [#8103](https://github.com/edwardkim/rhwp/issues/8103) (참조만 사용, 자동 종료하지 않음)
 
+## 현재 로컬 상태 (2026-10-24)
+
+최신 제품 head는 `1cdb915fa7994c890c7b03dfb37472a766ecf90b`, base는
+`60972534680a0c5e51e54ec189b92e252e81a867`이다. 아래 클라우드·중간 보류 기록은
+당시 실행 이력이다. 후속 승인으로 renderer 준비 중 replay와 backend 간 canvas context
+재사용을 보정했고, 최종 로컬 결과는 문서 마지막 절에 기록한다.
+
 ## 원인과 변경 동작
 
 기준 `upstream/devel`은 `def947c2149df5bc812d801e6e79be19a403b4d1`이다.
@@ -383,3 +390,32 @@ CanvasKit 없이도 동기 구간에서 발생하므로 선택 음영/renderer �
 이번 수정에 넣지 않으며 release WASM의 최종 성능 수치로 해석하지 않는다. 기존 이슈 검색에서
 #1211 전체 visible repaint, #4118 셀 뮤테이터, #5769/#3230 Undo 비용을 확인했으나 같은
 400문단 본문 붙여넣기 증상으로 단정하지 않았다. 별도 이슈 게시나 성능 구현은 하지 않았다.
+
+## 제품 head 1cdb915의 최종 로컬 검증
+
+base `60972534680a0c5e51e54ec189b92e252e81a867`, 제품 head
+`1cdb915fa7994c890c7b03dfb37472a766ecf90b`에서 fresh dev web·Node WASM을 다시 생성했고
+위 JS/WASM SHA-256은 동일하다. CI unit TypeScript·production build와 전체 unit
+2429 PASS / 0 FAIL / 0 SKIP이다.
+
+| 브라우저 검사 | 결과 |
+|---|---|
+| 선택 Canvas2D + auto software | 298 PASS / 0 FAIL |
+| 선택 강제 CanvasKit software | 151 PASS / 0 FAIL |
+| 선택 auto WebGL (SwiftShader ANGLE) | 152 PASS / 0 FAIL |
+| renderer contract | exit 0 |
+| Enter / Undo / select-all | 84 / 99 / 63 PASS, 실패 0 |
+| zoom dialog / font fallback | 37 / 1 PASS, 실패 0 |
+| #8102 cell target | exit 0, errors 비어 있음 |
+
+선택 601개 검사에서 pageerror와 caught console render error가 각각 0건이다.
+WebGL 실제 surface는 `default`, renderer는 `canvaskit`으로 확인했다. 동일 head의 실제
+in-app browser 기본 `?renderer=auto`에서 400문단 전체 삭제/Undo·66%·마지막 쪽 스크롤·
+재선택 없는 Backspace·Undo·Redo를 확인했고 콘솔 오류 0건이다.
+[최종 실제 화면](../pr/assets/issue_8103/auto-66-last-page.png)은 공개 합성 입력이다.
+로그는 ignored `output/pr-review/8103/local/final-head-*.log`에 보존한다.
+
+제출 직전 devel에 #8195(#8104)가 병합되어 새 base가
+`9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`로 전진했다. 위 결과는 이전 base의
+완료 증거이며 새 base의 결과로 재사용해 표시하지 않는다. 입력 처리 경로가 교차하므로
+최신 base로 리베이스 후 선택·renderer 회귀와 새 명령 오류 계약을 함께 재검증한다.
