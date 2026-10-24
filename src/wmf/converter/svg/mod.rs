@@ -1,3 +1,4 @@
+mod clipping;
 mod device_context;
 mod node;
 mod saved_device_context;
@@ -28,6 +29,7 @@ pub struct SVGPlayer {
     elements: Vec<Node>,
     object_selected: SelectedGraphicsObject,
     current_clip_id: Option<String>,
+    clip_bounds: BTreeMap<String, clipping::DeviceClipBounds>,
 }
 
 impl SVGPlayer {
@@ -74,6 +76,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
             definitions,
             brush_only_rop_sequence,
             elements,
+            clip_bounds,
             ..
         } = self;
 
@@ -97,12 +100,15 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let mut vb_right = vb_x.saturating_add(vb_w_i32);
         let mut vb_bottom = vb_y.saturating_add(vb_h_i32);
         for elem in elements.iter() {
-            if let Some(mx) = element_max_x(elem) {
+            // 출력에 적용한 같은 물리 클립만 표시 외곽에도 반영한다.
+            // 큰 원본 비트맵의 잘린 부분으로 viewBox를 늘리면 남은 그림까지 축소된다.
+            let (max_x, max_y) = clipping::visible_element_maxima(elem, &clip_bounds);
+            if let Some(mx) = max_x {
                 if mx > vb_right {
                     vb_right = mx;
                 }
             }
-            if let Some(my) = element_max_y(elem) {
+            if let Some(my) = max_y {
                 if my > vb_bottom {
                     vb_bottom = my;
                 }
@@ -1738,20 +1744,16 @@ impl crate::wmf::converter::Player for SVGPlayer {
             .object_table
             .get(record.region as usize);
 
-        if let GraphicsObject::Region(region) = object {
-            let rect = &region.bounding_rectangle;
-            let id = format!("clip{record_number}");
-            let mut clip = Node::new("clipPath").set("id", &id);
-            let rect_node = Node::new("rect")
-                .set("x", rect.left)
-                .set("y", rect.top)
-                .set("width", rect.right - rect.left)
-                .set("height", rect.bottom - rect.top);
-            clip = clip.add(rect_node);
-            self.definitions.push(clip);
-            self.current_clip_id = Some(id);
+        let rectangle = match object {
+            GraphicsObject::Region(region) => Some(region.bounding_rectangle.clone()),
+            _ => None,
+        };
+        if let Some(rectangle) = rectangle {
+            self.context_current.clipping_region = Some(rectangle.clone());
+            self.install_device_clip(record_number, &rectangle, false);
         } else {
             self.current_clip_id = None;
+            self.context_current.clipping_region = None;
         }
 
         Ok(self)
@@ -1867,12 +1869,14 @@ impl crate::wmf::converter::Player for SVGPlayer {
             ..
         } = record;
 
-        self.context_current = self.context_current.clipping_region(Rect {
+        let rectangle = Rect {
             left,
             top,
             right,
             bottom,
-        });
+        };
+        self.context_current = self.context_current.clipping_region(rectangle.clone());
+        self.install_device_clip(record_number, &rectangle, true);
 
         Ok(self)
     }
