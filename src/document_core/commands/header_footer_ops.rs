@@ -1092,7 +1092,7 @@ impl DocumentCore {
     }
 
     /// 머리말/꼬리말 문단 리플로우
-    fn reflow_hf_paragraph(
+    pub(crate) fn reflow_hf_paragraph(
         &mut self,
         section_idx: usize,
         is_header: bool,
