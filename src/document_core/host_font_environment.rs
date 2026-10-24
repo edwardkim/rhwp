@@ -57,7 +57,7 @@ impl DocumentCore {
                     || self
                         .font_environment
                         .as_ref()
-                        .is_some_and(|env| env.replacement(&font.name).is_some())
+                        .is_some_and(|env| env.has_source_selection(&font.name))
                 {
                     continue;
                 }

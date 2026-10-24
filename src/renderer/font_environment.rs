@@ -122,7 +122,7 @@ impl FontEnvironment {
             glyph_fallbacks: BTreeMap::new(),
         });
         for (family, target) in replacements {
-            if result.substitutions.contains_key(&family) {
+            if result.has_source_selection(&family) {
                 continue;
             }
             result.substitutions.insert(family, target.clone());
@@ -651,6 +651,15 @@ impl FontEnvironment {
 
     pub(crate) fn replacement(&self, face: &str) -> Option<&str> {
         self.substitutions.get(face).map(String::as_str)
+    }
+
+    /// family 단위 관측은 원본 주소별 프로그램 선택을 덮어쓸 수 없다.
+    pub(crate) fn has_source_selection(&self, face: &str) -> bool {
+        self.substitutions.contains_key(face)
+            || self
+                .document_substitutions
+                .iter()
+                .any(|selection| selection.source == face)
     }
 
     fn document_substitution(
