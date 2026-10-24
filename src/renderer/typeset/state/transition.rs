@@ -421,7 +421,18 @@ impl TypesetState {
             let Some((top, bottom)) = self.page_anchored_band_in_column(control) else {
                 continue;
             };
-            if bottom <= self.data.current_height + 0.5
+            // 저장 첫 줄이 밴드 앞에 있는 경우에는 그 원점을 먼저 수용한다.
+            // 용지 좌표 안에 들어간다는 사실만으로 개체의 실제 쪽 소속까지
+            // 확정되지는 않는다. 문단 분할 뒤 실제로 라우팅한 개체의 밴드는
+            // register_page_anchored_topbottom_band가 등록한다.
+            let stored_line_precedes_band = !para.stored_text_partition_is_dirty()
+                && !para.cell_format_vpos_dirty
+                && para.line_segs.first().is_some_and(|line| {
+                    line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                        && hwpunit_to_px(line.vertical_pos, self.data.layout.dpi) < bottom - 0.5
+                });
+            if stored_line_precedes_band
+                || bottom <= self.data.current_height + 0.5
                 || bottom + first_line_height > self.available_height() + 0.5
             {
                 continue;
