@@ -3516,6 +3516,10 @@ pub struct LayoutEngine {
     /// `cell_units_uncached` 안에서 계산되어 52,694 셀 표에서 O(셀²)(≈28억) 로 폭증했다.
     /// `cell_units_cache` 와 동일 조판 경계에서 clear 한다.
     table_nested_text_flag_cache: std::cell::RefCell<std::collections::HashMap<usize, bool>>,
+    /// 중첩 표 본체 높이 — (표 주소, 스타일 주소) 키. `cell_units_cache` 와 같은 경계에서
+    /// 비우고, 셀 편집 무효화 때는 통째로 비운다.
+    nested_table_body_height_cache:
+        std::cell::RefCell<std::collections::HashMap<(usize, usize), f64>>,
     table_row_index_cache: table_rows::TableRowIndexCache,
     /// 셀 안에 든 표(중첩 표)의 포인터. 저장 쪽 되감김 줄간격 트림은 쪽 프레임을 소유하는
     /// 바깥 표에만 쓴다. `cell_units_cache` 와 동일 조판 경계에서 clear 한다.
@@ -3689,6 +3693,9 @@ impl LayoutEngine {
             nested_table_ptrs: std::cell::RefCell::new(std::collections::HashSet::new()),
             stored_frame_row_plans: std::cell::RefCell::new(std::collections::HashMap::new()),
             table_nested_text_flag_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
+            nested_table_body_height_cache: std::cell::RefCell::new(
+                std::collections::HashMap::new(),
+            ),
             table_row_index_cache: Default::default(),
             cursor_probe_block_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
             single_line_overflow_cache: Default::default(),
@@ -3704,6 +3711,7 @@ impl LayoutEngine {
         self.nested_table_ptrs.borrow_mut().clear();
         self.stored_frame_row_plans.borrow_mut().clear();
         self.table_nested_text_flag_cache.borrow_mut().clear();
+        self.nested_table_body_height_cache.borrow_mut().clear();
         self.table_row_index_cache.clear();
         self.cursor_probe_block_cache.borrow_mut().clear();
         self.single_line_overflow_cache.clear();

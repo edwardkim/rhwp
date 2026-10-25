@@ -11236,6 +11236,27 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        // 같은 중첩 표의 높이를 분할 판정마다 다시 묻는다. 행 높이 해석 전체를 다시
+        // 하지 않도록 표 단위로 한 번만 계산한다(`cell_units_cache` 와 같은 수명).
+        let key = (
+            table as *const crate::model::table::Table as usize,
+            styles as *const ResolvedStyleSet as usize,
+        );
+        if let Some(&height) = self.nested_table_body_height_cache.borrow().get(&key) {
+            return height;
+        }
+        let height = self.nested_table_body_height_uncached(table, styles);
+        self.nested_table_body_height_cache
+            .borrow_mut()
+            .insert(key, height);
+        height
+    }
+
+    fn nested_table_body_height_uncached(
+        &self,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
         let col_count = table.col_count as usize;
         let row_count = table.row_count as usize;
         let row_heights = self.resolve_row_heights(table, col_count, row_count, None, styles, true);
@@ -13475,6 +13496,8 @@ impl LayoutEngine {
         local_after: bool,
         unit_fingerprint_unchanged: bool,
     ) {
+        // 편집한 셀을 품은 중첩 표의 높이가 바뀔 수 있다. 어느 표인지 좁히지 않고 모두 버린다.
+        self.nested_table_body_height_cache.borrow_mut().clear();
         let edited_cell_key = edited_cell as *const crate::model::table::Cell as usize;
         let owner_table_key = owner_table as *const crate::model::table::Table as usize;
         let cached_owner_flag = self
