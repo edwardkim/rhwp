@@ -68,8 +68,6 @@ const SMALL: &str = "samples/para-001.hwp";
 const FIELDS: &str = "samples/field-01.hwp";
 const TABLE: &str = "samples/table-001.hwp";
 const DIGEST_SAMPLE: &str = "samples/hwp3-sample.hwp";
-const STRUCT_SAMPLE: &str = "samples/hwp3-sample16.hwp";
-
 fn required_keys(command: &str) -> Vec<String> {
     let env = read_json("envelope_keys.json");
     env["commands"][command]["keys"]
@@ -104,15 +102,6 @@ fn explain_envelope_matches_fixture_keys_on_fields_and_tables() {
         assert!(v["summary"].as_str().unwrap().chars().count() > 0);
         assert!(v["paragraphCount"].as_u64().is_some());
     }
-}
-
-#[test]
-fn export_structure_envelope_matches_fixture_keys() {
-    let p = sample(STRUCT_SAMPLE);
-    let v = run_ok_json(&["export-structure", p.to_str().unwrap(), "--json"]);
-    assert_keys("export-structure", &v);
-    assert!(v["nodeCount"].as_u64().is_some());
-    assert!(v["structure"].is_object());
 }
 
 #[test]

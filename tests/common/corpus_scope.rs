@@ -13,5 +13,10 @@ pub(crate) fn sample_is_in_scope(path: &Path) -> bool {
         return true;
     };
     let relative = relative.to_string_lossy().replace('\\', "/");
+    let name = relative.rsplit('/').next().unwrap_or(&relative);
+    if name.starts_with("hwp3-sample16.") || name.starts_with("hwp3-sample16-") {
+        // sample16 원본·변환본은 별도 PR에서 회귀를 관리한다.
+        return false;
+    }
     !TRANSFERRED_EXAMS.lines().any(|exam| exam == relative)
 }

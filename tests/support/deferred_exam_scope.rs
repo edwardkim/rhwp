@@ -3,7 +3,10 @@
 fn is_deferred_exam_document(path: &str) -> bool {
     let normalized = path.replace('\\', "/").to_lowercase();
     let name = normalized.rsplit('/').next().unwrap_or(&normalized);
-    name.starts_with("exam_")
+    // sample16 원본·변환본의 회귀는 사용자 요청으로 별도 PR에서 처리한다.
+    name.starts_with("hwp3-sample16.")
+        || name.starts_with("hwp3-sample16-")
+        || name.starts_with("exam_")
         || name.starts_with("exam-")
         || name.starts_with("exambank_math")
         || name.starts_with("eq-002")

@@ -142,12 +142,7 @@ fn issue_3739_export_hwpx_verify_accepts_generated_field_command_parameters() {
 
 #[test]
 fn issue_3739_export_hwpx_accepts_password_stdin_for_hwp3_hwp5_and_hwpx() {
-    for sample in [
-        "samples/HWP5-password-123456.hwpx",
-        "samples/hwp3-sample16-hwp5-2024-password-123456.hwp",
-    ] {
-        assert_password_protected_export_hwpx_success(sample, false);
-    }
+    assert_password_protected_export_hwpx_success("samples/HWP5-password-123456.hwpx", false);
 }
 
 #[test]

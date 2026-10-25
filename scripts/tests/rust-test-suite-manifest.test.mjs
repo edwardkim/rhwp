@@ -153,12 +153,12 @@ test('전체 integration source는 파생 산출물을 쓰지 않고 검증한�
 });
 
 test('일반 case는 weighted suite로 해석한다', () => {
-  const target = resolveCase('issue_1035_alignment');
+  const target = resolveCase('issue_1086');
   assert.match(target, /^regression_suite_\d{3}$/);
-  const plan = resolveCasePlan('issue_1035_alignment');
+  const plan = resolveCasePlan('issue_1086');
   assert.equal(plan.grouped, true);
-  assert.match(nextestArguments(plan).join(' '), /issue_1035_alignment::/);
-  assert.match(cargoTestArguments(plan).at(-1), /issue_1035_alignment::/);
+  assert.match(nextestArguments(plan).join(' '), /issue_1086::/);
+  assert.match(cargoTestArguments(plan).at(-1), /issue_1086::/);
 });
 
 test('경로 의존 case는 기존 target 이름을 유지한다', () => {

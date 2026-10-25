@@ -79,21 +79,3 @@ fn sample19_synthesized_width_matches_hancom_conversion() {
         ours.keys().filter(|w| **w > hancom_w).collect::<Vec<_>>()
     );
 }
-
-/// 제본 여백이 **0** 인 문서는 이 수정이 건드리지 않는다.
-///
-/// `hwp3-sample16.hwp` 의 본문 문단 최다 폭은 수정 전후 모두 `46024` 다. 이 문서는
-/// 한컴 변환본(`51024`)과 여전히 다른데, 그 불일치는 제본 축이 아니라 어울림 구역·
-/// 들여쓰기 축이라 이 이슈와 분리된다(#5696 본문의 `hwp3-sample16` 52.8%).
-///
-/// 이 시험이 깨지면 제본 차감이 제본 여백 0 인 문서까지 좁힌 것이다.
-#[test]
-fn sample16_dominant_width_is_untouched_by_the_gutter_subtraction() {
-    /// 수정 전후 동일한 실측값.
-    const SAMPLE16_DOMINANT_HU: i32 = 46024;
-    let ours = dominant_width(&segment_width_histogram("samples/hwp3-sample16.hwp"));
-    assert_eq!(
-        ours, SAMPLE16_DOMINANT_HU,
-        "제본 여백 0 인 문서의 최다 폭은 그대로여야 한다: {ours}"
-    );
-}

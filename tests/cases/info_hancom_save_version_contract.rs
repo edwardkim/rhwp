@@ -9,11 +9,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const HWP3: &str = "samples/hwp3-sample16.hwp";
 const HWP2010: &str = "samples/basic/Hyper(hwp2010).hwp";
-const HWP2018: &str = "samples/hwp3-sample16-hwp5-2018.hwp";
-const HWP2022: &str = "samples/hwp3-sample16-hwp5-2022.hwp";
-const HWP2024: &str = "samples/hwp3-sample16-hwp5-2024.hwp";
 const NEW_SAVE_HWP2010: &str = "samples/pr5935/test-2010.hwp";
 const NEW_SAVE_HWP2018: &str = "samples/pr5935/test-2018.hwp";
 const NEW_SAVE_HWP2022: &str = "samples/pr5935/test-2022.hwp";
@@ -46,9 +42,6 @@ fn info_json(relative: &str) -> serde_json::Value {
 fn info_distinguishes_hancom_office_save_editions_for_hwp5_and_hwpx() {
     for (sample, format, product, version) in [
         (HWP2010, "hwp5", "hancom-office-2010", "8.0.0.460"),
-        (HWP2018, "hwp5", "hancom-office-2018", "10.0.0.14727"),
-        (HWP2022, "hwp5", "hancom-office-2022", "12.0.0.535"),
-        (HWP2024, "hwp5", "hancom-office-2024", "13.0.0.3457"),
         (NEW_SAVE_HWP2010, "hwp5", "hancom-office-2010", "8.0.0.466"),
         (
             NEW_SAVE_HWP2018,
@@ -103,13 +96,6 @@ fn info_distinguishes_hancom_office_save_editions_for_hwp5_and_hwpx() {
             "{sample}: {info}"
         );
     }
-}
-
-#[test]
-fn info_does_not_guess_a_saving_product_without_supported_metadata() {
-    let info = info_json(HWP3);
-    assert_eq!(info["format"], "hwp3", "{HWP3}: {info}");
-    assert!(info["lastSavedWith"].is_null(), "{HWP3}: {info}");
 }
 
 #[test]

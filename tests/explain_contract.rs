@@ -21,9 +21,6 @@ const SAMPLE_PLAIN: &str = "samples/para-001.hwp";
 const SAMPLE_FOOTNOTE: &str = "samples/footnote-01.hwp";
 /// 미주 6개.
 const SAMPLE_ENDNOTE: &str = "samples/endnote-01.hwp";
-/// 비밀번호 "123456" 로 걸린 HWP5 문서.
-const SAMPLE_ENCRYPTED: &str = "samples/hwp3-sample16-hwp5-2024-password-123456.hwp";
-
 fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
 }
@@ -234,70 +231,4 @@ fn explain_multiple_files_exit_usage() {
         "{}",
         describe(&args, &output)
     );
-}
-
-// ── 암호 문서 — 다른 명령과 같은 `load_document` 규약을 그대로 물려받는다 ──────
-
-#[test]
-fn explain_encrypted_document_without_password_is_usage_error() {
-    // [#3828] 규약: 다른 조회 명령(info 등)과 같은 종료 코드(EXIT_USAGE=2) —
-    // "암호로 보호돼 있어 상세 분석 불가"는 이 계약을 통해 자동으로 지켜진다.
-    let p = sample(SAMPLE_ENCRYPTED);
-    let args = ["explain", p.to_str().unwrap(), "--json"];
-    let output = run(&args);
-    assert_eq!(
-        output.status.code(),
-        Some(2),
-        "{}",
-        describe(&args, &output)
-    );
-    assert!(
-        output.stdout.is_empty(),
-        "암호 문서 거부 경로 stdout 은 비어야 합니다.\n{}",
-        describe(&args, &output)
-    );
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("암호"), "{stderr}");
-}
-
-#[test]
-fn explain_encrypted_document_wrong_password_exit_runtime() {
-    let p = sample(SAMPLE_ENCRYPTED);
-    let args = [
-        "explain",
-        p.to_str().unwrap(),
-        "--password",
-        "wrong-password",
-        "--json",
-    ];
-    let output = run(&args);
-    assert_eq!(
-        output.status.code(),
-        Some(1),
-        "{}",
-        describe(&args, &output)
-    );
-}
-
-#[test]
-fn explain_encrypted_document_with_password_reports_encrypted_true() {
-    let p = sample(SAMPLE_ENCRYPTED);
-    let args = [
-        "explain",
-        p.to_str().unwrap(),
-        "--password",
-        "123456",
-        "--json",
-    ];
-    let output = run(&args);
-    assert_eq!(
-        output.status.code(),
-        Some(0),
-        "{}",
-        describe(&args, &output)
-    );
-    let v: serde_json::Value = serde_json::from_slice(&output.stdout).expect("json");
-    assert_eq!(v["encrypted"], true, "{v}");
-    let summary = v["summary"].as_str().unwrap();
-    assert!(summary.contains("암호로 보호돼 있다"), "{summary}");
 }

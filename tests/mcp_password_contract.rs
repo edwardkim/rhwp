@@ -11,10 +11,6 @@ use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 const PASSWORD: &str = "123456";
 const WRONG_PASSWORD: &str = "mcp-password-must-not-echo";
 const FIXTURES: &[(&str, Option<u64>)] = &[
-    (
-        "samples/hwp3-sample16-hwp5-2024-password-123456.hwp",
-        Some(64),
-    ),
     ("samples/HWP3-password-123456.hwp", Some(24)),
     // 이 HWPX의 쪽수 고정만 #7445에서 독립 시각 기준으로 재검토한다.
     ("samples/HWP5-password-123456.hwpx", None),

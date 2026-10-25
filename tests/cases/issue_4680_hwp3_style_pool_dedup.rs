@@ -87,10 +87,9 @@ fn distinct_counts<T: PartialEq>(ids: &[u32], pool: &[T]) -> (usize, usize) {
 }
 
 /// HWP3 표본 — 본문만 있는 것, 표가 있는 것, 쪽수가 큰 것을 섞는다.
-const SAMPLES: [&str; 4] = [
+const SAMPLES: [&str; 3] = [
     "samples/hwp3-sample.hwp",
     "samples/hwp3-sample11.hwp",
-    "samples/hwp3-sample16.hwp",
     "samples/hwp3-empty-cell.hwp",
 ];
 
@@ -161,7 +160,8 @@ fn hwp3_cell_border_fill_ids_map_one_to_one_onto_values() {
 fn distinct_styles_are_not_merged_away() {
     // 반례 — 정리가 과해서 서로 다른 모양까지 하나로 합치면 안 된다.
     // 이 표본들은 본문에 서로 다른 글자 모양이 실제로 섞여 있다.
-    for rel in ["samples/hwp3-sample11.hwp", "samples/hwp3-sample16.hwp"] {
+    {
+        let rel = "samples/hwp3-sample11.hwp";
         let core = parse_hwp3(rel);
         let doc = core.document();
         let ids = used_char_shape_ids(doc);

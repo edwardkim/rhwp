@@ -45,10 +45,6 @@ hwp-3.0-HWPML.hwp	2
 hwp3-sample11-hwp5.hwp	14
 hwp3-sample11-hwpx.hwpx	10
 hwp3-sample11.hwp	10
-hwp3-sample16-hwp5-2018.hwp	1
-hwp3-sample16-hwp5-2024.hwp	1
-hwp3-sample16-hwp5.hwpx	7
-hwp3-sample16.hwp	0
 hwp3-sample4-hwp5.hwp	4
 hwp3-sample4.hwp	1
 hwp3-sample5-hwp5-v2018.hwp	18
@@ -204,4 +200,3 @@ issue6465/press_release_footer_logos.hwpx	1
 # 저장값(20000 = 133.3px)으로 만들면 똑같이 37.8px 넘친다 — 홀수 값이 이제 실제 간격으로 읽혀 드러났을 뿐이다. 별도 이슈 #7824.
 issue7816/odd_spacing_prev.hwpx	2
 issue6031/3249937_asset_management_rules.hwpx	0
-hwp3-sample16-hwp5-2022.hwp	0

@@ -23,17 +23,6 @@
       "sample": "samples/hwp3-sample.hwp"
     },
     {
-      "id": "J03",
-      "ask": "목차만 뽑아줘",
-      "pages": "medium+",
-      "steps": [
-        "info",
-        "export-structure"
-      ],
-      "stop": "S05",
-      "sample": "samples/hwp3-sample16.hwp"
-    },
-    {
       "id": "J04",
       "ask": "긴 문서인데 다 읽지 말고 훑어줘",
       "pages": "large",
@@ -110,16 +99,6 @@
       "sample": "samples/hwp3-sample.hwp"
     },
     {
-      "id": "J11",
-      "ask": "절 단위로 나눠서 요약해",
-      "pages": "medium+",
-      "steps": [
-        "digest --sections"
-      ],
-      "stop": "S06",
-      "sample": "samples/hwp3-sample16.hwp"
-    },
-    {
       "id": "J12",
       "ask": "폴더에서 위임전결 있는 파일만",
       "pages": "folder",
@@ -128,16 +107,6 @@
       ],
       "stop": "S14",
       "sample": "docs/*.hwp"
-    },
-    {
-      "id": "J13",
-      "ask": "암호 걸린 문서 열어봐",
-      "pages": "any",
-      "steps": [
-        "info"
-      ],
-      "stop": "S02",
-      "sample": "samples/hwp3-sample16-hwp5-2024-password-123456.hwp"
     },
     {
       "id": "J14",

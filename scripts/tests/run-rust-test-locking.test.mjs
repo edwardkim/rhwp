@@ -9,7 +9,7 @@ import {
 const GROUPED_PLAN = {
   target: 'regression_suite_001',
   grouped: true,
-  caseName: 'issue_1035_alignment',
+  caseName: 'issue_1086',
 };
 
 test('run-rust-test nextest 명령은 Cargo.lock을 갱신하지 않는다', () => {
@@ -22,7 +22,7 @@ test('run-rust-test nextest 명령은 Cargo.lock을 갱신하지 않는다', () 
       '--test',
       'regression_suite_001',
       '-E',
-      'test(/(^|::)issue_1035_alignment::/)',
+      'test(/(^|::)issue_1086::/)',
       '--cargo-profile',
       'release-test',
     ],
@@ -39,7 +39,7 @@ test('run-rust-test cargo test 명령은 중복 없이 --locked를 전달한다'
       'native-skia',
       '--test',
       'regression_suite_001',
-      'issue_1035_alignment::',
+      'issue_1086::',
     ],
   );
 });

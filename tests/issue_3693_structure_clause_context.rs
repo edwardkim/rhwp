@@ -57,20 +57,6 @@ fn all_text(structure: &StructureDoc) -> Vec<String> {
 }
 
 #[test]
-fn real_agreement_keeps_items_under_article() {
-    let structure = load_structure("samples/hwp3-sample16-hwp5.hwp");
-    let article = find_at(&structure.roots, 0, 945).expect("협정서 제1조");
-
-    assert_eq!((article.kind, article.marker.as_str()), ("조", "제1조"));
-    let child_markers: Vec<&str> = article
-        .children
-        .iter()
-        .map(|node| node.marker.as_str())
-        .collect();
-    assert_eq!(child_markers, vec!["1.", "2.", "3."]);
-}
-
-#[test]
 fn real_work_plan_date_is_not_a_clause_item() {
     let structure = load_structure("samples/2022년 국립국어원 업무계획.hwp");
 

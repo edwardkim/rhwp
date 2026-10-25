@@ -77,7 +77,7 @@ fn depth_budget_counts_active_lists_and_restores_after_failure() {
 
 #[test]
 fn normal_saved_hwp3_documents_still_open() {
-    for fixture in ["hwp3-sample.hwp", "hwp3-sample16.hwp", "hwp3-sample19.hwp"] {
+    for fixture in ["hwp3-sample.hwp", "hwp3-sample19.hwp"] {
         let bytes = std::fs::read(format!("samples/{fixture}")).unwrap();
         let document = parse_hwp3(&bytes).unwrap_or_else(|error| panic!("{fixture}: {error}"));
         assert!(document.sections.iter().any(|s| !s.paragraphs.is_empty()));

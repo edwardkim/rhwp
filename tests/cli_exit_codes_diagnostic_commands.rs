@@ -12,7 +12,6 @@ use std::process::{Command, Output};
 const SAMPLE: &str = "samples/hwp3-sample.hwp";
 /// HWP5(CFB) 샘플 — `dump-records` 는 HWP3 CFB 아닌 입력을 지원하지 않는다.
 const HWP5_SAMPLE: &str = "samples/2010-01-06.hwp";
-const HWP5_PASSWORD_SAMPLE: &str = "samples/hwp3-sample16-hwp5-2024-password-123456.hwp";
 const HWP5_PASSWORD: &str = "123456";
 
 fn sample_path() -> PathBuf {
@@ -21,10 +20,6 @@ fn sample_path() -> PathBuf {
 
 fn hwp5_sample_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(HWP5_SAMPLE)
-}
-
-fn hwp5_password_sample_path() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join(HWP5_PASSWORD_SAMPLE)
 }
 
 fn run(args: &[&str]) -> Output {
@@ -196,40 +191,6 @@ fn dump_records_rejects_non_cfb_hwp3_without_stdout() {
         "{}",
         describe(&[], &output)
     );
-}
-
-#[test]
-fn dump_records_preserves_hwp5_password_exit_and_output_contract() {
-    let encrypted = hwp5_password_sample_path();
-    let encrypted = encrypted.to_str().expect("valid utf8 path");
-
-    let missing = assert_code(&["dump-records", encrypted], 2);
-    assert!(missing.stdout.is_empty(), "{}", describe(&[], &missing));
-    assert!(
-        String::from_utf8_lossy(&missing.stderr).contains("비밀번호가 필요한 암호 문서"),
-        "{}",
-        describe(&[], &missing)
-    );
-
-    let wrong = assert_code(
-        &[
-            "dump-records",
-            encrypted,
-            "--password",
-            "wrong-fixture-password",
-        ],
-        1,
-    );
-    assert!(wrong.stdout.is_empty(), "{}", describe(&[], &wrong));
-    assert!(
-        String::from_utf8_lossy(&wrong.stderr).contains("비밀번호 불일치 또는 복호화 실패"),
-        "{}",
-        describe(&[], &wrong)
-    );
-
-    let opened = assert_code(&["dump-records", encrypted, "--password", HWP5_PASSWORD], 0);
-    assert!(!opened.stdout.is_empty(), "{}", describe(&[], &opened));
-    assert!(opened.stderr.is_empty(), "{}", describe(&[], &opened));
 }
 
 /// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,

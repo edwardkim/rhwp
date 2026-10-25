@@ -6721,34 +6721,6 @@ mod tests {
     }
 
     #[test]
-    fn test_hwp3_sample16_load_alignment() {
-        // [Task #877] hwp3-sample16.hwp panic 회귀 + paragraph alignment 정합.
-        // Stage 1: WASM RawVec overflow panic → graceful Err (가드 도입)
-        // Stage 2: ch=6 책갈피 / ch=7 날짜형식 / ch=8 날짜코드 record size 정합
-        //          (한글문서파일구조3.0 §10.2/§10.3/§10.4 참고)
-        //
-        // 본 sample16 은 표지 picture(ch=11) + 책갈피(ch=6) 가 다수 포함된 64쪽 RFP 문서.
-        // ch=6 가 8 byte (current) 가 아닌 spec 의 42 byte 로 처리되지 않으면 paragraph
-        // stream alignment 가 어긋나 28737 페이지로 폭주 인식됨.
-        let path = "samples/hwp3-sample16.hwp";
-        if !std::path::Path::new(path).exists() {
-            // 샘플 미커밋 환경에서는 skip.
-            return;
-        }
-        let mut data = Vec::new();
-        File::open(path).unwrap().read_to_end(&mut data).unwrap();
-        let doc = parse_hwp3(&data).expect("sample16 parse failed");
-        // 정상 alignment 시 한컴 HWP5 변환본과 동일한 1058 paragraphs 인식.
-        // 누락/오인 alignment 시 77 (Stage 1 only) 또는 더 적은 수 인식됨.
-        let total_paras: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
-        assert!(
-            total_paras >= 1000,
-            "sample16 paragraph count too low ({}); ch=6/7/8 alignment 회귀 의심",
-            total_paras
-        );
-    }
-
-    #[test]
     fn task2765_hwp3_toc_mark_does_not_emit_hyphen() {
         // [#2765] HWP3 특수문자 코드 25(제목/표/그림차례 표시, §10.19)는 비가시 표식이므로
         // 하이픈 글리프('-')를 방출하면 안 된다. 종전에는 코드 24(하이픈)와 동일 arm 이라

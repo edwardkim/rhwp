@@ -248,7 +248,6 @@ fn hwp3_convert_never_emits_black_char_shade() {
 fn hwp3_shaded_samples_match_hancom_gray() {
     // (표본, 한컴 저장본 음영색, HWP3 원본의 팔레트 × 비율)
     let cases: &[(&str, u32, &str)] = &[
-        ("samples/hwp3-sample16.hwp", 0x00D8_D8D8, "0 × 15%"),
         ("samples/hwp3-sample5.hwp", 0x00EF_EFEF, "0 × 6%"),
         ("samples/hwp3-sample11.hwp", 0x0099_9999, "0 × 40%"),
         ("samples/hwp3-sample11.hwp", 0x00D8_D8D8, "0 × 15%"),
@@ -317,10 +316,6 @@ fn shade_values_are_a_subset_of_hancom_own_conversion() {
         (
             "samples/hwp3-sample14.hwp",
             "samples/hwp3-sample14-hwp5.hwp",
-        ),
-        (
-            "samples/hwp3-sample16.hwp",
-            "samples/hwp3-sample16-hwp5.hwp",
         ),
         (
             "samples/hwp3-sample19.hwp",

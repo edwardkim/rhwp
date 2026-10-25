@@ -175,10 +175,6 @@ fn real_hwp5_and_hwpx_emit_complete_read_only_envelopes() {
 fn encrypted_hwp3_hwp5_and_hwpx_open_through_password_stdin() {
     for (rel, pages) in [
         ("samples/HWP3-password-123456.hwp", Some(24)),
-        (
-            "samples/hwp3-sample16-hwp5-2024-password-123456.hwp",
-            Some(64),
-        ),
         // 쪽수 고정만 #7445로 이관하고 암호·응답 봉투 계약은 유지한다.
         ("samples/HWP5-password-123456.hwpx", None),
     ] {

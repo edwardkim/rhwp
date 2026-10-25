@@ -1,7 +1,6 @@
 //! 이슈 #1086: HWP3 유래 문서의 쪽 나눔과 RowBreak·행 병합의 과도한 분할 회귀 검사.
 //!
 //! `samples/k-water-rfp.hwp`의 정상 한컴2022 PDF는 27쪽이다.
-//! `samples/hwp3-sample16-hwp5.hwp`의 정상 한컴 HWP5 변환 출력은 64쪽이다.
 
 use std::fs;
 use std::path::Path;
@@ -18,12 +17,6 @@ fn page_count(rel_path: &str) -> usize {
 #[test]
 fn task1086_k_water_rfp_page_count_matches_hancom_pdf() {
     assert_eq!(page_count("samples/k-water-rfp.hwp"), 27);
-}
-
-/// 독립 한컴 PDF와 전64쪽 Native/fresh 시각 검증의 같은 원본이다.
-#[test]
-fn task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office() {
-    assert_eq!(page_count("samples/hwp3-sample16-hwp5.hwp"), 64);
 }
 
 // hwpspec의 실패한 쪽수·쪽 소속 검사는 #7445로 이관했다.

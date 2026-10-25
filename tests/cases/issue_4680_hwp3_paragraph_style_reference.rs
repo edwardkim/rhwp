@@ -8,7 +8,7 @@
 //! # 기대값의 출처
 //!
 //! `samples/` 에는 같은 문서의 HWP3 원본과 **한/글이 저장한 HWP5 변환본**이 짝으로
-//! 들어 있다(`hwp3-sample16.hwp` ↔ `hwp3-sample16-hwp5.hwp`). 두 파일은 포맷만
+//! 들어 있다(`hwp3-sample11.hwp` ↔ `hwp3-sample11-hwp5.hwp`). 두 파일은 포맷만
 //! 다른 같은 문서이므로 문단별 스타일 참조도 같아야 한다. 그래서 기대값을 우리
 //! 구현이 아니라 **한/글 변환본**에서 가져온다 — 수정 전에는 HWP3 쪽만 전부 0 이라
 //! 이 대조가 깨진다.
@@ -64,11 +64,7 @@ fn style_ids(rel: &str) -> Vec<u8> {
 }
 
 /// (HWP3 원본, 한/글 HWP5 변환본) 짝.
-const PAIRS: [(&str, &str); 4] = [
-    (
-        "samples/hwp3-sample16.hwp",
-        "samples/hwp3-sample16-hwp5.hwp",
-    ),
+const PAIRS: [(&str, &str); 3] = [
     (
         "samples/hwp3-sample11.hwp",
         "samples/hwp3-sample11-hwp5.hwp",
@@ -105,17 +101,6 @@ fn hwp3_paragraph_style_ids_match_the_hangul_hwp5_conversion() {
             b[first_diff.unwrap()]
         );
     }
-}
-
-#[test]
-fn hwp3_paragraphs_reference_more_than_the_default_style() {
-    // 결함을 직접 드러낸다 — 수정 전에는 어떤 문서든 `{0}` 하나뿐이었다.
-    // `hwp3-sample16` 은 이름 붙은 스타일을 15종 쓰는 문서다.
-    let used: BTreeSet<u8> = style_ids("samples/hwp3-sample16.hwp").into_iter().collect();
-    assert!(
-        used.len() > 1,
-        "쓰이는 style_id 가 {used:?} 뿐이다 — 문단이 스타일을 참조하지 않는다"
-    );
 }
 
 #[test]

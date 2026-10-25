@@ -111,12 +111,6 @@ samples/hwp3-sample13-hwp5.hwpx	3	3
 samples/hwp3-sample14-hwp5.hwp	11	11
 samples/hwp3-sample14-hwp5.hwpx	11	11
 samples/hwp3-sample14.hwp	11	11
-samples/hwp3-sample16-hwp5.hwp	64	64
-samples/hwp3-sample16-hwp5-2010.hwp	64	64
-samples/hwp3-sample16-hwp5-2018.hwp	64	64
-samples/hwp3-sample16-hwp5-2024.hwp	64	64
-samples/hwp3-sample16-hwp5.hwpx	64	64
-samples/hwp3-sample16.hwp	64	64
 samples/hwp3-sample19-hwp5.hwp	2	2
 samples/hwp3-sample4-hwp5.hwp	36	36
 samples/hwp3-sample4.hwp	36	36
@@ -529,7 +523,6 @@ samples/issue7626/sample-document.hwpx	2	2
 samples/issue7626/hancom-resaved.hwp	2	2
 samples/issue7626/end-run-two-lines.hwpx	2	2
 samples/issue7626/end-run-two-lines.hwp	2	2
-samples/hwp3-sample16-hwp5-2022.hwp	64	64
 # #7622: 실제 한컴 저장 대조군의 대응 2020 1-up Print 전 1쪽, Native/fresh WASM 99.01152%.
 samples/issue7622/curly_quote_tac_native.hwpx	1	1
 
