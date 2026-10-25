@@ -148,10 +148,20 @@ Native와 표준 release·wasm-opt 최적화 fresh WASM은 같은 source를 실�
 접수란의 경계를 확인했다. 각 입력 형식의 해당 PNG가 바이트 단위로 같음도 확인했다.
 
 새 검사 4건·남은 #4764 11건·정상 대조 #1658/#3386/#1133 7건·복원한 논문 모듈 8건이
-실제 실행에서 통과했다. 수집기 Node 25건도 통과했다. 정식 파일 등록 뒤 suite 수집과
-생성된 모듈 경로에서의 실행은 이어서 확인한다. 전체 Rust 회귀·lint·Skia·Studio의 최종
+실제 실행에서 통과했다. 수집기 Node 25건도 통과했다. 정식 파일 등록 뒤 검증 worktree에서
+suite `--prepare`·`--check --base-ref upstream/devel`와 두 case의 실제 target 선택을 확인했다.
+1,706 sources·7,507 static test attrs·28 suites + 20 exceptions = 48 targets다. 같은 공식
+harness 생성기로 두 정식 원본을 모듈로 수집하고 실제 source 라이브러리에 연결해 4건을
+다시 실행했다. 모두 통과했으며 로그는 `handbook-regression-replacement/formal-suite-run.log`,
+수집·producer 구분은 `formal-suite-result.json`에 있다. 전체 Rust 회귀·lint·Skia·Studio의 최종
 PR 게이트 완료를 의미하지 않는다. **전쪽 raw100은 1,061/1,532이며 471조건이 남는다.**
 PR은 기존 지시대로 전쪽 100% 달성과 필수 검증을 완료한 뒤 승인 대기한다.
 
 선행 서버 작업의 새 정상 검사나 이름을 변경한 검사를 이전 삭제 커밋으로 다시 없애지 않는다.
 두 작업이 통합된 뒤 최신 devel을 기준으로 소유·등록·출력과 실제 회귀를 재검증한다.
+
+최종 Native/fresh WASM 전쪽 비교는 각각 766조건으로 완료했다. 미대응 픽셀 증가 쪽은
+없다. WASM에서 raw가 소폭 작아진 179·200·232쪽도 두 형식의 미대응 mask는 이전과
+동일했고 엄격 이진 mask 오차는 줄었다. 숫자를 감추지 않고 배경 경계 개선에 따른 union
+분모 변화로 구분했다. `whole-native-comparison.json`, `whole-wasm-comparison.json`,
+`wasm-denominator-audit.json`과 각 원본 TSV에 기록했다.
