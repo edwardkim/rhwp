@@ -4653,7 +4653,11 @@ fn parse_hwp3_inner(
         }
     }
 
-    for (name, id) in pic_name_to_id.iter() {
+    // 연결(Link) 항목은 이름→id 맵에서 만든다. HashMap 순회 순서는 실행마다 바뀌므로
+    // id 순으로 붙인다(#8218).
+    let mut link_names: Vec<(&String, &u16)> = pic_name_to_id.iter().collect();
+    link_names.sort_by_key(|(_, id)| **id);
+    for (name, id) in link_names {
         if !processed_ids.contains(id) {
             let ext = name.rsplit('.').next().unwrap_or("bin").to_string();
             let bin_data = crate::model::bin_data::BinData {
@@ -4830,6 +4834,10 @@ fn parse_hwp3_inner(
     doc.doc_info.styles = doc_styles;
     doc.doc_info.border_fills = doc_border_fills;
     doc.doc_info.tab_defs = doc_tab_defs;
+    // HWP5 의 binDataId 는 BIN_DATA 레코드의 1부터 센 위치다. 내장 항목을 먼저, 연결 항목을
+    // 나중에 붙였으므로 두 종류의 id 가 섞이면 위치와 id 가 어긋난다. id 순으로 맞춘다
+    // (id 는 1부터 빈틈 없이 매긴다 — 위 `doc_bin_data_content` 와 같은 색인).
+    doc_bin_data_list.sort_by_key(|bin_data| bin_data.storage_id);
     doc.doc_info.bin_data_list = doc_bin_data_list;
     doc.bin_data_content = doc_bin_data_content;
 
