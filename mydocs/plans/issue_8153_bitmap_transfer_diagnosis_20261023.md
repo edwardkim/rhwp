@@ -132,3 +132,46 @@ Print 장치 pen → Rectangle PaintOp → Native/Canvas`다. 논리 bbox·style
 농도·외형까지 픽셀 단위로 같다는 뜻은 아니다. 인쇄의 채운 띠·외곽선 경로와 현재 단일 선폭
 재생의 차이는 계속 검토한다. 새 후보의 Native 전 766쪽과 최적화 fresh WASM 빌드·핵심 52쪽
 검증을 시작했으며 완료 결과는 아직 없다. 원본 273쪽, 그림자 처리와 전쪽 raw 100%는 미완료다.
+
+## 2026-10-25: 채운 띠·외곽 pen과 실제 출력 격자의 구분
+
+`4bb17e9f9c`의 원점 보정 후 94·163쪽은 두 형식·Native/fresh WASM 모두 raw 100%다.
+그러나 같은 96dpi PNG의 외곽선을 3배 확대하면 Print는 검은 선, 후보는 옅은 선이다.
+이 발견으로 기존 외곽선 검사 4건의 기대값 교체를 보류했다. 같은 고정 library에서 기존
+검사는 4 FAIL, 소유·중심·잉크 포함 관계로 바꾼 진단 초안은 4 PASS지만 정식 변경은 아니다.
+
+원 구현 `1a948bb522`와 위 독립 15폭×ROUND/FLAT 원장을 먼저 대조했다. 제품은 인쇄의
+`채운 띠 + 외곽 pen`을 단일 물리 선폭 `(band + 1) × 600dpi 단위`로 합쳤다. 실제 독립
+PDF의 대응 객체는 검은 고리의 fill과 0.120pt stroke를 함께 갖는다. 공개 PDFium의
+[`RasterizeStroke`](https://pdfium.googlesource.com/pdfium/+/refs/heads/chromium/7999/core/fxge/agg/cfx_agg_devicedriver.cpp)는
+실제 출력 변환에서 stroke 최소 폭을 별도로 적용한다. 기존 `raster_stroke`의 공통
+최소 폭 계산도 같은 목적이지만 현재 소비자는 Line이며 그림 외곽 Rectangle에는 연결되지 않았다.
+HWP의 원본 선폭·Print 장치 띠 폭·최종 PNG의 최소 stroke는 서로 다른 단위다.
+
+원본에서 생산한 band는 유지하고 외곽 pen에만 최소 raster 폭을 적용하는 진단은
+18조건의 raw·미대응 수를 전부 유지했다. 163쪽 상단 확대 영역의 RGB 평균 절대 오차는
+10.9521→3.1315, 94쪽은 7.7543→3.5422로 줄었다. 이는 제품 검증이 아니다.
+
+중심선 frame도 별도로 확인했다. 선언 폭 0은 화면용 기본 0.1mm의 안쪽 겹침을 인쇄에
+전달하지 않는다. 나머지는 원래 테두리의 논리 경계를 보존하고 각 끝점을 장치 정수로
+변환한다. 독립 PDF의 94·163쪽 path/image 원점을 대조한 추가 진단은 앞선 회색 선을
+검은 선으로 복원했고, 해당 확대 영역의 RGB 평균 절대 오차는 각각 1.6901 / 3.0838이다.
+두 형식 18조건에서 raw 하락·미대응 증가는 없다. 곡선·안티앨리어싱의 RGB 잔여를 숨기지 않는다.
+
+다음 제품 연결은 다음과 같다.
+
+1. `Picture.border_width → PagePaintContext`가 띠와 외곽 pen의 물리 폭을 따로 게시한다.
+   원본·문단·그림 소유는 보존하며 자동 폭 0과 명시 폭을 구분한다.
+2. 같은 소유 그림의 source frame과 테두리의 source frame에서 인쇄 중심선 경계를
+   확정하고, `ImagePaintFrame`에서 각 backend에 공통 결과를 공급한다.
+3. Native·Canvas2D·CanvasKit이 실제 출력 변환으로 계산한 공통 최소 폭과 동일한 Rust의
+   `band + max(outline, raster minimum)` 결과를 소비한다. JSON과 WASM adapter에도 두
+   원래 폭을 전달하며 TypeScript에 같은 계산을 복제하지 않는다.
+4. Screen·벡터 출력·다른 도형·점선·회전/별도 좌표계의 선택을 이 계약으로 추정하지 않는다.
+   영향을 받는 원본과 기존 폭/모서리 대조군, 96/192dpi를 실제 재검증한다.
+
+제품 연결 후 새 source에서 Native/fresh WASM·확대 판독을 완료한 다음 기존 검사의
+중심선 bbox 동일성 가정을 소유·중심·잉크 포함 관계로 보정한다. 독립 163쪽 ±2px 보호와
+그림 내용·순서 검사는 유지한다. 전체 필수 검증·전쪽 raw100 목표를 진단 통과로 대신하지 않는다.
+원 자료는 ignored `handbook-inline-anchor-candidate/border-direct-review/`,
+`handbook-picture-pen-{raster,frame}-diagnostic-4bb17/`에 보존한다.
