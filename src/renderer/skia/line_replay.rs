@@ -35,6 +35,14 @@ pub(super) fn draw_line(
     let transform = canvas.local_to_device_as_3x3();
     // 단일 직교 실선의 인쇄 coverage만 공통 계획으로 정한다. 다중선·화살표·
     // screen·기울임은 원본 좌표를 반환하므로 기존 평행선 재생을 유지한다.
+    // 계획은 장치 한 칸 하한 전의 선언 굵기로 세운다 — 하한이 적용된 paint 굵기(한 칸)를
+    // 넘기면 계획이 화소 중심 맞춤을 건너뛰어 한 칸 선이 두 화소에 나뉜다(Canvas2D·CanvasKit
+    // 과 같은 순서).
+    let declared_width = if line.style.width > 0.0 {
+        line.style.width
+    } else {
+        1.0
+    };
     let (x1, y1, x2, y2, paint_width) = crate::renderer::raster_stroke::raster_line_geometry(
         line,
         [
@@ -46,14 +54,15 @@ pub(super) fn draw_line(
             transform.translate_y() as f64,
         ],
         profile,
-        paint.stroke_width() as f64,
+        declared_width,
     );
     let width = line.style.width.max(0.5);
     let segments: &[(f64, f64)] = match line.style.line_type {
         LineRenderType::Single => {
             let mut paint = paint.clone();
             paint.set_anti_alias(antialias);
-            paint.set_stroke_width(paint_width as f32);
+            // 계획이 원래 굵기를 돌려주는 경우(점선·screen·한 칸 이상)에도 장치 한 칸 하한은 유지한다.
+            paint.set_stroke_width(paint.stroke_width().max(paint_width as f32));
             canvas.draw_line((x1 as f32, y1 as f32), (x2 as f32, y2 as f32), &paint);
             return;
         }
