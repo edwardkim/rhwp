@@ -6597,14 +6597,19 @@ impl LayoutEngine {
         cell_h: f64,
         bin_data_content: &[BinDataContent],
     ) {
-        cell_node
-            .children
-            .extend(Self::border_fill_background_nodes(
+        cell_node.children.extend(
+            Self::border_fill_background_nodes(
                 tree,
                 border_style,
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
                 bin_data_content,
-            ));
+            )
+            .into_iter()
+            .map(|mut background| {
+                background.table_background_paint = true;
+                background
+            }),
+        );
     }
 
     /// 표 수평 위치 결정.

@@ -510,11 +510,17 @@ impl PagePaintContext {
     }
 
     /// 시작·끝을 같은 원본 참조에서 변환한다. PAPER/PAGE 축은 절대 좌표를 유지한다.
-    fn fill_device_coordinate(self, value: f64, pixel: f64, axis: usize) -> f64 {
+    fn fill_device_coordinate(
+        self,
+        value: f64,
+        pixel: f64,
+        axis: usize,
+        table_background: bool,
+    ) -> f64 {
         if let Some(origin) = self
             .table_fill_origin
             .axis(axis)
-            .filter(|_| self.print_paper.is_some())
+            .filter(|_| table_background && self.print_paper.is_some())
         {
             source_device_coordinate(origin, pixel).round()
                 + source_device_coordinate(value - origin, pixel).round()
@@ -543,7 +549,7 @@ impl PagePaintContext {
         bounds: BoundingBox,
         rect: &RectangleNode,
         device_pixel: Option<f64>,
-        x_is_physical: bool,
+        node: &RenderNode,
     ) -> BoundingBox {
         let Some(pixel) = device_pixel.filter(|p| p.is_finite() && *p > 0.0) else {
             return bounds;
@@ -577,16 +583,17 @@ impl PagePaintContext {
             ),
             |paper| paper.device_units,
         );
-        let (x, width) = if x_is_physical {
+        let background = node.table_background_paint;
+        let (x, width) = if node.layer.is_some_and(|layer| layer.master_page) {
             // 바탕쪽의 가로 프레임은 rectangle_frame에서 이미 확정했다.
             (bounds.x, bounds.width)
         } else {
-            let left = self.fill_device_coordinate(bounds.x, pixel, 0);
-            let right = self.fill_device_coordinate(bounds.x + bounds.width, pixel, 0);
+            let left = self.fill_device_coordinate(bounds.x, pixel, 0, background);
+            let right = self.fill_device_coordinate(bounds.x + bounds.width, pixel, 0, background);
             (left * x_unit, (right - left) * x_unit)
         };
-        let top = self.fill_device_coordinate(bounds.y, pixel, 1);
-        let bottom = self.fill_device_coordinate(bounds.y + bounds.height, pixel, 1);
+        let top = self.fill_device_coordinate(bounds.y, pixel, 1, background);
+        let bottom = self.fill_device_coordinate(bounds.y + bounds.height, pixel, 1, background);
         BoundingBox::new(x, top * y_unit, width, (bottom - top) * y_unit)
     }
 
@@ -841,18 +848,23 @@ impl PagePaintContext {
             return None;
         }
         let bounds = node.bbox;
-        let left = self.fill_device_coordinate(bounds.x, pixel, 0);
-        let top = self.fill_device_coordinate(bounds.y, pixel, 1);
-        let width = if self.print_paper.is_some() && self.table_fill_origin.axis(0).is_some() {
-            self.fill_device_coordinate(bounds.x + bounds.width, pixel, 0) - left
-        } else {
-            source_device_coordinate(bounds.width, pixel).round()
-        };
-        let height = if self.print_paper.is_some() && self.table_fill_origin.axis(1).is_some() {
-            self.fill_device_coordinate(bounds.y + bounds.height, pixel, 1) - top
-        } else {
-            source_device_coordinate(bounds.height, pixel).round()
-        };
+        let background = node.table_background_paint;
+        let left = self.fill_device_coordinate(bounds.x, pixel, 0, background);
+        let top = self.fill_device_coordinate(bounds.y, pixel, 1, background);
+        let width =
+            if background && self.print_paper.is_some() && self.table_fill_origin.axis(0).is_some()
+            {
+                self.fill_device_coordinate(bounds.x + bounds.width, pixel, 0, background) - left
+            } else {
+                source_device_coordinate(bounds.width, pixel).round()
+            };
+        let height =
+            if background && self.print_paper.is_some() && self.table_fill_origin.axis(1).is_some()
+            {
+                self.fill_device_coordinate(bounds.y + bounds.height, pixel, 1, background) - top
+            } else {
+                source_device_coordinate(bounds.height, pixel).round()
+            };
         super::bitmap_fill_frame::map(
             BoundingBox::new(left, top, width, height),
             (header.width, header.height),

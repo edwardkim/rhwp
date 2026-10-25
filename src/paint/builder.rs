@@ -399,12 +399,7 @@ impl LayerBuilder {
                         bounds
                     } else {
                         self.page_context.map_or(bounds, |context| {
-                            context.solid_fill_frame(
-                                bounds,
-                                rect,
-                                pixel,
-                                node.layer.is_some_and(|layer| layer.master_page),
-                            )
+                            context.solid_fill_frame(bounds, rect, pixel, node)
                         })
                     }
                 };

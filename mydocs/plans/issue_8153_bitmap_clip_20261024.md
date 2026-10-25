@@ -144,3 +144,10 @@ Native 영향 페이지 36건의 실제 출력에서 1쪽 표지는 양쪽 형�
 `PagePaintContext::fill_device_coordinate`가 단색 채움 양 끝과 bitmap clip/carrier의
 양 끝을 함께 확정한다. 화면·2020 Print·PAPER/PAGE 축과 기존 bitmap 재생 산식은
 유지한다. 이 기록 시점에는 새 후보의 실제 Native/fresh WASM 검증은 아직 실행 전이다.
+
+후속 소비 경로 점검에서 셀의 직접 자식도 독립 도형일 수 있음을 확인했다.
+`render_cell_background`가 실제 BorderFill 배경에 `table_background_paint`를 발행하고,
+같은 공통 채움 변환은 이 명시적 소유를 확인한다. 셀 안에 있다는 사실이나 도형의
+색·stroke 조합으로 배경을 추정하지 않는다. 첫 후보 `7f219ae638`의 Native 빌드는
+6분 43초·exit 0이며, 집중 검증은 보존하고 보완 전 전쪽/WASM 예약만 중지했다.
+이후 보완 후보를 실제로 다시 빌드·검증한다.
