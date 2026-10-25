@@ -421,6 +421,20 @@ fn write_hwp_cfb(
         let storage_name = format!("BIN{:04X}.{}", storage_id, ext);
         let path = format!("/BinData/{}", storage_name);
 
+        // 원본 HWP5 에서 바뀌지 않은 항목은 저장된 스트림을 그대로 쓴다. 압축을 풀었다가
+        // 다시 압축하는 것과 내용이 같고(OLE 크기 prefix 도 원본 그대로다), 원본 바이트를
+        // 보존한다. 편집·추가한 바이트는 저장 형태가 없어 아래 경로로 다시 만든다.
+        // 저장 압축 상태가 이 문서가 기대하는 상태와 다르면(암호 저장의 압축 강제 등)
+        // 통과시키지 않는다.
+        if let Some(stored) = content
+            .data
+            .load_raw()
+            .filter(|stored| stored.compressed == should_compress)
+        {
+            streams.push((path, encrypt_if_password(stored.bytes, password)));
+            continue;
+        }
+
         // [#2550] 압축 해제 상한. 초과 항목(deflate bomb 포함)은 해제 없이 원본
         // 저장 바이트를 그대로 통과시킨다 — 재압축·OLE prefix 복원·매직 판정은
         // 해제된 바이트에만 의미가 있고, 원본 스트림은 이미 그 처리가 끝난
