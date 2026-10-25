@@ -503,9 +503,10 @@ impl Default for ResolvedBorderStyle {
 #[derive(Debug, Default, Clone)]
 pub struct ResolvedStyleSet {
     /// 문서 지정 대체가 있어도 현재 선택은 자기 메트릭을 가진 원본 TTF인 슬롯.
-    /// 이것만으로 저장 줄을 무효화하지 않으며, 같은 가로 상자에서 원래 어절을
-    /// 더 이을 수 있다는 문자 분할 증거와 함께 사용한다.
-    pub(crate) source_program_projection_slots: std::collections::HashSet<(u32, usize)>,
+    /// 값은 문서가 선언한 대체 프로그램의 해소 결과다. 저장 줄 전체가 이 대체
+    /// 프로그램의 채움과 일치하고 현재 원본 프로그램과 다른 경우에만 사용한다.
+    pub(crate) source_program_projection_slots:
+        std::collections::HashMap<(u32, usize), ResolvedCharStyle>,
     pub(crate) native_pua_fonts: std::sync::Arc<crate::renderer::native_pua_fonts::NativePuaFonts>,
     /// px 형태의 해소된 스타일을 원본 HWPUNIT으로 환산할 때의 배율.
     pub(crate) resolved_dpi: Option<f64>,

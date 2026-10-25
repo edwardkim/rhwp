@@ -280,6 +280,20 @@ pub fn resolve_styles_with_variant(
 /// 실제 대체 face 및 폭을 추정하는 face를 원본 TTF의 캐시 갱신 근거로 쓰지 않는다.
 fn refresh_source_program_projection_slots(doc_info: &DocInfo, styles: &mut ResolvedStyleSet) {
     styles.source_program_projection_slots.clear();
+    let dpi = styles.resolved_dpi.unwrap_or(96.0);
+    let fallback_char_styles = std::cell::LazyCell::new(|| {
+        let mut fallback_info = doc_info.clone();
+        for fonts in &mut fallback_info.font_faces {
+            for font in fonts {
+                if let Some(substitute) = font.subst_font.take() {
+                    if substitute.font_type == 1 && !substitute.face.trim().is_empty() {
+                        font.name = substitute.face;
+                    }
+                }
+            }
+        }
+        resolve_char_styles(&fallback_info, dpi)
+    });
     for (shape_id, shape) in doc_info.char_shapes.iter().enumerate() {
         let Some(style) = styles.char_styles.get(shape_id) else {
             continue;
@@ -318,9 +332,11 @@ fn refresh_source_program_projection_slots(doc_info: &DocInfo, styles: &mut Reso
                 .as_deref()
                     == Some(primary);
             if own_metric {
-                styles
-                    .source_program_projection_slots
-                    .insert((shape_id as u32, language));
+                if let Some(fallback) = fallback_char_styles.get(shape_id) {
+                    styles
+                        .source_program_projection_slots
+                        .insert((shape_id as u32, language), fallback.clone());
+                }
             }
         }
     }

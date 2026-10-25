@@ -2,7 +2,8 @@
 //!
 //! PDFium RasterizeStroke의 최소 장치 폭과 독립 Print의 실제 coverage를 따른다.
 //! 원본 줄/표 좌표·색·선폭 속성은 그대로 두고 현재 raster transform의
-//! 법선 배율로 paint 폭만 계산한다. 선 중심을 별도 픽셀로 옮기지 않는다.
+//! 법선 배율로 paint 폭을 계산하고 가는 선의 coverage를 장치 픽셀 중심에
+//! 모은다. 레이아웃 좌표와 SVG/PDF 속성은 수정하지 않는다.
 
 use crate::paint::RenderProfile;
 
@@ -35,7 +36,7 @@ pub(crate) fn raster_line_geometry(
     {
         return original;
     }
-    let [a, b, c, d, _, _] = matrix;
+    let [a, b, c, d, e, f] = matrix;
     // 회전/기울임에서 두 법선 축을 따로 반올림하지 않는다. 축 반전과
     // 90도 회전은 같은 장치 직교선이며 역변환으로 원래 좌표계에 돌려준다.
     if !((b == 0.0 && c == 0.0) || (a == 0.0 && d == 0.0)) {
@@ -62,5 +63,33 @@ pub(crate) fn raster_line_geometry(
     if !raster_width.is_finite() || raster_width <= 0.0 {
         return original;
     }
-    (line.x1, line.y1, line.x2, line.y2, raster_width)
+    let (px, py) = (a * line.x1 + c * line.y1 + e, b * line.x1 + d * line.y1 + f);
+    let (ex, ey) = (a * dx + c * dy, b * dx + d * dy);
+    if ![px, py, ex, ey].into_iter().all(f64::is_finite) {
+        return original;
+    }
+    let (shift_x, shift_y) = if ex != 0.0 && ey == 0.0 {
+        (0.0, py.floor() + 0.5 - py)
+    } else if ex == 0.0 && ey != 0.0 {
+        (px.floor() + 0.5 - px, 0.0)
+    } else {
+        return original;
+    };
+    let local_x = (d * shift_x - c * shift_y) / determinant;
+    let local_y = (-b * shift_x + a * shift_y) / determinant;
+    let adjusted = (
+        line.x1 + local_x,
+        line.y1 + local_y,
+        line.x2 + local_x,
+        line.y2 + local_y,
+        raster_width,
+    );
+    if [adjusted.0, adjusted.1, adjusted.2, adjusted.3]
+        .into_iter()
+        .all(f64::is_finite)
+    {
+        adjusted
+    } else {
+        original
+    }
 }

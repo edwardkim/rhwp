@@ -745,6 +745,7 @@ fn test_layout_with_composed_styles() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
 
     let styles = ResolvedStyleSet {
+        source_program_projection_slots: Default::default(),
         native_pua_fonts: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
@@ -898,6 +899,7 @@ fn test_layout_multi_run_x_position() {
 
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
+        source_program_projection_slots: Default::default(),
         native_pua_fonts: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
@@ -1001,6 +1003,7 @@ fn test_resolved_to_text_style() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        source_program_projection_slots: Default::default(),
         native_pua_fonts: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
@@ -1042,6 +1045,7 @@ fn test_resolved_to_text_style_with_ratio() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        source_program_projection_slots: Default::default(),
         native_pua_fonts: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,

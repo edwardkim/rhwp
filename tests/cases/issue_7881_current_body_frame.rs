@@ -58,10 +58,13 @@ fn body_lines<'a>(node: &'a Value, pi: u64, result: &mut Vec<&'a Value>) {
     }
 }
 fn page(number: usize) -> Value {
+    page_input(INPUT, number)
+}
+fn page_input(input: &str, number: usize) -> Value {
     let dir = output("tree");
     let result = Command::new(binary())
         .arg("export-render-tree")
-        .arg(root().join(INPUT))
+        .arg(root().join(input))
         .args([
             "--compat",
             "2022",
@@ -95,6 +98,42 @@ fn height(node: &Value) -> f64 {
 }
 fn compact(value: &str) -> String {
     value.chars().filter(|c| !c.is_whitespace()).collect()
+}
+
+#[test]
+fn valid_original_program_keeps_the_print_verified_word_boundary() {
+    // 정상 저장 대조군 전46쪽 Native92.38021/WASM92.38142%이며,
+    // 이9쪽은 양쪽99.76%다. 독립 Print의 '내 / 용을' 줄 소속을 확인했다.
+    const NORMAL: &str = "samples/[2027] 온새미로 1 본교재.hwp";
+    let document = rhwp::parser::parse_hwp(&fs::read(root().join(NORMAL)).unwrap()).unwrap();
+    let paragraph = &document.sections[1].paragraphs[74];
+    let tree = page_input(NORMAL, 9);
+    let mut lines = Vec::new();
+    body_lines(&tree, 74, &mut lines);
+    assert_eq!(lines.len(), paragraph.line_segs.len());
+    let characters: Vec<_> = paragraph.text.chars().collect();
+    for (index, line) in lines.iter().enumerate() {
+        let start = paragraph
+            .char_offsets
+            .iter()
+            .position(|&offset| offset == paragraph.line_seg_text_start(index))
+            .unwrap();
+        let end = if index + 1 == lines.len() {
+            characters.len()
+        } else {
+            paragraph
+                .char_offsets
+                .iter()
+                .position(|&offset| offset == paragraph.line_seg_text_start(index + 1))
+                .unwrap()
+        };
+        let expected: String = characters[start..end].iter().collect();
+        assert_eq!(
+            compact(&text(line)),
+            compact(&expected),
+            "대체 글꼴 선언만으로 독립 Print가 확인한 원본 줄의 문자를 앞당기면 안 된다"
+        );
+    }
 }
 
 #[test]

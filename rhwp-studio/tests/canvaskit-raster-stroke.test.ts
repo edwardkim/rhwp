@@ -18,22 +18,22 @@ const line: LayerLineOp = {
 
 // PDFium RasterizeStroke의 최소 장치 폭과 같은 원본 Print를 먼저 대조했다.
 // 온새미로 전46쪽 Native94.65583/WASM94.55536%, 선을 읽은19쪽은 양쪽100%다.
-test('인쇄의 가는 실선은 원본 중심·길이를 보존하고 한 장치 픽셀의 폭으로 그린다', () => {
-  assert.deepEqual(geometry(line, identity, 'print'), [3, 10, 27, 10, 1]);
+test('인쇄의 가는 실선은 장치 픽셀 중심과 최소 폭을 함께 소비하고 원본 속성을 보존한다', () => {
+  assert.deepEqual(geometry(line, identity, 'print'), [3, 10.5, 27, 10.5, 1]);
   assert.deepEqual(geometry(line, [2, 0, 0, 0, 2, 0, 0, 0, 1], 'print'),
-    [3, 10, 27, 10, 0.5]);
-  assert.equal(line.y1, 10, '원본 좌표를 픽셀 중심으로 옮기지 않는다');
+    [3, 10.25, 27, 10.25, 0.5]);
+  assert.equal(line.y1, 10, '레이아웃 원본 좌표는 바꾸지 않는다');
   assert.equal(line.style?.width, 0.48, '원본 선폭 속성도 바꾸지 않는다');
 });
 
 test('장치 이동·반전·직교 회전은 같은 법선 배율의 최소 폭을 소비한다', () => {
   assert.deepEqual(geometry(line, [1, 0, 0, 0, 1, 0.25, 0, 0, 1], 'print'),
-    [3, 10, 27, 10, 1]);
+    [3, 10.25, 27, 10.25, 1]);
   const rotated = geometry(line, [0, -2, 40, 2, 0, 0, 0, 0, 1], 'print');
-  assert.deepEqual(rotated, [3, 10, 27, 10, 0.5]);
+  assert.deepEqual(rotated, [3, 9.75, 27, 9.75, 0.5]);
   assert.equal(rotated[4] * 2, 1, '회전 후 장치 법선 폭은 한 픽셀이다');
   assert.deepEqual(geometry(line, [-1, 0, 0, 0, -1, 0, 0, 0, 1], 'print'),
-    [3, 10, 27, 10, 1]);
+    [3, 9.5, 27, 9.5, 1]);
 });
 
 test('화면·굵은 선·복합선·화살표·그림자·사선은 원래 paint 좌표와 폭을 유지한다', () => {

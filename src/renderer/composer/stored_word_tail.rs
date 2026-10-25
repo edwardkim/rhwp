@@ -129,24 +129,44 @@ pub(crate) fn project_current_source_program_rows(
     }
     let composed = super::compose_paragraph_in_context(para, styles);
     let mut has_text = false;
+    let mut fallback_styles = styles.clone();
+    fallback_styles.source_program_projection_slots.clear();
     for run in composed.lines.iter().flat_map(|line| &line.runs) {
         if run.text.chars().all(char::is_whitespace) {
             continue;
         }
         has_text = true;
-        if run.inserted_control_text
-            || !styles
-                .source_program_projection_slots
-                .contains(&(run.char_style_id, run.lang_index))
-        {
+        let Some(fallback) = styles
+            .source_program_projection_slots
+            .get(&(run.char_style_id, run.lang_index))
+        else {
+            return None;
+        };
+        if run.inserted_control_text {
             return None;
         }
+        *fallback_styles
+            .char_styles
+            .get_mut(run.char_style_id as usize)? = fallback.clone();
     }
     if !has_text {
         return None;
     }
     let first = para.line_segs.first()?.vertical_pos;
     let frame = box_.frame(first);
+    // 대체 선언이 있다는 사실이나 현재 글자가 한 자 더 들어간다는 사실은
+    // 저장 줄이 다른 프로그램의 캐시라는 증거가 아니다. 문서가 지정한 대체
+    // 프로그램이 같은 상자에서 저장 줄 전체를 재현하는지 먼저 확인한다.
+    let fallback_rows =
+        line_breaking::layout_paragraph_in_frame(para, &mut frame.clone(), &fallback_styles, dpi)?;
+    if fallback_rows.len() != para.line_segs.len()
+        || fallback_rows
+            .iter()
+            .enumerate()
+            .any(|(index, row)| row.text_start != para.line_seg_text_start(index))
+    {
+        return None;
+    }
     project_stored_rows(para, &frame, styles, dpi, false, true)
 }
 

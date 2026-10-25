@@ -78,6 +78,7 @@ mod tests {
         let composed: Vec<_> = paragraphs.iter().map(compose_paragraph).collect();
 
         let styles = ResolvedStyleSet {
+            source_program_projection_slots: Default::default(),
             native_pua_fonts: Default::default(),
             resolved_dpi: None,
             page_number_char_style_id: None,

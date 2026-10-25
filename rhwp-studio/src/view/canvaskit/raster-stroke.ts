@@ -34,8 +34,19 @@ export function rasterLineGeometry(
   const deviceWidth = paintWidth * normalScale;
   if (!(deviceWidth > 0 && deviceWidth < 1)) return original;
   const rasterWidth = 1 / normalScale;
-  return Number.isFinite(rasterWidth) && rasterWidth > 0
-    ? [line.x1, line.y1, line.x2, line.y2, rasterWidth] : original;
+  if (!Number.isFinite(rasterWidth) || rasterWidth <= 0) return original;
+  const [px, py] = [a * line.x1 + c * line.y1 + e, b * line.x1 + d * line.y1 + f];
+  const [ex, ey] = [a * dx + c * dy, b * dx + d * dy];
+  if (![px, py, ex, ey].every(Number.isFinite)) return original;
+  let sx = 0, sy = 0;
+  if (ex !== 0 && ey === 0) sy = Math.floor(py) + 0.5 - py;
+  else if (ex === 0 && ey !== 0) sx = Math.floor(px) + 0.5 - px;
+  else return original;
+  const lx = (d * sx - c * sy) / determinant;
+  const ly = (-b * sx + a * sy) / determinant;
+  const adjusted: [number, number, number, number, number] =
+    [line.x1 + lx, line.y1 + ly, line.x2 + lx, line.y2 + ly, rasterWidth];
+  return adjusted.every(Number.isFinite) ? adjusted : original;
 }
 
 /** 기존 좌표 조회도 새 공통 래스터 계획의 원본 좌표를 사용한다. */
