@@ -226,6 +226,7 @@ impl LayerBuilder {
             self.image_reference_origin = (node.bbox.x, node.bbox.y);
         }
         let previous_context = self.page_context;
+        self.page_context = self.page_context.map(|context| context.for_children(node));
         if matches!(&node.node_type, RenderNodeType::Group(group) if group.paint_transform.is_some())
         {
             self.page_context = self

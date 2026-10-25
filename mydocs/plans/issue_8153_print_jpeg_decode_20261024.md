@@ -124,6 +124,31 @@ PagePaintContext의 물리 종이 단위 → Image 및 image_frame_owner 테두�
 않았으므로 일반 투명 PNG에 이 결과를 적용하지 않는다. 진단 문서·PDF·비공개 분석은
 `output/`에만 보존하며 제품 구현 완료로 세지 않는다.
 
+#### 실제 원본 소비 진단과 공통 경로 연결
+
+`a2e14ae3bb`의 고정 library로 독립 대조군 5개와 편람 28쪽씩을 실행했다.
+원래 경로의 편람 56 PNG는 실제 CLI와 RGB 전체가 같았다. 실제 Column 원점과 상대
+위치를 각각 변환하고 같은 그림의 외곽선 소유자도 함께 이동한 진단은 편람 14조건 개선,
+42조건 동일, 하락 0건이다. 두 형식 모두 92·94·95·163·263·273쪽은 raw 100%·미대응
+0픽셀이다. 255쪽은 두 형식에서 각각 657→265픽셀로 줄었으며 alpha 잔여는 유지한다.
+
+독립 정규 저장본의 원래 phase와 종이 기준 그림은 각각 100%·99.98973%를 유지했다.
+0.9×0.8 그림의 본문/종이/여백 변경 대조군은 각각 94.80134%·80.82043%·81.90630%로
+기존과 같았다. 좌표 예측은 독립 PDF 연산자로 확인했지만 낮은 전쪽 점수를 좌표 보정
+성공으로 덮거나 이 입력을 정식 회귀로 신규 등록하지 않는다. 이 진단은 제품 빌드가 아니다.
+
+제품에서는 `LayerBuilder::build_children → PagePaintContext::for_children`이 실제
+단 원점을 상속하고, floating·셀·글상자·머리말·각주·변환 그룹에서 해당 소유를 끊는다.
+`image_frame`은 원본 bbox를 보존한 채 원점과 상대 위치의 장치 정수 합을 기존 물리
+PrintPaper 단위로 발행한다. `ImagePaintFrame::border_frame`이 같은 결과와 원래 pen
+확장을 소비하므로 외곽선에 별도 좌표 보정을 복제하지 않는다. 앞 crop·별도 그림 변환·
+본문 단을 소유하지 않는 그림과 비2024 경로는 기존 계약을 유지한다.
+
+진단 원장은 ignored `handbook-inline-anchor-diagnostic-a2e14/result.json`, 원점 예측은
+`bitmap-inline-body-anchor-controls/source-predicted-origin-comparison.json`이다.
+이 제품 연결 뒤 Native 집중/전쪽·기존 그림 대조군·표준 optimized fresh WASM으로 실제
+출력을 다시 검증한다. 기존 JPEG 단계 전쪽 TSV를 새 좌표 후보의 결과로 바꾸지 않는다.
+
 원본 JPEG를 펼치는 IDCT와 색차 보간의 정수 반올림은 PDF로 전달할 RGB555·JPEG보다
 앞선 단계다. 현재 Print 전달은 일반 화면용 `image` decoder를 그대로 사용하므로,
 동일한 원본·crop·RGB555·JPEG 양자화를 적용해도 독립 한컴 Print 이미지와 차이가 남는다.

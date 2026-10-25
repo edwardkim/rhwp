@@ -6,7 +6,9 @@ use crate::paint::{
     LayerNode, LayerNodeKind, PaintOp, TextDecorationKind, TextDecorationPaintGeometry,
 };
 use crate::renderer::image_resolver::detect_image_mime_type;
-use crate::renderer::render_tree::{BoundingBox, ImageNode, RectangleNode, RenderNode};
+use crate::renderer::render_tree::{
+    BoundingBox, ImageNode, RectangleNode, RenderNode, RenderNodeType,
+};
 use crate::renderer::{hwpunit_to_px, DEFAULT_DPI, HWPUNIT_PER_INCH};
 
 /// 원래 정수 HU를 정확히 재현하는 px만 정수 단위로 되돌린다.
@@ -27,6 +29,8 @@ pub(crate) struct PagePaintContext {
     output_size: (f64, f64),
     axis_aligned_graphics: bool,
     print_paper: Option<super::print_paper::PrintPaper>,
+    image_column_origin: Option<(f64, f64)>,
+    image_column_blocked: bool,
 }
 
 impl PagePaintContext {
@@ -44,6 +48,8 @@ impl PagePaintContext {
             },
             axis_aligned_graphics: true,
             print_paper: None,
+            image_column_origin: None,
+            image_column_blocked: false,
         }
     }
 
@@ -60,6 +66,29 @@ impl PagePaintContext {
 
     pub(crate) fn output_size(self) -> (f64, f64) {
         self.output_size
+    }
+
+    /// 글줄 그림은 실제 소유 단의 원점과 상대 위치를 따로 장치 정수로 변환한다.
+    /// 셀·글상자·각주·별도 개체 좌표계를 본문 단의 좌표계로 간주하지 않는다.
+    pub(crate) fn for_children(mut self, node: &RenderNode) -> Self {
+        self.image_column_blocked |= node.layer.is_some()
+            || matches!(
+                &node.node_type,
+                RenderNodeType::MasterPage
+                    | RenderNodeType::Header
+                    | RenderNodeType::Footer
+                    | RenderNodeType::FootnoteArea
+                    | RenderNodeType::TableCell(_)
+                    | RenderNodeType::TextBox
+            )
+            || matches!(&node.node_type,
+                RenderNodeType::Group(group) if group.paint_transform.is_some());
+        if self.image_column_blocked {
+            self.image_column_origin = None;
+        } else if matches!(&node.node_type, RenderNodeType::Column(_)) {
+            self.image_column_origin = Some((node.bbox.x, node.bbox.y));
+        }
+        self
     }
 
     /// 표 괘선은 논리 조판 상자를 유지하되 물리 Print 종이의 정밀 CTM을 쓴다.
@@ -691,16 +720,35 @@ impl PagePaintContext {
         // 앞 장치 경계를 공유한다. 전체 원본과 뒤쪽만 자른 축은 기존
         // 첫 픽셀 원점을 유지하며, crop 단위나 내용으로 대상을 추정하지 않는다.
         let (left, top) = image.crop.map_or((0, 0), |(left, top, _, _)| (left, top));
-        let origin = |value: f64, clipped_start: bool| {
+        let column = self.image_column_origin.filter(|(x, y)| {
+            self.print_paper.is_some()
+                && !self.image_column_blocked
+                && self.axis_aligned_graphics
+                && x.is_finite()
+                && y.is_finite()
+                && node.layer.is_none()
+                && image.fill_mode.is_none()
+                && !image.transform.has_transform()
+                && image.content_inset.is_none()
+                && image.cell_context.is_none()
+                && image.header_footer_ref.is_none()
+                && left == 0
+                && top == 0
+        });
+        let origin = |value: f64, clipped_start: bool, column_origin: Option<f64>| {
             if clipped_start {
                 (value * device_per_css + 1e-9).floor()
+            } else if let Some(anchor) = column_origin {
+                // 원본 단 원점과 글줄 안 상대 위치는 각각의 정수 장치 좌표다.
+                // 더한 뒤 ceil/round하면 서로 다른 소유 단계의 반올림이 사라진다.
+                (anchor * device_per_css).round() + ((value - anchor) * device_per_css).round()
             } else {
                 (value * device_per_css - 1e-9).ceil()
             }
         };
         BoundingBox::new(
-            origin(bbox.x, left > 0) * sx,
-            origin(bbox.y, top > 0) * sy,
+            origin(bbox.x, left > 0, column.map(|anchor| anchor.0)) * sx,
+            origin(bbox.y, top > 0, column.map(|anchor| anchor.1)) * sy,
             (bbox.width * device_per_css).round() * sx,
             (bbox.height * device_per_css).round() * sy,
         )
