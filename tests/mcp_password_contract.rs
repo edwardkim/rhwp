@@ -208,7 +208,8 @@ fn protected_documents_open_in_a_password_session_without_echoing_password() {
 
 #[test]
 fn stateless_document_tool_uses_password_stdin_without_cli_argument_echo() {
-    let fixture = fixture_path(FIXTURES[0].0);
+    let (fixture_name, expected_pages) = FIXTURES[0];
+    let fixture = fixture_path(fixture_name);
     if !fixture.exists() {
         eprintln!("fixture 없음 — 건너뜀: {}", fixture.display());
         return;
@@ -254,7 +255,13 @@ fn stateless_document_tool_uses_password_stdin_without_cli_argument_echo() {
         "hwp_info",
         serde_json::json!({"path": path, "password": PASSWORD}),
     );
-    assert_eq!(info["pageCount"].as_u64(), Some(64), "{info}");
+    if let Some(expected_pages) = expected_pages {
+        assert_eq!(
+            info["pageCount"].as_u64(),
+            Some(expected_pages),
+            "{fixture_name}: {info}"
+        );
+    }
 
     let wrong = server.tool_response(
         "hwp_info",
