@@ -44,6 +44,15 @@ fn stdout_string(out: &Output) -> String {
     String::from_utf8(out.stdout.clone()).expect("stdout UTF-8")
 }
 
+/// 문자열에서 영숫자만 이어붙인다 — 구두점·공백 표면 차이를 지운 내용 비교용.
+fn alnum(s: &str) -> String {
+    s.chars().filter(|c| c.is_alphanumeric()).collect()
+}
+
+fn has_hangul(s: &str) -> bool {
+    s.chars().any(|c| ('\u{AC00}'..='\u{D7A3}').contains(&c))
+}
+
 // ── NDJSON 기본 산출 ────────────────────────────────────────────────────────
 
 #[test]
