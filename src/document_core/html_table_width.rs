@@ -122,13 +122,33 @@ pub(super) fn reserve_content_widths(
 
 /// Import 결과는 저장 LineSeg를 재사용하기 전에 현재 내용의 행 높이를 확정한다.
 pub(super) fn reserve_content_heights(table: &mut Table, styles: &ResolvedStyleSet, dpi: f64) {
+    // CSS에서 읽은 셀 높이는 최소 높이다. 내용 측정으로 늘리되 원문 치수를 줄이지 않는다.
+    let minimum_heights = table.get_row_heights();
     let measured = crate::renderer::height_measurer::HeightMeasurer::new(dpi)
         .with_session_edited(true)
         .measure_table(table, 0, 0, styles);
-    let heights: Vec<u32> = measured
-        .row_heights
+    // 투명 래퍼 측정은 자식 행을 돌려준다. 부모 셀의 한 행에는 전체 자식 높이를 넣는다.
+    let rows = if crate::renderer::height_measurer::transparent_table_wrapper_child(table, styles)
+        .is_some()
+    {
+        vec![
+            crate::renderer::height_measurer::unwrapped_table_whole_height(
+                table,
+                measured.total_height,
+                dpi,
+                styles,
+            ),
+        ]
+    } else {
+        measured.row_heights
+    };
+    let heights: Vec<u32> = rows
         .iter()
-        .map(|height| px_to_hwpunit(*height, dpi).max(0) as u32)
+        .enumerate()
+        .map(|(row, height)| {
+            (px_to_hwpunit(*height, dpi).max(0) as u32)
+                .max(minimum_heights.get(row).copied().unwrap_or(0))
+        })
         .collect();
     for cell in &mut table.cells {
         let start = usize::from(cell.row);

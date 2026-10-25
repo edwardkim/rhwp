@@ -733,7 +733,7 @@ impl DocumentCore {
         html.len().saturating_sub(payload)
     }
 
-    fn parse_html_to_paragraphs_at_depth(
+    pub(crate) fn parse_html_to_paragraphs_at_depth(
         &mut self,
         html: &str,
         depth: u32,
@@ -801,7 +801,7 @@ impl DocumentCore {
                     // 표 전체 추출
                     let table_end = find_closing_tag_chars(&chars, pos, "table");
                     let table_html: String = chars[tag_start..table_end.min(len)].iter().collect();
-                    self.parse_table_html(&mut paragraphs, &table_html, container_width);
+                    self.parse_table_html(&mut paragraphs, &table_html, container_width, depth);
                     pos = table_end;
                     continue;
                 } else if tag_lower.starts_with("<img") {

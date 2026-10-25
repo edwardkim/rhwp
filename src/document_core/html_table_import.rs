@@ -13,6 +13,7 @@ impl DocumentCore {
         paragraphs: &mut Vec<Paragraph>,
         table_html: &str,
         container_width: u32,
+        depth: u32,
     ) {
         use crate::model::control::Control;
         use crate::model::table::{Cell, Table, TablePageBreak};
@@ -376,22 +377,19 @@ impl DocumentCore {
                 },
             };
 
-            // 셀 내용 파싱
-            // &nbsp; 등 HTML 엔티티를 디코딩한 후 공백만 남으면 빈 셀로 처리
-            // 그림만 있는 셀(로고 칸 등)은 평문이 비어 있어
-            // 종전에는 '빈 셀'로 처리돼 그림이 통째로 사라졌다.
-            let cell_has_image = pc.content_html.to_ascii_lowercase().contains("<img");
-            let cell_paragraphs = if !cell_has_image
-                && (pc.content_html.trim().is_empty()
-                    || html_to_plain_text(&pc.content_html).is_empty())
-            {
+            // 평문이 없어도 중첩 표·그림은 파싱 결과로 확인한다.
+            let cell_paragraphs = if pc.content_html.trim().is_empty() {
                 vec![Paragraph::new_empty()]
             } else {
                 // 셀 안 표는 이 셀 안쪽 폭에 맞춘다.
                 let inner_width = cell_width.saturating_sub(
                     table_padding.left.max(0) as u32 + table_padding.right.max(0) as u32,
                 );
-                let parsed = self.parse_html_to_paragraphs(&pc.content_html, inner_width);
+                let parsed = self.parse_html_to_paragraphs_at_depth(
+                    &pc.content_html,
+                    depth + 1,
+                    inner_width,
+                );
                 if parsed.is_empty()
                     || parsed
                         .iter()
@@ -1186,7 +1184,7 @@ mod nested_table_cell_boundary_tests {
         let html =
             r#"<table><tr><td>OUTER<table><tr><td>INNER</td></tr></table></td></tr></table>"#;
         let mut paragraphs: Vec<Paragraph> = Vec::new();
-        core.parse_table_html(&mut paragraphs, html, 42520);
+        core.parse_table_html(&mut paragraphs, html, 42520, 0);
 
         assert_eq!(paragraphs.len(), 1, "표 문단 1개가 나와야 함");
         let outer_table = match &paragraphs[0].controls.first() {
