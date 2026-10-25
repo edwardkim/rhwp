@@ -404,7 +404,7 @@ fn public_blank_derived_document_keeps_all_non_applicable_width_sources_out_of_c
 
     let expected = BTreeMap::from([
         ("clusterContinuation".to_string(), 2),
-        ("figureSpace".to_string(), 1),
+        ("literalFigureSpace".to_string(), 1),
         ("heuristicFullwidth".to_string(), 1),
         ("heuristicHalfwidth".to_string(), 1),
         ("inlineObjectPlaceholder".to_string(), 1),

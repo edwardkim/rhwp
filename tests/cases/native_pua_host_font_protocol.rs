@@ -16,6 +16,26 @@ fn pua_supply_clear_preserves_explicit_exact_font_owner() {
     .unwrap();
     let document_before = format!("{:?}", core.document());
     let saved_before = core.export_hwp_native().unwrap();
+    let literal_space_program = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf");
+    assert!(core
+        .register_literal_figure_space_font(
+            "RHWP Equation Latin Only",
+            false,
+            false,
+            literal_space_program,
+            0,
+        )
+        .unwrap());
+    assert_eq!(
+        format!("{:?}", core.document()),
+        document_before,
+        "리터럴 공백의 세션 프로그램 등록은 문서 IR을 바꾸지 않는다"
+    );
+    assert_eq!(
+        core.export_hwp_native().unwrap(),
+        saved_before,
+        "실제 숫자 glyph를 공급해도 원본 HWP 저장 바이트를 바꾸지 않는다"
+    );
     core.clear_native_pua_fonts();
     let after: serde_json::Value = serde_json::from_str(
         &core

@@ -136,12 +136,9 @@ pub(crate) fn project_current_source_program_rows(
             continue;
         }
         has_text = true;
-        let Some(fallback) = styles
+        let fallback = styles
             .source_program_projection_slots
-            .get(&(run.char_style_id, run.lang_index))
-        else {
-            return None;
-        };
+            .get(&(run.char_style_id, run.lang_index))?;
         if run.inserted_control_text {
             return None;
         }

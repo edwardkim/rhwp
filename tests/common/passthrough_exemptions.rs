@@ -22,6 +22,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "native_pua_fonts.rs",
+        "register_literal_figure_space_font",
+        Exempt::SessionState,
+        "리터럴 공백의 실제 공급 프로그램과 파생 조판 캐시만 갱신한다. native_pua_host_font_protocol에서 등록·해제 전후 명시 exact 소유권·문서 IR·저장 HWP 바이트 보존을 검사한다.",
+    ),
+    (
+        "native_pua_fonts.rs",
         "clear_native_pua_fonts",
         Exempt::SessionState,
         "원 PUA 공급과 파생 캐시만 해제한다. native_pua_host_font_protocol에서 명시 exact 소유권·원본 IR·실제 저장 HWP 바이트 보존을 검사한다.",
