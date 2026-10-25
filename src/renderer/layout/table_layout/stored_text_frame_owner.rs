@@ -19,8 +19,7 @@ impl LayoutEngine {
     }
 
     pub(crate) fn native_stored_table_has_fragment_frames(&self, table: &Table) -> bool {
-        self.profile.get().hwp5_stored_pagination_layout()
-            && self.original_stored_table_frame_is_usable(
+        self.original_stored_table_frame_is_usable(
                 table,
                 self.render_normalization
                     .borrow()
