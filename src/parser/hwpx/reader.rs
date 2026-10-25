@@ -246,6 +246,30 @@ impl HwpxReader {
             .ok_or_else(|| HwpxError::MissingFile(path.into()))
     }
 
+    /// deflate 로 저장된 엔트리의 압축 바이트와 CRC-32·비압축 크기 (압축 해제 없음).
+    ///
+    /// deflate 가 아니거나 압축 크기가 [`MAX_BINDATA_SIZE`] 를 넘으면 `None` 이다.
+    pub fn raw_deflated_entry(
+        &mut self,
+        path: &str,
+    ) -> Option<crate::model::bin_data::DeflatedZipEntry> {
+        let index = self.file_index(path).ok()?;
+        let mut file = self.archive.by_index_raw(index).ok()?;
+        if file.compression() != zip::CompressionMethod::Deflated {
+            return None;
+        }
+        let compressed = usize::try_from(file.compressed_size())
+            .ok()
+            .filter(|size| *size <= MAX_BINDATA_SIZE)?;
+        let mut compressed_bytes = Vec::with_capacity(compressed);
+        file.read_to_end(&mut compressed_bytes).ok()?;
+        Some(crate::model::bin_data::DeflatedZipEntry {
+            crc32: file.crc32(),
+            uncompressed_size: file.size(),
+            compressed_bytes,
+        })
+    }
+
     /// 아카이브 내 파일 목록을 반환한다.
     pub fn file_names(&self) -> Vec<String> {
         self.file_names.clone()

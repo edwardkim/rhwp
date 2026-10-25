@@ -45,6 +45,43 @@ use writer::HwpxZipWriter;
 /// Stage 0 이후: 빈 문서 특수 분기를 제거하고 **항상 동적 경로**를 탄다.
 /// `SerializeContext`가 1-pass 스캔으로 ID 풀을 구성하고, 각 writer가 동일 컨텍스트를
 /// 참조한다. 직렬화 종료 시 `assert_all_refs_resolved()`가 미등록 참조를 단언한다.
+/// 저장할 내용(`payload`)과 같은 내용의 원본 deflate 바이트가 있으면 다시 압축하지 않고 쓴다.
+///
+/// - HWPX 원본: 원본 ZIP 엔트리가 deflate 이고 CRC-32·크기가 `payload` 와 같을 때.
+/// - HWP5 원본: 저장 스트림을 raw deflate 로 풀어 낸 CRC-32·크기가 `payload` 와 같을 때.
+///   HWP5 읽기는 raw deflate 가 실패하면 zlib 으로도 푸는데, zlib 스트림은 ZIP 엔트리가
+///   될 수 없으므로 raw deflate 로 풀리는지까지 확인한다.
+fn reusable_deflate(
+    data: &crate::model::bin_data::BinDataBytes,
+    payload: &[u8],
+) -> Option<crate::model::bin_data::DeflatedZipEntry> {
+    let crc32 = || {
+        let mut crc = flate2::Crc::new();
+        crc.update(payload);
+        crc.sum()
+    };
+    if let Some(entry) = data.load_deflated_zip_entry() {
+        return (entry.uncompressed_size == payload.len() as u64 && entry.crc32 == crc32())
+            .then_some(entry);
+    }
+    let stored = data.load_raw().filter(|stored| stored.compressed)?;
+    let mut inflated =
+        flate2::CrcReader::new(flate2::read::DeflateDecoder::new(stored.bytes.as_slice()));
+    let inflated_size = std::io::copy(
+        &mut std::io::Read::take(&mut inflated, payload.len() as u64 + 1),
+        &mut std::io::sink(),
+    )
+    .ok()?;
+    let crc = crc32();
+    (inflated_size == payload.len() as u64 && inflated.crc().sum() == crc).then_some(
+        crate::model::bin_data::DeflatedZipEntry {
+            crc32: crc,
+            uncompressed_size: payload.len() as u64,
+            compressed_bytes: stored.bytes,
+        },
+    )
+}
+
 pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     let serialized = serialize_hwpx_with_report(doc)?;
     serialized.content_loss().write_warnings_to_stderr();
@@ -229,7 +266,15 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
         } else {
             bytes
         };
-        z.write_deflated(&entry.href, &payload)?;
+        match reusable_deflate(&data.data, &payload) {
+            Some(raw) => z.write_precompressed_deflated(
+                &entry.href,
+                raw.crc32,
+                raw.uncompressed_size,
+                &raw.compressed_bytes,
+            )?,
+            None => z.write_deflated(&entry.href, &payload)?,
+        }
         zip_bin_entries.insert(entry.href.clone());
     }
 

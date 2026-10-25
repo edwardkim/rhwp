@@ -150,6 +150,17 @@ impl crate::model::bin_data::BinDataResolver for HwpxBinResolver {
     fn resolved_is_empty(&self, key: &str) -> bool {
         self.resolved_len(key) == 0
     }
+
+    fn resolve_deflated_zip_entry(
+        &self,
+        key: &str,
+    ) -> Option<crate::model::bin_data::DeflatedZipEntry> {
+        let mut reader = match self.reader.lock() {
+            Ok(reader) => reader,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        reader.raw_deflated_entry(key)
+    }
 }
 
 /// HWPX 파싱 에러

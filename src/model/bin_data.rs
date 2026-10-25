@@ -151,6 +151,21 @@ pub trait BinDataResolver:
     fn resolve_raw(&self, _key: &str) -> Option<StoredBinData> {
         None
     }
+
+    /// 원본 ZIP 엔트리가 deflate 로 저장돼 있으면 그 압축 바이트와 CRC-32·비압축 크기를
+    /// 반환한다 (압축 해제 없음). HWPX 저장이 바뀌지 않은 엔트리를 다시 압축하지 않고
+    /// 옮길 때 쓴다. ZIP 컨테이너가 아니거나 deflate 가 아니면 `None` 이다 (기본값).
+    fn resolve_deflated_zip_entry(&self, _key: &str) -> Option<DeflatedZipEntry> {
+        None
+    }
+}
+
+/// 원본 ZIP 의 deflate 엔트리 — 압축 바이트와 그 해제 내용의 CRC-32·크기.
+#[derive(Debug, Clone)]
+pub struct DeflatedZipEntry {
+    pub crc32: u32,
+    pub uncompressed_size: u64,
+    pub compressed_bytes: Vec<u8>,
 }
 
 /// 세션 중 추가된 바이트를 기존 공개 enum 모양을 바꾸지 않고 공유한다.
@@ -282,6 +297,15 @@ impl BinDataBytes {
         match self {
             BinDataBytes::Loaded(_) => None,
             BinDataBytes::Lazy { resolver, key } => resolver.resolve_raw(key),
+        }
+    }
+
+    /// 원본 ZIP 의 deflate 엔트리를 그대로 얻는다 (압축 해제 없음). `Loaded` 와 ZIP 이 아닌
+    /// 컨테이너는 `None` 이다.
+    pub fn load_deflated_zip_entry(&self) -> Option<DeflatedZipEntry> {
+        match self {
+            BinDataBytes::Loaded(_) => None,
+            BinDataBytes::Lazy { resolver, key } => resolver.resolve_deflated_zip_entry(key),
         }
     }
 
