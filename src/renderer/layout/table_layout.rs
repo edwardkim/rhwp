@@ -5763,9 +5763,7 @@ impl LayoutEngine {
             &content_row_floor,
             &self.indexed_rowspan_declared_overflow_shrink(table),
             self.dpi,
-            self.render_normalization
-                .borrow()
-                .table_text_reflowed(table),
+            &self.render_normalization.borrow(),
         ) {
             row_heights = heights;
         }

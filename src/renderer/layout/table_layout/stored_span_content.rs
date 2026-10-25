@@ -338,6 +338,31 @@ impl LayoutEngine {
             && self.stored_plain_text_span_frame(table, cell)
     }
 
+    /// 현재 글꼴 프로그램으로 다시 구성한 순수 글줄은 실제 수용한 조각에서
+    /// 명시한 valign을 유지한다. 낡은 LineSeg 프레임을 되살리는 인증이 아니다.
+    /// 내용 컷과 그 물리 상자는 호출자가 이미 공통 유닛으로 결정했다.
+    pub(in crate::renderer::layout) fn current_program_span_owns_alignment(
+        &self,
+        table: &Table,
+        cell: &Cell,
+    ) -> bool {
+        let profile = self.profile.get();
+        cell.row_span > 1
+            && cell.vertical_align != crate::model::table::VerticalAlign::Top
+            && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            && !profile.session_edited()
+            && !cell.dirty_flag
+            && self
+                .render_normalization
+                .borrow()
+                .cell_has_current_render_partition(table, cell)
+            && cell.paragraphs.iter().all(|para| {
+                para.controls.is_empty()
+                    && !para.stored_text_partition_is_dirty()
+                    && !para.cell_format_vpos_dirty
+            })
+    }
+
     /// 슬롯 수용과 정렬 프레임은 별도 계약이다. 원본 문단 안의 실제 쪽
     /// 재시작이 있으면 그 앞 프레임을 다 소비한 컷만 해당 정렬을 소유한다.
     /// 문단별 로컬 원점이나 실제 페이지 경계가 없는 일반 슬롯 컷은 기존 계약을 쓴다.

@@ -4850,7 +4850,7 @@ impl HeightMeasurer {
                 &content_row_floor,
                 &table.rowspan_declared_overflow_shrink(),
                 self.dpi,
-                self.render_normalization.table_text_reflowed(table),
+                &self.render_normalization,
             )
         {
             row_heights = heights;

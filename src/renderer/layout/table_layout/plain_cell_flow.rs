@@ -121,10 +121,16 @@ impl super::LayoutEngine {
         content_floors: &[f64],
         declared_shrink_hu: &[u32],
         dpi: f64,
-        table_reflowed: bool,
+        render_normalization: &crate::renderer::render_normalization::RenderNormalizationOverlay,
     ) -> Option<Vec<f64>> {
         let is_plain_reflow = |cell: &crate::model::table::Cell| {
-            cell.text_direction == 0 && Self::cell_has_plain_reflow_paragraphs(cell, table_reflowed)
+            // 이웃 셀의 줄 구성이 바뀌어도 이 셀의 저장 선언 제약은 유지한다.
+            // 컷 유닛과 같은 출처로 실제 재조판 셀의 내용 요구만 먼저 배분한다.
+            cell.text_direction == 0
+                && Self::cell_has_plain_reflow_paragraphs(
+                    cell,
+                    render_normalization.cell_text_partition_reflowed(table, cell),
+                )
         };
         if !requirements.iter().any(|&(index, height)| {
             let cell = &table.cells[index];

@@ -1418,7 +1418,7 @@ impl LayoutEngine {
                                 // 이 프레임에서는 남은 내용 전체를 정렬한다. 실제 내용 컷이 있으면 위쪽 원점을 유지해야 한다.
                                 // 저장 행 잔여 프레임도 완전한 남은 내용의 정렬 공간을 소유한다.
                                 end >= units.len()
-                                    && (self.stored_row_frame_owns_complete_tail(table)
+                                    && (self.stored_row_frame_owns_complete_tail(table, cell)
                                         || self.row_uses_reflow_physical_frame(table, cell_row)
                                         || (self.profile.get().hwp5_stored_pagination_layout()
                                             && !self.profile.get().session_edited()
@@ -1546,6 +1546,8 @@ impl LayoutEngine {
                     && cell.vertical_align != crate::model::table::VerticalAlign::Top
                     && straddle_cut_units.is_some_and(|(start, end)| {
                         self.stored_span_cut_owns_alignment(cell, table, styles, start, end)
+                            || (start < end
+                                && self.current_program_span_owns_alignment(table, cell))
                             || self.stored_plain_spanning_frame_owns_alignment(
                                 cell, table, start, end, end_row, styles,
                             )

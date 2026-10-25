@@ -82,6 +82,7 @@ pub struct RenderNormalizationOverlay {
     nested_table_widths_by_pointer: HashMap<usize, Arc<NestedTableWidthProjection>>,
     text_reflowed_tables_by_pointer: HashSet<usize>,
     rendered_cell_frame_changes: HashMap<usize, HashSet<(u16, u16)>>,
+    rebased_table_frames_by_pointer: HashSet<usize>,
     nested_tables_with_reflowed_hosts: HashSet<usize>,
     stored_nested_text_frames_by_pointer: HashMap<usize, Arc<StoredNestedTextFrames>>,
 }
@@ -436,8 +437,13 @@ impl RenderNormalizationOverlay {
             }
         }
         if frames {
-            self.register_text_reflowed_table(source);
-            self.register_text_reflowed_table(rendered);
+            // 앞 흐름의 변화는 표의 절대 쪽 프레임에 전파된다. 실제로 바뀐
+            // 셀의 집합은 유지하여 이웃 셀의 상대 줄 원점·정렬을 보존한다.
+            for table in [source, rendered] {
+                let pointer = table as *const Table as usize;
+                self.text_reflowed_tables_by_pointer.insert(pointer);
+                self.rebased_table_frames_by_pointer.insert(pointer);
+            }
         }
         frames
     }
@@ -448,19 +454,47 @@ impl RenderNormalizationOverlay {
             .contains(&(table as *const Table as usize))
     }
 
-    /// 본체의 총높이가 바뀌어도 이웃 셀의 유효한 저장 프레임까지 폐기하지 않는다.
-    /// 표 내부에서 주소가 유일한 행·열은 측정용 셀 복제에도 같은 출처를 전달한다.
+    /// 셀 범위가 확인되지 않은 전체 재조판은 원본 개체 프레임도 무효화한다.
+    /// 셀별 읽기 전용 정규화는 글줄 출처만 바꾸므로 호스트 앵커가 증명하는
+    /// 본문 종료선과 구분한다. 명시적 편집 등록은 셀 범위를 지워 우선한다.
+    pub(crate) fn table_frame_reflowed_without_cell_scope(&self, table: &Table) -> bool {
+        self.rebased_table_frames_by_pointer
+            .contains(&(table as *const Table as usize))
+            || (self.table_text_reflowed(table)
+                && !self
+                    .rendered_cell_frame_changes
+                    .contains_key(&(table as *const Table as usize)))
+    }
+
+    /// 앞 흐름에서 이월된 표의 저장 쪽 프레임은 셀 글줄이 같아도 무효다.
+    /// 상대 글줄 프로그램이 같은지는 별도 질의로 보존한다.
     pub(crate) fn cell_frame_reflowed(
         &self,
         table: &Table,
         cell: &crate::model::table::Cell,
     ) -> bool {
+        self.rebased_table_frames_by_pointer
+            .contains(&(table as *const Table as usize))
+            || self.cell_text_partition_reflowed(table, cell)
+    }
+
+    /// 상대 글줄 소속의 변경만 확인한다. 앞 흐름의 쪽 원점 이동을 이웃 셀의
+    /// 문자 재조판으로 취급하지 않는다. 명시적 전체 편집은 기존 fallback을 쓴다.
+    pub(crate) fn cell_text_partition_reflowed(&self, table: &Table, cell: &Cell) -> bool {
         self.rendered_cell_frame_changes
             .get(&(table as *const Table as usize))
             .map_or_else(
                 || self.table_text_reflowed(table),
                 |cells| cells.contains(&(cell.row, cell.col)),
             )
+    }
+
+    /// 실제 render-only 줄 구성 변경의 양성 출처다. 편집·출처 미확정
+    /// 전체 재조판은 이 집합에 없으므로 현재 프로그램의 셀 프레임으로 승격하지 않는다.
+    pub(crate) fn cell_has_current_render_partition(&self, table: &Table, cell: &Cell) -> bool {
+        self.rendered_cell_frame_changes
+            .get(&(table as *const Table as usize))
+            .is_some_and(|cells| cells.contains(&(cell.row, cell.col)))
     }
 
     /// 물리 행을 덮는 셀만 그 행의 저장 프레임을 무효화할 수 있다.

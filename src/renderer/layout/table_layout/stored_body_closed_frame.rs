@@ -199,10 +199,12 @@ impl LayoutEngine {
             || table.row_count <= 1
             || table.page_break != crate::model::table::TablePageBreak::RowBreak
             || table.caption.is_some()
+            // 셀 글줄의 관측 정규화와 원본 호스트의 물리 종료선은 별도 소유다.
+            // 명시적 전체 편집·출처 미확정 재조판은 종전대로 프레임을 무효화한다.
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .table_frame_reflowed_without_cell_scope(table)
             || table.cells.iter().any(|cell| {
                 cell.dirty_flag
                     || cell.paragraphs.iter().any(|para| {
