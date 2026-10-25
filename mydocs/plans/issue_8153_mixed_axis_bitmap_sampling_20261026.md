@@ -27,8 +27,11 @@ Print 샘플러는 혼합 축을 지원한다. 그 결과는 독립 Print의 닫
 현재 판정은 일반 JPEG Picture만 허용해 PNG 영역 채움을 건너뛴다. 이후 일반 준비의
 거절로 Native의 mipmap과 Canvas 필터가 서로 다른 표본을 소비한다.
 
-같은 원본 전체를 사용하는 PNG와 `FitToSize`/`Total`을 공통 판정에 포함하는 방향을
-검증한다. 페이지·문서 ID·특정 폭·색상에 따른 분기를 만들지 않는다. 기존 공통
+같은 원본 전체를 사용하는 PNG/JPEG의 `FitToSize`/`Total`을 공통 판정에 포함하는
+방향을 검증한다. 기존 `device_image::eligible`의 동일한 전체 원본 계약을 재사용한다.
+일반 PNG Picture는 기존의 가시 팔레트별 재구성 계약을 유지한다. 이를 보호하는
+`verified_print_bitmap_visible_palette.rs`도 정상 대조에 포함한다.
+페이지·문서 ID·특정 폭·색상에 따른 분기를 만들지 않는다. 기존 공통
 샘플러의 수학·장치 영역·임계값을 바꾸지 않는다. 명시적 PDF interpolation 선언,
 반복·자연 크기·Zoom·crop·회전·효과는 기존 계약을 유지한다. alpha가 있는 원본은
 이미 있는 샘플러의 불투명성 검사에서 거절하고 기존 출력 경로로 돌아간다.
@@ -40,8 +43,11 @@ Print 샘플러는 혼합 축을 지원한다. 그 결과는 독립 Print의 닫
    글꼴 오류가 아니다. 같은 검사를 실제 후보에서 다시 실행하고 여덟 조각의 소유·
    누락·중복, 네 모서리·두 가로 띠·두 세로 띠의 관계도 보호한다.
 2. 정식 원본은 `tests/cases/issue_8153_opaque_mixed_axis_image_sampling.rs`에 둔다.
-   Native CI의 기존 `skia --lib` 실행 경로에서 같은 사례를 수집하게 하고 불필요한
-   workflow 개별 호출을 추가하지 않는다. 실제 수집과 테스트 tier 정책을 확인한다.
+   Native CI의 실제 수집 경로와 테스트 tier 정책을 확인한다. 소스 `cfg(test)` 모듈을
+   추가하는 include 방식은 정책 검사에서 거절돼 제거했다. 현 Native CI는 제한된
+   integration 사례만 선택하므로 새 feature 전용 검사의 실행 누락을 확인했다.
+   최종 제출 전 CI 호출 추가 기준 5.3.1에 따라 필요한 최소 수집 경로를 마련하고
+   실제 실행을 확인한다. 기본 수집에 이미 포함된 검사를 중복 호출하지 않는다.
 3. 두 원본의 239쪽 및 기존 PNG 그림 경계·JPEG·그룹·crop·명시적 interpolation의
    정상 대조를 확인한다. Native/fresh WASM의 해당 페이지 TSV와 확대 PNG를 직접
    비교한다. 기준 `7620cc75`의 전쪽 최저는 Native 99.45644%, WASM 99.25584%다.

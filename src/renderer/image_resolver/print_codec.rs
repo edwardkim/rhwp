@@ -24,13 +24,21 @@ pub(crate) fn print_area_sampling(
     image: &ImageNode,
     resolved: Option<&ResolvedImagePayload>,
 ) -> bool {
+    // 영역 맞춤 채움은 이미 검증한 전체 원본·장치 사각형 계약을 재사용한다.
+    // 일반 PNG Picture의 팔레트별 재구성과 반복·부분 창은 이 경로로 넓히지 않는다.
+    let bitmap_fill = crate::paint::device_image::eligible(image);
+    let accepts_mime = |mime| mime == "image/jpeg" || (bitmap_fill && mime == "image/png");
     image.hancom2024_print_bitmap
         && image.effect == ImageEffect::RealPic
         && image.brightness == 0
         && image.contrast == 0
         && image.opacity == 1.0
-        && image.fill_mode.is_none()
+        && (image.fill_mode.is_none() || bitmap_fill)
         && !image.transform.has_transform()
+        && !image
+            .data
+            .as_deref()
+            .is_some_and(|data| super::png_sampling::interpolation(data).is_some())
         && image.crop.is_none_or(|(left, top, right, bottom)| {
             super::image_crop_reference(image).is_some_and(|(width, height)| {
                 left == 0
@@ -44,9 +52,9 @@ pub(crate) fn print_area_sampling(
                 image
                     .data
                     .as_deref()
-                    .is_some_and(|data| detect_image_mime_type(data) == "image/jpeg")
+                    .is_some_and(|data| accepts_mime(detect_image_mime_type(data)))
             },
-            |payload| payload.mime == "image/jpeg",
+            |payload| accepts_mime(payload.mime),
         )
 }
 
