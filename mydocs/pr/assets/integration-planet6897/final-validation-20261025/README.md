@@ -127,3 +127,13 @@ Native Print 15개는 동일 producer의 전쪽 PNG에서 해시를 확인하여
 | `policy1790387-actual` | wasm | 65 → 64 | 본문 문자·소유·순서 보존 |
 | `onsaemiro-converted-control` | native | 48 → 46 | 본문 문자·소유·순서 보존 |
 | `onsaemiro-converted-control` | wasm | 48 → 46 | 본문 문자·소유·순서 보존 |
+
+## 통합 PR의 최종 CI와 병합
+
+[PR #8228](https://github.com/edwardkim/rhwp/pull/8228)은 최종 head `b1e93d8de2d4842f725415aee19bd5b98ecfb8b3`, 테스트 merge `41a30c3eeb6e50464b6806beeaa20dbaa23a77a8`의 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/40196953497)와 CodeQL·Render Diff·Proptest·Adapter·Gym 성공 후 2026-10-25 22:58:32 KST에 merge `3e02fe2749866a8453af3eb3901b9c1a674cccaf`로 반영됐습니다. CI Rust shard는 A3801/B2845/C3385/D1257, 총11,288 PASS/실패0/skip45입니다. 로컬 전체11,481건과 CI shard 합계를 구분합니다.
+
+추가 CI 보정은 Python Gym 기대 건수8개 값과 workflow의 삭제 case `--print` 참조1행뿐입니다. 원래 검증 head `673c1d5f7cdcb5573b793ba2d2abaaedd2602134` 이후 Rust·Studio 제품 소스는 동일하며, squash merge tree도 최종 검증 head와 같습니다. 위 전쪽 TSV·PNG는 실제 producer의 결과이며 새 head에서 재캡처했다고 쓰지 않습니다.
+
+사용자 지정 옵션 2로 [완료 후보·잔여 판독](../postmerge-20261025/README.md)과 개별 원 PR의 확정 기록을 보완합니다.
+
+- 병합 후 [duration 갱신](https://github.com/edwardkim/rhwp/actions/runs/40200061667)은 `successful-pr-worker-measurements`, source run40196953497/attempt1, B·C·D artifact `12601231532`·`12601517458`·`12601121704`를 확인하고 metrics commit `56537b8ce5162d47b9679f6355aef0044937eb2b`로 발행했습니다. 검증 CI를 병합 뒤 재실행하지 않았습니다.

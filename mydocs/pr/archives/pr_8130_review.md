@@ -4,7 +4,7 @@
 
 **승인 — 중복 PR의 미병합 종료와 기존 대조군 보존을 확인했습니다. 통합 기능 기여로 계산하지 않습니다.**
 
-원격 push·통합 PR 생성·CI·merge는 아직 수행하지 않았습니다. 사용자 승인 후 진행하며, 원 contributor head와 검증한 통합 head를 구분합니다.
+통합 [PR #8228](https://github.com/edwardkim/rhwp/pull/8228)의 최종 head `b1e93d8de2d4842f725415aee19bd5b98ecfb8b3`가 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/40196953497)를 통과했고, 2026-10-25 22:58:32 KST에 merge `3e02fe2749866a8453af3eb3901b9c1a674cccaf`로 devel에 반영됐습니다. 원 contributor head와 실제 검증한 통합 head를 구분하여 기록합니다.
 
 ## 접수 정보
 
@@ -87,4 +87,4 @@
 
 ## 원격 검토와 후속 처리
 
-통합 PR 생성 전 최신 devel/source head와 제출 바이트를 확인합니다. 게시 후 exact-head CI와 raw 이미지·TSV 다운로드 해시를 검증합니다. 통합이 실제 merge된 뒤에만 merge SHA를 연결해 원 PR의 완료 범위와 comment/close 여부를 처리합니다. 원 contributor의 기여·메인터너 보정·남은 차이를 구분하여 한국어 존댓말로 설명합니다.
+중복 PR #8130은 이미 미병합 종료됐습니다. 임시 적용 후 제거한 2개 commit은 통합 기능 49개에 포함하지 않았고, 기존 대조군만 유지했습니다. 이 문서의 원격 통합 기록을 보완하며 원 PR을 재개하거나 중복 종료하지 않습니다.
