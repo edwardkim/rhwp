@@ -7502,25 +7502,6 @@ impl LayoutEngine {
                 // 문단 끝·명시 개행의 작성 공백과 밑줄 친 공백은 유지한다.
                 0.0
             };
-            let unjustified_leading_spaces = if needs_justify
-                && has_tabs
-                && styles
-                    .para_styles
-                    .get(composed.para_style_id as usize)
-                    .is_some_and(|style| style.auto_tab_left && style.indent < 0.0)
-            {
-                fixed_auto_tab_prefix_by_run(&leading_space_plan.line)
-            } else if needs_justify && !is_hancom_company_pua_logo_line {
-                // Both measurement and emitted advances stop indentation at
-                // the same visible owner, including a note marker outside
-                // text runs. A following space belongs to body distribution.
-                let first_inline_offset = first_inline_pos.map_or(usize::MAX, |position| {
-                    position.saturating_sub(comp_line.char_start)
-                });
-                unjustified_leading_spaces_by_run(&leading_space_plan.line, first_inline_offset)
-            } else {
-                vec![0; leading_space_plan.line.runs.len()]
-            };
             let mut dash_extra_by_run = None;
             let condense = styles
                 .para_styles
@@ -7551,6 +7532,26 @@ impl LayoutEngine {
                 prepared
             } else {
                 None
+            };
+            // 실제 배치할 run 분할이 확정된 뒤 같은 소유 배열을 만든다.
+            let unjustified_leading_spaces = if needs_justify
+                && has_tabs
+                && styles
+                    .para_styles
+                    .get(composed.para_style_id as usize)
+                    .is_some_and(|style| style.auto_tab_left && style.indent < 0.0)
+            {
+                fixed_auto_tab_prefix_by_run(&leading_space_plan.line)
+            } else if needs_justify && !is_hancom_company_pua_logo_line {
+                // Both measurement and emitted advances stop indentation at
+                // the same visible owner, including a note marker outside
+                // text runs. A following space belongs to body distribution.
+                let first_inline_offset = first_inline_pos.map_or(usize::MAX, |position| {
+                    position.saturating_sub(comp_line.char_start)
+                });
+                unjustified_leading_spaces_by_run(&leading_space_plan.line, first_inline_offset)
+            } else {
+                vec![0; leading_space_plan.line.runs.len()]
             };
             let (extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
                 (0.0, 0.0, 0.0)
