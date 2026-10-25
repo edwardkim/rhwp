@@ -47,3 +47,39 @@ paint가 그리는 프로그램을 함께 확인하고, 같은 공급 결과를 
 
 현재는 원인 확인 계획이다. 신규 글꼴 정책 구현·100% 또는 필수 전체 테스트의 완료를
 뜻하지 않는다. 브랜치는 `task/8153-handbook-raw100`이며, 동기화·원격 PR 처리는 하지 않는다.
+
+## 2026-10-26 실제 관측과 보정 범위
+
+동일 producer `6e0114e077dd2354266dbe18e7935341a6fbd7a4`의 Native observer에서
+200쪽 세 기호 모두 `paint.native.resolved=Haansoft Batang`, `certainty=observed`를
+확인했다. 측정은 기존 KoPub advance 872HU에 원본 장평·자간을 적용하고 있다.
+이번 공급 보정은 그 저장/조판 좌표를 변경하지 않고 빈 paint 기호만 후속 실제 프로그램으로 넘긴다.
+보정 후 실제 글꼴·윤곽·뒤 본문과 위치를 다시 대조한다. 측정과 paint의 동일성 전체를
+확인했다고 주장하지 않는다.
+
+브라우저는 원본 HBATANG의 기존 cmap 종료 형식 때문에 원본 바이트를 직접 거부했다.
+이 실패를 fallback 결과로 해석하지 않았다. 표준 Sweep에서 이미 사용하는 메타데이터
+정규화 프로그램(원본 SHA `35f84328…`, 공급 SHA `e391734b…`)으로 재현한 결과,
+첫 face와 HCR Batang을 함께 등록해도 U+26AB의 잉크는 0픽셀이었다. FontFace의
+unicodeRange에서 그 코드포인트만 제외한 진단 대조에서는 잉크 36픽셀, 정상 A는
+양쪽 모두 39픽셀이었다. 이는 원인 실험이며 실제 새 WASM 출력 검증을 대체하지 않는다.
+
+공통 `font_symbol_coverage`는 Unicode 기호 범주 중 원래 빈 칸인 U+2800을 제외하고,
+TrueType loca/glyf가 명시적으로 빈 glyph라고 선언한 경우에만 공급에서 제외한다.
+공백·문자·결합/서식 문자와 미해석·깨진 glyph는 빈 것으로 추정하지 않는다.
+색·bitmap·SVG 자료가 있는 glyph와 CFF·가변 face도 이 빈 glyf 정책으로 거절하지 않는다.
+기호 집합은 Unicode scalar의 유한한 범위를 한 번 순회해 만들고, 외부 cmap가 주장하는
+무제한 범위를 순회하지 않는다. 같은 제외 집합을 Native selector와 WASM FontFace
+unicodeRange가 소비한다. 원본 face 이름·cmap·glyf·advance는 바꾸지 않는다.
+Studio의 승인된 로컬 프로그램·호스트 FontFace 공급에도 같은 Rust API를 사용한다.
+
+생산 경로는 `공급 bytes → 공통 빈 기호 집합 → Native 후보 선택/FontFace unicodeRange →
+기존 positioned paint`다. 문서의 기호나 family, 저장 좌표, PNG 점수 판정은 수정하지 않는다.
+표준화되지 않은 WOFF/WOFF2·URL 전용 공급의 빈 glyph를 추정하지 않는다.
+
+정식 검사는 저장소의 MIT 합성 글꼴만 메모리에서 조합한다. 기존 E 라이브러리로 실행한
+`mapped_empty_symbols_use_real_fallback_without_changing_source_or_positions`는
+첫 빈 기호가 실제 fallback의 PNG를 가리는 결함으로 FAIL했다. 해당 모듈 원문·SHA와
+빌드/실행 명령을 ignored `symbol-fallback-before-*`에 보존했다. 원본 private 글꼴은
+새 fixture나 Git 파일로 복사하지 않는다. 보정 후 합성 계약·실물 200쪽과 정상 대조군,
+Native/fresh WASM 전체 비교 결과를 이어서 기록한다.
