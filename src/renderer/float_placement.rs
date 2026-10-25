@@ -402,6 +402,9 @@ pub(crate) fn stored_complete_row_frame_heights(table: &Table) -> Option<Vec<i32
         return None;
     }
     let mut rows = vec![0_i32; row_count];
+    let mut constrained_rows = vec![0_i32; row_count];
+    let mut declarations_valid = true;
+    let mut nonnegative_spacing = true;
     let mut columns = vec![0_usize; row_count];
     for cell in &table.cells {
         let row = usize::from(cell.row);
@@ -430,12 +433,12 @@ pub(crate) fn stored_complete_row_frame_heights(table: &Table) -> Option<Vec<i32
             for line in &para.line_segs {
                 if line.vertical_pos < 0
                     || line.line_height <= 0
-                    || line.line_spacing < 0
                     || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
                     || last_end.is_some_and(|end| line.vertical_pos < end)
                 {
                     return None;
                 }
+                nonnegative_spacing &= line.line_spacing >= 0;
                 last_end = Some(line.vertical_pos.checked_add(line.line_height)?);
             }
         }
@@ -443,6 +446,11 @@ pub(crate) fn stored_complete_row_frame_heights(table: &Table) -> Option<Vec<i32
             .checked_add(i32::from(padding.top))?
             .checked_add(i32::from(padding.bottom))?;
         rows[row] = rows[row].max(physical_height);
+        if let Ok(declared) = i32::try_from(cell.height) {
+            constrained_rows[row] = constrained_rows[row].max(physical_height).max(declared);
+        } else {
+            declarations_valid = false;
+        }
         columns[row] = columns[row].checked_add(usize::from(cell.col_span))?;
     }
     if rows.iter().any(|height| *height <= 0)
@@ -455,7 +463,21 @@ pub(crate) fn stored_complete_row_frame_heights(table: &Table) -> Option<Vec<i32
     let total = rows.iter().map(|height| i64::from(*height)).sum::<i64>()
         + table.inner_cell_spacing_hu(row_count)
         + i64::from(table.outer_cell_spacing_hu());
-    (total == i64::from(table.common.height)).then_some(rows)
+    if nonnegative_spacing && total == i64::from(table.common.height) {
+        return Some(rows);
+    }
+    // 선언이 내용보다 작은 행은 실제 줄과 안 여백을 담아야 한다. 다른 행의
+    // 선언 여유는 보존하며, 그 하한들이 원래 개체 전체 프레임을 정확히 닫는
+    // 경우만 채택한다. 부족분을 마지막 행에 주면 앞선 행 원점이 틀어진다.
+    // 마지막 줄의 후행 spacing은 이 닫힌 내용 상자에 더하지 않는다.
+    let constrained_total = constrained_rows
+        .iter()
+        .map(|height| i64::from(*height))
+        .sum::<i64>()
+        + table.inner_cell_spacing_hu(row_count)
+        + i64::from(table.outer_cell_spacing_hu());
+    (declarations_valid && constrained_total == i64::from(table.common.height))
+        .then_some(constrained_rows)
 }
 
 /// An original plain grid can close its final cell's unused band at the
