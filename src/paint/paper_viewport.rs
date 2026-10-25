@@ -599,9 +599,43 @@ impl PagePaintContext {
             rect.style.stroke_width / pixel
         };
         let band = declared.round().max(1.0);
+        rect.print_picture_pen = Some([band * pixel, pixel]);
         rect.style.stroke_width = (band + 1.0) * pixel;
         // 빈 명시적 반복 구간은 실선이다. 재생기는 확정한 장치 선폭을 그대로 소비한다.
         rect.style.stroke_dash = crate::renderer::StrokeDash::Explicit([0.0; 6]);
+    }
+
+    /// 그림의 중심선 경로는 source 경계의 각 끝점을 장치 정수로 변환한다.
+    /// 선언 폭 0의 Print 경로에는 화면용 기본 폭의 안쪽 겹침이 없다.
+    pub(crate) fn picture_border_frame(
+        self,
+        bounds: BoundingBox,
+        rect: &RectangleNode,
+    ) -> Option<BoundingBox> {
+        let paper = self.print_paper?;
+        if !self.print
+            || !self.axis_aligned_graphics
+            || rect.print_picture_pen.is_none()
+            || rect.transform.has_transform()
+            || ![bounds.x, bounds.y, bounds.width, bounds.height]
+                .into_iter()
+                .all(f64::is_finite)
+            || bounds.width <= 0.0
+            || bounds.height <= 0.0
+        {
+            return None;
+        }
+        let device = 600.0 / 96.0;
+        let left = (bounds.x * device).round();
+        let top = (bounds.y * device).round();
+        let right = ((bounds.x + bounds.width) * device).round();
+        let bottom = ((bounds.y + bounds.height) * device).round();
+        Some(BoundingBox::new(
+            left * paper.device_units.0,
+            top * paper.device_units.1,
+            (right - left) * paper.device_units.0,
+            (bottom - top) * paper.device_units.1,
+        ))
     }
 
     /// 정수 장치 좌표 → 물리 종이 viewport의 가로 축 변환.

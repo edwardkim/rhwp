@@ -1370,6 +1370,8 @@ export interface LayerRectangleOp {
   gradient?: LayerGradientFill;
   /** Rust가 판정한 Print 단색 사각형의 장치 채움 정책. */
   printFillCoverage?: 'device';
+  /** Print의 물리 채운 띠와 외곽 pen. raster 폭은 공통 WASM에서 계산한다. */
+  printPicturePen?: [number, number];
 }
 
 export interface LayerEllipseOp {

@@ -1477,6 +1477,9 @@ pub struct RectangleNode {
     /// 그림 원본의 HU 선폭. 인쇄 장치 pen과 화면용 기본 선폭을 구분한다.
     #[serde(skip)]
     pub picture_border_width_hu: Option<i32>,
+    /// Print에서 확정한 채운 띠와 외곽 pen의 물리 폭. raster 최소 폭은 재생 시 결정한다.
+    #[serde(skip)]
+    pub print_picture_pen: Option<[f64; 2]>,
     /// 일반 사각형의 NORMAL 테두리 원본 폭. 선 생략과 채움 중첩을 구분한다.
     #[serde(skip)]
     pub drawing_border_width_hu: Option<i32>,
@@ -1503,6 +1506,7 @@ impl RectangleNode {
             outer_table_control_index: None,
             image_frame_owner: None,
             picture_border_width_hu: None,
+            print_picture_pen: None,
             drawing_border_width_hu: None,
         }
     }

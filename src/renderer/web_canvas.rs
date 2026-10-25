@@ -1170,13 +1170,30 @@ impl WebCanvasRenderer {
         }
         let fill_bounds =
             rectangle_fill::bounds(&self.ctx, *bbox, rect, self.print_stroke_adjustment);
+        let mut style = std::borrow::Cow::Borrowed(&rect.style);
+        if self.print_stroke_adjustment {
+            let minimum = self.ctx.get_transform().ok().and_then(|matrix| {
+                super::raster_stroke::minimum_width([
+                    matrix.a(),
+                    matrix.b(),
+                    matrix.c(),
+                    matrix.d(),
+                ])
+            });
+            if let Some(width) = rect
+                .print_picture_pen
+                .and_then(|pen| super::print_picture_pen::raster_width(pen, minimum))
+            {
+                style.to_mut().stroke_width = width;
+            }
+        }
         self.draw_rect_with_gradient(
             fill_bounds.x,
             fill_bounds.y,
             fill_bounds.width,
             fill_bounds.height,
             rect.corner_radius,
-            &rect.style,
+            &style,
             rect.gradient.as_deref(),
         );
         self.ctx.set_line_join(&previous_join);

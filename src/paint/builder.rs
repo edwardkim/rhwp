@@ -375,7 +375,16 @@ impl LayerBuilder {
                 let image_frame = rect
                     .image_frame_owner
                     .and_then(|owner| self.image_frames.get(&owner))
-                    .map(|frame| frame.border_frame(node.bbox));
+                    .map(|frame| {
+                        let source = if rect.picture_border_width_hu == Some(0) {
+                            frame.source
+                        } else {
+                            node.bbox
+                        };
+                        self.page_context
+                            .and_then(|context| context.picture_border_frame(source, &rect))
+                            .unwrap_or_else(|| frame.border_frame(node.bbox))
+                    });
                 let frame = image_frame.unwrap_or_else(|| {
                     self.page_context.map_or(node.bbox, |context| {
                         context.rectangle_frame(node, &mut rect, pixel)
@@ -429,7 +438,8 @@ impl LayerBuilder {
                 };
                 if image_fill_clip.is_none()
                     && !node.layer.as_ref().is_some_and(|layer| layer.master_page)
-                    && (frame.x != node.bbox.x
+                    && (self.hancom2024_print_bitmap
+                        || frame.x != node.bbox.x
                         || frame.y != node.bbox.y
                         || frame.width != node.bbox.width
                         || frame.height != node.bbox.height)

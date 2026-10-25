@@ -1047,16 +1047,18 @@ impl PaintOp {
                 buf.push_str("\"type\":\"rectangle\",\"bbox\":");
                 let device_fill = ctx.profile == RenderProfile::Print
                     && crate::paint::device_fill::eligible(rect);
-                if device_fill {
+                if device_fill || rect.print_picture_pen.is_some() {
                     // 장치 픽셀 선택 전에 원본 끝점을 세 자리로 절삭하지 않는다.
                     let _ = write!(
                         buf,
                         "{{\"x\":{},\"y\":{},\"width\":{},\"height\":{}}}",
                         bbox.x, bbox.y, bbox.width, bbox.height
                     );
-                    buf.push_str(",\"printFillCoverage\":\"device\"");
                 } else {
                     write_bbox(buf, *bbox);
+                }
+                if device_fill {
+                    buf.push_str(",\"printFillCoverage\":\"device\"");
                 }
                 let _ = write!(
                     buf,
@@ -1064,6 +1066,9 @@ impl PaintOp {
                     rect.corner_radius
                 );
                 write_shape_style(buf, &rect.style);
+                if let Some([band, outline]) = rect.print_picture_pen {
+                    let _ = write!(buf, ",\"printPicturePen\":[{band},{outline}]");
+                }
                 if rect.round_stroke_join {
                     buf.push_str(",\"strokeJoin\":\"round\"");
                 }

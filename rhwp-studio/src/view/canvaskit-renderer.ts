@@ -12,7 +12,7 @@ import * as bitmapRasterWasm from '@wasm/rhwp.js';
 import { drawAnisotropicPrintImage, drawPrintFrameImage } from './canvaskit/anisotropic-image.ts';
 import { drawPrintMetafile, isPrintMetafile } from './canvaskit/metafile-print.ts';
 import { drawPrintAreaImage } from './canvaskit/print-image-sampling.ts';
-import { printRectangleClip, printRectangleFill, printBitmapImage } from './canvaskit/print-device-rectangle.ts';
+import { printRectangleClip, printRectangleFill, printBitmapImage, printPicturePenWidth } from './canvaskit/print-device-rectangle.ts';
 import CanvasKitInit from 'canvaskit-wasm';
 import { blake3 } from '@noble/hashes/blake3.js';
 import type {
@@ -2171,7 +2171,10 @@ export class CanvasKitLayerRenderer {
     this.withImageTransform(canvas, op.bbox, op.transform, () => {
       const bounds = this.currentProfile === 'print' && op.printFillCoverage === 'device'
         ? printRectangleFill(canvas, op.bbox) : op.bbox;
-      this.drawStyledShape(canvas, bounds, op.style, (paint) => {
+      const penWidth = this.currentProfile === 'print' && op.printPicturePen
+        ? printPicturePenWidth(canvas, op.printPicturePen) : undefined;
+      const style = penWidth === undefined ? op.style : { ...op.style, strokeWidth: penWidth };
+      this.drawStyledShape(canvas, bounds, style, (paint) => {
         if (op.strokeJoin === 'round') paint.setStrokeJoin(this.canvasKit.StrokeJoin.Round);
         const cornerRadius = op.cornerRadius ?? 0;
         if (cornerRadius > 0) {

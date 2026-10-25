@@ -3,11 +3,47 @@
 #[allow(dead_code)]
 #[path = "../../src/paint/print_paper.rs"]
 mod print_paper;
+#[path = "../../src/renderer/print_picture_pen.rs"]
+mod print_picture_pen;
 #[allow(dead_code)]
 #[path = "../../src/renderer/print_image_sampling.rs"]
 mod print_sampling;
 
 use print_paper::{reference_geometry, PrintPaper};
+
+#[test]
+fn independent_picture_band_keeps_physical_width_and_raster_outline_separate() {
+    // 독립 Print 163쪽: 채운 띠 0.36pt와 외곽 pen 0.12pt.
+    // 96/192dpi에서는 외곽 pen만 출력 격자의 한 픽셀로 넓어진다.
+    // 600dpi에서는 원래 0.12pt를 유지한다. 띠 자체는 확대하지 않는다.
+    for (dpi, expected_css) in [(96.0, 1.48), (192.0, 0.98), (600.0, 0.64)] {
+        let actual = print_picture_pen::raster_width([0.48, 0.16], Some(96.0 / dpi));
+        assert!((actual.unwrap() - expected_css).abs() < 1e-12);
+    }
+}
+
+#[test]
+fn picture_pen_rejects_unusable_device_transform_and_invalid_source_widths() {
+    assert_eq!(print_picture_pen::raster_width([0.48, 0.16], None), None);
+    for invalid in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+        assert_eq!(
+            print_picture_pen::raster_width([invalid, 0.16], Some(1.0)),
+            None
+        );
+        assert_eq!(
+            print_picture_pen::raster_width([0.48, invalid], Some(1.0)),
+            None
+        );
+        assert_eq!(
+            print_picture_pen::raster_width([0.48, 0.16], Some(invalid)),
+            None
+        );
+    }
+    assert_eq!(
+        print_picture_pen::raster_width([f64::MAX, f64::MAX], Some(1.0)),
+        None
+    );
+}
 
 #[test]
 fn independent_print_paper_and_integer_device_origins() {

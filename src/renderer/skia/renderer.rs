@@ -1955,6 +1955,28 @@ impl SkiaLayerRenderer {
                                 }
                             }
                             if let Some(mut stroke) = make_stroke_paint(&rect.style) {
+                                if cache_context.raster_target
+                                    && cache_context.policy.print_stroke_adjustment()
+                                {
+                                    let matrix = canvas.local_to_device_as_3x3();
+                                    let minimum = (!matrix.has_perspective())
+                                        .then(|| {
+                                            crate::renderer::raster_stroke::minimum_width([
+                                                f64::from(matrix.scale_x()),
+                                                f64::from(matrix.skew_y()),
+                                                f64::from(matrix.skew_x()),
+                                                f64::from(matrix.scale_y()),
+                                            ])
+                                        })
+                                        .flatten();
+                                    if let Some(width) = rect.print_picture_pen.and_then(|pen| {
+                                        crate::renderer::print_picture_pen::raster_width(
+                                            pen, minimum,
+                                        )
+                                    }) {
+                                        stroke.set_stroke_width(width as f32);
+                                    }
+                                }
                                 if rect.round_stroke_join {
                                     stroke.set_stroke_join(skia_safe::paint::Join::Round);
                                 }

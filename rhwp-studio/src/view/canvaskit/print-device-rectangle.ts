@@ -27,3 +27,13 @@ export function printRectangleFill(canvas: Canvas, rectangle: LayerBounds): Laye
 export function printBitmapImage(canvas: Canvas, rectangle: LayerBounds): LayerBounds {
   return mapRectangle(canvas, rectangle, 'mapPrintBitmapImage');
 }
+
+/** 띠와 외곽선의 결합 계산은 Native·Canvas2D와 같은 Rust 함수를 사용한다. */
+export function printPicturePenWidth(canvas: Canvas, pen: readonly [number, number]): number | undefined {
+  const m = canvas.getTotalMatrix?.();
+  if (!m || m[6] !== 0 || m[7] !== 0 || m[8] !== 1) return undefined;
+  type PenMapper = (pen: Float64Array, transform: Float64Array) => number | undefined;
+  const mapper = (wasmExports as unknown as { printPicturePenWidth?: PenMapper }).printPicturePenWidth;
+  if (!mapper) throw new Error('Print 그림 외곽 pen을 지원하는 fresh WASM이 필요합니다.');
+  return mapper(new Float64Array(pen), new Float64Array([m[0], m[3], m[1], m[4]]));
+}

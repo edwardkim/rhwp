@@ -78,6 +78,7 @@ pub mod pdf;
 pub mod pdf_raster_fidelity;
 mod physical_units;
 pub(crate) mod pua_glyph;
+pub(crate) mod print_picture_pen;
 pub mod pua_oldhangul;
 pub mod raster_pixels;
 pub(crate) mod raster_stroke;
