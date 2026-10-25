@@ -34,8 +34,8 @@ positions와 다음 run pen → Native/Canvas`를 확인한다. CENTER를 공백
 확장한 가정을 제거하고 기존 가운데 정렬의 공통 fit을 유지한다. LEFT의 확인된 공백
 예산을 되돌리거나 RIGHT의 현재 계약을 이 작업에서 추측으로 확장하지 않는다.
 
-373쪽은 `원본 run·말미 공백 소유 → LineMeasure의 가시 점유 → 음수 Justify 선택 →
-후속 fallback의 fit 폭 → 실제 positions`에서 같은 점유를 소비하게 한다. 원문 공백과
+373쪽은 `원본 run·말미 공백 소유 → 기존 가시 줄 측정 → 비분배 fallback의 fit 폭 →
+실제 positions`에서 같은 점유를 소비하게 한다. 기존 음수 Justify의 분배 계약도 보호한다. 원문 공백과
 저장 char 범위·positions를 삭제하는 방식으로 해결하지 않는다. 별도의 x 보정이나
 backend별 폭 계산을 넣지 않는다.
 
@@ -64,7 +64,8 @@ backend별 폭 계산을 넣지 않는다.
 완료해야 한다.
 
 작업 자료는 `output/pr-review/issue8153-handbook-raw100-20261022/`의
-`remaining-raw100-diagnostic/p046-current-regression/`, `p373-source7620-line/`,
+`remaining-raw100-diagnostic/p046-current-regression/`,
+`remaining-raw100-diagnostic/p373-source7620-line/`,
 `handbook-final-visible-fit-candidate/`, `handbook-centered-condense-regression/`에 있다.
 기존 기준 PDF를 재사용하며 private 글꼴·프로그램 분석 자료는 output에만 둔다.
 사용자 지시대로 upstream/devel은 동기화하지 않는다. 모든 1,532조건의 raw 100%·미대응

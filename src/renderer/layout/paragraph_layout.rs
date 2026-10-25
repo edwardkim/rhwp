@@ -2096,16 +2096,16 @@ fn right_tab_block_width_with_tac(
     Some(estimate_text_width(&tail, &ts) + tac_w)
 }
 
-/// 가운데 정렬에서 폭 맞춤과 시작점 계산이 함께 소비하는 실제 글줄 끝.
+/// 가운데 정렬과 비분배 양쪽 정렬의 폭 맞춤이 함께 소비하는 실제 글줄 끝.
 /// 저장 줄의 구분 공백은 잉크가 없지만 음수 자간 뒤의 마지막 글리프는
 /// advance 끝을 넘어간다. 이 두 값을 서로 다른 단계에서 따로 제외하면
 /// 원래 폭에 들어가는 줄까지 압축된다. 장식 공백의 점유는 그대로 남긴다.
-struct CenteredTextLineMeasure {
+struct VisibleTextLineMeasure {
     runs: Vec<(String, TextStyle)>,
     char_count: usize,
 }
 
-impl CenteredTextLineMeasure {
+impl VisibleTextLineMeasure {
     fn new(line: &ComposedLine, styles: &ResolvedStyleSet) -> Option<Self> {
         // 개체·탭·겹침·각주 마커는 각자의 위치/축소 계약으로 측정한다.
         if line.runs.iter().any(|run| {
@@ -2203,7 +2203,7 @@ impl CenteredTextLineMeasure {
 fn converge_cell_overflow_char_spacing(
     line_plan: &LeadingSpacePlan<'_>,
     styles: &ResolvedStyleSet,
-    centered_measure: Option<&CenteredTextLineMeasure>,
+    visible_line_measure: Option<&VisibleTextLineMeasure>,
     tab_width: f64,
     total_char_count: usize,
     total_text_width: f64,
@@ -2216,7 +2216,7 @@ fn converge_cell_overflow_char_spacing(
     let min_sp = -avg_char_w * 0.5;
     let mut extra = ((available_width - total_text_width) / spacing_count as f64).max(min_sp);
     for _ in 0..4 {
-        let measured = centered_measure.map_or_else(
+        let measured = visible_line_measure.map_or_else(
             || {
                 line_plan
                     .line
@@ -2372,11 +2372,11 @@ fn justified_dash_restoration(
 fn line_fit_width(
     width: f64,
     soft_wrap_separator: f64,
-    centered: Option<&CenteredTextLineMeasure>,
+    visible: Option<&VisibleTextLineMeasure>,
     leading: &LeadingSpacePlan<'_>,
     styles: &ResolvedStyleSet,
 ) -> f64 {
-    centered.map_or((width - soft_wrap_separator).max(0.0), |measure| {
+    visible.map_or((width - soft_wrap_separator).max(0.0), |measure| {
         measure.width(0.0)
     }) + leading.field_fit_adjustment(styles)
 }
@@ -2392,7 +2392,7 @@ fn compute_line_extra_spacing_with_dash_plan(
     terminal_tracking: f64,
     unjustified_leading_spaces: &[usize],
     styles: &ResolvedStyleSet,
-    centered_measure: Option<&CenteredTextLineMeasure>,
+    visible_line_measure: Option<&VisibleTextLineMeasure>,
     alignment: Alignment,
     in_cell: bool,
     needs_justify: bool,
@@ -2413,7 +2413,7 @@ fn compute_line_extra_spacing_with_dash_plan(
     // 글자 뒤 말미 공백은 줄 밖에 매달리므로 넘침 판정에서 뺀다. 가운데 정렬 측정은
     // 이미 빼고 잰다. 공백까지 세면 칸에 들어가는 `120,283 ` 같은 숫자를
     // 공백 폭만큼 눌렀다(정렬은 #7081 이후 공백을 빼고 한다).
-    let (trailing_fit_width, trailing_fit_count) = if centered_measure.is_some() {
+    let (trailing_fit_width, trailing_fit_count) = if visible_line_measure.is_some() {
         (0.0, 0)
     } else {
         let trailing_spaces = comp_line
@@ -2447,11 +2447,11 @@ fn compute_line_extra_spacing_with_dash_plan(
     };
     // 자동 줄바꿈 구분 공백도 같은 말미 영역이다. 두 폭을 중복 차감하지 않는다.
     let excluded_tail_width = trailing_fit_width.max(soft_wrap_separator_width);
-    let fit_width = centered_measure.map_or(
+    let fit_width = visible_line_measure.map_or(
         (total_text_width - excluded_tail_width).max(0.0),
         |measure| measure.width(0.0),
     ) + leading_space_plan.field_fit_adjustment(styles);
-    let fit_char_count = centered_measure
+    let fit_char_count = visible_line_measure
         .map_or(total_char_count - trailing_fit_count, |measure| {
             measure.char_count
         });
@@ -2840,7 +2840,7 @@ fn compute_line_extra_spacing_with_dash_plan(
     } else if fit_width > available_width && fit_char_count > 1 && !has_tabs {
         // 평문 말미 공백은 전진으로 남지만 앞의 가시 글자를 압축하지 않는다.
         // 본문·셀의 같은 점유 계약이며 가운데 정렬은 별도의 공통 측정을 쓴다.
-        let plain_tail = if centered_measure.is_none() {
+        let plain_tail = if visible_line_measure.is_none() {
             trailing_space_fit::plain_trailing_width(comp_line, styles, trailing_space_limit)
         } else {
             0.0
@@ -2849,7 +2849,7 @@ fn compute_line_extra_spacing_with_dash_plan(
             && fit_width - (plain_tail - soft_wrap_separator_width) <= available_width;
         if suppress_cell_overflow_spacing || tail_only_overflow {
             (0.0, 0.0, 0.0)
-        } else if converge_auto_shrink_cell || centered_measure.is_some() {
+        } else if converge_auto_shrink_cell || visible_line_measure.is_some() {
             // [#6303] 칸 폭 자동 축소(#6196) 가 선형 slack/N 한 번이면 목표가
             // 1~2% 헐거워 긴 행 꼬리가 괘선 밖으로 나간다. 저장 한 줄이 안쪽 폭을
             // 15% 넘게 넘는 칸에서만 줄바꿈은 그대로 두고 실측 폭을 수렴시킨다.
@@ -2860,7 +2860,7 @@ fn compute_line_extra_spacing_with_dash_plan(
                 converge_cell_overflow_char_spacing(
                     leading_space_plan,
                     styles,
-                    centered_measure,
+                    visible_line_measure,
                     tab_width,
                     // 수렴 측정은 말미 공백을 포함한 줄 전체를 잰다.
                     fit_char_count + trailing_fit_count,
@@ -7440,13 +7440,14 @@ impl LayoutEngine {
                 is_hancom_company_pua_logo_line(comp_line, alignment);
 
             // 생성한 soft-wrap 구분 공백과 개체/탭은 기존 소유·측정 계약을
-            // 유지한다. 순수 가운데 정렬 글줄은 저장 줄 끝과 문단 끝 모두
-            // 동일한 점유 폭으로 압축 여부와 실제 시작점을 결정한다.
-            let centered_measure = if alignment == Alignment::Center
+            // 유지한다. 순수 가운데 정렬과 비분배 양쪽 정렬 글줄은 가시 점유로
+            // fit을 판정한다. 말미의 비가시 공백 때문에 본문을 압축하지 않는다.
+            let visible_line_measure = if (alignment == Alignment::Center
+                || (alignment == Alignment::Justify && !needs_justify))
                 && !has_tabs
                 && line_tac_offsets_for_width.is_empty()
             {
-                CenteredTextLineMeasure::new(comp_line, styles)
+                VisibleTextLineMeasure::new(comp_line, styles)
             } else {
                 None
             };
@@ -7499,11 +7500,10 @@ impl LayoutEngine {
                 .para_styles
                 .get(composed.para_style_id as usize)
                 .map_or(0, |style| style.condense_min_space);
+            // 가운데 정렬은 가시 줄 끝을 쓰는 기존 글리프 fit을 유지한다.
+            // 공백 최소값의 줄 수용 예산을 공백 전용 paint 축소로 재배정하지 않는다.
             let compression = if condense > 0
-                && matches!(
-                    alignment,
-                    Alignment::Left | Alignment::Center | Alignment::Right
-                )
+                && matches!(alignment, Alignment::Left | Alignment::Right)
                 && !needs_justify
                 && !needs_distribute
                 && !has_tabs
@@ -7514,7 +7514,7 @@ impl LayoutEngine {
                 let fit = line_fit_width(
                     total_text_width,
                     soft_wrap_separator_width,
-                    centered_measure.as_ref(),
+                    visible_line_measure.as_ref(),
                     &candidate,
                     styles,
                 );
@@ -7628,7 +7628,7 @@ impl LayoutEngine {
                     terminal_tracking_for_fit,
                     &unjustified_leading_spaces,
                     styles,
-                    centered_measure.as_ref(),
+                    visible_line_measure.as_ref(),
                     alignment,
                     cell_ctx.is_some(),
                     needs_justify_spacing,
@@ -7805,7 +7805,7 @@ impl LayoutEngine {
                         (available_width - effective_text_width).max(0.0)
                     } else {
                         (available_width
-                            - centered_measure.as_ref().map_or(
+                            - visible_line_measure.as_ref().map_or(
                                 effective_text_width - trailing_ws_width - terminal_tracking_width,
                                 |measure| measure.width(extra_char_sp),
                             ))
@@ -11964,7 +11964,7 @@ mod issue_2809_split_alignment_tests {
         terminal_tracking: f64,
         unjustified_leading_spaces: &[usize],
         styles: &ResolvedStyleSet,
-        centered_measure: Option<&CenteredTextLineMeasure>,
+        visible_line_measure: Option<&VisibleTextLineMeasure>,
         alignment: Alignment,
         in_cell: bool,
         needs_justify: bool,
@@ -11991,7 +11991,7 @@ mod issue_2809_split_alignment_tests {
             terminal_tracking,
             unjustified_leading_spaces,
             styles,
-            centered_measure,
+            visible_line_measure,
             alignment,
             in_cell,
             needs_justify,
@@ -12011,8 +12011,8 @@ mod issue_2809_split_alignment_tests {
     }
 
     use super::{
-        compute_line_extra_spacing_with_dash_plan, needs_word_distribution,
-        CenteredTextLineMeasure, LeadingSpacePlan,
+        compute_line_extra_spacing_with_dash_plan, needs_word_distribution, LeadingSpacePlan,
+        VisibleTextLineMeasure,
     };
     use crate::model::style::Alignment;
     use crate::renderer::composer::{ComposedLine, ComposedTextRun};
