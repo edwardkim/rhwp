@@ -24452,17 +24452,13 @@ impl LayoutEngine {
                     table,
                     usize::from(cell.row),
                 ))
-            || self
-                .render_normalization
-                .borrow()
-                .cell_frame_reflowed(table, cell)
             || end == 0
             || end >= units.len()
         {
             return 0.0;
         }
-        // 원본 연속 줄의 후속 간격만 종료 잉크와 분리한다. 이웃 셀의 재조판은
-        // 무관하지만, 이 셀을 재조판했다면 저장 간격으로 현재 컷을 인증하지 않는다.
+        // 현재 유닛과 실제 연속 LineSeg가 잉크와 후속 전진을 함께 인증한다.
+        // 같은 셀의 다른 문단을 재조판했다는 이유로 이 현재 줄의 간격을 지우지 않는다.
         let unit = &units[end - 1];
         let Some(para) = cell.paragraphs.get(unit.para_idx) else {
             return 0.0;
