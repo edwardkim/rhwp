@@ -2005,11 +2005,6 @@ fn char_width_decision_with_hft_tracking<'a>(
     {
         em_exact = Some(em);
         (font_size * em, "verifiedSourcePua", None, "exact")
-    } else if let Some(w) = (c == '\u{318D}')
-        .then(|| area_dot_fallback_width(&style.font_family, font_size))
-        .flatten()
-    {
-        (w, "areaDotFallback", None, "notApplicable")
     } else if crate::renderer::boxed_pua_number(c).is_some() {
         // 한컴 네모 숫자의 합성 전진은 1em이다. 독립 Print와 Haansoft Batang의
         // 해당 PUA hmtx가 같은 값을 준다. 뒤따르는 일반 □의 글꼴 폭과 구분한다.
@@ -2318,6 +2313,13 @@ fn char_width_decision_with_hft_tracking<'a>(
                 embedded.metric,
                 embedded.character_match,
             )
+        } else if let Some(w) = (c == '\u{318D}')
+            .then(|| area_dot_fallback_width(&style.font_family, font_size))
+            .flatten()
+        {
+            // 원 glyph의 확인된 전진이 없을 때만 기존 전각 계약을 사용한다.
+            // KoPub의 900/1000em 같은 실제 폭 hit를 1em으로 덮어쓰지 않는다.
+            (w, "areaDotFallback", None, "notApplicable")
         } else if cluster_len[i] <= 1 && is_unicode_halfwidth_form(c) {
             // [#6023] Halfwidth and Fullwidth Forms 블록(FF00–FFEF)에서
             // FF61–FFDC(｡｢｣､･·반각 가타카나·반각 한글 자모)와 FFE8–FFEE 는
