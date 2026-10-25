@@ -522,8 +522,8 @@ impl PagePaintContext {
             .axis(axis)
             .filter(|_| table_background && self.print_paper.is_some())
         {
-            source_device_coordinate(origin, pixel).round()
-                + source_device_coordinate(value - origin, pixel).round()
+            super::print_coordinate::relative_device(origin, 0.0, pixel).round()
+                + super::print_coordinate::relative_device(value, origin, pixel).round()
         } else {
             source_device_coordinate(value, pixel).round()
         }
