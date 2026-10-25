@@ -17,8 +17,13 @@ struct BoxedDigit {
 /// [#8201] 서명·날인 기호 U+F012B. Haansoft Batang GID 3(타원 안 '인')의 윤곽 경계와
 /// 같은 프로그램의 일반 '인' 경계에서 정했다(두 독립 한컴 출력에서 동일).
 #[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CircledSeal {
     text: String,
+    /// Haansoft Batang 이 없을 때 쓸 공개 face. 저장소 동봉 OFL `RHWP Public Batang` 의 일반
+    /// '인' 경계 (122,−69)–(910,842) 가 Haansoft Batang (116,−69)–(912,842) 과 거의 같아
+    /// 투영 결과가 원 중심을 유지한다. 숫자는 이 근거가 없어 네모 숫자에는 두지 않는다.
+    public_face: String,
     frame: [f64; 5],
     #[serde(flatten)]
     inner: InnerBounds,
@@ -39,9 +44,22 @@ fn metrics() -> &'static Metrics {
     })
 }
 
-/// 안쪽 글자를 먼저 요청할 face. 공급되지 않으면 문서 글꼴 체인으로 내려간다.
-pub(crate) fn inner_face() -> &'static str {
-    &metrics().inner_face
+/// 안쪽 글자를 먼저 요청할 face 들. 모두 공급되지 않으면 문서 글꼴 체인으로 내려간다.
+pub(crate) fn inner_faces(glyph: EnclosedPua) -> Vec<&'static str> {
+    let metrics = metrics();
+    let mut faces = vec![metrics.inner_face.as_str()];
+    if glyph == EnclosedPua::CircledSeal {
+        faces.push(metrics.circled_seal.public_face.as_str());
+    }
+    faces
+}
+
+/// 문서에 실려 있으면 렌더러가 공급받아야 하는 공개 face (Studio 웹폰트 적재용).
+pub(crate) fn public_faces(glyph: EnclosedPua) -> &'static [String] {
+    match glyph {
+        EnclosedPua::BoxedNumber(_) => &[],
+        EnclosedPua::CircledSeal => std::slice::from_ref(&metrics().circled_seal.public_face),
+    }
 }
 
 /// 서명·날인 기호의 안쪽 글자.

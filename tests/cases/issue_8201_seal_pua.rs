@@ -304,6 +304,36 @@ fn bokhakwonseo_signature_seal_is_painted_as_circled_in() {
     assert_seal_box_is_circled_in(&doc, 0, &receipt, receipt.index_of(SEAL));
 }
 
+/// 안쪽 '인'은 Haansoft Batang 이 없으면 그 '인' 경계와 거의 같은 공개 face(동봉 OFL
+/// `RHWP Public Batang`)로 그린다. Studio 가 그 웹폰트를 적재하도록 문서 정보가 요청한다.
+/// 반례: 네모 숫자만 있는 문서는 이 근거가 없어 요청하지 않는다.
+#[test]
+fn seal_documents_request_the_public_inner_face() {
+    let fonts_used = |relative: &str| -> Vec<String> {
+        let info: Value =
+            serde_json::from_str(&load(relative).get_document_info()).expect("document info");
+        info["fontsUsed"]
+            .as_array()
+            .expect("fontsUsed")
+            .iter()
+            .map(|font| font.as_str().expect("font name").to_string())
+            .collect()
+    };
+    const PUBLIC_FACE: &str = "RHWP Public Batang";
+    assert!(
+        fonts_used(ISSUE_FORM)
+            .iter()
+            .any(|font| font == PUBLIC_FACE),
+        "seal 문서는 안쪽 '인'의 공개 face 를 요청해야 함"
+    );
+    assert!(
+        !fonts_used("samples/basic/issue2007_nested_cell_pagination_42065.hwp")
+            .iter()
+            .any(|font| font == PUBLIC_FACE),
+        "네모 숫자만 있는 문서는 seal 공개 face 를 요청하면 안 됨"
+    );
+}
+
 /// 반례: 텍스트 표면과 글자겹침 안쪽 표시는 종전 읽기 문자열을 유지하고,
 /// 인접 PUA 는 합성 대상이 아니다.
 #[test]

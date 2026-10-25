@@ -154,6 +154,7 @@
   },
   "circledSeal": {
     "text": "인",
+    "publicFace": "RHWP Public Batang",
     "frame": [
       63.5,
       -829.5,

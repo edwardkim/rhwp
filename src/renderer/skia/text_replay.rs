@@ -590,7 +590,8 @@ impl SkiaTextReplay<'_> {
                                 ) {
                                     let family = format!(
                                         "{},{}",
-                                        crate::renderer::enclosed_pua_geometry::inner_face(),
+                                        crate::renderer::enclosed_pua_geometry::inner_faces(glyph)
+                                            .join(","),
                                         style.font_family
                                     );
                                     let (_, inner_faces) = text_typeface_candidates(

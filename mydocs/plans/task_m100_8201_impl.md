@@ -69,6 +69,22 @@ Haansoft Batang `/W` 1000 근거). supplemental metric 제외(같은 파일 2063
 
 다자리 네모 숫자의 기존 0.72em 폴백은 `BoxedNumber`에만 남긴다. CharOverlap 경로는 바꾸지 않는다.
 
+## 안쪽 '인'의 대체 face
+
+투영식은 Haansoft Batang 일반 '인'의 잉크 경계를 source 로 쓴다. 그 face 가 없을 때 SVG·Canvas2D 는
+문서 글꼴 체인(돋움체 → 고딕 대체)을, Skia 는 바탕 계열 대체를 골라 백엔드마다 '인'의 여백이 달랐다.
+macOS Chrome SVG 에서 원 안 '인'이 한컴보다 0.45pt 왼쪽에 놓였다(한컴 dx −0.44pt, SVG −0.89pt).
+
+동봉 OFL `RHWP Public Batang` 의 '인' 경계 (122,−69)–(910,842)는 Haansoft Batang (116,−69)–(912,842)과
+거의 같다(중심 +0.02pt). 숫자는 최대 46/1024em 달라 네모 숫자에는 적용하지 않는다.
+
+- `circledSeal.publicFace` 를 데이터로 두고 `enclosed_pua_geometry::inner_faces(glyph)` 가
+  `[innerFace, publicFace?]` 를 낸다. SVG·Canvas2D·Skia 가 같은 목록을 문서 글꼴 체인 앞에 둔다.
+  네모 숫자는 목록이 `[innerFace]` 하나라 출력이 그대로다.
+- Studio 가 웹폰트를 적재하도록 `document_core::queries::equation_fonts` 를 `content_fonts` 로 바꾸고,
+  같은 문단 걸음에서 합성 기호의 공개 face 를 `fontsUsed` 에 더한다. CanvasKit 은 실제 잉크 경계로
+  투영하므로 바뀌지 않는다.
+
 ## 접수증 날인선 (#2020/#4384)
 
 `layout.rs`의 `receipt_seal_line_text`는 F081C 채움줄에 심긴 U+F012B 자리를 `----(인)----`

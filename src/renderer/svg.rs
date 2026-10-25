@@ -3251,13 +3251,20 @@ impl SvgRenderer {
     ) {
         let inner_text = glyph.inner_text();
         if let Some(g) = super::enclosed_pua_geometry::geometry(glyph, font_size) {
-            let face = super::enclosed_pua_geometry::inner_face();
-            self.font_codepoints
-                .entry(face.to_string())
-                .or_default()
-                .extend(inner_text.chars());
+            let faces = super::enclosed_pua_geometry::inner_faces(glyph);
+            for face in &faces {
+                self.font_codepoints
+                    .entry((*face).to_string())
+                    .or_default()
+                    .extend(inner_text.chars());
+            }
             let family = format!(
-                "'{face}',{}",
+                "{},{}",
+                faces
+                    .iter()
+                    .map(|face| format!("'{face}'"))
+                    .collect::<Vec<_>>()
+                    .join(","),
                 super::render_font_family_chain_for_weight(
                     &style.font_family,
                     style.is_visually_bold()

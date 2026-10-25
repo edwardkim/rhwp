@@ -3762,8 +3762,12 @@ impl WebCanvasRenderer {
         if let Some(g) = super::enclosed_pua_geometry::geometry(glyph, font_size) {
             let color = color_to_css(style.color);
             let family = format!(
-                "'{}',{}",
-                super::enclosed_pua_geometry::inner_face(),
+                "{},{}",
+                super::enclosed_pua_geometry::inner_faces(glyph)
+                    .iter()
+                    .map(|face| format!("'{face}'"))
+                    .collect::<Vec<_>>()
+                    .join(","),
                 super::canvas_text_font::family_chain(style)
             );
             self.ctx.save();
