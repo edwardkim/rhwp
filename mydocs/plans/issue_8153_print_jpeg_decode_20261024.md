@@ -1,5 +1,44 @@
 # #8153: Print JPEG의 공통 정수 변환과 표본 경계
 
+## 2026-10-25: 최종 JPEG 재생과 원본 변환의 구분
+
+현재 작업 범위는 행정업무 편람 HWP·HWPX다. 두 원본의 90쪽은 같은 최종 JPEG
+바이트를 전달한다. Native Skia의 복호화 RGB는 독립 libjpeg와 일치하지만 실제 WASM
+`image::load_from_memory`의 결과는 26,930픽셀, 채널 최댓값 4만큼 다르다.
+실제 Canvas 원본을 관측해 Native의 `image` crate 결과와 바이트까지 같음을 확인했다.
+브라우저 JPEG 디코더가 만든 차이라고 표현하지 않는다.
+
+공개 libjpeg-turbo 3.1.2의
+[`jidctint.c`](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/3.1.2/src/jidctint.c),
+[`jdsample.c`](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/3.1.2/src/jdsample.c),
+[`jdcolor.c`](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/3.1.2/src/jdcolor.c)의
+8비트 ISLOW IDCT·중심 보간·16비트 YCbCr 변환을 독립 진단으로 대조했다.
+보간만 변경하면 차이가 1,387픽셀, IDCT까지 변경하면 5픽셀, 색 변환까지 적용하면
+0픽셀이다. 기존 코덱 경계 85건과 편람의 실제 JPEG 4건, 총 89건이 독립 libjpeg RGB와
+전부 일치했다. 회색·RGB JPEG에는 불가능한 YCbCr 출력을 요청하지 않고 원래 색 공간을
+유지해야 함도 실제 첫 진단 실패와 보정 재실행으로 확인했다.
+
+같은 optimized WASM·원본·좌표·PDF·실루엣 규칙에서 표본 함수가 읽는 RGB만 교체한
+원인 분리 진단은 90쪽 raw 100%·미대응 0개다. 원래 관측과 같은 두 번의 source 읽기를
+확인했다. 첫 후처리는 읽기 횟수를 1회라고 잘못 가정해 실패했으며, 실제 관측 횟수와
+PNG 해시를 대조하는 감사만 다시 실행했다. 이는 제품 구현·검증 통과가 아니다.
+
+다음 구현은 `최종 Print JPEG → 공통 bounded 재생 decoder → 실제 원본 Canvas →
+기존 공통 장치 표본 → Canvas 출력`을 연결한다. 원본 사진을 Print용으로 펼치는 기존
+Intel IDCT·RGB555·JPEG 압축은 별도 계약이므로 유지한다. 화면·기본 decoder·PDF import의
+선택은 바꾸지 않으며 문서·쪽·그림 크기로 분기하지 않는다. 최종 재생 선택은 명시적인
+Print 표본 소비 경로로 제한한다. 새 IJG 파생 구현은 기존 IJG 라이선스를 보존한 vendor에
+두고, 재생 전에도 헤더·8192축·32M픽셀·할당 예산·fallible output guard를 적용한다.
+
+구현 후 같은 89건과 자원 경계를 실제 제품 함수로 재검증하고, 두 원본 90쪽 및 JPEG가
+있는 영향 쪽의 표준 optimized fresh WASM·Native 대조·확대 판독을 완료한다. 기존에
+후퇴한 255·263쪽은 이 JPEG 진단 통과로 해결된 것으로 세지 않는다. 새 정식 회귀는
+해당 시각 선행 조건을 갖춘 후 등록하며, 전쪽 1,532결과의 raw100 목표는 그대로 남는다.
+
+진단 자료는 ignored `handbook-paper-frame-candidate/` 아래 `jpeg-p090-decoders/`,
+`jpeg-final-replay-controls-v2/`, `canvas-standard-jpeg-p090-diagnostic/`에 보존한다.
+비공개 모듈 분석·덤프는 Git에 포함하지 않는다.
+
 ## 원인과 독립 근거
 
 원본 JPEG를 펼치는 IDCT와 색차 보간의 정수 반올림은 PDF로 전달할 RGB555·JPEG보다
