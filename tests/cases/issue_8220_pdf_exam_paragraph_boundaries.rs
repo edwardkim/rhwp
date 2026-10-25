@@ -1,10 +1,12 @@
-//! Untagged exam PDFs printed from one HWP: imported body paragraphs follow the
-//! author's paragraph boundaries. The independent expectation is the source
+//! #8220: untagged exam PDFs printed from one HWP. Imported body paragraphs
+//! follow the author's paragraph boundaries. The independent expectation is the source
 //! HWP's own paragraph text, not a recognition preview or a pixel position.
 //!
 //! Boundaries exercised here, each on real Hancom output:
 //! - a short last line followed by an indented or flush next line,
 //! - item markers (`①`..`⑤`) on the first-line start of hanging choices,
+//! - a centered box title (`<보기>`) above a full box line whose text carries
+//!   no space characters, so words end at gaps between source spans,
 //! - a spanning title that abuts the two text columns,
 //! - columns whose baselines are offset from each other.
 #![cfg(feature = "pdf-import")]
@@ -131,6 +133,9 @@ fn verify(core: &DocumentCore, sources: &[String], label: &str) {
         "프로세스향상에는두유형이있다.",
         "1.윗글과일치하는것은?",
         "4.윗글과일치하지않는것은?",
+        // First box paragraphs below a centered `<보기>` title.
+        "◯◯병원에서는외래환자의",
+        "상고시대에유배형은",
     ]
     .iter()
     .map(|p| source(sources, p))

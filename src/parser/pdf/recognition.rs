@@ -201,6 +201,38 @@ fn starts_item(text: &str) -> bool {
     }
 }
 
+/// Width of the first word of `line`. Positioned PDF text often carries no
+/// space characters, so a word also ends at a gap between source span boxes
+/// that is at least a narrow word space wide.
+fn first_word_width(line: &Line, spans: &[TextSpan], em: f32) -> f32 {
+    let mut boxes: Vec<_> = line
+        .indices
+        .iter()
+        .filter_map(|&i| spans.get(i))
+        .map(|s| (s.bbox.x, s.bbox.x + s.bbox.width, s.text.as_str()))
+        .collect();
+    boxes.sort_by(|a, b| a.0.total_cmp(&b.0));
+    let Some(start) = boxes.first().map(|b| b.0) else {
+        return line.right - line.left;
+    };
+    for (k, &(left, right, text)) in boxes.iter().enumerate() {
+        let body = if k == 0 { text.trim_start() } else { text };
+        if let Some(space) = body.find(char::is_whitespace) {
+            let chars = text.chars().count().max(1) as f32;
+            let lead = (text.len() - body.len()) + space;
+            let before = text[..lead].chars().count() as f32;
+            return left + (right - left) * before / chars - start;
+        }
+        if boxes
+            .get(k + 1)
+            .is_some_and(|next| next.0 - right >= 0.15 * em)
+        {
+            return right - start;
+        }
+    }
+    line.right - line.left
+}
+
 struct ParagraphMachine {
     state: ParagraphState,
     owner: Rect,
@@ -241,12 +273,10 @@ impl ParagraphMachine {
     /// first word of `line` fits in the room `previous` left before the
     /// measure, the author broke the line: the paragraph ends there.
     /// Two short lines centered on the owner carry no wrap evidence.
-    fn ends_short(&self, previous: &Line, line: &Line, em: f32) -> bool {
+    fn ends_short(&self, previous: &Line, line: &Line, em: f32, spans: &[TextSpan]) -> bool {
         let measure = self.measure_right(line, em);
         let room = measure - previous.right;
-        let first_word = line.preview_text.split_whitespace().next().unwrap_or("");
-        let glyphs = line.preview_text.chars().count().max(1) as f32;
-        let word = (line.right - line.left) * first_word.chars().count() as f32 / glyphs;
+        let word = first_word_width(line, spans, em);
         let center = self.owner.x + self.owner.width / 2.;
         let centered = |l: &Line| ((l.left + l.right) / 2. - center).abs() <= 0.5;
         let centered_pair =
@@ -324,7 +354,7 @@ impl ParagraphMachine {
                     })))
                 // Unresolved content ends with its short last line. The next
                 // line is judged on its own evidence instead of being held.
-                || (!previous.disjoint && !line.disjoint && self.ends_short(previous, &line, em));
+                || (!previous.disjoint && !line.disjoint && self.ends_short(previous, &line, em, spans));
             if clear_boundary {
                 self.emit(spans, "unresolved_region_ended");
                 self.transition(
@@ -361,7 +391,7 @@ impl ParagraphMachine {
             .obstacles
             .iter()
             .any(|b| b.y >= previous.bottom - 0.5 && b.y + b.height <= line.top + 0.5);
-        let short_end = !line.disjoint && self.ends_short(previous, &line, em);
+        let short_end = !line.disjoint && self.ends_short(previous, &line, em, spans);
         // From the second line on, every continuation shares one left edge.
         // A different start begins the next paragraph's first line.
         let continuation_changed = self
