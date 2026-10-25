@@ -14,6 +14,10 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 
 | 파일 | 분류 | 상태 | 용도 | 샘플 | 배선 | 비고 |
 |------|------|------|------|------|------|------|
+| `ai-panel.test.mjs` | 상시 | active | AI 대화·문서 도구·명령 확인·스트리밍 및 오류 복구 | 합성 문서 | npm e2e:ai-panel | Anthropic 응답 가로채기, 실제 키·외부 API 미사용 |
+| `ai-settings.test.mjs` | 상시 | active | AI 모델·키 설정·동의·암호화 저장·잠금·삭제 | 빈 문서 | npm e2e:ai-settings | Anthropic 응답 가로채기, 실제 키·외부 API 미사용 |
+| `side-panel.test.mjs` | 상시 | active | AI 도우미 패널 열기·닫기·폭·눈금자·선택문 보존 | 합성 문서 | npm e2e:side-panel | 실제 Studio DOM·키 입력 |
+| `canvaskit-periodic-borders-issue7998.test.mjs` | 상시 | active | #7998 주기 괘선의 CanvasKit dash 소비와 투명 프레임 무출력 | issue7998/periodic-borders/native-dot-widths.hwpx | 수동 | 실제 software CanvasKit·독립 Print 주기 대조 |
 | `command-error-contract.test.mjs` | 상시 | active | #8104 오류 복구·호스트 전달 계약 | 빈 문서·실패 주입 | 수동 | 내용·선택·history·dirty·후속 편집·MessagePort·세션 교체 |
 | `cell-target-issue8102.test.mjs` | 상시 | active | #8102 생성·클릭·키보드·undo 진입 선택 삭제, 다중 문단·중첩·인접 셀·invalid target | 편집 API 합성 | npm e2e:issue-8102 | fresh WASM·Studio 실제 입력 |
 | `automation-commands.test.mjs` | 상시 | active | studio 자동화 표면 — 커맨드 질의·실행·메뉴 모델·드리프트 가드·다이얼로그 정책·`insert:field` 매개변수 삽입 | — | npm e2e:automation |  |
