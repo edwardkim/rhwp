@@ -330,3 +330,21 @@ fn boundary_with_field_rejects_before_mutation_and_keeps_clipboard() {
     assert_eq!(core.export_hwp_native().unwrap(), before);
     assert_eq!(core.get_clipboard_text_native(), clipboard);
 }
+
+#[test]
+fn empty_legacy_text_range_keeps_a_floating_object_and_events_unchanged() {
+    let mut core = document_with_table();
+    let mut document = core.document().clone();
+    for control in &mut document.sections[0].paragraphs[1].controls {
+        if let Control::Table(table) = control {
+            table.common.treat_as_char = false;
+        }
+    }
+    core.set_document(document);
+    let before = format!("{:?}", core.document());
+    let events = core.serialize_event_log();
+    core.delete_range_native(0, 1, 0, 1, 0, None).unwrap();
+    assert_eq!(format!("{:?}", core.document()), before);
+    assert_eq!(core.serialize_event_log(), events);
+    assert_eq!(table_count(&core), 1);
+}

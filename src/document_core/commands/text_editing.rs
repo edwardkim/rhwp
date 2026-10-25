@@ -3419,6 +3419,21 @@ impl DocumentCore {
         end_offset: usize,
         cell_ctx: Option<(usize, usize, usize)>,
     ) -> Result<String, HwpError> {
+        if cell_ctx.is_none()
+            && start_para == end_para
+            && start_offset == end_offset
+            && self
+                .document
+                .sections
+                .get(section_idx)
+                .and_then(|s| s.paragraphs.get(start_para))
+                .is_some()
+        {
+            return Ok(super::super::helpers::json_ok_with(&format!(
+                "\"paraIdx\":{},\"charOffset\":{}",
+                start_para, start_offset
+            )));
+        }
         let end_after = cell_ctx.is_none()
             && self
                 .document
