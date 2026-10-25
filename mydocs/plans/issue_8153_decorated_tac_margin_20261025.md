@@ -41,3 +41,22 @@ ignored `p116-tac-margin-controls/`에는 원래 표/장식을 보존한 한 구
 페이지·형식만으로 offset을 빼는 분기를 추가하지 않는다. 원본 두 형식의 앞뒤 내용,
 정상 TAC/장식 대조, Native/fresh WASM의 전쪽 비교와 직접 확대 판독을 진행한다.
 현재는 원인 조사이며 새 보정·100% 또는 필수 전체 테스트의 완료 기록이 아니다.
+
+## 실제 호출 경로에서 확인한 중복
+
+현재 producer의 `RHWP_DIAG_TAC` 실행에서 두 형식 모두 호스트 884 진입 커서가
+59.2px, page base=0, column anchor=0이며 뒤 커서도 172.3px로 같다.
+형식별 흐름 높이 차이나 이전 문단 앵커의 누적 차이가 아니다.
+
+HWP가 사용하는 `prepare_coanchored_first_line`의 `InlineBoxPlacement.y`는
+`origin + outer_margin_top`이다. `commit_stored_tac_control`은 이 값을 그대로
+보존하지만 `layout_table_control_block`의 수직 소유 소비자는
+`col_area.y + placement.y + outer_margin_top`으로 본체 원점을 만든다.
+즉 같은 원본 위 여백을 생산·소비에서 두 번 계상한다.
+`InlineBoxPlacement`의 명시 계약은 여백 포함 줄의 pen이며, 다른 두 저장 TAC 생산자와
+`physical_tac::prepare`도 여백 전 `origin`을 전달한다. 문제 생산자를 이 공통 계약에
+맞춘다. 원래의 줄 수용·종료·문단 뒤 전진량과 소비자의 여백 처리는 변경하지 않는다.
+
+장식 유무의 독립 한컴 Print 대조는 같은 표·텍스트 원점을 출력했다. 바깥 여백을
+0 → 140HU로 바꾸면 양쪽 조건 모두 같은 방향으로 이동한다. 따라서 장식 조건으로
+여백을 제거하는 규칙을 만들 근거가 아니다. 실제 변경은 생산자의 중복 가산 제거다.
