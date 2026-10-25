@@ -57,7 +57,8 @@ Studio 전용 검사 2개·실제 WMF browser 검사 1개와 혼합 Local Font A
 AST 문자열 검사에서 두 문서의 활성 경로는 제외 helper 두 곳에만 남는다.
 남은 사양 주석·과거 PNG 설명은 실행 입력이 아니다. 원본 HWP/HWPX·PDF·golden SVG의
 diff는 없다. Node 구문·Python 구문·변경 Rust 포맷과 diff 검사는 통과했다.
-정식 suite 재수집·Rust 실행과 새 #8153 검사 생성·검증은 다음 단계이며 아직 완료가 아니다.
+제거 단계에서는 정식 suite 재수집·Rust 실행과 새 #8153 검사 생성·검증이 남아 있었다.
+이후 실행 결과는 아래에 구분한다.
 
 ## 새 검사 초안과 관련 검증
 
@@ -66,7 +67,7 @@ ignored 작업 경로에서 새 파일 두 개를 작성하고 source `0bdcdbf92
 실제 HWPX 저장/재파싱에서 검사한다. 실제 Print 검사는 독립 383쪽의 부록·빈 쪽·판권 소속,
 94·163쪽 그림의 원본/crop/테두리 소유와 독립 PDF 경계 ±2px, 149쪽 행의 실제 줄·안 여백·
 후속 접수란 관계를 보호한다. 현재 4건은 통과했다. 보정 전 `5d5cc9a16b`에서는 같은 검사 중
-HWPX 149쪽의 줄·안 여백 하한 검사가 실패했고 HWP는 유지됐다. 새 검사는 아직 정식 등록 전이다.
+HWPX 149쪽의 줄·안 여백 하한 검사가 실패했고 HWP는 유지됐다. 정식 등록 결과는 아래에 기록한다.
 
 기존 혼합 #4764 실행에서 편람 corpus 제거 뒤 PDF 격리 표본이 17개가 되면서 과거의
 `built > 20`이 실패했다. 임의 개수 기준 대신 독립 활성 catalog의 모든 23쪽 간격 표본과
@@ -101,3 +102,56 @@ staged/unstaged 변경도 포함해 편람 관련 49·53개 파일의 기준/현
 새 devel의 기능 보존 검증과 함께 복원한 논문 검사 및 새 #8153 검사의 수집도 다시 확인한다.
 상세 source·working diff·함수 대조와 실행 로그는 ignored
 `cross-host-handbook-removal-audit/`에 보존한다.
+
+## #8153 정식 회귀 등록
+
+전쪽 Native/fresh WASM TSV 1,532조건을 확인한 뒤 아래 두 파일을 정식 경로에 생성했다.
+초안에서 실제 실행한 코드와 SHA-256이 같은 바이트를 복사했다. 두 파일의 검사 4건은
+통과했으며 수정 전 라이브러리의 HWPX 행 하한 실패도 같은 최종 검사 코드로 재현했다.
+
+- `tests/cases/issue_8153_handbook_print_boundaries.rs`: 두 형식의 독립 383쪽과 부록·빈 쪽·판권
+  소속, 94·163쪽 그림/crop/테두리 소유·순서·누락·중복, 153·149쪽의 닫힌 표 프레임과
+  실제 제목 줄·안 여백·안내 두 줄·후속 접수란을 검사한다.
+- `tests/cases/issue_8153_handbook_source_roundtrip.rs`: 실제 HWPX 저장/재파싱에서 구역·바탕쪽의
+  적용/내용, 문단·표·셀의 소속·병합·순서·본문, 머리말·꼬리말·각주·미주를 검사한다.
+
+| 형식 | 원본 SHA-256 | 독립 Print PDF SHA-256 |
+| --- | --- | --- |
+| HWP | `40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f` | `3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593` |
+| HWPX | `c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6` | `299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e` |
+
+PDF는 기존 `pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf`와
+`pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf`를 사용했다. 재출력하지 않았다.
+producer code source는 `0bdcdbf92d99820568f11d3efd2cc6aa5ffa56ec`이며 이후 변경은
+검사·문서뿐임을 `src/`, `crates/`, `vendor/`, `Cargo.toml`, `Cargo.lock`의 diff로 확인했다.
+Native와 표준 release·wasm-opt 최적화 fresh WASM은 같은 source를 실제 빌드했고 각
+실행 파일·라이브러리·WASM·glue 해시를 고정했다. 공용 target은 `target/pr-review`다.
+
+| 형식 | Native 전383쪽 최저 / raw100 쪽 | fresh WASM 전383쪽 최저 / raw100 쪽 |
+| --- | ---: | ---: |
+| HWP | 98.93537% / 270 | 98.93468% / 269 |
+| HWPX | 99.36039% / 261 | 99.25665% / 261 |
+
+판정은 `silhouette_raw_match_percent`, 물리 96dpi·2px 내용 실루엣, 좌상단 CSS px다.
+94·153·163쪽은 두 형식·양 backend 모두 raw100이라 우선 선택했다. 149쪽은 Native
+99.99721%·WASM 99.99723%이며 다른 안내 행 높이와 후속 접수란의 실제 경계도 보호한다.
+독립 PDF의 pt를 96/72로 환산한 기대 경계에 ±2px를 적용하며 소유·내용·포함 관계를 유지한다.
+원본 HU 하한은 제목 1000HU + 실효 안 여백 141+141HU이고, 표 전체는 153쪽 5345HU와
+149쪽 5628HU다. 좌표를 현재 구현에서 복사하지 않았다.
+
+전체 TSV는 ignored 작업 경로의 `handbook-row-frame-candidate/native/handbook-{hwp,hwpx}/whole-score/`와
+`handbook-row-frame-candidate/wasm-whole/handbook-{hwp,hwpx}/whole-score/`에 있다.
+`new-case-registration.json`에 원본 TSV SHA-256·전쪽 관문·검사 파일 SHA-256을 기록했다.
+직접 판독은 같은 producer의 Native/fresh WASM·독립 PDF를 같은 원점과 배율로 비교한
+`direct-regression-review/p094-same-origin-2x.png`, `p149-same-origin-2x.png`,
+`p153-same-origin-2x.png`, `p163-same-origin-2x.png`다. 그림 외곽·설명 순서·제목·안내 두 줄·
+접수란의 경계를 확인했다. 각 입력 형식의 해당 PNG가 바이트 단위로 같음도 확인했다.
+
+새 검사 4건·남은 #4764 11건·정상 대조 #1658/#3386/#1133 7건·복원한 논문 모듈 8건이
+실제 실행에서 통과했다. 수집기 Node 25건도 통과했다. 정식 파일 등록 뒤 suite 수집과
+생성된 모듈 경로에서의 실행은 이어서 확인한다. 전체 Rust 회귀·lint·Skia·Studio의 최종
+PR 게이트 완료를 의미하지 않는다. **전쪽 raw100은 1,061/1,532이며 471조건이 남는다.**
+PR은 기존 지시대로 전쪽 100% 달성과 필수 검증을 완료한 뒤 승인 대기한다.
+
+선행 서버 작업의 새 정상 검사나 이름을 변경한 검사를 이전 삭제 커밋으로 다시 없애지 않는다.
+두 작업이 통합된 뒤 최신 devel을 기준으로 소유·등록·출력과 실제 회귀를 재검증한다.
