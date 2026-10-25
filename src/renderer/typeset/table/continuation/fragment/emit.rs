@@ -1140,15 +1140,7 @@ impl TypesetEngine {
                 // 놓인다(한글문서파일형식 33쪽 표 199 → 제목 200 이 캡션과 겹침).
                 match whole_successor_flow_end {
                     Some(end) => st.align_flow_to(end),
-                    None => st.advance_flow_by(
-                        host_before_overhead
-                            + vert_offset_overhead
-                            + partial_height
-                            + bottom_caption_extra
-                            + terminal_outer_bottom_overhead
-                            + host_spacing_after_only
-                            + terminal_host_spacing,
-                    ),
+                    None => st.advance_flow_by(partial_height + host_spacing_total),
                 }
             } else {
                 self.record_stored_fragment_rows(
