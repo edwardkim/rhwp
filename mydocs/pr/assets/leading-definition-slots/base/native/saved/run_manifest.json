@@ -1,0 +1,78 @@
+{
+  "schema_version": 2,
+  "key": "saved",
+  "provenance": {
+    "hwp": {
+      "path": "output/pr-review/leading-slots-output/base/native-saved.hwp",
+      "sha256": "b11600e8601d73770d6824663ee70429d87cb447afd3f9baf4d53194afe9fc22"
+    },
+    "pdf": {
+      "path": "../output/pr-review/leading-slots-inputs/report-implicit-column-hancom-print.pdf",
+      "sha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7"
+    },
+    "git_head": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_v1",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+      "available": true,
+      "executable": "/usr/bin/python3.14",
+      "executable_sha256": "df5a95e6119c051c43ab78993af48f8a53c54a25a475dacd1428c322251eb8b0",
+      "library": "/home/ylcc/.cache/uv/archive-v0/ddViLomV7EoUTQFM/lib/python3.14/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "fd4de9f91f183476d04b1bc3fd17dacd95aba349c55d2c376512d95e082b441e",
+      "version": "156.0.8076.0",
+      "wrapper_version": "5.14.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/ylcc/.local/share/ylcc/worker/workspaces/e38bb9307da564f6/engine/output/pr-review/leading-slots-output/base/native-rhwp",
+      "path": "output/pr-review/leading-slots-output/base/native-rhwp",
+      "sha256": "44d0fc6a600753a3528f40ae528987f16d15b5bd83ca07f5b00a2ce1a84b979e"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "cdd15626217bec7bcfa475ac618847200770cfc13f670867c5bc95c10fbeee80",
+    "layout_generation": "2022",
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/ylcc/.local/share/ylcc/worker/workspaces/e38bb9307da564f6/engine/output/pr-review/leading-slots-output/fonts/HANBatang.ttf",
+          "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104"
+        }
+      ]
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1
+  ],
+  "requested_page_shards": [
+    [
+      1
+    ]
+  ],
+  "run_state": "complete",
+  "document_page_counts": {
+    "rhwp": 1,
+    "pdf": 1
+  }
+}
