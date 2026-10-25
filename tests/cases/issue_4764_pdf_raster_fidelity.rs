@@ -4,7 +4,7 @@
 
 #![cfg(not(target_arch = "wasm32"))]
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
 use rhwp::renderer::pdf_raster_fidelity::{
@@ -444,12 +444,22 @@ fn issue_4764_isolation_tsv_is_well_formed() {
 #[test]
 fn issue_4764_pdf_page_manifest_builds() {
     let text = std::fs::read_to_string(fixture("pdf_pages.tsv")).unwrap();
-    let mut built = 0u32;
+    let expected: HashSet<_> = load_all_records()
+        .into_iter()
+        .filter(|row| row.page_index.is_multiple_of(23))
+        .map(|row| (row.corpus, row.page_index))
+        .collect();
+    assert!(
+        !expected.is_empty(),
+        "활성 corpus의 PDF 격리 표본이 필요하다"
+    );
+    let mut built = HashSet::new();
     for (i, line) in text.lines().enumerate() {
         if i == 0 || line.is_empty() {
             continue;
         }
         let c: Vec<&str> = line.split('\t').collect();
+        let corpus = CorpusId::parse(c[0]).expect("활성 corpus 식별자");
         let page_index: u16 = c[1].parse().unwrap();
         let width: u32 = c[2].parse().unwrap();
         let height: u32 = c[3].parse().unwrap();
@@ -473,7 +483,10 @@ fn issue_4764_pdf_page_manifest_builds() {
         .unwrap();
         let tree = parse_pdf_page_tree(&pdf).unwrap();
         assert_eq!(tree.page_count, 2);
-        built += 1;
+        assert!(built.insert((corpus, page_index)), "PDF 격리 표본 중복");
     }
-    assert_eq!(built, 185, "남은 catalog의 모든 PDF 입력을 검사한다");
+    assert_eq!(
+        built, expected,
+        "활성 catalog의 모든 PDF 격리 표본을 실행한다"
+    );
 }
