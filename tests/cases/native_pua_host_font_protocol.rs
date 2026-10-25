@@ -84,6 +84,12 @@ fn source_pointer_requests_its_program_without_reclassifying_unicode_pointer() {
         ("►", false),
         ("\u{f031c}", true),
         ("■", false),
+        ("\u{f03a7}", true),
+        ("⊟", false),
+        ("\u{f03a8}", true),
+        ("⊞", false),
+        ("\u{f0848}", true),
+        ("━", false),
     ] {
         let mut core = DocumentCore::from_bytes(include_bytes!("../../saved/blank2010.hwp"))
             .expect("실제 빈 문서");
@@ -241,4 +247,19 @@ fn prepared_source_glyph_replaces_an_earlier_unicode_display_and_clear_restores_
 #[test]
 fn source_square_uses_supplied_hmtx_and_clear_restores_unicode_fallback() {
     assert_prepared_source_symbol('\u{f031c}', "■");
+}
+
+#[test]
+fn additional_source_box_minus_preserves_its_program_and_fallback() {
+    assert_prepared_source_symbol('\u{f03a7}', "⊟");
+}
+
+#[test]
+fn additional_source_box_plus_preserves_its_program_and_fallback() {
+    assert_prepared_source_symbol('\u{f03a8}', "⊞");
+}
+
+#[test]
+fn additional_source_dash_preserves_its_program_and_fallback() {
+    assert_prepared_source_symbol('\u{f0848}', "━");
 }

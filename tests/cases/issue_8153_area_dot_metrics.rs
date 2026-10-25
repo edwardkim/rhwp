@@ -19,11 +19,11 @@ fn measured_area_dot_uses_original_kopub_program_instead_of_fullwidth_fallback()
     ] {
         let style = TextStyle {
             font_family: family.into(),
-            font_size: 75.0,
+            font_size: 80.0,
             ..Default::default()
         };
         let positions = EmbeddedTextMeasurer.compute_char_positions("ㆍㆍ", &style);
-        let expected = 75.0 * 900.0 / 1000.0;
+        let expected = 80.0 * 900.0 / 1000.0;
         assert_eq!(positions.len(), 3);
         for span in positions.windows(2) {
             assert!(
@@ -38,12 +38,12 @@ fn measured_area_dot_uses_original_kopub_program_instead_of_fullwidth_fallback()
 fn unknown_program_keeps_the_existing_fullwidth_contract() {
     let style = TextStyle {
         font_family: "명조".into(),
-        font_size: 75.0,
+        font_size: 80.0,
         ..Default::default()
     };
     let positions = EmbeddedTextMeasurer.compute_char_positions("ㆍㆍ", &style);
     assert_eq!(positions.len(), 3);
     for span in positions.windows(2) {
-        assert!((span[1] - span[0] - 75.0).abs() <= 2.0 / 75.0);
+        assert!((span[1] - span[0] - 80.0).abs() <= 2.0 / 75.0);
     }
 }

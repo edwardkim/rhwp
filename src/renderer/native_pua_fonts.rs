@@ -10,9 +10,17 @@ pub fn is_book_bracket(character: char) -> bool {
     BOOK_BRACKETS.contains(&super::composer::hancom_symbol_display_key(character))
 }
 /// 실제 공급한 같은 SFNT의 원 PUA 표시와 전진을 보존할 기호다.
-/// 이 기호는 Unicode 대체와 폭·윤곽이 다르므로 실제 공급한 원 glyph가 필요하다.
-pub const SUPPORTED_SYMBOLS: [char; 6] = [
-    '\u{F0854}', '\u{F0855}', '\u{F02FC}', '\u{F02EF}', '\u{F031C}', '\u{F03C5}',
+/// 이 기호는 Unicode 대체와 폭·윤곽이 달라 실제 공급한 원 glyph가 필요하다.
+pub const SUPPORTED_SYMBOLS: [char; 9] = [
+    '\u{F0854}',
+    '\u{F0855}',
+    '\u{F02FC}',
+    '\u{F02EF}',
+    '\u{F031C}',
+    '\u{F03C5}',
+    '\u{F03A7}',
+    '\u{F03A8}',
+    '\u{F0848}',
 ];
 
 pub fn is_supported_symbol(character: char) -> bool {
