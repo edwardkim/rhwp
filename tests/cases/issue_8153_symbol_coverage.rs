@@ -59,3 +59,31 @@ fn bitmap_and_svg_symbols_with_empty_glyf_still_supply_their_ink() {
     assert!(empty_symbol_codepoints(&bytes, 0).is_empty());
     assert!(font_symbol_unicode_range(&bytes, 0).is_empty());
 }
+
+#[test]
+fn entirely_blank_ebdt_does_not_mask_fallback_but_any_ink_strike_is_preserved() {
+    let base = symbol_font_program::mapped_program(
+        include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf"),
+        &[('⚫', 1)],
+    );
+    for ink in [[false, false, false], [false, true, false]] {
+        let bytes = symbol_font_program::with_bitmap_strikes(&base, &ink);
+        let face = ttf_parser::Face::parse(&bytes, 0).unwrap();
+        let glyph = face.glyph_index('⚫').unwrap();
+        for (i, has_ink) in ink.iter().enumerate() {
+            let bitmap = face.glyph_raster_image(glyph, 12 + i as u16 * 2).unwrap();
+            assert_eq!(bitmap.data.iter().any(|byte| *byte != 0), *has_ink);
+        }
+        // 최대 크기만 보면 두 자료는 모두 비어 있다. 중간 크기를 놓치지 않는다.
+        assert!(face
+            .glyph_raster_image(glyph, u16::MAX)
+            .unwrap()
+            .data
+            .iter()
+            .all(|byte| *byte == 0));
+        assert_eq!(
+            empty_symbol_codepoints(&bytes, 0).contains(&u32::from('⚫')),
+            !ink.iter().any(|value| *value)
+        );
+    }
+}

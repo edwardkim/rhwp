@@ -3,6 +3,8 @@
 //! 원본 프로그램은 그대로 두고 실제 fallback의 문자 공급 범위만 제한한다.
 //! 공백·문자·결합/서식 문자와 별도 color/bitmap/SVG 표현은 이 정책의 대상이 아니다.
 
+mod bitmap;
+
 use std::collections::BTreeSet;
 use ttf_parser::{Face, GlyphId, Tag};
 use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
@@ -74,7 +76,7 @@ pub fn empty_symbol_codepoints(data: &[u8], face_index: u32) -> BTreeSet<u32> {
             && declared_empty_glyf(&face, glyph) == Some(true)
             && !face.is_color_glyph(glyph)
             && face.glyph_svg_image(glyph).is_none()
-            && face.glyph_raster_image(glyph, u16::MAX).is_none()
+            && !bitmap::may_supply_ink(&face, glyph)
         {
             empty.insert(*character as u32);
         }
