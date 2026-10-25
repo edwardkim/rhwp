@@ -78,7 +78,7 @@ paraPr142·JUSTIFY·condense70이다. LEFT인 200쪽의 condense30과 구별한�
    실제 run 분할을 확정한 뒤 선두 공백/필드 소유 배열을 생성하는 앞선 정정도 유지한다.
 3. `issue_8153_justified_final_line_compression.rs`에서 두 원본 148·327쪽의 같은 문단·
    글자모양·내용 관계와 독립 Print의 글자/공백 전진 구간을 검사한다. 전체 쪽의 절대
-   좌표 핀이 아니라 실제 글자 메트릭 계약이며, Print의600dpi 격자와1HU 오차만 반영한다.
+   좌표 핀이 아니라 실제 글자 메트릭 계약이며, Print의 600dpi 격자와 1HU 오차만 반영한다.
 4. 고정된 `7e8e5e9e02`에서 실제 FAIL을 확인하고 새 source에서 PASS와 연결한다.
    기존 60건과 집중 Native/fresh WASM을 다시 확인한 뒤 두 문서 전쪽 검증을 계속한다.
 

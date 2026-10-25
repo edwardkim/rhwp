@@ -2578,12 +2578,16 @@ fn compute_line_extra_spacing_with_dash_plan(
             trailing_note_slots,
         ));
         let all_chars: Vec<char> = spacing_chars.iter().map(|(ch, _)| *ch).collect();
-        let trailing_spaces = all_chars
-            .iter()
-            .rev()
-            .take_while(|c| **c == ' ')
-            .count()
-            .min(trailing_space_limit);
+        let measured = justification_spacing::measure(
+            leading_space_plan,
+            styles,
+            total_text_width,
+            available_width,
+            tab_width,
+            trailing_space_limit,
+            terminal_tracking,
+        );
+        let trailing_spaces = measured.trailing_spaces;
         let visible_count = all_chars.len() - trailing_spaces;
         // 그림 등 실제 줄 소유 개체도 가시 요소다. 텍스트가 모두 공백이라는
         // 이유로 여러 개체 사이의 배분을 막지 않는다.
@@ -2618,18 +2622,7 @@ fn compute_line_extra_spacing_with_dash_plan(
             .count();
         let leader_dashes = count_dash_leaders(&all_chars[..visible_count]);
         // 후행 공백 폭 계산
-        let trailing_width = if trailing_spaces > 0 {
-            if let Some(last_run) = comp_line.runs.last() {
-                let mut ts = last_run.text_style(styles);
-                ts.default_tab_width = tab_width;
-                let trailing_str: String = " ".repeat(trailing_spaces);
-                estimate_text_width_exact(&trailing_str, &ts)
-            } else {
-                0.0
-            }
-        } else {
-            0.0
-        };
+        let trailing_width = measured.trailing_width;
         if interior_spaces > 0 {
             let spacing_char_count = total_char_count
                 - leading_space_plan.leading_spaces
@@ -2642,8 +2635,7 @@ fn compute_line_extra_spacing_with_dash_plan(
             // 같은 내부 공백 수·말미 공백 제외 폭을 사용한다. 별도 합성 분기는
             // 한컴 Print의 같은 줄을 마지막 공백 한 칸만큼 왼쪽으로 압축했다.
             let rendered_space_slots = interior_spaces;
-            let effective_used = total_text_width - trailing_width - terminal_tracking;
-            let slack = available_width - effective_used;
+            let slack = measured.slack;
             if leader_dashes > 0 && slack > 0.0 {
                 // 독립 Print의 혼합 줄은 대시를 자연 전진까지 복원한 뒤
                 // 남은 폭을 낱말 사이에도 배분한다. 한 글꼴의 복원량을
@@ -7473,7 +7465,7 @@ impl LayoutEngine {
                 .chain(click_here_positions.iter().copied())
                 .filter(|pos| *pos >= comp_line.char_start)
                 .min();
-            let first_inline_pos = if needs_justify && !is_hancom_company_pua_logo_line {
+            let mut first_inline_pos = if needs_justify && !is_hancom_company_pua_logo_line {
                 first_owned_inline
             } else {
                 Some(comp_line.char_start)
@@ -7507,7 +7499,15 @@ impl LayoutEngine {
                 .para_styles
                 .get(composed.para_style_id as usize)
                 .map_or(0, |style| style.condense_min_space);
-            let compression = if condense > 0 && !needs_justify && !needs_distribute && !has_tabs {
+            let compression = if condense > 0
+                && matches!(
+                    alignment,
+                    Alignment::Left | Alignment::Center | Alignment::Right
+                )
+                && !needs_justify
+                && !needs_distribute
+                && !has_tabs
+            {
                 let candidate = LeadingSpacePlan::new(comp_line, first_owned_inline)
                     .with_inline_objects(&line_tac_offsets_for_width)
                     .with_body_fields(para.map_or(&[], |p| p.layout_field_values.as_slice()));
@@ -7533,8 +7533,50 @@ impl LayoutEngine {
             } else {
                 None
             };
+            let terminal_tracking_for_fit = terminal_tracking_for_alignment(
+                comp_line,
+                styles,
+                &line_tac_offsets_for_width,
+                true,
+            );
+            let negative_justified_last_line = if alignment == Alignment::Justify
+                && !needs_justify
+                && !needs_distribute
+                && !has_tabs
+                && !is_hancom_company_pua_logo_line
+            {
+                let candidate = LeadingSpacePlan::new(comp_line, first_owned_inline)
+                    .with_inline_objects(&line_tac_offsets_for_width)
+                    .with_body_fields(para.map_or(&[], |p| p.layout_field_values.as_slice()));
+                let terminal_tracking = if terminal_tracking_for_fit == 0.0 {
+                    0.0
+                } else {
+                    terminal_tracking_for_distribution(comp_line, styles, trailing_space_limit)
+                };
+                let measured = justification_spacing::measure(
+                    &candidate,
+                    styles,
+                    total_text_width,
+                    available_width,
+                    tab_width,
+                    trailing_space_limit,
+                    terminal_tracking,
+                );
+                if measured.slack < 0.0 {
+                    leading_space_plan = candidate;
+                    first_inline_pos = first_owned_inline;
+                    true
+                } else {
+                    false
+                }
+            } else {
+                false
+            };
+            // 문단 마지막 줄은 양수 여백을 늘리지 않지만, 음수 여백의
+            // 공백 한계·잔여 글자 사이 압축은 같은 Justify 계약을 따른다.
+            let needs_justify_spacing = needs_justify || negative_justified_last_line;
             // 실제 배치할 run 분할이 확정된 뒤 같은 소유 배열을 만든다.
-            let unjustified_leading_spaces = if needs_justify
+            let unjustified_leading_spaces = if needs_justify_spacing
                 && has_tabs
                 && styles
                     .para_styles
@@ -7542,7 +7584,7 @@ impl LayoutEngine {
                     .is_some_and(|style| style.auto_tab_left && style.indent < 0.0)
             {
                 fixed_auto_tab_prefix_by_run(&leading_space_plan.line)
-            } else if needs_justify && !is_hancom_company_pua_logo_line {
+            } else if needs_justify_spacing && !is_hancom_company_pua_logo_line {
                 // Both measurement and emitted advances stop indentation at
                 // the same visible owner, including a note marker outside
                 // text runs. A following space belongs to body distribution.
@@ -7583,18 +7625,13 @@ impl LayoutEngine {
                     trailing_space_limit,
                     &leading_space_plan,
                     soft_wrap_separator_width,
-                    terminal_tracking_for_alignment(
-                        comp_line,
-                        styles,
-                        &line_tac_offsets_for_width,
-                        true,
-                    ),
+                    terminal_tracking_for_fit,
                     &unjustified_leading_spaces,
                     styles,
                     centered_measure.as_ref(),
                     alignment,
                     cell_ctx.is_some(),
-                    needs_justify,
+                    needs_justify_spacing,
                     false,
                     needs_distribute,
                     has_tabs,
@@ -7940,6 +7977,7 @@ impl LayoutEngine {
                 && extra_char_sp == 0.0
                 && dash_extra_by_run.is_none()
                 && compression.is_none()
+                && !negative_justified_last_line
             {
                 comp_line
             } else {
