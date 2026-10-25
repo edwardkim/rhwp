@@ -212,3 +212,80 @@ fn radio_outer_bottom_right_edge_remains_visible_on_white_paper() {
         .descendants()
         .any(|n| n.has_tag_name("polyline") && n.attribute("stroke") == Some("#fafafa")));
 }
+
+#[test]
+fn deleting_one_of_shared_position_forms_preserves_others_and_round_trips() {
+    let mut core = document(FormType::RadioButton, true);
+    let mut doc = core.document().clone();
+    let template = doc.sections[0].paragraphs[0].controls[0].clone();
+    doc.sections[0].paragraphs[0].controls = (0..3)
+        .map(|index| {
+            let Control::Form(mut form) = template.clone() else {
+                unreachable!()
+            };
+            form.name = format!("선택{index}");
+            Control::Form(form)
+        })
+        .collect();
+    doc.sections[0].paragraphs[0].char_count = 25;
+    for selected in 0..3 {
+        core.set_document(doc.clone());
+        let before = core.save_snapshot_native();
+        core.copy_selection_logical_native(0, 0, selected, 0, selected + 1)
+            .unwrap();
+        core.delete_range_logical_native(0, 0, selected, 0, selected + 1)
+            .unwrap();
+        let names = |core: &DocumentCore| {
+            core.document().sections[0].paragraphs[0]
+                .controls
+                .iter()
+                .filter_map(|control| match control {
+                    Control::Form(form) => Some(form.name.clone()),
+                    _ => None,
+                })
+                .collect::<Vec<_>>()
+        };
+        let expected: Vec<_> = (0..3)
+            .filter(|index| *index != selected)
+            .map(|index| format!("선택{index}"))
+            .collect();
+        assert_eq!(names(&core), expected);
+        for bytes in [
+            core.export_hwp_with_adapter().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            assert_eq!(names(&DocumentCore::from_bytes(&bytes).unwrap()), expected);
+        }
+        let after = core.save_snapshot_native();
+        core.restore_snapshot_native(before).unwrap();
+        assert_eq!(names(&core).len(), 3);
+        core.restore_snapshot_native(after).unwrap();
+        assert_eq!(names(&core), expected);
+        core.paste_internal_native(0, 0, 0).unwrap();
+        assert_eq!(names(&core).len(), 3);
+    }
+}
+
+#[test]
+fn invalid_form_deletion_keeps_model_events_and_clipboard() {
+    let mut core = document(FormType::CheckBox, true);
+    core.copy_selection_logical_native(0, 0, 0, 0, 1).unwrap();
+    let before = format!("{:?}", core.document());
+    let events = core.serialize_event_log();
+    for (start, end) in [(1, 0), (0, 2)] {
+        assert!(core
+            .delete_range_logical_native(0, 0, start, 0, end)
+            .is_err());
+        assert_eq!(format!("{:?}", core.document()), before);
+        assert_eq!(core.serialize_event_log(), events);
+    }
+    core.paste_internal_native(0, 0, 0).unwrap();
+    assert_eq!(
+        core.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .filter(|c| matches!(c, Control::Form(_)))
+            .count(),
+        2
+    );
+}
