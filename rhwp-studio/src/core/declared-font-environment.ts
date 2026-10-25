@@ -2,6 +2,7 @@ import { registerLoadedLocalFontFace } from './font-loader.ts';
 import { FONT_RULE_WEBFONT_ENTRIES } from './font-rule-runtime.ts';
 import { loadLocalFontBytes, resolveLocalFont } from './local-fonts.ts';
 import { normalizeFontFaceData } from './sfnt-face.ts';
+import { fontSymbolDescriptors } from './font-symbol-coverage.ts';
 
 export interface DocumentFontSelectionPlan {
   environmentId: string | null;
@@ -41,7 +42,7 @@ async function loadLocalProgram(query: string): Promise<LoadedProgram | null> {
     // 유지하며 디렉터리·cmap 등 브라우저가 거부하는 메타데이터만 같은 방식으로 준비한다.
     const bytes = normalizeFontFaceData(original, 0);
     if (!bytes) return null;
-    const face = new FontFace(query, bytes);
+    const face = new FontFace(query, bytes, await fontSymbolDescriptors(bytes));
     await face.load();
     const signature = bytes.byteLength >= 4 ? new DataView(bytes).getUint32(0) : 0;
     const trueType = signature === 0x00010000 || signature === 0x74727565;
@@ -168,7 +169,7 @@ export async function prepareDeclaredFontPrograms(
       if (!selected) continue;
       if (!embedded.has(selected.family)) registerLoadedLocalFontFace(selected.face);
       if (embedded.has(requested) || requested === selected.query || suppliedAliases.get(requested) === selected.programId) continue;
-      const alias = new FontFace(requested, selected.bytes);
+      const alias = new FontFace(requested, selected.bytes, await fontSymbolDescriptors(selected.bytes));
       try {
         await alias.load();
         if (!isCurrent()) return empty();

@@ -3,6 +3,7 @@ import { getHostFontState, localFontFaceKey, loadRendererLocalFont,
   onHostFontsChanged, resolveRendererLocalFont, type LocalFontRecord } from './local-fonts.ts';
 import { parseCssFontFamilyList, formatCssFontFamilyList } from './font-substitution.ts';
 import { ordinaryTextFontFaceData, type OrdinaryTextFontSource } from './ordinary-text-font.ts';
+import { fontSymbolDescriptors } from './font-symbol-coverage.ts';
 
 interface CanvasHostFace {
   alias: string;
@@ -103,7 +104,10 @@ export class HostCanvasFontSession {
             if (!bytes) throw new Error('Host font has no usable face');
             const alias = `__rhwp_host_face_${this.id}_${++this.serial}`;
             const face = record.hostReference!.face;
-            const font = new FontFace(alias, bytes, { weight: String(face.weight ?? 400), style: face.slant ?? 'normal' });
+            const descriptors = await fontSymbolDescriptors(bytes,
+              { weight: String(face.weight ?? 400), style: face.slant ?? 'normal' });
+            if (stale()) return;
+            const font = new FontFace(alias, bytes, descriptors);
             await font.load();
             if (stale()) return;
             let intrinsicFont: FontFace | null = null;

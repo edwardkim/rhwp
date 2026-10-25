@@ -31,6 +31,7 @@ pub(crate) mod filled_path_bounds;
 pub mod float_placement;
 pub(crate) mod font_decision;
 pub mod font_environment;
+pub mod font_symbol_coverage;
 mod font_fallback;
 pub mod font_metrics_data;
 #[cfg(not(target_arch = "wasm32"))]

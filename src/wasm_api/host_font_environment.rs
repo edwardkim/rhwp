@@ -5,6 +5,12 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 impl HwpDocument {
+    /// FontFace와 Native fallback이 같은 실제 기호 공급 판정을 사용한다.
+    #[wasm_bindgen(js_name = getFontSymbolUnicodeRange)]
+    pub fn get_font_symbol_unicode_range_js(&self, bytes: &[u8], face_index: u32) -> String {
+        crate::renderer::font_symbol_coverage::font_symbol_unicode_range(bytes, face_index)
+    }
+
     #[wasm_bindgen(js_name = getDeclaredFontFallbackRequests)]
     pub fn get_declared_font_fallback_requests_js(&self) -> Result<String, JsValue> {
         serde_json::to_string(&self.declared_font_fallback_requests())

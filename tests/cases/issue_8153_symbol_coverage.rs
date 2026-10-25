@@ -1,0 +1,61 @@
+//! 가시 기호의 실제 공급 범위와 정상적인 빈 glyph의 구분.
+
+#[path = "../common/symbol_font_program.rs"]
+mod symbol_font_program;
+use rhwp::renderer::font_symbol_coverage::{empty_symbol_codepoints, font_symbol_unicode_range};
+
+#[test]
+fn empty_symbols_do_not_claim_coverage_but_blank_semantics_and_real_ink_remain() {
+    let original = include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf");
+    let bytes = symbol_font_program::mapped_program(
+        original,
+        &[
+            (' ', 1),
+            ('A', 2),
+            ('B', 1),
+            ('⚫', 1),
+            ('∑', 1),
+            ('€', 1),
+            ('˘', 1),
+            ('\u{2800}', 1),
+            ('\u{301}', 1),
+            ('\u{200d}', 1),
+            ('★', 2),
+        ],
+    );
+    let before = bytes.clone();
+    let empty = empty_symbol_codepoints(&bytes, 0);
+    assert_eq!(empty, ['˘', '€', '∑', '⚫'].map(u32::from).into());
+    let range = font_symbol_unicode_range(&bytes, 0);
+    assert!(!range.is_empty());
+    for ch in [' ', 'A', 'B', '★', '\u{2800}', '\u{301}', '\u{200d}'] {
+        assert!(
+            !empty.contains(&u32::from(ch)),
+            "정상 의미/잉크 보존: {ch:?}"
+        );
+    }
+    assert_eq!(bytes, before, "원본 cmap/glyph/hmtx/name은 바뀌지 않는다");
+    assert!(font_symbol_unicode_range(original, 0).is_empty());
+    assert!(
+        font_symbol_unicode_range(&bytes, 1).is_empty(),
+        "없는 collection face를 추측하지 않는다"
+    );
+    assert!(font_symbol_unicode_range(b"not a font", 0).is_empty());
+}
+
+#[test]
+fn bitmap_and_svg_symbols_with_empty_glyf_still_supply_their_ink() {
+    let bytes = symbol_font_program::mapped_program(
+        include_bytes!("../fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf"),
+        &[('⚫', 1), ('★', 2)],
+    );
+    let face = ttf_parser::Face::parse(&bytes, 0).unwrap();
+    assert!(face
+        .glyph_raster_image(face.glyph_index('⚫').unwrap(), u16::MAX)
+        .is_some());
+    assert!(face
+        .glyph_svg_image(face.glyph_index('★').unwrap())
+        .is_some());
+    assert!(empty_symbol_codepoints(&bytes, 0).is_empty());
+    assert!(font_symbol_unicode_range(&bytes, 0).is_empty());
+}
