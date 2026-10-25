@@ -40,6 +40,7 @@ pub(crate) enum ParagraphLineRange {
 }
 
 mod inline_table_context;
+mod condense_spacing;
 mod justification_spacing;
 mod leading_justification;
 mod leading_spaces;
@@ -155,7 +156,12 @@ fn emitted_run_layout_positions(
         && !replay_text.is_empty()
         && session.source_handle(slot).is_some();
     let recover_trailing = trailing_space_count > 0 && style.extra_word_spacing != 0.0;
-    if !can_kern && leading.is_none() && !recover_trailing && !source_projection {
+    if !can_kern
+        && leading.is_none()
+        && !recover_trailing
+        && !source_projection
+        && style.space_compression.is_none()
+    {
         return (fallback_width, None);
     }
     let mut base_positions = leading.as_ref().map_or_else(
@@ -188,7 +194,9 @@ fn emitted_run_layout_positions(
         base_font_size
     };
     let width_ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
-    let ordinary_replay = (leading.is_some() || recover_trailing).then(|| base_positions.clone());
+    let ordinary_replay =
+        (leading.is_some() || recover_trailing || style.space_compression.is_some())
+            .then(|| base_positions.clone());
     let fallback = || {
         if let Some(positions) = ordinary_replay {
             (
@@ -1310,6 +1318,7 @@ struct RunEmitVars<'a> {
     trailing_space_limit: usize,
     natural_prefix_runs: usize,
     body_field_runs: &'a [bool],
+    space_compressions: Option<&'a [Option<crate::renderer::space_compression::SpaceCompression>]>,
     baseline: f64,
     /// 같은 줄의 그림·도형이 공유하는 줄 상자 기준선.
     object_baseline: f64,
@@ -2358,6 +2367,18 @@ fn justified_dash_restoration(
         0.0
     };
     ((slack - restored) / word_slots as f64, average, extras)
+}
+
+fn line_fit_width(
+    width: f64,
+    soft_wrap_separator: f64,
+    centered: Option<&CenteredTextLineMeasure>,
+    leading: &LeadingSpacePlan<'_>,
+    styles: &ResolvedStyleSet,
+) -> f64 {
+    centered.map_or((width - soft_wrap_separator).max(0.0), |measure| {
+        measure.width(0.0)
+    }) + leading.field_fit_adjustment(styles)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -7444,18 +7465,20 @@ impl LayoutEngine {
             // 저장 줄이 상자를 넘더라도 접두 원점을 줄이지 않고 뒤 본문의
             // 같은 분배 배열이 남은 압축을 소비한다.
             // 글줄 소유 개체/각주는 가시 문자열 바깥에도 있으므로 선행 공백의 끝을 제한한다.
+            let first_owned_inline = line_tac_offsets_for_width
+                .iter()
+                .map(|(pos, _, _)| *pos)
+                .chain(composed.footnote_positions.iter().map(|(pos, _, _)| *pos))
+                .chain(note_line.positions.iter().map(|(pos, _, _)| *pos))
+                .chain(click_here_positions.iter().copied())
+                .filter(|pos| *pos >= comp_line.char_start)
+                .min();
             let first_inline_pos = if needs_justify && !is_hancom_company_pua_logo_line {
-                line_tac_offsets_for_width
-                    .iter()
-                    .map(|(pos, _, _)| *pos)
-                    .chain(note_line.positions.iter().map(|(pos, _, _)| *pos))
-                    .chain(click_here_positions.iter().copied())
-                    .filter(|pos| *pos >= comp_line.char_start)
-                    .min()
+                first_owned_inline
             } else {
                 Some(comp_line.char_start)
             };
-            let leading_space_plan = LeadingSpacePlan::new(comp_line, first_inline_pos)
+            let mut leading_space_plan = LeadingSpacePlan::new(comp_line, first_inline_pos)
                 .with_inline_objects(&line_tac_offsets_for_width)
                 .with_body_fields(para.map_or(&[], |p| p.layout_field_values.as_slice()));
             let trailing_space_limit = trailing_space_limit_after_last_inline_object(
@@ -7499,7 +7522,39 @@ impl LayoutEngine {
                 vec![0; leading_space_plan.line.runs.len()]
             };
             let mut dash_extra_by_run = None;
-            let (extra_word_sp, extra_char_sp, extra_dash_sp) = if is_hancom_company_pua_logo_line {
+            let condense = styles
+                .para_styles
+                .get(composed.para_style_id as usize)
+                .map_or(0, |style| style.condense_min_space);
+            let compression = if condense > 0 && !needs_justify && !needs_distribute && !has_tabs {
+                let candidate = LeadingSpacePlan::new(comp_line, first_owned_inline)
+                    .with_inline_objects(&line_tac_offsets_for_width)
+                    .with_body_fields(para.map_or(&[], |p| p.layout_field_values.as_slice()));
+                let fit = line_fit_width(
+                    total_text_width,
+                    soft_wrap_separator_width,
+                    centered_measure.as_ref(),
+                    &candidate,
+                    styles,
+                );
+                let prepared = condense_spacing::CondensePlan::prepare(
+                    &candidate,
+                    styles,
+                    condense,
+                    fit,
+                    available_width,
+                    self.dpi,
+                );
+                if prepared.is_some() {
+                    leading_space_plan = candidate;
+                }
+                prepared
+            } else {
+                None
+            };
+            let (extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
+                (0.0, 0.0, 0.0)
+            } else if is_hancom_company_pua_logo_line {
                 // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
                 // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
                 // 흡수하게 해야 Hancom PDF의 좌측 회사명·우측 logo 배치가 유지된다.
@@ -7569,7 +7624,9 @@ impl LayoutEngine {
             // 셀 overflow/underflow 분기로 자간 보정된 경우 정렬 기준 폭은 실제 렌더 폭이어야 함.
             // 특히 #1285 답안지 `수험번호` 라벨은 음수 자간으로 압축된 텍스트를 자연 폭 기준으로
             // 정렬하면 압축 후 남은 폭만큼 왼쪽에 붙는다. 일반 셀은 기존 단순 보정 경로를 유지한다.
-            let effective_text_width = if is_answer_sheet_number_label
+            let effective_text_width = if let Some(compression) = &compression {
+                total_text_width - compression.saving_px
+            } else if is_answer_sheet_number_label
                 && extra_char_sp.abs() > 0.001
                 && cell_ctx.is_some()
                 && !needs_justify
@@ -7878,12 +7935,15 @@ impl LayoutEngine {
             // cross-run 탭 감지용 inline_tabs(composed.tab_extended) 커서 — Task #290
             let mut inline_tab_cursor_render = stored_tab_index_before_line(composed, comp_line);
             // 측정에 사용한 줄과 같은 run 분할로 선두 공백의 소유를 재생한다.
-            let emit_line =
-                if extra_word_sp == 0.0 && extra_char_sp == 0.0 && dash_extra_by_run.is_none() {
-                    comp_line
-                } else {
-                    leading_space_plan.line.as_ref()
-                };
+            let emit_line = if extra_word_sp == 0.0
+                && extra_char_sp == 0.0
+                && dash_extra_by_run.is_none()
+                && compression.is_none()
+            {
+                comp_line
+            } else {
+                leading_space_plan.line.as_ref()
+            };
             let leading_spaces = LeadingSpaces::new(emit_line, first_inline_pos);
             let emit_state = self.emit_line_runs(
                 tree,
@@ -7913,6 +7973,7 @@ impl LayoutEngine {
                     trailing_space_limit,
                     natural_prefix_runs: leading_space_plan.natural_prefix_runs,
                     body_field_runs: &leading_space_plan.body_field_runs,
+                    space_compressions: compression.as_ref().map(|plan| plan.runs.as_slice()),
                     baseline,
                     object_baseline,
                     raw_lh,
@@ -8689,6 +8750,7 @@ impl LayoutEngine {
             trailing_space_limit,
             natural_prefix_runs,
             body_field_runs,
+            space_compressions,
             baseline,
             object_baseline,
             raw_lh,
@@ -9022,6 +9084,9 @@ impl LayoutEngine {
             let fixed_spacing = run_idx < natural_prefix_runs || body_field;
             text_style.extra_word_spacing = if fixed_spacing { 0.0 } else { extra_word_sp };
             text_style.extra_char_spacing = if fixed_spacing { 0.0 } else { extra_char_sp };
+            text_style.space_compression = space_compressions
+                .and_then(|runs| runs.get(run_idx))
+                .and_then(Clone::clone);
             text_style.extra_dash_advance = if body_field {
                 0.0
             } else {

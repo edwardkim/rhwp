@@ -31,7 +31,6 @@ pub(crate) mod filled_path_bounds;
 pub mod float_placement;
 pub(crate) mod font_decision;
 pub mod font_environment;
-pub mod font_symbol_coverage;
 mod font_fallback;
 pub mod font_metrics_data;
 #[cfg(not(target_arch = "wasm32"))]
@@ -40,6 +39,7 @@ pub mod font_paths;
 pub(crate) mod font_rule_layout_metric_projection;
 #[path = "font_rule_projections/layout_name.rs"]
 pub(crate) mod font_rule_layout_name_projection;
+pub mod font_symbol_coverage;
 pub mod form_appearance;
 pub(crate) mod form_caption;
 pub(crate) mod gradient_geometry;
@@ -116,6 +116,7 @@ pub(crate) mod print_image_sampling;
 pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod skia;
+pub mod space_compression;
 pub(crate) mod static_svg;
 #[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
 pub(crate) mod static_svg_raster;
@@ -397,6 +398,9 @@ pub struct TextStyle {
     /// 출력 세대가 독립 중성·종성에 선택한 무전진 프로그램. 세션 속성이다.
     #[serde(skip)]
     pub isolated_jamo_font: Option<IsolatedJamoFont>,
+    /// 같은 줄의 측정·배치가 공유하는 세션 한정 공백 결과다.
+    #[serde(skip)]
+    pub space_compression: Option<space_compression::SpaceCompression>,
     /// 글꼴 이름
     pub font_family: String,
     /// 글꼴 크기 (px)
@@ -661,6 +665,10 @@ impl TextStyle {
     /// 런을 각주·인라인 개체 경계에서 나눠도 같은 공백 구간을 이어받는다.
     pub(crate) fn for_text_fragment(&self, scalar_start: usize) -> Self {
         let mut style = self.clone();
+        style.space_compression = self
+            .space_compression
+            .as_ref()
+            .map(|plan| plan.for_fragment(scalar_start));
         style.unjustified_leading_spaces =
             self.unjustified_leading_spaces.saturating_sub(scalar_start);
         style
@@ -847,6 +855,7 @@ impl Default for TextStyle {
             top_underline_phase: None,
             supplemental_metrics: None,
             isolated_jamo_font: None,
+            space_compression: None,
             font_family: String::new(),
             font_size: 0.0,
             fixed_glyph_advances: false,

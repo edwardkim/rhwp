@@ -325,6 +325,7 @@ mod empty_line_metrics;
 pub(crate) mod inline_box_rows;
 mod line_breaking;
 pub(crate) use line_breaking::try_reflow_line_segs;
+pub(crate) use line_breaking::condense_space_savings_px;
 
 mod picture_anchor_projection;
 pub(crate) use line_breaking::{
