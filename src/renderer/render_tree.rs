@@ -188,6 +188,9 @@ pub struct RenderNode {
     /// Keep its source address for paint ordering; the control query omits it.
     #[serde(skip)]
     pub(crate) cell_frame_paint: bool,
+    /// 표 배경의 축별 원본 참조가 본문 단인지 보존한다. 배치 좌표는 바꾸지 않는다.
+    #[serde(skip)]
+    pub(crate) print_table_column_axes: Option<[bool; 2]>,
     /// Source text clipping in absolute page pixels; not a layout height/cut.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub paint_clip: Option<Vec<crate::model::text_clip::TextClipPath>>,
@@ -235,6 +238,7 @@ impl RenderNode {
     pub fn new(id: NodeId, node_type: RenderNodeType, bbox: BoundingBox) -> Self {
         Self {
             cell_frame_paint: false,
+            print_table_column_axes: None,
             id,
             node_type,
             bbox,

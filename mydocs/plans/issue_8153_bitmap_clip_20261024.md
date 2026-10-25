@@ -135,3 +135,12 @@ Native 영향 페이지 36건의 실제 출력에서 1쪽 표지는 양쪽 형�
    실행한다. 원시 clip/채움/그림 matrix가 독립 Print와 일치하는지 확인하고 직접 확대
    판독한다. 그 뒤 Native/fresh WASM 전쪽과 회귀 검증을 수행한다. 실패한 기존 검사의
    기대값을 먼저 바꾸거나 raw 기준·허용 반경을 완화하지 않는다.
+
+### 공통 구현 후보
+
+전체·분할 표의 기존 생산 지점에서 축별 원본 참조를 전달한다. 공통 paint의
+`TableFillOrigin`은 실제 Column과 직접 표/셀 배경의 소유를 보존하며, 중첩 표·셀 본문·
+바탕쪽·머리말·꼬리말·각주·별도 affine에서는 바깥 단 참조를 끊는다.
+`PagePaintContext::fill_device_coordinate`가 단색 채움 양 끝과 bitmap clip/carrier의
+양 끝을 함께 확정한다. 화면·2020 Print·PAPER/PAGE 축과 기존 bitmap 재생 산식은
+유지한다. 이 기록 시점에는 새 후보의 실제 Native/fresh WASM 검증은 아직 실행 전이다.

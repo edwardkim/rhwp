@@ -31,6 +31,7 @@ pub(crate) struct PagePaintContext {
     print_paper: Option<super::print_paper::PrintPaper>,
     image_column_origin: Option<(f64, f64)>,
     image_column_blocked: bool,
+    table_fill_origin: super::table_fill_origin::TableFillOrigin,
 }
 
 impl PagePaintContext {
@@ -50,6 +51,7 @@ impl PagePaintContext {
             print_paper: None,
             image_column_origin: None,
             image_column_blocked: false,
+            table_fill_origin: Default::default(),
         }
     }
 
@@ -71,6 +73,7 @@ impl PagePaintContext {
     /// 글줄 그림은 실제 소유 단의 원점과 상대 위치를 따로 장치 정수로 변환한다.
     /// 셀·글상자·각주·별도 개체 좌표계를 본문 단의 좌표계로 간주하지 않는다.
     pub(crate) fn for_children(mut self, node: &RenderNode) -> Self {
+        self.table_fill_origin = self.table_fill_origin.for_children(node);
         self.image_column_blocked |= node.layer.is_some()
             || matches!(
                 &node.node_type,
@@ -506,6 +509,20 @@ impl PagePaintContext {
         self
     }
 
+    /// 시작·끝을 같은 원본 참조에서 변환한다. PAPER/PAGE 축은 절대 좌표를 유지한다.
+    fn fill_device_coordinate(self, value: f64, pixel: f64, axis: usize) -> f64 {
+        if let Some(origin) = self
+            .table_fill_origin
+            .axis(axis)
+            .filter(|_| self.print_paper.is_some())
+        {
+            source_device_coordinate(origin, pixel).round()
+                + source_device_coordinate(value - origin, pixel).round()
+        } else {
+            source_device_coordinate(value, pixel).round()
+        }
+    }
+
     /// 원래 글상자·테두리 프레임과 별개로 Print 단색 채움의 중첩을 결정한다.
     pub(crate) fn rectangle_fill_frame(
         self,
@@ -564,12 +581,12 @@ impl PagePaintContext {
             // 바탕쪽의 가로 프레임은 rectangle_frame에서 이미 확정했다.
             (bounds.x, bounds.width)
         } else {
-            let left = source_device_coordinate(bounds.x, pixel).round();
-            let right = source_device_coordinate(bounds.x + bounds.width, pixel).round();
+            let left = self.fill_device_coordinate(bounds.x, pixel, 0);
+            let right = self.fill_device_coordinate(bounds.x + bounds.width, pixel, 0);
             (left * x_unit, (right - left) * x_unit)
         };
-        let top = source_device_coordinate(bounds.y, pixel).round();
-        let bottom = source_device_coordinate(bounds.y + bounds.height, pixel).round();
+        let top = self.fill_device_coordinate(bounds.y, pixel, 1);
+        let bottom = self.fill_device_coordinate(bounds.y + bounds.height, pixel, 1);
         BoundingBox::new(x, top * y_unit, width, (bottom - top) * y_unit)
     }
 
@@ -824,13 +841,20 @@ impl PagePaintContext {
             return None;
         }
         let bounds = node.bbox;
+        let left = self.fill_device_coordinate(bounds.x, pixel, 0);
+        let top = self.fill_device_coordinate(bounds.y, pixel, 1);
+        let width = if self.print_paper.is_some() && self.table_fill_origin.axis(0).is_some() {
+            self.fill_device_coordinate(bounds.x + bounds.width, pixel, 0) - left
+        } else {
+            source_device_coordinate(bounds.width, pixel).round()
+        };
+        let height = if self.print_paper.is_some() && self.table_fill_origin.axis(1).is_some() {
+            self.fill_device_coordinate(bounds.y + bounds.height, pixel, 1) - top
+        } else {
+            source_device_coordinate(bounds.height, pixel).round()
+        };
         super::bitmap_fill_frame::map(
-            BoundingBox::new(
-                source_device_coordinate(bounds.x, pixel).round(),
-                source_device_coordinate(bounds.y, pixel).round(),
-                source_device_coordinate(bounds.width, pixel).round(),
-                source_device_coordinate(bounds.height, pixel).round(),
-            ),
+            BoundingBox::new(left, top, width, height),
             (header.width, header.height),
             (
                 (self.logical_size.0 / pixel).round(),
