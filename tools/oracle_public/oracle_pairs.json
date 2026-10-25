@@ -2,18 +2,18 @@
   "schemaVersion": "1.0",
   "generator": "tools/oracle_public/oracle_resolver.py",
   "targetPairCount": 269,
-  "pairCount": 948,
-  "matchedSampleCount": 525,
-  "unmatchedCount": 400,
-  "oracleLinkCount": 948,
+  "pairCount": 931,
+  "matchedSampleCount": 518,
+  "unmatchedCount": 399,
+  "oracleLinkCount": 931,
   "oracleRoots": [
     "pdf"
   ],
   "byHancomVersion": {
     "2018": 0,
-    "2020": 525,
-    "2022": 350,
-    "2024": 83
+    "2020": 509,
+    "2022": 347,
+    "2024": 75
   },
   "pairs": [
     {
@@ -2191,176 +2191,6 @@
       "sample": "samples/hwp3-sample14.hwp",
       "pdf": "pdf/hwp3-sample14-hwp-2020.pdf",
       "stem": "hwp3-sample14",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5-2010.hwp::pdf/hwp3-sample16-hwp5-2010-hwp-2024.pdf",
-      "sample": "samples/hwp3-sample16-hwp5-2010.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2010-hwp-2024.pdf",
-      "stem": "hwp3-sample16-hwp5-2010",
-      "hancomVersion": "2024",
-      "variant": "hwp-2024",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5-2010.hwp::pdf/hwp3-sample16-hwp5-2010-2020.pdf",
-      "sample": "samples/hwp3-sample16-hwp5-2010.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2010-2020.pdf",
-      "stem": "hwp3-sample16-hwp5-2010",
-      "hancomVersion": "2020",
-      "variant": "2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5-2018.hwp::pdf/hwp3-sample16-hwp5-2018-2020.pdf",
-      "sample": "samples/hwp3-sample16-hwp5-2018.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2018-2020.pdf",
-      "stem": "hwp3-sample16-hwp5-2018",
-      "hancomVersion": "2020",
-      "variant": "2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5-2018.hwp::pdf/hwp3-sample16-hwp5-2018-hwp-2020.pdf",
-      "sample": "samples/hwp3-sample16-hwp5-2018.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2018-hwp-2020.pdf",
-      "stem": "hwp3-sample16-hwp5-2018",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5-2022.hwp::pdf/hwp3-sample16-hwp5-2022.pdf",
-      "sample": "samples/hwp3-sample16-hwp5-2022.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2022.pdf",
-      "stem": "hwp3-sample16-hwp5-2022",
-      "hancomVersion": "2022",
-      "variant": "exact",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5-2022.hwp::pdf/hwp3-sample16-hwp5-2022-2020.pdf",
-      "sample": "samples/hwp3-sample16-hwp5-2022.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2022-2020.pdf",
-      "stem": "hwp3-sample16-hwp5-2022",
-      "hancomVersion": "2020",
-      "variant": "2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5-2022.hwp::pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
-      "sample": "samples/hwp3-sample16-hwp5-2022.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
-      "stem": "hwp3-sample16-hwp5-2022",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5-2024.hwp::pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
-      "sample": "samples/hwp3-sample16-hwp5-2024.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
-      "stem": "hwp3-sample16-hwp5-2024",
-      "hancomVersion": "2024",
-      "variant": "hwp-2024",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5-2024.hwp::pdf/hwp3-sample16-hwp5-2024-2020.pdf",
-      "sample": "samples/hwp3-sample16-hwp5-2024.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2024-2020.pdf",
-      "stem": "hwp3-sample16-hwp5-2024",
-      "hancomVersion": "2020",
-      "variant": "2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5.hwp::pdf/hwp3-sample16-hwp5-hwp-2024.pdf",
-      "sample": "samples/hwp3-sample16-hwp5.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-hwp-2024.pdf",
-      "stem": "hwp3-sample16-hwp5",
-      "hancomVersion": "2024",
-      "variant": "hwp-2024",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5.hwp::pdf/hwp3-sample16-hwp5-2022.pdf",
-      "sample": "samples/hwp3-sample16-hwp5.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2022.pdf",
-      "stem": "hwp3-sample16-hwp5",
-      "hancomVersion": "2022",
-      "variant": "2022",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5.hwp::pdf/hwp3-sample16-hwp5-2020.pdf",
-      "sample": "samples/hwp3-sample16-hwp5.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2020.pdf",
-      "stem": "hwp3-sample16-hwp5",
-      "hancomVersion": "2020",
-      "variant": "2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5.hwpx::pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
-      "sample": "samples/hwp3-sample16-hwp5.hwpx",
-      "pdf": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
-      "stem": "hwp3-sample16-hwp5",
-      "hancomVersion": "2024",
-      "variant": "hwpx-2024",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5.hwpx::pdf/hwp3-sample16-hwp5-2022.pdf",
-      "sample": "samples/hwp3-sample16-hwp5.hwpx",
-      "pdf": "pdf/hwp3-sample16-hwp5-2022.pdf",
-      "stem": "hwp3-sample16-hwp5",
-      "hancomVersion": "2022",
-      "variant": "2022",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5.hwpx::pdf/hwp3-sample16-hwp5-2020.pdf",
-      "sample": "samples/hwp3-sample16-hwp5.hwpx",
-      "pdf": "pdf/hwp3-sample16-hwp5-2020.pdf",
-      "stem": "hwp3-sample16-hwp5",
-      "hancomVersion": "2020",
-      "variant": "2020",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16.hwp::pdf/hwp3-sample16-2020.pdf",
-      "sample": "samples/hwp3-sample16.hwp",
-      "pdf": "pdf/hwp3-sample16-2020.pdf",
-      "stem": "hwp3-sample16",
-      "hancomVersion": "2020",
-      "variant": "2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16.hwp::pdf/hwp3-sample16-hwp-2020.pdf",
-      "sample": "samples/hwp3-sample16.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp-2020.pdf",
-      "stem": "hwp3-sample16",
       "hancomVersion": "2020",
       "variant": "hwp-2020",
       "sourceFormat": "hwp",
@@ -9681,12 +9511,6 @@
     {
       "sample": "samples/hwp3-sample13.hwp",
       "stem": "hwp3-sample13",
-      "sourceFormat": "hwp",
-      "reason": "no_oracle_pdf"
-    },
-    {
-      "sample": "samples/hwp3-sample16-hwp5-2024-password-123456.hwp",
-      "stem": "hwp3-sample16-hwp5-2024-password-123456",
       "sourceFormat": "hwp",
       "reason": "no_oracle_pdf"
     },

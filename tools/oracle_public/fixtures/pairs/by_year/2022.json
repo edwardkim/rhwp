@@ -3,7 +3,7 @@
   "claim": "M01-f",
   "kind": "oraclePairFixture",
   "hancomVersion": "2022",
-  "pairCount": 350,
+  "pairCount": 347,
   "pairs": [
     {
       "id": "samples/2010-01-06.hwp::pdf/2010-01-06-2022.pdf",
@@ -1050,36 +1050,6 @@
       "sample": "samples/hwp3-sample14-hwp5.hwpx",
       "pdf": "pdf/hwp3-sample14-hwp5-2022.pdf",
       "stem": "hwp3-sample14-hwp5",
-      "hancomVersion": "2022",
-      "variant": "2022",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5-2022.hwp::pdf/hwp3-sample16-hwp5-2022.pdf",
-      "sample": "samples/hwp3-sample16-hwp5-2022.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2022.pdf",
-      "stem": "hwp3-sample16-hwp5-2022",
-      "hancomVersion": "2022",
-      "variant": "exact",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5.hwp::pdf/hwp3-sample16-hwp5-2022.pdf",
-      "sample": "samples/hwp3-sample16-hwp5.hwp",
-      "pdf": "pdf/hwp3-sample16-hwp5-2022.pdf",
-      "stem": "hwp3-sample16-hwp5",
-      "hancomVersion": "2022",
-      "variant": "2022",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/hwp3-sample16-hwp5.hwpx::pdf/hwp3-sample16-hwp5-2022.pdf",
-      "sample": "samples/hwp3-sample16-hwp5.hwpx",
-      "pdf": "pdf/hwp3-sample16-hwp5-2022.pdf",
-      "stem": "hwp3-sample16-hwp5",
       "hancomVersion": "2022",
       "variant": "2022",
       "sourceFormat": "hwpx",

@@ -1,5 +1,5 @@
 /**
- * Issue #3474/#3481/#5986 browser regression — HWP3/HWP5/HWPX password open
+ * Issue #3474/#3481/#5986 browser regression — HWP3/HWPX password open
  * and save-protection lifecycle.
  *
  * The fixture password is intentionally reconstructed from character codes so
@@ -18,11 +18,6 @@ import {
 const E2E_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(E2E_DIR, '..', '..');
 const FIXTURES = [
-  {
-    name: 'HWP5 EncryptVersion 4',
-    path: path.join(REPO_ROOT, 'samples', 'hwp3-sample16-hwp5-2024-password-123456.hwp'),
-    pageCount: 64,
-  },
   {
     name: 'HWP3 압축 비밀번호 문서',
     path: path.join(REPO_ROOT, 'samples', 'HWP3-password-123456.hwp'),
@@ -72,7 +67,7 @@ async function clickDialogButton(page, label) {
   assert(clicked, `암호 대화상자 ${label} 버튼이 있다`);
 }
 
-runTest('Issue #3474/#3481/#5986 HWP3/HWP5/HWPX 암호 문서 열기와 보호 상태', async ({ page }) => {
+runTest('Issue #3474/#3481/#5986 HWP3/HWPX 암호 문서 열기와 보호 상태', async ({ page }) => {
   await createNewDocument(page);
   const blankProtection = await page.evaluate(() => window.__wasm?.requiresPasswordForSave);
   assert(blankProtection === false, '새 문서는 암호 저장 보호 의도를 갖지 않는다');

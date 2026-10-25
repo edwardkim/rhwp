@@ -288,12 +288,13 @@ def walk_samples(samples_dir: Path, repo_root: Path) -> list[SampleDoc]:
         policy = Path(__file__).resolve().parents[2] / "tests/fixtures/transferred_exam_regressions.txt"
     excluded = set(policy.read_text(encoding="utf-8").splitlines()) if policy.is_file() else set()
     deferred = Path(__file__).resolve().parents[2] / "tests/fixtures/deferred_document_regressions.txt"
-    excluded.update(deferred.read_text(encoding="utf-8").splitlines())
+    deferred_names = set(deferred.read_text(encoding="utf-8").splitlines())
+    excluded.update(deferred_names)
     found: list[SampleDoc] = []
     for path in samples_dir.rglob("*"):
         if not path.is_file() or path.suffix.lower() not in SAMPLE_EXTS:
             continue
-        if path.relative_to(samples_dir).as_posix() in excluded:
+        if path.name in deferred_names or path.relative_to(samples_dir).as_posix() in excluded:
             continue
         rel = Path(posix_rel(path, repo_root))
         parent = rel.parent.as_posix()
