@@ -1053,7 +1053,7 @@ jobs:
           node scripts/rust-test-suite-manifest.mjs --check "${base_args[@]}"
           node --test scripts/tests/rust-unit-test-tiers.test.mjs
           node scripts/rust-unit-test-tiers.mjs --check "${base_args[@]}"
-          node scripts/run-rust-test.mjs --print issue_1035_alignment
+          node scripts/run-rust-test.mjs --print mcp_password_contract
 
       - name: Test internal Rust crates
         run: |
