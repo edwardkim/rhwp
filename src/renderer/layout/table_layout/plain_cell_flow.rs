@@ -202,7 +202,7 @@ impl super::LayoutEngine {
             cell,
             self.render_normalization
                 .borrow()
-                .table_text_reflowed(table),
+                .cell_frame_reflowed(table, cell),
         )
     }
 

@@ -8,22 +8,24 @@ use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::table::{Cell, Table, TablePageBreak};
 
 impl LayoutEngine {
-    fn original_stored_table_frame_is_usable(&self, table: &Table) -> bool {
+    fn original_stored_table_frame_is_usable(&self, table: &Table, frame_reflowed: bool) -> bool {
         let profile = self.profile.get();
         (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             && !profile.session_edited()
             && !table.common.treat_as_char
             && table.page_break == TablePageBreak::RowBreak
             && table.common.height > 0
-            && !self
-                .render_normalization
-                .borrow()
-                .table_text_reflowed(table)
+            && !frame_reflowed
     }
 
     pub(crate) fn native_stored_table_has_fragment_frames(&self, table: &Table) -> bool {
         self.profile.get().hwp5_stored_pagination_layout()
-            && self.original_stored_table_frame_is_usable(table)
+            && self.original_stored_table_frame_is_usable(
+                table,
+                self.render_normalization
+                    .borrow()
+                    .table_text_reflowed(table),
+            )
             && Self::stored_row_boxes_exceed_object_frame(table)
     }
 
@@ -39,7 +41,12 @@ impl LayoutEngine {
     ) -> bool {
         cell.row_span == 1
             && !cell.dirty_flag
-            && self.original_stored_table_frame_is_usable(table)
+            && self.original_stored_table_frame_is_usable(
+                table,
+                self.render_normalization
+                    .borrow()
+                    .cell_frame_reflowed(table, cell),
+            )
             && stored_text_paragraphs_share_vpos_frame(cell, styles, self.dpi)
             && (Self::stored_row_boxes_exceed_object_frame(table)
                 || opening_text_frame_end_hu(cell, table, styles, self.dpi)

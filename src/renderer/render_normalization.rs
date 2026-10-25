@@ -81,6 +81,7 @@ pub struct RenderNormalizationOverlay {
     nested_table_widths_by_path: HashMap<RenderPath, Arc<NestedTableWidthProjection>>,
     nested_table_widths_by_pointer: HashMap<usize, Arc<NestedTableWidthProjection>>,
     text_reflowed_tables_by_pointer: HashSet<usize>,
+    rendered_cell_frame_changes: HashMap<usize, HashSet<(u16, u16)>>,
     nested_tables_with_reflowed_hosts: HashSet<usize>,
     stored_nested_text_frames_by_pointer: HashMap<usize, Arc<StoredNestedTextFrames>>,
 }
@@ -297,6 +298,10 @@ impl RenderNormalizationOverlay {
     /// Logical-path validation happens in DocumentCore before this hot-path
     /// pointer is published.
     pub(crate) fn register_text_reflowed_table(&mut self, table: &Table) {
+        // 편집 명령이 표 전체를 다시 조판한 경우에는 셀별 render-only 범위로
+        // 축소하지 않는다. 이 명시적 등록은 아래의 관측 결과보다 우선한다.
+        self.rendered_cell_frame_changes
+            .remove(&(table as *const Table as usize));
         self.text_reflowed_tables_by_pointer
             .insert(table as *const Table as usize);
     }
@@ -351,6 +356,14 @@ impl RenderNormalizationOverlay {
                 let (Control::Table(old), Control::Table(new)) = (old, new) else {
                     continue;
                 };
+                let old_pointer = old.as_ref() as *const Table as usize;
+                let new_pointer = new.as_ref() as *const Table as usize;
+                self.rendered_cell_frame_changes
+                    .entry(old_pointer)
+                    .or_default();
+                self.rendered_cell_frame_changes
+                    .entry(new_pointer)
+                    .or_default();
                 let mut table_changed = old.cells.len() != new.cells.len();
                 let mut table_flow_changed = table_changed;
                 for (old_cell, new_cell) in old.cells.iter().zip(&new.cells) {
@@ -359,12 +372,22 @@ impl RenderNormalizationOverlay {
                         &new_cell.paragraphs,
                         styles,
                     );
+                    if text || flow {
+                        self.rendered_cell_frame_changes
+                            .entry(old_pointer)
+                            .or_default()
+                            .insert((old_cell.row, old_cell.col));
+                        self.rendered_cell_frame_changes
+                            .entry(new_pointer)
+                            .or_default()
+                            .insert((new_cell.row, new_cell.col));
+                    }
                     table_changed |= text;
                     table_flow_changed |= flow;
                 }
                 if table_changed {
-                    self.register_text_reflowed_table(old);
-                    self.register_text_reflowed_table(new);
+                    self.text_reflowed_tables_by_pointer.insert(old_pointer);
+                    self.text_reflowed_tables_by_pointer.insert(new_pointer);
                 }
                 if upstream_flow_changed {
                     self.register_rebased_source_frames(old, new);
@@ -423,6 +446,51 @@ impl RenderNormalizationOverlay {
     pub(crate) fn table_text_reflowed(&self, table: &Table) -> bool {
         self.text_reflowed_tables_by_pointer
             .contains(&(table as *const Table as usize))
+    }
+
+    /// 본체의 총높이가 바뀌어도 이웃 셀의 유효한 저장 프레임까지 폐기하지 않는다.
+    /// 표 내부에서 주소가 유일한 행·열은 측정용 셀 복제에도 같은 출처를 전달한다.
+    pub(crate) fn cell_frame_reflowed(
+        &self,
+        table: &Table,
+        cell: &crate::model::table::Cell,
+    ) -> bool {
+        self.rendered_cell_frame_changes
+            .get(&(table as *const Table as usize))
+            .map_or_else(
+                || self.table_text_reflowed(table),
+                |cells| cells.contains(&(cell.row, cell.col)),
+            )
+    }
+
+    /// 물리 행을 덮는 셀만 그 행의 저장 프레임을 무효화할 수 있다.
+    pub(crate) fn row_frame_reflowed(&self, table: &Table, row: usize) -> bool {
+        table.cells.iter().any(|cell| {
+            usize::from(cell.row) <= row
+                && row < usize::from(cell.row) + usize::from(cell.row_span)
+                && self.cell_frame_reflowed(table, cell)
+        })
+    }
+
+    /// 인증할 첫 물리 상자에 실제로 들어가는 행의 출처만 확인한다.
+    pub(crate) fn frame_prefix_reflowed(
+        &self,
+        table: &Table,
+        rows: &[f64],
+        spacing: f64,
+        height: f64,
+    ) -> bool {
+        let mut top = 0.0;
+        for (row, row_height) in rows.iter().enumerate() {
+            if top >= height {
+                break;
+            }
+            if self.row_frame_reflowed(table, row) {
+                return true;
+            }
+            top += row_height + spacing;
+        }
+        false
     }
 
     /// 글자 재조판 여부와 별개인 부모 호스트 프레임의 무효화 출처다.

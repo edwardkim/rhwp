@@ -17,17 +17,17 @@ impl LayoutEngine {
         let profile = self.profile.get();
         if profile.session_edited()
             || !(profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
-            || self
-                .render_normalization
-                .borrow()
-                .table_text_reflowed(table)
         {
             return false;
         }
         cells.iter().zip(units).any(|(cell, units)| {
-            units
-                .iter()
-                .any(|unit| Self::stored_in_paragraph_unit_is_original_restart(cell, unit))
+            !self
+                .render_normalization
+                .borrow()
+                .cell_frame_reflowed(table, cell)
+                && units
+                    .iter()
+                    .any(|unit| Self::stored_in_paragraph_unit_is_original_restart(cell, unit))
         })
     }
 

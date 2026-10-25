@@ -152,14 +152,9 @@ impl LayoutEngine {
         // 유지 속성은 실제 줄 구성의 계약이다. 저장 LineSeg가 없거나 편집으로
         // 재생성됐다는 이유로 완결한 문단 컷을 고정 px 고아 기준에 넘기지 않는다.
         let profile = self.profile.get();
-        let table_reflowed = self
-            .render_normalization
-            .borrow()
-            .table_text_reflowed(table);
         if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             || table.page_break != TablePageBreak::RowBreak
             || table.common.treat_as_char
-            || (matches!(source, CutSource::Stored) && table_reflowed)
         {
             return None;
         }
@@ -174,6 +169,13 @@ impl LayoutEngine {
             }
             if end == units.len() {
                 continue;
+            }
+            let cell_reflowed = self
+                .render_normalization
+                .borrow()
+                .cell_frame_reflowed(table, cell);
+            if matches!(source, CutSource::Stored) && cell_reflowed {
+                return None;
             }
             let start = start_cut.get(index).copied().unwrap_or(0);
             if end <= start
@@ -215,7 +217,7 @@ impl LayoutEngine {
                     }
                 }
                 CutSource::Reflow => {
-                    if !(table_reflowed || crate::renderer::para_has_no_stored_line_segs(paragraph))
+                    if !(cell_reflowed || crate::renderer::para_has_no_stored_line_segs(paragraph))
                         || !closing.has_visible_line()
                     {
                         return None;

@@ -1147,11 +1147,6 @@ impl TypesetEngine {
         let saved_first_fragment_source_frame = if !is_continuation
             && cursor_row == 0
             && start_cut.is_empty()
-            // 셀 편집의 재조판은 저장 첫 조각을 이미 무효화했다.
-            // 원본 host 좌표가 우연히 현재 원점과 같아도 그 옛 프레임으로
-            // 내용 예산을 초과 수용하지 않는다. 다른 source-frame 소비자와
-            // 같은 정규화 overlay의 유효성 결과를 사용한다.
-            && !self.render_normalization.table_text_reflowed(table)
             && first_fragment_painted_row_footer_guard <= 0.0
             && !table.common.treat_as_char
             && crate::renderer::typeset::is_para_topbottom_float(&table.common)
@@ -1205,7 +1200,15 @@ impl TypesetEngine {
                     }
                     ((anchor_px - actual_anchor).abs() <= 0.5
                         && flow_bottom_px <= source_first_fragment_flow_bottom + 0.5
-                        && placed_frame_fits)
+                        && placed_frame_fits
+                        // 뒤쪽 셀의 변경은 첫 상자의 빈 물리 띠를 지우지 않는다.
+                        // 실제 첫 조각 소유 행의 변경만 이 생산 결과를 무효화한다.
+                        && !self.render_normalization.frame_prefix_reflowed(
+                            table,
+                            cut_row_h,
+                            cs,
+                            frame_height,
+                        ))
                         .then_some((frame_height, flow_bottom_px))
                 })
         } else {

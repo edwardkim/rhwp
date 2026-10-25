@@ -395,7 +395,7 @@ impl LayoutEngine {
             && !self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             && !table.common.treat_as_char
             && table.page_break == TablePageBreak::RowBreak
             && !cell.dirty_flag

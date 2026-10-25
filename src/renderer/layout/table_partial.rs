@@ -2152,7 +2152,7 @@ impl LayoutEngine {
                     || self
                         .render_normalization
                         .borrow()
-                        .table_text_reflowed(table)
+                        .cell_frame_reflowed(table, cell)
                     || !para.line_segs.first().is_some_and(|line| {
                         line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
                             == 0
@@ -5090,7 +5090,7 @@ impl LayoutEngine {
                                             } else {
                                                 // 프레임 끝은 다음 글줄 원점이다. 문단 시작으로
                                                 // 환산해 다음 문단이 앞 간격을 한 번만 적용한다.
-                                                let successor_before = (self.render_normalization.borrow().table_text_reflowed(table)
+                                                let successor_before = (self.render_normalization.borrow().cell_frame_reflowed(table, cell)
                                                     && frame.stored_successor_line_origin.is_some())
                                                     .then(|| cell.paragraphs.get(cp_idx + 1))
                                                     .flatten()
@@ -5151,7 +5151,7 @@ impl LayoutEngine {
                             && !self
                                 .render_normalization
                                 .borrow()
-                                .table_text_reflowed(table)
+                                .cell_frame_reflowed(table, cell)
                         {
                             if let Some(advance) = cell.paragraphs.get(cp_idx + 1).and_then(|next| {
                                 crate::renderer::float_placement::stored_inline_table_successor_advance(
@@ -5181,7 +5181,7 @@ impl LayoutEngine {
                     // 흐름을 밀지 않으면 다음 문단(캡션)이 그림 위에 겹쳐 그려진다.
                     if let Some(bottom) = wrapped_tac_flow_bottom {
                         let stored_advance = (!self.profile.get().session_edited()
-                            && !self.render_normalization.borrow().table_text_reflowed(table)
+                            && !self.render_normalization.borrow().cell_frame_reflowed(table, cell)
                             && next_para_in_fragment)
                             .then(|| cell.paragraphs.get(cp_idx + 1).and_then(|next|
                                 crate::renderer::float_placement::stored_inline_picture_successor_advance(
@@ -5200,7 +5200,7 @@ impl LayoutEngine {
                     && !self
                         .render_normalization
                         .borrow()
-                        .table_text_reflowed(table))
+                        .cell_frame_reflowed(table, cell))
                 .then(|| {
                     crate::renderer::float_placement::stored_empty_successor_advance(
                         &cell.paragraphs,
@@ -5233,7 +5233,7 @@ impl LayoutEngine {
                     && !self
                         .render_normalization
                         .borrow()
-                        .table_text_reflowed(table)
+                        .cell_frame_reflowed(table, cell)
                 {
                     // LINE_SEG vpos 기반으로 para_y 보정.
                     let is_last_para = cp_idx + 1 == cell.paragraphs.len();
@@ -5269,7 +5269,7 @@ impl LayoutEngine {
                                 let next_spacing_before = if preserve_linear_single_cell_vpos
                                     || wrap_successor.is_some()
                                     || (!self.profile.get().session_edited()
-                                        && !self.render_normalization.borrow().table_text_reflowed(table)
+                                        && !self.render_normalization.borrow().cell_frame_reflowed(table, cell)
                                         && crate::renderer::float_placement::stored_column_top_spacing_before(
                                             &cell.paragraphs,
                                             wrap_successor.unwrap_or(cp_idx + 1),

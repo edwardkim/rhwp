@@ -262,7 +262,6 @@ impl TypesetEngine {
             || st.profile.session_edited()
             || source.paragraph.stored_text_partition_is_dirty()
             || source.paragraph.cell_format_vpos_dirty
-            || self.render_normalization.table_text_reflowed(source.table)
             || !input
                 .prepared
                 .layout_engine

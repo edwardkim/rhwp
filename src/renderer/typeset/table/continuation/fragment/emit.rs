@@ -1388,14 +1388,13 @@ impl TypesetEngine {
             && accepted_partial_row_box.is_some_and(|(row, _)| row + 1 == end_row);
         let mut span_band_owns_end_row = false;
         let mut span_band_row_box = None;
+        // 선언 최소 공간은 저장 글줄 캐시가 아니다. 현재 내용 컷과 앞에서
+        // 실제 수용한 상자를 차감하므로 다른 셀의 줄 변경으로 폐기하지 않는다.
         if (split_end_limit == 0.0 || plain_paragraph_cut || other_content_cut)
             && split_block_start.is_none()
             && end_row > cursor_row
             && table_footnotes.is_empty()
             && !st.profile.session_edited()
-            && !self
-                .render_normalization
-                .table_text_reflowed(row_geometry_table)
             && mt.allows_row_break_split()
             && (row_geometry_table.cells.iter().any(|cell| {
                 cell.row_span > 1

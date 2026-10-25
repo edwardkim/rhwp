@@ -2691,7 +2691,7 @@ impl HeightMeasurer {
         if !(self.is_native_hwp5 || self.hwpx_stored_layout)
             || self.is_hwp3_variant
             || self.session_edited
-            || self.render_normalization.table_text_reflowed(table)
+            || self.render_normalization.cell_frame_reflowed(table, cell)
         {
             return None;
         }
@@ -3259,7 +3259,7 @@ impl HeightMeasurer {
         let coincident_source_height = |cell: &crate::model::table::Cell| {
             ((self.is_native_hwp5 || self.hwpx_stored_layout)
                 && !self.session_edited
-                && !self.render_normalization.table_text_reflowed(table))
+                && !self.render_normalization.cell_frame_reflowed(table, cell))
             .then(|| {
                 crate::renderer::float_placement::stored_coincident_empty_cell_height(cell, table)
             })
@@ -3715,7 +3715,7 @@ impl HeightMeasurer {
                     };
                 let stored_picture_flow = (!self.session_edited
                     && (self.is_native_hwp5 || self.hwpx_stored_layout)
-                    && !self.render_normalization.table_text_reflowed(table))
+                    && !self.render_normalization.cell_frame_reflowed(table, cell))
                 .then(|| {
                     crate::renderer::float_placement::stored_partitioned_picture_cell_flow(
                         cell, table,
@@ -3732,7 +3732,7 @@ impl HeightMeasurer {
                                 let Control::Table(child) = control else {
                                     return None;
                                 };
-                                if self.render_normalization.table_text_reflowed(table)
+                                if self.render_normalization.cell_frame_reflowed(table, cell)
                                     || self.render_normalization.table_text_reflowed(child)
                                 {
                                     return None;
@@ -3747,7 +3747,7 @@ impl HeightMeasurer {
                     || self.hwpx_stored_layout
                     || self.hwp5_origin_hwpx)
                     && !self.session_edited
-                    && !self.render_normalization.table_text_reflowed(table))
+                    && !self.render_normalization.cell_frame_reflowed(table, cell))
                 .then(|| crate::renderer::float_placement::stored_picture_cell_content_end_hu(cell))
                 .flatten();
                 let content_height = if let Some(flow) = stored_picture_flow {
@@ -4090,7 +4090,7 @@ impl HeightMeasurer {
 
                 let stored_inline_frame = ((self.is_native_hwp5 || self.hwpx_stored_layout)
                     && !self.session_edited
-                    && !self.render_normalization.table_text_reflowed(table))
+                    && !self.render_normalization.cell_frame_reflowed(table, cell))
                 .then(|| crate::renderer::float_placement::stored_inline_content_frame(cell, table))
                 .flatten();
                 let content_height = stored_inline_frame
@@ -4100,7 +4100,7 @@ impl HeightMeasurer {
                 // 닫힌 원본 프레임의 빈 마지막 줄은 그림 띠와 별도의 실제 공간이다.
                 let text_height = if (self.is_native_hwp5 || self.hwpx_stored_layout)
                     && !self.session_edited
-                    && !self.render_normalization.table_text_reflowed(table)
+                    && !self.render_normalization.cell_frame_reflowed(table, cell)
                 {
                     crate::renderer::float_placement::stored_empty_picture_cell_frame(cell, table)
                         .map(|frame| hwpunit_to_px(frame.content_height_hu, self.dpi))
@@ -4116,7 +4116,7 @@ impl HeightMeasurer {
                 let total_pad = pad_top + pad_bottom;
                 let stored_text_guard_height = ((self.is_native_hwp5 || self.hwpx_stored_layout)
                     && !self.session_edited
-                    && !self.render_normalization.table_text_reflowed(table))
+                    && !self.render_normalization.cell_frame_reflowed(table, cell))
                 .then(|| {
                     crate::renderer::float_placement::stored_text_cell_padding_height_hu(
                         cell, table,
@@ -4158,13 +4158,13 @@ impl HeightMeasurer {
                         self.dpi,
                         self.hwpx_stored_layout,
                         self.session_edited,
-                        self.render_normalization.table_text_reflowed(table),
+                        self.render_normalization.cell_frame_reflowed(table, cell),
                         relaxed_pad_mirror,
                     );
                 let closed_plain_frame = (!self.session_edited
                     && (self.is_native_hwp5 || self.hwpx_stored_layout)
                     && !self.is_hwp3_variant
-                    && !self.render_normalization.table_text_reflowed(table))
+                    && !self.render_normalization.cell_frame_reflowed(table, cell))
                 .then(|| {
                     crate::renderer::float_placement::stored_plain_closed_cell_ink_height(
                         cell, table,
@@ -4385,7 +4385,7 @@ impl HeightMeasurer {
                 row,
                 self.is_native_hwp5 || self.hwpx_stored_layout,
                 self.session_edited,
-                self.render_normalization.table_text_reflowed(table),
+                self.render_normalization.row_frame_reflowed(table, row),
             ) {
                 let minimum = hwpunit_to_px(frame.height_hu, self.dpi);
                 *height = height.max(minimum);
@@ -4748,7 +4748,7 @@ impl HeightMeasurer {
                     || self.hwpx_stored_layout
                     || self.hwp5_origin_hwpx)
                     && !self.session_edited
-                    && !self.render_normalization.table_text_reflowed(table))
+                    && !self.render_normalization.cell_frame_reflowed(table, cell))
                 .then(|| crate::renderer::float_placement::stored_picture_cell_content_end_hu(cell))
                 .flatten();
                 let required_height = if let Some(end) = source_picture_end {
@@ -4792,7 +4792,7 @@ impl HeightMeasurer {
                 let closed_plain_frame = (!self.session_edited
                     && (self.is_native_hwp5 || self.hwpx_stored_layout)
                     && !self.is_hwp3_variant
-                    && !self.render_normalization.table_text_reflowed(table))
+                    && !self.render_normalization.cell_frame_reflowed(table, cell))
                 .then(|| {
                     crate::renderer::float_placement::stored_plain_closed_cell_ink_height(
                         cell, table,
@@ -4819,7 +4819,7 @@ impl HeightMeasurer {
                             self.dpi,
                             self.hwpx_stored_layout,
                             self.session_edited,
-                            self.render_normalization.table_text_reflowed(table),
+                            self.render_normalization.cell_frame_reflowed(table, cell),
                             relaxed_pad_mirror,
                         )
                     })

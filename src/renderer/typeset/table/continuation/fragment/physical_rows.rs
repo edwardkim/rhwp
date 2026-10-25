@@ -107,7 +107,11 @@ impl TypesetEngine {
             st.profile,
             source.paragraph,
             source.table,
-        ) && !self.render_normalization.table_text_reflowed(source.table)
+        ) && source.table.leading_header_rows().into_iter().all(|row| {
+            !self
+                .render_normalization
+                .row_frame_reflowed(source.table, row)
+        })
     }
 
     /// 쪽 끝 내용 컷에 걸리는 병합 칸의 최소 높이 중 현재 조각이 소유하는 잔여다.

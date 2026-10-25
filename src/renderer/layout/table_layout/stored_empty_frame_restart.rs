@@ -97,10 +97,6 @@ impl LayoutEngine {
         let profile = self.profile.get();
         if !profile.hwp5_stored_pagination_layout()
             || profile.session_edited()
-            || self
-                .render_normalization
-                .borrow()
-                .table_text_reflowed(table)
             || !start.is_empty()
             || end != [1]
             || table.common.treat_as_char
@@ -114,7 +110,11 @@ impl LayoutEngine {
             return false;
         };
         let cell = &table.cells[*index];
-        if usize::from(cell.row) != row
+        if self
+            .render_normalization
+            .borrow()
+            .cell_frame_reflowed(table, cell)
+            || usize::from(cell.row) != row
             || cell.row_span != 1
             || cell.col_span != table.col_count
             || cell.dirty_flag
@@ -224,7 +224,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             || table.common.treat_as_char
             || table.page_break != TablePageBreak::RowBreak
             || cell.row_span != 1

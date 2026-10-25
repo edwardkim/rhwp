@@ -19,7 +19,7 @@ impl LayoutEngine {
             profile.session_edited(),
             self.render_normalization
                 .borrow()
-                .table_text_reflowed(table),
+                .cell_frame_reflowed(table, cell),
         )
         .map(|prefixes| {
             prefixes

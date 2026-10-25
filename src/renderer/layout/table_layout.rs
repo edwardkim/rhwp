@@ -2540,7 +2540,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .row_frame_reflowed(table, usize::from(cell.row))
             || !Self::stored_row_boxes_exceed_object_frame(table)
         {
             return None;
@@ -2704,7 +2704,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             || cell.dirty_flag
             || cell.text_direction != 0
             || !para.controls.is_empty()
@@ -2835,10 +2835,10 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
     ) -> bool {
-        self.native_stored_table_has_fragment_frames(table)
+        self.profile.get().hwp5_stored_pagination_layout()
+            && Self::stored_row_boxes_exceed_object_frame(table)
             && table.cells.iter().any(|cell| {
-                cell.row_span == 1
-                    && stored_text_paragraphs_share_vpos_frame(cell, styles, self.dpi)
+                self.original_stored_text_frame_cell(cell, table, styles)
                     && stored_plain_text_cell_has_frame_reset(cell, styles, self.dpi)
             })
     }
@@ -2854,13 +2854,13 @@ impl LayoutEngine {
         self.native_stored_table_has_text_frame_boundaries(table, styles)
             || (self.profile.get().hwpx_stored_layout()
                 && !self.profile.get().session_edited()
-                && !self
-                    .render_normalization
-                    .borrow()
-                    .table_text_reflowed(table)
                 && Self::stored_row_boxes_exceed_object_frame(table)
                 && table.cells.iter().any(|cell| {
                     cell.row_span == 1
+                        && !self
+                            .render_normalization
+                            .borrow()
+                            .cell_frame_reflowed(table, cell)
                         && self.direct_hwpx_cell_has_declared_stored_frame(cell, table)
                         && self.direct_hwpx_cell_has_progressing_source_frames(cell)
                 }))
@@ -5179,7 +5179,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             || cell.dirty_flag
             || previous.vertical_pos <= 0
             || previous.line_spacing < 0
@@ -6173,7 +6173,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
         {
             return None;
         }
@@ -6193,7 +6193,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
         {
             return None;
         }
@@ -10759,7 +10759,7 @@ impl LayoutEngine {
                 && !self
                     .render_normalization
                     .borrow()
-                    .table_text_reflowed(table)
+                    .cell_frame_reflowed(table, cell)
                 && !cell.dirty_flag
                 && cell.paragraphs.iter().all(|paragraph| {
                     !paragraph.stored_text_partition_is_dirty()
@@ -13268,7 +13268,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
         {
             return None;
         }
@@ -13376,7 +13376,7 @@ impl LayoutEngine {
                 || (self
                     .render_normalization
                     .borrow()
-                    .table_text_reflowed(table)
+                    .cell_frame_reflowed(table, cell)
                     && crate::renderer::cell_paragraph_has_only_single_column_metadata(paragraph))
         })) && self
             .cell_units(cell, table, styles)
@@ -14489,7 +14489,7 @@ impl LayoutEngine {
         let text_reflowed = self
             .render_normalization
             .borrow()
-            .table_text_reflowed(table);
+            .cell_frame_reflowed(table, cell);
         let direct_hwpx_stored_frame_cell =
             self.direct_hwpx_cell_has_declared_stored_frame(cell, table);
         let original_text_frame_cell = self.original_stored_text_frame_cell(cell, table, styles);
@@ -14497,7 +14497,7 @@ impl LayoutEngine {
             && !self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             && self.stored_cell_paragraph_has_zero_before_origin(cell, 0, styles);
         let declared_opening_reset = self.declared_nested_opening_frame_reset(table);
         let joint_zero_origin_boundary = self.stored_joint_zero_origin_boundary(cell, table);
@@ -15078,7 +15078,7 @@ impl LayoutEngine {
                 && !self
                     .render_normalization
                     .borrow()
-                    .table_text_reflowed(table))
+                    .cell_frame_reflowed(table, cell))
             .then(|| {
                 crate::renderer::float_placement::stored_partitioned_picture_cell_flow(cell, table)
             })
@@ -16463,7 +16463,7 @@ impl LayoutEngine {
                         && !self
                             .render_normalization
                             .borrow()
-                            .table_text_reflowed(table)
+                            .cell_frame_reflowed(table, cell)
                         && !self.render_normalization.borrow().table_text_reflowed(nt)
                     {
                         let body = rhs.iter().sum::<f64>() + ncs * (nrow + 1) as f64;
@@ -17474,7 +17474,7 @@ impl LayoutEngine {
             && !self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
         {
             if let Some(flow) = crate::renderer::float_placement::stored_picture_cell_flow(cell) {
                 // 다음 저장 앵커까지의 전진량은 이미 그림과 빈 줄을 함께 담는다.
@@ -18188,7 +18188,7 @@ impl LayoutEngine {
             && !self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table);
+                .cell_frame_reflowed(table, cell);
         if !(profile.hwp5_stored_pagination_layout() || direct_hwpx_frame)
             || table.row_count <= 1
             || table.common.treat_as_char
@@ -18867,7 +18867,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             || end == 0
             || end >= units.len()
         {
@@ -18952,7 +18952,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             || next.para_idx != closing.para_idx + 1
             || next.vis_start != 0
             || closing.vis_start >= closing.vis_end
@@ -19041,7 +19041,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             || closing.vis_start >= closing.vis_end
             || next.vis_start >= next.vis_end
         {
@@ -21699,7 +21699,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
             || para.stored_text_partition_is_dirty()
             || para.cell_format_vpos_dirty
@@ -21829,7 +21829,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             || [previous, para].iter().any(|p| {
                 !crate::renderer::cell_paragraph_has_only_single_column_metadata(p)
                     || p.stored_text_partition_is_dirty()
@@ -21975,7 +21975,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
         {
             return None;
         }
@@ -21994,7 +21994,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
         {
             return None;
         }
@@ -23634,7 +23634,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             || next == 0
         {
             return false;
@@ -24455,12 +24455,14 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             || end == 0
             || end >= units.len()
         {
             return 0.0;
         }
+        // 원본 연속 줄의 후속 간격만 종료 잉크와 분리한다. 이웃 셀의 재조판은
+        // 무관하지만, 이 셀을 재조판했다면 저장 간격으로 현재 컷을 인증하지 않는다.
         let unit = &units[end - 1];
         let Some(para) = cell.paragraphs.get(unit.para_idx) else {
             return 0.0;
@@ -24643,7 +24645,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
         {
             return fit;
         }
@@ -24901,7 +24903,7 @@ impl LayoutEngine {
             && !self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             && crate::renderer::float_placement::stored_partitioned_picture_cell_flow(cell, table)
                 .is_some()
             && self.cell_units(cell, table, styles).len() > 1
@@ -24956,7 +24958,7 @@ impl LayoutEngine {
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
         {
             return None;
         }
@@ -26739,17 +26741,15 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         row: usize,
     ) -> bool {
-        let reflowed = self
-            .render_normalization
-            .borrow()
-            .table_text_reflowed(table);
         let mut cells = self
             .cells_starting_on_row(table, row)
             .filter(|cell| cell.row_span == 1)
             .peekable();
         cells.peek().is_some()
             && cells.all(|cell| {
-                reflowed
+                self.render_normalization
+                    .borrow()
+                    .cell_frame_reflowed(table, cell)
                     || cell
                         .paragraphs
                         .iter()
@@ -26825,10 +26825,6 @@ impl LayoutEngine {
         accepted_cut: Option<&[usize]>,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
-        let table_reflowed = self
-            .render_normalization
-            .borrow()
-            .table_text_reflowed(table);
         // 병합 밴드의 일반 셀 내용이 모두 끝났으면 기존 밴드가 행을 닫는다.
         // 미소비 유닛이 있는 실제 분할만 독립 셀의 최소 높이를 이어받는다.
         if Self::row_has_prior_rowspan_cover(table, row)
@@ -26851,7 +26847,12 @@ impl LayoutEngine {
             .filter(|cell| cell.row as usize == row && cell.row_span == 1)
             .filter(|cell| {
                 cell.height < 0x8000_0000
-                    && Self::cell_has_plain_reflow_paragraphs(cell, table_reflowed)
+                    && Self::cell_has_plain_reflow_paragraphs(
+                        cell,
+                        self.render_normalization
+                            .borrow()
+                            .cell_frame_reflowed(table, cell),
+                    )
             })
             .filter_map(|cell| {
                 let minimum = hwpunit_to_px(cell.height as i32, self.dpi).min(row_frame_height);

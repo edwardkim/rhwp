@@ -538,27 +538,16 @@ impl TypesetEngine {
                     + measured.cell_spacing * measured.row_heights.len().saturating_sub(1) as f64
             })
         });
-        // 재조판한 온전한 일반 행도 실제 배치 높이로 통째 수용 여부를 정한다.
-        // 원본의 저장 되감김/프레임 원점 조건과 별개이며 중첩 내용 컷은 제외한다.
-        let reflowed_table_uses_painted_whole_rows = if table.row_count > 0
+        // 통째 표는 중첩 셀을 포함한 모든 측정 행을 실제로 그린다.
+        // 부분 컷의 저장 프레임/viewport 술어로 이 전체 footprint를 제외하면
+        // 한 정상 셀 때문에 실제 행 합보다 작은 개체 선언 높이만 수용하게 된다.
+        // 내용 컷이 필요한 경우의 예약·배치는 fragment 경로가 별도로 소유한다.
+        let reflowed_table_uses_painted_whole_rows = table.row_count > 0
             && matches!(
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
             )
-            && self.render_normalization.table_text_reflowed(table)
-        {
-            let layout_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
-            self.prime_section_cell_context(&layout_engine);
-            layout_engine.set_layout_profile(st.profile);
-            layout_engine.prime_column_layout_env(&st.layout);
-            layout_engine.set_render_normalization_overlay(std::sync::Arc::clone(
-                &self.render_normalization,
-            ));
-            (0..table.row_count as usize)
-                .all(|row| layout_engine.reflowed_fragment_row_uses_measured_height(table, row))
-        } else {
-            false
-        };
+            && self.render_normalization.table_text_reflowed(table);
         let uses_painted_row_footprint_for_whole_fit =
             (stored_rewinding_rowbreak_uses_painted_row_footprint
                 || reflowed_table_uses_painted_whole_rows)

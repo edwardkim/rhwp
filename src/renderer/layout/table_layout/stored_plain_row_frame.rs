@@ -107,7 +107,7 @@ impl LayoutEngine {
             profile.session_edited(),
             self.render_normalization
                 .borrow()
-                .table_text_reflowed(table),
+                .row_frame_reflowed(table, row),
         )
     }
 
