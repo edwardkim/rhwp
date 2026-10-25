@@ -83,3 +83,19 @@ Studio의 승인된 로컬 프로그램·호스트 FontFace 공급에도 같은 
 빌드/실행 명령을 ignored `symbol-fallback-before-*`에 보존했다. 원본 private 글꼴은
 새 fixture나 Git 파일로 복사하지 않는다. 보정 후 합성 계약·실물 200쪽과 정상 대조군,
 Native/fresh WASM 전체 비교 결과를 이어서 기록한다.
+
+
+### 내장 bitmap의 빈 잉크 추가 확인
+
+실제 HBATANG에는 U+26AB를 포함한 EBLC/EBDT 12·14·16ppem strike가 있다.
+그러나 해당 glyph의 bit-aligned 1-bit 데이터 18·25·32바이트는 모두 0이다.
+원본 SHA와 각 strike의 metric·길이·0이 아닌 바이트 수·데이터 SHA만 ignored
+`p200-empty-symbol-bitmap-proof.json`에 보존했다. 이는 실제 표시 가능한 bitmap의
+부재를 뜻하며, bitmap 테이블의 존재 자체를 정상 잉크의 증거로 삼으면 안 된다.
+
+[공식 EBDT 사양](https://learn.microsoft.com/en-us/typography/opentype/spec/ebdt)의
+1-bit 0=white 계약과 [EBLC 사양](https://learn.microsoft.com/en-us/typography/opentype/spec/eblc)의
+모든 strike 범위를 확인한다. 최대 ppem 하나만 확인해서 다른 크기의 정상 glyph를
+버리지 않는다. PNG·색 표현·미해석/손상·파싱 예산 초과는 빈 것으로 추정하지 않고 보존한다.
+실제 잉크가 있는 중간 strike와 전부 빈 strike를 MIT 메모리 fixture로 대조할 계획이다.
+현재 Native 빌드 소스를 동결한 상태이므로 이 추가 보정은 해당 빌드 종료 후 적용한다.
