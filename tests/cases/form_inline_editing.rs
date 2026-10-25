@@ -289,3 +289,27 @@ fn invalid_form_deletion_keeps_model_events_and_clipboard() {
         2
     );
 }
+
+#[test]
+fn deleting_form_between_unicode_text_keeps_text_and_reopened_carets() {
+    let mut core = document(FormType::Edit, true);
+    let mut doc = core.document().clone();
+    let paragraph = &mut doc.sections[0].paragraphs[0];
+    paragraph.text = "앞🦦뒤".into();
+    paragraph.char_offsets = vec![0, 9, 11];
+    paragraph.char_count = 13;
+    core.set_document(doc);
+    core.delete_range_logical_native(0, 0, 1, 0, 2).unwrap();
+    assert_eq!(core.document().sections[0].paragraphs[0].text, "앞🦦뒤");
+    assert!(core.document().sections[0].paragraphs[0]
+        .controls
+        .is_empty());
+    for bytes in [
+        core.export_hwp_with_adapter().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let reopened = HwpDocument::from_bytes(&bytes).unwrap();
+        assert_eq!(reopened.document().sections[0].paragraphs[0].text, "앞🦦뒤");
+        assert_eq!(reopened.get_logical_length(0, 0).unwrap(), 3);
+    }
+}

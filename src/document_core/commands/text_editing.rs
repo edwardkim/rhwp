@@ -3486,7 +3486,10 @@ impl DocumentCore {
                 let suffix = paragraph.split_at(end_logical);
                 paragraph.split_at(start_logical);
                 paragraph.merge_from(&suffix);
-                self.reflow_body_paragraph_range_native(section_idx, start_para..start_para + 1)?;
+                self.document.sections[section_idx].raw_stream = None;
+                self.reflow_body_after_range_deletion(section_idx, start_para);
+                self.recompose_paragraph(section_idx, start_para);
+                self.paginate_if_needed();
                 self.document.doc_properties.caret_list_id = section_idx as u32;
                 self.document.doc_properties.caret_para_id = start_para as u32;
                 self.event_log.push(DocumentEvent::TextDeleted {
@@ -3533,6 +3536,24 @@ impl DocumentCore {
             "\"paraIdx\":{},\"charOffset\":{}",
             start_para, start_logical
         )))
+    }
+
+    fn reflow_body_after_range_deletion(&mut self, section_idx: usize, para_idx: usize) {
+        // 저장 흐름 끝을 남겨 재조판 뒤의 쪽·단 리셋을 구분한다.
+        let stored_end = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
+        self.reflow_paragraph(section_idx, para_idx);
+        let hwp3 = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            None,
+            stored_end,
+            &self.styles,
+            self.dpi,
+            hwp3,
+        );
     }
 
     fn delete_body_paragraph_range(
@@ -3677,21 +3698,7 @@ impl DocumentCore {
                         end,
                         &first_controls,
                     )?;
-                    // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
-                    let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
-                        &self.document.sections[section_idx].paragraphs[start_para],
-                    );
-                    self.reflow_paragraph(section_idx, start_para);
-                    let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
-                    crate::renderer::composer::recalculate_section_vpos(
-                        &mut self.document.sections[section_idx].paragraphs,
-                        start_para,
-                        None,
-                        stored_end_for_reset,
-                        &self.styles,
-                        self.dpi,
-                        doc_hwp3_layout,
-                    );
+                    self.reflow_body_after_range_deletion(section_idx, start_para);
                 }
                 // 변경 문단만 재구성
                 self.recompose_paragraph(section_idx, start_para);
@@ -3746,21 +3753,7 @@ impl DocumentCore {
                         &source_table_controls,
                     )?;
                 }
-                // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
-                let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
-                    &self.document.sections[section_idx].paragraphs[start_para],
-                );
-                self.reflow_paragraph(section_idx, start_para);
-                let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
-                crate::renderer::composer::recalculate_section_vpos(
-                    &mut self.document.sections[section_idx].paragraphs,
-                    start_para,
-                    None,
-                    stored_end_for_reset,
-                    &self.styles,
-                    self.dpi,
-                    doc_hwp3_layout,
-                );
+                self.reflow_body_after_range_deletion(section_idx, start_para);
                 // 병합된 문단 재구성
                 self.recompose_paragraph(section_idx, start_para);
             }
