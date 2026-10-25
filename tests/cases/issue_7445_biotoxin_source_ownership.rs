@@ -479,7 +479,10 @@ fn gray_grid_keeps_its_print_coverage_cell_owners_and_pdf_origin() {
     assert!((table.bbox.x + table.bbox.width - 707.78).abs() <= 2.0);
 
     // C80의 같은 회색 grid 경계143쪽: 양쪽 raw99.97632/99.97501%.
-    // 독립 PDF를96DPI로 인쇄 raster한 내부 선은 x700에서 RGB224다.
+    // 한/글 2024(13.0.0.564)가 직접 그린 같은 쪽(CreatePageImage 96DPI)의 내부 선은
+    // x700 y257·273·336·399에서 한 화소를 채운 RGB191이다. 같은 독립 PDF를 다른
+    // rasterizer로 그리면 값이 갈린다(poppler 한 화소 191, pdfium 두 화소 211~234)
+    // — 기대값은 한/글 출력을 따른다(#8125).
     // 모델 좌표만 검사하면 두 픽셀에 분산되어 사라진 회색 선을 놓치므로
     // 최종 Native paint에서 같은 독립 위치±2px와 AA 색 차이8을 확인한다.
     let layer = core
@@ -490,7 +493,7 @@ fn gray_grid_keeps_its_print_coverage_cell_owners_and_pdf_origin() {
     for expected_y in [257, 273, 336, 399] {
         let visible = (expected_y - 2..=expected_y + 2).any(|y| {
             let color = pixels.get_pixel(700, y).0;
-            color.into_iter().all(|value| value.abs_diff(224) <= 8)
+            color.into_iter().all(|value| value.abs_diff(191) <= 8)
         });
         assert!(
             visible,
