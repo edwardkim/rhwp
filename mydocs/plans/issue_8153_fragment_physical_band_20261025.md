@@ -41,3 +41,20 @@ HWP/HWPX를 모두 검사하지만, 진입 함수가 HWP5만 허용해 HWPX를 �
 수정 전 HWPX 실패 / HWP 정상 대조를 확인한다. 같은 종료선의 후속 페이지와
 비대상 본문·앞뒤 조각의 내용 순서, 누락·중복·383쪽 유지도 대조한다.
 최신 Native/fresh WASM 전쪽 TSV·정확한 미대응 픽셀 및 확대 판독으로 완료를 판정한다.
+
+## 실제 Native 후보 결과
+
+공통 수용 변경 source는 `68dbcdc78f1e5037905c5056b26435db5c08b9c8`이다.
+독립 PDF의 314쪽 끝점을 사용한 실제 회귀는 변경 전 HWP 정상·HWPX 실패이며,
+변경 후 두 형식 모두 통과했다. 새 검사와 기존 정상 대조를 포함한 집중 회귀는
+23건 통과, 실패 0건이다. 전체 Rust 회귀의 완료를 뜻하지 않는다.
+
+같은 producer의 Native 전쪽 766개를 직전 `c5383665af`와 대조했다.
+HWPX 314·325·331·338·340·349·357·363쪽은 각각 미대응 9 → 0픽셀이며
+raw 100%가 됐다. 나머지 758개에는 미대응 증가와 raw 하락이 없다.
+HWPX는 292/383쪽, HWP는 295/383쪽이 미대응 0픽셀이다.
+fresh WASM의 같은 source 검증은 진행 중이며 이 Native 결과로 대신하지 않는다.
+
+ignored 검증 루트 `handbook-source-band-candidate/`의 `producer/receipt.json`,
+`before-test-run.log`, `selected-regressions-run.log`, `whole-native-exact-audit.json`,
+`whole-native-comparison.json`에 실제 source·입력·출력과 비교 결과를 연결한다.
