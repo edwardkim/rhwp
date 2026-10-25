@@ -1,0 +1,18 @@
+{
+  "source": "d2a7376aa00c6b4cc2fb1a7ad84240094879d8b8",
+  "base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "files": {
+    "src/model/paragraph.rs": "7100869a991d476b31e0ca296149420b5f31265390e8bc1f7c257d10632c7901",
+    "src/serializer/body_text.rs": "389cc912e8c4981ce0a362be7a68c25cb31bcaf1e58b273f85dcbda1d0d6714d",
+    "src/document_core/converters/hwpx_to_hwp.rs": "f3cc2df9d9daf3c6449de66e2e1f602e6081afd12c579ba6f13df0db21f51df5",
+    "tests/cases/leading_definition_slots.rs": "3d98576ed778e6a2e9591f0486fd579f6c51d4c56bcee1028cf43056f7cd75d2"
+  },
+  "fmt": true,
+  "clippy_default": true,
+  "clippy_wasm": true,
+  "workspace_build": true,
+  "clippy_workspace_all_targets": true,
+  "policy": true,
+  "default_nextest": true,
+  "docs": true
+}

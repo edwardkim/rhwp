@@ -1,0 +1,23 @@
+{
+  "version": "base",
+  "before": [
+    0,
+    0,
+    20
+  ],
+  "after": [
+    0,
+    0,
+    20,
+    33
+  ],
+  "text": "담당 업무 내역은 다음과 같습니다. 검토 후 승인해 주세요.",
+  "nativeAfter": [
+    0,
+    0,
+    20,
+    33
+  ],
+  "inputSha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40",
+  "wasmSha256": "95c1ea2dc80a4f3d0f4db28a7994b8ed180ba4dc2cfbdca91be02e6bf20676c7"
+}
