@@ -99,3 +99,37 @@ Native/fresh WASM 전체 비교 결과를 이어서 기록한다.
 버리지 않는다. PNG·색 표현·미해석/손상·파싱 예산 초과는 빈 것으로 추정하지 않고 보존한다.
 실제 잉크가 있는 중간 strike와 전부 빈 strike를 MIT 메모리 fixture로 대조할 계획이다.
 현재 Native 빌드 소스를 동결한 상태이므로 이 추가 보정은 해당 빌드 종료 후 적용한다.
+
+
+## 보정 구현과 실제 실행 결과 (2026-10-26)
+
+- `aab94696861685a4f952150668cdcba61bf0216e`: 공통 빈 glyf 판정과 Native/FontFace
+  소비 경로를 연결했다. MIT 실제 Native paint 회귀는 수정 전 E에서 FAIL, 이 후보에서
+  PASS했다. 기존 핵심 사례와 합쳐 41건 통과했다. 실제 양쪽 51쪽씩, 102개 조건은
+  전부 출력 불변이었다. 실제 원본의 EBDT strike가 모두 빈 사실까지 확인한 뒤
+  이 중간 후보의 불필요한 전쪽 실행은 중단했다. 전쪽·WASM 통과로 기록하지 않는다.
+- `5bcb654516968c64d5c3910aeb556fe5e3eebe72`: 공통 판정이 모든 해당 EBDT/CBLC/bloc
+  strike의 잉크도 확인한다. 1-bit/회색조 원자료가 모든 크기에서 0인 경우에만 빈 것으로
+  인정한다. 크기 하나라도 실제 잉크가 있으면 보존하며, PNG·색·sbix와 해석 실패·예산
+  초과도 보존한다. EBLC 크기 수 검사 예산 256은 사양의 최대치라고 주장하지 않는다.
+- 새 정식 `entirely_blank_ebdt_does_not_mask_fallback_but_any_ink_strike_is_preserved`는
+  앞 후보에서 2 PASS / 1 FAIL로 결함을 재현했고 새 후보에서 PASS했다. 최대 크기는
+  비었지만 중간 크기에 잉크가 있는 독립 합성 자료도 정상 보존한다. 이 합성 자료는
+  기존 MIT glyph에 메모리에서 명시적인 EBLC/EBDT 구조를 더한 것이며 한컴 일치의 증거와 구별한다.
+- 새 Native 후보는 고정 `target/pr-review`, jobs 8로 release-test 빌드했고 exit 0이다.
+  frozen code SHA를 쓰는 집중 회귀는 **42 PASS / 0 FAIL**이다. 전체 nextest 완료를 뜻하지 않는다.
+- 실제 HWPX 200쪽은 미대응 **125→14개**, raw **99.84905→99.98309%**다.
+  누락됐던 세 원 U+26AB가 표시됐고 각 37픽셀이 해소됐다. 같은 96 DPI의 독립 Print,
+  E의 수정 전 Native, 새 Native를 확대해 직접 판독했다. 같은 51쪽 대조에서 나머지 쪽은
+  미대응 증가가 없었다. 남은 14픽셀은 본문 공백/글자 간격 차이이며 이 페이지의 100%
+  달성으로 보고하지 않는다. HWP·양쪽 전쪽 Native·optimized fresh WASM은 이어서 검증 중이다.
+- 실제 Chrome을 쓰는 기존 공급 검사 2건, Sweep 환경 검사 12건, Studio host font 검사
+  4건과 Studio TypeScript 검사는 통과했다. 새 최적화 WASM의 실제 공통 API 및 문서
+  출력은 해당 producer의 빌드/PNG/TSV로 별도 확인한다. 과거 브라우저 단독 실험을
+  새 WASM 검증으로 승격하지 않는다.
+
+실행 로그·명령·beforeFAIL 지문과 확대 PNG는 ignored `output/pr-review/
+issue8153-handbook-raw100-20261022/`에 있다. 코어와 기존 설치 글꼴의 source 프로그램은
+변경하지 않았으며 private font binary/윤곽을 Git에 추가하지 않았다. 외부 글꼴의
+저작권과 원문 family 선언을 이 테스트 목적의 별칭으로 덮어쓰지 않았다.
+전체 목표와 필수 전체 게이트는 계속 진행하며, upstream 동기화·원격 PR 조치는 하지 않는다.
