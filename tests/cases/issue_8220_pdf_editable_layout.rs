@@ -15,19 +15,32 @@ use std::collections::{BTreeMap, BTreeSet};
 
 const SOURCE: &str = "samples/21_언어_기출_편집가능본.hwp";
 /// Source PDF, its page count, and source paragraphs the PDF cut at a column
-/// or page boundary. The 2010 print keeps running headers inside its column
-/// regions, so its column tops carry no continuation evidence.
+/// or page boundary.
 const PDFS: [(&str, usize, &[&str]); 3] = [
     (
         "21_언어_기출_편집가능본-2020.pdf",
         15,
-        &["물론자신이풍경안에갇혀", "싱어는위와같은롤스의시도를"],
+        &[
+            "물론자신이풍경안에갇혀",
+            "싱어는위와같은롤스의시도를",
+            "물론르포르도새로운권리의",
+        ],
     ),
-    ("21_언어_기출_편집가능본-2010.pdf", 16, &[]),
+    // The 2010 print draws its page title as paint, so only short running
+    // header pieces sit above the columns; they must not open the columns.
+    (
+        "21_언어_기출_편집가능본-2010.pdf",
+        16,
+        &[
+            "물론자신이풍경안에갇혀",
+            "싱어는위와같은롤스의시도를",
+            "물론르포르도새로운권리의",
+        ],
+    ),
     (
         "21_언어_기출_편집가능본.pdf",
         15,
-        &["싱어는위와같은롤스의시도를"],
+        &["싱어는위와같은롤스의시도를", "물론르포르도새로운권리의"],
     ),
 ];
 

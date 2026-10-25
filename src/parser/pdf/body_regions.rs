@@ -111,6 +111,49 @@ fn vertical_cut(items: &[&Item], work: &mut Work) -> Result<Option<f32>, String>
     Ok(None)
 }
 
+fn row_count(items: &[&Item], tolerance: f32) -> usize {
+    let mut rows: Vec<_> = items.iter().map(|i| i.baseline).collect();
+    rows.sort_by(f32::total_cmp);
+    rows.dedup_by(|a, b| (*a - *b).abs() <= tolerance);
+    rows.len()
+}
+
+/// A running header or footer band: one or two rows at the top or bottom of
+/// the page, set off from multi-column body text by a gap wider than one and
+/// a half lines. Its pieces (page number, booklet marks) need not cross the
+/// gutter, so the column cut alone would hand them to the columns as their
+/// first or last rows. Returns the horizontal cut, top band first.
+fn running_band_cut(items: &[&Item], work: &mut Work) -> Result<Option<f32>, String> {
+    let mut fonts: Vec<f32> = items.iter().map(|i| i.font).collect();
+    fonts.sort_by(f32::total_cmp);
+    let font = fonts.get(fonts.len() / 2).copied().unwrap_or(0.);
+    let tolerance = font * 0.2;
+    let mut bands = gaps(items, true, work)?;
+    bands.retain(|(a, b)| b - a >= 1.5 * font);
+    bands.sort_by(|x, y| x.0.total_cmp(&y.0));
+    // The first wide gap from the top, then the first from the bottom.
+    let top = bands.first().copied();
+    let bottom = bands.last().copied();
+    for (gap, band_above) in [(top, true), (bottom, false)] {
+        let Some((a, b)) = gap else { continue };
+        work.charge(items.len())?;
+        let (above, below): (Vec<_>, Vec<_>) = items.iter().copied().partition(|i| i.bounds.y < b);
+        let (band, body) = if band_above {
+            (&above, &below)
+        } else {
+            (&below, &above)
+        };
+        let rows = row_count(band, tolerance);
+        if (1..=2).contains(&rows)
+            && row_count(body, tolerance) > 2
+            && vertical_cut(body, work)?.is_some()
+        {
+            return Ok(Some((a + b) / 2.));
+        }
+    }
+    Ok(None)
+}
+
 fn divide(
     items: Vec<&Item>,
     owner: Rect,
@@ -120,6 +163,28 @@ fn divide(
 ) -> Result<(), String> {
     if depth > 16 || out.len() >= MAX_REGIONS {
         return Err("body partition depth/region limit".into());
+    }
+    // Page-level bands come off before columns: once the columns are cut,
+    // band pieces would read as the columns' own rows.
+    if depth <= 1 {
+        if let Some(cut) = running_band_cut(&items, work)? {
+            let (top, bottom): (Vec<_>, Vec<_>) = items.into_iter().partition(|i| i.bounds.y < cut);
+            divide(
+                top,
+                Rect::new(owner.x, owner.y, owner.width, cut - owner.y),
+                work,
+                out,
+                depth + 1,
+            )?;
+            divide(
+                bottom,
+                Rect::new(owner.x, cut, owner.width, owner.y + owner.height - cut),
+                work,
+                out,
+                depth + 1,
+            )?;
+            return Ok(());
+        }
     }
     if let Some(cut) = vertical_cut(&items, work)? {
         let (left, right) = items.into_iter().partition(|i| i.bounds.x < cut);
