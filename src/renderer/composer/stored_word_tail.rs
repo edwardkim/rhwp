@@ -13,6 +13,12 @@ pub(crate) fn projects_current_marker_geometry(
     box_: &ParagraphBox,
     styles: &ResolvedStyleSet,
 ) -> bool {
+    stored_horizontal_box_matches(para, box_)
+        && crate::renderer::layout::list_marker_geometry(para, styles)
+            .is_some_and(|marker| marker.marker_visible)
+}
+
+fn stored_horizontal_box_matches(para: &Paragraph, box_: &ParagraphBox) -> bool {
     let extent = box_.effective();
     // 셀의 문단 여백 경로는 실제 폭을 유지하고, 저장 줄의 오른쪽 끝은
     // content_width_px와 같은 4 HWPUNIT 격자에 놓인다. 격자에서 접힌
@@ -30,8 +36,44 @@ pub(crate) fn projects_current_marker_geometry(
                 && (line.segment_width == extent.end - extent.start
                     || line.segment_width == stored_right - extent.start)
         })
-        && crate::renderer::layout::list_marker_geometry(para, styles)
-            .is_some_and(|marker| marker.marker_visible)
+}
+
+/// 원본 TTF로 잰 같은 상자에서 저장 경계가 본문을 먼저 끊었는지 확인한다.
+/// 줄 수 감소나 글꼴 이름만으로 캐시를 버리지 않는다. 대체 선언과 달리 원본
+/// 프로그램을 실제 측정에 사용하고, 새 채움이 그 경계의 글자를 앞줄에 보존해야 한다.
+pub(crate) fn project_current_source_program_rows(
+    para: &Paragraph,
+    box_: &ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
+    if !stored_horizontal_box_matches(para, box_)
+        || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
+        || para.text.chars().any(char::is_control)
+    {
+        return None;
+    }
+    let composed = super::compose_paragraph_in_context(para, styles);
+    let mut has_text = false;
+    for run in composed.lines.iter().flat_map(|line| &line.runs) {
+        if run.text.chars().all(char::is_whitespace) {
+            continue;
+        }
+        has_text = true;
+        if run.inserted_control_text
+            || !styles
+                .source_program_projection_slots
+                .contains(&(run.char_style_id, run.lang_index))
+        {
+            return None;
+        }
+    }
+    if !has_text {
+        return None;
+    }
+    let first = para.line_segs.first()?.vertical_pos;
+    let frame = box_.frame(first);
+    project_stored_rows(para, &frame, styles, dpi, false, true)
 }
 
 /// 앞선 물리 경계가 없는 마지막 자동 어절의 캐시 원점 되감김인가.
@@ -136,14 +178,29 @@ pub(crate) fn project_stored_soft_wraps(
     dpi: f64,
     supported_inline_picture: bool,
 ) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
+    project_stored_rows(para, frame, styles, dpi, supported_inline_picture, false)
+}
+
+fn project_stored_rows(
+    para: &Paragraph,
+    frame: &LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    supported_inline_picture: bool,
+    source_program: bool,
+) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
     if let Some(projected) = super::stored_marker_frames::project(para, frame, styles, dpi) {
         return Some(projected);
     }
     if para.line_segs.len() < 2
-        || (!para.controls.is_empty() && !supported_inline_picture)
+        || (!para.controls.is_empty()
+            && !supported_inline_picture
+            && !(source_program
+                && crate::renderer::cell_paragraph_has_only_single_column_metadata(para)))
         || para.text.contains('\n')
         || para.stored_text_partition_is_dirty()
-        || (super::stored_row_fragments::crosses_physical_frame(para)
+        || (!source_program
+            && super::stored_row_fragments::crosses_physical_frame(para)
             && !has_unmarked_final_word_rewind(para))
         || frame.models_exclusions()
         || para
@@ -155,7 +212,8 @@ pub(crate) fn project_stored_soft_wraps(
     }
     let last = para.line_segs.last()?;
     let previous = &para.line_segs[para.line_segs.len() - 2];
-    if last.is_first_line_of_page()
+    if !source_program
+        && (last.is_first_line_of_page()
         || last.is_first_line_of_column()
         || last.vertical_pos == previous.vertical_pos
         // 같은 가로 상자의 저장 캐시 되감김은 명시적 쪽 경계와 구분한다.
@@ -163,7 +221,7 @@ pub(crate) fn project_stored_soft_wraps(
             && (last.vertical_pos < 0
                 || last.column_start != previous.column_start
                 || last.segment_width <= 0
-                || last.segment_width != previous.segment_width))
+                || last.segment_width != previous.segment_width)))
     {
         return None;
     }
@@ -189,6 +247,40 @@ pub(crate) fn project_stored_soft_wraps(
     // 채움은 새 줄을 만들지만 원본의 줄별 들여쓰기 기록도 소비한다. 저장 줄을
     // 비워 입력의 근거까지 없애면 명시적으로 꺼진 들여쓰기가 다시 적용된다.
     let rows = line_breaking::layout_paragraph_in_frame(para, &mut probe, styles, dpi)?;
+    if source_program {
+        let cached = super::compose_paragraph_in_context(para, styles);
+        let chars: Vec<_> = para.text.chars().collect();
+        let source_index = |position| {
+            utf16_range_to_text_range(&para.char_offsets, position, u32::MAX, chars.len()).0
+        };
+        let fresh_starts: Vec<_> = rows
+            .iter()
+            .map(|line| source_index(line.text_start))
+            .collect();
+        // 다른 프로그램으로 저장한 캐시는 어절 안뿐 아니라 어절 사이에서도
+        // 너무 일찍 끝날 수 있다. 다음 저장 줄의 실제 첫 글자가 새 채움의
+        // 앞줄에 들어가는지 확인한다. 후행 공백만 이동한 차이는 근거가 아니다.
+        // 문자 줄을 다시 발행하면 캐시의 쪽/단 플래그도 다시 사용하지 않는다.
+        // 명시적 본문 개행은 이 경로에 들어오기 전에 보존한다.
+        let cached_content_boundary_moves = (1..para.line_segs.len()).any(|index| {
+            let start = source_index(para.line_seg_text_start(index));
+            let next_ink = chars
+                .iter()
+                .enumerate()
+                .skip(start)
+                .find(|(_, ch)| !ch.is_whitespace())
+                .map(|(index, _)| index);
+            start > 0
+                && next_ink.is_some_and(|next| {
+                    fresh_starts.partition_point(|&fresh| fresh <= next) < index + 1
+                })
+                && !cached
+                    .lines
+                    .get(index - 1)
+                    .is_some_and(|line| line.has_line_break)
+        });
+        return cached_content_boundary_moves.then(|| (rows, probe.project_space_metrics()));
+    }
     // 마지막 자동 어절의 가짜 프레임 원점은 줄 수가 같아도 복원한다.
     // 일반 저장 줄은 같은 줄 수라는 이유만으로 다시 구성하지 않는다.
     (rows.len() < para.line_segs.len()

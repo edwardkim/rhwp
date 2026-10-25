@@ -235,6 +235,7 @@ pub(crate) fn resolve_styles_with_environment(
             }
         }
     }
+    refresh_source_program_projection_slots(&document.doc_info, &mut styles);
     styles
 }
 
@@ -254,7 +255,8 @@ pub fn resolve_styles_with_variant(
     let (page_number_char_style_id, page_number_font_is_hft) =
         page_number::resolve(doc_info, false);
 
-    ResolvedStyleSet {
+    let mut styles = ResolvedStyleSet {
+        source_program_projection_slots: Default::default(),
         native_pua_fonts: Default::default(),
         resolved_dpi: Some(dpi),
         page_number_char_style_id,
@@ -269,6 +271,58 @@ pub fn resolve_styles_with_variant(
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
         supplemental_metrics: None,
+    };
+    refresh_source_program_projection_slots(doc_info, &mut styles);
+    styles
+}
+
+/// 대체 선언과 실제 선택을 구분한다. HFT의 원본 전진, 내장 프로그램,
+/// 실제 대체 face 및 폭을 추정하는 face를 원본 TTF의 캐시 갱신 근거로 쓰지 않는다.
+fn refresh_source_program_projection_slots(doc_info: &DocInfo, styles: &mut ResolvedStyleSet) {
+    styles.source_program_projection_slots.clear();
+    for (shape_id, shape) in doc_info.char_shapes.iter().enumerate() {
+        let Some(style) = styles.char_styles.get(shape_id) else {
+            continue;
+        };
+        for language in 0..LANG_COUNT {
+            let Some(font) = doc_info
+                .font_faces
+                .get(language)
+                .and_then(|fonts| fonts.get(shape.font_ids[language] as usize))
+            else {
+                continue;
+            };
+            let primary = primary_font_name(style.font_family_for_lang(language));
+            if font.alt_type != 1
+                || font.is_embedded
+                || font.native_program.is_some()
+                || primary != font.name.trim()
+                || !font.subst_font.as_ref().is_some_and(|substitute| {
+                    substitute.font_type == 1
+                        && !substitute.face.trim().is_empty()
+                        && substitute.face.trim() != primary
+                })
+                || style.metric_face_for_lang(language).is_some()
+                || style
+                    .original_glyph_metric_face_for_lang(language)
+                    .is_some()
+            {
+                continue;
+            }
+            let own_metric = style.font_metric_trusted_for_lang(language)
+                || super::font_metrics_data::layout_metric_face_name(
+                    primary,
+                    style.bold,
+                    style.italic,
+                )
+                .as_deref()
+                    == Some(primary);
+            if own_metric {
+                styles
+                    .source_program_projection_slots
+                    .insert((shape_id as u32, language));
+            }
+        }
     }
 }
 

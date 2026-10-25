@@ -232,6 +232,50 @@ pub(super) fn from_stored_ladder(
     measured_table_height: f64,
     dpi: f64,
 ) -> Option<ParagraphFloatPlacement> {
+    from_ladder(
+        para,
+        next,
+        table,
+        origin,
+        spacing_before,
+        measured_table_height,
+        dpi,
+        false,
+    )
+}
+
+/// 원본 사다리가 증명한 간격 소유는 보존하되 본체는 현재 재조판 높이를 쓴다.
+pub(super) fn from_reflowed_ladder(
+    para: &Paragraph,
+    next: &Paragraph,
+    table: &Table,
+    origin: f64,
+    spacing_before: f64,
+    measured_table_height: f64,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    from_ladder(
+        para,
+        next,
+        table,
+        origin,
+        spacing_before,
+        measured_table_height,
+        dpi,
+        true,
+    )
+}
+
+fn from_ladder(
+    para: &Paragraph,
+    next: &Paragraph,
+    table: &Table,
+    origin: f64,
+    spacing_before: f64,
+    measured_table_height: f64,
+    dpi: f64,
+    reflowed: bool,
+) -> Option<ParagraphFloatPlacement> {
     let paragraph_square = !table.common.treat_as_char
         && table.common.text_wrap == TextWrap::Square
         && table.common.vert_rel_to == VertRelTo::Para;
@@ -249,11 +293,12 @@ pub(super) fn from_stored_ladder(
         || !spacing_before.is_finite()
         || spacing_before < 0.0
         || !measured_table_height.is_finite()
+        || measured_table_height < 0.0
     {
         return None;
     }
     let declared = hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, dpi);
-    if (measured_table_height - declared).abs() > 1.0 {
+    if !reflowed && (measured_table_height - declared).abs() > 1.0 {
         return None;
     }
     let host_vpos = stored_line(para)?;
@@ -277,7 +322,13 @@ pub(super) fn from_stored_ladder(
             as f64
             * dpi
             / 7200.0;
-    let occupied_bottom = origin + physical_hu as f64 * dpi / 7200.0;
+    let occupied_bottom = origin
+        + physical_hu as f64 * dpi / 7200.0
+        + if reflowed {
+            measured_table_height - declared
+        } else {
+            0.0
+        };
     Some(ParagraphFloatPlacement {
         flow: ParagraphFloatFlow::Exclusion,
         anchor_y: origin,

@@ -301,6 +301,124 @@ impl RenderNormalizationOverlay {
             .insert(table as *const Table as usize);
     }
 
+    /// render-only 재조판으로 문자 줄 소속이 달라진 표는 원본 물리 컷의
+    /// 캐시를 다시 인증할 수 없다. 같은 결과를 쓰는 원본·파생 포인터와
+    /// 그 조각을 포함한 조상 표를 함께 갱신한다. 편집 IR은 변경하지 않는다.
+    pub(crate) fn register_rendered_text_partitions(
+        &mut self,
+        source: &[crate::model::paragraph::Paragraph],
+        rendered: &[crate::model::paragraph::Paragraph],
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    ) -> (bool, bool) {
+        let mut changed = source.len() != rendered.len();
+        let mut flow_changed = changed;
+        let mut upstream_flow_changed = false;
+        for (original, current) in source.iter().zip(rendered) {
+            if original.column_type != crate::model::paragraph::ColumnBreakType::None
+                || styles
+                    .para_styles
+                    .get(original.para_shape_id as usize)
+                    .is_some_and(|style| style.page_break_before)
+            {
+                upstream_flow_changed = false;
+            }
+            changed |= original.line_segs.len() != current.line_segs.len()
+                || (0..original.line_segs.len()).any(|index| {
+                    original.line_seg_text_start(index) != current.line_seg_text_start(index)
+                });
+            let extent = |paragraph: &crate::model::paragraph::Paragraph| {
+                paragraph
+                    .line_segs
+                    .first()
+                    .zip(paragraph.line_segs.last())
+                    .map(|(first, last)| {
+                        i64::from(last.vertical_pos)
+                            + i64::from(last.line_height)
+                            + i64::from(last.line_spacing)
+                            - i64::from(first.vertical_pos)
+                    })
+            };
+            let mut paragraph_flow_changed = extent(original) != extent(current)
+                || original.line_segs.len() != current.line_segs.len()
+                || original
+                    .line_segs
+                    .iter()
+                    .zip(&current.line_segs)
+                    .any(|(a, b)| {
+                        a.line_height != b.line_height || a.line_spacing != b.line_spacing
+                    });
+            for (old, new) in original.controls.iter().zip(&current.controls) {
+                let (Control::Table(old), Control::Table(new)) = (old, new) else {
+                    continue;
+                };
+                let mut table_changed = old.cells.len() != new.cells.len();
+                let mut table_flow_changed = table_changed;
+                for (old_cell, new_cell) in old.cells.iter().zip(&new.cells) {
+                    let (text, flow) = self.register_rendered_text_partitions(
+                        &old_cell.paragraphs,
+                        &new_cell.paragraphs,
+                        styles,
+                    );
+                    table_changed |= text;
+                    table_flow_changed |= flow;
+                }
+                if table_changed {
+                    self.register_text_reflowed_table(old);
+                    self.register_text_reflowed_table(new);
+                }
+                if upstream_flow_changed {
+                    self.register_rebased_source_frames(old, new);
+                }
+                changed |= table_changed;
+                paragraph_flow_changed |= table_flow_changed;
+            }
+            flow_changed |= paragraph_flow_changed;
+            upstream_flow_changed |= paragraph_flow_changed;
+        }
+        (changed, flow_changed)
+    }
+
+    /// 앞 문단의 점유가 바뀌면 후속 block 표의 저장 쪽 컷도 같은 흐름의
+    /// 결과가 아니다. 명시적 쪽/단 경계까지 그 의존성을 전달한다.
+    /// 인라인 표의 내부 상자와 쪽 컷이 없는 표의 독립 기하는 유지한다.
+    fn register_rebased_source_frames(&mut self, source: &Table, rendered: &Table) -> bool {
+        if source.common.treat_as_char
+            || source.common.text_wrap != crate::model::shape::TextWrap::TopAndBottom
+            || source.page_break != crate::model::table::TablePageBreak::RowBreak
+        {
+            return false;
+        }
+        let mut frames = source.cells.iter().any(|cell| {
+            let mut previous = None;
+            cell.paragraphs
+                .iter()
+                .flat_map(|paragraph| &paragraph.line_segs)
+                .any(|line| {
+                    let boundary = previous.is_some_and(|vpos| {
+                        line.is_first_line_of_page()
+                            || line.is_first_line_of_column()
+                            || line.vertical_pos < vpos
+                    });
+                    previous = Some(line.vertical_pos);
+                    boundary
+                })
+        });
+        for (old_cell, new_cell) in source.cells.iter().zip(&rendered.cells) {
+            for (old_para, new_para) in old_cell.paragraphs.iter().zip(&new_cell.paragraphs) {
+                for (old, new) in old_para.controls.iter().zip(&new_para.controls) {
+                    if let (Control::Table(old), Control::Table(new)) = (old, new) {
+                        frames |= self.register_rebased_source_frames(old, new);
+                    }
+                }
+            }
+        }
+        if frames {
+            self.register_text_reflowed_table(source);
+            self.register_text_reflowed_table(rendered);
+        }
+        frames
+    }
+
     #[inline]
     pub(crate) fn table_text_reflowed(&self, table: &Table) -> bool {
         self.text_reflowed_tables_by_pointer

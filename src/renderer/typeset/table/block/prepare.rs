@@ -1214,6 +1214,7 @@ impl TypesetEngine {
         let continuation_fragment_budget = usize::MAX;
         let terminal_host_spacing = native_terminal_child_host_line_spacing(
             self.profile.get().hwp5_stored_pagination_layout(),
+            self.render_normalization.table_text_reflowed(table),
             table,
             self.dpi,
         ) + layout_engine

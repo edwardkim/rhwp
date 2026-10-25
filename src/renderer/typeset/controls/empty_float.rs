@@ -54,6 +54,7 @@ pub(super) fn prepare(
     lanes: &FloatLaneSet,
     page: EmptyFloatPage<'_>,
     table_reflowed: bool,
+    preceding_fragment_reflowed: bool,
     available_height: impl FnOnce() -> f64,
     dpi: f64,
 ) -> Option<EmptyFloatPlacement> {
@@ -417,6 +418,14 @@ pub(super) fn prepare(
     // 바꾸지는 않는다. 이미 수용한 저장 앵커를 먼저 선택하고, 아래 lane의
     // 확정 이동을 같은 placement의 원점·점유 끝·후속 줄에 함께 반영한다.
     let raw_top = saved_page_top
+        .or_else(|| {
+            // 같은 단의 앞 조각이 재조판됐으면 후속 저장 상자는 높이를
+            // 증명할 뿐 예전 절대 원점을 증명하지 않는다. 현재 흐름에서
+            // 이미 생산한 같은 상자를 lane 예약과 paint에 전달한다.
+            preceding_fragment_reflowed
+                .then(|| closed_source_placement.map(|placement| placement.table_top))
+                .flatten()
+        })
         .or_else(|| {
             // 닫힌 상자는 원점 앞의 호스트 간격까지 이미 분리했다.
             // raw 호스트+오프셋으로 다시 시작하면 같은 간격이 lane의

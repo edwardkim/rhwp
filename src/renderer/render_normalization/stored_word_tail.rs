@@ -5,7 +5,10 @@ use crate::model::{
     paragraph::{ColumnBreakType, LineSeg, Paragraph},
 };
 use crate::renderer::{
-    composer::{project_stored_soft_wraps, projects_current_marker_geometry, ParagraphBox},
+    composer::{
+        project_current_source_program_rows, project_stored_soft_wraps,
+        projects_current_marker_geometry, ParagraphBox,
+    },
     page_layout::PageLayoutInfo,
     px_to_hwpunit,
     style_resolver::ResolvedStyleSet,
@@ -234,20 +237,22 @@ fn normalize_flow(
             // 해소한 실제 기하를 갱신해야 하며, 같은 결과가 채움·높이에 참여한다.
             let spans_physical_frames =
                 crate::renderer::composer::stored_rows_cross_physical_frame(&paragraph);
-            if (refresh_text || spans_physical_frames)
-                && projects_current_marker_geometry(&paragraph, &box_, styles)
-            {
-                let first = paragraph.line_segs[0].vertical_pos;
-                let frame = box_.frame(first);
-                if let Some((lines, spaces)) =
-                    project_stored_soft_wraps(&paragraph, &frame, styles, dpi, false)
-                {
-                    let old_advance = frame_advance(&paragraph.line_segs)?;
-                    let new_advance = frame_advance(&lines)?;
-                    shift = shift.checked_add(new_advance.checked_sub(old_advance)?)?;
-                    paragraph.replace_line_segs_with_space_metrics(lines, spaces);
-                    changed = true;
-                }
+            let program_rows = project_current_source_program_rows(&paragraph, &box_, styles, dpi);
+            let marker_rows = || {
+                ((refresh_text || spans_physical_frames)
+                    && projects_current_marker_geometry(&paragraph, &box_, styles))
+                .then(|| {
+                    let first = paragraph.line_segs[0].vertical_pos;
+                    project_stored_soft_wraps(&paragraph, &box_.frame(first), styles, dpi, false)
+                })
+                .flatten()
+            };
+            if let Some((lines, spaces)) = program_rows.or_else(marker_rows) {
+                let old_advance = frame_advance(&paragraph.line_segs)?;
+                let new_advance = frame_advance(&lines)?;
+                shift = shift.checked_add(new_advance.checked_sub(old_advance)?)?;
+                paragraph.replace_line_segs_with_space_metrics(lines, spaces);
+                changed = true;
             }
         }
         result.push(paragraph);

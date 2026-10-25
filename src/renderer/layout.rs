@@ -16027,6 +16027,9 @@ impl LayoutEngine {
                     if end_row >= table.row_count as usize {
                         y_offset += table_layout::native_terminal_child_host_line_spacing(
                             self.profile.get().hwp5_stored_pagination_layout(),
+                            self.render_normalization
+                                .borrow()
+                                .table_text_reflowed(table),
                             table,
                             self.dpi,
                         );

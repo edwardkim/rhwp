@@ -431,6 +431,7 @@ pub(super) fn try_place_empty_para_float_table(
     lanes: &mut FloatLaneSet,
     paragraphs: &[Paragraph],
     table_reflowed: bool,
+    preceding_fragment_reflowed: bool,
     dpi: f64,
 ) -> bool {
     let Some(placement) = empty_float::prepare(
@@ -447,6 +448,7 @@ pub(super) fn try_place_empty_para_float_table(
         lanes,
         st.empty_float_page(paragraphs),
         table_reflowed,
+        preceding_fragment_reflowed,
         || st.empty_float_available_height(ft.table_footnote_height, ft.table_footnote_count),
         dpi,
     ) else {

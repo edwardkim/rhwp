@@ -5088,7 +5088,15 @@ impl LayoutEngine {
                                             if matches!(frame.flow, crate::renderer::float_placement::ParagraphFloatFlow::NextLine) {
                                                 frame.paragraph_end(para_y, 0.0)
                                             } else {
-                                                frame.occupied_bottom
+                                                // 프레임 끝은 다음 글줄 원점이다. 문단 시작으로
+                                                // 환산해 다음 문단이 앞 간격을 한 번만 적용한다.
+                                                let successor_before = (self.render_normalization.borrow().table_text_reflowed(table)
+                                                    && frame.stored_successor_line_origin.is_some())
+                                                    .then(|| cell.paragraphs.get(cp_idx + 1))
+                                                    .flatten()
+                                                    .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
+                                                    .map_or(0.0, |style| style.spacing_before);
+                                                frame.occupied_bottom - successor_before
                                             }
                                         });
                                     has_preceding_text = true;
@@ -5220,7 +5228,13 @@ impl LayoutEngine {
                             ranges.get(idx).is_some_and(|&(start, end)| start < end)
                         })
                     });
-                if has_table_ctrl && (mixed_nested_split.is_none() || wrap_successor.is_some()) {
+                if has_table_ctrl
+                    && (mixed_nested_split.is_none() || wrap_successor.is_some())
+                    && !self
+                        .render_normalization
+                        .borrow()
+                        .table_text_reflowed(table)
+                {
                     // LINE_SEG vpos 기반으로 para_y 보정.
                     let is_last_para = cp_idx + 1 == cell.paragraphs.len();
                     if !is_last_para {
@@ -7557,6 +7571,9 @@ impl LayoutEngine {
                 && end_cut.is_empty()
                 && native_terminal_child_host_line_spacing(
                     self.profile.get().hwp5_stored_pagination_layout(),
+                    self.render_normalization
+                        .borrow()
+                        .table_text_reflowed(table),
                     table,
                     self.dpi,
                 ) > 0.5;

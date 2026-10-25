@@ -6188,6 +6188,20 @@ impl DocumentCore {
                 &self.document,
                 &self.render_normalization.overlay,
             );
+        for (source, rendered) in self
+            .document
+            .sections
+            .iter()
+            .zip(&self.render_normalization.sections)
+        {
+            if let Some(rendered) = rendered {
+                overlay.register_rendered_text_partitions(
+                    &source.paragraphs,
+                    &rendered.paragraphs,
+                    &self.styles,
+                );
+            }
+        }
         for (section_index, section) in self.document.sections.iter().enumerate() {
             for (paragraph_index, paragraph) in section.paragraphs.iter().enumerate() {
                 for (control_index, control) in paragraph.controls.iter().enumerate() {

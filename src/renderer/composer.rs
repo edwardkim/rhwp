@@ -34,7 +34,10 @@ pub(crate) use inline_picture_metrics::{
     inline_picture_ascent_ratio, inline_picture_occupied_size_hu, inline_picture_size_hu,
 };
 pub(crate) use stored_tac_host_frame::stored_tac_host_frame;
-pub(crate) use stored_word_tail::{project_stored_soft_wraps, projects_current_marker_geometry};
+pub(crate) use stored_word_tail::{
+    project_current_source_program_rows, project_stored_soft_wraps,
+    projects_current_marker_geometry,
+};
 mod punctuation_slots;
 
 /// 글자겹침(CharOverlap) 렌더링 정보

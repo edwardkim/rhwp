@@ -5978,6 +5978,28 @@ impl ParagraphFloatPlacement {
         )
     }
 
+    /// 저장 사다리의 로컬 간격 계약을 인증하고 본체만 현재 재조판 높이로 갱신한다.
+    /// 호출자는 해당 자식 표의 물리 프레임을 갱신했다는 출처를 확인한다.
+    pub(crate) fn from_reflowed_empty_ladder_host(
+        para: &Paragraph,
+        next: &Paragraph,
+        table: &Table,
+        origin: f64,
+        spacing_before: f64,
+        measured_table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        stored_empty_host_frame::from_reflowed_ladder(
+            para,
+            next,
+            table,
+            origin,
+            spacing_before,
+            measured_table_height,
+            dpi,
+        )
+    }
+
     /// 저장 LineSeg 대신 현재 frame에서 계산된 줄로 앵커를 결정한다.
     /// 모든 호스트 줄이 표보다 앞서는 계약만 소유하며, 혼합 배치를 임의로
     /// 본문 뒤 배치로 바꾸지 않는다. source의 UTF-16 위치/높이는 읽지 않는다.

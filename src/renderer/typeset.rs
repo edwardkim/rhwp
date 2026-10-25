@@ -3898,6 +3898,28 @@ impl TypesetEngine {
         if self.stored_two_line_row_frames_require_split(table, styles) {
             return false;
         }
+        // 앞 조각의 새 문자 줄로 현재 단의 흐름이 바뀌었으면 후속 표의
+        // 원본 절대 vpos를 같은 물리 원점으로 다시 인증할 수 없다.
+        let preceding_fragment_reflowed = st.current_items.iter().any(|item| {
+            let PageItem::PartialTable {
+                para_index,
+                control_index,
+                ..
+            } = item
+            else {
+                return false;
+            };
+            *para_index < para_idx
+                && paragraphs
+                    .get(*para_index)
+                    .and_then(|paragraph| paragraph.controls.get(*control_index))
+                    .is_some_and(|control| match control {
+                        Control::Table(previous) => {
+                            self.render_normalization.table_text_reflowed(previous)
+                        }
+                        _ => false,
+                    })
+        });
         controls::try_place_empty_para_float_table(
             st,
             para_idx,
@@ -3913,6 +3935,7 @@ impl TypesetEngine {
             lanes,
             paragraphs,
             self.render_normalization.table_text_reflowed(table),
+            preceding_fragment_reflowed,
             self.dpi,
         )
     }
