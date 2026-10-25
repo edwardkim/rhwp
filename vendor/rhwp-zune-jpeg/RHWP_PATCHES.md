@@ -83,3 +83,12 @@ from djpeg are reported separately from sampling geometry and content retention.
 이 디렉터리의 `README.ijg` 및 해당 소스에 보존한다.
 
 This software is based in part on the work of the Independent JPEG Group.
+
+## 최종 Print JPEG 재생 (#8153)
+
+`src/ijg_replay.rs`는 libjpeg-turbo 3.1.2의 `jidctint.c` 8비트 ISLOW IDCT와
+`jdcolor.c` 16비트 YCbCr→RGB를 안전한 정수 연산으로 재표현한다. 원 저작권은 해당
+파일에, 배포 조건은 `README.ijg`에 보존한다. 기존 IJG 보간과 함께 명시적으로 선택한
+최종 Print JPEG 재생 인스턴스에만 적용한다. 기본 decoder와 원본 사진을 압축 전에
+변환하는 기존 Print IDCT 선택은 유지한다. IDCT는 MCU shortcut이 일부만 초기화하는
+입력 버퍼를 덮어쓰지 않는다. 각 pass의 정규화와 색 변환의 반올림은 공개 원문을 따른다.

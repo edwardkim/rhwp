@@ -10,6 +10,8 @@ pub(crate) use print_alpha::print_alpha_payload;
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
 pub(crate) use print_jpeg_encode::{encode_print_jpeg, print_jpeg_payload};
 mod print_window;
+#[cfg(target_arch = "wasm32")]
+pub(crate) use print_tone::decode_print_jpeg_replay;
 pub(crate) use print_tone::print_bitmap_payload;
 mod print_codec;
 pub(crate) use print_codec::{print_area_sampling, print_device_image_payload};

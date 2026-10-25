@@ -15,6 +15,8 @@ use crate::renderer::render_tree::ImageNode;
 #[path = "print_jpeg.rs"]
 mod print_jpeg;
 pub(super) use print_jpeg::decode as decode_print_bitmap;
+#[cfg(target_arch = "wasm32")]
+pub(crate) use print_jpeg::decode_replay as decode_print_jpeg_replay;
 
 fn is_print_bitmap_candidate(image: &ImageNode) -> bool {
     image.hancom2024_print_bitmap

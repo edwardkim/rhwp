@@ -5,6 +5,10 @@ mod ijg;
 /// 실제 성분 경계를 사용하는 IJG 중심 표본 보간. 명시적으로 설치한 인스턴스에만 적용한다.
 pub use ijg::select as ijg_fancy_upsampling;
 
+#[path = "ijg_replay.rs"]
+mod replay;
+pub use replay::{idct as ijg_replay_idct, ycbcr_to_rgb as ijg_replay_ycbcr_to_rgb};
+
 use crate::components::{Components, SampleRatios, UpSampler};
 use crate::decoder::{IDCTPtr, JpegDecoder};
 use crate::errors::DecodeErrors;

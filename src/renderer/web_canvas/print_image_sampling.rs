@@ -3,6 +3,9 @@
 use wasm_bindgen::{Clamped, JsCast};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, ImageData};
 
+#[path = "print_jpeg_replay.rs"]
+mod jpeg_replay;
+
 /// 일반 bitmap 전처리 전에 실제 원본 canvas를 공통 표본에 전달한다.
 pub(super) fn draw_encoded(
     context: &CanvasRenderingContext2d,
@@ -11,8 +14,12 @@ pub(super) fn draw_encoded(
     page: (f64, f64),
     scale: f64,
 ) -> bool {
-    super::cached_image_canvas(bytes)
-        .is_some_and(|source| draw(context, &source, rectangle, page, scale))
+    let source = if bytes.starts_with(&[0xff, 0xd8]) {
+        jpeg_replay::canvas(bytes)
+    } else {
+        super::cached_image_canvas(bytes)
+    };
+    source.is_some_and(|source| draw(context, &source, rectangle, page, scale))
 }
 
 pub(super) fn draw(

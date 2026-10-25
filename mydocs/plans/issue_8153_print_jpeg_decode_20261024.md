@@ -39,6 +39,33 @@ Print 표본 소비 경로로 제한한다. 새 IJG 파생 구현은 기존 IJG 
 `jpeg-final-replay-controls-v2/`, `canvas-standard-jpeg-p090-diagnostic/`에 보존한다.
 비공개 모듈 분석·덤프는 Git에 포함하지 않는다.
 
+### 최종 재생 구현과 호스트 선행 검증
+
+최종 재생 선택도 기존 `print_jpeg.rs`의 같은 헤더·예산·fallible output 생산 함수를
+소비하게 연결했다. 실제 source와 바이트가 같은 header 모듈 및 제품 decoder를 연결한
+호스트 진단 89건은 독립 RGB와 모두 일치하고, 기존 원본 변환 85건도 독립 기대 RGB를
+그대로 유지한다. 축 초과·면적 초과·잘린 JPEG 헤더 3건도 거절했다. 첫 진단 build의
+module 경로 해석 오류는 header와 자식 module의 디렉터리 구조를 보존한 source snapshot으로
+보정했으며 원본과 snapshot SHA-256의 동일성을 기록했다. 실제 제품 코드는 이 문제로
+바꾸지 않았다. 자료는 `handbook-paper-frame-candidate/jpeg-final-product-controls/`다.
+
+Canvas의 명시적인 Print 표본 경로가 최종 재생 RGB를 소비한다. 일반 source canvas와
+cache를 구분하며 새 cache는 16MiB·64항목 이내로 유지하고, 큰 그림은 cache하지 않는다.
+일반 화면·원본 전달·PDF import는 원래 선택을 유지한다. 전체 source crop은 기존
+`draw_image` 위임을 거쳐 같은 소비 지점에 들어오며, 원점을 옮기거나 crop을 다시 추측하지 않는다.
+
+사전 정책 검사에서 앞선 단계의 `src` 내부 산술 검사 7건 증설을 발견해
+`tests/cases/issue_8153_print_device_arithmetic.rs`로 옮겼다. 독립 용지 원점 검사는
+`PrintPaper::from_css`의 실제 결과를 사용하고, 참조 DC 계산 helper의 가시성은 부모 module
+까지만 허용했다. 기대 수치와 12조건·표본 경계의 보호는 유지한다. 직접 실행과 suite 안의
+동일한 module 배치 실행에서 각각 7건 PASS다. 정확한 경로의 `path_attr`·`root_mod`만
+허용하는 정책을 더해 독립 integration target을 늘리지 않는다. 최초 suite 정책 검사 실패와
+보정 재실행은 별도로 보존한다. source unit 검사는 base의 4101건·296 module로 통과했다.
+
+위 결과는 호스트 선행 검증이다. 실제 source를 커밋한 뒤 Native 출력과 표준 최적화
+fresh WASM에서 90쪽 및 영향·정상 대조 쪽을 검증한다. 최종 전쪽 raw100·정식 회귀와
+전체 검증은 아직 완료되지 않았다.
+
 ## 원인과 독립 근거
 
 원본 JPEG를 펼치는 IDCT와 색차 보간의 정수 반올림은 PDF로 전달할 RGB555·JPEG보다

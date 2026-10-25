@@ -27,6 +27,19 @@ pub(crate) fn decode(data: &[u8], format: image::ImageFormat) -> Option<image::D
     if format != image::ImageFormat::Jpeg {
         return super::super::decode_image_with_format_limited(data, format);
     }
+    decode_jpeg(data, false)
+}
+
+/// 최종 Print JPEG 재생. 원본 사진의 Intel IDCT·RGB555 변환과 구분한다.
+#[cfg(target_arch = "wasm32")]
+pub(crate) fn decode_replay(data: &[u8]) -> Option<image::DynamicImage> {
+    if !data.starts_with(&[0xff, 0xd8]) {
+        return None;
+    }
+    decode_jpeg(data, true)
+}
+
+pub(super) fn decode_jpeg(data: &[u8], final_replay: bool) -> Option<image::DynamicImage> {
     let header = super::super::canvaskit_encoded_image_header(data)?;
     if !header.is_within_decode_limits() {
         return None;
@@ -44,7 +57,11 @@ pub(crate) fn decode(data: &[u8], format: image::ImageFormat) -> Option<image::D
     decoder.set_allocation_budget(&budget).ok()?;
     decoder
         .set_transforms(
-            idct::transform,
+            if final_replay {
+                zune_print::transforms::ijg_replay_idct
+            } else {
+                idct::transform
+            },
             zune_print::transforms::ijg_fancy_upsampling,
         )
         .ok()?;
@@ -54,7 +71,11 @@ pub(crate) fn decode(data: &[u8], format: image::ImageFormat) -> Option<image::D
         ColorSpace::RGB | ColorSpace::YCbCr | ColorSpace::Luma
     ) {
         drop(decoder);
-        return super::super::decode_image_with_format_limited(data, format);
+        return super::super::decode_image_with_format_limited(data, image::ImageFormat::Jpeg);
+    }
+    let ycbcr = final_replay && decoder.input_colorspace()? == ColorSpace::YCbCr;
+    if ycbcr {
+        decoder.set_options(options.jpeg_set_out_colorspace(ColorSpace::YCbCr));
     }
     let (width, height) = decoder.dimensions()?;
     if width != header.width as usize || height != header.height as usize {
@@ -70,6 +91,9 @@ pub(crate) fn decode(data: &[u8], format: image::ImageFormat) -> Option<image::D
     pixels.try_reserve_exact(length).ok()?;
     pixels.resize(length, 0);
     decoder.decode_into(&mut pixels).ok()?;
+    if ycbcr {
+        zune_print::transforms::ijg_replay_ycbcr_to_rgb(&mut pixels);
+    }
     Some(image::DynamicImage::ImageRgb8(image::RgbImage::from_raw(
         header.width,
         header.height,

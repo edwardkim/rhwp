@@ -82,6 +82,13 @@
         "path_attr",
         "root_mod"
       ]
+    },
+    {
+      "path": "tests/cases/issue_8153_print_device_arithmetic.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
     }
   ],
   "exceptions": [
