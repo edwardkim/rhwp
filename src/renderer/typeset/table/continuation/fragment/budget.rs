@@ -525,6 +525,31 @@ impl TypesetEngine {
                 - vert_offset_overhead
                 - fragment_outer_bottom_overhead
         };
+        // [#8149] 첫 행 이월 판정(prepare)과 같은 예약이다. 저장 첫 프레임이 있으면 그 높이가
+        // 같은 컷을 정하므로(합성은 그 경로) 아래에서 되돌린다 — 한글문서파일형식 38쪽 표 234 는
+        // 앞에 저장 줄 없는 제목이라 이 예약을 쓴다. 한/글 2024 합성(바깥 아래 여백 0·141HU ×
+        // 바깥 위 여백 75HU 간격 24단계)에서 1.9px 여백도 행 안 컷의 마지막 줄을 넘긴다.
+        //
+        // 저장 되감김 첫 조각의 꼬리말 여유(`first_fragment_painted_row_footer_guard`)도 같은
+        // 쪽 바닥 띠를 남긴다. 두 예약은 겹치므로 여유가 이미 남긴 만큼은 다시 빼지 않는다 —
+        // 75544 65쪽 표 619(여유 4px · 바깥 아래 여백 1.9px)는 한/글이 본문 끝 5.9px 위에서
+        // 첫 조각을 닫고 넷째 행을 싣는다.
+        let empty_host_first_fragment_reserve =
+            if !is_continuation && cursor_row == 0 && start_cut.is_empty() {
+                (crate::renderer::typeset::empty_host_float_first_fragment_reserve_px(
+                    para,
+                    table,
+                    fragment_outer_bottom_overhead,
+                    input.prepared.source_text_first_frame_height.is_some(),
+                    caption_overhead,
+                    caption_is_top,
+                    self.dpi,
+                ) - first_fragment_painted_row_footer_guard)
+                    .max(0.0)
+            } else {
+                0.0
+            };
+        let page_avail_raw = page_avail_raw - empty_host_first_fragment_reserve;
         // [#8081] 첫 조각은 0 으로 자르기 전 모자란 몫을 함께 넘긴다(FragmentBudget 주석).
         let first_fragment_shortfall = if is_continuation {
             0.0
@@ -1108,6 +1133,7 @@ impl TypesetEngine {
             (boundary
                 - p.table_top
                 - caption_extra
+                - empty_host_first_fragment_reserve
                 - if captioned_object_frame {
                     // 종료 캡션 여백은 마지막 유닛에만 속한다.
                     // 스캔에서 해당 유닛을 수용할 때 함께 예약한다.
@@ -1433,6 +1459,14 @@ impl TypesetEngine {
             } else {
                 0.0
             };
+        // [#8149] 저장 첫 조각 프레임(선언 개체 높이 = 한/글이 정한 첫 조각, #7147)이 이 쪽
+        // 원점에서 인정되면 그 프레임이 컷의 증거다. 위의 쪽 바닥 예약은 저장 근거가 없을 때의
+        // 규칙이므로 되돌린다(한글문서파일형식 26쪽 표 174: 선언 240.2px = 15행).
+        let page_avail = if saved_first_fragment_source_frame.is_some() {
+            page_avail + empty_host_first_fragment_reserve
+        } else {
+            page_avail
+        };
         let avail_for_rows = {
             // [Task #1831] 단 상단에서 시작하는 첫 fragment 가 표 **전체** 기준
             // 근소(≤2px) 오차로만 넘치면 전체 배치를 허용한다 — 행높이 측정
