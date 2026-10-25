@@ -6,6 +6,8 @@ use super::*;
 
 #[path = "table_inline_grid.rs"]
 mod inline_grid;
+#[path = "table/row_frames.rs"]
+mod row_frames;
 
 /// [#2722] `Table::rebuild_grid()` 가 예약할 수 있는 최대 그리드 칸 수.
 ///
@@ -715,17 +717,9 @@ impl Table {
         PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.get())
     }
 
-    /// Widths owned by cell paragraph frames before padding and paragraph margins.
-    ///
-    /// Native tables may repeat a row with raw cell widths whose sum is a few
-    /// HWPUNIT short of the table's resolved column grid. Those raw values are
-    /// serialization auxiliaries, not independent row boundaries. Use genuine
-    /// base-track evidence and place any positive table-width residual on the
-    /// last column without inferring a prior editing gesture.
-    ///
-    /// This is deliberately batch-shaped. Row-role inference examines the table
-    /// as a whole, so repeating it once per cell makes large native tables
-    /// quadratic and can prevent on-demand reflow from completing.
+    /// 문단 프레임은 여백을 빼기 전의 실제 셀 폭을 소비한다. 원본 구획을
+    /// 완결한 행은 마지막 셀에서 표 외곽을 닫고, 그 밖의 보조 폭은 기존
+    /// 공통 grid 해석을 유지한다. 셀마다 표 전체를 다시 탐색하지 않는다.
     pub(crate) fn paragraph_frame_owner_widths(&self) -> Vec<i32> {
         match self.paragraph_frame_owner_widths_with_storage(&crate::storage::Unbounded) {
             Ok(value) => value,
@@ -734,6 +728,21 @@ impl Table {
     }
 
     pub(crate) fn paragraph_frame_owner_widths_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Vec<i32>, S::Error> {
+        let mut owners = self.fallback_paragraph_frame_owner_widths_with_storage(storage)?;
+        for (row, frames) in self.closing_row_frames_with_storage(storage)?.into_iter().enumerate() {
+            for frame in frames.into_iter().flatten() {
+                if usize::from(self.cells[frame.cell_index].row) == row {
+                    owners[frame.cell_index] = frame.width_hu.min(i64::from(i32::MAX)) as i32;
+                }
+            }
+        }
+        Ok(owners)
+    }
+
+    fn fallback_paragraph_frame_owner_widths_with_storage<S: crate::storage::Storage>(
         &self,
         storage: &S,
     ) -> Result<Vec<i32>, S::Error> {

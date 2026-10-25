@@ -218,6 +218,28 @@ pub(crate) fn build_row_col_x(
     dpi: f64,
     width_scale: f64,
 ) -> Result<RowColumnGeometry, TableGridTooLarge> {
+    let mut geometry = build_fallback_row_col_x(
+        table,
+        col_widths,
+        col_count,
+        row_count,
+        cell_spacing,
+        dpi,
+        width_scale,
+    )?;
+    geometry.apply_closing_rows(table, dpi, width_scale);
+    Ok(geometry)
+}
+
+fn build_fallback_row_col_x(
+    table: &Table,
+    col_widths: &[f64],
+    col_count: usize,
+    row_count: usize,
+    cell_spacing: f64,
+    dpi: f64,
+    width_scale: f64,
+) -> Result<RowColumnGeometry, TableGridTooLarge> {
     use super::super::hwpunit_to_px;
     TableGridTooLarge::check(row_count, col_count)?;
     // 셀 너비 그리드 구축 (O(cells) 탐색 1회)
@@ -816,9 +838,17 @@ pub(crate) fn render_edge_borders(
     for (ri, h_row) in h_edges.iter().enumerate() {
         let row_node_start = nodes.len();
         let y = table_y + row_y.get(ri).copied().unwrap_or(0.0);
-        // 행 경계의 열 위치: 경계 아래 행 (또는 마지막 행) 기준
-        let ref_row = ri.min(row_count.saturating_sub(1));
-        let ref_cx = &row_col_x[ref_row.min(row_col_x.len() - 1)];
+        // 아래 행의 가상 열은 위 셀의 실제 끝점이 아니다. 획 소유 행을 따른다.
+        let edge_positions = |edge: &BorderEdge| {
+            let row = if edge.horizontal_top == Some(false) {
+                ri.saturating_sub(1)
+            } else {
+                ri
+            };
+            &row_col_x[row
+                .min(row_count.saturating_sub(1))
+                .min(row_col_x.len() - 1)]
+        };
         let mut seg_start: Option<usize> = None;
         let mut seg_border: Option<BorderEdge> = None;
 
@@ -829,6 +859,7 @@ pub(crate) fn render_edge_borders(
                         && e.width == s.width
                         && e.color == s.color
                         && e.underpaint_color == s.underpaint_color
+                        && e.horizontal_top == s.horizontal_top
                 }
                 _ => false,
             };
@@ -839,6 +870,7 @@ pub(crate) fn render_edge_borders(
                 } else {
                     // 다른 스타일 → 이전 세그먼트 마무리
                     if let (Some(start), Some(ref sb)) = (seg_start, seg_border) {
+                        let ref_cx = edge_positions(sb);
                         let x1 = table_x + ref_cx[start];
                         let x2 = table_x + ref_cx[ci];
                         nodes.extend(create_edge_border_line_nodes(tree, &sb, x1, y, x2, y));
@@ -848,6 +880,7 @@ pub(crate) fn render_edge_borders(
                 }
             } else {
                 if let (Some(start), Some(ref sb)) = (seg_start, seg_border) {
+                    let ref_cx = edge_positions(sb);
                     let x1 = table_x + ref_cx[start];
                     let x2 = table_x + ref_cx[ci];
                     nodes.extend(create_edge_border_line_nodes(tree, &sb, x1, y, x2, y));
@@ -858,6 +891,7 @@ pub(crate) fn render_edge_borders(
         }
         // 마지막 세그먼트
         if let (Some(start), Some(ref sb)) = (seg_start, seg_border) {
+            let ref_cx = edge_positions(sb);
             let x1 = table_x + ref_cx[start];
             let x2 = table_x + ref_cx.get(h_row.len()).copied().unwrap_or(ref_cx[start]);
             nodes.extend(create_edge_border_line_nodes(tree, &sb, x1, y, x2, y));
