@@ -205,9 +205,9 @@ impl Output {
         controls: &[Control],
         removed: &mut BTreeSet<usize>,
         next_id: &mut u32,
-    ) {
+    ) -> bool {
         if batch.is_empty() {
-            return;
+            return true;
         }
         let count = batch.len();
         let spans: Vec<_> = batch
@@ -233,10 +233,12 @@ impl Output {
                 self.frames.push(control);
                 removed.extend(owned);
                 *next_id = next;
+                true
             }
             Err(reason) => {
                 rollback(doc, typography, cp);
                 self.reports.push(json!({"region":ri,"status":"retained_positioned_spans","reason":reason,"spans":spans}));
+                false
             }
         }
     }
@@ -257,8 +259,42 @@ pub(super) fn lower(
         let mut batch = Vec::new();
         let mut batch_start = checkpoint(doc, typography);
         for (pi, p) in region.recognition.paragraphs.iter().enumerate() {
+            let confirmed = p.status == ParagraphState::Confirmed && p.layout.is_some();
+            // One frame repaints its paragraphs at a single layer. Close the
+            // frame before a paragraph whose sources would interleave with
+            // other paint, so the conflict retains only the paragraphs it
+            // actually touches.
+            let owned: BTreeSet<usize> = p
+                .span_indices
+                .iter()
+                .filter_map(|&i| span_controls[i])
+                .collect();
+            let alone_conflicts = confirmed && paint_order(controls, &owned, removed).is_err();
+            if confirmed && !alone_conflicts && !batch.is_empty() {
+                let mut joined = owned.clone();
+                joined.extend(
+                    batch
+                        .iter()
+                        .flat_map(|b: &Prepared<'_>| b.owned.iter().copied()),
+                );
+                if paint_order(controls, &joined, removed).is_err() {
+                    output.commit(
+                        ri,
+                        region,
+                        &mut batch,
+                        batch_start,
+                        doc,
+                        typography,
+                        controls,
+                        removed,
+                        next_id,
+                    );
+                }
+            }
             let before = checkpoint(doc, typography);
-            let prepared = if p.status == ParagraphState::Confirmed && p.layout.is_some() {
+            let prepared = if alone_conflicts {
+                Err("overlapping source paint interleaves body text; retain source owners".into())
+            } else if confirmed {
                 prepare(
                     page,
                     doc,
@@ -275,6 +311,29 @@ pub(super) fn lower(
             };
             match prepared {
                 Ok(prepared) => {
+                    // Frames stack paragraphs top to bottom. A paragraph box
+                    // that starts above the previous one's end opens a new frame.
+                    if batch
+                        .last()
+                        .is_some_and(|b| prepared.item.top < b.item.bottom - 0.5)
+                    {
+                        let committed = output.commit(
+                            ri,
+                            region,
+                            &mut batch,
+                            batch_start,
+                            doc,
+                            typography,
+                            controls,
+                            removed,
+                            next_id,
+                        );
+                        if !committed {
+                            // The failed batch rolled back this paragraph's styles too.
+                            output.reports.push(json!({"region":ri,"paragraph":pi,"status":"retained_positioned_spans","reason":"previous body frame was not representable","spans":p.span_indices}));
+                            continue;
+                        }
+                    }
                     if batch.is_empty() {
                         batch_start = before;
                     }

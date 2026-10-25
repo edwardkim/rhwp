@@ -47,7 +47,9 @@ fn gaps(items: &[&Item], horizontal: bool, work: &mut Work) -> Result<Vec<(f32, 
     let mut result = Vec::new();
     let mut end = intervals.first().map_or(0., |i| i.1);
     for (start, next) in intervals.into_iter().skip(1) {
-        if start > end {
+        // Abutting boxes still separate cleanly: no item straddles the edge.
+        // A spanning heading often ends exactly where the columns begin.
+        if start >= end {
             result.push((end, start));
         }
         end = end.max(next);
@@ -76,11 +78,25 @@ fn repeated_rows(a: &[&Item], b: &[&Item], tolerance: f32) -> bool {
             j += 1;
         }
     }
-    paired >= 2
+    if paired >= 2 {
+        return true;
+    }
+    if a.is_empty() || b.is_empty() {
+        return false;
+    }
+    // Columns need not share baselines: a heading or a picture shifts one
+    // column's grid. Both sides still run several rows across the same band.
+    let (top, bottom) = (a[0].max(b[0]), a[a.len() - 1].min(b[b.len() - 1]));
+    let inside = |rows: &[f32]| rows.iter().filter(|r| **r >= top && **r <= bottom).count();
+    top < bottom && inside(&a) >= 3 && inside(&b) >= 3
 }
 
 fn vertical_cut(items: &[&Item], work: &mut Work) -> Result<Option<f32>, String> {
-    let font = items.iter().map(|i| i.font).fold(0., f32::max);
+    // Word spacing follows the running text size. One larger heading in the
+    // band must not raise the gutter threshold above the actual gutter.
+    let mut fonts: Vec<f32> = items.iter().map(|i| i.font).collect();
+    fonts.sort_by(f32::total_cmp);
+    let font = fonts.get(fonts.len() / 2).copied().unwrap_or(0.);
     for (a, b) in gaps(items, false, work)? {
         // A large inter-word space on one row does not establish a column.
         if b - a < font * 2. {

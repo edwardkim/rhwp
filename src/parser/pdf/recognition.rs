@@ -158,14 +158,102 @@ fn make_lines(
     observed.lines(&indices, policy.baseline_tolerance_em)
 }
 
+/// Enumerators and bullets that open a list item or a labelled block:
+/// `①`, `❶`, `◦`, `1.`, `(1)`, `(가)`, `ㄱ.`, `<보기>`, `[1~3]`.
+/// Inline reference marks such as `㉠` also start wrapped lines, so they
+/// are not item evidence.
+fn starts_item(text: &str) -> bool {
+    let text = text.trim_start();
+    let mut chars = text.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    let closes = |rest: &str, close: char| {
+        let mut rest = rest.chars();
+        rest.next() == Some(close) && rest.next().is_none_or(char::is_whitespace)
+    };
+    match first {
+        '\u{2460}'..='\u{2473}' | '\u{2776}'..='\u{277f}' => true,
+        '◦' | '•' | '●' | '○' | '■' | '□' | '▪' | '◆' | '◇' | '▶' | '※' => {
+            true
+        }
+        '0'..='9' => {
+            let rest = text.trim_start_matches(|c: char| c.is_ascii_digit());
+            text.len() - rest.len() <= 2 && (closes(rest, '.') || closes(rest, ')'))
+        }
+        // Syllable enumerators (`가.`, `다.`) are not used: a wrapped sentence
+        // end such as `다. ` starts lines just as often.
+        'ㄱ'..='ㅎ' => closes(chars.as_str(), '.') || closes(chars.as_str(), ')'),
+        '(' => {
+            let rest = chars.as_str();
+            let inner =
+                rest.trim_start_matches(|c: char| c.is_ascii_digit() || ('가'..='하').contains(&c));
+            inner.len() < rest.len() && rest.len() - inner.len() <= 3 && closes(inner, ')')
+        }
+        '<' | '[' => {
+            let close = if first == '<' { '>' } else { ']' };
+            chars
+                .as_str()
+                .find(close)
+                .is_some_and(|end| end > 0 && end <= 12)
+        }
+        _ => false,
+    }
+}
+
 struct ParagraphMachine {
     state: ParagraphState,
     owner: Rect,
     trace: Trace,
     pending: Vec<Line>,
     output: Vec<ParagraphProposal>,
+    /// (left, right, baseline, block) of every observed line in this owner.
+    /// A block is a run of lines without a paragraph-sized baseline gap. A
+    /// paragraph's measure comes only from nearby lines of its own block that
+    /// start on one of its own left edges.
+    line_extents: Vec<(f32, f32, f32, usize)>,
 }
 impl ParagraphMachine {
+    /// The widest right edge among lines of `line`'s block that start
+    /// exactly on a left edge of the pending paragraph or of `line` and lie
+    /// within a few lines of it. Blocks with another start, across a
+    /// paragraph gap or farther away keep their own measure.
+    fn measure_right(&self, line: &Line, em: f32) -> f32 {
+        let starts: Vec<f32> = self.pending.iter().chain([line]).map(|l| l.left).collect();
+        let top = self.pending.first().map_or(line.baseline, |l| l.baseline);
+        let block = self
+            .line_extents
+            .iter()
+            .find(|e| e.2 == line.baseline && e.0 == line.left)
+            .map(|e| e.3);
+        self.line_extents
+            .iter()
+            .filter(|(l, _, baseline, b)| {
+                Some(*b) == block
+                    && *baseline >= top - 8.0 * em
+                    && *baseline <= line.baseline + 8.0 * em
+                    && starts.iter().any(|s| (l - s).abs() <= 0.5)
+            })
+            .map(|&(_, r, _, _)| r)
+            .fold(line.right, f32::max)
+    }
+    /// A line wraps only when the next word does not fit after it. If the
+    /// first word of `line` fits in the room `previous` left before the
+    /// measure, the author broke the line: the paragraph ends there.
+    /// Two short lines centered on the owner carry no wrap evidence.
+    fn ends_short(&self, previous: &Line, line: &Line, em: f32) -> bool {
+        let measure = self.measure_right(line, em);
+        let room = measure - previous.right;
+        let first_word = line.preview_text.split_whitespace().next().unwrap_or("");
+        let glyphs = line.preview_text.chars().count().max(1) as f32;
+        let word = (line.right - line.left) * first_word.chars().count() as f32 / glyphs;
+        let center = self.owner.x + self.owner.width / 2.;
+        let centered = |l: &Line| ((l.left + l.right) / 2. - center).abs() <= 0.5;
+        let centered_pair =
+            centered(previous) && centered(line) && measure - line.right > 0.25 * em;
+        // A word follows a separator about a quarter em wide.
+        room >= word + 0.25 * em && !centered_pair
+    }
     fn transition(&mut self, to: ParagraphState, event: &str, reason: &str, evidence: Value) {
         self.trace.record(self.state, to, event, reason, evidence);
         self.state = to;
@@ -228,13 +316,15 @@ impl ParagraphMachine {
         }
         if self.state == ParagraphState::Deferred {
             let previous = self.pending.last().unwrap();
-            let clear_boundary = region.body
-                && (line.baseline - previous.baseline
-                    > policy.paragraph_gap_em * previous.font.max(line.font)
-                    || region
-                        .obstacles
-                        .iter()
-                        .any(|b| b.y >= previous.bottom - 0.5 && b.y + b.height <= line.top + 0.5));
+            let em = previous.font.max(line.font);
+            let clear_boundary = (region.body
+                && (line.baseline - previous.baseline > policy.paragraph_gap_em * em
+                    || region.obstacles.iter().any(|b| {
+                        b.y >= previous.bottom - 0.5 && b.y + b.height <= line.top + 0.5
+                    })))
+                // Unresolved content ends with its short last line. The next
+                // line is judged on its own evidence instead of being held.
+                || (!previous.disjoint && !line.disjoint && self.ends_short(previous, &line, em));
             if clear_boundary {
                 self.emit(spans, "unresolved_region_ended");
                 self.transition(
@@ -271,8 +361,25 @@ impl ParagraphMachine {
             .obstacles
             .iter()
             .any(|b| b.y >= previous.bottom - 0.5 && b.y + b.height <= line.top + 0.5);
+        let short_end = !line.disjoint && self.ends_short(previous, &line, em);
+        // From the second line on, every continuation shares one left edge.
+        // A different start begins the next paragraph's first line.
+        let continuation_changed = self
+            .pending
+            .get(1)
+            .is_some_and(|second| (line.left - second.left).abs() > 0.5);
+        // An item marker on the paragraph's own first-line start opens the
+        // next item. Inside a hanging paragraph a wrap starts on the
+        // continuation edge instead, so it never matches.
+        let item_start = starts_item(&line.preview_text)
+            && self
+                .pending
+                .first()
+                .is_some_and(|first| (line.left - first.left).abs() <= 0.5);
         let evidence = json!({"baselineGap":gap,"fontScale":em,"alignmentCompatible":alignment,
-            "firstLineIndent":first_indent,"fontSizeChanged":size_change,"objectBoundary":object_boundary});
+            "firstLineIndent":first_indent,"fontSizeChanged":size_change,"objectBoundary":object_boundary,
+            "previousLineShort":short_end,"continuationLeftChanged":continuation_changed,
+            "itemMarker":item_start});
         if line.disjoint {
             self.transition(
                 ParagraphState::BoundaryCandidate,
@@ -289,6 +396,9 @@ impl ParagraphMachine {
         } else if object_boundary
             || gap > policy.paragraph_gap_em * em
             || (region.body && size_change)
+            || short_end
+            || continuation_changed
+            || item_start
         {
             let reason = if object_boundary {
                 if region.body {
@@ -298,8 +408,14 @@ impl ParagraphMachine {
                 }
             } else if region.body && size_change {
                 "body_typographic_boundary"
-            } else {
+            } else if gap > policy.paragraph_gap_em * em {
                 "large_baseline_gap"
+            } else if short_end {
+                "short_last_line"
+            } else if continuation_changed {
+                "continuation_left_changed"
+            } else {
+                "item_marker"
             };
             self.transition(
                 ParagraphState::BoundaryCandidate,
@@ -413,6 +529,23 @@ fn recognize_region(
         owner: region.bbox,
         pending: Vec::new(),
         output: Vec::new(),
+        line_extents: {
+            let mut block = 0;
+            let mut previous: Option<&Line> = None;
+            let mut extents = Vec::new();
+            for l in &lines {
+                if previous.is_some_and(|p| {
+                    l.baseline - p.baseline > policy.paragraph_gap_em * p.font.max(l.font)
+                }) {
+                    block += 1;
+                }
+                previous = Some(l);
+                if !l.disjoint {
+                    extents.push((l.left, l.right, l.baseline, block));
+                }
+            }
+            extents
+        },
         trace: Trace {
             context: region.context.clone(),
             actor: "paragraph",
