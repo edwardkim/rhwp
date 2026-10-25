@@ -238,3 +238,64 @@ fn spec_header_only_split_follows_declared_first_fragment() {
         "표 334 는 51·52쪽에 나뉜다"
     );
 }
+
+/// 쪽 `page`(0부터)에서 구역 `section` 문단 `para` 첫 글줄의 위끝과, 같은 쪽 단 위끝 + 그 문단의
+/// 저장 첫 줄 vpos. 한/글 저장 사다리는 쪽마다 vpos 를 0 에서 다시 센다.
+fn first_line_top_and_stored(
+    core: &DocumentCore,
+    page: u32,
+    section: usize,
+    para: usize,
+) -> (f64, f64) {
+    let source = &core.document().sections[section].paragraphs[para];
+    let head: String = source.text.chars().take(12).collect();
+    let stored = source.line_segs.first().expect("저장 첫 줄").vertical_pos as f64 * 96.0 / 7200.0;
+    let tree = core.build_page_render_tree(page).expect("쪽 배치");
+    let mut column_top = None;
+    let mut line_top = None;
+    let mut stack = vec![&tree.root];
+    while let Some(node) = stack.pop() {
+        match &node.node_type {
+            RenderNodeType::Column(_) if column_top.is_none() => column_top = Some(node.bbox.y),
+            RenderNodeType::TextLine(_) if line_top.is_none() => {
+                let mut texts = Vec::new();
+                line_texts(node, &mut texts);
+                // 번호 문단은 줄 앞에 번호 글자가 붙는다.
+                if texts.concat().contains(&head) {
+                    line_top = Some(node.bbox.y);
+                }
+            }
+            _ => {}
+        }
+        stack.extend(node.children.iter().rev());
+    }
+    (
+        line_top.expect("문단 첫 글줄"),
+        column_top.expect("단") + stored,
+    )
+}
+
+/// 상자 뒤 앞 간격 흡수는 다음 문단의 저장 첫 줄이 «상자 끝 + 앞 간격» 을 증언하면 하지 않는다.
+/// hwpspec 54쪽: 이어지는 마지막 조각(표 340) 뒤 테두리 문단 341 — 한/글 Print 와 저장 줄 모두
+/// 앞 간격 13.3px 아래에 첫 줄을 둔다. 반례(흡수가 맞는 쪽): 사양서 55쪽 통째 표 348 뒤 같은
+/// 모양의 문단 349, hwpspec 53쪽 이어지는 조각(표 336) 뒤 제목 337.
+#[test]
+fn successor_keeps_spacing_when_its_stored_line_says_so() {
+    let hwpspec = open("samples/hwpspec.hwp");
+    let (line, stored) = first_line_top_and_stored(&hwpspec, 53, 2, 341);
+    assert!(
+        (line - stored).abs() <= 1.0,
+        "hwpspec 54쪽 문단 341 첫 줄 {line:.1} 이 저장 줄 {stored:.1} 에 있다"
+    );
+    let (line, stored) = first_line_top_and_stored(&hwpspec, 52, 2, 337);
+    assert!(
+        (line - stored).abs() <= 1.0,
+        "hwpspec 53쪽 문단 337 첫 줄 {line:.1} 이 저장 줄 {stored:.1} 에 있다(흡수)"
+    );
+    let spec = open(SPEC);
+    let (line, stored) = first_line_top_and_stored(&spec, 54, SPEC_SECTION, 349);
+    assert!(
+        (line - stored).abs() <= 1.0,
+        "사양서 55쪽 문단 349 첫 줄 {line:.1} 이 저장 줄 {stored:.1} 에 있다(흡수)"
+    );
+}

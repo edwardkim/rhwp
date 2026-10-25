@@ -3832,11 +3832,18 @@ pub(crate) fn stored_frame_successor_shared_spacing_px(
 /// 소비량은 `min(앞 간격, 바깥 아래 여백)` 이다. 앞 간격이 바깥 아래 여백보다 큰 경우의
 /// 한/글 동작은 확인하지 않았으므로 그 차이는 흐름에 남긴다. 조판과 배치가 같은 직전 항목으로
 /// 판정한다.
+///
+/// 다음 문단의 저장 첫 줄이 «상자 끝 + 앞 간격» 을 증언하면 그 쪽의 한/글 출력은 앞 간격을
+/// 소비하지 않은 것이므로 흡수하지 않는다(hwpspec 54쪽 pi=341: 이어지는 마지막 조각 뒤 테두리
+/// 문단, 저장 vpos 141.8px = 상자 끝 128.4 + 앞 간격 13.3). samples 에서 저장 줄과 맞출 수 있는
+/// 흡수 사례 118곳 중 117곳은 저장 줄이 흡수한 위치를 증언한다.
 pub(crate) fn empty_host_float_successor_absorbed_spacing_px(
     previous_item: Option<&crate::renderer::pagination::PageItem>,
     paragraphs: &[Paragraph],
     para_index: usize,
     spacing_before: f64,
+    stored_layout: bool,
+    flow_from_body_top: f64,
     dpi: f64,
 ) -> f64 {
     use crate::renderer::pagination::PageItem;
@@ -3885,7 +3892,27 @@ pub(crate) fn empty_host_float_successor_absorbed_spacing_px(
     {
         return 0.0;
     }
-    spacing_before.min(hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi).max(0.0))
+    let absorbed =
+        spacing_before.min(hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi).max(0.0));
+    let stored_keeps_spacing = stored_layout
+        && paragraphs
+            .get(para_index)
+            .filter(|para| !para.stored_text_partition_is_dirty() && !para.cell_format_vpos_dirty)
+            .and_then(|para| para.line_segs.first())
+            .filter(|line| {
+                line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            .is_some_and(|line| {
+                let saved_top = hwpunit_to_px(line.vertical_pos, dpi);
+                saved_top > 0.0
+                    && (saved_top - (flow_from_body_top + spacing_before)).abs() <= 1.0
+                    && (saved_top - (flow_from_body_top - absorbed + spacing_before)).abs() > 1.0
+            });
+    if stored_keeps_spacing {
+        0.0
+    } else {
+        absorbed
+    }
 }
 
 /// A genuine source ladder and its independently stored successor close the

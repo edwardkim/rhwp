@@ -47,6 +47,9 @@ pub(in crate::renderer::typeset) fn place(
             paragraphs,
             para_idx,
             fmt.spacing_before,
+            (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+                && !st.profile.session_edited(),
+            st.current_height,
             dpi,
         )
     };

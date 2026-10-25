@@ -9696,6 +9696,10 @@ impl LayoutEngine {
                             paragraphs,
                             item_para,
                             spacing_before,
+                            (self.profile.get().hwpx_stored_layout()
+                                || self.profile.get().hwp5_stored_pagination_layout())
+                                && !self.profile.get().session_edited(),
+                            y_offset - col_area.y,
                             self.dpi,
                         );
                     if absorbed > 0.0 {
