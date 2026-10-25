@@ -153,3 +153,19 @@ host/declared FontFace는 같은 검사기를 소비하며 검사 알고리즘�
 이 어댑터 보완은 Rust engine을 바꾸지 않으므로, 현재 실행 중인 Native/optimized WASM의
 engine producer `5bcb654516`과 Studio 어댑터의 별도 source SHA를 구별해 기록한다.
 최종 PR head의 전체 게이트와 실제 fresh WASM 검증 완료는 아직 남아 있다.
+
+
+### Studio 전체 단위 검사와 HWPX 전쪽 비교 완료
+
+Studio 어댑터 code source `52e7322a29152501208f7a9ced77eed09389379d`에서
+기존 npm test와 같은 Studio·npm editor·shared PDF 패턴 전체를 실행해
+**2,441 PASS / 0 FAIL / 0 SKIP**, exit 0을 확인했다. 테스트 concurrency는 4이며
+Rust 공유 target이나 실행 중인 optimized WASM 빌드는 건드리지 않았다. 실행 argv와
+330개 실제 test file 목록·source·136.27초 결과는 ignored 실행 receipt에 보존했다.
+
+engine source `5bcb654516`의 Native HWPX 전 383쪽은 모든 PNG hash와 정확한
+미대응 수를 확인했다. raw100/미대응 0은 292쪽, 최저 raw 99.36039%, 총 미대응은
+4,604→4,493개다. 앞 E 대비 200쪽의 111개 개선 외에는 출력 변화가 없으며
+미대응 증가와 raw 하락도 없다. HWP 전쪽과 optimized fresh WASM은 진행 중이며,
+이 부분 결과를 1,532개 전쪽 조건의 완료로 확대하지 않는다.
+남은 본문 condense·표/그림·미세 간격과 최종 Rust/lint/시각 게이트를 계속 처리한다.
