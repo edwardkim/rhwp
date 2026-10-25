@@ -127,6 +127,9 @@ rhwp import-pdf input.pdf selected.hwp --source-pages 0,6-7 --json
 
 # 원본 문자·클립·표 후보를 포함한 로컬 상세 진단
 rhwp import-pdf input.pdf review.hwpx --json --table-inference
+
+# 본문 문단을 구역 본문 흐름(다단·단/쪽 나누기)으로 가져오기
+rhwp import-pdf input.pdf editable.hwpx --layout editable --json
 ```
 
 - 입력·출력 위치 인자 두 개가 필수이며 출력 확장자는 `.hwpx` 또는 `.hwp`다.
@@ -147,6 +150,17 @@ rhwp import-pdf input.pdf review.hwpx --json --table-inference
   후보별 지역 축의 상세 근거를 추가한다. 작성 당시 셀 구조의 정답을 의미하지 않는다.
   원본 문자가 포함되므로 로컬 검토용이며 자료 공개 여부는 별도로 판단한다.
   WASM `HwpDocument.importPdf(bytes, { includeTableInference: true })`도 같은 진단을 반환한다.
+- `--layout`은 인식한 본문 문단의 배치를 고른다. 생략하면 `fidelity`다.
+  - `fidelity`: 인식한 본문 영역마다 위치 고정 글상자 하나를 둔다. 쪽 모양은 원본 좌표를
+    따르지만, 문단은 영역 경계에서 끝난다.
+  - `editable`: 본문 문단을 구역의 본문 흐름으로 옮긴다. 쪽 여백과 단 정의는 관측한 글자
+    범위에서 정하고, 원본 쪽마다 쪽 나누기, 단마다 단 나누기를 둔다. 단·쪽 경계에서 끊긴
+    문단은 하나로 잇는다. 여러 단에 걸친 띠, 쪽마다 같은 높이에 반복되는 짧은 머리·꼬리
+    글자, 단 밖의 글자, 표·그림·선은 쪽에 고정된 개체로 남는다.
+  - `diagnostics.layout`에 선택한 배치를 기록한다. `editable`이면 `diagnostics.editableLayout`에
+    구역별 단 수·여백·이어 붙인 문단 수를 함께 남긴다.
+  - WASM `HwpDocument.importPdf(bytes, { layout: "editable" })`와 MCP `hwp_import_pdf`의 `layout`도
+    같은 값을 받는다.
 - 암호 옵션은 이 명령에서 거부한다. 출력 암호가 필요하면 생성된 파일에 `convert` 또는
   `export-hwpx`의 암호 옵션을 사용한다.
 - `--no-default-features --features wasm-api`로 PDF만 제외한 CLI 빌드에도 도움말·capabilities는 보이며 `available=false`, 실행은

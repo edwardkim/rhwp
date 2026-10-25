@@ -1,10 +1,10 @@
 //! Strict JS options boundary; the shared frontend owns page-range validation.
-use crate::parser::pdf::{PdfImportOptions, PdfImportPolicy};
+use crate::parser::pdf::{PdfImportLayout, PdfImportOptions, PdfImportPolicy};
 use wasm_bindgen::{JsCast, JsValue};
 
 pub(super) fn options(value: JsValue) -> Result<PdfImportOptions, JsValue> {
     let invalid = || {
-        JsValue::from_str("PDF_IMPORT_OPTIONS: expected { sourcePages?: number[], includeTableInference?: boolean }")
+        JsValue::from_str("PDF_IMPORT_OPTIONS: expected { sourcePages?: number[], includeTableInference?: boolean, layout?: \"fidelity\" | \"editable\" }")
     };
     if value.is_undefined() {
         return Ok(PdfImportOptions::default());
@@ -17,7 +17,7 @@ pub(super) fn options(value: JsValue) -> Result<PdfImportOptions, JsValue> {
     for key in keys.iter() {
         if !matches!(
             key.as_string().as_deref(),
-            Some("sourcePages" | "includeTableInference")
+            Some("sourcePages" | "includeTableInference" | "layout")
         ) {
             return Err(invalid());
         }
@@ -29,11 +29,23 @@ pub(super) fn options(value: JsValue) -> Result<PdfImportOptions, JsValue> {
     } else {
         inference.as_bool().ok_or_else(invalid)?
     };
+    let layout =
+        js_sys::Reflect::get(&value, &JsValue::from_str("layout")).map_err(|_| invalid())?;
+    let layout = if layout.is_undefined() {
+        PdfImportLayout::default()
+    } else {
+        layout
+            .as_string()
+            .as_deref()
+            .and_then(PdfImportLayout::parse)
+            .ok_or_else(invalid)?
+    };
     let pages =
         js_sys::Reflect::get(&value, &JsValue::from_str("sourcePages")).map_err(|_| invalid())?;
     if pages.is_undefined() {
         return Ok(PdfImportOptions {
             include_table_inference,
+            layout,
             ..PdfImportOptions::default()
         });
     }
@@ -67,5 +79,6 @@ pub(super) fn options(value: JsValue) -> Result<PdfImportOptions, JsValue> {
     Ok(PdfImportOptions {
         source_pages: Some(result),
         include_table_inference,
+        layout,
     })
 }

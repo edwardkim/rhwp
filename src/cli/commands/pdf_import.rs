@@ -11,6 +11,8 @@ struct ImportArgs<'a> {
     ranges: Option<Vec<(usize, usize)>>,
     json: bool,
     table_inference: bool,
+    // fidelity(기본) 또는 editable. 문자열 검증은 공통 parser가 소유한다.
+    layout: Option<&'a str>,
 }
 
 fn parse_ranges(value: &str) -> Result<Vec<(usize, usize)>, &'static str> {
@@ -47,6 +49,7 @@ fn parse_args(args: &[String]) -> Result<ImportArgs<'_>, &'static str> {
     let mut ranges = None;
     let mut json = false;
     let mut table_inference = false;
+    let mut layout = None;
     let mut iter = args.iter();
     while let Some(arg) = iter.next() {
         match arg.as_str() {
@@ -57,12 +60,22 @@ fn parse_args(args: &[String]) -> Result<ImportArgs<'_>, &'static str> {
             }
             "--json" if !json => json = true,
             "--table-inference" if !table_inference => table_inference = true,
+            "--layout" if layout.is_none() => {
+                layout = Some(
+                    iter.next()
+                        .map(String::as_str)
+                        .ok_or("--layout 값이 필요합니다 (fidelity|editable).")?,
+                );
+            }
             option if option.starts_with('-') => return Err("알 수 없거나 중복된 옵션입니다."),
             path => positionals.push(path),
         }
     }
     if positionals.len() != 2 {
-        return Err("사용법: rhwp import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--json] [--table-inference]");
+        return Err("사용법: rhwp import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--layout fidelity|editable] [--json] [--table-inference]");
+    }
+    if layout.is_some_and(|value| !matches!(value, "fidelity" | "editable")) {
+        return Err("--layout은 fidelity 또는 editable입니다.");
     }
     if table_inference && !json {
         return Err("--table-inference는 --json과 함께 지정하세요. 원본 문자가 포함된 상세 추론 근거를 출력합니다.");
@@ -86,6 +99,7 @@ fn parse_args(args: &[String]) -> Result<ImportArgs<'_>, &'static str> {
         ranges,
         json,
         table_inference,
+        layout,
     })
 }
 
@@ -114,6 +128,7 @@ fn execute(options: ImportArgs<'_>) -> Result<(), (i32, String)> {
         options.ranges,
         options.json,
         options.table_inference,
+        options.layout,
     );
     Err((EXIT_RUNTIME, "PDF_IMPORT_DISABLED: 이 빌드는 PDF 가져오기가 제외되었습니다. cargo build --features pdf-import --bin rhwp 로 빌드하세요.".into()))
 }
@@ -123,7 +138,7 @@ fn execute(options: ImportArgs<'_>) -> Result<(), (i32, String)> {
     use std::io::Read;
 
     use rhwp::document_core::DocumentCore;
-    use rhwp::parser::pdf::{PdfImportOptions, MAX_INPUT_BYTES, MAX_PAGES};
+    use rhwp::parser::pdf::{PdfImportLayout, PdfImportOptions, MAX_INPUT_BYTES, MAX_PAGES};
 
     let runtime = |error: String| (EXIT_RUNTIME, error);
     let source_pages = options
@@ -156,6 +171,10 @@ fn execute(options: ImportArgs<'_>) -> Result<(), (i32, String)> {
         &PdfImportOptions {
             source_pages,
             include_table_inference: options.table_inference,
+            layout: options
+                .layout
+                .and_then(PdfImportLayout::parse)
+                .unwrap_or_default(),
         },
     )
     .map_err(|error| {

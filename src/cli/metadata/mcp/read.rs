@@ -298,13 +298,17 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 "properties": {
                     "path": { "type": "string", "description": "입력 PDF 경로" },
                     "output": { "type": "string", "description": "출력 .hwpx 또는 .hwp 경로" },
-                    "sourcePages": { "type": "string", "description": "0-based 증가 목록·포함 범위 (예: 0,6-7). 생략하면 전체 쪽" }
+                    "sourcePages": { "type": "string", "description": "0-based 증가 목록·포함 범위 (예: 0,6-7). 생략하면 전체 쪽" },
+                    "layout": { "type": "string", "enum": ["fidelity", "editable"], "description": "fidelity(기본): 본문 영역마다 위치 고정 글상자. editable: 본문 문단을 구역 본문 흐름으로 배치" }
                 },
                 "required": ["path", "output"]
             }),
             "import-pdf",
             serde_json::json!(["import-pdf", "{path}", "{output}", "--json"]),
-            serde_json::json!([{ "when": "sourcePages", "args": ["--source-pages", "{sourcePages}"] }]),
+            serde_json::json!([
+                { "when": "sourcePages", "args": ["--source-pages", "{sourcePages}"] },
+                { "when": "layout", "args": ["--layout", "{layout}"] }
+            ]),
             &["schemaVersion", "source", "output", "format", "bytes", "pageCount", "diagnostics"],
         ),
         tool(

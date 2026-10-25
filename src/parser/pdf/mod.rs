@@ -5,6 +5,7 @@
 //! full codec/font/cache allocation bounds are not yet proven.
 mod body_regions;
 mod char_pool;
+mod editable;
 mod extract;
 mod lowering;
 mod path_paint;
@@ -44,6 +45,33 @@ pub struct PdfImportOptions {
     /// Include page-scoped observations and competing table hypotheses in metadata.
     /// Contains source text; opt-in, local review only.
     pub include_table_inference: bool,
+    /// Where recognized body paragraphs are placed.
+    pub layout: PdfImportLayout,
+}
+
+/// Placement of recognized body paragraphs.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum PdfImportLayout {
+    /// One positioned text box per recognized body region (default). Every
+    /// page keeps the source geometry; paragraphs end at region borders.
+    #[default]
+    Fidelity,
+    /// Body paragraphs become the section's text flow with page margins,
+    /// columns and page/column breaks measured from the source. Other content
+    /// stays positioned on its page.
+    Editable,
+}
+
+impl PdfImportLayout {
+    /// Parses the stable option spelling used by the CLI and the WASM API.
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "fidelity" => Some(Self::Fidelity),
+            "editable" => Some(Self::Editable),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -196,6 +224,10 @@ pub struct PdfImportMetadata {
     pub source_page_count: usize,
     pub pages: Vec<PdfPageMetadata>,
     pub paragraph_policy: &'static str,
+    pub layout: PdfImportLayout,
+    /// Editable layout only: sections, measured margins and moved paragraphs.
+    #[serde(skip_serializing_if = "Value::is_null")]
+    pub editable_layout: Value,
     pub parser_allocation_bounds_proven: bool,
     pub warnings: Vec<&'static str>,
     pub resource_policy: PdfImportPolicy,
@@ -368,6 +400,7 @@ pub fn parse_pdf_with_policy(
         ..Budget::default()
     };
     let mut pages = Vec::with_capacity(selected.len());
+    let mut body_frames = Vec::new();
     for source_page in selected {
         let page = extract::extract(&pdf, source_page, &mut budget)
             .map_err(|error| error.at("extract", Some(source_page), Some(&request)))?;
@@ -423,6 +456,9 @@ pub fn parse_pdf_with_policy(
         let report = lowered.map_err(|_| {
             PdfImportError::new("PDF_LOWERING_FAILED", "PDF content could not be lowered")
         })?;
+        if options.layout == PdfImportLayout::Editable {
+            body_frames.push(editable::page_frames(section, &report));
+        }
         character_pool.compact_page(&mut document, first_character_shape, section)?;
         let n = |key: &str| report[key].as_u64().unwrap_or(0) as usize;
         let (left, bottom, right, top) = page.media_box;
@@ -458,6 +494,33 @@ pub fn parse_pdf_with_policy(
             ),
         });
     }
+    let editable_layout = if options.layout == PdfImportLayout::Editable {
+        let report = editable::reflow(&mut document, &body_frames).map_err(|_| {
+            PdfImportError::new("PDF_LOWERING_FAILED", "PDF body could not be reflowed")
+        })?;
+        // Page metadata follows the page into its reflowed section.
+        let mut section_of = std::collections::BTreeMap::new();
+        for (index, section) in report["sections"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .enumerate()
+        {
+            for page in section["pages"].as_array().into_iter().flatten() {
+                if let Some(source) = page["sourceSection"].as_u64() {
+                    section_of.insert(source as usize, index);
+                }
+            }
+        }
+        for page in &mut pages {
+            if let Some(&section) = section_of.get(&page.output_section) {
+                page.output_section = section;
+            }
+        }
+        report
+    } else {
+        Value::Null
+    };
     document.doc_properties.section_count = u16::try_from(document.sections.len())
         .map_err(|_| PdfImportError::budget("section count exceeds format range"))?;
     document
@@ -470,6 +533,8 @@ pub fn parse_pdf_with_policy(
             pdf_import_support: crate::pdf_support::pdf_import_support(),
             source_page_count: count, pages,
             paragraph_policy: "observed-lines; authored paragraph boundaries are not recovered",
+            layout: options.layout,
+            editable_layout,
             parser_allocation_bounds_proven: false,
             warnings: vec![
                 "Experimental PDF frontend; upstream allocation bounds remain unproven",

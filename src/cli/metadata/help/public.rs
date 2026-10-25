@@ -271,12 +271,14 @@ pub(super) fn print() {
     );
     println!("      --verify-pages        변환 전/후 렌더 페이지 수를 비교 (불일치 시 exit 4)");
     println!();
-    println!("  import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--json] [--table-inference]");
+    println!("  import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--layout fidelity|editable] [--json] [--table-inference]");
     println!("      --table-inference    --json에 원본 문자를 포함한 표 추론 근거·후보를 추가");
     println!(
         "      PDF 전체 또는 선택 쪽을 가져오기 (기본 포함 pdf-import; 제외 빌드는 재빌드 필요)"
     );
     println!("      --source-pages <목록>  원본 쪽 0-based 증가 목록·포함 범위. 생략하면 전체 쪽");
+    println!("      --layout <모드>        fidelity(기본): 인식한 본문 영역마다 위치 고정 글상자");
+    println!("                             editable: 본문 문단을 구역 본문 흐름·다단·쪽/단 나누기로 배치");
     println!("      --json                 stdout에 저장 결과·원본 쪽/구역 대응·진단 JSON 한 개");
     println!("      중복·역순·잘못된 범위는 exit 2, 읽기·변환·쓰기 실패는 exit 1 (stdout 비움)");
     println!("      원본 덮어쓰기 금지. 성공한 전체 결과만 원자적으로 저장하며 암호 옵션은 미지원");

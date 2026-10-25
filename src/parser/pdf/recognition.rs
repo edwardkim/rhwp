@@ -162,7 +162,7 @@ fn make_lines(
 /// `①`, `❶`, `◦`, `1.`, `(1)`, `(가)`, `ㄱ.`, `<보기>`, `[1~3]`.
 /// Inline reference marks such as `㉠` also start wrapped lines, so they
 /// are not item evidence.
-fn starts_item(text: &str) -> bool {
+pub(super) fn starts_item(text: &str) -> bool {
     let text = text.trim_start();
     let mut chars = text.chars();
     let Some(first) = chars.next() else {

@@ -213,6 +213,7 @@ fn source(page: usize) -> DocumentCore {
         &PdfImportOptions {
             source_pages: Some(vec![page]),
             include_table_inference: true,
+            ..PdfImportOptions::default()
         },
     )
     .unwrap()

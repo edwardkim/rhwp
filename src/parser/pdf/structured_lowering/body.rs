@@ -214,6 +214,15 @@ impl Output {
             .iter()
             .flat_map(|p| p.proposal.span_indices.iter().copied())
             .collect();
+        // Observed text extent of the frame, in page points. Layout modes that
+        // place these paragraphs outside the frame use it as their measure.
+        let lines = || batch.iter().flat_map(|p| p.proposal.lines.iter());
+        let text_box = [
+            lines().map(|l| l.left).fold(f32::MAX, f32::min),
+            batch.first().map_or(0., |p| p.item.top),
+            lines().map(|l| l.right).fold(f32::MIN, f32::max),
+            batch.last().map_or(0., |p| p.item.bottom),
+        ];
         let mut owned = BTreeSet::new();
         let mut flow = Vec::new();
         for p in batch.drain(..) {
@@ -229,7 +238,7 @@ impl Output {
         match built {
             Ok((next, control)) => {
                 self.paragraphs += count;
-                self.reports.push(json!({"region":ri,"status":"paragraph_ir","instanceId":*next_id,"paragraphCount":count,"spans":spans}));
+                self.reports.push(json!({"region":ri,"status":"paragraph_ir","instanceId":*next_id,"paragraphCount":count,"textBox":text_box,"spans":spans}));
                 self.frames.push(control);
                 removed.extend(owned);
                 *next_id = next;
