@@ -407,6 +407,16 @@ impl DocumentCore {
             bboxes: &mut std::collections::HashMap<usize, (f64, f64, f64, f64)>,
         ) {
             match &node.node_type {
+                RenderNodeType::FormObject(form)
+                    if form.section_index == sec
+                        && form.para_index == para
+                        && form.cell_location.is_none() =>
+                {
+                    bboxes.insert(
+                        form.control_index,
+                        (node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height),
+                    );
+                }
                 RenderNodeType::Image(image_node) => {
                     if image_node.section_index == Some(sec) && image_node.para_index == Some(para)
                     {
@@ -1967,6 +1977,32 @@ impl DocumentCore {
             node: &RenderNode,
             hits: &mut Vec<(usize, usize, usize, f64, f64, f64, f64)>,
         ) {
+            if let RenderNodeType::FormObject(form) = &node.node_type {
+                if form.cell_location.is_none() {
+                    if let Some(para) = core
+                        .document
+                        .sections
+                        .get(form.section_index)
+                        .and_then(|s| s.paragraphs.get(form.para_index))
+                    {
+                        if para
+                            .controls
+                            .get(form.control_index)
+                            .is_some_and(Control::is_treat_as_char_object)
+                        {
+                            hits.push((
+                                form.section_index,
+                                form.para_index,
+                                find_logical_control_positions(para)[form.control_index],
+                                node.bbox.x,
+                                node.bbox.y,
+                                node.bbox.width,
+                                node.bbox.height,
+                            ));
+                        }
+                    }
+                }
+            }
             if let RenderNodeType::Image(ref img) = node.node_type {
                 if img.cell_context.is_none() {
                     if let (Some(si), Some(pi), Some(ci)) =

@@ -1880,36 +1880,48 @@ impl DocumentCore {
                 node: &RenderNode,
                 sec: usize,
                 para: usize,
+                render_para: Option<&Paragraph>,
                 control_positions: &[usize],
                 offset: usize,
                 page: u32,
                 bias: CursorBias,
                 best: &mut Option<(u8, CursorHit)>,
             ) {
-                if let RenderNodeType::Equation(ref eq) = node.node_type {
-                    if eq.section_index == Some(sec)
-                        && eq.para_index == Some(para)
-                        && eq.cell_index.is_none()
+                let address = match &node.node_type {
+                    RenderNodeType::Equation(eq) if eq.cell_index.is_none() => eq
+                        .section_index
+                        .zip(eq.para_index)
+                        .zip(eq.control_index)
+                        .map(|((s, p), c)| (s, p, c)),
+                    RenderNodeType::FormObject(form)
+                        if form.cell_location.is_none()
+                            && render_para
+                                .and_then(|p| p.controls.get(form.control_index))
+                                .is_some_and(Control::is_treat_as_char_object) =>
                     {
-                        if let Some(ci) = eq.control_index {
-                            if let Some(pos) = control_positions.get(ci).copied() {
-                                if offset == pos || offset == pos + 1 {
-                                    let x = if offset == pos {
-                                        node.bbox.x
-                                    } else {
-                                        node.bbox.x + node.bbox.width
-                                    };
-                                    update_best_cursor(
-                                        best,
-                                        0,
-                                        CursorHit {
-                                            page,
-                                            x,
-                                            y: node.bbox.y,
-                                            h: node.bbox.height.max(10.0),
-                                        },
-                                    );
-                                }
+                        Some((form.section_index, form.para_index, form.control_index))
+                    }
+                    _ => None,
+                };
+                if let Some((s, p, ci)) = address {
+                    if s == sec && p == para {
+                        if let Some(pos) = control_positions.get(ci).copied() {
+                            if offset == pos || offset == pos + 1 {
+                                let x = if offset == pos {
+                                    node.bbox.x
+                                } else {
+                                    node.bbox.x + node.bbox.width
+                                };
+                                update_best_cursor(
+                                    best,
+                                    0,
+                                    CursorHit {
+                                        page,
+                                        x,
+                                        y: node.bbox.y,
+                                        h: node.bbox.height.max(10.0),
+                                    },
+                                );
                             }
                         }
                     }
@@ -1952,6 +1964,7 @@ impl DocumentCore {
                         child,
                         sec,
                         para,
+                        render_para,
                         control_positions,
                         offset,
                         page,
@@ -1966,6 +1979,7 @@ impl DocumentCore {
                 node,
                 sec,
                 para,
+                render_para,
                 &control_positions,
                 offset,
                 page,

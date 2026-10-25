@@ -120,6 +120,7 @@ fn control_identity(ctrl: &Control) -> (&'static str, u32, &'static str) {
         ),
         Control::Picture(_) => ("gso", 11, "그림"),
         Control::Equation(_) => ("eqed", 11, "수식"),
+        Control::Form(_) => ("form", 11, "양식 개체"),
         Control::Header(_) => ("head", 2, "머리말"),
         Control::Footer(_) => ("foot", 2, "꼬리말"),
         Control::Footnote(_) => ("fn", 2, "각주"),
