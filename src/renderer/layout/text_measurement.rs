@@ -2149,17 +2149,12 @@ fn char_width_decision_with_hft_tracking<'a>(
         // 표 전체를 신뢰하는지는 cmap 결측을 확인했는지와 별개의 계약이다.
         // KoPub처럼 별도 부분 표를 쓰는 face도 실제 프로그램의 결측을 조회하되,
         // HFT 원본이나 다른 측정 face의 계약을 표시 TTF의 cmap으로 대체하지 않는다.
-        let verified_primary_missing = verified_primary_missing
-            || (!style.source_font_is_hft
-                && measured_family == display_family
-                && font_metrics_data::verified_named_program_has_glyph(
-                    measured_family,
-                    style.bold,
-                    style.italic,
-                    c,
-                ) == Some(false))
-            // KoPub 전용 부분 표에는 FontMetric 항목이 없지만, 이 기호 범위는
-            // 12개 프로그램의 cmap을 전수 대조했다. 실제 결측만 선언 공급자로 보낸다.
+        let verified_named_primary_missing = !style.source_font_is_hft
+            && measured_family == display_family
+            && font_metrics_data::verified_named_program_has_glyph(
+                measured_family, style.bold, style.italic, c,
+            ) == Some(false);
+        let verified_primary_missing = verified_primary_missing || verified_named_primary_missing
             || (!style.source_font_is_hft
                 && measured_family == display_family
                 && KoPubFamily::from_primary(measured_family).is_some_and(|family| {
@@ -2179,9 +2174,10 @@ fn char_width_decision_with_hft_tracking<'a>(
             && !style.hft_fullwidth_dot
             // 결측 글리프의 paint 공급과 한컴 호환 전진폭은 독립 계약이다.
             // 형식 미확인 슬롯의 한점 리더는 독립 Print의 전각 대체
-            // 기호 폭을 보존한다. 명시 glyphFallbacks·검증 TrueType 환경·영문 슬롯은
-            // 선언 공급자의 자연 폭을 사용하며 HFT 보호는 위에서 유지한다.
+            // 기호 폭을 보존한다. 원 프로그램의 확인된 cmap 결측도 명시적인
+            // 공급 근거이며 부분 폭 표 전체의 신뢰도와 구별한다. HFT 보호는 위에서 유지한다.
             && (c != '\u{2024}'
+                || verified_named_primary_missing
                 || style.glyph_fallback_advance_explicit
                 || latin.is_some()
                 || latin.map_or(style.font_metric_trusted, |l| l.font_metric_trusted))

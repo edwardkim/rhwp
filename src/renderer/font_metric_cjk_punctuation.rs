@@ -1,4 +1,4 @@
-//! 확인한 실제 프로그램의 CJK 구두점 블록 cmap. 미수집 메트릭과 glyph 결측을 구분한다.
+//! 확인한 실제 프로그램의 기호·CJK 구두점 cmap. 미수집 메트릭과 glyph 결측을 구분한다.
 //! 글꼴 바이트는 포함하지 않는다. 세 KoPub 굵기와 HCR 정체/굵기의 coverage가 각각 같다.
 // HANBatang.ttf; SHA-256 c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104
 // HANBatangB.ttf; SHA-256 0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f
@@ -16,9 +16,12 @@
 // KoPubWorld Dotum Medium.ttf; SHA-256 6269624bd0c5ae8746a8e731b8087f056088af930a7bbc0efb76902bf732a293
 
 pub(super) fn primary_has_glyph(family: &str, _bold: bool, italic: bool, ch: char) -> Option<bool> {
-    let offset = (ch as u32)
+    let cjk_offset = (ch as u32)
         .checked_sub(0x3000)
-        .filter(|offset| *offset < 64)?;
+        .filter(|offset| *offset < 64);
+    if ch != '\u{2024}' && cjk_offset.is_none() {
+        return None;
+    }
     if italic {
         return None;
     }
@@ -33,6 +36,25 @@ pub(super) fn primary_has_glyph(family: &str, _bold: bool, italic: bool, ch: cha
         .iter()
         .find_map(|suffix| name.strip_suffix(suffix))
         .unwrap_or(&name);
+    // 위에 기록한 열두 원본 프로그램 모두 U+2024 cmap이 없다.
+    // 독립 편람 Print는 선언 체인의 HBATANG으로 공급한다. 부분 폭 표의
+    // 미수집을 결측으로 추정하거나 U+2027의 실제 KoPub hit를 바꾸지 않는다.
+    if ch == '\u{2024}'
+        && matches!(
+            base,
+            "kopubbatang"
+                | "kopubdotum"
+                | "kopub바탕체"
+                | "kopub돋움체"
+                | "kopubworldbatang"
+                | "kopubworlddotum"
+                | "kopubworld바탕체"
+                | "kopubworld돋움체"
+        )
+    {
+        return Some(false);
+    }
+    let offset = cjk_offset?;
     let coverage: u64 = match base {
         "kopubbatang" | "kopubdotum" | "kopub바탕체" | "kopub돋움체" => 0x00000000003bff0f,
         "kopubworldbatang" | "kopubworlddotum" | "kopubworld바탕체" | "kopubworld돋움체" => {
