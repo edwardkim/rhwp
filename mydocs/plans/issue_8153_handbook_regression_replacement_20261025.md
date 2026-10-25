@@ -37,3 +37,22 @@ ignored `output/pr-review/issue8153-handbook-raw100-20261022/handbook-regression
 suite 수집·관련 회귀·필수 전체 Rust·lint·Skia·Studio·fresh WASM을 실제 실행한다.
 
 현재 기록은 범위와 계획이다. 제거·새 검사·전쪽 100%·PR 준비 완료를 뜻하지 않는다.
+
+## 기존 검사 제거 단계
+
+직접 경로와 상수/helper 종속을 추적해 기존 Rust 검사 함수 59개를 제거했다.
+혼합 모듈의 편람 전용 함수와 assertion만 제거하고 다른 문서의 검사·독립 합성 계약은
+유지했다. 기존 #8153 묶음 그림 검사도 포함하며, 새 파일에서 독립 기대값으로 다시 만든다.
+Studio 전용 검사 2개·실제 WMF browser 검사 1개와 혼합 Local Font Access의 실물 편람
+부분을 제거했다. 나머지 독립 글꼴 계약은 유지했다.
+
+공용 baseline·catalog·격리 시나리오·JSONL 및 원본에서 추출한 동일-id corpus 34행을
+제거했다. 생성기의 두 corpus 정의와 관련 관측값도 함께 제거했다. ignored 경로에
+생성기를 실행해 남은 17개 산출물이 저장소와 바이트 단위로 같은 것을 확인했다.
+두 기존 공통 제외 helper를 통해 직접·동적 corpus와 serializer/wasm_api 단위 스윕에도
+같은 범위를 적용한다. 실제 helper의 6개 대상 경로 제외·3개 비대상 유지 검사는 통과했다.
+
+AST 문자열 검사에서 두 문서의 활성 경로는 제외 helper 두 곳에만 남는다.
+남은 사양 주석·과거 PNG 설명은 실행 입력이 아니다. 원본 HWP/HWPX·PDF·golden SVG의
+diff는 없다. Node 구문·Python 구문·변경 Rust 포맷과 diff 검사는 통과했다.
+정식 suite 재수집·Rust 실행과 새 #8153 검사 생성·검증은 다음 단계이며 아직 완료가 아니다.

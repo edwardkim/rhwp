@@ -12,7 +12,11 @@ use std::path::Path;
 const TRANSFERRED_EXAMS: &str = include_str!("../fixtures/transferred_exam_regressions.txt");
 
 pub(crate) fn sample_is_in_scope(path: &Path) -> bool {
-    if corpus_deferred_document_scope::is_deferred_document(path) {
+    if corpus_deferred_document_scope::is_deferred_document(path)
+        || path.file_name().and_then(|name| name.to_str()).is_some_and(|name| {
+            matches!(name, "2025 행정업무운영 편람(최종).hwp" | "2025 행정업무운영 편람(최종).hwpx")
+        })
+    {
         return false;
     }
     let absolute_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples");

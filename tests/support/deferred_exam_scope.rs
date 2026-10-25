@@ -16,6 +16,7 @@ fn is_deferred_exam_document(path: &str) -> bool {
         || include_str!("../fixtures/deferred_document_regressions.txt").lines().any(|deferred| deferred == name)
         || name.starts_with("hwp3-sample16.")
         || name.starts_with("hwp3-sample16-")
+        || matches!(name, "2025 행정업무운영 편람(최종).hwp" | "2025 행정업무운영 편람(최종).hwpx")
         || name.starts_with("exam_")
         || name.starts_with("exam-")
         || name.starts_with("exambank_math")
