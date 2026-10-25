@@ -1,0 +1,357 @@
+{
+  "source": "ac6534470739f8708e479be8de5bbcad990e08ae",
+  "rendererOverridesSha256": {
+    "src/renderer/typeset/table/block/entry.rs": "738e5a0c8b7597a884bceefb38639e0fecc2f523bb4115c10e090deb9b004707",
+    "src/renderer/typeset/section/vpos.rs": "327bb760fc45c2e6e28731d7a8e5c7696c40a33d6cfcdb458fe87e9864c6df1b",
+    "src/renderer/typeset/paragraph.rs": "6c9e42b2c19bccaf03b4f87d66f878d498c26b7aa285ba9a4f9396310ea5336e",
+    "src/renderer/typeset/paragraph/content.rs": "2fb1294834744b662a8585a8d6dc20236345813809bb887bb54364145c76c7b6",
+    "src/renderer/typeset/controls/order.rs": "7f45ae4ff68707946234300d4b7b3883d7c500cdefe52a8613e2665302874466",
+    "src/renderer/typeset.rs": "3fa6c324f1d92cef609022aa4bc185596aef2e9e86266b2a961453caf363003e",
+    "src/renderer/typeset/controls/stored_tac.rs": "5912767eca87d468dfd5c003e1024a5ce7a81d468851bfe14cdc444c6b3d40ae",
+    "src/renderer/layout/table_layout.rs": "0133ca1574f7c64c1da324d6b9fbc3ffff0e73b42d8c72b882d126753ae77780",
+    "src/renderer/float_placement.rs": "bdf9d673b0594deeaf4f5082015b73ddf428f5b2bf9f400d0164376926151cd2",
+    "src/renderer/layout/table_partial.rs": "e55b5021b24cd8c0e2d359bb2e1ba489fda88302bfe745ce5bb461f3bcd5804b"
+  },
+  "sourceArchiveSha256": "205529c8ac515185afb603a7e15ca8d70efed971e16f6f3a2be60e5f08fc1c14",
+  "sourceManifestSha256": "7cbde7e1998cdd64f456b30d4b14a3e28d3dedd602cd603d7a5df3b75dd4cc10",
+  "visualToolsManifestSha256": "32799f39622c5c6082cd29abf8afe08ad6e76787e9dcd3440c15a1e9bfc83249",
+  "nativeBinarySha256": "047d968ba1ec89ed98d42557d4313b12f20f20a01d3e2360f357af7b92187bbf",
+  "nativeProofSha256": "a74d14a89d675325874e579b2e09589341a0225a4ee8c6ca6b9cf5cdb331b59c",
+  "nativeComparisonSha256": "7cd0951522fad20a4899d7640f07feb7517cd6a92ccb4736a7b0e085fdbc2eab",
+  "canvasExporterSha256": "b4b00fecc3515073c1157f4f7a75cf0e6dc3c42533e56cf3251605efd4e479a1",
+  "jsSha256": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+  "wasmSha256": "0d1f99f7915a61e1581afd89646eee423e34a21bd6671fa064e1d2238ececadc",
+  "referencePdfSha256": "de1e7469a33a1e3b6eb9f0829fffc52715a80e2351a3d4caaf6195b7ddfd26f2",
+  "savedModelSha256": "91695094d661d217d436ea0c16d01501ba603f5ada22dae6d7b3746cc5555730",
+  "nativeState": {
+    "afterCapturePages": 24,
+    "backend": "native-skia",
+    "calls": 53,
+    "dpi": 96,
+    "editedPages": 24,
+    "originalPages": 22,
+    "pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "profile": "print",
+    "reopenedAfterCapturePages": 24,
+    "reopenedPages": 24,
+    "scope": "Live53call replay before export, followed by independent HWPX reopen; uncommitted renderer prototype on ac653; exact ten overrides in proof"
+  },
+  "rows": [
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 1,
+      "raw": 99.98901
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 2,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 3,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 4,
+      "raw": 99.57731
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 5,
+      "raw": 98.68115
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 6,
+      "raw": 99.99915
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 7,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 8,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 9,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 10,
+      "raw": 99.97223
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 11,
+      "raw": 94.54642
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 12,
+      "raw": 95.7519
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 13,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 14,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 15,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 16,
+      "raw": 99.99884
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 17,
+      "raw": 99.99942
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 18,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 19,
+      "raw": 99.99884
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 20,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 21,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 22,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 23,
+      "raw": 99.99794
+    },
+    {
+      "backend": "wasm",
+      "arm": "live",
+      "page": 24,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 1,
+      "raw": 99.98901
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 2,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 3,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 4,
+      "raw": 99.57731
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 5,
+      "raw": 98.68115
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 6,
+      "raw": 99.99915
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 7,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 8,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 9,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 10,
+      "raw": 99.97223
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 11,
+      "raw": 99.99882
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 12,
+      "raw": 95.7519
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 13,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 14,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 15,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 16,
+      "raw": 99.99884
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 17,
+      "raw": 99.99942
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 18,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 19,
+      "raw": 99.99884
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 20,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 21,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 22,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 23,
+      "raw": 99.99794
+    },
+    {
+      "backend": "wasm",
+      "arm": "reopened",
+      "page": 24,
+      "raw": 100.0
+    }
+  ],
+  "raw90GatePass": true,
+  "submissionQualityPass": false,
+  "scope": "Prototype on exact ac653 build scope plus ten explicit renderer overrides; Native outputs reused from independently verified source-identical472764e8-df7c-4fc3-b4d5-8e120227289c. Oversized None admission excludes transparent wrappers and uses physical base body height. Actual53call live Native/freshWASM and saved-model reopen, every24pages. Model None summary clipping is preserved like Hancom; this is rendering fidelity, not successful AI repair or final PR approval."
+}

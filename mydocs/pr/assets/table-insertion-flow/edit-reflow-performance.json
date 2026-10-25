@@ -1,0 +1,165 @@
+{
+  "source": {
+    "baseSource": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+    "candidateSource": "ac6534470739f8708e479be8de5bbcad990e08ae",
+    "candidateRendererOverrides": {
+      "src/renderer/typeset/table/block/entry.rs": {
+        "input": "notice-source-host-frame-v11.rs",
+        "sha256": "738e5a0c8b7597a884bceefb38639e0fecc2f523bb4115c10e090deb9b004707"
+      },
+      "src/renderer/typeset/section/vpos.rs": {
+        "input": "notice-first-origin-vpos.rs",
+        "sha256": "327bb760fc45c2e6e28731d7a8e5c7696c40a33d6cfcdb458fe87e9864c6df1b"
+      },
+      "src/renderer/typeset/paragraph.rs": {
+        "input": "notice-first-origin-paragraph.rs",
+        "sha256": "6c9e42b2c19bccaf03b4f87d66f878d498c26b7aa285ba9a4f9396310ea5336e"
+      },
+      "src/renderer/typeset/paragraph/content.rs": {
+        "input": "notice-first-origin-content.rs",
+        "sha256": "2fb1294834744b662a8585a8d6dc20236345813809bb887bb54364145c76c7b6"
+      },
+      "src/renderer/typeset/controls/order.rs": {
+        "input": "notice-order-owned-stream-v2.rs",
+        "sha256": "7f45ae4ff68707946234300d4b7b3883d7c500cdefe52a8613e2665302874466"
+      },
+      "src/renderer/typeset.rs": {
+        "input": "notice-terminal-tac-flow-v2.rs",
+        "sha256": "3fa6c324f1d92cef609022aa4bc185596aef2e9e86266b2a961453caf363003e"
+      },
+      "src/renderer/typeset/controls/stored_tac.rs": {
+        "input": "notice-tac-notes-visibility.rs",
+        "sha256": "5912767eca87d468dfd5c003e1024a5ce7a81d468851bfe14cdc444c6b3d40ae"
+      },
+      "src/renderer/layout/table_layout.rs": {
+        "input": "notice-source-row-frame-v3.rs",
+        "sha256": "0133ca1574f7c64c1da324d6b9fbc3ffff0e73b42d8c72b882d126753ae77780"
+      },
+      "src/renderer/float_placement.rs": {
+        "input": "notice-table-source-qualification-v4.rs",
+        "sha256": "bdf9d673b0594deeaf4f5082015b73ddf428f5b2bf9f400d0164376926151cd2"
+      },
+      "src/renderer/layout/table_partial.rs": {
+        "input": "notice-source-tail-alignment-v7.rs",
+        "sha256": "e55b5021b24cd8c0e2d359bb2e1ba489fda88302bfe745ce5bb461f3bcd5804b"
+      }
+    },
+    "input": {
+      "path": "output/pr-review/devel-sync-fixtures/rowbreak18.hwp",
+      "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed"
+    },
+    "files": {
+      "output/pr-review/table-insertion-perf/base-pkg/package.json": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+      "output/pr-review/table-insertion-perf/base-pkg/rhwp.js": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+      "output/pr-review/table-insertion-perf/base-pkg/rhwp_bg.wasm": "95c1ea2dc80a4f3d0f4db28a7994b8ed180ba4dc2cfbdca91be02e6bf20676c7",
+      "output/pr-review/table-insertion-perf/candidate-pkg/package.json": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+      "output/pr-review/table-insertion-perf/candidate-pkg/rhwp.js": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+      "output/pr-review/table-insertion-perf/candidate-pkg/rhwp_bg.wasm": "0d1f99f7915a61e1581afd89646eee423e34a21bd6671fa064e1d2238ececadc"
+    },
+    "sourceCanvasProofSha256": "1098e04330e2d5e1e211cb9aa3ff3078ed16f199b49ad4c7e68498214fe7da7d"
+  },
+  "platform": {
+    "os": "darwin",
+    "arch": "arm64",
+    "node": "v24.18.0",
+    "cpus": 10,
+    "load": [
+      2.1064453125,
+      1.40478515625,
+      1.30517578125
+    ]
+  },
+  "initialization": [
+    {
+      "arm": "base",
+      "moduleInitMs": 83.06379199999999
+    },
+    {
+      "arm": "candidate",
+      "moduleInitMs": 43.31200000000001
+    }
+  ],
+  "rows": [
+    {
+      "arm": "base",
+      "trial": 1,
+      "beforePages": 18,
+      "afterPages": 18,
+      "prepareMs": 355.15362500000003,
+      "editAndPaginateMs": 32.67770799999994,
+      "cpuMs": 154.201,
+      "textPreservedExceptMarker": true,
+      "controlsPreserved": true
+    },
+    {
+      "arm": "candidate",
+      "trial": 1,
+      "beforePages": 18,
+      "afterPages": 18,
+      "prepareMs": 396.72175000000004,
+      "editAndPaginateMs": 33.058333000000175,
+      "cpuMs": 164.954,
+      "textPreservedExceptMarker": true,
+      "controlsPreserved": true
+    },
+    {
+      "arm": "candidate",
+      "trial": 2,
+      "beforePages": 18,
+      "afterPages": 18,
+      "prepareMs": 193.87137499999994,
+      "editAndPaginateMs": 29.863250000000107,
+      "cpuMs": 153.148,
+      "textPreservedExceptMarker": true,
+      "controlsPreserved": true
+    },
+    {
+      "arm": "base",
+      "trial": 2,
+      "beforePages": 18,
+      "afterPages": 18,
+      "prepareMs": 189.54941699999995,
+      "editAndPaginateMs": 29.745957999999973,
+      "cpuMs": 151.473,
+      "textPreservedExceptMarker": true,
+      "controlsPreserved": true
+    },
+    {
+      "arm": "base",
+      "trial": 3,
+      "beforePages": 18,
+      "afterPages": 18,
+      "prepareMs": 187.35741700000017,
+      "editAndPaginateMs": 27.877500000000055,
+      "cpuMs": 75.995,
+      "textPreservedExceptMarker": true,
+      "controlsPreserved": true
+    },
+    {
+      "arm": "candidate",
+      "trial": 3,
+      "beforePages": 18,
+      "afterPages": 18,
+      "prepareMs": 181.53750000000014,
+      "editAndPaginateMs": 27.551041999999825,
+      "cpuMs": 64.508,
+      "textPreservedExceptMarker": true,
+      "controlsPreserved": true
+    }
+  ],
+  "medians": {
+    "base": {
+      "wallMs": 29.745957999999973,
+      "cpuMs": 151.473
+    },
+    "candidate": {
+      "wallMs": 29.863250000000107,
+      "cpuMs": 153.148
+    }
+  },
+  "ratio": {
+    "wall": 1.0039431239699905,
+    "cpu": 1.0110580763568424
+  },
+  "scope": "Same real multi-page RowBreak document, same outside-table prefix edit, API edit+pageCount completion only. Module init and parse/font preparation separate; no save, PNG, network, provider/model or app-latency claim. Three interleaved samples; no invented performance pass threshold or full visual quality claim."
+}
