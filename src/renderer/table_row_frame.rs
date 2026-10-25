@@ -35,14 +35,15 @@ pub(crate) fn stored_rows_own_body(table: &Table, rows: &[f64], dpi: f64) -> boo
         return false;
     }
     let unit = dpi / 7200.0;
-    rows.iter().enumerate().all(|(index, measured)| {
-        let declared = table
-            .cells
-            .iter()
-            .filter(|cell| usize::from(cell.row) == index)
-            .map(|cell| cell.height)
-            .max()
-            .map(|height| hwpunit_to_px(height as i32, dpi));
+    // 행마다 표 전체를 훑지 않고 행별 선언 높이 최댓값을 한 번에 모은다.
+    let mut declared_rows: Vec<Option<u32>> = vec![None; rows.len()];
+    for cell in &table.cells {
+        if let Some(declared) = declared_rows.get_mut(usize::from(cell.row)) {
+            *declared = Some(declared.map_or(cell.height, |height| height.max(cell.height)));
+        }
+    }
+    rows.iter().zip(&declared_rows).all(|(measured, declared)| {
+        let declared = declared.map(|height| hwpunit_to_px(height as i32, dpi));
         declared.is_some_and(|height| {
             measured.is_finite()
                 && (measured - height).abs()
