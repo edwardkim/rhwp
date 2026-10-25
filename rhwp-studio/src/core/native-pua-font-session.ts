@@ -62,7 +62,7 @@ export class NativePuaFontSession {
         if (!data) continue;
         const bytes = normalizeFontFaceData(data.bytes, data.faceIndex ?? 0);
         if (!bytes) continue;
-        const register = request.literal_figure_space
+        const register: NativePuaFontDocument['registerNativePuaFont'] = request.literal_figure_space
           ? owner.registerLiteralFigureSpaceFont : owner.registerNativePuaFont;
         if (register?.call(owner, request.family, request.bold, request.italic,
           new Uint8Array(bytes), 0)) {

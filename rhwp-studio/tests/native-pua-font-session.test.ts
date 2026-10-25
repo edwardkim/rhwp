@@ -61,6 +61,32 @@ test('주 face의 glyph 지원이 없으면 준비한 fallback을 순서대로 �
   } finally { await setHostFontProvider(null); }
 });
 
+test('같은 family의 PUA와 리터럴 공백을 별도 등록하고 두 역할을 세대 교체까지 보존한다', { timeout: 5000 }, async () => {
+  const f = await fixture();
+  const spaces: number[] = [];
+  const owner = {
+    ...f.owner,
+    getNativePuaFontRequests: () => JSON.stringify([
+      { family: 'Primary', bold: false, italic: false },
+      { family: 'Primary', bold: false, italic: false, literal_figure_space: true },
+    ]),
+    registerLiteralFigureSpaceFont(_family: string, _bold: boolean, _italic: boolean, bytes: Uint8Array) {
+      spaces.push(bytes[0]);
+      return true;
+    },
+  };
+  try {
+    await f.session.prepare(owner, 1, () => true, () => true);
+    await f.session.prepare(owner, 1, () => true, () => true);
+    assert.deepEqual(f.calls, [1]);
+    assert.deepEqual(spaces, [1]);
+    await f.session.prepare(owner, 2, () => true, () => true);
+    assert.deepEqual(f.calls, [1, 1]);
+    assert.deepEqual(spaces, [1, 1]);
+    assert.equal(f.clears(), 1);
+  } finally { await setHostFontProvider(null); }
+});
+
 for (const cancel of ['문서 교체', '공급 해제'] as const) {
   test(`${cancel} 뒤 도착한 이전 bytes는 새 문서/글꼴 세대에 등록하지 않는다`, { timeout: 5000 }, async () => {
     const f = await fixture();
