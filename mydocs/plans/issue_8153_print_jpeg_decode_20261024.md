@@ -175,6 +175,21 @@ Native TSV는 `native/handbook-{hwp,hwpx}/whole-score/silhouette.tsv`에 있다.
 표준 최적화 fresh WASM은 같은 `4bb17e9f9c`에서 빌드 중이다. Native 성공을 WASM 또는
 전쪽 raw100 완료로 세지 않는다. 기존 실패 검사와 최종 필수 검증도 아직 완료되지 않았다.
 
+후속 표준 fresh WASM 빌드는 wasm-opt까지 20분 29초·exit 0이다. 실제 브라우저의 편람
+집중 56조건과 팔레트 대조 1조건을 통과한 뒤, 같은 패키지에서 전 766쪽을 새로 출력했다.
+WASM SHA-256은 `5819b18df6575ec41569180db28dda4bab99220014bf7077fb4c14dc1f5d1d65`다.
+HWPX/HWP의 최저 raw는 각각 99.24283% / 98.93468%, 미대응 0픽셀은 254 / 263쪽,
+미대응 픽셀 합은 13015 / 11861개다. 직전 후보보다 22조건 개선·744조건 유지이며 하락과
+미대응 픽셀 증가는 없다. 전체 1,532결과의 raw 100%·미대응 0픽셀은 1,037결과다.
+새 TSV는 `wasm-whole/handbook-{hwp,hwpx}/whole-score/silhouette.tsv`에 있다.
+
+94·163쪽은 두 형식·양쪽 backend 모두 raw 100%지만 실제 3배 확대에서 외곽선이
+Print보다 옅었다. 기존 그림 외곽선 회귀 4건은 같은 고정 library에서 여전히 실패한다.
+중심선 bbox와 그림 bbox의 동일성 대신 소유·중심·잉크 포함 관계로 바꾼 진단 초안은
+4건 통과했으나, 보이는 선폭 차이를 먼저 보정해야 하므로 정식 검사에는 반영하지 않았다.
+raw 100%를 직접 판독의 면제로 쓰지 않는다. 관련 원장은 `border-direct-review/`와
+`logs/group-picture-border-{old,proposed}-test.log`이며 전쪽 100% 목표와 최종 검증은 계속 남는다.
+
 #### alpha 일반화 전의 추가 반례
 
 255쪽의 원본 색 평면·고정 Bayer16 mask와 공개 PDFium 16.16 표본/정수 합성으로 해당
