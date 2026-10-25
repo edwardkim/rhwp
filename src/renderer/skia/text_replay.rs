@@ -27,6 +27,7 @@ mod overlap;
 pub(super) struct SkiaTextReplay<'a> {
     pub(super) canvas: &'a Canvas,
     pub(super) raster_target: bool,
+    pub(super) geometric_text: bool,
     pub(super) hft_outline_enabled: bool,
     pub(super) font_mgr: &'a FontMgr,
     pub(super) text_shaper: &'a std::cell::OnceCell<Option<skia_safe::Shaper>>,
@@ -119,7 +120,7 @@ impl SkiaTextReplay<'_> {
                             family,
                             font_style,
                         );
-                        return fonts::for_text(&chain, sample, size, style, self.font_mgr);
+                        return fonts::for_text(&chain, sample, size, style, self.font_mgr, self.geometric_text);
                     }
                     if crate::renderer::pua_glyph::candidate(sample).is_some() {
                         if let Some(primary) = typeface_chain.first() {
@@ -131,11 +132,12 @@ impl SkiaTextReplay<'_> {
                                     size,
                                     style,
                                     self.font_mgr,
+                                    self.geometric_text,
                                 );
                             }
                         }
                     }
-                    fonts::for_text(&typeface_chain, sample, size, style, self.font_mgr)
+                    fonts::for_text(&typeface_chain, sample, size, style, self.font_mgr, self.geometric_text)
                 };
                 let baseline_y = if baseline > 0.0 {
                     bbox.y + baseline
@@ -559,6 +561,10 @@ impl SkiaTextReplay<'_> {
                                         let mut number_font =
                                             Font::new(face.typeface.clone(), font_size);
                                         number_font.set_edging(font::Edging::AntiAlias);
+                                        fonts::preserve_geometry(
+                                            &mut number_font,
+                                            self.geometric_text,
+                                        );
                                         let mut frame_paint = Paint::default();
                                         frame_paint.set_anti_alias(true);
                                         frame_paint.set_style(paint::Style::Stroke);

@@ -22,6 +22,12 @@ impl RenderProfile {
     pub fn shows_editor_visuals(self) -> bool {
         matches!(self, Self::FastPreview | Self::Screen)
     }
+
+    /// Print raster는 장치 격자로 원본 글리프의 소수 기하를 대체하지 않는다.
+    #[cfg(any(target_arch = "wasm32", feature = "native-skia"))]
+    pub(crate) fn preserves_raster_text_geometry(self) -> bool {
+        self == Self::Print
+    }
 }
 
 #[cfg(test)]

@@ -1217,6 +1217,7 @@ impl SkiaLayerRenderer {
         let text_replay = SkiaTextReplay {
             canvas,
             raster_target: cache_context.raster_target,
+            geometric_text: cache_context.raster_target && profile.preserves_raster_text_geometry(),
             hft_outline_enabled,
             font_mgr: &self.font_mgr,
             text_shaper: &self.text_shaper,

@@ -60,23 +60,52 @@ pub(super) fn for_text(
     size: f32,
     style: &TextStyle,
     font_mgr: &FontMgr,
+    geometric_text: bool,
 ) -> Option<Font> {
     if let Some(ch) = sample.chars().find(|ch| !ch.is_whitespace()) {
-        return select_typeface_for_character(chain, ch)
-            .map(|candidate| finish(candidate.typeface.clone(), size, style, font_mgr));
+        return select_typeface_for_character(chain, ch).map(|candidate| {
+            finish(
+                candidate.typeface.clone(),
+                size,
+                style,
+                font_mgr,
+                geometric_text,
+            )
+        });
     }
     if let Some(candidate) = chain.first() {
-        Some(finish(candidate.typeface.clone(), size, style, font_mgr))
+        Some(finish(
+            candidate.typeface.clone(),
+            size,
+            style,
+            font_mgr,
+            geometric_text,
+        ))
     } else {
         let mut font = Font::default();
         font.set_size(size);
         font.set_edging(font::Edging::AntiAlias);
         font.set_subpixel(true);
+        preserve_geometry(&mut font, geometric_text);
         Some(font)
     }
 }
 
-fn finish(tf: Typeface, size: f32, style: &TextStyle, font_mgr: &FontMgr) -> Font {
+pub(super) fn preserve_geometry(font: &mut Font, geometric_text: bool) {
+    if geometric_text {
+        font.set_subpixel(true);
+        font.set_hinting(skia_safe::FontHinting::None);
+        font.set_baseline_snap(false);
+    }
+}
+
+fn finish(
+    tf: Typeface,
+    size: f32,
+    style: &TextStyle,
+    font_mgr: &FontMgr,
+    geometric_text: bool,
+) -> Font {
     let tf = if style.italic {
         unobliqued_typeface(font_mgr, &tf).unwrap_or(tf)
     } else {
@@ -103,6 +132,7 @@ fn finish(tf: Typeface, size: f32, style: &TextStyle, font_mgr: &FontMgr) -> Fon
     if style.fixed_glyph_advances {
         font.set_baseline_snap(false);
     }
+    preserve_geometry(&mut font, geometric_text);
     if style.is_visually_bold() && !is_bold_face && !owns_heavy {
         font.set_embolden(true);
     }
