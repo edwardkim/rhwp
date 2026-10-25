@@ -30,5 +30,7 @@ fn cell_source_paragraph_range_survives_layer_conversion_and_json() {
             range.is_some()
         );
         assert!(layer.to_json().contains("\"modelCellIndex\":4"));
+        let json: serde_json::Value = serde_json::from_str(&layer.to_json()).unwrap();
+        assert_eq!(json["schemaMinorVersion"], 30);
     }
 }
