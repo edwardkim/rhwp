@@ -100,6 +100,107 @@ fn floating_forms_do_not_take_an_inline_slot() {
 }
 
 #[test]
+fn same_position_forms_copy_only_the_selected_logical_slot() {
+    let mut core = document(FormType::RadioButton, true);
+    let mut doc = core.document().clone();
+    let template = doc.sections[0].paragraphs[0].controls[0].clone();
+    let kinds = [
+        FormType::PushButton,
+        FormType::CheckBox,
+        FormType::RadioButton,
+        FormType::ComboBox,
+        FormType::Edit,
+    ];
+    doc.sections[0].paragraphs[0].controls = kinds
+        .into_iter()
+        .enumerate()
+        .map(|(index, kind)| {
+            let Control::Form(mut form) = template.clone() else {
+                unreachable!()
+            };
+            form.form_type = kind;
+            form.name = format!("양식{index}");
+            Control::Form(form)
+        })
+        .collect();
+    doc.sections[0].paragraphs[0].char_count = 41;
+    for selected in 0..5 {
+        core.set_document(doc.clone());
+        core.copy_selection_logical_native(0, 0, selected, 0, selected + 1)
+            .unwrap();
+        core.paste_internal_native(0, 0, 0).unwrap();
+        let names: Vec<_> = core.document().sections[0]
+            .paragraphs
+            .iter()
+            .flat_map(|p| &p.controls)
+            .filter_map(|c| match c {
+                Control::Form(form) => Some(form.name.clone()),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(names.len(), 6);
+        for index in 0..5 {
+            assert_eq!(
+                names
+                    .iter()
+                    .filter(|name| **name == format!("양식{index}"))
+                    .count(),
+                if index == selected { 2 } else { 1 }
+            );
+        }
+    }
+}
+
+#[test]
+fn invalid_form_copy_keeps_the_previous_clipboard() {
+    let mut core = document(FormType::RadioButton, true);
+    core.copy_selection_logical_native(0, 0, 0, 0, 1).unwrap();
+    assert!(core.copy_selection_logical_native(0, 0, 1, 0, 0).is_err());
+    assert!(core.copy_selection_logical_native(0, 0, 0, 0, 2).is_err());
+    core.paste_internal_native(0, 0, 0).unwrap();
+    assert_eq!(
+        core.document().sections[0]
+            .paragraphs
+            .iter()
+            .flat_map(|p| &p.controls)
+            .filter(|c| matches!(c, Control::Form(_)))
+            .count(),
+        2
+    );
+}
+
+#[test]
+fn copying_a_form_between_unicode_text_keeps_the_neighbouring_text() {
+    let mut core = document(FormType::RadioButton, true);
+    let mut doc = core.document().clone();
+    let para = &mut doc.sections[0].paragraphs[0];
+    para.text = "앞🦦뒤".into();
+    para.char_offsets = vec![0, 9, 11];
+    para.char_count = 13;
+    core.set_document(doc);
+    core.copy_selection_logical_native(0, 0, 1, 0, 2).unwrap();
+    assert_eq!(core.get_clipboard_text_native(), "");
+    assert_eq!(core.document().sections[0].paragraphs[0].text, "앞🦦뒤");
+    core.paste_internal_native(0, 0, 0).unwrap();
+    let paragraphs = &core.document().sections[0].paragraphs;
+    assert_eq!(
+        paragraphs
+            .iter()
+            .map(|p| p.text.as_str())
+            .collect::<String>(),
+        "앞🦦뒤"
+    );
+    assert_eq!(
+        paragraphs
+            .iter()
+            .flat_map(|p| &p.controls)
+            .filter(|c| matches!(c, Control::Form(_)))
+            .count(),
+        2
+    );
+}
+
+#[test]
 fn radio_outer_bottom_right_edge_remains_visible_on_white_paper() {
     let core = document(FormType::RadioButton, true);
     let svg = core.render_page_svg_native(0).unwrap();

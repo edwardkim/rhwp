@@ -405,6 +405,35 @@ impl DocumentCore {
         end_para_idx: usize,
         end_logical: usize,
     ) -> Result<String, HwpError> {
+        if start_para_idx == end_para_idx {
+            if let Some(para) = self
+                .document
+                .sections
+                .get(section_idx)
+                .and_then(|section| section.paragraphs.get(start_para_idx))
+                .filter(|para| {
+                    para.field_ranges.is_empty()
+                        && para.controls.iter().any(|c| matches!(c, Control::Form(_)))
+                        && para.controls.iter().all(|c| {
+                            matches!(c, Control::SectionDef(_) | Control::ColumnDef(_))
+                                || matches!(c, Control::Form(form) if form.common.treat_as_char)
+                        })
+                })
+            {
+                if start_logical > end_logical || end_logical > logical_paragraph_length(para) {
+                    return Err(HwpError::RenderError(
+                        "복사할 논리 범위가 올바르지 않습니다".into(),
+                    ));
+                }
+                // 같은 글자 자리에 붙은 양식은 앞/뒤 한 비트로 구별할 수 없어 논리 칸에서 직접 나눈다.
+                let mut selected = para.clone();
+                selected.split_at(end_logical);
+                if start_logical > 0 {
+                    selected = selected.split_at(start_logical);
+                }
+                return Ok(self.store_clipboard(vec![selected]));
+            }
+        }
         let para = |para_idx: usize| {
             self.document
                 .sections
@@ -485,6 +514,10 @@ impl DocumentCore {
             ));
         }
 
+        Ok(self.store_clipboard(clip_paragraphs))
+    }
+
+    fn store_clipboard(&mut self, mut clip_paragraphs: Vec<Paragraph>) -> String {
         // 구조적 컨트롤(SectionDef, ColumnDef 등) 제거 — 텍스트 복사에 불필요
         for para in &mut clip_paragraphs {
             strip_structural_controls_for_text_clipboard(para);
@@ -505,10 +538,7 @@ impl DocumentCore {
             copied_table_text_reflowed: false,
         });
 
-        Ok(super::super::helpers::json_ok_with(&format!(
-            "\"text\":\"{}\"",
-            escaped
-        )))
+        super::super::helpers::json_ok_with(&format!("\"text\":\"{}\"", escaped))
     }
 
     /// 표 셀 내부 선택 영역을 내부 클립보드에 복사한다.

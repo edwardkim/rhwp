@@ -701,6 +701,7 @@ impl Paragraph {
                 | Control::Table(_)
                 | Control::Picture(_)
                 | Control::Equation(_)
+                | Control::Form(_)
                 | Control::Footnote(_)
                 | Control::Endnote(_)
                 | Control::AutoNumber(_)
