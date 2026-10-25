@@ -133,6 +133,43 @@ fn rendered_rows(
     out
 }
 
+/// Left edge of each rendered row's first character, by paragraph, in row
+/// order. Rows of one paragraph on one page and column only.
+fn row_lefts(core: &DocumentCore) -> BTreeMap<(usize, usize, i64), Vec<(usize, f64)>> {
+    fn walk(n: &RenderNode, page: usize, rows: &mut BTreeMap<(usize, usize, i64), (usize, f64)>) {
+        if let RenderNodeType::TextRun(r) = &n.node_type {
+            if let (Some(0), Some(pi), Some(start), None) =
+                (r.section_index, r.para_index, r.char_start, &r.cell_context)
+            {
+                let e = rows
+                    .entry((pi, page, n.bbox.y.round() as i64))
+                    .or_insert((start, n.bbox.x));
+                if start < e.0 {
+                    *e = (start, n.bbox.x);
+                }
+            }
+        }
+        for c in &n.children {
+            walk(c, page, rows);
+        }
+    }
+    let mut rows = BTreeMap::new();
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).unwrap();
+        walk(&tree.root, page as usize, &mut rows);
+    }
+    let mut out: BTreeMap<(usize, usize, i64), Vec<(usize, f64)>> = BTreeMap::new();
+    for ((pi, page, _), (start, x)) in rows {
+        out.entry((pi, page, i64::from(x >= 560.0)))
+            .or_default()
+            .push((start, x));
+    }
+    for rows in out.values_mut() {
+        rows.sort_by_key(|r| r.0);
+    }
+    out
+}
+
 /// Character index of each stored row start, read on the paragraph's own
 /// stream axis (`line_seg_text_start`), the axis its characters use.
 fn stored_rows(p: &Paragraph) -> BTreeSet<usize> {
@@ -211,6 +248,28 @@ fn verify(core: &DocumentCore, sources: &[String], pages: usize, joined: &[&str]
             "{label}: `{prefix}` continues into the next column or page: {places:?}"
         );
     }
+    // A first-line indent shows on the paragraph's first row only.
+    let mut indented = 0;
+    for ((pi, _, _), rows) in row_lefts(core) {
+        let p = &paragraphs[pi];
+        let shape = &doc.doc_info.para_shapes[p.para_shape_id as usize];
+        // Paragraph measures are twice HWPUNIT; 1pt is 100 HWPUNIT, 96/72 px.
+        let expected = f64::from(shape.indent) / 2.0 / 100.0 * 96.0 / 72.0;
+        if shape.indent >= 1000 && rows.len() >= 2 && rows[0].0 == 0 {
+            let head: String = p.text.chars().take(24).collect();
+            let shift = rows[0].1 - rows[1].1;
+            assert!(
+                (shift - expected).abs() <= 1.5,
+                "{label}: first row of `{head}` is indented by its paragraph indent \
+                 ({shift:.1}px, indent {expected:.1}px)"
+            );
+            indented += 1;
+        }
+    }
+    assert!(
+        indented >= 10,
+        "{label}: indented body paragraphs are checked"
+    );
     // The renderer keeps every stored row of every flow paragraph.
     for (pi, (starts, _)) in &rows {
         let p = &paragraphs[*pi];

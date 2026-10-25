@@ -218,6 +218,28 @@ fn join(previous: &mut Paragraph, next: &Paragraph) {
     previous.line_segs = rows;
 }
 
+/// Body rows take the paragraph indent from the row tag, not from their
+/// start position: a positive indent marks the first row, a negative
+/// (hanging) indent the rows after it. Frame rows stored the indent in
+/// their start instead, and joined rows came from separate paragraphs.
+fn mark_indented_rows(doc: &Document, paragraphs: &mut [Paragraph]) {
+    use crate::model::paragraph::LineSeg;
+    for p in paragraphs.iter_mut() {
+        let Some(shape) = doc.doc_info.para_shapes.get(p.para_shape_id as usize) else {
+            continue;
+        };
+        let indent = shape.indent;
+        for (row, seg) in p.line_segs.iter_mut().enumerate() {
+            let indented = (indent > 0 && row == 0) || (indent < 0 && row > 0);
+            if indented {
+                seg.tag |= LineSeg::TAG_INDENTATION;
+            } else {
+                seg.tag &= !LineSeg::TAG_INDENTATION;
+            }
+        }
+    }
+}
+
 /// Lay the pages' paragraphs into one flow. Paragraphs cut by a column or
 /// page boundary are joined. Each page's positioned content rides on the
 /// first paragraph that starts on that page, or on its own anchor line.
@@ -670,6 +692,7 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
             pages_flow.push((anchor, body, keep_anchor));
         }
         let joined = assemble(doc, &mut section.paragraphs, pages_flow);
+        mark_indented_rows(doc, &mut section.paragraphs);
         report.push(json!({"pages":pages_report,"columns":count,"columnGap":gap,"joinedParagraphs":joined,"margins":[margin_left,margin_top,margin_right,margin_bottom]}));
         doc.sections.push(section);
     }
