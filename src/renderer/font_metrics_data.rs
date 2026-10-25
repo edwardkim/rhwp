@@ -369,22 +369,75 @@ pub fn find_metric(name: &str, bold: bool, italic: bool) -> Option<MetricMatch> 
     })
 }
 
+/// 이름 하나의 별칭·색인 해석. `bold`/`italic` 과 무관하다.
+#[derive(Clone, Copy)]
+struct MetricNameResolution {
+    /// 별칭이 요청 이름과 다르면 그 정적 이름.
+    alias: Option<&'static str>,
+    alias_rule_id: Option<&'static str>,
+    slots: Option<&'static [MetricSelection; 4]>,
+}
+
+/// 글자마다 불리므로 최근 이름 몇 개의 해석을 보관한다. 결과는 이름만으로 정해진다.
+fn resolve_metric_name(name: &str) -> MetricNameResolution {
+    const RECENT: usize = 8;
+    thread_local! {
+        static RECENT_NAMES: std::cell::RefCell<Vec<(Box<str>, MetricNameResolution)>> =
+            const { std::cell::RefCell::new(Vec::new()) };
+    }
+    RECENT_NAMES.with(|recent| {
+        let mut recent = recent.borrow_mut();
+        if let Some((_, resolution)) = recent.iter().find(|(cached, _)| **cached == *name) {
+            return *resolution;
+        }
+        let (alias_resolved_name, alias_rule_id) = resolve_projected_metric_alias(name);
+        let resolution = MetricNameResolution {
+            alias: static_metric_alias(name),
+            alias_rule_id,
+            slots: metric_index().get(alias_resolved_name),
+        };
+        if recent.len() >= RECENT {
+            recent.remove(0);
+        }
+        recent.push((name.into(), resolution));
+        resolution
+    })
+}
+
+/// `resolve_projected_metric_alias` 가 요청 이름 대신 돌려주는 정적 별칭.
+fn static_metric_alias(name: &str) -> Option<&'static str> {
+    match find_font_rule_layout_metric(name) {
+        Some(rule) => Some(rule.target_face_or_policy),
+        None if name == "양재난초체M" => Some("Yj NANCHO Medium"),
+        None => None,
+    }
+}
+
 pub(crate) fn find_metric_decision<'a>(
     name: &'a str,
     bold: bool,
     italic: bool,
 ) -> Option<MetricLookupDecision<'a>> {
-    let (mut alias_resolved_name, mut alias_rule_id) = resolve_projected_metric_alias(name);
+    let resolution = resolve_metric_name(name);
     let mut bold = bold;
-    let slots = match metric_index().get(alias_resolved_name) {
-        Some(slots) => slots,
+    let (alias_resolved_name, alias_rule_id, slots) = match resolution.slots {
+        Some(slots) => (
+            resolution.alias.unwrap_or(name),
+            resolution.alias_rule_id,
+            slots,
+        ),
         None => {
             // `Pretendard-Bold`처럼 PostScript 이름으로 저장된 face 는 굵기 접미사를 떼고
-            // family 이름으로 다시 찾는다. `-Bold` 는 Bold 메트릭을 고른다.
+            // family 이름으로 다시 찾는다. `-Bold` 는 Bold 메트릭을 고른다. 떼어 낸 family 는
+            // 요청 이름의 일부라 이름 캐시(`resolve_metric_name`)에 두지 않는다.
             let (family, suffix_bold) = strip_postscript_weight_suffix(name)?;
-            (alias_resolved_name, alias_rule_id) = resolve_projected_metric_alias(family);
+            let (family_alias, family_rule_id) = resolve_projected_metric_alias(family);
             bold |= suffix_bold;
-            metric_index().get(alias_resolved_name)?
+            (
+                family_alias,
+                family_rule_id,
+                metric_index().get(family_alias)?,
+            )
         }
     };
     let selected = slots[metric_slot_index(bold, italic)];
