@@ -37,11 +37,19 @@ impl Table {
         }
         let mut covering = storage.vec(rows)?;
         covering.resize_with(rows, Vec::new);
+        let mut coverage = 0usize;
         for (index, cell) in self.cells.iter().enumerate() {
             let start = usize::from(cell.row);
             let end = start + usize::from(cell.row_span);
-            if cell.row_span == 0 || cell.col_span == 0 || end > rows || cell.width == 0 {
-                continue;
+            coverage = coverage.saturating_add(usize::from(cell.row_span));
+            if cell.row_span == 0
+                || cell.col_span == 0
+                || end > rows
+                || cell.width == 0
+                || usize::from(cell.col) + usize::from(cell.col_span) > cols
+                || coverage > MAX_TABLE_GRID_CELLS
+            {
+                return Ok(result);
             }
             for row in &mut covering[start..end] {
                 storage.push(row, index)?;
@@ -61,12 +69,16 @@ impl Table {
                 if usize::from(cell.col) != col || end_col > cols {
                     break;
                 }
+                // 병합 셀은 열 코어뿐 아니라 그 사이의 원본 간격도 점유한다.
+                // 이 간격을 마지막 셀에 다시 몰면 같은 걸침 셀의 시작이 행마다 달라진다.
+                let width_hu =
+                    i64::from(cell.width) + self.inner_cell_spacing_hu(usize::from(cell.col_span));
                 frames.push(RowCellFrame {
                     cell_index: index,
                     start_hu: cursor,
-                    width_hu: i64::from(cell.width),
+                    width_hu,
                 });
-                cursor += i64::from(cell.width) + spacing;
+                cursor += width_hu + spacing;
                 col = end_col;
             }
             if col != cols || frames.len() != indices.len() || cursor > target {

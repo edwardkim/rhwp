@@ -187,7 +187,16 @@ fn merge_edge_slot(slot: &mut Option<BorderEdge>, border: &BorderLine, side: Bor
                     horizontal_top: Some(true),
                 }
             } else if line == existing.line {
-                existing
+                // 같은 색 획도 좌표 소유는 아래 셀 상단이다. 방문 순서가
+                // 달라도 같은 물리 행을 선택하며, 아래 획이 없으면 위 하단을 유지한다.
+                if horizontal_top == Some(true) {
+                    BorderEdge {
+                        horizontal_top,
+                        ..existing
+                    }
+                } else {
+                    existing
+                }
             } else {
                 BorderEdge {
                     horizontal_top,
