@@ -60,3 +60,22 @@ HWP가 사용하는 `prepare_coanchored_first_line`의 `InlineBoxPlacement.y`는
 장식 유무의 독립 한컴 Print 대조는 같은 표·텍스트 원점을 출력했다. 바깥 여백을
 0 → 140HU로 바꾸면 양쪽 조건 모두 같은 방향으로 이동한다. 따라서 장식 조건으로
 여백을 제거하는 규칙을 만들 근거가 아니다. 실제 변경은 생산자의 중복 가산 제거다.
+
+## 실제 후보의 Native 검증
+
+후보 source는 `6e0114e077dd2354266dbe18e7935341a6fbd7a4`이며 jobs 8·고정
+`target/pr-review`의 Native 빌드는 6분 18초, 종료 코드 0이다. 실제 원본의 같은
+저장 줄을 대조한 새 관계형 검사는 수정 전 HWP 210.346667px·HWPX 208.48px의
+차이에서 실패하고 수정 후 통과했다. 내부 표의 독립 Print ±2px와 쪽·문단 소유,
+관인/서명 생략의 내용 수량과 앞뒤 순서를 함께 확인했다.
+
+기존 #7333의 14개 정상 회귀와 이번 검사를 포함한 집중 회귀 38건은 모두 통과했다.
+편람 Native 전체 766개 중 변경은 HWP 116쪽 한 개이며 미대응 465 → 1픽셀,
+raw 98.93498% → 99.99767%다. 다른 765개에는 미대응 증가가 없다.
+두 문서의 Native 최저 raw는 각각 99.36039%다. 116쪽의 얇은 화살표와 남은
+1픽셀은 계속 확인하며, 이 원점 보정을 116쪽 또는 전쪽 100% 완료로 바꾸지 않는다.
+
+ignored `handbook-decorated-tac-candidate/`의 producer 영수증,
+`selected-regressions-run.log`, `native-focus-result.json`, `whole-native-exact-audit.json`,
+`native-improvement-summary.json`에 연결한다. 같은 source의 최적화 fresh WASM과
+최종 전체 Rust/lint/Skia/Studio 게이트는 진행 중 또는 미실행이며 이 기록으로 대체하지 않는다.

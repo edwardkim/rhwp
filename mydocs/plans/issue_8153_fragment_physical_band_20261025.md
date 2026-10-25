@@ -58,3 +58,10 @@ fresh WASM의 같은 source 검증은 진행 중이며 이 Native 결과로 대�
 ignored 검증 루트 `handbook-source-band-candidate/`의 `producer/receipt.json`,
 `before-test-run.log`, `selected-regressions-run.log`, `whole-native-exact-audit.json`,
 `whole-native-comparison.json`에 실제 source·입력·출력과 비교 결과를 연결한다.
+
+같은 source의 표준 최적화 fresh WASM 전쪽 766개도 종료 코드 0으로 완료했다.
+HWPX 8쪽의 미대응 9 → 0픽셀 개선이 동일하며, 나머지 쪽의 미대응 증가와 raw 하락은
+없다. Native/fresh WASM의 미대응 0은 각각 HWPX 292·292쪽, HWP 295·294쪽으로
+총 1173/1532개다. 전체 최소 raw는 98.93458%이며 목표의 전쪽 100%는 미완료다.
+`whole-wasm-exact-audit.json`, `whole-wasm-comparison.json`,
+`validation-controller-result.json`과 최적화 WASM 영수증에 source·실제 출력 SHA를 고정했다.
