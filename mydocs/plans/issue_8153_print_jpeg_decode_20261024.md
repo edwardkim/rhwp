@@ -149,6 +149,48 @@ PrintPaper 단위로 발행한다. `ImagePaintFrame::border_frame`이 같은 결
 이 제품 연결 뒤 Native 집중/전쪽·기존 그림 대조군·표준 optimized fresh WASM으로 실제
 출력을 다시 검증한다. 기존 JPEG 단계 전쪽 TSV를 새 좌표 후보의 결과로 바꾸지 않는다.
 
+#### `4bb17e9f9c`의 실제 Native 전쪽 검증
+
+고정 checkout·공유 target·jobs 8의 release-test/native-skia 빌드는 372.389초·exit 0이다.
+CLI SHA-256은 `3e243605d981d4d03bbd15d1874d3a48e818ef9d4457f417914b6ebb6d0bdd6e`다.
+실제 집중 56조건은 앞선 source 기반 진단과 RGB 전체가 같고, 14조건 개선·42조건 동일이다.
+같은 후보의 두 원본 전 766쪽을 새로 출력해 383쪽씩의 대응과 PNG/입력/PDF 해시를 확인했다.
+
+| 입력 | Native 최저 raw % | 미대응 0픽셀 쪽 | 미대응 픽셀 합 |
+| --- | ---: | ---: | ---: |
+| 편람 HWPX | 99.36039 | 255 / 383 | 12385 |
+| 편람 HWP | 98.93537 | 265 / 383 | 11306 |
+
+직전 `a2e14ae3bb` 대비 두 형식 각각 11쪽, 총 22쪽이 개선됐고 하락·미대응 픽셀 증가는
+0건이다. 각각 91·92·94·95·163·262·263·265·273쪽이 미대응 0픽셀이 됐고, 93쪽은
+5→2개, 255쪽은 657→265개다. 263쪽의 실제 Native review를 직접 확인했다. 두 그림,
+외곽선과 뒤 문단의 소속·순서·내용을 유지하며 raw 100%를 RGB 전체 일치로 확대하지 않는다.
+
+기존 phase/color/faint 3개를 2022·2024 모드에서 직전·새 CLI로 실제 실행한 6쌍도 RGB가
+전부 같다. 이 결과는 독립 reference의 점수를 새로 판정한 결과와 구분한다. 실행 원장은
+`handbook-inline-anchor-candidate/{native-focus-result,whole-native-exact-audit,
+whole-native-comparison,actual-vs-source-derived-diagnostic}.json`과 `paper-controls/result.json`이다.
+Native TSV는 `native/handbook-{hwp,hwpx}/whole-score/silhouette.tsv`에 있다.
+
+표준 최적화 fresh WASM은 같은 `4bb17e9f9c`에서 빌드 중이다. Native 성공을 WASM 또는
+전쪽 raw100 완료로 세지 않는다. 기존 실패 검사와 최종 필수 검증도 아직 완료되지 않았다.
+
+#### alpha 일반화 전의 추가 반례
+
+255쪽의 원본 색 평면·고정 Bayer16 mask와 공개 PDFium 16.16 표본/정수 합성으로 해당
+그림 영역을 재생한 진단은 독립 Print와 RGB 전 픽셀이 같다. 그러나 원래 alpha 전 256값
+대조군의 색 평면까지 같은 방식으로 일반화하면 두 JPEG에서 각각 16만 픽셀 이상이 다르다.
+참조의 718열 창을 압축 전에 반영해도 해결되지 않는다. 단순 PARGB floor 왕복 가설도
+개선되지 않아 제품에는 적용하지 않았다. mask의 721,536픽셀 일치와 색 전달의 미입증 범위를
+구분한다.
+
+16색·상수 alpha 1/17/203의 추가 독립 Print는 실제 원본 RGB와 최종 색 평면의 차이를
+압축 오차 없이 관측하기 위한 진단이다. alpha 17은 실제 Skia decoder와 같지만 203은
+다르다. 일반화할 색 변환의 근거를 더 확보해야 하며, 단일 편람 그림의 일치만으로 모든
+투명 그림의 decoder·mask 계약을 바꾸지 않는다. 이 PDF·분석·실행 원장은 ignored
+`alpha-p255-public-contract/`, `alpha-grid-color-plane-controls/`,
+`alpha-lossless-color-controls/`, `alpha-constant-color-contracts/`에만 보존한다.
+
 원본 JPEG를 펼치는 IDCT와 색차 보간의 정수 반올림은 PDF로 전달할 RGB555·JPEG보다
 앞선 단계다. 현재 Print 전달은 일반 화면용 `image` decoder를 그대로 사용하므로,
 동일한 원본·crop·RGB555·JPEG 양자화를 적용해도 독립 한컴 Print 이미지와 차이가 남는다.
