@@ -2164,7 +2164,8 @@ impl CenteredTextLineMeasure {
             measured_style.extra_char_spacing = extra_char_spacing;
             width += estimate_text_width_exact(text, &measured_style);
         }
-        // 마지막 가시 글자의 음수 자간은 글리프 자체의 폭을 줄이지 않는다.
+        // 마지막 가시 글자 뒤에는 자간을 소비할 다음 글자가 없다.
+        // 음수 자간은 glyph 끝을 복원하고 양수 자간은 정렬 점유에서 제외한다.
         if let Some((text, style)) = self.runs.iter().rev().find(|(text, _)| !text.is_empty()) {
             if let Some(character) = text
                 .chars()
@@ -2177,7 +2178,7 @@ impl CenteredTextLineMeasure {
                 let advance = estimate_text_width_exact(&glyph, &measured_style);
                 measured_style.letter_spacing = 0.0;
                 measured_style.extra_char_spacing = 0.0;
-                width += (estimate_text_width_exact(&glyph, &measured_style) - advance).max(0.0);
+                width += estimate_text_width_exact(&glyph, &measured_style) - advance;
             }
         }
         width
