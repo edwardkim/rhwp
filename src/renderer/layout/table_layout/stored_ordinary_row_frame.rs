@@ -361,32 +361,43 @@ impl LayoutEngine {
         Some(hwpunit_to_px(table.common.height as i32, self.dpi))
     }
 
-    /// 저장 쪽 경계에서 선택한 유닛을 실제 마지막 행 상자 안에 놓는다.
+    /// 저장 컷과 같은 물리 상자를 첫 조각·이어받기에서 예약한다.
+    /// 이어받은 상자는 앞 조각을 차감한 동일 행의 잔여만 사용한다.
     pub(crate) fn stored_ordinary_row_end_frame(
         &self,
         table: &Table,
         row: usize,
-        start: &[usize],
-        end: &[usize],
+        cut: (&[usize], &[usize]),
         available: f64,
+        carried: Option<f64>,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
+        let (start, end) = cut;
         let cells = self.ordinary_row_cells_for_cut(table, row, end, styles)?;
-        if !start.is_empty()
-            || end.len() != cells.len()
+        if end.len() != cells.len()
             || !(self.stored_ordinary_row_cut_has_physical_frame(table, row, start, end, styles)
                 || self.row_cut_consumes_all_ordinary_units(table, row, end, styles))
-            || !self.row_cut_remaining_is_single_stored_frame(table, row, end, None, styles)
         {
             return None;
         }
-        let full = cells
-            .iter()
-            .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
-            .fold(0.0, f64::max);
+        let full = if start.is_empty() {
+            // 첫 조각의 독립 선언·종료 프레임 계약은 유지한다.
+            if !self.row_cut_remaining_is_single_stored_frame(table, row, end, None, styles) {
+                return None;
+            }
+            cells
+                .iter()
+                .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
+                .fold(0.0, f64::max)
+        } else {
+            // 미소비 내용이 여러 쪽이어도 같은 물리 잔여를 이어받는다.
+            // 블록 컷이나 알 수 없는 prefix를 원본 전체 높이로 추측하지 않는다.
+            if start.len() != cells.len() {
+                return None;
+            }
+            carried.filter(|height| height.is_finite() && *height > 0.0)?
+        };
         let content = self.stored_ordinary_row_cut_height(table, row, start, end, styles)?;
-        // 내용이 든 첫 조각은 원본 최소가 들어가면 그 높이에서 닫는다.
-        // 남은 쪽 공간이 선언보다 큰 경우에도 내용 높이로만 축소하지 않는다.
         (available.is_finite() && available >= content).then_some(full.min(available).max(content))
     }
 

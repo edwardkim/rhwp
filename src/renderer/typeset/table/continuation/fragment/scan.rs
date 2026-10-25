@@ -759,9 +759,7 @@ impl TypesetEngine {
                 split_end_reserved = height;
             }
         }
-
-        // 원본 일반 행의 쪽 프레임은 refit이 선택한 내용과 같은 물리 상자를 예약한다.
-        // 내용을 다 소비한 컷에도 마지막 줄 간격만 남은 꼬리를 별도 행으로 세지 않는다.
+        // refit의 내용 컷과 물리 상자를 함께 예약하고 완료 컷의 작은 줄간격 꼬리는 새 행으로 만들지 않는다.
         if split_block_start.is_none()
             && split_end_limit > 0.0
             && !split_end_cut.is_empty()
@@ -798,8 +796,7 @@ impl TypesetEngine {
                     .min(avail_for_rows)
                     - before_last,
             );
-            // 두 저장 프레임과 후속 원점이 닫은 상자는 쪽의 남는 공간이 아니다.
-            // 이미 늘어난 임시 예약 대신 실제 소유 컷의 내용 하한과 비교한다.
+            // 두 저장 프레임·후속 원점이 닫은 상자는 임시 예약 대신 실제 소유 컷의 내용 하한과 비교한다.
             let source_opening = (!is_continuation
                 && cursor_row == 0
                 && start_cut.is_empty()
@@ -833,8 +830,7 @@ impl TypesetEngine {
                     )
                     && *height <= available
             });
-            // 인라인 프레임의 반복 제목행 계약은 유지한다. 일반 칸의 원본
-            // 최소는 제목행 유무와 무관하며, helper가 저장 컷의 유효성을 확인한다.
+            // 인라인 반복 제목행은 유지하며 일반 칸의 원본 최소·저장 컷은 제목행 유무와 별도로 확인한다.
             let inline_frame = self
                 .stored_header_physical_rows(st, input.source)
                 .then(|| {
@@ -861,12 +857,15 @@ impl TypesetEngine {
                 .flatten()
                 .filter(|height| *height >= selected);
             if let Some(height) = source_opening.or(inline_frame).or_else(|| {
+                let carried = (row == cursor_row && !input.start.start_cut_is_block)
+                    .then_some(start_row_height_override)
+                    .flatten();
                 layout_engine.stored_ordinary_row_end_frame(
                     row_geometry_table,
                     row,
-                    row_start,
-                    &split_end_cut,
+                    (row_start, &split_end_cut),
                     available,
+                    carried,
                     styles,
                 )
             }) {
@@ -878,7 +877,6 @@ impl TypesetEngine {
                 split_end_reserved = height;
             }
         }
-
         // 온전한 앞 제목만 소유한 원본 조각은 다음 인라인 상자를 가져오지
         // 않고 현재 셀의 최소 물리 밴드를 끝낸다. 같은 높이를 paint에 전달한다.
         if split_block_start.is_none()
