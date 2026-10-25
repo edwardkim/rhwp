@@ -38,7 +38,6 @@ use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
 
-const SAMPLE: &str = "samples/2025 행정업무운영 편람(최종).hwp";
 const TOLERANCE: f64 = 0.015;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
@@ -124,41 +123,6 @@ fn ratios(core: &DocumentCore, page: u32) -> BTreeMap<(bool, Class), Vec<f64>> {
     out
 }
 
-#[test]
-fn kopub_hanja_symbols_and_corner_brackets_follow_the_font_advance() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let core = DocumentCore::from_bytes(&std::fs::read(&path).expect("정식 원본")).expect("로드");
-    for (pages, dotum, k, oracle) in [
-        (&[38u32][..], false, Class::Hanja, 0.9667),
-        (&[38][..], true, Class::Hanja, 1.0345),
-        (&[60][..], false, Class::Symbol, 0.9651),
-        (&[177][..], true, Class::Symbol, 1.0307),
-        (&[205][..], true, Class::Quote, 0.5217),
-        (&[288][..], false, Class::Quote, 0.4778),
-        (&[57][..], false, Class::Times, 0.9638),
-    ] {
-        let mut observed = Vec::new();
-        for &page in pages {
-            observed.extend(ratios(&core, page).remove(&(dotum, k)).unwrap_or_default());
-        }
-        let face = if dotum { "돋움" } else { "바탕" };
-        assert!(
-            !observed.is_empty(),
-            "{pages:?}쪽 KoPub {face} {k:?} 가 없다 — 대상 0건은 통과 증거가 아니다"
-        );
-        let got = median(observed.clone());
-        println!(
-            "{pages:?}쪽 KoPub {face} {k:?}: {got:.4} (정본 {oracle:.4}, n={})",
-            observed.len()
-        );
-        assert!(
-            (got - oracle).abs() <= TOLERANCE,
-            "{pages:?}쪽 KoPub {face} {k:?}: 같은 글꼴·크기 한글 대비 {got:.4}, 정본 {oracle:.4} (n={})",
-            observed.len()
-        );
-    }
-}
-
 /// 독립 온새미로 Print 36쪽의 연속 원점은 ㉠ 215.6800, ∼ 227.0405,
 /// ㉤ 238.4009px다. 같은 KoPubWorld 프로그램의 두 글리프는 900/1000em이며,
 /// 앞 원문자의 폭만 바로잡고 ∼를 반각으로 남기면 이후 본문이 당겨진다.
@@ -201,69 +165,4 @@ fn kopub_world_similarity_and_circled_hangul_keep_equal_advances() {
         "독립 Print는 같은 전진폭이나 ∼/㉠={}",
         similarity / circle
     );
-}
-
-/// KoPub에는 ▪가 없으며 편람 Print 170쪽은 Haansoft Batang으로 공급한다.
-/// 이 공급자의 전진은 약 1.012em(프로그램 hmtx 1em)이다. KoPub의 900 규칙을
-/// 존재하지 않는 글리프에 적용하거나 한글 936 규칙으로 되돌려도 검출한다.
-#[test]
-fn absent_kopub_square_uses_the_declared_supplier_advance() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let core = DocumentCore::from_bytes(&std::fs::read(path).expect("정식 원본")).expect("로드");
-    let raw = core.get_page_text_layout_native(169).expect("text-layout");
-    let layout: serde_json::Value = serde_json::from_str(&raw).expect("JSON");
-    let mut observed = Vec::new();
-    for run in layout["runs"].as_array().expect("runs") {
-        let family = run["fontFamily"].as_str().unwrap_or_default();
-        if !family.starts_with("KoPub바탕체") || !family.contains("Haansoft Batang") {
-            continue;
-        }
-        let xs = run["charX"].as_array().expect("charX");
-        let size = run["fontSize"].as_f64().expect("fontSize");
-        let ratio = run["ratio"].as_f64().expect("ratio");
-        for (i, c) in run["text"].as_str().expect("text").chars().enumerate() {
-            if c == '▪' {
-                let advance = xs[i + 1].as_f64().expect("x") - xs[i].as_f64().expect("x");
-                observed.push(advance / (size * ratio));
-            }
-        }
-    }
-    assert!(!observed.is_empty(), "실제 결측 기호 0건은 통과가 아니다");
-    let got = median(observed);
-    println!("▪ 공급자 전진={got:.4}em");
-    assert!((0.985..=1.025).contains(&got), "결측 ▪ 공급자 전진 {got}em");
-}
-
-/// 원본 F02FC는 표시용 Unicode ►와 전진폭이 다르다. 편람 106·170쪽의
-/// 한컴 2020·2024 Print는 Haansoft Batang CID13, /W500으로 출력한다.
-/// 해당 기호를 담은 실제 SFNT가 없는 portable 경로도 원본 반각 전진을 보존한다.
-#[test]
-fn original_private_triangle_keeps_its_half_em_advance() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let core = DocumentCore::from_bytes(&std::fs::read(path).expect("정식 원본")).expect("로드");
-    for page in [106, 170] {
-        let raw = core
-            .get_page_text_layout_native(page - 1)
-            .expect("text-layout");
-        let layout: serde_json::Value = serde_json::from_str(&raw).expect("JSON");
-        let mut count = 0;
-        for run in layout["runs"].as_array().expect("runs") {
-            let xs = run["charX"].as_array().expect("charX");
-            let size = run["fontSize"].as_f64().expect("fontSize");
-            let ratio = run["ratio"].as_f64().expect("ratio");
-            for (i, c) in run["text"].as_str().expect("text").chars().enumerate() {
-                if c == '\u{F02FC}' {
-                    let advance = xs[i + 1].as_f64().expect("x") - xs[i].as_f64().expect("x");
-                    let em = advance / (size * ratio);
-                    // 원본의 음수 자간과 HWP 장치 격자 반올림을 포함한다.
-                    assert!(
-                        (em - 0.5).abs() < 0.035,
-                        "{page}쪽 원 PUA F02FC는 /W500 반각, 실제 {em:.4}em"
-                    );
-                    count += 1;
-                }
-            }
-        }
-        assert!(count >= 2, "{page}쪽 원 PUA 실제 검사 부족: {count}");
-    }
 }

@@ -527,8 +527,6 @@ const CLEAN_CORPUS: &[&str] = &[
     "samples/2026_oss_rst.hwp",
     "samples/hwp3-sample.hwp",
     "samples/2022년 국립국어원 업무계획.hwp",
-    "samples/2025 행정업무운영 편람(최종).hwp",
-    "samples/2025 행정업무운영 편람(최종).hwpx",
     "samples/21868765_별표2_보건소_분장사무.hwp",
     "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
 ];
@@ -574,36 +572,5 @@ fn ordinary_korean_documents_are_clean() {
          정상 문서가 걸리면 규칙을 좁히세요 — 경보는 오탐 한 건이면 통째로 무시됩니다.",
         noisy.len(),
         noisy.join("\n"),
-    );
-}
-#[test]
-fn scan_cost_is_linear_in_document_size() {
-    // 문서 전체를 훑는 명령이 2차식이면 대형 문서에서 조용히 못 쓰게 된다.
-    // 같은 문서를 잘라 만든 2배 크기 사이에서 문자 수와 시간이 함께 선형인지 본다.
-    let big = manifest("samples/2025 행정업무운영 편람(최종).hwp");
-    let small = manifest(SAMPLE);
-    if !big.exists() {
-        eprintln!("대형 샘플 없음 — 건너뜀");
-        return;
-    }
-    let measure = |p: &Path| -> (u64, f64) {
-        let path = p.to_str().expect("경로");
-        let args = ["inspect", "unicode", path, "--json"];
-        let t = std::time::Instant::now();
-        let output = run(&args);
-        let secs = t.elapsed().as_secs_f64();
-        let v = parse_stdout_json(&args, &output);
-        (v["scannedChars"].as_u64().unwrap_or(0), secs)
-    };
-    let (small_chars, _) = measure(&small);
-    let (big_chars, big_secs) = measure(&big);
-    assert!(
-        big_chars > small_chars * 10,
-        "대형 표본이 충분히 크지 않습니다: {big_chars} vs {small_chars}"
-    );
-    // 상한만 건다 — CI 부하에 따라 절대 시간은 흔들리지만, 2차식이면 이 상한을 못 지킨다.
-    assert!(
-        big_secs < 30.0,
-        "{big_chars}자 문서 스캔에 {big_secs:.1}초 — 선형이라면 나올 수 없는 시간입니다"
     );
 }

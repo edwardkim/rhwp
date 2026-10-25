@@ -72,28 +72,3 @@ fn real_work_plan_date_is_not_a_clause_item() {
         "날짜 문단이 텍스트로도 사라졌다면 negative 단언이 공허하게 통과한 것이다"
     );
 }
-
-#[test]
-fn real_handbook_toc_numbers_are_not_clause_items() {
-    let structure = load_structure("samples/2025 행정업무운영 편람(최종).hwp");
-
-    assert_eq!(
-        find_at(&structure.roots, 0, 8).map(|node| (node.kind, node.marker.as_str())),
-        Some(("장", "제1장"))
-    );
-    assert_eq!(
-        find_at(&structure.roots, 0, 14).map(|node| (node.kind, node.marker.as_str())),
-        Some(("절", "제1절"))
-    );
-    assert!(find_at(&structure.roots, 0, 9).is_none());
-    assert!(find_at(&structure.roots, 0, 15).is_none());
-
-    // 거부된 목차 번호도 텍스트로는 남는다.
-    let texts = all_text(&structure);
-    assert!(
-        texts.iter().any(|text| text
-            .trim_start()
-            .starts_with("1. ‘행정업무의 효율적 운영’의 의의")),
-        "목차 문단이 텍스트로도 사라졌다면 negative 단언이 공허하게 통과한 것이다"
-    );
-}

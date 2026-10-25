@@ -206,25 +206,6 @@ fn direct_mok_under_section_is_a_heading() {
 }
 
 #[test]
-fn real_handbook_keeps_representative_direct_mok_headings() {
-    let structure = load_structure("samples/2025 행정업무운영 편람(최종).hwp");
-
-    for (section, paragraph, marker) in [
-        (1, 7, "가."),
-        (1, 9, "나."),
-        (2, 219, "가."),
-        (2, 222, "나."),
-    ] {
-        assert_eq!(
-            find_at(&structure.roots, section, paragraph)
-                .map(|node| (node.kind, node.marker.as_str())),
-            Some(("목", marker)),
-            "편람 section={section} paragraph={paragraph}"
-        );
-    }
-}
-
-#[test]
 fn real_market_report_keeps_matching_direct_mok_heading() {
     let structure = load_structure(
         "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",

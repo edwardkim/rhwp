@@ -12,11 +12,15 @@
 import path from 'path';
 import pixelmatch from 'pixelmatch';
 import puppeteer from 'puppeteer-core';
-import { existsSync, readdirSync } from 'fs';
+import { existsSync, readFileSync, readdirSync } from 'fs';
 import os from 'os';
 import { PNG } from 'pngjs';
 import { TestReporter } from './report-generator.mjs';
 import { observeWasmArtifact } from './wasm-artifact-check.mjs';
+
+const DEFERRED_DOCUMENTS = new Set(readFileSync(
+  new URL('../../tests/fixtures/deferred_document_regressions.txt', import.meta.url), 'utf8',
+).trim().split(/\r?\n/u));
 
 const MAX_INK_MASK_MATCH_EDGES = 5_000_000;
 const CHROME_CDP = process.env.CHROME_CDP || 'http://172.21.192.1:19222';
@@ -89,6 +93,9 @@ function sampleFetchPath(filename) {
   const parts = value.split('/');
   if (parts.some(part => !part || part === '.' || part === '..')) {
     throw new Error(`샘플 파일명이 /samples 밖으로 벗어날 수 있음: ${filename}`);
+  }
+  if (DEFERRED_DOCUMENTS.has(parts.at(-1))) {
+    throw new Error(`별도 PR에서 회귀를 다시 추가할 문서입니다: ${filename}`);
   }
   return `/samples/${parts.map(encodeURIComponent).join('/')}`;
 }

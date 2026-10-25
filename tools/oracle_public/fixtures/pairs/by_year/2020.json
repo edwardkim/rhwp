@@ -3,7 +3,7 @@
   "claim": "M01-f",
   "kind": "oraclePairFixture",
   "hancomVersion": "2020",
-  "pairCount": 525,
+  "pairCount": 519,
   "pairs": [
     {
       "id": "samples/2010-01-06.hwp::pdf/2010-01-06-hwp-2020.pdf",
@@ -23,66 +23,6 @@
       "hancomVersion": "2020",
       "variant": "hwp-2020",
       "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwp::pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwp",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2020",
-      "variant": "2020-kopub",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwp::pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwp",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwp::pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwp",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2020",
-      "variant": "hwp-kopub-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwpx::pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2020",
-      "variant": "2020-kopub",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwpx::pdf/2025 행정업무운영 편람(최종)-hwpx-2020.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-2020.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2020",
-      "variant": "hwpx-2020",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwpx::pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2020.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2020.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2020",
-      "variant": "hwpx-kopub-2020",
-      "sourceFormat": "hwpx",
       "oracleRoot": "pdf"
     },
     {

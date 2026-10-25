@@ -86,7 +86,6 @@ CLEAN_SAMPLES = [
     "samples/hwp3-sample10.hwp",
     "samples/issue1950_hwp3_tab_charoffset.hwp",
     "samples/2022년 국립국어원 업무계획.hwp",
-    "samples/2025 행정업무운영 편람(최종).hwpx",
 ]
 
 INJECTION_KINDS = [

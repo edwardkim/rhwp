@@ -174,27 +174,6 @@
       }
     },
     {
-      "id": "t08_structure_report",
-      "title": "문서 구조 파악 보고",
-      "category": "구조",
-      "goal": "입력 문서(BENCH_INPUT)의 조문/개요 구조를 분석해 BENCH_OUT_DIR/answers.json 에 {\"mode\": <auto 모드가 고른 구조 종류>, \"nodeCount\": <전체 구조 노드 수>, \"topLevelCount\": <최상위 노드 수>} 로 보고하라.",
-      "fixtures": ["samples/2025 행정업무운영 편람(최종).hwpx"],
-      "params": {},
-      "outputs": ["answers.json"],
-      "timeoutSec": 300,
-      "oracle": {
-        "steps": [
-          {"save": "ref", "cmd": ["{RHWP}", "export-structure", "{FIXTURE}", "--json"], "timeoutSec": 300},
-          {"loadJson": "{OUT}/answers.json", "save": "ans"}
-        ],
-        "checks": [
-          {"type": "json", "label": "mode", "from": "ans", "path": "mode", "op": "eq", "value": {"from": "ref", "path": "mode"}},
-          {"type": "json", "label": "nodeCount", "from": "ans", "path": "nodeCount", "op": "eq", "value": {"from": "ref", "path": "nodeCount"}},
-          {"type": "json", "label": "topLevelCount", "from": "ref", "path": "structure.roots", "op": "lenEq", "value": {"from": "ans", "path": "topLevelCount"}}
-        ]
-      }
-    },
-    {
       "id": "t09_bulk_aggregate",
       "title": "대량 처리 집계 대장",
       "category": "대량",

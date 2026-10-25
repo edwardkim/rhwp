@@ -32,22 +32,6 @@ FINGERPRINT_HEADER = (
 # Locked counts from PR #4763 / issue #4764.
 CORPORA = [
     {
-        "id": "admin_hwp",
-        "kind": "hwp",
-        "pages": 383,
-        "locked": 383,
-        "stage": "s125",
-        "note": "2025 admin handbook HWP remesure",
-    },
-    {
-        "id": "admin_hwpx",
-        "kind": "hwpx",
-        "pages": 383,
-        "locked": 383,
-        "stage": "s134",
-        "note": "2025 admin handbook HWPX remesure",
-    },
-    {
         "id": "reg_76076",
         "kind": "hwp",
         "pages": 82,
@@ -123,12 +107,6 @@ KNOWN = {
     ("issue4491", 9): ("table_place", 0, 0, 1, "s4491", "table placement"),
     ("issue4491", 26): ("font_env", 0, 0, 0, "s169", "HCRDotum font environment"),
     ("issue4491", 36): ("font_weight", 0, 0, 0, "s4491", "font weight"),
-    ("admin_hwp", 144): ("none", 0, 0, 0, "s66", "p144 header regression preserve"),
-    ("admin_hwp", 145): ("none", 0, 0, 0, "s66", "p145 header regression preserve"),
-    ("admin_hwp", 156): ("none", 0, 0, 0, "s67", "p156 square wrap regression preserve"),
-    ("admin_hwpx", 144): ("none", 0, 0, 0, "s66", "hwpx p144 preserve"),
-    ("admin_hwpx", 145): ("none", 0, 0, 0, "s66", "hwpx p145 preserve"),
-    ("admin_hwpx", 156): ("none", 0, 0, 0, "s67", "hwpx p156 preserve"),
 }
 
 SCENARIOS = (

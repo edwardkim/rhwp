@@ -46,7 +46,6 @@ ht-clean-sample-hwp3-sample4.hwp	hidden-text	clean-corpus	negative	envelopes/hid
 ht-clean-sample-hwp3-sample10.hwp	hidden-text	clean-corpus	negative	envelopes/hidden-text/ht-clean-sample-hwp3-sample10.hwp.json	0	
 ht-clean-sample-issue1950_hwp3_tab_charoffset.hwp	hidden-text	clean-corpus	negative	envelopes/hidden-text/ht-clean-sample-issue1950_hwp3_tab_charoffset.hwp.json	0	
 ht-clean-sample-2022년_국립국어원_업무계획.hwp	hidden-text	clean-corpus	negative	envelopes/hidden-text/ht-clean-sample-2022년_국립국어원_업무계획.hwp.json	0	
-ht-clean-sample-2025_행정업무운영_편람_최종_.hwpx	hidden-text	clean-corpus	negative	envelopes/hidden-text/ht-clean-sample-2025_행정업무운영_편람_최종_.hwpx.json	0	
 inj-role-token-im_start-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-im_start-hwp.json	0	
 inj-role-token-im_end-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-im_end-hwp.json	0	
 inj-role-token-system-hwp	injection	role_impersonation	positive	envelopes/injection/inj-role-token-system-hwp.json	0	

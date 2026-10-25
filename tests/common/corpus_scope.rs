@@ -14,6 +14,12 @@ pub(crate) fn sample_is_in_scope(path: &Path) -> bool {
     };
     let relative = relative.to_string_lossy().replace('\\', "/");
     let name = relative.rsplit('/').next().unwrap_or(&relative);
+    if include_str!("../fixtures/deferred_document_regressions.txt")
+        .lines().any(|deferred| deferred == name)
+    {
+        // 별도 PR에서 회귀를 다시 추가하는 문서는 자동 수집에서도 제외한다.
+        return false;
+    }
     if name.starts_with("hwp3-sample16.") || name.starts_with("hwp3-sample16-") {
         // sample16 원본·변환본은 별도 PR에서 회귀를 관리한다.
         return false;

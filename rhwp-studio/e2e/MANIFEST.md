@@ -90,7 +90,6 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-2635-rawsvg-first-paint.test.mjs` | 상시 | active | Issue #2635: 순수 RawSvg 차트가 첫 화면에 늦게 표시되는 회귀 | chart/원형/쪼개진원형.hwp | 수동 |  |
 | `issue-270-set-field-persist.test.mjs` | 상시 | active | 이슈 #270 — set_field 후 저장/재오픈 시 필드 값 유실 회귀 | field-01.hwp | 수동 |  |
 | `issue-2809-split-alignment.test.mjs` | 상시 | active | Issue #2809 위·아래 Split 문단 속성 및 WASM/editor 정렬 회귀 | issues/2809/jubo_20260104.hwp | npm e2e:issue-2809 |  |
-| `issue-3820-hwp-hwpx-page-count.test.mjs` | 상시 | active | Issue #3820 — 2025 행정업무운영 편람의 HWP/HWPX 물리 페이지 수와 주요 page owner를 383쪽 기준으로 고정 | 2025 행정업무운영 편람(최종).hwp/.hwpx | npm e2e:issue-3820 | fresh WASM 필수 |
 | `issue-3682-chart-object-probe.test.mjs` | 진단 | active | #3682 차트 개체 P1~P5 행동 현황 수집 프로브 | chart/세로막대형/묶은세로막대형.hwp | 수동 | legacy-name · 최신 devel의 기존 미등재 항목 보완 |
 | `issue-3953-large-document-goto.test.mjs` | 상시 | active | #3953 대형 HWP 후반부 찾아가기, 오류 재입력과 상태 표시줄 진입 | 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp | 수동 | |
 | `issue-4026-footnote-global-shortcuts.test.mjs` | 상시 | active | #4026 각주 편집 중 Cmd+Z 되돌리기와 Option+G 찾아가기 | footnote-01.hwp | 수동 | |
@@ -105,14 +104,13 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-4272-nested-cell-text-selection.test.mjs` | 상시 | active | #4272 중첩 표 안쪽 셀의 전체 cellPath 선택 rect, 실제 마우스 드래그와 Ctrl+C/V | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4272 | 물리 5쪽 `23,504`, `output/4272/nested-cell-*.{json,png}` |
 | `issue-536-boxed-pua-canvas2d.test.mjs` | 상시 | active | #536 실제 HWP의 사각 안 숫자 PUA를 기본 Canvas2D가 결정적으로 합성 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-536 | #4122 17쪽 pagination stack 계약 포함 |
 | `layer-export-issue536.test.mjs` | 상시 | active | #536 JSON/value·v2 compat/strict export, font/image byte 생략 4조합, content-key 재조회·입력 변이 격리·편집 후 자원 계약 | test-image.hwpx, render-p35-font-native-bitmap.hwpx, para-001.hwp | npm e2e:layer-export-issue536 | fresh WASM 필수, Chromium·임시 Vite 자체 기동, 비시각 API 검사 |
-| `local-font-partial-enumeration-issue4741.test.mjs` | 상시 | active | #4741 Local Font Access 부분 열거를 강제해 raw probe·exact Canvas2D face·폭·cache·편람 383쪽 계약 검증 | 2025 행정업무운영 편람(최종).hwp | npm e2e:issue-4741 | KoPub바탕체 Light 설치 호스트 Chrome 전용 |
+| `local-font-partial-enumeration-issue4741.test.mjs` | 상시 | active | #4741 Local Font Access 부분 열거를 강제해 raw probe·exact Canvas2D face·폭·cache 계약 검증 | 일반 Canvas 측정 문자열 | npm e2e:issue-4741 | KoPub바탕체 Light 설치 호스트 Chrome 전용 |
 | `middle-dot-canvas-paint.test.mjs` | 상시 | active | 실제 Canvas 가운뎃점 원형 경로와 앞뒤 본문 소유 보존 | k-water-rfp.hwp | npm e2e:middle-dot-canvas-paint | 독립 Print 근거와 기존 시각 증적은 테스트 주석 참조 |
 | `issue-595.test.mjs` | 진단 | hold | 시험지 회귀 실행 제거·파일 보존 | exam_math.hwp | — | legacy-name · 사용자 지시로 실행 진입점 제거 |
 | `issue-6099-probe.mjs` | 진단 | active | #6099 90° 회전 그림 DOM frame/img 실측과 스크린샷 생성 프로브 | samples 하위 지정 파일 | 수동 | legacy-name · 일회성 실측 프로브 |
 | `issue-6117-cell-underline-canvas2d.test.mjs` | 상시 | active | #6117 표 칸 안 밑줄이 우측 괘선을 넘어 그려지지 않는 Canvas2D 잉크 경계 | issue6117/52690_higher_education_decree.hwp | 수동 | 9쪽 실제 fixture, `output/6117` 증적 |
 | `issue-6202-picture-move-reflow.test.mjs` | 상시 | active | #6202 어울림 그림 이동 뒤 본문 화면 갱신 | 143E433F503322BD33.hwp | 수동 | legacy-name |
 | `line-spacing.test.mjs` | 상시 | active | 줄간격 변경에 따른 페이지 넘김 검증 | — | 수동 |  |
-| `loading-busy-cursor.test.mjs` | 상시 | active | #5740 대형 문서 로딩 중 busy 상태와 wait cursor 표시 계약 | 2025 행정업무운영 편람(최종).hwp | npm e2e:loading-busy-cursor |  |
 | `merged-cell-boundary-drag.test.mjs` | 상시 | active | #6557 세로 병합 셀 표에서 하위 행만 선택하고 열 경계를 드래그 — 선택 필터의 병합 셀 포함·걸친 모든 행의 이웃 보상·균일 결과 무마킹 세 층이 함께 고쳐져야 경계가 전 행에서 같은 x 로 이동 | — | npm e2e:issue-6557-merged-col | dev server 필요 — run-with-vite.mjs 경유 · 증적 [assets/merged-cell-resize-evidence](https://github.com/jeong-sik/rhwp/tree/assets/merged-cell-resize-evidence) |
 | `merged-cell-row-boundary-drag.test.mjs` | 상시 | active | #6557 가로 병합 셀 표의 행 경계 드래그 — 병합 셀이 걸친 모든 열의 아래 이웃이 보상을 받아 표 전체 높이가 보존되는지 검증 | — | npm e2e:issue-6557-merged-row | dev server 필요 — run-with-vite.mjs 경유 · 증적 [assets/merged-cell-resize-evidence](https://github.com/jeong-sik/rhwp/tree/assets/merged-cell-resize-evidence) |
 | `navigation-shortcuts.test.mjs` | 상시 | active | 플랫폼별 navigation shortcut | — | 수동 |  |

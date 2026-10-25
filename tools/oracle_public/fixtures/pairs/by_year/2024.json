@@ -3,48 +3,8 @@
   "claim": "M01-f",
   "kind": "oraclePairFixture",
   "hancomVersion": "2024",
-  "pairCount": 83,
+  "pairCount": 79,
   "pairs": [
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwp::pdf/2025 행정업무운영 편람(최종)-2024.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwp",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-2024.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2024",
-      "variant": "2024",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwp::pdf/2025 행정업무운영 편람(최종)-hwp-2024.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwp",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwp-2024.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2024",
-      "variant": "hwp-2024",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwpx::pdf/2025 행정업무운영 편람(최종)-2024.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-2024.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2024",
-      "variant": "2024",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwpx::pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2024",
-      "variant": "hwpx-2024",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
     {
       "id": "samples/80168_regulatory_analysis.hwp::pdf/80168_regulatory_analysis-2024.pdf",
       "sample": "samples/80168_regulatory_analysis.hwp",

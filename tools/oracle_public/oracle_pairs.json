@@ -2,10 +2,10 @@
   "schemaVersion": "1.0",
   "generator": "tools/oracle_public/oracle_resolver.py",
   "targetPairCount": 269,
-  "pairCount": 958,
-  "matchedSampleCount": 527,
+  "pairCount": 948,
+  "matchedSampleCount": 525,
   "unmatchedCount": 400,
-  "oracleLinkCount": 958,
+  "oracleLinkCount": 948,
   "oracleRoots": [
     "pdf"
   ],
@@ -54,106 +54,6 @@
       "hancomVersion": "2020",
       "variant": "hwp-2020",
       "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwp::pdf/2025 행정업무운영 편람(최종)-2024.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwp",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-2024.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2024",
-      "variant": "2024",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwp::pdf/2025 행정업무운영 편람(최종)-hwp-2024.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwp",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwp-2024.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2024",
-      "variant": "hwp-2024",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwp::pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwp",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2020",
-      "variant": "2020-kopub",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwp::pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwp",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2020",
-      "variant": "hwp-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwp::pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwp",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2020",
-      "variant": "hwp-kopub-2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwpx::pdf/2025 행정업무운영 편람(최종)-2024.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-2024.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2024",
-      "variant": "2024",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwpx::pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2024",
-      "variant": "hwpx-2024",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwpx::pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2020",
-      "variant": "2020-kopub",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwpx::pdf/2025 행정업무운영 편람(최종)-hwpx-2020.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-2020.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2020",
-      "variant": "hwpx-2020",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/2025 행정업무운영 편람(최종).hwpx::pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2020.pdf",
-      "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
-      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2020.pdf",
-      "stem": "2025 행정업무운영 편람(최종)",
-      "hancomVersion": "2020",
-      "variant": "hwpx-kopub-2020",
-      "sourceFormat": "hwpx",
       "oracleRoot": "pdf"
     },
     {

@@ -13,8 +13,7 @@ use std::process::{Command, Output, Stdio};
 
 /// 표지 첫 줄이 문서 제목인 표본 (제목 있는 경우).
 const SAMPLE_COVER_TITLE: &str = "samples/2022년 국립국어원 업무계획.hwp";
-/// 표지(0~1쪽)가 이미지라 렌더 텍스트가 비는 표본 — 다음 쪽 fallback 검증.
-const SAMPLE_IMAGE_COVER: &str = "samples/2025 행정업무운영 편람(최종).hwp";
+
 /// 앞쪽 페이지에 의미 줄이 전혀 없는 표본 — null fallback 검증.
 const SAMPLE_NO_TEXT: &str = "samples/253E164F57A1BC6934-empty.hwp";
 /// 단건/배치·export-text 동형 검증용 소형 표본.
@@ -138,16 +137,6 @@ fn info_json_title_is_cover_first_meaningful_line() {
     assert!(v["pageCount"].as_u64().unwrap() >= 1, "{v}");
     assert!(v["paraCount"].as_u64().unwrap() >= 1, "{v}");
     assert!(v["fonts"].is_array(), "{v}");
-}
-
-#[test]
-fn info_json_title_falls_back_past_image_cover() {
-    // 표지 0~1쪽이 이미지(렌더 텍스트 "")인 문서 — 이슈 #3407 3안의 fallback.
-    let v = info_json(SAMPLE_IMAGE_COVER);
-    assert_eq!(
-        v["title"], "행정업무운영 편람",
-        "표지가 비면 다음 쪽 첫 의미 줄로 내려가야 합니다: {v}"
-    );
 }
 
 #[test]

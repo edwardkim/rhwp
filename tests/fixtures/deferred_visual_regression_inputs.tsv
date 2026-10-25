@@ -1,7 +1,6 @@
 # 원본 경로	이관한 렌더링 축	추적 이슈
 samples/issue5792/2700727_animal_facility_standards.hwpx	body,off_canvas,text_overlap,overflow_cell,oracle,render_page	7811
 samples/table_giant_cell_overfill.hwpx	body,off_canvas,text_overlap,overflow_cell,oracle,render_page	7812
-samples/2025 행정업무운영 편람(최종).hwpx	body,off_canvas,text_overlap,overflow_cell,oracle,render_page	7752
 samples/issue1949_giant_cell_nested_tables_perf.hwp	body,off_canvas,text_overlap,overflow_cell,oracle,render_page	7813
 samples/issue1949_giant_cell_nested_tables_perf.hwpx	body,off_canvas,text_overlap,overflow_cell,oracle,render_page	7813
 samples/aift.hwp	body,off_canvas,text_overlap,overflow_cell,oracle,render_page	7791

@@ -90,7 +90,6 @@ const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
     // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
     "table_giant_cell_overfill.hwpx",
     "issue5792/2700727_animal_facility_standards.hwpx",
-    "2025 행정업무운영 편람(최종).hwpx",
     // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
     "issue6035/cgmp_evaluation_table.hwpx",
     // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
