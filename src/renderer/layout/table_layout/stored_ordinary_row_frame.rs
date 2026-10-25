@@ -381,10 +381,8 @@ impl LayoutEngine {
             return None;
         }
         let full = if start.is_empty() {
-            // 첫 조각의 독립 선언·종료 프레임 계약은 유지한다.
-            if !self.row_cut_remaining_is_single_stored_frame(table, row, end, None, styles) {
-                return None;
-            }
+            // 뒤에 남은 저장 내용 프레임 수는 현재 수용 상자의 크기가 아니다.
+            // 첫 컷도 원본 선언을 현재 예산 안에서 받고 실제 수용분만 다음에 차감한다.
             cells
                 .iter()
                 .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
