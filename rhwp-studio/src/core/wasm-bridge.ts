@@ -13,6 +13,8 @@ import type { CharShapeRun } from './types';
 import type { HyperlinkTarget, HyperlinkContext } from './hyperlink';
 import * as wasmExports from '@wasm/rhwp.js';
 import { hasPdfImportCapability } from './pdf-import-capability';
+import { createDocumentForBytes } from './pdf-import-layout';
+import { userSettings } from './user-settings';
 import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import type { DocumentInfo, PageInfo, PageDef, SectionDef, PageBorderFillSettings, EndnoteShapeSettings, NoteEditInfo, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, CellPathLike, NavContextEntry, FieldInfoResult, BookmarkInfo, LayerRenderProfile, PageLayerTree, CanvasKitDocumentPreflight } from './types';
@@ -558,7 +560,14 @@ export class WasmBridge {
   }
 
   loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
-    this.loadDocumentAtomically(data, fileName, false, () => new HwpDocument(data));
+    // PDF는 환경 설정의 가져오기 배치를 따른다. 다른 형식과 기본 배치는 같은 생성자를 쓴다.
+    const layout = userSettings.getPdfImportLayout();
+    this.loadDocumentAtomically(
+      data,
+      fileName,
+      false,
+      () => createDocumentForBytes(HwpDocument, data, layout),
+    );
     return this.getDocumentInfo();
   }
 

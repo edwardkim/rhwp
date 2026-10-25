@@ -15,6 +15,7 @@ import {
   type LocalFontState,
 } from '@/core/local-fonts';
 import type { EventBus } from '@/core/event-bus';
+import type { PdfImportLayout } from '@/core/pdf-import-layout';
 
 import { t as i18nText } from '../i18n/index.ts';
 export class OptionsDialog extends ModalDialog {
@@ -25,6 +26,7 @@ export class OptionsDialog extends ModalDialog {
   private idleSaveEnabledCheck!: HTMLInputElement;
   private idleDelayInput!: HTMLInputElement;
   private pdfPrintGuidanceCheck!: HTMLInputElement;
+  private pdfImportEditableRadio!: HTMLInputElement;
 
   constructor(private readonly eventBus?: EventBus) {
     super(i18nText('dialog.options.title'), 480);
@@ -329,7 +331,48 @@ export class OptionsDialog extends ModalDialog {
     pdfSection.appendChild(pdfRow);
     panel.appendChild(pdfSection);
 
+    panel.appendChild(this.createPdfImportSection());
+
     return panel;
+  }
+
+  /** PDF를 열 때 본문 문단 배치를 고르는 구역. 다음에 여는 PDF부터 적용된다. */
+  private createPdfImportSection(): HTMLElement {
+    const section = document.createElement('div');
+    section.className = 'dialog-section';
+
+    const title = document.createElement('div');
+    title.className = 'dialog-section-title';
+    title.textContent = i18nText('dialog.options.pdfImportTitle.text');
+    section.appendChild(title);
+
+    const desc = document.createElement('p');
+    desc.className = 'opt-desc';
+    desc.textContent = i18nText('dialog.options.pdfImportDesc.text');
+    section.appendChild(desc);
+
+    const current = userSettings.getPdfImportLayout();
+    const choices: { value: PdfImportLayout; labelKey: string }[] = [
+      { value: 'fidelity', labelKey: 'dialog.options.pdfImportFidelity.text' },
+      { value: 'editable', labelKey: 'dialog.options.pdfImportEditable.text' },
+    ];
+    for (const choice of choices) {
+      const row = document.createElement('div');
+      row.className = 'dialog-row opt-row';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'opt-pdf-import-layout';
+      radio.id = `opt-pdf-import-${choice.value}`;
+      radio.value = choice.value;
+      radio.checked = current === choice.value;
+      const label = document.createElement('label');
+      label.htmlFor = radio.id;
+      label.textContent = i18nText(choice.labelKey);
+      row.append(radio, label);
+      section.appendChild(row);
+      if (choice.value === 'editable') this.pdfImportEditableRadio = radio;
+    }
+    return section;
   }
 
   protected onConfirm(): void {
@@ -345,6 +388,7 @@ export class OptionsDialog extends ModalDialog {
       idleDelaySeconds: clampInteger(this.idleDelayInput.value, 10, 5, 600),
     });
     userSettings.setShowPdfPrintGuidance(this.pdfPrintGuidanceCheck.checked);
+    userSettings.setPdfImportLayout(this.pdfImportEditableRadio.checked ? 'editable' : 'fidelity');
     this.eventBus?.emit('autosave-settings-changed', { source: 'options-dialog' });
   }
 }
