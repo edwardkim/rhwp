@@ -133,16 +133,24 @@ fn rendered_rows(
     out
 }
 
-/// Character index of each stored row start.
+/// Character index of each stored row start, read on the paragraph's own
+/// stream axis (`line_seg_text_start`), the axis its characters use.
 fn stored_rows(p: &Paragraph) -> BTreeSet<usize> {
-    p.line_segs
-        .iter()
-        .map(|seg| {
-            p.char_offsets
-                .iter()
-                .position(|&o| o >= seg.text_start)
-                .unwrap_or(0)
+    (0..p.line_segs.len())
+        .map(|i| {
+            let start = p.line_seg_text_start(i);
+            p.char_offsets.iter().position(|&o| o >= start).unwrap_or(0)
         })
+        .collect()
+}
+
+/// Every flow paragraph's text with the characters that start its rows.
+fn row_starts(core: &DocumentCore) -> Vec<(String, BTreeSet<usize>)> {
+    core.document().sections[0]
+        .paragraphs
+        .iter()
+        .filter(|p| !p.text.trim().is_empty())
+        .map(|p| (norm(&p.text), stored_rows(p)))
         .collect()
 }
 
@@ -224,17 +232,17 @@ fn editable_layout_flows_body_paragraphs_through_columns_and_pages() {
     for (name, pages, joined) in PDFS {
         let core = import(name, PdfImportLayout::Editable);
         verify(&core, &sources, pages, joined, name);
+        let rows = row_starts(&core);
         for data in [
             core.export_hwp_native().unwrap(),
             core.export_hwpx_native().unwrap(),
         ] {
-            verify(
-                &DocumentCore::from_bytes(&data).unwrap(),
-                &sources,
-                pages,
-                joined,
-                name,
-            );
+            let reopened = DocumentCore::from_bytes(&data).unwrap();
+            verify(&reopened, &sources, pages, joined, name);
+            // Saving keeps every paragraph's rows on the same characters,
+            // including the section's first paragraphs, whose row positions
+            // the containers store on their own axes.
+            assert_eq!(row_starts(&reopened), rows, "{name}: rows survive saving");
         }
     }
 }

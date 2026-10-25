@@ -57,6 +57,9 @@ pub(super) fn page_frames(section: usize, report: &Value) -> PageFrames {
     PageFrames { section, frames }
 }
 
+/// Height in HWPUNIT that an anchor line (no text) takes in its column.
+const ANCHOR_HEIGHT: i32 = 100;
+
 fn hu(points: f32) -> i32 {
     (points * 100.0).round() as i32
 }
@@ -225,6 +228,29 @@ fn assemble(
 ) -> usize {
     let mut joined = 0;
     for (page_no, (mut anchor, mut body, keep_anchor)) in pages.into_iter().enumerate() {
+        if page_no == 0 {
+            // The section's first paragraph carries only the section and
+            // column definitions on one minimal line, as stored sections do.
+            // HWPX stores the first paragraph's row starts on an axis without
+            // those two definitions, so text rows never start in it.
+            let lead = anchor
+                .controls
+                .iter()
+                .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+                .count();
+            let mut rest = Paragraph::new_empty();
+            rest.controls = anchor.controls.split_off(lead);
+            if anchor.ctrl_data_records.len() > lead {
+                rest.ctrl_data_records = anchor.ctrl_data_records.split_off(lead);
+            }
+            anchor.char_count -= 8 * rest.controls.len() as u32;
+            rest.para_shape_id = anchor.para_shape_id;
+            rest.char_shapes = anchor.char_shapes.clone();
+            rest.line_segs = anchor.line_segs.clone();
+            rest.char_count = 1 + 8 * rest.controls.len() as u32;
+            out.push(anchor);
+            anchor = rest;
+        }
         if !keep_anchor && page_no > 0 {
             if let Some(first) = body.first_mut() {
                 first.column_type = ColumnBreakType::Page;
@@ -499,15 +525,24 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
             pd.margin_footer = 0;
         }
         // An anchor line that reserves almost no height: fixed 1pt spacing.
-        let anchor_shape_id = *anchor_shape.get_or_insert_with(|| {
+        // Anchor lines hold no text. A 1pt face on a fixed 1pt line keeps
+        // the height they take in the column known: `ANCHOR_HEIGHT`.
+        let (anchor_shape_id, anchor_char_id) = *anchor_shape.get_or_insert_with(|| {
             let mut shape = doc.doc_info.para_shapes[0].clone();
             shape.raw_data = None;
             shape.line_spacing_type = LineSpacingType::Fixed;
-            shape.line_spacing = 200;
+            shape.line_spacing = 2 * ANCHOR_HEIGHT;
             shape.spacing_before = 0;
             shape.spacing_after = 0;
             doc.doc_info.para_shapes.push(shape);
-            (doc.doc_info.para_shapes.len() - 1) as u16
+            let mut face = doc.doc_info.char_shapes[0].clone();
+            face.raw_data = None;
+            face.base_size = ANCHOR_HEIGHT;
+            doc.doc_info.char_shapes.push(face);
+            (
+                (doc.doc_info.para_shapes.len() - 1) as u16,
+                (doc.doc_info.char_shapes.len() - 1) as u32,
+            )
         });
         let def = column_def(&boxes);
         let mut pages_report = Vec::new();
@@ -515,18 +550,21 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
         for (page_no, page) in run.iter().enumerate() {
             let mut anchor = std::mem::take(&mut old[page.section - base].paragraphs[0]);
             if page_no == 0 {
-                // The section opens with its column grid, after the section
-                // definition when the anchor carries one.
+                // The section opens with its definition and column grid as the
+                // first two extended controls, as stored HWP sections do. Both
+                // take stream slots ahead of the first character; savers write
+                // the section definition there even when the model omits it.
+                let before = anchor.controls.len();
                 anchor
                     .controls
-                    .retain(|c| !matches!(c, Control::ColumnDef(_)));
-                let at = anchor
-                    .controls
-                    .iter()
-                    .position(|c| !matches!(c, Control::SectionDef(_)))
-                    .unwrap_or(anchor.controls.len());
-                anchor.controls.insert(at, Control::ColumnDef(def.clone()));
-                anchor.char_count += 8;
+                    .retain(|c| !matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)));
+                anchor.char_count -= 8 * (before - anchor.controls.len()) as u32;
+                anchor.controls.insert(
+                    0,
+                    Control::SectionDef(Box::new(section.section_def.clone())),
+                );
+                anchor.controls.insert(1, Control::ColumnDef(def.clone()));
+                anchor.char_count += 16;
             } else {
                 // One section definition and one column grid open the section.
                 let before = anchor.controls.len();
@@ -541,12 +579,16 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
             // A separate anchor line is kept only when column 0 has none.
             let keep_anchor = !placed[page_no].contains(&Some(0));
             anchor.para_shape_id = anchor_shape_id;
+            anchor.char_shapes = vec![crate::model::paragraph::CharShapeRef {
+                start_pos: 0,
+                char_shape_id: anchor_char_id,
+            }];
             for seg in &mut anchor.line_segs {
                 seg.vertical_pos = 0;
-                seg.line_height = 100;
-                seg.text_height = 100;
-                seg.baseline_distance = 85;
-                seg.line_spacing = 100;
+                seg.line_height = ANCHOR_HEIGHT;
+                seg.text_height = ANCHOR_HEIGHT;
+                seg.baseline_distance = ANCHOR_HEIGHT * 85 / 100;
+                seg.line_spacing = 0;
                 seg.column_start = 0;
                 seg.segment_width = column_width_of(0);
             }
@@ -559,7 +601,11 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
                     .collect();
                 members.sort_by(|&a, &b| page.frames[a].top.total_cmp(&page.frames[b].top));
                 // The anchor line occupies the top of the first column.
-                let mut previous_bottom = margin_top + if g == 0 && keep_anchor { 200 } else { 0 };
+                // Anchor lines (the section opener, a page anchor) occupy the
+                // top of the first column.
+                let anchors = i32::from(page_no == 0) + i32::from(keep_anchor);
+                let mut previous_bottom =
+                    margin_top + if g == 0 { ANCHOR_HEIGHT * anchors } else { 0 };
                 let col_left = column_left(g);
                 for &i in &members {
                     let frame = &page.frames[i];
