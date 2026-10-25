@@ -95,3 +95,43 @@ Native 영향 페이지 36건의 실제 출력에서 1쪽 표지는 양쪽 형�
 
 실제 자료는 ignored 작업 경로의 `bitmap-clip-afd8d95856/device-contract-result.json`,
 `native-focus-result.json`, `bitmap-clip-boundary-after-afd8d95856.json`과 페이지별 PNG에 있다.
+
+## 2026-10-25: 본문 단의 원점과 채움 끝점의 공통 변환
+
+`3509cafe88`에서 표 배경의 남은 가는 경계를 독립 Print 원시 연산과 대조했다.
+283쪽은 후보의 회색 행이 추가되고, 291·297·304쪽은 Print에 있는 회색 행이 빠진다.
+298쪽도 후보에만 회색 행이 있다. 이들은 실제 선 개체가 아니라 배경 bitmap과 흰 셀
+채움의 경계다. 숨김·clip 축소·페이지별 오프셋으로 처리하지 않는다.
+
+원인은 절대 좌표를 한 번에 장치 정수로 반올림한 것과, 본문 단 원점과 상대 좌표를
+각각 변환한 것의 차이다. source의 단 원점 A와 끝점 P에서 장치 좌표는
+`round(A × 600/96) + round((P-A) × 600/96)`다. 물리 용지 단위는 이미 검증한
+`PrintPaper.device_units`를 사용한다. 길이만 따로 반올림하지 않고 시작·끝을 각각
+같은 원점으로 옮긴 뒤 차이를 취한다. 그림과 셀 채움이 같은 결과를 소비해야 한다.
+
+| 독립 관측 | 기존 최대 좌표 오차 | 단 원점·상대 끝점 변환 |
+| --- | ---: | ---: |
+| 283·291·297·298·304쪽의 표 bitmap clip 14개 | 약 0.16062px | 최대 0.00066px |
+| 같은 쪽 본문 흰 셀 채움 104개 | 약 0.16067px | PDF 0.001pt 표기 정밀도 안 |
+
+위 계산은 원본·Print와 고정 Native library의 관측을 대조한 진단이다. 제품 수정이나
+새 head의 시각 검증 완료를 뜻하지 않는다. 원시 좌표와 모든 쌍은 ignored
+`handbook-fill-owner-diagnostic-3509/source-predicted-column-{clips,white-rectangles}.json`에
+보존한다. 흰 사각형 진단의 나머지 두 사례는 본문 단 밖의 바탕쪽 가림띠다. 이 별도
+좌표계를 본문 단으로 바꾸지 않으며, 진단의 최대 오차만 보고 같은 변환을 전역 적용하지 않는다.
+
+### 생산·소비 경로와 적용 범위
+
+1. 원본 `Table.common`의 `treat_as_char`, `horz_rel_to`, `vert_rel_to`에서 각 축이 본문
+   단 좌표계를 쓰는지 명시한다. 기존 `publish_table_paint_layer`의 공통 생산 지점에서
+   이 원본 계약을 전달한다. z-order·페이지·문단·모델 좌표는 바꾸지 않는다.
+2. `PagePaintContext`는 실제 Column 원점과 표의 축별 참조를 유지한다. 표/셀 배경을
+   그리는 직접 자식에서만 이를 사용하고, 셀 본문·중첩 개체·바탕쪽·머리말·꼬리말·각주·
+   별도 affine 좌표계를 본문 단으로 추정하지 않는다. PAPER/PAGE 축은 기존 경로를 유지한다.
+3. `bitmap_fill_frame`은 같은 참조로 clip 양 끝과 carrier의 요구 길이를 확정한다.
+   `solid_fill_frame`도 같은 참조로 흰 셀의 양 끝을 확정한다. Native·Canvas2D·CanvasKit은
+   공통 paint 결과를 소비하며 backend마다 오프셋을 재계산하지 않는다.
+4. 위 5쪽과 원본 282·288·289·307쪽, 기존 PAPER 도형·그림/팔레트/종이 대조군을 먼저
+   실행한다. 원시 clip/채움/그림 matrix가 독립 Print와 일치하는지 확인하고 직접 확대
+   판독한다. 그 뒤 Native/fresh WASM 전쪽과 회귀 검증을 수행한다. 실패한 기존 검사의
+   기대값을 먼저 바꾸거나 raw 기준·허용 반경을 완화하지 않는다.
