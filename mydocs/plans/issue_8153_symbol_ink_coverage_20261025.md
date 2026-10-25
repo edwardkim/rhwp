@@ -129,7 +129,27 @@ Native/fresh WASM 전체 비교 결과를 이어서 기록한다.
   새 WASM 검증으로 승격하지 않는다.
 
 실행 로그·명령·beforeFAIL 지문과 확대 PNG는 ignored `output/pr-review/
-issue8153-handbook-raw100-20261022/`에 있다. 코어와 기존 설치 글꼴의 source 프로그램은
+issue8153-handbook-raw100-20261022/`에 있다. 문서의 원문과 기존 설치 글꼴의 source 프로그램은
 변경하지 않았으며 private font binary/윤곽을 Git에 추가하지 않았다. 외부 글꼴의
 저작권과 원문 family 선언을 이 테스트 목적의 별칭으로 덮어쓰지 않았다.
 전체 목표와 필수 전체 게이트는 계속 진행하며, upstream 동기화·원격 PR 조치는 하지 않는다.
+
+
+### Native 집중 대조 완료와 Studio 공급 경계 보완
+
+새 Native `5bcb654516`은 HWP/HWPX 각 51쪽, 102개 조건의 실제 PNG/TSV를 마쳤다.
+200쪽만 양쪽 모두 125→14픽셀로 개선됐고 다른 쪽은 그대로이며 미대응 증가는 0건이다.
+실제 observer는 세 U+26AB 모두 `HCR Dotum`, `certainty=observed`를 반환했다.
+공급 HCR Dotum과 HCR Batang의 해당 기호는 같은 units/advance와 같은 윤곽을 가진다.
+남은 본문 14픽셀과 전쪽 결과는 별도이며 200쪽 100%로 판정하지 않는다.
+
+독립 Studio 공급 검사에서는 실제 SFNT를 공급할 때 엔진 모듈을 지연 import하는
+부작용이 확인됐다. 엔진 없이 쓰는 기존 `prepareDeclaredLocalPrograms` 경로가
+실제 프로그램을 버려 테스트 1건이 실패했다. 이를 기존 공급 계약의 문제로
+방치하지 않고, 초기화한 WASM bridge가 공통 검사기를 명시적으로 주입하게 보완했다.
+host/declared FontFace는 같은 검사기를 소비하며 검사 알고리즘을 JS로 복제하지 않는다.
+새 host 경계 검사는 검사기와 FontFace가 같은 실제 buffer를 받는지, 결과 unicodeRange와
+기존 weight/style을 함께 소비하는지 확인한다. 관련 Studio 7건과 TypeScript 검사가 통과했다.
+이 어댑터 보완은 Rust engine을 바꾸지 않으므로, 현재 실행 중인 Native/optimized WASM의
+engine producer `5bcb654516`과 Studio 어댑터의 별도 source SHA를 구별해 기록한다.
+최종 PR head의 전체 게이트와 실제 fresh WASM 검증 완료는 아직 남아 있다.

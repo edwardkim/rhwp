@@ -3,7 +3,7 @@ import { getHostFontState, localFontFaceKey, loadRendererLocalFont,
   onHostFontsChanged, resolveRendererLocalFont, type LocalFontRecord } from './local-fonts.ts';
 import { parseCssFontFamilyList, formatCssFontFamilyList } from './font-substitution.ts';
 import { ordinaryTextFontFaceData, type OrdinaryTextFontSource } from './ordinary-text-font.ts';
-import { fontSymbolDescriptors } from './font-symbol-coverage.ts';
+import { fontSymbolDescriptors, type FontSymbolInspector } from './font-symbol-coverage.ts';
 
 interface CanvasHostFace {
   alias: string;
@@ -36,6 +36,10 @@ export function scopedHostCanvasFont(cssFont: string): string | null {
 /** One owner per document bridge. FontFace objects are loaded before being added,
  * so document.fonts loadingdone cannot recursively restart their preparation. */
 export class HostCanvasFontSession {
+  private readonly inspectSymbols?: FontSymbolInspector;
+
+  constructor(inspectSymbols?: FontSymbolInspector) { this.inspectSymbols = inspectSymbols; }
+
   private readonly id = ++nextSession;
   private serial = 0;
   private epoch = 0;
@@ -104,8 +108,8 @@ export class HostCanvasFontSession {
             if (!bytes) throw new Error('Host font has no usable face');
             const alias = `__rhwp_host_face_${this.id}_${++this.serial}`;
             const face = record.hostReference!.face;
-            const descriptors = await fontSymbolDescriptors(bytes,
-              { weight: String(face.weight ?? 400), style: face.slant ?? 'normal' });
+            const descriptors = fontSymbolDescriptors(bytes,
+              { weight: String(face.weight ?? 400), style: face.slant ?? 'normal' }, this.inspectSymbols);
             if (stale()) return;
             const font = new FontFace(alias, bytes, descriptors);
             await font.load();

@@ -2,7 +2,7 @@ import { registerLoadedLocalFontFace } from './font-loader.ts';
 import { FONT_RULE_WEBFONT_ENTRIES } from './font-rule-runtime.ts';
 import { loadLocalFontBytes, resolveLocalFont } from './local-fonts.ts';
 import { normalizeFontFaceData } from './sfnt-face.ts';
-import { fontSymbolDescriptors } from './font-symbol-coverage.ts';
+import { fontSymbolDescriptors, type FontSymbolInspector } from './font-symbol-coverage.ts';
 
 export interface DocumentFontSelectionPlan {
   environmentId: string | null;
@@ -23,7 +23,7 @@ let programGeneration = 0;
 const loadedPrograms = new Map<string, LoadedProgram>();
 const suppliedAliases = new Map<string, string>();
 
-async function loadLocalProgram(query: string): Promise<LoadedProgram | null> {
+async function loadLocalProgram(query: string, inspect?: FontSymbolInspector): Promise<LoadedProgram | null> {
   // local() can report loaded while the platform supplies LastResort glyphs.
   // Only a face from the already authorized catalog may become a declared
   // local program. An unverified name remains on the ordinary fallback path.
@@ -42,7 +42,7 @@ async function loadLocalProgram(query: string): Promise<LoadedProgram | null> {
     // 유지하며 디렉터리·cmap 등 브라우저가 거부하는 메타데이터만 같은 방식으로 준비한다.
     const bytes = normalizeFontFaceData(original, 0);
     if (!bytes) return null;
-    const face = new FontFace(query, bytes, await fontSymbolDescriptors(bytes));
+    const face = new FontFace(query, bytes, fontSymbolDescriptors(bytes, {}, inspect));
     await face.load();
     const signature = bytes.byteLength >= 4 ? new DataView(bytes).getUint32(0) : 0;
     const trueType = signature === 0x00010000 || signature === 0x74727565;
@@ -118,6 +118,7 @@ async function loadPublicProgram(query: string): Promise<LoadedProgram | null> {
 export async function prepareDeclaredFontPrograms(
   plan: DocumentFontSelectionPlan,
   isCurrent: () => boolean,
+  inspect?: FontSymbolInspector,
 ): Promise<DeclaredFontProgramSnapshot> {
   const empty = (): DeclaredFontProgramSnapshot => ({ programs: [], publicFallbackBlockedSources: [] });
   const names = [...new Set(plan.requests.flatMap(request => [...request.primary, ...request.substitute]))];
@@ -125,7 +126,7 @@ export async function prepareDeclaredFontPrograms(
   const programs = new Map<string, LoadedProgram>();
   const embedded = new Set(plan.embeddedFamilies ?? []);
   for (const name of names) {
-    const program = await loadLocalProgram(name);
+    const program = await loadLocalProgram(name, inspect);
     if (!isCurrent()) return empty();
     if (program) programs.set(name, program);
   }
@@ -169,7 +170,7 @@ export async function prepareDeclaredFontPrograms(
       if (!selected) continue;
       if (!embedded.has(selected.family)) registerLoadedLocalFontFace(selected.face);
       if (embedded.has(requested) || requested === selected.query || suppliedAliases.get(requested) === selected.programId) continue;
-      const alias = new FontFace(requested, selected.bytes, await fontSymbolDescriptors(selected.bytes));
+      const alias = new FontFace(requested, selected.bytes, fontSymbolDescriptors(selected.bytes, {}, inspect));
       try {
         await alias.load();
         if (!isCurrent()) return empty();
