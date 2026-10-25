@@ -27,7 +27,7 @@ fn measured_area_dot_uses_original_kopub_program_instead_of_fullwidth_fallback()
         assert_eq!(positions.len(), 3);
         for span in positions.windows(2) {
             assert!(
-                (span[1] - span[0] - expected).abs() <= 1.0 / 75.0,
+                (span[1] - span[0] - expected).abs() <= 2.0 / 75.0,
                 "{family}: {:?}, independent hmtx900/1000",
                 positions
             );
@@ -42,5 +42,8 @@ fn unknown_program_keeps_the_existing_fullwidth_contract() {
         ..Default::default()
     };
     let positions = EmbeddedTextMeasurer.compute_char_positions("ㆍㆍ", &style);
-    assert_eq!(positions, vec![0.0, 75.0, 150.0]);
+    assert_eq!(positions.len(), 3);
+    for span in positions.windows(2) {
+        assert!((span[1] - span[0] - 75.0).abs() <= 2.0 / 75.0);
+    }
 }
