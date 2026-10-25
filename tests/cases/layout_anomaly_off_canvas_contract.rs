@@ -311,6 +311,7 @@ fn nested_lines_inside_off_canvas_table_are_not_double_reported() {
             clip: false,
             page_fragment: false,
             model_cell_index: None,
+            model_para_range: None,
         }),
         BoundingBox::new(-80.0, -80.0, 30.0, 10.0),
     );

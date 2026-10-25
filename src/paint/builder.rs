@@ -896,6 +896,7 @@ mod tests {
                 clip: true,
                 page_fragment: false,
                 model_cell_index: None,
+                model_para_range: None,
             }),
             BoundingBox::new(100.0, 200.0, 150.0, 80.0),
         ));
@@ -1343,6 +1344,7 @@ mod tests {
                 clip: true,
                 page_fragment: false,
                 model_cell_index: Some(4),
+                model_para_range: Some((2, 5)),
             }),
             BoundingBox::new(60.0, 110.0, 180.0, 80.0),
         );
@@ -1371,6 +1373,7 @@ mod tests {
                 clip: false,
                 page_fragment: false,
                 model_cell_index: None,
+                model_para_range: None,
             }),
             BoundingBox::new(70.0, 120.0, 80.0, 40.0),
         ));
@@ -1385,6 +1388,7 @@ mod tests {
 
         let mut builder = LayerBuilder::new(RenderProfile::Screen);
         let layer_tree = builder.build(&tree);
+        assert!(layer_tree.to_json().contains("\"modelParaRange\":[2,5]"));
 
         let LayerNodeKind::Group { children, .. } = &layer_tree.root.kind else {
             panic!("expected root group");
@@ -1500,6 +1504,7 @@ mod tests {
             GroupKind::TableCell(cell) => {
                 assert!(cell.clip);
                 assert_eq!(cell.model_cell_index, Some(4));
+                assert_eq!(cell.model_para_range, Some((2, 5)));
             }
             other => panic!("expected table cell group kind, got {other:?}"),
         }
