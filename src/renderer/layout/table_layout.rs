@@ -15497,12 +15497,16 @@ impl LayoutEngine {
                         && (!cell_uses_overlapping_line_boxes
                             || current.vertical_pos < previous.vertical_pos)
                 });
+            // 그림 띠와 다음 원본 글줄은 셀의 다른 문단을 편집했는지와 무관한
+            // 로컬 출처를 공유한다. 인증 함수는 앞뒤 원본 줄·실제 본문 예산·
+            // 같은 그림 띠 높이를 대조하며, 재조판한 당사자 문단은 기각한다.
+            let deferred_picture_source_reset =
+                self.stored_deferred_picture_frame_before(cell, table, pi, p);
             let reset_before = declared_two_line_frame
                 || source_text_frame_reset
+                || deferred_picture_source_reset
                 || paragraph_origin_rewind.is_some_and(|(previous, current)| {
-                    current.vertical_pos == 0
-                        || is_stored_frame_rewind(previous, current, pi, 0)
-                        || self.stored_deferred_picture_frame_before(cell, table, pi, p)
+                    current.vertical_pos == 0 || is_stored_frame_rewind(previous, current, pi, 0)
                 });
             // #2430 p14의 비선형 부모 셀에는 한컴이 무시하는 빈 Enter가 있고,
             // 그 단일 lineseg도 다음 저장 좌표 0으로 rewind한다. 이를 프레임
@@ -15533,6 +15537,7 @@ impl LayoutEngine {
             };
             let stored_frame_break_before_para = declared_two_line_frame
                 || source_text_frame_reset
+                || deferred_picture_source_reset
                 || if pi > 0 && cell_has_local_vpos_origin {
                     let prev_para = &cell.paragraphs[pi - 1];
                     match (prev_para.line_segs.last(), p.line_segs.first()) {
