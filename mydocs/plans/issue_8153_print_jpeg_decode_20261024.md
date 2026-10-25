@@ -68,6 +68,62 @@ fresh WASM에서 90쪽 및 영향·정상 대조 쪽을 검증한다. 최종 전
 
 ## 원인과 독립 근거
 
+### 최종 재생 후보 `a2e14ae3bb`의 실제 전쪽 검증
+
+표준 optimized fresh WASM은 jobs 8·codegen units 16으로 wasm-opt까지 21분 32초,
+Native release-test/native-skia는 같은 `target/pr-review`에서 7분 56초·exit 0이다.
+WASM SHA-256은 `5124c84b7dbf536a3045d5b721e7c6ec25a57dc13c12c5902e70ae96c5e19362`,
+Native CLI SHA-256은 `ce3d44a0428eb50ca3adbc2ae83aef36e3003056dfa35928561e2306b92f25ff`다.
+같은 두 원본·독립 2024 Print·정확한 96dpi에서 전 1,532결과를 새로 생산했다.
+
+| 입력 | backend | 최저 raw % | 미대응 0픽셀 쪽 | 미대응 픽셀 합 |
+| --- | --- | ---: | ---: | ---: |
+| 편람 HWPX | Native | 99.36039 | 246 / 383 | 14493 |
+| 편람 HWP | Native | 98.93537 | 256 / 383 | 13414 |
+| 편람 HWPX | fresh WASM | 99.24283 | 245 / 383 | 15123 |
+| 편람 HWP | fresh WASM | 98.93468 | 254 / 383 | 13969 |
+
+Native 전 766 PNG는 앞선 용지 프레임 후보와 바이트까지 같다. fresh WASM의 90쪽은
+두 형식 모두 raw 100%·미대응 0픽셀이다. 다만 92쪽은 각각 11→12픽셀로 늘어 집중 비교의
+보존 gate가 실제 실패했다. 새 한 픽셀의 위치와 25×25 RGB 주변은 Native와 정확히 같다.
+기존 decoder 오류가 가리던 위치 잔여가 드러난 것이며, 이를 목표 달성이나 보존 gate 통과로
+바꾸지 않는다. 별도 전쪽 특성 조사는 이 실패를 보존한 채 완료했다. 136쪽의 -0.00001%p는
+미대응 44개가 같은 상태에서 내용 합집합 크기만 바뀐 결과다.
+
+전쪽 raw 100%·미대응 0픽셀은 1,001 / 1,532결과다. 실제 최적화 WASM의 90쪽 review를
+직접 판독했고, 92쪽의 새 차이도 Native와 같은 위치임을 확대 확인했다. raw 100%를 RGB 전체
+동일성으로 표현하지 않는다. 남은 531결과·기존 실패 검사·최종 필수 검증은 계속 처리한다.
+
+실제 실행 원장은 ignored `handbook-final-jpeg-replay-candidate/` 아래에 있다.
+Native TSV는 `native/handbook-{hwp,hwpx}/whole-score/silhouette.tsv`, WASM TSV는
+`wasm-whole/handbook-{hwp,hwpx}/whole-score/silhouette.tsv`다. 최초 집중 gate 실패,
+후속 특성 조사와 766 PNG 보존 감사도 별도 원장으로 유지한다.
+
+### 다음 단계: 글줄 그림의 원점 생산·소비 검증
+
+기존 다음 장치 원점 계약은 PR #8191의 merge `60972534680`에서 반영됐으며,
+Stage82·83·107의 C352/C354/C356 독립 Print·실제 소비·회귀 보호를 먼저 확인했다.
+이전 전체 최근접 원점 진단은 이 대조군과 맞지 않으므로 그대로 제품에 적용하지 않는다.
+
+글줄 안 그림은 저장 LineSeg의 상대 위치와 본문/단 원점이 서로 다른 좌표 소유자다.
+독립 검증용 같은 문서에서 여백 위쪽만 5668→7200 HU로 변경하고, 한컴 2024에서 실제
+HWP 저장 후 Print했다. 본문 원점과 그림의 상대 위치를 각각 최근접 장치 정수로 변환한
+예측은 세 그림 모두 독립 PDF와 0.00042pt 이내다. 전역 ceil은 첫째·셋째 그림에서 약
+0.12pt 어긋난다. 예측은 새 Print 전에 정했으며 원본 편람·LineSeg·PDF를 고치지 않았다.
+비등방 0.9×0.8 그림을 쓰는 기존 본문 원점의 별도 저장·Print 대조군도 보존한다.
+
+다음 진단은 `실제 Column 원점 → 소유 글줄의 상대 bbox → 각각 장치 정수 변환 →
+PagePaintContext의 물리 종이 단위 → Image 및 image_frame_owner 테두리`를 대조한다.
+문서·쪽·그림 ID나 점수로 분기하지 않는다. 종이 기준 floating·앞쪽 crop·별도 변환·셀/머리말의
+다른 좌표 소유 계약을 본문 Column 계약으로 간주하지 않는다. 같은 좌표 소유 경로가 실제로
+적용되는지 확인하고 대조군과 영향 쪽에서 방향을 검증한 뒤 공통 제품 로직을 보정한다.
+
+새 alpha 진단에서는 원본 알파와 고정 16×16 Bayer 순서만으로 독립 Print의 1비트 mask를
+721,536픽셀 전부 재현했고, mask 밖 RGB를 흰색으로 전달한 별도 색 평면의 JPEG RGB도
+독립 PDF와 일치했다. 상수 alpha의 tiled stencil·mask 표본 소비 계약은 아직 입증하지
+않았으므로 일반 투명 PNG에 이 결과를 적용하지 않는다. 진단 문서·PDF·비공개 분석은
+`output/`에만 보존하며 제품 구현 완료로 세지 않는다.
+
 원본 JPEG를 펼치는 IDCT와 색차 보간의 정수 반올림은 PDF로 전달할 RGB555·JPEG보다
 앞선 단계다. 현재 Print 전달은 일반 화면용 `image` decoder를 그대로 사용하므로,
 동일한 원본·crop·RGB555·JPEG 양자화를 적용해도 독립 한컴 Print 이미지와 차이가 남는다.
