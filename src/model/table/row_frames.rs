@@ -1,4 +1,4 @@
-//! 원본 셀의 물리 구획과 표 외곽에서 닫히는 마지막 셀을 함께 해석한다.
+//! 원본 완결 행의 실제 끝점과 저장 셀 폭으로 물리 구획을 함께 해석한다.
 
 use super::{Table, MAX_TABLE_GRID_CELLS};
 
@@ -10,8 +10,8 @@ pub(crate) struct RowCellFrame {
 }
 
 impl Table {
-    /// 가상 열 번호를 실제 폭으로 취급하지 않는다. 완전한 행의 앞 셀은
-    /// 저장 폭을 소유하고 마지막 셀이 표 외곽까지 남은 공간을 소유한다.
+    /// 가상 열 내부 보간을 실제 경계로 승격하지 않는다. 표 외곽을 닫는
+    /// 원본 행의 실제 셀 끝점을 재사용하고 그 사이에서 저장 폭을 소비한다.
     pub(crate) fn closing_row_frames(&self) -> Vec<Option<Vec<RowCellFrame>>> {
         match self.closing_row_frames_with_storage(&crate::storage::Unbounded) {
             Ok(value) => value,
@@ -57,6 +57,7 @@ impl Table {
         }
         let spacing = i64::from(self.cell_spacing);
         let target = i64::from(self.common.width);
+        let mut closed = storage.filled(rows, false)?;
         for (row, indices) in covering.iter_mut().enumerate() {
             storage.bytes(std::mem::size_of_val(indices.as_slice()))?;
             indices.sort_by_key(|index| self.cells[*index].col);
@@ -84,9 +85,64 @@ impl Table {
             if col != cols || frames.len() != indices.len() || cursor > target {
                 continue;
             }
-            if let Some(last) = frames.last_mut() {
-                last.width_hu += target - cursor;
+            if !frames.is_empty() {
+                closed[row] = cursor == target;
                 result[row] = Some(frames);
+            }
+        }
+        let mut boundaries = storage.filled(cols + 1, None)?;
+        let mut conflicting = storage.filled(cols + 1, false)?;
+        let mut observe = |col: usize, position: i64| {
+            if conflicting[col] {
+                return;
+            }
+            match boundaries[col] {
+                Some(old) if old != position => {
+                    conflicting[col] = true;
+                    boundaries[col] = None;
+                }
+                None => boundaries[col] = Some(position),
+                _ => {}
+            }
+        };
+        for (row, frames) in result.iter().enumerate() {
+            if !closed[row] {
+                continue;
+            }
+            for frame in frames.iter().flatten() {
+                let cell = &self.cells[frame.cell_index];
+                observe(usize::from(cell.col), frame.start_hu);
+                observe(
+                    usize::from(cell.col) + usize::from(cell.col_span),
+                    frame.start_hu + frame.width_hu + spacing,
+                );
+            }
+        }
+        boundaries[0] = Some(spacing);
+        boundaries[cols] = Some(target);
+        for (row, owned) in result.iter_mut().enumerate() {
+            if closed[row] {
+                continue;
+            }
+            let Some(frames) = owned else {
+                continue;
+            };
+            let mut cursor = spacing;
+            let mut valid = true;
+            for frame in frames {
+                let cell = &self.cells[frame.cell_index];
+                let end = usize::from(cell.col) + usize::from(cell.col_span);
+                let width = boundaries[end].map_or(frame.width_hu, |end| end - cursor - spacing);
+                if width <= 0 {
+                    valid = false;
+                    break;
+                }
+                frame.start_hu = cursor;
+                frame.width_hu = width;
+                cursor += width + spacing;
+            }
+            if !valid || cursor != target {
+                *owned = None;
             }
         }
         Ok(result)
