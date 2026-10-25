@@ -177,4 +177,87 @@ mod subpixel_stroke_hairline {
             &faint[..faint.len().min(6)]
         );
     }
+
+    fn thin_lines(node: &RenderNode, out: &mut Vec<LineNode>) {
+        if let RenderNodeType::Line(line) = &node.node_type {
+            let axis = (line.y1 - line.y2).abs() < 0.01 || (line.x1 - line.x2).abs() < 0.01;
+            let long = (line.x2 - line.x1).hypot(line.y2 - line.y1) > 100.0;
+            if axis && long && line.style.width > 0.0 && line.style.width < 1.0 {
+                out.push(line.clone());
+            }
+        }
+        for child in &node.children {
+            thin_lines(child, out);
+        }
+    }
+
+    /// 단일 실선의 인쇄 coverage 계획은 점선을 원래 굵기로 둔다. 점선 쪽 테두리도 장치 한 칸을
+    /// 덮어야 한다 — `samples/basic/sungeo.hwp` 34쪽(기준 `pdf/basic/sungeo-2022.pdf`)의 점선 쪽
+    /// 테두리 네 변은 선언 굵기 그대로면 거의 보이지 않아 Native raw 실루엣이 78.75 였고, 한 칸
+    /// 굵기로 그리면 99.58(fresh WASM 99.99)이다.
+    ///
+    /// 같은 PDF 를 96DPI 로 raster 하면(poppler) 네 변 모두 회색 63 의 내용 화소다. Visual Sweep 의
+    /// 내용 화소 판정(최소 채널 < 232)으로 rhwp 도 각 변에 내용 화소가 있는지 본다. 점선의 빈 칸을
+    /// 피하려고 선 방향 ±20px 창에서 선을 가로지르는 ±2px 화소 중 가장 진한 값을 쓴다.
+    #[test]
+    fn subpixel_dashed_page_border_covers_one_device_pixel() {
+        let path =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/basic/sungeo.hwp");
+        let core = DocumentCore::from_bytes(&std::fs::read(path).expect("read")).expect("parse");
+        let page = 33;
+        let tree = core.build_page_render_tree(page).expect("page");
+        let mut lines = Vec::new();
+        thin_lines(&tree.root, &mut lines);
+        assert!(
+            lines.len() >= 4,
+            "쪽 테두리 네 변의 가는 선 — {}개",
+            lines.len()
+        );
+
+        let width = tree.root.bbox.width.round() as u32;
+        let pixels = core
+            .render_page_pixels_native_at_width(page, width, RenderProfile::Print, &[])
+            .expect("raster");
+        let scale = f64::from(pixels.width) / tree.root.bbox.width;
+        let min_channel = |x: i32, y: i32| -> u8 {
+            let at = y as usize * pixels.stride + x as usize * 4;
+            pixels.bytes[at..at + 3]
+                .iter()
+                .copied()
+                .min()
+                .unwrap_or(255)
+        };
+        let inside = |x: i32, y: i32| x >= 0 && y >= 0 && x < pixels.width && y < pixels.height;
+
+        let mut faint = Vec::new();
+        for line in &lines {
+            let horizontal = (line.y1 - line.y2).abs() < 0.01;
+            for t in [0.3, 0.5, 0.7] {
+                let along = if horizontal {
+                    (line.x1 + (line.x2 - line.x1) * t) * scale
+                } else {
+                    (line.y1 + (line.y2 - line.y1) * t) * scale
+                };
+                let across = if horizontal { line.y1 } else { line.x1 } * scale;
+                let mut darkest = 255u8;
+                for a in (along - 20.0) as i32..=(along + 20.0) as i32 {
+                    for c in (across - 2.0) as i32..=(across + 2.0) as i32 {
+                        let (x, y) = if horizontal { (a, c) } else { (c, a) };
+                        if inside(x, y) {
+                            darkest = darkest.min(min_channel(x, y));
+                        }
+                    }
+                }
+                if darkest >= 232 {
+                    faint.push((horizontal, across / scale, darkest));
+                }
+            }
+        }
+        assert!(
+            faint.is_empty(),
+            "내용 화소가 없는 점선 쪽 테두리 {}곳 (가로, 위치, 가장 진한 최소 채널) — {:?}",
+            faint.len(),
+            &faint[..faint.len().min(6)]
+        );
+    }
 }
