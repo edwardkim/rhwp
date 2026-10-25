@@ -88,6 +88,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                     inserted_control_text: false,
                     space_metric: crate::renderer::composer::SpaceMetric::Stored,
                     regenerated_font_metrics: false,
+                    literal_figure_space: false,
                 }])
             };
             for run in &mut fallback_runs {
@@ -364,6 +365,7 @@ fn split_by_char_shapes(
             inserted_control_text: false,
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
+            literal_figure_space: false,
         }]);
     }
 
@@ -428,6 +430,7 @@ fn split_by_char_shapes(
             inserted_control_text: false,
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
+            literal_figure_space: false,
         }]);
     }
 
@@ -459,6 +462,7 @@ fn split_by_char_shapes(
                     inserted_control_text: false,
                     space_metric: crate::renderer::composer::SpaceMetric::Stored,
                     regenerated_font_metrics: false,
+                    literal_figure_space: false,
                 });
             }
         }
@@ -484,6 +488,7 @@ fn split_by_char_shapes(
                     inserted_control_text: false,
                     space_metric: crate::renderer::composer::SpaceMetric::Stored,
                     regenerated_font_metrics: false,
+                    literal_figure_space: false,
                 },
             );
         }
@@ -503,6 +508,7 @@ fn split_by_char_shapes(
             inserted_control_text: false,
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
+            literal_figure_space: false,
         });
     }
 
@@ -594,6 +600,7 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
                         inserted_control_text: run.inserted_control_text,
                         space_metric: run.space_metric,
                         regenerated_font_metrics: run.regenerated_font_metrics,
+                        literal_figure_space: run.literal_figure_space,
                     });
                 }
                 current_lang = char_lang;
@@ -616,6 +623,7 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
                 inserted_control_text: run.inserted_control_text,
                 space_metric: run.space_metric,
                 regenerated_font_metrics: run.regenerated_font_metrics,
+                literal_figure_space: run.literal_figure_space,
             });
         }
     }

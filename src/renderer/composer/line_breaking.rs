@@ -358,6 +358,7 @@ pub(crate) fn tokenize_paragraph(
         SpaceMetric::Stored,
         &[],
         false,
+        &[],
     )
 }
 
@@ -418,6 +419,7 @@ pub(crate) fn text_word_ranges(para: &Paragraph, styles: &ResolvedStyleSet) -> V
         SpaceMetric::Stored,
         &[],
         para.control_mask & (1 << 0x18) != 0,
+        &para.literal_figure_spaces,
     )
     .into_iter()
     .filter_map(|token| match token {
@@ -439,6 +441,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
     space_metric: SpaceMetric,
     inline_controls: &[FlowInlineControl],
     soft_hyphen_control: bool,
+    literal_figure_spaces: &[usize],
 ) -> Vec<BreakToken> {
     let text_len = text_chars.len();
     if text_len == 0 {
@@ -447,8 +450,9 @@ fn tokenize_paragraph_with_regenerated_space_metric(
 
     let mut tokens = Vec::new();
     let mut i = 0;
-    let metric_scope =
-        ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
+    let metric_scope = ParagraphMetricScope::new(text_chars, styles)
+        .with_space_metric(space_metric)
+        .with_literal_figure_spaces(literal_figure_spaces);
     let mut current_lang: usize = 0;
 
     while i < text_len {
@@ -1050,8 +1054,9 @@ fn prepare_paragraph_projection(
     }
     let mut current_lang = 0usize;
     let mut base_positions = Vec::with_capacity(text_chars.len().saturating_add(1));
-    let metric_scope =
-        ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
+    let metric_scope = ParagraphMetricScope::new(text_chars, styles)
+        .with_space_metric(space_metric)
+        .with_literal_figure_spaces(&para.literal_figure_spaces);
     let mut kerning_scalar_styles = Vec::with_capacity(text_chars.len());
     let mut shaping_scalar_styles = Vec::with_capacity(text_chars.len());
     let mut hard_boundaries = vec![false; text_chars.len().saturating_add(1)];
@@ -1553,10 +1558,12 @@ fn resolved_letter_spacing_px(
     char_shapes: &[CharShapeRef],
     styles: &ResolvedStyleSet,
     space_metric: SpaceMetric,
+    literal_figure_spaces: &[usize],
 ) -> Vec<f64> {
     let mut lang = 0usize;
-    let metric_scope =
-        ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
+    let metric_scope = ParagraphMetricScope::new(text_chars, styles)
+        .with_space_metric(space_metric)
+        .with_literal_figure_spaces(literal_figure_spaces);
     text_chars
         .iter()
         .enumerate()
@@ -1589,6 +1596,7 @@ fn resolved_paragraph_letter_spacing(
         &para.char_shapes,
         styles,
         space_metric,
+        &para.literal_figure_spaces,
     );
     for (position, value) in &para.layout_field_values {
         if let Some(spacing) = values.get_mut(*position) {
@@ -3390,7 +3398,9 @@ fn inline_control_requires_own_line(
     } else {
         to_hwp(available_width_px)
     };
-    let scope = ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
+    let scope = ParagraphMetricScope::new(text_chars, styles)
+        .with_space_metric(space_metric)
+        .with_literal_figure_spaces(&para.literal_figure_spaces);
     let width_of = |range: Range<usize>| {
         let text: String = text_chars[range.clone()].iter().collect();
         to_hwp(measure_token_width(
@@ -3901,6 +3911,7 @@ fn layout_paragraph_in_frame_impl(
         space_metric,
         &inline_controls,
         para.control_mask & (1 << 0x18) != 0,
+        &para.literal_figure_spaces,
     );
     apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
     apply_auto_left_tab_targets(&mut tokens, para_style);
@@ -3945,6 +3956,7 @@ fn layout_paragraph_in_frame_impl(
             SpaceMetric::Stored,
             &inline_controls,
             para.control_mask & (1 << 0x18) != 0,
+            &para.literal_figure_spaces,
         );
         apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
         apply_auto_left_tab_targets(&mut tokens, para_style);
@@ -5153,6 +5165,7 @@ fn reflow_line_segs_impl(
         reflow_space_metric,
         &inline_controls,
         para.control_mask & (1 << 0x18) != 0,
+        &para.literal_figure_spaces,
     );
     apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
     apply_auto_left_tab_targets(&mut tokens, para_style);
@@ -6147,6 +6160,7 @@ mod frame_reflow_tests {
             SpaceMetric::Stored,
             &[],
             para.control_mask & (1 << 0x18) != 0,
+            &para.literal_figure_spaces,
         );
         let line_breaks = fill_lines_before_cursor(
             &tokens,

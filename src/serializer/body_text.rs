@@ -1053,7 +1053,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 prev_end = offset + 1;
             }
             '\u{2007}' => {
-                if should_serialize_figure_space_as_hwp_fixed_blank(para) {
+                if !para.literal_figure_spaces.contains(&i)
+                    && should_serialize_figure_space_as_hwp_fixed_blank(para)
+                {
                     code_units.push(0x001F);
                 } else {
                     code_units.push(0x2007);
@@ -1408,6 +1410,15 @@ fn serialize_para_range_tag(range_tags: &[RangeTag]) -> Vec<u8> {
 fn should_serialize_figure_space_as_hwp_fixed_blank(para: &Paragraph) -> bool {
     const HWP5_AUTONUM_FWSPACE_TRAILING_TAG: u32 = 0x0100_0023;
     const HWP5_FIXED_WIDTH_SPACE_MASK: u32 = 1u32 << 0x001f;
+
+    if !para
+        .text
+        .chars()
+        .enumerate()
+        .any(|(i, ch)| ch == '\u{2007}' && !para.literal_figure_spaces.contains(&i))
+    {
+        return false;
+    }
 
     if para.control_mask & HWP5_FIXED_WIDTH_SPACE_MASK != 0 && para.text.contains('\u{2007}') {
         return true;

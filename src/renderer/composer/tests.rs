@@ -283,6 +283,7 @@ fn context_display_overlay_preserves_frame_style_partitions_around_the_field() {
             inserted_control_text: false,
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
+            literal_figure_space: false,
             ..stale.clone()
         },
         ComposedTextRun {
@@ -1197,6 +1198,7 @@ fn test_split_runs_by_lang_korean_english() {
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
+        literal_figure_space: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
@@ -1223,6 +1225,7 @@ fn test_split_runs_by_lang_no_split() {
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
+        literal_figure_space: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1245,6 +1248,7 @@ fn test_split_runs_by_lang_space_follows_prev() {
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
+        literal_figure_space: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
@@ -1271,6 +1275,7 @@ fn test_split_runs_by_lang_empty() {
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
+        literal_figure_space: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1292,6 +1297,7 @@ fn test_split_runs_by_lang_english_only() {
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
+        literal_figure_space: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1398,6 +1404,7 @@ fn test_estimate_composed_line_width() {
             inserted_control_text: false,
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
+            literal_figure_space: false,
         }],
         line_height: 400,
         baseline_distance: 320,
@@ -1897,6 +1904,7 @@ fn test_555_effective_text_for_metrics_uses_display_text_when_present() {
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
+        literal_figure_space: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1924,6 +1932,7 @@ fn test_555_effective_text_for_metrics_multi_jamo_cluster() {
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
+        literal_figure_space: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1952,6 +1961,7 @@ fn test_555_effective_text_for_metrics_no_display_text_falls_back_to_text() {
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
+        literal_figure_space: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1981,6 +1991,7 @@ fn test_677_effective_text_for_metrics_preserves_f081c_filler() {
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
         regenerated_font_metrics: false,
+        literal_figure_space: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -2108,6 +2119,7 @@ fn test_kbu1_line_start_forbidden_retraction() {
             inserted_control_text: false,
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
+            literal_figure_space: false,
         }],
         line_height: 400,
         baseline_distance: 320,

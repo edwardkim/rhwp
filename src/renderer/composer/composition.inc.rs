@@ -121,6 +121,8 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
     let mut new_offsets: Vec<u32> =
         Vec::with_capacity(para.char_offsets.len() + (inline_ctrl_count - existing_markers));
 
+    let mut literal_figure_spaces = Vec::new();
+
     // 첫 visible char 전 leading gap (좁힘 가드에서 계산한 n_leading 재사용)
     for i in 0..n_leading {
         new_offsets.push((i * 8) as u32);
@@ -130,6 +132,9 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
     // visible chars 사이 / 후행
     for (i, &off) in offsets.iter().enumerate() {
         let ch = chars.get(i).copied().unwrap_or(' ');
+        if para.literal_figure_spaces.binary_search(&i).is_ok() {
+            literal_figure_spaces.push(new_offsets.len());
+        }
         new_offsets.push(off);
         new_text.push(ch);
 
@@ -171,6 +176,7 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
     let mut synth = para.clone();
     synth.text = new_text;
     synth.char_offsets = new_offsets;
+    synth.literal_figure_spaces = literal_figure_spaces;
     Some(synth)
 }
 
@@ -366,6 +372,8 @@ fn compose_paragraph_scoped(
     if let Some(styles) = metric_styles {
         equation_line_metrics::refresh_equation_rows(&mut composed, para, styles);
     }
+
+    supplemental_clusters::preserve_literal_spaces(&mut composed, &para.literal_figure_spaces);
 
     // CharOverlap 글자를 조합된 텍스트에 삽입
     inject_char_overlap_text(&mut composed, para);

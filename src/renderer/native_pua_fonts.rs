@@ -34,9 +34,17 @@ impl NativePuaMetrics {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+struct LiteralSpaceMetric {
+    digest: [u8; 32],
+    face_index: u32,
+    advance_em: f64,
+}
+
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct NativePuaFonts {
     programs: BTreeMap<String, BTreeMap<(bool, bool), Arc<NativePuaMetrics>>>,
+    literal_spaces: BTreeMap<String, BTreeMap<(bool, bool), LiteralSpaceMetric>>,
 }
 
 impl NativePuaFonts {
@@ -94,6 +102,82 @@ impl NativePuaFonts {
             .or_default()
             .insert((bold, italic), Arc::new(metric));
         Ok(true)
+    }
+
+    /// 기호 fallback 프로그램과 공백 프로그램은 서로 덮어쓰지 않는다.
+    pub fn register_literal_space(
+        &mut self,
+        family: &str,
+        bold: bool,
+        italic: bool,
+        bytes: &[u8],
+        face_index: u32,
+    ) -> Result<bool, &'static str> {
+        if family.is_empty() || family.len() > 4096 || family.chars().any(char::is_control) {
+            return Err("invalid literal space font family");
+        }
+        if bytes.is_empty() || bytes.len() > MAX_FONT_BYTES {
+            return Err("literal space font exceeds 32 MiB");
+        }
+        let face = ttf_parser::Face::parse(bytes, face_index)
+            .map_err(|_| "invalid literal space SFNT face")?;
+        let glyph = face
+            .glyph_index('\u{2007}')
+            .or_else(|| face.glyph_index('0'))
+            .filter(|glyph| glyph.0 != 0);
+        let Some(advance) = glyph
+            .and_then(|glyph| face.glyph_hor_advance(glyph))
+            .filter(|width| *width > 0)
+        else {
+            let removed = self
+                .literal_spaces
+                .get_mut(family)
+                .is_some_and(|entries| entries.remove(&(bold, italic)).is_some());
+            if self
+                .literal_spaces
+                .get(family)
+                .is_some_and(BTreeMap::is_empty)
+            {
+                self.literal_spaces.remove(family);
+            }
+            return Ok(removed);
+        };
+        let metric = LiteralSpaceMetric {
+            digest: Sha256::digest(bytes).into(),
+            face_index,
+            advance_em: f64::from(advance) / f64::from(face.units_per_em()),
+        };
+        let existing = self
+            .literal_spaces
+            .get(family)
+            .and_then(|entries| entries.get(&(bold, italic)));
+        if existing == Some(&metric) {
+            return Ok(false);
+        }
+        if existing.is_none()
+            && self
+                .literal_spaces
+                .values()
+                .map(BTreeMap::len)
+                .sum::<usize>()
+                >= MAX_PROGRAMS
+        {
+            return Err("literal space font program limit exceeded");
+        }
+        self.literal_spaces
+            .entry(family.to_owned())
+            .or_default()
+            .insert((bold, italic), metric);
+        Ok(true)
+    }
+
+    pub fn literal_space_em(&self, family: &str, bold: bool, italic: bool) -> Option<f64> {
+        Some(
+            self.literal_spaces
+                .get(family)?
+                .get(&(bold, italic))?
+                .advance_em,
+        )
     }
 
     pub fn get(&self, family: &str, bold: bool, italic: bool) -> Option<Arc<NativePuaMetrics>> {

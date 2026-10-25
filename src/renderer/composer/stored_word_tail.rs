@@ -18,6 +18,39 @@ pub(crate) fn projects_current_marker_geometry(
             .is_some_and(|marker| marker.marker_visible)
 }
 
+/// 실제 번호·글머리표를 담지 못하는 저장 줄은 현재 공통 채움으로 갱신한다.
+/// 줄 수가 그대로여도 마커의 크기는 본문 흐름과 후속 원점에 참여한다.
+pub(crate) fn project_current_marker_height_rows(
+    para: &Paragraph,
+    box_: &ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
+    if !projects_current_marker_geometry(para, box_, styles)
+        || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
+        || para.text.chars().any(char::is_control)
+        || para.stored_text_partition_is_dirty()
+        || super::stored_row_fragments::crosses_physical_frame(para)
+        || para
+            .line_segs
+            .iter()
+            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+    {
+        return None;
+    }
+    let marker = crate::renderer::layout::list_marker_geometry(para, styles)?;
+    let minimum_height = (marker.line_font_size_px * 7200.0 / dpi).round() as i32;
+    let first = para.line_segs.first()?;
+    if first.line_height >= minimum_height {
+        return None;
+    }
+    let mut frame = box_.frame(first.vertical_pos);
+    let rows = line_breaking::layout_paragraph_in_frame(para, &mut frame, styles, dpi)?;
+    rows.first()
+        .is_some_and(|row| row.line_height >= minimum_height)
+        .then(|| (rows, frame.project_space_metrics()))
+}
+
 fn stored_horizontal_box_matches(para: &Paragraph, box_: &ParagraphBox) -> bool {
     let extent = box_.effective();
     // 셀의 문단 여백 경로는 실제 폭을 유지하고, 저장 줄의 오른쪽 끝은
@@ -36,6 +69,47 @@ fn stored_horizontal_box_matches(para: &Paragraph, box_: &ParagraphBox) -> bool 
                 && (line.segment_width == extent.end - extent.start
                     || line.segment_width == stored_right - extent.start)
         })
+}
+
+/// 본문의 해소 가능한 여백 원점보다 앞에 놓인 저장 줄은 같은 상자가 아니다.
+/// 목록의 내어쓰기나 유효한 저장 원점을 버리지 않고, 같은 폭의 모순된
+/// 상자에서 현재 채움이 실제 문자 경계를 옮기는 경우만 다시 발행한다.
+pub(crate) fn project_current_body_box_rows(
+    para: &Paragraph,
+    box_: &ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
+    let style = styles.para_styles.get(para.para_shape_id as usize)?;
+    let extent = box_.effective();
+    if style.head_type != crate::model::style::HeadType::None
+        || !box_.is_usable()
+        || extent.start <= 0
+        || para.line_segs.len() < 2
+        || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
+        || para.text.chars().any(char::is_control)
+        || !para.line_segs.iter().all(|line| {
+            line.is_first_segment()
+                && line.is_last_segment()
+                && line.column_start < extent.start
+                && line.segment_width == extent.end - extent.start
+        })
+        || para.line_segs.windows(2).any(|pair| {
+            pair[1].vertical_pos <= pair[0].vertical_pos
+                || pair[1].is_first_line_of_page()
+                || pair[1].is_first_line_of_column()
+        })
+    {
+        return None;
+    }
+    project_stored_rows(
+        para,
+        &box_.frame(para.line_segs[0].vertical_pos),
+        styles,
+        dpi,
+        false,
+        true,
+    )
 }
 
 /// 원본 TTF로 잰 같은 상자에서 저장 경계가 본문을 먼저 끊었는지 확인한다.
@@ -187,7 +261,7 @@ fn project_stored_rows(
     styles: &ResolvedStyleSet,
     dpi: f64,
     supported_inline_picture: bool,
-    source_program: bool,
+    refresh_physical_cache: bool,
 ) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
     if let Some(projected) = super::stored_marker_frames::project(para, frame, styles, dpi) {
         return Some(projected);
@@ -195,11 +269,11 @@ fn project_stored_rows(
     if para.line_segs.len() < 2
         || (!para.controls.is_empty()
             && !supported_inline_picture
-            && !(source_program
+            && !(refresh_physical_cache
                 && crate::renderer::cell_paragraph_has_only_single_column_metadata(para)))
         || para.text.contains('\n')
         || para.stored_text_partition_is_dirty()
-        || (!source_program
+        || (!refresh_physical_cache
             && super::stored_row_fragments::crosses_physical_frame(para)
             && !has_unmarked_final_word_rewind(para))
         || frame.models_exclusions()
@@ -212,7 +286,7 @@ fn project_stored_rows(
     }
     let last = para.line_segs.last()?;
     let previous = &para.line_segs[para.line_segs.len() - 2];
-    if !source_program
+    if !refresh_physical_cache
         && (last.is_first_line_of_page()
         || last.is_first_line_of_column()
         || last.vertical_pos == previous.vertical_pos
@@ -247,7 +321,7 @@ fn project_stored_rows(
     // 채움은 새 줄을 만들지만 원본의 줄별 들여쓰기 기록도 소비한다. 저장 줄을
     // 비워 입력의 근거까지 없애면 명시적으로 꺼진 들여쓰기가 다시 적용된다.
     let rows = line_breaking::layout_paragraph_in_frame(para, &mut probe, styles, dpi)?;
-    if source_program {
+    if refresh_physical_cache {
         let cached = super::compose_paragraph_in_context(para, styles);
         let chars: Vec<_> = para.text.chars().collect();
         let source_index = |position| {

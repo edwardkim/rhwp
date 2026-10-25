@@ -3,7 +3,7 @@ import { parseCssFontFamilyList } from '../core/font-substitution.ts';
 import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
 import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
-import { rasterLineEndpoints } from './canvaskit/raster-stroke.ts';
+import { rasterLineGeometry } from './canvaskit/raster-stroke.ts';
 import { shouldDrawPageMarginGuides } from './page-margin-guides.ts';
 import squareGradientSkSL from '../../../src/renderer/square_gradient.sksl?raw';
 import * as bitmapRasterWasm from '@wasm/rhwp.js';
@@ -2130,8 +2130,8 @@ export class CanvasKitLayerRenderer {
     const width = style.width ?? 1;
     const matrix = (profile === 'print' || profile === 'highQuality')
       && typeof canvas.getTotalMatrix === 'function' ? canvas.getTotalMatrix() : undefined;
-    const singlePaintWidth = Math.max(0.3, width);
-    const [x1, y1, x2, y2] = rasterLineEndpoints(op, matrix, profile, singlePaintWidth);
+    const [x1, y1, x2, y2, singlePaintWidth] = rasterLineGeometry(
+      op, matrix, profile, Math.max(0.3, width));
     if (![x1, y1, x2, y2, width].every(Number.isFinite)) {
       this.unsupportedOps.add('line:invalidGeometry');
       return;

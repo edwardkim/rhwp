@@ -337,6 +337,12 @@ fn has_no_unjustified_leading_spaces(count: &usize) -> bool {
 /// 텍스트 렌더링 스타일
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TextStyle {
+    /// 리터럴 숫자 폭 공백. HWP 고정폭 빈칸 제어 문자와 구분한다.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub literal_figure_space: bool,
+    /// 리터럴 공백에 선택한 실제 슬롯 프로그램의 전진폭(em).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub literal_figure_space_em: Option<f64>,
     /// 호스트가 실제 paint에 준비한 글꼴의 원 PUA 표시·전진 계약이다.
     #[serde(skip)]
     pub native_pua_metrics: Option<std::sync::Arc<native_pua_fonts::NativePuaMetrics>>,
@@ -783,6 +789,8 @@ impl Default for TextStyle {
             font_space_em: None,
             layout_half_space: false,
             regenerated_font_metrics: false,
+            literal_figure_space: false,
+            literal_figure_space_em: None,
             hft_hangul_face: false,
             hft_font_face: false,
             hft_fullwidth_dot: false,

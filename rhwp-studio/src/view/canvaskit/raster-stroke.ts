@@ -1,13 +1,13 @@
 import type { LayerLineOp, LayerRenderProfile } from '../../core/types.ts';
 
 /** Native/Web Canvas의 raster_stroke와 같은 장치 좌표의 가는 실선 계약. */
-export function rasterLineEndpoints(
+export function rasterLineGeometry(
   line: LayerLineOp,
   matrix: ArrayLike<number> | undefined,
   profile: LayerRenderProfile,
   paintWidth: number,
-): [number, number, number, number] {
-  const original: [number, number, number, number] = [line.x1, line.y1, line.x2, line.y2];
+): [number, number, number, number, number] {
+  const original: [number, number, number, number, number] = [line.x1, line.y1, line.x2, line.y2, paintWidth];
   const style = line.style ?? {};
   const width = style.width ?? 1;
   if (!['print', 'highQuality'].includes(profile) || !matrix || matrix.length !== 9
@@ -30,21 +30,19 @@ export function rasterLineEndpoints(
   if (dx !== 0 && dy === 0) [nx, ny] = [0, 1];
   else if (dx === 0 && dy !== 0) [nx, ny] = [1, 0];
   else return original;
-  const deviceWidth = paintWidth * Math.hypot(a * nx + c * ny, b * nx + d * ny);
+  const normalScale = Math.hypot(a * nx + c * ny, b * nx + d * ny);
+  const deviceWidth = paintWidth * normalScale;
   if (!(deviceWidth > 0 && deviceWidth < 1)) return original;
-  const px = a * line.x1 + c * line.y1 + e;
-  const py = b * line.x1 + d * line.y1 + f;
-  const ex = a * dx + c * dy;
-  const ey = b * dx + d * dy;
-  if (![px, py, ex, ey].every(Number.isFinite)) return original;
-  let sx: number, sy: number;
-  if (ex !== 0 && ey === 0) [sx, sy] = [0, Math.floor(py) + 0.5 - py];
-  else if (ex === 0 && ey !== 0) [sx, sy] = [Math.floor(px) + 0.5 - px, 0];
-  else return original;
-  const lx = (d * sx - c * sy) / determinant;
-  const ly = (-b * sx + a * sy) / determinant;
-  const adjusted: [number, number, number, number] = [
-    line.x1 + lx, line.y1 + ly, line.x2 + lx, line.y2 + ly,
-  ];
-  return adjusted.every(Number.isFinite) ? adjusted : original;
+  const rasterWidth = 1 / normalScale;
+  return Number.isFinite(rasterWidth) && rasterWidth > 0
+    ? [line.x1, line.y1, line.x2, line.y2, rasterWidth] : original;
+}
+
+/** 기존 좌표 조회도 새 공통 래스터 계획의 원본 좌표를 사용한다. */
+export function rasterLineEndpoints(
+  line: LayerLineOp, matrix: ArrayLike<number> | undefined,
+  profile: LayerRenderProfile, paintWidth: number,
+): [number, number, number, number] {
+  const [x1, y1, x2, y2] = rasterLineGeometry(line, matrix, profile, paintWidth);
+  return [x1, y1, x2, y2];
 }

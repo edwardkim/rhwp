@@ -3,7 +3,7 @@ use super::{ComposedParagraph, ComposedTextRun, SpaceMetric};
 use crate::renderer::supplemental_metrics::scalar_eligibility;
 
 /// Logical scalar eligibility prepared once, before token/style subdivision.
-pub(crate) struct ParagraphMetricScope<'a>(Option<Vec<bool>>, SpaceMetric, &'a [char]);
+pub(crate) struct ParagraphMetricScope<'a>(Option<Vec<bool>>, SpaceMetric, &'a [char], &'a [usize]);
 
 impl<'a> ParagraphMetricScope<'a> {
     pub(crate) fn allows(&self, index: usize) -> bool {
@@ -19,11 +19,17 @@ impl<'a> ParagraphMetricScope<'a> {
             }),
             SpaceMetric::Stored,
             chars,
+            &[],
         )
     }
 
     pub(crate) fn with_space_metric(mut self, metric: SpaceMetric) -> Self {
         self.1 = metric;
+        self
+    }
+
+    pub(crate) fn with_literal_figure_spaces(mut self, indices: &'a [usize]) -> Self {
+        self.3 = indices;
         self
     }
 
@@ -40,6 +46,11 @@ impl<'a> ParagraphMetricScope<'a> {
         );
         if !self.allows(index) {
             style.supplemental_metrics = None;
+        }
+        style.literal_figure_space =
+            self.2.get(index) == Some(&'\u{2007}') && self.3.binary_search(&index).is_ok();
+        if style.literal_figure_space {
+            style.literal_figure_space_em = styles.literal_figure_space_em(id, lang);
         }
         self.1.apply_to_style(&mut style);
         // 이 scope는 새 줄의 채움·분할·투영을 측정한다.
@@ -137,5 +148,46 @@ fn split_run(run: ComposedTextRun, allowed: &[bool], output: &mut Vec<ComposedTe
     }
     if allowed.is_empty() {
         output.push(run);
+    }
+}
+
+/// 원문 리터럴 공백의 출처를 표시 변환 전에 런에 전달한다.
+pub(super) fn preserve_literal_spaces(composed: &mut ComposedParagraph, indices: &[usize]) {
+    if indices.is_empty() {
+        return;
+    }
+    for line in &mut composed.lines {
+        let mut offset = line.char_start;
+        let mut output = Vec::new();
+        for run in std::mem::take(&mut line.runs) {
+            let count = run.source_scalar_count();
+            if count == 0 || !run.text.contains('\u{2007}') {
+                offset += count;
+                output.push(run);
+                continue;
+            }
+            let mut boundaries: Vec<usize> =
+                run.text.char_indices().map(|(byte, _)| byte).collect();
+            boundaries.push(run.text.len());
+            let flags: Vec<bool> = run
+                .text
+                .chars()
+                .enumerate()
+                .map(|(i, ch)| ch == '\u{2007}' && indices.binary_search(&(offset + i)).is_ok())
+                .collect();
+            let mut start = 0;
+            for end in 1..=flags.len() {
+                if end == flags.len() || flags[end] != flags[start] {
+                    output.push(ComposedTextRun {
+                        text: run.text[boundaries[start]..boundaries[end]].to_owned(),
+                        literal_figure_space: flags[start],
+                        ..run.clone()
+                    });
+                    start = end;
+                }
+            }
+            offset += count;
+        }
+        line.runs = output;
     }
 }

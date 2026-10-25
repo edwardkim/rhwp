@@ -93,6 +93,7 @@ fn split_composed_line_by_width(
                         inserted_control_text: t.inserted_control_text,
                         space_metric: t.space_metric,
                         regenerated_font_metrics: t.regenerated_font_metrics,
+                        literal_figure_space: t.literal_figure_space,
                     });
                 } else {
                     text.clear();

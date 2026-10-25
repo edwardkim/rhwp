@@ -128,6 +128,7 @@ fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) 
                 inserted_control_text: true,
                 space_metric: crate::renderer::composer::SpaceMetric::Stored,
                 regenerated_font_metrics: text_metric_origin::regenerated_row(para, 0),
+                literal_figure_space: false,
             },
         ));
     }
@@ -226,6 +227,7 @@ pub(super) fn insert_control_text_run(
                         inserted_control_text: line.runs[run_idx].inserted_control_text,
                         space_metric: line.runs[run_idx].space_metric,
                         regenerated_font_metrics: line.runs[run_idx].regenerated_font_metrics,
+                        literal_figure_space: line.runs[run_idx].literal_figure_space,
                     };
 
                     // overlap_run과 after_run을 삽입

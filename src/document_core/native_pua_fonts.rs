@@ -12,6 +12,9 @@ pub struct NativePuaFontRequest {
     pub paint_families: Vec<String>,
     pub bold: bool,
     pub italic: bool,
+    /// 리터럴 공백의 프로그램은 PUA 기호 fallback과 별도로 선택한다.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub literal_figure_space: bool,
 }
 
 impl DocumentCore {
@@ -23,9 +26,18 @@ impl DocumentCore {
         let mut fonts = crate::renderer::native_pua_fonts::NativePuaFonts::default();
         for request in self.native_pua_font_requests() {
             if let Some((bytes, index)) = provider(&request) {
-                fonts
-                    .register(&request.family, request.bold, request.italic, &bytes, index)
-                    .map_err(|message| HwpError::RenderError(message.into()))?;
+                if request.literal_figure_space {
+                    fonts.register_literal_space(
+                        &request.family,
+                        request.bold,
+                        request.italic,
+                        &bytes,
+                        index,
+                    )
+                } else {
+                    fonts.register(&request.family, request.bold, request.italic, &bytes, index)
+                }
+                .map_err(|message| HwpError::RenderError(message.into()))?;
             }
         }
         let changed = fonts != *self.native_pua_fonts;
@@ -38,46 +50,60 @@ impl DocumentCore {
     /// 기존 bounded source traversal로 실제 PUA를 쓰는 슬롯만 조회한다.
     /// 뒤늦은 paint-time 검색이나 모든 글자 모양의 글꼴 선등록을 하지 않는다.
     pub fn native_pua_font_requests(&self) -> Vec<NativePuaFontRequest> {
-        let mut slots = HashSet::<ExactFontSlot>::new();
+        use super::queries::rendering::{
+            collect_exact_font_slots_from_paragraphs_filtered, ExactFontSlotFilter,
+        };
+        let mut requests = BTreeMap::new();
         let mut work = 1_000_000;
-        for section in &self.document.sections {
-            super::queries::rendering::collect_exact_font_slots_from_paragraphs_filtered(
-                &section.paragraphs,
-                &mut slots,
-                &mut work,
-                0,
-                true,
-            );
-            for master in &section.section_def.master_pages {
-                super::queries::rendering::collect_exact_font_slots_from_paragraphs_filtered(
-                    &master.paragraphs,
+        for (filter, literal_figure_space) in [
+            (ExactFontSlotFilter::Pua, false),
+            (ExactFontSlotFilter::LiteralFigureSpace, true),
+        ] {
+            let mut slots = HashSet::<ExactFontSlot>::new();
+            for section in &self.document.sections {
+                collect_exact_font_slots_from_paragraphs_filtered(
+                    &section.paragraphs,
                     &mut slots,
                     &mut work,
                     0,
-                    true,
+                    filter,
                 );
+                for master in &section.section_def.master_pages {
+                    collect_exact_font_slots_from_paragraphs_filtered(
+                        &master.paragraphs,
+                        &mut slots,
+                        &mut work,
+                        0,
+                        filter,
+                    );
+                }
             }
-        }
-        let mut requests = BTreeMap::new();
-        for slot in slots {
-            if self
-                .styles
-                .has_exact_font_source(slot.char_shape_id, slot.language_index)
-            {
-                continue;
-            }
-            if let Some(style) = self.styles.char_styles.get(slot.char_shape_id as usize) {
-                let family = style.font_family_for_lang(slot.language_index).to_owned();
-                requests
-                    .entry((family.clone(), style.bold, style.italic))
-                    .or_insert(NativePuaFontRequest {
-                        paint_families: crate::renderer::render_font_family_names_for_weight(
-                            &family, style.bold,
-                        ),
-                        family,
-                        bold: style.bold,
-                        italic: style.italic,
-                    });
+            for slot in slots {
+                if self
+                    .styles
+                    .has_exact_font_source(slot.char_shape_id, slot.language_index)
+                {
+                    continue;
+                }
+                if let Some(style) = self.styles.char_styles.get(slot.char_shape_id as usize) {
+                    let family = style.font_family_for_lang(slot.language_index).to_owned();
+                    requests
+                        .entry((
+                            family.clone(),
+                            style.bold,
+                            style.italic,
+                            literal_figure_space,
+                        ))
+                        .or_insert(NativePuaFontRequest {
+                            paint_families: crate::renderer::render_font_family_names_for_weight(
+                                &family, style.bold,
+                            ),
+                            family,
+                            bold: style.bold,
+                            italic: style.italic,
+                            literal_figure_space,
+                        });
+                }
             }
         }
         requests.into_values().collect()
@@ -98,6 +124,27 @@ impl DocumentCore {
             .register(family, bold, italic, bytes, face_index)
             .map_err(|message| HwpError::RenderError(message.into()))?;
         let supported = fonts.get(family, bold, italic).is_some();
+        if changed {
+            self.native_pua_fonts = std::sync::Arc::new(fonts);
+            self.refresh_native_pua_font_layout();
+        }
+        Ok(supported)
+    }
+
+    /// 실제 리터럴 공백에 선택한 SFNT만 별도 세션 메트릭으로 공급한다.
+    pub fn register_literal_figure_space_font(
+        &mut self,
+        family: &str,
+        bold: bool,
+        italic: bool,
+        bytes: &[u8],
+        face_index: u32,
+    ) -> Result<bool, HwpError> {
+        let mut fonts = (*self.native_pua_fonts).clone();
+        let changed = fonts
+            .register_literal_space(family, bold, italic, bytes, face_index)
+            .map_err(|message| HwpError::RenderError(message.into()))?;
+        let supported = fonts.literal_space_em(family, bold, italic).is_some();
         if changed {
             self.native_pua_fonts = std::sync::Arc::new(fonts);
             self.refresh_native_pua_font_layout();

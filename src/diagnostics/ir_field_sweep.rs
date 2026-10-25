@@ -641,6 +641,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         hwpx_axis_shift: _,
         text,
         char_offsets,
+        literal_figure_spaces,
         char_shapes,
         line_segs,
         range_tags,
@@ -681,6 +682,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
     f!(raw_break_type);
     f!(text);
     f!(char_offsets);
+    f!(literal_figure_spaces);
     f!(char_shapes);
     f!(line_segs);
     f!(range_tags);

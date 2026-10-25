@@ -101,6 +101,7 @@ pub(super) fn project(composed: &mut ComposedParagraph, para: &Paragraph) {
             inserted_control_text: true,
             space_metric: SpaceMetric::Stored,
             regenerated_font_metrics: super::text_metric_origin::regenerated_row(para, 0),
+            literal_figure_space: false,
             ..Default::default()
         };
         for run in super::split_runs_by_lang(vec![run]) {

@@ -35,6 +35,7 @@ pub(crate) use inline_picture_metrics::{
 };
 pub(crate) use stored_tac_host_frame::stored_tac_host_frame;
 pub(crate) use stored_word_tail::{
+    project_current_body_box_rows, project_current_marker_height_rows,
     project_current_source_program_rows, project_stored_soft_wraps,
     projects_current_marker_geometry,
 };
@@ -52,6 +53,8 @@ pub struct CharOverlapInfo {
 /// 구성된 텍스트 런 (줄 내 동일 스타일 + 동일 언어 구간)
 #[derive(Debug, Clone, Default)]
 pub struct ComposedTextRun {
+    /// 원문 U+2007 리터럴의 숫자 폭 공백 계약이다.
+    pub literal_figure_space: bool,
     /// 텍스트 조각
     pub text: String,
     /// 글자 스타일 ID (ResolvedStyleSet.char_styles 인덱스)
@@ -106,6 +109,11 @@ impl ComposedTextRun {
         }
         self.space_metric.apply_to_style(&mut style);
         style.regenerated_font_metrics = self.regenerated_font_metrics;
+        style.literal_figure_space = self.literal_figure_space;
+        if self.literal_figure_space {
+            style.literal_figure_space_em =
+                styles.literal_figure_space_em(self.char_style_id, self.lang_index);
+        }
         style
     }
 

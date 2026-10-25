@@ -6,9 +6,10 @@ import { normalizeFontFaceData } from './sfnt-face.ts';
 export interface NativePuaFontDocument {
   getNativePuaFontRequests?(): string;
   registerNativePuaFont?(family: string, bold: boolean, italic: boolean, bytes: Uint8Array, faceIndex: number): boolean;
+  registerLiteralFigureSpaceFont?(family: string, bold: boolean, italic: boolean, bytes: Uint8Array, faceIndex: number): boolean;
   clearNativePuaFonts?(): void;
 }
-interface Request { family: string; paint_families?: string[]; bold: boolean; italic: boolean }
+interface Request { literal_figure_space?: boolean; family: string; paint_families?: string[]; bold: boolean; italic: boolean }
 interface State { generation: string; requests: string; keys: Set<string> }
 
 /** FontFace의 준비·선택이 확인된 현재 호스트 세대에서만 원 PUA를 허용한다. */
@@ -48,7 +49,7 @@ export class NativePuaFontSession {
     const requests: Request[] = JSON.parse(raw);
     let settled = true;
     for (const request of requests) {
-      const key = JSON.stringify([request.family, request.bold, request.italic]);
+      const key = JSON.stringify([request.family, request.bold, request.italic, Boolean(request.literal_figure_space)]);
       if (state.keys.has(key)) continue;
       for (const family of request.paint_families ?? parseCssFontFamilyList(request.family)) {
         const record = resolveRendererLocalFont(family,
@@ -61,7 +62,9 @@ export class NativePuaFontSession {
         if (!data) continue;
         const bytes = normalizeFontFaceData(data.bytes, data.faceIndex ?? 0);
         if (!bytes) continue;
-        if (owner.registerNativePuaFont(request.family, request.bold, request.italic,
+        const register = request.literal_figure_space
+          ? owner.registerLiteralFigureSpaceFont : owner.registerNativePuaFont;
+        if (register?.call(owner, request.family, request.bold, request.italic,
           new Uint8Array(bytes), 0)) {
           state.keys.add(key);
           break;

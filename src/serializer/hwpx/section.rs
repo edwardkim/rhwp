@@ -1001,6 +1001,8 @@ pub(crate) struct InlineCursor<'a> {
     /// (HWPX 실측: 요소 26문서 · 리터럴 20문서 · 혼용 0문서). 출처가 제어·요소 표기
     /// (`control_mask` 비트 30)일 때만 요소로 내린다.
     pub nb_space_as_element: bool,
+    /// 리터럴 문자는 고정폭 빈칸 요소와 구분하여 원래 표기로 저장한다.
+    pub literal_figure_spaces: &'a [usize],
 }
 
 impl InlineCursor<'_> {
@@ -1126,18 +1128,18 @@ pub(crate) fn render_hp_t_content(
                 flush_buf(&mut t_xml, &mut buf);
                 t_xml.push_str("<hp:lineBreak/>");
             }
-            // 고정폭 빈칸은 `<hp:fwSpace/>` 요소로 복원한다(#4675). 파서가
-            // `<hp:fwSpace/>`→U+2007 로 읽으므로 리터럴 방출은 표현 강등이다 — 한글은
-            // 요소를 텍스트 추출에 싣지 않지만 리터럴은 문자로 실어, 저장본의 추출
-            // 텍스트·재조판이 원본과 달라진다(10k 스윕 figure-space-only 1,970건).
-            //
-            // 한컴 원본 실측(hwpx 전수): U+2007 은 fwSpace 요소 530회 · 리터럴 0회로
-            // **항상 요소**다. 반면 U+00A0 은 요소 26문서 · 리터럴 20문서로 섞여 있어
-            // 요소로 강제하면 리터럴이던 원본에서 한글 추출 텍스트가 사라진다.
-            // 그래서 U+00A0 만 아래에서 출처 표기를 따라간다(#5174).
+            // HWP 코드 31과 fwSpace 요소는 기존 요소 표기를 유지한다(#4675).
+            // 실제 리터럴 U+2007은 다른 문자 폭 계약이므로 요소로 바꾸지 않는다.
             '\u{2007}' => {
-                flush_buf(&mut t_xml, &mut buf);
-                t_xml.push_str("<hp:fwSpace/>");
+                if cursor
+                    .literal_figure_spaces
+                    .contains(&(cursor.char_idx - 1))
+                {
+                    buf.push(c);
+                } else {
+                    flush_buf(&mut t_xml, &mut buf);
+                    t_xml.push_str("<hp:fwSpace/>");
+                }
             }
             // [#5174] 묶음 빈칸은 U+2007 과 달리 **원본 표기를 따라간다.** 종전에는 늘
             // 리터럴로 냈는데(표현 강등), 원본이 제어·요소 표기였으면 한글 추출 텍스트에
@@ -1675,6 +1677,7 @@ fn render_runs_in_paragraph_scope(
         soft_hyphen_as_element: para.control_mask & (1u32 << 0x0018) != 0,
         // [#5174] 같은 계약 — 출처가 제어·요소 표기였던 문단만 `<hp:nbSpace/>` 로 되돌린다.
         nb_space_as_element: para.control_mask & (1u32 << 0x001E) != 0,
+        literal_figure_spaces: &para.literal_figure_spaces,
         ..Default::default()
     };
 

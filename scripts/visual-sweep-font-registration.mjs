@@ -67,9 +67,11 @@ export async function prepareNativePuaFonts(owner, fonts, loadBytes) {
             {weight: String(record.weight), style: record.style}, owner);
           loaded.set(key, bytes);
         }
-        if (owner.registerNativePuaFont(request.family, request.bold, request.italic,
-          new Uint8Array(bytes), 0)) {
-          proofs.push({family: request.family, selectedFamily: family, weight: record.weight,
+        const register = request.literal_figure_space
+          ? owner.registerLiteralFigureSpaceFont : owner.registerNativePuaFont;
+        if (typeof register === 'function' && register.call(owner, request.family,
+          request.bold, request.italic, new Uint8Array(bytes), 0)) {
+          proofs.push({family: request.family, literalFigureSpace: Boolean(request.literal_figure_space), selectedFamily: family, weight: record.weight,
             style: record.style, sha256: record.sha256, sourceSha256: record.sourceSha256});
           accepted = true;
           break;

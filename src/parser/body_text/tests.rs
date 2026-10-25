@@ -1082,6 +1082,7 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
     let mut title_marks: Vec<TitleMark> = Vec::new();
     let mut orphan_field_ends: Vec<OrphanFieldEnd> = Vec::new();
     let mut nb_space_control = false;
+    let mut literal_figure_spaces = Vec::new();
     let mut pos = 0;
     // 확장 컨트롤(extended) 카운터 → controls[] 인덱스와 1:1 대응
     let mut ctrl_idx: usize = 0;
@@ -1255,6 +1256,9 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
             // [#6873] 짝을 잃은 서로게이트는 버리지 않고 `□` 로 받는다 — 본 구현과 같다.
             let scalar = char::from_u32(ch as u32).or(Some(super::UNPAIRED_SURROGATE_CHAR));
             if let Some(c) = scalar {
+                if c == '\u{2007}' {
+                    literal_figure_spaces.push(char_count);
+                }
                 char_offsets.push(code_unit_pos);
                 text.push(c);
                 char_count += 1;
@@ -1265,6 +1269,7 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
 
     ParaTextParts {
         text,
+        literal_figure_spaces,
         char_offsets,
         field_ranges,
         tab_extended,
@@ -1302,6 +1307,11 @@ fn assert_decode_identical(data: &[u8]) {
     let new = parse_para_text(data);
     let reference = parse_para_text_reference(data);
     assert_eq!(new.text, reference.text, "text 불일치: {:02x?}", data);
+    assert_eq!(
+        new.literal_figure_spaces, reference.literal_figure_spaces,
+        "리터럴 FIGURE SPACE 출처 불일치: {:02x?}",
+        data
+    );
     assert_eq!(
         new.char_offsets, reference.char_offsets,
         "offsets 불일치: {:02x?}",

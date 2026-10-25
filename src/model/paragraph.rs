@@ -46,6 +46,10 @@ pub struct Paragraph {
     /// 텍스트 문자별 UTF-16 코드 유닛 위치 (LineSeg/CharShapeRef 위치와 매핑용)
     /// char_offsets[i] = text[i]에 해당하는 원본 UTF-16 코드 유닛 인덱스
     pub char_offsets: Vec<u32>,
+    /// 리터럴 U+2007의 문자 인덱스. 같은 표시 문자인 HWP 코드31과 구분한다.
+    /// 파일 표기 출처이며 원문 문자·UTF-16 축은 바꾸지 않는다.
+    #[serde(skip_serializing)]
+    pub literal_figure_spaces: Vec<usize>,
     /// 글자 모양 변경 위치 목록
     pub char_shapes: Vec<CharShapeRef>,
     /// 줄 레이아웃 정보
@@ -1407,6 +1411,19 @@ impl Paragraph {
         let new_chars: Vec<char> = new_text.chars().collect();
         let utf16_delta: u32 = new_chars.iter().map(|c| Self::char_stream_len(*c)).sum();
 
+        for position in &mut self.literal_figure_spaces {
+            if *position >= char_offset {
+                *position += new_chars.len();
+            }
+        }
+        self.literal_figure_spaces.extend(
+            new_chars
+                .iter()
+                .enumerate()
+                .filter_map(|(i, ch)| (*ch == '\u{2007}').then_some(char_offset + i)),
+        );
+        self.literal_figure_spaces.sort_unstable();
+
         for mark in &mut self.markpen_marks {
             if mark.char_idx >= char_offset {
                 mark.char_idx += new_chars.len();
@@ -1532,6 +1549,14 @@ impl Paragraph {
             .map(|c| Self::char_stream_len(*c))
             .sum();
         let utf16_end = utf16_start + utf16_delta;
+
+        self.literal_figure_spaces
+            .retain(|&position| position < char_offset || position >= del_end);
+        for position in &mut self.literal_figure_spaces {
+            if *position >= del_end {
+                *position -= del_end - char_offset;
+            }
+        }
 
         for mark in &mut self.markpen_marks {
             mark.char_idx = if mark.char_idx >= del_end {
@@ -1702,6 +1727,15 @@ impl Paragraph {
         let byte_offset: usize = text_chars[..split_pos].iter().map(|c| c.len_utf8()).sum();
         let new_text = self.text[byte_offset..].to_string();
         self.text.truncate(byte_offset);
+
+        let new_literal_figure_spaces = self
+            .literal_figure_spaces
+            .iter()
+            .filter(|&&position| position >= split_pos)
+            .map(|&position| position - split_pos)
+            .collect();
+        self.literal_figure_spaces
+            .retain(|&position| position < split_pos);
 
         // 2. char_offsets 분할
         let new_char_offsets: Vec<u32> = self.char_offsets[split_pos..]
@@ -1976,6 +2010,7 @@ impl Paragraph {
         let mut new_para = Paragraph {
             text: new_text,
             char_offsets: new_char_offsets,
+            literal_figure_spaces: new_literal_figure_spaces,
             char_shapes: new_char_shapes,
             line_segs: new_line_segs,
             layout_space_metrics: Vec::new(),
@@ -2058,6 +2093,12 @@ impl Paragraph {
 
         // 1. 텍스트 결합
         self.text.push_str(&other.text);
+        self.literal_figure_spaces.extend(
+            other
+                .literal_figure_spaces
+                .iter()
+                .map(|&position| position + self_text_len),
+        );
 
         // 2. char_offsets 결합 (other의 오프셋에 utf16_end 추가)
         for &off in &other.char_offsets {

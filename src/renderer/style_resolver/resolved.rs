@@ -548,6 +548,29 @@ pub struct ResolvedStyleSet {
 }
 
 impl ResolvedStyleSet {
+    pub(crate) fn literal_figure_space_em(
+        &self,
+        char_style_id: u32,
+        lang_index: usize,
+    ) -> Option<f64> {
+        self.kerning_measurement_context
+            .as_ref()
+            .and_then(|context| {
+                context.literal_figure_space_em(crate::renderer::kerning::ExactFontSlot::new(
+                    char_style_id,
+                    lang_index,
+                ))
+            })
+            .or_else(|| {
+                let style = self.char_styles.get(char_style_id as usize)?;
+                self.native_pua_fonts.literal_space_em(
+                    style.font_family_for_lang(lang_index),
+                    style.bold,
+                    style.italic,
+                )
+            })
+    }
+
     /// 명시/내장 슬롯의 실제 프로그램을 외부 family 캐시로 대체하지 않는다.
     pub(crate) fn has_exact_font_source(&self, char_style_id: u32, lang_index: usize) -> bool {
         self.kerning_measurement_context

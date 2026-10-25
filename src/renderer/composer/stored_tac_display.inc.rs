@@ -520,6 +520,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                     inserted_control_text: false,
                     space_metric: crate::renderer::composer::SpaceMetric::Stored,
                     regenerated_font_metrics: line.runs[ri].regenerated_font_metrics,
+                    literal_figure_space: line.runs[ri].literal_figure_space,
                 };
 
                 let mut new_runs = Vec::new();
@@ -539,6 +540,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 inserted_control_text: run.inserted_control_text,
                                 space_metric: run.space_metric,
                                 regenerated_font_metrics: run.regenerated_font_metrics,
+                                literal_figure_space: run.literal_figure_space,
                             });
                         }
                         new_runs.push(marker_run.clone());
@@ -555,6 +557,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 inserted_control_text: run.inserted_control_text,
                                 space_metric: run.space_metric,
                                 regenerated_font_metrics: run.regenerated_font_metrics,
+                                literal_figure_space: run.literal_figure_space,
                             });
                         }
                     } else {

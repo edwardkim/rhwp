@@ -339,6 +339,14 @@ fn load_bounded_embedded_font_bytes(
     bytes_by_id
 }
 
+/// 실제 필요한 문자 출처에 한해 같은 bounded 문단 순회를 사용한다.
+#[derive(Clone, Copy)]
+pub(crate) enum ExactFontSlotFilter {
+    All,
+    Pua,
+    LiteralFigureSpace,
+}
+
 fn collect_exact_font_slots_from_paragraphs(
     paragraphs: &[Paragraph],
     slots: &mut std::collections::HashSet<ExactFontSlot>,
@@ -350,7 +358,7 @@ fn collect_exact_font_slots_from_paragraphs(
         slots,
         remaining_work_units,
         depth,
-        false,
+        ExactFontSlotFilter::All,
     );
 }
 
@@ -359,7 +367,7 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_filtered(
     slots: &mut std::collections::HashSet<ExactFontSlot>,
     remaining_work_units: &mut usize,
     depth: usize,
-    pua_only: bool,
+    filter: ExactFontSlotFilter,
 ) {
     const MAX_EXACT_FONT_TRAVERSAL_DEPTH: usize = 128;
     if depth > MAX_EXACT_FONT_TRAVERSAL_DEPTH
@@ -380,11 +388,14 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_filtered(
             }
             *remaining_work_units -= 1;
             if !run.text.is_empty()
-                && (!pua_only
-                    || run
+                && match filter {
+                    ExactFontSlotFilter::All => true,
+                    ExactFontSlotFilter::Pua => run
                         .text
                         .chars()
-                        .any(crate::renderer::native_pua_fonts::is_supported_symbol))
+                        .any(crate::renderer::native_pua_fonts::is_supported_symbol),
+                    ExactFontSlotFilter::LiteralFigureSpace => run.literal_figure_space,
+                }
             {
                 slots.insert(ExactFontSlot::new(run.char_style_id, run.lang_index));
                 if slots.len() >= MAX_KERNING_REGISTRY_SLOTS {
@@ -405,7 +416,7 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_filtered(
                             slots,
                             remaining_work_units,
                             depth + 1,
-                            pua_only,
+                            filter,
                         );
                     }
                     for cell in &table.cells {
@@ -414,7 +425,7 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_filtered(
                             slots,
                             remaining_work_units,
                             depth + 1,
-                            pua_only,
+                            filter,
                         );
                     }
                 }
@@ -423,7 +434,7 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_filtered(
                     slots,
                     remaining_work_units,
                     depth + 1,
-                    pua_only,
+                    filter,
                 ),
                 Control::Picture(picture) => {
                     if let Some(caption) = &picture.caption {
@@ -432,7 +443,7 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_filtered(
                             slots,
                             remaining_work_units,
                             depth + 1,
-                            pua_only,
+                            filter,
                         );
                     }
                 }
@@ -441,28 +452,28 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_filtered(
                     slots,
                     remaining_work_units,
                     depth + 1,
-                    pua_only,
+                    filter,
                 ),
                 Control::Footer(footer) => collect_exact_font_slots_from_paragraphs_filtered(
                     &footer.paragraphs,
                     slots,
                     remaining_work_units,
                     depth + 1,
-                    pua_only,
+                    filter,
                 ),
                 Control::Footnote(note) => collect_exact_font_slots_from_paragraphs_filtered(
                     &note.paragraphs,
                     slots,
                     remaining_work_units,
                     depth + 1,
-                    pua_only,
+                    filter,
                 ),
                 Control::Endnote(note) => collect_exact_font_slots_from_paragraphs_filtered(
                     &note.paragraphs,
                     slots,
                     remaining_work_units,
                     depth + 1,
-                    pua_only,
+                    filter,
                 ),
                 Control::HiddenComment(comment) => {
                     collect_exact_font_slots_from_paragraphs_filtered(
@@ -470,7 +481,7 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_filtered(
                         slots,
                         remaining_work_units,
                         depth + 1,
-                        pua_only,
+                        filter,
                     )
                 }
                 Control::Field(field) if !field.memo_paragraphs.is_empty() => {
@@ -479,7 +490,7 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_filtered(
                         slots,
                         remaining_work_units,
                         depth + 1,
-                        pua_only,
+                        filter,
                     )
                 }
                 _ => {}
@@ -496,7 +507,7 @@ fn collect_exact_font_slots_from_shape_filtered(
     slots: &mut std::collections::HashSet<ExactFontSlot>,
     remaining_work_units: &mut usize,
     depth: usize,
-    pua_only: bool,
+    filter: ExactFontSlotFilter,
 ) {
     if depth > 128 || slots.len() >= MAX_KERNING_REGISTRY_SLOTS || *remaining_work_units == 0 {
         return;
@@ -509,7 +520,7 @@ fn collect_exact_font_slots_from_shape_filtered(
                 slots,
                 remaining_work_units,
                 depth + 1,
-                pua_only,
+                filter,
             );
         }
         if let Some(caption) = &drawing.caption {
@@ -518,7 +529,7 @@ fn collect_exact_font_slots_from_shape_filtered(
                 slots,
                 remaining_work_units,
                 depth + 1,
-                pua_only,
+                filter,
             );
         }
     }
@@ -530,7 +541,7 @@ fn collect_exact_font_slots_from_shape_filtered(
                     slots,
                     remaining_work_units,
                     depth + 1,
-                    pua_only,
+                    filter,
                 );
             }
             for child in &group.children {
@@ -539,7 +550,7 @@ fn collect_exact_font_slots_from_shape_filtered(
                     slots,
                     remaining_work_units,
                     depth + 1,
-                    pua_only,
+                    filter,
                 );
             }
         }
@@ -550,7 +561,7 @@ fn collect_exact_font_slots_from_shape_filtered(
                     slots,
                     remaining_work_units,
                     depth + 1,
-                    pua_only,
+                    filter,
                 );
             }
         }

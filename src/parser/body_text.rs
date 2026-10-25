@@ -38,6 +38,7 @@ use crate::model::paragraph::{
 /// `PARA_TEXT` 한 레코드에서 뽑아낸 문단 본문 축 정보.
 struct ParaTextParts {
     text: String,
+    literal_figure_spaces: Vec<usize>,
     char_offsets: Vec<u32>,
     field_ranges: Vec<FieldRange>,
     tab_extended: Vec<[u16; 7]>,
@@ -300,6 +301,12 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
             tags::HWPTAG_PARA_TEXT => {
                 let parts = parse_para_text(&record.data);
                 para.text = parts.text;
+                para.literal_figure_spaces = parts.literal_figure_spaces;
+                if para.text.chars().filter(|&ch| ch == '\u{2007}').count()
+                    > para.literal_figure_spaces.len()
+                {
+                    para.control_mask |= 1u32 << 0x001F;
+                }
                 para.char_offsets = parts.char_offsets;
                 para.field_ranges = parts.field_ranges;
                 para.tab_extended = parts.tab_extended;
@@ -440,6 +447,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
     // 예약값으로 쓴다(ASCII 는 여유, 전각은 doubling 1회 이내).
     let n_units = data.len() / 2;
     let mut text = String::with_capacity(data.len());
+    let mut literal_figure_spaces = Vec::new();
     let mut char_offsets: Vec<u32> = Vec::with_capacity(n_units);
     let mut field_ranges: Vec<FieldRange> = Vec::new();
     let mut tab_extended: Vec<[u16; 7]> = Vec::new();
@@ -479,6 +487,12 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                 }
             }
             let end_cu = (pos / 2) as u32;
+            literal_figure_spaces.extend(
+                data[run_start..pos]
+                    .chunks_exact(2)
+                    .enumerate()
+                    .filter_map(|(i, bytes)| (bytes == [0x07, 0x20]).then_some(char_count + i)),
+            );
             char_offsets.extend(start_cu..end_cu);
             text.extend(data[run_start..pos].chunks_exact(2).map(|c| {
                 char::from_u32(u16::from_le_bytes([c[0], c[1]]) as u32).unwrap_or('\u{FFFD}')
@@ -678,6 +692,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
 
     ParaTextParts {
         text,
+        literal_figure_spaces,
         char_offsets,
         field_ranges,
         tab_extended,

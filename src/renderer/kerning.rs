@@ -397,6 +397,18 @@ impl KerningMeasurementContext {
     pub(crate) fn has_font_source(&self, slot: ExactFontSlot) -> bool {
         self.registry.handle_for_slot(slot).is_some()
     }
+    /// 리터럴 공백에 한해 실제 슬롯 프로그램의 숫자 폭을 읽는다.
+    /// HWP 고정폭 빈칸과 일반 문자의 저장 폭 계약은 변경하지 않는다.
+    pub(crate) fn literal_figure_space_em(&self, slot: ExactFontSlot) -> Option<f64> {
+        let handle = self.registry.handle_for_slot(slot)?;
+        let source = self.registry.source_for_handle(handle)?;
+        let face = ttf_parser::Face::parse(source.bytes, source.face_index).ok()?;
+        let glyph = face
+            .glyph_index('\u{2007}')
+            .or_else(|| face.glyph_index('0'))?;
+        let advance = face.glyph_hor_advance(glyph)?;
+        (advance > 0).then(|| f64::from(advance) / f64::from(face.units_per_em()))
+    }
     pub(crate) fn new(registry: ExactFontSourceRegistry) -> Self {
         Self {
             registry,

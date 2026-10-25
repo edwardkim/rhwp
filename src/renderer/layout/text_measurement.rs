@@ -919,6 +919,8 @@ pub(crate) fn resolved_to_text_style(
             font_space_em: cs.font_space_em,
             layout_half_space: false,
             regenerated_font_metrics: false,
+            literal_figure_space: false,
+            literal_figure_space_em: None,
             hft_hangul_face: styles.hft_ascii_halfwidth && cs.hft_hangul_face_for_lang(lang_index),
             hft_font_face: cs.hft_hangul_face_for_lang(lang_index),
             hft_fullwidth_dot: cs.hft_fullwidth_dot_for_lang(lang_index),
@@ -1798,13 +1800,29 @@ fn char_width_decision_with_hft_tracking<'a>(
         //
         // 3.718 / 14.992 = 0.248em. 종전 `0.5` 는 정확히 두 배라, 이 문서의 글머리
         // ` ○<FW><FW>` 줄이 전부 10px 오른쪽으로 밀렸다(컨트롤 31 이 35회).
-        let base_width_px = font_size * 0.25;
+        // 리터럴 U+2007은 글꼴의 표 숫자 전진폭을 쓴다. 같은 표시 문자로
+        // 읽은 HWP 코드 31은 위 독립 출력으로 확인한 0.25em을 유지한다.
+        let base_width_px = if style.literal_figure_space {
+            style
+                .literal_figure_space_em
+                .map(|em| font_size * em)
+                .unwrap_or_else(|| {
+                    char_width_decision_with_hft_tracking(&['0'], &[1], 0, style, false, false)
+                        .base_width_px
+                })
+        } else {
+            font_size * 0.25
+        };
         let applied_letter_spacing_px =
             glyph_letter_spacing(style.letter_spacing, base_width_px * ratio, font_size);
         let final_width_px =
             base_width_px * ratio + applied_letter_spacing_px + style.extra_char_spacing;
         return CharWidthDecision {
-            width_source: "figureSpace",
+            width_source: if style.literal_figure_space {
+                "literalFigureSpace"
+            } else {
+                "figureSpace"
+            },
             base_width_px,
             final_width_px,
             bold_tracking_px: 0.0,

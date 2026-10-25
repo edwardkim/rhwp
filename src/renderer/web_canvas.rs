@@ -1108,11 +1108,11 @@ impl WebCanvasRenderer {
         // 이미 낮춘 PaintOp는 underpaint가 없으므로 한 번만 그린다.
         for stroke in line.paint_strokes() {
             let paint_width = stroke.style.dash.canvas_width(stroke.style.width);
-            let (x1, y1, x2, y2) = self
+            let (x1, y1, x2, y2, raster_width) = self
                 .ctx
                 .get_transform()
                 .map(|transform| {
-                    super::raster_stroke::raster_line_endpoints(
+                    super::raster_stroke::raster_line_geometry(
                         &stroke,
                         [
                             transform.a(),
@@ -1126,8 +1126,8 @@ impl WebCanvasRenderer {
                         paint_width,
                     )
                 })
-                .unwrap_or((stroke.x1, stroke.y1, stroke.x2, stroke.y2));
-            self.draw_line_with_resolved_width(x1, y1, x2, y2, &stroke.style, paint_width);
+                .unwrap_or((stroke.x1, stroke.y1, stroke.x2, stroke.y2, paint_width));
+            self.draw_line_with_resolved_width(x1, y1, x2, y2, &stroke.style, raster_width);
         }
         if restore_transform {
             self.close_shape_transform_if_needed(&line.transform);
