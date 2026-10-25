@@ -1135,12 +1135,25 @@ impl TypesetEngine {
                     para_index: para_idx,
                     control_index: ctrl_idx,
                 });
-                // [#8149] 통째 첫 조각도 끝 조각과 같은 점유(아래 캡션·바깥 아래 여백 포함)로
-                // 흐름을 닫는다. 표 행만 더하면 새 쪽 첫머리로 넘긴 표 뒤 제목이 캡션 위에
-                // 놓인다(한글문서파일형식 33쪽 표 199 → 제목 200 이 캡션과 겹침).
+                // [#8149] 통째 첫 조각도 끝 조각과 같은 점유(아래 캡션·바깥 아래 여백·뒤 간격)로
+                // 흐름을 닫는다. host 간격 합(`host_spacing_total`)의 뒤 몫이 그 점유보다 작을
+                // 때만 모자란 만큼 더한다 — 한글문서파일형식 33쪽 표 199 는 뒤 몫 0 이라 캡션
+                // 24.0 + 바깥 아래 여백 26.5 를 빠뜨려 제목 200 이 캡션과 겹쳤다. host 앞 간격과
+                // host 줄간격은 host 간격 합의 것을 그대로 쓴다: 단 맨 위 표의 바깥 위 여백은
+                // paint 위치만 바꾸고 흐름은 바꾸지 않는다(issue_4068).
+                let host_spacing_after_in_total =
+                    (host_spacing_total - input.prepared.host_spacing_before).max(0.0);
+                let terminal_occupancy = bottom_caption_extra
+                    + terminal_outer_bottom_overhead
+                    + host_spacing_after_only
+                    + terminal_host_spacing;
                 match whole_successor_flow_end {
                     Some(end) => st.align_flow_to(end),
-                    None => st.advance_flow_by(partial_height + host_spacing_total),
+                    None => st.advance_flow_by(
+                        partial_height
+                            + host_spacing_total
+                            + (terminal_occupancy - host_spacing_after_in_total).max(0.0),
+                    ),
                 }
             } else {
                 self.record_stored_fragment_rows(
