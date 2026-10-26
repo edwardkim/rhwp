@@ -11845,7 +11845,10 @@ impl LayoutEngine {
                         });
                         if has_tac_block {
                             let pp_text_only_ws = if let Some(comp) = composed.get(*para_index) {
-                                comp.lines[*start_line..*end_line].iter().all(|line| {
+                                // 쪽 나눔이 정한 줄 범위가 현재 조합 줄 수보다 길 수 있다. 남은 줄만 본다.
+                                let end = (*end_line).min(comp.lines.len());
+                                let start = (*start_line).min(end);
+                                comp.lines[start..end].iter().all(|line| {
                                     line.runs.iter().all(|r| {
                                         r.text.chars().all(|c| {
                                             c.is_whitespace() || c <= '\u{001F}' || c == '\u{FFFC}'
