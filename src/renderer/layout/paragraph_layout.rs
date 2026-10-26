@@ -7389,8 +7389,7 @@ impl LayoutEngine {
             let visible_line_measure = if (matches!(
                 alignment,
                 Alignment::Left | Alignment::Center | Alignment::Right
-            )
-                || (alignment == Alignment::Justify && !needs_justify))
+            ) || (alignment == Alignment::Justify && !needs_justify))
                 && !has_tabs
                 && line_tac_offsets_for_width.is_empty()
             {
