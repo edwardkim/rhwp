@@ -942,6 +942,7 @@ fn replace_paragraph_text(
             after_inline_control,
         );
     }
+    let replaced_memos = para.memos_within(char_offset, char_offset + delete_count);
     let deleted = if delete_count > 0 {
         if text.is_empty() {
             crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
@@ -955,7 +956,8 @@ fn replace_paragraph_text(
     } else {
         0
     };
-    para.insert_text_at_caret(char_offset, text, after_inline_control);
+    let inserted_at = para.insert_text_at_caret(char_offset, text, after_inline_control);
+    para.regrow_replaced_memos(&replaced_memos, inserted_at, text.chars().count());
     deleted
 }
 

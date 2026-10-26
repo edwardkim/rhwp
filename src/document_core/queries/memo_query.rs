@@ -645,8 +645,10 @@ pub(crate) fn replace_text_at_keeping_memos(
     if new_text.is_empty() {
         (delete_text_at_keeping_memos(para, char_offset, count), 0)
     } else {
+        let replaced_memos = para.memos_within(char_offset, char_offset + count);
         let deleted = para.delete_text_at(char_offset, count);
         let inserted = para.insert_text_at(char_offset, new_text);
+        para.regrow_replaced_memos(&replaced_memos, inserted, new_text.chars().count());
         (deleted, inserted)
     }
 }
@@ -2307,5 +2309,29 @@ mod tests {
         assert!(parse_memo_input(r#"{"text":1}"#).is_err());
         assert!(parse_memo_input(r#"{"author":null,"text":"x"}"#).is_err());
         assert!(parse_memo_input("not json").is_err());
+    }
+
+    #[test]
+    fn typing_at_a_caret_memo_does_not_grow_it() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "hello").unwrap();
+        core.insert_memo_at(0, 0, 2, 2, "tester", "body").unwrap();
+
+        core.insert_text_native(0, 0, 2, "ab").unwrap();
+        let para = &core.document.sections[0].paragraphs[0];
+        assert_eq!(para.text, "heabllo");
+        let range = &para.field_ranges[0];
+        assert_eq!(
+            (range.start_char_idx, range.end_char_idx),
+            (2, 2),
+            "typed text stays outside a zero-length memo"
+        );
+
+        core.delete_text_native(0, 0, 2, 2).unwrap();
+        assert!(
+            core.get_memo_list_json().contains("\"text\":\"body\""),
+            "deleting the typed text keeps the memo"
+        );
     }
 }
