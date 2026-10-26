@@ -687,10 +687,10 @@ mod image_adjustment_regressions {
 // #7501: the shared #7688 arrow outlines are replayed into the PDF canvas too.
 // These tests check the PDF's vector coordinates, not the same helper's output.
 mod connector_arrow_regressions {
-    use rhwp::paint::{LayerNode, PageLayerTree, PaintOp, RenderProfile};
+    use rhwp::paint::{CacheHint, GroupKind, LayerNode, PageLayerTree, PaintOp, RenderProfile};
     use rhwp::renderer::layer_renderer::RasterRenderOptions;
     use rhwp::renderer::pdf::layer_trees_to_pdf;
-    use rhwp::renderer::render_tree::{BoundingBox, LineNode, PathNode};
+    use rhwp::renderer::render_tree::{BoundingBox, GroupNode, LineNode, PathNode};
     use rhwp::renderer::skia::SkiaLayerRenderer;
     use rhwp::renderer::{
         ArrowStyle, LineRenderType, LineStyle, PathCommand, ShadowStyle, ShapeStyle,
@@ -954,6 +954,61 @@ mod connector_arrow_regressions {
             LineNode::new(20.0, 40.0, 20.0, 40.0, style(ArrowStyle::None)),
         ));
         vector_commands(&layer_trees_to_pdf(&[zero_line_without_heads]).unwrap());
+    }
+
+    #[test]
+    fn direct_pdf_rejects_head_outlines_collapsed_before_a_parent_translation() {
+        let translated = |offset: f64, arrow: ArrowStyle, as_path: bool| {
+            let bounds = BoundingBox::new(0.0, 0.0, 256.0, 96.0);
+            let source_bounds = BoundingBox::new(offset, 0.0, 256.0, 96.0);
+            let shaft_bounds = BoundingBox::new(offset, 40.0, 256.0, 0.0);
+            let op = if as_path {
+                let mut connector = connector(style(arrow));
+                connector.commands = vec![
+                    PathCommand::MoveTo(offset, 40.0),
+                    PathCommand::LineTo(offset + 256.0, 40.0),
+                ];
+                connector.connector_endpoints = Some((offset, 40.0, offset + 256.0, 40.0));
+                PaintOp::path(shaft_bounds, connector)
+            } else {
+                PaintOp::line(
+                    shaft_bounds,
+                    LineNode::new(offset, 40.0, offset + 256.0, 40.0, style(arrow)),
+                )
+            };
+            PageLayerTree::with_profile(
+                bounds.width,
+                bounds.height,
+                LayerNode::group(
+                    bounds,
+                    None,
+                    vec![LayerNode::leaf(source_bounds, None, vec![op])],
+                    CacheHint::None,
+                    GroupKind::Group(GroupNode {
+                        paint_transform: Some([1.0, 0.0, 0.0, 1.0, -offset, 0.0]),
+                        section_index: None,
+                        para_index: None,
+                        control_index: None,
+                    }),
+                ),
+                RenderProfile::Print,
+            )
+        };
+        for as_path in [false, true] {
+            let plain = translated(1_073_741_824.0, ArrowStyle::None, as_path);
+            let pixels = SkiaLayerRenderer::new()
+                .render_pixels_with_options(&plain, RasterRenderOptions::default())
+                .unwrap();
+            assert!(pixels.bytes[40 * pixels.stride + 128 * 4 + 3] > 0);
+            vector_commands(&layer_trees_to_pdf(&[plain]).unwrap());
+            for arrow in [ArrowStyle::Arrow, ArrowStyle::OpenArrow, ArrowStyle::Circle] {
+                let error = layer_trees_to_pdf(&[translated(1_073_741_824.0, arrow, as_path)])
+                    .expect_err("the visible shaft must not hide a collapsed head");
+                assert!(error.contains("invalid arrow geometry"), "{error}");
+                assert!(error.contains("use the svg backend"));
+                vector_commands(&layer_trees_to_pdf(&[translated(0.0, arrow, as_path)]).unwrap());
+            }
+        }
     }
 
     #[test]

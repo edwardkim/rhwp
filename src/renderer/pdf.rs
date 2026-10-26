@@ -160,6 +160,33 @@ fn validate_direct_pdf_tree(
         Ok(())
     }
 
+    fn has_skia_outline_area(commands: &[PathCommand]) -> bool {
+        // Test the two-dimensional outline Skia actually consumes. A valid
+        // parent translation can reveal a head collapsed by f32 narrowing.
+        let point = |x: f64, y: f64| (f64::from(x as f32), f64::from(y as f32));
+        let mut points = Vec::new();
+        for command in commands {
+            match *command {
+                PathCommand::MoveTo(x, y) | PathCommand::LineTo(x, y) => points.push(point(x, y)),
+                PathCommand::CurveTo(a, b, c, d, e, f) => {
+                    points.extend([point(a, b), point(c, d), point(e, f)]);
+                }
+                PathCommand::ClosePath => {}
+                PathCommand::ArcTo(..) => return false,
+            }
+        }
+        let Some(&(x0, y0)) = points.first() else {
+            return false;
+        };
+        let Some(&(x1, y1)) = points.iter().find(|&&p| p != (x0, y0)) else {
+            return false;
+        };
+        // f64 keeps the determinant finite even at the f32 coordinate limits.
+        points
+            .iter()
+            .any(|&(x, y)| (x1 - x0) * (y - y0) != (y1 - y0) * (x - x0))
+    }
+
     fn validate_arrow_heads(
         heads: &[crate::renderer::arrow::ArrowHead],
         style: &LineStyle,
@@ -169,11 +196,11 @@ fn validate_direct_pdf_tree(
         let requested = usize::from(style.start_arrow != ArrowStyle::None)
             + usize::from(style.end_arrow != ArrowStyle::None);
         // The shared producer skips degenerate directions. Strict PDF must not
-        // silently lose a requested head, nor narrow an expanded outline to Inf.
+        // silently lose a requested head through overflow or f32 collapse.
         if heads.len() != requested
-            || heads
-                .iter()
-                .any(|head| !valid_path_commands(&head.commands))
+            || heads.iter().any(|head| {
+                !valid_path_commands(&head.commands) || !has_skia_outline_area(&head.commands)
+            })
         {
             return Err(unsupported(page_index, op, "invalid arrow geometry"));
         }
