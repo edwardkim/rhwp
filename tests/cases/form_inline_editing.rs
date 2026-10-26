@@ -774,6 +774,59 @@ fn assert_wrapped_form_owners(doc: &HwpDocument, expected: usize, label: &str) {
                 (end["x"].as_f64().unwrap() - bbox.x - bbox.width).abs() < 0.1,
                 "{label}: 마지막 양식 뒤 캐럿 {end} / {bbox:?}"
             );
+            let all: serde_json::Value = serde_json::from_str(&if let Some((
+                parent,
+                table_control,
+                cell_index,
+                cell_paragraph,
+            )) = cell
+            {
+                doc.get_selection_rects_in_cell(
+                    0,
+                    *parent as u32,
+                    *table_control as u32,
+                    *cell_index as u32,
+                    *cell_paragraph as u32,
+                    0,
+                    *cell_paragraph as u32,
+                    offset + 1,
+                )
+                .unwrap()
+            } else {
+                doc.get_selection_rects(0, *paragraph as u32, 0, *paragraph as u32, offset + 1)
+                    .unwrap()
+            })
+            .unwrap();
+            let boxes: Vec<_> = painted
+                .iter()
+                .filter(|(p, _, location, _, _)| p == paragraph && location == cell)
+                .map(|(_, _, _, bounds, _)| bounds)
+                .collect();
+            let rows: std::collections::HashSet<_> = boxes
+                .iter()
+                .map(|bounds| (bounds.y * 75.0).round() as i32)
+                .collect();
+            let rects = all.as_array().unwrap();
+            assert_eq!(
+                rects.len(),
+                rows.len(),
+                "{label}: 전체 블록의 실제 줄마다 선택한다: {all}"
+            );
+            for bounds in boxes {
+                assert!(
+                    rects.iter().any(|rect| {
+                        let x = rect["x"].as_f64().unwrap();
+                        let y = rect["y"].as_f64().unwrap();
+                        let width = rect["width"].as_f64().unwrap();
+                        let height = rect["height"].as_f64().unwrap();
+                        x <= bounds.x + 0.1
+                            && x + width >= bounds.x + bounds.width - 0.1
+                            && y <= bounds.y + 0.1
+                            && y + height >= bounds.y + bounds.height - 0.1
+                    }),
+                    "{label}: 블록이 모든 양식을 덮는다: {all} / {bounds:?}"
+                );
+            }
         }
     }
 }
