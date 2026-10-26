@@ -2214,8 +2214,8 @@ fn task290_inline_left_returns_none() {
 }
 
 #[test]
-fn task290_inline_right_uses_tabdef() {
-    // inline 이 RIGHT (ext[2] high=2) 면 TabDef find_next_tab_stop 경로로 폴스루
+fn task290_inline_right_auto_tab_uses_tabdef() {
+    // 자동 우측 탭은 현재 프레임의 TabDef 정지에서 블록 폭을 빼서 정렬한다.
     let ext = vec![mk_ext(200, 2, 3)]; // RIGHT, fill=dot
     let ts = mk_text_style();
     let tab_stops = vec![TabStop {
@@ -2224,11 +2224,11 @@ fn task290_inline_right_uses_tabdef() {
         fill_type: 3,
     }];
     let result = super::paragraph_layout::resolve_last_tab_pending(
-        "abc\t", 0, &ext, &ts, &tab_stops, 48.0, false, 420.0,
+        "abc\t", 0, &ext, &ts, &tab_stops, 48.0, true, 420.0,
     );
     assert_eq!(
         result,
-        Some((300.0, 1, 3)),
+        Some(super::paragraph_layout::PendingTab::Right { position: 300.0, fill_type: 3 }),
         "RIGHT inline → TabDef 기반 위치, fill=dot"
     );
 }
@@ -2248,7 +2248,7 @@ fn task290_inline_center_uses_tabdef() {
     );
     assert_eq!(
         result,
-        Some((200.0, 2, 0)),
+        Some(super::paragraph_layout::PendingTab::Center { position: 200.0, fill_type: 0 }),
         "CENTER inline → TabDef 기반 위치, fill 없음"
     );
 }
@@ -2268,7 +2268,7 @@ fn task290_no_inline_fallback_to_tabdef() {
     );
     assert_eq!(
         result,
-        Some((250.0, 1, 0)),
+        Some(super::paragraph_layout::PendingTab::Right { position: 250.0, fill_type: 0 }),
         "inline 없음 → TabDef RIGHT stop 사용, fill 없음"
     );
 }
@@ -2287,12 +2287,7 @@ fn task290_no_inline_auto_tab_right_fallthrough() {
         "abcdef\t", 0, &ext, &ts, &tab_stops, 48.0, true, 420.0,
     );
     assert!(result.is_some(), "auto_tab_right 폴스루 → Some");
-    let (tp, tt, _ft) = result.unwrap();
-    assert_eq!(tt, 1, "auto_tab_right 은 RIGHT(1)");
-    assert!(
-        (tp - 420.0).abs() < 0.1,
-        "tab_pos 는 available_width 에 고정"
-    );
+    assert_eq!(result.unwrap(), super::paragraph_layout::PendingTab::Right { position: 420.0, fill_type: 0 });
 }
 
 // [Task #296] inline_tab_type 헬퍼 단위 테스트
@@ -3218,4 +3213,40 @@ fn whitespace_tac_carrier_paint_y_rejects_missing_or_block_tac() {
         ),
         None
     );
+}
+
+
+#[test]
+fn issue8153_stored_right_advance_is_not_realigned_or_conditioned_on_leader() {
+    use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+    let style = TextStyle { line_x_offset: 20.0, ..Default::default() };
+    let stops = [TabStop { position: 300.0, tab_type: 1, fill_type: 3 }];
+    for fill in [0, 3] {
+        let extensions = [mk_ext(7500, 2, fill)];
+        let pending = resolve_last_tab_pending("\t", 0, &extensions, &style, &stops, 48.0, false, 420.0).unwrap();
+        assert_eq!(pending, PendingTab::StoredStart { position: 120.0, fill_type: fill });
+    }
+}
+
+#[test]
+fn issue8153_stored_tab_width_preserves_high_word_and_run_origin() {
+    use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+    let style = TextStyle { line_x_offset: 20.0, ..Default::default() };
+    let extensions = [[0, 1, 0x0203, 0, 0, 0, 9]];
+    let stops = [TabStop { position: 300.0, tab_type: 1, fill_type: 3 }];
+    let pending = resolve_last_tab_pending("\t", 0, &extensions, &style, &stops, 48.0, false, 420.0).unwrap();
+    assert_eq!(pending, PendingTab::StoredStart { position: 20.0 + 65536.0 * 96.0 / 7200.0, fill_type: 3 });
+}
+
+#[test]
+fn issue8153_auto_right_or_missing_geometry_aligns_current_block() {
+    use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+    let style = TextStyle::default();
+    let stops = [TabStop { position: 300.0, tab_type: 1, fill_type: 3 }];
+    let stored = [mk_ext(7500, 2, 3)];
+    let placeholder = [[0, 0, 0, 0, 0, 0, 9]];
+    for (extensions, auto_right) in [(&stored[..], true), (&placeholder[..], false), (&[][..], false)] {
+        let pending = resolve_last_tab_pending("\t", 0, extensions, &style, &stops, 48.0, auto_right, 420.0).unwrap();
+        assert_eq!(pending, PendingTab::Right { position: 300.0, fill_type: 3 });
+    }
 }

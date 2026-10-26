@@ -259,6 +259,8 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storag
                 }
                 let mut reconciled = crate::storage::try_clone(composed, storage)?;
                 reconciled.lines = reflowed.lines;
+                // 재조판 줄은 현재 TabDef로 계산한다.
+                reconciled.tab_extended.clear();
                 let uncached_inline_frame = inline_frame_admission::supports_uncached_inline_host(para);
                 if rejoinable_word_tail || !measured_inline_table_heights.is_empty() || uncached_inline_frame {
                     for control in &mut reconciled.inline_controls {

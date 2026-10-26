@@ -2466,3 +2466,63 @@ fn default_tabs_use_the_physical_row_origin() {
         "탭 격자는 줄 내부 0이 아니라 물리 행의 시작 좌표에서 이어진다"
     );
 }
+
+#[test]
+fn issue8153_reflowed_frame_discards_source_tab_advance_without_mutating_source() {
+    let text = "alpha\tomega";
+    let extensions = vec![[7500, 0, 0x0203, 0, 0, 0, 9]];
+    let mut para = Paragraph {
+        text: text.into(),
+        char_count: text.chars().count() as u32 + 1,
+        char_offsets: (0..text.chars().count() as u32).collect(),
+        tab_extended: extensions.clone(),
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            segment_width: 15000,
+            line_height: 1000,
+            text_height: 900,
+            baseline_distance: 800,
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let composed = compose_paragraph(&para);
+    assert_eq!(
+        composed.tab_extended, extensions,
+        "저장 줄 수용 경로는 전진을 보존한다"
+    );
+    para.invalidate_layout_inputs();
+    assert!(para.stored_text_partition_is_dirty());
+    let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
+    let rebuilt = recompose_stored_lines_in_frame(
+        &composed,
+        &para,
+        ParagraphBox::content(0..15000),
+        200.0,
+        &styles,
+        96.0,
+        false,
+        StoredRowMissPolicy::Reflow,
+        &[],
+    )
+    .expect("편집으로 무효화한 저장 줄은 현재 프레임에서 재구성한다");
+    assert!(
+        rebuilt.tab_extended.is_empty(),
+        "옛 줄의 전진을 새 줄에서 다시 수용하지 않는다"
+    );
+    assert_eq!(
+        para.tab_extended, extensions,
+        "원본·직렬화 데이터는 보존한다"
+    );
+    let visible: String = rebuilt
+        .lines
+        .iter()
+        .flat_map(|line| &line.runs)
+        .map(|run| run.text.as_str())
+        .collect();
+    assert_eq!(visible, text, "재조판은 내용 순서·누락·중복을 보존한다");
+}
