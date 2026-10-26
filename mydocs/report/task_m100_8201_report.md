@@ -3,10 +3,14 @@
 Issue: [#8201](https://github.com/edwardkim/rhwp/issues/8201) ·
 계획: [task_m100_8201.md](../plans/task_m100_8201.md), [구현 계획](../plans/task_m100_8201_impl.md)
 
-base `238de6de4`(upstream/devel), 검증한 code head `645e1ba4c`.
-커밋: `b8435b881` 계획·입력 보존 → `691a3b77c` 회귀 가드(RED) → `d6f06886d` refactor →
-`183ca3982` fix → `bb818c854` 합성 fixture 렌더링 검사 제외 → `2816d3cc1` 증적 →
-`645e1ba4c` 안쪽 '인'의 공개 대체 face.
+PR base `0bb36e6f9`(upstream/devel), code head `90aba0886`.
+게이트·Visual Sweep 은 base `f770ef502` 위의 `529ee86d1`(code `f8f32af6c`)에서 실행했다. 그 뒤 upstream 이
+문서만 4커밋(`AGENTS.md`·`CLAUDE.md`·`mydocs/`) 바꿔 그 위로 다시 rebase 했고, 코드·테스트·자원 트리는
+`529ee86d1` 과 같다(`git diff 529ee86d1 HEAD` 는 upstream 문서 7개뿐). 새 base 로 `git diff --check`,
+manifest·unit tier `--check --base-ref 0bb36e6f9` 를 다시 실행해 통과했다.
+커밋: `6069ecad7` 계획·입력 보존 → `076ad6451` 회귀 가드(RED) → `2299c2f7a` refactor →
+`fb0e636a1` fix → `9dcd1fdd1` 합성 fixture 렌더링 검사 제외 → `a202d6474` 증적 →
+`90aba0886` 안쪽 '인'의 공개 대체 face → 증적 커밋.
 
 ## 원인과 정답
 
@@ -43,15 +47,15 @@ GID 3 한 글리프(`/W` 1000, 타원 안 '인')로 그린다. 같은 글리프�
 
 ## 영향 범위
 
-samples 1,334 문서의 전 쪽 SVG를 base `238de6de4` 와 head `645e1ba4c` 로 내보내 비교했다. 바뀐 문서는
+samples 1,353 문서의 전 쪽 SVG(14,033쪽)를 base `f770ef502` 와 head `529ee86d1` 로 내보내 비교했다. 바뀐 문서는
 8개이며 모두 seal 문서다(이슈 서식, 복학원서 HWP·HWPX, issue4680, issue5800, issue5870, hwp3-table-caption,
 issue1842). 사라진 `(인)` 묶음 16곳과 새 "타원 + 안쪽 '인'" 16곳이 1:1로 대응하고, 그 밖의 텍스트 변화와
 쪽수 변화는 없다. 복학원서(HWP·HWPX) 접수증 날인선은 seal 이 좁아진 만큼 대시 글자와 그 선분이 2개씩
-늘었다. 나머지 1,326 문서는 바이트 단위로 같다(암호 문서 3건은 양쪽 모두 0쪽).
+늘었다. 나머지 1,345 문서는 바이트 단위로 같다(암호 문서 3건은 양쪽 모두 0쪽).
 
 ## 검증
 
-### Rust·Studio (code head `645e1ba4c`, 정책 비교 base `238de6de4`)
+### Rust·Studio (검증 head `529ee86d1` = code `f8f32af6c`, 정책 비교 base `f770ef502`)
 
 CONTRIBUTING 절차로 같은 SHA 의 별도 review worktree 에서 실행했다. 공용 target `target/pr-review`.
 
@@ -60,27 +64,28 @@ CONTRIBUTING 절차로 같은 SHA 의 별도 review worktree 에서 실행했다
 | `git diff --check base...head`, `cargo fmt --all -- --check` | 통과 |
 | Clippy native / `wasm32-unknown-unknown` lib / workspace all-targets (`-D warnings`) | 통과 |
 | `cargo build --workspace`, suite manifest 테스트·`--check --base-ref`, unit tier `--check --base-ref` | 통과 |
-| `cargo nextest run --cargo-profile release-test --tests` | 11,486 통과 / 0 실패 / 45 skip (코퍼스 래칫 포함) |
+| `cargo nextest run --cargo-profile release-test --tests` | 11,577 통과 / 0 실패 / 45 skip (코퍼스 래칫 포함) |
 | Native Skia: `--features native-skia --lib`, `issue_2225…`, `render_p37…` | `rhwp` lib 3,858 통과·12 ignored(workspace 다른 lib 182 통과) / 2 / 14 통과, 실패 0 |
 | 새 sample 보안 검사 (`RHWP_SECURITY_SWEEP_SAMPLES_JSON`) | 6 통과 |
-| RED ①: 최종 `issue_8201_seal_pua` 를 refactor 만 있는 `d6f06886d` 에 넣어 실행 | 4 FAIL(seal 4.242 vs 한글 8.829, 상자 안 타원 0개, 복학원서 seal 기호 수, 공개 face 미요청) / 반례 1 PASS |
-| RED ②: 같은 테스트를 공개 face 보정 전 `bb818c854` 에 넣어 실행 | 공개 face 검사 1 FAIL / 나머지 4 PASS |
+| RED ①: 최종 `issue_8201_seal_pua` 를 refactor 만 있는 `969721c95`(현 `2299c2f7a`) 에 넣어 실행 | 4 FAIL(seal 4.242 vs 한글 8.829, 상자 안 타원 0개, 복학원서 seal 기호 수, 공개 face 미요청) / 반례 1 PASS |
+| RED ②: 같은 테스트를 공개 face 보정 전 `e28bd0d21`(현 `9dcd1fdd1`) 에 넣어 실행 | 공개 face 검사 1 FAIL / 나머지 4 PASS |
 | 수정 후 같은 테스트 | 5 통과 |
-| Studio `tsc --noEmit`(fresh WASM 포함) | 통과. base 갱신으로 `package-lock.json` 에 추가된 `@anthropic-ai/sdk` 를 `npm ci` 로 설치한 뒤 실행 |
-| Studio 단위 `npm test` | 2,311건 중 27건 실패 — base `238de6de4`+base WASM 에서도 같은 27건(목록 동일). 이 환경(Node 22.12 타입 제거 실험 옵션)의 기존 실패 |
+| Studio `tsc --noEmit`(fresh WASM 포함) | 통과. base 의 `package-lock.json` 으로 `npm ci` 한 뒤 실행 |
+| Studio 단위 `npm test` | 2,311건 중 27건 실패 — base `f770ef502`+base WASM 에서도 같은 27건(목록 동일). 이 환경(Node 22.12 타입 제거 실험 옵션)의 기존 실패 |
 | `e2e/renderer-contract.test.mjs`(seal replay drawOval + '인' 추가) | 통과 |
 | `e2e/issue-536…`, `e2e/issue-4158…` 브라우저 e2e 원본 | base·head 모두 `renderPageToCanvas` 가 #7084 의 export 보호("supplemental metrics are active")에 걸려 판정 전 중단 — 테스트가 그 이전 작성분 |
 | 위 두 e2e 의 로컬 변형(Canvas2D 호출만 앱 export 경로와 같은 `withPortableMetrics` 로 감쌈, 커밋 안 함) | 4158: base·head 모두 전체 통과. 536: base·head 모두 상자 높이 37px 로 기대 30.7px(#7642 이전 0.72em 기준) 실패 — 같은 결과. 두 테스트의 Canvas2D PNG 는 base·head 바이트 동일 |
 | seal Canvas2D 로컬 e2e(이슈 서식 1쪽, `withPortableMetrics`) | head: seal 전진 9.174 = 한글 9.174, 잉크가 전진 상자 안 — 통과. base: 4.242 vs 8.829 — 실패(결함 재현) |
 
-산출물: Native CLI `rhwp-645e1ba4c` SHA-256 `51288b3f…`, fresh WASM `rhwp_bg.wasm` `6204e9e5…`,
-`rhwp.js` `ba97ed3f…`. base CLI `7a341fcc…`, base WASM `rhwp_bg.wasm` `ed1dbc38…`(`rhwp.js` 는 head 와 같음).
+산출물: Native CLI `rhwp-529ee86d1` SHA-256 `71321e87…`, fresh WASM `rhwp_bg.wasm` `b21782ca…`,
+`rhwp.js` `c1c8d182…`. base CLI `91e442e4…`, base WASM `rhwp_bg.wasm` `f51d1389…`(`rhwp.js` 는 head 와 같음).
 
 ### Visual Sweep (96dpi, print 프로필, 2px 관용 실루엣)
 
-base CLI `238de6de4`(SHA-256 `7a341fcc…`)·base WASM(`ed1dbc38…`)과 head CLI `645e1ba4c`·head fresh
-WASM(아래 산출물)을 같은 입력·기준 PDF로 쟀다. 글꼴 공급은 아래 "검증 환경 주의"의 `RHWP_FONT_PATH` 로
-base·head·Native·WASM 모두 같다. 값은 gate 판정값인 실루엣 raw 일치율(%)이다.
+base CLI `f770ef502`(SHA-256 `91e442e4…`)·base WASM(`f51d1389…`)과 head CLI `529ee86d1`·head fresh
+WASM(위 산출물)을 같은 입력·기준 PDF로 쟀다. 출력은 직전 base `238de6de4` 회차와 픽셀 단위로 같다.
+글꼴 공급은 아래 "검증 환경 주의"의 `RHWP_FONT_PATH` 로 base·head·Native·WASM 모두 같다. 값은 gate
+판정값인 실루엣 raw 일치율(%)이다.
 
 | 입력 · 기준 PDF | 쪽 | base Native | head Native | base WASM | head WASM |
 | --- | --- | --- | --- | --- | --- |
