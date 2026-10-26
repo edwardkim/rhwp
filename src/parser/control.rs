@@ -80,7 +80,7 @@ fn ctrl_id_to_field_type(ctrl_id: u32) -> FieldType {
 /// - 일반 컨트롤: CTRL_HEADER = [ctrl_id(4)] + [ctrl_data]
 /// - 필드 컨트롤: CTRL_HEADER = [ctrl_id(4)] + [속성(4)] + [기타속성(1)] + [command_len(2)] + [command] + [id(4)]
 fn parse_field_control(ctrl_id: u32, ctrl_data: &[u8]) -> Control {
-    let field_type = ctrl_id_to_field_type(ctrl_id);
+    let mut field_type = ctrl_id_to_field_type(ctrl_id);
 
     // ctrl_data: 속성(4) + 기타속성(1) + command_len(2) + command(가변) + id(4)
     if ctrl_data.len() < 7 {
@@ -113,11 +113,25 @@ fn parse_field_control(ctrl_id: u32, ctrl_data: &[u8]) -> Control {
         0
     };
 
-    let memo_index = if reader.remaining() >= 4 {
+    let mut memo_index = if reader.remaining() >= 4 {
         reader.read_u32().unwrap_or(0)
     } else {
         0
     };
+    // Hancom writes a memo's control id as `%unk` and only the command says
+    // MEMO. The real number may live in the command when the trailing slot is 0.
+    if command.starts_with("MEMO/") {
+        if field_type == FieldType::Unknown {
+            field_type = FieldType::Memo;
+        }
+        if memo_index == 0 {
+            memo_index = command
+                .split('/')
+                .nth(2)
+                .and_then(|token| token.parse().ok())
+                .unwrap_or(0);
+        }
+    }
 
     Control::Field(Field {
         field_type,

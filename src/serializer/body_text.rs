@@ -178,18 +178,63 @@ fn serialize_master_page_tail(section: &Section, records: &mut Vec<Record>) {
 }
 
 fn collect_memo_lists(section: &Section) -> Vec<(u32, Vec<Paragraph>)> {
-    let mut memo_lists = Vec::new();
-    for para in &section.paragraphs {
-        for ctrl in &para.controls {
-            if let Control::Field(field) = ctrl {
-                if field.field_type == crate::model::control::FieldType::Memo
-                    && !field.memo_paragraphs.is_empty()
-                {
-                    memo_lists.push((field.memo_index, field.memo_paragraphs.clone()));
+    fn collect(paragraphs: &[Paragraph], lists: &mut Vec<(u32, Vec<Paragraph>)>) {
+        for para in paragraphs {
+            for ctrl in &para.controls {
+                match ctrl {
+                    Control::Field(field)
+                        if (field.field_type == crate::model::control::FieldType::Memo
+                            || field.command.starts_with("MEMO/"))
+                            && !field.memo_paragraphs.is_empty() =>
+                    {
+                        // The tail is keyed by the memo number; a field that kept
+                        // only its command (HWPX conversion) must still match.
+                        let number = if field.memo_index != 0 {
+                            field.memo_index
+                        } else {
+                            field
+                                .command
+                                .split('/')
+                                .nth(2)
+                                .and_then(|token| token.parse().ok())
+                                .unwrap_or(0)
+                        };
+                        lists.push((number, field.memo_paragraphs.clone()));
+                    }
+                    Control::Table(table) => {
+                        for cell in &table.cells {
+                            collect(&cell.paragraphs, lists);
+                        }
+                    }
+                    Control::Shape(shape) => collect_shape_memos(shape, lists),
+                    Control::Header(header) => collect(&header.paragraphs, lists),
+                    Control::Footer(footer) => collect(&footer.paragraphs, lists),
+                    Control::Footnote(note) => collect(&note.paragraphs, lists),
+                    Control::Endnote(note) => collect(&note.paragraphs, lists),
+                    _ => {}
                 }
             }
         }
     }
+
+    fn collect_shape_memos(
+        shape: &crate::model::shape::ShapeObject,
+        lists: &mut Vec<(u32, Vec<Paragraph>)>,
+    ) {
+        if let Some(drawing) = shape.drawing() {
+            if let Some(text_box) = &drawing.text_box {
+                collect(&text_box.paragraphs, lists);
+            }
+        }
+        if let crate::model::shape::ShapeObject::Group(group) = shape {
+            for child in &group.children {
+                collect_shape_memos(child, lists);
+            }
+        }
+    }
+
+    let mut memo_lists = Vec::new();
+    collect(&section.paragraphs, &mut memo_lists);
     memo_lists
 }
 
@@ -827,7 +872,13 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             .iter()
             .filter(|o| o.char_idx == i && o.begin_ctrl_id != 0)
         {
-            push_extended_ctrl(&mut code_units, 0x0004, ofe.begin_ctrl_id);
+            push_field_end_ctrl(
+                &mut code_units,
+                FieldEndMarker {
+                    ctrl_id: ofe.begin_ctrl_id,
+                    memo_index: ofe.memo_index,
+                },
+            );
             prev_end += 8;
         }
 
@@ -1085,7 +1136,13 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         .iter()
         .filter(|o| o.char_idx >= text_chars.len() && o.begin_ctrl_id != 0)
     {
-        push_extended_ctrl(&mut code_units, 0x0004, ofe.begin_ctrl_id);
+        push_field_end_ctrl(
+            &mut code_units,
+            FieldEndMarker {
+                ctrl_id: ofe.begin_ctrl_id,
+                memo_index: ofe.memo_index,
+            },
+        );
         prev_end += 8;
     }
 

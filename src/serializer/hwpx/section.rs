@@ -2642,6 +2642,33 @@ fn generated_field_parameters(field: &Field) -> Option<String> {
     if field.command.is_empty() {
         return None;
     }
+    // HWP5-origin memo fields have their whole identity in the command. Hancom's
+    // HWPX shape carries the same values as named parameters; emitting only
+    // `Command` loses the author and number for readers that do not split it.
+    if field.field_type == crate::model::control::FieldType::Memo
+        && field.command.starts_with("MEMO/")
+    {
+        let tokens: Vec<&str> = field.command.split('/').collect();
+        let shape = tokens.get(1).copied().unwrap_or("65535");
+        let number = tokens.get(2).copied().unwrap_or("0");
+        let author = tokens.get(5).copied().unwrap_or("");
+        return Some(format!(
+            concat!(
+                r#"<hp:parameters cnt="6" name="">"#,
+                r#"<hp:integerParam name="Prop">0</hp:integerParam>"#,
+                r#"<hp:stringParam name="Command">{command}</hp:stringParam>"#,
+                r#"<hp:stringParam name="ID">memo{number}</hp:stringParam>"#,
+                r#"<hp:integerParam name="Number">{number}</hp:integerParam>"#,
+                r#"<hp:stringParam name="Author">{author}</hp:stringParam>"#,
+                r#"<hp:stringParam name="MemoShapeIDRef">{shape}</hp:stringParam>"#,
+                r#"</hp:parameters>"#,
+            ),
+            command = xml_escape(&field.command),
+            number = xml_escape(number),
+            author = xml_escape(author),
+            shape = xml_escape(shape),
+        ));
+    }
     Some(format!(
         r#"<hp:parameters cnt="1" name=""><hp:stringParam name="Command">{}</hp:stringParam></hp:parameters>"#,
         xml_escape(&field.command),
@@ -5585,6 +5612,7 @@ mod tests {
             begin_id_ref: 1_878_228_493,
             field_id: 627_272_811,
             begin_ctrl_id: 0,
+            memo_index: 0,
         }];
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);
@@ -5659,6 +5687,7 @@ mod tests {
             begin_id_ref: 42,
             field_id: 0,
             begin_ctrl_id: 0,
+            memo_index: 0,
         }];
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);
@@ -6162,6 +6191,7 @@ mod tests {
             begin_id_ref: 1_867_945_539,
             field_id: 0,
             begin_ctrl_id: crate::parser::tags::FIELD_CLICKHERE,
+            memo_index: 0,
         }];
 
         let runs = runs_of(&para);
@@ -6182,6 +6212,7 @@ mod tests {
             begin_id_ref: 0,
             field_id: 0,
             begin_ctrl_id: 0,
+            memo_index: 0,
         }];
         let runs = runs_of(&para);
         assert!(
@@ -6210,6 +6241,7 @@ mod tests {
             begin_id_ref: 2_031_845_287,
             field_id: 0,
             begin_ctrl_id: crate::parser::tags::FIELD_CLICKHERE,
+            memo_index: 0,
         }];
 
         let runs = runs_of(&para);

@@ -16,6 +16,7 @@ mod font_metric_coverage;
 mod form_query;
 pub mod hwpctrl_sets;
 pub mod hyperlink_geometry;
+pub(crate) mod memo_query;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod png_export;
 pub mod rendering;

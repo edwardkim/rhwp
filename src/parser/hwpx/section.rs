@@ -151,10 +151,10 @@ fn link_orphan_field_ends_in_control(control: &mut Control) {
 /// HWPX fieldEnd는 beginIDRef와 fieldid만 보관하므로, HWP5 PARA_TEXT로 다시 쓸 때 필요한
 /// field control fourcc는 앞 문단의 fieldBegin에서 찾아야 한다. 짝을 찾지 못한 종료 마커는
 /// 그대로 남긴다. 임의의 필드 종류를 만들어 내는 것보다 보존 실패를 명시하는 편이 안전하다.
-fn link_orphan_field_ends(paragraphs: &mut [Paragraph], open_fields: &mut Vec<(u32, u32)>) {
+fn link_orphan_field_ends(paragraphs: &mut [Paragraph], open_fields: &mut Vec<(u32, u32, u32)>) {
     for para in paragraphs.iter_mut() {
         for orphan in &mut para.orphan_field_ends {
-            let Some((field_id, ctrl_id)) = open_fields.last().copied() else {
+            let Some((field_id, ctrl_id, memo_index)) = open_fields.last().copied() else {
                 continue;
             };
 
@@ -169,6 +169,9 @@ fn link_orphan_field_ends(paragraphs: &mut [Paragraph], open_fields: &mut Vec<(u
                 orphan.begin_id_ref = field_id;
             }
             orphan.begin_ctrl_id = ctrl_id;
+            if memo_index != 0 {
+                orphan.memo_index = memo_index;
+            }
         }
 
         for (control_idx, control) in para.controls.iter().enumerate() {
@@ -180,7 +183,12 @@ fn link_orphan_field_ends(paragraphs: &mut [Paragraph], open_fields: &mut Vec<(u
                 .iter()
                 .any(|range| range.control_idx == control_idx);
             if !closes_in_this_paragraph && field.field_id != 0 {
-                open_fields.push((field.field_id, field.ctrl_id));
+                let memo_index = if crate::parser::body_text::field_is_memo(field) {
+                    crate::parser::body_text::memo_field_number(field)
+                } else {
+                    0
+                };
+                open_fields.push((field.field_id, field.ctrl_id, memo_index));
             }
         }
     }
@@ -203,7 +211,7 @@ fn link_orphan_field_ends(paragraphs: &mut [Paragraph], open_fields: &mut Vec<(u
 /// 컨테이너(표 칸·글상자·각주…) 목록은 건드리지 않는다 — 필드는 컨테이너 경계를 넘지
 /// 못하고, 그 목록들은 이미 자기 스택으로 짝을 지었다.
 pub fn link_orphan_field_ends_across_sections(sections: &mut [Section]) {
-    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+    let mut open_fields: Vec<(u32, u32, u32)> = Vec::new();
     for section in sections.iter_mut() {
         link_orphan_field_ends(&mut section.paragraphs, &mut open_fields);
     }
@@ -1021,6 +1029,7 @@ fn parse_paragraph_body(
                         // HWPX `<hp:fieldEnd>` 는 필드 종류를 싣지 않는다 — 짝
                         // `fieldBegin` 은 다른 문단에 있어 여기서는 알 수 없다.
                         begin_ctrl_id: 0,
+                        memo_index: 0,
                     });
                 }
             }

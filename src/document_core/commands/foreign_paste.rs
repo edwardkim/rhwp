@@ -112,6 +112,9 @@ impl crate::document_core::DocumentCore {
         for para in &mut foreign_paras {
             strip_section_scoped_controls(para);
         }
+        // 외부/HTML 붙여넣기는 메모 본문을 싣지 않는다. 앵커만 남기면 본문 없는
+        // 메모 필드가 되므로 필드를 떼고 글자만 남긴다.
+        crate::document_core::queries::memo_query::drop_memo_fields(&mut foreign_paras);
 
         let imported_bin = pool.imported();
         pool.restore(&mut self.document);

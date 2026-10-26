@@ -804,7 +804,15 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
 /// 다시 쓰지 않고 종전 파서 결과를 그대로 반환한다.
 pub fn parse_hwpx_with_password(data: &[u8], password: &[u8]) -> Result<Document, HwpxError> {
     match crypto::decrypt_hwpx_package(data, password)? {
-        Some(decrypted) => parse_hwpx(&decrypted),
+        Some(decrypted) => {
+            let mut document = parse_hwpx(&decrypted)?;
+            // The decrypted package is HWPX, but the fact that it needed a
+            // password must survive so editors keep it read-only. The HWP5
+            // writer clears this flag when it writes a plain document.
+            document.header.encrypted = true;
+            document.header.flags |= 0x02;
+            Ok(document)
+        }
         None => parse_hwpx(data),
     }
 }

@@ -85,7 +85,13 @@ fn bin_data_over_limit_error(bin_data_id: u16) -> HwpError {
 }
 
 fn clipboard_paragraphs_contain_field(paragraphs: &[Paragraph]) -> bool {
-    paragraphs.iter().any(|para| !para.field_ranges.is_empty())
+    paragraphs.iter().any(|para| {
+        !para.field_ranges.is_empty()
+            || para
+                .controls
+                .iter()
+                .any(|ctrl| matches!(ctrl, Control::Field(field) if crate::document_core::queries::memo_query::is_memo_field(field)))
+    })
 }
 
 fn clipboard_control_char_code(ctrl: &Control) -> u16 {
@@ -776,8 +782,6 @@ impl DocumentCore {
             Some(c) if !c.paragraphs.is_empty() => c.paragraphs.clone(),
             _ => return Ok("{\"ok\":false,\"error\":\"clipboard empty\"}".to_string()),
         };
-        let contains_field = clipboard_paragraphs_contain_field(&clip_paras);
-
         // 인덱스 검증
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -793,6 +797,8 @@ impl DocumentCore {
         }
 
         super::clone_identity::reidentify_clipboard(&self.document, &mut clip_paras)?;
+        // Reidentify prunes memo fragments; report what actually remains.
+        let contains_field = clipboard_paragraphs_contain_field(&clip_paras);
         self.document.sections[section_idx].raw_stream = None;
 
         let clip_count = clip_paras.len();
@@ -969,8 +975,8 @@ impl DocumentCore {
             Some(c) if !c.paragraphs.is_empty() => c.paragraphs.clone(),
             _ => return Ok("{\"ok\":false,\"error\":\"clipboard empty\"}".to_string()),
         };
-        let contains_field = clipboard_paragraphs_contain_field(&clip_paras);
         super::clone_identity::reidentify_clipboard(&self.document, &mut clip_paras)?;
+        let contains_field = clipboard_paragraphs_contain_field(&clip_paras);
 
         let (last_para_idx, merge_point) = {
             let section =
@@ -1043,11 +1049,11 @@ impl DocumentCore {
             Some(c) if !c.paragraphs.is_empty() => c.paragraphs.clone(),
             _ => return Ok("{\"ok\":false,\"error\":\"clipboard empty\"}".to_string()),
         };
-        let contains_field = clipboard_paragraphs_contain_field(&clip_paras);
         if path.is_empty() {
             return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
         }
         super::clone_identity::reidentify_clipboard(&self.document, &mut clip_paras)?;
+        let contains_field = clipboard_paragraphs_contain_field(&clip_paras);
 
         let cell_para_idx = path[path.len() - 1].2;
         let (last_para_idx, merge_point) = {

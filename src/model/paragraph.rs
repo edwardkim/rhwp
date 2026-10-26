@@ -671,6 +671,10 @@ pub struct OrphanFieldEnd {
     /// 0 이면 모른다는 뜻이고, 그때는 HWP5 저장에서 마커를 내지 않는다 — 필드 종류를
     /// 지어내면 한글이 짝을 못 맞춘다. HWPX 에서 들어온 고아 마커가 이 경우다.
     pub begin_ctrl_id: u32,
+    /// HWP5 memo number for a memo field's closing marker. Hancom writes a
+    /// distinct 8-unit memo end marker whose sixth unit is this number; 0 means
+    /// the field is not a memo.
+    pub memo_index: u32,
 }
 
 impl Paragraph {

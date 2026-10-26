@@ -5557,6 +5557,90 @@ impl HwpDocument {
     }
 
     // ─────────────────────────────────────────────
+    // 메모 API
+    // ─────────────────────────────────────────────
+
+    /// 문서의 메모를 문서 순서대로 반환한다.
+    ///
+    /// 반환: `[{id,index,author,date,text,place,sectionIndex,paraIndex,
+    /// startCharIdx,endCharIdx,path,page,editable,readOnlyReason}]`
+    #[wasm_bindgen(js_name = getMemoList)]
+    pub fn get_memo_list(&self) -> String {
+        self.get_memo_list_json()
+    }
+
+    /// 한 문단의 범위에 메모를 넣는다. `json` = `{author,text}`.
+    ///
+    /// 반환: `{"ok":true,"id":N,"index":N}`. 실패는 `{ok:false,code,message}`.
+    #[wasm_bindgen(js_name = insertMemo)]
+    pub fn insert_memo(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        start_char_idx: u32,
+        end_char_idx: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        use crate::document_core::helpers::json_str;
+        self.insert_memo_at(
+            section_idx as usize,
+            para_idx as usize,
+            start_char_idx as usize,
+            end_char_idx as usize,
+            &json_str(json, "author").unwrap_or_default(),
+            &json_str(json, "text").unwrap_or_default(),
+        )
+        .map_err(|e| JsValue::from_str(&e.to_json()))
+    }
+
+    /// 표 칸·글상자 안의 범위에 메모를 넣는다.
+    ///
+    /// `path_json` = `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, …]`.
+    #[wasm_bindgen(js_name = insertMemoByPath)]
+    pub fn insert_memo_by_path(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        path_json: &str,
+        start_char_idx: u32,
+        end_char_idx: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        use crate::document_core::helpers::json_str;
+        use crate::document_core::queries::memo_query::{MemoError, MemoErrorCode};
+        let path = crate::document_core::DocumentCore::parse_cell_path(path_json).map_err(|e| {
+            JsValue::from_str(&MemoError::new(MemoErrorCode::InvalidRange, e.to_string()).to_json())
+        })?;
+        self.core
+            .insert_memo_by_path(
+                section_idx as usize,
+                para_idx as usize,
+                &path,
+                start_char_idx as usize,
+                end_char_idx as usize,
+                &json_str(json, "author").unwrap_or_default(),
+                &json_str(json, "text").unwrap_or_default(),
+            )
+            .map_err(|e| JsValue::from_str(&e.to_json()))
+    }
+
+    /// 메모 본문을 바꾼다. 작성자·날짜·서식은 그대로다.
+    #[wasm_bindgen(js_name = setMemoText)]
+    pub fn set_memo_text(&mut self, id: u32, text: &str) -> Result<String, JsValue> {
+        self.core
+            .set_memo_text(id, text)
+            .map_err(|e| JsValue::from_str(&e.to_json()))
+    }
+
+    /// 메모를 지운다. 기준 글자는 남긴다.
+    #[wasm_bindgen(js_name = removeMemo)]
+    pub fn remove_memo(&mut self, id: u32) -> Result<String, JsValue> {
+        self.core
+            .remove_memo(id)
+            .map_err(|e| JsValue::from_str(&e.to_json()))
+    }
+
+    // ─────────────────────────────────────────────
     // 양식 개체(Form Object) API
     // ─────────────────────────────────────────────
 

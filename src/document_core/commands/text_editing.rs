@@ -943,7 +943,15 @@ fn replace_paragraph_text(
         );
     }
     let deleted = if delete_count > 0 {
-        para.delete_text_at(char_offset, delete_count)
+        if text.is_empty() {
+            crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                para,
+                char_offset,
+                delete_count,
+            )
+        } else {
+            para.delete_text_at(char_offset, delete_count)
+        }
     } else {
         0
     };
@@ -1479,6 +1487,30 @@ impl DocumentCore {
         char_offset: usize,
         count: usize,
     ) -> Result<String, HwpError> {
+        self.delete_text_native_impl(section_idx, para_idx, char_offset, count, false)
+    }
+
+    /// Delete text for a replacement whose new text is not empty. A memo whose
+    /// whole anchor is replaced keeps its field; a following insert expands the
+    /// range over the replacement.
+    pub(crate) fn delete_text_native_preserving_memos(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        count: usize,
+    ) -> Result<String, HwpError> {
+        self.delete_text_native_impl(section_idx, para_idx, char_offset, count, true)
+    }
+
+    fn delete_text_native_impl(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        count: usize,
+        preserve_memos: bool,
+    ) -> Result<String, HwpError> {
         // 인덱스 범위 검증
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -1498,7 +1530,15 @@ impl DocumentCore {
 
         // 텍스트 삭제
         let apply_delete = |para: &mut Paragraph| {
-            para.delete_text_at(char_offset, count);
+            if preserve_memos {
+                para.delete_text_at(char_offset, count);
+            } else {
+                crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                    para,
+                    char_offset,
+                    count,
+                );
+            }
         };
         self.apply_body_text_edit(section_idx, para_idx, char_offset, &apply_delete)?;
 
@@ -1529,6 +1569,11 @@ impl DocumentCore {
         let normalized = normalize_text_newlines(text);
         let text = normalized.as_ref();
         self.validate_body_paragraph_index(section_idx, para_idx)?;
+        // An empty replacement is a deletion: a memo whose whole anchor text
+        // went away must go with it.
+        if text.is_empty() {
+            return self.delete_text_native_impl(section_idx, para_idx, char_offset, length, false);
+        }
         let new_chars_count = text.chars().count();
         let apply_replace = |para: &mut Paragraph| {
             para.replace_text_inheriting_char_shapes(char_offset, length, text);
@@ -2209,7 +2254,11 @@ impl DocumentCore {
             );
         let units_fp_before =
             crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(cell_para);
-        let deleted_count = cell_para.delete_text_at(char_offset, count);
+        let deleted_count = crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+            cell_para,
+            char_offset,
+            count,
+        );
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
         self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
@@ -3254,7 +3303,11 @@ impl DocumentCore {
                 if count > 0 {
                     let cell_para =
                         self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, start_para)?;
-                    cell_para.delete_text_at(start_offset, count);
+                    crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                        cell_para,
+                        start_offset,
+                        count,
+                    );
                     self.reflow_cell_paragraph(section_idx, ppi, ci, cei, start_para);
                 }
             } else {
@@ -3263,7 +3316,9 @@ impl DocumentCore {
                 if end_offset > 0 {
                     let cell_para =
                         self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, end_para)?;
-                    cell_para.delete_text_at(0, end_offset);
+                    crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                        cell_para, 0, end_offset,
+                    );
                 }
                 // 2) 중간 문단 역순 제거 — 셀 내 문단은 cell.paragraphs에서 직접 제거
                 for mid_para in (start_para + 1..end_para).rev() {
@@ -3278,7 +3333,11 @@ impl DocumentCore {
                         self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, start_para)?;
                     let para_len = cell_para.text.chars().count();
                     if start_offset < para_len {
-                        cell_para.delete_text_at(start_offset, para_len - start_offset);
+                        crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                            cell_para,
+                            start_offset,
+                            para_len - start_offset,
+                        );
                     }
                 }
                 // 4) 첫-마지막 문단 병합 (마지막 문단이 이제 start_para+1에 위치)
@@ -3310,8 +3369,12 @@ impl DocumentCore {
                 // 같은 문단 내 삭제
                 let count = end_offset - start_offset;
                 if count > 0 {
-                    self.document.sections[section_idx].paragraphs[start_para]
-                        .delete_text_at(start_offset, count);
+                    let para = &mut self.document.sections[section_idx].paragraphs[start_para];
+                    crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                        para,
+                        start_offset,
+                        count,
+                    );
                     // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
                     let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
                         &self.document.sections[section_idx].paragraphs[start_para],
@@ -3333,8 +3396,10 @@ impl DocumentCore {
             } else {
                 // 1) 마지막 문단 앞부분 삭제
                 if end_offset > 0 {
-                    self.document.sections[section_idx].paragraphs[end_para]
-                        .delete_text_at(0, end_offset);
+                    let para = &mut self.document.sections[section_idx].paragraphs[end_para];
+                    crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                        para, 0, end_offset,
+                    );
                 }
                 // 2) 중간 문단 역순 제거 (composed도 동기)
                 for mid_para in (start_para + 1..end_para).rev() {
@@ -3351,8 +3416,12 @@ impl DocumentCore {
                         .chars()
                         .count();
                     if start_offset < para_len {
-                        self.document.sections[section_idx].paragraphs[start_para]
-                            .delete_text_at(start_offset, para_len - start_offset);
+                        let para = &mut self.document.sections[section_idx].paragraphs[start_para];
+                        crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                            para,
+                            start_offset,
+                            para_len - start_offset,
+                        );
                     }
                 }
                 // 4) 첫-마지막 문단 병합 (마지막 문단이 이제 start_para+1에 위치)
@@ -5812,7 +5881,11 @@ impl DocumentCore {
         }
 
         let cell_para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
-        cell_para.delete_text_at(char_offset, count);
+        crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+            cell_para,
+            char_offset,
+            count,
+        );
 
         // [#2755] 깊이 ≥ 2 중첩 셀도 flat `delete_text_in_cell_native` 처럼 최내곽 셀 폭으로
         // 재래핑하고 vpos 를 재계산한다(깊이 1 은 위 위임 가드가 flat 경로로 처리).
@@ -5866,14 +5939,20 @@ impl DocumentCore {
                 let count = end_offset.saturating_sub(start_offset);
                 if count > 0 {
                     if let Some(p) = paras.get_mut(start_para) {
-                        p.delete_text_at(start_offset, count);
+                        crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                            p,
+                            start_offset,
+                            count,
+                        );
                     }
                 }
             } else {
                 // 1) 마지막 문단 앞부분 삭제
                 if end_offset > 0 {
                     if let Some(p) = paras.get_mut(end_para) {
-                        p.delete_text_at(0, end_offset);
+                        crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                            p, 0, end_offset,
+                        );
                     }
                 }
                 // 2) 중간 문단 역순 제거
@@ -5886,7 +5965,11 @@ impl DocumentCore {
                 if let Some(p) = paras.get_mut(start_para) {
                     let para_len = p.text.chars().count();
                     if start_offset < para_len {
-                        p.delete_text_at(start_offset, para_len - start_offset);
+                        crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                            p,
+                            start_offset,
+                            para_len - start_offset,
+                        );
                     }
                 }
                 // 4) 첫-마지막 문단 병합 (마지막이 이제 start_para+1)
