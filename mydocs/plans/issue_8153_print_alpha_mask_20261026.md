@@ -52,6 +52,14 @@ Pillow와 제품 인코더의 차이로 면제하지 않는다. premultiply/unpr
 가설은 기각하고, 실제 반투명 경로의 색 전달·정수 복원 위치를 구분한다.
 비교 원문은 `opaque-color-independent-result.json`이다.
 
+Windows GDI+의 실제 `LockBits`와 `GdipBitmapConvertFormat`도 같은 생성 PNG를
+메모리에서 직접 읽어 측정했다. 일반 32비트 ARGB 읽기는 원본 RGBA를 전픽셀
+보존했지만, 16비트 읽기와 Ordered4x4 변환만으로는 독립 Print의 색·마스크가
+재현되지 않았다. 실제 GDI+ 결과라는 이유로 이 변환을 한컴 Print의 계약으로
+동일시하지 않는다. 이 관측은 디더·색·마스크 생산 단계가 같다는 가정을 기각하며
+반투명 처리 위치를 더 추적할 근거다. 원격 저장소·검증 파일을 만들지 않고
+프로세스 메모리에서만 실행했으며 script·raw·비교 결과는 output에만 보존했다.
+
 또한 원본에서 계산한 JPEG RGB와 이진 알파를 단순 RGBA PNG로 재생하는 실제 Native
 진단은 미대응 **265→406픽셀**로 나빠졌다. 진단의 수정 전 PNG는 정식 현재 Native와
 RGB 전픽셀이 같았다. 배치·텍스트·소유를 그대로 둔 자원 변경만으로 개선되지
