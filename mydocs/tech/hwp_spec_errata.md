@@ -555,25 +555,25 @@ InFrontOfText(글앞으로, text_wrap=3) / BehindText(글뒤로, text_wrap=2) �
 
 ---
 
-## 30. TabDef.position (표 7) — 데이터 좌표일 뿐, 한컴 조판 알고리즘은 비공개
+## 30. TabDef.position — 명시적 정지와 자동 우측 탭을 구분한다
 
-**스펙은 "데이터 포맷" 만 정의 — 한컴은 그 값을 시멘틱적으로 재해석한다.**
+**2026-10-26 정정:** 기존 KTX 사례의 셀 우단 보정을 모든 RIGHT+leader에
+일반화한 설명은 편람의 독립 Print 반례로 기각했다. 공식 사양 자체의 오류가 아니라
+프로젝트 설명본의 과도한 일반화이며 원문 사양은 수정하지 않는다.
 
 | 항목 | 내용 |
-|------|------|
-| 스펙 위치 | 표 7 (TabDef), HWP5 스펙 §4.2.7 |
-| 스펙 기술 | TabDef.tabs[].position (UINT32, HWPUNIT) — 탭 정지 위치 |
-| 실제 동작 | 한컴은 `position` 을 절대 좌표로 신뢰하지 않고, **리더 도트 (`fill_type ≠ 0`) + RIGHT 탭 (`tab_type=1`)** 인 경우 "이 줄 우측 끝까지 채움" 으로 시멘틱 재해석. 셀 안 paragraph 에서는 cell padding_right 영역 침범 금지. 들여쓰기 문단도 페이지번호 right edge 가 동일 위치에 정렬. |
-| 잘못된 구현 | TabDef.position 그대로 사용 시: ① 셀 padding_right 영역 침범, ② 들여쓰기 문단 (소제목) 페이지번호가 좌측으로 어긋남, ③ 한 자리/두 자리 페이지번호 무관 leader 끝이 같은 x 라 페이지번호와 leader 겹침. |
-| 위반 시 결과 | KTX.hwp 목차에서 장제목·소제목 페이지번호 정렬 어긋남, leader 가 페이지번호 안으로 침범, 페이지번호가 셀 padding 영역까지 침범. |
-| 검증 데이터 | KTX.hwp 목차 (셀[10] 안 paragraph, ps_id=109 장제목 / ps_id=111 소제목, tab_def_id=5 RIGHT + fill=점선) |
-| 해결 방향 | 리더 (`fill_type ≠ 0`) RIGHT 탭은 `effective_pos = effective_margin_left + available_width` (cell inner 우측 끝) 로 강제. 페이지번호 폭에 따라 leader.end_x 단축. 공백 only run 은 carry-over. |
-| 수정 파일 | `src/renderer/layout/paragraph_layout.rs::resolve_last_tab_pending` + cross-run RIGHT take 분기 |
-| 참조 문서 | `troubleshootings/toc_leader_right_tab_alignment.md` — Task #279, PR #282 |
-| 기여자 | [@seanshin](https://github.com/seanshin) (Shin hyoun mouk) — 발견·구현 (`tab_type != 1` 클램핑 제외 + dasharray round cap), 메인테이너 — 6가지 추가 결함 식별 및 보강 |
-| 발견일 | 2026-04-25 |
+| --- | --- |
+| 사양 위치 | HWP5 §4.2.7 표 36·37 |
+| 공식 계약 | 탭 위치·종류·채움은 각각의 필드다. 자동 우측 탭 유무도 별도 속성이다. |
+| 독립 반례 | 편람 280쪽의 `\t285`·`\t286`은 자동 우측 탭이 꺼져 있고 명시적 정지가 셀 우단 안에 있다. 실제 한컴 Print는 그 정지에 쪽번호를 맞춘다. |
+| 잘못된 일반화 | 리더가 있다는 이유로 유효한 명시적 정지를 셀 우단으로 덮어쓰면 쪽번호가 원본보다 오른쪽으로 이동한다. |
+| 소비 계약 | 단 안의 명시적 정지는 보존한다. 더 좁은 셀 밖의 정지는 기존 가용 프레임 계약을 따른다. 자동 우측 탭·저장 전진·교차 런의 정렬 단위도 구분한다. |
+| 실제 진단 | 같은 source의 Native paint에서 원본 정지를 소비하면 편람 280쪽 미대응이 164→0픽셀이다. 제품 구현의 최종 검증과 구분한다. |
+| 원 해결 추적 | Task #279·PR #282, Task #874·PR #1021, 공통 측정 통합 `b9075217cc` |
+| 현재 계획 | [같은 런의 오른쪽 탭](../plans/issue_8153_inline_right_tab_20261026.md) |
 
-**핵심 교훈**: HWP 스펙은 **데이터 포맷 스펙이지 조판 알고리즘 스펙이 아니다**. 스펙대로 처리해도 한컴과 다른 결과가 나오면 한컴 시각 결과를 정답으로 삼아 의도를 역공학해야 한다. rhwp 는 "스펙 충실 구현체" 가 아니라 **"한컴 조판 결과를 재현하는 엔진"** 이어야 한다.
+공식 단위·속성·원본 저장값을 우선하고 같은 원본의 독립 출력으로 적용 범위를 확인한다.
+개별 문서에서 필요한 프레임 보정을 사양의 모든 탭에 적용되는 규칙으로 승격하지 않는다.
 
 ---
 
