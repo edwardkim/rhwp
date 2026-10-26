@@ -247,6 +247,7 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storag
                 preserve_context_resolved_runs_with_storage(composed, &mut reflowed, storage)?;
                 // 부분 재조판 앞행은 원래 저장 축과 이미 해석한 줄 소유를 보존한다.
                 // HWPX의 저장 축 보정을 새 HWP5 축의 뒤쪽에 다시 적용하지 않는다.
+                let mut preserved_tab_count = 0;
                 if let Some(prefix_len) = line_breaking::remeasured_equation_start_row(para) {
                     if prefix_len <= composed.lines.len() && prefix_len <= reflowed.lines.len() {
                         for (dst, source) in reflowed.lines[..prefix_len]
@@ -255,12 +256,13 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storag
                         {
                             *dst = crate::storage::try_clone(source, storage)?;
                         }
+                        preserved_tab_count = composed.lines[..prefix_len].iter().flat_map(|line| &line.runs).flat_map(|run| run.text.chars()).filter(|&ch| ch == '\t').count();
                     }
                 }
                 let mut reconciled = crate::storage::try_clone(composed, storage)?;
                 reconciled.lines = reflowed.lines;
-                // 재조판 줄은 현재 TabDef로 계산한다.
-                reconciled.tab_extended.clear();
+                // 보존한 앞행의 탭만 남기고 재조판 줄은 현재 TabDef로 계산한다.
+                reconciled.tab_extended.truncate(preserved_tab_count);
                 let uncached_inline_frame = inline_frame_admission::supports_uncached_inline_host(para);
                 if rejoinable_word_tail || !measured_inline_table_heights.is_empty() || uncached_inline_frame {
                     for control in &mut reconciled.inline_controls {
