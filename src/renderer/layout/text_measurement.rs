@@ -604,9 +604,8 @@ impl EmbeddedTextMeasurer {
                             let seg_w = style.right_tab_block_width_override.unwrap_or_else(|| {
                                 measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
                             });
-                            let right_edge_rel = style.text_start_offset + style.available_width
-                                - style.line_x_offset;
-                            total = (right_edge_rel - seg_w).max(total);
+                            // 자동 우측도 실제 명시적 정지를 소비한다.
+                            total = inline_right_tab::text_start(style, total, tab_target, seg_w);
                         } else if inline_type_hi == 0
                             && !has_more_tabs_after
                             && (tab_suffix_is_ascii_page_number(&chars, i + 1)
@@ -748,9 +747,8 @@ impl EmbeddedTextMeasurer {
             let tab_width_px = ext[0] as f64 * 96.0 / 7200.0;
             let tab_type_raw = ext[2];
             let tab_target = x + tab_width_px;
-            // [Task #874] auto_tab_right paragraph + 단일 tab: ext[0] = Hancom의
-            // right-tab 결과 위치 (= 우측 끝 - 한컴_seg_w). 우리 폰트의 seg_w 와 차이
-            // 가 있으면 좌측 이탈. col-relative right edge - our_seg_w 로 override.
+            // [Task #874] 자동 우측의 후속 정렬 블록 폭을 사용한다.
+            // 실제 정지는 측정과 같은 공통 선택 결과이며 문단 우단으로 가정하지 않는다.
             let has_more_tabs_after = chars[i + 1..].contains(&'\t');
             // [Task #874 #10] ext[2] high-byte 가 명시적 LEFT(1)/DECIMAL(4) 면
             // auto_tab_right paragraph 라도 override 금지 — exam_math.hwp p7
@@ -765,11 +763,6 @@ impl EmbeddedTextMeasurer {
             // 이므로 high-byte 추출이 정확. 단, RIGHT(high-byte=2) + leader(fill≠0)
             // 의 경우 한컴 ext[0] 가 이미 "(우측 끝 - 한컴_seg_w)" 까지의 거리로
             // 저장 (Stage 4 검증).
-            let body_right_text_rel = if style.available_width > 0.0 {
-                style.text_start_offset + style.available_width - style.line_x_offset
-            } else {
-                f64::INFINITY
-            };
             let body_right_legacy = if style.available_width > 0.0 {
                 style.available_width - style.line_x_offset
             } else {
@@ -789,7 +782,8 @@ impl EmbeddedTextMeasurer {
                     };
                     measure_segment_from(&chars, &cluster_len, seg_start, &char_width)
                 };
-                x = (body_right_text_rel - seg_w).max(x);
+                // 측정과 같은 명시적/자동 정지를 소비한다. 문단 우단으로 덮어쓰지 않는다.
+                x = inline_right_tab::text_start(style, x, tab_target, seg_w);
             } else if inline_type_hi == 0
                 && !has_more_tabs_after
                 && (tab_suffix_is_ascii_page_number(&chars, i + 1)
