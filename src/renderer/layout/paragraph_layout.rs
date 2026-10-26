@@ -2038,7 +2038,7 @@ fn right_tab_block_width_with_tac(
     Some(estimate_text_width(&tail, &ts) + tac_w)
 }
 
-/// 가운데 정렬과 비분배 양쪽 정렬의 폭 맞춤이 함께 소비하는 실제 글줄 끝.
+/// 비분배 정렬의 폭 맞춤이 함께 소비하는 실제 글줄 끝.
 /// 저장 줄의 구분 공백은 잉크가 없지만 음수 자간 뒤의 마지막 글리프는
 /// advance 끝을 넘어간다. 이 두 값을 서로 다른 단계에서 따로 제외하면
 /// 원래 폭에 들어가는 줄까지 압축된다. 장식 공백의 점유는 그대로 남긴다.
@@ -7384,9 +7384,12 @@ impl LayoutEngine {
                 is_hancom_company_pua_logo_line(comp_line, alignment);
 
             // 생성한 soft-wrap 구분 공백과 개체/탭은 기존 소유·측정 계약을
-            // 유지한다. 순수 가운데 정렬과 비분배 양쪽 정렬 글줄은 가시 점유로
+            // 유지한다. 순수 비분배 정렬 글줄은 가시 점유로
             // fit을 판정한다. 말미의 비가시 공백 때문에 본문을 압축하지 않는다.
-            let visible_line_measure = if (alignment == Alignment::Center
+            let visible_line_measure = if (matches!(
+                alignment,
+                Alignment::Left | Alignment::Center | Alignment::Right
+            )
                 || (alignment == Alignment::Justify && !needs_justify))
                 && !has_tabs
                 && line_tac_offsets_for_width.is_empty()
