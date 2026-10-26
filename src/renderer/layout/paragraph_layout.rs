@@ -6483,6 +6483,10 @@ impl LayoutEngine {
                 let font_bl = max_fs * 0.85;
                 (font_lh, ensure_min_baseline(font_bl, max_fs))
             } else if has_tac_shape
+                // 재조판한 줄은 현재 개체를 담아 계산한 상자다. 저장 guide처럼
+                // 접으면 뒤의 도형 높이 바닥값이 signed 줄간격을 버린다.
+                // 측정·조판이 소비한 같은 composed 높이와 간격을 유지한다.
+                && !para.is_some_and(crate::renderer::para_has_no_stored_line_segs)
                 // 개체만 있는 guide 줄의 접힘과 문단 높이 바닥값은 한 쌍이다.
                 // 가시 글자나 공백 run이 있으면 그 줄도 기준선을 소유하므로 저장
                 // line box를 font 높이로 접지 않는다. 큰 inline 도형과 글자가 같은
