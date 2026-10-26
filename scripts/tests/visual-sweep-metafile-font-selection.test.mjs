@@ -23,7 +23,7 @@ test('동일 source의 별칭·fallback을 보존하고 없는 family는 만들�
 });
 
 // 이 검사는 공급 순서 계약이다. 모의 cmap 응답을 실제 SFNT·시각 검증으로 취급하지 않는다.
-test('점 글리프를 가진 첫 실제 face만 선택하고 TTC face index를 전달한다', async () => {
+test('첫 실제 공급자를 선택하고 원 TTC 출처와 공급 SFNT의 face index를 구분한다', async () => {
   const fonts = [font(400), {...font(700, 'italic', 'Fallback'), faceIndex: 2}, font(400, 'normal', 'Unused')];
   const reads = [], probes = [];
   const selected = await selectTextEffectFontFaces({fontSupportsText(bytes, index, text) {
@@ -33,7 +33,7 @@ test('점 글리프를 가진 첫 실제 face만 선택하고 TTC face index를 
   async record => { reads.push(record.families[0]); return Uint8Array.of(record.faceIndex ?? 0).buffer; });
   assert.deepEqual([...selected], ['fallback|700|italic']);
   assert.deepEqual(reads, ['Face', 'Fallback']);
-  assert.deepEqual(probes, [{bytes: [0], index: 0, text: '·'}, {bytes: [2], index: 2, text: '·'}]);
+  assert.deepEqual(probes, [{bytes: [0], index: 0, text: '·'}, {bytes: [2], index: 0, text: '·'}]);
 });
 
 test('미공급·글리프 부재는 공급 성공으로 바꾸지 않는다', async () => {
