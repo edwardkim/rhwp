@@ -372,7 +372,7 @@ svg2pdf = { package = "rhwp-svg2pdf", path = "vendor/svg2pdf", version = "=0.13.
 usvg = "0.45"
 pdf-writer = "0.12"
 read-fonts = "0.45"
-skera = "0.8"
+skera = "0.9"
 skia-safe = { version = "0.153.2", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
 icy_sixel = { version = "=0.7.0", optional = true }
 
