@@ -1,6 +1,6 @@
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::{Control, FormObject, FormType};
-use rhwp::model::paragraph::{CharShapeRef, MarkpenMark, Paragraph, RangeTag};
+use rhwp::model::paragraph::{MarkpenMark, Paragraph, RangeTag};
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 
@@ -319,13 +319,6 @@ fn cross_paragraph_forms() -> DocumentCore {
     let mut core = document(FormType::RadioButton, true);
     let mut doc = core.document().clone();
     let template = doc.sections[0].paragraphs[0].clone();
-    let mut shape_ids = Vec::new();
-    for color in [0x112233, 0x445566] {
-        let mut style = doc.doc_info.char_shapes[0].clone();
-        style.text_color = color;
-        shape_ids.push(doc.doc_info.char_shapes.len() as u32);
-        doc.doc_info.char_shapes.push(style);
-    }
     let endpoints: Vec<_> = ["앞", "끝"]
         .into_iter()
         .enumerate()
@@ -339,10 +332,6 @@ fn cross_paragraph_forms() -> DocumentCore {
             .into();
             paragraph.char_offsets = vec![0, 25, 27];
             paragraph.char_count = 29;
-            paragraph.char_shapes = vec![CharShapeRef {
-                start_pos: 0,
-                char_shape_id: shape_ids[side],
-            }];
             paragraph.controls = (0..3)
                 .map(|index| {
                     let Control::Form(mut form) = template.controls[0].clone() else {
@@ -367,6 +356,11 @@ fn cross_paragraph_forms() -> DocumentCore {
     };
     doc.sections[0].paragraphs = vec![endpoints[0].clone(), middle, endpoints[1].clone()];
     core.set_document(doc);
+    // 실제 편집 API로 글자 모양과 저장 자원 등록을 함께 갱신한다.
+    for (paragraph, color) in [(0, "#332211"), (2, "#665544")] {
+        core.apply_char_format_native(0, paragraph, 0, 3, &format!(r#"{{"textColor":"{color}"}}"#))
+            .unwrap();
+    }
     core
 }
 
