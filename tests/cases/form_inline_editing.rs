@@ -388,7 +388,22 @@ fn assert_cross_paragraph_remainder(core: &DocumentCore) {
     assert_eq!(paragraphs.len(), 1);
     let paragraph = &paragraphs[0];
     assert_eq!(paragraph.text, "앞🦫끝");
-    assert_eq!(paragraph.control_text_positions(), [1, 1]);
+    let positions = paragraph.control_text_positions();
+    let form_positions: Vec<_> = paragraph
+        .controls
+        .iter()
+        .zip(&positions)
+        .filter_map(|(control, &position)| match control {
+            Control::Form(_) => Some(position),
+            Control::SectionDef(_) | Control::ColumnDef(_) => {
+                assert_eq!(position, 0, "저장에 필요한 구조 정의는 문단 앞에 남는다");
+                None
+            }
+            _ => panic!("선택하지 않은 다른 개체가 생겼다"),
+        })
+        .collect();
+    assert_eq!(form_positions, [1, 1]);
+    // 이 API가 문자 인덱스를 UTF-16 스트림 축으로 바꾸므로 개체 8유닛·이모지를 다시 더하지 않는다.
     for (character, color) in [(0, 0x112233), (1, 0x445566), (2, 0x445566)] {
         let id = paragraph.char_shape_id_at(character).unwrap();
         assert_eq!(
