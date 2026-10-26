@@ -5581,14 +5581,15 @@ impl HwpDocument {
         end_char_idx: u32,
         json: &str,
     ) -> Result<String, JsValue> {
-        use crate::document_core::helpers::json_str;
+        use crate::document_core::queries::memo_query::parse_memo_input;
+        let (author, text) = parse_memo_input(json).map_err(|e| JsValue::from_str(&e.to_json()))?;
         self.insert_memo_at(
             section_idx as usize,
             para_idx as usize,
             start_char_idx as usize,
             end_char_idx as usize,
-            &json_str(json, "author").unwrap_or_default(),
-            &json_str(json, "text").unwrap_or_default(),
+            &author,
+            &text,
         )
         .map_err(|e| JsValue::from_str(&e.to_json()))
     }
@@ -5606,8 +5607,10 @@ impl HwpDocument {
         end_char_idx: u32,
         json: &str,
     ) -> Result<String, JsValue> {
-        use crate::document_core::helpers::json_str;
-        use crate::document_core::queries::memo_query::{MemoError, MemoErrorCode};
+        use crate::document_core::queries::memo_query::{
+            parse_memo_input, MemoError, MemoErrorCode,
+        };
+        let (author, text) = parse_memo_input(json).map_err(|e| JsValue::from_str(&e.to_json()))?;
         let path = crate::document_core::DocumentCore::parse_cell_path(path_json).map_err(|e| {
             JsValue::from_str(&MemoError::new(MemoErrorCode::InvalidRange, e.to_string()).to_json())
         })?;
@@ -5618,8 +5621,8 @@ impl HwpDocument {
                 &path,
                 start_char_idx as usize,
                 end_char_idx as usize,
-                &json_str(json, "author").unwrap_or_default(),
-                &json_str(json, "text").unwrap_or_default(),
+                &author,
+                &text,
             )
             .map_err(|e| JsValue::from_str(&e.to_json()))
     }

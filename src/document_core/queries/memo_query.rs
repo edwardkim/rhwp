@@ -1589,6 +1589,20 @@ fn memo_json(hit: &MemoHit, protected: bool, reason: &str, page: u32) -> String 
     )
 }
 
+/// Read the `{author,text}` argument of the insert entries. A missing member is
+/// empty; anything that is not an object of strings is rejected.
+pub(crate) fn parse_memo_input(json: &str) -> Result<(String, String), MemoError> {
+    let invalid = || MemoError::insert_failed("메모 입력은 {author,text} 문자열 객체여야 함");
+    let value: serde_json::Value = serde_json::from_str(json).map_err(|_| invalid())?;
+    let object = value.as_object().ok_or_else(invalid)?;
+    let member = |key: &str| match object.get(key) {
+        None => Ok(String::new()),
+        Some(serde_json::Value::String(text)) => Ok(text.clone()),
+        Some(_) => Err(invalid()),
+    };
+    Ok((member("author")?, member("text")?))
+}
+
 /// Trim, drop `/`, `\`, `;` and control characters, cap at 64 UTF-16 units.
 pub(crate) fn sanitize_author(author: &str) -> Result<String, MemoError> {
     let mut out = String::new();
@@ -2278,5 +2292,20 @@ mod tests {
             numbers.contains(&Some(next as i64)),
             "the pasted memo keeps its new number: {numbers:?}"
         );
+    }
+
+    #[test]
+    fn memo_input_is_read_as_json() {
+        let (author, text) = parse_memo_input(r#"{"author": "AA", "text": "x\/y\b\fé"}"#).unwrap();
+        assert_eq!(author, "AA");
+        assert_eq!(text, "x/y\u{8}\u{c}é");
+        assert_eq!(
+            parse_memo_input(r#"{"text":"only"}"#).unwrap(),
+            (String::new(), "only".to_string())
+        );
+        assert!(parse_memo_input("[]").is_err());
+        assert!(parse_memo_input(r#"{"text":1}"#).is_err());
+        assert!(parse_memo_input(r#"{"author":null,"text":"x"}"#).is_err());
+        assert!(parse_memo_input("not json").is_err());
     }
 }
