@@ -96,3 +96,9 @@ before FAIL 증거에서 제외하고 원인과 원본 로그를 ignored output�
 `cell-clip-native-validation.log`, `cell-clip-native-terminal-recheck.log`,
 `cell-clip-unit.log`, `cell-clip-native-whole.log`다. 작업 경로는 앞 절의
 `continuous-text-shadow/` 아래다. 이미 보존한 원본 PDF를 재출력하지 않았다.
+
+동결 실행 파일 22개 harness를 별도 드라이버에서 다시 실행했다. 같은 source·
+파일 SHA를 확인했고 **49 PASS·0 FAIL·0 ignored, 드라이버 종료 코드 0**이었다.
+첫 드라이버의 143 원인은 확정하지 않으며 해당 관측도 보존한다. 재실행의 각 실행
+파일·로그 SHA와 실제 종료 코드는 `cell-clip-native/contracts-terminal-recheck.json`에 있다.
+공유 Cargo 산출물은 다시 컴파일하지 않고 기존 동결 실행 파일만 재사용했다.
