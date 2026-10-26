@@ -267,7 +267,11 @@ fn serialize_memo_tail(memo_lists: &[(u32, Vec<Paragraph>)], records: &mut Vec<R
 
         let mut memo_paragraphs = paragraphs.clone();
         for para in &mut memo_paragraphs {
-            if para.raw_header_extra.len() < 12 {
+            // A body read from an HWP5 memo list keeps its own header tail
+            // (instance id and, from 5.0.3.2, the change-tracking word).
+            // Only a paragraph without one (HWPX subList, a new memo) gets
+            // the zero tail Hancom writes.
+            if para.raw_header_extra.len() < 10 {
                 para.raw_header_extra = vec![0; 12];
             }
             // Hancom writes memo body paragraphs under MEMO_LIST without
