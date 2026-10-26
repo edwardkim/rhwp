@@ -5581,17 +5581,15 @@ impl HwpDocument {
         end_char_idx: u32,
         json: &str,
     ) -> Result<String, JsValue> {
-        use crate::document_core::queries::memo_query::parse_memo_input;
-        let (author, text) = parse_memo_input(json).map_err(|e| JsValue::from_str(&e.to_json()))?;
-        self.insert_memo_at(
-            section_idx as usize,
-            para_idx as usize,
-            start_char_idx as usize,
-            end_char_idx as usize,
-            &author,
-            &text,
-        )
-        .map_err(|e| JsValue::from_str(&e.to_json()))
+        self.core
+            .insert_memo_json_native(
+                section_idx as usize,
+                para_idx as usize,
+                start_char_idx as usize,
+                end_char_idx as usize,
+                json,
+            )
+            .map_err(|e| JsValue::from_str(&e.to_json()))
     }
 
     /// 표 칸·글상자 안의 범위에 메모를 넣는다.
@@ -5607,22 +5605,14 @@ impl HwpDocument {
         end_char_idx: u32,
         json: &str,
     ) -> Result<String, JsValue> {
-        use crate::document_core::queries::memo_query::{
-            parse_memo_input, MemoError, MemoErrorCode,
-        };
-        let (author, text) = parse_memo_input(json).map_err(|e| JsValue::from_str(&e.to_json()))?;
-        let path = crate::document_core::DocumentCore::parse_cell_path(path_json).map_err(|e| {
-            JsValue::from_str(&MemoError::new(MemoErrorCode::InvalidRange, e.to_string()).to_json())
-        })?;
         self.core
-            .insert_memo_by_path(
+            .insert_memo_by_path_json_native(
                 section_idx as usize,
                 para_idx as usize,
-                &path,
+                path_json,
                 start_char_idx as usize,
                 end_char_idx as usize,
-                &author,
-                &text,
+                json,
             )
             .map_err(|e| JsValue::from_str(&e.to_json()))
     }

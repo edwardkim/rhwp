@@ -634,25 +634,6 @@ pub(crate) fn delete_text_at_keeping_memos(
     deleted
 }
 
-/// Replace text in one paragraph. Non-empty text keeps memo fields and lets the
-/// insertion expand their ranges; empty text is a deletion and may drop them.
-pub(crate) fn replace_text_at_keeping_memos(
-    para: &mut Paragraph,
-    char_offset: usize,
-    count: usize,
-    new_text: &str,
-) -> (usize, usize) {
-    if new_text.is_empty() {
-        (delete_text_at_keeping_memos(para, char_offset, count), 0)
-    } else {
-        let replaced_memos = para.memos_within(char_offset, char_offset + count);
-        let deleted = para.delete_text_at(char_offset, count);
-        let inserted = para.insert_text_at(char_offset, new_text);
-        para.regrow_replaced_memos(&replaced_memos, inserted, new_text.chars().count());
-        (deleted, inserted)
-    }
-}
-
 fn drop_memo_control_fallback(para: &mut Paragraph, control_idx: usize) {
     para.field_ranges
         .retain(|range| range.control_idx != control_idx);
@@ -1209,6 +1190,51 @@ impl DocumentCore {
                 } => (*control_index, 0, *para_index),
             })
             .collect()
+    }
+
+    /// `insertMemo`: the `{author,text}` JSON argument, then [`Self::insert_memo_at`].
+    pub fn insert_memo_json_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        start_char_idx: usize,
+        end_char_idx: usize,
+        json: &str,
+    ) -> Result<String, MemoError> {
+        let (author, text) = parse_memo_input(json)?;
+        self.insert_memo_at(
+            section_idx,
+            para_idx,
+            start_char_idx,
+            end_char_idx,
+            &author,
+            &text,
+        )
+    }
+
+    /// `insertMemoByPath`: the cell path and `{author,text}` JSON arguments, then
+    /// [`Self::insert_memo_by_path`].
+    pub fn insert_memo_by_path_json_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        path_json: &str,
+        start_char_idx: usize,
+        end_char_idx: usize,
+        json: &str,
+    ) -> Result<String, MemoError> {
+        let (author, text) = parse_memo_input(json)?;
+        let path = Self::parse_cell_path(path_json)
+            .map_err(|e| MemoError::new(MemoErrorCode::InvalidRange, e.to_string()))?;
+        self.insert_memo_by_path(
+            section_idx,
+            para_idx,
+            &path,
+            start_char_idx,
+            end_char_idx,
+            &author,
+            &text,
+        )
     }
 
     /// Insert a memo over a one-paragraph range. `start == end` makes a
@@ -1952,457 +1978,4 @@ fn remove_memo_field_in_para(
     para.char_count = gaps[text_len].1.saturating_sub(16) + 1;
     para.invalidate_layout_inputs();
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::model::paragraph::CharShapeRef;
-
-    fn para_with_text(text: &str) -> Paragraph {
-        let mut para = Paragraph::new_empty();
-        if !text.is_empty() {
-            para.insert_text_at(0, text);
-            para.has_para_text = true;
-        }
-        para
-    }
-
-    fn memo_field(id: u32, number: u32, body: &[&str]) -> Field {
-        let mut field = new_memo_field(
-            id,
-            number,
-            65535,
-            "tester",
-            &body.join("\n"),
-            &para_with_text("anchor"),
-        )
-        .unwrap();
-        field.properties |= 0x8001;
-        field
-    }
-
-    #[test]
-    fn sanitize_author_drops_command_separators() {
-        assert_eq!(sanitize_author("  A/B\\C;D\nE  ").unwrap(), "ABCDE");
-        assert_eq!(sanitize_author("").unwrap(), "");
-        assert!(sanitize_author(&"가".repeat(65)).is_err());
-        assert_eq!(
-            sanitize_author(&"가".repeat(64))
-                .unwrap()
-                .encode_utf16()
-                .count(),
-            64
-        );
-    }
-
-    #[test]
-    fn command_roundtrips_number_and_author() {
-        let command = memo_command(65535, 3, 77, "hancom");
-        let tokens: Vec<&str> = command.split('/').collect();
-        assert_eq!(&tokens[..3], ["MEMO", "65535", "3"]);
-        assert_eq!(tokens[3], "77");
-        assert!(!tokens[4].is_empty() && tokens[4].parse::<u32>().unwrap() != 0);
-        assert_eq!(tokens[5], "hancom");
-        assert_eq!(tokens[6], "\\;;");
-        let field = Field {
-            command,
-            ..Default::default()
-        };
-        assert_eq!(memo_number(&field), 3);
-        assert_eq!(memo_author(&field), "hancom");
-    }
-
-    #[test]
-    fn memo_text_joins_paragraphs_with_newlines() {
-        let field = memo_field(9, 1, &["첫 줄", "", "끝"]);
-        assert_eq!(memo_text(&field), "첫 줄\n\n끝");
-    }
-
-    #[test]
-    fn readonly_reason_tracks_formatting_and_objects() {
-        let plain = vec![para_with_text("한 줄")];
-        assert_eq!(memo_readonly_reason(&plain), None);
-
-        let mut shaped = plain.clone();
-        shaped[0].char_shapes = vec![
-            CharShapeRef {
-                start_pos: 0,
-                char_shape_id: 1,
-            },
-            CharShapeRef {
-                start_pos: 2,
-                char_shape_id: 2,
-            },
-        ];
-        assert_eq!(memo_readonly_reason(&shaped), Some("formatted"));
-
-        let mut with_table = plain;
-        with_table[0]
-            .controls
-            .push(Control::Table(Default::default()));
-        assert_eq!(memo_readonly_reason(&with_table), Some("object"));
-    }
-
-    #[test]
-    fn insert_and_remove_keep_anchor_text_and_slots_consistent() {
-        let mut para = para_with_text("앞뒤");
-        let field = memo_field(10, 1, &["메모 본문"]);
-        insert_memo_field_in_para(&mut para, 1, 1, field).unwrap();
-        assert_eq!(para.text, "앞뒤");
-        assert_eq!(para.field_ranges.len(), 1);
-        assert_eq!(para.field_ranges[0].start_char_idx, 1);
-        assert_eq!(para.field_ranges[0].end_char_idx, 1);
-        assert_eq!(para.controls.len(), 1);
-        assert_eq!(para.char_count, 2 + 16 + 1);
-
-        let range_idx = para.field_ranges[0].control_idx;
-        let idx = memo_field_range_index(&para, range_idx).unwrap();
-        remove_memo_field_in_para(&mut para, range_idx, idx).unwrap();
-        assert_eq!(para.text, "앞뒤");
-        assert!(para.field_ranges.is_empty());
-        assert!(para.controls.is_empty());
-        assert_eq!(para.char_count, 2 + 1);
-    }
-
-    #[test]
-    fn insert_rejects_memo_overlap_but_allows_boundary_anchor() {
-        let mut para = para_with_text("abcdef");
-        insert_memo_field_in_para(&mut para, 1, 3, memo_field(1, 1, &["a"])).unwrap();
-        assert!(matches!(
-            insert_memo_field_in_para(&mut para, 2, 4, memo_field(2, 2, &["b"])),
-            Err(MemoError {
-                code: MemoErrorCode::Overlap,
-                ..
-            })
-        ));
-        // Zero-length anchor on the boundary is allowed.
-        insert_memo_field_in_para(&mut para, 1, 1, memo_field(3, 3, &["c"])).unwrap();
-        insert_memo_field_in_para(&mut para, 3, 3, memo_field(4, 4, &["d"])).unwrap();
-        assert_eq!(para.field_ranges.len(), 3);
-    }
-
-    #[test]
-    fn memo_body_splits_lines_and_keeps_trailing_empty_paragraph() {
-        let template = para_with_text("t");
-        let paragraphs = memo_paragraphs_from_text("one\n\ntwo\n", &template).unwrap();
-        assert_eq!(paragraphs.len(), 4);
-        assert_eq!(paragraphs[0].text, "one");
-        assert_eq!(paragraphs[1].text, "");
-        assert_eq!(paragraphs[2].text, "two");
-        assert_eq!(paragraphs[3].text, "");
-    }
-
-    #[test]
-    fn text_limit_counts_utf16_units() {
-        assert!(check_text_size(&"가".repeat(MEMO_TEXT_MAX_UNITS)).is_ok());
-        assert!(check_text_size(&"가".repeat(MEMO_TEXT_MAX_UNITS + 1)).is_err());
-        // An emoji is two UTF-16 units.
-        assert!(check_text_size(&"😀".repeat(MEMO_TEXT_MAX_UNITS / 2)).is_ok());
-        assert!(check_text_size(&"😀".repeat(MEMO_TEXT_MAX_UNITS / 2 + 1)).is_err());
-    }
-
-    #[test]
-    fn set_memo_text_marks_the_section_dirty() {
-        let mut core = DocumentCore::new_empty();
-        core.create_blank_document_native().unwrap();
-        core.insert_text_native(0, 0, 0, "anchor").unwrap();
-        core.insert_memo_at(0, 0, 0, 0, "tester", "body").unwrap();
-        let id = core.document.sections[0].paragraphs[0]
-            .controls
-            .iter()
-            .find_map(|ctrl| match ctrl {
-                Control::Field(field) if is_memo_field(field) => Some(field.field_id),
-                _ => None,
-            })
-            .unwrap();
-        core.batch_mode = true;
-        core.set_memo_text(id, "new body").unwrap();
-        assert!(
-            core.dirty_sections[0],
-            "setMemoText must mark the section dirty"
-        );
-    }
-
-    #[test]
-    fn formatted_memo_is_read_only_but_removable() {
-        let mut core = DocumentCore::new_empty();
-        core.create_blank_document_native().unwrap();
-        core.insert_text_native(0, 0, 0, "anchor").unwrap();
-        core.insert_memo_at(0, 0, 0, 0, "tester", "body").unwrap();
-        let (id, field) = core.document.sections[0].paragraphs[0]
-            .controls
-            .iter_mut()
-            .find_map(|ctrl| match ctrl {
-                Control::Field(field) if is_memo_field(field) => Some(field),
-                _ => None,
-            })
-            .map(|field| {
-                field.memo_paragraphs[0].char_shapes.push(CharShapeRef {
-                    start_pos: 1,
-                    char_shape_id: 999,
-                });
-                (field.field_id, ())
-            })
-            .unwrap();
-        let _ = field;
-        let error = core.set_memo_text(id, "new").unwrap_err();
-        assert_eq!(error.code, MemoErrorCode::ReadOnly);
-        core.remove_memo(id).unwrap();
-        assert!(core.get_memo_list_json() == "[]");
-    }
-
-    #[test]
-    fn deleting_the_whole_anchor_removes_the_memo_and_a_part_keeps_it() {
-        let mut para = para_with_text("hello world");
-        insert_memo_field_in_para(&mut para, 0, 5, memo_field(1, 1, &["body"])).unwrap();
-        delete_text_at_keeping_memos(&mut para, 0, 5);
-        assert_eq!(para.text, " world");
-        assert!(
-            para.controls
-                .iter()
-                .all(|ctrl| !matches!(ctrl, Control::Field(field) if is_memo_field(field))),
-            "the memo went with its whole anchor"
-        );
-
-        let mut para = para_with_text("hello world");
-        insert_memo_field_in_para(&mut para, 0, 5, memo_field(2, 2, &["body"])).unwrap();
-        delete_text_at_keeping_memos(&mut para, 1, 2);
-        assert_eq!(para.text, "hlo world");
-        assert!(
-            para.controls
-                .iter()
-                .any(|ctrl| matches!(ctrl, Control::Field(field) if is_memo_field(field))),
-            "a shortened anchor keeps its memo"
-        );
-    }
-
-    #[test]
-    fn replacing_the_whole_anchor_with_text_keeps_the_memo() {
-        let mut para = para_with_text("hello world");
-        insert_memo_field_in_para(&mut para, 0, 5, memo_field(3, 3, &["body"])).unwrap();
-        replace_text_at_keeping_memos(&mut para, 0, 5, "HELLO");
-        assert_eq!(para.text, "HELLO world");
-        assert!(
-            para.controls
-                .iter()
-                .any(|ctrl| matches!(ctrl, Control::Field(field) if is_memo_field(field))),
-            "text replacement keeps the memo and expands its range"
-        );
-    }
-
-    #[test]
-    fn native_replace_keeps_a_memo_until_its_whole_anchor_is_deleted() {
-        let mut core = DocumentCore::new_empty();
-        core.create_blank_document_native().unwrap();
-        core.insert_text_native(0, 0, 0, "hello world").unwrap();
-        core.insert_memo_at(0, 0, 0, 5, "tester", "body").unwrap();
-        assert!(core.get_memo_list_json().contains("\"text\":\"body\""));
-
-        core.replace_text_native(0, 0, 0, 5, "HELLO").unwrap();
-        assert!(
-            core.get_memo_list_json().contains("\"text\":\"body\""),
-            "a replacement with text keeps the memo and expands its range"
-        );
-
-        core.replace_text_native(0, 0, 0, 5, "").unwrap();
-        assert_eq!(core.get_memo_list_json(), "[]");
-    }
-
-    #[test]
-    fn the_hwp5_sample_reads_its_memo_body() {
-        let path = concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/samples/issue5866/memo_field_hwp5.hwp"
-        );
-        let bytes = std::fs::read(path).expect("read the Hancom memo sample");
-        let doc = crate::parser::parse_document(&bytes).expect("parse the Hancom memo sample");
-        let memos: Vec<&Field> = doc
-            .sections
-            .iter()
-            .flat_map(|section| &section.paragraphs)
-            .flat_map(|para| &para.controls)
-            .filter_map(|control| match control {
-                Control::Field(field) if is_memo_field(field) => Some(field),
-                _ => None,
-            })
-            .collect();
-        assert_eq!(memos.len(), 1, "one memo in the Hancom sample");
-        assert!(
-            !memos[0].memo_paragraphs.is_empty(),
-            "the memo body paragraphs were assigned to the field"
-        );
-        assert!(
-            memos[0]
-                .memo_paragraphs
-                .iter()
-                .any(|para| !para.text.trim().is_empty()),
-            "the memo body has readable text"
-        );
-    }
-
-    #[test]
-    fn a_pasted_hwpx_memo_is_written_with_its_new_number() {
-        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/samples/hwpx/aift.hwpx");
-        let bytes = std::fs::read(path).expect("read the HWPX memo sample");
-        let mut doc = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse the HWPX sample");
-        let (section_idx, para_idx) = doc
-            .sections
-            .iter()
-            .enumerate()
-            .find_map(|(section_idx, section)| {
-                section
-                    .paragraphs
-                    .iter()
-                    .position(|para| {
-                        para.controls.iter().any(
-                            |ctrl| matches!(ctrl, Control::Field(field) if is_memo_field(field)),
-                        )
-                    })
-                    .map(|para_idx| (section_idx, para_idx))
-            })
-            .expect("a memo paragraph");
-        let mut copy = vec![doc.sections[section_idx].paragraphs[para_idx].clone()];
-        let next = max_memo_number(&doc) + 1;
-        renumber_memos(&mut copy, next);
-
-        let field = copy[0]
-            .controls
-            .iter()
-            .find_map(|ctrl| match ctrl {
-                Control::Field(field) if is_memo_field(field) => Some(field),
-                _ => None,
-            })
-            .unwrap();
-        assert_eq!(memo_number(field), next);
-        let number = |field: &Field| {
-            field.parameters.items.iter().find_map(|item| match item {
-                Parameter::Integer {
-                    name: Some(key),
-                    value,
-                } if key == "Number" => Some(*value),
-                _ => None,
-            })
-        };
-        assert_eq!(number(field), Some(next as i64));
-        assert_eq!(parameter_string(field, "ID"), Some(format!("memo{next}")));
-        assert_eq!(
-            parameter_string(field, "Command").as_deref(),
-            Some(field.command.as_str())
-        );
-
-        // The HWPX writer must not fall back to the copied original parameters.
-        doc.sections[section_idx].paragraphs.extend(copy);
-        let out = crate::serializer::hwpx::serialize_hwpx(&doc).expect("write HWPX");
-        let reparsed = crate::parser::hwpx::parse_hwpx(&out).expect("read the written HWPX");
-        let numbers: Vec<Option<i64>> = reparsed.sections[section_idx]
-            .paragraphs
-            .iter()
-            .flat_map(|para| &para.controls)
-            .filter_map(|ctrl| match ctrl {
-                Control::Field(field) if is_memo_field(field) => Some(number(field)),
-                _ => None,
-            })
-            .collect();
-        assert!(
-            numbers.contains(&Some(next as i64)),
-            "the pasted memo keeps its new number: {numbers:?}"
-        );
-    }
-
-    #[test]
-    fn memo_input_is_read_as_json() {
-        let (author, text) = parse_memo_input(r#"{"author": "AA", "text": "x\/y\b\fé"}"#).unwrap();
-        assert_eq!(author, "AA");
-        assert_eq!(text, "x/y\u{8}\u{c}é");
-        assert_eq!(
-            parse_memo_input(r#"{"text":"only"}"#).unwrap(),
-            (String::new(), "only".to_string())
-        );
-        assert!(parse_memo_input("[]").is_err());
-        assert!(parse_memo_input(r#"{"text":1}"#).is_err());
-        assert!(parse_memo_input(r#"{"author":null,"text":"x"}"#).is_err());
-        assert!(parse_memo_input("not json").is_err());
-    }
-
-    #[test]
-    fn typing_at_a_caret_memo_does_not_grow_it() {
-        let mut core = DocumentCore::new_empty();
-        core.create_blank_document_native().unwrap();
-        core.insert_text_native(0, 0, 0, "hello").unwrap();
-        core.insert_memo_at(0, 0, 2, 2, "tester", "body").unwrap();
-
-        core.insert_text_native(0, 0, 2, "ab").unwrap();
-        let para = &core.document.sections[0].paragraphs[0];
-        assert_eq!(para.text, "heabllo");
-        let range = &para.field_ranges[0];
-        assert_eq!(
-            (range.start_char_idx, range.end_char_idx),
-            (2, 2),
-            "typed text stays outside a zero-length memo"
-        );
-
-        core.delete_text_native(0, 0, 2, 2).unwrap();
-        assert!(
-            core.get_memo_list_json().contains("\"text\":\"body\""),
-            "deleting the typed text keeps the memo"
-        );
-    }
-
-    #[test]
-    fn memo_text_control_characters_are_normalized() {
-        let mut core = DocumentCore::new_empty();
-        core.create_blank_document_native().unwrap();
-        core.insert_text_native(0, 0, 0, "hello").unwrap();
-        let inserted = core
-            .insert_memo_at(0, 0, 0, 5, "tester", "a\r\nb\rc\u{1}d\te")
-            .unwrap();
-        let id: u32 = inserted
-            .split("\"id\":")
-            .nth(1)
-            .and_then(|rest| rest.split(',').next())
-            .and_then(|id| id.parse().ok())
-            .unwrap();
-        let memo_body = |core: &DocumentCore| -> Vec<String> {
-            core.document.sections[0].paragraphs[0]
-                .controls
-                .iter()
-                .find_map(|ctrl| match ctrl {
-                    Control::Field(field) if is_memo_field(field) => Some(
-                        field
-                            .memo_paragraphs
-                            .iter()
-                            .map(|para| para.text.clone())
-                            .collect(),
-                    ),
-                    _ => None,
-                })
-                .unwrap()
-        };
-        assert_eq!(memo_body(&core), ["a", "b", "cd\te"]);
-
-        core.set_memo_text(id, "x\ry\u{7}").unwrap();
-        assert_eq!(memo_body(&core), ["x", "y"]);
-
-        let mut section = core.document.sections[0].clone();
-        section.raw_stream = None;
-        section.raw_provenance = None;
-        let bytes = crate::serializer::body_text::serialize_section(&section);
-        let reread = crate::parser::body_text::parse_body_text_section(&bytes).unwrap();
-        let body: Vec<String> = reread.paragraphs[0]
-            .controls
-            .iter()
-            .find_map(|ctrl| match ctrl {
-                Control::Field(field) if is_memo_field(field) => Some(
-                    field
-                        .memo_paragraphs
-                        .iter()
-                        .map(|para| para.text.clone())
-                        .collect(),
-                ),
-                _ => None,
-            })
-            .unwrap();
-        assert_eq!(body, ["x", "y"], "the memo body survives an HWP save");
-    }
 }

@@ -107,3 +107,60 @@ fn a_new_memo_body_gets_the_zero_header_tail() {
         assert!(tail[6..].iter().all(|byte| *byte == 0));
     }
 }
+
+/// A memo document must not grow by one empty paragraph per HWP save. Hancom puts
+/// MEMO_LIST right after the real last body paragraph.
+#[test]
+fn memo_tail_resave_keeps_the_paragraph_count() {
+    use rhwp::parser::body_text::parse_body_text_section;
+    use rhwp::parser::record::Record;
+    use rhwp::parser::tags;
+    use rhwp::serializer::body_text::serialize_section;
+
+    let doc = parse_document(&sample("issue5866/memo_field_hwp5.hwp"))
+        .expect("parse the Hancom memo sample");
+    let mut section = doc
+        .sections
+        .into_iter()
+        .last()
+        .expect("the sample has a section");
+    let original = section.paragraphs.len();
+    for _ in 0..2 {
+        section.raw_stream = None;
+        section.raw_provenance = None;
+        let bytes = serialize_section(&section);
+        let records = Record::read_all(&bytes).unwrap();
+        let last_body = records
+            .iter()
+            .rposition(|r| r.tag_id == tags::HWPTAG_PARA_HEADER && r.level == 0)
+            .unwrap();
+        let char_count = u32::from_le_bytes(records[last_body].data[0..4].try_into().unwrap());
+        assert_ne!(
+            char_count & 0x8000_0000,
+            0,
+            "the real last paragraph keeps its last bit"
+        );
+        assert!(
+            records[last_body + 1..]
+                .iter()
+                .any(|r| r.tag_id == tags::HWPTAG_MEMO_LIST && r.level == 1),
+            "the memo list follows the last body paragraph"
+        );
+        section = parse_body_text_section(&bytes).unwrap();
+        assert_eq!(
+            section.paragraphs.len(),
+            original,
+            "no root paragraph is added"
+        );
+        let mut found = Vec::new();
+        collect_memos(&section.paragraphs, &mut found);
+        assert_eq!(
+            found
+                .iter()
+                .filter(|field| !field.memo_paragraphs.is_empty())
+                .count(),
+            1,
+            "the memo body is read back"
+        );
+    }
+}
