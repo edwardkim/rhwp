@@ -371,6 +371,12 @@ pub(crate) enum ExactFontSlotSelection<'a> {
     NativePua,
     LiteralFigureSpace,
     Tab(&'a crate::model::document::DocInfo),
+    Shadow(
+        &'a crate::model::document::DocInfo,
+        &'a std::cell::RefCell<
+            std::collections::HashMap<ExactFontSlot, std::collections::BTreeSet<char>>,
+        >,
+    ),
 }
 
 pub(crate) fn collect_exact_font_slots_from_paragraphs_filtered(
@@ -436,7 +442,12 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_selected(
                     return;
                 }
                 *remaining_work_units -= 1;
-                if !run.text.is_empty()
+                let effect_text = run.display_text.as_deref().unwrap_or(&run.text);
+                let has_text = match selection {
+                    ExactFontSlotSelection::Shadow(_, _) => !effect_text.is_empty(),
+                    _ => !run.text.is_empty(),
+                };
+                if has_text
                     && match selection {
                         ExactFontSlotSelection::All => true,
                         ExactFontSlotSelection::NativePua => run
@@ -445,9 +456,31 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_selected(
                             .any(crate::renderer::native_pua_fonts::is_supported_symbol),
                         ExactFontSlotSelection::LiteralFigureSpace => run.literal_figure_space,
                         ExactFontSlotSelection::Tab(_) => run.text.contains('\t'),
+                        ExactFontSlotSelection::Shadow(info, _) => info
+                            .char_shapes
+                            .get(run.char_style_id as usize)
+                            .is_some_and(|style| style.shadow_type == 2),
                     }
                 {
-                    slots.insert(ExactFontSlot::new(run.char_style_id, run.lang_index));
+                    let slot = ExactFontSlot::new(run.char_style_id, run.lang_index);
+                    slots.insert(slot);
+                    if let ExactFontSlotSelection::Shadow(_, usage) = selection {
+                        let mut usage = usage.borrow_mut();
+                        let glyphs = usage.entry(slot).or_default();
+                        for character in effect_text.chars() {
+                            if *remaining_work_units == 0 {
+                                return;
+                            }
+                            *remaining_work_units -= 1;
+                            if !character.is_control() && !character.is_whitespace() {
+                                glyphs.insert(character);
+                                if glyphs.len() > crate::paint::MAX_PORTABLE_GLYPHS_PER_RUN {
+                                    *remaining_work_units = 0;
+                                    return;
+                                }
+                            }
+                        }
+                    }
                     if slots.len() >= MAX_KERNING_REGISTRY_SLOTS {
                         return;
                     }

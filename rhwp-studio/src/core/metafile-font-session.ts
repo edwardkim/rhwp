@@ -5,6 +5,7 @@ export interface MetafileFontDocument {
   getMetafileFontRequests?(): string;
   getTextShadowFontRequests?(): string;
   fontSupportsText?(bytes: Uint8Array, faceIndex: number, text: string): boolean;
+  fontMissingText?(bytes: Uint8Array, faceIndex: number, text: string): string | undefined;
   registerMetafileFont?(family: string, bytes: Uint8Array, faceIndex: number): boolean;
   clearMetafileFonts?(): void;
 }
@@ -41,23 +42,31 @@ export class MetafileFontSession {
       this.prepared.set(owner, state);
     }
     for (const request of requests) {
+      let remaining = request.text;
       for (const family of request.families) {
         const style = { weight: request.weight, slant: request.italic ? 'italic' as const : 'normal' as const };
         const record = resolveRendererLocalFont(family, style) ?? resolveRendererLocalFont(family);
         if (!record) continue;
         const key = `${family.toLowerCase()}|${localFontFaceKey(record)}`;
-        const glyphs = request.glyphs && typeof owner.fontSupportsText === 'function';
+        const glyphs = request.glyphs && (typeof owner.fontMissingText === 'function'
+          || typeof owner.fontSupportsText === 'function');
         if (state.keys.has(key) && !glyphs) continue;
         const data = await loadRendererLocalFont(record);
         if (!current() || generation !== `${fontGeneration}:${getHostFontState().generation}`) return false;
         if (!data) continue;
-        if (glyphs && !owner.fontSupportsText!(new Uint8Array(data.bytes), data.faceIndex ?? 0, request.text)) continue;
+        if (glyphs) {
+          const missing = typeof owner.fontMissingText === 'function'
+            ? owner.fontMissingText(new Uint8Array(data.bytes), data.faceIndex ?? 0, remaining)
+            : owner.fontSupportsText!(new Uint8Array(data.bytes), data.faceIndex ?? 0, remaining) ? '' : remaining;
+          if (typeof missing !== 'string' || missing === remaining) continue;
+          remaining = missing;
+        }
         // 실패를 빈 glyph 프로그램으로 대체하지 않는다. 미공급 face는 기존 SVG 경로가 담당한다.
         if (!state.keys.has(key)) {
           owner.registerMetafileFont(family, new Uint8Array(data.bytes), data.faceIndex ?? 0);
           state.keys.add(key);
         }
-        if (glyphs) break;
+        if (glyphs && !remaining) break;
       }
     }
     state.requests = raw;

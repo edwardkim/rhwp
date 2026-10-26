@@ -98,7 +98,7 @@ async function glyphFixture(primaryCovers: boolean) {
     registerMetafileFont(family: string) { calls.push(family); return true; },
   };
   return {owner, calls, probes, request, session: new MetafileFontSession(),
-    useShadow() { effectText = ''; }};
+    useShadow() { effectText = ''; }, useText(text: string) { effectText = text; }};
 }
 
 test('점 효과는 실제 cmap가 있는 첫 공급자만 등록하고 전체 그림자로 확장할 수 있다', async () => {
@@ -131,5 +131,20 @@ test('WMF의 text는 점 효과처럼 공급자를 좁히지 않는다', async (
     const owner = {...f.owner, getMetafileFontRequests: () => f.request('WMF')};
     await f.session.prepare(owner, 1, () => true);
     assert.deepEqual(f.calls, ['Primary', 'Fallback', 'Unused']);
+  } finally { await setHostFontProvider(null); }
+});
+
+test('실제 글리프가 여러 face에 나뉘면 미공급 집합만 다음 후보에 전달한다', async () => {
+  const f = await glyphFixture(true);
+  try {
+    f.useText('A·');
+    const seen: unknown[] = [];
+    const owner = {...f.owner, fontMissingText(bytes: Uint8Array, index: number, text: string) {
+      seen.push({index, text});
+      return text.replaceAll(bytes[0] === 1 ? 'A' : '·', '');
+    }};
+    await f.session.prepare(owner, 1, () => true);
+    assert.deepEqual(f.calls, ['Primary', 'Fallback']);
+    assert.deepEqual(seen, [{index: 2, text: 'A·'}, {index: 2, text: '·'}]);
   } finally { await setHostFontProvider(null); }
 });

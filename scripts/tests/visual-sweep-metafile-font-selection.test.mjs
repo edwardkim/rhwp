@@ -59,3 +59,21 @@ test('전체 그림자 요청과 구버전 owner는 기존 fallback 사다리를
   assert.deepEqual([...await selectTextEffectFontFaces({fontSupportsText: () => true}, fonts,
     [{...base, text: '·'}, {...base, text: ''}], async () => Uint8Array.of(1))], expected);
 });
+
+test('서로 다른 실제 face가 맡는 글리프를 공통 missing 결과로 순서대로 공급한다', async () => {
+  const fonts = [font(400), font(400, 'normal', 'Fallback'), font(400, 'normal', 'Unused')];
+  const probes = [];
+  const selected = await selectTextEffectFontFaces({fontMissingText(bytes, index, text) {
+    probes.push({index, text});
+    return text.replaceAll(bytes[0] === 1 ? 'A' : '·', '');
+  }}, fonts, [{...request(400, false, ['Face', 'Fallback', 'Unused']), text: 'A·'}],
+  async record => Uint8Array.of(record.families[0] === 'Face' ? 1 : 2));
+  assert.deepEqual([...selected], ['face|400|normal', 'fallback|400|normal']);
+  assert.deepEqual(probes, [{index: 0, text: 'A·'}, {index: 0, text: '·'}]);
+});
+
+test('글꼴 파싱 실패를 모든 글리프 공급으로 간주하지 않는다', async () => {
+  const selected = await selectTextEffectFontFaces({fontMissingText: () => undefined},
+    [font(400)], [{...request(400), text: 'A·'}], async () => Uint8Array.of(1));
+  assert.deepEqual([...selected], []);
+});

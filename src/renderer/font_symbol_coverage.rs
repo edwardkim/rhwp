@@ -11,20 +11,27 @@ use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
 
 /// 실제 프로그램의 cmap로 요청 글리프 공급을 확인한다. 파일·별칭·캐시를 바꾸지 않는다.
 pub fn font_supports_text(data: &[u8], face_index: u32, text: &str) -> bool {
+    font_missing_text(data, face_index, text).is_some_and(|missing| missing.is_empty())
+}
+
+/// 다음 실제 공급자가 맡아야 할 글리프다. 해석 실패는 빈 집합(완전 공급)이 아니다.
+pub fn font_missing_text(data: &[u8], face_index: u32, text: &str) -> Option<String> {
     if data.len() > crate::paint::MAX_PORTABLE_FONT_BLOB_BYTES
         || text.chars().count() > crate::paint::MAX_PORTABLE_GLYPHS_PER_RUN
     {
-        return false;
+        return None;
     }
-    let Ok(face) = Face::parse(data, face_index) else {
-        return false;
-    };
-    text.chars().all(|character| {
-        character.is_whitespace()
-            || face
-                .glyph_index(character)
-                .is_some_and(|glyph| glyph.0 != 0)
-    })
+    let face = Face::parse(data, face_index).ok()?;
+    Some(
+        text.chars()
+            .filter(|character| {
+                !character.is_whitespace()
+                    && !face
+                        .glyph_index(*character)
+                        .is_some_and(|glyph| glyph.0 != 0)
+            })
+            .collect(),
+    )
 }
 
 pub fn is_visible_symbol(character: char) -> bool {

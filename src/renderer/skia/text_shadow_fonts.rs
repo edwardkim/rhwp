@@ -11,6 +11,7 @@ impl SkiaLayerRenderer {
                 .map_err(|e| HwpError::RenderError(e.to_string()))?;
         let mut changed = false;
         for request in requests {
+            let mut remaining = request.text.clone();
             for family in &request.families {
                 let names = crate::renderer::font_environment::program_names(family);
                 let style = font_style_for_text(&TextStyle {
@@ -35,18 +36,22 @@ impl SkiaLayerRenderer {
                 let Some((data, index)) = selected.typeface.to_existing_font_data() else {
                     continue;
                 };
-                if !request.text.is_empty()
-                    && !crate::renderer::font_symbol_coverage::font_supports_text(
+                if !request.text.is_empty() {
+                    let Some(missing) = crate::renderer::font_symbol_coverage::font_missing_text(
                         data.as_bytes(),
                         index,
-                        &request.text,
-                    )
-                {
-                    continue;
+                        &remaining,
+                    ) else {
+                        continue;
+                    };
+                    if missing == remaining {
+                        continue;
+                    }
+                    remaining = missing;
                 }
                 // 이미 로드한 프로그램을 메모리로 공유한다. font file 복사는 하지 않는다.
                 changed |= core.register_metafile_font_native(family, data.as_bytes(), index)?;
-                if !request.text.is_empty() {
+                if !request.text.is_empty() && remaining.is_empty() {
                     break;
                 }
             }

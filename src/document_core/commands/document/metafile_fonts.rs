@@ -13,7 +13,10 @@ impl DocumentCore {
             collect_exact_font_slots_from_paragraphs_selected, ExactFontSlotSelection,
         };
         let mut tab_slots = std::collections::HashSet::new();
+        let mut shadow_slots = std::collections::HashSet::new();
+        let shadow_usage = std::cell::RefCell::new(std::collections::HashMap::new());
         let mut work = 1_000_000;
+        let mut shadow_work = 1_000_000;
         for section in &self.document.sections {
             collect_exact_font_slots_from_paragraphs_selected(
                 &section.paragraphs,
@@ -21,6 +24,13 @@ impl DocumentCore {
                 &mut work,
                 0,
                 ExactFontSlotSelection::Tab(&self.document.doc_info),
+            );
+            collect_exact_font_slots_from_paragraphs_selected(
+                &section.paragraphs,
+                &mut shadow_slots,
+                &mut shadow_work,
+                0,
+                ExactFontSlotSelection::Shadow(&self.document.doc_info, &shadow_usage),
             );
             for master in &section.section_def.master_pages {
                 collect_exact_font_slots_from_paragraphs_selected(
@@ -30,24 +40,46 @@ impl DocumentCore {
                     0,
                     ExactFontSlotSelection::Tab(&self.document.doc_info),
                 );
+                collect_exact_font_slots_from_paragraphs_selected(
+                    &master.paragraphs,
+                    &mut shadow_slots,
+                    &mut shadow_work,
+                    0,
+                    ExactFontSlotSelection::Shadow(&self.document.doc_info, &shadow_usage),
+                );
             }
         }
+        if work == 0 || shadow_work == 0 {
+            return Err(HwpError::RenderError(
+                "텍스트 효과 글꼴 요청의 순회 한도를 초과했습니다".into(),
+            ));
+        }
+        let shadow_usage = shadow_usage.into_inner();
         let mut seen: std::collections::HashMap<_, usize> = std::collections::HashMap::new();
         let mut requests: Vec<crate::paint::metafile_fonts::FontRequest> = Vec::new();
         for (index, resolved) in self.styles.char_styles.iter().enumerate() {
             let has_tab = tab_slots
                 .iter()
                 .any(|slot| slot.char_shape_id == index as u32);
-            if resolved.shadow_type != 2 && !has_tab {
+            let has_shadow = shadow_slots
+                .iter()
+                .any(|slot| slot.char_shape_id == index as u32);
+            if !has_shadow && !has_tab {
                 continue;
             }
             for language in 0..7 {
-                let tab = tab_slots.contains(&crate::renderer::kerning::ExactFontSlot::new(
-                    index as u32,
-                    language,
-                ));
-                if resolved.shadow_type != 2 && !tab {
+                let slot = crate::renderer::kerning::ExactFontSlot::new(index as u32, language);
+                let mut glyphs = shadow_usage.get(&slot).cloned().unwrap_or_default();
+                if tab_slots.contains(&slot) {
+                    glyphs.insert('·');
+                }
+                if glyphs.is_empty() {
                     continue;
+                }
+                if glyphs.len() > crate::paint::MAX_PORTABLE_GLYPHS_PER_RUN {
+                    return Err(HwpError::RenderError(
+                        "텍스트 효과의 글리프 요청 한도를 초과했습니다".into(),
+                    ));
                 }
                 let style = crate::renderer::TextStyle {
                     font_family: resolved.font_family_for_lang(language).to_owned(),
@@ -69,21 +101,24 @@ impl DocumentCore {
                 }
                 let key = (families.clone(), weight, style.italic);
                 if let Some(&index) = seen.get(&key) {
-                    // 먼저 수집한 점 요청 때문에 나중의 전체 그림자 공급을 줄이지 않는다.
-                    if resolved.shadow_type == 2 {
-                        requests[index].text.clear();
+                    let mut combined = requests[index]
+                        .text
+                        .chars()
+                        .collect::<std::collections::BTreeSet<_>>();
+                    combined.extend(glyphs);
+                    if combined.len() > crate::paint::MAX_PORTABLE_GLYPHS_PER_RUN {
+                        return Err(HwpError::RenderError(
+                            "텍스트 효과의 글리프 요청 한도를 초과했습니다".into(),
+                        ));
                     }
+                    requests[index].text = combined.into_iter().collect();
                 } else {
                     seen.insert(key, requests.len());
                     requests.push(crate::paint::metafile_fonts::FontRequest {
                         families,
                         weight,
                         italic: style.italic,
-                        text: if tab && resolved.shadow_type != 2 {
-                            "·".into()
-                        } else {
-                            String::new()
-                        },
+                        text: glyphs.into_iter().collect(),
                     });
                 }
             }

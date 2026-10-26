@@ -5,6 +5,17 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 impl HwpDocument {
+    /// 같은 cmap 판정으로 아직 공급되지 않은 글리프만 다음 후보에 전달한다.
+    #[wasm_bindgen(js_name = fontMissingText)]
+    pub fn font_missing_text_js(
+        &self,
+        bytes: &[u8],
+        face_index: u32,
+        text: &str,
+    ) -> Option<String> {
+        crate::renderer::font_symbol_coverage::font_missing_text(bytes, face_index, text)
+    }
+
     /// 공급 후보를 등록하기 전에 실제 cmap를 대조한다. CSS 이름 검사가 아니다.
     #[wasm_bindgen(js_name = fontSupportsText)]
     pub fn font_supports_text_js(&self, bytes: &[u8], face_index: u32, text: &str) -> bool {
