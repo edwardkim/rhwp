@@ -1226,6 +1226,7 @@ impl DocumentCore {
             return Err(MemoError::read_only("protected"));
         }
         let author = sanitize_author(author)?;
+        let text = &normalize_memo_text(text);
         check_text_size(text)?;
         let (number, field_id) = self.next_memo_identity()?;
 
@@ -1309,6 +1310,7 @@ impl DocumentCore {
             return Err(MemoError::read_only("protected"));
         }
         let author = sanitize_author(author)?;
+        let text = &normalize_memo_text(text);
         check_text_size(text)?;
         let (number, field_id) = self.next_memo_identity()?;
         let shape_ref = self
@@ -1355,6 +1357,7 @@ impl DocumentCore {
     /// Replace a memo's body paragraphs. Paragraph/character shapes are kept
     /// from the first body paragraph; lines split on `\n`.
     pub fn set_memo_text(&mut self, id: u32, text: &str) -> Result<String, MemoError> {
+        let text = &normalize_memo_text(text);
         check_text_size(text)?;
         let hit = self.memo_hit(id)?;
         if self.document_protected() {
@@ -1618,6 +1621,17 @@ pub(crate) fn sanitize_author(author: &str) -> Result<String, MemoError> {
         return Err(MemoError::invalid_author());
     }
     Ok(out)
+}
+
+/// Memo text as the file can hold it: `\r\n` and `\r` become `\n` (a body
+/// paragraph break) and other C0 controls except `\t` are dropped. A raw `\r`
+/// would be written as a paragraph end and cut the memo on reopen.
+fn normalize_memo_text(text: &str) -> String {
+    text.replace("\r\n", "\n")
+        .replace('\r', "\n")
+        .chars()
+        .filter(|&ch| ch >= ' ' || ch == '\n' || ch == '\t')
+        .collect()
 }
 
 fn check_text_size(text: &str) -> Result<(), MemoError> {
@@ -2333,5 +2347,62 @@ mod tests {
             core.get_memo_list_json().contains("\"text\":\"body\""),
             "deleting the typed text keeps the memo"
         );
+    }
+
+    #[test]
+    fn memo_text_control_characters_are_normalized() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "hello").unwrap();
+        let inserted = core
+            .insert_memo_at(0, 0, 0, 5, "tester", "a\r\nb\rc\u{1}d\te")
+            .unwrap();
+        let id: u32 = inserted
+            .split("\"id\":")
+            .nth(1)
+            .and_then(|rest| rest.split(',').next())
+            .and_then(|id| id.parse().ok())
+            .unwrap();
+        let memo_body = |core: &DocumentCore| -> Vec<String> {
+            core.document.sections[0].paragraphs[0]
+                .controls
+                .iter()
+                .find_map(|ctrl| match ctrl {
+                    Control::Field(field) if is_memo_field(field) => Some(
+                        field
+                            .memo_paragraphs
+                            .iter()
+                            .map(|para| para.text.clone())
+                            .collect(),
+                    ),
+                    _ => None,
+                })
+                .unwrap()
+        };
+        assert_eq!(memo_body(&core), ["a", "b", "cd\te"]);
+
+        core.set_memo_text(id, "x\ry\u{7}").unwrap();
+        assert_eq!(memo_body(&core), ["x", "y"]);
+
+        let mut section = core.document.sections[0].clone();
+        section.raw_stream = None;
+        section.raw_provenance = None;
+        let bytes = crate::serializer::body_text::serialize_section(&section);
+        let reread = crate::parser::body_text::parse_body_text_section(&bytes).unwrap();
+        let body: Vec<String> = reread.paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|ctrl| match ctrl {
+                Control::Field(field) if is_memo_field(field) => Some(
+                    field
+                        .memo_paragraphs
+                        .iter()
+                        .map(|para| para.text.clone())
+                        .collect(),
+                ),
+                _ => None,
+            })
+            .unwrap();
+        assert_eq!(body, ["x", "y"], "the memo body survives an HWP save");
     }
 }
