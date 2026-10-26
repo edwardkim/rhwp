@@ -51,8 +51,11 @@ Canvas는 같은 프로필 정책을 표준 textRendering으로 전달한다. �
 셀 여백 280HU가 빠지고 마지막 행으로 넘어간 별도 공통 조판 결함을 좁혔다.
 글꼴 모드를 문서별로 되돌려 이 위치 차이를 숨기지 않고 행 높이 생산자를 추적한다.
 
-같은 코드의 표준 fresh WASM은 Native 검사 뒤 공용 target에서 순차 빌드 중이다.
-실제 브라우저 검사와 전쪽 Native/fresh WASM, 증가 쪽 보정은 아직 남았다.
+같은 코드의 표준 최적화 fresh WASM 빌드는 exit 0으로 완료했다. 잡 8개,
+codegen-units 16, Binaryen 8이며 WASM SHA-256은
+`fa8587efda24d69dadfe3485f3654ff678c0ca2bc8b9c7aba687d25dfb87a4b7`이다.
+수정 전과 동일한 정식 브라우저 원문 1건도 실제 Canvas 실행에서 PASS다.
+전쪽 Native/fresh WASM과 증가 쪽 보정은 아직 남았다.
 이 단계는 전쪽 100%·최종 테스트·PR 준비 완료가 아니다.
 
 실행 로그·고정 producer·초안·proof는 ignored 작업 루트의

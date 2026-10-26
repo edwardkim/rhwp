@@ -46,6 +46,7 @@ mod stored_nested_before_host;
 mod stored_nested_closing_host;
 mod stored_nested_terminal_line;
 mod stored_padded_line;
+mod stored_row_picture_frame;
 pub(crate) use stored_nested_before_host::{
     stored_nested_before_host_placement, stored_opening_table_before_host_frame,
     stored_table_before_host_frame,
@@ -422,7 +423,8 @@ pub(crate) fn stored_complete_row_frame_heights(table: &Table) -> Option<Vec<i32
         }
         let mut last_end = None;
         for para in &cell.paragraphs {
-            if !para.controls.is_empty()
+            if (!para.controls.is_empty()
+                && !stored_row_picture_frame::controls_preserve_stored_picture_lines(para))
                 || para.column_type != ColumnBreakType::None
                 || para.stored_text_partition_is_dirty()
                 || para.cell_format_vpos_dirty
