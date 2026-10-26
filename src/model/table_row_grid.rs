@@ -135,9 +135,22 @@ impl Writer {
     }
 
     fn project<'a>(&mut self, t: &'a Table) -> Result<Cow<'a, Table>, String> {
+        // 같은 개체 ID를 가진 표가 앞에 있으면 이 표는 새 ID로 쓴다. 격자 보존 기록은
+        // ID로 표를 다시 찾으므로, 중복 ID 때문에 HWPX 저장 전체가 실패하지 않게 한다.
+        let t: Cow<'a, Table> = if self.ids.contains_key(&t.common.instance_id) {
+            let mut fresh = u32::MAX - self.ids.len() as u32;
+            while self.ids.contains_key(&fresh) {
+                fresh -= 1;
+            }
+            let mut renamed = t.clone();
+            renamed.common.instance_id = fresh;
+            Cow::Owned(renamed)
+        } else {
+            Cow::Borrowed(t)
+        };
         *self.ids.entry(t.common.instance_id).or_default() += 1;
-        let Some(boundaries) = projection(t)? else {
-            return Ok(Cow::Borrowed(t));
+        let Some(boundaries) = projection(&t)? else {
+            return Ok(t);
         };
         // Bound the record allocation before serializing JSON (each u16 takes
         // at most six bytes including its separator; the fixed record fits 512).
@@ -147,7 +160,8 @@ impl Writer {
             .filter(|bytes| *bytes <= MAX_BYTES)
             .ok_or("HWPX 표 격자 보존 정보가 크기 한도를 넘습니다")?;
         let index = |row| boundaries.binary_search(&row).expect("proven row boundary") as u16;
-        let mut projected = t.clone();
+        let id = t.common.instance_id;
+        let mut projected = t.into_owned();
         projected.row_count = (boundaries.len() - 1) as u16;
         for c in &mut projected.cells {
             let end = index(c.row + c.row_span);
@@ -161,7 +175,7 @@ impl Writer {
         projected.rebuild_row_sizes();
         projected.rebuild_grid();
         self.records.push(Record {
-            id: t.common.instance_id,
+            id,
             fingerprint: fingerprint(&projected),
             boundaries,
         });
