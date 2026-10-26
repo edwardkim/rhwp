@@ -1914,7 +1914,11 @@ impl DocumentCore {
                                 };
                                 update_best_cursor(
                                     best,
-                                    0,
+                                    if matches!(node.node_type, RenderNodeType::FormObject(_)) {
+                                        cursor_score(offset, pos, 1, bias)
+                                    } else {
+                                        0
+                                    },
                                     CursorHit {
                                         page,
                                         x,

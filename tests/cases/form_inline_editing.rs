@@ -738,6 +738,11 @@ fn assert_wrapped_form_owners(doc: &HwpDocument, expected: usize, label: &str) {
         );
         assert!((rects[0]["x"].as_f64().unwrap() - bbox.x).abs() < 0.1);
         assert!((rects[0]["width"].as_f64().unwrap() - bbox.width).abs() < 0.1);
+        assert!(
+            (rects[0]["y"].as_f64().unwrap() - bbox.y).abs() < 0.1,
+            "{label}: 개체 {control}이 놓인 실제 줄을 선택한다: {selection} / {bbox:?}"
+        );
+        assert!((rects[0]["height"].as_f64().unwrap() - bbox.height).abs() < 0.1);
         let last = para
             .controls
             .iter()
