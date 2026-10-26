@@ -75,3 +75,16 @@ CLI 소비 검사는 새 동결 Native 바이너리 경로를 compile/runtime �
 `plain-fit-native/native-focus/result.json`, `plain-fit-p228-contract.log`,
 `plain-fit-native-focus.log`와 `plain-fit-native/native-focus/handbook-hwpx/p228/`의
 review·overlay PNG에 연결한다.
+
+## source9bab 전쪽 Native·집중 DEV WASM 완료
+
+전쪽 Native 766조건을 완료했다. HWPX는 364/383조건, HWP는 361/383조건이
+raw 100%·정수 미대응 0이며, 미대응 합은 각각 1,036/1,052픽셀이다. 직전 sourceffc7보다
+두 228쪽의 18픽셀씩이 줄었고 증가 조건은 없다. 논리 트리가 달라진 쪽도 두 228쪽뿐이다.
+각 전체 쪽수는 독립 Print의 383쪽과 같다. 최신 TSV는 `plain-fit-native/native-whole/`
+각 문서의 `score/silhouette.tsv`, 전체 대조는 `whole-result.json`에 있다.
+
+fresh DEV WASM 집중 61조건도 실제 exit 0으로 완료했다. 두 원본은 29쪽씩 중
+28쪽씩이 raw 100%·0픽셀이고 289쪽은 각각 4픽셀이다. 228쪽은 양쪽 모두 100%·0픽셀이며
+탭 대조군 3조건도 모두 100%·0픽셀이다. 이 59/61 결과는 표준 최적화 WASM이나
+전쪽 1,532조건의 완료로 합산하지 않는다. 원문은 `plain-fit-wasm-dev/wasm-focus-result.json`이다.
