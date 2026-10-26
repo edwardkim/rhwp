@@ -674,8 +674,9 @@ pub(crate) fn is_lang_neutral(ch: char) -> bool {
         0x0000..=0x0020 |
         // ASCII 구두점/기호 (영문자/숫자 제외)
         0x0021..=0x002F | 0x003A..=0x0040 | 0x005B..=0x0060 | 0x007B..=0x007F |
-        // Latin-1 Supplement 구두점 (문자 제외)
-        0x00A0..=0x00AF | 0x00B1..=0x00B6 | 0x00B8..=0x00BF
+        // Latin-1 Supplement 의 NBSP·소프트 하이픈. 나머지 구두점·기호는 한/글이 영문 슬롯으로
+        // 그린다(#8136, `style_resolver::is_latin_slot_symbol`).
+        0x00A0 | 0x00AD
     )
 }
 

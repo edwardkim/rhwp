@@ -338,10 +338,11 @@ fn is_latin(ch: char) -> bool {
     detect_lang_category(ch) == 1 && !is_latin_slot_symbol(ch)
 }
 
-/// 영문 낱말 안에 머무는 글자 — 언어 중립 문자와, 중립 문자이던 Latin-1 기호 `·`·`°`.
-/// 곡선 따옴표는 종전처럼 낱말을 끊는다.
+/// 영문 낱말 안에 머무는 글자 — 언어 중립 문자와, 중립 문자이던 Latin-1 기호(U+00A1–00BF,
+/// `·`·`°` 포함 — #7702·#8136). 글꼴만 영문 슬롯으로 옮겼고 낱말 경계는 바꾸지 않는다.
+/// 곡선·아래 따옴표는 종전처럼 낱말을 끊는다.
 fn stays_in_latin_word(ch: char) -> bool {
-    is_lang_neutral(ch) || matches!(ch, '\u{00B0}' | '\u{00B7}')
+    is_lang_neutral(ch) || matches!(ch, '\u{00A1}'..='\u{00BF}')
 }
 
 /// CJK 문자 여부 (한자/일본어 — 개별 분할 대상)
