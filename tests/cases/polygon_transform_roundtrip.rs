@@ -83,3 +83,40 @@ fn transformed_polygon_keeps_live_position_after_save_and_reopen() {
         }
     }
 }
+
+/// 한컴 2024가 30도 돌려 저장한 직사각형·열린 다각형. 회전 행렬은 개체 가운데 기준이고,
+/// 위치는 회전 외접 상자의 왼쪽 위(직사각형 13864×14400, 크기 15824×13683)다.
+#[test]
+fn hancom_rotated_shapes_keep_their_centre_after_save_and_reopen() {
+    for bytes in [
+        &include_bytes!("../fixtures/hancom_rotated/rotated.hwp")[..],
+        &include_bytes!("../fixtures/hancom_rotated/rotated.hwpx")[..],
+    ] {
+        let core = DocumentCore::from_bytes(bytes).unwrap();
+        let svg = core.render_page_svg_native(0).unwrap();
+        // 직사각형은 외접 상자 가운데(위치 + 크기/2)를 기준으로 돈다.
+        let px = |hu: f64| hu / 75.0;
+        let centre = (px(13864.0 + 15824.0 / 2.0), px(14400.0 + 13683.0 / 2.0));
+        let rotate = svg.find("rotate(30,").expect("직사각형 회전");
+        let args: Vec<f64> = svg[rotate + "rotate(30,".len()..]
+            .split(')')
+            .next()
+            .unwrap()
+            .split(',')
+            .map(|v| v.parse().unwrap())
+            .collect();
+        assert!((args[0] - centre.0).abs() < 0.05 && (args[1] - centre.1).abs() < 0.05);
+        let live = polygon(&core);
+        for saved in [
+            core.export_hwp_native().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            let reopened = DocumentCore::from_bytes(&saved).unwrap();
+            assert_close(&polygon(&reopened), &live);
+            assert!(reopened
+                .render_page_svg_native(0)
+                .unwrap()
+                .contains(&format!("rotate(30,{},{})", args[0], args[1])));
+        }
+    }
+}
