@@ -72,6 +72,41 @@ each new output RGBA must fit 128 MiB, including wholly off-page requests.
 Existing caller-owned output buffers and Skia intermediates remain outside this
 bitmap accounting. The snapshot does not establish a cross-thread/GPU contract.
 
+## 선택적 고정 격자 타일 경로
+
+`SkiaLayerRenderer::render_tiled_region_pixels_with_options`와
+`NativeDocumentSession::render_tiled_region`은 전체 페이지 working raster 한도를
+넘는 페이지에서 작은 영역을 렌더링합니다. `SkiaTilePlan::new`는 bitmap을 할당하지
+않고 영역·출력·메모리를 검증하며, 필요한 타일 수를 보고합니다.
+
+페이지를 장치 픽셀 512칸의 고정 격자로 나누고, 요청 영역과 만나는 타일마다 전체 paint
+순서를 재생합니다. 각 타일은 두 픽셀 guard를 포함하며, scaled page의 정수 경계로만
+잘립니다. 타일의 원점·변환·크기는 요청 창과 독립적이므로 겹치는 창은 같은 타일 픽셀을
+읽습니다. 음수·페이지 밖 padding에는 기존 투명·흰색·지정 배경 정책을 적용합니다.
+
+한 번에 expanded N32 타일 하나만 유지합니다. 최종 RGBA 출력과 최대
+`516 × 516 × 4` bytes의 보수적인 working 한도를 합산해 128 MiB를 검사합니다.
+Native session은 기존 전체 페이지 snapshot도 합산하며 필요할 때 LRU 항목을 먼저
+제거합니다. 완전히 페이지 밖인 요청은 타일 할당·replay를 하지 않습니다. 이 수치는
+renderer 자원·Skia 중간 surface·호출자가 보관하는 이전 출력을 제외합니다.
+
+이 API의 타일 픽셀 계약은 별도입니다. Skia의 장치 원점 이동에 따라 AA·부동소수점
+반올림이 달라질 수 있으므로 전체 페이지 crop과의 무조건적인 일치를 보장하지 않습니다.
+두 픽셀 guard도 임의 filter 범위를 보장하지 않습니다. 기존 exact-crop API와 snapshot
+cache는 전체 페이지 계약을 유지합니다. 각 타일이 전체 tree를 재생하므로 subtree culling,
+지속 타일 cache, 처리 속도·GPU·프로세스 RSS 개선을 완료한 것으로 해석하지 않습니다.
+
+```rust,ignore
+let plan = SkiaTilePlan::new(tree.page_width, tree.page_height, region, options)?;
+let pixels = renderer.render_tiled_region_pixels_with_options(&tree, region, options)?;
+assert_eq!(pixels.pixels.bytes.len(), plan.output_bytes());
+```
+
+집중 회귀는 단일 타일과 전체 페이지의 일치, 분수 배율의 AA·gradient·clip 경계에서
+겹치는 창의 일치, 마지막 페이지 픽셀·배경·padding, 실제 picture cache hit와 비활성
+경로의 일치, 큰 페이지·고배율 Native frame을 검사합니다. region plan case는 메모리
+할당 전에 큰 페이지 허용·타일 수·출력과 working 합산 한도의 거부를 검사합니다.
+
 ## Native session retention
 
 `NativeDocumentSession::render_region` retains up to four prepared page/scale

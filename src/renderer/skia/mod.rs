@@ -27,6 +27,7 @@ mod svg_bitmap_mask;
 mod synthetic_typeface;
 mod text_replay;
 mod text_shaping;
+mod tiled_region;
 
 pub use cache::{NativeSkiaCacheStats, NativeSkiaCacheUsage};
 pub use prepared_page::PreparedSkiaPage;
@@ -37,3 +38,4 @@ pub use renderer::{
 };
 
 pub use surface::SkiaSurfaceRenderOptions;
+pub use tiled_region::SkiaTilePlan;

@@ -9,12 +9,12 @@ use rhwp::native_host::region_cache::{
     DEFAULT_REGION_CACHE_BYTES, MAX_REGION_CACHE_BYTES, MAX_REGION_CACHE_ENTRIES,
 };
 use rhwp::native_host::{NativeDocumentSession, NativeHostError};
-use rhwp::paint::{ClipKind, LayerNode, PageLayerTree, PaintOp};
+use rhwp::paint::{CacheHint, ClipKind, GroupKind, LayerNode, PageLayerTree, PaintOp};
 use rhwp::renderer::font_environment::FontEnvironment;
 use rhwp::renderer::layer_renderer::RasterRenderOptions;
 use rhwp::renderer::raster_pixels::{RasterPixels, RasterRegion, RasterRegionPixels};
 use rhwp::renderer::render_tree::{BoundingBox, EllipseNode, RectangleNode};
-use rhwp::renderer::skia::{SkiaLayerRenderer, SkiaRegionPlan};
+use rhwp::renderer::skia::{SkiaLayerRenderer, SkiaRegionPlan, SkiaTilePlan};
 use rhwp::renderer::{GradientFillInfo, ShapeStyle};
 use rhwp::{DocumentCore, HwpError};
 
@@ -95,6 +95,290 @@ fn assert_crop(full: &RasterPixels, region: &RasterRegionPixels, padding: [u8; 4
             );
         }
     }
+}
+
+#[test]
+fn one_tile_matches_the_existing_full_page_raster_and_padding_policy() {
+    let renderer = SkiaLayerRenderer::new().with_cache_limits(0, 0);
+    for scale in [0.75, 1.25, 2.0] {
+        for (background_color, transparent, padding) in [
+            (None, true, [0; 4]),
+            (None, false, [255; 4]),
+            (Some(0x332211), true, [0x11, 0x22, 0x33, 255]),
+        ] {
+            let options = RasterRenderOptions {
+                scale,
+                background_color,
+                transparent,
+                dpi: Some(144.0),
+                ..Default::default()
+            };
+            let full = renderer
+                .render_pixels_with_options(&page(), options)
+                .unwrap();
+            for region in [
+                request(),
+                RasterRegion {
+                    x: -2.3,
+                    y: -1.2,
+                    ..request()
+                },
+                RasterRegion {
+                    x: 50.25,
+                    y: 39.5,
+                    ..request()
+                },
+            ] {
+                let tile = renderer
+                    .render_tiled_region_pixels_with_options(&page(), region, options)
+                    .unwrap();
+                assert_crop(&full, &tile, padding);
+                assert_eq!(tile.pixels.color_space, full.color_space);
+                assert_eq!(tile.pixels.dpi, full.dpi);
+            }
+        }
+    }
+}
+
+fn tile_boundary_page() -> PageLayerTree {
+    let bounds = BoundingBox::new(0.0, 0.0, 710.5, 685.25);
+    let mut tree = PageLayerTree::new(
+        bounds.width,
+        bounds.height,
+        LayerNode::clip_rect(
+            bounds,
+            None,
+            BoundingBox::new(233.25, 235.5, 460.25, 435.5),
+            LayerNode::leaf(
+                bounds,
+                None,
+                vec![
+                    PaintOp::rectangle(
+                        BoundingBox::new(234.75, 237.25, 465.0, 430.5),
+                        RectangleNode::new(
+                            2.0,
+                            ShapeStyle {
+                                opacity: 0.75,
+                                ..Default::default()
+                            },
+                            Some(Box::new(GradientFillInfo {
+                                gradient_type: 1,
+                                angle: 45,
+                                center_x: 50,
+                                center_y: 50,
+                                colors: vec![0xff, 0xff0000],
+                                positions: vec![0.0, 1.0],
+                            })),
+                        ),
+                    ),
+                    PaintOp::ellipse(
+                        BoundingBox::new(240.2, 245.75, 452.5, 420.25),
+                        EllipseNode::new(
+                            ShapeStyle {
+                                fill_color: Some(0x00ff00),
+                                opacity: 166.0 / 255.0,
+                                ..Default::default()
+                            },
+                            None,
+                        ),
+                    ),
+                ],
+            ),
+            ClipKind::Generic,
+        ),
+    );
+    tree.root = LayerNode::group(
+        bounds,
+        None,
+        vec![tree.root],
+        CacheHint::StaticSubtree,
+        GroupKind::Generic,
+    );
+    tree
+}
+
+#[test]
+fn fixed_grid_tiles_keep_overlap_pixels_stable_across_window_and_cache_changes() {
+    let renderer = SkiaLayerRenderer::new();
+    let uncached = SkiaLayerRenderer::new().with_cache_limits(0, 0);
+    let tree = tile_boundary_page();
+    for scale in [0.75, 1.25, 1.5] {
+        for (background_color, transparent, padding) in [
+            (None, true, [0; 4]),
+            (None, false, [255; 4]),
+            (Some(0x332211), true, [0x11, 0x22, 0x33, 255]),
+        ] {
+            let options = RasterRenderOptions {
+                scale,
+                background_color,
+                transparent,
+                ..Default::default()
+            };
+            let full = renderer
+                .render_tiled_region_pixels_with_options(
+                    &tree,
+                    RasterRegion {
+                        x: 0.0,
+                        y: 0.0,
+                        width: tree.page_width,
+                        height: tree.page_height,
+                    },
+                    options,
+                )
+                .unwrap();
+            assert_eq!(full.origin_x, 0);
+            assert_eq!(full.origin_y, 0);
+            assert!(
+                SkiaTilePlan::new(
+                    tree.page_width,
+                    tree.page_height,
+                    RasterRegion {
+                        x: 0.0,
+                        y: 0.0,
+                        width: tree.page_width,
+                        height: tree.page_height
+                    },
+                    options
+                )
+                .unwrap()
+                .tile_count()
+                    > 1
+            );
+            // Cross both grid axes, request overlapping parts, and include the
+            // last fractional page column/row and off-page clear padding.
+            for region in [
+                RasterRegion {
+                    x: 220.3,
+                    y: 230.2,
+                    width: 400.4,
+                    height: 380.1,
+                },
+                RasterRegion {
+                    x: 340.5,
+                    y: 345.25,
+                    width: 235.0,
+                    height: 220.75,
+                },
+                RasterRegion {
+                    x: -1.3,
+                    y: -2.2,
+                    width: 714.6,
+                    height: 690.4,
+                },
+                RasterRegion {
+                    x: 650.25,
+                    y: 630.75,
+                    width: 65.5,
+                    height: 60.5,
+                },
+            ] {
+                let output = renderer
+                    .render_tiled_region_pixels_with_options(&tree, region, options)
+                    .unwrap();
+                assert_crop(&full.pixels, &output, padding);
+                assert_eq!(
+                    output,
+                    uncached
+                        .render_tiled_region_pixels_with_options(&tree, region, options)
+                        .unwrap()
+                );
+            }
+        }
+    }
+    assert!(renderer.cache_stats().pictures.hits > 0);
+    assert_eq!(uncached.cache_stats().pictures.hits, 0);
+}
+
+#[test]
+fn a_large_page_renders_a_small_tile_without_a_full_page_bitmap() {
+    let renderer = SkiaLayerRenderer::new();
+    let mut tree = page();
+    tree.page_width = 20_000.0;
+    tree.page_height = 30_000.0;
+    let options = RasterRenderOptions::default();
+    assert!(renderer
+        .render_region_pixels_with_options(&tree, request(), options)
+        .is_err());
+    let output = renderer
+        .render_tiled_region_pixels_with_options(&tree, request(), options)
+        .unwrap();
+    let reference = renderer
+        .render_tiled_region_pixels_with_options(&page(), request(), options)
+        .unwrap();
+    assert_eq!(output, reference);
+    assert!(output
+        .pixels
+        .bytes
+        .chunks_exact(4)
+        .any(|pixel| pixel[3] != 0));
+    let before = renderer.cache_stats();
+    let offpage = renderer
+        .render_tiled_region_pixels_with_options(
+            &tree,
+            RasterRegion {
+                x: -4.0,
+                y: -4.0,
+                width: 2.0,
+                height: 2.0,
+            },
+            options,
+        )
+        .unwrap();
+    assert_eq!(offpage.pixels.bytes, vec![0; 16]);
+    assert_eq!(
+        renderer.cache_stats(),
+        before,
+        "off-page windows do not replay"
+    );
+    tree.page_width = f64::from(SkiaRegionPlan::MAX_EXACT_PIXEL);
+    tree.page_height = tree.page_width;
+    let edge = renderer
+        .render_tiled_region_pixels_with_options(
+            &tree,
+            RasterRegion {
+                x: tree.page_width - 2.0,
+                y: tree.page_height - 2.0,
+                width: 2.0,
+                height: 2.0,
+            },
+            options,
+        )
+        .unwrap();
+    assert_eq!(edge.origin_x, SkiaRegionPlan::MAX_EXACT_PIXEL - 2);
+    assert_eq!(edge.origin_y, SkiaRegionPlan::MAX_EXACT_PIXEL - 2);
+    assert_eq!(edge.pixels.bytes, vec![0; 16]);
+}
+
+#[test]
+fn native_tiled_frames_allow_high_scale_and_preserve_the_page_cache() {
+    let session = session(false);
+    session.render_region(0, request(), 0.5).unwrap();
+    let before = session.region_cache_stats();
+    assert!(session.render_region(0, request(), 16.0).is_err());
+    let frame = session.render_tiled_region(0, request(), 16.0).unwrap();
+    frame.pixels.validate().unwrap();
+    assert_eq!(frame.revision, session.revision());
+    assert_eq!(frame.font_generation, session.font_generation());
+    assert_eq!(frame.origin_x, (request().x * 16.0).floor() as i32);
+    assert_eq!(frame.origin_y, (request().y * 16.0).floor() as i32);
+    assert_eq!(session.region_cache_stats(), before);
+    assert!(session
+        .render_tiled_region(u32::MAX, request(), 1.0)
+        .is_err());
+    assert!(session.render_tiled_region(0, request(), f64::NAN).is_err());
+    assert!(session
+        .render_tiled_region(
+            0,
+            RasterRegion {
+                width: 0.0,
+                ..request()
+            },
+            1.0
+        )
+        .is_err());
+    assert_eq!(session.region_cache_stats(), before);
+    session.render_region(0, request(), 0.5).unwrap();
+    assert_eq!(session.region_cache_stats().hits, before.hits + 1);
 }
 
 #[test]

@@ -7,7 +7,7 @@ use std::collections::VecDeque;
 use super::{NativeDocumentSession, NativeFrame, NativeHostError, MAX_FRAME_PIXELS};
 use crate::renderer::layer_renderer::RasterRenderOptions;
 use crate::renderer::raster_pixels::{RasterRegion, RasterRegionPixels};
-use crate::renderer::skia::{PreparedSkiaPage, SkiaRegionPlan};
+use crate::renderer::skia::{PreparedSkiaPage, SkiaRegionPlan, SkiaTilePlan};
 
 pub const DEFAULT_REGION_CACHE_BYTES: usize = 8 * 1024 * 1024;
 pub const MAX_REGION_CACHE_BYTES: usize = 64 * 1024 * 1024;
@@ -207,6 +207,32 @@ impl NativeDocumentSession {
                 cache.stats.bypassed_oversized = cache.stats.bypassed_oversized.saturating_add(1);
             }
         }
+        Ok(self.region_frame(output))
+    }
+
+    pub(super) fn render_tiled_region_uncached(
+        &self,
+        page: u32,
+        region: RasterRegion,
+        scale: f64,
+    ) -> Result<NativeFrame, NativeHostError> {
+        let options = RasterRenderOptions {
+            scale,
+            max_pixels: MAX_FRAME_PIXELS,
+            transparent: false,
+            ..Default::default()
+        };
+        let tree = self
+            .core
+            .build_page_layer_tree_with_profile(page, crate::paint::RenderProfile::Screen)?;
+        let plan = SkiaTilePlan::new(tree.page_width, tree.page_height, region, options)?;
+        // Include retained full-page snapshots in the new request's bitmap peak.
+        self.region_cache
+            .borrow_mut()
+            .evict_for_allocation(plan.peak_bitmap_bytes());
+        let output = self
+            .renderer()
+            .render_tiled_region_pixels_with_options(&tree, region, options)?;
         Ok(self.region_frame(output))
     }
 
