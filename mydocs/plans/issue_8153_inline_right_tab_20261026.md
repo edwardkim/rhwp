@@ -61,3 +61,28 @@ upstream 동기화와 원격 GitHub 쓰기 없이 PR 준비까지만 진행한�
 원본 값·현재 실제 스타일·독립 glyph 원점은 ignored 작업 폴더의
 `p279-source-paragraphs.json`, `p279-independent-digit-positions.json`,
 `current-native-residual-text-attrs.json`, `residual-text-independent-origin-comparison.json`에 있다.
+
+## 279쪽의 원본 전진 재생과 구현 경계
+
+source `143f99b7aa`의 실제 Native paint 진단은 출력 전 RGB가 기존 PNG와 동일했다.
+별도 탭 런의 원본 32비트 전진을 재생하면 279쪽은 미대응 17→0픽셀·raw 100%이고,
+280쪽은 0픽셀을 유지한다. 4~8쪽은 이 진단이 적용되는 별도 탭 런이 없으므로
+불변이며, 같은 런 내부 탭의 새 규칙을 입증한 결과로 사용하지 않는다.
+
+실제 소비 경로는 `compose_paragraph`의 저장 줄 수용 → `tab_extended` →
+`geometry_inline_tabs` → 교차 런 pending → 측정·배치 →
+`resolve_trailing_tab_end`와 canonical TabLeader다. 원본·합성 줄 부재는
+`para_has_no_stored_line_segs`가 구분하며, 그때 composition은 저장 탭을 전달하지 않는다.
+현재 프레임에서 줄을 재구성하는 `StoredRowResolution::Reflowed` 역시 원본 탭 전진을
+새 줄의 캐시로 넘기지 않아야 한다. 원본 모델·직렬화 바이트는 보존한다.
+
+새 pending은 유효한 원본 RIGHT 전진의 **정렬 완료된 다음 블록 시작**과,
+자동 우측/가운데/저장 정보 부재의 **아직 정렬할 정지**를 구분한다. 측정과 배치가
+같은 시작점을 소비하며, 전자에서 뒤 블록 폭을 다시 빼지 않는다. 자동 우측 탭은
+현재 프레임과 블록 폭으로 정렬하는 기존 계약을 유지한다. 채움은 정렬 여부를 바꾸지 않는다.
+같은 런 내부 탭과 가운데 탭의 계약은 이 279쪽 보정으로 바꾸지 않는다.
+
+실제 두 원본 279쪽의 서로 다른 저장 전진·문단 소유·숫자 순서·리더 끝을 검사하고,
+280쪽과 목차 경계를 대조한다. 단위 계약은 원본 RIGHT·자동 탭·자리표·상위 16비트·
+공백 carry-over와 재조판 후 저장 전진 폐기를 포함한다. 현재 진단은 제품 수정의
+PASS 근거가 아니며, 보정 후 Native/fresh WASM과 전체 범위를 다시 확인한다.
