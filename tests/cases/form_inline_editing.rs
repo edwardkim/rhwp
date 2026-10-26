@@ -544,7 +544,7 @@ fn cross_paragraph_form_metadata_and_mixed_object_guards_run_before_mutation() {
                 ]
             }
             2 => {
-                paragraph.controls.push(Control::Field(Box::default()));
+                paragraph.controls.push(Control::Field(Default::default()));
                 paragraph
                     .field_ranges
                     .push(rhwp::model::paragraph::FieldRange {
