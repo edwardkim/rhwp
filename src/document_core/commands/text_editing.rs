@@ -26,6 +26,33 @@ use crate::renderer::style_resolver::ResolvedStyleSet;
 
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
 
+fn validate_form_boundary_metadata(
+    paragraph: &Paragraph,
+    from: usize,
+    to: usize,
+) -> Result<(), HwpError> {
+    if paragraph.range_tags.is_empty() && paragraph.markpen_marks.is_empty() {
+        return Ok(());
+    }
+    let mut prefix = paragraph.clone();
+    let suffix = prefix.split_at(to);
+    let selected = prefix.split_at(from);
+    let fragments = [&prefix, &selected, &suffix];
+    // 기존 분할기가 경계에 걸친 범위 표지를 버리므로 원문 변경 전에 막는다.
+    if fragments.iter().map(|p| p.range_tags.len()).sum::<usize>() != paragraph.range_tags.len()
+        || fragments
+            .iter()
+            .map(|p| p.effective_markpen_range_tags().len())
+            .sum::<usize>()
+            != paragraph.effective_markpen_range_tags().len()
+    {
+        return Err(HwpError::RenderError(
+            "양식 선택 경계에 걸친 범위 태그나 형광펜은 아직 지원하지 않습니다".into(),
+        ));
+    }
+    Ok(())
+}
+
 /// 복사와 같은 경계로 지울 개체를 먼저 검증하여 실패 시 원문을 지킨다.
 fn boundary_controls_to_delete(
     para: &Paragraph,
@@ -3448,6 +3475,7 @@ impl DocumentCore {
             end_para,
             (end_offset, end_after),
             cell_ctx,
+            None,
         )
     }
 
@@ -3460,7 +3488,7 @@ impl DocumentCore {
         end_para: usize,
         end_logical: usize,
     ) -> Result<String, HwpError> {
-        if start_para == end_para && start_logical > end_logical {
+        if start_para > end_para || (start_para == end_para && start_logical > end_logical) {
             return Err(HwpError::RenderError(
                 "시작 위치가 끝 위치보다 뒤에 있음".into(),
             ));
@@ -3477,6 +3505,12 @@ impl DocumentCore {
                     "지울 논리 범위가 올바르지 않습니다".into(),
                 ));
             }
+        }
+        if start_para == end_para && start_logical == end_logical {
+            return Ok(super::super::helpers::json_ok_with(&format!(
+                "\"paraIdx\":{},\"charOffset\":{}",
+                start_para, start_logical
+            )));
         }
         if start_para == end_para
             && super::clipboard::has_only_inline_forms(para(start_para).unwrap())
@@ -3506,6 +3540,9 @@ impl DocumentCore {
         }
         for (index, logical) in [(start_para, start_logical), (end_para, end_logical)] {
             if let Some(p) = para(index) {
+                if super::clipboard::has_only_inline_forms(p) {
+                    continue;
+                }
                 let positions = p.control_text_positions();
                 if logical < logical_paragraph_length(p)
                     && p.controls.iter().enumerate().any(|(ci, control)| {
@@ -3531,7 +3568,15 @@ impl DocumentCore {
             logical_to_text_offset(p, end_logical)
         });
         end.1 |= para(end_para).is_some_and(|p| end_logical >= logical_paragraph_length(p));
-        self.delete_range_with_boundaries(section_idx, start_para, start, end_para, end, None)?;
+        self.delete_range_with_boundaries(
+            section_idx,
+            start_para,
+            start,
+            end_para,
+            end,
+            None,
+            Some((start_logical, end_logical)),
+        )?;
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"paraIdx\":{},\"charOffset\":{}",
             start_para, start_logical
@@ -3563,7 +3608,15 @@ impl DocumentCore {
         start: (usize, bool),
         end: (usize, bool),
         selected: &[usize],
+        form_logical_range: Option<(usize, usize)>,
     ) -> Result<(), HwpError> {
+        if let Some((from, to)) = form_logical_range {
+            let paragraph = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            let suffix = paragraph.split_at(to);
+            paragraph.split_at(from);
+            paragraph.merge_from(&suffix);
+            return Ok(());
+        }
         if selected.is_empty() {
             self.document.sections[section_idx].paragraphs[para_idx]
                 .delete_text_at(start.0, end.0.saturating_sub(start.0));
@@ -3596,6 +3649,7 @@ impl DocumentCore {
         end_para: usize,
         end: (usize, bool),
         cell_ctx: Option<(usize, usize, usize)>,
+        form_logical_offsets: Option<(usize, usize)>,
     ) -> Result<String, HwpError> {
         let (start_offset, end_offset) = (start.0, end.0);
         // 인덱스/범위 검증 — section_idx 범위, start/end para 범위, 뒤집힌 오프셋(start > end)
@@ -3630,18 +3684,42 @@ impl DocumentCore {
 
         let mut first_controls = Vec::new();
         let mut last_controls = Vec::new();
+        let mut first_form_range = None;
+        let mut last_form_range = None;
         if cell_ctx.is_none() {
             let paragraphs = &self.document.sections[section_idx].paragraphs;
+            if let Some((from, to)) = form_logical_offsets {
+                if super::clipboard::has_only_inline_forms(&paragraphs[start_para]) {
+                    first_form_range = Some((
+                        from,
+                        if start_para == end_para {
+                            to
+                        } else {
+                            logical_paragraph_length(&paragraphs[start_para])
+                        },
+                    ));
+                    let (from, to) = first_form_range.unwrap();
+                    validate_form_boundary_metadata(&paragraphs[start_para], from, to)?;
+                }
+                if super::clipboard::has_only_inline_forms(&paragraphs[end_para]) {
+                    validate_form_boundary_metadata(&paragraphs[end_para], 0, to)?;
+                    last_form_range = Some((0, to));
+                }
+            }
             let first_end = if start_para == end_para {
                 end
             } else {
                 (paragraphs[start_para].text.chars().count(), true)
             };
-            first_controls =
-                boundary_controls_to_delete(&paragraphs[start_para], start, first_end)?;
+            if first_form_range.is_none() {
+                first_controls =
+                    boundary_controls_to_delete(&paragraphs[start_para], start, first_end)?;
+            }
             if start_para != end_para {
-                last_controls =
-                    boundary_controls_to_delete(&paragraphs[end_para], (0, false), end)?;
+                if last_form_range.is_none() {
+                    last_controls =
+                        boundary_controls_to_delete(&paragraphs[end_para], (0, false), end)?;
+                }
             }
         }
         if let Some((ppi, ci, cei)) = cell_ctx {
@@ -3697,6 +3775,7 @@ impl DocumentCore {
                         start,
                         end,
                         &first_controls,
+                        None,
                     )?;
                     self.reflow_body_after_range_deletion(section_idx, start_para);
                 }
@@ -3710,6 +3789,7 @@ impl DocumentCore {
                     (0, false),
                     end,
                     &last_controls,
+                    last_form_range,
                 )?;
                 // 2) 중간 문단 역순 제거 (composed도 동기)
                 for mid_para in (start_para + 1..end_para).rev() {
@@ -3731,6 +3811,7 @@ impl DocumentCore {
                         start,
                         (para_len, true),
                         &first_controls,
+                        first_form_range,
                     )?;
                 }
                 // 4) 첫-마지막 문단 병합 (마지막 문단이 이제 start_para+1에 위치)

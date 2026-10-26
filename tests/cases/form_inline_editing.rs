@@ -1,5 +1,6 @@
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::{Control, FormObject, FormType};
+use rhwp::model::paragraph::{CharShapeRef, MarkpenMark, Paragraph, RangeTag};
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 
@@ -311,5 +312,282 @@ fn deleting_form_between_unicode_text_keeps_text_and_reopened_carets() {
         let reopened = HwpDocument::from_bytes(&bytes).unwrap();
         assert_eq!(reopened.document().sections[0].paragraphs[0].text, "앞🦦뒤");
         assert_eq!(reopened.get_logical_length(0, 0).unwrap(), 3);
+    }
+}
+
+fn cross_paragraph_forms() -> DocumentCore {
+    let mut core = document(FormType::RadioButton, true);
+    let mut doc = core.document().clone();
+    let template = doc.sections[0].paragraphs[0].clone();
+    let mut shape_ids = Vec::new();
+    for color in [0x112233, 0x445566] {
+        let mut style = doc.doc_info.char_shapes[0].clone();
+        style.text_color = color;
+        shape_ids.push(doc.doc_info.char_shapes.len() as u32);
+        doc.doc_info.char_shapes.push(style);
+    }
+    let endpoints: Vec<_> = ["앞", "끝"]
+        .into_iter()
+        .enumerate()
+        .map(|(side, label)| {
+            let mut paragraph = template.clone();
+            paragraph.text = if side == 0 {
+                "앞🦦뒤"
+            } else {
+                "둘🦫끝"
+            }
+            .into();
+            paragraph.char_offsets = vec![0, 25, 27];
+            paragraph.char_count = 29;
+            paragraph.char_shapes = vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: shape_ids[side],
+            }];
+            paragraph.controls = (0..3)
+                .map(|index| {
+                    let Control::Form(mut form) = template.controls[0].clone() else {
+                        unreachable!()
+                    };
+                    form.name = format!("{label}{index}");
+                    form.caption = format!("설명 {label}{index}");
+                    form.fore_color = 0x102030 + index;
+                    form.value = i32::from(index == 1);
+                    Control::Form(form)
+                })
+                .collect();
+            paragraph
+        })
+        .collect();
+    let middle = Paragraph {
+        text: "중간".into(),
+        char_offsets: vec![0, 1],
+        char_count: 3,
+        has_para_text: true,
+        ..Paragraph::new_empty_like(&template)
+    };
+    doc.sections[0].paragraphs = vec![endpoints[0].clone(), middle, endpoints[1].clone()];
+    core.set_document(doc);
+    core
+}
+
+fn form_names(core: &DocumentCore) -> Vec<String> {
+    core.document().sections[0]
+        .paragraphs
+        .iter()
+        .flat_map(|paragraph| &paragraph.controls)
+        .filter_map(|control| match control {
+            Control::Form(form) => Some(form.name.clone()),
+            _ => None,
+        })
+        .collect()
+}
+
+fn assert_cross_paragraph_remainder(core: &DocumentCore) {
+    assert_eq!(form_names(core), ["앞0", "끝2"]);
+    let paragraphs = &core.document().sections[0].paragraphs;
+    assert_eq!(paragraphs.len(), 1);
+    let paragraph = &paragraphs[0];
+    assert_eq!(paragraph.text, "앞🦫끝");
+    assert_eq!(paragraph.control_text_positions(), [1, 1]);
+    for (character, color) in [(0, 0x112233), (1, 0x445566), (2, 0x445566)] {
+        let id = paragraph.char_shape_id_at(character).unwrap();
+        assert_eq!(
+            core.document().doc_info.char_shapes[id as usize].text_color,
+            color
+        );
+    }
+    for control in &paragraph.controls {
+        let Control::Form(form) = control else {
+            continue;
+        };
+        assert_eq!(form.caption, format!("설명 {}", form.name));
+        assert_eq!(
+            form.fore_color,
+            if form.name == "앞0" {
+                0x102030
+            } else {
+                0x102032
+            }
+        );
+        assert_eq!(form.value, 0);
+    }
+}
+
+#[test]
+fn cross_paragraph_shared_form_boundaries_copy_cut_and_restore_exact_siblings() {
+    let mut core = cross_paragraph_forms();
+    let mut doc = core.document().clone();
+    doc.sections[0].paragraphs[0].range_tags = vec![RangeTag {
+        start: 0,
+        end: 1,
+        tag: 0x03000001,
+    }];
+    doc.sections[0].paragraphs[2].range_tags = vec![RangeTag {
+        start: 25,
+        end: 28,
+        tag: 0x03000002,
+    }];
+    core.set_document(doc);
+    let original = format!("{:?}", core.document());
+    let events = core.serialize_event_log();
+    let before = core.save_snapshot_native();
+    core.copy_selection_logical_native(0, 0, 2, 2, 3).unwrap();
+    assert_eq!(core.get_clipboard_text_native(), "🦦뒤\n중간\n둘");
+    assert_eq!(format!("{:?}", core.document()), original);
+    assert_eq!(core.serialize_event_log(), events);
+    core.paste_internal_native(0, 0, 0).unwrap();
+    let copied = form_names(&core);
+    for (name, count) in [
+        ("앞0", 1),
+        ("앞1", 2),
+        ("앞2", 2),
+        ("끝0", 2),
+        ("끝1", 2),
+        ("끝2", 1),
+    ] {
+        assert_eq!(
+            copied
+                .iter()
+                .filter(|actual| actual.as_str() == name)
+                .count(),
+            count,
+            "{name}"
+        );
+    }
+    core.restore_snapshot_native(before).unwrap();
+    core.delete_range_logical_native(0, 0, 2, 2, 3).unwrap();
+    assert_cross_paragraph_remainder(&core);
+    let tags: Vec<_> = core.document().sections[0].paragraphs[0]
+        .range_tags
+        .iter()
+        .map(|tag| (tag.start, tag.end, tag.tag))
+        .collect();
+    assert_eq!(tags, [(0, 1, 0x03000001), (17, 20, 0x03000002)]);
+    for bytes in [
+        core.export_hwp_with_adapter().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        assert_cross_paragraph_remainder(&DocumentCore::from_bytes(&bytes).unwrap());
+    }
+    let after = core.save_snapshot_native();
+    core.restore_snapshot_native(before).unwrap();
+    assert_eq!(
+        form_names(&core),
+        ["앞0", "앞1", "앞2", "끝0", "끝1", "끝2"]
+    );
+    assert_eq!(core.document().sections[0].paragraphs.len(), 3);
+    core.restore_snapshot_native(after).unwrap();
+    assert_cross_paragraph_remainder(&core);
+    assert_eq!(core.get_clipboard_text_native(), "🦦뒤\n중간\n둘");
+}
+
+#[test]
+fn cross_paragraph_form_invalid_and_empty_ranges_preserve_state_and_clipboard() {
+    let mut core = cross_paragraph_forms();
+    core.copy_selection_logical_native(0, 0, 1, 0, 2).unwrap();
+    let before = format!("{:?}", core.document());
+    let events = core.serialize_event_log();
+    for (section, start_para, start, end_para, end) in [
+        (0, 0, 2, 2, 7),
+        (0, 2, 2, 0, 3),
+        (1, 0, 2, 2, 3),
+        (0, 0, 2, 3, 3),
+    ] {
+        assert!(core
+            .copy_selection_logical_native(section, start_para, start, end_para, end)
+            .is_err());
+        assert!(core
+            .delete_range_logical_native(section, start_para, start, end_para, end)
+            .is_err());
+        assert_eq!(format!("{:?}", core.document()), before);
+        assert_eq!(core.serialize_event_log(), events);
+    }
+    core.copy_selection_logical_native(0, 0, 2, 0, 2).unwrap();
+    core.delete_range_logical_native(0, 0, 2, 0, 2).unwrap();
+    assert_eq!(format!("{:?}", core.document()), before);
+    assert_eq!(core.serialize_event_log(), events);
+    core.paste_internal_native(0, 0, 0).unwrap();
+    let names = form_names(&core);
+    assert_eq!(
+        names.iter().filter(|name| name.as_str() == "앞0").count(),
+        2
+    );
+    assert_eq!(names.len(), 7);
+}
+
+#[test]
+fn cross_paragraph_form_metadata_and_mixed_object_guards_run_before_mutation() {
+    for guard in 0..5 {
+        let mut core = cross_paragraph_forms();
+        let mut doc = core.document().clone();
+        let paragraph = &mut doc.sections[0].paragraphs[2];
+        match guard {
+            0 => {
+                paragraph.range_tags = vec![RangeTag {
+                    start: 0,
+                    end: 28,
+                    tag: 0x03000001,
+                }]
+            }
+            1 => {
+                paragraph.markpen_marks = vec![
+                    MarkpenMark {
+                        char_idx: 0,
+                        color: Some("#FFFF00".into()),
+                        utf16_pos: Some(0),
+                    },
+                    MarkpenMark {
+                        char_idx: 2,
+                        color: None,
+                        utf16_pos: Some(27),
+                    },
+                ]
+            }
+            2 => {
+                paragraph.controls.push(Control::Field(Box::default()));
+                paragraph
+                    .field_ranges
+                    .push(rhwp::model::paragraph::FieldRange {
+                        start_char_idx: 0,
+                        end_char_idx: 1,
+                        control_idx: 3,
+                        ..Default::default()
+                    });
+                paragraph.char_offsets = vec![8, 41, 43];
+                paragraph.char_count = 45;
+            }
+            3 => {
+                let Control::Form(form) = &mut paragraph.controls[1] else {
+                    unreachable!()
+                };
+                form.common.treat_as_char = false;
+            }
+            _ => {
+                let mut picture = rhwp::model::image::Picture::default();
+                picture.common.treat_as_char = true;
+                paragraph.controls.push(Control::Picture(Box::new(picture)));
+                paragraph.char_offsets = vec![0, 33, 35];
+                paragraph.char_count = 37;
+            }
+        }
+        core.set_document(doc);
+        core.copy_selection_logical_native(0, 0, 1, 0, 2).unwrap();
+        let before = format!("{:?}", core.document());
+        let events = core.serialize_event_log();
+        assert!(
+            core.delete_range_logical_native(0, 0, 2, 2, 3).is_err(),
+            "guard {guard}"
+        );
+        assert_eq!(format!("{:?}", core.document()), before, "guard {guard}");
+        assert_eq!(core.serialize_event_log(), events, "guard {guard}");
+        core.paste_internal_native(0, 0, 0).unwrap();
+        assert_eq!(
+            form_names(&core)
+                .iter()
+                .filter(|name| name.as_str() == "앞0")
+                .count(),
+            2,
+            "guard {guard}"
+        );
     }
 }

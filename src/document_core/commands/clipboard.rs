@@ -437,34 +437,66 @@ impl DocumentCore {
         end_para_idx: usize,
         end_logical: usize,
     ) -> Result<String, HwpError> {
-        if start_para_idx == end_para_idx {
-            if let Some(para) = self
-                .document
-                .sections
-                .get(section_idx)
-                .and_then(|section| section.paragraphs.get(start_para_idx))
-                .filter(|para| has_only_inline_forms(para))
-            {
-                if start_logical > end_logical || end_logical > logical_paragraph_length(para) {
-                    return Err(HwpError::RenderError(
-                        "복사할 논리 범위가 올바르지 않습니다".into(),
-                    ));
-                }
-                // 같은 글자 자리에 붙은 양식은 앞/뒤 한 비트로 구별할 수 없어 논리 칸에서 직접 나눈다.
-                let mut selected = para.clone();
-                selected.split_at(end_logical);
-                if start_logical > 0 {
-                    selected = selected.split_at(start_logical);
-                }
-                return Ok(self.store_clipboard(vec![selected]));
-            }
-        }
         let para = |para_idx: usize| {
             self.document
                 .sections
                 .get(section_idx)
                 .and_then(|section| section.paragraphs.get(para_idx))
         };
+        if start_para_idx > end_para_idx
+            || (start_para_idx == end_para_idx && start_logical > end_logical)
+            || [(start_para_idx, start_logical), (end_para_idx, end_logical)]
+                .into_iter()
+                .any(|(index, offset)| {
+                    para(index).is_none_or(|p| offset > logical_paragraph_length(p))
+                })
+        {
+            return Err(HwpError::RenderError(
+                "복사할 논리 범위가 올바르지 않습니다".into(),
+            ));
+        }
+        if start_para_idx == end_para_idx && start_logical == end_logical {
+            return Ok(super::super::helpers::json_ok_with("\"text\":\"\""));
+        }
+        if has_only_inline_forms(para(start_para_idx).unwrap())
+            || has_only_inline_forms(para(end_para_idx).unwrap())
+        {
+            let mut selected = Vec::new();
+            for index in start_para_idx..=end_para_idx {
+                let paragraph = para(index).unwrap();
+                if index != start_para_idx && index != end_para_idx {
+                    selected.push(paragraph.clone());
+                    continue;
+                }
+                let from = if index == start_para_idx {
+                    start_logical
+                } else {
+                    0
+                };
+                let to = if index == end_para_idx {
+                    end_logical
+                } else {
+                    logical_paragraph_length(paragraph)
+                };
+                if has_only_inline_forms(paragraph) {
+                    // 같은 글자 자리의 양식도 문단 경계에서 각 논리 칸으로 나눈다.
+                    let mut fragment = paragraph.clone();
+                    fragment.split_at(to);
+                    if from > 0 {
+                        fragment = fragment.split_at(from);
+                    }
+                    selected.push(fragment);
+                } else {
+                    let start = logical_to_text_offset(paragraph, from);
+                    let mut end = logical_to_text_offset(paragraph, to);
+                    end.1 |= to == logical_paragraph_length(paragraph);
+                    selected.push(clip_paragraph_caret_range_for_clipboard(
+                        paragraph, start, end,
+                    ));
+                }
+            }
+            return Ok(self.store_clipboard(selected));
+        }
         let start = para(start_para_idx).map_or((start_logical, false), |p| {
             logical_to_text_offset(p, start_logical)
         });
