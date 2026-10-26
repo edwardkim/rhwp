@@ -28,8 +28,8 @@ Canvas 비실행 및 분류 이유를 확인했다. 이 오류와 최초 로그�
 수정한 workflow·분류기·브라우저 진입점은 기존 필수 검사나 feature를 제거하지 않는다.
 정책 검사와 실제 Native/브라우저 결과를 각각 기록했다. 새 source 원본이나 검사 본문이
 바뀌면 최종 제출 source의 파생 suite를 다시 준비하고 논리 selector로 실행한다.
-suite 번호는 생성 결과이며 고정 계약이 아니다. 이후 기존 #6311 검사 정정으로
-현재 파생 계획이 symbol fallback을 suite 024에 배정하는 것도 확인했다.
+suite 번호는 생성 결과이며 고정 계약이 아니다. 일례로 기존 #6311 검사 정정 중의
+파생 계획에서는 symbol fallback을 suite 024에 배정하는 것도 확인했다.
 임시 selector plan과 실행 로그는 ignored `handbook-cell-none-candidate/execution-wiring/` 및
 작업 루트 `logs/handbook-regression-execution-*`에 보존한다.
 
