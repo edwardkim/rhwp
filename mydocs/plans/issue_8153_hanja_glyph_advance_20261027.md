@@ -68,7 +68,7 @@ KoPubWorld는 별도 프로그램이므로 이 데이터로 이름만 바꾸어 
 이 보충 표가 가로채지 않는 검사도 통과했다. 이는 메타데이터 검증이며 제품의 전쪽 시각
 완료로 대신하지 않는다. 실제 166쪽 뒤 원점과 한자 전진은 수정 전 진단 3건 모두 실패했다.
 
-## sourceffc7 집중 검증
+## source `ffc7cf81b4` 집중 검증
 
 `ffc7cf81b4c661490abd0bf061521db9a282a62d`의 Native 52조건을 완료했다.
 두 형식의 166쪽은 모두 raw 100%·정수 미대응 0픽셀이고 136쪽도 그대로다.
@@ -79,7 +79,7 @@ KoPubWorld는 별도 프로그램이므로 이 데이터로 이름만 바꾸어 
 잘못된 전제가 한 번 있었다. 100px 글자에서 hmtx의 연속값 90px를 장치 격자 반올림 없이
 그대로 기대했다. 4HU 장치 격자에서 이는 90.02667px다. 임의 허용치를 늘리지 않고
 한 인치(96px) 글자 크기의 정확한 hmtx 전진 86.4px로 입력·기대값을 정정했다.
-정정한 같은 검사도 수정 전 source40에서 3건 FAIL, sourceffc7에서 3건 PASS였다.
+정정한 같은 검사도 수정 전 source40에서 3건 FAIL, source `ffc7cf81b4`에서 3건 PASS였다.
 최초 실패 로그와 정정 후 로그는 함께 보존했다.
 
 증거는 공통 `continuous-text-shadow/`의 `hanja-native/contracts-corrected-result.json`,
@@ -87,3 +87,23 @@ KoPubWorld는 별도 프로그램이므로 이 데이터로 이름만 바꾸어 
 `hanja-corrected-afterffc7.log`와 `p166-hanja-independent-word-origins-review.png`다.
 전쪽 Native 766조건과 fresh DEV WASM 55조건을 이 source로 새로 실행 중이며,
 새 source 전쪽·최종 표준 최적화 WASM·전체 Rust·lint 완료는 아직 주장하지 않는다.
+
+## source `ffc7cf81b4` 전쪽 Native 완료와 166쪽 양쪽 backend
+
+Native 전 766조건을 완료했다. HWPX는 363/383조건, HWP는 360/383조건이
+raw 100%·정수 미대응 0픽셀이다. source40의 719조건에서 723조건으로 늘었고
+미대응은 2,216 → 2,124픽셀로 줄었다. 두 형식의 166쪽 43픽셀·167쪽 3픽셀이
+각각 0으로 바뀌었으며 미대응 증가 페이지는 없다. 최저 raw는 양쪽 99.46283%다.
+Native 전쪽 source40·source `ffc7cf81b4` 결과를 다른 source WASM과 합산하지 않는다.
+
+같은 source `ffc7cf81b4`의 fresh DEV WASM에서 두 형식의 166쪽도 100%·0픽셀을 확인했다.
+원본 26쪽씩의 TSV를 완료했으며 탭 대조군까지 포함한 최종 집중 실행은 별도 확인한다.
+정식 회귀 `tests/cases/issue_8153_hanja_source_advance.rs`는 96dpi 한 인치 글자의
+실제 900/1000em 전진과 166쪽의 원문·줄 소유·뒤 글자 원점 ±2px를 함께 보호한다.
+별도 글꼴 설치 경로나 글꼴 파일을 테스트에 포함하지 않는다. 최종 자동 수집·전체 suite는
+후속 source의 필수 검증으로 남는다.
+
+정식 한자 검사 파일을 새 공통 fit source `9bab87505c`의 동결 라이브러리에 실제 연결해
+3건 PASS를 확인했다. 이전 진단 파일과 독립 기대값·검사 동작은 같으며, 파일 해시와
+실행 기록은 `plain-fit-actual-advance-contract.log` 및 해당 contracts 결과에 남긴다.
+이 검사 등록으로 전쪽 WASM·전체 Rust 검증을 완료 처리하지 않는다.
