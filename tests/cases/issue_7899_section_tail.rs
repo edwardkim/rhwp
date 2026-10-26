@@ -261,12 +261,17 @@ fn removed_memo_anchor_cannot_replay_orphan_tail() {
         });
     }
     assert!(removed, "원본의 실제 본문 MEMO anchor를 제거한다");
+    // #8017부터 HWP5 메모 목록은 원본 tail이 아니라 메모 필드(`memo_paragraphs`)가 소유한다.
+    // anchor를 지우면 본문 목록도 함께 사라지므로 저장은 성공하고, 사라진 목록을 다시 쓰지 않는다.
+    let saved = serialize_hwp(&model).expect("모델이 소유한 메모 목록은 anchor와 함께 저장된다");
+    let last = CfbReader::open(&saved).unwrap().section_count() as usize - 1;
     assert!(
-        matches!(
-            serialize_hwp(&model),
-            Err(SerializeError::UnsupportedInput(_))
-        ),
-        "소유 anchor가 사라진 목록을 원본 그대로 저장하면 안 된다"
+        tail(&saved, last).iter().all(|r| r.0 != 93),
+        "소유 anchor가 사라진 메모 목록(MEMO_LIST)을 원본 그대로 다시 쓰면 안 된다"
+    );
+    assert!(
+        (0..=last).all(|s| memo_begin_markers(&saved, s).is_empty()),
+        "지운 메모의 시작 표식도 남지 않는다"
     );
 }
 
