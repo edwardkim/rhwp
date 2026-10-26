@@ -46,3 +46,30 @@ source `08d87142c8`의 Native 실제 paint에서 낱말 확장은
 기존 셀 압축·낱말 꼬리·머리말·혼합 글자 검사를 정상 대조로 실행한다. 이후 전쪽 Native와
 fresh WASM에서 새 미대응 증가가 있는지 확인하며, 불확실하면 개선 완료로 기록하지 않는다.
 최종 표준 최적화 WASM·전쪽 100%·필수 전체 검증·PR 준비가 남는다.
+
+## source40 실제 검증 결과
+
+`40d36c55993f327f9b1c3bc66b854750c7fa3fad`를 고정한 Native 전 766조건을 완료했다.
+HWPX는 361/383조건, HWP는 358/383조건이 raw 100%·정수 미대응 0픽셀이다.
+직전 source08의 717조건에서 719조건으로 늘었고, 미대응은 2,272 → 2,216픽셀이다.
+미대응 증가 페이지는 0개이며 양쪽 최저 raw는 99.46283%다. 전체 목표 완료는 아니다.
+
+같은 source의 fresh DEV WASM은 원본 18쪽씩과 독립 탭 대조군 3개, 총 39조건을 완료했다.
+33조건이 100%·0픽셀이다. 166·228·289쪽의 남은 차이는 각 형식에서 별도로 남으며,
+이를 성공 조건에 합산하지 않는다. 두 원본의 136쪽은 Native와 WASM 네 조건 모두
+100%·0픽셀이다. 같은 backend의 두 형식 136쪽 PNG는 각각 바이트까지 같아 직접 판독을
+공유했다. 최종 표준 최적화 WASM 검증과 전 1,532조건 완료를 뜻하지 않는다.
+
+기존 탭·그림자·bbox·셀 압축·condense·혼합 글자·머리말과 실제 136쪽 검사 29건이 통과했다.
+시스템 글꼴을 별도 준비하지 않는 공개 API 진단에서도 source08은 단어 원점 두 건 FAIL,
+source40은 두 건 PASS였다. 원점은 582.80515 → 585.53333px이며 독립 Print는
+585.59998px다. 원본 셀의 내용·공백·다음 줄 순서도 보존했다.
+
+작업 증거의 공통 디렉터리는
+`output/pr-review/issue8153-handbook-raw100-20261022/remaining-raw100-diagnostic/continuous-text-shadow/`다.
+
+- 전쪽 Native: `positive-slack-native/native-whole/whole-result.json`과 각 형식의 `score/silhouette.tsv`.
+- fresh DEV WASM: `positive-slack-wasm-dev/wasm-focus-result.json`과 각 형식의 `score/silhouette.tsv`.
+- 실행 로그: `positive-slack-native-whole-run.log`, `positive-slack-wasm-focus.log`, `positive-slack-native-validation.log`.
+- 136쪽 직접 판독: `positive-slack-native/native-focus/handbook-hwpx/p136/` 및
+  `positive-slack-wasm-dev/wasm-focus/handbook-hwpx/p136/`의 review·overlay PNG.
