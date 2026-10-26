@@ -5,7 +5,8 @@
 use crate::document_core::DocumentCore;
 use crate::model::control::Control;
 use crate::model::document::Document;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{LineSeg, Paragraph};
+use crate::model::table::Table;
 use crate::renderer::height_measurer::{HeightMeasurer, MeasuredTable};
 use crate::renderer::px_to_hwpunit;
 
@@ -19,6 +20,22 @@ fn content_height(measured: &MeasuredTable, dpi: f64) -> u32 {
 
 fn grown(declared: u32, content: u32) -> Option<u32> {
     (content > declared.saturating_add(ROUNDING_HU)).then_some(content)
+}
+
+/// rhwp가 다시 짠 칸 문단이 있는 표인가. 한컴이 저장한 줄을 그대로 가진 표는 그 높이(sz)가
+/// 한컴 조판값이므로 rhwp 측정으로 덮어쓰지 않는다. 본문 표는 이번 편집의 재조판 표시도 본다.
+fn has_reflowed_cell_text(table: &Table) -> bool {
+    table
+        .cells
+        .iter()
+        .flat_map(|cell| &cell.paragraphs)
+        .any(|paragraph| {
+            paragraph.line_segs.is_empty()
+                || paragraph
+                    .line_segs
+                    .iter()
+                    .any(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        })
 }
 
 impl DocumentCore {
@@ -40,7 +57,18 @@ impl DocumentCore {
                             })
                         })
                         .map(|m| content_height(m, self.dpi));
-                    out.push(content.and_then(|content| grown(table.common.height, content)));
+                    out.push(
+                        content
+                            .filter(|_| {
+                                has_reflowed_cell_text(table)
+                                    || self.table_text_reflowed_path_exists(
+                                        section_idx,
+                                        para_idx,
+                                        control_idx,
+                                    )
+                            })
+                            .and_then(|content| grown(table.common.height, content)),
+                    );
                     self.push_nested_grown_heights(&table.cells, &mut out);
                 }
             }
