@@ -359,7 +359,7 @@ impl LayerBuilder {
                 {
                     run.style.continuous_shadow = super::text_shadow::prepare(
                         &self.metafile_fonts,
-                        &run.text,
+                        run.display_or_text(),
                         &run.style,
                         self.layout_dpi,
                     );

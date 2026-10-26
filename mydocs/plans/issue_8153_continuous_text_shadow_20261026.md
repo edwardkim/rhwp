@@ -122,5 +122,49 @@ Native 집중 실행에서 두 원본의 9·27·183·251·277쪽 10건 모두 ra
 자료는 작업 폴더의 `product-native-v3/focus-result.json`, `controls-result.json`,
 `focused-logical-tree-preservation.json`, `common-contract-receipt.json`,
 `page009-current-corner-review.png` 및 `product-common-contract-tests.log`다.
-전쪽 Native 비교는 진행 중이다. SVG의 호스트 공급 경로와 직렬화된 paint 계약,
+전쪽 Native 비교는 766건 모두 완료했으며, raw100·미대응 0은 695건에서 705건으로
+늘었다. 미대응 증가나 raw 하락은 없고 전쪽 논리 RenderTree는 기존 source와 바이트
+단위로 같다. 이 결과는 source `65af5b612d`의 Native 중간 결과이며, 같은 source의
+표준 최적화 fresh WASM 전쪽 결과를 대신하지 않는다.
+SVG의 호스트 공급 경로와 직렬화된 paint 계약,
 fresh WASM 집중·전쪽 및 최종 필수 검증은 후속 단계이며 이 집중 확인으로 대신하지 않는다.
+
+## 종류 변경과 잉크 범위의 후속 경계
+
+HWP5 표 35의 종류 0·1·2가 재생 계획보다 우선한다. 이미 준비한 연속 계획이
+남아 있어도 종류 없음은 그림자를 그리지 않고, 비연속은 끝점 한 번만 소비한다.
+출력 투영에서 종류를 바꾸는 실제 Native 재생을 수정 전 라이브러리와 대조하고,
+같은 공통 소비 규칙을 계약 검사로 보호한다. 실제 표시 문자열이 공백뿐인 경우
+줄 점유는 보존하되 연속 그림자의 잉크로 본문 clip을 늘리지 않는다.
+
+검증은 기존 전쪽 증적을 유지하며 새 source의 집중 재생부터 진행한다. 진단용
+dev WASM은 방향 확인에만 사용하고 최종 표준 최적화 WASM 검증과 구분한다.
+
+### 2026-10-27 확인 결과
+
+source `65af5b612d`의 dev WASM 집중 검증에서 두 원본 장 제목 5쪽씩 10건 모두
+raw100·미대응 0이며, 함께 확인한 8·10쪽은 기존 결과를 유지했다. 독립 Print
+대조군의 연속 그림자 20건도 모두 raw100·미대응 0이다. 이 집중 결과는 최종 표준
+최적화 fresh WASM 전쪽 결과에 합산하지 않는다. 같은 좌표에서 확대한 9쪽의
+이전 Native·현재 Native·dev WASM·독립 Print 모서리도 직접 대조했다.
+
+종류 0으로 투영한 실제 Native 재생은 이전 연속 계획의 유무에 따라 PNG가
+달라지는 문제를 수정 전 라이브러리에서 재현했다. 종류 우선 규칙과 표시 잉크·셀
+clip 경계를 보호한 공통 Rust 검사 4건은 통과했다. 새 검사 작성 중의 좌표 비교
+타입 오류는 검사에서 좌표 성분을 비교하도록 바로잡은 뒤 전체 선택 검사를 다시
+실행했다. 수정 후 실제 Native PNG 재생은 새 라이브러리 빌드 뒤 대조한다.
+
+Studio의 실제 호스트 공급 세션은 WMF 요청만 읽고 있어, 연속 그림자만 있는
+문서에서 공급 등록이 누락되는 것도 수정 전 API 호출로 재현했다. 같은 세션이
+연속 그림자 요청도 함께 읽도록 연결했다. 실제 바이트는 기존 호스트/local 공급
+경로를 재사용하며 글꼴 파일은 복사하지 않는다. 새 공급 계약 3건과 기존 PUA
+공급·문서 교체 계약 4건을 함께 실행해 7건 모두 통과했다. 이 검사의 가짜 바이트는
+공급·비동기 소유 계약만 검증하며 실제 글꼴·glyph·시각 일치의 증거가 아니다.
+
+새 증적은 같은 작업 폴더의 `diagnostic-wasm-dev/focus-comparison.json`,
+`diagnostic-wasm-dev/controls-result.json`,
+`diagnostic-wasm-dev/page009-native-wasm-print-corner-review.png`,
+`stale-shadow-before/result.json`, `source-kind-guard-contract-tests.log`,
+`studio-shadow-supply-before.log`, `studio-shadow-supply-final-tests.log`에 있다.
+소스 종류·호스트 공급 보정의 최종 Native/fresh WASM 전쪽·전체 필수 게이트는
+계속 진행하며, 현재 목표 전체 완료나 PR 준비 완료를 선언하지 않는다.

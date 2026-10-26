@@ -1,8 +1,9 @@
 import { getHostFontState, hasHostFontProvider, loadRendererLocalFont, loadStoredLocalFonts,
-  prepareHostFontCatalog, resolveRendererLocalFont, localFontFaceKey } from './local-fonts';
+  prepareHostFontCatalog, resolveRendererLocalFont, localFontFaceKey } from './local-fonts.ts';
 
 export interface MetafileFontDocument {
   getMetafileFontRequests?(): string;
+  getTextShadowFontRequests?(): string;
   registerMetafileFont?(family: string, bytes: Uint8Array, faceIndex: number): boolean;
   clearMetafileFonts?(): void;
 }
@@ -10,15 +11,18 @@ export interface MetafileFontDocument {
 interface FontRequest { families: string[]; weight: number; italic: boolean; text: string }
 interface Prepared { generation: string; requests: string; keys: Set<string> }
 
-/** 이미지 내부 글꼴도 실제 host/local SFNT를 받는다. CSS 존재를 bytes 공급으로 간주하지 않는다. */
+/** 이미지·글자 효과가 실제 host/local SFNT를 공유한다. CSS 존재를 bytes 공급으로 간주하지 않는다. */
 export class MetafileFontSession {
   private readonly prepared = new WeakMap<MetafileFontDocument, Prepared>();
 
   async prepare(owner: MetafileFontDocument | null, fontGeneration: number,
     current: () => boolean): Promise<boolean> {
-    if (!owner?.getMetafileFontRequests || !owner.registerMetafileFont) return true;
-    const raw = owner.getMetafileFontRequests();
-    const requests: FontRequest[] = JSON.parse(raw);
+    if (!owner?.registerMetafileFont) return true;
+    const requests: FontRequest[] = [
+      ...JSON.parse(owner.getMetafileFontRequests?.() ?? '[]'),
+      ...JSON.parse(owner.getTextShadowFontRequests?.() ?? '[]'),
+    ];
+    const raw = JSON.stringify(requests);
     if (!requests.length) return true;
     if (hasHostFontProvider()) await prepareHostFontCatalog();
     else {

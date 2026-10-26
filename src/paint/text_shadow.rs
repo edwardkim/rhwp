@@ -34,7 +34,12 @@ impl ContinuousTextShadow {
 
 /// 세 backend가 같은 순서의 그림자를 소비한다. 원문은 이 반복 뒤에 한 번만 그린다.
 pub(crate) fn offsets(style: &TextStyle) -> impl Iterator<Item = [f64; 2]> + '_ {
-    let continuous = style.continuous_shadow.as_ref().map(|plan| plan.offsets());
+    // 편집·출력 투영에서 종류가 바뀌면 이전 세션 계획으로 효과를 되살리지 않는다.
+    let continuous = style
+        .continuous_shadow
+        .as_ref()
+        .filter(|_| style.shadow_type == 2)
+        .map(|plan| plan.offsets());
     let endpoint = (style.shadow_type > 0 && continuous.is_none())
         .then_some([style.shadow_offset_x, style.shadow_offset_y]);
     continuous.into_iter().flatten().chain(endpoint)
@@ -70,7 +75,11 @@ pub(super) fn flow_bounds(
                 else {
                     return None;
                 };
-                if run.rotation != 0.0 || run.is_vertical {
+                if run.style.shadow_type != 2
+                    || run.rotation != 0.0
+                    || run.is_vertical
+                    || !run.display_or_text().chars().any(|ch| !ch.is_whitespace())
+                {
                     return None;
                 }
                 let [dx, dy] = run.style.continuous_shadow.as_ref()?.extent();
@@ -166,7 +175,7 @@ pub(super) fn prepare(
     style: &TextStyle,
     layout_dpi: f64,
 ) -> Option<ContinuousTextShadow> {
-    if style.shadow_type != 2 {
+    if style.shadow_type != 2 || !text.chars().any(|ch| !ch.is_whitespace()) {
         return None;
     }
     let percent = style.shadow_offset_percent?;
@@ -286,5 +295,78 @@ mod tests {
         style.shadow_offset_x = 3.0;
         style.shadow_offset_y = -2.0;
         assert_eq!(offsets(&style).collect::<Vec<_>>(), [[3.0, -2.0]]);
+    }
+
+    #[test]
+    fn source_shadow_kind_overrides_a_previous_continuous_plan() {
+        // HWP5 표 35의 없음·비연속은 과거 연속 계획의 유무와 독립적인 원본 계약이다.
+        let mut style = TextStyle {
+            shadow_offset_x: 3.0,
+            shadow_offset_y: -2.0,
+            continuous_shadow: Some(plan([5, 2])),
+            ..Default::default()
+        };
+        assert_eq!(offsets(&style).count(), 0);
+        style.shadow_type = 1;
+        assert_eq!(offsets(&style).collect::<Vec<_>>(), [[3.0, -2.0]]);
+        style.shadow_type = 2;
+        assert_eq!(
+            offsets(&style).collect::<Vec<_>>(),
+            plan([5, 2]).offsets().collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn flow_shadow_uses_displayed_ink_and_preserves_owned_clips() {
+        use crate::paint::{ClipKind, LayerNode, PaintOp};
+        use crate::renderer::render_tree::{BoundingBox, TextRunNode};
+
+        let bounds = BoundingBox::new(10.0, 20.0, 30.0, 12.0);
+        let mut run = TextRunNode {
+            text: "원문".into(),
+            display_text: Some(" \t".into()),
+            style: TextStyle {
+                shadow_type: 2,
+                continuous_shadow: Some(plan([-5, 2])),
+                ..Default::default()
+            },
+            char_shape_id: None,
+            para_shape_id: None,
+            section_index: None,
+            para_index: None,
+            char_start: None,
+            cell_context: None,
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline: 12.0,
+            field_marker: Default::default(),
+            layout_positions: None,
+        };
+        let leaf = |run| LayerNode::leaf(bounds, None, vec![PaintOp::text_run(bounds, run)]);
+        let blank = leaf(run.clone());
+        assert!(flow_bounds(&blank).is_none());
+        let coordinates = |b: BoundingBox| [b.x, b.y, b.width, b.height];
+        assert_eq!(
+            coordinates(blank.bounds),
+            coordinates(bounds),
+            "잉크가 없어도 줄의 점유는 유지한다"
+        );
+        run.display_text = Some("1".into());
+        let visible = leaf(run.clone());
+        assert_eq!(
+            flow_bounds(&visible).map(coordinates),
+            Some([5.0, 20.0, 35.0, 14.0])
+        );
+        run.style.shadow_type = 0;
+        assert!(flow_bounds(&leaf(run)).is_none());
+        let clipped = LayerNode::clip_rect(bounds, None, bounds, visible, ClipKind::TableCell);
+        assert!(
+            flow_bounds(&clipped).is_none(),
+            "셀의 소유 clip은 본문에서 확장하지 않는다"
+        );
     }
 }
