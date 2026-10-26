@@ -3516,6 +3516,11 @@ impl DocumentCore {
             && super::clipboard::has_only_inline_forms(para(start_para).unwrap())
         {
             if start_logical != end_logical {
+                validate_form_boundary_metadata(
+                    para(start_para).unwrap(),
+                    start_logical,
+                    end_logical,
+                )?;
                 let paragraph = &mut self.document.sections[section_idx].paragraphs[start_para];
                 let suffix = paragraph.split_at(end_logical);
                 paragraph.split_at(start_logical);

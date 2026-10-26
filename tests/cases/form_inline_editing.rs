@@ -580,6 +580,20 @@ fn cross_paragraph_form_metadata_and_mixed_object_guards_run_before_mutation() {
         );
         assert_eq!(format!("{:?}", core.document()), before, "guard {guard}");
         assert_eq!(core.serialize_event_log(), events, "guard {guard}");
+        assert!(
+            core.delete_range_logical_native(0, 2, 2, 2, 3).is_err(),
+            "같은 문단의 guard {guard}"
+        );
+        assert_eq!(
+            format!("{:?}", core.document()),
+            before,
+            "같은 문단의 guard {guard}"
+        );
+        assert_eq!(
+            core.serialize_event_log(),
+            events,
+            "같은 문단의 guard {guard}"
+        );
         core.paste_internal_native(0, 0, 0).unwrap();
         assert_eq!(
             form_names(&core)
