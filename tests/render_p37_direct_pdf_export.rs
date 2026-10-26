@@ -683,3 +683,464 @@ mod image_adjustment_regressions {
         assert!(!issue_4764_pdf_images_contain_rgb(&images, [20, 30, 40]));
     }
 }
+
+// #7501: the shared #7688 arrow outlines are replayed into the PDF canvas too.
+// These tests check the PDF's vector coordinates, not the same helper's output.
+mod connector_arrow_regressions {
+    use rhwp::paint::{LayerNode, PageLayerTree, PaintOp, RenderProfile};
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+    use rhwp::renderer::pdf::layer_trees_to_pdf;
+    use rhwp::renderer::render_tree::{BoundingBox, LineNode, PathNode};
+    use rhwp::renderer::skia::SkiaLayerRenderer;
+    use rhwp::renderer::{
+        ArrowStyle, LineRenderType, LineStyle, PathCommand, ShadowStyle, ShapeStyle,
+    };
+
+    fn style(arrow: ArrowStyle) -> LineStyle {
+        LineStyle {
+            width: 1.0,
+            start_arrow: arrow,
+            end_arrow: arrow,
+            start_arrow_size: 4,
+            end_arrow_size: 4,
+            ..Default::default()
+        }
+    }
+
+    fn connector(style: LineStyle) -> PathNode {
+        let mut path = PathNode::new(
+            vec![
+                PathCommand::MoveTo(20.0, 40.0),
+                PathCommand::LineTo(100.0, 40.0),
+            ],
+            ShapeStyle {
+                stroke_color: Some(0),
+                stroke_width: 1.0,
+                ..Default::default()
+            },
+            None,
+        );
+        path.connector_endpoints = Some((20.0, 40.0, 100.0, 40.0));
+        path.line_style = Some(style);
+        path
+    }
+
+    fn tree(op: PaintOp) -> PageLayerTree {
+        let bounds = BoundingBox::new(0.0, 0.0, 128.0, 96.0);
+        PageLayerTree::with_profile(
+            bounds.width,
+            bounds.height,
+            LayerNode::leaf(bounds, None, vec![op]),
+            RenderProfile::Print,
+        )
+    }
+
+    fn line(style: LineStyle) -> PageLayerTree {
+        tree(PaintOp::line(
+            BoundingBox::new(20.0, 40.0, 80.0, 0.0),
+            LineNode::new(20.0, 40.0, 100.0, 40.0, style),
+        ))
+    }
+
+    fn path(path: PathNode) -> PageLayerTree {
+        tree(PaintOp::path(
+            BoundingBox::new(20.0, 10.0, 80.0, 60.0),
+            path,
+        ))
+    }
+
+    fn vector_commands(pdf: &[u8]) -> String {
+        use flate2::read::ZlibDecoder;
+        use std::io::Read;
+
+        assert!(pdf.starts_with(b"%PDF-"));
+        assert!(pdf.windows(5).any(|bytes| bytes == b"%%EOF"));
+        assert!(
+            !String::from_utf8_lossy(pdf).contains("/Subtype /Image"),
+            "simple arrow outlines must remain vectors"
+        );
+        let mut content = String::new();
+        let mut cursor = 0;
+        while let Some(relative) = pdf[cursor..]
+            .windows(7)
+            .position(|bytes| bytes == b"stream\n")
+        {
+            let marker = cursor + relative;
+            // Skia writes the stream token directly after the dictionary's
+            // closing >>. The closing endstream token is not a new stream.
+            if pdf[..marker].ends_with(b"end") {
+                cursor = marker + 7;
+                continue;
+            }
+            let dictionary_start = pdf[..marker]
+                .windows(2)
+                .rposition(|bytes| bytes == b"<<")
+                .expect("stream dictionary");
+            let dictionary = String::from_utf8_lossy(&pdf[dictionary_start..marker]);
+            let length: usize = dictionary
+                .split_once("/Length ")
+                .expect("direct stream length")
+                .1
+                .trim_start()
+                .split(|c: char| !c.is_ascii_digit())
+                .next()
+                .unwrap()
+                .parse()
+                .unwrap();
+            let start = marker + 7;
+            let end = start + length;
+            let data = if dictionary.contains("/FlateDecode") {
+                let mut decoded = Vec::new();
+                ZlibDecoder::new(&pdf[start..end])
+                    .read_to_end(&mut decoded)
+                    .unwrap();
+                decoded
+            } else {
+                pdf[start..end].to_vec()
+            };
+            content.push_str(std::str::from_utf8(&data).expect("vector-only content stream"));
+            content.push('\n');
+            cursor = end;
+        }
+        assert!(!content.is_empty());
+        content
+    }
+
+    fn assert_vertices(commands: &str, expected: &[(f64, f64)]) {
+        let mut vertices = Vec::new();
+        let mut operands = Vec::new();
+        let mut matrix = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0];
+        let mut stack = Vec::new();
+        for token in commands.split_whitespace() {
+            if let Ok(number) = token.parse::<f64>() {
+                operands.push(number);
+                continue;
+            }
+            match token {
+                "q" => stack.push(matrix),
+                "Q" => matrix = stack.pop().expect("balanced PDF graphics state"),
+                "cm" if operands.len() == 6 => {
+                    let m = &operands;
+                    let c = matrix;
+                    matrix = [
+                        c[0] * m[0] + c[2] * m[1],
+                        c[1] * m[0] + c[3] * m[1],
+                        c[0] * m[2] + c[2] * m[3],
+                        c[1] * m[2] + c[3] * m[3],
+                        c[0] * m[4] + c[2] * m[5] + c[4],
+                        c[1] * m[4] + c[3] * m[5] + c[5],
+                    ];
+                }
+                "m" | "l" if operands.len() == 2 => {
+                    vertices.push((
+                        matrix[0] * operands[0] + matrix[2] * operands[1] + matrix[4],
+                        matrix[1] * operands[0] + matrix[3] * operands[1] + matrix[5],
+                    ));
+                }
+                _ => {}
+            }
+            operands.clear();
+        }
+        for (x, y) in expected {
+            // Standard PDF points have a bottom-left origin. Account for the
+            // recorded CTM rather than pinning Skia's choice of matrix packing.
+            let point = (x * 0.75, (96.0 - y) * 0.75);
+            assert!(
+                vertices
+                    .iter()
+                    .any(|(a, b)| (a - point.0).abs() < 0.02 && (b - point.1).abs() < 0.02),
+                "missing vector point {point:?} in {vertices:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn direct_pdf_records_both_triangle_heads_at_the_original_line_and_connector_tips() {
+        for tree in [
+            line(style(ArrowStyle::Arrow)),
+            path(connector(style(ArrowStyle::Arrow))),
+        ] {
+            let pdf = layer_trees_to_pdf(std::slice::from_ref(&tree)).unwrap();
+            let commands = vector_commands(&pdf);
+            // Independent medium-size contract from #7688 Hancom Print: the
+            // head length and width are 15.36 CSS px, with its tip at the source.
+            assert_vertices(
+                &commands,
+                &[
+                    (20.0, 40.0),
+                    (35.36, 32.32),
+                    (35.36, 47.68),
+                    (100.0, 40.0),
+                    (84.64, 32.32),
+                    (84.64, 47.68),
+                ],
+            );
+            let pixels = SkiaLayerRenderer::new()
+                .render_pixels_with_options(&tree, RasterRenderOptions::default())
+                .unwrap();
+            // Stay inside the independently specified triangles, away from
+            // their AA edges and outside the one-pixel horizontal shaft.
+            for (x, y) in [(30, 42), (90, 42)] {
+                let offset = y * pixels.stride + x * 4;
+                assert_eq!(pixels.bytes[offset + 3], 255);
+                assert!(pixels.bytes[offset..offset + 3]
+                    .iter()
+                    .all(|value| *value < 32));
+            }
+        }
+    }
+
+    #[test]
+    fn direct_pdf_connector_heads_follow_curve_tangents_instead_of_the_chord() {
+        let mut curved = connector(style(ArrowStyle::Arrow));
+        curved.commands[1] = PathCommand::CurveTo(20.0, 10.0, 100.0, 10.0, 100.0, 40.0);
+        let commands = vector_commands(&layer_trees_to_pdf(&[path(curved)]).unwrap());
+        assert_vertices(
+            &commands,
+            &[
+                (20.0, 40.0),
+                (12.32, 24.64),
+                (27.68, 24.64),
+                (100.0, 40.0),
+                (92.32, 24.64),
+                (107.68, 24.64),
+            ],
+        );
+        assert!(commands.split_whitespace().any(|token| token == "c"));
+    }
+
+    #[test]
+    fn direct_pdf_accepts_supported_open_filled_and_asymmetric_head_sizes() {
+        let count_subpaths = |commands: &str| {
+            commands
+                .split_whitespace()
+                // PDF `re` starts a rectangle subpath directly; Skia can
+                // encode square heads without a separate moveto command.
+                .filter(|token| matches!(*token, "m" | "re"))
+                .count()
+        };
+        let plain = vector_commands(&layer_trees_to_pdf(&[line(style(ArrowStyle::None))]).unwrap());
+        let plain_subpaths = count_subpaths(&plain);
+        for arrow in [
+            ArrowStyle::None,
+            ArrowStyle::Arrow,
+            ArrowStyle::ConcaveArrow,
+            ArrowStyle::Diamond,
+            ArrowStyle::OpenDiamond,
+            ArrowStyle::Circle,
+            ArrowStyle::OpenCircle,
+            ArrowStyle::Square,
+            ArrowStyle::OpenSquare,
+            ArrowStyle::OpenArrow,
+        ] {
+            let mut style = style(arrow);
+            style.start_arrow_size = 0;
+            style.end_arrow_size = 8;
+            for tree in [line(style.clone()), path(connector(style))] {
+                let commands = vector_commands(&layer_trees_to_pdf(&[tree]).unwrap());
+                if arrow != ArrowStyle::None {
+                    assert!(
+                        count_subpaths(&commands) > plain_subpaths,
+                        "{arrow:?}: no head paths"
+                    );
+                }
+            }
+        }
+        let mut invisible_metadata = connector(style(ArrowStyle::None));
+        invisible_metadata.line_style = None;
+        vector_commands(&layer_trees_to_pdf(&[path(invisible_metadata)]).unwrap());
+        let zero_line_without_heads = tree(PaintOp::line(
+            BoundingBox::new(20.0, 40.0, 0.0, 0.0),
+            LineNode::new(20.0, 40.0, 20.0, 40.0, style(ArrowStyle::None)),
+        ));
+        vector_commands(&layer_trees_to_pdf(&[zero_line_without_heads]).unwrap());
+    }
+
+    #[test]
+    fn direct_pdf_rejects_missing_degenerate_and_nonfinite_arrow_geometry() {
+        let valid = line(style(ArrowStyle::Arrow));
+        let mut missing = connector(style(ArrowStyle::Arrow));
+        missing.connector_endpoints = None;
+        let mut nonfinite = connector(style(ArrowStyle::None));
+        nonfinite.connector_endpoints = Some((20.0, 40.0, f64::NAN, 40.0));
+        let mut degenerate = connector(style(ArrowStyle::Arrow));
+        degenerate.connector_endpoints = Some((20.0, 40.0, 20.0, 40.0));
+        degenerate.commands = vec![PathCommand::MoveTo(20.0, 40.0)];
+        let zero_line = tree(PaintOp::line(
+            BoundingBox::new(20.0, 40.0, 0.0, 0.0),
+            LineNode::new(20.0, 40.0, 20.0, 40.0, style(ArrowStyle::Arrow)),
+        ));
+        let collapsed_line = tree(PaintOp::line(
+            BoundingBox::new(20.0, 40.0, 1e-9, 0.0),
+            LineNode::new(20.0, 40.0, 20.0 + 1e-9, 40.0, style(ArrowStyle::Arrow)),
+        ));
+        let nonfinite_line = tree(PaintOp::line(
+            BoundingBox::new(20.0, 40.0, 80.0, 0.0),
+            LineNode::new(20.0, 40.0, f64::NAN, 40.0, style(ArrowStyle::Arrow)),
+        ));
+        let mut negative_width = style(ArrowStyle::Arrow);
+        negative_width.width = -1.0;
+        let mut invalid_size = style(ArrowStyle::Arrow);
+        invalid_size.start_arrow_size = 9;
+        let mut overflow = style(ArrowStyle::Arrow);
+        overflow.width = f64::from(f32::MAX);
+        for invalid in [
+            path(missing),
+            path(nonfinite),
+            path(degenerate),
+            zero_line,
+            collapsed_line,
+            nonfinite_line,
+            line(negative_width.clone()),
+            path(connector(negative_width)),
+            line(invalid_size.clone()),
+            path(connector(invalid_size)),
+            line(overflow.clone()),
+            path(connector(overflow)),
+        ] {
+            let error = layer_trees_to_pdf(&[valid.clone(), invalid]).unwrap_err();
+            assert!(error.contains("direct PDF page 2"), "{error}");
+            assert!(error.contains("invalid"), "{error}");
+        }
+    }
+
+    #[test]
+    fn direct_pdf_requires_arrow_metadata_to_match_one_continuous_shaft() {
+        for commands in [
+            vec![],
+            vec![PathCommand::MoveTo(20.0, 40.0)],
+            vec![PathCommand::LineTo(100.0, 40.0)],
+            vec![
+                PathCommand::MoveTo(20.0, 40.0),
+                PathCommand::LineTo(60.0, 40.0),
+                PathCommand::MoveTo(80.0, 40.0),
+                PathCommand::LineTo(100.0, 40.0),
+            ],
+            vec![
+                PathCommand::MoveTo(21.0, 40.0),
+                PathCommand::LineTo(100.0, 40.0),
+            ],
+            vec![
+                PathCommand::MoveTo(20.0, 40.0),
+                PathCommand::LineTo(99.0, 40.0),
+            ],
+        ] {
+            let mut connector = connector(style(ArrowStyle::Arrow));
+            connector.commands = commands;
+            let error = layer_trees_to_pdf(&[path(connector)]).unwrap_err();
+            assert!(error.contains("invalid connector shaft"), "{error}");
+            assert!(error.contains("use the svg backend"));
+        }
+    }
+
+    #[test]
+    fn direct_pdf_rejects_unproved_endpoint_controls_only_where_a_head_is_requested() {
+        // For B'(0)=0, B''(0) points up to (20,10); a chord fallback would
+        // incorrectly point the head left. The end case is its counterpart.
+        for (segments, requested, unrequested, expected) in [
+            (
+                vec![PathCommand::CurveTo(20.0, 40.0, 20.0, 10.0, 100.0, 40.0)],
+                (ArrowStyle::Arrow, ArrowStyle::None),
+                (ArrowStyle::None, ArrowStyle::Arrow),
+                None,
+            ),
+            (
+                vec![PathCommand::CurveTo(20.0, 10.0, 100.0, 40.0, 100.0, 40.0)],
+                (ArrowStyle::None, ArrowStyle::Arrow),
+                (ArrowStyle::Arrow, ArrowStyle::None),
+                Some([(20.0, 40.0), (12.32, 24.64), (27.68, 24.64)]),
+            ),
+            (
+                vec![PathCommand::CurveTo(
+                    20.0 + 1e-9,
+                    40.0,
+                    20.0,
+                    10.0,
+                    100.0,
+                    40.0,
+                )],
+                (ArrowStyle::Arrow, ArrowStyle::None),
+                (ArrowStyle::None, ArrowStyle::Arrow),
+                None,
+            ),
+            (
+                vec![PathCommand::CurveTo(
+                    20.0,
+                    10.0,
+                    100.0 - 1e-9,
+                    40.0,
+                    100.0,
+                    40.0,
+                )],
+                (ArrowStyle::None, ArrowStyle::Arrow),
+                (ArrowStyle::Arrow, ArrowStyle::None),
+                Some([(20.0, 40.0), (12.32, 24.64), (27.68, 24.64)]),
+            ),
+            (
+                vec![
+                    PathCommand::LineTo(20.0 + 1e-9, 40.0 + 1e-9),
+                    PathCommand::LineTo(100.0, 40.0),
+                ],
+                (ArrowStyle::Arrow, ArrowStyle::None),
+                (ArrowStyle::None, ArrowStyle::Arrow),
+                None,
+            ),
+            (
+                vec![
+                    PathCommand::LineTo(100.0 - 1e-9, 40.0 - 1e-9),
+                    PathCommand::LineTo(100.0, 40.0),
+                ],
+                (ArrowStyle::None, ArrowStyle::Arrow),
+                (ArrowStyle::Arrow, ArrowStyle::None),
+                None,
+            ),
+        ] {
+            let mut connector = connector(style(ArrowStyle::None));
+            connector.commands.truncate(1);
+            connector.commands.extend(segments);
+            let line = connector.line_style.as_mut().unwrap();
+            line.start_arrow = requested.0;
+            line.end_arrow = requested.1;
+            let error = layer_trees_to_pdf(&[path(connector.clone())]).unwrap_err();
+            assert!(error.contains("unsupported arrow tangent"), "{error}");
+            let line = connector.line_style.as_mut().unwrap();
+            line.start_arrow = unrequested.0;
+            line.end_arrow = unrequested.1;
+            let commands = vector_commands(&layer_trees_to_pdf(&[path(connector)]).unwrap());
+            if let Some(expected) = expected {
+                assert_vertices(&commands, &expected);
+            }
+        }
+    }
+
+    #[test]
+    fn direct_pdf_keeps_unproved_line_styles_and_connector_tangents_closed() {
+        let mut multiline = style(ArrowStyle::Arrow);
+        multiline.line_type = LineRenderType::Double;
+        let mut shadow = style(ArrowStyle::Arrow);
+        shadow.shadow = Some(ShadowStyle {
+            shadow_type: 1,
+            color: 0,
+            offset_x: 2.0,
+            offset_y: 2.0,
+            alpha: 128,
+        });
+        for style in [multiline, shadow] {
+            for invalid in [line(style.clone()), path(connector(style))] {
+                let error = layer_trees_to_pdf(&[invalid]).unwrap_err();
+                assert!(error.contains("multi-line or shadow style"), "{error}");
+                assert!(error.contains("use the svg backend"));
+            }
+        }
+        for unsupported in [
+            PathCommand::ArcTo(40.0, 20.0, 0.0, false, true, 100.0, 40.0),
+            PathCommand::ClosePath,
+        ] {
+            let mut curved = connector(style(ArrowStyle::Arrow));
+            curved.commands.push(unsupported);
+            let error = layer_trees_to_pdf(&[path(curved)]).unwrap_err();
+            assert!(error.contains("unsupported arrow tangent"), "{error}");
+            assert!(error.contains("use the svg backend"));
+        }
+    }
+}

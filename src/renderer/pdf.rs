@@ -87,11 +87,32 @@ fn validate_direct_pdf_tree(
 ) -> Result<(), String> {
     use crate::model::image::ImageEffect;
     use crate::paint::{LayerNode, LayerNodeKind, PaintOp};
-    use crate::renderer::render_tree::{BoundingBox, ShapeTransform};
-    use crate::renderer::{ArrowStyle, GradientFillInfo, LineRenderType, PathCommand, ShapeStyle};
+    use crate::renderer::render_tree::{BoundingBox, PathNode, ShapeTransform};
+    use crate::renderer::{
+        ArrowStyle, GradientFillInfo, LineRenderType, LineStyle, PathCommand, ShapeStyle,
+    };
 
     fn is_valid_skia_scalar(value: f64) -> bool {
         value.is_finite() && value.abs() <= f32::MAX as f64
+    }
+
+    fn same_skia_point(left: (f64, f64), right: (f64, f64)) -> bool {
+        (left.0 as f32, left.1 as f32) == (right.0 as f32, right.1 as f32)
+    }
+
+    fn valid_path_commands(commands: &[PathCommand]) -> bool {
+        commands.iter().all(|command| match *command {
+            PathCommand::MoveTo(x, y) | PathCommand::LineTo(x, y) => {
+                is_valid_skia_scalar(x) && is_valid_skia_scalar(y)
+            }
+            PathCommand::CurveTo(x1, y1, x2, y2, x, y) => [x1, y1, x2, y2, x, y]
+                .iter()
+                .all(|value| is_valid_skia_scalar(*value)),
+            PathCommand::ArcTo(rx, ry, rotation, _, _, x, y) => [rx, ry, rotation, x, y]
+                .iter()
+                .all(|value| is_valid_skia_scalar(*value)),
+            PathCommand::ClosePath => true,
+        })
     }
 
     fn validate_bbox(bbox: BoundingBox, page_index: usize, context: &str) -> Result<(), String> {
@@ -114,6 +135,109 @@ fn validate_direct_pdf_tree(
             "direct PDF page {} cannot replay {op} without visual loss: {detail}; use the svg backend",
             page_index + 1
         )
+    }
+
+    fn validate_line_style(style: &LineStyle, page_index: usize, op: &str) -> Result<(), String> {
+        if style.line_type != LineRenderType::Single || style.shadow.is_some() {
+            return Err(unsupported(page_index, op, "multi-line or shadow style"));
+        }
+        if !is_valid_skia_scalar(style.width) || style.width < 0.0 {
+            return Err(format!(
+                "direct PDF page {} has invalid {op} stroke width: {}",
+                page_index + 1,
+                style.width
+            ));
+        }
+        if [
+            (style.start_arrow, style.start_arrow_size),
+            (style.end_arrow, style.end_arrow_size),
+        ]
+        .into_iter()
+        .any(|(arrow, size)| arrow != ArrowStyle::None && size > 8)
+        {
+            return Err(unsupported(page_index, op, "invalid arrow size"));
+        }
+        Ok(())
+    }
+
+    fn validate_arrow_heads(
+        heads: &[crate::renderer::arrow::ArrowHead],
+        style: &LineStyle,
+        page_index: usize,
+        op: &str,
+    ) -> Result<(), String> {
+        let requested = usize::from(style.start_arrow != ArrowStyle::None)
+            + usize::from(style.end_arrow != ArrowStyle::None);
+        // The shared producer skips degenerate directions. Strict PDF must not
+        // silently lose a requested head, nor narrow an expanded outline to Inf.
+        if heads.len() != requested
+            || heads
+                .iter()
+                .any(|head| !valid_path_commands(&head.commands))
+        {
+            return Err(unsupported(page_index, op, "invalid arrow geometry"));
+        }
+        Ok(())
+    }
+
+    fn validate_connector_shaft(
+        path: &PathNode,
+        style: &LineStyle,
+        page_index: usize,
+    ) -> Result<(), String> {
+        let invalid = || unsupported(page_index, "connector", "invalid connector shaft");
+        let Some((PathCommand::MoveTo(x1, y1), segments)) = path.commands.split_first() else {
+            return Err(invalid());
+        };
+        if segments.is_empty()
+            || segments.iter().any(|command| {
+                !matches!(command, PathCommand::LineTo(..) | PathCommand::CurveTo(..))
+            })
+        {
+            return Err(invalid());
+        }
+        let endpoint = |command: &PathCommand| match *command {
+            PathCommand::LineTo(x, y) | PathCommand::CurveTo(_, _, _, _, x, y) => (x, y),
+            _ => unreachable!("validated open connector segment"),
+        };
+        let (x2, y2) = endpoint(segments.last().expect("nonempty connector"));
+        // Selection metadata must describe this one continuous shaft, not a
+        // detached chord that happens to produce the requested number of heads.
+        if path.connector_endpoints != Some((*x1, *y1, x2, y2)) {
+            return Err(invalid());
+        }
+        // The common producer uses the first/last cubic controls. When a
+        // control coincides with its endpoint it falls back to another segment
+        // or the chord, without deriving the higher-order Bezier tangent.
+        // Keep those unproved directions closed instead of recording a head
+        // with a direction different from the actual shaft at that endpoint.
+        let start_control = match segments[0] {
+            PathCommand::LineTo(x, y) | PathCommand::CurveTo(x, y, ..) => (x, y),
+            _ => unreachable!("validated open connector segment"),
+        };
+        let end_control = match *segments.last().expect("nonempty connector") {
+            PathCommand::CurveTo(_, _, x, y, _, _) => (x, y),
+            PathCommand::LineTo(..) => {
+                if segments.len() == 1 {
+                    (*x1, *y1)
+                } else {
+                    endpoint(&segments[segments.len() - 2])
+                }
+            }
+            _ => unreachable!("validated open connector segment"),
+        };
+        // Compare in the scalar precision actually replayed by Skia. Distinct
+        // f64 controls can collapse to their endpoint after narrowing as well.
+        if (style.start_arrow != ArrowStyle::None && same_skia_point(start_control, (*x1, *y1)))
+            || (style.end_arrow != ArrowStyle::None && same_skia_point(end_control, (x2, y2)))
+        {
+            return Err(unsupported(
+                page_index,
+                "connector",
+                "unsupported arrow tangent",
+            ));
+        }
+        Ok(())
     }
 
     fn validate_transform(
@@ -362,27 +486,28 @@ fn validate_direct_pdf_tree(
                         }
                         PaintOp::Line { line, .. } => {
                             validate_transform(line.transform, page_index, "line")?;
-                            if line.style.line_type != LineRenderType::Single
-                                || line.style.start_arrow != ArrowStyle::None
-                                || line.style.end_arrow != ArrowStyle::None
-                                || line.style.shadow.is_some()
-                            {
-                                return Err(unsupported(
-                                    page_index,
-                                    "line",
-                                    "multi-line, arrow, or shadow style",
-                                ));
-                            }
-                            if [line.x1, line.y1, line.x2, line.y2, line.style.width]
+                            validate_line_style(&line.style, page_index, "line")?;
+                            if [line.x1, line.y1, line.x2, line.y2]
                                 .iter()
                                 .any(|value| !is_valid_skia_scalar(*value))
-                                || line.style.width < 0.0
+                                || ((line.style.start_arrow != ArrowStyle::None
+                                    || line.style.end_arrow != ArrowStyle::None)
+                                    && same_skia_point((line.x1, line.y1), (line.x2, line.y2)))
                             {
                                 return Err(format!(
                                     "direct PDF page {} has invalid line geometry",
                                     page_index + 1
                                 ));
                             }
+                            validate_arrow_heads(
+                                &crate::renderer::arrow::line_heads(
+                                    (line.x1, line.y1, line.x2, line.y2),
+                                    &line.style,
+                                ),
+                                &line.style,
+                                page_index,
+                                "line",
+                            )?;
                         }
                         PaintOp::Rectangle { bbox, rect } => {
                             validate_transform(rect.transform, page_index, "rectangle")?;
@@ -420,34 +545,53 @@ fn validate_direct_pdf_tree(
                                 page_index,
                                 "path",
                             )?;
-                            if path.connector_endpoints.is_some() || path.line_style.is_some() {
-                                return Err(unsupported(
-                                    page_index,
-                                    "path",
-                                    "connector line style",
-                                ));
-                            }
-                            let finite = path.commands.iter().all(|command| match *command {
-                                PathCommand::MoveTo(x, y) | PathCommand::LineTo(x, y) => {
-                                    is_valid_skia_scalar(x) && is_valid_skia_scalar(y)
-                                }
-                                PathCommand::CurveTo(x1, y1, x2, y2, x, y) => {
-                                    [x1, y1, x2, y2, x, y]
-                                        .iter()
-                                        .all(|value| is_valid_skia_scalar(*value))
-                                }
-                                PathCommand::ArcTo(rx, ry, rotation, _, _, x, y) => {
-                                    [rx, ry, rotation, x, y]
-                                        .iter()
-                                        .all(|value| is_valid_skia_scalar(*value))
-                                }
-                                PathCommand::ClosePath => true,
-                            });
-                            if !finite {
+                            if !valid_path_commands(&path.commands) {
                                 return Err(format!(
                                     "direct PDF page {} has invalid path geometry",
                                     page_index + 1
                                 ));
+                            }
+                            if path.connector_endpoints.is_some_and(|(x1, y1, x2, y2)| {
+                                [x1, y1, x2, y2]
+                                    .into_iter()
+                                    .any(|value| !is_valid_skia_scalar(value))
+                            }) {
+                                return Err(format!(
+                                    "direct PDF page {} has invalid connector endpoints",
+                                    page_index + 1
+                                ));
+                            }
+                            if let Some(style) = &path.line_style {
+                                validate_line_style(style, page_index, "connector")?;
+                                // The shared connector producer derives tangents
+                                // from open line/cubic segments, not SVG arcs or
+                                // a closing edge. Do not admit an unproved head.
+                                if (style.start_arrow != ArrowStyle::None
+                                    || style.end_arrow != ArrowStyle::None)
+                                    && path.commands.iter().any(|command| {
+                                        matches!(
+                                            command,
+                                            PathCommand::ArcTo(..) | PathCommand::ClosePath
+                                        )
+                                    })
+                                {
+                                    return Err(unsupported(
+                                        page_index,
+                                        "connector",
+                                        "unsupported arrow tangent",
+                                    ));
+                                }
+                                if style.start_arrow != ArrowStyle::None
+                                    || style.end_arrow != ArrowStyle::None
+                                {
+                                    validate_connector_shaft(path, style, page_index)?;
+                                }
+                                validate_arrow_heads(
+                                    &crate::renderer::arrow::connector_heads(path),
+                                    style,
+                                    page_index,
+                                    "connector",
+                                )?;
                             }
                         }
                         PaintOp::Image {
