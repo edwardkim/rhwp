@@ -48,3 +48,17 @@ p289-301-source-contract/`의 `actual-top-image-paint.log`,
 `p291-actual-independent-image-comparison.json`, `p291-301-independent-top-images.json`,
 `cell-background-replay/comparison.json`, `cell-background-replay-hwp/comparison.json`이다.
 원본·PDF·폰트·측정 기준 변경, upstream 동기화와 원격 변경은 하지 않았다.
+
+## 공통 구현 후보
+
+`cell_clip::build`는 원본 `table_background_paint` 역할과 직접 자식의
+`PrintBitmapFill`을 함께 확인한다. 일반 셀에서만 그 배경을 자체 clip으로 그리고,
+그 앞뒤의 연속 본문 묶음에는 기존 셀 clip을 유지한다. 따라서 중간에 배경이 있어도
+paint 순서를 재정렬하지 않으며, 일반 그림은 배경으로 승격하지 않는다. 셀 소유 group의
+source ID·cache hint·layer를 보존하고 상위 셀·본문 clip은 건드리지 않는다.
+
+`page_fragment`는 실제 쪽 컷을 소유하므로 배경에도 기존 셀 clip을 유지한다.
+이 분기는 문서·좌표 조건이 아니라 기존 #5862의 명시적 원인 구분을 소비한다.
+원래 #1197 Stage 4의 layer 상속과 그리기 순서를 확인했으며 Screen·자체 물리 clip이
+없는 배경도 종전 구조로 남긴다. 구조 계약은 배경/본문의 교차 순서와 일반 그림,
+분할 컷, 중첩 상위 셀의 clip을 확인한다. 현재 실행 전 후보이며 시각 통과는 미판정이다.

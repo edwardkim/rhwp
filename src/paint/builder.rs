@@ -672,23 +672,13 @@ impl LayerBuilder {
                 )
             }
             RenderNodeType::TableCell(cell) if cell.clip => {
-                let child = LayerNode::group(
-                    node.bbox,
-                    Some(node.id),
-                    self.build_children(node),
+                let children = self.build_children(node);
+                Some(super::cell_clip::build(
+                    node,
+                    cell,
+                    children,
                     self.cache_hint_for(&node.node_type),
-                    GroupKind::TableCell(cell.clone()),
-                );
-                Some(
-                    LayerNode::clip_rect(
-                        node.bbox,
-                        Some(node.id),
-                        node.bbox,
-                        child,
-                        ClipKind::TableCell,
-                    )
-                    .with_layer(node.layer),
-                )
+                ))
             }
             RenderNodeType::TextBox => {
                 let clip = node
