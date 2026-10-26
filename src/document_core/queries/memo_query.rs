@@ -239,6 +239,32 @@ fn rewritten_memo_command(field: &Field, number: u32) -> String {
     memo_command(shape, number, field.field_id, &memo_author(field))
 }
 
+/// Carry a new memo number into the HWPX parameters. The HWPX writer prefers
+/// the parameters over the command, so a renumbered memo must not keep the
+/// copied `Number`, `ID` and `Command`; the verbatim original is dropped.
+fn set_memo_parameters(field: &mut Field, number: u32) {
+    field.raw_parameters_xml = None;
+    for item in &mut field.parameters.items {
+        match item {
+            Parameter::Integer {
+                name: Some(key),
+                value,
+            } if key == "Number" => *value = number as i64,
+            Parameter::String {
+                name: Some(key),
+                value,
+                ..
+            } => match key.as_str() {
+                "Number" => *value = number.to_string(),
+                "ID" => *value = format!("memo{number}"),
+                "Command" => *value = field.command.clone(),
+                _ => {}
+            },
+            _ => {}
+        }
+    }
+}
+
 /// Give every memo in a detached copy a fresh document-wide number. Used after
 /// clipboard identities are remapped; the body travels with the field.
 pub(crate) fn renumber_memos(paragraphs: &mut [Paragraph], mut next: u32) -> u32 {
@@ -252,6 +278,7 @@ pub(crate) fn renumber_memos(paragraphs: &mut [Paragraph], mut next: u32) -> u32
                         *next = (*next).max(1);
                         field.memo_index = *next;
                         field.command = rewritten_memo_command(field, *next);
+                        set_memo_parameters(field, *next);
                         numbers.insert(field.field_id, *next);
                         *next = next.saturating_add(1).max(1);
                         walk(&mut field.memo_paragraphs, next, numbers);
@@ -2181,6 +2208,75 @@ mod tests {
                 .iter()
                 .any(|para| !para.text.trim().is_empty()),
             "the memo body has readable text"
+        );
+    }
+
+    #[test]
+    fn a_pasted_hwpx_memo_is_written_with_its_new_number() {
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/samples/hwpx/aift.hwpx");
+        let bytes = std::fs::read(path).expect("read the HWPX memo sample");
+        let mut doc = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse the HWPX sample");
+        let (section_idx, para_idx) = doc
+            .sections
+            .iter()
+            .enumerate()
+            .find_map(|(section_idx, section)| {
+                section
+                    .paragraphs
+                    .iter()
+                    .position(|para| {
+                        para.controls.iter().any(
+                            |ctrl| matches!(ctrl, Control::Field(field) if is_memo_field(field)),
+                        )
+                    })
+                    .map(|para_idx| (section_idx, para_idx))
+            })
+            .expect("a memo paragraph");
+        let mut copy = vec![doc.sections[section_idx].paragraphs[para_idx].clone()];
+        let next = max_memo_number(&doc) + 1;
+        renumber_memos(&mut copy, next);
+
+        let field = copy[0]
+            .controls
+            .iter()
+            .find_map(|ctrl| match ctrl {
+                Control::Field(field) if is_memo_field(field) => Some(field),
+                _ => None,
+            })
+            .unwrap();
+        assert_eq!(memo_number(field), next);
+        let number = |field: &Field| {
+            field.parameters.items.iter().find_map(|item| match item {
+                Parameter::Integer {
+                    name: Some(key),
+                    value,
+                } if key == "Number" => Some(*value),
+                _ => None,
+            })
+        };
+        assert_eq!(number(field), Some(next as i64));
+        assert_eq!(parameter_string(field, "ID"), Some(format!("memo{next}")));
+        assert_eq!(
+            parameter_string(field, "Command").as_deref(),
+            Some(field.command.as_str())
+        );
+
+        // The HWPX writer must not fall back to the copied original parameters.
+        doc.sections[section_idx].paragraphs.extend(copy);
+        let out = crate::serializer::hwpx::serialize_hwpx(&doc).expect("write HWPX");
+        let reparsed = crate::parser::hwpx::parse_hwpx(&out).expect("read the written HWPX");
+        let numbers: Vec<Option<i64>> = reparsed.sections[section_idx]
+            .paragraphs
+            .iter()
+            .flat_map(|para| &para.controls)
+            .filter_map(|ctrl| match ctrl {
+                Control::Field(field) if is_memo_field(field) => Some(number(field)),
+                _ => None,
+            })
+            .collect();
+        assert!(
+            numbers.contains(&Some(next as i64)),
+            "the pasted memo keeps its new number: {numbers:?}"
         );
     }
 }
