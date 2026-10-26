@@ -62,3 +62,37 @@ source ID·cache hint·layer를 보존하고 상위 셀·본문 clip은 건드�
 원래 #1197 Stage 4의 layer 상속과 그리기 순서를 확인했으며 Screen·자체 물리 clip이
 없는 배경도 종전 구조로 남긴다. 구조 계약은 배경/본문의 교차 순서와 일반 그림,
 분할 컷, 중첩 상위 셀의 clip을 확인한다. 현재 실행 전 후보이며 시각 통과는 미판정이다.
+
+## 실제 Native 후보 실행
+
+제품 source `259ecf8303d97d17a8afd5598fdd504340abdeb1`을 고정했다.
+`target/pr-review`, jobs 8의 Native CLI·library 빌드는 481.57초·종료 코드 0이며,
+다음 Cargo 빌드 전에 producer와 SHA-256 receipt를 ignored output에 보존했다.
+
+실제 원본 HWP/HWPX 291·301쪽 네 조건은 각각 미대응 **20 → 0픽셀**,
+raw **100%**다. 원본·독립 PDF·DPI·글꼴·그림 바이트·frame·자체 물리 clip을
+유지했다. 291쪽의 같은 좌표 확대와 291·301쪽 review를 직접 읽어, Q 아이콘
+윗부분에 잘못 나타났던 회색 가로선이 사라지고 본문·다음 항목이 유지됨을 확인했다.
+그림 자원 전체의 RGB 동일성을 raw 100%의 의미로 주장하지 않는다.
+
+주변·정상 대조군을 넓힌 Native 80조건은 70조건 raw 100%·미대응 0이며,
+기준 source b3ad의 같은 조건보다 미대응 픽셀이 증가한 조건은 0개다. 전체
+766조건은 별도 실행 중이며 이 집중 검증으로 전쪽 완료를 대신하지 않는다.
+
+공개 API 원본 진단은 실제 PNG와 같은 글꼴 환경·exporter 준비를 적용했다.
+수정 전 source b3ad의 네 조건 모두 본문 clip 중복 적용 assertion에서 실패하고,
+제품 후보의 네 조건은 통과했다. 초기 진단에는 글꼴 준비 누락과 원본 Q 배경 수를
+하나로 가정한 오류가 있었으며, guard가 해당 실패를 거부했다. 그 기록은 유효한
+before FAIL 증거에서 제외하고 원인과 원본 로그를 ignored output에 따로 남겼다.
+
+원본 진단과 #5862 분할 clip, #6861/#5587 중첩 표의 양쪽 계약, 배경 변경,
+비변환 그림 및 기존 편람/TAC 대조군 22개 harness의 개별 종료 코드는 모두 0이며
+49 PASS·0 FAIL·0 ignored다. 최초 실행 드라이버의 관측 종료 코드는 143으로
+돌아와 원인을 미확정으로 기록했고, 같은 동결 실행 파일의 정상 종료 재확인을
+진행 중이다. 공통 clip 구조 검사와 기존 builder 단위 검사는 별도 Cargo로 실행 중이다.
+현재 후보의 fresh WASM·전쪽 766·최종 필수 검증과 정식 원본 회귀 등록은 남아 있다.
+
+실제 자료는 `cell-clip-native/{producer,native-boundary,native-focus}/`와
+`cell-clip-native-validation.log`, `cell-clip-native-terminal-recheck.log`,
+`cell-clip-unit.log`, `cell-clip-native-whole.log`다. 작업 경로는 앞 절의
+`continuous-text-shadow/` 아래다. 이미 보존한 원본 PDF를 재출력하지 않았다.

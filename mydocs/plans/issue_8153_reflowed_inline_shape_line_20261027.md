@@ -70,3 +70,15 @@ jobs 8에서 6분 55초·exit 0이었다. 원본 HWP/HWPX의 같은 진단 파�
 `inline-shape-original-contract.log`와 문서별 `p289/review/review_289.png`에 연결한다.
 전쪽 Native와 fresh DEV WASM은 별도로 계속 실행한다. 이 결과를 최종 표준 최적화 WASM이나
 전 1,532조건의 100%·정수 미대응 0, 정식 새 회귀 등록 또는 최종 전체 검증 완료로 쓰지 않는다.
+
+## source b3ad 전쪽 Native 후속 결과
+
+두 원본 전체 766조건은 정상 종료했으며 HWPX 365/383, HWP 362/383,
+합계 **727/766조건**이 raw 100%·미대응 0이다. 최저 raw는 양쪽 99.46283%,
+정수 미대응 합계는 HWPX 1,013·HWP 1,029다. source 9bab보다 증가한
+미대응 픽셀은 없고, 의미 render tree의 변경도 양쪽 289쪽뿐이다.
+`inline-shape-native/native-whole/whole-result.json`과 문서별 TSV를 확인했다.
+
+fresh DEV WASM은 HWPX 집중 36조건 중 33조건이 raw 100%·미대응 0이며,
+289쪽도 100%·0이다. 남은 쪽은 161·291·301쪽이다. HWP와 독립 대조군은
+실행 중이므로 전체 75조건이나 최종 표준 최적화 WASM 완료로 주장하지 않는다.
