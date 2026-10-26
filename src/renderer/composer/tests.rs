@@ -2467,3 +2467,34 @@ fn default_tabs_use_the_physical_row_origin() {
         "탭 격자는 줄 내부 0이 아니라 물리 행의 시작 좌표에서 이어진다"
     );
 }
+
+/// 저장 줄 없는 문단은 vpos 재계산이 건너뛰지만, 그 높이 자리는 뒤 문단의 저장
+/// 좌표에 남아 있다. 앞 문단을 편집해도 그 간격을 지워 뒤 문단을 끌어올리지 않는다.
+#[test]
+fn recalculating_vpos_keeps_the_room_of_a_paragraph_without_stored_lines() {
+    let line = |vertical_pos| LineSeg {
+        vertical_pos,
+        line_height: 1000,
+        text_height: 1000,
+        baseline_distance: 850,
+        line_spacing: 600,
+        segment_width: 42520,
+        ..Default::default()
+    };
+    let lined = |vertical_pos| Paragraph {
+        line_segs: vec![line(vertical_pos)],
+        ..Default::default()
+    };
+    // 0번(0~1600) 뒤에 줄 없는 1번(저장 높이 2000)이 있고, 2번은 3600에서 시작한다.
+    let mut paragraphs = vec![lined(0), Paragraph::default(), lined(3600), lined(5200)];
+    let styles = ResolvedStyleSet::default();
+    recalculate_section_vpos(&mut paragraphs, 0, None, Some(1600), &styles, 96.0, false);
+    assert_eq!(paragraphs[2].line_segs[0].vertical_pos, 3600);
+    assert_eq!(paragraphs[3].line_segs[0].vertical_pos, 5200);
+
+    // 0번이 한 줄 늘면 뒤 문단은 그 증가만큼만 내려간다.
+    paragraphs[0].line_segs.push(line(1600));
+    recalculate_section_vpos(&mut paragraphs, 0, None, Some(1600), &styles, 96.0, false);
+    assert_eq!(paragraphs[2].line_segs[0].vertical_pos, 5200);
+    assert_eq!(paragraphs[3].line_segs[0].vertical_pos, 6800);
+}

@@ -5644,9 +5644,12 @@ pub(crate) fn recalculate_section_vpos(
     // 직전 문단이 이번 편집의 변조 대상이었는가 + 직전 문단에 적용된 delta.
     let mut prev_modified = false;
     let mut prev_delta: i32 = 0;
+    // 직전 줄 보유 문단과 현재 문단 사이에 저장 줄이 없는 문단이 있었는가.
+    let mut skipped_unlined = false;
 
     for pi in start_para..paragraphs.len() {
         if paragraphs[pi].line_segs.is_empty() {
+            skipped_unlined = true;
             continue;
         }
 
@@ -5676,6 +5679,15 @@ pub(crate) fn recalculate_section_vpos(
         let delta = if is_reset {
             // 단/쪽 리셋 경계 — 저장 좌표 유지.
             0
+        } else if skipped_unlined && !para_modified {
+            // 저장 줄 없는 문단의 높이는 조판이 그때 정하고, 그 자리는 이 문단의 저장
+            // 좌표에만 남아 있다. 앞 문단 end 의 이동만 옮겨 그 간격을 지킨다.
+            let stored_prev_end = if prev_idx == Some(start_para) && !is_ignored(start_para) {
+                start_stored_end.or(orig_prev_end)
+            } else {
+                orig_prev_end
+            };
+            stored_prev_end.map_or(0, |end| next_vpos - end)
         } else if para_modified || prev_modified {
             // 변조 인접 경계 — 이동 후 흐름에 스타일 여백 gap 으로 다시 잇는다.
             let gap = prev_idx
@@ -5707,6 +5719,7 @@ pub(crate) fn recalculate_section_vpos(
         prev_modified = para_modified;
         prev_delta = delta;
         prev_idx = Some(pi);
+        skipped_unlined = false;
     }
 }
 
