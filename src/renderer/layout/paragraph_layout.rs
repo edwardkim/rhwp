@@ -9992,11 +9992,12 @@ impl LayoutEngine {
                         );
                     }
                     let seg_display = run.display_for_model_range(seg_start, run_chars.len());
-                    let seg_w = if let Some(display) = &seg_display {
-                        estimate_text_width_exact(display, &seg_style)
-                    } else {
-                        estimate_text_width(&remaining, &seg_style)
-                    };
+                    // [#7254] 개체 앞 조각처럼 마지막 조각도 반올림하지 않는다. 반올림하면
+                    // 다음 런이 캐럿·글자 경계보다 뒤에서 시작한다.
+                    let seg_w = estimate_text_width_exact(
+                        seg_display.as_deref().unwrap_or(&remaining),
+                        &seg_style,
+                    );
                     let trailing_space_count =
                         line_trailing_space_by_run[run_idx].min(remaining.chars().count());
                     let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
