@@ -51,3 +51,19 @@ KoPubWorld는 별도 프로그램이므로 이 데이터로 이름만 바꾸어 
 166쪽과 핵심 경계를 먼저 직접 비교하고 전쪽을 검사한다. 이전136쪽 보정의 고정 producer로
 진행 중인 전쪽 검증과 새 source의 결과를 혼합하지 않는다. 전체1532조건100%·0픽셀,
 필수 전체 검사와 PR 준비는 아직 완료되지 않았다.
+
+## 원본 프로그램 신원과 메타데이터 검사
+
+| 설치 프로그램 | SHA-256 |
+| --- | --- |
+| `KoPub Batang Bold.ttf` | `94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b` |
+| `KoPub Batang Light.ttf` | `b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f` |
+| `KoPub Batang Medium.ttf` | `7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4` |
+| `KoPub Dotum Bold.ttf` | `967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275` |
+| `KoPub Dotum Light.ttf` | `018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d` |
+| `KoPub Dotum Medium.ttf` | `d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7` |
+
+현재 compact 메타데이터를 실제 여섯 프로그램의4888자씩과 다시 대조했다.
+독립 `cmap/hmtx`29328항목이 모두 같고, 한글·ASCII·기존 기호·미수록 한자를
+이 보충 표가 가로채지 않는 검사도 통과했다. 이는 메타데이터 검증이며 제품의 전쪽 시각
+완료로 대신하지 않는다. 실제166쪽 뒤 원점과 한자 전진은 수정 전 진단3건 모두 실패했다.

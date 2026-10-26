@@ -1307,7 +1307,10 @@ fn kopub_char_advance_em(primary_name: &str, bold: bool, c: char) -> Option<f64>
         }
     }
     if matches!(family, KoPubFamily::Dotum | KoPubFamily::Batang) {
-        if let Some(em) = super::kopub_symbol_metrics::advance_em(family == KoPubFamily::Dotum, c) {
+        let effective_bold = bold || primary_name.to_ascii_lowercase().contains("bold");
+        if let Some(em) =
+            super::kopub_symbol_metrics::advance_em(family == KoPubFamily::Dotum, effective_bold, c)
+        {
             return Some(em);
         }
     }

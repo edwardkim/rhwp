@@ -6,7 +6,13 @@
 //! 299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e
 //! KoPubWorld는 별도 프로그램이므로 이 표에 이름만으로 포함하지 않는다.
 
-pub(super) fn advance_em(dotum: bool, ch: char) -> Option<f64> {
+#[path = "kopub_hanja_metrics.rs"]
+mod hanja;
+
+pub(super) fn advance_em(dotum: bool, bold: bool, ch: char) -> Option<f64> {
+    if let Some(em) = hanja::advance_em(dotum, bold, ch) {
+        return Some(em);
+    }
     let table = if dotum { DOTUM } else { BATANG };
     table
         .binary_search_by_key(&(ch as u32), |entry| entry.0)
