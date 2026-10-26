@@ -37,18 +37,26 @@ Native 영향 84조건과 전쪽 766쪽을 실제 재출력했다. 두 원본의
 | HWPX | 345/383 | 99.46283% | 1,437 |
 | HWP | 342/383 | 99.46283% | 1,453 |
 
-현재 source의 표준 최적화 fresh WASM 검증은 진행 중이다. 마지막으로 양쪽 backend의
+같은 source의 표준 최적화 fresh WASM 빌드와 실제 브라우저 계약 검사가 통과했다.
+WASM SHA-256은 `83d382d7e85db7b6409b2fad3da6c52d7c94148523bab13dd024399d7cc803e2`다.
+잡 8개·codegen-units 16·Binaryen 8개로 표준 최적화를 수행했다. 영향 84조건에서는
+두 원본의 280쪽만 미대응 **172→0픽셀·raw100**이며 나머지 82조건의 수는 같다.
+실제 WASM review PNG도 열어 본문·리더·쪽번호와 독립 Print를 대조했다.
+전쪽 WASM 766쪽 재검증은 진행 중이다. 마지막으로 양쪽 backend의
 전쪽을 모두 확인한 source는 `c3b88a07df`이며 그 source는 1,532조건 중
 1,368조건이 raw100·미대응 0이다. 서로 다른 source의 수치를 합쳐 현재 source의
 완료 건수로 보고하지 않는다. 전체 목표와 필수 전체 테스트·PR 준비는 아직 완료 전이다.
 작업 로그와 원문은 ignored
 `handbook-intrarun-right-tab-candidate/` 및 `remaining-raw100-diagnostic/remaining-direct-current/`다.
 
-전체 서식 검사는 생성 harness의 삭제된 검사 참조 때문에 실패했다. 정본 생성기로
-현재 원본 목록을 준비했으나 integration target 예산 50>48에서 harness 재생성이
-거부됐다. 변경한 코드의 별도 rustfmt 검사는 통과했지만 전체 서식·suite 정책 검사를
-통과했다고 계산하지 않는다. 삭제한 검사를 복원하거나 정책 한도를 늘려 우회하지 않으며
-최종 전체 검증 전 수집 경로와 실제 target 구성을 확인해 해결해야 한다.
+전체 서식 검사의 최초 실패는 오래된 생성 harness의 삭제된 검사 참조였다.
+정본 생성기의 50>48 target 거부는 새 symbol 검사 두 모듈의 helper 경로 속성을
+독립 바이너리가 필요한 조건으로 분류한 결과였다. 실제 124건의 중첩 harness에서
+두 모듈의 통과를 확인했고, 기존 정책 형식으로 moduleIntegrationOverrides를 등록했다.
+현재 원본 1,728개를 28 suites와 20 exceptions, **48/48 targets**로 재생성했으며
+정책 check와 관련 Node 검사 **23건**이 통과했다. 삭제한 검사를 복원하거나 한도를
+늘리지 않았고 Cargo.toml·ci.yml·파생 harness를 커밋하지 않는다.
+전체 `cargo fmt --all --check`도 최종 exit 0을 확인했다.
 
 첫 제품 빌드 `b64342407e`는 helper 호출의 `tab_w` 스코프 오류로 exit 101이었다.
 이 오류를 보존하고 helper가 기존 `style_params`에서 같은 기본 탭 폭을 직접

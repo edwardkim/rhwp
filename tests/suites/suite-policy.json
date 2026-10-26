@@ -89,6 +89,20 @@
         "path_attr",
         "root_mod"
       ]
+    },
+    {
+      "path": "tests/cases/issue_8153_symbol_coverage.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8153_symbol_fallback.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
     }
   ],
   "exceptions": [
