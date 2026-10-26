@@ -1,7 +1,8 @@
-//! One bounded CPU page snapshot per native session. This cache is optional;
+//! Bounded LRU CPU page snapshots per native session. This cache is optional;
 //! misses and rejected retention never change the region pixel contract.
 
 use serde::Serialize;
+use std::collections::VecDeque;
 
 use super::{NativeDocumentSession, NativeFrame, NativeHostError, MAX_FRAME_PIXELS};
 use crate::renderer::layer_renderer::RasterRenderOptions;
@@ -10,12 +11,14 @@ use crate::renderer::skia::{PreparedSkiaPage, SkiaRegionPlan};
 
 pub const DEFAULT_REGION_CACHE_BYTES: usize = 8 * 1024 * 1024;
 pub const MAX_REGION_CACHE_BYTES: usize = 64 * 1024 * 1024;
+/// Bound metadata as well as pixel storage, including very small page rasters.
+pub const MAX_REGION_CACHE_ENTRIES: usize = 4;
 
 /// Counters accumulate for the session lifetime, including across cache clears.
 /// `replays` counts successful full-page rasterizations for region requests.
 /// Hits count successful requests served by the matching retained snapshot;
 /// `off_page_requests` counts successful clear-only requests on a cold key.
-/// Gauges count only the retained N32 image, excluding output buffers, renderer
+/// Gauges count all retained N32 images, excluding output buffers, renderer
 /// resources, layout data and Skia intermediates. This is not an RSS estimate.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -45,7 +48,8 @@ struct RegionEntry {
 }
 
 pub(super) struct NativeRegionCache {
-    entry: Option<RegionEntry>,
+    // Least recently used first. A successful read moves its entry to the back.
+    entries: VecDeque<RegionEntry>,
     max_bytes: usize,
     stats: NativeRegionCacheStats,
 }
@@ -53,7 +57,7 @@ pub(super) struct NativeRegionCache {
 impl Default for NativeRegionCache {
     fn default() -> Self {
         Self {
-            entry: None,
+            entries: VecDeque::new(),
             max_bytes: DEFAULT_REGION_CACHE_BYTES,
             stats: NativeRegionCacheStats::default(),
         }
@@ -61,32 +65,53 @@ impl Default for NativeRegionCache {
 }
 
 impl NativeRegionCache {
-    fn evict(&mut self) {
-        if self.entry.take().is_some() {
+    fn evict_oldest(&mut self) {
+        if self.entries.pop_front().is_some() {
             self.stats.evictions = self.stats.evictions.saturating_add(1);
         }
     }
 
+    fn evict_all(&mut self) {
+        while !self.entries.is_empty() {
+            self.evict_oldest();
+        }
+    }
+
+    fn retained_bytes(&self) -> usize {
+        self.entries
+            .iter()
+            .map(|entry| entry.page.retained_bytes())
+            .sum()
+    }
+
+    fn evict_for_allocation(&mut self, allocation_bytes: u64) {
+        // The region planner bounds each allocation to 128 MiB, and retained
+        // images total at most 64 MiB. Include every image before allocating.
+        while !self.entries.is_empty()
+            && self.retained_bytes() as u64 + allocation_bytes > SkiaRegionPlan::MAX_BITMAP_BYTES
+        {
+            self.evict_oldest();
+        }
+    }
+
     pub(super) fn invalidate(&mut self) {
-        self.evict();
+        self.evict_all();
         self.stats.invalidations = self.stats.invalidations.saturating_add(1);
     }
 
     fn stats(&self) -> NativeRegionCacheStats {
         let mut stats = self.stats;
-        stats.entries = usize::from(self.entry.is_some());
-        stats.retained_bytes = self
-            .entry
-            .as_ref()
-            .map_or(0, |entry| entry.page.retained_bytes());
+        stats.entries = self.entries.len();
+        stats.retained_bytes = self.retained_bytes();
         stats
     }
 }
 
 impl NativeDocumentSession {
-    /// Configure retention for one completed CPU page, from zero (disabled) to
-    /// 64 MiB. Changing the limit evicts the current entry before returning.
-    /// Rejected values leave the existing limit, snapshot and counters intact.
+    /// Configure total retention for up to four completed CPU page/scale
+    /// snapshots, from zero (disabled) to 64 MiB. Changing the limit evicts all
+    /// entries before returning. Rejected values leave the existing limit,
+    /// snapshots and counters intact.
     /// The per-request 128 MiB bitmap peak remains independent of this limit.
     pub fn set_region_cache_limit(&self, max_bytes: usize) -> Result<(), NativeHostError> {
         if max_bytes > MAX_REGION_CACHE_BYTES {
@@ -125,17 +150,18 @@ impl NativeDocumentSession {
             scale: scale.to_bits(),
         };
         let mut cache = self.region_cache.borrow_mut();
-        if let Some(entry) = cache.entry.as_ref().filter(|entry| entry.key == key) {
-            let plan = entry.page.plan_region(region)?;
-            if entry.page.can_render_plan(plan) {
-                let output = entry.page.render_region(region)?;
+        if let Some(index) = cache.entries.iter().position(|entry| entry.key == key) {
+            let plan = cache.entries[index].page.plan_region(region)?;
+            cache.evict_for_allocation(plan.output_bytes() as u64);
+            if let Some(index) = cache.entries.iter().position(|entry| entry.key == key) {
+                let output = cache.entries[index].page.render_region(region)?;
+                let entry = cache.entries.remove(index).expect("matching cache entry");
+                cache.entries.push_back(entry);
                 cache.stats.hits = cache.stats.hits.saturating_add(1);
                 return Ok(self.region_frame(output));
             }
-            // An off-page request needs no working raster. Release the old
-            // image before its large clear output so retention cannot turn a
-            // formerly admissible direct request into a bitmap peak error.
-            cache.evict();
+            // If the matching image was evicted, preserve the direct API's
+            // clear-only allowance without retaining it alongside the output.
         }
 
         let tree = self
@@ -144,15 +170,7 @@ impl NativeDocumentSession {
         let plan = SkiaRegionPlan::new(tree.page_width, tree.page_height, region, options)?;
         cache.stats.misses = cache.stats.misses.saturating_add(1);
         if plan.intersection().is_none() {
-            // The matching-key case above evicts when required. A different-key
-            // snapshot must also fit alongside the clear-only output.
-            let retained = cache
-                .entry
-                .as_ref()
-                .map_or(0, |entry| entry.page.retained_bytes());
-            if !PreparedSkiaPage::fits_bitmap_budget(retained, plan.output_bytes()) {
-                cache.evict();
-            }
+            cache.evict_for_allocation(plan.output_bytes() as u64);
             let (output, prepared) = self
                 .renderer()
                 .prepare_page_for_region(&tree, region, options)?;
@@ -161,16 +179,27 @@ impl NativeDocumentSession {
             return Ok(self.region_frame(output));
         }
 
-        // Drop the old N32 image before any new surface/output allocation. A
-        // replacement never temporarily retains two full-page snapshots.
-        cache.evict();
+        // Reserve room before creating the new surface. Its immutable snapshot
+        // shares that allocation, so working_bytes is also its retention cost.
+        // Preserve the existing oversized-page bypass: release all old images.
+        if plan.working_bytes() > cache.max_bytes as u64 {
+            cache.evict_all();
+        } else {
+            while cache.entries.len() >= MAX_REGION_CACHE_ENTRIES
+                || cache.retained_bytes() as u64 + plan.working_bytes() > cache.max_bytes as u64
+            {
+                cache.evict_oldest();
+            }
+        }
+        cache.evict_for_allocation(plan.peak_bitmap_bytes());
         let (output, prepared) = self
             .renderer()
             .prepare_page_for_region(&tree, region, options)?;
         cache.stats.replays = cache.stats.replays.saturating_add(1);
         if let Some(prepared) = prepared {
+            debug_assert_eq!(prepared.retained_bytes() as u64, plan.working_bytes());
             if prepared.retained_bytes() <= cache.max_bytes {
-                cache.entry = Some(RegionEntry {
+                cache.entries.push_back(RegionEntry {
                     key,
                     page: prepared,
                 });

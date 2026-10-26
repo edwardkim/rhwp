@@ -5,7 +5,9 @@
 
 use rhwp::document_core::native_interaction::{NativeTextPosition, NativeTextSelection};
 use rhwp::native_host::editor::NativeEditor;
-use rhwp::native_host::region_cache::{DEFAULT_REGION_CACHE_BYTES, MAX_REGION_CACHE_BYTES};
+use rhwp::native_host::region_cache::{
+    DEFAULT_REGION_CACHE_BYTES, MAX_REGION_CACHE_BYTES, MAX_REGION_CACHE_ENTRIES,
+};
 use rhwp::native_host::{NativeDocumentSession, NativeHostError};
 use rhwp::paint::{ClipKind, LayerNode, PageLayerTree, PaintOp};
 use rhwp::renderer::font_environment::FontEnvironment;
@@ -213,16 +215,31 @@ fn preparing_a_wholly_off_page_request_avoids_an_oversized_working_bitmap() {
 }
 
 fn session(two_pages: bool) -> NativeDocumentSession {
+    session_with_pages(if two_pages { 2 } else { 1 })
+}
+
+fn session_with_pages(pages: usize) -> NativeDocumentSession {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
     core.insert_text_native(0, 0, 0, "Skia 가😀").unwrap();
-    if two_pages {
+    if pages > 1 {
         let mut document = core.document().clone();
-        document.sections.push(document.sections[0].clone());
+        for _ in 1..pages {
+            document.sections.push(document.sections[0].clone());
+        }
         core.set_document(document);
-        assert!(core.page_count() >= 2);
+        for section in 1..pages {
+            core.insert_text_native(section, 0, 0, &format!("Different page {section}: ABC "))
+                .unwrap();
+        }
+        assert_eq!(core.page_count() as usize, pages);
     }
     NativeDocumentSession::from_core(core)
+}
+
+fn page_bytes(session: &NativeDocumentSession, page: u32, scale: f64) -> usize {
+    let size = session.page_size(page).unwrap();
+    (size.width * scale).ceil() as usize * (size.height * scale).ceil() as usize * 4
 }
 
 #[test]
@@ -264,25 +281,143 @@ fn native_regions_replay_once_then_reuse_one_bounded_page_for_moving_windows() {
 }
 
 #[test]
-fn native_page_scale_and_explicit_clear_replace_or_invalidate_the_one_entry() {
+fn native_page_round_trips_and_scale_keys_reuse_snapshots_until_explicit_clear() {
     let session = session(true);
     session.render_region(0, request(), 0.5).unwrap();
     session.render_region(1, request(), 0.5).unwrap();
     assert_eq!(session.region_cache_stats().replays, 2);
-    assert_eq!(session.region_cache_stats().evictions, 1);
+    assert_eq!(session.region_cache_stats().entries, 2);
+    assert_eq!(session.region_cache_stats().evictions, 0);
     session.render_region(0, request(), 0.5).unwrap();
     session.render_region(0, request(), 0.75).unwrap();
-    assert_eq!(session.region_cache_stats().replays, 4);
-    assert_eq!(session.region_cache_stats().evictions, 3);
+    assert_eq!(session.region_cache_stats().replays, 3);
+    assert_eq!(session.region_cache_stats().hits, 1);
+    assert_eq!(session.region_cache_stats().entries, 3);
+    assert_eq!(session.region_cache_stats().evictions, 0);
+    assert_eq!(
+        session.region_cache_stats().retained_bytes,
+        page_bytes(&session, 0, 0.5) + page_bytes(&session, 1, 0.5) + page_bytes(&session, 0, 0.75)
+    );
     let before_clear = session.region_cache_stats();
     session.clear_caches();
     let cleared = session.region_cache_stats();
     assert_eq!(cleared.entries, 0);
     assert_eq!(cleared.retained_bytes, 0);
     assert_eq!(cleared.replays, before_clear.replays);
+    assert_eq!(cleared.evictions, before_clear.evictions + 3);
     assert_eq!(cleared.invalidations, before_clear.invalidations + 1);
     session.render_region(0, request(), 0.75).unwrap();
-    assert_eq!(session.region_cache_stats().replays, 5);
+    assert_eq!(session.region_cache_stats().replays, 4);
+}
+
+#[test]
+fn distinct_pages_keep_their_own_exact_full_page_crops_on_warm_round_trips() {
+    let session = session(true);
+    let scale = 0.5;
+    let references = [
+        session.render_page(0, scale).unwrap(),
+        session.render_page(1, scale).unwrap(),
+    ];
+    assert_ne!(references[0].pixels.bytes, references[1].pixels.bytes);
+    for page in [0, 1, 0, 1] {
+        let size = session.page_size(page).unwrap();
+        let frame = session
+            .render_region(
+                page,
+                RasterRegion {
+                    x: -1.3,
+                    y: -2.2,
+                    width: size.width + 2.6,
+                    height: size.height + 4.4,
+                },
+                scale,
+            )
+            .unwrap();
+        assert_crop(
+            &references[page as usize].pixels,
+            &RasterRegionPixels {
+                pixels: frame.pixels,
+                origin_x: frame.origin_x,
+                origin_y: frame.origin_y,
+            },
+            [255; 4],
+        );
+    }
+    let stats = session.region_cache_stats();
+    assert_eq!(stats.replays, 2);
+    assert_eq!(stats.misses, 2);
+    assert_eq!(stats.hits, 2);
+    assert_eq!(stats.entries, 2);
+    assert_eq!(
+        stats.retained_bytes,
+        references
+            .iter()
+            .map(|frame| frame.pixels.bytes.len())
+            .sum::<usize>()
+    );
+}
+
+#[test]
+fn entry_cap_evicts_the_least_recently_used_scale_after_a_successful_hit() {
+    assert_eq!(MAX_REGION_CACHE_ENTRIES, 4);
+    let session = session(false);
+    let scales = [0.125, 0.25, 0.375, 0.5, 0.625];
+    for scale in &scales[..4] {
+        session.render_region(0, request(), *scale).unwrap();
+    }
+    let filled = session.region_cache_stats();
+    assert_eq!(filled.entries, MAX_REGION_CACHE_ENTRIES);
+    assert_eq!(filled.replays, 4);
+    assert_eq!(
+        filled.retained_bytes,
+        scales[..4]
+            .iter()
+            .map(|scale| page_bytes(&session, 0, *scale))
+            .sum::<usize>()
+    );
+    session.render_region(0, request(), scales[0]).unwrap();
+    session.render_region(0, request(), scales[4]).unwrap();
+    let replaced = session.region_cache_stats();
+    assert_eq!(replaced.entries, MAX_REGION_CACHE_ENTRIES);
+    assert_eq!(replaced.evictions, 1);
+    assert_eq!(replaced.replays, 5);
+    assert_eq!(
+        replaced.retained_bytes,
+        [scales[0], scales[2], scales[3], scales[4]]
+            .iter()
+            .map(|scale| page_bytes(&session, 0, *scale))
+            .sum::<usize>()
+    );
+    session.render_region(0, request(), scales[0]).unwrap();
+    assert_eq!(session.region_cache_stats().hits, 2);
+    session.render_region(0, request(), scales[1]).unwrap();
+    assert_eq!(session.region_cache_stats().replays, 6);
+    assert_eq!(session.region_cache_stats().evictions, 2);
+}
+
+#[test]
+fn total_byte_cap_evicts_the_least_recently_used_page_before_the_entry_cap() {
+    let session = session_with_pages(3);
+    let scale = 0.5;
+    let budget = page_bytes(&session, 0, scale) + page_bytes(&session, 1, scale);
+    assert!(budget < DEFAULT_REGION_CACHE_BYTES);
+    session.set_region_cache_limit(budget).unwrap();
+    session.render_region(0, request(), scale).unwrap();
+    session.render_region(1, request(), scale).unwrap();
+    assert_eq!(session.region_cache_stats().retained_bytes, budget);
+    session.render_region(0, request(), scale).unwrap();
+    session.render_region(2, request(), scale).unwrap();
+    let replaced = session.region_cache_stats();
+    assert_eq!(replaced.entries, 2);
+    assert!(replaced.entries < MAX_REGION_CACHE_ENTRIES);
+    assert_eq!(replaced.retained_bytes, budget);
+    assert_eq!(replaced.replays, 3);
+    assert_eq!(replaced.evictions, 1);
+    session.render_region(0, request(), scale).unwrap();
+    assert_eq!(session.region_cache_stats().hits, 2);
+    session.render_region(1, request(), scale).unwrap();
+    assert_eq!(session.region_cache_stats().replays, 4);
+    assert_eq!(session.region_cache_stats().retained_bytes, budget);
 }
 
 #[test]
@@ -347,10 +482,30 @@ fn a_page_above_the_retention_cap_evicts_the_old_entry_and_replays_on_each_reque
 }
 
 #[test]
-fn invalid_regions_and_rejected_font_updates_leave_the_retained_frame_usable() {
+fn an_oversized_page_evicts_all_retained_pages_before_bypassing_retention() {
+    let session = session(true);
+    session.render_region(0, request(), 0.5).unwrap();
+    session.render_region(1, request(), 0.5).unwrap();
+    assert_eq!(session.region_cache_stats().entries, 2);
+    assert!(page_bytes(&session, 0, 2.0) > DEFAULT_REGION_CACHE_BYTES);
+    session.render_region(0, request(), 2.0).unwrap();
+    let stats = session.region_cache_stats();
+    assert_eq!(stats.entries, 0);
+    assert_eq!(stats.retained_bytes, 0);
+    assert_eq!(stats.evictions, 2);
+    assert_eq!(stats.replays, 3);
+    assert_eq!(stats.bypassed_oversized, 1);
+}
+
+#[test]
+fn invalid_requests_and_rejected_updates_preserve_all_entries_and_lru_order() {
     let mut session = session(false);
-    let first = session.render_region(0, request(), 0.75).unwrap().pixels;
+    let scales = [0.125, 0.25, 0.375, 0.5];
+    for scale in scales {
+        session.render_region(0, request(), scale).unwrap();
+    }
     let before = session.region_cache_stats();
+    assert_eq!(before.entries, MAX_REGION_CACHE_ENTRIES);
     assert!(session
         .render_region(
             0,
@@ -358,44 +513,65 @@ fn invalid_regions_and_rejected_font_updates_leave_the_retained_frame_usable() {
                 width: 0.0,
                 ..request()
             },
-            0.75
+            scales[0]
         )
         .is_err());
-    assert!(session.render_region(u32::MAX, request(), 0.75).is_err());
+    assert!(session
+        .render_region(u32::MAX, request(), scales[0])
+        .is_err());
     assert!(session.render_region(0, request(), f64::NAN).is_err());
+    assert!(matches!(
+        session.set_region_cache_limit(MAX_REGION_CACHE_BYTES + 1),
+        Err(NativeHostError::LimitExceeded(_))
+    ));
     assert!(session
         .set_font_sources(&["/missing/rhwp-p67-font.ttf".into()], None)
         .is_err());
     assert_eq!(session.region_cache_stats(), before);
     assert!(!session.set_font_sources(&[], None).unwrap());
     assert_eq!(session.region_cache_stats(), before);
-    assert_eq!(
-        session.render_region(0, request(), 0.75).unwrap().pixels,
-        first
-    );
-    assert_eq!(session.region_cache_stats().replays, 1);
+    session
+        .set_region_cache_limit(DEFAULT_REGION_CACHE_BYTES)
+        .unwrap();
+    assert_eq!(session.region_cache_stats(), before);
+    session.render_region(0, request(), 0.625).unwrap();
+    assert_eq!(session.region_cache_stats().replays, 5);
+    session.render_region(0, request(), scales[1]).unwrap();
     assert_eq!(session.region_cache_stats().hits, 1);
+    // The failed request for scales[0] must not have promoted the oldest key.
+    session.render_region(0, request(), scales[0]).unwrap();
+    assert_eq!(session.region_cache_stats().replays, 6);
 }
 
 #[test]
 fn font_generation_change_invalidates_even_when_document_revision_is_unchanged() {
-    let mut session = session(false);
-    session.render_region(0, request(), 0.75).unwrap();
+    let mut session = session(true);
+    for page in 0..2 {
+        session.render_region(page, request(), 0.5).unwrap();
+    }
+    assert_eq!(session.region_cache_stats().entries, 2);
     let environment =
         FontEnvironment::from_json(r#"{"id":"p67-font-generation","substitutions":{}}"#).unwrap();
     assert!(session.set_font_sources(&[], Some(environment)).unwrap());
     assert_eq!(session.revision(), 0);
     assert_eq!(session.font_generation(), 1);
     assert_eq!(session.region_cache_stats().entries, 0);
-    let frame = session.render_region(0, request(), 0.75).unwrap();
-    assert_eq!(frame.font_generation, 1);
-    assert_eq!(session.region_cache_stats().replays, 2);
+    assert_eq!(session.region_cache_stats().retained_bytes, 0);
+    assert_eq!(session.region_cache_stats().evictions, 2);
+    for page in 0..2 {
+        let frame = session.render_region(page, request(), 0.5).unwrap();
+        assert_eq!(frame.font_generation, 1);
+    }
+    assert_eq!(session.region_cache_stats().replays, 4);
 }
 
 #[test]
 fn edits_undo_and_redo_invalidate_region_snapshots_and_stamp_new_revision() {
-    let session = session(false);
-    session.render_region(0, request(), 0.75).unwrap();
+    let session = session(true);
+    for page in 0..2 {
+        session.render_region(page, request(), 0.5).unwrap();
+    }
+    assert_eq!(session.region_cache_stats().entries, 2);
     let position = NativeTextPosition {
         section: 0,
         paragraph: 0,
@@ -412,24 +588,45 @@ fn edits_undo_and_redo_invalidate_region_snapshots_and_stamp_new_revision() {
     .unwrap();
     let edited = editor.replace_selection(0, "한글").unwrap();
     assert_eq!(editor.session().region_cache_stats().entries, 0);
-    let frame = editor.session().render_region(0, request(), 0.75).unwrap();
-    assert_eq!(frame.revision, edited.revision);
-    assert_eq!(editor.session().region_cache_stats().replays, 2);
+    assert_eq!(editor.session().region_cache_stats().retained_bytes, 0);
+    for page in 0..2 {
+        let frame = editor
+            .session()
+            .render_region(page, request(), 0.5)
+            .unwrap();
+        assert_eq!(frame.revision, edited.revision);
+    }
+    assert_eq!(editor.session().region_cache_stats().replays, 4);
     let undone = editor.undo(edited.revision).unwrap();
     assert_eq!(editor.session().region_cache_stats().entries, 0);
-    let frame = editor.session().render_region(0, request(), 0.75).unwrap();
-    assert_eq!(frame.revision, undone.revision);
+    assert_eq!(editor.session().region_cache_stats().retained_bytes, 0);
+    for page in 0..2 {
+        let frame = editor
+            .session()
+            .render_region(page, request(), 0.5)
+            .unwrap();
+        assert_eq!(frame.revision, undone.revision);
+    }
+    assert_eq!(editor.session().region_cache_stats().replays, 6);
     let redone = editor.redo(undone.revision).unwrap();
     assert_eq!(editor.session().region_cache_stats().entries, 0);
-    let frame = editor.session().render_region(0, request(), 0.75).unwrap();
-    assert_eq!(frame.revision, redone.revision);
-    assert_eq!(editor.session().region_cache_stats().replays, 4);
+    assert_eq!(editor.session().region_cache_stats().retained_bytes, 0);
+    for page in 0..2 {
+        let frame = editor
+            .session()
+            .render_region(page, request(), 0.5)
+            .unwrap();
+        assert_eq!(frame.revision, redone.revision);
+    }
+    assert_eq!(editor.session().region_cache_stats().replays, 8);
 }
 
 #[test]
 fn composition_preview_and_cancel_invalidate_without_leaving_a_stale_cached_page() {
-    let session = session(false);
-    session.render_region(0, request(), 0.75).unwrap();
+    let session = session(true);
+    for page in 0..2 {
+        session.render_region(page, request(), 0.5).unwrap();
+    }
     let position = NativeTextPosition {
         section: 0,
         paragraph: 0,
@@ -445,22 +642,35 @@ fn composition_preview_and_cancel_invalidate_without_leaving_a_stale_cached_page
     )
     .unwrap();
     let id = editor.begin_composition(0).unwrap().composition_id.unwrap();
-    assert_eq!(editor.session().region_cache_stats().entries, 1);
+    assert_eq!(editor.session().region_cache_stats().entries, 2);
     let preview = editor.update_composition(0, id, "한글").unwrap();
     assert_eq!(editor.session().region_cache_stats().entries, 0);
-    editor.session().render_region(0, request(), 0.75).unwrap();
-    assert_eq!(editor.session().region_cache_stats().replays, 2);
+    assert_eq!(editor.session().region_cache_stats().retained_bytes, 0);
+    for page in 0..2 {
+        editor
+            .session()
+            .render_region(page, request(), 0.5)
+            .unwrap();
+    }
+    assert_eq!(editor.session().region_cache_stats().replays, 4);
     let cancelled = editor.cancel_composition(preview.revision, id).unwrap();
     assert_eq!(editor.session().region_cache_stats().entries, 0);
-    let frame = editor.session().render_region(0, request(), 0.75).unwrap();
-    assert_eq!(frame.revision, cancelled.revision);
-    assert_eq!(editor.session().region_cache_stats().replays, 3);
+    assert_eq!(editor.session().region_cache_stats().retained_bytes, 0);
+    for page in 0..2 {
+        let frame = editor
+            .session()
+            .render_region(page, request(), 0.5)
+            .unwrap();
+        assert_eq!(frame.revision, cancelled.revision);
+    }
+    assert_eq!(editor.session().region_cache_stats().replays, 6);
 }
 
 #[test]
-fn off_page_requests_do_not_replay_or_replace_a_small_retained_page() {
+fn off_page_requests_do_not_replay_or_replace_small_retained_pages() {
     let session = session(true);
     session.render_region(0, request(), 0.5).unwrap();
+    session.render_region(1, request(), 0.5).unwrap();
     let before = session.region_cache_stats();
     let off_page = RasterRegion {
         x: -4.0,
@@ -468,19 +678,19 @@ fn off_page_requests_do_not_replay_or_replace_a_small_retained_page() {
         width: 2.0,
         height: 2.0,
     };
-    let frame = session.render_region(1, off_page, 0.5).unwrap();
+    let frame = session.render_region(1, off_page, 0.75).unwrap();
     assert!(frame
         .pixels
         .bytes
         .chunks_exact(4)
         .all(|pixel| pixel == [255; 4]));
     let after = session.region_cache_stats();
-    assert_eq!(after.entries, 1);
+    assert_eq!(after.entries, 2);
     assert_eq!(after.retained_bytes, before.retained_bytes);
     assert_eq!(after.replays, before.replays);
     assert_eq!(after.evictions, before.evictions);
     assert_eq!(after.off_page_requests, 1);
     session.render_region(0, request(), 0.5).unwrap();
     assert_eq!(session.region_cache_stats().hits, 1);
-    assert_eq!(session.region_cache_stats().replays, 1);
+    assert_eq!(session.region_cache_stats().replays, 2);
 }

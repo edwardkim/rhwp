@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/native_skia_region.md
+last_verified: 2026-10-26
+---
+
 # Native Skia region rendering
 
 With `native-skia`, `SkiaRegionPlan::new(page_width, page_height, region,
@@ -67,23 +74,35 @@ bitmap accounting. The snapshot does not establish a cross-thread/GPU contract.
 
 ## Native session retention
 
-`NativeDocumentSession::render_region` retains at most one prepared page, with an
-8 MiB default limit. `set_region_cache_limit(bytes)` accepts zero to disable
-retention and limits up to 64 MiB. Changing the limit evicts the current entry;
-an invalid limit leaves the cache and counters unchanged.
+`NativeDocumentSession::render_region` retains up to four prepared page/scale
+snapshots in a least-recently-used (LRU) cache. The 8 MiB default and 64 MiB
+maximum limits apply to their **combined** N32 storage. The four-entry cap also
+bounds metadata for very small rasters. `set_region_cache_limit(bytes)` accepts
+zero to disable retention. Changing the limit evicts all entries; an invalid
+limit leaves the cache, recency order, and counters unchanged.
 
 The key includes document revision, font generation, page index, and the exact
 scale bits. A matching warm request skips page-tree construction and paint
-replay. Successful edits, IME preview/cancel, undo/redo, font changes, and
-`clear_caches` invalidate the snapshot. Rejected/no-op font changes preserve it.
-Page/scale changes replace it; an oversized page still renders and is discarded.
-The previous image is released before a replacement surface is allocated.
+replay and marks the entry most recently used. For example, `page 0 → page 1 →
+page 0` performs two replays when both rasters fit. Different scales are separate
+entries. Invalid requests do not promote an entry or evict another page.
+Successful edits, IME preview/cancel, undo/redo, font changes, and `clear_caches`
+invalidate all snapshots. Rejected/no-op font changes preserve them.
 
-Cold-key off-page requests do not replay and can preserve another useful cached
-page when retained image plus output fit the bitmap limit. A prepared read
-counts its image even off-page; the session can evict first to preserve the
-direct API's clear-only allowance. At the current native 64 MiB frame and cache
-caps, their sum is already at most 128 MiB.
+Before a cacheable miss allocates its surface, the least recently used entries
+are released until the new raster fits both the combined byte limit and the
+four-entry cap. The planner also checks all remaining images plus the new
+working raster and output against the 128 MiB bitmap limit. An oversized page
+preserves the existing bypass behavior: all retained images are released before
+it renders, and its snapshot is discarded afterward. No new tile origin or
+translated-surface rasterization is introduced.
+
+Cold-key off-page requests do not replay and preserve useful cached pages when
+all retained images plus output fit the bitmap limit. A warm read counts all
+retained images too, including off-page reads; the session can evict first to
+preserve the direct API's clear-only allowance. At the current native 64 MiB
+frame and total cache caps, their sum is already at most 128 MiB. These limits
+exclude earlier output buffers still owned by callers and Skia intermediates.
 
 `region_cache_stats()` exposes current entries/retained bytes and lifetime hit,
 miss, replay, eviction, invalidation, oversized-bypass, and cold-key off-page
@@ -94,6 +113,7 @@ are Rust host diagnostics; this change adds no C ABI or wire command.
 `tests/cases/issue_536_native_region_cache.rs` compares cold/warm AA, gradient,
 clip, fractional scale, and padding pixels with independently rendered full
 pages. It also covers snapshot ownership, bounds, replay counts, retention
-disable/bypass, failed requests, edit/IME/font invalidation, page/scale changes,
-and off-page reads. It makes no wall-clock speed, subtree-culling, presentation,
+disable/bypass, failed requests, edit/IME/font invalidation, page/scale reuse,
+LRU eviction under entry/byte limits, and off-page reads. It makes no wall-clock
+speed, subtree-culling, presentation,
 GPU acceleration, or final Hancom fidelity claim.
