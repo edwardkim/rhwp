@@ -3078,7 +3078,7 @@ fn parse_picture(
     let mut border_x = [0i32; 4];
     let mut border_y = [0i32; 4];
     let mut border_line: Option<ShapeBorderLine> = None;
-    let mut img_dim: (u32, u32) = (0, 0); // [#1389] hp:imgDim 원본 이미지 픽셀 크기
+    let mut img_dim: (u32, u32) = (0, 0); // [#1389] hp:imgDim 원본 crop 좌표계의 기준 크기
     let mut href: Option<String> = None;
     let mut picture_instance_id = 0;
     let mut effects = PictureEffects::default();

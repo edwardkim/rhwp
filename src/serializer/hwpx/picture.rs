@@ -390,7 +390,7 @@ pub(super) fn write_img_dim_with_storage<W: Write, S: crate::storage::Storage>(
 where
     S::Error: std::fmt::Display,
 {
-    // [#1389] 원본 이미지 픽셀 크기 verbatim (IR img_dim). 종전 간이 계산
+    // [#1389] 원본 crop 좌표계의 기준 크기 그대로 보존(IR img_dim). 종전 간이 계산
     // (common - crop)은 imgClip extent 의미 오해로 음수→0 변형이었다.
     empty_tag_with_storage(
         w,

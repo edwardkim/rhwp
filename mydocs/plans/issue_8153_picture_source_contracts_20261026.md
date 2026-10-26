@@ -2,7 +2,7 @@
 
 ## 실제 원본과 원인 분리
 
-제품 source `ddfacbc9fa305175a6e0237a7f6e14800a3cede4`의 두 편람은 전쪽
+이 단계의 시작 기준 source `ddfacbc9fa305175a6e0237a7f6e14800a3cede4`의 두 편람은 전쪽
 Native·표준 최적화 fresh WASM 1,532조건 중 1,380조건이 raw100·정수 미대응
 0이다. 이 작업은 잔여 152개 조건의 원인 보정이며 원본·기준 PDF·점수 조건을 바꾸지 않는다.
 
@@ -100,5 +100,103 @@ ubuntu-ted2의 `5df67d3299befb467a49dc4eaafd12d6e1877e2d`에서 WMF Print
 실행한다. 다른 paint를 분리한 PNG의 투명 영역은 PDF와 같은 흰색 종이에 먼저
 합성한다. alpha를 버려 검정으로 비교한 초기 진단은 제외했다. 기준 PNG를 유지한
 동일 검사에서 이전 `ddfacbc9fa` 라이브러리는 **2 FAIL**, 보정 `49fa71149a`
-라이브러리는 **2 PASS·0 FAIL·0 ignored**다. Native 전체·fresh WASM은 아직
-진행 전이며 이 focused 결과로 전체 1,532개 조건의 개선 수를 대신하지 않는다.
+라이브러리는 **2 PASS·0 FAIL·0 ignored**다. 이 focused 결과로 전쪽 검증을
+대신하지 않았으며, 이후 같은 제품 source에서 아래 전체 결과를 확인했다.
+
+## 제품 source 8b960562c8의 완료한 검증
+
+Native와 표준 최적화 fresh WASM의 같은 source
+`8b960562c8830709b05571a71c34b9349bff5909`에서 두 원본의 전쪽을 검증했다.
+
+| 원본 | backend | 전체 쪽 | raw 100%·미대응 0 | 최저 raw | 미대응 합계 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| HWPX | Native | 383 | 349 | 99.46283% | 1,232 |
+| HWP | Native | 383 | 346 | 99.46283% | 1,248 |
+| HWPX | 표준 최적화 fresh WASM | 383 | 348 | 99.25254% | 1,335 |
+| HWP | 표준 최적화 fresh WASM | 383 | 345 | 99.25254% | 1,350 |
+
+53쪽 4→0픽셀, 139쪽 52→0픽셀이 두 원본·양쪽 backend에서 모두 확인됐다.
+전체 1,532개 조건 중 raw 100%·정수 미대응 0은 **1,380→1,388**, 잔여는
+**144개 조건**이다. 미대응 픽셀 증가·쪽수 불일치·누락은 없다. Native의 논리
+렌더 트리 JSON 766개도 이전 source와 바이트 단위로 같다.
+
+145쪽은 미대응 픽셀이 Native 9개·WASM 6개로 그대로다. 비교 분모가 달라져
+raw가 Native 99.99414→99.99406%, WASM 99.99606→99.99601%로 소폭 낮아졌다.
+Native의 기존 미대응 mask는 전후 완전히 같고, 엄격한 이진 픽셀 차이는
+18,561→14,619로 줄었다. 이 설명으로 목표 raw 100%를 면제하지 않는다.
+
+정식 자동 수집 경로 `regression_suite_007`에서 새 그림 회귀는 **2 PASS·0 FAIL·
+0 ignored**다. 실제 Canvas Print 기하 모드·Screen 복귀 브라우저 검사도 **1 PASS**다.
+fresh WASM은 release·기본 최적화를 모두 포함하며 jobs 8·codegen units 16·
+Binaryen 8로 빌드했다. 빌드만 약 38분 2초가 걸렸다. 임의 no-opt 결과로 대신하지 않았다.
+
+증거는 `picture-frame-isolation/column-owner-product/`의
+`same-source-whole-summary.json`, 문서별 Native/WASM `whole-score/silhouette.tsv`,
+`native-render-tree-preservation.json`, `actual-ci-selector-receipt.json`, `browser.log`,
+`standard-release-build/build.json`, Native/fresh WASM 139쪽 review·overlay다.
+139쪽 그림과 표 경계를 직접 대조했다. raw 100%는 RGB 전체 동일의 뜻이 아니며,
+기존 본문 획 농도 차이를 이 보정의 해결 범위로 올리지 않는다.
+
+목표인 전쪽 100%와 최종 전체 필수 검증은 아직 완료하지 않았다. PR 생성·push·
+upstream 동기화는 하지 않았으며, 남은 보정 뒤 PR 준비까지만 진행한다.
+
+## 3개 공식 참조본에 따른 원본·소비 경로 분석
+
+작업지시자의 지시에 따라 이후 보정은 인쇄 API 조합을 탐색하기 전에 다음 참조본의
+원본 레코드 종류·단위·속성을 대조한다. 사양의 명시 규칙과 독립 인쇄에서 관찰한
+미기술 동작을 구분하며, 화면 점수에 맞춘 수치나 문서별 분기를 추가하지 않는다.
+
+- [HWP5 revision 1.3](../tech/한글문서파일형식_5.0_revision1.3.md):
+  표 70의 글자처럼 취급·참조 축, 표 83~85의 원래/현재 크기와 저장 행렬,
+  표 107의 그림 사각형·crop·안쪽 여백, 표 116의 기준 이미지 크기를 확인한다.
+- [수식 revision 1.3](../tech/한글문서파일형식_수식_revision1.3.md):
+  영문 기본 이탤릭·`rm`/`it`/`bold`, 첫 글자 크기 기준 `SCALE`, 항 구분과
+  표시 간격을 구분한다. HWP5 표 105의 수식 글자 크기 단위는 HWPUNIT다.
+- [차트 revision 1.2](../tech/한글문서파일형식_차트_revision1.2.md):
+  ChartObj 구조와 저장 속성을 먼저 확인한다. 표 1의 차트 크기는 twip,
+  표 3의 글꼴과 표 42의 pen 너비는 point이며, 일반 그림의 좌표와 혼용하지 않는다.
+  HWP5 4.3.9.6의 OLE `Contents`와 `OOXMLChartContents` 구분도 따른다.
+
+### 원본에서 확정한 구분
+
+HWP 원본을 레코드 수준으로 열거하고 HWPX의 구역·바탕쪽 등 전체 Contents story를
+대조했다. **두 원본 모두 그림 113개, 수식·OLE·차트 데이터 0개**다. HWPX 구역만
+읽은 101개에 바탕쪽 그림 12개를 포함한 수다. 따라서 현재 그림 잔여를 수식·차트
+엔진 문제로 분류하지 않으며, 그림에 포함된 기호에도 수식 기본 글꼴 규칙을 적용하지 않는다.
+그림 밖 본문·글상자 문자는 HWP5 표 33의 언어별 글꼴·장평·자간·상대 크기·위치와
+표 62의 저장 글줄 원점·높이·베이스라인을 대조한다. 같은 모양의 기호라도 실제
+수식 레코드와 일반 문자 run의 적용 규칙을 혼용하지 않는다.
+
+표 116은 기준 이미지 크기를 **HWPUNIT 4×2바이트**로 정의한다. 실제 HWP 그림
+113개는 모두 91바이트·효과 flags 0이고, 기준 크기·crop·BinData의 조합이 HWPX
+113개와 일치한다. `src/parser/control/shape.rs`도 기준 크기를 `Picture.img_dim`에
+읽는다. 일부 주석의 “픽셀 크기·HWPX만 적재” 설명은 실제 타입·코드와 다르지만,
+그 주석만으로 기능 손실이나 파서 결함을 판정하지 않는다.
+
+그림 꼭짓점의 실제 INT32 8개는 `(x0,y0,x1,y1,x2,y2,x3,y3)` 순서로 읽을 때
+HWPX의 점 4개와 **113개 모두** 일치한다. 현재 IR의 `border_x`/`border_y`는 각각
+앞뒤 INT32 4개를 보존하고 HWPX 파서·직렬화기도 같은 scalar 배치를 쓴다. 이름만 보고
+X 배열·Y 배열로 재배열하면 왕복 계약을 깨므로 변경하지 않는다. 표 107의 원문
+표기와 실제 저장 배치를 구분해 설명해야 한다. 이 필드는 현재 renderer에서 직접
+소비하지 않으므로 이번 raw 잔여의 원인이라고 주장하지 않는다.
+
+### 다음으로 대조할 실제 변환 경계
+
+141쪽 그림은 HWP/HWPX 모두 기준 크기 `(80280,30900)`과
+crop `(1091,0,79016,30900)`을 저장하고, 실제 bitmap은 `1070×412`다.
+기준 좌표를 raster로 대응하면 x 시작은 `1091×1070/80280`이며 약 14.54123px다.
+이 원본 범위는 `Picture.crop_reference_size` → `ImageNode.original_size_hu` →
+`SourceWindow::for_image`로 전달된다. 그 뒤 `print_tone::print_bitmap_payload`가
+정수 내포 창 `[15,0,1053,412]`을 잘라 `OutputDeviceWindow`를 발행한다.
+`image_resolver`의 window 소비와 최종 paint frame까지 이 대응이 보존되는지 확인한다.
+이 정수화가 HWP5의 명시 규칙이라고 간주하거나 독립 근거 없이 필터를 바꾸지 않는다.
+
+원본 레코드·XML·대응 비교와 참조본 SHA는 ignored
+`output/pr-review/issue8153-handbook-raw100-20261022/remaining-raw100-diagnostic/spec-contract-audit/`
+아래에 있다. 원본·PDF·글꼴·현재 base는 변경하지 않았다.
+
+원본 crop을 되살리고 같은 bitmap의 Native full-source JPEG와 기존 sampler로
+재생한 141쪽 진단은 **34→30픽셀**이다. PDF 자원·좌표나 새 필터는 주입하지 않았다.
+그러나 전부 해결되지 않았고 미대응 위치도 달라져 제품 보정으로 채택하지 않았다.
+이 결과는 `spec-contract-audit/source-crop-replay-comparison.json`에 별도로 두며
+위 제품의 1,388개 완료 조건에 합산하지 않는다.
