@@ -1119,17 +1119,15 @@ impl TextRunNode {
         let chars: Vec<char> = text.chars().collect();
         let mut positions = self.replay_positions_for(text).into_owned();
         super::validated_replay_positions(text, Some(&positions))?;
-        let visible_end = chars
-            .iter()
-            .rposition(|ch| !ch.is_whitespace())
-            .map_or(0, |index| index + 1);
-        // 실제 잉크가 다음 블록을 침범하면 그 겹침을 bbox 절단으로 숨기지 않는다.
-        let width = requested_width.max(positions[visible_end]);
         let tab = chars.iter().rposition(|character| *character == '\t')?;
         let suffix = chars[tab + 1..].iter().collect::<String>();
         let suffix_style = self.style.for_text_fragment(tab + 1);
         let suffix_positions = super::layout::compute_char_positions(&suffix, &suffix_style);
-        let tab_end = width - suffix_positions.last()?;
+        let suffix_width = *suffix_positions.last()?;
+        // 앞의 공백과 뒤 공백도 자연 전진을 갖는다. 요청 폭이 이보다 작으면
+        // 음수 탭이나 공백 절단 대신 최소 점유 폭을 같은 배열·bbox에 보존한다.
+        let width = requested_width.max(positions[tab] + suffix_width);
+        let tab_end = width - suffix_width;
         if !tab_end.is_finite() || tab_end < positions[tab] {
             return None;
         }
