@@ -11832,7 +11832,7 @@ fn make_picture_image_node(
         .unwrap_or((None, None, None));
     let para_for_image = cell_ctx.map(|c| c.parent_para_index).unwrap_or(para_index);
     let img_id = tree.next_id();
-    RenderNode::new(
+    let mut node = RenderNode::new(
         img_id,
         RenderNodeType::Image(ImageNode {
             section_index: Some(section_index),
@@ -11860,7 +11860,9 @@ fn make_picture_image_node(
             ..ImageNode::new(bin_data_id, image_data)
         }),
         bbox,
-    )
+    );
+    node.source_inline_picture = pic.common.treat_as_char;
+    node
 }
 
 /// [Task #1151 v9 결함 D] paragraph 의 sibling TAC picture 들의 (control_idx, width_px)

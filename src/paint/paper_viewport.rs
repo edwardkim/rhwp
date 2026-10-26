@@ -793,6 +793,27 @@ impl PagePaintContext {
                 && left == 0
                 && top == 0
         });
+        // 원본이 글자처럼 취급한 셀 그림은 표의 실제 참조 축을 상속한다.
+        // 셀·표 레이어가 있다는 이유로 본문 단의 소유를 버리지 않는다.
+        // 중첩 표·별도 좌표계는 TableFillOrigin이 독립적으로 차단한다.
+        let inline_cell = self.print_paper.is_some()
+            && self.axis_aligned_graphics
+            && node.source_inline_picture
+            && node.layer.is_none()
+            && image.cell_context.is_some()
+            && image.header_footer_ref.is_none()
+            && image.fill_mode.is_none()
+            && image.content_inset.is_none()
+            && !image.transform.has_transform();
+        let axis = |index| {
+            column
+                .map(|(x, y)| if index == 0 { x } else { y })
+                .or_else(|| {
+                    inline_cell
+                        .then(|| self.table_fill_origin.inline_picture_axis(index))
+                        .flatten()
+                })
+        };
         let origin = |value: f64, clipped_start: bool, column_origin: Option<f64>| {
             if clipped_start {
                 (value * device_per_css + 1e-9).floor()
@@ -805,8 +826,8 @@ impl PagePaintContext {
             }
         };
         BoundingBox::new(
-            origin(bbox.x, left > 0, column.map(|anchor| anchor.0)) * sx,
-            origin(bbox.y, top > 0, column.map(|anchor| anchor.1)) * sy,
+            origin(bbox.x, left > 0, axis(0)) * sx,
+            origin(bbox.y, top > 0, axis(1)) * sy,
             (bbox.width * device_per_css).round() * sx,
             (bbox.height * device_per_css).round() * sy,
         )

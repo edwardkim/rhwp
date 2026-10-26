@@ -191,6 +191,9 @@ pub struct RenderNode {
     /// 표 배경의 축별 원본 참조가 본문 단인지 보존한다. 배치 좌표는 바꾸지 않는다.
     #[serde(skip)]
     pub(crate) print_table_column_axes: Option<[bool; 2]>,
+    /// 원본 Picture가 글자처럼 취급되는지 보존한다. wrap 값으로 추측하지 않는다.
+    #[serde(skip)]
+    pub(crate) source_inline_picture: bool,
     /// 표/셀의 BorderFill이 직접 생성한 배경. 셀 본문의 독립 도형과 구분한다.
     #[serde(skip)]
     pub(crate) table_background_paint: bool,
@@ -242,6 +245,7 @@ impl RenderNode {
         Self {
             cell_frame_paint: false,
             print_table_column_axes: None,
+            source_inline_picture: false,
             table_background_paint: false,
             id,
             node_type,

@@ -522,7 +522,7 @@ impl LayoutEngine {
             .map(|c| c.last_image_indices())
             .unwrap_or((None, None, None));
         let img_id = tree.next_id();
-        let img_node = RenderNode::new(
+        let mut img_node = RenderNode::new(
             img_id,
             RenderNodeType::Image(ImageNode {
                 section_index,
@@ -552,6 +552,7 @@ impl LayoutEngine {
             }),
             rotated_frame_node_box(pic_x, pic_y, pic_width, pic_height, node_box_size),
         );
+        img_node.source_inline_picture = picture.common.treat_as_char;
 
         self.append_picture_image_node(tree, parent_node, picture, img_node);
 
