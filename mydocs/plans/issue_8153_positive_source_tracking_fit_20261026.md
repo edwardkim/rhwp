@@ -65,3 +65,54 @@ TSV와 배치/소유 보존을 확인한다. 111쪽을 개선한 것으로 전�
 검사를 대신하지 않는다. 최종 목표는 1,532조건 모두 raw100·정수 미대응 0,
 필수 검사 완료와 PR 준비 후 대기다. upstream/devel 동기화·원격 GitHub 쓰기·
 PR 생성은 하지 않는다. 모든 중간 JSON·로그·PNG·SO 분석은 ignored output에 둔다.
+
+## 공통 구현과 실제 검증 결과
+
+제품 코드 `ddfacbc9fa305175a6e0237a7f6e14800a3cede4`에서 양수 원본 자간을
+제외한 intrinsic 측정을 `renderer/glyph_fit.rs`로 모았다. 본문 문자 위치·장평·
+소유와 음수/0 자간의 기존 계약은 보존했다. 문단·명시적 개행 끝 밑줄의 끝점은
+같은 intrinsic 결과를 `PaintOp::decoration_replay`에서 소비한다. 원본 run을
+수정하거나 backend마다 끝 좌표를 따로 보정하지 않는다.
+
+실제 원본을 읽는 `tests/cases/issue_8153_positive_source_tracking.rs` 4건은
+기존 제품 source `be1b4f2ddb7c730075d15cea1d844dbf7826d024`에서 숫자 폭·
+밑줄 길이 assertion으로 모두 FAIL, 수정 후 모두 PASS다. 자동 수집된
+`regression_suite_002`에 대해 기존 `run-rust-test.mjs --cargo-test
+issue_8153_positive_source_tracking -- --profile release-test --features native-skia
+--verbose`도 실제 실행해 **4 PASS / 0 FAIL / 0 ignored**를 확인했다.
+CI workflow에는 호출을 추가하지 않았다.
+
+두 원본의 111쪽은 Native 각각 **47→0픽셀**, 표준 최적화 fresh WASM 각각
+**41→0픽셀**이다. 숫자의 모양·간격·밑줄 끝을 독립 Print와 확대 대조했다.
+기존 화살표의 획 대비 차이는 그대로이며, 숫자 보정의 raw100을 전체 RGB 일치로
+해석하지 않는다. 원본·PDF·점수 알고리즘·글꼴 파일은 변경하지 않았다.
+
+| 원본 | backend | raw100·정수 미대응 0 쪽수 | 전체 쪽수 | 전쪽 최저 raw |
+| --- | --- | ---: | ---: | ---: |
+| HWPX | Native | 347 | 383 | 99.46283 |
+| HWP | Native | 344 | 383 | 99.46283 |
+| HWPX | fresh WASM | 346 | 383 | 99.25254 |
+| HWP | fresh WASM | 343 | 383 | 99.25254 |
+
+전쪽 **1,532개 조건**에서 111쪽의 4조건만 개선됐고 나머지 raw 점수·정수
+미대응 수의 하락은 없다. Native 전쪽 렌더 트리 JSON 766개도 수정 전과
+바이트 단위로 같았다. fresh WASM은 standard release·wasm-opt 실행을
+확인했으며 SHA-256은
+`ab87b6393e934da2e555742138ad6811b175add53a6cec54b7688c69ce21d03e`다.
+공유 `target/pr-review`, Cargo jobs 8, WASM codegen-units 16·Binaryen 8을
+사용했고 Cargo/rustc/wasm-opt는 순차 실행했다.
+
+작업 증거는
+`output/pr-review/issue8153-handbook-raw100-20261022/remaining-raw100-diagnostic/positive-source-spacing-product/`
+아래의 `same-source-whole-summary.json`, `native-whole-comparison.json`,
+`wasm-whole-comparison.json`, `native-render-tree-preservation.json`,
+`actual-ci-selector-receipt.json` 및 `review-native/`에 있다. 각 원본의 전체
+TSV는 `native/<문서키>/whole-score/silhouette.tsv`와
+`wasm-whole/<문서키>/whole-score/silhouette.tsv`다.
+
+현재 raw100·정수 미대응 0은 **1,380/1,532개**, 잔여는 **152조건·40개
+페이지 번호·5,389픽셀**이다. 전체 목표와 최종 필수 suite 완료는 아직 아니다.
+다음 그림 진단에서는 원본 BMP→Print JPEG의 RGB가 같은 139쪽의 배치 경로와,
+원본 공백의 언어 슬롯·장평 및 crop 재표본화 차이가 있는 141쪽을 구분한다.
+단순 crop 원점 내림은 독립 자원과의 차이를 늘려 배제했다. 다른 호스트의
+sample16용 작업을 가져오거나 원본/PDF를 바꿔 점수를 맞추지 않는다.
