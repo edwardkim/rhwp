@@ -114,7 +114,7 @@
     "brace-expansion": "5.0.12"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "0.137.0",
+    "@anthropic-ai/sdk": "1.1.0",
     "@noble/hashes": "^2.4.0",
     "canvaskit-wasm": "^0.42.0",
     "pixelmatch": "^8.0.0",
