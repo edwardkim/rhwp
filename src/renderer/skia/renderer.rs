@@ -41,6 +41,8 @@ use super::font_catalog::TypefaceCatalog;
 mod declared_font_fallbacks;
 #[path = "native_pua_fonts.rs"]
 mod native_pua_fonts;
+#[path = "text_shadow_fonts.rs"]
+mod text_shadow_fonts;
 use super::font_lookup::{
     collect_system_families, font_style_for_text, legacy_typeface_for_style, match_supplied_family,
     match_system_family_style, SystemFontFamilies,

@@ -842,6 +842,12 @@ impl HwpDocument {
             .map_err(JsValue::from)
     }
 
+    #[wasm_bindgen(js_name = getTextShadowFontRequests)]
+    pub fn get_text_shadow_font_requests(&self) -> Result<String, JsValue> {
+        self.get_text_shadow_font_requests_native()
+            .map_err(JsValue::from)
+    }
+
     #[wasm_bindgen(js_name = getNativePuaFontRequests)]
     pub fn get_native_pua_font_requests(&self) -> Result<String, JsValue> {
         serde_json::to_string(&self.native_pua_font_requests())

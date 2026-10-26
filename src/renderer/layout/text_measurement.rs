@@ -1016,6 +1016,8 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
             extra_dash_advance: 0.0,
             outline_type: cs.outline_type,
             shadow_type: cs.shadow_type,
+            shadow_offset_percent: Some([cs.shadow_offset_x, cs.shadow_offset_y]),
+            continuous_shadow: None,
             shadow_color: cs.shadow_color,
             shadow_offset_x: cs.font_size * cs.shadow_offset_x as f64 / 100.0,
             shadow_offset_y: cs.font_size * cs.shadow_offset_y as f64 / 100.0,

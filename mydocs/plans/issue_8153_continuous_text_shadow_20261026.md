@@ -103,3 +103,24 @@ Native·Canvas·SVG는 같은 결과를 소비하고 원문 TextRun·source 수�
 전체 Native/fresh WASM 결과가 완료되기 전에는 최종 보정·PR 준비 완료로 판정하지 않는다.
 공통 코드의 거리·중간 위치에 관한 기대값은 실제 한컴에서 저장·인쇄한 대조군에서
 정한다. 임시 진단과 비공개 분석 기록은 계속 ignored output에만 둔다.
+
+## Native 공통 구현 집중 확인
+
+실제 Native renderer가 선택한 SFNT를 메모리로 공급하고 공통 paint에서 연속 그림자의
+거리·중간 위치를 해소했다. Native·Canvas·SVG의 재생 반복은 이 공통 결과를 소비한다.
+원문 TextRun이나 source를 복제하지 않으며, 원본 signed 간격을 별도로 전달한다.
+본문 clip은 흐름 그림자 범위를 포함하고 셀·글상자·곡선 clip의 소유 경계는 유지한다.
+공급 증거가 없는 프로그램으로 거리를 확정하거나 글꼴별 고정 배율을 추가하지 않는다.
+
+Native 집중 실행에서 두 원본의 9·27·183·251·277쪽 10건 모두 raw100·미대응 0을
+확인했다. 함께 실행한 8·10쪽은 기존 결과를 유지했고, 14쪽의 논리 RenderTree JSON은
+기존 source 8b960562c8과 바이트 단위로 같다. 실제 한컴 저장·Print 대조군 중 연속
+그림자 20건도 모두 Native raw100·미대응 0이다. 음수 그림자의 기존 14픽셀 잘림도
+본문 clip의 공통 범위 반영으로 0이 됐다. 비연속 대조군의 기존 차이는 개선 완료로
+주장하지 않는다. 중간 표본의 혼합 축·음수·0과 종류 구분 계약 검사 2건은 통과했다.
+
+자료는 작업 폴더의 `product-native-v3/focus-result.json`, `controls-result.json`,
+`focused-logical-tree-preservation.json`, `common-contract-receipt.json`,
+`page009-current-corner-review.png` 및 `product-common-contract-tests.log`다.
+전쪽 Native 비교는 진행 중이다. SVG의 호스트 공급 경로와 직렬화된 paint 계약,
+fresh WASM 집중·전쪽 및 최종 필수 검증은 후속 단계이며 이 집중 확인으로 대신하지 않는다.

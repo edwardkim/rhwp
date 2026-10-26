@@ -3594,8 +3594,7 @@ impl Renderer for SvgRenderer {
         // 그림자 렌더링 (원본 아래에 오프셋된 그림자색 텍스트)
         if !self.suppress_text_glyphs && style.shadow_type > 0 {
             let shadow_color = color_to_svg(style.shadow_color);
-            let dx = style.shadow_offset_x;
-            let dy = style.shadow_offset_y;
+            for [dx, dy] in crate::paint::text_shadow::offsets(style) {
             for (char_idx, cluster_str) in clusters.iter() {
                 let painted = visual_positions
                     .as_ref()
@@ -3664,6 +3663,7 @@ impl Renderer for SvgRenderer {
                         escape_xml(&pua_glyph::display(&source_coverage, cluster_str, style)),
                     ));
                 }
+            }
             }
         }
 

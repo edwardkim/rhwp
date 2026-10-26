@@ -354,7 +354,20 @@ impl LayerBuilder {
                 background.clone(),
             )]),
             RenderNodeType::TextRun(run) => {
-                Some(text_run_ops(node.bbox, run.clone(), self.output_options))
+                let mut run = run.clone();
+                if self.profile == RenderProfile::Print && self.hangul2024_print && !run.is_vertical
+                {
+                    run.style.continuous_shadow = super::text_shadow::prepare(
+                        &self.metafile_fonts,
+                        &run.text,
+                        &run.style,
+                        self.layout_dpi,
+                    );
+                    if let Some(plan) = &run.style.continuous_shadow {
+                        [run.style.shadow_offset_x, run.style.shadow_offset_y] = plan.extent();
+                    }
+                }
+                Some(text_run_ops(node.bbox, run, self.output_options))
             }
             RenderNodeType::FootnoteMarker(marker) => {
                 Some(vec![PaintOp::footnote_marker(node.bbox, marker.clone())])
@@ -622,6 +635,20 @@ impl LayerBuilder {
                     self.cache_hint_for(&node.node_type),
                     GroupKind::Body,
                 );
+                let effective_clip =
+                    super::text_shadow::flow_bounds(&child).map_or(effective_clip, |shadow| {
+                        let x = effective_clip.x.min(shadow.x);
+                        let y = effective_clip.y.min(shadow.y);
+                        BoundingBox::new(
+                            x,
+                            y,
+                            (effective_clip.x + effective_clip.width).max(shadow.x + shadow.width)
+                                - x,
+                            (effective_clip.y + effective_clip.height)
+                                .max(shadow.y + shadow.height)
+                                - y,
+                        )
+                    });
                 Some(
                     LayerNode::clip_rect(
                         node.bbox,

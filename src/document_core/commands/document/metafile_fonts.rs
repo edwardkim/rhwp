@@ -3,6 +3,47 @@
 use crate::{document_core::DocumentCore, error::HwpError};
 
 impl DocumentCore {
+    /// 연속 그림자가 실제 SFNT의 세로 메트릭을 소비할 때 필요한 paint 공급이다.
+    /// 원본·조판 폭은 바꾸지 않는다. WMF 공급 캐시와 별도로 현재 스타일을 읽는다.
+    pub fn get_text_shadow_font_requests_native(&self) -> Result<String, HwpError> {
+        if !self.hangul2024_compat {
+            return Ok("[]".into());
+        }
+        let mut seen = std::collections::HashSet::new();
+        let mut requests = Vec::new();
+        for resolved in &self.styles.char_styles {
+            if resolved.shadow_type != 2 {
+                continue;
+            }
+            for language in 0..7 {
+                let style = crate::renderer::TextStyle {
+                    font_family: resolved.font_family_for_lang(language).to_owned(),
+                    bold: resolved.bold,
+                    italic: resolved.italic,
+                    ..Default::default()
+                };
+                let families = crate::renderer::internal_font_family_members(&style.font_family)
+                    .into_iter()
+                    .map(str::to_owned)
+                    .collect::<Vec<_>>();
+                let weight = match style.css_font_weight() {
+                    Some("bold") => 700,
+                    Some(value) => value.parse().unwrap_or(400),
+                    None => 400,
+                };
+                if !families.is_empty() && seen.insert((families.clone(), weight, style.italic)) {
+                    requests.push(crate::paint::metafile_fonts::FontRequest {
+                        families,
+                        weight,
+                        italic: style.italic,
+                        text: String::new(),
+                    });
+                }
+            }
+        }
+        serde_json::to_string(&requests).map_err(|e| HwpError::RenderError(e.to_string()))
+    }
+
     /// 호스트가 선택한 실제 SFNT/TTC face를 메타파일 paint에 공급한다.
     pub fn register_metafile_font_native(
         &mut self,

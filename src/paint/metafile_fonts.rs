@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 
 use resvg::usvg::fontdb::{Database, Family, Source, Style, Weight, ID};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use super::metafile_surface::SurfaceCache;
 
@@ -22,7 +22,7 @@ pub(crate) struct MetafileFonts {
     requests: Arc<Mutex<Option<(u32, String)>>>,
 }
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct FontRequest {
     pub families: Vec<String>,
     pub weight: u16,
@@ -143,6 +143,13 @@ fn default_database() -> Arc<Database> {
 }
 
 impl MetafileFonts {
+    /// 세션에 명시적으로 공급한 프로그램만 새 텍스트 효과의 근거로 쓴다.
+    pub(super) fn is_supplied_face(&self, id: ID) -> bool {
+        self.aliases
+            .values()
+            .any(|(_, _, supplied)| *supplied == id)
+    }
+
     pub(crate) fn cached_requests(&self, epoch: u32) -> Option<String> {
         self.requests
             .lock()

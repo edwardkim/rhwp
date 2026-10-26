@@ -21,7 +21,10 @@ impl NativePngExporter {
     pub fn prepare_document(&self, document: &mut DocumentCore) -> Result<bool, HwpError> {
         let fallback_changed = self.renderer.prepare_declared_font_fallbacks(document)?;
         let pua_changed = self.renderer.prepare_native_pua_fonts(document)?;
-        Ok(fallback_changed || pua_changed)
+        let shadow_changed = self.profile == RenderProfile::Print
+            && document.hangul2024_compat
+            && self.renderer.prepare_text_shadow_fonts(document)?;
+        Ok(fallback_changed || pua_changed || shadow_changed)
     }
     /// 옵션 없는 기존 screen PNG의 시스템 글꼴 경로를 유지한다.
     pub fn system_defaults() -> Self {

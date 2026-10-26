@@ -3680,9 +3680,9 @@ impl WebCanvasRenderer {
         // 그림자 (원본 아래에 그림자색으로 오프셋 렌더)
         if style.shadow_type > 0 {
             let shadow_css = color_to_css(style.shadow_color);
-            let dx = style.shadow_offset_x;
-            let dy = style.shadow_offset_y;
-            render_pass(&self.ctx, dx, dy, &shadow_css, false, "", 0.0);
+            for [dx, dy] in crate::paint::text_shadow::offsets(style) {
+                render_pass(&self.ctx, dx, dy, &shadow_css, false, "", 0.0);
+            }
         }
 
         // 외곽선 (fillText(흰색) + strokeText(글자색))

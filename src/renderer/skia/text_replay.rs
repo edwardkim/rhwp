@@ -777,12 +777,12 @@ impl SkiaTextReplay<'_> {
                 };
 
                 if !suppress_glyphs {
-                    if style.shadow_type > 0 {
+                    for [shadow_x, shadow_y] in crate::paint::text_shadow::offsets(style) {
                         draw_text_pass(
                             colorref_to_skia(style.shadow_color, 1.0),
                             0.0,
-                            style.shadow_offset_x as f32,
-                            style.shadow_offset_y as f32,
+                            shadow_x as f32,
+                            shadow_y as f32,
                         );
                     }
                     if style.outline_type > 0 {

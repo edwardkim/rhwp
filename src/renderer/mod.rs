@@ -42,8 +42,8 @@ pub(crate) mod font_rule_layout_name_projection;
 pub mod font_symbol_coverage;
 pub mod form_appearance;
 pub(crate) mod form_caption;
-pub(crate) mod gradient_geometry;
 pub(crate) mod glyph_fit;
+pub(crate) mod gradient_geometry;
 pub(crate) mod hancom_pua;
 pub mod height_cursor;
 pub mod height_measurer;
@@ -328,6 +328,12 @@ pub struct TextStyle {
     /// 리터럴 공백에 선택한 실제 슬롯 프로그램의 전진폭(em).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub literal_figure_space_em: Option<f64>,
+    /// 원본 표 33의 signed 그림자 간격. 세션 paint에서만 사용한다.
+    #[serde(skip)]
+    pub shadow_offset_percent: Option<[i8; 2]>,
+    /// 공통 paint가 실제 공급 글꼴로 해소한 연속 그림자다.
+    #[serde(skip)]
+    pub continuous_shadow: Option<crate::paint::text_shadow::ContinuousTextShadow>,
     /// 호스트가 실제 paint에 준비한 글꼴의 원 PUA 표시·전진 계약이다.
     #[serde(skip)]
     pub native_pua_metrics: Option<std::sync::Arc<native_pua_fonts::NativePuaMetrics>>,
@@ -806,6 +812,8 @@ impl Default for TextStyle {
             top_underline_phase: None,
             supplemental_metrics: None,
             isolated_jamo_font: None,
+            shadow_offset_percent: None,
+            continuous_shadow: None,
             space_compression: None,
             font_family: String::new(),
             font_size: 0.0,
@@ -3515,7 +3523,7 @@ pub(crate) fn native_font_family_for_style(style: &TextStyle) -> std::borrow::Co
     )
 }
 
-fn internal_font_family_members(font_family: &str) -> Vec<&str> {
+pub(crate) fn internal_font_family_members(font_family: &str) -> Vec<&str> {
     font_family
         .split(',')
         .map(str::trim)
