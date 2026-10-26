@@ -527,3 +527,48 @@ fn memo_text_control_characters_are_normalized() {
         "the memo body survives an HWP save"
     );
 }
+
+/// A password guards opening only: memos in an opened password document are
+/// editable, for HWP5 and HWPX alike, and opening does not touch the header.
+#[test]
+fn memos_in_an_opened_password_document_are_editable() {
+    for rel in [
+        "HWP5-password-123456.hwpx",
+        "hwp3-sample16-hwp5-2024-password-123456.hwp",
+    ] {
+        let mut core = DocumentCore::from_bytes_with_password(&sample(rel), b"123456")
+            .unwrap_or_else(|e| panic!("open {rel}: {e}"));
+        let encrypted = core.document().header.encrypted;
+        let first_text = core.document().sections[0]
+            .paragraphs
+            .iter()
+            .position(|para| para.text.chars().count() >= 2)
+            .expect("a paragraph with text");
+        let id = inserted_id(
+            &core
+                .insert_memo_at(0, first_text, 0, 2, "t", "body")
+                .unwrap_or_else(|e| panic!("{rel}: {}", e.to_json())),
+        );
+        assert_eq!(memo_list(&core)[0]["editable"], true, "{rel}");
+        core.set_memo_text(id, "new").unwrap();
+        core.remove_memo(id).unwrap();
+        assert_eq!(core.document().header.encrypted, encrypted, "{rel}");
+    }
+}
+
+#[test]
+fn memos_in_a_distribution_document_are_read_only() {
+    let mut core = core_with("anchor");
+    let id = inserted_id(&core.insert_memo_at(0, 0, 0, 6, "t", "body").unwrap());
+    core.document_mut().header.distribution = true;
+    let list = memo_list(&core);
+    assert_eq!(list[0]["editable"], false);
+    assert_eq!(list[0]["readOnlyReason"], "protected");
+    for error in [
+        core.set_memo_text(id, "x").unwrap_err(),
+        core.remove_memo(id).unwrap_err(),
+        core.insert_memo_at(0, 0, 0, 0, "t", "y").unwrap_err(),
+    ] {
+        assert_eq!(error.code.as_str(), "memo_read_only");
+    }
+}

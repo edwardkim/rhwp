@@ -997,8 +997,10 @@ fn hits_in_any(
 }
 
 impl DocumentCore {
+    /// A distribution document is read-only in Hancom. A password only guards
+    /// opening: once opened, the document edits like any other, memos included.
     fn document_protected(&self) -> bool {
-        self.document.header.encrypted || self.document.header.distribution
+        self.document.header.distribution
     }
 
     fn memo_hits(&self) -> Vec<MemoHit> {
