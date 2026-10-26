@@ -3,19 +3,52 @@
 use crate::{document_core::DocumentCore, error::HwpError};
 
 impl DocumentCore {
-    /// 연속 그림자가 실제 SFNT의 세로 메트릭을 소비할 때 필요한 paint 공급이다.
-    /// 원본·조판 폭은 바꾸지 않는다. WMF 공급 캐시와 별도로 현재 스타일을 읽는다.
+    /// 공통 텍스트 효과의 실제 SFNT 공급이다. 기존 API 이름은 호환성을 위해 유지한다.
+    /// 연속 그림자와 실제 탭의 점 리더를 포함하며 원본·조판 폭은 바꾸지 않는다.
     pub fn get_text_shadow_font_requests_native(&self) -> Result<String, HwpError> {
         if !self.hangul2024_compat {
             return Ok("[]".into());
         }
+        use crate::document_core::queries::rendering::{
+            collect_exact_font_slots_from_paragraphs_selected, ExactFontSlotSelection,
+        };
+        let mut tab_slots = std::collections::HashSet::new();
+        let mut work = 1_000_000;
+        for section in &self.document.sections {
+            collect_exact_font_slots_from_paragraphs_selected(
+                &section.paragraphs,
+                &mut tab_slots,
+                &mut work,
+                0,
+                ExactFontSlotSelection::Tab(&self.document.doc_info),
+            );
+            for master in &section.section_def.master_pages {
+                collect_exact_font_slots_from_paragraphs_selected(
+                    &master.paragraphs,
+                    &mut tab_slots,
+                    &mut work,
+                    0,
+                    ExactFontSlotSelection::Tab(&self.document.doc_info),
+                );
+            }
+        }
         let mut seen = std::collections::HashSet::new();
         let mut requests = Vec::new();
-        for resolved in &self.styles.char_styles {
-            if resolved.shadow_type != 2 {
+        for (index, resolved) in self.styles.char_styles.iter().enumerate() {
+            let has_tab = tab_slots
+                .iter()
+                .any(|slot| slot.char_shape_id == index as u32);
+            if resolved.shadow_type != 2 && !has_tab {
                 continue;
             }
             for language in 0..7 {
+                let tab = tab_slots.contains(&crate::renderer::kerning::ExactFontSlot::new(
+                    index as u32,
+                    language,
+                ));
+                if resolved.shadow_type != 2 && !tab {
+                    continue;
+                }
                 let style = crate::renderer::TextStyle {
                     font_family: resolved.font_family_for_lang(language).to_owned(),
                     bold: resolved.bold,
@@ -36,7 +69,7 @@ impl DocumentCore {
                         families,
                         weight,
                         italic: style.italic,
-                        text: String::new(),
+                        text: if tab { "·".into() } else { String::new() },
                     });
                 }
             }

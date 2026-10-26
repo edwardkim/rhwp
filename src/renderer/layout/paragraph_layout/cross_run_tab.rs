@@ -73,9 +73,10 @@ pub(crate) fn resolve_last_tab_pending(
             0 | 1 => return None,
             2 => {
                 // HWP5와 HWPX의 width는 하위·상위 16비트를 합친 저장 전진이다.
-                // 자동 우측 탭은 현재 프레임·블록 폭으로 다시 정렬하는 계약을 유지한다.
+                // 자동 우측 속성도 유효한 저장 줄의 전진을 무효화하지 않는다.
+                // 재조판·저장 줄 부재는 생산자가 제거하므로 그때만 아래 동적 정지를 쓴다.
                 let width_hu = u32::from(ext[0]) | (u32::from(ext[1]) << 16);
-                if !auto_right && width_hu > 0 {
+                if width_hu > 0 {
                     return Some(PendingTab::StoredStart {
                         position: style.line_x_offset
                             + estimate_text_width_exact(before, style)

@@ -2276,8 +2276,8 @@ fn task290_inline_left_returns_none() {
 }
 
 #[test]
-fn task290_inline_right_auto_tab_uses_tabdef() {
-    // 자동 우측 탭은 현재 프레임의 TabDef 정지에서 블록 폭을 빼서 정렬한다.
+fn task290_inline_right_preserves_stored_advance_with_auto_tab() {
+    // 유효한 저장 줄의 전진은 자동 우측 속성과 별개다. 재조판은 생산자가 제거한다.
     let ext = vec![mk_ext(200, 2, 3)]; // RIGHT, fill=dot
     let ts = mk_text_style();
     let tab_stops = vec![TabStop {
@@ -2286,15 +2286,15 @@ fn task290_inline_right_auto_tab_uses_tabdef() {
         fill_type: 3,
     }];
     let result = super::paragraph_layout::resolve_last_tab_pending(
-        "abc\t", 0, &ext, &ts, &tab_stops, 48.0, true, 420.0,
+        "\t", 0, &ext, &ts, &tab_stops, 48.0, true, 420.0,
     );
     assert_eq!(
         result,
-        Some(super::paragraph_layout::PendingTab::Right {
-            position: 300.0,
+        Some(super::paragraph_layout::PendingTab::StoredStart {
+            position: 200.0 * 96.0 / 7200.0,
             fill_type: 3
         }),
-        "RIGHT inline → TabDef 기반 위치, fill=dot"
+        "RIGHT inline → 원본 전진 유지, 자동 속성으로 TabDef 정지를 재적용하지 않음"
     );
     {
         use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
@@ -2373,10 +2373,10 @@ fn task290_no_inline_fallback_to_tabdef() {
             tab_type: 1,
             fill_type: 3,
         }];
-        let stored = [mk_ext(7500, 2, 3)];
+        let zero_advance = [mk_ext(0, 2, 3)];
         let placeholder = [[0, 0, 0, 0, 0, 0, 9]];
         for (extensions, auto_right) in [
-            (&stored[..], true),
+            (&zero_advance[..], true),
             (&placeholder[..], false),
             (&[][..], false),
         ] {

@@ -145,7 +145,8 @@ impl LayerBuilder {
         if self.profile == RenderProfile::Print
             && !fonts.is_empty()
             && (super::metafile::has_wmf(&tree.root)
-                || (self.hancom2024_print_bitmap && super::text_shadow::needs_font_metrics(&tree.root)))
+                || (self.hancom2024_print_bitmap && super::text_shadow::needs_font_metrics(&tree.root))
+                || super::dot_leader::needs_font_program(&tree.root))
         {
             for font in fonts {
                 let _ = self
@@ -356,6 +357,7 @@ impl LayerBuilder {
             )]),
             RenderNodeType::TextRun(run) => {
                 let mut run = run.clone();
+                let mut leader_paths = Vec::new();
                 if self.profile == RenderProfile::Print && self.hangul2024_print && !run.is_vertical
                 {
                     run.style.continuous_shadow = super::text_shadow::prepare(
@@ -367,8 +369,16 @@ impl LayerBuilder {
                     if let Some(plan) = &run.style.continuous_shadow {
                         [run.style.shadow_offset_x, run.style.shadow_offset_y] = plan.extent();
                     }
+                    leader_paths =
+                        super::dot_leader::prepare(&self.metafile_fonts, node.bbox, &mut run);
                 }
-                Some(text_run_ops(node.bbox, run, self.output_options))
+                let mut ops = text_run_ops(node.bbox, run, self.output_options);
+                ops.extend(
+                    leader_paths
+                        .into_iter()
+                        .map(|path| PaintOp::path(node.bbox, path)),
+                );
+                Some(ops)
             }
             RenderNodeType::FootnoteMarker(marker) => {
                 Some(vec![PaintOp::footnote_marker(node.bbox, marker.clone())])

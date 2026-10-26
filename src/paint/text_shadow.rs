@@ -1,7 +1,6 @@
 //! HWP5 표 33·35의 글자 그림자를 한 번 해소해 출력 경로가 함께 재생한다.
 
 use crate::renderer::TextStyle;
-use resvg::usvg::fontdb::{Family, Query, Style, Weight};
 
 /// 실제 글자 효과가 내장 SFNT 메트릭을 요구하는지 원본 종류로 판정한다.
 pub(crate) fn needs_font_metrics(node: &crate::renderer::render_tree::RenderNode) -> bool {
@@ -209,28 +208,7 @@ pub(super) fn prepare(
         return None;
     }
     let database = fonts.database();
-    let names = crate::renderer::internal_font_family_members(&style.font_family);
-    let weight = match style.css_font_weight() {
-        Some("bold") => 700,
-        Some(value) => value.parse().unwrap_or(400),
-        None => 400,
-    };
-    for name in names {
-        let Some(id) = database.query(&Query {
-            families: &[Family::Name(name)],
-            weight: Weight(weight),
-            style: if style.italic {
-                Style::Italic
-            } else {
-                Style::Normal
-            },
-            ..Default::default()
-        }) else {
-            continue;
-        };
-        if !fonts.is_supplied_face(id) {
-            continue;
-        }
+    for id in fonts.supplied_faces_for_style(style) {
         let plan = database
             .with_face_data(id, |bytes, face_index| {
                 let face = ttf_parser::Face::parse(bytes, face_index).ok()?;
