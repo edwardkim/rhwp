@@ -3069,6 +3069,14 @@ impl LayoutEngine {
             return;
         }
         let chars: Vec<_> = para.text.chars().collect();
+        // 글 런은 원문 글자 축이지만, 글 없는 문단 끝 캐럿은 저장 줄 경로의 빈 줄처럼
+        // 앞선 인라인 개체를 센 논리 끝을 쓴다.
+        let logical_end = chars.len()
+            + para
+                .controls
+                .iter()
+                .filter(|control| control.is_logical_inline())
+                .count();
         let mut paragraph_fill_bands = Vec::new();
         // Physical rows and per-character positions are the measurement
         // result. Preserve them in the render tree and coalesce compatible
@@ -3166,7 +3174,11 @@ impl LayoutEngine {
                         para_shape_id: Some(para.para_shape_id),
                         section_index: Some(section_index),
                         para_index: Some(para_index),
-                        char_start: Some(range.start),
+                        char_start: Some(if range.is_empty() && range.start == chars.len() {
+                            logical_end
+                        } else {
+                            range.start
+                        }),
                         cell_context: None,
                         is_para_end: range.end == chars.len(),
                         is_line_break_end: false,
@@ -3187,6 +3199,42 @@ impl LayoutEngine {
                         display_text: None,
                     }),
                     BoundingBox::new(x, y, item.width, item.height),
+                ));
+            }
+            // 글 없이 개체로 끝나는 마지막 줄도 저장 줄 경로처럼 문단 끝 캐럿 앵커를 둔다.
+            // 앵커가 없으면 저장 줄을 생략한 HWPX를 다시 열 때 개체 뒤 캐럿의 글꼴 높이를 잃는다.
+            if line_index + 1 == plan.rows.len()
+                && !line.children.iter().any(|child| {
+                    matches!(&child.node_type, RenderNodeType::TextRun(run) if run.is_para_end)
+                })
+            {
+                let (text_style, char_shape_id) =
+                    paragraph_active_text_style(styles, Some(para), chars.len());
+                let x = col_area.x + row.x + row.width;
+                line.children.push(RenderNode::new(
+                    tree.next_id(),
+                    RenderNodeType::TextRun(TextRunNode {
+                        text: String::new(),
+                        style: text_style,
+                        char_shape_id,
+                        para_shape_id: Some(para.para_shape_id),
+                        section_index: Some(section_index),
+                        para_index: Some(para_index),
+                        char_start: Some(logical_end),
+                        cell_context: None,
+                        is_para_end: true,
+                        is_line_break_end: false,
+                        rotation: 0.0,
+                        is_vertical: false,
+                        char_overlap: None,
+                        border_fill_id: 0,
+                        baseline: row.baseline,
+                        field_marker: FieldMarkerType::None,
+                        // 공통 계획의 런처럼 글자 원점을 둔다. 글이 없으니 시작점 하나다.
+                        layout_positions: Some(vec![0.0]),
+                        display_text: None,
+                    }),
+                    BoundingBox::new(x, col_area.y + row.y, 0.0, row.height),
                 ));
             }
             let anchor = (!line.children.is_empty()).then_some((line.id, line.bbox.y));
@@ -3626,9 +3674,19 @@ impl LayoutEngine {
         if layout_debug_enabled() {
             eprintln!(
                 "LAYOUT_INLINE_TABLE_PARA: pi={} sec={} col_x={:.1} col_w={:.1} y_start={:.1} y={:.1} sb={:.1} sa={:.1} ml={:.1} mr={:.1} align={:?} ls_count={} tables={}",
-                para_index, section_index, col_area.x, col_area.width, y_start, y,
-                spacing_before, spacing_after, margin_left, margin_right, alignment,
-                para.line_segs.len(), inline_tables.len(),
+                para_index,
+                section_index,
+                col_area.x,
+                col_area.width,
+                y_start,
+                y,
+                spacing_before,
+                spacing_after,
+                margin_left,
+                margin_right,
+                alignment,
+                para.line_segs.len(),
+                inline_tables.len(),
             );
             for (li, seg) in para.line_segs.iter().enumerate() {
                 eprintln!(
@@ -3645,9 +3703,15 @@ impl LayoutEngine {
             for (ti, (ci, tbl)) in inline_tables.iter().enumerate() {
                 eprintln!(
                     "  LAYOUT_INLINE_TBL[{}]: ctrl_idx={} rows={} cols={} w={} h={} vert={:?} horz={:?} wrap={:?}",
-                    ti, ci, tbl.row_count, tbl.col_count,
-                    tbl.common.width, tbl.common.height,
-                    tbl.common.vert_align, tbl.common.horz_align, tbl.common.text_wrap,
+                    ti,
+                    ci,
+                    tbl.row_count,
+                    tbl.col_count,
+                    tbl.common.width,
+                    tbl.common.height,
+                    tbl.common.vert_align,
+                    tbl.common.horz_align,
+                    tbl.common.text_wrap,
                 );
             }
         }
@@ -6819,8 +6883,12 @@ impl LayoutEngine {
             {
                 eprintln!(
                     "LAYOUT_OVERFLOW_DRAW: section={} pi={} line={} y={:.1} col_bottom={:.1} overflow={:.1}px",
-                    section_index, para_index, line_idx,
-                    line_visual_bottom, col_bottom, line_visual_bottom - col_bottom,
+                    section_index,
+                    para_index,
+                    line_idx,
+                    line_visual_bottom,
+                    col_bottom,
+                    line_visual_bottom - col_bottom,
                 );
             }
             // [#3637] 셀 안 줄이 **쪽 본문 하단**을 넘는 경우.
@@ -9057,8 +9125,20 @@ impl LayoutEngine {
 
             // [Task #960] env-gated TAC line-mapping 추적
             if std::env::var("RHWP_DEBUG_PARA_TAC").is_ok() && !tac_offsets_px.is_empty() {
-                eprintln!("  TAC_LINE pi={} line_idx={} run_idx={} run_char_pos={} run_char_end={} y={:.1} lh={:.1} ls={:.1} raw_lh={:.1} baseline={:.1} run_tacs={:?}",
-                    para_index, line_idx, run_idx, run_char_pos, run_char_end, y, line_height, line_spacing_px, raw_lh, baseline, run_tacs);
+                eprintln!(
+                    "  TAC_LINE pi={} line_idx={} run_idx={} run_char_pos={} run_char_end={} y={:.1} lh={:.1} ls={:.1} raw_lh={:.1} baseline={:.1} run_tacs={:?}",
+                    para_index,
+                    line_idx,
+                    run_idx,
+                    run_char_pos,
+                    run_char_end,
+                    y,
+                    line_height,
+                    line_spacing_px,
+                    raw_lh,
+                    baseline,
+                    run_tacs
+                );
             }
 
             if run_tacs.is_empty() {
@@ -11199,7 +11279,10 @@ impl LayoutEngine {
             if self.is_body_flow_col_area(col_area) && y + line_height > col_bottom + 0.5 {
                 eprintln!(
                     "LAYOUT_OVERFLOW_DRAW: line={} y={:.1} col_bottom={:.1} overflow={:.1}px (fast path)",
-                    line_idx, y + line_height, col_bottom, y + line_height - col_bottom,
+                    line_idx,
+                    y + line_height,
+                    col_bottom,
+                    y + line_height - col_bottom,
                 );
             }
             let y_clamped = y;

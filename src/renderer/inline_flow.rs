@@ -340,6 +340,50 @@ pub(crate) fn plan(
         // 범위 밖 anchor를 누락시킨 부분 결과를 확정하지 않는다.
         return None;
     }
+    // 글자처럼 그림으로 끝나는 문단은 문단 끝 표시의 글자 모양이 마지막 줄 높이와
+    // 끝 캐럿을 정한다. 저장 줄 경로와 같도록 폭 0인 끝 상자를 둔다. 표로 끝나는 문단은
+    // 한컴 인쇄처럼 표 줄 높이만 쓴다(issue_6776).
+    if matches!(
+        atoms.last(),
+        Some(Atom::Box(InlineFlowBox {
+            content: InlineFlowContent::Picture { .. },
+            ..
+        }))
+    ) {
+        let end = chars.len();
+        let cs = super::composer::find_active_char_shape(
+            &para.char_shapes,
+            para.char_count.saturating_sub(1),
+        );
+        let font_size = styles
+            .char_styles
+            .get(cs as usize)
+            .map_or(12.0, |s| s.font_size);
+        let metrics = super::composer::frame_metrics_for_line(
+            font_size,
+            12.0,
+            style.line_spacing_type,
+            style.line_spacing,
+            frame.dpi,
+        );
+        let height = hwpunit_to_px(metrics.line_height, frame.dpi);
+        let alignment_baseline = (picture_rows && style.vertical_alignment != 0).then(|| {
+            height * super::composer::inline_picture_ascent_ratio(style.vertical_alignment)
+        });
+        atoms.push(Atom::Box(InlineFlowBox {
+            content: InlineFlowContent::Text {
+                range: end..end,
+                style: cs,
+                lang: 0,
+                alignment_baseline,
+            },
+            x: 0.0,
+            y: 0.0,
+            width: 0.0,
+            height,
+            baseline: hwpunit_to_px(metrics.baseline_distance, frame.dpi),
+        }));
+    }
     // Reuse the composer's language/style word boundaries. A word that fits
     // a whole line moves together; an overlong word retains character fallback.
     let word_ranges = super::composer::text_word_ranges(para, styles);
