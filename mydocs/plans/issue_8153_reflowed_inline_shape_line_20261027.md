@@ -13,7 +13,7 @@
 1250×(90−100)/100 = −125HU의 간격을 각각 소유한다. 원본 저장 간격 −124HU와
 새 계산값을 혼동하지 않는다. 두 값의 차이는 1HU이고 출력 차이를 맞춘 상수가 아니다.
 
-독립 Print의 표 상단은 191.02132px, 첫 답변 기준선은 302.23999px다. source9bab의
+독립 Print의 표 상단은 191.02132px, 첫 답변 기준선은 302.23999px다. source 9bab의
 실제 Native에서 표 상단이 약 1.7px 아래이며, 289쪽에는 23개의 미대응 픽셀이 있다.
 이 차이를 글자 기준선에 직접 더하거나 그림/표를 이동하는 방식으로 보정하지 않는다.
 
@@ -29,7 +29,7 @@
 RenderNormalizedSection의 같은 paragraphs/composed → HeightMeasurer·typeset의
 줄 높이/간격 → layout_composed_paragraph_in_frame → TAC Shape 높이 바닥값`이다.
 재조판한 줄도 저장 guide처럼 접어 높이를 0으로 만든 뒤, 뒤의 바닥값이 도형 높이와
-문단 뒤 간격만 다시 더해 음수 줄간격을 잃는지 확인한다. source9bab의 실제 공개
+문단 뒤 간격만 다시 더해 음수 줄간격을 잃는지 확인한다. source 9bab의 실제 공개
 렌더 트리에는 높이 32px의 도형과 그 아래 높이 0의 호스트 TextLine이 동시에 있다.
 
 ## 보정과 검증 계획
@@ -49,10 +49,10 @@ RenderNormalizedSection의 같은 paragraphs/composed → HeightMeasurer·typese
 p289-301-source-contract/`의 원본 XML, 독립 PDF 원점·도형, 실제 flow trace와
 `diagnose-inline-frame.log`에 있다. upstream 동기화·원격 쓰기는 하지 않는다.
 
-## sourceb3ad의 실제 Native 검증
+## source b3ad의 실제 Native 검증
 
 `b3adcdc39c7bd368acfcdabe4bf9bc330f7fbf86`의 Native 빌드는 고정 target/pr-review와
-jobs 8에서 6분 55초·exit 0이었다. 원본 HWP/HWPX의 같은 진단 파일이 이전 source9bab에서
+jobs 8에서 6분 55초·exit 0이었다. 원본 HWP/HWPX의 같은 진단 파일이 이전 source 9bab에서
 2 FAIL, 새 source에서 2 PASS였다. 이전 호스트 TextLine은 도형 바닥에 높이 0으로 있었지만,
 새 줄은 도형과 같은 y=147.41333px·높이 32px를 포함한다. 뒤 표의 상단은
 192.74667 → 191.09333px로 바뀌어 독립 Print 191.02132px와 차이가 약 0.072px다.
