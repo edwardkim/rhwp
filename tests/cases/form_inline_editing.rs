@@ -671,7 +671,8 @@ fn assert_wrapped_form_owners(
     }
     macro_rules! check {
         ($condition:expr, $($message:tt)*) => {
-            if !$condition {
+            let passed = $condition;
+            if !passed {
                 let detail = format!($($message)*);
                 failures.push(format!("{label}: {detail}"));
             }
