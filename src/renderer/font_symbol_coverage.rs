@@ -9,6 +9,24 @@ use std::collections::BTreeSet;
 use ttf_parser::{Face, GlyphId, Tag};
 use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
 
+/// 실제 프로그램의 cmap로 요청 글리프 공급을 확인한다. 파일·별칭·캐시를 바꾸지 않는다.
+pub fn font_supports_text(data: &[u8], face_index: u32, text: &str) -> bool {
+    if data.len() > crate::paint::MAX_PORTABLE_FONT_BLOB_BYTES
+        || text.chars().count() > crate::paint::MAX_PORTABLE_GLYPHS_PER_RUN
+    {
+        return false;
+    }
+    let Ok(face) = Face::parse(data, face_index) else {
+        return false;
+    };
+    text.chars().all(|character| {
+        character.is_whitespace()
+            || face
+                .glyph_index(character)
+                .is_some_and(|glyph| glyph.0 != 0)
+    })
+}
+
 pub fn is_visible_symbol(character: char) -> bool {
     // Unicode BRAILLE PATTERN BLANK는 OtherSymbol이지만 본래 빈 칸이다.
     character != '\u{2800}'

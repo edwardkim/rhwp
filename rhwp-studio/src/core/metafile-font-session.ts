@@ -4,11 +4,12 @@ import { getHostFontState, hasHostFontProvider, loadRendererLocalFont, loadStore
 export interface MetafileFontDocument {
   getMetafileFontRequests?(): string;
   getTextShadowFontRequests?(): string;
+  fontSupportsText?(bytes: Uint8Array, faceIndex: number, text: string): boolean;
   registerMetafileFont?(family: string, bytes: Uint8Array, faceIndex: number): boolean;
   clearMetafileFonts?(): void;
 }
 
-interface FontRequest { families: string[]; weight: number; italic: boolean; text: string }
+interface FontRequest { families: string[]; weight: number; italic: boolean; text: string; glyphs?: boolean }
 interface Prepared { generation: string; requests: string; keys: Set<string> }
 
 /** 이미지·글자 효과가 실제 host/local SFNT를 공유한다. CSS 존재를 bytes 공급으로 간주하지 않는다. */
@@ -20,7 +21,8 @@ export class MetafileFontSession {
     if (!owner?.registerMetafileFont) return true;
     const requests: FontRequest[] = [
       ...JSON.parse(owner.getMetafileFontRequests?.() ?? '[]'),
-      ...JSON.parse(owner.getTextShadowFontRequests?.() ?? '[]'),
+      ...JSON.parse(owner.getTextShadowFontRequests?.() ?? '[]')
+        .map((request: FontRequest) => ({...request, glyphs: Boolean(request.text)})),
     ];
     const raw = JSON.stringify(requests);
     if (!requests.length) return true;
@@ -44,13 +46,18 @@ export class MetafileFontSession {
         const record = resolveRendererLocalFont(family, style) ?? resolveRendererLocalFont(family);
         if (!record) continue;
         const key = `${family.toLowerCase()}|${localFontFaceKey(record)}`;
-        if (state.keys.has(key)) continue;
+        const glyphs = request.glyphs && typeof owner.fontSupportsText === 'function';
+        if (state.keys.has(key) && !glyphs) continue;
         const data = await loadRendererLocalFont(record);
         if (!current() || generation !== `${fontGeneration}:${getHostFontState().generation}`) return false;
         if (!data) continue;
+        if (glyphs && !owner.fontSupportsText!(new Uint8Array(data.bytes), data.faceIndex ?? 0, request.text)) continue;
         // 실패를 빈 glyph 프로그램으로 대체하지 않는다. 미공급 face는 기존 SVG 경로가 담당한다.
-        owner.registerMetafileFont(family, new Uint8Array(data.bytes), data.faceIndex ?? 0);
-        state.keys.add(key);
+        if (!state.keys.has(key)) {
+          owner.registerMetafileFont(family, new Uint8Array(data.bytes), data.faceIndex ?? 0);
+          state.keys.add(key);
+        }
+        if (glyphs) break;
       }
     }
     state.requests = raw;

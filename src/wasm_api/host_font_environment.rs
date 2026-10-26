@@ -5,6 +5,12 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 impl HwpDocument {
+    /// 공급 후보를 등록하기 전에 실제 cmap를 대조한다. CSS 이름 검사가 아니다.
+    #[wasm_bindgen(js_name = fontSupportsText)]
+    pub fn font_supports_text_js(&self, bytes: &[u8], face_index: u32, text: &str) -> bool {
+        crate::renderer::font_symbol_coverage::font_supports_text(bytes, face_index, text)
+    }
+
     /// FontFace와 Native fallback이 같은 실제 기호 공급 판정을 사용한다.
     #[wasm_bindgen(js_name = getFontSymbolUnicodeRange)]
     pub fn get_font_symbol_unicode_range_js(&self, bytes: &[u8], face_index: u32) -> String {

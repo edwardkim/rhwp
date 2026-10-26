@@ -306,9 +306,6 @@ async function main() {
           const doc = globalThis.sweepDocument, canvas = document.getElementById('page');
           for (const page of pages) doc.renderPageToCanvasFilteredWithProfile(page - 1, canvas, scale, 'all', 'print');
           const metafileRequests = typeof doc.getMetafileFontRequests === 'function' ? JSON.parse(doc.getMetafileFontRequests()) : [];
-          if (typeof doc.getTextShadowFontRequests === 'function') {
-            metafileRequests.push(...JSON.parse(doc.getTextShadowFontRequests()));
-          }
           const metafileFaces = selectMetafileFontFaces(fonts, metafileRequests);
           const effectRequests = typeof doc.getTextShadowFontRequests === 'function'
             ? JSON.parse(doc.getTextShadowFontRequests()) : [];

@@ -32,8 +32,8 @@ impl DocumentCore {
                 );
             }
         }
-        let mut seen = std::collections::HashSet::new();
-        let mut requests = Vec::new();
+        let mut seen: std::collections::HashMap<_, usize> = std::collections::HashMap::new();
+        let mut requests: Vec<crate::paint::metafile_fonts::FontRequest> = Vec::new();
         for (index, resolved) in self.styles.char_styles.iter().enumerate() {
             let has_tab = tab_slots
                 .iter()
@@ -64,12 +64,26 @@ impl DocumentCore {
                     Some(value) => value.parse().unwrap_or(400),
                     None => 400,
                 };
-                if !families.is_empty() && seen.insert((families.clone(), weight, style.italic)) {
+                if families.is_empty() {
+                    continue;
+                }
+                let key = (families.clone(), weight, style.italic);
+                if let Some(&index) = seen.get(&key) {
+                    // 먼저 수집한 점 요청 때문에 나중의 전체 그림자 공급을 줄이지 않는다.
+                    if resolved.shadow_type == 2 {
+                        requests[index].text.clear();
+                    }
+                } else {
+                    seen.insert(key, requests.len());
                     requests.push(crate::paint::metafile_fonts::FontRequest {
                         families,
                         weight,
                         italic: style.italic,
-                        text: if tab { "·".into() } else { String::new() },
+                        text: if tab && resolved.shadow_type != 2 {
+                            "·".into()
+                        } else {
+                            String::new()
+                        },
                     });
                 }
             }
