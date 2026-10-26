@@ -615,7 +615,12 @@ fn cross_paragraph_form_metadata_and_mixed_object_guards_run_before_mutation() {
     }
 }
 
-fn assert_wrapped_form_owners(doc: &HwpDocument, expected: usize, label: &str) {
+fn assert_wrapped_form_owners(
+    doc: &HwpDocument,
+    expected: usize,
+    label: &str,
+    failures: &mut Vec<String>,
+) {
     type FormPaint = (
         usize,
         usize,
@@ -638,165 +643,173 @@ fn assert_wrapped_form_owners(doc: &HwpDocument, expected: usize, label: &str) {
                 form.control_index,
                 form.cell_location,
                 node.bbox,
-                frame.unwrap(),
+                frame.unwrap_or_else(|| BoundingBox::new(0.0, 0.0, 0.0, 0.0)),
             ));
         }
         for child in &node.children {
             walk(child, frame, out);
         }
     }
+    fn query<E: std::fmt::Debug>(
+        result: Result<String, E>,
+        label: &str,
+        failures: &mut Vec<String>,
+    ) -> Option<serde_json::Value> {
+        match result {
+            Ok(json) => match serde_json::from_str(&json) {
+                Ok(value) => Some(value),
+                Err(error) => {
+                    failures.push(format!("{label}: JSON {error}: {json}"));
+                    None
+                }
+            },
+            Err(error) => {
+                failures.push(format!("{label}: query {error:?}"));
+                None
+            }
+        }
+    }
+    macro_rules! check {
+        ($condition:expr, $($message:tt)*) => {
+            if !$condition {
+                let detail = format!($($message)*);
+                failures.push(format!("{label}: {detail}"));
+            }
+        };
+    }
     let mut painted = Vec::new();
-    assert_eq!(doc.page_count(), 1, "{label}: 같은 쪽의 두 줄");
-    walk(
-        &doc.build_page_render_tree(0).unwrap().root,
-        None,
-        &mut painted,
+    check!(
+        doc.page_count() == 1,
+        "같은 쪽의 두 줄: pages={}",
+        doc.page_count()
     );
-    assert_eq!(
-        painted.len(),
-        expected,
-        "{label}: 모델 개체 수와 실제 paint 수"
+    for page in 0..doc.page_count() {
+        match doc.build_page_render_tree(page) {
+            Ok(tree) => walk(&tree.root, None, &mut painted),
+            Err(error) => failures.push(format!("{label}: tree {page} {error:?}")),
+        }
+    }
+    check!(
+        painted.len() == expected,
+        "모델 {expected}개와 실제 paint {}개",
+        painted.len()
     );
     let owners: std::collections::HashSet<_> = painted
         .iter()
         .map(|(p, c, cell, _, _)| (*p, *c, *cell))
         .collect();
-    assert_eq!(
-        owners.len(),
-        expected,
-        "{label}: 각 컨트롤을 한 번만 그린다"
+    check!(
+        owners.len() == expected,
+        "각 컨트롤을 한 번만 그린다: {}",
+        owners.len()
     );
     for (paragraph, control, cell, bbox, frame) in &painted {
-        assert!(
+        check!(
             bbox.x >= frame.x - 0.1 && bbox.x + bbox.width <= frame.x + frame.width + 0.1,
-            "{label}: 개체 {control}은 종이가 아니라 소속 단·셀 안에 놓인다: {bbox:?} / {frame:?}"
+            "개체 {control} 소속 단·셀 경계 {bbox:?} / {frame:?}"
         );
         let para = if let Some((parent, table_control, cell_index, cell_paragraph)) = cell {
             let Control::Table(table) =
                 &doc.document().sections[0].paragraphs[*parent].controls[*table_control]
             else {
-                panic!("양식의 소유 표")
+                failures.push(format!("{label}: 양식 {control}의 소유 표가 없다"));
+                continue;
             };
             &table.cells[*cell_index].paragraphs[*cell_paragraph]
         } else {
             &doc.document().sections[0].paragraphs[*paragraph]
         };
-        assert!(matches!(
-            para.controls.get(*control),
-            Some(Control::Form(_))
-        ));
+        if !matches!(para.controls.get(*control), Some(Control::Form(_))) {
+            failures.push(format!("{label}: 원문 양식 {control}이 없다"));
+            continue;
+        }
         let offset = para.logical_control_positions()[*control] as u32;
-        let cursor: serde_json::Value =
-            serde_json::from_str(
-                &if let Some((parent, table_control, cell_index, cell_paragraph)) = cell {
-                    doc.get_cursor_rect_in_cell(
-                        0,
-                        *parent as u32,
-                        *table_control as u32,
-                        *cell_index as u32,
-                        *cell_paragraph as u32,
-                        offset,
-                    )
-                    .unwrap()
-                } else {
-                    doc.get_cursor_rect(0, *paragraph as u32, offset).unwrap()
-                },
-            )
-            .unwrap();
-        assert!(
-            (cursor["x"].as_f64().unwrap() - bbox.x).abs() < 0.1,
-            "{label}: 개체 {control} 앞 캐럿 {cursor} / {bbox:?}"
-        );
-        let selection: serde_json::Value = serde_json::from_str(&if let Some((
-            parent,
-            table_control,
-            cell_index,
-            cell_paragraph,
-        )) = cell
-        {
-            doc.get_selection_rects_in_cell(
-                0,
-                *parent as u32,
-                *table_control as u32,
-                *cell_index as u32,
-                *cell_paragraph as u32,
-                offset,
-                *cell_paragraph as u32,
-                offset + 1,
-            )
-            .unwrap()
-        } else {
-            doc.get_selection_rects(0, *paragraph as u32, offset, *paragraph as u32, offset + 1)
-                .unwrap()
-        })
-        .unwrap();
-        let rects = selection.as_array().unwrap();
-        assert_eq!(
-            rects.len(),
-            1,
-            "{label}: 개체 {control} 하나의 선택 {selection}"
-        );
-        assert!((rects[0]["x"].as_f64().unwrap() - bbox.x).abs() < 0.1);
-        assert!((rects[0]["width"].as_f64().unwrap() - bbox.width).abs() < 0.1);
-        assert!(
-            (rects[0]["y"].as_f64().unwrap() - bbox.y).abs() < 0.1,
-            "{label}: 개체 {control}이 놓인 실제 줄을 선택한다: {selection} / {bbox:?}"
-        );
-        assert!((rects[0]["height"].as_f64().unwrap() - bbox.height).abs() < 0.1);
-        let last = para
-            .controls
-            .iter()
-            .rposition(|c| matches!(c, Control::Form(_)))
-            .unwrap();
-        if *control == last {
-            let end: serde_json::Value = serde_json::from_str(&if let Some((
-                parent,
-                table_control,
-                cell_index,
-                cell_paragraph,
-            )) = cell
-            {
+        let cursor_at = |at| {
+            if let Some((parent, table_control, cell_index, cell_paragraph)) = cell {
                 doc.get_cursor_rect_in_cell(
                     0,
                     *parent as u32,
                     *table_control as u32,
                     *cell_index as u32,
                     *cell_paragraph as u32,
-                    offset + 1,
+                    at,
                 )
-                .unwrap()
             } else {
-                doc.get_cursor_rect(0, *paragraph as u32, offset + 1)
-                    .unwrap()
-            })
-            .unwrap();
-            assert!(
-                (end["x"].as_f64().unwrap() - bbox.x - bbox.width).abs() < 0.1,
-                "{label}: 마지막 양식 뒤 캐럿 {end} / {bbox:?}"
-            );
-            let all: serde_json::Value = serde_json::from_str(&if let Some((
-                parent,
-                table_control,
-                cell_index,
-                cell_paragraph,
-            )) = cell
-            {
+                doc.get_cursor_rect(0, *paragraph as u32, at)
+            }
+        };
+        let selected = |start, end| {
+            if let Some((parent, table_control, cell_index, cell_paragraph)) = cell {
                 doc.get_selection_rects_in_cell(
                     0,
                     *parent as u32,
                     *table_control as u32,
                     *cell_index as u32,
                     *cell_paragraph as u32,
-                    0,
+                    start,
                     *cell_paragraph as u32,
-                    offset + 1,
+                    end,
                 )
-                .unwrap()
             } else {
-                doc.get_selection_rects(0, *paragraph as u32, 0, *paragraph as u32, offset + 1)
-                    .unwrap()
-            })
+                doc.get_selection_rects(0, *paragraph as u32, start, *paragraph as u32, end)
+            }
+        };
+        if let Some(cursor) = query(
+            cursor_at(offset),
+            &format!("{label} form {control} before"),
+            failures,
+        ) {
+            check!(
+                (cursor["x"].as_f64().unwrap_or(f64::NAN) - bbox.x).abs() < 0.1,
+                "개체 {control} 앞 캐럿 {cursor} / {bbox:?}"
+            );
+            let y = cursor["y"].as_f64().unwrap_or(f64::NAN);
+            let height = cursor["height"].as_f64().unwrap_or(f64::NAN);
+            check!(
+                y >= bbox.y - 0.1 && height > 0.0 && y + height <= bbox.y + bbox.height + 0.1,
+                "개체 {control}의 실제 줄 캐럿 {cursor} / {bbox:?}"
+            );
+        }
+        if let Some(selection) = query(
+            selected(offset, offset + 1),
+            &format!("{label} form {control} selection"),
+            failures,
+        ) {
+            let rects = selection.as_array().map(Vec::as_slice).unwrap_or(&[]);
+            check!(rects.len() == 1, "개체 {control} 하나의 선택 {selection}");
+            if let Some(rect) = rects.first() {
+                for (key, expected) in [
+                    ("x", bbox.x),
+                    ("y", bbox.y),
+                    ("width", bbox.width),
+                    ("height", bbox.height),
+                ] {
+                    check!(
+                        (rect[key].as_f64().unwrap_or(f64::NAN) - expected).abs() < 0.1,
+                        "개체 {control} 선택 {key}: {selection} / {bbox:?}"
+                    );
+                }
+            }
+        }
+        let last = para
+            .controls
+            .iter()
+            .rposition(|c| matches!(c, Control::Form(_)))
             .unwrap();
+        if *control != last {
+            continue;
+        }
+        if let Some(end) = query(
+            cursor_at(offset + 1),
+            &format!("{label} form {control} after"),
+            failures,
+        ) {
+            check!(
+                (end["x"].as_f64().unwrap_or(f64::NAN) - bbox.x - bbox.width).abs() < 0.1,
+                "마지막 양식 뒤 캐럿 {end} / {bbox:?}"
+            );
+        }
+        if let Some(all) = query(selected(0, offset + 1), &format!("{label} block"), failures) {
             let boxes: Vec<_> = painted
                 .iter()
                 .filter(|(p, _, location, _, _)| p == paragraph && location == cell)
@@ -806,25 +819,25 @@ fn assert_wrapped_form_owners(doc: &HwpDocument, expected: usize, label: &str) {
                 .iter()
                 .map(|bounds| (bounds.y * 75.0).round() as i32)
                 .collect();
-            let rects = all.as_array().unwrap();
-            assert_eq!(
-                rects.len(),
-                rows.len(),
-                "{label}: 전체 블록의 실제 줄마다 선택한다: {all}"
+            let rects = all.as_array().map(Vec::as_slice).unwrap_or(&[]);
+            check!(
+                rects.len() == rows.len(),
+                "전체 블록의 실제 {}줄 선택: {all}",
+                rows.len()
             );
             for bounds in boxes {
-                assert!(
+                check!(
                     rects.iter().any(|rect| {
-                        let x = rect["x"].as_f64().unwrap();
-                        let y = rect["y"].as_f64().unwrap();
-                        let width = rect["width"].as_f64().unwrap();
-                        let height = rect["height"].as_f64().unwrap();
+                        let x = rect["x"].as_f64().unwrap_or(f64::NAN);
+                        let y = rect["y"].as_f64().unwrap_or(f64::NAN);
+                        let width = rect["width"].as_f64().unwrap_or(f64::NAN);
+                        let height = rect["height"].as_f64().unwrap_or(f64::NAN);
                         x <= bounds.x + 0.1
                             && x + width >= bounds.x + bounds.width - 0.1
                             && y <= bounds.y + 0.1
                             && y + height >= bounds.y + bounds.height - 0.1
                     }),
-                    "{label}: 블록이 모든 양식을 덮는다: {all} / {bounds:?}"
+                    "블록이 모든 양식을 덮는다: {all} / {bounds:?}"
                 );
             }
         }
@@ -862,11 +875,12 @@ fn copied_eight_forms_wrap_once_in_body_and_cell_and_reopen_both_formats() {
     model.sections[0].raw_stream = None;
     doc.set_document(model);
     assert_eq!(doc.get_logical_length(0, 0).unwrap(), 4);
-    assert_wrapped_form_owners(&doc, 4, "원래 네 양식");
+    let mut failures = Vec::new();
+    assert_wrapped_form_owners(&doc, 4, "원래 네 양식", &mut failures);
     doc.copy_selection_logical(0, 0, 0, 0, 4).unwrap();
     doc.paste_internal(0, 0, 0).unwrap();
     assert_eq!(doc.get_logical_length(0, 0).unwrap(), 8);
-    assert_wrapped_form_owners(&doc, 8, "복사한 여덟 양식");
+    assert_wrapped_form_owners(&doc, 8, "복사한 여덟 양식", &mut failures);
     doc.insert_paragraph_native(0, 1).unwrap();
     let created: serde_json::Value =
         serde_json::from_str(&doc.create_table_native(0, 1, 0, 1, 1).unwrap()).unwrap();
@@ -880,12 +894,17 @@ fn copied_eight_forms_wrap_once_in_body_and_cell_and_reopen_both_formats() {
         0,
     )
     .unwrap();
-    assert_wrapped_form_owners(&doc, 16, "본문과 좁은 셀");
+    assert_wrapped_form_owners(&doc, 16, "본문과 좁은 셀", &mut failures);
     for (format, bytes) in [
         ("HWP", doc.export_hwp().unwrap()),
         ("HWPX", doc.export_hwpx().unwrap()),
     ] {
         let reopened = HwpDocument::from_bytes(&bytes).unwrap();
-        assert_wrapped_form_owners(&reopened, 16, format);
+        assert_wrapped_form_owners(&reopened, 16, format, &mut failures);
     }
+    assert!(
+        failures.is_empty(),
+        "양식 전체 경로 검증 실패:\n{}",
+        failures.join("\n")
+    );
 }

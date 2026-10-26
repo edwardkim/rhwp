@@ -79,6 +79,7 @@ struct CellCursorHit {
     x: f64,
     y: f64,
     height: f64,
+    at_form_end: bool,
 }
 
 /// 렌더 노드 트리에서 대상 셀의 bbox 를 찾는다 (legacy/fast 공유).
@@ -118,6 +119,8 @@ fn find_table_cell_bounds_in_node(
 /// 렌더 노드 트리에서 (cell_para, offset) 캐럿 TextRun 을 찾는다 (legacy/fast 공유).
 fn find_cursor_in_cell_node(
     node: &crate::renderer::render_tree::RenderNode,
+    paragraph: Option<&crate::model::paragraph::Paragraph>,
+    section: usize,
     parent_para: usize,
     ctrl_idx: usize,
     c_idx: usize,
@@ -126,6 +129,66 @@ fn find_cursor_in_cell_node(
     page_index: u32,
 ) -> Option<CellCursorHit> {
     use crate::renderer::render_tree::RenderNodeType;
+    let paragraph = paragraph.filter(|paragraph| {
+        paragraph
+            .controls
+            .iter()
+            .any(|control| matches!(control, crate::model::control::Control::Form(_)))
+    });
+    let mut end_fallback = None;
+    if let (RenderNodeType::TextLine(_), Some(paragraph)) = (&node.node_type, paragraph) {
+        let owns_cell = node.children.iter().any(|child| {
+            let RenderNodeType::TextRun(run) = &child.node_type else {
+                return false;
+            };
+            run.cell_context.as_ref().is_some_and(|ctx| {
+                ctx.parent_para_index == parent_para
+                    && ctx.path.len() == 1
+                    && ctx.path[0].control_index == ctrl_idx
+                    && ctx.path[0].cell_index == c_idx
+                    && ctx.path[0].cell_para_index == cp_idx
+            })
+        });
+        if owns_cell {
+            let positions = paragraph.logical_control_positions();
+            for child in &node.children {
+                let RenderNodeType::FormObject(form) = &child.node_type else {
+                    continue;
+                };
+                if form.section_index != section
+                    || form.para_index != cp_idx
+                    || form.cell_location.is_none()
+                    || !matches!(paragraph.controls.get(form.control_index),
+                        Some(crate::model::control::Control::Form(source))
+                            if source.common.treat_as_char)
+                {
+                    continue;
+                }
+                let Some(&position) = positions.get(form.control_index) else {
+                    continue;
+                };
+                if offset == position || offset == position + 1 {
+                    // 양식의 원문 글자 수가 0이어도 실제 인라인 칸의 앞·뒤는 서로 다르다.
+                    let hit = CellCursorHit {
+                        page_index,
+                        x: child.bbox.x
+                            + if offset == position {
+                                0.0
+                            } else {
+                                child.bbox.width
+                            },
+                        y: child.bbox.y,
+                        height: child.bbox.height.max(10.0),
+                        at_form_end: offset != position,
+                    };
+                    if !hit.at_form_end {
+                        return Some(hit);
+                    }
+                    end_fallback = Some(hit);
+                }
+            }
+        }
+    }
     if let RenderNodeType::TextRun(ref text_run) = node.node_type {
         let matches_cell = text_run.cell_context.as_ref().map_or(false, |ctx| {
             // path.len()==1 가드가 없으면 중첩 표 *내부* 셀의 run 도
@@ -165,6 +228,7 @@ fn find_cursor_in_cell_node(
                     x: node.bbox.x + x_in_run,
                     y: caret_y,
                     height: font_size,
+                    at_form_end: false,
                 });
             }
         }
@@ -172,6 +236,8 @@ fn find_cursor_in_cell_node(
     for child in &node.children {
         if let Some(hit) = find_cursor_in_cell_node(
             child,
+            paragraph,
+            section,
             parent_para,
             ctrl_idx,
             c_idx,
@@ -179,10 +245,14 @@ fn find_cursor_in_cell_node(
             offset,
             page_index,
         ) {
-            return Some(hit);
+            if hit.at_form_end {
+                end_fallback = Some(hit);
+            } else {
+                return Some(hit);
+            }
         }
     }
-    None
+    end_fallback
 }
 
 fn format_cursor_rect_json(
@@ -2873,6 +2943,14 @@ impl DocumentCore {
                 find_table_cell_bounds_in_node(&tree.root, parent_para_idx, control_idx, cell_idx);
             if let Some(hit) = find_cursor_in_cell_node(
                 &tree.root,
+                self.get_cell_paragraph_ref(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                ),
+                section_idx,
                 parent_para_idx,
                 control_idx,
                 cell_idx,
@@ -3473,6 +3551,14 @@ impl DocumentCore {
             find_table_cell_bounds_in_node(&scratch_col, parent_para_idx, control_idx, cell_idx);
         if let Some(hit) = find_cursor_in_cell_node(
             &scratch_col,
+            self.get_cell_paragraph_ref(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            ),
+            section_idx,
             parent_para_idx,
             control_idx,
             cell_idx,
