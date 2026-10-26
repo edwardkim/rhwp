@@ -3069,6 +3069,17 @@ impl LayoutEngine {
             return;
         }
         let chars: Vec<_> = para.text.chars().collect();
+        // 런의 char_start는 저장 줄 경로처럼 논리 오프셋이다. 같은 자리의 개체는 글자 앞에 놓인다.
+        let control_positions = para.control_text_positions();
+        let inline_positions: Vec<usize> = para
+            .controls
+            .iter()
+            .zip(&control_positions)
+            .filter(|(control, _)| control.is_logical_inline())
+            .map(|(_, &position)| position)
+            .collect();
+        let logical_start =
+            |index: usize| index + inline_positions.iter().filter(|&&p| p <= index).count();
         let mut paragraph_fill_bands = Vec::new();
         // Physical rows and per-character positions are the measurement
         // result. Preserve them in the render tree and coalesce compatible
@@ -3142,7 +3153,7 @@ impl LayoutEngine {
                             && run.style == text_style
                             && run.char_shape_id == Some(*style)
                             && run.char_start.is_some_and(|start| {
-                                start + run.text.chars().count() == range.start
+                                start + run.text.chars().count() == logical_start(range.start)
                             })
                             && (previous.bbox.x + previous.bbox.width - x).abs() < 0.01
                             && (previous.bbox.y - y).abs() < 0.01
@@ -3166,7 +3177,7 @@ impl LayoutEngine {
                         para_shape_id: Some(para.para_shape_id),
                         section_index: Some(section_index),
                         para_index: Some(para_index),
-                        char_start: Some(range.start),
+                        char_start: Some(logical_start(range.start)),
                         cell_context: None,
                         is_para_end: range.end == chars.len(),
                         is_line_break_end: false,
@@ -3626,9 +3637,19 @@ impl LayoutEngine {
         if layout_debug_enabled() {
             eprintln!(
                 "LAYOUT_INLINE_TABLE_PARA: pi={} sec={} col_x={:.1} col_w={:.1} y_start={:.1} y={:.1} sb={:.1} sa={:.1} ml={:.1} mr={:.1} align={:?} ls_count={} tables={}",
-                para_index, section_index, col_area.x, col_area.width, y_start, y,
-                spacing_before, spacing_after, margin_left, margin_right, alignment,
-                para.line_segs.len(), inline_tables.len(),
+                para_index,
+                section_index,
+                col_area.x,
+                col_area.width,
+                y_start,
+                y,
+                spacing_before,
+                spacing_after,
+                margin_left,
+                margin_right,
+                alignment,
+                para.line_segs.len(),
+                inline_tables.len(),
             );
             for (li, seg) in para.line_segs.iter().enumerate() {
                 eprintln!(
@@ -3645,9 +3666,15 @@ impl LayoutEngine {
             for (ti, (ci, tbl)) in inline_tables.iter().enumerate() {
                 eprintln!(
                     "  LAYOUT_INLINE_TBL[{}]: ctrl_idx={} rows={} cols={} w={} h={} vert={:?} horz={:?} wrap={:?}",
-                    ti, ci, tbl.row_count, tbl.col_count,
-                    tbl.common.width, tbl.common.height,
-                    tbl.common.vert_align, tbl.common.horz_align, tbl.common.text_wrap,
+                    ti,
+                    ci,
+                    tbl.row_count,
+                    tbl.col_count,
+                    tbl.common.width,
+                    tbl.common.height,
+                    tbl.common.vert_align,
+                    tbl.common.horz_align,
+                    tbl.common.text_wrap,
                 );
             }
         }
@@ -6819,8 +6846,12 @@ impl LayoutEngine {
             {
                 eprintln!(
                     "LAYOUT_OVERFLOW_DRAW: section={} pi={} line={} y={:.1} col_bottom={:.1} overflow={:.1}px",
-                    section_index, para_index, line_idx,
-                    line_visual_bottom, col_bottom, line_visual_bottom - col_bottom,
+                    section_index,
+                    para_index,
+                    line_idx,
+                    line_visual_bottom,
+                    col_bottom,
+                    line_visual_bottom - col_bottom,
                 );
             }
             // [#3637] 셀 안 줄이 **쪽 본문 하단**을 넘는 경우.
@@ -9057,8 +9088,20 @@ impl LayoutEngine {
 
             // [Task #960] env-gated TAC line-mapping 추적
             if std::env::var("RHWP_DEBUG_PARA_TAC").is_ok() && !tac_offsets_px.is_empty() {
-                eprintln!("  TAC_LINE pi={} line_idx={} run_idx={} run_char_pos={} run_char_end={} y={:.1} lh={:.1} ls={:.1} raw_lh={:.1} baseline={:.1} run_tacs={:?}",
-                    para_index, line_idx, run_idx, run_char_pos, run_char_end, y, line_height, line_spacing_px, raw_lh, baseline, run_tacs);
+                eprintln!(
+                    "  TAC_LINE pi={} line_idx={} run_idx={} run_char_pos={} run_char_end={} y={:.1} lh={:.1} ls={:.1} raw_lh={:.1} baseline={:.1} run_tacs={:?}",
+                    para_index,
+                    line_idx,
+                    run_idx,
+                    run_char_pos,
+                    run_char_end,
+                    y,
+                    line_height,
+                    line_spacing_px,
+                    raw_lh,
+                    baseline,
+                    run_tacs
+                );
             }
 
             if run_tacs.is_empty() {
@@ -11199,7 +11242,10 @@ impl LayoutEngine {
             if self.is_body_flow_col_area(col_area) && y + line_height > col_bottom + 0.5 {
                 eprintln!(
                     "LAYOUT_OVERFLOW_DRAW: line={} y={:.1} col_bottom={:.1} overflow={:.1}px (fast path)",
-                    line_idx, y + line_height, col_bottom, y + line_height - col_bottom,
+                    line_idx,
+                    y + line_height,
+                    col_bottom,
+                    y + line_height - col_bottom,
                 );
             }
             let y_clamped = y;
