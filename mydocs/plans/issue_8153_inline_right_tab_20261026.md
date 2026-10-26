@@ -40,3 +40,24 @@ intrarun bbox·canonical TabLeader·Native/Canvas`의 실제 경로를 연결한
 최종 목표인 전쪽 raw 100%·미대응 0과 필수 전체 테스트는 아직 완료되지 않았다.
 작업 증적은 ignored `remaining-raw100-diagnostic/remaining-direct-current/`다.
 upstream 동기화와 원격 GitHub 쓰기 없이 PR 준비까지만 진행한다.
+
+## 후속: 저장 너비와 명시적 정지가 갈리는 실제 줄
+
+원본 279쪽의 `10. 공문서 작성시…`와 `11. 공무직 등…`은 같은 paraPr61·tabPr10을
+쓴다. 명시적 RIGHT 정지는 38,272HU이고 자동 우측 탭은 꺼져 있다. 실제 inline
+너비는 각각 9,938HU·12,366HU다. 같은 저장 줄의 세로/가로 메트릭도 원본에서
+읽었으며, 원본을 수정한 합성 입력이 아니다.
+
+동결된 Native source `e5a1e3e04a`의 실제 paint에서 두 숫자의 x는 모두 586.56px다.
+독립 Print의 첫 숫자는 583.04px, 다음 숫자는 586.56px다. 숫자 세 글자와 리더의
+대응도 확인했으므로 다른 `279`를 찾은 결과와 구분한다. 현재 첫 탭 원점과 원본의
+9,938HU를 더한 값은 583.01333px이며 Print의 장치 격자 위치와 대응한다.
+
+280쪽만으로는 명시적 정지와 저장 전진의 우선순위를 구분하지 못했다. 이 실제
+반례에서 원본 inline 너비·유효한 저장 줄과 편집 후 재조판의 계약을 구분하고,
+공통 탭 측정 → 교차 런 pending → 숫자 블록 배치 → TabLeader/bbox를 추적한다.
+원본 값의 직접 재생 진단과 정상 대조를 먼저 실행한 뒤 구현 근거를 판정한다.
+현재 관측만으로 탭 종류나 전체 저장/재조판 규칙을 바꾼 것으로 기록하지 않는다.
+원본 값·현재 실제 스타일·독립 glyph 원점은 ignored 작업 폴더의
+`p279-source-paragraphs.json`, `p279-independent-digit-positions.json`,
+`current-native-residual-text-attrs.json`, `residual-text-independent-origin-comparison.json`에 있다.
