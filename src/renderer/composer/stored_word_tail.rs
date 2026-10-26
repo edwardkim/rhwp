@@ -215,6 +215,7 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
             failure,
         )?;
         let mut has_text = false;
+        let mut em_px: f64 = 0.0;
         let mut fallback_styles =
             crate::storage::optional(crate::storage::try_clone(styles, storage), failure)?;
         fallback_styles.source_program_projection_slots.clear();
@@ -223,6 +224,12 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
                 continue;
             }
             has_text = true;
+            em_px = em_px.max(
+                styles
+                    .char_styles
+                    .get(run.char_style_id as usize)
+                    .map_or(0.0, |style| style.font_size),
+            );
             let fallback = styles
                 .source_program_projection_slots
                 .get(&(run.char_style_id, run.lang_index))?;
@@ -260,11 +267,71 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
         {
             return None;
         }
+        if crate::storage::optional(
+            source_program_reproduces_stored_rows(para, &frame, styles, dpi, em_px, storage),
+            failure,
+        )? {
+            return None;
+        }
         crate::storage::optional(
             project_stored_rows_with_storage(para, &frame, styles, dpi, false, true, storage),
             failure,
         )?
     })
+}
+
+/// 대체 프로그램이 저장 줄을 재현해도 원본 프로그램과 모순된다는 뜻은 아니다.
+/// 원본 TTF가 같은 줄 수로, 상자를 반 자(0.5em) 미만으로 좁혔을 때 저장
+/// 경계를 그대로 만들면 줄 끝 글자는 반 자도 안 되는 측정 차이로만 앞줄에
+/// 들어간다. 저장 경계가 원본 채움의 가장 가까운 글자 경계이므로 유지한다.
+/// 줄 수가 달라지거나 반 자 이상의 폭 차이가 필요한 경우만 다른 프로그램의
+/// 캐시로 보고 다시 채운다.
+fn source_program_reproduces_stored_rows<S: crate::storage::Storage>(
+    para: &Paragraph,
+    frame: &LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    em_px: f64,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    // 0.2px(15HU) 간격으로 폭을 줄여 저장 경계가 나타나는 구간을 찾는다.
+    const STEP_HU: i32 = 15;
+    let half_em = crate::renderer::px_to_hwpunit(em_px, dpi) / 2;
+    let width = frame.horizontal.end - frame.horizontal.start;
+    if half_em <= 0 || width <= half_em {
+        return Ok(false);
+    }
+    let full = line_breaking::layout_paragraph_in_frame_with_storage(
+        para,
+        &mut crate::storage::try_clone(frame, storage)?,
+        styles,
+        dpi,
+        storage,
+    )?;
+    if full.is_none_or(|rows| rows.len() != para.line_segs.len()) {
+        return Ok(false);
+    }
+    for step in 1..=(half_em - 1) / STEP_HU {
+        let mut narrowed = crate::storage::try_clone(frame, storage)?;
+        narrowed.horizontal.end -= step * STEP_HU;
+        let rows = line_breaking::layout_paragraph_in_frame_with_storage(
+            para,
+            &mut narrowed,
+            styles,
+            dpi,
+            storage,
+        )?;
+        if rows.is_some_and(|rows| {
+            rows.len() == para.line_segs.len()
+                && rows
+                    .iter()
+                    .enumerate()
+                    .all(|(index, row)| row.text_start == para.line_seg_text_start(index))
+        }) {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 /// 앞선 물리 경계가 없는 마지막 자동 어절의 캐시 원점 되감김인가.
