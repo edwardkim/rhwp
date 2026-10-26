@@ -73,3 +73,9 @@ source40은 두 건 PASS였다. 원점은 582.80515 → 585.53333px이며 독립
 - 실행 로그: `positive-slack-native-whole-run.log`, `positive-slack-wasm-focus.log`, `positive-slack-native-validation.log`.
 - 136쪽 직접 판독: `positive-slack-native/native-focus/handbook-hwpx/p136/` 및
   `positive-slack-wasm-dev/wasm-focus/handbook-hwpx/p136/`의 review·overlay PNG.
+
+정식 회귀 `tests/cases/issue_8153_positive_word_slack.rs`는 실제 셀·줄의 원문과 공백,
+원본 불변, 독립 단어 원점·기준선 ±2px를 함께 보호한다. 같은 파일을 고정 source08의
+라이브러리에 연결하면 2건 FAIL, 한자 보정을 함께 포함한 source `ffc7cf81b4`에서는
+2건 PASS다. 시스템 글꼴 경로나 복사한 글꼴 fixture를 요구하지 않는다. 이 검사의
+확인은 최종 자동 수집 suite와 전체 회귀 실행을 대신하지 않는다.
