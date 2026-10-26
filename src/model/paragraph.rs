@@ -1942,6 +1942,21 @@ impl Paragraph {
         // TAC 그림/표/수식 등은 본문에서 한 글자처럼 취급되므로 문단 분할 시
         // logical offset 기준으로 앞뒤 문단에 나뉘어야 한다. SectionDef/ColumnDef 같은
         // 구조 control은 문단 시작에 붙은 문서 구조 정보라 원래 문단에 둔다.
+        // 번호 자리표 공백은 그 자체로 번호의 8유닛을 담는다. 그 자리에서 나눈 번호는
+        // 새 문단 앞 갭을 따로 차지하지 않는다.
+        let placeholder_end = new_char_offsets.get(1).copied().unwrap_or_else(|| {
+            self.char_count
+                .saturating_sub(1)
+                .saturating_sub(utf16_split)
+        });
+        let number_placeholder_at_split = text_chars.get(split_pos) == Some(&' ')
+            && new_char_offsets.first() == Some(&0)
+            && placeholder_end >= CTRL_CHAR_CODE_UNITS;
+        let number_controls: Vec<bool> = self
+            .controls
+            .iter()
+            .map(|ctrl| matches!(ctrl, Control::AutoNumber(_) | Control::NewNumber(_)))
+            .collect();
         let old_controls = std::mem::take(&mut self.controls);
         let old_ctrl_data = std::mem::take(&mut self.ctrl_data_records);
         let mut kept_controls = Vec::with_capacity(old_controls.len());
@@ -1978,6 +1993,7 @@ impl Paragraph {
         let moved_gap_controls = moved_control_idx_map
             .keys()
             .filter(|&&ci| text_positions.get(ci) == Some(&split_pos))
+            .filter(|&&ci| !(number_placeholder_at_split && number_controls[ci]))
             .count();
 
         // 6. char_count 갱신
@@ -1986,8 +2002,14 @@ impl Paragraph {
         let new_text_code_units: u32 = new_text.chars().map(Self::char_stream_len).sum();
         let ctrl_code_units: u32 = (self.controls.len() + self.field_ranges.len()) as u32 * 8;
         self.char_count = kept_text_code_units + ctrl_code_units + 1; // +1 for paragraph end marker
+                                                                      // 번호의 8유닛은 자리표 공백이 이미 담으므로 그 공백을 따로 세지 않는다.
+        let moved_number_placeholder = number_placeholder_at_split
+            && moved_control_idx_map
+                .keys()
+                .any(|&ci| number_controls[ci] && text_positions.get(ci) == Some(&split_pos));
         let new_char_count =
-            new_text_code_units + (new_controls.len() + new_field_ranges.len()) as u32 * 8 + 1;
+            new_text_code_units + (new_controls.len() + new_field_ranges.len()) as u32 * 8 + 1
+                - u32::from(moved_number_placeholder);
 
         // 7. has_para_text: 빈 문단(텍스트 없고 컨트롤 없음)이면 PARA_TEXT 불필요
         //    HWP 프로그램은 cc=1(빈 문단)에 PARA_TEXT가 있으면 파일 손상으로 판단
