@@ -3230,7 +3230,8 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline: row.baseline,
                         field_marker: FieldMarkerType::None,
-                        layout_positions: None,
+                        // 공통 계획의 런처럼 글자 원점을 둔다. 글이 없으니 시작점 하나다.
+                        layout_positions: Some(vec![0.0]),
                         display_text: None,
                     }),
                     BoundingBox::new(x, col_area.y + row.y, 0.0, row.height),
