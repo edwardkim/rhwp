@@ -49,7 +49,13 @@ fn verify(extension: &str) {
         .render_raster_with_options(&tree, Default::default())
         .unwrap()
         .bytes;
-    let actual = image::load_from_memory(&bytes).unwrap().into_rgb8();
+    let raster = image::load_from_memory(&bytes).unwrap().into_rgba8();
+    // 다른 paint를 분리한 PNG의 투명 종이는 PDF와 같은 흰색으로 합성한다.
+    // alpha를 버리면 새로 드러난 빈 가장자리가 검정으로 바뀐다.
+    let mut opaque =
+        image::RgbaImage::from_pixel(raster.width(), raster.height(), image::Rgba([255; 4]));
+    image::imageops::overlay(&mut opaque, &raster, 0, 0);
+    let actual = image::DynamicImage::ImageRgba8(opaque).into_rgb8();
     let actual = image::imageops::crop_imm(&actual, 139, 658, 447, 195).to_image();
     let expected = image::load_from_memory(include_bytes!(
         "../fixtures/issue8153/handbook_p139_picture_hancom2024_96dpi.png"

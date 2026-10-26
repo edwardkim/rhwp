@@ -95,3 +95,10 @@ ubuntu-ted2의 `5df67d3299befb467a49dc4eaafd12d6e1877e2d`에서 WMF Print
 요구하므로, 밝기 −5와 crop이 있는 편람 130쪽에 그대로 적용하지 않는다.
 읽기 전용 증거는 `ubuntu-ted2-picture-reference/read-only-metafile-print-20261026*`다.
 원격 작업 트리나 현재 base는 변경하지 않았다.
+
+139쪽의 독립 PDF 그림 영역을 쓰는 정식 회귀는 시스템 글꼴 없이 두 원본에서
+실행한다. 다른 paint를 분리한 PNG의 투명 영역은 PDF와 같은 흰색 종이에 먼저
+합성한다. alpha를 버려 검정으로 비교한 초기 진단은 제외했다. 기준 PNG를 유지한
+동일 검사에서 이전 `ddfacbc9fa` 라이브러리는 **2 FAIL**, 보정 `49fa71149a`
+라이브러리는 **2 PASS·0 FAIL·0 ignored**다. Native 전체·fresh WASM은 아직
+진행 전이며 이 focused 결과로 전체 1,532개 조건의 개선 수를 대신하지 않는다.
