@@ -614,6 +614,27 @@ pub fn is_function(cmd: &str) -> bool {
 /// 원래 대소문자로 먼저 찾고 실패하면 대문자 변환 후 재시도한다.
 /// 그리스 이름은 소문자·첫 글자 대문자·전체 대문자를 구분하며 혼합 철자는 접지 않는다.
 /// 화살표는 기호표에 등록된 원래 철자로만 조회한다.
+/// 기호 표의 가장 긴 이름 길이. 이름 조회는 대소문자만 바꾸므로 이보다 긴 철자는 기호가 아니다.
+pub(crate) fn max_symbol_name_len() -> usize {
+    static MAX: LazyLock<usize> = LazyLock::new(|| {
+        [
+            &*GREEK_LOWER,
+            &*GREEK_UPPER,
+            &*SPECIAL_SYMBOLS,
+            &*OPERATORS,
+            &*BIG_OPERATORS,
+            &*ARROWS,
+            &*BRACKETS,
+        ]
+        .iter()
+        .flat_map(|table| table.keys())
+        .map(|name| name.len())
+        .max()
+        .unwrap_or(0)
+    });
+    *MAX
+}
+
 pub fn lookup_symbol(cmd: &str) -> Option<&'static str> {
     // 독립 한컴 Print에서 MINUSPLUS만 명령이며 minusplus는 min과 usplus다.
     if cmd != "MINUSPLUS" && cmd.eq_ignore_ascii_case("MINUSPLUS") {

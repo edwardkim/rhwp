@@ -696,8 +696,17 @@ fn longest_keyword_prefix(value: &str) -> Option<usize> {
     if value.len() < 3 || is_eq_keyword(value) {
         return None;
     }
-    // 최장 우선 (len-1 .. 2), allowlist 만 분리
-    (2..value.len()).rev().find(|&k| is_glue_safe(&value[..k]))
+    // 최장 우선 (len-1 .. 2), allowlist 만 분리. 알려진 키워드보다 긴 접두사는 볼 필요가 없다.
+    // 긴 식별자(예: 8,000자 x)에서 모든 접두사를 해시하면 문자 수의 제곱만큼 느려진다.
+    let longest = GLUE_SAFE
+        .iter()
+        .map(|keyword| keyword.len())
+        .max()
+        .unwrap_or(0)
+        .max(super::symbols::max_symbol_name_len());
+    (2..value.len().min(longest + 1))
+        .rev()
+        .find(|&k| is_glue_safe(&value[..k]))
 }
 
 /// 수식 스크립트를 토큰 리스트로 변환
