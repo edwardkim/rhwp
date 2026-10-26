@@ -2624,7 +2624,9 @@ fn compute_line_extra_spacing_with_dash_plan(
                 // 테두리에서 클리핑된다. 공백-없는 분기와 동일하게 잔여 음수 슬랙을
                 // 자간으로 흡수한다 (narrow glyph 역진은 #229 per-char 클램프가 방어).
                 let leftover = slack - ews * rendered_space_slots as f64;
-                let ecs = if in_cell && leftover < 0.0 && spacing_char_count > 1 && !has_tabs {
+                // 한계가 작동했을 때만 잔여 초과가 있다. 나눗셈 왕복의 미소 음수
+                // 잔여를 자간 수렴의 근거로 삼으면 양수 낱말 여백까지 압축한다.
+                let ecs = if in_cell && raw_ews < min_ews && spacing_char_count > 1 && !has_tabs {
                     let avg_char_w = (total_text_width
                         - leading_space_plan.natural_width(styles, tab_width))
                         / spacing_char_count as f64;
