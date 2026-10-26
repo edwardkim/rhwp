@@ -9,8 +9,8 @@ pub(super) fn text_start(
     current: f64,
     stored_target: f64,
     segment_width: f64,
-    default_tab_width: f64,
 ) -> f64 {
+    let (_, _, default_tab_width) = super::style_params(style);
     let (position, kind, _) = super::find_next_tab_stop(
         style.line_x_offset + current,
         &style.tab_stops,

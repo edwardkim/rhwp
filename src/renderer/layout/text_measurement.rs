@@ -629,7 +629,7 @@ impl EmbeddedTextMeasurer {
                                         &chars, &cluster_len, i + 1, &char_width,
                                     );
                                     total = inline_right_tab::text_start(
-                                        style, total, tab_target, seg_w, tab_w,
+                                        style, total, tab_target, seg_w,
                                     );
                                 }
                                 1 => {
@@ -840,9 +840,7 @@ impl EmbeddedTextMeasurer {
                         if has_content_after {
                             let seg_w_full =
                                 measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
-                            x = inline_right_tab::text_start(
-                                style, x, tab_target, seg_w_full, tab_w,
-                            );
+                            x = inline_right_tab::text_start(style, x, tab_target, seg_w_full);
                         } else {
                             let seg_w = measure_segment_from(
                                 &chars,
