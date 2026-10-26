@@ -16,7 +16,10 @@ pub(super) fn supports_uncached_inline_host(para: &Paragraph) -> bool {
                 has_inline_object = true;
             }
             marker if line_breaking::control_is_width_neutral_marker(marker) => {}
-            // 표·부동 개체·중첩 흐름은 각각의 기존 소유권 계약을 따른다.
+            // 줄 폭을 바꾸지 않는 부동 그림·도형은 자기 상자만 부동 개체 소유자가 배치한다.
+            // 사양하면 같은 문단의 글자처럼 개체가 이 프레임의 줄 높이를 잃는다(#8271).
+            float if line_breaking::control_is_line_width_neutral_float_object(float) => {}
+            // 표·폭을 바꾸는 부동 개체·중첩 흐름은 각각의 기존 소유권 계약을 따른다.
             _ => return false,
         }
     }
