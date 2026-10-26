@@ -55,8 +55,20 @@ decoder/encoder의 수학·폭 계산·기존 품질 경계를 새로 맞추지 
 
 표준 최적화 fresh WASM 빌드도 잡 8개·codegen-units 16·Binaryen 8개로 성공했다.
 WASM SHA-256은 `e75f0f015e27eee220f4c488b70f1bae189647a1f6ee0b7f8b57f2fb0cfc0ef4`다.
-같은 browser 계약 검사도 실제 브라우저에서 통과했다. 이 빌드의 영향 84조건과
-전쪽 WASM 검증은 후속 단계이며, 빌드 성공으로 그 출력을 확인했다고 기록하지 않는다.
+같은 browser 계약 검사도 실제 브라우저에서 통과했다. 이어 실제 영향 84조건과
+전쪽 WASM 766쪽을 재출력하고 점수·미대응 수·PNG 해시를 검증했다.
+
+| 표준 fresh WASM 입력 | 100%·미대응 0인 쪽 | 최저 raw | 전체 미대응 픽셀 |
+| --- | ---: | ---: | ---: |
+| HWPX | 343/383 | 99.25254% | 1,706 |
+| HWP | 340/383 | 99.25254% | 1,721 |
+
+WASM도 양쪽 261쪽만 미대응 322→0픽셀로 바뀌고 다른 764쪽은 유지됐다.
+두 형식의 실제 WASM review PNG를 열어 독립 Print와 그림·선·본문을 직접 대조했다.
+Native와 WASM 합계는 **1,368/1,532조건**이 raw 100%·미대응 0이며 **164조건이 남는다**.
+비교 원문은 `whole-native-comparison.json`, `whole-wasm-comparison.json`이고,
+각 `native/handbook-*/whole-score/silhouette.tsv`와
+`wasm-whole/handbook-*/whole-score/silhouette.tsv`가 실제 전쪽 TSV다.
 
 전쪽 100% 목표와 최종 전체 테스트·PR 준비는 아직 완료되지 않았다.
 작업 증적은 ignored `handbook-jpeg-fill-color-candidate/`와
