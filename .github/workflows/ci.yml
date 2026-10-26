@@ -1336,6 +1336,8 @@ jobs:
               node scripts/run-rust-test.mjs --cargo-test issue_8160_hwp2022_paragraph_relations -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test native_fractional_glyph_origin -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_536_native_region_cache -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test skia_region_plan -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test skia_host_surface -- --profile release-test --features native-skia --verbose
               ;;
             release)
               echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
@@ -1355,6 +1357,8 @@ jobs:
               node scripts/run-rust-test.mjs --cargo-test issue_8160_hwp2022_paragraph_relations -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test native_fractional_glyph_origin -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_536_native_region_cache -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test skia_region_plan -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test skia_host_surface -- --release --features native-skia --verbose
               ;;
             *)
               echo "::error::Unknown test profile: ${TEST_PROFILE}"

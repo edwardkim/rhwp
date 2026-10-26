@@ -46,6 +46,8 @@ const NATIVE_SKIA_RUST_FILES = new Set([
   'tests/cases/issue_7950_pdf_paint.rs',
   'tests/cases/issue_536_native_region_cache.rs',
   'tests/cases/native_fractional_glyph_origin.rs',
+  'tests/cases/skia_region_plan.rs',
+  'tests/cases/skia_host_surface.rs',
   'tests/cli_exit_codes_native.rs',
   'tests/issue_1144_native.rs',
   'tests/issue_2083_hide_fill_page_background.rs',
