@@ -8941,9 +8941,10 @@ impl LayoutEngine {
                 // 공백 폭만큼 우측으로 밀려 소제목 정렬과 어긋난다. 공백 only run 은 정렬을
                 // 건너뛰고 pending 을 다음 의미있는 run 으로 carry-over.
                 if run.text.trim().is_empty() {
-                    // carry-over: 공백 run 은 정렬 단위가 아님. leader 보정도 다음 run 시점으로
-                    // 위임 (그 시점의 leader-bearing TextRun 검색이 \t 가진 진짜 leader run 을 찾음).
-                    pending_right_tab_render = Some(pending);
+                    // 자동 정렬 정지는 그대로 넘기고, 저장 전진의 다음 시작에는 공백 폭을 보존한다.
+                    // leader 보정은 다음 내용 런에서 원래 탭 런을 찾아 같은 끝을 소비한다.
+                    pending_right_tab_render =
+                        Some(pending.carry_over_blank(&run.text, &text_style));
                 } else {
                     text_style.line_x_offset = x - col_area.x;
                     // 측정과 같은 탭 정지를 쓴다. 리더가 있어도 명시적 정지를
@@ -10997,7 +10998,7 @@ impl LayoutEngine {
                 // [Task #279] 공백만 있는 run 은 right/center tab 정렬 단위가 아니다.
                 // (장제목 케이스: " " 단독 run → carry-over)
                 if run.text.trim().is_empty() {
-                    pending_right_tab_est = Some(pending);
+                    pending_right_tab_est = Some(pending.carry_over_blank(&run.text, &ts));
                 } else {
                     ts.line_x_offset = est_x;
                     // 측정도 배치도 생산자가 해소한 단 기준 탭 정지를 소비한다.

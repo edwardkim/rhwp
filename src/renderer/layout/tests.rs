@@ -2214,6 +2214,7 @@ fn task290_inline_left_returns_none() {
     {
         use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
         let style = TextStyle {
+            font_size: 16.0,
             line_x_offset: 20.0,
             ..Default::default()
         };
@@ -2234,6 +2235,42 @@ fn task290_inline_left_returns_none() {
                     fill_type: fill
                 }
             );
+            // 독립 한컴 저장/Print 대조: fwSpace는 저장 탭 뒤에서 1/4em을 전진한다.
+            let carried = pending.carry_over_blank("\u{2007}", &style);
+            assert_eq!(
+                carried,
+                PendingTab::StoredStart {
+                    position: 124.0,
+                    fill_type: fill
+                }
+            );
+            let same_run = resolve_last_tab_pending(
+                "\t\u{2007}",
+                0,
+                &extensions,
+                &style,
+                &stops,
+                48.0,
+                false,
+                420.0,
+            );
+            assert_eq!(
+                same_run,
+                Some(carried),
+                "공백의 런 분리와 무관하게 전진 유지"
+            );
+            for aligned in [
+                PendingTab::Right {
+                    position: 300.0,
+                    fill_type: fill,
+                },
+                PendingTab::Center {
+                    position: 300.0,
+                    fill_type: fill,
+                },
+            ] {
+                assert_eq!(aligned.carry_over_blank("\u{2007}", &style), aligned);
+            }
         }
     }
 }

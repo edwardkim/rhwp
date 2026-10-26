@@ -34,6 +34,20 @@ impl PendingTab {
     pub(super) fn is_right_alignment(self) -> bool {
         matches!(self, Self::Right { .. })
     }
+
+    /// 저장 전진은 공백 앞까지다. 아직 정렬할 정지와 달리 후속 공백을 소비한다.
+    pub(crate) fn carry_over_blank(self, text: &str, style: &TextStyle) -> Self {
+        match self {
+            Self::StoredStart {
+                position,
+                fill_type,
+            } => Self::StoredStart {
+                position: position + estimate_text_width_exact(text, style),
+                fill_type,
+            },
+            _ => self,
+        }
+    }
 }
 
 /// `extensions`는 composition과 출력 프로필이 수용한 현재 런의 기하만 전달한다.
@@ -65,7 +79,8 @@ pub(crate) fn resolve_last_tab_pending(
                     return Some(PendingTab::StoredStart {
                         position: style.line_x_offset
                             + estimate_text_width_exact(before, style)
-                            + f64::from(width_hu) * 96.0 / 7200.0,
+                            + f64::from(width_hu) * 96.0 / 7200.0
+                            + estimate_text_width_exact(&run_text[last_tab + 1..], style),
                         fill_type: (ext[2] & 0xff) as u8,
                     });
                 }
