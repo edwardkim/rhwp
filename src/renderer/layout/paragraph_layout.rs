@@ -3069,17 +3069,14 @@ impl LayoutEngine {
             return;
         }
         let chars: Vec<_> = para.text.chars().collect();
-        // 런의 char_start는 저장 줄 경로처럼 논리 오프셋이다. 같은 자리의 개체는 글자 앞에 놓인다.
-        let control_positions = para.control_text_positions();
-        let inline_positions: Vec<usize> = para
-            .controls
-            .iter()
-            .zip(&control_positions)
-            .filter(|(control, _)| control.is_logical_inline())
-            .map(|(_, &position)| position)
-            .collect();
-        let logical_start =
-            |index: usize| index + inline_positions.iter().filter(|&&p| p <= index).count();
+        // 글 런은 원문 글자 축이지만, 글 없는 문단 끝 캐럿은 저장 줄 경로의 빈 줄처럼
+        // 앞선 인라인 개체를 센 논리 끝을 쓴다.
+        let logical_end = chars.len()
+            + para
+                .controls
+                .iter()
+                .filter(|control| control.is_logical_inline())
+                .count();
         let mut paragraph_fill_bands = Vec::new();
         // Physical rows and per-character positions are the measurement
         // result. Preserve them in the render tree and coalesce compatible
@@ -3153,7 +3150,7 @@ impl LayoutEngine {
                             && run.style == text_style
                             && run.char_shape_id == Some(*style)
                             && run.char_start.is_some_and(|start| {
-                                start + run.text.chars().count() == logical_start(range.start)
+                                start + run.text.chars().count() == range.start
                             })
                             && (previous.bbox.x + previous.bbox.width - x).abs() < 0.01
                             && (previous.bbox.y - y).abs() < 0.01
@@ -3177,7 +3174,11 @@ impl LayoutEngine {
                         para_shape_id: Some(para.para_shape_id),
                         section_index: Some(section_index),
                         para_index: Some(para_index),
-                        char_start: Some(logical_start(range.start)),
+                        char_start: Some(if range.is_empty() && range.start == chars.len() {
+                            logical_end
+                        } else {
+                            range.start
+                        }),
                         cell_context: None,
                         is_para_end: range.end == chars.len(),
                         is_line_break_end: false,
@@ -3198,6 +3199,41 @@ impl LayoutEngine {
                         display_text: None,
                     }),
                     BoundingBox::new(x, y, item.width, item.height),
+                ));
+            }
+            // 글 없이 개체로 끝나는 마지막 줄도 저장 줄 경로처럼 문단 끝 캐럿 앵커를 둔다.
+            // 앵커가 없으면 저장 줄을 생략한 HWPX를 다시 열 때 개체 뒤 캐럿의 글꼴 높이를 잃는다.
+            if line_index + 1 == plan.rows.len()
+                && !line.children.iter().any(|child| {
+                    matches!(&child.node_type, RenderNodeType::TextRun(run) if run.is_para_end)
+                })
+            {
+                let (text_style, char_shape_id) =
+                    paragraph_active_text_style(styles, Some(para), chars.len());
+                let x = col_area.x + row.x + row.width;
+                line.children.push(RenderNode::new(
+                    tree.next_id(),
+                    RenderNodeType::TextRun(TextRunNode {
+                        text: String::new(),
+                        style: text_style,
+                        char_shape_id,
+                        para_shape_id: Some(para.para_shape_id),
+                        section_index: Some(section_index),
+                        para_index: Some(para_index),
+                        char_start: Some(logical_end),
+                        cell_context: None,
+                        is_para_end: true,
+                        is_line_break_end: false,
+                        rotation: 0.0,
+                        is_vertical: false,
+                        char_overlap: None,
+                        border_fill_id: 0,
+                        baseline: row.baseline,
+                        field_marker: FieldMarkerType::None,
+                        layout_positions: None,
+                        display_text: None,
+                    }),
+                    BoundingBox::new(x, col_area.y + row.y, 0.0, row.height),
                 ));
             }
             let anchor = (!line.children.is_empty()).then_some((line.id, line.bbox.y));

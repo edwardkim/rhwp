@@ -76,7 +76,7 @@ fn empty_inline_picture_paragraph_keeps_end_anchor_after_hwpx_without_line_cache
 }
 
 #[test]
-fn text_after_inline_picture_keeps_logical_char_start_without_line_cache() {
+fn text_after_inline_picture_keeps_stored_line_char_start_without_line_cache() {
     let core = document("가나");
     let reopened = DocumentCore::from_bytes(&core.export_hwpx_native().unwrap()).unwrap();
     assert!(reopened.document().sections[0].paragraphs[0]
@@ -89,9 +89,10 @@ fn text_after_inline_picture_keeps_logical_char_start_without_line_cache() {
             .map(|(text, start, _)| (text, start))
             .collect::<Vec<_>>()
     };
-    // 그림이 논리 한 칸을 차지하므로 뒤 글자는 2에서 시작한다.
+    // 글 런의 char_start는 저장 줄 경로처럼 원문 글자 축이다. 그린 개체는 칸을 더 쓰지 않는다.
     assert_eq!(
-        starts(&reopened),
-        vec![("가".to_string(), 0), ("나".to_string(), 2)]
+        starts(&core),
+        vec![("가".to_string(), 0), ("나".to_string(), 1)]
     );
+    assert_eq!(starts(&reopened), starts(&core));
 }

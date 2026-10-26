@@ -340,12 +340,13 @@ pub(crate) fn plan(
         // 범위 밖 anchor를 누락시킨 부분 결과를 확정하지 않는다.
         return None;
     }
-    // 글이 아닌 개체로 끝나는 문단도 문단 끝 표시의 글자 모양이 마지막 줄 높이와
-    // 끝 캐럿을 정한다. 저장 줄 경로와 같도록 폭 0인 끝 상자를 둔다.
-    if !matches!(
+    // 글자처럼 그림으로 끝나는 문단은 문단 끝 표시의 글자 모양이 마지막 줄 높이와
+    // 끝 캐럿을 정한다. 저장 줄 경로와 같도록 폭 0인 끝 상자를 둔다. 표로 끝나는 문단은
+    // 한컴 인쇄처럼 표 줄 높이만 쓴다(issue_6776).
+    if matches!(
         atoms.last(),
         Some(Atom::Box(InlineFlowBox {
-            content: InlineFlowContent::Text { .. },
+            content: InlineFlowContent::Picture { .. },
             ..
         }))
     ) {
