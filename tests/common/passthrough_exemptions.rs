@@ -3,6 +3,42 @@
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
+        "commands/clipboard.rs",
+        "paste_internal_native",
+        Exempt::DelegatesTo("paste_internal_at_caret_native"),
+        "글자 좌표를 받는 호환 진입점이며 실제 붙이기와 대상 구역 raw_stream 무효화는 공통 캐럿 경로가 수행한다.",
+    ),
+    (
+        "commands/clipboard.rs",
+        "paste_internal_text_logical_native",
+        Exempt::DelegatesTo("paste_internal_at_caret_native"),
+        "순수 서식 글과 논리 위치만 검증·변환하고 실제 편집과 대상 구역 raw_stream 무효화는 공통 캐럿 경로에 위임한다.",
+    ),
+    (
+        "commands/formatting.rs",
+        "reflow_body_paragraph_range_native",
+        Exempt::DelegatesTo("refresh_section_native"),
+        "지정 본문 범위의 저장 줄을 갱신한 뒤 공통 구역 갱신 경로가 같은 구역 raw_stream을 무효화한다. 빈 범위와 잘못된 요청은 변경하지 않는다.",
+    ),
+    (
+        "commands/html_import.rs",
+        "paste_html_native",
+        Exempt::DelegatesTo("paste_html_filtered_native"),
+        "HTML 종류를 제한하지 않는 진입점이며 공통 HTML 붙이기가 실제 대상 구역 raw_stream과 필요한 DocInfo를 무효화한다.",
+    ),
+    (
+        "commands/html_import.rs",
+        "paste_html_text_logical_native",
+        Exempt::DelegatesTo("paste_html_filtered_native"),
+        "순수 서식 HTML을 검증한 뒤 같은 HTML 붙이기 경로에 위임한다. 실제 문서 변경과 대상 구역 raw_stream 무효화는 그 경로가 수행한다.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "delete_range_native",
+        Exempt::DelegatesTo("delete_range_with_boundaries"),
+        "호환 글자 경계를 계산한 뒤 공통 경계 삭제가 본문·셀의 실제 변경과 대상 구역 raw_stream 무효화를 수행한다. 빈 범위는 변경하지 않는다.",
+    ),
+    (
         "commands/border_paint_edit.rs",
         "discard_border_paint_undo_native",
         Exempt::SessionState,

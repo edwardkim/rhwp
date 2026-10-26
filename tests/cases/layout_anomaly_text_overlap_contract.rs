@@ -194,6 +194,7 @@ fn overlapping_text_runs_inside_table_are_text_overlap_not_generic_overlap() {
             clip: false,
             page_fragment: false,
             model_cell_index: None,
+            model_para_range: None,
         }),
         BoundingBox::new(10.0, 10.0, 80.0, 30.0),
     );

@@ -252,7 +252,7 @@ pub fn form_drawing(form: &FormObjectNode, b: BoundingBox) -> FormDrawing {
                     cy,
                     r - s / 2.0,
                     -std::f64::consts::FRAC_PI_4,
-                    "#fafafa",
+                    "#a0a0a0",
                     s,
                 );
                 arc(

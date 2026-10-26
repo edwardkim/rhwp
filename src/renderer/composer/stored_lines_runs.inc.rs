@@ -691,7 +691,14 @@ pub(crate) fn composed_tac_line_assignment(
 ) -> Option<Vec<(usize, usize)>> {
     let computed_rows = para.line_segs.first()?.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
     if super::equation_tac_flow::uses_equation_only_flow(para, comp)
-        || para.char_offsets.is_empty()
+        // 글자 없는 문단도 증가하는 원시 제어 슬롯 경계가 각 줄을 증명한다.
+        // 같은 시작을 반복한 안내 줄에는 이 배정을 적용하지 않는다.
+        || (para.char_offsets.is_empty()
+            && (!para.text.is_empty()
+                || para
+                    .line_segs
+                    .windows(2)
+                    .any(|rows| rows[0].text_start >= rows[1].text_start)))
         || comp.lines.len() != para.line_segs.len()
         || comp.lines.len() < 2
         || comp

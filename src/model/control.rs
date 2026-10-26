@@ -90,6 +90,7 @@ impl Control {
             Control::Table(table) => table.common.treat_as_char,
             Control::Picture(picture) => picture.common.treat_as_char,
             Control::Equation(equation) => equation.common.treat_as_char,
+            Control::Form(form) => form.common.treat_as_char,
             _ => false,
         }
     }

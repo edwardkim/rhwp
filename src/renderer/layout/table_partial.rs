@@ -1264,6 +1264,7 @@ impl LayoutEngine {
                     // [#5862] 이 경로의 clip 셀은 전부 쪽 컷이 만든 조각이다.
                     page_fragment: is_in_split_row || is_rowbreak_straddle || height_override_clip,
                     model_cell_index: Some(cell_idx as u32),
+                    model_para_range: None,
                 }),
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
             );
@@ -7903,6 +7904,7 @@ mod tests {
                 clip: true,
                 page_fragment: false,
                 model_cell_index: Some(0),
+                model_para_range: None,
             }),
             BoundingBox::new(10.0, 20.0, 100.0, 80.0),
         );

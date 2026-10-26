@@ -6926,6 +6926,26 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 본문 선택을 글자·개체를 함께 세는 논리 좌표로 지운다.
+    #[wasm_bindgen(js_name = deleteRangeLogical)]
+    pub fn delete_range_logical(
+        &mut self,
+        section_idx: u32,
+        start_para_idx: u32,
+        start_offset: u32,
+        end_para_idx: u32,
+        end_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.delete_range_logical_native(
+            section_idx as usize,
+            start_para_idx as usize,
+            start_offset as usize,
+            end_para_idx as usize,
+            end_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 셀 내 선택 영역을 삭제한다.
     ///
     /// 반환: JSON `{"ok":true,"paraIdx":N,"charOffset":N}`
@@ -8576,6 +8596,46 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = hasInternalClipboard)]
     pub fn has_internal_clipboard(&self) -> bool {
         self.has_internal_clipboard_native()
+    }
+
+    /// 내부 클립보드가 글자 모양만 가진 한 문단인지 읽는다.
+    #[wasm_bindgen(js_name = clipboardIsSingleText)]
+    pub fn clipboard_is_single_text(&self) -> bool {
+        self.clipboard_is_single_text_native()
+    }
+
+    /// 순수 서식 글을 논리 캐럿에 붙이고 결과는 글자 위치로 돌려준다.
+    #[wasm_bindgen(js_name = pasteInternalTextLogical)]
+    pub fn paste_internal_text_logical(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        logical_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.paste_internal_text_logical_native(
+            section_idx as usize,
+            para_idx as usize,
+            logical_offset as usize,
+        )
+        .map_err(|error| error.into())
+    }
+
+    /// 순수 서식 HTML을 논리 캐럿에 붙이고 결과는 글자 위치로 돌려준다.
+    #[wasm_bindgen(js_name = pasteHtmlTextLogical)]
+    pub fn paste_html_text_logical(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        logical_offset: u32,
+        html: &str,
+    ) -> Result<String, JsValue> {
+        self.paste_html_text_logical_native(
+            section_idx as usize,
+            para_idx as usize,
+            logical_offset as usize,
+            html,
+        )
+        .map_err(|error| error.into())
     }
 
     /// 내부 클립보드의 플레인 텍스트를 반환한다.

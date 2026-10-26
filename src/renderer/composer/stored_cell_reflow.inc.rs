@@ -82,6 +82,8 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             == 1;
     let frame_admits_controls = line_breaking::supports_cached_body_frame_controls(para)
         || inline_frame_admission::supports_uncached_inline_host(para)
+        || (crate::renderer::para_has_no_stored_line_segs(para)
+            && line_breaking::supports_inline_form_frame_controls(para))
         || (justified_kopub_picture
             && para.controls.iter().all(|control| {
                 matches!(control, crate::model::control::Control::Picture(picture)
@@ -202,7 +204,11 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             }
             let mut reconciled = composed.clone();
             reconciled.lines = reflowed.lines;
-            if rejoinable_word_tail || !measured_inline_table_heights.is_empty() {
+            if rejoinable_word_tail
+                || !measured_inline_table_heights.is_empty()
+                || (crate::renderer::para_has_no_stored_line_segs(para)
+                    && line_breaking::supports_inline_form_frame_controls(para))
+            {
                 reconciled.frame_geometry =
                     Some(std::sync::Arc::new(frame_geometry::FrameGeometry {
                         line_segs: reflowed_para.line_segs,
@@ -575,7 +581,11 @@ pub fn recompose_cell_lines_in_frame(
         // 재분할하면 RowBreak 표의 쪽 나눔 기준 줄 수가 원본 세로 정보와 어긋난다.
         return;
     }
-    if composed.lines.is_empty() || !cell_box.is_usable() {
+    // HWPX가 합성 줄을 생략한 Form 전용 셀은 아직 조합할 글자 줄이 없다.
+    // 저장 기하가 없는 이 호스트의 첫 행도 아래 공통 프레임이 구성한다.
+    let uncached_form_host = crate::renderer::para_has_no_stored_line_segs(para)
+        && line_breaking::supports_inline_form_frame_controls(para);
+    if (composed.lines.is_empty() && !uncached_form_host) || !cell_box.is_usable() {
         return;
     }
 

@@ -3048,6 +3048,7 @@ fn collect_top_level_table_spans_domain() {
             clip: false,
             page_fragment: false,
             model_cell_index: None,
+            model_para_range: None,
         }),
         BoundingBox::new(75.6, 202.5, 100.0, 100.0),
     );

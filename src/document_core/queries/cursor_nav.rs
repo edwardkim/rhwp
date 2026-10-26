@@ -1880,36 +1880,52 @@ impl DocumentCore {
                 node: &RenderNode,
                 sec: usize,
                 para: usize,
+                render_para: Option<&Paragraph>,
                 control_positions: &[usize],
                 offset: usize,
                 page: u32,
                 bias: CursorBias,
                 best: &mut Option<(u8, CursorHit)>,
             ) {
-                if let RenderNodeType::Equation(ref eq) = node.node_type {
-                    if eq.section_index == Some(sec)
-                        && eq.para_index == Some(para)
-                        && eq.cell_index.is_none()
+                let address = match &node.node_type {
+                    RenderNodeType::Equation(eq) if eq.cell_index.is_none() => eq
+                        .section_index
+                        .zip(eq.para_index)
+                        .zip(eq.control_index)
+                        .map(|((s, p), c)| (s, p, c)),
+                    RenderNodeType::FormObject(form)
+                        if form.cell_location.is_none()
+                            && render_para
+                                .and_then(|p| p.controls.get(form.control_index))
+                                .is_some_and(Control::is_treat_as_char_object) =>
                     {
-                        if let Some(ci) = eq.control_index {
-                            if let Some(pos) = control_positions.get(ci).copied() {
-                                if offset == pos || offset == pos + 1 {
-                                    let x = if offset == pos {
-                                        node.bbox.x
+                        Some((form.section_index, form.para_index, form.control_index))
+                    }
+                    _ => None,
+                };
+                if let Some((s, p, ci)) = address {
+                    if s == sec && p == para {
+                        if let Some(pos) = control_positions.get(ci).copied() {
+                            if offset == pos || offset == pos + 1 {
+                                let x = if offset == pos {
+                                    node.bbox.x
+                                } else {
+                                    node.bbox.x + node.bbox.width
+                                };
+                                update_best_cursor(
+                                    best,
+                                    if matches!(node.node_type, RenderNodeType::FormObject(_)) {
+                                        cursor_score(offset, pos, 1, bias)
                                     } else {
-                                        node.bbox.x + node.bbox.width
-                                    };
-                                    update_best_cursor(
-                                        best,
-                                        0,
-                                        CursorHit {
-                                            page,
-                                            x,
-                                            y: node.bbox.y,
-                                            h: node.bbox.height.max(10.0),
-                                        },
-                                    );
-                                }
+                                        0
+                                    },
+                                    CursorHit {
+                                        page,
+                                        x,
+                                        y: node.bbox.y,
+                                        h: node.bbox.height.max(10.0),
+                                    },
+                                );
                             }
                         }
                     }
@@ -1952,6 +1968,7 @@ impl DocumentCore {
                         child,
                         sec,
                         para,
+                        render_para,
                         control_positions,
                         offset,
                         page,
@@ -1966,6 +1983,7 @@ impl DocumentCore {
                 node,
                 sec,
                 para,
+                render_para,
                 &control_positions,
                 offset,
                 page,
@@ -1977,21 +1995,83 @@ impl DocumentCore {
 
         fn find_cell_cursor(
             node: &RenderNode,
+            section: usize,
             target: SelectionCellTarget<'_>,
             cpi: usize,
+            render_para: &Paragraph,
             offset: usize,
             page: u32,
             bias: CursorBias,
         ) -> Option<CursorHit> {
             fn visit(
                 node: &RenderNode,
+                section: usize,
                 target: SelectionCellTarget<'_>,
                 cpi: usize,
+                render_para: &Paragraph,
+                control_positions: &[usize],
+                line_context: Option<&crate::renderer::layout::CellContext>,
                 offset: usize,
                 page: u32,
                 bias: CursorBias,
                 best: &mut Option<(u8, CursorHit)>,
             ) {
+                // 양식은 평면 주소만 가지므로 같은 실제 글줄의 전체 셀 경로로 소유를 확인한다.
+                let line_context = if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+                    node.children.iter().find_map(|child| {
+                        if let RenderNodeType::TextRun(run) = &child.node_type {
+                            run.cell_context.as_ref()
+                        } else {
+                            None
+                        }
+                    })
+                } else {
+                    line_context
+                };
+                if let RenderNodeType::FormObject(form) = &node.node_type {
+                    let matches_cell = line_context.is_some_and(|ctx| match target {
+                        SelectionCellTarget::Flat {
+                            parent_para_idx,
+                            control_idx,
+                            cell_idx,
+                        } => {
+                            flat_cell_ctx_matches(ctx, parent_para_idx, control_idx, cell_idx, cpi)
+                        }
+                        SelectionCellTarget::Path {
+                            parent_para_idx,
+                            path,
+                        } => path_cell_ctx_matches(ctx, parent_para_idx, path, cpi),
+                    });
+                    if matches_cell
+                        && form.section_index == section
+                        && form.para_index == cpi
+                        && form.cell_location.is_some()
+                        && render_para
+                            .controls
+                            .get(form.control_index)
+                            .is_some_and(Control::is_treat_as_char_object)
+                    {
+                        if let Some(position) = control_positions.get(form.control_index).copied() {
+                            if offset == position || offset == position + 1 {
+                                update_best_cursor(
+                                    best,
+                                    cursor_score(offset, position, 1, bias),
+                                    CursorHit {
+                                        page,
+                                        x: node.bbox.x
+                                            + if offset == position {
+                                                0.0
+                                            } else {
+                                                node.bbox.width
+                                            },
+                                        y: node.bbox.y,
+                                        h: node.bbox.height.max(10.0),
+                                    },
+                                );
+                            }
+                        }
+                    }
+                }
                 if let RenderNodeType::TextRun(ref tr) = node.node_type {
                     let matches_cell = tr.cell_context.as_ref().is_some_and(|ctx| match target {
                         SelectionCellTarget::Flat {
@@ -2033,12 +2113,37 @@ impl DocumentCore {
                     }
                 }
                 for child in &node.children {
-                    visit(child, target, cpi, offset, page, bias, best);
+                    visit(
+                        child,
+                        section,
+                        target,
+                        cpi,
+                        render_para,
+                        control_positions,
+                        line_context,
+                        offset,
+                        page,
+                        bias,
+                        best,
+                    );
                 }
             }
 
             let mut best = None;
-            visit(node, target, cpi, offset, page, bias, &mut best);
+            let control_positions = find_logical_control_positions(render_para);
+            visit(
+                node,
+                section,
+                target,
+                cpi,
+                render_para,
+                &control_positions,
+                None,
+                offset,
+                page,
+                bias,
+                &mut best,
+            );
             best.map(|(_, hit)| hit)
         }
 
@@ -2075,6 +2180,130 @@ impl DocumentCore {
             }
 
             visit(node, sec, para, line_idx, page)
+        }
+
+        fn collect_rendered_line_starts(
+            node: &RenderNode,
+            sec: usize,
+            para: usize,
+            render_para: &Paragraph,
+            target: Option<SelectionCellTarget<'_>>,
+            starts: &mut Vec<usize>,
+        ) {
+            // 본문 선택에 머리말·꼬리말·주석·캡션의 같은 문단 번호를 섞지 않는다.
+            if matches!(
+                node.node_type,
+                RenderNodeType::Header
+                    | RenderNodeType::Footer
+                    | RenderNodeType::MasterPage
+                    | RenderNodeType::FootnoteArea
+            ) {
+                return;
+            }
+            if let RenderNodeType::TextLine(line) = &node.node_type {
+                if line.caption_owner.is_some() {
+                    return;
+                }
+                // 빈 양식 줄의 종단 TextRun은 가시 글자 시작을 갖지 않는다.
+                // 그 줄에 실제로 놓인 양식의 논리 칸으로 줄 시작을 확인한다.
+                let cell_line_owned = node.children.iter().any(|child| {
+                    let RenderNodeType::TextRun(run) = &child.node_type else {
+                        return false;
+                    };
+                    run.section_index == Some(sec)
+                        && run.cell_context.as_ref().is_some_and(|ctx| match target {
+                            Some(SelectionCellTarget::Flat {
+                                parent_para_idx,
+                                control_idx,
+                                cell_idx,
+                            }) => flat_cell_ctx_matches(
+                                ctx,
+                                parent_para_idx,
+                                control_idx,
+                                cell_idx,
+                                para,
+                            ),
+                            Some(SelectionCellTarget::Path {
+                                parent_para_idx,
+                                path,
+                            }) => path_cell_ctx_matches(ctx, parent_para_idx, path, para),
+                            None => false,
+                        })
+                });
+                let positions = find_logical_control_positions(render_para);
+                let form_start = node
+                    .children
+                    .iter()
+                    .filter_map(|child| {
+                        let RenderNodeType::FormObject(form) = &child.node_type else {
+                            return None;
+                        };
+                        (form.section_index == sec
+                            && form.para_index == para
+                            && if target.is_none() {
+                                form.cell_location.is_none()
+                            } else {
+                                form.cell_location.is_some() && cell_line_owned
+                            }
+                            && render_para
+                                .controls
+                                .get(form.control_index)
+                                .is_some_and(Control::is_treat_as_char_object))
+                        .then_some(positions.get(form.control_index).copied())
+                        .flatten()
+                    })
+                    .min();
+                let start = node
+                    .children
+                    .iter()
+                    .filter_map(|child| {
+                        let RenderNodeType::TextRun(run) = &child.node_type else {
+                            return None;
+                        };
+                        let owned = match target {
+                            None => {
+                                run.section_index == Some(sec)
+                                    && run.para_index == Some(para)
+                                    && run.cell_context.is_none()
+                            }
+                            Some(target) => {
+                                run.section_index == Some(sec)
+                                    && run.cell_context.as_ref().is_some_and(|ctx| match target {
+                                        SelectionCellTarget::Flat {
+                                            parent_para_idx,
+                                            control_idx,
+                                            cell_idx,
+                                        } => flat_cell_ctx_matches(
+                                            ctx,
+                                            parent_para_idx,
+                                            control_idx,
+                                            cell_idx,
+                                            para,
+                                        ),
+                                        SelectionCellTarget::Path {
+                                            parent_para_idx,
+                                            path,
+                                        } => {
+                                            path_cell_ctx_matches(ctx, parent_para_idx, path, para)
+                                        }
+                                    })
+                            }
+                        };
+                        (owned && (!run.text.is_empty() || form_start.is_none()))
+                            .then_some(run.char_start)
+                            .flatten()
+                    })
+                    .min()
+                    .into_iter()
+                    .chain(form_start)
+                    .min();
+                if let Some(start) = start {
+                    starts.push(start);
+                }
+            }
+            for child in &node.children {
+                collect_rendered_line_starts(child, sec, para, render_para, target, starts);
+            }
         }
 
         // ── 후보 페이지별 렌더 트리 캐시 ──
@@ -2142,17 +2371,27 @@ impl DocumentCore {
         let find_cursor_in_tree = |tree: &crate::renderer::render_tree::PageRenderTree,
                                    page: u32,
                                    para_idx: usize,
+                                   render_para: &Paragraph,
                                    offset: usize,
                                    bias: CursorBias|
          -> Option<CursorHit> {
             if let Some(target) = cell_target {
-                find_cell_cursor(&tree.root, target, para_idx, offset, page, bias)
+                find_cell_cursor(
+                    &tree.root,
+                    section_idx,
+                    target,
+                    para_idx,
+                    render_para,
+                    offset,
+                    page,
+                    bias,
+                )
             } else {
                 find_body_cursor(
                     &tree.root,
                     section_idx,
                     para_idx,
-                    self.get_render_paragraph_ref(section_idx, para_idx).ok(),
+                    Some(render_para),
                     offset,
                     page,
                     bias,
@@ -2250,8 +2489,45 @@ impl DocumentCore {
                 }
             }
 
+            // 편집한 HWPX는 저장 줄을 생략할 수 있다. 캐럿과 같은 렌더 트리의
+            // 실제 TextLine 소유·글자 경계만 사용하며 좌표로 줄을 추정하지 않는다.
+            let mut rendered_starts = Vec::new();
+            if para.line_segs.is_empty()
+                && para.controls.iter().any(
+                    |control| matches!(control, Control::Form(form) if form.common.treat_as_char),
+                )
+            {
+                for (_, tree) in &tree_cache {
+                    collect_rendered_line_starts(
+                        &tree.root,
+                        section_idx,
+                        para_idx,
+                        para,
+                        cell_target,
+                        &mut rendered_starts,
+                    );
+                }
+                rendered_starts.sort_unstable();
+                rendered_starts.dedup();
+            }
+            let line_count = if rendered_starts.is_empty() {
+                line_count
+            } else {
+                rendered_starts.len()
+            };
+
             for line_idx in 0..line_count {
-                let (line_char_start, line_char_end) = Self::get_line_char_range(para, line_idx);
+                let (line_char_start, line_char_end) = if rendered_starts.is_empty() {
+                    Self::get_line_char_range(para, line_idx)
+                } else {
+                    (
+                        rendered_starts[line_idx],
+                        rendered_starts
+                            .get(line_idx + 1)
+                            .copied()
+                            .unwrap_or(char_count),
+                    )
+                };
                 let range_start = sel_start.max(line_char_start);
                 let range_end = sel_end.min(line_char_end);
                 if range_start >= range_end {
@@ -2263,38 +2539,51 @@ impl DocumentCore {
                     if last_segment_page.is_some_and(|last| *pn < last) {
                         return None;
                     }
-                    let left_hit =
-                        find_cursor_in_tree(tree, *pn, para_idx, range_start, CursorBias::Leading);
+                    let left_hit = find_cursor_in_tree(
+                        tree,
+                        *pn,
+                        para_idx,
+                        para,
+                        range_start,
+                        CursorBias::Leading,
+                    );
                     // range_end가 줄바꿈 등 비렌더링 문자 위치이면 같은 page tree에서 한 칸
                     // 앞으로 재시도한다. body line-end fallback도 같은 page로 제한한다.
-                    let right_hit =
-                        find_cursor_in_tree(tree, *pn, para_idx, range_end, CursorBias::Trailing)
-                            .or_else(|| {
-                                if range_end > range_start {
-                                    find_cursor_in_tree(
-                                        tree,
-                                        *pn,
-                                        para_idx,
-                                        range_end - 1,
-                                        CursorBias::Trailing,
-                                    )
-                                } else {
-                                    None
-                                }
-                            })
-                            .or_else(|| {
-                                if cell_target.is_none() {
-                                    find_body_line_end_cursor(
-                                        &tree.root,
-                                        section_idx,
-                                        para_idx,
-                                        line_idx,
-                                        *pn,
-                                    )
-                                } else {
-                                    None
-                                }
-                            });
+                    let right_hit = find_cursor_in_tree(
+                        tree,
+                        *pn,
+                        para_idx,
+                        para,
+                        range_end,
+                        CursorBias::Trailing,
+                    )
+                    .or_else(|| {
+                        if range_end > range_start {
+                            find_cursor_in_tree(
+                                tree,
+                                *pn,
+                                para_idx,
+                                para,
+                                range_end - 1,
+                                CursorBias::Trailing,
+                            )
+                        } else {
+                            None
+                        }
+                    })
+                    .or_else(|| {
+                        if cell_target.is_none() {
+                            find_body_line_end_cursor(
+                                &tree.root,
+                                section_idx,
+                                para_idx,
+                                line_idx,
+                                *pn,
+                            )
+                        } else {
+                            None
+                        }
+                    });
                     left_hit.zip(right_hit)
                 });
 
