@@ -192,6 +192,7 @@ fn issue6868_hwp5_orphan_field_end_links_across_section_boundary() {
             begin_id_ref: 0,
             field_id: 0,
             begin_ctrl_id: 0,
+            memo_index: 0,
         });
         para
     }
