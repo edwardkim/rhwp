@@ -273,6 +273,7 @@ pub(super) fn from_stored_ladder(
         origin,
         spacing_before,
         measured_table_height,
+        origin_closes_float_frame,
         dpi,
         false,
     )
@@ -295,6 +296,7 @@ pub(super) fn from_reflowed_ladder(
         origin,
         spacing_before,
         measured_table_height,
+        false,
         dpi,
         true,
     )
@@ -307,6 +309,7 @@ fn from_ladder(
     origin: f64,
     spacing_before: f64,
     measured_table_height: f64,
+    origin_closes_float_frame: bool,
     dpi: f64,
     reflowed: bool,
 ) -> Option<ParagraphFloatPlacement> {
