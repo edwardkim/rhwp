@@ -113,3 +113,39 @@ PUA 수용 규칙·폰트 파일·공개 API를 바꾸지 않았다.
 부분 수식 재조판은 그대로 보존하는 앞행의 탭 순번·전진을 유지하고 새 줄의
 저장 전진만 폐기하도록 추가 보완했다. 이 후속 source의 실제 단위·시각 재검증과
 최종 최적화 WASM 및 전쪽 검증은 아직 남아 있다.
+
+## 2026-10-27 후속 검증과 고정폭 공백 반례
+
+`bddd5d58e4` Native 전쪽 검증은 두 원본 766조건 중 707조건이 raw 100%·미대응
+0픽셀이다. 이전 Native와 비교해 증가한 쪽은 없으며 279쪽만 각각 17→0픽셀이다.
+논리 RenderTree는 각 문서 279~281쪽에서 바뀌고, 280·281쪽은 0픽셀을 유지한다.
+현재 `64565d275f`의 Native 32조건은 이 전쪽 결과와 RGB 전픽셀이 같고,
+같은 source의 개발용 fresh WASM 14조건에서도 279·280쪽은 0픽셀이다.
+최종 표준 최적화 WASM 전쪽 검증으로 대신 기록하지 않는다.
+
+현재 source에서 실제 원본 279쪽 검사 2건, 공개 그림자 통합 검사 3건,
+Task290 5건과 재조판 계약 1건을 통과했다. 같은 동결 단위 바이너리의 탭 관련
+검사는 530 PASS·4 ignored다. 실행 원문은 ignored `continuous-text-shadow/`의
+`p279-source645-regression.log`, `shadow-public-contracts-source645.log`,
+`p279-related-tab-unit-tests.log`, `p279-followup-*.log`에 있다.
+
+독립적인 탭 반례는 원본 스타일을 사용한 작은 입력을 한컴 2024로 실제 저장한 뒤
+독립 Print로 출력했다. 원래 편람의 입력·기준 PDF는 바꾸지 않았다.
+RIGHT 탭 뒤의 고정폭 공백과 `Z`가 별도 런으로 나뉘는 두 줄에서, Print의 `Z`는
+공백이 없는 대조 줄과 같은 오른쪽 정지에 맞는다. 현재 저장 전진 pending은 공백의
+4px 전진을 잃고 `Z`를 공백 시작에 겹친다. 한컴 저장본의 실제 전진·공백 폭과
+Print 글리프 원점으로 확인했으며 폰트나 페이지 이름을 판정 조건으로 사용하지 않는다.
+
+공통 `PendingTab::StoredStart`는 이미 정렬된 시작이므로 같은 탭 런 뒤의 공백과
+별도 공백 런의 실제 전진을 보존해야 한다. 아직 정렬하지 않은 Right/Center는
+Task279의 기존 공백 carry-over를 유지한다. 생산자는 유효한 저장 탭이며, 소비자는
+`resolve_last_tab_pending` → 측정/배치의 동일 pending → 실제 bbox·TabLeader다.
+같은 런·별도 런의 공백과 자동 우측·가운데·자리표 대조를 검사하고, 실제 원본
+279·280쪽 및 목차 경계의 Native/fresh WASM을 다시 확인한다.
+
+진단과 독립 저장/Print 작업 영수증은 ignored
+`continuous-text-shadow/leader-independent-controls-v2/`에 있다.
+`source-span-vs-independent-cells.json`의 두 공백 줄은 현재 `Z`가 독립 Print보다
+각각 약 4px 왼쪽임을 기록한다. 작은 입력의 Print 좌표계는 원래 편람의 쪽 크기와
+다르므로 원점 비교 시 실제 Print 변환 행렬을 구분하며 제품에 보정 배율을 넣지 않는다.
+점 리더의 실제 글리프·개수·간격은 별도 진단 중이며 아직 제품 규칙으로 채택하지 않았다.
