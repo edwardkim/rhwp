@@ -620,3 +620,220 @@ fn cross_paragraph_form_metadata_and_mixed_object_guards_run_before_mutation() {
         );
     }
 }
+
+fn assert_wrapped_form_owners(doc: &HwpDocument, expected: usize, label: &str) {
+    type FormPaint = (
+        usize,
+        usize,
+        Option<(usize, usize, usize, usize)>,
+        BoundingBox,
+        BoundingBox,
+    );
+    fn walk(node: &RenderNode, frame: Option<BoundingBox>, out: &mut Vec<FormPaint>) {
+        let frame = if matches!(
+            node.node_type,
+            RenderNodeType::Column(_) | RenderNodeType::TableCell(_)
+        ) {
+            Some(node.bbox)
+        } else {
+            frame
+        };
+        if let RenderNodeType::FormObject(form) = &node.node_type {
+            out.push((
+                form.para_index,
+                form.control_index,
+                form.cell_location,
+                node.bbox,
+                frame.unwrap(),
+            ));
+        }
+        for child in &node.children {
+            walk(child, frame, out);
+        }
+    }
+    let mut painted = Vec::new();
+    assert_eq!(doc.page_count(), 1, "{label}: 같은 쪽의 두 줄");
+    walk(
+        &doc.build_page_render_tree(0).unwrap().root,
+        None,
+        &mut painted,
+    );
+    assert_eq!(
+        painted.len(),
+        expected,
+        "{label}: 모델 개체 수와 실제 paint 수"
+    );
+    let owners: std::collections::HashSet<_> = painted
+        .iter()
+        .map(|(p, c, cell, _, _)| (*p, *c, *cell))
+        .collect();
+    assert_eq!(
+        owners.len(),
+        expected,
+        "{label}: 각 컨트롤을 한 번만 그린다"
+    );
+    for (paragraph, control, cell, bbox, frame) in &painted {
+        assert!(
+            bbox.x >= frame.x - 0.1 && bbox.x + bbox.width <= frame.x + frame.width + 0.1,
+            "{label}: 개체 {control}은 종이가 아니라 소속 단·셀 안에 놓인다: {bbox:?} / {frame:?}"
+        );
+        let para = if let Some((parent, table_control, cell_index, cell_paragraph)) = cell {
+            let Control::Table(table) =
+                &doc.document().sections[0].paragraphs[*parent].controls[*table_control]
+            else {
+                panic!("양식의 소유 표")
+            };
+            &table.cells[*cell_index].paragraphs[*cell_paragraph]
+        } else {
+            &doc.document().sections[0].paragraphs[*paragraph]
+        };
+        assert!(matches!(
+            para.controls.get(*control),
+            Some(Control::Form(_))
+        ));
+        let offset = para.logical_control_positions()[*control] as u32;
+        let cursor: serde_json::Value =
+            serde_json::from_str(
+                &if let Some((parent, table_control, cell_index, cell_paragraph)) = cell {
+                    doc.get_cursor_rect_in_cell(
+                        0,
+                        *parent as u32,
+                        *table_control as u32,
+                        *cell_index as u32,
+                        *cell_paragraph as u32,
+                        offset,
+                    )
+                    .unwrap()
+                } else {
+                    doc.get_cursor_rect(0, *paragraph as u32, offset).unwrap()
+                },
+            )
+            .unwrap();
+        assert!(
+            (cursor["x"].as_f64().unwrap() - bbox.x).abs() < 0.1,
+            "{label}: 개체 {control} 앞 캐럿 {cursor} / {bbox:?}"
+        );
+        let selection: serde_json::Value = serde_json::from_str(&if let Some((
+            parent,
+            table_control,
+            cell_index,
+            cell_paragraph,
+        )) = cell
+        {
+            doc.get_selection_rects_in_cell(
+                0,
+                *parent as u32,
+                *table_control as u32,
+                *cell_index as u32,
+                *cell_paragraph as u32,
+                offset,
+                *cell_paragraph as u32,
+                offset + 1,
+            )
+            .unwrap()
+        } else {
+            doc.get_selection_rects(0, *paragraph as u32, offset, *paragraph as u32, offset + 1)
+                .unwrap()
+        })
+        .unwrap();
+        let rects = selection.as_array().unwrap();
+        assert_eq!(
+            rects.len(),
+            1,
+            "{label}: 개체 {control} 하나의 선택 {selection}"
+        );
+        assert!((rects[0]["x"].as_f64().unwrap() - bbox.x).abs() < 0.1);
+        assert!((rects[0]["width"].as_f64().unwrap() - bbox.width).abs() < 0.1);
+        let last = para
+            .controls
+            .iter()
+            .rposition(|c| matches!(c, Control::Form(_)))
+            .unwrap();
+        if *control == last {
+            let end: serde_json::Value = serde_json::from_str(&if let Some((
+                parent,
+                table_control,
+                cell_index,
+                cell_paragraph,
+            )) = cell
+            {
+                doc.get_cursor_rect_in_cell(
+                    0,
+                    *parent as u32,
+                    *table_control as u32,
+                    *cell_index as u32,
+                    *cell_paragraph as u32,
+                    offset + 1,
+                )
+                .unwrap()
+            } else {
+                doc.get_cursor_rect(0, *paragraph as u32, offset + 1)
+                    .unwrap()
+            })
+            .unwrap();
+            assert!(
+                (end["x"].as_f64().unwrap() - bbox.x - bbox.width).abs() < 0.1,
+                "{label}: 마지막 양식 뒤 캐럿 {end} / {bbox:?}"
+            );
+        }
+    }
+}
+
+#[test]
+fn copied_eight_forms_wrap_once_in_body_and_cell_and_reopen_both_formats() {
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document().unwrap();
+    let mut model = doc.document().clone();
+    let para = &mut model.sections[0].paragraphs[0];
+    para.controls
+        .retain(|control| matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)));
+    for index in 0..4 {
+        let mut form = FormObject {
+            form_type: FormType::RadioButton,
+            name: format!("줄바꿈 양식 {index}"),
+            caption: format!("선택 {index}"),
+            width: 8504,
+            height: 1984,
+            enabled: true,
+            ..Default::default()
+        };
+        form.common.width = form.width;
+        form.common.height = form.height;
+        form.common.treat_as_char = true;
+        form.common.instance_id = 100 + index;
+        para.controls.push(Control::Form(Box::new(form)));
+    }
+    para.char_count = (para.controls.len() * 8 + 1) as u32;
+    para.char_offsets.clear();
+    para.line_segs.clear();
+    para.has_para_text = true;
+    model.sections[0].raw_stream = None;
+    doc.set_document(model);
+    assert_eq!(doc.get_logical_length(0, 0).unwrap(), 4);
+    assert_wrapped_form_owners(&doc, 4, "원래 네 양식");
+    doc.copy_selection_logical(0, 0, 0, 0, 4).unwrap();
+    doc.paste_internal(0, 0, 0).unwrap();
+    assert_eq!(doc.get_logical_length(0, 0).unwrap(), 8);
+    assert_wrapped_form_owners(&doc, 8, "복사한 여덟 양식");
+    doc.insert_paragraph_native(0, 1).unwrap();
+    let created: serde_json::Value =
+        serde_json::from_str(&doc.create_table_native(0, 1, 0, 1, 1).unwrap()).unwrap();
+    doc.copy_selection_logical(0, 0, 0, 0, 8).unwrap();
+    doc.paste_internal_in_cell(
+        0,
+        created["paraIdx"].as_u64().unwrap() as u32,
+        created["controlIdx"].as_u64().unwrap() as u32,
+        0,
+        0,
+        0,
+    )
+    .unwrap();
+    assert_wrapped_form_owners(&doc, 16, "본문과 좁은 셀");
+    for (format, bytes) in [
+        ("HWP", doc.export_hwp().unwrap()),
+        ("HWPX", doc.export_hwpx().unwrap()),
+    ] {
+        let reopened = HwpDocument::from_bytes(&bytes).unwrap();
+        assert_wrapped_form_owners(&reopened, 16, format);
+    }
+}

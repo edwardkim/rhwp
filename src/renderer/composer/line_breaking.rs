@@ -3344,6 +3344,18 @@ fn supports_inline_picture_frame_controls(para: &Paragraph) -> bool {
         })
 }
 
+// 양식만 있는 빈 문단도 그림과 같은 원시 인라인 슬롯을 프레임에 넘긴다.
+// 떠 있는 양식이나 다른 개체의 배치 소유권은 기존 경로에 둔다.
+pub(super) fn supports_inline_form_frame_controls(para: &Paragraph) -> bool {
+    para.controls
+        .iter()
+        .any(|control| matches!(control, Control::Form(form) if form.common.treat_as_char))
+        && para.controls.iter().all(|control| match control {
+            Control::Form(form) => form.common.treat_as_char,
+            other => control_is_width_neutral_marker(other),
+        })
+}
+
 /// 본문 뒤 남은 폭에 놓이지 않는 inline control은 별도 physical line을 가진다.
 ///
 /// 종전 cell reflow는 text token만 줄바꿈한 뒤 첫 LineSeg를 표 높이만큼 키웠다.
@@ -3787,6 +3799,7 @@ fn layout_paragraph_in_frame_impl(
         FramePurpose::Body => {
             supports_picture_band_frame_controls(para)
                 || supports_cached_body_frame_controls(para)
+                || supports_inline_form_frame_controls(para)
                 || (para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
         }
         FramePurpose::PictureAnchor => picture_anchor_projection::admits(para),
@@ -3797,7 +3810,8 @@ fn layout_paragraph_in_frame_impl(
 
     let projected = (para.line_segs.is_empty()
         && (supports_tac_table_band_frame_controls(para)
-            || supports_inline_picture_frame_controls(para)))
+            || supports_inline_picture_frame_controls(para)
+            || supports_inline_form_frame_controls(para)))
     .then(|| inline_frame_input::project(para, styles, dpi))
     .flatten();
     let para = projected.as_ref().map_or(para, |(input, _)| input);
@@ -4434,7 +4448,8 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     // 거절하면 45자 합성 줄이 그대로 남아 표가 자기 줄을 못 얻는다(distribution_doc 3쪽).
     let tac_table_host_fill =
         para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para);
-    if !supports_picture_band_frame_controls(para) && !tac_table_host_fill {
+    let form_host_fill = para.line_segs.is_empty() && supports_inline_form_frame_controls(para);
+    if !supports_picture_band_frame_controls(para) && !tac_table_host_fill && !form_host_fill {
         if !supports_cached_body_frame_controls(para) || (!stale && !para.line_segs.is_empty()) {
             return None;
         }
@@ -4942,7 +4957,10 @@ fn reflow_line_segs_impl(
     let (marker_hang_px, indent_px) = list_marker_breaker_box(para, styles, indent_px);
     let available_width_px = (paragraph_box.width_px(dpi) - marker_hang_px).max(1.0);
 
-    if !split_stale_cell_reflow && supports_inline_picture_frame_controls(para) {
+    if !split_stale_cell_reflow
+        && (supports_inline_picture_frame_controls(para)
+            || supports_inline_form_frame_controls(para))
+    {
         // An edit invalidates the old text/control partition together. Project
         // invisible control slots before filling, rather than measuring text
         // alone and attaching an end-of-paragraph picture during paint. The
