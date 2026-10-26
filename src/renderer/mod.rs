@@ -43,6 +43,7 @@ pub mod font_symbol_coverage;
 pub mod form_appearance;
 pub(crate) mod form_caption;
 pub(crate) mod gradient_geometry;
+pub(crate) mod glyph_fit;
 pub(crate) mod hancom_pua;
 pub mod height_cursor;
 pub mod height_measurer;
@@ -312,57 +313,7 @@ pub(crate) fn replay_positions_or_compute<'a>(
         })
 }
 
-/// 글리프 폭 맞춤(SVG `textLength`, Canvas `scaleX`)에 쓸 문자 경계를 돌려준다.
-///
-/// 커닝과 음수 배분 간격은 글자 사이만 좁힌다. 그 경계로 폭을 맞추면 글리프도
-/// 눌리므로, 폭 맞춤에는 해당 간격 전의 경계를 사용한다. 음수 간격의 최소 전진폭
-/// clamp를 역산하지 않고 같은 측정기로 다시 계산하며, 그리는 원점은 보존한다.
-pub(crate) fn glyph_fit_positions<'a>(
-    replay_text: &str,
-    style: &TextStyle,
-    layout_positions: Option<&[f64]>,
-    char_positions: &'a [f64],
-) -> std::borrow::Cow<'a, [f64]> {
-    if legacy_font_advances::has_fixed_ascii_bold_tracking(style) {
-        // 원점은 확정 layout positions를 그대로 쓴다. 윤곽 폭만 측정이 실제
-        // 적용한 tracking 기여를 제외하며, 다른 언어 슬롯·탭·음수 자간도
-        // 같은 CharWidthDecision 결과에서 소비한다.
-        let mut fit_style = style.clone();
-        fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
-        let decisions = layout::trace_char_width_decisions(replay_text, &fit_style);
-        let mut positions = Vec::with_capacity(decisions.len() + 1);
-        let mut x = 0.0;
-        positions.push(x);
-        for decision in decisions {
-            x += decision.final_width_px - decision.bold_tracking_px;
-            positions.push(x);
-        }
-        return std::borrow::Cow::Owned(positions);
-    }
-    if layout::has_hft_bold_tracking(style) {
-        // 원본 HFT의 굵기 간격은 글자 원점만 전진시키며 intrinsic 폭은 유지한다.
-        // backend는 원래 char_positions를 위치로, 이 경계를 glyph-fit 폭으로 쓴다.
-        {
-            let mut fit_style = style.clone();
-            fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
-            std::borrow::Cow::Owned(layout::compute_glyph_fit_positions(replay_text, &fit_style))
-        }
-    } else if (style.kerning && validated_replay_positions(replay_text, layout_positions).is_some())
-        || style.extra_char_spacing < 0.0
-        || legacy_font_advances::has_bold_tracking(style)
-    {
-        let mut fit_style = style.clone();
-        fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
-        if legacy_font_advances::has_bold_tracking(style) {
-            // 원점만 전진시키는 옛 프로그램의 굵은 자간을 글리프 확대에 쓰지 않는다.
-            // 표시 글꼴·굵기와 자연 메트릭은 유지한다.
-            fit_style.metric_font_family = None;
-        }
-        std::borrow::Cow::Owned(layout::compute_char_positions(replay_text, &fit_style))
-    } else {
-        std::borrow::Cow::Borrowed(char_positions)
-    }
-}
+pub(crate) use glyph_fit::glyph_fit_positions;
 
 fn has_no_unjustified_leading_spaces(count: &usize) -> bool {
     *count == 0
