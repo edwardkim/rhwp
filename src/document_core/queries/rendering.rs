@@ -1657,7 +1657,8 @@ impl DocumentCore {
             let mut builder = LayerBuilder::new(profile)
                 .with_layout_dpi(self.dpi)
                 .with_metafile_fonts(&if profile == RenderProfile::Print
-                    && crate::paint::metafile::has_wmf(&tree.root)
+                    && (crate::paint::metafile::has_wmf(&tree.root)
+                        || (self.hangul2024_compat && crate::paint::text_shadow::needs_font_metrics(&tree.root)))
                 {
                     metafile_fonts::with_document_fonts(&self.metafile_fonts, &self.document)
                 } else {

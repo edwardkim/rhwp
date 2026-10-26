@@ -3,6 +3,14 @@
 use crate::renderer::TextStyle;
 use resvg::usvg::fontdb::{Family, Query, Style, Weight};
 
+/// 실제 글자 효과가 내장 SFNT 메트릭을 요구하는지 원본 종류로 판정한다.
+pub(crate) fn needs_font_metrics(node: &crate::renderer::render_tree::RenderNode) -> bool {
+    use crate::renderer::render_tree::RenderNodeType;
+    matches!(&node.node_type, RenderNodeType::TextRun(run)
+        if run.style.shadow_type == 2 && !run.is_vertical)
+        || node.children.iter().any(needs_font_metrics)
+}
+
 /// 인쇄 장치에서 해소한 연속 그림자. 원문·글줄·전진 폭에는 참여하지 않는다.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ContinuousTextShadow {
@@ -43,6 +51,22 @@ pub(crate) fn offsets(style: &TextStyle) -> impl Iterator<Item = [f64; 2]> + '_ 
     let endpoint = (style.shadow_type > 0 && continuous.is_none())
         .then_some([style.shadow_offset_x, style.shadow_offset_y]);
     continuous.into_iter().flatten().chain(endpoint)
+}
+
+/// 전송 소비자는 SFNT 메트릭이나 보간을 다시 계산하지 않고 확정된 표본을 재생한다.
+pub(super) fn write_offsets_json(buf: &mut String, kind: u8, plan: Option<&ContinuousTextShadow>) {
+    use std::fmt::Write;
+    let Some(plan) = plan.filter(|_| kind == 2) else {
+        return;
+    };
+    buf.push_str(",\"shadowOffsets\":[");
+    for (index, [x, y]) in plan.offsets().enumerate() {
+        if index != 0 {
+            buf.push(',');
+        }
+        let _ = write!(buf, "[{x},{y}]");
+    }
+    buf.push(']');
 }
 
 /// 레이아웃의 본문 clip은 흐름 콘텐츠를 포함한다. paint에서 해소한 그림자도 같은 소유다.
@@ -317,19 +341,119 @@ mod tests {
     }
 
     #[test]
-    fn flow_shadow_uses_displayed_ink_and_preserves_owned_clips() {
-        use crate::paint::{ClipKind, LayerNode, PaintOp};
-        use crate::renderer::render_tree::{BoundingBox, TextRunNode};
+    fn transport_preserves_independent_print_samples_and_source_kind() {
+        let mut style = TextStyle {
+            shadow_type: 2,
+            continuous_shadow: Some(plan([5, 2])),
+            ..Default::default()
+        };
+        let glyph_style = crate::paint::PaintTextStyle::from(&style);
+        assert_eq!(glyph_style.continuous_shadow, style.continuous_shadow);
+        let mut json = "{\"source\":true".to_owned();
+        write_offsets_json(
+            &mut json,
+            style.shadow_type,
+            style.continuous_shadow.as_ref(),
+        );
+        json.push('}');
+        let value: serde_json::Value = serde_json::from_str(&json).unwrap();
+        let samples: Vec<[f64; 2]> =
+            serde_json::from_value(value["shadowOffsets"].clone()).unwrap();
+        assert_eq!(
+            samples,
+            [
+                [0.0, 0.0],
+                [1.0, 0.0],
+                [2.0, 1.0],
+                [3.0, 1.0],
+                [4.0, 1.0],
+                [5.0, 2.0]
+            ]
+        );
+        for kind in [0, 1] {
+            style.shadow_type = kind;
+            let mut json = String::new();
+            write_offsets_json(
+                &mut json,
+                style.shadow_type,
+                style.continuous_shadow.as_ref(),
+            );
+            assert!(
+                json.is_empty(),
+                "없음·비연속에 과거 연속 표본을 보내지 않는다"
+            );
+        }
+    }
 
-        let bounds = BoundingBox::new(10.0, 20.0, 30.0, 12.0);
-        let mut run = TextRunNode {
-            text: "원문".into(),
-            display_text: Some(" \t".into()),
-            style: TextStyle {
-                shadow_type: 2,
-                continuous_shadow: Some(plan([-5, 2])),
-                ..Default::default()
-            },
+    #[test]
+    fn embedded_face_without_wmf_reaches_print_layer_transport() {
+        use crate::paint::{EmbeddedFontFace, LayerBuilder, RenderProfile};
+        use crate::renderer::render_tree::{
+            BoundingBox, PageRenderTree, RenderNode, RenderNodeType,
+        };
+
+        // 저장소가 직접 만든 MIT 합성 TTC다. 실제 한컴 출력의 증거로 사용하지 않는다.
+        let bytes = include_bytes!("../../tests/fixtures/fonts/RHWPExactFaceSmoke.ttc");
+        let family = "RHWP Exact Face One";
+        let mut run = text_run("\u{e104}");
+        run.char_shape_id = Some(0);
+        run.style.font_family = family.into();
+        run.style.font_size = 12.0;
+        run.style.shadow_type = 2;
+        run.style.shadow_offset_percent = Some([10, 5]);
+        let mut tree = PageRenderTree::new(0, 100.0, 100.0);
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::TextRun(run),
+            BoundingBox::new(10.0, 20.0, 12.0, 12.0),
+        ));
+        assert!(!crate::paint::metafile::has_wmf(&tree.root));
+        let fonts = [EmbeddedFontFace {
+            char_shape_id: 0,
+            language_index: 0,
+            family,
+            alternate_family: None,
+            bytes,
+            face_index: 1,
+        }];
+        let build = |profile| {
+            LayerBuilder::new(profile)
+                .with_hancom2024_print_bitmap(true)
+                .with_hangul2024_print(true)
+                .build_with_embedded_fonts(&tree, &fonts)
+                .to_json()
+        };
+        let print: serde_json::Value = serde_json::from_str(&build(RenderProfile::Print)).unwrap();
+        fn samples(value: &serde_json::Value) -> Option<&serde_json::Value> {
+            match value {
+                serde_json::Value::Object(map) => map
+                    .get("shadowOffsets")
+                    .or_else(|| map.values().find_map(samples)),
+                serde_json::Value::Array(values) => values.iter().find_map(samples),
+                _ => None,
+            }
+        }
+        let offsets = samples(&print).expect("WMF 없이도 실제 내장 face 계획을 전달한다");
+        assert_eq!(offsets.as_array().unwrap().len(), 9);
+        // 합성 face의 Win 800/200, 1000 UPEM, 12px와 원본 signed 비율의 단위 계약이다.
+        assert_eq!(
+            offsets.as_array().unwrap().last().unwrap(),
+            &serde_json::json!([1.28, 0.64])
+        );
+        let screen: serde_json::Value =
+            serde_json::from_str(&build(RenderProfile::Screen)).unwrap();
+        assert!(
+            samples(&screen).is_none(),
+            "Print 장치 계획을 Screen에 강제하지 않는다"
+        );
+    }
+
+    fn text_run(text: &str) -> crate::renderer::render_tree::TextRunNode {
+        use crate::renderer::render_tree::TextRunNode;
+        TextRunNode {
+            text: text.into(),
+            display_text: None,
+            style: TextStyle::default(),
             char_shape_id: None,
             para_shape_id: None,
             section_index: None,
@@ -345,7 +469,19 @@ mod tests {
             baseline: 12.0,
             field_marker: Default::default(),
             layout_positions: None,
-        };
+        }
+    }
+
+    #[test]
+    fn flow_shadow_uses_displayed_ink_and_preserves_owned_clips() {
+        use crate::paint::{ClipKind, LayerNode, PaintOp};
+        use crate::renderer::render_tree::BoundingBox;
+
+        let bounds = BoundingBox::new(10.0, 20.0, 30.0, 12.0);
+        let mut run = text_run("원문");
+        run.display_text = Some(" \t".into());
+        run.style.shadow_type = 2;
+        run.style.continuous_shadow = Some(plan([-5, 2]));
         let leaf = |run| LayerNode::leaf(bounds, None, vec![PaintOp::text_run(bounds, run)]);
         let blank = leaf(run.clone());
         assert!(flow_bounds(&blank).is_none());

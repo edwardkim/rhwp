@@ -6,6 +6,7 @@ import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
 import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
 import { rasterLineGeometry } from './canvaskit/raster-stroke.ts';
+import { textShadowOffsets } from './canvaskit/text-shadow.ts';
 import { shouldDrawPageMarginGuides } from './page-margin-guides.ts';
 import squareGradientSkSL from '../../../src/renderer/square_gradient.sksl?raw';
 import * as bitmapRasterWasm from '@wasm/rhwp.js';
@@ -2402,7 +2403,8 @@ export class CanvasKitLayerRenderer {
         draw(paint);
       } else {
         if ((style.shadowType ?? 0) > 0) {
-          draw(effectPaint(style.shadowColor || '#000000'), style.shadowOffsetX ?? 0, style.shadowOffsetY ?? 0);
+          const shadowPaint = effectPaint(style.shadowColor || '#000000');
+          for (const [x, y] of textShadowOffsets(style)) draw(shadowPaint, x, y);
         }
         if ((style.outlineType ?? 0) > 0) {
           const stroke = this.makeStrokePaint(style.color ?? '#000000', Math.max(size / 25, 0.5));
@@ -3655,7 +3657,7 @@ export class CanvasKitLayerRenderer {
           if (shadowType > 0) {
             const shadowPaint = this.makeFillPaint(style.shadowColor ?? style.color ?? '#000000');
             effectPaints.push(shadowPaint);
-            drawPass(shadowPaint, shadowOffsetX, shadowOffsetY);
+            for (const [x, y] of textShadowOffsets(style)) drawPass(shadowPaint, x, y);
           }
           if (outlineType > 0) {
             const outlineFillPaint = this.makeFillPaint('#ffffff');

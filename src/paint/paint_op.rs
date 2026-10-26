@@ -2098,6 +2098,8 @@ pub struct PaintTextStyle {
     pub shadow_color: ColorRef,
     pub shadow_offset_x: f64,
     pub shadow_offset_y: f64,
+    /// 공통 paint에서 확정한 연속 표본을 직렬화 소비자에게도 전달한다.
+    pub continuous_shadow: Option<crate::paint::text_shadow::ContinuousTextShadow>,
     pub emboss: bool,
     pub engrave: bool,
     pub superscript: bool,
@@ -2128,6 +2130,7 @@ impl From<&TextStyle> for PaintTextStyle {
             shadow_color: style.shadow_color,
             shadow_offset_x: style.shadow_offset_x,
             shadow_offset_y: style.shadow_offset_y,
+            continuous_shadow: style.continuous_shadow.clone(),
             emboss: style.emboss,
             engrave: style.engrave,
             superscript: style.superscript,

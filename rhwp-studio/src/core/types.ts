@@ -1205,6 +1205,8 @@ export interface LayerTextStyle {
   shadowColor?: string;
   shadowOffsetX?: number;
   shadowOffsetY?: number;
+  /** 공통 paint가 해소한 순서 그대로 재생한다. 글꼴·보간을 여기서 추정하지 않는다. */
+  shadowOffsets?: [number, number][];
   emboss?: boolean;
   engrave?: boolean;
   superscript?: boolean;

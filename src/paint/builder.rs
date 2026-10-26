@@ -144,7 +144,8 @@ impl LayerBuilder {
     ) -> PageLayerTree {
         if self.profile == RenderProfile::Print
             && !fonts.is_empty()
-            && super::metafile::has_wmf(&tree.root)
+            && (super::metafile::has_wmf(&tree.root)
+                || (self.hancom2024_print_bitmap && super::text_shadow::needs_font_metrics(&tree.root)))
         {
             for font in fonts {
                 let _ = self

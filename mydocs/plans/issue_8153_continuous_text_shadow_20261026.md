@@ -168,3 +168,40 @@ Studio의 실제 호스트 공급 세션은 WMF 요청만 읽고 있어, 연속 
 `studio-shadow-supply-before.log`, `studio-shadow-supply-final-tests.log`에 있다.
 소스 종류·호스트 공급 보정의 최종 Native/fresh WASM 전쪽·전체 필수 게이트는
 계속 진행하며, 현재 목표 전체 완료나 PR 준비 완료를 선언하지 않는다.
+
+## 직렬화된 paint와 내장 SFNT 공급
+
+Rust 내부 소비자는 공통 연속 계획을 받지만 기존 레이어 JSON의 종류·끝점만으로는
+CanvasKit 소비자가 중간 표본을 재생할 수 없다. 준비된 공통 계획의 순서 있는
+좌표를 `shadowOffsets`로 전달하고, TextRun과 glyph paint 모두 같은 표본을
+소비하게 한다. 소비자가 글꼴 메트릭이나 보간을 다시 추측하지 않는다. 종류 0·1은
+이전에 남은 연속 표본보다 우선하며, 계획이 없는 이전 전송 형식은 기존 끝점을
+유지한다. 잘못된 표본을 임의 좌표로 바꿔 그리지 않는다.
+
+WMF가 없어도 연속 그림자의 실제 글꼴 메트릭은 필요하다. 원본 TextRun의 종류로
+필요 여부를 확인하고, 문서 내장 face도 기존의 제한된 메모리 공급 경로에서
+등록한다. source family·원본 bytes·본문의 논리 메트릭을 바꾸지 않는다.
+Native 실제 재생을 검증하는 source `e5a1e3e04a`는 유지하며, 이 후속 보정은
+별도 로컬 검증 worktree에서 준비한다. 최종 source의 공통 Rust 계약·실제 레이어
+JSON·CanvasKit 소비와 Native/fresh WASM 시각 증거를 확인하기 전에는 완료로
+판정하지 않는다. 별도 SVG 호스트 글꼴 공급 경로도 계속 확인한다.
+
+후속 공통 Rust 검사 6건은 모두 통과했다. 내장 face 검사는 저장소에서 직접 만든
+MIT 합성 TTC를 읽어 WMF 없는 페이지의 공급·공통 계획·실제 레이어 JSON 연결과
+Screen 분리를 확인했다. 좌표 기대값은 합성 face의 OS/2·UPEM과 원본 signed 비율의
+단위 계약이다. 실제 한컴 문서의 시각 검증과 구분한다. JSON 숫자의 정수/실수 표기를
+다르게 비교했던 검사는 해석한 숫자 좌표를 비교하도록 고친 뒤 6건을 다시 실행했다.
+
+실제 CanvasKit 제품 `renderGlyphRun`을 호출한 진단은 이전 코드에서 끝점 한 번만
+소비하는 실패를 재현했고, 후속 코드에서 독립 혼합 축 표본 6회와 원문 1회의 순서를
+확인했다. 이 소비 경계를 종류 0·1·2의 정식 검사로 추가했다. 새 전송·기존 공급
+검사 총 13건과 TypeScript 타입 검사가 통과했다. 가짜 canvas/font의 명령 소비
+검사이며 실제 글꼴·픽셀·Print 일치의 증거로 대신하지 않는다.
+
+Native source `e5a1e3e04a`의 실제 종류 0 투영은 수정 전 FAIL·수정 후 PASS이며,
+원본 영향 14건·독립 대조군 25건의 미대응 증가가 없다. 영향 14건의 논리 RenderTree도
+기존 source와 바이트 단위로 같다. 후속 전송 보정의 실제 Native/fresh WASM 출력과
+전쪽 목표는 계속 검증한다. 작업 폴더의 `product-native-v4/validation-receipt.json`,
+`focused-logical-preservation.json`, `shadow-transport-rust-contract-tests.log`,
+`shadow-transport-node-final-tests.log`, `shadow-transport-typecheck.log`,
+`shadow-transport-canvaskit-consumer-before.log`·`after.log`를 대조한다.
