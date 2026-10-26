@@ -1125,19 +1125,28 @@ impl TextRunNode {
             .map_or(0, |index| index + 1);
         // 실제 잉크가 다음 블록을 침범하면 그 겹침을 bbox 절단으로 숨기지 않는다.
         let width = requested_width.max(positions[visible_end]);
-        for position in &mut positions[visible_end..] {
-            *position = position.min(width);
+        let tab = chars.iter().rposition(|character| *character == '\t')?;
+        let suffix = chars[tab + 1..].iter().collect::<String>();
+        let suffix_style = self.style.for_text_fragment(tab + 1);
+        let suffix_positions = super::layout::compute_char_positions(&suffix, &suffix_style);
+        let tab_end = width - suffix_positions.last()?;
+        if !tab_end.is_finite() || tab_end < positions[tab] {
+            return None;
         }
-        *positions.last_mut()? = width;
+        // 탭 뒤 공백은 독립 전진이다. 확정된 끝에 맞추려고 공백 폭을 잘라 내지 않는다.
+        for (position, offset) in positions[tab + 1..].iter_mut().zip(&suffix_positions) {
+            *position = tab_end + offset;
+        }
         super::validated_replay_positions(text, Some(&positions))?;
+        let leaders = super::layout::extract_tab_leaders_with_extended(
+            text,
+            &positions,
+            &self.style,
+            &self.style.inline_tabs,
+        );
         self.layout_positions = Some(positions);
-        // 공백 carry-over의 논리 경계와 점선의 그리기 끝은 다르다.
-        // 기존 점선은 공백 구간을 지나갈 수 있지만 다음 가시 런을 침범하지 않는다.
-        // 저장된 점선 끝을 늘리지 않아 목차 번호 앞의 원래 간격도 보존한다.
-        for leader in &mut self.style.tab_leaders {
-            leader.start_x = leader.start_x.min(leader_limit_width);
-            leader.end_x = leader.end_x.min(leader_limit_width).max(leader.start_x);
-        }
+        // 장식도 같은 실제 위치 배열을 소비한다. 오래된 TabDef 기반 끝을 남기지 않는다.
+        self.style.tab_leaders = leaders;
         Some(width)
     }
 

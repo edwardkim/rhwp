@@ -35,6 +35,14 @@ impl PendingTab {
         matches!(self, Self::Right { .. })
     }
 
+    /// 저장 전진은 가시 블록뿐 아니라 그 앞 공백 런의 시작도 소유한다.
+    pub(super) fn blank_start(self, current: f64) -> f64 {
+        match self {
+            Self::StoredStart { position, .. } => position,
+            _ => current,
+        }
+    }
+
     /// 저장 전진은 공백 앞까지다. 아직 정렬할 정지와 달리 후속 공백을 소비한다.
     pub(crate) fn carry_over_blank(self, text: &str, style: &TextStyle) -> Self {
         match self {

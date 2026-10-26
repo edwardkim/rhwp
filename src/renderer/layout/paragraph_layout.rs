@@ -8943,6 +8943,7 @@ impl LayoutEngine {
                 if run.text.trim().is_empty() {
                     // 자동 정렬 정지는 그대로 넘기고, 저장 전진의 다음 시작에는 공백 폭을 보존한다.
                     // leader 보정은 다음 내용 런에서 원래 탭 런을 찾아 같은 끝을 소비한다.
+                    x = col_area.x + pending.blank_start(x - col_area.x);
                     pending_right_tab_render =
                         Some(pending.carry_over_blank(&run.text, &text_style));
                 } else {
@@ -10998,6 +10999,7 @@ impl LayoutEngine {
                 // [Task #279] 공백만 있는 run 은 right/center tab 정렬 단위가 아니다.
                 // (장제목 케이스: " " 단독 run → carry-over)
                 if run.text.trim().is_empty() {
+                    est_x = pending.blank_start(est_x);
                     pending_right_tab_est = Some(pending.carry_over_blank(&run.text, &ts));
                 } else {
                     ts.line_x_offset = est_x;
