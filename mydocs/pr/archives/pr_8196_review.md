@@ -1,0 +1,132 @@
+# PR #8196 self-review — Undo 선택 배치와 CanvasKit 전환
+
+## 최종 판정
+
+**승인 — #8103 범위의 P2 보정과 로컬 재검증, 정확한 code head CI를 완료했다.**
+
+2026-10-26 collaborator 본인 PR 검토다. 검증 code head는 `1a5cea08307132d3deba18a1a01b85869717b726`다.
+원 head `5ab102cc6b55af8c3a6776e217d3840fe74dffb4`는 준비 실패 회귀로 보류했고,
+사용자의 보정 승인 뒤 공통 실패 복구를 구현했다. GitHub self-approve·reviewer 지정·merge는 하지 않았다.
+문서 trailing head의 실제 CI/fast-pass 확인과 사용자 병합 승인은 별도 조건이다.
+
+## 접수와 검토 범위
+
+- [PR #8196](https://github.com/edwardkim/rhwp/pull/8196), 작성자 `postmelee`, base `devel`.
+- 원 base `9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`, 검토 중 최신 base
+  `49bc935a149c20b942d3045c2f5c733aeccf57d0`. 문서 때문에 rebase/merge하지 않았다.
+- [#8103](https://github.com/edwardkim/rhwp/issues/8103)은 참조다. 400문단 붙여넣기 성능은
+  [#8197](https://github.com/edwardkim/rhwp/issues/8197)로 측정·재현 절차를 분리했다.
+- collaborator_self_merge를 기본으로 intake_and_review, local_validation, review_template,
+  visual_fixture_evidence, rework_and_exceptions, review_only_fast_pass를 적용했다.
+  외부 contributor 중개 절차는 적용하지 않았다. 1,000줄 초과 범위는 별도 검토·실행·판정 cycle로 확인했다.
+- 원 해결 PR·통합 보정 SHA와 음성 대조는 [구현 보고서](../../report/task_m100_8103_report.md),
+  최종 코드·증거 연결은 [구현 검토](pr_8196_review_impl.md)에 있다.
+
+## 보정 후 검증
+
+| 검사 | 결과 |
+| --- | --- |
+| Studio/editor unit | 2,447 PASS / 0 FAIL / 0 SKIP |
+| production build / CI unit TypeScript | exit 0 |
+| 선택 E2E Canvas2D + auto software | 314 PASS |
+| 선택 E2E 강제 CanvasKit | 159 PASS |
+| 선택 E2E auto WebGL SwiftShader | 160 PASS |
+| 기존 Undo / 전체 선택 / Enter / 줌 대화상자 | 99 / 63 / 84 / 37 PASS |
+| renderer-contract / command-error-contract | exit 0 |
+| E2E manifest | 169개 / 169행, 이상 없음 |
+| 현재 실패 / stale pending / stale 완료 / 문서 교체 / dispose | 현재 실패만 복구, 최신 준비·선택 유지 |
+
+선택 E2E 세 실행 모두 준비 실패를 주입한 뒤 본문·논리 선택·음영 보존과 실제 Canvas2D repaint를
+확인했다. pageerror와 caught render error는 0이다. 예상 준비 실패는 진단 warning으로 기록된다.
+정상 zoom/scroll/Undo/Redo·역순 선택·quiet 재선택·문서 교체도 통과했다.
+검증한 제품·테스트 트리를 위 code SHA로 커밋했으며 이후 코드 변경은 없다.
+
+명령은 `npm --prefix rhwp-studio test`, `npm --prefix rhwp-studio run build`, Studio에서
+`npx tsc --noEmit -p tsconfig.ci-unit.json`, `node e2e/selection-layout-issue8103.test.mjs --mode=headless`다.
+브라우저 환경은 `CHROME_PATH=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`,
+`VITE_URL=http://127.0.0.1:7700`이며 강제 CanvasKit은 `--renderer=canvaskit`, WebGL은
+`CHROME_EXTRA_ARGS=--use-angle=swiftshader --enable-unsafe-swiftshader`와 `--renderer=auto --surface=webgl`이다.
+ignored `output/pr-review/8196/fix-*.log`, `final-*.log`에 결과를 보존했다.
+
+로컬 WASM은 같은 Rust 입력으로 10월 24일 fresh 생성한 산출물을 재사용했다. 오늘 새 로컬 빌드로
+표시하지 않는다. public/pkg SHA-256은 모두
+`27a0fee1ad2875cfe8423ee43667b2411c9f040a3b4c8c43d92bbbca114fa5f1`이다.
+새 code head CI에서는 fresh WASM 빌드와 프런트엔드 gate, Render Diff를 별도로 완료했다.
+
+## Code head GitHub CI
+
+다음 여섯 workflow 모두 `1a5cea08307132d3deba18a1a01b85869717b726`의 완료·성공을 확인한 뒤 이 문서를 작성했다.
+
+- [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/40318570668): completed / success
+- [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/40318570620): completed / success
+- [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/40318570641): completed / success
+- [CI](https://github.com/edwardkim/rhwp/actions/runs/40318570567): completed / success
+- [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/40318570442): completed / success
+- [CI Impact Policy Controller](https://github.com/edwardkim/rhwp/actions/runs/40318565714): completed / success
+
+영향 범위상 skipped job이나 GHAS neutral을 실제 검사 실행으로 세지 않는다.
+code head의 성공을 아직 실행 전인 trailing head의 성공으로 간주하지 않는다.
+
+## 조판 원칙·시각 증거
+
+현재 선택·확정 page origin·zoom의 관계를 사용하며 문서 ID 분기, 임의 clamp, golden 완화는 없다.
+공통 renderer 준비 수명과 DOM overlay 투영을 보정하며 Rust 줄 구성·페이지 분할·paint 기하는 변경하지 않는다.
+HWP/HWPX/PDF fixture나 인쇄 기대값을 추가하지 않았다. 합성 400문단의 본문·소유·순서·삭제 범위를 검사한다.
+Native/한컴 Print TSV의 fidelity 판정은 이 DOM 선택/context 수명 계약에 비해당이다.
+CI Render Diff 성공을 독립 한컴 전체 출력 일치로 승격하지 않는다.
+
+새 code tree의 WebGL 66% 마지막 쪽 캡처를 직접 열어 P369~P399 본문과 선택 음영의 일치를 확인했다.
+[제출 PNG](../assets/issue_8103/auto-66-last-page.png)를 갱신하고 PR 본문은 code SHA 고정 이미지로 표시했다.
+수식·실물 px/조판 개선을 주장하지 않는다. 최신 base와의 merge simulation은 충돌 검증이며
+새 base 전체 렌더 기능을 source에 통합해 재검증했다는 의미가 아니다.
+
+## 원 head의 P2 재현과 해소 이력
+
+아래는 보정 전 head의 결함 기록이다. 보정 후에는 공통 `prepareRendererRevision`이 현재 epoch 실패만
+portable metrics·Canvas2D로 복구한다. 아래 해제 조건을 단위·브라우저 검사로 충족했다.
+
+### [P2] 준비 Promise 실패 뒤 현재 revision의 렌더 대기를 복구해야 한다
+
+`rhwp-studio/src/view/canvas-view.ts:502-509`에서 `rendererSelectionPending = true`를 설정한 뒤
+renderer resolve·metrics 준비를 await한다. 성공한 `applyRendererSelection`만 false로 돌린다.
+실패 경로에는 상태 복구나 bounded retry가 없다. 같은 문제는 auto mutation 경로의 457-467행에도 있다.
+
+`prepareCanvasMetrics()`가 reject되면 이후 `updateVisiblePages`·`renderPage`·`renderCanvas`는
+`deferRenderUntilRendererReady()`에서 계속 반환한다. 단순 scroll/zoom으로는 revision 선택을
+다시 시작하지 않으므로, 새 편집·문서 로드 등 다음 revision이 준비될 때까지 페이지 다시 그리기가 막힌다.
+기존 예외 전파 문제에 이번 PR이 지속적인 repaint 차단 상태를 추가한다.
+
+준비 API 전체가 no-throw 계약인 것은 아니다. `WasmBridge.prepareCanvasMetrics`는
+metafile 준비·host font catalog·원본 PUA 요청 등 CanvasMetricSession의 portable fallback catch
+바깥 호출도 await한다. 다만 이번 검토에서는 실제 특정 사용자 파일의 자원 오류를 자연 재현하지 않았고,
+**실패 주입으로 상태 머신의 회귀를 재현**했다. 자원 오류의 발생 빈도나 모든 글꼴 실패가 reject된다고 주장하지 않는다.
+
+검증 방법:
+
+1. 실제 CanvasView를 Vite SSR로 로드하고 `prepareCanvasMetrics`만 reject시키는 진단을 실행했다.
+2. base 소스는 Vite pre-transform으로 공급했다. 실패 후 scroll 경로는 base에서 viewport 처리에
+   도달했으나 head에서는 pending/deferred만 true가 되고 viewport 처리에 도달하지 못했다.
+3. 실제 Chrome·WASM 새 문서에서도 같은 준비 실패를 한 번 주입하고 원래 메서드를 복원했다.
+   scroll 재호출 뒤 pending/deferred는 true였다. 새 revision을 명시적으로 실행한 뒤에만 pending이 false가 됐다.
+
+```jsonl
+{"version":"base","pending":false,"deferred":false,"reachesViewport":1}
+{"version":"head","pending":true,"deferred":true,"reachesViewport":0}
+{"error":"review: preparation failure","afterFailure":{"pending":true,"deferred":true},"afterNext":{"pending":false,"selected":true}}
+```
+
+해제 조건: 현재 epoch의 준비 실패를 명시적으로 처리하고 안전한 fallback 또는 제한된 재시도로
+repaint를 복구한다. 무조건 finally에서 pending을 false로 바꾸면 stale 실패가 더 최신 준비를
+해제할 수 있으므로 epoch/dispose 경계를 유지해야 한다. 현재 실패·stale 실패·문서 교체 후 실패,
+성공 뒤 같은 backend repaint를 정식 회귀 검사에 포함하고 실제 브라우저로 재검증한다.
+
+
+## 남은 원격 조건과 후속 처리
+
+문서-only trailing commit의 merge-tree 공백·링크·오늘할일 보존을 검사하고 push한다.
+그 뒤 최신 head의 actual fast-pass·required check와 mergeability를 확인한다. 병합은 사용자 승인 단계다.
+merge·issue close·release·배포는 수행하지 않았다.
+
+병합이 승인되면 확정 merge SHA·CI·보정 결과·#8197 분리를 한국어 존댓말 comment로 남기고,
+같은 asset의 merge SHA 고정 raw 이미지를 사용한다. 게시 시 body-file과 API 재조회로 본문을 확인한다.
+현재는 해당 comment를 게시하지 않았다.
