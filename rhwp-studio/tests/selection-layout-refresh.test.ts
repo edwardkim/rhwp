@@ -38,12 +38,13 @@ test('실제 CanvasView mutation 선택은 대기 중 바뀐 epoch·current·dis
         scheduleAutoRendererReselection: () => { scheduled++; },
       });
       const first = view.selectMutationRevision();
+      await Promise.resolve();
       assert.equal(guards[0](), true, `${boundary}: 현재 작업만 metrics를 반영할 수 있다`);
       if (boundary === 'epoch') view.rendererSelectionEpoch++;
       if (boundary === 'dispose') view.disposed = true;
       if (boundary === 'current') current = false;
       let second: Promise<unknown> | undefined;
-      if (boundary === 'revision') second = view.selectMutationRevision();
+      if (boundary === 'revision') { second = view.selectMutationRevision(); await Promise.resolve(); }
       assert.equal(guards[0](), false, `${boundary}: 오래된 metrics 반영 차단`);
       if (second) assert.equal(guards[1](), true, '두 번째 revision만 metrics를 반영한다');
       pending.resolve(false);
@@ -218,4 +219,59 @@ test('자원 준비 중의 viewport·page replay는 최신 revision 준비 뒤�
   } finally {
     await vite.close();
   }
+});
+
+
+test('현재 준비 실패만 portable fallback으로 복구하고 stale·dispose 실패는 최신 준비를 유지한다', async () => {
+  const vite = await createServer({ root: fileURLToPath(new URL('..', import.meta.url)),
+    appType: 'custom', logLevel: 'silent', server: { middlewareMode: true } });
+  try {
+    const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+    const { RendererSession } = await vite.ssrLoadModule('/src/view/renderer-session.ts');
+    for (const boundary of ['metrics', 'resolve', 'stale', 'stale-completed', 'document-switch', 'dispose']) {
+      const session = new RendererSession({ backend: 'canvas2d', source: 'url' },
+        { mode: 'default', source: 'default' }, { preference: 'software', requested: 'software' },
+        'screen', async () => { throw new Error('unused'); });
+      let reject!: (error: Error) => void;
+      const pending = new Promise<boolean>((_, fail) => { reject = fail; });
+      let invalidated = 0;
+      let applied = 0;
+      const view = Object.assign(Object.create(CanvasView.prototype), {
+        disposed: false, rendererSelectionEpoch: 1, rendererSelectionPending: false,
+        rendererRefreshDeferred: false, rendererSession: session,
+        wasm: { prepareCanvasMetrics: () => pending, invalidateCanvasMetrics: () => { invalidated++; } },
+        viewportManager: { cancelPendingZoomRaster: () => false },
+        pageRenderer: { configure: () => { applied++; return false; }, invalidateDocumentRevision() {} },
+        eventBus: { emit() {} },
+      });
+      const result = view.prepareRendererRevision(1, boundary === 'resolve'
+        ? () => pending.then(() => null) : () => session.resolve({}));
+      await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+      if (boundary === 'stale' || boundary === 'stale-completed' || boundary === 'document-switch') {
+        view.rendererSelectionEpoch++;
+        if (boundary === 'document-switch') session.beginDocument('replacement');
+        if (boundary === 'stale-completed') {
+          view.wasm.prepareCanvasMetrics = async () => false;
+          await view.prepareRendererRevision(2, () => session.resolve({}));
+        }
+      }
+      if (boundary === 'dispose') view.disposed = true;
+      reject(new Error(`injected ${boundary} failure`));
+      const recovered = await result;
+      if (['stale', 'stale-completed', 'document-switch', 'dispose'].includes(boundary)) {
+        assert.equal(recovered, null);
+        assert.equal(invalidated, 0);
+        assert.equal(applied, boundary === 'stale-completed' ? 1 : 0);
+        assert.equal(view.rendererSelectionPending, boundary !== 'stale-completed', '오래된 실패는 최신 준비 상태를 변경하지 않는다');
+      } else {
+        assert.equal(recovered.selection.backend, 'canvas2d');
+        assert.equal(recovered.selection.diagnostics.fallbackReason, 'rendererPreparationFailed');
+        assert.match(recovered.selection.diagnostics.selectionError, /injected/);
+        assert.equal(recovered.backendChanged, true);
+        assert.equal(invalidated, 1, 'portable metrics를 다시 선택한다');
+        assert.equal(applied, 1);
+        assert.equal(view.deferRenderUntilRendererReady(), false, '같은 revision에서 repaint를 재개한다');
+      }
+    }
+  } finally { await vite.close(); }
 });

@@ -444,3 +444,25 @@ base `9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`, 실행 head
 `4c8a5ff1ff30987c07cbce6b88d35d8487b067d274475c8b9946b5f9d5b21332`, WASM은
 `27a0fee1ad2875cfe8423ee43667b2411c9f040a3b4c8c43d92bbbca114fa5f1`이다.
 이후 제출 커밋은 이 기록과 최신 PNG만 갱신한다. 생성 wrapper는 커밋하지 않는다.
+
+## 2026-10-26 self-review P2 보정
+
+기존 code head `5ab102cc6b55af8c3a6776e217d3840fe74dffb4`에서 준비 Promise의
+실패를 주입하면 pending이 남아 스크롤 repaint가 차단됐다. 특정 사용자 파일의 자연 발생
+오류가 아니라 실제 CanvasView와 Chrome에서 검증한 실패 상태 계약이다.
+
+문서 로드·일반 revision·auto 고정 revision이 공통 `prepareRendererRevision`을 사용한다.
+현재 epoch의 실패는 portable metrics와 Canvas2D로 복구하고 준비 상태를 해제한다.
+stale·dispose·문서 교체 뒤 실패는 현재 준비와 선택을 변경하지 않는다. 실패 사유는
+`rendererPreparationFailed`로 진단에 남긴다. 무조건 finally에서 pending을 해제하지 않는다.
+
+검증 결과: Studio unit 2,447 PASS, production build 및 CI unit TypeScript exit 0.
+선택 E2E는 Canvas2D+auto software 314, 강제 CanvasKit 159, auto WebGL 160 PASS다.
+세 경로에서 준비 실패 후 본문·논리 선택·음영 보존과 실제 Canvas2D repaint를 확인했다.
+기존 renderer/command-error 계약, Undo 99, 전체 선택 63, Enter 84와 줌 대화상자도 통과했다.
+로그는 ignored `output/pr-review/8196/fix-*.log`, 최종 unit/types/build는 `final-*.log`에 있다.
+
+WASM은 같은 Rust 입력으로 10월 24일 fresh 빌드했던 산출물을 재사용했다. Rust 조판·paint
+기하와 출력 기대값 변경은 없다. DOM 선택 투영·renderer 준비 수명 검증을 한컴 Print fidelity
+검증으로 주장하지 않는다. 새 WebGL 66% 마지막 쪽 PNG를 직접 열어 P369~P399의 본문과
+음영을 확인하고 제출 asset을 갱신했다. 새 code head CI와 최종 self-review는 후속 기록한다.

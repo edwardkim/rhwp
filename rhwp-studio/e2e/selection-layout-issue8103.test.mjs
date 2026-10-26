@@ -279,6 +279,34 @@ await runTest(`선택 삭제 Undo의 확정 layout·스크롤·줌·stale fencin
   checkProjection(afterDialog, '실제 줌 대화상자의 최종 배치');
   assert(same(afterDialog.selection, beforeDialog.selection), '줌 대화상자는 복원 선택을 보존');
 
+  setTestCase('preparation-failure-recovery');
+  const beforeFailure = await state(page);
+  const recovery = await page.evaluate(async () => {
+    const view = window.__canvasView;
+    const wasm = window.__wasm;
+    const prepare = wasm.prepareCanvasMetrics.bind(wasm);
+    let failures = 0;
+    wasm.prepareCanvasMetrics = async () => { failures++; throw new Error('injected preparation failure'); };
+    try { await view.refreshPagesForMutation(); }
+    finally { wasm.prepareCanvasMetrics = prepare; view.cancelAutoRendererReselection(); }
+    const diagnostics = view.getRenderBackend();
+    view.updateVisiblePages('scroll');
+    return { failures, backend: diagnostics, pending: view.rendererSelectionPending,
+      reason: window.__rendererSelection?.fallbackReason,
+      painted: [...document.querySelectorAll('canvas.document-page-canvas')]
+        .some(c => c.width > 0 && c.height > 0 && c.dataset.rhwpRenderedZoom) };
+  });
+  await frames(page);
+  const afterFailure = await state(page);
+  assert(recovery.failures === 1 && !recovery.pending && recovery.backend === 'canvas2d'
+    && recovery.reason === 'rendererPreparationFailed' && recovery.painted,
+    '준비 실패 후 반복 준비 없이 portable Canvas2D 실제 replay 재개');
+  assert(same(afterFailure.texts, beforeFailure.texts) && same(afterFailure.selection, beforeFailure.selection),
+    '준비 실패 복구는 문서 내용·현재 선택을 보존');
+  checkProjection(afterFailure, '준비 실패 복구');
+  await page.evaluate(() => window.__canvasView.refreshFontResources());
+  await frames(page);
+
   setTestCase('arrangement-resize-smooth-zoom');
   const beforeViewChange = await state(page);
   await page.evaluate(() => {

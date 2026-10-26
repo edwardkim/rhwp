@@ -15,7 +15,8 @@ export type RenderBackendFallbackReason =
   | 'canvaskitRevisionInvalidated'
   | 'canvaskitInitializationFailed'
   | 'canvaskitResourcePreparationFailed'
-  | 'canvaskitRuntimeFailed';
+  | 'canvaskitRuntimeFailed'
+  | 'rendererPreparationFailed';
 export type RenderBackendRequestSource = 'default' | 'url';
 
 export interface CanvasKitSurfaceRequest {

@@ -261,15 +261,8 @@ export class CanvasView {
     const epoch = this.rendererSelectionEpoch;
     this.documentLoadPrepared = false;
     if (this.disposed) return;
-    const selection = await this.rendererSession.resolve(this.wasm);
-    if (this.disposed || epoch !== this.rendererSelectionEpoch || !this.rendererSession.isCurrent(selection)) return;
-    await this.wasm.prepareCanvasMetrics(selection.backend, () => !this.disposed && epoch === this.rendererSelectionEpoch && this.rendererSession.isCurrent(selection));
-    if (
-      this.disposed
-      || epoch !== this.rendererSelectionEpoch
-      || !this.rendererSession.isCurrent(selection)
-    ) return;
-    this.applyRendererSelection(selection);
+    const selected = await this.prepareRendererRevision(epoch, () => this.rendererSession.resolve(this.wasm));
+    if (!selected) return;
 
     const pageCount = this.wasm.pageCount;
     this.pages = [];
@@ -459,15 +452,8 @@ export class CanvasView {
     if (!pinned) return this.selectNextDocumentRevision();
 
     const epoch = ++this.rendererSelectionEpoch;
-    const isCurrent = () => !this.disposed
-      && epoch === this.rendererSelectionEpoch
-      && this.rendererSession.isCurrent(pinned);
-    const selected = {
-      selection: pinned,
-      backendChanged: (await this.wasm.prepareCanvasMetrics(pinned.backend, isCurrent)) || this.zoomRefreshRequired,
-    };
-    if (!isCurrent()) return null;
-    selected.backendChanged = this.applyRendererSelection(pinned) || selected.backendChanged;
+    const selected = await this.prepareRendererRevision(epoch, () => Promise.resolve(pinned));
+    if (!selected) return null;
     this.scheduleAutoRendererReselection();
     return selected;
   }
@@ -499,23 +485,41 @@ export class CanvasView {
     if (this.disposed) return null;
     this.zoomRefreshRequired = this.viewportManager.cancelPendingZoomRaster() || this.zoomRefreshRequired;
     const epoch = ++this.rendererSelectionEpoch;
-    this.rendererSelectionPending = true;
-    this.rendererSession.invalidateDocument({ resetResources });
-    await Promise.resolve();
-    if (this.disposed || epoch !== this.rendererSelectionEpoch) return null;
+    return this.prepareRendererRevision(epoch, async () => {
+      this.rendererSession.invalidateDocument({ resetResources });
+      await Promise.resolve();
+      if (this.disposed || epoch !== this.rendererSelectionEpoch) return null;
+      return this.rendererSession.resolve(this.wasm);
+    });
+  }
 
-    const selection = await this.rendererSession.resolve(this.wasm);
-    if (this.disposed || epoch !== this.rendererSelectionEpoch || !this.rendererSession.isCurrent(selection)) return null;
-    const metricsChanged = await this.wasm.prepareCanvasMetrics(selection.backend, () => !this.disposed && epoch === this.rendererSelectionEpoch && this.rendererSession.isCurrent(selection));
-    if (
-      this.disposed
-      || epoch !== this.rendererSelectionEpoch
-      || !this.rendererSession.isCurrent(selection)
-    ) return null;
-    return {
-      selection,
-      backendChanged: this.applyRendererSelection(selection) || metricsChanged,
-    };
+  /** 성공·실패 모두 현재 revision만 준비 상태를 확정한다. */
+  private async prepareRendererRevision(
+    epoch: number,
+    resolve: () => Promise<RendererSessionSelection | null>,
+  ): Promise<{ selection: RendererSessionSelection; backendChanged: boolean } | null> {
+    this.rendererSelectionPending = true;
+    const current = () => !this.disposed && epoch === this.rendererSelectionEpoch;
+    let selection: RendererSessionSelection | null;
+    let metricsChanged: boolean;
+    try {
+      selection = await resolve();
+      if (!selection || !current() || !this.rendererSession.isCurrent(selection)) return null;
+      const preparedSelection = selection;
+      metricsChanged = await this.wasm.prepareCanvasMetrics(selection.backend,
+        () => current() && this.rendererSession.isCurrent(preparedSelection));
+      if (!current() || !this.rendererSession.isCurrent(selection)) return null;
+    } catch (error) {
+      if (!current()) return null;
+      // 실패한 준비를 반복하거나 자원이 무효화된 이전 CanvasKit으로 replay하지 않는다.
+      // CanvasMetricSession과 같은 portable metric 경로로 현재 문서를 다시 그린다.
+      this.wasm.invalidateCanvasMetrics();
+      const selection = this.rendererSession.fallbackFromPreparationFailure(error);
+      this.applyRendererSelection(selection);
+      console.warn('[CanvasView] renderer 준비 실패: portable Canvas2D로 복구', error);
+      return { selection, backendChanged: true };
+    }
+    return { selection, backendChanged: this.applyRendererSelection(selection) || metricsChanged };
   }
 
   private applyRendererSelection(selection: RendererSessionSelection): boolean {
