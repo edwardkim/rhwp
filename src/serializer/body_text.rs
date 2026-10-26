@@ -118,7 +118,7 @@ fn serialize_section_inner(section: &Section, version: Option<u32>) -> Vec<u8> {
         }
     });
     for (i, para) in section.paragraphs.iter().enumerate() {
-        let is_last = i == para_count - 1 && !has_memo_tail;
+        let is_last = i == para_count - 1;
         let para_ref = if i == 0 {
             first_para_with_secd.as_ref().unwrap_or(para)
         } else {
@@ -136,7 +136,7 @@ fn serialize_section_inner(section: &Section, version: Option<u32>) -> Vec<u8> {
         }));
     } else {
         if has_memo_tail {
-            serialize_memo_tail(section, &memo_lists, &mut records);
+            serialize_memo_tail(&memo_lists, &mut records);
         }
         serialize_master_page_tail(section, &mut records);
     }
@@ -238,51 +238,15 @@ fn collect_memo_lists(section: &Section) -> Vec<(u32, Vec<Paragraph>)> {
     memo_lists
 }
 
-fn serialize_memo_tail(
-    section: &Section,
-    memo_lists: &[(u32, Vec<Paragraph>)],
-    records: &mut Vec<Record>,
-) {
+fn serialize_memo_tail(memo_lists: &[(u32, Vec<Paragraph>)], records: &mut Vec<Record>) {
     if memo_lists.is_empty() {
         return;
     }
 
     // HWP5 spec: 메모 관련 정보는 마지막 구역 끝에 문단 리스트 형태로 저장된다.
-    // 한컴 저장본은 마지막 본문 문단의 조판 속성을 복제한 빈 root 문단 아래에
-    // MEMO_LIST, LIST_HEADER, 메모 본문 문단을 순서대로 둔다.
-    let last_para = section.paragraphs.last();
-    let mut root = Paragraph {
-        char_count: 1,
-        para_shape_id: last_para.map_or(0, |p| p.para_shape_id),
-        style_id: last_para.map_or(0, |p| p.style_id),
-        char_shapes: last_para
-            .and_then(|p| p.char_shapes.first().cloned())
-            .map(|mut cs| {
-                cs.start_pos = 0;
-                vec![cs]
-            })
-            .unwrap_or_else(|| {
-                vec![CharShapeRef {
-                    start_pos: 0,
-                    char_shape_id: 0,
-                }]
-            }),
-        line_segs: last_para
-            .map(|p| p.serializable_line_segs().to_vec())
-            .filter(|segs| !segs.is_empty())
-            .unwrap_or_else(|| Paragraph::new_empty().line_segs),
-        raw_header_extra: vec![0; 12],
-        ..Default::default()
-    };
-    for seg in &mut root.line_segs {
-        seg.vertical_pos = seg
-            .vertical_pos
-            .saturating_add(seg.line_height)
-            .saturating_add(seg.line_spacing);
-    }
-    root.has_para_text = false;
-    serialize_paragraph_with_msb(&root, 0, true, records);
-
+    // 한컴 저장본은 진짜 마지막 본문 문단(마지막 문단 비트 유지) 바로 뒤에
+    // level 1 MEMO_LIST, LIST_HEADER, 메모 본문 문단을 순서대로 둔다. 빈 root
+    // 문단을 만들면 파서가 그것을 본문 문단으로 읽어 저장할 때마다 문단이 는다.
     for (memo_index, paragraphs) in memo_lists {
         records.push(Record {
             tag_id: tags::HWPTAG_MEMO_LIST,
@@ -2275,38 +2239,20 @@ mod tests {
             "조판 전용 보강 줄은 레코드에서 제외된다"
         );
 
-        memo_root_copies_only_source_line_segments();
+        memo_tail_writes_no_root_paragraph();
     }
 
-    fn memo_root_copies_only_source_line_segments() {
-        let mut last = Paragraph::new_empty();
-        last.line_segs = vec![
-            LineSeg {
-                text_start: 0,
-                line_height: 500,
-                ..Default::default()
-            },
-            LineSeg {
-                text_start: 1,
-                line_height: 500,
-                ..Default::default()
-            },
-        ];
-        last.layout_only_fill_lines = 1;
-        let section = Section {
-            paragraphs: vec![last],
-            ..Default::default()
-        };
+    fn memo_tail_writes_no_root_paragraph() {
         let memo_lists = vec![(1, vec![Paragraph::new_empty()])];
         let mut records = Vec::new();
 
-        serialize_memo_tail(&section, &memo_lists, &mut records);
+        serialize_memo_tail(&memo_lists, &mut records);
 
-        let root_lines = records
-            .iter()
-            .find(|record| record.tag_id == tags::HWPTAG_PARA_LINE_SEG)
-            .expect("memo root line record");
-        assert_eq!(root_lines.data.len(), 36, "one source LineSeg only");
+        assert_eq!(records[0].tag_id, tags::HWPTAG_MEMO_LIST);
+        assert!(
+            records.iter().all(|record| record.level >= 1),
+            "memo lists hang under the real last body paragraph"
+        );
     }
 
     /// PARA_RANGE_TAG 라운드트립
@@ -2848,5 +2794,58 @@ mod tests {
         let parsed = parse_body_text_section(&bytes).unwrap();
 
         assert_eq!(parsed.paragraphs[0].column_type, ColumnBreakType::Page);
+    }
+
+    /// A memo document must not grow by one empty paragraph per HWP save.
+    /// Hancom puts MEMO_LIST right after the real last body paragraph.
+    #[test]
+    fn memo_tail_resave_keeps_the_paragraph_count() {
+        let path = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/samples/issue5866/memo_field_hwp5.hwp"
+        );
+        let bytes = std::fs::read(path).expect("read the Hancom memo sample");
+        let doc = crate::parser::parse_document(&bytes).expect("parse the Hancom memo sample");
+        let mut section = doc
+            .sections
+            .into_iter()
+            .last()
+            .expect("the sample has a section");
+        let original = section.paragraphs.len();
+        for _ in 0..2 {
+            section.raw_stream = None;
+            section.raw_provenance = None;
+            let bytes = serialize_section(&section);
+            let records = Record::read_all(&bytes).unwrap();
+            let last_body = records
+                .iter()
+                .rposition(|r| r.tag_id == tags::HWPTAG_PARA_HEADER && r.level == 0)
+                .unwrap();
+            let char_count = u32::from_le_bytes(records[last_body].data[0..4].try_into().unwrap());
+            assert_ne!(
+                char_count & 0x8000_0000,
+                0,
+                "the real last paragraph keeps its last bit"
+            );
+            assert!(
+                records[last_body + 1..]
+                    .iter()
+                    .any(|r| r.tag_id == tags::HWPTAG_MEMO_LIST && r.level == 1),
+                "the memo list follows the last body paragraph"
+            );
+            section = parse_body_text_section(&bytes).unwrap();
+            assert_eq!(
+                section.paragraphs.len(),
+                original,
+                "no root paragraph is added"
+            );
+            let memos = section
+                .paragraphs
+                .iter()
+                .flat_map(|p| &p.controls)
+                .filter(|c| matches!(c, Control::Field(f) if !f.memo_paragraphs.is_empty()))
+                .count();
+            assert_eq!(memos, 1, "the memo body is read back");
+        }
     }
 }
