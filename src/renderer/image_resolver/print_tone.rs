@@ -18,6 +18,15 @@ pub(super) use print_jpeg::decode as decode_print_bitmap;
 #[cfg(target_arch = "wasm32")]
 pub(crate) use print_jpeg::decode_replay as decode_print_jpeg_replay;
 
+/// 전체 JPEG 채움은 독립 Print의 IJG 원본 RGB를 압축한다.
+/// Picture의 Intel IDCT·RGB555 전달이나 최종 출력의 재색변환으로 대체하지 않는다.
+pub(super) fn decode_jpeg_fill_rgb(data: &[u8]) -> Option<image::RgbImage> {
+    if !data.starts_with(&[0xff, 0xd8]) {
+        return None;
+    }
+    print_jpeg::decode_jpeg(data, true).map(image::DynamicImage::into_rgb8)
+}
+
 fn is_print_bitmap_candidate(image: &ImageNode) -> bool {
     image.hancom2024_print_bitmap
         && image.effect == ImageEffect::RealPic

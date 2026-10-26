@@ -39,7 +39,7 @@ pub(crate) fn decode_replay(data: &[u8]) -> Option<image::DynamicImage> {
     decode_jpeg(data, true)
 }
 
-pub(super) fn decode_jpeg(data: &[u8], final_replay: bool) -> Option<image::DynamicImage> {
+pub(super) fn decode_jpeg(data: &[u8], ijg_rgb: bool) -> Option<image::DynamicImage> {
     let header = super::super::canvaskit_encoded_image_header(data)?;
     if !header.is_within_decode_limits() {
         return None;
@@ -57,7 +57,7 @@ pub(super) fn decode_jpeg(data: &[u8], final_replay: bool) -> Option<image::Dyna
     decoder.set_allocation_budget(&budget).ok()?;
     decoder
         .set_transforms(
-            if final_replay {
+            if ijg_rgb {
                 zune_print::transforms::ijg_replay_idct
             } else {
                 idct::transform
@@ -73,7 +73,7 @@ pub(super) fn decode_jpeg(data: &[u8], final_replay: bool) -> Option<image::Dyna
         drop(decoder);
         return super::super::decode_image_with_format_limited(data, image::ImageFormat::Jpeg);
     }
-    let ycbcr = final_replay && decoder.input_colorspace()? == ColorSpace::YCbCr;
+    let ycbcr = ijg_rgb && decoder.input_colorspace()? == ColorSpace::YCbCr;
     if ycbcr {
         decoder.set_options(options.jpeg_set_out_colorspace(ColorSpace::YCbCr));
     }

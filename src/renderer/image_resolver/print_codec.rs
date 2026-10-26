@@ -19,6 +19,10 @@ pub(super) fn quality_for_palette(quality: u8, source_colors: usize) -> u8 {
     }
 }
 
+pub(super) fn requested_quality(width_points: f64, pixel_width: u32) -> u8 {
+    ((width_points as f32 / pixel_width as f32 * 100.0) as i32).clamp(35, 75) as u8
+}
+
 /// 압축 형식과 출력 세대를 확인한 뒤 동일한 장치 표본 계약을 게시한다.
 pub(crate) fn print_area_sampling(
     image: &ImageNode,
@@ -63,6 +67,16 @@ pub(crate) fn print_device_image_payload(
     image: &ImageNode,
     width_points: f64,
 ) -> Option<ResolvedImagePayload> {
+    // 전체 JPEG 채움의 원본 RGB 계약은 Picture의 RGB555 전달과 다르다.
+    // 같은 공통 진입점에서 자원을 만들고 모든 backend가 그 결과를 소비한다.
+    if crate::paint::device_image::eligible(image)
+        && image
+            .data
+            .as_deref()
+            .is_some_and(|data| detect_image_mime_type(data) == "image/jpeg")
+    {
+        return super::print_fill_jpeg::payload(image, width_points);
+    }
     if !image.hancom2024_print_bitmap
         || image.effect != ImageEffect::RealPic
         || image.brightness != 0
@@ -108,8 +122,7 @@ pub(crate) fn print_device_image_payload(
     if !output_header.is_within_decode_limits() {
         return None;
     }
-    let quality =
-        ((width_points as f32 / output_header.width as f32 * 100.0) as i32).clamp(35, 75) as u8;
+    let quality = requested_quality(width_points, output_header.width);
     // 압축 전의 같은 가시 창에서 색 수를 센다. base가 이미 RGB555 PNG면
     // 그 변환으로 줄어든 팔레트가 원본의 고색수 품질 계약을 바꾸지 않아야 한다.
     let quality = if quality > 70 {
@@ -159,24 +172,32 @@ fn encode(payload: &ResolvedImagePayload, quality: u8) -> Option<Vec<u8>> {
         _ => return None,
     };
     let (rgba, _) = super::print_tone::decode_transfer_pixels(&payload.data, format, None)?;
-    let (width, height) = (
-        u16::try_from(rgba.width()).ok()?,
-        u16::try_from(rgba.height()).ok()?,
-    );
     if rgba.as_raw().len() / 4 * 3 < 4000 || rgba.pixels().any(|pixel| pixel[3] != 255) {
         return None;
     }
+    encode_rgb(image::DynamicImage::ImageRgba8(rgba).to_rgb8(), quality)
+}
+
+pub(super) fn palette_len(rgb: &image::RgbImage) -> usize {
     let mut colors = HashSet::with_capacity(1025);
-    for pixel in rgba.pixels() {
+    for pixel in rgb.pixels() {
         colors.insert([pixel[0], pixel[1], pixel[2]]);
         if colors.len() > 1024 {
             break;
         }
     }
-    if colors.len() < 32 {
+    colors.len()
+}
+
+/// RGB의 압축만 공유한다. 원본 색의 디코딩·RGB555 여부는 호출 계약이 결정한다.
+pub(super) fn encode_rgb(rgb: image::RgbImage, quality: u8) -> Option<Vec<u8>> {
+    let (width, height) = (
+        u16::try_from(rgb.width()).ok()?,
+        u16::try_from(rgb.height()).ok()?,
+    );
+    if rgb.as_raw().len() < 4000 || palette_len(&rgb) < 32 {
         return None;
     }
-    let rgb = image::DynamicImage::ImageRgba8(rgba).to_rgb8();
     let mut data = Vec::new();
     let mut encoder = Encoder::new(&mut data, quality);
     encoder.set_sampling_factor(SamplingFactor::F_2_2);
