@@ -48,3 +48,25 @@ RenderNormalizedSection의 같은 paragraphs/composed → HeightMeasurer·typese
 진단 원문은 ignored `remaining-raw100-diagnostic/continuous-text-shadow/
 p289-301-source-contract/`의 원본 XML, 독립 PDF 원점·도형, 실제 flow trace와
 `diagnose-inline-frame.log`에 있다. upstream 동기화·원격 쓰기는 하지 않는다.
+
+## sourceb3ad의 실제 Native 검증
+
+`b3adcdc39c7bd368acfcdabe4bf9bc330f7fbf86`의 Native 빌드는 고정 target/pr-review와
+jobs 8에서 6분 55초·exit 0이었다. 원본 HWP/HWPX의 같은 진단 파일이 이전 source9bab에서
+2 FAIL, 새 source에서 2 PASS였다. 이전 호스트 TextLine은 도형 바닥에 높이 0으로 있었지만,
+새 줄은 도형과 같은 y=147.41333px·높이 32px를 포함한다. 뒤 표의 상단은
+192.74667 → 191.09333px로 바뀌어 독립 Print 191.02132px와 차이가 약 0.072px다.
+작은 위치 공차를 새로 맞춘 것이 아니라, TAC 포함 관계와 원본 Percent의 signed 간격을
+각각 검사했다. 원본 HWP 내보내기 바이트도 전후 같다.
+
+기존 #6551·#7196·#6280·#8153 문단/그림/이어받기/글자 폭/한자와 실제 overflow 대조를
+포함한 16개 harness는 총 35 PASS·0 FAIL·0 ignored였다. 이는 전체 Rust suite가 아니다.
+두 원본 36쪽씩의 Native 72조건을 같은 PDF·DPI·공급·마스크로 대조했고 미대응 증가가 없다.
+289쪽은 두 형식 모두 23 → 0픽셀, raw 99.98886 → 100%로 개선됐다. 291·301쪽의
+각 20픽셀은 이 수정으로 해결되지 않았으며 별도의 셀 그림 clip 경계로 추적 중이다.
+136·166·228쪽과 기존 정상 TAC 경계도 유지했다. 289쪽 review PNG를 직접 확인했다.
+
+`inline-shape-native/native-focus/result.json`, `inline-shape-native/contracts-result.json`,
+`inline-shape-original-contract.log`와 문서별 `p289/review/review_289.png`에 연결한다.
+전쪽 Native와 fresh DEV WASM은 별도로 계속 실행한다. 이 결과를 최종 표준 최적화 WASM이나
+전 1,532조건의 100%·정수 미대응 0, 정식 새 회귀 등록 또는 최종 전체 검증 완료로 쓰지 않는다.
