@@ -365,7 +365,11 @@ pub(crate) fn parse_common_obj_attr(ctrl_data: &[u8]) -> CommonObjAttr {
     // 됐고, 한글이 상호참조 순번을 전부 1 로 재계산했다(07276 상호참조 153중
     // 101 오염). bit26/28 개별 보존 플래그(hwp5_gen_shape_attr_bit26/28)는
     // attr verbatim 왕복용으로 그대로 둔다.
-    common.numbering_type = match (attr >> 26) & 0x7 {
+    // [#8294] 범주는 bit 26-27 의 2비트다. bit 28 은 범주와 별개로 켜진다 — 한글 2024
+    // `NumberingType` 은 원본 6·5·7 을 표·그림·수식(2·1·3)으로, 4 를 없음(0)으로 읽는다
+    // (한글문서파일형식 표 166 · exam_math_no 수식·그림·표 전수). 3비트로 읽으면 표 1437·
+    // 그림 435·수식 375(samples)가 범주를 잃어 캡션 번호가 모두 1이 된다.
+    common.numbering_type = match (attr >> 26) & 0x3 {
         1 => crate::model::shape::ObjectNumberingType::Picture,
         2 => crate::model::shape::ObjectNumberingType::Table,
         3 => crate::model::shape::ObjectNumberingType::Equation,
