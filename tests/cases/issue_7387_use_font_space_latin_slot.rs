@@ -26,32 +26,6 @@ fn collect(node: &RenderNode, out: &mut Vec<Run>) {
     }
 }
 
-/// 언어 슬롯별 run 분할과 무관하게 같은 줄의 문자열과 실제 점유폭을 확인한다.
-fn named_line(node: &RenderNode, needle: &str) -> Option<Run> {
-    if matches!(&node.node_type, RenderNodeType::TextLine(_)) {
-        let mut runs = Vec::new();
-        collect(node, &mut runs);
-        let text: String = runs.iter().map(|run| run.text.as_str()).collect();
-        if !runs.is_empty() && text == needle {
-            let left = runs.iter().map(|run| run.x).fold(f64::INFINITY, f64::min);
-            let right = runs
-                .iter()
-                .map(|run| run.x + run.width)
-                .fold(f64::NEG_INFINITY, f64::max);
-            return Some(Run {
-                text,
-                x: left,
-                width: right - left,
-                y: node.bbox.y,
-                font_size: runs[0].font_size,
-            });
-        }
-    }
-    node.children
-        .iter()
-        .find_map(|child| named_line(child, needle))
-}
-
 fn open(name: &str) -> DocumentCore {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("samples/{name}"));
     DocumentCore::from_bytes(&std::fs::read(path).expect("공개 회귀 문서")).expect("문서 파싱")

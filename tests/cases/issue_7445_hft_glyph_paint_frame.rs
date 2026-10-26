@@ -202,6 +202,69 @@ fn substituted_hwp3_program_keeps_its_existing_origin() {
         origin(&paint),
         "치환 프로그램은 검증된 인쇄 원점을 보존한다"
     );
+
+    // 동일 Print의 자동 대체 세션과 실제 원 프로그램 선택을 구분한다.
+    // source 메트릭을 보존하는 공급의 윤곽을 자연 폭으로 승격하지 않는다.
+    fn supplied_runs(node: &rhwp::paint::layer_tree::LayerNode, preserves_source: bool) -> usize {
+        use rhwp::paint::{layer_tree::LayerNodeKind, paint_op::PaintOp};
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => children
+                .iter()
+                .map(|n| supplied_runs(n, preserves_source))
+                .sum(),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                supplied_runs(child, preserves_source)
+            }
+            LayerNodeKind::Leaf { ops } => {
+                let mut count = 0;
+                for op in ops {
+                    if let PaintOp::TextRun { run, .. } = op {
+                        if run
+                            .style
+                            .font_family
+                            .split(',')
+                            .next()
+                            .unwrap_or_default()
+                            .trim()
+                            == "RHWP Public Batang"
+                            && !run.text.is_empty()
+                        {
+                            assert_eq!(
+                                run.style.preserve_glyph_ink, !preserves_source,
+                                "자동 표시용 공급은 기존 glyph fit, 명시 원 프로그램은 자연 윤곽"
+                            );
+                            count += 1;
+                        }
+                    }
+                }
+                count
+            }
+        }
+    }
+    for preserves_source in [true, false] {
+        let mut program = load("samples/hwp3-sample11.hwp");
+        program
+            .set_font_environment(Some(
+                rhwp::renderer::font_environment::FontEnvironment::from_json(
+                    &serde_json::json!({
+                        "id": "original-or-display-only-program-contract",
+                        "substitutions": {"하이텔울릉도제목체": "RHWP Public Batang"},
+                        "trueTypeFaces": ["RHWP Public Batang"],
+                        "preserveSourceMetrics": preserves_source
+                    })
+                    .to_string(),
+                )
+                .unwrap(),
+            ))
+            .unwrap();
+        let paint = program
+            .build_page_layer_tree_with_profile(0, RenderProfile::Print)
+            .unwrap();
+        assert!(
+            supplied_runs(&paint.root, preserves_source) > 0,
+            "실제 공급 런 없이 검사 통과 금지"
+        );
+    }
 }
 
 /// C278: 같은 원본/독립 Print의 Native/fresh WASM 전18쪽 최저92.87548/92.86964%.

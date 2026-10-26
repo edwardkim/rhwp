@@ -1022,6 +1022,27 @@ impl HeightCursor {
             self.stored_column_origin = None;
             return y_offset;
         }
+        // 합성 줄 뒤의 수용 위치가 원본 첫 줄과 이미 일치하면, 재구성 vpos를
+        // 옛 단 축으로 읽어 되당기지 않는다. 측정과 배치는 같은 기준을 이어받는다.
+        if synthetic_prev_seg && !self.session_edited && !self.skip_spacing_before_prededuct {
+            if let Some(base) = paragraphs.get(item_para).and_then(|current| {
+                origin::source_aligned_rebuilt_base(
+                    prev_para,
+                    current,
+                    styles,
+                    self.stored_column_origin?,
+                    y_offset,
+                    self.dpi,
+                )
+            }) {
+                if self.vpos_page_base.is_some() {
+                    self.vpos_page_base = Some(base);
+                } else {
+                    self.vpos_lazy_base = Some(base);
+                }
+                return y_offset;
+            }
+        }
         // 저장 줄이 없는 글자취급 그림의 합성 시작이 앞 저장 글줄 끝과 같으면
         // 그 합성 좌표에는 그림 문단의 위 간격이 아직 담겨 있지 않다.
         // 이 경우 간격을 미리 빼면 실제 배치가 더하는 같은 간격과 상쇄된다.

@@ -11,7 +11,7 @@
 import { assert, loadApp, runTest, setTestCase } from './helpers.mjs';
 
 const FACE = 'KoPub바탕체 Light';
-const TEST_TEXT = 'KoPub바탕체 Light 0123456789 가나다라마';
+const TEST_TEXT = '로컬 글꼴 검사 KoPub바탕체 Light 0123456789 가나다라마';
 const WIDTH_TOLERANCE_PX = 0.01;
 
 runTest('Issue #4741 Local Font Access 부분 열거와 exact Canvas2D face', async ({ page }) => {
@@ -100,5 +100,6 @@ runTest('Issue #4741 Local Font Access 부분 열거와 exact Canvas2D face', as
   );
 
   console.log(JSON.stringify(result, null, 2));
+
 
 }, { skipLoadApp: true });

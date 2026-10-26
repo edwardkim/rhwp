@@ -1,7 +1,8 @@
 //! #3604 보호 문서 MCP 계약.
 //!
-//! 실제 HWP5/HWP3/HWPX fixture로 세션 암호 입력과 무상태 자식 stdin 전달을
-//! 검증한다. 암호 값이 도구 응답에 에코되지 않는지도 함께 고정한다.
+//! 공용 HWP3/HWPX fixture로 세션 암호 입력과 무상태 자식 stdin 전달을
+//! 검증한다. sample16 HWP5는 issue_8160_mcp_password에서 같은 경계를 보호한다.
+//! 암호 값이 도구 응답에 에코되지 않는지도 함께 고정한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::io::{BufRead, BufReader, Write};
@@ -16,6 +17,11 @@ const FIXTURES: &[(&str, Option<u64>)] = &[
     ("samples/HWP5-password-123456.hwpx", None),
 ];
 
+// nextest archive의 런타임 실행 경로 재매핑을 우선한다(#3289).
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+}
+
 fn fixture_path(relative: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(relative)
 }
@@ -29,7 +35,7 @@ struct Server {
 
 impl Server {
     fn started() -> Self {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        let mut child = Command::new(rhwp_bin())
             .arg("mcp-serve")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -214,7 +220,7 @@ fn stateless_document_tool_uses_password_stdin_without_cli_argument_echo() {
         eprintln!("fixture 없음 — 건너뜀: {}", fixture.display());
         return;
     }
-    let capabilities = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let capabilities = Command::new(rhwp_bin())
         .args(["capabilities", "--mcp"])
         .output()
         .expect("capabilities 실행 실패");
@@ -255,13 +261,11 @@ fn stateless_document_tool_uses_password_stdin_without_cli_argument_echo() {
         "hwp_info",
         serde_json::json!({"path": path, "password": PASSWORD}),
     );
-    if let Some(expected_pages) = expected_pages {
-        assert_eq!(
-            info["pageCount"].as_u64(),
-            Some(expected_pages),
-            "{fixture_name}: {info}"
-        );
-    }
+    assert_eq!(
+        info["pageCount"].as_u64(),
+        expected_pages,
+        "{fixture_name}: {info}"
+    );
 
     let wrong = server.tool_response(
         "hwp_info",

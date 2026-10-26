@@ -120,11 +120,11 @@ export function collectDurationMeasurement(junitXml) {
 function main() {
   const options = parseArgs(process.argv.slice(2));
   if (options.help) {
-    process.stdout.write("Usage: node scripts/collect-nextest-target-durations.mjs --archive-label b|c|d --input junit.xml --output target-durations.json\n");
+    process.stdout.write("Usage: node scripts/collect-nextest-target-durations.mjs --archive-label b|c|d|e --input junit.xml --output target-durations.json\n");
     return;
   }
-  if (!["b", "c", "d"].includes(options["archive-label"]) || !options.input || !options.output) {
-    fail("--archive-label b|c|d, --input, and --output are required");
+  if (!["b", "c", "d", "e"].includes(options["archive-label"]) || !options.input || !options.output) {
+    fail("--archive-label b|c|d|e, --input, and --output are required");
   }
 
   const measurement = collectDurationMeasurement(fs.readFileSync(options.input, "utf8"));

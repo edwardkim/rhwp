@@ -1,7 +1,8 @@
 //! [#5511 Stage 2] `armor` CLI handler 이동 전 보완 계약.
 //!
 //! 기존 `armor_contract`가 HWP3 기반 nonce·격벽·주입 탐지·JSON provenance를 보호한다.
-//! 이 파일은 실제 HWP5/HWPX, 세 암호 형식과 사람용 제어문자 출력을 추가로 고정한다.
+//! 이 파일은 실제 HWP5/HWPX, 공용 암호 형식과 사람용 제어문자 출력을 고정한다.
+//! sample16 HWP5 암호 경로는 issue_8160_armor_password에서 보호한다.
 //! 합성 공격 문서는 임시 디렉터리에서 만들고 테스트 종료 시 제거한다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -172,7 +173,7 @@ fn real_hwp5_and_hwpx_emit_complete_read_only_envelopes() {
 }
 
 #[test]
-fn encrypted_hwp3_hwp5_and_hwpx_open_through_password_stdin() {
+fn encrypted_hwp3_and_hwpx_open_through_password_stdin() {
     for (rel, pages) in [
         ("samples/HWP3-password-123456.hwp", Some(24)),
         // 쪽수 고정만 #7445로 이관하고 암호·응답 봉투 계약은 유지한다.

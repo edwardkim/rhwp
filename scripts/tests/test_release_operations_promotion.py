@@ -95,7 +95,7 @@ class ReleaseOperationsPromotionTests(unittest.TestCase):
                 self.assertEqual({item["path"] for item in verdict["acceptedRuns"]}, {item["path"] for item in entries if item is not entry})
                 run["jobs"][-1]["conclusion"] = "success"
 
-    def test_nextest_reusables_require_real_four_archive_caller_jobs(self):
+    def test_nextest_reusables_require_real_five_archive_caller_jobs(self):
         ci = (ROOT / ".github/workflows/ci.yml").read_text()
         for name, template in (
             ("build-nextest-archives", "build-test-archive-{a} / Build test archive ({a})"),
@@ -105,11 +105,11 @@ class ReleaseOperationsPromotionTests(unittest.TestCase):
             self.assertEqual(entry["evidencePath"], ".github/workflows/ci.yml")
             self.assertEqual(entry["executionMode"], "direct")
             expected = ["CI preflight", "Build & Test"] + [
-                template.format(a=a, upper=a.upper()) for a in "abcd"
+                template.format(a=a, upper=a.upper()) for a in "abcde"
             ]
             self.assertEqual(entry["requiredJobs"], expected)
-            for a in "abcd":
-                job = expected[2 + "abcd".index(a)].split(" / ")[0]
+            for a in "abcde":
+                job = expected[2 + "abcde".index(a)].split(" / ")[0]
                 block = re.search(rf"(?ms)^  {job}:\n.*?(?=^  [\w-]+:\n|\Z)", ci)
                 self.assertIsNotNone(block)
                 self.assertIn(f"uses: ./.github/workflows/{name}.yml", block.group())

@@ -12,7 +12,6 @@ use std::process::{Command, Output};
 const SAMPLE: &str = "samples/hwp3-sample.hwp";
 /// HWP5(CFB) 샘플 — `dump-records` 는 HWP3 CFB 아닌 입력을 지원하지 않는다.
 const HWP5_SAMPLE: &str = "samples/2010-01-06.hwp";
-const HWP5_PASSWORD: &str = "123456";
 
 fn sample_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)

@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-const GROUPS = ["integration-b", "integration-c", "integration-d"];
+const GROUPS = ["integration-b", "integration-c", "integration-d", "integration-e"];
 const TEST_ATTRIBUTE = /^\s*#\s*\[(?:test|case)\b/gm;
 const DEFAULT_V2_PARALLELISM_FACTOR = 4;
 
@@ -37,7 +37,7 @@ function usage() {
   return [
     "Usage: cargo metadata --no-deps --format-version 1 |",
     "  node scripts/select-nextest-archive-targets.mjs",
-    "    --group integration-b|integration-c|integration-d",
+    "    --group integration-b|integration-c|integration-d|integration-e",
     "    --policy tests/suites/nextest-target-duration-policy.json",
     "    [--manifest tests/suites/manifest.json]",
   ].join(" ");

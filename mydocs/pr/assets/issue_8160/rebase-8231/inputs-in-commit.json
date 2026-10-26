@@ -1,0 +1,607 @@
+{
+  "commit": "678ba12d1695bddb81becc393f0a396e21285ee3",
+  "passed": true,
+  "files": [
+    {
+      "path": "samples/stored_reset_float/field_float_reset.hwp",
+      "role": "source",
+      "sha256": "9dfe5e3fcdb1041de3e68c38ea4ebd95c3d51b858d7907607cc4c0b12ca13a14",
+      "bytes": 34816,
+      "git_blob": "4cce4319ed20ef437dcbd3d74c555308f4792af8",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/stored_reset_float/field_float_reset-2020.pdf",
+      "role": "pdf",
+      "sha256": "2c7f2f14f3a60d9636e1d61507f3318eccc2fcced01852c360ed773dcd51f861",
+      "bytes": 22389,
+      "git_blob": "9e16f45272eea3cff63ffae0a6096930c710079b",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/stored_reset_float/field_float_reset_plain.hwp",
+      "role": "source",
+      "sha256": "5eefa29cbad1ba0dbd369581e89da31cacae64e2b873f92353a2700ce00a1813",
+      "bytes": 34304,
+      "git_blob": "038f0ae396b97268886b23f6ea7ea6bdb1801ae6",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/stored_reset_float/field_float_reset_plain-2020.pdf",
+      "role": "pdf",
+      "sha256": "a0f4e1806669482b587b0c511018fb6f17238e88909e4c3a702ce70120c2e4e7",
+      "bytes": 21986,
+      "git_blob": "48ff1c909bb874573945047c90d894af273a162b",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/lang_slot/symbol_slot_bullets.hwpx",
+      "role": "source",
+      "sha256": "388dd0f84f46301803d5072d21585988b969adf75dce4eecaa9463145080d1fa",
+      "bytes": 3912,
+      "git_blob": "b1bad807f795b458cac4ab18b12dedc7c04c256c",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/lang_slot/symbol_slot_bullets-2020.pdf",
+      "role": "pdf",
+      "sha256": "cc1c03ca618cdcf32cd924f85eed8ae32728d52613e699a2cefbcdd031654cab",
+      "bytes": 35637,
+      "git_blob": "744be92eb843a659911804219248fe3929161df7",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/lang_slot/symbol_slot_bullets-2024.pdf",
+      "role": "pdf",
+      "sha256": "6e20a8f4d78a89fa024644c354ab484f9fdcf316c1179effcd2021cbd80ae03a",
+      "bytes": 32522,
+      "git_blob": "7a2b2fc2f504aab32388406fe390f679d4377b3c",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue7687/titled-host.hwpx",
+      "role": "source",
+      "sha256": "7647230e6b7194bda394b8f9771523708104be1b48f54064e7243f2c5446dd74",
+      "bytes": 8064,
+      "git_blob": "cc5ead80e9612fa74097b59baebd510ec3c9b197",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue7687/titled-host-2020.pdf",
+      "role": "pdf",
+      "sha256": "ac0b81e37e957bd923dd7b7cb0c9ab243ff0e2039ca9385880e9f73fe87c0521",
+      "bytes": 21372,
+      "git_blob": "9d5733da447dd74d1afb799366921ad167119805",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue8156/titled-host-hancom2020-saved.hwp",
+      "role": "source",
+      "sha256": "0fe65f118d8617552af12f1ef9ebeb3083cce0a6b5537fab43646fc30a0fd776",
+      "bytes": 21504,
+      "git_blob": "b02aec925b2581fce9fd8d425ab188f34739a805",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue8156/titled-host-hancom2020-saved-2020.pdf",
+      "role": "pdf",
+      "sha256": "5ce45d9da28bd05627fbf4e084da3de380da990b145d7c1475f54fe1df005df8",
+      "bytes": 21372,
+      "git_blob": "6c0d7912cfdc852f5b4c8d2554029ebab5fa1893",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue7874/omitted-spacing-after.hwpx",
+      "role": "source",
+      "sha256": "b1905e369c93f4086047e3c68b77474eab0468491fae7da97bcbd4d944ac0cbf",
+      "bytes": 4618,
+      "git_blob": "642b1c331393c9aa1f2eae6164d79f28d569c5c0",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue7874/omitted-spacing-after-2024.pdf",
+      "role": "pdf",
+      "sha256": "8a15a05c3f7c7f43e999e4bfa75971255a1892e03643f54f0ffc7cf848da2bce",
+      "bytes": 21782,
+      "git_blob": "b7757aa6a9c565f08d84c3825aa602f169a9306c",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/HWP5-nopassword-123456.hwp",
+      "role": "source",
+      "sha256": "a34ecb8cde85b6db49c64a954cb7fa5d23b5f49367bc4753c90bfe89a075b50d",
+      "bytes": 247808,
+      "git_blob": "33b13f3e3a9d7967fc418d7559f622ce85e73827",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue7994/HWP5-nopassword-123456-source-2024.pdf",
+      "role": "pdf",
+      "sha256": "69378cafd87877cb09813350e8bb83130a5dd9ef8239e4a0a79250ec7a7a928c",
+      "bytes": 741941,
+      "git_blob": "b49c79c610a0ca3f879434ff0923c47942d2aed6",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/[2027] 온새미로 1 본교재.hwp",
+      "role": "source",
+      "sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "bytes": 734720,
+      "git_blob": "567bb9f6445726b6cdbdbffcbcce177071929cc6",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/[2027] 온새미로 1 본교재-hwp-2020.pdf",
+      "role": "pdf",
+      "sha256": "450c793f33a134198936504b38d3b21c01a343a11c09c13e5a7a00e39e2d58c7",
+      "bytes": 717189,
+      "git_blob": "62bce126d4577bd9cd6b9b987a9f89fb2bb8b670",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue4599/1790387_offset_float_split_min.hwpx",
+      "role": "source",
+      "sha256": "a4f2f5fc2b3b68148100121344783964be75f11092a985d89317b963cdda1156",
+      "bytes": 208729,
+      "git_blob": "89765f644632998ae24b7359cd25d94e2ff5e35e",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/1790387_offset_float_split_min-2020.pdf",
+      "role": "pdf",
+      "sha256": "53ed89bf9c3b937a909eec7f43e215747ef47e43691abe9d61637c1e8b1c8d70",
+      "bytes": 120740,
+      "git_blob": "bcea323b59a66ddaf19d9e48b511beb09ef162bc",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue4599/1790387_rowspan_header_repeat.hwpx",
+      "role": "source",
+      "sha256": "59b8c232f433ecf04e2374505e4c6b18a9aac919a347e0f3a9b8f4d791e004a4",
+      "bytes": 650354,
+      "git_blob": "45e9a36471410b7ff6308a47273f59c4f60c09c9",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/1790387_rowspan_header_repeat-2020.pdf",
+      "role": "pdf",
+      "sha256": "4e6bf98adea24d257accf50fdfdc5bd386736f3623e6d2a96cceb63d94c7d097",
+      "bytes": 420328,
+      "git_blob": "eb0c3b88ad886eca921e33c4e80ecffa183e9e37",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue4599/1790387_tac_successor_after_split.hwpx",
+      "role": "source",
+      "sha256": "1b2505d993e8948ba2cfd649a7403781488286aa2bcf45eacaa2285ebbee0942",
+      "bytes": 18932,
+      "git_blob": "5a793fcf135d21b1055d5742522879a3bad99a60",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/1790387_tac_successor_after_split-2020.pdf",
+      "role": "pdf",
+      "sha256": "10e37138faf2bdb841275ad730dc9e844d6fdaf862b9fcb822f533712211b0b2",
+      "bytes": 153641,
+      "git_blob": "1e7d905364d8d0d985507800d57ffdd0767c2f53",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue4599/1790387_policy_progress.hwpx",
+      "role": "source",
+      "sha256": "947e51913c561611397c4f7d88feaad7112da4adc658b21cbfd9471e00192411",
+      "bytes": 4743695,
+      "git_blob": "768b7142115ffbaa64e4efa161db41fc45c97296",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf",
+      "role": "pdf",
+      "sha256": "4c0d9d0876410766d99f4589916971f97b751a3d71901068637c7e2cc1061f95",
+      "bytes": 1508356,
+      "git_blob": "549903203289d2278f14be0e23c102aeb2880fdd",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue6924/148751598-briefing.hwp",
+      "role": "source",
+      "sha256": "03c93b021e01652b1ca5ba3a4a301decf9da33484af7d088987327efcb59e610",
+      "bytes": 176128,
+      "git_blob": "5fe3db783cdd86b038d46e14ec1f8b0a43221668",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/148751598-briefing-2020.pdf",
+      "role": "pdf",
+      "sha256": "98ce52ec0a6ed25ba73070b22c743cb72d129113456ae3019f417d1b53ee9dd3",
+      "bytes": 490795,
+      "git_blob": "c56349e55b9d70800782127ba99f0cda89273219",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue5966/1130000-202100008_franchise_review_report.hwp",
+      "role": "source",
+      "sha256": "a1b8299b2554a83873b780474defb02efa949b43c86c63bcc164967f96091e55",
+      "bytes": 562176,
+      "git_blob": "cc188a9a1e302c1ff8f5914fb5f1afa26e046d30",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue5966_franchise_review_report_1130000-202100008_franchise_review_report-2020.pdf",
+      "role": "pdf",
+      "sha256": "4cf22800e29baddb9b84023462c75252efd4efb04d22e9e64a8e3d9313076009",
+      "bytes": 1261043,
+      "git_blob": "e89313da803488b02c9a17b982c675c91d7621b9",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/86712_regulatory_analysis.hwp",
+      "role": "source",
+      "sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88",
+      "bytes": 151040,
+      "git_blob": "21e9cc08701428ab6f4e933ad387d4b71a9faaf9",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+      "role": "pdf",
+      "sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a",
+      "bytes": 728698,
+      "git_blob": "f2d95b800b40ffa77a564656b768721912457dbb",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "role": "source",
+      "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+      "bytes": 12851712,
+      "git_blob": "ad992b6d9cd596c3c68d3d5c19e67e3acd0bdf00",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf",
+      "role": "pdf",
+      "sha256": "1e15e26100e3b4c4cd9737a0d2b116a449c5895efec9765680d79baa3b8f4380",
+      "bytes": 5007605,
+      "git_blob": "2fe6a41f4cd6368f15d1e41c0ca5157016394a50",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/task1749/saved_bounds_cumulative_page_break.hwpx",
+      "role": "source",
+      "sha256": "2fd531b3e235a714c3fef1a59ddcd9d23225f68f5c492adb17500d23f5cbfe2f",
+      "bytes": 51205,
+      "git_blob": "dd950a5e16c6775a10e8d704f8c240903910d12f",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/task1749/saved_bounds_cumulative_page_break-hwpx-2020.pdf",
+      "role": "pdf",
+      "sha256": "798e06db6946edcbb05e7399d3aec08d847a57afc375d9d9e67b435e9e1f40d8",
+      "bytes": 259515,
+      "git_blob": "119180b61ead21600fb7f3c654f7f22019a33891",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/task1749/saved_bounds_cumulative_page_break.hwp",
+      "role": "source",
+      "sha256": "49478ec2a01315594bcc5bf0bbbdbc43b86c134cefba3c979d617180bfd43f81",
+      "bytes": 77824,
+      "git_blob": "dffb5931e8a4b352402725840bac9746f847f243",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/task1749/saved_bounds_cumulative_page_break-hwp-2020.pdf",
+      "role": "pdf",
+      "sha256": "0b219907dc9fcaf34175ee70b59c3124c1fcd76bd0613e49fcf7529cec6e6dc9",
+      "bytes": 259515,
+      "git_blob": "666aad2060823c8ada73f8f263fb30185fd38d67",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue5941/1480000-201900698-native-neartop-reset.hwp",
+      "role": "source",
+      "sha256": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a",
+      "bytes": 61810688,
+      "git_blob": "44f75587f6093ba9558b51afabc1e21bd0922069",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue5941-1480000-201900698-2020.pdf",
+      "role": "pdf",
+      "sha256": "fe01f1ddffc3153d015adab93178f0fa8a5e9624763ff529362d4410d50955dc",
+      "bytes": 8209545,
+      "git_blob": "fa33cd7aa6aa552fb890a75498e6f5846b580c01",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp",
+      "role": "source",
+      "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+      "bytes": 1324032,
+      "git_blob": "e8b23a44fc02a7a6c0cdb5a5e64ba31b55377594",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/education-curriculum-map/existing-hwp-hancom2020-print.pdf",
+      "role": "pdf",
+      "sha256": "bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197",
+      "bytes": 2611647,
+      "git_blob": "a571e3a4e708b7b407278b499a42616e89ce4518",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue8141/1342000_math_textbook_field_review.hwp",
+      "role": "source",
+      "sha256": "1c2d27c5f431141b81052ea308039aa43c2899488b54b48a1d1ff2f6c487047e",
+      "bytes": 393216,
+      "git_blob": "b00ec765899347120c85a0a49a2a5fbf1b289ab9",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue8141/1342000_math_textbook_field_review-hwp-2020.pdf",
+      "role": "pdf",
+      "sha256": "956ede8003ccd245d5dd7021a0e4af4bd9264a1d95eac77dda134f698b230972",
+      "bytes": 470272,
+      "git_blob": "9cbcbb25c73d3a396c68bb5aa41d0bb723efa1a7",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue5941/1490000-201600081_roadmap_research.hwp",
+      "role": "source",
+      "sha256": "a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9",
+      "bytes": 3923456,
+      "git_blob": "ae3adc94f92b90f4dff84794d42db3feaa4de0a5",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue7382-regression-review/1490000-201600081_roadmap_research-2020.pdf",
+      "role": "pdf",
+      "sha256": "133f79cad7b756ebef777d253befb14f9407faaf7fe04eeea66036f3e049bbe7",
+      "bytes": 4342169,
+      "git_blob": "0d51a40cdf8d25820a2f043d3ab32b29e2faea7d",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/hwpx/hancom-hwp/[2027] 온새미로 1 본교재.hwp",
+      "role": "source",
+      "sha256": "c9ef761953944665e7f9886f5414955c9d52291f1b2e2fd12f62277aafdafa3e",
+      "bytes": 527360,
+      "git_blob": "7b2414ce7ac3af5bd60e3972c0027a5fa95d23e6",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/hwpx/hancom-hwp/[2027] 온새미로 1 본교재-hwp-2020.pdf",
+      "role": "pdf",
+      "sha256": "58ff2fdc358d38c503d61a1e35a78320099b0671860047f1ac40151787247f3d",
+      "bytes": 662052,
+      "git_blob": "6c82d1f8b44341a07d24cc191fdf11dfff7b178c",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/hwpx/21761835_jeonjik_exemption_table.hwpx",
+      "role": "source",
+      "sha256": "53b33bfca8d8a80534f27564ecee86403c6d1e3dc83cf405c7d6d158ae9625d2",
+      "bytes": 97654,
+      "git_blob": "0d70d5fd550201b935a9954b741d86c736a16236",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/task2146/21761835_jeonjik_exemption_table-2020.pdf",
+      "role": "pdf",
+      "sha256": "d24191e125ce03290fdd55414ff480d8e00ade177d2b51352a61dbafbedd9ca0",
+      "bytes": 131209,
+      "git_blob": "4072f1a79e93d56ea47b28d532b37d5925d6fde3",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue6756/17253153-traffic-safety-designated-routes.hwp",
+      "role": "source",
+      "sha256": "0bb29b403355463d16c8dab2107431cb258ec73f8ada8ec564f2200fd8aa2721",
+      "bytes": 122368,
+      "git_blob": "0ae9426b2d611b1c2aee0048cab03a6a8ba2fc35",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/17253153-traffic-safety-designated-routes-2020.pdf",
+      "role": "pdf",
+      "sha256": "deb6aad07fde6198443c95360a2dcbaea7781dce66e769c4754c0fb8fca8f6be",
+      "bytes": 66169,
+      "git_blob": "36cd4a5cdff45acd133528e2557f57b8f36022e2",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/80168_regulatory_analysis.hwp",
+      "role": "source",
+      "sha256": "c8ad10fe9f07be5119cd804278017aefa46e555bbee4f05f0f5132fe4f591a22",
+      "bytes": 218624,
+      "git_blob": "b2e9369c8ccfbd1581745e51afd413bdd9645907",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/80168_regulatory_analysis-hwp-2024.pdf",
+      "role": "pdf",
+      "sha256": "b233df7098547df43455f49c13ba5b63f1f06113c853a4773f86a94d6b34a982",
+      "bytes": 940965,
+      "git_blob": "7332291a572f8255d5ebd44859ba01340c739f60",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue1853_caption_precedes_body_split.hwpx",
+      "role": "source",
+      "sha256": "46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9",
+      "bytes": 284908,
+      "git_blob": "1f79fd7642e29177cbe7913c7fef3b23b1498187",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue1853_caption_precedes_body_split-hwpx-2020.pdf",
+      "role": "pdf",
+      "sha256": "6577db6936337f4003553c1b8c492cfac42f06554b7dddca640b865ce5a100a8",
+      "bytes": 746649,
+      "git_blob": "66fa063d3657ff5d80276316c104e8f906bd5fb8",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue1880_takeplace_host_before.hwpx",
+      "role": "source",
+      "sha256": "9807766f5b4b2ad352362b5384f3bc0611a89cfdb1b65bd3d6682d7d571dca2c",
+      "bytes": 39873,
+      "git_blob": "25f7883e5d8608565652878e5f9af1a528ad02b5",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue1880/issue1880_takeplace_host_before-2024.pdf",
+      "role": "pdf",
+      "sha256": "662735e5f28fd423ffd158335cea1abfee1ed92b19c125efbea20c46dceca446",
+      "bytes": 279477,
+      "git_blob": "07790dc79ce20a7f74917a172a76fb44771d0c7f",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue5169_viewtext_changetracking.hwp",
+      "role": "source",
+      "sha256": "c003cdb0dd9aac5fda9c82d4f3be20a327522cf2deb680dc25134c7c6c8c3462",
+      "bytes": 225280,
+      "git_blob": "81b0839486060df57ee1d42bbfa602119b9de37a",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue7674/issue5169_viewtext_changetracking-2020.pdf",
+      "role": "pdf",
+      "sha256": "affa9d0f6325d77317b4d206feec9c3cd5f62f9181a11f39efffc41fbda88f18",
+      "bytes": 183579,
+      "git_blob": "f7f7baf4499b545e94b662832ac97e24508a1a58",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue7702/humanmyeongjo_condense_end_fine.hwpx",
+      "role": "source",
+      "sha256": "18e7f00b1a1714e0afdea4b41ee7d87fbcdb1c290e74575082fce574d91f0675",
+      "bytes": 8892,
+      "git_blob": "c986a70d827b17a4b3959934f7e08025bc4dc1be",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue7702/humanmyeongjo_condense_end_fine-2024.pdf",
+      "role": "pdf",
+      "sha256": "2ac26de6d0bf79e486a4ac882bfe8aca751d6121dc028a251e0fb205b3328fb0",
+      "bytes": 23496,
+      "git_blob": "6d23b534409af5b4dc15e59ea669a47e82aec5b4",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue7702/humanmyeongjo_ascii_10pt_m10.hwpx",
+      "role": "source",
+      "sha256": "367300d79682b5fd3945c6a0a7e40c2591ee8ae71cdaf9397b8a0f3b15ec021b",
+      "bytes": 8526,
+      "git_blob": "32047e05f5c816814a9c3e6c30c87a08186d11cb",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue7702/humanmyeongjo_ascii_10pt_m10-2024.pdf",
+      "role": "pdf",
+      "sha256": "756902b7490316bf603b0dbf9f9d92b31aed988e5a2b4a23337d0d203dfca06d",
+      "bytes": 34138,
+      "git_blob": "41a51d713ea88ca8ec4569cfb7d9b8adf60b4d04",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue8105/declared_row_band.hwpx",
+      "role": "source",
+      "sha256": "3ce5fc24400e5647921538aea20dbfb6999e4fd6b198d044b3f269992d23af91",
+      "bytes": 10893,
+      "git_blob": "180da525aab77f95a0ef963c07fa50767ad7603a",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue8105/declared_row_band-2024.pdf",
+      "role": "pdf",
+      "sha256": "13c60cdc8f3fba6fe052a0bc29fbf9cd2c46298c091854ccd5e2eda39f7919d8",
+      "bytes": 24215,
+      "git_blob": "f262efacc5219baec61e14b46c0a84c97f599efd",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/hwpx_sample2.hwp",
+      "role": "source",
+      "sha256": "ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f",
+      "bytes": 357376,
+      "git_blob": "81484a812065715206e00883233b40292a45e60c",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/hwpx_sample2-hwp-2024.pdf",
+      "role": "pdf",
+      "sha256": "1b2e13e966787f6b91f590c8901dcb988e73ac7063d5e1cb95c8952400fd9a47",
+      "bytes": 568387,
+      "git_blob": "c36271330098e70c5cba897af30e702cb4af3ad5",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/issue1891/80168_regulatory_analysis.hwpx",
+      "role": "source",
+      "sha256": "1e00b54e1139515258260a657217e0b3baa0b1b652a2cd28dd4b9bc48aa262fe",
+      "bytes": 179730,
+      "git_blob": "ec8b38f871f2f635757afb1c08e85577410ec24d",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/issue1891/80168_regulatory_analysis-hwpx-2020.pdf",
+      "role": "pdf",
+      "sha256": "88996e41ed3e68b15a3cd0eb4eda98845d34225c5dcd2ca547c80ab6e1242744",
+      "bytes": 1065999,
+      "git_blob": "41976e190d3d46eee8568c2cbc618604e8d8636d",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5.hwpx",
+      "role": "hwp",
+      "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "bytes": 3061900,
+      "git_blob": "119f835b1a7d296e21a43e91715c52ebf1ecb912",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "role": "pdf",
+      "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "bytes": 2234018,
+      "git_blob": "d729d2c89320ccd332c9a7ba2fe370629444a0e2",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "role": "hwp",
+      "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "bytes": 3044864,
+      "git_blob": "1e7b1834277effd9240a2aa24724799c55b210f1",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "role": "pdf",
+      "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "bytes": 2234015,
+      "git_blob": "5974ae3ecf91fca171b847c4d3fdad640920d567",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "role": "hwp",
+      "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "bytes": 3048448,
+      "git_blob": "ce4fc4fddbd57ea4cfcaef2c5e2f4f72991e4f7b",
+      "commit_bytes_identical": true
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "role": "pdf",
+      "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "bytes": 1830277,
+      "git_blob": "cb168a9199f86c9f935af695af055bfa382e9e8b",
+      "commit_bytes_identical": true
+    }
+  ],
+  "merged_commit": "2546c8b2ab7041399fb15fe82e0f50c1ade21724"
+}

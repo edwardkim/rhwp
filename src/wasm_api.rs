@@ -49,6 +49,8 @@ mod hyperlink;
 mod layout_generation;
 #[cfg(all(feature = "pdf-import", target_arch = "wasm32"))]
 mod pdf_import;
+#[cfg(target_arch = "wasm32")]
+mod print_image_sampling;
 /// 어떤 렌더 export가 교체 가능한 경계 뒤에 있는지 선언하는 곳 (#4577, #4642).
 mod render_patch_boundary;
 mod table_cell_bboxes;

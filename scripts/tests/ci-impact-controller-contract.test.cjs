@@ -119,7 +119,7 @@ for (const name of ['ci.yml', 'codeql.yml', 'render-diff.yml']) {
     assert.equal((await consume({ run: { status: 'in_progress', conclusion: null } })).accepted, true);
   });
   test(name + ': rejects malformed, stale and untrusted reuse evidence', async () => {
-    for (const bad of [description().replace(/^v=\d+;/, 'v=5;'), description().replace(/^v=\d+;/, 'v=6;'), description().replace(/^v=\d+;/, 'v=999;'),
+    for (const bad of [description().replace(/^v=\d+;/, 'v=5;'), description().replace(/^v=\d+;/, 'v=6;'), description().replace(/^v=\d+;/, 'v=7;'), description().replace(/^v=\d+;/, 'v=999;'),
       description() + ';rfp=1', description().replace(';rfp=1', ''), description() + ';',
       description().replace('rfp=1', 'rfp=0'), description().replace(BASE, 'c'.repeat(40))]) {
       assert.equal((await consume({ status: { description: bad } })).accepted, false, bad);
@@ -328,3 +328,62 @@ test('actual completion audit returns present running or failed workflows withou
     assert.equal(calls.runs, 6); assert.equal(calls.jobs, 3);
   }
 });
+
+// #8267: run each real workflow preflight with a complete PR file list.
+for (const workflow of ['ci.yml', 'codeql.yml', 'render-diff.yml', 'adapter-diff.yml', 'proptest-roundtrip.yml']) {
+  test(`#8267 ${workflow}: root instruction documents fast-pass; source and rename do not`, async () => {
+    const lines = readWorkflow(workflow).split('          script: |\n')[1].split('\n');
+    const script = [];
+    for (const line of lines) {
+      if (line.trim() && !line.startsWith('            ')) break;
+      script.push(line.slice(12));
+    }
+    const { isAllowedReviewFile, selectReviewOnlyCandidate, workflowRunExpected } = require('../ci-impact-policy.cjs');
+    for (const filename of ['AGENTS.md', 'CLAUDE.md']) {
+      for (const check of ['CI', 'CodeQL', 'Render Diff']) {
+        assert.equal(workflowRunExpected(check, [{ filename, status: 'modified' }]), true);
+      }
+      for (const [files, accepted] of [
+        [[{ filename, status: 'modified' }], true],
+        [[{ filename, status: 'added' }], true],
+        [[{ filename, status: 'modified' }, { filename: 'src/lib.rs', status: 'modified' }], false],
+        [[{ filename, status: 'removed' }], false],
+        [[{ filename, previous_filename: 'src/lib.rs', status: 'renamed' }], false],
+        [[{ filename: `tools/${filename}`, status: 'modified' }], false],
+      ]) {
+        const outputs = {}, errors = [];
+        const listFiles = Symbol('files'), listCommits = Symbol('commits');
+        const context = { eventName: 'pull_request', repo: { owner: 'edwardkim', repo: 'rhwp' },
+          payload: { pull_request: { ...pull(), base: { ...pull().base, repo: { id: 10 } },
+            head: { ...pull().head, repo: { id: 20, full_name: 'contributor/rhwp' } } } } };
+        await vm.runInNewContext('(async () => {\n' + script.join('\n') + '\n})()', {
+          context, process: { env: {} },
+          github: { rest: { pulls: { listFiles, listCommits } },
+            paginate: async endpoint => {
+              if (endpoint === listFiles) return files;
+              if (endpoint === listCommits) return [];
+              throw new Error('unexpected API call');
+            } },
+          core: { setOutput: (key, value) => { outputs[key] = String(value); },
+            info() {}, warning: message => errors.push(message), setFailed: message => errors.push(message) },
+        });
+        const decision = workflow === 'adapter-diff.yml'
+          ? outputs.adapter_required === 'false' : outputs.fast_pass === 'true';
+        assert.equal(decision, accepted, `${workflow}: ${JSON.stringify(files)} ${JSON.stringify(outputs)} ${errors}`);
+        assert.equal(files.every(isAllowedReviewFile), accepted);
+        const result = selectReviewOnlyCandidate([
+          { sha: 'c'.repeat(40), parents: [{ sha: BASE }], files: [{ filename: 'src/lib.rs', status: 'modified' }] },
+          { sha: HEAD, parents: [{ sha: 'c'.repeat(40) }], files },
+        ], BASE);
+        assert.equal(result.candidateSha === 'c'.repeat(40), accepted);
+        const classification = classifyChanges({ eventName: 'pull_request', files });
+        if (accepted) {
+          assert.equal(classification.rust_required, 'false');
+          assert.equal(classification.codeql_languages, 'none');
+        } else if (files.some(file => file.filename === 'src/lib.rs')) {
+          assert.equal(classification.rust_required, 'true');
+        }
+      }
+    }
+  });
+}

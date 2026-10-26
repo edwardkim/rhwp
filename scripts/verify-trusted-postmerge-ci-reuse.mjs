@@ -82,6 +82,9 @@ function allowedReviewOnlyFile(file) {
   if (!file || typeof file.filename !== "string") {
     return false;
   }
+  if (file.filename === "AGENTS.md" || file.filename === "CLAUDE.md") {
+    return !file.previous_filename && ["added", "modified"].includes(file.status);
+  }
   if (file.previous_filename && !file.previous_filename.startsWith("mydocs/")) {
     return false;
   }

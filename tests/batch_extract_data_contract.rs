@@ -1,21 +1,10 @@
 //! [#3830] `batch extract-data` 계약 회귀 테스트.
 //!
-//! 핵심 계약 두 가지:
-//! 1. 배치 레코드는 단건 `extract-data --json` 봉투와 **같은 스키마**다 — 새 추출 로직이
-//!    아니라 같은 `DocumentCore::extract_data` 를 재사용한다는 증거다.
-//! 2. `--limit` 은 **배치 전체가 아니라 문서마다** 적용된다. 전역 상한으로 잘못 구현하면
-//!    앞선 문서가 한도를 다 써버려 뒤 문서가 조용히 0건으로 보이고, 소비자는 "그 문서에
-//!    값이 없다"와 "한도를 이미 다 썼다"를 구별할 수 없다. 같은 문서를 stdin 에 두 번
-//!    넣고 두 레코드 모두 독립적으로 절단됐는지 고정한다.
+//! 편람 입력을 사용하는 검사는 별도 PR로 이관한다. 인자·capabilities·MCP 선언 검사는 유지한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::io::Write;
-use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
-
-fn sample(rel: &str) -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
-}
 
 fn write_stdin_ignoring_early_exit(child: &mut std::process::Child, stdin_body: &str) {
     use std::io::ErrorKind;
@@ -52,28 +41,6 @@ fn describe(args: &[&str], output: &Output) -> String {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     )
-}
-
-fn ndjson(args: &[&str], output: &Output) -> Vec<serde_json::Value> {
-    String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .filter(|l| !l.trim().is_empty())
-        .map(|l| {
-            serde_json::from_str(l)
-                .unwrap_or_else(|e| panic!("NDJSON 아님 ({e}): {l}\n{}", describe(args, output)))
-        })
-        .collect()
-}
-
-fn field_names(v: &serde_json::Value) -> Vec<String> {
-    let mut names: Vec<String> = v
-        .as_object()
-        .unwrap_or_else(|| panic!("JSON 객체가 아닙니다: {v}"))
-        .keys()
-        .cloned()
-        .collect();
-    names.sort();
-    names
 }
 
 #[test]

@@ -183,6 +183,8 @@ fn multi_unit_text_chunks_respect_the_budget() {
     }
 }
 
+// ── 제목 경로 · 자기완결 표 ──────────────────────────────────────────────────
+
 // ── 무손실(라운드트립) ──────────────────────────────────────────────────────
 
 /// export-text 본문 토큰이 청크(headingPath + text)에 얼마나 담기는지.
@@ -214,6 +216,14 @@ fn coverage(path: &str) -> f64 {
     }
     let present = needles.iter().filter(|n| hay.contains(n.as_str())).count();
     present as f64 / total as f64
+}
+
+#[test]
+fn chunks_cover_the_document_body() {
+    // 본문만 있는 논문: 사실상 전량 커버.
+    let paper = sample(PAPER);
+    let paper_cov = coverage(paper.to_str().unwrap());
+    assert!(paper_cov >= 0.97, "PAPER 커버리지 {paper_cov:.4} < 0.97");
 }
 
 // ── 사용법 · 런타임 오류 ────────────────────────────────────────────────────

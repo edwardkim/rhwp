@@ -13,7 +13,7 @@ pub(crate) fn projects_current_marker_geometry(
     box_: &ParagraphBox,
     styles: &ResolvedStyleSet,
 ) -> bool {
-    stored_horizontal_box_matches(para, box_)
+    stored_rows_match_paragraph_box(para, box_)
         && crate::renderer::layout::list_marker_geometry(para, styles)
             .is_some_and(|marker| marker.marker_visible)
 }
@@ -51,7 +51,8 @@ pub(crate) fn project_current_marker_height_rows(
         .then(|| (rows, frame.project_space_metrics()))
 }
 
-fn stored_horizontal_box_matches(para: &Paragraph, box_: &ParagraphBox) -> bool {
+/// 현재 문단 상자와 같은 원본 가로 프레임인지 인증한다.
+pub(super) fn stored_rows_match_paragraph_box(para: &Paragraph, box_: &ParagraphBox) -> bool {
     let extent = box_.effective();
     // 셀의 문단 여백 경로는 실제 폭을 유지하고, 저장 줄의 오른쪽 끝은
     // content_width_px와 같은 4 HWPUNIT 격자에 놓인다. 격자에서 접힌
@@ -121,7 +122,7 @@ pub(crate) fn project_current_source_program_rows(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
-    if !stored_horizontal_box_matches(para, box_)
+    if !stored_rows_match_paragraph_box(para, box_)
         || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
         || para.text.chars().any(char::is_control)
     {

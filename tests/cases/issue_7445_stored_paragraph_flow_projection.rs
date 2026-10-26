@@ -2,32 +2,6 @@
 //! 독립 Print 원점과 원문 소유·간격 관계를 함께 검증한다.
 #![cfg(not(target_arch = "wasm32"))]
 
-mod handbook {
-    use rhwp::{
-        model::control::Control,
-        renderer::render_tree::{RenderNode, RenderNodeType},
-        DocumentCore,
-    };
-    fn owner(n: &RenderNode, pi: usize, table: bool) -> Option<&RenderNode> {
-        if match &n.node_type {
-            RenderNodeType::Table(t) => {
-                table && t.section_index == Some(7) && t.para_index == Some(pi)
-            }
-            RenderNodeType::TextRun(t) => {
-                !table
-                    && t.section_index == Some(7)
-                    && t.para_index == Some(pi)
-                    && t.cell_context.is_none()
-                    && t.char_start == Some(0)
-            }
-            _ => false,
-        } {
-            return Some(n);
-        }
-        n.children.iter().find_map(|c| owner(c, pi, table))
-    }
-}
-
 mod prep {
     use rhwp::{
         paint::{LayerJsonOptions, RenderProfile},

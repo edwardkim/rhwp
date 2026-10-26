@@ -1,43 +1,5 @@
-//! [#5952] 편람 유의사항의 내용과 상자·사이드바·다음 제목의 관계를 보존한다.
+//! [#5952] 합성 저장 줄의 재래핑과 끝의 빈 줄 보존 계약.
 #![cfg(not(target_arch = "wasm32"))]
-
-use rhwp::document_core::DocumentCore;
-use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
-
-fn text(node: &RenderNode) -> String {
-    let mut result = match &node.node_type {
-        RenderNodeType::TextRun(run) => run.text.clone(),
-        _ => String::new(),
-    };
-    for child in &node.children {
-        result.push_str(&text(child));
-    }
-    result
-}
-
-fn compact(s: &str) -> String {
-    s.chars().filter(|c| !c.is_whitespace()).collect()
-}
-
-fn nodes(root: &RenderNode) -> Vec<&RenderNode> {
-    let mut result = vec![root];
-    for child in &root.children {
-        result.extend(nodes(child));
-    }
-    result
-}
-
-fn note(root: &RenderNode) -> &RenderNode {
-    let found: Vec<_> = nodes(root)
-        .into_iter()
-        .filter(|n| {
-            matches!(n.node_type, RenderNodeType::Table(_))
-                && text(n).contains("기안문 제목과 붙임물의 제목")
-        })
-        .collect();
-    assert_eq!(found.len(), 1, "유의사항 상자의 누락·중복");
-    found[0]
-}
 
 /// [#5952] 저장 2줄이 composed 1줄로 접혀 셀 내폭을 넘치면 fresh 재래핑한다.
 /// source-side `#[cfg(test)]` 가 아니라 integration 으로 둔다 (RustUnitTier).

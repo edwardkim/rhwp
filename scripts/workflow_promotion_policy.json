@@ -169,7 +169,8 @@
         "build-test-archive-a / Build test archive (a)",
         "build-test-archive-b / Build test archive (b)",
         "build-test-archive-c / Build test archive (c)",
-        "build-test-archive-d / Build test archive (d)"
+        "build-test-archive-d / Build test archive (d)",
+        "build-test-archive-e / Build test archive (e)"
       ]
     },
     ".github/workflows/run-nextest-archives.yml": {
@@ -193,7 +194,8 @@
         "test-archive-a-shard-1 / Default-feature tests (Archive A)",
         "test-archive-b-shard-1 / Default-feature tests (Archive B)",
         "test-archive-c-shard-1 / Default-feature tests (Archive C)",
-        "test-archive-d-shard-1 / Default-feature tests (Archive D)"
+        "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+        "test-archive-e-shard-1 / Default-feature tests (Archive E)"
       ]
     },
     ".github/workflows/issue-form-labels.yml": {

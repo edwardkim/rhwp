@@ -7,7 +7,7 @@ import { collectPostmergeDurations, selectMeasuredDurationArtifacts, resolveMeas
 import { validateDurationReports } from '../trusted-postmerge-duration-evidence.mjs';
 import { durationFixture, reportZip } from './helpers/postmerge-duration-fixtures.mjs';
 
-function fixture(attempts = [1, 1, 1]) {
+function fixture(attempts = [1, 1, 1, 1]) {
   const f = durationFixture({ attempt: 2 });
   Object.assign(f.pr, { created_at: '2026-09-06T10:00:00Z', merged: true, merge_commit_sha: '4'.repeat(40) });
   f.pr.head.sha = f.run.head_sha;
@@ -18,13 +18,13 @@ function fixture(attempts = [1, 1, 1]) {
   f.reports.forEach((r, i) => { r.run_attempt = String(attempts[i]); f.artifacts[i].name = `nextest-target-durations-123-attempt-${attempts[i]}-${r.archive_label}`; });
   return f;
 }
-for (const attempts of [[1, 1, 1], [1, 2, 1], [2, 2, 2]]) {
+for (const attempts of [[1, 1, 1, 1], [1, 2, 1, 1], [2, 2, 2, 2]]) {
   test(`partial rerun uses actual successful worker attempts ${attempts}`, () => {
     const f = fixture(attempts);
     const selected = selectMeasuredDurationArtifacts(f);
     assert.deepEqual(selected.map(s => s.attempt), attempts);
     const measurementAttempts = Object.fromEntries(selected.map(s => [s.label, s.attempt]));
-    assert.equal(validateDurationReports(f.reports, { ...f.context, measurementAttempts }).length, 3);
+    assert.equal(validateDurationReports(f.reports, { ...f.context, measurementAttempts }).length, 4);
     if (attempts.includes(1)) assert.throws(() => validateDurationReports(f.reports, f.context));
   });
 }
@@ -54,7 +54,7 @@ for (const [name, mutate] of Object.entries({
   'invalid creation time': f => { delete f.pr.created_at; },
 })) test(`rejects ${name}`, () => { const f = fixture(); mutate(f); assert.throws(() => selectMeasuredDurationArtifacts(f)); });
 
-for (const measurementAttempts of [{}, { b: 1, c: 1 }, { b: 1, c: 1, d: 3 }, { b: 1, c: 1, d: 1, e: 1 }, { b: '1', c: 1, d: 1 }]) {
+for (const measurementAttempts of [{}, { b: 1, c: 1 }, { b: 1, c: 1, d: 3 }, { b: 1, c: 1, d: 1, e: 1, f: 1 }, { b: '1', c: 1, d: 1 }]) {
   test(`rejects incomplete or invalid attempt map ${JSON.stringify(measurementAttempts)}`, () => {
     const f = fixture(); assert.throws(() => validateDurationReports(f.reports, { ...f.context, measurementAttempts }));
   });
@@ -93,7 +93,7 @@ for (const options of [{}, { changed: true }, { noPr: true }, { wrongParent: tru
       const expected = Object.keys(options).length === 0 || options.reviewTail === true;
       assert.equal(result.ready, expected);
       if (expected) {
-        assert.deepEqual(result.measurementAttempts, { b: 1, c: 1, d: 1 });
+        assert.deepEqual(result.measurementAttempts, { b: 1, c: 1, d: 1, e: 1 });
         const saved = JSON.parse(fs.readFileSync(path.join(dir, 'duration-b/target-durations-b.json')));
         assert.equal(saved.run_attempt, '1');
       } else assert.deepEqual(fs.readdirSync(dir), []);
@@ -112,7 +112,7 @@ for (const changed of [false, true]) {
     if (changed) await assert.rejects(resolveMeasuredJobs(args), /original measured worker unavailable/);
     else {
       const jobs = await resolveMeasuredJobs(args);
-      assert.deepEqual(selectMeasuredDurationArtifacts({ ...f, jobs }).map(s => s.attempt), [1, 1, 1]);
+      assert.deepEqual(selectMeasuredDurationArtifacts({ ...f, jobs }).map(s => s.attempt), [1, 1, 1, 1]);
     }
   });
 }
@@ -126,4 +126,19 @@ test('#7068 real API copied job IDs/attempts resolve to original B/C/D artifacts
   } });
   const selected = selectMeasuredDurationArtifacts({ ...f, jobs });
   assert.deepEqual(selected.map(s => s.artifact.id), [10301251247, 10301655406, 10301346099]);
+});
+
+test('#8267 historical B/C/D reports require an explicit layout; new E omission is rejected', () => {
+  const f = fixture();
+  // Trusted API metadata from an old run has neither an E caller nor an E artifact.
+  f.jobs.pop(); f.artifacts.pop(); f.reports.pop();
+  const selected = selectMeasuredDurationArtifacts(f);
+  assert.deepEqual(selected.map(entry => entry.label), ['b', 'c', 'd']);
+  const measurementAttempts = Object.fromEntries(selected.map(entry => [entry.label, entry.attempt]));
+  assert.throws(() => validateDurationReports(f.reports, { ...f.context, measurementAttempts }));
+  assert.equal(validateDurationReports(f.reports, { ...f.context, measurementAttempts,
+    archiveLabels: ['b', 'c', 'd'] }).length, 3);
+  const current = fixture();
+  current.artifacts.pop();
+  assert.throws(() => selectMeasuredDurationArtifacts(current), /measurement:e/);
 });

@@ -248,7 +248,7 @@ async function runWorkflow(t, workflowFile = "ci.yml", options = {}) {
     path: `.github/workflows/${workflowFile}`, pull_requests: [],
   }));
   const headers = [candidateSha, f.sourceSha, bridgeSha, f.headSha].map(sha => ({ sha }));
-  const artifacts = ["b", "c", "d"].map((label, index) => ({
+  const artifacts = ["b", "c", "d", "e"].map((label, index) => ({
     name: `nextest-target-durations-${fullRunId}${options.fork ? "-attempt-1" : ""}-${label}`, expired: false,
     id: index + 100, size_in_bytes: 1024, created_at: "2026-09-06T11:20:00Z",
   }));
@@ -346,7 +346,7 @@ for (const workflowFile of ["ci.yml", "codeql.yml", "adapter-diff.yml", "proptes
       reason: "current-base-review-bridge-green-pr-workflow-reused", source_run_id: String(fullRunId),
       refresh_duration_data: workflowFile === "ci.yml" ? "true" : "false" });
     if (workflowFile === "ci.yml") {
-      assert.equal(result.apiCalls.filter(([method]) => method === "downloadArtifact").length, 3);
+      assert.equal(result.apiCalls.filter(([method]) => method === "downloadArtifact").length, 4);
       assert.equal(JSON.parse(readFileSync(path.join(durationPath, "target-durations-b.json"))).run_id, String(fullRunId));
     } else assert.equal(durationPath, undefined);
     assert.ok(result.apiCalls.some(([method, ref]) => method === "getCommit" && ref === result.candidateSha));
@@ -461,5 +461,16 @@ for (const status of ["failure", "cancelled", "in_progress"]) {
       status: status === "in_progress" ? status : "completed",
       conclusion: status === "in_progress" ? null : status });
     assert.equal(evaluateTrustedPostMergeReuse(data).reason, "latest-pr-workflow-candidate-not-successful");
+  });
+}
+
+for (const filename of ['AGENTS.md', 'CLAUDE.md']) {
+  test(`#8267 trusted bridge accepts ${filename} documentation tails with the same tested tree`, () => {
+    const data = provenFixture();
+    data.prCommits[1].files = [file(filename)];
+    data.prCommits.at(-1).files = [file(filename)];
+    assert.equal(evaluateTrustedPostMergeReuse(data).reuse, true);
+    data.prCommits.at(-1).files.push(file('src/lib.rs'));
+    assert.equal(evaluateTrustedPostMergeReuse(data).reuse, false);
   });
 }

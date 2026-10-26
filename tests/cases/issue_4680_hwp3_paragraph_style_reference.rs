@@ -19,7 +19,6 @@ use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::document::Document;
 use rhwp::model::paragraph::Paragraph;
-use std::collections::BTreeSet;
 use std::path::Path;
 
 fn collect<'a>(paragraphs: &'a [Paragraph], out: &mut Vec<&'a Paragraph>) {

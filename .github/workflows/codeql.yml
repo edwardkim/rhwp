@@ -7,7 +7,20 @@ on:
       # samples는 PR preflight에서 신규 reference-only와 기존 자료 변경을
       # 구분해 CodeQL no-op/full 판정을 발행한다.
       - 'assets/**'
-      - '*.md'
+      # #8267: root instruction documents must reach the fast-pass preflight.
+      - 'CHANGELOG.md'
+      - 'CHANGELOG_EN.md'
+      - 'CONTRIBUTING.md'
+      - 'CONVENTIONS.md'
+      - 'GEMINI.md'
+      - 'QWEN.md'
+      - 'README.md'
+      - 'README_EN.md'
+      - 'ROADMAP.md'
+      - 'SECURITY.md'
+      - 'THIRD_PARTY.md'
+      - 'THIRD_PARTY_LICENSES.md'
+      - 'replit.md'
       - 'LICENSE'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/FUNDING.yml'
@@ -108,6 +121,10 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
+              if (filename === 'AGENTS.md' || filename === 'CLAUDE.md') {
+                return !file.previous_filename
+                  && (file.status === 'added' || file.status === 'modified');
+              }
               if (filename.startsWith('mydocs/') && !renderContractPaths.has(filename)) {
                 return true;
               }
@@ -210,7 +227,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '7'
+                    && fields.get('v') === '8'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target

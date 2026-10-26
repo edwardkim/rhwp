@@ -515,10 +515,12 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "BUILD_ARCHIVE_B_RESULT": "skipped",
             "BUILD_ARCHIVE_C_RESULT": "skipped",
             "BUILD_ARCHIVE_D_RESULT": "skipped",
+            "BUILD_ARCHIVE_E_RESULT": "skipped",
             "TEST_ARCHIVE_A_1_RESULT": "skipped",
             "TEST_ARCHIVE_B_1_RESULT": "skipped",
             "TEST_ARCHIVE_C_1_RESULT": "skipped",
             "TEST_ARCHIVE_D_1_RESULT": "skipped",
+            "TEST_ARCHIVE_E_1_RESULT": "skipped",
             "LINT_RESULT": "skipped",
             "NATIVE_SKIA_RESULT": "skipped",
             "FRONTEND_UNIT_RESULT": "success",
@@ -714,6 +716,11 @@ class CiImpactWorkflowTests(unittest.TestCase):
             (
                 "build-test-archive-d",
                 "integration-d",
+                "needs: [preflight, resolve-nextest-duration-policy]",
+            ),
+            (
+                "build-test-archive-e",
+                "integration-e",
                 "needs: [preflight, resolve-nextest-duration-policy]",
             ),
         ):
@@ -1088,6 +1095,7 @@ mod support;
             "Download archive B expected count",
             "Download archive C expected count",
             "Download archive D expected count",
+            "Download archive E expected count",
             "Download shard counts",
             "Verify archive shard totals",
         ):
@@ -1105,10 +1113,12 @@ mod support;
             "BUILD_ARCHIVE_B_RESULT": "success",
             "BUILD_ARCHIVE_C_RESULT": "success",
             "BUILD_ARCHIVE_D_RESULT": "success",
+            "BUILD_ARCHIVE_E_RESULT": "success",
             "TEST_ARCHIVE_A_1_RESULT": "success",
             "TEST_ARCHIVE_B_1_RESULT": "success",
             "TEST_ARCHIVE_C_1_RESULT": "success",
             "TEST_ARCHIVE_D_1_RESULT": "success",
+            "TEST_ARCHIVE_E_1_RESULT": "success",
         }
         cases = {
             "frontend-only": {},

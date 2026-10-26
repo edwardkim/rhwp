@@ -7,6 +7,10 @@
 mod cubic_reduction;
 #[cfg(target_arch = "wasm32")]
 mod image_reduction;
+#[cfg(target_arch = "wasm32")]
+mod metafile_print;
+#[cfg(target_arch = "wasm32")]
+mod print_jpeg;
 
 #[cfg(target_arch = "wasm32")]
 use base64::Engine;
@@ -119,6 +123,9 @@ thread_local! {
 
 #[cfg(target_arch = "wasm32")]
 fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
+    if super::image_resolver::png_sampling::print_jpeg_transfer(data) {
+        return print_jpeg::decode(data);
+    }
     let dynimg = image::load_from_memory(data).ok()?;
     let rgba = dynimg.to_rgba8();
     let (iw, ih) = (rgba.width(), rgba.height());
@@ -147,6 +154,25 @@ fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
         .ok()?;
     ctx.put_image_data(&image_data, 0.0, 0.0).ok()?;
     Some(canvas)
+}
+
+#[cfg(target_arch = "wasm32")]
+fn cached_decoded_image_canvas(data: &[u8], key: u64) -> Option<HtmlCanvasElement> {
+    DECODED_CANVAS_CACHE.with(|cache| {
+        let mut cache = cache.borrow_mut();
+        if let Some(slot) = cache.get(&key) {
+            return slot.clone();
+        }
+        if cache.len() > 200 {
+            cache.clear();
+        }
+        let canvas = decode_image_to_canvas(data);
+        // HTML decode 대기 중인 None을 영구 실패로 캐시하지 않는다.
+        if canvas.is_some() || !super::image_resolver::png_sampling::print_jpeg_transfer(data) {
+            cache.insert(key, canvas.clone());
+        }
+        canvas
+    })
 }
 
 /// 빠른 해시 (FNV-1a 64비트)
@@ -2934,6 +2960,25 @@ impl Renderer for WebCanvasRenderer {
                 1 => draw_line(&self.ctx, ly, 0.5, &[]),         // 실선
                 2 => draw_line(&self.ctx, ly, 0.5, &[3.0, 3.0]), // 파선
                 3 => {
+                    if let Some(dots) = crate::renderer::tab_leader::dot_geometry(
+                        font_size,
+                        leader.start_x,
+                        leader_end_x,
+                    ) {
+                        self.ctx.set_fill_style_str(&stroke_color);
+                        for center in dots.centers {
+                            self.ctx.begin_path();
+                            let _ = self.ctx.arc(
+                                x + center,
+                                ly,
+                                dots.radius,
+                                0.0,
+                                std::f64::consts::TAU,
+                            );
+                            self.ctx.fill();
+                        }
+                        continue;
+                    }
                     // 점선 ··· — round cap 으로 원형 점 표현 (한컴 동등).
                     // 두께·간격은 폰트 크기를 따른다 (svg.rs 와 같은 출처).
                     let (w, dash, gap) =
@@ -3008,7 +3053,22 @@ impl Renderer for WebCanvasRenderer {
     }
 
     fn draw_image(&mut self, data: &[u8], x: f64, y: f64, w: f64, h: f64) {
+        if self.high_quality_images && metafile_print::draw(&self.ctx, data) {
+            return;
+        }
         let _sampling = self.image_sampling_scope(data, None, w, h);
+        // 독립 Print의 장치 프레임이 표본을 소유하면 그 프레임을 먼저 재생한다.
+        // 일반 비트맵 준비가 JPEG를 PNG로 바꾸면 프레임 선언까지 사라진다.
+        // Native Skia와 같은 순서이며, 재생할 수 없는 변환은 기존 경로로 간다.
+        if self.high_quality_images && self.ctx.image_smoothing_enabled() {
+            if let Some(frame) = super::print_raster::PrintRasterFrame::read(data) {
+                if let Some(canvas) = cached_decoded_image_canvas(data, hash_bytes(data)) {
+                    if cubic_reduction::draw_print_frame(&self.ctx, &canvas, frame) {
+                        return;
+                    }
+                }
+            }
+        }
         let prepared = self.ctx.get_transform().ok().and_then(|matrix| {
             crate::renderer::bitmap_raster::prepare_bitmap(
                 data,
@@ -3037,23 +3097,20 @@ impl Renderer for WebCanvasRenderer {
         };
         let key = hash_bytes(data);
 
-        let decoded = DECODED_CANVAS_CACHE.with(|cache| {
-            let mut c = cache.borrow_mut();
-            if let Some(slot) = c.get(&key) {
-                return slot.clone();
-            }
-            if c.len() > 200 {
-                c.clear();
-            }
-            let canvas = decode_image_to_canvas(data);
-            c.insert(key, canvas.clone());
-            canvas
-        });
+        let decoded = cached_decoded_image_canvas(data, key);
         if let Some(canvas) = decoded {
             if self.high_quality_images
                 && self.ctx.image_smoothing_enabled()
-                && super::image_resolver::png_sampling::print_bitmap_reconstruction(data)
-                && cubic_reduction::draw(&self.ctx, &canvas, key, (x, y, w, h))
+                && (super::image_resolver::png_sampling::print_bitmap_reconstruction(data)
+                    || super::image_resolver::png_sampling::print_jpeg_transfer(data))
+                && cubic_reduction::draw(
+                    &self.ctx,
+                    &canvas,
+                    key,
+                    (x, y, w, h),
+                    super::image_resolver::png_sampling::print_jpeg_transfer(data),
+                    super::image_resolver::png_sampling::print_bitmap_reconstruction(data),
+                )
             {
                 return;
             }
@@ -3067,6 +3124,10 @@ impl Renderer for WebCanvasRenderer {
             let _ = self
                 .ctx
                 .draw_image_with_html_canvas_element_and_dw_and_dh(&canvas, x, y, w, h);
+            return;
+        }
+
+        if super::image_resolver::png_sampling::print_jpeg_transfer(data) {
             return;
         }
 
@@ -3227,24 +3288,17 @@ impl WebCanvasRenderer {
         let _sampling = self.image_sampling_scope(data, Some((sw, sh)), dw, dh);
         let key = hash_bytes(data);
 
-        let decoded = DECODED_CANVAS_CACHE.with(|cache| {
-            let mut c = cache.borrow_mut();
-            if let Some(slot) = c.get(&key) {
-                return slot.clone();
-            }
-            if c.len() > 200 {
-                c.clear();
-            }
-            let canvas = decode_image_to_canvas(data);
-            c.insert(key, canvas.clone());
-            canvas
-        });
+        let decoded = cached_decoded_image_canvas(data, key);
         if let Some(canvas) = decoded {
             let _ = self
                 .ctx
                 .draw_image_with_html_canvas_element_and_sw_and_sh_and_dx_and_dy_and_dw_and_dh(
                     &canvas, sx, sy, sw, sh, dx, dy, dw, dh,
                 );
+            return;
+        }
+
+        if super::image_resolver::png_sampling::print_jpeg_transfer(data) {
             return;
         }
 

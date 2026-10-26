@@ -7,6 +7,7 @@ use std::collections::HashMap;
 
 thread_local! {
     static UNEMBOLDENED_TYPEFACES: RefCell<HashMap<u32, Option<Typeface>>> = RefCell::new(HashMap::new());
+    static UNOBLIQUED_TYPEFACES: RefCell<HashMap<u32, Option<Typeface>>> = RefCell::new(HashMap::new());
 }
 
 /// 합성 굵기는 장치 격자에 맞춘 글자 mask 대신 원 프로그램의 윤곽선을 채우고 그린다.
@@ -120,4 +121,46 @@ fn regular_program_typeface(font_mgr: &FontMgr, typeface: &Typeface) -> Option<T
         return None;
     }
     Some(regular)
+}
+
+/// fontconfig가 일반 프로그램에 붙인 가상 slant를 paint의 합성 shear와 구분한다.
+/// 실제 italic/oblique 프로그램과 활성 slnt/ital 축은 그대로 사용한다.
+pub(super) fn unobliqued_typeface(font_mgr: &FontMgr, typeface: &Typeface) -> Option<Typeface> {
+    if typeface.font_style().slant() == skia_safe::font_style::Slant::Upright {
+        return None;
+    }
+    UNOBLIQUED_TYPEFACES.with(|cache| {
+        let id = typeface.unique_id();
+        if let Some(cached) = cache.borrow().get(&id) {
+            return cached.clone();
+        }
+        let result = physical_upright_typeface(font_mgr, typeface);
+        cache.borrow_mut().insert(id, result.clone());
+        result
+    })
+}
+
+fn physical_upright_typeface(font_mgr: &FontMgr, typeface: &Typeface) -> Option<Typeface> {
+    let coordinates = typeface.variation_design_position().unwrap_or_default();
+    if coordinates.iter().any(|coordinate| {
+        (coordinate.axis == u32::from_be_bytes(*b"ital").into()
+            || coordinate.axis == u32::from_be_bytes(*b"slnt").into())
+            && coordinate.value != 0.0
+    }) {
+        return None;
+    }
+    let (bytes, index) = typeface.to_font_bytes()?;
+    let parsed = ttf_parser::Face::parse(&bytes, u32::try_from(index).ok()?).ok()?;
+    if parsed.is_italic() || parsed.is_oblique() || parsed.italic_angle() != 0.0 {
+        return None;
+    }
+    let mut physical = font_mgr.new_from_data(Data::new_copy(&bytes), index)?;
+    if !coordinates.is_empty() {
+        let mut arguments = FontArguments::new().set_variation_design_position(VariationPosition {
+            coordinates: &coordinates,
+        });
+        arguments.set_collection_index(index as usize);
+        physical = physical.clone_with_arguments(&arguments)?;
+    }
+    (physical.font_style().slant() == skia_safe::font_style::Slant::Upright).then_some(physical)
 }

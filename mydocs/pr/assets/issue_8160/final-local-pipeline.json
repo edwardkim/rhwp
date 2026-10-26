@@ -1,0 +1,95 @@
+{
+  "source_sha": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+  "status": "passed",
+  "steps": [
+    {
+      "name": "ordered-validation",
+      "command": [
+        "/usr/bin/python3",
+        "-u",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/final_validation.py",
+        "ordered"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final34-finish-ordered-validation.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 5540.754,
+      "reused_same_source_and_command": true
+    },
+    {
+      "name": "render",
+      "command": [
+        "/usr/bin/python3",
+        "-u",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/final_render_pipeline.py"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final34-finish-render.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 3047.25,
+      "reused_same_source_and_command": true
+    },
+    {
+      "name": "summary",
+      "command": [
+        "/usr/bin/python3",
+        "-u",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/summarize_final34.py"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final34-finish-summary.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 0.421,
+      "reused_same_source_and_command": true
+    },
+    {
+      "name": "browser",
+      "command": [
+        "/usr/bin/python3",
+        "-u",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/final_browser34.py"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final34-finish-browser.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 67.266
+    },
+    {
+      "name": "controls",
+      "command": [
+        "/usr/bin/python3",
+        "-u",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/run_contract_controls.py",
+        "candidate34",
+        "contract-controls-final34"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final34-finish-controls.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 139.937
+    },
+    {
+      "name": "visual-panels",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "-u",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/prepare_final34_visuals.py"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final34-finish-visual-panels.log",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 30.052
+    }
+  ],
+  "visual_label_correction": {
+    "command": [
+      "venv/bin/python",
+      "-u",
+      "output/pr-review/issue8160-20261022/prepare_final34_visuals.py"
+    ],
+    "exit_code": 0,
+    "status": "passed",
+    "reason": "Pass zero-based page_index to the canonical overlay function; all 14 labels and metric page fields now match actual input filenames",
+    "data_and_384_pixel_counts_changed": false
+  }
+}

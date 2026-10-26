@@ -36,6 +36,13 @@ use rhwp::serializer::hwpx::char_shapes::{
 use rhwp::serializer::hwpx::roundtrip::diff_documents;
 use rhwp::serializer::hwpx::serialize_hwpx;
 
+mod corpus_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/common/corpus_scope.rs"
+    ));
+}
+
 const SAMPLE: &str = "samples/re-multisize-10-10-empty-hancom.hwp";
 const SAME_ID_JSONL: &str =
     include_str!("../fixtures/char_shapes/corpus_same_id_para_char_shapes.jsonl");
@@ -116,6 +123,11 @@ fn same_id_jsonl_matches_catalog() {
         .filter(|line| !line.is_empty())
         .map(|line| serde_json::from_str::<serde_json::Value>(line).expect("원본 corpus 행"))
         .filter(|row| {
+            corpus_scope::sample_is_in_scope(std::path::Path::new(
+                row["file"].as_str().expect("원본 파일 경로"),
+            ))
+        })
+        .filter(|row| {
             !exam_fixtures::is_exam_fixture(std::path::Path::new(
                 row["file"].as_str().expect("원본 파일 경로"),
             ))
@@ -123,6 +135,7 @@ fn same_id_jsonl_matches_catalog() {
         .count();
     let catalog_rows = SAME_ID_PARAS
         .iter()
+        .filter(|row| corpus_scope::sample_is_in_scope(std::path::Path::new(row.file)))
         .filter(|row| !exam_fixtures::is_exam_fixture(std::path::Path::new(row.file)))
         .count();
     assert_eq!(jsonl_rows, catalog_rows);
@@ -132,6 +145,7 @@ fn same_id_jsonl_matches_catalog() {
 fn planner_keeps_every_same_id_corpus_row() {
     for row in SAME_ID_PARAS
         .iter()
+        .filter(|row| corpus_scope::sample_is_in_scope(std::path::Path::new(row.file)))
         .filter(|row| !exam_fixtures::is_exam_fixture(std::path::Path::new(row.file)))
     {
         let refs: Vec<rhwp::model::paragraph::CharShapeRef> = row

@@ -1,3 +1,4 @@
+import './issue_8160_print_jpeg_frame.browser.mjs';
 import './picture-tones.browser.mjs';
 import './hft-outline-font-selection.browser.mjs';
 // 실제 Chrome·FontFace·공개 Noto 글꼴로 PNG exporter의 글꼴 연결을 검사한다.

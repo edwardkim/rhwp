@@ -78,6 +78,10 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
+              if (filename === 'AGENTS.md' || filename === 'CLAUDE.md') {
+                return !file.previous_filename
+                  && (file.status === 'added' || file.status === 'modified');
+              }
               if (filename.startsWith('mydocs/')) {
                 return true;
               }

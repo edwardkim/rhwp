@@ -2,6 +2,8 @@
 
 #[path = "rendering_metafile_fonts.rs"]
 mod metafile_fonts;
+#[path = "rendering_metafile_resources.rs"]
+mod metafile_resources;
 
 use super::super::helpers::color_ref_to_css;
 use crate::document_core::{
@@ -1597,14 +1599,23 @@ impl DocumentCore {
             );
             let mut builder = LayerBuilder::new(profile)
                 .with_layout_dpi(self.dpi)
-                .with_metafile_fonts(&if self.hangul2024_compat
-                    && profile == RenderProfile::Print
+                .with_metafile_fonts(&if profile == RenderProfile::Print
                     && crate::paint::metafile::has_wmf(&tree.root)
                 {
                     metafile_fonts::with_document_fonts(&self.metafile_fonts, &self.document)
                 } else {
                     self.metafile_fonts.clone()
                 })
+                .with_metafile_catalogue(
+                    if !self.hangul2024_compat
+                        && profile == RenderProfile::Print
+                        && crate::paint::metafile::has_wmf(&tree.root)
+                    {
+                        metafile_resources::catalogue(&self.document, &self.pagination)
+                    } else {
+                        None
+                    },
+                )
                 .with_metafile_device_pixel_width(metafile_pixel)
                 .with_hancom2024_print_bitmap(self.hangul2024_compat)
                 .with_output_options(output_options)
@@ -5999,16 +6010,18 @@ impl DocumentCore {
                 math_tables.as_deref().unwrap_or(&section.paragraphs),
                 &self.styles,
             );
-            let stored_word_tails =
-                (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
-                    .then_some(())
-                    .filter(|_| !profile.session_edited() && !profile.legacy_hwp3_stored_geometry())
-                    .and_then(|_| {
-                        // 구판 자체 변환본은 원 HWP의 줄을 보존했지만 XML 1.2의
-                        // 여백 단위는 달라졌다. marker 2 이후와 한컴 원본은 제외한다.
-                        let previous_margins = (self.document.hwpx_aux_entry(
-                    crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH,
-                ) == Some(b"1")
+            // 프로그램 교체는 어느 형식에서도 현재 줄 메트릭을 바꿀 수 있다.
+            // 기존 목록 캐시 갱신의 형식·저장 프레임 경계는 별도로 보존한다.
+            let refresh_markers = (profile.hwp5_stored_pagination_layout()
+                || profile.hwpx_stored_layout())
+                && !profile.legacy_hwp3_stored_geometry();
+            let stored_word_tails = (!profile.session_edited()).then_some(()).and_then(|_| {
+                // 구판 자체 변환본은 원 HWP의 줄을 보존했지만 XML 1.2의
+                // 여백 단위는 달라졌다. marker 2 이후와 한컴 원본은 제외한다.
+                let previous_margins = (self
+                    .document
+                    .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+                    == Some(b"1")
                     && self.document.doc_info.hwpml_version.as_deref() == Some("1.2"))
                 .then(|| {
                     crate::renderer::composer::stored_margin_context::previous_margin_styles(
@@ -6018,18 +6031,19 @@ impl DocumentCore {
                     )
                 })
                 .flatten();
-                        crate::renderer::render_normalization::stored_word_tail::normalize(
-                            math_textboxes
-                                .as_deref()
-                                .or(math_tables.as_deref())
-                                .unwrap_or(&section.paragraphs),
-                            &self.styles,
-                            pd,
-                            &Self::find_initial_column_def(&section.paragraphs),
-                            self.dpi,
-                            previous_margins.as_ref(),
-                        )
-                    });
+                crate::renderer::render_normalization::stored_word_tail::normalize(
+                    math_textboxes
+                        .as_deref()
+                        .or(math_tables.as_deref())
+                        .unwrap_or(&section.paragraphs),
+                    &self.styles,
+                    pd,
+                    &Self::find_initial_column_def(&section.paragraphs),
+                    refresh_markers,
+                    self.dpi,
+                    previous_margins.as_ref(),
+                )
+            });
             let paragraph_geometry_changed =
                 stored_word_tails.is_some() || math_textboxes.is_some() || math_tables.is_some();
             let unplaced_rows =

@@ -101,14 +101,14 @@ class AdapterDiffWorkflowTests(unittest.TestCase):
         run_at = self.wf.index("run-adapter-diff.mjs --cargo-test")
         self.assertLess(prepare_at, run_at, "prepare 가 실행보다 먼저여야 한다")
 
-    def test_keeps_nextest_workers_at_four_balanced_archives(self) -> None:
-        """A/B/C/D archive의 worker 네 개 합 = runnable. 다섯 번째 worker는 깨진다."""
+    def test_keeps_nextest_workers_at_five_balanced_archives(self) -> None:
+        """A/B/C/D/E archive의 worker 다섯 개 합 = runnable. 각 archive는 한 worker가 소비한다."""
         self.assertNotRegex(self.ci, r"(?m)^  adapter-diff:")
         self.assertNotIn("adapter_diff", RUN_ARCHIVE.read_text(encoding="utf-8"))
         self.assertNotIn('partition: "hash:1/2"', self.ci)
         self.assertNotIn('partition: "hash:2/2"', self.ci)
-        self.assertEqual(4, self.ci.count('partition: "hash:1/1"'))
-        for count_label in ("a-1", "b-1", "c-1", "d-1"):
+        self.assertEqual(5, self.ci.count('partition: "hash:1/1"'))
+        for count_label in ("a-1", "b-1", "c-1", "d-1", "e-1"):
             with self.subTest(count_label=count_label):
                 self.assertIn(f"shard-count-{count_label}", self.ci)
 

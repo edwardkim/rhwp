@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       archive_label:
-        description: Stable A/B/C/D archive partition label.
+        description: Stable A/B/C/D/E archive partition label.
         required: true
         type: string
       filterset:
@@ -35,7 +35,7 @@ jobs:
     name: Default-feature tests (${{ inputs.label }})
     runs-on: ubuntu-latest
     # [#3284] 러너 hang을 실패로 드러내는 상한이며 성능 목표가 아니다.
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
 
@@ -79,7 +79,7 @@ jobs:
           profile_args=()
           duration_report=""
           case "${{ inputs.archive_label }}" in
-            b|c|d)
+            b|c|d|e)
               profile_args=(--profile ci-duration-observation)
               duration_report="target/nextest/ci-duration-observation/junit.xml"
               ;;
@@ -121,8 +121,8 @@ jobs:
       # Upstream-run same-repository and fork PRs may publish untrusted metrics.
       # This read-only job cannot update the policy. The trusted post-merge
       # verifier binds the exact PR/run/attempt/tree and validates JSON before use.
-      - name: Upload upstream PR B/C/D target durations
-        if: ${{ success() && github.event_name == 'pull_request' && github.repository == 'edwardkim/rhwp' && github.event.pull_request.base.repo.id == github.repository_id && github.event.pull_request.base.ref == 'devel' && (inputs.archive_label == 'b' || inputs.archive_label == 'c' || inputs.archive_label == 'd') }}
+      - name: Upload upstream PR B/C/D/E target durations
+        if: ${{ success() && github.event_name == 'pull_request' && github.repository == 'edwardkim/rhwp' && github.event.pull_request.base.repo.id == github.repository_id && github.event.pull_request.base.ref == 'devel' && (inputs.archive_label == 'b' || inputs.archive_label == 'c' || inputs.archive_label == 'd' || inputs.archive_label == 'e') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nextest-target-durations-${{ github.run_id }}-attempt-${{ github.run_attempt }}-${{ inputs.archive_label }}
@@ -130,10 +130,10 @@ jobs:
           retention-days: 3
           if-no-files-found: error
 
-      # Only successful devel B/C/D measurements are baseline candidates. They are
+      # Only successful devel B/C/D/E measurements are baseline candidates. They are
       # retained longer so their provenance can be audited after policy refresh.
-      - name: Upload devel B/C/D target durations
-        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/devel' && (inputs.archive_label == 'b' || inputs.archive_label == 'c' || inputs.archive_label == 'd') }}
+      - name: Upload devel B/C/D/E target durations
+        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/devel' && (inputs.archive_label == 'b' || inputs.archive_label == 'c' || inputs.archive_label == 'd' || inputs.archive_label == 'e') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nextest-target-durations-${{ github.run_id }}-${{ inputs.archive_label }}

@@ -19,6 +19,7 @@ pub mod canvas_text_font;
 pub mod canvaskit_policy;
 pub(crate) mod cell_paragraph_spacing;
 pub mod composer;
+mod conjoining_jamo;
 pub(crate) mod endnote_spacing;
 pub mod equation;
 pub(crate) mod equation_tac_flow;
@@ -90,10 +91,12 @@ mod stroke_pattern;
 pub(crate) mod table_row_frame;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
 // layout/publication callers remain closed until their own approved slices.
+pub(crate) mod anisotropic_sampling;
 #[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
 pub(crate) mod cubic_sampling;
 pub mod native_pua_fonts;
 pub(crate) mod pdf_stroke;
+pub(crate) mod print_raster;
 #[allow(dead_code)]
 pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
@@ -108,7 +111,9 @@ pub mod supplemental_metrics;
 pub mod svg;
 pub mod svg_fragment;
 pub mod svg_layer;
+pub(crate) mod tab_leader;
 pub(crate) mod text_decoration;
+pub(crate) mod text_transform;
 pub mod typeset;
 #[cfg(target_arch = "wasm32")]
 pub mod web_canvas;
@@ -350,6 +355,9 @@ pub struct TextStyle {
     #[serde(skip)]
     pub supplemental_metrics:
         Option<std::sync::Arc<supplemental_metrics::SupplementalMetricSnapshot>>,
+    /// 출력 세대가 독립 중성·종성에 선택한 무전진 프로그램. 세션 속성이다.
+    #[serde(skip)]
+    pub isolated_jamo_font: Option<&'static str>,
     /// 글꼴 이름
     pub font_family: String,
     /// 글꼴 크기 (px)
@@ -371,6 +379,9 @@ pub struct TextStyle {
     /// 유지된 원본 HFT의 인쇄 paint 좌표 계약. 논리 조판/전진 폭과 별개다.
     #[serde(skip_serializing)]
     pub hft_print_frame: bool,
+    /// 명시적으로 선택한 실제 프로그램의 잉크 폭. 논리 전진과 구분한다.
+    #[serde(skip_serializing)]
+    pub preserve_glyph_ink: bool,
     /// 글자 색상
     pub color: ColorRef,
     /// 진하게
@@ -708,7 +719,7 @@ impl TextStyle {
     }
 }
 
-/// Canvas 폰트의 실측 폭을 레이아웃 advance에 맞출 때 적용할 배율을 계산한다.
+/// 원본이 명시한 glyph 폭 맞춤의 배율을 계산한다.
 ///
 /// 양수 문자 간격은 다음 cluster의 시작 위치를 바꾸는 값이므로 glyph 폭 맞춤과
 /// 분리한다. 음수 간격은 `glyph_fit_positions`에서 다시 측정한 폭을 사용하고,
@@ -719,6 +730,11 @@ pub(crate) fn canvas_cluster_fit_scale(
     visual_width: f64,
     pin_ascii_advance: bool,
 ) -> Option<f64> {
+    // 호출자가 선택한 프로그램은 전진과 잉크 폭을 구분한다. 원본 HFT 선언이나
+    // 폭 표의 신뢰만으로 일반 대체 face의 기존 맞춤까지 차단하지 않는다.
+    if !style.fixed_glyph_advances && style.preserve_glyph_ink {
+        return None;
+    }
     let cluster_advance =
         style.glyph_fit_advance(layout_cluster_advance)? * style.script_advance_scale();
     if cluster_advance <= 0.0 || visual_width <= 0.0 || style.letter_spacing < 0.0 {
@@ -737,6 +753,7 @@ impl Default for TextStyle {
     fn default() -> Self {
         Self {
             supplemental_metrics: None,
+            isolated_jamo_font: None,
             font_family: String::new(),
             font_size: 0.0,
             fixed_glyph_advances: false,
@@ -744,6 +761,7 @@ impl Default for TextStyle {
             resolved_font_size: false,
             font_position: None,
             hft_print_frame: false,
+            preserve_glyph_ink: false,
             color: 0,
             bold: false,
             italic: false,
@@ -3852,6 +3870,7 @@ mod tests {
     #[test]
     fn issue_2809_negative_letter_spacing_does_not_compress_canvas_glyph() {
         let style = TextStyle {
+            fixed_glyph_advances: true,
             letter_spacing: -7.5,
             ..Default::default()
         };
@@ -3861,18 +3880,25 @@ mod tests {
 
     #[test]
     fn non_negative_letter_spacing_keeps_existing_canvas_font_fit_policy() {
-        let style = TextStyle::default();
-        assert_eq!(
-            canvas_cluster_fit_scale(&style, 7.5, 15.0, false),
-            Some(0.5)
-        );
-        assert_eq!(canvas_cluster_fit_scale(&style, 7.5, 15.0, true), Some(0.5));
-        assert_eq!(canvas_cluster_fit_scale(&style, 15.0, 14.9, false), None);
+        for fixed_glyph_advances in [false, true] {
+            let style = TextStyle {
+                fixed_glyph_advances,
+                ..Default::default()
+            };
+            assert_eq!(
+                canvas_cluster_fit_scale(&style, 7.5, 15.0, false),
+                Some(0.5)
+            );
+            assert_eq!(canvas_cluster_fit_scale(&style, 7.5, 15.0, true), Some(0.5));
+            assert_eq!(canvas_cluster_fit_scale(&style, 15.0, 14.9, false), None);
+        }
+        verified_font_glyph_ink_preserves_natural_width_without_explicit_fit();
     }
 
     #[test]
     fn distribution_spacing_does_not_resize_ascii_canvas_glyph() {
         let positive = TextStyle {
+            fixed_glyph_advances: true,
             extra_char_spacing: 12.0,
             ..Default::default()
         };
@@ -3882,6 +3908,7 @@ mod tests {
         );
 
         let negative = TextStyle {
+            fixed_glyph_advances: true,
             extra_char_spacing: -3.0,
             ..Default::default()
         };
@@ -3893,6 +3920,28 @@ mod tests {
             canvas_cluster_fit_scale(&negative, 5.0, 8.0, false),
             Some(0.625)
         );
+    }
+
+    fn verified_font_glyph_ink_preserves_natural_width_without_explicit_fit() {
+        for (layout, visual, extra, letter) in [
+            (7.5, 15.0, 0.0, 0.0),
+            (20.0, 8.0, 12.0, 0.0),
+            (5.0, 8.0, -3.0, 0.0),
+            (7.5, 15.0, 0.0, -7.5),
+        ] {
+            let style = TextStyle {
+                preserve_glyph_ink: true,
+                extra_char_spacing: extra,
+                letter_spacing: letter,
+                ..Default::default()
+            };
+            for pin_ascii in [false, true] {
+                assert_eq!(
+                    canvas_cluster_fit_scale(&style, layout, visual, pin_ascii),
+                    None
+                );
+            }
+        }
     }
 
     #[test]

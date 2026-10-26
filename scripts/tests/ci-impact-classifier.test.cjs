@@ -242,6 +242,7 @@ test('Native Skia integration test and support changes run Rust and Native Skia 
     'tests/cases/issue_8150_kitty_contract.rs',
     'tests/cases/issue_4961_font_decision_trace.rs',
     'tests/cases/issue_7902_original_frame_and_content.rs',
+    'tests/cases/issue_8160_hwp2022_paragraph_relations.rs',
     'tests/cases/issue_7950_pdf_paint.rs',
     'tests/cases/native_fractional_glyph_origin.rs',
     'tests/cli_exit_codes_native.rs',

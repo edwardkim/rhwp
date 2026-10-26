@@ -30,7 +30,7 @@ pub(crate) struct FontRequest {
     pub text: String,
 }
 
-fn family(name: &str) -> Family<'_> {
+pub(super) fn family(name: &str) -> Family<'_> {
     match name {
         "serif" => Family::Serif,
         "sans-serif" => Family::SansSerif,

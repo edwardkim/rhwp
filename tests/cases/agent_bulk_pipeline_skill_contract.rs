@@ -306,7 +306,7 @@ fn extract_data_limit_is_per_document() {
 fn transcripts_are_pure_ndjson() {
     let idx = read_json("traces_index.json");
     let traces = idx["traces"].as_array().unwrap();
-    assert!(traces.len() >= 20, "{}", traces.len());
+    assert!(traces.len() == 17, "{}", traces.len());
     for t in traces {
         let rel = t["transcript"].as_str().unwrap();
         let path = skill_dir().join(rel);

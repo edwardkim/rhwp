@@ -30,7 +30,7 @@
 
 ## 3. Raw binary 리버싱 (sample16-hwp5 5 fixture)
 
-[tests/diag_1042_raw_binary.rs](tests/diag_1042_raw_binary.rs) 진단 결과:
+[tests/diag_1042_raw_binary.rs](https://github.com/edwardkim/rhwp/blob/021c486d1eaee17920a2b3e82ae896115b847669/tests/diag_1042_raw_binary.rs) 진단 결과:
 
 | 파일 | BodyText size | PARA_HEADER | PARA_TEXT | PARA_CHAR_SHAPE | PARA_LINE_SEG |
 |------|---------------|-------------|-----------|-----------------|---------------|
@@ -62,7 +62,7 @@
 
 ## 5. 합성 공식 도출 (2018/2024 reverse engineering)
 
-[tests/diag_1042_2024_reverse.rs](tests/diag_1042_2024_reverse.rs):
+[tests/diag_1042_2024_reverse.rs](https://github.com/edwardkim/rhwp/blob/021c486d1eaee17920a2b3e82ae896115b847669/tests/diag_1042_2024_reverse.rs):
 
 ```
 lh = th = max base_size in paragraph

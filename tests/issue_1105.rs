@@ -1,4 +1,4 @@
-//! Issue #1105: k-water 한컴2024 저장본의 쪽수·행 병합·표지 쪽번호를 보존한다.
+//! #1105: K-water RFP의 쪽 나눔·표·꼬리말 회귀. sample16 검사는 #8160으로 통합.
 
 use std::fs;
 use std::path::Path;

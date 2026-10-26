@@ -152,7 +152,16 @@ fn render_box(
             ctx.set_font(&format!("{fs:.1}px {font_family}"));
             ctx.set_fill_style_str(color);
             ctx.set_text_align("start");
-            let _ = ctx.fill_text(text, x, y + lb.baseline);
+            let scale_x = paint.map_or(1.0, |p| p.scale_x);
+            if scale_x != 1.0 {
+                ctx.save();
+                let _ = ctx.translate(x, y + lb.baseline);
+                let _ = ctx.scale(scale_x, 1.0);
+                let _ = ctx.fill_text(text, 0.0, 0.0);
+                ctx.restore();
+            } else {
+                let _ = ctx.fill_text(text, x, y + lb.baseline);
+            }
         }
         LayoutKind::MathSymbol(text) => {
             // [Issue #900] svg_render.rs MathSymbol arm 과 동기화 (commit 292dbbef).

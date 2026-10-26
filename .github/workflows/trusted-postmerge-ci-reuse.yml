@@ -20,7 +20,7 @@ on:
         required: true
         type: string
       require_duration_artifacts:
-        description: Require B/C/D duration artifacts for accepted Rust CI reuse, not frontend-only CI.
+        description: Require B/C/D/E duration artifacts for accepted Rust CI reuse, not frontend-only CI.
         required: false
         default: false
         type: boolean
@@ -837,6 +837,16 @@ jobs:
           retention-days: 3
           if-no-files-found: error
 
+      - name: Publish validated Archive E duration measurement
+        id: publish-duration-e
+        if: ${{ steps.evaluate.outputs.reuse == 'true' && steps.evaluate.outputs.refresh_duration_data == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: trusted-postmerge-durations-${{ github.run_id }}-${{ github.run_attempt }}-e
+          path: ${{ steps.evaluate.outputs.duration_path }}/target-durations-e.json
+          retention-days: 3
+          if-no-files-found: error
+
       - name: Finalize reuse after validated evidence publication
         id: finalize
         if: ${{ always() }}
@@ -848,8 +858,9 @@ jobs:
           PUBLISH_B: ${{ steps.publish-duration-b.outcome }}
           PUBLISH_C: ${{ steps.publish-duration-c.outcome }}
           PUBLISH_D: ${{ steps.publish-duration-d.outcome }}
+          PUBLISH_E: ${{ steps.publish-duration-e.outcome }}
         run: |
-          if [[ "$REUSE" == 'true' && "$REFRESH" == 'true' && ( "$PUBLISH_B" != 'success' || "$PUBLISH_C" != 'success' || "$PUBLISH_D" != 'success' ) ]]; then
+          if [[ "$REUSE" == 'true' && "$REFRESH" == 'true' && ( "$PUBLISH_B" != 'success' || "$PUBLISH_C" != 'success' || "$PUBLISH_D" != 'success' || "$PUBLISH_E" != 'success' ) ]]; then
             REUSE=false
             REASON=validated-duration-publication-failed
           fi

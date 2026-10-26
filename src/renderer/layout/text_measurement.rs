@@ -23,32 +23,10 @@ pub trait TextMeasurer {
 
 // ── 공통 헬퍼 ───────────────────────────────────────────────────────
 
-/// 자모 클러스터 길이 매핑 계산
-///
-/// 한글 자모 조합(초+중+종)을 1개 클러스터로 묶는다.
-/// cluster_len[i] > 0: 클러스터 시작 (길이), 0: 클러스터 내부 (이전 문자와 동일 위치)
-fn build_cluster_len(chars: &[char]) -> Vec<u8> {
-    let char_count = chars.len();
-    let mut cluster_len = vec![0u8; char_count];
-    let mut ci = 0;
-    while ci < char_count {
-        if is_hangul_choseong(chars[ci]) {
-            let start = ci;
-            ci += 1;
-            if ci < char_count && is_hangul_jungseong(chars[ci]) {
-                ci += 1;
-                if ci < char_count && is_hangul_jongseong(chars[ci]) {
-                    ci += 1;
-                }
-            }
-            cluster_len[start] = (ci - start) as u8;
-        } else {
-            cluster_len[ci] = 1;
-            ci += 1;
-        }
-    }
-    cluster_len
-}
+use super::super::conjoining_jamo::{
+    cluster_lengths as build_cluster_len, is_hangul_choseong, is_hangul_jongseong,
+    is_hangul_jungseong,
+};
 
 /// [#2279] 자간(%)의 픽셀 기여 — 한글은 자간을 **해당 글자의 진행폭 비례**로
 /// 적용한다 (fs-비례 아님). 무신축 Justify 마지막 줄 실측(36392557 pi34,
@@ -244,16 +222,9 @@ fn tab_suffix_is_ascii_page_number(chars: &[char], start: usize) -> bool {
     seen_digit
 }
 
-// A right tab anchors the block end. Leader padding belongs to its drawn line,
-// not to the tab stop, including when tab and digits occupy the same run.
 fn right_leader_tab_target_rel(style: &TextStyle) -> Option<f64> {
-    style
-        .tab_stops
-        .iter()
-        .rev()
-        .find(|tab| tab.tab_type == 1 && tab.fill_type != 0)
-        .map(|tab| tab.position - style.line_x_offset)
-        .filter(|target| target.is_finite())
+    super::leader_tab::right_aligned_target(style, !style.inline_tabs.is_empty())
+        .map(|target| target - style.line_x_offset)
 }
 
 fn right_leader_tab_fill(style: &TextStyle) -> Option<u8> {
@@ -610,11 +581,13 @@ impl EmbeddedTextMeasurer {
                         total = (right_edge_rel - seg_w).max(total);
                     } else if inline_type_hi == 0
                         && !has_more_tabs_after
-                        && tab_suffix_is_ascii_page_number(&chars, i + 1)
+                        && (tab_suffix_is_ascii_page_number(&chars, i + 1)
+                            || style.right_tab_block_width_override.is_some())
                     {
                         if let Some(target_rel) = right_leader_tab_target_rel(style) {
-                            let seg_w =
-                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                            let seg_w = style.right_tab_block_width_override.unwrap_or_else(|| {
+                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
+                            });
                             total = (target_rel - seg_w).max(total);
                         } else {
                             total = tab_target.max(total);
@@ -767,10 +740,13 @@ impl EmbeddedTextMeasurer {
                 x = (body_right_text_rel - seg_w).max(x);
             } else if inline_type_hi == 0
                 && !has_more_tabs_after
-                && tab_suffix_is_ascii_page_number(&chars, i + 1)
+                && (tab_suffix_is_ascii_page_number(&chars, i + 1)
+                    || style.right_tab_block_width_override.is_some())
             {
                 if let Some(target_rel) = right_leader_tab_target_rel(style) {
-                    let seg_w = measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                    let seg_w = style.right_tab_block_width_override.unwrap_or_else(|| {
+                        measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
+                    });
                     x = (target_rel - seg_w).max(x);
                 } else {
                     x = tab_target.max(x);
@@ -905,6 +881,21 @@ pub(crate) fn resolved_to_text_style(
             fixed_glyph_advances: false,
             source_font_is_hft: cs.source_hft_for_lang(lang_index),
             hft_print_frame: cs.hft_print_frame_for_lang(lang_index),
+            preserve_glyph_ink: cs
+                .font_families_preserve_glyph_ink
+                .get(lang_index)
+                .copied()
+                .unwrap_or(false),
+            isolated_jamo_font: styles.isolated_jamo_font.or_else(|| {
+                matches!(
+                    cs.font_family_for_lang(lang_index)
+                        .split(',')
+                        .next()
+                        .map(str::trim),
+                    Some("HCR Dotum" | "HCRDotum" | "함초롬돋움")
+                )
+                .then_some("HCR Dotum")
+            }),
             font_family: cs.font_family_for_lang(lang_index).to_string(),
             supplemental_metrics: styles.supplemental_metrics.clone(),
             font_metric_trusted: cs.font_metric_trusted_for_lang(lang_index),
@@ -1773,6 +1764,24 @@ fn char_width_decision_with_hft_tracking<'a>(
             negative_spacing_clamped: false,
         };
     }
+    if cluster_len[i] == 1
+        && super::super::conjoining_jamo::is_mark(c)
+        && style.isolated_jamo_font == Some("HCR Dotum")
+    {
+        // 독립 2020 Print의 HCRDotum 단독 중성·종성은 표시하되 전진하지 않는다.
+        // 초성으로 시작하는 조합 내부는 위 clusterContinuation 경로가 소유한다.
+        return CharWidthDecision {
+            width_source: "isolatedConjoiningJamo",
+            base_width_px: 0.0,
+            final_width_px: 0.0,
+            bold_tracking_px: 0.0,
+            applied_letter_spacing_px: 0.0,
+            metric: None,
+            character_match: "notApplicable",
+            dash_leader: false,
+            negative_spacing_clamped: false,
+        };
+    }
     if c == '\u{FFFC}' {
         return CharWidthDecision {
             width_source: "inlineObjectPlaceholder",
@@ -2626,8 +2635,8 @@ pub fn forces_halfwidth_cjk_quote(
 
 /// 페인트가 `U+2018..=U+2027` 구두점을 반각 공간에 눌러 그려야 하는지.
 ///
-/// [#7702] 측정이 곡선 따옴표의 글리프 폭을 진짜 값으로 받아들였으면(`quote_width_is_authentic`)
-/// 전진폭이 이미 글리프 폭이므로 누르면 안 된다. 나머지는 종전대로 누른다.
+/// 측정이 선택한 반각·협폭 보정만 paint에서도 적용한다.
+/// 원 프로그램 폭이나 전각 폴백을 쓰는 기호를 별도로 좁히지 않는다.
 pub fn forces_halfwidth_punct_paint(style: &TextStyle, c: char) -> bool {
     if !matches!(c, '\u{2018}'..='\u{2027}') {
         return false;
@@ -2645,15 +2654,12 @@ pub fn forces_halfwidth_punct_paint(style: &TextStyle, c: char) -> bool {
         style.font_metric_trusted,
         style.hft_hangul_face,
     );
-    // 그 글리프의 전진폭을 그대로 썼다면 폭이 전각인지와 관계없이 다시 누르지 않는다.
-    // 휴먼명조의 검증된 프로그램 폭과 Times의 좁은 원 글리프도 같은 계약이다.
-    let authentic_quote = matches!(c, '\u{2018}' | '\u{2019}' | '\u{201C}' | '\u{201D}')
-        && matches!(
-            decision.width_source,
-            "embeddedMetric" | "metricTrueTypeGlyph"
-        )
-        && (style.font_metric_trusted || decision.em_fraction.is_some_and(|em| em >= 1.0));
-    !authentic_quote
+    // 측정이 실제로 좁힌 프로그램만 같은 paint 보정을 소비한다.
+    // 전각 기호의 metric miss나 원 프로그램 폭은 문자 범위만으로 다시 누르지 않는다.
+    matches!(
+        decision.width_source,
+        HALFWIDTH_PUNCTUATION_WIDTH_SOURCE | "metricNarrowPunctuationOverlay"
+    )
 }
 
 /// 3 개 이상 연속하는 dash leader 시퀀스의 일부 여부 (Task #352).
@@ -2709,21 +2715,6 @@ fn is_fullwidth_symbol(c: char) -> bool {
     || ('\u{3200}'..='\u{32FF}').contains(&c) // Enclosed CJK Letters (㉠㉡ 등)
     || ('\u{3300}'..='\u{33FF}').contains(&c) // CJK Compatibility (㎜㎝ 등)
     || ('\u{2160}'..='\u{217F}').contains(&c) // Roman Numerals (Ⅰ Ⅱ Ⅲ 등)
-}
-
-/// 한글 자모 초성 여부 (옛한글 포함)
-fn is_hangul_choseong(c: char) -> bool {
-    ('\u{1100}'..='\u{115F}').contains(&c) || ('\u{A960}'..='\u{A97F}').contains(&c)
-}
-
-/// 한글 자모 중성 여부 (옛한글 포함, ᆞ U+119E 포함)
-fn is_hangul_jungseong(c: char) -> bool {
-    ('\u{1160}'..='\u{11A7}').contains(&c) || ('\u{D7B0}'..='\u{D7C6}').contains(&c)
-}
-
-/// 한글 자모 종성 여부 (옛한글 포함)
-fn is_hangul_jongseong(c: char) -> bool {
-    ('\u{11A8}'..='\u{11FF}').contains(&c) || ('\u{D7CB}'..='\u{D7FB}').contains(&c)
 }
 
 /// 텍스트를 렌더링 클러스터 단위로 분할한다.

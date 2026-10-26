@@ -53,7 +53,6 @@ fn advance(record: &Value) -> f64 {
         .as_f64()
         .unwrap()
 }
-
 #[test]
 fn gulim_missing_point_publishes_the_measured_supplier_to_paint() {
     // 프로그램 cmap·독립 PDF 공급자 계약이며 법원 서식의 미달 배치를 고정하지 않는다.
@@ -86,7 +85,6 @@ fn gulim_missing_point_publishes_the_measured_supplier_to_paint() {
     );
     assert_eq!(program.export_hwp_native().unwrap(), original);
 }
-
 #[test]
 fn measured_original_glyph_survives_legacy_type1_display_fallback() {
     let fallback = core_with_palatino_program();
@@ -149,7 +147,6 @@ fn measured_original_glyph_survives_legacy_type1_display_fallback() {
 fn core_with_palatino_program() -> DocumentCore {
     core("Palatino Linotype", "A/A·", None)
 }
-
 #[test]
 fn explicit_true_type_program_keeps_its_own_slash_advance() {
     let mut core = core("HCI Poppy", "A/A·", None);
@@ -172,7 +169,6 @@ fn explicit_true_type_program_keeps_its_own_slash_advance() {
         "선택 환경은 원본을 수정하지 않음"
     );
 }
-
 #[test]
 fn onepoint_uses_its_symbol_program_before_glyph_resolution() {
     let core = core("휴먼명조", "가․나", Some("한양신명조"));
@@ -186,7 +182,6 @@ fn onepoint_uses_its_symbol_program_before_glyph_resolution() {
         "독립 전각 프로그램 전진"
     );
 }
-
 #[test]
 fn explicit_onepoint_provider_uses_its_own_advance() {
     let mut core = core("휴먼명조", "가․나", None);
@@ -200,7 +195,6 @@ fn explicit_onepoint_provider_uses_its_own_advance() {
     );
     assert_ne!(dot["layoutMetric"]["widthSource"], "heuristicFullwidth");
 }
-
 #[test]
 fn hyphenation_point_selects_the_symbol_slot_before_glyph_fallback() {
     // 한컴2020 Print의 교차 슬롯 probe: 한글=한컴바탕, 영문=한컴돋움,
@@ -214,7 +208,6 @@ fn hyphenation_point_selects_the_symbol_slot_before_glyph_fallback() {
         assert_eq!(core.document().sections[0].paragraphs[0].text, text);
     }
 }
-
 #[test]
 fn worklife_symbol_point_preserves_source_and_independent_completed_page_position() {
     // C93 Native/fresh WASM 전6쪽90% 이상. 변경 경계인5쪽은 각각
@@ -326,7 +319,6 @@ fn worklife_symbol_point_preserves_source_and_independent_completed_page_positio
     assert!((baseline - 111.23843383789062).abs() <= 2.0);
     assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
 }
-
 #[test]
 fn original_hci_plus_keeps_its_independent_type3_advance() {
     // 일·생활균형 독립 Print 4/5쪽 T10: ToUnicode002B,
@@ -341,7 +333,6 @@ fn original_hci_plus_keeps_its_independent_type3_advance() {
     assert_eq!(plus["layoutMetric"]["widthSource"], "measuredOriginalGlyph");
     assert_eq!(program.document().sections[0].paragraphs[0].text, "A+A");
 }
-
 #[test]
 fn regular_hci_comparison_signs_keep_the_independent_program_and_ttf_boundary() {
     // 별도 ASCII95 ×6크기 한컴2020 Print: 일반 HCI Poppy의 <=>도
@@ -365,7 +356,6 @@ fn regular_hci_comparison_signs_keep_the_independent_program_and_ttf_boundary() 
         );
     }
 }
-
 #[test]
 fn asset_caption_comparison_program_reaches_the_following_source_text() {
     fn collect<'a>(node: &'a Value, out: &mut Vec<&'a Value>) {
@@ -428,7 +418,6 @@ fn asset_caption_comparison_program_reaches_the_following_source_text() {
     }
     assert_eq!(found, 2, "같은 원문의 두 비교 기호만 검사");
 }
-
 #[test]
 fn worklife_repeated_plus_keeps_the_following_value_on_its_independent_origin() {
     // C94: 전6쪽 Native/fresh WASM90% 이상, devel 대비0.01%p 하락0.
@@ -543,7 +532,6 @@ fn worklife_repeated_plus_keeps_the_following_value_on_its_independent_origin() 
     assert!((op["placement"]["runToPage"]["f"].as_f64().unwrap() - 997.9493815104166).abs() <= 2.0);
     assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
 }
-
 #[test]
 fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
     use rhwp::document_core::CanvasMetricReply;
@@ -646,7 +634,6 @@ fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
     assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
     assert_eq!(core.page_count(), 6);
 }
-
 #[test]
 fn declared_hft_quote_preserves_ttf_and_unmeasured_style_boundaries() {
     use rhwp::renderer::supplemental_metrics::{MetricBackend, MetricContext};
@@ -700,7 +687,6 @@ fn declared_hft_quote_preserves_ttf_and_unmeasured_style_boundaries() {
         "measuredOriginalGlyph"
     );
 }
-
 #[test]
 fn hft_human_bold_tracking_preserves_regular_ttf_spaces_and_native_program_ownership() {
     let mut program = core("휴먼명조", "가 •", None);
@@ -736,7 +722,6 @@ fn hft_human_bold_tracking_preserves_regular_ttf_spaces_and_native_program_owner
         "원 프로그램의 bold 추적을 중복하지 않음:{final_advance}"
     );
 }
-
 #[test]
 fn original_hci_bold_comparison_glyphs_preserve_style_and_ttf_boundaries() {
     let mut program = core("HCI Poppy", "A<=>A", None);
@@ -776,7 +761,6 @@ fn original_hci_bold_comparison_glyphs_preserve_style_and_ttf_boundaries() {
         );
     }
 }
-
 #[test]
 fn declared_hft_gothic_keeps_its_monospace_ascii_punctuation() {
     // 별도 빈 HWPX의 전체 ASCII 표본을 한컴2020 Print: 95자 모두500/1000em.
@@ -872,7 +856,6 @@ fn pii_declared_program_core() -> DocumentCore {
     assert_eq!(core.page_count(), 66, "전쪽 독립 Print와 동일한 쪽 소속");
     core
 }
-
 #[test]
 fn pii_declared_ttf_angles_keep_the_document_program_advance() {
     // 독립 PII18/F7·43/F4는 Palatino Type0/CIDFontType2, < >의 /W=500이다.
@@ -923,7 +906,6 @@ fn pii_declared_ttf_angles_keep_the_document_program_advance() {
         }
     }
 }
-
 #[test]
 fn pii_declared_ttf_closing_angles_keep_source_order_and_independent_ends() {
     use rhwp::{

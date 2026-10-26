@@ -15,10 +15,10 @@ python tools/inspect_msec/test_msec_fixtures.py
 
 ## 건수
 
-- 성공 봉투: 193
+- 성공 봉투: 192
 - 예외 봉투: 22
-- 합계: 215
-- hidden-text: 48
+- 합계: 214
+- hidden-text: 47
 - injection: 102
 - unicode: 43
 
@@ -41,3 +41,5 @@ python tools/inspect_msec/test_msec_fixtures.py
 - 새 kind / 새 토큰 / 새 코드포인트
 - gym / canvaskit / serializer / layout-anomaly / oracle /
   render_backend / proptest / fidelity_compare / hwp5-inventory / page-count
+
+편람 HWPX의 clean-corpus 봉투는 사용자 요청으로 검사와 생성기에서 제거했다.

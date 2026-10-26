@@ -13,6 +13,9 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
+/// 이중 축 보고 표본. hwp3-sample10 은 #3532, issue_265 는 #5251 이 정상화했고
+/// sample16 도 #5251 이후 IR 왕복이 맞을 수 있다. 계약은 쪽수 축이 통과·실패여도
+/// `--verify` IR 축이 **반드시 한 줄로 보고**되는 것이다 (#3915).
 /// 두 축 모두 통과하는 표본 — 무회귀 기준선.
 const CLEAN_SAMPLE: &str = "samples/table-001.hwp";
 

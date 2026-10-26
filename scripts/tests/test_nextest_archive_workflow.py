@@ -136,6 +136,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             "test-archive-b-shard-1",
             "test-archive-c-shard-1",
             "test-archive-d-shard-1",
+            "test-archive-e-shard-1",
         ):
             with self.subTest(job=job_name):
                 worker = job_body(self.ci, job_name)
@@ -145,14 +146,14 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
                     worker,
                 )
 
-    def test_archive_builders_split_lib_and_three_integration_targets(self):
+    def test_archive_builders_split_lib_and_four_integration_targets(self):
         from pathlib import Path
         root = Path(__file__).resolve().parents[2]
         ci = (root / ".github/workflows/ci.yml").read_text()
         builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
         runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
         self.assertIn("build-test-archive-a:", ci); self.assertIn("build-test-archive-b:", ci); self.assertIn("build-test-archive-c:", ci); self.assertIn("build-test-archive-d:", ci)
-        self.assertNotIn("test-slow-shard:", ci); self.assertNotIn('partition: "hash:1/2"', ci); self.assertNotIn('partition: "hash:2/2"', ci); self.assertEqual(4, ci.count('partition: "hash:1/1"'))
+        self.assertNotIn("test-slow-shard:", ci); self.assertNotIn('partition: "hash:1/2"', ci); self.assertNotIn('partition: "hash:2/2"', ci); self.assertEqual(5, ci.count('partition: "hash:1/1"'))
         self.assertIn("target_group: lib", ci); self.assertIn("target_group: integration-b", ci); self.assertIn("target_group: integration-c", ci); self.assertIn("target_group: integration-d", ci)
         self.assertIn("cargo metadata --no-deps --format-version 1", builder)
         self.assertIn("scripts/select-nextest-archive-targets.mjs", builder)
@@ -211,7 +212,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("JUnit report contains no target durations", collector)
         self.assertIn("collectDurationMeasurement", collector)
         self.assertIn("case_durations", collector)
-        self.assertIn("exactly one B, C, and D report", refresh)
+        self.assertIn("const refreshed = refreshDurationPolicy(policy, measurements)", refresh)
         self.assertIn("identical run, ref, and sha provenance", refresh)
 
     def test_native_skia_uses_the_same_test_profile_policy(self) -> None:
@@ -364,6 +365,46 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             'git fetch --depth=1 origin "${{ inputs.duration_policy_sha }}"',
             self.builder,
         )
+
+    def test_worker_has_finite_sixty_minute_limit(self):
+        self.assertIn("    timeout-minutes: 60", self.runner)
+        self.assertNotIn("    timeout-minutes: 30", self.runner)
+
+    def test_e_count_is_actually_checked(self):
+        script = step_body(self.ci, "Verify archive shard totals").split("        run: |\n", 1)[1]
+        script = "\n".join(line.removeprefix("          ") for line in script.splitlines())
+        for value in ("5", "4", "invalid", None):
+            with self.subTest(e_count=value), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                for label in "abcde":
+                    expected = root / f"archive-expected-{label}"
+                    expected.mkdir()
+                    (expected / "archive-expected-total.txt").write_text("5\n")
+                    actual = root / f"shard-counts/shard-count-{label}-1"
+                    actual.mkdir(parents=True)
+                    content = value if label == "e" else "5"
+                    if content is not None:
+                        (actual / f"shard-count-{label}-1.txt").write_text(content + "\n")
+                result = run_script(f'cd "{directory}"\n' + script, {})
+                self.assertEqual(result.returncode == 0, value == "5", result.stdout + result.stderr)
+
+    def test_e_builder_and_worker_cannot_escape_aggregate(self):
+        step = step_body(self.ci, "Check Build & Test worker results")
+        script = step.split("        run: |\n", 1)[1]
+        script = "\n".join(line.removeprefix("          ") for line in script.splitlines())
+        env = {"CANONICAL_PROMOTION": "false", "PROMOTION_RESULT": "skipped",
+               "PREFLIGHT_RESULT": "success", "FAST_PASS": "false", "RUST_REQUIRED": "true",
+               "NATIVE_SKIA_REQUIRED": "false", "NATIVE_SKIA_RESULT": "skipped",
+               "FRONTEND_MODE": "none", "FRONTEND_UNIT_RESULT": "skipped",
+               "FRONTEND_PACKAGE_RESULT": "skipped", "LINT_RESULT": "success"}
+        for label in "ABCDE":
+            env[f"BUILD_ARCHIVE_{label}_RESULT"] = "success"
+            env[f"TEST_ARCHIVE_{label}_1_RESULT"] = "success"
+        self.assertEqual(run_script(script, env).returncode, 0)
+        for variable in ("BUILD_ARCHIVE_E_RESULT", "TEST_ARCHIVE_E_1_RESULT"):
+            for conclusion in ("failure", "cancelled", "skipped", ""):
+                with self.subTest(variable=variable, conclusion=conclusion):
+                    self.assertNotEqual(run_script(script, {**env, variable: conclusion}).returncode, 0)
 
 
 if __name__ == "__main__":

@@ -82,6 +82,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `hml-open.check.mjs` | 상시 | active | Standalone HML browser regression. | — | 수동 | legacy-name |
 | `hwpctl-basic.test.mjs` | 상시 | active | hwpctl 호환 레이어 기본 동작 | — | 수동 |  |
 | `hwp-password-open.test.mjs` | 상시 | active | #3474/#3481/#5986 HWP3·HWPX 암호 문서: 대화상자·오답·취소·Enter·저장소 비보존·저장 보호 상태 수명주기, HWP3 A4 144dpi Canvas 경계 | HWP3-password-123456.hwp, HWP5-password-123456.hwpx, HWP5-nopassword-123456.hwpx | npm e2e:hwp-password-open | 실제 암호 fixture; 비밀번호와 로컬 E2E 보고서는 비커밋 |
+| `issue_8160_password_open.test.mjs` | 상시 | active | #8160 sample16 HWP5 EncryptVersion 4 암호 대화상자·오답·취소·Enter·저장 보호 상태 | hwp3-sample16-hwp5-2024-password-123456.hwp | 기존 e2e:hwp-password-open에서 순차 실행 | 새 이름의 전용 검사, 직접 실행도 가능 |
 | `crlf-insert-history.test.mjs` | 상시 | active | CRLF 입력의 커서·Undo/Redo·HWP 저장 보존 | 합성 본문·셀·중첩 셀 | 수동 | #8001, run-with-vite·fresh WASM 실동작 |
 | `hwpctrl-nested-caret.test.mjs` | 상시 | active | SDK 캐럿 동기화→CreateField의 중첩 셀 부모 문단 소유·Undo | issue1949_giant_cell_nested_tables_perf.hwp | 수동 | 조판 좌표 고정 없음 |
 | `hwpctrl-plugin.test.mjs` | 상시 | active | hwpctrl 플러그인 — studio 문서 공유·배치 편집·좌표 변환·사용자 캐럿 동기화·unload 생존 | — | npm e2e:hwpctrl-plugin |  |
@@ -108,7 +109,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-4272-nested-cell-text-selection.test.mjs` | 상시 | active | #4272 중첩 표 안쪽 셀의 전체 cellPath 선택 rect, 실제 마우스 드래그와 Ctrl+C/V | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4272 | 물리 5쪽 `23,504`, `output/4272/nested-cell-*.{json,png}` |
 | `issue-536-boxed-pua-canvas2d.test.mjs` | 상시 | active | #536 실제 HWP의 사각 안 숫자 PUA를 기본 Canvas2D가 결정적으로 합성 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-536 | #4122 17쪽 pagination stack 계약 포함 |
 | `layer-export-issue536.test.mjs` | 상시 | active | #536 JSON/value·v2 compat/strict export, font/image byte 생략 4조합, content-key 재조회·입력 변이 격리·편집 후 자원 계약 | test-image.hwpx, render-p35-font-native-bitmap.hwpx, para-001.hwp | npm e2e:layer-export-issue536 | fresh WASM 필수, Chromium·임시 Vite 자체 기동, 비시각 API 검사 |
-| `local-font-partial-enumeration-issue4741.test.mjs` | 상시 | active | #4741 Local Font Access 부분 열거를 강제해 raw probe·exact Canvas2D face·폭·cache 계약 검증 | 일반 Canvas 측정 문자열 | npm e2e:issue-4741 | KoPub바탕체 Light 설치 호스트 Chrome 전용 |
+| `local-font-partial-enumeration-issue4741.test.mjs` | 상시 | active | #4741 Local Font Access 부분 열거를 강제해 raw probe·exact Canvas2D face·폭·cache 계약 검증 | 합성 Canvas2D 글꼴 표본 | npm e2e:issue-4741 | KoPub바탕체 Light 설치 호스트 Chrome 전용 |
 | `middle-dot-canvas-paint.test.mjs` | 상시 | active | 실제 Canvas 가운뎃점 원형 경로와 앞뒤 본문 소유 보존 | k-water-rfp.hwp | npm e2e:middle-dot-canvas-paint | 독립 Print 근거와 기존 시각 증적은 테스트 주석 참조 |
 | `issue-595.test.mjs` | 진단 | hold | 시험지 회귀 실행 제거·파일 보존 | exam_math.hwp | — | legacy-name · 사용자 지시로 실행 진입점 제거 |
 | `issue-6099-probe.mjs` | 진단 | active | #6099 90° 회전 그림 DOM frame/img 실측과 스크린샷 생성 프로브 | samples 하위 지정 파일 | 수동 | legacy-name · 일회성 실측 프로브 |

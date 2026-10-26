@@ -79,6 +79,7 @@ mod tests {
 
         let styles = ResolvedStyleSet {
             source_program_projection_slots: Default::default(),
+            isolated_jamo_font: None,
             native_pua_fonts: Default::default(),
             resolved_dpi: None,
             page_number_char_style_id: None,

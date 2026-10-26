@@ -1,6 +1,7 @@
 //! 이슈 #1086: HWP3 유래 문서의 쪽 나눔과 RowBreak·행 병합의 과도한 분할 회귀 검사.
 //!
 //! `samples/k-water-rfp.hwp`의 정상 한컴2022 PDF는 27쪽이다.
+//! sample16 전용 검사는 `issue_8160_legacy_hwp5_page_count`로 통합했다.
 
 use std::fs;
 use std::path::Path;

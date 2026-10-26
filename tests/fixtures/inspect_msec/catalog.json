@@ -15,10 +15,10 @@
     "src/main.rs"
   ],
   "counts": {
-    "cases": 193,
+    "cases": 192,
     "exceptions": 22,
-    "total": 215,
-    "hiddenText": 48,
+    "total": 214,
+    "hiddenText": 47,
     "injection": 102,
     "unicode": 43
   },

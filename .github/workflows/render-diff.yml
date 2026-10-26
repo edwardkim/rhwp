@@ -5,6 +5,8 @@ on:
     branches: [main, devel]
     types: [opened, reopened, synchronize]
     paths:
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - 'src/paint/**'
@@ -140,6 +142,10 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
+              if (filename === 'AGENTS.md' || filename === 'CLAUDE.md') {
+                return !file.previous_filename
+                  && (file.status === 'added' || file.status === 'modified');
+              }
               if (filename.startsWith('mydocs/') && !renderContractPaths.has(filename)) {
                 return true;
               }
@@ -242,7 +248,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '7'
+                    && fields.get('v') === '8'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target

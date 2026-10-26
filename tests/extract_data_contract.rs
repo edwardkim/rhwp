@@ -60,16 +60,6 @@ fn run_ok(args: &[&str]) -> serde_json::Value {
     parse_json(args, &output)
 }
 
-/// `info` 의 사람용 출력에서 쪽 수를 읽는다 — 쪽 주소 유효 범위 검증용.
-fn page_count(path: &Path) -> u64 {
-    let output = run(&["info", path.to_str().unwrap()]);
-    let text = String::from_utf8_lossy(&output.stdout);
-    text.lines()
-        .find_map(|l| l.strip_prefix("페이지 수:"))
-        .and_then(|v| v.trim().parse().ok())
-        .unwrap_or_else(|| panic!("info 에서 페이지 수를 찾지 못했습니다:\n{text}"))
-}
-
 #[test]
 fn year_month_only_notation_is_a_partial_date_not_a_guess() {
     // 이 양식의 유일한 날짜는 `2026. 1.` 이다. 없는 날(日)을 1일로 채우면 조용히 틀린

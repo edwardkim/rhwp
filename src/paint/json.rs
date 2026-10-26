@@ -1107,6 +1107,25 @@ impl PaintOp {
                         .transform
                         .effective_image_bbox(&image.paint_bbox(bbox)),
                 );
+                if let Some(frame) = resolved.and_then(|payload| {
+                    crate::renderer::print_raster::PrintRasterFrame::read(&payload.data)
+                }) {
+                    buf.push_str(",\"imagePrintFrame\":[");
+                    for (index, value) in frame.values().iter().enumerate() {
+                        if index > 0 {
+                            buf.push(',');
+                        }
+                        let _ = write!(buf, "{}", value);
+                    }
+                    buf.push(']');
+                }
+                if resolved.is_some_and(|payload| {
+                    crate::renderer::image_resolver::png_sampling::print_jpeg_transfer(
+                        &payload.data,
+                    )
+                }) {
+                    buf.push_str(",\"imageAnisotropicReduction\":true");
+                }
                 if resolved
                     .map(|payload| payload.data.as_slice())
                     .or(image.data.as_deref())
@@ -1800,6 +1819,7 @@ fn write_text_style(buf: &mut String, style: &TextStyle) {
     if style.kerning {
         buf.push_str(",\"kerning\":true");
     }
+    write_synthetic_italic_skew(buf, style.italic);
     buf.push('}');
 }
 
@@ -1832,7 +1852,18 @@ fn write_paint_text_style(buf: &mut String, style: &PaintTextStyle) {
         json_escape(&color_ref_to_css(style.shade_color)),
         style.emphasis_dot,
     );
+    write_synthetic_italic_skew(buf, style.italic);
     buf.push('}');
+}
+
+fn write_synthetic_italic_skew(buf: &mut String, italic: bool) {
+    if italic {
+        let _ = write!(
+            buf,
+            ",\"syntheticItalicSkew\":{:.6}",
+            crate::renderer::text_transform::SYNTHETIC_ITALIC_SKEW,
+        );
+    }
 }
 
 fn write_text_positions(buf: &mut String, run: &TextRunNode) {
@@ -1902,9 +1933,24 @@ fn write_clamped_tab_leaders(buf: &mut String, run: &TextRunNode) -> bool {
         let end_x = clamp_tab_leader_end_x(&display_text, &positions, leader, font_size);
         let _ = write!(
             buf,
-            "{{\"startX\":{:.3},\"endX\":{:.3},\"fillType\":{}}}",
+            "{{\"startX\":{:.3},\"endX\":{:.3},\"fillType\":{}",
             leader.start_x, end_x, leader.fill_type
         );
+        if leader.fill_type == 3 {
+            if let Some(dots) =
+                crate::renderer::tab_leader::dot_geometry(font_size, leader.start_x, end_x)
+            {
+                let _ = write!(buf, ",\"dotRadius\":{:.6},\"dotCenters\":[", dots.radius);
+                for (index, center) in dots.centers.iter().enumerate() {
+                    if index != 0 {
+                        buf.push(',');
+                    }
+                    let _ = write!(buf, "{:.6}", center);
+                }
+                buf.push(']');
+            }
+        }
+        buf.push('}');
     }
     buf.push(']');
     text_complete && leaders_complete
@@ -3135,6 +3181,11 @@ fn write_equation_layout_kind(buf: &mut String, layout: &LayoutBox) {
                     ",\"outlineGeometry\":{{\"pathData\":{},\"strokeWidth\":{stroke_width:.6},\"scaleX\":{scale_x:.8},\"fillAndStroke\":true}}",
                     json_escape(&path),
                 );
+            }
+            if outline.is_none() {
+                if let Some(paint) = paint {
+                    let _ = write!(buf, ",\"glyphScaleX\":{:.8}", paint.scale_x);
+                }
             }
             buf.push('}');
         }

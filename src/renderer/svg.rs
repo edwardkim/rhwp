@@ -3766,6 +3766,20 @@ impl Renderer for SvgRenderer {
                     ));
                 }
                 3 => {
+                    if let Some(dots) =
+                        super::tab_leader::dot_geometry(font_size, leader.start_x, leader_end_x)
+                    {
+                        for center in dots.centers {
+                            self.output.push_str(&format!(
+                                "<circle cx=\"{:.6}\" cy=\"{:.6}\" r=\"{:.6}\" fill=\"{}\"/>\n",
+                                x + center,
+                                ly,
+                                dots.radius,
+                                color,
+                            ));
+                        }
+                        continue;
+                    }
                     // 점선 ··· — round cap 으로 원형 점 표현 (한컴 동등).
                     // 두께·간격은 폰트 크기를 따른다 — 고정값은 목차 점선을 가는
                     // 실선으로 보이게 했다(#5698 계열, 상수 근거는 render_tree).

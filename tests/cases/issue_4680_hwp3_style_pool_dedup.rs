@@ -160,17 +160,15 @@ fn hwp3_cell_border_fill_ids_map_one_to_one_onto_values() {
 fn distinct_styles_are_not_merged_away() {
     // 반례 — 정리가 과해서 서로 다른 모양까지 하나로 합치면 안 된다.
     // 이 표본들은 본문에 서로 다른 글자 모양이 실제로 섞여 있다.
-    {
-        let rel = "samples/hwp3-sample11.hwp";
-        let core = parse_hwp3(rel);
-        let doc = core.document();
-        let ids = used_char_shape_ids(doc);
-        let (_, value_count) = distinct_counts(&ids, &doc.doc_info.char_shapes);
-        assert!(
-            value_count > 1,
-            "{rel}: 글자 모양이 {value_count}가지뿐이다 — 서로 다른 모양까지 합쳐졌다"
-        );
-    }
+    let rel = "samples/hwp3-sample11.hwp";
+    let core = parse_hwp3(rel);
+    let doc = core.document();
+    let ids = used_char_shape_ids(doc);
+    let (_, value_count) = distinct_counts(&ids, &doc.doc_info.char_shapes);
+    assert!(
+        value_count > 1,
+        "{rel}: 글자 모양이 {value_count}가지뿐이다 — 서로 다른 모양까지 합쳐졌다"
+    );
 }
 
 #[test]

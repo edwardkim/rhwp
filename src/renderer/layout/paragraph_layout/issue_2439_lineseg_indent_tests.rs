@@ -85,6 +85,7 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
     let composed: Vec<_> = paragraphs.iter().map(compose_paragraph).collect();
     let styles = ResolvedStyleSet {
         source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
         native_pua_fonts: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,

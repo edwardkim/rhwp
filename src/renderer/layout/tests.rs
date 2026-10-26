@@ -746,6 +746,7 @@ fn test_layout_with_composed_styles() {
 
     let styles = ResolvedStyleSet {
         source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
         native_pua_fonts: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
@@ -900,6 +901,7 @@ fn test_layout_multi_run_x_position() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
         source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
         native_pua_fonts: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
@@ -1004,6 +1006,7 @@ fn test_resolved_to_text_style() {
 
     let styles = ResolvedStyleSet {
         source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
         native_pua_fonts: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
@@ -1046,6 +1049,7 @@ fn test_resolved_to_text_style_with_ratio() {
 
     let styles = ResolvedStyleSet {
         source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
         native_pua_fonts: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,

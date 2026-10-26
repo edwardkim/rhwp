@@ -1,0 +1,14 @@
+{
+  "source_sha": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "private_case": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/proposed-restored-2022-border.rs",
+  "exit_code": 0,
+  "registered": false,
+  "historical_private_execution": true,
+  "later_permanent_registration": {
+    "test_head_sha": "ef69d163e05062f9c281968a0f9e0884a616aec3",
+    "case": "tests/cases/issue_7642_sample16_2022_paragraph_relations.rs",
+    "case_sha256": "9dddf443d5a0a465ded2894e911007b7b54920e4a882de81d934071fb62cf232",
+    "registered_cargo_validation": "validation-skia.json"
+  }
+}

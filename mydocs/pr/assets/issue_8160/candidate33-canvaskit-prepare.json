@@ -1,0 +1,60 @@
+{
+  "rust_source_sha": "803046519d82d20c71d85937b96a8eefabb200d0",
+  "wasm_sha256": "d936eaf728d2938cccf26d5ab6046c8818d72792534d2d16ced8919c6505b122",
+  "studio_fix": "Prepared WMF source recognition shared by preparation and replay. Ordinary SVG security validation retained.",
+  "pages": [
+    {
+      "page": 18,
+      "before_preparation_failures": [
+        {
+          "source": "inline",
+          "sourceImageKey": null,
+          "imageRef": null,
+          "reason": "encodedImageRejected"
+        }
+      ],
+      "after_preparation_failures": [],
+      "after_replay_failures": [],
+      "last_render_completed": true,
+      "unmatched_pixels_in_image_region": [
+        0,
+        0
+      ],
+      "png_sha256": "37f9fe4cd9adb6ac5e15564012de6c804b71e652a24ca34a34477d54ac2c7afb"
+    },
+    {
+      "page": 35,
+      "before_preparation_failures": [
+        {
+          "source": "inline",
+          "sourceImageKey": null,
+          "imageRef": null,
+          "reason": "encodedImageRejected"
+        }
+      ],
+      "after_preparation_failures": [],
+      "after_replay_failures": [],
+      "last_render_completed": true,
+      "unmatched_pixels_in_image_region": [
+        0,
+        0
+      ],
+      "png_sha256": "c31d15e6cfbed51bc439f18318737cd20dbd12f71e1a4e39ead0dcefb8275d5b"
+    }
+  ],
+  "normal_control": {
+    "test": "canvaskit-cropped-contain.test.mjs",
+    "source": "803046519 plus same two Studio files as this commit",
+    "exit_code": 0,
+    "cases": [
+      "none",
+      "zoom",
+      "fitToSize",
+      "total"
+    ]
+  },
+  "typecheck": {
+    "command": "npx tsc --noEmit",
+    "exit_code": 0
+  }
+}

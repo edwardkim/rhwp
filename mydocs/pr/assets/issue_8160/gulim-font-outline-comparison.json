@@ -1,0 +1,11 @@
+{
+  "source_font_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+  "source_face_index": 0,
+  "pdf": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+  "pdf_font_xref": 34,
+  "pdf_font_sha256": "f60daf5255e75844b990f6afaf8616f1ad4aeea9690b9742422e2042d109ad28",
+  "method": "Identity CIDToGIDMap and ToUnicode, DecomposingRecordingPen normalized to em; read-only comparison",
+  "compared_hangul": 445,
+  "identical": 445,
+  "different": []
+}

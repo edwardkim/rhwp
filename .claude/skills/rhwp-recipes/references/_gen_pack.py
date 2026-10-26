@@ -1113,6 +1113,8 @@ def extract_transcripts() -> list[dict]:
         json_blocks = extract_json_blocks(text)
         bash_blocks = extract_bash_blocks(text)
         for i, raw in enumerate(json_blocks, 1):
+            if any(name in raw for name in (REPO / "tests/fixtures/transferred_document_regressions.txt").read_text(encoding="utf-8").splitlines()):
+                continue
             parsed = parse_json_loose(raw)
             tid = f"T{card['id']}-J{i:02d}"
             rec = {
@@ -1130,6 +1132,8 @@ def extract_transcripts() -> list[dict]:
             items.append(rec)
             dump(TRANS / f"{tid}.json", rec)
         for i, raw in enumerate(bash_blocks, 1):
+            if any(name in raw for name in (REPO / "tests/fixtures/transferred_document_regressions.txt").read_text(encoding="utf-8").splitlines()):
+                continue
             tid = f"T{card['id']}-B{i:02d}"
             rec = {
                 "id": tid,

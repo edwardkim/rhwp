@@ -457,6 +457,9 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
             self._run_resolution_check("mydocs/orders/20260807.md").returncode,
             0,
         )
+        for filename in ("AGENTS.md", "CLAUDE.md"):
+            with self.subTest(root_document=filename):
+                self.assertEqual(self._run_resolution_check(filename).returncode, 0)
         rejected = self._run_resolution_check("src/lib.rs")
         self.assertNotEqual(rejected.returncode, 0)
         self.assertIn("current-base-merge-resolution-not-mydocs", rejected.stderr)
@@ -488,19 +491,19 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
     def test_worker_preflights_skip_modified_review_pdf(self) -> None:
         files = [
             {
-                "filename": "pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf",
+                "filename": "pdf/policy-control-hwp-2020.pdf",
                 "status": "modified",
             },
             {
-                "filename": "pdf/2025 행정업무운영 편람(최종)-hwp-2024.pdf",
+                "filename": "pdf/policy-control-hwp-2024.pdf",
                 "status": "modified",
             },
             {
-                "filename": "pdf/2025 행정업무운영 편람(최종)-hwpx-2020.pdf",
+                "filename": "pdf/policy-control-hwpx-2020.pdf",
                 "status": "modified",
             },
             {
-                "filename": "pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf",
+                "filename": "pdf/policy-control-hwpx-2024.pdf",
                 "status": "modified",
             },
         ]

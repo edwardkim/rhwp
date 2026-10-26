@@ -26,17 +26,18 @@ const policy = {
   },
 };
 
-test("duration-aware assignment is deterministic and balances three estimated loads", () => {
+test("duration-aware assignment is deterministic and balances four estimated loads", () => {
   const first = assignIntegrationTargets(["fast", "slow", "medium", "new"], policy);
   const second = assignIntegrationTargets(["new", "medium", "fast", "slow"], policy);
 
   assert.deepEqual(first, second);
   assert.deepEqual(first["integration-b"].targets, ["slow"]);
   assert.deepEqual(first["integration-c"].targets, ["medium"]);
-  assert.deepEqual(first["integration-d"].targets, ["fast", "new"]);
+  assert.deepEqual(first["integration-d"].targets, ["fast"]);
   assert.equal(first["integration-b"].estimatedSeconds, 9);
   assert.equal(first["integration-c"].estimatedSeconds, 6);
-  assert.equal(first["integration-d"].estimatedSeconds, 2);
+  assert.equal(first["integration-d"].estimatedSeconds, 1);
+  assert.deepEqual(first["integration-e"].targets, ["new"]);
   assert.deepEqual(
     Object.values(first).flatMap((assignment) => assignment.targets).sort(),
     ["fast", "medium", "new", "slow"],
@@ -50,9 +51,10 @@ test("empty duration profile preserves stable alternating bootstrap assignment",
     targets: {},
   });
 
-  assert.deepEqual(assignments["integration-b"].targets, ["alpha", "delta"]);
+  assert.deepEqual(assignments["integration-b"].targets, ["alpha"]);
   assert.deepEqual(assignments["integration-c"].targets, ["bravo"]);
   assert.deepEqual(assignments["integration-d"].targets, ["charlie"]);
+  assert.deepEqual(assignments["integration-e"].targets, ["delta"]);
 });
 
 test("metadata selection uses only root integration targets", () => {
@@ -216,14 +218,16 @@ test("v2 assignment separates longest testcase critical paths before filling bul
     ["bulk", { estimatedSeconds: 1200, maxTestcaseSeconds: 10 }],
   ]));
 
-  assert.deepEqual(assignments["integration-b"].targets, ["bulk", "long-a"]);
+  assert.deepEqual(assignments["integration-b"].targets, ["long-a"]);
   assert.deepEqual(assignments["integration-c"].targets, ["long-b"]);
   assert.deepEqual(assignments["integration-d"].targets, ["long-c"]);
-  assert.equal(assignments["integration-b"].estimatedSeconds, 2000);
+  assert.equal(assignments["integration-b"].estimatedSeconds, 800);
   assert.equal(assignments["integration-b"].maxTestcaseSeconds, 800);
   assert.equal(assignments["integration-b"].estimatedWallSeconds, 800);
   assert.equal(assignments["integration-c"].estimatedWallSeconds, 800);
   assert.equal(assignments["integration-d"].estimatedWallSeconds, 800);
+  assert.deepEqual(assignments["integration-e"].targets, ["bulk"]);
+  assert.equal(assignments["integration-e"].estimatedWallSeconds, 300);
 });
 
 test("v2 assignment fills critical-path slack to avoid a one-target archive", () => {
@@ -235,6 +239,7 @@ test("v2 assignment fills critical-path slack to avoid a one-target archive", ()
     "bulk-b",
     "bulk-c",
     "bulk-d",
+    "long-d",
   ], {
     schema_version: 2,
     fallback_seconds_per_test: 1,
@@ -246,6 +251,7 @@ test("v2 assignment fills critical-path slack to avoid a one-target archive", ()
     ["critical", { estimatedSeconds: 900, maxTestcaseSeconds: 800 }],
     ["long-b", { estimatedSeconds: 800, maxTestcaseSeconds: 650 }],
     ["long-c", { estimatedSeconds: 800, maxTestcaseSeconds: 550 }],
+    ["long-d", { estimatedSeconds: 800, maxTestcaseSeconds: 450 }],
     ["bulk-a", { estimatedSeconds: 500, maxTestcaseSeconds: 10 }],
     ["bulk-b", { estimatedSeconds: 500, maxTestcaseSeconds: 10 }],
     ["bulk-c", { estimatedSeconds: 500, maxTestcaseSeconds: 10 }],
@@ -254,8 +260,8 @@ test("v2 assignment fills critical-path slack to avoid a one-target archive", ()
 
   const estimatedSeconds = Object.values(assignments)
     .map((assignment) => assignment.estimatedSeconds);
-  assert.deepEqual(assignments["integration-b"].targets, ["bulk-c", "critical"]);
-  assert.equal(Math.max(...estimatedSeconds) - Math.min(...estimatedSeconds), 500);
+  assert.deepEqual(assignments["integration-b"].targets, ["bulk-d", "critical"]);
+  assert.equal(Math.max(...estimatedSeconds) - Math.min(...estimatedSeconds), 100);
   assert.equal(assignments["integration-b"].estimatedWallSeconds, 800);
 });
 
@@ -365,3 +371,82 @@ test("policy refresh rejects empty or mismatched B/C/D measurements", () => {
     /identical run, ref, and sha provenance/,
   );
 });
+
+
+test("#8267 current Cargo targets form four nonempty disjoint deterministic archives", async (t) => {
+  const { readFileSync, writeFileSync, mkdtempSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const directory = mkdtempSync(path.join(tmpdir(), "archive-e-contract-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const manifestPath = path.join(directory, "manifest.json");
+  const { deriveManifest } = await import("../rust-test-suite-manifest.mjs");
+  const metadata = spawnSync("cargo", ["metadata", "--no-deps", "--format-version", "1"], {
+    cwd: repoRoot, encoding: "utf8", timeout: 60000,
+  });
+  assert.equal(metadata.status, 0, metadata.stderr);
+  const targets = integrationTargetsFromMetadata(JSON.parse(metadata.stdout), path.join(repoRoot, "Cargo.toml"));
+  const currentPolicy = JSON.parse(readFileSync(policyPath, "utf8"));
+  const manifest = deriveManifest(repoRoot);
+  writeFileSync(manifestPath, JSON.stringify(manifest));
+  const estimates = estimateManifestTargetRuntimeProfiles(manifest, currentPolicy, repoRoot);
+  const assignment = assignIntegrationTargets(targets, currentPolicy, estimates);
+  assert.deepEqual(Object.keys(assignment), ["integration-b", "integration-c", "integration-d", "integration-e"]);
+  const assigned = Object.values(assignment).flatMap(group => group.targets);
+  assert.equal(new Set(assigned).size, assigned.length, "no target is tested twice");
+  assert.deepEqual([...assigned].sort(), [...targets].sort(), "no target is omitted");
+  assert.ok(Object.values(assignment).every(group => group.targets.length > 0));
+  assert.deepEqual(assignment, assignIntegrationTargets([...targets].reverse(), currentPolicy, estimates));
+  for (const [group, expected] of Object.entries(assignment)) {
+    const result = spawnSync(process.execPath, [selectorPath, "--group", group,
+      "--policy", policyPath, "--manifest", manifestPath], {
+      cwd: repoRoot, encoding: "utf8", input: metadata.stdout, timeout: 60000,
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(result.stdout.trim().split("\n"), expected.targets);
+  }
+});
+
+
+for (const schema of [1, 2]) {
+  test(`#8272 refresh CLI consumes complete three/four archive reports (schema ${schema})`, async t => {
+    const fs = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const directory = fs.mkdtempSync(path.join(tmpdir(), "duration-refresh-cli-"));
+    t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+    const cli = fileURLToPath(new URL("../refresh-nextest-target-duration-policy.mjs", import.meta.url));
+    const inputPolicy = schema === 1
+      ? { schema_version: 1, fallback_seconds: 1, targets: {} }
+      : { schema_version: 2, fallback_seconds_per_test: 1, parallelism_factor: 4,
+        targets: {}, cases: {}, test_cases: {} };
+    const policyFile = path.join(directory, "policy.json");
+    fs.writeFileSync(policyFile, JSON.stringify(inputPolicy));
+    for (const label of ["b", "c", "d", "e", "f"]) {
+      const target = `target_${label}`;
+      const report = { schema_version: schema, archive_label: label, run_id: "123",
+        ref: "refs/pull/8188/merge", sha: "a".repeat(40), targets: { [target]: 2 } };
+      if (schema === 2) Object.assign(report, { cases: { [target]: 2 }, test_cases: { [`${target}::works`]: 2 } });
+      fs.writeFileSync(path.join(directory, `${label}.json`), JSON.stringify(report));
+    }
+    function run(labels, suffix) {
+      const output = path.join(directory, `output-${suffix}.json`);
+      const result = spawnSync(process.execPath, [cli, "--policy", policyFile,
+        ...labels.flatMap(label => ["--measurement", path.join(directory, `${label}.json`)]),
+        "--output", output], { encoding: "utf8", timeout: 30000 });
+      return { result, output };
+    }
+    for (const labels of [["b", "c", "d"], ["b", "c", "d", "e"]]) {
+      const { result, output } = run(labels, labels.join(""));
+      assert.equal(result.status, 0, result.stderr);
+      const actual = JSON.parse(fs.readFileSync(output, "utf8"));
+      assert.deepEqual(Object.keys(actual.measurement_sources), labels);
+      assert.deepEqual(Object.keys(actual.targets), labels.map(label => `target_${label}`));
+      if (labels.includes("e")) assert.equal(actual.targets.target_e, 2);
+    }
+    for (const [index, labels] of [["b", "c"], ["b", "c", "e"],
+      ["b", "c", "d", "d"], ["b", "c", "d", "f"], ["b", "c", "d", "e", "f"]].entries()) {
+      const { result, output } = run(labels, `rejected-${index}`);
+      assert.notEqual(result.status, 0, JSON.stringify(labels));
+      assert.equal(fs.existsSync(output), false, "invalid reports cannot publish a policy");
+    }
+  });
+}

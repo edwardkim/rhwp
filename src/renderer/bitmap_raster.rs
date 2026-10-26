@@ -94,6 +94,11 @@ pub(crate) fn prepare_bitmap(
     profile: RenderProfile,
     paper_grid: Option<PrintPaperGrid>,
 ) -> Option<PreparedBitmap> {
+    // SVG와 마찬가지로 메타파일 표본은 최종 장치에서 이미 합성했다.
+    // 원본 비트맵용 경계 확장/저역 통과를 다시 적용하지 않는다.
+    if super::image_resolver::png_sampling::metafile_surface(bytes) {
+        return None;
+    }
     let [a, b, c, d, e, f] = matrix;
     if !matches!(profile, RenderProfile::Print | RenderProfile::HighQuality)
         || b != 0.0

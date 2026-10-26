@@ -83,7 +83,7 @@ fn issue_4764_catalog_covers_every_mapped_corpus() {
     }
     assert_eq!(counts[&CorpusId::Regulatory76076], 82);
     assert_eq!(counts[&CorpusId::Issue4090], 17);
-    assert!(rows.len() >= 82 + 17);
+    assert!(rows.len() == 185);
 }
 
 #[test]
@@ -313,8 +313,8 @@ fn inject_pair(scenario: &str) -> (RasterPageSpec, Option<RasterPageSpec>, bool)
 fn issue_4764_isolation_casebook_preserves_page_count() {
     let cases = load_isolation_cases();
     assert!(
-        cases.len() == load_all_records().len() * 8,
-        "페이지별8개 격리 시나리오가 누락·중복됨: {}",
+        cases.len() == 185 * 8,
+        "remaining isolation casebook size drift: {}",
         cases.len()
     );
 
@@ -451,9 +451,6 @@ fn issue_4764_pdf_page_manifest_builds() {
         }
         let c: Vec<&str> = line.split('\t').collect();
         let page_index: u16 = c[1].parse().unwrap();
-        if !page_index.is_multiple_of(23) {
-            continue;
-        }
         let width: u32 = c[2].parse().unwrap();
         let height: u32 = c[3].parse().unwrap();
         let content = if c[4] == "rect" {
@@ -478,6 +475,5 @@ fn issue_4764_pdf_page_manifest_builds() {
         assert_eq!(tree.page_count, 2);
         built += 1;
     }
-    // 별도 PR로 이관한 편람·sample16을 빼고 남은 7개 코퍼스의 23쪽 간격 표본은 12개다.
-    assert_eq!(built, 12, "유지한 PDF 표본의 누락·중복: {built}");
+    assert_eq!(built, 185, "남은 catalog의 모든 PDF 입력을 검사한다");
 }

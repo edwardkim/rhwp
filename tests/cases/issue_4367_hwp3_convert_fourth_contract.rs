@@ -1,6 +1,4 @@
-//! [Issue #4367] HWP3 도형·표의 저장 계약.
-//! sample16 전용 글상자·수식 검사는 별도 PR에서 처리하며 다른 표본의 계약은 유지한다.
-
+//! #4367: 다각형·빈 글상자·표 셀·곡선의 저장 계약. sample16 전용 검사는 #8160으로 통합.
 use rhwp::model::control::Control;
 use rhwp::model::shape::ShapeObject;
 use rhwp::parser::FileFormat;

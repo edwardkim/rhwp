@@ -3,7 +3,7 @@
 /// WMF의 이미지 전체 좌표 범위는 가로·세로 각각 15000이다.
 /// 한컴 저장본에 imgDim이 있으면 그 명시 범위를 먼저 소비한다.
 /// 비트맵의 HU/픽셀 폴백이나 shape orgSz로 대신하지 않는다.
-pub(super) fn wmf_crop_reference(declared: Option<(u32, u32)>) -> Option<(u32, u32)> {
+pub(crate) fn wmf_crop_reference(declared: Option<(u32, u32)>) -> Option<(u32, u32)> {
     declared
         .filter(|&(w, h)| w > 0 && h > 0)
         .or(Some((15000, 15000)))

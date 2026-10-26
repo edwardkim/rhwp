@@ -1,0 +1,244 @@
+{
+  "passed": true,
+  "role": "head",
+  "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+  "pkg_hashes": {
+    "rhwp.js": "c1c8d1820cc4375ab668427fa0a42c87d71c3d0d83955f4d300880559023ddc6",
+    "rhwp_bg.wasm": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c"
+  },
+  "phases": [
+    {
+      "name": "ai-settings",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/ai-settings.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 41.15644217107911,
+      "actual_initialization_receipts": [
+        {
+          "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+          "profile": "release",
+          "expected_sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c",
+          "page": "http://127.0.0.1:7820/",
+          "matched": true,
+          "received": [
+            {
+              "url": "http://127.0.0.1:7820/@fs/home/tsjang/rhwp-8160-wasm-candidate6/pkg/rhwp_bg.wasm",
+              "status": 200,
+              "sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c"
+            }
+          ]
+        },
+        {
+          "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+          "profile": "release",
+          "expected_sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c",
+          "page": "http://127.0.0.1:7820/",
+          "matched": true,
+          "received": [
+            {
+              "url": "http://127.0.0.1:7820/@fs/home/tsjang/rhwp-8160-wasm-candidate6/pkg/rhwp_bg.wasm",
+              "status": 200,
+              "sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c"
+            }
+          ]
+        },
+        {
+          "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+          "profile": "release",
+          "expected_sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c",
+          "page": "http://127.0.0.1:7820/",
+          "matched": true,
+          "received": [
+            {
+              "url": "http://127.0.0.1:7820/@fs/home/tsjang/rhwp-8160-wasm-candidate6/pkg/rhwp_bg.wasm",
+              "status": 200,
+              "sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "side-panel",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/side-panel.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 22.429966713069007,
+      "actual_initialization_receipts": [
+        {
+          "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+          "profile": "release",
+          "expected_sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c",
+          "page": "http://127.0.0.1:7820/",
+          "matched": true,
+          "received": [
+            {
+              "url": "http://127.0.0.1:7820/@fs/home/tsjang/rhwp-8160-wasm-candidate6/pkg/rhwp_bg.wasm",
+              "status": 200,
+              "sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ai-panel",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/ai-panel.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 64.47421107394621,
+      "actual_initialization_receipts": [
+        {
+          "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+          "profile": "release",
+          "expected_sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c",
+          "page": "http://127.0.0.1:7820/",
+          "matched": true,
+          "received": [
+            {
+              "url": "http://127.0.0.1:7820/@fs/home/tsjang/rhwp-8160-wasm-candidate6/pkg/rhwp_bg.wasm",
+              "status": 200,
+              "sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c"
+            }
+          ]
+        },
+        {
+          "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+          "profile": "release",
+          "expected_sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c",
+          "page": "http://127.0.0.1:7820/",
+          "matched": true,
+          "received": [
+            {
+              "url": "http://127.0.0.1:7820/@fs/home/tsjang/rhwp-8160-wasm-candidate6/pkg/rhwp_bg.wasm",
+              "status": 200,
+              "sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c"
+            }
+          ]
+        },
+        {
+          "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+          "profile": "release",
+          "expected_sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c",
+          "page": "http://127.0.0.1:7840/",
+          "capture_method": "actual-initialization-response-at-loadingFinished",
+          "matched": true,
+          "received": [
+            {
+              "url": "http://127.0.0.1:7840/@fs/home/tsjang/rhwp-8160-wasm-candidate6/pkg/rhwp_bg.wasm",
+              "status": 200,
+              "bytes": 22651204,
+              "sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "hwp-password-open",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/hwp-password-open.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 247.43294712994248,
+      "actual_initialization_receipts": [
+        {
+          "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+          "profile": "release",
+          "expected_sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c",
+          "page": "http://127.0.0.1:7840/",
+          "capture_method": "actual-initialization-response-at-loadingFinished",
+          "matched": true,
+          "received": [
+            {
+              "url": "http://127.0.0.1:7840/@fs/home/tsjang/rhwp-8160-wasm-candidate6/pkg/rhwp_bg.wasm",
+              "status": 200,
+              "bytes": 22651204,
+              "sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c"
+            }
+          ]
+        },
+        {
+          "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+          "profile": "release",
+          "expected_sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c",
+          "page": "http://127.0.0.1:7820/",
+          "matched": true,
+          "received": [
+            {
+              "url": "http://127.0.0.1:7820/@fs/home/tsjang/rhwp-8160-wasm-candidate6/pkg/rhwp_bg.wasm",
+              "status": 200,
+              "sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c"
+            }
+          ]
+        },
+        {
+          "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+          "profile": "release",
+          "expected_sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c",
+          "page": "http://127.0.0.1:7820/",
+          "matched": true,
+          "received": [
+            {
+              "url": "http://127.0.0.1:7820/@fs/home/tsjang/rhwp-8160-wasm-candidate6/pkg/rhwp_bg.wasm",
+              "status": 200,
+              "sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "local-font-partial-enumeration-issue4741",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/local-font-partial-enumeration-issue4741.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 42.838232227019034,
+      "actual_initialization_receipts": [
+        {
+          "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+          "profile": "release",
+          "expected_sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c",
+          "page": "http://127.0.0.1:7820/",
+          "matched": true,
+          "received": [
+            {
+              "url": "http://127.0.0.1:7820/@fs/home/tsjang/rhwp-8160-wasm-candidate6/pkg/rhwp_bg.wasm",
+              "status": 200,
+              "sha256": "c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

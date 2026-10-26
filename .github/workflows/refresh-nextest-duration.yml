@@ -4,6 +4,41 @@ name: Refresh nextest target duration data
 on:
   push:
     branches: [devel]
+    # #8277: PR CI의 경로 필터와 문서 전용 분류에 맞춰 checkout부터 생략한다.
+    # 렌더링 계약 문서는 PR CI와 같이 검증 대상에 다시 포함한다.
+    paths:
+      - '**'
+      - '!assets/chrome/**'
+      - '!assets/edge/**'
+      - '!assets/logo/**'
+      - '!assets/screenshots/**'
+      - '!CHANGELOG.md'
+      - '!CHANGELOG_EN.md'
+      - '!CONTRIBUTING.md'
+      - '!CONVENTIONS.md'
+      - '!GEMINI.md'
+      - '!QWEN.md'
+      - '!README.md'
+      - '!README_EN.md'
+      - '!ROADMAP.md'
+      - '!SECURITY.md'
+      - '!THIRD_PARTY.md'
+      - '!THIRD_PARTY_LICENSES.md'
+      - '!replit.md'
+      - '!LICENSE'
+      - '!.github/ISSUE_TEMPLATE/**'
+      - '!.github/FUNDING.yml'
+      - '!.github/CODE_OF_CONDUCT.md'
+      - '!.github/SECURITY.md'
+      - '!.github/pull_request_template.md'
+      - '!.github/dependabot.yml'
+      - '!rhwp-logo.*'
+      - '!AGENTS.md'
+      - '!CLAUDE.md'
+      - '!llms.txt'
+      - '!mydocs/**'
+      - 'mydocs/tech/canvaskit-parity-implementation.md'
+      - 'mydocs/tech/text-ir-v2.md'
   workflow_dispatch:
 
 permissions: {}
@@ -62,11 +97,16 @@ jobs:
             exit 0
           fi
 
+          measurement_args=()
+          for label in b c d e; do
+            measurement="${DURATION_DIR}/duration-${label}/target-durations-${label}.json"
+            if [[ -f "$measurement" ]]; then
+              measurement_args+=(--measurement "$measurement")
+            fi
+          done
           node scripts/refresh-nextest-target-duration-policy.mjs \
             --policy tests/suites/nextest-target-duration-policy.json \
-            --measurement "${DURATION_DIR}/duration-b/target-durations-b.json" \
-            --measurement "${DURATION_DIR}/duration-c/target-durations-c.json" \
-            --measurement "${DURATION_DIR}/duration-d/target-durations-d.json" \
+            "${measurement_args[@]}" \
             --output "${OUTPUT_POLICY}"
 
           if git ls-remote --exit-code origin "refs/heads/${METRICS_BRANCH}" >/dev/null 2>&1; then

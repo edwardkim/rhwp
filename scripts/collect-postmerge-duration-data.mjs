@@ -3,13 +3,21 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { decodeDurationArtifact, validateDurationReports } from './trusted-postmerge-duration-evidence.mjs';
 const { isAllowedReviewFile } = createRequire(import.meta.url)('./ci-impact-policy.cjs');
-const LABELS = ['b', 'c', 'd'];
+const LABELS = ['b', 'c', 'd', 'e'];
+// The Jobs API is trusted metadata: runs before #8267 have no Archive E caller.
+// An E artifact without its worker still selects the new layout and is rejected.
+function archiveLabelsForRun(jobs, artifacts) {
+  const hasE = jobs.some(job => /^(?:test|build)-archive-e(?:-|$)/.test(job.name)
+    || /^build-test-archive-e(?: |$)/.test(job.name))
+    || artifacts.some(artifact => /^nextest-target-durations-.*-e$/.test(artifact.name));
+  return hasE ? LABELS : LABELS.slice(0, 3);
+}
 const SHA = /^[0-9a-f]{40}$/;
 const fail = (reason) => { throw new Error(`postmerge-duration: ${reason}`); };
 const time = (value) => Date.parse(value || '');
 
 // Metrics provenance is separate from approval/CI reuse. A lint-only rerun does
-// not invalidate successful B/C/D measurements from the same head's earlier attempt.
+// not invalidate successful B/C/D/E measurements from the same head's earlier attempt.
 export function selectMeasuredDurationArtifacts({ run, pr, jobs, artifacts, repositoryId }) {
   if (!Number.isSafeInteger(repositoryId) || repositoryId < 1
       || !Number.isSafeInteger(pr?.number) || pr.number < 1
@@ -26,7 +34,8 @@ export function selectMeasuredDurationArtifacts({ run, pr, jobs, artifacts, repo
   if (Array.isArray(run.pull_requests) && run.pull_requests.length
       && !run.pull_requests.some((entry) => entry.number === pr.number)) fail('run belongs to another PR');
   if (!Array.isArray(jobs) || !Array.isArray(artifacts)) fail('missing API evidence');
-  const selected = LABELS.map((label) => {
+  const archiveLabels = archiveLabelsForRun(jobs, artifacts);
+  const selected = archiveLabels.map((label) => {
     const names = [`test-archive-${label}-shard-1`, `test-archive-${label}-shard-1 / Default-feature tests (Archive ${label.toUpperCase()})`];
     const matches = jobs.filter((job) => names.includes(job.name));
     if (matches.length !== 1) fail(`missing or duplicate duration worker:${label}`);
@@ -51,7 +60,7 @@ export function selectMeasuredDurationArtifacts({ run, pr, jobs, artifacts, repo
           || artifact.workflow_run.head_sha !== run.head_sha))) fail(`invalid measurement artifact:${label}`);
     return { label, artifact, attempt: job.run_attempt, jobId: job.id };
   });
-  if (new Set(selected.map((entry) => entry.artifact.id)).size !== 3) fail('duplicate artifact IDs');
+  if (new Set(selected.map((entry) => entry.artifact.id)).size !== archiveLabels.length) fail('duplicate artifact IDs');
   return selected;
 }
 
@@ -61,7 +70,7 @@ export function selectMeasuredDurationArtifacts({ run, pr, jobs, artifacts, repo
 export async function resolveMeasuredJobs({ run, jobs, artifacts, listAttemptJobs }) {
   const result = [...jobs];
   const cache = new Map();
-  for (const label of LABELS) {
+  for (const label of archiveLabelsForRun(jobs, artifacts)) {
     const matches = jobs.filter(job => job.name === `test-archive-${label}-shard-1`
       || job.name === `test-archive-${label}-shard-1 / Default-feature tests (Archive ${label.toUpperCase()})`);
     if (matches.length !== 1) fail(`missing or duplicate duration worker:${label}`);
@@ -156,6 +165,7 @@ export async function collectPostmergeDurations({ github, owner, repo, mergeSha,
       const measurementAttempts = Object.fromEntries(selected.map(({ label, attempt }) => [label, attempt]));
       const normalized = validateDurationReports(reports, {
         run, pr, repositoryId: repository.id, testedMergeSha, measurementAttempts,
+        archiveLabels: selected.map(({ label }) => label),
       });
       const final = (await github.rest.actions.getWorkflowRun({ owner, repo, run_id: run.id })).data;
       if (final.status !== 'completed' || final.conclusion !== 'success'

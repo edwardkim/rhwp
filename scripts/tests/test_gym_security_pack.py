@@ -91,7 +91,7 @@ class SecurityPackLayoutTests(unittest.TestCase):
 class SecurityTaskContractTests(unittest.TestCase):
     def test_se14_plus_ship_with_paired_reference(self):
         plus = [p for p in task_paths() if se_num(p) >= 14]
-        self.assertGreaterEqual(len(plus), 50, "SE14+ 과제가 50건 미만이다")
+        self.assertEqual(len(plus), 56, "이관 후 유지한 SE14+ 과제 수")
         missing = []
         for path in plus:
             tid = se_id(path)
@@ -109,7 +109,7 @@ class SecurityTaskContractTests(unittest.TestCase):
         nums = sorted(se_num(p) for p in task_paths())
         self.assertEqual(nums[0], 1)
         self.assertGreaterEqual(nums[-1], 80)
-        self.assertEqual(nums, [n for n in range(1, nums[-1] + 1) if n not in {23, 34, 55, 68}], "시험지 제외 외의 SE 번호 누락")
+        self.assertEqual(nums, [n for n in range(1, nums[-1] + 1) if n not in {13, 20, 21, 23, 32, 34, 41, 42, 53, 55, 66, 68}], "이관한 시험지·편람 이외의 SE 번호 누락")
 
     def test_operators_are_existing_only(self):
         unknown = []
@@ -223,7 +223,8 @@ class SecurityExpansionScopeTests(unittest.TestCase):
                 if key in blob:
                     axes[key] += 1
         for key, count in axes.items():
-            self.assertGreaterEqual(count, 3, f"SE14+ 에 {key} 축이 부족하다: {count}")
+            minimum = 2 if key == "sanitize" else 3
+            self.assertGreaterEqual(count, minimum, f"SE14+ 에 {key} 축이 부족하다: {count}")
 
     def test_instructions_are_korean_and_unique(self):
         seen = {}

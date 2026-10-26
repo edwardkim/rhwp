@@ -16,6 +16,7 @@ mod json;
 pub mod layer_tree;
 pub(crate) mod metafile;
 pub(crate) mod metafile_fonts;
+pub(crate) mod metafile_print;
 mod metafile_print_coverage;
 mod metafile_surface;
 mod paint_bounds;

@@ -1,0 +1,311 @@
+{
+  "source_sha": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+  "raw100": 384,
+  "metric": {
+    "threshold": 232,
+    "symmetric_radius_pixels": 2,
+    "white_pad": true
+  },
+  "files": {
+    "final-direct-review.json": {
+      "sha256": "e1ae0a30f56bbad26e95bd6cbd2d73ffc6af8eb2e6826b05d298017538dec4b8",
+      "bytes": 2819
+    },
+    "final-384-raw100.json": {
+      "sha256": "0ac3d39598f7084d288b5fe321e610bb1695aa2242d2fd2d02d9e32023a9fc49",
+      "bytes": 429701
+    },
+    "final-validation.json": {
+      "sha256": "f7521bfe83e881a3d89b8468fba655a1e04123f92fc195353daca59e5f6488fb",
+      "bytes": 76681
+    },
+    "final-canvaskit-regions.json": {
+      "sha256": "259be36a07b523af162d23dc7032eabaab042487ae4117052e3780030d78de80",
+      "bytes": 11083
+    },
+    "final-local-pipeline.json": {
+      "sha256": "44f76c1491c15fd5adc9e4a2edeb79d34111c5f124979054b914c050d21988e1",
+      "bytes": 2994
+    },
+    "final-fontgen-worktree-control.json": {
+      "sha256": "ec51898c056abb4843934d14d566b7a5e068d3300cf2ae3023c1c9e1277d74b2",
+      "bytes": 951
+    },
+    "final-native-build.json": {
+      "sha256": "1da902a5c6d1d2ace715743a91e201d519c104bd6e4d5df318d154409e82d3a1",
+      "bytes": 673
+    },
+    "final-standard-wasm.json": {
+      "sha256": "95ddd8435f9c2e08c8208d551ac393789cd060b3e4194ae9da11f9082d48b860",
+      "bytes": 2960
+    },
+    "final-controls.json": {
+      "sha256": "db45919c21bc31e4917a04cbed0c16f7a49b8c10f5d7766de83fb5edc31e21a1",
+      "bytes": 2516
+    },
+    "final-wasm-consumption.json": {
+      "sha256": "411a6af0db8f2ea30006b6b6387507fea5fc732c8689920adc8ee5254727437c",
+      "bytes": 975
+    },
+    "final-browser-review/canvaskit-2022-p035.png": {
+      "sha256": "6b31048743a1d94e8c968c8958c40931bf3ab563e9385949cade3c4a6e0dc94a",
+      "bytes": 322144
+    },
+    "final-browser-review/canvaskit-2022-p018.png": {
+      "sha256": "3c7488b87ef4a7722182303d8f84356cbc0f9b9406dfeb69cb1cc85593c6aac2",
+      "bytes": 356013
+    },
+    "final-review/triplet-hwp2024-p003.png": {
+      "sha256": "92d193ca244ea569a17d328847a22c87d09783e1d40badca373da2d5d921e707",
+      "bytes": 680223
+    },
+    "final-review/triplet-hwp2024-p006.png": {
+      "sha256": "e4397b120c113e5daf885ba5142d0f46dbf66d2202facce108a7e1628df3ab09",
+      "bytes": 186352
+    },
+    "final-review/triplet-manifest.json": {
+      "sha256": "5dcd5f8d40cdb9b1b5fd64be4e963d404f2ae39b9edc088f385cd5ddab724001",
+      "bytes": 4717
+    },
+    "final-review/triplet-hwp2022-p038.png": {
+      "sha256": "0d6732dcba57e82fc798a65f00da5a52734fa924b7bb7e43fc54f56e4b47605e",
+      "bytes": 361723
+    },
+    "final-review/manifest.json": {
+      "sha256": "26ac5fea1a3327a76ea337cce08a8af5e75cf7a8e85bb2738cc0e30639ea4aa8",
+      "bytes": 30344
+    },
+    "final-review/triplet-hwp2022-p035.png": {
+      "sha256": "38de61ca7265dbe56df2a19eadac88ac518debb5453fc9556bcde7ed7cb59bf8",
+      "bytes": 340445
+    },
+    "final-review/triplet-hwpx-p058.png": {
+      "sha256": "cbccb3a0623c6556469848e778b1c494525357c8f3499486c6641ad754afc415",
+      "bytes": 86303
+    },
+    "final-review/triplet-hwpx-p018.png": {
+      "sha256": "00ec3f332fff7a336e2c46c984ab4c144204fdfb3f788f4f24c31f30dc2e4c26",
+      "bytes": 514848
+    },
+    "final-review/triplet-hwp2022-p003.png": {
+      "sha256": "12d82af220031726a39a63c245b4309b51a76b05af3bec7dbf8c4b7c4b8f01ae",
+      "bytes": 110498
+    },
+    "final-review/hwp2024/native/compare_003.png": {
+      "sha256": "eeb721735dd73ef67b01c6eb48f39e6658d402566c09b9bc071b27fd0950592e",
+      "bytes": 500355
+    },
+    "final-review/hwp2024/native/review_003.png": {
+      "sha256": "055b0d52dc37e01df6462cd2ad27945a003c056a563ee48b0ad6e0d5fb6c400c",
+      "bytes": 745633
+    },
+    "final-review/hwp2024/native/overlay_003.png": {
+      "sha256": "5afad7b1486d108df4b49a04b90152cd3f5a5a90433a1a14b8b8d2e6cdda1e73",
+      "bytes": 238347
+    },
+    "final-review/hwp2024/native/compare_006.png": {
+      "sha256": "a4cfcb5110b7a3384014e8a281421d88d176ea863694147113c1aec9ae716ba8",
+      "bytes": 470517
+    },
+    "final-review/hwp2024/native/overlay_006.png": {
+      "sha256": "bde13231784b12d20790bdad1fa59573b09dcdebddca21cfb0cd652fb7025af1",
+      "bytes": 234115
+    },
+    "final-review/hwp2024/native/review_006.png": {
+      "sha256": "e02b33af2dafb6fb0cfe21cbd9000507f0a42825bf505b9bb2c15c853da5a1b7",
+      "bytes": 713255
+    },
+    "final-review/hwp2024/wasm/compare_003.png": {
+      "sha256": "288b62731119d58ba641358769a923e7cf7efd3fada6271fe7aa233ad9649474",
+      "bytes": 496714
+    },
+    "final-review/hwp2024/wasm/review_003.png": {
+      "sha256": "a4d1c91a9fb1a8f47da273472ef1bc2c1400d2d422121497e169927a45d933fc",
+      "bytes": 750018
+    },
+    "final-review/hwp2024/wasm/overlay_003.png": {
+      "sha256": "a3c62d1b9ba4a06ea56e7b84b8825269f667e8c5a7b1b4284eaa666f3bea2c6e",
+      "bytes": 247143
+    },
+    "final-review/hwp2024/wasm/compare_006.png": {
+      "sha256": "696bd82619804234510c8d7065f5597bb3b7af5fd8806cda17a83307088d1338",
+      "bytes": 470640
+    },
+    "final-review/hwp2024/wasm/overlay_006.png": {
+      "sha256": "a2e9f1e6af4b72d5e2caa1603ca118598c7cc15faea3cabf3c47d85ab14abfb7",
+      "bytes": 244446
+    },
+    "final-review/hwp2024/wasm/review_006.png": {
+      "sha256": "5099043b70a16bdaf6d9bd18110d55e4678ceb81216582ef5fe96fdccf160070",
+      "bytes": 722150
+    },
+    "final-review/hwp2022/native/compare_035.png": {
+      "sha256": "66f30b5f310cc49bd1ab15825480b89295fc3bde6f47635c92c6fb384443d537",
+      "bytes": 443963
+    },
+    "final-review/hwp2022/native/review_035.png": {
+      "sha256": "68352f3eee3160b0ee86b86c36e760201d2c5511f410738ea39bbbb13a4e6290",
+      "bytes": 694683
+    },
+    "final-review/hwp2022/native/compare_003.png": {
+      "sha256": "e96efae130a2d914bc657fb04de672152d953c54b29a260670e5c6cf2538b291",
+      "bytes": 414467
+    },
+    "final-review/hwp2022/native/overlay_038.png": {
+      "sha256": "fcdcfb3326c713640f6566639019a3582ea40181c44d95fe2a64107733b54c99",
+      "bytes": 140671
+    },
+    "final-review/hwp2022/native/compare_038.png": {
+      "sha256": "40b23d525d4c4bd285b24acbd6b2187ba6da7f4d29daff029d8d314395a36c89",
+      "bytes": 262729
+    },
+    "final-review/hwp2022/native/review_003.png": {
+      "sha256": "5cac9c089f7f68f771818770b99336c5f066dd6b34e527709fafd0f313773d38",
+      "bytes": 627488
+    },
+    "final-review/hwp2022/native/review_038.png": {
+      "sha256": "6a1c219b34e8fcece0f8bbabc59030d8b622b00676615979fd51c47ac68bfc97",
+      "bytes": 402253
+    },
+    "final-review/hwp2022/native/overlay_003.png": {
+      "sha256": "b41f95ea2bd38e11c4b79d0b0c34414669aae3d94baa11e9780cc250a56142d4",
+      "bytes": 208788
+    },
+    "final-review/hwp2022/native/overlay_035.png": {
+      "sha256": "55f9569995fc2dd5d99537d9f30c661704db52742cdc93e800e4df98defec271",
+      "bytes": 249436
+    },
+    "final-review/hwp2022/wasm/compare_035.png": {
+      "sha256": "5ef06b3aca3453bcf05b9fdb5119dbfc727ace16c10a388543e467e6131ab800",
+      "bytes": 442895
+    },
+    "final-review/hwp2022/wasm/review_035.png": {
+      "sha256": "282dec6e1e27bba7fe6f2ae32ab880e28cb687d547720970696705ba460f7b78",
+      "bytes": 693962
+    },
+    "final-review/hwp2022/wasm/compare_003.png": {
+      "sha256": "bd032dbc5881a6b446dd6188c3fcda51ea3c3360bcbc487bb5d82a2403a8ce2f",
+      "bytes": 418310
+    },
+    "final-review/hwp2022/wasm/overlay_038.png": {
+      "sha256": "6c86fc62723284a3696e9012b8bdd622296219c1ad189329b878563c0f5a1cdb",
+      "bytes": 138954
+    },
+    "final-review/hwp2022/wasm/compare_038.png": {
+      "sha256": "ddd03b222d142c89aace9da374c026c40d46e38da3e86e914cdf866947c3a0ad",
+      "bytes": 260717
+    },
+    "final-review/hwp2022/wasm/review_003.png": {
+      "sha256": "6539c36cc85de9c59291ddd23f46184a96c40c38ce1e86be2f8cb93cfbaf267c",
+      "bytes": 637258
+    },
+    "final-review/hwp2022/wasm/review_038.png": {
+      "sha256": "1d4369d0fdd9e0e8c22289055089d574c04ab59c586b483d7f72a2146bdaa20c",
+      "bytes": 399485
+    },
+    "final-review/hwp2022/wasm/overlay_003.png": {
+      "sha256": "e65d5eb2df6c8048f5716a116c21207c5a71f780202b4e1ec3e73cb89fc9db35",
+      "bytes": 212569
+    },
+    "final-review/hwp2022/wasm/overlay_035.png": {
+      "sha256": "c6147e1c6c9ea16aecfcdead4adf0f7e3c3238764498d8dc20631c413fb85c24",
+      "bytes": 249811
+    },
+    "final-review/hwpx/native/compare_058.png": {
+      "sha256": "2810ca539f3f4ce0881f20c2d5102392fba67a236c3a76f0714046f3160579c9",
+      "bytes": 71323
+    },
+    "final-review/hwpx/native/overlay_058.png": {
+      "sha256": "3ccd09a99836362b88ebb7a7f5d1067c581cd5ec0c4fd5e793d0953f7c2cdcd0",
+      "bytes": 53170
+    },
+    "final-review/hwpx/native/overlay_018.png": {
+      "sha256": "39d70eb2ed2abb1e7e6f12464bdd2ced17cba7e43956e45db299a474964ab9d2",
+      "bytes": 273220
+    },
+    "final-review/hwpx/native/review_058.png": {
+      "sha256": "00190ac07b6ec1070ef3a512f6ee3fce51b630d9ed70ce9fdb6257ccbbb027f5",
+      "bytes": 118636
+    },
+    "final-review/hwpx/native/compare_018.png": {
+      "sha256": "e14130e2190be9fa5d89d04e8ddcc8b7d91da1f22ef47f4922d91feada03a0ba",
+      "bytes": 643303
+    },
+    "final-review/hwpx/native/review_018.png": {
+      "sha256": "28f83bb5cce0ef7ad60a1f323af5f282318d47362f0789a2a36de02a61acbecf",
+      "bytes": 925565
+    },
+    "final-review/hwpx/wasm/compare_058.png": {
+      "sha256": "b78e04f9c06db6536fda7a30741bbfc5fe6eea4b9973ef555ac57e4218816ea0",
+      "bytes": 69340
+    },
+    "final-review/hwpx/wasm/overlay_058.png": {
+      "sha256": "711cc6f440115eef8ec1ba7de838c6618c37ec17e960254cfe381a43d6fcb085",
+      "bytes": 52067
+    },
+    "final-review/hwpx/wasm/overlay_018.png": {
+      "sha256": "45892511982b2b9eeb8f5b34913f65a6fd67e12f1f2eb4ce743e3d2aae69ebde",
+      "bytes": 273062
+    },
+    "final-review/hwpx/wasm/review_058.png": {
+      "sha256": "613baf5f6dfe3e643dfbdc56b45e5c6459d7b740964fa06428271146bb352f4e",
+      "bytes": 116519
+    },
+    "final-review/hwpx/wasm/compare_018.png": {
+      "sha256": "378648ccc4e45c4f0df5007cbaea027a27e97785581cb6d18d6b3d20a97cc3f2",
+      "bytes": 638886
+    },
+    "final-review/hwpx/wasm/review_018.png": {
+      "sha256": "cc98b3e5d861dff0e7f09db6cb26431529c095396dfd0bfd4f2418b63af08163",
+      "bytes": 921526
+    },
+    "tsv/same-font-base/native/hwpx.tsv": {
+      "sha256": "9854d1c12a4d234f6b9262aef59178de72cce3f851a7174ca2d1d761c8f75ab2",
+      "bytes": 1734
+    },
+    "tsv/same-font-base/native/hwp2024.tsv": {
+      "sha256": "160dfe9a172b6dddcfd47fb7cefa5d40c76321085a101513cd3e40b45befa777",
+      "bytes": 1734
+    },
+    "tsv/same-font-base/native/hwp2022.tsv": {
+      "sha256": "b8c97e02529316fb8814f68ff2ac7641038c88881d6323e0453b1f1b230145ae",
+      "bytes": 1705
+    },
+    "tsv/same-font-base/wasm/hwpx.tsv": {
+      "sha256": "fd5bf3ad2440b2a8316245f737ad3124d8725399fc6b176ef3cc50e3a2ab9132",
+      "bytes": 1732
+    },
+    "tsv/same-font-base/wasm/hwp2024.tsv": {
+      "sha256": "7ac46141d30069fc5eaaf365e7be519220e9418ac4400805dd0654f2f41e526e",
+      "bytes": 1732
+    },
+    "tsv/same-font-base/wasm/hwp2022.tsv": {
+      "sha256": "76d92ea80f0797edc23cebe73f992735d8b5b496bf0d5afc8189532104e61e00",
+      "bytes": 1703
+    },
+    "tsv/final/native/hwpx.tsv": {
+      "sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f",
+      "bytes": 1831
+    },
+    "tsv/final/native/hwp2024.tsv": {
+      "sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f",
+      "bytes": 1831
+    },
+    "tsv/final/native/hwp2022.tsv": {
+      "sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f",
+      "bytes": 1831
+    },
+    "tsv/final/wasm/hwpx.tsv": {
+      "sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f",
+      "bytes": 1831
+    },
+    "tsv/final/wasm/hwp2024.tsv": {
+      "sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f",
+      "bytes": 1831
+    },
+    "tsv/final/wasm/hwp2022.tsv": {
+      "sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f",
+      "bytes": 1831
+    }
+  }
+}

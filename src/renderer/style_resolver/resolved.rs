@@ -25,6 +25,8 @@ pub struct ResolvedCharStyle {
     /// 대체 여부와 무관하게 보존하는 원본 프로그램 종류다.
     pub font_families_source_hft: Vec<bool>,
     pub font_families_hft_print_frame: Vec<bool>,
+    /// 세션이 명시적으로 선택한 프로그램의 자연 윤곽 폭을 보존한다.
+    pub font_families_preserve_glyph_ink: Vec<bool>,
     /// 언어 슬롯이 대체되지 않은 원본 HFT 기호 전각 폭을 갖는지.
     pub font_families_hft_fullwidth_dot: Vec<bool>,
     /// [#7418] 한/글이 한글 뒤 ASCII 구두점도 **영문 슬롯** 글꼴로 재고 그리는가.
@@ -137,6 +139,7 @@ impl Default for ResolvedCharStyle {
             font_families_hft_hangul: Vec::new(),
             font_families_source_hft: Vec::new(),
             font_families_hft_print_frame: Vec::new(),
+            font_families_preserve_glyph_ink: Vec::new(),
             font_families_hft_fullwidth_dot: Vec::new(),
             ascii_punct_latin_slot: false,
             explicit_latin_slot: false,
@@ -510,6 +513,8 @@ pub struct ResolvedStyleSet {
     pub(crate) native_pua_fonts: std::sync::Arc<crate::renderer::native_pua_fonts::NativePuaFonts>,
     /// px 형태의 해소된 스타일을 원본 HWPUNIT으로 환산할 때의 배율.
     pub(crate) resolved_dpi: Option<f64>,
+    /// 한컴 2020의 독립 자모 프로그램. 문서의 글꼴 선언과 구분한다.
+    pub(crate) isolated_jamo_font: Option<&'static str>,
     /// 문서의 `쪽 번호` 스타일이 참조하는 글자 모양. 자동 쪽번호는 본문
     /// 기본 글꼴이 아닌 이 스타일로 출력된다.
     pub page_number_char_style_id: Option<usize>,

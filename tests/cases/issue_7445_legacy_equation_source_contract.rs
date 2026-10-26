@@ -415,3 +415,43 @@ fn completed_legacy_fraction_rule_uses_content_bounds_instead_of_registration_sp
         );
     }
 }
+
+#[test]
+fn compound_fraction_preserves_a_declared_frame_that_contains_its_natural_paint() {
+    let mut source = equation();
+    source.script = "가 TIMES LEFT ( {나} over {다} RIGHT )".into();
+    source.common.width = 20_000;
+    source.common.height = 6_000;
+    let (bounds, paint) = rendered(&document(source.clone()));
+    assert!(paint.layout_box.width < f64::from(source.common.width) / 75.0);
+    assert!(paint.layout_box.height < f64::from(source.common.height) / 75.0);
+    assert!(
+        (bounds.width * 75.0 - f64::from(source.common.width)).abs() < 1e-8,
+        "a containing source reservation is not replaced by the smaller compound paint"
+    );
+    assert!(
+        (bounds.height * 75.0 - f64::from(source.common.height)).abs() < 1e-8,
+        "source height keeps the same frame owner"
+    );
+    source.common.size_protect = true;
+    let protected = rendered(&document(source)).0;
+    assert_eq!(
+        (bounds.width, bounds.height),
+        (protected.width, protected.height),
+        "size protection does not choose another reservation when the source frame already fits"
+    );
+}
+
+#[test]
+fn compound_fraction_color_keeps_the_same_frame_and_advance() {
+    let mut source = equation();
+    source.script = "가 TIMES LEFT ( {나} over {다} RIGHT )".into();
+    let plain = rendered(&document(source.clone())).1.layout_box;
+    source.script = format!("COLOR{{255,0,0}}{{{}}}", source.script);
+    let colored = rendered(&document(source)).1.layout_box;
+    assert_eq!(
+        (plain.width, plain.height, plain.baseline),
+        (colored.width, colored.height, colored.baseline),
+        "a transparent paint wrapper does not choose another compound frame"
+    );
+}

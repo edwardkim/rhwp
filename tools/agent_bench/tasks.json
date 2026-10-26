@@ -173,6 +173,7 @@
         ]
       }
     },
+
     {
       "id": "t09_bulk_aggregate",
       "title": "대량 처리 집계 대장",

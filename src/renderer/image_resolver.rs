@@ -5,7 +5,7 @@ mod print_crop;
 mod print_jpeg;
 mod print_tone;
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
-pub(crate) use print_jpeg::print_jpeg_payload;
+pub(crate) use print_jpeg::{encode_print_jpeg, print_jpeg_payload};
 pub(crate) use print_tone::print_bitmap_payload;
 
 use crate::model::image::ImageEffect;
@@ -1338,7 +1338,7 @@ pub fn is_displayable_image_data(data: &[u8]) -> bool {
     }
 }
 
-fn decode_image_with_format_limited(
+pub(crate) fn decode_image_with_format_limited(
     data: &[u8],
     format: image::ImageFormat,
 ) -> Option<image::DynamicImage> {

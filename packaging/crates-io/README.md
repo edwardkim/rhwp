@@ -9,6 +9,9 @@
 `product_release`·본체 제안 버전 0.9.0과 구분한다. 사용자용 API·feature·설치 안내는
 [패키지 README](README_PACKAGE.md)에 둔다. 이 사전 검사 자체는 실제 Cargo 검증을 실행하지 않는다.
 
+#8160의 인쇄 JPEG encoder fork를 포함한 현재 후보 그래프는 9개 패키지다.
+`rhwp-jpeg-encoder`도 실제 path 의존성과 source 사전 검사에 포함하며 비게시 상태를 유지한다.
+
 ## 실행
 
 Python 3.11 이상과 Git을 사용한다. 추가 Python package나 Cargo 빌드는 필요하지 않다.

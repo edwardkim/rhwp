@@ -13,7 +13,6 @@ use std::process::{Command, Output, Stdio};
 
 /// 표지 첫 줄이 문서 제목인 표본 (제목 있는 경우).
 const SAMPLE_COVER_TITLE: &str = "samples/2022년 국립국어원 업무계획.hwp";
-
 /// 앞쪽 페이지에 의미 줄이 전혀 없는 표본 — null fallback 검증.
 const SAMPLE_NO_TEXT: &str = "samples/253E164F57A1BC6934-empty.hwp";
 /// 단건/배치·export-text 동형 검증용 소형 표본.

@@ -20,7 +20,11 @@ roundtrip을 시작하지 않으며, Oracle advisory도 devel push를 구독하�
 없다는 이유로 병합 후 Full CI를 실행하거나 수동으로 재실행하지 않는다.
 
 `devel` push에서는 `Refresh nextest target duration data`가 실행 시간 메타데이터만 갱신한다.
-성공 PR CI의 정확한 head 또는 완전한 linear review-only 후행 변경을 확인한 후보에서 B/C/D
+단, PR CI의 trigger 생략 경로와 `AGENTS.md`, `CLAUDE.md`, `llms.txt`, 일반 `mydocs/**`만
+바뀐 push는 경로 필터로 생략한다. `mydocs/tech/canvaskit-parity-implementation.md`와
+`mydocs/tech/text-ir-v2.md`는 PR CI와 동일하게 렌더링 계약 문서로 분류해 실행한다.
+문서와 코드가 섞인 push 및 `devel`의 명시적인 `workflow_dispatch`는 계속 실행한다.
+성공 PR CI의 정확한 head 또는 완전한 linear review-only 후행 변경을 확인한 후보에서 B/C/D/E
 실측을 읽는다. artifact의 run/repository/head/PR/tested merge와 worker별 실제 attempt를
 검증하므로 lint만 재실행한 attempt 2에서도 성공 worker attempt 1의 실측을 사용할 수 있다.
 증거 누락·만료·불일치는 갱신 보류이며 검증 CI fallback이 아니다. 기록은
@@ -39,6 +43,25 @@ issue close 자동화는 업무 메타데이터 처리로 유지한다. release 
 push trigger 제거와 새 duration workflow는 해당 변경의 devel 병합부터 적용된다. 반면
 CI Impact Policy Controller의 `pull_request_target`/`workflow_run` 배선 변경은 기본 branch
 main에 정상 release된 뒤 활성화된다. policy 모듈은 live base에서 로드하므로 이를 구분해 보고한다.
+
+## Archive 분산과 로컬 실행 (#8267)
+
+기본 Rust CI는 A(lib)와 B/C/D/E(integration)의 다섯 archive를 각각 한 worker에서 실행한다.
+Integration target은 같은 고정 duration policy와 현재 source manifest로 배정하며, 다섯 archive의
+예상 runnable 수를 해당 worker의 실제 실행 수와 각각 대조한다. Worker timeout은 60분이고,
+archive builder는 기존 `release-test:30`·`release:60`분 정책을 유지한다.
+
+로컬 전체 검증은 기존 `cargo nextest run --cargo-profile release-test --target-dir target/pr-review
+--tests --test-threads 12 --no-fail-fast`를 그대로 사용한다. 분할 자체를 재현할 때만
+`node scripts/rust-test-suite-manifest.mjs --prepare` 이후 Cargo metadata를
+`scripts/select-nextest-archive-targets.mjs --group integration-e --policy <policy.json>
+--manifest tests/suites/manifest.json`에 전달한다. B/C/D도 같은 방식이다.
+Duration 갱신기는 새 B/C/D/E 네 실측을 소비하며, 이전 B/C/D 세 실측은 trusted Jobs API에
+E caller가 없는 과거 실행임을 확인한 경우에만 구 layout으로 읽는다. 새 layout에서 E 누락은 실패다.
+
+루트 `AGENTS.md`·`CLAUDE.md`만 added/modified한 PR은 다섯 workflow의 review-only fast-pass와
+trusted policy가 같은 규칙을 사용한다. 코드·workflow와 함께 변경하거나 rename·삭제하면 이
+루트 문서 허용 항목으로 우회할 수 없다. [정확한 허용 범위](pr_review/review_only_fast_pass.md)를 따른다.
 
 ## 1. 목적과 범위
 
