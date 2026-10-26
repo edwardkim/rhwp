@@ -423,9 +423,12 @@ pub(crate) fn stored_complete_row_frame_heights(table: &Table) -> Option<Vec<i32
         }
         let mut last_end = None;
         for para in &cell.paragraphs {
-            if (!para.controls.is_empty()
-                && !stored_row_picture_frame::controls_preserve_stored_picture_lines(para))
-                || para.column_type != ColumnBreakType::None
+            let contents_valid = if para.controls.is_empty() {
+                para.column_type == ColumnBreakType::None
+            } else {
+                stored_row_picture_frame::controls_preserve_stored_picture_lines(para)
+            };
+            if !contents_valid
                 || para.stored_text_partition_is_dirty()
                 || para.cell_format_vpos_dirty
                 || super::para_has_no_stored_line_segs(para)
