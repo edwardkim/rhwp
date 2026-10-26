@@ -31,8 +31,34 @@ decoder/encoder의 수학·폭 계산·기존 품질 경계를 새로 맞추지 
 출력 payload는 OutputDevice이며 모든 backend가 같은 결과와 기존 공통 표본을 소비한다.
 원본 BinData와 편집/저장 정보·배치·문단 소유는 바꾸지 않는다.
 
-같은 정식 원문을 새 Native에서 재실행하고 관련 정상 대조·영향 페이지·전쪽 및 표준
-최적화 fresh WASM을 확인한다. 아직 제품 변경의 수정 후 검증은 완료 전이며 전체 테스트와
-PR 준비 완료로 기록하지 않는다. 작업 증적은 ignored `handbook-jpeg-fill-color-candidate/`와
+## 실제 제품 재검증
+
+제품 source는 `c3b88a07df14861ad8ad0dd339af4f35ccf66566`다. 고정
+`target/pr-review`·빌드 잡 8개로 Native 빌드가 성공했고, 수정 전 실패한 것과 SHA가
+같은 정식 검사 2건이 모두 통과했다. 관련 정상 대조군을 포함한 114건도 통과했다.
+수동 진단용 harness의 첫 빌드는 `--extern image` 누락으로 실패했으며 그 로그를
+보존했다. harness의 의존성 전달만 바로잡아 같은 라이브러리와 검사로 다시 실행했다.
+해당 harness 오류를 제품의 검사 실패나 검증 통과로 계산하지 않았다.
+
+전쪽 Native는 양쪽 문서 383쪽씩 실제 재출력하고 원본·PDF·PNG 해시를 대조했다.
+직전 source `8adc3a40102e7ed4a6cd51b73e7451395af6227a`와 비교하면 두 형식의
+261쪽만 미대응 322→0픽셀로 바뀌었으며 다른 764쪽의 미대응 수는 같다.
+766쪽의 전체 render tree도 동일해 텍스트·소유·순서·좌표 보존을 확인했다.
+
+| Native 입력 | 100%·미대응 0인 쪽 | 최저 raw | 전체 미대응 픽셀 |
+| --- | ---: | ---: | ---: |
+| HWPX | 344/383 | 99.46283% | 1,601 |
+| HWP | 341/383 | 99.46283% | 1,617 |
+
+261쪽은 실제 제품의 새 PNG가 직접 판독한 원본 RGB 진단 PNG와 전픽셀 동일하고
+두 원본 형식 간에도 RGB가 같다. 독립 Print·직전·제품의 그림 내용·표·선·색을 대조했다.
+
+표준 최적화 fresh WASM 빌드도 잡 8개·codegen-units 16·Binaryen 8개로 성공했다.
+WASM SHA-256은 `e75f0f015e27eee220f4c488b70f1bae189647a1f6ee0b7f8b57f2fb0cfc0ef4`다.
+같은 browser 계약 검사도 실제 브라우저에서 통과했다. 이 빌드의 영향 84조건과
+전쪽 WASM 검증은 후속 단계이며, 빌드 성공으로 그 출력을 확인했다고 기록하지 않는다.
+
+전쪽 100% 목표와 최종 전체 테스트·PR 준비는 아직 완료되지 않았다.
+작업 증적은 ignored `handbook-jpeg-fill-color-candidate/`와
 `remaining-raw100-diagnostic/remaining-image-resource-audit/current8adc/`에 보존한다.
 upstream 동기화와 원격 쓰기는 하지 않고 전쪽 100%·필수 테스트 후 PR 준비까지만 한다.
