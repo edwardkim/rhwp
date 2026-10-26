@@ -135,9 +135,16 @@ impl Writer {
     }
 
     fn project<'a>(&mut self, t: &'a Table) -> Result<Cow<'a, Table>, String> {
-        // 같은 개체 ID를 가진 표가 앞에 있으면 이 표는 새 ID로 쓴다. 격자 보존 기록은
-        // ID로 표를 다시 찾으므로, 중복 ID 때문에 HWPX 저장 전체가 실패하지 않게 한다.
-        let t: Cow<'a, Table> = if self.ids.contains_key(&t.common.instance_id) {
+        // 격자 보존 기록은 ID로 표를 다시 찾는다. 기록이 걸린 ID가 겹칠 때만 뒤 표를
+        // 새 ID로 써서 HWPX 저장 전체가 실패하지 않게 한다. 기록과 무관한 표의 ID는 원본대로 둔다.
+        let id = t.common.instance_id;
+        let boundaries = projection(t)?;
+        let clashes = if boundaries.is_some() {
+            self.ids.contains_key(&id)
+        } else {
+            self.records.iter().any(|record| record.id == id)
+        };
+        let t: Cow<'a, Table> = if clashes {
             let mut fresh = u32::MAX - self.ids.len() as u32;
             while self.ids.contains_key(&fresh) {
                 fresh -= 1;
@@ -149,7 +156,7 @@ impl Writer {
             Cow::Borrowed(t)
         };
         *self.ids.entry(t.common.instance_id).or_default() += 1;
-        let Some(boundaries) = projection(&t)? else {
+        let Some(boundaries) = boundaries else {
             return Ok(t);
         };
         // Bound the record allocation before serializing JSON (each u16 takes
