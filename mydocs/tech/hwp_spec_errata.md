@@ -910,6 +910,47 @@ PDF 44쪽 표 76은 TABLE 속성 bit 0~1의 값 0과 2를 모두 `나누지 않�
 HWPX에서 구간 종류를 버리는 동작은 별도의 구현 오류다. 보간식·열린 끝·닫힌 곡선의
 동작은 이 표만으로 확정하지 않고 독립 한컴 Print와 정상 대조군으로 검증한다.
 
+<a id="picture-corners-storage"></a>
+
+## 37. SHAPE_COMPONENT_PICTURE (표 107) — 그림 꼭짓점의 저장 순서
+
+- **발견일**: 2026-10-26, 이슈 #8153의 그림 원본 좌표 조사.
+- **원문**: [공식 revision 1.3 PDF](../../pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf)
+  52쪽, 표 107. SHA-256은
+  `1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782`다.
+  원문은 `INT32 x[4]` 다음 `INT32 y[4]`로 기술한다. 원문 PDF는 변경하지 않는다.
+- **확인한 구조**: 5.1.1.0 저장본에서는 `(INT32 x, INT32 y) × 4`다.
+  왼쪽 위 → 오른쪽 위 → 오른쪽 아래 → 왼쪽 아래 순서다.
+  총 32바이트이며 앞의 테두리 속성과 뒤의 crop 오프셋은 변하지 않는다.
+  [사양 설명본 표 107](한글문서파일형식_5.0_revision1.3.md#표-107-그림-개체-속성)을 정정한다.
+
+### 교차 확인한 근거
+
+1. 원본 `samples/2025 행정업무운영 편람(최종).hwp`
+   (SHA-256 `40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f`)의
+   `BodyText/Section3`, 0부터 센 레코드 1135는 tag 85이며 instance ID는
+   `885694781`이다. payload의 `[12,44)`에 있는 INT32 8개는
+   `[0,0,80280,0,80280,30900,0,30900]`이다. 좌표 쌍으로 읽으면
+   `(0,0)`, `(80280,0)`, `(80280,30900)`, `(0,30900)`이다.
+2. 대응 HWPX 원본의 SHA-256은
+   `c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6`이다.
+   `Contents/section3.xml`의 같은 instance ID 그림 `imgRect`는 위의 네 점을
+   보존한다. 구역과 바탕쪽을 포함한 그림 113개 모두 좌표 쌍 해석과 일치하며,
+   x/y 분리 배열 해석과 일치하는 것은 0개다.
+3. 독립 참조 구현 hwplib의 고정 SHA `6746c27f17ebf5277493206284aa32044a1839c4`에서
+   [reader](https://github.com/neolord0/hwplib/blob/6746c27f17ebf5277493206284aa32044a1839c4/src/main/java/kr/dogfoot/hwplib/reader/bodytext/paragraph/control/gso/ForControlPicture.java)와
+   [writer](https://github.com/neolord0/hwplib/blob/6746c27f17ebf5277493206284aa32044a1839c4/src/main/java/kr/dogfoot/hwplib/writer/bodytext/paragraph/control/gso/ForControlPicture.java)는
+   `LeftTop`·`RightTop`·`RightBottom`·`LeftBottom`의 x/y를 번갈아 읽고 쓴다.
+   이 참조 구현을 한컴 공식 사양으로 부르지 않는다.
+
+기존 `Picture.border_x`/`border_y`는 앞뒤 INT32 4개를 보존하는 레거시 필드이며,
+HWPX 파서·직렬화기도 같은 scalar 순서를 소비한다. 이미 보존되는 바이트를 필드명에
+맞춰 재배열하지 않는다. 이 정정은 저장 구조에 관한 것으로, 그림의 Print 정수 창·
+보간·압축·장치 픽셀 계산을 새로 규정하거나 잔여 시각 차이의 해결을 입증하지 않는다.
+분석 원본과 113개 대응표는 ignored
+`output/pr-review/issue8153-handbook-raw100-20261022/remaining-raw100-diagnostic/spec-contract-audit/`
+아래에 있으며, 제품의 실행문은 변경하지 않았다.
+
 ## 검증 원칙
 
 1. **사양 우선·불일치 교차 검증**: 공식 사양의 단위·속성·규칙을 먼저 따른다. 실제 결과가
