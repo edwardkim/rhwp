@@ -185,6 +185,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `zoom-dialog-transaction.test.mjs` | 상시 | active | #6109 사용자 배율 오류·ARIA·Enter/Escape/취소와 배치+이동+배율 단일 transaction — 최종 상태 `recalcLayout()` 1회 | — | npm e2e:zoom-dialog-transaction | dev server 필요 — run-with-vite.mjs 경유 |
 
 | `hyperlink-ui-issue6963.test.mjs` | 상시 | active | #6963 한컴형 링크 UI·우클릭·방문 색·undo/redo·드래그 선택 | 새 문서 | 수동 | 실제 WASM 필요 |
+| `memo-delete-undo.test.mjs` | 상시 | active | #8017 메모 기준 글자 Backspace·Delete 삭제와 Ctrl+Z·Ctrl+Y의 메모·범위 복원, 떨어진 삭제 병합 유지 | 새 문서 | npm e2e:memo-delete-undo | 실제 Studio 키 입력·fresh WASM |
 
 | `host-font-provider-issue7403.test.mjs` | 상시 | active | #7403 호스트 face 선택·동명 교체·실패 복구·저장 이름/dirty 보존 | 새 문서·합성 TTC·번들 Noto·basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-7403 / e2e:issue-7403-canvas2d | 명시적 CanvasKit/Canvas2D, 측정·paint·SVG 경계 포함 |
 

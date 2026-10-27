@@ -671,6 +671,10 @@ pub struct OrphanFieldEnd {
     /// 0 이면 모른다는 뜻이고, 그때는 HWP5 저장에서 마커를 내지 않는다 — 필드 종류를
     /// 지어내면 한글이 짝을 못 맞춘다. HWPX 에서 들어온 고아 마커가 이 경우다.
     pub begin_ctrl_id: u32,
+    /// HWP5 memo number for a memo field's closing marker. Hancom writes a
+    /// distinct 8-unit memo end marker whose sixth unit is this number; 0 means
+    /// the field is not a memo.
+    pub memo_index: u32,
 }
 
 impl Paragraph {
@@ -1495,6 +1499,10 @@ impl Paragraph {
         for fr in &mut self.field_ranges {
             let is_hyperlink = matches!(self.controls.get(fr.control_idx),
                 Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink);
+            // A zero-length memo marks a caret position; text typed there goes
+            // after its markers, so the memo must not swallow it.
+            let is_caret_memo = fr.start_char_idx == fr.end_char_idx
+                && is_memo_control(self.controls.get(fr.control_idx));
             if fr.start_char_idx > char_offset
                 || (is_hyperlink
                     && fr.start_char_idx == char_offset
@@ -1502,7 +1510,9 @@ impl Paragraph {
             {
                 fr.start_char_idx += inserted_len;
             }
-            if fr.end_char_idx > char_offset || (fr.end_char_idx == char_offset && !is_hyperlink) {
+            if fr.end_char_idx > char_offset
+                || (fr.end_char_idx == char_offset && !is_hyperlink && !is_caret_memo)
+            {
                 fr.end_char_idx += inserted_len;
             }
         }
@@ -2560,6 +2570,35 @@ impl Paragraph {
         deleted
     }
 
+    /// Memo fields whose whole non-empty anchor lies in `start..end`. When that
+    /// span is replaced, [`Self::regrow_replaced_memos`] gives them the new text.
+    pub(crate) fn memos_within(&self, start: usize, end: usize) -> Vec<usize> {
+        self.field_ranges
+            .iter()
+            .filter(|fr| {
+                fr.start_char_idx < fr.end_char_idx
+                    && start <= fr.start_char_idx
+                    && fr.end_char_idx <= end
+                    && is_memo_control(self.controls.get(fr.control_idx))
+            })
+            .map(|fr| fr.control_idx)
+            .collect()
+    }
+
+    /// A replacement deletes a memo's whole anchor and then inserts the new
+    /// text where it collapsed. Typing at a zero-length memo does not grow it,
+    /// so the replaced memos take the inserted text here.
+    pub(crate) fn regrow_replaced_memos(&mut self, memos: &[usize], at: usize, inserted: usize) {
+        if inserted == 0 {
+            return;
+        }
+        for fr in &mut self.field_ranges {
+            if memos.contains(&fr.control_idx) && fr.start_char_idx == at && fr.end_char_idx == at {
+                fr.end_char_idx += inserted;
+            }
+        }
+    }
+
     /// [#7866] 글자 `char_offset..+delete_count` 를 `text` 로 바꾸되, 새 글자가 지운 글자의
     /// 글자 모양을 **자리대로** 잇는다: i번째 새 글자는 i번째 지운 글자의 모양, 지운 글자
     /// 수를 넘는 꼬리는 마지막 지운 글자의 모양이다. 한/글 2024 찾아 바꾸기 실측
@@ -2581,9 +2620,11 @@ impl Paragraph {
         let old_ids: Vec<u32> = (at..old_end)
             .map(|offset| self.char_shape_id_at(offset).unwrap_or(0))
             .collect();
+        let replaced_memos = self.memos_within(at, old_end);
         let deleted = self.delete_text_at(at, delete_count);
         let inserted_at = self.insert_text_at(at, text);
         let new_len = text.chars().count();
+        self.regrow_replaced_memos(&replaced_memos, inserted_at, new_len);
         let Some(&last_id) = old_ids.last() else {
             return deleted;
         };
@@ -3413,6 +3454,13 @@ impl Paragraph {
         }
         self.char_shapes = merged;
     }
+}
+
+/// A memo field: `FieldType::Memo`, or a field whose command names a memo
+/// (Hancom writes a memo's control id as `%unk`).
+fn is_memo_control(ctrl: Option<&Control>) -> bool {
+    matches!(ctrl, Some(Control::Field(field))
+        if field.field_type == FieldType::Memo || field.command.starts_with("MEMO/"))
 }
 
 #[cfg(test)]

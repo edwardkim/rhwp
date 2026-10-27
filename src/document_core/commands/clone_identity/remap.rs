@@ -55,7 +55,16 @@ pub(crate) fn reidentify_clipboard(
     let mut used = used_instance_ids(doc);
     used.extend(paragraph_ids(paras)); // clipboard can outlive cut/source deletion
     let mut allocator = Allocator { used, next: 1 };
-    reidentify_with_allocator(paras, &mut allocator)
+    reidentify_with_allocator(paras, &mut allocator)?;
+    // A pasted memo needs its own number and command ids; otherwise two lists
+    // would claim the same number in the same document.
+    let next_memo = crate::document_core::queries::memo_query::max_memo_number(doc)
+        .saturating_add(1)
+        .max(1);
+    crate::document_core::queries::memo_query::renumber_memos(paras, next_memo);
+    crate::document_core::queries::memo_query::prune_incomplete_memos(paras)
+        .map_err(|error| HwpError::RenderError(error.message))?;
+    Ok(())
 }
 
 /// A request owns the allocator; each copy owns its reference maps.

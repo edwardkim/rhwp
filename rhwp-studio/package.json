@@ -33,6 +33,7 @@
     "e2e:form-edit-escape": "node e2e/form-edit-escape-cancel.test.mjs --mode=headless",
     "e2e:unsaved-guard": "node e2e/unsaved-changes-guard.test.mjs",
     "e2e:undo": "node e2e/undo-contracts.test.mjs",
+    "e2e:memo-delete-undo": "node e2e/run-with-vite.mjs -- node e2e/memo-delete-undo.test.mjs --mode=headless",
     "e2e:status-page-number": "node e2e/status-page-number.test.mjs --mode=headless",
     "e2e:document-title": "node e2e/run-with-vite.mjs -- node e2e/document-title-issue6566.test.mjs --mode=headless",
     "e2e:ruler-document-switch": "node e2e/ruler-document-switch.test.mjs --mode=headless",

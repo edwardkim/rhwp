@@ -10,6 +10,7 @@ import type { CanvasMetricDocument } from './canvas-metric-session';
 import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns } from './char-shape-runs';
 import type { CharShapeRun } from './types';
 import type { HyperlinkTarget, HyperlinkContext } from './hyperlink';
+import type { MemoAnchor } from './memo';
 import * as wasmExports from '@wasm/rhwp.js';
 import { hasPdfImportCapability } from './pdf-import-capability';
 import { blake3 } from '@noble/hashes/blake3.js';
@@ -3677,6 +3678,12 @@ export class WasmBridge {
   getHyperlinkContext(target: HyperlinkTarget): HyperlinkContext {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getHyperlinkContext(JSON.stringify(target)));
+  }
+
+  /** 문서 순서의 메모 기준 글자 위치. `getMemoList()` 의 위치 필드만 쓴다. */
+  getMemoAnchors(): MemoAnchor[] {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(this.doc.getMemoList());
   }
 
   insertHyperlink(target: HyperlinkTarget, start: number, end: number, uri: string): number {

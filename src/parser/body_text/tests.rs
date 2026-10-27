@@ -1011,6 +1011,7 @@ fn orphan_field_end_links_to_the_open_field_id() {
             begin_id_ref: 0,
             field_id: 0,
             begin_ctrl_id: 0,
+            memo_index: 0,
         }],
         ..Default::default()
     };
@@ -1050,6 +1051,7 @@ fn field_closed_in_its_own_paragraph_is_not_left_open() {
             begin_id_ref: 0,
             field_id: 0,
             begin_ctrl_id: 0,
+            memo_index: 0,
         }],
         ..Default::default()
     };
@@ -1165,6 +1167,7 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
                         begin_id_ref: 0,
                         field_id: 0,
                         begin_ctrl_id: 0,
+                        memo_index: 0,
                     });
                 }
             } else if is_extended_only_ctrl_char(ch) {

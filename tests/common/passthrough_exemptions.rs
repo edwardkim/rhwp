@@ -211,6 +211,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
          선행 편집 뮤테이터가 이미 무효화했다.",
     ),
     (
+        "queries/memo_query.rs",
+        "insert_memo_json_native",
+        Exempt::DelegatesTo("insert_memo_at"),
+        "insertMemo의 {author,text} JSON을 읽은 뒤 insert_memo_at에 넘긴다. 구역 raw_stream 무효화는 insert_memo_at이 한다 (#8017).",
+    ),
+    (
+        "queries/memo_query.rs",
+        "insert_memo_by_path_json_native",
+        Exempt::DelegatesTo("insert_memo_by_path"),
+        "insertMemoByPath의 셀 경로와 JSON을 읽은 뒤 insert_memo_by_path에 넘긴다. 구역 raw_stream 무효화는 insert_memo_by_path가 한다 (#8017).",
+    ),
+    (
         "queries/changed_pages.rs",
         "pages_covering_paragraphs",
         Exempt::SessionState,
