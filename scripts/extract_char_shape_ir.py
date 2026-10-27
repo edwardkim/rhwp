@@ -14,6 +14,8 @@ import sys
 import zipfile
 import zlib
 from pathlib import Path
+
+from regression_document_scope import is_deferred_regression_input
 from xml.etree import ElementTree as ET
 
 MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
@@ -406,9 +408,12 @@ def main() -> int:
     out_dir = root / "tests" / "fixtures" / "char_shapes"
     out_dir.mkdir(parents=True, exist_ok=True)
     excluded = set((root / "tests/fixtures/transferred_exam_regressions.txt").read_text(encoding="utf-8").splitlines())
-    excluded.update((root / "tests/fixtures/deferred_document_regressions.txt").read_text(encoding="utf-8").splitlines())
+    deferred_names = set((root / "tests/fixtures/deferred_document_regressions.txt").read_text(encoding="utf-8").splitlines())
+    excluded.update(deferred_names)
     files = sorted(samples.rglob("*.hwp")) + sorted(samples.rglob("*.hwpx"))
-    files = [path for path in files if path.relative_to(samples).as_posix() not in excluded and not path.name.startswith("hwp3-sample16")]
+    files = [path for path in files if path.name not in deferred_names
+             and path.relative_to(samples).as_posix() not in excluded
+             and not is_deferred_regression_input(path)]
     para_rows = []
     shape_rows = []
     target = None

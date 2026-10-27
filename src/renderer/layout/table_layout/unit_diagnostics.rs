@@ -42,6 +42,16 @@ pub(super) fn trace_units(cell: &Cell, units: &[CellUnit]) {
     }
 }
 
+/// 저장 혼합 컷의 인증이 끝난 지점을 선택한 셀에 한해 기록한다.
+pub(super) fn trace_mixed_opening(cell: &Cell, stage: &str) {
+    if selected(cell) {
+        eprintln!(
+            "DIAG_MIXED_OPENING row={} col={} stage={stage}",
+            cell.row, cell.col
+        );
+    }
+}
+
 /// 로컬 원점 복원과 독립적인 물리 페이지 경계의 판정을 구분한다.
 pub(super) fn trace_reset_cut(
     cell: &Cell,
@@ -57,6 +67,25 @@ pub(super) fn trace_reset_cut(
             cell.row, cell.col, cut.0, cut.1, budget.0, budget.1, unit.height,
             unit.para_idx, unit.vis_start, unit.hard_break_before,
             unit.stored_frame_break_before, strict, zero_origin(),
+        );
+    }
+}
+
+/// 원점 되감김과 현재 물리 컷의 인증 근거를 선택한 셀에서 분리해 기록한다.
+pub(super) fn trace_reset_owners(
+    cell: &Cell,
+    cursor: (usize, usize),
+    unit: &CellUnit,
+    owners: &[(&str, bool)],
+) {
+    if selected(cell)
+        && (unit.page_frame_reset_before
+            || unit.stored_frame_break_before
+            || unit.hard_break_before)
+    {
+        eprintln!(
+            "DIAG_RESET_OWNERS row={} col={} start={} next={} para={} line={} owners={owners:?}",
+            cell.row, cell.col, cursor.0, cursor.1, unit.para_idx, unit.vis_start,
         );
     }
 }

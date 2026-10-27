@@ -96,6 +96,15 @@ impl TypesetEngine {
                 .any(|p| p.line_segs.iter().any(|ls| !is_synthetic_line_seg(ls))),
             skip_spacing_before_prededuct,
         );
+        if let Some(band) = crate::renderer::stored_page_origin::initial_column_band::resolve(
+            paragraphs,
+            styles,
+            profile,
+            usize::from(col_count),
+            self.dpi,
+        ) {
+            st.initialize_stored_column_band(band);
+        }
         // [#2279 OMIT-eager] 기계생성 압축 ladder 문서군 사전 판별 — lazy 판별
         // (#2383, 빈 host 표 성장 시점)보다 앞서 페이지말 fit 규칙에 적용되도록
         // 구역 시작 시점에 확정한다. lazy 경로는 사전 스캔 미검출 형상의
@@ -401,9 +410,12 @@ impl TypesetEngine {
         let issue2424_inloop_flush = issue2424_prof.deferred_flush.0;
 
         // source tail에 뒤따르는 본문이 없어 자연 page break가 일어나지 않은 경우에도,
-        // deferred Square picture는 현재 쪽 FootnoteArea에 겹치지 않고 독립한 다음 physical
-        // page를 가져야 한다. 일반 흐름을 되감지 않고 picture PageItem만 drain한다.
-        if !st.deferred_next_page_square_pictures.is_empty() || st.has_deferred_body_footnotes() {
+        // 지연 그림과 확정 개체 프레임은 독립한 다음 physical page를 가져야 한다.
+        // 일반 흐름을 되감지 않고 다음 쪽 소유가 확정된 항목을 모두 배출한다.
+        if !st.deferred_next_page_square_pictures.is_empty()
+            || !st.deferred_next_page_stored_frames.is_empty()
+            || st.has_deferred_body_footnotes()
+        {
             st.force_new_page();
         }
 
@@ -440,7 +452,7 @@ impl TypesetEngine {
         );
         st.finish_next_column_stored_frames();
         st.finish_deferred_column_shapes();
-        if !st.current_items.is_empty() {
+        if st.has_column_content() {
             st.flush_column_always();
         }
         // 마지막 본문 뒤의 저장 각주 suffix도 버리지 않는다. 실제 다음 쪽을

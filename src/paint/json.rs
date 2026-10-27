@@ -726,6 +726,19 @@ impl PaintOp {
                 if let Some(display_text) = &display_text {
                     let _ = write!(buf, ",\"displayText\":{}", json_escape(display_text));
                 }
+                let (pua_candidates, complete) = crate::renderer::pua_glyph::candidates(
+                    display_text.as_deref().unwrap_or(&run.text),
+                );
+                if !complete {
+                    buf.push_str(",\"puaGlyphCandidatesComplete\":false");
+                }
+                if !pua_candidates.is_empty() {
+                    let _ = write!(
+                        buf,
+                        ",\"puaGlyphCandidates\":{}",
+                        serde_json::to_string(&pua_candidates).unwrap()
+                    );
+                }
                 buf.push_str(",\"placement\":");
                 write_text_run_placement(buf, *bbox, run);
                 buf.push_str(",\"clusters\":");
@@ -908,6 +921,10 @@ impl PaintOp {
                 let _ = write!(buf, ",\"positionsComplete\":{complete}");
                 buf.push_str(",\"charOverlap\":");
                 write_char_overlap(buf, run.char_overlap.as_ref());
+                if let Some(plan) = crate::renderer::char_overlap::project(run, *bbox) {
+                    buf.push_str(",\"composition\":");
+                    write_overlap_composition(buf, &plan);
+                }
                 buf.push('}');
             }
             PaintOp::TextControlMark { bbox, run, source } => {
@@ -1101,12 +1118,12 @@ impl PaintOp {
                 // [#7193] 소비자가 그리는 자리 — 틀에서 그림 안쪽 여백을 뺀 사각형.
                 write_bbox(buf, image.paint_bbox(bbox));
                 buf.push_str(",\"imagePaintBBox\":");
-                write_bbox(
-                    buf,
-                    image
-                        .transform
-                        .effective_image_bbox(&image.paint_bbox(bbox)),
-                );
+                write_bbox(buf, image.transformed_paint_bbox(bbox));
+                if image.pre_rotation_ratio.is_some() || image.source_rect.is_some() {
+                    // bbox는 기존 외접 프레임 계약을 유지한다. 실제 그릴 크기는 별도로 전달한다.
+                    buf.push_str(",\"paintBbox\":");
+                    write_bbox(buf, image.transformed_paint_bbox(bbox));
+                }
                 if let Some(frame) = resolved.and_then(|payload| {
                     crate::renderer::print_raster::PrintRasterFrame::read(&payload.data)
                 }) {
@@ -1125,6 +1142,14 @@ impl PaintOp {
                     )
                 }) {
                     buf.push_str(",\"imageAnisotropicReduction\":true");
+                }
+                if let Some(clip) = image.source_clip_bbox(bbox) {
+                    buf.push_str(",\"paintClip\":");
+                    write_bbox(buf, clip);
+                    buf.push_str(",\"paintClipPath\":");
+                    buf.push_str(
+                        &serde_json::to_string(&image.source_clip_path(bbox).unwrap()).unwrap(),
+                    );
                 }
                 if resolved
                     .map(|payload| payload.data.as_slice())
@@ -1817,6 +1842,10 @@ fn write_text_style(buf: &mut String, style: &TextStyle) {
         buf.push_str(",\"kerning\":true");
     }
     write_synthetic_italic_skew(buf, style.italic);
+    if let Some(layout) = &style.bidi_layout {
+        buf.push_str(",\"bidiLayout\":");
+        buf.push_str(&serde_json::to_string(layout).expect("방향 결과의 유한 좌표"));
+    }
     buf.push('}');
 }
 
@@ -2059,6 +2088,32 @@ fn field_marker_str(value: FieldMarkerType) -> &'static str {
         FieldMarkerType::FieldBeginEnd => "fieldBeginEnd",
         FieldMarkerType::ShapeMarker(_) => "shapeMarker",
     }
+}
+
+fn write_overlap_glyph(buf: &mut String, glyph: &crate::renderer::char_overlap::Glyph) {
+    buf.push_str("{\"type\":\"textRun\",\"bbox\":");
+    write_bbox(buf, glyph.bbox);
+    let _ = write!(buf, ",\"text\":{},\"baseline\":{:.3},\"rotation\":0,\"isVertical\":false,\"positions\":[0,{:.3}],\"style\":",
+        json_escape(&glyph.run.text),glyph.run.baseline,glyph.bbox.width);
+    write_text_style(buf, &glyph.run.style);
+    buf.push('}');
+}
+
+fn write_overlap_composition(buf: &mut String, plan: &crate::renderer::char_overlap::Projection) {
+    let _ = write!(buf, "{{\"reversed\":{},\"border\":", plan.reversed);
+    if let Some(border) = &plan.border {
+        write_overlap_glyph(buf, border);
+    } else {
+        buf.push_str("null");
+    }
+    buf.push_str(",\"interior\":[");
+    for (i, glyph) in plan.interior.iter().enumerate() {
+        if i > 0 {
+            buf.push(',');
+        }
+        write_overlap_glyph(buf, glyph);
+    }
+    buf.push_str("]}");
 }
 
 fn write_char_overlap(
@@ -2933,7 +2988,30 @@ fn write_text_decoration(
         }
         let _ = write!(buf, "{:.3}", position);
     }
-    let _ = write!(buf, "],\"positionsComplete\":{complete}}}");
+    let _ = write!(buf, "],\"positionsComplete\":{complete}");
+    if kind == TextDecorationKind::Underline {
+        if let Some(top) =
+            crate::renderer::text_decoration::top_underline_geometry(&run.style, font_size)
+        {
+            let _ = write!(
+                buf,
+                ",\"topUnderline\":{}",
+                serde_json::to_string(&top).unwrap()
+            );
+        }
+    }
+    if kind == TextDecorationKind::EmphasisDot {
+        if let Some(geometry) =
+            crate::renderer::emphasis::geometry(&bounded_text, &positions, &run.style, font_size)
+        {
+            let _ = write!(
+                buf,
+                ",\"emphasis\":{}",
+                serde_json::to_string(&geometry).unwrap()
+            );
+        }
+    }
+    buf.push('}');
 }
 
 fn write_shape_style(buf: &mut String, style: &ShapeStyle) {
@@ -3694,6 +3772,7 @@ mod tests {
                 char_overlap: Some(CharOverlapInfo {
                     border_type: 1,
                     inner_char_size: 90,
+                    composition: None,
                 }),
                 border_fill_id: 0,
                 baseline: 13.0,
@@ -4016,6 +4095,7 @@ mod tests {
             char_overlap: Some(CharOverlapInfo {
                 border_type: 2,
                 inner_char_size: 80,
+                composition: None,
             }),
             border_fill_id: 0,
             baseline: 11.0,
@@ -4227,6 +4307,7 @@ mod tests {
             char_overlap: Some(CharOverlapInfo {
                 border_type: 1,
                 inner_char_size: 100,
+                composition: None,
             }),
             border_fill_id: 0,
             baseline: 10.0,

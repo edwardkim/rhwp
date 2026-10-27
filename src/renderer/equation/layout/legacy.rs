@@ -47,7 +47,9 @@ fn cjk(character: char) -> bool {
 }
 
 fn line_node(node: &EqNode) -> bool {
-    match node {
+    // 구형 파서는 명시적 중괄호의 소유를 Group으로 보존한다. 그 소유는
+    // 지우지 않고, 이 프레임이 표시할 수 있는 피연산자인지만 안쪽에서 확인한다.
+    match node.ungrouped() {
         EqNode::Text(text) | EqNode::Number(text) => {
             text.chars().all(|ch| cjk(ch) || glyph_width(ch).is_some())
         }
@@ -66,7 +68,7 @@ fn line_node(node: &EqNode) -> bool {
 }
 
 pub(super) fn supports(node: &EqNode) -> bool {
-    match node {
+    match node.ungrouped() {
         EqNode::Fraction { numer, denom } => line_node(numer) && line_node(denom),
         EqNode::Paren { left, right, body } => {
             matches!((left.as_str(), right.as_str()), ("(", ")") | ("[", "]")) && supports(body)
@@ -86,7 +88,7 @@ pub(super) fn supports(node: &EqNode) -> bool {
 // 문자열이나 문서 식별자가 아니라 AST의 프레임 소유 구조로 구분한다.
 pub(super) fn compound_frame(node: &EqNode) -> bool {
     fn fraction(node: &EqNode) -> bool {
-        match node {
+        match node.ungrouped() {
             EqNode::Fraction { .. } => true,
             EqNode::Row(items) => items.iter().any(fraction),
             EqNode::Paren { body, .. }
@@ -95,7 +97,7 @@ pub(super) fn compound_frame(node: &EqNode) -> bool {
             _ => false,
         }
     }
-    match node {
+    match node.ungrouped() {
         EqNode::Paren { body, .. } => fraction(body),
         EqNode::Row(items) => items.iter().any(compound_frame),
         EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => compound_frame(body),
@@ -180,7 +182,7 @@ pub(super) fn text(text: &str, fs: f64) -> LayoutBox {
 }
 
 fn operator(node: &EqNode) -> Option<&str> {
-    match node {
+    match node.ungrouped() {
         EqNode::Symbol(text) | EqNode::MathSymbol(text) => Some(text),
         EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => operator(body),
         _ => None,
@@ -199,7 +201,8 @@ pub(super) fn row_children(layout: &EqLayout, nodes: &[EqNode], fs: f64) -> Vec<
             let (left, right) = match op {
                 "+" | "-" | "−" => (
                     if index > 0 { fs / 9.0 } else { 0.0 },
-                    if index + 1 < nodes.len() && !matches!(nodes[index + 1], EqNode::Paren { .. })
+                    if index + 1 < nodes.len()
+                        && !matches!(nodes[index + 1].ungrouped(), EqNode::Paren { .. })
                     {
                         fs / 9.0
                     } else {

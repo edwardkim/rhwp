@@ -10,6 +10,7 @@ mod connector;
 mod equation;
 mod note;
 mod picture;
+mod picture_inline_migration;
 mod shape;
 mod table;
 mod table_creation;

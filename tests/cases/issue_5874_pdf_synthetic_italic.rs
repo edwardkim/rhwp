@@ -87,8 +87,10 @@ fn upright_fallback_is_sheared_without_moving_baseline_or_advances() {
             close(new.ty, old.ty);
             close(new.sx, old.sx);
             close(new.ky, old.ky);
-            close(new.kx, old.kx - 0.25 * old.sx);
-            close(new.sy, old.sy - 0.25 * old.ky);
+            // 독립 한컴 Print의 Tm = [1 0 .333 -1 ...]에 따른 무차원 shear다.
+            // 기준선·전진과 실제 italic face의 비합성 계약은 별도로 유지한다.
+            close(new.kx, old.kx - 0.333 * old.sx);
+            close(new.sy, old.sy - 0.333 * old.ky);
         }
         let (chunk, _) = svg2pdf_to_chunk(&after, true).unwrap();
         assert!(

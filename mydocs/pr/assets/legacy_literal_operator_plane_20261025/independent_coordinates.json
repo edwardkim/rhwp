@@ -1,0 +1,6161 @@
+{
+  "dpi": 96,
+  "coordinate_system": "paper CSS px; independent PDF point coordinates times96/72; x relative to unchanged label origin and y relative to first glyph baseline",
+  "tolerance_css_px": 2,
+  "corpora": [
+    {
+      "name": "literal",
+      "input": "mydocs/pr/assets/legacy_literal_operator_plane_20261025/inputs/legacy-literal-advance-grid.hwpx",
+      "input_sha256": "091a280867b228c53eaefdf66ffecd4c1dbc189edc81d5be9461b2ec62a9493c",
+      "pdf": "pdf/legacy-literal-operator-plane/legacy-literal-advance-grid-2020.pdf",
+      "pdf_sha256": "deb21d0e1b01b6fdaa5af60a72951a514da65cb302490f62e4e07c5ff8ebaa2f",
+      "page_count": 10,
+      "print_job_id": "4d8e7afd-b1fe-45a5-9436-1a237d4723b6",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "observation_source": "legacy-literal-grid-measurements-3304.json",
+      "cases": [
+        {
+          "paragraph": 1,
+          "label_paragraph": 0,
+          "label": "P000",
+          "script": "%",
+          "page": 1,
+          "characters": "%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 12.952977498372396,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 3,
+          "label_paragraph": 2,
+          "label": "P001",
+          "script": "%",
+          "page": 1,
+          "characters": "%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 12.793065388997396,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 5,
+          "label_paragraph": 4,
+          "label": "P002",
+          "script": "%",
+          "page": 1,
+          "characters": "%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 12.793065388997396,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 7,
+          "label_paragraph": 6,
+          "label": "P003",
+          "script": "%",
+          "page": 1,
+          "characters": "%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 25.106399536132812,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 9,
+          "label_paragraph": 8,
+          "label": "P004",
+          "script": "%",
+          "page": 1,
+          "characters": "%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 24.94647725423177,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 11,
+          "label_paragraph": 10,
+          "label": "P005",
+          "script": "%",
+          "page": 1,
+          "characters": "%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 24.94647725423177,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 13,
+          "label_paragraph": 12,
+          "label": "P006",
+          "script": "%",
+          "page": 1,
+          "characters": "%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 15,
+          "label_paragraph": 14,
+          "label": "P007",
+          "script": "%",
+          "page": 1,
+          "characters": "%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 36.93997701009115,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 17,
+          "label_paragraph": 16,
+          "label": "P008",
+          "script": "%",
+          "page": 1,
+          "characters": "%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 37.09989929199219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 19,
+          "label_paragraph": 18,
+          "label": "P009",
+          "script": "%%",
+          "page": 1,
+          "characters": "%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 7.51593017578125,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 21,
+          "label_paragraph": 20,
+          "label": "P010",
+          "script": "%%",
+          "page": 1,
+          "characters": "%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 7.3560129801432295,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 23,
+          "label_paragraph": 22,
+          "label": "P011",
+          "script": "%%",
+          "page": 2,
+          "characters": "%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 7.3560129801432295,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 25,
+          "label_paragraph": 24,
+          "label": "P012",
+          "script": "%%",
+          "page": 2,
+          "characters": "%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 14.232284545898438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 74.03987121582031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 27,
+          "label_paragraph": 26,
+          "label": "P013",
+          "script": "%%",
+          "page": 2,
+          "characters": "%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 14.072372436523438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 74.03987121582031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 29,
+          "label_paragraph": 28,
+          "label": "P014",
+          "script": "%%",
+          "page": 2,
+          "characters": "%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 14.072372436523438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 74.03987121582031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 31,
+          "label_paragraph": 30,
+          "label": "P015",
+          "script": "%%",
+          "page": 2,
+          "characters": "%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 20.948644002278645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 110.81994120279948,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 33,
+          "label_paragraph": 32,
+          "label": "P016",
+          "script": "%%",
+          "page": 2,
+          "characters": "%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 20.628819783528645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 110.66002909342448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 35,
+          "label_paragraph": 34,
+          "label": "P017",
+          "script": "%%",
+          "page": 2,
+          "characters": "%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 20.788731892903645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 110.66002909342448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 37,
+          "label_paragraph": 36,
+          "label": "P018",
+          "script": "%%%",
+          "page": 2,
+          "characters": "%%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 5.4370574951171875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 26.065872192382812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 46.69469706217448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 39,
+          "label_paragraph": 38,
+          "label": "P019",
+          "script": "%%%",
+          "page": 2,
+          "characters": "%%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 5.277140299479167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 26.065872192382812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 46.69469706217448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 41,
+          "label_paragraph": 40,
+          "label": "P020",
+          "script": "%%%",
+          "page": 2,
+          "characters": "%%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 5.277140299479167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 26.065872192382812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 46.69469706217448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 43,
+          "label_paragraph": 42,
+          "label": "P021",
+          "script": "%%%",
+          "page": 2,
+          "characters": "%%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 10.074539184570312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 92.74973042805989,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 45,
+          "label_paragraph": 44,
+          "label": "P022",
+          "script": "%%%",
+          "page": 3,
+          "characters": "%%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 9.914627075195312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 92.58981831868489,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 47,
+          "label_paragraph": 46,
+          "label": "P023",
+          "script": "%%%",
+          "page": 3,
+          "characters": "%%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 9.914627075195312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 92.58981831868489,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 49,
+          "label_paragraph": 48,
+          "label": "P024",
+          "script": "%%%",
+          "page": 3,
+          "characters": "%%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 14.712031046549479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 76.59848531087239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 138.6448516845703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 51,
+          "label_paragraph": 50,
+          "label": "P025",
+          "script": "%%%",
+          "page": 3,
+          "characters": "%%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 14.552118937174479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 76.59848531087239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 138.6448516845703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 53,
+          "label_paragraph": 52,
+          "label": "P026",
+          "script": "%%%",
+          "page": 3,
+          "characters": "%%%",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 14.552118937174479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 76.59848531087239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 138.6448516845703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 55,
+          "label_paragraph": 54,
+          "label": "P027",
+          "script": "△",
+          "page": 3,
+          "characters": "△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 12.952977498372396,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 57,
+          "label_paragraph": 56,
+          "label": "P028",
+          "script": "△",
+          "page": 3,
+          "characters": "△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 12.793065388997396,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 59,
+          "label_paragraph": 58,
+          "label": "P029",
+          "script": "△",
+          "page": 3,
+          "characters": "△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 12.793065388997396,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 61,
+          "label_paragraph": 60,
+          "label": "P030",
+          "script": "△",
+          "page": 3,
+          "characters": "△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 25.106399536132812,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 63,
+          "label_paragraph": 62,
+          "label": "P031",
+          "script": "△",
+          "page": 3,
+          "characters": "△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 24.94647725423177,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 65,
+          "label_paragraph": 64,
+          "label": "P032",
+          "script": "△",
+          "page": 3,
+          "characters": "△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 24.94647725423177,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 67,
+          "label_paragraph": 66,
+          "label": "P033",
+          "script": "△",
+          "page": 4,
+          "characters": "△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 69,
+          "label_paragraph": 68,
+          "label": "P034",
+          "script": "△",
+          "page": 4,
+          "characters": "△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 36.93997701009115,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 71,
+          "label_paragraph": 70,
+          "label": "P035",
+          "script": "△",
+          "page": 4,
+          "characters": "△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 37.09989929199219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 73,
+          "label_paragraph": 72,
+          "label": "P036",
+          "script": "△△",
+          "page": 4,
+          "characters": "△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 7.51593017578125,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 75,
+          "label_paragraph": 74,
+          "label": "P037",
+          "script": "△△",
+          "page": 4,
+          "characters": "△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 7.3560129801432295,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 77,
+          "label_paragraph": 76,
+          "label": "P038",
+          "script": "△△",
+          "page": 4,
+          "characters": "△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 7.3560129801432295,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 79,
+          "label_paragraph": 78,
+          "label": "P039",
+          "script": "△△",
+          "page": 4,
+          "characters": "△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 14.232284545898438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 74.03987121582031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 81,
+          "label_paragraph": 80,
+          "label": "P040",
+          "script": "△△",
+          "page": 4,
+          "characters": "△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 14.072372436523438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 74.03987121582031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 83,
+          "label_paragraph": 82,
+          "label": "P041",
+          "script": "△△",
+          "page": 4,
+          "characters": "△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 14.072372436523438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 74.03987121582031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 85,
+          "label_paragraph": 84,
+          "label": "P042",
+          "script": "△△",
+          "page": 4,
+          "characters": "△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 20.948644002278645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 110.81994120279948,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 87,
+          "label_paragraph": 86,
+          "label": "P043",
+          "script": "△△",
+          "page": 4,
+          "characters": "△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 20.628819783528645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 110.66002909342448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 89,
+          "label_paragraph": 88,
+          "label": "P044",
+          "script": "△△",
+          "page": 5,
+          "characters": "△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 20.788731892903645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 110.66002909342448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 91,
+          "label_paragraph": 90,
+          "label": "P045",
+          "script": "△△△",
+          "page": 5,
+          "characters": "△△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 5.4370574951171875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 26.065872192382812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 46.69469706217448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 93,
+          "label_paragraph": 92,
+          "label": "P046",
+          "script": "△△△",
+          "page": 5,
+          "characters": "△△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 5.277140299479167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 26.065872192382812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 46.69469706217448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 95,
+          "label_paragraph": 94,
+          "label": "P047",
+          "script": "△△△",
+          "page": 5,
+          "characters": "△△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 5.277140299479167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 26.065872192382812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 46.69469706217448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 97,
+          "label_paragraph": 96,
+          "label": "P048",
+          "script": "△△△",
+          "page": 5,
+          "characters": "△△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 10.074539184570312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 92.74973042805989,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 99,
+          "label_paragraph": 98,
+          "label": "P049",
+          "script": "△△△",
+          "page": 5,
+          "characters": "△△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 9.914627075195312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 92.58981831868489,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 101,
+          "label_paragraph": 100,
+          "label": "P050",
+          "script": "△△△",
+          "page": 5,
+          "characters": "△△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 9.914627075195312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 92.58981831868489,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 103,
+          "label_paragraph": 102,
+          "label": "P051",
+          "script": "△△△",
+          "page": 5,
+          "characters": "△△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 14.712031046549479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 76.59848531087239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 138.6448516845703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 105,
+          "label_paragraph": 104,
+          "label": "P052",
+          "script": "△△△",
+          "page": 5,
+          "characters": "△△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 14.552118937174479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 76.59848531087239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 138.6448516845703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 107,
+          "label_paragraph": 106,
+          "label": "P053",
+          "script": "△△△",
+          "page": 5,
+          "characters": "△△△",
+          "points": [
+            {
+              "character": "△",
+              "x_from_label_css_px": 14.552118937174479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 76.59848531087239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 138.6448516845703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 109,
+          "label_paragraph": 108,
+          "label": "P054",
+          "script": "․",
+          "page": 5,
+          "characters": "․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 12.952977498372396,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 111,
+          "label_paragraph": 110,
+          "label": "P055",
+          "script": "․",
+          "page": 6,
+          "characters": "․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 12.793065388997396,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 113,
+          "label_paragraph": 112,
+          "label": "P056",
+          "script": "․",
+          "page": 6,
+          "characters": "․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 12.793065388997396,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 115,
+          "label_paragraph": 114,
+          "label": "P057",
+          "script": "․",
+          "page": 6,
+          "characters": "․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 25.106399536132812,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 117,
+          "label_paragraph": 116,
+          "label": "P058",
+          "script": "․",
+          "page": 6,
+          "characters": "․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 24.94647725423177,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 119,
+          "label_paragraph": 118,
+          "label": "P059",
+          "script": "․",
+          "page": 6,
+          "characters": "․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 24.94647725423177,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 121,
+          "label_paragraph": 120,
+          "label": "P060",
+          "script": "․",
+          "page": 6,
+          "characters": "․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 123,
+          "label_paragraph": 122,
+          "label": "P061",
+          "script": "․",
+          "page": 6,
+          "characters": "․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 36.93997701009115,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 125,
+          "label_paragraph": 124,
+          "label": "P062",
+          "script": "․",
+          "page": 6,
+          "characters": "․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 37.09989929199219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 127,
+          "label_paragraph": 126,
+          "label": "P063",
+          "script": "․․",
+          "page": 6,
+          "characters": "․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 7.51593017578125,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 129,
+          "label_paragraph": 128,
+          "label": "P064",
+          "script": "․․",
+          "page": 6,
+          "characters": "․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 7.3560129801432295,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 131,
+          "label_paragraph": 130,
+          "label": "P065",
+          "script": "․․",
+          "page": 6,
+          "characters": "․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 7.3560129801432295,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 133,
+          "label_paragraph": 132,
+          "label": "P066",
+          "script": "․․",
+          "page": 7,
+          "characters": "․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 14.232284545898438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 74.03987121582031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 135,
+          "label_paragraph": 134,
+          "label": "P067",
+          "script": "․․",
+          "page": 7,
+          "characters": "․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 14.072372436523438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 74.03987121582031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 137,
+          "label_paragraph": 136,
+          "label": "P068",
+          "script": "․․",
+          "page": 7,
+          "characters": "․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 14.072372436523438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 74.03987121582031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 139,
+          "label_paragraph": 138,
+          "label": "P069",
+          "script": "․․",
+          "page": 7,
+          "characters": "․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 20.948644002278645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 110.81994120279948,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 141,
+          "label_paragraph": 140,
+          "label": "P070",
+          "script": "․․",
+          "page": 7,
+          "characters": "․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 20.628819783528645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 110.66002909342448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 143,
+          "label_paragraph": 142,
+          "label": "P071",
+          "script": "․․",
+          "page": 7,
+          "characters": "․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 20.788731892903645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 110.66002909342448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 145,
+          "label_paragraph": 144,
+          "label": "P072",
+          "script": "․․․",
+          "page": 7,
+          "characters": "․․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 5.4370574951171875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 26.065872192382812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 46.69469706217448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 147,
+          "label_paragraph": 146,
+          "label": "P073",
+          "script": "․․․",
+          "page": 7,
+          "characters": "․․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 5.277140299479167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 26.065872192382812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 46.69469706217448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 149,
+          "label_paragraph": 148,
+          "label": "P074",
+          "script": "․․․",
+          "page": 7,
+          "characters": "․․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 5.277140299479167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 26.065872192382812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 46.69469706217448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 151,
+          "label_paragraph": 150,
+          "label": "P075",
+          "script": "․․․",
+          "page": 7,
+          "characters": "․․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 10.074539184570312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 92.74973042805989,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 153,
+          "label_paragraph": 152,
+          "label": "P076",
+          "script": "․․․",
+          "page": 7,
+          "characters": "․․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 9.914627075195312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 92.58981831868489,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 155,
+          "label_paragraph": 154,
+          "label": "P077",
+          "script": "․․․",
+          "page": 8,
+          "characters": "․․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 9.914627075195312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 92.58981831868489,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 157,
+          "label_paragraph": 156,
+          "label": "P078",
+          "script": "․․․",
+          "page": 8,
+          "characters": "․․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 14.712031046549479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 76.59848531087239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 138.6448516845703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 8
+        },
+        {
+          "paragraph": 159,
+          "label_paragraph": 158,
+          "label": "P079",
+          "script": "․․․",
+          "page": 8,
+          "characters": "․․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 14.552118937174479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 76.59848531087239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 138.6448516845703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 8
+        },
+        {
+          "paragraph": 161,
+          "label_paragraph": 160,
+          "label": "P080",
+          "script": "․․․",
+          "page": 8,
+          "characters": "․․․",
+          "points": [
+            {
+              "character": "․",
+              "x_from_label_css_px": 14.552118937174479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 76.59848531087239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 138.6448516845703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 8
+        },
+        {
+          "paragraph": 163,
+          "label_paragraph": 162,
+          "label": "P081",
+          "script": "%△․",
+          "page": 8,
+          "characters": "%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 5.4370574951171875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 26.065872192382812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 46.69469706217448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 8
+        },
+        {
+          "paragraph": 165,
+          "label_paragraph": 164,
+          "label": "P082",
+          "script": "%△․",
+          "page": 8,
+          "characters": "%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 5.277140299479167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 26.065872192382812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 46.69469706217448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 8
+        },
+        {
+          "paragraph": 167,
+          "label_paragraph": 166,
+          "label": "P083",
+          "script": "%△․",
+          "page": 8,
+          "characters": "%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 5.277140299479167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 26.065872192382812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 46.69469706217448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 8
+        },
+        {
+          "paragraph": 169,
+          "label_paragraph": 168,
+          "label": "P084",
+          "script": "%△․",
+          "page": 8,
+          "characters": "%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 10.074539184570312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 92.74973042805989,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 8
+        },
+        {
+          "paragraph": 171,
+          "label_paragraph": 170,
+          "label": "P085",
+          "script": "%△․",
+          "page": 8,
+          "characters": "%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 9.914627075195312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 92.58981831868489,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 8
+        },
+        {
+          "paragraph": 173,
+          "label_paragraph": 172,
+          "label": "P086",
+          "script": "%△․",
+          "page": 8,
+          "characters": "%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 9.914627075195312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 92.58981831868489,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 8
+        },
+        {
+          "paragraph": 175,
+          "label_paragraph": 174,
+          "label": "P087",
+          "script": "%△․",
+          "page": 8,
+          "characters": "%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 14.712031046549479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 76.59848531087239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 138.6448516845703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 8
+        },
+        {
+          "paragraph": 177,
+          "label_paragraph": 176,
+          "label": "P088",
+          "script": "%△․",
+          "page": 9,
+          "characters": "%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 14.552118937174479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 76.59848531087239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 138.6448516845703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 8
+        },
+        {
+          "paragraph": 179,
+          "label_paragraph": 178,
+          "label": "P089",
+          "script": "%△․",
+          "page": 9,
+          "characters": "%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 14.552118937174479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 76.59848531087239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 138.6448516845703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 9
+        },
+        {
+          "paragraph": 181,
+          "label_paragraph": 180,
+          "label": "P090",
+          "script": "%△․%△․",
+          "page": 9,
+          "characters": "%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 3.198267618815104,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 13.912460327148438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 24.62665303548177,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 35.3408457438151,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 45.89512634277344,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 56.60931905110677,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 9
+        },
+        {
+          "paragraph": 183,
+          "label_paragraph": 182,
+          "label": "P091",
+          "script": "%△․%△․",
+          "page": 9,
+          "characters": "%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 3.198267618815104,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 13.752548217773438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 24.46674092610677,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 35.1809336344401,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 45.89512634277344,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 56.60931905110677,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 9
+        },
+        {
+          "paragraph": 185,
+          "label_paragraph": 184,
+          "label": "P092",
+          "script": "%△․%△․",
+          "page": 9,
+          "characters": "%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 3.198267618815104,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 13.912460327148438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 24.46674092610677,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 35.1809336344401,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 45.89512634277344,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 56.60931905110677,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 9
+        },
+        {
+          "paragraph": 187,
+          "label_paragraph": 186,
+          "label": "P093",
+          "script": "%△․%△․",
+          "page": 9,
+          "characters": "%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 5.5969696044921875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 27.025355021158855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 48.29382832845052,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 69.72221374511719,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 91.15059916178386,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 112.57899475097656,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 9
+        },
+        {
+          "paragraph": 189,
+          "label_paragraph": 188,
+          "label": "P094",
+          "script": "%△․%△․",
+          "page": 9,
+          "characters": "%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 5.4370574951171875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 26.865442911783855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 48.29382832845052,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 69.72221374511719,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 91.15059916178386,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 112.57899475097656,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 9
+        },
+        {
+          "paragraph": 191,
+          "label_paragraph": 190,
+          "label": "P095",
+          "script": "%△․%△․",
+          "page": 9,
+          "characters": "%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 5.4370574951171875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 26.865442911783855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 48.29382832845052,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 69.72221374511719,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 91.15059916178386,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 112.57899475097656,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 9
+        },
+        {
+          "paragraph": 193,
+          "label_paragraph": 192,
+          "label": "P096",
+          "script": "%△․%△․",
+          "page": 9,
+          "characters": "%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 7.99566650390625,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 40.13824971516927,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 72.12091573079427,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 104.26350402832031,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 136.4060821533203,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 168.5486602783203,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 9
+        },
+        {
+          "paragraph": 195,
+          "label_paragraph": 194,
+          "label": "P097",
+          "script": "%△․%△․",
+          "page": 9,
+          "characters": "%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 7.83575439453125,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 39.97833760579427,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 72.12091573079427,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 104.26350402832031,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 136.4060821533203,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 168.5486602783203,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 9
+        },
+        {
+          "paragraph": 197,
+          "label_paragraph": 196,
+          "label": "P098",
+          "script": "%△․%△․",
+          "page": 9,
+          "characters": "%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 7.83575439453125,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 39.97833760579427,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 72.12091573079427,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 104.26350402832031,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 136.4060821533203,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 168.5486602783203,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 9
+        },
+        {
+          "paragraph": 199,
+          "label_paragraph": 198,
+          "label": "P099",
+          "script": "%△․%△․%△․",
+          "page": 10,
+          "characters": "%△․%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 2.3987019856770835,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 9.594802856445312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 16.79089864095052,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 23.98700459798177,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 31.18310038248698,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 38.53911844889323,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 45.73521423339844,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 52.93131001790365,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 60.1274159749349,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 9
+        },
+        {
+          "paragraph": 201,
+          "label_paragraph": 200,
+          "label": "P100",
+          "script": "%△․%△․%△․",
+          "page": 10,
+          "characters": "%△․%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 2.3987019856770835,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 9.594802856445312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 16.79089864095052,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 23.98700459798177,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 31.18310038248698,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 38.53911844889323,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 45.73521423339844,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 52.93131001790365,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 60.1274159749349,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 10
+        },
+        {
+          "paragraph": 203,
+          "label_paragraph": 202,
+          "label": "P101",
+          "script": "%△․%△․%△․",
+          "page": 10,
+          "characters": "%△․%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 2.3987019856770835,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 9.594802856445312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 16.79089864095052,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 23.98700459798177,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 31.18310038248698,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 38.53911844889323,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 45.73521423339844,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 52.93131001790365,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 60.1274159749349,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 10
+        },
+        {
+          "paragraph": 205,
+          "label_paragraph": 204,
+          "label": "P102",
+          "script": "%△․%△․%△․",
+          "page": 10,
+          "characters": "%△․%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 3.997833251953125,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 18.390040079752605,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 32.94214375813802,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 47.33434549967448,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 61.72654724121094,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 76.27866109212239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 90.67086283365886,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 105.06306457519531,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 119.61516825358073,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 10
+        },
+        {
+          "paragraph": 207,
+          "label_paragraph": 206,
+          "label": "P103",
+          "script": "%△․%△․%△․",
+          "page": 10,
+          "characters": "%△․%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 3.997833251953125,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 18.390040079752605,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 32.78223164876302,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 47.33434549967448,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 61.72654724121094,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 76.27866109212239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 90.67086283365886,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 105.06306457519531,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 119.61516825358073,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 10
+        },
+        {
+          "paragraph": 209,
+          "label_paragraph": 208,
+          "label": "P104",
+          "script": "%△․%△․%△․",
+          "page": 10,
+          "characters": "%△․%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 3.997833251953125,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 18.390040079752605,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 32.78223164876302,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 47.33434549967448,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 61.72654724121094,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 76.27866109212239,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 90.67086283365886,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 105.06306457519531,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 119.61516825358073,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 10
+        },
+        {
+          "paragraph": 211,
+          "label_paragraph": 210,
+          "label": "P105",
+          "script": "%△․%△․%△․",
+          "page": 10,
+          "characters": "%△․%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 5.5969696044921875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 27.345179239908855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 48.93347676595052,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 70.68169657389323,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 92.26999409993489,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 114.01820373535156,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 135.60650126139322,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 157.3547108968099,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 178.94302876790366,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 10
+        },
+        {
+          "paragraph": 213,
+          "label_paragraph": 212,
+          "label": "P106",
+          "script": "%△․%△․%△․",
+          "page": 10,
+          "characters": "%△․%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 5.5969696044921875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 27.185267130533855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 48.93347676595052,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 70.52178446451823,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 92.26999409993489,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 113.85829162597656,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 135.60650126139322,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 157.3547108968099,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 178.94302876790366,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 10
+        },
+        {
+          "paragraph": 215,
+          "label_paragraph": 214,
+          "label": "P107",
+          "script": "%△․%△․%△․",
+          "page": 10,
+          "characters": "%△․%△․%△․",
+          "points": [
+            {
+              "character": "%",
+              "x_from_label_css_px": 5.5969696044921875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 27.185267130533855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 48.93347676595052,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 70.52178446451823,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 92.26999409993489,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 113.85829162597656,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "%",
+              "x_from_label_css_px": 135.60650126139322,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "△",
+              "x_from_label_css_px": 157.3547108968099,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "․",
+              "x_from_label_css_px": 178.94302876790366,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 10
+        }
+      ]
+    },
+    {
+      "name": "cjk",
+      "input": "mydocs/pr/assets/legacy_literal_operator_plane_20261025/inputs/legacy-cjk-operator-grid.hwpx",
+      "input_sha256": "1c4e8ff31c8a997a6ac5e39f728e5f7a5ce8d391c6009451002e6a5dc4de1211",
+      "pdf": "pdf/legacy-literal-operator-plane/legacy-cjk-operator-grid-2020.pdf",
+      "pdf_sha256": "98f85298f6c7f34370a53430f0fa95ba739b9885a6925eb3428fc171011d73fe",
+      "page_count": 7,
+      "print_job_id": "19f5d19d-f53c-4fd2-8cb0-7387e4a358e4",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "observation_source": "legacy-cjk-grid-observations-3345.json",
+      "cases": [
+        {
+          "paragraph": 1,
+          "label_paragraph": 0,
+          "label": "C000",
+          "script": "가",
+          "page": 1,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 12.952977498372396,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 3,
+          "label_paragraph": 2,
+          "label": "C001",
+          "script": "가",
+          "page": 1,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 12.793065388997396,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 5,
+          "label_paragraph": 4,
+          "label": "C002",
+          "script": "가",
+          "page": 1,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 12.793065388997396,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 7,
+          "label_paragraph": 6,
+          "label": "C003",
+          "script": "가",
+          "page": 1,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 25.106399536132812,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 9,
+          "label_paragraph": 8,
+          "label": "C004",
+          "script": "가",
+          "page": 1,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 24.94647725423177,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 11,
+          "label_paragraph": 10,
+          "label": "C005",
+          "script": "가",
+          "page": 1,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 24.94647725423177,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 13,
+          "label_paragraph": 12,
+          "label": "C006",
+          "script": "가",
+          "page": 1,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 15,
+          "label_paragraph": 14,
+          "label": "C007",
+          "script": "가",
+          "page": 1,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 36.93997701009115,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 17,
+          "label_paragraph": 16,
+          "label": "C008",
+          "script": "가",
+          "page": 1,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 37.09989929199219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 19,
+          "label_paragraph": 18,
+          "label": "C009",
+          "script": "가나",
+          "page": 1,
+          "characters": "가나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 7.51593017578125,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 21,
+          "label_paragraph": 20,
+          "label": "C010",
+          "script": "가나",
+          "page": 1,
+          "characters": "가나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 7.3560129801432295,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 23,
+          "label_paragraph": 22,
+          "label": "C011",
+          "script": "가나",
+          "page": 2,
+          "characters": "가나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 7.3560129801432295,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 37.41972351074219,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 25,
+          "label_paragraph": 24,
+          "label": "C012",
+          "script": "가나",
+          "page": 2,
+          "characters": "가나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 14.232284545898438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 74.03987121582031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 27,
+          "label_paragraph": 26,
+          "label": "C013",
+          "script": "가나",
+          "page": 2,
+          "characters": "가나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 14.072372436523438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 74.03987121582031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 29,
+          "label_paragraph": 28,
+          "label": "C014",
+          "script": "가나",
+          "page": 2,
+          "characters": "가나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 14.072372436523438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 74.03987121582031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 31,
+          "label_paragraph": 30,
+          "label": "C015",
+          "script": "가나",
+          "page": 2,
+          "characters": "가나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 20.948644002278645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 110.81994120279948,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 33,
+          "label_paragraph": 32,
+          "label": "C016",
+          "script": "가나",
+          "page": 2,
+          "characters": "가나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 20.628819783528645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 110.66002909342448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 35,
+          "label_paragraph": 34,
+          "label": "C017",
+          "script": "가나",
+          "page": 2,
+          "characters": "가나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 20.788731892903645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 110.66002909342448,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 37,
+          "label_paragraph": 36,
+          "label": "C018",
+          "script": "가=나",
+          "page": 2,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 4.957316080729167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 26.545618693033855,
+              "baseline_from_first_css_px": -0.6393229166666666
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 48.45374043782552,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 39,
+          "label_paragraph": 38,
+          "label": "C019",
+          "script": "가=나",
+          "page": 2,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 4.957316080729167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 26.385706583658855,
+              "baseline_from_first_css_px": -0.958984375
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 48.45374043782552,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 41,
+          "label_paragraph": 40,
+          "label": "C020",
+          "script": "가=나",
+          "page": 2,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 4.957316080729167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 26.385706583658855,
+              "baseline_from_first_css_px": -1.4383951822916667
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 48.45374043782552,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 43,
+          "label_paragraph": 42,
+          "label": "C021",
+          "script": "가=나",
+          "page": 2,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.274973551432291,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 52.29166158040365,
+              "baseline_from_first_css_px": -0.6392415364583334
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 96.26783752441406,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 45,
+          "label_paragraph": 44,
+          "label": "C022",
+          "script": "가=나",
+          "page": 3,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.115061442057291,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 52.13174947102865,
+              "baseline_from_first_css_px": -0.958953857421875
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 96.26783752441406,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 47,
+          "label_paragraph": 46,
+          "label": "C023",
+          "script": "가=나",
+          "page": 3,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.115061442057291,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 52.13174947102865,
+              "baseline_from_first_css_px": -1.4384358723958333
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 96.26783752441406,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 49,
+          "label_paragraph": 48,
+          "label": "C024",
+          "script": "가=나",
+          "page": 3,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.432723999023438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 78.03770446777344,
+              "baseline_from_first_css_px": -0.6393025716145834
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 144.08190409342447,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 51,
+          "label_paragraph": 50,
+          "label": "C025",
+          "script": "가=나",
+          "page": 3,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.272811889648438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 77.87779235839844,
+              "baseline_from_first_css_px": -0.9589436848958334
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 143.92199198404947,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 53,
+          "label_paragraph": 52,
+          "label": "C026",
+          "script": "가=나",
+          "page": 3,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.272811889648438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 77.87779235839844,
+              "baseline_from_first_css_px": -1.4384358723958333
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 143.92199198404947,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 55,
+          "label_paragraph": 54,
+          "label": "C027",
+          "script": "가+나",
+          "page": 3,
+          "characters": "가+나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 5.117228190104167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 26.545618693033855,
+              "baseline_from_first_css_px": -0.6392822265625
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 48.13391621907552,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 57,
+          "label_paragraph": 56,
+          "label": "C028",
+          "script": "가+나",
+          "page": 3,
+          "characters": "가+나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 4.957316080729167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 26.545618693033855,
+              "baseline_from_first_css_px": -0.9589436848958334
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 47.97400410970052,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 59,
+          "label_paragraph": 58,
+          "label": "C029",
+          "script": "가+나",
+          "page": 3,
+          "characters": "가+나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 5.117228190104167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 26.545618693033855,
+              "baseline_from_first_css_px": -1.4383951822916667
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 47.97400410970052,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 61,
+          "label_paragraph": 60,
+          "label": "C030",
+          "script": "가+나",
+          "page": 3,
+          "characters": "가+나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.434890747070312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 52.45157368977865,
+              "baseline_from_first_css_px": -0.6393229166666666
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 95.30834452311198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 63,
+          "label_paragraph": 62,
+          "label": "C031",
+          "script": "가+나",
+          "page": 3,
+          "characters": "가+나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.274973551432291,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 52.29166158040365,
+              "baseline_from_first_css_px": -0.958984375
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 95.30834452311198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 65,
+          "label_paragraph": 64,
+          "label": "C032",
+          "script": "가+나",
+          "page": 3,
+          "characters": "가+나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.274973551432291,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 52.29166158040365,
+              "baseline_from_first_css_px": -1.4384765625
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 95.30834452311198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 67,
+          "label_paragraph": 66,
+          "label": "C033",
+          "script": "가+나",
+          "page": 4,
+          "characters": "가+나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.752548217773438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 78.19761657714844,
+              "baseline_from_first_css_px": -0.6393025716145834
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 142.64269510904947,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 69,
+          "label_paragraph": 68,
+          "label": "C034",
+          "script": "가+나",
+          "page": 4,
+          "characters": "가+나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.592636108398438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 78.03770446777344,
+              "baseline_from_first_css_px": -0.958953857421875
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 142.64269510904947,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 71,
+          "label_paragraph": 70,
+          "label": "C035",
+          "script": "가+나",
+          "page": 4,
+          "characters": "가+나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.592636108398438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 78.19761657714844,
+              "baseline_from_first_css_px": -1.4384358723958333
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 142.64269510904947,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 73,
+          "label_paragraph": 72,
+          "label": "C036",
+          "script": "가-나",
+          "page": 4,
+          "characters": "가-나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 5.117228190104167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "-",
+              "x_from_label_css_px": 26.545618693033855,
+              "baseline_from_first_css_px": -0.6393229166666666
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 48.13391621907552,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 75,
+          "label_paragraph": 74,
+          "label": "C037",
+          "script": "가-나",
+          "page": 4,
+          "characters": "가-나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 4.957316080729167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "-",
+              "x_from_label_css_px": 26.545618693033855,
+              "baseline_from_first_css_px": -0.958984375
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 47.97400410970052,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 77,
+          "label_paragraph": 76,
+          "label": "C038",
+          "script": "가-나",
+          "page": 4,
+          "characters": "가-나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 5.117228190104167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "-",
+              "x_from_label_css_px": 26.545618693033855,
+              "baseline_from_first_css_px": -1.4384358723958333
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 47.97400410970052,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 79,
+          "label_paragraph": 78,
+          "label": "C039",
+          "script": "가-나",
+          "page": 4,
+          "characters": "가-나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.434890747070312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "-",
+              "x_from_label_css_px": 52.45157368977865,
+              "baseline_from_first_css_px": -0.6393229166666666
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 95.30834452311198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 81,
+          "label_paragraph": 80,
+          "label": "C040",
+          "script": "가-나",
+          "page": 4,
+          "characters": "가-나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.274973551432291,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "-",
+              "x_from_label_css_px": 52.29166158040365,
+              "baseline_from_first_css_px": -0.958984375
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 95.30834452311198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 83,
+          "label_paragraph": 82,
+          "label": "C041",
+          "script": "가-나",
+          "page": 4,
+          "characters": "가-나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.274973551432291,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "-",
+              "x_from_label_css_px": 52.29166158040365,
+              "baseline_from_first_css_px": -1.4383951822916667
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 95.30834452311198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 85,
+          "label_paragraph": 84,
+          "label": "C042",
+          "script": "가-나",
+          "page": 4,
+          "characters": "가-나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.752548217773438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "-",
+              "x_from_label_css_px": 78.19761657714844,
+              "baseline_from_first_css_px": -0.6392415364583334
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 142.64269510904947,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 87,
+          "label_paragraph": 86,
+          "label": "C043",
+          "script": "가-나",
+          "page": 4,
+          "characters": "가-나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.592636108398438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "-",
+              "x_from_label_css_px": 78.03770446777344,
+              "baseline_from_first_css_px": -0.9589029947916666
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 142.64269510904947,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 89,
+          "label_paragraph": 88,
+          "label": "C044",
+          "script": "가-나",
+          "page": 5,
+          "characters": "가-나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.592636108398438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "-",
+              "x_from_label_css_px": 78.19761657714844,
+              "baseline_from_first_css_px": -1.4384256998697917
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 142.64269510904947,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 91,
+          "label_paragraph": 90,
+          "label": "C045",
+          "script": "가/나",
+          "page": 5,
+          "characters": "가/나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 6.236623128255208,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 30.54345194498698,
+              "baseline_from_first_css_px": -0.6393025716145834
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 43.01668802897135,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 93,
+          "label_paragraph": 92,
+          "label": "C046",
+          "script": "가/나",
+          "page": 5,
+          "characters": "가/나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 6.236623128255208,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 30.70336405436198,
+              "baseline_from_first_css_px": -0.9589640299479166
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 42.85677591959635,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 95,
+          "label_paragraph": 94,
+          "label": "C047",
+          "script": "가/나",
+          "page": 5,
+          "characters": "가/나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 6.236623128255208,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 30.70336405436198,
+              "baseline_from_first_css_px": -1.4383951822916667
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 42.85677591959635,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 97,
+          "label_paragraph": 96,
+          "label": "C048",
+          "script": "가/나",
+          "page": 5,
+          "characters": "가/나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 11.673670450846354,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 60.4472401936849,
+              "baseline_from_first_css_px": -0.6393229166666666
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 85.23381042480469,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 99,
+          "label_paragraph": 98,
+          "label": "C049",
+          "script": "가/나",
+          "page": 5,
+          "characters": "가/나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 11.673670450846354,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 60.6071523030599,
+              "baseline_from_first_css_px": -0.9589436848958334
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 85.07389831542969,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 101,
+          "label_paragraph": 100,
+          "label": "C050",
+          "script": "가/나",
+          "page": 5,
+          "characters": "가/나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 11.673670450846354,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 60.6071523030599,
+              "baseline_from_first_css_px": -1.4383951822916667
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 85.07389831542969,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 103,
+          "label_paragraph": 102,
+          "label": "C051",
+          "script": "가/나",
+          "page": 5,
+          "characters": "가/나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 17.110733032226562,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 90.35103861490886,
+              "baseline_from_first_css_px": -0.6393229166666666
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 127.45092264811198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 105,
+          "label_paragraph": 104,
+          "label": "C052",
+          "script": "가/나",
+          "page": 5,
+          "characters": "가/나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 16.95081075032552,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 90.51095072428386,
+              "baseline_from_first_css_px": -0.958984375
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 127.13109842936198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 107,
+          "label_paragraph": 106,
+          "label": "C053",
+          "script": "가/나",
+          "page": 5,
+          "characters": "가/나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 17.110733032226562,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 90.51095072428386,
+              "baseline_from_first_css_px": -1.4383951822916667
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 127.13109842936198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 109,
+          "label_paragraph": 108,
+          "label": "C054",
+          "script": "{가}",
+          "page": 5,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 21.428390502929688,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 111,
+          "label_paragraph": 110,
+          "label": "C055",
+          "script": "{가}",
+          "page": 6,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 21.268478393554688,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 113,
+          "label_paragraph": 112,
+          "label": "C056",
+          "script": "{가}",
+          "page": 6,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 21.268478393554688,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 115,
+          "label_paragraph": 114,
+          "label": "C057",
+          "script": "{가}",
+          "page": 6,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 42.05720520019531,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 117,
+          "label_paragraph": 116,
+          "label": "C058",
+          "script": "{가}",
+          "page": 6,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 41.73738098144531,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 119,
+          "label_paragraph": 118,
+          "label": "C059",
+          "script": "{가}",
+          "page": 6,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 41.73738098144531,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 121,
+          "label_paragraph": 120,
+          "label": "C060",
+          "script": "{가}",
+          "page": 6,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 62.84594217936198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 123,
+          "label_paragraph": 122,
+          "label": "C061",
+          "script": "{가}",
+          "page": 6,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 62.20628356933594,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 125,
+          "label_paragraph": 124,
+          "label": "C062",
+          "script": "{가}",
+          "page": 6,
+          "characters": "가",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 62.20628356933594,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 127,
+          "label_paragraph": 126,
+          "label": "C063",
+          "script": "가{=}나",
+          "page": 6,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 4.957316080729167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 27.185267130533855,
+              "baseline_from_first_css_px": -0.6393229166666666
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 48.29382832845052,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 129,
+          "label_paragraph": 128,
+          "label": "C064",
+          "script": "가{=}나",
+          "page": 6,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 4.957316080729167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 27.185267130533855,
+              "baseline_from_first_css_px": -0.958984375
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 48.29382832845052,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 131,
+          "label_paragraph": 130,
+          "label": "C065",
+          "script": "가{=}나",
+          "page": 6,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 4.957316080729167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 27.185267130533855,
+              "baseline_from_first_css_px": -1.4384765625
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 48.29382832845052,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 133,
+          "label_paragraph": 132,
+          "label": "C066",
+          "script": "가{=}나",
+          "page": 7,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.274973551432291,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 53.73088073730469,
+              "baseline_from_first_css_px": -0.6393025716145834
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 95.94799296061198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 6
+        },
+        {
+          "paragraph": 135,
+          "label_paragraph": 134,
+          "label": "C067",
+          "script": "가{=}나",
+          "page": 7,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.115061442057291,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 53.57096862792969,
+              "baseline_from_first_css_px": -0.958953857421875
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 95.94799296061198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 137,
+          "label_paragraph": 136,
+          "label": "C068",
+          "script": "가{=}나",
+          "page": 7,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.274973551432291,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 53.57096862792969,
+              "baseline_from_first_css_px": -1.4384358723958333
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 95.94799296061198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 139,
+          "label_paragraph": 138,
+          "label": "C069",
+          "script": "가{=}나",
+          "page": 7,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.592636108398438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 80.11658223470052,
+              "baseline_from_first_css_px": -0.6393229166666666
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 143.60216776529947,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 141,
+          "label_paragraph": 140,
+          "label": "C070",
+          "script": "가{=}나",
+          "page": 7,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.432723999023438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 80.11658223470052,
+              "baseline_from_first_css_px": -0.958984375
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 143.44225565592447,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        },
+        {
+          "paragraph": 143,
+          "label_paragraph": 142,
+          "label": "C071",
+          "script": "가{=}나",
+          "page": 7,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.432723999023438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 80.11658223470052,
+              "baseline_from_first_css_px": -1.4384358723958333
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 143.60216776529947,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 7
+        }
+      ]
+    },
+    {
+      "name": "mixed",
+      "input": "mydocs/pr/assets/legacy_literal_operator_plane_20261025/inputs/legacy-mixed-operator-grid.hwpx",
+      "input_sha256": "9e85b2079cf0036df424d9ab6a3f286f8bf2e838118edb5c151832908924ec46",
+      "pdf": "pdf/legacy-literal-operator-plane/legacy-mixed-operator-grid-2020.pdf",
+      "pdf_sha256": "99e023a13b763da4f9edeecaf6caee651c1835edfe741fa5fc0b4b36fabf95b8",
+      "page_count": 5,
+      "print_job_id": "37c18568-84a1-4906-8a80-400ad6fee468",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "observation_source": "legacy-mixed-grid-frame-validation-3350.json",
+      "cases": [
+        {
+          "paragraph": 1,
+          "label_paragraph": 0,
+          "label": "L000",
+          "script": "A=B",
+          "page": 1,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 5.4370574951171875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 27.025355021158855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 51.6520029703776,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 3,
+          "label_paragraph": 2,
+          "label": "L001",
+          "script": "A=B",
+          "page": 1,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 5.4370574951171875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 26.865442911783855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 51.4920908610026,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 5,
+          "label_paragraph": 4,
+          "label": "L002",
+          "script": "A=B",
+          "page": 1,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 5.4370574951171875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 26.865442911783855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 51.4920908610026,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 7,
+          "label_paragraph": 6,
+          "label": "L003",
+          "script": "A=B",
+          "page": 1,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 10.234451293945312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 53.25114440917969,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 102.50445048014323,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 9,
+          "label_paragraph": 8,
+          "label": "L004",
+          "script": "A=B",
+          "page": 1,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 10.074539184570312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 53.09123229980469,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 102.34453837076823,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 11,
+          "label_paragraph": 10,
+          "label": "L005",
+          "script": "A=B",
+          "page": 1,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 10.074539184570312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 52.93131001790365,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 102.18462626139323,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 13,
+          "label_paragraph": 12,
+          "label": "L006",
+          "script": "A=B",
+          "page": 1,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 14.871943155924479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 79.47692362467448,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 153.3568878173828,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 15,
+          "label_paragraph": 14,
+          "label": "L007",
+          "script": "A=B",
+          "page": 1,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 14.712031046549479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 79.31701151529948,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 153.1969757080078,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 17,
+          "label_paragraph": 16,
+          "label": "L008",
+          "script": "A=B",
+          "page": 1,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 14.871943155924479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 78.99718729654948,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 152.8771514892578,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 19,
+          "label_paragraph": 18,
+          "label": "L009",
+          "script": "A+B",
+          "page": 1,
+          "characters": "A+B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 5.5969696044921875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 27.025355021158855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 51.1722666422526,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 21,
+          "label_paragraph": 20,
+          "label": "L010",
+          "script": "A+B",
+          "page": 1,
+          "characters": "A+B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 5.5969696044921875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 27.025355021158855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 51.1722666422526,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 23,
+          "label_paragraph": 22,
+          "label": "L011",
+          "script": "A+B",
+          "page": 2,
+          "characters": "A+B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 5.5969696044921875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 26.865442911783855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 51.0123545328776,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 25,
+          "label_paragraph": 24,
+          "label": "L012",
+          "script": "A+B",
+          "page": 2,
+          "characters": "A+B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 10.394373575846354,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 53.41105651855469,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 101.70488993326823,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 27,
+          "label_paragraph": 26,
+          "label": "L013",
+          "script": "A+B",
+          "page": 2,
+          "characters": "A+B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 10.394373575846354,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 53.25114440917969,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 101.54495747884114,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 29,
+          "label_paragraph": 28,
+          "label": "L014",
+          "script": "A+B",
+          "page": 2,
+          "characters": "A+B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 10.394373575846354,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 53.09123229980469,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 101.38504536946614,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 31,
+          "label_paragraph": 30,
+          "label": "L015",
+          "script": "A+B",
+          "page": 2,
+          "characters": "A+B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 15.351679484049479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 79.79675801595052,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 152.07757059733072,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 33,
+          "label_paragraph": 32,
+          "label": "L016",
+          "script": "A+B",
+          "page": 2,
+          "characters": "A+B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 15.191767374674479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 79.63684590657552,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 151.91765848795572,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 35,
+          "label_paragraph": 34,
+          "label": "L017",
+          "script": "A+B",
+          "page": 2,
+          "characters": "A+B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 15.191767374674479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 79.31701151529948,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 151.59783426920572,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 37,
+          "label_paragraph": 36,
+          "label": "L018",
+          "script": "A/B",
+          "page": 2,
+          "characters": "A/B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 7.0361887613932295,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 31.98267110188802,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 46.21495056152344,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 39,
+          "label_paragraph": 38,
+          "label": "L019",
+          "script": "A/B",
+          "page": 2,
+          "characters": "A/B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 7.0361887613932295,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 31.98267110188802,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 46.05503845214844,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 41,
+          "label_paragraph": 40,
+          "label": "L020",
+          "script": "A/B",
+          "page": 2,
+          "characters": "A/B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 7.0361887613932295,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 31.82275899251302,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 46.05503845214844,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 43,
+          "label_paragraph": 42,
+          "label": "L021",
+          "script": "A/B",
+          "page": 2,
+          "characters": "A/B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 13.432723999023438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 63.16576639811198,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 91.79025777180989,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 45,
+          "label_paragraph": 44,
+          "label": "L022",
+          "script": "A/B",
+          "page": 3,
+          "characters": "A/B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 13.272811889648438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 63.16576639811198,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 91.47042338053386,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 2
+        },
+        {
+          "paragraph": 47,
+          "label_paragraph": 46,
+          "label": "L023",
+          "script": "A/B",
+          "page": 3,
+          "characters": "A/B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 13.432723999023438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 62.84594217936198,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 91.31051127115886,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 49,
+          "label_paragraph": 48,
+          "label": "L024",
+          "script": "A/B",
+          "page": 3,
+          "characters": "A/B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 19.829259236653645,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 94.34887186686198,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 137.3655548095703,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 51,
+          "label_paragraph": 50,
+          "label": "L025",
+          "script": "A/B",
+          "page": 3,
+          "characters": "A/B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 19.509424845377605,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 94.34887186686198,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 136.8858184814453,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 53,
+          "label_paragraph": 52,
+          "label": "L026",
+          "script": "A/B",
+          "page": 3,
+          "characters": "A/B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 19.669336954752605,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "/",
+              "x_from_label_css_px": 94.02903747558594,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 136.5659942626953,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 55,
+          "label_paragraph": 54,
+          "label": "L027",
+          "script": "A=가",
+          "page": 3,
+          "characters": "A=가",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 5.117228190104167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 25.106399536132812,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "가",
+              "x_from_label_css_px": 47.81409200032552,
+              "baseline_from_first_css_px": 0.6392822265625
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 57,
+          "label_paragraph": 56,
+          "label": "L028",
+          "script": "A=가",
+          "page": 3,
+          "characters": "A=가",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 5.117228190104167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 24.94647725423177,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "가",
+              "x_from_label_css_px": 47.81409200032552,
+              "baseline_from_first_css_px": 0.9589436848958334
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 59,
+          "label_paragraph": 58,
+          "label": "L029",
+          "script": "A=가",
+          "page": 3,
+          "characters": "A=가",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 5.117228190104167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 24.94647725423177,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "가",
+              "x_from_label_css_px": 47.81409200032552,
+              "baseline_from_first_css_px": 1.4383951822916667
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 61,
+          "label_paragraph": 60,
+          "label": "L030",
+          "script": "A=가",
+          "page": 3,
+          "characters": "A=가",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 9.434890747070312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 49.41322326660156,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "가",
+              "x_from_label_css_px": 94.98852030436198,
+              "baseline_from_first_css_px": 0.6393229166666666
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 63,
+          "label_paragraph": 62,
+          "label": "L031",
+          "script": "A=가",
+          "page": 3,
+          "characters": "A=가",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 9.434890747070312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 49.25331115722656,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "가",
+              "x_from_label_css_px": 94.82860819498698,
+              "baseline_from_first_css_px": 0.958984375
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 65,
+          "label_paragraph": 64,
+          "label": "L032",
+          "script": "A=가",
+          "page": 3,
+          "characters": "A=가",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 9.434890747070312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 49.09339904785156,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "가",
+              "x_from_label_css_px": 94.82860819498698,
+              "baseline_from_first_css_px": 1.4384765625
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 67,
+          "label_paragraph": 66,
+          "label": "L033",
+          "script": "A=가",
+          "page": 4,
+          "characters": "A=가",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 13.912460327148438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 73.72004699707031,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "가",
+              "x_from_label_css_px": 142.16295878092447,
+              "baseline_from_first_css_px": 0.6393025716145834
+            }
+          ],
+          "label_page": 3
+        },
+        {
+          "paragraph": 69,
+          "label_paragraph": 68,
+          "label": "L034",
+          "script": "A=가",
+          "page": 4,
+          "characters": "A=가",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 13.752548217773438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 73.56013488769531,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "가",
+              "x_from_label_css_px": 142.00304667154947,
+              "baseline_from_first_css_px": 0.958953857421875
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 71,
+          "label_paragraph": 70,
+          "label": "L035",
+          "script": "A=가",
+          "page": 4,
+          "characters": "A=가",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 13.752548217773438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 73.24031066894531,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "가",
+              "x_from_label_css_px": 141.84313456217447,
+              "baseline_from_first_css_px": 1.4384358723958333
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 73,
+          "label_paragraph": 72,
+          "label": "L036",
+          "script": "가=A",
+          "page": 4,
+          "characters": "가=A",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 5.117228190104167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 27.345179239908855,
+              "baseline_from_first_css_px": -0.6393229166666666
+            },
+            {
+              "character": "A",
+              "x_from_label_css_px": 50.21278381347656,
+              "baseline_from_first_css_px": -0.6393229166666666
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 75,
+          "label_paragraph": 74,
+          "label": "L037",
+          "script": "가=A",
+          "page": 4,
+          "characters": "가=A",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 5.117228190104167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 27.345179239908855,
+              "baseline_from_first_css_px": -0.958984375
+            },
+            {
+              "character": "A",
+              "x_from_label_css_px": 50.21278381347656,
+              "baseline_from_first_css_px": -0.958984375
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 77,
+          "label_paragraph": 76,
+          "label": "L038",
+          "script": "가=A",
+          "page": 4,
+          "characters": "가=A",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 5.117228190104167,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 27.345179239908855,
+              "baseline_from_first_css_px": -1.4384358723958333
+            },
+            {
+              "character": "A",
+              "x_from_label_css_px": 50.21278381347656,
+              "baseline_from_first_css_px": -1.4384358723958333
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 79,
+          "label_paragraph": 78,
+          "label": "L039",
+          "script": "가=A",
+          "page": 4,
+          "characters": "가=A",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.434890747070312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 54.05070495605469,
+              "baseline_from_first_css_px": -0.6393229166666666
+            },
+            {
+              "character": "A",
+              "x_from_label_css_px": 99.62601216634114,
+              "baseline_from_first_css_px": -0.6393229166666666
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 81,
+          "label_paragraph": 80,
+          "label": "L040",
+          "script": "가=A",
+          "page": 4,
+          "characters": "가=A",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.434890747070312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 53.89079284667969,
+              "baseline_from_first_css_px": -0.958984375
+            },
+            {
+              "character": "A",
+              "x_from_label_css_px": 99.62601216634114,
+              "baseline_from_first_css_px": -0.958984375
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 83,
+          "label_paragraph": 82,
+          "label": "L041",
+          "script": "가=A",
+          "page": 4,
+          "characters": "가=A",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.434890747070312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 54.05070495605469,
+              "baseline_from_first_css_px": -1.4383951822916667
+            },
+            {
+              "character": "A",
+              "x_from_label_css_px": 99.78592427571614,
+              "baseline_from_first_css_px": -1.4383951822916667
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 85,
+          "label_paragraph": 84,
+          "label": "L042",
+          "script": "가=A",
+          "page": 4,
+          "characters": "가=A",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.912460327148438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 80.75623067220052,
+              "baseline_from_first_css_px": -0.6392415364583334
+            },
+            {
+              "character": "A",
+              "x_from_label_css_px": 149.19913228352866,
+              "baseline_from_first_css_px": -0.6392415364583334
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 87,
+          "label_paragraph": 86,
+          "label": "L043",
+          "script": "가=A",
+          "page": 4,
+          "characters": "가=A",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.752548217773438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 80.59631856282552,
+              "baseline_from_first_css_px": -0.9589029947916666
+            },
+            {
+              "character": "A",
+              "x_from_label_css_px": 149.03922017415366,
+              "baseline_from_first_css_px": -0.9589029947916666
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 89,
+          "label_paragraph": 88,
+          "label": "L044",
+          "script": "가=A",
+          "page": 5,
+          "characters": "가=A",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 13.752548217773438,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 80.75623067220052,
+              "baseline_from_first_css_px": -1.4384256998697917
+            },
+            {
+              "character": "A",
+              "x_from_label_css_px": 149.35904439290366,
+              "baseline_from_first_css_px": -1.4384256998697917
+            }
+          ],
+          "label_page": 4
+        },
+        {
+          "paragraph": 91,
+          "label_paragraph": 90,
+          "label": "L045",
+          "script": "A{=}B",
+          "page": 5,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 5.5969696044921875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 27.824925740559895,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 51.4920908610026,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 93,
+          "label_paragraph": 92,
+          "label": "L046",
+          "script": "A{=}B",
+          "page": 5,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 5.4370574951171875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 27.824925740559895,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 95,
+          "label_paragraph": 94,
+          "label": "L047",
+          "script": "A{=}B",
+          "page": 5,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 5.4370574951171875,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 27.665003458658855,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 51.3321787516276,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 97,
+          "label_paragraph": 96,
+          "label": "L048",
+          "script": "A{=}B",
+          "page": 5,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 10.234451293945312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 54.85027567545573,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 102.18462626139323,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 99,
+          "label_paragraph": 98,
+          "label": "L049",
+          "script": "A{=}B",
+          "page": 5,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 10.234451293945312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 54.69036356608073,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 102.02471415201823,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 101,
+          "label_paragraph": 100,
+          "label": "L050",
+          "script": "A{=}B",
+          "page": 5,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 10.234451293945312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 54.53045145670573,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 101.86480204264323,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 103,
+          "label_paragraph": 102,
+          "label": "L051",
+          "script": "A{=}B",
+          "page": 5,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 15.031855265299479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 82.03553771972656,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 153.0370635986328,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 105,
+          "label_paragraph": 104,
+          "label": "L052",
+          "script": "A{=}B",
+          "page": 5,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 14.871943155924479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 81.71571350097656,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 152.7172393798828,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        },
+        {
+          "paragraph": 107,
+          "label_paragraph": 106,
+          "label": "L053",
+          "script": "A{=}B",
+          "page": 5,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 15.031855265299479,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 81.39588928222656,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 152.3974151611328,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 5
+        }
+      ]
+    },
+    {
+      "name": "groups",
+      "input": "mydocs/pr/assets/legacy_literal_operator_plane_20261025/inputs/legacy-group-operator-boundaries.hwpx",
+      "input_sha256": "a835c1e4526951bb49745404ed40737a2bd141fec07fb77a207484118abeeda8",
+      "pdf": "pdf/legacy-literal-operator-plane/legacy-group-operator-boundaries-2020.pdf",
+      "pdf_sha256": "149ba2d5e772ff9163b2e2c6685985475291adf5e38b766a0891fc4472f25d63",
+      "page_count": 1,
+      "print_job_id": "071c9446-9696-43d8-a24b-9c64481815d9",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "observation_source": "legacy-group-boundary-validation-3360.json",
+      "cases": [
+        {
+          "paragraph": 1,
+          "label_paragraph": 0,
+          "label": "G000",
+          "script": "A+{B}",
+          "page": 1,
+          "characters": "A+B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 10.234451293945312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 52.45157368977865,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 102.02471415201823,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 3,
+          "label_paragraph": 2,
+          "label": "G001",
+          "script": "{A}=B",
+          "page": 1,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 18.390040079752605,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 57.72871398925781,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 104.26350402832031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 5,
+          "label_paragraph": 4,
+          "label": "G002",
+          "script": "A={B}",
+          "page": 1,
+          "characters": "A=B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 10.074539184570312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 53.09123229980469,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 102.34453837076823,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 7,
+          "label_paragraph": 6,
+          "label": "G003",
+          "script": "{A}+{B}",
+          "page": 1,
+          "characters": "A+B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 18.070205688476562,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 56.92914326985677,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 104.74324035644531,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 9,
+          "label_paragraph": 8,
+          "label": "G004",
+          "script": "가+{나}",
+          "page": 1,
+          "characters": "가+나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.115061442057291,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 51.4920908610026,
+              "baseline_from_first_css_px": -0.958984375
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 95.94799296061198,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 11,
+          "label_paragraph": 10,
+          "label": "G005",
+          "script": "{가}=나",
+          "page": 1,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 16.63098653157552,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 56.44940694173177,
+              "baseline_from_first_css_px": -0.958984375
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 98.18678283691406,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 13,
+          "label_paragraph": 12,
+          "label": "G006",
+          "script": "가={나}",
+          "page": 1,
+          "characters": "가=나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 9.115061442057291,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "=",
+              "x_from_label_css_px": 52.13174947102865,
+              "baseline_from_first_css_px": -0.9589436848958334
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 96.26783752441406,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 15,
+          "label_paragraph": 14,
+          "label": "G007",
+          "script": "{가}+{나}",
+          "page": 1,
+          "characters": "가+나",
+          "points": [
+            {
+              "character": "가",
+              "x_from_label_css_px": 16.47107442220052,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 55.64983622233073,
+              "baseline_from_first_css_px": -0.958984375
+            },
+            {
+              "character": "나",
+              "x_from_label_css_px": 98.66651916503906,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        },
+        {
+          "paragraph": 17,
+          "label_paragraph": 16,
+          "label": "G008",
+          "script": "A+{}B",
+          "page": 1,
+          "characters": "A+B",
+          "points": [
+            {
+              "character": "A",
+              "x_from_label_css_px": 9.594802856445312,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "+",
+              "x_from_label_css_px": 48.93347676595052,
+              "baseline_from_first_css_px": 0.0
+            },
+            {
+              "character": "B",
+              "x_from_label_css_px": 104.26350402832031,
+              "baseline_from_first_css_px": 0.0
+            }
+          ],
+          "label_page": 1
+        }
+      ]
+    }
+  ],
+  "page_provenance": "Actual glyph page from independent PDF raw spans; labels may be on preceding page; previous label-page diagnostic3386 preserved"
+}

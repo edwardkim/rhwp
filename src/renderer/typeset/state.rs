@@ -132,8 +132,14 @@ impl TypesetState {
         end_line: usize,
         suffix_height: f64,
         content_height: f64,
+        last_line_spacing: Option<f64>,
     ) {
-        self.record_paragraph_content_bottom((para_idx, end_line), content_height, suffix_height);
+        self.record_paragraph_content_bottom(
+            (para_idx, end_line),
+            content_height,
+            suffix_height,
+            last_line_spacing,
+        );
         self.data.current_items.push(PageItem::PartialParagraph {
             para_index: para_idx,
             start_line: wrap_prefix_len,
@@ -866,7 +872,12 @@ impl TypesetState {
             Some(height),
         ) = (&fragment.item, fragment.content_height)
         {
-            self.record_paragraph_content_bottom((*para_index, *end_line), height, fragment.height);
+            self.record_paragraph_content_bottom(
+                (*para_index, *end_line),
+                height,
+                fragment.height,
+                fragment.last_line_spacing,
+            );
         }
         self.data.current_items.push(fragment.item);
         self.data.vpos_prev_trimmed_sb_px = 0.0;
@@ -1122,13 +1133,16 @@ impl TypesetState {
 }
 
 mod commands;
+mod computed_float_line;
 mod data;
 mod empty_run;
 pub(super) mod finalize;
+mod mixed_host_line;
 mod notes;
 mod paragraph_fragment;
 mod stored_tac;
 mod transition;
+mod whole_float_successor;
 
 pub(super) struct TypesetState {
     data: data::StateView,

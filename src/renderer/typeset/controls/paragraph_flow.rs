@@ -99,6 +99,9 @@ pub(in crate::renderer::typeset) fn place(
     // 문단의 블록 표 fit 이 존 위에 겹쳐 배치됐다 (19439117: 870px 서식 표
     // 존 [31..902] 위에 866px 표가 y≈36 에 통배치 → 1쪽, 한글 2쪽).
     let host_col_w = st.prepare_table_paragraph_column();
+    if st.place_mixed_host_line(para_idx, para, styles, measured_tables, engine.dpi) {
+        return;
+    }
     if try_place_reflowed_table_rows(engine, st, para_idx, para, styles, measured_tables) {
         return;
     }

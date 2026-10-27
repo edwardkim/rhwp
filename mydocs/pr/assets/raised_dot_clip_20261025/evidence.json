@@ -1,0 +1,105 @@
+{
+  "render_source": "fb759a980d50268b29274f94ccaee406a7e975fd",
+  "native_producer_receipt": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/rebase-native209-build-3285-result.json",
+  "fresh_wasm_receipt": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/rebase-candidate-wasm056-build-3296-result.json",
+  "before_helper_receipt": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/rebase-focused-contracts-3324-result.json",
+  "after_helper_receipt": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/rebase-focused-contracts-3325-result.json",
+  "dpi": 96,
+  "compat": "2022",
+  "records": [
+    {
+      "backend": "native",
+      "input_sha256": "c65131da3881475c93af521dcdcde9b2b4e8cd981500fcaa98ab9b447dc4e1b7",
+      "pdf_sha256": "cfd1ebaa3ccad355448049468a6bd13ba60c0428f020cca129e80d40f6d7a90d",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-raised-dot",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/raised-dot.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/raised-dot/raised-dot-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-209",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3314/native-candidate-raised-dot",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "input": "mydocs/pr/assets/raised_dot_clip_20261025/raised-dot.hwpx",
+      "pdf": "pdf/raised-dot-clip/raised-dot-2020.pdf",
+      "tsv": "mydocs/pr/assets/raised_dot_clip_20261025/native/silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "backend": "wasm",
+      "input_sha256": "c65131da3881475c93af521dcdcde9b2b4e8cd981500fcaa98ab9b447dc4e1b7",
+      "pdf_sha256": "cfd1ebaa3ccad355448049468a6bd13ba60c0428f020cca129e80d40f6d7a90d",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-raised-dot",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/raised-dot.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/raised-dot/raised-dot-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-209",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3314/wasm-candidate-raised-dot",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-056",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "input": "mydocs/pr/assets/raised_dot_clip_20261025/raised-dot.hwpx",
+      "pdf": "pdf/raised-dot-clip/raised-dot-2020.pdf",
+      "tsv": "mydocs/pr/assets/raised_dot_clip_20261025/wasm/silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    }
+  ]
+}

@@ -21,7 +21,165 @@ use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
+mod stored_vertical_frame;
+use stored_vertical_frame::StoredVerticalFrame;
+
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
+
+/// 복사와 같은 글자 경계에 든 표·그림만 지울 수 있는지 변경 전에 확인한다.
+fn cell_boundary_has_objects(
+    paragraph: &Paragraph,
+    start: usize,
+    end: usize,
+) -> Result<bool, HwpError> {
+    let positions = paragraph.control_text_positions();
+    let end_after = end >= paragraph.text.chars().count();
+    let selected: Vec<usize> = paragraph
+        .controls
+        .iter()
+        .enumerate()
+        .filter_map(|(ci, control)| {
+            let at = positions.get(ci).copied()?;
+            (!matches!(
+                control,
+                Control::SectionDef(_) | Control::ColumnDef(_) | Control::Field(_)
+            ) && at >= start
+                && (at < end || (at == end && end_after)))
+                .then_some(ci)
+        })
+        .collect();
+    let has_objects = selected.iter().any(|&ci| {
+        matches!(
+            paragraph.controls[ci],
+            Control::Table(_) | Control::Picture(_)
+        )
+    });
+    if !has_objects {
+        return Ok(false);
+    }
+    if !paragraph.range_tags.is_empty() || !paragraph.markpen_marks.is_empty() {
+        return Err(HwpError::RenderError(
+            "범위 태그나 형광펜이 있는 문단의 경계 개체 삭제는 아직 지원하지 않습니다".into(),
+        ));
+    }
+    if !paragraph.field_ranges.is_empty()
+        || !paragraph.orphan_field_ends.is_empty()
+        || paragraph
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Field(_)))
+        || selected.iter().any(|&ci| {
+            !matches!(
+                paragraph.controls[ci],
+                Control::Table(_) | Control::Picture(_)
+            ) || paragraph
+                .controls
+                .iter()
+                .enumerate()
+                .any(|(other, control)| {
+                    other != ci
+                        && Paragraph::is_split_movable_control(control)
+                        && positions.get(other) == positions.get(ci)
+                })
+        })
+    {
+        return Err(HwpError::RenderError(
+            "필드나 같은 자리의 여러 개체를 포함한 셀 경계 삭제는 아직 지원하지 않습니다".into(),
+        ));
+    }
+    Ok(true)
+}
+
+fn delete_paragraph_boundary(
+    paragraph: &mut Paragraph,
+    start: usize,
+    end: usize,
+    has_objects: bool,
+) {
+    let text_len = paragraph.text.chars().count();
+    let end = end.min(text_len);
+    if start > end {
+        return;
+    }
+    if has_objects {
+        let end_after = end == text_len;
+        let positions = paragraph.control_text_positions();
+        // 복사와 같은 반개방 글자 범위를 쓴다. 문단 끝 경계는 후행 개체까지 포함한다.
+        // 슬롯 제거를 공통 모델 연산에 맡겨 글자 모양과 필드의 컨트롤 번호도 함께 옮긴다.
+        for control in (0..paragraph.controls.len()).rev() {
+            let at = positions[control];
+            if matches!(
+                paragraph.controls[control],
+                Control::Table(_) | Control::Picture(_)
+            ) && at >= start
+                && (at < end || (at == end && end_after))
+            {
+                paragraph.remove_control(control);
+            }
+        }
+    }
+    paragraph.delete_text_at(start, end - start);
+}
+
+/// flat·중첩 경로 모두 같은 문단 범위를 검증한 뒤 적용한다.
+fn delete_cell_range(
+    paragraphs: &mut Vec<Paragraph>,
+    start_para: usize,
+    start_offset: usize,
+    end_para: usize,
+    end_offset: usize,
+) -> Result<bool, HwpError> {
+    if start_para > end_para || (start_para == end_para && start_offset > end_offset) {
+        return Err(HwpError::RenderError(
+            "시작 위치가 끝 위치보다 뒤에 있습니다".into(),
+        ));
+    }
+    let first = paragraphs
+        .get(start_para)
+        .ok_or_else(|| HwpError::RenderError("시작 셀 문단 범위 초과".into()))?;
+    let last = paragraphs
+        .get(end_para)
+        .ok_or_else(|| HwpError::RenderError("끝 셀 문단 범위 초과".into()))?;
+    let first_len = first.text.chars().count();
+    if start_offset > first_len || end_offset > last.text.chars().count() {
+        return Err(HwpError::RenderError("셀 글자 위치 범위 초과".into()));
+    }
+    if start_para == end_para && start_offset == end_offset {
+        return Ok(false);
+    }
+    let first_end = if start_para == end_para {
+        end_offset
+    } else {
+        first_len
+    };
+    let first_objects = cell_boundary_has_objects(first, start_offset, first_end)?;
+    let last_objects = if start_para == end_para {
+        false
+    } else {
+        cell_boundary_has_objects(last, 0, end_offset)?
+    };
+    // 끝 경계까지 검증을 마친 뒤에만 원문을 바꿔 실패 시 부분 삭제를 막는다.
+    if start_para == end_para {
+        delete_paragraph_boundary(
+            &mut paragraphs[start_para],
+            start_offset,
+            end_offset,
+            first_objects,
+        );
+    } else {
+        delete_paragraph_boundary(&mut paragraphs[end_para], 0, end_offset, last_objects);
+        paragraphs.drain(start_para + 1..end_para);
+        delete_paragraph_boundary(
+            &mut paragraphs[start_para],
+            start_offset,
+            first_end,
+            first_objects,
+        );
+        let next = paragraphs.remove(start_para + 1);
+        paragraphs[start_para].merge_from(&next);
+    }
+    Ok(true)
+}
 
 pub(super) fn cell_vpos_resets(previous: &Paragraph, current: &Paragraph) -> bool {
     if let Some(reset) = current.cell_vpos_reset {
@@ -1184,7 +1342,10 @@ impl DocumentCore {
             &self.document.sections[section_idx].paragraphs[para_idx],
         );
         let flow_changed = flow_before != flow_after;
-        if flow_changed {
+        if self.batch_mode {
+            // 문단의 새 줄 구성은 위에서 갱신했다. 쪽 소속 확정은 endBatch가 소유한다.
+            self.mark_section_dirty(section_idx);
+        } else if flow_changed {
             self.paginate();
             for _ in 0..2 {
                 let new_col = self
@@ -1252,7 +1413,9 @@ impl DocumentCore {
 
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"charOffset\":{},\"documentPaginationPending\":{},\"flowChanged\":{}",
-            new_offset, !flow_changed, flow_changed
+            new_offset,
+            self.batch_mode || !flow_changed,
+            flow_changed
         )))
     }
 
@@ -1868,6 +2031,9 @@ impl DocumentCore {
             cell_para_idx,
         )?;
         let old_text_len = cell_para.text.chars().count();
+        let source_text_before =
+            crate::model::raw_provenance::bytes_digest(cell_para.text.as_bytes());
+        let stored_frame_before = StoredVerticalFrame::capture(cell_para);
         let flow_advance_before = relative_paragraph_flow_advance(cell_para);
         let local_contribution_before =
             crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
@@ -1899,16 +2065,12 @@ impl DocumentCore {
             cell_para_idx,
             None,
         );
-        if matches!(
-            self.document.sections[section_idx].paragraphs[parent_para_idx]
-                .controls
-                .get(control_idx),
-            Some(Control::Table(_))
-        ) {
-            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
-        }
-
-        let (flow_advance_after, local_contribution_after) = {
+        let (
+            flow_advance_after,
+            local_contribution_after,
+            stored_frame_unchanged,
+            source_text_after,
+        ) = {
             let cell_para_after = self
                 .get_cell_paragraph_ref(
                     section_idx,
@@ -1925,21 +2087,49 @@ impl DocumentCore {
                 crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                     cell_para_after,
                 ),
+                stored_frame_before
+                    .as_ref()
+                    .is_some_and(|before| before.matches(cell_para_after)),
+                crate::model::raw_provenance::bytes_digest(cell_para_after.text.as_bytes()),
             )
         };
-        let units_fp_unchanged = self
-            .get_cell_paragraph_ref(
+        // 실제 줄 프레임이 같으면 표 전체의 저장 사다리를 무효화하지 않는다.
+        // 이전 편집의 표식은 구역 전체의 로드 상태 복원 근거가 있을 때만 해제한다.
+        if !stored_frame_unchanged
+            && matches!(
+                self.document.sections[section_idx].paragraphs[parent_para_idx]
+                    .controls
+                    .get(control_idx),
+                Some(Control::Table(_))
+            )
+        {
+            self.mark_table_text_reflowed_after_cell_edit(
                 section_idx,
                 parent_para_idx,
                 control_idx,
-                cell_idx,
-                cell_para_idx,
-            )
-            .is_some_and(|p| {
-                crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
-                    == units_fp_before
-            });
-        let cell_flow_changed = flow_advance_before != flow_advance_after;
+            )?;
+        }
+        let loaded_frame_restored = self.restore_loaded_frames_after_cell_text_edit(
+            section_idx,
+            old_text_len,
+            old_text_len - deleted_count + new_chars_count,
+            source_text_before,
+            source_text_after,
+        );
+        let units_fp_unchanged = !loaded_frame_restored
+            && self
+                .get_cell_paragraph_ref(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                )
+                .is_some_and(|p| {
+                    crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
+                        == units_fp_before
+                });
+        let cell_flow_changed = loaded_frame_restored || flow_advance_before != flow_advance_after;
         let new_offset = char_offset + new_chars_count;
         let focused_after = if focused_target_is_table_cell {
             self.get_cell_paragraph_ref(
@@ -2032,16 +2222,20 @@ impl DocumentCore {
             });
         }
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변, section dirty만 설정)
-        self.document.sections[section_idx].raw_stream = None;
+        let source_cache_restored =
+            self.finish_loaded_source_cache_after_cell_edit(section_idx, loaded_frame_restored);
         if has_compat_projection {
             self.invalidate_render_normalization_section(section_idx);
         }
-        if has_compat_projection && !paginate_immediately {
+        if (has_compat_projection || loaded_frame_restored || source_cache_restored)
+            && !paginate_immediately
+        {
             self.compute_render_normalized();
         }
         self.mark_section_pagination_dirty(section_idx);
         let new_text_len = old_text_len - deleted_count + new_chars_count;
         let focused_page_tree_patched = if !paginate_immediately
+            && !source_cache_restored
             && !cell_flow_changed
             && !had_pending_flow_change
             && focused_delta_x.is_some()
@@ -2202,6 +2396,9 @@ impl DocumentCore {
             cell_para_idx,
         )?;
         let old_text_len = cell_para.text.chars().count();
+        let source_text_before =
+            crate::model::raw_provenance::bytes_digest(cell_para.text.as_bytes());
+        let stored_frame_before = StoredVerticalFrame::capture(cell_para);
         let flow_advance_before = relative_paragraph_flow_advance(cell_para);
         let local_contribution_before =
             crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
@@ -2233,16 +2430,12 @@ impl DocumentCore {
             cell_para_idx,
             None,
         );
-        if matches!(
-            self.document.sections[section_idx].paragraphs[parent_para_idx]
-                .controls
-                .get(control_idx),
-            Some(Control::Table(_))
-        ) {
-            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
-        }
-
-        let (flow_advance_after, local_contribution_after) = {
+        let (
+            flow_advance_after,
+            local_contribution_after,
+            stored_frame_unchanged,
+            source_text_after,
+        ) = {
             let cell_para_after = self
                 .get_cell_paragraph_ref(
                     section_idx,
@@ -2259,21 +2452,49 @@ impl DocumentCore {
                 crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                     cell_para_after,
                 ),
+                stored_frame_before
+                    .as_ref()
+                    .is_some_and(|before| before.matches(cell_para_after)),
+                crate::model::raw_provenance::bytes_digest(cell_para_after.text.as_bytes()),
             )
         };
-        let units_fp_unchanged = self
-            .get_cell_paragraph_ref(
+        // 실제 줄 프레임이 같으면 표 전체의 저장 사다리를 무효화하지 않는다.
+        // 이전 편집이 이미 기록한 재조판 표식은 그대로 유지한다.
+        if !stored_frame_unchanged
+            && matches!(
+                self.document.sections[section_idx].paragraphs[parent_para_idx]
+                    .controls
+                    .get(control_idx),
+                Some(Control::Table(_))
+            )
+        {
+            self.mark_table_text_reflowed_after_cell_edit(
                 section_idx,
                 parent_para_idx,
                 control_idx,
-                cell_idx,
-                cell_para_idx,
-            )
-            .is_some_and(|p| {
-                crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
-                    == units_fp_before
-            });
-        let cell_flow_changed = flow_advance_before != flow_advance_after;
+            )?;
+        }
+        let loaded_frame_restored = self.restore_loaded_frames_after_cell_text_edit(
+            section_idx,
+            old_text_len,
+            old_text_len.saturating_sub(deleted_count),
+            source_text_before,
+            source_text_after,
+        );
+        let units_fp_unchanged = !loaded_frame_restored
+            && self
+                .get_cell_paragraph_ref(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                )
+                .is_some_and(|p| {
+                    crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
+                        == units_fp_before
+                });
+        let cell_flow_changed = loaded_frame_restored || flow_advance_before != flow_advance_after;
         let focused_after = if focused_target_is_table_cell {
             self.get_cell_paragraph_ref(
                 section_idx,
@@ -2362,19 +2583,23 @@ impl DocumentCore {
         }
 
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변)
-        self.document.sections[section_idx].raw_stream = None;
+        let source_cache_restored =
+            self.finish_loaded_source_cache_after_cell_edit(section_idx, loaded_frame_restored);
         // Immediate edits need the same revision bump as deferred edits and
         // insertion. Otherwise pagination can reuse a projection that still
         // paints text which has already been deleted from the editable IR.
         if has_compat_projection {
             self.invalidate_render_normalization_section(section_idx);
         }
-        if has_compat_projection && !paginate_immediately {
+        if (has_compat_projection || loaded_frame_restored || source_cache_restored)
+            && !paginate_immediately
+        {
             self.compute_render_normalized();
         }
         self.mark_section_pagination_dirty(section_idx);
         let new_text_len = old_text_len.saturating_sub(deleted_count);
         let focused_page_tree_patched = if !paginate_immediately
+            && !source_cache_restored
             && !cell_flow_changed
             && !had_pending_flow_change
             && focused_delta_x.is_some()
@@ -3071,7 +3296,10 @@ impl DocumentCore {
             .collect()
     }
 
-    fn cell_metrics_for_control(control: &Control, cell_idx: usize) -> Option<CellReflowMetrics> {
+    pub(crate) fn cell_metrics_for_control(
+        control: &Control,
+        cell_idx: usize,
+    ) -> Option<CellReflowMetrics> {
         match control {
             Control::Table(table) => {
                 if cell_idx == 65534 {
@@ -3242,53 +3470,30 @@ impl DocumentCore {
             }
         }
 
-        // Section raw 스트림 무효화 (재직렬화 유도)
-        self.document.sections[section_idx].raw_stream = None;
-        // DocInfo raw_stream은 유지 (전체 재직렬화 시 FIX-4 문제 발생)
-
         if let Some((ppi, ci, cei)) = cell_ctx {
-            // ─── 셀 내 deleteRange ───
-            if start_para == end_para {
-                // 같은 문단 내 삭제
-                let count = end_offset - start_offset;
-                if count > 0 {
-                    let cell_para =
-                        self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, start_para)?;
-                    cell_para.delete_text_at(start_offset, count);
-                    self.reflow_cell_paragraph(section_idx, ppi, ci, cei, start_para);
+            let changed = if cei == 65534 && start_para == end_para {
+                // 기존 flat API의 표 캡션 문단 주소도 그대로 받는다.
+                let paragraph =
+                    self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, start_para)?;
+                let mut paragraphs = vec![paragraph.clone()];
+                let changed = delete_cell_range(&mut paragraphs, 0, start_offset, 0, end_offset)?;
+                if changed {
+                    *paragraph = paragraphs.remove(0);
                 }
+                changed
             } else {
-                // 다중 문단 셀 내 삭제
-                // 1) 마지막 문단 앞부분 삭제
-                if end_offset > 0 {
-                    let cell_para =
-                        self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, end_para)?;
-                    cell_para.delete_text_at(0, end_offset);
-                }
-                // 2) 중간 문단 역순 제거 — 셀 내 문단은 cell.paragraphs에서 직접 제거
-                for mid_para in (start_para + 1..end_para).rev() {
-                    let cell = self.get_cell_mut(section_idx, ppi, ci, cei)?;
-                    if mid_para < cell.paragraphs.len() {
-                        cell.paragraphs.remove(mid_para);
-                    }
-                }
-                // 3) 첫 문단 뒷부분 삭제
-                {
-                    let cell_para =
-                        self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, start_para)?;
-                    let para_len = cell_para.text.chars().count();
-                    if start_offset < para_len {
-                        cell_para.delete_text_at(start_offset, para_len - start_offset);
-                    }
-                }
-                // 4) 첫-마지막 문단 병합 (마지막 문단이 이제 start_para+1에 위치)
-                let cell = self.get_cell_mut(section_idx, ppi, ci, cei)?;
-                if start_para + 1 < cell.paragraphs.len() {
-                    let next_para = cell.paragraphs.remove(start_para + 1);
-                    cell.paragraphs[start_para].merge_from(&next_para);
-                }
-                self.reflow_cell_paragraph(section_idx, ppi, ci, cei, start_para);
+                let paragraphs =
+                    self.get_cell_paragraphs_mut_by_path(section_idx, ppi, &[(ci, cei, 0)])?;
+                delete_cell_range(paragraphs, start_para, start_offset, end_para, end_offset)?
+            };
+            if !changed {
+                return Ok(super::super::helpers::json_ok_with(&format!(
+                    "\"paraIdx\":{},\"charOffset\":{}",
+                    start_para, start_offset
+                )));
             }
+            self.document.sections[section_idx].raw_stream = None;
+            self.reflow_cell_paragraph(section_idx, ppi, ci, cei, start_para);
 
             // 부모 컨트롤 dirty 마킹 + 재페이지네이션
             self.mark_cell_control_dirty(section_idx, ppi, ci);
@@ -3305,13 +3510,19 @@ impl DocumentCore {
                 start_para, start_offset
             )))
         } else {
+            // 셀 경로 검증 실패는 원시 저장 스트림에도 영향을 주지 않는다.
+            self.document.sections[section_idx].raw_stream = None;
             // ─── 본문 deleteRange ───
             if start_para == end_para {
                 // 같은 문단 내 삭제
                 let count = end_offset - start_offset;
                 if count > 0 {
-                    self.document.sections[section_idx].paragraphs[start_para]
-                        .delete_text_at(start_offset, count);
+                    delete_paragraph_boundary(
+                        &mut self.document.sections[section_idx].paragraphs[start_para],
+                        start_offset,
+                        end_offset,
+                        true,
+                    );
                     // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
                     let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
                         &self.document.sections[section_idx].paragraphs[start_para],
@@ -3332,10 +3543,12 @@ impl DocumentCore {
                 self.recompose_paragraph(section_idx, start_para);
             } else {
                 // 1) 마지막 문단 앞부분 삭제
-                if end_offset > 0 {
-                    self.document.sections[section_idx].paragraphs[end_para]
-                        .delete_text_at(0, end_offset);
-                }
+                delete_paragraph_boundary(
+                    &mut self.document.sections[section_idx].paragraphs[end_para],
+                    0,
+                    end_offset,
+                    true,
+                );
                 // 2) 중간 문단 역순 제거 (composed도 동기)
                 for mid_para in (start_para + 1..end_para).rev() {
                     self.forget_text_reflowed_tables_in_paragraph_at(section_idx, mid_para);
@@ -3350,10 +3563,12 @@ impl DocumentCore {
                         .text
                         .chars()
                         .count();
-                    if start_offset < para_len {
-                        self.document.sections[section_idx].paragraphs[start_para]
-                            .delete_text_at(start_offset, para_len - start_offset);
-                    }
+                    delete_paragraph_boundary(
+                        &mut self.document.sections[section_idx].paragraphs[start_para],
+                        start_offset,
+                        para_len,
+                        true,
+                    );
                 }
                 // 4) 첫-마지막 문단 병합 (마지막 문단이 이제 start_para+1에 위치)
                 if start_para + 1 < self.document.sections[section_idx].paragraphs.len() {
@@ -5860,41 +6075,13 @@ impl DocumentCore {
         end_para: usize,
         end_offset: usize,
     ) -> Result<String, HwpError> {
-        {
-            let paras = self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
-            if start_para == end_para {
-                let count = end_offset.saturating_sub(start_offset);
-                if count > 0 {
-                    if let Some(p) = paras.get_mut(start_para) {
-                        p.delete_text_at(start_offset, count);
-                    }
-                }
-            } else {
-                // 1) 마지막 문단 앞부분 삭제
-                if end_offset > 0 {
-                    if let Some(p) = paras.get_mut(end_para) {
-                        p.delete_text_at(0, end_offset);
-                    }
-                }
-                // 2) 중간 문단 역순 제거
-                for mid in (start_para + 1..end_para).rev() {
-                    if mid < paras.len() {
-                        paras.remove(mid);
-                    }
-                }
-                // 3) 첫 문단 뒷부분 삭제
-                if let Some(p) = paras.get_mut(start_para) {
-                    let para_len = p.text.chars().count();
-                    if start_offset < para_len {
-                        p.delete_text_at(start_offset, para_len - start_offset);
-                    }
-                }
-                // 4) 첫-마지막 문단 병합 (마지막이 이제 start_para+1)
-                if start_para + 1 < paras.len() {
-                    let next = paras.remove(start_para + 1);
-                    paras[start_para].merge_from(&next);
-                }
-            }
+        let paragraphs =
+            self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
+        if !delete_cell_range(paragraphs, start_para, start_offset, end_para, end_offset)? {
+            return Ok(super::super::helpers::json_ok_with(&format!(
+                "\"paraIdx\":{},\"charOffset\":{}",
+                start_para, start_offset
+            )));
         }
 
         // [#2755] flat `delete_range_native` 셀 분기와 동일하게 병합 생존 문단(start_para)을

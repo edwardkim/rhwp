@@ -913,10 +913,7 @@ pub(crate) fn render_paragraph_parts(
         // 쪽-상대 좌표로 되돌려 낸다 — 누적 좌표가 파일로 나가면 한글 2022 가
         // 캐시를 신뢰해 조판을 폐기한다(08818: 81쪽 → 5쪽). axis 절단은 앞
         // 접두 슬라이스라 인덱스가 그대로 대응한다.
-        let source_vpos = para
-            .source_line_seg_vertical_pos
-            .as_deref()
-            .filter(|v| v.len() == para.line_segs.len())
+        let source_vpos = crate::serializer::line_cache::source_vertical_positions(para)
             .map(|v| &v[..axis_line_segs.len()]);
         let linesegs = format!(
             "{}{}{}",
@@ -3549,6 +3546,10 @@ fn render_equation(eq: &Equation) -> String {
         "CHAR"
     };
 
+    // 개체 공통 속성을 그대로 보존한다. 원본 수식의 줄간격 참여가 저장에서 풀리면
+    // 같은 선언 높이·스크립트여도 한컴의 후속 문단 원점이 달라진다.
+    let affect_line_spacing = if c.affect_line_spacing { "1" } else { "0" };
+
     // [#2840] 개체 잠금(lock) — 종전 하드코딩 "0" 제거, IR(common.locked) 값을 방출.
     let lock = if c.locked { "1" } else { "0" };
 
@@ -3564,7 +3565,7 @@ fn render_equation(eq: &Equation) -> String {
     let allow_overlap = if c.allow_overlap { "1" } else { "0" };
 
     format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="{width_rel_to}" height="{height}" heightRelTo="{height_rel_to}"{size_protect}/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="{allow_overlap}" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="{width_rel_to}" height="{height}" heightRelTo="{height_rel_to}"{size_protect}/><hp:pos treatAsChar="{treat}" affectLSpacing="{affect_line_spacing}" flowWithText="{flow_with_text}" allowOverlap="{allow_overlap}" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
         text_wrap_to_hwpx(c.text_wrap),
         text_flow_to_hwpx(c.text_flow),
         vert_rel_to_hwpx(c.vert_rel_to),

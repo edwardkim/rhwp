@@ -46,6 +46,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "commands/document/hft_outline_fonts.rs",
+        "register_text_font_glyph_coverage_native",
+        Exempt::SessionState,
+        "원문 IR·raw stream 대신 paint용 pua_coverage 세션만 등록한다. text_font_coverage_registration의 registered_upright_face_resolves_quoted_css_and_keeps_document_source가 공개 등록 전후 HWP/HWPX 바이트 보존을 검사한다.",
+    ),
+    (
+        "commands/document/hft_outline_fonts.rs",
         "register_hft_outline_font_native",
         Exempt::SessionState,
         "#7902: hft_outline_fonts의 paint 전용 프로그램만 등록·교체한다. 문서 IR과 저장 HWP 바이트 보존은 hft_outline_font_contract의 public API 실행으로 검사한다.",
@@ -91,14 +97,26 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
         "hyperlink.rs",
         "insert_hyperlink_native",
-        Exempt::DelegatesTo("commit_hyperlink_paragraph"),
-        "검증한 필드 삽입 후보를 공통 commit helper에 넘긴다. helper가 구역 raw_stream과 페이지 캐시를 무효화한다 (#6963).",
+        Exempt::DelegatesTo("insert_hyperlink_command"),
+        "웹 주소 Command를 공통 삽입 경로에 넘긴다. 그 경로가 commit helper로 구역 raw_stream과 페이지 캐시를 무효화한다 (#6963).",
+    ),
+    (
+        "hyperlink.rs",
+        "insert_bookmark_hyperlink_native",
+        Exempt::DelegatesTo("insert_hyperlink_command"),
+        "책갈피 Command를 공통 삽입 경로에 넘긴다. 그 경로가 commit helper로 구역 raw_stream과 페이지 캐시를 무효화한다 (#6963).",
     ),
     (
         "hyperlink.rs",
         "update_hyperlink_native",
-        Exempt::DelegatesTo("commit_hyperlink_paragraph"),
-        "주소가 바뀐 경우에만 공통 commit helper로 적용한다. helper가 구역 raw_stream을 무효화하며 동일 주소는 무변경이다 (#6963).",
+        Exempt::DelegatesTo("update_hyperlink_command"),
+        "주소가 바뀐 경우에만 공통 수정 경로가 commit helper로 적용한다. helper가 구역 raw_stream을 무효화하며 동일 주소는 무변경이다 (#6963).",
+    ),
+    (
+        "hyperlink.rs",
+        "update_bookmark_hyperlink_native",
+        Exempt::DelegatesTo("update_hyperlink_command"),
+        "대상 책갈피가 바뀐 경우에만 공통 수정 경로가 commit helper로 적용한다. 동일 대상은 무변경이다 (#6963).",
     ),
     (
         "hyperlink.rs",

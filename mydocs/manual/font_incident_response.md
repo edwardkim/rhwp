@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/font_incident_response.md
-last_verified: 2026-08-15
+last_verified: 2026-10-24
 ---
 
 # 폰트 감지·대체 사고 대응 절차
@@ -89,6 +89,47 @@ API 함수의 존재, 성공 응답, 큰 결과 count를 전체 설치 글꼴 �
   `exact-probed`를 local Typeface 성공으로 보고하지 않는다.
 - native/WASM 레이아웃 메트릭, Canvas2D paint, CanvasKit glyph는 각각 따로 판정한다.
 - 한 backend의 성공으로 다른 backend나 페이지네이션을 완료 처리하지 않는다.
+
+### 3.4 구형 수식의 독립 표시 글꼴 공급
+
+파일에서 읽은 빈 수식 버전의 HYhwpEQ는 현대 `Equation Version 60`의 PUA와 표시
+프로그램이 다를 수 있다. 같은 이름의 현대 TTF가 설치됐다는 이유로 구형 Type3와 같다고
+판정하지 않는다. 저장 상자의 유효성과 표시 세대도 구분한다. 수식 내용·크기 편집만으로
+구형 표시를 현대 PUA로 바꾸지 않는다.
+
+구형 표시 자료가 필요하면 대상 문서 대신 독립 문자 표본을 만든다. 스크립트가 없고
+`paraPr`·`charPr` 0 및 용지·단 설정이 있는 깨끗한 HWPX 서식을 사용한다.
+
+```bash
+venv/bin/python scripts/prepare_legacy_equation_font.py create \
+  --template /path/to/clean.hwpx \
+  --output output/fonts/legacy-equation-alphabet.hwpx
+```
+
+표본을 저장 버전에 맞는 한컴에서 전체 쪽 Print로 출력한다.
+[MCP Print 계약](mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따르며, 수동 Print도
+가능하다. 생성된 `legacy-equation-alphabet.manifest.json`과 같은 입력을 출력해야 한다.
+PDF는 원본 문자 84개의 순서와 Type3 75자의 프로그램·em 행렬을 검사해 로컬 CFF로 옮긴다.
+그리스 문자처럼 별도 본문 프로그램으로 출력한 문자는 복원 글꼴에 섞지 않는다.
+
+```bash
+venv/bin/python scripts/prepare_legacy_equation_font.py recover \
+  --manifest output/fonts/legacy-equation-alphabet.manifest.json \
+  --pdf output/fonts/legacy-equation-alphabet-2020.pdf \
+  --output output/fonts/RHWP-Hancom-Legacy-Equation.otf
+
+# Linux 사용자 글꼴 등록 예시
+install -D -m 644 output/fonts/RHWP-Hancom-Legacy-Equation.otf \
+  ~/.local/share/fonts/rhwp-legacy-equation/RHWP-Hancom-Legacy-Equation.otf
+fc-cache -f ~/.local/share/fonts/rhwp-legacy-equation
+fc-match -f '%{family}\n%{file}\n' 'RHWP Hancom Legacy Equation'
+```
+
+표시 family는 `RHWP Hancom Legacy Equation`이다. 원본 HYhwpEQ의 현대 face를 덮어쓰지 않는다.
+동일한 SFNT를 Native와 브라우저의 실제 글꼴 공급 경로에 적재하고 출력별 선택을 확인한다.
+복원 파일과 원본 프로그램은 로컬 공급 자료로 유지한다. 입력·독립 PDF·글꼴·글리프 해시는
+출력한 `.provenance.json`에 기록한다. 대상 PDF의 윤곽을 재료로 쓰거나 점수에 맞춰
+윤곽·전진·기준선을 변형하지 않는다. 글꼴 공급 준비는 배치 차이의 해결·시각 통과를 뜻하지 않는다.
 
 ## 4. RED fixture 최소 분할
 

@@ -5,7 +5,10 @@ impl EqLayout {
     /// 독립 Print의 HYhwpEQ·HancomEQN 첨자는 명목 크기의 0.68배다.
     /// 다른 face의 계약과 실제 자식 상자의 글자 크기는 보존한다.
     pub(super) fn script_font_size(&self, fs: f64) -> f64 {
-        fs * if self.hancom_math_face || self.hancom_eqn {
+        fs * if self.legacy_math_face {
+            // 같은 스크립트의 빈 버전/Version 60을 독립 Print로 대조한 표시 세대.
+            0.64
+        } else if self.hancom_math_face || self.hancom_eqn {
             0.68
         } else {
             super::SCRIPT_SCALE
@@ -33,6 +36,21 @@ impl EqLayout {
         fs: f64,
         pad: f64,
     ) -> Option<LayoutBox> {
+        if self.legacy_math_face {
+            if self.variable_bold {
+                return None;
+            }
+            let run = super::super::legacy_glyphs::measure(text, role, fs, pad)?;
+            return Some(LayoutBox {
+                font_size: fs,
+                x: 0.0,
+                y: 0.0,
+                width: run.width,
+                height: fs,
+                baseline: fs * super::TEXT_BASELINE,
+                kind: LayoutKind::HancomGlyphs(run),
+            });
+        }
         if !self.hancom_latin {
             return None;
         }
@@ -64,6 +82,16 @@ impl EqLayout {
     }
 
     pub(super) fn layout_function(&self, name: &str, fs: f64) -> LayoutBox {
+        if self.legacy_math_face {
+            if let Some(body) = self.layout_hancom_glyphs(
+                name,
+                super::super::hancom_glyphs::Role::Variable { italic: false },
+                fs,
+                0.0,
+            ) {
+                return body;
+            }
+        }
         if self.hancom_eqn {
             if let Some(body) = self.layout_hancom_glyphs(
                 name,

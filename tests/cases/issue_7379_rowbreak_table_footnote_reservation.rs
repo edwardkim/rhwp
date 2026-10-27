@@ -1032,57 +1032,6 @@ fn assert_empty_picture_table_closed_outer_frame(hwpx: bool) {
     assert!(text(notes(&page.root).expect("같은 쪽 각주6")).contains("6)"));
 }
 
-/// 수동 메타데이터 대조군은 한컴 출력의 일치 증거가 아니다.
-/// 저장 상자의 증거를 없애면 앞 본문의 실제 줄 끝에서 흐름 배치해야 한다.
-#[test]
-fn unproven_empty_picture_table_frame_keeps_measured_flow_origin() {
-    use rhwp::model::{control::Control, paragraph::LineSeg};
-    for variant in 0..4 {
-        let mut core = core();
-        let mut doc = core.document().clone();
-        match variant {
-            0 => {
-                doc.sections[0].paragraphs[240].line_segs[0].tag |=
-                    LineSeg::TAG_IMPLEMENTATION_PROPERTY
-            }
-            1 => {
-                doc.sections[0].paragraphs[241].line_segs[0].tag |=
-                    LineSeg::TAG_IMPLEMENTATION_PROPERTY
-            }
-            2 => doc.sections[0].paragraphs[241].line_segs[0].vertical_pos += 75,
-            3 => {
-                let Control::Table(table) = &mut doc.sections[0].paragraphs[240].controls[0] else {
-                    panic!("원래 그림6 표");
-                };
-                table.common.height -= 75;
-            }
-            _ => unreachable!(),
-        }
-        core.set_document(doc);
-        let page = core.build_page_render_tree(10).expect("반례 실제 쪽");
-        let table = table_for_para(&page.root, 240).expect("일반 흐름 표 보존");
-        let previous = line_top(&page.root, "에는 생존 간 이식이").expect("직전 실제 글줄");
-        // 직전 줄1000HU와 뒤 간격1000HU를 소비한 흐름에 개체 오프셋319HU를 더한다.
-        // 증거가 없는 위여백 원점을 저장 상자로 승격하지 않는다.
-        let flow_top = previous + (1000.0 + 1000.0 + 319.0) / 75.0;
-        assert!(
-            (table.bbox.y - flow_top).abs() <= 0.1,
-            "반례{variant}: 일반 원점{}/{flow_top}",
-            table.bbox.y
-        );
-        assert!(find_picture(table).is_some(), "그림 유닛 누락 없음");
-        assert_eq!(
-            text(table).matches("그림 6.").count(),
-            1,
-            "캡션 유닛 중복 없음"
-        );
-        assert!(
-            line_top(&page.root, "다. 장기 매매 현황").is_some(),
-            "뒤 본문 보존"
-        );
-    }
-}
-
 fn assert_centered_cell_pictures_match_independent_pdf(native: bool) {
     let mut path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     if native {

@@ -34,6 +34,7 @@ for (const kind of ['body', 'cell', 'nested']) {
     };
     const wasm = {
       snapshotCapacity: () => 100,
+      getParagraphLength: () => [...value].length,
       insertText: insert, deleteText: remove,
       insertTextInCell: insert, deleteTextInCell: remove,
       insertTextInCellByPath: insert, deleteTextInCellByPath: remove,

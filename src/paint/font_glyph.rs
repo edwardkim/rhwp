@@ -651,6 +651,11 @@ impl FontGlyphLowerer<'_, '_> {
             return None;
         }
 
+        let visual_positions = crate::renderer::text_direction::VisualTextPositions::for_style(
+            &run.text,
+            &producer_positions,
+            &run.style,
+        );
         let units_per_em = f64::from(face.units_per_em());
         if units_per_em <= 0.0 || !super::font::glyph_font_size_is_portable(run.style.font_size) {
             self.report.rejected_glyph_runs += 1;
@@ -664,8 +669,17 @@ impl FontGlyphLowerer<'_, '_> {
         let mut utf16_offset = 0_u32;
         let mut max_advance_delta_px = 0.0_f64;
         for (index, character) in characters.iter().copied().enumerate() {
+            let glyph_character = if visual_positions
+                .as_ref()
+                .and_then(|p| p.span_scope(index, index + 1))
+                .is_some_and(|(_, _, rtl)| rtl)
+            {
+                unicode_bidi_mirroring::get_mirrored(character).unwrap_or(character)
+            } else {
+                character
+            };
             let Some(glyph_id) = face
-                .glyph_index(character)
+                .glyph_index(glyph_character)
                 .filter(|glyph_id| glyph_id.0 != 0)
             else {
                 self.report.rejected_glyph_runs += 1;
@@ -685,7 +699,10 @@ impl FontGlyphLowerer<'_, '_> {
                 max_advance_delta_px.max((producer_advance - nominal_advance).abs());
             glyph_ids.push(u32::from(glyph_id.0));
             positions.push(LayerPoint {
-                x: producer_positions[index],
+                x: visual_positions
+                    .as_ref()
+                    .and_then(|p| p.span_origin(index, index + 1))
+                    .unwrap_or(producer_positions[index]),
                 y: 0.0,
             });
             advances.push(LayerVector {

@@ -51,6 +51,9 @@ use crate::parser::hwpx::parse_hwpx;
 use crate::serializer::hwpx::serialize_hwpx;
 use crate::serializer::SerializeError;
 
+mod export_cache;
+pub use export_cache::diff_exported_hwpx_documents;
+
 /// IR diff 결과 — 발견된 차이 목록을 보관.
 #[derive(Debug, Default)]
 pub struct IrDiff {

@@ -25,6 +25,7 @@ pub(super) mod metrics;
 pub(super) mod overflow;
 pub(super) mod placement;
 pub(super) mod scan;
+pub(super) mod spacing;
 pub(super) mod split;
 pub(super) mod split_entry;
 pub(super) mod stored_lines;
@@ -132,6 +133,8 @@ pub(super) fn place_split_paragraph(
     let mut cursor_line = st.take_prefilled_line_prefix(para_idx);
     let mut on_entry_page = true;
     while cursor_line < line_count {
+        let confirmed = spacing::confirmed_format(st, para_idx, fmt, paragraphs);
+        let fmt = confirmed.as_ref().unwrap_or(fmt);
         let reserve = if on_entry_page {
             safety.entry
         } else {
@@ -260,8 +263,24 @@ pub(super) fn place_split_paragraph(
         };
         if cursor_line == 0 {
             record_stored_column_top_spacing(st, paragraphs, para_idx, fmt, styles, dpi);
+            // 통째 fit 실패 뒤 새 단에서 전체 문단을 수용하는 재시도도
+            // 같은 첫 줄 계약을 쓴다. 항목 이름이 FullParagraph여도
+            // 이 경로는 place_fitted_paragraph를 통과하지 않는다.
+            if st.starts_after_overheight_whole_float(paragraphs, para_idx, dpi) {
+                st.record_float_pushed_line_spacing(para_idx, sp_b);
+            }
         }
         content::record_first_fragment_origin(st, &fragment.item, paragraphs);
+        if std::env::var("RHWP_DIAG_SPLIT_BUDGET").is_ok() {
+            eprintln!(
+                "DIAG_FRAGMENT_COMMIT pi={} current={} height={} content={:?} item={:?}",
+                para_idx,
+                st.current_height,
+                fragment.height,
+                fragment.content_height,
+                fragment.item,
+            );
+        }
         st.commit_split_paragraph_fragment(fragment);
 
         if end_line >= line_count {
@@ -350,9 +369,30 @@ pub(super) fn place_fitted_paragraph(
     body_bottom_vpos: Option<i32>,
     dpi: f64,
 ) {
+    let confirmed = spacing::confirmed_format(st, para_idx, fmt, paragraphs);
+    let fmt = confirmed.as_ref().unwrap_or(fmt);
     let defer_preceding_float =
         placement::defer_preceding_float(&st.current_items, paragraphs, para_idx, para);
+    let split_float_spacing_before = match st.current_items.last() {
+        _ if confirmed.is_some() => None,
+        Some(PageItem::PartialTable {
+            para_index,
+            is_continuation: true,
+            ..
+        }) => paragraphs.get(*para_index).and_then(|host| {
+            crate::renderer::float_placement::split_float_successor_spacing_before(
+                host,
+                para,
+                st.current_start_height,
+                fmt.spacing_before,
+                st.current_height,
+            )
+        }),
+        _ => None,
+    };
     record_stored_column_top_spacing(st, paragraphs, para_idx, fmt, styles, dpi);
+    let after_overheight_whole_float =
+        st.starts_after_overheight_whole_float(paragraphs, para_idx, dpi);
     st.insert_fitted_paragraph(para_idx, defer_preceding_float);
     let stored_successor_flow =
         content::stored_successor_flow(st, para, fmt, paragraphs, styles, para_idx, dpi);
@@ -377,6 +417,30 @@ pub(super) fn place_fitted_paragraph(
                 st.vpos_page_base.is_none(),
             )
         });
+    // 앞 단의 통째 표 뒤에서 새로 수용한 앞 간격이다. 이전 단의 저장 vpos를
+    // 새 단의 원점으로 해석하거나 출력 단계의 상단 트림으로 버리지 않는다.
+    // 흐름이 이미 이 간격을 포함하므로 다시 더하지 않고 확정값만 공유한다.
+    if after_overheight_whole_float
+        && stored_successor_flow.is_none()
+        && stored_guide_advance.is_none()
+        && advance + dpi / 7200.0 >= fmt.total_height
+    {
+        st.record_float_pushed_line_spacing(para_idx, fmt.spacing_before);
+    }
+    // 분할 자리차지 표 조각이 앞 간격을 품었으면 흐름에서 그만큼 덜 전진하고, 출력에
+    // 같은 확정 앞 간격을 넘긴다. 트림·저장 끝이 이미 정한 전진은 건드리지 않는다.
+    let absorbed_spacing_before = split_float_spacing_before
+        .filter(|_| {
+            stored_successor_flow.is_none()
+                && stored_guide_advance.is_none()
+                && advance + 0.5 >= fmt.total_height
+        })
+        .map(|spacing| {
+            st.record_float_pushed_line_spacing(para_idx, spacing);
+            (fmt.spacing_before - spacing).max(0.0)
+        })
+        .unwrap_or(0.0);
+    let advance = advance - absorbed_spacing_before;
     if std::env::var("RHWP_DIAG_ADV").is_ok() {
         eprintln!(
             "DIAG_ADV pi={} adv={:.1} total={:.1} h4f={:.1} sb={:.1} sa={:.1} cur={:.1} columns={} page_base={:?} lazy_base={:?} dirty={} trim_before={} stored_successor={:?} stored_guide={:?}",
@@ -431,6 +495,7 @@ pub(super) fn place_fitted_paragraph(
                 |flow| flow.content_bottom - st.current_height,
             ),
             advance,
+            fmt.line_tail_spacing(fmt.line_count()),
         );
     }
     st.apply_full_paragraph_flow(
@@ -438,7 +503,7 @@ pub(super) fn place_fitted_paragraph(
         if stored_successor_flow.is_some() {
             advance
         } else {
-            fmt.total_height
+            fmt.total_height - absorbed_spacing_before
         },
         trimmed_spacing_before,
         body_bottom_vpos,
@@ -503,6 +568,8 @@ pub(super) fn try_place_overflow_paragraph(
     current_page_vpos_base: Option<i32>,
     dpi: f64,
 ) -> bool {
+    let confirmed = spacing::confirmed_format(st, para_idx, fmt, paragraphs);
+    let fmt = confirmed.as_ref().unwrap_or(fmt);
     let page = st.paragraph_overflow_page(current_page_vpos_base);
     if overflow::atomic_overflow_fits(
         para,
@@ -613,6 +680,9 @@ pub(super) fn place_after_failed_fit(
     current_page_vpos_base: Option<i32>,
     dpi: f64,
 ) {
+    let original_fmt = fmt;
+    let confirmed = spacing::confirmed_format(st, para_idx, fmt, paragraphs);
+    let fmt = confirmed.as_ref().unwrap_or(fmt);
     // split: 줄 단위 분할
     let line_count = fmt.line_heights.len();
     // [#2004] tac(글자처럼) 전면 그림이 줄마다 하나씩 쌓인 "이미지 스택" 문단은 저장
@@ -693,7 +763,7 @@ pub(super) fn place_after_failed_fit(
         st,
         para_idx,
         para,
-        fmt,
+        original_fmt,
         paragraphs,
         styles,
         line_count,
@@ -758,6 +828,16 @@ pub(super) fn prepare_fit_budget(
             st.vpos_ladder_dirty,
             st.current_items.first(),
         );
+        eprintln!(
+            "DIAG_FLOW_METRICS pi={} heights={:?} spacings={:?} total={} fit={} before={} after={}",
+            para_idx,
+            fmt.line_heights,
+            fmt.line_spacings,
+            fmt.total_height,
+            fmt.height_for_fit,
+            fmt.spacing_before,
+            fmt.spacing_after,
+        );
     }
 
     if entry::edited_picture_requires_transition(
@@ -803,6 +883,7 @@ pub(super) fn prepare_fit_budget(
         absorbed_spacing_before,
         Some(para_idx),
     );
+    st.resolve_computed_float_first_line(para_idx, fmt);
     let footnote_margin_addback =
         st.take_paragraph_footnote_margin_addback(strict_after_empty_host_float);
     let tail_overflow =

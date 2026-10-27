@@ -2,8 +2,7 @@
 //! The start cut is snapshotted once before queued notes can advance the cursor.
 
 use crate::renderer::typeset::{
-    row_geometry_table, BlockTableContinuationSource, TableContinuationIteration, TypesetEngine,
-    TypesetState,
+    BlockTableContinuationSource, TableContinuationIteration, TypesetEngine, TypesetState,
 };
 
 use super::{BlockTableContinuationPreparedState, TableContinuationCursor};

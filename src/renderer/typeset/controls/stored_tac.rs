@@ -42,7 +42,7 @@ pub(in crate::renderer::typeset) struct StoredTacPage {
     pub vpos_page_base: Option<i32>,
     pub vpos_lazy_base: Option<i32>,
     /// 실제 수용한 직전 문단의 소유·끝 줄과 뒤 간격을 제외한 내용 하단.
-    pub previous_content_bottom: Option<(usize, usize, f64)>,
+    pub previous_content_bottom: Option<(usize, usize, f64, Option<f64>)>,
     /// 바로 이전 실제 쪽의 마지막 원문 소유 문단과 소비한 끝 줄.
     pub previous_page_tail: Option<(usize, usize)>,
     pub side_wrap_empty: bool,
@@ -51,6 +51,8 @@ pub(in crate::renderer::typeset) struct StoredTacPage {
     pub stored_zero_column_origin: bool,
     /// 첫 원본 TAC의 확정 배치와 저장 줄이 현재 단 원점에서 일치하는가.
     pub original_object_column_origin: bool,
+    /// 실제 첫 저장 글줄이 소유하는 원문 기준축과 물리 단 앵커.
+    pub stored_text_column_frame: Option<StoredColumnFrame>,
 }
 
 pub(super) struct StoredTacPlan {
@@ -258,8 +260,6 @@ pub(super) fn prepare_coanchored_first_line(
         && page.stored_zero_column_origin
         && para.line_segs.len() == 1
         && fmt.line_count() == 1
-        && fmt.spacing_after == 0.0
-        && next_spacing_before == 0.0
         && next_para.is_some_and(|next| {
             !next.stored_text_partition_is_dirty()
                 && !next.cell_format_vpos_dirty
@@ -269,6 +269,12 @@ pub(super) fn prepare_coanchored_first_line(
                             .vertical_pos
                             .checked_add(line.line_height)
                             .and_then(|end| end.checked_add(line.line_spacing))
+                            .and_then(|end| {
+                                end.checked_add(crate::renderer::px_to_hwpunit(
+                                    fmt.spacing_after + next_spacing_before,
+                                    dpi,
+                                ))
+                            })
                             == Some(after.vertical_pos)
                 })
         })
@@ -279,12 +285,18 @@ pub(super) fn prepare_coanchored_first_line(
     if !has_float && !(has_fixed_decoration && full_trailing) && !closed_decorated_line {
         return None;
     }
-    let origin = page.vpos_col_anchor
-        + hwpunit_to_px(
-            line.vertical_pos
-                .saturating_sub(page.vpos_page_base.or(page.vpos_lazy_base).unwrap_or(0)),
-            dpi,
-        );
+    // 단 첫 원본 줄이 인증한 영점은 글줄의 임시 lazy 기준축과 다르다.
+    // 장식이 함께 있는 개체 줄도 그 원점을 수용·후속 흐름·paint에 전달한다.
+    let source_frame = closed_decorated_line.then_some(StoredColumnFrame {
+        source_origin_hu: 0,
+        column_anchor_y: page.vpos_col_anchor,
+    });
+    let source_base = source_frame.map_or_else(
+        || page.vpos_page_base.or(page.vpos_lazy_base).unwrap_or(0),
+        |frame| frame.source_origin_hu,
+    );
+    let origin =
+        page.vpos_col_anchor + hwpunit_to_px(line.vertical_pos.saturating_sub(source_base), dpi);
     let end = origin
         + hwpunit_to_px(line.line_height, dpi)
         + hwpunit_to_px(line.line_spacing, dpi) * if full_trailing { 1.0 } else { 0.5 }
@@ -296,12 +308,13 @@ pub(super) fn prepare_coanchored_first_line(
         control_index,
         inline: InlineBoxPlacement {
             x: 0.0,
-            y: origin + hwpunit_to_px(i32::from(table.outer_margin_top), dpi),
+            // 실제 표 배치가 위 바깥 여백을 소비하므로 줄의 pen만 전달한다.
+            y: origin,
             clearance: 0.0,
             resolved_x: false,
             advance_end: Some(end),
             stored_horizontal_pen: None,
-            stored_column_frame: None,
+            stored_column_frame: source_frame,
         },
         end,
         rebase_line_origin: false,
@@ -320,6 +333,7 @@ pub(super) fn prepare_computed(
     styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     page: StoredTacPage,
     available_height: impl Fn() -> f64,
+    source_frame: Option<StoredColumnFrame>,
     dpi: f64,
 ) -> Option<StoredTacControlPlacement> {
     if !page.profile.hwpx_stored_layout()
@@ -396,6 +410,7 @@ pub(super) fn prepare_computed(
         && seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && next_para.is_some_and(|next| {
             !next.stored_text_partition_is_dirty()
+                && !next.cell_format_vpos_dirty
                 && next.line_segs.first().is_some_and(|after| {
                     after.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                         && after.vertical_pos > seg.vertical_pos
@@ -534,7 +549,9 @@ pub(super) fn prepare_computed(
             resolved_x: false,
             advance_end: Some(end),
             stored_horizontal_pen: None,
-            stored_column_frame: None,
+            stored_column_frame: source_frame.filter(|frame| {
+                closed_stored_line && frame.accepts_line_origin(seg.vertical_pos, origin, dpi)
+            }),
         },
         end,
         rebase_line_origin: !closed_stored_line,
@@ -570,6 +587,7 @@ pub(super) fn prepare(
     next_spacing_before: f64,
     explicit_page_break_before: bool,
     available_height: impl Fn() -> f64,
+    source_frame: Option<StoredColumnFrame>,
     dpi: f64,
 ) -> Option<StoredTacPlan> {
     // 커서가 이미 거절한 source 원점을 첫 저장 줄/개체의 영점 인증으로
@@ -710,19 +728,33 @@ pub(super) fn prepare(
             };
             // 앞 문단의 저장 사다리가 누적 높이보다 앞서 있으면 그 앵커를
             // fit와 paint에 함께 보존한다. 문단 상대 top만 더하면 앞 표로 되감긴다.
-            let mut saved_origin = page.vpos_col_anchor
-                + hwpunit_to_px(
-                    if single_saved_line {
-                        // An original object box is page-relative. A paragraph
-                        // ladder's text base does not authenticate its object origin.
-                        para.line_segs[0].vertical_pos
-                    } else {
+            let mut saved_origin = if single_saved_line {
+                // 완전한 개체 높이는 줄의 소유를 입증하지만 단의 원점을 0으로 만들지는
+                // 않는다. 앞 글줄 또는 완전한 표가 확립한 같은 원문/물리
+                // 프레임에 개체 줄도 투영한다.
+                let frame =
+                    page.stored_text_column_frame
+                        .or(source_frame)
+                        .unwrap_or(StoredColumnFrame {
+                            source_origin_hu: 0,
+                            column_anchor_y: page.vpos_col_anchor,
+                        });
+                frame.column_anchor_y
+                    + hwpunit_to_px(
+                        para.line_segs[0]
+                            .vertical_pos
+                            .saturating_sub(frame.source_origin_hu),
+                        dpi,
+                    )
+            } else {
+                page.vpos_col_anchor
+                    + hwpunit_to_px(
                         para.line_segs[0].vertical_pos.saturating_sub(
                             page.vpos_page_base.or(page.vpos_lazy_base).unwrap_or(0),
-                        )
-                    },
-                    dpi,
-                );
+                        ),
+                        dpi,
+                    )
+            };
             let restarted_column_line = single_saved_line
                 && page.empty_column
                 && page.current_height == 0.0
@@ -765,7 +797,7 @@ pub(super) fn prepare(
                     }
                     previous.line_segs.last().is_some_and(|last| {
                         !crate::renderer::typeset::is_synthetic_line_seg(last)
-                            && last.vertical_pos > 0
+                            && last.vertical_pos >= 0
                             && last.line_height > 0
                             && last.line_spacing >= 0
                             && last
@@ -830,7 +862,8 @@ pub(super) fn prepare(
                                 ))
                             })
                             == Some(next.vertical_pos);
-                    let (owner, end_line, content_end) = page.previous_content_bottom?;
+                    let (owner, end_line, content_end, last_line_spacing) =
+                        page.previous_content_bottom?;
                     // 실제 수용한 완전한 글줄 조각이 소유를 인증한다. 같은 문단의
                     // 독립 표가 있다는 사실로 그 본문 소유까지 거절하지 않는다.
                     if owner.checked_add(1) != Some(para_idx)
@@ -842,23 +875,37 @@ pub(super) fn prepare(
                     // 상대 간격을 한 번 연결한다. 스타일 뒤 간격의 소비량을 추측하지 않는다.
                     let source_end = last.vertical_pos.checked_add(last.line_height)?;
                     let gap = next.vertical_pos.checked_sub(source_end)?;
-                    (valid && gap >= 0).then(|| content_end + hwpunit_to_px(gap, dpi))
+                    // 기준선 보정은 높이를 늘리고 줄간격을 같은 만큼 줄일 수 있다.
+                    // 내용 하단에는 이미 보정된 높이가 있으므로 원본 간격을 다시
+                    // 더하면 그 차이만큼 다음 저장 축을 밀어낸다. 같은 구성 결과의
+                    // 끝 간격을 소비하고, 원본은 상대 사다리의 소유 확인에만 쓴다.
+                    let spacing_delta = last_line_spacing
+                        .map(|spacing| spacing - hwpunit_to_px(last.line_spacing, dpi))
+                        .unwrap_or(0.0);
+                    (valid && gap >= 0)
+                        .then(|| content_end + hwpunit_to_px(gap, dpi) + spacing_delta)
                 });
                 // 저장 축과 실제 내용 하단이 갈리는 경계를 같은 진단에서 추적한다.
                 if std::env::var("RHWP_DIAG_FLOW").is_ok() {
                     eprintln!(
-                        "DIAG_STORED_TAC pi={para_idx} current={} saved={} same_frame={same_frame} inherited={inherited_origin:?} previous={:?} page_base={:?} lazy_base={:?} anchor={}",
+                        "DIAG_STORED_TAC pi={para_idx} current={} saved={} same_frame={same_frame} inherited={inherited_origin:?} previous={:?} page_base={:?} lazy_base={:?} anchor={} text_frame={:?}",
                         page.current_height, saved_origin, page.previous_content_bottom,
                         page.vpos_page_base, page.vpos_lazy_base, page.vpos_col_anchor,
+                        page.stored_text_column_frame,
                     );
                 }
                 if !same_frame && inherited_origin.is_none() {
                     return None;
                 }
-                // 기존 축이 증명된 경우는 보존한다. 다른 경우에는 소유가
-                // 확인된 직전 실제 줄과 저장 상대 간격으로 축을 확립한다.
                 if !same_frame {
+                    // 현재 단과 일치하지 않는 저장 원점은 상대 간격의 하한이 아니다.
+                    // 로드 재구성 축과 물리 축이 다르면, 앞 글줄이 인증한 내용 하단과
+                    // 같은 저장 사다리의 간격으로 원점을 새로 확립한다.
                     saved_origin = inherited_origin?;
+                } else if let Some(inherited_origin) = inherited_origin {
+                    // 같은 축으로 인증된 독립 개체 원점과 실제 앞 내용의 하한은
+                    // 함께 지킨다. 서로 다른 좌표축의 숫자끼리는 최댓값을 취하지 않는다.
+                    saved_origin = saved_origin.max(inherited_origin);
                 }
             }
             let origin = flow_origin.max(saved_origin);

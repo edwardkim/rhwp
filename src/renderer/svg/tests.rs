@@ -1390,6 +1390,7 @@ fn char_overlap_without_border_keeps_body_font_size() {
     let overlap = CharOverlapInfo {
         border_type: 0,
         inner_char_size: -4,
+        composition: None,
     };
 
     let mut renderer = SvgRenderer::new();
@@ -1418,6 +1419,7 @@ fn boxed_pua_char_overlap_draws_square_and_number() {
     let overlap = CharOverlapInfo {
         border_type: 0,
         inner_char_size: 0,
+        composition: None,
     };
 
     let mut renderer = SvgRenderer::new();
@@ -1444,6 +1446,7 @@ fn char_overlap_with_border_keeps_charsz_reduction() {
     let overlap = CharOverlapInfo {
         border_type: 4,
         inner_char_size: -2,
+        composition: None,
     };
 
     let mut renderer = SvgRenderer::new();

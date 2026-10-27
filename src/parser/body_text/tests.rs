@@ -1197,7 +1197,7 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
                 }
             }
             // 자동번호(0x12) / 새번호(0x12): 텍스트에 공백 placeholder 추가
-            // → apply_auto_numbers_to_composed에서 "  " (연속 2공백)으로 번호 삽입
+            // → 렌더러가 이 자리표 글자의 표시 문자열로 번호를 투영한다
             if ch == 0x0012 {
                 char_offsets.push(code_unit_pos);
                 text.push(' ');

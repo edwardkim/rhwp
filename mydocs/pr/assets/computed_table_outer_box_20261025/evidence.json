@@ -1,0 +1,2739 @@
+{
+  "code_source": "bc1e99abf036ef6febc551437962ef20fb726939",
+  "base_policy_source": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "base_runtime_source": "60972534680a0c5e51e54ec189b92e252e81a867",
+  "base_runtime_equivalence_command": [
+    "git",
+    "diff",
+    "--name-only",
+    "60972534680a0c5e51e54ec189b92e252e81a867",
+    "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+    "--",
+    "src",
+    "crates",
+    "Cargo.toml",
+    "Cargo.lock",
+    "assets",
+    "build.rs",
+    "scripts/wasm-pack-locked.sh"
+  ],
+  "base_runtime_changed_paths": [],
+  "native_binary_sha256": "0fd70f61a62cf30e89cc6fad8abfda2de23c4159d9f71cc7c7d8a28e7ff7176b",
+  "fresh_wasm_artifacts": {
+    "rhwp.js": "75cae6af5d48aa54e2d182681313dc85d824c60ebbea973ab4eb9285807c967d",
+    "rhwp_bg.wasm": "42197471992d4845002261c0420dd8c642333c56376a29f67757dfe27be71daa"
+  },
+  "dpi": 96,
+  "compat": "2022",
+  "coordinates": "paper origin CSS96; independent PDF points multiplied by4/3; JSON rounding stays inside2px budget",
+  "records": [
+    {
+      "key": "column-top-empty-margin-0",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-empty-margin-0.hwpx",
+      "input_sha256": "d183c665fc835476618b88bc2cc1d3794e7e86615c0a03668b8250818303692f",
+      "pdf": "pdf/computed-table-outer-box/column-top-empty-margin-0-2020.pdf",
+      "pdf_sha256": "65ddc43008c83ed8afc70a7515c07d03fd5a203275e8c19b7d342074bdae0c88",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-column-top-empty-margin-0",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-empty-margin-0.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-empty-margin-0/column-top-empty-margin-0-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-column-top-empty-margin-0",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/column-top-empty-margin-0_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-empty-margin-5000",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-empty-margin-5000.hwpx",
+      "input_sha256": "5cab2813a8f3f1806487e7168a59f4be5bc585c76ab79bae7c7909f38ac96218",
+      "pdf": "pdf/computed-table-outer-box/column-top-empty-margin-5000-2020.pdf",
+      "pdf_sha256": "4ce159629d7c22fc5d5320f8fe222aacf2522ce38a4be50cd2ad86fa2839c00a",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-column-top-empty-margin-5000",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-empty-margin-5000.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-empty-margin-5000/column-top-empty-margin-5000-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-column-top-empty-margin-5000",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/column-top-empty-margin-5000_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-text-margin-0",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-text-margin-0.hwpx",
+      "input_sha256": "3665fc60f5ce83d628c13a0c6f0f46ef0096ef567bee41862eb4a52901c12674",
+      "pdf": "pdf/computed-table-outer-box/column-top-text-margin-0-2020.pdf",
+      "pdf_sha256": "a439d62b003a02569f41baad15f8967cbb0d72ab4555b1e3a6d6a1fc90b464f9",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-column-top-text-margin-0",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-text-margin-0.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-text-margin-0/column-top-text-margin-0-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-column-top-text-margin-0",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/column-top-text-margin-0_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-text-margin-5000",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-text-margin-5000.hwpx",
+      "input_sha256": "3fc94a9f12743188e5222be825455b410bfd6c326ae1e06750b67e3c7fc12ab7",
+      "pdf": "pdf/computed-table-outer-box/column-top-text-margin-5000-2020.pdf",
+      "pdf_sha256": "14fe936ae9c355a3c28af61df25de14165b732037ecadf2a22577559c4d016ed",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-column-top-text-margin-5000",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-text-margin-5000.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-text-margin-5000/column-top-text-margin-5000-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-column-top-text-margin-5000",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/column-top-text-margin-5000_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "raised-dot",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/raised_dot_clip_20261025/raised-dot.hwpx",
+      "input_sha256": "c65131da3881475c93af521dcdcde9b2b4e8cd981500fcaa98ab9b447dc4e1b7",
+      "pdf": "pdf/raised-dot-clip/raised-dot-2020.pdf",
+      "pdf_sha256": "cfd1ebaa3ccad355448049468a6bd13ba60c0428f020cca129e80d40f6d7a90d",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-raised-dot",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/raised-dot.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/raised-dot/raised-dot-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-raised-dot",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/raised-dot_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-1000-offset-0-hwp",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-0-hwp.hwp",
+      "input_sha256": "2366b4b020de53c890fddd16de74b6318d798c32b1fe68e9d61e22553b1848dd",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-0-hwp.pdf",
+      "pdf_sha256": "b870721825fd3bddd6ccb380eb228b67ed7ed4e25e7732ac4cb9d2a256df89f5",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-host-size-1000-offset-0-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-0-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-0-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-host-size-1000-offset-0-hwp",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/host-size-1000-offset-0-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-1000-offset-0-hwpx",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-0-hwpx.hwpx",
+      "input_sha256": "535aecf0725458ed95ad7f9e49e302913d28ac64f941b5c777a9b108853900c2",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-0-hwpx.pdf",
+      "pdf_sha256": "2b328257d61d5a6be633b2c9a26e5909ceaaa160701aa64ab2a6290e23cfa42e",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-host-size-1000-offset-0-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-0-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-0-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-host-size-1000-offset-0-hwpx",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/host-size-1000-offset-0-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-1000-offset-1700-hwp",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-1700-hwp.hwp",
+      "input_sha256": "a3b3abf13a772882ac358db53013620f58c09c2ecda222556f5c5e4e194e9dc2",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-1700-hwp.pdf",
+      "pdf_sha256": "1f08489c1416342fed73627b970d5cfb9db30f13fd0ac5b1a606a9a119d8e343",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-host-size-1000-offset-1700-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-1700-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-1700-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-host-size-1000-offset-1700-hwp",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/host-size-1000-offset-1700-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-1000-offset-1700-hwpx",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-1700-hwpx.hwpx",
+      "input_sha256": "fd856e9a1c254ea82f3d3858ff895f08f5746926236d319e483bb6df50a0905d",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-1700-hwpx.pdf",
+      "pdf_sha256": "4f0f71134e17e2dbf8e7f4f63a2606c5b098f605ddc320584c749520cb344794",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-host-size-1000-offset-1700-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-1700-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-1700-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-host-size-1000-offset-1700-hwpx",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/host-size-1000-offset-1700-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-250-offset-0-hwp",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-0-hwp.hwp",
+      "input_sha256": "deadae28b5e14e532f5d892d47d127cf148dfdda7d54818e8603f6bddb7e0c98",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-0-hwp.pdf",
+      "pdf_sha256": "60cb0f426e646859843ae295591da9a36b5b5837dae2eb26b856219a765e4d7f",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-host-size-250-offset-0-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-0-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-0-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-host-size-250-offset-0-hwp",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/host-size-250-offset-0-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-250-offset-0-hwpx",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-0-hwpx.hwpx",
+      "input_sha256": "2d17fb6729d34f07cb7a81a760fd9a2bd932279401f61cd04c0d7207c3a95918",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-0-hwpx.pdf",
+      "pdf_sha256": "68ff9588d804e27c7055013ad663a9c285641de705275a1d1297b9adce5ff936",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-host-size-250-offset-0-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-0-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-0-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-host-size-250-offset-0-hwpx",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/host-size-250-offset-0-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-250-offset-1700-hwp",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-1700-hwp.hwp",
+      "input_sha256": "fb44d1a9116db2b832953a5758fb057a2f8e45a1af307cf0881b3bef05921df9",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-1700-hwp.pdf",
+      "pdf_sha256": "015dc2c6489a38722f66d0f5cb0e72f06c4abe077ad546baee0ee7b4e451e798",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-host-size-250-offset-1700-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-1700-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-1700-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-host-size-250-offset-1700-hwp",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/host-size-250-offset-1700-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-250-offset-1700-hwpx",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-1700-hwpx.hwpx",
+      "input_sha256": "0edff451afe352ea6fdf4a22ba90e2a70d8e0b2bee21a7a5f22559a7caf554c2",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-1700-hwpx.pdf",
+      "pdf_sha256": "80657a1380d1744b6afdfac2f73e0ed7bba20ca568518532b9792773a94d88b7",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-host-size-250-offset-1700-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-1700-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-1700-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-host-size-250-offset-1700-hwpx",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/host-size-250-offset-1700-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-4000-offset-0-hwp",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-0-hwp.hwp",
+      "input_sha256": "36b7163c9f63a6f92487546193a3fdf3fc0b738e869a01a81b113fffe23265bf",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-0-hwp.pdf",
+      "pdf_sha256": "3e2d3878bda7d6b06db72dc39e3e40af1ed6910bbc5c839eec4d19fd3c981619",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-host-size-4000-offset-0-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-0-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-0-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-host-size-4000-offset-0-hwp",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/host-size-4000-offset-0-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-4000-offset-0-hwpx",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-0-hwpx.hwpx",
+      "input_sha256": "3357a1f915bd2968040e67d8f89905c3c649363eb999c2140c0f79536b93a646",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-0-hwpx.pdf",
+      "pdf_sha256": "414f3394dec0afc9f7036db73493fde9eaf815f7b47a1885a431de9d74c57bf8",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-host-size-4000-offset-0-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-0-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-0-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-host-size-4000-offset-0-hwpx",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/host-size-4000-offset-0-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-4000-offset-1700-hwp",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-1700-hwp.hwp",
+      "input_sha256": "064cff5c2b45bec55615e08dc570470a5ef45dde352f2a3c3e68a0f45fdf7de7",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-1700-hwp.pdf",
+      "pdf_sha256": "1777c34d29f7833c8051deb5f9c9e291061015f76717b40c329953f013dbf194",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-host-size-4000-offset-1700-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-1700-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-1700-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-host-size-4000-offset-1700-hwp",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/host-size-4000-offset-1700-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-4000-offset-1700-hwpx",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-1700-hwpx.hwpx",
+      "input_sha256": "1527e74277a326922db6981d77992d3517c69358a19ba81bc46e43ae200588c0",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-1700-hwpx.pdf",
+      "pdf_sha256": "60fd219290f0462eb54cce79f9f2f2254684c348427312f122ea0bc0b79b82b3",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-host-size-4000-offset-1700-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-1700-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-1700-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-host-size-4000-offset-1700-hwpx",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/host-size-4000-offset-1700-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "unsplit-rows-2-body-true-flow-false-hwp",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/unsplit-rows-2-body-true-flow-false-hwp.hwp",
+      "input_sha256": "c96ec32b71a8d5bf0b249d1131c0d539c9fc994fd1283de86b8bf2a1299dee66",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/unsplit-rows-2-body-true-flow-false-hwp.pdf",
+      "pdf_sha256": "292f03828fbce39c8d17c5bed6049f46d16e9fdff974758f91a4f8a5b7489e73",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-unsplit-rows-2-body-true-flow-false-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/unsplit-rows-2-body-true-flow-false-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/unsplit-rows-2-body-true-flow-false-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-unsplit-rows-2-body-true-flow-false-hwp",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/unsplit-rows-2-body-true-flow-false-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "unsplit-rows-2-body-true-flow-false-hwpx",
+      "role": "candidate",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/unsplit-rows-2-body-true-flow-false-hwpx.hwpx",
+      "input_sha256": "de4b2c644110fb10ad45abc76a4e9e78b5bab2f25db89f506334c2a6bb2abb6b",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/unsplit-rows-2-body-true-flow-false-hwpx.pdf",
+      "pdf_sha256": "ff468af32568ca4f15ac8ce21f47e18796cea43b8906c8cbcaef3ab34fa75a20",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-unsplit-rows-2-body-true-flow-false-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/unsplit-rows-2-body-true-flow-false-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/unsplit-rows-2-body-true-flow-false-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3329/native-candidate-unsplit-rows-2-body-true-flow-false-hwpx",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/unsplit-rows-2-body-true-flow-false-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-empty-margin-0",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-empty-margin-0.hwpx",
+      "input_sha256": "d183c665fc835476618b88bc2cc1d3794e7e86615c0a03668b8250818303692f",
+      "pdf": "pdf/computed-table-outer-box/column-top-empty-margin-0-2020.pdf",
+      "pdf_sha256": "65ddc43008c83ed8afc70a7515c07d03fd5a203275e8c19b7d342074bdae0c88",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-column-top-empty-margin-0",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-empty-margin-0.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-empty-margin-0/column-top-empty-margin-0-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-column-top-empty-margin-0",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/column-top-empty-margin-0_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-empty-margin-5000",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-empty-margin-5000.hwpx",
+      "input_sha256": "5cab2813a8f3f1806487e7168a59f4be5bc585c76ab79bae7c7909f38ac96218",
+      "pdf": "pdf/computed-table-outer-box/column-top-empty-margin-5000-2020.pdf",
+      "pdf_sha256": "4ce159629d7c22fc5d5320f8fe222aacf2522ce38a4be50cd2ad86fa2839c00a",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-column-top-empty-margin-5000",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-empty-margin-5000.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-empty-margin-5000/column-top-empty-margin-5000-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-column-top-empty-margin-5000",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/column-top-empty-margin-5000_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-text-margin-0",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-text-margin-0.hwpx",
+      "input_sha256": "3665fc60f5ce83d628c13a0c6f0f46ef0096ef567bee41862eb4a52901c12674",
+      "pdf": "pdf/computed-table-outer-box/column-top-text-margin-0-2020.pdf",
+      "pdf_sha256": "a439d62b003a02569f41baad15f8967cbb0d72ab4555b1e3a6d6a1fc90b464f9",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-column-top-text-margin-0",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-text-margin-0.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-text-margin-0/column-top-text-margin-0-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-column-top-text-margin-0",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/column-top-text-margin-0_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-text-margin-5000",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-text-margin-5000.hwpx",
+      "input_sha256": "3fc94a9f12743188e5222be825455b410bfd6c326ae1e06750b67e3c7fc12ab7",
+      "pdf": "pdf/computed-table-outer-box/column-top-text-margin-5000-2020.pdf",
+      "pdf_sha256": "14fe936ae9c355a3c28af61df25de14165b732037ecadf2a22577559c4d016ed",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-column-top-text-margin-5000",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-text-margin-5000.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-text-margin-5000/column-top-text-margin-5000-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-column-top-text-margin-5000",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/column-top-text-margin-5000_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "raised-dot",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/raised_dot_clip_20261025/raised-dot.hwpx",
+      "input_sha256": "c65131da3881475c93af521dcdcde9b2b4e8cd981500fcaa98ab9b447dc4e1b7",
+      "pdf": "pdf/raised-dot-clip/raised-dot-2020.pdf",
+      "pdf_sha256": "cfd1ebaa3ccad355448049468a6bd13ba60c0428f020cca129e80d40f6d7a90d",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-raised-dot",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/raised-dot.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/raised-dot/raised-dot-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-raised-dot",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/raised-dot_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-1000-offset-0-hwp",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-0-hwp.hwp",
+      "input_sha256": "2366b4b020de53c890fddd16de74b6318d798c32b1fe68e9d61e22553b1848dd",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-0-hwp.pdf",
+      "pdf_sha256": "b870721825fd3bddd6ccb380eb228b67ed7ed4e25e7732ac4cb9d2a256df89f5",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-host-size-1000-offset-0-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-0-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-0-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-host-size-1000-offset-0-hwp",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/host-size-1000-offset-0-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-1000-offset-0-hwpx",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-0-hwpx.hwpx",
+      "input_sha256": "535aecf0725458ed95ad7f9e49e302913d28ac64f941b5c777a9b108853900c2",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-0-hwpx.pdf",
+      "pdf_sha256": "2b328257d61d5a6be633b2c9a26e5909ceaaa160701aa64ab2a6290e23cfa42e",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-host-size-1000-offset-0-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-0-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-0-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-host-size-1000-offset-0-hwpx",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/host-size-1000-offset-0-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-1000-offset-1700-hwp",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-1700-hwp.hwp",
+      "input_sha256": "a3b3abf13a772882ac358db53013620f58c09c2ecda222556f5c5e4e194e9dc2",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-1700-hwp.pdf",
+      "pdf_sha256": "1f08489c1416342fed73627b970d5cfb9db30f13fd0ac5b1a606a9a119d8e343",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-host-size-1000-offset-1700-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-1700-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-1700-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-host-size-1000-offset-1700-hwp",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/host-size-1000-offset-1700-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-1000-offset-1700-hwpx",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-1700-hwpx.hwpx",
+      "input_sha256": "fd856e9a1c254ea82f3d3858ff895f08f5746926236d319e483bb6df50a0905d",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-1700-hwpx.pdf",
+      "pdf_sha256": "4f0f71134e17e2dbf8e7f4f63a2606c5b098f605ddc320584c749520cb344794",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-host-size-1000-offset-1700-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-1000-offset-1700-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-1000-offset-1700-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-host-size-1000-offset-1700-hwpx",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/host-size-1000-offset-1700-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-250-offset-0-hwp",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-0-hwp.hwp",
+      "input_sha256": "deadae28b5e14e532f5d892d47d127cf148dfdda7d54818e8603f6bddb7e0c98",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-0-hwp.pdf",
+      "pdf_sha256": "60cb0f426e646859843ae295591da9a36b5b5837dae2eb26b856219a765e4d7f",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-host-size-250-offset-0-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-0-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-0-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-host-size-250-offset-0-hwp",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/host-size-250-offset-0-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-250-offset-0-hwpx",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-0-hwpx.hwpx",
+      "input_sha256": "2d17fb6729d34f07cb7a81a760fd9a2bd932279401f61cd04c0d7207c3a95918",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-0-hwpx.pdf",
+      "pdf_sha256": "68ff9588d804e27c7055013ad663a9c285641de705275a1d1297b9adce5ff936",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-host-size-250-offset-0-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-0-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-0-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-host-size-250-offset-0-hwpx",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/host-size-250-offset-0-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-250-offset-1700-hwp",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-1700-hwp.hwp",
+      "input_sha256": "fb44d1a9116db2b832953a5758fb057a2f8e45a1af307cf0881b3bef05921df9",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-1700-hwp.pdf",
+      "pdf_sha256": "015dc2c6489a38722f66d0f5cb0e72f06c4abe077ad546baee0ee7b4e451e798",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-host-size-250-offset-1700-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-1700-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-1700-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-host-size-250-offset-1700-hwp",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/host-size-250-offset-1700-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-250-offset-1700-hwpx",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-1700-hwpx.hwpx",
+      "input_sha256": "0edff451afe352ea6fdf4a22ba90e2a70d8e0b2bee21a7a5f22559a7caf554c2",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-1700-hwpx.pdf",
+      "pdf_sha256": "80657a1380d1744b6afdfac2f73e0ed7bba20ca568518532b9792773a94d88b7",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-host-size-250-offset-1700-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-250-offset-1700-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-250-offset-1700-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-host-size-250-offset-1700-hwpx",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/host-size-250-offset-1700-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-4000-offset-0-hwp",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-0-hwp.hwp",
+      "input_sha256": "36b7163c9f63a6f92487546193a3fdf3fc0b738e869a01a81b113fffe23265bf",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-0-hwp.pdf",
+      "pdf_sha256": "3e2d3878bda7d6b06db72dc39e3e40af1ed6910bbc5c839eec4d19fd3c981619",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-host-size-4000-offset-0-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-0-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-0-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-host-size-4000-offset-0-hwp",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/host-size-4000-offset-0-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-4000-offset-0-hwpx",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-0-hwpx.hwpx",
+      "input_sha256": "3357a1f915bd2968040e67d8f89905c3c649363eb999c2140c0f79536b93a646",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-0-hwpx.pdf",
+      "pdf_sha256": "414f3394dec0afc9f7036db73493fde9eaf815f7b47a1885a431de9d74c57bf8",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-host-size-4000-offset-0-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-0-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-0-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-host-size-4000-offset-0-hwpx",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/host-size-4000-offset-0-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-4000-offset-1700-hwp",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-1700-hwp.hwp",
+      "input_sha256": "064cff5c2b45bec55615e08dc570470a5ef45dde352f2a3c3e68a0f45fdf7de7",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-1700-hwp.pdf",
+      "pdf_sha256": "1777c34d29f7833c8051deb5f9c9e291061015f76717b40c329953f013dbf194",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-host-size-4000-offset-1700-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-1700-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-1700-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-host-size-4000-offset-1700-hwp",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/host-size-4000-offset-1700-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "host-size-4000-offset-1700-hwpx",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-1700-hwpx.hwpx",
+      "input_sha256": "1527e74277a326922db6981d77992d3517c69358a19ba81bc46e43ae200588c0",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-1700-hwpx.pdf",
+      "pdf_sha256": "60fd219290f0462eb54cce79f9f2f2254684c348427312f122ea0bc0b79b82b3",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-host-size-4000-offset-1700-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/host-size-4000-offset-1700-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/host-size-4000-offset-1700-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-host-size-4000-offset-1700-hwpx",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/host-size-4000-offset-1700-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "unsplit-rows-2-body-true-flow-false-hwp",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/unsplit-rows-2-body-true-flow-false-hwp.hwp",
+      "input_sha256": "c96ec32b71a8d5bf0b249d1131c0d539c9fc994fd1283de86b8bf2a1299dee66",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/unsplit-rows-2-body-true-flow-false-hwp.pdf",
+      "pdf_sha256": "292f03828fbce39c8d17c5bed6049f46d16e9fdff974758f91a4f8a5b7489e73",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-unsplit-rows-2-body-true-flow-false-hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/unsplit-rows-2-body-true-flow-false-hwp.hwp",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/unsplit-rows-2-body-true-flow-false-hwp.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-unsplit-rows-2-body-true-flow-false-hwp",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/unsplit-rows-2-body-true-flow-false-hwp_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "unsplit-rows-2-body-true-flow-false-hwpx",
+      "role": "candidate",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/inputs/unsplit-rows-2-body-true-flow-false-hwpx.hwpx",
+      "input_sha256": "de4b2c644110fb10ad45abc76a4e9e78b5bab2f25db89f506334c2a6bb2abb6b",
+      "pdf": "mydocs/pr/assets/computed_empty_host_line_20261020/reference/unsplit-rows-2-body-true-flow-false-hwpx.pdf",
+      "pdf_sha256": "ff468af32568ca4f15ac8ce21f47e18796cea43b8906c8cbcaef3ab34fa75a20",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-unsplit-rows-2-body-true-flow-false-hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/inputs/unsplit-rows-2-body-true-flow-false-hwpx.hwpx",
+        "/home/tsjang/rhwp/mydocs/pr/assets/computed_empty_host_line_20261020/reference/unsplit-rows-2-body-true-flow-false-hwpx.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-210",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-unsplit-rows-2-body-true-flow-false-hwpx",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-057",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/unsplit-rows-2-body-true-flow-false-hwpx_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-empty-margin-0",
+      "role": "base",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-empty-margin-0.hwpx",
+      "input_sha256": "d183c665fc835476618b88bc2cc1d3794e7e86615c0a03668b8250818303692f",
+      "pdf": "pdf/computed-table-outer-box/column-top-empty-margin-0-2020.pdf",
+      "pdf_sha256": "65ddc43008c83ed8afc70a7515c07d03fd5a203275e8c19b7d342074bdae0c88",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-base-column-top-empty-margin-0",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-empty-margin-0.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-empty-margin-0/column-top-empty-margin-0-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-base-194",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3353/native-base-column-top-empty-margin-0",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/base/native/column-top-empty-margin-0_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-empty-margin-0",
+      "role": "base",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-empty-margin-0.hwpx",
+      "input_sha256": "d183c665fc835476618b88bc2cc1d3794e7e86615c0a03668b8250818303692f",
+      "pdf": "pdf/computed-table-outer-box/column-top-empty-margin-0-2020.pdf",
+      "pdf_sha256": "65ddc43008c83ed8afc70a7515c07d03fd5a203275e8c19b7d342074bdae0c88",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-base-column-top-empty-margin-0",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-empty-margin-0.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-empty-margin-0/column-top-empty-margin-0-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-base-194",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3353/wasm-base-column-top-empty-margin-0",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-base-052",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/base/wasm/column-top-empty-margin-0_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-empty-margin-5000",
+      "role": "base",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-empty-margin-5000.hwpx",
+      "input_sha256": "5cab2813a8f3f1806487e7168a59f4be5bc585c76ab79bae7c7909f38ac96218",
+      "pdf": "pdf/computed-table-outer-box/column-top-empty-margin-5000-2020.pdf",
+      "pdf_sha256": "4ce159629d7c22fc5d5320f8fe222aacf2522ce38a4be50cd2ad86fa2839c00a",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-base-column-top-empty-margin-5000",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-empty-margin-5000.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-empty-margin-5000/column-top-empty-margin-5000-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-base-194",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3353/native-base-column-top-empty-margin-5000",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/base/native/column-top-empty-margin-5000_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-empty-margin-5000",
+      "role": "base",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-empty-margin-5000.hwpx",
+      "input_sha256": "5cab2813a8f3f1806487e7168a59f4be5bc585c76ab79bae7c7909f38ac96218",
+      "pdf": "pdf/computed-table-outer-box/column-top-empty-margin-5000-2020.pdf",
+      "pdf_sha256": "4ce159629d7c22fc5d5320f8fe222aacf2522ce38a4be50cd2ad86fa2839c00a",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-base-column-top-empty-margin-5000",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-empty-margin-5000.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-empty-margin-5000/column-top-empty-margin-5000-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-base-194",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3353/wasm-base-column-top-empty-margin-5000",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-base-052",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/base/wasm/column-top-empty-margin-5000_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-text-margin-0",
+      "role": "base",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-text-margin-0.hwpx",
+      "input_sha256": "3665fc60f5ce83d628c13a0c6f0f46ef0096ef567bee41862eb4a52901c12674",
+      "pdf": "pdf/computed-table-outer-box/column-top-text-margin-0-2020.pdf",
+      "pdf_sha256": "a439d62b003a02569f41baad15f8967cbb0d72ab4555b1e3a6d6a1fc90b464f9",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-base-column-top-text-margin-0",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-text-margin-0.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-text-margin-0/column-top-text-margin-0-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-base-194",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3353/native-base-column-top-text-margin-0",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/base/native/column-top-text-margin-0_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-text-margin-0",
+      "role": "base",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-text-margin-0.hwpx",
+      "input_sha256": "3665fc60f5ce83d628c13a0c6f0f46ef0096ef567bee41862eb4a52901c12674",
+      "pdf": "pdf/computed-table-outer-box/column-top-text-margin-0-2020.pdf",
+      "pdf_sha256": "a439d62b003a02569f41baad15f8967cbb0d72ab4555b1e3a6d6a1fc90b464f9",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-base-column-top-text-margin-0",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-text-margin-0.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-text-margin-0/column-top-text-margin-0-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-base-194",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3353/wasm-base-column-top-text-margin-0",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-base-052",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/base/wasm/column-top-text-margin-0_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-text-margin-5000",
+      "role": "base",
+      "backend": "native",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-text-margin-5000.hwpx",
+      "input_sha256": "3fc94a9f12743188e5222be825455b410bfd6c326ae1e06750b67e3c7fc12ab7",
+      "pdf": "pdf/computed-table-outer-box/column-top-text-margin-5000-2020.pdf",
+      "pdf_sha256": "14fe936ae9c355a3c28af61df25de14165b732037ecadf2a22577559c4d016ed",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-base-column-top-text-margin-5000",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-text-margin-5000.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-text-margin-5000/column-top-text-margin-5000-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-base-194",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3353/native-base-column-top-text-margin-5000",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/base/native/column-top-text-margin-5000_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "key": "column-top-text-margin-5000",
+      "role": "base",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-text-margin-5000.hwpx",
+      "input_sha256": "3fc94a9f12743188e5222be825455b410bfd6c326ae1e06750b67e3c7fc12ab7",
+      "pdf": "pdf/computed-table-outer-box/column-top-text-margin-5000-2020.pdf",
+      "pdf_sha256": "14fe936ae9c355a3c28af61df25de14165b732037ecadf2a22577559c4d016ed",
+      "pages": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00000",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00000",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "reference_pages": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-base-column-top-text-margin-5000",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/boundary-exact-inputs-3307/column-top-text-margin-5000.hwpx",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-boundary-exact-inputs-3308/print/column-top-text-margin-5000/column-top-text-margin-5000-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-base-194",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3353/wasm-base-column-top-text-margin-5000",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-base-052",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "mydocs/pr/assets/computed_table_outer_box_20261025/base/wasm/column-top-text-margin-5000_silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    }
+  ],
+  "prints": [
+    {
+      "key": "column-top-empty-margin-0",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-empty-margin-0.hwpx",
+      "pdf": "pdf/computed-table-outer-box/column-top-empty-margin-0-2020.pdf",
+      "input_sha256": "d183c665fc835476618b88bc2cc1d3794e7e86615c0a03668b8250818303692f",
+      "pdf_sha256": "65ddc43008c83ed8afc70a7515c07d03fd5a203275e8c19b7d342074bdae0c88",
+      "job_id": "20892bf4-0c37-4623-a9ac-9601c0ab2c95",
+      "print": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "none"
+      }
+    },
+    {
+      "key": "column-top-empty-margin-5000",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-empty-margin-5000.hwpx",
+      "pdf": "pdf/computed-table-outer-box/column-top-empty-margin-5000-2020.pdf",
+      "input_sha256": "5cab2813a8f3f1806487e7168a59f4be5bc585c76ab79bae7c7909f38ac96218",
+      "pdf_sha256": "4ce159629d7c22fc5d5320f8fe222aacf2522ce38a4be50cd2ad86fa2839c00a",
+      "job_id": "cad2a4b7-d300-4301-bff2-3efcbf8c4af6",
+      "print": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "none"
+      }
+    },
+    {
+      "key": "column-top-text-margin-0",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-text-margin-0.hwpx",
+      "pdf": "pdf/computed-table-outer-box/column-top-text-margin-0-2020.pdf",
+      "input_sha256": "3665fc60f5ce83d628c13a0c6f0f46ef0096ef567bee41862eb4a52901c12674",
+      "pdf_sha256": "a439d62b003a02569f41baad15f8967cbb0d72ab4555b1e3a6d6a1fc90b464f9",
+      "job_id": "0f97f745-e046-4935-8395-01373bc4e664",
+      "print": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "none"
+      }
+    },
+    {
+      "key": "column-top-text-margin-5000",
+      "input": "mydocs/pr/assets/computed_table_outer_box_20261025/inputs/column-top-text-margin-5000.hwpx",
+      "pdf": "pdf/computed-table-outer-box/column-top-text-margin-5000-2020.pdf",
+      "input_sha256": "3fc94a9f12743188e5222be825455b410bfd6c326ae1e06750b67e3c7fc12ab7",
+      "pdf_sha256": "14fe936ae9c355a3c28af61df25de14165b732037ecadf2a22577559c4d016ed",
+      "job_id": "3aa097cb-4f11-4ba7-b39e-d8e6e0fe1fbb",
+      "print": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "none"
+      }
+    }
+  ],
+  "png": [
+    {
+      "path": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/review_001.png",
+      "sha256": "2842178cb337512be70bb3c6918a3385dce4eec76635c5e805df71856bb8783f"
+    },
+    {
+      "path": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/native/overlay_001.png",
+      "sha256": "ac80f69cc615fa225d9b94602baad9ba712f12a7b173ef7e80a3f50720b14da5"
+    },
+    {
+      "path": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/review_001.png",
+      "sha256": "5abe55cbe659fc26ac58a72b2349403c296230263929b284915349a423e92eb3"
+    },
+    {
+      "path": "mydocs/pr/assets/computed_table_outer_box_20261025/candidate/wasm/overlay_001.png",
+      "sha256": "41b346681d3eff98f81cadb99347ac9d9c867862413031971658d663aef77bb0"
+    }
+  ],
+  "base_comparisons": [
+    {
+      "key": "column-top-empty-margin-0",
+      "backend": "native",
+      "page": 1,
+      "drop_pp": "0.00000"
+    },
+    {
+      "key": "column-top-empty-margin-5000",
+      "backend": "native",
+      "page": 1,
+      "drop_pp": "0.00000"
+    },
+    {
+      "key": "column-top-text-margin-0",
+      "backend": "native",
+      "page": 1,
+      "drop_pp": "0.00000"
+    },
+    {
+      "key": "column-top-text-margin-5000",
+      "backend": "native",
+      "page": 1,
+      "drop_pp": "0.00000"
+    },
+    {
+      "key": "column-top-empty-margin-0",
+      "backend": "wasm",
+      "page": 1,
+      "drop_pp": "0.00000"
+    },
+    {
+      "key": "column-top-empty-margin-5000",
+      "backend": "wasm",
+      "page": 1,
+      "drop_pp": "0.00000"
+    },
+    {
+      "key": "column-top-text-margin-0",
+      "backend": "wasm",
+      "page": 1,
+      "drop_pp": "0.00000"
+    },
+    {
+      "key": "column-top-text-margin-5000",
+      "backend": "wasm",
+      "page": 1,
+      "drop_pp": "0.00000"
+    }
+  ],
+  "focused_after_receipt": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/rebase-focused-contracts-3328-result.json",
+  "root_sync_receipt": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/root-wasm-sync-3347-result.json",
+  "scope": "19 candidate conditions per backend; four outer-box conditions also compared with pinned devel; not full45PR approval",
+  "new_regression": {
+    "source": "tests/cases/computed_table_outer_box_successor_contract.rs",
+    "source_sha256": "c54349a8c418cb809087272470e82134d5b10cd6a45f947a55a9fad2ca05c4f3",
+    "expected_sha256": "9bf39235ddb65039b8383408b997d0e77eb47b9e9757933393b41c39312e75dd",
+    "before_runtime_source": "fb759a980d50268b29274f94ccaee406a7e975fd",
+    "before_cli": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-209",
+    "before_exit": 101,
+    "before_support_library_source": "bc1e99abf036ef6febc551437962ef20fb726939",
+    "after_runtime_source": "bc1e99abf036ef6febc551437962ef20fb726939",
+    "after_summary": {
+      "total": 22,
+      "executed": 22,
+      "pass": 22,
+      "fail": 0,
+      "ignored": 0
+    },
+    "before_receipt": "output/pr-review/semanticist21-20261019/rebase-focused-contracts-3354-result.json",
+    "after_receipt": "output/pr-review/semanticist21-20261019/rebase-focused-contracts-3355-result.json"
+  },
+  "px_regression_contract": {
+    "pages": [
+      {
+        "input_key": "column-top-empty-margin-0",
+        "page": 1,
+        "minimum_raw_native": 98,
+        "minimum_raw_fresh_wasm": 98,
+        "input_sha256": "d183c665fc835476618b88bc2cc1d3794e7e86615c0a03668b8250818303692f",
+        "pdf_sha256": "65ddc43008c83ed8afc70a7515c07d03fd5a203275e8c19b7d342074bdae0c88"
+      },
+      {
+        "input_key": "column-top-empty-margin-5000",
+        "page": 1,
+        "minimum_raw_native": 98,
+        "minimum_raw_fresh_wasm": 98,
+        "input_sha256": "5cab2813a8f3f1806487e7168a59f4be5bc585c76ab79bae7c7909f38ac96218",
+        "pdf_sha256": "4ce159629d7c22fc5d5320f8fe222aacf2522ce38a4be50cd2ad86fa2839c00a"
+      },
+      {
+        "input_key": "column-top-text-margin-0",
+        "page": 1,
+        "minimum_raw_native": 98,
+        "minimum_raw_fresh_wasm": 98,
+        "input_sha256": "3665fc60f5ce83d628c13a0c6f0f46ef0096ef567bee41862eb4a52901c12674",
+        "pdf_sha256": "a439d62b003a02569f41baad15f8967cbb0d72ab4555b1e3a6d6a1fc90b464f9"
+      },
+      {
+        "input_key": "column-top-text-margin-5000",
+        "page": 1,
+        "minimum_raw_native": 98,
+        "minimum_raw_fresh_wasm": 98,
+        "input_sha256": "3fc94a9f12743188e5222be825455b410bfd6c326ae1e06750b67e3c7fc12ab7",
+        "pdf_sha256": "14fe936ae9c355a3c28af61df25de14165b732037ecadf2a22577559c4d016ed"
+      }
+    ],
+    "dpi": 96,
+    "coordinates": "paper origin CSSpx",
+    "maximum_absolute_error_css_px": 2,
+    "json_rounding_consumes_budget": true,
+    "selection_reason": "four completed100%pages, important table boundaries and following body; semantic guards retained",
+    "future_gate": "either backend raw<98 is regression; improvement to100 allowed"
+  },
+  "font_catalog": {
+    "sha256": "f094f284e9f1803242429add122bf7d0ac5b3fe1ade1552d297866bf5a0513f6",
+    "original_path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3336/wasm-candidate-column-top-text-margin-5000/wasm-candidate-column-top-text-margin-5000/font-catalog.json",
+    "relevant_upright_supply": [
+      {
+        "source": "/opt/hnc/hoffice11/Shared/TTF/All/FZSong_Super.TTF",
+        "source_sha256": "cbf26cf7c72522e4de508373fec17d3499bb4a7c47b0a501fd175b0222c57fc7",
+        "loaded_sha256": "cbf26cf7c72522e4de508373fec17d3499bb4a7c47b0a501fd175b0222c57fc7",
+        "families": [
+          "FZSong_Superfont",
+          "한컴바탕확장"
+        ]
+      },
+      {
+        "source": "/opt/hnc/hoffice11/Shared/TTF/All/HBATANG.TTF",
+        "source_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+        "loaded_sha256": "e391734bd989a8c45fe671ebcf3a4960985a0dfb1c5638209b55a3dd3f5517df",
+        "families": [
+          "Haansoft Batang",
+          "한컴바탕"
+        ]
+      },
+      {
+        "source": "/opt/hnc/hoffice11/Shared/TTF/Install/HANBatang.ttf",
+        "source_sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+        "loaded_sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+        "families": [
+          "HCR Batang",
+          "함초롬바탕"
+        ]
+      },
+      {
+        "source": "/opt/hnc/hoffice11/Shared/TTF/Install/HANBatangExt.ttf",
+        "source_sha256": "f88d957a26dd5a6360424e37b6d25b4192a83d922b7ac1fa9fb92d34e579afe4",
+        "loaded_sha256": "f88d957a26dd5a6360424e37b6d25b4192a83d922b7ac1fa9fb92d34e579afe4",
+        "families": [
+          "HCR Batang Ext",
+          "함초롬바탕 확장"
+        ]
+      },
+      {
+        "source": "/opt/hnc/hoffice11/Shared/TTF/Install/HANBatangExtB.ttf",
+        "source_sha256": "c9c8ec1f6c295be9254157fdbddef9df93f5f4b6c55e8683214b50368c50c381",
+        "loaded_sha256": "c9c8ec1f6c295be9254157fdbddef9df93f5f4b6c55e8683214b50368c50c381",
+        "families": [
+          "HCR Batang ExtB",
+          "함초롬바탕 확장B"
+        ]
+      },
+      {
+        "source": "/opt/hnc/hoffice11/Shared/TTF/Install/MB.TTF",
+        "source_sha256": "f8e1bf06fe9488b362732483fae0d762f2081bcf9c67c2e748ca0f898585e26d",
+        "loaded_sha256": "f8e1bf06fe9488b362732483fae0d762f2081bcf9c67c2e748ca0f898585e26d",
+        "families": [
+          "MJemokBatang",
+          "문체부 제목 바탕체"
+        ]
+      },
+      {
+        "source": "/opt/hnc/hoffice11/Shared/TTF/Install/MT.TTF",
+        "source_sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+        "loaded_sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+        "families": [
+          "MBatang",
+          "문체부 바탕체"
+        ]
+      },
+      {
+        "source": "/opt/hnc/hoffice11/Shared/TTF/Install/batangche.ttf",
+        "source_sha256": "3bb6a723dd098d5e07b880c1b7519f694cb3a9f60afaec4bd99c33b06b53a434",
+        "loaded_sha256": "c1c4ee99469aafb192842f9c9176f741c99e7de1e4315d0a50bf76e77e1a70bf",
+        "families": [
+          "HYBatangChe",
+          "HY바탕체"
+        ]
+      },
+      {
+        "source": "/opt/hnc/hoffice11/Shared/TTF/Install/경기천년바탕_Regular.ttf",
+        "source_sha256": "bb6c078983dc2f4e1db2c3e3c307f3408805fda1347903e1ba20c7e99968c3b3",
+        "loaded_sha256": "bb6c078983dc2f4e1db2c3e3c307f3408805fda1347903e1ba20c7e99968c3b3",
+        "families": [
+          "GyeonggiBatang",
+          "GyeonggiBatang Regular",
+          "경기천년바탕",
+          "경기천년바탕 Regular"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-safe/Batang.ttf",
+        "source_sha256": "4a9dce7310abb1e29097020599ceb9ba5e6b0c0f5e2b71b327a097e52784bbe9",
+        "loaded_sha256": "4a9dce7310abb1e29097020599ceb9ba5e6b0c0f5e2b71b327a097e52784bbe9",
+        "families": [
+          "GimpoBatang",
+          "김포평화바탕"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-safe/HakgyoansimBareonbatangR.ttf",
+        "source_sha256": "a7ab8757f6c02e2bd715639d289e792892a04f6771da7308a70b815d4bb415b3",
+        "loaded_sha256": "a7ab8757f6c02e2bd715639d289e792892a04f6771da7308a70b815d4bb415b3",
+        "families": [
+          "Hakgyoansim Bareonbatang",
+          "Hakgyoansim Bareonbatang R",
+          "학교안심 바른바탕",
+          "학교안심 바른바탕 R"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-safe/SokchoBadaBatang.otf",
+        "source_sha256": "684dfd22d6818c9ccf346247864f252bdaf5b4a2f47a5e62563d4035baaee084",
+        "loaded_sha256": "684dfd22d6818c9ccf346247864f252bdaf5b4a2f47a5e62563d4035baaee084",
+        "families": [
+          "Sokcho Bada Batang",
+          "속초바다 바탕"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-safe/SokchoBadaBatang.ttf",
+        "source_sha256": "6d3d6b36ce6d45f158b724cf17bbd7acd408e83a7d589d79eb0bfa1904e970cd",
+        "loaded_sha256": "6d3d6b36ce6d45f158b724cf17bbd7acd408e83a7d589d79eb0bfa1904e970cd",
+        "families": [
+          "Sokcho Bada Batang TTF",
+          "속초바다 바탕 TTF"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-safe/SuseongBatang.ttf",
+        "source_sha256": "77df5a66884277a14e74ea7b8ca0f3ceb5741a0ddf076593bcb32cc93b4b0fa0",
+        "loaded_sha256": "77df5a66884277a14e74ea7b8ca0f3ceb5741a0ddf076593bcb32cc93b4b0fa0",
+        "families": [
+          "Suseong Batang",
+          "수성바탕체"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-safe/감탄로드바탕체 Bold.otf",
+        "source_sha256": "7802d84d84e7b5dd8e861eb61f04321cdc5cdfcb83386333944952e59408869c",
+        "loaded_sha256": "7802d84d84e7b5dd8e861eb61f04321cdc5cdfcb83386333944952e59408869c",
+        "families": [
+          "GamtanRoad Batang",
+          "GamtanRoad Batang Bold",
+          "감탄로드바탕체",
+          "감탄로드바탕체 Bold"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-safe/감탄로드바탕체 Bold.ttf",
+        "source_sha256": "5f92ec02e727f26aa7655dfadcf46def2a6081a665789ba5c4a5b29842f84ea8",
+        "loaded_sha256": "5f92ec02e727f26aa7655dfadcf46def2a6081a665789ba5c4a5b29842f84ea8",
+        "families": [
+          "GamtanRoad Batang Bold TTF",
+          "GamtanRoad Batang TTF",
+          "감탄로드바탕체 Bold TTF",
+          "감탄로드바탕체 TTF"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-safe/감탄로드바탕체 Regular.otf",
+        "source_sha256": "626d9f2012cd55e4b728e2ce66fd0118cb240e346bb9923f4c36751b63614a9d",
+        "loaded_sha256": "626d9f2012cd55e4b728e2ce66fd0118cb240e346bb9923f4c36751b63614a9d",
+        "families": [
+          "GamtanRoad Batang",
+          "GamtanRoad Batang Regular",
+          "감탄로드바탕체",
+          "감탄로드바탕체 Regular"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-safe/감탄로드바탕체 Regular.ttf",
+        "source_sha256": "07c492f90262d04d3e9056fcf5472611b0239360ee9fc31bd30ab1b8f7ac9849",
+        "loaded_sha256": "07c492f90262d04d3e9056fcf5472611b0239360ee9fc31bd30ab1b8f7ac9849",
+        "families": [
+          "GamtanRoad Batang Regular TTF",
+          "GamtanRoad Batang TTF",
+          "감탄로드바탕체 Regular TTF",
+          "감탄로드바탕체 TTF"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-safe/감탄로드바탕체 Thin.otf",
+        "source_sha256": "4aafb458fe5f159a9aae6d0b2b12f1f5e943f3771b6eecc3b7e2d9615d03cd4a",
+        "loaded_sha256": "4aafb458fe5f159a9aae6d0b2b12f1f5e943f3771b6eecc3b7e2d9615d03cd4a",
+        "families": [
+          "GamtanRoad Batang",
+          "GamtanRoad Batang Thin",
+          "감탄로드바탕체",
+          "감탄로드바탕체 Thin"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-safe/감탄로드바탕체 Thin.ttf",
+        "source_sha256": "9c591410959ca225a42bce6374a353a346fb0cfde36d46ca437199c4ac722e46",
+        "loaded_sha256": "9c591410959ca225a42bce6374a353a346fb0cfde36d46ca437199c4ac722e46",
+        "families": [
+          "GamtanRoad Batang TTF",
+          "GamtanRoad Batang Thin TTF",
+          "감탄로드바탕체 TTF",
+          "감탄로드바탕체 Thin TTF"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-safe/경기천년바탕OTF_Regular.otf",
+        "source_sha256": "88288c795fd604dafcc39acac98db640820b266aceae6051a982fa8eade35cf0",
+        "loaded_sha256": "88288c795fd604dafcc39acac98db640820b266aceae6051a982fa8eade35cf0",
+        "families": [
+          "GyeonggiBatangOTF",
+          "GyeonggiBatangOTF Regular",
+          "경기천년바탕OTF",
+          "경기천년바탕OTF Regular"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-survey/0660ef7f715a-Batang_Regular.otf",
+        "source_sha256": "0660ef7f715a841cb1bc421348b5999d82735428565e7af091f61280f7a21c78",
+        "loaded_sha256": "0660ef7f715a841cb1bc421348b5999d82735428565e7af091f61280f7a21c78",
+        "families": [
+          "GyeonggiBatang",
+          "경기천년바탕"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-survey/8664669bd2d6-HANBatang.ttf",
+        "source_sha256": "8664669bd2d6a4fe8b7538706d2bb2a1004c074aa02dca59051e515e731294f5",
+        "loaded_sha256": "8664669bd2d6a4fe8b7538706d2bb2a1004c074aa02dca59051e515e731294f5",
+        "families": [
+          "HCR Batang",
+          "함초롬바탕"
+        ]
+      },
+      {
+        "source": "/usr/local/share/fonts/hwp-convert-mcp-survey/910a6437f2bf-bareunbatang-400.otf",
+        "source_sha256": "910a6437f2bf99fbb5616634c7abee4981738ef7bc663171f43b42ddbabe2a5f",
+        "loaded_sha256": "910a6437f2bf99fbb5616634c7abee4981738ef7bc663171f43b42ddbabe2a5f",
+        "families": [
+          "BareunBatangOTF",
+          "BareunBatangOTFM",
+          "바른바탕OTF",
+          "바른바탕OTF 2Medium",
+          "바른바탕OTF2 M"
+        ]
+      },
+      {
+        "source": "/home/tsjang/rhwp/assets/fonts/GowunBatang-Regular.woff2",
+        "source_sha256": "0c6a288aa0c12081dccde769c312f71f290b353243747dd24fb8c57f94f01d72",
+        "loaded_sha256": "0c6a288aa0c12081dccde769c312f71f290b353243747dd24fb8c57f94f01d72",
+        "families": [
+          "Gowun Batang",
+          "Gowun Batang Regular"
+        ]
+      },
+      {
+        "source": "/home/tsjang/rhwp/assets/fonts/RHWPPublicBatang-Regular.woff2",
+        "source_sha256": "20d454f45cdf29cc4619e769f1f59f3b8920941b6b274a530e82d3b75e24dbfb",
+        "loaded_sha256": "20d454f45cdf29cc4619e769f1f59f3b8920941b6b274a530e82d3b75e24dbfb",
+        "families": [
+          "RHWP Public Batang"
+        ]
+      }
+    ]
+  }
+}

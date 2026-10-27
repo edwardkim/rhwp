@@ -977,6 +977,7 @@ fn parse_equation_control(ctrl_data: &[u8], child_records: &[Record]) -> Control
         }
     }
 
+    equation.retain_legacy_source_frame();
     Control::Equation(Box::new(equation))
 }
 

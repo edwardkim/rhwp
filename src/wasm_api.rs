@@ -746,6 +746,24 @@ impl HwpDocument {
             .map_err(JsValue::from)
     }
 
+    /// 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
+    #[wasm_bindgen(js_name = registerTextFontGlyphCoverage)]
+    pub fn register_text_font_glyph_coverage(
+        &mut self,
+        family: &str,
+        bytes: &[u8],
+        face_index: u32,
+    ) -> Result<bool, JsValue> {
+        self.register_text_font_glyph_coverage_native(family, bytes, face_index)
+            .map_err(JsValue::from)
+    }
+
+    /// 일반 FontFace 전용 기본 윤곽 사본. 원본·컬러 자원·문서 상태는 변경하지 않는다.
+    #[wasm_bindgen(js_name = ordinaryTextFontProgram)]
+    pub fn ordinary_text_font_program(&self, bytes: &[u8], face_index: u32) -> Option<Vec<u8>> {
+        crate::renderer::text_font_presentation::ordinary_text_font_program(bytes, face_index)
+    }
+
     /// 문서 측정 slot과 별도로 SVG/WMF paint에 실제 선택한 font face를 공급한다.
     #[wasm_bindgen(js_name = registerMetafileFont)]
     pub fn register_metafile_font(
@@ -6291,6 +6309,23 @@ impl HwpDocument {
     ) -> Result<String, JsValue> {
         self.break_at_cursor(list_id, para_in_list as usize, pos as usize, kind)
             .map_err(|e| e.into())
+    }
+
+    /// 인라인 개체를 논리적 캐럿 위치로 원자적으로 옮긴다.
+    #[wasm_bindgen(js_name = moveInlineControl)]
+    pub fn move_inline_control_api(
+        &mut self,
+        source_json: &str,
+        destination_json: &str,
+    ) -> Result<String, JsValue> {
+        let source =
+            serde_json::from_str(source_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let destination = serde_json::from_str(destination_json)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let result = self
+            .move_inline_control_native(&source, &destination)
+            .map_err(JsValue::from)?;
+        serde_json::to_string(&result).map_err(|e| JsValue::from_str(&e.to_string()))
     }
 
     /// 개체를 한 걸음 옮긴다 — 웹한글컨트롤 `ShapeObjMove*`(걸음 56 HWPUNIT).

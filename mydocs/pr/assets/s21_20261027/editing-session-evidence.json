@@ -1,0 +1,142 @@
+{
+  "source": "04c92da78165ccbf63b467855591df183655a98d",
+  "pr8090": {
+    "original_input": "inputs/pr8090-original-two-sections.hwpx",
+    "original_sha256": "ff4667ab09bcd0cedf537be0b306a37786b555d9cd1e72fae6c48301a659ef2a",
+    "edited_input": "inputs/209.hwpx",
+    "sequence": "기존 원본 열기 → 전 구역 pageCount 캐시 → 앞 구역 미주 삽입·본문 편집 → 재열기 없이 같은 세션 Canvas Print",
+    "session": {
+      "beforePages": 2,
+      "inserted": {
+        "ok": true,
+        "paraIdx": 0,
+        "controlIdx": 2,
+        "endnoteNumber": 1
+      },
+      "editInfo": {
+        "ok": true,
+        "kind": "endnote",
+        "pageNum": 1,
+        "footnoteIndex": 0,
+        "fnParaIndex": 0,
+        "charOffset": 2,
+        "virtualParaIndex": 1
+      },
+      "caret": {
+        "pageIndex": 1,
+        "x": 129.8,
+        "y": 165.1,
+        "height": 12
+      }
+    },
+    "actual_session_and_reopen": [
+      {
+        "page": 1,
+        "incremental_capture_sha256": "06a3cd34259163714e6cb0fba31bbf77cdb85750e5f45ae7a251a0af108288d7",
+        "reopened_capture_sha256": "06a3cd34259163714e6cb0fba31bbf77cdb85750e5f45ae7a251a0af108288d7",
+        "rgb_identical": true
+      },
+      {
+        "page": 2,
+        "incremental_capture_sha256": "e8783aa906460d0c4a1e38d21237c9f9a693ae429256ffb149a22059fa1a9a91",
+        "reopened_capture_sha256": "e8783aa906460d0c4a1e38d21237c9f9a693ae429256ffb149a22059fa1a9a91",
+        "rgb_identical": true
+      }
+    ]
+  },
+  "pr7904": {
+    "passed": true,
+    "code_test_head": "04c92da78165ccbf63b467855591df183655a98d",
+    "results": [
+      {
+        "prefix": "",
+        "control": {
+          "ok": true,
+          "paraIdx": 0,
+          "controlIdx": 2,
+          "logicalOffset": 1
+        },
+        "body": "한",
+        "cursor": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 2
+        },
+        "undo_redo_cycles": 2,
+        "cancellation_preserved": true,
+        "engine": "actual optimized WASM092",
+        "handler": "production input-handler-text + CommandHistory + WasmBridge; only UI this/cursor stubbed"
+      },
+      {
+        "prefix": "앞🦦",
+        "control": {
+          "ok": true,
+          "paraIdx": 0,
+          "controlIdx": 2,
+          "logicalOffset": 3
+        },
+        "body": "앞🦦한",
+        "cursor": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 4
+        },
+        "undo_redo_cycles": 2,
+        "cancellation_preserved": true,
+        "engine": "actual optimized WASM092",
+        "handler": "production input-handler-text + CommandHistory + WasmBridge; only UI this/cursor stubbed"
+      }
+    ]
+  },
+  "pr8035": {
+    "passed": true,
+    "source": "tests/cases/delete_inline_control_char_shapes.rs",
+    "package": "current-092",
+    "code_test_head": "04c92da78165ccbf63b467855591df183655a98d",
+    "records": [
+      {
+        "name": "picture-boundary",
+        "kind": "picture",
+        "offset": 2,
+        "bold": [
+          0,
+          2
+        ],
+        "objectFirst": false,
+        "controlIdx": 2,
+        "actualCharShapeRuns": [],
+        "independentNoObjectReference": [],
+        "matched": true
+      },
+      {
+        "name": "leading-picture",
+        "kind": "picture",
+        "offset": 0,
+        "bold": [
+          2,
+          3
+        ],
+        "objectFirst": false,
+        "controlIdx": 2,
+        "actualCharShapeRuns": [],
+        "independentNoObjectReference": [],
+        "matched": true
+      },
+      {
+        "name": "leading-equation",
+        "kind": "equation",
+        "offset": 0,
+        "bold": [
+          0,
+          2
+        ],
+        "objectFirst": true,
+        "controlIdx": 2,
+        "actualCharShapeRuns": [],
+        "independentNoObjectReference": [],
+        "matched": true
+      }
+    ]
+  },
+  "meaning": "실제 최적화 WASM092와 제품 처리 경로의 상태 기록이다. #7904의 UI this/cursor는 stub이며 실제 브라우저 이벤트 자동화라고 부르지 않는다. 빈 페이지 점수로 내용 배치를 대신하지 않는다."
+}

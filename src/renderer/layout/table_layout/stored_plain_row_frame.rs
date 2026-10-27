@@ -6,6 +6,70 @@ use crate::model::table::{Cell, Table, TablePageBreak};
 use super::{LayoutEngine, ResolvedStyleSet};
 
 impl LayoutEngine {
+    /// 첫 물리 조각이 실제로 소유한 글줄만 확인한다. 다음 쪽의 개체 때문에
+    /// 현재 순수 글줄 컷을 개체 조각으로 분류하지 않는다. 미완료 소유자는
+    /// 모두 원본 쪽 재시작에서 끝나야 하며 로컬 좌표 되감김은 수용하지 않는다.
+    pub(crate) fn row_cut_has_original_plain_text_owners(
+        &self,
+        table: &Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let profile = self.profile.get();
+        let owners = self.indexed_row_cut_cell_order(table, row);
+        if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            || profile.session_edited()
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+            || table.common.treat_as_char
+            || table.page_break != TablePageBreak::RowBreak
+            || owners.is_empty()
+            || owners.len() != cut.len()
+        {
+            return false;
+        }
+        owners.iter().zip(cut).all(|(&index, &end)| {
+            let cell = &table.cells[index];
+            let units = self.cell_units(cell, table, styles);
+            if usize::from(cell.row) != row
+                || cell.row_span != 1
+                || cell.dirty_flag
+                || end == 0
+                || end > units.len()
+                || units
+                    .get(end)
+                    .is_some_and(|unit| !unit.page_frame_reset_before)
+            {
+                return false;
+            }
+            units[..end].iter().all(|unit| {
+                let para = &cell.paragraphs[unit.para_idx];
+                !unit.reflowed_line_slot
+                    && unit.nested_row.is_none()
+                    && unit.nested_table_fragment.is_none()
+                    && !unit.mixed_nested_fragment
+                    && unit.vis_start < unit.vis_end
+                    && !para.stored_text_partition_is_dirty()
+                    && !para.cell_format_vpos_dirty
+                    && para.controls.is_empty()
+                    && para
+                        .line_segs
+                        .get(unit.vis_start..unit.vis_end)
+                        .is_some_and(|lines| {
+                            lines.iter().all(|line| {
+                                line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                                    && line.vertical_pos >= 0
+                                    && line.line_height > 0
+                                    && line.line_spacing >= 0
+                            })
+                        })
+            })
+        })
+    }
+
     /// 일반 부분 컷의 저장 글줄은 중첩 개체의 물리 조각을 입증하지 않는다.
     /// 해당 행의 실제 소유자 전부가 원본 일반 글줄 상자를 공유하는지 확인한다.
     pub(crate) fn row_has_original_plain_text_owners(

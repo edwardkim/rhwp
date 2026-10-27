@@ -105,6 +105,9 @@ pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Optio
     // 자연 전진은 기존 메트릭의 178/1024em이며, 독립 Print의 다음 글자 원점으로 대조했다.
     if matches!(ch, '\u{2024}' | '\u{2027}') {
         match (metric.name, metric.em_size, metric.bold, metric.italic) {
+            // arial.ttf SHA-256 b23742143bae95dfaf50d8d530e798c7863336b254b899024b0b12b09c93abfd.
+            // 실제 regular 프로그램의 cmap 결측이며 다른 Arial face에는 적용하지 않는다.
+            ("Arial", 2048, false, false) => return Some(false),
             ("HumanMyeongJo", 1024, false, false) => return Some(false),
             // H2HDRM.TTF e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831:
             // 원 프로그램 cmap의 확인된 결측이다. 폭 표의 미수집을 뜻하지 않는다.

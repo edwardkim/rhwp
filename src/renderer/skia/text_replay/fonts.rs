@@ -7,6 +7,16 @@ use crate::renderer::{internal_font_family_members, TextStyle};
 use skia_safe::{font, Font, FontMgr, Typeface};
 use std::{cell::RefCell, collections::HashMap};
 
+pub(in crate::renderer::skia) fn compatibility_glyph(font: &Font, text: &str) -> Option<char> {
+    crate::renderer::pua_glyph::candidate(text)
+        .into_iter()
+        .chain(crate::renderer::pua_glyph::fallback_candidate(text))
+        .find(|ch| {
+            let glyph = font.typeface().unichar_to_glyph(*ch as i32);
+            glyph != 0 && font.get_path(glyph).is_some_and(|path| !path.is_empty())
+        })
+}
+
 thread_local! {
     static OWN_HEAVY_FACES: RefCell<HashMap<(u32, String), bool>> = RefCell::new(HashMap::new());
 }
@@ -72,6 +82,8 @@ fn finish(tf: Typeface, size: f32, style: &TextStyle, font_mgr: &FontMgr) -> Fon
     } else {
         tf
     };
+    // nominal과 SkShaper가 같은 일반 텍스트용 기본 윤곽 프로그램을 소비한다.
+    let tf = super::monochrome::text_typeface(font_mgr, &tf).unwrap_or(tf);
     let owns_heavy = owns_intrinsic_heavy_face(&tf, style);
     let tf = if owns_heavy {
         // source의 bold가 아닌 fallback 보완 weight다. fontconfig가 붙인

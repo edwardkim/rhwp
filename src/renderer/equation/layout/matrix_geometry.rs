@@ -7,7 +7,7 @@ use super::{
 // 글꼴·색상과 단일 행의 포장은 내용 소속을 바꾸지 않는다. 분수·조건식·
 // 첨자 등의 실제 부모가 있으면 그 구조가 바깥 leading을 소유한다.
 pub(super) fn is_standalone_eqalign(node: &EqNode) -> bool {
-    match node {
+    match node.ungrouped() {
         EqNode::EqAlign { .. } => true,
         EqNode::Row(items) if items.iter().any(|item| matches!(item, EqNode::Newline)) => true,
         EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => is_standalone_eqalign(body),

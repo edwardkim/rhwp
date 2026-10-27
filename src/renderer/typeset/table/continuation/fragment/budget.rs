@@ -3,8 +3,7 @@
 use crate::renderer::typeset::{
     controls, hwpunit_to_px, is_synthetic_line_seg, nearest_saved_rowbreak_frame_row_end,
     para_has_non_whitespace_text, para_has_visible_text, paragraph,
-    partial_rowbreak_fragment_spacing_px, row_geometry_table,
-    rowbreak_row_has_internal_saved_vpos_reset,
+    partial_rowbreak_fragment_spacing_px, rowbreak_row_has_internal_saved_vpos_reset,
     saved_rowbreak_first_fragment_flow_overflow_allowance, table,
     table_declared_object_covers_cell_row_frames, Control, TypesetEngine, TypesetState,
     SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,
@@ -47,6 +46,11 @@ impl TypesetEngine {
         let cursor_row = input.start.cursor_row;
         let is_continuation = input.start.is_continuation;
         let start_cut = &input.start.start_cut;
+        let detached_child_fragment = !input.row_cursor_is_nested
+            && prepared
+                .layout_engine
+                .reflow_unrestricted_fragment_frame(table, start_cut, &[], input.source.styles)
+                .is_some_and(|frame| !frame.parent_owned);
         let caption_extra =
             if !is_continuation && cursor_row == 0 && start_cut.is_empty() && caption_is_top {
                 caption_overhead
@@ -105,11 +109,13 @@ impl TypesetEngine {
                     )
                 })
                 .flatten();
-        let repeat_fragment_outer_margin =
+        let repeat_fragment_outer_margin = !detached_child_fragment && (
+            prepared.computed_host_tail.is_some() ||
             crate::renderer::float_placement::stored_empty_offset_rowbreak_fragment_repeats_outer_margin(
                 self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
                 para, table,
-            );
+            ) || crate::renderer::float_placement::computed_rowbreak_owns_outer_frame(para, table, &start_cut)
+                || crate::renderer::float_placement::stored_rowbreak_owns_fragment_outer_frame(para, table));
         let repeated_header_outer_frame =
             crate::renderer::float_placement::stored_repeated_header_rowbreak_outer_frame(
                 st.profile, para, table,
@@ -126,16 +132,22 @@ impl TypesetEngine {
                 is_continuation,
                 strict_following_plain_text_fit || single_cell_page_fragment
                     || repeat_fragment_outer_margin || repeated_header_outer_frame,
-                crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
+                prepared.computed_host_tail.is_some() || crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
                     self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
                     para,
                     table,
                 ),
                 self.dpi,
             );
-        let recursive_overlay_frame = prepared
-            .layout_engine
-            .reflow_recursive_overlay_frame(table, input.source.styles);
+        let (host_before_overhead, fragment_outer_bottom_overhead) = if detached_child_fragment {
+            (0.0, 0.0)
+        } else {
+            (host_before_overhead, fragment_outer_bottom_overhead)
+        };
+        // 물리 조각의 바깥 여백은 내용 유닛의 주소 형식으로 다시 판정하지 않는다.
+        // 실제 배치와 같은 문단-following overlay 프레임 계약을 소비한다.
+        let recursive_overlay_frame =
+            crate::renderer::float_placement::paragraph_following_overlay_rowbreak_frame(table);
         let (host_before_overhead, fragment_outer_bottom_overhead) = if recursive_overlay_frame {
             (
                 host_before_overhead + hwpunit_to_px(table.outer_margin_top as i32, self.dpi),
@@ -300,8 +312,8 @@ impl TypesetEngine {
                 table,
                 host_spacing_before,
                 is_continuation,
-                strict_following_plain_text_fit,
-                crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
+                strict_following_plain_text_fit || prepared.computed_host_tail.is_some(),
+                prepared.computed_host_tail.is_some() || crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
                     self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
                     para,
                     table,
@@ -612,7 +624,17 @@ impl TypesetEngine {
                         // 첫 조각 전체가 이월된 경우에도 이전 frame의 거리를 재가산하지 않는다.
                         let unanchored_fragment =
                             crate::renderer::float_placement::ParagraphFloatPlacement {
-                                flow: original.flow,
+                                // 계산한 빈 호스트 글줄은 첫 조각이 이미 소비했다.
+                                // 이어받기 끝에 그 줄 높이를 다시 적용하면 짧은
+                                // 마지막 물리 띠 뒤의 본문이 불필요하게 내려간다.
+                                flow: match original.flow {
+                                    crate::renderer::float_placement::ParagraphFloatFlow::ComputedEmptyHost { .. }
+                                        if is_continuation =>
+                                    {
+                                        crate::renderer::float_placement::ParagraphFloatFlow::EmptyHost
+                                    }
+                                    flow => flow,
+                                },
                                 anchor_y: st.current_height,
                                 stored_host_origin: None,
                                 stored_successor_line_origin: None,
@@ -770,7 +792,7 @@ impl TypesetEngine {
                 && para.line_segs.len() == 1
                 && !is_synthetic_line_seg(&para.line_segs[0])
                 && (table.cells.iter().all(|cell| cell.row_span == 1)
-                    || self.stored_two_line_row_frames_require_split(table, input.source.styles))
+                    || self.stored_cell_page_frames_require_split(table, input.source.styles))
                 && table.cells.iter().all(|cell| {
                     !cell.dirty_flag
                         && cell.paragraphs.iter().all(|paragraph| {
@@ -786,7 +808,7 @@ impl TypesetEngine {
                 && table.caption.is_none()
                 && !self.render_normalization.table_text_reflowed(table)
                 && (crate::renderer::typeset::rowbreak_table_has_internal_saved_vpos_reset(table)
-                    || self.stored_two_line_row_frames_require_split(table, input.source.styles))
+                    || self.stored_cell_page_frames_require_split(table, input.source.styles))
                 && st.current_zone_y_offset.abs() < f64::EPSILON)
                 .then(|| {
                     let previous = input.source.paragraphs_all.get(para_idx.checked_sub(1)?)?;
@@ -1791,13 +1813,14 @@ impl TypesetEngine {
                 frame_boundary,
                 self.dpi,
                 body_filling,
+                prepared.layout_engine.table_uses_stored_fragment_coordinates(table),
             );
             // 내용 컷이 이미 소비한 원본 하단 inset을 빈 띠 예산에서 되돌리지 않는다.
             // 현재 각주 등으로 좁아진 본문과 인증한 이어받기 프레임의 교집합이다.
             let bottom = accepted_frame_bottom
                 .map_or(bounds.content_bottom, |saved| bounds.content_bottom.min(saved));
             let blank_bottom = accepted_frame_bottom
-                .map_or(bounds.blank_bottom, |saved| bounds.content_bottom.min(saved));
+                .map_or(bounds.blank_bottom, |saved| bounds.blank_bottom.min(saved));
             let top = fragment_placement.map_or(
                 fragment_flow_origin + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,

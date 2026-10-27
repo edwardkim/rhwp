@@ -1,0 +1,482 @@
+{
+  "dpi": 96,
+  "coordinate_system": "CSSpx at 96dpi; original page origin; +/-2px",
+  "expectation_source": "Independent Hancom 2020 Print raster, not SVG/RenderTree or implementation calculations",
+  "measurement_method": "Original Print rasterized at 96dpi. Continuous gray frame/grid runs: per-channel distance <=2 from RGB(134,134,134); select long connected runs. Record actual page edges and vertical value-axis/grid intersections. Raster phase is covered only by the existing +/-2px rule.",
+  "runtime_source": "df65ef9a58eecb5e96f86a0d7e4ca623bb4eb85d",
+  "producer_source": "cafcc5ad54e9e2cba8cd888b25a928ef7a4c7b62",
+  "base": "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c",
+  "producer": {
+    "native": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-276",
+    "native_sha256": "5d91d9f09e04c639a9bf76629e51cdc7159b1813b34d965fd8fb014699b5a620",
+    "source": "cafcc5ad54e9e2cba8cd888b25a928ef7a4c7b62",
+    "runtime_source": "df65ef9a58eecb5e96f86a0d7e4ca623bb4eb85d",
+    "chart_source_literal_verified": true,
+    "native_control_gate_passed": true,
+    "wasm_package": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-current-086",
+    "artifacts": {
+      "rhwp.js": "a48acb46a157950724859baea436fda8d5d3b7c9a0fd10665455c952bf4c2434",
+      "rhwp_bg.wasm": "ec3223dc0ca8d9611373a9a143c892e9c71284da51619fba544e9b81fb609677"
+    },
+    "standard_release_verified": true,
+    "wasm_control_gate_passed": true
+  },
+  "cases": [
+    {
+      "key": "chart-before-hwp",
+      "input": "tests/fixtures/inline-control-move/chart-before.hwp",
+      "pdf": "pdf/semanticist21_source_contracts_20261026/pr7694-updated-198-chart-before-2020.pdf",
+      "input_sha256": "f4ad7a61bda9a19e1ef5a059fbeb8fd8851c53e1584db36e0e6dd6c9e7939375",
+      "pdf_sha256": "8bf9e211868e22f694097e7011b9eab18833cb43d12614fc26df2b686fa13bd7",
+      "outer_edges_csspx": [
+        113,
+        131,
+        543,
+        382
+      ],
+      "plot_left_csspx": 145,
+      "plot_top_csspx": 191,
+      "plot_baseline_csspx": 339,
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "99.80761",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "command": [
+            "/home/tsjang/rhwp/venv/bin/python",
+            "/home/tsjang/rhwp/scripts/visual_sweep.py",
+            "--silhouette-only",
+            "--file-target",
+            "coherent-chart-124-native-4557",
+            "/home/tsjang/rhwp/tests/fixtures/inline-control-move/chart-before.hwp",
+            "/home/tsjang/rhwp/pdf/semanticist21_source_contracts_20261026/pr7694-updated-198-chart-before-2020.pdf",
+            "--rhwp-bin",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-276",
+            "--compat",
+            "2022",
+            "--dpi",
+            "96",
+            "--page-workers",
+            "1",
+            "--out",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/coherent-chart-controls-4557/coherent-chart-124-native-4557",
+            "--font-path",
+            "/usr/share/fonts",
+            "--font-path",
+            "/usr/local/share/fonts",
+            "--font-path",
+            "/home/tsjang/.local/share/fonts",
+            "--font-path",
+            "/home/tsjang/rhwp/assets/fonts"
+          ],
+          "direct_reading": {
+            "method": "Actual current review and overlay opened",
+            "representative_index": 124,
+            "observation": "직접 연 Native HWP 이동 전 review·overlay: 제목·값축·플롯·열두 막대·네 항목·오른쪽 세 범례와 뒤 본문을 Print와 대조했다.",
+            "remaining_difference": "글자 가장자리·선 농도의 잔차 유지; raw를 RGB 동일성으로 해석하지 않음"
+          },
+          "tsv": "native/chart-before-hwp/silhouette.tsv",
+          "tsv_sha256": "2a891b4dda94f62d426fade9e70d6f4663809b6f6b86e6b2be63846d922ce9dc",
+          "review": "native/chart-before-hwp/review_001.png",
+          "review_sha256": "8670487a1fd5b7afbfad01fa6d634003168219f114775151c72bb73879d37ad4",
+          "overlay": "native/chart-before-hwp/overlay_001.png",
+          "overlay_sha256": "d1e1e7664b7572578a08cc16b5dac7de4125b6b90d07384393cfc7733f55d3b5"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "99.66483",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "command": [
+            "/home/tsjang/rhwp/venv/bin/python",
+            "/home/tsjang/rhwp/scripts/visual_sweep.py",
+            "--silhouette-only",
+            "--file-target",
+            "coherent-chart-124-wasm-4557",
+            "/home/tsjang/rhwp/tests/fixtures/inline-control-move/chart-before.hwp",
+            "/home/tsjang/rhwp/pdf/semanticist21_source_contracts_20261026/pr7694-updated-198-chart-before-2020.pdf",
+            "--rhwp-bin",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-276",
+            "--compat",
+            "2022",
+            "--dpi",
+            "96",
+            "--page-workers",
+            "1",
+            "--out",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/coherent-chart-controls-4557/coherent-chart-124-wasm-4557",
+            "--wasm-pkg",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-current-086",
+            "--font-path",
+            "/usr/share/fonts",
+            "--font-path",
+            "/usr/local/share/fonts",
+            "--font-path",
+            "/home/tsjang/.local/share/fonts",
+            "--font-path",
+            "/home/tsjang/rhwp/assets/fonts"
+          ],
+          "direct_reading": {
+            "method": "Actual current fresh-WASM review and overlay opened",
+            "representative_index": 124,
+            "observation": "독립 Print와 이동 전후 제목·플롯·막대·네 항목·오른쪽 세 범례 및 앞뒤 본문의 관계를 직접 대조했다.",
+            "remaining_difference": "글자 가장자리와 선 농도 잔차가 남으며 raw를 RGB 동일성으로 해석하지 않는다."
+          },
+          "tsv": "wasm/chart-before-hwp/silhouette.tsv",
+          "tsv_sha256": "c5ff5cfe43c1d85644c2a0f28e59e6d2564508deccfa18a17f528b643fc47f2f",
+          "review": "wasm/chart-before-hwp/review_001.png",
+          "review_sha256": "9bb56053dcaf49df5c53ee4245ba71e8388da6e0cc787701d5f787e783c0fbd3",
+          "overlay": "wasm/chart-before-hwp/overlay_001.png",
+          "overlay_sha256": "94007ccf8ff9a1cb846bd6f1c95160c21be4129d3c47db8df5b425d7568ae5b0"
+        }
+      ]
+    },
+    {
+      "key": "chart-after-hwp",
+      "input": "tests/fixtures/inline-control-move/chart-after.hwp",
+      "pdf": "pdf/semanticist21_source_contracts_20261026/pr7694-updated-198-chart-after-2020.pdf",
+      "input_sha256": "8ff56111b683005b7d4cd34990e7214debc7785d9bef6bc76a2772d036ace617",
+      "pdf_sha256": "2f93373067c868addc624878b01c99f25fd13235de2924976fa17b5a44a90d57",
+      "outer_edges_csspx": [
+        202,
+        153,
+        632,
+        403
+      ],
+      "plot_left_csspx": 234,
+      "plot_top_csspx": 212,
+      "plot_baseline_csspx": 360,
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "99.71479",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "command": [
+            "/home/tsjang/rhwp/venv/bin/python",
+            "/home/tsjang/rhwp/scripts/visual_sweep.py",
+            "--silhouette-only",
+            "--file-target",
+            "coherent-chart-125-native-4557",
+            "/home/tsjang/rhwp/tests/fixtures/inline-control-move/chart-after.hwp",
+            "/home/tsjang/rhwp/pdf/semanticist21_source_contracts_20261026/pr7694-updated-198-chart-after-2020.pdf",
+            "--rhwp-bin",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-276",
+            "--compat",
+            "2022",
+            "--dpi",
+            "96",
+            "--page-workers",
+            "1",
+            "--out",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/coherent-chart-controls-4557/coherent-chart-125-native-4557",
+            "--font-path",
+            "/usr/share/fonts",
+            "--font-path",
+            "/usr/local/share/fonts",
+            "--font-path",
+            "/home/tsjang/.local/share/fonts",
+            "--font-path",
+            "/home/tsjang/rhwp/assets/fonts"
+          ],
+          "direct_reading": {
+            "method": "Actual current review and overlay opened",
+            "representative_index": 125,
+            "observation": "직접 연 Native HWP 이동 후 review·overlay: 이동한 차트와 왼쪽 앞 본문·오른쪽 뒤 본문의 순서, 플롯·범례를 Print와 대조했다.",
+            "remaining_difference": "글자 가장자리·선 농도의 잔차 유지; raw를 RGB 동일성으로 해석하지 않음"
+          },
+          "tsv": "native/chart-after-hwp/silhouette.tsv",
+          "tsv_sha256": "0d2c389c71478f43143cb7d8b6ba2a72316694ddb7d8cbf93c38e61ba113a3a8",
+          "review": "native/chart-after-hwp/review_001.png",
+          "review_sha256": "8ba78c64203142533458b2f42d5044fe0d11d2ccfe9f0546cd7b14b4f0aa19c6",
+          "overlay": "native/chart-after-hwp/overlay_001.png",
+          "overlay_sha256": "13244ec8ed46ecd26aa0554051e449d2b338825f5aea0468992d4450e4c865c4"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "99.73289",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "command": [
+            "/home/tsjang/rhwp/venv/bin/python",
+            "/home/tsjang/rhwp/scripts/visual_sweep.py",
+            "--silhouette-only",
+            "--file-target",
+            "coherent-chart-125-wasm-4557",
+            "/home/tsjang/rhwp/tests/fixtures/inline-control-move/chart-after.hwp",
+            "/home/tsjang/rhwp/pdf/semanticist21_source_contracts_20261026/pr7694-updated-198-chart-after-2020.pdf",
+            "--rhwp-bin",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-276",
+            "--compat",
+            "2022",
+            "--dpi",
+            "96",
+            "--page-workers",
+            "1",
+            "--out",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/coherent-chart-controls-4557/coherent-chart-125-wasm-4557",
+            "--wasm-pkg",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-current-086",
+            "--font-path",
+            "/usr/share/fonts",
+            "--font-path",
+            "/usr/local/share/fonts",
+            "--font-path",
+            "/home/tsjang/.local/share/fonts",
+            "--font-path",
+            "/home/tsjang/rhwp/assets/fonts"
+          ],
+          "direct_reading": {
+            "method": "Actual current fresh-WASM review and overlay opened",
+            "representative_index": 125,
+            "observation": "독립 Print와 이동 전후 제목·플롯·막대·네 항목·오른쪽 세 범례 및 앞뒤 본문의 관계를 직접 대조했다.",
+            "remaining_difference": "글자 가장자리와 선 농도 잔차가 남으며 raw를 RGB 동일성으로 해석하지 않는다."
+          },
+          "tsv": "wasm/chart-after-hwp/silhouette.tsv",
+          "tsv_sha256": "6b66583b775ca5cae1108a9a20d16a6688cbf723822bea66eec50f377be0c759",
+          "review": "wasm/chart-after-hwp/review_001.png",
+          "review_sha256": "2cc896cc5961efdd34e83d9ab1e71bf0bd1e9f18432349bf97649c6a761763dc",
+          "overlay": "wasm/chart-after-hwp/overlay_001.png",
+          "overlay_sha256": "29286a9f2262bfb3521884fef5f53ac67912c954b32d2953fe1edc1b98589405"
+        }
+      ]
+    },
+    {
+      "key": "chart-before-hwpx",
+      "input": "tests/fixtures/inline-control-move/chart-before.hwpx",
+      "pdf": "pdf/semanticist21_source_contracts_20261026/pr7694-chart-before-hwpx-2020.pdf",
+      "input_sha256": "196c868bdc03e2888744e35740b0a7bbca96a9d3c2b999ba759b7e4355ae4ed2",
+      "pdf_sha256": "afb6fffe11ca85d65bb80e2c72ed060db09f9ecff5a8d0162c5db14b383e2c79",
+      "outer_edges_csspx": [
+        113,
+        131,
+        543,
+        382
+      ],
+      "plot_left_csspx": 145,
+      "plot_top_csspx": 191,
+      "plot_baseline_csspx": 339,
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "99.80761",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "command": [
+            "/home/tsjang/rhwp/venv/bin/python",
+            "/home/tsjang/rhwp/scripts/visual_sweep.py",
+            "--silhouette-only",
+            "--file-target",
+            "coherent-chart-128-native-4557",
+            "/home/tsjang/rhwp/tests/fixtures/inline-control-move/chart-before.hwpx",
+            "/home/tsjang/rhwp/pdf/semanticist21_source_contracts_20261026/pr7694-chart-before-hwpx-2020.pdf",
+            "--rhwp-bin",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-276",
+            "--compat",
+            "2022",
+            "--dpi",
+            "96",
+            "--page-workers",
+            "1",
+            "--out",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/coherent-chart-controls-4557/coherent-chart-128-native-4557",
+            "--font-path",
+            "/usr/share/fonts",
+            "--font-path",
+            "/usr/local/share/fonts",
+            "--font-path",
+            "/home/tsjang/.local/share/fonts",
+            "--font-path",
+            "/home/tsjang/rhwp/assets/fonts"
+          ],
+          "direct_reading": {
+            "method": "Identical current candidate/reference pixel pairs to opened HWP counterpart; independently measured HWPX",
+            "representative_index": 124,
+            "observation": "직접 연 Native HWP 이동 전 review·overlay: 제목·값축·플롯·열두 막대·네 항목·오른쪽 세 범례와 뒤 본문을 Print와 대조했다.",
+            "remaining_difference": "글자 가장자리·선 농도의 잔차 유지; raw를 RGB 동일성으로 해석하지 않음"
+          },
+          "tsv": "native/chart-before-hwpx/silhouette.tsv",
+          "tsv_sha256": "2a891b4dda94f62d426fade9e70d6f4663809b6f6b86e6b2be63846d922ce9dc",
+          "review": "native/chart-before-hwpx/review_001.png",
+          "review_sha256": "75268a3859fd436160e9d0f3c318a67f42824800d4d034de8aaed53909d34334",
+          "overlay": "native/chart-before-hwpx/overlay_001.png",
+          "overlay_sha256": "7436f21cabc556936140b3a1e08e233e3e5ee1c44d332fb11affc0c2b96f169f"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "99.66483",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "command": [
+            "/home/tsjang/rhwp/venv/bin/python",
+            "/home/tsjang/rhwp/scripts/visual_sweep.py",
+            "--silhouette-only",
+            "--file-target",
+            "coherent-chart-128-wasm-4557",
+            "/home/tsjang/rhwp/tests/fixtures/inline-control-move/chart-before.hwpx",
+            "/home/tsjang/rhwp/pdf/semanticist21_source_contracts_20261026/pr7694-chart-before-hwpx-2020.pdf",
+            "--rhwp-bin",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-276",
+            "--compat",
+            "2022",
+            "--dpi",
+            "96",
+            "--page-workers",
+            "1",
+            "--out",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/coherent-chart-controls-4557/coherent-chart-128-wasm-4557",
+            "--wasm-pkg",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-current-086",
+            "--font-path",
+            "/usr/share/fonts",
+            "--font-path",
+            "/usr/local/share/fonts",
+            "--font-path",
+            "/home/tsjang/.local/share/fonts",
+            "--font-path",
+            "/home/tsjang/rhwp/assets/fonts"
+          ],
+          "direct_reading": {
+            "method": "Identical current candidate/reference pixel pairs to opened HWP counterpart; independently measured HWPX",
+            "representative_index": 124,
+            "observation": "독립 Print와 이동 전후 제목·플롯·막대·네 항목·오른쪽 세 범례 및 앞뒤 본문의 관계를 직접 대조했다.",
+            "remaining_difference": "글자 가장자리와 선 농도 잔차가 남으며 raw를 RGB 동일성으로 해석하지 않는다."
+          },
+          "tsv": "wasm/chart-before-hwpx/silhouette.tsv",
+          "tsv_sha256": "c5ff5cfe43c1d85644c2a0f28e59e6d2564508deccfa18a17f528b643fc47f2f",
+          "review": "wasm/chart-before-hwpx/review_001.png",
+          "review_sha256": "cd68d21aad2e65ef280cdac28e0b01fd922db0c2e6cb03cdfba2ce5ac923371d",
+          "overlay": "wasm/chart-before-hwpx/overlay_001.png",
+          "overlay_sha256": "8d120eb870de8f6b3bbe2272706c289f58b2a4184f34dd6b6f40021e2fa5420a"
+        }
+      ]
+    },
+    {
+      "key": "chart-after-hwpx",
+      "input": "tests/fixtures/inline-control-move/chart-after.hwpx",
+      "pdf": "pdf/semanticist21_source_contracts_20261026/pr7694-chart-after-hwpx-2020.pdf",
+      "input_sha256": "8ea852aacd448701811fbbd89a807c9321d171300bdba67c822f9a561910a308",
+      "pdf_sha256": "95192a09dfef731207a3c5c550f79b77bd891c13fc2585c6420bfa1c5da780df",
+      "outer_edges_csspx": [
+        202,
+        153,
+        632,
+        403
+      ],
+      "plot_left_csspx": 234,
+      "plot_top_csspx": 212,
+      "plot_baseline_csspx": 360,
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "99.71479",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "command": [
+            "/home/tsjang/rhwp/venv/bin/python",
+            "/home/tsjang/rhwp/scripts/visual_sweep.py",
+            "--silhouette-only",
+            "--file-target",
+            "coherent-chart-129-native-4557",
+            "/home/tsjang/rhwp/tests/fixtures/inline-control-move/chart-after.hwpx",
+            "/home/tsjang/rhwp/pdf/semanticist21_source_contracts_20261026/pr7694-chart-after-hwpx-2020.pdf",
+            "--rhwp-bin",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-276",
+            "--compat",
+            "2022",
+            "--dpi",
+            "96",
+            "--page-workers",
+            "1",
+            "--out",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/coherent-chart-controls-4557/coherent-chart-129-native-4557",
+            "--font-path",
+            "/usr/share/fonts",
+            "--font-path",
+            "/usr/local/share/fonts",
+            "--font-path",
+            "/home/tsjang/.local/share/fonts",
+            "--font-path",
+            "/home/tsjang/rhwp/assets/fonts"
+          ],
+          "direct_reading": {
+            "method": "Identical current candidate/reference pixel pairs to opened HWP counterpart; independently measured HWPX",
+            "representative_index": 125,
+            "observation": "직접 연 Native HWP 이동 후 review·overlay: 이동한 차트와 왼쪽 앞 본문·오른쪽 뒤 본문의 순서, 플롯·범례를 Print와 대조했다.",
+            "remaining_difference": "글자 가장자리·선 농도의 잔차 유지; raw를 RGB 동일성으로 해석하지 않음"
+          },
+          "tsv": "native/chart-after-hwpx/silhouette.tsv",
+          "tsv_sha256": "0d2c389c71478f43143cb7d8b6ba2a72316694ddb7d8cbf93c38e61ba113a3a8",
+          "review": "native/chart-after-hwpx/review_001.png",
+          "review_sha256": "c936c86960537b564e6a26c3d9079fc85a47f3138d6c37783dc03623ea553dce",
+          "overlay": "native/chart-after-hwpx/overlay_001.png",
+          "overlay_sha256": "d91722f7763f122fd6c8ae8caf61356ae9f34448bed86a21d8e79dc20799bc11"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "99.73289",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          },
+          "command": [
+            "/home/tsjang/rhwp/venv/bin/python",
+            "/home/tsjang/rhwp/scripts/visual_sweep.py",
+            "--silhouette-only",
+            "--file-target",
+            "coherent-chart-129-wasm-4557",
+            "/home/tsjang/rhwp/tests/fixtures/inline-control-move/chart-after.hwpx",
+            "/home/tsjang/rhwp/pdf/semanticist21_source_contracts_20261026/pr7694-chart-after-hwpx-2020.pdf",
+            "--rhwp-bin",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-276",
+            "--compat",
+            "2022",
+            "--dpi",
+            "96",
+            "--page-workers",
+            "1",
+            "--out",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/coherent-chart-controls-4557/coherent-chart-129-wasm-4557",
+            "--wasm-pkg",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-current-086",
+            "--font-path",
+            "/usr/share/fonts",
+            "--font-path",
+            "/usr/local/share/fonts",
+            "--font-path",
+            "/home/tsjang/.local/share/fonts",
+            "--font-path",
+            "/home/tsjang/rhwp/assets/fonts"
+          ],
+          "direct_reading": {
+            "method": "Identical current candidate/reference pixel pairs to opened HWP counterpart; independently measured HWPX",
+            "representative_index": 125,
+            "observation": "독립 Print와 이동 전후 제목·플롯·막대·네 항목·오른쪽 세 범례 및 앞뒤 본문의 관계를 직접 대조했다.",
+            "remaining_difference": "글자 가장자리와 선 농도 잔차가 남으며 raw를 RGB 동일성으로 해석하지 않는다."
+          },
+          "tsv": "wasm/chart-after-hwpx/silhouette.tsv",
+          "tsv_sha256": "6b66583b775ca5cae1108a9a20d16a6688cbf723822bea66eec50f377be0c759",
+          "review": "wasm/chart-after-hwpx/review_001.png",
+          "review_sha256": "3ce5a9c8425e26e70e6bdba880a950eb147c4008cf9aa0ecb58418f360f3ba1c",
+          "overlay": "wasm/chart-after-hwpx/overlay_001.png",
+          "overlay_sha256": "c98e1a3e587b420601c955dd7d8a63a0d49e7f5e7f72b668be44a24314a61f74"
+        }
+      ]
+    }
+  ]
+}

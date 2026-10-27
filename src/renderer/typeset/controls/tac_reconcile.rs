@@ -174,7 +174,13 @@ pub(super) fn measure(
                         .map(|mt| mt.total_height)
                         .unwrap_or(0.0);
                     let effective_h = crate::renderer::tac_table_effective_height(seg_lh, mt_h);
-                    let trailing = if seg.line_spacing > 0 {
+                    let percent_spacing = styles
+                        .para_styles
+                        .get(para.para_shape_id as usize)
+                        .is_some_and(|style| {
+                            style.line_spacing_type == crate::model::style::LineSpacingType::Percent
+                        });
+                    let trailing = if seg.line_spacing > 0 || percent_spacing {
                         crate::renderer::composer::tac_host_trailing_spacing_at_boundary(
                             para,
                             next_para,

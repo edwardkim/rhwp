@@ -34,6 +34,9 @@ import sys
 import tempfile
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from regression_document_scope import is_deferred_regression_input
+
 PAGES_RE = re.compile(r"페이지 수:\s*(\d+)")
 # pdf 파일명 꼬리의 판본 표시를 벗긴다 — `-2022`, `-20260814`, `-2010-kopub`, `-2020-no-ttf`.
 VARIANT_RE = re.compile(r"-((?:19|20)\d{2})(\d{4})?(-[A-Za-z0-9\-]+)?$")
@@ -66,6 +69,8 @@ def sample_index(root: Path) -> dict[str, str]:
                 continue
             stem = os.path.splitext(name)[0]
             rel = os.path.relpath(os.path.join(dirpath, name), root).replace("\\", "/")
+            if is_deferred_regression_input(rel, axis="render_page"):
+                continue
             prev = index.get(stem)
             if prev is None or rel.count("/") < prev.count("/"):
                 index[stem] = rel

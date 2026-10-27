@@ -67,20 +67,22 @@ impl TypesetEngine {
         {
             return false;
         }
-        if plan.end > st.available_height() + 0.01 {
+        if plan.end.max(plan.occupied_end()) > st.available_height() + 0.01 {
             // 새 단 후보가 실제로 수용 가능할 때만 상태를 전진한다.
             // 한 단보다 큰 혼합 문단의 fragment owner는 아직 기존 경로에 있다.
             let Some(candidate) = build(st, 0.0, false) else {
                 return false;
             };
-            if candidate.end > st.base_available_height() + 0.01 || st.current_items.is_empty() {
+            if candidate.end.max(candidate.occupied_end()) > st.base_available_height() + 0.01
+                || st.current_items.is_empty()
+            {
                 return false;
             }
             st.advance_column_or_new_page();
             let Some(candidate) = build(st, st.current_height, true) else {
                 return false;
             };
-            if candidate.end > st.available_height() + 0.01 {
+            if candidate.end.max(candidate.occupied_end()) > st.available_height() + 0.01 {
                 // 실제 다음 단의 폭/각주 예산이 예비 후보와 다르면 기존 분할기로 넘긴다.
                 // 수용 불가능한 plan을 확정 metadata로 게시하지 않는다.
                 return false;

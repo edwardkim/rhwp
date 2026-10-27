@@ -16,6 +16,19 @@ fn text(node: &RenderNode) -> String {
     node.children.iter().map(text).collect()
 }
 
+// 원문 내용과 표시용 각주 번호를 따로 검사한다. 각주 번호의 TextRun은
+// 원문 문자 오프셋을 소유하지 않으며 독립 Print에는 별도로 표시된다.
+fn source_text(node: &RenderNode) -> String {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        return if run.char_start.is_some() {
+            run.text.clone()
+        } else {
+            String::new()
+        };
+    }
+    node.children.iter().map(source_text).collect()
+}
+
 fn compact(text: &str) -> String {
     text.chars()
         .filter(|c| !c.is_whitespace() && !c.is_control())
@@ -57,6 +70,7 @@ fn rowbreak_footnote_table_does_not_over_paginate() {
     let core = DocumentCore::from_bytes(&std::fs::read(path).expect("원본 HWP5")).unwrap();
     assert_eq!(core.page_count(), 50, "독립 한컴 Print의 전체50쪽");
     let mut cells = BTreeMap::<(u16, u16), String>::new();
+    let mut annotated_cell = String::new();
     let mut headers = BTreeSet::new();
     let mut notes = Vec::new();
     let mut first_table_page = None;
@@ -86,7 +100,10 @@ fn rowbreak_footnote_table_does_not_over_paginate() {
                     cells
                         .entry(key)
                         .or_default()
-                        .push_str(&compact(&text(cell)));
+                        .push_str(&compact(&source_text(cell)));
+                    if key == (44, 2) {
+                        annotated_cell.push_str(&compact(&text(cell)));
+                    }
                 }
             }
             if page == 37 {
@@ -136,6 +153,10 @@ fn rowbreak_footnote_table_does_not_over_paginate() {
         panic!("원본 표")
     };
     assert_eq!(cells.len(), source.cells.len(), "원본의 모든 셀 소유 보존");
+    assert_eq!(
+        annotated_cell, "정책실현24)25)재정조달",
+        "독립 Print37쪽의 원문과 두 각주 참조 번호 순서·누락·중복"
+    );
     for cell in &source.cells {
         let expected = compact(
             &cell

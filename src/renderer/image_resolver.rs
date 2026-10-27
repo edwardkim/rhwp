@@ -1,9 +1,11 @@
 use std::cell::RefCell;
 use std::io::Cursor;
 
+mod print_alpha;
 mod print_crop;
 mod print_jpeg;
 mod print_tone;
+pub(crate) use print_alpha::print_alpha_payload;
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
 pub(crate) use print_jpeg::{encode_print_jpeg, print_jpeg_payload};
 pub(crate) use print_tone::print_bitmap_payload;
@@ -24,7 +26,9 @@ use crate::renderer::render_tree::{
 };
 
 mod picture_adjustments;
-pub(crate) use picture_adjustments::{adjusted_picture_bytes, picture_tone_parameters};
+pub(crate) use picture_adjustments::{
+    adjusted_picture_bytes, picture_tone_parameters, resolve_page_background_tone,
+};
 mod wmf_picture;
 /// 명시된 crop 좌표 범위는 보존한다. 원본 WMF의 범위가 없으면 한컴의
 /// 메타파일 자르기 좌표계(축마다 15000)를 사용한다. SVG/PNG 변환 뒤의 픽셀
@@ -134,6 +138,9 @@ enum Conversion {
     },
     PrintJpegWindow {
         bounds: [u32; 4],
+    },
+    PrintAlpha {
+        frame: [u64; 8],
     },
     Hancom2024BitmapPalette {
         bounds: [u32; 4],

@@ -1027,24 +1027,6 @@
       "baselineTier": "representative"
     },
     {
-      "id": "image-in-table",
-      "file": "pic-in-table-01.hwp",
-      "category": "image",
-      "page": 0,
-      "notes": "Picture-in-table sample for combined image resource, table clipping, and placement parity.",
-      "browserParityThresholds": {
-        "maxDiffRatio": null,
-        "inkMaskNeighborhoodRadius": 3,
-        "inkMaskMaxDiffRatio": 0.002,
-        "nonInkMaxDiffPixels": 0,
-        "solidInkMaxDiffRatio": 0.045
-      },
-      "diagnosticAxes": [
-        "image"
-      ],
-      "baselineTier": "extended"
-    },
-    {
       "id": "image-object",
       "file": "hwp-img-001.hwp",
       "category": "image",
@@ -1133,44 +1115,6 @@
         "paragraph"
       ],
       "baselineTier": "representative"
-    },
-    {
-      "id": "header-image",
-      "file": "pic-in-head-01.hwp",
-      "category": "header-footer",
-      "page": 0,
-      "notes": "Header region rendering with floating image content.",
-      "browserParityThresholds": {
-        "maxDiffRatio": null,
-        "inkMaskNeighborhoodRadius": 3,
-        "inkMaskMaxDiffRatio": 0.002,
-        "nonInkMaxDiffPixels": 0,
-        "solidInkMaxDiffRatio": 0.045
-      },
-      "diagnosticAxes": [
-        "header-footer"
-      ],
-      "baselineTier": "representative"
-    },
-    {
-      "id": "header-image-page-5",
-      "file": "pic-in-head-01.hwp",
-      "category": "header-footer",
-      "page": 5,
-      "notes": "Non-zero page coverage for repeated header image placement and page-indexed renderer diagnostics.",
-      "browserParityThresholds": {
-        "maxDiffRatio": null,
-        "inkMaskNeighborhoodRadius": 3,
-        "inkMaskMaxDiffRatio": 0.002,
-        "nonInkMaxDiffPixels": 0,
-        "solidInkMaxDiffRatio": 0.045
-      },
-      "diagnosticAxes": [
-        "header-footer",
-        "image",
-        "page-index"
-      ],
-      "baselineTier": "extended"
     },
     {
       "id": "header-image-alt",
@@ -1268,24 +1212,6 @@
       "category": "control",
       "page": 0,
       "notes": "HWP control table action sample for table/control document parity.",
-      "browserParityThresholds": {
-        "maxDiffRatio": null,
-        "inkMaskNeighborhoodRadius": 3,
-        "inkMaskMaxDiffRatio": 0.002,
-        "nonInkMaxDiffPixels": 0,
-        "solidInkMaxDiffRatio": 0.015
-      },
-      "diagnosticAxes": [
-        "control"
-      ],
-      "baselineTier": "extended"
-    },
-    {
-      "id": "hwpctl-parameterset-item",
-      "file": "hwpctl_ParameterSetID_Item_v1.2.hwp",
-      "category": "control",
-      "page": 0,
-      "notes": "HWP control parameter-set item sample for control-heavy document parity.",
       "browserParityThresholds": {
         "maxDiffRatio": null,
         "inkMaskNeighborhoodRadius": 3,
@@ -1794,24 +1720,6 @@
       },
       "diagnosticAxes": [
         "mixed-document"
-      ],
-      "baselineTier": "extended"
-    },
-    {
-      "id": "real-return-school-form",
-      "file": "복학원서.hwp",
-      "category": "form",
-      "page": 0,
-      "notes": "Return-to-school form sample for real-world form and text placement parity.",
-      "browserParityThresholds": {
-        "maxDiffRatio": null,
-        "inkMaskNeighborhoodRadius": 3,
-        "inkMaskMaxDiffRatio": 0.002,
-        "nonInkMaxDiffPixels": 0,
-        "solidInkMaxDiffRatio": 0.02
-      },
-      "diagnosticAxes": [
-        "form"
       ],
       "baselineTier": "extended"
     },

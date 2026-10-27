@@ -312,3 +312,25 @@ test('italic runs can select an unambiguous oblique face when no italic face exi
     assert.equal(resolveRendererLocalFont('Host Only', { weight: 400, slant: 'italic' }), null);
   } finally { await setHostFontProvider(null); }
 });
+
+
+test('일반 글리프 대체 face를 준비해도 문서의 주 글꼴 가용성을 바꾸지 않는다', async () => {
+  const f = fixture();
+  const emoji = { ...f.snapshot().faces[0], id: 'emoji', family: 'Segoe UI Emoji',
+    fullName: 'Segoe UI Emoji', postscriptName: 'SegoeUIEmoji', aliases: [] };
+  f.replace({ ...f.snapshot(), faces: [...f.snapshot().faces, emoji] });
+  const bounds = { x: 0, y: 0, width: 200, height: 100 };
+  const tree: PageLayerTree = { pageWidth: 200, pageHeight: 100,
+    root: { kind: 'leaf', bounds, ops: [
+      { type: 'textRun', text: '🦦나나끝', bbox: bounds, style: { fontFamily: 'Host Only' } },
+      { type: 'textRun', text: '앞😀뒤', bbox: bounds, style: { fontFamily: 'Host Only' } },
+      { type: 'textRun', text: '미등록', bbox: bounds, style: { fontFamily: 'Missing Source' } },
+    ] } };
+  try {
+    await setHostFontProvider(f.provider);
+    assert.deepEqual(collectHostFontRequests(tree).map(record => record.hostReference?.face.id), ['regular', 'emoji']);
+    assert.equal(f.reads(), 0, '중복 없는 메타데이터 준비는 프로그램을 미리 읽지 않는다');
+    assert.deepEqual(resolveDocumentCanvasKitFontFamilies(['Host Only', 'Missing Source'], [tree]),
+      ['Host Only', 'Missing Source'], '글리프 대체 face로 미등록 주 글꼴을 등록된 것처럼 처리하지 않는다');
+  } finally { await setHostFontProvider(null); }
+});

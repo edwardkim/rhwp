@@ -18,8 +18,11 @@
 use std::path::Path;
 
 use rhwp::model::control::Control;
+use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, TextSourceTable};
 use rhwp::parser::parse_document;
 use rhwp::renderer::composer::char_overlap_display_text;
+use rhwp::renderer::layer_renderer::LayerRenderer;
+use rhwp::renderer::svg_layer::SvgLayerRenderer;
 use rhwp::wasm_api::HwpDocument;
 
 const SAMPLE: &str = "samples/issue1880_takeplace_oracle_p13.hwpx";
@@ -29,33 +32,49 @@ fn read_sample() -> Vec<u8> {
     std::fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()))
 }
 
-/// SVG 에서 글자겹침 글리프의 내용만 모은다.
-///
-/// `draw_char_overlap` 만 `text-anchor="middle" dominant-baseline="central">` 로
-/// 바로 닫는 `<text>` 를 낸다 — 회전 텍스트는 뒤에 `transform=`, PUA 다자리 합성은
-/// 뒤에 `textLength=` 가 붙어 이 마커에 걸리지 않는다.
-fn char_overlap_glyphs(svg: &str) -> Vec<String> {
-    const MARK: &str = "text-anchor=\"middle\" dominant-baseline=\"central\">";
-    let mut out = Vec::new();
-    let mut rest = svg;
-    while let Some(i) = rest.find(MARK) {
-        rest = &rest[i + MARK.len()..];
-        match rest.find("</text>") {
-            Some(end) => out.push(rest[..end].to_string()),
-            None => break,
+/// 실제 글자겹침 leaf와 그 source-bound fallback·clip·layer를 함께 남긴다.
+/// 본문의 다른 원문자가 검사 대상 글리프의 누락을 가리지 않도록 한다.
+fn retain_overlap_leaves(node: &mut LayerNode) -> bool {
+    match &mut node.kind {
+        LayerNodeKind::Leaf { ops } => ops
+            .iter()
+            .any(|op| matches!(op, PaintOp::CharOverlap { .. })),
+        LayerNodeKind::Group { children, .. } => {
+            children.retain_mut(retain_overlap_leaves);
+            !children.is_empty()
+        }
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            retain_overlap_leaves(child)
         }
     }
-    out
 }
 
 fn all_char_overlap_glyphs() -> Vec<String> {
     let doc = HwpDocument::from_bytes(&read_sample()).expect("parse sample");
     let mut out = Vec::new();
     for page in 0..doc.page_count() {
-        let svg = doc
-            .render_page_svg_native(page)
-            .unwrap_or_else(|e| panic!("render page {page}: {e}"));
-        out.extend(char_overlap_glyphs(&svg));
+        let mut tree = doc.build_page_layer_tree(page).expect("실제 paint tree");
+        if !retain_overlap_leaves(&mut tree.root) {
+            continue;
+        }
+        // 원래 source ID는 유지하고 제거한 본문의 표 항목만 함께 제거한다.
+        // 실제 replay의 canonical source 검증을 우회하지 않는다.
+        tree.text_sources = TextSourceTable::from_layer_node(&tree.root);
+        let mut renderer = SvgLayerRenderer::new();
+        renderer
+            .render_page(&tree)
+            .expect("글자겹침 canonical SVG replay");
+        let svg = roxmltree::Document::parse(renderer.output()).expect("유효한 SVG XML");
+        out.extend(
+            svg.descendants()
+                .filter(|node| node.is_element() && node.tag_name().name() == "text")
+                .map(|node| {
+                    node.descendants()
+                        .filter(|child| child.is_text())
+                        .filter_map(|child| child.text())
+                        .collect::<String>()
+                }),
+        );
     }
     out
 }
@@ -87,6 +106,7 @@ fn issue_5790_parser_keeps_circled_compose_text() {
 #[test]
 fn issue_5790_svg_draws_circled_char_not_bare_digit() {
     let glyphs = all_char_overlap_glyphs();
+    assert_eq!(glyphs.len(), 2, "실제 겹침 두 건의 누락·중복: {glyphs:?}");
 
     assert!(
         glyphs.iter().any(|g| g == "③") && glyphs.iter().any(|g| g == "④"),

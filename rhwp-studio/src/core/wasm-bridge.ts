@@ -1,6 +1,7 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
 import { CanvasMetricSession, withPortableMetrics } from './canvas-metric-session';
 import { HostCanvasFontSession, scopedHostCanvasFont, withHostCanvasFonts } from './host-canvas-fonts';
+import { ordinaryTextFontFaceData, type OrdinaryTextFontSource } from './ordinary-text-font';
 import { NativePuaFontSession, type NativePuaFontDocument } from './native-pua-font-session';
 import { CanvasFontResolutionScope } from './canvas-font-resolution-scope';
 import { MetafileFontSession, type MetafileFontDocument } from './metafile-font-session';
@@ -376,7 +377,7 @@ export class WasmBridge {
         }
         return [...selected.values()];
       });
-      await this.hostCanvasFonts.prepare(records);
+      await this.hostCanvasFonts.prepare(records, doc, current);
       if (!current() || generation !== getHostFontState().generation) return false;
       const puaFontGeneration = this.canvasFontGeneration;
       if (!await this.nativePuaFonts.prepare(doc as unknown as NativePuaFontDocument | null,
@@ -403,6 +404,11 @@ export class WasmBridge {
 
   getHostCanvasFontDiagnostics(): { loaded: number; pending: number; failed: number } {
     return this.hostCanvasFonts.diagnostics();
+  }
+
+  /** CanvasKit의 일반 텍스트도 현재 문서의 공통 기본 윤곽 처리를 소비한다. */
+  prepareOrdinaryTextFont(data: ArrayBuffer, faceIndex = 0): ArrayBuffer | null {
+    return ordinaryTextFontFaceData(data, faceIndex, this.doc as OrdinaryTextFontSource | null);
   }
 
   withPortableMetrics<T>(operation: () => T): T {
@@ -1427,6 +1433,11 @@ export class WasmBridge {
     return this.doc.insertText(sec, para, charOffset, text);
   }
 
+  insertTextLogical(sec: number, para: number, logicalOffset: number, text: string): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.insertTextLogical(sec, para, logicalOffset, text);
+  }
+
   replaceBodyTextLocal(
     sec: number,
     para: number,
@@ -1596,6 +1607,16 @@ export class WasmBridge {
   textToLogicalOffset(sec: number, para: number, textOffset: number): number {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.textToLogicalOffset(sec, para, textOffset);
+  }
+
+  logicalToTextOffset(sec: number, para: number, logicalOffset: number): number {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.logicalToTextOffset(sec, para, logicalOffset);
+  }
+
+  getLogicalLength(sec: number, para: number): number {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.getLogicalLength(sec, para);
   }
 
   /** 문서 트리 DFS 기반 다음/이전 편집 가능 위치 반환 */

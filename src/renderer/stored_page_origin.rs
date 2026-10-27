@@ -3,6 +3,8 @@
 use crate::model::{control::Control, paragraph::Paragraph};
 use crate::renderer::{hwpunit_to_px, style_resolver::ResolvedStyleSet};
 
+pub(crate) mod initial_column_band;
+
 /// 문단 기준 위·아래 배치 그림은 본문 밴드를 따로 점유할 수 있다.
 /// 글앞/글뒤 개체는 그려져도 본문 글줄의 앞 간격을 대체하지 않는다.
 fn has_paragraph_float_graphic(paragraph: &Paragraph) -> bool {

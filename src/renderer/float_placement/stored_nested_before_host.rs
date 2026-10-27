@@ -56,9 +56,121 @@ pub(crate) fn stored_nested_before_host_placement(
     )
 }
 
+/// 셀의 마지막 저장 호스트는 뒤 문단 없이도 앞 줄 끝·표 상자로 인증한다.
+/// 원본 호스트 줄의 점유 끝을 따로 발행해 표 높이로 그 공간을 대신하지 않는다.
+fn terminal_table_before_host_frame(
+    paragraphs: &[Paragraph],
+    para_index: usize,
+    table: &Table,
+    control_index: usize,
+    origin: f64,
+    table_height: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    if para_index.checked_add(1)? != paragraphs.len() {
+        return None;
+    }
+    let para = paragraphs.get(para_index)?;
+    let previous = paragraphs.get(para_index.checked_sub(1)?)?;
+    let [host] = para.line_segs.as_slice() else {
+        return None;
+    };
+    if ![dpi, origin, table_height]
+        .iter()
+        .all(|value| value.is_finite())
+        || dpi <= 0.0
+        || table.common.height == 0
+        || table.common.height > i32::MAX as u32
+        || table.caption.is_some()
+        || !is_para_topbottom_float(&table.common)
+        || !table.common.flow_with_text
+        || table.common.vert_align != crate::model::shape::VertAlign::Top
+        || signed_hwpunit(table.common.vertical_offset) < 0
+        || table.outer_margin_top < 0
+        || table.outer_margin_bottom < 0
+        || !para.text.trim().is_empty()
+        || control_index != 0
+        || !matches!(para.controls.as_slice(), [Control::Table(_)])
+        || !previous.controls.is_empty()
+        || !original_lines(para)
+        || !original_lines(previous)
+    {
+        return None;
+    }
+    let last = previous.line_segs.last()?;
+    let previous_style = styles.para_styles.get(previous.para_shape_id as usize)?;
+    let style = styles.para_styles.get(para.para_shape_id as usize)?;
+    let offset = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
+    let top = hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+    let bottom = hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
+    let outer = offset + top + table_height + bottom;
+    let preceding = hwpunit_to_px(
+        last.vertical_pos
+            .checked_add(last.line_height)?
+            .checked_add(last.line_spacing)?,
+        dpi,
+    ) + previous_style.spacing_after
+        + style.spacing_before;
+    let epsilon = hwpunit_to_px(2, dpi);
+    if (table_height - hwpunit_to_px(table.common.height as i32, dpi)).abs() > epsilon
+        || (preceding + outer - hwpunit_to_px(host.vertical_pos, dpi)).abs() > epsilon
+    {
+        return None;
+    }
+    let host_origin = origin + style.spacing_before;
+    let anchor_y = host_origin - outer;
+    Some(ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::NextLine,
+        anchor_y,
+        stored_host_origin: Some(host_origin),
+        stored_successor_line_origin: None,
+        table_left: None,
+        table_top: anchor_y + offset + top,
+        // 셀의 마지막 문단 뒤 간격은 일반 셀 유닛과 동일하게 점유하지 않는다.
+        occupied_bottom: host_origin + hwpunit_to_px(host.line_height, dpi),
+    })
+}
+
 /// 측정도 같은 저장 앞·뒤 줄과 표 바깥 상자로 호스트의 줄 소속을 확인한다.
 /// 셀 편집 여부는 셀을 소유한 호출자가, 저장 줄의 유효성은 이 함수가 확인한다.
 pub(crate) fn stored_table_before_host_frame(
+    paragraphs: &[Paragraph],
+    para_index: usize,
+    table: &Table,
+    control_index: usize,
+    origin: f64,
+    table_height: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    // 마지막 호스트도 같은 닫힌 상자의 소유자다. 측정의 블록 흐름과 실제
+    // 배치가 서로 다른 프레임 수용 조건을 사용하지 않도록 여기서 선택한다.
+    stored_table_between_host_frames(
+        paragraphs,
+        para_index,
+        table,
+        control_index,
+        origin,
+        table_height,
+        styles,
+        dpi,
+    )
+    .or_else(|| {
+        terminal_table_before_host_frame(
+            paragraphs,
+            para_index,
+            table,
+            control_index,
+            origin,
+            table_height,
+            styles,
+            dpi,
+        )
+    })
+}
+
+fn stored_table_between_host_frames(
     paragraphs: &[Paragraph],
     para_index: usize,
     table: &Table,

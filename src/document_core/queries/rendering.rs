@@ -1675,6 +1675,7 @@ impl DocumentCore {
         let tree = self.build_page_tree(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
         let mut renderer = SvgRenderer::new();
+        renderer.source_font_coverage = self.hft_outline_fonts.pua_coverage.clone();
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.debug_overlay = self.debug_overlay;
@@ -1700,6 +1701,14 @@ impl DocumentCore {
         let profile = layer_tree.profile;
 
         let mut renderer = SvgLayerRenderer::new();
+        renderer.inner_mut().source_font_coverage = self.hft_outline_fonts.pua_coverage.clone();
+        let embedded_fonts = self.collect_embedded_font_bytes_by_name();
+        for (family, bytes) in &embedded_fonts {
+            let _ = renderer
+                .inner_mut()
+                .source_font_coverage
+                .register(family, bytes, 0);
+        }
         // WASM에서도 문서 내장 face 사용량을 수집한다. 실제 CSS 생성은 아래의
         // embedded-only 경로가 담당하므로 시스템 font file I/O는 발생하지 않는다.
         renderer.inner_mut().font_embed_mode = crate::renderer::svg::FontEmbedMode::Style;
@@ -1710,7 +1719,6 @@ impl DocumentCore {
         // [#2524/#3126] print/profile SVG도 브라우저가 문서 내장 폰트를 직접
         // 해석할 수 있게 원본 font bytes를 data URI로 포함한다. Layer SVG가
         // TextRun fallback을 재생하더라도 Blink에서 두부(□)가 되지 않는다.
-        let embedded_fonts = self.collect_embedded_font_bytes_by_name();
         let style_css =
             crate::renderer::svg::generate_embedded_font_style(renderer.inner(), &embedded_fonts);
         if !style_css.is_empty() {
@@ -1963,6 +1971,14 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
         let mut renderer = SvgLayerRenderer::new();
+        renderer.inner_mut().source_font_coverage = self.hft_outline_fonts.pua_coverage.clone();
+        let embedded_fonts = self.collect_embedded_font_bytes_by_name();
+        for (family, bytes) in &embedded_fonts {
+            let _ = renderer
+                .inner_mut()
+                .source_font_coverage
+                .register(family, bytes, 0);
+        }
         renderer.inner_mut().font_embed_mode = font_embed_mode;
         renderer.inner_mut().font_paths = font_paths.to_vec();
         renderer.inner_mut().annotate_metric_font = self.annotate_metric_font;
@@ -1973,7 +1989,6 @@ impl DocumentCore {
         if font_embed_mode != crate::renderer::svg::FontEmbedMode::None {
             // [#2524] 문서 임베디드(BinData) 폰트를 face명 → bytes 로 수집해
             // @font-face 직접 임베딩에 쓴다(미설치 임베디드 폰트 chrome 두부 해소).
-            let embedded_fonts = self.collect_embedded_font_bytes_by_name();
             let style_css = crate::renderer::svg::generate_font_style(
                 renderer.inner(),
                 font_paths,
@@ -2592,7 +2607,16 @@ impl DocumentCore {
                             };
                             // 보이는 영역이 없으면 소비자가 그릴 것도 없다. 교차 결과는 가시성
                             // 판정에만 쓰고, 직렬화에는 canonical 한 조상 clip 을 그대로 넘긴다.
-                            if intersect(clip, *bbox).is_none() {
+                            let image_clip = if let Some(source_clip) = image.source_clip_bbox(bbox)
+                            {
+                                let Some(clip) = intersect(clip, source_clip) else {
+                                    continue;
+                                };
+                                Some(clip)
+                            } else {
+                                clip
+                            };
+                            if intersect(image_clip, op.visual_bounds()).is_none() {
                                 continue;
                             }
                             let key = crate::paint::source_image_key(self.epoch, image);
@@ -2602,7 +2626,9 @@ impl DocumentCore {
                             // [#7193] 그리는 자리는 틀에서 그림 안쪽 여백을 뺀 사각형이다.
                             self.write_image(
                                 image.paint_bbox(bbox),
-                                clip,
+                                image.transformed_paint_bbox(bbox),
+                                image_clip,
+                                image.source_clip_path(bbox),
                                 image,
                                 resolved.as_deref(),
                                 data,
@@ -2616,7 +2642,9 @@ impl DocumentCore {
             fn write_image(
                 &mut self,
                 bbox: BoundingBox,
+                paint_bbox: BoundingBox,
                 clip: Option<BoundingBox>,
+                source_clip_path: Option<[[f64; 2]; 4]>,
                 image: &crate::renderer::render_tree::ImageNode,
                 resolved: Option<&crate::paint::ResolvedImagePayload>,
                 data: &[u8],
@@ -2629,7 +2657,11 @@ impl DocumentCore {
                 buf.push_str("{\"bbox\":");
                 write_bbox(buf, bbox);
                 buf.push_str(",\"imagePaintBBox\":");
-                write_bbox(buf, image.transform.effective_image_bbox(&bbox));
+                write_bbox(buf, paint_bbox);
+                if image.pre_rotation_ratio.is_some() || image.source_rect.is_some() {
+                    buf.push_str(",\"paintBbox\":");
+                    write_bbox(buf, paint_bbox);
+                }
                 // 조상 clip 이 있으면 **언제나** 싣는다. 교차한 값을 그대로 주고, 그것으로 무엇을
                 // 할지는 소비자가 정한다.
                 //
@@ -2640,6 +2672,10 @@ impl DocumentCore {
                 if let Some(clip) = clip {
                     buf.push_str(",\"clip\":");
                     write_bbox(buf, clip);
+                }
+                if let Some(path) = source_clip_path {
+                    buf.push_str(",\"paintClipPath\":");
+                    buf.push_str(&serde_json::to_string(&path).unwrap());
                 }
                 let mime = crate::renderer::image_resolver::emitted_image_mime(
                     data,
@@ -4715,6 +4751,7 @@ impl DocumentCore {
         self.invalidate_page_tree_cache();
         self.overflow_links_cache.borrow_mut().clear();
         self.paginate();
+        self.sync_loaded_frame_text_balance();
     }
 
     /// Batch 모드가 아닐 때만 paginate를 실행한다.
@@ -5214,6 +5251,28 @@ impl DocumentCore {
         self.measured_tables.truncate(sec_count);
         self.dirty_sections.resize(sec_count, true);
         self.dirty_sections.truncate(sec_count);
+        // 앞 구역의 문서 끝 미주는 마지막 구역이 모아 그린다. 미주가 있거나 마지막 구역이
+        // 그 미주를 그리고 있던 앞 구역이 바뀌면 마지막 구역도 다시 조판한다.
+        if let Some(last) = sec_count.checked_sub(1) {
+            let renders_notes_of_dirty_section = (0..last).any(|idx| {
+                self.dirty_sections[idx]
+                    && (self.document.sections[idx]
+                        .paragraphs
+                        .iter()
+                        .enumerate()
+                        .any(|(pi, para)| {
+                            !crate::renderer::pagination::paragraph_endnote_refs(idx, pi, para)
+                                .is_empty()
+                        })
+                        || self.pagination[last]
+                            .endnote_para_sources
+                            .iter()
+                            .any(|src| src.section_index == idx))
+            });
+            if renders_notes_of_dirty_section {
+                self.dirty_sections[last] = true;
+            }
+        }
         while self.measured_sections.len() < sec_count {
             self.measured_sections.push(MeasuredSection {
                 fallback_paragraphs: Vec::new(),
@@ -5976,13 +6035,21 @@ impl DocumentCore {
                 continue;
             }
             let section = &self.document.sections[idx];
+            let cached_frames =
+                crate::renderer::render_normalization::cached_frame_owner::normalize(
+                    &section.paragraphs,
+                    &self.styles,
+                    self.dpi,
+                    crate::renderer::style_resolver::missing_char_table(&self.document),
+                    profile.hwpx_container() && !profile.legacy_hwp3_stored_geometry(),
+                );
+            let source_paragraphs = cached_frames.as_deref().unwrap_or(&section.paragraphs);
             let pd = &section.section_def.page_def;
             let body_area = PageAreas::from_page_def(pd).body_area;
             let body_h_hu = body_area.height();
             let body_bottom_hu = body_area.bottom;
             let min_height_hu = (body_h_hu / 2).max(1);
-            let matches: Vec<usize> = section
-                .paragraphs
+            let matches: Vec<usize> = source_paragraphs
                 .iter()
                 .enumerate()
                 .filter(|(_, p)| {
@@ -5992,7 +6059,7 @@ impl DocumentCore {
                 .map(|(i, _)| i)
                 .collect();
             // [#2004] 표 셀 내부 부동 이미지 스택 검출(본문 스택과 별개 경로).
-            let has_cell_stack = section.paragraphs.iter().any(|p| {
+            let has_cell_stack = source_paragraphs.iter().any(|p| {
                 p.controls.iter().any(|ctrl| match ctrl {
                     Control::Table(table) => table.cells.iter().any(|cell| {
                         cell.paragraphs
@@ -6003,13 +6070,50 @@ impl DocumentCore {
                 })
             });
             let math_tables = crate::renderer::render_normalization::math_table::normalize(
-                &section.paragraphs,
+                source_paragraphs,
                 &self.styles,
             );
             let math_textboxes = crate::renderer::render_normalization::math_textbox::normalize(
-                math_tables.as_deref().unwrap_or(&section.paragraphs),
+                math_tables.as_deref().unwrap_or(source_paragraphs),
                 &self.styles,
             );
+            let text_metrics = (!profile.hwp3_layout())
+                .then(|| {
+                    crate::renderer::render_normalization::stored_text_metrics::normalize(
+                        math_textboxes
+                            .as_deref()
+                            .or(math_tables.as_deref())
+                            .unwrap_or(source_paragraphs),
+                        &self.styles,
+                        self.dpi,
+                        profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx(),
+                    )
+                })
+                .flatten();
+            let text_metric_changes: Vec<usize> = text_metrics
+                .as_deref()
+                .map(|paragraphs| {
+                    let source = math_textboxes
+                        .as_deref()
+                        .or(math_tables.as_deref())
+                        .unwrap_or(source_paragraphs);
+                    paragraphs
+                        .iter()
+                        .zip(source)
+                        .enumerate()
+                        .filter(|(_, (projected, original))| {
+                            projected.line_segs.iter().zip(&original.line_segs).any(
+                                |(projected, original)| {
+                                    projected.line_height != original.line_height
+                                        || projected.text_height != original.text_height
+                                        || projected.baseline_distance != original.baseline_distance
+                                },
+                            )
+                        })
+                        .map(|(index, _)| index)
+                        .collect()
+                })
+                .unwrap_or_default();
             // 프로그램 교체는 어느 형식에서도 현재 줄 메트릭을 바꿀 수 있다.
             // 기존 목록 캐시 갱신의 형식·저장 프레임 경계는 별도로 보존한다.
             let refresh_markers = (profile.hwp5_stored_pagination_layout()
@@ -6032,24 +6136,25 @@ impl DocumentCore {
                 })
                 .flatten();
                 crate::renderer::render_normalization::stored_word_tail::normalize(
-                    math_textboxes
+                    text_metrics
                         .as_deref()
-                        .or(math_tables.as_deref())
-                        .unwrap_or(&section.paragraphs),
+                        .or(math_textboxes.as_deref().or(math_tables.as_deref()))
+                        .unwrap_or(source_paragraphs),
                     &self.styles,
                     pd,
-                    &Self::find_initial_column_def(&section.paragraphs),
+                    &Self::find_initial_column_def(source_paragraphs),
                     refresh_markers,
                     self.dpi,
                     previous_margins.as_ref(),
                 )
             });
-            let paragraph_geometry_changed =
-                stored_word_tails.is_some() || math_textboxes.is_some() || math_tables.is_some();
+            let paragraph_geometry_changed = cached_frames.is_some()
+                || stored_word_tails.is_some()
+                || math_textboxes.is_some()
+                || math_tables.is_some();
             let unplaced_rows =
-                normalize_widthless_rows && section_has_unplaced_stored_rows(&section.paragraphs);
-            let widthless: Vec<usize> = section
-                .paragraphs
+                normalize_widthless_rows && section_has_unplaced_stored_rows(source_paragraphs);
+            let widthless: Vec<usize> = source_paragraphs
                 .iter()
                 .enumerate()
                 .filter(|(_, para)| unplaced_rows && has_widthless_stored_rows(para))
@@ -6059,8 +6164,7 @@ impl DocumentCore {
                 if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
                     && !profile.session_edited()
                 {
-                    section
-                        .paragraphs
+                    source_paragraphs
                         .iter()
                         .enumerate()
                         .filter_map(|(index, paragraph)| {
@@ -6069,6 +6173,14 @@ impl DocumentCore {
                                 &self.styles,
                                 self.dpi,
                             )
+                            .or_else(|| {
+                                crate::renderer::composer::inline_box_rows::normalized_host(
+                                    paragraph,
+                                    &self.styles,
+                                    self.dpi,
+                                    profile,
+                                )
+                            })
                             .map(|projected| (index, projected))
                         })
                         .collect()
@@ -6080,21 +6192,23 @@ impl DocumentCore {
                 && widthless.is_empty()
                 && inline_frames.is_empty()
                 && !paragraph_geometry_changed
+                && text_metrics.is_none()
             {
                 out.push(None);
                 continue;
             }
             let mut np = stored_word_tails
+                .or(text_metrics)
                 .or(math_textboxes)
                 .or(math_tables)
-                .unwrap_or_else(|| section.paragraphs.clone());
+                .unwrap_or_else(|| source_paragraphs.to_vec());
             let mut frame_changes = Vec::new();
             if !inline_frames.is_empty() {
                 let mut frames = inline_frames.into_iter().peekable();
                 let mut shift_hu = 0i32;
                 let mut previous_source_end = None;
                 for (index, paragraph) in np.iter_mut().enumerate() {
-                    let source = &section.paragraphs[index];
+                    let source = &source_paragraphs[index];
                     let first = source.line_segs.first();
                     if !matches!(source.column_type, ColumnBreakType::None)
                         || first.is_some_and(|line| {
@@ -6119,22 +6233,19 @@ impl DocumentCore {
                         if shift_hu != 0 {
                             for line in &mut paragraph.line_segs {
                                 line.vertical_pos = line.vertical_pos.saturating_sub(shift_hu);
-                                line.tag |=
-                                    crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
                             }
                         }
                         frame_changes.push(index);
                         shift_hu = shift_hu.saturating_add(old_height - new_height);
                     } else if shift_hu != 0 && !paragraph.line_segs.is_empty() {
-                        // Derived page-frame coordinates stay with the projected
-                        // geometry. Original document/save caches are untouched.
-                        let mut lines = paragraph.line_segs.clone();
-                        for line in &mut lines {
+                        // 원점 이동은 문자 경계·가로 폭·공백 메트릭을 다시 만든
+                        // 것이 아니다. 원본 태그와 문자 축을 보존해야 조판·흡수·
+                        // paint가 같은 외부 어울림 줄을 소비한다. 구현 태그를
+                        // 붙이면 NO_LS 재조판과 접두 줄 끝점 누락이 함께 발생한다.
+                        for line in &mut paragraph.line_segs {
                             line.vertical_pos = line.vertical_pos.saturating_sub(shift_hu);
-                            line.tag |=
-                                crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
                         }
-                        paragraph.replace_line_segs(lines);
+                        paragraph.source_line_seg_vertical_pos = None;
                         frame_changes.push(index);
                     }
                 }
@@ -6158,6 +6269,7 @@ impl DocumentCore {
                     if matches.binary_search(&i).is_ok()
                         || widthless.binary_search(&i).is_ok()
                         || frame_changes.binary_search(&i).is_ok()
+                        || text_metric_changes.binary_search(&i).is_ok()
                         || paragraph_geometry_changed
                     {
                         let mut c = crate::renderer::composer::compose_paragraph_in_context(
@@ -6407,6 +6519,25 @@ impl DocumentCore {
         parent_para_idx: usize,
         control_idx: usize,
     ) -> Result<(), HwpError> {
+        self.mark_table_text_reflowed_owner(section_idx, parent_para_idx, control_idx, false)
+    }
+
+    pub(crate) fn mark_table_text_reflowed_after_cell_edit(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<(), HwpError> {
+        self.mark_table_text_reflowed_owner(section_idx, parent_para_idx, control_idx, true)
+    }
+
+    fn mark_table_text_reflowed_owner(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_text: bool,
+    ) -> Result<(), HwpError> {
         let table = self
             .document
             .sections
@@ -6422,9 +6553,14 @@ impl DocumentCore {
                 "text-reflowed table path mismatch: section={section_idx} para={parent_para_idx} control={control_idx}"
             )));
         };
-        self.render_normalization
-            .text_reflowed_tables
-            .insert(super::super::TableTextReflowKey::from_table(table));
+        let key = super::super::TableTextReflowKey::from_table(table);
+        if cell_text {
+            self.render_normalization
+                .text_reflowed_tables
+                .insert_cell_text(key);
+        } else {
+            self.render_normalization.text_reflowed_tables.insert(key);
+        }
         Ok(())
     }
 
@@ -9447,6 +9583,7 @@ mod tests {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
             stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
             float_pushed_line_spacings: Default::default(),

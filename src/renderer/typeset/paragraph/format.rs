@@ -165,10 +165,17 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
     // 표 없는 일반 본문에는 배치용 줄 사본을 만들지 않는다.
     let computed_host_lines = recomposed
         .as_ref()
-        .filter(|_| {
-            para.controls.iter().any(|control| {
-                matches!(control,
-            Control::Table(table) if is_para_topbottom_float(&table.common))
+        .or_else(|| {
+            (para.stored_text_partition_is_dirty()
+                || crate::renderer::para_has_no_stored_line_segs(para))
+            .then_some(composed)
+            .flatten()
+        })
+        .filter(|comp| {
+            para.controls.iter().enumerate().any(|(index, control)| {
+                matches!(control, Control::Table(table)
+                    if is_para_topbottom_float(&table.common)
+                        || comp.frame_owns_inline_table(index))
             })
         })
         .map(|comp| {
@@ -191,6 +198,18 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
                 })
                 .collect()
         });
+    let host_composition = composed
+        .filter(|comp| {
+            computed_host_lines.is_some()
+                && !comp.lines.is_empty()
+                && comp.lines.len() == line_heights.len()
+                && comp.lines.len() == line_spacings.len()
+                && comp.lines.iter().enumerate().all(|(index, line)| {
+                    line_heights[index] == hwpunit_to_px(line.line_height, ctx.dpi())
+                        && line_spacings[index] == hwpunit_to_px(line.line_spacing, ctx.dpi())
+                })
+        })
+        .map(|comp| std::sync::Arc::new(comp.clone()));
     let tail_line_remaining_width = (|| {
         if !para.controls.iter().any(|control| {
             matches!(control, Control::Table(table) if is_para_topbottom_float(&table.common))
@@ -265,6 +284,7 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         computed_paragraph,
         tail_line_remaining_width,
         computed_host_lines,
+        host_composition,
         square_host_plan: None,
         total_height,
         line_heights,
@@ -308,6 +328,11 @@ fn recompose_for_flow(
                 crate::renderer::composer::ParagraphBox::body_for_style(cw, para_style, ctx.dpi());
             // NO_LS 와 저장분할 both go to the frame.
             if inner > 0.0 {
+                let inline_table_heights = if ctx.profile().legacy_hwp3_stored_geometry() {
+                    Vec::new()
+                } else {
+                    crate::renderer::composer::reflow_inline_table_heights(para, styles, ctx.dpi())
+                };
                 crate::renderer::composer::recompose_stored_lines_in_frame_with_known_square_band(
                     c,
                     para,
@@ -321,7 +346,7 @@ fn recompose_for_flow(
                     known_square_band,
                     ctx.profile().hwpx_stored_layout(),
                     ctx.uniform_filler_ladder(),
-                    &[],
+                    &inline_table_heights,
                 )
             } else {
                 None
@@ -558,8 +583,13 @@ fn resolve_line_metrics(
             }
             // [#5854] 통짜 합성 사다리 문서는 저장 `line_height` 가 글자 크기보다
             // 크든 작든 실측이 아니다 — 항상 글꼴·문단 스타일로 다시 뽑는다.
+            let computed_empty_host = para.controls.iter().any(|control| {
+                matches!(control, Control::Table(table)
+                    if crate::renderer::float_placement::computed_empty_table_host(para, table))
+            });
             let recompute_lh = text_before_picture_line
-                || (max_fs > 0.0 && (raw_lh < max_fs || ctx.uniform_filler_ladder()));
+                || (max_fs > 0.0
+                    && (raw_lh < max_fs || ctx.uniform_filler_ladder() || computed_empty_host));
             let (lh, line_spacing_px) = if recompute_lh {
                 // [Task #1042 Stage 6c] HWP3/HWP5 line_segs 의 (line_height=base,
                 // line_spacing=extra) 의미와 정합되게 분해 — 종전 처럼 ls_val/100 전체를
@@ -614,6 +644,35 @@ fn resolve_line_metrics(
             // HeightMeasurer의 fallback 측정 정합 범위이므로 typeset 예약 높이는
             // 종전 줄 상자를 유지한다.
             let flow_lh = lh + extra_rows as f64 * (lh + line_spacing_px);
+            // 글자가 없는 개체 줄은 저장 사다리에서 다음 줄과 겹칠 수 있다(통계 보고서
+            // 첫 문단: 조판부호 줄과 글상자 줄이 모두 lh=3403 인데 vpos 500→600). 한글은
+            // 저장 vpos 차이만큼만 전진하므로 줄 상자를 통째로 쌓으면 뒤 내용이 그만큼
+            // (+44px) 밀린다.
+            let stored_overlap_advance = (runs_all_whitespace
+                && comp.lines.len() == para.line_segs.len())
+            .then(|| {
+                para.line_segs
+                    .get(line_idx)
+                    .zip(para.line_segs.get(line_idx + 1))
+            })
+            .flatten()
+            .filter(|(cur, next)| {
+                let authored = |seg: &crate::model::paragraph::LineSeg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                };
+                // 사다리 자체가 겹침을 적은 경우만 — 다음 줄이 줄 상자 안에서 시작한다.
+                authored(cur)
+                    && authored(next)
+                    && next.vertical_pos > cur.vertical_pos
+                    && next.vertical_pos < cur.vertical_pos + cur.line_height + cur.line_spacing
+            })
+            .map(|(cur, next)| hwpunit_to_px(next.vertical_pos - cur.vertical_pos, ctx.dpi()))
+            .filter(|advance| *advance < flow_lh + line_spacing_px);
+            if let Some(advance) = stored_overlap_advance {
+                pairs.push((advance, 0.0));
+                prev_line_reserved_tac_picture_height = None;
+                continue;
+            }
             pairs.push((flow_lh, line_spacing_px));
             prev_line_reserved_tac_picture_height = tac_picture_height;
         }

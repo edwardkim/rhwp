@@ -1,4 +1,5 @@
 //! 구역 문단 처리의 absorb_section_tail 단계. 조건·예약·발행 순서를 유지한다.
+use crate::renderer::typeset::paragraph::stored_lines::stored_tail_boundary_invalidated_at_current_flow;
 use crate::renderer::typeset::{
     hwpunit_to_px, is_para_topbottom_float, is_synthetic_line_seg, para_has_visible_text,
     paragraph_saved_visible_bounds, paragraph_saved_vpos_reset_starts_new_page_after,
@@ -61,6 +62,11 @@ impl TypesetEngine {
                     next_para,
                     st.col_count,
                     st.profile.hwp3_layout(),
+                ) && !stored_tail_boundary_invalidated_at_current_flow(
+                    st,
+                    paragraphs,
+                    para_idx + 1,
+                    styles,
                 )
             }
         } else {
@@ -88,6 +94,12 @@ impl TypesetEngine {
                         after,
                         st.col_count,
                         st.profile.hwp3_layout(),
+                    )
+                    && !stored_tail_boundary_invalidated_at_current_flow(
+                        st,
+                        paragraphs,
+                        para_idx + 2,
+                        styles,
                     )
             };
         if tail_before_break_through_empty {
@@ -134,7 +146,10 @@ impl TypesetEngine {
                     );
                     // 글이 있는 문단은 앞 빈 줄의 뒤쪽 경계다. 그 문단 다음의
                     // reset을 앞당겨 적용하면 실제 본문 앞 빈 줄의 점유가 사라진다.
-                    found = reset_after_empty_run;
+                    found = reset_after_empty_run
+                        && !stored_tail_boundary_invalidated_at_current_flow(
+                            st, paragraphs, idx, styles,
+                        );
                     break;
                 }
                 found
@@ -173,6 +188,12 @@ impl TypesetEngine {
             && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
             && para.text.is_empty()
             && para.controls.is_empty()
+            && !stored_tail_boundary_invalidated_at_current_flow(
+                st,
+                paragraphs,
+                para_idx + 1,
+                styles,
+            )
             && paragraphs.get(para_idx + 1).is_some_and(|next_para| {
                 stored_vpos_rewinds(
                     para.line_segs

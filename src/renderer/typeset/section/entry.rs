@@ -49,9 +49,8 @@ impl TypesetEngine {
             })
             .unwrap_or(false);
 
-        let is_terminal_empty_column_break = para_idx + 1 == paragraphs.len()
+        let is_terminal_empty_para = para_idx + 1 == paragraphs.len()
             && st.col_count == 1
-            && para.column_type == ColumnBreakType::Column
             && !has_diff_col_def
             && para.controls.is_empty()
             && para
@@ -59,11 +58,13 @@ impl TypesetEngine {
                 .replace(|c: char| c.is_control(), "")
                 .trim()
                 .is_empty();
-        if is_terminal_empty_column_break {
+        if is_terminal_empty_para && para.column_type == ColumnBreakType::Column {
             // 1단 구역 끝의 빈 단나누기 문단은 다음 단/밴드가 없으므로
             // 별도 빈 페이지를 만들지 않는다.
             return None;
         }
+        // 명시적 쪽 나누기는 빈 마지막 문단도 다음 쪽으로 보낸다.
+        // 앞 쪽의 남은 공간만으로 생략하면 실제 한컴 Print의 빈 끝 쪽이 유실된다.
 
         let is_overlay_guide_empty_para = st.col_count > 1
             && para.column_type == ColumnBreakType::None

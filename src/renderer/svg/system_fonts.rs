@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 use std::sync::OnceLock;
-use usvg::fontdb::{Database, Family, Query, Source, Weight};
+use usvg::fontdb::{Database, Family, Query, Source, Style, Weight};
 
 fn system_fonts() -> &'static Database {
     static FONTS: OnceLock<Database> = OnceLock::new();
@@ -31,6 +31,35 @@ pub(super) fn family_file_from_database(
     bold: bool,
     chars: &std::collections::HashSet<char>,
 ) -> Option<PathBuf> {
+    family_file_from_database_with_style(fonts, names, bold, chars, Style::Normal)
+}
+
+pub(super) fn italic_family_file(
+    extra_paths: &[PathBuf],
+    names: &[String],
+    bold: bool,
+    chars: &std::collections::HashSet<char>,
+) -> Option<PathBuf> {
+    let mut supplied = Database::new();
+    for path in extra_paths {
+        if path.is_dir() {
+            supplied.load_fonts_dir(path);
+        } else if path.is_file() {
+            let _ = supplied.load_font_file(path);
+        }
+    }
+    family_file_from_database_with_style(&supplied, names, bold, chars, Style::Italic).or_else(
+        || family_file_from_database_with_style(system_fonts(), names, bold, chars, Style::Italic),
+    )
+}
+
+fn family_file_from_database_with_style(
+    fonts: &Database,
+    names: &[String],
+    bold: bool,
+    chars: &std::collections::HashSet<char>,
+    style: Style,
+) -> Option<PathBuf> {
     // family 별 우선순위는 호출자가 정한다. generic 폴백을 요청하지 않아
     // 없는 이름을 무관한 시스템 글꼴로 잘못 내장하지 않는다.
     for name in names {
@@ -38,6 +67,7 @@ pub(super) fn family_file_from_database(
         let Some(id) = fonts.query(&Query {
             families: &families,
             weight: if bold { Weight::BOLD } else { Weight::NORMAL },
+            style,
             ..Default::default()
         }) else {
             continue;
@@ -45,7 +75,10 @@ pub(super) fn family_file_from_database(
         let preferred = fonts.face(id)?;
         // Regular만 있는 family를 Bold face로 선언하지 않는다.
         // TTC의 face 선택은 기존 파일 임베딩 계약 밖이므로 여기서 확대하지 않는다.
-        if (bold && preferred.weight < Weight::SEMIBOLD) || preferred.index != 0 {
+        if (bold && preferred.weight < Weight::SEMIBOLD)
+            || preferred.index != 0
+            || (style != Style::Normal && preferred.style == Style::Normal)
+        {
             continue;
         }
         // 같은 family의 부분 글꼴이 먼저 등록되어도 실제 표시 문자를 모두 공급하는

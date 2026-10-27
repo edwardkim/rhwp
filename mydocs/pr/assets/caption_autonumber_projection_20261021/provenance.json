@@ -1,0 +1,255 @@
+{
+  "product_source_sha": "e787be830763d871703e025aa7adae499f954618",
+  "scope": "원본과 기존 정식 검사의 같은 공백 없는 반례, 전쪽 1=1",
+  "cases": [
+    {
+      "label": "ta-pic-001-r",
+      "input": "../../../../samples/hwpx/ta-pic-001-r.hwpx",
+      "input_sha256": "bec0bb48113109907f9003f5e27745bb834267adcb80dfd332ad98388c0fdd81",
+      "pdf": "pdf/ta-pic-001-r-2020.pdf",
+      "pdf_sha256": "1710ddc838c9976f28d6570717c41c34b1e2e0c92cab4458a32f845b45c31218",
+      "print": {
+        "job_id": "ecc55120-34d6-4848-b3af-7b559b4f4a15",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "backends": {
+        "native": {
+          "source_sha": "e787be830763d871703e025aa7adae499f954618",
+          "raw_minimum": "99.98114",
+          "tsv": "native/ta-pic-001-r_silhouette.tsv",
+          "tsv_sha256": "61e98c02f7e5ab9c6e168d0206aed054a1e27b87139e8b86e358ebf35f54504f",
+          "command": [
+            "venv/bin/python",
+            "scripts/visual_sweep.py",
+            "--silhouette-only",
+            "--file-target",
+            "ta-pic-001-r",
+            "/home/tsjang/rhwp/samples/hwpx/ta-pic-001-r.hwpx",
+            "/home/tsjang/rhwp/pdf/semanticist21-20261019/caption-position-074/ta-pic-001-r/ta-pic-001-r-2020.pdf",
+            "--rhwp-bin",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-char-overlap-082",
+            "--compat",
+            "2022",
+            "--dpi",
+            "96",
+            "--page-workers",
+            "1",
+            "--out",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/caption-current-native-1244/candidate",
+            "--font-path",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/private-font-diagnostics-037",
+            "--font-path",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/canvas-font-trace-sources",
+            "--font-environment",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/font-environment-supplied-symbols-038.json"
+          ]
+        },
+        "wasm": {
+          "source_sha": "e787be830763d871703e025aa7adae499f954618",
+          "raw_minimum": "99.98117",
+          "tsv": "wasm/ta-pic-001-r_silhouette.tsv",
+          "tsv_sha256": "33240fb76d1e60b6f0bb5839622e5d0efc080e25d443301c6c785734176d434b",
+          "command": [
+            "venv/bin/python",
+            "scripts/visual_sweep.py",
+            "--silhouette-only",
+            "--file-target",
+            "ta-pic-001-r",
+            "/home/tsjang/rhwp/samples/hwpx/ta-pic-001-r.hwpx",
+            "/home/tsjang/rhwp/pdf/semanticist21-20261019/caption-position-074/ta-pic-001-r/ta-pic-001-r-2020.pdf",
+            "--rhwp-bin",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-char-overlap-082",
+            "--compat",
+            "2022",
+            "--dpi",
+            "96",
+            "--page-workers",
+            "1",
+            "--out",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/caption-current-wasm-1244/candidate",
+            "--font-path",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/private-font-diagnostics-037",
+            "--font-path",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/canvas-font-trace-sources",
+            "--font-environment",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/font-environment-supplied-symbols-038.json",
+            "--wasm-pkg",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-char-overlap-033"
+          ]
+        }
+      }
+    },
+    {
+      "label": "ta-pic-caption-tight",
+      "input": "inputs/ta-pic-caption-tight.hwpx",
+      "input_sha256": "32cdf807f2a9ceae26671a07ab88ea69bcbc5e2082a6aabe75ae265b2e5b8c4f",
+      "pdf": "pdf/ta-pic-caption-tight-2020.pdf",
+      "pdf_sha256": "0800c0ffc142e50abb76b4db6f69a8201c0849813c924e928b10893a4947f9d8",
+      "print": {
+        "job_id": "1cafb099-6b75-4112-a3bf-e22255373a5c",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "backends": {
+        "native": {
+          "source_sha": "e787be830763d871703e025aa7adae499f954618",
+          "raw_minimum": "99.98115",
+          "tsv": "native/ta-pic-caption-tight_silhouette.tsv",
+          "tsv_sha256": "0d30c7fd5ba8e4053885309a2c6af95ce51c28a97a0790bcf382eb1181bed5bd",
+          "command": [
+            "venv/bin/python",
+            "scripts/visual_sweep.py",
+            "--silhouette-only",
+            "--file-target",
+            "ta-pic-caption-tight",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/caption-position-controls-074/ta-pic-caption-tight.hwpx",
+            "/home/tsjang/rhwp/pdf/semanticist21-20261019/caption-position-074/ta-pic-caption-tight/ta-pic-caption-tight-2020.pdf",
+            "--rhwp-bin",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-char-overlap-082",
+            "--compat",
+            "2022",
+            "--dpi",
+            "96",
+            "--page-workers",
+            "1",
+            "--out",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/caption-current-native-1244/candidate",
+            "--font-path",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/private-font-diagnostics-037",
+            "--font-path",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/canvas-font-trace-sources",
+            "--font-environment",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/font-environment-supplied-symbols-038.json"
+          ]
+        },
+        "wasm": {
+          "source_sha": "e787be830763d871703e025aa7adae499f954618",
+          "raw_minimum": "99.98118",
+          "tsv": "wasm/ta-pic-caption-tight_silhouette.tsv",
+          "tsv_sha256": "236dc24a0ae6e9a85bbf8eaf8b29f1e9f498aa0e749cf9c4c13fcdad005240a9",
+          "command": [
+            "venv/bin/python",
+            "scripts/visual_sweep.py",
+            "--silhouette-only",
+            "--file-target",
+            "ta-pic-caption-tight",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/caption-position-controls-074/ta-pic-caption-tight.hwpx",
+            "/home/tsjang/rhwp/pdf/semanticist21-20261019/caption-position-074/ta-pic-caption-tight/ta-pic-caption-tight-2020.pdf",
+            "--rhwp-bin",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-char-overlap-082",
+            "--compat",
+            "2022",
+            "--dpi",
+            "96",
+            "--page-workers",
+            "1",
+            "--out",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/caption-current-wasm-1244/candidate",
+            "--font-path",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/private-font-diagnostics-037",
+            "--font-path",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/canvas-font-trace-sources",
+            "--font-environment",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/font-environment-supplied-symbols-038.json",
+            "--wasm-pkg",
+            "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-char-overlap-033"
+          ]
+        }
+      }
+    }
+  ],
+  "representative_pngs": [
+    {
+      "path": "native_review.png",
+      "sha256": "5ef79c040c30196f2a7994a360d95bcecf7cecbd94b2752f059aa3c219da8b8f",
+      "backend": "native",
+      "label": "ta-pic-caption-tight"
+    },
+    {
+      "path": "native_overlay.png",
+      "sha256": "dcc4213c851c1eae76e604abce91d9af5abfe211a9241500db5b96aa5d294201",
+      "backend": "native",
+      "label": "ta-pic-caption-tight"
+    },
+    {
+      "path": "wasm_review.png",
+      "sha256": "640bcc8feb8f9f2cbd53a28e1169a406a8ffb7c33a1bae032e1240baf4f087e7",
+      "backend": "wasm",
+      "label": "ta-pic-001-r"
+    },
+    {
+      "path": "wasm_overlay.png",
+      "sha256": "4887ef1edf22e3fe06d6e7c22ed6c0da5fe8804ed4b92784cf5cc2b2dd0005c3",
+      "backend": "wasm",
+      "label": "ta-pic-001-r"
+    }
+  ],
+  "test_consumer": {
+    "before": {
+      "phase": "before",
+      "product_source_sha": "e787be830763d871703e025aa7adae499f954618",
+      "library_sha256": "86980af643469e31e24e131a7af3076143e5930b44ac5caf197c3113d29e1039",
+      "test_source": "/home/tsjang/rhwp/tests/cases/caption_auto_number_position.rs",
+      "test_source_sha256": "7575c87a3f0c27061950365deebf02dafe57db78e7647683c02a1bcc87d23426",
+      "command": [
+        "rustc",
+        "--crate-name",
+        "caption_consumer_1250_before",
+        "--edition=2021",
+        "--test",
+        "/home/tsjang/rhwp/tests/cases/caption_auto_number_position.rs",
+        "-D",
+        "warnings",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/librhwp-native-char-overlap-082.rlib",
+        "--extern",
+        "zip=/home/tsjang/rhwp/target/pr-review/release-test/deps/libzip-06b159f030735417.rlib",
+        "-o",
+        "/home/tsjang/rhwp/target/pr-review/release-test/caption-consumer-1250-before",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia"
+      ],
+      "build_exit": 0,
+      "test_exit": 101,
+      "test_log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/caption-consumer-1250-before.log"
+    },
+    "after": {
+      "phase": "after",
+      "product_source_sha": "e787be830763d871703e025aa7adae499f954618",
+      "library_sha256": "86980af643469e31e24e131a7af3076143e5930b44ac5caf197c3113d29e1039",
+      "test_source": "/home/tsjang/rhwp/tests/cases/caption_auto_number_position.rs",
+      "test_source_sha256": "e60e6d59a95326c2af875fe47ca4bb07528ea0896936c4b5ce67feab5350c736",
+      "command": [
+        "rustc",
+        "--crate-name",
+        "caption_consumer_1250_after",
+        "--edition=2021",
+        "--test",
+        "/home/tsjang/rhwp/tests/cases/caption_auto_number_position.rs",
+        "-D",
+        "warnings",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/librhwp-native-char-overlap-082.rlib",
+        "--extern",
+        "zip=/home/tsjang/rhwp/target/pr-review/release-test/deps/libzip-06b159f030735417.rlib",
+        "-o",
+        "/home/tsjang/rhwp/target/pr-review/release-test/caption-consumer-1250-after",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia"
+      ],
+      "build_exit": 0,
+      "test_exit": 0,
+      "test_log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/caption-consumer-1250-after.log"
+    }
+  },
+  "test_consumer_note": "동일 Native082 제품을 사용했다. 기대 문자열은 유지하고 paint와 같은 display_or_text를 읽었다. 두 build exit0; 검사 보정 전2FAIL, 후2PASS."
+}

@@ -20,7 +20,7 @@ pub const LANG_COUNT: usize = 7;
 
 mod ascii_punctuation;
 mod missing_fonts;
-pub(crate) use missing_fonts::missing_latin_default;
+pub(crate) use missing_fonts::{missing_char_table, missing_latin_default};
 mod page_number;
 mod resolved;
 pub use resolved::{
@@ -39,6 +39,13 @@ pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> Reso
     let profile = document.layout_profile();
     let lookup = missing_fonts::lookup_context(document);
     let mut styles = resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout());
+    if missing_fonts::missing_char_table(document) {
+        styles.page_number_char_style_id = Some(0);
+        styles.page_number_font_is_hft = false;
+    }
+    if document.provenance.format == crate::model::provenance::SourceFormat::Hwp5 {
+        styles.char_overlap_size_bounds = Some((-8, 2));
+    }
     super::legacy_font_advances::select_native_programs(document, &mut styles);
     // [#7051] 계보 신호가 없는 저장본의 HFT ASCII 반각 판정은 로드 시 한 번 내려 출처에 둔다.
     styles.hft_ascii_halfwidth |= document.provenance.hft_ascii_halfwidth_witnessed;
@@ -120,11 +127,13 @@ pub(crate) fn resolve_styles_with_environment(
     // 자모 전진을 유지한다. 세대는 기존 명시적 출력 profile에서만 받는다.
     styles.isolated_jamo_font = (!profile.hangul2024_layout()
         && document.provenance.format != crate::model::provenance::SourceFormat::Pdf)
-        .then_some("HCR Dotum");
-    (
-        styles.page_number_char_style_id,
-        styles.page_number_font_is_hft,
-    ) = page_number::resolve(&document.doc_info, profile.hangul2024_layout());
+        .then_some(crate::renderer::IsolatedJamoFont::HcrDotum);
+    if !missing_fonts::missing_char_table(document) {
+        (
+            styles.page_number_char_style_id,
+            styles.page_number_font_is_hft,
+        ) = page_number::resolve(&document.doc_info, profile.hangul2024_layout());
+    }
     if environment.is_some() {
         let lookup = missing_fonts::lookup_context(document);
         for (style, shape) in styles
@@ -296,6 +305,17 @@ pub fn resolve_styles_with_variant(
     let mut styles = ResolvedStyleSet {
         source_program_projection_slots: Default::default(),
         native_pua_fonts: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: doc_info
+            .char_shapes
+            .iter()
+            .map(|source| {
+                let mut shape = source.clone();
+                shape.raw_data = None;
+                shape
+            })
+            .collect::<Vec<_>>()
+            .into(),
         resolved_dpi: Some(dpi),
         isolated_jamo_font: None,
         page_number_char_style_id,
@@ -1254,6 +1274,8 @@ pub(crate) fn is_heavy_display_face(font_family: &str) -> bool {
             | "HYHeadLine M"
             | "HYHeadLine Medium"
             | "HY견고딕"
+            | "한양견고딕"
+            | "HYGothic-Extra"
             | "HY견명조B"
             | "HY그래픽"
             | "HY그래픽M"

@@ -1,0 +1,51 @@
+{
+  "input": "mydocs/pr/assets/float_fragment_frames_20261020/inputs/hwp/public-rowbreak-normalized-2020.hwp",
+  "input_sha256": "5c6e9dcc37c42de5f2d4c9972eb339e476672ac60da02135e7ec2e483d5ed34d",
+  "pdf": "mydocs/pr/assets/float_fragment_frames_20261020/pdf/hwp/public-rowbreak-normalized-2020-2020.pdf",
+  "pdf_sha256": "93cc27c42b7db35f13e8925c651c883e90b390e68bbf068ad4865e2437bec22f",
+  "dpi": 96,
+  "compat": "2022",
+  "profile": "print",
+  "coordinate_tolerance_px": 2,
+  "native_raw": "100.00000",
+  "fresh_wasm_raw": "100.00000",
+  "pages": [
+    {
+      "page": 1,
+      "table_border_centerline_edges_px": [
+        117.05733333333335,
+        136.0106666666667,
+        676.596,
+        989.6373333333332
+      ],
+      "printed_rows": 50
+    },
+    {
+      "page": 2,
+      "table_border_centerline_edges_px": [
+        117.05733333333335,
+        136.0106666666667,
+        676.596,
+        306.704
+      ],
+      "printed_rows": 10
+    }
+  ],
+  "successor_text_baselines": [
+    {
+      "text": "다음 ",
+      "baseline_xy_px": [
+        113.37855333333333,
+        321.728396
+      ]
+    },
+    {
+      "text": "문단",
+      "baseline_xy_px": [
+        146.00087333333332,
+        321.728396
+      ]
+    }
+  ],
+  "expectation_source": "Independent PDF painted m/l paths (excluding W/n clipping paths) and text cm/tm; no RHWP layout values"
+}

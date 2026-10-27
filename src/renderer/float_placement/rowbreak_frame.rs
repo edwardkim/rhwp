@@ -14,6 +14,7 @@ pub(crate) fn rowbreak_fragment_bounds(
     body_bottom: f64,
     dpi: f64,
     body_filling_source_frame: bool,
+    has_original_page_frames: bool,
 ) -> RowbreakFragmentBounds {
     let outer_bottom = body_bottom - hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
     let blank_bottom = if body_filling_source_frame {
@@ -35,10 +36,22 @@ pub(crate) fn rowbreak_fragment_bounds(
                     usize::from(cell.row),
                 )
         });
+    // 원본 쪽 프레임이 없다는 사실만으로 재구성된 저장 사다리가 있다고
+    // 추정하지 않는다. NO_LS 본문은 새 글줄을 만들며 일반 격자 하단을 쓴다.
+    // 내용 없는 앵커의 저장 줄은 본문 좌표계의 증거가 아니다.
+    let has_saved_text_coordinates = table.cells.iter().any(|cell| {
+        cell.paragraphs.iter().any(|paragraph| {
+            !paragraph.text.trim().is_empty()
+                && !crate::renderer::para_has_no_stored_line_segs(paragraph)
+        })
+    });
     RowbreakFragmentBounds {
         // 단독 셀과 출처가 인증된 분할 본문은 쪽 조각 자체가 이 프레임을 소유한다.
         // 일반 격자의 글줄에는 빈 종료 띠의 inset을 수용 예산으로 중복 적용하지 않는다.
-        content_bottom: if (table.row_count == 1 && table.col_count == 1) || reparsed_body_owner {
+        content_bottom: if (!has_original_page_frames && has_saved_text_coordinates)
+            || (table.row_count == 1 && table.col_count == 1)
+            || reparsed_body_owner
+        {
             blank_bottom
         } else {
             outer_bottom
@@ -53,5 +66,6 @@ pub(crate) fn rowbreak_fragment_frame_bottom(
     dpi: f64,
     body_filling_source_frame: bool,
 ) -> f64 {
-    rowbreak_fragment_bounds(table, body_bottom, dpi, body_filling_source_frame).content_bottom
+    rowbreak_fragment_bounds(table, body_bottom, dpi, body_filling_source_frame, true)
+        .content_bottom
 }

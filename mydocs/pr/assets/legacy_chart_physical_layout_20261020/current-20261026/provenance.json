@@ -1,0 +1,381 @@
+{
+  "scope": "Existing original pension OLE chart; same input and independent Print, no additional document",
+  "base": "238de6de41a208648f4ade6b494fe433a81c1fce",
+  "runtime_source": "bbf3aed18dd82bbf344072b77b5ac590e7a71f3a",
+  "input_sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa",
+  "pdf_sha256": "5bb1416b4850e9e1d4b9abaec3c68dd8322a7480a1c0f98d1b892a71ff44f18b",
+  "code_and_tests": "61528013511c87c732524f91c6f224286a055337",
+  "evidence_head": "ba6a9533bfcecac9333702e5dd2917c57b73f547",
+  "input": "samples/143E433F503322BD33.hwp",
+  "pdf": "mydocs/pr/assets/legacy_chart_physical_layout_20261020/pdf/original-hwp.pdf",
+  "capture_pdf_alias": "/home/tsjang/rhwp/pdf/semanticist21-20261019/font-trace-originals/143E433F503322BD33/143E433F503322BD33-2020.pdf",
+  "pdf_reused_without_duplicate": true,
+  "dpi": 96,
+  "comparison_profile": "print",
+  "compat": "2022",
+  "comparisons": [
+    {
+      "backend": "native",
+      "pages": 1,
+      "drops_over_0_1pp": [],
+      "records": [
+        {
+          "page": "1",
+          "base_raw": "94.51108",
+          "candidate_raw": "99.28860",
+          "drop_pp": "-4.77752"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "pages": 1,
+      "drops_over_0_1pp": [],
+      "records": [
+        {
+          "page": "1",
+          "base_raw": "94.08200",
+          "candidate_raw": "99.30234",
+          "drop_pp": "-5.22034"
+        }
+      ]
+    }
+  ],
+  "records": [
+    {
+      "backend": "native",
+      "role": "base",
+      "raw_min": "94.51108",
+      "whole_pages": 1,
+      "tsv": "native/base/silhouette.tsv",
+      "tsv_sha256": "57ee0f2e2d32b155b07ae5d015787f5ec0b55b875513c9a0b279cc6bf41eb326",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "original-ole-native-base",
+        "/home/tsjang/rhwp/samples/143E433F503322BD33.hwp",
+        "/home/tsjang/rhwp/pdf/semanticist21-20261019/font-trace-originals/143E433F503322BD33/143E433F503322BD33-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-base-247",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/existing-original-ole-4096",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "rhwp_binary": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-base-247",
+        "path": "output/pr-review/semanticist21-20261019/producers/rhwp-native-base-247",
+        "sha256": "3e6349241efaa0e05c6f9297ae25f9aa60d6b427c7e9c97952dc871678a38d54"
+      },
+      "wasm": null,
+      "font_supply_reference": "../../inline_wrap_qualified_20261026/font_supply.tsv",
+      "font_supply_identical_to_monthly": true,
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1"
+      },
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_v1",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "png": []
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "raw_min": "99.28860",
+      "whole_pages": 1,
+      "tsv": "native/candidate/silhouette.tsv",
+      "tsv_sha256": "5c4d6b1f56f07824a3c8d9ec53295fa743c73358b59dd9785788f9da9eca623f",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "original-ole-native-candidate",
+        "/home/tsjang/rhwp/samples/143E433F503322BD33.hwp",
+        "/home/tsjang/rhwp/pdf/semanticist21-20261019/font-trace-originals/143E433F503322BD33/143E433F503322BD33-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-255",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/existing-original-ole-4096",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "rhwp_binary": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-255",
+        "path": "output/pr-review/semanticist21-20261019/producers/rhwp-native-current-255",
+        "sha256": "7485e6484724ba0a5a20c6565acf488a9f0c453d6d71a284ba17df07fffe1926"
+      },
+      "wasm": null,
+      "font_supply_reference": "../../inline_wrap_qualified_20261026/font_supply.tsv",
+      "font_supply_identical_to_monthly": true,
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1"
+      },
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_v1",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "png": [
+        {
+          "kind": "review",
+          "path": "native/candidate/review_001.png",
+          "sha256": "c3cc8a4664dac59b68f7d69274f59411dc453a4d8dbaf068edb901899c662ac7"
+        },
+        {
+          "kind": "overlay",
+          "path": "native/candidate/overlay_001.png",
+          "sha256": "1136bde75e7bde98eeb16694bf476e840e0f254f1debeaf3479b3004085d6327"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "role": "base",
+      "raw_min": "94.08200",
+      "whole_pages": 1,
+      "tsv": "wasm/base/silhouette.tsv",
+      "tsv_sha256": "a605ab54bed50454ffd0426bee7e978f3f78ff330b5be65fc49fd8ad8fb68aca",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "original-ole-wasm-base",
+        "/home/tsjang/rhwp/samples/143E433F503322BD33.hwp",
+        "/home/tsjang/rhwp/pdf/semanticist21-20261019/font-trace-originals/143E433F503322BD33/143E433F503322BD33-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-base-247",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/existing-original-ole-4096",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-base-070",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "rhwp_binary": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-base-247",
+        "path": "output/pr-review/semanticist21-20261019/producers/rhwp-native-base-247",
+        "sha256": "3e6349241efaa0e05c6f9297ae25f9aa60d6b427c7e9c97952dc871678a38d54"
+      },
+      "wasm": {
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-base-070/rhwp.js",
+            "sha256": "ba97ed3f9cb04605f9fee14363eb76bf572eca3722ece29fd4181fe0076e7da0"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-base-070/rhwp_bg.wasm",
+            "sha256": "dc16999a98697813561f2aefa09267565c751dcf11aaa225306705c04e4b4fe9"
+          }
+        ],
+        "exporter_sha256": "22dd253bd89d3fda89584c7b7b8ce641fb84aca07ffc9d39c9a8fb43c09cb975",
+        "comparison_profile": "print",
+        "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+        "render_tree": "WASM getPageRenderTree"
+      },
+      "font_supply_reference": "../../inline_wrap_qualified_20261026/font_supply.tsv",
+      "font_supply_identical_to_monthly": true,
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1"
+      },
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_v1",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "png": []
+    },
+    {
+      "backend": "wasm",
+      "role": "candidate",
+      "raw_min": "99.30234",
+      "whole_pages": 1,
+      "tsv": "wasm/candidate/silhouette.tsv",
+      "tsv_sha256": "0a5e57b5d297079f35e53a976d19d4aebb4c593f95af7110a3c579096d4dd361",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "original-ole-wasm-candidate",
+        "/home/tsjang/rhwp/samples/143E433F503322BD33.hwp",
+        "/home/tsjang/rhwp/pdf/semanticist21-20261019/font-trace-originals/143E433F503322BD33/143E433F503322BD33-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-255",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/existing-original-ole-4096",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-073",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "rhwp_binary": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-255",
+        "path": "output/pr-review/semanticist21-20261019/producers/rhwp-native-current-255",
+        "sha256": "7485e6484724ba0a5a20c6565acf488a9f0c453d6d71a284ba17df07fffe1926"
+      },
+      "wasm": {
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-073/rhwp.js",
+            "sha256": "c54d7b15b99d43918960f1c0b5b0ba138f912a7998793fc9f28a94053620fc0c"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-073/rhwp_bg.wasm",
+            "sha256": "79d21a246fa138a18eb11af0fb8f186d731c0303ee1f83cee4ee16e53e76fc53"
+          }
+        ],
+        "exporter_sha256": "22dd253bd89d3fda89584c7b7b8ce641fb84aca07ffc9d39c9a8fb43c09cb975",
+        "comparison_profile": "print",
+        "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+        "render_tree": "WASM getPageRenderTree"
+      },
+      "font_supply_reference": "../../inline_wrap_qualified_20261026/font_supply.tsv",
+      "font_supply_identical_to_monthly": true,
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1"
+      },
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_v1",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "png": [
+        {
+          "kind": "review",
+          "path": "wasm/candidate/review_001.png",
+          "sha256": "d55f2170f448c50e9a0a7132ce063c693343be9d6ccfe7197f3ca3f51acbaefa"
+        },
+        {
+          "kind": "overlay",
+          "path": "wasm/candidate/overlay_001.png",
+          "sha256": "9a3a3571ffbe31d8ca72a79e6b1bdc23fd7da167e27f52698ec42655700cb5eb"
+        }
+      ]
+    }
+  ],
+  "direct_inspection": {
+    "read": [
+      "Native의 review와 standalone overlay p1",
+      "fresh WASM의 review와 standalone overlay p1"
+    ],
+    "chart": "독립 Print와 막대 높이·범주·값 라벨·제목·플롯·범례 소유·차트 외곽과 뒤 본문을 대조했다. 과거 지적한 차트 이탈은 보이지 않는다.",
+    "background": "불투명하게 보정된 bitmap이 밝기·대비를 한 번 소비하며 Print와 같은 색조·범위를 유지한다.",
+    "residual": "본문 글자 가장자리와 일부 간격 차이는 남는다. raw 실루엣은 2px 허용 점수이며 RGB나 모든 글자 메트릭의 완전 일치를 뜻하지 않는다.",
+    "not_added": "새 회귀·fixture·원본 문서·PDF를 생성하지 않았다."
+  },
+  "font_inventory_rows": 1317
+}

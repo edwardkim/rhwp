@@ -1,0 +1,786 @@
+{
+  "scope": "Existing font-trace monthly-trade original; same input and independent Print, no additional document",
+  "base": "238de6de41a208648f4ade6b494fe433a81c1fce",
+  "runtime_source": "bbf3aed18dd82bbf344072b77b5ac590e7a71f3a",
+  "input_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+  "pdf_sha256": "cd3798dd11f32ae9ccb0e6f300005c9f6fd0bf141b5349920e0a5cd1a0340912",
+  "input": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+  "pdf": "pdf/pr8025_review/monthly-trade-original-2020.pdf",
+  "dpi": 96,
+  "comparison_profile": "print",
+  "compatibility_generation": "2022",
+  "records": [
+    {
+      "backend": "native",
+      "role": "base",
+      "tsv": "native/base/silhouette.tsv",
+      "tsv_sha256": "fa78236a507370c7b4450e4f4e3d5e1dcc7393c46dba0b4818ff185b0c16614f",
+      "whole_pages": 19,
+      "raw_min": "96.66566",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "heavy-face-native-base",
+        "/home/tsjang/rhwp/samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+        "/home/tsjang/rhwp/pdf/pr8025_review/monthly-trade-original-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-base-247",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/existing-heavy-face-4081",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "raster_backend": "native-skia",
+      "native_producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-base-247",
+        "path": "output/pr-review/semanticist21-20261019/producers/rhwp-native-base-247",
+        "sha256": "3e6349241efaa0e05c6f9297ae25f9aa60d6b427c7e9c97952dc871678a38d54"
+      },
+      "wasm_producer": null,
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1"
+      },
+      "representatives": []
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "tsv": "native/candidate/silhouette.tsv",
+      "tsv_sha256": "6e0215f6d9f822abcfd3754ff90fdc209abcc385a5e21f61e356a17334aeea0f",
+      "whole_pages": 19,
+      "raw_min": "96.62490",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "heavy-face-native-candidate",
+        "/home/tsjang/rhwp/samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+        "/home/tsjang/rhwp/pdf/pr8025_review/monthly-trade-original-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-255",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/existing-heavy-face-4081",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "raster_backend": "native-skia",
+      "native_producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-255",
+        "path": "output/pr-review/semanticist21-20261019/producers/rhwp-native-current-255",
+        "sha256": "7485e6484724ba0a5a20c6565acf488a9f0c453d6d71a284ba17df07fffe1926"
+      },
+      "wasm_producer": null,
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1"
+      },
+      "representatives": [
+        {
+          "page": 4,
+          "direct_read": "Title weight, glyph baseline/spacing, preceding/following text, table and chart boundaries checked against independent Print. Remaining circle glyph difference is disclosed separately.",
+          "files": [
+            {
+              "kind": "review",
+              "file": "native/candidate/review_004.png",
+              "sha256": "b5754aac9e86131e815892520b417dffbc6b0a0beb9d66eda4a3fe15c290d6d8"
+            },
+            {
+              "kind": "overlay",
+              "file": "native/candidate/overlay_004.png",
+              "sha256": "2ee7d21a1444466bcf81b80e9e5fdafa67fcae9a92b0b2d9e54843c4e5866457"
+            }
+          ]
+        },
+        {
+          "page": 8,
+          "direct_read": "Title weight, glyph baseline/spacing, preceding/following text, table and chart boundaries checked against independent Print. Remaining circle glyph difference is disclosed separately.",
+          "files": [
+            {
+              "kind": "review",
+              "file": "native/candidate/review_008.png",
+              "sha256": "49254dd8e6578d1fbeecb201eaf02a681ba868484c9bdcb6cef60513d793c78d"
+            },
+            {
+              "kind": "overlay",
+              "file": "native/candidate/overlay_008.png",
+              "sha256": "e7a8d3344432ca69d13fc32e1111316d1b981b4ca48007903e7f3d13ddf797c7"
+            }
+          ]
+        },
+        {
+          "page": 10,
+          "direct_read": "Title weight, glyph baseline/spacing, preceding/following text, table and chart boundaries checked against independent Print. Remaining circle glyph difference is disclosed separately.",
+          "files": [
+            {
+              "kind": "review",
+              "file": "native/candidate/review_010.png",
+              "sha256": "9f78f11e470f88ed613854b0867a4d03f34808a9a6e557474f6cfa745893e8a6"
+            },
+            {
+              "kind": "overlay",
+              "file": "native/candidate/overlay_010.png",
+              "sha256": "32694169e657fc7de23cd49856bb097878b897b6598d537d3733bf3c30bd0845"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "backend": "fresh-wasm",
+      "role": "base",
+      "tsv": "fresh-wasm/base/silhouette.tsv",
+      "tsv_sha256": "cfe2c6390ac6f9512a68c0d8d1d2b39fc13d886ccf4a14464305d096e00f56a5",
+      "whole_pages": 19,
+      "raw_min": "96.94896",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "heavy-face-wasm-base",
+        "/home/tsjang/rhwp/samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+        "/home/tsjang/rhwp/pdf/pr8025_review/monthly-trade-original-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-base-247",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/existing-heavy-face-4081",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-base-070",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "raster_backend": "wasm-canvas2d",
+      "native_producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-base-247",
+        "path": "output/pr-review/semanticist21-20261019/producers/rhwp-native-base-247",
+        "sha256": "3e6349241efaa0e05c6f9297ae25f9aa60d6b427c7e9c97952dc871678a38d54"
+      },
+      "wasm_producer": {
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-base-070/rhwp.js",
+            "sha256": "ba97ed3f9cb04605f9fee14363eb76bf572eca3722ece29fd4181fe0076e7da0"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-base-070/rhwp_bg.wasm",
+            "sha256": "dc16999a98697813561f2aefa09267565c751dcf11aaa225306705c04e4b4fe9"
+          }
+        ],
+        "exporter_sha256": "22dd253bd89d3fda89584c7b7b8ce641fb84aca07ffc9d39c9a8fb43c09cb975",
+        "comparison_profile": "print",
+        "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+        "render_tree": "WASM getPageRenderTree"
+      },
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1"
+      },
+      "representatives": []
+    },
+    {
+      "backend": "fresh-wasm",
+      "role": "candidate",
+      "tsv": "fresh-wasm/candidate/silhouette.tsv",
+      "tsv_sha256": "8d133d953bfc418a39d18d9ddd530829901e821e5f132a96314382016d7af195",
+      "whole_pages": 19,
+      "raw_min": "96.89977",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "heavy-face-wasm-candidate",
+        "/home/tsjang/rhwp/samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+        "/home/tsjang/rhwp/pdf/pr8025_review/monthly-trade-original-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-255",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/existing-heavy-face-4081",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-073",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "raster_backend": "wasm-canvas2d",
+      "native_producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-255",
+        "path": "output/pr-review/semanticist21-20261019/producers/rhwp-native-current-255",
+        "sha256": "7485e6484724ba0a5a20c6565acf488a9f0c453d6d71a284ba17df07fffe1926"
+      },
+      "wasm_producer": {
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-073/rhwp.js",
+            "sha256": "c54d7b15b99d43918960f1c0b5b0ba138f912a7998793fc9f28a94053620fc0c"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-073/rhwp_bg.wasm",
+            "sha256": "79d21a246fa138a18eb11af0fb8f186d731c0303ee1f83cee4ee16e53e76fc53"
+          }
+        ],
+        "exporter_sha256": "22dd253bd89d3fda89584c7b7b8ce641fb84aca07ffc9d39c9a8fb43c09cb975",
+        "comparison_profile": "print",
+        "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+        "render_tree": "WASM getPageRenderTree"
+      },
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1"
+      },
+      "representatives": [
+        {
+          "page": 4,
+          "direct_read": "Title weight, glyph baseline/spacing, preceding/following text, table and chart boundaries checked against independent Print. Remaining circle glyph difference is disclosed separately.",
+          "files": [
+            {
+              "kind": "review",
+              "file": "fresh-wasm/candidate/review_004.png",
+              "sha256": "ddac497291f0143427494198e0d261f1a0e4354d0d57262784f9e9c918c3d3de"
+            },
+            {
+              "kind": "overlay",
+              "file": "fresh-wasm/candidate/overlay_004.png",
+              "sha256": "bca907358b2462dc6314b8c434f5760cbb7fb13de01fa27cdc79d6fd8d60ed0f"
+            }
+          ]
+        },
+        {
+          "page": 8,
+          "direct_read": "Title weight, glyph baseline/spacing, preceding/following text, table and chart boundaries checked against independent Print. Remaining circle glyph difference is disclosed separately.",
+          "files": [
+            {
+              "kind": "review",
+              "file": "fresh-wasm/candidate/review_008.png",
+              "sha256": "aaa7a07b8ce760a3bc788c1dd044edbeef609d59912b7a1df0d1a894f86c3be1"
+            },
+            {
+              "kind": "overlay",
+              "file": "fresh-wasm/candidate/overlay_008.png",
+              "sha256": "3115ca8f749dddabf69f4383fdd96010652fbe771f778ba3efd146b7e3298b45"
+            }
+          ]
+        },
+        {
+          "page": 10,
+          "direct_read": "Title weight, glyph baseline/spacing, preceding/following text, table and chart boundaries checked against independent Print. Remaining circle glyph difference is disclosed separately.",
+          "files": [
+            {
+              "kind": "review",
+              "file": "fresh-wasm/candidate/review_010.png",
+              "sha256": "e78b984e7188e535e05fbb864e1964aafa77f6c1d3899c144c4a97fc09fdc132"
+            },
+            {
+              "kind": "overlay",
+              "file": "fresh-wasm/candidate/overlay_010.png",
+              "sha256": "11928d9210d9bdc9855aa4092a6b65e391a27d22ac24fd93c0686a004654f486"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "backend": "native",
+      "pages": 19,
+      "drops_over_0_1pp": [],
+      "records": [
+        {
+          "page": "1",
+          "base_raw": "99.61613",
+          "candidate_raw": "99.61615",
+          "drop_pp": "-0.00002"
+        },
+        {
+          "page": "2",
+          "base_raw": "98.44797",
+          "candidate_raw": "98.44922",
+          "drop_pp": "-0.00125"
+        },
+        {
+          "page": "3",
+          "base_raw": "99.09717",
+          "candidate_raw": "99.09707",
+          "drop_pp": "0.00010"
+        },
+        {
+          "page": "4",
+          "base_raw": "99.16763",
+          "candidate_raw": "99.16846",
+          "drop_pp": "-0.00083"
+        },
+        {
+          "page": "5",
+          "base_raw": "99.10991",
+          "candidate_raw": "99.24170",
+          "drop_pp": "-0.13179"
+        },
+        {
+          "page": "6",
+          "base_raw": "98.24627",
+          "candidate_raw": "98.24986",
+          "drop_pp": "-0.00359"
+        },
+        {
+          "page": "7",
+          "base_raw": "97.85172",
+          "candidate_raw": "97.85593",
+          "drop_pp": "-0.00421"
+        },
+        {
+          "page": "8",
+          "base_raw": "98.76576",
+          "candidate_raw": "98.76705",
+          "drop_pp": "-0.00129"
+        },
+        {
+          "page": "9",
+          "base_raw": "96.66566",
+          "candidate_raw": "96.62490",
+          "drop_pp": "0.04076"
+        },
+        {
+          "page": "10",
+          "base_raw": "99.07819",
+          "candidate_raw": "99.93056",
+          "drop_pp": "-0.85237"
+        },
+        {
+          "page": "11",
+          "base_raw": "99.77870",
+          "candidate_raw": "99.73612",
+          "drop_pp": "0.04258"
+        },
+        {
+          "page": "12",
+          "base_raw": "99.84494",
+          "candidate_raw": "99.77050",
+          "drop_pp": "0.07444"
+        },
+        {
+          "page": "13",
+          "base_raw": "99.89570",
+          "candidate_raw": "99.84898",
+          "drop_pp": "0.04672"
+        },
+        {
+          "page": "14",
+          "base_raw": "99.78721",
+          "candidate_raw": "99.70690",
+          "drop_pp": "0.08031"
+        },
+        {
+          "page": "15",
+          "base_raw": "99.99545",
+          "candidate_raw": "99.95769",
+          "drop_pp": "0.03776"
+        },
+        {
+          "page": "16",
+          "base_raw": "99.84522",
+          "candidate_raw": "99.75507",
+          "drop_pp": "0.09015"
+        },
+        {
+          "page": "17",
+          "base_raw": "99.82954",
+          "candidate_raw": "99.77429",
+          "drop_pp": "0.05525"
+        },
+        {
+          "page": "18",
+          "base_raw": "99.83176",
+          "candidate_raw": "99.75365",
+          "drop_pp": "0.07811"
+        },
+        {
+          "page": "19",
+          "base_raw": "99.84283",
+          "candidate_raw": "99.76255",
+          "drop_pp": "0.08028"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "pages": 19,
+      "drops_over_0_1pp": [],
+      "records": [
+        {
+          "page": "1",
+          "base_raw": "99.57650",
+          "candidate_raw": "99.57658",
+          "drop_pp": "-0.00008"
+        },
+        {
+          "page": "2",
+          "base_raw": "98.00901",
+          "candidate_raw": "98.00868",
+          "drop_pp": "0.00033"
+        },
+        {
+          "page": "3",
+          "base_raw": "98.99323",
+          "candidate_raw": "98.99626",
+          "drop_pp": "-0.00303"
+        },
+        {
+          "page": "4",
+          "base_raw": "99.04690",
+          "candidate_raw": "99.04671",
+          "drop_pp": "0.00019"
+        },
+        {
+          "page": "5",
+          "base_raw": "99.05630",
+          "candidate_raw": "99.18411",
+          "drop_pp": "-0.12781"
+        },
+        {
+          "page": "6",
+          "base_raw": "98.05073",
+          "candidate_raw": "98.05202",
+          "drop_pp": "-0.00129"
+        },
+        {
+          "page": "7",
+          "base_raw": "97.70619",
+          "candidate_raw": "97.70838",
+          "drop_pp": "-0.00219"
+        },
+        {
+          "page": "8",
+          "base_raw": "98.73735",
+          "candidate_raw": "98.73836",
+          "drop_pp": "-0.00101"
+        },
+        {
+          "page": "9",
+          "base_raw": "96.94896",
+          "candidate_raw": "96.89977",
+          "drop_pp": "0.04919"
+        },
+        {
+          "page": "10",
+          "base_raw": "98.94921",
+          "candidate_raw": "99.81911",
+          "drop_pp": "-0.86990"
+        },
+        {
+          "page": "11",
+          "base_raw": "99.72261",
+          "candidate_raw": "99.68367",
+          "drop_pp": "0.03894"
+        },
+        {
+          "page": "12",
+          "base_raw": "99.82927",
+          "candidate_raw": "99.75692",
+          "drop_pp": "0.07235"
+        },
+        {
+          "page": "13",
+          "base_raw": "99.86735",
+          "candidate_raw": "99.82261",
+          "drop_pp": "0.04474"
+        },
+        {
+          "page": "14",
+          "base_raw": "99.77995",
+          "candidate_raw": "99.70172",
+          "drop_pp": "0.07823"
+        },
+        {
+          "page": "15",
+          "base_raw": "99.97061",
+          "candidate_raw": "99.92985",
+          "drop_pp": "0.04076"
+        },
+        {
+          "page": "16",
+          "base_raw": "99.81784",
+          "candidate_raw": "99.72853",
+          "drop_pp": "0.08931"
+        },
+        {
+          "page": "17",
+          "base_raw": "99.80695",
+          "candidate_raw": "99.75121",
+          "drop_pp": "0.05574"
+        },
+        {
+          "page": "18",
+          "base_raw": "99.82443",
+          "candidate_raw": "99.73811",
+          "drop_pp": "0.08632"
+        },
+        {
+          "page": "19",
+          "base_raw": "99.83743",
+          "candidate_raw": "99.74706",
+          "drop_pp": "0.09037"
+        }
+      ]
+    }
+  ],
+  "source_heavy_runs": [
+    {
+      "page": 4,
+      "text": "2024",
+      "char_shape_id": 124,
+      "font_family": "HY헤드라인M",
+      "bold": false,
+      "section": 0,
+      "parent_paragraph": 62,
+      "cell_path": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 0,
+          "cellParaIndex": 0
+        }
+      ],
+      "paragraph": 0,
+      "character_start": 0
+    },
+    {
+      "page": 4,
+      "text": "년 ",
+      "char_shape_id": 124,
+      "font_family": "HY헤드라인M",
+      "bold": false,
+      "section": 0,
+      "parent_paragraph": 62,
+      "cell_path": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 0,
+          "cellParaIndex": 0
+        }
+      ],
+      "paragraph": 0,
+      "character_start": 4
+    },
+    {
+      "page": 4,
+      "text": "5",
+      "char_shape_id": 124,
+      "font_family": "HY헤드라인M",
+      "bold": false,
+      "section": 0,
+      "parent_paragraph": 62,
+      "cell_path": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 0,
+          "cellParaIndex": 0
+        }
+      ],
+      "paragraph": 0,
+      "character_start": 6
+    },
+    {
+      "page": 4,
+      "text": "월 수출입현황 및 무역수지 [상세]",
+      "char_shape_id": 124,
+      "font_family": "HY헤드라인M",
+      "bold": false,
+      "section": 0,
+      "parent_paragraph": 62,
+      "cell_path": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 0,
+          "cellParaIndex": 0
+        }
+      ],
+      "paragraph": 0,
+      "character_start": 7
+    },
+    {
+      "page": 4,
+      "text": "1",
+      "char_shape_id": 62,
+      "font_family": "HY헤드라인M",
+      "bold": false,
+      "section": 0,
+      "parent_paragraph": 64,
+      "cell_path": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 0,
+          "cellParaIndex": 0
+        }
+      ],
+      "paragraph": 0,
+      "character_start": 0
+    },
+    {
+      "page": 4,
+      "text": "수출 현황",
+      "char_shape_id": 96,
+      "font_family": "HY헤드라인M",
+      "bold": false,
+      "section": 0,
+      "parent_paragraph": 64,
+      "cell_path": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 2,
+          "cellParaIndex": 0
+        }
+      ],
+      "paragraph": 0,
+      "character_start": 0
+    },
+    {
+      "page": 8,
+      "text": "2",
+      "char_shape_id": 62,
+      "font_family": "HY헤드라인M",
+      "bold": false,
+      "section": 0,
+      "parent_paragraph": 160,
+      "cell_path": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 0,
+          "cellParaIndex": 0
+        }
+      ],
+      "paragraph": 0,
+      "character_start": 0
+    },
+    {
+      "page": 8,
+      "text": " 수입 현황",
+      "char_shape_id": 96,
+      "font_family": "HY헤드라인M",
+      "bold": false,
+      "section": 0,
+      "parent_paragraph": 160,
+      "cell_path": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 2,
+          "cellParaIndex": 0
+        }
+      ],
+      "paragraph": 0,
+      "character_start": 0
+    },
+    {
+      "page": 10,
+      "text": "3",
+      "char_shape_id": 62,
+      "font_family": "HY헤드라인M",
+      "bold": false,
+      "section": 0,
+      "parent_paragraph": 193,
+      "cell_path": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 0,
+          "cellParaIndex": 0
+        }
+      ],
+      "paragraph": 0,
+      "character_start": 0
+    },
+    {
+      "page": 10,
+      "text": " 무역수지 현황",
+      "char_shape_id": 96,
+      "font_family": "HY헤드라인M",
+      "bold": false,
+      "section": 0,
+      "parent_paragraph": 193,
+      "cell_path": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 2,
+          "cellParaIndex": 0
+        }
+      ],
+      "paragraph": 0,
+      "character_start": 0
+    }
+  ],
+  "actual_canvas": {
+    "page_count": 19,
+    "raster_backend": "wasm-canvas2d",
+    "comparison_profile": "print",
+    "browser": "Chrome/156.0.8078.47",
+    "loaded_heavy_faces": [
+      {
+        "family": "HY헤드라인M",
+        "registeredFamily": "HY헤드라인M",
+        "sourceSha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+        "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+        "textProgramSha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+        "faceIndex": 0,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [],
+        "sourceKind": "external"
+      }
+    ]
+  },
+  "limitations": [
+    "CSS descriptor assertions are kept distinct from actual Canvas glyph evidence.",
+    "The pre-existing circle glyph size difference on p10 is not claimed fixed. Six of eight base/candidate diagnostic regions are byte-identical per backend. The first two differ; independent Print circle2 x=396.8px, base x=394.4px, candidate x=396.9px, so the current origin is closer.",
+    "No new HWP input, independent PDF conversion, fixed-coordinate test, or retired regression reference was generated.",
+    "Whole Rust/lint/remote CI completion is a separate gate."
+  ]
+}

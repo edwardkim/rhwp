@@ -92,7 +92,11 @@ pub(in crate::renderer::typeset) fn place(
     let is_first_placed = first_placed_table == Some(ctrl_idx);
     let is_last_placed = last_placed_table == Some(ctrl_idx);
     if engine.is_effective_tac_table(para, table, fmt) {
-        if !engine.render_normalization.table_text_reflowed(table) {
+        if !engine.render_normalization.table_text_reflowed(table)
+            && !engine
+                .render_normalization
+                .inline_host_frame_expanded(table)
+        {
             if let Some(placement) = super::stored_tac::prepare_coanchored_first_line(
                 ctrl_idx,
                 para,

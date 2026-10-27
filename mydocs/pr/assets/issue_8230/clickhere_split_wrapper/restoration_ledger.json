@@ -1,0 +1,87 @@
+{
+  "base": "238de6de41a208648f4ade6b494fe433a81c1fce",
+  "source_head_before_removal": "726d40fd476999fb384dbc7e8d6cf38195334b2f",
+  "new_rendering_tests_added": 0,
+  "archives_only_source_counts": {
+    "sources": 1771,
+    "exceptions": 20
+  },
+  "before_source_counts": {
+    "sources": 1771,
+    "exceptions": 20
+  },
+  "after_source_counts": {
+    "sources": 1767,
+    "exceptions": 20
+  },
+  "retired_sample16_or_handbook_restored": false,
+  "issue": 8230,
+  "modules": [
+    {
+      "old_path": "tests/cases/clickhere_wrapper_cell_path.rs",
+      "preserved_path": "mydocs/pr/assets/issue_8230/clickhere_split_wrapper/clickhere_wrapper_cell_path.rs.txt",
+      "source_commit": "726d40fd476999fb384dbc7e8d6cf38195334b2f",
+      "last_change_commit": "ce7f14c52567e0f0f13ddf13dff4bddb58bb3723",
+      "git_blob": "339792de2cc1ce2d2ee2e7a5e83c92bb0c7959ad",
+      "sha256": "db4012c85f2b140a7c5591ec41fdac61d679fe0b7f3aa76f12a03212e19ded2a",
+      "tests_before": [
+        "nontransparent_nested_table_preserves_full_cell_path",
+        "transparent_wrapper_preserves_full_cell_path",
+        "transparent_wrapper_activation_hides_its_guide",
+        "split_transparent_wrapper_preserves_full_cell_path"
+      ],
+      "removed_tests": [
+        "split_transparent_wrapper_preserves_full_cell_path"
+      ],
+      "active_tests": [
+        "nontransparent_nested_table_preserves_full_cell_path",
+        "transparent_wrapper_preserves_full_cell_path",
+        "transparent_wrapper_activation_hides_its_guide"
+      ],
+      "active_removal_complete": true
+    }
+  ],
+  "input_pdf": [
+    {
+      "path": "mydocs/pr/assets/issue_8230/clickhere_split_wrapper/clickhere-split-wrapper.hwpx",
+      "sha256": "8beecc00e2a3778222f1a70716b53b3feba82876fd68b4b71380f41ec6480641",
+      "bytes": 10205,
+      "original_local_path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/clickhere-base-generated-3887/clickhere-split-wrapper/clickhere-split-wrapper.hwpx"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8230/clickhere_split_wrapper/clickhere-split-wrapper-2024.pdf",
+      "sha256": "4c4fd55ba7ed1502a245cb490760dadf9e00058da68f28a33a7f3a92c1ee89dd",
+      "bytes": 12498,
+      "original_local_path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-clickhere-base-3888/print/clickhere-split-wrapper-base-2024.pdf"
+    }
+  ],
+  "tsv": {
+    "path": "mydocs/pr/assets/issue_8230/clickhere_split_wrapper/candidate-fresh-wasm.tsv",
+    "sha256": "322635751bf1cf2fed4b6ea41234d8e13b8d01e6b670d1c384d597bbfdef47c9",
+    "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/remaining-visual-3955/clickhere-candidate-wasm/silhouette.tsv"
+  },
+  "restoration": "80행 입력의 실제 내용 보존·Print 쪽수·전쪽 Native/fresh WASM raw 90% 이상 및 직접 판독 후 새 이름의 관계형 검사로 복원.",
+  "representative_pngs": [
+    {
+      "path": "mydocs/pr/assets/issue_8230/clickhere_split_wrapper/candidate-native-overlay_002.png",
+      "sha256": "d09b433aeeaf73e9278712b5a72ea64c0656548872a352067e79f6d8674c1f20",
+      "producer_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8230/clickhere_split_wrapper/candidate-native-review_002.png",
+      "sha256": "64a8ffa98bda237c533d1b732c710cea5f8621078e82715170029fd1cf748896",
+      "producer_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8230/clickhere_split_wrapper/candidate-wasm-overlay_002.png",
+      "sha256": "61d17004551d97cbfa8f83837fa12c8af023724a5fc318fdf0971d248de4973f",
+      "producer_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8230/clickhere_split_wrapper/candidate-wasm-review_002.png",
+      "sha256": "7518d3cbc529e219e64ecfce84b9460c8f9d3dd4221aff417318c53ee0ec49df",
+      "producer_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    }
+  ],
+  "archive_source_hashes_verified": true
+}

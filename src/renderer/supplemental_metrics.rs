@@ -13,14 +13,14 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use super::TextStyle;
 
-/// Unverified width guesses may use a prepared measurement from the active
-/// backend. Authentic glyph advances and explicit HWP width rules stay intact.
-/// The narrow overlay is a compatibility guess, not evidence of a selected
-/// program's advance. A Canvas measurement does not promote its format to TTF.
+/// 실제 backend의 전진이 확인되지 않은 추정 폭만 보충 측정으로 대체한다.
+/// 원 face의 실제 글리프 폭과 명시적인 HWP 규칙은 유지한다. 선언 체인의 다른
+/// face에서 빌린 폭과 좁은 문장부호 overlay는 선택된 프로그램의 전진을 입증하지
+/// 않는다. Canvas 측정으로 원 face의 형식을 TrueType으로 승격하지 않는다.
 pub(crate) fn accepts_prepared_glyph_advance(width_source: &str) -> bool {
     matches!(
         width_source,
-        "heuristicHalfwidth" | "metricNarrowPunctuationOverlay"
+        "heuristicHalfwidth" | "declaredGlyphFallbackMetric" | "metricNarrowPunctuationOverlay"
     )
 }
 

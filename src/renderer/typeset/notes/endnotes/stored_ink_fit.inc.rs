@@ -456,6 +456,11 @@ impl TypesetEngine {
                 .iter()
                 .filter_map(|(para, end)| to_local(*para).map(|local| (local, *end)))
                 .collect(),
+            host_compositions: st
+                .host_compositions
+                .iter()
+                .filter_map(|(para, comp)| to_local(*para).map(|local| (local, comp.clone())))
+                .collect(),
             stored_column_top_spacings: st
                 .stored_column_top_spacings
                 .iter()

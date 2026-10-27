@@ -13,9 +13,23 @@ impl EqParser {
     }
 
     fn parse_script_span(&mut self, opposite: TokenType, occupied: bool) -> EqNode {
-        // 명시적으로 닫힌 인자를 뒤 본문과 결합하지 않는다.
+        // 구형 위첨자는 뒤 아래첨자까지 자기 인자로 소유한다. 일반 아래첨자의
+        // 뒤 위첨자는 바깥 병렬 슬롯이며, 이미 안쪽 소유가 정해진 경우는 이어받는다.
+        // Version 60의 명시적 인자 종료와 병렬 슬롯 계약은 유지한다.
+        let owns_following = self.legacy_display && (opposite == TokenType::Subscript || occupied);
         if self.current_type() == TokenType::LBrace {
-            return self.parse_group();
+            let group = self.parse_group();
+            if owns_following && self.depth < MAX_EQ_DEPTH {
+                if let EqNode::Group(body) = group {
+                    // 첨자 인자의 중괄호는 이 인자 프레임을 소유한다. 이것을 새
+                    // 바깥 기저 그룹으로 다시 읽어 c^d까지 한 단계 더 줄이지 않는다.
+                    self.depth += 1;
+                    let body = self.try_parse_scripts(*body);
+                    self.depth -= 1;
+                    return EqNode::Group(Box::new(body));
+                }
+            }
+            return group;
         }
         // 붙은 반복 첨자도 구조 명령과 같은 깊이 상한을 지킨다.
         self.depth += 1;
@@ -35,7 +49,7 @@ impl EqParser {
                 // 처음부터 braced인 인자는 위 parse_group 경로가 끝까지 소유한다.
                 || (self.document_terms && !items.is_empty() && ty == TokenType::LBrace)
                 || (ty == TokenType::Command && Self::cmd_eq(self.current_value(), "RIGHT"))
-                || (ty == opposite && !occupied)
+                || (ty == opposite && !occupied && !owns_following)
             {
                 break;
             }

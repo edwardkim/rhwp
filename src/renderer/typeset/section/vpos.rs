@@ -222,9 +222,7 @@ impl TypesetEngine {
                 .paragraph_float_placements
                 .iter()
                 .any(|(&(owner, _), placement)| {
-                    owner < para_idx
-                        && placement.flow
-                            == crate::renderer::float_placement::ParagraphFloatFlow::NextLine
+                    owner < para_idx && placement.advances_paragraph_flow()
                 })
         {
             y = y.max(st.current_height - hc.stored_boundary_spacing_before);

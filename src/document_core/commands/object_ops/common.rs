@@ -127,6 +127,36 @@ pub(crate) fn update_changed_polygon_geometry(
 }
 
 impl DocumentCore {
+    /// 인라인 개체 편집 뒤 실제 줄과 후속 문단의 저장 흐름을 함께 갱신한다.
+    pub(crate) fn reflow_body_inline_object_change(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        stored_end_before: Option<i32>,
+    ) {
+        self.reflow_paragraph(section_idx, para_idx);
+        self.finish_body_inline_object_reflow(section_idx, para_idx, stored_end_before);
+    }
+
+    /// 이미 구성한 줄 결과를 후속 본문 원점에 반영한다. 같은 문단을 다시 조판하지 않는다.
+    pub(crate) fn finish_body_inline_object_reflow(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        stored_end_before: Option<i32>,
+    ) {
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            None,
+            stored_end_before,
+            &self.styles,
+            self.dpi,
+            hwp3_layout,
+        );
+    }
+
     const COMMON_OBJ_ATTR_KNOWN_MASK: u32 = 0x01
         | (0x03 << 3)
         | (0x07 << 5)
@@ -155,24 +185,50 @@ impl DocumentCore {
                 .iter()
                 .all(|ctrl| matches!(ctrl, Control::SectionDef(_) | Control::ColumnDef(_)))
     }
-    /// 본문 문단 `controls[control_idx]` 에 컨트롤을 넣었을 때 같은 문단의 활성 누름틀 번호를 민다.
-    ///
-    /// 셀 활성 주소에는 본문 부모 문단 번호가 없어 같은 문단인지 가릴 수 없으므로 그대로 둔다.
+    /// 본문 컨트롤 배열의 변경을 활성 누름틀의 같은 소유 주소에 반영한다.
+    /// 셀 안의 필드는 맨 앞 경로가 본문 소유자이고, 나머지 경로와 필드 번호는 그대로다.
+    pub(crate) fn remap_active_field_root_control(
+        active_field: &mut Option<crate::document_core::ActiveFieldInfo>,
+        section_idx: usize,
+        para_idx: usize,
+        remap: impl FnOnce(usize) -> Option<usize>,
+    ) {
+        let Some(active) = active_field.as_mut() else {
+            return;
+        };
+        if active.section_idx != section_idx || active.para_idx != para_idx {
+            return;
+        }
+        let owner = match active.cell_path.as_mut().and_then(|path| path.first_mut()) {
+            Some((control_idx, _, _)) => control_idx,
+            None => &mut active.control_idx,
+        };
+        if let Some(updated) = remap(*owner) {
+            *owner = updated;
+        } else {
+            *active_field = None;
+        }
+    }
+
+    /// 본문 컨트롤 삽입 뒤 같은 문단의 본문 또는 셀 활성 주소를 민다.
     pub(crate) fn shift_active_field_for_control_insert(
         &mut self,
         section_idx: usize,
         para_idx: usize,
         control_idx: usize,
     ) {
-        if let Some(active) = self.active_field.as_mut() {
-            if active.section_idx == section_idx
-                && active.para_idx == para_idx
-                && active.cell_path.is_none()
-                && active.control_idx >= control_idx
-            {
-                active.control_idx += 1;
-            }
-        }
+        Self::remap_active_field_root_control(
+            &mut self.active_field,
+            section_idx,
+            para_idx,
+            |index| {
+                Some(if index >= control_idx {
+                    index + 1
+                } else {
+                    index
+                })
+            },
+        );
     }
     /// 컨트롤 삭제 후 문단의 line_segs를 재계산한다.
     ///

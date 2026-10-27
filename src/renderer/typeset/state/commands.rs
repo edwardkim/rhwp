@@ -160,7 +160,15 @@ impl TypesetState {
         }
         self.data.deferred_next_page_stored_frames.push(picture);
     }
-    /// OLE를 넘기더라도 현재 단의 뒤 본문은 남은 예산을 계속 소비한다.
+    /// 첫 쪽의 인증된 시작 밴드를 측정 커서에 설정한다.
+    pub(in crate::renderer::typeset) fn initialize_stored_column_band(&mut self, band: f64) {
+        self.data.stored_initial_column_band = band;
+        self.data.current_height = band;
+        self.data.current_start_height = band;
+    }
+
+    /// OLE를 넘겨도 현재 단의 뒤 본문은 남은 예산을 계속 소비한다.
+    /// 다음 단의 확정 원점은 첫 쪽 공통 밴드를 소비한다.
     pub(in crate::renderer::typeset) fn defer_table_host_ole_to_next_column(
         &mut self,
         para_idx: usize,
@@ -179,7 +187,12 @@ impl TypesetState {
             .deferred_next_column_stored_frames
             .iter()
             .map(|frame| frame.placement.occupied_bottom)
-            .fold(self.data.pending_body_wide_top_reserve, f64::max);
+            .fold(
+                self.data
+                    .pending_body_wide_top_reserve
+                    .max(self.data.stored_initial_column_band),
+                f64::max,
+            );
         let Some(placement) =
             crate::renderer::float_placement::column_ole_placement(shape, anchor_y, dpi)
         else {
@@ -512,7 +525,11 @@ impl TypesetState {
         self.data.current_height += spacing;
         self.data
             .float_pushed_line_spacings
-            .insert(para_idx, spacing);
+            .entry(para_idx)
+            .and_modify(|line| line.spacing_before = spacing)
+            .or_insert_with(|| {
+                crate::renderer::float_placement::FloatPushedFirstLine::spacing(spacing)
+            });
     }
     /// [#7677] 흐름이 이미 전진한 몫(마지막 표 조각 뒤 바깥 아래 여백)을 host 첫 글줄의 확정
     /// 앞 간격으로 **기록만** 한다 — 배치는 조각 하단에서 그만큼 내려 같은 자리에 줄을 둔다.
@@ -523,7 +540,11 @@ impl TypesetState {
     ) {
         self.data
             .float_pushed_line_spacings
-            .insert(para_idx, spacing);
+            .entry(para_idx)
+            .and_modify(|line| line.spacing_before = spacing)
+            .or_insert_with(|| {
+                crate::renderer::float_placement::FloatPushedFirstLine::spacing(spacing)
+            });
     }
     pub(in crate::renderer::typeset) fn record_paragraph_float_placement(
         &mut self,
@@ -559,12 +580,14 @@ impl TypesetState {
         key: (usize, usize),
         content_height: f64,
         flow_advance: f64,
+        last_line_spacing: Option<f64>,
     ) {
         self.data.paragraph_fragment_content_bottoms.insert(
             key,
             super::paragraph_fragment::ParagraphFragmentBounds {
                 content_bottom: self.data.current_height + content_height,
                 flow_end: self.data.current_height + flow_advance,
+                last_line_spacing,
                 stored_frame: None,
             },
         );
@@ -683,6 +706,12 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn restart_zone_columns(&mut self) {
         self.data.current_column = 0;
         self.data.current_height = 0.0;
+        // 저장 첫 줄의 밴드는 첫 존이 소유한다. 뒤 존의 측정과 paint가
+        // 이전 존의 시작 높이를 물려받지 않도록 소유 상태를 함께 닫는다.
+        if self.data.stored_initial_column_band > 0.0 {
+            self.data.stored_initial_column_band = 0.0;
+            self.data.current_start_height = 0.0;
+        }
         self.data.on_first_multicolumn_page = true;
     }
     pub(in crate::renderer::typeset) fn reserve_bottom_fixed_flow(
@@ -893,7 +922,18 @@ impl TypesetState {
             if owner == para_idx
                 && matches!(
                     placement.flow,
+                    crate::renderer::float_placement::ParagraphFloatFlow::ComputedEmptyHost { .. }
+                )
+            {
+                self.data.current_height =
+                    placement.paragraph_end(self.data.current_height, spacing_after);
+            }
+            if owner == para_idx
+                && matches!(
+                    placement.flow,
                     crate::renderer::float_placement::ParagraphFloatFlow::NextLine
+                        | crate::renderer::float_placement::ParagraphFloatFlow::CoanchoredTable
+                        | crate::renderer::float_placement::ParagraphFloatFlow::SplitHost { .. }
                         | crate::renderer::float_placement::ParagraphFloatFlow::EmptyHost
                 )
             {

@@ -35,6 +35,9 @@ impl EqParser {
         // 2024 Print의 네 행렬 종류·세 정렬과 바깥 후속 항에서 확인했다.
         if self.document_terms && self.current_type() == TokenType::Command {
             let command = self.current_value().to_ascii_uppercase();
+            if matches!(classify_command(&command), EqCommandClass::Column) {
+                return self.parse_matrix_columns(end, style);
+            }
             if matches!(classify_command(&command), EqCommandClass::Pile) {
                 self.pos += 1;
                 let body = self.parse_pile(pile_align(&command));
@@ -87,6 +90,44 @@ impl EqParser {
         self.expect(TokenType::RBrace);
 
         EqNode::Matrix { rows, style }
+    }
+
+    /// 선두 COL은 열 목록을 연다. #/&는 열 몸체의 인자 안에서 소유하며,
+    /// 목록 사이의 행·칸 구분자나 일반 항을 새 열로 추측하지 않는다.
+    fn parse_matrix_columns(&mut self, end: usize, style: MatrixStyle) -> EqNode {
+        let mut columns = Vec::new();
+        while self.pos < end && !self.at_end() {
+            let command = self.current_value().to_ascii_uppercase();
+            if self.current_type() != TokenType::Command
+                || classify_command(&command) != EqCommandClass::Column
+            {
+                self.reject_column_input();
+                break;
+            }
+            self.pos += 1;
+            // 각 열의 인자도 기존 명령 깊이 가드를 공유한다.
+            columns.push(self.parse_command(&command));
+        }
+        self.expect(TokenType::RBrace);
+        EqNode::Matrix {
+            rows: vec![columns],
+            style,
+        }
+    }
+
+    pub(super) fn parse_column(&mut self, align: PileAlign) -> EqNode {
+        if self.current_type() != TokenType::LBrace
+            || (self.legacy_display && self.find_matching_brace(self.pos + 1) == self.tokens.len())
+        {
+            self.reject_column_input();
+            return EqNode::Empty;
+        }
+        self.parse_pile(align)
+    }
+
+    fn reject_column_input(&mut self) {
+        self.stopped_document_input = true;
+        self.invalid_document_script |= self.legacy_display;
     }
 
     /// 세로 쌓기 파싱

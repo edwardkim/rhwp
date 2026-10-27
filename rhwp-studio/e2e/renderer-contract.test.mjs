@@ -2309,7 +2309,7 @@ requireSnippet(
 );
 requireSnippet(
   renderTextRunBody,
-  /const replayText = op\.displayText \?\? op\.text;[\s\S]*?const replayPositions = op\.displayText !== undefined \? op\.displayPositions : op\.positions;[\s\S]*?for \(const character of replayText\)[\s\S]*?textRun:visualItemLimitExceeded[\s\S]*?const glyphReplayText = verticalPresentationText \?\? replayText;[\s\S]*?if \(hasLayoutPositions\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs\(glyphReplayText, codePoints\.length\)[\s\S]*?const runPositions = new Float32Array[\s\S]*?runPositions\[\(index - runStart\) \* 2\] = replayPositions!\[index\];[\s\S]*?this\.drawCachedGlyphs\(/,
+  /const replayText = op\.displayText \?\? op\.text;[\s\S]*?let replayPositions = op\.displayText !== undefined \? op\.displayPositions : op\.positions;[\s\S]*?for \(const character of replayText\)[\s\S]*?textRun:visualItemLimitExceeded[\s\S]*?let glyphReplayText = verticalPresentationText \?\? replayText;[\s\S]*?if \(hasLayoutPositions\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs\(glyphReplayText, codePoints\.length\)[\s\S]*?const runPositions = new Float32Array[\s\S]*?runPositions\[\(index - runStart\) \* 2\] = replayPositions!\[index\];[\s\S]*?this\.drawCachedGlyphs\(/,
   'textRun replay should bound display projection and preserve serialized advances',
 );
 requireSnippet(
@@ -3371,9 +3371,19 @@ assert.equal(
   false,
   'retired exam inputs must not participate in renderer regression coverage',
 );
+// #7445 미완료 문서의 승인된 5개 캡처만 제외하고 나머지 corpus를 보호한다.
+const deferredDocumentSampleIds = [
+  'image-in-table', 'header-image', 'header-image-page-5',
+  'hwpctl-parameterset-item', 'real-return-school-form',
+];
+assert.equal(
+  rendererBaselineManifest.samples.some((sample) => deferredDocumentSampleIds.includes(sample.id)),
+  false,
+  'deferred document captures must not participate in renderer regression coverage',
+);
 assert.ok(
-  rendererBaselineManifest.samples.length >= 120 - retiredExamSampleIds.length,
-  'renderer baseline manifest must keep the refreshed cross-backend corpus',
+  rendererBaselineManifest.samples.length >= 120 - retiredExamSampleIds.length - deferredDocumentSampleIds.length,
+  'renderer baseline manifest must keep the remaining cross-backend corpus',
 );
 for (const sample of rendererBaselineManifest.samples) {
   assert.ok(
@@ -3393,7 +3403,7 @@ for (const sample of rendererBaselineManifest.samples) {
 }
 assert.equal(
   rendererBaselineManifest.samples.filter((sample) => sample.baselineTier === 'representative').length,
-  22,
+  21, // 승인된 header-image 1건 제외 후의 대표 corpus 수.
   'the default renderer baseline tier must remain bounded',
 );
 assert.equal(rendererBaselineManifest.samples.some((sample) => sample.id === 'hwpctl-api'), false,

@@ -136,14 +136,14 @@ fn original_nested_table_closes_its_host_slot_once() {
         panic!("원문 중첩 표")
     };
     let slot = &host.line_segs[0];
-    let min = f64::from(i32::from(t.outer_margin_bottom) + slot.line_height) * 96.0 / 7200.0;
-    let max = f64::from(i32::from(t.outer_margin_bottom) + slot.line_height + slot.line_spacing)
-        * 96.0
-        / 7200.0;
+    let min = i32::from(t.outer_margin_bottom) + slot.line_height;
+    let max = min + slot.line_spacing;
     let tree = d.build_page_render_tree(28).unwrap();
     let t = table(&tree.root, 626);
     let next = line(&tree.root, 627);
-    let gap = next.bbox.y - (t.bbox.y + t.bbox.height);
+    // 원본의 정수 HU 계약으로 비교한다. px 누산의 1ULP 차이로 닫힌
+    // 상한을 실패시키거나 화면 위치 허용치를 새로 추가하지 않는다.
+    let gap = rhwp::renderer::px_to_hwpunit(next.bbox.y - (t.bbox.y + t.bbox.height), 96.0);
     assert!(
         gap >= min && gap <= max,
         "후속 빈 줄은 원본 호스트 한 줄과 아래 여백만큼 전진: gap={gap},source=[{min},{max}]"

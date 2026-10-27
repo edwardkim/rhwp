@@ -286,6 +286,29 @@ pub struct ShapeComponentAttr {
     pub render_c: f64,
 }
 
+impl ShapeComponentAttr {
+    /// 원본 사각형 안에서 수행하는 로컬 반전. 저장 행렬과 편집 캐시가 공유한다.
+    /// 현재 크기로의 배율과 회전·이동은 이 변환 다음에 합성한다.
+    pub(crate) fn local_reflection_matrix(&self) -> [f64; 6] {
+        [
+            if self.horz_flip { -1.0 } else { 1.0 },
+            0.0,
+            if self.horz_flip {
+                self.original_width as f64
+            } else {
+                0.0
+            },
+            0.0,
+            if self.vert_flip { -1.0 } else { 1.0 },
+            if self.vert_flip {
+                self.original_height as f64
+            } else {
+                0.0
+            },
+        ]
+    }
+}
+
 impl Default for ShapeComponentAttr {
     fn default() -> Self {
         Self {

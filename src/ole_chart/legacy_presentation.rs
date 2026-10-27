@@ -6,8 +6,6 @@
 use std::collections::BTreeMap;
 use std::rc::Rc;
 
-use encoding_rs::EUC_KR;
-
 type Result<T> = std::result::Result<T, ()>;
 
 #[derive(Clone, Copy)]
@@ -351,15 +349,10 @@ impl<'a> Reader<'a> {
                     // writers do not always zero it. Keep the length/bounds
                     // check without treating that byte as a NUL contract.
                     let bytes = self.bytes(len + 1)?;
-                    let end = bytes[..len]
-                        .iter()
-                        .position(|byte| *byte == 0)
-                        .unwrap_or(len);
-                    let (text, _, errors) = EUC_KR.decode(&bytes[..end]);
-                    if errors {
-                        return Err(());
-                    }
-                    text.into_owned()
+                    // 자료 그리드와 같은 UTF-16 정본을 읽는다. 표현 문자열의
+                    // 전각 공백은 제목의 실제 간격이므로 정규화하지 않는다.
+                    let text = super::legacy_string::decode(&bytes[..len]).ok_or(())?;
+                    text.split('\0').next().unwrap_or_default().to_owned()
                 } else {
                     String::new()
                 };

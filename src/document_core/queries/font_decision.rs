@@ -3,8 +3,10 @@
 use serde::Deserialize;
 use serde_json::json;
 
+use crate::document_core::helpers::{find_logical_control_positions, logical_to_text_offset};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
+use crate::model::control::Control;
 use crate::renderer::composer::is_lang_neutral;
 use crate::renderer::font_decision::*;
 use crate::renderer::layout::trace_char_width_decisions;
@@ -45,12 +47,36 @@ fn options(options_json: &str) -> Result<TraceLimits, HwpError> {
     Ok(TraceLimits { max_characters })
 }
 
-fn collect_runs<'a>(node: &'a RenderNode, runs: &mut Vec<&'a TextRunNode>) {
+fn collect_runs<'a>(
+    node: &'a RenderNode,
+    runs: &mut Vec<(&'a TextRunNode, bool)>,
+    source_frame: Option<bool>,
+    in_container: bool,
+    in_text_box: bool,
+) {
+    let in_container = in_container
+        || matches!(
+            node.node_type,
+            RenderNodeType::TableCell(_) | RenderNodeType::TextBox
+        );
+    let in_text_box = in_text_box || matches!(node.node_type, RenderNodeType::TextBox);
+    // 조상 줄은 새 컨테이너 문단의 원문 소유자가 아니다.
+    let source_frame = match &node.node_type {
+        RenderNodeType::Header | RenderNodeType::Footer | RenderNodeType::FootnoteArea => None,
+        RenderNodeType::TextLine(line) if line.caption_owner.is_some() => None,
+        RenderNodeType::TextLine(_) => source_frame.map(|_| true),
+        RenderNodeType::TableCell(_) | RenderNodeType::TextBox => source_frame.map(|_| false),
+        _ => source_frame,
+    };
     if let RenderNodeType::TextRun(run) = &node.node_type {
-        runs.push(run);
+        let has_source_path = !in_container
+            || run.cell_context.as_ref().is_some_and(|context| {
+                !context.path.is_empty() && (!in_text_box || context.in_textbox)
+            });
+        runs.push((run, source_frame == Some(true) && has_source_path));
     }
     for child in &node.children {
-        collect_runs(child, runs);
+        collect_runs(child, runs, source_frame, in_container, in_text_box);
     }
 }
 
@@ -174,14 +200,18 @@ fn source_paragraph_index(run: &TextRunNode) -> Option<usize> {
         .filter(|index| *index < usize::MAX.saturating_sub(4096))
 }
 
-fn source_matches(core: &DocumentCore, run: &TextRunNode, offset: usize, ch: char) -> bool {
-    let (Some(section), Some(paragraph), Some(char_start)) = (
-        run.section_index,
-        source_paragraph_index(run),
-        run.char_start,
-    ) else {
-        return false;
-    };
+fn source_character(
+    core: &DocumentCore,
+    run: &TextRunNode,
+    offset: usize,
+    in_text_line: bool,
+) -> Option<(usize, char)> {
+    if !in_text_line {
+        return None;
+    }
+    let section = run.section_index?;
+    let paragraph = source_paragraph_index(run)?;
+    let mut logical_offset = run.char_start?.checked_add(offset)?;
     let path: Vec<(usize, usize, usize)> = run
         .cell_context
         .as_ref()
@@ -193,10 +223,41 @@ fn source_matches(core: &DocumentCore, run: &TextRunNode, offset: usize, ch: cha
                 .collect()
         })
         .unwrap_or_default();
-    core.resolve_control_para(section, paragraph, &path)
-        .ok()
-        .and_then(|para| para.text.chars().nth(char_start + offset))
-        .is_some_and(|source| source == ch)
+    let para = core.resolve_control_para(section, paragraph, &path).ok()?;
+    let control_positions = find_logical_control_positions(para);
+    let text_positions = para.control_text_positions();
+    let mut note_positions: Vec<usize> = para
+        .controls
+        .iter()
+        .zip(&control_positions)
+        .zip(text_positions)
+        .filter_map(|((control, position), text_position)| {
+            (text_position == 0 && matches!(control, Control::Footnote(_) | Control::Endnote(_)))
+                .then_some(*position)
+        })
+        .collect();
+    note_positions.sort_unstable();
+    // 선두 참조 번호는 note_reference가 줄 밖의 prefix로 방출해 런 주소에서 제외된다.
+    // 줄 안의 참조 번호는 emit_line_runs가 이미 논리 한 칸을 반영하므로 다시 더하지 않는다.
+    for note_position in note_positions {
+        if note_position > logical_offset {
+            break;
+        }
+        logical_offset = logical_offset.checked_add(1)?;
+    }
+    for (control, position) in para.controls.iter().zip(control_positions) {
+        // shortcut: 겹침 런의 원문 소유권을 전달할 때까지 첫 겹침부터 뒤 주소는 확정하지 않는다.
+        if (matches!(control, Control::CharOverlap(_)) && position <= logical_offset)
+            || (control.is_logical_inline() && position == logical_offset)
+        {
+            return None;
+        }
+    }
+    let (scalar_offset, _) = logical_to_text_offset(para, logical_offset);
+    para.text
+        .chars()
+        .nth(scalar_offset)
+        .map(|character| (scalar_offset, character))
 }
 
 fn measurement_provenance() -> Result<ProvenanceDecision, HwpError> {
@@ -381,6 +442,7 @@ fn metric_alias_provenance(
 
 fn metric_entry_provenance(
     metric: &crate::renderer::font_metrics_data::MetricLookupDecision<'_>,
+    character: char,
 ) -> Result<ProvenanceDecision, HwpError> {
     if let Some((source, symbol)) =
         crate::renderer::font_metrics_data::core14_metric_source(metric.metric)
@@ -402,21 +464,27 @@ fn metric_entry_provenance(
         provenance.known_limitations.push("Published advances do not establish the installed paint font or recover a missing PDF font program.".into());
         return Ok(provenance);
     }
+    let mut identity = json!({
+        "sourceBoundaryId": "rust-metric.metric-table",
+        "candidateKind": "metric-entry",
+        "sourceFace": metric.metric.name,
+        "targetOrPolicy": format!("metric-entry:{}", metric.entry_index),
+        "conditions": {
+            "bold": metric.metric.bold,
+            "italic": metric.metric.italic,
+            "emSize": metric.metric.em_size,
+            "latinRangeSymbol": format!("FONT_{}_LATIN_RANGES", metric.entry_index),
+            "hangulSymbol": metric.metric.hangul.as_ref().map(|_| format!("FONT_{}_HANGUL", metric.entry_index)),
+        },
+        "order": null,
+    });
+    if crate::renderer::font_metrics_data::uses_hangul_jamo_overlay(metric.metric, character) {
+        identity["conditions"]["latinRangeSymbol"] = serde_json::Value::Null;
+        identity["conditions"]["hangulJamoModule"] =
+            json!("src/renderer/font_metric_hangul_jamo.rs");
+    }
     linked_provenance(
-        json!({
-            "sourceBoundaryId": "rust-metric.metric-table",
-            "candidateKind": "metric-entry",
-            "sourceFace": metric.metric.name,
-            "targetOrPolicy": format!("metric-entry:{}", metric.entry_index),
-            "conditions": {
-                "bold": metric.metric.bold,
-                "italic": metric.metric.italic,
-                "emSize": metric.metric.em_size,
-                "latinRangeSymbol": format!("FONT_{}_LATIN_RANGES", metric.entry_index),
-                "hangulSymbol": metric.metric.hangul.as_ref().map(|_| format!("FONT_{}_HANGUL", metric.entry_index)),
-            },
-            "order": null,
-        }),
+        identity,
         "rust-metric",
         "metric-entry",
         "verified-by-test",
@@ -803,15 +871,15 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let applied_limits = requested_limits;
         let mut runs = Vec::new();
-        collect_runs(&tree.root, &mut runs);
+        collect_runs(&tree.root, &mut runs, Some(false), false, false);
         let characters_seen = runs
             .iter()
-            .map(|run| run.text.chars().count())
+            .map(|(run, _)| run.text.chars().count())
             .sum::<usize>();
         let mut records = Vec::with_capacity(characters_seen.min(applied_limits.max_characters));
         let mut source_mapping_mismatch = false;
         let mut ledger_rule_missing = false;
-        'runs: for (run_index, run) in runs.iter().enumerate() {
+        'runs: for (run_index, (run, in_text_line)) in runs.iter().enumerate() {
             let chars: Vec<char> = run.text.chars().collect();
             let language_slots = run_language_slots(&chars, run_style_language_slot(self, run));
             let width_decisions = trace_char_width_decisions(&run.text, &run.style);
@@ -824,7 +892,8 @@ impl DocumentCore {
                 if records.len() >= applied_limits.max_characters {
                     break 'runs;
                 }
-                let source_complete = source_matches(self, run, run_offset, ch);
+                let source_character = source_character(self, run, run_offset, *in_text_line);
+                let source_complete = source_character.is_some_and(|(_, source)| source == ch);
                 source_mapping_mismatch |= !source_complete;
                 let font_decision = run.char_shape_id.and_then(|char_shape_id| {
                     self.document
@@ -928,7 +997,10 @@ impl DocumentCore {
                             })?,
                         )?);
                     }
-                    provenance.push(metric_entry_provenance(&metric)?);
+                    provenance.push(metric_entry_provenance(
+                        &metric,
+                        width.measurement_character.unwrap_or(ch),
+                    )?);
                 }
                 let requested_face = width
                     .metric
@@ -972,11 +1044,12 @@ impl DocumentCore {
                     metric_entry: width.metric.map(|metric| metric.entry_index),
                     character_match: width.character_match.into(),
                     width_source: width.width_source.into(),
+                    measurement_character: width.measurement_character.map(|ch| ch.to_string()),
                     base_advance_hwpunit: Some(px_to_hwpunit(width.base_width_px, self.dpi)),
                     transforms: transform_steps(run, ch, width),
                     final_advance_hwpunit: Some(px_to_hwpunit(width.final_width_px, self.dpi)),
                 };
-                let source_offset = run.char_start.map(|start| start + run_offset);
+                let source_offset = source_character.map(|(offset, _)| offset);
                 let requested_document_face = font_decision
                     .as_ref()
                     .and_then(|font| font.requested_face.clone());

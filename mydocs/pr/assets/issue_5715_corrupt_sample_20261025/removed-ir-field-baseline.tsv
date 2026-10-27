@@ -1,0 +1,8 @@
+# rhwp-ir-field-sweep-baseline-v2 complete-normalized-path-counts
+lane	sample	path	count
+hwp5rb	issue5715/float_chart_ghost_ladder_gap.hwp	sections[].paragraphs[].char_count	1
+hwp5rb	issue5715/float_chart_ghost_ladder_gap.hwp	sections[].paragraphs[].char_offsets.n	83
+hwp5rb	issue5715/float_chart_ghost_ladder_gap.hwp	sections[].paragraphs[].char_offsets[]	32
+hwp5rb	issue5715/float_chart_ghost_ladder_gap.hwp	sections[].paragraphs[].controls.len	1
+hwp5rb	issue5715/float_chart_ghost_ladder_gap.hwp	sections[].paragraphs[].ctrl_data_records.len	1
+hwp5rb	issue5715/float_chart_ghost_ladder_gap.hwp	sections[].paragraphs[].line_segs[].text_start	2

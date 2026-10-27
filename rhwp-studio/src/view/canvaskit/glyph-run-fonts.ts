@@ -1,3 +1,4 @@
+import { BODY_SYNTHETIC_ITALIC_SKEW_X } from '../../core/text-italic.ts';
 import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import type { Canvas, CanvasKit, Font, Paint, Typeface } from 'canvaskit-wasm';
@@ -363,7 +364,7 @@ export class CanvasKitGlyphRunFontCache {
       if (!font) return null;
       font.setSubpixel(true);
       font.setEmbolden(instance.syntheticBold === true);
-      font.setSkewX(instance.syntheticItalic === true ? -0.25 : 0);
+      font.setSkewX(instance.syntheticItalic === true ? BODY_SYNTHETIC_ITALIC_SKEW_X : 0);
       this.glyphRunFonts.set(key, font);
       return font;
     } catch {

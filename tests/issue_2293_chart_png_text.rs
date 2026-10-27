@@ -7,9 +7,9 @@
 //! 수정: PDF 경로(`renderer/pdf.rs::create_fontdb`)와 동일 규약으로
 //! `ttfs/`(재귀)·WSL 윈도우 폰트 로딩 + generic 폴백을 존재 확인 체인으로.
 //!
-//! 검증: 차트 PNG 의 제목·축 라벨 영역에 잉크가 존재해야 한다 (수정 전
-//! FAILED). 환경별 폰트 차이를 허용하기 위해 잉크 존재만 단언하고 특정
-//! 글리프 픽셀 비교는 하지 않는다. #2292 표적(기하)과 축 분리.
+//! 검증: 제목·눈금·카테고리·범례를 각각 제외한 대조와 최종 PNG를 비교해
+//! 각 원본 텍스트의 가시 출력 기여를 검사한다. 고정 좌표·bbox 비율 영역·
+//! 특정 글리프 농도는 사용하지 않는다. #2292 표적(기하)과 축을 분리한다.
 #![cfg(feature = "native-skia")]
 
 use rhwp::document_core::DocumentCore;
@@ -19,69 +19,102 @@ use std::path::Path;
 
 const SAMPLE: &str = "samples/chart/라인/표식이있는꺽은선형.hwp";
 
-fn find_chart_bbox(node: &RenderNode) -> Option<(f64, f64, f64, f64)> {
-    if let RenderNodeType::RawSvg(_) = &node.node_type {
-        return Some((node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height));
-    }
-    node.children.iter().find_map(find_chart_bbox)
-}
+/// 원본 SVG의 특정 라벨만 제외한 대조를 만든다. 위치·글꼴·다른 paint는 유지한다.
+fn remove_svg_label(node: &mut rhwp::paint::LayerNode, label: &str) -> usize {
+    use rhwp::paint::{LayerNodeKind, PaintOp};
 
-fn ink_in_region(img: &image::RgbaImage, x0: u32, y0: u32, x1: u32, y1: u32) -> usize {
-    let mut ink = 0;
-    for y in y0..y1.min(img.height()) {
-        for x in x0..x1.min(img.width()) {
-            let p = img.get_pixel(x, y);
-            if p.0[3] > 8 && (p.0[0] < 200 || p.0[1] < 200 || p.0[2] < 200) {
-                ink += 1;
+    match &mut node.kind {
+        LayerNodeKind::Group { children, .. } => children
+            .iter_mut()
+            .map(|child| remove_svg_label(child, label))
+            .sum(),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            remove_svg_label(child, label)
+        }
+        LayerNodeKind::Leaf { ops } => {
+            let mut removed = 0;
+            for op in ops {
+                let PaintOp::RawSvg { raw, .. } = op else {
+                    continue;
+                };
+                let prefix = r#"<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">"#;
+                let xml = format!("{prefix}{}</svg>", raw.svg);
+                let document = roxmltree::Document::parse(&xml).expect("차트 SVG");
+                let ranges: Vec<_> = document
+                    .descendants()
+                    .filter(|node| {
+                        node.is_element()
+                            && node.tag_name().name() == "text"
+                            && node.text() == Some(label)
+                    })
+                    .map(|node| node.range())
+                    .collect();
+                removed += ranges.len();
+                for range in ranges.into_iter().rev() {
+                    raw.svg
+                        .replace_range(range.start - prefix.len()..range.end - prefix.len(), "");
+                }
             }
+            removed
         }
     }
-    ink
 }
 
-/// 차트 텍스트(제목 상단 밴드 + 카테고리 라벨 하단 밴드)가 래스터에 그려진다.
+/// 각 원본 라벨과 최종 가시 출력의 관계를 검사한다. 좌표·영역·획 농도는 고정하지 않는다.
 #[test]
 fn chart_png_renders_text_labels() {
+    use rhwp::renderer::{layer_renderer::LayerRasterRenderer, skia::SkiaLayerRenderer};
+
     let repo = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let bytes = fs::read(repo.join(SAMPLE)).expect("read sample");
-    let core = DocumentCore::from_bytes(&bytes).expect("parse");
+    let core = DocumentCore::from_bytes(&fs::read(repo.join(SAMPLE)).expect("read sample"))
+        .expect("parse");
+    assert_eq!(core.page_count(), 1, "원본 차트는 한 쪽에 속한다");
+    let scene = core.build_page_layer_tree(0).expect("layer tree");
+    let original = image::load_from_memory(&core.render_page_png_native(0).expect("png"))
+        .expect("decode")
+        .to_rgba8();
+    let renderer = SkiaLayerRenderer::new();
 
-    let tree = core.build_page_render_tree(0).expect("tree");
-    let (bx, by, bw, bh) = find_chart_bbox(&tree.root).expect("RawSvg(차트) 부재");
-
-    let png = core.render_page_png_native(0).expect("png");
-    let img = image::load_from_memory(&png).expect("decode").to_rgba8();
-    let scale = img.width() as f64 / tree.root.bbox.width;
-    let px = |v: f64| (v * scale).round() as u32;
-
-    // 제목 밴드: bbox 상단 12% (조각 실측 — "차트 제목" y≈150/bbox y=132..382).
-    // 기하(플롯 프레임 상단선)가 걸치지 않도록 좌우 25% 인셋의 중앙부만 본다.
-    let title = ink_in_region(
-        &img,
-        px(bx + bw * 0.25),
-        px(by + bh * 0.02),
-        px(bx + bw * 0.75),
-        px(by + bh * 0.12),
-    );
-
-    // 카테고리 라벨 밴드: 플롯 하단과 bbox 사이 (조각 실측 — "항목 N"
-    // y≈374/bbox 하단 382). 하단 6% 밴드.
-    let category = ink_in_region(
-        &img,
-        px(bx + bw * 0.1),
-        px(by + bh * 0.94),
-        px(bx + bw * 0.9),
-        px(by + bh),
-    );
-
-    assert!(
-        title > 0,
-        "차트 제목 밴드 잉크 0 — 조각 래스터 텍스트 소실(#2293)"
-    );
-    assert!(
-        category > 0,
-        "카테고리 라벨 밴드 잉크 0 (title={title}) — 조각 래스터 텍스트 소실(#2293)"
-    );
+    // 원본 HWP와 독립 Print의 제목·눈금·카테고리·범례다. SVG는 이 소비 단계의
+    // 입력이며 조판 위치의 독립 정답지가 아니다. 위치는 별도의 전쪽 Sweep으로 확인한다.
+    for label in [
+        "차트 제목",
+        "0",
+        "2",
+        "4",
+        "6",
+        "항목 1",
+        "항목 2",
+        "항목 3",
+        "항목 4",
+        "계열 1",
+        "계열 2",
+        "계열 3",
+    ] {
+        let mut without_label = scene.clone();
+        assert_eq!(
+            remove_svg_label(&mut without_label.root, label),
+            1,
+            "원본 라벨은 SVG에 한 번만 존재한다: {label}"
+        );
+        let control =
+            image::load_from_memory(&renderer.render_png(&without_label).expect("라벨 제외 대조"))
+                .expect("decode control")
+                .to_rgba8();
+        assert_eq!(original.dimensions(), control.dimensions());
+        // 같은 출력 경로에서 해당 글자만 제외했을 때 표시가 달라져야 한다.
+        // 격자·다른 라벨의 잉크로 소실된 글자의 존재를 대신할 수 없다.
+        let contribution = original
+            .pixels()
+            .zip(control.pixels())
+            .filter(|(original, control)| original != control)
+            .count();
+        assert!(
+            contribution > 0,
+            "차트 라벨이 가시 출력에 기여하지 않는다: {label} — SVG→Skia 텍스트 소실(#2293)"
+        );
+        eprintln!("#2293 {label}: 가시 출력 기여 {contribution}");
+    }
 }
 
 // #7445: 원본 산점도의 전 302쪽 수용 후 추가한 Print 축소 경계.

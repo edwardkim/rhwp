@@ -4,7 +4,7 @@ use super::style_usvg as usvg;
 
 use std::collections::HashMap;
 
-const SHEAR: f32 = 0.25;
+const SHEAR: f32 = -crate::renderer::text_italic::SKEW_X as f32;
 const SVG_NS: &str = "http://www.w3.org/2000/svg";
 
 /// Diagnostic counts, without document text or font names.
@@ -121,7 +121,10 @@ pub fn parse_svg_with_synthetic_italic(
     svg: &str,
     options: &usvg::Options<'_>,
 ) -> Result<(usvg::Tree, PdfItalicReport), String> {
-    let parse = |source: &str| usvg::Tree::from_str(source, options).map_err(|e| e.to_string());
+    let parse = |source: &str| {
+        let normalized = normalize_body_italic_for_usvg(source)?;
+        usvg::Tree::from_str(&normalized, options).map_err(|e| e.to_string())
+    };
     let mut report = PdfItalicReport::default();
     // Ordinary rhwp pages keep their existing single parse, including unmodified IDs.
     if ![b"italic".as_slice(), b"oblique".as_slice()]
@@ -199,4 +202,30 @@ pub fn parse_svg_with_synthetic_italic(
     } else {
         Ok((parse(&insertions(&tagged, edits))?, report))
     }
+}
+
+/// usvg의 SVG1.1 파서는 CSS의 각도 문법을 받지 않는다. 알려진 본문 계약만
+/// face 선택용 oblique로 정규화하고 실제 합성은 위의 동일 shear가 담당한다.
+fn normalize_body_italic_for_usvg(source: &str) -> Result<std::borrow::Cow<'_, str>, String> {
+    if !source.contains(crate::renderer::text_italic::CSS_STYLE) {
+        return Ok(std::borrow::Cow::Borrowed(source));
+    }
+    let document = roxmltree::Document::parse(source).map_err(|error| error.to_string())?;
+    let mut ranges = document
+        .descendants()
+        .filter(|node| node.has_tag_name((SVG_NS, "text")))
+        .filter_map(|node| node.attribute_node("font-style"))
+        .filter(|attribute| attribute.value() == crate::renderer::text_italic::CSS_STYLE)
+        .map(|attribute| attribute.range_value())
+        .collect::<Vec<_>>();
+    ranges.sort_by_key(|range| range.start);
+    let mut normalized = String::with_capacity(source.len());
+    let mut cursor = 0;
+    for range in ranges {
+        normalized.push_str(&source[cursor..range.start]);
+        normalized.push_str("oblique");
+        cursor = range.end;
+    }
+    normalized.push_str(&source[cursor..]);
+    Ok(std::borrow::Cow::Owned(normalized))
 }

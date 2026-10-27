@@ -88,9 +88,7 @@ fn device_size(
     if crop_w <= 0.0 || crop_h <= 0.0 {
         return None;
     }
-    let target = image
-        .transform
-        .effective_image_bbox(&image.paint_bbox(&bbox));
+    let target = image.transformed_paint_bbox(&bbox);
     let (w, h) = match image.fill_mode.unwrap_or(ImageFillMode::FitToSize) {
         ImageFillMode::FitToSize | ImageFillMode::Total => (
             target.width * natural_w / crop_w,

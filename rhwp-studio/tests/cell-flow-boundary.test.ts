@@ -179,6 +179,55 @@ class FakeWasm {
   }
 }
 
+// 본문 문자열은 scalar만 센다. Paragraph::insert_text_at처럼 넘친 삽입 자리는
+// 끝에 붙이고, 인라인 개체 뒤 요청 번호를 삭제할 scalar 번호로 바꾸지는 않는다.
+class FakeScalarBodyWasm extends FakeWasm {
+  constructor(text = '') {
+    super();
+    this.text = text;
+  }
+
+  getParagraphLength() {
+    return [...this.text].length;
+  }
+
+  snapshotCapacity() { return 100; }
+
+  #replace(offset, count, text) {
+    const chars = [...this.text];
+    const start = Math.min(offset, chars.length);
+    chars.splice(start, count, ...text);
+    this.text = chars.join('');
+    return start + [...text].length;
+  }
+
+  replaceBodyTextLocal(...args) {
+    this.calls.push({ name: 'body-local', args });
+    const charOffset = this.#replace(args[2], args[3], args[4]);
+    return {
+      ok: true,
+      charOffset,
+      documentPaginationPending: true,
+      flowChanged: false,
+    };
+  }
+
+  insertText(...args) {
+    this.calls.push({ name: 'body-immediate', args });
+    return JSON.stringify({ ok: true, charOffset: this.#replace(args[2], 0, args[3]) });
+  }
+
+  deleteText(...args) {
+    this.calls.push({ name: 'delete-body', args });
+    this.#replace(args[2], args[3], '');
+    return JSON.stringify({ ok: true, charOffset: args[2] });
+  }
+
+  getTextRange(_section, _paragraph, offset, count) {
+    return [...this.text].slice(offset, offset + count).join('');
+  }
+}
+
 test('InsertTextCommand effect는 실행별로 한 번만 소비되고 undo에서 초기화된다', () => {
   const wasm = new FakeWasm(mutationResult(true), mutationResult(true));
   const command = new InsertTextCommand(depth1Position(), '1', 1_000);
@@ -558,7 +607,7 @@ test('본문 flow boundary local result는 pagination 완료 effect로 전달된
 });
 
 test('본문 command undo는 local pending을 만들지 않고 기존 immediate API를 사용한다', () => {
-  const wasm = new FakeWasm();
+  const wasm = new FakeScalarBodyWasm('앞🦦뒤');
   const position = { sectionIndex: 0, paragraphIndex: 2, charOffset: 3 };
   const command = new InsertTextCommand(position, '가');
 
@@ -567,4 +616,119 @@ test('본문 command undo는 local pending을 만들지 않고 기존 immediate 
 
   assert.equal(wasm.calls.at(-1).name, 'delete-body');
   assert.deepEqual(command.consumeTextMutationEffects(), NO_TEXT_MUTATION_EFFECTS);
+});
+
+test('빈 인라인 그림 뒤 입력은 요청 캐럿을 보존하며 한 번에 되돌린다', () => {
+  const wasm = new FakeScalarBodyWasm();
+  const history = new CommandHistory();
+  const position = { sectionIndex: 0, paragraphIndex: 0, charOffset: 1 };
+
+  assert.deepEqual(history.execute(new InsertTextCommand(position, 'X'), wasm), {
+    ...position, charOffset: 2,
+  });
+  assert.equal(wasm.text, 'X');
+  for (let cycle = 0; cycle < 2; cycle++) {
+    assert.deepEqual(history.undo(wasm), position);
+    assert.equal(wasm.text, '');
+    assert.equal(history.canUndo(), false);
+    assert.deepEqual(history.redo(wasm), { ...position, charOffset: 2 });
+    assert.equal(wasm.text, 'X');
+  }
+});
+
+test('빈 인라인 그림 뒤 연속 XY 입력의 병합은 남는 글 없이 왕복한다', () => {
+  const wasm = new FakeScalarBodyWasm();
+  const history = new CommandHistory();
+  const position = { sectionIndex: 0, paragraphIndex: 0, charOffset: 1 };
+
+  history.execute(new InsertTextCommand(position, 'X', 1_000), wasm);
+  history.execute(new InsertTextCommand({ ...position, charOffset: 2 }, 'Y', 1_100), wasm);
+  assert.equal(wasm.text, 'XY');
+  assert.deepEqual(history.peekUndoTop().getPageLocalTextEditOptions(), { insertedText: 'XY' });
+  for (let cycle = 0; cycle < 2; cycle++) {
+    assert.deepEqual(history.undo(wasm), position);
+    assert.equal(wasm.text, '');
+    assert.equal(history.canUndo(), false);
+    assert.deepEqual(history.redo(wasm), { ...position, charOffset: 3 });
+    assert.equal(wasm.text, 'XY');
+  }
+});
+
+test('원문 앞🦦와 뒤 인라인 개체가 있는 본문 입력은 원문을 보존한다', () => {
+  const wasm = new FakeScalarBodyWasm('앞🦦');
+  const history = new CommandHistory();
+  const position = { sectionIndex: 0, paragraphIndex: 0, charOffset: 3 };
+
+  history.execute(new InsertTextCommand(position, 'X'), wasm);
+  assert.equal(wasm.text, '앞🦦X');
+  for (let cycle = 0; cycle < 2; cycle++) {
+    assert.deepEqual(history.undo(wasm), position);
+    assert.equal(wasm.text, '앞🦦');
+    assert.deepEqual(history.redo(wasm), { ...position, charOffset: 4 });
+    assert.equal(wasm.text, '앞🦦X');
+  }
+});
+
+test('인라인 개체 뒤 astral 입력의 Undo는 원문 이웃 글자를 지우지 않는다', () => {
+  const wasm = new FakeScalarBodyWasm('앞🦦뒤');
+  const history = new CommandHistory();
+  const position = { sectionIndex: 0, paragraphIndex: 0, charOffset: 4 };
+
+  assert.deepEqual(history.execute(new InsertTextCommand(position, '😀'), wasm), {
+    ...position, charOffset: 5,
+  });
+  assert.equal(wasm.text, '앞🦦뒤😀');
+  for (let cycle = 0; cycle < 2; cycle++) {
+    assert.deepEqual(history.undo(wasm), position);
+    assert.equal(wasm.text, '앞🦦뒤');
+    assert.equal(wasm.getParagraphLength(), 3);
+    assert.deepEqual(history.redo(wasm), { ...position, charOffset: 5 });
+    assert.equal(wasm.text, '앞🦦뒤😀');
+  }
+});
+
+test('일반 본문의 기존 scalar 입력 자리는 astral 이웃을 보존하며 왕복한다', () => {
+  const wasm = new FakeScalarBodyWasm('앞🦦뒤');
+  const history = new CommandHistory();
+  const position = { sectionIndex: 0, paragraphIndex: 0, charOffset: 1 };
+
+  history.execute(new InsertTextCommand(position, '😀'), wasm);
+  assert.equal(wasm.text, '앞😀🦦뒤');
+  for (let cycle = 0; cycle < 2; cycle++) {
+    assert.deepEqual(history.undo(wasm), position);
+    assert.equal(wasm.text, '앞🦦뒤');
+    assert.deepEqual(wasm.calls.at(-1), { name: 'delete-body', args: [0, 0, 1, 1] });
+    assert.deepEqual(history.redo(wasm), { ...position, charOffset: 2 });
+    assert.equal(wasm.text, '앞😀🦦뒤');
+  }
+});
+
+test('이미 삽입된 개체 뒤 본문 조합 기록도 새 삽입 없이 Undo와 Redo를 잇는다', () => {
+  const wasm = new FakeScalarBodyWasm('앞🦦');
+  const history = new CommandHistory();
+  const position = { sectionIndex: 0, paragraphIndex: 0, charOffset: 3 };
+
+  wasm.insertText(0, 0, position.charOffset, '😀');
+  const calls = wasm.calls.length;
+  history.recordWithoutExecute(new InsertTextCommand(position, '😀'), wasm);
+  assert.equal(wasm.calls.length, calls);
+  assert.equal(wasm.text, '앞🦦😀');
+  for (let cycle = 0; cycle < 2; cycle++) {
+    assert.deepEqual(history.undo(wasm), position);
+    assert.equal(wasm.text, '앞🦦');
+    assert.deepEqual(history.redo(wasm), { ...position, charOffset: 4 });
+    assert.equal(wasm.text, '앞🦦😀');
+  }
+});
+
+test('flat와 중첩 셀 입력 Undo는 본문 길이를 묻지 않고 기존 삭제 주소를 쓴다', () => {
+  for (const position of [depth1Position(7), depth2Position(7)]) {
+    const wasm = new FakeWasm(mutationResult(false));
+    const command = new InsertTextCommand(position, '😀');
+    command.execute(wasm);
+    assert.deepEqual(command.undo(wasm), position);
+    assert.deepEqual(wasm.calls.at(-1), position.cellPath.length > 1
+      ? { name: 'delete-path', args: [0, 5, JSON.stringify(position.cellPath), 7, 1] }
+      : { name: 'delete-cell', args: [0, 5, 2, 3, 0, 7, 1] });
+  }
 });

@@ -10,6 +10,7 @@
  *   node e2e/text-flow.test.mjs --mode=headless  # headless Chrome
  */
 import path from 'path';
+import {isDeferredRegressionInput} from '../../scripts/lib/regression-document-scope.mjs';
 import pixelmatch from 'pixelmatch';
 import puppeteer from 'puppeteer-core';
 import { existsSync, readFileSync, readdirSync } from 'fs';
@@ -250,6 +251,9 @@ export async function createNewDocument(page) {
 
 /** HWP 파일을 fetch하여 문서 로드 + 캔버스 대기 */
 export async function loadHwpFile(page, filename) {
+  if (isDeferredRegressionInput(filename)) {
+    throw new Error(`별도 PR에서 재등록할 회귀 입력입니다: ${filename}`);
+  }
   const fetchPath = sampleFetchPath(filename);
   const result = await page.evaluate(async ({ fname, url }) => {
     const startedAt = performance.now();

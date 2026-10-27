@@ -278,6 +278,17 @@ fn break_before_text_token(
         })
 }
 
+/// 독립 Print에서 낱말 유지 문단도 한점 리더·분철점 뒤에서 나뉜다.
+/// 같은 폭의 U+00B7·ASCII 마침표는 라틴 낱말을 유지한다. 글꼴 슬롯과
+/// 줄 경계는 별도 계약이며, 이미 분리한 기호 토큰의 끝을 공통 소비한다.
+fn can_break_after_text_token(ch: char, korean_break_unit: u8) -> bool {
+    if is_hangul(ch) {
+        korean_break_unit == 1
+    } else {
+        is_cjk_ideograph(ch) || matches!(ch, '\u{2024}' | '\u{2027}')
+    }
+}
+
 pub(crate) fn is_line_end_forbidden(ch: char) -> bool {
     // ASCII 큰따옴표는 여는/닫는 모양이 같아 문자값만으로 줄끝 금칙으로
     // 분류할 수 없다. 독립 Print에서도 큰따옴표 뒤 한글 경계가 줄끝이 된다.
@@ -2247,7 +2258,12 @@ fn fill_one_interval(
                         let rel_idx = ci - *start_idx;
                         let char_w = base_char_widths
                             .get(rel_idx)
-                            .map(|width| to_hwp(*width))
+                            // 한 글자 토큰의 폭은 이미 같은 글리프·속성으로 측정됐다.
+                            // 빈 세부 배열을 반각 추정으로 바꾸면 앞선 fit 거절을
+                            // 뒤집어 넓은 기호나 보충 평면 문자를 넘치는 줄에 남긴다.
+                            .copied()
+                            .or_else(|| (*end_idx == *start_idx + 1).then_some(*base_width))
+                            .map(to_hwp)
                             .unwrap_or_else(|| {
                                 let ch = text_chars[ci];
                                 let char_w_px = if is_cjk_char(ch) {
@@ -2376,12 +2392,7 @@ fn fill_one_interval(
                     // `…상호 협력·` 로 끝내는 자리에서 우리는 `…상호 협` 으로 끝나 두 글자를 잃었다.
                     // 1글자 토큰은 아래 슬라이스가 비어 `all()` 이 참이라 종전 동작 그대로다.
                     let c = text_chars[*start_idx];
-                    let allow_break = if is_hangul(c) {
-                        // [#2185] bit7=1 = 글자 단위 break 허용 (위 주석 참조)
-                        korean_break_unit == 1
-                    } else {
-                        is_cjk_ideograph(c)
-                    };
+                    let allow_break = can_break_after_text_token(c, korean_break_unit);
                     if allow_break {
                         cursor.last_break_token_idx = Some(ti);
                         cursor.last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
@@ -2695,12 +2706,7 @@ fn fill_lines_before_cursor(
                 // 위 `fill_one_interval` 과 같은 계약(흡수 묶음도 줄 끝 후보).
                 if tail_all_line_start_forbidden && *start_idx > line_start_idx && token_fits {
                     let c = text_chars[*start_idx];
-                    let allow_break = if is_hangul(c) {
-                        // [#2185] bit7=1 = 글자 단위 break 허용 (위 주석 참조)
-                        korean_break_unit == 1
-                    } else {
-                        is_cjk_ideograph(c)
-                    };
+                    let allow_break = can_break_after_text_token(c, korean_break_unit);
                     if allow_break {
                         last_break_token_idx = Some(ti);
                         last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
@@ -2945,7 +2951,7 @@ fn paragraph_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> Option
 
 /// 표시되지 않는 문단 끝 문자도 마지막 줄의 글자모양 높이를 소유한다.
 /// 문자 수는 확장 제어를 포함한 원본 UTF-16 축이므로 표시 문자열 길이로 대신하지 않는다.
-fn paragraph_end_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> f64 {
+pub(crate) fn paragraph_end_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> f64 {
     let Some(end_pos) = para.char_count.checked_sub(1) else {
         return 0.0;
     };
@@ -3065,6 +3071,18 @@ fn inline_control_occupied_size_hwp(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<(i32, i32)> {
+    if let Control::Table(table) = control {
+        if let Some(measured) = super::measured_reflow_inline_table(table, styles, dpi) {
+            let width = i32::try_from(table.flow_width_hu())
+                .ok()?
+                .saturating_add(i32::from(table.outer_margin_left))
+                .saturating_add(i32::from(table.outer_margin_right));
+            let height = px_to_hwpunit(measured.total_height, dpi)
+                .saturating_add(i32::from(table.outer_margin_top))
+                .saturating_add(i32::from(table.outer_margin_bottom));
+            return (width > 0 && height > 0).then_some((width, height));
+        }
+    }
     let (mut width, mut height) = inline_control_size_hwp(control)?;
     if let Control::Table(table) = control {
         // 편집으로 셀 내용이 선언 높이를 넘으면 실제 표 배치도 행 높이를 키운다.
@@ -3540,7 +3558,7 @@ fn line_start_utf16_offset(
 /// and `make_line_seg`'s output is written to the file. Any half-point font
 /// size split them — 10.5pt gives `1050 * 0.85 = 892.5`, so one published 893
 /// and the other 892.
-fn baseline_distance_hwp(line_height_hwp: i32) -> i32 {
+pub(super) fn baseline_distance_hwp(line_height_hwp: i32) -> i32 {
     (line_height_hwp as f64 * 0.85).round() as i32
 }
 
@@ -3626,7 +3644,7 @@ fn apply_reflowed_equation_row_metrics(
     }
 }
 
-fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
+pub(super) fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
     if height_hwp > seg.line_height {
         seg.line_height = height_hwp;
         seg.text_height = height_hwp;
@@ -5403,35 +5421,47 @@ fn reflow_line_segs_impl(
     // 실제 측정한 표 본체와 바깥 여백을 줄 폭과 줄 높이에서 함께 사용한다.
     // 개체 줄은 개체 자신의 원시 위치에서 시작한다. 뒤 글자 위치(`char_offsets`)로
     // 시작하면 저장 줄 경계가 개체 뒤에 놓여 개체가 앞 줄 끝에 남는다.
-    let occupied_controls: Vec<_> =
-        if split_stale_cell_reflow || edited_tac_table || inline_controls.is_empty() {
-            para.controls
-                .iter()
-                .zip(para.control_text_positions())
-                .zip(para.control_utf16_positions())
-                .filter_map(|((control, position), utf16_start)| {
-                    let (width, height) = inline_control_occupied_size_hwp(control, styles, dpi)?;
-                    Some((position, utf16_start, width, height))
-                })
-                .collect()
-        } else {
-            Vec::new()
-        };
-    let forced_inline_line = (split_stale_cell_reflow || edited_tac_table)
-        .then(|| {
-            inline_control_requires_own_line(
-                para,
-                &occupied_controls,
-                &text_chars,
-                &line_breaks,
-                available_width_px,
-                table_indent_px,
-                reflow_is_first_line,
-                styles,
-                reflow_space_metric,
-            )
-        })
-        .flatten();
+    let terminal_inline_control = para
+        .controls
+        .iter()
+        .zip(para.control_text_positions())
+        .any(|(control, position)| position == text_len && control.is_treat_as_char_object());
+    let occupied_controls: Vec<_> = if split_stale_cell_reflow
+        || edited_tac_table
+        || terminal_inline_control
+        || inline_controls.is_empty()
+    {
+        para.controls
+            .iter()
+            .zip(para.control_text_positions())
+            .zip(para.control_utf16_positions())
+            .filter_map(|((control, position), utf16_start)| {
+                let (width, height) = inline_control_occupied_size_hwp(control, styles, dpi)?;
+                Some((position, utf16_start, width, height))
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
+    // 마지막 글자 뒤의 글자처럼 취급 개체는 뒤 글자가 없어 채움 토큰에 폭이 실리지 않는다
+    // (`flow_inline_controls`). 채움이 그 앞에서 줄을 나눌 수 없으므로 표와 같은 개체 줄
+    // 판정을 받는다. 판정이 없으면 넓은 그림이 앞 글자와 한 줄에 남아 오른쪽 여백을 넘는다.
+    let forced_inline_line =
+        (split_stale_cell_reflow || edited_tac_table || terminal_inline_control)
+            .then(|| {
+                inline_control_requires_own_line(
+                    para,
+                    &occupied_controls,
+                    &text_chars,
+                    &line_breaks,
+                    available_width_px,
+                    table_indent_px,
+                    reflow_is_first_line,
+                    styles,
+                    reflow_space_metric,
+                )
+            })
+            .flatten();
     let floating_anchors = floating_anchor_char_font_sizes(para, styles);
     let preserved_prefix_len = preserved_prefix.len();
     let mut new_line_segs: Vec<LineSeg> = preserved_prefix;
@@ -5481,6 +5511,12 @@ fn reflow_line_segs_impl(
                     && !(control_after_text
                         && forced_inline_line
                             .is_some_and(|(position, ..)| position == control.char_position))
+            })
+            // 별도 줄로 분리된 개체 높이는 앞 텍스트 줄에 중복 계상하지 않는다.
+            .filter(|control| {
+                !forced_inline_line.is_some_and(|(position, start, ..)| {
+                    position > lb.start_idx && start == control.utf16_position
+                })
             })
             .max_by_key(|control| (control.height_hwp, control.baseline_distance_hwp))
         {

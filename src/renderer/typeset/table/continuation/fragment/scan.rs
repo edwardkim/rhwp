@@ -1,8 +1,8 @@
 //! Read-only scan and footnote-aware refit. Returns cuts; does not emit page items.
 
 use crate::renderer::typeset::{
-    controls, row_geometry_table, table, table_declared_object_covers_cell_row_frames,
-    BlockRowScanVars, BlockTableRowScan, Control, Footnote, TypesetEngine, TypesetState,
+    controls, table, table_declared_object_covers_cell_row_frames, BlockRowScanVars,
+    BlockTableRowScan, Control, Footnote, TypesetEngine, TypesetState,
 };
 
 use super::super::TableContinuationCursor;
@@ -989,6 +989,43 @@ impl TypesetEngine {
             }
         }
 
+        // 재조판 호스트의 자리차지 조각은 수용한 행의 물리 상자를 쪽 끝까지
+        // 소유한다. 내용 유닛 컷은 늘리지 않고, 같은 예산 안의 빈 띠만 예약한다.
+        // 저장 프레임·걸침 블록이 이미 높이를 소유하면 그 결과를 유지한다.
+        if input.prepared.computed_host_tail.is_some()
+            && split_block_start.is_none()
+            && end_row > cursor_row
+            && split_end_limit > 0.0
+            && !split_end_cut.is_empty()
+            && end_row_height_override.is_none()
+        {
+            let row = end_row - 1;
+            let row_start: &[usize] = if row == cursor_row { start_cut } else { &[] };
+            let selected = layout_engine.row_cut_content_height(
+                row_geometry_table,
+                row,
+                row_start,
+                &split_end_cut,
+                styles,
+            );
+            let full = layout_engine.row_cut_content_height(
+                row_geometry_table,
+                row,
+                row_start,
+                &[],
+                styles,
+            );
+            let before = (consumed - selected).max(0.0);
+            let capacity = (avail_for_rows - before).max(0.0);
+            let plain_row = row_geometry_table
+                .cells
+                .iter()
+                .all(|cell| usize::from(cell.row) != row || cell.row_span == 1);
+            if plain_row && capacity > selected && capacity < full {
+                end_row_height_override = Some(capacity);
+                consumed = before + capacity;
+            }
+        }
         BlockTableRowScan {
             source_frame_band,
             plain_cut_owns_blank_band,

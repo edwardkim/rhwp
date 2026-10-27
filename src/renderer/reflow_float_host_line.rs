@@ -1,4 +1,4 @@
-//! 재조판하는 자리차지 표의 잉크 없는 호스트 줄 점유.
+//! 재조판하는 부동 개체의 잉크 없는 호스트 줄 점유.
 
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
@@ -7,7 +7,53 @@ use crate::model::table::Table;
 
 use super::composer::ComposedParagraph;
 use super::float_placement::{is_non_flow_decoration, is_para_topbottom_float, signed_hwpunit};
-use super::style_resolver::ResolvedStyleSet;
+use super::style_resolver::{ResolvedParaStyle, ResolvedStyleSet};
+
+/// 저장 줄이 없는 부동 개체 앵커도 문단의 빈 글자 줄은 소유한다.
+/// 파서가 만든 LineSeg는 어울림 안내 줄의 저장 증거가 아니다. 실제 저장된
+/// 줄은 기존 사다리/안내 줄 경로에 남기고, 재조판 앵커의 글꼴·줄간격만 공유한다.
+/// 개체의 페인트 크기는 이 글자 줄의 높이를 대신하지 않는다.
+pub(crate) fn neutral_anchor_metrics(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    para_style: Option<&ResolvedParaStyle>,
+    hwp3_legacy_caps: bool,
+    dpi: f64,
+) -> Option<(f64, f64, f64)> {
+    // NoLS 표 host의 줄과 글꼴 선택은 새 base의 공통 결과를 그대로 소비한다.
+    // 일반 부동 앵커의 첫 글자 모양으로 재계산하면 layout의 최대 글꼴 선택과 달라진다.
+    if super::para_is_unstored_empty_overlay_table_host(para) {
+        return super::unstored_overlay_table_host_line_metrics(para, styles, para_style);
+    }
+    if !para.text.trim().is_empty()
+        || para.controls.is_empty()
+        || !super::empty_host_controls_are_flow_neutral(para)
+        || !super::para_has_no_stored_line_segs(para)
+    {
+        return None;
+    }
+    let shape = para
+        .char_shape_id_at(0)
+        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))?;
+    let char_style = styles.char_styles.get(shape as usize)?;
+    let font_size = char_style.font_size;
+    if font_size <= 0.0 {
+        return None;
+    }
+    if hwp3_legacy_caps
+        && (font_size > super::hwpunit_to_px(1000, dpi) + 0.1
+            || (!char_style.bold && font_size < super::hwpunit_to_px(800, dpi) - 0.1))
+    {
+        return None;
+    }
+    let spacing_type = para_style.map_or(crate::model::style::LineSpacingType::Percent, |style| {
+        style.line_spacing_type
+    });
+    let spacing = para_style.map_or(160.0, |style| style.line_spacing);
+    let (height, leading) =
+        super::corrected_line_metrics(0.0, 0.0, font_size, spacing_type, spacing);
+    Some((height, leading, font_size))
+}
 
 /// 양수 첫줄 들여쓰기는 텍스트 없이도 줄 안쪽을 차지한다.
 /// 왼쪽 여백과 내어쓰기는 줄 밖의 기하이며, 빈 개체 줄을 만들지 않는다.

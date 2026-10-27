@@ -1360,6 +1360,45 @@ impl LayoutEngine {
                 );
                 parent.children.push(node);
             }
+            ShapeObject::Ellipse(ellipse) => {
+                // 회전된 타원: 원래 상자에 내접한 타원을 베지어 4개로 만들어 아핀 변환한다.
+                // 아핀 변환은 베지어 제어점에 그대로 적용되므로 모양이 정확히 유지된다.
+                // 두 모서리 AABB 폴백은 회전 타원을 축 정렬 타원으로 찌그러뜨렸다.
+                const K: f64 = 0.552_284_749_830_793_4;
+                let (rx, ry) = (
+                    sa.original_width as f64 / 2.0,
+                    sa.original_height as f64 / 2.0,
+                );
+                let pt = |ux: f64, uy: f64| transform_pt(rx + rx * ux, ry + ry * uy);
+                let quarters = [
+                    [(1.0, K), (K, 1.0), (0.0, 1.0)],
+                    [(-K, 1.0), (-1.0, K), (-1.0, 0.0)],
+                    [(-1.0, -K), (-K, -1.0), (0.0, -1.0)],
+                    [(K, -1.0), (1.0, -K), (1.0, 0.0)],
+                ];
+                let start = pt(1.0, 0.0);
+                let mut commands = vec![PathCommand::MoveTo(start.0, start.1)];
+                let (mut min_x, mut min_y, mut max_x, mut max_y) =
+                    (start.0, start.1, start.0, start.1);
+                for q in quarters {
+                    let [c1, c2, end] = q.map(|(ux, uy)| pt(ux, uy));
+                    commands.push(PathCommand::CurveTo(c1.0, c1.1, c2.0, c2.1, end.0, end.1));
+                    for (px, py) in [c1, c2, end] {
+                        min_x = min_x.min(px);
+                        min_y = min_y.min(py);
+                        max_x = max_x.max(px);
+                        max_y = max_y.max(py);
+                    }
+                }
+                commands.push(PathCommand::ClosePath);
+                let (style, gradient) = drawing_to_shape_style(&ellipse.drawing, self.dpi);
+                let node_id = tree.next_id();
+                parent.children.push(RenderNode::new(
+                    node_id,
+                    RenderNodeType::Path(PathNode::new(commands, style, gradient)),
+                    BoundingBox::new(min_x, min_y, max_x - min_x, max_y - min_y),
+                ));
+            }
             _ => {
                 // 그 외 도형(타원, 호, 그림 등): 기본 AABB 방식 폴백
                 let (p0x, p0y) = transform_pt(0.0, 0.0);
@@ -1663,6 +1702,9 @@ impl LayoutEngine {
                 parent.children.push(node);
             }
             ShapeObject::Line(line) => {
+                // 선 종류 "없음"(0)은 그리지 않는다. 사각형 등은 drawing_to_shape_style 이
+                // 같은 규칙으로 테두리를 끈다. 노드는 남겨 개체 질의·선택은 유지한다.
+                let line_visible = line.drawing.border_line.attr & 0x3F != 0;
                 let sa = &line.drawing.shape_attr;
                 let sx = if sa.original_width > 0 {
                     render_w / hwpunit_to_px(sa.original_width as i32, self.dpi)
@@ -1876,11 +1918,12 @@ impl LayoutEngine {
                         {
                             path_node.line_style = Some(line_style);
                         }
-                        let node = RenderNode::new(
+                        let mut node = RenderNode::new(
                             node_id,
                             RenderNodeType::Path(path_node),
                             BoundingBox::new(render_x, render_y, render_w, render_h),
                         );
+                        node.visible = line_visible;
                         parent.children.push(node);
                     } else {
                         // 제어점 없는 연결선 → 직선으로 렌더링
@@ -1902,11 +1945,12 @@ impl LayoutEngine {
                         line_node.cell_index = cell_index;
                         line_node.cell_para_index = cell_para_index;
                         line_node.outer_table_control_index = outer_table_control_index;
-                        let node = RenderNode::new(
+                        let mut node = RenderNode::new(
                             node_id,
                             RenderNodeType::Line(line_node),
                             BoundingBox::new(render_x, render_y, render_w, render_h),
                         );
+                        node.visible = line_visible;
                         parent.children.push(node);
                     }
                 } else {
@@ -1929,11 +1973,12 @@ impl LayoutEngine {
                     line_node.cell_index = cell_index;
                     line_node.cell_para_index = cell_para_index;
                     line_node.outer_table_control_index = outer_table_control_index;
-                    let node = RenderNode::new(
+                    let mut node = RenderNode::new(
                         node_id,
                         RenderNodeType::Line(line_node),
                         BoundingBox::new(render_x, render_y, render_w, render_h),
                     );
+                    node.visible = line_visible;
                     parent.children.push(node);
                 }
             }
@@ -2384,7 +2429,7 @@ impl LayoutEngine {
                     }),
                     BoundingBox::new(render_x, render_y, render_w, render_h),
                 );
-                parent.children.push(img_node);
+                self.append_picture_image_node(tree, parent, pic, img_node);
             }
             ShapeObject::Chart(chart) => {
                 // Task #195: 차트 placeholder (점선 테두리 + "차트" 라벨)
@@ -4096,11 +4141,7 @@ impl LayoutEngine {
                                 (x, inline_obj_y)
                             };
 
-                            let tokens =
-                                super::super::equation::document_script::tokenize(&eq.script);
-                            let ast =
-                                super::super::equation::parser::EqParser::for_document(tokens)
-                                    .parse();
+                            let ast = super::super::equation::document_script::parse(eq);
                             let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
                             let layout_box =
                                 super::super::equation::layout_for_paint(eq, &ast, self.dpi);

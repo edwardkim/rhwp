@@ -5,6 +5,21 @@ use super::*;
 
 pub(super) type Reference = (u16, String, TextStyle, usize, f64);
 
+pub(super) fn reference(
+    control: Option<&Control>,
+    number: u16,
+    style: TextStyle,
+    control_index: usize,
+) -> Reference {
+    let text = paragraph_layout::note_marker_text_from_control(control, number);
+    let marker_style = TextStyle {
+        font_size: FootnoteMarkerNode::font_size(style.font_size),
+        ..style.clone()
+    };
+    let width = estimate_text_width(&text, &marker_style);
+    (number, text, style, control_index, width)
+}
+
 pub(super) fn leading(
     para: &Paragraph,
     styles: &ResolvedStyleSet,
@@ -28,18 +43,12 @@ pub(super) fn leading(
             if position != line_start {
                 return None;
             }
-            let text = paragraph_layout::note_marker_text_from_control(Some(control), number);
             let style_id = para
                 .char_shapes
                 .first()
                 .map_or(0, |shape| shape.char_shape_id);
             let style = resolved_to_text_style(styles, style_id, 0);
-            let marker_style = TextStyle {
-                font_size: FootnoteMarkerNode::font_size(style.font_size),
-                ..style.clone()
-            };
-            let width = estimate_text_width(&text, &marker_style);
-            Some((number, text, style, index, width))
+            Some(reference(Some(control), number, style, index))
         })
         .collect()
 }

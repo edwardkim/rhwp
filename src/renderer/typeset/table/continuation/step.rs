@@ -1,8 +1,8 @@
 //! 표 도메인 조정. 기존 평가·상태 쓰기 순서를 보존한다.
 
 use crate::renderer::typeset::{
-    paragraph, row_geometry_table, table, BlockTableContinuationContext,
-    BlockTableContinuationSource, Issue2424TypesetProfile, TypesetEngine, TypesetState,
+    paragraph, table, BlockTableContinuationContext, BlockTableContinuationSource,
+    Issue2424TypesetProfile, TypesetEngine, TypesetState,
 };
 
 use super::fragment::FragmentProfile;
@@ -92,6 +92,25 @@ impl TypesetEngine {
                 &mut profile,
             )
         });
+        if continuation_context.is_complete() {
+            if let Some(tail) = continuation_context.prepared.computed_host_tail.take() {
+                let st = &mut continuation_context.flow_state;
+                let fmt = &tail.paragraph;
+                let range = tail.first_line..fmt.line_count();
+                let fit = fmt.line_content_height(range.clone(), 0.0);
+                if st.current_height + fit > st.available_height() && !st.current_items.is_empty() {
+                    st.advance_column_or_new_page();
+                }
+                st.record_host_text_fragment(para_idx, range.clone(), para, fmt, self.dpi);
+                st.append_item(crate::renderer::pagination::PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: range.start,
+                    end_line: range.end,
+                });
+                st.advance_flow_by(fmt.line_advances_sum(range) + fmt.spacing_after);
+                st.record_stored_paragraph_flow_end(para_idx, st.current_height);
+            }
+        }
         if let Some(started) = issue2424_step_started {
             use crate::renderer::layout::table_layout as issue2424_tl;
             use std::sync::atomic::Ordering::Relaxed;

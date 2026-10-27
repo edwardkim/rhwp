@@ -3,10 +3,10 @@
 use crate::renderer::typeset::{
     column_def_design_spacing_px, controls, footnote_between_notes_margin_px,
     footnote_separator_overhead_px, hwpunit_to_px, is_synthetic_line_seg, para_has_visible_text,
-    paragraph, row_geometry_table, state, table, BlockTableContinuationSource, ColumnDef,
-    ComposedParagraph, Control, FootnoteShape, MeasuredTable, PageDef, PageLayoutInfo,
-    PaginationResult, Paragraph, ResolvedStyleSet, ResumablePaginationStep,
-    ResumableTablePaginationJob, TypesetEngine, TypesetState,
+    paragraph, state, table, BlockTableContinuationSource, ColumnDef, ComposedParagraph, Control,
+    FootnoteShape, MeasuredTable, PageDef, PageLayoutInfo, PaginationResult, Paragraph,
+    ResolvedStyleSet, ResumablePaginationStep, ResumableTablePaginationJob, TypesetEngine,
+    TypesetState,
 };
 
 impl TypesetEngine {
@@ -167,7 +167,7 @@ impl TypesetEngine {
             // 재개 작업은 host 글이 없는 표만 받는다(`begin_resumable_table_pagination`).
             composed_all: &[],
             table,
-            row_geometry_table: row_geometry_table(table),
+            row_geometry_table: measured_table.row_geometry_table(table),
             measured_table,
             styles,
         };

@@ -3,7 +3,11 @@
 use super::{
     CellUnit, LayoutEngine, ResolvedStyleSet, RowCutResult, ROW_CUT_CAPACITY_FP_EPSILON_PX,
 };
-use crate::model::table::{Cell, Table};
+use crate::model::{
+    control::Control,
+    paragraph::LineSeg,
+    table::{Cell, Table},
+};
 
 /// 같은 내용 컷의 수용 전진과 실제 마지막 상자를 재귀 부모까지 구분한다.
 #[derive(Clone, Copy)]
@@ -15,14 +19,26 @@ pub(super) enum CutHeight {
 #[derive(Clone, Copy)]
 pub(super) enum RowCutCapacity<'a> {
     Content,
-    Physical(&'a [f64]),
+    Physical {
+        deltas: &'a [f64],
+        allow_stored_tail: bool,
+    },
 }
 
 impl<'a> RowCutCapacity<'a> {
     pub(super) fn deltas(self) -> Option<&'a [f64]> {
         match self {
             Self::Content => None,
-            Self::Physical(deltas) => Some(deltas),
+            Self::Physical { deltas, .. } => Some(deltas),
+        }
+    }
+
+    pub(super) fn allows_stored_tail(self) -> bool {
+        match self {
+            Self::Content => true,
+            Self::Physical {
+                allow_stored_tail, ..
+            } => allow_stored_tail,
         }
     }
 }
@@ -75,6 +91,50 @@ impl LayoutEngine {
         .then_some(complete)
     }
 
+    /// 실제 선택한 컷에 일반 글줄만 남는 재조판 행인지 확인한다.
+    /// 바깥 프레임을 쓰는 개체 viewport를 일반 글줄과 혼동하지 않는다.
+    pub(crate) fn row_cut_has_plain_reflow_units(
+        &self,
+        table: &Table,
+        row: usize,
+        start_cut: &[usize],
+        available: f64,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        if !self.row_uses_outer_fragment_frame(table, row) {
+            return false;
+        }
+        let (cut, _) =
+            self.advance_row_cut_for_physical_band(table, row, start_cut, available, styles);
+        let mut has_reflow_line = false;
+        for (slot, index) in Self::row_cut_cell_order(table, row).into_iter().enumerate() {
+            let cell = &table.cells[index];
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut.get(slot).copied().unwrap_or(0).min(units.len());
+            let end = cut
+                .end_cut
+                .get(slot)
+                .copied()
+                .unwrap_or(start)
+                .clamp(start, units.len());
+            for unit in &units[start..end] {
+                if unit.nested_row.is_some()
+                    || unit.nested_table_fragment.is_some()
+                    || unit.mixed_nested_fragment
+                    || unit.top_and_bottom_flow
+                    || unit.non_inline_control_range.is_some()
+                {
+                    return false;
+                }
+                has_reflow_line |= cell
+                    .paragraphs
+                    .get(unit.para_idx)
+                    .is_some_and(crate::renderer::para_has_no_stored_line_segs);
+            }
+        }
+        has_reflow_line
+    }
+
     /// 앞 쪽 꼬리의 무료 spacer는 바로 뒤 저장 프레임이 재시작함을 확인한다.
     /// 새 조각의 빈 줄은 양의 높이를 가진 상태로 같은 컷의 예약과 paint에 남긴다.
     pub(super) fn physical_start_after_leading_spacers(
@@ -103,6 +163,112 @@ impl LayoutEngine {
         } else {
             start
         }
+    }
+
+    /// 같은 저장 줄의 TAC 표 본체와 위·아래 여백이 그 줄 상자를 실제로 소유한다.
+    fn unit_owns_stored_inline_table_frame(&self, cell: &Cell, unit: &CellUnit) -> bool {
+        if !(self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().hwpx_stored_layout())
+        {
+            return false;
+        }
+        let Some(para) = cell.paragraphs.get(unit.para_idx) else {
+            return false;
+        };
+        if !para.text.trim().is_empty()
+            || para.stored_text_partition_is_dirty()
+            || para.cell_format_vpos_dirty
+            || crate::renderer::para_has_no_stored_line_segs(para)
+        {
+            return false;
+        }
+        para.controls.iter().enumerate().any(|(index, control)| {
+            let Control::Table(child) = control else {
+                return false;
+            };
+            if !child.common.treat_as_char
+                || child.common.height == 0
+                || self
+                    .render_normalization
+                    .borrow()
+                    .table_text_reflowed(child)
+            {
+                return false;
+            }
+            let Some(line_index) = super::super::control_line_seg_index(para, index) else {
+                return false;
+            };
+            let height = i64::from(child.common.height)
+                + i64::from(child.outer_margin_top)
+                + i64::from(child.outer_margin_bottom);
+            unit.vis_start <= line_index
+                && line_index < unit.vis_end
+                && para.line_segs.get(line_index).is_some_and(|line| {
+                    line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                        && i64::from(line.line_height) == height
+                })
+        })
+    }
+
+    /// 바깥 조각의 예산은 행 전체가 아닌 표의 실제 프레임 소유로 정한다.
+    /// 부모가 크기를 정하는 중첩 viewport는 자신의 예산을 유지한다.
+    pub(crate) fn row_uses_outer_fragment_frame(&self, table: &Table, row: usize) -> bool {
+        !self
+            .nested_table_ptrs
+            .borrow()
+            .contains(&(table as *const Table as usize))
+            && !Self::row_cut_cell_order(table, row).is_empty()
+    }
+
+    /// 현재 밴드가 실제로 소비하는 일반 글줄의 바깥 프레임이다.
+    /// 먼 개체의 존재나 표의 중첩 깊이만으로 현재 컷의 소유자를 추정하지 않는다.
+    pub(crate) fn row_cut_uses_outer_line_frame(
+        &self,
+        table: &Table,
+        row: usize,
+        start_cut: &[usize],
+        available: f64,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        if !self.row_uses_outer_fragment_frame(table, row) {
+            return false;
+        }
+        if self.row_has_plain_line_units(table, row, styles) {
+            return true;
+        }
+        // 내용 선택과 같은 물리 컷 생산자를 사용한다. 개체 viewport가 예약한
+        // 몫까지 일반 글줄의 바깥 예산으로 다시 차감하지 않는다.
+        let (cut, _) =
+            self.advance_row_cut_for_physical_band(table, row, start_cut, available, styles);
+        let mut has_content = false;
+        for (slot, index) in Self::row_cut_cell_order(table, row).into_iter().enumerate() {
+            let units = self.cell_units(&table.cells[index], table, styles);
+            let start = start_cut.get(slot).copied().unwrap_or(0).min(units.len());
+            let end = cut
+                .end_cut
+                .get(slot)
+                .copied()
+                .unwrap_or(start)
+                .clamp(start, units.len());
+            for unit in &units[start..end] {
+                if self.unit_owns_stored_inline_table_frame(&table.cells[index], unit) {
+                    return false;
+                }
+                if unit.nested_row.is_some()
+                    || unit.nested_table_fragment.is_some()
+                    || unit.mixed_nested_fragment
+                    || unit.top_and_bottom_flow
+                    || unit.non_inline_control_range.is_some()
+                {
+                    // 저장 부모 프레임이 없는 재구성 사다리는 이 viewport도
+                    // 현재 바깥 조각 안에서 예약해야 한다. 자식 reset을 부모
+                    // 쪽 프레임의 증거로 대신하지 않는다.
+                    return !self.table_uses_stored_fragment_coordinates(table);
+                }
+                has_content = true;
+            }
+        }
+        has_content
     }
 
     /// 내용 커서는 무높이 보조 spacer도 소비한다. 이어받은 조각의 실제
@@ -262,10 +428,18 @@ impl LayoutEngine {
         physical_budget: f64,
         styles: &ResolvedStyleSet,
     ) -> (RowCutResult, f64) {
+        // 외부 공동 앵커의 컷은 부모 패딩까지 포함한 물리 프레임과 비교했다.
+        // 일반 칸 예산으로 바꾸며 같은 패딩을 다시 빼지 않는다.
+        if let Some(cut) =
+            self.advance_reflow_external_row_cut(table, row, start_cut, physical_budget, styles)
+        {
+            return (cut, physical_budget);
+        }
         let padding = self.row_remaining_visible_cell_padding(table, row, start_cut, styles);
         let max_padding = padding.iter().copied().fold(0.0, f64::max);
         let mut physical_cut_budget = physical_budget;
         let mut previous_cut = None;
+        let mut allow_stored_tail = true;
         loop {
             let budget = (physical_cut_budget - max_padding).max(0.0);
             let deltas: Vec<f64> = padding
@@ -278,8 +452,21 @@ impl LayoutEngine {
                 start_cut,
                 budget,
                 styles,
-                RowCutCapacity::Physical(&deltas),
+                RowCutCapacity::Physical {
+                    deltas: &deltas,
+                    allow_stored_tail,
+                },
             );
+            if let Some(fitted) = self.advance_reflow_nested_closing_band(
+                table,
+                row,
+                start_cut,
+                cut.clone(),
+                physical_budget,
+                styles,
+            ) {
+                return (fitted, budget);
+            }
             let required = self.row_cut_height(
                 table,
                 row,
@@ -311,6 +498,15 @@ impl LayoutEngine {
                     "DIAG_SCAN PHYSICAL_REFIT r={row} start={start_cut:?} end={:?} physical={physical_budget:.3} budget={budget:.3} required={required:.3} owners={owners:?}",
                     cut.end_cut,
                 );
+            }
+            // 실제 상자가 예산을 넘으면 옛 저장 reset까지의 꼬리 흡수는
+            // 현재 컷의 수용 근거가 아니다. 원래 물리 예산에서 다시 선택해
+            // 초과를 일으킨 허용량 때문에 정상 앞부분까지 물러나지 않는다.
+            if excess > ROW_CUT_CAPACITY_FP_EPSILON_PX && allow_stored_tail {
+                allow_stored_tail = false;
+                physical_cut_budget = physical_budget;
+                previous_cut = None;
+                continue;
             }
             if excess <= ROW_CUT_CAPACITY_FP_EPSILON_PX
                 || physical_cut_budget <= 0.0

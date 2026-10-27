@@ -59,6 +59,9 @@ pub(in crate::renderer::typeset) fn place(
         crate::renderer::typeset::notes::footnotes::measure::BodyFootnoteMeasure { engine, styles }
             .stored_current_area_height(st, paragraphs)
     });
+    paragraph::spacing::confirm_split_successor(st, para_idx, para, fmt, paragraphs);
+    let entry_format = paragraph::spacing::confirmed_format(st, para_idx, fmt, paragraphs);
+    let entry_format = entry_format.as_ref().unwrap_or(fmt);
     let paragraph::FitBudget {
         strict_after_empty_host_float,
         layout_drift_safety_px,
@@ -70,7 +73,7 @@ pub(in crate::renderer::typeset) fn place(
         st,
         para_idx,
         para,
-        fmt,
+        entry_format,
         paragraphs,
         engine.profile.get().session_edited(),
         dpi,
@@ -87,7 +90,9 @@ pub(in crate::renderer::typeset) fn place(
         return;
     }
 
-    if paragraph::try_place_multicolumn_paragraph(st, para_idx, para, fmt, dpi) {
+    let early_format = paragraph::spacing::confirmed_format(st, para_idx, fmt, paragraphs);
+    let early_format = early_format.as_ref().unwrap_or(fmt);
+    if paragraph::try_place_multicolumn_paragraph(st, para_idx, para, early_format, dpi) {
         return;
     }
 
@@ -95,7 +100,7 @@ pub(in crate::renderer::typeset) fn place(
         st,
         para_idx,
         para,
-        fmt,
+        early_format,
         is_last_in_section,
         available,
         layout_drift_safety_px,
@@ -239,13 +244,15 @@ pub(in crate::renderer::typeset) fn place(
         );
         return;
     }
+    let current_format = paragraph::spacing::confirmed_format(st, para_idx, fmt, paragraphs);
+    let current_format = current_format.as_ref().unwrap_or(fmt);
     let paragraph::metrics::ParagraphFlowHints {
         body_bottom_vpos,
         trim_spacing_before_for_flow,
         trimmed_sb_gate,
     } = paragraph::metrics::flow_hints(
         para,
-        fmt,
+        current_format,
         paragraphs,
         para_idx,
         st.paragraph_flow_profile(),

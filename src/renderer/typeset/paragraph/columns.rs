@@ -58,6 +58,7 @@ pub(super) fn plan_fragment(
         item,
         height: part_height,
         content_height: None,
+        last_line_spacing: None,
     })
 }
 

@@ -1453,6 +1453,13 @@ impl CanvasKitReplayPlanBuilder {
 
         for op in ops {
             match op {
+                PaintOp::CharOverlap { bbox, run, .. } => {
+                    if let Some(plan) = crate::renderer::char_overlap::project(run, *bbox) {
+                        for glyph in plan.border.iter().chain(&plan.interior) {
+                            self.record_required_font_family(&glyph.run.style.font_family);
+                        }
+                    }
+                }
                 PaintOp::TextRun { run, .. } if text_run_selected => {
                     self.record_required_font_family(&run.style.font_family);
                     let display_text =
@@ -3137,6 +3144,7 @@ mod tests {
         superscript.char_overlap = Some(CharOverlapInfo {
             border_type: 1,
             inner_char_size: 100,
+            composition: None,
         });
         superscript
             .style
@@ -3195,6 +3203,7 @@ mod tests {
         rotated.char_overlap = Some(CharOverlapInfo {
             border_type: 1,
             inner_char_size: 100,
+            composition: None,
         });
         let rotated_tree = tree_with_ops(vec![PaintOp::char_overlap(bbox(), rotated)]);
         let rotated_plan =
@@ -3213,6 +3222,7 @@ mod tests {
         invalid_overlap.char_overlap = Some(CharOverlapInfo {
             border_type: 9,
             inner_char_size: 100,
+            composition: None,
         });
         let mut invalid_leader = text_run("A");
         invalid_leader

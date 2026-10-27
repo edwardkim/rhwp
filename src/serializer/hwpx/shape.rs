@@ -713,16 +713,14 @@ fn write_rotation_info<W: Write>(
 }
 
 /// `<hp:renderingInfo>` — `raw_rendering` (cnt u16 LE + trans 6×f64 + cnt×(sca, rot))
-/// 를 디코드해 행렬을 재구성한다 (`parse_rendering_info` 의 역). raw가 없으면
-/// HWP와 같은 생성 경로를 쓴다. pic 자식도 공유하며 유효한 원본 행렬은 보존한다.
+/// 를 디코드해 행렬을 재구성한다 (`parse_rendering_info` 의 역). raw 비정합/빈 경우
+/// HWP와 같은 편집 변환을 생성한다. pic 자식도 공유 (그룹 내 자식 transMatrix 보존).
 pub(crate) fn write_rendering_info<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
-    const IDENTITY: [f64; 6] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0];
-    let rendering = crate::serializer::control::shape_rendering_bytes(sa);
-    let (trans, pairs) =
-        decode_raw_rendering(&rendering).unwrap_or((IDENTITY, vec![(IDENTITY, IDENTITY)]));
+    let (trans, pairs) = decode_raw_rendering(&sa.raw_rendering)
+        .unwrap_or_else(|| crate::serializer::shape_rendering::generated(sa));
 
     start_tag(w, "hp:renderingInfo")?;
     write_matrix(w, "hc:transMatrix", &trans)?;

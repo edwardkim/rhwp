@@ -29,6 +29,9 @@ pub enum EqNode {
     /// 수평 나열 (여러 노드의 연속)
     Row(Vec<EqNode>),
 
+    /// 구형 저장 수식의 명시적 중괄호. 일반 Row와 다른 좌표 프레임 소유를 보존한다.
+    Group(Box<EqNode>),
+
     /// 일반 텍스트 (이탤릭체로 렌더링되는 변수 등)
     Text(String),
 
@@ -181,6 +184,14 @@ pub enum PileAlign {
 }
 
 impl EqNode {
+    /// 기존 자연 배치의 분류는 그룹 본체를 읽고, 구형 좌표 평면은 Group 자체를 읽는다.
+    pub(super) fn ungrouped(&self) -> &Self {
+        match self {
+            Self::Group(body) => body.ungrouped(),
+            other => other,
+        }
+    }
+
     /// Row에서 불필요한 중첩 제거
     pub fn simplify(self) -> Self {
         match self {
@@ -199,6 +210,7 @@ impl EqNode {
                     EqNode::Row(children)
                 }
             }
+            EqNode::Group(body) => EqNode::Group(Box::new(body.simplify())),
             other => other,
         }
     }

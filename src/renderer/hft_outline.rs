@@ -176,6 +176,7 @@ type SourceGlyphKey = ([u8; 32], u32, u16);
 /// 호스트가 실제 FontFace에 적재한 프로그램만 보관한다. 파일 이름으로 다시 찾지 않는다.
 #[derive(Clone, Default)]
 pub(crate) struct HftOutlineFonts {
+    pub(crate) pua_coverage: super::pua_glyph::FontCoverage,
     faces: HashMap<String, Arc<SourceFace>>,
     cache: Arc<Mutex<ContourCache<SourceGlyphKey>>>,
 }

@@ -10,6 +10,7 @@ use crate::model::paragraph::Paragraph;
 use crate::model::shape::common_obj_offsets;
 
 use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+mod creation_line;
 
 // 렌더 트리에서 해당 표 노드를 찾아 셀 bbox를 수집
 fn find_table_cells(
@@ -477,8 +478,9 @@ impl DocumentCore {
         };
         // 한컴 기본: 셀 높이 = top + bottom padding (빈 셀 최소 높이)
         let cell_height: u32 = (cell_pad.top + cell_pad.bottom) as u32;
-        // 한컴 기본: 행 렌더링 높이 = padding_top + line_height(1000) + padding_bottom
-        let rendered_row_height: u32 = cell_pad.top as u32 + 1000 + cell_pad.bottom as u32;
+        let inherited_line = creation_line::for_cursor(self, section_idx, para_idx, char_offset);
+        let rendered_row_height: u32 =
+            cell_pad.top as u32 + inherited_line.line_height.max(0) as u32 + cell_pad.bottom as u32;
         let total_width: u32 = col_widths.iter().sum();
         let total_height = rendered_row_height * row_count as u32;
 
@@ -570,14 +572,8 @@ impl DocumentCore {
                     // line_segs 보정: new_empty()의 기본 LineSeg는 line_height=0이므로 항상 교체
                     let seg_w = (col_width as i32) - 141 - 141; // 셀 폭 - 좌우 패딩
                     cp.line_segs = vec![LineSeg {
-                        text_start: 0,
-                        line_height: 1000,
-                        text_height: 1000,
-                        baseline_distance: 850,
-                        line_spacing: 600,
                         segment_width: seg_w,
-                        tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                        ..Default::default()
+                        ..inherited_line.clone()
                     }];
                 }
                 // raw_list_extra: 빈 벡터 (cell.width 필드가 LIST_HEADER에 직렬화됨)
@@ -688,14 +684,8 @@ impl DocumentCore {
                 char_shape_id: default_char_shape_id,
             }],
             line_segs: vec![LineSeg {
-                text_start: 0,
-                line_height: 1000,
-                text_height: 1000,
-                baseline_distance: 850,
-                line_spacing: 600,
                 segment_width: 0, // 한컴 표준: 표 문단의 segment_width는 0
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                ..Default::default()
+                ..inherited_line.clone()
             }],
             para_shape_id: table_para_shape_id,
             style_id: 0,
@@ -723,14 +713,8 @@ impl DocumentCore {
                     char_shape_id: default_char_shape_id,
                 }],
                 line_segs: vec![LineSeg {
-                    text_start: 0,
-                    line_height: 1000,
-                    text_height: 1000,
-                    baseline_distance: 850,
-                    line_spacing: 600,
                     segment_width: content_width as i32,
-                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                    ..Default::default()
+                    ..inherited_line.clone()
                 }],
                 has_para_text: false,
                 raw_header_extra: empty_raw_header_extra,
@@ -941,7 +925,9 @@ impl DocumentCore {
             top: 141,
             bottom: 141,
         };
-        let min_row_height: u32 = cell_pad.top as u32 + 1000 + cell_pad.bottom as u32;
+        let inherited_line = creation_line::for_cursor(self, section_idx, para_idx, char_offset);
+        let min_row_height: u32 =
+            cell_pad.top as u32 + inherited_line.line_height.max(0) as u32 + cell_pad.bottom as u32;
         let row_heights: Vec<u32> = if let Some(heights) = row_heights_hu {
             if heights.len() == row_count as usize {
                 heights.iter().map(|h| (*h).max(min_row_height)).collect()
@@ -1017,17 +1003,9 @@ impl DocumentCore {
                         cp.raw_header_extra = rhe;
                     }
                     let seg_w = (col_w as i32) - 141 - 141;
-                    let text_height =
-                        row_height.saturating_sub((cell_pad.top + cell_pad.bottom) as u32);
                     cp.line_segs = vec![LineSeg {
-                        text_start: 0,
-                        line_height: text_height as i32,
-                        text_height: text_height as i32,
-                        baseline_distance: (text_height as f64 * 0.85) as i32,
-                        line_spacing: 600,
                         segment_width: seg_w,
-                        tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                        ..Default::default()
+                        ..inherited_line.clone()
                     }];
                 }
                 cell.raw_list_extra = Vec::new();
@@ -1566,60 +1544,7 @@ impl DocumentCore {
                 )));
             }
 
-            let text_chars: Vec<char> = para.text.chars().collect();
-            let mut ci = 0usize;
-            let mut prev_end: u32 = 0;
-            let mut gap_start: Option<u32> = None;
-            'outer: for i in 0..text_chars.len() {
-                let offset = if i < para.char_offsets.len() {
-                    para.char_offsets[i]
-                } else {
-                    prev_end
-                };
-                while prev_end + 8 <= offset && ci < para.controls.len() {
-                    if ci == inner_control_idx {
-                        gap_start = Some(prev_end);
-                        break 'outer;
-                    }
-                    ci += 1;
-                    prev_end += 8;
-                }
-                let char_size: u32 = if text_chars[i] == '\t' {
-                    8
-                } else if text_chars[i].len_utf16() == 2 {
-                    2
-                } else {
-                    1
-                };
-                prev_end = offset + char_size;
-            }
-            if gap_start.is_none() {
-                while ci < para.controls.len() {
-                    if ci == inner_control_idx {
-                        gap_start = Some(prev_end);
-                        break;
-                    }
-                    ci += 1;
-                    prev_end += 8;
-                }
-            }
-
-            if let Some(gs) = gap_start {
-                let threshold = gs + 8;
-                for offset in para.char_offsets.iter_mut() {
-                    if *offset >= threshold {
-                        *offset -= 8;
-                    }
-                }
-            }
-
-            deleted_table = matches!(para.controls.remove(inner_control_idx), Control::Table(_));
-            if inner_control_idx < para.ctrl_data_records.len() {
-                para.ctrl_data_records.remove(inner_control_idx);
-            }
-            if para.char_count >= 8 {
-                para.char_count -= 8;
-            }
+            deleted_table = matches!(para.remove_control(inner_control_idx), Control::Table(_));
             Self::reflow_paragraph_line_segs_after_control_delete(para, &self.styles, self.dpi);
         }
 

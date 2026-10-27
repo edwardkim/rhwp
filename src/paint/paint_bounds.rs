@@ -27,15 +27,32 @@ impl PaintOp {
                 expand(logical, background.border_width * 0.5)
             }
             Self::TextRun { run, .. } => text_bounds(logical, run),
-            Self::GlyphRun { run, .. } => expand(
-                logical,
-                run.paint_style
-                    .font_size
-                    .max(1.0)
+            Self::GlyphRun { run, .. } => {
+                let size = run.paint_style.font_size.max(1.0);
+                let padding = size
                     .max(run.paint_style.shadow_offset_x.abs())
                     .max(run.paint_style.shadow_offset_y.abs())
-                    * 0.2,
-            ),
+                    * 0.2;
+                let mut bounds = expand(logical, padding);
+                // 줄 방향을 해소한 glyph는 논리 런 밖에도 놓일 수 있다.
+                for position in &run.positions {
+                    if position.x.is_finite() && position.y.is_finite() {
+                        bounds = union(
+                            bounds,
+                            affine_bounds(
+                                BoundingBox::new(
+                                    position.x - size * 0.2,
+                                    position.y - size,
+                                    size * 1.4,
+                                    size * 1.4,
+                                ),
+                                Some(run.placement.run_to_page),
+                            ),
+                        );
+                    }
+                }
+                bounds
+            }
             Self::GlyphOutline { outline, .. } => {
                 let padding = outline
                     .paint_style
@@ -73,6 +90,9 @@ impl PaintOp {
                 bounds
             }
             Self::CharOverlap { run, .. } => {
+                if let Some(visual) = crate::renderer::char_overlap::ink_bounds(run, logical) {
+                    return PaintBounds { logical, visual };
+                }
                 let padding = run
                     .style
                     .font_size
@@ -146,9 +166,7 @@ impl PaintOp {
                 shape_bounds(bounds, logical, path.transform)
             }
             Self::Image { image, .. } => {
-                let effective = image
-                    .transform
-                    .effective_image_bbox(&image.paint_bbox(&logical));
+                let effective = image.transformed_paint_bbox(&logical);
                 shape_bounds(effective, effective, image.transform)
             }
             Self::ControlLabel { .. }
@@ -757,7 +775,7 @@ fn rotate_text(bounds: BoundingBox, logical: BoundingBox, run: &TextRunNode) -> 
 }
 
 fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
-    let (font_size, _) = effective_text_font_size_and_baseline(run);
+    let (font_size, baseline) = effective_text_font_size_and_baseline(run);
     // Character position moves ink, not the line's logical flow box. Keep both
     // extents in the conservative paint bounds so clipping/cache invalidation
     // cannot drop a raised/lowered glyph. Rotation still uses the original box.
@@ -787,13 +805,47 @@ fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
     if run.style.emphasis_dot != 0 {
         padding = padding.max(font_size * 0.35);
     }
-    let mut bounds = expand(positioned, padding);
+    let text = run.display_or_text();
+    let positions = run.replay_positions_for(text);
+    let mut painted = positioned;
+    if let Some(visual) = crate::renderer::text_direction::VisualTextPositions::for_style(
+        text, &positions, &run.style,
+    ) {
+        for (left, right) in visual.segments(text.chars().count()) {
+            painted = union(
+                painted,
+                BoundingBox::new(
+                    logical.x + left,
+                    positioned.y,
+                    right - left,
+                    positioned.height,
+                ),
+            );
+        }
+    }
+    let mut bounds = expand(painted, padding);
+    if let Some(ink) = crate::renderer::text_ink::zero_advance_ink_bbox(logical, run) {
+        bounds = union(bounds, ink);
+    }
+    if let Some(ink) = crate::renderer::emphasis::geometry(text, &positions, &run.style, font_size)
+        .and_then(|g| g.ink_bounds())
+    {
+        bounds = union(
+            bounds,
+            BoundingBox::new(
+                logical.x + ink.x,
+                logical.y + baseline + ink.y,
+                ink.width,
+                ink.height,
+            ),
+        );
+    }
     if run.style.shadow_type != 0 {
         let offset = BoundingBox::new(
-            positioned.x + run.style.shadow_offset_x,
-            positioned.y + run.style.shadow_offset_y,
-            positioned.width,
-            positioned.height,
+            painted.x + run.style.shadow_offset_x,
+            painted.y + run.style.shadow_offset_y,
+            painted.width,
+            painted.height,
         );
         bounds = union(
             bounds,
@@ -874,23 +926,62 @@ fn decoration_bounds(
     let end = positions.len().saturating_sub(trim.min(trailing));
     let width = positions.get(end.saturating_sub(1)).copied().unwrap_or(0.0);
     let (font_size, baseline) = effective_text_font_size_and_baseline(run);
+    if kind == TextDecorationKind::EmphasisDot {
+        let ink = crate::renderer::emphasis::geometry(&text, &positions, &run.style, font_size)
+            .and_then(|g| g.ink_bounds());
+        return rotate_text(
+            ink.map_or(logical, |ink| {
+                union(
+                    logical,
+                    BoundingBox::new(
+                        logical.x + ink.x,
+                        logical.y + baseline + ink.y,
+                        ink.width,
+                        ink.height,
+                    ),
+                )
+            }),
+            logical,
+            run,
+        );
+    }
+    let top_geometry = (kind == TextDecorationKind::Underline)
+        .then(|| crate::renderer::text_decoration::top_underline_geometry(&run.style, font_size))
+        .flatten();
+    let end_pad = top_geometry
+        .as_ref()
+        .and_then(|g| g.dots.as_ref())
+        .map_or(0.0, |d| d.radius);
     let (y, height) = match kind {
-        TextDecorationKind::Underline => (
-            if run.style.underline == UnderlineType::Top {
-                baseline - font_size + 1.0
+        TextDecorationKind::Underline => {
+            if let Some(top) = &top_geometry {
+                let (top, bottom) = top.vertical_bounds();
+                (baseline + top, bottom - top)
             } else {
-                baseline + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO
-            },
-            1.0,
-        ),
+                (
+                    if run.style.underline == UnderlineType::Top {
+                        baseline - font_size + 1.0
+                    } else {
+                        baseline
+                            + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO
+                    },
+                    1.0,
+                )
+            }
+        }
         TextDecorationKind::Strikethrough => (baseline - font_size * 0.3, 1.0),
-        TextDecorationKind::EmphasisDot => (baseline - font_size * 1.2, font_size * 0.3),
+        TextDecorationKind::EmphasisDot => (baseline, 0.0),
     };
     rotate_text(
         union(
             logical,
             expand(
-                BoundingBox::new(logical.x, logical.y + y, width, height),
+                BoundingBox::new(
+                    logical.x - end_pad,
+                    logical.y + y,
+                    width + 2.0 * end_pad,
+                    height,
+                ),
                 2.0,
             ),
         ),

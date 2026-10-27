@@ -30,6 +30,8 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) current_height: f64,
     /// 현재 단 시작 시점의 논리 높이 (px)
     pub(in crate::renderer::typeset) current_start_height: f64,
+    /// 첫 물리 쪽의 모든 단이 공유하는 인증된 저장 시작 밴드.
+    pub(in crate::renderer::typeset) stored_initial_column_band: f64,
     /// 현재 단에 미주 흐름 항목이 포함되어 있는지 여부
     pub(in crate::renderer::typeset) current_endnote_flow: bool,
     /// [#5886] 현재 단에 문단-사이 compact 되감김을 넣었으면, 이후 문단도
@@ -156,6 +158,10 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) paragraph_origins:
         std::collections::HashMap<usize, crate::renderer::pagination::ParagraphOrigin>,
     pub(super) pending_paragraph_origins: Vec<PendingParagraphOrigin>,
+    pub(in crate::renderer::typeset) host_compositions: std::collections::HashMap<
+        usize,
+        std::sync::Arc<crate::renderer::composer::ComposedParagraph>,
+    >,
     pub(in crate::renderer::typeset) stored_paragraph_flow_ends:
         std::collections::HashMap<usize, f64>,
     /// 쪽 상단의 첫 문단이 이미 예약한 저장 앞 간격.
@@ -167,7 +173,7 @@ pub(in crate::renderer::typeset) struct StateView {
     >,
     /// [#7330] 현재 단에서 확정한 자리차지 표가 민 host 첫 글줄의 남은 앞 간격.
     pub(in crate::renderer::typeset) float_pushed_line_spacings:
-        std::collections::HashMap<usize, f64>,
+        std::collections::HashMap<usize, crate::renderer::float_placement::FloatPushedFirstLine>,
     /// 단 상대 TAC 물리 하단. 저장 host 높이와 별개로 다음 어울림 후보 줄을 제한한다.
     pub(in crate::renderer::typeset) inline_box_flow_bottom: f64,
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를

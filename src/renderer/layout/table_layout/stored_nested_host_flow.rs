@@ -26,6 +26,11 @@ impl LayoutEngine {
         para_index: usize,
         cut: Option<(usize, usize)>,
     ) -> Option<StoredNestedHostFlow> {
+        if let Some(height) =
+            self.block_following_host_flow_height(cell, table, styles, para_index, cut)
+        {
+            return Some(StoredNestedHostFlow::BeforeLine { height });
+        }
         if cell.dirty_flag
             || self.profile.get().session_edited()
             || !(self.profile.get().hwp5_stored_pagination_layout()

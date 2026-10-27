@@ -50,7 +50,7 @@ Visual Sweep 보정 `4fe5530d6`을 사용한 [공통 재산출 기록](pr_6886_6
 
 - 입력: `/Users/tsjang/Downloads/korea_downloads/중소벤처기업부/156492236_220119_(보도참고자료)_규제샌드박스_시행_3주년(규제자유툭구단).hwpx`.
 - 실제 검토 범위: 5·7·9쪽 / 전체 17쪽.
-- 기준 PDF: [pdf/156492236-regulatory-sandbox-full-2020.pdf](../../../pdf/156492236-regulatory-sandbox-full-2020.pdf).
+- 기준 PDF: [pdf/156492236-regulatory-sandbox-full-2020.pdf](../assets/issue_8236/regulatory_sandbox/reference-full-2020.pdf).
 - 자동 회귀 입력은 원본 section/header XML을 보존한 기존 [공개 최소 샘플](../../../samples/issue4090/156492236_규제샌드박스_min.hwpx)을 재사용한다.
 - [자료 연결·출처](../../../samples/issue6887/README.md)와 [manifest](../../../samples/issue6887/MANIFEST.json)에 원본/최소본의 서로 다른 hash와 역할을 기록했다. 최소본을 전체 그림 시각 대조용 원본으로 바꿔 부르지 않는다.
 
@@ -65,7 +65,7 @@ roundtrip PASS는 같은 렌더러 왕복 간 동일성이지 한컴 일치나 �
 ## 보류 해소를 위해 완료한 보정
 
 - 기존 issue4090 공개 최소본을 발견해 재사용했다. 새 23.2MB 원본 중복 추가나 기존 baseline 완화는 하지 않았다.
-- [전용 회귀](../../../tests/cases/issue_6887_para_float_outer_margin.rs)는 원본 `pi=44, ci=1` 표의 PARA / LEFT / Square / 비-TAC / 여백 1417HU 선언을 먼저 확인한다.
+- [전용 회귀](../assets/issue_8236/regulatory_sandbox/issue_6887_para_float_outer_margin.rs.txt)는 원본 `pi=44, ci=1` 표의 PARA / LEFT / Square / 비-TAC / 여백 1417HU 선언을 먼저 확인한다.
 - Left·Inside에서는 1417HU(18.8933px)가 한 번만 적용되고, Center·Right·Outside에서는 왼쪽 여백이 추가되지 않으며 음수 여백도 이동을 만들지 않음을 검사한다.
 - 크기 비교는 `280.2933333333333` 대 `280.29333333333335`의 f64 반올림 때문에 처음 실패했다. 사용자 승인으로 크기에만 `1e-9px` 허용을 적용했다. 가로 이동량·비대상 정렬 검사는 그대로 유지했다.
 - 초기 import 컴파일 오류와 위 엄밀 비교 실패는 메인터너 테스트의 문제였으며, 수정 후 focused·전체 회귀를 다시 실행해 통과했다.

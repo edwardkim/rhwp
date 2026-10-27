@@ -1182,6 +1182,12 @@ export interface LayerPageBackgroundOp {
 }
 
 export interface LayerTextStyle {
+  /** 줄 전체에서 해소한 방향. 논리 positions와 원문 주소는 유지한다. */
+  bidiLayout?: {
+    scalarCount: number;
+    logicalWidth: number;
+    runs: { start: number; end: number; x: number; rtl: boolean }[];
+  };
   fontFamily?: string;
   fontSize?: number;
   color?: string;
@@ -1249,6 +1255,9 @@ export interface LayerTextRunOp {
   bbox: LayerBounds;
   text: string;
   displayText?: string;
+  /** 주소·전진은 원 표시 자소 기준이다. 실제 face에 가시 glyph가 있을 때만 선택한다. */
+  puaGlyphCandidates?: Array<{start: number; end: number; glyph: string; fallbackGlyph?: string}>;
+  puaGlyphCandidatesComplete?: boolean;
   /** Run-local baseline offset from bbox.y when placement is absent. */
   baseline?: number;
   rotation?: number;
@@ -1406,6 +1415,12 @@ export interface LayerImageOp {
   bbox: LayerBounds;
   /** Shared producer result before rotation; bbox remains the occupied frame. */
   imagePaintBBox?: LayerBounds;
+  /** 회전 전 출력 크기. 없으면 기존 bbox 계약을 사용한다. */
+  paintBbox?: LayerBounds;
+  /** 그림 변환 바깥에서 적용하는 페이지 좌표의 저장 viewport. */
+  paintClip?: LayerBounds;
+  /** 저장 viewport의 실제 네 꼭짓점. 회전 외접 상자로 대체하지 않는다. */
+  paintClipPath?: [number, number][];
   /** Explicit source sampling; absent preserves the output profile policy. */
   imageInterpolation?: 'nearest' | 'linear';
   /** 실제 Print 색 전달 payload의 축소 재구성 계약. */
@@ -1587,6 +1602,26 @@ export interface LayerTextDecorationOp {
     emphasisDot: number;
     positions: number[];
     positionsComplete: boolean;
+    /** 본문과 독립된 강조점 face와 표시 자소 소속. */
+    emphasis?: {
+      fontFamily: string;
+      glyph: string;
+      fontSize: number;
+      bold: boolean;
+      ratio: number;
+      skewX: number;
+      baselineOffset: number;
+      positions: number[];
+      browserText: string;
+      browserOffset: number;
+      browserAlignEnd?: boolean;
+    };
+    /** 실제 글줄 메트릭과 독립 Print로 해소한 기하. 클라이언트에서 크기를 다시 추정하지 않는다. */
+    topUnderline?: {
+      phase?: number;
+      strokes: Array<{ offset: number; width: number; dash: number[] }>;
+      dots: { offset: number; radius: number; step: number } | null;
+    };
   };
 }
 
@@ -1630,6 +1665,12 @@ export interface LayerCharOverlapOp {
   positions: number[];
   positionsComplete: boolean;
   charOverlap: LayerCharOverlap;
+  /** 원문 겹침의 공통 배치. 최종 좌표·스타일을 재계산하지 않고 소비한다. */
+  composition?: {
+    reversed: boolean;
+    border: LayerTextRunOp | null;
+    interior: LayerTextRunOp[];
+  };
 }
 
 export interface LayerGlyphRunOp {

@@ -285,7 +285,8 @@ impl LayoutEngine {
                                 .get(&(para_index, control_index))
                                 .filter(|placement| matches!(placement.flow,
                                     super::float_placement::ParagraphFloatFlow::StoredPicture { .. }
-                                        | super::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. })
+                                        | super::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. }
+                                        | super::float_placement::ParagraphFloatFlow::InlineHostPicture { .. })
                                     || (placement.flow == super::float_placement::ParagraphFloatFlow::Exclusion
                                         && placement.stored_host_origin.is_some()));
                             let (vpos_accounts_for_height, pic_y) = stored_picture
@@ -458,6 +459,10 @@ impl LayoutEngine {
                                 // 복수 그림의 합집합 계획은 빈 호스트 줄도 이미 소유한다.
                                 && !stored_picture.is_some_and(|placement| matches!(placement.flow,
                                     super::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. }))
+                                // 공동 호스트는 다른 쪽에 남은 TAC 줄도 이미 소유한다.
+                                // 이 그림 뒤에 같은 빈 줄을 다시 더하지 않는다.
+                                && !stored_picture.is_some_and(|placement| matches!(placement.flow,
+                                    super::float_placement::ParagraphFloatFlow::InlineHostPicture { .. }))
                             {
                                 let has_visible_text =
                                     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');

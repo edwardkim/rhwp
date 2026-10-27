@@ -1,0 +1,48 @@
+{
+  "page": 94,
+  "dpi": 96,
+  "coordinate_system": "paper origin CSS px; PDF point coordinates times 96/72",
+  "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+  "pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+  "tolerance_css_px": 2,
+  "objects": [
+    {
+      "section": 2,
+      "paragraph": 657,
+      "control": 0,
+      "child": 0,
+      "pdf_vector_bounds_pt": [
+        118.37200164794922,
+        130.84698486328125,
+        481.4739990234375,
+        277.4880065917969
+      ],
+      "outline_bbox_css_px": {
+        "x": 157.82933553059897,
+        "y": 174.462646484375,
+        "width": 484.13599650065106,
+        "height": 195.5213623046875
+      },
+      "pdf_stroke_width_pt": 0.11999999731779099
+    },
+    {
+      "section": 2,
+      "paragraph": 661,
+      "control": 0,
+      "child": 0,
+      "pdf_vector_bounds_pt": [
+        127.12300109863281,
+        359.5450134277344,
+        481.489013671875,
+        664.2249755859375
+      ],
+      "outline_bbox_css_px": {
+        "x": 169.4973347981771,
+        "y": 479.3933512369792,
+        "width": 472.48801676432294,
+        "height": 406.2399495442708
+      },
+      "pdf_stroke_width_pt": 0.11999999731779099
+    }
+  ]
+}

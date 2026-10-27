@@ -31,6 +31,7 @@ pub(super) fn plan(
                 },
                 height: fmt.line_advances_sum(0..total_lines),
                 content_height: None,
+                last_line_spacing: None,
             });
         }
     } else if decoration_host_text_pending && !flow_table_owns_host_text {
@@ -45,6 +46,7 @@ pub(super) fn plan(
                 },
                 height: fmt.total_height,
                 content_height: None,
+                last_line_spacing: None,
             });
         }
         // [#7047] **글자 없는** 데코레이션 표 host 도 자기 줄을 흐름에 낸다.
@@ -70,6 +72,7 @@ pub(super) fn plan(
                 },
                 height: hwpunit_to_px(advance_hu, dpi),
                 content_height: None,
+                last_line_spacing: None,
             });
         }
     }

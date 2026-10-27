@@ -86,7 +86,7 @@ fn first_sample(ext: &str) -> Option<std::path::PathBuf> {
             .filter_map(|e| e.ok().map(|e| e.path()))
             .filter(|p| !is_deferred_exam_document(p.to_string_lossy().as_ref()))
             .filter(|p| {
-                !exam_fixtures::is_exam_fixture(p)
+                !exam_fixtures::is_deferred_fixture(p)
                     && p.is_file()
                     && corpus_scope::sample_is_in_scope(p)
                     && p.extension()

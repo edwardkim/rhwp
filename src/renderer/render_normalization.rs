@@ -4,6 +4,7 @@
 //! durable cache keys; pointer indexes are rebuilt from the current source IR
 //! and exist only as a fast lookup surface for renderer hot paths.
 
+pub(crate) mod cached_frame_owner;
 mod stored_nested_text_frames;
 pub(crate) use stored_nested_text_frames::{StoredNestedTextFrames, StoredTextFrame};
 
@@ -15,6 +16,7 @@ use std::sync::Arc;
 
 pub(crate) mod math_table;
 pub(crate) mod math_textbox;
+pub(crate) mod stored_text_metrics;
 pub(crate) mod stored_word_tail;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -83,6 +85,7 @@ pub struct RenderNormalizationOverlay {
     text_reflowed_tables_by_pointer: HashSet<usize>,
     rendered_cell_frame_changes: HashMap<usize, HashSet<(u16, u16)>>,
     rebased_table_frames_by_pointer: HashSet<usize>,
+    expanded_inline_host_tables_by_pointer: HashSet<usize>,
     nested_tables_with_reflowed_hosts: HashSet<usize>,
     stored_nested_text_frames_by_pointer: HashMap<usize, Arc<StoredNestedTextFrames>>,
 }
@@ -359,6 +362,24 @@ impl RenderNormalizationOverlay {
                 };
                 let old_pointer = old.as_ref() as *const Table as usize;
                 let new_pointer = new.as_ref() as *const Table as usize;
+                // 짧은 저장 줄을 실제 인라인 상자로 확장한 출처를 보존한다.
+                // 투영 뒤에는 줄 높이가 표를 덮으므로 숫자만 다시 비교하면
+                // 원본의 누락 밴드를 정상 저장 프레임으로 오인한다.
+                if old.common.treat_as_char && new.common.treat_as_char {
+                    if let ([before], [after]) =
+                        (original.line_segs.as_slice(), current.line_segs.as_slice())
+                    {
+                        let source_box_height = i64::from(old.common.height)
+                            + i64::from(old.outer_margin_top)
+                            + i64::from(old.outer_margin_bottom);
+                        if i64::from(before.line_height) < source_box_height
+                            && after.line_height > before.line_height
+                        {
+                            self.expanded_inline_host_tables_by_pointer
+                                .extend([old_pointer, new_pointer]);
+                        }
+                    }
+                }
                 self.rendered_cell_frame_changes
                     .entry(old_pointer)
                     .or_default();
@@ -454,6 +475,12 @@ impl RenderNormalizationOverlay {
             .contains(&(table as *const Table as usize))
     }
 
+    /// 실제 표 상자로 확장한 줄 뒤에서는 옛 저장 줄의 spill 허용을 재사용하지 않는다.
+    pub(crate) fn inline_host_frame_expanded(&self, table: &Table) -> bool {
+        self.expanded_inline_host_tables_by_pointer
+            .contains(&(table as *const Table as usize))
+    }
+
     /// 셀 범위가 확인되지 않은 전체 재조판은 원본 개체 프레임도 무효화한다.
     /// 셀별 읽기 전용 정규화는 글줄 출처만 바꾸므로 호스트 앵커가 증명하는
     /// 본문 종료선과 구분한다. 명시적 편집 등록은 셀 범위를 지워 우선한다.
@@ -532,6 +559,18 @@ impl RenderNormalizationOverlay {
     pub(crate) fn nested_table_has_reflowed_host(&self, table: &Table) -> bool {
         self.nested_tables_with_reflowed_hosts
             .contains(&(table as *const Table as usize))
+    }
+
+    /// 부모 폭 변경 전의 개체 선언은 현재 첫 조각의 물리 프레임을 인증하지 않는다.
+    /// 측정·행 유닛·실제 배치는 같은 출처 판정을 거친 결과를 소비한다.
+    pub(crate) fn stored_opening_row_frame(
+        &self,
+        table: &Table,
+    ) -> Option<super::float_placement::StoredOpeningRowFrame> {
+        if self.table_text_reflowed(table) || self.nested_table_has_reflowed_host(table) {
+            return None;
+        }
+        super::float_placement::stored_plain_opening_row_frame(table)
     }
 }
 

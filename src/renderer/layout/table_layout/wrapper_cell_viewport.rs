@@ -22,6 +22,7 @@ pub(super) fn retain(
             border_fill_id: 0,
             text_direction: cell.text_direction,
             clip: true,
+            closed_reflow_frame: false,
             page_fragment: false,
             model_cell_index: None,
         }),

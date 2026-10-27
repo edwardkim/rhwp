@@ -1,5 +1,6 @@
 // 일반 glyph replay의 문자 범위 계약. 조합/형식 문자와 복합 script는 계속 shaping 경로로 보낸다.
-const COMPLEX_SHAPING_UNICODE_CATEGORY = /[\p{M}\p{Cf}]/u;
+const COMPLEX_SHAPING_UNICODE_CATEGORY = /[\p{M}\p{Cf}\p{Emoji_Modifier}]/u;
+const STANDALONE_PICTOGRAPH = /\p{Extended_Pictographic}/u;
 
 export function textRequiresComplexShaping(text: string): boolean {
   for (const character of text) {
@@ -21,7 +22,9 @@ export function textRequiresComplexShaping(text: string): boolean {
       || (codePoint >= 0xfe30 && codePoint <= 0xfe6f)
       || (codePoint >= 0xff00 && codePoint <= 0xffef)
       || (codePoint >= 0x1d400 && codePoint <= 0x1d7ff)
-      // 두 그림자 원형 기호는 결합·조인 없는 일반 글리프다. VS/ZWJ는 아래 M/Cf 검사로 보류한다.
+      // 단독 그림문자는 명목 글리프로 그린다. VS·ZWJ·피부색 결합은 별도 shaping이 필요하다.
+      || STANDALONE_PICTOGRAPH.test(character)
+      // 기존 그림자 원형 기호는 Extended_Pictographic 속성이 없는 일반 기호다.
       || (codePoint >= 0x1f53e && codePoint <= 0x1f53f)
       || (codePoint >= 0x20000 && codePoint <= 0x323af);
     if (!nominalGlyphReplayIsSafe || COMPLEX_SHAPING_UNICODE_CATEGORY.test(character)) {

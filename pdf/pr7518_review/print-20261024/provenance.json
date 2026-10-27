@@ -1,0 +1,46 @@
+{
+  "records": [
+    {
+      "key": "original",
+      "input": "samples/issue7500/picture_band_cell_spaces.hwp",
+      "input_sha256": "70c76b83f86a9d5ee4bd619c32f60c22d16ae406fb7bed452b766e8838d207bb",
+      "pdf": "pdf/pr7518_review/print-20261024/picture_band_cell_spaces-2020.pdf",
+      "pdf_sha256": "c6709ccaf2a16bb79355c6f338039349fc2b7def9df3f55d504323ae7b3b7fc5",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "pdf_page_count": 2,
+      "job_id": "e9daf1a4-f378-4c4b-8c8a-49dc7e3f5aaa",
+      "completed_at": "2026-10-24T08:51:38.275Z"
+    },
+    {
+      "key": "nested-split",
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-split.hwp",
+      "input_sha256": "0f4d41b7a4de244f9032ea26d0cac2b66db446a35d16a62421a58ed0276002c0",
+      "pdf": "pdf/pr7518_review/print-20261024/nested-split-2020.pdf",
+      "pdf_sha256": "a0b889f66d6415a8c4b554e15f28fba92c509f331301e072b087781c8b449a97",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "pdf_page_count": 6,
+      "job_id": "3169a9b3-32f8-4106-8a54-b838a3ed8852",
+      "completed_at": "2026-10-24T08:54:45.684Z"
+    },
+    {
+      "key": "terminal-follower",
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_generated/terminal-follower.hwp",
+      "input_sha256": "e9402a615c7c40404f7df2e76b27471f8ef9a9813698c25a61b43577b7b227f5",
+      "pdf": "pdf/pr7518_review/print-20261024/terminal-follower-2020.pdf",
+      "pdf_sha256": "b46bc069be887e83a8ba350173bafbc0cd828993195df07574eb43dcdae35c78",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "pdf_page_count": 3,
+      "job_id": "5c971a80-7560-4013-86b4-d25ab77607ec",
+      "completed_at": "2026-10-24T08:55:08.371Z"
+    }
+  ]
+}

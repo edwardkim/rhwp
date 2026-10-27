@@ -125,6 +125,7 @@ async function main() {
     ['/source', ['application/octet-stream', readFileSync(input)]],
     ['/font-registration.mjs', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-registration.mjs'))]],
     ['/sweep-font-environment.js', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-environment.mjs'))]],
+    ['/rhwp-studio/src/core/canvas-intrinsic-font.mjs', ['application/javascript', readFileSync(join(root, 'rhwp-studio/src/core/canvas-intrinsic-font.mjs'))]],
   ]);
   // 실제 공급 목록만 HTTP로 읽을 수 있다. 요청 URL을 파일시스템 경로로 변환하지 않는다.
   const fonts = catalogue.faces.map((face, index) => ({...face, url: `/font/${index}`}));
@@ -261,7 +262,7 @@ async function main() {
           for (const page of pages) doc.renderPageToCanvasFilteredWithProfile(page - 1, canvas, scale, 'all', 'print');
           const metafileRequests = typeof doc.getMetafileFontRequests === 'function' ? JSON.parse(doc.getMetafileFontRequests()) : [];
           const metafileFaces = selectMetafileFontFaces(fonts, metafileRequests);
-          const requested = new Set();
+          const requested = new Set(), intrinsicRequested = new Set();
           if (metafileRequests.length) {
             for (const request of metafileRequests) {
               for (const family of request.families) {
@@ -277,6 +278,7 @@ async function main() {
               .map(family => family.trim().replace(/^['"]|['"]$/g, '').toLowerCase());
             // 첫 face에 없는 문자의 fallback도 같은 실제 family 사다리로 공급한다.
             for (const family of chain) {
+              if (family.startsWith('__rhwp_intrinsic__')) intrinsicRequested.add(family.slice('__rhwp_intrinsic__'.length));
               if (fonts.some(record => record.families.some(name => name.toLowerCase() === family))) requested.add(family);
             }
           }
@@ -289,15 +291,21 @@ async function main() {
             if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
             const bytes = await response.arrayBuffer();
             for (const family of selected) {
-              // 실제 family 등록과 HFT 원본 윤곽 바인딩을 같은 helper가 소유한다.
+              let textProgramSha256 = null;
               let font;
               try {
-                font = await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc, metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`));
+                font = await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc,
+                  metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`),
+                  intrinsicRequested.has(family.toLowerCase()), async program => {
+                    const digest = await crypto.subtle.digest('SHA-256', program);
+                    textProgramSha256 = [...new Uint8Array(digest)]
+                      .map(byte => byte.toString(16).padStart(2, '0')).join('');
+                  });
                 if (font.family !== family) throw Error(`Canvas 글꼴의 등록 이름이 다릅니다: ${family} → ${font.family}`);
               }
               catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
               supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}`);
-              loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
+              loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, textProgramSha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
             }
           }
           await document.fonts.ready;

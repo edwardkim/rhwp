@@ -18,7 +18,7 @@ fn refresh_rows(
     styles: &ResolvedStyleSet,
     regenerated: bool,
 ) {
-    append_missing_single_equation_row(composed, para, styles);
+    refresh_single_tac_host_row(composed, para, styles);
     let positions = para.control_text_positions();
     let dpi = styles.resolved_dpi.unwrap_or(DEFAULT_DPI);
     let tac_offsets_px: Vec<_> = composed
@@ -58,8 +58,10 @@ fn refresh_rows(
         let mut new_logical_height = 0_i32;
         let mut new_ascent = 0_i32;
         let mut new_descent = 0_i32;
+        let mut spacing_object_height = 0_i32;
         let mut changed = false;
         let mut has_equation = false;
+        let mut has_form = false;
         let mut supported = true;
         for (control_index, (control, position)) in para.controls.iter().zip(&positions).enumerate()
         {
@@ -86,9 +88,25 @@ fn refresh_rows(
                     new_logical_height = new_logical_height.max(height);
                     new_ascent = new_ascent.max(baseline);
                     new_descent = new_descent.max(height - baseline);
+                    if equation.common.affect_line_spacing {
+                        spacing_object_height = spacing_object_height.max(height);
+                    }
                     // 한글 대체 글꼴 경로도 같은 flow 메트릭을 발행한다.
                     // 특정 정규화 helper의 실행 여부 대신 실제 변경을 소비한다.
                     changed |= height != old_height || baseline != old_baseline;
+                }
+                Control::Form(form) if form.common.treat_as_char => {
+                    has_form = true;
+                    let height = form.height as i32;
+                    let baseline = super::line_breaking::baseline_distance_hwp(height);
+                    old_ascent = old_ascent.max(baseline);
+                    old_logical_height = old_logical_height.max(height);
+                    new_logical_height = new_logical_height.max(height);
+                    new_ascent = new_ascent.max(baseline);
+                    new_descent = new_descent.max(height - baseline);
+                    if form.common.affect_line_spacing {
+                        spacing_object_height = spacing_object_height.max(height);
+                    }
                 }
                 Control::Picture(_) | Control::Table(_) | Control::Shape(_) => supported = false,
                 _ => {}
@@ -153,7 +171,7 @@ fn refresh_rows(
             .unwrap_or(0);
         let text_ascent = (f64::from(text_height) * 0.85).round() as i32;
         let text_descent = text_height - text_ascent;
-        if !has_equation && text_height == 0 {
+        if !has_equation && !has_form && text_height == 0 {
             continue;
         }
         old_ascent = old_ascent.max(text_ascent);
@@ -184,24 +202,56 @@ fn refresh_rows(
         let generated_row = para.line_segs.get(line_index).is_some_and(|line| {
             line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         });
-        // 저장 줄이 없거나 재생성된 줄은 본문과 수식의 실제 합집합을
-        // 소비한다. 본문 유무로 수식의 점유·기준선을 제외하지 않는다.
-        let owned_equation_row =
-            has_equation && (generated_row || regenerated || para.line_segs.is_empty());
+        // 저장 줄이 없거나 재생성된 줄은 본문과 인라인 상자의 실제 합집합을
+        // 소비한다. 본문 유무로 수식·양식의 점유·기준선을 제외하지 않는다.
+        let owned_inline_row = (has_equation || has_form)
+            && (generated_row || regenerated || para.line_segs.is_empty());
         // 저장 줄이 이 개체 합집합에서 나온 경우만 메트릭을 다시 발행한다.
         // 별도 줄 높이·수직 정렬 계약을 실제 상자의 대용으로 덮어쓰지 않는다.
         if (changed
             && line.line_height == old_logical_height
             && (line.baseline_distance - old_ascent).abs() <= 1)
             || following_inline_box_was_reserved
-            || owned_equation_row
+            || owned_inline_row
         {
             let occupied_height = new_ascent + new_descent;
+            let leading = if owned_inline_row {
+                // 새 줄의 간격은 원본 글자·문단 속성에서 매번 같은 값으로 생산한다.
+                // 이미 합집합 차이를 뺀 leading을 다시 빼면 재구성마다 줄이 짧아진다.
+                let font_size = line
+                    .runs
+                    .iter()
+                    .filter(|run| !run.text.is_empty())
+                    .filter_map(|run| styles.char_styles.get(run.char_style_id as usize))
+                    .map(|style| style.font_size)
+                    .reduce(f64::max)
+                    .or_else(|| {
+                        para.char_shapes
+                            .first()
+                            .and_then(|shape| styles.char_styles.get(shape.char_shape_id as usize))
+                            .map(|style| style.font_size)
+                    })
+                    .unwrap_or(12.0);
+                let ps = styles.para_styles.get(para.para_shape_id as usize);
+                // '줄 간격에 영향'이 켜진 개체만 비율 간격의 기준 상자에 참여한다.
+                // 물리 기준선 합집합은 위에서 별도로 계산한 같은 결과를 유지한다.
+                super::frame_metrics_for_line(
+                    font_size.max(hwpunit_to_px(spacing_object_height, dpi)),
+                    font_size,
+                    ps.map_or(crate::model::style::LineSpacingType::Percent, |style| {
+                        style.line_spacing_type
+                    }),
+                    ps.map_or(160.0, |style| style.line_spacing),
+                    dpi,
+                )
+                .line_spacing
+            } else {
+                line.line_spacing
+            };
             // 저장 간격은 논리 상자 높이 뒤의 leading이다. 실제 기준선 합집합이
             // 더 크면 그 차이는 leading에서 소비해 상자/간격을 이중 예약하지 않는다.
-            line.line_spacing = line
-                .line_spacing
-                .saturating_add(new_logical_height.saturating_sub(occupied_height));
+            line.line_spacing =
+                leading.saturating_add(new_logical_height.saturating_sub(occupied_height));
             line.line_height = occupied_height;
             line.baseline_distance = new_ascent;
             debug_assert!(hwpunit_to_px(line.line_height, DEFAULT_DPI) > 0.0);
@@ -284,15 +334,28 @@ fn source_inline_box_height(
         .filter(|height| *height > 0)
 }
 
-/// 줄 캐시가 없는 단일 TAC 수식 호스트의 같은 구성 결과를 세 소비자에 공급한다.
-fn append_missing_single_equation_row(
+/// 줄 캐시가 없는 단일 TAC 수식·양식 개체 호스트의 같은 구성 결과를 세 소비자에 공급한다.
+///
+/// rhwp가 합성한 줄은 HWPX에 저장하지 않으므로, 양식 개체만 든 문단을 저장했다가 다시 열면
+/// 줄이 하나도 없어 개체가 그려지지 않았다. 양식 개체 줄은 재조판처럼 개체 높이를 줄 높이로 쓴다.
+fn refresh_single_tac_host_row(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
     styles: &ResolvedStyleSet,
 ) {
-    if !composed.lines.is_empty()
-        || !para.line_segs.is_empty()
-        || !matches!(para.controls.as_slice(), [Control::Equation(e)] if e.common.treat_as_char)
+    let form_height = match para.controls.as_slice() {
+        [Control::Equation(e)] if e.common.treat_as_char => 0,
+        [Control::Form(f)] if f.common.treat_as_char => f.height as i32,
+        _ => return,
+    };
+    // 직접 IR 편집 뒤 남은 합성 수식 줄은 정상 한컴 저장 줄의 근거가 아니다.
+    // 단일 양식의 실제 높이와 같은 결과로 다시 잰다. 정상 저장 LineSeg는 보존한다.
+    let generated_form = form_height > 0
+        && composed.lines.len() == 1
+        && para.line_segs.len() == 1
+        && para.line_segs[0].tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+            != 0;
+    if ((!composed.lines.is_empty() || !para.line_segs.is_empty()) && !generated_form)
         || para
             .text
             .chars()
@@ -315,10 +378,21 @@ fn append_missing_single_equation_row(
         ps.map_or(160.0, |s| s.line_spacing),
         styles.resolved_dpi.unwrap_or(DEFAULT_DPI),
     );
+    let line_height = metrics.line_height.max(form_height);
+    let baseline = metrics
+        .baseline_distance
+        .max(super::line_breaking::baseline_distance_hwp(form_height));
+    if generated_form {
+        let line = &mut composed.lines[0];
+        line.line_height = line_height;
+        line.baseline_distance = baseline;
+        line.line_spacing = metrics.line_spacing;
+        return;
+    }
     composed.lines.push(ComposedLine {
         runs: Vec::new(),
-        line_height: metrics.line_height,
-        baseline_distance: metrics.baseline_distance,
+        line_height,
+        baseline_distance: baseline,
         segment_width: 0,
         column_start: 0,
         line_spacing: metrics.line_spacing,
@@ -327,19 +401,21 @@ fn append_missing_single_equation_row(
     });
 }
 
-/// 실제 재조판 뒤 수식 전용 줄을 composition과 같은 메트릭으로 저장한다.
+/// 실제 재조판 뒤 텍스트와 수식 줄을 composition과 같은 메트릭으로 저장한다.
 /// 단일/여러 수식의 실제 줄 소속은 기존 composition이 결정한다.
 pub(super) fn publish_regenerated_rows(para: &mut Paragraph, styles: &ResolvedStyleSet) {
-    if para.controls.is_empty()
-        || !para
-            .controls
-            .iter()
-            .all(|c| matches!(c, Control::Equation(e) if e.common.treat_as_char))
-        || para
-            .text
-            .chars()
-            .any(|c| !c.is_whitespace() && !c.is_control() && c != '\u{fffc}')
-    {
+    let mut has_inline_equation = false;
+    let supported = para.controls.iter().all(|control| match control {
+        Control::Equation(equation) if equation.common.treat_as_char => {
+            has_inline_equation = true;
+            true
+        }
+        // 구역·단 선언과 책갈피는 이 줄의 개체 점유를 바꾸지 않는다.
+        // 첫 문단도 동일한 실제 수식 줄 결과를 소비하며, 다른 흐름 개체는 제외한다.
+        Control::SectionDef(_) | Control::ColumnDef(_) | Control::Bookmark(_) => true,
+        _ => false,
+    });
+    if !has_inline_equation || !supported {
         return;
     }
     let mut composed = super::compose_paragraph(para);

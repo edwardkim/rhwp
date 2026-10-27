@@ -6980,7 +6980,7 @@ fn parse_equation(
         buf.clear();
     }
 
-    let equation = Equation {
+    let mut equation = Equation {
         common,
         // [#2727] HWPX lineMode → EQEDIT attribute bit0
         attr: eq_attr,
@@ -6995,7 +6995,9 @@ fn parse_equation(
         raw_ctrl_data: Vec::new(),
         raw_ctrl_seal: None,
         unpositioned_host_frame_seal: None,
+        legacy_source_frame_seal: None,
     };
+    equation.retain_legacy_source_frame();
     Ok(Control::Equation(Box::new(equation)))
 }
 

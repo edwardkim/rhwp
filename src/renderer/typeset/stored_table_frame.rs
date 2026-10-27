@@ -5,11 +5,9 @@
 
 use crate::renderer::typeset::{hwpunit_to_px, is_synthetic_line_seg, raw_table_ctrl_height_px};
 
-/// Whether every text-bearing cell proves, through its stored line segments,
-/// that its content belongs inside the declared cell box. This distinguishes a
-/// renderer metric expansion from a source-owned row growth without a table
-/// size ratio or a pixel cap. Rowspans and controls have independent physical
-/// ownership, so they stay on the measured-row path.
+/// 실제 저장 글줄의 물리 점유가 선언 셀 상자 안에 들어가는지 확인한다.
+/// 빈 문자열과 공백도 유효한 줄 상자를 가질 수 있다. 잉크의 존재로 줄 점유를
+/// 대신하지 않으며, rowspan과 컨트롤의 별도 소유는 실측 행 경로에 남긴다.
 pub(super) fn table_declared_height_has_stored_cell_content_frame(
     table: &crate::model::table::Table,
     dpi: f64,
@@ -19,30 +17,28 @@ pub(super) fn table_declared_height_has_stored_cell_content_frame(
             if cell.row_span != 1 || cell.height >= 0x8000_0000 {
                 return false;
             }
-            let mut has_text = false;
+            let mut needs_stored_frame = false;
             let mut stored_bottom = None;
             for para in &cell.paragraphs {
                 if !para.controls.is_empty() {
                     return false;
                 }
                 let text = para.text.replace(|c: char| c.is_control(), "");
-                if text.trim().is_empty() {
-                    continue;
-                }
-                has_text = true;
+                needs_stored_frame |= !text.trim().is_empty();
                 for seg in para
                     .line_segs
                     .iter()
                     .filter(|seg| !is_synthetic_line_seg(seg))
                     .filter(|seg| seg.vertical_pos >= 0 && seg.line_height > 0)
                 {
+                    needs_stored_frame = true;
                     let bottom =
                         hwpunit_to_px(seg.vertical_pos.saturating_add(seg.line_height), dpi);
                     stored_bottom =
                         Some(stored_bottom.map_or(bottom, |current: f64| current.max(bottom)));
                 }
             }
-            !has_text
+            !needs_stored_frame
                 || stored_bottom.is_some_and(|bottom| {
                     let padding = cell.effective_padding(&table.padding);
                     let physical_bottom = bottom

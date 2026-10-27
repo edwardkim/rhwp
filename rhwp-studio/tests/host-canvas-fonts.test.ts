@@ -64,6 +64,25 @@ test('#8109 a prepared document substitute remains available behind an absent pr
   } finally { await f.dispose(); }
 });
 
+test('일반 글리프 대체도 준비한 프로그램의 별칭을 선언 순서로 소비한다', async () => {
+  const f = await fixture();
+  try {
+    const snapshot = await f.provider.getSnapshot();
+    const second = { ...snapshot.faces[0], id: 'fallback', family: 'Fallback Test',
+      fullName: 'Fallback Test Italic', postscriptName: 'FallbackTest-Italic' };
+    await setHostFontProvider({ ...f.provider,
+      getSnapshot: async () => ({ revision: 'two-faces', faces: [...snapshot.faces, second] }) });
+    await f.session.prepare([...f.records(), resolveRendererLocalFont('Fallback Test', { weight: 400, slant: 'italic' })!]);
+    const resolve = (family: string) => withHostCanvasFonts(f.session,
+      () => scopedHostCanvasFont(`italic 20px ${family}`))!.replace(/^italic 20px /, '');
+    const firstAlias = resolve('"Host Test"').split(',')[0];
+    const secondAlias = resolve('"Fallback Test"').split(',')[0];
+    assert.notEqual(firstAlias, secondAlias);
+    assert.ok(resolve('"Host Test", "Fallback Test"').startsWith(`${firstAlias}, ${secondAlias}`));
+    assert.ok(resolve('"Fallback Test", "Host Test"').startsWith(`${secondAlias}, ${firstAlias}`));
+  } finally { await f.dispose(); }
+});
+
 test('late FontFace.load cannot register after a document reset, even if bytes were already read', async () => {
   const f = await fixture();
   try {

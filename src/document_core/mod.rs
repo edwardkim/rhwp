@@ -12,6 +12,8 @@ mod canvas_metrics;
 mod native_pua_fonts;
 pub use native_pua_fonts::NativePuaFontRequest;
 mod font_environment;
+mod loaded_frame_restore;
+mod table_reflow_owners;
 pub use canvas_metric_requests::{CanvasMetricBatch, CanvasMetricReply, CanvasMetricRequest};
 mod commands;
 pub use commands::paragraph_block::{
@@ -31,6 +33,7 @@ mod html_table_width;
 /// 한글 클립보드 문서모델(hwpjson) → HWPX 변환
 pub mod hwpjson;
 pub mod hyperlink;
+pub mod inline_control;
 pub mod native_interaction;
 pub mod queries;
 pub mod table_calc;
@@ -172,7 +175,8 @@ pub(crate) struct RenderNormalizationState {
     /// Stable live Box identities whose stored frame was superseded by text
     /// reflow. Box pointees survive paragraph/control-vector moves; clones are
     /// admitted only by explicit split/clipboard inheritance.
-    pub(crate) text_reflowed_tables: std::collections::HashSet<TableTextReflowKey>,
+    pub(crate) text_reflowed_tables: table_reflow_owners::TableReflowOwners,
+    pub(crate) loaded_frames: Option<loaded_frame_restore::LoadedFrames>,
     pub(crate) overlay: Arc<RenderNormalizationOverlay>,
 }
 

@@ -22,6 +22,7 @@ impl TypesetState {
                 paragraph_fragment_content_bottoms: Default::default(),
                 current_height: 0.0,
                 current_start_height: 0.0,
+                stored_initial_column_band: 0.0,
                 current_endnote_flow: false,
                 column_had_compact_endnote_rewind: false,
                 prev_body_bottom_vpos: None,
@@ -66,6 +67,7 @@ impl TypesetState {
                 computed_paragraphs: Default::default(),
                 pending_paragraph_origins: Vec::new(),
                 stored_paragraph_flow_ends: std::collections::HashMap::new(),
+                host_compositions: std::collections::HashMap::new(),
                 stored_column_top_spacings: std::collections::HashMap::new(),
                 paragraph_float_placements: std::collections::HashMap::new(),
                 float_pushed_line_spacings: std::collections::HashMap::new(),
@@ -466,17 +468,22 @@ impl TypesetState {
         }
     }
 
+    /// 본문 항목 외에 이 쪽에서 실제 방출할 개체·어울림도 단의 내용이다.
+    /// 일반 전환과 문서 끝 확정이 같은 소유 판정을 사용한다.
+    pub(in crate::renderer::typeset) fn has_column_content(&self) -> bool {
+        !self.data.current_items.is_empty()
+            || !self.data.current_column_wrap_around_paras.is_empty()
+            || !self.data.page_start_square_pictures.is_empty()
+            || !self.data.page_start_stored_frames.is_empty()
+    }
+
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
     pub(in crate::renderer::typeset) fn flush_column(&mut self) {
         self.data.pending_paragraph_origins.clear();
         // [#4090] 쪽이 끝나면 어울림 밴드도 끝난다 — 개체 높이를 used 에 반영한다.
         self.close_square_band();
         self.data.inline_box_flow_bottom = 0.0;
-        if self.data.current_items.is_empty()
-            && self.data.current_column_wrap_around_paras.is_empty()
-            && self.data.page_start_square_pictures.is_empty()
-            && self.data.page_start_stored_frames.is_empty()
-        {
+        if !self.has_column_content() {
             return;
         }
         let col_content = ColumnContent {
@@ -498,6 +505,7 @@ impl TypesetState {
             inline_placements: std::mem::take(&mut self.data.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.data.inline_flow_plans),
             stored_paragraph_flow_ends: std::mem::take(&mut self.data.stored_paragraph_flow_ends),
+            host_compositions: std::mem::take(&mut self.data.host_compositions),
             stored_column_top_spacings: std::mem::take(&mut self.data.stored_column_top_spacings),
             paragraph_float_placements: std::mem::take(&mut self.data.paragraph_float_placements),
             float_pushed_line_spacings: std::mem::take(&mut self.data.float_pushed_line_spacings),
@@ -583,6 +591,7 @@ impl TypesetState {
             inline_placements: std::mem::take(&mut self.data.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.data.inline_flow_plans),
             stored_paragraph_flow_ends: std::mem::take(&mut self.data.stored_paragraph_flow_ends),
+            host_compositions: std::mem::take(&mut self.data.host_compositions),
             stored_column_top_spacings: std::mem::take(&mut self.data.stored_column_top_spacings),
             paragraph_float_placements: std::mem::take(&mut self.data.paragraph_float_placements),
             float_pushed_line_spacings: std::mem::take(&mut self.data.float_pushed_line_spacings),
@@ -726,7 +735,10 @@ impl TypesetState {
             // current_height의 시작값으로 사용 (가용 공간만 줄임, zone_y_offset은 건드리지 않음).
             // layout은 body_wide_reserved로 별도 처리하므로 여기서 zone_y_offset에
             // 넣으면 double-shift가 발생.
-            self.data.current_height = self.data.pending_body_wide_top_reserve;
+            self.data.current_height = self
+                .data
+                .pending_body_wide_top_reserve
+                .max(self.data.stored_initial_column_band);
             self.data.current_start_height = self.data.current_height;
             self.data.current_endnote_flow = false;
             // [#5699 H1] 밴드 교정 바닥은 단 흐름 좌표 — 새 단에서 리셋.
@@ -803,6 +815,9 @@ impl TypesetState {
                 }
                 | crate::renderer::float_placement::ParagraphFloatFlow::StoredPictureGroup {
                     next_flow_y,
+                }
+                | crate::renderer::float_placement::ParagraphFloatFlow::InlineHostPicture {
+                    next_flow_y,
                 } => next_flow_y,
                 _ => deferred.placement.occupied_bottom,
             };
@@ -845,6 +860,7 @@ impl TypesetState {
         self.data.current_column = 0;
         self.data.current_height = 0.0;
         self.data.current_start_height = 0.0;
+        self.data.stored_initial_column_band = 0.0;
         // [#5699 H1] 밴드 교정 바닥은 쪽 단위.
         self.data.ladder_band_floor = 0.0;
         // [compat 2024] 앵커 줄 회수 누계는 쪽 단위 — 새 쪽에서 리셋.
@@ -912,6 +928,10 @@ impl TypesetState {
         };
         let mut jump_to = current_height;
         for zone in &self.data.visible_float_exclusions {
+            // 계산 호스트의 첫 줄은 자체 앞 간격·높이 계약에서 밴드를 소비한다.
+            if self.computed_float_owns_band(zone.para_index) {
+                continue;
+            }
             if hits(jump_to, zone.top, zone.bottom) {
                 let target = (zone.bottom - absorbed_spacing_before.max(0.0)).max(zone.top);
                 jump_to = jump_to.max(target);

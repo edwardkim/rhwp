@@ -4,7 +4,7 @@
 use super::{estimate_text_width, source_font_symbol, EqLayout, EqNode, LayoutBox, LayoutKind};
 
 fn operator(node: &EqNode) -> bool {
-    matches!(node, EqNode::Symbol(s) | EqNode::MathSymbol(s)
+    matches!(node.ungrouped(), EqNode::Symbol(s) | EqNode::MathSymbol(s)
         if super::super::hancom_glyphs::is_operator(s) || super::super::symbols::is_binary_symbol(s)
             || matches!(s.as_str(), "=" | "≠" | "<" | ">" | "≤" | "≥"))
 }
@@ -14,11 +14,11 @@ fn operator(node: &EqNode) -> bool {
 fn explicit_gap(nodes: &[EqNode], left: usize, right: usize) -> bool {
     nodes[left + 1..right]
         .iter()
-        .any(|node| matches!(node, EqNode::Space(_)))
+        .any(|node| matches!(node.ungrouped(), EqNode::Space(_)))
 }
 
 fn opening_delimiter(node: &EqNode) -> bool {
-    match node {
+    match node.ungrouped() {
         EqNode::Symbol(text) => matches!(text.as_str(), "(" | "[" | "{"),
         EqNode::Decoration { body, .. } | EqNode::FontStyle { body, .. } => opening_delimiter(body),
         _ => false,
@@ -27,7 +27,7 @@ fn opening_delimiter(node: &EqNode) -> bool {
 
 /// 분수·근호의 끝 여백·닫는 괄호의 점유 뒤에 연산자 앞 여백을 중복 예약하지 않는다.
 fn reserves_operator_gap(node: &EqNode, hancom_eqn: bool) -> bool {
-    match node {
+    match node.ungrouped() {
         EqNode::Fraction { .. } | EqNode::Sqrt { .. } => true,
         // 독립 Print의 벡터 합·괄호식은 장식 점유 뒤 앞 연산자 여백을 다시 더하지 않는다.
         // 장식 본체의 좌우 여유와 연산자 뒤 여백은 각각 별도로 보존한다.
@@ -54,7 +54,7 @@ fn reserves_operator_gap(node: &EqNode, hancom_eqn: bool) -> bool {
 }
 
 fn ends_with_script(node: &EqNode) -> bool {
-    match node {
+    match node.ungrouped() {
         EqNode::Superscript { .. } | EqNode::Subscript { .. } => true,
         EqNode::FontStyle { body, .. } => ends_with_script(body),
         EqNode::Row(items) => items.last().is_some_and(ends_with_script),
@@ -64,7 +64,7 @@ fn ends_with_script(node: &EqNode) -> bool {
 
 /// 인접한 닫는 괄호는 하나의 구분자 묶음이다. operand 끝만 자동 간격을 만든다.
 fn operand_end(node: &EqNode) -> bool {
-    match node {
+    match node.ungrouped() {
         EqNode::Text(_) | EqNode::Number(_) | EqNode::Function(_) => true,
         EqNode::Symbol(text) | EqNode::MathSymbol(text) => {
             matches!(text.as_str(), "'" | "′")
@@ -75,7 +75,7 @@ fn operand_end(node: &EqNode) -> bool {
         }
         EqNode::Row(items) => items
             .iter()
-            .rfind(|item| !matches!(item, EqNode::Space(_) | EqNode::Empty))
+            .rfind(|item| !matches!(item.ungrouped(), EqNode::Space(_) | EqNode::Empty))
             .is_some_and(operand_end),
         EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => operand_end(body),
         _ => false,
@@ -83,11 +83,11 @@ fn operand_end(node: &EqNode) -> bool {
 }
 
 fn boundary_element(node: &EqNode, first: bool) -> &EqNode {
-    match node {
+    match node.ungrouped() {
         EqNode::Row(items) => {
             let mut significant = items
                 .iter()
-                .filter(|item| !matches!(item, EqNode::Space(_) | EqNode::Empty));
+                .filter(|item| !matches!(item.ungrouped(), EqNode::Space(_) | EqNode::Empty));
             let edge = if first {
                 significant.next()
             } else {
@@ -95,9 +95,10 @@ fn boundary_element(node: &EqNode, first: bool) -> &EqNode {
             };
             edge.map_or(node, |item| boundary_element(item, first))
         }
-        EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => {
-            boundary_element(body, first)
-        }
+        EqNode::FontStyle { body, .. } => boundary_element(body, first),
+        // 현대 한컴 COLOR는 내부 행의 여백을 유지하지만, 그 끝 연산자를
+        // 바깥 행의 연산자로 전파하지 않는다. 일반 Group은 위에서 계속 보존한다.
+        EqNode::Color { .. } => node,
         EqNode::Superscript { base, .. }
         | EqNode::Subscript { base, .. }
         | EqNode::SubSup { base, .. }
@@ -171,7 +172,7 @@ impl EqLayout {
         let significant: Vec<usize> = nodes
             .iter()
             .enumerate()
-            .filter(|(_, node)| !matches!(node, EqNode::Space(_) | EqNode::Empty))
+            .filter(|(_, node)| !matches!(node.ungrouped(), EqNode::Space(_) | EqNode::Empty))
             .map(|(index, _)| index)
             .collect();
         let mut next_position = 0;
@@ -182,14 +183,14 @@ impl EqLayout {
                 if self.legacy_hft_metrics {
                     return result;
                 }
-                if matches!(node, EqNode::Space(_) | EqNode::Empty) {
+                if matches!(node.ungrouped(), EqNode::Space(_) | EqNode::Empty) {
                     return result;
                 }
                 let position = next_position;
                 next_position += 1;
                 if self.hancom_math_face
                     && position > 0
-                    && matches!(node, EqNode::Symbol(text) if matches!(text.as_str(), "(" | ")"))
+                    && matches!(node.ungrouped(), EqNode::Symbol(text) if matches!(text.as_str(), "(" | ")"))
                     && operand_end(&nodes[significant[position - 1]])
                 {
                     let left = fs * 0.07;
@@ -269,7 +270,7 @@ impl EqLayout {
                 let text = match &result.kind {
                     LayoutKind::Symbol(text) => text.as_str(),
                     LayoutKind::FontGlyph { text, .. } => text.as_str(),
-                    LayoutKind::HancomGlyphs(_) => match node {
+                    LayoutKind::HancomGlyphs(_) => match node.ungrouped() {
                         EqNode::Symbol(text) | EqNode::MathSymbol(text) => text.as_str(),
                         _ => return result,
                     },

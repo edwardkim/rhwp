@@ -207,12 +207,31 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             }
             let mut reconciled = composed.clone();
             reconciled.lines = reflowed.lines;
-            if rejoinable_word_tail || !measured_inline_table_heights.is_empty() {
+            let uncached_inline_frame = inline_frame_admission::supports_uncached_inline_host(para);
+            if rejoinable_word_tail
+                || !measured_inline_table_heights.is_empty()
+                || uncached_inline_frame
+            {
+                // 가시 글자 경계는 그 앞의 개체 슬롯과 같은 줄 경계가 아닐 수 있다.
+                // 새 원시 프레임의 소유를 게시하여 배치가 줄을 다시 추측하지 않게 한다.
+                for control in &mut reconciled.inline_controls {
+                    if let Some(line) = control_slot_line_index_with_starts(
+                        para,
+                        control.control_index,
+                        reflowed_para
+                            .line_segs
+                            .iter()
+                            .map(|segment| segment.text_start),
+                    ) {
+                        control.line_index = line;
+                    }
+                }
                 reconciled.frame_geometry =
                     Some(std::sync::Arc::new(frame_geometry::FrameGeometry {
                         line_segs: reflowed_para.line_segs,
                         space_metrics: reflowed_para.layout_space_metrics,
                         inline_table_heights: measured_inline_table_heights.to_vec(),
+                        stored_partition: false,
                     }));
             }
             // Q2-D5-N1: source NO_LS has no usable width during the initial
@@ -816,14 +835,8 @@ pub(crate) fn shrunk_cell_horizontal_padding(
             let mut w = 0.0;
             for run in &line.runs {
                 let mut ts = run.text_style(styles);
-                if run.char_overlap.is_some() {
-                    let fs = if ts.font_size > 0.0 {
-                        ts.font_size
-                    } else {
-                        12.0
-                    };
-                    let chars: Vec<char> = run.text.chars().collect();
-                    w += fs * char_overlap_advance_units(&chars) as f64;
+                if let Some(overlap) = &run.char_overlap {
+                    w += super::char_overlap::advance(&run.text, overlap, &ts);
                     continue;
                 }
                 // 자연 폭 측정: 음수 자간을 제거하여 글리프가 서로 겹치지 않는 최소 폭을 얻음

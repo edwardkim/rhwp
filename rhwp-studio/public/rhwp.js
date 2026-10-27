@@ -8390,6 +8390,34 @@ export class HwpDocument {
         }
     }
     /**
+     * 인라인 개체를 논리적 캐럿 위치로 원자적으로 옮긴다.
+     * @param {string} source_json
+     * @param {string} destination_json
+     * @returns {string}
+     */
+    moveInlineControl(source_json, destination_json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(source_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(destination_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_moveInlineControl(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
      * 직선 끝점 이동 (글로벌 HWPUNIT 좌표)
      * @param {number} sec
      * @param {number} para
@@ -8662,6 +8690,23 @@ export class HwpDocument {
             throw takeFromExternrefTable0(ret[1]);
         }
         return HwpDocument.__wrap(ret[0]);
+    }
+    /**
+     * 일반 FontFace 전용 기본 윤곽 사본. 원본·컬러 자원·문서 상태는 변경하지 않는다.
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @returns {Uint8Array | undefined}
+     */
+    ordinaryTextFontProgram(bytes, face_index) {
+        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_ordinaryTextFontProgram(this.__wbg_ptr, ptr0, len0, face_index);
+        let v2;
+        if (ret[0] !== 0) {
+            v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        }
+        return v2;
     }
     /**
      * 총 페이지 수를 반환한다.
@@ -9155,6 +9200,24 @@ export class HwpDocument {
         const ptr1 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
         const len1 = WASM_VECTOR_LEN;
         const ret = wasm.hwpdocument_registerNativePuaFont(this.__wbg_ptr, ptr0, len0, bold, italic, ptr1, len1, face_index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
+     * 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
+     * @param {string} family
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @returns {boolean}
+     */
+    registerTextFontGlyphCoverage(family, bytes, face_index) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_registerTextFontGlyphCoverage(this.__wbg_ptr, ptr0, len0, ptr1, len1, face_index);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -12109,6 +12172,17 @@ export function init_panic_hook() {
 }
 
 /**
+ * @param {Uint8Array} data
+ * @returns {boolean}
+ */
+export function isPrintMetafile(data) {
+    const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.isPrintMetafile(ptr0, len0);
+    return ret !== 0;
+}
+
+/**
  * @param {Uint8Array} bytes
  * @param {Float64Array} destination
  * @param {Float64Array} matrix
@@ -12129,6 +12203,72 @@ export function prepareBitmapRaster(bytes, destination, matrix, profile, paper_g
     var len4 = WASM_VECTOR_LEN;
     const ret = wasm.prepareBitmapRaster(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4);
     return ret;
+}
+
+/**
+ * host의 실제 JPEG codec 결과만 받아 Native와 같은 공통 재생을 수행한다.
+ * @param {Uint8Array} data
+ * @param {Float64Array} matrix
+ * @param {Function} decode
+ * @returns {Uint8Array | undefined}
+ */
+export function rasterizePrintMetafile(data, matrix, decode) {
+    const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(matrix, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.rasterizePrintMetafile(ptr0, len0, ptr1, len1, decode);
+    let v3;
+    if (ret[0] !== 0) {
+        v3 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    }
+    return v3;
+}
+
+/**
+ * @param {Uint8Array} rgba
+ * @param {number} width
+ * @param {number} height
+ * @param {Float64Array} destination
+ * @returns {Uint8Array | undefined}
+ */
+export function resamplePrintBitmapRgba(rgba, width, height, destination) {
+    const ptr0 = passArray8ToWasm0(rgba, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(destination, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.resamplePrintBitmapRgba(ptr0, len0, width, height, ptr1, len1);
+    let v3;
+    if (ret[0] !== 0) {
+        v3 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    }
+    return v3;
+}
+
+/**
+ * @param {Uint8Array} rgba
+ * @param {number} width
+ * @param {number} height
+ * @param {Float64Array} frame
+ * @param {Float64Array} scale
+ * @returns {Uint8Array | undefined}
+ */
+export function resamplePrintFrameRgba(rgba, width, height, frame, scale) {
+    const ptr0 = passArray8ToWasm0(rgba, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(frame, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passArrayF64ToWasm0(scale, wasm.__wbindgen_malloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ret = wasm.resamplePrintFrameRgba(ptr0, len0, width, height, ptr1, len1, ptr2, len2);
+    let v4;
+    if (ret[0] !== 0) {
+        v4 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    }
+    return v4;
 }
 
 /**
@@ -12194,6 +12334,14 @@ function __wbg_get_imports() {
         },
         __wbg_a_50b8aa2c55aab913: function(arg0) {
             const ret = arg0.a;
+            return ret;
+        },
+        __wbg_actualBoundingBoxLeft_862e432cc4b67b21: function(arg0) {
+            const ret = arg0.actualBoundingBoxLeft;
+            return ret;
+        },
+        __wbg_actualBoundingBoxRight_7dc82a3b2c564418: function(arg0) {
+            const ret = arg0.actualBoundingBoxRight;
             return ret;
         },
         __wbg_addColorStop_35d831fa917ffcd4: function() { return handleError(function (arg0, arg1, arg2, arg3) {
@@ -12270,6 +12418,9 @@ function __wbg_get_imports() {
             const ret = arg0.document;
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
         },
+        __wbg_drawImage_426c25f11858e3bd: function() { return handleError(function (arg0, arg1, arg2, arg3) {
+            arg0.drawImage(arg1, arg2, arg3);
+        }, arguments); },
         __wbg_drawImage_4f05aa5544efd528: function() { return handleError(function (arg0, arg1, arg2, arg3) {
             arg0.drawImage(arg1, arg2, arg3);
         }, arguments); },
@@ -12374,6 +12525,16 @@ function __wbg_get_imports() {
             const ret = result;
             return ret;
         },
+        __wbg_instanceof_Uint8Array_f935dbb0aa7cdeed: function(arg0) {
+            let result;
+            try {
+                result = arg0 instanceof Uint8Array;
+            } catch (_) {
+                result = false;
+            }
+            const ret = result;
+            return ret;
+        },
         __wbg_instanceof_Window_5625ff9937037a38: function(arg0) {
             let result;
             try {
@@ -12386,6 +12547,10 @@ function __wbg_get_imports() {
         },
         __wbg_isArray_6339f732981044bf: function(arg0) {
             const ret = Array.isArray(arg0);
+            return ret;
+        },
+        __wbg_length_36bd29c6848c2144: function(arg0) {
+            const ret = arg0.length;
             return ret;
         },
         __wbg_length_ecfa2c63d3d0d82c: function(arg0) {
@@ -12465,6 +12630,9 @@ function __wbg_get_imports() {
             const ret = JSON.parse(getStringFromWasm0(arg0, arg1));
             return ret;
         }, arguments); },
+        __wbg_prototypesetcall_de8e0d9553586985: function(arg0, arg1, arg2) {
+            Uint8Array.prototype.set.call(getArrayU8FromWasm0(arg0, arg1), arg2);
+        },
         __wbg_push_adb0107829f02d75: function(arg0, arg1) {
             const ret = arg0.push(arg1);
             return ret;
@@ -12521,6 +12689,9 @@ function __wbg_get_imports() {
         __wbg_set_globalAlpha_7990fab00eb6c8f2: function(arg0, arg1) {
             arg0.globalAlpha = arg1;
         },
+        __wbg_set_globalCompositeOperation_1336df410cebd928: function() { return handleError(function (arg0, arg1, arg2) {
+            arg0.globalCompositeOperation = getStringFromWasm0(arg1, arg2);
+        }, arguments); },
         __wbg_set_height_d72f2b76484a44de: function(arg0, arg1) {
             arg0.height = arg1 >>> 0;
         },
@@ -12529,6 +12700,9 @@ function __wbg_get_imports() {
         },
         __wbg_set_lineCap_ec484c1489fa48bc: function(arg0, arg1, arg2) {
             arg0.lineCap = getStringFromWasm0(arg1, arg2);
+        },
+        __wbg_set_lineDashOffset_77617c80be8af018: function(arg0, arg1) {
+            arg0.lineDashOffset = arg1;
         },
         __wbg_set_lineJoin_645744ec04386dd0: function(arg0, arg1, arg2) {
             arg0.lineJoin = getStringFromWasm0(arg1, arg2);

@@ -380,24 +380,32 @@ fn check_body_fields(
         assert_eq!(count, page_pins.len(), "선정한 쪽의 필드 누락·중복 없음");
         for pin in page_pins {
             let source = &core.document().sections[0].paragraphs[pin.paragraph];
-            assert!(
-                source
-                    .controls
-                    .iter()
-                    .zip(source.control_text_positions())
-                    .any(|(control, at)| matches!(
-                        control,
-                        rhwp::model::control::Control::AutoNumber(_)
-                    ) && at == pin.scalar),
+            let source_controls: Vec<_> = source
+                .controls
+                .iter()
+                .zip(source.control_text_positions())
+                .enumerate()
+                .filter(|(_, (control, at))| {
+                    matches!(*control, rhwp::model::control::Control::AutoNumber(_))
+                        && *at == pin.scalar
+                })
+                .map(|(index, _)| index)
+                .collect();
+            assert_eq!(
+                source_controls.len(),
+                1,
                 "원본 자동번호가 소유한 모델 자리표"
             );
+            // Print의 원문 scalar와 인라인 개체를 포함한 공개 편집 주소를 구분한다.
+            // 앞 개체는 별도 한 칸이며 원문 자리표와 뒤 글자의 저장 위치는 유지된다.
+            let logical_position = source.logical_control_positions()[source_controls[0]];
             let fields: Vec<_> = nodes
                 .iter()
                 .filter_map(|node| match &node.node_type {
                     RenderNodeType::TextRun(run)
                         if run.section_index == Some(0)
                             && run.para_index == Some(pin.paragraph)
-                            && run.char_start == Some(pin.scalar)
+                            && run.char_start == Some(logical_position)
                             && run.display_text.as_deref() == Some(pin.value) =>
                     {
                         Some((*node, run))
@@ -420,7 +428,7 @@ fn check_body_fields(
                     RenderNodeType::TextRun(run)
                         if run.section_index == Some(0)
                             && run.para_index == Some(pin.paragraph)
-                            && run.char_start == Some(pin.scalar + 1)
+                            && run.char_start == Some(logical_position + 1)
                             && run.text.starts_with(pin.following) =>
                     {
                         Some((*node, run))

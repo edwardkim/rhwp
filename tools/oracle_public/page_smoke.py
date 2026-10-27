@@ -32,6 +32,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+from regression_document_scope import is_deferred_regression_input
+
 SCHEMA_VERSION = 1
 KIND = "pageSmokeReport"
 PAIR_KIND = "pageSmokePairs"
@@ -380,6 +383,8 @@ def load_manifest(path: Path, repo: Path) -> tuple[list[Pair], list[str]]:
         doc_s, pdf_s = _pair_keys(item)
         if not doc_s or not pdf_s:
             continue
+        if is_deferred_regression_input(doc_s, axis="oracle"):
+            continue
         doc = Path(doc_s)
         pdf = Path(pdf_s)
         if not doc.is_absolute():
@@ -388,7 +393,7 @@ def load_manifest(path: Path, repo: Path) -> tuple[list[Pair], list[str]]:
             pdf = repo / pdf
         stem = str(item.get("stem") or doc.stem)
         pairs.append(Pair(doc=doc, pdf=pdf, stem=stem))
-    return pairs, unpaired
+    return pairs, [p for p in unpaired if not is_deferred_regression_input(p, axis="oracle")]
 
 
 def write_manifest(path: Path, pairs: Sequence[Pair], repo: Path, unpaired: Sequence[str] | None = None) -> None:
@@ -434,6 +439,8 @@ def iter_docs(docs_roots: Sequence[Path]) -> list[Path]:
     docs: list[Path] = []
     seen: set[str] = set()
     for root in docs_roots:
+        if is_deferred_regression_input(root, axis="oracle"):
+            continue
         if root.is_file() and root.suffix.lower() in DOC_SUFFIXES:
             key = str(root.resolve()).casefold()
             if key not in seen:
@@ -444,6 +451,8 @@ def iter_docs(docs_roots: Sequence[Path]) -> list[Path]:
             continue
         for path in sorted(root.rglob("*")):
             if not path.is_file() or path.suffix.lower() not in DOC_SUFFIXES:
+                continue
+            if is_deferred_regression_input(path, axis="oracle"):
                 continue
             key = str(path.resolve()).casefold()
             if key in seen:

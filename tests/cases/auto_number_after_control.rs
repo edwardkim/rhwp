@@ -121,9 +121,16 @@ fn check(broken: &mut Vec<String>, label: &str, core: &DocumentCore, para: usize
             &mut owners,
         );
         let expected_owner = want.1.iter().find(|(kind, _)| *kind == "번호").unwrap().1;
-        if owners != [Some(expected_owner)] {
+        let paragraph = &doc.document().sections[0].paragraphs[para];
+        let number_index = paragraph
+            .controls
+            .iter()
+            .position(|control| matches!(control, Control::AutoNumber(_)))
+            .expect("번호 제어");
+        let logical_owner = paragraph.logical_control_positions()[number_index];
+        if owners != [Some(logical_owner)] {
             broken.push(format!(
-                "{label} → {state}: 표시 필드의 모델 소속 {owners:?}, 원본 자리표 {expected_owner}"
+                "{label} → {state}: 표시 필드의 논리 소속 {owners:?}, 원문 자리표 {expected_owner}, 논리 기대 {logical_owner}"
             ));
         }
     }

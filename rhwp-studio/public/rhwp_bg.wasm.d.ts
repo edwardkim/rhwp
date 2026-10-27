@@ -1,6 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
+export const version: () => [number, number];
+export const init_panic_hook: () => void;
 export const __wbg_documentexport_free: (a: number, b: number) => void;
 export const __wbg_hwpdocument_free: (a: number, b: number) => void;
 export const __wbg_hwpviewer_free: (a: number, b: number) => void;
@@ -43,6 +45,7 @@ export const hwpdocument_clearActiveField: (a: number) => void;
 export const hwpdocument_clearClipboard: (a: number) => void;
 export const hwpdocument_clearExactFontInstance: (a: number, b: number, c: number) => [number, number, number, number];
 export const hwpdocument_clearMetafileFonts: (a: number) => void;
+export const hwpdocument_clearNativePuaFonts: (a: number) => void;
 export const hwpdocument_clearTableCellsAtCursor: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_clipboardHasControl: (a: number) => number;
 export const hwpdocument_collectCanvasMetricRequests: (a: number, b: number, c: number) => [number, number, number, number];
@@ -90,6 +93,7 @@ export const hwpdocument_deleteTextInCellEx: (a: number, b: number, c: number) =
 export const hwpdocument_deleteTextInFootnote: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
 export const hwpdocument_deleteTextInHeaderFooter: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
 export const hwpdocument_detachCaptionAt: (a: number, b: number, c: number) => [number, number, number, number];
+export const hwpdocument_discardBorderPaintUndo: (a: number, b: number) => void;
 export const hwpdocument_discardDeleteFragment: (a: number, b: number) => void;
 export const hwpdocument_discardPictureTransform: (a: number, b: number) => void;
 export const hwpdocument_discardSectionRaw: (a: number, b: number) => void;
@@ -207,6 +211,7 @@ export const hwpdocument_getLineInfoInCell: (a: number, b: number, c: number, d:
 export const hwpdocument_getLineStarts: (a: number, b: number, c: number) => [number, number];
 export const hwpdocument_getLogicalLength: (a: number, b: number, c: number) => [number, number, number];
 export const hwpdocument_getMetafileFontRequests: (a: number) => [number, number, number, number];
+export const hwpdocument_getNativePuaFontRequests: (a: number) => [number, number, number, number];
 export const hwpdocument_getNoteEditInfo: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_getNoteEquationProperties: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
 export const hwpdocument_getNumberingList: (a: number) => [number, number];
@@ -357,6 +362,7 @@ export const hwpdocument_mergeTableCells: (a: number, b: number, c: number, d: n
 export const hwpdocument_mergeTableCellsEx: (a: number, b: number, c: number) => [number, number, number, number];
 export const hwpdocument_mergeTableWithNext: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_moveControlAt: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
+export const hwpdocument_moveInlineControl: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
 export const hwpdocument_moveLineEndpoint: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
 export const hwpdocument_moveLineEndpointEx: (a: number, b: number, c: number) => [number, number, number, number];
 export const hwpdocument_moveTableOffset: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
@@ -386,6 +392,8 @@ export const hwpdocument_registerCanvasMetricReplies: (a: number, b: number, c: 
 export const hwpdocument_registerExactFontSource: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
 export const hwpdocument_registerHftOutlineFont: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
 export const hwpdocument_registerMetafileFont: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
+export const hwpdocument_registerNativePuaFont: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number];
+export const hwpdocument_registerTextFontGlyphCoverage: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
 export const hwpdocument_removeBorderFillTails: (a: number, b: number, c: number) => [number, number, number, number];
 export const hwpdocument_removeFieldAt: (a: number, b: number, c: number, d: number) => [number, number];
 export const hwpdocument_removeFieldAtInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
@@ -518,8 +526,6 @@ export const version: () => [number, number];
 export const init_panic_hook: () => void;
 export const hwpviewer_pageCount: (a: number) => number;
 export const hwpviewer_setAnnotateMetricFont: (a: number, b: number) => void;
-export const version: () => [number, number];
-export const init_panic_hook: () => void;
 export const __wbindgen_malloc: (a: number, b: number) => number;
 export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
 export const __wbindgen_exn_store: (a: number) => void;

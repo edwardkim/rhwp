@@ -45,10 +45,7 @@ impl LayoutEngine {
             alignment,
         );
 
-        let ast = equation::parser::EqParser::for_document(equation::document_script::tokenize(
-            &eq.script,
-        ))
-        .parse();
+        let ast = equation::document_script::parse(eq);
         let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
         let layout_box = equation::layout_for_paint(eq, &ast, self.dpi);
         let color_str = equation::svg_render::eq_color_to_svg(eq.color);

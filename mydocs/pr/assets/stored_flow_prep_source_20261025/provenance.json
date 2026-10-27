@@ -1,0 +1,115 @@
+{
+  "runtime_commit": "8dc75860cec88ddf7c3f8aeee230b2ca7e2e5537",
+  "dpi": 96,
+  "compat": "2024",
+  "profile": "Print",
+  "native_sha256": "e333c70587ecf48e24632de8e6f3b843f33eb328051580442af4f46214743ca4",
+  "wasm_artifacts": {
+    "rhwp.js": "75cae6af5d48aa54e2d182681313dc85d824c60ebbea973ab4eb9285807c967d",
+    "rhwp_bg.wasm": "0995e84e0f2adf6411a517e7f10998a3cbc0929d067d757d8e8ee136637cf4fc"
+  },
+  "scope": "same original full 140 pages; corrected first visible glyph selection; not final PR or new-base preservation gate",
+  "backends": {
+    "native": {
+      "pages": 140,
+      "minimum_raw": 96.0143,
+      "page70_raw": "100.00000",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "prep-current-native-224",
+        "/home/tsjang/rhwp/samples/issue2006/1790387_prep_final_report.hwpx",
+        "/home/tsjang/rhwp/pdf/issue2006/1790387_prep_final_report-hwpx-2024.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-224",
+        "--compat",
+        "2024",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "2",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/prep-current-3616/prep-current-native-224",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "tsv/native.tsv",
+      "tsv_sha256": "91f9ffa1e8d9f109ebcbff27ce6f4d5677e10a5ff993bbd7227395cd24383735",
+      "pngs": {
+        "png/native/overlay_070.png": "98c912b376b213b3b078bc5e7973b2db68dbf1593895f79ccd7bfa6e7e45d4a9",
+        "png/native/review_070.png": "3a58245aa8b80cf60e7add4d25f178a886722b60ce361968083b7680f4103d9d"
+      }
+    },
+    "wasm": {
+      "pages": 140,
+      "minimum_raw": 96.16717,
+      "page70_raw": "100.00000",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "prep-current-wasm-224",
+        "/home/tsjang/rhwp/samples/issue2006/1790387_prep_final_report.hwpx",
+        "/home/tsjang/rhwp/pdf/issue2006/1790387_prep_final_report-hwpx-2024.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-224",
+        "--compat",
+        "2024",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "2",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/prep-current-3616/prep-current-wasm-224",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-063",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "tsv/wasm.tsv",
+      "tsv_sha256": "e996e0cc7d356ea3fc17cc99ed2ae8e4d3fe6f3e75918f1fc6b49dc523eba0b3",
+      "pngs": {
+        "png/wasm/overlay_070.png": "99cb7b4a4e057098a1bac9ca2356eb7455bd2afd392e1bf0c671ef874b62108e",
+        "png/wasm/review_070.png": "f9fb7b8677af2eb4477be4507ab1cd8ac335dda5a7315d5f5e86db1a2cb8e556"
+      }
+    }
+  },
+  "formal_regression": {
+    "sources": {
+      "tests/cases/issue_7445_stored_paragraph_flow_projection.rs": "a45b4bb15b7e264a2014311fe5ff8766fb33dc8a2454e61f6c88564c0ea10ba3"
+    },
+    "summary": {
+      "total": 4,
+      "executed": 4,
+      "pass": 4,
+      "fail": 0,
+      "ignored": 0
+    },
+    "independent_first_glyph_css_px": [
+      105.44,
+      818.88
+    ],
+    "coordinate_tolerance_css_px": 2,
+    "old_selector_error": "source char:1 owns the leading space, not the first visible word",
+    "focused_clippy_exit_code": 0
+  },
+  "input": "samples/issue2006/1790387_prep_final_report.hwpx",
+  "input_sha256": "c68baed24096386f9041930d24d39409b61ac99463bf04dfd242440dfdeb739f",
+  "pdf": "pdf/issue2006/1790387_prep_final_report-hwpx-2024.pdf",
+  "pdf_sha256": "732baa118fbe380cf4c5e12e080eee5acb1eb8372070390fef47e53e2469f729"
+}

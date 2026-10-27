@@ -2472,9 +2472,8 @@ impl Paginator {
         // 투명 1×1 래퍼를 벗긴 표를 기준으로 만들어질 수 있다 — `row_count`/`row_heights`가
         // `table`(바깥 컨트롤 표) 자신의 행 수와 다를 수 있다는 뜻이다. 이 함수가 아래에서
         // 방출하는 모든 PartialTable의 start_row/end_row는 그 `mt` 기준이므로, 같은 unwrap
-        // 규칙(`row_geometry_table`)으로 좌표계를 판정해 PageItem에 데이터로 싣는다.
-        let row_cursor_is_nested =
-            !std::ptr::eq(crate::renderer::typeset::row_geometry_table(table), table);
+        // 결과에 기록된 소유 표를 소비해 PageItem에 좌표계를 싣는다.
+        let row_cursor_is_nested = !std::ptr::eq(mt.row_geometry_table(table), table);
         let row_count = mt.row_heights.len();
         let cs = mt.cell_spacing;
         let header_row_height = if row_count > 0 {

@@ -992,6 +992,7 @@ impl LayoutEngine {
                     border_fill_id: cell.border_fill_id,
                     text_direction: cell.text_direction,
                     clip: false,
+                    closed_reflow_frame: false,
                     page_fragment: false,
                     model_cell_index: Some(cell_enum_idx as u32),
                 }),
@@ -1295,7 +1296,9 @@ impl LayoutEngine {
                                     control_index: Some(ctrl_idx),
                                     fill_mode: None,
                                     original_size: None,
-                                    transform: extract_shape_transform(&pic.shape_attr),
+                                    transform: crate::renderer::image_geometry::picture_transform(
+                                        pic,
+                                    ),
                                     crop,
                                     original_size_hu,
                                     effect: pic.image_attr.effect,
@@ -1310,6 +1313,12 @@ impl LayoutEngine {
                                     outer_table_control_index: enclosing_ctx
                                         .map(|(_, _, _, table_ci)| table_ci),
                                     cell_context: cell_ctx.clone(),
+                                    pre_rotation_ratio:
+                                        crate::renderer::image_geometry::picture_pre_rotation_ratio(
+                                            pic,
+                                        ),
+                                    source_rect:
+                                        crate::renderer::image_geometry::picture_source_rect(pic),
                                     content_inset:
                                         crate::renderer::layout::utils::picture_content_inset(pic),
                                 }),

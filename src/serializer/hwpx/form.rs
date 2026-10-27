@@ -82,6 +82,8 @@ pub fn write_form<W: Write>(w: &mut Writer<W>, form: &FormObject) -> Result<(), 
     let tag = form_tag(form.form_type);
     let fore = color_to_hex(form.fore_color);
     let back = color_to_hex(form.back_color);
+    // 새 IR은 저장 포맷에 따라 외형이 달라지지 않도록 같은 기본값을 쓴다.
+    let default_border = super::super::control::default_border_type(form.form_type).to_string();
     let enabled = if form.enabled { "1" } else { "0" };
     // value: UNCHECKED/CHECKED/INDETERMINATE 3상태 (parser 의 역방향).
     let checked = match form.value {
@@ -135,7 +137,7 @@ pub fn write_form<W: Write>(w: &mut Writer<W>, form: &FormObject) -> Result<(), 
     attrs.push(("editable", prop(form, "Editable", "1")));
     attrs.push(("tabOrder", prop(form, "TabOrder", "0")));
     attrs.push(("enabled", enabled));
-    attrs.push(("borderTypeIDRef", prop(form, "BorderType", "0")));
+    attrs.push(("borderTypeIDRef", prop(form, "BorderType", &default_border)));
     attrs.push(("drawFrame", prop(form, "DrawFrame", "1")));
     attrs.push(("printable", prop(form, "Printable", "1")));
     attrs.push(("command", prop(form, "Command", "")));

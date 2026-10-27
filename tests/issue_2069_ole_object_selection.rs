@@ -4,8 +4,7 @@
 //! 렌더 트리는 OLE preview를 RawSvg로 만들지만, 원본 control 좌표를 잃으면 Studio가
 //! 클릭 선택/개체 속성 진입을 할 수 없고 빈 문단 커서 rect도 찾지 못한다.
 
-use std::fs;
-use std::path::Path;
+use std::{fs, path::Path};
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
@@ -144,6 +143,16 @@ fn collect_text_run_nodes<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode
     for child in &node.children {
         collect_text_run_nodes(child, out);
     }
+}
+// 모델 자리표 대신 paint가 사용하는 표시 번호를 읽는다.
+fn visible_text(nodes: &[&RenderNode]) -> String {
+    nodes
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) => Some(run.display_or_text()),
+            _ => None,
+        })
+        .collect()
 }
 
 fn assert_enter_after_square_ole_keeps_wrap_zone(rel: &str) {
@@ -841,13 +850,7 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
         .unwrap_or_else(|e| panic!("render tree after OLE caption {}: {:?}", rel, e));
     let mut text_runs = Vec::new();
     collect_text_run_nodes(&tree.root, &mut text_runs);
-    let rendered_text = text_runs
-        .iter()
-        .filter_map(|node| match &node.node_type {
-            RenderNodeType::TextRun(run) => Some(run.display_or_text()),
-            _ => None,
-        })
-        .collect::<String>();
+    let rendered_text = visible_text(&text_runs);
     let caption_run = text_runs
         .iter()
         .find(|node| {
@@ -857,6 +860,7 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
                     if run.display_or_text() == "1."
             )
         })
+        .filter(|_| rendered_text.contains("그림 1."))
         .unwrap_or_else(|| {
             panic!(
                 "OLE 캡션의 표시 번호가 있어야 함 {}: 표시 문자열={:?}",
@@ -873,15 +877,15 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
     assert_eq!(number_run.text, " ", "모델의 번호 공백 한 자리를 보존");
     let svg = core.render_page_svg_native(0).expect("OLE 캡션 SVG");
     let svg_document = roxmltree::Document::parse(&svg).expect("SVG XML");
-    let visible_text = svg_document
+    let svg_visible_text = svg_document
         .descendants()
         .filter(|node| node.has_tag_name("text"))
         .flat_map(|node| node.descendants().filter(|child| child.is_text()))
         .filter_map(|node| node.text())
         .collect::<String>();
     assert!(
-        visible_text.contains("그림1."),
-        "SVG의 글자별 출력에도 접두어와 번호가 순서대로 있어야 함: {visible_text:?}"
+        svg_visible_text.contains("그림1."),
+        "SVG의 글자별 출력에도 접두어와 번호가 순서대로 있어야 함: {svg_visible_text:?}"
     );
     assert!(
         caption_run.bbox.x > ole_right,
@@ -932,13 +936,7 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
         .unwrap_or_else(|e| panic!("render tree after OLE caption removal {}: {:?}", rel, e));
     let mut text_runs = Vec::new();
     collect_text_run_nodes(&tree.root, &mut text_runs);
-    let rendered_text = text_runs
-        .iter()
-        .filter_map(|node| match &node.node_type {
-            RenderNodeType::TextRun(run) => Some(run.text.as_str()),
-            _ => None,
-        })
-        .collect::<String>();
+    let rendered_text = visible_text(&text_runs);
     assert!(
         !rendered_text.contains("그림"),
         "removed OLE caption should not remain visible for {}: rendered={:?}",

@@ -36,10 +36,9 @@ pub(super) struct WholeFit {
 }
 
 impl TypesetEngine {
-    /// A complete source cell can own two physical row frames even when
-    /// sequential measurement would fit both. Whole placement must retain
-    /// the same source boundary consumed by the row scanner and paint.
-    pub(in crate::renderer::typeset) fn stored_two_line_row_frames_require_split(
+    /// 완전한 원본 셀도 여러 물리 프레임을 소유할 수 있다. 통째 수용과
+    /// 빈 호스트 빠른 경로가 실제 스캐너의 같은 저장 경계를 보존한다.
+    pub(in crate::renderer::typeset) fn stored_cell_page_frames_require_split(
         &self,
         table: &crate::model::table::Table,
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
@@ -55,8 +54,9 @@ impl TypesetEngine {
         self.prime_section_cell_context(&engine);
         engine.set_layout_profile(self.profile.get());
         engine.set_render_normalization_overlay(std::sync::Arc::clone(&self.render_normalization));
-        (0..usize::from(table.row_count))
-            .any(|row| engine.native_saved_two_line_row_frame(table, row, styles))
+        engine.native_stored_table_has_intra_paragraph_frames(table, styles)
+            || (0..usize::from(table.row_count))
+                .any(|row| engine.native_saved_two_line_row_frame(table, row, styles))
     }
 
     /// 원본 공동 앵커의 첫 수용 원점과 이월 후 소비된 오프셋을 함께 조회한다.

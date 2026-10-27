@@ -260,13 +260,15 @@ impl LayoutEngine {
                     brightness: pic.image_attr.brightness,
                     contrast: pic.image_attr.contrast,
                     opacity: pic.image_attr.opacity(),
-                    transform: utils::extract_shape_transform(&pic.shape_attr),
+                    transform: crate::renderer::image_geometry::picture_transform(pic),
                     // [Issue #1167] wrap 모드 보존 — SVG plane multi-pass z-order
                     // 판별에 사용 (BehindText 워터마크가 본문 뒤로). PaintOp
                     // 경로(skia/canvaskit)는 별도로 image.text_wrap 을 set 하므로 무관.
                     text_wrap: Some(pic.common.text_wrap),
                     external_path: pic.image_attr.external_path.clone(),
                     content_inset: utils::picture_content_inset(pic),
+                    pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(pic),
+ source_rect: crate::renderer::image_geometry::picture_source_rect(pic),
                     ..ImageNode::new(bin_data_id, image_data)
                 }),
                 BoundingBox::new(pic_x + margin_left, pic_y + margin_top, pic_w, pic_h),

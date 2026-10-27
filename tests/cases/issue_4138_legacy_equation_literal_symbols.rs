@@ -92,7 +92,7 @@ fn literal_symbols_use_independent_full_em_slots_in_final_paint() {
         "텍스트 추출은 그리기용 글리프로 대체하지 않음"
     );
     let glyphs = literal_run(&eq.layout_box).expect("실제 paint가 읽는 수식 글꼴의 기호 슬롯");
-    assert_eq!(glyphs.glyphs, "△⋅");
+    assert_eq!(glyphs.glyphs, "△․");
     assert_eq!(glyphs.positions.len(), 2);
     assert!(
         (glyphs.positions[1] - glyphs.positions[0] - eq.font_size).abs() < 1e-6,
@@ -105,13 +105,13 @@ fn literal_symbols_use_independent_full_em_slots_in_final_paint() {
     let painted = eq
         .svg_content
         .lines()
-        .filter(|l| l.contains('△') || l.contains('⋅'))
+        .filter(|l| l.contains('△') || l.contains('․'))
         .collect::<Vec<_>>();
     assert_eq!(painted.len(), 2);
     assert!(
         painted
             .iter()
-            .all(|l| l.contains("font-family=\"HyhwpEQ\"")),
+            .all(|l| l.contains("font-family=\"RHWP Hancom Legacy Equation\"")),
         "SVG도 공통 글리프 선택을 소비"
     );
 }

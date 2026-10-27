@@ -1,0 +1,1316 @@
+{
+  "schema": "rhwp-claim-page-evidence-v1",
+  "code_test_head": "04c92da78165ccbf63b467855591df183655a98d",
+  "base": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "selection": "명시적 PR 주장·편집 후 상태·페이지 선택; 첫 조건 자동 선택 금지",
+  "base_below_90_allowed": true,
+  "candidate_raw_floor": 90,
+  "records": [
+    {
+      "pr": 7559,
+      "title": "# PR #7559 리뷰 — 새 표의 저장 전후 원점",
+      "primary": {
+        "scope_index": 77,
+        "page": 1,
+        "claim": "새 표를 HWPX로 저장·재열기한 표와 뒤 본문의 원점",
+        "native_review": "panels/native/077-p001-review.png",
+        "native_overlay": "panels/native/077-p001-overlay.png",
+        "wasm_review": "panels/wasm/077-p001-review.png",
+        "wasm_overlay": "panels/wasm/077-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        76,
+        77,
+        78,
+        79
+      ],
+      "api_labels": [],
+      "conditions": [
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        76,
+        77,
+        78,
+        79
+      ]
+    },
+    {
+      "pr": 7572,
+      "title": "# PR #7572 검토 — 본문 조합 중 명시적 배치의 쪽 나눔 경계",
+      "primary": {
+        "scope_index": 178,
+        "page": 1,
+        "claim": "본문 조합 뒤 첫 문단과 명시적 배치의 최종 출력; 배치 중 재조판 지연은 실제 API 검사로 구분",
+        "native_review": "panels/native/178-p001-review.png",
+        "native_overlay": "panels/native/178-p001-overlay.png",
+        "wasm_review": "panels/wasm/178-p001-review.png",
+        "wasm_overlay": "panels/wasm/178-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr7572-all-formatted",
+        "pr7572-before",
+        "pr7572-composed"
+      ],
+      "conditions": [
+        176,
+        177,
+        178
+      ]
+    },
+    {
+      "pr": 7573,
+      "title": "# PR #7573 검토 — 오려 붙이기 선택 경계의 표 소유 보존",
+      "primary": {
+        "scope_index": 181,
+        "page": 1,
+        "claim": "시작 경계에서 오려 붙인 뒤 표 하나와 앞뒤 텍스트의 소유·순서",
+        "native_review": "panels/native/181-p001-review.png",
+        "native_overlay": "panels/native/181-p001-overlay.png",
+        "wasm_review": "panels/wasm/181-p001-review.png",
+        "wasm_overlay": "panels/wasm/181-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr7573-after-end-boundary",
+        "pr7573-after-interior",
+        "pr7573-after-start-boundary",
+        "pr7573-before"
+      ],
+      "conditions": [
+        179,
+        180,
+        181,
+        182
+      ]
+    },
+    {
+      "pr": 7588,
+      "title": "# PR #7588 리뷰 — 묶음 해제의 누름틀과 회전 자식 재현",
+      "primary": {
+        "scope_index": 21,
+        "page": 1,
+        "claim": "30도 회전 묶음을 푼 뒤 자식과 누름틀의 유지",
+        "native_review": "panels/native/021-p001-review.png",
+        "native_overlay": "panels/native/021-p001-overlay.png",
+        "wasm_review": "panels/wasm/021-p001-review.png",
+        "wasm_overlay": "panels/wasm/021-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        18,
+        19,
+        20,
+        21,
+        32,
+        33,
+        34,
+        35,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55
+      ],
+      "api_labels": [],
+      "conditions": [
+        18,
+        19,
+        20,
+        21,
+        32,
+        33,
+        34,
+        35,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55
+      ]
+    },
+    {
+      "pr": 7589,
+      "title": "# PR #7589 검토 — 입력 상자의 저장 개행과 Print 표시",
+      "primary": {
+        "scope_index": 74,
+        "page": 1,
+        "claim": "여러 줄 입력 상자의 한컴 Print 표시와 false 대조군",
+        "native_review": "panels/native/074-p001-review.png",
+        "native_overlay": "panels/native/074-p001-overlay.png",
+        "wasm_review": "panels/wasm/074-p001-review.png",
+        "wasm_overlay": "panels/wasm/074-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        74,
+        75
+      ],
+      "api_labels": [],
+      "conditions": [
+        74,
+        75
+      ]
+    },
+    {
+      "pr": 7662,
+      "title": "# PR #7662 리뷰 — 수정: 개체 바로 앞에서 나눈 문단이 그 개체로 시작하게 한다",
+      "primary": {
+        "scope_index": 192,
+        "page": 1,
+        "claim": "개체 바로 앞 문단 나눔 뒤 인라인 사각형과 뒤 텍스트의 다음 문단 소속",
+        "native_review": "panels/native/192-p001-review.png",
+        "native_overlay": "panels/native/192-p001-overlay.png",
+        "wasm_review": "panels/wasm/192-p001-review.png",
+        "wasm_overlay": "panels/wasm/192-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr7662-Endnote-before",
+        "pr7662-Endnote-split",
+        "pr7662-FloatRect-before",
+        "pr7662-FloatRect-split",
+        "pr7662-Footnote-before",
+        "pr7662-Footnote-split",
+        "pr7662-InlinePicture-before",
+        "pr7662-InlinePicture-split",
+        "pr7662-InlineRect-before",
+        "pr7662-InlineRect-split",
+        "pr7662-auto-before",
+        "pr7662-auto-split"
+      ],
+      "conditions": [
+        183,
+        184,
+        185,
+        186,
+        187,
+        188,
+        189,
+        190,
+        191,
+        192,
+        193,
+        194
+      ]
+    },
+    {
+      "pr": 7694,
+      "title": "# PR #7694 리뷰 — 기능: 인라인 개체를 논리 캐럿 위치로 원자적으로 이동하는 API 추가",
+      "primary": {
+        "scope_index": 125,
+        "page": 1,
+        "claim": "차트를 논리 슬롯으로 옮긴 뒤 본문·차트·후속 문단의 순서",
+        "native_review": "panels/native/125-p001-review.png",
+        "native_overlay": "panels/native/125-p001-overlay.png",
+        "wasm_review": "panels/wasm/125-p001-review.png",
+        "wasm_overlay": "panels/wasm/125-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        124,
+        125,
+        128,
+        129
+      ],
+      "api_labels": [],
+      "conditions": [
+        124,
+        125,
+        128,
+        129
+      ]
+    },
+    {
+      "pr": 7819,
+      "title": "# PR #7819 리뷰 — Fix CharOverlap logical slots and inline note rendering",
+      "primary": {
+        "scope_index": 82,
+        "page": 1,
+        "claim": "비 BMP 글자 뒤 미주가 있는 실제 출력과 논리 슬롯의 API 검사",
+        "native_review": "panels/native/082-p001-review.png",
+        "native_overlay": "panels/native/082-p001-overlay.png",
+        "wasm_review": "panels/wasm/082-p001-review.png",
+        "wasm_overlay": "panels/wasm/082-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106
+      ],
+      "api_labels": [],
+      "conditions": [
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106
+      ]
+    },
+    {
+      "pr": 7833,
+      "title": "# PR #7833 리뷰 — Fix inline object positions and boundary cut/paste in cells",
+      "primary": {
+        "scope_index": 134,
+        "page": 1,
+        "claim": "셀 경계 오리기 실행 후 결과; 오리기 전 133은 대조군",
+        "native_review": "panels/native/134-p001-review.png",
+        "native_overlay": "panels/native/134-p001-overlay.png",
+        "wasm_review": "panels/wasm/134-p001-review.png",
+        "wasm_overlay": "panels/wasm/134-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        154,
+        155,
+        156,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167,
+        168,
+        169
+      ],
+      "api_labels": [],
+      "conditions": [
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        154,
+        155,
+        156,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167,
+        168,
+        169
+      ]
+    },
+    {
+      "pr": 7904,
+      "title": "# PR #7904 리뷰 — fix(studio): 문단 끝 인라인 개체 뒤 입력·IME 조합·Undo/Redo 수정",
+      "primary": {
+        "scope_index": 211,
+        "page": 1,
+        "claim": "실제 WASM의 인라인 그림 뒤 IME 확정 결과; 확정·취소·Undo/Redo 상태 기록과 연결",
+        "native_review": "panels/native/211-p001-review.png",
+        "native_overlay": "panels/native/211-p001-overlay.png",
+        "wasm_review": "panels/wasm/211-p001-review.png",
+        "wasm_overlay": "panels/wasm/211-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        210,
+        211
+      ],
+      "api_labels": [],
+      "conditions": [
+        210,
+        211
+      ]
+    },
+    {
+      "pr": 8014,
+      "title": "# PR #8014 리뷰 — fix(render): 선 종류가 없음인 직선을 그리지 않는다",
+      "primary": {
+        "scope_index": 195,
+        "page": 1,
+        "claim": "NONE 선이 보이지 않는 Print 출력과 실선 196 대조군",
+        "native_review": "panels/native/195-p001-review.png",
+        "native_overlay": "panels/native/195-p001-overlay.png",
+        "wasm_review": "panels/wasm/195-p001-review.png",
+        "wasm_overlay": "panels/wasm/195-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr8014-line-type-0",
+        "pr8014-line-type-1"
+      ],
+      "conditions": [
+        195,
+        196
+      ]
+    },
+    {
+      "pr": 8025,
+      "title": "# PR #8025 리뷰 — fix(canvas): 굵은 표시용 글꼴을 SVG처럼 굵게 그린다",
+      "primary": {
+        "scope_index": 113,
+        "page": 4,
+        "claim": "bold=false인 굵은 표시용 실제 HY헤드라인M의 Canvas 잉크",
+        "native_review": "panels/native/113-p004-review.png",
+        "native_overlay": "panels/native/113-p004-overlay.png",
+        "wasm_review": "panels/wasm/113-p004-review.png",
+        "wasm_overlay": "panels/wasm/113-p004-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        113
+      ],
+      "api_labels": [],
+      "conditions": [
+        113
+      ]
+    },
+    {
+      "pr": 8027,
+      "title": "# PR #8027 리뷰 — fix(emf): EMR_POLYGON16·EMR_POLYLINE16 레코드 번호를 바로잡는다",
+      "primary": null,
+      "evidence_kind": "runtime-contract",
+      "main_conditions": [],
+      "api_labels": [],
+      "meaning": "EMR_POLYGON16·EMR_POLYLINE16의 원시 레코드 번호와 파싱·닫힘 경로를 실제 네 함수에서 검사한다. 일반 OLE 차트 PNG를 이 레코드 결함 검출의 증거로 사용하지 않는다.",
+      "conditions": []
+    },
+    {
+      "pr": 8029,
+      "title": "# PR #8029 리뷰 — fix(font-metrics): PostScript 굵기 접미사가 붙은 글꼴 이름도 family 메트릭을 찾는다",
+      "primary": null,
+      "evidence_kind": "runtime-contract",
+      "main_conditions": [],
+      "api_labels": [],
+      "meaning": "PostScript 굵기 접미사에 대한 실제 메트릭 조회 결과·별칭·미지원 이름의 API 계약을 검사한다. HY헤드라인M PNG를 Pretendard 접미사 조회의 증거로 사용하지 않는다.",
+      "conditions": []
+    },
+    {
+      "pr": 8030,
+      "title": "# PR #8030 리뷰 — fix(render): 반각 구두점은 글리프가 전진폭보다 넓을 때만 눌러 그린다",
+      "primary": null,
+      "evidence_kind": "runtime-contract",
+      "main_conditions": [
+        113
+      ],
+      "api_labels": [],
+      "meaning": "전진폭보다 넓음·좁음·같음·폭 없음 네 독립 함수 경계를 검사한다. 표시용 굵은 글꼴 PNG를 반각 배율의 결함 검출로 사용하지 않는다.",
+      "visual_role": "113은 공통 렌더링 무회귀 대조군이며 함수의 결함 검출을 입증하는 대표 PNG로 사용하지 않는다.",
+      "conditions": [
+        113
+      ]
+    },
+    {
+      "pr": 8031,
+      "title": "# PR #8031 리뷰 — fix(pagination): 표 셀 안의 쪽 번호 위치도 읽는다",
+      "primary": {
+        "scope_index": 145,
+        "page": 1,
+        "claim": "공개 API로 표 셀 안에 정의한 쪽 번호의 실제 출력",
+        "native_review": "panels/native/145-p001-review.png",
+        "native_overlay": "panels/native/145-p001-overlay.png",
+        "wasm_review": "panels/wasm/145-p001-review.png",
+        "wasm_overlay": "panels/wasm/145-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        132,
+        145
+      ],
+      "api_labels": [],
+      "conditions": [
+        132,
+        145
+      ]
+    },
+    {
+      "pr": 8032,
+      "title": "# PR #8032 리뷰 — fix(layout): 문단 끝 글자처럼 취급 개체가 줄에 안 들어가면 그 앞에서 줄을 나눈다",
+      "primary": {
+        "scope_index": 141,
+        "page": 1,
+        "claim": "큰 인라인 그림이 남은 줄 폭에 들어가지 않아 그림 앞에서 줄바꿈; 작은 그림 142는 같은 줄 정상 대조군",
+        "native_review": "panels/native/141-p001-review.png",
+        "native_overlay": "panels/native/141-p001-overlay.png",
+        "wasm_review": "panels/wasm/141-p001-review.png",
+        "wasm_overlay": "panels/wasm/141-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        141,
+        142,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153
+      ],
+      "api_labels": [],
+      "conditions": [
+        141,
+        142,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153
+      ]
+    },
+    {
+      "pr": 8033,
+      "title": "# PR #8033 리뷰 — fix(typeset): 저장 줄 없는 글자처럼 취급 표의 바깥 여백을 쪽 맞춤에서 한 번만 센다",
+      "primary": {
+        "scope_index": 170,
+        "page": 4,
+        "claim": "중첩 표의 시작 조각·바깥여백과 뒤 본문; 같은 측정·배치 프레임 소비",
+        "native_review": "panels/native/170-p004-review.png",
+        "native_overlay": "panels/native/170-p004-overlay.png",
+        "wasm_review": "panels/wasm/170-p004-review.png",
+        "wasm_overlay": "panels/wasm/170-p004-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        15,
+        170,
+        171
+      ],
+      "api_labels": [],
+      "conditions": [
+        15,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        170,
+        171
+      ]
+    },
+    {
+      "pr": 8035,
+      "title": "# PR #8035 리뷰 — fix(edit): 개체를 지우면 뒤 글자 모양 경계도 당긴다",
+      "primary": {
+        "scope_index": 212,
+        "page": 1,
+        "claim": "그림을 지운 뒤 앞글뒤글의 굵게 경계; 다른 두 삭제 시나리오 TSV와 API 경계 대조",
+        "native_review": "panels/native/212-p001-review.png",
+        "native_overlay": "panels/native/212-p001-overlay.png",
+        "wasm_review": "panels/wasm/212-p001-review.png",
+        "wasm_overlay": "panels/wasm/212-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        212,
+        213,
+        214
+      ],
+      "api_labels": [],
+      "conditions": [
+        212,
+        213,
+        214
+      ]
+    },
+    {
+      "pr": 8036,
+      "title": "# PR #8036 리뷰 — fix(typeset): 쪽 높이 줄 뒤의 저장 쪽 경계를 줄 끝 위치로 판정한다",
+      "primary": {
+        "scope_index": 144,
+        "page": 1,
+        "claim": "큰 저장 vpos 뒤 실제 한 쪽 출력과 뒤 문단 보존; 143은 영 원점 대조군",
+        "native_review": "panels/native/144-p001-review.png",
+        "native_overlay": "panels/native/144-p001-overlay.png",
+        "wasm_review": "panels/wasm/144-p001-review.png",
+        "wasm_overlay": "panels/wasm/144-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        143,
+        144
+      ],
+      "api_labels": [],
+      "conditions": [
+        143,
+        144
+      ]
+    },
+    {
+      "pr": 8037,
+      "title": "# PR #8037 리뷰 — fix(layout): 표의 문단에 쪽 기준 그림이 붙어도 표 바깥 여백을 지킨다",
+      "primary": {
+        "scope_index": 65,
+        "page": 1,
+        "claim": "쪽 기준 그림을 가진 표 문단의 양수 offset과 바깥여백",
+        "native_review": "panels/native/065-p001-review.png",
+        "native_overlay": "panels/native/065-p001-overlay.png",
+        "wasm_review": "panels/wasm/065-p001-review.png",
+        "wasm_overlay": "panels/wasm/065-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72
+      ],
+      "api_labels": [],
+      "conditions": [
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72
+      ]
+    },
+    {
+      "pr": 8038,
+      "title": "# PR #8038 리뷰 — fix(layout): 첫 줄 윗줄·강조점 잉크를 본문 clip에 넣는다",
+      "primary": {
+        "scope_index": 73,
+        "page": 1,
+        "claim": "첫 줄 윗강조점 잉크와 본문 clip 상단",
+        "native_review": "panels/native/073-p001-review.png",
+        "native_overlay": "panels/native/073-p001-overlay.png",
+        "wasm_review": "panels/wasm/073-p001-review.png",
+        "wasm_overlay": "panels/wasm/073-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        56,
+        57,
+        58,
+        73
+      ],
+      "api_labels": [],
+      "conditions": [
+        56,
+        57,
+        58,
+        73
+      ]
+    },
+    {
+      "pr": 8039,
+      "title": "# PR #8039 리뷰 — fix(layout): 글자처럼 취급 표 뒤 컨트롤만 있는 저장 줄의 높이를 쌓는다",
+      "primary": {
+        "scope_index": 130,
+        "page": 1,
+        "claim": "TAC 표 뒤 컨트롤 전용 저장 줄의 점유와 NEXT 본문; false 대조군 131",
+        "native_review": "panels/native/130-p001-review.png",
+        "native_overlay": "panels/native/130-p001-overlay.png",
+        "wasm_review": "panels/wasm/130-p001-review.png",
+        "wasm_overlay": "panels/wasm/130-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        130,
+        131
+      ],
+      "api_labels": [],
+      "conditions": [
+        130,
+        131
+      ]
+    },
+    {
+      "pr": 8041,
+      "title": "# PR #8041 리뷰 — 자식 도형의 실제 틀과 겹침 순서 보존",
+      "primary": {
+        "scope_index": 26,
+        "page": 1,
+        "claim": "실제 자식 틀을 사용하는 도형 겹침 순서의 편집 후 출력",
+        "native_review": "panels/native/026-p001-review.png",
+        "native_overlay": "panels/native/026-p001-overlay.png",
+        "wasm_review": "panels/wasm/026-p001-review.png",
+        "wasm_overlay": "panels/wasm/026-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45
+      ],
+      "api_labels": [],
+      "conditions": [
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45
+      ]
+    },
+    {
+      "pr": 8042,
+      "title": "# PR #8042 리뷰 — 묶기·풀기 뒤 필드와 회전 자식 보존",
+      "primary": {
+        "scope_index": 52,
+        "page": 1,
+        "claim": "묶기·풀기 편집 뒤 누름틀과 자식 회전 상태",
+        "native_review": "panels/native/052-p001-review.png",
+        "native_overlay": "panels/native/052-p001-overlay.png",
+        "wasm_review": "panels/wasm/052-p001-review.png",
+        "wasm_overlay": "panels/wasm/052-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        18,
+        19,
+        20,
+        21,
+        32,
+        33,
+        34,
+        35,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55
+      ],
+      "api_labels": [],
+      "conditions": [
+        18,
+        19,
+        20,
+        21,
+        32,
+        33,
+        34,
+        35,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55
+      ]
+    },
+    {
+      "pr": 8043,
+      "title": "# PR #8043 리뷰 — feat(hyperlink): 문서 내부 책갈피 링크를 넣고 고치고 읽는다",
+      "primary": {
+        "scope_index": 197,
+        "page": 1,
+        "claim": "책갈피 링크 문단의 표시와 순서; 링크 대상 읽기·갱신은 별도 API 검사",
+        "native_review": "panels/native/197-p001-review.png",
+        "native_overlay": "panels/native/197-p001-overlay.png",
+        "wasm_review": "panels/wasm/197-p001-review.png",
+        "wasm_overlay": "panels/wasm/197-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr8043-bookmark-control"
+      ],
+      "conditions": [
+        197
+      ]
+    },
+    {
+      "pr": 8045,
+      "title": "# PR #8045 리뷰 — fix(layout): 칸 안 어울림 중첩 표 옆의 글도 저장 줄 시작 위치를 따른다",
+      "primary": {
+        "scope_index": 112,
+        "page": 1,
+        "claim": "한컴 저장본의 셀 안 어울림 중첩 표 옆 글 시작 위치",
+        "native_review": "panels/native/112-p001-review.png",
+        "native_overlay": "panels/native/112-p001-overlay.png",
+        "wasm_review": "panels/wasm/112-p001-review.png",
+        "wasm_overlay": "panels/wasm/112-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        112
+      ],
+      "api_labels": [],
+      "conditions": [
+        112
+      ]
+    },
+    {
+      "pr": 8049,
+      "title": "# PR #8049 리뷰 — 캡션 자동 번호의 자리표와 표시 문자열",
+      "primary": {
+        "scope_index": 46,
+        "page": 1,
+        "claim": "캡션 자동 번호·접두부·뒤 문자의 표시",
+        "native_review": "panels/native/046-p001-review.png",
+        "native_overlay": "panels/native/046-p001-overlay.png",
+        "wasm_review": "panels/wasm/046-p001-review.png",
+        "wasm_overlay": "panels/wasm/046-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        46,
+        47
+      ],
+      "api_labels": [],
+      "conditions": [
+        46,
+        47
+      ]
+    },
+    {
+      "pr": 8050,
+      "title": "# PR #8050 리뷰 — fix(layout): 바깥 칸 변이 없음이면 표 테두리로 메우지 않는다",
+      "primary": {
+        "scope_index": 198,
+        "page": 1,
+        "claim": "NONE 셀 변을 표 외곽선으로 채우지 않는 실제 출력",
+        "native_review": "panels/native/198-p001-review.png",
+        "native_overlay": "panels/native/198-p001-overlay.png",
+        "wasm_review": "panels/wasm/198-p001-review.png",
+        "wasm_overlay": "panels/wasm/198-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr8050-none-cell-borders"
+      ],
+      "conditions": [
+        198
+      ]
+    },
+    {
+      "pr": 8051,
+      "title": "# PR #8051 리뷰 — fix(layout): 쪽을 넘어 나뉜 표 조각에도 cellzone·표 바깥 테두리를 적용한다",
+      "primary": {
+        "scope_index": 199,
+        "page": 1,
+        "claim": "첫 표 조각의 cellzone 색과 외곽선; 뒤 빈 쪽은 쪽수 대조이며 가시 내용 증거가 아님",
+        "native_review": "panels/native/199-p001-review.png",
+        "native_overlay": "panels/native/199-p001-overlay.png",
+        "wasm_review": "panels/wasm/199-p001-review.png",
+        "wasm_overlay": "panels/wasm/199-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr8051-split-cellzone"
+      ],
+      "conditions": [
+        199
+      ]
+    },
+    {
+      "pr": 8052,
+      "title": "# PR #8052 리뷰 — fix(typeset): 꽉 찬 쪽 뒤 쪽 나누기 빈 마지막 문단은 빈 쪽을 만들지 않는다",
+      "primary": null,
+      "evidence_kind": "runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr8052-page-break-38",
+        "pr8052-page-break-41"
+      ],
+      "meaning": "실제 빈 마지막 문단의 명시적 쪽 나눔·쪽수 계약을 검사한다. 실제 빈 페이지 raw100을 가시 내용 배치 정확성으로 제시하지 않는다.",
+      "conditions": [
+        200,
+        201
+      ]
+    },
+    {
+      "pr": 8053,
+      "title": "# PR #8053 리뷰 — fix(layout): 머리말·꼬리말 용지 기준 도형도 머리말 틀을 원점으로 쓴다",
+      "primary": {
+        "scope_index": 202,
+        "page": 1,
+        "claim": "용지 기준 머리말 도형과 본문 기준 도형의 상대 원점",
+        "native_review": "panels/native/202-p001-review.png",
+        "native_overlay": "panels/native/202-p001-overlay.png",
+        "wasm_review": "panels/wasm/202-p001-review.png",
+        "wasm_overlay": "panels/wasm/202-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr8053-header-paper-origin"
+      ],
+      "conditions": [
+        202
+      ]
+    },
+    {
+      "pr": 8054,
+      "title": "# PR #8054 리뷰 — fix(layout): 세로 오프셋 위아래 배치 표 뒤의 같은 문단 글을 표 아래에 둔다",
+      "primary": {
+        "scope_index": 203,
+        "page": 1,
+        "claim": "offset 표 아래에서 같은 문단 본문이 재개하는 순서와 위치",
+        "native_review": "panels/native/203-p001-review.png",
+        "native_overlay": "panels/native/203-p001-overlay.png",
+        "wasm_review": "panels/wasm/203-p001-review.png",
+        "wasm_overlay": "panels/wasm/203-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr8054-offset-host-text"
+      ],
+      "conditions": [
+        203
+      ]
+    },
+    {
+      "pr": 8055,
+      "title": "# PR #8055 리뷰 — fix(typeset): 쪽을 넘은 위아래 배치 표 조각 뒤 첫 줄의 간격을 한 번만 둔다",
+      "primary": {
+        "scope_index": 170,
+        "page": 8,
+        "claim": "표 이어받기·종료 조각 뒤 첫 줄의 간격과 후속 본문",
+        "native_review": "panels/native/170-p008-review.png",
+        "native_overlay": "panels/native/170-p008-overlay.png",
+        "wasm_review": "panels/wasm/170-p008-review.png",
+        "wasm_overlay": "panels/wasm/170-p008-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        123,
+        15,
+        170,
+        171
+      ],
+      "api_labels": [],
+      "conditions": [
+        15,
+        123,
+        170,
+        171
+      ]
+    },
+    {
+      "pr": 8056,
+      "title": "# PR #8056 리뷰 — fix(layout): 줄 끝 공백은 넘침 판정에 넣지 않는다",
+      "primary": {
+        "scope_index": 205,
+        "page": 1,
+        "claim": "줄 끝 공백이 있는 숫자의 실제 오른쪽 정렬; 204는 공백 없는 대조군",
+        "native_review": "panels/native/205-p001-review.png",
+        "native_overlay": "panels/native/205-p001-overlay.png",
+        "wasm_review": "panels/wasm/205-p001-review.png",
+        "wasm_overlay": "panels/wasm/205-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr8056-no-space",
+        "pr8056-space"
+      ],
+      "conditions": [
+        204,
+        205
+      ]
+    },
+    {
+      "pr": 8057,
+      "title": "# PR #8057 리뷰 — fix(render): 가운뎃점으로 쓴 U+2024를 가운데 점으로 그린다",
+      "primary": {
+        "scope_index": 107,
+        "page": 1,
+        "claim": "U+2024를 가운뎃점으로 사용한 실제 본문과 A·B 간격",
+        "native_review": "panels/native/107-p001-review.png",
+        "native_overlay": "panels/native/107-p001-overlay.png",
+        "wasm_review": "panels/wasm/107-p001-review.png",
+        "wasm_overlay": "panels/wasm/107-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        107,
+        108,
+        109
+      ],
+      "api_labels": [],
+      "conditions": [
+        107,
+        108,
+        109
+      ]
+    },
+    {
+      "pr": 8058,
+      "title": "# PR #8058 리뷰 — fix(canvas): 글리프 맞춤이 글자를 늘리거나 기호 잉크를 지나치게 줄이지 않는다",
+      "primary": null,
+      "evidence_kind": "runtime-contract",
+      "main_conditions": [
+        113
+      ],
+      "api_labels": [],
+      "meaning": "음수·양수 자간과 기호 잉크에 대한 실제 Canvas 배율 함수 계약을 검사한다. 일반 굵은 제목 PNG를 과도한 축소 검출로 사용하지 않는다.",
+      "visual_role": "113은 공통 렌더링 무회귀 대조군이며 함수의 결함 검출을 입증하는 대표 PNG로 사용하지 않는다.",
+      "conditions": [
+        113
+      ]
+    },
+    {
+      "pr": 8061,
+      "title": "# PR #8061 리뷰 — 셀 그림의 편집 소유와 쪽 그리기 순서",
+      "primary": {
+        "scope_index": 120,
+        "page": 1,
+        "claim": "쪽 기준 떠 있는 그림의 높은 z-order와 실제 셀 내용 쌓기 순서; 115는 정상 대조군",
+        "native_review": "panels/native/120-p001-review.png",
+        "native_overlay": "panels/native/120-p001-overlay.png",
+        "wasm_review": "panels/wasm/120-p001-review.png",
+        "wasm_overlay": "panels/wasm/120-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122
+      ],
+      "api_labels": [],
+      "conditions": [
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122
+      ]
+    },
+    {
+      "pr": 8062,
+      "title": "# PR #8062 리뷰 — fix(typeset): 개체만 있는 줄과 겹치는 저장 줄은 저장 vpos 차이만큼 나아간다",
+      "primary": null,
+      "evidence_kind": "runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr8062-object-overlapping-line"
+      ],
+      "meaning": "개체 전용 줄과 저장 vpos 차이의 실제 배치 계약을 검사한다. 이 최소 입력의 실제 빈 Print를 가시 본문의 위치 정확성으로 제시하지 않는다.",
+      "conditions": [
+        206
+      ]
+    },
+    {
+      "pr": 8065,
+      "title": "# PR #8065 리뷰 — fix(layout): 안 여백이 선언 높이보다 큰 칸도 행을 내용만큼 키운다",
+      "primary": {
+        "scope_index": 207,
+        "page": 1,
+        "claim": "안 여백 아래 가 글줄이 셀 안에 포함되는 실제 행 높이",
+        "native_review": "panels/native/207-p001-review.png",
+        "native_overlay": "panels/native/207-p001-overlay.png",
+        "wasm_review": "panels/wasm/207-p001-review.png",
+        "wasm_overlay": "panels/wasm/207-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr8065-padding-exceeds-height"
+      ],
+      "conditions": [
+        207
+      ]
+    },
+    {
+      "pr": 8066,
+      "title": "# PR #8066 리뷰 — fix(layout): 글자처럼 취급 RowBreak 표도 마지막 줄 간격만 넘친 행을 선언 높이로 둔다",
+      "primary": {
+        "scope_index": 208,
+        "page": 1,
+        "claim": "마지막 줄 간격만 넘치는 TAC RowBreak 행과 가 글줄",
+        "native_review": "panels/native/208-p001-review.png",
+        "native_overlay": "panels/native/208-p001-overlay.png",
+        "wasm_review": "panels/wasm/208-p001-review.png",
+        "wasm_overlay": "panels/wasm/208-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [],
+      "api_labels": [
+        "pr8066-rowbreak-whitespace-tail"
+      ],
+      "conditions": [
+        208
+      ]
+    },
+    {
+      "pr": 8090,
+      "title": "# PR #8090 리뷰 — fix: 구역이 둘 이상인 문서에서 앞 구역 미주의 편집 위치를 찾는다",
+      "primary": {
+        "scope_index": 209,
+        "page": 2,
+        "claim": "두 구역 중 앞 구역에 삽입·편집한 미주가 마지막 쪽에 표시되고 캐럿 소속이 일치",
+        "native_review": "panels/native/209-p002-review.png",
+        "native_overlay": "panels/native/209-p002-overlay.png",
+        "wasm_review": "panels/wasm/209-p002-review.png",
+        "wasm_overlay": "panels/wasm/209-p002-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        209
+      ],
+      "api_labels": [],
+      "conditions": [
+        209
+      ]
+    },
+    {
+      "pr": 8093,
+      "title": "# PR #8093 리뷰 — fix(edit): 글자처럼 취급한 양식 개체도 캐럿 한 칸을 차지한다",
+      "primary": {
+        "scope_index": 110,
+        "page": 1,
+        "claim": "가와 나 사이 TAC 양식 개체의 표시; 논리 한 칸·캐럿은 API 검사",
+        "native_review": "panels/native/110-p001-review.png",
+        "native_overlay": "panels/native/110-p001-overlay.png",
+        "wasm_review": "panels/wasm/110-p001-review.png",
+        "wasm_overlay": "panels/wasm/110-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        110,
+        111
+      ],
+      "api_labels": [],
+      "conditions": [
+        110,
+        111
+      ]
+    },
+    {
+      "pr": 8094,
+      "title": "# PR #8094 리뷰 — fix(layout): 캡션 자동 번호 뒤 캐럿과 클릭 위치를 그린 글자에 맞춘다",
+      "primary": {
+        "scope_index": 46,
+        "page": 1,
+        "claim": "캡션 자동 번호와 뒤 글자의 표시; 캐럿·클릭 역변환은 API 검사",
+        "native_review": "panels/native/046-p001-review.png",
+        "native_overlay": "panels/native/046-p001-overlay.png",
+        "wasm_review": "panels/wasm/046-p001-review.png",
+        "wasm_overlay": "panels/wasm/046-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        46,
+        47
+      ],
+      "api_labels": [],
+      "conditions": [
+        46,
+        47
+      ]
+    },
+    {
+      "pr": 8096,
+      "title": "# PR #8096 리뷰 — fix(layout): 줄 정보 없이 양식 개체만 든 문단도 개체를 그린다",
+      "primary": {
+        "scope_index": 126,
+        "page": 1,
+        "claim": "저장 줄 없는 양식 전용 문단의 다섯 개체 표시",
+        "native_review": "panels/native/126-p001-review.png",
+        "native_overlay": "panels/native/126-p001-overlay.png",
+        "wasm_review": "panels/wasm/126-p001-review.png",
+        "wasm_overlay": "panels/wasm/126-p001-overlay.png"
+      },
+      "evidence_kind": "page-and-runtime-contract",
+      "main_conditions": [
+        126,
+        127
+      ],
+      "api_labels": [],
+      "conditions": [
+        126,
+        127
+      ]
+    }
+  ],
+  "inherited_required_conditions": [
+    172,
+    173,
+    174,
+    175
+  ],
+  "strict_8188": "별도 4입력·64쪽씩, 전쪽 raw100/정수 미일치0/0"
+}

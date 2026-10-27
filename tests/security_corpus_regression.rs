@@ -332,7 +332,7 @@ fn security_sweep_documents() -> Vec<PathBuf> {
     }
     let docs: Vec<PathBuf> = rels
         .into_iter()
-        .filter(|rel| is_security_sample_path(rel) && !is_exam_fixture(Path::new(rel)))
+        .filter(|rel| is_security_sample_path(rel) && !is_deferred_fixture(Path::new(rel)))
         .map(|rel| repo(&rel))
         .collect();
     assert!(

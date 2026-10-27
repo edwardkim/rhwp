@@ -24,6 +24,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+from regression_document_scope import is_deferred_regression_input
+
 SCHEMA_VERSION = "1.0"
 CLAIM_ID = "M01-3"
 GENERATOR = "tools/oracle_public/coverage_report.py"
@@ -107,6 +110,8 @@ def walk_samples(samples_dir: Path, repo_root: Path) -> list[SampleDoc]:
     excluded.update(deferred_names)
     found: list[SampleDoc] = []
     for path in samples_dir.rglob("*"):
+        if is_deferred_regression_input(path, axis="oracle"):
+            continue
         if not path.is_file():
             continue
         if path.suffix.lower() not in SAMPLE_EXTS:

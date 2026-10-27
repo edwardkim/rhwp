@@ -648,7 +648,8 @@ async function initialize(): Promise<void> {
                 records.set(localFontFaceKey(record), record);
               }
             }
-            await renderer.prepareHostFonts([...records.values()]);
+            await renderer.prepareHostFonts([...records.values()],
+              (bytes, faceIndex) => wasm.prepareOrdinaryTextFont(bytes, faceIndex));
           }
           // Explicit selection bypasses auto eligibility, not font preparation.
           const fontRequirements = report ?? wasm.getCanvasKitDocumentPreflight(

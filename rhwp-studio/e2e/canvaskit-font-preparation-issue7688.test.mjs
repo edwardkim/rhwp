@@ -90,6 +90,44 @@ try {
   console.log(JSON.stringify({ original, styles, failures }));
   assert(failures.length === 0, failures.join("; ") || 'document fonts and both style load orders consume the actual supplied outlines');
 
+  // 두 실제 cmap이 서로 다른 문자를 공급한다. 이는 자원 소비 계약이며 한컴 배치의 정답지는 아니다.
+  const glyphFallback = await page.evaluate(async () => {
+    const { CanvasKitLayerRenderer } = await import('/src/view/canvaskit-renderer.ts');
+    const { setHostFontProvider } = await import('/src/core/local-fonts.ts');
+    const { collectHostFontRequests } = await import('/src/core/host-font-requests.ts');
+    const primary = 'Noto Serif KR', fallback = 'Noto Sans Symbols2';
+    const payloads = await Promise.all(['NotoSerifKR-Regular.woff2', 'NotoSansSymbols2-Regular.ttf']
+      .map(async file => (await fetch(`fonts/${file}`)).arrayBuffer()));
+    await setHostFontProvider({
+      getSnapshot: async () => ({ revision: 'ordinary-glyph-fallback', faces: [primary, fallback].map((family, index) => ({
+        id: String(index), family, fullName: family, postscriptName: family,
+        style: 'Regular', weight: 400, slant: 'normal',
+      })) }),
+      readFace: async id => ({ bytes: payloads[Number(id)].slice(0), faceIndex: 0 }), subscribe: () => () => {},
+    });
+    const renderer = await CanvasKitLayerRenderer.create('default', 'software', { requirePreparedFontFamilies: true });
+    try {
+      const run = (text, family, x, positions) => ({ type: 'textRun', text,
+        bbox: { x, y: 10, width: positions.at(-1), height: 40 }, baseline: 32, positions,
+        style: { fontFamily: family, fontSize: 30, color: '#000000' } });
+      const tree = ops => ({ pageWidth: 130, pageHeight: 60,
+        root: { kind: 'leaf', bounds: { x: 0, y: 0, width: 130, height: 60 }, ops } });
+      const input = tree([run('가🖨나', `${primary}, ${fallback}`, 10, [0, 30, 60, 90])]);
+      await renderer.prepareHostFonts(collectHostFontRequests(input));
+      const paint = input => renderer.renderPage(input, document.createElement('canvas'), 1).toDataURL('image/png');
+      const actual = paint(input);
+      const diagnostics = renderer.diagnostics();
+      const expected = paint(tree([run('가', primary, 10, [0, 30]), run('🖨', fallback, 40, [0, 30]), run('나', primary, 70, [0, 30])]));
+      if (actual !== expected) throw Error('혼합 런이 독립 글리프 공급 face와 원래 위치를 소비하지 않았다');
+      if (!diagnostics.fontSubstitutions.some(row => row.source === 'missingGlyphFamily' && row.resolvedFamily === fallback)) {
+        throw Error('실제 그리기의 글리프 대체 face를 관측하지 못했다');
+      }
+      return { mixedRunMatchesIndependentFaces: true, producerPositionsPreserved: true };
+    } finally { renderer.dispose(); await setHostFontProvider(null); }
+  });
+  assert(glyphFallback.mixedRunMatchesIndependentFaces && glyphFallback.producerPositionsPreserved,
+    'ordinary pictographs preserve surrounding Hangul and consume the declared fallback program');
+
   // #8109: exercise the real replay with a supplied, distinct serif program.
   // A missing primary must retain the document's second candidate. Compare
   // against selecting that exact face directly, not the renderer's default.

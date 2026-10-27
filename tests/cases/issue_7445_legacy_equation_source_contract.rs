@@ -113,45 +113,129 @@ fn legacy_operator_spacing_survives_glyph_projection() {
     }
 }
 
+fn completed_control(relative: &str) -> DocumentCore {
+    let input = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(relative);
+    DocumentCore::from_bytes(&std::fs::read(input).unwrap()).unwrap()
+}
+
+fn paint_characters(
+    layout: &rhwp::renderer::equation::layout::LayoutBox,
+    x: f64,
+    out: &mut Vec<(char, f64, f64)>,
+) {
+    use rhwp::renderer::equation::layout::LayoutKind;
+    let x = x + layout.x;
+    match &layout.kind {
+        LayoutKind::Text(text) => {
+            assert_eq!(text.chars().count(), 1, "독립 한글 대조군의 낱글자 소유");
+            out.push((text.chars().next().unwrap(), x, layout.font_size));
+        }
+        LayoutKind::HancomGlyphs(run) => {
+            assert_eq!(run.glyphs.chars().count(), run.positions.len());
+            for (character, dx) in run.glyphs.chars().zip(&run.positions) {
+                out.push((
+                    if character == '\u{e047}' {
+                        '='
+                    } else {
+                        character
+                    },
+                    x + dx,
+                    layout.font_size,
+                ));
+            }
+        }
+        LayoutKind::Row(children) => {
+            for child in children {
+                paint_characters(child, x, out)
+            }
+        }
+        LayoutKind::FontStyle { body, .. } | LayoutKind::Color { body, .. } => {
+            paint_characters(body, x, out)
+        }
+        other => panic!("완료 대조군의 예상하지 않은 표시 경로: {other:?}"),
+    }
+}
+
 #[test]
-fn legacy_transparent_color_keeps_operator_spacing() {
-    let mut equation = equation();
-    equation.script = "가=나".into();
-    let plain = rendered(&document(equation.clone())).1.layout_box;
-    equation.script = "가 COLOR{255,0,0}{=} 나".into();
-    let colored = rendered(&document(equation)).1.layout_box;
-    assert!(
-        (plain.width - colored.width).abs() < 1e-9,
-        "a paint color wrapper must preserve logical operator gaps"
+fn modern_color_boundary_preserves_print_owned_operator_gaps() {
+    let mut actual = Vec::new();
+    for name in ["plain", "color-grouped", "color-ungrouped"] {
+        let core = completed_control(&format!("mydocs/pr/assets/legacy_literal_operator_plane_20261025/inputs/modern-group-{name}.hwpx"));
+        assert_eq!(core.page_count(), 1, "독립 Print와 같은 쪽 소속");
+        let paint = rendered(&core).1;
+        let mut glyphs = Vec::new();
+        paint_characters(&paint.layout_box, 0.0, &mut glyphs);
+        assert_eq!(
+            glyphs.iter().map(|x| x.0).collect::<String>(),
+            "가=나",
+            "내용·순서·누락·중복"
+        );
+        if name != "plain" {
+            assert!(
+                paint.svg_content.contains("#ff0000"),
+                "COLOR의 실제 빨간 기호 보존"
+            );
+        }
+        actual.push(glyphs);
+    }
+    for colored in &actual[1..] {
+        let fs = actual[0][1].2;
+        // 독립 Print에서 = 원점 차이/11.9902pt=0.210057em,
+        // 나 원점 차이/11.9902pt=0.420115em. 절대 좌표나 구현 폭을 답으로 쓰지 않는다.
+        assert!(
+            ((actual[0][1].1 - colored[1].1) / fs - 0.21).abs() < 0.002,
+            "COLOR 경계 앞 자동 여백을 중복하지 않는다"
+        );
+        assert!(
+            ((actual[0][2].1 - colored[2].1) / fs - 0.42).abs() < 0.002,
+            "COLOR 경계 양쪽 자동 여백을 중복하지 않는다"
+        );
+        assert_eq!(actual[0][0].1, colored[0].1, "앞 한글의 원점 보존");
+    }
+    assert_eq!(
+        actual[1], actual[2],
+        "두 유효 COLOR 구문의 독립 Print 원점이 같다"
     );
 }
 
 #[test]
-fn legacy_percent_selects_equation_pua() {
-    let mut equation = equation();
-    equation.script = "%".into();
-    let legacy = rendered(&document(equation.clone())).1;
-    assert!(serde_json::to_string(&legacy.layout_box)
-        .unwrap()
-        .contains('\u{e042}'));
-    fn percent_width(layout: &rhwp::renderer::equation::layout::LayoutBox) -> Option<f64> {
-        use rhwp::renderer::equation::layout::LayoutKind;
+fn percent_paint_preserves_independent_legacy_and_modern_font_ownership() {
+    use rhwp::renderer::equation::layout::{LayoutBox, LayoutKind};
+    fn find(layout: &LayoutBox, modern: bool) -> bool {
         match &layout.kind {
-            LayoutKind::HancomGlyphs(run) if run.glyphs == "\u{e042}" => Some(run.width),
-            LayoutKind::Row(children) => children.iter().find_map(percent_width),
-            _ => None,
+            LayoutKind::HancomGlyphs(run) if !modern => {
+                assert_eq!(run.font_family, "RHWP Hancom Legacy Equation");
+                assert_eq!(run.glyphs, "%", "독립 구형 Type3의 원문 문자");
+                assert_eq!(run.positions.len(), 1);
+                assert_eq!(run.shears, vec![0.0], "정체 원본 프로그램");
+                true
+            }
+            LayoutKind::FontGlyph {
+                text, font_family, ..
+            } if modern => {
+                assert_eq!(text, "\u{e042}", "독립 현대 HyhwpEQ의 수학 PUA");
+                assert!(font_family.starts_with("HYhwpEQ"));
+                true
+            }
+            LayoutKind::Row(children) => children.iter().any(|child| find(child, modern)),
+            _ => false,
         }
     }
-    assert_eq!(
-        percent_width(&legacy.layout_box).expect("percent paint glyph") / legacy.font_size,
-        1.0,
-        "independent HFT Print has a full-em percent glyph slot; outer frame inset is separate"
-    );
-    equation.version_info = "Equation Version 60".into();
-    let modern = rendered(&document(equation)).1;
-    assert!(!serde_json::to_string(&modern.layout_box)
-        .unwrap()
-        .contains('\u{e042}'));
+    for (name, modern) in [("legacy", false), ("modern", true)] {
+        let core=completed_control(&format!("mydocs/pr/assets/legacy_literal_operator_plane_20261025/inputs/equation-cc9-{name}-percent.hwpx"));
+        assert_eq!(core.page_count(), 1);
+        let (bounds, paint) = rendered(&core);
+        assert_eq!(paint.script, "%", "표시용 PUA로 원문을 치환하지 않는다");
+        assert!(core.extract_page_text_native(0).unwrap().contains('%'));
+        assert!(
+            find(&paint.layout_box, modern),
+            "같은 공통 표시 결과를 최종 paint가 소비한다"
+        );
+        assert!(
+            (bounds.width - 10000.0 / 75.0).abs() < 1.0 / 75.0,
+            "선택한 glyph와 별개인 원본 선언 프레임 보존"
+        );
+    }
 }
 
 #[test]
@@ -443,15 +527,23 @@ fn compound_fraction_preserves_a_declared_frame_that_contains_its_natural_paint(
 }
 
 #[test]
-fn compound_fraction_color_keeps_the_same_frame_and_advance() {
-    let mut source = equation();
-    source.script = "가 TIMES LEFT ( {나} over {다} RIGHT )".into();
-    let plain = rendered(&document(source.clone())).1.layout_box;
-    source.script = format!("COLOR{{255,0,0}}{{{}}}", source.script);
-    let colored = rendered(&document(source)).1.layout_box;
+fn legacy_color_spelling_keeps_the_independent_print_empty_paint() {
+    // 빈 버전 COLOR는 현대 RGB 래퍼가 아니다. 같은 원본의 독립 Print는 비어 있다.
+    // 현대 COLOR의 표시·간격은 modern_color_boundary_preserves_print_owned_operator_gaps가 보호한다.
+    let core = completed_control("mydocs/pr/assets/legacy_literal_operator_plane_20261025/inputs/equation-cc9-legacy-color.hwpx");
+    assert_eq!(core.page_count(), 1, "독립 Print의 한 쪽 소속");
+    let (_, paint) = rendered(&core);
     assert_eq!(
-        (plain.width, plain.height, plain.baseline),
-        (colored.width, colored.height, colored.baseline),
-        "a transparent paint wrapper does not choose another compound frame"
+        paint.script, "가 COLOR{255,0,0}{=} 나",
+        "원본의 앞뒤 글자를 포함한 구형 스크립트 보존"
+    );
+    assert!(paint.svg_content.is_empty(), "독립 Print와 같은 빈 표시");
+    assert_eq!(
+        paint.layout_box.width, 0.0,
+        "독립 Print에 없는 수식을 만들지 않음"
+    );
+    assert_eq!(
+        paint.layout_box.height, 0.0,
+        "현대 색상 프레임을 잘못 적용하지 않음"
     );
 }

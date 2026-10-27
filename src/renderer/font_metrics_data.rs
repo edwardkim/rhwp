@@ -32,9 +32,20 @@ mod math_symbols;
 
 #[path = "font_metric_cjk_punctuation.rs"]
 mod cjk_punctuation;
+#[path = "font_metric_supplementary_pictographs.rs"]
+mod supplementary_pictographs;
 
+#[path = "font_metric_contextual_scripts.rs"]
+mod contextual_scripts;
 #[path = "font_metric_math_symbol_blocks.rs"]
 mod math_symbol_blocks;
+
+#[path = "font_metric_hangul_jamo.rs"]
+mod hangul_jamo;
+
+pub(crate) fn uses_hangul_jamo_overlay(metric: &FontMetric, character: char) -> bool {
+    hangul_jamo::width(metric, character).is_some()
+}
 
 pub(crate) use legacy_hft::{
     is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
@@ -84,6 +95,9 @@ pub struct LatinRange {
 impl FontMetric {
     pub fn get_width(&self, ch: char) -> Option<u16> {
         let code = ch as u32;
+        if let Some(width) = hangul_jamo::width(self, ch) {
+            return Some(width);
+        }
         // 한글 음절 (U+AC00~U+D7A3)
         if code >= 0xAC00 && code <= 0xD7A3 {
             if let Some(h) = self.hangul {
@@ -107,13 +121,20 @@ impl FontMetric {
             let Some(&w) = range.widths.get(idx) else {
                 continue;
             };
-            return if w > 0 { Some(w) } else { None };
+            return if w > 0 {
+                Some(w)
+            } else {
+                supplementary_pictographs::width(self, ch)
+                    .or_else(|| contextual_scripts::width(self, ch))
+            };
         }
         // 기존 범위는 그대로 우선하며, 확인된 프로그램의 누락 구간만 보충한다.
         verified_technical_symbol_width(self, ch)
             .or_else(|| math_symbols::width(self, ch))
             .or_else(|| math_alphabet::width(self, ch))
             .or_else(|| math_symbol_blocks::width(self, ch))
+            .or_else(|| supplementary_pictographs::width(self, ch))
+            .or_else(|| contextual_scripts::width(self, ch))
     }
 }
 
@@ -126,6 +147,8 @@ pub(crate) fn verified_metric_has_glyph(metric: &FontMetric, ch: char) -> Option
         .or_else(|| math_alphabet::entry(metric, ch).map(|(present, _)| present))
         .or_else(|| cjk_punctuation::primary_has_glyph(metric.name, metric.bold, metric.italic, ch))
         .or_else(|| math_symbol_blocks::entry(metric, ch).map(|(present, _)| present))
+        .or_else(|| supplementary_pictographs::entry(metric, ch).map(|(present, _)| present))
+        .or_else(|| contextual_scripts::entry(metric, ch).map(|(present, _)| present))
 }
 
 /// DB 항목이 없어도 확인한 원 face의 cmap은 독립적으로 조회한다.
@@ -137,6 +160,8 @@ pub(crate) fn verified_named_program_has_glyph(
 ) -> Option<bool> {
     math_alphabet::primary_has_glyph(family, bold, italic, ch)
         .or_else(|| cjk_punctuation::primary_has_glyph(family, bold, italic, ch))
+        .or_else(|| supplementary_pictographs::primary_has_glyph(family, bold, italic, ch))
+        .or_else(|| contextual_scripts::primary_has_glyph(family, bold, italic, ch))
 }
 
 /// 확인한 원 프로그램의 결측 글리프 공급 체인. 기본 face의 폭 계약은 바꾸지 않는다.
@@ -162,6 +187,10 @@ pub(crate) fn verified_missing_glyph_supplier(
     ch: char,
 ) -> Option<&'static str> {
     match (metric.name, metric.em_size, metric.bold, metric.italic, ch) {
+        // arial.ttf b2374214…abfd의 cmap에는 두 점이 없다. 명시적 Arial
+        // 대조군의 독립 한컴2020 Print는 두 문자 모두 HBATANG으로 출력한다.
+        // Arial의 다른 문자나 다른 weight/style의 공급자는 변경하지 않는다.
+        ("Arial", 2048, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Batang"),
         // gulim.TTC의 DotumChe cmap에는 U+2024가 없다(SHA ed750275…776c).
         // 근린생활시설 표의 독립 Print는 HBATANG의 0.173em 글리프로 출력하며,
         // HBATANG.TTF의 hmtx 178/1024도 같은 자연 전진을 확인한다.
@@ -236,6 +265,16 @@ fn resolve_projected_metric_alias(name: &str) -> (&str, Option<&'static str>) {
         // YNCH05.TTF의 숫자 1은 530/1000em이며 한컴 PDF도 이 폭을 쓴다.
         None if name == "양재난초체M" => ("Yj NANCHO Medium", None),
         None => (name, None),
+    }
+}
+
+/// PostScript 이름의 굵기 접미사(`-Regular`/`-Medium`/`-Bold`)를 떼어 family 와 Bold 여부를 돌려준다.
+fn strip_postscript_weight_suffix(name: &str) -> Option<(&str, bool)> {
+    let (family, weight) = name.rsplit_once('-')?;
+    match weight {
+        "Regular" | "Medium" => Some((family, false)),
+        "Bold" => Some((family, true)),
+        _ => None,
     }
 }
 
@@ -335,8 +374,19 @@ pub(crate) fn find_metric_decision<'a>(
     bold: bool,
     italic: bool,
 ) -> Option<MetricLookupDecision<'a>> {
-    let (alias_resolved_name, alias_rule_id) = resolve_projected_metric_alias(name);
-    let slots = metric_index().get(alias_resolved_name)?;
+    let (mut alias_resolved_name, mut alias_rule_id) = resolve_projected_metric_alias(name);
+    let mut bold = bold;
+    let slots = match metric_index().get(alias_resolved_name) {
+        Some(slots) => slots,
+        None => {
+            // `Pretendard-Bold`처럼 PostScript 이름으로 저장된 face 는 굵기 접미사를 떼고
+            // family 이름으로 다시 찾는다. `-Bold` 는 Bold 메트릭을 고른다.
+            let (family, suffix_bold) = strip_postscript_weight_suffix(name)?;
+            (alias_resolved_name, alias_rule_id) = resolve_projected_metric_alias(family);
+            bold |= suffix_bold;
+            metric_index().get(alias_resolved_name)?
+        }
+    };
     let selected = slots[metric_slot_index(bold, italic)];
     Some(MetricLookupDecision {
         requested_name: name,

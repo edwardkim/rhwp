@@ -2191,6 +2191,8 @@ dependencies = [
  "svgtypes 0.16.1",
  "tiny-skia 0.12.0",
  "ttf-parser",
+ "unicode-bidi",
+ "unicode-bidi-mirroring",
  "unicode-properties",
  "unicode-segmentation",
  "unicode-width",

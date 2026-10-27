@@ -4,6 +4,7 @@ mod hft_outline_fonts;
 mod initial_fields;
 mod metafile_fonts;
 mod reflowed_table_frames;
+mod section_activation;
 
 use crate::document_core::validation::{
     CellPath, ValidationReport, ValidationWarning, WarningKind,
@@ -259,6 +260,8 @@ impl DocumentCore {
             .is_some_and(|major| (1..11).contains(&major));
 
         // [Task #1001] HWP3 변환본의 ParaShape 단위 1/2 추가 보정
+        let activated_sections =
+            section_activation::activate_page_geometry(&mut document, source_format);
         let mut styles = resolve_styles_for_document(&document, DEFAULT_DPI);
         // [#7051] 계보 신호가 없는 저장본은 저장 줄 사다리로 HFT ASCII 반각 조판을 판정한다.
         // 편집 중 판정이 흔들리지 않도록 로드 시 한 번만 내린다.
@@ -337,6 +340,12 @@ impl DocumentCore {
             );
         }
         Self::clear_missing_lineseg_placeholders(&mut document);
+        section_activation::rebase_body_frames(
+            &mut document,
+            &activated_sections,
+            &styles,
+            DEFAULT_DPI,
+        );
 
         // XML import → HWP 라운드트립 일관성 normalize (#314):
         // XML 파서가 채우지 않는 paragraph 필드를 HWP 직렬화/파싱 라운드트립 결과와 일치시킨다.
@@ -428,6 +437,7 @@ impl DocumentCore {
         // 이후 본문 변경은 편집 명령(raw_stream 무효화 동반) 또는 공개 모델 직접
         // 변경(봉인이 잡아야 할 대상)뿐이다.
         doc.document.seal_body_raw_provenance();
+        doc.capture_loaded_source_frames();
         Ok(doc)
     }
 
@@ -2211,6 +2221,7 @@ impl DocumentCore {
         self.recompose_all_with_horizontal_shaping();
         self.paginate();
 
+        self.capture_loaded_source_frames();
         Ok(self.get_document_info())
     }
 
@@ -3046,6 +3057,7 @@ impl DocumentCore {
         self.render_normalization.text_reflowed_tables.clear();
         self.bump_bin_data_epoch();
         self.rebuild_derived_state();
+        self.capture_loaded_source_frames();
     }
 
     /// Host font selection이 확정한 exact face를 글자모양·언어 slot에 등록한다.

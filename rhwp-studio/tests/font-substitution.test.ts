@@ -5,6 +5,7 @@ import { getDetectedOSFonts } from '../src/core/font-loader.ts';
 import {
   fontFamilyChainForDisplay,
   fontFamilyWithFallback,
+  ordinaryTextFontFamilies,
   resolveFont,
 } from '../src/core/font-substitution.ts';
 
@@ -44,18 +45,18 @@ test('fontFamilyChainForDisplay는 중복 없이 generic font를 그대로 처�
   assert.equal(fontFamilyChainForDisplay('serif', 0, 0), 'serif');
   assert.equal(
     fontFamilyChainForDisplay('없는글꼴', 0, 0),
-    '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", sans-serif',
+    '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", sans-serif',
   );
   assert.equal(
     fontFamilyChainForDisplay('없는글꼴', 0, 0, { confirmedLocalFonts: ['없는글꼴'] }),
-    '"없는글꼴", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", sans-serif',
+    '"없는글꼴", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", sans-serif',
   );
 });
 
 test('fontFamilyWithFallback 기존 helper는 동일한 fallback 계열을 사용한다', () => {
   assert.equal(
     fontFamilyWithFallback('굴림체'),
-    '"굴림체", "GulimChe", "D2Coding", "Noto Sans Mono", monospace',
+    '"굴림체", "GulimChe", "D2Coding", "Noto Sans Mono", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", monospace',
   );
 });
 
@@ -124,7 +125,7 @@ test('치환 대상이 설치돼 있지 않으면 legacy 이름의 기존 체인
 
   assert.equal(
     chain,
-    '"한양중고딕", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", sans-serif',
+    '"한양중고딕", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", sans-serif',
   );
 });
 
@@ -151,4 +152,15 @@ test('요청 이름 자체가 설치돼 있으면 치환 대상을 앞에 두지
   });
 
   assert.match(chain, /^"굴림"/u);
+});
+
+
+test('일반 글리프 후보는 문서 순서를 유지하고 본문 뒤에 그림문자 글꼴을 준비한다', () => {
+  const candidates = ordinaryTextFontFamilies('"함초롬바탕", "Document Substitute"');
+  assert.deepEqual(candidates.slice(0, 2), ['함초롬바탕', 'Document Substitute']);
+  assert.ok(candidates.indexOf('Noto Serif KR') < candidates.indexOf('Segoe UI Emoji'));
+  assert.deepEqual(candidates.slice(-4), ['Segoe UI Emoji', 'Noto Emoji', 'Noto Color Emoji', 'serif']);
+  const chain = ordinaryTextFontFamilies(fontFamilyWithFallback('함초롬바탕'));
+  assert.equal(chain.length, new Set(chain).size);
+  assert.deepEqual(ordinaryTextFontFamilies(''), []);
 });

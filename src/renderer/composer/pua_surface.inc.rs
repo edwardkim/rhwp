@@ -123,20 +123,14 @@ pub fn char_overlap_advance_units(chars: &[char]) -> usize {
 /// - 관세청 월간 수출입 현황 p1 — 테두리 없음(0), `charSz=-4` → 축소 없음. 한컴 PDF
 ///   content stream 에서 마커와 본문이 같은 `101 Tf`, 같은 baseline 으로 나온다.
 ///
-/// 음수 영역의 10% step 해석은 PR #1101 의 실측 가설을 그대로 둔다.
+/// 독립 한컴 Print에서 양수도 같은 부호 있는 10% 단계임을 확인했다.
+/// 본문 10pt에 -3/0/10/20/50을 적용하면 약 7/10/20/30/60pt다.
+/// 양수 값을 절대 백분율로 읽으면 확대가 축소로 바뀐다.
 pub fn char_overlap_size_ratio(effective_border: u8, inner_char_size: i8) -> f64 {
     if effective_border == 0 {
         return 1.0;
     }
-    if inner_char_size > 0 {
-        // 양수 → percent ratio (HWPX 양수 case 보존: 50 = 0.5)
-        inner_char_size as f64 / 100.0
-    } else if inner_char_size < 0 {
-        // 음수 → 10% step 축소 (한컴 정합: charSz=-3 → 1.0 + (-3)×0.10 = 0.70)
-        1.0 + inner_char_size as f64 * 0.10
-    } else {
-        1.0
-    }
+    1.0 + f64::from(inner_char_size) * 0.10
 }
 
 /// 글자겹침(CharOverlap) 한 글자의 **표시 문자열**을 정한다.
@@ -465,6 +459,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                         char_overlap: Some(CharOverlapInfo {
                             border_type,
                             inner_char_size: 0,
+                            composition: None,
                         }),
                         footnote_marker: None,
                         display_text: None,

@@ -1,7 +1,7 @@
 import type { LayerEquationLayoutBox, LayerNode, LayerTextStyle, PageLayerTree } from './types.ts';
 import { resolveRendererLocalFont, localFontFaceKey, type LocalFontRecord } from './local-fonts.ts';
 import boxedDigitMetrics from '../../../assets/fonts/boxed-digit-metrics.json' with { type: 'json' };
-import { parseCssFontFamilyList } from './font-substitution.ts';
+import { ordinaryTextFontFamilies, parseCssFontFamilyList } from './font-substitution.ts';
 
 export function hostFontStyle(style?: LayerTextStyle): { weight: number; slant: 'normal' | 'italic' } {
   return { weight: style?.bold ? 700 : 400, slant: style?.italic ? 'italic' : 'normal' };
@@ -123,6 +123,12 @@ function hancomEquationFamilies(root: LayerEquationLayoutBox | undefined): Set<s
 /** 실제 text/수식 face 소비자를 준비한다. glyph ID나 자원 내용은 다시 쓰지 않는다. */
 export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] {
   const selected = new Map<string, LocalFontRecord>();
+  const selectTextFaces = (family: string, style?: LayerTextStyle) => {
+    for (const candidate of ordinaryTextFontFamilies(family)) {
+      const record = resolveRendererLocalFont(candidate, hostFontStyle(style));
+      if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+    }
+  };
   const stack: LayerNode[] = [tree.root];
   while (stack.length) {
     const node = stack.pop()!;
@@ -136,13 +142,21 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
         }
         continue;
       }
+      if (op.type === 'textDecoration' && op.decoration?.emphasis) {
+        const mark = op.decoration.emphasis;
+        selectTextFaces(mark.fontFamily, { bold: mark.bold, italic: false });
+        continue;
+      }
       if (op.type !== 'textRun' && op.type !== 'charOverlap' && op.type !== 'footnoteMarker') continue;
-      const style = op.type === 'footnoteMarker' ? { fontFamily: op.fontFamily } : op.style;
-      const family = style?.fontFamily;
-      if (!family) continue;
-      for (const candidate of parseCssFontFamilyList(family)) {
-        const record = resolveRendererLocalFont(candidate, hostFontStyle(style));
-        if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+      const styles = [op.type === 'footnoteMarker' ? { fontFamily: op.fontFamily } : op.style];
+      if (op.type === 'charOverlap' && op.composition && Array.isArray(op.composition.interior)) {
+        if (op.composition.border) styles.push(op.composition.border.style);
+        styles.push(...op.composition.interior.slice(0, 9).map(glyph => glyph.style));
+      }
+      for (const style of styles) {
+        const family = style?.fontFamily;
+        if (!family) continue;
+        selectTextFaces(family, style);
       }
       if ([...op.text].some(character => {
         const code = character.codePointAt(0) ?? 0;

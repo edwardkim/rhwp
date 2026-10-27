@@ -2,6 +2,54 @@
 use super::*;
 
 impl TypesetState {
+    /// 최초 완전한 표의 source 축은 paint의 단 초기화와 같은 규칙으로 조회한다.
+    /// 여기서는 후보만 만들고 실제 pen과의 일치는 수용 계획이 확인한다.
+    pub(in crate::renderer::typeset) fn stored_tac_line_frame(
+        &self,
+        para: &Paragraph,
+        next: Option<&Paragraph>,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    ) -> Option<crate::renderer::float_placement::StoredColumnFrame> {
+        use crate::renderer::float_placement::StoredColumnFrame;
+        if let Some(first) = self.data.current_items.first() {
+            // 단의 첫 완전한 표만 이 축의 소유자다. 글줄로 시작한 단의
+            // 중간 표가 한 점에서 맞더라도, 그 뒤 재조판 글줄의 저장 끝까지
+            // 유효하다고 인증하면 기존 본문의 source 축을 가로채게 된다.
+            let PageItem::Table {
+                para_index,
+                control_index,
+            } = first
+            else {
+                return None;
+            };
+            let (source_origin_hu, column_anchor_y) = self.data.vpos_stored_column_origin?;
+            return self
+                .data
+                .inline_placements
+                .get(&(*para_index, *control_index))?
+                .stored_column_frame
+                .filter(|frame| {
+                    frame.source_origin_hu == source_origin_hu
+                        && frame.column_anchor_y == column_anchor_y
+                });
+        }
+        let dpi = self.data.layout.dpi;
+        let source_origin_hu =
+            if crate::renderer::stored_page_origin::stored_first_margin_is_page_relative(
+                para, next, styles, dpi,
+            ) {
+                0
+            } else {
+                crate::renderer::float_placement::stored_table_column_origin(
+                    para, false, None, dpi,
+                )?
+            };
+        Some(StoredColumnFrame {
+            source_origin_hu,
+            column_anchor_y: self.data.vpos_col_anchor,
+        })
+    }
+
     /// 각주 등록 뒤 단일 단의 vpos 관측값을 기존 순서로 확정한다.
     pub(in crate::renderer::typeset) fn commit_deferred_table_anchor(
         &mut self,
@@ -183,6 +231,32 @@ impl TypesetState {
                             })
                     })
                 }),
+            stored_text_column_frame: self.data.current_items.first().and_then(|item| {
+                let (owner, start) = match item {
+                    PageItem::FullParagraph { para_index } => (*para_index, 0),
+                    PageItem::PartialParagraph { para_index, start_line, .. } =>
+                        (*para_index, *start_line),
+                    _ => return None,
+                };
+                let paragraph = paragraphs.get(owner)?;
+                let line = paragraph.line_segs.get(start)?;
+                if paragraph.stored_text_partition_is_dirty()
+                    || paragraph.cell_format_vpos_dirty
+                    || crate::renderer::typeset::is_synthetic_line_seg(line)
+                {
+                    return None;
+                }
+                // 다단은 HeightCursor의 단일 단 초기화를 거치지 않을 수 있다.
+                // 그때도 첫 수용 글줄의 원문 좌표와 같은 물리 앵커가 단 프레임을 정한다.
+                let (source_origin_hu, column_anchor_y) = self
+                    .data
+                    .vpos_stored_column_origin
+                    .unwrap_or((line.vertical_pos, self.data.vpos_col_anchor));
+                Some(crate::renderer::float_placement::StoredColumnFrame {
+                    source_origin_hu,
+                    column_anchor_y,
+                })
+            }),
             // layout의 단 초기 base와 같은 첫 완전한 표의 저장 줄을 읽는다.
             // PartialTable에는 소비된 컷이 있고, 문단 시작의 들여쓰기·앞 간격은
             // 별도 계약이므로 이 표 원점 조회에 섞지 않는다.
@@ -206,7 +280,7 @@ impl TypesetState {
     fn previous_text_content_bottom(
         &self,
         paragraphs: &[crate::model::paragraph::Paragraph],
-    ) -> Option<(usize, usize, f64)> {
+    ) -> Option<(usize, usize, f64, Option<f64>)> {
         let mut following_owner = None;
         for item in self.data.current_items.iter().rev() {
             let (owner, end_line) = match item {
@@ -261,7 +335,14 @@ impl TypesetState {
                 .data
                 .paragraph_fragment_content_bottoms
                 .get(&(owner, end_line))
-                .map(|bounds| (owner, end_line, bounds.content_bottom));
+                .map(|bounds| {
+                    (
+                        owner,
+                        end_line,
+                        bounds.content_bottom,
+                        bounds.last_line_spacing,
+                    )
+                });
         }
         None
     }

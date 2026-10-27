@@ -1,0 +1,156 @@
+{
+  "host-size-1000-offset-0-hwp": {
+    "input": "host-size-1000-offset-0-hwp.hwp",
+    "mode": "clear",
+    "pdf_sha256": "b870721825fd3bddd6ccb380eb228b67ed7ed4e25e7732ac4cb9d2a256df89f5",
+    "table_left": 128.4106648763021,
+    "table_right": 687.6306966145834,
+    "table_top": 157.26798502604166,
+    "table_bottom": 191.470703125,
+    "successor_top": 195.48394775390625,
+    "source_text": "앞뒤"
+  },
+  "host-size-1000-offset-0-hwpx": {
+    "input": "host-size-1000-offset-0-hwpx.hwpx",
+    "mode": "clear",
+    "pdf_sha256": "2b328257d61d5a6be633b2c9a26e5909ceaaa160701aa64ab2a6290e23cfa42e",
+    "table_left": 128.4106648763021,
+    "table_right": 687.6306966145834,
+    "table_top": 157.26798502604166,
+    "table_bottom": 191.470703125,
+    "successor_top": 195.48394775390625,
+    "source_text": "앞뒤"
+  },
+  "host-size-1000-offset-1700-hwp": {
+    "input": "host-size-1000-offset-1700-hwp.hwp",
+    "mode": "clear",
+    "pdf_sha256": "1f08489c1416342fed73627b970d5cfb9db30f13fd0ac5b1a606a9a119d8e343",
+    "table_left": 128.4106648763021,
+    "table_right": 687.6306966145834,
+    "table_top": 179.962646484375,
+    "table_bottom": 214.00537109375,
+    "successor_top": 218.17915852864584,
+    "source_text": "앞뒤"
+  },
+  "host-size-1000-offset-1700-hwpx": {
+    "input": "host-size-1000-offset-1700-hwpx.hwpx",
+    "mode": "clear",
+    "pdf_sha256": "4f0f71134e17e2dbf8e7f4f63a2606c5b098f605ddc320584c749520cb344794",
+    "table_left": 128.4106648763021,
+    "table_right": 687.6306966145834,
+    "table_top": 179.962646484375,
+    "table_bottom": 214.00537109375,
+    "successor_top": 218.17915852864584,
+    "source_text": "앞뒤"
+  },
+  "host-size-250-offset-0-hwp": {
+    "input": "host-size-250-offset-0-hwp.hwp",
+    "mode": "clear",
+    "pdf_sha256": "60cb0f426e646859843ae295591da9a36b5b5837dae2eb26b856219a765e4d7f",
+    "table_left": 128.4106648763021,
+    "table_right": 687.6306966145834,
+    "table_top": 157.26798502604166,
+    "table_bottom": 191.470703125,
+    "successor_top": 195.48394775390625,
+    "source_text": "앞뒤"
+  },
+  "host-size-250-offset-0-hwpx": {
+    "input": "host-size-250-offset-0-hwpx.hwpx",
+    "mode": "clear",
+    "pdf_sha256": "68ff9588d804e27c7055013ad663a9c285641de705275a1d1297b9adce5ff936",
+    "table_left": 128.4106648763021,
+    "table_right": 687.6306966145834,
+    "table_top": 157.26798502604166,
+    "table_bottom": 191.470703125,
+    "successor_top": 195.48394775390625,
+    "source_text": "앞뒤"
+  },
+  "host-size-250-offset-1700-hwp": {
+    "input": "host-size-250-offset-1700-hwp.hwp",
+    "mode": "gap",
+    "pdf_sha256": "015dc2c6489a38722f66d0f5cb0e72f06c4abe077ad546baee0ee7b4e451e798",
+    "table_left": 128.4106648763021,
+    "table_right": 687.6306966145834,
+    "table_top": 179.962646484375,
+    "table_bottom": 214.00537109375,
+    "successor_top": 159.04379272460938,
+    "source_text": "앞뒤"
+  },
+  "host-size-250-offset-1700-hwpx": {
+    "input": "host-size-250-offset-1700-hwpx.hwpx",
+    "mode": "gap",
+    "pdf_sha256": "80657a1380d1744b6afdfac2f73e0ed7bba20ca568518532b9792773a94d88b7",
+    "table_left": 128.4106648763021,
+    "table_right": 687.6306966145834,
+    "table_top": 179.962646484375,
+    "table_bottom": 214.00537109375,
+    "successor_top": 159.04379272460938,
+    "source_text": "앞뒤"
+  },
+  "host-size-4000-offset-0-hwp": {
+    "input": "host-size-4000-offset-0-hwp.hwp",
+    "mode": "tall",
+    "pdf_sha256": "3e2d3878bda7d6b06db72dc39e3e40af1ed6910bbc5c839eec4d19fd3c981619",
+    "table_left": 128.4106648763021,
+    "table_right": 687.6306966145834,
+    "table_top": 157.26798502604166,
+    "table_bottom": 191.470703125,
+    "successor_top": 239.11627197265625,
+    "source_text": "앞뒤"
+  },
+  "host-size-4000-offset-0-hwpx": {
+    "input": "host-size-4000-offset-0-hwpx.hwpx",
+    "mode": "tall",
+    "pdf_sha256": "414f3394dec0afc9f7036db73493fde9eaf815f7b47a1885a431de9d74c57bf8",
+    "table_left": 128.4106648763021,
+    "table_right": 687.6306966145834,
+    "table_top": 157.26798502604166,
+    "table_bottom": 191.470703125,
+    "successor_top": 239.11627197265625,
+    "source_text": "앞뒤"
+  },
+  "host-size-4000-offset-1700-hwp": {
+    "input": "host-size-4000-offset-1700-hwp.hwp",
+    "mode": "tall",
+    "pdf_sha256": "1777c34d29f7833c8051deb5f9c9e291061015f76717b40c329953f013dbf194",
+    "table_left": 128.4106648763021,
+    "table_right": 687.6306966145834,
+    "table_top": 179.962646484375,
+    "table_bottom": 214.00537109375,
+    "successor_top": 239.11627197265625,
+    "source_text": "앞뒤"
+  },
+  "host-size-4000-offset-1700-hwpx": {
+    "input": "host-size-4000-offset-1700-hwpx.hwpx",
+    "mode": "tall",
+    "pdf_sha256": "60fd219290f0462eb54cce79f9f2f2254684c348427312f122ea0bc0b79b82b3",
+    "table_left": 128.4106648763021,
+    "table_right": 687.6306966145834,
+    "table_top": 179.962646484375,
+    "table_bottom": 214.00537109375,
+    "successor_top": 239.11627197265625,
+    "source_text": "앞뒤"
+  },
+  "unsplit-rows-2-body-true-flow-false-hwp": {
+    "input": "unsplit-rows-2-body-true-flow-false-hwp.hwp",
+    "mode": "spacing",
+    "pdf_sha256": "292f03828fbce39c8d17c5bed6049f46d16e9fdff974758f91a4f8a5b7489e73",
+    "table_left": 117.2173360188802,
+    "table_right": 676.2760009765625,
+    "table_top": 157.26798502604166,
+    "table_bottom": 191.470703125,
+    "successor_top": 195.48394775390625,
+    "source_text": "앞다음문단"
+  },
+  "unsplit-rows-2-body-true-flow-false-hwpx": {
+    "input": "unsplit-rows-2-body-true-flow-false-hwpx.hwpx",
+    "mode": "spacing",
+    "pdf_sha256": "ff468af32568ca4f15ac8ce21f47e18796cea43b8906c8cbcaef3ab34fa75a20",
+    "table_left": 117.2173360188802,
+    "table_right": 676.2760009765625,
+    "table_top": 157.26798502604166,
+    "table_bottom": 191.470703125,
+    "successor_top": 195.48394775390625,
+    "source_text": "앞다음문단"
+  }
+}

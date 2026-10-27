@@ -1,0 +1,157 @@
+{
+  "issue": "https://github.com/edwardkim/rhwp/issues/8266",
+  "base": "238de6de41a208648f4ade6b494fe433a81c1fce",
+  "runtime_source": "a90a2057a7e967a617c043c62e71f4fab26186df",
+  "dpi": 96,
+  "compat": "2022",
+  "profile": "print",
+  "role": "Pre-existing layout defect evidence. Not a qualified rendering fixture or positive PR fidelity result.",
+  "model_storage_contracts_retained": true,
+  "physical_page_count_pins_removed": true,
+  "damaged_hwp_restored": false,
+  "records": [
+    {
+      "input": "tests/fixtures/inline-control-move/before.hwpx",
+      "input_sha256": "7fe95b0b2db799adecc29ecc7eb6dca9777da0177312c1b8b669ffbf0e5ec7c3",
+      "pdf": "pdf/issue_8266/before-hwpx-2020.pdf",
+      "pdf_sha256": "ed599c8e316b1e19c0c8dd9a749d7c4f35c71f003bf83870313c3c4437a52a99",
+      "pdf_bytes": 20523,
+      "job_id": "399d6935-c309-4ac1-a75e-253df94956a4",
+      "print": {
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "pdf_page_count": 1,
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "raw": [
+        {
+          "role": "candidate",
+          "backend": "native",
+          "raw_min": "60.18966",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        },
+        {
+          "role": "candidate",
+          "backend": "wasm",
+          "raw_min": "59.46767",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        },
+        {
+          "role": "base",
+          "backend": "native",
+          "raw_min": "60.18966",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        },
+        {
+          "role": "base",
+          "backend": "wasm",
+          "raw_min": "59.46767",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/inline-control-move/after.hwpx",
+      "input_sha256": "bc83ae03baafed90c8d6b30c6227a86ea5b37d53ae298f663ff8183df0c37d9e",
+      "pdf": "pdf/issue_8266/after-hwpx-2020.pdf",
+      "pdf_sha256": "1dd01154156d26ccc700eeab0e3e095cd7ade9ed4fd8f3bed5f44f348323a4c4",
+      "pdf_bytes": 20359,
+      "job_id": "8d281958-f027-41e0-a9e7-77df7a416b3a",
+      "print": {
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "pdf_page_count": 1,
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "raw": [
+        {
+          "role": "candidate",
+          "backend": "native",
+          "raw_min": "47.66593",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        },
+        {
+          "role": "candidate",
+          "backend": "wasm",
+          "raw_min": "47.17905",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        },
+        {
+          "role": "base",
+          "backend": "native",
+          "raw_min": "47.66593",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        },
+        {
+          "role": "base",
+          "backend": "wasm",
+          "raw_min": "47.17905",
+          "page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    }
+  ],
+  "preserved_test_modules": [
+    {
+      "source": "tests/cases/valid_inline_move_fixture_contract.rs",
+      "preserved": "mydocs/pr/assets/issue_8266/valid_inline_move_fixture_contract.rs.txt",
+      "source_commit": "5e71af95aaaa4e18555813a5c94abaf528486086",
+      "git_blob": "b1351c19a6bd38746c650956c6091d599353ee33",
+      "sha256": "cb1fa2abfc77d46e3ef7173e1885b7accb781301bbeb0586440e570e51a93019"
+    },
+    {
+      "source": "tests/support/inline_control_move_contract.rs",
+      "preserved": "mydocs/pr/assets/issue_8266/inline_control_move_contract.rs.txt",
+      "source_commit": "5e71af95aaaa4e18555813a5c94abaf528486086",
+      "git_blob": "3a61dd970565a4fa1e98364e8b7eaed115b78579",
+      "sha256": "daf06b6e4fde99c28532fb03a5b0576ab5ef2ae8e8f5a1f93ee26fd4aadc5891"
+    }
+  ],
+  "active_scope": {
+    "retained": [
+      "model text, control and saved caret contracts for before.hwpx/after.hwpx",
+      "four chart HWP/HWPX content and page-count contracts"
+    ],
+    "removed": [
+      "basic before.hwpx/after.hwpx page_count() == 1 assertion only"
+    ],
+    "removed_test_function_count": 0,
+    "restore_condition": "Same originals and independent Print: all relevant Native/fresh WASM pages >=90 with direct reading; relational layout assertions first, px only on both-backend >=98 pages."
+  }
+}

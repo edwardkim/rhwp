@@ -578,6 +578,45 @@ impl HeightCursor {
             .map(para_has_overlay_shape)
             .unwrap_or(false);
         if prev_has_overlay_shape || self.prev_item_was_partial_table {
+            // 분할 자리차지 표의 이어지는 조각 뒤 첫 문단은 저장 첫 줄이 조각 점유 끝(앞 간격을
+            // 조각 안에서 소비한 자리)이다. 그 줄로 단의 사다리 기준을 세워, 빈 문단 뒤
+            // trailing 줄간격 bridge 가 다음 문단을 한 줄간격 더 내리지 않게 한다.
+            if self.prev_item_was_partial_table
+                && self.vpos_page_base.is_none()
+                && !self.session_edited
+            {
+                if let (Some(host), Some(para)) =
+                    (paragraphs.get(prev_pi), paragraphs.get(item_para))
+                {
+                    let spacing_before = styles
+                        .para_styles
+                        .get(para.para_shape_id as usize)
+                        .map_or(0.0, |style| style.spacing_before);
+                    if let (Some(first), Some(spacing)) = (
+                        para.line_segs.first().filter(|seg| {
+                            seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                                && !para.stored_text_partition_is_dirty()
+                                && !para.cell_format_vpos_dirty
+                        }),
+                        crate::renderer::float_placement::split_float_successor_spacing_before(
+                            host,
+                            para,
+                            self.col_area_y,
+                            spacing_before,
+                            y_offset,
+                        ),
+                    ) {
+                        let line_top = y_offset + spacing;
+                        self.vpos_lazy_base = Some(
+                            first.vertical_pos
+                                - crate::renderer::px_to_hwpunit(
+                                    line_top - self.col_area_y,
+                                    self.dpi,
+                                ),
+                        );
+                    }
+                }
+            }
             return y_offset;
         }
         let Some(prev_para) = paragraphs.get(prev_pi) else {

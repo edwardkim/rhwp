@@ -21,6 +21,7 @@ use crate::renderer::style_resolver::ResolvedStyleSet;
 
 pub(super) mod block;
 pub(super) mod continuation;
+pub(super) mod deferred_float_flow;
 pub(super) mod footnotes;
 mod host_spacing;
 pub(super) mod scan;
@@ -36,6 +37,7 @@ pub(super) struct TableFormatInput<'a> {
     pub(super) composed: Option<&'a ComposedParagraph>,
     pub(super) next_para: Option<&'a Paragraph>,
     pub(super) is_column_top: bool,
+    pub(super) external_flow: Option<crate::renderer::float_placement::ReflowExternalTableFlow>,
 }
 
 /// 측정 선택 → host 간격 → 측정값 복제 → 각주 수집 → 결과 조립 순서를 유지한다.
@@ -56,6 +58,7 @@ pub(super) fn format(
         composed,
         next_para,
         is_column_top,
+        external_flow,
     } = input;
     let mt = measured_tables
         .iter()
@@ -127,6 +130,7 @@ pub(super) fn format(
         profile().hwp5_stored_pagination_layout() || profile().hwpx_stored_layout(),
         styles,
     );
+    let effective_height = external_flow.map_or(effective_height, |flow| flow.effective_height);
     let total_height = effective_height + host_spacing.before + host_spacing.after;
 
     // 표 셀 내 각주 높이 사전 계산 (Paginator engine.rs:565-581 동일)
@@ -155,6 +159,7 @@ pub(super) fn format(
     }
 
     FormattedTable {
+        external_flow,
         row_heights,
         cell_spacing,
         header_row_count,

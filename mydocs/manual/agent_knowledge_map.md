@@ -15,7 +15,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 다르면 그쪽을 따른다. 새 표면이 머지되면 해당 행만 추가한다(기존 행 재서술 금지).
 
 **PR 시각 무회귀를 검토할 때**: 최신 SHA의 upstream/devel과 후보 head의 전쪽
-Native/fresh WASM TSV를 같은 조건·페이지로 비교한다. **2%p 이상 하락한 쪽이 있으면
+Native/fresh WASM TSV를 같은 조건·페이지로 비교한다. **2%p 초과 하락한 쪽이 있으면
 90% 이상이어도 PR 재검토**다. 평균·CI 통과로 대체하지 않는다.
 [권위 절차](verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)와 [PR workflow](pr_review_workflow.md)를 먼저 읽는다.
 

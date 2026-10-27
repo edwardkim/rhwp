@@ -485,8 +485,7 @@ impl LayoutEngine {
     }
 
     pub(super) fn stored_span_line_tail_spacing(&self, unit: &CellUnit) -> f64 {
-        if (unit.empty_spacer && !unit.owns_stored_closing_line)
-            || unit.vis_start >= unit.vis_end
+        if unit.vis_start >= unit.vis_end
             || unit.nested_row.is_some()
             || unit.mixed_nested_fragment
             || unit.non_inline_control_range.is_some()
@@ -494,5 +493,51 @@ impl LayoutEngine {
             return 0.0;
         }
         unit.following_line_advance.min(unit.height.max(0.0))
+    }
+    /// 병합 칸의 행 프레임이 이미 예약한 줄간격과 보이는 끝을 분리한다.
+    /// 일반 저장 줄의 연속성은 다음 물리 쪽으로 간격을 넘길 증거가 아니다.
+    pub(super) fn stored_spanning_cut_closing_advance(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        units: &[CellUnit],
+        end: usize,
+    ) -> f64 {
+        let profile = self.profile.get();
+        if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            || profile.session_edited()
+            || cell.row_span <= 1
+            || cell.dirty_flag
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+            || end == 0
+            || end >= units.len()
+        {
+            return 0.0;
+        }
+        let unit = &units[end - 1];
+        let Some(para) = cell.paragraphs.get(unit.para_idx) else {
+            return 0.0;
+        };
+        if !para.controls.is_empty()
+            || para.stored_text_partition_is_dirty()
+            || para.cell_format_vpos_dirty
+            || unit.vis_end != unit.vis_start + 1
+        {
+            return 0.0;
+        }
+        let Some(line) = para.line_segs.get(unit.vis_start) else {
+            return 0.0;
+        };
+        if line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || line.line_height <= 0
+            || line.line_spacing < 0
+        {
+            return 0.0;
+        }
+        hwpunit_to_px(line.line_spacing, self.dpi)
+            .min((unit.height - hwpunit_to_px(line.line_height, self.dpi)).max(0.0))
     }
 }

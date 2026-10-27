@@ -303,61 +303,6 @@ fn rotated_frame_node_box(
 }
 
 impl LayoutEngine {
-    #[allow(clippy::too_many_arguments)]
-    pub(crate) fn layout_picture(
-        &self,
-        tree: &mut PageLayoutContext,
-        parent_node: &mut RenderNode,
-        picture: &crate::model::image::Picture,
-        container: &LayoutRect,
-        bin_data_content: &[BinDataContent],
-        alignment: Alignment,
-        section_index: Option<usize>,
-        para_index: Option<usize>,
-        control_index: Option<usize>,
-        cell_ctx: Option<&crate::renderer::layout::CellContext>,
-        // [#6284] 캡션 문단 조판에 필요하다.
-        styles: &ResolvedStyleSet,
-    ) {
-        let children_before = parent_node.children.len();
-        // [Task #825] 본문 picture 경로 — header_footer_ref = None
-        self.layout_picture_full(
-            tree,
-            parent_node,
-            picture,
-            container,
-            bin_data_content,
-            alignment,
-            section_index,
-            para_index,
-            control_index,
-            None,
-            cell_ctx,
-            styles,
-        );
-        if cell_ctx.is_some_and(|ctx| !ctx.in_textbox)
-            && !picture.common.treat_as_char
-            && matches!(picture.common.text_wrap, TextWrap::BehindText)
-        {
-            let stable_index = cell_ctx
-                .and_then(|ctx| ctx.path.last())
-                .map(|entry| {
-                    Self::object_stable_index(entry.cell_para_index, control_index.unwrap_or(0))
-                })
-                .unwrap_or(0);
-            let layer = RenderLayerInfo::new(
-                Some(TextWrap::BehindText),
-                picture.common.z_order,
-                stable_index,
-            );
-            for child in parent_node.children.iter_mut().skip(children_before) {
-                child.set_layer(layer);
-                child.cell_frame_paint =
-                    crate::model::border_paint::is_cell_frame_attributes(&picture.common);
-            }
-        }
-    }
-
     /// [Task #825] 머리말/꼬리말 picture 전용 — outer Header/Footer 위치 marker 전달.
     /// `header_footer_ref` 가 `Some` 일 때 ImageNode 에 마커 설정 → rhwp-studio
     /// 머리말/꼬리말 그림 클릭 hit-test + 개체 속성 dialog dispatch 활성화.
@@ -590,9 +535,13 @@ impl LayoutEngine {
                 contrast: picture.image_attr.contrast,
                 opacity: picture.image_attr.opacity(),
                 text_wrap: Some(picture.common.text_wrap),
-                transform: extract_picture_transform(picture),
+                transform: crate::renderer::image_geometry::picture_transform(picture),
                 external_path: picture.image_attr.external_path.clone(),
                 content_inset: crate::renderer::layout::utils::picture_content_inset(picture),
+                pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(
+                    picture,
+                ),
+                source_rect: crate::renderer::image_geometry::picture_source_rect(picture),
                 header_footer_ref: header_footer_ref.clone(),
                 cell_index: cei,
                 cell_para_index: cpi,
@@ -779,46 +728,18 @@ impl LayoutEngine {
             0.0
         };
 
-        // 캡션을 포함한 전체 크기 계산 (위치 결정에 사용)
-        let (total_width, total_height) = if let Some(ref caption) = picture.caption {
-            match caption.direction {
-                CaptionDirection::Top | CaptionDirection::Bottom => (
-                    pic_width,
-                    super::super::composer::captioned_picture_height_px(picture, self.dpi),
-                ),
-                CaptionDirection::Left | CaptionDirection::Right => {
-                    let cw = hwpunit_to_px(caption.width as i32, self.dpi);
-                    (
-                        pic_width + cw + caption_spacing,
-                        super::super::composer::captioned_picture_height_px(picture, self.dpi),
-                    )
-                }
-            }
-        } else {
-            (pic_width, pic_height)
-        };
-
-        // [#6596] 바깥 여백은 개체 상자의 일부다. 한/글은 여백을 포함한 상자를 오프셋·정렬
-        // 자리에 놓고 잉크(그림+캡션)를 그 안쪽 (왼쪽 여백, 위 여백) 에 그린다.
-        // 코퍼스 실측(samples↔pdf 한컴 PDF 215문서): 여백 3.01mm 그림 45건 중 44건이
-        // dx + 왼쪽 여백 ≈ 0, dy + 위 여백 ≈ 0 이고 Paper/Column/Para 기준과
-        // Square/TopAndBottom/BehindText 를 가리지 않는다. 가운데 정렬은 좌우 여백이
-        // 같아 가로가 상쇄되고 오른쪽 정렬은 오른쪽 여백만 잉크에 나타나므로, 정렬은
-        // 상자 크기로 계산해야 둘 다 맞는다. 글자처럼 그림은 줄 안 상자라 이 규칙 밖이다.
-        let (margin_left, margin_right, margin_top, margin_bottom) = if picture.common.treat_as_char
-        {
-            (0.0, 0.0, 0.0, 0.0)
-        } else {
-            let m = &picture.common.margin;
-            (
-                hwpunit_to_px(i32::from(m.left), self.dpi),
-                hwpunit_to_px(i32::from(m.right), self.dpi),
-                hwpunit_to_px(i32::from(m.top), self.dpi),
-                hwpunit_to_px(i32::from(m.bottom), self.dpi),
-            )
-        };
-        let box_width = total_width + margin_left + margin_right;
-        let box_height = total_height + margin_top + margin_bottom;
+        // #6596의 여백·캡션 상자를 셀과 같은 생산 결과로 소비한다.
+        let outer_box = crate::renderer::float_placement::picture_outer_box(
+            picture,
+            pic_width,
+            pic_height,
+            caption_height,
+            self.dpi,
+        );
+        let box_width = outer_box.width;
+        let box_height = outer_box.height;
+        let margin_left = outer_box.margin_left;
+        let margin_top = outer_box.margin_top;
 
         // 통합 좌표 계산 (여백을 포함한 상자 기준)
         let (box_x, base_y) = self.compute_object_position(
@@ -853,19 +774,8 @@ impl LayoutEngine {
             base_y
         };
 
-        // 캡션 방향에 따라 그림 위치 오프셋 계산
-        let (caption_top_offset, caption_left_offset) = if let Some(ref caption) = picture.caption {
-            match caption.direction {
-                CaptionDirection::Top => (caption_height + caption_spacing, 0.0),
-                CaptionDirection::Left => {
-                    let cw = hwpunit_to_px(caption.width as i32, self.dpi);
-                    (0.0, cw + caption_spacing)
-                }
-                _ => (0.0, 0.0),
-            }
-        } else {
-            (0.0, 0.0)
-        };
+        let caption_top_offset = outer_box.caption_top;
+        let caption_left_offset = outer_box.caption_left;
 
         // 잉크 원점 = 상자 원점 + (왼쪽 여백, 위 여백). #3821 이 Column-왼쪽 Square 의
         // 왼쪽 여백에만 좁혀 적용하던 것을 위 실측대로 사방·전 기준으로 편다. wrap
@@ -921,9 +831,13 @@ impl LayoutEngine {
                 contrast: picture.image_attr.contrast,
                 opacity: picture.image_attr.opacity(),
                 text_wrap: Some(picture.common.text_wrap),
-                transform: extract_picture_transform(picture),
+                transform: crate::renderer::image_geometry::picture_transform(picture),
                 external_path: picture.image_attr.external_path.clone(),
                 content_inset: crate::renderer::layout::utils::picture_content_inset(picture),
+                pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(
+                    picture,
+                ),
+                source_rect: crate::renderer::image_geometry::picture_source_rect(picture),
                 ..ImageNode::new(bin_data_id, image_data)
             })
         };
@@ -1051,7 +965,7 @@ impl LayoutEngine {
         content_x: f64,
         content_width: f64,
         y_start: f64,
-        auto_counter: &mut AutoNumberCounter,
+        _auto_counter: &mut AutoNumberCounter,
         bin_data_content: &[BinDataContent],
         cell_ctx: Option<super::CellContext>,
         caption_owner: Option<CaptionOwner>,
@@ -1075,8 +989,8 @@ impl LayoutEngine {
             let mut composed =
                 crate::renderer::composer::compose_paragraph_in_context(para, styles);
 
-            // AutoNumber 컨트롤 처리: 조합된 텍스트에 번호 삽입
-            self.apply_auto_numbers_to_composed(&mut composed, para, auto_counter);
+            // 자동 번호는 자리표 글자의 표시 문자열로만 바꿔 글자 위치 대응을 지킨다.
+            crate::renderer::composer::project_caption_auto_numbers(&mut composed, para);
 
             // cell_ctx에 cell_para_index 갱신
             let ctx = cell_ctx.as_ref().map(|c| {
@@ -2504,99 +2418,4 @@ fn format_footnote_number(
     };
 
     format!("{}{}{} ", prefix_str, num_str, suffix_str)
-}
-
-impl LayoutEngine {
-    /// 그림 테두리(선) 렌더링
-    /// border_attr의 bit 0~5가 선 종류, border_width가 두께 (0이면 기본 0.1mm)
-    pub(crate) fn render_picture_border(
-        &self,
-        tree: &mut PageLayoutContext,
-        parent: &mut RenderNode,
-        picture: &crate::model::image::Picture,
-        x: f64,
-        y: f64,
-        w: f64,
-        h: f64,
-    ) {
-        if let Some(border) =
-            self.make_picture_border_node(tree, picture, BoundingBox::new(x, y, w, h))
-        {
-            parent.children.push(border);
-        }
-    }
-
-    /// Inline and floating pictures use the same outer object frame for their
-    /// outline; bitmap crop/inset changes only the image's painted interior.
-    pub(crate) fn append_picture_image_node(
-        &self,
-        tree: &mut PageLayoutContext,
-        parent: &mut RenderNode,
-        picture: &crate::model::image::Picture,
-        image: RenderNode,
-    ) {
-        let bbox = image.bbox;
-        parent.children.push(image);
-        if let Some(border) = self.make_picture_border_node(tree, picture, bbox) {
-            parent.children.push(border);
-        }
-    }
-
-    pub(crate) fn make_picture_border_node(
-        &self,
-        tree: &mut PageLayoutContext,
-        picture: &crate::model::image::Picture,
-        bbox: BoundingBox,
-    ) -> Option<RenderNode> {
-        let line_type = picture.border_attr.attr & 0x3F;
-        // 선 종류 0 = 없음
-        if line_type == 0 {
-            return None;
-        }
-        let border_w = if picture.border_width > 0 {
-            hwpunit_to_px(picture.border_width, self.dpi)
-        } else {
-            // 기본 선 두께 0.1mm
-            0.1 / 25.4 * self.dpi
-        };
-        let stroke_dash = match line_type {
-            2 => super::super::StrokeDash::Dot,        // 점선
-            3 => super::super::StrokeDash::Dash,       // 긴 점선 (파선)
-            4 => super::super::StrokeDash::DashDot,    // 일점쇄선
-            5 => super::super::StrokeDash::DashDotDot, // 이점쇄선
-            _ => super::super::StrokeDash::Solid,      // 1=실선, 기타
-        };
-        let style = super::super::ShapeStyle {
-            fill_color: None,
-            pattern: None,
-            stroke_color: Some(picture.border_color),
-            stroke_width: border_w,
-            stroke_dash,
-            opacity: 1.0,
-            shadow: None,
-        };
-        let border_id = tree.next_id();
-        let transform = extract_picture_transform(picture);
-        let bbox = transform.effective_image_bbox(&bbox);
-        // 독립 Print의 그림 외곽선은 한 화면 픽셀까지 그림 안에 겹치고
-        // 나머지 굵기는 바깥으로 자란다. 중앙 stroke로 그리면 굵은 선이
-        // 그림 전체를 덮는다. source 그림·점유 프레임은 바꾸지 않는다.
-        let overlap = border_w.min(hwpunit_to_px(75, self.dpi));
-        let outset = border_w / 2.0 - overlap;
-        let bbox = BoundingBox::new(
-            bbox.x - outset,
-            bbox.y - outset,
-            bbox.width + 2.0 * outset,
-            bbox.height + 2.0 * outset,
-        );
-        let mut rectangle = RectangleNode::new(0.0, style, None);
-        rectangle.picture_border = true;
-        rectangle.round_stroke_join = !matches!((picture.border_attr.attr >> 6) & 0x0f, 1 | 2);
-        rectangle.transform = transform;
-        Some(RenderNode::new(
-            border_id,
-            RenderNodeType::Rectangle(rectangle),
-            bbox,
-        ))
-    }
 }

@@ -813,19 +813,18 @@ fn test_char_overlap_multi_component_is_single_advance() {
 /// - 관세청 월간 수출입 현황 p1 — 테두리 없음(0) + `charSz=-4` → 축소 없음.
 ///   한컴 PDF content stream 에서 마커와 본문이 같은 `101 Tf`, 같은 baseline.
 #[test]
-fn char_overlap_size_ratio_applies_only_when_a_border_is_drawn() {
+fn char_overlap_signed_size_steps_follow_hancom_print() {
     // 테두리 없음 — charSz 부호와 무관하게 축소하지 않는다 (#4085 관세청 오라클)
     assert_eq!(char_overlap_size_ratio(0, -4), 1.0);
     assert_eq!(char_overlap_size_ratio(0, 90), 1.0);
-
-    // 테두리 있음 — PR #1101 실측 규칙 보존 (회귀 금지)
+    // 독립 Print의 크기 증거·전쪽 Native/fresh WASM·직접 확대 판독:
+    // mydocs/pr/assets/semanticist21_20261019/char_overlap_size_print/README.md
+    // 본문 10pt에 -3/0/10/20/50을 적용한 결과는 약 7/10/20/30/60pt다.
+    for (char_size, expected) in [(-3, 0.7), (0, 1.0), (10, 2.0), (20, 3.0), (50, 6.0)] {
+        assert!((char_overlap_size_ratio(1, char_size) - expected).abs() < 1e-9);
+    }
+    // 기존 PR #1101의 테두리 있는 음수 크기 계약도 유지한다.
     assert_eq!(char_overlap_size_ratio(4, -2), 0.8);
-    assert!((char_overlap_size_ratio(1, -3) - 0.7).abs() < 1e-9);
-
-    // 양수는 percent 그대로
-    assert_eq!(char_overlap_size_ratio(1, 50), 0.5);
-
-    // 0 은 기본 100%
     assert_eq!(char_overlap_size_ratio(3, 0), 1.0);
 }
 

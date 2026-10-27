@@ -295,7 +295,7 @@ pub(super) fn construct_glyph_font(
     let mut font = Font::from_typeface(typeface, instance.size_px as f32);
     font.set_embolden(instance.synthetic_bold);
     font.set_skew_x(if instance.synthetic_italic {
-        -0.25
+        crate::renderer::text_italic::SKEW_X as f32
     } else {
         0.0
     });

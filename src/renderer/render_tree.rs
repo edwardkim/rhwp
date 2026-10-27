@@ -62,6 +62,11 @@ pub(crate) fn fullwidth_onepoint_ink(style: &TextStyle, draw_font_size: f64) -> 
     })
 }
 
+/// 가운뎃점만 공통 벡터 경로를 사용한다. U+2024는 공급 글꼴과 전진 소유를 따른다.
+pub fn is_vector_middle_dot(cluster: &str) -> bool {
+    cluster == "\u{00B7}"
+}
+
 /// 이전 payload와 비정상적으로 큰 리더를 위한 점선 근사 간격.
 /// 유효한 일반 리더는 `tab_leader::dot_geometry`의 glyph 원점과 셀 배분을 쓴다.
 /// 과거 KTX의 특정 크기에서 관측한 0.248은 출력 격자가 포함된 근삿값이며
@@ -139,6 +144,11 @@ pub type NodeId = u32;
 #[derive(Debug, Clone, Copy, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RenderLayerInfo {
+    /// 셀의 편집 소유와 별개로 쪽 순서를 따르는 그림의 그리기 묶음이다.
+    /// 같은 그림의 bitmap·테두리·캡션을 함께 옮기며 이 ID로 정렬하지 않는다.
+    /// 레이아웃 조립 단계에서만 소비하며 공개 직렬화 계약에는 추가하지 않는다.
+    #[serde(skip)]
+    pub(crate) independent_page_paint: Option<NodeId>,
     /// Text wrapping mode that decides the coarse replay plane.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text_wrap: Option<TextWrap>,
@@ -156,6 +166,7 @@ pub struct RenderLayerInfo {
 impl RenderLayerInfo {
     pub fn new(text_wrap: Option<TextWrap>, z_order: i32, stable_index: u32) -> Self {
         Self {
+            independent_page_paint: None,
             text_wrap,
             z_order,
             stable_index,
@@ -753,8 +764,18 @@ impl FormObjectNode {
         if form.form_type != crate::model::control::FormType::Edit {
             return None;
         }
-        let mask = form.properties.get("PasswordChar")?.chars().next()?;
-        Some(mask.to_string().repeat(form.text.chars().count()))
+        // 한컴 Print는 저장된 LF 뒤 문자열을 한 줄 입력 상자에 이어 그리지 않는다.
+        // MultiLine=0/1인 동일 입력의 독립 Print 모두 첫 줄만 표시한다. 원문은 보존한다.
+        let first_line = form.text.split(['\r', '\n']).next().unwrap_or_default();
+        if let Some(mask) = form
+            .properties
+            .get("PasswordChar")
+            .and_then(|value| value.chars().next())
+        {
+            Some(mask.to_string().repeat(first_line.chars().count()))
+        } else {
+            (first_line.len() != form.text.len()).then(|| first_line.to_owned())
+        }
     }
 
     pub fn display_or_text(&self) -> &str {
@@ -1047,6 +1068,15 @@ pub struct TextRunNode {
 }
 
 impl TextRunNode {
+    /// 편집·소유 판정이 공유하는 논리 칸 수. 겹침 payload도 한 칸이다.
+    pub(crate) fn logical_char_count(&self) -> usize {
+        if self.char_overlap.is_some() {
+            usize::from(!self.text.is_empty())
+        } else {
+            self.text.chars().count()
+        }
+    }
+
     /// Same logical end-tab rule as cross-run alignment: saved trailing
     /// spaces belong to the tab's advance, rather than visible content.
     pub(crate) fn ends_with_alignment_tab(text: &str) -> bool {
@@ -1216,6 +1246,10 @@ pub struct TableCellNode {
     pub text_direction: u8,
     /// 셀 콘텐츠를 bounding box로 클리핑 (분할 행 셀에서 사용)
     pub clip: bool,
+    /// 완료된 재조판 셀은 독립적으로 확정한 물리 경계를 소유한다.
+    /// 조상 표의 사후 clip 확장으로 그 경계를 다시 추정하지 않는다.
+    #[serde(default)]
+    pub closed_reflow_frame: bool,
     /// [#5862] 이 셀이 **쪽 분할 조각**인가 (`table_partial` 경로에서 만든 셀).
     ///
     /// 조각 셀의 clip 은 괘선이 아니라 **쪽 컷**이 정한 값이라, 컷 부기와 실제
@@ -1257,6 +1291,15 @@ impl ShapeTransform {
     /// 변환이 필요한지 여부
     pub fn has_transform(&self) -> bool {
         self.rotation != 0.0 || self.horz_flip || self.vert_flip
+    }
+
+    /// 축 반전을 먼저 concat하는 backend에서 로컬 대칭 뒤 회전을 재현할 각도.
+    pub fn reflected_rotation(&self) -> f64 {
+        if self.horz_flip ^ self.vert_flip {
+            -self.rotation
+        } else {
+            self.rotation
+        }
     }
 
     /// 그림 노드 한정: 회전각 90°/270° (±1° 톨러런스) 일 때 bbox extent 만 swap.
@@ -1626,6 +1669,12 @@ pub struct ImageNode {
     /// `None` 이면 틀 전체에 그린다.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub content_inset: Option<[f64; 4]>,
+    /// 저장 계약이 확인된 그림의 회전 전 크기 / 회전 후 프레임 크기.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pre_rotation_ratio: Option<[f64; 2]>,
+    /// 저장 그림 영역과 bitmap 자체 원점. 공통 기하 결과가 크기·clip을 함께 만든다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_rect: Option<super::image_geometry::PictureSourceRect>,
 }
 
 /// [Task #825] 머리말/꼬리말 안 그림의 outer 위치 + 종류.
@@ -1684,6 +1733,8 @@ impl ImageNode {
             outer_table_control_index: None,
             cell_context: None,
             content_inset: None,
+            pre_rotation_ratio: None,
+            source_rect: None,
         }
     }
 
@@ -1701,6 +1752,39 @@ impl ImageNode {
             frame.width * (1.0 - left - right),
             frame.height * (1.0 - top - bottom),
         )
+    }
+
+    /// 회전·대칭을 적용하기 전 실제 그림 출력 사각형. 모든 backend가 한 번만 소비한다.
+    pub fn transformed_paint_bbox(&self, frame: &BoundingBox) -> BoundingBox {
+        self.paint_geometry(frame).bitmap
+    }
+
+    pub fn source_clip_path(&self, frame: &BoundingBox) -> Option<[[f64; 2]; 4]> {
+        self.paint_geometry(frame).clip
+    }
+
+    pub fn source_clip_bbox(&self, frame: &BoundingBox) -> Option<BoundingBox> {
+        let points = self.source_clip_path(frame)?;
+        let min_x = points.iter().map(|p| p[0]).fold(f64::INFINITY, f64::min);
+        let min_y = points.iter().map(|p| p[1]).fold(f64::INFINITY, f64::min);
+        let max_x = points
+            .iter()
+            .map(|p| p[0])
+            .fold(f64::NEG_INFINITY, f64::max);
+        let max_y = points
+            .iter()
+            .map(|p| p[1])
+            .fold(f64::NEG_INFINITY, f64::max);
+        Some(BoundingBox::new(min_x, min_y, max_x - min_x, max_y - min_y))
+    }
+
+    fn paint_geometry(&self, frame: &BoundingBox) -> super::image_geometry::PicturePaintGeometry {
+        let base = super::image_geometry::pre_rotation_bbox(
+            &self.paint_bbox(frame),
+            self.transform,
+            self.pre_rotation_ratio,
+        );
+        super::image_geometry::source_geometry(base, self.transform, self.source_rect)
     }
 }
 

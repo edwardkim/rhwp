@@ -153,12 +153,18 @@ test('전체 integration source는 파생 산출물을 쓰지 않고 검증한�
 });
 
 test('일반 case는 weighted suite로 해석한다', () => {
-  const target = resolveCase('issue_8160_all_pages');
-  assert.match(target, /^regression_suite_\d{3}$/);
-  const plan = resolveCasePlan('issue_8160_all_pages');
-  assert.equal(plan.grouped, true);
-  assert.match(nextestArguments(plan).join(' '), /issue_8160_all_pages::/);
-  assert.match(cargoTestArguments(plan).at(-1), /issue_8160_all_pages::/);
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-suite-resolver-'));
+  try {
+    writeRepositoryFixture(root);
+    const target = resolveCase('existing', root);
+    assert.match(target, /^regression_suite_\d{3}$/);
+    const plan = resolveCasePlan('existing', root);
+    assert.equal(plan.grouped, true);
+    assert.match(nextestArguments(plan).join(' '), /existing::/);
+    assert.match(cargoTestArguments(plan).at(-1), /existing::/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('경로 의존 case는 기존 target 이름을 유지한다', () => {

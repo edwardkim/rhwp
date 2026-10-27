@@ -233,7 +233,9 @@ pub(crate) fn build_row_col_x(
         }
         if let Some(row) = cell_width_grid.get_mut(r) {
             if let Some(slot) = row.get_mut(c) {
-                *slot = Some(hwpunit_to_px(cell.width as i32, dpi) * width_scale);
+                *slot = Some(
+                    hwpunit_to_px(table.physical_cell_width_hu(cell) as i32, dpi) * width_scale,
+                );
             }
         }
     }
@@ -424,7 +426,7 @@ fn declared_row_col_x(
             return None;
         }
         candidate[c] = cursor;
-        let cell_w = hwpunit_to_px(cell.width as i32, dpi) * width_scale;
+        let cell_w = hwpunit_to_px(table.physical_cell_width_hu(cell) as i32, dpi) * width_scale;
         for width in &mut widths[c..end] {
             *width = if span == 1 {
                 cell_w
@@ -688,13 +690,39 @@ pub(crate) fn apply_cellzone_border_fill(
     }
 }
 
+/// 셀 영역(cellzone) 테두리 덮어쓰기와 표 외곽 테두리 보충을 엣지 그리드에 적용한다.
+///
+/// 비분할 표와 쪽을 넘는 표 조각이 같은 규칙을 쓰도록 한곳에 둔다. `cells`·`zones`
+/// 의 행 주소는 그리드와 같은 행 공간(조각이면 조각-지역 행)이어야 한다.
+pub(crate) fn apply_table_border_overrides(
+    h_edges: &mut [Vec<Option<BorderEdge>>],
+    v_edges: &mut [Vec<Option<BorderEdge>>],
+    table_border_fill_id: u16,
+    zones: &[TableZone],
+    cells: &[Cell],
+    styles: &ResolvedStyleSet,
+) {
+    let style = |id: u16| {
+        (id > 0)
+            .then(|| styles.border_styles.get(id as usize - 1))
+            .flatten()
+    };
+    for zone in zones {
+        if let Some(zone_bs) = style(zone.border_fill_id) {
+            apply_cellzone_border_fill(h_edges, v_edges, &zone_bs.borders, zone, cells);
+        }
+    }
+    if let Some(table_bs) = style(table_border_fill_id) {
+        apply_table_outer_border_fill(h_edges, v_edges, &table_bs.borders, cells);
+    }
+}
+
 /// 표 자신의 `borderFillIDRef` 를 바깥 네 변의 **빈 슬롯**에만 보충한다.
 ///
-/// 칸 occupancy 만으로 막으면 일러두기 틀처럼 바깥 칸이 NONE 인 변
-/// (왼쪽·아래·제목왼쪽)이 사라진다 (#6311). 반대로 바깥 SOLID 가 하나라도
-/// 있는 일반 표까지 빈 칸을 메우면 #469 단 침범·KTX TOC·#6030 행 괘선이
-/// 깨진다. 제목 칸만 바깥 SOLID 를 일부 그린 **일러두기 부분 프레임**만
-/// occupancy+NONE 슬롯을 메우고, 칸이 안 덮는 구멍은 종전 fallback 을 둔다.
+/// 칸이 덮는 바깥 변은 칸 자신의 테두리가 정한다. 칸 테두리가 NONE 이면 한컴도
+/// 표 테두리로 메우지 않는다(사행행위 시설완료 신고서 처리절차 표, 한컴 2020 PDF).
+/// 표 테두리는 칸이 안 덮는 구멍과 테두리 참조가 없는(`border_fill_id == 0`) 칸의
+/// 변에만 보충한다 (#6311). 일러두기 틀의 바깥 선은 cellzone 이 그린다 (#6619).
 pub(crate) fn apply_table_outer_border_fill(
     h_edges: &mut [Vec<Option<BorderEdge>>],
     v_edges: &mut [Vec<Option<BorderEdge>>],
@@ -715,7 +743,8 @@ pub(crate) fn apply_table_outer_border_fill(
     for cell in cells {
         let c = cell.col as usize;
         let r = cell.row as usize;
-        if c >= col_count || r >= row_count {
+        // 테두리 참조가 없는 칸은 바깥 변을 소유하지 않는다.
+        if c >= col_count || r >= row_count || cell.border_fill_id == 0 {
             continue;
         }
         let ec = (c + cell.col_span as usize).min(col_count);
@@ -742,13 +771,8 @@ pub(crate) fn apply_table_outer_border_fill(
         }
     }
 
-    let fill_occupied = is_callout_partial_frame(h_edges, v_edges, &h_occupied);
-
     let fill = |slot: &mut Option<BorderEdge>, border: &BorderLine, occupied: bool| {
-        if slot.is_none()
-            && border.line_type != BorderLineType::None
-            && (!occupied || fill_occupied)
-        {
+        if slot.is_none() && border.line_type != BorderLineType::None && !occupied {
             *slot = Some((*border).into());
         }
     };
@@ -769,51 +793,6 @@ pub(crate) fn apply_table_outer_border_fill(
             v_occupied[col_count][r],
         );
     }
-}
-
-fn outer_slot_drawn(slot: &Option<BorderEdge>) -> bool {
-    slot.as_ref()
-        .is_some_and(|border| border.line_type != BorderLineType::None)
-}
-
-/// 일러두기 틀: 첫 행 제목 칸만 바깥 SOLID 를 일부 그리고, 아래·본문 좌우는
-/// 칸이 NONE 이다. 일반 박스(좌우·아래가 이미 있는 부분 시작 표)는 제외한다.
-fn is_callout_partial_frame(
-    h_edges: &[Vec<Option<BorderEdge>>],
-    v_edges: &[Vec<Option<BorderEdge>>],
-    h_occupied: &[Vec<bool>],
-) -> bool {
-    let col_count = h_edges[0].len();
-    let row_count = v_edges[0].len();
-    if row_count < 2 || col_count < 2 {
-        return false;
-    }
-
-    let mut top_drawn = false;
-    let mut top_empty_occupied = false;
-    for c in 0..col_count {
-        if outer_slot_drawn(&h_edges[0][c]) {
-            top_drawn = true;
-        } else if h_occupied[0][c] {
-            top_empty_occupied = true;
-        }
-    }
-    if !top_drawn || !top_empty_occupied {
-        return false;
-    }
-
-    if (0..col_count).any(|c| outer_slot_drawn(&h_edges[row_count][c])) {
-        return false;
-    }
-
-    // 본문 행의 좌·우 바깥 SOLID 가 있으면 일반 박스다. 제목 행(row 0) 토막만 허용.
-    for r in 1..row_count {
-        if outer_slot_drawn(&v_edges[0][r]) || outer_slot_drawn(&v_edges[col_count][r]) {
-            return false;
-        }
-    }
-
-    true
 }
 
 /// 엣지 그리드에서 테두리 Line 노드를 생성

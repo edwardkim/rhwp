@@ -30,6 +30,7 @@ pub(super) mod deferred_placement;
 pub(super) mod empty_float;
 pub(super) mod flow_table;
 pub(super) mod host_wrap;
+pub(super) mod mixed_host_line;
 pub(super) mod order;
 pub(super) mod paragraph_flow;
 pub(super) mod physical_tac;
@@ -525,6 +526,15 @@ pub(super) fn try_place_stored_tac_paragraph(
     composed: Option<&ComposedParagraph>,
 ) -> bool {
     let dpi = engine.dpi;
+    // 커진 인라인 줄은 원본 저장 TAC 계획의 수용 증거가 아니다.
+    // 공통 표 경로가 실제 상자와 뒤 본문의 전체 점유를 함께 검사한다.
+    if para.controls.iter().any(|control| {
+        matches!(control, Control::Table(table)
+            if engine.render_normalization.inline_host_frame_expanded(table))
+    }) {
+        return false;
+    }
+    let source_frame = st.stored_tac_line_frame(para, paragraphs.get(para_idx + 1), styles);
     if let Some(placement) = stored_tac::prepare_computed(
         para_idx,
         para,
@@ -538,6 +548,7 @@ pub(super) fn try_place_stored_tac_paragraph(
         styles,
         st.stored_tac_page(paragraphs),
         || st.available_height(),
+        source_frame,
         dpi,
     ) {
         // 합성 표 줄의 간격은 확정 끝에 이미 포함된다. 같은 끝점에서 좌표축을
@@ -646,6 +657,7 @@ pub(super) fn try_place_stored_tac_paragraph(
             .get(para.para_shape_id as usize)
             .is_some_and(|style| style.page_break_before),
         || st.available_height(),
+        source_frame,
         dpi,
     ) else {
         return false;

@@ -6,11 +6,10 @@ use crate::renderer::typeset::{
     is_two_row_picture_caption_rowbreak_table, line_seg_visible_bounds_px,
     native_hwp5_rowbreak_host_precedes_first_fragment, native_terminal_child_host_line_spacing,
     none_table_is_atomic_here, notes, para_has_non_whitespace_text, para_has_visible_text,
-    paragraph, partial_rowbreak_fragment_spacing_px, row_geometry_table,
-    rowbreak_table_has_internal_saved_vpos_reset, stored_square_picture_has_adjacent_text, table,
-    BlockTableContinuationContext, BlockTableContinuationPreparedState,
-    BlockTableContinuationSource, CaptionDirection, Control, PageItem, TypesetEngine, TypesetState,
-    MIN_TOP_KEEP_PX, SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,
+    paragraph, partial_rowbreak_fragment_spacing_px, rowbreak_table_has_internal_saved_vpos_reset,
+    stored_square_picture_has_adjacent_text, table, BlockTableContinuationContext,
+    BlockTableContinuationPreparedState, BlockTableContinuationSource, CaptionDirection, Control,
+    PageItem, TypesetEngine, TypesetState, MIN_TOP_KEEP_PX, SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,
 };
 
 use super::{BlockTableInput, SplitTableEntry};
@@ -40,6 +39,7 @@ impl TypesetEngine {
             ..
         } = input;
         let SplitTableEntry {
+            computed_host_tail,
             mut total_footnote,
             next_starts_new_page,
             next_rewinds_after_table,
@@ -64,7 +64,11 @@ impl TypesetEngine {
         } = entry;
         let row_count = mt.row_heights.len();
         let cs = mt.cell_spacing;
-        let can_intra_split = !mt.cells.is_empty();
+        let can_intra_split = !mt.cells.is_empty()
+            || super::unrestricted_float::independent_child_can_split(
+                input,
+                st.base_available_height(),
+            );
         let base_available = st.base_available_height();
         // 표 조각의 괘선은 실제 본문 영역에 그린다. 쪽 하단 허용치는 글줄 수용에
         // 사용하지만, 행 컷이 이 공간까지 쓰면 표 조각이 꼬리말이나 본문 경계에
@@ -558,7 +562,12 @@ impl TypesetEngine {
             || crate::renderer::float_placement::partial_table_opening_host_owns_lead(
                 para, table, ctrl_idx, false,
             );
-        let fragment_host_placement = source_control_frame.or_else(|| {
+        let fragment_host_placement = if computed_host_tail.is_some() {
+            // prefix·표 위 여백은 entry의 같은 계획이 이미 소비했다.
+            // 마지막 호스트 줄의 높이나 양수 offset을 다시 가산하지 않는다.
+            unconstrained_host_placement
+        } else {
+            source_control_frame.or_else(|| {
             unconstrained_host_placement
                 .filter(|_| placement_para_start_height + fmt.height_for_fit <= available)
                 .map(|placement| {
@@ -654,10 +663,14 @@ impl TypesetEngine {
                     }
                     constrain_host_placement.constrain(fragment, st)
                 })
-        });
+        })
+        };
         // 닫힌 폭0 개체 앵커는 표 공간을 소유하며 별도 빈 글줄을 전진시키지 않는다.
         // 실제 호스트 텍스트가 있는 내부 개체는 그 글줄의 기존 소유를 유지한다.
-        let host_owns_text_lines = host_owns_opening_line
+        // 계산한 앞·뒤 줄 계획은 entry와 continuation이 각 범위를 방출한다.
+        // 같은 호스트 전체를 여기서 다시 pre-emit하면 첫 조각과 끝 조각에 중복된다.
+        let host_owns_text_lines = computed_host_tail.is_none()
+            && host_owns_opening_line
             && !crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
                 para,
                 table,
@@ -709,8 +722,8 @@ impl TypesetEngine {
                 table,
                 ft.host_spacing.before,
                 false,
-                ft.strict_following_plain_text_fit,
-                crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
+                ft.strict_following_plain_text_fit || computed_host_tail.is_some(),
+                computed_host_tail.is_some() || crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
                     self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
                     para,
                     table,
@@ -855,7 +868,11 @@ impl TypesetEngine {
         // 다만 아래 «표 통째» 분할 단위는 값 0 에만 해당한다 — 값 1 은 행 단위다.
         let atomic_rule_applies = (none_table_is_atomic_here(table)
             || cell_unit_row_is_atomic_here(table))
-            && !stored_declares_table_split;
+            && !stored_declares_table_split
+            && !super::unrestricted_float::independent_child_can_split(
+                input,
+                st.base_available_height(),
+            );
         let split_unit_h = if atomic_rule_applies && none_table_is_atomic_here(table) {
             all_rows_h
         } else if first_block_protected {
@@ -952,8 +969,11 @@ impl TypesetEngine {
             // «셀 단위로 나눔» 은 단위가 한 쪽에도 안 들어갈 때만 불가피하게 자른다.
             // 한/글 정본: 편람 PDF 158→159쪽은 큰 행을 통째로 넘기며 앞쪽 바닥에 빈
             // 공간을 남긴다(값 1), 315→316쪽은 문장 한가운데를 자른다(값 2).
+            let atomic_host_band_h =
+                layout_engine.reflow_cellbreak_row_host_band_height(row_geometry_table, 0, styles);
+            let atomic_band_h = atomic_host_band_h.unwrap_or(split_unit_h);
             let unit_fits_fresh_page =
-                split_unit_h <= (base_available - first_frag_overhead).max(0.0);
+                atomic_band_h <= (base_available - first_frag_overhead).max(0.0);
             let intra_row_cut_here = !atomic_rule_applies || !unit_fits_fresh_page;
             let first_row_splittable = (first_block_is_single_row || !first_block_protected)
                 && can_intra_split
@@ -1018,6 +1038,13 @@ impl TypesetEngine {
             } else {
                 f64::MAX
             };
+            // NO_LS 블록 호스트의 작은 글자 상자는 자식 첫 유닛의 수용 근거가
+            // 아니다. 실제 컷이 요구하는 높이까지 들어가야 현재 쪽을 유지한다.
+            let min_content = min_content.max(
+                layout_engine
+                    .reflow_row_opening_cut_height(row_geometry_table, 0, styles)
+                    .unwrap_or(0.0),
+            );
             // [Task #1046 Stage 3] 다행(多行) 표의 비분할 첫 행/블록이 잔여공간엔 안
             // 들어가지만 fresh 페이지엔 통째 들어가면 다음 페이지로 이월한다. 첫 행은
             // 행 내부 분할이 안 되고(=is_row_splittable=false) 표에 후속 행 경계가 있어
@@ -1071,6 +1098,16 @@ impl TypesetEngine {
                 || remaining_on_page_for_first_unit < min_content
                 || multirow_clean_defer
             {
+                if atomic_host_band_h.is_some() {
+                    self.prefill_computed_deferred_float(
+                        st,
+                        para_idx,
+                        para,
+                        paragraphs_all,
+                        composed_all,
+                        styles,
+                    );
+                }
                 // [Task #1753] visible-host 자리차지 RowBreak 표가 다음 쪽으로 이월되기
                 // 직전, 후속 문단을 현재 쪽 잔여 공간에 선행 채움(한글 fill-before-
                 // deferred-float 정합 — 2814765 pi52/53 은 9쪽 하단, 표는 10쪽부터).
@@ -1230,15 +1267,16 @@ impl TypesetEngine {
             });
         let native_hwp5_host_precedes_first_fragment = st.profile.hwp5_stored_pagination_layout()
             && native_hwp5_rowbreak_host_precedes_first_fragment(para, table);
-        if (st.profile.hwpx_stored_layout()
-            && host_vpos_is_cumulative
-            && !table.common.treat_as_char
-            && is_para_topbottom_float(&table.common)
-            && matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-            ))
-            || native_hwp5_host_precedes_first_fragment
+        if computed_host_tail.is_none()
+            && ((st.profile.hwpx_stored_layout()
+                && host_vpos_is_cumulative
+                && !table.common.treat_as_char
+                && is_para_topbottom_float(&table.common)
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                ))
+                || native_hwp5_host_precedes_first_fragment)
         {
             self.pre_emit_visible_rowbreak_host_text(st, para_idx, para, composed_all, styles);
         }
@@ -1410,6 +1448,7 @@ impl TypesetEngine {
             })
         });
         let prepared = BlockTableContinuationPreparedState {
+            computed_host_tail,
             first_anchor_offset_consumed,
             opening_rowspan_block_cuts_after_first_row,
             host_placement: source_single_cell_first_placement.or(fragment_host_placement),

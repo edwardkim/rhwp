@@ -148,12 +148,6 @@ hwp5rb	issue5714/1490000-200800034_vietnam_labor_report.hwp	sections[].paragraph
 hwp5rb	issue5714/1490000-200800034_vietnam_labor_report.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	2
 hwp5rb	issue5714/1490000-200800034_vietnam_labor_report.hwp	sections[].paragraphs[].controls[][].drawing.text_box.raw_list_header_extra.len	1
 hwp5rb	issue5714/1490000-200800034_vietnam_labor_report.hwp	sections[].section_def.raw_ctrl_extra.len	2
-hwp5rb	issue5715/float_chart_ghost_ladder_gap.hwp	sections[].paragraphs[].char_count	1
-hwp5rb	issue5715/float_chart_ghost_ladder_gap.hwp	sections[].paragraphs[].char_offsets.n	83
-hwp5rb	issue5715/float_chart_ghost_ladder_gap.hwp	sections[].paragraphs[].char_offsets[]	32
-hwp5rb	issue5715/float_chart_ghost_ladder_gap.hwp	sections[].paragraphs[].controls.len	1
-hwp5rb	issue5715/float_chart_ghost_ladder_gap.hwp	sections[].paragraphs[].ctrl_data_records.len	1
-hwp5rb	issue5715/float_chart_ghost_ladder_gap.hwp	sections[].paragraphs[].line_segs[].text_start	2
 hwp5rb	issue5721/2568129_textbox_float_tables.hwp	sections[].paragraphs[].controls[].text_box.paragraphs[].controls[].cells[].list_header_width_ref	5
 hwp5rb	issue5724/2689441_wmf_contents_ole.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	11
 hwp5rb	issue5727/156732636_inline_logo_cell.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	44

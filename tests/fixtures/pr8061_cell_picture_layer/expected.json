@@ -1,0 +1,233 @@
+{
+  "dpi": 96,
+  "compat": "2022",
+  "profile": "print",
+  "coordinate_tolerance_px": 2,
+  "expectation_source": "Independent Hancom Print PDF image CTM, not RHWP layout or golden raster",
+  "records": [
+    {
+      "key": "explicit-geometry",
+      "input": "tests/fixtures/pr8061_cell_picture_layer/explicit-geometry.hwpx",
+      "input_sha256": "dcc02d3964cd0615d72f493bfba2d0f140a00e8251302258cf99ac59a77d6c07",
+      "pdf": "pdf/pr8061_review/explicit-geometry-2020.pdf",
+      "pdf_sha256": "49a74a80d55e886cd433738434699a41a6bcecc7ce8466cb9fbd0bac987b6eaf",
+      "page": 1,
+      "image_ctm_bbox_px": [
+        113.37866666666667,
+        132.17599999999993,
+        95.94800000000001,
+        95.89466666666672
+      ],
+      "probe_xy_px": [
+        161,
+        180
+      ],
+      "probe_rgb": [
+        0,
+        255,
+        0
+      ],
+      "has_paper_shape": true,
+      "picture_below_paper": true,
+      "has_blue_border": false,
+      "native_raw": "100.00000",
+      "fresh_wasm_raw": "100.00000"
+    },
+    {
+      "key": "no-paper",
+      "input": "tests/fixtures/pr8061_cell_picture_layer/no-paper.hwpx",
+      "input_sha256": "e384233029ec4c122e3ee46d60d577b9581e8c3e4e497f04045d9be4b5e64575",
+      "pdf": "pdf/pr8061_review/no-paper-2020.pdf",
+      "pdf_sha256": "2a0eeedd7eda89545c04dfd27ce6d3bde84e600aa821b998e7cd457cc39e3b6a",
+      "page": 1,
+      "image_ctm_bbox_px": [
+        113.37866666666667,
+        132.17599999999993,
+        95.94800000000001,
+        95.89466666666672
+      ],
+      "probe_xy_px": [
+        161,
+        180
+      ],
+      "probe_rgb": [
+        255,
+        0,
+        0
+      ],
+      "has_paper_shape": false,
+      "picture_below_paper": false,
+      "has_blue_border": false,
+      "native_raw": "100.00000",
+      "fresh_wasm_raw": "100.00000"
+    },
+    {
+      "key": "picture-z2",
+      "input": "tests/fixtures/pr8061_cell_picture_layer/picture-z2.hwpx",
+      "input_sha256": "759bf88c72ac5d1b2ff221756abbad2bbaac7776af752350f003bd4db9e83998",
+      "pdf": "pdf/pr8061_review/picture-z2-2020.pdf",
+      "pdf_sha256": "fc519b025cd35fb85e2be7e6505b74a0e0a4b0328f7bb3b1c18bb109dcf308a9",
+      "page": 1,
+      "image_ctm_bbox_px": [
+        113.37866666666667,
+        132.17599999999993,
+        95.94800000000001,
+        95.89466666666672
+      ],
+      "probe_xy_px": [
+        161,
+        180
+      ],
+      "probe_rgb": [
+        255,
+        0,
+        0
+      ],
+      "has_paper_shape": true,
+      "picture_below_paper": false,
+      "has_blue_border": false,
+      "native_raw": "100.00000",
+      "fresh_wasm_raw": "100.00000"
+    },
+    {
+      "key": "picture-follow-cell",
+      "input": "tests/fixtures/pr8061_cell_picture_layer/picture-follow-cell.hwpx",
+      "input_sha256": "88ee617382d065e952089dc0d24c4a4326108c4a997a201db3135730fdb6ad06",
+      "pdf": "pdf/pr8061_review/picture-follow-cell-2020.pdf",
+      "pdf_sha256": "6046a3a1ccc5714fab40a2cfe6e22549116d023dda0837291553b97d2d2df8ae",
+      "page": 1,
+      "image_ctm_bbox_px": [
+        113.37866666666667,
+        132.17599999999993,
+        95.94800000000001,
+        95.89466666666672
+      ],
+      "probe_xy_px": [
+        161,
+        180
+      ],
+      "probe_rgb": [
+        255,
+        0,
+        0
+      ],
+      "has_paper_shape": true,
+      "picture_below_paper": false,
+      "has_blue_border": false,
+      "native_raw": "100.00000",
+      "fresh_wasm_raw": "100.00000"
+    },
+    {
+      "key": "floating-page-order",
+      "input": "tests/fixtures/pr8061_cell_picture_layer/floating-page-order.hwpx",
+      "input_sha256": "60796296f86d0f795310b11d57408bb9b8fd344b536ed5e337d816107c427e61",
+      "pdf": "pdf/pr8061_review/floating-page-order-2020.pdf",
+      "pdf_sha256": "aac7e29a4371b9cdc715e4004af008ac6849a351efc36b82dc2ccdb40d86dd06",
+      "page": 1,
+      "image_ctm_bbox_px": [
+        113.37866666666667,
+        132.17599999999993,
+        95.94800000000001,
+        95.89466666666672
+      ],
+      "probe_xy_px": [
+        161,
+        180
+      ],
+      "probe_rgb": [
+        0,
+        255,
+        0
+      ],
+      "has_paper_shape": true,
+      "picture_below_paper": true,
+      "has_blue_border": false,
+      "native_raw": "100.00000",
+      "fresh_wasm_raw": "100.00000"
+    },
+    {
+      "key": "floating-picture-z2",
+      "input": "tests/fixtures/pr8061_cell_picture_layer/floating-picture-z2.hwpx",
+      "input_sha256": "fb340ffcd9e6505aec6851d41c71ec99f1fa064348734ab6a23dcfa8cf12e132",
+      "pdf": "pdf/pr8061_review/floating-picture-z2-2020.pdf",
+      "pdf_sha256": "285936089928e782c44cb2725499fa7a04305d8ac4d0d6c9ba529f43fcf31a75",
+      "page": 1,
+      "image_ctm_bbox_px": [
+        113.37866666666667,
+        132.17599999999993,
+        95.94800000000001,
+        95.89466666666672
+      ],
+      "probe_xy_px": [
+        161,
+        180
+      ],
+      "probe_rgb": [
+        255,
+        0,
+        0
+      ],
+      "has_paper_shape": true,
+      "picture_below_paper": false,
+      "has_blue_border": false,
+      "native_raw": "100.00000",
+      "fresh_wasm_raw": "100.00000"
+    },
+    {
+      "key": "floating-follow-cell",
+      "input": "tests/fixtures/pr8061_cell_picture_layer/floating-follow-cell.hwpx",
+      "input_sha256": "bed565ecf7a7e9b818ff9d9b3a5b642c690416bc348d666a385d29bdc26192b0",
+      "pdf": "pdf/pr8061_review/floating-follow-cell-2020.pdf",
+      "pdf_sha256": "faea623b7b3411b91a7bab4cc4bdbae790e29bb1cb41ad128ef6514cfff906ea",
+      "page": 1,
+      "image_ctm_bbox_px": [
+        113.37866666666667,
+        133.29466666666667,
+        95.94800000000001,
+        95.89466666666672
+      ],
+      "probe_xy_px": [
+        161,
+        181
+      ],
+      "probe_rgb": [
+        255,
+        0,
+        0
+      ],
+      "has_paper_shape": true,
+      "picture_below_paper": false,
+      "has_blue_border": false,
+      "native_raw": "100.00000",
+      "fresh_wasm_raw": "100.00000"
+    },
+    {
+      "key": "bordered-page-picture",
+      "input": "tests/fixtures/pr8061_cell_picture_layer/bordered-page-picture.hwpx",
+      "input_sha256": "f70bc037f86735cd4ae8160dd581545ddd286fa31acb04a9ed0ad4fc03797c4b",
+      "pdf": "pdf/pr8061_review/bordered-page-picture-2020.pdf",
+      "pdf_sha256": "be5caf78a6b51a2607b39230aa8eab859e2633408ce3a0b942e38a21ef5662ae",
+      "page": 1,
+      "image_ctm_bbox_px": [
+        113.37866666666667,
+        132.17599999999993,
+        95.94800000000001,
+        95.89466666666672
+      ],
+      "probe_xy_px": [
+        161,
+        180
+      ],
+      "probe_rgb": [
+        255,
+        0,
+        0
+      ],
+      "has_paper_shape": false,
+      "picture_below_paper": false,
+      "has_blue_border": true,
+      "native_raw": "100.00000",
+      "fresh_wasm_raw": "100.00000"
+    }
+  ]
+}

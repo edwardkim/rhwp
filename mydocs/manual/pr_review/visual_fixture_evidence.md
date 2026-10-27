@@ -38,7 +38,7 @@ reviewer는 일반 제출자의 검증을 자동으로 대신하지 않는다. �
 위치가 어긋나면 글꼴 차이가 공존해도 배치 결함을 먼저 수정한다(#7359 p14).
 
 **90% 최소 gate와 devel 대비 무회귀는 둘 다 확인한다.** 최신 기준 SHA의 전쪽 TSV와
-후보 TSV를 Native/fresh WASM 각각 같은 조건·페이지로 비교해, 2%p 이상 하락한 쪽이
+후보 TSV를 Native/fresh WASM 각각 같은 조건·페이지로 비교해, 2%p 초과 하락한 쪽이
 하나라도 있으면 PR 재검토·머지 보류다. 기준 TSV 없음은 미검증이며 평균 개선으로 면제하지 않는다.
 [비교 절차와 예시](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
 

@@ -1,0 +1,137 @@
+{
+  "render_source": "4adb7faf48ec055d45e1db5a0bd2160ff6e6b995",
+  "policy_base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "compat": "2022",
+  "dpi": 96,
+  "print": {
+    "input": "samples/issue7216/tall_table_before.hwpx",
+    "input_sha256": "82386dde2f8bc8b47a212fda9c623cf7094a6a1fb385be426e334f6990aa9df4",
+    "pdf": "pdf/issue7216/tall_table_before-2020.pdf",
+    "pdf_sha256": "3b6f5dc51170b23c78e9991622612861c082f08e8ebfa5914711902217e08e8a",
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+    "input_preprocess": "none",
+    "job_id": "4fde79e8-c41c-41c3-8e46-a4f04e43ec45",
+    "pages": 2
+  },
+  "comparisons": [
+    {
+      "backend": "native",
+      "role": "base",
+      "minimum_raw": 1.11835,
+      "pages": 2,
+      "reference_pages": 2,
+      "tsv": "native-base_silhouette.tsv",
+      "sha256": "79d3079b72d7fcdd123e68922c505fa9c07d7ead5607373ee5c52addbaf26424",
+      "exit_code": 1
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "minimum_raw": 100.0,
+      "pages": 2,
+      "reference_pages": 2,
+      "tsv": "native-candidate_silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "exit_code": 0
+    },
+    {
+      "backend": "wasm",
+      "role": "base",
+      "minimum_raw": 1.08641,
+      "pages": 2,
+      "reference_pages": 2,
+      "tsv": "wasm-base_silhouette.tsv",
+      "sha256": "4500af97a90fce2a94659a2fa2ee7ae12b3daa14cc3c6cbf9724fbead197c8c9",
+      "exit_code": 1
+    },
+    {
+      "backend": "wasm",
+      "role": "candidate",
+      "minimum_raw": 100.0,
+      "pages": 2,
+      "reference_pages": 2,
+      "tsv": "wasm-candidate_silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "exit_code": 0
+    }
+  ],
+  "current_verification": [
+    {
+      "backend": "native",
+      "producer": "Native208",
+      "source": "5ae234786dbcd15e98a6cf35dd0c187af483efc7",
+      "pages": 2,
+      "minimum_raw": 100.0,
+      "tsv": "native-candidate_silhouette.tsv",
+      "tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "panels": [
+        {
+          "file": "native-p001-review.png",
+          "sha256": "abe385a327def08b83831ab91cf281e788670cf11367374efcd0f096367a8e8a"
+        },
+        {
+          "file": "native-p001-overlay.png",
+          "sha256": "7219d7b97f958d02bafe8c0a37d3c6276a5aff3efc2145c67d21d4c316119a5e"
+        },
+        {
+          "file": "native-p002-review.png",
+          "sha256": "c28a11254bfd5dd58c365a279f89ace9bc2b8adf42ec6b7272f2a54f635311c9"
+        },
+        {
+          "file": "native-p002-overlay.png",
+          "sha256": "7e0e9dbd74962b18071784a6b44d6e223f385e310f0a9491d737edf252ba09c2"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "producer": "fresh055",
+      "source": "04d8c792ee2352ef4f102ce31f056a735e74609d",
+      "pages": 2,
+      "minimum_raw": 100.0,
+      "tsv": "wasm-candidate_silhouette.tsv",
+      "tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "panels": [
+        {
+          "file": "wasm-p001-review.png",
+          "sha256": "08427d8ce58a9b62eec2ba90ae793eaf9b08df7a2762bbb6d72be06e7f37b4ac"
+        },
+        {
+          "file": "wasm-p001-overlay.png",
+          "sha256": "a24f56279a0ff0ce24a69e1b036ba4d7ff7e404c6687e37b9a2e79f73eeae7f5"
+        },
+        {
+          "file": "wasm-p002-review.png",
+          "sha256": "e229e002884de4fdf5cb6bf263188c234e4b820510fb6767886966bffa1dc3b4"
+        },
+        {
+          "file": "wasm-p002-overlay.png",
+          "sha256": "3f32f4bcc8a8a7c8bf2e59ea9684ea03003bb86c465f1e8636d16a26628057f4"
+        }
+      ]
+    }
+  ],
+  "independent_print_contract": {
+    "last_visible_data_row": 53,
+    "hidden_data_rows": [
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60
+    ],
+    "following_body_page": 2,
+    "unsplit_table_page": 1,
+    "hidden_cells": 21,
+    "off_canvas": 1,
+    "body_overflow": 1,
+    "source_rows_preserved": 61,
+    "source_columns_preserved": 3
+  },
+  "relational_regression": "tests/cases/issue_7216_print_clipped_unsplit_table.rs"
+}

@@ -16,6 +16,8 @@ pub(in crate::renderer::typeset) fn decide_whole_fit(
     available: f64,
     dpi: f64,
 ) -> WholeFitDecision {
+    let confirmed = spacing::confirmed_format(st, para_idx, fmt, paragraphs);
+    let fmt = confirmed.as_ref().unwrap_or(fmt);
     // 같은 확정 placement를 paint도 사용한다. 옛 host 좌표의 경계를
     // 이미 새 쪽에서 소비했다면 뒤 줄에 두 번째 경계를 강제하지 않는다.
     let accepted_opening_owner = (st.current_start_height == 0.0

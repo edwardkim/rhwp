@@ -15,3 +15,12 @@ test('variation selectors, joining sequences and combining marks still need shap
   }
   assert.equal(textRequiresComplexShaping('ABC 가나 ∑'), false);
 });
+
+test('단독 그림문자와 뒤의 한글은 그리되 결합 이모지는 명목 재생으로 보내지 않는다', () => {
+  for (const text of ['🦦나나끝', '앞😀뒤', '🦊', '🛠']) {
+    assert.equal(textRequiresComplexShaping(text), false, text);
+  }
+  for (const text of ['🦦\ufe0f', '👩\u200d🔬', '👍🏽', '🇰🇷', '1\ufe0f\u20e3']) {
+    assert.equal(textRequiresComplexShaping(text), true, text);
+  }
+});

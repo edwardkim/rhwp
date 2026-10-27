@@ -302,7 +302,7 @@ function pushUniqueFontFamily(families: string[], fontName: string): void {
   families.push(name);
 }
 
-function systemFallbackFamilies(fontName: string): string[] {
+function bodyFallbackFamilies(fontName: string): string[] {
   if (GENERIC_FONTS.has(fontName)) return [fontName];
   // KoPub바탕체는 이름에 "바탕체"가 있지만 Windows BatangChe와 달리 비례폭 출판 명조다.
   if (/KoPub\s*바탕(?:체)?|KoPub\s*Batang/i.test(fontName)) {
@@ -318,6 +318,24 @@ function systemFallbackFamilies(fontName: string): string[] {
   }
   // Sans-serif (기본)
   return ['Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Pretendard', 'sans-serif'];
+}
+
+function systemFallbackFamilies(fontName: string): string[] {
+  const body = bodyFallbackFamilies(fontName);
+  if (GENERIC_FONTS.has(fontName)) return body;
+  // Native의 일반 텍스트 글리프 대체 순서와 같다. 색상 사용 여부는 글꼴 준비에서 결정한다.
+  return [...body.slice(0, -1), 'Segoe UI Emoji', 'Noto Emoji', 'Noto Color Emoji', body.at(-1)!];
+}
+
+/** 원래 선언은 유지하고, 빠진 글리프를 공급할 일반 텍스트 후보를 같은 순서로 준비·소비한다. */
+export function ordinaryTextFontFamilies(family: string): string[] {
+  const declared = parseCssFontFamilyList(family);
+  if (!declared.length) return [];
+  const families: string[] = [];
+  for (const candidate of [...declared, ...systemFallbackFamilies(declared[0])]) {
+    pushUniqueFontFamily(families, candidate);
+  }
+  return families;
 }
 
 /**

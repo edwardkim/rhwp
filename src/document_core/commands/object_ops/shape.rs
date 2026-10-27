@@ -1,5 +1,7 @@
 //! 도형 생성/속성/그룹 native 명령 (object_ops 분할, #1904).
 
+mod group_geometry;
+
 use super::MIN_SHAPE_SIZE;
 use crate::document_core::helpers::get_textbox_from_shape;
 use crate::document_core::DocumentCore;
@@ -585,13 +587,9 @@ impl DocumentCore {
             }
         }
 
-        // Rectangle 좌표 동기화
-        if let crate::model::shape::ShapeObject::Rectangle(ref mut rect) = shape {
-            let w = rect.common.width as i32;
-            let h = rect.common.height as i32;
-            rect.x_coords = [0, w, w, 0];
-            rect.y_coords = [0, 0, h, h];
-        }
+        // 꼭짓점은 original 좌표계로 보존한다. current/common 크기로 덮으면
+        // 저장 시 current/original 배율이 두 번 적용된다.
+        group_geometry::finish_top_level_edit(shape, transform_before);
 
         let caption_changed = Self::apply_shape_caption_props(shape, props_json);
 
@@ -940,12 +938,7 @@ impl DocumentCore {
             }
         }
 
-        if let crate::model::shape::ShapeObject::Rectangle(ref mut rect) = shape {
-            let w = rect.common.width as i32;
-            let h = rect.common.height as i32;
-            rect.x_coords = [0, w, w, 0];
-            rect.y_coords = [0, 0, h, h];
-        }
+        group_geometry::finish_top_level_edit(shape, transform_before);
 
         let caption_changed = Self::apply_shape_caption_props(shape, props_json);
 
@@ -1004,75 +997,18 @@ impl DocumentCore {
             ));
         }
 
-        // char_offsets 조정 (delete_picture_control_native와 동일)
-        let text_chars: Vec<char> = para.text.chars().collect();
-        let mut ci = 0usize;
-        let mut prev_end: u32 = 0;
-        let mut gap_start: Option<u32> = None;
-        'outer: for i in 0..text_chars.len() {
-            let offset = if i < para.char_offsets.len() {
-                para.char_offsets[i]
-            } else {
-                prev_end
-            };
-            while prev_end + 8 <= offset && ci < para.controls.len() {
-                if ci == control_idx {
-                    gap_start = Some(prev_end);
-                    break 'outer;
-                }
-                ci += 1;
-                prev_end += 8;
-            }
-            let char_size: u32 = if text_chars[i] == '\t' {
-                8
-            } else if text_chars[i].len_utf16() == 2 {
-                2
-            } else {
-                1
-            };
-            prev_end = offset + char_size;
-        }
-        if gap_start.is_none() {
-            while ci < para.controls.len() {
-                if ci == control_idx {
-                    gap_start = Some(prev_end);
-                    break;
-                }
-                ci += 1;
-                prev_end += 8;
-            }
-        }
-        if let Some(gs) = gap_start {
-            let threshold = gs + 8;
-            for offset in para.char_offsets.iter_mut() {
-                if *offset >= threshold {
-                    *offset -= 8;
-                }
-            }
-        }
-
-        para.controls.remove(control_idx);
-        if control_idx < para.ctrl_data_records.len() {
-            para.ctrl_data_records.remove(control_idx);
-        }
-        // 컨트롤 배열이 줄어도 뒤 누름틀의 범위는 같은 필드를 가리켜야 한다.
-        for range in &mut para.field_ranges {
-            if range.control_idx > control_idx {
-                range.control_idx -= 1;
-            }
-        }
-        if let Some(active) = self.active_field.as_mut() {
-            if active.section_idx == section_idx
-                && active.para_idx == parent_para_idx
-                && active.cell_path.is_none()
-                && active.control_idx > control_idx
-            {
-                active.control_idx -= 1;
-            }
-        }
-        if para.char_count >= 8 {
-            para.char_count -= 8;
-        }
+        para.remove_control(control_idx);
+        // 활성 필드 자신 또는 셀의 본문 소유자 번호를 같은 제거 결과로 갱신한다.
+        Self::remap_active_field_root_control(
+            &mut self.active_field,
+            section_idx,
+            parent_para_idx,
+            |index| match index.cmp(&control_idx) {
+                std::cmp::Ordering::Less => Some(index),
+                std::cmp::Ordering::Equal => None,
+                std::cmp::Ordering::Greater => Some(index - 1),
+            },
+        );
 
         // line_segs 재계산: 도형 높이가 반영된 line_segs를 텍스트 기반으로 리셋
         Self::reflow_paragraph_line_segs_after_control_delete(para, &self.styles, self.dpi);
@@ -1491,6 +1427,9 @@ impl DocumentCore {
             }),
         };
 
+        let stored_end_before = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
         // --- 기존 문단에 인라인 컨트롤로 삽입 ---
         self.document.sections[section_idx].raw_stream = None;
 
@@ -1535,6 +1474,10 @@ impl DocumentCore {
             insert_ctrl_idx = insert_idx;
         }
         self.shift_active_field_for_control_insert(section_idx, para_idx, insert_ctrl_idx);
+
+        if treat_as_char {
+            self.reflow_body_inline_object_change(section_idx, para_idx, stored_end_before);
+        }
 
         // 리플로우 + 페이지네이션
         self.recompose_section(section_idx);
@@ -1753,64 +1696,6 @@ impl DocumentCore {
             applied
         )))
     }
-    /// 도형 내부 좌표만 스케일 (common/shape_attr은 변경하지 않음)
-    fn scale_shape_coords(child: &mut crate::model::shape::ShapeObject, sx: f64, sy: f64) {
-        use crate::model::shape::ShapeObject as SO;
-        fn sp(v: i32, s: f64) -> i32 {
-            (v as f64 * s).round() as i32
-        }
-        match child {
-            SO::Line(ref mut s) => {
-                s.start.x = sp(s.start.x, sx);
-                s.start.y = sp(s.start.y, sy);
-                s.end.x = sp(s.end.x, sx);
-                s.end.y = sp(s.end.y, sy);
-            }
-            SO::Rectangle(ref mut s) => {
-                let w = s.common.width as i32;
-                let h = s.common.height as i32;
-                s.x_coords = [0, w, w, 0];
-                s.y_coords = [0, 0, h, h];
-            }
-            SO::Ellipse(ref mut s) => {
-                s.center.x = sp(s.center.x, sx);
-                s.center.y = sp(s.center.y, sy);
-                s.axis1.x = sp(s.axis1.x, sx);
-                s.axis1.y = sp(s.axis1.y, sy);
-                s.axis2.x = sp(s.axis2.x, sx);
-                s.axis2.y = sp(s.axis2.y, sy);
-                s.start1.x = sp(s.start1.x, sx);
-                s.start1.y = sp(s.start1.y, sy);
-                s.end1.x = sp(s.end1.x, sx);
-                s.end1.y = sp(s.end1.y, sy);
-                s.start2.x = sp(s.start2.x, sx);
-                s.start2.y = sp(s.start2.y, sy);
-                s.end2.x = sp(s.end2.x, sx);
-                s.end2.y = sp(s.end2.y, sy);
-            }
-            SO::Arc(ref mut s) => {
-                s.center.x = sp(s.center.x, sx);
-                s.center.y = sp(s.center.y, sy);
-                s.axis1.x = sp(s.axis1.x, sx);
-                s.axis1.y = sp(s.axis1.y, sy);
-                s.axis2.x = sp(s.axis2.x, sx);
-                s.axis2.y = sp(s.axis2.y, sy);
-            }
-            SO::Polygon(ref mut s) => {
-                for p in &mut s.points {
-                    p.x = sp(p.x, sx);
-                    p.y = sp(p.y, sy);
-                }
-            }
-            SO::Curve(ref mut s) => {
-                for p in &mut s.points {
-                    p.x = sp(p.x, sx);
-                    p.y = sp(p.y, sy);
-                }
-            }
-            _ => {}
-        }
-    }
     /// 그룹 자식 개체들을 비례 스케일 (크기/위치/도형좌표 포함)
     fn scale_group_children(children: &mut [crate::model::shape::ShapeObject], sx: f64, sy: f64) {
         use crate::model::shape::ShapeObject as SO;
@@ -1939,6 +1824,115 @@ impl DocumentCore {
             .unwrap_or(-1)
     }
 
+    /// 개체가 실제로 그려진 상자(개체 틀)의 왼쪽 위 꼭짓점 (쪽 절대 좌표, HWPUNIT).
+    /// 회전·대칭된 도형은 현재 크기 상자를 틀 중심에 그리므로 노드 중심에서 틀 크기의 반을 뺀다.
+    fn rendered_object_origin_hu(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+        common: &crate::model::shape::CommonObjAttr,
+    ) -> Option<(i32, i32)> {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+        fn find(node: &RenderNode, key: (usize, usize, usize)) -> Option<&RenderNode> {
+            let meta = match &node.node_type {
+                RenderNodeType::Rectangle(n) => (n.section_index, n.para_index, n.control_index),
+                RenderNodeType::Ellipse(n) => (n.section_index, n.para_index, n.control_index),
+                RenderNodeType::Path(n) => (n.section_index, n.para_index, n.control_index),
+                RenderNodeType::Line(n) => (n.section_index, n.para_index, n.control_index),
+                RenderNodeType::Image(n) => (n.section_index, n.para_index, n.control_index),
+                RenderNodeType::Group(n) => (n.section_index, n.para_index, n.control_index),
+                _ => (None, None, None),
+            };
+            if meta == (Some(key.0), Some(key.1), Some(key.2)) {
+                return Some(node);
+            }
+            node.children.iter().find_map(|child| find(child, key))
+        }
+        let pages = self.find_pages_for_paragraph(section_idx, para_idx).ok()?;
+        pages.into_iter().find_map(|page| {
+            let tree = self.build_page_tree_cached(page).ok()?;
+            let node = find(&tree.root, (section_idx, para_idx, control_idx))?;
+            let cx = node.bbox.x + node.bbox.width / 2.0;
+            let cy = node.bbox.y + node.bbox.height / 2.0;
+            Some((
+                crate::renderer::px_to_hwpunit(cx, self.dpi) - common.width as i32 / 2,
+                crate::renderer::px_to_hwpunit(cy, self.dpi) - common.height as i32 / 2,
+            ))
+        })
+    }
+
+    /// 렌더링 행렬을 그룹 깊이에 맞는 원본 바이트(이동 + 그룹 단계별 (크기, 회전) 쌍)와
+    /// 합성값으로 함께 기록한다. 바깥 단계 쌍은 단위행렬이고 마지막 쌍이 개체 자신의 것이다.
+    /// 파서와 같은 합성(이동 × 회전 × 크기)이라 HWP/HWPX 저장 후 다시 열어도 같은 행렬이 된다.
+    fn store_group_rendering(
+        sa: &mut crate::model::shape::ShapeComponentAttr,
+        (tx, ty): (f64, f64),
+        sca: [f64; 6],
+        rot: [f64; 6],
+    ) {
+        const IDENTITY: [f64; 6] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0];
+        let trans = [1.0, 0.0, tx, 0.0, 1.0, ty];
+        let mut raw = Vec::with_capacity(2 + 48 + (sa.group_level as usize + 1) * 96);
+        raw.extend_from_slice(&(sa.group_level + 1).to_le_bytes());
+        let pairs = std::iter::repeat((IDENTITY, IDENTITY))
+            .take(sa.group_level as usize)
+            .chain(std::iter::once((sca, rot)));
+        for m in std::iter::once(trans).chain(pairs.flat_map(|(s, r)| [s, r])) {
+            for v in m {
+                raw.extend_from_slice(&v.to_le_bytes());
+            }
+        }
+        sa.raw_rendering = raw;
+        // 회전·크기 행렬은 이동 성분이 없으므로 합성 = [rot × sca | (tx, ty)]
+        sa.render_sx = rot[0] * sca[0] + rot[1] * sca[3];
+        sa.render_b = rot[0] * sca[1] + rot[1] * sca[4];
+        sa.render_c = rot[3] * sca[0] + rot[4] * sca[3];
+        sa.render_sy = rot[3] * sca[1] + rot[4] * sca[4];
+        sa.render_tx = tx;
+        sa.render_ty = ty;
+    }
+
+    /// 최상위 개체를 묶음 로컬 상자 (x, y)로 옮긴다. 최상위에서는 틀 중심에 현재 크기로
+    /// 대칭 후 회전해 그리므로, 같은 모습이 되도록 원래 크기 → 현재 크기 배율, 대칭,
+    /// 회전을 렌더링 행렬에 합성한다. 묶음을 묶으면 손자 행렬(최상위 묶음 좌표계)도 함께 민다.
+    fn place_group_child(child: &mut ShapeObject, x: i32, y: i32) {
+        if let ShapeObject::Group(g) = child {
+            fn shift(children: &mut [ShapeObject], x: f64, y: f64) {
+                for c in children {
+                    let sa = c.shape_attr_mut();
+                    sa.group_level += 1;
+                    let lin = [
+                        sa.render_sx,
+                        sa.render_b,
+                        0.0,
+                        sa.render_c,
+                        sa.render_sy,
+                        0.0,
+                    ];
+                    let t = (sa.render_tx + x, sa.render_ty + y);
+                    DocumentCore::store_group_rendering(sa, t, lin, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+                    if let ShapeObject::Group(g) = c {
+                        shift(&mut g.children, x, y);
+                    }
+                }
+            }
+            shift(&mut g.children, x as f64, y as f64);
+        }
+        let placement = group_geometry::placement(child, x as f64, y as f64);
+        let sa = child.shape_attr_mut();
+        sa.offset_x = x;
+        sa.offset_y = y;
+        sa.group_level = 1;
+        sa.is_two_ctrl_id = false; // 그룹 자식은 ctrl_id 1번만
+        Self::store_group_rendering(
+            sa,
+            placement.translation,
+            placement.scale,
+            placement.rotation,
+        );
+    }
+
     // ─── 개체 묶기/풀기 API ──────────────────────────────
     /// 선택된 개체들을 GroupShape로 묶는다.
     /// targets: [(para_idx, control_idx), ...] — 같은 구역 내 Shape 또는 Picture
@@ -1965,13 +1959,7 @@ impl DocumentCore {
 
         // 1) 대상 개체들을 ShapeObject로 수집 (인덱스 유효성 검사 포함)
         let section = &self.document.sections[section_idx];
-        let mut children: Vec<ShapeObject> = Vec::new();
-        let mut group_min_x: i32 = i32::MAX;
-        let mut group_min_y: i32 = i32::MAX;
-        let mut group_max_x: i32 = i32::MIN;
-        let mut group_max_y: i32 = i32::MIN;
-        let mut first_common: Option<CommonObjAttr> = None;
-
+        let mut items: Vec<(usize, usize, ShapeObject)> = Vec::new();
         for &(pi, ci) in targets {
             if pi >= section.paragraphs.len() {
                 return Err(HwpError::RenderError(format!(
@@ -1985,16 +1973,9 @@ impl DocumentCore {
                     ci, pi
                 )));
             }
-            let ctrl = &section.paragraphs[pi].controls[ci];
-            let (common, shape_obj) = match ctrl {
-                Control::Shape(s) => {
-                    let c = s.common().clone();
-                    (c, (**s).clone())
-                }
-                Control::Picture(p) => {
-                    let c = p.common.clone();
-                    (c, ShapeObject::Picture(p.clone()))
-                }
+            let shape_obj = match &section.paragraphs[pi].controls[ci] {
+                Control::Shape(s) => (**s).clone(),
+                Control::Picture(p) => ShapeObject::Picture(p.clone()),
                 _ => {
                     return Err(HwpError::RenderError(format!(
                         "컨트롤 ({},{})은 Shape/Picture가 아닙니다",
@@ -2002,70 +1983,96 @@ impl DocumentCore {
                     )))
                 }
             };
-
-            // 합산 bbox 계산 (HWPUNIT 기준 — horizontal_offset, vertical_offset, width, height)
-            let x1 = common.horizontal_offset as i32;
-            let y1 = common.vertical_offset as i32;
-            let x2 = x1 + common.width as i32;
-            let y2 = y1 + common.height as i32;
-            group_min_x = group_min_x.min(x1);
-            group_min_y = group_min_y.min(y1);
-            group_max_x = group_max_x.max(x2);
-            group_max_y = group_max_y.max(y2);
-
-            if first_common.is_none() {
-                first_common = Some(common);
-            }
-            children.push(shape_obj);
+            items.push((pi, ci, shape_obj));
         }
+        // 묶음 안 자식 순서가 곧 그리기 순서다. 선택 순서가 아니라 원래 z-order(같으면
+        // 문서 순서)로 정렬해야 겹친 개체의 앞뒤가 묶은 뒤에도 그대로다.
+        items.sort_by_key(|(pi, ci, s)| (s.common().z_order, *pi, *ci));
 
+        // 첫 번째 삽입 위치 (원래 개체 중 가장 앞에 있는 것). 묶음은 이 문단에 놓이므로
+        // 위치 기준·배치 속성도 이 개체의 것을 물려받는다(문단 기준이면 기준 문단이 같다).
+        let insert_target = *targets.iter().min().unwrap();
+        let anchor = items
+            .iter()
+            .position(|(pi, ci, _)| (*pi, *ci) == insert_target)
+            .unwrap();
+        let fc = items[anchor].2.common().clone();
+
+        // 개체마다 기준(종이/쪽/단/문단)과 정렬이 달라 오프셋을 그대로 더하면 자리가 바뀐다.
+        // 실제로 그려진 상자 자리를 공통 좌표(쪽 절대 좌표)로 쓴다. 조판 결과가 없으면
+        // 종전처럼 오프셋을 쓴다.
+        let origins: Vec<(i32, i32)> = items
+            .iter()
+            .map(|(pi, ci, s)| self.rendered_object_origin_hu(section_idx, *pi, *ci, s.common()))
+            .collect::<Option<_>>()
+            .unwrap_or_else(|| {
+                items
+                    .iter()
+                    .map(|(_, _, s)| {
+                        let c = s.common();
+                        (c.horizontal_offset as i32, c.vertical_offset as i32)
+                    })
+                    .collect()
+            });
+        let mut group_min_x = i32::MAX;
+        let mut group_min_y = i32::MAX;
+        let mut group_max_x = i32::MIN;
+        let mut group_max_y = i32::MIN;
+        for ((_, _, s), &(x, y)) in items.iter().zip(&origins) {
+            // 저장 행렬과 같은 변환을 사용한다. 회전 전 프레임만 합치면 자식이
+            // 부모 경계를 벗어나 한컴에서 그룹 전체가 다시 축소된다.
+            let (left, top, right, bottom) =
+                group_geometry::placement(s, x as f64, y as f64).bounds();
+            group_min_x = group_min_x.min(left.floor() as i32);
+            group_min_y = group_min_y.min(top.floor() as i32);
+            group_max_x = group_max_x.max(right.ceil() as i32);
+            group_max_y = group_max_y.max(bottom.ceil() as i32);
+        }
         let group_w = (group_max_x - group_min_x).max(1) as u32;
         let group_h = (group_max_y - group_min_y).max(1) as u32;
-        let fc = first_common.unwrap();
 
-        // 2) 자식 개체의 offset/render 좌표를 그룹 로컬 좌표로 변환
-        for child in &mut children {
-            // 그룹 내 로컬 좌표 계산
-            let new_horz = ((child.common().horizontal_offset as i32 - group_min_x).max(0)) as u32;
-            let new_vert = ((child.common().vertical_offset as i32 - group_min_y).max(0)) as u32;
-            child.common_mut().horizontal_offset = new_horz;
-            child.common_mut().vertical_offset = new_vert;
+        // 묶음 상자를 기준 개체와 같은 기준·정렬에 놓는 오프셋. 같은 기준이면 그려진 자리
+        // 차이가 곧 오프셋 차이고, 가운데/오른쪽 정렬은 폭 차이만큼 더 보정한다.
+        let (anchor_x, anchor_y) = origins[anchor];
+        let (anchor_w, anchor_h) = (fc.width as i32, fc.height as i32);
+        let (dx, dy) = (group_min_x - anchor_x, group_min_y - anchor_y);
+        let (dw, dh) = (group_w as i32 - anchor_w, group_h as i32 - anchor_h);
+        let h_off = fc.horizontal_offset as i32;
+        let v_off = fc.vertical_offset as i32;
+        let group_h_off = match fc.horz_align {
+            HorzAlign::Left | HorzAlign::Inside => h_off + dx,
+            HorzAlign::Center => h_off + dx + dw / 2,
+            HorzAlign::Right | HorzAlign::Outside => h_off - dx - dw,
+        };
+        let group_v_off = match fc.vert_align {
+            VertAlign::Top | VertAlign::Inside => v_off + dy,
+            VertAlign::Center => v_off + dy + dh / 2,
+            VertAlign::Bottom | VertAlign::Outside => v_off - dy - dh,
+        };
 
-            // shape_attr: 렌더링에 사용되는 render_tx/ty와 offset_x/y 설정
-            let sa = match child {
-                ShapeObject::Line(s) => &mut s.drawing.shape_attr,
-                ShapeObject::Rectangle(s) => &mut s.drawing.shape_attr,
-                ShapeObject::Ellipse(s) => &mut s.drawing.shape_attr,
-                ShapeObject::Arc(s) => &mut s.drawing.shape_attr,
-                ShapeObject::Polygon(s) => &mut s.drawing.shape_attr,
-                ShapeObject::Curve(s) => &mut s.drawing.shape_attr,
-                ShapeObject::Group(g) => &mut g.shape_attr,
-                ShapeObject::Picture(p) => &mut p.shape_attr,
-                ShapeObject::Chart(c) => &mut c.drawing.shape_attr,
-                ShapeObject::Ole(o) => &mut o.drawing.shape_attr,
-            };
-            sa.offset_x = new_horz as i32;
-            sa.offset_y = new_vert as i32;
-            sa.group_level = 1;
-            sa.is_two_ctrl_id = false; // 그룹 자식은 ctrl_id 1번만
-            sa.raw_rendering = Vec::new(); // 새로 생성 (직렬화 시 재계산)
-                                           // 렌더러가 사용하는 변환 행렬 값 설정
-            sa.render_tx = new_horz as f64;
-            sa.render_ty = new_vert as f64;
-            sa.render_sx = 1.0;
-            sa.render_sy = 1.0;
-            sa.render_b = 0.0;
-            sa.render_c = 0.0;
+        // 2) 자식을 그룹 로컬 좌표로 옮기되, 그려지던 모습(크기·회전·대칭)은 렌더링 행렬로 보존
+        let new_z_order = items
+            .iter()
+            .map(|(_, _, s)| s.common().z_order)
+            .max()
+            .unwrap();
+        let mut children: Vec<ShapeObject> = Vec::with_capacity(items.len());
+        for ((_, _, mut child), &(x, y)) in items.into_iter().zip(&origins) {
+            let new_horz = x - group_min_x;
+            let new_vert = y - group_min_y;
+            child.common_mut().horizontal_offset = new_horz as u32;
+            child.common_mut().vertical_offset = new_vert as u32;
+            Self::place_group_child(&mut child, new_horz, new_vert);
+            children.push(child);
         }
 
         // 3) GroupShape 조립
-        let new_z_order = self.max_shape_z_order_in_section(section_idx) + 1;
         let group = GroupShape {
             common: CommonObjAttr {
                 ctrl_id: 0x24636f6e, // '$con' — 그룹 컨테이너
                 attr: fc.attr,
-                vertical_offset: group_min_y as u32,
-                horizontal_offset: group_min_x as u32,
+                vertical_offset: group_v_off as u32,
+                horizontal_offset: group_h_off as u32,
                 width: group_w,
                 height: group_h,
                 z_order: new_z_order,
@@ -2104,66 +2111,20 @@ impl DocumentCore {
         let mut sorted_targets: Vec<(usize, usize)> = targets.to_vec();
         sorted_targets.sort_by(|a, b| b.cmp(a)); // 역순 정렬
 
-        // 첫 번째 삽입 위치 (원래 개체 중 가장 앞에 있는 것)
-        let insert_target = *targets.iter().min().unwrap();
-
         for &(pi, ci) in &sorted_targets {
             let para = &mut self.document.sections[section_idx].paragraphs[pi];
 
-            // char_offsets 조정
-            let text_chars: Vec<char> = para.text.chars().collect();
-            let mut ctrl_ci = 0usize;
-            let mut prev_end: u32 = 0;
-            let mut gap_start: Option<u32> = None;
-            'outer: for i in 0..text_chars.len() {
-                let offset = if i < para.char_offsets.len() {
-                    para.char_offsets[i]
-                } else {
-                    prev_end
-                };
-                while prev_end + 8 <= offset && ctrl_ci < para.controls.len() {
-                    if ctrl_ci == ci {
-                        gap_start = Some(prev_end);
-                        break 'outer;
-                    }
-                    ctrl_ci += 1;
-                    prev_end += 8;
-                }
-                let char_size: u32 = if text_chars[i] == '\t' {
-                    8
-                } else if text_chars[i].len_utf16() == 2 {
-                    2
-                } else {
-                    1
-                };
-                prev_end = offset + char_size;
-            }
-            if gap_start.is_none() {
-                while ctrl_ci < para.controls.len() {
-                    if ctrl_ci == ci {
-                        gap_start = Some(prev_end);
-                        break;
-                    }
-                    ctrl_ci += 1;
-                    prev_end += 8;
-                }
-            }
-            if let Some(gs) = gap_start {
-                let threshold = gs + 8;
-                for offset in para.char_offsets.iter_mut() {
-                    if *offset >= threshold {
-                        *offset -= 8;
-                    }
-                }
-            }
-
-            para.controls.remove(ci);
-            if ci < para.ctrl_data_records.len() {
-                para.ctrl_data_records.remove(ci);
-            }
-            if para.char_count >= 8 {
-                para.char_count -= 8;
-            }
+            para.remove_control(ci);
+            Self::remap_active_field_root_control(
+                &mut self.active_field,
+                section_idx,
+                pi,
+                |index| match index.cmp(&ci) {
+                    std::cmp::Ordering::Less => Some(index),
+                    std::cmp::Ordering::Equal => None,
+                    std::cmp::Ordering::Greater => Some(index - 1),
+                },
+            );
         }
 
         // 5) 삽입 위치 인덱스 재계산 (제거 후 인덱스가 변했을 수 있음)
@@ -2195,6 +2156,11 @@ impl DocumentCore {
 
             para.controls
                 .insert(ctrl_insert, Control::Shape(Box::new(group_obj)));
+            for range in &mut para.field_ranges {
+                if range.control_idx >= ctrl_insert {
+                    range.control_idx += 1;
+                }
+            }
             let cdr_insert = ctrl_insert.min(para.ctrl_data_records.len());
             para.ctrl_data_records.insert(cdr_insert, None);
 
@@ -2210,6 +2176,8 @@ impl DocumentCore {
             para.control_mask |= 0x00000800;
             para.has_para_text = true;
         }
+
+        self.shift_active_field_for_control_insert(section_idx, insert_pi, insert_ci);
 
         // 7) 리플로우 + 페이지네이션
         self.document.sections[section_idx].raw_stream = None;
@@ -2290,96 +2258,79 @@ impl DocumentCore {
             _ => unreachable!(),
         };
 
-        // 그룹의 글로벌 좌표
-        let group_x = group_shape.common.horizontal_offset as i32;
-        let group_y = group_shape.common.vertical_offset as i32;
-        // 그룹 스케일 (리사이즈된 경우)
-        let gsa = &group_shape.shape_attr;
-        let group_sx = if gsa.original_width > 0 {
-            gsa.current_width as f64 / gsa.original_width as f64
-        } else {
-            1.0
-        };
-        let group_sy = if gsa.original_height > 0 {
-            gsa.current_height as f64 / gsa.original_height as f64
-        } else {
-            1.0
-        };
+        // 묶음 상자 (기준·정렬 좌표계의 오프셋과 크기)
+        let gc = &group_shape.common;
+        let group_x = gc.horizontal_offset as i32;
+        let group_y = gc.vertical_offset as i32;
+        let (group_w, group_h) = (gc.width as f64, gc.height as f64);
 
         // 자식들을 개별 컨트롤로 복원
         let mut insert_idx = control_idx;
         for mut child in group_shape.children {
-            // 파일에서 로드한 그룹 자식은 common이 기본값(0) → shape_attr에서 복원
+            // 자식이 그려진 자리의 권위는 렌더링 행렬(최상위 묶음 좌표계)이다. offset_x/y 와
+            // 크기 필드는 저장 경로에 따라 행렬과 어긋날 수 있어(회전 행렬 보정 등) 쓰지 않는다.
+            // 행렬이 원래 상자를 옮긴 실제 크기·중심으로 최상위 틀을 만든다. 최상위 도형은 틀
+            // 중심에 현재 크기로 회전·대칭해 그리므로 같은 모습이 된다.
             {
-                let sa = child.shape_attr();
-                let sa_w = sa.original_width;
-                let sa_h = sa.original_height;
-                let sa_ox = sa.offset_x;
-                let sa_oy = sa.offset_y;
-                let c = child.common_mut();
-                if c.width == 0 && sa_w > 0 {
-                    c.width = sa_w;
-                }
-                if c.height == 0 && sa_h > 0 {
-                    c.height = sa_h;
-                }
-                if c.horizontal_offset == 0 && sa_ox > 0 {
-                    c.horizontal_offset = sa_ox as u32;
-                }
-                if c.vertical_offset == 0 && sa_oy > 0 {
-                    c.vertical_offset = sa_oy as u32;
-                }
-            }
-            // 자식의 로컬 좌표를 글로벌 좌표로 변환 (그룹 스케일 적용)
-            {
-                let c = child.common_mut();
-                c.horizontal_offset =
-                    (group_x + (c.horizontal_offset as f64 * group_sx) as i32) as u32;
-                c.vertical_offset = (group_y + (c.vertical_offset as f64 * group_sy) as i32) as u32;
-                c.width = ((c.width as f64 * group_sx).round().max(1.0)) as u32;
-                c.height = ((c.height as f64 * group_sy).round().max(1.0)) as u32;
-                c.vert_rel_to = group_shape.common.vert_rel_to;
-                c.vert_align = group_shape.common.vert_align;
-                c.horz_rel_to = group_shape.common.horz_rel_to;
-                c.horz_align = group_shape.common.horz_align;
-                c.text_wrap = group_shape.common.text_wrap;
-                c.attr = group_shape.common.attr;
-                c.treat_as_char = group_shape.common.treat_as_char;
-            }
-            // 도형별 좌표에 그룹 스케일 적용
-            if group_sx != 1.0 || group_sy != 1.0 {
-                Self::scale_shape_coords(&mut child, group_sx, group_sy);
-            }
-            // shape_attr 갱신 (common 값 확정 후)
-            let final_w = child.common().width;
-            let final_h = child.common().height;
-            {
-                let sa = match &mut child {
-                    ShapeObject::Line(s) => &mut s.drawing.shape_attr,
-                    ShapeObject::Rectangle(s) => &mut s.drawing.shape_attr,
-                    ShapeObject::Ellipse(s) => &mut s.drawing.shape_attr,
-                    ShapeObject::Arc(s) => &mut s.drawing.shape_attr,
-                    ShapeObject::Polygon(s) => &mut s.drawing.shape_attr,
-                    ShapeObject::Curve(s) => &mut s.drawing.shape_attr,
-                    ShapeObject::Group(g) => &mut g.shape_attr,
-                    ShapeObject::Picture(p) => &mut p.shape_attr,
-                    ShapeObject::Chart(c) => &mut c.drawing.shape_attr,
-                    ShapeObject::Ole(o) => &mut o.drawing.shape_attr,
-                };
+                let frame = (child.common().width as f64, child.common().height as f64);
+                let sa = child.shape_attr_mut();
+                let positive = |v: u32, fallback: f64| if v > 0 { v as f64 } else { fallback };
+                let ow = positive(sa.original_width, positive(sa.current_width, frame.0));
+                let oh = positive(sa.original_height, positive(sa.current_height, frame.1));
+                let w = (ow * sa.render_sx.hypot(sa.render_c)).round().max(1.0);
+                let h = (oh * sa.render_b.hypot(sa.render_sy)).round().max(1.0);
+                let cx = sa.render_sx * ow / 2.0 + sa.render_b * oh / 2.0 + sa.render_tx;
+                let cy = sa.render_c * ow / 2.0 + sa.render_sy * oh / 2.0 + sa.render_ty;
+                let (lx, ly) = ((cx - w / 2.0).round(), (cy - h / 2.0).round());
                 if sa.group_level > 0 {
                     sa.group_level -= 1;
                 }
                 sa.offset_x = 0;
                 sa.offset_y = 0;
+                sa.current_width = w as u32;
+                sa.current_height = h as u32;
+                sa.original_width = ow as u32;
+                sa.original_height = oh as u32;
+                sa.is_two_ctrl_id = true;
+                // 최상위 개체의 회전·크기는 rotation_angle·current/original 로 표현한다.
+                // 행렬을 비워야 저장 시 그 값들로 다시 만든다.
+                sa.raw_rendering = Vec::new();
                 sa.render_tx = 0.0;
                 sa.render_ty = 0.0;
-                sa.current_width = final_w;
-                sa.original_width = final_w;
-                sa.current_height = final_h;
-                sa.original_height = final_h;
-                sa.is_two_ctrl_id = true;
-                sa.raw_rendering = Vec::new();
+                sa.render_sx = 1.0;
+                sa.render_sy = 1.0;
+                sa.render_b = 0.0;
+                sa.render_c = 0.0;
+
+                // 묶음과 같은 기준·정렬에서 묶음 상자 안 (lx, ly) 에 오도록 오프셋을 정한다.
+                // 가운데/오른쪽 정렬은 자식과 묶음의 크기 차이만큼 보정해야 같은 자리다.
+                let c = child.common_mut();
+                let (lx, ly, w, h) = (lx as i32, ly as i32, w, h);
+                c.horizontal_offset = match gc.horz_align {
+                    HorzAlign::Left | HorzAlign::Inside => group_x + lx,
+                    HorzAlign::Center => group_x + lx + ((w - group_w) / 2.0).round() as i32,
+                    HorzAlign::Right | HorzAlign::Outside => {
+                        group_x - lx + (group_w - w).round() as i32
+                    }
+                } as u32;
+                c.vertical_offset = match gc.vert_align {
+                    VertAlign::Top | VertAlign::Inside => group_y + ly,
+                    VertAlign::Center => group_y + ly + ((h - group_h) / 2.0).round() as i32,
+                    VertAlign::Bottom | VertAlign::Outside => {
+                        group_y - ly + (group_h - h).round() as i32
+                    }
+                } as u32;
+                c.width = w as u32;
+                c.height = h as u32;
+                c.vert_rel_to = gc.vert_rel_to;
+                c.vert_align = gc.vert_align;
+                c.horz_rel_to = gc.horz_rel_to;
+                c.horz_align = gc.horz_align;
+                c.text_wrap = gc.text_wrap;
+                c.attr = gc.attr;
+                c.treat_as_char = gc.treat_as_char;
             }
+            group_geometry::refresh_top_level_frame(&mut child);
 
             // 문단에 삽입
             // [#3214] controls 기준 인덱스를 ctrl_data_records 에 그대로 쓰기 전에 정렬한다.
@@ -2413,6 +2364,25 @@ impl DocumentCore {
                 *co += net_delta;
             }
         }
+
+        // 묶음 하나가 자식 N개가 되면 뒤 컨트롤 번호가 N-1 만큼 밀린다. 누름틀 범위가 옛
+        // 번호에 남으면 자식 도형을 가리켜, 누름틀이 조회와 저장에서 사라진다.
+        let remap = |idx: usize| {
+            if idx > control_idx {
+                idx + children_count - 1
+            } else {
+                idx
+            }
+        };
+        for range in &mut para.field_ranges {
+            range.control_idx = remap(range.control_idx);
+        }
+        Self::remap_active_field_root_control(
+            &mut self.active_field,
+            section_idx,
+            para_idx,
+            |index| Some(remap(index)),
+        );
 
         // 리플로우 + 페이지네이션
         self.document.sections[section_idx].raw_stream = None;

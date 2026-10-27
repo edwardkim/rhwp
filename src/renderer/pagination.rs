@@ -705,6 +705,9 @@ pub struct ColumnContent {
     pub paragraph_origins: std::collections::HashMap<usize, ParagraphOrigin>,
     /// 실제 fit에 사용한 일반 본문 구성. 전체/부분 배치가 같은 줄을 소비한다.
     pub computed_paragraphs: std::collections::HashMap<usize, super::composer::ComposedParagraph>,
+    /// 부분 문단의 줄 범위는 이 수용된 구성의 문자 컷을 참조한다.
+    pub host_compositions:
+        std::collections::HashMap<usize, std::sync::Arc<super::composer::ComposedParagraph>>,
     /// 저장 사다리의 기준을 수용할 때 확정한 문단 끝(단 상대 좌표).
     /// 배치는 이후의 cursor 기준으로 같은 사다리를 다시 투영하지 않는다.
     pub stored_paragraph_flow_ends: std::collections::HashMap<usize, f64>,
@@ -718,7 +721,8 @@ pub struct ColumnContent {
     /// [#7330] 같은 문단의 자리차지 표가 아래로 민 host 첫 글줄이 표 점유 끝 위에 더
     /// 소비하는 문단 앞 간격(px, 0 이상). 측정(typeset)이 확정하고 배치(layout)가 같은 값을
     /// 확정 앞 간격으로 소비한다. 키는 문단 인덱스이며 항목이 없으면 이 계약이 아니다.
-    pub float_pushed_line_spacings: std::collections::HashMap<usize, f64>,
+    pub float_pushed_line_spacings:
+        std::collections::HashMap<usize, super::float_placement::FloatPushedFirstLine>,
     /// [#7696] 쪽·종이 기준 자리차지 그림·도형의 밴드가 밀어 확정한 문단 시작(단 상대 px).
     /// 측정(typeset)이 확정하고 배치(layout)가 그 문단의 시작으로 소비한다.
     pub page_band_flow_starts: std::collections::HashMap<usize, f64>,
@@ -1407,6 +1411,13 @@ impl PaginationResult {
                             .stored_paragraph_flow_ends
                             .iter()
                             .map(|(&pi, &end)| ((pi as i64 + offset as i64).max(0) as usize, end))
+                            .collect(),
+                        host_compositions: cc
+                            .host_compositions
+                            .iter()
+                            .map(|(&pi, comp)| {
+                                ((pi as i64 + offset as i64).max(0) as usize, comp.clone())
+                            })
                             .collect(),
                         stored_column_top_spacings: cc
                             .stored_column_top_spacings

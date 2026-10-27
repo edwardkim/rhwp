@@ -2584,147 +2584,24 @@ pub(crate) fn shape_rendering_bytes(attr: &ShapeComponentAttr) -> Vec<u8> {
 fn write_shape_rendering(w: &mut ByteWriter, attr: &ShapeComponentAttr) {
     if !attr.raw_rendering.is_empty() {
         w.write_bytes(&attr.raw_rendering).unwrap();
-    } else if attr.rotation_angle.rem_euclid(360) != 0 {
-        write_generated_rendering_matrix(w, attr);
-    } else if has_explicit_rendering_matrix(attr) {
-        write_parsed_rendering_matrix(w, attr);
     } else {
-        // [#4680] 쌍 개수는 그룹 깊이 + 1 이다. 한/글 HWP5 저장본 실측(264쪽 HWP3
-        // 변환본 대조): 깊이 0 → 1쌍, 1 → 2쌍, 2 → 3쌍, 3 → 4쌍. 종전에는 깊이와
-        // 무관하게 2 를 써서 두 겹 이상 중첩된 묶음의 레코드가 96바이트씩 짧았고,
-        // 한컴 저장본과의 레코드 길이 계약을 잃었다.
-        let cnt: u16 = attr.group_level.saturating_add(1);
-        w.write_u16(cnt).unwrap();
-        // translation matrix = identity [1, 0, 0, 0, 1, 0].
-        // 그룹 자식 위치의 단일 권위는 render_tx/ty 다 (렌더러 layout_group_child_*,
-        // object_ops 그룹 생성 모두 render_tx 기준). 위치를 의도한 작성자는 항상
-        // render_tx 를 명시하므로(그 경우 explicit 경로로 감), 이 폴백에 오는
-        // offset_x/y 는 위치가 아닌 메타데이터다(HWP3 relative_pos 등). 종전처럼
-        // offset 을 tx/ty 로 승격하면 재파스에서 render_tx 가 생겨 그룹 자식이
-        // offset 만큼 이동한다 (#1892 대법원 서식 최대 10485px 라운드트립 변위).
-        w.write_f64(1.0).unwrap();
-        w.write_f64(0.0).unwrap();
-        w.write_f64(0.0).unwrap(); // tx
-        w.write_f64(0.0).unwrap();
-        w.write_f64(1.0).unwrap();
-        w.write_f64(0.0).unwrap(); // ty
-                                   // scale matrix = identity [1, 0, 0, 0, 1, 0]
-                                   // (스케일은 current_width/original_width 값으로 표현 — 행렬에 중복 기록하면 이중 적용됨)
-        w.write_f64(1.0).unwrap();
-        w.write_f64(0.0).unwrap();
-        w.write_f64(0.0).unwrap();
-        w.write_f64(0.0).unwrap();
-        w.write_f64(1.0).unwrap();
-        w.write_f64(0.0).unwrap();
-        // rotation matrix. Hancom applies visible picture rotation from the
-        // rendering rotMatrix, not only from ShapeComponentAttr.rotation_angle.
-        write_matrix(w, shape_rotation_matrix(attr));
-        // 그룹 깊이만큼 남은 scale + rotation 쌍 (identity)
-        for _ in 0..attr.group_level {
-            write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
-            write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+        let (translation, pairs) = super::shape_rendering::generated(attr);
+        w.write_u16(pairs.len() as u16).unwrap();
+        for matrix in std::iter::once(translation).chain(
+            pairs
+                .into_iter()
+                .flat_map(|(scale, rotation)| [scale, rotation]),
+        ) {
+            for value in matrix {
+                w.write_f64(value).unwrap();
+            }
         }
     }
-}
-
-fn has_explicit_rendering_matrix(attr: &ShapeComponentAttr) -> bool {
-    const EPSILON: f64 = 0.000_001;
-
-    (attr.render_sx - 1.0).abs() > EPSILON
-        || attr.render_b.abs() > EPSILON
-        || attr.render_tx.abs() > EPSILON
-        || attr.render_c.abs() > EPSILON
-        || (attr.render_sy - 1.0).abs() > EPSILON
-        || attr.render_ty.abs() > EPSILON
 }
 
 fn write_matrix(w: &mut ByteWriter, matrix: [f64; 6]) {
     for value in matrix {
         w.write_f64(value).unwrap();
-    }
-}
-
-fn shape_scale_matrix(attr: &ShapeComponentAttr) -> [f64; 6] {
-    let sx = if attr.original_width > 0 && attr.current_width > 0 {
-        attr.current_width as f64 / attr.original_width as f64
-    } else {
-        1.0
-    };
-    let sy = if attr.original_height > 0 && attr.current_height > 0 {
-        attr.current_height as f64 / attr.original_height as f64
-    } else {
-        1.0
-    };
-    [sx, 0.0, 0.0, 0.0, sy, 0.0]
-}
-
-fn shape_rotation_positive_correction(attr: &ShapeComponentAttr) -> (f64, f64) {
-    let width = attr.current_width as f64;
-    let height = attr.current_height as f64;
-    if width <= 0.0 || height <= 0.0 {
-        return (0.0, 0.0);
-    }
-
-    let theta = (attr.rotation_angle as f64).to_radians();
-    let cos = theta.cos();
-    let sin = theta.sin();
-    let corners = [
-        (0.0, 0.0),
-        (width * cos, width * sin),
-        (-height * sin, height * cos),
-        (width * cos - height * sin, width * sin + height * cos),
-    ];
-    let min_x = corners
-        .iter()
-        .map(|(x, _)| *x)
-        .fold(f64::INFINITY, f64::min);
-    let min_y = corners
-        .iter()
-        .map(|(_, y)| *y)
-        .fold(f64::INFINITY, f64::min);
-    (-min_x, -min_y)
-}
-
-fn shape_rotation_matrix(attr: &ShapeComponentAttr) -> [f64; 6] {
-    if attr.rotation_angle.rem_euclid(360) == 0 {
-        return [1.0, 0.0, 0.0, 0.0, 1.0, 0.0];
-    }
-
-    let theta = (attr.rotation_angle as f64).to_radians();
-    let cos = theta.cos();
-    let sin = theta.sin();
-    let (tx, ty) = shape_rotation_positive_correction(attr);
-
-    [
-        cos,
-        -sin,
-        tx - attr.offset_x as f64,
-        sin,
-        cos,
-        ty - attr.offset_y as f64,
-    ]
-}
-
-fn write_generated_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) {
-    // [#6874] 쌍 개수는 그룹 깊이 + 1 이다 — 아래 폴백 경로와 같은 규칙.
-    let cnt: u16 = attr.group_level.saturating_add(1);
-    w.write_u16(cnt).unwrap();
-    write_matrix(
-        w,
-        [
-            1.0,
-            0.0,
-            attr.offset_x as f64,
-            0.0,
-            1.0,
-            attr.offset_y as f64,
-        ],
-    );
-    write_matrix(w, shape_scale_matrix(attr));
-    write_matrix(w, shape_rotation_matrix(attr));
-    for _ in 0..attr.group_level {
-        write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
-        write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
     }
 }
 
@@ -3095,7 +2972,7 @@ fn serialize_form_control(form: &FormObject, level: u16, records: &mut Vec<Recor
 }
 
 /// 정답지 fall-back BorderType (FormObject.properties 에 키가 없을 때).
-fn default_border_type(ft: FormType) -> i32 {
+pub(super) fn default_border_type(ft: FormType) -> i32 {
     match ft {
         FormType::PushButton => 4,
         FormType::CheckBox => 0,

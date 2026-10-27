@@ -19,7 +19,12 @@ use crate::renderer::layout_frame::LayoutFrame;
 pub use crate::renderer::layout_frame::ParagraphBox;
 
 mod frame_geometry;
+mod inline_table_frame;
 mod nested_table_frames;
+pub(crate) use inline_table_frame::{
+    inline_table_needs_reflow_measurement, inline_table_width_cache_is_stale,
+    measured_reflow_inline_table, reflow_inline_table_heights,
+};
 pub(crate) use nested_table_frames::{
     recompose_cell_lines_with_nested_tables, table_cells_have_no_stored_lines,
 };
@@ -39,15 +44,20 @@ pub(crate) use stored_word_tail::{
     project_current_source_program_rows, project_stored_soft_wraps,
     projects_current_marker_geometry,
 };
+mod note_line_slots;
 mod punctuation_slots;
+pub(crate) use note_line_slots::NoteLineSlots;
 
 /// 글자겹침(CharOverlap) 렌더링 정보
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct CharOverlapInfo {
     /// 테두리 타입 (0=없음, 1=원, 2=반전원, 3=사각형, 4=반전사각형)
     pub border_type: u8,
-    /// 내부 글자 크기 (%, 기본 100)
+    /// 내부 글자 크기의 부호 있는 10% 단계 (0=원래 크기)
     pub inner_char_size: i8,
+    /// 원문 컨트롤의 문자별 스타일과 펼침. 폰트 인코딩 PUA는 별도 계약을 쓴다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub composition: Option<Box<super::char_overlap::Composition>>,
 }
 
 /// 구성된 텍스트 런 (줄 내 동일 스타일 + 동일 언어 구간)
@@ -137,6 +147,7 @@ impl ComposedTextRun {
 
 mod auto_number_projection;
 mod conjoining_jamo;
+pub(crate) use auto_number_projection::project_caption as project_caption_auto_numbers;
 pub(crate) use conjoining_jamo::project_stored_rows_with_selected_program;
 mod equation_line_metrics;
 mod mapped_symbol_fonts;
@@ -259,10 +270,13 @@ include!("composer/stored_cell_reflow.inc.rs");
 include!("composer/cell_line_breaking.inc.rs");
 include!("composer/pua_surface.inc.rs");
 
+mod empty_line_metrics;
+pub(crate) mod inline_box_rows;
 mod line_breaking;
 mod picture_anchor_projection;
 pub(crate) use line_breaking::{
-    control_is_width_neutral_marker, frame_metrics_for_line, text_word_ranges,
+    control_is_width_neutral_marker, frame_metrics_for_line, paragraph_end_font_size_px,
+    text_word_ranges,
 };
 pub mod lineseg_compare;
 

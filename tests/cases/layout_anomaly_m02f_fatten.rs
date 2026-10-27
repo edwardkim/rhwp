@@ -103,6 +103,7 @@ fn text_run_node(n: &serde_json::Value, bbox: BoundingBox) -> RenderNode {
                 Some(rhwp::renderer::composer::CharOverlapInfo {
                     border_type: 1,
                     inner_char_size: 100,
+                    composition: None,
                 })
             } else {
                 None
@@ -144,6 +145,7 @@ fn cell_node(bbox: BoundingBox) -> RenderNode {
             border_fill_id: 0,
             text_direction: 0,
             clip: false,
+            closed_reflow_frame: false,
             page_fragment: false,
             model_cell_index: None,
         }),

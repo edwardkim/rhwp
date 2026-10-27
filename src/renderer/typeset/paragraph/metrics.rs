@@ -23,6 +23,9 @@ pub(in crate::renderer::typeset) struct FormattedParagraph {
     /// frame이 실제로 재조판한 줄만 보존한다. Some이면 source 줄로 되돌아가지 않는다.
     pub(in crate::renderer::typeset) computed_host_lines:
         Option<Vec<crate::renderer::float_placement::ParagraphHostLine>>,
+    /// 측정한 줄의 문자 컷과 메트릭을 paint까지 같은 결과로 전달한다.
+    pub(in crate::renderer::typeset) host_composition:
+        Option<std::sync::Arc<crate::renderer::composer::ComposedParagraph>>,
     /// Shared physical rows for a no-LineSeg Square table host.
     pub(in crate::renderer::typeset) square_host_plan:
         Option<crate::renderer::inline_flow::InlineFlowPlan>,
@@ -41,6 +44,13 @@ pub(in crate::renderer::typeset) struct FormattedParagraph {
     /// `total_height` 에 섞어 넣은 TAC 표 바깥 여백(세로). 저장 사다리 지문처럼
     /// **생성기가 쓴 값과 대조하는** 계산에서는 이 몫을 도로 빼야 한다.
     pub(in crate::renderer::typeset) tac_outer_margin_v_px: f64,
+}
+
+/// 표의 마지막 조각 뒤까지 남겨 둔 현재 구성의 줄 범위.
+#[derive(Debug, Clone)]
+pub(in crate::renderer::typeset) struct FormattedHostTail {
+    pub first_line: usize,
+    pub paragraph: FormattedParagraph,
 }
 
 impl FormattedParagraph {
@@ -91,6 +101,14 @@ impl FormattedParagraph {
     #[inline]
     pub(in crate::renderer::typeset) fn line_count(&self) -> usize {
         self.line_heights.len().min(self.line_spacings.len())
+    }
+
+    /// 수용 범위의 끝 줄이 발행한 간격이다. 원본 높이에서 다시 계산하지 않는다.
+    pub(in crate::renderer::typeset) fn line_tail_spacing(&self, end_line: usize) -> Option<f64> {
+        end_line
+            .checked_sub(1)
+            .and_then(|index| self.line_spacings.get(index))
+            .copied()
     }
 
     /// 줄 범위의 advance 합계 (Issue #3780 — 범위를 실제 줄 수로 클램프)

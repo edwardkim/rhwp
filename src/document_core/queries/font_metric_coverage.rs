@@ -3,7 +3,7 @@
 //! This is a read-only, native-only analysis surface. It deliberately has no CLI,
 //! WASM or npm binding: corpus orchestration and publication remain separate stages.
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{
@@ -18,16 +18,18 @@ use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::ShapeObject;
 use crate::model::style::{Alignment, CharShape};
-use crate::parser::FileFormat;
 use crate::renderer::font_decision::sha256_canonical;
 use crate::renderer::font_metrics_data::layout_metric_face_name;
-use crate::renderer::layout::{
-    resolved_to_text_style, trace_char_width_decisions, CharWidthDecision,
-};
+use crate::renderer::layout::{resolved_to_text_style, trace_char_width_decisions};
 use crate::renderer::style_resolver::lookup_font_name_in_environment;
 use crate::schema_registry::LEGACY_FONT_LAYOUT_HABITS_SCHEMA_VERSION;
 
 use super::font_decision::{metric_alias_relation, run_language_slots};
+
+mod classification;
+mod report;
+use classification::{classify_decision, CoverageClassification};
+use report::{decision_records, format_name, legacy_records, reconcile};
 
 const CTX_TABLE_CELL: u16 = 1 << 0;
 const CTX_TEXT_BOX: u16 = 1 << 1;
@@ -49,8 +51,6 @@ const CATEGORY_IDS: [&str; 7] = [
     "face-miss",
     "heuristic",
 ];
-
-const LANGUAGE_NAMES: [&str; 7] = ["ko", "latin", "hanja", "ja", "other", "symbol", "user"];
 
 const DEFAULT_MAX_WORK_UNITS: u64 = 10_000_000;
 const MAX_MAX_WORK_UNITS: u64 = 2_000_000_000;
@@ -292,66 +292,6 @@ impl CoverageStats {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-enum CoverageClassification {
-    Category(&'static str),
-    NotApplicable,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct LegacyUsageRecord {
-    font: String,
-    metric_face: Option<String>,
-    language: String,
-    ratio: u8,
-    spacing: i8,
-    kerning: bool,
-    bold: bool,
-    italic: bool,
-    context: String,
-    alignment: String,
-    stored_line_seg: bool,
-    document_count: u64,
-    paragraph_count: u64,
-    run_count: u64,
-    char_count: u64,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct DecisionUsageRecord {
-    font: String,
-    metric_face: Option<String>,
-    language: String,
-    ratio: u8,
-    spacing: i8,
-    kerning: bool,
-    bold: bool,
-    italic: bool,
-    context: String,
-    alignment: String,
-    stored_line_seg: bool,
-    normalized_face: Option<String>,
-    subst_font: Option<String>,
-    alt_type: Option<u8>,
-    layout_family: String,
-    metric_requested_face: Option<String>,
-    metric_resolved_face: Option<String>,
-    match_kind: String,
-    metric_entry: Option<usize>,
-    character_match: String,
-    width_source: String,
-    relation_type: Option<String>,
-    relation_evidence_status: Option<String>,
-    coverage_category: Option<String>,
-    source_join_status: &'static str,
-    document_count: u64,
-    paragraph_count: u64,
-    run_count: u64,
-    char_count: u64,
-}
-
 fn coverage_error(message: impl Into<String>) -> HwpError {
     HwpError::RenderError(format!("font metric coverage: {}", message.into()))
 }
@@ -362,19 +302,6 @@ fn coverage_resource_error(message: impl Into<String>) -> HwpError {
 
 fn coverage_cancelled_error() -> HwpError {
     coverage_error("[ANALYSIS_CANCELLED] cancellation requested")
-}
-
-fn format_name(format: FileFormat) -> &'static str {
-    match format {
-        FileFormat::Hwp => "hwp",
-        FileFormat::Hwpx => "hwpx",
-        FileFormat::Hwp3 => "hwp3",
-        FileFormat::Hml => "hml",
-        FileFormat::Pdf => "pdf",
-        FileFormat::DrmProtected => "drm",
-        FileFormat::Empty => "empty",
-        FileFormat::Unknown => "unknown",
-    }
 }
 
 fn visible_layout_char(ch: char) -> bool {
@@ -392,131 +319,6 @@ fn alignment_code(alignment: Alignment) -> u8 {
         Alignment::Center => 3,
         Alignment::Distribute => 4,
         Alignment::Split => 5,
-    }
-}
-
-fn alignment_name(code: u8) -> String {
-    match code {
-        0 => "justify",
-        1 => "left",
-        2 => "right",
-        3 => "center",
-        4 => "distribute",
-        5 => "split",
-        _ => "unknown",
-    }
-    .to_string()
-}
-
-fn context_name(mask: u16) -> String {
-    if mask == 0 {
-        return "body".to_string();
-    }
-    [
-        (CTX_TABLE_CELL, "table-cell"),
-        (CTX_TEXT_BOX, "text-box"),
-        (CTX_HEADER, "header"),
-        (CTX_FOOTER, "footer"),
-        (CTX_FOOTNOTE, "footnote"),
-        (CTX_ENDNOTE, "endnote"),
-        (CTX_MASTER_PAGE, "master-page"),
-        (CTX_CAPTION, "caption"),
-        (CTX_MEMO, "memo"),
-        (CTX_HIDDEN_COMMENT, "hidden-comment"),
-    ]
-    .into_iter()
-    .filter_map(|(bit, name)| (mask & bit != 0).then_some(name))
-    .collect::<Vec<_>>()
-    .join("+")
-}
-
-fn classify_decision(
-    decision: &CharWidthDecision<'_>,
-    relation_type: Option<&str>,
-    relation_evidence_status: Option<&str>,
-) -> Result<CoverageClassification, HwpError> {
-    let metric_entry = decision.metric.map(|metric| metric.entry_index);
-    match decision.width_source {
-        "metricMiss" | "metricCharacterMiss" => Err(coverage_error(format!(
-            "internal-only widthSource reached aggregate: {}",
-            decision.width_source
-        ))),
-        "clusterContinuation"
-        | "figureSpace"
-        | "literalFigureSpace"
-        | "hwpPuaFiller"
-        | "inlineObjectPlaceholder"
-        | "tabAdvance" => {
-            if decision.character_match != "notApplicable" || metric_entry.is_some() {
-                return Err(coverage_error(format!(
-                    "non-applicable widthSource has metric state: {}",
-                    decision.width_source
-                )));
-            }
-            Ok(CoverageClassification::NotApplicable)
-        }
-        "measuredOriginalGlyph"
-        | "kopubTable"
-        | "metricHalfwidthPunctuationOverlay"
-        | "metricNarrowPunctuationOverlay"
-        | "metricSpaceOverlay" => {
-            if decision.character_match != "hit" {
-                return Err(coverage_error(format!(
-                    "measured overlay must be a character hit: {}",
-                    decision.width_source
-                )));
-            }
-            Ok(CoverageClassification::Category("measured-overlay"))
-        }
-        // 선언된 paint 대체 face의 실제 glyph hit도 해당 face의 메트릭 측정이다.
-        // 원래 face의 결측 때문에 선택됐다는 이유로 집계에서 제외하지 않는다.
-        "embeddedMetric" | "metricHalfSpace" | "declaredGlyphFallbackMetric" => {
-            if decision.character_match != "hit" || metric_entry.is_none() {
-                return Err(coverage_error(format!(
-                    "metric widthSource requires a metric character hit: {}",
-                    decision.width_source
-                )));
-            }
-            match (relation_type, relation_evidence_status) {
-                (Some("identity-alias"), Some("verified-by-bytes")) => {
-                    Ok(CoverageClassification::Category("identity-alias-hit"))
-                }
-                (Some("identity-alias"), _) => Err(coverage_error(
-                    "identity-alias requires verified-by-bytes evidence",
-                )),
-                (Some("metric-surrogate"), _) => {
-                    Ok(CoverageClassification::Category("metric-surrogate"))
-                }
-                _ => Ok(CoverageClassification::Category("exact-hit")),
-            }
-        }
-        "heuristicFullwidth" | "heuristicHalfwidth" | "heuristicNarrow" => {
-            if metric_entry.is_some() {
-                if decision.character_match != "miss" {
-                    return Err(coverage_error(format!(
-                        "metric fallback requires characterMatch miss: {}",
-                        decision.width_source
-                    )));
-                }
-                Ok(CoverageClassification::Category("char-miss"))
-            } else if decision.character_match == "notApplicable" {
-                Ok(CoverageClassification::Category("face-miss"))
-            } else {
-                Err(coverage_error(format!(
-                    "face miss has contradictory metric state: {}",
-                    decision.width_source
-                )))
-            }
-        }
-        "areaDotFallback" => {
-            if metric_entry.is_some() || decision.character_match != "notApplicable" {
-                return Err(coverage_error(
-                    "areaDotFallback has contradictory metric state",
-                ));
-            }
-            Ok(CoverageClassification::Category("heuristic"))
-        }
-        other => Err(coverage_error(format!("unclassified widthSource: {other}"))),
     }
 }
 
@@ -754,23 +556,31 @@ fn analyze_paragraph(
             }
             budget.consume(decisions.len())?;
 
-            let metric_names = decisions
-                .iter()
-                .find_map(|decision| decision.metric)
-                .map(|metric| {
-                    budget.check_dimension(metric.requested_name)?;
-                    budget.check_dimension(metric.alias_resolved_name)?;
-                    Ok::<(Arc<str>, Arc<str>), HwpError>((
-                        Arc::from(metric.requested_name),
-                        Arc::from(metric.alias_resolved_name),
-                    ))
-                })
-                .transpose()?;
+            let mut metric_names_cache = BTreeMap::new();
 
             let mut legacy_run: Option<(LegacyUsageKey, u64)> = None;
             let mut decision_run: Option<(DecisionUsageKey, u64)> = None;
             for decision in decisions {
                 let metric = decision.metric;
+                // 같은 언어 구간 안에서도 글리프를 공급하는 프로그램은 달라질 수 있다.
+                // 첫 문자 이름으로 나머지 entry를 덮지 않고 같은 이름 쌍만 재사용한다.
+                let metric_names = if let Some(found) = metric {
+                    let key = (found.requested_name, found.alias_resolved_name);
+                    let names = match metric_names_cache.entry(key) {
+                        std::collections::btree_map::Entry::Occupied(entry) => entry.into_mut(),
+                        std::collections::btree_map::Entry::Vacant(entry) => {
+                            budget.check_dimension(found.requested_name)?;
+                            budget.check_dimension(found.alias_resolved_name)?;
+                            entry.insert((
+                                Arc::<str>::from(found.requested_name),
+                                Arc::<str>::from(found.alias_resolved_name),
+                            ))
+                        }
+                    };
+                    Some(&*names)
+                } else {
+                    None
+                };
                 let (relation_type, relation_evidence_status) = metric
                     .filter(|metric| metric.requested_name != metric.alias_resolved_name)
                     .map(|metric| {
@@ -1063,106 +873,6 @@ fn analyze_document(
         counts.documents = 1;
     }
     Ok(stats)
-}
-
-fn legacy_records(stats: &CoverageStats) -> Vec<LegacyUsageRecord> {
-    let mut records: Vec<LegacyUsageRecord> = stats
-        .legacy_usage
-        .iter()
-        .map(|(key, counts)| LegacyUsageRecord {
-            font: key.font.to_string(),
-            metric_face: key.metric_face.as_deref().map(str::to_string),
-            language: LANGUAGE_NAMES[key.language as usize].to_string(),
-            ratio: key.ratio,
-            spacing: key.spacing,
-            kerning: key.kerning,
-            bold: key.bold,
-            italic: key.italic,
-            context: context_name(key.context),
-            alignment: alignment_name(key.alignment),
-            stored_line_seg: key.stored_lineseg,
-            document_count: counts.documents,
-            paragraph_count: counts.paragraphs,
-            run_count: counts.runs,
-            char_count: counts.chars,
-        })
-        .collect();
-    // Keep the v2 POC projection order: character count descending, then face.
-    // Stable sorting preserves the original BTree key order for complete ties.
-    records.sort_by(|left, right| {
-        right
-            .char_count
-            .cmp(&left.char_count)
-            .then_with(|| left.font.cmp(&right.font))
-    });
-    records
-}
-
-fn decision_records(stats: &CoverageStats) -> Vec<DecisionUsageRecord> {
-    stats
-        .decision_usage
-        .iter()
-        .map(|(key, counts)| DecisionUsageRecord {
-            font: key.legacy.font.to_string(),
-            metric_face: key.legacy.metric_face.as_deref().map(str::to_string),
-            language: LANGUAGE_NAMES[key.legacy.language as usize].to_string(),
-            ratio: key.legacy.ratio,
-            spacing: key.legacy.spacing,
-            kerning: key.legacy.kerning,
-            bold: key.legacy.bold,
-            italic: key.legacy.italic,
-            context: context_name(key.legacy.context),
-            alignment: alignment_name(key.legacy.alignment),
-            stored_line_seg: key.legacy.stored_lineseg,
-            normalized_face: key.normalized_face.as_deref().map(str::to_string),
-            subst_font: key.subst_font.as_deref().map(str::to_string),
-            alt_type: key.alt_type,
-            layout_family: key.layout_family.to_string(),
-            metric_requested_face: key.metric_requested_face.as_deref().map(str::to_string),
-            metric_resolved_face: key.metric_resolved_face.as_deref().map(str::to_string),
-            match_kind: key.match_kind.to_string(),
-            metric_entry: key.metric_entry,
-            character_match: key.character_match.to_string(),
-            width_source: key.width_source.to_string(),
-            relation_type: key.relation_type.map(str::to_string),
-            relation_evidence_status: key.relation_evidence_status.map(str::to_string),
-            coverage_category: key.coverage_category.map(str::to_string),
-            source_join_status: "joined",
-            document_count: counts.documents,
-            paragraph_count: counts.paragraphs,
-            run_count: counts.runs,
-            char_count: counts.chars,
-        })
-        .collect()
-}
-
-fn reconcile(stats: &CoverageStats) -> Result<(), HwpError> {
-    let category_sum: u64 = stats.categories.values().sum();
-    if category_sum != stats.coverage_characters {
-        return Err(coverage_error(
-            "category sum does not equal coverage denominator",
-        ));
-    }
-    if stats.layout_characters
-        != stats.coverage_characters + stats.not_applicable_characters + stats.excluded_characters
-    {
-        return Err(coverage_error("layout denominator does not reconcile"));
-    }
-    if stats.layout_characters != stats.joined + stats.excluded_characters {
-        return Err(coverage_error("source join denominator does not reconcile"));
-    }
-    let legacy_chars: u64 = stats.legacy_usage.values().map(|counts| counts.chars).sum();
-    let decision_chars: u64 = stats
-        .decision_usage
-        .values()
-        .map(|counts| counts.chars)
-        .sum();
-    if legacy_chars != stats.joined || decision_chars != stats.joined {
-        return Err(coverage_error(
-            "usage projection does not equal joined characters",
-        ));
-    }
-    Ok(())
 }
 
 impl DocumentCore {

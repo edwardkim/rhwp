@@ -190,7 +190,7 @@ raw도2px 이웃을 허용하며, RGB까지 동일해야 하는 엄격 픽셀 �
 위 Native/fresh WASM 명령을 기준 SHA의 producer와 후보 SHA의 producer로 각각 실행한다.
 동일 원본·PDF·글꼴·backend·Print profile·compat·DPI로 문서 전쪽을 비교하며, output은
 `output/pr-review/<id>/base/{native,wasm}`와 `head/{native,wasm}`처럼 분리한다.
-`page`별 `silhouette_raw_match_percent`의 **기준−후보가2%p 이상이면90% 이상이어도
+`page`별 `silhouette_raw_match_percent`의 **기준−후보가 2%p를 초과하면 90% 이상이어도
 PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 혼합은 허용하지 않는다.
 원 소수값·십진수 연산·누락 판정·직접 판독·review 기록은
 [devel 대비 실루엣 하락 재검토](visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.

@@ -5,7 +5,7 @@ use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::renderer::TextStyle;
 
 pub(super) fn apply_font(run: &ComposedTextRun, style: &mut TextStyle) {
-    if style.isolated_jamo_font == Some("HCR Dotum")
+    if style.isolated_jamo_font == Some(crate::renderer::IsolatedJamoFont::HcrDotum)
         && run.display_text.is_none()
         && !run.text.is_empty()
         && run
@@ -32,7 +32,7 @@ pub(super) fn split_runs(composed: &mut ComposedParagraph, styles: &ResolvedStyl
         for run in std::mem::take(&mut line.runs) {
             let program = super::resolved_to_text_style(styles, run.char_style_id, run.lang_index)
                 .isolated_jamo_font;
-            if program != Some("HCR Dotum")
+            if program != Some(crate::renderer::IsolatedJamoFont::HcrDotum)
                 || run.display_text.is_some()
                 || run.char_overlap.is_some()
                 || run.inserted_control_text
@@ -141,7 +141,7 @@ fn replaces_spacing_mark(para: &Paragraph, styles: &ResolvedStyleSet) -> bool {
             reference.char_shape_id,
             super::detect_lang_category(ch),
         );
-        if original.isolated_jamo_font != Some("HCR Dotum")
+        if original.isolated_jamo_font != Some(crate::renderer::IsolatedJamoFont::HcrDotum)
             || matches!(
                 original
                     .font_family

@@ -1,0 +1,286 @@
+{
+  "base": "238de6de41a208648f4ade6b494fe433a81c1fce",
+  "source_head_before_removal": "726d40fd476999fb384dbc7e8d6cf38195334b2f",
+  "new_rendering_tests_added": 0,
+  "archives_only_source_counts": {
+    "sources": 1771,
+    "exceptions": 20
+  },
+  "before_source_counts": {
+    "sources": 1771,
+    "exceptions": 20
+  },
+  "after_source_counts": {
+    "sources": 1767,
+    "exceptions": 20
+  },
+  "retired_sample16_or_handbook_restored": false,
+  "issue": 8236,
+  "modules": [
+    {
+      "old_path": "tests/cases/issue_7158_square_wrap_continuation.rs",
+      "preserved_path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/issue_7158_square_wrap_continuation.rs.txt",
+      "source_commit": "726d40fd476999fb384dbc7e8d6cf38195334b2f",
+      "last_change_commit": "da7ec5c0906b38b7a1cfa15cf70ca5534b7d7ebb",
+      "git_blob": "5a629b9d8831590a9cbec9662afe40bb2a63ba71",
+      "sha256": "ae97d04861078ab35f00cbbb302007d183ded828043afdaf6a3b769f380bbeb5",
+      "tests_before": [
+        "square_wrap_continuation_tracks_the_stored_ladder",
+        "continuation_and_following_paragraph_preserve_moved_anchor",
+        "all_same_page_wrap_handoffs_keep_every_line_and_its_pitch"
+      ],
+      "removed_tests": [
+        "square_wrap_continuation_tracks_the_stored_ladder",
+        "continuation_and_following_paragraph_preserve_moved_anchor",
+        "all_same_page_wrap_handoffs_keep_every_line_and_its_pitch"
+      ],
+      "active_tests": [],
+      "active_removal_complete": true
+    },
+    {
+      "old_path": "tests/cases/issue_6887_para_float_outer_margin.rs",
+      "preserved_path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/issue_6887_para_float_outer_margin.rs.txt",
+      "source_commit": "726d40fd476999fb384dbc7e8d6cf38195334b2f",
+      "last_change_commit": "7e96080244691d783e92e54c46bc0ea2cde23d7f",
+      "git_blob": "6694089e0a131f73b76544f97b0d217a42f8295e",
+      "sha256": "38e7a6585a900ef67265712cb0654c93c46b07f87576c94693b696fba2423fd1",
+      "tests_before": [
+        "left_and_inside_apply_the_declared_margin_once",
+        "center_right_and_outside_do_not_add_the_left_margin",
+        "negative_margin_does_not_shift_the_para_left_table"
+      ],
+      "removed_tests": [
+        "left_and_inside_apply_the_declared_margin_once",
+        "center_right_and_outside_do_not_add_the_left_margin",
+        "negative_margin_does_not_shift_the_para_left_table"
+      ],
+      "active_tests": [],
+      "active_removal_complete": true
+    },
+    {
+      "old_path": "tests/issue_4090_hwpx_tail_page_break.rs",
+      "preserved_path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/issue_4090_hwpx_tail_page_break.rs.txt",
+      "source_commit": "726d40fd476999fb384dbc7e8d6cf38195334b2f",
+      "last_change_commit": "9f564bbeea841a6d03c3c38b67f45a7439b95323",
+      "git_blob": "1f99cb3383cedf8eea1d5a7b9bf0e0e91e7e747d",
+      "sha256": "e494fdb3aa5695654be92bca93a3dfe50c433d1e8f9813de5fb19d22db1d6986",
+      "tests_before": [
+        "issue_4090_hwpx_tail_lines_follow_the_explicit_page_break"
+      ],
+      "removed_tests": [
+        "issue_4090_hwpx_tail_lines_follow_the_explicit_page_break"
+      ],
+      "active_tests": [],
+      "active_removal_complete": true
+    },
+    {
+      "old_path": "tests/issue_4090_square_table_left_wrap.rs",
+      "preserved_path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/issue_4090_square_table_left_wrap.rs.txt",
+      "source_commit": "726d40fd476999fb384dbc7e8d6cf38195334b2f",
+      "last_change_commit": "2d5ecdddc8ac16036d8df243534041fdc2a83a7d",
+      "git_blob": "4ee4676a2b581ed7f5c29849397306811e54c11b",
+      "sha256": "d6a690a6e332639270cbce60aae724f97a5a76c3bb260343b0a2b7333d8e49ee",
+      "tests_before": [
+        "issue_4090_empty_host_right_square_table_keeps_left_wrap_prefix"
+      ],
+      "removed_tests": [
+        "issue_4090_empty_host_right_square_table_keeps_left_wrap_prefix"
+      ],
+      "active_tests": [],
+      "active_removal_complete": true
+    },
+    {
+      "old_path": "tests/cases/issue_6778_square_beside_lane_render_flow.rs",
+      "preserved_path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/issue_6778_square_beside_lane_render_flow.rs.txt",
+      "source_commit": "726d40fd476999fb384dbc7e8d6cf38195334b2f",
+      "last_change_commit": "429dee416e64e26ae6b66e0e7f395caf35e0735b",
+      "git_blob": "b94651d91e570f43684210baf48f3ae86a95dd1d",
+      "sha256": "949a08d3094a4f325f6c238a739874e04f68f99e25fde93a650d83da374c54ca",
+      "tests_before": [
+        "maintainer_plain_indents_do_not_rewind_into_the_square_band",
+        "maintainer_square_lane_requires_the_right_edge_and_narrow_width",
+        "maintainer_first_item_without_stored_vpos_starts_below_the_square_band",
+        "square_beside_lane_text_stays_inside_the_body",
+        "square_beside_lane_starts_next_to_the_table_not_below_it",
+        "square_band_closes_below_the_table_bottom",
+        "left_lane_flow_is_untouched"
+      ],
+      "removed_tests": [
+        "left_lane_flow_is_untouched"
+      ],
+      "active_tests": [
+        "maintainer_plain_indents_do_not_rewind_into_the_square_band",
+        "maintainer_square_lane_requires_the_right_edge_and_narrow_width",
+        "maintainer_first_item_without_stored_vpos_starts_below_the_square_band",
+        "square_beside_lane_text_stays_inside_the_body",
+        "square_beside_lane_starts_next_to_the_table_not_below_it",
+        "square_band_closes_below_the_table_bottom"
+      ],
+      "active_removal_complete": true
+    }
+  ],
+  "moved_files": [
+    {
+      "old_path": "tests/fixtures/issue_7158/156492236-regulatory-sandbox-full.hwpx",
+      "new_path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/156492236-regulatory-sandbox-full.hwpx",
+      "sha256": "af198ad2dff0c1ad0458d7147ca8fcf42b45b0d2e5ceb2e10353debc8250a5b9",
+      "bytes": 23230621
+    },
+    {
+      "old_path": "pdf/156492236-regulatory-sandbox-full-2020.pdf",
+      "new_path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/reference-full-2020.pdf",
+      "sha256": "54139a4760f911f57861f33920f5755e07eee85c1cf2cfedfd6c272e25a5c3e9",
+      "bytes": 926826
+    },
+    {
+      "old_path": "pdf/issue4090/156492236_규제샌드박스_min-hancom2020-production-verify.pdf",
+      "new_path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/reference-min-2020.pdf",
+      "sha256": "60b4d14e7305d148a913f281c6629b531a3fedcc7e6f76042c0994169001ccfc",
+      "bytes": 2583139
+    }
+  ],
+  "preserved_edited_pairs": [
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/margin750.hwpx",
+      "sha256": "1e577f944145d32dee669c9f9ea961f73300a15bfaae8d698d3ea1e960f40baf",
+      "bytes": 58246,
+      "original_local_path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/margin-7158-3880/margin750.hwpx"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/margin750-2020.pdf",
+      "sha256": "eb6d71e41df2f419506c8b9a343654ce22b8014efef30e628b02f8cad4be9b7a",
+      "bytes": 523646,
+      "original_local_path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-7158-margin750-3881/reference/issue7158-margin750-2020.pdf"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/margin1500.hwpx",
+      "sha256": "443d6252a8b263dda3f7c60639e3fcf05d10b16e9b44b2e4de68616a223fc7e7",
+      "bytes": 58246,
+      "original_local_path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/margin-7158-3880/margin1500.hwpx"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/margin1500-2020.pdf",
+      "sha256": "c6637def9fdb63b9f2cd7034ab6953413cd6ef2ffa6508aafc1727ff2d496d7c",
+      "bytes": 524237,
+      "original_local_path": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-7158-margin1500-3881/reference/issue7158-margin1500-2020.pdf"
+    }
+  ],
+  "tsv": [
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/7158-full-candidate-native.tsv",
+      "sha256": "abdda7f8fb4a000c35fd41a8b3fe25d3a74b7d3c590dd6df73ca3ab0c8857fad",
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/7158-existing-full-document-3980/7158-full-candidate-native/silhouette.tsv",
+      "source_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/7158-full-base-native.tsv",
+      "sha256": "c018accc72fb1f0ef55b5bef8125d613aa227e0587f256a8504344bca22e3a63",
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/7158-existing-full-document-3980/7158-full-base-native/silhouette.tsv",
+      "source_code": "3e02fe2749866a8453af3eb3901b9c1a674cccaf"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/7158-full-candidate-wasm.tsv",
+      "sha256": "95cb9c8b701bf626bb0ebea5c99aab8a608c109d22038a8bf349609fe79f6f49",
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/7158-existing-full-document-3980/7158-full-candidate-wasm/silhouette.tsv",
+      "source_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/7158-full-base-wasm.tsv",
+      "sha256": "fe11a32a92f06cc659cdeebeda8a71d6c7858ef1769f967740dbaf39f00bc5a0",
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/7158-existing-full-document-3980/7158-full-base-wasm/silhouette.tsv",
+      "source_code": "3e02fe2749866a8453af3eb3901b9c1a674cccaf"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/7158-original-base-native.tsv",
+      "sha256": "0adb8ff8ff196d0daac1e9a8b4c9bc18312e62f427cd1681d8baf6a216222154",
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/remaining-visual-3929/7158-original-base-native/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/7158-margin750-base-native.tsv",
+      "sha256": "24fbb2890cea1ff4eb69154154840cfdebc982584118aa7069aa98189f2d9699",
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/remaining-visual-3929/7158-margin750-base-native/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/7158-original-candidate-native.tsv",
+      "sha256": "eafebe4d08f9324008bc0ef9a8bad714a510df9a40c90ee7278fdcbf8ceab1ad",
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/remaining-visual-3946/7158-original-candidate-native/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/7158-margin750-candidate-native.tsv",
+      "sha256": "de0e8f746660dbedd633904eff2a9226eb2a488d77357f00a3b10b9bece37d64",
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/remaining-visual-3946/7158-margin750-candidate-native/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/7158-margin1500-candidate-native.tsv",
+      "sha256": "5892291fc5fa0c4f6cdd911bd67590eafb9cbe6024df240776f1dc1a92e16272",
+      "source": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/remaining-visual-3946/7158-margin1500-candidate-native/silhouette.tsv"
+    }
+  ],
+  "baseline_rows": [
+    {
+      "path": "tests/fixtures/body_overflow_baseline.tsv",
+      "source_commit": "726d40fd476999fb384dbc7e8d6cf38195334b2f",
+      "git_blob": "721c93669374b331358c0bf9c88246d7c2eaa3fd",
+      "removed_rows": [
+        "issue4090/156492236_규제샌드박스_min.hwpx\t0\n"
+      ]
+    },
+    {
+      "path": "tests/fixtures/off_canvas_baseline.tsv",
+      "source_commit": "726d40fd476999fb384dbc7e8d6cf38195334b2f",
+      "git_blob": "2305137db337abfe9662b62bb70a4218f7bb326d",
+      "removed_rows": [
+        "issue4090/156492236_규제샌드박스_min.hwpx\t7\n"
+      ]
+    }
+  ],
+  "shared_original_retained": "samples/issue4090/156492236_규제샌드박스_min.hwpx",
+  "shared_contracts_retained": [
+    "src/serializer/hwpx/char_shape_tables/same_id_corpus.rs",
+    "tests/fixtures/char_shapes/corpus_same_id_para_char_shapes.jsonl"
+  ],
+  "restoration": "독립 Print와 전쪽 Native/fresh WASM raw 90% 이상 및 직접 판독 후 새 이름의 관계형 검사로 복원. 완료 쪽 양쪽 98% 이상일 때만 ±2px 허용.",
+  "representative_pngs": [
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/candidate-native-overlay_007.png",
+      "sha256": "2bcd6ae8cf7b357bb607ac1675a9f78f381b04d5b02426eb433165420be71c11",
+      "producer_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/candidate-native-overlay_015.png",
+      "sha256": "5e7d231520eab9af13440fc9093ed2c70a83769f39a4416ad85949b83ab03f31",
+      "producer_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/candidate-native-review_007.png",
+      "sha256": "8fc79c46542218e6c25e7e74a1483caa0b8bcba3d1b03c7a030a48bc98d435de",
+      "producer_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/candidate-native-review_015.png",
+      "sha256": "6ef210f55831808c5071fe29bebd20fb4f668caf5f32e8cf240b345f3b3a78ec",
+      "producer_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/candidate-wasm-overlay_007.png",
+      "sha256": "ec1b35b85ca241de0a59509a8744d15a35928892fc52b17d1cd11b95e7e0dfb1",
+      "producer_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/candidate-wasm-overlay_015.png",
+      "sha256": "3867b2621c8bab80489c19d9f3e876ecbef4097f29a091d23a81fc9a45e3fbeb",
+      "producer_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/candidate-wasm-review_007.png",
+      "sha256": "8c4aee1e37fe2fadd945426b0952df80fe2615970b85a99ccc69cff71bf827cf",
+      "producer_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/candidate-wasm-review_015.png",
+      "sha256": "a2c12f1218ed7ce4dcca8267e98ce4bab72dcd18fc842928f221c23ba65dbe1f",
+      "producer_code": "9504cf250a211077a2f6c7f9137a890f8f5db8eb"
+    }
+  ],
+  "archive_source_hashes_verified": true
+}

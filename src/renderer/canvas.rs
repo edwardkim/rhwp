@@ -158,9 +158,7 @@ impl CanvasRenderer {
                     return;
                 }
                 // [shot 05] 회전 90/270° 시 bbox extent swap — 이중회전 방지.
-                let eff_bbox = img
-                    .transform
-                    .effective_image_bbox(&img.paint_bbox(&node.bbox));
+                let eff_bbox = img.transformed_paint_bbox(&node.bbox);
                 self.open_shape_transform(&img.transform, &eff_bbox);
                 if let Some(ref data) = img.data {
                     self.draw_image(
@@ -271,9 +269,7 @@ impl CanvasRenderer {
                             resolved,
                         } => {
                             // [shot 05] 회전 90/270° 시 bbox extent swap — 이중회전 방지.
-                            let eff_bbox = image
-                                .transform
-                                .effective_image_bbox(&image.paint_bbox(bbox));
+                            let eff_bbox = image.transformed_paint_bbox(bbox);
                             self.open_shape_transform(&image.transform, &eff_bbox);
                             let data = resolved
                                 .as_deref()
@@ -686,6 +682,7 @@ mod tests {
                 border_fill_id: 0,
                 text_direction: 0,
                 clip: true,
+                closed_reflow_frame: false,
                 page_fragment: false,
                 model_cell_index: Some(0),
             }),

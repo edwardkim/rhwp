@@ -18,6 +18,8 @@ pub struct FormAppearance {
     pub italic: bool,
     pub label_width: f64,
     pub draw_frame: bool,
+    /// 체크·라디오의 배경 채움. 아이콘 내부 흰색과는 별개의 원본 속성이다.
+    pub opaque_background: bool,
     /// 96dpi classic UI pixel을 문서 출력 해상도로 변환한다.
     pub pixel_scale: f64,
 }
@@ -31,6 +33,7 @@ impl Default for FormAppearance {
             italic: false,
             label_width: 0.0,
             draw_frame: true,
+            opaque_background: true,
             pixel_scale: 1.0,
         }
     }
@@ -71,7 +74,13 @@ impl FormAppearance {
             draw_frame: !form
                 .properties
                 .get("DrawFrame")
-                .is_some_and(|v| v == "0" || v.eq_ignore_ascii_case("false")),
+                .is_some_and(|v| v == "0" || v.eq_ignore_ascii_case("false"))
+                && (matches!(form.form_type, FormType::CheckBox | FormType::RadioButton)
+                    || form.properties.get("BorderType").is_none_or(|v| v != "0")),
+            opaque_background: form
+                .properties
+                .get("BackStyle")
+                .is_none_or(|v| v != "0" && !v.eq_ignore_ascii_case("TRANSPARENT")),
             pixel_scale: dpi / 96.0,
         }
     }
@@ -216,6 +225,9 @@ pub fn form_drawing(form: &FormObjectNode, b: BoundingBox) -> FormDrawing {
             }
         }
         FormType::CheckBox => {
+            if a.opaque_background {
+                rect(&mut out, b, &form.back_color);
+            }
             let size = (13.0 * s).min(b.height).min(b.width);
             let icon = BoundingBox::new(b.x, cy - size / 2.0, size, size);
             rect(&mut out, icon, "#ffffff");
@@ -237,6 +249,9 @@ pub fn form_drawing(form: &FormObjectNode, b: BoundingBox) -> FormDrawing {
             tx = b.x + (40.0 / 3.0 + 4.0) * s;
         }
         FormType::RadioButton => {
+            if a.opaque_background {
+                rect(&mut out, b, &form.back_color);
+            }
             let r = (5.0 * s).min(b.height / 2.0).min(b.width / 2.0);
             let cx = b.x + r;
             out.push(FormPrimitive::Circle {

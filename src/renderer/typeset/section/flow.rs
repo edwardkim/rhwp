@@ -83,10 +83,13 @@ impl TypesetEngine {
                             }
                             let left_gap = ox0 - cax;
                             let right_gap = cax + caw - ox1;
+                            // 사각형은 원본의 좌우 바깥 여백까지 이미 포함한다.
+                            // 별도 고정 간격을 얹으면 원점과 가용 폭이 함께
+                            // 달라져 같은 배제 경계를 측정·paint에서 잃는다.
                             if right_gap >= left_gap {
-                                cs_px = cs_px.max(ox1 - cax + 3.8);
+                                cs_px = cs_px.max(ox1 - cax);
                             } else {
-                                right_cut = right_cut.min(left_gap - 3.8);
+                                right_cut = right_cut.min(left_gap);
                             }
                         }
                         let sw_px = (right_cut - cs_px).max(0.0);
@@ -174,7 +177,7 @@ impl TypesetEngine {
                         if right_gap < left_gap {
                             continue; // 우측 개체 형상은 미지원(현행 유지)
                         }
-                        let cs_px = ox1 - cax + 3.8;
+                        let cs_px = ox1 - cax;
                         let sw_px = caw - cs_px;
                         if sw_px < caw * 0.25 {
                             continue;

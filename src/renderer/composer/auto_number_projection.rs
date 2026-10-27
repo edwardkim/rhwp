@@ -1,4 +1,4 @@
-//! note 표제와 개체 자동 번호를 해당 control의 원문 위치에 표시한다.
+//! 자동 번호를 해당 control의 원문 자리표와 같은 표시 런에 투영한다.
 
 use super::{insert_control_text_run, ComposedParagraph, ComposedTextRun, SpaceMetric};
 use crate::model::{
@@ -44,6 +44,7 @@ fn project_placeholder(
                 if offset > 0 {
                     let mut before = run.clone();
                     before.text = chars[..offset].iter().collect();
+                    before.display_text = run.display_for_model_range(0, offset);
                     parts.push(before);
                 }
                 let mut marker = run.clone();
@@ -55,6 +56,7 @@ fn project_placeholder(
                 if offset + 1 < chars.len() {
                     let mut after = run.clone();
                     after.text = chars[offset + 1..].iter().collect();
+                    after.display_text = run.display_for_model_range(offset + 1, chars.len());
                     parts.push(after);
                 }
                 line.runs.splice(index..=index, parts);
@@ -67,30 +69,40 @@ fn project_placeholder(
 }
 
 pub(super) fn project(composed: &mut ComposedParagraph, para: &Paragraph) {
-    let positions = para.control_text_positions();
-    let utf16_positions = para.control_utf16_positions();
+    project_where(composed, para, |kind| {
+        // 본문 개체 번호도 모델에서 할당한 현재 번호를 자기 자리표에 표시한다.
+        // 쪽·총쪽수는 페이지 계획이 완성된 후 실제 쪽을 아는 소비자가 결정한다.
+        !matches!(kind, AutoNumberType::Page | AutoNumberType::TotalPage)
+    });
+}
+
+/// 캡션은 일반 본문 구성의 project를 거치지 않으므로 자체 구성 직후 투영한다.
+pub(crate) fn project_caption(composed: &mut ComposedParagraph, para: &Paragraph) {
+    project_where(composed, para, |kind| {
+        !matches!(kind, AutoNumberType::Footnote | AutoNumberType::Endnote)
+    });
+}
+
+fn project_where(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    owns: impl Fn(AutoNumberType) -> bool,
+) {
+    let sources = para.control_source_positions();
     for (index, control) in para.controls.iter().enumerate() {
         let Control::AutoNumber(number) = control else {
             continue;
         };
-        if !matches!(
-            number.number_type,
-            AutoNumberType::Footnote
-                | AutoNumberType::Endnote
-                | AutoNumberType::Picture
-                | AutoNumberType::Table
-                | AutoNumberType::Equation
-        ) {
+        if !owns(number.number_type) {
             continue;
         }
-        let Some(&position) = positions.get(index) else {
+        let Some(source) = sources.get(index) else {
             continue;
         };
-        let utf16 = utf16_positions.get(index).copied().unwrap_or(0);
+        let position = source.char_index;
+        let utf16 = source.utf16;
         let style = super::find_active_char_shape(&para.char_shapes, utf16);
-        if para.char_offsets.get(position).copied() == Some(utf16)
-            && project_placeholder(composed, position, number, style)
-        {
+        if source.owns_char && project_placeholder(composed, position, number, style) {
             continue;
         }
         // 원문 scalar를 갖지 않는 형식의 control만 별도 표시 런을 삽입한다.

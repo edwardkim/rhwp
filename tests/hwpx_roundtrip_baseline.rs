@@ -88,7 +88,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
     let root = Path::new(SAMPLES_ROOT);
     let mut acc = Vec::new();
     walk(root, root, &mut acc);
-    acc.retain(|(path, _)| !is_exam_fixture(path));
+    acc.retain(|(path, _)| !is_deferred_fixture(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples/hwpx 에 .hwpx 샘플이 없음");
     acc

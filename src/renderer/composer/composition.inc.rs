@@ -371,12 +371,13 @@ fn compose_paragraph_scoped(
 
     if let Some(styles) = metric_styles {
         equation_line_metrics::refresh_equation_rows(&mut composed, para, styles);
+        empty_line_metrics::refresh(&mut composed, para, styles);
     }
 
     supplemental_clusters::preserve_literal_spaces(&mut composed, &para.literal_figure_spaces);
 
     // CharOverlap 글자를 조합된 텍스트에 삽입
-    inject_char_overlap_text(&mut composed, para);
+    inject_char_overlap_text(&mut composed, para, metric_styles);
 
     // PUA 테두리 숫자(사각형/원형 안의 숫자) → CharOverlap 런으로 변환
     convert_pua_enclosed_numbers(&mut composed);
@@ -467,7 +468,12 @@ pub(crate) fn tac_host_trailing_spacing(
     native_stored_layout: bool,
     dpi: f64,
 ) -> f64 {
-    let spacing = crate::renderer::hwpunit_to_px(seg.line_spacing.max(0), dpi);
+    let spacing = crate::renderer::hwpunit_to_px(seg.line_spacing, dpi);
+    // 압축 간격은 글자 높이에 대한 전진 감소량이다. 양수 저장 간격의
+    // 절반 분배 규칙을 적용하거나 0으로 올리면 다음 문단이 내려간다.
+    if spacing <= 0.0 {
+        return spacing;
+    }
     let current_owned_row = hwpx_stored_layout
         && para.line_segs.len() == 1
         && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
@@ -502,6 +508,11 @@ pub(crate) fn tac_host_trailing_spacing(
 
 /// 다음 문단을 현재 프레임에서 재조판하면 저장 vpos가 간격의 나머지를
 /// 복원하지 않는다. 마지막 저장 TAC 줄은 후행 간격 전량을 흐름에 남긴다.
+fn successor_lacks_stored_text_axis(para: &Paragraph) -> bool {
+    para.stored_text_partition_is_dirty()
+        || crate::renderer::para_has_no_stored_line_segs(para)
+}
+
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn tac_host_trailing_spacing_at_boundary(
     para: &Paragraph,
@@ -519,9 +530,9 @@ pub(crate) fn tac_host_trailing_spacing_at_boundary(
             .line_segs
             .last()
             .is_some_and(|last| std::ptr::eq(last, seg))
-        && next_para.is_some_and(crate::renderer::para_has_no_stored_line_segs)
+        && next_para.is_some_and(successor_lacks_stored_text_axis)
     {
-        crate::renderer::hwpunit_to_px(seg.line_spacing.max(0), dpi)
+        crate::renderer::hwpunit_to_px(seg.line_spacing, dpi)
     } else {
         tac_host_trailing_spacing(
             para,
@@ -551,9 +562,7 @@ pub(crate) fn tac_successor_uses_reflow_spacing(
             .last()
             .is_some_and(|last| std::ptr::eq(last, seg))
         && next_para.is_some_and(|next| {
-            next.controls.is_empty()
-                && !next.stored_text_partition_is_dirty()
-                && crate::renderer::para_has_no_stored_line_segs(next)
+            next.controls.is_empty() && successor_lacks_stored_text_axis(next)
         })
 }
 

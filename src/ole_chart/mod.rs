@@ -6,9 +6,13 @@
 
 pub mod grid;
 pub mod ir;
+mod legacy_column_layout;
 mod legacy_column_renderer;
 mod legacy_combo_renderer;
+mod legacy_legend_layout;
 mod legacy_presentation;
+mod legacy_string;
+mod legacy_text_metrics;
 mod ooxml_text;
 pub mod orientation;
 pub mod parser;

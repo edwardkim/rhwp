@@ -313,6 +313,7 @@ impl TypesetEngine {
                 inline_placements: st.inline_placements.clone(),
                 inline_flow_plans: st.inline_flow_plans.clone(),
                 stored_paragraph_flow_ends: st.stored_paragraph_flow_ends.clone(),
+                host_compositions: st.host_compositions.clone(),
                 stored_column_top_spacings: st.stored_column_top_spacings.clone(),
                 float_pushed_line_spacings: st.float_pushed_line_spacings.clone(),
                 page_band_flow_starts: st.page_band_flow_starts.clone(),

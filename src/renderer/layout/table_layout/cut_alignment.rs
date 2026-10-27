@@ -28,6 +28,7 @@ impl LayoutEngine {
         }) {
             let trailing = self.nested_cut_terminal_line_spacing(table, cell, window);
             window.iter().map(|unit| unit.height).sum::<f64>()
+                + self.nested_continuation_header_height(cell, &units, lo, styles)
                 - self.continued_cut_nested_atom_tail(cell, &units, lo, lo + window.len(), styles)
                 + self.mixed_nested_flow_extra_from_cut(cell, table, styles, lo, lo + window.len())
                 - trailing

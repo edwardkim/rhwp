@@ -161,7 +161,7 @@ SVG/렌더 트리 산출 후 Chrome 웹폰트 래스터와 한컴 PDF의 96dpi �
 - 원본 SHA-256: `af198ad2dff0c1ad0458d7147ca8fcf42b45b0d2e5ceb2e10353debc8250a5b9`.
 - 기존 PDF 두 개는 `pdf/issue3820/`, `pdf/issue4090/`의 축약본이므로 전체 문서 정본으로 대용하지 않았다.
 - 비동기 MCP `start → status → download`, engine `2020`, 한컴 버전 `12.0.0.4605`, 43.202초, 전처리 없음.
-- 결과: [전체 기준 PDF](../../../pdf/156492236-regulatory-sandbox-full-2020.pdf), 17쪽, 926,826 bytes.
+- 결과: [전체 기준 PDF](../assets/issue_8236/regulatory_sandbox/reference-full-2020.pdf), 17쪽, 926,826 bytes.
 - PDF SHA-256: `54139a4760f911f57861f33920f5755e07eee85c1cf2cfedfd6c272e25a5c3e9`.
 - 서버 URL·토큰·비공개 환경 파일 내용은 기록하지 않는다.
 - x 수치 재현과 roundtrip PASS만으로 전체 PDF 일치를 주장하지 않는다. 9쪽 본문 넘침은 A/B로 확인한 기존 잔여이며 #6926의 가로 여백 변경을 보류하는 근거로 사용하지 않는다.

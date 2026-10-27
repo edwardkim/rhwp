@@ -4,6 +4,9 @@ use super::paragraph::Paragraph;
 use super::shape::{common_obj_offsets, Caption};
 use super::*;
 
+#[path = "table_inline_grid.rs"]
+mod inline_grid;
+
 /// [#2722] `Table::rebuild_grid()` 가 예약할 수 있는 최대 그리드 칸 수.
 ///
 /// 실측 근거: `samples/` 전수 조사(파일 343개, 중첩 포함 표 5,353개)에서
@@ -729,7 +732,7 @@ impl Table {
         let mut owners = self
             .cells
             .iter()
-            .map(|cell| to_i32(u64::from(cell.width)))
+            .map(|cell| to_i32(u64::from(self.physical_cell_width_hu(cell))))
             .collect::<Vec<_>>();
         let col_count = usize::from(self.col_count);
         if owners.is_empty()
@@ -756,7 +759,7 @@ impl Table {
             {
                 continue;
             }
-            base_tracks[col] = base_tracks[col].max(cell.width);
+            base_tracks[col] = base_tracks[col].max(self.physical_cell_width_hu(cell));
         }
         if base_tracks.contains(&0) {
             return owners;
@@ -804,7 +807,7 @@ impl Table {
                     complete = false;
                     break;
                 }
-                row_total = row_total.saturating_add(u64::from(cell.width));
+                row_total = row_total.saturating_add(u64::from(self.physical_cell_width_hu(cell)));
                 next_col = end;
             }
             let row_spacing = i64::from(self.outer_cell_spacing_hu())
@@ -1377,14 +1380,18 @@ impl Table {
     /// 실제 폭보다 커진다(3049001 약장 실측 12,872 vs 17,299 HU). 선언 폭
     /// `common.width` 가 있으면 그것이 이 표의 폭이다.
     ///
-    /// 선언 폭이 0 인 합성 표에서만 열 합으로 폴백한다.
+    /// TAC 표의 모든 완결 행이 같은 물리 폭을 선언하면 그 공통 폭을 사용한다.
+    /// 이때 개체 선언 크기는 오래된 캐시일 수 있으며 실제 칸 경계를 바꾸지 않는다.
+    /// 행 합의가 없고 선언 폭도 0인 합성 표에서만 기존 열 합으로 폴백한다.
     ///
     /// 이 규칙은 종전에 `is_tac_table_inline` 한 자리에만 있었고, 나머지 흐름 폭
     /// 호출부 셋은 원시 합을 그대로 써서 같은 결함이 남아 있었다 — 표가 선언보다
     /// 넓게 배치돼 본문 오른쪽 여백을 넘었다(samples 전수에서 12문서).
     /// 규칙을 모델로 올려 호출부가 고를 수 없게 한다.
     pub fn flow_width_hu(&self) -> HwpUnit {
-        if self.common.width > 0 {
+        if let Some(width) = self.closed_inline_grid_width_hu() {
+            width
+        } else if self.common.width > 0 {
             self.common.width
         } else {
             self.get_column_widths().iter().sum()

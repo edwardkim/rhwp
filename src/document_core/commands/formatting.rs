@@ -1098,7 +1098,7 @@ impl DocumentCore {
         }
 
         self.document.sections[sec_idx].raw_stream = None;
-        self.rebuild_section(sec_idx);
+        self.rebuild_paragraph_deferred_in_batch(sec_idx, para_idx);
         self.event_log.push(DocumentEvent::CharFormatChanged {
             section: sec_idx,
             para: para_idx,

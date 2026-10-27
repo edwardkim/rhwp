@@ -1,10 +1,22 @@
+import { fontProgramOwnsFamily, intrinsicCanvasSourceFamily } from './canvas-intrinsic-font.mjs';
 import { getHostFontState, localFontFaceKey, loadRendererLocalFont,
   onHostFontsChanged, resolveRendererLocalFont, type LocalFontRecord } from './local-fonts.ts';
 import { parseCssFontFamilyList, formatCssFontFamilyList } from './font-substitution.ts';
-import { normalizeFontFaceData } from './sfnt-face.ts';
+import { ordinaryTextFontFaceData, type OrdinaryTextFontSource } from './ordinary-text-font.ts';
 
-interface CanvasHostFace { alias: string; font: FontFace }
+interface CanvasHostFace {
+  alias: string;
+  font: FontFace;
+  bytes: ArrayBuffer;
+  intrinsicAlias: string;
+  intrinsicFont: FontFace | null;
+  ownership: Map<string, boolean>;
+}
 type CanvasFontContext = Pick<CanvasRenderingContext2D, 'font' | 'measureText'>;
+interface CanvasFontSourceOwner extends OrdinaryTextFontSource {
+  registerTextFontGlyphCoverage?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
+  registerHftOutlineFont?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
+}
 let nextSession = 0;
 let currentSession: HostCanvasFontSession | null = null;
 
@@ -37,7 +49,10 @@ export class HostCanvasFontSession {
   reset(): void {
     this.epoch += 1;
     this.off?.(); this.off = null;
-    for (const { font } of this.faces.values()) this.fontSet?.delete(font);
+    for (const { font, intrinsicFont } of this.faces.values()) {
+      this.fontSet?.delete(font);
+      if (intrinsicFont) this.fontSet?.delete(intrinsicFont);
+    }
     this.fontSet = null;
     this.faces.clear(); this.aliases.clear(); this.pending.clear(); this.failures.clear();
     this.generation = -1;
@@ -51,7 +66,8 @@ export class HostCanvasFontSession {
     return this.generation === getHostFontState().generation && this.faces.has(localFontFaceKey(record));
   }
 
-  async prepare(records: readonly LocalFontRecord[]): Promise<void> {
+  async prepare(records: readonly LocalFontRecord[], sourceOwner: CanvasFontSourceOwner | null = null,
+    isCurrent: () => boolean = () => true): Promise<void> {
     const generation = getHostFontState().generation;
     if (this.generation !== generation) {
       this.reset(); this.generation = generation;
@@ -61,9 +77,21 @@ export class HostCanvasFontSession {
     this.fontSet = document.fonts;
     const epoch = this.epoch;
     for (const record of records) {
-      if (epoch !== this.epoch) return;
+      if (epoch !== this.epoch || !isCurrent()) return;
       const key = localFontFaceKey(record);
-      if (!record.hostReference || this.faces.has(key) || this.failures.has(key)) continue;
+      if (!record.hostReference || this.failures.has(key)) continue;
+      const register = (loaded: CanvasHostFace) => {
+        if (!isCurrent()) return;
+        for (const family of new Set([record.family, ...record.aliases])) {
+          sourceOwner?.registerTextFontGlyphCoverage?.(family, new Uint8Array(loaded.bytes), 0);
+          if (Number(record.hostReference!.face.weight ?? 400) === 400
+            && (record.hostReference!.face.slant ?? 'normal') === 'normal') {
+            sourceOwner?.registerHftOutlineFont?.(family, new Uint8Array(loaded.bytes), 0);
+          }
+        }
+      };
+      const loaded = this.faces.get(key);
+      if (loaded) { register(loaded); continue; }
       let pending = this.pending.get(key);
       if (!pending) {
         const stale = () => epoch !== this.epoch || generation !== getHostFontState().generation;
@@ -71,15 +99,26 @@ export class HostCanvasFontSession {
           try {
             const data = await loadRendererLocalFont(record);
             if (stale()) return;
-            const bytes = data ? normalizeFontFaceData(data.bytes, data.faceIndex ?? 0) : null;
+            const bytes = data ? ordinaryTextFontFaceData(data.bytes, data.faceIndex ?? 0, sourceOwner) : null;
             if (!bytes) throw new Error('Host font has no usable face');
             const alias = `__rhwp_host_face_${this.id}_${++this.serial}`;
             const face = record.hostReference!.face;
             const font = new FontFace(alias, bytes, { weight: String(face.weight ?? 400), style: face.slant ?? 'normal' });
             await font.load();
             if (stale()) return;
+            let intrinsicFont: FontFace | null = null;
+            const needsIntrinsic = Number(face.weight ?? 400) < 600
+              && [record.family, ...record.aliases].some(name => fontProgramOwnsFamily(bytes, name));
+            const intrinsicAlias = needsIntrinsic ? `${alias}__intrinsic` : alias;
+            if (intrinsicAlias !== alias) {
+              intrinsicFont = new FontFace(intrinsicAlias, bytes, { weight: '700', style: face.slant ?? 'normal' });
+              await intrinsicFont.load();
+              if (stale()) return;
+              this.fontSet!.add(intrinsicFont);
+            }
             this.fontSet!.add(font);
-            this.faces.set(key, { alias, font });
+            this.faces.set(key, { alias, font, bytes, intrinsicAlias, intrinsicFont, ownership: new Map() });
+            this.aliases.add(intrinsicAlias);
             this.aliases.add(alias);
           } catch {
             if (!stale()) this.failures.add(key);
@@ -88,6 +127,8 @@ export class HostCanvasFontSession {
         this.pending.set(key, pending);
       }
       await pending;
+      const prepared = this.faces.get(key);
+      if (prepared && epoch === this.epoch) register(prepared);
     }
   }
 
@@ -103,13 +144,21 @@ export class HostCanvasFontSession {
     const slant = tokens.includes('italic') ? 'italic' : tokens.includes('oblique') ? 'oblique' : 'normal';
     const families = parseCssFontFamilyList(match[3]);
     if (this.aliases.has(families[0])) return cssFont;
+    const intrinsic = families[0] ? intrinsicCanvasSourceFamily(families[0]) : null;
     const prepared: string[] = [];
-    for (const family of families) {
-      const record = resolveRendererLocalFont(family, { weight, slant });
+    for (const [index, family] of families.entries()) {
+      const requested = index === 0 ? intrinsic ?? family : family;
+      const record = resolveRendererLocalFont(requested, { weight: index === 0 && intrinsic ? 400 : weight, slant });
       const loaded = record?.hostReference ? this.faces.get(localFontFaceKey(record)) : null;
-      // 첫 face에 없는 글리프는 뒤 후보가 맡는다. 준비한 host bytes는
-      // 세션 별칭으로만 등록되므로 원래 family 이름만으로는 소비할 수 없다.
-      if (loaded && !prepared.includes(loaded.alias)) prepared.push(loaded.alias);
+      if (!loaded) continue;
+      // 실제 프로그램 소유 검증은 원 face에 적용하고 뒤 후보도 세션 별칭으로 공급한다.
+      if (index === 0 && intrinsic !== null && !loaded.ownership.has(intrinsic)) {
+        loaded.ownership.set(intrinsic, fontProgramOwnsFamily(loaded.bytes, intrinsic));
+      }
+      const ownsIntrinsic = index === 0 && intrinsic !== null && loaded.ownership.get(intrinsic) === true;
+      if (index === 0 && intrinsic !== null && !ownsIntrinsic) return null;
+      const selectedAlias = ownsIntrinsic ? loaded.intrinsicAlias : loaded.alias;
+      if (!prepared.includes(selectedAlias)) prepared.push(selectedAlias);
     }
     return prepared.length ? `${match[1]}${match[2]} ${formatCssFontFamilyList([...prepared, ...families])}` : null;
   }

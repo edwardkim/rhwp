@@ -1,0 +1,537 @@
+{
+  "runtime_head": "b9c1249098856f5cb1fb17c45d75ad76e855a18a",
+  "scope": "Same13 controls already qualified in4471/4482; source variants do not replace original Print",
+  "records": [
+    {
+      "key": "pr8032-current-width-38400",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "98.78322",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8032-current-width-38400_silhouette.tsv",
+          "tsv_sha256": "6dd99082b21662a8c193585e08b26b57f532359c53a9348091bd8e5e96c5b5f9",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "98.78261",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8032-current-width-38400_silhouette.tsv",
+          "tsv_sha256": "1a3dee217910a635e2b834eea02f0fd1a216b513d1fc28288739769c05f66273",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "input_sha256": "9ef1b0180eab92c311901a5be26936ac737df165c6a0cdf9b8a743553519b07d",
+      "input_bytes": 8904,
+      "pdf": "pdf/semanticist21-20261019/pr8032-print-alpha-wide-2020.pdf",
+      "pdf_sha256": "ca30c1fce58e933f0a20c7b842f1cd1c306d071f2f64b1fef110449532d5187d",
+      "pdf_bytes": 36248,
+      "original_input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "changed_entries": [],
+      "png": {
+        "mode": "P",
+        "dimensions": [
+          16,
+          16
+        ],
+        "sha256": "ea7d417dc9de2f04a3074a63690c99363d8738b9d614e96ccb289ea7b6573390",
+        "alpha_extrema": [
+          0,
+          255
+        ]
+      }
+    },
+    {
+      "key": "pr8032-current-width-4000",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "100.00000",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8032-current-width-4000_silhouette.tsv",
+          "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "100.00000",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8032-current-width-4000_silhouette.tsv",
+          "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8032_print_alpha/narrow.hwpx",
+      "input_sha256": "0a86ed26a5429f80b079ee18d37a6e3c6f1c8924787d353be44e0ebe09baa377",
+      "input_bytes": 8897,
+      "pdf": "pdf/semanticist21-20261019/pr8032-print-alpha-narrow-2020.pdf",
+      "pdf_sha256": "1d3d29dd82da18e53b1cf1d16483f24635cdc28c63d14151f515ae551d428ecd",
+      "pdf_bytes": 14525,
+      "original_input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "changed_entries": [
+        "Contents/section0.xml"
+      ],
+      "png": {
+        "mode": "P",
+        "dimensions": [
+          16,
+          16
+        ],
+        "sha256": "ea7d417dc9de2f04a3074a63690c99363d8738b9d614e96ccb289ea7b6573390",
+        "alpha_extrema": [
+          0,
+          255
+        ]
+      }
+    },
+    {
+      "key": "pr8036-saved-vpos-0",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "100.00000",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8036-saved-vpos-0_silhouette.tsv",
+          "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "100.00000",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8036-saved-vpos-0_silhouette.tsv",
+          "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8036_stored_tall_line/zero.hwpx",
+      "input_sha256": "a83882b554b8909890f4950ca8680f366c75b3797421e65dd632f60e3c0ad9f0",
+      "input_bytes": 4208,
+      "pdf": "pdf/pr8036_stored_tall_line/zero-2020.pdf",
+      "pdf_sha256": "a929d0384ce06938306e55753bbfa6055702651331e29e382f1ede05ddeb9d09",
+      "pdf_bytes": 10400
+    },
+    {
+      "key": "pr8036-saved-vpos-67200",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "100.00000",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8036-saved-vpos-67200_silhouette.tsv",
+          "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "100.00000",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8036-saved-vpos-67200_silhouette.tsv",
+          "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8036_stored_tall_line/continuing.hwpx",
+      "input_sha256": "21bb9f714b5e3ce646142cd4d8a34cd2c50600a89d6b741f75a2f7dbdbb4df0f",
+      "input_bytes": 4215,
+      "pdf": "pdf/pr8036_stored_tall_line/continuing-2020.pdf",
+      "pdf_sha256": "8ae130f8e28669e5036359e2c2a95d2c992f78947feaf1e9ab2f2811e39b478d",
+      "pdf_bytes": 10400
+    },
+    {
+      "key": "pr8031-api-defined-cell-native265",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "100.00000",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8031-api-defined-cell-native265_silhouette.tsv",
+          "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "100.00000",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8031-api-defined-cell-native265_silhouette.tsv",
+          "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8031_page_number_cell/pr8031-api-defined-page-number-cell.hwpx",
+      "input_sha256": "7e331d2c5a828bf4f915491ee8db3cd0a9eb253d7cc6caad80acebc37044e8b8",
+      "input_bytes": 7746,
+      "pdf": "pdf/semanticist21-20261019/pr8031-api-defined-page-number-cell-2020.pdf",
+      "pdf_sha256": "feb6345ec85aa9166fb3d7a6ce5a2359879cdff66f009c293fd237559986f1a9",
+      "pdf_bytes": 12779
+    },
+    {
+      "key": "pr8032-indexed-clean",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "98.78322",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8032-indexed-clean_silhouette.tsv",
+          "tsv_sha256": "6dd99082b21662a8c193585e08b26b57f532359c53a9348091bd8e5e96c5b5f9",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "98.78261",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8032-indexed-clean_silhouette.tsv",
+          "tsv_sha256": "1a3dee217910a635e2b834eea02f0fd1a216b513d1fc28288739769c05f66273",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8032_print_controls/pr8032-indexed-clean.hwpx",
+      "input_sha256": "a1ae85d3c32a347f43678c3a48ce28c7c511b59a6336ed36212390526e66f9e6",
+      "input_bytes": 8710,
+      "pdf": "pdf/semanticist21-20261019/print-controls/pr8032-indexed-clean-hancom-print.pdf",
+      "pdf_sha256": "ee2bbe2454e85df00533faca221064585e4ec11a1b2684a1aa198e8a8e74a90a",
+      "pdf_bytes": 36248,
+      "original_input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "changed_entries": [
+        "BinData/image1.png"
+      ],
+      "png": {
+        "mode": "P",
+        "dimensions": [
+          16,
+          16
+        ],
+        "sha256": "933dcfa04f3993241abc8ccb3e8b5589357407cbce0612dff4a1efc7d948c6bb",
+        "alpha_extrema": [
+          0,
+          255
+        ]
+      },
+      "independent_print": {
+        "engine": "2020",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "source_receipt": "output/pr-review/semanticist21-20261019/pr8032-codec-controls-print-4381-result.json"
+      }
+    },
+    {
+      "key": "pr8032-rgba16",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "98.78322",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8032-rgba16_silhouette.tsv",
+          "tsv_sha256": "6dd99082b21662a8c193585e08b26b57f532359c53a9348091bd8e5e96c5b5f9",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "98.78261",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8032-rgba16_silhouette.tsv",
+          "tsv_sha256": "1a3dee217910a635e2b834eea02f0fd1a216b513d1fc28288739769c05f66273",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8032_print_controls/pr8032-rgba16.hwpx",
+      "input_sha256": "a7b2a3cc8ca8fc14aefd637dccd00ceb5fc038c3e896a4ca852f49d1d2cf2f43",
+      "input_bytes": 8546,
+      "pdf": "pdf/semanticist21-20261019/print-controls/pr8032-rgba16-hancom-print.pdf",
+      "pdf_sha256": "79187768fa3ac0fa3d8364c4e839538528f7e5a4520da2f442bd67ab2b1c9344",
+      "pdf_bytes": 36248,
+      "original_input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "changed_entries": [
+        "BinData/image1.png"
+      ],
+      "png": {
+        "mode": "RGBA",
+        "dimensions": [
+          16,
+          16
+        ],
+        "sha256": "cf177931eb6cb9bdb19ae87d670a07dccf6b171fe745ab2cf5779d53ad9fd236",
+        "alpha_extrema": [
+          0,
+          255
+        ]
+      },
+      "independent_print": {
+        "engine": "2020",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "source_receipt": "output/pr-review/semanticist21-20261019/pr8032-codec-controls-print-4381-result.json"
+      }
+    },
+    {
+      "key": "pr8032-indexed48",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "99.29159",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8032-indexed48_silhouette.tsv",
+          "tsv_sha256": "7e9297b4c8e564a09545488c0d19557b79af8d8c0fb54afec51dc579ff0c32c7",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "99.29123",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8032-indexed48_silhouette.tsv",
+          "tsv_sha256": "30d988bbeac3f81905280dab08e40726245e2bce61ca0215249fc17043e953e8",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8032_print_controls/pr8032-indexed48.hwpx",
+      "input_sha256": "f067e048a52c683a15ac7aac0aa3ba1d974735095482c57888e3b66c2752c890",
+      "input_bytes": 9065,
+      "pdf": "pdf/semanticist21-20261019/print-controls/pr8032-indexed48-hancom-print.pdf",
+      "pdf_sha256": "063b68aa87f4f7b9d2192d09f7bbe7098d4d935f7eb5afe59a2a9d1d4503b748",
+      "pdf_bytes": 40487,
+      "original_input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "changed_entries": [
+        "BinData/image1.png"
+      ],
+      "png": {
+        "mode": "P",
+        "dimensions": [
+          48,
+          48
+        ],
+        "sha256": "ceeffbea8d1733dd545fbe7a0be9da2f58af383c4e0fd0d7e264ceead29741f7",
+        "alpha_extrema": [
+          0,
+          255
+        ]
+      },
+      "independent_print": {
+        "engine": "2020",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "source_receipt": "output/pr-review/semanticist21-20261019/pr8032-codec-controls-print-4381-result.json"
+      }
+    },
+    {
+      "key": "pr8032-indexed32",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "98.68050",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8032-indexed32_silhouette.tsv",
+          "tsv_sha256": "85e6e0bc664085436ed60986ec733878a593f49d92cf8e5d44cbdf9214a673d9",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "98.67984",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8032-indexed32_silhouette.tsv",
+          "tsv_sha256": "b5aa5adf79a158218e72ad73acecbe6576a19093c701c6870f1be3f830c8ad28",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8032_print_controls/pr8032-indexed32.hwpx",
+      "input_sha256": "9d70e86078bb0d430aae16e396ccb7ea0eeb8b27b421af3163ae44eba50951c6",
+      "input_bytes": 8914,
+      "pdf": "pdf/semanticist21-20261019/print-controls/pr8032-indexed32-hancom-print.pdf",
+      "pdf_sha256": "76405d3003777b2dc8652fdee89226723db5729674b5cee39adb0224cfb7060c",
+      "pdf_bytes": 40954,
+      "original_input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "changed_entries": [
+        "BinData/image1.png"
+      ],
+      "png": {
+        "mode": "P",
+        "dimensions": [
+          32,
+          32
+        ],
+        "sha256": "3ddd1f0541e7b3e77aa0ca3371a7b9760ba4295c1397beb9e74eea8c54e49610",
+        "alpha_extrema": [
+          0,
+          255
+        ]
+      },
+      "independent_print": {
+        "engine": "2020",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "source_receipt": "output/pr-review/semanticist21-20261019/pr8032-codec-controls-print-4381-result.json"
+      }
+    },
+    {
+      "key": "pr8032-constant-alpha128",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "100.00000",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8032-constant-alpha128_silhouette.tsv",
+          "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "100.00000",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8032-constant-alpha128_silhouette.tsv",
+          "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8032_print_controls/pr8032-constant-alpha128.hwpx",
+      "input_sha256": "6a44bb7b32c81c9297b4f84ef8b6c1dfafbe7e5b73ac6041ddadd2dca2d92aa8",
+      "input_bytes": 8006,
+      "pdf": "pdf/semanticist21-20261019/print-controls/pr8032-constant-alpha128-hancom-print.pdf",
+      "pdf_sha256": "a337ad8054885da4640a285a17d4496f85c5d06fb77b4b4ed6853f87fec6496b",
+      "pdf_bytes": 14568,
+      "original_input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "changed_entries": [
+        "BinData/image1.png"
+      ],
+      "png": {
+        "mode": "RGBA",
+        "dimensions": [
+          16,
+          16
+        ],
+        "sha256": "cb147e70ccaa1939613a75fb47bb6333aab0e6a2e0c56d152fc6dd0f9cdddb4a",
+        "alpha_extrema": [
+          128,
+          128
+        ]
+      },
+      "independent_print": {
+        "engine": "2020",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "source_receipt": "output/pr-review/semanticist21-20261019/pr8032-alpha-controls-print-4382-result.json"
+      }
+    },
+    {
+      "key": "pr8032-constant-rgb-original-alpha",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "98.67346",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8032-constant-rgb-original-alpha_silhouette.tsv",
+          "tsv_sha256": "667d4ebcd2ac8763636333db801e9e496f39fff1d02095e999faa8c0447840ee",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "98.67278",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8032-constant-rgb-original-alpha_silhouette.tsv",
+          "tsv_sha256": "b3104cef5c2aa21ba0a2a6899937b3224bcc008c5e13a4ef91301da15a975c4b",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8032_print_controls/pr8032-constant-rgb-original-alpha.hwpx",
+      "input_sha256": "c78185f247c538178b5f0e674080f5e5afd7a21bf4cff73612d665193abf54ef",
+      "input_bytes": 8354,
+      "pdf": "pdf/semanticist21-20261019/print-controls/pr8032-constant-rgb-original-alpha-hancom-print.pdf",
+      "pdf_sha256": "8e9c96c3a92f8f34dfea9f292343bdb678abd521da2b51df59b235796872dd1d",
+      "pdf_bytes": 36104,
+      "original_input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "changed_entries": [
+        "BinData/image1.png"
+      ],
+      "png": {
+        "mode": "RGBA",
+        "dimensions": [
+          16,
+          16
+        ],
+        "sha256": "bf5e86d32e672501ae0f4c9ed6eb06b07b296e468ce770e1fb8c6923ea5f7733",
+        "alpha_extrema": [
+          0,
+          255
+        ]
+      },
+      "independent_print": {
+        "engine": "2020",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "source_receipt": "output/pr-review/semanticist21-20261019/pr8032-alpha-controls-print-4382-result.json"
+      }
+    },
+    {
+      "key": "pr8032-ratio-5",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "99.41467",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8032-ratio-5_silhouette.tsv",
+          "tsv_sha256": "a93cb9ce51ab2e66feead667426a1bd726be8607c16fe270ccf25d0efd18c9e8",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "99.41408",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8032-ratio-5_silhouette.tsv",
+          "tsv_sha256": "4bee95a58e0fec376ee5854104cdee8484688d6df17416428c4e073b71d2120d",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8032_print_controls/pr8032-ratio-5.hwpx",
+      "input_sha256": "99166dfe1e470a3973ef22c9780a0d4e87db9b26309f1f474a91854dac35a961",
+      "input_bytes": 8628,
+      "pdf": "pdf/semanticist21-20261019/print-controls/pr8032-ratio-5-hancom-print.pdf",
+      "pdf_sha256": "228065248a45ede0ed5daaf73919a024e5e36177e2ed7251eea473aaaa04e948",
+      "pdf_bytes": 25055,
+      "original_input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "changed_entries": [
+        "Contents/section0.xml"
+      ],
+      "png": {
+        "mode": "P",
+        "dimensions": [
+          16,
+          16
+        ],
+        "sha256": "ea7d417dc9de2f04a3074a63690c99363d8738b9d614e96ccb289ea7b6573390",
+        "alpha_extrema": [
+          0,
+          255
+        ]
+      },
+      "independent_print": {
+        "engine": "2020",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "source_receipt": "output/pr-review/semanticist21-20261019/pr8032-aspect-controls-print-4385-result.json"
+      }
+    },
+    {
+      "key": "pr8032-half-same-ratio",
+      "captures": [
+        {
+          "backend": "native",
+          "raw_min": "99.88849",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/native/pr8032-half-same-ratio_silhouette.tsv",
+          "tsv_sha256": "85e8de25ff85e8144ee8468c62d487048624173a8e2ea513e5b3c20d14538b27",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-native-4471-result.json"
+        },
+        {
+          "backend": "wasm",
+          "raw_min": "99.88830",
+          "tsv": "mydocs/pr/assets/pr_8032_print_controls/wasm/pr8032-half-same-ratio_silhouette.tsv",
+          "tsv_sha256": "4dde50b0dea9834124a0c997d7a85d46bfdfa236cacefb6f500c7eb2d692e0cd",
+          "source_receipt": "output/pr-review/semanticist21-20261019/cell-defaults-current-wasm-4482-result.json"
+        }
+      ],
+      "input": "tests/fixtures/pr8032_print_controls/pr8032-half-same-ratio.hwpx",
+      "input_sha256": "45416a9db3c68fcfdaa65426dacc320f232061c4faba2ae7ec2d89ce2e0a3753",
+      "input_bytes": 8626,
+      "pdf": "pdf/semanticist21-20261019/print-controls/pr8032-half-same-ratio-hancom-print.pdf",
+      "pdf_sha256": "2aaf4ca8c19edcbcf43c01f78976a85023e75dd7935dadc319a148e6ee48b093",
+      "pdf_bytes": 21669,
+      "original_input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "changed_entries": [
+        "Contents/section0.xml"
+      ],
+      "png": {
+        "mode": "P",
+        "dimensions": [
+          16,
+          16
+        ],
+        "sha256": "ea7d417dc9de2f04a3074a63690c99363d8738b9d614e96ccb289ea7b6573390",
+        "alpha_extrema": [
+          0,
+          255
+        ]
+      },
+      "independent_print": {
+        "engine": "2020",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "source_receipt": "output/pr-review/semanticist21-20261019/pr8032-aspect-controls-print-4385-result.json"
+      }
+    }
+  ]
+}

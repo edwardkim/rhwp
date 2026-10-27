@@ -7,6 +7,7 @@ fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {
             Control::Shape(shape) if shape.common().treat_as_char => InlineControlType::Shape,
             Control::Picture(pic) if pic.common.treat_as_char => InlineControlType::Shape,
             Control::Equation(eq) if eq.common.treat_as_char => InlineControlType::Shape,
+            Control::Form(form) if form.common.treat_as_char => InlineControlType::Shape,
             Control::SectionDef(_) | Control::ColumnDef(_) => InlineControlType::Other,
             _ => continue,
         };
@@ -75,7 +76,11 @@ pub(crate) fn find_render_inline_control_positions(para: &Paragraph) -> Vec<usiz
 ///
 /// char_offsets 갭 분석으로 각 CharOverlap의 원래 텍스트 위치를 복원하고,
 /// 해당 위치의 composed line에서 기존 텍스트 런을 분할하여 CharOverlap 런을 삽입한다.
-fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) {
+fn inject_char_overlap_text(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    styles: Option<&ResolvedStyleSet>,
+) {
     // CharOverlap 컨트롤과 인덱스 수집
     let char_overlap_indices: Vec<(usize, &crate::model::control::CharOverlap)> = para
         .controls
@@ -96,6 +101,7 @@ fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) 
 
     // 모든 컨트롤의 텍스트 위치 결정
     let control_positions = para.control_text_positions();
+    let stream_positions = para.control_utf16_positions();
 
     // CharOverlap별 (텍스트위치, 런) 수집
     let mut insertions: Vec<(usize, ComposedTextRun)> = Vec::new();
@@ -104,13 +110,30 @@ fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) 
         if text.is_empty() {
             continue;
         }
-        let char_style_id = co
+        let stored_char_style_id = co
             .char_shape_ids
             .iter()
             .find(|&&id| id != 0xFFFFFFFF)
             .copied()
             .unwrap_or(0);
         let text_pos = control_positions.get(*ctrl_idx).copied().unwrap_or(0);
+        // 제어 슬롯 뒤 글자의 스타일이 아니라, 원문 슬롯 자체를 소유한 run을 찾는다.
+        let stream_pos = stream_positions.get(*ctrl_idx).copied().unwrap_or(0);
+        let host_style_id = para
+            .char_shapes
+            .iter()
+            .filter(|r| r.start_pos <= stream_pos)
+            .max_by_key(|r| r.start_pos)
+            .or_else(|| para.char_shapes.first())
+            .map_or(0, |r| r.char_shape_id);
+        let composition = styles.and_then(|styles| {
+            super::char_overlap::Composition::from_model(co, styles, host_style_id)
+        });
+        let char_style_id = if composition.is_some() {
+            host_style_id
+        } else {
+            stored_char_style_id
+        };
         insertions.push((
             text_pos,
             ComposedTextRun {
@@ -120,7 +143,9 @@ fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) 
                 neutral_space_origin: None,
                 char_overlap: Some(CharOverlapInfo {
                     border_type: co.border_type,
-                    inner_char_size: co.inner_char_size,
+                    inner_char_size: styles
+                        .map_or(co.inner_char_size, |s| s.char_overlap_inner_size(co.inner_char_size)),
+                    composition,
                 }),
                 footnote_marker: None,
                 display_text: None,

@@ -102,7 +102,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
             // 다른 작업이 보정하는 CGMP는 사용자 요청으로 렌더링 실행도 제외한다.
             && rel != "issue6035/cgmp_evaluation_table.hwpx"
     });
-    acc.retain(|(path, _)| !is_exam_fixture(path));
+    acc.retain(|(path, _)| !is_deferred_fixture(path));
     acc.retain(|(path, _)| !deferred_visual_regression_scope::is_deferred(path, "overflow_cell"));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples 에 hwp/hwpx 샘플이 없음");

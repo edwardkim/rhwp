@@ -10,6 +10,8 @@ use crate::renderer::{hwpunit_to_px, px_to_hwpunit};
 pub(in crate::renderer::typeset) struct ParagraphFragmentBounds {
     pub content_bottom: f64,
     pub flow_end: f64,
+    /// 내용 하단과 같은 구성 결과가 발행한 마지막 줄간격.
+    pub last_line_spacing: Option<f64>,
     /// 실제 조각 원점과 같은 저장 축 및 단 앵커다. 재조판 줄은 발행하지 않는다.
     pub stored_frame: Option<StoredColumnFrame>,
 }
@@ -24,6 +26,11 @@ impl TypesetState {
         fmt: &FormattedParagraph,
         dpi: f64,
     ) {
+        if let Some(composition) = fmt.host_composition.as_ref() {
+            self.data
+                .host_compositions
+                .insert(owner, composition.clone());
+        }
         let content_height = fmt.line_content_height(range.clone(), 0.0);
         let advance = fmt.line_advances_sum(range.clone());
         let stored_frame = self.host_fragment_stored_frame(range.clone(), para, fmt, dpi);
@@ -32,6 +39,7 @@ impl TypesetState {
             ParagraphFragmentBounds {
                 content_bottom: self.data.current_height + content_height,
                 flow_end: self.data.current_height + advance,
+                last_line_spacing: fmt.line_tail_spacing(range.end),
                 stored_frame,
             },
         );

@@ -12,6 +12,8 @@ pub(in crate::renderer::typeset) struct ParagraphFragment {
     pub height: f64,
     /// 줄·문단 뒤 간격을 제외한 점유 높이. 일반 분할의 확정 메트릭에서 생산한다.
     pub content_height: Option<f64>,
+    /// 이 조각의 내용 높이를 만든 구성 결과의 끝 줄간격.
+    pub last_line_spacing: Option<f64>,
 }
 
 /// None이면 아직 아무 항목도 배치하지 않았으며 다음 단/쪽에서 같은 시작 줄을 재시도한다.
@@ -88,6 +90,7 @@ pub(in crate::renderer::typeset) fn plan_fragment(
         item,
         height: part_height,
         content_height: Some(content_height),
+        last_line_spacing: fmt.line_tail_spacing(end_line),
     })
 }
 

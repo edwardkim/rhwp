@@ -5,14 +5,73 @@
 
 use crate::model::paragraph::Paragraph;
 
+/// 실제 현재 흐름에서 이미 무효가 된 자동 저장 경계를 조기 흡수도 공유한다.
+pub(in crate::renderer::typeset) fn stored_page_boundary_invalidated_at_current_flow(
+    st: &super::super::TypesetState,
+    paragraphs: &[Paragraph],
+    index: usize,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+) -> bool {
+    stored_frame_prefix_consumed_before_page(st, paragraphs, index, styles)
+        || stored_page_boundary_invalidated_by_reflow(
+            st.profile,
+            st.col_count,
+            &st.current_items,
+            paragraphs,
+            index,
+            st.current_height,
+            st.layout.dpi,
+        )
+}
+
 /// 현재 실제 페이지가 저장 프레임의 중간부터 시작하는지 실제 앞뒤 소유로 확인한다.
 /// 저장 prefix가 이전 실제 페이지에서 소비됐으면 다음 자동 reset도 재배분 대상이다.
+#[derive(Clone, Copy)]
+enum StoredFramePrefix {
+    /// 원본이 저장 프레임 중간에서 시작해 앞부분이 입력에 없다.
+    OmittedFromInput,
+    /// 앞 실제 쪽이 같은 원본 프레임의 앞부분을 이미 수용했다.
+    ConsumedOnEarlierPage,
+}
+
 pub(in crate::renderer::typeset) fn stored_frame_prefix_consumed_before_page(
+    st: &super::super::TypesetState,
+    paragraphs: &[Paragraph],
+    index: usize,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+) -> bool {
+    stored_frame_prefix(st, paragraphs, index, styles).is_some()
+}
+
+/// 사라진 prefix와 이미 이월한 prefix를 빈 꼬리의 점유 근거로 혼동하지 않는다.
+/// 이전 쪽에서 소비한 프레임의 빈 꼬리는 기존 저장 경계 흡수가 처리한다.
+/// 입력에 없는 prefix를 재기준했거나 실제 재조판한 경우는 빈 줄도 수용한다.
+pub(in crate::renderer::typeset) fn stored_tail_boundary_invalidated_at_current_flow(
+    st: &super::super::TypesetState,
+    paragraphs: &[Paragraph],
+    index: usize,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+) -> bool {
+    matches!(
+        stored_frame_prefix(st, paragraphs, index, styles),
+        Some(StoredFramePrefix::OmittedFromInput)
+    ) || stored_page_boundary_invalidated_by_reflow(
+        st.profile,
+        st.col_count,
+        &st.current_items,
+        paragraphs,
+        index,
+        st.current_height,
+        st.layout.dpi,
+    )
+}
+
+fn stored_frame_prefix(
     st: &super::super::TypesetState,
     paragraphs: &[Paragraph],
     para_idx: usize,
     styles: &crate::renderer::style_resolver::ResolvedStyleSet,
-) -> bool {
+) -> Option<StoredFramePrefix> {
     use crate::renderer::pagination::PageItem;
     if st.col_count != 1
         || st.profile.session_edited()
@@ -26,7 +85,48 @@ pub(in crate::renderer::typeset) fn stored_frame_prefix_consumed_before_page(
                     .is_some_and(|line| line.is_first_line_of_page())
         })
     {
-        return false;
+        return None;
+    }
+    // 파일 첫 문단의 완전한 표가 확정 source 축의 0 물리 원점에 놓였다면,
+    // 옛 저장 프레임의 앞부분은 이 파일에 없다. 그 자동 경계를 다시 적용하면
+    // 실제 남은 공간에 들어가는 제목을 다음 쪽으로 밀게 된다.
+    if !st.current_endnote_flow
+        && st.current_start_height == 0.0
+        && st
+            .pages
+            .iter()
+            .rev()
+            .skip(1)
+            .all(|page| page.section_index != st.section_index)
+    {
+        if let Some(PageItem::Table {
+            para_index: 0,
+            control_index,
+        }) = st.current_items.first()
+        {
+            if let Some(first) = paragraphs.first().filter(|first| {
+                !first.cell_format_vpos_dirty
+                    && crate::renderer::stored_frame_boundary::owns_saved_object_line(first)
+            }) {
+                let source = match &first.source_line_seg_vertical_pos {
+                    Some(positions) if positions.len() == first.line_segs.len() => positions[0],
+                    Some(_) => return None,
+                    None => first.line_segs[0].vertical_pos,
+                };
+                let certified = st
+                    .inline_placements
+                    .get(&(0, *control_index))
+                    .and_then(|placement| placement.stored_column_frame)
+                    .is_some_and(|frame| {
+                        frame.source_origin_hu == source
+                            && source > 0
+                            && frame.column_anchor_y == 0.0
+                    });
+                if certified {
+                    return Some(StoredFramePrefix::OmittedFromInput);
+                }
+            }
+        }
     }
     // 완전한 TAC 줄이 새 단의 원점에서 수용되고 뒤 저장 줄까지 같은
     // 전진 끝으로 이어지면 새 저장 프레임이 이미 확립됐다. 옛 host의
@@ -43,27 +143,19 @@ pub(in crate::renderer::typeset) fn stored_frame_prefix_consumed_before_page(
         )
         .is_some_and(|(_, origin)| st.vpos_page_base == Some(origin))
     {
-        return false;
+        return None;
     }
-    let Some(previous_page) = st
+    let previous_page = st
         .pages
         .iter()
         .rev()
         .nth(1)
-        .filter(|page| page.section_index == st.section_index)
-    else {
-        return false;
-    };
-    let Some(previous) = previous_page
+        .filter(|page| page.section_index == st.section_index)?;
+    let previous = previous_page
         .column_contents
         .last()
-        .and_then(|col| col.items.last())
-    else {
-        return false;
-    };
-    let Some(first) = st.current_items.first() else {
-        return false;
-    };
+        .and_then(|col| col.items.last())?;
+    let first = st.current_items.first()?;
     let complete_tac_source = |para: &Paragraph| {
         matches!(para.controls.as_slice(), [crate::model::control::Control::Table(table)]
             if table.common.treat_as_char)
@@ -79,11 +171,9 @@ pub(in crate::renderer::typeset) fn stored_frame_prefix_consumed_before_page(
             para_index,
             control_index: 0,
         } if paragraphs.get(*para_index).is_some_and(complete_tac_source) => (*para_index, 0),
-        _ => return false,
+        _ => return None,
     };
-    let Some(para) = paragraphs.get(owner) else {
-        return false;
-    };
+    let para = paragraphs.get(owner)?;
     let valid_source = |para: &Paragraph| {
         !para.stored_text_partition_is_dirty()
             && !para.cell_format_vpos_dirty
@@ -109,25 +199,21 @@ pub(in crate::renderer::typeset) fn stored_frame_prefix_consumed_before_page(
         || position(para, start) <= 0
         || para.line_segs[start].is_first_line_of_page()
     {
-        return false;
+        return None;
     }
     if start > 0 {
         // 현재 조각 바로 앞 줄을 이전 실제 페이지가 소유했고, 저장 축은 이어진다.
-        return matches!(previous,
+        return (matches!(previous,
             PageItem::PartialParagraph { para_index, end_line, .. }
             if *para_index == owner && *end_line == start)
             && position(para, start) > position(para, start - 1)
-            && (0..start).any(|line| position(para, line) == 0);
+            && (0..start).any(|line| position(para, line) == 0))
+        .then_some(StoredFramePrefix::ConsumedOnEarlierPage);
     }
-    let Some(before_index) = owner.checked_sub(1) else {
-        return false;
-    };
-    let Some(before) = paragraphs
+    let before_index = owner.checked_sub(1)?;
+    let before = paragraphs
         .get(before_index)
-        .filter(|para| valid_source(para))
-    else {
-        return false;
-    };
+        .filter(|para| valid_source(para))?;
     let complete = match previous {
         PageItem::FullParagraph { para_index } => *para_index == before_index,
         PageItem::PartialParagraph {
@@ -148,7 +234,7 @@ pub(in crate::renderer::typeset) fn stored_frame_prefix_consumed_before_page(
     let continued_source_frame = position(before, 0) > 0
         && position(para, 0)
             >= position(before, last).saturating_add(before.line_segs[last].line_height);
-    complete
+    (complete
         && (continued_source_frame
             || ((1..=last).any(|line| {
                 position(before, line) == 0
@@ -157,7 +243,8 @@ pub(in crate::renderer::typeset) fn stored_frame_prefix_consumed_before_page(
             }) && position(para, 0)
                 == position(before, last)
                     .saturating_add(before.line_segs[last].line_height)
-                    .saturating_add(before.line_segs[last].line_spacing)))
+                    .saturating_add(before.line_segs[last].line_spacing))))
+    .then_some(StoredFramePrefix::ConsumedOnEarlierPage)
 }
 
 /// 위쪽에서 시작한 큰 개체 줄도 끝까지 소비했다면 다음 저장 프레임의 경계를 따른다.

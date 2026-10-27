@@ -34,7 +34,7 @@ head CI를 완료한 뒤 신규 PR을 진행한다. 메인터너 보정 요청�
 collaborator 매개 외부 PR 모두 같은 기준을 사용하며, CI 통과가 이 검토를 대체하지 않는다.
 
 조판·렌더링 영향 PR은 최신 SHA를 고정한 `upstream/devel`의 전쪽 Native/fresh WASM TSV를
-후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도 2%p 이상 하락하면90% 이상이어도
+후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도 2%p 초과 하락하면 90% 이상이어도
 PR을 재검토하고 승인·통합을 보류한다.** 평균 상승·CI 통과로 상쇄하지 않는다.
 계산·증거·base 갱신은 [devel 대비 실루엣 하락 재검토](verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
 

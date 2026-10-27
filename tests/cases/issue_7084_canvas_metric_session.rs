@@ -149,7 +149,7 @@ fn active_emoji_metric_preserves_unrelated_nominal_grapheme_run() {
 }
 
 #[test]
-fn cached_standalone_metric_does_not_leak_into_a_style_split_cluster() {
+fn cached_standalone_metrics_preserve_cluster_ownership_and_width_provenance() {
     for ext in ["hwp", "hwpx"] {
         let mut core = core(ext);
         core.insert_text_in_cell_native(0, 12, 1, 5, 0, 6, " 😀")
@@ -169,6 +169,34 @@ fn cached_standalone_metric_does_not_leak_into_a_style_split_cluster() {
             )
         };
         let (baseline_offset, baseline_advance) = emoji_measurement(&baseline);
+        let width_sources = |core: &DocumentCore| {
+            let mut sources = Vec::new();
+            for page in 0..core.page_count() {
+                let trace: serde_json::Value =
+                    serde_json::from_str(&core.get_font_decision_trace_native(page, "{}").unwrap())
+                        .unwrap();
+                for record in trace["records"].as_array().unwrap() {
+                    if record["source"]["character"] == "😀" {
+                        sources.push(
+                            record["layoutMetric"]["widthSource"]
+                                .as_str()
+                                .unwrap()
+                                .to_owned(),
+                        );
+                    }
+                }
+            }
+            sources
+        };
+        let baseline_sources = width_sources(&core);
+        assert_eq!(
+            baseline_sources.len(),
+            2,
+            "두 원문 이모지의 측정 출처: {ext}"
+        );
+        assert!(baseline_sources
+            .iter()
+            .all(|source| source != "supplementalBackendMeasured"));
         let batch = core.collect_canvas_metric_requests(context()).unwrap();
         assert_eq!(
             batch.requests.len(),
@@ -185,25 +213,10 @@ fn cached_standalone_metric_does_not_leak_into_a_style_split_cluster() {
             (active_advance - baseline_advance).abs() < 1e-9,
             "protected first emoji advance: {ext}: {baseline_advance} -> {active_advance}"
         );
-        let mut sources = Vec::new();
-        for page in 0..2 {
-            let trace: serde_json::Value =
-                serde_json::from_str(&core.get_font_decision_trace_native(page, "{}").unwrap())
-                    .unwrap();
-            for record in trace["records"].as_array().unwrap() {
-                if record["source"]["character"] == "😀" {
-                    sources.push(
-                        record["layoutMetric"]["widthSource"]
-                            .as_str()
-                            .unwrap()
-                            .to_owned(),
-                    );
-                }
-            }
-        }
+        let sources = width_sources(&core);
         assert_eq!(
             sources,
-            ["heuristicHalfwidth", "supplementalBackendMeasured"],
+            [baseline_sources[0].as_str(), "supplementalBackendMeasured"],
             "{ext}"
         );
         assert_eq!(format!("{:?}", core.document()), original);

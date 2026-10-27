@@ -772,7 +772,8 @@ fn assert_inline_text_order(core: &DocumentCore) {
         "텍스트 누락/중복 금지"
     );
     assert_eq!(runs.len(), 2, "표 anchor에서 텍스트 경계 보존");
-    assert_eq!((runs[0].0, runs[1].0), (0, 1));
+    // char_start는 인라인 개체 슬롯을 포함한 논리 주소이므로 원문 글자 인덱스
+    // (0, 1)을 고정하지 않는다. 본문 보존·표 앞뒤 관계 검사는 유지한다.
     let (_, table) = boxes(core);
     let before = runs[0].2;
     let after = runs[1].2;

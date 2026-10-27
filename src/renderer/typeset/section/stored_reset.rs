@@ -308,6 +308,9 @@ impl TypesetEngine {
                         cv < pv && pv > 5000
                     }
                 } else {
+                    // 큰 개체 줄의 끝만으로 다음 vpos=0을 새 쪽으로 추정하지 않는다.
+                    // 뒤 글줄이 현재 쪽에 들어가는 정상 인쇄도 있으므로, 저장 줄의
+                    // 시작 위치가 충분히 진행한 기존 되감김 조건을 유지한다.
                     (cv == 0
                             && pv > 5000
                             && !hwp3_content_vpos_zero_reset

@@ -110,6 +110,7 @@ pub(in crate::renderer::typeset) fn place(
                             formatted.line_count(),
                             suffix.advance,
                             suffix.content_height,
+                            formatted.line_tail_spacing(formatted.line_count()),
                         );
                         return true;
                     }

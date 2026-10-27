@@ -14,18 +14,19 @@ pub struct CanvasTextFont {
 }
 
 impl CanvasTextFont {
-    /// Preserve the positioned painter's existing defaults, script geometry,
-    /// condensed-ratio rule, family chain and three-decimal CSS size verbatim.
+    /// 측정과 paint가 같은 크기·장평·CSS 반올림과 face 사다리를 사용한다.
+    /// 자체 굵기용 face가 공급되지 않았으면 원래 bold fallback으로 이어진다.
     /// Registration must reject invalid styles; painting keeps its old fallback.
     pub fn for_positioned_text(style: &TextStyle, baseline: f64) -> Self {
         let base_size = style.effective_font_size();
         let (size, baseline) = style.script_draw_metrics(base_size, baseline);
         let (draw_size, horizontal_scale) = style.ratio_draw_params(size);
-        let family = canvas_font_family_chain(&style.font_family);
+        let family = family_chain(style);
         let prefix = format!(
             "{}{}{:.3}px ",
-            if style.italic { "italic " } else { "" },
-            if style.bold && super::faux_bold_stroke_width(style, draw_size).is_none() {
+            super::text_italic::css_prefix(style.italic),
+            if style.is_visually_bold() && super::faux_bold_stroke_width(style, draw_size).is_none()
+            {
                 "bold "
             } else {
                 ""
@@ -79,4 +80,24 @@ impl CanvasTextFont {
         let advance = measured_advance * (self.horizontal_scale / self.layout_ratio);
         (advance.is_finite() && advance >= 0.0).then_some(advance)
     }
+}
+
+/// 원 face의 자체 굵기와 fallback 보완 굵기를 CSS face 선택 단계에서 구분한다.
+/// 예약 별칭은 실제 프로그램의 family가 확인된 정상 face에만 공급한다.
+/// 원 face에 없는 글리프는 뒤의 원래 사다리에서 bold fallback을 사용한다.
+/// 명시적 bold는 별칭을 사용하지 않아 추가 굵기 요청을 보존한다.
+pub(crate) fn family_chain(style: &TextStyle) -> String {
+    let fallback = canvas_font_family_chain(&style.font_family);
+    if style.bold || !super::style_resolver::is_heavy_display_face(&style.font_family) {
+        return fallback;
+    }
+    let primary = super::internal_font_family_members(&style.font_family);
+    let Some(primary) = primary.first() else {
+        return fallback;
+    };
+    format!(
+        "'__rhwp_intrinsic__{}', {}",
+        primary.replace('\\', "\\\\").replace('\'', "\\'"),
+        fallback
+    )
 }

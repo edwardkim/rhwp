@@ -844,6 +844,7 @@ mod tests {
             raw_ctrl_data: Vec::new(),
             raw_ctrl_seal: None,
             unpositioned_host_frame_seal: None,
+            legacy_source_frame_seal: None,
         })));
         section.paragraphs.push(para);
         doc.sections.push(section);

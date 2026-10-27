@@ -156,7 +156,7 @@ fn serializer_enum_tokens_within_whitelist() {
     for entry in std::fs::read_dir("samples/hwpx").expect("samples") {
         let path = entry.unwrap().path();
         if is_deferred_exam_document(path.to_string_lossy().as_ref())
-            || exam_fixtures::is_exam_fixture(&path)
+            || exam_fixtures::is_deferred_fixture(&path)
         {
             continue;
         }
@@ -201,7 +201,7 @@ fn numtype_figure_regression_guard() {
     for entry in std::fs::read_dir("samples/hwpx").expect("samples") {
         let path = entry.unwrap().path();
         if is_deferred_exam_document(path.to_string_lossy().as_ref())
-            || exam_fixtures::is_exam_fixture(&path)
+            || exam_fixtures::is_deferred_fixture(&path)
         {
             continue;
         }

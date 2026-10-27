@@ -1,5 +1,7 @@
+import { replayComposedCharOverlap } from './canvaskit-char-overlap';
+import { compatibilityGlyphView } from './canvaskit/compatibility-glyph-view.ts';
 import { CanvasKitBundledFontFamily, syntheticItalicSkew } from './canvaskit/font-style-selection.ts';
-import { parseCssFontFamilyList } from '../core/font-substitution.ts';
+import { ordinaryTextFontFamilies, parseCssFontFamilyList } from '../core/font-substitution.ts';
 import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
 import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
@@ -881,7 +883,9 @@ export class CanvasKitLayerRenderer {
   }
 
   /** Host records have already been selected from actual text styles. */
-  async prepareHostFonts(records: readonly LocalFontRecord[]): Promise<number> {
+  async prepareHostFonts(records: readonly LocalFontRecord[],
+    prepareTextFont: (bytes: ArrayBuffer, faceIndex: number) => ArrayBuffer | null = canvasKitFontFaceData,
+  ): Promise<number> {
     const documentGeneration = this.documentGeneration;
     const hostGeneration = getHostFontState().generation;
     let registered = 0;
@@ -894,7 +898,7 @@ export class CanvasKitLayerRenderer {
         const data = await loadRendererLocalFont(record);
         if (this.disposed || documentGeneration !== this.documentGeneration
           || hostGeneration !== getHostFontState().generation) return registered;
-        const bytes = data ? canvasKitFontFaceData(data.bytes, data.faceIndex ?? 0) : null;
+        const bytes = data ? prepareTextFont(data.bytes, data.faceIndex ?? 0) : null;
         if (!bytes) { this.localTypefaceLoadFailures.add(key); continue; }
         let typeface: Typeface | null = null;
         let fontManager: FontMgr | null = null;
@@ -1344,9 +1348,11 @@ export class CanvasKitLayerRenderer {
         : primary
           ? 'default'
           : null;
+    const familyTypefaces = this.ordinaryTextTypefaces(requested);
     const candidates = [
       requestedFamily,
       primary?.fontFamily ?? '',
+      ...familyTypefaces.map(candidate => candidate.fontFamily ?? ''),
       this.defaultFontFamily ?? 'CanvasKit default',
       'CanvasKit symbol fallback',
     ].filter((family, index, all) => family && all.indexOf(family) === index);
@@ -1385,6 +1391,9 @@ export class CanvasKitLayerRenderer {
       }
     };
     const selected = observe(primary?.typeface ?? null, primary?.fontFamily ?? requestedFamily, primarySource ?? 'default')
+      ?? familyTypefaces.map(candidate => observe(candidate.typeface, candidate.fontFamily ?? requestedFamily,
+        candidate.record ? 'local' : candidate.typeface === this.defaultTypeface ? 'default' : 'bundled'))
+        .find(candidate => candidate !== null)
       ?? (primary?.typeface !== this.defaultTypeface
         ? observe(this.defaultTypeface, this.defaultFontFamily ?? 'CanvasKit default', 'default')
         : null)
@@ -2258,9 +2267,31 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('image:decodeFailed');
       return;
     }
-    const paintOp = op.imagePaintBBox ? { ...op, bbox: op.imagePaintBBox } : op;
-    this.withImageTransform(canvas, paintOp.bbox, paintOp.transform,
-      () => this.drawImageOp(canvas, image, paintOp, undefined, profile));
+    const frame = op.imagePaintBBox ?? op.paintBbox;
+    const drawOp = frame ? { ...op, bbox: frame } : op;
+    const sourceClip = op.paintClipPath;
+    if (sourceClip !== undefined && (!Array.isArray(sourceClip) || sourceClip.length !== 4
+      || !sourceClip.every(p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite)))) {
+      this.unsupportedOps.add('image:invalidGeometry');
+      return;
+    }
+    const clipPath = sourceClip && this.canvasKit.Path.MakeFromSVGString(
+      `M${sourceClip.map(([x,y]) => `${x} ${y}`).join(' L')} Z`);
+    if (sourceClip && !clipPath) {
+      this.unsupportedOps.add('image:invalidGeometry');
+      return;
+    }
+    if (op.paintClip || clipPath) {
+      canvas.save();
+      if (op.paintClip) canvas.clipRect(this.rect(op.paintClip), this.canvasKit.ClipOp?.Intersect ?? 0, true);
+      if (clipPath) canvas.clipPath(clipPath, this.canvasKit.ClipOp?.Intersect ?? 0, true);
+    }
+    try {
+      this.withImageTransform(canvas, drawOp.bbox, drawOp.transform, () => this.drawImageOp(canvas, image, drawOp, undefined, profile));
+    } finally {
+      if (op.paintClip || clipPath) canvas.restore();
+      clipPath?.delete();
+    }
   }
 
   private printMetafileBytes(op: LayerImageOp): Uint8Array | null {
@@ -2979,7 +3010,8 @@ export class CanvasKitLayerRenderer {
         canvas.translate(-cx, -cy);
       }
       if (rotation !== 0) {
-        canvas.rotate(rotation, cx, cy);
+        // SVG·Canvas2D와 같은 로컬 대칭 뒤 회전 계약이다.
+        canvas.rotate(horzFlip !== vertFlip ? -rotation : rotation, cx, cy);
       }
       draw();
     } finally {
@@ -3043,7 +3075,11 @@ export class CanvasKitLayerRenderer {
       return;
     }
     const replayText = op.displayText ?? op.text;
-    const replayPositions = op.displayText !== undefined ? op.displayPositions : op.positions;
+    let replayPositions = op.displayText !== undefined ? op.displayPositions : op.positions;
+    if (op.puaGlyphCandidatesComplete === false) {
+      this.unsupportedOps.add('textRun:compatibilityGlyphLimitExceeded');
+      return;
+    }
     if (!replayText) return;
     const replayCodePoints: string[] = [];
     for (const character of replayText) {
@@ -3054,6 +3090,12 @@ export class CanvasKitLayerRenderer {
       replayCodePoints.push(character);
     }
     const style = op.style ?? {};
+    // 줄 방향 문맥을 가진 legacy run은 기존 complex-script fallback을 사용한다.
+    // 명시적 glyphRun의 위치는 producer가 이미 해소하므로 이 분기를 거치지 않는다.
+    if (style.bidiLayout) {
+      this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
+      return;
+    }
     if (this.recordTextRunCoverageGaps(op, replayCodePoints)) return;
     const ratio = style.ratio ?? 1;
     const outlineType = style.outlineType ?? 0;
@@ -3082,13 +3124,13 @@ export class CanvasKitLayerRenderer {
       && op.orientation !== 'vertical-sideways'
       ? VERTICAL_PRESENTATION_BASE_TEXT.get(replayText)
       : undefined;
-    const glyphReplayText = verticalPresentationText ?? replayText;
+    let glyphReplayText = verticalPresentationText ?? replayText;
     const codePoints = verticalPresentationText === undefined
       ? replayCodePoints
       : [verticalPresentationText];
-    const replayUtf16Offsets = new Uint32Array(codePoints.length + 1);
+    let replayUtf16Offsets = new Uint32Array(codePoints.length + 1);
     for (let index = 0; index < codePoints.length; index++) replayUtf16Offsets[index + 1] = replayUtf16Offsets[index] + codePoints[index].length;
-    const hasOldHangul = codePoints.some((codePoint) => {
+    let hasOldHangul = codePoints.some((codePoint) => {
       const code = codePoint.codePointAt(0) ?? 0;
       return (code >= 0x1100 && code <= 0x11ff)
         || (code >= 0xa960 && code <= 0xa97f)
@@ -3155,8 +3197,7 @@ export class CanvasKitLayerRenderer {
             setSkewX?: (skew: number) => void;
             setScaleX?: (scale: number) => void;
           };
-          const physical = target === font && preparedTypeface?.record
-            ? localFontFaceStyle(preparedTypeface.record) : null;
+          const physical = selected?.record ? localFontFaceStyle(selected.record) : null;
           adjustable.setEmbolden?.(selected?.syntheticStyle?.bold
             ?? (style.bold === true && (selected?.hostFace?.weight ?? physical?.weight ?? 400) < 600));
           const physicalItalic = selected?.hostFace
@@ -3166,6 +3207,18 @@ export class CanvasKitLayerRenderer {
         };
         font = this.makeFont(typeface, fontSize);
         adjustFont(font);
+        const sourceGlyphIndices = new Set<number>();
+        if (hasLayoutPositions && op.puaGlyphCandidates?.length && !op.isVertical) {
+          const view = compatibilityGlyphView(codePoints, replayPositions!, op.puaGlyphCandidates, font);
+          if (!view) {this.unsupportedOps.add('textRun:invalidCompatibilityGlyph'); return;}
+          codePoints.splice(0, codePoints.length, ...view.points);
+          replayPositions = view.positions;
+          glyphReplayText = view.text;
+          for (const index of view.sourceIndices) sourceGlyphIndices.add(index);
+          replayUtf16Offsets = new Uint32Array(codePoints.length + 1);
+          for (let index = 0; index < codePoints.length; index++) replayUtf16Offsets[index + 1] = replayUtf16Offsets[index] + codePoints[index].length;
+          hasOldHangul = codePoints.some(ch => /[\u1100-\u11ff\ua960-\ua97f\ud7b0-\ud7ff]/.test(ch));
+        }
         const candidateFonts = [font];
         const candidateFontSources: CanvasKitFontSubstitutionDiagnostic['source'][] = [
           'unregisteredDefault',
@@ -3196,6 +3249,17 @@ export class CanvasKitLayerRenderer {
           oldHangulTypeface = hasOldHangul
             ? this.findPreparedTypeface(OLD_HANGUL_FONT_FAMILY)
             : null;
+          for (const candidate of this.ordinaryTextTypefaces(style.fontFamily, style)) {
+            if (candidate.typeface === typeface || !candidate.typeface) continue;
+            if (!codePoints.some((_, index) => candidateGlyphIds.every(ids => (ids[index] ?? 0) === 0))) break;
+            const fallbackFont = this.makeFont(candidate.typeface, fontSize);
+            adjustFont(fallbackFont, candidate);
+            fallbackFonts.push(fallbackFont);
+            candidateFonts.push(fallbackFont);
+            candidateFontSources.push('missingGlyphFamily');
+            candidateFontFamilies.push(candidate.fontFamily ?? 'CanvasKit family fallback');
+            candidateGlyphIds.push(fallbackFont.getGlyphIDs(glyphReplayText, codePoints.length));
+          }
           if (primaryGlyphIds.some(glyphId => glyphId === 0)
             && this.defaultTypeface !== null
             && typeface !== this.defaultTypeface) {
@@ -3223,9 +3287,9 @@ export class CanvasKitLayerRenderer {
             // 위치/전진은 공통 positions가 소유한다. TAB·공백은 font가 visible gid를 갖고 있어도 글리프 잉크가 아니다.
             if (/^\s$/u.test(codePoint)) return -3;
             const code = codePoint.codePointAt(0) ?? 0;
-            if ((code >= 0x1100 && code <= 0x11ff)
+            if (!sourceGlyphIndices.has(index) && ((code >= 0x1100 && code <= 0x11ff)
               || (code >= 0xa960 && code <= 0xa97f)
-              || (code >= 0xd7b0 && code <= 0xd7ff)) {
+              || (code >= 0xd7b0 && code <= 0xd7ff))) {
               return -2;
             }
             const candidateIndex = candidateGlyphIds.findIndex(ids => (ids[index] ?? 0) !== 0);
@@ -3550,6 +3614,15 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderCharOverlap(canvas: SkCanvas, op: LayerCharOverlapOp): void {
+    if (op.composition) {
+      if (replayComposedCharOverlap(this.canvasKit, canvas, op, glyph => this.renderTextRun(canvas, glyph))) {
+        this.currentReplayFeatureCounts.charOverlaps++;
+      } else {
+        this.unsupportedOps.add('charOverlap:invalidComposition');
+      }
+      return;
+    }
+
     if (typeof op.text !== 'string' || !op.charOverlap || !Array.isArray(op.positions)) {
       this.unsupportedOps.add('charOverlap:invalidGeometry');
       return;
@@ -3592,12 +3665,6 @@ export class CanvasKitLayerRenderer {
       return;
     }
     const fontSize = Math.max(1, rawFontSize);
-    const rawRatio = op.charOverlap.innerCharSize > 0
-      ? op.charOverlap.innerCharSize / 100
-      : op.charOverlap.innerCharSize < 0
-        ? 1 + op.charOverlap.innerCharSize * 0.1
-        : 1;
-    const innerFontSize = Math.max(1, fontSize * Math.min(4, Math.max(0.1, rawRatio)));
     const requestedFontFamily = primaryFontFamily(style.fontFamily);
     const preparedTypeface = this.findPreparedTypeface(style.fontFamily, style);
     if (requestedFontFamily && !preparedTypeface && this.requirePreparedFontFamilies) {
@@ -3631,6 +3698,14 @@ export class CanvasKitLayerRenderer {
           .map(([, digit]) => String.fromCharCode(0x30 + digit))
           .join('')
       : null;
+
+    // 원문 charSz는 부호 있는 10% 단계다. 테두리가 없으면 적용하지 않는다.
+    // PUA 다자리 숫자가 실제 원 테두리를 그리는 경로도 Rust와 같은 조건을 쓴다.
+    const effectiveBorder = op.charOverlap.borderType === 0 && decodedNumber !== null
+      ? 1
+      : op.charOverlap.borderType;
+    const sizeRatio = effectiveBorder === 0 ? 1 : 1 + op.charOverlap.innerCharSize * 0.1;
+    const innerFontSize = Math.max(1, fontSize * sizeRatio);
 
     let rendered = false;
     const draw = (originX: number, originY: number) => {
@@ -3781,6 +3856,7 @@ export class CanvasKitLayerRenderer {
     this.withHorizontalTextVisualOrigin(canvas, op.bbox, op.rotation ?? 0, 'charOverlap', draw);
     if (rendered) this.currentReplayFeatureCounts.charOverlaps++;
   }
+
 
   private renderTextControlMark(canvas: SkCanvas, op: LayerTextControlMarkOp): void {
     if (op.isVertical) {
@@ -4025,6 +4101,34 @@ export class CanvasKitLayerRenderer {
     const draw = (originX: number, originY: number) => {
       const baselineY = originY + decoration.baseline;
       if (decoration.kind === 'underline') {
+        if (decoration.underline === 'top' && decoration.topUnderline) {
+          if (textWidth <= 0) return;
+          const geometry = decoration.topUnderline;
+          const phase = geometry.phase ?? 0;
+          const dots = geometry.dots;
+          if (!Number.isFinite(phase) || !Array.isArray(geometry.strokes)
+            || geometry.strokes.some(stroke => !Number.isFinite(stroke.offset)
+              || !Number.isFinite(stroke.width) || stroke.width <= 0
+              || !Array.isArray(stroke.dash)
+              || stroke.dash.some(value => !Number.isFinite(value) || value <= 0))
+            || (dots !== null && (!dots || !Number.isFinite(dots.offset)
+              || !Number.isFinite(dots.radius) || dots.radius <= 0
+              || !Number.isFinite(dots.step) || dots.step <= 0))) {
+            this.unsupportedOps.add('textDecoration:invalidGeometry');
+            return;
+          }
+          for (const stroke of geometry.strokes) {
+            const y = baselineY + stroke.offset;
+            this.drawTextVisualStroke(canvas, originX, y, originX + textWidth, y,
+              decoration.color, stroke.width, stroke.dash, false, 0, 0, phase);
+          }
+          if (dots) {
+            const y = baselineY + dots.offset;
+            this.drawTextVisualStroke(canvas, originX, y, originX + textWidth, y,
+              decoration.color, dots.radius * 2, [0, dots.step], true, 0, 0, phase);
+          }
+          return;
+        }
         const y = decoration.underline === 'top'
           ? baselineY - decoration.fontSize + 1
           // 독립 Print 6크기 계약: Native/SVG/Canvas2D와 같은 em 비례 오프셋.
@@ -4037,6 +4141,39 @@ export class CanvasKitLayerRenderer {
         return;
       }
       if (decoration.emphasisDot === 0) return;
+      if (decoration.emphasis) {
+        const geometry = decoration.emphasis;
+        if (!geometry.fontFamily || [...geometry.glyph].length !== 1
+          || ![geometry.fontSize, geometry.ratio, geometry.skewX, geometry.baselineOffset].every(Number.isFinite)
+          || geometry.fontSize <= 0 || geometry.ratio <= 0 || !Array.isArray(geometry.positions)
+          || geometry.positions.length > CanvasKitLayerRenderer.MAX_TEXT_SPECIAL_VISUAL_ITEMS
+          || geometry.positions.some(value => !Number.isFinite(value))) {
+          this.unsupportedOps.add('textDecoration:invalidGeometry');
+          return;
+        }
+        const style = {fontFamily: geometry.fontFamily, bold: geometry.bold, italic: false};
+        const prepared = this.findPreparedTypeface(geometry.fontFamily, style);
+        if (!prepared && this.requirePreparedFontFamilies) {
+          throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${geometry.fontFamily}`);
+        }
+        const font = this.makeFont(prepared?.typeface ?? this.defaultTypeface, geometry.fontSize);
+        const paint = this.makeFillPaint(decoration.color);
+        try {
+          const adjustable = font as Font & {setScaleX?: (value: number) => void; setSkewX?: (value: number) => void; setEmbolden?: (value: boolean) => void};
+          adjustable.setScaleX?.(geometry.ratio);
+          adjustable.setSkewX?.(geometry.skewX * geometry.ratio);
+          adjustable.setEmbolden?.(prepared?.syntheticStyle?.bold ?? (geometry.bold && (prepared?.hostFace?.weight ?? 0) < 600));
+          const glyphs = font.getGlyphIDs(geometry.glyph);
+          if (glyphs.length !== 1 || glyphs[0] === 0) {
+            this.unsupportedOps.add('textDecoration:missingEmphasisGlyph');
+            return;
+          }
+          for (const x of geometry.positions) {
+            canvas.drawGlyphs(glyphs, [0, 0], originX + x, baselineY + geometry.baselineOffset, font, paint);
+          }
+        } finally {font.delete(); paint.delete();}
+        return;
+      }
       const dotSize = Math.max(1, decoration.fontSize * 0.3);
       let fillPaint: SkPaint | null = null;
       let strokePaint: SkPaint | null = null;
@@ -4122,6 +4259,7 @@ export class CanvasKitLayerRenderer {
     roundCap = false,
     waveHeight = 0,
     waveWidth = 0,
+    dashPhase = 0,
   ): void {
     const paint = this.makeStrokePaint(color, width);
     let effect: ReturnType<typeof this.canvasKit.PathEffect.MakeDash> | null = null;
@@ -4129,7 +4267,7 @@ export class CanvasKitLayerRenderer {
     try {
       if (roundCap) paint.setStrokeCap(this.canvasKit.StrokeCap.Round);
       if (dash.length > 0) {
-        effect = this.canvasKit.PathEffect.MakeDash(dash, 0);
+        effect = this.canvasKit.PathEffect.MakeDash(dash, dashPhase);
         if (effect) paint.setPathEffect(effect);
       }
       if (waveHeight > 0 && waveWidth > 0) {
@@ -4357,6 +4495,21 @@ export class CanvasKitLayerRenderer {
         catch (error) { this.textFailures.add({ ...diagnostic, reason: 'simpleTextFallbackFailed' }); throw error; }
       }
     } finally { if (blob && !retained) blob.delete(); }
+  }
+
+  /** 요청 글꼴의 준비 계약은 유지하고, 같은 일반 글리프 후보를 paint와 관측에 전달한다. */
+  private ordinaryTextTypefaces(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface[] {
+    const primary = this.findPreparedTypeface(fontFamily, style);
+    if (!primary) return [];
+    const candidates = [primary];
+    const seen = new Set<Typeface | null>([primary.typeface]);
+    for (const family of ordinaryTextFontFamilies(fontFamily ?? '')) {
+      const candidate = this.findPreparedTypeface(family, style);
+      if (!candidate?.typeface || seen.has(candidate.typeface)) continue;
+      seen.add(candidate.typeface);
+      candidates.push(candidate);
+    }
+    return candidates;
   }
 
   private resolvePreparedTypeface(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface | null {
@@ -4969,7 +5122,7 @@ export class CanvasKitLayerRenderer {
     if (!text || text.length > CanvasKitLayerRenderer.MAX_EQUATION_TEXT_LENGTH
       || !nativeFinite(x, y, fontSize, targetWidth ?? 0)
       || fontSize <= 0 || (targetWidth !== undefined && targetWidth < 0)) return false;
-    const candidates = [...options.fontFamilies.map(family => this.findPreparedTypeface(family, { bold, italic })), this.oldHangulTypeface,
+    const candidates = [...options.fontFamilies.flatMap(family => this.ordinaryTextTypefaces(family, { bold, italic })), this.oldHangulTypeface,
       { typeface: this.defaultTypeface, fontManager: this.defaultFontManager, fontFamily: this.defaultFontFamily },
       { typeface: this.symbolFallbackTypeface, fontManager: null, fontFamily: null },
       { typeface: this.mathFallbackTypeface, fontManager: null, fontFamily: null }];

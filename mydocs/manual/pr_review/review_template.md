@@ -48,7 +48,7 @@ PR 채번과 code head CI 성공 뒤 이 review와 오늘할일을 문서-only t
 
 조판·렌더링 영향 PR은 고정한 최신 upstream/devel SHA와 후보 SHA의 전쪽 Native/fresh WASM
 TSV를 같은 조건·페이지로 비교한 증거를 적는다. 원본/PDF·producer·글꼴·backend·쪽수와
-페이지별 기준/후보/하락폭,2%p 이상 하락한 쪽 목록을 연결한다. 한 쪽이라도 2%p 이상 하락하면
+페이지별 기준/후보/하락폭, 2%p 초과 하락한 쪽 목록을 연결한다. 한 쪽이라도 2%p 초과 하락하면
 90% 이상·평균 개선·CI 성공과 관계없이 재검토다. 기준 TSV가 없으면 미검증으로 기록한다.
 [상세 비교 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)을 따른다.
 

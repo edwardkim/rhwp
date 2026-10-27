@@ -53,6 +53,7 @@
 use std::path::{Path, PathBuf};
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
 use rhwp::model::paragraph::{LineSeg, Paragraph};
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
@@ -65,15 +66,12 @@ fn sample_path(name: &str) -> PathBuf {
 /// 저장 사다리가 말하는 컷을 **보이는 글자 오프셋**으로 옮긴다.
 ///
 /// `LineSeg::text_start` 는 문단의 UTF-16 축이고 확장 제어 하나가 8유닛을 차지한다.
-/// 렌더 트리의 `char_start` 는 보이는 글자 번호이므로 `char_offsets` 로 투영한다.
+/// `char_offsets`로 보이는 글자 컷을 구하고, 비교할 때 주석의 논리 슬롯을 더한다.
 /// 축 보정(`#5961` HWPX 구역 첫 문단)은 `line_seg_text_start_of` 가 갖는다.
 ///
 /// 구현 속성(`TAG_IMPLEMENTATION_PROPERTY`) 줄은 저장본의 컷이 아니므로 뺀다.
 fn stored_cuts(para: &Paragraph) -> Option<Vec<usize>> {
-    // This contract compares visible text cuts through TextRun.char_start.
-    // Whitespace carriers can now publish their real prefix line box, but
-    // their following object row is a Table node, not a second TextRun.
-    // Their physical occupancy is covered by the edited-prefix contracts.
+    // 공백 운반 문단의 객체 줄은 TextRun 컷이 아니므로 별도 점유 계약에서 검증한다.
     if para.text.chars().all(char::is_whitespace) {
         return None;
     }
@@ -100,7 +98,10 @@ fn stored_cuts(para: &Paragraph) -> Option<Vec<usize>> {
 /// 본문 흐름의 줄 시작 글자 오프셋을 문단별로 모은다.
 ///
 /// 각주 영역·표·글상자는 자기 흐름이라 문단 번호 공간이 다르다 — 본문만 센다.
-fn body_line_starts(node: &RenderNode, out: &mut std::collections::BTreeMap<usize, Vec<usize>>) {
+fn body_line_starts(
+    node: &RenderNode,
+    out: &mut std::collections::BTreeMap<usize, Vec<(usize, String)>>,
+) {
     if matches!(
         node.node_type,
         RenderNodeType::FootnoteArea
@@ -113,15 +114,18 @@ fn body_line_starts(node: &RenderNode, out: &mut std::collections::BTreeMap<usiz
         return;
     }
     if let RenderNodeType::TextLine(_) = &node.node_type {
-        let first = node
-            .children
-            .iter()
-            .find_map(|child| match &child.node_type {
-                RenderNodeType::TextRun(run) => Some((run.para_index?, run.char_start?)),
-                _ => None,
-            });
+        let mut first = None;
+        let mut text = String::new();
+        for child in &node.children {
+            if let RenderNodeType::TextRun(run) = &child.node_type {
+                if let (Some(para_index), Some(char_start)) = (run.para_index, run.char_start) {
+                    first.get_or_insert((para_index, char_start));
+                    text.push_str(&run.text);
+                }
+            }
+        }
         if let Some((para_index, char_start)) = first {
-            out.entry(para_index).or_default().push(char_start);
+            out.entry(para_index).or_default().push((char_start, text));
         }
         return;
     }
@@ -136,7 +140,7 @@ fn reproduced_stored_cuts(name: &str) -> (usize, usize) {
     let mut core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     let page_count = core.page_count();
 
-    let mut rendered: std::collections::BTreeMap<usize, Vec<usize>> = Default::default();
+    let mut rendered = Default::default();
     for page in 0..page_count {
         let tree = core.build_page_render_tree(page).expect("render tree");
         body_line_starts(&tree.root, &mut rendered);
@@ -153,11 +157,46 @@ fn reproduced_stored_cuts(name: &str) -> (usize, usize) {
         let Some(actual) = rendered.get(&index) else {
             continue;
         };
+        let note_positions: Vec<_> = para
+            .controls
+            .iter()
+            .zip(para.control_text_positions())
+            .filter_map(|(control, position)| {
+                matches!(control, Control::Footnote(_) | Control::Endnote(_)).then_some(position)
+            })
+            .collect();
+        // 저장 컷은 원문 축을 유지하고, 렌더 주소에 포함된 주석 슬롯만 투영한다.
+        let logical_expected: Vec<_> = expected
+            .iter()
+            .map(|&cut| {
+                cut + note_positions
+                    .iter()
+                    .filter(|&&position| position < cut)
+                    .count()
+            })
+            .collect();
+        if !note_positions.is_empty() {
+            for (line, ((_, text), &cut)) in actual.iter().zip(&expected).enumerate() {
+                let end = expected
+                    .get(line + 1)
+                    .copied()
+                    .unwrap_or_else(|| para.text.chars().count());
+                let source_text: String = para.text.chars().skip(cut).take(end - cut).collect();
+                assert_eq!(
+                    text.trim_end(),
+                    source_text.trim_end(),
+                    "{name} pi={index} 줄={line}: 주석 주소 보정과 무관하게 저장 컷의 본문을 보존한다"
+                );
+            }
+        }
+        let actual: Vec<_> = actual.iter().map(|(start, _)| *start).collect();
         total += 1;
-        if actual.len() == expected.len() && actual.iter().zip(&expected).all(|(a, b)| a == b) {
+        if actual == logical_expected {
             hit += 1;
         } else {
-            eprintln!("[7408miss] {name} pi={index} 저장={expected:?} 실제={actual:?}");
+            eprintln!(
+                "[7408miss] {name} pi={index} 저장={expected:?} 논리={logical_expected:?} 실제={actual:?}"
+            );
         }
     }
     (hit, total)
@@ -229,14 +268,19 @@ fn edited_paragraph_is_rewrapped() {
         .expect("글자 삽입");
 
     let page_count = core.page_count();
-    let mut rendered: std::collections::BTreeMap<usize, Vec<usize>> = Default::default();
+    let mut rendered = Default::default();
     for page in 0..page_count {
         let tree = core.build_page_render_tree(page).expect("render tree");
         body_line_starts(&tree.root, &mut rendered);
     }
-    let actual = rendered.get(&4).expect("pi=4 본문 줄");
+    let actual: Vec<_> = rendered
+        .get(&4)
+        .expect("pi=4 본문 줄")
+        .iter()
+        .map(|(start, _)| *start)
+        .collect();
     assert_ne!(
-        actual, &before,
+        actual, before,
         "글자를 40개 넣었는데 낡은 저장 컷을 그대로 썼다 — stale 재래핑이 막혔다"
     );
     assert!(

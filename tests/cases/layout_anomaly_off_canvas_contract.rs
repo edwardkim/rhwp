@@ -309,6 +309,7 @@ fn nested_lines_inside_off_canvas_table_are_not_double_reported() {
             border_fill_id: 0,
             text_direction: 0,
             clip: false,
+            closed_reflow_frame: false,
             page_fragment: false,
             model_cell_index: None,
         }),

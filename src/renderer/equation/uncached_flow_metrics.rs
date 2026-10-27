@@ -13,9 +13,7 @@ pub(super) fn metrics(equation: &Equation) -> Option<(u32, u32, i32)> {
     {
         return None;
     }
-    let ast =
-        super::parser::EqParser::for_document(super::document_script::tokenize(&equation.script))
-            .parse();
+    let ast = super::document_script::parse(equation);
     let layout = super::layout::EqLayout::for_equation(equation, DEFAULT_DPI).layout(&ast);
     if !layout.width.is_finite()
         || !layout.height.is_finite()

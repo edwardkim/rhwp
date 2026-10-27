@@ -660,7 +660,7 @@ export class PageRenderer {
         visibleBbox.y !== image.bbox.y ||
         visibleBbox.width !== image.bbox.width ||
         visibleBbox.height !== image.bbox.height ||
-        image.rotation !== 0
+        image.rotation !== 0 || image.paintClipPath !== undefined
       );
       const clipHost = needsClipWrapper ? document.createElement('div') : layer;
       if (needsClipWrapper) {
@@ -671,6 +671,10 @@ export class PageRenderer {
         clipHost.style.height = `${visibleBbox.height * displayScale}px`;
         clipHost.style.overflow = 'hidden';
         clipHost.style.pointerEvents = 'none';
+        if (image.paintClipPath) {
+          clipHost.style.clipPath = `polygon(${image.paintClipPath.map(([x,y]) =>
+            `${(x-visibleBbox.x)*displayScale}px ${(y-visibleBbox.y)*displayScale}px`).join(', ')})`;
+        }
       }
 
       // [#6099] image.bbox 는 **회전 후 외접 상자**다. 프레임을 그 크기로 만들고
@@ -681,7 +685,7 @@ export class PageRenderer {
       const quarterTurned = ((image.rotation % 180) + 180) % 180 === 90;
       // The producer resolves source current/common sizes for every angle.
       // Retain the quarter-turn fallback for older WASM responses only.
-      const paintFrame = image.imagePaintBBox;
+      const paintFrame = image.imagePaintBBox ?? image.paintBbox;
       const frameWidth = paintFrame?.width ?? (quarterTurned ? image.bbox.height : image.bbox.width);
       const frameHeight = paintFrame?.height ?? (quarterTurned ? image.bbox.width : image.bbox.height);
       const frameX = paintFrame?.x ?? image.bbox.x + (image.bbox.width - frameWidth) / 2;

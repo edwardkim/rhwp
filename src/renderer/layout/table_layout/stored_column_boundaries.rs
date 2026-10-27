@@ -44,7 +44,10 @@ impl StoredCellSpans {
                 // 격자 밖으로 나가는 칸이 있으면 경계 해석의 전제가 깨진다.
                 return None;
             }
-            let width = hwpunit_to_px(cell.width.min(i32::MAX as u32) as i32, dpi) * width_scale;
+            let width = hwpunit_to_px(
+                table.physical_cell_width_hu(cell).min(i32::MAX as u32) as i32,
+                dpi,
+            ) * width_scale;
             spans.push((start, end, width + spacing));
         }
         if spans.is_empty() {

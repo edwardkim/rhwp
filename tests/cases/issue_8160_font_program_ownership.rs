@@ -27,10 +27,9 @@ fn sample16_layer_ops<'a>(value: &'a Value, kind: &str, prefix: &str, out: &mut 
 
 fn sample16_assert_tab_owner(label: &str) {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
-    let mut core = DocumentCore::from_bytes(
-        &std::fs::read(root.join("samples/hwp3-sample16-hwp5.hwp")).unwrap(),
-    )
-    .unwrap();
+    let bytes = std::fs::read(root.join("samples/hwp3-sample16-hwp5.hwp")).unwrap();
+    let source_document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).unwrap();
+    let mut core = DocumentCore::from_bytes(&bytes).unwrap();
     core.set_hangul2024_compat(true);
     let (pi, text) = core.document().sections[0]
         .paragraphs
@@ -93,7 +92,24 @@ fn sample16_assert_tab_owner(label: &str) {
             .chars()
             .position(|c| c == '\t')
             .unwrap();
-        assert_eq!(text.chars().nth(source_start + tab_local), Some('\t'));
+        // TextRun의 시작은 인라인 개체 한 칸을 포함하는 논리 캐럿 주소다.
+        // 같은 원본의 공개 변환 계약으로 원문 scalar 주소에 대응시킨다.
+        let source_tab = source_document
+            .logical_to_text_offset(0, pi as u32, (source_start + tab_local) as u32)
+            .unwrap() as usize;
+        assert_eq!(text.chars().nth(source_tab), Some('\t'));
+        let scalar_start = source_document
+            .logical_to_text_offset(0, pi as u32, source_start as u32)
+            .unwrap() as usize;
+        let owned = owner[0]["text"].as_str().unwrap();
+        assert_eq!(
+            text.chars()
+                .skip(scalar_start)
+                .take(owned.chars().count())
+                .collect::<String>(),
+            owned,
+            "논리 주소가 같은 원본 텍스트 조각을 가리킴"
+        );
         let number = texts.last().unwrap();
         for span in leader["leaders"].as_array().unwrap() {
             assert!(

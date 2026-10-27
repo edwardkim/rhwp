@@ -1,3 +1,6 @@
+#[path = "column_width_contract_tests.rs"]
+mod column_width_contract_tests;
+
 use super::super::page_layout::PageLayoutInfo;
 use super::super::pagination::{ColumnContent, PageContent, PageItem};
 use super::text_measurement::estimate_text_width;
@@ -481,39 +484,6 @@ fn stored_layout_relocated_picture_caption_uses_next_saved_flow_anchor() {
 }
 
 #[test]
-fn oversized_row_width_outlier_does_not_expand_base_columns() {
-    let mut cells = Vec::new();
-    for row in 0..3 {
-        for col in 0..2 {
-            cells.push(Cell {
-                row,
-                col,
-                row_span: 1,
-                col_span: 1,
-                width: if row == 0 && col == 0 { 150 } else { 100 },
-                ..Default::default()
-            });
-        }
-    }
-    let table = Table {
-        row_count: 3,
-        col_count: 2,
-        cells,
-        common: CommonObjAttr {
-            width: 200,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-    let engine = LayoutEngine::with_default_dpi();
-    let widths = engine.resolve_column_widths(&table, 2);
-    let expected = hwpunit_to_px(100, DEFAULT_DPI);
-
-    assert!((widths[0] - expected).abs() < 0.01, "widths={widths:?}");
-    assert!((widths[1] - expected).abs() < 0.01, "widths={widths:?}");
-}
-
-#[test]
 fn compact_endnote_tail_log_tolerance_allows_line_box_bleed_only() {
     let col_bottom = 1092.3;
 
@@ -587,6 +557,7 @@ fn test_build_page_with_paragraph() {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
             stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
             float_pushed_line_spacings: Default::default(),
@@ -680,6 +651,7 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
             stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
             float_pushed_line_spacings: Default::default(),
@@ -748,6 +720,8 @@ fn test_layout_with_composed_styles() {
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
         native_pua_fonts: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
         page_number_font_is_hft: false,
@@ -800,6 +774,7 @@ fn test_layout_with_composed_styles() {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
             stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
             float_pushed_line_spacings: Default::default(),
@@ -903,6 +878,8 @@ fn test_layout_multi_run_x_position() {
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
         native_pua_fonts: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
         page_number_font_is_hft: false,
@@ -950,6 +927,7 @@ fn test_layout_multi_run_x_position() {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
             stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
             float_pushed_line_spacings: Default::default(),
@@ -1008,6 +986,8 @@ fn test_resolved_to_text_style() {
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
         native_pua_fonts: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
         page_number_font_is_hft: false,
@@ -1051,6 +1031,8 @@ fn test_resolved_to_text_style_with_ratio() {
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
         native_pua_fonts: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
         page_number_font_is_hft: false,
@@ -1364,6 +1346,7 @@ fn test_layout_table_basic() {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
             stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
             float_pushed_line_spacings: Default::default(),
@@ -1528,6 +1511,7 @@ fn test_layout_table_cell_positions() {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
             stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
             float_pushed_line_spacings: Default::default(),
@@ -3046,6 +3030,7 @@ fn collect_top_level_table_spans_domain() {
             border_fill_id: 0,
             text_direction: 0,
             clip: false,
+            closed_reflow_frame: false,
             page_fragment: false,
             model_cell_index: None,
         }),

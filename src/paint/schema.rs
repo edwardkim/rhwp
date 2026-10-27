@@ -15,8 +15,8 @@ pub struct LayerTreeSchema {
 
 pub const LAYER_TREE_SCHEMA: LayerTreeSchema = LayerTreeSchema {
     schema_version: 1,
-    // 29: rectangle-owned text transforms; imagePaintBBox/strokeJoin remain additive contracts.
-    schema_minor_version: 29,
+    // 34: 현대 합성 음절 후보와 성조 문맥의 문자열 끝점 정렬.
+    schema_minor_version: 34,
     resource_table_version: 1,
     resource_table_minor_version: 6,
     unit: "px",
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn layer_tree_schema_constants_match_schema() {
-        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 29);
+        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 34);
         assert_eq!(LAYER_TREE_SCHEMA.resource_table_minor_version, 6);
         assert_eq!(
             LAYER_TREE_SCHEMA,

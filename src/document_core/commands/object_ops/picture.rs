@@ -551,10 +551,12 @@ impl DocumentCore {
 
         // [Task #1151 v2] floating → inline migration (H1 정합, samples/tac-verify/).
         // 한컴 산출물 Scenario A~D 분석: tac false→true 시 picture 의 control 위치는
-        // 불변이고, 4 필드만 갱신 (treat_as_char / h/v_rel_to=Para / h/v_offset=0 /
-        // parent line_segs[0]). text/char_offsets/paragraph 수 변화 없음.
-        let mut reflow_text_para_after_floating = false;
+        // 불변이다. 텍스트 없는 문단의 첫 줄은 그림 높이를 따르고, 혼합 줄은
+        // 실제 소속 프레임에서 재조판한다. text/char_offsets/paragraph 수는 보존한다.
+        let mut reflowed_body_end = None;
         if should_migrate_to_inline || should_migrate_to_floating {
+            let styles = self.resolve_render_styles();
+            let width = self.picture_host_width(section_idx, Some(parent_para_idx))?;
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
             })?;
@@ -581,51 +583,33 @@ impl DocumentCore {
                     HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", parent_para_idx))
                 })?
             };
+            let style = styles.para_styles.get(para.para_shape_id as usize);
+            let frame = if parent_para_idx < body_len {
+                crate::renderer::composer::ParagraphBox::body_for_style(width, style, self.dpi)
+            } else {
+                crate::renderer::composer::ParagraphBox::content_for_style(width, style, self.dpi)
+            };
+            let stored_end = crate::renderer::composer::paragraph_flow_end(para);
+            let has_text = !para.text.is_empty();
             if should_migrate_to_inline {
-                let crate::model::paragraph::Paragraph {
-                    line_segs,
-                    controls,
-                    ..
-                } = &mut *para;
-                match controls.get_mut(control_idx) {
-                    Some(Control::Picture(pic_box)) => {
-                        Self::migrate_picture_floating_to_inline(line_segs, pic_box.as_mut());
-                    }
-                    Some(Control::Shape(shape)) => {
-                        if let ShapeObject::Picture(pic) = shape.as_mut() {
-                            Self::migrate_picture_floating_to_inline(line_segs, pic);
-                        }
-                    }
-                    _ => {}
-                }
+                Self::migrate_picture_floating_to_inline(
+                    para,
+                    control_idx,
+                    frame,
+                    &styles,
+                    self.dpi,
+                );
             } else if para.text.is_empty() && para.char_offsets.is_empty() {
                 Self::migrate_empty_picture_para_inline_to_floating(para);
-            } else if !para.text.is_empty() && parent_para_idx < body_len {
-                // 텍스트가 있는 문단: false→true 마이그레이션이 line_segs[0] 를
-                // 그림 높이로 키워 놓았으므로, 그림이 inline 흐름에서 빠지는 시점에
-                // 남은 인라인 콘텐츠 기준으로 재계산해야 한다. 그림 삭제 경로
-                // (reflow_paragraph_line_segs_after_control_delete) 와 동일한 원리.
-                // paragraph &mut borrow 가 끝난 뒤 reflow_paragraph 로 수행.
-                // 텍스트 없이 컨트롤 문자만 있는 문단(표 문단 등)은 기존 동작 유지.
-                reflow_text_para_after_floating = true;
+            } else if has_text {
+                super::picture_inline_migration::reflow_text_host(para, frame, &styles, self.dpi);
+            }
+            if has_text && parent_para_idx < body_len {
+                reflowed_body_end = Some(stored_end);
             }
         }
-        if reflow_text_para_after_floating {
-            // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
-            let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
-                &self.document.sections[section_idx].paragraphs[parent_para_idx],
-            );
-            self.reflow_paragraph(section_idx, parent_para_idx);
-            let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
-            crate::renderer::composer::recalculate_section_vpos(
-                &mut self.document.sections[section_idx].paragraphs,
-                parent_para_idx,
-                None,
-                stored_end_for_reset,
-                &self.styles,
-                self.dpi,
-                doc_hwp3_layout,
-            );
+        if let Some(stored_end) = reflowed_body_end {
+            self.finish_body_inline_object_reflow(section_idx, parent_para_idx, stored_end);
         }
         // 캡션 생성/삭제 시 자동번호를 재할당한다.
         if caption_created || caption_removed {
@@ -717,6 +701,8 @@ impl DocumentCore {
         inner_control_idx: usize,
         props_json: &str,
     ) -> Result<String, HwpError> {
+        let styles = self.resolve_render_styles();
+        let width = self.picture_host_width(section_idx, None)?;
         let caption_created;
         {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
@@ -773,17 +759,27 @@ impl DocumentCore {
             // 본문 setter 와 같은 이유로 여기서도 packed attr 을 동기화한다 —
             // 머리말/꼬리말 경로도 같은 tac 토글 마이그레이션을 수행한다 (Issue #3781).
             crate::serializer::control::sync_anchor_bits(&mut pic.common);
+            let frame = crate::renderer::composer::ParagraphBox::content_for_style(
+                width,
+                styles.para_styles.get(inner_para.para_shape_id as usize),
+                self.dpi,
+            );
             if !was_tac && now_tac {
-                if let crate::model::control::Control::Picture(pic_box) =
-                    &mut inner_para.controls[inner_control_idx]
-                {
-                    Self::migrate_picture_floating_to_inline(
-                        &mut inner_para.line_segs,
-                        pic_box.as_mut(),
+                Self::migrate_picture_floating_to_inline(
+                    inner_para,
+                    inner_control_idx,
+                    frame,
+                    &styles,
+                    self.dpi,
+                );
+            } else if was_tac && !now_tac {
+                if inner_para.text.is_empty() {
+                    Self::migrate_empty_picture_para_inline_to_floating(inner_para);
+                } else {
+                    super::picture_inline_migration::reflow_text_host(
+                        inner_para, frame, &styles, self.dpi,
                     );
                 }
-            } else if was_tac && !now_tac {
-                Self::migrate_empty_picture_para_inline_to_floating(inner_para);
             }
         }
         if caption_created {
@@ -801,53 +797,6 @@ impl DocumentCore {
             ctrl: outer_control_idx,
         });
         Ok("{\"ok\":true}".to_string())
-    }
-    /// [Task #1151 v2] Floating picture → inline 마이그레이션 (H1 정합).
-    ///
-    /// 한컴 2022 산출물 (`samples/tac-verify/scenario-{a,b,c,d}-after.hwp`) 분석
-    /// 결과: floating picture 의 `treat_as_char` 가 false→true 로 토글될 때
-    /// 한컴은 다음만 갱신한다 (자세한 분석: `mydocs/tech/investigations/issue-1151/hancom_picture_tac_toggle.md`).
-    ///
-    /// Picture 자체: `horz_rel_to = Para`, `vert_rel_to = Para`,
-    /// `horizontal_offset = 0`, `vertical_offset = 0`. (`treat_as_char = true` 와 attr
-    /// 비트는 `apply_picture_props_inner` 가 이미 처리.)
-    ///
-    /// Parent paragraph 의 `line_segs[0]`: `line_height = picture.common.height`,
-    /// `text_height = picture.common.height`, `baseline_distance = round(line_height × 0.85)`.
-    /// 비율 0.85 는 한컴 산출물 4 시나리오 (5331/16038/4847/19019) 모두 정확 관찰.
-    /// `line_segs` 가 비어있으면 신설 (line_spacing=600 기본).
-    ///
-    /// 변경 없음: paragraph.text / char_offsets / char_shapes / paragraph 수, picture
-    /// control 의 paragraph 위치 (sentinel char 추가하지 않음, 셀 안 이동 / 새 paragraph
-    /// 분리 모두 없음 — H1 정합).
-    pub(crate) fn migrate_picture_floating_to_inline(
-        line_segs: &mut Vec<crate::model::paragraph::LineSeg>,
-        pic: &mut crate::model::image::Picture,
-    ) {
-        use crate::model::shape::{HorzRelTo, VertRelTo};
-        pic.common.horz_rel_to = HorzRelTo::Para;
-        pic.common.vert_rel_to = VertRelTo::Para;
-        pic.common.horizontal_offset = 0;
-        pic.common.vertical_offset = 0;
-        // stale packed attr 동기화 — 없으면 바이너리 왕복에서 Paper 앵커 부활
-        // (treatAsChar=1 + PAPER 모순 → 한글 렌더 깨짐, Issue #3781 실측).
-        crate::serializer::control::sync_anchor_bits(&mut pic.common);
-
-        let picture_height_hu = crate::renderer::composer::inline_picture_occupied_size_hu(pic).1;
-        let baseline = (picture_height_hu as f64 * 0.85).round() as i32;
-        if let Some(seg) = line_segs.first_mut() {
-            seg.line_height = picture_height_hu;
-            seg.text_height = picture_height_hu;
-            seg.baseline_distance = baseline;
-        } else {
-            line_segs.push(crate::model::paragraph::LineSeg {
-                line_height: picture_height_hu,
-                text_height: picture_height_hu,
-                baseline_distance: baseline,
-                line_spacing: 600,
-                ..Default::default()
-            });
-        }
     }
     /// TAC 그림을 자리차지 개체로 되돌릴 때, 텍스트 없는 그림 전용 문단의
     /// LINE_SEG를 남은 TAC 개체 수에 맞춰 재구성한다.
@@ -1168,12 +1117,15 @@ impl DocumentCore {
         // src/serializer/control.rs 의 rendering 블록).
         if Self::picture_transform_fingerprint(pic) != transform_before {
             pic.shape_attr.raw_rendering.clear();
-            pic.shape_attr.render_tx = pic.shape_attr.offset_x as f64;
-            pic.shape_attr.render_ty = pic.shape_attr.offset_y as f64;
-            pic.shape_attr.render_sx = 1.0;
-            pic.shape_attr.render_sy = 1.0;
-            pic.shape_attr.render_b = 0.0;
-            pic.shape_attr.render_c = 0.0;
+            // 회전 없는 저장 경로는 이 명시적 행렬을 소비한다. 플래그만 바꾸면
+            // 한컴은 반전 전 그림을 출력하므로 원본 사각형 안의 반전도 기록한다.
+            let [sx, b, tx, c, sy, ty] = pic.shape_attr.local_reflection_matrix();
+            pic.shape_attr.render_tx = pic.shape_attr.offset_x as f64 + tx;
+            pic.shape_attr.render_ty = pic.shape_attr.offset_y as f64 + ty;
+            pic.shape_attr.render_sx = sx;
+            pic.shape_attr.render_sy = sy;
+            pic.shape_attr.render_b = b;
+            pic.shape_attr.render_c = c;
         }
 
         // 자르기: HWP 내부 crop은 원본 이미지의 source rect 좌표이고,
@@ -1337,66 +1289,8 @@ impl DocumentCore {
             ));
         }
 
-        // 컨트롤이 차지하는 갭의 시작 위치를 찾아 char_offsets 조정
-        let text_chars: Vec<char> = para.text.chars().collect();
-        let mut ci = 0usize;
-        let mut prev_end: u32 = 0;
-        let mut gap_start: Option<u32> = None;
-        'outer: for i in 0..text_chars.len() {
-            let offset = if i < para.char_offsets.len() {
-                para.char_offsets[i]
-            } else {
-                prev_end
-            };
-            while prev_end + 8 <= offset && ci < para.controls.len() {
-                if ci == control_idx {
-                    gap_start = Some(prev_end);
-                    break 'outer;
-                }
-                ci += 1;
-                prev_end += 8;
-            }
-            let char_size: u32 = if text_chars[i] == '\t' {
-                8
-            } else if text_chars[i].len_utf16() == 2 {
-                2
-            } else {
-                1
-            };
-            prev_end = offset + char_size;
-        }
-        if gap_start.is_none() {
-            while ci < para.controls.len() {
-                if ci == control_idx {
-                    gap_start = Some(prev_end);
-                    break;
-                }
-                ci += 1;
-                prev_end += 8;
-            }
-        }
-
-        // char_offsets 조정
-        if let Some(gs) = gap_start {
-            let threshold = gs + 8;
-            for offset in para.char_offsets.iter_mut() {
-                if *offset >= threshold {
-                    *offset -= 8;
-                }
-            }
-        }
-
-        // 컨트롤 및 ctrl_data_record 제거
-        para.controls.remove(control_idx);
-        if control_idx < para.ctrl_data_records.len() {
-            para.ctrl_data_records.remove(control_idx);
-        }
-        // 컨트롤 배열이 줄어도 뒤 누름틀의 범위는 같은 필드를 가리켜야 한다.
-        for range in &mut para.field_ranges {
-            if range.control_idx > control_idx {
-                range.control_idx -= 1;
-            }
-        }
+        para.remove_control(control_idx);
+        // 컨트롤 배열이 줄어도 활성 누름틀은 같은 필드를 가리켜야 한다.
         if let Some(active) = self.active_field.as_mut() {
             if active.section_idx == section_idx
                 && active.para_idx == parent_para_idx
@@ -1405,11 +1299,6 @@ impl DocumentCore {
             {
                 active.control_idx -= 1;
             }
-        }
-
-        // char_count 갱신
-        if para.char_count >= 8 {
-            para.char_count -= 8;
         }
 
         // line_segs 재계산: 그림 높이가 반영된 line_segs를 텍스트 기반으로 리셋
