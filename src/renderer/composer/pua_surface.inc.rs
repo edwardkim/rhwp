@@ -98,14 +98,21 @@ pub fn decode_pua_overlap_number(chars: &[char]) -> Option<String> {
     Some(s)
 }
 
-/// CharOverlap controls occupy one text-flow position even when their payload
-/// contains multiple glyph components.
-///
-/// Hancom uses this for overlapped two-digit markers such as the boxed 10/11/12
-/// in `table-vpos-01.hwp`: the control stores two PUA glyph components, but
-/// caret movement and line measurement advance by one character box.
-pub fn char_overlap_advance_units(chars: &[char]) -> usize {
-    usize::from(!chars.is_empty())
+/// 구성 글자의 수와 별개로 글자 겹침 컨트롤은 한 글줄·편집 프레임을 점유한다.
+/// 여러 PUA 구성의 두 자리 번호뿐 아니라 빈 HWPX compose도 같은 계약이다.
+/// 독립 한컴 저장본은 빈 compose를 전각 공백 프레임으로 보존한다.
+pub fn char_overlap_advance_units(_chars: &[char]) -> usize {
+    1
+}
+
+/// 빈 구성의 물리 프레임을 파생 run에 남긴다. 문서의 원문 배열은 바꾸지 않는다.
+/// 한컴 저장본의 전각 공백과 같은 캐리어를 기존 겹침 배치·paint 경로가 소비한다.
+pub(crate) fn char_overlap_flow_text<S: crate::storage::Storage>(chars: &[char], storage: &S) -> Result<String, S::Error> {
+    if chars.is_empty() {
+        storage.string("\u{3000}")
+    } else {
+        storage.chars(chars.iter().copied())
+    }
 }
 
 /// 글자겹침(CharOverlap) 내부 글자의 크기 비율.

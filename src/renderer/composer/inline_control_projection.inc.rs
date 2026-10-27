@@ -124,10 +124,7 @@ fn try_inject_char_overlap_text<S: crate::storage::Storage>(
     // CharOverlap별 (텍스트위치, 런) 수집
     let mut insertions: Vec<(usize, ComposedTextRun)> = storage.vec(0)?;
     for (ctrl_idx, co) in &char_overlap_indices {
-        let text = storage.chars(co.chars.iter().copied())?;
-        if text.is_empty() {
-            continue;
-        }
+        let text = char_overlap_flow_text(&co.chars, storage)?;
         let stored_char_style_id = co
             .char_shape_ids
             .iter()
