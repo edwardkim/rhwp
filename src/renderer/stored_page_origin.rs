@@ -167,13 +167,12 @@ pub(crate) fn stored_first_margin_is_page_relative(
         && !first.cell_format_vpos_dirty
         && !next.cell_format_vpos_dirty
         && next.controls.is_empty();
-    let stored_gap = hwpunit_to_px(
-        next_seg.vertical_pos
-            - last_seg.vertical_pos
-            - last_seg.line_height
-            - last_seg.line_spacing,
-        dpi,
-    );
+    // 손상 입력의 저장 줄 값은 i32 뺄셈을 넘칠 수 있어 위 등식처럼 i64 로 잰다.
+    let stored_gap_hu = i64::from(next_seg.vertical_pos)
+        - i64::from(last_seg.vertical_pos)
+        - i64::from(last_seg.line_height)
+        - i64::from(last_seg.line_spacing);
+    let stored_gap = stored_gap_hu as f64 * dpi / crate::renderer::HWPUNIT_PER_INCH;
     // 명시적 나눔만으로 저장 축을 정하지 않는다. 첫 줄의 앞 간격과
     // 두 문단 사이의 아래·위 간격이 함께 닫혀야 새 쪽의 절대 원점이다.
     // 아래 간격이 0이어도 완전한 저장 단계다. 명시적 쪽 나눔의 첫
