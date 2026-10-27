@@ -229,3 +229,41 @@ exit 0, Studio 전체 단위 검사는 2,454 PASS·0 FAIL·0 skipped다.
 표본 수학을 복제하지 않는다. 이 파일은 wasm32 전용이므로 검증한 Native 코드와
 단위 검사 소스는 바뀌지 않았다. 해당 연결을 포함한 새 패키지에서 두 원본 255쪽을
 먼저 재검증한다. 기존 c8e 패키지는 이 보완을 포함하지 않으므로 최종 근거로 쓰지 않는다.
+
+## 현재 검증 완료 범위와 정식 회귀
+
+Native b2b의 두 문서 전 766조건을 완료했다. HWPX 368/383, HWP 365/383,
+합계 **733/766조건**이 raw 100%·미대응 0이다. 미대응 합계는 각각 708·724,
+최저 raw는 양쪽 99.46283%다. source 259보다 미대응이 늘어난 쪽은 없다.
+의미 렌더 트리는 766쪽 모두 바이트가 같고, 출력 PNG도 **762쪽은 바이트가 같다**.
+RGB가 바뀐 쪽은 두 원본의 245·255쪽뿐이다.
+
+245쪽은 양쪽 원본 모두 기존/현재 raw 100%·0을 유지한다. 바뀐 26,986픽셀에서
+독립 Print와의 RGB 절대 차이 합계는 1,792,412→511,723으로 감소했다.
+같은 영역을 확대 판독했으며 새 결과를 원본 그림의 다른 배치로 바꾸지 않았다.
+255쪽은 앞서 기록한 대로 양쪽 265→0이다. 결과 원문과 전쪽 TSV는
+`alpha-mask-native/native-whole/whole-result.json`, 각 문서의 `score/silhouette.tsv`,
+`all-native-rgb-comparison.json`, `p245-native-changed-region-print-comparison.json`이다.
+
+Canvas2D 보완을 포함한 `88d81725f1372f3e9fa90bc9f8d604d08449ee0a`의
+새 DEV WASM 패키지를 약 4분 17초에 빌드하고 두 원본의 245·255쪽을 실제
+브라우저에서 다시 출력했다. **4조건 모두 raw 100%·미대응 0**이며 종료 코드 0이다.
+Native/fresh Canvas2D/독립 Print의 같은 영역도 확대 판독했다.
+`alpha-mask-wasm-dev-v2/wasm-boundary-result.json`과 문서별 TSV/PNG에 연결한다.
+초기 c8e 패키지의 HWPX 255쪽 406픽셀은 이 보완 뒤 0이다. 초기 패키지의
+HWP 40쪽 DEV 준비는 Runtime.callFunctionOn의 600초 제한으로 종료됐으므로
+83조건 완료나 현재 소스 실패로 분류하지 않는다. 해당 로그·패키지는 구분해 보존했다.
+
+`tests/cases/issue_8153_print_alpha_mask.rs`는 독립 PDF의 JPEG/1비트 마스크에서
+읽은 색·alpha, 특히 투명 픽셀 아래 남는 RGB를 검사한다. 같은 그림의 문단 소유,
+누락·중복·본문 clip, 원본 저장 내용 보존도 함께 보호한다. 독립 PDF의 표시
+사각형은 96dpi에서 좌·위·우·아래
+`170.3759969075521, 658.4959716796875, 626.6826985677084, 865.0359700520834`이며
+완료된 255쪽의 ±2px 경계로 등록한다. 구현이 계산한 좌표를 기대값으로 복사하지 않았다.
+같은 정식 파일은 source 259에서 2 FAIL, b2b에서 2 PASS였다.
+실제 Cargo 자동 수집 실행은 별도로 확인하며 아직 이 문단의 완료 근거에 포함하지 않는다.
+
+기존 정식 TAC 2건과 셀 clip 4건도 source 88d의 실제 Cargo 자동 수집 suite에서
+각각 2 PASS·4 PASS로 완료했다. `alpha-mask-native/formal-cargo-result.json`에 연결한다.
+전체 회귀·최종 표준 최적화 WASM·corpus·페이지별 중요 영역 전수 보호는 여전히
+필요하다. Native에 남은 33조건을 포함한 원래 1,532조건 목표를 축소하지 않는다.
