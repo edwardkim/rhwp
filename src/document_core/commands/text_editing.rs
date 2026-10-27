@@ -3104,7 +3104,7 @@ impl DocumentCore {
     /// [#2755] path 의 CellPathEntry 사슬을 따라 **최내곽** 셀의 폭·좌우 패딩(HWPUNIT)을
     /// 해석한다. 마지막 엔트리를 제외한 각 엔트리에서 다음 중첩 컨트롤을 담은 컨테이너
     /// 문단(`cell_para_idx`)으로 하강한다 — `get_cell_paragraphs_mut_by_path` 의 불변 짝이다.
-    fn resolve_innermost_cell_metrics(
+    pub(crate) fn resolve_innermost_cell_metrics(
         &self,
         section_idx: usize,
         parent_para_idx: usize,

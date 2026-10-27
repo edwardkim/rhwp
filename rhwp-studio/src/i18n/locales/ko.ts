@@ -1761,6 +1761,7 @@ const catalog = {
   "dialog.tableCreate.okBtn.text": "만들기",
   "dialog.tableCreate.title.text": "표 만들기",
   "dialog.tableCreate.treatLbl.text": " 글자처럼 취급",
+  "dialog.tableCreate.treatInCell.title": "표 칸 안에 만드는 표는 글자처럼 취급만 지원합니다",
   "dialog.tableRowColumn.clampInsertCount.title": "줄/칸 추가하기",
   "dialog.tableRowColumn.confirmBtn.text": "추가",
   "dialog.tableRowColumn.confirmBtn.text.x5c6c6e": "지우기",
