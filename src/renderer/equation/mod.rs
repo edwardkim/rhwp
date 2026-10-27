@@ -122,6 +122,76 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
             (equation.common.height as i32).saturating_mul(i32::from(equation.baseline)) / 100,
         );
     }
+    cached_flow_metrics(equation)
+}
+
+/// 선언 프레임 밖 흐름 메트릭이 읽는 수식 값 전부다. 값이 같으면 결과도 같으므로
+/// 편집으로 값이 바뀌면 다른 키가 되어 이전 결과를 재사용하지 않는다.
+#[derive(PartialEq, Eq, Hash)]
+struct FlowMetricsKey {
+    script: String,
+    font_name: String,
+    version_info: String,
+    font_size: u32,
+    attr: u32,
+    baseline: i16,
+    width: u32,
+    height: u32,
+    size_protect: bool,
+}
+
+/// 미주 조판은 같은 수식의 메트릭을 판정마다 다시 묻는다. 토큰화·조판을 반복하지 않는다.
+fn cached_flow_metrics(equation: &crate::model::control::Equation) -> (u32, u32, i32) {
+    use std::cell::RefCell;
+    use std::collections::HashMap;
+    // 가득 차면 통째로 비운다. 키가 입력 값 전부라 비워도 결과는 같고 다시 계산할 뿐이다.
+    const CAPACITY: usize = 4096;
+    thread_local! {
+        static CACHE: RefCell<HashMap<FlowMetricsKey, (u32, u32, i32)>> = RefCell::default();
+    }
+    // 새 필드가 생기면 컴파일이 멈춰 키에 넣을지 판단하게 한다.
+    // eqedit·treat_as_char·봉인은 선언 프레임 판정만 읽고 그 판정은 캐시 앞에서 끝난다.
+    let crate::model::control::Equation {
+        common,
+        attr,
+        script,
+        font_size,
+        color: _,
+        baseline,
+        unknown: _,
+        eqedit: _,
+        version_info,
+        font_name,
+        raw_ctrl_data: _,
+        raw_ctrl_seal: _,
+        unpositioned_host_frame_seal: _,
+    } = equation;
+    let key = FlowMetricsKey {
+        script: script.clone(),
+        font_name: font_name.clone(),
+        version_info: version_info.clone(),
+        font_size: *font_size,
+        attr: *attr,
+        baseline: *baseline,
+        width: common.width,
+        height: common.height,
+        size_protect: common.size_protect,
+    };
+    if let Some(metrics) = CACHE.with(|cache| cache.borrow().get(&key).copied()) {
+        return metrics;
+    }
+    let metrics = computed_flow_metrics(equation);
+    CACHE.with(|cache| {
+        let mut cache = cache.borrow_mut();
+        if cache.len() >= CAPACITY {
+            cache.clear();
+        }
+        cache.insert(key, metrics);
+    });
+    metrics
+}
+
+fn computed_flow_metrics(equation: &crate::model::control::Equation) -> (u32, u32, i32) {
     if let Some(intrinsic) = layout::EqLayout::legacy_flow_layout(equation, super::DEFAULT_DPI) {
         return (
             super::px_to_hwpunit(intrinsic.width, super::DEFAULT_DPI).max(1) as u32,
