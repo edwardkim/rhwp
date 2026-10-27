@@ -19,29 +19,48 @@ fn converted_hft_bullet_shares_the_adjacent_fullwidth_advance() {
     let layout: Value =
         serde_json::from_str(&core.get_page_text_layout_native(4).unwrap()).unwrap();
     let title = "•서버 측면의 응용 프로그램 계층 작업 할당 방법";
-    let rows: Vec<_> = layout["runs"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter(|run| run["text"].as_str() == Some(title))
+    // [#8136] `•` 는 기호 슬롯 글자라 제목 글과 다른 run 이 된다. 같은 글줄에서 `•` run 과
+    // 바로 뒤 run 을 이어 제목을 복원한다(이 문서는 기호·한글 슬롯 face 가 같아 표시는 그대로다).
+    let runs = layout["runs"].as_array().unwrap();
+    let rows: Vec<_> = runs
+        .windows(2)
+        .filter(|pair| {
+            pair[0]["y"] == pair[1]["y"]
+                && format!(
+                    "{}{}",
+                    pair[0]["text"].as_str().unwrap_or_default(),
+                    pair[1]["text"].as_str().unwrap_or_default()
+                ) == title
+        })
         .collect();
     assert_eq!(rows.len(), 1, "원문 제목의 누락·중복 없음");
-    let run = rows[0];
-    assert!(run["bold"].as_bool().unwrap(), "독립 Print의 굵은 제목");
-    let xs = run["charX"].as_array().unwrap();
-    assert_eq!(xs.len(), title.chars().count() + 1, "scalar 소유 보존");
-    let bullet = xs[1].as_f64().unwrap() - xs[0].as_f64().unwrap();
-    let hangul = xs[2].as_f64().unwrap() - xs[1].as_f64().unwrap();
+    let (bullet_run, text_run) = (&rows[0][0], &rows[0][1]);
+    assert_eq!(bullet_run["text"].as_str(), Some("•"));
+    for run in [bullet_run, text_run] {
+        assert!(run["bold"].as_bool().unwrap(), "독립 Print의 굵은 제목");
+        assert!(run["fontFamily"]
+            .as_str()
+            .unwrap()
+            .starts_with("한양신명조"));
+    }
+    let bx = bullet_run["charX"].as_array().unwrap();
+    let tx = text_run["charX"].as_array().unwrap();
+    assert_eq!(
+        bx.len() + tx.len(),
+        title.chars().count() + 2,
+        "scalar 소유 보존"
+    );
+    let bullet = bx[1].as_f64().unwrap() - bx[0].as_f64().unwrap();
+    let hangul = tx[1].as_f64().unwrap() - tx[0].as_f64().unwrap();
+    // 제목 run 은 `•` 전진이 끝난 자리에서 시작한다.
+    let gap = text_run["x"].as_f64().unwrap() - (bullet_run["x"].as_f64().unwrap() + bullet);
+    assert!(gap.abs() < 0.5, "`•` 뒤 제목 시작이 어긋남: {gap}");
     // Print의 기준선 원점 709→805→901.9956, 같은 glyph scale92이다.
     // 절대 위치를 고정하지 않고 실제 글줄에서 두 전진의 관계를 검사한다.
     assert!(
         bullet > hangul * 0.95 && bullet < hangul * 1.05,
         "bullet을 반각으로 축소하면 안 된다: bullet={bullet}, 인접 한글={hangul}"
     );
-    assert!(run["fontFamily"]
-        .as_str()
-        .unwrap()
-        .starts_with("한양신명조"));
 }
 
 /// 전2쪽 Native/fresh 90%·쪽수 일치 및 대괄호 확대 확인 뒤 추가한다.
