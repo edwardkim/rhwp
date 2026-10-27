@@ -5842,8 +5842,9 @@ export class CanvasKitLayerRenderer {
     const index = this.layerResourceIndex(op.imageRef, this.currentResources?.imageKeys,
       this.currentResources?.images?.length ?? 0);
     const resource = index === null ? undefined : this.currentResources?.images?.[index];
-    const bytes = this.imageResourceBytes(resource ?? op.base64
-      ?? (op.sourceImageKey ? this.currentImageBytesResolver?.(op.sourceImageKey) : undefined));
+    const source = resource ?? op.base64
+      ?? (op.sourceImageKey ? this.currentImageBytesResolver?.(op.sourceImageKey) : undefined);
+    const bytes = this.imageResourceBytes(source ?? undefined);
     if (!bytes) throw new Error('Print 색·마스크의 원본 바이트가 없습니다.');
     return bytes;
   }
