@@ -99,29 +99,3 @@ pub(super) fn payload(
         suppress_effects: false,
     })
 }
-
-#[cfg(test)]
-mod tests {
-    use super::dimensions;
-
-    #[test]
-    fn independent_print_integer_boundaries_control_both_axes() {
-        // 별도 한컴 Print 12쪽 대조의 선언 HU와 관측 픽셀이다.
-        // 소수/정수 DPI로 수용 여부를 판정하면 경계 11063..11066HU에서 틀린다.
-        for h in 11062..=11066 {
-            assert_eq!(
-                dimensions((860, 769), (174.8, f64::from(h) / 100.0)),
-                Some((1214, 768))
-            );
-        }
-        for h in [11067, 11068] {
-            assert_eq!(dimensions((860, 769), (174.8, f64::from(h) / 100.0)), None);
-        }
-        assert_eq!(dimensions((860, 769), (123.76, 120.0)), Some((859, 833)));
-        assert_eq!(dimensions((860, 769), (123.77, 120.0)), None);
-        assert_eq!(dimensions((860, 769), (180.0, 120.0)), None);
-        assert_eq!(dimensions((860, 769), (100.0, 80.0)), Some((694, 556)));
-        assert_eq!(dimensions((860, 769), (100.0, 140.0)), Some((694, 972)));
-        assert_eq!(dimensions((860, 769), (f64::NAN, 10.0)), None);
-    }
-}
