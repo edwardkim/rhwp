@@ -134,7 +134,7 @@ HWP5 원본의 채움은 사양 표 31의 값 5인 FitToSize이고 HWPX는 TOTAL
 속성을 검사하도록 고쳐 같은 파일을 재실행했다. 제품의 공통 수용 조건은 두 형식을
 이미 구분해 소비하며 이 검증을 위해 구현이나 원본을 바꾸지 않았다.
 
-suite는 정본 `--prepare`로 자동 수집했다. `regression_suite_020`에 4건이 들어가고
+suite는 정본 `--prepare`로 자동 수집했다. 최종 파일은 `regression_suite_009`에 4건이 들어가고
 28 suites + 20 exceptions = 48/48 targets다. 파생 manifest/harness는 ignored이며,
 Cargo registry·suite policy·CI 호출을 추가 변경하지 않았다. `--adopt-new`만 실행하면
 정리되지 않은 과거 예외가 남던 관측은 정식 prepare로 해소했으며, 그 실패를 코드
@@ -145,3 +145,10 @@ Cargo registry·suite policy·CI 호출을 추가 변경하지 않았다. `--ado
 `p289-301-source-contract/formal-cell-bg-before-after-result.json`이다.
 확대 PNG는 `cell-clip-native/native-boundary/native-fresh-wasm-print-four-boundaries-zoom.png`다.
 최종 PR 제출 TSV·중요 전쪽 ±2px 회귀·표준 최적화 fresh WASM·전체 필수 검증은 미완료다.
+
+실제 Cargo 자동 수집 검증은 source `1d75b62dd400e35dfbcea45f43df7666767e484a`의
+`regression_suite_009`에서 **4 PASS·0 FAIL·0 ignored, 종료 코드 0**으로 완료했다.
+컴파일·실행 합계는 669.09초이고 필터에서 제외된 기존 검사는 259건이다.
+제품 src는 259와 같으며 이 source 차이는 원본 회귀 파일·검증 기록이다.
+`cell-clip-native/formal-suite-result.json`에 정확한 명령·source·실제 summary를 보존했다.
+전체 Rust suite 통과로 확대하지 않는다.

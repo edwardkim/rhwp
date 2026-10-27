@@ -75,3 +75,31 @@ RGB 전픽셀이 같았다. 배치·텍스트·소유를 그대로 둔 자원 �
 제품 코드·편람 원본·기존 PDF·글꼴·측정 기준은 이 조사에서 바꾸지 않았다.
 SO 분석 자료는 output에만 둔다. 전쪽 100%와 필수 테스트 후 PR 준비까지만 진행하며
 사용자 지시 전 upstream 동기화·원격 GitHub 쓰기를 하지 않는다.
+
+## 2026-10-27: 색·마스크를 분리한 장치 표본의 원인 분리
+
+제품 source 259의 원본 두 문서 255쪽을 같은 글꼴 환경으로 다시 재생했다.
+진단의 수정 전 PNG는 각각 현재 제품의 Native PNG와 **RGB 전픽셀이 같다**.
+현재 paint frame도 기존 실제 관측과 일치함을 확인해 임의 이동을 하지 않았다.
+
+원본에서 이미 계산한 JPEG RGB와 이진 alpha를 그대로 사용하되,
+색 평면과 마스크 평면을 실제 동결 WASM의 공통 면적 표본으로 각각 처리한 뒤
+같은 장치 픽셀 격자에서 결합했다. 이진 alpha가 들어 있는 PNG를 먼저 합쳐
+일반 RGBA 필터로 그렸던 265→406픽셀 진단과 구분한다. 그림의 원본 bbox,
+본문·소유·순서·clip은 유지하고 paint leaf의 작업 사각형만 공통 sampler가
+반환한 정수 장치 영역으로 재생했다. PDF 바이트를 그림 자원으로 주입하지 않았다.
+
+새 실제 Native 원인 분리 진단은 두 원본 모두 **265→0픽셀, raw 100%**다.
+이는 색 평면과 마스크의 표본 순서가 남은 차이를 설명한다는 근거이며 아직
+제품 수정이나 fresh WASM 문서 출력 통과로 분류하지 않는다. 공통 불투명 sampler를
+alpha를 가진 입력에 몰래 적용하지 않고, 두 opaque 평면을 각각 처리했음을 구분한다.
+
+256단계 alpha 색 대조군의 색 전달은 여전히 설명이 필요하다. 같은 색과 alpha를
+예측하는 일반 계약을 확인하고, 이미 표본화한 투명 결과에 두 번째 필터를 적용하지
+않도록 Native/Canvas의 실제 소비까지 연결한 후 제품을 보정한다. 원본 하나의
+색 불변 조건으로 수용 범위를 임의로 좁히지 않는다.
+
+자료는 `alpha-print-contract/separate-device-planes/`의
+`input.json`, `device-result.json`, `replay-results.json`, `comparison.json`,
+각 원본의 actual-paint-frame과 before/after PNG다. 제품 src·원본·기준 PDF·폰트·
+Visual Sweep의 내용 mask/2px 반경은 변경하지 않았다.

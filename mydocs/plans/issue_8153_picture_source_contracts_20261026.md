@@ -238,3 +238,21 @@ subset과 설치본의 해당 7개 글리프 윤곽·전진·힌트가 같은 �
 바이트를 제외한 진단이며, 선택한 run만 남긴 paint JSON의 source table 경고는
 이 진단 축소에서 생긴 것으로 제품 검증 결과로 사용하지 않는다. 기존 전체 TSV를
 재산출하지 않았고, 이번 사양 설명·진단 기록으로 144개 잔여가 개선됐다고 세지 않는다.
+
+## 2026-10-27: crop 색의 원본 표면 형식 대조
+
+141쪽의 원래 RGB와 crop/변환을 유지해 사전 양자화한 동일 색을 PNG32·BMP24·
+BMP16 stream으로 읽고, 별도로 실제 16bpp RGB555 scan surface도 생성해 대조했다.
+Windows에서 원본 RGBA와 실제 객체 형식을 확인했다. 같은 정수 복사와 원본 유래
+소수 이동 각각에서 모든 사전 양자화 표면의 출력 RGBA가 전픽셀 같다.
+실제 16비트 객체도 같았으며, stream BMP16은 32비트로 확장된다는 차이를 구분했다.
+
+독립 Print의 alpha는 소수 이동에서 같지만 JPEG RGB는 여전히 다르다.
+원본 24비트·후 양자화는 이전 관측인 RGB 39,962픽셀 차이를 재현했고,
+사전 양자화·후 추가 양자화 없음은 형식과 무관하게 59,198픽셀 차이다.
+이는 이 변환에서 표면 형식만으로 색 차이를 설명할 수 없다는 반례다.
+낮은 오차 후보나 16비트 전용 분기를 제품에 채택하지 않았다.
+
+새 결과는 ignored `p141-installed-crop-stage/{source-format-findings.json,
+source-format-comparison.json,scan0/source-format-comparison.json}`에 있다.
+설치본의 사설 분석 기록은 output에만 두며 Git에는 포함하지 않는다.
