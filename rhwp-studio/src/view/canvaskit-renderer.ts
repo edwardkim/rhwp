@@ -2856,10 +2856,11 @@ export class CanvasKitLayerRenderer {
         const mapped = printBitmapImage(canvas, { x: dstX, y: dstY, width: dstW, height: dstH });
         dstX = mapped.x; dstY = mapped.y; dstW = mapped.width; dstH = mapped.height;
       }
-      if (op.imageReconstruction === 'printArea' && !crop && opacity === 1
+      if ((op.imageReconstruction === 'printArea' || op.imageReconstruction === 'printMaskedArea') && !crop && opacity === 1
         && this.currentProfile === 'print' && this.preferRasterDepth === 0 && this.currentPageExtent
         && drawPrintAreaImage(this.canvasKit, canvas, image,
-          { x: dstX, y: dstY, width: dstW, height: dstH }, this.currentPageExtent, this.currentRasterScale)) return;
+          { x: dstX, y: dstY, width: dstW, height: dstH }, this.currentPageExtent, this.currentRasterScale,
+          op.imageReconstruction === 'printMaskedArea' ? this.printMaskedImageBytes(op) : undefined)) return;
       const src = crop
         ? this.canvasKit.XYWHRect(crop.x, crop.y, crop.width, crop.height)
         : this.canvasKit.XYWHRect(0, 0, imageWidth, imageHeight);
@@ -5834,6 +5835,17 @@ export class CanvasKitLayerRenderer {
       paint.setStrokeCap(previousCap);
       effect.delete?.();
     }
+  }
+
+  private printMaskedImageBytes(op: LayerImageOp): Uint8Array {
+    // imageForOp가 검증한 동일 resource를 공통 sampler에 encoded 그대로 전달한다.
+    const index = this.layerResourceIndex(op.imageRef, this.currentResources?.imageKeys,
+      this.currentResources?.images?.length ?? 0);
+    const resource = index === null ? undefined : this.currentResources?.images?.[index];
+    const bytes = this.imageResourceBytes(resource ?? op.base64
+      ?? (op.sourceImageKey ? this.currentImageBytesResolver?.(op.sourceImageKey) : undefined));
+    if (!bytes) throw new Error('Print 색·마스크의 원본 바이트가 없습니다.');
+    return bytes;
   }
 
   private imageForOp(op: LayerImageOp): SkImage | null {

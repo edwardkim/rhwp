@@ -18,7 +18,7 @@ fn declaration(data: &[u8]) -> Option<(u8, u8)> {
         || &data[..8] != b"\x89PNG\r\n\x1a\n"
         || data[8..16] != [0, 0, 0, 13, b'I', b'H', b'D', b'R']
         || data[33..41] != [0, 0, 0, 2, b'r', b'h', b'W', b'P']
-        || !matches!(data[41], 1 | 2 | 4)
+        || !matches!(data[41], 1 | 2 | 4 | 5)
         || data[42] > 1
     {
         return None;
@@ -51,6 +51,21 @@ pub(crate) fn mark_metafile_surface(data: &mut Vec<u8>) {
         return;
     }
     let mut chunk = [0, 0, 0, 2, b'r', b'h', b'W', b'P', 4, 1, 0, 0, 0, 0];
+    let crc = crc32fast::hash(&chunk[4..10]);
+    chunk[10..14].copy_from_slice(&crc.to_be_bytes());
+    data.splice(33..33, chunk);
+}
+
+/// 색과 이진 마스크가 별도로 표본화된 Print 2024 자원이다.
+pub(crate) fn print_separate_alpha(data: &[u8]) -> bool {
+    declaration(data) == Some((5, 1))
+}
+
+pub(crate) fn mark_print_separate_alpha(data: &mut Vec<u8>) {
+    if data.len() < 33 || &data[..8] != b"\x89PNG\r\n\x1a\n" {
+        return;
+    }
+    let mut chunk = [0, 0, 0, 2, b'r', b'h', b'W', b'P', 5, 1, 0, 0, 0, 0];
     let crc = crc32fast::hash(&chunk[4..10]);
     chunk[10..14].copy_from_slice(&crc.to_be_bytes());
     data.splice(33..33, chunk);

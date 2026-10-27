@@ -28,6 +28,11 @@ pub(crate) fn print_area_sampling(
     image: &ImageNode,
     resolved: Option<&ResolvedImagePayload>,
 ) -> bool {
+    if super::print_alpha_2024::eligible(image)
+        && resolved.is_some_and(|payload| super::png_sampling::print_separate_alpha(&payload.data))
+    {
+        return true;
+    }
     // 영역 맞춤 채움은 이미 검증한 전체 원본·장치 사각형 계약을 재사용한다.
     // 일반 PNG Picture의 팔레트별 재구성과 반복·부분 창은 이 경로로 넓히지 않는다.
     let bitmap_fill = crate::paint::device_image::eligible(image);
@@ -67,6 +72,9 @@ pub(crate) fn print_device_image_payload(
     image: &ImageNode,
     width_points: f64,
 ) -> Option<ResolvedImagePayload> {
+    if let Some(payload) = super::print_alpha_2024::payload(image, width_points) {
+        return Some(payload);
+    }
     // 전체 JPEG 채움의 원본 RGB 계약은 Picture의 RGB555 전달과 다르다.
     // 같은 공통 진입점에서 자원을 만들고 모든 backend가 그 결과를 소비한다.
     if crate::paint::device_image::eligible(image)

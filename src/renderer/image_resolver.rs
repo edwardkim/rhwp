@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::io::Cursor;
 
 mod print_alpha;
+mod print_alpha_2024;
 mod print_crop;
 mod print_jpeg_encode;
 mod print_rgb555;
@@ -13,6 +14,7 @@ mod print_window;
 #[cfg(target_arch = "wasm32")]
 pub(crate) use print_tone::decode_print_jpeg_replay;
 pub(crate) use print_tone::print_bitmap_payload;
+mod print_alpha;
 mod print_codec;
 mod print_fill_jpeg;
 pub(crate) use print_codec::{print_area_sampling, print_device_image_payload};
@@ -156,6 +158,9 @@ enum Conversion {
         bounds: [u32; 4],
     },
     Hancom2024PrintJpeg {
+        quality: u8,
+    },
+    Hancom2024PrintAlpha {
         quality: u8,
     },
     Hancom2024FillJpegRgb {

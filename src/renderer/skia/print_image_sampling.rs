@@ -2,6 +2,38 @@
 
 use skia_safe::{AlphaType, Canvas, ColorType, Data, Image, ImageInfo, Paint, Rect};
 
+pub(super) fn draw_masked(
+    canvas: &Canvas,
+    encoded: &[u8],
+    destination: Rect,
+    page: (f64, f64),
+    scale: f64,
+) -> bool {
+    let matrix = canvas.local_to_device_as_3x3();
+    if matrix.has_perspective()
+        || matrix.skew_x() != 0.0
+        || matrix.skew_y() != 0.0
+        || matrix.scale_x() <= 0.0
+        || matrix.scale_y() <= 0.0
+    {
+        return false;
+    }
+    let rectangle = (
+        f64::from(matrix.scale_x()) * f64::from(destination.left())
+            + f64::from(matrix.translate_x()),
+        f64::from(matrix.scale_y()) * f64::from(destination.top())
+            + f64::from(matrix.translate_y()),
+        f64::from(matrix.scale_x()) * f64::from(destination.width()),
+        f64::from(matrix.scale_y()) * f64::from(destination.height()),
+    );
+    let Some(raster) =
+        crate::renderer::print_image_sampling::rasterize_masked(encoded, rectangle, page, scale)
+    else {
+        return false;
+    };
+    paint_raster(canvas, &raster, &Paint::default(), AlphaType::Unpremul)
+}
+
 pub(super) fn draw(
     canvas: &Canvas,
     source: &Image,
@@ -62,10 +94,19 @@ pub(super) fn draw(
     ) else {
         return false;
     };
+    paint_raster(canvas, &raster, paint, AlphaType::Opaque)
+}
+
+fn paint_raster(
+    canvas: &Canvas,
+    raster: &crate::renderer::print_image_sampling::DeviceRaster,
+    paint: &Paint,
+    alpha: AlphaType,
+) -> bool {
     let info = ImageInfo::new(
         (raster.width as i32, raster.height as i32),
         ColorType::RGBA8888,
-        AlphaType::Opaque,
+        alpha,
         None,
     );
     let Some(image) = skia_safe::images::raster_from_data(

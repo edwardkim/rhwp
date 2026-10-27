@@ -1430,7 +1430,7 @@ export interface LayerImageOp {
   /** Explicit source sampling; absent preserves the output profile policy. */
   imageInterpolation?: 'nearest' | 'linear';
   /** 실제 Print 색 전달 payload의 축소 재구성 계약. */
-  imageReconstruction?: 'catmullRom' | 'printArea';
+  imageReconstruction?: 'catmullRom' | 'printArea' | 'printMaskedArea';
   imageAnisotropicReduction?: boolean;
   imagePrintFrame?: number[];
   /** Print bitmap 채움의 실제 장치 외접 영역. 필터 선택과 별개다. */

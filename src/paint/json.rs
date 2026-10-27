@@ -1186,7 +1186,15 @@ impl PaintOp {
                     );
                 }
                 if crate::renderer::image_resolver::print_area_sampling(image, resolved) {
-                    buf.push_str(",\"imageReconstruction\":\"printArea\"");
+                    if resolved.is_some_and(|payload| {
+                        crate::renderer::image_resolver::png_sampling::print_separate_alpha(
+                            &payload.data,
+                        )
+                    }) {
+                        buf.push_str(",\"imageReconstruction\":\"printMaskedArea\"");
+                    } else {
+                        buf.push_str(",\"imageReconstruction\":\"printArea\"");
+                    }
                 } else if resolved
                     .map(|payload| payload.data.as_slice())
                     .or(image.data.as_deref())
