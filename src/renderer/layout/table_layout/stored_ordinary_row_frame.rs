@@ -432,7 +432,6 @@ impl LayoutEngine {
     ) -> Option<f64> {
         let cells = self.ordinary_row_cells_for_cut(table, row, cut, styles)?;
         if cut.len() != cells.len()
-            || !self.row_cut_remaining_is_single_stored_frame(table, row, cut, None, styles)
             || !(self.stored_ordinary_row_cut_has_physical_frame(table, row, &[], cut, styles)
                 || self.stored_single_line_row_is_fragmentable(table, row, styles)
                 || carried.is_some()
@@ -450,7 +449,13 @@ impl LayoutEngine {
             .iter()
             .map(|cell| self.cell_units(cell, table, styles).len())
             .collect();
-        if let Some(height) = self.stored_ordinary_closing_text_frame(table, row, cut, styles) {
+        // 여러 내용 프레임도 같은 원본 행의 물리 잔여를 이어받는다.
+        // 한 프레임 조건은 마지막 텍스트 프레임으로 잔여를 대체할 때만 필요하다.
+        let closing = self
+            .row_cut_remaining_is_single_stored_frame(table, row, cut, None, styles)
+            .then(|| self.stored_ordinary_closing_text_frame(table, row, cut, styles))
+            .flatten();
+        if let Some(height) = closing {
             // 내용 합보다 큰 저장 높이도 앞 쪽에서 접힌 간격을 담을 수 있다.
             // 원본 Common 상자가 첫 내용 컷의 물리 공간을 함께 증언한
             // 경우에만 선언 최소의 잔여를 유지한다. 그 근거가 없는 후속
