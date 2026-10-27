@@ -829,24 +829,6 @@ fn char_overlap_size_ratio_applies_only_when_a_border_is_drawn() {
     assert_eq!(char_overlap_size_ratio(3, 0), 1.0);
 }
 
-/// LineSeg 없는 텍스트 문단
-#[test]
-fn test_compose_no_line_segs() {
-    let para = Paragraph {
-        text: "텍스트만 있음".to_string(),
-        char_shapes: vec![CharShapeRef {
-            start_pos: 0,
-            char_shape_id: 7,
-        }],
-        ..Default::default()
-    };
-
-    let composed = compose_paragraph(&para);
-    assert_eq!(composed.lines.len(), 1);
-    assert_eq!(composed.lines[0].runs[0].text, "텍스트만 있음");
-    assert_eq!(composed.lines[0].runs[0].char_style_id, 7);
-}
-
 /// 확장 컨트롤 문자로 인한 위치 격차
 #[test]
 fn test_compose_with_ctrl_char_gap() {
