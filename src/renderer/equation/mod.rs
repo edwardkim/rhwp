@@ -138,23 +138,53 @@ struct FlowMetricsKey {
     version_info: String,
     font_size: u32,
     attr: u32,
+    eqedit: u32,
     baseline: i16,
     width: u32,
     height: u32,
+    width_criterion: crate::model::shape::SizeCriterion,
     size_protect: bool,
+}
+
+impl FlowMetricsKey {
+    /// 키 값만 담은 수식. 계산이 키 밖의 값을 읽을 수 없으므로 캐시가 낡지 않는다.
+    fn equation(&self) -> crate::model::control::Equation {
+        crate::model::control::Equation {
+            script: self.script.clone(),
+            font_name: self.font_name.clone(),
+            version_info: self.version_info.clone(),
+            font_size: self.font_size,
+            attr: self.attr,
+            eqedit: self.eqedit,
+            baseline: self.baseline,
+            common: crate::model::shape::CommonObjAttr {
+                width: self.width,
+                height: self.height,
+                width_criterion: self.width_criterion,
+                size_protect: self.size_protect,
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    }
+}
+
+thread_local! {
+    static FLOW_METRICS_CACHE: std::cell::RefCell<
+        std::collections::HashMap<FlowMetricsKey, (u32, u32, i32)>,
+    > = std::cell::RefCell::default();
+}
+
+/// 조판 pass마다 비워 캐시 크기를 지금 문서의 수식 수로 묶는다.
+/// 비워도 결과는 같고 다시 계산할 뿐이다.
+pub(crate) fn clear_flow_metrics_cache() {
+    FLOW_METRICS_CACHE.with(|cache| cache.take());
 }
 
 /// 미주 조판은 같은 수식의 메트릭을 판정마다 다시 묻는다. 토큰화·조판을 반복하지 않는다.
 fn cached_flow_metrics(equation: &crate::model::control::Equation) -> (u32, u32, i32) {
-    use std::cell::RefCell;
-    use std::collections::HashMap;
-    // 가득 차면 통째로 비운다. 키가 입력 값 전부라 비워도 결과는 같고 다시 계산할 뿐이다.
-    const CAPACITY: usize = 4096;
-    thread_local! {
-        static CACHE: RefCell<HashMap<FlowMetricsKey, (u32, u32, i32)>> = RefCell::default();
-    }
     // 새 필드가 생기면 컴파일이 멈춰 키에 넣을지 판단하게 한다.
-    // eqedit·treat_as_char·봉인은 선언 프레임 판정만 읽고 그 판정은 캐시 앞에서 끝난다.
+    // 색·treat_as_char·봉인은 흐름 메트릭이 읽지 않거나 캐시 앞 선언 프레임 판정만 읽는다.
     let crate::model::control::Equation {
         common,
         attr,
@@ -163,12 +193,13 @@ fn cached_flow_metrics(equation: &crate::model::control::Equation) -> (u32, u32,
         color: _,
         baseline,
         unknown: _,
-        eqedit: _,
+        eqedit,
         version_info,
         font_name,
         raw_ctrl_data: _,
         raw_ctrl_seal: _,
         unpositioned_host_frame_seal: _,
+        legacy_source_frame_seal: _,
     } = equation;
     let key = FlowMetricsKey {
         script: script.clone(),
@@ -176,22 +207,18 @@ fn cached_flow_metrics(equation: &crate::model::control::Equation) -> (u32, u32,
         version_info: version_info.clone(),
         font_size: *font_size,
         attr: *attr,
+        eqedit: *eqedit,
         baseline: *baseline,
         width: common.width,
         height: common.height,
+        width_criterion: common.width_criterion,
         size_protect: common.size_protect,
     };
-    if let Some(metrics) = CACHE.with(|cache| cache.borrow().get(&key).copied()) {
+    if let Some(metrics) = FLOW_METRICS_CACHE.with(|cache| cache.borrow().get(&key).copied()) {
         return metrics;
     }
-    let metrics = computed_flow_metrics(equation);
-    CACHE.with(|cache| {
-        let mut cache = cache.borrow_mut();
-        if cache.len() >= CAPACITY {
-            cache.clear();
-        }
-        cache.insert(key, metrics);
-    });
+    let metrics = computed_flow_metrics(&key.equation());
+    FLOW_METRICS_CACHE.with(|cache| cache.borrow_mut().insert(key, metrics));
     metrics
 }
 

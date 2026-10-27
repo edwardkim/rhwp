@@ -183,7 +183,7 @@ pub enum HorzAlign {
 }
 
 /// 크기 기준 (너비/높이)
-#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, serde::Serialize)]
 pub enum SizeCriterion {
     /// 종이 기준 (퍼센트)
     Paper,
