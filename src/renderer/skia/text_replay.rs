@@ -703,7 +703,14 @@ impl SkiaTextReplay<'_> {
                                 canvas.save();
                                 canvas.translate((char_x, char_y));
                                 canvas.scale((scale, 1.0));
-                                canvas.draw_str(glyph_text, (0.0, 0.0), &font, glyph_paint);
+                                fonts::draw_positioned_cluster(
+                                    canvas,
+                                    glyph_text,
+                                    (0.0, 0.0),
+                                    &font,
+                                    glyph_paint,
+                                    self.geometric_text,
+                                );
                                 canvas.restore();
                                 continue;
                             }
@@ -741,11 +748,13 @@ impl SkiaTextReplay<'_> {
                                     glyph_paint,
                                     self.raster_target,
                                 ) {
-                                    canvas.draw_str(
+                                    fonts::draw_positioned_cluster(
+                                        canvas,
                                         glyph_text,
-                                        (char_x + fit_dx, char_y),
+                                        (char_x, char_y),
                                         &font,
                                         glyph_paint,
+                                        self.geometric_text,
                                     );
                                 }
                                 continue;
@@ -760,7 +769,14 @@ impl SkiaTextReplay<'_> {
                                 if !hft_outline.as_ref().is_some_and(|outline| {
                                     outline.draw(canvas, glyph_text, &font, (0.0, 0.0), glyph_paint)
                                 }) {
-                                    canvas.draw_str(glyph_text, (0.0, 0.0), &font, glyph_paint);
+                                    fonts::draw_positioned_cluster(
+                                        canvas,
+                                        glyph_text,
+                                        (0.0, 0.0),
+                                        &font,
+                                        glyph_paint,
+                                        self.geometric_text,
+                                    );
                                 }
                                 canvas.restore();
                             } else if !hft_outline.as_ref().is_some_and(|outline| {
@@ -772,7 +788,14 @@ impl SkiaTextReplay<'_> {
                                     glyph_paint,
                                 )
                             }) {
-                                canvas.draw_str(glyph_text, (char_x, char_y), &font, glyph_paint);
+                                fonts::draw_positioned_cluster(
+                                    canvas,
+                                    glyph_text,
+                                    (char_x, char_y),
+                                    &font,
+                                    glyph_paint,
+                                    self.geometric_text,
+                                );
                             }
                         }
                     }

@@ -4,7 +4,7 @@ use super::super::font_lookup::{
 };
 use super::super::synthetic_typeface::{unemboldened_typeface, unobliqued_typeface};
 use crate::renderer::{internal_font_family_members, TextStyle};
-use skia_safe::{font, Font, FontMgr, Typeface};
+use skia_safe::{font, Canvas, Font, FontMgr, Paint, Typeface};
 use std::{cell::RefCell, collections::HashMap};
 
 pub(in crate::renderer::skia) fn compatibility_glyph(font: &Font, text: &str) -> Option<char> {
@@ -145,4 +145,30 @@ fn finish(
         font.set_skew_x(crate::renderer::text_transform::SYNTHETIC_ITALIC_SKEW as f32);
     }
     font
+}
+
+/// Print의 독립 glyph는 실제 선택한 Font의 윤곽을 기존 paint·원점에 재생한다.
+/// 여러 scalar의 shaping과 path가 없는 glyph는 원래 텍스트 재생에 맡긴다.
+pub(super) fn draw_positioned_cluster(
+    canvas: &Canvas,
+    text: &str,
+    origin: (f32, f32),
+    font: &Font,
+    paint: &Paint,
+    geometric_text: bool,
+) {
+    if geometric_text {
+        let mut characters = text.chars();
+        if let Some(character) = characters.next().filter(|_| characters.next().is_none()) {
+            let glyph = font.unichar_to_glyph(character as i32);
+            if let Some(path) = font.get_path(glyph) {
+                canvas.save();
+                canvas.translate(origin);
+                canvas.draw_path(&path, paint);
+                canvas.restore();
+                return;
+            }
+        }
+    }
+    canvas.draw_str(text, origin, font, paint);
 }
