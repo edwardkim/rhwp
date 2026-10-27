@@ -1,0 +1,17 @@
+{
+  "kind": "base_diagnostic_only",
+  "base_sha": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+  "source_test": "tests/cases/tac_table_no_lineseg_outer_margin_fit.rs",
+  "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/baseline_diagnostic/pr8033/pr8033-fit.hwpx",
+  "pdf": "pdf/pr8319_evidence_alignment_20261027/pr8033-fit-2020.pdf",
+  "input_sha256": "019d74035ef4b3078407ba4574f8787dd0bc3bb9aec671f9a182eb298e62b5f8",
+  "pdf_sha256": "d51a827fdedacfb884c869b039511cfba298f61afa8022b3a40c165835581f6d",
+  "in_memory_ir_page_count": 1,
+  "fresh_native_saved_hwpx_pages": 2,
+  "fresh_wasm_saved_hwpx_pages": 2,
+  "independent_hancom_print_pages": 1,
+  "gate": "re_review_required",
+  "full_page_tsv": "not_produced_page_count_mismatch",
+  "eligible_as_pass_evidence": false,
+  "is_original_report_document": false
+}

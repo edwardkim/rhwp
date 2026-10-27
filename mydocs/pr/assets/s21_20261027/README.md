@@ -1,5 +1,7 @@
 # 통합 후보의 검증 입력·전체 TSV·대표 증거
 
+> **2026-10-27 증적 대응 정정:** 원 PR에 검증용 HWP/HWPX가 없는 사례는 유사 문서로 대체했음을 표시한다. 아래 수치는 실제 측정 입력에 한정하며 배경 실물 문서의 직접 검증으로 표현하지 않는다. [현재 대응 원장](../pr8319_evidence_alignment_20261027/alignment.json)과 개별 review를 우선한다.
+
 코드·테스트 source는 `04c92da78165ccbf63b467855591df183655a98d`, 고정 devel은 `faa885e8b54ffc7cdf4196cd43a3103f362499a2`다.
 
 [45개 PR의 주장 → 실제 입력·편집 상태·쪽](claim-evidence.json), [개별 리뷰](reviews.md), [실행 요약](execution-evidence.json), [계보](source-lineage.json), [독립 Print](api-independent-print.json), [실제 편집 세션](editing-session-evidence.json)을 함께 확인한다.

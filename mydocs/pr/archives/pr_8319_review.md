@@ -1,103 +1,60 @@
-# PR #8319 리뷰 — 편집·표 조판·차트 45개 PR 통합과 회귀 보정
+# PR #8319 리뷰 — 증적의 원본 대응 정정
 
 ## 최종 판정
 
-**승인.** 원 PR 45개를 각각 검토하고 필요한 메인터너 보정을 포함한 통합 head의 로컬 검증과
-정확한 code head CI·정책 성공을 확인했다. 최신 사용자 지시에 따라 self-review와 오늘할일을
-**같은 PR의 문서-only trailing commit**으로 반영한다. 아직 병합하지 않았으며 trailing head의
-CI·정책·병합 가능 상태 확인 뒤 일반 merge한다. 원 contributor head의 직접 merge와 구분한다.
+**증적 대응 정정 — 원 PR에 HWP/HWPX가 없는 22건은 유사 문서로 대체했음을 밝히고, 실제 검증한 입력의 결과로 한정한다.**
 
-| 항목 | 실제 값 |
-| --- | --- |
-| PR·작성자·base | [#8319](https://github.com/edwardkim/rhwp/pull/8319) / jangster77 / devel |
-| 통합 브랜치 | review/semanticist21-20261019 |
-| Full CI 검증 code head | `aee691ae596d288382369b9d5243f4cd06e7fa65` |
-| 고정 검증 base | `faa885e8b54ffc7cdf4196cd43a3103f362499a2` |
-| 제품·기존 회귀 검증 source | `04c92da78165ccbf63b467855591df183655a98d` |
-| 병합 상태 | trailing head CI·정책 성공 뒤 일반 merge 예정 |
-| 정확한 head CI | [40489874571](https://github.com/edwardkim/rhwp/actions/runs/40489874571) |
-| 기록 브랜치 | `review/semanticist21-20261019` |
+이는 2026-10-27 후속 증적 감사와 작업지시자의 대체 표시 지시를 반영한 판정이다. 이미 완료한 통합 merge와 코드 CI의 성공 이력은 보존한다. 원문 부재만으로 통합을 다시 보류하지 않는다.
+대표 PNG를 별도 합성 입력이나 다른 문서에서 골랐다는 문제를 코드 CI PASS로 면제하지 않는다.
 
-## 원 PR별 검토와 구현 주장
+## 실제 통합 이력
 
-[개별 review·구현 검토 45쌍](../assets/s21_20261027/reviews.md)을 각각 작성했다.
-원 head·체리픽 계보·보정·실제 계약 함수·독립 Print·전체 TSV와 주장에 맞는 대표 쪽을 구분했다.
-통합 PR 본문에도 45개 개별 검토 표와 24개 Markdown 이미지를 넣었다. 런타임 계약인 6개는
-관계없는 PNG를 결함 검출 증거로 붙이지 않았다. 캐럿·링크·IME 이력과 정적 출력의 검증을 구분했다.
+- [통합 PR #8319](https://github.com/edwardkim/rhwp/pull/8319)는 `af6bb05b26887135fb9da0fa4e54ca7205564fca`로 병합됐다.
+- Full code head `aee691ae596d288382369b9d5243f4cd06e7fa65`의 [CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)는 archive 11,638 PASS, Native 15묶음·124 PASS다.
+- 문서 trailing head `aeeccee2bc5368d1660b68a384738b6b9ef70055`의 [CI](https://github.com/edwardkim/rhwp/actions/runs/40496300856)와 정책은 성공했다.
+- 원 PR 45개는 통합 완료로 종료했으며 contributor fork·source branch는 보존했다. 이 이력과 원본문서의 시각적 해결 판정을 구분한다.
 
-현재 보정 범위와 리베이스로 들어온 기능만 검증했다. 추가 CI 보정은 기존 PDF 3개와 HWP 1개로 한정했다. 추가 PR 체리픽·다른 실제 HWP 확대는 하지 않았다.
-원 이슈→해결 PR→통합·메인터너 보정→독립 기준의 분석은 각 review_impl과
-[입력·source 계보](../assets/s21_20261027/source-lineage.json)에 있다.
+## 원본·상태·페이지 대응 재검토
 
-## 로컬 검증과 CI 실패 보정
+[새 대응 원장](../assets/pr8319_evidence_alignment_20261027/alignment.json)과 45쌍의 개별 review/review_impl을 현재 판정으로 사용한다.
 
-- 최종 제품 source의 default-feature 전체 nextest **11,832 PASS·45 skip·exit 0**,
-  release lib **3,983 PASS·12 ignored**, 집중 73건 PASS, Skia lib **4,040 PASS·12 ignored**.
-- Studio **2,597 PASS**와 fresh 글꼴 추적·TypeScript·production build·실제 브라우저 3종,
-  스크립트 계약 39 PASS·1 skip을 [명령·함수별 증거](../assets/s21_20261027/execution-evidence.json)에 보존했다.
-- 이전 제출 head f528dba6의 Native #7950 검사는 고정 `RGB <80`이 얇은 대체 글꼴의 보이는
-  B1을 놓쳐 실패했다. 원 해결 PR #7953과 원본 PDF를 대조해 색상 관계 검사로 보정했다.
-- 이 Native 전용 CLI 검사는 기존 default-feature 전체와 Skia lib 검증에 포함되지 않았다.
-  누락을 숨기지 않고 정상·최소 글꼴 각각 4 PASS, 실제 PNG 글자 가림 음성 대조 FAIL(exit 101),
-  CI와 같은 Native 명령 **15개 전체 PASS**, fmt·Native/WASM/workspace/Skia Clippy·workspace build·정책 통과로 보완했다.
-- #2293의 실제 보이는 라벨을 놓친 하단 6% 밴드도 제거했다. 원본 텍스트 12개를 각각 제외한 대조와
-  원 Native 출력을 비교하는 관계형 검사로 교체했다. 정상·최소 환경 2 PASS씩, 글꼴 부재 음성 대조 FAIL,
-  필수 Rust lint가 통과했다. 같은 원본의 새 MCP Print 한 쪽은 Native 97.45943% / WASM 96.57949%다.
-  양쪽 98% 미만이므로 px·고정 영역으로 회귀를 걸지 않았다.
-- 이 추가 보정은 테스트·문서·증적·독립 Print PDF만 바꿨다. 제품 source와 baseline·golden은 같아 기존
-  제품·Studio·전체 시각 결과를 재사용했으며 새 제품 실행으로 합산하지 않았다.
-  [실패 원인·독립 기대값·12개 전쪽 대조](../../working/task_semanticist21_20261027_ci_pdf_paint.md)를 연결한다.
+| 범위 | 건수 | 현재 인정하는 근거 |
+| --- | ---: | --- |
+| 유효 공개 재현 입력 | 21 | 같은 입력·Print·페이지의 Native/fresh WASM TSV와 review/overlay |
+| 유사 문서로 대체한 유효 재현 입력 | 18 | 대체 여부·실제 파일·페이지를 표시한 Native/fresh WASM 증거; 원 실물 문서의 직접 검증으로 표현하지 않음 |
+| 파일을 소비하지 않는 단위 계약 | 5 | 함수·반환 계약·실제 CI; 배경 실물 문서의 시각 완료를 주장하지 않음 |
+| 추가 저장본 진단 | 1 | #8033의 RHWP 2쪽 / Print 1쪽 차이를 실패로 기록; 성공 자료로 사용하지 않음 |
 
-Cargo 8 jobs·테스트 12 threads, 공유 `target/pr-review`를 순차 사용했다.
-원문 로그·중간 실행 JSON·생성 suite는 커밋하지 않는다. 로컬 통과와 원격 CI의 성공을 구분했다.
+이전 대표 선택의 구체적인 오류는 #8055의 다른 중첩 표 8쪽, #8096의 HWPX 대신 HWP,
+#8061의 글자처럼 흐르는 표 대신 떠 있는 표, #8094의 다른 캡션 입력 등이다.
+같은 producer·높은 점수·CI PASS는 잘못 고른 파일과 상태를 올바른 증거로 만들지 않는다.
 
-## 정확한 head의 원격 CI
+## 새 진단과 검증 범위
 
-[CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)의 builder 예상 수와 worker 실행 수를 실제 artifact에서 각각 읽어 대조했다.
+40개 재현 입력에서 Native/fresh WASM 80개 캡처를 실제로 끝냈다. 39개 입력은 양쪽 전쪽 raw 90% 이상과
+쪽수 일치를 확인했다. #8033의 원 메모리 IR을 저장한 HWPX는 양쪽 RHWP 2쪽·동일 입력의 한컴 Print 1쪽으로
+실패했다. 이 진단은 원 가정통신문이 아니며 통과 자료·새 golden·등록 fixture의 근거로 사용하지 않는다.
 
-| Archive | 예상 | 실제 PASS |
-| --- | ---: | ---: |
-| A | 3,801 | 3,801 |
-| B | 1,895 | 1,895 |
-| C | 1,163 | 1,163 |
-| D | 2,323 | 2,323 |
-| E | 2,456 | 2,456 |
-| 합계 | 11,638 | 11,638 |
+현재 자료는 통합 merge와 동일한 엔진의 증적 대응을 정정한다. 엔진·test·baseline·Visual Sweep 지침을
+변경하지 않았고 새 렌더링 개선을 주장하지 않는다. 기존 최적화 WASM 패키지는 실제 바이트가 같은 것을
+확인해 새 캡처에 사용했으며 새 WASM 빌드를 수행한 것으로 기재하지 않는다.
 
-Native Skia는 비어 있지 않은 15개 명령 묶음의 **124 PASS**를 실제 job 로그로 확인했다.
-최신 head의 총 43개 check가 success/skipped/neutral로 끝났고 CI Impact Policy도 성공했다.
-Frontend의 fresh WASM·Lint·CodeQL·Render Diff·Adapter·Proptest 등 실제 결과와 artifact SHA는
-[최종 CI 증거](../assets/s21_20261027/final-ci.json)에 있다. code head의 MERGEABLE/CLEAN을 확인했다.
-trailing head에서도 CI·정책·병합 가능 상태를 다시 확인하고 검증한 최종 head를 지정해 일반 merge한다.
-현재 병합 전이며 admin 우회는 사용하지 않는다.
+## 기존 검증 이력의 보존
 
-## 조판 원칙·입력·시각 증적
+[과거 실행 요약](../assets/s21_20261027/execution-evidence.json), [코드 CI 집계](../assets/s21_20261027/final-ci.json),
+[source 계보](../assets/s21_20261027/source-lineage.json)와 과거 전쪽 TSV는 해당 실제 입력의 결과로 보존한다.
+197조건·256쪽의 과거 측정값을 45개 원 PR이 보고한 실물 문서 전체의 일치 결과로 확대하지 않는다.
+#8188의 별도 지정 입력 검증 이력도 그 입력에 한정하며 이번 정정으로 다른 원본의 증거가 되지 않는다.
 
-공통 로직의 생산→측정→배치 소비, 원본 줄·개체 소속과 경계 반례는 각 원 PR별 기록에 연결했다.
-독립 Print의 입력·PDF SHA·제품·인쇄 설정과 실제 코드 provenance를 구분하고,
-새 회귀의 90% 선행 조건 및 완료 쪽의 양쪽 98%·독립 ±2px 조건과 관계 검사를 함께 적용했다.
-문서별 수치·ID로 출력을 맞추는 보정을 완료 근거로 쓰지 않았다.
+## 기존 댓글 수정
 
-Native/fresh WASM 각 **197조건·256쪽**, 후보 최저 **93.22230% / 93.52322%**,
-90% 미만·누락·측정 불가·쪽수 불일치 0쪽이다. 같은 조건 base 공통 512쪽에서 사용자 지정
-**0.1%p 초과 하락 0쪽**을 확인했다. #8188 지정 네 입력은 총 512쪽 양쪽 raw 100%·정수 미일치 0/0을 유지했다.
-#8116의 기존 네 입력 15쪽과 기존 15개 검사도 보존했다. sample16·편람의 일반 회귀 삭제·범위 제외는 유지했다.
+새 정정 댓글을 작성하지 않는다. 45개 원 PR의 기존 댓글 ID와 통합 PR의 기존 결과 댓글
+[6441006418](https://github.com/edwardkim/rhwp/pull/8319#issuecomment-6441006418)을 직접 수정한다.
+정식 자산의 실제 반영 뒤 그 merge SHA에 고정한 URL을 쓰고, 댓글 본문·파일·페이지·수치를 API로 다시 확인한다.
+원 PR에 검증용 HWP/HWPX가 없어 유사 문서로 대체한 경우에는 기존 댓글과 이미지 설명에도 이를 표시한다. 잘못 붙인 이미지·수치와 원 실물 문서의 직접 검증 주장은 제거한다.
 
-[전쪽 TSV·입력/Print·대표 PNG](../assets/s21_20261027/README.md),
-[주장별 쪽 선택과 직접 판독](../assets/s21_20261027/claim-evidence.json),
-[편집 중 실제 상태](../assets/s21_20261027/editing-session-evidence.json)를 각각 연결했다.
-전체 TSV 796개와 CI 보정의 12개 TSV는 요약값으로 대체하지 않았다.
-수식·미세 간격·표 외곽·후속 본문을 review와 standalone overlay에서 직접 확인했다.
-raw100을 RGB·획 농도·글꼴 모양의 완전 일치로 선언하지 않았다.
+## 공식 배포 문서와 대체 표시
 
-## Merge 후 후속 처리
+인터넷 검색으로 16개 PR에 대응하는 공식 배포 문서 14개를 확보했다. 앞서 확보한 #8014는 별도다. 내용·표·문제 영역의 대응을 확인했으나 작성자가 사용한 파일과 바이트 동일성을 확인한 것은 아니다. #8029·#8030·#8033·#8054·#8066은 판본 또는 원문을 확정하지 못해 유사 문서·공개 재현 입력·단위 계약의 범위를 명시한다.
 
-이 PR의 trailing head CI·일반 merge와 devel 동기화 뒤 원 PR 45개의 실제 최신 head·상태를 다시 확인한다.
-같은 merge·증적 comment는 중복 게시하지 않고 각 PR별 한국어 존댓말 문안에 원 기여·보정·실제
-CI·merge SHA·그 SHA로 고정한 대표 review/overlay를 남긴 뒤 체리픽 통합 완료로 종료한다.
-contributor fork·branch는 변경하거나 삭제하지 않는다. 원 PR을 직접 merge했다고 표시하지 않는다.
-#7721·#7722의 기존 완료·부모 #7445의 열린 상태를 유지하며 새 issue close를 추정하지 않는다.
-
-코드 merge 후 duration metadata 갱신만 관찰하며 제품 CI는 재실행하지 않는다. 별도 기록 PR은
-만들지 않고 같은 PR에서 검토 기록과 오늘할일을 함께 반영한다. comment·원 PR 종료와 전용 branch/worktree 정리,
-실제 사용 종료 뒤 root output 전체·공유 target의 debug 삭제 및 외부 정리 로그까지 완료한다.
+[공식 출처와 입력 해시](../assets/pr8319_evidence_alignment_20261027/source-identification.md)를 연결한다. 새로 찾은 문서는 전 페이지 90% 이상으로 맞출 의무가 없다는 작업지시를 적용하며 엔진·회귀·baseline·지침을 변경하지 않는다.
