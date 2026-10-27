@@ -11,7 +11,7 @@ pub fn is_book_bracket(character: char) -> bool {
 }
 /// 실제 공급한 같은 SFNT의 원 PUA 표시와 전진을 보존할 기호다.
 /// 이 기호는 Unicode 대체와 폭·윤곽이 달라 실제 공급한 원 glyph가 필요하다.
-pub const SUPPORTED_SYMBOLS: [char; 9] = [
+pub const SUPPORTED_SYMBOLS: [char; 10] = [
     '\u{F0854}',
     '\u{F0855}',
     '\u{F02FC}',
@@ -21,6 +21,7 @@ pub const SUPPORTED_SYMBOLS: [char; 9] = [
     '\u{F03A7}',
     '\u{F03A8}',
     '\u{F0848}',
+    '\u{F080F}',
 ];
 
 pub fn is_supported_symbol(character: char) -> bool {
