@@ -189,24 +189,27 @@ fn render_page_to_canvas_filtered_with_profile_impl(
 
     let profile = RenderProfile::parse(profile)
         .ok_or_else(|| JsValue::from_str(&format!("unsupported render profile: {profile}")))?;
-    let tree = document
-        .build_canvas_page_layer_tree_with_profile(page_num, profile)
-        .map_err(JsValue::from)?;
+    // 레이어 트리의 회색 판정이 디코드한 픽셀을 이 쪽의 캔버스 그리기에 넘긴다.
+    crate::renderer::image_resolver::with_decoded_handoff(|| {
+        let tree = document
+            .build_canvas_page_layer_tree_with_profile(page_num, profile)
+            .map_err(JsValue::from)?;
 
-    let scale = normalize_canvas_scale(tree.page_width, tree.page_height, scale)
-        .map_err(JsValue::from_str)?;
+        let scale = normalize_canvas_scale(tree.page_width, tree.page_height, scale)
+            .map_err(JsValue::from_str)?;
 
-    canvas.set_width(scaled_canvas_extent(tree.page_width, scale));
-    canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
+        canvas.set_width(scaled_canvas_extent(tree.page_width, scale));
+        canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
 
-    let mut renderer = WebCanvasRenderer::new(canvas)?;
-    renderer.set_hft_outline_fonts(&document.hft_outline_fonts);
-    renderer.show_paragraph_marks = document.show_paragraph_marks;
-    renderer.show_control_codes = document.show_control_codes;
-    renderer.set_scale(scale);
-    renderer.set_layer_filter(filter);
-    renderer.render_page(&tree).map_err(JsValue::from)?;
-    Ok(())
+        let mut renderer = WebCanvasRenderer::new(canvas)?;
+        renderer.set_hft_outline_fonts(&document.hft_outline_fonts);
+        renderer.show_paragraph_marks = document.show_paragraph_marks;
+        renderer.show_control_codes = document.show_control_codes;
+        renderer.set_scale(scale);
+        renderer.set_layer_filter(filter);
+        renderer.render_page(&tree).map_err(JsValue::from)?;
+        Ok(())
+    })
 }
 
 /// 부분 재도색 본체.
@@ -980,27 +983,29 @@ impl HwpDocument {
         use crate::renderer::layer_renderer::LayerRenderer;
         use crate::renderer::web_canvas::WebCanvasRenderer;
 
-        let tree = self
-            .build_canvas_page_layer_tree_with_profile(
-                page_num,
-                crate::paint::RenderProfile::Screen,
-            )
-            .map_err(JsValue::from)?;
+        crate::renderer::image_resolver::with_decoded_handoff(|| {
+            let tree = self
+                .build_canvas_page_layer_tree_with_profile(
+                    page_num,
+                    crate::paint::RenderProfile::Screen,
+                )
+                .map_err(JsValue::from)?;
 
-        let scale = normalize_canvas_scale(tree.page_width, tree.page_height, scale)
-            .map_err(JsValue::from_str)?;
+            let scale = normalize_canvas_scale(tree.page_width, tree.page_height, scale)
+                .map_err(JsValue::from_str)?;
 
-        // 캔버스 크기 = 페이지 크기 × scale
-        canvas.set_width(scaled_canvas_extent(tree.page_width, scale));
-        canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
+            // 캔버스 크기 = 페이지 크기 × scale
+            canvas.set_width(scaled_canvas_extent(tree.page_width, scale));
+            canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
 
-        let mut renderer = WebCanvasRenderer::new(canvas)?;
-        renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
-        renderer.show_paragraph_marks = self.show_paragraph_marks;
-        renderer.show_control_codes = self.show_control_codes;
-        renderer.set_scale(scale);
-        renderer.render_page(&tree).map_err(JsValue::from)?;
-        Ok(())
+            let mut renderer = WebCanvasRenderer::new(canvas)?;
+            renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
+            renderer.show_paragraph_marks = self.show_paragraph_marks;
+            renderer.show_control_codes = self.show_control_codes;
+            renderer.set_scale(scale);
+            renderer.render_page(&tree).map_err(JsValue::from)?;
+            Ok(())
+        })
     }
 
     /// 구역 첫 페이지에 요청한 머리말/꼬리말 정의를 가상 투영해 Canvas 2D로 렌더링한다.

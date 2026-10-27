@@ -231,16 +231,19 @@ fn conversion_key(conversion: Conversion, data: &[u8]) -> u64 {
 // 레이어 트리를 만들 때 회색 JPEG 판정이 그림 전체를 디코드한다. 바로 뒤의 캔버스
 // 그리기는 같은 바이트를 Rust 로 다시 디코드했다 — 32Mpix 사진이 첫 그리기마다 두 번
 // 풀렸다. 판정이 얻은 RGBA 를 캔버스가 그릴 바이트(색 사진은 원본 JPEG, 회색은 PNG)의
-// 지문으로 맡기고, 캔버스가 그 바이트를 디코드할 때 꺼낸다. 꺼내면 비운다.
+// 지문으로 맡기고, 캔버스가 그 바이트를 디코드할 때 꺼낸다.
 //
-// 캔버스(wasm)만 꺼내므로 다른 빌드는 맡기지 않는다. 꺼내지 않고 남는 픽셀의 합은 큰 그림
-// 한 장(32Mpix RGBA, 128MiB)을 넘지 않는다.
-#[cfg(any(target_arch = "wasm32", test))]
-const MAX_HANDOFF_BYTES: usize = CANVASKIT_MAX_IMAGE_PIXELS as usize * 4;
-
+// 맡긴 픽셀은 한 장만 들고, 캔버스 한 쪽 그리기가 끝나면 버린다(`with_decoded_handoff`).
+// 그 사이 다른 그림을 디코드할 때(엔진의 `decode_image_with_format_limited`, 다른 바이트를
+// 디코드하는 캔버스)는 그 그림이 맡긴 그림의 4분의 1 이하일 때만 들고 있다. 판정 디코드는
+// RGB 와 RGBA(1.75배)를 함께 들었으므로, 맡긴 RGBA 옆에서 작은 그림을 풀어도(최대 0.5배)
+// 그 최고치를 넘지 않는다. 큰 그림이 여럿이면 수정 전처럼 디코드 버퍼가 한 번에 하나다.
+// 캔버스 그리기 밖(SVG·JSON)에서는 맡기지 않는다.
 #[cfg(any(target_arch = "wasm32", test))]
 thread_local! {
-    static DECODED_HANDOFF: RefCell<Vec<(u64, image::RgbaImage)>> = const { RefCell::new(Vec::new()) };
+    /// `None` 이면 캔버스 그리기 밖이라 맡기지 않는다. `Some(None)` 은 그리기 중이지만 빈 자리.
+    static DECODED_HANDOFF: RefCell<Option<Option<(u64, image::RgbaImage)>>> =
+        const { RefCell::new(None) };
 }
 
 #[cfg(any(target_arch = "wasm32", test))]
@@ -251,42 +254,68 @@ fn handoff_key(bytes: &[u8]) -> u64 {
     hasher.finish()
 }
 
+/// 캔버스 한 쪽을 그리는 동안만 회색 판정의 픽셀을 맡기고, 끝나면 남은 픽셀을 버린다.
+#[cfg(any(target_arch = "wasm32", test))]
+pub(crate) fn with_decoded_handoff<R>(draw: impl FnOnce() -> R) -> R {
+    DECODED_HANDOFF.with(|handoff| *handoff.borrow_mut() = Some(None));
+    let drawn = draw();
+    DECODED_HANDOFF.with(|handoff| *handoff.borrow_mut() = None);
+    drawn
+}
+
+/// `bytes` 를 디코드하기 전에 부른다. 맡긴 픽셀 옆에서 풀기에 크면 맡긴 픽셀을 버린다.
+#[allow(unused_variables)]
+fn make_room_for_decode(bytes: &[u8]) {
+    #[cfg(any(target_arch = "wasm32", test))]
+    DECODED_HANDOFF.with(|handoff| {
+        if let Some(slot) = handoff.borrow_mut().as_mut() {
+            if !slot
+                .as_ref()
+                .is_some_and(|(_, held)| fits_beside(held, bytes))
+            {
+                *slot = None;
+            }
+        }
+    });
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+fn fits_beside(held: &image::RgbaImage, bytes: &[u8]) -> bool {
+    canvaskit_encoded_image_header(bytes).is_some_and(|header| {
+        u64::from(header.width) * u64::from(header.height) * 4 * 4 <= held.as_raw().len() as u64
+    })
+}
+
 /// `bytes` 를 `image::load_from_memory(bytes)?.to_rgba8()` 로 디코드한 것과 같은 픽셀을 맡긴다.
 /// 캔버스는 형식을 추측해 디코드하므로 추측이 `format` 과 다르면 맡기지 않는다.
 #[allow(unused_variables)]
 fn hand_off_decoded(bytes: &[u8], format: image::ImageFormat, pixels: image::RgbaImage) {
     #[cfg(any(target_arch = "wasm32", test))]
-    {
-        let size = pixels.as_raw().len();
-        if size > MAX_HANDOFF_BYTES || image::guess_format(bytes).ok() != Some(format) {
-            return;
-        }
-        let key = handoff_key(bytes);
-        DECODED_HANDOFF.with(|handoff| {
-            let mut handoff = handoff.borrow_mut();
-            handoff.retain(|(k, _)| *k != key);
-            while handoff.iter().map(|(_, p)| p.as_raw().len()).sum::<usize>() + size
-                > MAX_HANDOFF_BYTES
-            {
-                handoff.remove(0);
+    DECODED_HANDOFF.with(|handoff| {
+        if let Some(slot) = handoff.borrow_mut().as_mut() {
+            // 들고 있는 그림이 남아 있으면 이 그림은 그 옆에서 푼 작은 그림이다.
+            if slot.is_none() && image::guess_format(bytes).ok() == Some(format) {
+                *slot = Some((handoff_key(bytes), pixels));
             }
-            handoff.push((key, pixels));
-        });
-    }
+        }
+    });
 }
 
-/// 회색 판정이 맡긴 `bytes` 의 디코드 픽셀을 꺼낸다.
+/// 회색 판정이 맡긴 `bytes` 의 디코드 픽셀을 꺼낸다. 다른 바이트면 그 디코드에 자리를 낸다.
 #[cfg(any(target_arch = "wasm32", test))]
 pub(crate) fn take_decoded(bytes: &[u8]) -> Option<image::RgbaImage> {
-    DECODED_HANDOFF.with(|handoff| {
+    let taken = DECODED_HANDOFF.with(|handoff| {
         let mut handoff = handoff.borrow_mut();
-        if handoff.is_empty() {
+        let slot = handoff.as_mut()?;
+        if slot.as_ref()?.0 != handoff_key(bytes) {
             return None;
         }
-        let key = handoff_key(bytes);
-        let index = handoff.iter().position(|(k, _)| *k == key)?;
-        Some(handoff.remove(index).1)
-    })
+        slot.take().map(|(_, pixels)| pixels)
+    });
+    if taken.is_none() {
+        make_room_for_decode(bytes);
+    }
+    taken
 }
 
 /// 원본 해상도에서 흑백을 확정할 수 있는 무보정 raster 그림이다.
@@ -1415,6 +1444,8 @@ pub(crate) fn decode_image_with_format_limited(
     data: &[u8],
     format: image::ImageFormat,
 ) -> Option<image::DynamicImage> {
+    // 한도를 넘어 거절된 BMP 도 호출부가 줄여 디코드하므로 검사보다 먼저 자리를 낸다.
+    make_room_for_decode(data);
     if matches!(
         format,
         image::ImageFormat::Png | image::ImageFormat::Jpeg | image::ImageFormat::Bmp
@@ -1451,7 +1482,7 @@ mod tests {
     use super::{
         bmp_bytes_to_png_bytes, emitted_image_bytes, grayscale_jpeg_bytes_to_png_bytes,
         is_watermark_image, resolve_image_payload, take_decoded,
-        watermark_jpeg_bytes_to_hancom_baked_png_bytes, ConversionMemo,
+        watermark_jpeg_bytes_to_hancom_baked_png_bytes, with_decoded_handoff, ConversionMemo,
         CANVASKIT_MAX_IMAGE_DIMENSION, CONVERSIONS_RUN, MAX_MEMO_BYTES, MAX_MEMO_ENTRIES,
     };
     use crate::model::image::ImageEffect;
@@ -1553,23 +1584,131 @@ mod tests {
         );
     }
 
-    /// 회색 판정이 디코드한 픽셀은 캔버스가 그릴 바이트를 디코드한 픽셀과 같고, 한 번만 꺼낸다.
+    fn canvas_decode(bytes: &[u8]) -> Option<image::RgbaImage> {
+        Some(image::load_from_memory(bytes).unwrap().to_rgba8())
+    }
+
+    /// 실제 사진(1701x2552 색 JPEG)에서 회색 판정이 맡긴 픽셀은 캔버스가 디코드할 픽셀과
+    /// 버퍼 전체가 같고, 한 번만 꺼낸다.
     #[test]
     fn grayscale_probe_hands_off_the_pixels_canvas_would_decode() {
-        let decoded = |bytes: &[u8]| Some(image::load_from_memory(bytes).unwrap().to_rgba8());
-
-        let color = jpeg_from_pixels(16, 8, |x, y| [(x * 13) as u8, 90, (y * 29) as u8]);
-        assert!(grayscale_jpeg_bytes_to_png_bytes(&color).is_none());
-        assert_eq!(take_decoded(&color), decoded(&color));
-        assert_eq!(take_decoded(&color), None, "꺼낸 픽셀은 남지 않는다");
+        let photo = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/samples/images/tiger01.jpg"
+        ))
+        .expect("samples/images/tiger01.jpg");
+        with_decoded_handoff(|| {
+            assert!(grayscale_jpeg_bytes_to_png_bytes(&photo).is_none());
+            let taken = take_decoded(&photo).expect("색 사진은 원본 JPEG 의 픽셀을 맡긴다");
+            assert!(taken == canvas_decode(&photo).unwrap(), "픽셀이 다르다");
+            assert_eq!(take_decoded(&photo), None, "꺼낸 픽셀은 남지 않는다");
+        });
 
         let gray = jpeg_from_pixels(8, 8, |x, y| {
             let g = 60 + (x * 8 + y) as u8;
             [g, g, g]
         });
-        let gray_png = grayscale_jpeg_bytes_to_png_bytes(&gray).expect("gray jpeg converts");
-        assert_eq!(take_decoded(&gray), None, "회색은 PNG 를 그린다");
-        assert_eq!(take_decoded(&gray_png), decoded(&gray_png));
+        with_decoded_handoff(|| {
+            let png = grayscale_jpeg_bytes_to_png_bytes(&gray).expect("gray jpeg converts");
+            assert_eq!(
+                take_decoded(&png),
+                canvas_decode(&png),
+                "회색은 PNG 의 픽셀을 맡긴다"
+            );
+        });
+    }
+
+    /// Photoshop 휘도 평면 JPEG 은 R 을 세 채널에 펴서 PNG 로 쓴다. 맡긴 픽셀은 바꾼 뒤의
+    /// 것이라 그 PNG 를 디코드한 픽셀과 같다.
+    #[test]
+    fn luma_plane_probe_hands_off_the_rewritten_pixels() {
+        let plain = jpeg_from_pixels(16, 16, |x, y| [(96 + (x + y) / 8) as u8, 128, 128]);
+        let mut photoshop = plain[..2].to_vec();
+        let comment = b"Adobe Photoshop";
+        photoshop.extend_from_slice(&[0xFF, 0xFE, 0, comment.len() as u8 + 2]);
+        photoshop.extend_from_slice(comment);
+        photoshop.extend_from_slice(&plain[2..]);
+
+        with_decoded_handoff(|| {
+            let png =
+                grayscale_jpeg_bytes_to_png_bytes(&photoshop).expect("휘도 평면은 PNG 로 쓴다");
+            let taken = take_decoded(&png).expect("PNG 의 픽셀을 맡긴다");
+            assert!(
+                taken.pixels().any(|px| px.0[1] != 128),
+                "G 를 휘도로 바꾼 픽셀이다"
+            );
+            assert_eq!(Some(taken), canvas_decode(&png));
+        });
+    }
+
+    /// 밝기를 바꾼 그림은 캔버스가 보정한 바이트를 그린다. 보정 디코드가 시작될 때 원본
+    /// JPEG 의 맡긴 픽셀을 버리므로, 두 디코드 버퍼가 함께 살지 않고 남는 픽셀도 없다.
+    #[test]
+    fn adjusted_picture_leaves_no_handed_off_pixels() {
+        let color = jpeg_from_pixels(16, 8, |x, y| [(x * 13) as u8, 90, (y * 29) as u8]);
+        let mut image = ImageNode::new(1, Some(color.clone()));
+        image.effect = ImageEffect::RealPic;
+        image.brightness = 20;
+        with_decoded_handoff(|| {
+            let payload = resolve_image_payload(&image).expect("보정한 바이트");
+            assert_ne!(payload.data, color);
+            assert_eq!(take_decoded(&color), None);
+        });
+    }
+
+    /// 맡긴 그림의 4분의 1 이하인 그림은 엔진이나 캔버스가 그 옆에서 디코드해도 맡긴 픽셀이
+    /// 남는다. 그보다 큰 그림을 캔버스가 디코드하면 맡긴 픽셀을 먼저 버린다.
+    #[test]
+    fn small_decodes_keep_the_handed_off_pixels_and_large_ones_drop_them() {
+        let photo =
+            |seed: u8| jpeg_from_pixels(64, 64, move |x, y| [(x * 3) as u8, seed, (y * 3) as u8]);
+        let icon =
+            |seed: u8| jpeg_from_pixels(32, 32, move |x, y| [(y * 5) as u8, seed, (x * 5) as u8]);
+
+        let kept = photo(90);
+        with_decoded_handoff(|| {
+            assert!(grayscale_jpeg_bytes_to_png_bytes(&kept).is_none());
+            assert!(grayscale_jpeg_bytes_to_png_bytes(&icon(40)).is_none());
+            assert_eq!(take_decoded(&icon(41)), None);
+            assert_eq!(
+                take_decoded(&kept),
+                canvas_decode(&kept),
+                "작은 그림은 옆에서 풀었다"
+            );
+        });
+
+        let dropped = photo(91);
+        let wide = jpeg_from_pixels(64, 33, |x, y| [(x * 2) as u8, 70, (y * 6) as u8]);
+        with_decoded_handoff(|| {
+            assert!(grayscale_jpeg_bytes_to_png_bytes(&dropped).is_none());
+            assert_eq!(take_decoded(&wide), None);
+            assert_eq!(take_decoded(&dropped), None, "큰 그림의 디코드가 버렸다");
+        });
+    }
+
+    /// 다음 그림의 디코드가 시작되면 앞 그림의 맡긴 픽셀을 버린다. 캔버스 그리기가 끝나면
+    /// 남은 픽셀도 버리고, 그리기 밖(SVG·JSON)의 판정은 맡기지 않는다.
+    #[test]
+    fn handed_off_pixels_never_outlive_the_next_decode_or_the_draw() {
+        let first = jpeg_from_pixels(16, 8, |x, y| [(x * 13) as u8, 90, (y * 29) as u8]);
+        let second = jpeg_from_pixels(16, 8, |x, y| [(y * 13) as u8, 40, (x * 29) as u8]);
+        with_decoded_handoff(|| {
+            assert!(grayscale_jpeg_bytes_to_png_bytes(&first).is_none());
+            assert!(grayscale_jpeg_bytes_to_png_bytes(&second).is_none());
+            assert_eq!(take_decoded(&first), None, "다음 디코드가 버렸다");
+        });
+
+        let third = jpeg_from_pixels(16, 8, |x, y| [(x * 7) as u8, 200, (y * 3) as u8]);
+        with_decoded_handoff(|| {
+            assert!(grayscale_jpeg_bytes_to_png_bytes(&third).is_none());
+        });
+        with_decoded_handoff(|| assert_eq!(take_decoded(&third), None, "그리기 끝에 버렸다"));
+
+        let svg_only = jpeg_from_pixels(16, 8, |x, y| [(x * 5) as u8, 10, (y * 9) as u8]);
+        assert!(grayscale_jpeg_bytes_to_png_bytes(&svg_only).is_none());
+        with_decoded_handoff(|| {
+            assert_eq!(take_decoded(&svg_only), None, "그리기 밖은 맡기지 않는다")
+        });
     }
 
     /// 메모가 다른 그림의 결과를 흘리지 않는다.
