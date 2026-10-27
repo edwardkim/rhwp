@@ -63,3 +63,28 @@ GDI 양수 cell 높이 70이 문자 높이 64가 되는 관측은 KoPub의 한 �
 `independent-script-contract-summary.json`, 각 `script-cell-*-controls/`와
 `script-cell-controls/`에 있다. 원본 두 편람과 기존 기준 PDF는 변경·재출력하지 않았다.
 이 진단 자료는 아직 정식 회귀 fixture나 최종 완료 증거로 등록하지 않았다.
+
+## 공통 결과의 실제 소비와 버전 경계
+
+12pt 대조의 첨자 뒤 본문은 현재 Native에서 PDF보다 첨자 하나당 약 0.7~1.1px
+오른쪽으로 전진한다. 끝 본문에서는 누적 약 1.6~2.0px 차이가 난다. glyph 크기만
+바꾸면 이 잘못된 전진이 남으므로 다음 연결을 함께 보정한다.
+
+- 생산: `resolve_styles_with_environment`가 문서의 실제 조판 호환 profile을 선택한다.
+- 전파: `ResolvedStyleSet → resolved_to_text_style → TextStyle`에 첨자 계약을 전달한다.
+- 측정: `text_measurement::style_params`, 문단의 kerning/shaping 경로와 composer의
+  scalar style이 같은 `TextStyle`의 첨자 크기를 사용한다.
+- 배치·paint: `script_draw_metrics`의 크기·baseline을 Native, Canvas, SVG, HTML,
+  paint bounds와 JSON의 장식이 소비한다. 장평·기존 glyph fit은 그 뒤 적용되므로
+  Native 집중/전쪽 및 독립 장평 대조에서 중복 배율이 없는지 확인한다.
+- CanvasKit의 기존 별도 0.7/0.3/0.15 계산은 Rust가 확정한 크기·baseline 이동을
+  JSON으로 받아 소비하게 한다. 브라우저에 새 2024 배율 사본을 추가하지 않는다.
+
+기존 PR #5756의 `156732409` 저장 줄에는 전진 0.7의 독립 근거가 있다. 이 계약을
+전역으로 덮어쓰지 않는다. 새 계약은 명시된 2024 호환 profile의 HWP5/HWPX에
+한정하며, HWP3 계보와 기존 기본 모드는 종전 계약을 유지한다. 해당 차이는 문서·쪽·
+글꼴 이름에 따른 예외가 아닌 실제 버전/원본 조판 계약의 경계다.
+
+호환 모드가 첨자 계약을 바꿀 때에는 이전 조합 결과를 그대로 두지 않고 재조합한다.
+기존 큰 source 파일에는 계약 선택·전파·공통 helper 호출만 최소로 연결한다. 수치와
+계산은 새 작은 모듈로 모으며, 관련 없는 대규모 파일 분할로 범위를 넓히지 않는다.
