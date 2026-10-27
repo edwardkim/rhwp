@@ -267,3 +267,17 @@ HWP 40쪽 DEV 준비는 Runtime.callFunctionOn의 600초 제한으로 종료됐�
 각각 2 PASS·4 PASS로 완료했다. `alpha-mask-native/formal-cargo-result.json`에 연결한다.
 전체 회귀·최종 표준 최적화 WASM·corpus·페이지별 중요 영역 전수 보호는 여전히
 필요하다. Native에 남은 33조건을 포함한 원래 1,532조건 목표를 축소하지 않는다.
+
+새 색·마스크/경계 정식 파일도 `574dc743fa0c428fad239dabc6913a6d54b9555b`의
+자동 수집 `regression_suite_011`에서 **2 PASS·0 FAIL·0 ignored**, 종료 코드 0으로
+완료했다. 약 37초였으며 `alpha-mask-native/alpha-color-formal-cargo-result.json`과
+`alpha-mask-color-formal-suite.log`에 연결한다. 이번 단계의 실제 Cargo 검증은
+공통 단위 3건과 TAC 2·셀 clip 4·색/경계 2건이며, 전체 회귀 완료와 구분한다.
+
+남은 130쪽의 원본 WMF도 다시 읽었다. 실제 비트맵 레코드는
+`META_DIBSTRETCHBLT (0x0b41)`이며, 소스/목적 사각형은 770×674,
+WindowExtent는 771×675다. 24비트 DIB의 해상도 필드는 모두 0이고,
+원본에는 `META_SETSTRETCHBLTMODE = HALFTONE (4)`가 있다.
+현재 SVG converter의 해당 소비 함수는 미구현이다. 이 사실을 독립 출력 자원 크기의
+해명이나 완료로 확대하지 않으며, WMF의 원본 규칙과 실제 소비 경로를 다음에 검증한다.
+원본 바이트·레코드 관측은 ignored `wmf-source-record-20261027.json`에만 보존했다.
