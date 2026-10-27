@@ -19,7 +19,10 @@ pub(super) fn primary_has_glyph(family: &str, _bold: bool, italic: bool, ch: cha
     let cjk_offset = (ch as u32)
         .checked_sub(0x3000)
         .filter(|offset| *offset < 64);
-    if ch != '\u{2024}' && cjk_offset.is_none() {
+    let arrow_offset = (ch as u32)
+        .checked_sub(0x2190)
+        .filter(|offset| *offset < 112);
+    if ch != '\u{2024}' && cjk_offset.is_none() && arrow_offset.is_none() {
         return None;
     }
     if italic {
@@ -36,6 +39,22 @@ pub(super) fn primary_has_glyph(family: &str, _bold: bool, italic: bool, ch: cha
         .iter()
         .find_map(|suffix| name.strip_suffix(suffix))
         .unwrap_or(&name);
+    // 위 열두 프로그램의 Arrows 전체 cmap은 동일하다. 부분 폭 표에 없는
+    // 화살표를 한글 전진으로 추정하지 않고 기존 선언 공급자 탐색에 맡긴다.
+    // 실제 hit인 U+2192 등의 원 프로그램 전진은 그대로 유지한다.
+    if let Some(offset) = arrow_offset {
+        return match base {
+            "kopubbatang"
+            | "kopubdotum"
+            | "kopub바탕체"
+            | "kopub돋움체"
+            | "kopubworldbatang"
+            | "kopubworlddotum"
+            | "kopubworld바탕체"
+            | "kopubworld돋움체" => Some(0x1400000000000003ff_u128 & (1_u128 << offset) != 0),
+            _ => None,
+        };
+    }
     // 위에 기록한 열두 원본 프로그램 모두 U+2024 cmap이 없다.
     // 독립 편람 Print는 선언 체인의 HBATANG으로 공급한다. 부분 폭 표의
     // 미수집을 결측으로 추정하거나 U+2027의 실제 KoPub hit를 바꾸지 않는다.
