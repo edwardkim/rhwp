@@ -232,7 +232,7 @@ pub(super) fn select_typeface_for_character<'a>(
     chain: &'a [TypefaceCandidate],
     character: char,
 ) -> Option<&'a TypefaceCandidate> {
-    if character.is_whitespace() {
+    if crate::renderer::text_glyph_visibility::is_nonprinting_character(character) {
         return chain
             .iter()
             .find(|candidate| !is_placeholder_typeface(&candidate.typeface));

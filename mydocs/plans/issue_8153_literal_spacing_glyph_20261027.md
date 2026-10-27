@@ -50,3 +50,19 @@ Native/fresh WASM 시각 검증 뒤 source·소유·내용 보존과 실제 back
 직전 HNC 후보의 집중 Native 42조건·독립 원 기호 3쪽·공급 프로토콜 제안 9건은
 통과했으며 전쪽과 fresh WASM은 별도 진행한다. upstream 동기화와 원격 쓰기 없이
 PR 준비까지만 수행한다.
+
+## 첫 후보와 남은 정확한 재생 경계
+
+`66da16eeb0`의 Native·SVG 공급/비표시 제어·실물 두 원본 제안 검사는 6건 통과했다.
+설치 글꼴 없이 MIT 합성 glyph와 실제 문서의 원본 소유·좌표를 각각 대조했다.
+이는 정식 등록 전 output 제안 실행이며 fresh WASM·최종 회귀를 대신하지 않는다.
+
+실물 HWPX 79쪽은 새 잉크가 출력되지만 RGB가 232여서 고정된 `<232` 마스크에는
+포함되지 않는다. 독립 Print의 해당 픽셀은 230·219이고 정수 미대응 2개는 남아 있다.
+임계값을 바꾸거나 윤곽을 굵게 만들어 통과시키지 않는다. 실제 프로그램의 작은 윤곽과
+소수 원점이 glyph raster cache·벡터 path에서 어떻게 재생되는지 별도 출력으로 대조한다.
+
+Native `for_text` 뒤의 `select_typeface_for_character`에도 공백이면 cmap 조회를
+생략하는 분기가 남아 있었다. 이 소비 지점도 공통 비표시 제어 기준으로 연결한다.
+첫 face에 해당 spacing glyph가 없고 뒤의 실제 공급 face에만 있는 대조군을 추가해
+기존 첫 face의 `.notdef`로 되돌아가지 않는지 실제 Native 출력으로 확인한다.
