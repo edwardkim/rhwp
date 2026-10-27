@@ -94,3 +94,19 @@ rowspan은 1이고, 저장 60줄의 재시작은 문단 7→8, 28→29의 경계
 `p223-new-regression-review.png`, `p223-render-tree-changes.json`에 보존했다.
 이 반례의 독립 좌표·내용 순서 검사는 먼저 output의 제안 파일로 실행하며, 실제 보정과
 Native/fresh WASM 시각 선행 조건을 확인한 뒤 정식 `tests/cases/`에 반영한다.
+
+## 보정 후 실제 검증과 닫힘 경계 회귀
+
+`95a1c8df17`의 Native 전 766조건에서 미대응이 증가한 쪽은 없으며,
+HWP 317·327·353쪽의 각 9픽셀이 모두 0으로 개선됐다. 두 형식의 223쪽도
+raw 100%·미대응 0으로 복구됐다. bbox를 제외한 내용·소유 정보는 전쪽에서 같고,
+정식 nextest 14건이 통과했다. 같은 source의 표준 최적화 fresh WASM 빌드와
+집중 44조건도 완료됐으며, 223쪽과 세 개선 쪽 모두 raw 100%·미대응 0이다.
+WASM 전쪽과 #8153의 최종 검증은 별도 진행 중이다.
+
+`tests/cases/issue_8153_ordinary_row_closing_body.rs`는 원본 저장 컷 `[1,44,1]`,
+표 종료·뒤 빈 문단 240~242·제목 243의 소유와 순서·누락/중복, 독립 Print의
+제목 기준선 556±2px를 보호한다. 설치 글꼴·Skia 준비 없이 실행해 같은 source에서
+2 PASS, 잘못된 `1c7f742a9e`에서 2 FAIL을 확인했다. 외부 글꼴을 제공해야만
+성립하는 검사로 만들지 않는다. 직접 확대 판독과 전후 실행 기록은 ignored
+`hwp-only-row-ends/v2/p223-no-host-fonts/`, `p223-*-following-body-review.png`에 있다.
