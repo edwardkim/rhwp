@@ -1,0 +1,30 @@
+[
+  {
+    "case": "exempt-CD10",
+    "changed_task": "CD10",
+    "injected_page_count": 999,
+    "original_python_test_method_actually_executed": true,
+    "passed": true,
+    "expected_failure_control": false,
+    "test_failures": 0,
+    "log": "/Users/tsjang/rhwp/output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/exempt-CD10-actual-python-test.log",
+    "log_sha256": "986fff902d2c4ab353b5fed071c071771beeaabcd5dffe49d0ad8ad64a8b505e",
+    "private_mutated_task": "/Users/tsjang/rhwp/output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/exempt-CD10-private-mutated-task.json",
+    "private_mutated_task_sha256": "6c9ff4c813b35ceea805d94da03284a1cf3c3a587fd8f87a947fdc12c26430d2",
+    "tracked_task_source_modified": false
+  },
+  {
+    "case": "control-LR01",
+    "changed_task": "LR01",
+    "injected_page_count": 999,
+    "original_python_test_method_actually_executed": true,
+    "passed": false,
+    "expected_failure_control": true,
+    "test_failures": 1,
+    "log": "/Users/tsjang/rhwp/output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/control-LR01-actual-python-test.log",
+    "log_sha256": "9c6c5d70a1d864c7aeb8116c314eda1892a7e4a83faee32feb655542027d4f65",
+    "private_mutated_task": "/Users/tsjang/rhwp/output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/control-LR01-private-mutated-task.json",
+    "private_mutated_task_sha256": "3e212ce56d9f9dec235684aa6f1ebbbe56670a657d3c6cc653d14e670ce33b38",
+    "tracked_task_source_modified": false
+  }
+]

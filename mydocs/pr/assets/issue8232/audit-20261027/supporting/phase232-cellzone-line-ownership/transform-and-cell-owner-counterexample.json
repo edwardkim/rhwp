@@ -1,0 +1,40 @@
+{
+  "raw_endpoints": [
+    [
+      145.12666666666667,
+      136.05333333333334,
+      145.12666666666667,
+      153.14666666666668
+    ],
+    [
+      117.16,
+      144.60000000000002,
+      173.09333333333333,
+      144.60000000000002
+    ]
+  ],
+  "transform": [
+    100,
+    60
+  ],
+  "fixed_selector_predicates": {
+    "vertical_in_fixed_region": true,
+    "horizontal_in_fixed_region": true
+  },
+  "raster": {
+    "svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase232-cellzone-line-ownership/origin-center/diagnostic-centers-outside-own-cell.svg",
+    "svg_sha256": "8c5ce3a8edd9546d42807dd7262b75bd6dd368ad608a7dc464b4abd7b3908fba",
+    "png": "/Users/tsjang/rhwp/output/issue8232-audit/phase232-cellzone-line-ownership/origin-center/diagnostic-centers-outside-own-cell.png",
+    "png_sha256": "c459b03a65ce3cfc7465bd0239e3616bc9040e83f2fa90bc3a018386f613ebc6",
+    "painted_pixels": 891662,
+    "log": "/Users/tsjang/rhwp/output/issue8232-audit/phase232-cellzone-line-ownership/origin-center/diagnostic-centers-outside-own-cell.render.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "exit_code": 0
+  },
+  "authored_cell_width_hu": 4195,
+  "authored_cell_height_hu": 1282,
+  "authored_cell_width_css_px": 55.93333333333333,
+  "authored_cell_height_css_px": 17.093333333333334,
+  "translated_outside_own_cell": true,
+  "original_rust_output_injection_executed": false
+}

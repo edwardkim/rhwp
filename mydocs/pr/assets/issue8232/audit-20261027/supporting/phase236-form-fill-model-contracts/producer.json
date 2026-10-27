@@ -1,0 +1,27 @@
+{
+  "head": "01ced3d42724285c8f9765a453393ab6af326617",
+  "pid": 27029,
+  "terminal": true,
+  "exit_code": 0,
+  "driver_sha256": "712bed1ef50152b146728d572bdf095c3e16d1bebdd16991ef9f5a49944a041e",
+  "source_sha256": {
+    "tools/form_fill/test_form_fill.py": "7b71aa65703a2748aa6e73f4035d5aa5e15ebc1e857b3cf8d0956853e5848f7f",
+    "tools/form_fill/form_fill.py": "33bf9d365c1bd4314e5486a48eaa797208112e289ebceccfe9b99baabf5fae8b",
+    "tools/form_fill/catalogs.py": "17cadf8dbdc676982f89fba76bf806bbcd70cfafea7973fbd6505dabd73f02f9",
+    "rhwp-studio/public/rhwp.js": "c1c8d1820cc4375ab668427fa0a42c87d71c3d0d83955f4d300880559023ddc6"
+  },
+  "source_sha256_after": {
+    "tools/form_fill/test_form_fill.py": "7b71aa65703a2748aa6e73f4035d5aa5e15ebc1e857b3cf8d0956853e5848f7f",
+    "tools/form_fill/form_fill.py": "33bf9d365c1bd4314e5486a48eaa797208112e289ebceccfe9b99baabf5fae8b",
+    "tools/form_fill/catalogs.py": "17cadf8dbdc676982f89fba76bf806bbcd70cfafea7973fbd6505dabd73f02f9",
+    "rhwp-studio/public/rhwp.js": "c1c8d1820cc4375ab668427fa0a42c87d71c3d0d83955f4d300880559023ddc6"
+  },
+  "python": "/Users/tsjang/rhwp/output/issue8232-audit/parser-venv/bin/python3.13",
+  "selected_test_roots": 31,
+  "actual_python_test_roots": 31,
+  "actual_child_processes": 0,
+  "additional_builds": 0,
+  "new_visual_sweep_runs": 0,
+  "source_test_changes": 0,
+  "renames": 0
+}

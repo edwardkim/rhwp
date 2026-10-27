@@ -1,0 +1,11 @@
+{
+  "device_samples": 3025,
+  "normal_wrong_samples": 0,
+  "hidden_wrong_samples": 1250,
+  "destination_rgb": [
+    31,
+    79,
+    127
+  ],
+  "meaning": "완성 관용구의 이산 bit oracle는 정상 그림을 수용하고 숨긴 합성 그림을 거부한다. 이 부분을 현행±2CSSpx로 완화하거나 삭제하지 않는다. complete root의 검출 공백은 별도 curve 문자열 분기에 있다."
+}

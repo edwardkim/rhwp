@@ -1,0 +1,14 @@
+{
+  "public_input_cases": 10,
+  "native_original_passed": 8,
+  "normal_native_wasm_line_coordinates_equal_cases": 10,
+  "hidden_diagnostics_zero_paint": 10,
+  "negative_visible_path_counterexamples": 2,
+  "per_cell_coverage_counterexample": true,
+  "transformed_cell_owner_counterexample": true,
+  "standalone_rsvg_calls": 24,
+  "original_rust_mutated_output_injection_executed": false,
+  "new_visual_sweep_runs": 0,
+  "whole_document_fidelity_acceptance": false,
+  "additional_builds": 0
+}

@@ -1,0 +1,15 @@
+{
+  "ids": [
+    "issue_1623_cellzone_diagonal::issue_1633_sample4_renders_cellzone_diagonal_without_cell_overlay",
+    "issue_1623_cellzone_diagonal::issue_1623_cellzone_diagonal_renders_across_zone_bbox",
+    "issue_1623_cellzone_diagonal::issue_1633_as_one_cell_diagonal_uses_cellzone_range",
+    "issue_1623_cellzone_diagonal::issue_1633_centerline_is_disabled_for_as_one_cellzone_apply",
+    "issue_1623_cellzone_diagonal::issue_1633_cellzone_origin_centerline_renders_after_each_cell_apply",
+    "issue_1623_cellzone_diagonal::issue_1633_cell_diagonal_renders_over_existing_cellzone_diagonal",
+    "issue_1623_cellzone_diagonal::issue_1633_cellzone_origin_cell_diagonal_renders_after_each_cell_apply",
+    "issue_1623_cellzone_diagonal::issue_1633_all_cells_centerline_suppresses_old_cellzone_diagonal_render"
+  ],
+  "list_sha256": "3f5b5968b6ad3cb099be1fd27d7b9cf8bfbf43e75fb7a17d604641df79b5e32e",
+  "generated_suite": "tests/generated/regression_suite_023.rs",
+  "helper_is_not_an_extra_test": true
+}

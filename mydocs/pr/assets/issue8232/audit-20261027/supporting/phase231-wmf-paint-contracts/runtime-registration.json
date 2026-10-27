@@ -1,0 +1,17 @@
+{
+  "ids": [
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_complete_mask_selects_brush_or_original_destination",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_lone_monochrome_pattern_blit_is_unaffected",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_halftone_two_unit_edge_difference_is_preserved",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_non_halftone_one_unit_difference_is_preserved",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_one_unit_final_xor_difference_is_preserved",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_incomplete_idiom_keeps_middle_draw",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_different_middle_region_is_not_a_mask_idiom",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_different_final_region_keeps_middle_draw",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_different_final_brush_keeps_middle_draw",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_intervening_draw_keeps_middle_draw",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_clip_change_keeps_middle_draw",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_colored_one_bit_pattern_is_preserved"
+  ],
+  "list_sha256": "2a0fd43e80ad34c01594ca057c0c27dd74c351a9742f54de2278c74d2d0b1cc1"
+}

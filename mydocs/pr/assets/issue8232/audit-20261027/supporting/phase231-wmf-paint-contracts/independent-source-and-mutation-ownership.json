@@ -1,0 +1,38 @@
+{
+  "hwp": "/Users/tsjang/rhwp/samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+  "hwp_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+  "cfb_stream": "BinData/BIN0003.wmf",
+  "fixture": "/Users/tsjang/rhwp/tests/fixtures/wmf_monthly_trade_curve.wmf",
+  "fixture_sha256": "11c89d411b2451fdc05584484086fd4e3ec3115aeb8f4ba87b248efd7caf1449",
+  "fixture_matches_current_raw_decompressed_stream": true,
+  "size": 92032,
+  "global_window_count": 7,
+  "active_dib_palette_windows": 2,
+  "escape_comment_windows": 4,
+  "pen_windows": 1,
+  "pen": {
+    "record_offset": 77090,
+    "changed_file_offset": 77100,
+    "parsed_before": [
+      5,
+      0,
+      0,
+      16777215
+    ],
+    "parsed_after": [
+      5,
+      0,
+      255,
+      16777215
+    ],
+    "fields": [
+      "PenStyle",
+      "Width.x",
+      "Width.y",
+      "ColorRef"
+    ],
+    "effect": "Width.y만 0→255로 바뀌며 MS-WMF에서는 무시되는 필드다. 현재 펜 폭·색의 표시 회귀라고 주장하지 않는다. 팔레트만 바꾼다는 입력 계약 밖의 부수 변형이다."
+  },
+  "primary_spec_url": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wmf/6e43c74e-2d19-4d40-97ab-b5933caa80ca",
+  "required_input_repair": "전역 8바이트 검색 대신 META_DIBCREATEPATTERNBRUSH의 실제 팔레트 필드만 바꾸고 나머지 원본 레코드·EMF 주석·펜 상태의 byte 보존을 확인한다."
+}

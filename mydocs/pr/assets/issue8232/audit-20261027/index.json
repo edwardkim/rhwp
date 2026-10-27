@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "issue": 8232,
+  "status": "audit_in_progress",
+  "code_head": "01ced3d42724285c8f9765a453393ab6af326617",
+  "source_ledger_local_cache": "output/issue8232-audit/phase236-form-fill-model-contracts/audit-ledger.json",
+  "source_ledger_sha256": "c30317c7b1cae2d6a1bb8474a9feb8ba4258fbf9e4486d9389e2e76a8d0b5bc2",
+  "latest_completed_phase": 236,
+  "function_status_records": 22616,
+  "direct_decisions": 16047,
+  "confirmed_change_function_sites": 346,
+  "confirmed_change_files": 91,
+  "full_audit_complete": false,
+  "source_test_changes": 0,
+  "renames": 0,
+  "decision_files": [
+    {
+      "path": "decisions/part-001.jsonl",
+      "records": 600,
+      "bytes": 2093111,
+      "sha256": "b1d0c17015c0a13b086fb45bf8ae14be5e68cedced0dddea691c7b37f48c134f"
+    },
+    {
+      "path": "decisions/part-002.jsonl",
+      "records": 623,
+      "bytes": 2094272,
+      "sha256": "27fede67424845e934fa91f9784d49184a48f77eaa79625c202383b9cf2488cb"
+    },
+    {
+      "path": "decisions/part-003.jsonl",
+      "records": 808,
+      "bytes": 2095947,
+      "sha256": "2cabd664416f4d5cba1209220764f7caa6468e8728e2d7c9dd464bb31fb89ba3"
+    },
+    {
+      "path": "decisions/part-004.jsonl",
+      "records": 769,
+      "bytes": 2096723,
+      "sha256": "845e388ed27653e012b5c5dc06eec2731ed05ae3e8502a19eb94fecaae62ea6d"
+    },
+    {
+      "path": "decisions/part-005.jsonl",
+      "records": 781,
+      "bytes": 2095527,
+      "sha256": "68e6c6c799c52f57385099d8b3f664dcb14075522952792ecb537fdb4107a110"
+    },
+    {
+      "path": "decisions/part-006.jsonl",
+      "records": 804,
+      "bytes": 2095718,
+      "sha256": "17968e56ae9d6db9858315811ee901b67d4b10496fe3dd913f48470798aaa7d8"
+    },
+    {
+      "path": "decisions/part-007.jsonl",
+      "records": 767,
+      "bytes": 2095509,
+      "sha256": "b53425121bbae366d0aa916ab42d9b3cdec99c4703aad6693760cdbda67468db"
+    },
+    {
+      "path": "decisions/part-008.jsonl",
+      "records": 668,
+      "bytes": 2095250,
+      "sha256": "6d9dc1cfab18dfe5713a46cf7a09130ef5fd97d7a8de6c1222ed3799835d7bda"
+    },
+    {
+      "path": "decisions/part-009.jsonl",
+      "records": 592,
+      "bytes": 2096367,
+      "sha256": "b85df2f64a5ced27c89ed03c699234d92d1287f3d86bdcf8fb7aa270a9a2e1d0"
+    },
+    {
+      "path": "decisions/part-010.jsonl",
+      "records": 612,
+      "bytes": 2094160,
+      "sha256": "69e9c0f201c9704793d29c0af579af5c641b1c787e0e484438be0dbf74b07b5f"
+    },
+    {
+      "path": "decisions/part-011.jsonl",
+      "records": 602,
+      "bytes": 2096359,
+      "sha256": "8818197cd2e42c3c31de506bd6301ff41503019e297398aca95cf4e5fe703cf0"
+    },
+    {
+      "path": "decisions/part-012.jsonl",
+      "records": 600,
+      "bytes": 2092549,
+      "sha256": "e87db228737a11805e07654b182762620d09763f2547c2bba818f16236b014ff"
+    },
+    {
+      "path": "decisions/part-013.jsonl",
+      "records": 595,
+      "bytes": 2095948,
+      "sha256": "99053a23a5eeecbaf6768296e8de22cbb8c1b4aad1092daee6a8b1471e8b77c6"
+    },
+    {
+      "path": "decisions/part-014.jsonl",
+      "records": 558,
+      "bytes": 2093133,
+      "sha256": "29fafc20e1abd46b38c7ea416d60fb3834c7505862e2eada304d83e817eda2cc"
+    },
+    {
+      "path": "decisions/part-015.jsonl",
+      "records": 563,
+      "bytes": 2093621,
+      "sha256": "d7d779b092ab1415afa880a4a05aeb1bc1b126af2a4ebc180d22b53787c2ec9a"
+    },
+    {
+      "path": "decisions/part-016.jsonl",
+      "records": 608,
+      "bytes": 2094076,
+      "sha256": "0aa02a70329f508b2966722194cf1f2b07138a315d61028a0d142812fcf4a2ee"
+    },
+    {
+      "path": "decisions/part-017.jsonl",
+      "records": 450,
+      "bytes": 2096142,
+      "sha256": "34fe40f42df3d0081002e1a2663d5ab31e5133b8831d19951c5447504d0a05f5"
+    },
+    {
+      "path": "decisions/part-018.jsonl",
+      "records": 499,
+      "bytes": 2095206,
+      "sha256": "c7005bd9a93763a2896829465438dac66eea6956d433b488ef3a4e767bf87ce2"
+    },
+    {
+      "path": "decisions/part-019.jsonl",
+      "records": 513,
+      "bytes": 2095625,
+      "sha256": "c08dafac5592236cb96ee60e58b5af9106b685ab7877c08720449ab8db827afa"
+    },
+    {
+      "path": "decisions/part-020.jsonl",
+      "records": 485,
+      "bytes": 2093213,
+      "sha256": "32c374678ca583cfcf5755553ff203b18c3c9648958f2c8e5110605dcb300229"
+    },
+    {
+      "path": "decisions/part-021.jsonl",
+      "records": 564,
+      "bytes": 2095299,
+      "sha256": "0801078d63ac024de7904dc8f583e3668815a8866383d8e2afd64b41db44ad10"
+    },
+    {
+      "path": "decisions/part-022.jsonl",
+      "records": 555,
+      "bytes": 2095164,
+      "sha256": "af94700f9afe2e81bf74907f3cc3d09c87b10c6c989323853f5e95b54f7e9c3e"
+    },
+    {
+      "path": "decisions/part-023.jsonl",
+      "records": 576,
+      "bytes": 2093664,
+      "sha256": "28a9da3ccbf6be9290b07304bba3c2e64f15f495320199b3702978e52d7b2f60"
+    },
+    {
+      "path": "decisions/part-024.jsonl",
+      "records": 512,
+      "bytes": 2093492,
+      "sha256": "f25c53366a01768fb81e6c87980a3b5a2c619f1724945628bfaa8b6ef76c958c"
+    },
+    {
+      "path": "decisions/part-025.jsonl",
+      "records": 538,
+      "bytes": 2096838,
+      "sha256": "4042a35568712845b3aa8b9df103113d2fe76c9603f06eb0c3eb3f39eed5267e"
+    },
+    {
+      "path": "decisions/part-026.jsonl",
+      "records": 585,
+      "bytes": 2097035,
+      "sha256": "4cc48c923c01ada136e53232269075800a22f35feaedc3579249d64fb5c0b723"
+    },
+    {
+      "path": "decisions/part-027.jsonl",
+      "records": 220,
+      "bytes": 851054,
+      "sha256": "5de1d62e6e7e22a6dea86249fcd273cb724a6151a91453b370ea8b7810b89bcf"
+    }
+  ],
+  "promoted_history_reports": 231,
+  "history_original_texts_sha256": "694c0d4007d0b1b86ee473a3c5459459350fa9bab69b75aa09029ddef9503b51",
+  "supporting_artifacts": 32,
+  "user_exclusion_records": 599,
+  "permanent_working_report": "mydocs/working/task_m100_8232_stage1.md",
+  "temporary_materials_policy": "로그·실행 스크립트·임시 입력·과거 API 응답 사본·기계 작업 원장은 output에 두며, 현재 판정과 조사 보고서는 이 정식 경로에 보존한다.",
+  "current_metadata_retained_except_duplicated_initial_search_notes_and_adjudication_history": true
+}

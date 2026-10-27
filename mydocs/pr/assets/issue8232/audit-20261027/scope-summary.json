@@ -1,0 +1,33 @@
+{
+  "head": "01ced3d42724285c8f9765a453393ab6af326617",
+  "function_groups": 22616,
+  "files": 2501,
+  "review_state": {
+    "unreviewed": 6316,
+    "function_px_policy_adjudicated": 15651,
+    "file_scope_policy_adjudicated": 9,
+    "semantic_notes_present_requires_adjudication": 81,
+    "function_evidence_pending": 396,
+    "file_context_only_requires_function_review": 163
+  },
+  "direct_functions": 16047,
+  "direct_rust_test_functions": 7882,
+  "direct_rust_test_files": 888,
+  "new_direct_functions": 31,
+  "new_rust_test_functions": 0,
+  "new_helpers": 0,
+  "change_required_confirmed_findings": 346,
+  "additional_builds": 0,
+  "source_test_changes": 0,
+  "renames": 0,
+  "full_audit_complete": false,
+  "python_tests_run": 31,
+  "python_passed": 31,
+  "python_failed": 0,
+  "python_skipped": 0,
+  "actual_declared_catalogs": 5,
+  "actual_repository_file_reads": 3,
+  "actual_native_or_document_io": 0,
+  "actual_child_processes": 0,
+  "new_visual_sweep_runs": 0
+}

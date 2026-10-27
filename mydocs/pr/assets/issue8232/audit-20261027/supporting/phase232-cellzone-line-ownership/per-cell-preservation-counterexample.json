@@ -1,0 +1,23 @@
+{
+  "authored_source_cells": 80,
+  "normal_verticals": 80,
+  "normal_horizontals": 80,
+  "diagnostic_verticals": 10,
+  "diagnostic_horizontals": 0,
+  "source_edit_properties_unchanged": true,
+  "existing_predicates": {
+    "no_old_zone_line": true,
+    "ten_short_verticals": true
+  },
+  "raster": {
+    "svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase232-cellzone-line-ownership/all-center/diagnostic-ten-verticals-only.svg",
+    "svg_sha256": "06e037d4dc15bb65010698cfd5e3cccf71f1bcb7e086f507ddd2990e32244e57",
+    "png": "/Users/tsjang/rhwp/output/issue8232-audit/phase232-cellzone-line-ownership/all-center/diagnostic-ten-verticals-only.png",
+    "png_sha256": "43c3d2b4df9c7a170aef7dd5dfdb1f99499126700d7a1f2b9579f1d5d688ed89",
+    "painted_pixels": 891662,
+    "log": "/Users/tsjang/rhwp/output/issue8232-audit/phase232-cellzone-line-ownership/all-center/diagnostic-ten-verticals-only.render.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "exit_code": 0
+  },
+  "original_rust_output_injection_executed": false
+}

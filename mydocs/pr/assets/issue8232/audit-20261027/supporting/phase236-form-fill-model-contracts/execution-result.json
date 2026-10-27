@@ -1,0 +1,16 @@
+{
+  "tests_run": 31,
+  "passed": 31,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "seconds": 0.05504054101766087,
+  "all_tests_passed": true,
+  "log": "/Users/tsjang/rhwp/output/issue8232-audit/phase236-form-fill-model-contracts/existing-python-tests.log",
+  "log_sha256": "43015f6d064e90d4f6d65bb41abe40d06663331663f0568179b0b82be2408f52",
+  "actual_child_processes": [],
+  "repository_writes": [],
+  "additional_builds": 0,
+  "failure_ids": [],
+  "error_ids": []
+}

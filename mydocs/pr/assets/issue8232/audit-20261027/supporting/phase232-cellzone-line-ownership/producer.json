@@ -1,0 +1,86 @@
+{
+  "head": "01ced3d42724285c8f9765a453393ab6af326617",
+  "pid": 28066,
+  "terminal": true,
+  "driver_sha256": "96ee131ac6bfa2de1f1d9d41b41c5b0dea036b8eab646033e8ee816cf5f6863d",
+  "source_sha256": {
+    "tests/issue_1623_cellzone_diagonal.rs": "dfaad74c3478a44d3fc25d072fd8af223d3ec6188bac1770a1ce718b3594ed02",
+    "tests/generated/regression_suite_023.rs": "381bfddfcfd95255f89e10a546bac058c8b9d5f3305f6af33157f00a7c983516",
+    "src/wasm_api.rs": "0cb09c2876af18169a0c32b794e1c84b8c86b96191ced0feef04fa5efbb343dd",
+    "src/renderer/layout/border_rendering.rs": "b493278afe2441d9508ef775a1e4cfa7afd28ee2bbb8197bb4f6c633b07a0bcf",
+    "src/renderer/layout/table_layout.rs": "b2aaed7d828b27792447c3c48245980564da75ed78cb15ff3cc59f2f0220c280",
+    "src/renderer/layout/table_partial.rs": "58908e9e6baeef754134e446999c8625e11e3d56d9f6960dcb20fb512b62e72e",
+    "rhwp-studio/public/rhwp.js": "c1c8d1820cc4375ab668427fa0a42c87d71c3d0d83955f4d300880559023ddc6",
+    "samples/대각선샘플.hwp": "0ca676c2e2fdca79cc01b01d2743197a8d6dbf078726564085d2e3f8da8a1b8a",
+    "samples/대각선샘플.hwpx": "0ce2407dd5119e923af2e13879261291fb9a66e21f961650da3aa97488311933",
+    "samples/대각선샘플4.hwp": "3bf3dae45edb7fa106ff6303e4c4eb15ca6c654c68089cbf5738c4133e8a9a05",
+    "samples/대각선샘플4.hwpx": "89a6c6447fa2619d7845973b2c13754f24c7ee27c35261de25c6ae58843e2c0a"
+  },
+  "binary": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_023-6166cb474560552c",
+  "binary_sha256": "6a641f32453a6789cdf669e542bf0ca1eeaa2430a8334a1cf81ffaeb8bcff8ac",
+  "native_build_producer": "/Users/tsjang/rhwp/output/issue8232-audit/phase63-nested-editing-flow/producer.json",
+  "native_build_producer_sha256": "7165231081be4de7b92f2f18d28a7070616c4acdf5d1b564aba7a31e539d15a6",
+  "native_cli": "/Users/tsjang/rhwp/output/issue8232-audit/phase59-cli-contracts/rhwp-current-native",
+  "native_cli_sha256": "9d496496e8561ff04c7c64b7b7171581d29fa6babe1dcfcbe38467574250ecf5",
+  "cli_build_producer": "/Users/tsjang/rhwp/output/issue8232-audit/phase59-cli-contracts/producer.json",
+  "cli_build_producer_sha256": "5716aee8d65b57c636cba9e29d288dd9567a9513bf311bbc31f92da5d1ba1055",
+  "wasm_build_producer": "/Users/tsjang/rhwp/output/issue8232-audit/current-wasm-01ced/producer.json",
+  "wasm_build_producer_sha256": "cb169746992cc58f4b24b0b04b4b2194153590f4a2921d5ab115e9178d2dc0ed",
+  "wasm_compile_inputs_verified": 1892,
+  "package_files": {
+    "rhwp.js": {
+      "sha256": "c1c8d1820cc4375ab668427fa0a42c87d71c3d0d83955f4d300880559023ddc6",
+      "bytes": 489853
+    },
+    "LICENSE": {
+      "sha256": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+      "bytes": 1072
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "sha256": "b4a0c0703bbdd6d7b51b899c9d3932d2d88a0980009308b122f81c4d7ff230f5",
+      "bytes": 66681
+    },
+    "README.md": {
+      "sha256": "4266d6f1ae0afda875ac7a5223cc250c33eafca8c213e70ff232be77d8ddce08",
+      "bytes": 6962
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "0d47e5f969a71858f55814929e371185926ad8b393164d0d83bbb960e0a8c4fc",
+      "bytes": 27061084
+    },
+    ".gitignore": {
+      "sha256": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+      "bytes": 1
+    },
+    "package.json": {
+      "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+      "bytes": 429
+    },
+    "rhwp.d.ts": {
+      "sha256": "ed3e491f6c95ff0186afa3264587ee19c3e6545f48db0ad95e05849873b23e74",
+      "bytes": 195570
+    }
+  },
+  "package": "/Users/tsjang/rhwp/output/issue8232-audit/pkg-current-01ced",
+  "node_driver_sha256": "12378037e98e34cd716dbcb3392e3c1ecb9a30971336699fda6c283403f300cc",
+  "additional_builds": 0,
+  "source_test_changes": 0,
+  "renames": 0,
+  "exit_code": 0,
+  "source_sha256_after": {
+    "tests/issue_1623_cellzone_diagonal.rs": "dfaad74c3478a44d3fc25d072fd8af223d3ec6188bac1770a1ce718b3594ed02",
+    "tests/generated/regression_suite_023.rs": "381bfddfcfd95255f89e10a546bac058c8b9d5f3305f6af33157f00a7c983516",
+    "src/wasm_api.rs": "0cb09c2876af18169a0c32b794e1c84b8c86b96191ced0feef04fa5efbb343dd",
+    "src/renderer/layout/border_rendering.rs": "b493278afe2441d9508ef775a1e4cfa7afd28ee2bbb8197bb4f6c633b07a0bcf",
+    "src/renderer/layout/table_layout.rs": "b2aaed7d828b27792447c3c48245980564da75ed78cb15ff3cc59f2f0220c280",
+    "src/renderer/layout/table_partial.rs": "58908e9e6baeef754134e446999c8625e11e3d56d9f6960dcb20fb512b62e72e",
+    "rhwp-studio/public/rhwp.js": "c1c8d1820cc4375ab668427fa0a42c87d71c3d0d83955f4d300880559023ddc6",
+    "samples/대각선샘플.hwp": "0ca676c2e2fdca79cc01b01d2743197a8d6dbf078726564085d2e3f8da8a1b8a",
+    "samples/대각선샘플.hwpx": "0ce2407dd5119e923af2e13879261291fb9a66e21f961650da3aa97488311933",
+    "samples/대각선샘플4.hwp": "3bf3dae45edb7fa106ff6303e4c4eb15ca6c654c68089cbf5738c4133e8a9a05",
+    "samples/대각선샘플4.hwpx": "89a6c6447fa2619d7845973b2c13754f24c7ee27c35261de25c6ae58843e2c0a"
+  },
+  "original_native_tests_passed": 8,
+  "public_api_cases": 10,
+  "native_svg_exports": 10
+}

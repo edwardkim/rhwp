@@ -1,0 +1,67 @@
+[
+  {
+    "key": "disabled",
+    "forbidden_zone_paths": [
+      [
+        117.16,
+        272.8,
+        676.4933333333332,
+        136.05333333333334
+      ],
+      [
+        117.16,
+        136.05333333333334,
+        676.4933333333332,
+        272.8
+      ]
+    ],
+    "predicates": {
+      "no_old_zone_line": true
+    },
+    "changed_visible_pixels": 2441,
+    "raster": {
+      "svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase232-cellzone-line-ownership/disabled/diagnostic-old-zone-as-path.svg",
+      "svg_sha256": "597faff37b89e292bf25cdbedd46bf58ce00fb26539eab72c14f14ac6f939881",
+      "png": "/Users/tsjang/rhwp/output/issue8232-audit/phase232-cellzone-line-ownership/disabled/diagnostic-old-zone-as-path.png",
+      "png_sha256": "a41f9498ed2b2a4f6a119b809fe3f10b805974e59d29bd3d11084f4bd69ad6b2",
+      "painted_pixels": 891662,
+      "log": "/Users/tsjang/rhwp/output/issue8232-audit/phase232-cellzone-line-ownership/disabled/diagnostic-old-zone-as-path.render.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    "diagnostic_only_not_current_product_defect": true
+  },
+  {
+    "key": "all-center",
+    "forbidden_zone_paths": [
+      [
+        117.16,
+        272.8,
+        676.4933333333332,
+        136.05333333333334
+      ],
+      [
+        117.16,
+        136.05333333333334,
+        676.4933333333332,
+        272.8
+      ]
+    ],
+    "predicates": {
+      "no_old_zone_line": true,
+      "ten_short_verticals": true
+    },
+    "changed_visible_pixels": 2441,
+    "raster": {
+      "svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase232-cellzone-line-ownership/all-center/diagnostic-old-zone-as-path.svg",
+      "svg_sha256": "5ca80063dd8c14c25bbda74cc59b3d93de3bf660c85e1a5c828ffccc200b88f9",
+      "png": "/Users/tsjang/rhwp/output/issue8232-audit/phase232-cellzone-line-ownership/all-center/diagnostic-old-zone-as-path.png",
+      "png_sha256": "15df07f76e4876812e34343c8182e07bc0fac0fe4265df10499af83d3c3eb64a",
+      "painted_pixels": 891662,
+      "log": "/Users/tsjang/rhwp/output/issue8232-audit/phase232-cellzone-line-ownership/all-center/diagnostic-old-zone-as-path.render.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    "diagnostic_only_not_current_product_defect": true
+  }
+]

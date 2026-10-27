@@ -1,0 +1,20 @@
+{
+  "path": "tools/form_fill/catalogs.py",
+  "sha256": "17cadf8dbdc676982f89fba76bf806bbcd70cfafea7973fbd6505dabd73f02f9",
+  "FORMS_constructor_callee_names": [
+    "F",
+    "FormCatalog",
+    "_field01",
+    "_gani",
+    "_gian",
+    "_regulatory",
+    "repeat",
+    "tuple"
+  ],
+  "directly_read_source_ranges": [
+    "1–218",
+    "1370–1424"
+  ],
+  "range_scope": "테스트가 선택하는 field-01·form-01·gian-1·reg-80168·empty-none 선언과 공용 F/repeat·선택 helper를 읽었다. 다른 catalog 항목을 실물 문서와 대조했다고 하지 않는다.",
+  "runtime_boundary": "catalog의 sample은 문자열 메타데이터다. 실제 테스트 실행에서 HWP/HWPX/PDF 입력을 열지 않았다. 문서 Native 파서·writer·renderer를 부르지 않았다."
+}

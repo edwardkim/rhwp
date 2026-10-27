@@ -1,0 +1,347 @@
+{
+  "head": "01ced3d42724285c8f9765a453393ab6af326617",
+  "functions": [
+    {
+      "function": "issue_6865_complete_mask_selects_brush_or_original_destination",
+      "mutated_svg_cases": [
+        "curve"
+      ],
+      "normal_predicates": {
+        "synthetic_original_brush_color": true,
+        "synthetic_actual_bit_contract_unchanged_and_native_passed": true,
+        "curve_vector_mask": true,
+        "curve_red_line": true,
+        "first_xor_rectangle_absent": true,
+        "last_xor_rectangle_absent": true
+      },
+      "hidden_predicates": {
+        "synthetic_original_brush_color": true,
+        "synthetic_actual_bit_contract_unchanged_and_native_passed": true,
+        "curve_vector_mask": true,
+        "curve_red_line": true,
+        "first_xor_rectangle_absent": true,
+        "last_xor_rectangle_absent": true
+      },
+      "original_rust_output_injection_executed": false,
+      "current_native_normal_test_result": "PASS",
+      "model_scope": "동일 Native 변환 경로의 실제 SVG에 원 문자열 predicate를 그대로 평가했다. 원 Rust 함수에 반환값을 주입해 PASS한 실행은 아니다.",
+      "case_raster_proof": [
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/curve/current.svg",
+          "current_svg_sha256": "45a62228a36d946808665c05e4505874b851f878811333efd0e0066ef1760dbe",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/curve/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "42b53c0c379580db010d41570f6ff96c41d66e08522a0e76bfbcd8b091cf4d1f",
+          "current_painted_pixels": 167400,
+          "hidden_painted_pixels": 0
+        }
+      ]
+    },
+    {
+      "function": "issue_6865_lone_monochrome_pattern_blit_is_unaffected",
+      "mutated_svg_cases": [
+        "lone"
+      ],
+      "normal_predicates": {
+        "primary_pattern_name": true
+      },
+      "hidden_predicates": {
+        "primary_pattern_name": true
+      },
+      "original_rust_output_injection_executed": false,
+      "current_native_normal_test_result": "PASS",
+      "model_scope": "동일 Native 변환 경로의 실제 SVG에 원 문자열 predicate를 그대로 평가했다. 원 Rust 함수에 반환값을 주입해 PASS한 실행은 아니다.",
+      "case_raster_proof": [
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/lone/current.svg",
+          "current_svg_sha256": "649c6962275e54089c10ed275ee7e0de16b42efd0fb6bf03275d58e2b157d4be",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/lone/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "b4a3ad74eb416de246cdf3bd97c5f98195185160ed8d24c6aff56e93856ca5d2",
+          "current_painted_pixels": 2500,
+          "hidden_painted_pixels": 0
+        }
+      ]
+    },
+    {
+      "function": "issue_6865_halftone_two_unit_edge_difference_is_preserved",
+      "mutated_svg_cases": [
+        "edge-two"
+      ],
+      "normal_predicates": {
+        "primary_pattern_name": true
+      },
+      "hidden_predicates": {
+        "primary_pattern_name": true
+      },
+      "original_rust_output_injection_executed": false,
+      "current_native_normal_test_result": "PASS",
+      "model_scope": "동일 Native 변환 경로의 실제 SVG에 원 문자열 predicate를 그대로 평가했다. 원 Rust 함수에 반환값을 주입해 PASS한 실행은 아니다.",
+      "case_raster_proof": [
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/edge-two/current.svg",
+          "current_svg_sha256": "6127e102228a4f9148d453d23f6567a268b63d43e67f7b5a958fac3ef9343c1c",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/edge-two/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "fd5a97e80b2528f4188d995d8e7b21a8df8de42bc5c3852b4d6a3359bdc53704",
+          "current_painted_pixels": 1326,
+          "hidden_painted_pixels": 0
+        }
+      ]
+    },
+    {
+      "function": "issue_6865_non_halftone_one_unit_difference_is_preserved",
+      "mutated_svg_cases": [
+        "non-halftone-one"
+      ],
+      "normal_predicates": {
+        "primary_pattern_name": true
+      },
+      "hidden_predicates": {
+        "primary_pattern_name": true
+      },
+      "original_rust_output_injection_executed": false,
+      "current_native_normal_test_result": "PASS",
+      "model_scope": "동일 Native 변환 경로의 실제 SVG에 원 문자열 predicate를 그대로 평가했다. 원 Rust 함수에 반환값을 주입해 PASS한 실행은 아니다.",
+      "case_raster_proof": [
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/non-halftone-one/current.svg",
+          "current_svg_sha256": "85d8c6bc3d0a921aaee9d8f5df6a731c8be173c014b59fcdffd04a4076f7e4a7",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/non-halftone-one/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "7c639f3beffd61283ea141d4dc7102fe22443632057bf31b685a7b6af20d5e8f",
+          "current_painted_pixels": 1456,
+          "hidden_painted_pixels": 0
+        }
+      ]
+    },
+    {
+      "function": "issue_6865_one_unit_final_xor_difference_is_preserved",
+      "mutated_svg_cases": [
+        "final-one"
+      ],
+      "normal_predicates": {
+        "primary_pattern_name": true
+      },
+      "hidden_predicates": {
+        "primary_pattern_name": true
+      },
+      "original_rust_output_injection_executed": false,
+      "current_native_normal_test_result": "PASS",
+      "model_scope": "동일 Native 변환 경로의 실제 SVG에 원 문자열 predicate를 그대로 평가했다. 원 Rust 함수에 반환값을 주입해 PASS한 실행은 아니다.",
+      "case_raster_proof": [
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/final-one/current.svg",
+          "current_svg_sha256": "116f95335b9f6f4aa75489e7859ffbd97b93dc83e7c1fc90fd5c02dde5a1fe87",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/final-one/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "4c0e7582fc274b97970feda5b461dfe584d694a16c44b466730b81361280cd86",
+          "current_painted_pixels": 2651,
+          "hidden_painted_pixels": 0
+        }
+      ]
+    },
+    {
+      "function": "issue_6865_incomplete_idiom_keeps_middle_draw",
+      "mutated_svg_cases": [
+        "incomplete",
+        "curve-incomplete"
+      ],
+      "normal_predicates": {
+        "primary_pattern_name": true,
+        "curve_first_draw_identity": true
+      },
+      "hidden_predicates": {
+        "primary_pattern_name": true,
+        "curve_first_draw_identity": true
+      },
+      "original_rust_output_injection_executed": false,
+      "current_native_normal_test_result": "PASS",
+      "model_scope": "동일 Native 변환 경로의 실제 SVG에 원 문자열 predicate를 그대로 평가했다. 원 Rust 함수에 반환값을 주입해 PASS한 실행은 아니다.",
+      "case_raster_proof": [
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/incomplete/current.svg",
+          "current_svg_sha256": "03ee174dc570456eae150709927f18b0c20ab506d2bff70713a5f1bfd47d91ff",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/incomplete/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "2c2f4f0e75c5700a65531867e3a387abd5e48ae2d7374a0d0a36b8c66278250d",
+          "current_painted_pixels": 2500,
+          "hidden_painted_pixels": 0
+        },
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/curve-incomplete/current.svg",
+          "current_svg_sha256": "f483b404608fad33db2df78eebe877944afb7285c3644167f7559b3b48eba065",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/curve-incomplete/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "769fd8e4d9d79a98e17e66008fb9e0f83551fd0c3a62a8c64bc2bd2d9aee65c0",
+          "current_painted_pixels": 167400,
+          "hidden_painted_pixels": 0
+        }
+      ]
+    },
+    {
+      "function": "issue_6865_different_middle_region_is_not_a_mask_idiom",
+      "mutated_svg_cases": [
+        "middle-region"
+      ],
+      "normal_predicates": {
+        "primary_pattern_name": true,
+        "outer_brush_occurrences_one": true
+      },
+      "hidden_predicates": {
+        "primary_pattern_name": true,
+        "outer_brush_occurrences_one": true
+      },
+      "original_rust_output_injection_executed": false,
+      "current_native_normal_test_result": "PASS",
+      "model_scope": "동일 Native 변환 경로의 실제 SVG에 원 문자열 predicate를 그대로 평가했다. 원 Rust 함수에 반환값을 주입해 PASS한 실행은 아니다.",
+      "case_raster_proof": [
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/middle-region/current.svg",
+          "current_svg_sha256": "ab1d7654b90a7019ccc3394af8deb24c030568d89f7917efe7ea9a3fd869a2cd",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/middle-region/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "35613711b7443fed21d3ced7d6ed4b04dda9ef44c227c7fcbc8d7b2269ca3a8f",
+          "current_painted_pixels": 1250,
+          "hidden_painted_pixels": 0
+        }
+      ]
+    },
+    {
+      "function": "issue_6865_different_final_region_keeps_middle_draw",
+      "mutated_svg_cases": [
+        "final-region"
+      ],
+      "normal_predicates": {
+        "primary_pattern_name": true
+      },
+      "hidden_predicates": {
+        "primary_pattern_name": true
+      },
+      "original_rust_output_injection_executed": false,
+      "current_native_normal_test_result": "PASS",
+      "model_scope": "동일 Native 변환 경로의 실제 SVG에 원 문자열 predicate를 그대로 평가했다. 원 Rust 함수에 반환값을 주입해 PASS한 실행은 아니다.",
+      "case_raster_proof": [
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/final-region/current.svg",
+          "current_svg_sha256": "5081f7fbb6a2a3532f2baba99038f31686e156b7dff2cd80df322c3de66397d0",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/final-region/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "ef9d4edc3b0f2f17ace3ee5c434193385173971dce6ef1470e11166266c2f758",
+          "current_painted_pixels": 3950,
+          "hidden_painted_pixels": 0
+        }
+      ]
+    },
+    {
+      "function": "issue_6865_different_final_brush_keeps_middle_draw",
+      "mutated_svg_cases": [
+        "final-brush"
+      ],
+      "normal_predicates": {
+        "primary_pattern_name": true
+      },
+      "hidden_predicates": {
+        "primary_pattern_name": true
+      },
+      "original_rust_output_injection_executed": false,
+      "current_native_normal_test_result": "PASS",
+      "model_scope": "동일 Native 변환 경로의 실제 SVG에 원 문자열 predicate를 그대로 평가했다. 원 Rust 함수에 반환값을 주입해 PASS한 실행은 아니다.",
+      "case_raster_proof": [
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/final-brush/current.svg",
+          "current_svg_sha256": "f37d018f3b9023d4dda540ade132de5757b363e6be7a0758edfecd11afc50e5f",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/final-brush/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "2c3deeb93f4973b4f7eefa242109f40c803b0988f0b4fb0386fbfe52c592f882",
+          "current_painted_pixels": 2500,
+          "hidden_painted_pixels": 0
+        }
+      ]
+    },
+    {
+      "function": "issue_6865_intervening_draw_keeps_middle_draw",
+      "mutated_svg_cases": [
+        "intervening"
+      ],
+      "normal_predicates": {
+        "primary_pattern_name": true
+      },
+      "hidden_predicates": {
+        "primary_pattern_name": true
+      },
+      "original_rust_output_injection_executed": false,
+      "current_native_normal_test_result": "PASS",
+      "model_scope": "동일 Native 변환 경로의 실제 SVG에 원 문자열 predicate를 그대로 평가했다. 원 Rust 함수에 반환값을 주입해 PASS한 실행은 아니다.",
+      "case_raster_proof": [
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/intervening/current.svg",
+          "current_svg_sha256": "eb838dea172a9f778a4eff9c70e0e49164a7be88c079dd6ec6d91262bf3586c6",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/intervening/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "ee771dd620910a7516fb0e67753ca94362f05f99db5b2a55b9b2696b140be35e",
+          "current_painted_pixels": 2500,
+          "hidden_painted_pixels": 0
+        }
+      ]
+    },
+    {
+      "function": "issue_6865_clip_change_keeps_middle_draw",
+      "mutated_svg_cases": [
+        "clip"
+      ],
+      "normal_predicates": {
+        "primary_pattern_name": true,
+        "outer_brush_occurrences_two": true
+      },
+      "hidden_predicates": {
+        "primary_pattern_name": true,
+        "outer_brush_occurrences_two": true
+      },
+      "original_rust_output_injection_executed": false,
+      "current_native_normal_test_result": "PASS",
+      "model_scope": "동일 Native 변환 경로의 실제 SVG에 원 문자열 predicate를 그대로 평가했다. 원 Rust 함수에 반환값을 주입해 PASS한 실행은 아니다.",
+      "case_raster_proof": [
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/clip/current.svg",
+          "current_svg_sha256": "0a4ff3aeb0bb094d3f285eaa2610fadb70a1d6d669d4929b6b29b48a85501f46",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/clip/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "ce6c87bc31a07ac36e7ead23e516646561754ad6dbe4cf4f50edf48bdd55e59e",
+          "current_painted_pixels": 2500,
+          "hidden_painted_pixels": 0
+        }
+      ]
+    },
+    {
+      "function": "issue_6865_colored_one_bit_pattern_is_preserved",
+      "mutated_svg_cases": [
+        "colored",
+        "curve-colored"
+      ],
+      "normal_predicates": {
+        "primary_pattern_name": true,
+        "colored_curve_not_vector_mask": true
+      },
+      "hidden_predicates": {
+        "primary_pattern_name": true,
+        "colored_curve_not_vector_mask": true
+      },
+      "original_rust_output_injection_executed": false,
+      "current_native_normal_test_result": "PASS",
+      "model_scope": "동일 Native 변환 경로의 실제 SVG에 원 문자열 predicate를 그대로 평가했다. 원 Rust 함수에 반환값을 주입해 PASS한 실행은 아니다.",
+      "case_raster_proof": [
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/colored/current.svg",
+          "current_svg_sha256": "d3d1c57fb83370edcfcfb092fdb887e117ac58d6e3143c7563357edb56d88127",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/colored/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "58bf9533158a712f100c30a677a8b664079f5c5944762c7bf8af2704b1f10609",
+          "current_painted_pixels": 2500,
+          "hidden_painted_pixels": 0
+        },
+        {
+          "current_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/curve-colored/current.svg",
+          "current_svg_sha256": "2fcd49aaa96dae4184913ad151e44fb86218bd61731d99643c389165fb0c81b8",
+          "hidden_svg": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/curve-colored/diagnostic-hidden.svg",
+          "hidden_svg_sha256": "27f4968e667400ca3c76d0e47291e5234a11015d2b26e82facdb33d9b95ce791",
+          "current_painted_pixels": 167400,
+          "hidden_painted_pixels": 0
+        }
+      ]
+    }
+  ],
+  "functions_count": 12,
+  "actual_svg_inputs": 15,
+  "actual_product_paint_loss_reproduced": false,
+  "original_native_mutated_output_injection_claim": false,
+  "not_page_coordinate_pins": true,
+  "shared_cause": "정의·이름·색 문자열만 확인하는 분기는 실제 visible 참조/paint의 부재를 검출하지 못한다."
+}

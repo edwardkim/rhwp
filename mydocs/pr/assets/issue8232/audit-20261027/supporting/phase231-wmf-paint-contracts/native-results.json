@@ -1,0 +1,27 @@
+{
+  "command": [
+    "/Users/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_007-3c55e486c873622a",
+    "--exact",
+    "--test-threads",
+    "8",
+    "--show-output",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_complete_mask_selects_brush_or_original_destination",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_lone_monochrome_pattern_blit_is_unaffected",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_halftone_two_unit_edge_difference_is_preserved",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_non_halftone_one_unit_difference_is_preserved",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_one_unit_final_xor_difference_is_preserved",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_incomplete_idiom_keeps_middle_draw",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_different_middle_region_is_not_a_mask_idiom",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_different_final_region_keeps_middle_draw",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_different_final_brush_keeps_middle_draw",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_intervening_draw_keeps_middle_draw",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_clip_change_keeps_middle_draw",
+    "issue_6865_wmf_monochrome_mask_rop::issue_6865_colored_one_bit_pattern_is_preserved"
+  ],
+  "exit_code": 0,
+  "log": "/Users/tsjang/rhwp/output/issue8232-audit/phase231-wmf-paint-contracts/original-native-tests.log",
+  "log_sha256": "a26c310ac0f4ea4e1a846b45cd6d7ba906bcab35407c05d7b5a313f0ac17d1f6",
+  "seconds": 0.02266254200367257,
+  "tests_passed": 12,
+  "tests_failed": 0
+}

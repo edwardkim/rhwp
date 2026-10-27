@@ -1,0 +1,36 @@
+{
+  "head": "01ced3d42724285c8f9765a453393ab6af326617",
+  "terminal": true,
+  "exit_code": 0,
+  "driver_sha256": "07c80b29a7aaabd605e7dfa4daa68da212cd71ef142adbb0f6cac50c43470712",
+  "native_cli": "/Users/tsjang/rhwp/output/issue8232-audit/phase59-cli-contracts/rhwp-current-native",
+  "native_cli_sha256": "9d496496e8561ff04c7c64b7b7171581d29fa6babe1dcfcbe38467574250ecf5",
+  "same_head_build_producer": "/Users/tsjang/rhwp/output/issue8232-audit/phase59-cli-contracts/producer.json",
+  "same_head_build_producer_sha256": "5716aee8d65b57c636cba9e29d288dd9567a9513bf311bbc31f92da5d1ba1055",
+  "source_sha256": {
+    "scripts/tests/test_gym_om_lr_cd_packs.py": "e210d36f9a9e0cd70306d017547d7a0d37a1a06422bb0b1618491ffa59c76794",
+    "src/cli/commands/conversion.rs": "76946ee7316bab5dba119edef82f87049a34cde6fdcee02c70e7ed16841257d0",
+    "src/document_core/commands/page_extract.rs": "3e14fff14b68bae0dcf97956e182834824078a3e2b1b7e534d47d6ab0da8e08c",
+    "gym/packs/corpus-diagnostics/tasks/CD06.json": "11e52f1cf4b7ca4456809cfd36d3e6dc34a337c211dbc3a788c76f91b62f4890",
+    "gym/packs/corpus-diagnostics/tasks/CD10.json": "2693172f26d3d2f26e44978ef76347b5ad9c6ab3272cd53abce0886be3b5b4ff",
+    "samples/basic/issue2007_nested_cell_pagination_42065.hwp": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+    "rhwp-studio/public/rhwp.js": "c1c8d1820cc4375ab668427fa0a42c87d71c3d0d83955f4d300880559023ddc6"
+  },
+  "source_sha256_after": {
+    "scripts/tests/test_gym_om_lr_cd_packs.py": "e210d36f9a9e0cd70306d017547d7a0d37a1a06422bb0b1618491ffa59c76794",
+    "src/cli/commands/conversion.rs": "76946ee7316bab5dba119edef82f87049a34cde6fdcee02c70e7ed16841257d0",
+    "src/document_core/commands/page_extract.rs": "3e14fff14b68bae0dcf97956e182834824078a3e2b1b7e534d47d6ab0da8e08c",
+    "gym/packs/corpus-diagnostics/tasks/CD06.json": "11e52f1cf4b7ca4456809cfd36d3e6dc34a337c211dbc3a788c76f91b62f4890",
+    "gym/packs/corpus-diagnostics/tasks/CD10.json": "2693172f26d3d2f26e44978ef76347b5ad9c6ab3272cd53abce0886be3b5b4ff",
+    "samples/basic/issue2007_nested_cell_pagination_42065.hwp": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+    "rhwp-studio/public/rhwp.js": "c1c8d1820cc4375ab668427fa0a42c87d71c3d0d83955f4d300880559023ddc6"
+  },
+  "actual_native_extract_commands": 2,
+  "actual_native_info_commands": 2,
+  "original_static_tests_already_passed": 53,
+  "additional_python_injection_cases": 2,
+  "expected_failing_control": 1,
+  "additional_builds": 0,
+  "new_visual_sweep_runs": 0,
+  "policy_finding": "추출기는 요청 범위에 닿는 문단 전체를 남겨 재조판하므로 결과 쪽수가 요청 범위와 같다는 계약이 없다. 기존 정적 예외는 CD10의 999쪽 숫자도 수용하고 비예외 LR01에서는 거부한다. 현재 정해 둔 1/2가 독립 Print의 정답이라는 뜻은 아니다."
+}

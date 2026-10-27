@@ -1,0 +1,1850 @@
+[
+  {
+    "old_path": "output/issue8232-audit/phase10-source-endnote-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase10-source-endnote-report.md",
+    "original_sha256": "18fae4d6c8291b10376b2271f746dad3fd45ebd81c8e6459d08c59745bb6b960",
+    "published_sha256": "6b29b6c0d68d20ac8f715f32d257f3a45ba92f062071ae9f242eb4ebae6cb50e",
+    "original_bytes": 17128,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase100-chart-parser-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase100-chart-parser-contracts/goal-checkpoint.md",
+    "original_sha256": "aadd0639892e4882ac3f0171a3e9491e38a67b065fc864fddff2b46cff263dbf",
+    "published_sha256": "3f4cbb3181378d852396a9d40a61ee51b5fb720b6fb5ec6c6ced54bfe1bb683b",
+    "original_bytes": 1164,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase101-svg-variant-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase101-svg-variant-contracts/goal-checkpoint.md",
+    "original_sha256": "9f0caaa8679549c56d91e9516dadadb6bf27a54fc247937d4a671db709d5f40d",
+    "published_sha256": "49c1a5316a41e9e1099e4db3540c97050df348064779fb8e395e06693dbb3617",
+    "original_bytes": 1055,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase102-exit-evidence-correction/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase102-exit-evidence-correction/goal-checkpoint.md",
+    "original_sha256": "1037d0a540fe7aacb4c9d3b3a15725df00ef71f5063c42dd7f6d9d514acd9895",
+    "published_sha256": "e3a543867e99baf8e50f279be36a017bf96130adc36e8f2a72895e0f732ee375",
+    "original_bytes": 1122,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase103-wasm-binding-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase103-wasm-binding-contracts/goal-checkpoint.md",
+    "original_sha256": "adbaaebd8bc0325803d92781c5f1c2f9061f1e1c21e6209e23a7e49457c18189",
+    "published_sha256": "c43a2445c93b73a2e3aa8df1aa77579610a15524db8eb30b3ade36f89b275fc6",
+    "original_bytes": 1116,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase104-gym-score-runner/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase104-gym-score-runner/goal-checkpoint.md",
+    "original_sha256": "d77cab8a0fce6356251527de737d1e0fc1338a81cdd285b555659c9db4fe708a",
+    "published_sha256": "357bdbadafa56f76bc971267e7a8864bbe2214e0d80af0e3ddc0968ede5fc39f",
+    "original_bytes": 967,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase105-exam-source-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase105-exam-source-contracts/goal-checkpoint.md",
+    "original_sha256": "570f5d042d385d5cd1ef2ac79b53d97c5eac05015d9fa45a045bfc5019a18833",
+    "published_sha256": "cdb707974cb00898faf76ef565583262c12db297f100aa685a45b59d91af39bd",
+    "original_bytes": 1251,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase106-host-table-source-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase106-host-table-source-contracts/goal-checkpoint.md",
+    "original_sha256": "c41d5f51e708b20eaeba30cd18ff874a9bc862e01d9351bab69cd5e2b9d945a0",
+    "published_sha256": "23b918da3c4c3d56a67fd59eef559ae3a93c765dd7855382c0229fbc8267bc7f",
+    "original_bytes": 1408,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase107-onsamiro-wrap-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase107-onsamiro-wrap-contracts/goal-checkpoint.md",
+    "original_sha256": "162a1e93994908f257369771580b29a0a3171b39258e864c7333a39c0662d5db",
+    "published_sha256": "6bc12c05db04db843e6b070382731e13afe2bfe6a3e2fef0d8e96e49ae1afbd8",
+    "original_bytes": 1760,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase108-flow-budget-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase108-flow-budget-contracts/goal-checkpoint.md",
+    "original_sha256": "3f66d26193d4ba6a7394d1a6c660126f108679cb7f559acb8cc127cf28ebf917",
+    "published_sha256": "2c1a7e635924e6a3f30c1ddd5c96eb773e1acf41baf3bf32e20d2264510f44c0",
+    "original_bytes": 2113,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase109-equation-input-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase109-equation-input-contracts/goal-checkpoint.md",
+    "original_sha256": "26a1bcb832d25928c5075080bfb1942ba645cc4dfe7c447b8d77382009096144",
+    "published_sha256": "6c587a2c607ed003817e49d807d948817bd62af4cd6ff25f2c7f42cade3a4b3b",
+    "original_bytes": 1342,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase110-gym-differential-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase110-gym-differential-contracts/goal-checkpoint.md",
+    "original_sha256": "a85ecee7b6ea680241514b353acd0d340b8db45fa7783c2e7307f9e45a7c018d",
+    "published_sha256": "8e6a99a425b24311efebc436bbd099fcfe2586f984df50eace5e501b82394843",
+    "original_bytes": 1665,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase111-flow-and-overlap-relations/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase111-flow-and-overlap-relations/goal-checkpoint.md",
+    "original_sha256": "4d8d9f3d688153641a8603f316e4d58f12f3259a718f2c95d3fdee367626a19c",
+    "published_sha256": "53a60afc2206c335927d93c374def3ee7e57bfdb0924536c91390a0f3b3986cf",
+    "original_bytes": 1652,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase112-render-backend-scene-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase112-render-backend-scene-contracts/goal-checkpoint.md",
+    "original_sha256": "2f7cf9aef45bf62e19d3a47303fb8763b2dfa21cc7fca90c7e499d4974e01031",
+    "published_sha256": "3d8deab0e2a7cfd717957c05e262d2eab26b773f58be3c4a5b394e358ee2089a",
+    "original_bytes": 1770,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase113-shaping-input-source-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase113-shaping-input-source-contracts/goal-checkpoint.md",
+    "original_sha256": "82b6ab4a1250622f2bb084a10bd3c221939c985fb58e4b4898a266a787b18182",
+    "published_sha256": "ba2bc3f451d478d108d01202acb49300d33a63acaaf8337c6ad93c64d1614283",
+    "original_bytes": 1670,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase114-paragraph-print-origins/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase114-paragraph-print-origins/goal-checkpoint.md",
+    "original_sha256": "be80e74aa826e44c2985720addf412ed9411ec34a83404f9a5bab6443cd407f0",
+    "published_sha256": "9684ae788c38dda824c2a333f0855216e50fb9593f4be48cfbd06d51b2b46999",
+    "original_bytes": 1777,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase115-public-font-selection-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase115-public-font-selection-contracts/goal-checkpoint.md",
+    "original_sha256": "136604d9d74567e22931a855ea75ae5dceb4d0b46b35f8732b81457e3c96a62c",
+    "published_sha256": "76e67ce41b25fa71ee517b229ec4231df5d4efb8969d174f859d4a0af7e3ffad",
+    "original_bytes": 1572,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase116-field-control-stream-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase116-field-control-stream-contracts/goal-checkpoint.md",
+    "original_sha256": "50588b9152d3ebd3a2917ef791abae0c0d458a6b5db8b6c421338c0b99094d5c",
+    "published_sha256": "dcce534a385a170a8c90e4a2996140fa68e1d14a609e7395f06c1b9df926682a",
+    "original_bytes": 2067,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase117-fragment-and-spacer-pins/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase117-fragment-and-spacer-pins/goal-checkpoint.md",
+    "original_sha256": "9a388aefdcdb9ebfac1fe871135a2543427d96b44de31a98b5f4423486010bfe",
+    "published_sha256": "2c1379cb7e9217423e8dcc6871d918c8e9ae42eaa4798f8518604b68f4719800",
+    "original_bytes": 2674,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase118-qualified-page-boundaries/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase118-qualified-page-boundaries/goal-checkpoint.md",
+    "original_sha256": "d3fe98302425b82aaa7836102c81d5a1558d229783b9fde6b8da94173f4b2cc2",
+    "published_sha256": "99eed293cd27782e66309b797d6c6697ea3b2dde61f2842223eed81125cbd2ba",
+    "original_bytes": 2115,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase119-visual-sweep-png-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase119-visual-sweep-png-contracts/goal-checkpoint.md",
+    "original_sha256": "abee8911a5ff9c88bec8a744bf82146c6fa5d0acf1f7c4c5a652ff425e283ed1",
+    "published_sha256": "f74022d287836f873c31342f4d057ebce66d6d33f31a241b8ad6c594474433ea",
+    "original_bytes": 2103,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase12-survey-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase12-survey-report.md",
+    "original_sha256": "d24a5c461e278accc352214ad0fe698f78ae247b5983dbfde50c8f08c098db8f",
+    "published_sha256": "f0fc5d79c44207bd766cc31e807645e65c903d6b48dd8889c76bcd4241401e4d",
+    "original_bytes": 4930,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase120-font-advance-source-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase120-font-advance-source-contracts/goal-checkpoint.md",
+    "original_sha256": "c91260c861189a0d23c6f5f9c004f9b578d9d99c4d73df6183b0732cd6484e85",
+    "published_sha256": "433c473c61a57456c65248b7114c586121c4b237bb09dafc63fe7050cb51da5f",
+    "original_bytes": 2156,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase121-table-edit-source-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase121-table-edit-source-contracts/goal-checkpoint.md",
+    "original_sha256": "845cae7cb1feeacc0b6555291cf50ec8c927eff49433467415e925ff51faae09",
+    "published_sha256": "4b4ed3fcfa92a55759f018fe6c21742beabfcf04b088bba8aebccb89bf48b8bb",
+    "original_bytes": 2208,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase122-pdf-resource-direct-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase122-pdf-resource-direct-contracts/goal-checkpoint.md",
+    "original_sha256": "144fcc8b499bd1ef890aa6c70985068e69a7c76499f2590ff88bd216c7b80f0d",
+    "published_sha256": "cc0cccaf02d922b0654255ad632a70e2f0f7a887a8d4f1983ec3f0f9748f23a4",
+    "original_bytes": 2275,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase123-visual-sweep-tool-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase123-visual-sweep-tool-contracts/goal-checkpoint.md",
+    "original_sha256": "7a5adf4e19ba3230f68dce7bc406b91998d5f0f77f4d04b8309009a8e458ceeb",
+    "published_sha256": "3d088b3c8da108d3564b23214e856da680798fa5d665b24fb5b6aa1f3aebae4d",
+    "original_bytes": 2132,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase124-gym-trajectory-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase124-gym-trajectory-contracts/goal-checkpoint.md",
+    "original_sha256": "c35059247e90e01a81a4674c53cfc5aacd9cdf3e39d0898c95ce3a5ec84c2299",
+    "published_sha256": "e7d7380d6806c8f2f0de23f0950c70b0536adc9399d11358784db858ade40534",
+    "original_bytes": 2213,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase125-native-wasm-api-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase125-native-wasm-api-contracts/goal-checkpoint.md",
+    "original_sha256": "81df08dbecf93749dc22f1836850f5be01590e96b5bf354f406bd14dd6995839",
+    "published_sha256": "8010d6cd874750b5b37f94f1a94a60f0feedd17967ef8eaa370e50308fc3d13a",
+    "original_bytes": 2493,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase126-native-clipboard-field-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase126-native-clipboard-field-contracts/goal-checkpoint.md",
+    "original_sha256": "87ae6f2b837275f65f638d9aff313a3ee29a696970b56950caea3df56d2c63b0",
+    "published_sha256": "3ba08ba5a3e6ca398c4b7d0e268f1091f9d077fcacd8fabece84b9626606f6da",
+    "original_bytes": 2159,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase127-native-roundtrip-diagnostics/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase127-native-roundtrip-diagnostics/goal-checkpoint.md",
+    "original_sha256": "c22e9d67b557dd2b8de4184e61887746d035bf2e9516b157da5f6c1eac7a3f5f",
+    "published_sha256": "e29f5d3457ce3e6c54c394b2ecf36218408817e06832e51f9c5b3936e167bea0",
+    "original_bytes": 2100,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase128-native-diagnostic-control-flow/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase128-native-diagnostic-control-flow/goal-checkpoint.md",
+    "original_sha256": "3cce9f8f75ba15ad515521905d911768df2c606a9df111789bef894085181f21",
+    "published_sha256": "0bb95784df461e72b53d0d885f2817de29af954ed85b35b69d3a9a0572b8822a",
+    "original_bytes": 1718,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase129-required-edit-inputs/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase129-required-edit-inputs/goal-checkpoint.md",
+    "original_sha256": "27fda020430841d8d8a0885581bbcd980ecfa2e60edc2a845db140d839a96078",
+    "published_sha256": "53e3578e7842fe56b4c0e10e4a3f11a209bba2b2507fc98fdde1b3ba15d158fa",
+    "original_bytes": 1773,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase13-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase13-goal-checkpoint.md",
+    "original_sha256": "df1247323fca7363b951dfbf3c0b898018841ea43b9f7cafb2a956ff546922ee",
+    "published_sha256": "051f0953190fb06c1754e2692844e6aec94d837fea98e2d8ac7cb73de7d20920",
+    "original_bytes": 8424,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase13-survey-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase13-survey-report.md",
+    "original_sha256": "cea32e1f2fc99f4af36da7f978cb1aeb244d72ba4fb6b083220cbd153cbd9bdf",
+    "published_sha256": "11ed3fdd5707bcfe4f6301a9d4341adaf6ebffdc6cb1d8b22767b707f8d69a80",
+    "original_bytes": 5645,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase130-float-anchor-px-evidence/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase130-float-anchor-px-evidence/goal-checkpoint.md",
+    "original_sha256": "dd16a4ada73fd8d16a5ff937148f0e39e1c9647e1e168b7c6e374e2d17a85c20",
+    "published_sha256": "3d4c0b1aefd5f90c517f1227bb9a1bef862148f0e1e5b43253bcb10b035408de",
+    "original_bytes": 2082,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase131-page-frame-and-margin-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase131-page-frame-and-margin-contracts/goal-checkpoint.md",
+    "original_sha256": "3e647283bc0629d26a581654e7ccc700b471a97a147b2d1f58167d29e5c7d4fe",
+    "published_sha256": "9b05c90a860881c641bd39f33a0b4ba52dc38254be0e816cb76770f99b234772",
+    "original_bytes": 2111,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase132-current-paragraph-position-evidence/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase132-current-paragraph-position-evidence/goal-checkpoint.md",
+    "original_sha256": "043123de9cb3200cbe58cccfc509158510e45495f049e5074dacb2e50e485a49",
+    "published_sha256": "9ec9f95bd9886045b2f6ba79ac92bdd880f15c719f82abfff508830f494749d6",
+    "original_bytes": 1826,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase133-completed-page-geometry/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase133-completed-page-geometry/goal-checkpoint.md",
+    "original_sha256": "68568c82508b5570994f3c2846675102508c67b57990302e625effe8ba933e50",
+    "published_sha256": "7053d8f40383fe8dce3a54bb90fa6e3b7f742738b13ddf2038c96f83c0428499",
+    "original_bytes": 1932,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase134-parser-boundary-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase134-parser-boundary-contracts/goal-checkpoint.md",
+    "original_sha256": "04fdc1bb47500b73fe5434ac4d70f88d3eb1748b63917c1924cf7a5e4bb561ed",
+    "published_sha256": "ebec1a486ee2b5b8b4ea53099ff673fde470589603e7703c6f9977b4f95300a3",
+    "original_bytes": 2017,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase135-hwpx-section-attribute-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase135-hwpx-section-attribute-contracts/goal-checkpoint.md",
+    "original_sha256": "4326ab9233fbb9c238287598bc1c53aa966931256c3d38d82eb8cca54fbc2b80",
+    "published_sha256": "48e7ce9d9a34fd5fecc1bc44f4993362b895613a5af154b18754dab458fa1bfd",
+    "original_bytes": 1253,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase136-token-command-scan-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase136-token-command-scan-contracts/goal-checkpoint.md",
+    "original_sha256": "646b3ec3c062507402564d41406d403dbec4dd0955e8e42aee705ba73b8010fb",
+    "published_sha256": "a7ad0036e912169108cf2f3b24c61cefc2b0c75fef5ea743904f4927fad94eb9",
+    "original_bytes": 1060,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase137-hwpx-roundtrip-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase137-hwpx-roundtrip-contracts/goal-checkpoint.md",
+    "original_sha256": "dc6706ff25f03b35873ec053eef6c22aab3e39858c269cc6390386ac32c5b287",
+    "published_sha256": "dec10361bd3cb41ce9bc6ce0b676d6ac4aad547b16888cbe07252ef1fc562086",
+    "original_bytes": 1491,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase138-wasm-large-diagnostic-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase138-wasm-large-diagnostic-contracts/goal-checkpoint.md",
+    "original_sha256": "ab7e3d371f62a421540ec536e14be55c922cc21d36d3b017db7d69a4547d9cb2",
+    "published_sha256": "56749829bddd14a00af9ef9188b7bd380e459f5abbf9328d248ccb7c430eae78",
+    "original_bytes": 1749,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase139-diagnostic-helper-format-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase139-diagnostic-helper-format-contracts/goal-checkpoint.md",
+    "original_sha256": "4baff3f64972545d4f2def2918c290de6024562d21bc17859c07da900ca0d3b0",
+    "published_sha256": "104eec3ecc7421c3f24e19a93c7d9eec9e8dd30a7f2424c57e60b1c194216d3a",
+    "original_bytes": 1498,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase14-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase14-goal-checkpoint.md",
+    "original_sha256": "3f38f8e9c6edcf36761eb53f062d082b7e5d4734aca1ff8e8266a91eb271f6d4",
+    "published_sha256": "baf818d48bf81fc6b37e4c0997121303404b7ffe81eb2013f1d1040892ce86a2",
+    "original_bytes": 6877,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase14-survey-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase14-survey-report.md",
+    "original_sha256": "9f99e63a4ef5ab2061f12f67f588bbf8ea58da7a34973933e1455abe122bdfaf",
+    "published_sha256": "c3eff50d21613565cad64e7a9f7f60f3642b21953ecc281802106fd81204e730",
+    "original_bytes": 3184,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase140-renderer-guard-and-source-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase140-renderer-guard-and-source-contracts/goal-checkpoint.md",
+    "original_sha256": "80f37a699bd96c6ae055f52efc5c44d56e4d138fe15e0cf300ca01b01a8dede9",
+    "published_sha256": "51c00b6c9d70e1beff941bb997b47e97a7f51c27d1c2cdf6eeacc6df5c921ac8",
+    "original_bytes": 1142,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase141-gym-discrimination-test-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase141-gym-discrimination-test-contracts/goal-checkpoint.md",
+    "original_sha256": "585ada24d00d8766b895dc63992d2ad5a6eed2d41481b1bcd4f779e5772483c7",
+    "published_sha256": "4518b5a9adec482a66e90c281723cbefb1a79007d91b4400aaf98eb63648e807",
+    "original_bytes": 959,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase142-equation-svg-semantic-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase142-equation-svg-semantic-contracts/goal-checkpoint.md",
+    "original_sha256": "bdc6bbb065c675241aac99dc687ffe04747605edceeffedc75135d339d16ae78",
+    "published_sha256": "307f4acb59b2beca7922a8e13845a28b99fb091be25553302c62ab15ae03fd12",
+    "original_bytes": 708,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase143-re-sample-generator-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase143-re-sample-generator-contracts/goal-checkpoint.md",
+    "original_sha256": "29e763b3ca50c5f915032a15cf2a50353fa2ecce03f092f29754dd3aea76566d",
+    "published_sha256": "6a81835794d11fc8423705fd5fe470e8e4994dc426235108c166dab160265e05",
+    "original_bytes": 1106,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase144-hwpx-field-table-source-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase144-hwpx-field-table-source-contracts/goal-checkpoint.md",
+    "original_sha256": "baaa17047c056012d4a786e82052e6ba4cf565902c00c9989ae02b9855f9e46a",
+    "published_sha256": "a4cc5b6ce71d960c244ed986f4aef92df773334b3bf2ea8f6fb28200d368c861",
+    "original_bytes": 661,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase145-hwpx-shape-picture-source-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase145-hwpx-shape-picture-source-contracts/goal-checkpoint.md",
+    "original_sha256": "b91b513f473117a81e7447a9121c37e60e4090cc955eef40d7106eca0fb49567",
+    "published_sha256": "9c4181af08aa0a868de5d9f9aa52795aa4ad56ad7cca5b4dd0ad513e67f47245",
+    "original_bytes": 640,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase146-hwpx-reference-package-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase146-hwpx-reference-package-contracts/goal-checkpoint.md",
+    "original_sha256": "d2a813196abeb10bf8437d1b897103b18bf067c31f92b788a3ceb4f9c1948f93",
+    "published_sha256": "12f0bbcf04737f8f18f6a91821ba8e43568015088fb668accafb5c9ef592b605",
+    "original_bytes": 622,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase147-trailer-seal-source-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase147-trailer-seal-source-contracts/goal-checkpoint.md",
+    "original_sha256": "6955e2cf39c77aa7ac81a472d57fc38d27d77ac5e416a7dfe52051b483caa752",
+    "published_sha256": "12bee325a351ffac82d1ba12e842fb9729420e76311ac3ded0fc7a4686ad24b4",
+    "original_bytes": 688,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase148-inline-selector-source-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase148-inline-selector-source-contracts/goal-checkpoint.md",
+    "original_sha256": "06f39080e100cedaef6d8fed87c500a9a12a9eb77620c6bb6b100d8e63cd942f",
+    "published_sha256": "1af1db7694e2c8cb1222572501decd805cad3a3c0626ab2f8980f2f7be1d6d88",
+    "original_bytes": 643,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase149-renderer-comparison-evidence-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase149-renderer-comparison-evidence-contracts/goal-checkpoint.md",
+    "original_sha256": "96a32be0cebf4b374f32fa513eb6509f3a79bb2c82457938692b6a2132f061b4",
+    "published_sha256": "b3516563be4f3f52797f5b6499cac936f6873c6f2a385db2ff0a1d1be3a15377",
+    "original_bytes": 974,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase15-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase15-goal-checkpoint.md",
+    "original_sha256": "435c348bddd7cec480df10da02ab6436a55746d0bbc1f20694f6dfad9121f9ba",
+    "published_sha256": "8dd2e9b3c3c88ce4b889a33ee1b12b3253eeeb093924c630a066f2f35407dd76",
+    "original_bytes": 11332,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase15-survey-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase15-survey-report.md",
+    "original_sha256": "18e0dcaca4c219e97dc39b7d21fd58f1e7ba7c74ef07d949280bdabafd1d9213",
+    "published_sha256": "abb8e6dddacdc8664c36f6b2198b1bdc9e7ef94089709006e0dddd62991949b8",
+    "original_bytes": 5127,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase150-output-font-transport-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase150-output-font-transport-contracts/goal-checkpoint.md",
+    "original_sha256": "0aa22eaf92a118a31ba9f50d37129f14e7456ef56764cae8d5e12b34ddea4c0e",
+    "published_sha256": "de33f9444277cb37a7a066b7a62f1bea46c4fc18e79ce2b440240f5f07cf22cc",
+    "original_bytes": 790,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase151-font-symbol-policy-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase151-font-symbol-policy-contracts/goal-checkpoint.md",
+    "original_sha256": "55eb18e8deb9d2a0481699730afc6d930c3cf376b414b7a2b93083587459c576",
+    "published_sha256": "8072f1e8905400d4066420087aa21684a220d3547ab68962205bfb25204c7e77",
+    "original_bytes": 685,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase152-pdf-resource-and-source-geometry-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase152-pdf-resource-and-source-geometry-contracts/goal-checkpoint.md",
+    "original_sha256": "a0ea6812a25b4a789f3d7ef9c69d2216b9294100099bd3dc10d8489efb9594df",
+    "published_sha256": "1952345e4baad9f79c5103ff20fa3fd08755ca45b9ad536b695e7e416460d108",
+    "original_bytes": 712,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase153-remaining-renderer-root-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase153-remaining-renderer-root-contracts/goal-checkpoint.md",
+    "original_sha256": "c2aef23e4d825e62a6404acb3a57a3350dcfe77e70e9eb487cdd37612ec9651a",
+    "published_sha256": "e2e1544a09bc36fac80730e4836fca983529ce3664d9184bbdc5c95899dd64dd",
+    "original_bytes": 1041,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase154-shared-loader-caller-revisit/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase154-shared-loader-caller-revisit/goal-checkpoint.md",
+    "original_sha256": "c90ba7494bd103987c87d3c10d91e35ef92ee2f4b6d914677e21a6d006b18715",
+    "published_sha256": "b98da3eb64314c3bd534a57887d0893aea1168d4cb05aa7f1681905bdb832325",
+    "original_bytes": 756,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase155-selector-lex-node-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase155-selector-lex-node-contracts/goal-checkpoint.md",
+    "original_sha256": "f1869e22c88c64cb78153946b98077a482d8a108593780e08b8f0a0a39e12895",
+    "published_sha256": "40e2dd1151ad7aac1ebed69f7bb3c99a9def5a884141b0350ef0b9299c3d6267",
+    "original_bytes": 810,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase156-doclang-writer-source-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase156-doclang-writer-source-contracts/goal-checkpoint.md",
+    "original_sha256": "9cc2192536c1821ee65bf5ed6bbdbe0a7aa2fa6611c75afc39bcd649ff9ceae2",
+    "published_sha256": "ec9345e6c3fac7079accb28fa542dc0b177bfa058aa8573bd2eb4fbf23168a0a",
+    "original_bytes": 689,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase157-cfb-ingest-binary-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase157-cfb-ingest-binary-contracts/goal-checkpoint.md",
+    "original_sha256": "a561ac86087d17a3844c1f1e24bd5bc9ccdbc61c232f9c12cf76cf36553521e9",
+    "published_sha256": "85d093ccb43ce7f7f7ec8c84e1570c6b830912f8eb8547f98e5d70392673543f",
+    "original_bytes": 862,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase158-cfb-edit-and-diagnostic-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase158-cfb-edit-and-diagnostic-contracts/goal-checkpoint.md",
+    "original_sha256": "adf56ed7e1ce6929d5feacf783f822bd6f1990c2cf071ec2e52bf9b9cf92811c",
+    "published_sha256": "940931ac1bd1320a6fa9bd6bb1fe7d4902691d800a268acd93c8d3b71992c9f6",
+    "original_bytes": 821,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase159-paint-source-order-and-table-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase159-paint-source-order-and-table-contracts/goal-checkpoint.md",
+    "original_sha256": "1f555c21582868c980737ed097d07cf2105f8436cb4b47e9c956b46c5b3a6dfb",
+    "published_sha256": "336a731b45d5307a78a5687f5f2c2801d2665c7109a9377b8a044377bae350d6",
+    "original_bytes": 628,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase16-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase16-goal-checkpoint.md",
+    "original_sha256": "dd0f2c5e0258a28dc4de1c4e9b875488fde43b972196d57e7a97b5f13bd1cd85",
+    "published_sha256": "8e2833935449a4048d5437c69217f19301dd3be738ee9841de4886a4958bdf11",
+    "original_bytes": 7186,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase16-survey-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase16-survey-report.md",
+    "original_sha256": "467344b313b77f82887e29ca70757f0fe6568bed3ad5ca411e974ec86d74e251",
+    "published_sha256": "c906f1a1de069f57ee2b0908d214349f534fc65e0fa688d7b194127be5c52e21",
+    "original_bytes": 3901,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase160-gym-profile-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase160-gym-profile-contracts/goal-checkpoint.md",
+    "original_sha256": "6af88fee10c92a56b643c9e4648084ceb948ced884bfc62f36c22c9db5083741",
+    "published_sha256": "6605768c646fab5153ad18218498b3c0ff15a09b919aac77292b482a07c59066",
+    "original_bytes": 739,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase161-gym-pack-health-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase161-gym-pack-health-contracts/goal-checkpoint.md",
+    "original_sha256": "c9c554362ed7bbffbaf9fd92697cc220ab31cd62783d9cdf8f82783c8de1abea",
+    "published_sha256": "758f1d2f59bfd6c9f17126faac3f4f3bb05c7fb90307d4820a323de882422a7b",
+    "original_bytes": 683,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase162-gym-leaderboard-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase162-gym-leaderboard-contracts/goal-checkpoint.md",
+    "original_sha256": "4f7cb17eff1c0cbc28015220810f1ae016f50a384e94f13ecc8ed3b8b5fc9c73",
+    "published_sha256": "8f74a47a1bb4de9cb81c30c5fbcf02654f4ca71a4f1c72223c5935d11324d44f",
+    "original_bytes": 831,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase163-onboarding-doctor-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase163-onboarding-doctor-contracts/goal-checkpoint.md",
+    "original_sha256": "fd78b18520a48d334ad5c9da0a786e878daebdf7721279ea3b9c93a8674e45ea",
+    "published_sha256": "cb97b3142ea48234e3058074b4f673e395f30b06c3cdc560b1da76f5bb91bf03",
+    "original_bytes": 889,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase164-centered-picture-evidence/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase164-centered-picture-evidence/goal-checkpoint.md",
+    "original_sha256": "581762cf4eb40a429b9dbbde303b1489c24d46dca7c8ff9873deb714a0bf8ab8",
+    "published_sha256": "2392537f23289959dd60076ebf1621e649b8181dd45aa80406ebe704eb4979fb",
+    "original_bytes": 1134,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase165-gym-audit-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase165-gym-audit-contracts/goal-checkpoint.md",
+    "original_sha256": "a0b3ab831c3ad859a5b90fd991b46278758ff00a96c588993b3dd3b06b48bdcf",
+    "published_sha256": "8751fca1ffe38c504967143ec722d863d0caa4c99be1da9b04b5630f932dfae6",
+    "original_bytes": 704,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase167-relative-size-diagnostic-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase167-relative-size-diagnostic-contracts/goal-checkpoint.md",
+    "original_sha256": "e62f58ad4ae598b855b0bedb1d03b32e100a8e3fca209790eb3bf3fb3e633cc8",
+    "published_sha256": "a37b79895f68aea4bc4ba9211744dc049cbae09d1655e0639b06101b5112e8ed",
+    "original_bytes": 1142,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase168-hwpx-package-check-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase168-hwpx-package-check-contracts/goal-checkpoint.md",
+    "original_sha256": "d59b2f0a169e10ea8016220c521a9ab4405a02960ea4d077f4891f0a4d711e2b",
+    "published_sha256": "92fba274a48ffc4e4274ee0a56b22ec4108728a775f32e2cc8dff59781c63c88",
+    "original_bytes": 799,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase169-pii-unit-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase169-pii-unit-contracts/goal-checkpoint.md",
+    "original_sha256": "b2b36babdc437957beaf643be64be26a0bbf3dafa3552c480eb763ec706efe66",
+    "published_sha256": "1cf46558dfcfe51fbbf71473b6fe858865bdab0e55c3765ddfea30f25f51ba2d",
+    "original_bytes": 1236,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase17-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase17-goal-checkpoint.md",
+    "original_sha256": "cf9c52c1e446f424fa37d50cf517f50e95600526460cac085ccc3fda1773193c",
+    "published_sha256": "c68bfd0ecb250fa8d5211db1522d2a96c9210f4cca8a1e393931318a36e20772",
+    "original_bytes": 10038,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase17-survey-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase17-survey-report.md",
+    "original_sha256": "94af798ef646d20071dcbeb07968edc145bc8533b612fc40170da1269fcc59bd",
+    "published_sha256": "5e03764d7a923d7c7af57f271fe25810c98ea892396fe62117bc3ee36dc2a5ef",
+    "original_bytes": 5211,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase170-hwp3-source-field-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase170-hwp3-source-field-contracts/goal-checkpoint.md",
+    "original_sha256": "3aef2802c7ec4815aa559610a3f1c916ca5c351e065500bae7132ca08a306cb6",
+    "published_sha256": "41267e7b9dc79bf7daa1224e2638f825174b35440a83de660fb7fe56b306edb5",
+    "original_bytes": 945,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase171-oracle-probe-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase171-oracle-probe-contracts/goal-checkpoint.md",
+    "original_sha256": "e80b91eee88ece7b338b419d45cbd4d7e0b30ed89c96ad298ee0fed3a63b73e9",
+    "published_sha256": "012dee8607d2e46488bbb0eee37fb8e45fe4e5791b1b19d394773da2a275a013",
+    "original_bytes": 1207,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase172-relative-zero-hancom-print/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase172-relative-zero-hancom-print/goal-checkpoint.md",
+    "original_sha256": "582a55bed8cd8105498baf3961817f383de761d91d3f394e04a2508af655853a",
+    "published_sha256": "54bd4d1a7f8bc9efafbddf1883cccd1f7c8c43db0f244ad0c7663dd3e16afc1f",
+    "original_bytes": 1216,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase173-gym-check-operator-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase173-gym-check-operator-contracts/goal-checkpoint.md",
+    "original_sha256": "5d9bb30d103ba21d7bb69d5706a34aebbd97d88587af779b6b0cc1b29e5a9982",
+    "published_sha256": "3e83c5b82c8df699816f341a05eae3a9cdd4580ea18b12a7b432c10123c2e793",
+    "original_bytes": 1043,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase174-gym-pinpoint-matrix-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase174-gym-pinpoint-matrix-contracts/goal-checkpoint.md",
+    "original_sha256": "c30626924562dcb2ab03687c56b8d2212f235f6b46fef88a0981ba89a47e636e",
+    "published_sha256": "591669e423f75466289a259ab7ec3f00f06160ed533a75ebb371f51331dc2af0",
+    "original_bytes": 1021,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase175-roundtrip-tool-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase175-roundtrip-tool-contracts/goal-checkpoint.md",
+    "original_sha256": "10d0e184507e26bd3c8212665a683a67d801d2fc1d513f7c2e8bf7ad6bb0ac52",
+    "published_sha256": "218cdd62a3d6cdf2691570fb9d701f858e52458f22af3561fd7b798c11d6d728",
+    "original_bytes": 907,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase177-equation-header-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase177-equation-header-contracts/goal-checkpoint.md",
+    "original_sha256": "d8e0aba2995252c9830a59290dd71c2ab5ae35f2cb052523599a1e92be60ad1d",
+    "published_sha256": "714be1d166a68595988bdd7cceea28fe2121e7a87118e6fc5a5e8d3d13f4b692",
+    "original_bytes": 1008,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase178-current-hwpx-roundtrip-execution/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase178-current-hwpx-roundtrip-execution/goal-checkpoint.md",
+    "original_sha256": "846741d49927f56513ce5e71b62d71c7ba5c2ecf46175490f4c7b84eee406372",
+    "published_sha256": "5d5a260b4f88fb0da76611b485a0efec4857c1a188e2ae27c7ce261bfe8d5021",
+    "original_bytes": 935,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase179-studio-zoom-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase179-studio-zoom-contracts/goal-checkpoint.md",
+    "original_sha256": "eb18fdfdc2d0ffa0a0a26a85e24513f347da2a4f86354085dc689846c6fedd6f",
+    "published_sha256": "d055cd08c34235a3745bd6dfc9d716a0caa3b5f18e9efa8df41780f55f8215c5",
+    "original_bytes": 930,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase18-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase18-goal-checkpoint.md",
+    "original_sha256": "b59bfe353d48b1478113262a798293bc33b9f356161278ac25254727723d3c5e",
+    "published_sha256": "c6bd393c96b6aa3fc635be10750f6fb234736e4298a8cc342059774f8a61f321",
+    "original_bytes": 7976,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase18-survey-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase18-survey-report.md",
+    "original_sha256": "600be6256e81ddf6ac8143c6c2e563cfe2caf32569054268772f815c482819b8",
+    "published_sha256": "f1d729a27c9942af2837d9f19a529bd9b88e42b64365a365e67f33fa413ae922",
+    "original_bytes": 4916,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase180-paste-cascade-unit-contract/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase180-paste-cascade-unit-contract/goal-checkpoint.md",
+    "original_sha256": "c8376582dfbe1926b8d524c9af39940c65a27d95c04bb087dec938f07de09674",
+    "published_sha256": "eba5a4a9d9a13bdaff256a788109d52a20de6889b9f2f02375c16c0f68951ff3",
+    "original_bytes": 843,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase181-studio-preview-scroll-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase181-studio-preview-scroll-contracts/goal-checkpoint.md",
+    "original_sha256": "00af0a710458ec8c206276f296d943590067dfca1db6fa7f11a350dea8fe494a",
+    "published_sha256": "5d9ac18acfc69a63fc237911c9c30a390ae2b5f0fb4b877b4d7d9a71dbc3107a",
+    "original_bytes": 946,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase182-document-state-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase182-document-state-contracts/goal-checkpoint.md",
+    "original_sha256": "d437b616f9156a5e68090fedb7b9aee953882152855ce01cc914a82dd2380470",
+    "published_sha256": "d3205b9bf2fb98ad39e24bdc4f87fcd504e5320d86916f2d97f7d7869e188eb0",
+    "original_bytes": 1249,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase183-release-gate-exception-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase183-release-gate-exception-contracts/goal-checkpoint.md",
+    "original_sha256": "2aae2fbd79042ad9478fa3e2e94034166c22945f54c661ef3eac65c548e64a13",
+    "published_sha256": "7e599fbd7793ead26d79ee68b309b3bcfcf6d77623b7f19e8298d0ebf0cd0812",
+    "original_bytes": 1297,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase184-agent-session-error-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase184-agent-session-error-contracts/goal-checkpoint.md",
+    "original_sha256": "f6ef01be001fc45399bc7d0f879e9cfe389a31fd365ac913d657affa1e2c7c14",
+    "published_sha256": "e6ae3e2bd17b84e08dedb891cfa7186e7481cd133b8d57f914ead2867c80f3dd",
+    "original_bytes": 1056,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase185-agent-session-sequence-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase185-agent-session-sequence-contracts/goal-checkpoint.md",
+    "original_sha256": "986d779817cd1be9e7a96eb4a6736acc93a466d70989152fae556607c228d891",
+    "published_sha256": "a12d4e50a6a79cb48ac448c70c24233f9ee52dde8a365ed7c13ab63ba9b5fd23",
+    "original_bytes": 965,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase186-competitive-bench-pure-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase186-competitive-bench-pure-contracts/goal-checkpoint.md",
+    "original_sha256": "14f86d820d31c6a8e5614b2b44a9e34b8a22b5542cbb2e0192868a1aada5dad4",
+    "published_sha256": "b7be5ba81b163e34679e5e45909523ca0ed32e07e74047742d938a366c917017",
+    "original_bytes": 924,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase187-competitive-bench-boundary-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase187-competitive-bench-boundary-contracts/goal-checkpoint.md",
+    "original_sha256": "23c212c8e8d2e917a02b052ef6dab9140f0a00753db2625abed6822de9f7867a",
+    "published_sha256": "6717d655f8a7c5adf64702fb758e13d0069dcb8a8e8e1547f08f1dc2a00bf9c6",
+    "original_bytes": 997,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase188-report-scorecard-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase188-report-scorecard-contracts/goal-checkpoint.md",
+    "original_sha256": "c904236aeb184b5e93f0b0293dd6ff2e7159411eb9c99a18218b8fb04f347a65",
+    "published_sha256": "b50772d1db7bd7b19f361df7e0d3f0f44a475f3a41214e15430b2105e38e15d7",
+    "original_bytes": 892,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase189-certificate-reproduction-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase189-certificate-reproduction-contracts/goal-checkpoint.md",
+    "original_sha256": "30578cfa06abecde192549833e41d8f87a9542a74d8bc0d2a17e9490b8bbb97b",
+    "published_sha256": "fdc57ca8c4f02a6d6d9c84df71cf8dd541d30b9d1d58d886a7f2e34dc0e0ef0b",
+    "original_bytes": 822,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase19-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase19-goal-checkpoint.md",
+    "original_sha256": "b1377db96fd783422bc247315efe5570907adcbe7cff8dca585b18b28d5a6229",
+    "published_sha256": "a7a460da2b428f93eb7dd0d809cf4b3991c4d9a78f47d2a83fcfc29dd8500641",
+    "original_bytes": 9011,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase19-survey-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase19-survey-report.md",
+    "original_sha256": "02e83cbb8108c96a0d9098541dd4ef0ce1aa16aa054772e9e911ad1ecb47c09a",
+    "published_sha256": "50b717ba7f5e0e1a92c732a6f0ed8a7391b671c2b18292c22c8ff76ceeec569d",
+    "original_bytes": 6036,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase190-fuzz-corpus-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase190-fuzz-corpus-contracts/goal-checkpoint.md",
+    "original_sha256": "1a5196cdadb231a33fa80381bec6eed55e4a41eb60e0154aec932f90c2f870c5",
+    "published_sha256": "707557e43fd304d5d45750d53cc9af8b0e016300f116d206c6c555c8174fa3f6",
+    "original_bytes": 1062,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase191-robustness-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase191-robustness-contracts/goal-checkpoint.md",
+    "original_sha256": "95c818556c1ac0444063c39c2e770b8bfb89125d40f74c62d6b13fcd6ba2d796",
+    "published_sha256": "671727eaa2c6b23432d1ed214618f06a88c1f2a9a822b19f0fc6a93b3f0971cb",
+    "original_bytes": 991,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase192-exam-all01-page-qualification/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase192-exam-all01-page-qualification/goal-checkpoint.md",
+    "original_sha256": "abd2d5c085d3259fed0f95d76494281f3c6a2796bcea50eacd9d0b291dd16368",
+    "published_sha256": "11461a602c2bf3e72791c06344778f2c097b71db437306a00aedccda852cbf25",
+    "original_bytes": 1025,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase193-exam-pagecount-content-scope/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase193-exam-pagecount-content-scope/goal-checkpoint.md",
+    "original_sha256": "044c4225cefc262f69e18cf64fd9d25ea7f110f797529d844c6a31a87cbf5c65",
+    "published_sha256": "32bb7df00a88470c561aa4b26d5ed72b5c2cc467cd34363b5f4b465a0e0c00dc",
+    "original_bytes": 755,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase194-exam-pagecount-contract/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase194-exam-pagecount-contract/goal-checkpoint.md",
+    "original_sha256": "f3c37ca9259b0a9a683a9533dfd73d77327cdb76f99573af97d85580bd327fd3",
+    "published_sha256": "736b093f201c753417025b9854c59251761d652bcbe1f74bd296854f3be6215d",
+    "original_bytes": 906,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase195-bindata-storage-contract/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase195-bindata-storage-contract/goal-checkpoint.md",
+    "original_sha256": "36d170ca048844fc31aa74c06973b14b8187469046c2dadf39e84254ef8a3d7f",
+    "published_sha256": "86508aca487221b0deba12de2af4f2fae5713e96dda9ba6c4edc31f85e0f4314",
+    "original_bytes": 827,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase196-bindata-model-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase196-bindata-model-contracts/goal-checkpoint.md",
+    "original_sha256": "d2e159ec42cf61dc4d86a3225311cd1a2228e65680a354e11a13578d9ce71cd9",
+    "published_sha256": "b51c102ead166c6f39d0215a4b127205cfba1de6478e4ab51f37118751290ecf",
+    "original_bytes": 907,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase197-score-regression-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase197-score-regression-contracts/goal-checkpoint.md",
+    "original_sha256": "3f7101a13b1118f31f6fec312774dce6698a12be9a974b44836041025c9063fe",
+    "published_sha256": "bd8644a9d4c6ebbdc56bf4962409c7d1aa66ac084bde22cd4a9028fd7212a6d9",
+    "original_bytes": 1146,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase199-oct-title-padding-contract/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase199-oct-title-padding-contract/goal-checkpoint.md",
+    "original_sha256": "8bf712579b8adc8b40b7187176513027646849f66fdafb3a19be8ae91cd23aed",
+    "published_sha256": "b68023c1ca3de07b0a8a2bf1a8505f219cc647e09029e7f7d2e5fe9156d6589c",
+    "original_bytes": 1088,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase2-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase2-report.md",
+    "original_sha256": "e2ec65df5b167e43a4b273ffd7c02bfdc5cab820e84a2b4d0d25ca7832b92c10",
+    "published_sha256": "e47998d3cf561f641037020a1e53efa0e42442b3d7d0c87fc8c6210356a6d602",
+    "original_bytes": 8518,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase20-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase20-goal-checkpoint.md",
+    "original_sha256": "a1a40f239246b9dc9c201ef66492fb3d61670fb07695b6bd2a532102055d13f9",
+    "published_sha256": "6c7ae689f7ece20fff31355fdd97bc245eb596d12216b76980b2e2b4be035b8b",
+    "original_bytes": 7737,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase200-coverage-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase200-coverage-contracts/goal-checkpoint.md",
+    "original_sha256": "466d783d606cff983021eff42f3627ffe177068ebdabafbc376c81e1d76e2ae6",
+    "published_sha256": "3f07e607a475cdabb9294463d22935f5c95c1c68c0ae609717f8fd895c84e4b1",
+    "original_bytes": 1099,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase201-endnote-nominal-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase201-endnote-nominal-contracts/goal-checkpoint.md",
+    "original_sha256": "7c03f2f23473984ffe819da207f2cbb1a998fa357cb11aa80f06949678dcbf1d",
+    "published_sha256": "bf79ef3bd72ad3ed3e5bd06c8ea68fdf376f6bd297c10fc0516d097ffedd15f8",
+    "original_bytes": 1047,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase202-partial-row-current-evidence/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase202-partial-row-current-evidence/goal-checkpoint.md",
+    "original_sha256": "2378172c36924902698d69a8d1824fb679994084f8d45287e012d342b4bce74e",
+    "published_sha256": "bd9b58ddfa5966e68c907c0c402a7e8fa3d7b6596682f72a62c39fb9bcb49956",
+    "original_bytes": 1304,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase203-cli-unknown-flag-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase203-cli-unknown-flag-contracts/goal-checkpoint.md",
+    "original_sha256": "5fae2d860af14663f3bdfcbc45866d5ac77bd67927b5f39ec95ee5790e07c3e9",
+    "published_sha256": "9333d01bbde5225b21d467b1ce188aa1f18443d0c408739a09dbfa73d1bd0941",
+    "original_bytes": 741,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase204-gym-tutorial-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase204-gym-tutorial-contracts/goal-checkpoint.md",
+    "original_sha256": "ad68a9c5260ecce8d9874bcafa800390f52c2e17de9d6d0ba2b8b3d78835652d",
+    "published_sha256": "9b86aa8ab25af4e72ad83cbc855e2d30c4a8befde82f606102ed7b1fb55081f2",
+    "original_bytes": 1042,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase205-gym-pack-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase205-gym-pack-contracts/goal-checkpoint.md",
+    "original_sha256": "0cc4a736610b05c53eb6910d58c080db9f5374684cce847c20645336157b94b1",
+    "published_sha256": "b36b99ca4e4addc9cd6c5a0b3ec4ebc6f2175ce0c945b1ddd25021b4be21d85c",
+    "original_bytes": 961,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase206-m04f-catalog-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase206-m04f-catalog-contracts/goal-checkpoint.md",
+    "original_sha256": "18c1a7d6e6b647058574f95b4e76c1a12def4014d1f29a7eb2ef0dbad9343d0c",
+    "published_sha256": "fdca7c819eeaa843dc78b4bfa571d579e6b9b1034b6d41abb56c2ff0516983ad",
+    "original_bytes": 833,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase207-block-validation-unit-scope/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase207-block-validation-unit-scope/goal-checkpoint.md",
+    "original_sha256": "cb300c2179926b991776e47458c87c917e8bb3b22b226531e31ab06927bf9e1e",
+    "published_sha256": "3083967d9e52eee138d2c695330eff5dda63f012107f02419d1769a4363cba2c",
+    "original_bytes": 839,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase208-tac-host-page-qualification/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase208-tac-host-page-qualification/goal-checkpoint.md",
+    "original_sha256": "04b9ec9e3be1cb17319a286ef559d535b1d49841d574af9ed64eb32929809beb",
+    "published_sha256": "1f9709be33c9d7adf2de415038c336252a414d1335992ead5461f2975ded4615",
+    "original_bytes": 834,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase209-safe-edit-file-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase209-safe-edit-file-contracts/goal-checkpoint.md",
+    "original_sha256": "3d0393641b478ffc7a089a6639779fd90cce90eedc0bfeebf12d821e5a8c2050",
+    "published_sha256": "3f1ca7dc741812063bd8f64bdfea01f938a03f0b3e8739c99f64ee76c68ae4f4",
+    "original_bytes": 928,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase21-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase21-goal-checkpoint.md",
+    "original_sha256": "62c665bcd12d82b9d72343c1a68e0e5ebd7c4ad3e83b6a541e63832e44ff0766",
+    "published_sha256": "685fd6f9ad37e2c5d9d8d7ba3af1c8bf1b4e7b62df2f0311642d636fb913184b",
+    "original_bytes": 10794,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase210-square-host-page-qualification/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase210-square-host-page-qualification/goal-checkpoint.md",
+    "original_sha256": "0050936e9cb33ecf3528367c255435aa1d0eed63541553b7d1fc36bb27a057d2",
+    "published_sha256": "3db899374032c0e3d773b1f9e94323e60c4c529f19285005c927d983fb4f1832",
+    "original_bytes": 829,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase211-tail-fit-origin-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase211-tail-fit-origin-contracts/goal-checkpoint.md",
+    "original_sha256": "69c34a27d5731a97715f6b16c7e5d5f93501d5130645b84d31b001a90b9c4441",
+    "published_sha256": "f8f9f4b9c6727ef16c044e038bf173e02fed0bcb6cbcea8ac27ec00d3696d4df",
+    "original_bytes": 899,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase212-footnote-flow-contract/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase212-footnote-flow-contract/goal-checkpoint.md",
+    "original_sha256": "7d69e648472806e18bb26be8600aebc2364433cf4fdc1f2b79bdc3f8e823e9fe",
+    "published_sha256": "4e0ac962d215708495d326b36de2567a0a71f19c26414a6f122c720346c17852",
+    "original_bytes": 831,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase213-table-exchange-file-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase213-table-exchange-file-contracts/goal-checkpoint.md",
+    "original_sha256": "a03d1a8e354879abf9eb61c0b0c0d13a8ac0404d52de584040a9ef358a199513",
+    "published_sha256": "4faadc856a83a601e099b293a6cffe5753b57f79a616219cbeb0bd337b5d9a72",
+    "original_bytes": 788,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase214-underline-independent-print/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase214-underline-independent-print/goal-checkpoint.md",
+    "original_sha256": "807467c7d068dd1fa2a49a263979bd91330ad226860c0b940afa80720adbe6ed",
+    "published_sha256": "f6f16f092c92a337d43627498cef8755aff0c1865ecb107358434332bfa3630e",
+    "original_bytes": 820,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase215-crooked-diagonal-independent-print/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase215-crooked-diagonal-independent-print/goal-checkpoint.md",
+    "original_sha256": "f972c0b7cfc1a12d39385e975b570563b25af267431bc7b8e015f7c34f114055",
+    "published_sha256": "d3cec5ce84319d6ecb264103e79ca55bfa1e5cda28ae547984485f1f85684665",
+    "original_bytes": 973,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase216-handoff-skill-file-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase216-handoff-skill-file-contracts/goal-checkpoint.md",
+    "original_sha256": "6d4f3b22e5854e4d2edde236faaaf75b23f3d77ed2734490a545ed7981cd28b0",
+    "published_sha256": "8dde6bb2a4eb604b0977f26442f3af3d55111c50559937fe7ff8172ebe3a9ffd",
+    "original_bytes": 1013,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase217-work-receipt-file-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase217-work-receipt-file-contracts/goal-checkpoint.md",
+    "original_sha256": "5a81b1b5e1fe135a77c2e34179c5f798eeee2fbcf88da08735fc88dc9cc760f9",
+    "published_sha256": "7d1070da93546b66fe02eed46f91385283dfc718cf17b2b1bcf34390339420dc",
+    "original_bytes": 1009,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase218-explore-file-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase218-explore-file-contracts/goal-checkpoint.md",
+    "original_sha256": "2c21efa9e27a28e38a2227ca311644edbe5f81b404d6f8e0a32400d43fb3df80",
+    "published_sha256": "573cbcb8ea18c6a846d149b99f44f178023b27871b59bb2dfa4db52ebdb1a5ed",
+    "original_bytes": 980,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase219-work-receipt-generator-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase219-work-receipt-generator-contracts/goal-checkpoint.md",
+    "original_sha256": "5670115aa7c76ae05b4548f49d290a1fc1489dfe33b7d4214d67a141261fb3a5",
+    "published_sha256": "8ba695b484ff98e09a3d4f4eac6cf1bc67fffc10a917a895eac7aebdb4ee35da",
+    "original_bytes": 950,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase220-exam-ingest-file-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase220-exam-ingest-file-contracts/goal-checkpoint.md",
+    "original_sha256": "32781262e1e0d279a4f4a7b4d42c0e140e44e4eb2bd300f614f33327a4a46164",
+    "published_sha256": "e1bdae3d1b34ac7f1de2e6401aa2a2e4476f31fc3ed07838b3748e86a8943004",
+    "original_bytes": 990,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase221-exam-shared-body-check/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase221-exam-shared-body-check/goal-checkpoint.md",
+    "original_sha256": "b2a78eccac0eb3949d3df9cb9076dc89d21e63a2b84930f73560491a5c78ea30",
+    "published_sha256": "cdcca8e917272f351d0d228f4e272b3111506b50001202a1325f206cbc76f210",
+    "original_bytes": 1250,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase222-cursor-empirical-oracles/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase222-cursor-empirical-oracles/goal-checkpoint.md",
+    "original_sha256": "e1aba0992a9e4ab50f4e93e17db07c8e280b2942a2e00ed1a52202e17b17ee2b",
+    "published_sha256": "e1469534aba69eea43913fe2827ca6b857bed6aa6be6313b1f2d867b52af7e64",
+    "original_bytes": 1318,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase223-dormant-footnote-helpers/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase223-dormant-footnote-helpers/goal-checkpoint.md",
+    "original_sha256": "3e0fc658f7194a6bd163c76652d78dd4305deacd6608d099b97ded89df084323",
+    "published_sha256": "430ee6085f3a1b5948d225839e578bd1c469c0fea9d25bc1fde6e15dcec9b995",
+    "original_bytes": 1205,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase224-active-footnote-coverage/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase224-active-footnote-coverage/goal-checkpoint.md",
+    "original_sha256": "217841132bff12c6bc9cbd9af5617804f95ed42deab5619d7e7b9eaac45575e0",
+    "published_sha256": "e9bbb28d82f642ea52d88a3a19537919e2b04fff3c3b170aa52a6082c80c97a4",
+    "original_bytes": 1322,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase225-adapter-page-oracles/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase225-adapter-page-oracles/goal-checkpoint.md",
+    "original_sha256": "f4f55749fa18729f9dacb971f60675b15df2aa56657164600809df4cda580790",
+    "published_sha256": "714280888c778c8012ef654f001f9228495ae3c27a4fbb6e68d8cd64b85a4388",
+    "original_bytes": 1322,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase226-adapter-probe-dependencies/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase226-adapter-probe-dependencies/goal-checkpoint.md",
+    "original_sha256": "48e438a8642446e7238b6acef20649f453199527e9639f3914fa6090d404c136",
+    "published_sha256": "bf6af346ce46b54c2f663b2d6feedef5b9d2fbbf1f3179e165665cb6aa30b0f9",
+    "original_bytes": 1229,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase227-generated-body-preservation/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase227-generated-body-preservation/goal-checkpoint.md",
+    "original_sha256": "bc8730f7cb318502f3c02984104d7d87bd6b6690083dde58dc92102ac04766be",
+    "published_sha256": "20bd020d9c8c26b005278b09e3f482d243beb59354df7ab54ee3f0a29648ddbd",
+    "original_bytes": 1212,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase228-rowbreak-owner-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase228-rowbreak-owner-contracts/goal-checkpoint.md",
+    "original_sha256": "424c562c3af878b330f6594d7a4d41c1174f512bfe2408d2743052a16d436a90",
+    "published_sha256": "7bdaf40a56d5ad2fde7a7e4901faf04a219435f7368a4262711469dfa697195a",
+    "original_bytes": 1192,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase229-rowbreak-page-qualification/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase229-rowbreak-page-qualification/goal-checkpoint.md",
+    "original_sha256": "1a4a86432ce9271ad59ef0ff80dd513796ad4d24f38a90cc48dfa87cb907168b",
+    "published_sha256": "8be5bdecb3fb5b9d5a76f2e6327eb0e3ac0f5bf5b0d08429426966e913d2c3e4",
+    "original_bytes": 1462,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase23-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase23-goal-checkpoint.md",
+    "original_sha256": "62dd872a337159912df0bff24e2ac1e964356ff812813c916411a73b6c94ce40",
+    "published_sha256": "eb616e6c5fe03b56dc93c92d01da00c52cffe27038272bf3e9fcc6ca3c453a29",
+    "original_bytes": 9389,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase230-ci-and-knowledge-map-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase230-ci-and-knowledge-map-contracts/goal-checkpoint.md",
+    "original_sha256": "16a44f514f6e47f4da3d40f47ece7abbc608591fdfb58c1f69b1450b317deba3",
+    "published_sha256": "068efd43534e3c9784fc10863fa76b25f354f59efb5a2879c56d37989939f93b",
+    "original_bytes": 1407,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase231-wmf-paint-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase231-wmf-paint-contracts/goal-checkpoint.md",
+    "original_sha256": "b5c163215aa995e28a07e02a0abc254e5f1ba8a5b0997948c95acac031b1ffd9",
+    "published_sha256": "bd38fa449d072b9115d2d3c7142b6da2a0f6a837f2ef5d45af1aaf8d1b357dfb",
+    "original_bytes": 1528,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase232-cellzone-line-ownership/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase232-cellzone-line-ownership/goal-checkpoint.md",
+    "original_sha256": "fc06aa38791024f09aab64ef6c2001970f8d2ab6d9a8777d038ee16dbdd40c4e",
+    "published_sha256": "cd7187292a34caabd9a1fa929916acc3e8e709578a8c058b7a53ed691b904127",
+    "original_bytes": 1778,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase233-gym-studio-rendertree-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase233-gym-studio-rendertree-contracts/goal-checkpoint.md",
+    "original_sha256": "214ed568162c25728c109ffdbeee14fc493eef6dbe9fb5dbaf02d6b637d1ec96",
+    "published_sha256": "c64bceb71556069f9557d5f8acb95743568fd6101b1c34fa7c16e2a44f31010f",
+    "original_bytes": 1033,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase234-gym-text-self-description-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase234-gym-text-self-description-contracts/goal-checkpoint.md",
+    "original_sha256": "be83aaf59bb01793d735398afbfaef0859bf917e12e2b30307df15479613e8bd",
+    "published_sha256": "724e187f4bfa48e75d166b0d19db1d236b1d1b0602059870517229e918acd22f",
+    "original_bytes": 1273,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase235-gym-object-layout-serialization-contracts/goal-checkpoint.md",
+    "original_sha256": "95e712a6e03e8442b84322506b02c572e6129475d86deebf71767bbeb7b4a5a9",
+    "published_sha256": "8848f826c6ba01f9ad1bf23a5dcba5bb2422c47c1ba0c3fef06c1a67a579a710",
+    "original_bytes": 1743,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase236-form-fill-model-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase236-form-fill-model-contracts/goal-checkpoint.md",
+    "original_sha256": "e0ca6dc1f13ead5b6f223defab94a294f0cd6f305635f98d5b556fbf9808bd3e",
+    "published_sha256": "8a7a92390f1be8aafc938a75f72aa29363b698faa7d5a92ee0149f9d4f1cec2e",
+    "original_bytes": 888,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase25-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase25-goal-checkpoint.md",
+    "original_sha256": "011dbed2d29ef3a65619da185d16f6216128bbdea57aa02ac006eb25d79be014",
+    "published_sha256": "9f195c25a246a9074377e7393ccf92d352d274b7beac08775373282a5a1cec3e",
+    "original_bytes": 10592,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase26-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase26-goal-checkpoint.md",
+    "original_sha256": "4ecec6fed8b3e7b88c52f74adff5b8d619b5ec08318b419db649ef689ba6d30a",
+    "published_sha256": "3bd16ee647f3475be878828e913f7befda861cc5e912184c73214e4d5c3a9776",
+    "original_bytes": 9523,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase27-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase27-goal-checkpoint.md",
+    "original_sha256": "67ec7612230319cbdec3ffdd55501db8362847586b534c1e0a3b724841b056dc",
+    "published_sha256": "0802a8097ee76d4b560b96a4b2421b9dbb4ab4fbabb71a3ebd84fe5da3a91905",
+    "original_bytes": 8072,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase28-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase28-goal-checkpoint.md",
+    "original_sha256": "69cb5a6af2c8123bdadec73106c439fe84ac14d5adb96de09a175da6c2aa8948",
+    "published_sha256": "87258728fd41e6a5bb2161397674564a41e54ea426bf3ffb7fbad662800578ad",
+    "original_bytes": 9553,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase29-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase29-goal-checkpoint.md",
+    "original_sha256": "4d9ab830fb06db403f11cce315e08b6af0c950cb3ef4b5afc48a8608df100f8b",
+    "published_sha256": "1c528fc360b10c76df4e785376e4440d70dd9527693d9f7be5d6c962d10c8f59",
+    "original_bytes": 10184,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase3-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase3-report.md",
+    "original_sha256": "8f02d9a39c0c771f83132bfadbcc00a34b1469196761d1ca7e9dcf9817d981f4",
+    "published_sha256": "3a86bd02ca8d972960345e4a91c3520e15ba9be9837d51eb2b2292dc107ff023",
+    "original_bytes": 7922,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase30-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase30-goal-checkpoint.md",
+    "original_sha256": "f624572065c6812376692068ad971f14c33dd74b36f8783f905460fdebc44f37",
+    "published_sha256": "2ffb46b62faf2601704ef41b8989bb1da9989089e493ca10d05a73bdc01f6b37",
+    "original_bytes": 2860,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase31-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase31-goal-checkpoint.md",
+    "original_sha256": "7ab53aa72aafc4553486ebfaf5333ee599a38eac270037c1e46382689725155e",
+    "published_sha256": "d63a337fd687a2f541b2f59117d1dd2a8990f735d010409d96b10b8d9aa3154c",
+    "original_bytes": 6507,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase32-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase32-goal-checkpoint.md",
+    "original_sha256": "3d7af8a62438c9ab16200d2a180a6c377c287779f5c6b9eb28dd13fb60b7c91f",
+    "published_sha256": "02d9a158cf7ee2db9d0edf69418df9854a9cef765670c89fc42204b2fc4d73fb",
+    "original_bytes": 8269,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase33-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase33-goal-checkpoint.md",
+    "original_sha256": "924d47f13d5837eca5d22fc8acdfd906a3372a317bfbf2b64d38ec5e33eeb63b",
+    "published_sha256": "18940c0c1a6f25fa8acea1fdb0298185827a2e6197a628ff68623086345fe878",
+    "original_bytes": 6609,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase34-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase34-goal-checkpoint.md",
+    "original_sha256": "6688a9065132342aa6138fcfd5145caf1ce78d77cbbd158fc0007979bc7d173a",
+    "published_sha256": "d81c89981313094be5b2603187f72705295b89a01439a26527d4cc58c64bc0bd",
+    "original_bytes": 9659,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase35-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase35-goal-checkpoint.md",
+    "original_sha256": "2304307cdb15a91a303f28468d404e76a6e7f88764b02b5741774d415dbb8c1b",
+    "published_sha256": "9781c49807cb1b0936385ed0c4a5a8310eedc1b243e451c7147ac0a6dd425b25",
+    "original_bytes": 6830,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase36-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase36-goal-checkpoint.md",
+    "original_sha256": "8ba77b23d5be1ee3ca1c352621831d49082843ccff96e5b54d8d5c54e5af96bf",
+    "published_sha256": "824ad59b3b99efd9e1f9c28f7aa3e2e90b21f0ec8d218a3ce02e98aec7457734",
+    "original_bytes": 9513,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase37-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase37-goal-checkpoint.md",
+    "original_sha256": "8fe313cf5c7b43507ae5dd3661d50ef8f5c2dabd6094841867035a7d1b1faff9",
+    "published_sha256": "32c1eaf11f19aaeaef3217b2d6649fecbee6b358801eed331564bf0c3f0e0d66",
+    "original_bytes": 1845,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase38-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase38-goal-checkpoint.md",
+    "original_sha256": "aad57c8ee857b69a578f41333bf08992f7f1f4e12ff40b84995e04c10648ba77",
+    "published_sha256": "100dece78b4e572e5c6407c100342fe74b3f3e5f744d61bd5ec007a0cde04a15",
+    "original_bytes": 4232,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase39-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase39-goal-checkpoint.md",
+    "original_sha256": "888b7e67cf011baec0dc8ea6f840791d2d9edfcd4b72324630b8a90202f54971",
+    "published_sha256": "3ad27f94b6baa790905f0726ca76847dc4096f757d7de0fc9969a21620c50798",
+    "original_bytes": 5782,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase4-helper-audit-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase4-helper-audit-report.md",
+    "original_sha256": "b7e25e6496a340fbce6659ec77ee3aff6a8fbb8d5326f75f9687556e838afd4a",
+    "published_sha256": "5e1db89b2c2923a51555aa1393c13c2f1719986eb65a9b2a8533c40531df8c03",
+    "original_bytes": 8754,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase40-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase40-goal-checkpoint.md",
+    "original_sha256": "dad2f03f79fa5c488926d30dba75b2214c29c3645686de1bf34ad1ba979e3f53",
+    "published_sha256": "ee76b785924f7849a2dafd0f09edb539cb854d071eaac87571736aa75b3b8801",
+    "original_bytes": 6260,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase41-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase41-goal-checkpoint.md",
+    "original_sha256": "eb83b719aa42db0f60618fe1a5c9bf0ebbe6ecf22d7865f87bb3f00201d53946",
+    "published_sha256": "ca447b506609db9afe3a2cef9516ab16bbe68ec169bca8f87d9b9379c1056587",
+    "original_bytes": 4430,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase42-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase42-goal-checkpoint.md",
+    "original_sha256": "4b4559f92f2c1109274008345b2c656ddcf8994384301e17cecb55729af21798",
+    "published_sha256": "388d24e0db62788909aa4b895fa6506488f348fc9d6609c91bf3083727146bf7",
+    "original_bytes": 5098,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase43-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase43-goal-checkpoint.md",
+    "original_sha256": "4d31345e3b694ef69333be9beaf53ce5167c2e303e2c361b07d9cf6e5bb5b9d7",
+    "published_sha256": "acb08335b215921e2812071a706dd57788937230c1257ded5dabe6edafe26ade",
+    "original_bytes": 6194,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase44-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase44-goal-checkpoint.md",
+    "original_sha256": "474dd4d3e00b173b1bfd0163dafc3351d7adfd88d60c563f293ea3d989a07aed",
+    "published_sha256": "faad38f5c4f1c941811f14aba7fc27d998bbd76762204fecb333a6abeabb7013",
+    "original_bytes": 7159,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase45-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase45-goal-checkpoint.md",
+    "original_sha256": "4bca048e9dae6b05a70d7a3d1d98af2e19fbc223a68c4efacab47087149490fc",
+    "published_sha256": "ec185425e5764ff7e1abe55afc1d69c514e0d8938816df35d28ddc79979772e8",
+    "original_bytes": 8686,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase46-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase46-goal-checkpoint.md",
+    "original_sha256": "33d5dc921072df9b8cad6a0a70627fb679cfbf50b33c6b59e71bae98aa62a8e8",
+    "published_sha256": "5e73614d83938fb4460af84e55c12f67b9403ac8f5c33dc694051da7b3738c76",
+    "original_bytes": 7283,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase47-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase47-goal-checkpoint.md",
+    "original_sha256": "1d4689ded2adc4088a3d73eead83be2cb67101b1a43a75fb4c0a58453ca424d6",
+    "published_sha256": "5af6794ff4b7f490194718a9002182d388873d3ca99638d42110f248c98aaea8",
+    "original_bytes": 7589,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase48-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase48-goal-checkpoint.md",
+    "original_sha256": "8dba4286e95db53e5303da03a2c8cf6b61d839b55cc68f9cce143d6a9624fc4c",
+    "published_sha256": "db8e64e80b10e7e046b6347930e4057710eef9763cda85573ddb00c89cf2e60c",
+    "original_bytes": 2935,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase49-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase49-goal-checkpoint.md",
+    "original_sha256": "191178ee3362d1c810a9fee9d94e6274319e8b7e3376fcf86dbfef01bfa5519f",
+    "published_sha256": "782eac1def05782dab9a545d61843f27ea9cf6bc29240a51efaca0dc118a691a",
+    "original_bytes": 5091,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase5-priority-predicate-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase5-priority-predicate-report.md",
+    "original_sha256": "b4483f450882a57d02622aebb1cf7d203642486e3fa0c51f4dd0ced24adbe7e5",
+    "published_sha256": "7a23c335ad5f56355608cff48bf35cb5d2ce12c4da2b04aaea5f093a1b3c32d2",
+    "original_bytes": 7544,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase50-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase50-goal-checkpoint.md",
+    "original_sha256": "a562f14861dc215b3a37f4299a992156e46df0e2f5edc4869cd017a2c00948d6",
+    "published_sha256": "510e93f308c0535378ddeaac9df7fc29bdde0c27f719ca67f8c5971fbaad7f70",
+    "original_bytes": 5479,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase51-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase51-goal-checkpoint.md",
+    "original_sha256": "297f8e0867099eb92d634b949c08e1e021ed611baa9695557db5f5c7ffe64715",
+    "published_sha256": "e516e08b92cfcc35ba2f7ac0945d48acf6ae5357775cb216dff52288d5888f14",
+    "original_bytes": 7468,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase52-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase52-goal-checkpoint.md",
+    "original_sha256": "039cc5c52792cd8b9a34d4c7681345e533eeb2028c027aaa428604e10070603f",
+    "published_sha256": "d464c1aa3cfa007dc4817363972963957530a0fdfd42b0debb579a6f6e6d1b95",
+    "original_bytes": 923,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase53-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase53-goal-checkpoint.md",
+    "original_sha256": "11d592aafbce67d54267938e676b91952d6e3b922e5a22ec228836a8a7c6ca99",
+    "published_sha256": "c24978fe7a5dae0ff83f8228868714dc7f27ac08c8bc85559c60d9d5bfd271ad",
+    "original_bytes": 1238,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase54-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase54-goal-checkpoint.md",
+    "original_sha256": "f4cd90951607f3f0e47c0729c12590820e35147c872093927fbf4872b12a0fb9",
+    "published_sha256": "abc4f83ea522eadf4e884ca6cb67d392ff87d83cb874833e513a4778185a3570",
+    "original_bytes": 2384,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase55-goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase55-goal-checkpoint.md",
+    "original_sha256": "8a294bdd50e703e9b93dbc6e5b29c84d2beeb11bf7823afe3d80ae7e65399ac2",
+    "published_sha256": "3e23c6d6b0caad09c88496e3ac2ee9e56e8895ede299bd118b49edcd89a49623",
+    "original_bytes": 5193,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase57-existing-modifications/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase57-existing-modifications/goal-checkpoint.md",
+    "original_sha256": "6da7f19e42434a44c945a7f76b4627e3ea3471116df72b9694641ef964005140",
+    "published_sha256": "074d846a20fdab0db24029b8951083e200fcee786b1b032b063369c43878b0c1",
+    "original_bytes": 7420,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase59-cli-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase59-cli-contracts/goal-checkpoint.md",
+    "original_sha256": "cba6d93424cd6ae11d610e5ed9d588917db4cbf26301b9cb8dfd29a5aa361658",
+    "published_sha256": "ca4aac6aa8c3171233d50e0bb4dfe3bbc46af1897140d8da742bdb28c1280894",
+    "original_bytes": 1087,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase60-synthetic-geometry/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase60-synthetic-geometry/goal-checkpoint.md",
+    "original_sha256": "e55e3b175fa4c687c30c19b7bb7032e1ea99ffa6faa674cd073089b23cd9db79",
+    "published_sha256": "83b63d5f835ecdc5de0c4f4e8b45760e969ac8eb339bbcff8d80e5380ba4a55d",
+    "original_bytes": 1626,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase61-condense-list-head/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase61-condense-list-head/goal-checkpoint.md",
+    "original_sha256": "ba62b99b4e67397bf9052429c771784c6d1035d2693fd14fb4991236fb600663",
+    "published_sha256": "23a1b32352a693b740bedbefcebe7915725adc9d0a480b47b73361e164490a8e",
+    "original_bytes": 2914,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase62-stored-flow-fragments/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase62-stored-flow-fragments/goal-checkpoint.md",
+    "original_sha256": "b52a2bb930d01e7183fbb54c176f9635bdce3951e26d84e3296a2094b32dac80",
+    "published_sha256": "be81090d1151291d7fc7134c0c4fba6834f1c8dd4d643c2b26afe3d6d85c6a61",
+    "original_bytes": 2050,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase63-nested-editing-flow/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase63-nested-editing-flow/goal-checkpoint.md",
+    "original_sha256": "fad994c034cdcf93f6586bae43d8a9028f67500a02e273964255dbb29bad3a8f",
+    "published_sha256": "18b47986a6825ad3968a948a4f19f612f943278539385edb155c8b215586eecb",
+    "original_bytes": 3779,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase64-native-paint-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase64-native-paint-contracts/goal-checkpoint.md",
+    "original_sha256": "04ec8c704b50a5212551b82d6bebe4e114458f8033b1a84e73b68b9a9c1e3e6e",
+    "published_sha256": "3e94e2fc885626a3f82fae0e5083220fa457d3ac37a4a13e62f794bb035ae0bc",
+    "original_bytes": 1615,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase65-text-overlap-scope/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase65-text-overlap-scope/goal-checkpoint.md",
+    "original_sha256": "b0d39767ee5f69cb362b5b7fcbb5da117b0045942be86281eaae1fcf49864c7a",
+    "published_sha256": "779b25786015bff3998fd0da632d045873ff38c067190865ef8a0f88ac5dd9b0",
+    "original_bytes": 4068,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase66-agent-query-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase66-agent-query-contracts/goal-checkpoint.md",
+    "original_sha256": "33587b1430aeb7423754a5310ef8ef89e285e7fb436efb8129b1eee55a90f3ff",
+    "published_sha256": "7abf5ed8385e4ae1faf285c1db0ca3f7cb98d4f4316d178e5e06e0e3c9555ccc",
+    "original_bytes": 4957,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase67-cli-triage-documentation/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase67-cli-triage-documentation/goal-checkpoint.md",
+    "original_sha256": "f1694acbd6b2f42d00f376f08d53c052b8fce4237695a98c640c079d59090ebe",
+    "published_sha256": "998e0e5d5b58d7645a773d4f075700fadfcac94e016bf79a0ae5e36c480643a1",
+    "original_bytes": 3962,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase68-footer-anchors/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase68-footer-anchors/goal-checkpoint.md",
+    "original_sha256": "d05bf651c10583bdd0340212e5eed1c70bc5d2709e57f8fd7ac75f7d8bcdbd5c",
+    "published_sha256": "1f6c4d7e7cf6b27716d27ed84eb717156b4329cbb777633fac54a97f93e0d085",
+    "original_bytes": 5602,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase69-mcp-protocol-units/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase69-mcp-protocol-units/goal-checkpoint.md",
+    "original_sha256": "f1554e7eb658f7aaf65c2e8d666cfa7244814c98379312c538a36016ea521604",
+    "published_sha256": "714539cb9db624c3825bbe96f9e5c9c550af6b0796c72e6195849f1400855908",
+    "original_bytes": 7545,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase7-current-pin-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase7-current-pin-report.md",
+    "original_sha256": "eb4f98ae0ec911243829f7c3e8ed62eca8be18fb7ab35908188cad1bf01317f1",
+    "published_sha256": "c28988ca18c7a691d7aee8dd2f19058eddcfd87f307d1ac2193458525ca73906",
+    "original_bytes": 4974,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase70-session-hidden-units/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase70-session-hidden-units/goal-checkpoint.md",
+    "original_sha256": "23e266084f487f23019cf056af48de6c6bc31f218e2b0335a70996a77db7cd2a",
+    "published_sha256": "9a13fce436ebf54afd9163bf02a10afe5efb3a888c5f716c500b4b4fe027b8d0",
+    "original_bytes": 7242,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase71-session-view-provenance/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase71-session-view-provenance/goal-checkpoint.md",
+    "original_sha256": "326454063928d82face96e8d95683db63ab8561c6a46d3647416182731037ae1",
+    "published_sha256": "d8135ec7dc826ace6d8cb8053e67470c21d30f774ff7c3654c44198fb7df2210",
+    "original_bytes": 160,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase72-chart-data-units/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase72-chart-data-units/goal-checkpoint.md",
+    "original_sha256": "58b80e54817573a1ecb50841bf28c9a09628a47322a39ed39a5716f0a4e1e176",
+    "published_sha256": "ef4461fa662f632c7c04e3da6e3f0cc6db03e11d1834c1947808c26b43b1c12a",
+    "original_bytes": 6408,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase73-page-selectors/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase73-page-selectors/goal-checkpoint.md",
+    "original_sha256": "299316422e45a60a9dbc7582feb74484e560bdf4296aada069c17cbb509b3de6",
+    "published_sha256": "c7d8df01eea3986775fa35464644803d28bbdaa30e5385bf314a8d477e8c6fbe",
+    "original_bytes": 7608,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase75-pdf-boundary-relations/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase75-pdf-boundary-relations/goal-checkpoint.md",
+    "original_sha256": "11d04bd64fba863d439387e7e3843c5b4a753af82b493f3b84c80a5090369c01",
+    "published_sha256": "1dfcb3552dd5b4e6e8e7692da8a17dbc01073b95fa196ac8f31b3f8159b8763a",
+    "original_bytes": 6658,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase76-pdf-text-axis/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase76-pdf-text-axis/goal-checkpoint.md",
+    "original_sha256": "b35a88fc685ad6b592c4da6231a2842966843a2ff8eac5aa835bf79e62254065",
+    "published_sha256": "0e60b61b10146dd75f659d0e75c8a698430ca1147027c4b1b341400ee1225856",
+    "original_bytes": 8435,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase8-nearfit-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase8-nearfit-report.md",
+    "original_sha256": "37db4e27822a7c43bbeb1525eb8050a2021ff70905a9c1effd7c4a7bc4bbd31e",
+    "published_sha256": "75ab81caea800420e388e5c537163222246081bc4c84dcc0b75a07b2b66141d0",
+    "original_bytes": 7185,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase80-root-inventory-backstop/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase80-root-inventory-backstop/goal-checkpoint.md",
+    "original_sha256": "6ecf968b2c968fe58d6b618e2738d9b29809e023bde939aafb746d1faecd9d67",
+    "published_sha256": "ec4949267d45c7020825b1575f1d2d52bf7114cdb191a7d5507f13852c135400",
+    "original_bytes": 9194,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase83-sweep-fonts-resume/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase83-sweep-fonts-resume/goal-checkpoint.md",
+    "original_sha256": "3947e3c54776bba8a2cbef5a42a85417b8c9dacb03d1c4b84383e12d9e575d34",
+    "published_sha256": "c646bb95433ca07c627556ed2f76398b93b1dbe59b1cf3ab3bbfa56ee867cbf2",
+    "original_bytes": 7295,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase86-eqedit-language-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase86-eqedit-language-contracts/goal-checkpoint.md",
+    "original_sha256": "415f4293b575010ff80c1348123b7faa4c0fecf1ba063148e68d077458258a4f",
+    "published_sha256": "e61257f647cbb81e25ed90aa774c7680a1777f7e0343035dca6a2d59bb587d48",
+    "original_bytes": 8071,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase89-renderer-equation-ast/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase89-renderer-equation-ast/goal-checkpoint.md",
+    "original_sha256": "990b66d3b82af33eccf4956e3a21496c9c59aa57a662fce9e58b5b21ac63302c",
+    "published_sha256": "66906dd08409765689ebf7e4b1aa60814cf4e0d45947501fe7428b7b2c34c7a6",
+    "original_bytes": 8051,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase9-source-predicate-report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase9-source-predicate-report.md",
+    "original_sha256": "7dd4787c1378ca6c2df758f2cac4baad83219f9704b7b58769589ffda70306ad",
+    "published_sha256": "74cef3a4ac4924644cc5d605035617e476b2eeb7af9d6d3f673bb14750622bb1",
+    "original_bytes": 5391,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase90-gym-release-diff/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase90-gym-release-diff/goal-checkpoint.md",
+    "original_sha256": "c759dfd617d17d0836322013c00c1572ba25e7285e4c6a5f2a9e384dced99fbb",
+    "published_sha256": "b2a18115daaff213123e8f83d2ad015726c6d57bc0166486880b3e57ec71324d",
+    "original_bytes": 8152,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase92-glyph-bounds-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase92-glyph-bounds-contracts/goal-checkpoint.md",
+    "original_sha256": "4a3817d9209eb9a8a5d976664f375cd15f16eee9c8fb189650c4d6994d7492ed",
+    "published_sha256": "5aab4f8125c23626791c9b634ace7d7d82b4208bb737dbfecc4aff5085a99a39",
+    "original_bytes": 9105,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase94-header-footer-selection/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase94-header-footer-selection/goal-checkpoint.md",
+    "original_sha256": "55a5aa3fd15103bde94b28b15098a3e2ec3d2dc5bc63358e7bcfdfd643c94285",
+    "published_sha256": "945edb5987342fc17853ad4abe7cfb1f7dc115b9f927436251fd73f521513487",
+    "original_bytes": 11074,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase95-hf-natural-width-control/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase95-hf-natural-width-control/goal-checkpoint.md",
+    "original_sha256": "3d84c23a3ea83880d8f8fc5be6ef27311757a4978b8f0bc9703051c5a04c4ad0",
+    "published_sha256": "60889a472c298a0e1325952f7d4b05ba85f7c522c9837ef798944fa8d7b4f54e",
+    "original_bytes": 9578,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase96-hit-metric-contracts/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase96-hit-metric-contracts/goal-checkpoint.md",
+    "original_sha256": "fc1a9aa9fc83ff90a693c1a2016b87a64195bdb4a82c3d261df800c365cadfb9",
+    "published_sha256": "860f2f254756ad93fb970812abd82a4bba272f2e81d6b4142440a081eadc63fd",
+    "original_bytes": 943,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase97-gym-schema/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase97-gym-schema/goal-checkpoint.md",
+    "original_sha256": "ed1d95731b1e35d69e9d3986b989fa45fc69fefa225fedee658cd601c03f80d0",
+    "published_sha256": "a2a663462e09af2ff8cf92a83fd99f963726342671246506ec8a7ec58156ca24",
+    "original_bytes": 1036,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase98-authored-native-geometry/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase98-authored-native-geometry/goal-checkpoint.md",
+    "original_sha256": "48a9f9f07bae18550b60a07d303ffc99aa5001f3a49b299769dff8a740450d3f",
+    "published_sha256": "d591daf7ec5c8152beb505c05e5b9afdb35c9a0dbd89c634a9c86429c11733c3",
+    "original_bytes": 1150,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/phase99-adapter-source-guards/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/phase99-adapter-source-guards/goal-checkpoint.md",
+    "original_sha256": "fec9ff95a840a941815fcba7e2b7d9ebbb2979306d2c3ad5af50b63b31aac9bb",
+    "published_sha256": "58b97bc6cf0489407cadf7fa743f6d08e126627165646ba3ec90eb746e8268f3",
+    "original_bytes": 1099,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/priority-appendix.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/priority-appendix.md",
+    "original_sha256": "fe600fe6d1cd1c770a1b8c27eea5ea230179d3fabd7a5d59acb71c60c9081c6d",
+    "published_sha256": "17bc722b3271ae481bbfa19272dac8316e2e0d371a7f57f74bf8fefcdf6126d2",
+    "original_bytes": 35695,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/report.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/report.md",
+    "original_sha256": "64d73f14ff5ecac489da6243b968e684cca9569cc8bd43bf8b240b93532a9475",
+    "published_sha256": "1131ec83245691ef49efaf22d176668e2ba1c4b76d253ca8e8e4237808ef3152",
+    "original_bytes": 13913,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/upstream-sync-20261026-171714/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/upstream-sync-20261026-171714/goal-checkpoint.md",
+    "original_sha256": "be68afccefb9df728ef811912e5b6de12f2f316f7342f0d6e287d6fd81165dfc",
+    "published_sha256": "af9ba4ab6618006f462f6d939a9d9c7b431e32d82c889cc109a25cfbfcc45fc8",
+    "original_bytes": 5230,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/upstream-sync-20261026-184559/goal-checkpoint.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/upstream-sync-20261026-184559/goal-checkpoint.md",
+    "original_sha256": "e8c2f8f97c5dcce5a1c310b271e5c628051b86007b2db24c6abb008e78d90d45",
+    "published_sha256": "9fa8ce0851a3e8720eb00dae1d2cde70dc53c6b900c73e7713d20d1157f379e1",
+    "original_bytes": 955,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/checkpoint-20261026-current-pins.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/checkpoint-20261026-current-pins.md",
+    "original_sha256": "697725b0a12b5ee3b16f773f4f452cef56649818e92d7b3ba9bc2e1e97087304",
+    "published_sha256": "aef418c60ee597449cbf3ba8c62141bf54eeca5bf34d22c32a71adfdf0f74734",
+    "original_bytes": 7916,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/checkpoint-20261026-hidden-relative-contract.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/checkpoint-20261026-hidden-relative-contract.md",
+    "original_sha256": "2e414b63f9f536119a043583c35dd2d9f34bd89c7660c2a29fdced2e1a085fd2",
+    "published_sha256": "1962fb59df486ae569699ddf319a95d748d8412a13aba443a95d7650f8c102de",
+    "original_bytes": 4127,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/checkpoint-20261026-independent-contract.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/checkpoint-20261026-independent-contract.md",
+    "original_sha256": "6607b276c1ce44dbd197235bf62374fecfb474135e0eb5af330322a7cf31d756",
+    "published_sha256": "f8a2f889504e6b0401e02e82e785fa145f09aff4f4b05b2cb560868e9956d0b3",
+    "original_bytes": 4433,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/checkpoint-20261026-phase10-source30.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/checkpoint-20261026-phase10-source30.md",
+    "original_sha256": "b594b01d0df9ba3ccc9f5f5847185274bc3a3e796ca3c5c1460da697d34ddc90",
+    "published_sha256": "16e0599b534480a2afaef982842eddb0b686429cb2f25edc14e231e69f6c9c52",
+    "original_bytes": 5023,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/checkpoint-20261026-phase11-current-survey.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/checkpoint-20261026-phase11-current-survey.md",
+    "original_sha256": "c390c7eb188d6d03eec2e7e8a7cd96f0698f77e32675da87ab3a733672c7bea8",
+    "published_sha256": "4045ee4f6281668bbb53e37c2bb4639550ae429b1e1f761c48ae0911c41cafca",
+    "original_bytes": 5407,
+    "original_text_archive": "history-original-texts.jsonl"
+  },
+  {
+    "old_path": "output/issue8232-audit/checkpoint-helper-audit-20261026.md",
+    "new_path": "mydocs/pr/assets/issue8232/audit-20261027/history/checkpoint-helper-audit-20261026.md",
+    "original_sha256": "72cd8cefec02b46272147a1de43bff2f8d69bf4a56972b02aebacae55ff910a0",
+    "published_sha256": "df5f50fd30807f9b8b844275bb95b51caa06f3da9c68b20209376b3bb8b6ee72",
+    "original_bytes": 4519,
+    "original_text_archive": "history-original-texts.jsonl"
+  }
+]

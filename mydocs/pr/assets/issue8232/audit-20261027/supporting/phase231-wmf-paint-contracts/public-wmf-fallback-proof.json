@@ -1,0 +1,35 @@
+{
+  "curve": {
+    "wmfc_chunks": 10,
+    "embedded_emf_size": 76576,
+    "last_getdc": {
+      "emf_offset": 31572,
+      "comment_offset": 416
+    },
+    "rejecting_emf_offset": 32128,
+    "rejecting_record_type": 12,
+    "reason": "현행 emfplus/stream.rs는 GetDC 아래 지원하지 않는 실제 GDI를 만나 None을 반환한다. player::render와 convert_supported가 이를 전파하여 public SVG가 원 WMFConverter fallback을 사용한다."
+  },
+  "curve-incomplete": {
+    "wmfc_chunks": 10,
+    "embedded_emf_size": 76576,
+    "last_getdc": {
+      "emf_offset": 31572,
+      "comment_offset": 416
+    },
+    "rejecting_emf_offset": 32128,
+    "rejecting_record_type": 12,
+    "reason": "현행 emfplus/stream.rs는 GetDC 아래 지원하지 않는 실제 GDI를 만나 None을 반환한다. player::render와 convert_supported가 이를 전파하여 public SVG가 원 WMFConverter fallback을 사용한다."
+  },
+  "curve-colored": {
+    "wmfc_chunks": 10,
+    "embedded_emf_size": 76576,
+    "last_getdc": {
+      "emf_offset": 31572,
+      "comment_offset": 416
+    },
+    "rejecting_emf_offset": 32128,
+    "rejecting_record_type": 12,
+    "reason": "현행 emfplus/stream.rs는 GetDC 아래 지원하지 않는 실제 GDI를 만나 None을 반환한다. player::render와 convert_supported가 이를 전파하여 public SVG가 원 WMFConverter fallback을 사용한다."
+  }
+}

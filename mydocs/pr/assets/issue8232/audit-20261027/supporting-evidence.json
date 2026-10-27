@@ -1,0 +1,194 @@
+[
+  {
+    "source": "output/issue8232-audit/phase231-wmf-paint-contracts/producer.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase231-wmf-paint-contracts/producer.json",
+    "sha256": "0e72ea70934b4c828eba90f6a772a0c20270fd8df549cdbb4e081dd5c92d4062",
+    "bytes": 3281
+  },
+  {
+    "source": "output/issue8232-audit/phase231-wmf-paint-contracts/native-results.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase231-wmf-paint-contracts/native-results.json",
+    "sha256": "f7c1b090b8ba71be5b08d520c1773cbf581375d65a5d0907574e66c1268c8c4e",
+    "bytes": 1617
+  },
+  {
+    "source": "output/issue8232-audit/phase231-wmf-paint-contracts/runtime-registration.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase231-wmf-paint-contracts/runtime-registration.json",
+    "sha256": "0c327a55fd88a6832738b5de653d336b078a7fdb57319d05a5f988de313ff02f",
+    "bytes": 1244
+  },
+  {
+    "source": "output/issue8232-audit/phase231-wmf-paint-contracts/predicate-and-visible-paint-counterexamples.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase231-wmf-paint-contracts/predicate-and-visible-paint-counterexamples.json",
+    "sha256": "669e957166083df4a0e4bb25d343a42002ff85edf26cc73e114d4350a72d40bf",
+    "bytes": 16578
+  },
+  {
+    "source": "output/issue8232-audit/phase231-wmf-paint-contracts/bit-contract-preservation-control.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase231-wmf-paint-contracts/bit-contract-preservation-control.json",
+    "sha256": "c73bfeb55ed78656adce588965118ad136460fb27a8483640408f07d79c6e135",
+    "bytes": 414
+  },
+  {
+    "source": "output/issue8232-audit/phase231-wmf-paint-contracts/independent-source-and-mutation-ownership.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase231-wmf-paint-contracts/independent-source-and-mutation-ownership.json",
+    "sha256": "a2eeaabe3fa56d2ae325e448a8a49f1b6b6a4ad80bcd3b7c92f42721ffa904db",
+    "bytes": 1471
+  },
+  {
+    "source": "output/issue8232-audit/phase231-wmf-paint-contracts/public-wmf-fallback-proof.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase231-wmf-paint-contracts/public-wmf-fallback-proof.json",
+    "sha256": "e5196f2c1e8024e1067ba7b24f6edf95654e8e68e1d17ca9aac6122aa68f45a1",
+    "bytes": 1399
+  },
+  {
+    "source": "output/issue8232-audit/phase231-wmf-paint-contracts/curve/current.png",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase231-wmf-paint-contracts/curve/current.png",
+    "sha256": "296db8746664dad8a04560a7a3154f5052e24d9f38eb4f0adf925fdef108284d",
+    "bytes": 31117
+  },
+  {
+    "source": "output/issue8232-audit/phase231-wmf-paint-contracts/curve/diagnostic-hidden.png",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase231-wmf-paint-contracts/curve/diagnostic-hidden.png",
+    "sha256": "ed8460736eb0b7dd3d2ac5c4dafec22e644e3af39d2c0c7d3b4ef63eb38c7116",
+    "bytes": 747
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/producer.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/producer.json",
+    "sha256": "d6e9b95597ce3274e61a3d942bbd1cb355ef64f98f5c33c53b2c3e7fded6541a",
+    "bytes": 5065
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/native-results.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/native-results.json",
+    "sha256": "cc9e8183de5f6e57922d33d3a5d4a8b71466cb0fddd03b237f133d4d30c117aa",
+    "bytes": 1283
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/runtime-registration.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/runtime-registration.json",
+    "sha256": "58151b82973f68556bea33409d8de2c2034ee9ff47bc413ee9df8833edcc341a",
+    "bytes": 1010
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/per-cell-preservation-counterexample.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/per-cell-preservation-counterexample.json",
+    "sha256": "713311554d6106eee7372beb3f8aed945889f90e13baff9d5cb2ec5785ecdcbf",
+    "bytes": 1074
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/transform-and-cell-owner-counterexample.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/transform-and-cell-owner-counterexample.json",
+    "sha256": "a42b275fbd7a90543cb3423cfc6962b2e09424b71f248fc98e4c2f356ef3ff56",
+    "bytes": 1427
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/negative-assertion-path-counterexamples.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/negative-assertion-path-counterexamples.json",
+    "sha256": "5a4fd9f11cef7647a600d900f4338677a29a5628439d1bd553e542789d77a222",
+    "bytes": 2374
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/evaluation-summary.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/evaluation-summary.json",
+    "sha256": "2f1b92b9ee6032b5cef0e511cdd7aa846eb3de7e101d5ed78aee3868f5b9578b",
+    "bytes": 491
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/all-center/current.png",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/all-center/current.png",
+    "sha256": "db575892181660651ff332b1e5cd2b4061a334ae4dacbbc33899c310b7243c11",
+    "bytes": 9818
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/all-center/diagnostic-ten-verticals-only.png",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/all-center/diagnostic-ten-verticals-only.png",
+    "sha256": "43c3d2b4df9c7a170aef7dd5dfdb1f99499126700d7a1f2b9579f1d5d688ed89",
+    "bytes": 7783
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/origin-center/current.png",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/origin-center/current.png",
+    "sha256": "c690dca09594046facc90c37b07d906ee2a577b98762717155323d1b8c01e23d",
+    "bytes": 15226
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/origin-center/diagnostic-centers-outside-own-cell.png",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/origin-center/diagnostic-centers-outside-own-cell.png",
+    "sha256": "c459b03a65ce3cfc7465bd0239e3616bc9040e83f2fa90bc3a018386f613ebc6",
+    "bytes": 15208
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/disabled/current.png",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/disabled/current.png",
+    "sha256": "1e2c1900cb482ea14bc780d2af6e8c342995233f2d2dc5192a629c8c36da00e3",
+    "bytes": 7950
+  },
+  {
+    "source": "output/issue8232-audit/phase232-cellzone-line-ownership/disabled/diagnostic-old-zone-as-path.png",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase232-cellzone-line-ownership/disabled/diagnostic-old-zone-as-path.png",
+    "sha256": "a41f9498ed2b2a4f6a119b809fe3f10b805974e59d29bd3d11084f4bd69ad6b2",
+    "bytes": 17395
+  },
+  {
+    "source": "output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/producer.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase235-gym-object-layout-serialization-contracts/producer.json",
+    "sha256": "5cd5bb2e94bd068e84a2279a4f405ba4bd9b4f0137cfd6f5ed781d5b6a7c3651",
+    "bytes": 76596
+  },
+  {
+    "source": "output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/execution-result.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase235-gym-object-layout-serialization-contracts/execution-result.json",
+    "sha256": "470c59382249c5df3e62c718588149e8f6eaa85e37b69a2ec75a4025b9b4f7fd",
+    "bytes": 485
+  },
+  {
+    "source": "output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/extract-oracle-probe.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase235-gym-object-layout-serialization-contracts/extract-oracle-probe.json",
+    "sha256": "948daeffd4d8dd38044e89b29333e79e37bea644c2cce311cb22bb9a9ebb8133",
+    "bytes": 2868
+  },
+  {
+    "source": "output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/actual-extract-results.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase235-gym-object-layout-serialization-contracts/actual-extract-results.json",
+    "sha256": "24da997b434a6cc54faeee0ceca8e1767bb5980bafe881d788589eb338e40dfe",
+    "bytes": 11061
+  },
+  {
+    "source": "output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/static-exception-injection-controls.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase235-gym-object-layout-serialization-contracts/static-exception-injection-controls.json",
+    "sha256": "1c1bcf20f4549d111dc5581f674c6d7a0ff0e575a48c4436b1991974f58643c8",
+    "bytes": 1552
+  },
+  {
+    "source": "output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/exempt-CD10-private-mutated-task.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase235-gym-object-layout-serialization-contracts/exempt-CD10-private-mutated-task.json",
+    "sha256": "6c9ff4c813b35ceea805d94da03284a1cf3c3a587fd8f87a947fdc12c26430d2",
+    "bytes": 983
+  },
+  {
+    "source": "output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/control-LR01-private-mutated-task.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase235-gym-object-layout-serialization-contracts/control-LR01-private-mutated-task.json",
+    "sha256": "3e212ce56d9f9dec235684aa6f1ebbbe56670a657d3c6cc653d14e670ce33b38",
+    "bytes": 559
+  },
+  {
+    "source": "output/issue8232-audit/phase236-form-fill-model-contracts/producer.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase236-form-fill-model-contracts/producer.json",
+    "sha256": "d8a9fe6fe847571c674eaa28910836f3a2de3c011c4b37f33704f7848ac17b3f",
+    "bytes": 1368
+  },
+  {
+    "source": "output/issue8232-audit/phase236-form-fill-model-contracts/execution-result.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase236-form-fill-model-contracts/execution-result.json",
+    "sha256": "1ce5b8a4cfd51219a22a7fdd135ef55ac1c76dd36fe69b9ec3feecec4618a597",
+    "bytes": 470
+  },
+  {
+    "source": "output/issue8232-audit/phase236-form-fill-model-contracts/catalog-input-boundary.json",
+    "published": "mydocs/pr/assets/issue8232/audit-20261027/supporting/phase236-form-fill-model-contracts/catalog-input-boundary.json",
+    "sha256": "b40d4abaf3ca501db61c67df877de0729a601acd5d2a2cb8c7d2198718885d41",
+    "bytes": 791
+  }
+]

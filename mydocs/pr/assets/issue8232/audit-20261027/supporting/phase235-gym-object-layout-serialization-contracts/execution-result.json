@@ -1,0 +1,16 @@
+{
+  "tests_run": 53,
+  "passed": 53,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "seconds": 0.3750758749956731,
+  "log": "/Users/tsjang/rhwp/output/issue8232-audit/phase235-gym-object-layout-serialization-contracts/existing-python-tests.log",
+  "log_sha256": "c2e4728766dd4f59c8f588f4bf2f8a43a2427e662883c5e1cc503d451fad72ad",
+  "all_tests_passed": true,
+  "actual_child_processes": [],
+  "repository_writes": [],
+  "additional_builds": 0,
+  "failure_ids": [],
+  "error_ids": []
+}
