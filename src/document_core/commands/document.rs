@@ -327,15 +327,15 @@ impl DocumentCore {
             && document
                 .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
                 .is_some();
-        // [#8310] rhwp 가 HWPX 에서 만든 HWP(`hwpx_lineage`)는 HWPX 저장 계약을 그대로
-        // 지닌다 — 저장 줄 없는 문단도 원본 HWPX 처럼 줄 없이 저장된다. 같은 문서가 같은
-        // 조판 입력이 되도록 HWPX 와 같은 XML import 규칙으로 연다.
+        // [#8310] 한컴 HWPX 에서 만든 HWP(`/RhwpHwpxOrigin` = 2)는 원본 HWPX 의 저장 줄
+        // 계약을 지닌다 — 원본 좌표와 "저장 줄 없음". 같은 문서가 같은 조판 입력이 되도록
+        // HWPX 와 같은 XML import 규칙으로 연다.
         let use_xml_import_semantics =
             (matches!(
                 source_format,
                 crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
             ) || (matches!(source_format, crate::parser::FileFormat::Hwp)
-                && document.provenance.hwpx_lineage))
+                && document.hwpx_origin_keeps_source_lines()))
                 && !hwp5_origin_hwpx
                 && !document.layout_profile().hwp3_native_layout();
 

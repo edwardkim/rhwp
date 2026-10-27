@@ -111,7 +111,10 @@ pub(crate) fn edit_verify_report(
             reloaded.document(),
         )
     } else {
-        rhwp::serializer::hwpx::roundtrip::diff_documents(doc.document(), reloaded.document())
+        rhwp::serializer::hwpx::roundtrip::diff_exported_hwp_documents(
+            doc.document(),
+            reloaded.document(),
+        )
     };
     let diff = if source_is_hwpx {
         rhwp::serializer::hwpx::roundtrip::strip_hwpx_to_hwp_noise(diff)

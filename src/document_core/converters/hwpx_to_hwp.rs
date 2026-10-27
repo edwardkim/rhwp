@@ -2862,8 +2862,18 @@ pub(crate) fn try_convert_if_hwpx_source<S: crate::storage::Storage>(
             .iter()
             .any(|(p, _)| p == HWPX_ORIGIN_STREAM_PATH)
     {
+        // [#8310] 한컴 HWPX(rhwp 출처 표식 없음)는 원본 저장 줄 계약을 지닌 변환본으로
+        // 표시한다. rhwp HWP3 출처 HWPX 는 HWP3 native 규칙으로 열리므로 종전 값을 둔다.
+        let marker: &[u8] = if doc
+            .hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH)
+            .is_some()
+        {
+            b"1"
+        } else {
+            crate::model::document::HWPX_ORIGIN_SOURCE_LINES
+        };
         let path = storage.string(HWPX_ORIGIN_STREAM_PATH)?;
-        let data = storage.copy_slice(b"1")?;
+        let data = storage.copy_slice(marker)?;
         storage.push(&mut doc.extra_streams, (path, data))?;
     }
     // [#3707] HWP3 출처 마커 — 재파싱이 쪽나눔 허용치를 되돌릴 수 있게 한다.

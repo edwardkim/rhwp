@@ -6,7 +6,11 @@
 //! (`LineSeg::TAG_IMPLEMENTATION_PROPERTY`)을 그대로 파일에 써서, 다시 연 HWP 가 원본과
 //! 다른 조판 입력이 됐다. worklife_balance_index_156607916 은 원본·한컴 Print PDF
 //! (`pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf`) 6쪽에서
-//! HWP 저장본이 7쪽이 됐다.
+//! devel `faa885e8b` 의 HWP 저장본이 7쪽이 됐다. `af6bb05b2` 에서는 쪽 소속이 우연히
+//! 맞지만 원본 좌표는 여전히 사라진다(`source_vertical_positions_survive_hwp_save`).
+//! 쪽 소속 검사는 이 계약이 쪽 배치를 다시 가르지 않는지를 지킨다.
+//!
+//! 새 계약은 `/RhwpHwpxOrigin` 값 `2`(`HWPX_ORIGIN_SOURCE_LINES`)로 표시한 변환본에만 적용한다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::paragraph::Paragraph;
@@ -86,4 +90,44 @@ fn native_hwp5_resave_keeps_stored_lines() {
             a.text
         );
     }
+}
+
+/// `convert --verify` 와 같은 비교 — 저장 계약대로 쓴 좌표·합성 줄은 저장 손실이 아니다.
+#[test]
+fn hwpx_to_hwp_verify_reports_no_loss() {
+    use rhwp::serializer::hwpx::roundtrip::{diff_exported_hwp_documents, strip_hwpx_to_hwp_noise};
+    let original = load("samples/issue6145/worklife_balance_index_156607916.hwpx");
+    let snapshot = original.prepare_hwp_export_snapshot();
+    let expected = snapshot.document().clone();
+    let reloaded =
+        DocumentCore::from_bytes(&snapshot.serialize().expect("HWP 저장")).expect("HWP 다시 열기");
+    let diff = strip_hwpx_to_hwp_noise(diff_exported_hwp_documents(&expected, reloaded.document()));
+    assert!(
+        diff.is_empty(),
+        "저장 손실이 없어야 한다: {:?}",
+        diff.differences
+    );
+}
+
+/// 반례: rhwp 가 HWP3 에서 만든 HWPX 를 HWP 로 저장하면 종전 HWPX 계보 값을 둔다 —
+/// 그 HWPX 는 HWP3 native 규칙으로 열리므로 원본 저장 줄 계약 대상이 아니다.
+#[test]
+fn hwp3_origin_hwpx_to_hwp_keeps_legacy_marker() {
+    let hwp3 = load("samples/hwp3-empty-cell.hwp");
+    let hwpx = DocumentCore::from_bytes(&hwp3.export_hwpx_native().expect("HWPX 저장"))
+        .expect("HWPX 다시 열기");
+    let hwp = DocumentCore::from_bytes(&hwpx.export_hwp_with_adapter().expect("HWP 저장"))
+        .expect("HWP 다시 열기");
+    assert!(hwp.document().provenance.hwpx_lineage);
+    let marker = hwp
+        .document()
+        .extra_streams
+        .iter()
+        .find(|(path, _)| path == "/RhwpHwpxOrigin")
+        .map(|(_, value)| value.as_slice());
+    assert_eq!(
+        marker,
+        Some(&b"1"[..]),
+        "HWP3 출처 HWPX 변환본은 종전 값 1 을 둔다"
+    );
 }

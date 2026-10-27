@@ -34,7 +34,7 @@ use std::time::{Duration, Instant};
 
 use rhwp::parser::FileFormat;
 use rhwp::serializer::hwpx::roundtrip::{
-    diff_documents, strip_cross_format_noise, strip_hwpx_to_hwp_noise,
+    diff_exported_hwp_documents, strip_cross_format_noise, strip_hwpx_to_hwp_noise,
 };
 
 /// 현재 저장 손실이 남아 있는 문서 — 각 항목은 **왜 아직 열려 있는지**를 밝힌다.
@@ -119,7 +119,7 @@ fn verify_roundtrip(data: &[u8]) -> Option<usize> {
     let bytes = snapshot.serialize().ok()?;
     let reloaded = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).ok()?;
 
-    let diff = diff_documents(&expected, reloaded.document());
+    let diff = diff_exported_hwp_documents(&expected, reloaded.document());
     let diff = match source_format {
         FileFormat::Hwp => diff,
         FileFormat::Hwpx => strip_hwpx_to_hwp_noise(diff),
