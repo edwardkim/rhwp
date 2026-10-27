@@ -478,14 +478,26 @@ impl TypesetEngine {
                 .filter_map(|(para, start)| to_local(*para).map(|local| (local, *start)))
                 .collect(),
         };
-        // 배치 맵은 호출마다 새로 모으므로 키에는 순서를 고정해 싣는다.
+        // 배치 맵은 호출마다 새로 모으므로 키에는 순서를 고정해 싣는다. `..` 없이 풀어
+        // 새 필드가 생기면 빌드가 깨지게 한다. 아래 scratch에 새 입력을 넘기면 이 키에도 싣는다.
         fn sorted<K: Ord, V>(map: &std::collections::HashMap<K, V>) -> Vec<(&K, &V)> {
             let mut entries: Vec<_> = map.iter().collect();
             entries.sort_by(|a, b| a.0.cmp(b.0));
             entries
         }
+        let crate::renderer::layout::EndnoteColumnPlacements {
+            host_compositions,
+            stored_paragraph_flow_ends,
+            stored_column_top_spacings,
+            wrap_anchors,
+            inline_placements,
+            inline_flow_plans,
+            paragraph_float_placements,
+            float_pushed_line_spacings,
+            page_band_flow_starts,
+        } = &placements;
         let mut key = format!(
-            "extent|{:p}|{:?}|{:?}|{:?}|{:?}|{}|{}|{:?}|{}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}",
+            "extent|{:p}|{:?}|{:?}|{:?}|{:?}|{}|{}|{:?}|{}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}",
             styles,
             st.profile,
             self.section_column_spacing_hu.get(),
@@ -500,14 +512,15 @@ impl TypesetEngine {
             ),
             source_base,
             local_sources,
-            sorted(&placements.wrap_anchors),
-            sorted(&placements.inline_placements),
-            sorted(&placements.inline_flow_plans),
-            sorted(&placements.stored_paragraph_flow_ends),
-            sorted(&placements.stored_column_top_spacings),
-            sorted(&placements.paragraph_float_placements),
-            sorted(&placements.float_pushed_line_spacings),
-            sorted(&placements.page_band_flow_starts),
+            sorted(host_compositions),
+            sorted(stored_paragraph_flow_ends),
+            sorted(stored_column_top_spacings),
+            sorted(wrap_anchors),
+            sorted(inline_placements),
+            sorted(inline_flow_plans),
+            sorted(paragraph_float_placements),
+            sorted(float_pushed_line_spacings),
+            sorted(page_band_flow_starts),
         );
         for (index, paragraph) in a3_paras.iter().enumerate() {
             push_replay_paragraph_key(&mut key, index, paragraph);

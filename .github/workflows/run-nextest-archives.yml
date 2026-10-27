@@ -66,6 +66,8 @@ jobs:
           FILTERSET: ${{ inputs.filterset }}
           PARTITION: ${{ inputs.partition }}
           RHWP_SECURITY_SWEEP_SAMPLES_JSON: ${{ inputs.security_sweep_samples_json }}
+          # release 빌드에서도 미주 단 측정을 재사용할 때마다 다시 측정해 키 누락을 잡는다.
+          RHWP_ENDNOTE_REPLAY_VERIFY: "1"
           DURATION_PULL_NUMBER: ${{ github.event.pull_request.number }}
           DURATION_HEAD_REPOSITORY_ID: ${{ github.event.pull_request.head.repo.id }}
           DURATION_HEAD_SHA: ${{ github.event.pull_request.head.sha }}

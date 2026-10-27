@@ -350,6 +350,9 @@ pub struct TypesetEngine {
     /// 여러 판정이 같은 단과 후보를 연달아 다시 그리므로 입력 키가 같으면 결과를 재사용한다.
     endnote_column_replays:
         std::cell::RefCell<std::collections::VecDeque<(String, (f64, Option<f64>))>>,
+    /// 재사용할 때마다 다시 측정해 키가 scratch 입력을 빠뜨리지 않았는지 확인한다.
+    /// 디버그 빌드와 `RHWP_ENDNOTE_REPLAY_VERIFY` 가 켠다.
+    endnote_replay_verify: bool,
 }
 
 /// 조판 중 현재 페이지/단 상태
@@ -3276,6 +3279,8 @@ impl TypesetEngine {
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             ),
             endnote_column_replays: Default::default(),
+            endnote_replay_verify: cfg!(debug_assertions)
+                || std::env::var_os("RHWP_ENDNOTE_REPLAY_VERIFY").is_some(),
         }
     }
 

@@ -22,7 +22,10 @@ include!("stored_ink_fit.inc.rs");
 const ENDNOTE_COLUMN_REPLAY_MEMO_LEN: usize = 8;
 
 /// scratch 단 측정 키에 문단 입력을 싣는다. `NumberingMarker` 는 `Debug` 로 값을
-/// 드러내지 않으므로 번호 문자열과 머리 속성을 따로 싣는다.
+/// 드러내지 않으므로 번호 문자열과 머리 속성을 따로 싣는다. 표 칸·주석·글상자 안
+/// 문단의 번호는 `{paragraph:?}` 에도 드러나지 않는다. 번호는 조판 전에 정해지고
+/// 조판은 `line_segs` 만 고치므로, 구역 진입 때 비우는 이 재사용 안에서 같은 문단의
+/// 중첩 번호는 바뀌지 않는다.
 fn push_replay_paragraph_key(key: &mut String, index: usize, paragraph: &Paragraph) {
     use crate::model::paragraph::NumberingMarker;
     use std::fmt::Write;
@@ -36,7 +39,9 @@ fn push_replay_paragraph_key(key: &mut String, index: usize, paragraph: &Paragra
 
 impl TypesetEngine {
     /// scratch 단 측정은 새 `LayoutEngine` 으로 입력만 소비하는 순수 계산이다. `key` 가
-    /// 그 입력 전부를 담으므로 같은 키의 최근 결과를 그대로 돌려준다.
+    /// 그 입력 전부를 담으므로 같은 키의 최근 결과를 그대로 돌려준다. 키가 입력을
+    /// 빠뜨리면 다른 측정에 같은 결과를 돌려주므로, 검증을 켜면 재사용할 때마다 다시
+    /// 측정해 비트 단위로 비교한다.
     fn replay_endnote_column(
         &self,
         key: String,
@@ -48,6 +53,16 @@ impl TypesetEngine {
             .iter()
             .find_map(|(cached, result)| (*cached == key).then_some(*result));
         if let Some(result) = hit {
+            if self.endnote_replay_verify {
+                let bits =
+                    |(bottom, ink): (f64, Option<f64>)| (bottom.to_bits(), ink.map(f64::to_bits));
+                let fresh = measure();
+                assert_eq!(
+                    bits(fresh),
+                    bits(result),
+                    "미주 단 측정 키가 scratch 입력을 빠뜨렸다: {fresh:?} != {result:?}"
+                );
+            }
             return result;
         }
         let result = measure();
@@ -369,7 +384,8 @@ impl TypesetEngine {
             // 빈 float host의 줄 예약은 페이지가 소유한 Shape 항목을 확인한다.
             // 단만 전달하면 실제 개체가 있는데도 일반 빈 문단으로 측정한다.
             page.column_contents.push(column.clone());
-            // `paint_paras` 는 아래 문단 외에는 기본 문단이다.
+            // `paint_paras` 는 아래 문단 외에는 기본 문단이다. 아래 scratch에 새 입력을
+            // 넘기면 이 키에도 싣는다.
             let mut key = format!(
                 "bottom|{:p}|{:?}|{}|{}|{:?}|{:?}|{:?}|{:?}|{:?}",
                 styles,
@@ -865,7 +881,8 @@ mod replay_memo_tests {
 
     #[test]
     fn same_column_input_reuses_scratch_measure_until_evicted() {
-        let engine = TypesetEngine::new(96.0);
+        let mut engine = TypesetEngine::new(96.0);
+        engine.endnote_replay_verify = false;
         let calls = std::cell::Cell::new(0);
         let measure = |bottom: f64| {
             calls.set(calls.get() + 1);
@@ -882,6 +899,16 @@ mod replay_memo_tests {
         }
         assert_eq!(replay("column", 20.0), (20.0, Some(19.0)));
         assert_eq!(calls.get(), ENDNOTE_COLUMN_REPLAY_MEMO_LEN + 2);
+    }
+
+    #[test]
+    #[should_panic(expected = "미주 단 측정 키가 scratch 입력을 빠뜨렸다")]
+    fn verify_rejects_reuse_when_key_misses_an_input() {
+        let mut engine = TypesetEngine::new(96.0);
+        engine.endnote_replay_verify = true;
+        engine.replay_endnote_column("column".to_string(), || (10.0, None));
+        engine.replay_endnote_column("column".to_string(), || (10.0, None));
+        engine.replay_endnote_column("column".to_string(), || (11.0, None));
     }
 
     #[test]
