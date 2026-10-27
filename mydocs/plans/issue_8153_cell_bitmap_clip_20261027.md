@@ -102,3 +102,46 @@ before FAIL 증거에서 제외하고 원인과 원본 로그를 ignored output�
 첫 드라이버의 143 원인은 확정하지 않으며 해당 관측도 보존한다. 재실행의 각 실행
 파일·로그 SHA와 실제 종료 코드는 `cell-clip-native/contracts-terminal-recheck.json`에 있다.
 공유 Cargo 산출물은 다시 컴파일하지 않고 기존 동결 실행 파일만 재사용했다.
+
+## fresh WASM·전쪽 Native와 정식 원본 회귀
+
+동일 제품 source 259의 새 DEV WASM은 source clean·jobs 8·codegen units 16,
+표준 build mode로 228.52초·종료 코드 0이었다. 동결 package의 JS/WASM SHA를
+확인한 뒤 같은 Native 글꼴 snapshot으로 실행했다. 두 원본 291·301쪽 네 조건은
+**fresh DEV WASM에서도 모두 raw 100%·미대응 0픽셀**이다. Native/fresh WASM/
+독립 Print의 동일 좌표 확대 4행과 WASM 전체 review를 직접 읽어, 잘못 노출됐던
+회색 행이 없어지고 Q 윤곽·본문·다음 문항이 유지됨을 확인했다. 최종 표준 최적화
+전쪽 WASM과 구분하며, 넓힌 fresh DEV WASM 83조건은 실행 중이다.
+
+제품 후보의 Native 전쪽 766조건도 종료 코드 0으로 완료했다. HWPX는 367/383,
+HWP는 364/383, 합계 **731/766조건**이 raw 100%·미대응 0이다. 최저 raw는
+양쪽 99.46283%, 미대응 합계는 HWPX 973·HWP 989이며 기준 b3ad보다 증가한
+미대응 픽셀은 없다. 의미 render tree 766개도 b3ad와 바이트 단위로 같다.
+전쪽 100% 목표에는 아직 Native 35조건과 현재 source의 전쪽 WASM 검증이 남는다.
+
+공통 clip 구조 3건과 기존 builder 14건은 실제 Cargo 실행에서 모두 통과했다.
+새 원본 회귀 `tests/cases/issue_8153_cell_bitmap_clip_ownership.rs`는 공개 API의
+원본 셀/그림 신원을 따라, 배경 paint의 누락·중복, 자체 물리 clip 유지,
+같은 셀의 본문 clip 중복 적용 금지와 상위 본문 clip 유지를 검사한다. 시스템
+글꼴 경로·프로그램 바이트를 요구하지 않으며 절대 px 좌표나 쪽수를 새로 고정하지 않는다.
+같은 원본/동작의 기존 builder·#5862·#6861/#5587·편람 경계 검사도 확인했다.
+그 보호 목적과 충돌하는 기존 assertion은 확인되지 않아 유지했다.
+
+최종 등록 파일 자체를 이전 b3ad와 현재 259의 동결 라이브러리에 각각 컴파일했다.
+이전은 의도한 clip 중복 assertion에서 **4 FAIL**, 현재는 **4 PASS**다.
+HWP5 원본의 채움은 사양 표 31의 값 5인 FitToSize이고 HWPX는 TOTAL이다.
+두 원본을 모두 TOTAL로 가정했던 초기 등록 진단은 제외하고, 원본별 정확한
+속성을 검사하도록 고쳐 같은 파일을 재실행했다. 제품의 공통 수용 조건은 두 형식을
+이미 구분해 소비하며 이 검증을 위해 구현이나 원본을 바꾸지 않았다.
+
+suite는 정본 `--prepare`로 자동 수집했다. `regression_suite_020`에 4건이 들어가고
+28 suites + 20 exceptions = 48/48 targets다. 파생 manifest/harness는 ignored이며,
+Cargo registry·suite policy·CI 호출을 추가 변경하지 않았다. `--adopt-new`만 실행하면
+정리되지 않은 과거 예외가 남던 관측은 정식 prepare로 해소했으며, 그 실패를 코드
+회귀의 증거로 사용하지 않는다. 실제 Cargo suite 경로의 필터 4건 실행이 다음 검증이다.
+
+실행 근거는 `cell-clip-wasm-dev/{build.json,wasm-boundary-result.json}`,
+`cell-clip-native/{unit-results.json,native-whole/whole-result.json}`,
+`p289-301-source-contract/formal-cell-bg-before-after-result.json`이다.
+확대 PNG는 `cell-clip-native/native-boundary/native-fresh-wasm-print-four-boundaries-zoom.png`다.
+최종 PR 제출 TSV·중요 전쪽 ±2px 회귀·표준 최적화 fresh WASM·전체 필수 검증은 미완료다.
