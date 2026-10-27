@@ -193,8 +193,8 @@ pub(super) fn payload(
     render_payload(image, bbox, pixel, fonts, svg, false)
 }
 
-/// 색 보정 SVG도 같은 Print 장치에서 재생한다. painter마다 낮은 해상도에서
-/// 다시 축소하거나 이미 적용한 색 전달을 두 번 처리하지 않는다.
+/// 단일 raster WMF를 같은 Print 장치에서 재생한 뒤 색을 보정한다.
+/// 비균일 원본의 독립 Print에서 확인한 축소→명암 순서를 유지한다.
 pub(super) fn picture_payload(
     image: &ImageNode,
     bbox: BoundingBox,
@@ -215,7 +215,8 @@ pub(super) fn picture_payload(
     if !resolved.suppress_effects || resolved.mime != "image/svg+xml" {
         return None;
     }
-    render_payload(image, bbox, pixel, fonts, resolved.data, true)
+    let svg = crate::renderer::svg::convert_wmf_to_svg(source)?;
+    render_payload(image, bbox, pixel, fonts, svg, true)
 }
 
 fn render_payload(
@@ -224,21 +225,21 @@ fn render_payload(
     pixel: f64,
     fonts: &MetafileFonts,
     svg: Vec<u8>,
-    tone_baked: bool,
+    picture_transfer: bool,
 ) -> Option<ResolvedImagePayload> {
     let source = image.data.as_deref()?;
     if svg.len() > MAX_SVG_BYTES {
         return None;
     }
     let natural = crate::renderer::metafile_geometry::svg_viewport(&svg)?;
-    let (width, height) = if tone_baked {
+    let (width, height) = if picture_transfer {
         let (full, _) = super::metafile_picture::geometry(image, bbox)?;
         device_size_for_extent((full.width, full.height), natural, pixel)?
     } else {
         device_size(image, bbox, natural, pixel)?
     };
     // 색·mask 공통 표본기가 수용하는 한도를 게시 전에 확인한다.
-    if tone_baked
+    if picture_transfer
         && (width > 8192
             || height > 8192
             || u64::from(width) * u64::from(height) > 32 * 1024 * 1024)
@@ -249,9 +250,10 @@ fn render_payload(
     let font_sources = fonts.coverage_fingerprint(&font_requests)?;
     let mut hash = blake3::Hasher::new();
     hash.update(source);
-    if tone_baked {
+    if picture_transfer {
         hash.update(b"picture-tone-separate-mask");
         hash.update(&svg);
+        hash.update(&[image.brightness as u8, image.contrast as u8]);
     }
     hash.update(&width.to_le_bytes());
     hash.update(&height.to_le_bytes());
@@ -303,8 +305,8 @@ fn render_payload(
             height as f32 / tree.size().height(),
         );
         resvg::render(&tree, scale, &mut pixmap.as_mut());
-        let data = if tone_baked {
-            picture_transmission(pixmap)?
+        let data = if picture_transfer {
+            picture_transmission(pixmap, image)?
         } else {
             transmission(pixmap)?
         };
@@ -315,21 +317,21 @@ fn render_payload(
         data,
         mime: "image/png",
         kind: ResolvedImageKind::OutputDevice,
-        suppress_effects: tone_baked,
+        suppress_effects: picture_transfer,
     })
 }
 
-fn picture_transmission(pixmap: tiny_skia::Pixmap) -> Option<Vec<u8>> {
+fn picture_transmission(pixmap: tiny_skia::Pixmap, source: &ImageNode) -> Option<Vec<u8>> {
     let (width, height) = (pixmap.width(), pixmap.height());
-    let mut pixels = pixmap.take_demultiplied();
-    // WMF 창의 비점유 부분은 흰색 평면과 별도의 coverage다.
-    // 이미 구운 색에는 기존 transmission의 추가 확장을 적용하지 않는다.
-    for pixel in pixels.chunks_exact_mut(4) {
-        if pixel[3] == 0 {
-            pixel[..3].fill(255);
-        }
-    }
-    let image = image::RgbaImage::from_raw(width, height, pixels)?;
+    let mut image = image::RgbaImage::from_raw(width, height, pixmap.take_demultiplied())?;
+    // 명암 clipping은 보간과 교환할 수 없다. 장치 재생이 끝난 색에만 적용한다.
+    // 비점유 부분의 흰색과 coverage도 같은 공통 함수가 분리해 보존한다.
+    crate::renderer::image_resolver::adjust_wmf_device_pixels(
+        &mut image,
+        source.brightness,
+        source.contrast,
+        false,
+    );
     let mut encoded = std::io::Cursor::new(Vec::new());
     image::DynamicImage::ImageRgba8(image)
         .write_to(&mut encoded, image::ImageFormat::Png)

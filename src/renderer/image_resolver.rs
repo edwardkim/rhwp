@@ -39,6 +39,7 @@ pub(crate) use picture_adjustments::{
     adjusted_picture_bytes, picture_tone_parameters, resolve_page_background_tone,
 };
 mod wmf_picture;
+pub(crate) use wmf_picture::adjust_pixels as adjust_wmf_device_pixels;
 /// 명시된 crop 좌표 범위는 보존한다. 원본 WMF의 범위가 없으면 한컴의
 /// 메타파일 자르기 좌표계(축마다 15000)를 사용한다. SVG/PNG 변환 뒤의 픽셀
 /// 크기는 이 범위의 단위가 아니므로 원본 데이터에서 한 번 판정한다.
