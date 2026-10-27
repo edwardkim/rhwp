@@ -101,3 +101,10 @@ TAC 프레임과 뒤 표의 소유·포함·순서, 원본 저장 내용 보존�
 기존 진단의 수정 전 2 FAIL/후 2 PASS와 Native/fresh DEV WASM의 같은 쪽
 100%·미대응 0픽셀을 선행 근거로 사용한다. 정식 파일의 실제 수집·실행 결과는
 현재 알파 보정 Native 빌드가 종료된 뒤 별도로 기록한다. 아직 실행 전이다.
+
+정식 파일의 실제 동결 라이브러리 실행도 완료했다. source 9bab에서는 호스트 포함
+관계에서 **2 FAIL**, source b2b에서는 **2 PASS**이며 원본 저장 내용도 보존했다.
+같은 파일의 SHA-256과 양쪽 라이브러리 SHA는
+`continuous-text-shadow/alpha-mask-native/contracts/result.json`에 연결한다.
+자동 수집 prepare는 이 파일을 `regression_suite_004`에 배정했으며 생성 suite는
+기존 28개를 유지했다. 실제 Cargo의 해당 suite 실행은 아직 별도 완료 전이다.

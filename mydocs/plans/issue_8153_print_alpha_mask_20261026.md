@@ -182,3 +182,50 @@ premultiply해 투명 픽셀 아래 RGB를 잃거나, 결합된 RGBA를 두 번�
 스크립트·원본·PDF·관측 JSON은 ignored
 `alpha-print-contract/independent-second-control/`에 있다. 실험 자료는 아직
 정식 fixture가 아니며, 정식 회귀를 추가할 때 독립 출력의 보존 조건을 함께 적용한다.
+
+## 공통 제품 후보의 실제 Native 결과
+
+제품 구현 `b2b33fda6027c03cbcfaa051ee1f5968fbb7930d`의 실제 Native 빌드는
+target/pr-review·jobs 8에서 정상 종료했다. 빌드 시간은 약 13분 20초이며
+동결 실행 파일과 라이브러리의 SHA-256을 `alpha-mask-native/producer/receipt.json`에
+보존했다. 두 원본 각 40쪽, 80조건을 실제 출력해 source 259의 동일 페이지와
+대조했으며 미대응 증가가 없다. 양쪽 255쪽은 **265→0픽셀, raw 100%**다.
+실제 제품 전후와 독립 Print의 같은 영역을 확대해 세로 줄무늬 제거와 도형·연결선·
+문자 보존도 확인했다. 진단의 자원 교체 결과만으로 제품 통과를 주장하지 않았다.
+
+같은 라이브러리에 연결한 정식 원본 검사에서 TAC 2, 셀 clip 4, 낱말 간격 2,
+한자 3건이 통과했다. TAC의 같은 정식 파일은 수정 전 source 9bab에서 2 FAIL이다.
+Studio 타입 검사의 새 코드 null 처리 오류는 `2379bd13c5`에서 보정했으며 재검사는
+exit 0, Studio 전체 단위 검사는 2,454 PASS·0 FAIL·0 skipped다.
+
+서로 다른 크기의 단일 그림 대조군은 **색·마스크 자원의 독립 근거**로만 사용한다.
+그림 문단을 분리한 기존 wrapper는 Native와 한컴 사이에 위치 차이가 있어
+정식 배치 fixture의 선행 gate를 충족하지 않았다. 그 wrapper의 낮은 페이지 점수를
+제품 전체 문서의 회귀나 허용된 fixture로 분류하지 않으며 임의 좌표로 맞추지 않는다.
+제품의 실제 배치·표본 검증은 원본 두 편람 255쪽을 동일한 기존 PDF와 대조한다.
+
+현재 Native 전쪽 766조건, fresh DEV WASM 브라우저 83조건과 실제 Cargo의
+색/분리 평면 단위 검사는 진행 중이다. 최종 표준 최적화 WASM 전쪽·전체 Rust와
+필수 검증, 모든 1,532조건 100%·미대응 0과 PR 준비 완료는 아직 입증하지 않았다.
+중간 결과와 로그는 `continuous-text-shadow/alpha-mask-native*`,
+`alpha-mask-wasm-dev*`, `alpha-mask-unit-*`에 구분한다.
+
+실제 Cargo의 새 단위 검사도 정상 종료했다. PArgb 정수 경계·Bayer 방향 2건과
+투명 픽셀 아래 RGB를 보존하는 분리 표본 1건, 총 3 PASS다. 정식 suite 전체의
+완료를 뜻하지 않는다. 첫 lib test 빌드는 약 11분 10초, 같은 실행 파일의
+두 번째 필터는 약 11초였다. `alpha-mask-native/unit-result.json`에 연결한다.
+
+현재 compiled DEV WASM의 `rasterizePrintMaskedImage`도 실제 호출했다.
+장치 영역 `(170,658,457,208)`의 RGBA는 기존 독립 색/마스크 평면 결과와
+전 바이트 같다. SHA-256은
+`f7671c6f50dc3f44b174287c550682e9c2e3ef50dc6f175e18a24699bd9304ac`다.
+`alpha-print-contract/encoded-masked-api/result.json`에 보존했으며 문서 backend
+전체의 통과로 대신하지 않는다.
+
+실제 fresh sweep는 CanvasKit이 아니라 Rust Canvas2D를 호출한다. 소비 경로
+재확인에서 초기 후보가 그곳의 `draw_encoded`에서 일반 Canvas 디코딩을 거쳤던
+연결 누락을 확인했다. `4bcf8b0af3`은 디코딩 전에 동일한 공통 masked sampler를
+소비하도록 보완한다. 기존 불투명 경로와 새 경로가 장치 사각형·재생을 공유하고
+표본 수학을 복제하지 않는다. 이 파일은 wasm32 전용이므로 검증한 Native 코드와
+단위 검사 소스는 바뀌지 않았다. 해당 연결을 포함한 새 패키지에서 두 원본 255쪽을
+먼저 재검증한다. 기존 c8e 패키지는 이 보완을 포함하지 않으므로 최종 근거로 쓰지 않는다.
