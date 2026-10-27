@@ -1857,14 +1857,14 @@
       "existing_comment_id": 6440891320,
       "previous_primary": null,
       "reported_document": "재정경제부 고용동향 브리핑 HWPX 3쪽",
-      "status": "substitute_input_disclosed",
+      "status": "background_document_missing_unit_contract",
       "evidence": [],
       "original_document_pass_claim": false,
-      "disposition": "원 PR에 검증용 HWP/HWPX 원본이 첨부되어 있지 않아 유사 문서로 대체했다. 아래 결과는 명시한 대체 입력의 검증이며 원 PR에서 보고한 실물 문서를 직접 검증했다는 뜻이 아니다.",
+      "disposition": "원 PR에 검증용 HWP/HWPX 원본이 첨부되어 있지 않아 현재 실행 근거는 파일을 소비하지 않는 단위 계약에 한정한다. 유사 문서로 대체한 시각 증거가 있는 것으로 표시하지 않으며 배경 실물 문서의 직접 검증을 주장하지 않는다.",
       "substitution_authorized": true,
       "author_original_byte_identity_verified": false,
       "substitution_reason": "원 PR 검증용 HWP/HWPX 미첨부",
-      "substitution_disclosure": "원 PR에 검증용 HWP/HWPX 원본이 첨부되어 있지 않아 유사 문서로 대체했다. 아래 결과는 명시한 대체 입력의 검증이며 원 PR에서 보고한 실물 문서를 직접 검증했다는 뜻이 아니다.",
+      "substitution_disclosure": "원 PR에 검증용 HWP/HWPX 원본이 첨부되어 있지 않아 현재 실행 근거는 파일을 소비하지 않는 단위 계약에 한정한다. 유사 문서로 대체한 시각 증거가 있는 것으로 표시하지 않으며 배경 실물 문서의 직접 검증을 주장하지 않는다.",
       "official_source_identification": {
         "pr": 8027,
         "title": "2026년 9월 고용동향 및 평가",
@@ -1879,7 +1879,8 @@
         "role": "공식 배포처에서 내용 대응을 확인한 대체 문서; 작성자 원본 바이트 동일성은 미확인",
         "substitute_input": true
       },
-      "validation_scope": "파일을 소비하지 않는 기존 단위 계약만 검증했다. 실물 문서의 시각 완료 또는 대체 문서의 Visual Sweep 완료를 주장하지 않는다."
+      "validation_scope": "파일을 소비하지 않는 기존 단위 계약만 검증했다. 실물 문서의 시각 완료 또는 대체 문서의 Visual Sweep 완료를 주장하지 않는다.",
+      "substitution_applied": false
     },
     {
       "pr": 8029,
@@ -1888,15 +1889,16 @@
       "existing_comment_id": 6440892871,
       "previous_primary": null,
       "reported_document": "중앙선관위 선거 안내 포스터",
-      "status": "substitute_input_disclosed",
+      "status": "background_document_missing_unit_contract",
       "evidence": [],
       "original_document_pass_claim": false,
-      "disposition": "원 PR에 검증용 HWP/HWPX 원본이 첨부되어 있지 않아 유사 문서로 대체했다. 아래 결과는 명시한 대체 입력의 검증이며 원 PR에서 보고한 실물 문서를 직접 검증했다는 뜻이 아니다.",
+      "disposition": "원 PR에 검증용 HWP/HWPX 원본이 첨부되어 있지 않아 현재 실행 근거는 파일을 소비하지 않는 단위 계약에 한정한다. 유사 문서로 대체한 시각 증거가 있는 것으로 표시하지 않으며 배경 실물 문서의 직접 검증을 주장하지 않는다.",
       "substitution_authorized": true,
       "author_original_byte_identity_verified": false,
       "substitution_reason": "원 PR 검증용 HWP/HWPX 미첨부",
-      "substitution_disclosure": "원 PR에 검증용 HWP/HWPX 원본이 첨부되어 있지 않아 유사 문서로 대체했다. 아래 결과는 명시한 대체 입력의 검증이며 원 PR에서 보고한 실물 문서를 직접 검증했다는 뜻이 아니다.",
-      "validation_scope": "파일을 소비하지 않는 기존 단위 계약만 검증했다. 실물 문서의 시각 완료 또는 대체 문서의 Visual Sweep 완료를 주장하지 않는다."
+      "substitution_disclosure": "원 PR에 검증용 HWP/HWPX 원본이 첨부되어 있지 않아 현재 실행 근거는 파일을 소비하지 않는 단위 계약에 한정한다. 유사 문서로 대체한 시각 증거가 있는 것으로 표시하지 않으며 배경 실물 문서의 직접 검증을 주장하지 않는다.",
+      "validation_scope": "파일을 소비하지 않는 기존 단위 계약만 검증했다. 실물 문서의 시각 완료 또는 대체 문서의 Visual Sweep 완료를 주장하지 않는다.",
+      "substitution_applied": false
     },
     {
       "pr": 8030,
@@ -1905,21 +1907,22 @@
       "existing_comment_id": 6440894199,
       "previous_primary": null,
       "reported_document": "표준근로계약서의 따옴표",
-      "status": "substitute_input_disclosed",
+      "status": "background_document_missing_unit_contract",
       "evidence": [],
       "original_document_pass_claim": false,
-      "disposition": "원 PR에 검증용 HWP/HWPX 원본이 첨부되어 있지 않아 유사 문서로 대체했다. 아래 결과는 명시한 대체 입력의 검증이며 원 PR에서 보고한 실물 문서를 직접 검증했다는 뜻이 아니다.",
+      "disposition": "원 PR에 검증용 HWP/HWPX 원본이 첨부되어 있지 않아 현재 실행 근거는 파일을 소비하지 않는 단위 계약에 한정한다. 유사 문서로 대체한 시각 증거가 있는 것으로 표시하지 않으며 배경 실물 문서의 직접 검증을 주장하지 않는다.",
       "substitution_authorized": true,
       "author_original_byte_identity_verified": false,
       "substitution_reason": "원 PR 검증용 HWP/HWPX 미첨부",
-      "substitution_disclosure": "원 PR에 검증용 HWP/HWPX 원본이 첨부되어 있지 않아 유사 문서로 대체했다. 아래 결과는 명시한 대체 입력의 검증이며 원 PR에서 보고한 실물 문서를 직접 검증했다는 뜻이 아니다.",
+      "substitution_disclosure": "원 PR에 검증용 HWP/HWPX 원본이 첨부되어 있지 않아 현재 실행 근거는 파일을 소비하지 않는 단위 계약에 한정한다. 유사 문서로 대체한 시각 증거가 있는 것으로 표시하지 않으며 배경 실물 문서의 직접 검증을 주장하지 않는다.",
       "validation_scope": "파일을 소비하지 않는 기존 단위 계약만 검증했다. 실물 문서의 시각 완료 또는 대체 문서의 Visual Sweep 완료를 주장하지 않는다.",
       "candidate_similar_document": {
         "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8030-new-official.hwp",
         "input_sha256": "8acbe67ba95fd53432b80cbdbc82e9cb118534775ada58b832437eae2b4ea99c",
         "role": "고용노동부 2025년 표준근로계약서; 원 PR의 잘린 따옴표 캡처와 판본 동일성 미확인",
         "substitute_input": true
-      }
+      },
+      "substitution_applied": false
     },
     {
       "pr": 8031,

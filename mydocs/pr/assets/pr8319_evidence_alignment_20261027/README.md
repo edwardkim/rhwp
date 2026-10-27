@@ -1,7 +1,7 @@
 # PR #8319 후속 증적의 입력 대응 정정
 
 원 PR의 실제 보고 문서와 공개 API 재현 입력을 혼동한 이미지 연결을 정정한다.
-**원 PR에 검증용 HWP/HWPX 원본이 첨부되지 않은 사례는 유사 문서로 대체했음을 표시한다.**
+**원 PR에 검증용 HWP/HWPX 원본이 첨부되지 않아 유사 문서를 사용한 사례에는 대체 여부를 표시한다. 파일 없는 단위 계약은 별도로 구분한다.**
 대체 자료는 원 보고 문서를 직접 검증한 것으로 표현하지 않는다. 공식 배포처에서 내용 대응을 확인한 자료도 작성자의 원본 바이트와 동일하다는 뜻은 아니다.
 
 39개 유효 재현 입력은 같은 입력·Print·페이지의 Native/fresh WASM 전쪽 TSV와 대표 review/overlay를 새로 산출했다.
@@ -22,9 +22,9 @@
 | [#7904](https://github.com/edwardkim/rhwp/pull/7904) | 공개 재현 입력 | mydocs/pr/assets/s21_20261027/inputs/211.hwpx |
 | [#8014](https://github.com/edwardkim/rhwp/pull/8014) | 유사 문서 대체 | mydocs/pr/assets/s21_20261027/inputs/195.hwpx |
 | [#8025](https://github.com/edwardkim/rhwp/pull/8025) | 단위 계약 / 파일 없는 단위 계약 | 문서 입력 없음 |
-| [#8027](https://github.com/edwardkim/rhwp/pull/8027) | 유사 문서 대체 / 파일 없는 단위 계약 | 재정경제부 고용동향 브리핑 HWPX 3쪽 |
-| [#8029](https://github.com/edwardkim/rhwp/pull/8029) | 유사 문서 대체 / 파일 없는 단위 계약 | 중앙선관위 선거 안내 포스터 |
-| [#8030](https://github.com/edwardkim/rhwp/pull/8030) | 유사 문서 대체 / 파일 없는 단위 계약 | 표준근로계약서의 따옴표 |
+| [#8027](https://github.com/edwardkim/rhwp/pull/8027) | 원문 미첨부 / 파일 없는 단위 계약 | 재정경제부 고용동향 브리핑 HWPX 3쪽 |
+| [#8029](https://github.com/edwardkim/rhwp/pull/8029) | 원문 미첨부 / 파일 없는 단위 계약 | 중앙선관위 선거 안내 포스터 |
+| [#8030](https://github.com/edwardkim/rhwp/pull/8030) | 원문 미첨부 / 파일 없는 단위 계약 | 표준근로계약서의 따옴표 |
 | [#8031](https://github.com/edwardkim/rhwp/pull/8031) | 유사 문서 대체 | tests/fixtures/pr8031_page_number_cell/pr8031-api-defined-page-number-cell.hwpx |
 | [#8032](https://github.com/edwardkim/rhwp/pull/8032) | 공개 재현 입력 | tests/fixtures/pr8032_print_alpha/wide.hwpx |
 | [#8033](https://github.com/edwardkim/rhwp/pull/8033) | 유사 문서 대체 / 추가 진단 실패 | 서울시교육청 가정통신문의 공익제보센터 안내 표 |
