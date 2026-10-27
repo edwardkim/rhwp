@@ -11,6 +11,9 @@ use crate::model::paragraph::Paragraph;
 use crate::renderer::layout::{CellContext, CellPathEntry};
 use crate::renderer::render_tree::TextRunNode;
 
+/// 이보다 좁게 보이는 셀 clip은 다 가려진 것으로 본다.
+const HIT_CLIP_EPSILON_PX: f64 = 0.5;
+
 /// 묶음 개체(GSO Group)인가. 자식 Image 노드는 외곽 Group의 control_index를 물려받는다.
 fn is_group_shape_control(ctrl: &Control) -> bool {
     matches!(
@@ -1661,6 +1664,9 @@ impl DocumentCore {
             current_table_meta: Option<(usize, usize, usize)>,
             current_table_ctx: Option<CellContext>,
             current_cell_ctx: Option<CellContext>,
+            // 조상 셀 clip을 겹친 가로 보이는 범위. 부모 칸보다 넓은 중첩 표가 잘린 자리는
+            // 한컴처럼 클릭으로 고를 수 없다(Tab으로만 들어간다).
+            current_clip: Option<(f64, f64)>,
         ) {
             // Column 노드 진입 시 칼럼 인덱스 전파
             let col = if let RenderNodeType::Column(col_idx) = node.node_type {
@@ -1731,9 +1737,24 @@ impl DocumentCore {
                     h: node.bbox.height,
                 });
             }
+            // 셀 clip은 bbox다. 레이아웃은 직계 자식 칸만 부모 칸에 맞춰 줄이므로 조상 clip을
+            // 모두 겹쳐야 실제로 보이는 범위가 된다.
+            let clip = match &node.node_type {
+                RenderNodeType::TableCell(tc) if tc.clip => {
+                    let (left, right) = (node.bbox.x, node.bbox.x + node.bbox.width);
+                    Some(current_clip.map_or((left, right), |(l, r)| (l.max(left), r.min(right))))
+                }
+                _ => current_clip,
+            };
+            let fully_clipped = |x: f64, w: f64| {
+                clip.is_some_and(|(l, r)| r - l < HIT_CLIP_EPSILON_PX || x > r || x + w < l)
+            };
             // TableCell 노드의 bbox 수집
             if let RenderNodeType::TableCell(ref tc) = node.node_type {
-                if let Some(cell_idx) = tc.model_cell_index {
+                if let Some(cell_idx) = tc
+                    .model_cell_index
+                    .filter(|_| !fully_clipped(node.bbox.x, node.bbox.width))
+                {
                     let cell_ctx = cell_ctx_for_table_cell(
                         table_ctx.as_ref(),
                         cell_idx as usize,
@@ -1752,9 +1773,10 @@ impl DocumentCore {
                         control_index: ci,
                         cell_index: cell_idx as usize,
                         text_direction: tc.text_direction,
-                        x: node.bbox.x,
+                        x: node.bbox.x.max(clip.map_or(f64::MIN, |c| c.0)),
                         y: node.bbox.y,
-                        w: node.bbox.width,
+                        w: (node.bbox.x + node.bbox.width).min(clip.map_or(f64::MAX, |c| c.1))
+                            - node.bbox.x.max(clip.map_or(f64::MIN, |c| c.0)),
                         h: node.bbox.height,
                         has_meta,
                         cell_context: cell_ctx,
@@ -1766,7 +1788,8 @@ impl DocumentCore {
                     let cell_context =
                         effective_cell_context(&text_run.cell_context, &current_cell_ctx);
                     // 머리말/꼬리말·각주 마커 TextRun 건너뛰기
-                    if pi >= (usize::MAX - 3000) { /* skip marker runs */
+                    if pi >= (usize::MAX - 3000) || fully_clipped(node.bbox.x, node.bbox.width) {
+                        /* 머리말·각주 마커 런과 셀 clip에 가려진 런은 건너뛴다 */
                     } else if let Some(cs) = text_run.char_start {
                         let ecc = effective_char_count(text_run);
                         let positions = if text_run.char_overlap.is_some() && ecc == 1 {
@@ -1782,7 +1805,13 @@ impl DocumentCore {
                             char_positions: positions,
                             bbox_x: node.bbox.x,
                             bbox_y: node.bbox.y,
-                            bbox_w: node.bbox.width,
+                            // 오른쪽이 잘린 런은 보이는 데까지만 누를 수 있다. 글자 위치는
+                            // 런 왼쪽 기준이라 왼쪽 끝은 그대로 둔다.
+                            // ponytail: 왼쪽 clip은 다루지 않는다. 과폭 중첩 표는 셀 왼쪽
+                            // 여백에서 시작해 오른쪽으로만 넘친다.
+                            bbox_w: clip.map_or(node.bbox.width, |(_, r)| {
+                                node.bbox.width.min(r - node.bbox.x)
+                            }),
                             bbox_h: node.bbox.height,
                             cell_context,
                             is_textbox: false,
@@ -1815,6 +1844,7 @@ impl DocumentCore {
                     table_meta,
                     table_ctx.clone(),
                     child_cell_ctx.clone(),
+                    clip,
                 );
             }
         }
@@ -2035,6 +2065,7 @@ impl DocumentCore {
             &mut guide_runs,
             &mut cell_bboxes,
             &mut textbox_bboxes,
+            None,
             None,
             None,
             None,
