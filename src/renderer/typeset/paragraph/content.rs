@@ -432,6 +432,65 @@ pub(super) fn stored_successor_flow(
     )
 }
 
+/// 일반 진입과 분할 재시도가 수용한 첫 문단의 저장 좌표 원점을 공유한다.
+pub(in crate::renderer::typeset) fn initialize_first_paragraph_origin(
+    st: &mut TypesetState,
+    para_idx: usize,
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) {
+    if st.col_count != 1 || !st.current_items.is_empty() {
+        return;
+    }
+    st.record_vpos_column_anchor(st.current_height);
+    st.record_vpos_page_origin(
+        paragraphs
+            .get(para_idx)
+            .and_then(|p| p.line_segs.first())
+            .map(|seg| {
+                // 배치가 보존하는 문단 앞 여백을 측정의 쪽 원점으로 빼지 않는다.
+                let margin_is_page_relative = (st.profile.hwpx_stored_layout()
+                    || st.profile.hwp5_stored_pagination_layout()
+                    || st.profile.hwp3_native_layout())
+                    && !st.profile.session_edited()
+                    && paragraphs.get(para_idx).is_some_and(|first| {
+                        crate::renderer::stored_page_origin::stored_first_margin_is_page_relative(
+                            first,
+                            paragraphs.get(para_idx + 1),
+                            styles,
+                            dpi,
+                        )
+                    });
+                if margin_is_page_relative {
+                    0
+                } else {
+                    seg.vertical_pos
+                        - paragraphs.get(para_idx).map_or(0, |first| {
+                            crate::renderer::layout::synthesized_first_margin_hu(first, styles, dpi)
+                        })
+                }
+            }),
+    );
+    st.record_vpos_lazy_origin(None);
+    st.record_stored_column_origin(st.vpos_page_base.map(|base| (base, st.vpos_col_anchor)));
+    // [#2243] 저장 여부 태깅 — dirty 역스냅 금지 판단용.
+    st.record_vpos_origin_provenance(
+        paragraphs
+            .get(para_idx)
+            .and_then(|p| p.line_segs.first())
+            .is_some_and(|s| {
+                s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            }),
+    );
+    st.record_vpos_ladder_validity(paragraphs.get(para_idx).is_some_and(|para| {
+        !para.line_segs.is_empty()
+            && para.line_segs.iter().all(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            })
+    }));
+}
+
 /// paint와 같은 첫 수용 항목의 저장 원점과 물리 앵커를 보존한다.
 /// 이미 확립한 단 첫 여백 프레임은 실제 첫 vpos로 덮어쓰지 않는다.
 pub(super) fn record_first_fragment_origin(

@@ -20983,7 +20983,8 @@ impl LayoutEngine {
                 crate::model::table::TablePageBreak::RowBreak
             );
         if !(native_row_source || hwpx_row_source)
-            || self.profile.get().session_edited()
+            || (self.profile.get().session_edited()
+                && !crate::renderer::float_placement::stored_plain_table_source_is_current(table))
             || self
                 .render_normalization
                 .borrow()

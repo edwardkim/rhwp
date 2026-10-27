@@ -788,6 +788,9 @@ impl DocumentCore {
             self.document.sections[section_idx]
                 .paragraphs
                 .insert(para_idx, table_para);
+            if let Some(measured) = self.measured_sections.get_mut(section_idx) {
+                measured.shift_for_insert(para_idx);
+            }
             insert_para_idx = para_idx;
             table_control_idx = 0;
         } else {
@@ -799,10 +802,16 @@ impl DocumentCore {
                 self.document.sections[section_idx]
                     .paragraphs
                     .insert(para_idx + 1, new_para);
+                if let Some(measured) = self.measured_sections.get_mut(section_idx) {
+                    measured.shift_for_insert(para_idx + 1);
+                }
                 // 표 문단은 분할된 뒤에 삽입
                 self.document.sections[section_idx]
                     .paragraphs
                     .insert(para_idx + 1, table_para);
+                if let Some(measured) = self.measured_sections.get_mut(section_idx) {
+                    measured.shift_for_insert(para_idx + 1);
+                }
                 insert_para_idx = para_idx + 1;
                 table_control_idx = 0;
             } else {
@@ -810,6 +819,9 @@ impl DocumentCore {
                 self.document.sections[section_idx]
                     .paragraphs
                     .insert(para_idx + 1, table_para);
+                if let Some(measured) = self.measured_sections.get_mut(section_idx) {
+                    measured.shift_for_insert(para_idx + 1);
+                }
                 insert_para_idx = para_idx + 1;
                 table_control_idx = 0;
             }
@@ -819,6 +831,10 @@ impl DocumentCore {
         self.document.sections[section_idx]
             .paragraphs
             .insert(insert_para_idx + 1, make_empty_neighbor_para());
+        // 실제 삽입과 함께 측정 주소를 옮겨 다른 표의 로드 시점 행 높이를 계승하지 않는다.
+        if let Some(measured) = self.measured_sections.get_mut(section_idx) {
+            measured.shift_for_insert(insert_para_idx + 1);
+        }
 
         // [Task #2299] 신규 문단들(표 host·이웃 빈 문단·분할 우측)의 placeholder
         // vpos 를 흐름에 연결한다 — 방치하면 이후 편집의 vpos 재계산이 이를 저장

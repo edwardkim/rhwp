@@ -116,55 +116,9 @@ impl TypesetEngine {
         if st.col_count != 1 {
             return; // 다단은 Stage E
         }
-        // 컬럼 첫 항목: anchor + page_base 확립 (렌더러 2186/2216 정합).
-        // items.first() 의 vpos 를 page_base 로, 현 current_height 를 anchor 로 둔다.
-        if st.current_items.is_empty() {
-            st.record_vpos_column_anchor(st.current_height);
-            st.record_vpos_page_origin(
-                paragraphs
-                    .get(para_idx)
-                    .and_then(|p| p.line_segs.first())
-                    .map(|seg| {
-                        // 배치가 보존하는 문단 앞 여백을 측정의 쪽 원점으로 빼지 않는다.
-                        let margin_is_page_relative = (st.profile.hwpx_stored_layout()
-                            || st.profile.hwp5_stored_pagination_layout()
-                            || st.profile.hwp3_native_layout())
-                            && !st.profile.session_edited()
-                            && paragraphs.get(para_idx).is_some_and(|first| {
-                                crate::renderer::stored_page_origin::stored_first_margin_is_page_relative(
-                                    first,
-                                    paragraphs.get(para_idx + 1),
-                                    styles,
-                                    self.dpi,
-                                )
-                            });
-                        if margin_is_page_relative {
-                            0
-                        } else {
-                            seg.vertical_pos
-                                - paragraphs.get(para_idx).map_or(0, |first| {
-                                    crate::renderer::layout::synthesized_first_margin_hu(
-                                        first, styles, self.dpi,
-                                    )
-                                })
-                        }
-                    }),
-            );
-            st.record_vpos_lazy_origin(None);
-            st.record_stored_column_origin(
-                st.vpos_page_base.map(|base| (base, st.vpos_col_anchor)),
-            );
-            // [#2243] 저장 여부 태깅 — dirty 역스냅 금지 판단용.
-            st.record_vpos_origin_provenance(
-                paragraphs
-                    .get(para_idx)
-                    .and_then(|p| p.line_segs.first())
-                    .is_some_and(|s| {
-                        s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                    }),
-            );
-            st.record_vpos_ladder_validity(false);
-        }
+        super::super::paragraph::initialize_first_paragraph_origin(
+            st, para_idx, paragraphs, styles, self.dpi,
+        );
         // [#7824] 합성 줄(`TAG_IMPLEMENTATION_PROPERTY`)만 가진 문단이 흐름에 들어오면 이 쪽의
         // 사다리는 한/글 사다리가 아니다 — 로드 재구성이 그 문단에 rhwp 의 누적 좌표를 주므로,
         // 뒤 저장 문단의 쪽-상대 vpos 와 같은 좌표계가 아니다. 그러면 뒤 저장 문단의 스냅이

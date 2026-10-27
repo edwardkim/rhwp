@@ -1,0 +1,347 @@
+{
+  "source": "ac6534470739f8708e479be8de5bbcad990e08ae",
+  "rendererOverrides": {
+    "src/renderer/typeset/table/block/entry.rs": {
+      "input": "notice-source-host-frame-v11.rs",
+      "sha256": "738e5a0c8b7597a884bceefb38639e0fecc2f523bb4115c10e090deb9b004707"
+    },
+    "src/renderer/typeset/section/vpos.rs": {
+      "input": "notice-first-origin-vpos.rs",
+      "sha256": "327bb760fc45c2e6e28731d7a8e5c7696c40a33d6cfcdb458fe87e9864c6df1b"
+    },
+    "src/renderer/typeset/paragraph.rs": {
+      "input": "notice-first-origin-paragraph.rs",
+      "sha256": "6c9e42b2c19bccaf03b4f87d66f878d498c26b7aa285ba9a4f9396310ea5336e"
+    },
+    "src/renderer/typeset/paragraph/content.rs": {
+      "input": "notice-first-origin-content.rs",
+      "sha256": "2fb1294834744b662a8585a8d6dc20236345813809bb887bb54364145c76c7b6"
+    },
+    "src/renderer/typeset/controls/order.rs": {
+      "input": "notice-order-owned-stream-v2.rs",
+      "sha256": "7f45ae4ff68707946234300d4b7b3883d7c500cdefe52a8613e2665302874466"
+    },
+    "src/renderer/typeset.rs": {
+      "input": "notice-terminal-tac-flow-v2.rs",
+      "sha256": "3fa6c324f1d92cef609022aa4bc185596aef2e9e86266b2a961453caf363003e"
+    },
+    "src/renderer/typeset/controls/stored_tac.rs": {
+      "input": "notice-tac-notes-visibility.rs",
+      "sha256": "5912767eca87d468dfd5c003e1024a5ce7a81d468851bfe14cdc444c6b3d40ae"
+    },
+    "src/renderer/layout/table_layout.rs": {
+      "input": "notice-source-row-frame-v3.rs",
+      "sha256": "0133ca1574f7c64c1da324d6b9fbc3ffff0e73b42d8c72b882d126753ae77780"
+    },
+    "src/renderer/float_placement.rs": {
+      "input": "notice-table-source-qualification-v4.rs",
+      "sha256": "bdf9d673b0594deeaf4f5082015b73ddf428f5b2bf9f400d0164376926151cd2"
+    },
+    "src/renderer/layout/table_partial.rs": {
+      "input": "notice-source-tail-alignment-v7.rs",
+      "sha256": "e55b5021b24cd8c0e2d359bb2e1ba489fda88302bfe745ce5bb461f3bcd5804b"
+    }
+  },
+  "sourceManifestSha256": "7cbde7e1998cdd64f456b30d4b14a3e28d3dedd602cd603d7a5df3b75dd4cc10",
+  "sourceArchiveSha256": "205529c8ac515185afb603a7e15ca8d70efed971e16f6f3a2be60e5f08fc1c14",
+  "nativeBinarySha256": "047d968ba1ec89ed98d42557d4313b12f20f20a01d3e2360f357af7b92187bbf",
+  "nativeExampleSha256": "ec1c1bde3550a5552395d2ae918980dae23636d94274e5463f62c0009948c388",
+  "cargoLockUnchanged": true,
+  "existingWrapperTests": 4,
+  "existingSiblingAnchorTests": 2,
+  "defaultFontBodyRelations": {
+    "beforeTailFixLiveCenterFailed": true,
+    "candidateLiveAndReopenedPass": true
+  },
+  "state": {
+    "afterCapturePages": 24,
+    "backend": "native-skia",
+    "calls": 53,
+    "dpi": 96,
+    "editedPages": 24,
+    "originalPages": 22,
+    "pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "profile": "print",
+    "reopenedAfterCapturePages": 24,
+    "reopenedPages": 24,
+    "scope": "Live53call replay before export, followed by independent HWPX reopen; uncommitted renderer prototype on ac653; exact ten overrides in proof"
+  },
+  "savedSha256": "91695094d661d217d436ea0c16d01501ba603f5ada22dae6d7b3746cc5555730",
+  "scope": "Native v11, exact ten renderer overrides on ac653, physical base-body height and transparent-wrapper guard. Actual53call live and independent saved reopen, all24pages each; rendering fidelity only, not AI repair/submission quality.",
+  "job": "472764e8-df7c-4fc3-b4d5-8e120227289c",
+  "jobState": "succeeded",
+  "verifiedResultFiles": 105,
+  "referencePdfSha256": "de1e7469a33a1e3b6eb9f0829fffc52715a80e2351a3d4caaf6195b7ddfd26f2",
+  "visualToolsManifestSha256": "32799f39622c5c6082cd29abf8afe08ad6e76787e9dcd3440c15a1e9bfc83249",
+  "rows": [
+    {
+      "arm": "live",
+      "page": 1,
+      "raw": 99.99131
+    },
+    {
+      "arm": "live",
+      "page": 2,
+      "raw": 100.0
+    },
+    {
+      "arm": "live",
+      "page": 3,
+      "raw": 100.0
+    },
+    {
+      "arm": "live",
+      "page": 4,
+      "raw": 99.53538
+    },
+    {
+      "arm": "live",
+      "page": 5,
+      "raw": 98.6627
+    },
+    {
+      "arm": "live",
+      "page": 6,
+      "raw": 99.98461
+    },
+    {
+      "arm": "live",
+      "page": 7,
+      "raw": 100.0
+    },
+    {
+      "arm": "live",
+      "page": 8,
+      "raw": 100.0
+    },
+    {
+      "arm": "live",
+      "page": 9,
+      "raw": 100.0
+    },
+    {
+      "arm": "live",
+      "page": 10,
+      "raw": 99.94752
+    },
+    {
+      "arm": "live",
+      "page": 11,
+      "raw": 93.71518
+    },
+    {
+      "arm": "live",
+      "page": 12,
+      "raw": 95.18106
+    },
+    {
+      "arm": "live",
+      "page": 13,
+      "raw": 99.97471
+    },
+    {
+      "arm": "live",
+      "page": 14,
+      "raw": 99.98094
+    },
+    {
+      "arm": "live",
+      "page": 15,
+      "raw": 99.98278
+    },
+    {
+      "arm": "live",
+      "page": 16,
+      "raw": 99.99018
+    },
+    {
+      "arm": "live",
+      "page": 17,
+      "raw": 99.9838
+    },
+    {
+      "arm": "live",
+      "page": 18,
+      "raw": 99.9755
+    },
+    {
+      "arm": "live",
+      "page": 19,
+      "raw": 99.94049
+    },
+    {
+      "arm": "live",
+      "page": 20,
+      "raw": 99.94693
+    },
+    {
+      "arm": "live",
+      "page": 21,
+      "raw": 99.92109
+    },
+    {
+      "arm": "live",
+      "page": 22,
+      "raw": 99.9553
+    },
+    {
+      "arm": "live",
+      "page": 23,
+      "raw": 99.95252
+    },
+    {
+      "arm": "live",
+      "page": 24,
+      "raw": 99.98212
+    },
+    {
+      "arm": "reopened",
+      "page": 1,
+      "raw": 99.99131
+    },
+    {
+      "arm": "reopened",
+      "page": 2,
+      "raw": 100.0
+    },
+    {
+      "arm": "reopened",
+      "page": 3,
+      "raw": 100.0
+    },
+    {
+      "arm": "reopened",
+      "page": 4,
+      "raw": 99.53538
+    },
+    {
+      "arm": "reopened",
+      "page": 5,
+      "raw": 98.6627
+    },
+    {
+      "arm": "reopened",
+      "page": 6,
+      "raw": 99.98461
+    },
+    {
+      "arm": "reopened",
+      "page": 7,
+      "raw": 100.0
+    },
+    {
+      "arm": "reopened",
+      "page": 8,
+      "raw": 100.0
+    },
+    {
+      "arm": "reopened",
+      "page": 9,
+      "raw": 100.0
+    },
+    {
+      "arm": "reopened",
+      "page": 10,
+      "raw": 99.94752
+    },
+    {
+      "arm": "reopened",
+      "page": 11,
+      "raw": 99.95346
+    },
+    {
+      "arm": "reopened",
+      "page": 12,
+      "raw": 95.18106
+    },
+    {
+      "arm": "reopened",
+      "page": 13,
+      "raw": 99.97471
+    },
+    {
+      "arm": "reopened",
+      "page": 14,
+      "raw": 99.98094
+    },
+    {
+      "arm": "reopened",
+      "page": 15,
+      "raw": 99.98278
+    },
+    {
+      "arm": "reopened",
+      "page": 16,
+      "raw": 99.99018
+    },
+    {
+      "arm": "reopened",
+      "page": 17,
+      "raw": 99.9838
+    },
+    {
+      "arm": "reopened",
+      "page": 18,
+      "raw": 99.9755
+    },
+    {
+      "arm": "reopened",
+      "page": 19,
+      "raw": 99.94049
+    },
+    {
+      "arm": "reopened",
+      "page": 20,
+      "raw": 99.94693
+    },
+    {
+      "arm": "reopened",
+      "page": 21,
+      "raw": 99.92109
+    },
+    {
+      "arm": "reopened",
+      "page": 22,
+      "raw": 99.9553
+    },
+    {
+      "arm": "reopened",
+      "page": 23,
+      "raw": 99.95252
+    },
+    {
+      "arm": "reopened",
+      "page": 24,
+      "raw": 99.98212
+    }
+  ],
+  "raw90GatePass": true,
+  "submissionQualityPass": false,
+  "v7PngBytesIdentical": 48,
+  "declinesAbove0_1pp": []
+}

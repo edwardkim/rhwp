@@ -1,0 +1,631 @@
+{
+  "scope": "Table measurement ownership and stored body flow after table insertion. Engine rendering fidelity; not successful AI repair or app migration.",
+  "source": {
+    "officialBase": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+    "testedBaseCommit": "ac6534470739f8708e479be8de5bbcad990e08ae",
+    "codeFilesSha256": {
+      "src/renderer/typeset/table/block/entry.rs": "738e5a0c8b7597a884bceefb38639e0fecc2f523bb4115c10e090deb9b004707",
+      "src/renderer/typeset/section/vpos.rs": "327bb760fc45c2e6e28731d7a8e5c7696c40a33d6cfcdb458fe87e9864c6df1b",
+      "src/renderer/typeset/paragraph.rs": "6c9e42b2c19bccaf03b4f87d66f878d498c26b7aa285ba9a4f9396310ea5336e",
+      "src/renderer/typeset/paragraph/content.rs": "2fb1294834744b662a8585a8d6dc20236345813809bb887bb54364145c76c7b6",
+      "src/renderer/typeset/controls/order.rs": "7f45ae4ff68707946234300d4b7b3883d7c500cdefe52a8613e2665302874466",
+      "src/renderer/typeset.rs": "3fa6c324f1d92cef609022aa4bc185596aef2e9e86266b2a961453caf363003e",
+      "src/renderer/typeset/controls/stored_tac.rs": "5912767eca87d468dfd5c003e1024a5ce7a81d468851bfe14cdc444c6b3d40ae",
+      "src/renderer/layout/table_layout.rs": "0133ca1574f7c64c1da324d6b9fbc3ffff0e73b42d8c72b882d126753ae77780",
+      "src/renderer/float_placement.rs": "bdf9d673b0594deeaf4f5082015b73ddf428f5b2bf9f400d0164376926151cd2",
+      "src/renderer/layout/table_partial.rs": "e55b5021b24cd8c0e2d359bb2e1ba489fda88302bfe745ce5bb461f3bcd5804b",
+      "src/document_core/commands/object_ops/table.rs": "093a5a381954faf14cef42d2900f788b642892d5d16471e8ca49c9b7e80f2f6e",
+      "tests/cases/table_insert_measurement_ownership.rs": "7de72185e4bba4dcaa4dfa590b56e0814b322e850e72ea50ec1db2a4e2c32770",
+      "tests/cases/table_insert_body_flow.rs": "aa92368abf7c34b9f03b2a12a425455c49cb001b3bfe2c709f67bcc88e28b875",
+      "tests/fixtures/inserted_summary_calls.json": "35c4bf31b2b002b2c0b2e44f068eaf3a466ccae7721de8d956e454b262024113"
+    },
+    "rendererOverridesSha256": {
+      "src/renderer/typeset/table/block/entry.rs": "738e5a0c8b7597a884bceefb38639e0fecc2f523bb4115c10e090deb9b004707",
+      "src/renderer/typeset/section/vpos.rs": "327bb760fc45c2e6e28731d7a8e5c7696c40a33d6cfcdb458fe87e9864c6df1b",
+      "src/renderer/typeset/paragraph.rs": "6c9e42b2c19bccaf03b4f87d66f878d498c26b7aa285ba9a4f9396310ea5336e",
+      "src/renderer/typeset/paragraph/content.rs": "2fb1294834744b662a8585a8d6dc20236345813809bb887bb54364145c76c7b6",
+      "src/renderer/typeset/controls/order.rs": "7f45ae4ff68707946234300d4b7b3883d7c500cdefe52a8613e2665302874466",
+      "src/renderer/typeset.rs": "3fa6c324f1d92cef609022aa4bc185596aef2e9e86266b2a961453caf363003e",
+      "src/renderer/typeset/controls/stored_tac.rs": "5912767eca87d468dfd5c003e1024a5ce7a81d468851bfe14cdc444c6b3d40ae",
+      "src/renderer/layout/table_layout.rs": "0133ca1574f7c64c1da324d6b9fbc3ffff0e73b42d8c72b882d126753ae77780",
+      "src/renderer/float_placement.rs": "bdf9d673b0594deeaf4f5082015b73ddf428f5b2bf9f400d0164376926151cd2",
+      "src/renderer/layout/table_partial.rs": "e55b5021b24cd8c0e2d359bb2e1ba489fda88302bfe745ce5bb461f3bcd5804b"
+    },
+    "cargoLockUnchanged": true,
+    "codeCommit": "d8180194c2d6491f8583d1673f47e3b87b921581"
+  },
+  "notice": {
+    "input": {
+      "repositoryPath": "samples/pic-in-table-01.hwp",
+      "sha256": "c73145d60f3f0b041bc8fee64b65e6d419a1fc78aa62a90fa150b36f35278f4a",
+      "bytes": 179200
+    },
+    "trace": {
+      "repositoryPath": "tests/fixtures/inserted_summary_calls.json",
+      "sha256": "35c4bf31b2b002b2c0b2e44f068eaf3a466ccae7721de8d956e454b262024113",
+      "calls": 53
+    },
+    "independentReference": {
+      "file": "notice-hancom-print.pdf",
+      "sha256": "de1e7469a33a1e3b6eb9f0829fffc52715a80e2351a3d4caaf6195b7ddfd26f2",
+      "bytes": 1135915,
+      "pages": 24,
+      "application": "Mac Hancom12.30.0",
+      "print": "All pages/100%/native Print Save as PDF"
+    },
+    "savedModelSha256": "91695094d661d217d436ea0c16d01501ba603f5ada22dae6d7b3746cc5555730",
+    "native": {
+      "job": "472764e8-df7c-4fc3-b4d5-8e120227289c",
+      "verifiedResultFiles": 105,
+      "proof": "native-notice-proof.json",
+      "binarySha256": "047d968ba1ec89ed98d42557d4313b12f20f20a01d3e2360f357af7b92187bbf",
+      "rows": 48,
+      "liveMinimumRaw": 93.71518,
+      "reopenedMinimumRaw": 95.18106,
+      "rootDirectInspectionPages": [
+        1,
+        12,
+        13,
+        21
+      ]
+    },
+    "freshWasm": {
+      "job": "aadcf6fc-3dbc-4672-afac-f49b144e74d0",
+      "verifiedResultFiles": 140,
+      "proof": "canvas-notice-proof.json",
+      "jsSha256": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+      "wasmSha256": "0d1f99f7915a61e1581afd89646eee423e34a21bd6671fa064e1d2238ececadc",
+      "rows": 48,
+      "liveMinimumRaw": 94.54642,
+      "reopenedMinimumRaw": 95.7519,
+      "rootDirectInspectionPages": [
+        12,
+        13,
+        21
+      ]
+    },
+    "formalRegression": {
+      "repositoryPath": "tests/cases/table_insert_body_flow.rs",
+      "scope": "Full tail-body content from source, one occurrence across document, cell containment and Center relationship, following penalty table and independent24-page count; live before export and separate reopen. Does not assert preservation of every document object.",
+      "baseline": "Same nine other renderer overrides with only table_partial.rs reverted to testedBaseCommit; live Center gap difference11.2px. Candidate live/reopen0.2px.",
+      "beforeTailFileSha256": "e0d579c717b6ebcae01bb2e10f3dc486f1767599ecbd24cc9775b83f71ff5699",
+      "candidateTailFileSha256": "e55b5021b24cd8c0e2d359bb2e1ba489fda88302bfe745ce5bb461f3bcd5804b",
+      "beforeEvidence": "native-tail-before.json",
+      "afterEvidence": "native-tail-after.json"
+    },
+    "savedModel": "notice-edited.hwpx",
+    "representativeReview": {
+      "page": 21,
+      "toolSha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1",
+      "pixelDiffThreshold": 32,
+      "scope": "Native and freshCanvas same-size p21 review/overlay, derived from the exact already-verified PNG bytes; no new renderer run or raw-score reconciliation."
+    },
+    "officialBaseComparison": {
+      "source": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+      "native": {
+        "job": "e1037cf3-aa03-42e1-87c5-432551e2dbb9",
+        "state": "succeeded",
+        "exitCode": 0,
+        "verifiedResultFiles": 107,
+        "platform": "Linux x86_64; fedora-native, matching the candidate backend run",
+        "proof": "official-base-native-proof.json",
+        "counts": {
+          "live": 27,
+          "reopened": 24
+        },
+        "candidateCounts": {
+          "live": 24,
+          "reopened": 24
+        },
+        "extraRenderedPagesWithoutReference": {
+          "live": [
+            25,
+            26,
+            27
+          ],
+          "reopened": []
+        },
+        "rows": 48,
+        "declinesAbove0_1pp": 0,
+        "minimumDeltaPp": 0.0,
+        "baseRaw90GatePass": false,
+        "baseRowsBelow90": 26,
+        "scope": "Every actual base page rendered. Paired pages1..24 retain raw scores and the baseline page-count/geometry failure. Extra live pages25..27 have no reference and are explicitly unpaired. Same input, trace, PDF,17 font programs, Print2022/96dpi and frozen2px raw comparison. No font or AA exception."
+      },
+      "freshWasm": {
+        "job": "84422d91-8047-46f4-82c9-d3a873c64501",
+        "state": "succeeded",
+        "exitCode": 0,
+        "verifiedResultFiles": 137,
+        "platform": "Linux x86_64; fedora-native, matching the candidate backend run",
+        "proof": "official-base-canvas-proof.json",
+        "counts": {
+          "live": 27,
+          "reopened": 24
+        },
+        "candidateCounts": {
+          "live": 24,
+          "reopened": 24
+        },
+        "extraRenderedPagesWithoutReference": {
+          "live": [
+            25,
+            26,
+            27
+          ],
+          "reopened": []
+        },
+        "rows": 48,
+        "declinesAbove0_1pp": 0,
+        "minimumDeltaPp": 0.0,
+        "baseRaw90GatePass": false,
+        "baseRowsBelow90": 26,
+        "scope": "Every actual base page rendered. Paired pages1..24 retain raw scores and the baseline page-count/geometry failure. Extra live pages25..27 have no reference and are explicitly unpaired. Same input, trace, PDF,17 font programs, Print2022/96dpi and frozen2px raw comparison. No font or AA exception."
+      }
+    }
+  },
+  "existingOwnershipRegressions": {
+    "repositoryPath": "tests/cases/table_insert_measurement_ownership.rs",
+    "testsRetainedWithoutRelaxation": 2,
+    "cases": [
+      {
+        "case": "fresh-reference",
+        "page": 1,
+        "raw": 100.0,
+        "savedSha256": "c99160b2d024dedc467268ffc45f21a0dee5f0f377173d6ef2771bc7caf7b043",
+        "pdfSha256": "5325efb934e2b2e4a121e7060a12e7abe03284db033dbe6a0f544cbffd0ead48",
+        "nativeRaw": 100.0,
+        "canvasRaw": 100.0,
+        "model": "ownership/fresh-reference.hwpx",
+        "pdf": "ownership/fresh-reference-hancom-print.pdf",
+        "nativeTsv": "ownership/fresh-reference-native.tsv",
+        "canvasTsv": "ownership/fresh-reference-canvas.tsv"
+      },
+      {
+        "case": "loaded-before",
+        "page": 1,
+        "raw": 100.0,
+        "savedSha256": "ca03160be4ec78a600b29e53a8790a0c40337774233a534a2ddc23adc0d71939",
+        "pdfSha256": "1041e76f06fae6dcc0890ed08cc1d14f02933a3d8f51bf5b9e3612c8e70afa57",
+        "nativeRaw": 100.0,
+        "canvasRaw": 100.0,
+        "model": "ownership/loaded-before.hwpx",
+        "pdf": "ownership/loaded-before-hancom-print.pdf",
+        "nativeTsv": "ownership/loaded-before-native.tsv",
+        "canvasTsv": "ownership/loaded-before-canvas.tsv"
+      },
+      {
+        "case": "empty-host-after",
+        "page": 1,
+        "raw": 100.0,
+        "savedSha256": "f451e9919ed3f5f077b0434918762449092cfdecfab217fdbdb21c269fef18e6",
+        "pdfSha256": "eb2007bba04fcce0f90f27015bfd0739616881c20ee03ab71b640369d1aea452",
+        "nativeRaw": 100.0,
+        "canvasRaw": 100.0,
+        "model": "ownership/empty-host-after.hwpx",
+        "pdf": "ownership/empty-host-after-hancom-print.pdf",
+        "nativeTsv": "ownership/empty-host-after-native.tsv",
+        "canvasTsv": "ownership/empty-host-after-canvas.tsv"
+      },
+      {
+        "case": "after-table-after",
+        "page": 1,
+        "raw": 100.0,
+        "savedSha256": "236c0e7c375d793bf5ab6c94377ee038fb3a21a941515d7b49ad298e3f265c35",
+        "pdfSha256": "9ccd60e8eb3d447ff64891b2ac46ae0bf84f1e1de55d3e219c8a81725515f728",
+        "nativeRaw": 100.0,
+        "canvasRaw": 100.0,
+        "model": "ownership/after-table-after.hwpx",
+        "pdf": "ownership/after-table-after-hancom-print.pdf",
+        "nativeTsv": "ownership/after-table-after-native.tsv",
+        "canvasTsv": "ownership/after-table-after-canvas.tsv"
+      }
+    ],
+    "native": {
+      "job": "69b9805c-389b-46a6-bb7e-4ce0be437a09",
+      "verifiedResultFiles": 18,
+      "proof": "native-ownership-proof.json"
+    },
+    "freshWasm": {
+      "job": "5cf2aa65-4212-4ed1-9711-5df1d208c728",
+      "verifiedResultFiles": 38,
+      "proof": "canvas-ownership-proof.json"
+    },
+    "baseline": {
+      "job": "b7d171a9-6d9c-4ad5-9c4e-588d1dc0ea24",
+      "source": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+      "evidence": "measurement-baseline.json",
+      "scope": "Core WASM APIs, no baseline Canvas claim; existing first table133.3→240 and new table34.2→240 reproduce both failures."
+    },
+    "liveBeforeExport": true,
+    "boundsWarmupPreserved": true,
+    "modelsByteIdenticalToIndependentPrintInputs": true,
+    "rootContactSheet": "ownership-comparison.png",
+    "loadedInput": {
+      "file": "ownership/loaded-input.hwp",
+      "sha256": "a297f9b33b07ea89d8ca05e4ce9cad4844c6496f4b70a7e9da26f817ff68d417"
+    },
+    "freshInput": {
+      "file": "ownership/fresh-input.hwp",
+      "sha256": "170529f775ea480ff61bc7715e2a15dd3e21f0765912e7ad2b1b567de778c450"
+    }
+  },
+  "visualMethod": {
+    "field": "silhouette_raw_match_percent",
+    "beforeColorBoundaryReconciliation": true,
+    "radiusPx": 2,
+    "minimum": 90,
+    "dpi": 96,
+    "profile": "print",
+    "layoutGeneration": "2022",
+    "fontExceptions": null,
+    "newRegressionPrerequisitePassed": true,
+    "manualAllPagesClaim": false
+  },
+  "fontSupply": {
+    "manifestSha256": "aaa582301285f80f10ecce99a0926147cb50bb331d271be1a1754d928b8d9ebd",
+    "totalBytes": 40497904,
+    "programs": [
+      {
+        "file": "0d355f9766ff-HANBatangB.ttf",
+        "bytes": 1481468,
+        "sha256": "0e6329cb9b40e559f80ed96cb9cd433e1cefc6d50131390b346b4a43ff07a7e5"
+      },
+      {
+        "file": "11371a614903-HMKMM.TTF",
+        "bytes": 368392,
+        "sha256": "48348c39c534ae9c569e284b4f7f67314a749ceeed48c4f8bd2619081ea233e6"
+      },
+      {
+        "file": "1d0437906d52-HANDotum.ttf",
+        "bytes": 1617360,
+        "sha256": "d010c85e93e1709377c1f0d0579d269c9f22ab00830d62e4c8882ad807844b52"
+      },
+      {
+        "file": "50e2ad97d882-HMKMG.TTF",
+        "bytes": 256828,
+        "sha256": "ced1fae416b572a018be5c95acd4e74fe17cb191c312163b6c71477d66170a3d"
+      },
+      {
+        "file": "5b0b9fa5f3ba-HANDotumB.ttf",
+        "bytes": 1662556,
+        "sha256": "828e356d0ead4266ace7e8d653ffa83d3500b4b6fef9a24d0f479de0e6308cfb"
+      },
+      {
+        "file": "6706a05313c7-malgun.ttf",
+        "bytes": 548724,
+        "sha256": "2ccdb9b09204da9005fa0f275b3aa0f890e50405be7943d0e918d99f809860d5"
+      },
+      {
+        "file": "6e5565b626d8-Gulim.TTF",
+        "bytes": 8523616,
+        "sha256": "6e5565b626d8b11bde8f5e10b7def3c29e23da37899b43b47967ee0e5468f52c"
+      },
+      {
+        "file": "6f98bd91b902-pala.ttf",
+        "bytes": 215364,
+        "sha256": "32c2bbfa01ed7f43f9579e211e61538f4b68e985f688b513bd6826fc0f244dd1"
+      },
+      {
+        "file": "745f0d0dc6f4-HBatang.TTF",
+        "bytes": 1142388,
+        "sha256": "37b0cd5af3f866323cb4e9c29cb7bfa56525452fac7b1bc140c3821196769a45"
+      },
+      {
+        "file": "82f70d5e2214-HYGTRE.TTF",
+        "bytes": 2937892,
+        "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+      },
+      {
+        "file": "a3a3cd992a89-HYHWPEQ.TTF",
+        "bytes": 23596,
+        "sha256": "8a8b046380f40d791647d70ed6126c0e6c9a6d1b249307e810652cf77cd7c65d"
+      },
+      {
+        "file": "a3f57b4cb429-H2HDRM.TTF",
+        "bytes": 255652,
+        "sha256": "3dcac24401609a0231221facae985542ad31dd03e6b1e4da724fa444670d686e"
+      },
+      {
+        "file": "a8efcea3eacb-BatangChe.TTF",
+        "bytes": 10471476,
+        "sha256": "a8efcea3eacb18a14b3989bb62dee7c496f08e2de03082329f79935877960e17"
+      },
+      {
+        "file": "b05e5e2f6469-HDotum.TTF",
+        "bytes": 915880,
+        "sha256": "75eac74118a76fad83cd618759adf8ce9fa7d0a43f5c20dcab7830fbec3bba18"
+      },
+      {
+        "file": "c5d544769d83-HANBatang.ttf",
+        "bytes": 1550144,
+        "sha256": "e91ba00c8b1b58fcab3067c274e251c9717591f02669d193d13613fccb30561e"
+      },
+      {
+        "file": "d398aac5b56a-YNCH05.TTF",
+        "bytes": 402648,
+        "sha256": "d6895d78aaface9c636b3486061871a795a0e4def48341d6f6c915b9cac374ca"
+      },
+      {
+        "file": "e4b26bc99d46-DotumChe.TTF",
+        "bytes": 8123920,
+        "sha256": "e4b26bc99d467d329c6a5e1fcc975525272c0de549744896f8db226334fe2c4c"
+      }
+    ],
+    "fontFilesCommitted": false,
+    "fullGlyphCoverageClaim": false
+  },
+  "performance": {
+    "job": "3cc504b3-fc42-4bfb-9b6a-f9b389d36c1b",
+    "evidence": "edit-reflow-performance.json",
+    "inputRepositoryPath": "samples/rowbreak-problem-pages.hwp",
+    "inputSha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+    "scope": "Three interleaved trials per version of18-page real table document; insertText+pageCount only, not provider/model or full app/save time; text/control ownership and18→18 pages retained. No statistical or performance gate claim."
+  },
+  "limits": {
+    "submissionQualityPass": false,
+    "modelNoneSummaryClippingRemainsLikeHancom": true,
+    "appVendorOrWasmUpdated": false,
+    "htmlOrInteractiveEditingParityClaim": false,
+    "publicRelease": false
+  },
+  "payloads": {
+    "canvas-notice-live.tsv": {
+      "sha256": "b699a09dca6ffbc179bf8f98644eaa0e4ae45346607be2d58ffa22144a491c3b",
+      "bytes": 729
+    },
+    "canvas-notice-proof.json": {
+      "sha256": "1098e04330e2d5e1e211cb9aa3ff3078ed16f199b49ad4c7e68498214fe7da7d",
+      "bytes": 8185
+    },
+    "canvas-notice-reopened.tsv": {
+      "sha256": "5ec6e7cc27ce0ad72617229629b0011cd9405989c9344d1b6889028aa77b74e7",
+      "bytes": 729
+    },
+    "canvas-ownership-proof.json": {
+      "sha256": "a3e73c0454b536172a38c4a992b972feb1f1d442d99c09be451bcabe4909d4bf",
+      "bytes": 2850
+    },
+    "edit-reflow-performance.json": {
+      "sha256": "29a8f407196a71a2e2deb2218761a88a97a1ee251d53eb2acf1532a1d52a5898",
+      "bytes": 5938
+    },
+    "measurement-baseline.json": {
+      "sha256": "8b66207265538548f56f36a957d2cd57d8e9cb18f4890163236183d95f84e17a",
+      "bytes": 2087
+    },
+    "native-notice-live.tsv": {
+      "sha256": "b0b30e1713ad21967a8e69ce1841c344f7a00b96ba3380c3c9bd6876e90f83d4",
+      "bytes": 713
+    },
+    "native-notice-proof.json": {
+      "sha256": "7cd0951522fad20a4899d7640f07feb7517cd6a92ccb4736a7b0e085fdbc2eab",
+      "bytes": 7537
+    },
+    "native-notice-reopened.tsv": {
+      "sha256": "36dca1ff6a9bcd98218a2c21ca8379d2566d498d4577ad77f1b83a9b5e52a24e",
+      "bytes": 713
+    },
+    "native-ownership-proof.json": {
+      "sha256": "812b5f0493631f322392efecf7f03ef4b472e02460be0402d0db37e18d7eb03e",
+      "bytes": 7395
+    },
+    "native-tail-after.json": {
+      "sha256": "9c00e4d98d0ece112319338525c46a11d891fbcbb4b95d5fc8a2c6149c94b024",
+      "bytes": 6598
+    },
+    "native-tail-before.json": {
+      "sha256": "c216435f102c13a7c7b5d9ef006ec7d833c4af1f10da5db5d9760c94a24a2468",
+      "bytes": 6600
+    },
+    "notice-edited.hwpx": {
+      "sha256": "91695094d661d217d436ea0c16d01501ba603f5ada22dae6d7b3746cc5555730",
+      "bytes": 98564
+    },
+    "notice-hancom-021.png": {
+      "sha256": "58cb3fc634dd8f20813cd13a6ffbef0f0f414caf5530c448f137df9e2c3cd609",
+      "bytes": 207850
+    },
+    "notice-hancom-print.pdf": {
+      "sha256": "de1e7469a33a1e3b6eb9f0829fffc52715a80e2351a3d4caaf6195b7ddfd26f2",
+      "bytes": 1135915
+    },
+    "notice-live-021-canvas-overlay.png": {
+      "sha256": "ec30acaccbe5edb9dc891b0e7d1d9b4c4ac45f9ccc31512b7291b7c958740a7e",
+      "bytes": 199077
+    },
+    "notice-live-021-canvas-review.png": {
+      "sha256": "144375f5fad874fbb589c9ddcbe42ea51c62a9ae3512a84ab64cc701d39be3b0",
+      "bytes": 561025
+    },
+    "notice-live-021-canvas.png": {
+      "sha256": "beec22ab84c1816982fd09602a959b01a5e96e883a6078038c9a3a9c91912667",
+      "bytes": 178984
+    },
+    "notice-live-021-native-overlay.png": {
+      "sha256": "eccd1b559ca530b153bb6ff9f4b462be6913ec63d879f21c554baea14334f76f",
+      "bytes": 176711
+    },
+    "notice-live-021-native-review.png": {
+      "sha256": "706134df354ac0d909a68cceb85a478e623a31a4c3af333baffd6ec4103b47e2",
+      "bytes": 506899
+    },
+    "notice-live-021-native.png": {
+      "sha256": "7bc4302fb1b3a9aa0e1cf178de7d93ee1efd4c3fe9bc5e234d52aa02639cb2b0",
+      "bytes": 139297
+    },
+    "official-base-canvas-live.tsv": {
+      "sha256": "35e39b06659e5eef75b410abf14012376cdeeafe494f7a978bd3b5fa616fdaff",
+      "bytes": 736
+    },
+    "official-base-canvas-proof.json": {
+      "sha256": "5196ce9e79ab6192700cd23acd74cbddb53f529ada7fd3a1d1bf34a9d949bbe1",
+      "bytes": 4636
+    },
+    "official-base-canvas-reopened.tsv": {
+      "sha256": "93e8fdb30cb3de88f586a16b9356ad5b9b9a44c4bc16d7b7b83753a06d076bd1",
+      "bytes": 723
+    },
+    "official-base-native-live.tsv": {
+      "sha256": "f38c324d24e8d9791634dc82d426fcfb1a358e6ee77608e387a82ff0efc3a7f2",
+      "bytes": 736
+    },
+    "official-base-native-proof.json": {
+      "sha256": "5c64f88e25a350de725f375d57fd000bf0fd698f162b2cec8bbd5bce589001d5",
+      "bytes": 5532
+    },
+    "official-base-native-reopened.tsv": {
+      "sha256": "2fa2808829a47b844bceb9f84980616fe75f8e457a51cc7d38b8676dfe6e3713",
+      "bytes": 709
+    },
+    "ownership/after-table-after-canvas.tsv": {
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    "ownership/after-table-after-hancom-print.pdf": {
+      "sha256": "9ccd60e8eb3d447ff64891b2ac46ae0bf84f1e1de55d3e219c8a81725515f728",
+      "bytes": 6163
+    },
+    "ownership/after-table-after-native.tsv": {
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    "ownership/after-table-after.hwpx": {
+      "sha256": "236c0e7c375d793bf5ab6c94377ee038fb3a21a941515d7b49ad298e3f265c35",
+      "bytes": 8006
+    },
+    "ownership/empty-host-after-canvas.tsv": {
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    "ownership/empty-host-after-hancom-print.pdf": {
+      "sha256": "eb2007bba04fcce0f90f27015bfd0739616881c20ee03ab71b640369d1aea452",
+      "bytes": 6169
+    },
+    "ownership/empty-host-after-native.tsv": {
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    "ownership/empty-host-after.hwpx": {
+      "sha256": "f451e9919ed3f5f077b0434918762449092cfdecfab217fdbdb21c269fef18e6",
+      "bytes": 7988
+    },
+    "ownership/fresh-input.hwp": {
+      "sha256": "170529f775ea480ff61bc7715e2a15dd3e21f0765912e7ad2b1b567de778c450",
+      "bytes": 12800
+    },
+    "ownership/fresh-reference-canvas.tsv": {
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    "ownership/fresh-reference-hancom-print.pdf": {
+      "sha256": "5325efb934e2b2e4a121e7060a12e7abe03284db033dbe6a0f544cbffd0ead48",
+      "bytes": 4078
+    },
+    "ownership/fresh-reference-native.tsv": {
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    "ownership/fresh-reference.hwpx": {
+      "sha256": "c99160b2d024dedc467268ffc45f21a0dee5f0f377173d6ef2771bc7caf7b043",
+      "bytes": 7837
+    },
+    "ownership/loaded-before-canvas.tsv": {
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    "ownership/loaded-before-hancom-print.pdf": {
+      "sha256": "1041e76f06fae6dcc0890ed08cc1d14f02933a3d8f51bf5b9e3612c8e70afa57",
+      "bytes": 6092
+    },
+    "ownership/loaded-before-native.tsv": {
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "bytes": 138
+    },
+    "ownership/loaded-before.hwpx": {
+      "sha256": "ca03160be4ec78a600b29e53a8790a0c40337774233a534a2ddc23adc0d71939",
+      "bytes": 7932
+    },
+    "ownership/loaded-input.hwp": {
+      "sha256": "a297f9b33b07ea89d8ca05e4ce9cad4844c6496f4b70a7e9da26f817ff68d417",
+      "bytes": 13312
+    },
+    "ownership-comparison.png": {
+      "sha256": "65448b2bdcf31ee866a386f799ca657408c88d5e6abca7106514a6e54fb9dc08",
+      "bytes": 25263
+    }
+  },
+  "fullRegression": {
+    "job": "5f962fe7-4569-4927-9a89-a69028ecea51",
+    "state": "succeeded",
+    "exitCode": 0,
+    "platform": "Linux x86_64, Rust/Cargo1.93.1",
+    "cargoBuildJobs": 4,
+    "nextestThreads": 6,
+    "verifiedResultFiles": 2,
+    "completeSha256": "7d66f46f372a6f5bfae3ca98906c4eaf948001dbbac27f7c5d8c9f2e660b5369",
+    "rawLogSha256": "ac57089fff2e75f4825fe331a0f76daadb270142fede80b189f4213d7c5cbc68",
+    "defaultNextest": {
+      "passed": 11571,
+      "skipped": 45,
+      "failed": 0,
+      "seconds": 713.405
+    },
+    "nativeLib": {
+      "memberPassed": [
+        3859,
+        15,
+        165,
+        2
+      ],
+      "passed": 4041,
+      "ignored": 12,
+      "failed": 0
+    },
+    "nativeFocused": {
+      "table_insert_measurement_ownership": 2,
+      "table_insert_body_flow": 1,
+      "issue_6879_tac_sibling_float_anchor_line": 4,
+      "issue_6181_inline_tac_table_line_advance": 1
+    },
+    "docs": {
+      "passed": 8,
+      "ignored": 3,
+      "failed": 0
+    },
+    "completeFlags": {
+      "default_nextest": true,
+      "native_lib": true,
+      "native_existing_ownership_and_tac_boundary_tests": true,
+      "docs": true,
+      "default_wasm_workspace_native_clippy": true,
+      "fmt": true,
+      "inventory": true,
+      "workspace_build": true
+    },
+    "sourceIdentity": "ac653 base plus exact ten renderer overrides and two test additions, matching codeCommit14file SHA set; no source change after validation. Raw execution logs stay outside the source PR."
+  },
+  "nativeOutputSupplement": {
+    "job": "e1037cf3-aa03-42e1-87c5-432551e2dbb9",
+    "state": "succeeded",
+    "exitCode": 0,
+    "verifiedResultFiles": 107,
+    "completeSha256": "158f9c5f28c3741b50c93fc0e524d0c689e7b16bfddbb3d1cfa6d67b9c2cfa25",
+    "rawLogSha256": "8a596ad15ff439ef24cf15096efed7fbc379c6a1774c3ef93c6ca8c3c731e863",
+    "nativeModules": {
+      "issue_2225_missing_picture_placeholder": {
+        "passed": 2,
+        "caseFilterExcluded": 271
+      },
+      "render_p37_direct_pdf_export": {
+        "passed": 14,
+        "caseFilterExcluded": 264
+      }
+    },
+    "completeFlags": {
+      "native_picture_placeholder": true,
+      "native_direct_pdf_export": true
+    },
+    "sourceIdentity": "Exact final14 source/test SHA set; same as codeCommit. Case-filter exclusions are not executed test passes. No repeat of completed full/default/Native-lib/lint/docs checks."
+  }
+}

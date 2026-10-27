@@ -1421,12 +1421,19 @@ impl LayoutEngine {
                                     && (self.stored_row_frame_owns_complete_tail(table, cell)
                                         || self.row_uses_reflow_physical_frame(table, cell_row)
                                         || (self.profile.get().hwp5_stored_pagination_layout()
-                                            && !self.profile.get().session_edited()
+                                            && (!self.profile.get().session_edited()
+                                                || self
+                                                    .stored_full_width_row_declared_height(
+                                                        table,
+                                                        cell_row,
+                                                        styles,
+                                                        self.current_body_area.get().3,
+                                                    )
+                                                    .is_some())
                                             && self.cell_unit_opens_stored_page_frame(
                                                 cell, table, styles, start,
                                             ))
                                         || (self.profile.get().hwpx_stored_layout()
-                                            && !self.profile.get().session_edited()
                                             && self
                                                 .stored_full_width_row_declared_height(
                                                     table,

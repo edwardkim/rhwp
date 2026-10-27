@@ -5753,9 +5753,111 @@ impl TypesetEngine {
         let has_following_tac_table = para.controls.iter().skip(ctrl_idx + 1).any(|control| {
             matches!(control, Control::Table(next) if self.is_effective_tac_table(para, next, fmt))
         });
-        let restore_terminal_tac_spacing = is_tac && !has_post_text && !has_following_tac_table;
+        let stored_tail = (is_last_placed
+            && table.common.treat_as_char
+            && table.caption.is_none()
+            && !controls::stored_tac::table_has_notes(table)
+            && !para.stored_text_partition_is_dirty()
+            && !para.cell_format_vpos_dirty
+            && para
+                .source_line_seg_vertical_pos
+                .as_ref()
+                .is_none_or(|source| {
+                    source.len() == para.line_segs.len()
+                        && source
+                            .iter()
+                            .zip(&para.line_segs)
+                            .all(|(&position, line)| position == line.vertical_pos)
+                })
+            && fmt.computed_host_lines.is_none()
+            && fmt.line_count() == para.line_segs.len()
+            && para
+                .line_segs
+                .iter()
+                .all(|line| !is_synthetic_line_seg(line))
+            && (para.empty_control_stream_position(0).is_some()
+                || controls::order::complete_whitespace_table_stream(para)))
+        .then(|| crate::renderer::composer::control_slot_line_index(para, ctrl_idx))
+        .flatten()
+        .filter(|&owner| owner + 1 == para.line_segs.len())
+        .and_then(|owner| {
+            let line = &para.line_segs[owner];
+            let occupied = i64::from(table.common.height)
+                + i64::from(table.outer_margin_top)
+                + i64::from(table.outer_margin_bottom);
+            (line.line_spacing >= 0
+                && i64::from(line.line_height) == occupied
+                && (fmt.line_heights[owner] - hwpunit_to_px(line.line_height, self.dpi)).abs()
+                    <= self.dpi / 7200.0
+                && (table_total_height - fmt.line_heights[owner]).abs() <= self.dpi / 7200.0)
+                .then_some((owner, line))
+        });
+        // 제어 사이 공백은 마지막 표 뒤의 본문 줄이 아니며 그 줄의 닫는 간격을 소유하지 않는다.
+        let whitespace_ends_before_table = stored_tail.is_some()
+            && !should_add_post_text
+            && para.control_text_positions().get(ctrl_idx).copied()
+                == Some(para.text.chars().count());
+        let restore_terminal_tac_spacing =
+            is_tac && (!has_post_text || whitespace_ends_before_table) && !has_following_tac_table;
         if restore_terminal_tac_spacing {
+            let occupied_end = st.current_height;
             st.advance_flow_by(fmt.total_height - fmt.height_for_fit);
+            // 같은 줄의 확정 끝에도 복원한 간격을 반영해 뒤 상한이 되감지 않게 한다.
+            if let Some(mut placement) = st
+                .inline_placements
+                .get(&(para_idx, ctrl_idx))
+                .copied()
+                .filter(|placement| placement.advance_end == Some(occupied_end))
+            {
+                placement.advance_end = Some(st.current_height);
+                st.record_inline_placement((para_idx, ctrl_idx), placement);
+            }
+        }
+        if restore_terminal_tac_spacing {
+            if let Some((owner, line)) = stored_tail {
+                let origin = st.current_height - fmt.line_advance(owner) - fmt.spacing_after;
+                let existing = st.inline_placements.get(&(para_idx, ctrl_idx)).copied();
+                let first_zero = line.vertical_pos == 0
+                    && origin == 0.0
+                    && st.vpos_col_anchor == 0.0
+                    && matches!(st.current_items.first(), Some(PageItem::Table { para_index, control_index })
+                        if *para_index == para_idx && *control_index == ctrl_idx);
+                let base = st
+                    .vpos_page_base
+                    .filter(|_| st.vpos_page_base_stored)
+                    .or_else(|| first_zero.then_some(0));
+                if let Some(base) = base.filter(|&base| {
+                    let pen = st.vpos_col_anchor
+                        + hwpunit_to_px(line.vertical_pos.saturating_sub(base), self.dpi);
+                    (pen - origin).abs() <= self.dpi / 7200.0
+                        && existing.is_none_or(|placement| {
+                            placement.stored_column_frame.is_none()
+                                && placement
+                                    .advance_end
+                                    .is_none_or(|end| end == st.current_height)
+                                && (placement.y - origin).abs() <= self.dpi / 7200.0
+                        })
+                }) {
+                    // 수용한 같은 원점과 끝을 함께 발행해 후속 문단의 lazy 역산을 막는다.
+                    let mut placement =
+                        existing.unwrap_or(super::float_placement::InlineBoxPlacement {
+                            x: 0.0,
+                            y: origin,
+                            clearance: 0.0,
+                            resolved_x: false,
+                            advance_end: None,
+                            stored_horizontal_pen: None,
+                            stored_column_frame: None,
+                        });
+                    placement.advance_end = Some(st.current_height);
+                    placement.stored_column_frame =
+                        Some(super::float_placement::StoredColumnFrame {
+                            source_origin_hu: base,
+                            column_anchor_y: st.vpos_col_anchor,
+                        });
+                    st.record_inline_placement((para_idx, ctrl_idx), placement);
+                }
+            }
         }
         let accepted_single_row_origin = stored_single_row_source.and_then(
             |(source_vpos, source_base, column_started_at_zero)| {
