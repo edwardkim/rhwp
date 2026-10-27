@@ -806,7 +806,7 @@ impl DocumentCore {
 
             // 텍스트 삽입
             self.document.sections[section_idx].paragraphs[para_idx]
-                .insert_text_at(char_offset, &clip_text);
+                .insert_text_from_paragraph(char_offset, &clip_paras[0]);
 
             // 클립보드의 글자 모양 적용
             self.apply_clipboard_char_shapes(
@@ -926,7 +926,7 @@ impl DocumentCore {
             let clip_text = clip_paras[0].text.clone();
             let new_chars = clip_text.chars().count();
 
-            cell_paras[cell_para_idx].insert_text_at(char_offset, &clip_text);
+            cell_paras[cell_para_idx].insert_text_from_paragraph(char_offset, &clip_paras[0]);
 
             let clip_char_shapes = clip_paras[0].char_shapes.clone();
             let clip_char_offsets = clip_paras[0].char_offsets.clone();

@@ -642,6 +642,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         text,
         char_offsets,
         literal_figure_spaces,
+        nb_space_control_indices,
         char_shapes,
         line_segs,
         range_tags,
@@ -683,6 +684,11 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
     f!(text);
     f!(char_offsets);
     f!(literal_figure_spaces);
+    // 개별 출처를 읽을 수 있는 두 형식만 비교한다. 옛 입력의 None은
+    // 제어가 없다는 뜻이 아니라 문자별 출처가 알려지지 않았다는 뜻이다.
+    if nb_space_control_indices.is_some() && b.nb_space_control_indices.is_some() {
+        f!(nb_space_control_indices);
+    }
     f!(char_shapes);
     f!(line_segs);
     f!(range_tags);

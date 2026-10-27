@@ -672,6 +672,8 @@ fn parse_paragraph_body(
     // 문단 내용 파싱
     let mut buf = Vec::new();
     let mut text_parts: Vec<String> = Vec::new();
+    // 각 요소의 조각·스칼라 위치를 실제 모델 문자 위치로 투영할 때 사용한다.
+    let mut nb_space_parts: Vec<(usize, usize)> = Vec::new();
     let mut current_char_shape_id: u32 = 0;
     let mut char_shape_changes: Vec<(u32, u32)> = Vec::new(); // (utf16_pos, char_shape_id)
                                                               // 템플릿 첫 run 의 secPr/colPr 뒤에는 같은 charPrIDRef 의 텍스트 run 이 한 번 더
@@ -750,6 +752,8 @@ fn parse_paragraph_body(
                         if content.fixed_space_element {
                             para.control_mask |= 1u32 << 0x001F;
                         }
+                        let part_base = text_parts.len();
+                        nb_space_parts.extend(content.nb_space_parts.iter().map(|&(part, index)| (part_base + part, index)));
                         text_parts.extend(content.parts);
                         para.tab_extended.extend(content.tabs);
                         // [#5174] 묶음 빈칸의 출처 표기를 문단에 남긴다 — 직렬화기가 이
@@ -1057,9 +1061,10 @@ fn parse_paragraph_body(
     }
     let mut visual_text = String::new();
     let mut char_offsets: Vec<u32> = Vec::new();
+    let mut nb_space_control_indices = Vec::new();
     let mut utf16_pos: u32 = 0;
 
-    for part in &text_parts {
+    for (part_index, part) in text_parts.iter().enumerate() {
         match part.as_str() {
             "\u{0002}" | "\u{0003}" | "\u{0004}" => {
                 utf16_pos += 8;
@@ -1094,7 +1099,10 @@ fn parse_paragraph_body(
                 utf16_pos += 8;
             }
             _ => {
-                for c in part.chars() {
+                for (index, c) in part.chars().enumerate() {
+                    if nb_space_parts.contains(&(part_index, index)) {
+                        nb_space_control_indices.push(char_offsets.len());
+                    }
                     char_offsets.push(utf16_pos);
                     visual_text.push(c);
                     utf16_pos += hwpx_char_utf16_width_on_axis(c, axis_5251);
@@ -1105,6 +1113,7 @@ fn parse_paragraph_body(
 
     para.text = visual_text;
     para.char_offsets = char_offsets;
+    para.nb_space_control_indices = Some(nb_space_control_indices);
     para.char_count = utf16_pos + 1; // +1 for 끝 마커
 
     // [#5961] 저장 lineseg 가 HWP5 축보다 얼마나 짧은지 기록한다.
@@ -2143,6 +2152,7 @@ struct ParsedTextContent {
     hyphen_element: bool,
     fixed_space_element: bool,
     literal_figure_spaces: Vec<usize>,
+    nb_space_parts: Vec<(usize, usize)>,
 }
 
 fn visible_text_part_len(parts: &[String]) -> usize {
@@ -2184,6 +2194,7 @@ fn read_text_content_with_tabs(reader: &mut Reader<&[u8]>) -> Result<ParsedTextC
     let mut text = String::new();
     let mut tab_ext_buf: Vec<[u16; 7]> = Vec::new();
     let mut saw_nb_space_element = false;
+    let mut nb_space_parts = Vec::new();
     let mut saw_hyphen_element = false;
     let mut saw_fixed_space_element = false;
     let mut literal_figure_spaces = Vec::new();
@@ -2231,12 +2242,11 @@ fn read_text_content_with_tabs(reader: &mut Reader<&[u8]>) -> Result<ParsedTextC
                         // 다시 계산한다. 버리면 그 뒤 탭이 남의 확장을 쓴다.
                         tab_ext_buf.push(parse_tab_extension(ce));
                     }
-                    // [#5174] 묶음 빈칸은 요소·리터럴 두 표기가 다 쓰인다(한컴 HWPX 실측:
-                    // 요소 26문서 · 리터럴 20문서 · 혼용 0문서). 한글은 요소를 텍스트 추출에
-                    // 싣지 않고 리터럴은 싣기 때문에, 표기를 바꿔 저장하면 추출 텍스트가
-                    // 원본과 달라진다. IR 이 두 표기를 구분해야 왕복이 닫히므로 요소 표기를
-                    // 만나면 `control_mask` 비트 30(HWP5 제어코드 0x1E 자리)을 신호로 세운다.
+                    // [#5174] 한글은 요소 표기와 리터럴을 텍스트 추출에서 구분한다.
+                    // 문단 존재 비트와 함께 이 조각 안의 개별 문자 위치를 보존해
+                    // 한 문단에 두 표기가 섞여도 원본 순서대로 저장한다.
                     b"nbSpace" => {
+                        nb_space_parts.push((parts.len(), text.chars().count()));
                         text.push('\u{00A0}');
                         saw_nb_space_element = true;
                     }
@@ -2315,6 +2325,7 @@ fn read_text_content_with_tabs(reader: &mut Reader<&[u8]>) -> Result<ParsedTextC
         hyphen_element: saw_hyphen_element,
         fixed_space_element: saw_fixed_space_element,
         literal_figure_spaces,
+        nb_space_parts,
     })
 }
 

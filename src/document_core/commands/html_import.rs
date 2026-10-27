@@ -372,7 +372,7 @@ impl DocumentCore {
             let clip_text = parsed_paras[0].text.clone();
             let new_chars = clip_text.chars().count();
 
-            cell_paras[cell_para_idx].insert_text_at(char_offset, &clip_text);
+            cell_paras[cell_para_idx].insert_text_from_paragraph(char_offset, &parsed_paras[0]);
 
             let clip_char_shapes = parsed_paras[0].char_shapes.clone();
             let clip_char_offsets = parsed_paras[0].char_offsets.clone();

@@ -52,6 +52,10 @@ pub struct Paragraph {
     /// 파일 표기 출처이며 원문 문자·UTF-16 축은 바꾸지 않는다.
     #[serde(skip_serializing)]
     pub literal_figure_spaces: Vec<usize>,
+    /// 원본에서 묶음 빈칸 제어로 저장된 문자의 스칼라 위치. `Some`은 리터럴과
+    /// 제어 표기를 각각 확인한 결과이며, `None`은 개별 출처를 알 수 없는 기존 입력이다.
+    #[serde(skip_serializing)]
+    pub nb_space_control_indices: Option<Vec<usize>>,
     /// 글자 모양 변경 위치 목록
     pub char_shapes: Vec<CharShapeRef>,
     /// 줄 레이아웃 정보
@@ -539,6 +543,54 @@ pub fn tab_ext_is_placeholder(ext: &[u16; 7]) -> bool {
 pub const TAB_EXT_PLACEHOLDER: [u16; 7] = [0, 0, 0, 0, 0, 0, 0x0009];
 
 impl Paragraph {
+    /// 묶음 빈칸의 원본 표기를 확인한다. 개별 출처가 없는 기존 입력은 종전의
+    /// 문단 단위 신호를 유지한다.
+    pub fn nb_space_is_control_at(&self, char_idx: usize) -> bool {
+        self.nb_space_control_indices.as_ref().map_or_else(
+            || self.control_mask & (1u32 << 0x001e) != 0,
+            |indices| indices.binary_search(&char_idx).is_ok(),
+        )
+    }
+
+    fn materialized_nb_space_controls(&self) -> Vec<usize> {
+        self.text
+            .chars()
+            .enumerate()
+            .filter_map(|(index, ch)| {
+                (ch == '\u{00a0}' && self.nb_space_is_control_at(index)).then_some(index)
+            })
+            .collect()
+    }
+
+    fn refresh_nb_space_control_mask(&mut self) {
+        if let Some(indices) = &self.nb_space_control_indices {
+            if indices.is_empty() {
+                self.control_mask &= !(1u32 << 0x001e);
+            } else {
+                self.control_mask |= 1u32 << 0x001e;
+            }
+        }
+    }
+
+    /// 텍스트를 별도 수술 경로에서 제거할 때 같은 문자 범위의 표기 출처를 옮긴다.
+    pub(crate) fn delete_nb_space_origin_range(&mut self, start: usize, end: usize) {
+        let removed = end.saturating_sub(start);
+        let positions = self
+            .materialized_nb_space_controls()
+            .into_iter()
+            .filter_map(|index| {
+                if index < start {
+                    Some(index)
+                } else if index >= end {
+                    Some(index - removed)
+                } else {
+                    None
+                }
+            })
+            .collect();
+        self.nb_space_control_indices = Some(positions);
+        self.refresh_nb_space_control_mask();
+    }
     /// 새 캡션의 접두어 뒤에 원시 8유닛 자동번호 자리와 문단 끝을 만든다.
     pub(crate) fn new_auto_number_caption(
         prefix: &str,
@@ -1337,6 +1389,26 @@ impl Paragraph {
         self.insert_text_at_caret(char_offset, new_text, false)
     }
 
+    /// 문단에서 복사한 텍스트는 개별 묶음 빈칸의 표기도 함께 옮긴다.
+    pub(crate) fn insert_text_from_paragraph(
+        &mut self,
+        char_offset: usize,
+        source: &Paragraph,
+    ) -> usize {
+        let inserted_at = self.insert_text_at(char_offset, &source.text);
+        if let Some(indices) = &mut self.nb_space_control_indices {
+            indices.extend(
+                source
+                    .materialized_nb_space_controls()
+                    .into_iter()
+                    .map(|index| inserted_at + index),
+            );
+            indices.sort_unstable();
+        }
+        self.refresh_nb_space_control_mask();
+        inserted_at
+    }
+
     /// [`insert_text_at`](Self::insert_text_at) 과 같되, `after_inline_control` 이면
     /// `char_offset` 자리에 놓인 개체 **뒤**(다음 글자 앞)에 넣는다 (#7444).
     /// 글자 위치만으로는 개체 앞뒤를 가릴 수 없어 논리 오프셋 입력이 이 값을 넘긴다.
@@ -1493,6 +1565,13 @@ impl Paragraph {
                 .filter_map(|(i, ch)| (*ch == '\u{2007}').then_some(char_offset + i)),
         );
         self.literal_figure_spaces.sort_unstable();
+        let mut nb_spaces = self.materialized_nb_space_controls();
+        for index in &mut nb_spaces {
+            if *index >= char_offset {
+                *index += new_chars.len();
+            }
+        }
+        self.nb_space_control_indices = Some(nb_spaces);
 
         for mark in &mut self.markpen_marks {
             if mark.char_idx >= char_offset {
@@ -1507,6 +1586,7 @@ impl Paragraph {
 
         // 1. 텍스트 삽입
         self.text.insert_str(byte_offset, new_text);
+        self.refresh_nb_space_control_mask();
 
         // 2. char_offsets 재구축
         // 삽입 지점 이후의 기존 오프셋을 시프트
@@ -1604,6 +1684,8 @@ impl Paragraph {
         let actual_count = count.min(text_len - char_offset);
         let del_end = char_offset + actual_count;
 
+        self.delete_nb_space_origin_range(char_offset, del_end);
+
         // 바이트 범위 계산
         let byte_start: usize = text_chars[..char_offset].iter().map(|c| c.len_utf8()).sum();
         let byte_end: usize = text_chars[..del_end].iter().map(|c| c.len_utf8()).sum();
@@ -1645,6 +1727,7 @@ impl Paragraph {
 
         // 1. 텍스트 삭제
         self.text.drain(byte_start..byte_end);
+        self.refresh_nb_space_control_mask();
 
         // 2. char_offsets: 삭제 범위 제거 + 이후 엔트리 시프트
         let mut updated_offsets =
@@ -1772,6 +1855,17 @@ impl Paragraph {
         self.layout_object_projection = false;
         let control_positions = self.split_logical_control_positions();
         let split_pos = self.split_text_pos_for_logical_offset(char_offset, &control_positions);
+        let nb_spaces = self.materialized_nb_space_controls();
+        let new_nb_spaces = nb_spaces
+            .iter()
+            .filter_map(|&index| (index >= split_pos).then(|| index - split_pos))
+            .collect();
+        self.nb_space_control_indices = Some(
+            nb_spaces
+                .into_iter()
+                .filter(|&index| index < split_pos)
+                .collect(),
+        );
         let text_positions = self.control_text_positions();
         let text_chars: Vec<char> = self.text.chars().collect();
         // 문단 끝 자동 번호 뒤에서 나누면 번호는 자리표 글자와 함께 앞 문단에 남는다.
@@ -2098,6 +2192,7 @@ impl Paragraph {
 
         self.control_mask =
             Self::compute_control_mask_for(&self.text, &self.controls, &self.field_ranges);
+        self.refresh_nb_space_control_mask();
         let new_control_mask =
             Self::compute_control_mask_for(&new_text, &new_controls, &new_field_ranges);
 
@@ -2113,6 +2208,7 @@ impl Paragraph {
             text: new_text,
             char_offsets: new_char_offsets,
             literal_figure_spaces: new_literal_figure_spaces,
+            nb_space_control_indices: Some(new_nb_spaces),
             char_shapes: new_char_shapes,
             line_segs: new_line_segs,
             layout_space_metrics: Vec::new(),
@@ -2150,6 +2246,7 @@ impl Paragraph {
             // 번호는 문서 순서로 다시 계산해야 하는 파생값이다 (#7436).
             numbering_marker: NumberingMarker::Unresolved,
         };
+        new_para.refresh_nb_space_control_mask();
         for &char_idx in cut_field_ends.iter().rev() {
             new_para.remove_gap_slot(char_idx);
         }
@@ -2178,6 +2275,14 @@ impl Paragraph {
             return Ok(self.text.chars().count());
         }
         let self_text_len = self.text.chars().count();
+        let mut nb_spaces = self.materialized_nb_space_controls();
+        nb_spaces.extend(
+            other
+                .materialized_nb_space_controls()
+                .into_iter()
+                .map(|index| index + self_text_len),
+        );
+        self.nb_space_control_indices = Some(nb_spaces);
 
         // 현재 문단 끝의 UTF-16 위치.
         // 마지막 문자 뒤(trailing) 컨트롤과 거기서 끝나는 누름틀의 끝 표지는 char_offsets에
@@ -2342,6 +2447,7 @@ impl Paragraph {
         // split_at과 동일하게 병합 후 상태 전체를 재계산한다.
         self.control_mask =
             Self::compute_control_mask_for(&self.text, &self.controls, &self.field_ranges);
+        self.refresh_nb_space_control_mask();
 
         // 6. char_count 갱신: 텍스트 + 컨트롤·누름틀 끝 표지(각 8 code unit) + 문단끝(1)
         //    split_at의 ctrl_code_units 계산과 정합. HWPX 직렬화가 char_count에서

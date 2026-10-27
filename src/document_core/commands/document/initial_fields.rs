@@ -77,6 +77,7 @@ fn process_para(para: &mut Paragraph) {
         }
         let removed_len = end - start;
         let new_text: String = chars[..start].iter().chain(chars[end..].iter()).collect();
+        para.delete_nb_space_origin_range(start, end);
         para.text = new_text;
         para.field_ranges[fri].end_char_idx = start;
         // 이후 field_ranges의 char_idx 조정
