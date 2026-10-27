@@ -27,7 +27,7 @@ subpixel 설정을 바꾼 대조에서는 이 차이가 해소되지 않았다. 
 Native의 glyph cache와 Chromium의 텍스트 재생은 실제 저수준 출력 계약이 다르다.
 Canvas의 검증된 재생을 별도 glyph 공급 registry로 대체하지 않고, Native가 이미
 선택한 프로그램의 윤곽을 소비하도록 한다. HFT의 기존 CFF 계약과 합성 굵기의 path
-재생은 유지한다. 여러 scalar를 가진 cluster의 shaping, path가 없는 bitmap·색상 glyph,
+재생은 유지한다. 여러 scalar를 가진 cluster의 shaping, bitmap·색상·가변 글꼴,
 Screen 경로는 기존 재생을 유지하며 일반 glyph의 성공을 이 경로들의 증거로 쓰지 않는다.
 
 ## 검증
@@ -47,3 +47,8 @@ upstream 동기화와 원격 쓰기는 하지 않는다.
 현재 `text_replay.rs`가 1,034줄이므로 보정 코드를 추가하기 전에 기존 밑줄·취소선·
 탭 리더의 순수 재생 함수를 자식 `decorations.rs`로 옮긴다. 수치·선 종류·paint 순서와
 호출자의 원점은 그대로 유지하며, 변경하는 코드 파일은 각각 1,000줄 이하로 정리한다.
+
+단색 SFNT의 glyf/CFF 표를 확인하고, bitmap strike·COLR·SVG·가변 축이 있는
+프로그램은 glyph에 대체 윤곽도 있더라도 기존 painter로 보낸다. 다른 출력 계약을
+단색 path로 덮어쓰지 않는다. face별 판정 cache는 256개로 제한하고 원본 프로그램을
+추가 보관하지 않는다.

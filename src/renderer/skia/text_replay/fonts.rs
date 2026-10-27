@@ -18,6 +18,7 @@ pub(in crate::renderer::skia) fn compatibility_glyph(font: &Font, text: &str) ->
 }
 
 thread_local! {
+    static OUTLINE_REPLAY_FACES: RefCell<HashMap<u32, bool>> = RefCell::new(HashMap::new());
     static OWN_HEAVY_FACES: RefCell<HashMap<(u32, String), bool>> = RefCell::new(HashMap::new());
 }
 
@@ -147,6 +148,31 @@ fn finish(
     font
 }
 
+/// bitmap·색상·가변 글꼴은 별도 재생 계약이다. 단색 SFNT 윤곽만 수용한다.
+fn has_monochrome_source_outline(font: &Font) -> bool {
+    let face = font.typeface();
+    OUTLINE_REPLAY_FACES.with(|cache| {
+        let id = face.unique_id();
+        if let Some(supported) = cache.borrow().get(&id) {
+            return *supported;
+        }
+        let supported = face.read_table_tags().is_some_and(|tags| {
+            let contains = |tag: &[u8; 4]| tags.contains(&u32::from_be_bytes(*tag));
+            [*b"glyf", *b"CFF "].iter().any(contains)
+                && ![
+                    *b"EBLC", *b"EBDT", *b"CBLC", *b"CBDT", *b"bloc", *b"bdat", *b"sbix", *b"COLR",
+                    *b"SVG ", *b"fvar",
+                ]
+                .iter()
+                .any(contains)
+        });
+        if cache.borrow().len() < 256 {
+            cache.borrow_mut().insert(id, supported);
+        }
+        supported
+    })
+}
+
 /// Print의 독립 glyph는 실제 선택한 Font의 윤곽을 기존 paint·원점에 재생한다.
 /// 여러 scalar의 shaping과 path가 없는 glyph는 원래 텍스트 재생에 맡긴다.
 pub(super) fn draw_positioned_cluster(
@@ -157,7 +183,7 @@ pub(super) fn draw_positioned_cluster(
     paint: &Paint,
     geometric_text: bool,
 ) {
-    if geometric_text {
+    if geometric_text && has_monochrome_source_outline(font) {
         let mut characters = text.chars();
         if let Some(character) = characters.next().filter(|_| characters.next().is_none()) {
             let glyph = font.unichar_to_glyph(character as i32);
