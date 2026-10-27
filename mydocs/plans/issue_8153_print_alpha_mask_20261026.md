@@ -103,3 +103,37 @@ alpha를 가진 입력에 몰래 적용하지 않고, 두 opaque 평면을 각�
 `input.json`, `device-result.json`, `replay-results.json`, `comparison.json`,
 각 원본의 actual-paint-frame과 before/after PNG다. 제품 src·원본·기준 PDF·폰트·
 Visual Sweep의 내용 mask/2px 반경은 변경하지 않았다.
+
+## 색 전달의 실제 API 경계와 관측된 정수 계약
+
+기존 Windows LockBits의 실제 premultiplied ARGB 바이트를 원래 합성 RGBA와
+대조했다. `round(channel × alpha / 255)`가 전체 픽셀의 실제 premultiplied
+채널과 정확히 같다. 256 분모 근사 등은 같지 않으며 이 차이를 눈대중으로 조절하지 않는다.
+
+새 실험은 실제 premultiplied 픽셀을 별도 32비트 PArgb 표면에 복사하고 ARGB로
+읽었다. Graphics의 물리 DPI 변환이 섞인 초기 실험은 원본의 alpha를 바꿨으므로
+제외했다. 픽셀을 직접 복사한 정상 실험은 원본과 합성 대조군 모두 alpha의
+모든 바이트를 보존했다. 실제 한 번의 API 왕복은 다음 정수 연산과 RGBA 전 바이트가 같다.
+
+- premultiplied 채널 = `(channel × alpha + 127) / 255`의 정수 몫
+- 복원 계수 = `(255 × 65536) / alpha`의 정수 몫
+- 복원 채널 = `(premultiplied × 복원 계수) >> 16`, alpha 0은 채널 0
+
+한 번 왕복한 색의 RGB555·동일 JPEG 품질/인코더 조합은 원본 255쪽 색 자원과는
+전픽셀 같지만, 256단계 alpha 대조군에는 RGB 63,799픽셀 차이가 남는다.
+관찰된 비멱등성을 확인하려고 **같은 실제 연산을 한 번 더 적용한 진단**은
+원본과 합성 대조군 모두 독립 JPEG의 RGB가 **전픽셀 정확히 같다**.
+기준 source RGB555/JPEG 결과 208,685픽셀 차이도 먼저 재현했다.
+
+이는 독립 출력과 동등한 관측 연산이며, 한컴 내부에서 API를 실제로 두 번 호출한다는
+주장은 아니다. 반복 횟수를 제품에 넣은 상태가 아니다. 바닥 행 방향을 바꾸는
+다른 후보는 RGB 차이를 247,905픽셀로 늘려 기각했다. 아직 저장본·색 처리 생산
+경계 또는 다른 크기·alpha/색 패턴의 새 독립 Print로 일반성을 확인해야 한다.
+기존 PDF를 같은 입력으로 다시 출력하거나 이 두 결과만으로 제품 완료를 선언하지 않는다.
+
+실험과 첫 alpha 변경 실패의 기록은 ignored `alpha-print-contract/`의
+`native-pargb-roundtrip/`, `native-pargb-pixel-roundtrip/`,
+`native-premultiply-precision-contract.json`에 있다. 최종 진단은
+`comparison.json`, `idempotence-comparison.json`, `handbook-idempotence-comparison.json`이며
+API 결과와 정수식의 전 바이트 동일성, alpha·색 기대값과 실제 오차를 구분한다.
+255쪽의 제품 보정은 아직 적용하지 않았다.

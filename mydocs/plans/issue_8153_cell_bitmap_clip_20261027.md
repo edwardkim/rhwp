@@ -152,3 +152,17 @@ Cargo registry·suite policy·CI 호출을 추가 변경하지 않았다. `--ado
 제품 src는 259와 같으며 이 source 차이는 원본 회귀 파일·검증 기록이다.
 `cell-clip-native/formal-suite-result.json`에 정확한 명령·source·실제 summary를 보존했다.
 전체 Rust suite 통과로 확대하지 않는다.
+
+새 source 259의 fresh DEV WASM 83조건도 종료 코드 0으로 완료했다. 원본은 각
+40조건 중 35조건, 독립 탭 대조군 3조건은 모두 raw 100%·미대응 0이며 합계
+**73/83조건**이다. 이전 b3ad와 겹치는 75조건의 미대응 증가도 0이다.
+추가 8조건은 두 원본의 130·141·144·255쪽이며 이전 집중 결과와 없는 비교를
+만들지 않았다. 최종 표준 최적화 전쪽 검증은 별도로 남는다.
+
+원본의 205·239쪽은 양쪽 형식 모두 raw 100%를 유지하면서 RGB도 개선됐다.
+205쪽의 바뀐 13픽셀은 독립 Print에 대한 채널 절대 차이 합이 84→0,
+239쪽의 바뀐 515픽셀은 19,599→0이다. 75조건의 실제 PNG를 비교한 뒤
+변경 영역을 같은 좌표로 확대 판독했다. 오차 없는 raw 값만으로 이 RGB 차이를
+무시하지 않았으며, 변경 픽셀이 모두 독립 출력과 정확히 같아짐을 확인했다.
+관련 근거는 `cell-clip-wasm-dev/common75-comparison.json`,
+`additional205-239-reference-comparison.json`과 HWP 대응 JSON/PNG다.
