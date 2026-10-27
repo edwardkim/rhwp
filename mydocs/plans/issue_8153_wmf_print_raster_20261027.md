@@ -278,7 +278,12 @@ Canvas2D에서 실행했다. 전체 페이지 수는 각각 383쪽, 핵심 최�
 
 동일 테스트 소스를 동결 rlib에 연결한 실행에서 수정 전은 2건 실패(exit101), 수정 후는 2건
 통과(exit0)했다. `wmf-halftone-contract/wmf-window-test-result.json`과 각 실행 로그를 남겼다.
-이 standalone 실행을 정식 Cargo 자동 수집 실행으로 대신하지 않으며 해당 실행도 이어서 수행한다.
+정식 review worktree에서 자동 수집된 `regression_suite_028`도 실제 실행했다. Nextest run
+`ff1e1913-bb09-42c5-aa4e-ebd2c17ff7ae`는 2건 통과·260건 필터 제외, exit0이다.
+`CARGO_BUILD_JOBS=8`, 공용 `target/pr-review`, `release-test`·`native-skia`를 사용했다.
+명령·로그 SHA·test commit과 실제 worktree commit은
+`continuous-text-shadow/wmf-order-native/wmf-window-formal-result.json`에 기록했다.
+이 focused 2건 통과를 전체 회귀검사 통과로 표시하지 않는다.
 
 ### HALFTONE 면적 진단의 채택 보류
 
