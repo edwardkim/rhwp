@@ -514,6 +514,16 @@ impl LayerBuilder {
                                 })
                         })
                         .or_else(|| {
+                            pixel.and_then(|pixel| {
+                                super::metafile_surface::picture_payload(
+                                    &image,
+                                    frame,
+                                    pixel,
+                                    &self.metafile_fonts,
+                                )
+                            })
+                        })
+                        .or_else(|| {
                             crate::paint::metafile::image_payload(
                                 &image,
                                 node.bbox,
@@ -591,6 +601,7 @@ impl LayerBuilder {
             let own_bounds = ops.first().map_or(node.bbox, PaintOp::bounds);
             let mut own_leaf =
                 LayerNode::leaf(own_bounds, Some(node.id), ops).with_layer(node.layer);
+            own_leaf = super::metafile_picture::lower(own_leaf);
             if let Some(clip) = image_fill_clip {
                 own_leaf = LayerNode::clip_rect(
                     clip,

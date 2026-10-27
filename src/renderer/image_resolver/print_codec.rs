@@ -28,8 +28,9 @@ pub(crate) fn print_area_sampling(
     image: &ImageNode,
     resolved: Option<&ResolvedImagePayload>,
 ) -> bool {
-    if super::print_alpha_2024::eligible(image)
-        && resolved.is_some_and(|payload| super::png_sampling::print_separate_alpha(&payload.data))
+    if (super::print_alpha_2024::eligible(image)
+        && resolved.is_some_and(|payload| super::png_sampling::print_separate_alpha(&payload.data)))
+        || crate::paint::metafile_picture::is_device_picture(image, resolved)
     {
         return true;
     }

@@ -23,6 +23,7 @@ pub mod layer_tree;
 pub(crate) mod metafile;
 pub(crate) mod metafile_fonts;
 pub(crate) mod metafile_print;
+pub(crate) mod metafile_picture;
 mod metafile_print_coverage;
 mod metafile_surface;
 mod paint_bounds;
