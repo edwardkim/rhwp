@@ -5,7 +5,7 @@ Issue: #8153. 두 편람의 전쪽 Native·표준 최적화 fresh WASM에서 raw
 
 ## 현재 제품과 조사 범위
 
-현재 문서 head는 `64f95959d4be6e6474c3f8563fdb9a75859273db`다.
+첫 진단 단계 이전의 문서 head는 `64f95959d4be6e6474c3f8563fdb9a75859273db`다.
 이번 단계에서는 제품 코드를 바꾸지 않았다. 검증용 Native producer는
 `b2b33fda6027c03cbcfaa051ee1f5968fb7930d`이며, 이전 전쪽 결과는 766조건 중
 733조건의 raw 100%·미대응 0픽셀이다. 33조건과 최종 표준 WASM 전쪽 검증은 남아 있다.
@@ -133,3 +133,28 @@ mask 테두리 고정값을 추가하지 않는다. 이 소형 대조군은 자�
    실행한다. 기존 33조건과 전쪽 핵심 ±2px·관계 검사, 최종 전체 게이트·PR 문서는 계속 필수다.
 
 이번 단계에서는 130쪽의 조판 좌표나 제품·점수·원본·기준 PDF·글꼴을 변경하지 않았다.
+
+## 후속 독립 Print: 창과 비트맵 원점은 보존해야 한다
+
+`wmf-window-coordinate-control.hwpx`는 기존 3쪽 소형 입력의 HWP 그림 배치·자르기·imgDim과
+원본 DIB 픽셀을 그대로 두고, WMF 레코드의 두 좌표 계약만 구분한다. 세 쪽 모두 밝기 -5다.
+원본 파일은 바꾸지 않았으며 결과는 ignored `wmf-halftone-contract/`에만 보존한다.
+
+| 쪽 | WMF 변경 | 독립 Print 자원 | 같은 표시 사각형 안의 실제 내용 |
+| --- | --- | --- | --- |
+| 1 | 원본 창 771×675, 비트맵 원점 (0,0) | 3000×2625 | 원본과 동일 |
+| 2 | 창만 1542×1350으로 확대 | 2999×2626 | 그림의 폭·높이가 각각 절반으로 줄어듦 |
+| 3 | 창 유지, 비트맵 원점만 (31,17)로 이동 | 3000×2625 | 그림도 이동하며 오른쪽·아래 끝이 잘림 |
+
+세 쪽의 PDF image matrix는 같은 표시 영역을 사용한다. 자원 크기에 맞춘 동일 축소율로
+`window-control-resource-review.png`를 열어 그림 크기·원점·끝 경계를 직접 확인했다.
+한컴이 비트맵의 ink bounding box만 추출해 정규화하거나 WMF 창을 무시한다는 해석은 기각한다.
+단일 raster WMF라도 DIB 픽셀을 추출해 전체 표시 사각형에 채우는 처리로 대신하지 않는다.
+기존 `wmf_picture`가 보존하는 SVG viewport와 image의 위치·크기는 계속 보존해야 한다.
+자원 크기의 관측된 1픽셀 차이를 특정 문서의 크기 상수로 맞추지 않는다.
+
+실제 한컴 `13.0.0.3901`의 `PrintMethod=0`, `frame_print_to_pdf_ex_one_up`, preprocess 없음으로
+job `c62201c8-8b0b-4ee5-9a41-c8a683913e1b`가 완료됐다. PDF는 621,411바이트·3쪽이다.
+`window-control-provenance.json`, `window-control-status.json`, `window-control-observed.json`에
+원본 DIB 불변·입력/PDF SHA·세 쪽의 실제 image matrix·JPEG 해시를 기록했다.
+이 결과도 자원 계약을 구분하는 조사이며 신규 회귀 fixture나 제품의 전쪽 개선 결과가 아니다.
