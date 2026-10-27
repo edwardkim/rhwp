@@ -135,6 +135,7 @@ pub(crate) fn resolve_styles_with_environment(
     profile: crate::model::provenance::LayoutCompatibilityProfile,
 ) -> ResolvedStyleSet {
     let mut styles = resolve_styles_for_document(document, dpi);
+    styles.script_metrics = super::script_metrics::ScriptMetricsContract::for_profile(profile);
     // 독립 동일 입력의 2020은 HCRDotum을 강제하고, 2024는 원 face/대체 face의
     // 자모 전진을 유지한다. 세대는 기존 명시적 출력 profile에서만 받는다.
     styles.isolated_jamo_font = (!profile.hangul2024_layout()
@@ -354,6 +355,7 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
 
     let mut styles = ResolvedStyleSet {
         source_program_projection_slots: Default::default(),
+        script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: {

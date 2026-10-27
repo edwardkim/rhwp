@@ -546,8 +546,10 @@ impl DocumentCore {
     /// 변경 시 페이지네이션 결과가 달라지므로 모든 섹션을 재페이지네이션한다.
     pub fn set_hangul2024_compat(&mut self, enabled: bool) {
         if self.hangul2024_compat != enabled {
+            let previous_script_metrics = self.styles.script_metrics;
             self.hangul2024_compat = enabled;
-            if self.rebuild_resolved_styles() {
+            let equation_frames_changed = self.rebuild_resolved_styles();
+            if equation_frames_changed || previous_script_metrics != self.styles.script_metrics {
                 self.recompose_all_with_horizontal_shaping();
             }
             for d in self.dirty_sections.iter_mut() {

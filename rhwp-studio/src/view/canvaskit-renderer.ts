@@ -7,6 +7,7 @@ import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
 import { rasterLineGeometry } from './canvaskit/raster-stroke.ts';
 import { textShadowOffsets } from './canvaskit/text-shadow.ts';
+import { scriptDrawMetrics } from './canvaskit/script-metrics.ts';
 import { shouldDrawPageMarginGuides } from './page-margin-guides.ts';
 import squareGradientSkSL from '../../../src/renderer/square_gradient.sksl?raw';
 import * as bitmapRasterWasm from '@wasm/rhwp.js';
@@ -3218,15 +3219,7 @@ export class CanvasKitLayerRenderer {
         || (code >= 0xd7b0 && code <= 0xd7ff);
     });
     const effectPaints: SkPaint[] = [];
-    let fontSize = baseFontSize;
-    let baselineShift = 0;
-    if (style.superscript) {
-      fontSize = baseFontSize * 0.7;
-      baselineShift -= baseFontSize * 0.3;
-    } else if (style.subscript) {
-      fontSize = baseFontSize * 0.7;
-      baselineShift += baseFontSize * 0.15;
-    }
+    const { fontSize, baselineShift } = scriptDrawMetrics(style, baseFontSize);
     const placementMatrix = this.affineToCanvasKitMatrix(op.placement?.runToPage);
     const originX = placementMatrix ? 0 : op.bbox.x;
     const originY = placementMatrix

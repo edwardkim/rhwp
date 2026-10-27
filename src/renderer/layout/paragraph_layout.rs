@@ -190,11 +190,7 @@ fn emitted_run_layout_positions(
     }
 
     let base_font_size = style.effective_font_size();
-    let effective_font_size_px = if style.superscript || style.subscript {
-        base_font_size * crate::renderer::SCRIPT_FONT_SCALE
-    } else {
-        base_font_size
-    };
+    let effective_font_size_px = style.script_font_size(base_font_size);
     let width_ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
     let ordinary_replay =
         (leading.is_some() || recover_trailing || style.space_compression.is_some())

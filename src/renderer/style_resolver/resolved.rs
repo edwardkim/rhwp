@@ -510,6 +510,8 @@ pub struct ResolvedStyleSet {
     /// 프로그램의 채움과 일치하고 현재 원본 프로그램과 다른 경우에만 사용한다.
     pub(crate) source_program_projection_slots:
         std::collections::HashMap<(u32, usize), ResolvedCharStyle>,
+    /// 측정과 paint에 함께 전파하는 세션의 첨자 계약이다.
+    pub script_metrics: crate::renderer::script_metrics::ScriptMetricsContract,
     pub(crate) native_pua_fonts: std::sync::Arc<crate::renderer::native_pua_fonts::NativePuaFonts>,
     /// HWP5 저장 겹침은 다시 열 때 -80%~+20% 범위로 해소된다.
     /// XML 입력의 원래 값과 구분하며 모델의 저장 바이트는 보존한다.

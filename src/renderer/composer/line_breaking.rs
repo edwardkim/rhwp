@@ -1220,11 +1220,7 @@ fn prepare_paragraph_projection(
         let char_shape_id = find_active_char_shape(&para.char_shapes, utf16_pos);
         let text_style = metric_scope.style(styles, char_shape_id, language_index, index);
         let base_font_size = text_style.effective_font_size();
-        let effective_font_size_px = if text_style.superscript || text_style.subscript {
-            base_font_size * crate::renderer::SCRIPT_FONT_SCALE
-        } else {
-            base_font_size
-        };
+        let effective_font_size_px = text_style.script_font_size(base_font_size);
         let width_ratio = if text_style.ratio > 0.0 {
             text_style.ratio
         } else {

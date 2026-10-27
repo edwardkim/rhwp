@@ -1209,6 +1209,8 @@ export interface LayerTextStyle {
   shadowOffsets?: [number, number][];
   emboss?: boolean;
   engrave?: boolean;
+  /** producer가 확정한 첨자 크기와 본문 기준선에서의 이동이다. */
+  scriptMetrics?: { fontSize: number; baselineShift: number };
   superscript?: boolean;
   subscript?: boolean;
   underlineColor?: string;

@@ -2083,6 +2083,7 @@ pub struct GlyphRunDiagnostics {
 
 #[derive(Debug, Clone)]
 pub struct PaintTextStyle {
+    pub script_metrics: crate::renderer::script_metrics::ScriptMetricsContract,
     pub font_family: String,
     pub font_size: f64,
     pub font_position: Option<i8>,
@@ -2115,6 +2116,7 @@ pub struct PaintTextStyle {
 impl From<&TextStyle> for PaintTextStyle {
     fn from(style: &TextStyle) -> Self {
         Self {
+            script_metrics: style.script_metrics,
             font_family: style.font_family.clone(),
             font_size: style.font_size,
             font_position: style.font_position,

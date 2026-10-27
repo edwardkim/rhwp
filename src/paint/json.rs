@@ -1886,6 +1886,13 @@ fn write_text_style(buf: &mut String, style: &TextStyle) {
         buf.push_str(",\"bidiLayout\":");
         buf.push_str(&serde_json::to_string(layout).expect("방향 결과의 유한 좌표"));
     }
+    style.script_metrics.write_json(
+        buf,
+        style.font_size,
+        style.superscript,
+        style.subscript,
+        style.font_position,
+    );
     super::text_shadow::write_offsets_json(
         buf,
         style.shadow_type,
@@ -1924,6 +1931,13 @@ fn write_paint_text_style(buf: &mut String, style: &PaintTextStyle) {
         style.emphasis_dot,
     );
     write_synthetic_italic_skew(buf, style.italic);
+    style.script_metrics.write_json(
+        buf,
+        style.font_size,
+        style.superscript,
+        style.subscript,
+        style.font_position,
+    );
     super::text_shadow::write_offsets_json(
         buf,
         style.shadow_type,

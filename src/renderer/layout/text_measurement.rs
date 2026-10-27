@@ -102,17 +102,13 @@ fn hancom_device_advance_px(
 /// 스타일에서 공통 파라미터 추출 (font_size, ratio, tab_w)
 fn style_params(style: &TextStyle) -> (f64, f64, f64) {
     let base_font_size = style.effective_font_size();
-    // [#5756] 위/아래첨자 run 의 **전진폭**은 그리는 크기(0.7배)를 따른다.
+    // [#5756] 위/아래첨자 run 의 **전진폭**은 선택한 계약의 그리는 크기를 따른다.
     // 한글 저장 lineseg 실측(156732409 3쪽): 위첨자 전진을 본문 크기로 재면
     // 칸 안쪽 폭 327.95px 에 담긴 40글자가 382.9px 로 늘어 칸 오른쪽 괘선 밖
     // 54.9px 에 찍힌다 — 0.7배로 재면 327.4px 로 저장 줄바꿈(textpos)과 정확히
     // 맞는다. 자간/장평은 크기 비례라 함께 줄어든다. 탭 폭 기본값은 본문 크기
     // 기준을 유지한다.
-    let font_size = if style.superscript || style.subscript {
-        base_font_size * crate::renderer::SCRIPT_FONT_SCALE
-    } else {
-        base_font_size
-    };
+    let font_size = style.script_font_size(base_font_size);
     let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
     let tab_w = if style.default_tab_width > 0.0 {
         style.default_tab_width
@@ -924,6 +920,7 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
 ) -> Result<TextStyle, S::Error> {
     if let Some(cs) = styles.char_styles.get(char_style_id as usize) {
         Ok(TextStyle {
+            script_metrics: styles.script_metrics,
             native_pua_metrics: (!styles.has_exact_font_source(char_style_id, lang_index))
                 .then(|| {
                     styles.native_pua_fonts.get(

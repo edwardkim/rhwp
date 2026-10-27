@@ -89,6 +89,7 @@ pub(crate) mod reflow_spacing;
 pub mod render_normalization;
 pub mod render_tree;
 pub mod scheduler;
+pub mod script_metrics;
 pub(crate) mod shaping;
 pub(crate) mod shaping_composition;
 pub(crate) mod shaping_context;
@@ -329,6 +330,9 @@ pub struct TextStyle {
     /// 리터럴 공백에 선택한 실제 슬롯 프로그램의 전진폭(em).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub literal_figure_space_em: Option<f64>,
+    /// 원본과 분리된 세션의 첨자 조판 계약이다.
+    #[serde(skip)]
+    pub script_metrics: script_metrics::ScriptMetricsContract,
     /// 원본 표 33의 signed 그림자 간격. 세션 paint에서만 사용한다.
     #[serde(skip)]
     pub shadow_offset_percent: Option<[i8; 2]>,
@@ -640,30 +644,20 @@ impl TextStyle {
     ///
     /// 원본의 글자 위치는 줄 기준선에 한 번만 적용한다.
     pub fn script_draw_metrics(&self, base_font_size: f64, baseline_y: f64) -> (f64, f64) {
-        // 줄 기준선과 글리프 위치는 별도 속성이다. 양수는 아래 방향이며
-        // 원본 글꼴 크기의 비율로 이동한다. 모든 paint backend가 같은 값을 쓴다.
-        let baseline_y =
-            baseline_y + base_font_size * f64::from(self.font_position.unwrap_or_default()) / 100.0;
-        if self.superscript {
-            (
-                base_font_size * SCRIPT_FONT_SCALE,
-                baseline_y - base_font_size * SUPERSCRIPT_RISE_EM,
-            )
-        } else if self.subscript {
-            (
-                base_font_size * SCRIPT_FONT_SCALE,
-                baseline_y + base_font_size * SUBSCRIPT_DROP_EM,
-            )
-        } else {
-            (base_font_size, baseline_y)
-        }
+        self.script_metrics.draw_metrics(
+            base_font_size,
+            baseline_y,
+            self.superscript,
+            self.subscript,
+            self.font_position,
+        )
     }
 
     /// 글자폭 맞춤(fit) 대상 advance 에 적용할 배율 (#2771, #5756).
     ///
     /// SVG `textLength` 와 Canvas `fit_scale` 은 "레이아웃 advance 에 글리프 폭을
     /// 맞춘다". [#5756] 이후 첨자 run 의 **레이아웃 advance 자체**가 그리기
-    /// 배율(0.7)로 측정되므로(`text_measurement::style_params`), 대상 advance 는
+    /// 배율로 측정되므로(`text_measurement::style_params`), 대상 advance 는
     /// 이미 축소 글리프의 자연 폭과 일치한다 — 여기서 또 줄이면 이중 축소로
     /// 글리프가 0.49 배까지 눌린다. 항상 1.0(항등)을 돌려준다.
     pub fn script_advance_scale(&self) -> f64 {
@@ -817,6 +811,7 @@ impl Default for TextStyle {
             emphasis_skip_first_cluster: false,
             top_underline_font_size: None,
             top_underline_phase: None,
+            script_metrics: Default::default(),
             supplemental_metrics: None,
             isolated_jamo_font: None,
             shadow_offset_percent: None,
@@ -1470,12 +1465,7 @@ pub(crate) fn legacy_hft_bullet_geometry(
         ),
         _ => return None,
     };
-    let size = style.font_size
-        * if style.superscript || style.subscript {
-            SCRIPT_FONT_SCALE
-        } else {
-            1.0
-        };
+    let size = style.script_font_size(style.font_size);
     let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
     Some((size * ratio * cx, size * cy, size * ratio * rx, size * ry))
 }
