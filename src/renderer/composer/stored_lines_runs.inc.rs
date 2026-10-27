@@ -690,8 +690,21 @@ pub(crate) fn composed_tac_line_assignment(
     comp: &ComposedParagraph,
 ) -> Option<Vec<(usize, usize)>> {
     let computed_rows = para.line_segs.first()?.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
+    // 보이는 글자 없이 제어 슬롯만 완전히 보존된 문단도 서로 다른 저장 줄이
+    // 같은 논리 문자 위치를 갖는다. 완전한 원시 슬롯을 증명할 수 있을 때만
+    // 해당 슬롯으로 소유 줄을 구한다.
+    let empty_control_stream = !computed_rows
+        && para.text.is_empty()
+        && para.char_offsets.is_empty()
+        && !para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
+        && !comp.tac_controls.is_empty()
+        && comp
+            .tac_controls
+            .iter()
+            .all(|(_, _, ci)| para.empty_control_stream_position(*ci).is_some());
     if super::equation_tac_flow::uses_equation_only_flow(para, comp)
-        || para.char_offsets.is_empty()
+        || (para.char_offsets.is_empty() && !empty_control_stream)
         || comp.lines.len() != para.line_segs.len()
         || comp.lines.len() < 2
         || comp
@@ -728,12 +741,24 @@ pub(crate) fn composed_tac_line_assignment(
                     .get(owner + 1)
                     .is_some_and(|next| *pos >= next.char_start)
             });
-    collapsed_boundary.then_some(assignments)
+    (collapsed_boundary || empty_control_stream).then_some(assignments)
 }
 
 /// 보이는 다음 글자와 확장 제어 슬롯이 같은 논리 위치여도 원시 줄 소속은 다를 수 있다.
 /// 저장/현재 재조판 사다리의 UTF-16 경계로 조회하며 높이의 우연한 일치는 사용하지 않는다.
 pub(crate) fn control_slot_line_index(para: &Paragraph, control_index: usize) -> Option<usize> {
+    if !para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
+        && para.line_segs.first().is_some_and(|seg| {
+            seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        })
+    {
+        if let Some(slot) = para.empty_control_stream_position(control_index) {
+            return (0..para.line_segs.len())
+                .rev()
+                .find(|&line| para.line_seg_text_start(line) <= slot);
+        }
+    }
     control_slot_line_index_with_starts(
         para,
         control_index,

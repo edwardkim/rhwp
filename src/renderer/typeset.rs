@@ -5630,9 +5630,13 @@ impl TypesetEngine {
                 || split_host_prefix.is_some())
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common);
+            // 쪽 끝의 마지막 줄은 글줄의 점유 끝으로 수용한다. 줄 뒤 간격은
+            // 다음 흐름에는 보존하지만, 그 간격만 용지 밖에 남는다는 이유로
+            // 본문에 들어가는 줄을 다음 쪽으로 옮기지 않는다.
+            let post_content_height = fmt.line_content_height(post_table_start..total_lines, 0.0);
             if (self.tac_table_line_index(para, table, fmt) == Some(0)
                 || session_grown_topbottom_spill)
-                && st.current_height + post_height > st.available_height() + 0.5
+                && st.current_height + post_content_height > st.available_height() + 0.5
                 && !st.current_items.is_empty()
             {
                 st.advance_column_or_new_page();

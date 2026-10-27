@@ -38,7 +38,7 @@ find_endnote_edit_target은 원본 구역 주소와 미주를 그린 마지막 �
 실제 회귀 source:
 - [tests/cases/endnote_edit_target_multi_section.rs](../../../tests/cases/endnote_edit_target_multi_section.rs).
 
-source/test는 이번 증적 정정에서 변경하지 않았다. [Full code CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)의 archive 11,638 PASS, Native 15묶음·124 PASS와 [trailing CI](https://github.com/edwardkim/rhwp/actions/runs/40496300856) 성공은 실제 이력으로 보존한다. 코드 CI를 원 보고 문서의 Print 대조 완료로 확대하지 않는다.
+통합 당시의 source/test에 대한 기록이다. 이번 원문 검토의 추가 보정은 별도로 기록한다. [Full code CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)의 archive 11,638 PASS, Native 15묶음·124 PASS와 [trailing CI](https://github.com/edwardkim/rhwp/actions/runs/40496300856) 성공은 실제 이력으로 보존한다. 코드 CI를 원 보고 문서의 Print 대조 완료로 확대하지 않는다.
 
 ## 기존 댓글 수정
 
@@ -46,3 +46,14 @@ source/test는 이번 증적 정정에서 변경하지 않았다. [Full code CI]
 대체 입력은 이미지 설명에도 파일명·페이지·대체 여부를 밝힌다. 원문 검증으로 오인하게 하는 이미지·수치·완료 주장은 제거한다.
 
 [전체 대응 원장](../assets/pr8319_evidence_alignment_20261027/alignment.json)과 [공식 배포처 탐색·대체 표시](../assets/pr8319_evidence_alignment_20261027/source-identification.md)를 함께 확인한다.
+
+<!-- current-control-start -->
+## 현재 후보의 기존 대조군 확인
+
+기존 대조군 원본 `mydocs/pr/assets/s21_20261027/inputs/209.hwpx`과 독립 Print PDF를 같은 물리 2쪽에서 다시 비교했다. 이는 새로 확보한 원문과 다를 수 있다.
+
+- NATIVE: 전체 2쪽 최저 raw 100.00000%, 해당 쪽 100.00000% · [review](../assets/pr8319_evidence_alignment_20261027/current-evidence/pr8090/native/review.png) / [overlay](../assets/pr8319_evidence_alignment_20261027/current-evidence/pr8090/native/overlay.png) / [전체 TSV](../assets/pr8319_evidence_alignment_20261027/current-evidence/pr8090/native/silhouette.tsv)
+- WASM: 전체 2쪽 최저 raw 100.00000%, 해당 쪽 100.00000% · [review](../assets/pr8319_evidence_alignment_20261027/current-evidence/pr8090/wasm/review.png) / [overlay](../assets/pr8319_evidence_alignment_20261027/current-evidence/pr8090/wasm/overlay.png) / [전체 TSV](../assets/pr8319_evidence_alignment_20261027/current-evidence/pr8090/wasm/silhouette.tsv)
+
+이전 증적과 비교한 전체 쪽에서 0.1%p 초과 raw 하락과 쪽 누락이 없다.
+<!-- current-control-end -->

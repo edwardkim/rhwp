@@ -13,7 +13,7 @@ TAC fit은 format이 이미 포함한 tac_outer_margin_v_px를 중복 계상하�
 tests/cases/tac_table_no_lineseg_outer_margin_fit.rs의 fits/overflows 경계. 실제 저장 frame과 no-LineSeg 재조판은 서로 다른 분기이며 한쪽 성공으로 다른 분기를 대체하지 않는다.
 
 
-통합 merge `af6bb05b26887135fb9da0fa4e54ca7205564fca`와 [Full code CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)는 완료 이력이다. 엔진·테스트·baseline은 이번 변경에서 수정하지 않았다.
+통합 merge `af6bb05b26887135fb9da0fa4e54ca7205564fca`와 [Full code CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)는 완료 이력이다. 이 CI는 통합 당시의 실행 이력이며 후속 원문 대조에서 추가한 엔진·회귀 변경의 검증을 대신하지 않는다.
 
 ## 입력·페이지·대표 증거
 

@@ -6801,5 +6801,7 @@
     }
   ],
   "substitution_instruction": "원 pr 에 hwp 파일이 없어서 유사 문서로 대체해서 표시",
-  "newly_found_documents_scope": "내용 대응과 주장 페이지 증적만 확인한다. 전 페이지 90% 보정은 요청 범위가 아니며 엔진·회귀·지침을 변경하지 않는다."
+  "newly_found_documents_scope": "내용 대응과 주장 페이지 증적만 확인한다. 전 페이지 90% 보정은 요청 범위가 아니며 엔진·회귀·지침을 변경하지 않는다.",
+  "historical_capture_only": true,
+  "later_source_and_test_changes": "후속 원문 대조에서 제품 코드와 회귀를 추가 보정했다. 이 원장의 해시와 new_engine_or_test_changes는 당시 capture_head의 과거 기록이며 현재 후보의 source 상태나 최신 검증을 뜻하지 않는다. 최신 결과는 source-claims와 각 PR 리뷰를 확인한다."
 }

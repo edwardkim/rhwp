@@ -11,7 +11,7 @@ CanvasTextFont::for_positioned_text는 style.bold만 보지 않고 is_visually_b
 tests/cases/canvas_heavy_display_face_bold.rs. Canvas 실제 출력 증거는 해당 글꼴·producer의 Print 대조와 별도로 연결해야 하며 descriptor 검사만으로 수용하지 않는다.
 
 
-통합 merge `af6bb05b26887135fb9da0fa4e54ca7205564fca`와 [Full code CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)는 완료 이력이다. 엔진·테스트·baseline은 이번 변경에서 수정하지 않았다.
+통합 merge `af6bb05b26887135fb9da0fa4e54ca7205564fca`와 [Full code CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)는 완료 이력이다. 이 CI는 통합 당시의 실행 이력이며 후속 원문 대조에서 추가한 엔진·회귀 변경의 검증을 대신하지 않는다.
 
 ## 입력·페이지·대표 증거
 

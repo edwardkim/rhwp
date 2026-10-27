@@ -3,6 +3,7 @@
 
 pub mod device_context;
 mod device_stroke;
+mod pattern_brush;
 pub mod player;
 pub mod svg;
 

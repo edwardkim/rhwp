@@ -18,6 +18,8 @@ const RT_SET_VIEWPORT_EXT_EX: u32 = 0x0000000B;
 const RT_SET_VIEWPORT_ORG_EX: u32 = 0x0000000C;
 const RT_SET_MAP_MODE: u32 = 0x00000011;
 const RT_SET_BK_MODE: u32 = 0x00000012;
+const RT_SET_POLY_FILL_MODE: u32 = 0x00000013;
+const RT_SET_BRUSH_ORG_EX: u32 = 0x0000000D;
 const RT_SET_TEXT_ALIGN: u32 = 0x00000016;
 const RT_SET_TEXT_COLOR: u32 = 0x00000018;
 const RT_SET_BK_COLOR: u32 = 0x00000019;
@@ -30,6 +32,7 @@ const RT_CREATE_PEN: u32 = 0x00000026;
 const RT_CREATE_BRUSH_INDIRECT: u32 = 0x00000027;
 /// [#6577] 이 파일군의 비-스톡 펜은 전부 여기서 온다(`EMR_CREATEPEN` 은 0건).
 const RT_EXT_CREATE_PEN: u32 = 0x0000005F;
+const RT_CREATE_DIB_PATTERN_BRUSH: u32 = 0x0000005E;
 /// [#6577] 156627451 내장 EMF 는 클립을 112건 쓴다 — 종전에는 클립이 아예 없었다.
 const RT_INTERSECT_CLIP_RECT: u32 = 0x0000001E;
 const RT_EXT_SELECT_CLIP_RGN: u32 = 0x0000004B;
@@ -51,6 +54,7 @@ const RT_POLYLINE16: u32 = 0x00000057;
 /// [#6577] 패스 기반 EMF 의 주 구성 레코드 — 종전에는 `Unknown` 으로 버려졌다.
 const RT_POLYBEZIER_TO16: u32 = 0x00000058;
 const RT_POLYLINE_TO16: u32 = 0x00000059;
+const RT_POLY_POLYGON16: u32 = 0x0000005B;
 // 패스 (단계 12)
 const RT_BEGIN_PATH: u32 = 0x0000003B;
 const RT_END_PATH: u32 = 0x0000003C;
@@ -275,6 +279,10 @@ fn dispatch(record_type: u32, c: &mut Cursor<'_>, payload_len: usize) -> Result<
             let (handle, brush) = object::parse_create_brush_indirect(c)?;
             Record::CreateBrushIndirect { handle, brush }
         }
+        RT_CREATE_DIB_PATTERN_BRUSH => {
+            let (handle, brush) = bitmap::parse_pattern_brush(c.full_buf())?;
+            Record::CreateDibPatternBrush { handle, brush }
+        }
         RT_INTERSECT_CLIP_RECT => Record::IntersectClipRect(drawing::parse_rect(c)?),
         RT_EXT_SELECT_CLIP_RGN => {
             let cb_rgn_data = c.u32()?;
@@ -319,6 +327,8 @@ fn dispatch(record_type: u32, c: &mut Cursor<'_>, payload_len: usize) -> Result<
 
         // 색상/모드
         RT_SET_BK_MODE => Record::SetBkMode(state::parse_u32_single(c)?),
+        RT_SET_POLY_FILL_MODE => Record::SetPolyFillMode(state::parse_u32_single(c)?),
+        RT_SET_BRUSH_ORG_EX => Record::SetBrushOrgEx(drawing::parse_point(c)?),
         RT_SET_TEXT_ALIGN => Record::SetTextAlign(state::parse_u32_single(c)?),
         RT_SET_TEXT_COLOR => Record::SetTextColor(state::parse_u32_single(c)?),
         RT_SET_BK_COLOR => Record::SetBkColor(state::parse_u32_single(c)?),
@@ -367,6 +377,10 @@ fn dispatch(record_type: u32, c: &mut Cursor<'_>, payload_len: usize) -> Result<
         RT_POLYGON16 => {
             let (bounds, points) = drawing::parse_points16(c)?;
             Record::Polygon16 { bounds, points }
+        }
+        RT_POLY_POLYGON16 => {
+            let (bounds, polygons) = drawing::parse_poly_polygon16(c)?;
+            Record::PolyPolygon16 { bounds, polygons }
         }
         RT_POLYBEZIER16 => {
             let (bounds, points) = drawing::parse_points16(c)?;

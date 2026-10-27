@@ -17,7 +17,7 @@ pub(super) fn compose(a: Matrix, b: Matrix) -> Matrix {
     ]
 }
 
-fn inverse(m: Matrix) -> Option<Matrix> {
+pub(super) fn inverse(m: Matrix) -> Option<Matrix> {
     let det = m[0] * m[3] - m[1] * m[2];
     if !m.iter().all(|v| v.is_finite()) || !det.is_finite() || det == 0.0 {
         return None;

@@ -9,7 +9,7 @@
 canvas_cluster_fit은 양수 배분 간격을 실제 glyph fit 폭과 분리한다. 좁은 ASCII를 늘리지 않고 가운데 놓으며, box가 넓어도 잉크가 advance 안에 들면 기호를 누르지 않는다. 한글/한자와 fixed_glyph_advances의 원본 점유 계약은 별도 분기다. halfwidth punctuation과 Canvas/Skia의 동일 helper 소비를 확인하며 임의의 허용 배율로 시각 미달을 감추지 않는다.
 
 
-통합 merge `af6bb05b26887135fb9da0fa4e54ca7205564fca`와 [Full code CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)는 완료 이력이다. 엔진·테스트·baseline은 이번 변경에서 수정하지 않았다.
+통합 merge `af6bb05b26887135fb9da0fa4e54ca7205564fca`와 [Full code CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)는 완료 이력이다. 이 CI는 통합 당시의 실행 이력이며 후속 원문 대조에서 추가한 엔진·회귀 변경의 검증을 대신하지 않는다.
 
 ## 입력·페이지·대표 증거
 

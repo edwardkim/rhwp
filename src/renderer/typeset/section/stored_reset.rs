@@ -257,7 +257,7 @@ impl TypesetEngine {
                 // 부분 이어받기는 이 단에 원본 전체 줄을 소비한 증거가 아니다.
                 let inline_frame_page_restart = st.col_count == 1
                     && !profile.session_edited()
-                    && profile.hwp5_stored_pagination_layout()
+                    && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
                     && matches!(st.current_items.last(), Some(crate::renderer::typeset::PageItem::Table {
                         para_index, control_index: 0,
                     }) if *para_index == para_idx - 1)

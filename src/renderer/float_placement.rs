@@ -4611,7 +4611,10 @@ fn stored_captioned_picture_successor_placement(
         || common.vert_rel_to != VertRelTo::Para
         || common.vert_align != VertAlign::Top
         || common.margin.top != 0
-        || caption.direction != CaptionDirection::Bottom
+        || !matches!(
+            caption.direction,
+            CaptionDirection::Top | CaptionDirection::Bottom
+        )
         || caption.spacing < 0
         || caption.paragraphs.is_empty()
         || caption.paragraphs.iter().any(|p| {

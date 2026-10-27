@@ -6500,6 +6500,11 @@ impl LayoutEngine {
                 // line box를 font 높이로 접지 않는다. 큰 inline 도형과 글자가 같은
                 // 줄에 있는 경우에도 저장 baseline이 최종 글자 위치의 기준이다.
                 && empty_tac_guide_line
+                // 완전한 제어 전용 저장 스트림은 원시 슬롯으로 이 줄의 실제
+                // 개체 소유를 확인했다. 이 줄을 guide로 접으면 측정이 예약한
+                // 개체 높이를 배치가 버리고 뒤 표를 개체 위로 당긴다.
+                && !(stored_tac_assignment.is_some()
+                    && para.is_some_and(|p| p.text.is_empty() && p.char_offsets.is_empty()))
                 && !empty_tac_guide_has_explicit_shape_height
                 // [#6632] 셀 안에서는 접지 않는다. 접힌 높이를 되돌리는 바닥값
                 // (`layout_column_item` 의 `para_start + max(seg_lh, shape_max_h)`)은 본문
@@ -8333,6 +8338,25 @@ impl LayoutEngine {
             } else {
                 render_line_spacing_px
             };
+            // 보이는 문자가 없는 완전한 저장 제어 스트림에서 앞 guide 줄과
+            // 실제 개체 소유 줄이 겹칠 수 있다. 조판이 예약한 같은 저장 전진을
+            // 여기서도 소비해 다음 줄의 개체 원점이 한 줄 높이만큼 틀어지지 않게 한다.
+            let stored_tac_overlap_advance = (cell_ctx.is_none()
+                && line_tac_offsets.is_empty()
+                && stored_tac_assignment.as_ref().is_some_and(|assignment| {
+                    assignment.iter().any(|(_, owner)| *owner > line_idx)
+                }))
+            .then(|| {
+                crate::renderer::stored_line_ladder::stored_overlap_advance_hu(
+                    para?,
+                    line_idx,
+                    composed.lines.len(),
+                    runs_all_whitespace,
+                )
+            })
+            .flatten()
+            .and_then(|advance| i32::try_from(advance).ok())
+            .map(|advance| hwpunit_to_px(advance, self.dpi));
             if endnote_line_vpos_base.is_some() {
                 // 미주 끝의 줄 점유는 다음 미주 앞 간격과 별개다. fit 재생도
                 // 실제 paint가 소비한 마지막 줄 상자를 사용한다.
@@ -8362,6 +8386,9 @@ impl LayoutEngine {
                     Some(y + line_flow_height + render_line_spacing_px.max(0.0));
                 last_line_box_bottom = Some(y + line_flow_height);
                 y += line_flow_height;
+            } else if let Some(advance) = stored_tac_overlap_advance {
+                last_line_box_bottom = Some(y + advance);
+                y += advance;
             } else if skip_advance_empty_line {
                 // no advance
             } else if next_is_row_fragment {

@@ -13,7 +13,7 @@
 tests/cases/metric_postscript_weight_suffix.rs: Regular/Medium 동일 metric, Bold의 실제 bold metric, SourceHanSansK 별칭, 미등록 family 및 Light 거절.
 
 
-통합 merge `af6bb05b26887135fb9da0fa4e54ca7205564fca`와 [Full code CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)는 완료 이력이다. 엔진·테스트·baseline은 이번 변경에서 수정하지 않았다.
+통합 merge `af6bb05b26887135fb9da0fa4e54ca7205564fca`와 [Full code CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)는 완료 이력이다. 이 CI는 통합 당시의 실행 이력이며 후속 원문 대조에서 추가한 엔진·회귀 변경의 검증을 대신하지 않는다.
 
 ## 입력·페이지·대표 증거
 

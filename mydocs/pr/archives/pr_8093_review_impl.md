@@ -9,7 +9,7 @@
 Form의 treatAsChar를 논리 한 칸으로 투영하고, inline_control_projection·equation_line_metrics·inline_box_rows·nested_table_frames가 Form 메트릭을 소비한다. 같은 줄 본문과 개체의 높이·기준선 합집합을 사용하며 정상 저장 LineSeg를 임의로 덮지 않는다. 기존 화면 폭 90px 하한은 원본 Form 폭과 실제 caret 구간의 관계로 바꿨다. 입력·Enter 뒤 문단 소유도 유지하고 양쪽 100% 페이지의 독립 가/나 원점만 ±2px로 보호한다.
 
 
-통합 merge `af6bb05b26887135fb9da0fa4e54ca7205564fca`와 [Full code CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)는 완료 이력이다. 엔진·테스트·baseline은 이번 변경에서 수정하지 않았다.
+통합 merge `af6bb05b26887135fb9da0fa4e54ca7205564fca`와 [Full code CI](https://github.com/edwardkim/rhwp/actions/runs/40489874571)는 완료 이력이다. 이 CI는 통합 당시의 실행 이력이며 후속 원문 대조에서 추가한 엔진·회귀 변경의 검증을 대신하지 않는다.
 
 ## 입력·페이지·대표 증거
 
@@ -20,3 +20,14 @@ Form의 treatAsChar를 논리 한 칸으로 투영하고, inline_control_project
 ## 원격 반영
 
 새 댓글을 추가하지 않고 기존 댓글 ID `6440934691`를 수정한다. 증적 PR의 실제 반영 뒤 merge SHA로 URL을 고정하고 게시 내용을 재조회한다.
+
+<!-- current-control-start -->
+## 현재 후보의 기존 대조군 확인
+
+기존 대조군 원본 `tests/fixtures/pr8093_form_caret/form-slot.hwp`과 독립 Print PDF를 같은 물리 1쪽에서 다시 비교했다. 이는 새로 확보한 원문과 다를 수 있다.
+
+- NATIVE: 전체 1쪽 최저 raw 100.00000%, 해당 쪽 100.00000% · [review](../assets/pr8319_evidence_alignment_20261027/current-evidence/pr8093/native/review.png) / [overlay](../assets/pr8319_evidence_alignment_20261027/current-evidence/pr8093/native/overlay.png) / [전체 TSV](../assets/pr8319_evidence_alignment_20261027/current-evidence/pr8093/native/silhouette.tsv)
+- WASM: 전체 1쪽 최저 raw 100.00000%, 해당 쪽 100.00000% · [review](../assets/pr8319_evidence_alignment_20261027/current-evidence/pr8093/wasm/review.png) / [overlay](../assets/pr8319_evidence_alignment_20261027/current-evidence/pr8093/wasm/overlay.png) / [전체 TSV](../assets/pr8319_evidence_alignment_20261027/current-evidence/pr8093/wasm/silhouette.tsv)
+
+이전 증적과 비교한 전체 쪽에서 0.1%p 초과 raw 하락과 쪽 누락이 없다.
+<!-- current-control-end -->

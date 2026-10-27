@@ -648,26 +648,16 @@ fn resolve_line_metrics(
             // 첫 문단: 조판부호 줄과 글상자 줄이 모두 lh=3403 인데 vpos 500→600). 한글은
             // 저장 vpos 차이만큼만 전진하므로 줄 상자를 통째로 쌓으면 뒤 내용이 그만큼
             // (+44px) 밀린다.
-            let stored_overlap_advance = (runs_all_whitespace
-                && comp.lines.len() == para.line_segs.len())
-            .then(|| {
-                para.line_segs
-                    .get(line_idx)
-                    .zip(para.line_segs.get(line_idx + 1))
-            })
-            .flatten()
-            .filter(|(cur, next)| {
-                let authored = |seg: &crate::model::paragraph::LineSeg| {
-                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                };
-                // 사다리 자체가 겹침을 적은 경우만 — 다음 줄이 줄 상자 안에서 시작한다.
-                authored(cur)
-                    && authored(next)
-                    && next.vertical_pos > cur.vertical_pos
-                    && next.vertical_pos < cur.vertical_pos + cur.line_height + cur.line_spacing
-            })
-            .map(|(cur, next)| hwpunit_to_px(next.vertical_pos - cur.vertical_pos, ctx.dpi()))
-            .filter(|advance| *advance < flow_lh + line_spacing_px);
+            let stored_overlap_advance =
+                crate::renderer::stored_line_ladder::stored_overlap_advance_hu(
+                    para,
+                    line_idx,
+                    comp.lines.len(),
+                    runs_all_whitespace,
+                )
+                .and_then(|advance| i32::try_from(advance).ok())
+                .map(|advance| hwpunit_to_px(advance, ctx.dpi()))
+                .filter(|advance| *advance < flow_lh + line_spacing_px);
             if let Some(advance) = stored_overlap_advance {
                 pairs.push((advance, 0.0));
                 prev_line_reserved_tac_picture_height = None;

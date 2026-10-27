@@ -21,6 +21,103 @@ fn has_paragraph_float_graphic(paragraph: &Paragraph) -> bool {
     })
 }
 
+/// 문단 기준 자리차지 표가 소유하는 완전한 바깥 프레임의 끝.
+/// 저장 쪽 원점과 다음 문단의 전진을 확인하는 두 경로가 같은 프레임을 사용한다.
+fn paragraph_float_frame_end_hu(paragraph: &Paragraph) -> Option<i64> {
+    use crate::model::shape::{TextWrap, VertAlign, VertRelTo};
+    let [Control::Table(table)] = paragraph.controls.as_slice() else {
+        return None;
+    };
+    if table.common.treat_as_char
+        || !table.common.flow_with_text
+        || table.common.allow_overlap
+        || table.caption.is_some()
+        || table.common.text_wrap != TextWrap::TopAndBottom
+        || table.common.vert_rel_to != VertRelTo::Para
+        || table.common.vert_align != VertAlign::Top
+        || table.common.height == 0
+        || table.common.height >= 0x8000_0000
+        || (table.common.vertical_offset as i32) < 0
+        || paragraph.stored_text_partition_is_dirty()
+        || paragraph.cell_format_vpos_dirty
+    {
+        return None;
+    }
+    Some(
+        i64::from(table.common.vertical_offset)
+            + i64::from(table.common.height)
+            + i64::from(table.outer_margin_top)
+            + i64::from(table.outer_margin_bottom),
+    )
+}
+
+/// 제어 전용 문단에서 실제 인라인 개체가 겹친 마지막 저장 줄을 소유하고,
+/// 그 줄이 개체의 완전한 바깥 상자를 보존하는지 확인한다.
+fn control_only_overlapping_shape_frame(first: &Paragraph) -> bool {
+    use crate::model::paragraph::LineSeg;
+    if !first.text.is_empty()
+        || !first.char_offsets.is_empty()
+        || first.stored_text_partition_is_dirty()
+        || first.cell_format_vpos_dirty
+        || first.line_segs.len() < 2
+        || !first.line_segs.windows(2).enumerate().all(|(index, _)| {
+            super::stored_line_ladder::stored_overlap_advance_hu(
+                first,
+                index,
+                first.line_segs.len(),
+                true,
+            )
+            .is_some()
+        })
+    {
+        return false;
+    }
+    let mut shapes = first
+        .controls
+        .iter()
+        .enumerate()
+        .filter_map(|(index, control)| {
+            if let Control::Shape(shape) = control {
+                shape.common().treat_as_char.then_some((index, shape))
+            } else {
+                None
+            }
+        });
+    let Some((index, shape)) = shapes.next() else {
+        return false;
+    };
+    if shapes.next().is_some()
+        || first.controls.iter().enumerate().any(|(other, control)| {
+            other != index
+                && (control.is_logical_inline()
+                    || matches!(
+                        control,
+                        Control::Shape(_)
+                            | Control::Picture(_)
+                            | Control::Table(_)
+                            | Control::Form(_)
+                            | Control::Equation(_)
+                            | Control::AutoNumber(_)
+                            | Control::Ruby(_)
+                            | Control::Unknown(_)
+                    ))
+        })
+        || first.empty_control_stream_position(index).is_none()
+        || super::composer::control_slot_line_index(first, index) != Some(first.line_segs.len() - 1)
+        || super::composer::shape_caption_for_layout(shape).is_some()
+    {
+        return false;
+    }
+    let last = first.line_segs.last().expect("두 저장 줄을 확인함");
+    let common = shape.common();
+    let frame = i64::from(shape.flow_height_hu())
+        + i64::from(common.margin.top)
+        + i64::from(common.margin.bottom);
+    last.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && frame > 0
+        && i64::from(last.line_height) == frame
+}
+
 /// 쪽 첫 저장 줄의 vpos가 문단 앞 간격을 포함하면 쪽 원점은 0이다.
 /// 다음 문단의 저장 사다리도 앞 간격을 계상하는지 확인하여 측정과 배치가
 /// 같은 원점을 소비한다. 명시적 쪽 나눔도 원본 앞 간격과 다음 줄이 같은
@@ -62,17 +159,7 @@ pub(crate) fn stored_first_margin_is_page_relative(
     // of ordinary text advances. Its complete outer frame independently
     // closes the next saved line, so the first margin is still page-relative.
     let float_closes_next = matches!(first.controls.as_slice(), [Control::Table(table)]
-        if !table.common.treat_as_char && table.common.flow_with_text
-            && !table.common.allow_overlap
-            && table.caption.is_none()
-            && table.common.text_wrap == crate::model::shape::TextWrap::TopAndBottom
-            && table.common.vert_rel_to == crate::model::shape::VertRelTo::Para
-            && table.common.vert_align == crate::model::shape::VertAlign::Top
-            && table.common.height > 0 && table.common.height < 0x8000_0000
-            && (table.common.vertical_offset as i32) >= 0
-            && i64::from(table.common.vertical_offset) + i64::from(table.common.height)
-                + i64::from(table.outer_margin_top) + i64::from(table.outer_margin_bottom)
-                == i64::from(next_seg.vertical_pos)
+        if paragraph_float_frame_end_hu(first) == Some(i64::from(next_seg.vertical_pos))
             && i64::from(last_seg.vertical_pos) + i64::from(last_seg.line_height)
                 <= i64::from(table.common.vertical_offset) + i64::from(table.outer_margin_top))
         && !first.stored_text_partition_is_dirty()
@@ -99,10 +186,16 @@ pub(crate) fn stored_first_margin_is_page_relative(
     // 글자처럼 취급되는 도형이 있는 첫 문단은 제목과 개체가 저장 원점을 함께
     // 소유한다. 문단 앞 여백만으로 쪽 원점을 다시 정하면 후속 표가 그 여백만큼
     // 위로 이동한다. 일반 텍스트 문단의 여백 사다리와 구분한다(#6797 7쪽).
-    !first
-        .controls
-        .iter()
-        .any(|control| matches!(control, Control::Shape(shape) if shape.common().treat_as_char))
+    let overlapping_inline_frame = control_only_overlapping_shape_frame(first)
+        && !next.stored_text_partition_is_dirty()
+        && !next.cell_format_vpos_dirty;
+    let first_vpos_px = hwpunit_to_px(first_seg.vertical_pos, dpi);
+    let first_margin_matches = (first_vpos_px - first_before).abs() <= 0.5
+        || (overlapping_inline_frame && first_vpos_px > 0.0 && first_vpos_px <= first_before);
+    (overlapping_inline_frame
+        || !first.controls.iter().any(
+            |control| matches!(control, Control::Shape(shape) if shape.common().treat_as_char),
+        ))
         && !has_paragraph_float_graphic(first)
         && !has_paragraph_float_graphic(next)
         && first_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
@@ -110,7 +203,7 @@ pub(crate) fn stored_first_margin_is_page_relative(
         && next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && next_before >= 0.0
         && first_before > 0.5
-        && (hwpunit_to_px(first_seg.vertical_pos, dpi) - first_before).abs() <= 0.5
+        && first_margin_matches
         && (float_closes_next || complete_margin_step || next_margin_step)
 }
 
@@ -153,8 +246,6 @@ pub(crate) fn stored_inline_frame_restarts_page(
             .text
             .chars()
             .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}')
-        || !current.controls.is_empty()
-        || current.text.trim().is_empty()
         || first.vertical_pos != 0
         || first.line_height <= 0
         || first.line_spacing < 0
@@ -164,11 +255,41 @@ pub(crate) fn stored_inline_frame_restarts_page(
         || [object_line, first, successor].iter().any(|seg| {
             seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
                 || seg.tag & LineSeg::TAG_FIRST_SEGMENT == 0
-                || seg.segment_width <= 0
         })
+        || object_line.segment_width <= 0
+        || successor.segment_width <= 0
     {
         return false;
     }
+    let line_advance = i64::from(first.line_height) + i64::from(first.line_spacing);
+    let current_advance = match current.controls.as_slice() {
+        [] if !current.text.trim().is_empty() && first.segment_width > 0 => line_advance,
+        [Control::Table(table)]
+            if current
+                .text
+                .chars()
+                .all(|ch| ch.is_whitespace() || ch.is_control() || ch == '\u{fffc}') =>
+        {
+            if table.common.treat_as_char {
+                let frame = i64::from(table.common.height)
+                    + i64::from(table.outer_margin_top)
+                    + i64::from(table.outer_margin_bottom);
+                if first.segment_width <= 0 || i64::from(first.line_height) != frame {
+                    return false;
+                }
+                line_advance
+            } else if let Some(frame) =
+                paragraph_float_frame_end_hu(current).filter(|_| table.common.width > 0)
+            {
+                // 폭 없는 앵커 줄도 표의 완전한 프레임을 점유한다. 작은
+                // placeholder 줄 높이만으로 뒤 저장 사다리를 판정하지 않는다.
+                line_advance.max(frame)
+            } else {
+                return false;
+            }
+        }
+        _ => return false,
+    };
     let Some(current_style) = styles.para_styles.get(current.para_shape_id as usize) else {
         return false;
     };
@@ -179,9 +300,7 @@ pub(crate) fn stored_inline_frame_restarts_page(
     if !spacing.is_finite() || spacing < 0.0 || !dpi.is_finite() || dpi <= 0.0 {
         return false;
     }
-    let expected = i64::from(first.line_height)
-        + i64::from(first.line_spacing)
-        + (spacing * 7200.0 / dpi).round() as i64;
+    let expected = current_advance + (spacing * 7200.0 / dpi).round() as i64;
     // 새로운 제목과 그 다음 줄은 같은 원본 사다리를 닫는다. 문단마다
     // 0을 쓰는 로컬 좌표와 편집 후 재조판에는 이 독립 증거가 없다.
     i64::from(successor.vertical_pos) == expected

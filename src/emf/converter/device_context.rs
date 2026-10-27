@@ -7,11 +7,20 @@ use std::collections::HashMap;
 
 use crate::emf::parser::objects::{LogBrush, LogFontW, LogPen, XForm};
 
+/// 생성 시 한 번 디코딩하고, 선택·SaveDC/RestoreDC가 공유하는 브러시 타일.
+#[derive(Debug, Clone, Hash)]
+pub struct BitmapPattern {
+    pub width: u32,
+    pub height: u32,
+    pub data_url: String,
+}
+
 /// 그래픽 객체 핸들이 참조하는 구체 객체.
 #[derive(Debug, Clone)]
 pub enum GraphicsObject {
     Pen(LogPen),
     Brush(LogBrush),
+    PatternBrush(BitmapPattern),
     Font(LogFontW),
 }
 
@@ -20,6 +29,9 @@ pub enum GraphicsObject {
 pub struct DeviceContext {
     pub pen: Option<LogPen>,
     pub brush: Option<LogBrush>,
+    pub pattern_brush: Option<BitmapPattern>,
+    pub brush_origin: (i32, i32),
+    pub poly_fill_mode: u32,
     pub font: Option<LogFontW>,
     pub text_color: u32,
     pub bk_color: u32,
@@ -48,6 +60,9 @@ impl Default for DeviceContext {
             clip_rect: None,
             pen: None,
             brush: None,
+            pattern_brush: None,
+            brush_origin: (0, 0),
+            poly_fill_mode: 1,
             font: None,
             text_color: 0x00_00_00_00,
             bk_color: 0x00_FF_FF_FF,
