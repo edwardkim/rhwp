@@ -6592,17 +6592,8 @@ impl LayoutEngine {
                     current_zone_start_y = 0.0;
                 }
                 prev_zone_design_px = new_zone_design;
-                prev_zone_was_solo = new_zone_is_solo_zero
-                    || (new_zone_design > 0.5
-                        && new_zone_first_para
-                            .and_then(|pi| paragraphs.get(pi))
-                            .map(|p| {
-                                p.controls.iter().any(|c| {
-                                    matches!(c,
-                            Control::ColumnDef(cd) if cd.column_count.max(1) <= 1)
-                                })
-                            })
-                            .unwrap_or(false));
+                // 이어진 쪽에는 ColumnDef가 없어도 실제 영역의 단수는 유지된다.
+                prev_zone_was_solo = zone_layout.column_areas.len() == 1;
                 prev_zone_was_multi = zone_layout.column_areas.len() >= 2;
                 last_zone_y_offset = col_content.zone_y_offset;
                 prev_zone_sep_y_end = 0.0;
@@ -6632,7 +6623,7 @@ impl LayoutEngine {
                 *col_area_base
             };
 
-            let (col_node, y_offset) = self.build_single_column(
+            let (col_node, y_offset, body_content_bottom) = self.build_single_column(
                 tree,
                 paper_images,
                 col_content,
@@ -6715,7 +6706,45 @@ impl LayoutEngine {
                     zone_layout.column_areas.len(),
                     self.dpi,
                 ));
-            let y_offset_no_trailing = (y_offset - last_para_trailing_ls).max(0.0);
+            // 수용 판정과 같은 저장 내용 하단일 때만 새 텍스트 영역과 겹치는 뒤 여백을 제외한다.
+            let closing_content_bottom = (blank_band_tail.is_none() && apply_trailing_ls_subtract)
+                .then(|| {
+                    let PageItem::FullParagraph { para_index } = col_content.items.last()? else {
+                        return None;
+                    };
+                    let paragraph = paragraphs.get(*para_index)?;
+                    if !paragraph.controls.is_empty() || paragraph.line_segs.is_empty() {
+                        return None;
+                    }
+                    let next = page_content.column_contents.get(col_content_idx + 1)?;
+                    if next.zone_y_offset <= col_content.zone_y_offset {
+                        return None;
+                    }
+                    let next_para = match next.items.first()? {
+                        PageItem::FullParagraph { para_index }
+                        | PageItem::PartialParagraph { para_index, .. } => *para_index,
+                        _ => return None,
+                    };
+                    if !super::plain_text_column_zone(
+                        paragraphs,
+                        next_para,
+                        super::declared_column_type_at(paragraphs, *para_index),
+                        styles,
+                    ) {
+                        return None;
+                    }
+                    let after = styles
+                        .para_styles
+                        .get(paragraph.para_shape_id as usize)?
+                        .spacing_after;
+                    let tail = y_offset - body_content_bottom - after;
+                    (tail.abs() < 1e-6 || (tail - last_para_trailing_ls).abs() < 1e-6)
+                        .then_some(body_content_bottom)
+                })
+                .flatten();
+            let y_offset_no_trailing = closing_content_bottom
+                .unwrap_or(y_offset - last_para_trailing_ls)
+                .max(0.0);
 
             if y_offset_no_trailing > prev_zone_y_end {
                 prev_zone_y_end = y_offset_no_trailing;
@@ -6936,7 +6965,7 @@ impl LayoutEngine {
         // [#4277] 높이 측정 전용 — paint 트리가 아니라 흐름 상태만 만든다.
         let mut frame = PageLayoutContext::new(0, col_area.width, col_area.y + col_area.height);
         let mut paper_images: Vec<RenderNode> = Vec::new();
-        let (node, y_offset) = self.build_single_column(
+        let (node, y_offset, _) = self.build_single_column(
             &mut frame,
             &mut paper_images,
             &col_content,
@@ -7068,7 +7097,7 @@ impl LayoutEngine {
             layout.page_height,
         );
         let mut paper_images: Vec<RenderNode> = Vec::new();
-        let (_node, y_offset) = self.build_single_column(
+        let (_node, y_offset, _) = self.build_single_column(
             &mut frame,
             &mut paper_images,
             col_content,
@@ -7516,7 +7545,7 @@ impl LayoutEngine {
         outline_numbering_id: u16,
         wrap_around_paras: &[super::pagination::WrapAroundPara],
         body_wide_reserved: &[(usize, f64)],
-    ) -> (RenderNode, f64) {
+    ) -> (RenderNode, f64, f64) {
         let col_node_id = tree.next_id();
         let mut col_node = RenderNode::new(
             col_node_id,
@@ -10733,6 +10762,9 @@ impl LayoutEngine {
             }
         }
 
+        // 겹친 표·도형의 후처리가 덮어쓰기 전에 마지막 본문 항목의 내용 하단을 확보한다.
+        let body_content_bottom = self.last_item_content_bottom.get();
+
         // 2차 패스: 글상자(Shape) z-order 정렬 후 렌더링
         self.layout_column_shapes_pass(
             tree,
@@ -10882,7 +10914,7 @@ impl LayoutEngine {
             0,
         );
 
-        (col_node, y_offset)
+        (col_node, y_offset, body_content_bottom)
     }
 
     /// [#4533 ④-a] 비-tac TopAndBottom 자리차지 표의 앵커 줄을 한글은 밴드

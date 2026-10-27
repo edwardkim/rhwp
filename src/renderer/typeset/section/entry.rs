@@ -162,7 +162,7 @@ impl TypesetEngine {
 
         // 다단 나누기
         if para.column_type == ColumnBreakType::MultiColumn {
-            self.process_multicolumn_break(st, para_idx, paragraphs, page_def);
+            self.process_multicolumn_break(st, para_idx, paragraphs, page_def, styles);
         }
 
         // 단 나누기
@@ -197,7 +197,7 @@ impl TypesetEngine {
         if para.column_type == ColumnBreakType::Column && !suppress_floating_anchor_column_break {
             if has_diff_col_def {
                 // [Task #702] 단나누기 + 새 ColumnDef = zone 재정의 (MultiColumn 등가 처리)
-                self.process_multicolumn_break(st, para_idx, paragraphs, page_def);
+                self.process_multicolumn_break(st, para_idx, paragraphs, page_def, styles);
             } else if !st.current_items.is_empty() {
                 // [Task #846] 마지막 단에서 명시적 단나누기 → 새 페이지가 아니라 같은
                 // col_count 로 같은 페이지에 새 단-밴드를 시작 (들어갈 공간이 있으면). ≈ #768.
@@ -276,7 +276,7 @@ impl TypesetEngine {
                 // (이전 zone 은 이전 페이지에 있었으므로 아래쪽 절반은 더하지 않음.)
                 let new_ds = column_def_design_spacing_px(cd, self.dpi);
                 st.advance_zone_origin(new_ds / 2.0);
-                st.initialize_zone_spacing(new_ds);
+                st.initialize_zone_spacing(new_ds, false);
             }
         }
 

@@ -3,6 +3,48 @@
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
+        "commands/clipboard.rs",
+        "paste_internal_native",
+        Exempt::DelegatesTo("paste_internal_at_caret_native"),
+        "기존 붙이기 진입점은 구역 무효화를 수행하는 공통 구현에 위임한다.",
+    ),
+    (
+        "commands/clipboard.rs",
+        "paste_internal_text_logical_native",
+        Exempt::DelegatesTo("paste_internal_at_caret_native"),
+        "순수 조각과 논리 위치를 검증한 뒤 구역 무효화 공통 구현에 위임한다.",
+    ),
+    (
+        "commands/html_import.rs",
+        "paste_html_native",
+        Exempt::DelegatesTo("paste_html_at_caret_native"),
+        "기존 HTML 붙이기는 구역 무효화 공통 구현에 위임한다.",
+    ),
+    (
+        "commands/html_import.rs",
+        "paste_html_text_logical_native",
+        Exempt::DelegatesTo("paste_html_at_caret_native"),
+        "순수 HTML을 검증한 뒤 구역 무효화 공통 구현에 위임한다.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "delete_range_native",
+        Exempt::DelegatesTo("delete_range_internal"),
+        "기존 글자 축 삭제는 무효화와 삭제를 수행하는 공통 구현에 위임한다.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "delete_range_logical_native",
+        Exempt::DelegatesTo("delete_range_internal"),
+        "논리 경계를 검증한 뒤 실제 삭제와 구역 무효화를 수행하는 공통 구현에 위임한다.",
+    ),
+    (
+        "commands/formatting.rs",
+        "reflow_body_paragraph_range_native",
+        Exempt::DelegatesTo("refresh_section_native"),
+        "범위 전체를 검증해 줄을 계산한 뒤 구역 패스스루·파생 상태를 갱신한다.",
+    ),
+    (
         "commands/border_paint_edit.rs",
         "discard_border_paint_undo_native",
         Exempt::SessionState,

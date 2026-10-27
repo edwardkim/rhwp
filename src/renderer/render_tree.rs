@@ -1225,6 +1225,9 @@ pub struct TableCellNode {
     pub page_fragment: bool,
     /// 모델 cells 배열 내 인덱스 (getTableCellBboxes에서 resize용)
     pub model_cell_index: Option<u32>,
+    /// 저장된 쪽 조각이 사용하는 원본 셀 문단 범위 [start, end). 전체 셀은 None.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub model_para_range: Option<(usize, usize)>,
 }
 
 /// 도형 변환 정보 (회전/대칭)

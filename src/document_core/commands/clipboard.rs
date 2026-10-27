@@ -9,7 +9,7 @@ use crate::document_core::{ClipboardData, DocumentCore};
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
-use crate::model::paragraph::{FieldRange, LineSeg, Paragraph};
+use crate::model::paragraph::{tab_ext_is_placeholder, FieldRange, LineSeg, Paragraph};
 
 /// [Task #1161] 떠 있는 개체 반복 붙여넣기 cascade 1 회당 위치 오프셋(HWPUNIT).
 /// 약 2mm (1mm = 7200/25.4 ≈ 283.46 HWPUNIT). 한컴 정합은 작업지시자 시각 대조로 미세조정.
@@ -346,9 +346,31 @@ fn clip_paragraph_caret_range_for_clipboard(
     suffix
 }
 
+pub(super) fn is_single_text_fragment(paragraphs: &[Paragraph]) -> bool {
+    let [para] = paragraphs else {
+        return false;
+    };
+    !para.text.is_empty()
+        && para.controls.is_empty()
+        && para.field_ranges.is_empty()
+        && para.orphan_field_ends.is_empty()
+        && para.range_tags.is_empty()
+        && para.title_marks.is_empty()
+        && para.markpen_marks.is_empty()
+        && para.ctrl_data_records.iter().all(Option::is_none)
+        && para.tab_extended.iter().all(tab_ext_is_placeholder)
+}
+
 impl DocumentCore {
     pub fn has_internal_clipboard_native(&self) -> bool {
         self.clipboard.is_some()
+    }
+
+    /// 글자 모양만 옮길 수 있는 실제 한 문단 조각인지 읽는다.
+    pub fn clipboard_is_single_text_native(&self) -> bool {
+        self.clipboard
+            .as_ref()
+            .is_some_and(|clipboard| is_single_text_fragment(&clipboard.paragraphs))
     }
 
     /// 내부 클립보드의 플레인 텍스트를 반환한다.
@@ -772,6 +794,41 @@ impl DocumentCore {
         para_idx: usize,
         char_offset: usize,
     ) -> Result<String, HwpError> {
+        self.paste_internal_at_caret_native(section_idx, para_idx, char_offset, false)
+    }
+
+    /// 순수 서식 글 조각은 본문 논리 캐럿과 일반 입력의 필드 소속을 따른다.
+    pub fn paste_internal_text_logical_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        logical_offset: usize,
+    ) -> Result<String, HwpError> {
+        if !self.clipboard_is_single_text_native() {
+            return Ok("{\"ok\":false,\"error\":\"not a single text fragment\"}".into());
+        }
+        let para = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(para_idx))
+            .ok_or_else(|| HwpError::RenderError("붙일 본문 위치를 확인해 주세요".into()))?;
+        if logical_offset > logical_paragraph_length(para) {
+            return Err(HwpError::RenderError(
+                "붙일 캐럿 위치를 확인해 주세요".into(),
+            ));
+        }
+        let (text, after_control) = logical_to_text_offset(para, logical_offset);
+        self.paste_internal_at_caret_native(section_idx, para_idx, text, after_control)
+    }
+
+    fn paste_internal_at_caret_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        after_control: bool,
+    ) -> Result<String, HwpError> {
         let mut clip_paras = match &self.clipboard {
             Some(c) if !c.paragraphs.is_empty() => c.paragraphs.clone(),
             _ => return Ok("{\"ok\":false,\"error\":\"clipboard empty\"}".to_string()),
@@ -805,8 +862,15 @@ impl DocumentCore {
             let new_chars = clip_text.chars().count();
 
             // 텍스트 삽입
-            self.document.sections[section_idx].paragraphs[para_idx]
-                .insert_text_at(char_offset, &clip_text);
+            super::text_editing::insert_body_text_with_field_affinity(
+                &mut self.document.sections[section_idx].paragraphs[para_idx],
+                self.active_field.as_ref(),
+                section_idx,
+                para_idx,
+                char_offset,
+                after_control,
+                &clip_text,
+            );
 
             // 클립보드의 글자 모양 적용
             self.apply_clipboard_char_shapes(
@@ -1546,7 +1610,7 @@ impl DocumentCore {
 
         // 문단 스타일 CSS
         let para_css = self.para_style_to_css(para.para_shape_id);
-        let mut html = format!("<p style=\"margin:0;{}\">\n", para_css);
+        let mut html = format!("<p style=\"margin:0;{}\">", para_css);
 
         // CharShapeRef 경계에서 스타일이 바뀌는 지점을 찾아 span 분할
         let style_ranges = self.get_char_style_ranges(para, start_idx, end_idx);

@@ -1549,57 +1549,22 @@ fn repeated_empty_tac_line_offset(
     }
 }
 
-fn note_number_format_from_hwp_code(code: u8) -> NumFmt {
-    match code {
-        0 => NumFmt::Digit,
-        1 => NumFmt::CircledDigit,
-        2 => NumFmt::RomanUpper,
-        3 => NumFmt::RomanLower,
-        4 => NumFmt::LatinUpper,
-        5 => NumFmt::LatinLower,
-        8 => NumFmt::HangulGaNaDa,
-        12 => NumFmt::HangulNumber,
-        13 => NumFmt::HanjaNumber,
-        _ => NumFmt::Digit,
-    }
-}
-
-fn note_decoration_char(value: u16) -> Option<char> {
-    if value == 0 {
-        None
-    } else {
-        char::from_u32(value as u32).filter(|ch| *ch != '\0')
-    }
-}
-
-fn format_note_marker_text(
-    number: u16,
-    number_shape: u32,
-    before_decoration_letter: u16,
-    after_decoration_letter: u16,
-) -> String {
-    let number = format_number(number, note_number_format_from_hwp_code(number_shape as u8));
-    let prefix = note_decoration_char(before_decoration_letter)
-        .map(|ch| ch.to_string())
-        .unwrap_or_default();
-    let suffix = note_decoration_char(after_decoration_letter)
-        .unwrap_or(')')
-        .to_string();
-    format!("{}{}{}", prefix, number, suffix)
-}
-
 pub(super) fn note_marker_text_from_control(
     ctrl: Option<&Control>,
     fallback_number: u16,
 ) -> String {
     match ctrl {
-        Some(Control::Footnote(footnote)) => format_note_marker_text(
+        Some(Control::Footnote(footnote)) => crate::renderer::note_marker::text(
+            &footnote.paragraphs,
+            crate::model::control::AutoNumberType::Footnote,
             fallback_number,
             footnote.number_shape,
             footnote.before_decoration_letter,
             footnote.after_decoration_letter,
         ),
-        Some(Control::Endnote(endnote)) => format_note_marker_text(
+        Some(Control::Endnote(endnote)) => crate::renderer::note_marker::text(
+            &endnote.paragraphs,
+            crate::model::control::AutoNumberType::Endnote,
             fallback_number,
             endnote.number_shape,
             endnote.before_decoration_letter,
@@ -9038,7 +9003,7 @@ impl LayoutEngine {
             let allow_end_tac = (is_last_run
                 || (comp_line.has_line_break && is_last_run_of_line(run_idx)))
                 && !next_line_starts_at_run_end;
-            let run_tacs: Vec<(usize, f64, usize)> = tac_offsets_px
+            let mut run_tacs: Vec<(usize, f64, usize)> = tac_offsets_px
                 .iter()
                 .filter(|(pos, _, _)| {
                     *pos >= run_char_pos
@@ -9059,6 +9024,53 @@ impl LayoutEngine {
             if std::env::var("RHWP_DEBUG_PARA_TAC").is_ok() && !tac_offsets_px.is_empty() {
                 eprintln!("  TAC_LINE pi={} line_idx={} run_idx={} run_char_pos={} run_char_end={} y={:.1} lh={:.1} ls={:.1} raw_lh={:.1} baseline={:.1} run_tacs={:?}",
                     para_index, line_idx, run_idx, run_char_pos, run_char_end, y, line_height, line_spacing_px, raw_lh, baseline, run_tacs);
+            }
+
+            // run 내 각주 위치 수집 (run 내 상대 위치, 각주 번호, fn_positions 인덱스, control 인덱스)
+            // 마지막 run에서는 run_char_end 위치의 각주도 포함 (문단 끝 각주)
+            let is_last = is_last_run_of_line(run_idx);
+            let run_fn_markers: Vec<(usize, u16, usize, usize)> = fn_positions
+                .iter()
+                .enumerate()
+                .filter_map(|(fni, &(fpos, fnum, ctrl_idx))| {
+                    if is_leading_note_marker_rendered_as_prefix(
+                        para,
+                        ctrl_idx,
+                        line_idx,
+                        start_line,
+                        fpos,
+                        comp_line.char_start,
+                    ) {
+                        // 선두 주석 번호는 첫 줄의 최종 기준선에서 FootnoteMarker로 이미 그린다.
+                        // 같은 위치의 위첨자 마커를 다시 만들면 `문26)`처럼 제목이 중복된다.
+                        fn_marker_inserted[fni] = true;
+                        return None;
+                    }
+                    let in_range = fpos >= run_char_pos
+                        && (fpos < run_char_end || (is_last && fpos == run_char_end));
+                    if !fn_marker_inserted[fni] && in_range {
+                        Some((fpos - run_char_pos, fnum, fni, ctrl_idx))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+            if !run_tacs.is_empty() {
+                // 그림과 주석이 같은 run에 있어도 원본 컨트롤 순서로 함께 배치한다.
+                for &(rel_pos, fnum, _, ctrl_idx) in &run_fn_markers {
+                    let text = note_marker_text_from_control(
+                        para.and_then(|p| p.controls.get(ctrl_idx)),
+                        fnum,
+                    );
+                    let style = TextStyle {
+                        font_size: FootnoteMarkerNode::font_size(text_style.font_size),
+                        font_family: text_style.font_family.clone(),
+                        color: text_style.color,
+                        ..Default::default()
+                    };
+                    run_tacs.push((rel_pos, estimate_text_width(&text, &style), ctrl_idx));
+                }
+                run_tacs.sort_by_key(|&(pos, _, ci)| (pos, ci));
             }
 
             if run_tacs.is_empty() {
@@ -9169,36 +9181,6 @@ impl LayoutEngine {
                 let mut fn_split_extra = 0.0f64; // 각주 마커 삽입으로 인한 추가 폭
                 let mut emitted_text_width = full_width;
                 {
-                    // run 내 각주 위치 수집 (run 내 상대 위치, 각주 번호, fn_positions 인덱스, control 인덱스)
-                    // 마지막 run에서는 run_char_end 위치의 각주도 포함 (문단 끝 각주)
-                    let is_last = is_last_run_of_line(run_idx);
-                    let run_fn_markers: Vec<(usize, u16, usize, usize)> = fn_positions
-                        .iter()
-                        .enumerate()
-                        .filter_map(|(fni, &(fpos, fnum, ctrl_idx))| {
-                            if is_leading_note_marker_rendered_as_prefix(
-                                para,
-                                ctrl_idx,
-                                line_idx,
-                                start_line,
-                                fpos,
-                                comp_line.char_start,
-                            ) {
-                                // 선두 주석 번호는 첫 줄의 최종 기준선에서 FootnoteMarker로 이미 그린다.
-                                // 같은 위치의 위첨자 마커를 다시 만들면 `문26)`처럼 제목이 중복된다.
-                                fn_marker_inserted[fni] = true;
-                                return None;
-                            }
-                            let in_range = fpos >= run_char_pos
-                                && (fpos < run_char_end || (is_last && fpos == run_char_end));
-                            if !fn_marker_inserted[fni] && in_range {
-                                Some((fpos - run_char_pos, fnum, fni, ctrl_idx))
-                            } else {
-                                None
-                            }
-                        })
-                        .collect();
-
                     if run_fn_markers.is_empty() {
                         // 각주 없음: 기존 방식으로 전체 TextRun 생성
                         let run_x = x;
@@ -9520,6 +9502,32 @@ impl LayoutEngine {
                         }
                         x += seg_w;
                         sub_char_offset += seg_char_count;
+                    }
+                    if let Some(&(_, number, marker_index, control_index)) =
+                        run_fn_markers.iter().find(|&&(_, _, _, ci)| ci == tac_ci)
+                    {
+                        fn_marker_inserted[marker_index] = true;
+                        let reference = (
+                            number,
+                            note_marker_text_from_control(
+                                para.and_then(|p| p.controls.get(control_index)),
+                                number,
+                            ),
+                            text_style.clone(),
+                            control_index,
+                            tac_w,
+                        );
+                        super::note_reference::append(
+                            tree,
+                            line_node,
+                            std::slice::from_ref(&reference),
+                            (x, y),
+                            (line_height, baseline),
+                            (section_index, para_index),
+                        );
+                        x += tac_w;
+                        seg_start = tac_rel;
+                        continue;
                     }
                     // 인라인 이미지 렌더링: 텍스트 흐름 순서에 맞게 이 위치에서 직접 렌더링
                     if let (Some(p), Some(bdc)) = (para, bin_data_content) {

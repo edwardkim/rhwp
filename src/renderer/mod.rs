@@ -58,6 +58,7 @@ pub(crate) mod layout_frame;
 pub(crate) mod legacy_font_advances;
 pub(crate) mod line_style;
 pub(crate) mod metafile_geometry;
+pub(crate) mod note_marker;
 pub(crate) mod note_separator;
 pub(crate) mod object_alignment;
 pub mod page_layout;
@@ -2627,8 +2628,62 @@ pub fn hwpunit_to_px(hwpunit: i32, dpi: f64) -> f64 {
     hwpunit as f64 * dpi / HWPUNIT_PER_INCH
 }
 
-/// 같은 쪽의 단일 단 밴드 사이에는 구역에 저장된 단 사이 간격을 쓴다.
-/// 구역 정보 없는 직접 호출과 다단 전환은 기존 별도 간격 계약을 유지한다.
+/// 해당 문단까지 명시한 마지막 단 종류를 읽는다. 정의가 없거나 주소가 잘못되면 추정하지 않는다.
+pub(crate) fn declared_column_type_at(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    index: usize,
+) -> Option<crate::model::page::ColumnType> {
+    paragraphs.get(..=index)?.iter().rev().find_map(|para| {
+        para.controls.iter().find_map(|control| match control {
+            crate::model::control::Control::ColumnDef(definition) => Some(definition.column_type),
+            _ => None,
+        })
+    })
+}
+
+/// 개체와 문단 묶음 제약이 없는 일반 단 사이에서만 실제 첫 줄 높이로 수용한다.
+pub(crate) fn plain_text_column_zone(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    start: usize,
+    closing_column_type: Option<crate::model::page::ColumnType>,
+    styles: &style_resolver::ResolvedStyleSet,
+) -> bool {
+    // 닫히는 배분·평행 밴드도 기존 여유를 예약해야 다음 소제목이 실제 배치에서 넘치지 않는다.
+    if closing_column_type != Some(crate::model::page::ColumnType::Normal)
+        || declared_column_type_at(paragraphs, start)
+            != Some(crate::model::page::ColumnType::Normal)
+    {
+        return false;
+    }
+    paragraphs[start..]
+        .iter()
+        .enumerate()
+        .take_while(|(offset, para)| {
+            *offset == 0
+                || (para.column_type != crate::model::paragraph::ColumnBreakType::MultiColumn
+                    && !para
+                        .controls
+                        .iter()
+                        .any(|ctrl| matches!(ctrl, crate::model::control::Control::ColumnDef(_))))
+        })
+        .all(|(_, para)| {
+            para.controls.iter().all(|ctrl| {
+                matches!(
+                    ctrl,
+                    crate::model::control::Control::ColumnDef(_)
+                        | crate::model::control::Control::SectionDef(_)
+                )
+            }) && styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .is_some_and(|style| {
+                    !style.keep_with_next && !style.keep_lines && !style.widow_orphan
+                })
+        })
+}
+
+/// 같은 쪽의 단일 단 뒤에는 구역에 저장된 단 사이 간격을 쓴다.
+/// 구역 정보 없는 직접 호출과 다단 뒤의 전환은 기존 간격 계약을 유지한다.
 pub(crate) fn solo_zone_pad_px(
     entering_solo: bool,
     prior_multicol: bool,
@@ -2636,7 +2691,7 @@ pub(crate) fn solo_zone_pad_px(
     dpi: f64,
 ) -> f64 {
     let spacing = section_spacing_hu
-        .filter(|spacing| entering_solo && !prior_multicol && *spacing >= 0)
+        .filter(|spacing| !prior_multicol && *spacing >= 0)
         .unwrap_or(if entering_solo && prior_multicol {
             1500
         } else {

@@ -2169,18 +2169,12 @@ impl LayoutEngine {
         let mut footnotes: Vec<(String, usize)> = Vec::new();
         for (ci, ctrl) in para.controls.iter().enumerate() {
             let marker_text = match ctrl {
-                Control::Footnote(fn_ctrl) => Some(format_control_note_marker(
-                    fn_ctrl.number,
-                    fn_ctrl.number_shape,
-                    fn_ctrl.before_decoration_letter,
-                    fn_ctrl.after_decoration_letter,
-                )),
-                Control::Endnote(en_ctrl) => Some(format_control_note_marker(
-                    en_ctrl.number,
-                    en_ctrl.number_shape,
-                    en_ctrl.before_decoration_letter,
-                    en_ctrl.after_decoration_letter,
-                )),
+                Control::Footnote(note) => Some(
+                    super::paragraph_layout::note_marker_text_from_control(Some(ctrl), note.number),
+                ),
+                Control::Endnote(note) => Some(
+                    super::paragraph_layout::note_marker_text_from_control(Some(ctrl), note.number),
+                ),
                 _ => None,
             };
             if let Some(text) = marker_text {
@@ -2411,45 +2405,6 @@ fn get_footnote_paragraphs<'a>(
             &[]
         }
     }
-}
-
-fn note_number_format_from_hwp_code(code: u8) -> NumFmt {
-    match code {
-        0 => NumFmt::Digit,
-        1 => NumFmt::CircledDigit,
-        2 => NumFmt::RomanUpper,
-        3 => NumFmt::RomanLower,
-        4 => NumFmt::LatinUpper,
-        5 => NumFmt::LatinLower,
-        8 => NumFmt::HangulGaNaDa,
-        12 => NumFmt::HangulNumber,
-        13 => NumFmt::HanjaNumber,
-        _ => NumFmt::Digit,
-    }
-}
-
-fn note_decoration_char(value: u16) -> Option<char> {
-    if value == 0 {
-        None
-    } else {
-        char::from_u32(value as u32).filter(|ch| *ch != '\0')
-    }
-}
-
-fn format_control_note_marker(
-    number: u16,
-    number_shape: u32,
-    before_decoration_letter: u16,
-    after_decoration_letter: u16,
-) -> String {
-    let number = format_number(number, note_number_format_from_hwp_code(number_shape as u8));
-    let prefix = note_decoration_char(before_decoration_letter)
-        .map(|ch| ch.to_string())
-        .unwrap_or_default();
-    let suffix = note_decoration_char(after_decoration_letter)
-        .unwrap_or(')')
-        .to_string();
-    format!("{}{}{}", prefix, number, suffix)
 }
 
 /// 각주 번호 포맷 (NumberFormat에 따른 변환)

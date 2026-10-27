@@ -2104,6 +2104,92 @@ impl DocumentCore {
         }
     }
 
+    /// 단 정의를 직접 바꾼 뒤 그 정의를 따르는 본문 범위 `[start, end)`만 다시 접는다.
+    ///
+    /// 각 문단에 적용되는 단 정의와 직전 페이지네이션의 소속 단 폭을 쓴다. 너비가
+    /// 다른 단으로 옮겨 간 문단은 페이지네이션 후 같은 범위를 다시 호출해 새 폭으로
+    /// 접을 수 있다. 범위 밖의 본문·셀·주석·머리말 저장 줄은 건드리지 않는다.
+    /// 텍스트 편집 이벤트와 캐럿 저장 위치를 만들지 않으며 배치 중에는 쪽 나눔을 미룬다.
+    pub fn reflow_body_paragraph_range_native(
+        &mut self,
+        sec_idx: usize,
+        range: std::ops::Range<usize>,
+    ) -> Result<(), HwpError> {
+        let section = self
+            .document
+            .sections
+            .get(sec_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", sec_idx)))?;
+        if range.start > range.end || range.end > section.paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "본문 문단 범위 {}..{} 범위 초과",
+                range.start, range.end
+            )));
+        }
+        if range.is_empty() {
+            return Ok(());
+        }
+
+        let styles = self.resolve_render_styles();
+        let dpi = self.dpi;
+        // 어느 저장 줄도 비우기 전에 모든 문단 상자를 검사한다. 문단 여백이 단 폭을
+        // 넘는 요청은 기존 저장 줄을 잃거나 범위 일부만 바꾸지 않고 거절한다.
+        let boxes: Vec<_> = range
+            .clone()
+            .map(|para_idx| {
+                let column_def = Self::find_column_def_for_paragraph(&section.paragraphs, para_idx);
+                let layout =
+                    PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, dpi);
+                let col_idx = self
+                    .para_column_map
+                    .get(sec_idx)
+                    .and_then(|columns| columns.get(para_idx))
+                    .copied()
+                    .unwrap_or(0) as usize;
+                let column = layout
+                    .column_areas
+                    .get(col_idx)
+                    .unwrap_or(&layout.column_areas[0]);
+                let para = &section.paragraphs[para_idx];
+                let paragraph_box = ParagraphBox::body_for_style(
+                    column.width,
+                    styles.para_styles.get(para.para_shape_id as usize),
+                    dpi,
+                );
+                if !paragraph_box.is_usable() {
+                    return Err(HwpError::RenderError(format!(
+                        "본문 문단 {}의 여백이 단 너비를 넘습니다",
+                        para_idx
+                    )));
+                }
+                Ok(paragraph_box)
+            })
+            .collect::<Result<_, _>>()?;
+        for (para_idx, paragraph_box) in range.zip(boxes) {
+            let para = &mut self.document.sections[sec_idx].paragraphs[para_idx];
+            para.line_segs.clear();
+            reflow_line_segs(para, paragraph_box, &styles, dpi);
+        }
+        self.refresh_section_native(sec_idx)
+    }
+
+    /// 저장 줄을 보존하며 직접 수정한 구역의 스타일·조판·렌더 캐시를 갱신한다.
+    /// 단 구분선처럼 줄바꿈 폭이 그대로인 변경에 쓰며 배치 중에는 쪽 나눔을 미룬다.
+    pub fn refresh_section_native(&mut self, sec_idx: usize) -> Result<(), HwpError> {
+        let section = self
+            .document
+            .sections
+            .get_mut(sec_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", sec_idx)))?;
+        section.raw_stream = None;
+        // 기존 rebuild_section과 같은 순서로 파생 상태를 갱신하되 배치는 존중한다.
+        self.rebuild_resolved_styles();
+        self.flush_cell_format_vpos();
+        self.recompose_section(sec_idx);
+        self.paginate_if_needed();
+        Ok(())
+    }
+
     /// 이 구역의 본문 문단이 접히는 폭 (px) — 단이 나뉘어 있으면 첫 단 폭, 아니면 본문 상자 폭.
     ///
     /// "줄 나눔을 정하는 폭"의 정의는 하나여야 한다. 저장 분할을 버릴지 판단하는 곳(쪽 설정·단

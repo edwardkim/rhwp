@@ -371,6 +371,7 @@ fn compose_paragraph_scoped(
 
     if let Some(styles) = metric_styles {
         equation_line_metrics::refresh_equation_rows(&mut composed, para, styles);
+        inline_picture_metrics::refresh_picture_rows(&mut composed, para, styles);
     }
 
     supplemental_clusters::preserve_literal_spaces(&mut composed, &para.literal_figure_spaces);

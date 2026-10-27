@@ -954,6 +954,7 @@ mod tests {
                 clip: true,
                 page_fragment: false,
                 model_cell_index: None,
+                model_para_range: None,
             }),
             BoundingBox::new(100.0, 200.0, 150.0, 80.0),
         ));
@@ -1401,6 +1402,7 @@ mod tests {
                 clip: true,
                 page_fragment: false,
                 model_cell_index: Some(4),
+                model_para_range: None,
             }),
             BoundingBox::new(60.0, 110.0, 180.0, 80.0),
         );
@@ -1429,6 +1431,7 @@ mod tests {
                 clip: false,
                 page_fragment: false,
                 model_cell_index: None,
+                model_para_range: None,
             }),
             BoundingBox::new(70.0, 120.0, 80.0, 40.0),
         ));
