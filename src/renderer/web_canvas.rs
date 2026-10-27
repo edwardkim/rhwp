@@ -2691,7 +2691,7 @@ impl Renderer for WebCanvasRenderer {
         let font_size = font_setup.draw_size();
         let y = font_setup.baseline();
         let ratio = font_setup.horizontal_scale();
-        let has_ratio = (ratio - 1.0).abs() > 0.01;
+        let has_ratio = style.has_horizontal_ratio();
         let font = font_setup.descriptor();
         let old_hangul_font = font_setup.old_hangul_descriptor();
         self.ctx.set_font(font);

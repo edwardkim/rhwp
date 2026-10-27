@@ -374,8 +374,8 @@ impl Renderer for HtmlRenderer {
             ));
         }
 
-        let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
-        if (ratio - 1.0).abs() > 0.01 {
+        let (_, ratio) = style.ratio_draw_params(1.0);
+        if style.has_horizontal_ratio() {
             css.push_str(&format!(
                 "transform:scaleX({:.4});transform-origin:left;",
                 ratio

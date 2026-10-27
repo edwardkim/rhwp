@@ -3438,7 +3438,7 @@ impl Renderer for SvgRenderer {
 
         // HFT와 TrueType의 장평 변환을 같은 스타일 계약에서 소비한다.
         let (font_size, ratio) = style.ratio_draw_params(font_size);
-        let has_ratio = (ratio - 1.0).abs() > 0.01;
+        let has_ratio = style.has_horizontal_ratio();
 
         // 공통 스타일 속성 구성 (fill 제외 — 그림자/원본에서 각각 설정)
         // [#7151] 합성 볼드는 굵기를 획으로 명시한다 — 색이 fill 과 같아야 하므로

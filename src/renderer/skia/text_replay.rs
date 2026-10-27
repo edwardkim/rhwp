@@ -345,7 +345,7 @@ impl SkiaTextReplay<'_> {
                     let (fs, r) = style.ratio_draw_params(font_size as f64);
                     (fs as f32, r as f32)
                 };
-                let has_ratio = (ratio - 1.0).abs() > 0.01;
+                let has_ratio = style.has_horizontal_ratio();
                 let shaped_spans = if suppress_glyphs {
                     Vec::new()
                 } else {

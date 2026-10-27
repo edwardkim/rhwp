@@ -696,6 +696,12 @@ impl TextStyle {
         condensed_ratio_draw_params(font_size, self.ratio)
     }
 
+    /// 공식 장평은 정수 백분율이다. 99·101%도 항등 변환으로 생략하지 않는다.
+    /// 각 paint가 정밀도 변환 전에 같은 정규화 결과로 가로 변환을 선택한다.
+    pub fn has_horizontal_ratio(&self) -> bool {
+        self.ratio_draw_params(1.0).1 != 1.0
+    }
+
     /// 시각적 bold 여부.
     ///
     /// CharShape.bold=true 외에도 HY헤드라인M 같은 heavy display face 를
