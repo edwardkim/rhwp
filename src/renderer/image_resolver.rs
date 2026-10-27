@@ -226,6 +226,69 @@ fn conversion_key(conversion: Conversion, data: &[u8]) -> u64 {
     hasher.finish()
 }
 
+// ── 회색 판정이 디코드한 픽셀 넘겨주기 ──
+//
+// 레이어 트리를 만들 때 회색 JPEG 판정이 그림 전체를 디코드한다. 바로 뒤의 캔버스
+// 그리기는 같은 바이트를 Rust 로 다시 디코드했다 — 32Mpix 사진이 첫 그리기마다 두 번
+// 풀렸다. 판정이 얻은 RGBA 를 캔버스가 그릴 바이트(색 사진은 원본 JPEG, 회색은 PNG)의
+// 지문으로 맡기고, 캔버스가 그 바이트를 디코드할 때 꺼낸다. 꺼내면 비운다.
+//
+// 캔버스(wasm)만 꺼내므로 다른 빌드는 맡기지 않는다. 꺼내지 않고 남는 픽셀의 합은 큰 그림
+// 한 장(32Mpix RGBA, 128MiB)을 넘지 않는다.
+#[cfg(any(target_arch = "wasm32", test))]
+const MAX_HANDOFF_BYTES: usize = CANVASKIT_MAX_IMAGE_PIXELS as usize * 4;
+
+#[cfg(any(target_arch = "wasm32", test))]
+thread_local! {
+    static DECODED_HANDOFF: RefCell<Vec<(u64, image::RgbaImage)>> = const { RefCell::new(Vec::new()) };
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+fn handoff_key(bytes: &[u8]) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    bytes.hash(&mut hasher);
+    hasher.finish()
+}
+
+/// `bytes` 를 `image::load_from_memory(bytes)?.to_rgba8()` 로 디코드한 것과 같은 픽셀을 맡긴다.
+/// 캔버스는 형식을 추측해 디코드하므로 추측이 `format` 과 다르면 맡기지 않는다.
+#[allow(unused_variables)]
+fn hand_off_decoded(bytes: &[u8], format: image::ImageFormat, pixels: image::RgbaImage) {
+    #[cfg(any(target_arch = "wasm32", test))]
+    {
+        let size = pixels.as_raw().len();
+        if size > MAX_HANDOFF_BYTES || image::guess_format(bytes).ok() != Some(format) {
+            return;
+        }
+        let key = handoff_key(bytes);
+        DECODED_HANDOFF.with(|handoff| {
+            let mut handoff = handoff.borrow_mut();
+            handoff.retain(|(k, _)| *k != key);
+            while handoff.iter().map(|(_, p)| p.as_raw().len()).sum::<usize>() + size
+                > MAX_HANDOFF_BYTES
+            {
+                handoff.remove(0);
+            }
+            handoff.push((key, pixels));
+        });
+    }
+}
+
+/// 회색 판정이 맡긴 `bytes` 의 디코드 픽셀을 꺼낸다.
+#[cfg(any(target_arch = "wasm32", test))]
+pub(crate) fn take_decoded(bytes: &[u8]) -> Option<image::RgbaImage> {
+    DECODED_HANDOFF.with(|handoff| {
+        let mut handoff = handoff.borrow_mut();
+        if handoff.is_empty() {
+            return None;
+        }
+        let key = handoff_key(bytes);
+        let index = handoff.iter().position(|(k, _)| *k == key)?;
+        Some(handoff.remove(index).1)
+    })
+}
+
 /// 원본 해상도에서 흑백을 확정할 수 있는 무보정 raster 그림이다.
 pub(crate) fn is_baked_blackwhite_image(image: &ImageNode) -> bool {
     image.effect == ImageEffect::BlackWhite
@@ -977,12 +1040,15 @@ fn grayscale_jpeg_bytes_to_png_bytes_uncached(data: &[u8]) -> Option<Vec<u8>> {
             px.0 = [gray, gray, gray, px.0[3]];
         }
     } else if !is_gray {
+        // 색 사진은 원본 JPEG 그대로 그린다.
+        hand_off_decoded(data, ImageFormat::Jpeg, img);
         return None;
     }
 
     let mut out = Vec::new();
     img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
         .ok()?;
+    hand_off_decoded(&out, ImageFormat::Png, img);
     Some(out)
 }
 
@@ -1384,9 +1450,9 @@ pub(crate) fn decode_image_with_format_limited(
 mod tests {
     use super::{
         bmp_bytes_to_png_bytes, emitted_image_bytes, grayscale_jpeg_bytes_to_png_bytes,
-        is_watermark_image, resolve_image_payload, watermark_jpeg_bytes_to_hancom_baked_png_bytes,
-        ConversionMemo, CANVASKIT_MAX_IMAGE_DIMENSION, CONVERSIONS_RUN, MAX_MEMO_BYTES,
-        MAX_MEMO_ENTRIES,
+        is_watermark_image, resolve_image_payload, take_decoded,
+        watermark_jpeg_bytes_to_hancom_baked_png_bytes, ConversionMemo,
+        CANVASKIT_MAX_IMAGE_DIMENSION, CONVERSIONS_RUN, MAX_MEMO_BYTES, MAX_MEMO_ENTRIES,
     };
     use crate::model::image::ImageEffect;
     use crate::paint::ResolvedImageKind;
@@ -1485,6 +1551,25 @@ mod tests {
             1,
             "같은 그림은 한 번만 변환해야 한다"
         );
+    }
+
+    /// 회색 판정이 디코드한 픽셀은 캔버스가 그릴 바이트를 디코드한 픽셀과 같고, 한 번만 꺼낸다.
+    #[test]
+    fn grayscale_probe_hands_off_the_pixels_canvas_would_decode() {
+        let decoded = |bytes: &[u8]| Some(image::load_from_memory(bytes).unwrap().to_rgba8());
+
+        let color = jpeg_from_pixels(16, 8, |x, y| [(x * 13) as u8, 90, (y * 29) as u8]);
+        assert!(grayscale_jpeg_bytes_to_png_bytes(&color).is_none());
+        assert_eq!(take_decoded(&color), decoded(&color));
+        assert_eq!(take_decoded(&color), None, "꺼낸 픽셀은 남지 않는다");
+
+        let gray = jpeg_from_pixels(8, 8, |x, y| {
+            let g = 60 + (x * 8 + y) as u8;
+            [g, g, g]
+        });
+        let gray_png = grayscale_jpeg_bytes_to_png_bytes(&gray).expect("gray jpeg converts");
+        assert_eq!(take_decoded(&gray), None, "회색은 PNG 를 그린다");
+        assert_eq!(take_decoded(&gray_png), decoded(&gray_png));
     }
 
     /// 메모가 다른 그림의 결과를 흘리지 않는다.
