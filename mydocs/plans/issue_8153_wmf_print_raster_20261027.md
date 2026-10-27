@@ -158,3 +158,30 @@ job `c62201c8-8b0b-4ee5-9a41-c8a683913e1b`가 완료됐다. PDF는 621,411바이
 `window-control-provenance.json`, `window-control-status.json`, `window-control-observed.json`에
 원본 DIB 불변·입력/PDF SHA·세 쪽의 실제 image matrix·JPEG 해시를 기록했다.
 이 결과도 자원 계약을 구분하는 조사이며 신규 회귀 fixture나 제품의 전쪽 개선 결과가 아니다.
+
+## 공통 장치 경로의 source-only 선행 실행과 구현 계획
+
+현재 Native producer에서 실제 색 보정 SVG를 다시 추출했다. 원본 viewport 771×675와 그림
+위치를 그대로 두고 기존 `metafile_surface::device_size`의 max-axis·round 계산으로 600dpi
+자원 3000×2626을 만들었다. PDF의 관측 크기를 대신 넣지 않았다. 이미 구운 색을 다시 확장하지
+않았고, 전체 원본의 색·mask를 공통 표본기에 각각 전달한 뒤 실제 crop을 물리 clip으로 남겼다.
+
+실제 HWPX 130쪽은 미대응 377→23픽셀, raw 99.46283%→99.96442%다. 기준 PNG는 현재 제품과
+RGB 전체가 같으며, PDF 픽셀을 재생 입력으로 사용하지 않았다. 근거는 ignored
+`wmf-halftone-contract/public-svg-device/native-audit.json`이다. 23픽셀은 여전히 보정 대상이다.
+
+다음 제품 단계는 검증한 공통 경로를 실제 소비에 연결한다.
+
+1. 색 보정이 필요한 단일 raster WMF의 실제 SVG payload를 공통 600dpi surface에서 만든다.
+   벡터·ROP·WMFC enhanced content, 회전·반복 채움·지원하지 않는 crop은 기존 경로를 보존한다.
+   원본 색 보정 SVG를 재사용하고 두 번째 색 확장을 하지 않는다. cache는 색 보정 바이트를
+   구분하며, 공통 표본기의 크기·픽셀 한도를 만족하지 않으면 완료 자원으로 게시하지 않는다.
+2. producer에는 `page_context`가 확정한 최종 paint frame을 전달한다. 단순 `node.bbox`를
+   재사용해 실제 배치와 다른 장치 크기를 만들지 않는다. 기존 일반 메타파일 경로는 유지한다.
+3. `paint`의 공통 레이어 변환에서 그 그림의 전체 원본 영역과 원래 물리 clip을 함께 만든다.
+   원본 render tree·문단 소유·source ID·컨트롤 표시 순서를 보존한다. Native/Canvas2D/CanvasKit은
+   같은 full-source image와 clip을 소비하고 기존 색·mask 표본기를 사용한다. backend별로
+   자르기 비율을 다시 계산하지 않는다.
+4. 실제 130쪽 Native·fresh WASM과 핵심 crop/clip 경계를 먼저 실행하고 전쪽 Native를 비교한다.
+   픽셀 증가·원본 tree 변경이 있으면 보정한다. 첫 결과가 개선돼도 원래 1,532조건의 raw 100%·
+   미대응 0픽셀, 중요한 위치의 ±2px·관계 회귀, 최종 전체 검증과 PR 준비 조건은 유지한다.
