@@ -243,7 +243,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   'src/command/commands/format.ts': 1,
   'src/command/commands/insert.ts': 16, // -3: z순서 4 호출부를 changeZOrder 헬퍼 1곳으로 합침(#2370 A)
   'src/command/commands/page.ts': 13,
-  'src/command/commands/table.ts': 36, // +1: 블록계산 이관 시 evaluateTableFormula dry-run(write=false, 검증) 추가 / +2: 표 나누기·붙이기(splitTable·mergeTableWithNext) — 둘 다 executeOperation snapshot 으로 라우팅 (undo 기록됨)
+  'src/command/commands/table.ts': 37, // +1 [#8262]: 칸 안 표 만들기 createTableInCellByPath — 본문 생성과 같은 executeOperation snapshot 안 (undo 기록됨) / +1: 블록계산 이관 시 evaluateTableFormula dry-run(write=false, 검증) 추가 / +2: 표 나누기·붙이기(splitTable·mergeTableWithNext) — 둘 다 executeOperation snapshot 으로 라우팅 (undo 기록됨)
   'src/ui/bookmark-dialog.ts': 3,
   'src/ui/cell-border-bg-dialog.ts': 5,
   'src/ui/chart-data-dialog.ts': 3, // [#4694] dryRun 선검증 1 + snapshot 라우팅 실쓰기 1 + services 미주입 폴백 1

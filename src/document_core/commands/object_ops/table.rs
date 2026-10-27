@@ -11,6 +11,37 @@ use crate::model::shape::common_obj_offsets;
 
 use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
+/// 글자처럼 취급 표의 바깥 여백(위·아래·왼·오른) — 한/글 기본값 1mm.
+const INLINE_TABLE_OUTER_MARGIN: i16 = 283;
+
+/// [#8262] 글자처럼 취급 표를 어디에 만드는가 — 세로·가로 기준 위치가 갈린다.
+#[derive(Clone, Copy)]
+enum InlineTableAnchor {
+    /// 본문 문단. 기존 `create_table_ex_native` 값 그대로(세로 비트 0, 가로 문단).
+    Body,
+    /// 표 칸 안 문단. 한/글 2020 이 칸 안에 만든 표와 같게 세로 문단 · 가로 단
+    /// (`attr` bits 3-4 = 2, bits 8-9 = 2 — 한/글 표본 `0x082a2211`).
+    Cell,
+}
+
+impl InlineTableAnchor {
+    /// (attr 비트, 세로 기준, 가로 기준)
+    fn rel(
+        self,
+    ) -> (
+        u32,
+        crate::model::shape::VertRelTo,
+        crate::model::shape::HorzRelTo,
+    ) {
+        use crate::model::shape::{HorzRelTo, VertRelTo};
+        match self {
+            #[allow(clippy::identity_op)]
+            InlineTableAnchor::Body => ((0 << 3) | (3 << 8), VertRelTo::Page, HorzRelTo::Para),
+            InlineTableAnchor::Cell => ((2 << 3) | (2 << 8), VertRelTo::Para, HorzRelTo::Column),
+        }
+    }
+}
+
 // 렌더 트리에서 해당 표 노드를 찾아 셀 bbox를 수집
 fn find_table_cells(
     node: &RenderNode,
@@ -853,73 +884,33 @@ impl DocumentCore {
             insert_para_idx, table_control_idx
         )))
     }
-    /// 커서 위치에 표를 삽입한다 (확장, JSON 옵션).
+    /// [#8262] 글자처럼 취급 표 하나를 짓는다 — 문서에 끼우지는 않는다.
     ///
-    /// 기본 create_table_native의 확장판으로, treat_as_char(인라인) 등 세부 속성을 지정할 수 있다.
-    /// treat_as_char=true인 경우:
-    ///   - 별도 문단을 생성하지 않고 기존 문단의 controls에 표를 추가
-    ///   - 텍스트 흐름에 8 UTF-16 코드유닛 자리를 삽입
-    ///   - 표 아래 빈 문단 미생성
-    pub fn create_table_ex_native(
+    /// 본문 생성(`create_table_ex_native`)과 칸 안 생성(`create_table_in_cell_by_path_native`)이
+    /// 같이 쓴다. 둘은 폭의 출처(쪽 / 칸 안쪽)와 기준 위치(`anchor`)만 다르다.
+    /// 반환: (표, 새 BorderFill 을 추가했는가 — 추가했으면 호출자가 스타일을 다시 지어야 한다)
+    #[allow(clippy::too_many_arguments)]
+    fn build_inline_table(
         &mut self,
-        section_idx: usize,
-        para_idx: usize,
-        char_offset: usize,
+        content_width: u32,
         row_count: u16,
         col_count: u16,
-        treat_as_char: bool,
         col_widths_hu: Option<&[u32]>,
         row_heights_hu: Option<&[u32]>,
-    ) -> Result<String, HwpError> {
+        default_char_shape_id: u32,
+        default_para_shape_id: u16,
+        anchor: InlineTableAnchor,
+    ) -> Result<(crate::model::table::Table, bool), HwpError> {
         use crate::model::paragraph::{CharShapeRef, LineSeg};
         use crate::model::style::{
             BorderFill, BorderLine, BorderLineType, CenterLine, DiagonalLine, Fill,
         };
         use crate::model::table::{Cell, Table, TablePageBreak};
 
-        if section_idx >= self.document.sections.len() {
-            return Err(HwpError::RenderError(format!(
-                "구역 인덱스 {} 범위 초과",
-                section_idx
-            )));
-        }
-        if para_idx >= self.document.sections[section_idx].paragraphs.len() {
-            return Err(HwpError::RenderError(format!(
-                "문단 인덱스 {} 범위 초과",
-                para_idx
-            )));
-        }
-        if row_count == 0 || col_count == 0 || col_count > 256 {
-            return Err(HwpError::RenderError(format!(
-                "행/열 수 범위 오류 (행={}, 열={})",
-                row_count, col_count
-            )));
-        }
-
-        if !treat_as_char {
-            return self.create_table_native(
-                section_idx,
-                para_idx,
-                char_offset,
-                row_count,
-                col_count,
-            );
-        }
-
-        // ── 인라인 TAC 표 생성 ──
-
-        let previous_host_end = crate::renderer::composer::paragraph_flow_end(
-            &self.document.sections[section_idx].paragraphs[para_idx],
-        );
-
+        let border_fills_before = self.document.doc_info.border_fills.len();
         let instance_id = super::super::clone_identity::next_instance_id(&self.document)?;
 
-        let pd = &self.document.sections[section_idx].section_def.page_def;
-        let outer_margin: i16 = 283;
-        let outer_margin_lr = (outer_margin * 2) as i32;
-        let content_width =
-            (pd.width as i32 - pd.margin_left as i32 - pd.margin_right as i32 - outer_margin_lr)
-                .max(7200) as u32;
+        let outer_margin: i16 = INLINE_TABLE_OUTER_MARGIN;
 
         // 열 폭 결정
         let col_ws: Vec<u32> = if let Some(widths) = col_widths_hu {
@@ -987,11 +978,6 @@ impl DocumentCore {
             }
         };
 
-        // create_table_native 와 동일 — 커서 offset 의 글자모양을 상속 기준으로 쓴다.
-        let current_para = &self.document.sections[section_idx].paragraphs[para_idx];
-        let default_char_shape_id: u32 = current_para.char_shape_id_at(char_offset).unwrap_or(0);
-        let default_para_shape_id: u16 = current_para.para_shape_id;
-
         // 셀 생성
         let mut cells = Vec::with_capacity((row_count as usize) * (col_count as usize));
         for r in 0..row_count {
@@ -1037,11 +1023,10 @@ impl DocumentCore {
 
         // Table 구조체
         let row_sizes: Vec<i16> = (0..row_count).map(|_| col_count as i16).collect();
-        // raw_ctrl_data: treat_as_char + vert=Page(0) + horz=Para(3) + wrap=TopAndBottom(1)
+        let (rel_bits, vert_rel_to, horz_rel_to) = anchor.rel();
         #[allow(clippy::identity_op)]
         let flags: u32 = (1 << 0) /* treat_as_char */
-            | (0 << 3) /* vert=Page */
-            | (3 << 8) /* horz=Para */
+            | rel_bits /* 세로·가로 기준 (bits 3-4 · 8-9) */
             | (1 << 13) /* flow_with_text: 인라인 개체의 본문 흐름 */
             | (4 << 15) /* width_criterion=Absolute */
             | (2 << 18) /* height_criterion=Absolute */
@@ -1086,8 +1071,8 @@ impl DocumentCore {
                 treat_as_char: true,
                 flow_with_text: true,
                 text_wrap: crate::model::shape::TextWrap::TopAndBottom,
-                vert_rel_to: crate::model::shape::VertRelTo::Page,
-                horz_rel_to: crate::model::shape::HorzRelTo::Para,
+                vert_rel_to,
+                horz_rel_to,
                 vert_align: crate::model::shape::VertAlign::Top,
                 horz_align: crate::model::shape::HorzAlign::Left,
                 width: total_width,
@@ -1105,6 +1090,84 @@ impl DocumentCore {
             raw_table_record_extra: Vec::new(),
         };
         table.rebuild_grid();
+        let added_border_fill = self.document.doc_info.border_fills.len() != border_fills_before;
+        Ok((table, added_border_fill))
+    }
+    /// 커서 위치에 표를 삽입한다 (확장, JSON 옵션).
+    ///
+    /// 기본 create_table_native의 확장판으로, treat_as_char(인라인) 등 세부 속성을 지정할 수 있다.
+    /// treat_as_char=true인 경우:
+    ///   - 별도 문단을 생성하지 않고 기존 문단의 controls에 표를 추가
+    ///   - 텍스트 흐름에 8 UTF-16 코드유닛 자리를 삽입
+    ///   - 표 아래 빈 문단 미생성
+    pub fn create_table_ex_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        row_count: u16,
+        col_count: u16,
+        treat_as_char: bool,
+        col_widths_hu: Option<&[u32]>,
+        row_heights_hu: Option<&[u32]>,
+    ) -> Result<String, HwpError> {
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 인덱스 {} 범위 초과",
+                section_idx
+            )));
+        }
+        if para_idx >= self.document.sections[section_idx].paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "문단 인덱스 {} 범위 초과",
+                para_idx
+            )));
+        }
+        if row_count == 0 || col_count == 0 || col_count > 256 {
+            return Err(HwpError::RenderError(format!(
+                "행/열 수 범위 오류 (행={}, 열={})",
+                row_count, col_count
+            )));
+        }
+
+        if !treat_as_char {
+            return self.create_table_native(
+                section_idx,
+                para_idx,
+                char_offset,
+                row_count,
+                col_count,
+            );
+        }
+
+        // ── 인라인 TAC 표 생성 ──
+
+        let previous_host_end = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
+
+        let pd = &self.document.sections[section_idx].section_def.page_def;
+        let outer_margin: i16 = INLINE_TABLE_OUTER_MARGIN;
+        let outer_margin_lr = (outer_margin * 2) as i32;
+        let content_width =
+            (pd.width as i32 - pd.margin_left as i32 - pd.margin_right as i32 - outer_margin_lr)
+                .max(7200) as u32;
+
+        // create_table_native 와 동일 — 커서 offset 의 글자모양을 상속 기준으로 쓴다.
+        let current_para = &self.document.sections[section_idx].paragraphs[para_idx];
+        let default_char_shape_id: u32 = current_para.char_shape_id_at(char_offset).unwrap_or(0);
+        let default_para_shape_id: u16 = current_para.para_shape_id;
+
+        let (table, _) = self.build_inline_table(
+            content_width,
+            row_count,
+            col_count,
+            col_widths_hu,
+            row_heights_hu,
+            default_char_shape_id,
+            default_para_shape_id,
+            InlineTableAnchor::Body,
+        )?;
 
         // ── 기존 문단에 인라인 삽입 ──
         self.document.sections[section_idx].raw_stream = None;
@@ -1173,6 +1236,220 @@ impl DocumentCore {
             "\"paraIdx\":{},\"controlIdx\":{},\"logicalOffset\":{}",
             para_idx, ctrl_idx, logical_after
         )))
+    }
+
+    /// [#8262] 표 칸 안 문단에 글자처럼 취급 표를 만든다 — 셀 경로라 깊이에 상관없다.
+    ///
+    /// `path` 는 다른 by-path API 와 같은 `(control, cell, cell_para)` 사슬이고, 마지막 마디의
+    /// `cell_para` 가 캐럿이 있는 칸 문단, `char_offset` 은 그 문단의 캐럿 축 offset 이다.
+    ///
+    /// 구조는 한/글 2020 이 칸 안에 만든 표와 같다(#8262 표본):
+    /// - 캐럿 위치에서 칸 문단을 가른다. **앞쪽이 비면 원래 문단이 표 문단이 되고**,
+    ///   **뒤쪽은 비어도 새 문단으로** 내린다. 표 문단에는 표만 있다.
+    /// - 폭은 칸 안쪽 폭(칸 폭 − 왼/오른 안 여백) − 바깥 여백, 칸 수로 균등.
+    /// - 세로 기준 문단 · 가로 기준 단(`InlineTableAnchor::Cell`).
+    ///
+    /// 칸이 아닌 컨테이너(글상자 등)는 받지 않는다. 입력이 틀리면 문서를 바꾸지 않고 오류를
+    /// 돌려준다.
+    ///
+    /// 반환: `{"ok":true,"cellParaIdx":<표 문단>,"controlIdx":0,"cellPath":[..안쪽 표 첫 칸까지]}`
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_table_in_cell_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        char_offset: usize,
+        row_count: u16,
+        col_count: u16,
+        col_widths_hu: Option<&[u32]>,
+        row_heights_hu: Option<&[u32]>,
+    ) -> Result<String, HwpError> {
+        use crate::model::paragraph::{CharShapeRef, LineSeg};
+
+        if row_count == 0 || col_count == 0 || col_count > 256 {
+            return Err(HwpError::RenderError(format!(
+                "행/열 수 범위 오류 (행={}, 열={})",
+                row_count, col_count
+            )));
+        }
+        let &(_, _, cell_para_idx) = path
+            .last()
+            .ok_or_else(|| HwpError::RenderError("경로가 비어있습니다".to_string()))?;
+        if !self.innermost_container_is_table_cell(section_idx, parent_para_idx, path) {
+            return Err(HwpError::RenderError(
+                "경로가 표 칸을 가리키지 않습니다".to_string(),
+            ));
+        }
+
+        // ── 확인과 상속값 — 여기까지는 문서를 바꾸지 않는다 ──
+        let (default_char_shape_id, default_para_shape_id) = {
+            let paras = self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
+            let para = paras.get(cell_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("칸 문단 {} 범위 초과", cell_para_idx))
+            })?;
+            let caret_len = para.text.chars().count() + para.controls.len();
+            if char_offset > caret_len {
+                return Err(HwpError::RenderError(format!(
+                    "offset {} 이 칸 문단 길이 {} 를 넘는다",
+                    char_offset, caret_len
+                )));
+            }
+            (
+                para.char_shape_id_at(char_offset).unwrap_or(0),
+                para.para_shape_id,
+            )
+        };
+        let (cell_width, pad_left, pad_right) = self
+            .resolve_innermost_cell_metrics(section_idx, parent_para_idx, path)
+            .ok_or_else(|| HwpError::RenderError("칸 폭을 알 수 없습니다".to_string()))?;
+        let inner_width = (cell_width - pad_left as i32 - pad_right as i32).max(0);
+        let content_width =
+            (inner_width - 2 * INLINE_TABLE_OUTER_MARGIN as i32).max(col_count as i32) as u32;
+
+        let (table, added_border_fill) = self.build_inline_table(
+            content_width,
+            row_count,
+            col_count,
+            col_widths_hu,
+            row_heights_hu,
+            default_char_shape_id,
+            default_para_shape_id,
+            InlineTableAnchor::Cell,
+        )?;
+
+        // 본문 표 문단(`create_table_with_options_native`)과 같은 모양 — 컨트롤 8 + 문단 끝 1.
+        let mut raw_header_extra = vec![0u8; 10];
+        raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes());
+        raw_header_extra[4..6].copy_from_slice(&1u16.to_le_bytes());
+        let table_para = Paragraph {
+            text: String::new(),
+            char_count: 9,
+            control_mask: 0x0000_0800,
+            char_offsets: vec![],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: default_char_shape_id,
+            }],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                line_height: 1000,
+                text_height: 1000,
+                baseline_distance: 850,
+                line_spacing: 600,
+                segment_width: inner_width,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            }],
+            para_shape_id: default_para_shape_id,
+            style_id: 0,
+            controls: vec![Control::Table(Box::new(table))],
+            ctrl_data_records: vec![None],
+            has_para_text: true,
+            raw_header_extra,
+            ..Default::default()
+        };
+
+        // ── 칸 문단을 가르고 끼운다 ──
+        self.document.sections[section_idx].raw_stream = None;
+        let paras = self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
+        let tail = paras[cell_para_idx].split_at(char_offset);
+        let head = &paras[cell_para_idx];
+        let table_para_idx = if head.text.is_empty() && head.controls.is_empty() {
+            paras[cell_para_idx] = table_para;
+            cell_para_idx
+        } else {
+            paras.insert(cell_para_idx + 1, table_para);
+            cell_para_idx + 1
+        };
+        paras.insert(table_para_idx + 1, tail);
+        // 문단 목록의 끝 표시(char_count MSB)는 마지막 문단에만 — 칸 문단이 늘었다.
+        let last = paras.len() - 1;
+        for (i, p) in paras.iter_mut().enumerate() {
+            p.char_count_msb = i == last;
+        }
+
+        // ── 칸 by-path 편집의 뒤처리 순서(붙여넣기·글자 입력과 같다) ──
+        for i in cell_para_idx..=table_para_idx + 1 {
+            self.reflow_cell_paragraph_by_path(section_idx, parent_para_idx, path, i);
+        }
+        self.recalculate_cell_paragraph_vpos_by_path(
+            section_idx,
+            parent_para_idx,
+            path,
+            cell_para_idx,
+            None,
+        );
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, path[0].0);
+        if added_border_fill {
+            // 새 BorderFill 은 styles.border_styles 에 반영돼야 그려진다(본문 생성과 같은 이유).
+            self.rebuild_section(section_idx);
+        } else {
+            self.mark_section_dirty(section_idx);
+            self.paginate_if_needed();
+        }
+        self.invalidate_page_tree_cache();
+        self.event_log.push(DocumentEvent::CellTextChanged {
+            section: section_idx,
+            para: parent_para_idx,
+            ctrl: path[0].0,
+            cell: path[0].1,
+        });
+
+        let mut cell_path: Vec<String> = path
+            .iter()
+            .enumerate()
+            .map(|(i, &(ctrl, cell, cpi))| {
+                let cpi = if i + 1 == path.len() {
+                    table_para_idx
+                } else {
+                    cpi
+                };
+                format!(
+                    "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                    ctrl, cell, cpi
+                )
+            })
+            .collect();
+        cell_path.push("{\"controlIndex\":0,\"cellIndex\":0,\"cellParaIndex\":0}".to_string());
+        Ok(crate::document_core::helpers::json_ok_with(&format!(
+            "\"cellParaIdx\":{},\"controlIdx\":0,\"cellPath\":[{}]",
+            table_para_idx,
+            cell_path.join(",")
+        )))
+    }
+
+    /// 경로의 마지막 마디가 **표 칸**인가(글상자·캡션이 아니라). 경로가 틀려도 false.
+    fn innermost_container_is_table_cell(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+    ) -> bool {
+        let Some(mut para) = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|s| s.paragraphs.get(parent_para_idx))
+        else {
+            return false;
+        };
+        for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
+            let Some(Control::Table(t)) = para.controls.get(ctrl_idx) else {
+                return false;
+            };
+            let Some(cell) = t.cells.get(cell_idx) else {
+                return false;
+            };
+            if i + 1 == path.len() {
+                return true;
+            }
+            let Some(next) = cell.paragraphs.get(cell_para_idx) else {
+                return false;
+            };
+            para = next;
+        }
+        false
     }
     /// 표 셀의 page-relative 좌상단 좌표를 HWPUNIT 단위로 계산 (#1151 floating).
     ///

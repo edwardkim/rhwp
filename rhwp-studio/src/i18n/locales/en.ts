@@ -1761,6 +1761,7 @@ const catalog = {
   "dialog.tableCreate.okBtn.text": "Create",
   "dialog.tableCreate.title.text": "Insert Table",
   "dialog.tableCreate.treatLbl.text": " Treat as character",
+  "dialog.tableCreate.treatInCell.title": "Tables inside a table cell are always treated as characters",
   "dialog.tableRowColumn.clampInsertCount.title": "Insert Rows/Columns",
   "dialog.tableRowColumn.confirmBtn.text": "Add",
   "dialog.tableRowColumn.confirmBtn.text.x5c6c6e": "Delete",

@@ -20,6 +20,8 @@ import {
 } from '@/ui/table-row-column-dialog';
 import { t } from '../../i18n/index.ts';
 import { clampedCellAfterDelete } from '@/engine/table-cell-clamp';
+import type { WasmBridge } from '@/core/wasm-bridge';
+import type { CellPathEntry, DocumentPosition } from '@/core/types';
 const inTable = (ctx: EditorContext) => ctx.inTable;
 const inTableOrCellSelection = (ctx: EditorContext) => ctx.inTable || ctx.inCellSelectionMode;
 const hasMultiCellSelection = (ctx: EditorContext) => ctx.hasMultiCellSelection;
@@ -292,16 +294,53 @@ function applyTableDeleteRowColumn(
   restoreEditorFocus(ih);
 }
 
+/**
+ * [#8262] 캐럿이 있는 칸 안에 표를 만들고, 캐럿을 안쪽 표 첫 칸에 둔다.
+ * 깊이 1 칸은 `cellPath` 가 없을 수 있어 평면 필드로 경로를 만든다.
+ */
+function createTableInCell(
+  wasm: WasmBridge,
+  pos: DocumentPosition,
+  rows: number,
+  cols: number,
+  options?: TableCreateOptions,
+): DocumentPosition {
+  const cellPath: CellPathEntry[] = pos.cellPath?.length
+    ? pos.cellPath
+    : [{ controlIndex: pos.controlIndex!, cellIndex: pos.cellIndex!, cellParaIndex: pos.cellParaIndex! }];
+  const result = wasm.createTableInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPath, pos.charOffset, {
+    rowCount: rows,
+    colCount: cols,
+    ...(options?.colWidths ? { colWidths: options.colWidths } : {}),
+    ...(options?.rowHeights ? { rowHeights: options.rowHeights } : {}),
+  });
+  if (!result.ok) return pos;
+  const [outer] = result.cellPath;
+  return {
+    sectionIndex: pos.sectionIndex,
+    paragraphIndex: pos.paragraphIndex,
+    charOffset: 0,
+    parentParaIndex: pos.parentParaIndex,
+    controlIndex: outer.controlIndex,
+    cellIndex: outer.cellIndex,
+    cellParaIndex: outer.cellParaIndex,
+    cellPath: result.cellPath,
+  };
+}
+
 export const tableCommands: CommandDef[] = [
   { id: 'table:create', label: t('command.table.create.label'), icon: 'icon-table',
     opensDialog: true,
-    canExecute: (ctx) => ctx.hasDocument && !ctx.inTable,
+    // [#8262] 표 칸 안에서도 만든다(깊이 무관). 글상자 안은 아직 받지 않는다.
+    canExecute: (ctx) => ctx.hasDocument,
     execute(services, params) {
       const ih = services.getInputHandler();
       if (!ih) return;
       const pos = ih.getCursorPosition();
-      if (pos.parentParaIndex !== undefined) return;
+      if (pos.isTextBox) return;
+      const inCell = pos.parentParaIndex !== undefined;
       const dialog = new TableCreateDialog();
+      dialog.inlineOnly = inCell;
       dialog.onApply = (rows, cols, options?: TableCreateOptions) => {
         const ih2 = services.getInputHandler();
         if (!ih2) return;
@@ -309,6 +348,7 @@ export const tableCommands: CommandDef[] = [
           kind: 'snapshot',
           operationType: 'createTable',
           operation: (wasm) => {
+            if (inCell) return createTableInCell(wasm, pos, rows, cols, options);
             const result = options
               ? wasm.createTableEx({
                   sectionIdx: pos.sectionIndex,

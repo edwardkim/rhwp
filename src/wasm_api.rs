@@ -3917,6 +3917,62 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// [#8262] 표 칸 안 문단에 표를 만든다 — 셀 경로라 깊이에 상관없다.
+    ///
+    /// `cell_path_json`: 다른 by-path API 와 같은 `[{controlIndex, cellIndex, cellParaIndex}, ...]`.
+    /// 마지막 마디의 `cellParaIndex` 가 캐럿이 있는 칸 문단, `char_offset` 은 그 문단의 캐럿 offset.
+    ///
+    /// options JSON: `{ rowCount, colCount, colWidths?: [u32, ...], rowHeights?: [u32, ...],
+    ///                 treatAsChar?: bool }` — 칸 안 표는 **글자처럼 취급만** 만든다(한/글 기본값).
+    /// `treatAsChar:false` 는 조용히 무시하지 않고 오류로 돌려준다.
+    ///
+    /// 반환: `{"ok":true,"cellParaIdx":N,"controlIdx":0,"cellPath":[..안쪽 표 첫 칸까지]}`
+    #[wasm_bindgen(js_name = createTableInCellByPath)]
+    pub fn create_table_in_cell_by_path(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        cell_path_json: &str,
+        char_offset: u32,
+        options_json: &str,
+    ) -> Result<String, JsValue> {
+        let options: serde_json::Value = serde_json::from_str(options_json)
+            .map_err(|e| JsValue::from_str(&format!("options JSON 파싱 실패: {}", e)))?;
+        if options.get("treatAsChar").and_then(|v| v.as_bool()) == Some(false) {
+            return Err(JsValue::from_str(
+                "칸 안 표는 글자처럼 취급만 지원한다 (treatAsChar:false 는 받지 않는다)",
+            ));
+        }
+        let count = |key: &str, default: u64| -> u16 {
+            options.get(key).and_then(|v| v.as_u64()).unwrap_or(default) as u16
+        };
+        let hu_list = |key: &str| -> Option<Vec<u32>> {
+            let list: Vec<u32> = options
+                .get(key)?
+                .as_array()?
+                .iter()
+                .filter_map(|v| v.as_u64().map(|n| n as u32))
+                .collect();
+            (!list.is_empty()).then_some(list)
+        };
+        let path = crate::document_core::DocumentCore::parse_cell_path(cell_path_json)
+            .map_err(|e| -> JsValue { e.into() })?;
+        let col_widths = hu_list("colWidths");
+        let row_heights = hu_list("rowHeights");
+
+        self.create_table_in_cell_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            char_offset as usize,
+            count("rowCount", 2),
+            count("colCount", 2),
+            col_widths.as_deref(),
+            row_heights.as_deref(),
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 커서 위치에 그림을 삽입한다.
     ///
     /// image_data: 이미지 바이너리 데이터 (PNG/JPG/GIF/BMP 등)

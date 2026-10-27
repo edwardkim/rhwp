@@ -31,7 +31,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'splitParagraphInCell', 'mergeParagraphInCell', 'splitParagraphInCellByPath',
   'mergeParagraphInCellByPath',
   // 표 구조/속성
-  'createTable', 'createTableEx', 'deleteTableControl', 'insertTableRow', 'splitTable', 'mergeTableWithNext',
+  'createTable', 'createTableEx', 'createTableInCellByPath', 'deleteTableControl', 'insertTableRow', 'splitTable', 'mergeTableWithNext',
   'insertTableColumn', 'deleteTableRow', 'deleteTableColumn', 'mergeTableCells',
   'splitTableCell', 'splitTableCellInto', 'splitTableCellsInRange', 'resizeTableCells',
   'resizeTableCellsByPath', // [#7189] 중첩 표 셀 크기 조절 — 평면 resizeTableCells 의 경로 변형

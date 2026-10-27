@@ -2303,6 +2303,23 @@ export class WasmBridge {
     return JSON.parse((this.doc as any).createTableEx(JSON.stringify(options)));
   }
 
+  /**
+   * [#8262] 표 칸 안 문단에 표를 만든다 — 셀 경로라 깊이에 상관없다.
+   * 칸 안 표는 글자처럼 취급만 만든다(한/글 기본값). 반환 `cellPath` 는 안쪽 표 첫 칸까지다.
+   */
+  createTableInCellByPath(
+    sec: number,
+    parentPara: number,
+    cellPath: CellPathEntry[],
+    charOffset: number,
+    options: { rowCount: number; colCount: number; colWidths?: number[]; rowHeights?: number[] },
+  ): { ok: boolean; cellParaIdx: number; controlIdx: number; cellPath: CellPathEntry[] } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).createTableInCellByPath(
+      sec, parentPara, JSON.stringify(cellPath), charOffset, JSON.stringify(options),
+    ));
+  }
+
   evaluateTableFormula(sec: number, parentPara: number, controlIdx: number,
     targetRow: number, targetCol: number, formula: string, writeResult: boolean): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
