@@ -39,3 +39,27 @@ KoPub의 양수 cell 높이 70은 문자 높이 64, 음수 em 높이 -70은 문�
 원본·정상 대조군, Native·표준 최적화 fresh WASM, 중요한 경계 회귀를 함께 검증한다.
 목표인 두 편람 1,532조건 전쪽 raw 100%·미대응 0과 최종 필수 검증은 그대로 유지한다.
 upstream 동기화와 원격 GitHub 쓰기는 하지 않으며 PR 준비까지만 완료한다.
+
+## 실제 정규화·Print의 추가 대조
+
+소형 입력 두 개를 각각 실제 한컴 HWP 저장본으로 정규화하고 `PrintMethod=0`으로
+인쇄했다. 첫 입력은 3개 글꼴×900/1200/1800HU의 9쪽, 둘째는 같은 3개 글꼴×
+장평 90/100/110%의 9쪽이다. 첫 입력의 장평은 원본과 같은 98%다.
+정규화 전 HWPX와 정규화한 HWP 모두 기준 크기·상대 크기 100%·글자 위치 0·
+위/아래 첨자 flag를 보존했다. 저장 시 첨자를 작은 일반 글자로 풀어쓴 결과가 아니다.
+
+18조건의 실제 PDF 연산에서 글리프 크기/본문 크기는 0.64, 위첨자 baseline 상향은
+본문 대비 0.44, 아래첨자 하향은 0.12였다. 장평을 바꾼 대조에서도 같은 값이며,
+예를 들어 본문 Tf 75/100/150에 첨자 Tf 48/64/96이 대응한다. 이 결과는 해당 한컴
+2024 실제 Print의 계약이며, 공식 HWP5 문서가 이 숫자를 정의한다는 뜻은 아니다.
+
+GDI 양수 cell 높이 70이 문자 높이 64가 되는 관측은 KoPub의 한 경우와 맞았지만,
+한컴바탕의 같은 공개 API 결과는 70인 반면 실제 Print는 64다. 따라서 이 우연한
+일치를 일반 첨자 계산식으로 채택하지 않는다. 구현 전에는 기존 공통 첨자 함수의
+측정·전진 폭과 실제 paint 소비, 버전·출력 profile 경계 및 뒤의 별도 보정을 추적한다.
+
+자료는 `output/pr-review/issue8153-handbook-raw100-20261022/remaining-raw100-diagnostic/`
+아래 `small-residuals/literal-spacing-glyph/native-print-precision/`의
+`independent-script-contract-summary.json`, 각 `script-cell-*-controls/`와
+`script-cell-controls/`에 있다. 원본 두 편람과 기존 기준 PDF는 변경·재출력하지 않았다.
+이 진단 자료는 아직 정식 회귀 fixture나 최종 완료 증거로 등록하지 않았다.
