@@ -165,3 +165,42 @@ Native·Canvas2D·CanvasKit의 기존 별도 평면 표본 경로가 같은 결�
 별도 12쪽 합성 입력은 자원 크기 경계의 독립 증거다. 이전 제품 Native의 페이지 전체 시각
 결과는 배치 차이가 있어 통과 근거가 아니며 `size-boundary-control/before/audit.json`에 구분했다.
 이 자료의 픽셀 크기 관측을 실제 편람 전쪽 일치율이나 새 시각 fixture의 통과로 대신하지 않는다.
+
+### 실제 제품의 전쪽·표준 WASM 확인
+
+제품 소스 `0fcbd1e42ea20307604a4a97ed5fb209a8c7c464`의 Native 빌드는 jobs 8,
+고정 `target/pr-review`에서 12분 39초 후 exit 0으로 끝났다. 이후 `70e060edad`는 이번에
+추가한 소스 내부 테스트 모듈만 제거했으며 실제 함수 본문이 같다는 근거를 따로 보존했다.
+그 head의 표준 release fresh WASM은 wasm-opt까지 35분 5초 후 exit 0이다.
+WASM SHA-256은 `7a3b7eaeaa4e11b00581fc1f9a56ff449dbcd0f6efec5122cab193f5d1685484`다.
+
+| backend | 원본 | 전쪽 | raw 100%·미대응 0 | 최저 raw | 미대응 합계 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Native | HWPX | 383 | 369 | 99.96446% | 113 |
+| Native | HWP | 383 | 366 | 99.96446% | 129 |
+| 표준 최적화 fresh WASM | HWPX | 383 | 368 | 99.96402% | 116 |
+| 표준 최적화 fresh WASM | HWP | 383 | 365 | 99.96402% | 131 |
+
+144쪽은 네 조건 모두 raw 100%·정수 미대응 0이다. Native 전쪽은 이전 제품과 비교해
+미대응 증가·논리 트리 변경이 없고 RGB가 바뀐 쪽도 두 원본 144쪽뿐이다. 실제 제품의
+크기 경계 12조건도 독립 Print 자원 크기와 모두 일치했다. 축소하지 않는 경계의 원본 크기
+유지와 한 축 축소·다른 축 확대를 구분했으며, 이 결과는 합성 입력의 페이지 시각 통과가 아니다.
+
+`product-native/native-whole/`, `product-wasm-standard/wasm-whole/` 아래 각 문서의
+`score/silhouette.tsv`가 현재 전쪽 TSV다. 입력·기준 PDF·96dpi·임계값232·반경2px는 유지했다.
+WASM 글꼴은 이전 catalogue와 실제 파일 SHA를 다시 확인해 읽었으며 새 글꼴 파일을
+복사·수정·재생성하지 않았다. Native·최적화 WASM·독립 Print의 같은 그림 영역을 확대해
+직접 대조했고 가는 선·그림 순서·외곽이 유지됐다. RGB 바이트 완전 일치로 설명하지 않는다.
+
+정식 회귀 `tests/cases/issue_8153_picture_resource_resampling.rs`는 원본 JPEG 보존,
+두 축 크기·별도 alpha·독립 마스크 표본·본문/그림 소유·좌우 순서·페이지 포함·독립 ±2px
+경계를 보호한다. 원문 초안은 동결 이전 제품에서 2 FAIL, 현재 제품에서 2 PASS다.
+독립 마스크 표본까지 추가한 최종 원문도 동결 이전 제품에서 2 FAIL, 현재 제품에서
+2 PASS를 확인했다. 동일 테스트 SHA-256은
+`9ea883951f427a96bc7cf6cdb2bc452e9dc5b078b323cdebefead54a73c2f907`이며
+`picture-test-final-{before,after}-result.json`과 실행 로그에 연결했다. 정식 Cargo 실행은
+다음 물리 잔여 보정의 관련 회귀와 함께 확인하며 이 단독 실행으로 대체하지 않는다.
+기존 유효 검사를 지우거나 소스 내부 테스트 수를 늘리지 않는다.
+
+이번 전쪽 1,532조건 중 완료는 1,468조건이며 64조건·489픽셀이 남았다. 전체 목표와
+최종 Rust·lint·Skia·Studio·브라우저·PR 준비는 완료가 아니다. upstream 동기화·원격 게시를 하지 않는다.
