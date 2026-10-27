@@ -62,7 +62,10 @@ pub(super) fn for_text(
     font_mgr: &FontMgr,
     geometric_text: bool,
 ) -> Option<Font> {
-    if let Some(ch) = sample.chars().find(|ch| !ch.is_whitespace()) {
+    if let Some(ch) = sample
+        .chars()
+        .find(|ch| !crate::renderer::text_glyph_visibility::is_nonprinting_character(*ch))
+    {
         return select_typeface_for_character(chain, ch).map(|candidate| {
             finish(
                 candidate.typeface.clone(),

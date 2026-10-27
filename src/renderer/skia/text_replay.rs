@@ -435,7 +435,9 @@ impl SkiaTextReplay<'_> {
                         // U+FFFC의 실제 개체는 별도 paint op가 소유한다. 문자 인덱스를
                         // 제거하면 뒤 cluster의 저장 위치가 달라지므로 그대로 건너뛴다.
                         if cluster.starts_with('\u{FFFC}')
-                            || cluster.chars().all(char::is_whitespace)
+                            || crate::renderer::text_glyph_visibility::is_nonprinting_cluster(
+                                cluster,
+                            )
                         {
                             continue;
                         }

@@ -104,6 +104,7 @@ pub(crate) mod text_font_coverage;
 pub mod text_font_presentation;
 pub(crate) mod text_ink;
 pub(crate) mod text_italic;
+pub(crate) mod text_glyph_visibility;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
 // layout/publication callers remain closed until their own approved slices.
 pub(crate) mod anisotropic_sampling;

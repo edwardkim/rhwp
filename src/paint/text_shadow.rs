@@ -101,7 +101,9 @@ pub(super) fn flow_bounds(
                 if run.style.shadow_type != 2
                     || run.rotation != 0.0
                     || run.is_vertical
-                    || !run.display_or_text().chars().any(|ch| !ch.is_whitespace())
+                    || crate::renderer::text_glyph_visibility::is_nonprinting_cluster(
+                        run.display_or_text(),
+                    )
                 {
                     return None;
                 }
@@ -198,7 +200,9 @@ pub(super) fn prepare(
     style: &TextStyle,
     layout_dpi: f64,
 ) -> Option<ContinuousTextShadow> {
-    if style.shadow_type != 2 || !text.chars().any(|ch| !ch.is_whitespace()) {
+    if style.shadow_type != 2
+        || crate::renderer::text_glyph_visibility::is_nonprinting_cluster(text)
+    {
         return None;
     }
     let percent = style.shadow_offset_percent?;
@@ -214,7 +218,9 @@ pub(super) fn prepare(
                 let face = ttf_parser::Face::parse(bytes, face_index).ok()?;
                 if !text
                     .chars()
-                    .filter(|ch| !ch.is_whitespace())
+                    .filter(|ch| {
+                        !crate::renderer::text_glyph_visibility::is_nonprinting_character(*ch)
+                    })
                     .all(|ch| face.glyph_index(ch).is_some_and(|glyph| glyph.0 != 0))
                 {
                     return None;

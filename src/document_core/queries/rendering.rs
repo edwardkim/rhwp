@@ -472,7 +472,9 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_selected(
                                 return;
                             }
                             *remaining_work_units -= 1;
-                            if !character.is_control() && !character.is_whitespace() {
+                            if !crate::renderer::text_glyph_visibility::is_nonprinting_character(
+                                character,
+                            ) {
                                 glyphs.insert(character);
                                 if glyphs.len() > crate::paint::MAX_PORTABLE_GLYPHS_PER_RUN {
                                     *remaining_work_units = 0;

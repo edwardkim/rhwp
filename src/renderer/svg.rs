@@ -3602,7 +3602,7 @@ impl Renderer for SvgRenderer {
                     .unwrap_or(std::borrow::Cow::Borrowed(cluster_str.as_str()));
                 let cluster_str = painted.as_ref();
                 // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
-                if cluster_str.chars().all(char::is_whitespace) {
+                if super::text_glyph_visibility::is_nonprinting_cluster(cluster_str) {
                     continue;
                 }
                 if cluster_str == "․" {
@@ -3677,7 +3677,7 @@ impl Renderer for SvgRenderer {
                     .unwrap_or(std::borrow::Cow::Borrowed(cluster_str.as_str()));
                 let cluster_str = painted.as_ref();
                 // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
-                if cluster_str.chars().all(char::is_whitespace) {
+                if super::text_glyph_visibility::is_nonprinting_cluster(cluster_str) {
                     continue;
                 }
                 if cluster_str == "-" {
