@@ -1,10 +1,11 @@
 //! 부모 칸보다 넓은 중첩 표는 한컴처럼 선언 폭을 지키고, 보이는 범위는 부모 칸에서
 //! 잘리며, 잘린 칸은 클릭으로 고를 수 없다.
 //!
-//! 재현 문서 `samples/nested-wide-clip.hwpx`는 한컴에서 만들었다. 148mm 2×2 표(폭
-//! 41954, 칸 20977)를 1×2 표의 오른쪽 칸에 붙이고, 붙인 표의 왼쪽 아래 칸에 한 번 더
-//! 붙였다. 한컴은 어느 표도 줄이지 않고 바깥 표 오른쪽 테두리에서 그림을 자른다. 맨
-//! 안쪽 오른쪽 위 칸("셋")은 다 가려져 클릭되지 않고 Tab으로만 들어간다.
+//! 재현 문서 `tests/fixtures/nested_wide_clip/nested-wide-hancom.hwpx`는 한컴에서
+//! 만들었다. 148mm 2×2 표(폭 41954, 칸 20977)를 1×2 표의 오른쪽 칸에 붙이고, 붙인 표의
+//! 왼쪽 아래 칸에 한 번 더 붙였다. 한컴은 어느 표도 줄이지 않고 바깥 표 오른쪽
+//! 테두리에서 그림을 자른다. 맨 안쪽 오른쪽 위 칸("셋")은 다 가려져 클릭되지 않고
+//! Tab으로만 들어간다.
 
 use rhwp::model::control::Control;
 use rhwp::model::table::Table;
@@ -12,7 +13,7 @@ use rhwp::renderer::{hwpunit_to_px, DEFAULT_DPI};
 use rhwp::wasm_api::HwpDocument;
 use serde_json::Value;
 
-const SAMPLE: &str = "samples/nested-wide-clip.hwpx";
+const SAMPLE: &str = "tests/fixtures/nested_wide_clip/nested-wide-hancom.hwpx";
 
 fn load(bytes: &[u8]) -> HwpDocument {
     HwpDocument::from_bytes(bytes).expect("문서를 연다")

@@ -11,9 +11,6 @@ use crate::model::paragraph::Paragraph;
 use crate::renderer::layout::{CellContext, CellPathEntry};
 use crate::renderer::render_tree::TextRunNode;
 
-/// 이보다 좁게 보이는 셀 clip은 다 가려진 것으로 본다.
-const HIT_CLIP_EPSILON_PX: f64 = 0.5;
-
 /// 묶음 개체(GSO Group)인가. 자식 Image 노드는 외곽 Group의 control_index를 물려받는다.
 fn is_group_shape_control(ctrl: &Control) -> bool {
     matches!(
@@ -1746,9 +1743,8 @@ impl DocumentCore {
                 }
                 _ => current_clip,
             };
-            let fully_clipped = |x: f64, w: f64| {
-                clip.is_some_and(|(l, r)| r - l < HIT_CLIP_EPSILON_PX || x > r || x + w < l)
-            };
+            let fully_clipped =
+                |x: f64, w: f64| clip.is_some_and(|(l, r)| r <= l || x > r || x + w < l);
             // TableCell 노드의 bbox 수집
             if let RenderNodeType::TableCell(ref tc) = node.node_type {
                 if let Some(cell_idx) = tc
