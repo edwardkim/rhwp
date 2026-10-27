@@ -8867,15 +8867,16 @@ impl LayoutEngine {
             // 각주/TAC/탭은 최종 TextRun 경계를 추가로 만든다. whole-run pair를
             // 먼저 적용하면 그 경계를 가로지르는 delta가 남으므로, sub-run
             // producer가 연결될 때까지 이 특수 run은 원자적으로 K0로 닫는다.
-            let run_char_count_for_boundary =
-                if run.inserted_control_text && run.char_overlap.is_none() {
-                    0
-                } else if run.char_overlap.is_some() {
-                    let chars: Vec<char> = run.text.chars().collect();
-                    crate::renderer::composer::char_overlap_advance_units(&chars)
-                } else {
-                    run.text.chars().count()
-                };
+            // 컨트롤로 넣은 겹침은 렌더 런 축에서 한 칸이지만 Paragraph.text의 원문 글자는
+            // 아니다. 각주/TAC 앵커와 비교하는 run_char_pos는 원문 글자 축으로 유지한다.
+            let run_char_count_for_boundary = if run.inserted_control_text {
+                0
+            } else if run.char_overlap.is_some() {
+                let chars: Vec<char> = run.text.chars().collect();
+                crate::renderer::composer::char_overlap_advance_units(&chars)
+            } else {
+                run.text.chars().count()
+            };
             let run_char_end_for_boundary = run_char_pos + run_char_count_for_boundary;
             let has_tac_boundary = tac_offsets_px.iter().any(|(position, _, _)| {
                 *position >= run_char_pos && *position <= run_char_end_for_boundary
@@ -9014,7 +9015,13 @@ impl LayoutEngine {
             } else {
                 run.text.chars().count()
             };
-            let run_char_end = run_char_pos + run_char_count;
+            // 앵커 비교 축(run_char_pos)은 원문 글자 축이다. 컨트롤 겹침은 원문 글자가 아니다.
+            let run_char_end = run_char_pos
+                + if run.inserted_control_text {
+                    0
+                } else {
+                    run_char_count
+                };
             let is_last_run = is_last_line_of_para && is_last_run_of_line(run_idx);
             let is_line_break = comp_line.has_line_break && is_last_run_of_line(run_idx);
 
