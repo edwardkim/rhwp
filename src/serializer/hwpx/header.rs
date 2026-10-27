@@ -83,7 +83,7 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
     write_char_properties(&mut w, &doc.doc_info, ctx)?;
     write_tab_properties(&mut w, &doc.doc_info)?;
     write_numberings(&mut w, &doc.doc_info)?;
-    write_bullets(&mut w, &doc.doc_info)?;
+    write_bullets(&mut w, &doc.doc_info, ctx)?;
     write_para_properties(
         &mut w,
         &doc.doc_info,
@@ -887,7 +887,11 @@ fn write_numbering<W: Write>(
 // 소실되고, 글머리표 문단의 마커 글리프가 렌더에서 사라졌다. 파서(parse_bullet_hwpx)는
 // `char`/`useImage` 만 읽으므로 그 둘 + paraHead 뼈대를 방출하면 round-trip 무손실이다.
 // =====================================================================
-fn write_bullets<W: Write>(w: &mut Writer<W>, doc_info: &DocInfo) -> Result<(), SerializeError> {
+fn write_bullets<W: Write>(
+    w: &mut Writer<W>,
+    doc_info: &DocInfo,
+    ctx: &SerializeContext,
+) -> Result<(), SerializeError> {
     if doc_info.bullets.is_empty() {
         return Ok(());
     }
@@ -897,7 +901,7 @@ fn write_bullets<W: Write>(w: &mut Writer<W>, doc_info: &DocInfo) -> Result<(), 
         &[("itemCnt", &doc_info.bullets.len().to_string())],
     )?;
     for (idx, b) in doc_info.bullets.iter().enumerate() {
-        write_bullet(w, idx as u16, b)?;
+        write_bullet(w, idx as u16, b, ctx)?;
     }
     end_tag(w, "hh:bullets")?;
     Ok(())
@@ -907,6 +911,7 @@ fn write_bullet<W: Write>(
     w: &mut Writer<W>,
     id: u16,
     b: &crate::model::style::Bullet,
+    ctx: &SerializeContext,
 ) -> Result<(), SerializeError> {
     let id_s = (id + 1).to_string(); // 관찰: 1-based, ParaShape.numbering_id 참조와 정합
     let char_s = b.bullet_char.to_string();
@@ -930,6 +935,14 @@ fn write_bullet<W: Write>(
             .write_all(raw.as_bytes())
             .map_err(|e| SerializeError::XmlError(format!("bullet paraHead splice: {e}")))?;
     } else {
+        // 그림 글머리표는 `<hh:img>` 가 그림을 가리킨다. 없으면 다시 읽을 때 1번 그림이 된다.
+        if let Some(manifest_id) = u16::try_from(b.image_bullet)
+            .ok()
+            .filter(|id| *id > 0)
+            .and_then(|id| ctx.resolve_bin_id(id))
+        {
+            empty_tag(w, "hh:img", &[("binaryItemIDRef", manifest_id)])?;
+        }
         empty_tag(
             w,
             "hh:paraHead",

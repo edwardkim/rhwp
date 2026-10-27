@@ -302,6 +302,25 @@ fn resolve_master_page_hrefs<'a, 'b>(
 /// `binaryItemIDRef` 값을 정확히 한 번만 다시 쓴다. 맵에 없는 참조(BinData
 /// 항목이 아닌 것)는 그대로 둔다.
 fn canonicalize_bin_item_refs(xml: &str, bin_data_items: &[content::PackageItem]) -> String {
+    canonicalize_bin_item_refs_where(xml, bin_data_items, |_| true)
+}
+
+/// header.xml 은 그림 참조(`img`: 테두리·배경의 그림 채우기, 그림 글머리표)만 정규화한다.
+/// 이 참조도 숫자만 뽑아 쓰므로 매니페스트 이름 번호가 위치와 어긋나면(rhwp 가 내보낸
+/// `image2`…`image12` 처럼 구멍이 있는 이름 포함) 다른 그림을 가리키거나 사라진다.
+/// 글꼴 참조는 매니페스트 ID 를 그대로 찾으므로(`resolve_embedded_font_references`) 두지 않는다.
+fn canonicalize_header_image_refs(xml: &str, bin_data_items: &[content::PackageItem]) -> String {
+    canonicalize_bin_item_refs_where(xml, bin_data_items, |tag| {
+        tag.rsplit(':').next() == Some("img")
+    })
+}
+
+/// `binaryItemIDRef` 를 담은 요소 이름이 `rewrite_tag` 를 만족할 때만 다시 쓴다.
+fn canonicalize_bin_item_refs_where(
+    xml: &str,
+    bin_data_items: &[content::PackageItem],
+    rewrite_tag: impl Fn(&str) -> bool,
+) -> String {
     let canonical: HashMap<&str, String> = bin_data_items
         .iter()
         .enumerate()
@@ -321,7 +340,13 @@ fn canonicalize_bin_item_refs(xml: &str, bin_data_items: &[content::PackageItem]
             break;
         };
         let value = &rest[..end];
-        match canonical.get(value) {
+        let tag = out.rfind('<').map_or("", |start| {
+            out[start + 1..]
+                .split(|c: char| c.is_ascii_whitespace())
+                .next()
+                .unwrap_or("")
+        });
+        match canonical.get(value).filter(|_| rewrite_tag(tag)) {
             Some(canon) => out.push_str(canon),
             None => out.push_str(value),
         }
@@ -465,8 +490,10 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         .find(|(path, _)| path == "version.xml")
         .and_then(|(_, bytes)| std::str::from_utf8(bytes).ok())
         .is_some_and(physical_para_margin_units_from_version);
-    let (mut doc_info, doc_properties) =
-        header::parse_hwpx_header_with_plain_margin_units(&header_xml, physical_plain_margin)?;
+    let (mut doc_info, doc_properties) = header::parse_hwpx_header_with_plain_margin_units(
+        &canonicalize_header_image_refs(&header_xml, &package_info.bin_data_items),
+        physical_plain_margin,
+    )?;
     if let Ok(bytes) = reader.read_file_bytes_limited(
         crate::model::native_font_program::HWPX_ENTRY,
         crate::model::native_font_program::MAX_BYTES,
