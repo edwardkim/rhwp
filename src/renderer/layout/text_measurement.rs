@@ -1676,7 +1676,16 @@ fn measure_char_width_embedded_decision_for_font<'a>(
         //    26.93px = 0.645 em 이다(반각 20.87px 이 아니다). 같은 HFT 이름이라도
         //    HWP3 시대 저장본만 반각으로 조판된다.
         let hft_hangul_halfwidth_ascii = hft_hangul_face && c.is_ascii_graphic();
-        let is_halfwidth_punct = matches!(c, '\u{2018}'..='\u{2027}');
+        // [#8315] 기호 슬롯 글자 `† ‡ • ‥ …`(#8136)는 한/글이 기호 슬롯 글꼴의 전진폭을 그대로
+        // 쓴다. 기호 슬롯 글꼴만 바꾼 합성 입력(한/글 2024 Print)에서 궁서·바탕·돋움·굴림·굴림체
+        // ·HY견명조·HY중고딕·휴먼명조·한양신명조 모두 `‥`·`…` 가 hmtx 1.0em(Print 1.012)이고,
+        // 맑은 고딕·함초롬바탕은 표의 좁은 값(0.44·0.74 / 0.64·0.96) 그대로다. 반각으로 누른
+        // 글꼴은 없다. 이 범위의 나머지(따옴표 = 영문 슬롯, `‣` `․` `‧`)만 종전 규칙을 따른다.
+        let is_halfwidth_punct = matches!(c, '\u{2018}'..='\u{2027}')
+            && !matches!(
+                c,
+                '\u{2020}' | '\u{2021}' | '\u{2022}' | '\u{2025}' | '\u{2026}'
+            );
         // [#7092] 고정폭 표의 작은따옴표는 글꼴이 지닌 전각이 진짜 값이다. `·` 는 이미
         // `is_monospace_metric` 으로 이 갈래를 빼 두었는데, `‘`·`’` 는 face 를 보지 않고
         // 전부 0.3em 으로 눌러 왔다. 저장소 한컴 정본 623개 전수(앞 6쪽·리더 반복 제외,
@@ -1704,10 +1713,6 @@ fn measure_char_width_embedded_decision_for_font<'a>(
             && is_monospace_metric(mm.metric))
             || (matches!(c, '\u{2018}' | '\u{2019}' | '\u{201C}' | '\u{201D}')
                 && font_metric_trusted);
-        // 이 HFT overlay의 bullet은 독립 Print로 확인한 전각 글리프다.
-        // U+2018..U+2027이라는 범위만으로 실제 폭을 다시 반각으로 줄이지 않는다.
-        let hft_bullet_width_is_authentic =
-            c == '\u{2022}' && mm.metric.name == "HanyangSinMyeongJo";
         let is_narrow_unicode_punct =
             matches!(c, '\u{2018}' | '\u{2019}' | '\u{2027}') && !quote_width_is_authentic;
         // [#7092] 전각으로 **적힌** 가운뎃점은 대개 글꼴이 지닌 진짜 값이다 — 결측 글리프는
@@ -1727,11 +1732,7 @@ fn measure_char_width_embedded_decision_for_font<'a>(
                 (mm.metric.em_size as f64 * 0.3) as u16,
                 "metricNarrowPunctuationOverlay",
             )
-        } else if is_halfwidth_punct
-            && !quote_width_is_authentic
-            && !hft_bullet_width_is_authentic
-            && glyph_w >= mm.metric.em_size
-        {
+        } else if is_halfwidth_punct && !quote_width_is_authentic && glyph_w >= mm.metric.em_size {
             (mm.metric.em_size / 2, HALFWIDTH_PUNCTUATION_WIDTH_SOURCE)
         } else {
             (glyph_w, "embeddedMetric")

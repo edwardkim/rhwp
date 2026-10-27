@@ -46,6 +46,8 @@ mod hangul_jamo;
 pub(crate) fn uses_hangul_jamo_overlay(metric: &FontMetric, character: char) -> bool {
     hangul_jamo::width(metric, character).is_some()
 }
+#[path = "font_metric_symbol_slot_chars.rs"]
+mod symbol_slot_chars;
 
 pub(crate) use legacy_hft::{
     is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
@@ -135,6 +137,7 @@ impl FontMetric {
             .or_else(|| math_symbol_blocks::width(self, ch))
             .or_else(|| supplementary_pictographs::width(self, ch))
             .or_else(|| contextual_scripts::width(self, ch))
+            .or_else(|| symbol_slot_chars::width(self, ch))
     }
 }
 
@@ -149,6 +152,7 @@ pub(crate) fn verified_metric_has_glyph(metric: &FontMetric, ch: char) -> Option
         .or_else(|| math_symbol_blocks::entry(metric, ch).map(|(present, _)| present))
         .or_else(|| supplementary_pictographs::entry(metric, ch).map(|(present, _)| present))
         .or_else(|| contextual_scripts::entry(metric, ch).map(|(present, _)| present))
+        .or_else(|| symbol_slot_chars::entry(metric, ch).map(|(present, _)| present))
 }
 
 /// DB 항목이 없어도 확인한 원 face의 cmap은 독립적으로 조회한다.
