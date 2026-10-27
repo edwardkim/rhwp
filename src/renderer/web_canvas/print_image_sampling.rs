@@ -14,6 +14,16 @@ pub(super) fn draw_encoded(
     page: (f64, f64),
     scale: f64,
 ) -> bool {
+    if crate::renderer::image_resolver::png_sampling::print_separate_alpha(bytes) {
+        return device_rectangle(context, rectangle)
+            .and_then(|rectangle| {
+                crate::renderer::print_image_sampling::rasterize_masked(
+                    bytes, rectangle, page, scale,
+                )
+            })
+            .and_then(|raster| replay_raster(context, &raster))
+            .is_some();
+    }
     let source = if bytes.starts_with(&[0xff, 0xd8]) {
         jpeg_replay::canvas(bytes)
     } else {
@@ -32,23 +42,30 @@ pub(super) fn draw(
     draw_inner(context, source, rectangle, page, scale).is_some()
 }
 
-fn draw_inner(
+fn device_rectangle(
     context: &CanvasRenderingContext2d,
-    source: &HtmlCanvasElement,
     (x, y, w, h): (f64, f64, f64, f64),
-    page: (f64, f64),
-    scale: f64,
-) -> Option<()> {
+) -> Option<(f64, f64, f64, f64)> {
     let matrix = context.get_transform().ok()?;
     if matrix.b() != 0.0 || matrix.c() != 0.0 || matrix.a() <= 0.0 || matrix.d() <= 0.0 {
         return None;
     }
-    let rectangle = (
+    Some((
         matrix.a() * x + matrix.e(),
         matrix.d() * y + matrix.f(),
         matrix.a() * w,
         matrix.d() * h,
-    );
+    ))
+}
+
+fn draw_inner(
+    context: &CanvasRenderingContext2d,
+    source: &HtmlCanvasElement,
+    rectangle: (f64, f64, f64, f64),
+    page: (f64, f64),
+    scale: f64,
+) -> Option<()> {
+    let rectangle = device_rectangle(context, rectangle)?;
     let source_context = source
         .get_context("2d")
         .ok()??
@@ -69,6 +86,13 @@ fn draw_inner(
         page,
         scale,
     )?;
+    replay_raster(context, &raster)
+}
+
+fn replay_raster(
+    context: &CanvasRenderingContext2d,
+    raster: &crate::renderer::print_image_sampling::DeviceRaster,
+) -> Option<()> {
     let canvas = web_sys::window()?
         .document()?
         .create_element("canvas")
