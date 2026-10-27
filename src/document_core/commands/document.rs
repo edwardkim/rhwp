@@ -327,11 +327,17 @@ impl DocumentCore {
             && document
                 .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
                 .is_some();
-        let use_xml_import_semantics = matches!(
-            source_format,
-            crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
-        ) && !hwp5_origin_hwpx
-            && !document.layout_profile().hwp3_native_layout();
+        // [#8310] rhwp 가 HWPX 에서 만든 HWP(`hwpx_lineage`)는 HWPX 저장 계약을 그대로
+        // 지닌다 — 저장 줄 없는 문단도 원본 HWPX 처럼 줄 없이 저장된다. 같은 문서가 같은
+        // 조판 입력이 되도록 HWPX 와 같은 XML import 규칙으로 연다.
+        let use_xml_import_semantics =
+            (matches!(
+                source_format,
+                crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
+            ) || (matches!(source_format, crate::parser::FileFormat::Hwp)
+                && document.provenance.hwpx_lineage))
+                && !hwp5_origin_hwpx
+                && !document.layout_profile().hwp3_native_layout();
 
         // 비표준 lineseg 감지 — reflow 이전 시점에 IR을 그대로 검증.
         // 경고는 사용자에게 고지되며, 자동 reflow 는 `needs_line_seg_reflow` 조건에만 한정.
