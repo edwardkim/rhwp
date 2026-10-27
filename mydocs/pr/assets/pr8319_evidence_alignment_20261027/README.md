@@ -59,3 +59,7 @@
 [PR별 입력·SHA·페이지 대응 원장](alignment.json), [공식 배포 문서의 출처와 대체 표시](source-identification.md)를 함께 확인한다.
 기존 댓글만 수정하며 새 정정 댓글은 만들지 않는다. 과거 원 작성자의 캡처·실행 로그·중간 JSON·비공개 글꼴은 이 제출 자료에 포함하지 않는다.
 삭제된 손상 이동 HWP 두 개는 복원하지 않았다.
+
+## 원본과 PDF 동반 보존
+
+[HWP/HWPX와 PDF 대응표](source-input-pdf-pairs.md)에서 공식 배포 문서 16개와 확보한 Print PDF 16개를 함께 확인할 수 있다. 배포 PDF와 Print 출력 계약을 확인한 기준 PDF를 구분한다. 입력·Print PDF 확보는 완료했으며 원 PR의 실제 주장 영역 확인과 필요한 공통 로직 보정·새 head 검증이 끝나기 전까지 이 PR의 최종 수용·머지를 보류한다.
