@@ -21,7 +21,8 @@ use std::collections::BTreeSet;
 use crate::model::bin_data::{BinDataStatus, BinDataType};
 use crate::model::control::Control;
 use crate::model::document::{
-    Document, HwpVersion, Section, SectionDef, HWP3_ORIGIN_STREAM_PATH, HWPX_ORIGIN_STREAM_PATH,
+    Document, HwpVersion, Section, SectionDef, HWP3_ORIGIN_STREAM_PATH,
+    HWP5_ORIGIN_HWPX_MARKER_PATH, HWPX_ORIGIN_STREAM_PATH,
 };
 use crate::model::image::Picture;
 use crate::model::paragraph::Paragraph;
@@ -2849,7 +2850,13 @@ pub(crate) fn try_convert_if_hwpx_source<S: crate::storage::Storage>(
     } else {
         0
     };
+    // [#8302] rhwp 가 HWP5 에서 만든 HWPX(`rhwp-hwp5-origin`)는 HWPX 계보가 아니다.
+    // 그 IR 은 HWP5-origin 호환 계약으로 조판되므로, HWP 로 되돌릴 때 HWPX 계보 마커를
+    // 붙이면 재파싱이 `hwpx_stored_layout` 으로 갈라져 원본 HWP 와 쪽수가 달라진다
+    // (2912735: 원본·한컴 2쪽 → 왕복 1쪽). 마커 없이 원래의 native HWP5 계보로 둔다.
+    let hwp5_origin_hwpx = doc.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH).is_some();
     if matches!(source_format, FileFormat::Hwpx)
+        && !hwp5_origin_hwpx
         && !doc
             .extra_streams
             .iter()
