@@ -143,3 +143,15 @@ manifest를 구분했다. 두 원본의 identity가 현재 Native PNG와 RGB 전
 Native·Canvas2D·CanvasKit의 기존 별도 평면 표본 경로가 같은 결과를 소비하게 한다.
 원본 IR·crop 참조·문서 직렬화·조판 크기·최종 그림 위치를 바꾸지 않는다. 원본 크기 유지,
 한 축 축소/다른 축 확대, 경계, 다른 정상 JPEG도 재검증한 뒤 전쪽 검증으로 진행한다.
+
+### 제품 구현 후보
+
+`print_picture_resample`은 공통 paint builder의 종이 mapping 전 논리 크기를 받아 위 정수
+자원 크기를 계산한다. `print_prefilter`는 다항식의 누적 적분과 두 축 정수 처리를 수행한다.
+기존 제한된 Print JPEG 디코더와 RGB555·JPEG·별도 마스크 encoder를 재사용한다.
+원본 PNG의 PArgb 색 전달과 보간 후 straight RGB를 구분하며, 그림 원본의 JPEG 신원은
+유지한 채 생성 payload의 별도 평면 마커로 기존 공통 장치 표본 경로를 선택한다.
+
+그림 중심·투명 경계·할당 범위의 제품 소스 선행 단독 검사 2건은 통과했다. 이는 정식 Cargo
+회귀나 실제 제품 출력의 대체가 아니다. 후보의 Native 빌드·영향 쪽·정상 대조군과 fresh WASM,
+두 원본 전쪽 검증은 이어서 실행하며 결과를 확인하기 전 완료로 표시하지 않는다.

@@ -509,7 +509,12 @@ impl LayerBuilder {
                                 })
                                 .and_then(|width| {
                                     crate::renderer::image_resolver::print_device_image_payload(
-                                        &image, width,
+                                        &image,
+                                        width,
+                                        (
+                                            node.bbox.width * 72.0 / self.layout_dpi,
+                                            node.bbox.height * 72.0 / self.layout_dpi,
+                                        ),
                                     )
                                 })
                         })

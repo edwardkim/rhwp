@@ -17,6 +17,8 @@ pub(crate) use print_tone::print_bitmap_payload;
 mod print_alpha;
 mod print_codec;
 mod print_fill_jpeg;
+mod print_picture_resample;
+mod print_prefilter;
 pub(crate) use print_codec::{print_area_sampling, print_device_image_payload};
 
 use crate::model::image::ImageEffect;
@@ -162,6 +164,11 @@ enum Conversion {
         quality: u8,
     },
     Hancom2024PrintAlpha {
+        quality: u8,
+    },
+    Hancom2024PrintResampled {
+        width: u32,
+        height: u32,
         quality: u8,
     },
     Hancom2024FillJpegRgb {

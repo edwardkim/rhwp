@@ -31,6 +31,7 @@ pub(crate) fn print_area_sampling(
     if (super::print_alpha_2024::eligible(image)
         && resolved.is_some_and(|payload| super::png_sampling::print_separate_alpha(&payload.data)))
         || crate::paint::metafile_picture::is_device_picture(image, resolved)
+        || super::print_picture_resample::is_device_picture(image, resolved)
     {
         return true;
     }
@@ -72,7 +73,13 @@ pub(crate) fn print_area_sampling(
 pub(crate) fn print_device_image_payload(
     image: &ImageNode,
     width_points: f64,
+    logical_size_points: (f64, f64),
 ) -> Option<ResolvedImagePayload> {
+    if let Some(payload) =
+        super::print_picture_resample::payload(image, logical_size_points, width_points)
+    {
+        return Some(payload);
+    }
     if let Some(payload) = super::print_alpha_2024::payload(image, width_points) {
         return Some(payload);
     }

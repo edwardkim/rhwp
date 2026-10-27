@@ -43,47 +43,17 @@ pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedIm
     }
     let quality = print_codec::requested_quality(width_points, header.width);
     let data = memoized(Conversion::Hancom2024PrintAlpha { quality }, source, || {
-        let (mut rgba, quantized) =
+        let (rgba, quantized) =
             print_tone::decode_transfer_pixels(source, image::ImageFormat::Png, None)?;
         // 팔레트 bitmap과 불투명 PNG는 기존 색 전달 계약을 유지한다.
         if !quantized || rgba.pixels().all(|pixel| pixel[3] == 255) {
             return None;
         }
-        let (width, height) = rgba.dimensions();
         let quality = print_codec::quality_for_palette(
             quality,
             print_codec::palette_len(&image::DynamicImage::ImageRgba8(rgba.clone()).to_rgb8()),
         );
-        let mut mask = Vec::with_capacity(rgba.as_raw().len() / 4);
-        for (x, y, pixel) in rgba.enumerate_pixels_mut() {
-            let alpha = pixel[3];
-            let opaque = alpha == 255 || alpha > bayer_rank(x, y);
-            mask.push(if opaque { 255 } else { 0 });
-            for channel in &mut pixel.0[..3] {
-                *channel = if opaque {
-                    print_color(*channel, alpha)
-                } else {
-                    255
-                };
-            }
-            pixel[3] = 255;
-        }
-        super::print_rgb555::quantize(rgba.as_mut(), width, height)?;
-        let jpeg =
-            print_codec::encode_rgb(image::DynamicImage::ImageRgba8(rgba).to_rgb8(), quality)?;
-        let pixels = print_tone::decode_jpeg_fill_rgb(&jpeg)?.into_raw();
-        let mut combined = Vec::with_capacity(mask.len() * 4);
-        for (rgb, alpha) in pixels.chunks_exact(3).zip(mask) {
-            combined.extend_from_slice(rgb);
-            combined.push(alpha);
-        }
-        let rgba = image::RgbaImage::from_raw(width, height, combined)?;
-        let mut bytes = Vec::new();
-        image::DynamicImage::ImageRgba8(rgba)
-            .write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)
-            .ok()?;
-        super::png_sampling::mark_print_separate_alpha(&mut bytes);
-        Some(bytes)
+        encode_planes(rgba, quality, print_color)
     })?;
     Some(ResolvedImagePayload {
         data,
@@ -91,6 +61,41 @@ pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedIm
         kind: ResolvedImageKind::OutputDevice,
         suppress_effects: false,
     })
+}
+
+/// 색과 coverage를 따로 표본화하는 공통 payload를 생성한다.
+/// 복원한 straight RGB와 원본 PArgb의 색 전달 계약은 호출자가 구분한다.
+pub(super) fn encode_planes(
+    mut rgba: image::RgbaImage,
+    quality: u8,
+    color: impl Fn(u8, u8) -> u8,
+) -> Option<Vec<u8>> {
+    let (width, height) = rgba.dimensions();
+    let mut mask = Vec::with_capacity(rgba.as_raw().len() / 4);
+    for (x, y, pixel) in rgba.enumerate_pixels_mut() {
+        let alpha = pixel[3];
+        let opaque = alpha == 255 || alpha > bayer_rank(x, y);
+        mask.push(if opaque { 255 } else { 0 });
+        for channel in &mut pixel.0[..3] {
+            *channel = if opaque { color(*channel, alpha) } else { 255 };
+        }
+        pixel[3] = 255;
+    }
+    super::print_rgb555::quantize(rgba.as_mut(), width, height)?;
+    let jpeg = print_codec::encode_rgb(image::DynamicImage::ImageRgba8(rgba).to_rgb8(), quality)?;
+    let pixels = print_tone::decode_jpeg_fill_rgb(&jpeg)?.into_raw();
+    let mut combined = Vec::with_capacity(mask.len() * 4);
+    for (rgb, alpha) in pixels.chunks_exact(3).zip(mask) {
+        combined.extend_from_slice(rgb);
+        combined.push(alpha);
+    }
+    let rgba = image::RgbaImage::from_raw(width, height, combined)?;
+    let mut bytes = Vec::new();
+    image::DynamicImage::ImageRgba8(rgba)
+        .write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)
+        .ok()?;
+    super::png_sampling::mark_print_separate_alpha(&mut bytes);
+    Some(bytes)
 }
 
 /// 표준 16×16 Bayer 순위. 마스크는 top-down, RGB555 색 표면은 bottom-up이다.
