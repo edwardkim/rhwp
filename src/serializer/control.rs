@@ -2166,7 +2166,15 @@ fn serialize_text_box_if_present(drawing: &DrawingObjAttr, level: u16, records: 
         let mut w = ByteWriter::new();
         // para_count: 스펙은 INT16이지만 실제 HWP 파일에서는 UINT32로 저장됨
         w.write_u32(text_box.paragraphs.len() as u32).unwrap();
-        w.write_u32(text_box.list_attr).unwrap();
+        // list_attr bit 5~6(세로 정렬)은 vertical_align 에서 만든다 — HWPX 저장기·렌더러가 읽는
+        // 정렬 값이 vertical_align 이므로, 편집이 list_attr 를 따라 고치지 않아도 형식 간에 같다.
+        let v_align_code: u32 = match text_box.vertical_align {
+            VerticalAlign::Top => 0,
+            VerticalAlign::Center => 1,
+            VerticalAlign::Bottom => 2,
+        };
+        w.write_u32((text_box.list_attr & !(0b11 << 5)) | (v_align_code << 5))
+            .unwrap();
         // 여백 + 최대 폭 (글상자 고유 데이터)
         w.write_i16(text_box.margin_left).unwrap();
         w.write_i16(text_box.margin_right).unwrap();

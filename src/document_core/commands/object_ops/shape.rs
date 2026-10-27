@@ -1332,7 +1332,7 @@ impl DocumentCore {
             text_box: if has_textbox {
                 Some(TextBox {
                     paint_clip: None,
-                    list_attr: 0x20,
+                    list_attr: 0,
                     vertical_all: false,
                     text_margin_explicit: false,
                     vertical_align: crate::model::table::VerticalAlign::Top,
