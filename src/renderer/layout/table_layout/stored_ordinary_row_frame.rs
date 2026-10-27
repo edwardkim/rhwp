@@ -431,7 +431,22 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
         let cells = self.ordinary_row_cells_for_cut(table, row, cut, styles)?;
+        let single_frame =
+            self.row_cut_remaining_is_single_stored_frame(table, row, cut, None, styles);
+        // 문단 사이의 로컬 원점은 선언 전체에서 뺄 물리 프레임을 증언하지 않는다.
+        // 여러 프레임의 새 잔여는 같은 원본 문단 안의 쪽 재시작이 소유해야 한다.
+        // 이미 인증해 이어받은 잔여는 현재 수용분만 차감한다.
+        let owns_physical_remainder = single_frame
+            || carried.is_some()
+            || cells.iter().zip(cut).any(|(cell, &next)| {
+                self.cell_units(cell, table, styles)
+                    .get(next)
+                    .is_some_and(|unit| {
+                        Self::stored_in_paragraph_unit_is_original_restart(cell, unit)
+                    })
+            });
         if cut.len() != cells.len()
+            || !owns_physical_remainder
             || !(self.stored_ordinary_row_cut_has_physical_frame(table, row, &[], cut, styles)
                 || self.stored_single_line_row_is_fragmentable(table, row, styles)
                 || carried.is_some()
@@ -451,8 +466,7 @@ impl LayoutEngine {
             .collect();
         // 여러 내용 프레임도 같은 원본 행의 물리 잔여를 이어받는다.
         // 한 프레임 조건은 마지막 텍스트 프레임으로 잔여를 대체할 때만 필요하다.
-        let closing = self
-            .row_cut_remaining_is_single_stored_frame(table, row, cut, None, styles)
+        let closing = single_frame
             .then(|| self.stored_ordinary_closing_text_frame(table, row, cut, styles))
             .flatten();
         if let Some(height) = closing {
