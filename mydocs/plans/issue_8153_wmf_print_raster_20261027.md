@@ -6,7 +6,7 @@ Issue: #8153. 두 편람의 전쪽 Native·표준 최적화 fresh WASM에서 raw
 ## 현재 제품과 조사 범위
 
 첫 진단 단계 이전의 문서 head는 `64f95959d4be6e6474c3f8563fdb9a75859273db`다.
-이번 단계에서는 제품 코드를 바꾸지 않았다. 검증용 Native producer는
+첫 진단 단계에서는 제품 코드를 바꾸지 않았다. 그때의 검증용 Native producer는
 `b2b33fda6027c03cbcfaa051ee1f5968fbb7930d`이며, 이전 전쪽 결과는 766조건 중
 733조건의 raw 100%·미대응 0픽셀이다. 33조건과 최종 표준 WASM 전쪽 검증은 남아 있다.
 이번 진단을 제품의 전쪽 개선 수에 합산하지 않는다.
@@ -216,3 +216,84 @@ job `a2cc9cb9-d1cb-4fbe-a076-d17029c53c0b`는 한컴 `13.0.0.3901`, `PrintMethod
 예측은 ignored `order-control-{provenance,status,observed}.json`에 보존한다.
 사양 설명본은 그림의 명암 속성을 명시하지만 이 연산 순서를 정하지 않으므로, 공식 사양의
 오류로 확대하지 않고 이 독립 Print의 출력 계약으로 기록한다.
+
+## 공통 장치 구현과 실제 검증 결과
+
+제품 `36bae7c0edab15dd27dd769e5b4e1a422dd2a282`는 `page_context` 뒤의 실제 paint
+사각형을 `metafile_surface::picture_payload`에 전달한다. 원본 WMF를 장치에 재생한 뒤
+공통 명암을 적용하고 별도 색·coverage 평면의 PNG를 만든다. `metafile_picture::lower`가
+원본 전체 사각형과 별도의 물리 crop을 출력 레이어에 함께 만든다. 원본 render tree와 문서
+데이터는 변경하지 않으며, Native·Canvas2D·CanvasKit이 같은 레이어를 소비한다.
+CanvasKit의 실제 실행과 최종 최적화 WASM 전쪽 검증은 아직 남아 있다.
+
+동일 입력·독립 Print·96dpi·2px·시스템 글꼴로 실제 실행했다. 다음 값은 제출 gate의 raw이며,
+보조 색상 보정 점수로 대체하지 않았다.
+
+| 원본 | Native 전체 쪽 | Native 최저 raw | 100%·0픽셀 | 미대응 합계 | 130쪽 Native | 130쪽 fresh DEV WASM |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| HWPX | 383 | 99.67578% | 368 | 354 | 99.96446% / 23픽셀 | 99.96402% / 23픽셀 |
+| HWP | 383 | 99.67578% | 365 | 370 | 99.96446% / 23픽셀 | 99.96402% / 23픽셀 |
+
+Native 전쪽의 미대응 합계는 이전 `b2b33fda6027c03cbcfaa051ee1f5968fbb7930d`의
+1,432개에서 724개로 감소했다. 두 원본 모두 130쪽만 RGB가 변경됐으며 766조건의 의미
+render tree는 동일하다. 미대응 픽셀 증가 페이지는 없다. 현재 733/766조건이 정확히 0이며,
+이 값을 과거 WASM 전쪽 결과와 합쳐 현재 1,532조건의 완료 수로 표시하지 않는다.
+
+fresh DEV WASM은 두 원본의 129·130·131·141·144·245·255쪽, 총 14조건을 실제
+Canvas2D에서 실행했다. 전체 페이지 수는 각각 383쪽, 핵심 최저 raw는 99.67325%이며
+245·255쪽은 양쪽 모두 100%·0픽셀을 유지했다. DEV 검증을 최종 최적화 검증으로 승격하지 않는다.
+
+증적의 공통 접두사는 ignored
+`output/pr-review/issue8153-handbook-raw100-20261022/remaining-raw100-diagnostic/`다.
+
+| 근거 | 접두사 아래 경로 |
+| --- | --- |
+| Native source·실행 파일·rlib SHA | `continuous-text-shadow/wmf-order-native/producer/receipt.json` |
+| Native 전쪽 정수·의미 tree·증감 | `continuous-text-shadow/wmf-order-native/native-whole/whole-result.json` |
+| Native 파일별 TSV | `continuous-text-shadow/wmf-order-native/native-whole/handbook-{hwp,hwpx}/score/silhouette.tsv` |
+| WASM source·프로필·자원 SHA | `continuous-text-shadow/wmf-order-wasm-dev/build.json` |
+| WASM 14조건 | `continuous-text-shadow/wmf-order-wasm-dev/wasm-boundary-result.json` |
+| WASM 파일별 TSV | `continuous-text-shadow/wmf-order-wasm-dev/wasm-boundary/handbook-{hwp,hwpx}/score/silhouette.tsv` |
+| 실제 Native review·overlay | `continuous-text-shadow/wmf-order-native/native-focus/handbook-{hwp,hwpx}/p130/` |
+| 실제 WASM review·overlay | `continuous-text-shadow/wmf-order-wasm-dev/wasm-boundary/handbook-{hwp,hwpx}/p130/` |
+| 같은 배율의 수정 전·후·Print 경계 확대 | Native의 `p130/remaining-gantt-boundary-zoom.png` |
+
+입력·기준 PDF의 SHA-256은 다음과 같다. 기존 독립 PDF를 재사용했다.
+
+| 종류 | SHA-256 |
+| --- | --- |
+| HWP | `40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f` |
+| HWPX | `c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6` |
+| HWP Print PDF | `3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593` |
+| HWPX Print PDF | `299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e` |
+
+### 독립 경계 회귀
+
+`tests/cases/issue_8153_wmf_print_window.rs`는 두 원본 130쪽의 전체 원본·물리 crop을
+독립 PDF의 image matrix와 clip에서 읽은 96dpi 경계 ±2px로 보호한다. 원본 소유·본문 clip·
+누락/중복·포함 관계와 출력 전후 문서 데이터 동일성도 검사한다. 같은 bin376의 물리 창을
+검사하는 다른 #8153 검사는 없음을 확인했으며, 255쪽 alpha 검사는 다른 원본 자원이므로 유지한다.
+위 양쪽 backend의 98% 조건과 review/overlay·아래 막대 경계 확대를 직접 확인했다.
+본문·그림 외곽은 유지되지만 그림 아래 막대의 23픽셀 차이는 아직 완료 대상이다.
+
+동일 테스트 소스를 동결 rlib에 연결한 실행에서 수정 전은 2건 실패(exit101), 수정 후는 2건
+통과(exit0)했다. `wmf-halftone-contract/wmf-window-test-result.json`과 각 실행 로그를 남겼다.
+이 standalone 실행을 정식 Cargo 자동 수집 실행으로 대신하지 않으며 해당 실행도 이어서 수행한다.
+
+### HALFTONE 면적 진단의 채택 보류
+
+원본의 HALFTONE4와 `META_DIBSTRETCHBLT`·창·목적 사각형을 읽어, 기존 공통 16.16 표본기의
+면적 재표본화와 명암·RGB555·JPEG 순서를 ignored `wmf-halftone-contract/area-source-stage/`에서
+분리 검증했다. 원본·PDF·좌표·평가 기준은 바꾸지 않았고 PDF 픽셀은 제품 입력에 사용하지 않았다.
+
+축소 체크무늬 내부는 면적+명암+JPEG에서 밝기 -50은 평균2·표준편차0, +50은 평균255·
+표준편차0이 되어 독립 Print의 관측값과 일치했다. 밝기0의 ordered+JPEG는 평균130.92765·
+표준편차0.52705로 독립 Print의 130.99868·0.20224와 여전히 다르다.
+원본 130쪽은 같은 물리 창에서 mean만 36픽셀, codec 포함은 38픽셀로 현재 제품의 23픽셀보다
+나빠졌다. 축소 대조군의 일부 수치 일치만으로 확대 그림 전체의 계약을 확정하지 않고 채택을 보류한다.
+첫 진단의 투명 RGB를 검정으로 남긴 오류는 제품의 비점유 흰색 규칙에 맞춰 수정하고 다시 실행했다.
+오류가 있던 최초 결과는 별도로 표시해 보존하며 위 수치는 수정 후 실행이다.
+
+다음 단계에서는 동일 원본의 실제 장치 크기·coverage 생성과 확대 표본 경계를 확인한다.
+소형 대조군은 전체 페이지 배치가 90% 미만이므로 정식 fixture로 등록하지 않는다.
+최종 목표는 전쪽 1,532조건 raw100%·0픽셀과 전체 검증·PR 준비이며 그대로 유지한다.
