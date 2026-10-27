@@ -346,6 +346,10 @@ pub struct TypesetEngine {
     format_next_stored_vpos: std::cell::Cell<Option<i32>>,
     render_normalization:
         std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
+    /// 미주 fit 판정이 scratch로 다시 그린 단 측정의 최근 결과 — 구역 진입 시 비운다.
+    /// 여러 판정이 같은 단과 후보를 연달아 다시 그리므로 입력 키가 같으면 결과를 재사용한다.
+    endnote_column_replays:
+        std::cell::RefCell<std::collections::VecDeque<(String, (f64, Option<f64>))>>,
 }
 
 /// 조판 중 현재 페이지/단 상태
@@ -3271,6 +3275,7 @@ impl TypesetEngine {
             render_normalization: std::sync::Arc::new(
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             ),
+            endnote_column_replays: Default::default(),
         }
     }
 
