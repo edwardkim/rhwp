@@ -487,9 +487,9 @@ pub struct Bullet {
     pub char_shape_id: u32,
     /// 글머리표 문자 (●, ■, ▶ 등)
     pub bullet_char: char,
-    /// 이미지 글머리표 여부 (0=문자, ID=이미지)
+    /// 그림 글머리표의 그림 ID (0=문자). HWP 의 여부 값과 `image_data[3]` 은 파서와 writer 가 맞춘다.
     pub image_bullet: i32,
-    /// 이미지 글머리 데이터 (대비, 밝기, 효과, ID)
+    /// 이미지 글머리 데이터 (대비, 밝기, 효과, ID). 그림은 `image_bullet` 이 가리킨다.
     pub image_data: [u8; 4],
     /// 체크 글머리표 문자
     pub check_bullet_char: char,

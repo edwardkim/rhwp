@@ -305,13 +305,13 @@ fn canonicalize_bin_item_refs(xml: &str, bin_data_items: &[content::PackageItem]
     canonicalize_bin_item_refs_where(xml, bin_data_items, |_| true)
 }
 
-/// header.xml 은 그림 참조(`img`: 테두리·배경의 그림 채우기, 그림 글머리표)만 정규화한다.
+/// header.xml 은 그림 참조(`img`/`image`: 테두리·배경의 그림 채우기, 그림 글머리표)만 정규화한다.
 /// 이 참조도 숫자만 뽑아 쓰므로 매니페스트 이름 번호가 위치와 어긋나면(rhwp 가 내보낸
 /// `image2`…`image12` 처럼 구멍이 있는 이름 포함) 다른 그림을 가리키거나 사라진다.
 /// 글꼴 참조는 매니페스트 ID 를 그대로 찾으므로(`resolve_embedded_font_references`) 두지 않는다.
 fn canonicalize_header_image_refs(xml: &str, bin_data_items: &[content::PackageItem]) -> String {
     canonicalize_bin_item_refs_where(xml, bin_data_items, |tag| {
-        tag.rsplit(':').next() == Some("img")
+        matches!(tag.rsplit(':').next(), Some("img" | "image"))
     })
 }
 

@@ -915,7 +915,18 @@ fn write_bullet<W: Write>(
 ) -> Result<(), SerializeError> {
     let id_s = (id + 1).to_string(); // 관찰: 1-based, ParaShape.numbering_id 참조와 정합
     let char_s = b.bullet_char.to_string();
-    let use_image = if b.image_bullet > 0 { "1" } else { "0" };
+    let image_ref = u16::try_from(b.image_bullet)
+        .ok()
+        .filter(|id| *id > 0)
+        .and_then(|id| ctx.resolve_bin_id(id));
+    // 그림을 찾지 못한 그림 글머리표는 문자 글머리표로 쓴다. `<hh:img>` 없이 useImage="1" 만
+    // 남기면 다시 읽을 때 1번 그림이 된다. 원본 HWPX 구간은 자기 `<hh:img>` 를 그대로 가진다.
+    let use_image = if b.raw_para_head.is_some() {
+        b.image_bullet > 0
+    } else {
+        image_ref.is_some()
+    };
+    let use_image = if use_image { "1" } else { "0" };
     // [#3028] checkedChar(체크 글머리표 문자) — 값이 있을 때만 방출한다.
     let has_checked_char = b.check_bullet_char != '\0';
     let checked_char_s = b.check_bullet_char.to_string();
@@ -935,12 +946,7 @@ fn write_bullet<W: Write>(
             .write_all(raw.as_bytes())
             .map_err(|e| SerializeError::XmlError(format!("bullet paraHead splice: {e}")))?;
     } else {
-        // 그림 글머리표는 `<hh:img>` 가 그림을 가리킨다. 없으면 다시 읽을 때 1번 그림이 된다.
-        if let Some(manifest_id) = u16::try_from(b.image_bullet)
-            .ok()
-            .filter(|id| *id > 0)
-            .and_then(|id| ctx.resolve_bin_id(id))
-        {
+        if let Some(manifest_id) = image_ref {
             empty_tag(w, "hh:img", &[("binaryItemIDRef", manifest_id)])?;
         }
         empty_tag(

@@ -898,13 +898,20 @@ fn parse_bullet(data: &[u8]) -> Result<Bullet, DocInfoError> {
     let bullet_char = char::from_u32(bullet_char_u16 as u32).unwrap_or('●');
 
     // 이미지 글머리표 여부 (INT32, 4바이트)
-    let image_bullet = r.read_i32().unwrap_or(0);
+    let image_flag = r.read_i32().unwrap_or(0);
 
-    // 이미지 글머리 데이터 (4바이트)
+    // 이미지 글머리 데이터 (4바이트: 대비, 밝기, 효과, 그림 ID)
     let mut image_data = [0u8; 4];
     for byte in &mut image_data {
         *byte = r.read_u8().unwrap_or(0);
     }
+    // 모델의 image_bullet 은 그림 ID 다(HWPX `<hh:img>` 와 같은 뜻). 한/글이 저장한 HWP 는
+    // 여부에 1, ID 에 실제 그림을 두므로(NewYear_s_Day: 1과 2) 여부를 ID 로 쓰면 1번 그림을 그린다.
+    let image_bullet = match (image_flag, image_data[3]) {
+        (0, _) => 0,
+        (flag, 0) => flag,
+        (_, id) => i32::from(id),
+    };
 
     // 체크 글머리표 문자 (WCHAR, 2바이트)
     let check_char_u16 = r.read_u16().unwrap_or(0);

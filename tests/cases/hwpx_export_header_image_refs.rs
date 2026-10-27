@@ -6,7 +6,9 @@
 //! - 내보낸 매니페스트 이름은 `image{저장 ID}`라 저장 ID에 구멍이 있으면 위치와 어긋난다
 //!   (148776468: `image2`…`image12`). 본문 참조는 읽을 때 위치 번호로 고치지만 header.xml은
 //!   이름의 숫자를 그대로 써서, 칸 배경 그림 둘 중 하나는 사라지고 하나는 본문 그림으로 바뀌었다.
-//! - HWP 그림 글머리표는 `useImage="1"`만 쓰고 `<hh:img>`를 쓰지 않아 다시 읽으면 1번 그림이 됐다.
+//! - HWP 그림 글머리표는 여부(1)와 그림 ID(이미지 글머리 데이터의 넷째 바이트)를 따로 둔다.
+//!   여부를 ID로 읽어 본문 그림을 글머리표로 그렸고, HWPX에는 `<hh:img>` 없이 `useImage="1"`만
+//!   써서 다시 읽으면 1번 그림이 됐다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::collections::hash_map::DefaultHasher;
@@ -22,12 +24,16 @@ fn parse(bytes: &[u8]) -> Document {
 }
 
 /// 렌더러와 같은 규칙으로 그림 바이트를 찾는다: 레코드 순번이 먼저, 범위 밖이면 저장 ID.
-fn image_hash(contents: &[BinDataContent], id: u16) -> Option<u64> {
+fn image_bytes(contents: &[BinDataContent], id: u16) -> Option<Vec<u8>> {
     let index = usize::from(id.checked_sub(1)?);
     let content = contents
         .get(index)
         .or_else(|| contents.iter().find(|content| content.id == id))?;
-    let bytes = content.data.load();
+    Some(content.data.load().to_vec())
+}
+
+fn image_hash(contents: &[BinDataContent], id: u16) -> Option<u64> {
+    let bytes = image_bytes(contents, id)?;
     if bytes.is_empty() {
         return None;
     }
@@ -110,8 +116,45 @@ fn hwpx_export_keeps_cell_background_images_with_sparse_storage_ids() {
     );
 }
 
-/// 그림 글머리표 하나(순번 1 → 저장 ID 4)와 같은 그림을 쓰는 본문 그림.
+/// 그림 글머리표 하나(그림 ID 2 → 저장 ID 3, 60×60 png)와 본문 그림 하나(gif).
 #[test]
 fn hwpx_export_keeps_hwp_image_bullet() {
     assert_hwpx_round_trip_keeps_images("samples/basic/NewYear_s_Day.hwp", 2);
+}
+
+/// 첫 그림 글머리표가 가리키는 그림의 바이트 길이.
+fn bullet_image_len(doc: &Document) -> Option<usize> {
+    let bullet = doc.doc_info.bullets.iter().find(|b| b.image_bullet != 0)?;
+    let id = u16::try_from(bullet.image_bullet).ok()?;
+    Some(image_bytes(&doc.bin_data_content, id)?.len())
+}
+
+/// HWP 그림 글머리표는 여부가 1이고 그림 ID는 이미지 글머리 데이터의 넷째 바이트다.
+/// 두 표본 모두 글머리표 그림은 다른 곳에서 쓰지 않는 60×60 png이고, 여부 1이 가리키는
+/// 1번 그림은 본문 그림(NewYear 16726바이트 gif, hwpspec 1688598바이트 bmp)이다.
+/// HWP → HWPX → HWP를 거쳐도 같은 그림을 가리켜야 한다.
+#[test]
+fn hwp_image_bullet_uses_image_id_across_hwpx_and_hwp() {
+    for (rel, bullet_len) in [
+        ("samples/basic/NewYear_s_Day.hwp", 4557),
+        ("samples/hwpspec.hwp", 1124),
+    ] {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
+        let source = parse(&std::fs::read(&path).expect("표본 읽기"));
+        assert_eq!(bullet_image_len(&source), Some(bullet_len), "{rel} 원본");
+
+        let hwpx = rhwp::serializer::hwpx::serialize_hwpx(&source).expect("HWPX 내보내기");
+        let from_hwpx = parse(&hwpx);
+        assert_eq!(bullet_image_len(&from_hwpx), Some(bullet_len), "{rel} HWPX");
+
+        let hwp = rhwp::document_core::DocumentCore::from_bytes(&hwpx)
+            .expect("HWPX 로드")
+            .export_hwp_with_adapter()
+            .expect("HWP 저장");
+        assert_eq!(
+            bullet_image_len(&parse(&hwp)),
+            Some(bullet_len),
+            "{rel} HWPX → HWP"
+        );
+    }
 }
