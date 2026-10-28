@@ -3838,8 +3838,7 @@ impl Renderer for SvgRenderer {
                 // 글자색으로 바꿔 그렸다(hwpx_sample2 12쪽: 정답지 검정 25개 vs
                 // rhwp 글자색 #082108 24개). 저장값을 그대로 쓴다.
                 let ul_color = color_to_svg(style.underline_color);
-                let top =
-                    crate::renderer::text_decoration::top_underline_geometry(style, font_size);
+                let top = crate::renderer::text_decoration::underline_geometry(style, font_size);
                 let multi =
                     crate::renderer::text_decoration::underline_multi_lines(style.underline_shape)
                         .filter(|_| style.underline != UnderlineType::Top);

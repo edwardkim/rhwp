@@ -2959,7 +2959,7 @@ impl Renderer for WebCanvasRenderer {
                 // 2.0px 은 큰 글꼴에서 디센더 관통). 선 모양 내부 기하는 캔버스 경로
                 // 현행 유지 — 오프셋만 SVG/Skia 와 같은 계약을 쓴다.
                 if let Some(top) =
-                    crate::renderer::text_decoration::top_underline_geometry(style, font_size)
+                    crate::renderer::text_decoration::underline_geometry(style, font_size)
                 {
                     self.draw_top_underline_canvas(x, y, x + text_width, &ul_color, &top, left);
                 } else {

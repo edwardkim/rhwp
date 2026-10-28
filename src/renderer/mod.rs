@@ -372,7 +372,7 @@ pub struct TextStyle {
     /// 실제 글줄의 최대 글꼴 크기. 위 밑줄은 비장식 글자도 포함한 이 크기를 따른다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_underline_font_size: Option<f64>,
-    /// 같은 원본 글자 모양 구간의 위 밑줄에서 이미 소비한 가로 길이.
+    /// 같은 원본 글자 모양 구간의 위 밑줄·아래 일점쇄선에서 이미 소비한 가로 길이.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_underline_phase: Option<f64>,
     /// Session-only glyph metrics; never part of document/style serialization.

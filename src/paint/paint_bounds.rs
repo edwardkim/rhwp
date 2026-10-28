@@ -946,7 +946,7 @@ fn decoration_bounds(
         );
     }
     let top_geometry = (kind == TextDecorationKind::Underline)
-        .then(|| crate::renderer::text_decoration::top_underline_geometry(&run.style, font_size))
+        .then(|| crate::renderer::text_decoration::underline_geometry(&run.style, font_size))
         .flatten();
     let end_pad = top_geometry
         .as_ref()
