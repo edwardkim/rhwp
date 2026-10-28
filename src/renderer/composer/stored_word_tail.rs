@@ -298,7 +298,9 @@ fn source_program_reproduces_stored_rows<S: crate::storage::Storage>(
     const STEP_HU: i32 = 15;
     let half_em = crate::renderer::px_to_hwpunit(em_px, dpi) / 2;
     let width = frame.horizontal.end - frame.horizontal.start;
-    if half_em <= 0 || width <= half_em {
+    // 줄이 하나뿐이면 재현할 저장 경계가 없다 — 이 판정은 줄 끝 경계에 대한 것이므로 한 줄
+    // 문단의 대체 투영(글자 전진폭)을 끄지 않는다(행정업무운영 편람 49쪽 «※한글 맞춤법» 셀).
+    if para.line_segs.len() < 2 || half_em <= 0 || width <= half_em {
         return Ok(false);
     }
     let full = line_breaking::layout_paragraph_in_frame_with_storage(
