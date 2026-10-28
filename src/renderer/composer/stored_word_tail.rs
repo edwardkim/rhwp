@@ -129,26 +129,29 @@ pub(crate) fn project_current_source_program_rows(
         return None;
     }
     let composed = super::compose_paragraph_in_context(para, styles);
-    let mut has_text = false;
-    let mut fallback_styles = styles.clone();
-    fallback_styles.source_program_projection_slots.clear();
+    // 문서 전체 스타일 집합 복사는 비싸다. 모든 글자 묶음이 대체 프로그램을
+    // 가진 것을 먼저 확인하고, 그때만 복사해 해당 글자 모양을 바꾼다.
+    let mut overrides = Vec::new();
     for run in composed.lines.iter().flat_map(|line| &line.runs) {
         if run.text.chars().all(char::is_whitespace) {
             continue;
         }
-        has_text = true;
         let fallback = styles
             .source_program_projection_slots
             .get(&(run.char_style_id, run.lang_index))?;
         if run.inserted_control_text {
             return None;
         }
-        *fallback_styles
-            .char_styles
-            .get_mut(run.char_style_id as usize)? = fallback.clone();
+        styles.char_styles.get(run.char_style_id as usize)?;
+        overrides.push((run.char_style_id as usize, fallback));
     }
-    if !has_text {
+    if overrides.is_empty() {
         return None;
+    }
+    let mut fallback_styles = styles.clone();
+    fallback_styles.source_program_projection_slots.clear();
+    for (id, fallback) in overrides {
+        fallback_styles.char_styles[id] = fallback.clone();
     }
     let first = para.line_segs.first()?.vertical_pos;
     let frame = box_.frame(first);
