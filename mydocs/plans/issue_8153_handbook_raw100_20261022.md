@@ -995,3 +995,211 @@ jobs8로6분23초·exit0이며 영향50쪽과 기존 대조군을 실행 중이�
 `ed630b398e` Native 전 766쪽 TSV와 정확 마스크 검사는 완료했다. 273쪽 하락이 남아
 PR 제출은 보류한다. 원본 결과·진단 사본·독립 Print의 압축 대조는
 [후속 조사 기록](issue_8153_bitmap_transfer_diagnosis_20261023.md)에 이어서 남긴다.
+
+### 130쪽 WMF 내부 차이에 대한 작업 범위
+
+사용자는 130쪽의 그림 내부 차이가 통 WMF 그림의 차이임을 확인한 뒤 추가 보정 없이
+넘어가도록 지시했다. 따라서 해당 차이를 100%로 해결했다고 주장하지 않고, 최종
+Native/fresh WASM TSV의 실제 측정값과 독립 Print 확대 판독 결과를 그대로 기록한다.
+이 지시는 다른 쪽의 확인, 기존 회귀의 보존, 전체 검증과 PR 준비 조건을 대체하지 않는다.
+
+### 회귀 테스트 첫머리 근거 범위
+
+사용자 지시에 따라 새로 추가한 검사뿐 아니라 이번 브랜치에서 수정한 회귀 테스트도
+첫 줄의 검사 유형과 해당 검사의 실제 측정 근거를 점검한다. 기준 커밋
+`9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`과 현재 작업 트리를 대조한 목록은
+ignored `output/pr-review/issue8153-handbook-raw100-20261022/`의
+`regression-all-changed-files-20261028.tsv`다. 실제 테스트와 공용 helper·삭제 파일을
+구분한다. 이후 사용자가 작업 범위를 두 편람 원본으로 한정했으므로 편람 외 HWP의
+검사·측정·보정은 진행하지 않는다. 기존 sample16 회귀 삭제는 사용자 지시대로 유지한다.
+최종 source의 Native/fresh WASM TSV, 해당 쪽 직접 판독 및 저장소 내 정식 근거가
+확정되기 전에는 이전 후보의 수치를 최종 수치로 쓰지 않는다. 주석 반영은 미완료다.
+
+이전 ignored suite manifest는 새 회귀 중 `issue_8153_centered_inline_picture`,
+`issue_8153_centered_picture_fill`, `issue_8153_empty_overlap_carrier`,
+`issue_8153_group_bitmap_clip`, `issue_8153_kopub_circled_symbol`을 아직 수집하지
+못했다. 이전 nextest 결과는 이 다섯 모듈을 포함하지 않는다. 2026-10-28에
+`node scripts/rust-test-suite-manifest.mjs --prepare`를 실행했고 다섯 모듈이 각각
+`tests/generated/regression_suite_{006,017,010,025,023}.rs`에 수집된 것을
+확인했다. 실제 suite 실행과 최종 전체 검증은 남아 있다. 파생 manifest·generated
+파일은 커밋하지 않는다.
+
+### 309쪽 Native 후퇴와 작업 범위 재조정
+
+`candidate-native-whole-after-regressions-20261028`에서 HWP 383쪽을 측정한 결과,
+309쪽이 이전 후보 raw 100.00%에서 98.17%(771 미대응 픽셀)로 하락했다.
+두 render tree에서 글상자 제목 줄이 x=127.6·폭749.9px에서 x=114.3·폭763.2px로
+바뀌어 가운데 정렬된 제목 전체가 약 6.7px 왼쪽으로 이동했다. 직전에 별도 PDF
+입력의 회귀를 처리하기 위해 적용한 글상자 문단 여백 중복 제거 후보가 편람에
+후퇴를 일으키는 경로이므로 그 후보를 제거했다. 사용자는 현재 두 편람 외 문서를
+다루지 않도록 범위를 지정했다. 309쪽 수정 후 재빌드·Native/fresh WASM 전체
+검증 전까지 후퇴가 해소됐다고 판단하지 않는다. 앞선 HWPX 전체 산출은 잘못된
+후보에서 진행 중이어서 중단했으며 최종 TSV로 사용하지 않는다.
+
+309쪽 기존 검사는 `부록`의 쪽 소유·뒤 빈 쪽을 보호하지만 가운데 제목의 글상자
+가로 원점을 보호하지 않는다. 독립 한컴 2024 HWP Print의 `pdftotext -bbox`에서
+`행정업무의` 첫 글자 xMin은 241.56pt(96dpi 기준 322.08px)이며 이전의 정상
+render tree는 322.0px이다. 후퇴한 후보는 315.3px이다. 최종 두 원본의 Native와
+fresh WASM이 각각 98% 이상인지, HWPX 독립 PDF의 같은 위치와 확대 판독을
+확인한 뒤 각 원본에 ±2px 기대값과 문구 소유·누락·중복 관계를 추가한다.
+두 독립 PDF의 동일 좌표와 앞선 양쪽 Native/fresh WASM 측정을 확인해
+`issue_8153_handbook_print_boundaries.rs`에 제목 원점·유일성 검사를 추가했다.
+기존 Native Skia 라이브러리를 사용한 독립 `rustc --test` 실행은 2건 모두
+통과했다(`p309-standalone-test-20261028.log`). 정식 suite 경로 재실행과 현재
+후보 fresh WASM 검증은 아직 남아 있다.
+좌표 측정 원본은 ignored output의
+`handbook-print-p309-bbox-20261028.html`이다.
+
+후퇴 후보를 제거한 소스의 Native Skia를 새로 빌드한 뒤 309쪽을 각각 독립
+한컴 2024 Print와 `scripts/visual_sweep.py` 96dpi로 비교했다. HWP와 HWPX 모두
+raw 100.00%이며 두 페이지의 독립 PDF 제목 xMin은 241.56pt(322.08px)다.
+단일 쪽 결과는 전체 TSV나 fresh WASM 결과를 대체하지 않는다. Native 로그는
+ignored output의 `p309-fix-handbook-hwp-native-20261028.log`,
+`p309-fix-handbook-hwpx-native-20261028.log`다. 전쪽과 fresh WASM은 진행 중이다.
+
+9쪽 직접 판독: 현재 후보의 항목 글자끼리는 겹치지 않지만 PDF와 overlay하면
+두 원점이 어긋나 두 벌처럼 보인다. 독립 HWP Print `pdftotext -bbox`에서
+첫 항목 `1.`의 xMin은 277.68pt(370.24px)이다. HWPX 독립 Print에서도
+같은 항목의 xMin은 277.68pt다. 두 후보의 render tree에서
+그 글줄 시작은 보정 적용 시 370.3px, 보정 제거 후 383.6px이다. 원본 HWPX
+section1의 해당 문단은 양쪽 정렬(`paraPrIDRef=1291`), 저장 가로 시작 1000HU,
+폭 20544HU이며 왼쪽·오른쪽 여백이 각 1000HU다. 309쪽 제목은 가운데 정렬
+(`paraPrIDRef=1318`), 시작 1000HU, 폭 58240HU, 양쪽 여백 각 1000HU다.
+같은 저장 단위와 독립 Print를 바탕으로 두 정렬의 프레임 끝과 실제 가용폭을
+추적한다. 9쪽도 raw 100.00%라는 점수만으로 시각 일치를 판정하지 않는다.
+
+HWP 5.0 revision 1.3의 표 62는 저장 LineSeg의 두 가로 값을 각각 컬럼에서의
+시작 위치와 세그먼트 폭으로 정의한다. 이 표만으로 문단 양쪽 여백의 중복 소비
+여부까지 확정할 수는 없으므로, 두 편람의 원본 글상자 프레임과 독립 Print를
+함께 대조한다. HWPX 원본에서 두 글상자는 모두 좌우 안쪽 여백이 283HU이며,
+9쪽은 묶음 안의 양쪽 정렬 문단이고 309쪽은 가운데 정렬 문단이다. 정렬 종류만을
+조건으로 특정 문서를 맞추지 않는다.
+
+HWPX의 원본 글상자 `lastWidth`와 안쪽 여백으로 계산한 내부 폭은 9쪽
+`23110−283−283=22544HU`, 309쪽 `60809−283−283=60243HU`다. 저장 줄의
+`horzpos+horzsize`는 각각 21544HU와 59240HU이고, 원본 문단 오른쪽 여백을
+더하면 각각 22544HU와 60240HU다. 309쪽은 3HU 차이가 있어 정수의 완전
+일치만을 조건으로 오른쪽 여백 소유를 판정할 수 없다. 실제 레이아웃 경로의
+변환과 반올림을 추적해 이 차이의 출처를 확인하기 전에는 허용치를 임의로
+정하거나 이 수치만으로 분기를 추가하지 않는다.
+309쪽 사각형의 원본 폭은 52141HU이고 저장 가로 배율은 1.166257이므로
+변환 폭은 약 60809.806HU다. `layout_textbox_content`는 변환된 도형 폭에서
+글상자 좌우 안쪽 여백을 빼고, `layout_composed_paragraph`는 저장 시작을 더한
+뒤 문단 여백을 다시 적용한다. 3HU 차이는 원본 글상자의 `lastWidth`와 저장
+줄의 관계에서 이미 나타나며, 배율 변환 후 실수 폭과는 약 3.806HU 차이다.
+배율 반올림만으로 그 차이가 생겼다는 근거는 아직 없다.
+HWP 5.0 표 90에서 글상자 `lastWidth`에 대응하는 값은 텍스트 문자열의 최대
+폭이며 보통 도형 너비와 같다고 설명한다. 항상 실제 배치 폭이라는 뜻은 아니므로
+위 원본 값의 산술 비교만으로 배치 폭을 확정하지 않는다.
+
+두 원본의 독립 PDF 좌표를 그대로 사용하는 임시 진단을 기존 Native Skia
+라이브러리에 연결해 실행했다. HWP·HWPX 309쪽은 통과했고 두 9쪽은 모두
+실제 383.613px 대 독립 Print 370.240px로 실패했다. 이는 수정 전 실행 증거이며,
+진단 코드와 로그는 `output/pr-review/issue8153-handbook-raw100-20261022/`의
+`textbox-origin-diagnostic-20261028.rs`, `textbox-origin-diagnostic-before-20261028.log`에
+있다. 정식 회귀 등록은 보정 및 해당 쪽의 양 경로 시각 검증 후 진행한다.
+
+저장 줄을 실제로 수용한 글상자는 시작·폭 자체가 줄 프레임이라는 공통 해석으로,
+`layout_composed_paragraph`에서 문단 좌우 여백을 다시 차감하지 않는 후보를 적용했다.
+줄 들여쓰기는 기존 경로대로 소비한다. 이는 아직 가설 검증 단계이며, 9쪽과
+309쪽의 위 진단·독립 Print와 두 편람 전쪽에서 부작용을 확인하기 전에는 유효한
+보정으로 판정하지 않는다. 309쪽에서 왼쪽만 제거하면 중심이 이동했던 반례를
+포함해 좌우를 함께 확인한다. Native 빌드 로그는 ignored output의
+`textbox-frame-candidate-native-build-20261028.log`다.
+
+HWPX 원본의 `drawText` 아래 저장 줄을 열거하면 243건 중 시작값이 0이 아닌
+것은 9쪽의 두 항목과 309쪽 제목 세 건이다. 시작값이 0이면서 오른쪽 문단 여백과
+들여쓰기가 각각 1000HU인 줄도 15건 발견했다. 현재 후보는 이 줄의 가용 폭에도
+영향을 줄 수 있으므로 27·183·251·277쪽의 장 간지와 전쪽 출력을 반례로 함께
+확인한다. 원본 XML의 열거는 실행 분기 진입이나 출력 변화의 증거가 아니며,
+목록은 ignored output의 `handbook-hwpx-textbox-stored-frames-20261028.tsv`다.
+
+후보 Native 빌드 뒤 같은 임시 진단을 새 라이브러리로 다시 실행해 두 원본의
+9쪽·309쪽 네 검사가 모두 통과했다. 빌드와 진단 로그는 각각
+`textbox-frame-candidate-native-build-20261028.log`,
+`textbox-origin-diagnostic-after-20261028.log`다. 좌표 통과는 시각 판독과
+전쪽 비교를 대신하지 않는다. HWP와 HWPX의 선택한
+9·27·59·123·130·183·251·277·309쪽 Native Visual Sweep은 완료됐으며,
+수정 전후 raw가 모두 같다(130쪽 99.96463%, 나머지 100%). HWP 렌더 픽셀은
+9·59·123쪽에서
+바뀌었다. 독립 PDF와의 RGB 절대 오차 합은 변경 영역에서 9쪽 1407444→451470,
+59·123쪽 각각 123942→27591이다. 이는 변경 영역의 보조 비교이지 전쪽 raw나
+직접 판독을 대신하지 않는다. 해당 좌표와 값은 ignored output의
+`textbox-frame-focus-hwp-rgb-before-after-20261028.json`에 기록했다.
+최종 후보의 Native 전쪽 산출과 fresh WASM 빌드를 시작했다. 두 원본의 전쪽
+변경 목록은 `compare-textbox-frame-native-whole-20261028.py`로 산출하며,
+이전 후보와 원본·PDF·DPI가 같은 조건에서 하락 여부를 확인한다.
+
+9쪽 두 항목의 독립 Print 시작 xMin은 두 원본 모두 277.68pt이고, 후보 Native
+render tree에서는 각각 370.3px이다. 두 항목의 소유·순서와 각각의 독립 좌표를
+정식 회귀로 보호할 근거다. 후보 fresh WASM 전쪽 및 직접 판독이 끝난 뒤 등록한다.
+
+HWP Native 383쪽의 변경 전후 RGB를 전수 비교한 결과 146쪽이 달라졌다.
+그 146쪽 각각의 변경된 사각 영역을 독립 PDF와 직접 RGB 절대 오차 합으로
+비교하면 146쪽 모두 오차가 감소했고 증가한 쪽은 없다. 수치와 영역은 ignored
+output의 `textbox-frame-hwp-native-changed-region-pdf-rgb-20261028.json`에 있다.
+이 보조 비교는 전쪽 raw TSV·의미 판독이나 HWPX·WASM 검증을 대신하지 않는다.
+HWPX도 383쪽 중 RGB가 달라진 146쪽 모두 변경 영역의 독립 PDF 대비 오차가
+감소했다. 두 원본 전쪽 raw와 미대응 픽셀 수의 변동은 모두 0쪽이다.
+Native 원본 TSV와 9쪽 overlay는 정식
+`mydocs/pr/assets/issue_8153/handbook-validation-20261028/`에 보존했다.
+fresh WASM과 첫머리 측정 주석은 아직 완료되지 않았다.
+편람 회귀 45개 파일은 검사 유형을 첫 줄에 분류했고 주석 편집 후 해당 파일과
+`issue_7032_cell_empty_paragraph_flow.rs`의 `rustfmt --check`가 통과했다. 이는
+측정값·정식 근거가 포함된 첫머리 주석의 완료나 회귀 실행을 뜻하지 않는다.
+
+### 2026-10-29 측정 근거와 base 검증 진행 상태
+
+위의 진행 중이라는 표현은 해당 시점의 기록이다. 후보의 두 원본 각각 전 383쪽
+Native와 fresh WASM 측정은 완료했다. Native 최저 raw는 두 원본 모두 99.96463%,
+fresh WASM 최저는 각각 99.96402%이며 모두 130쪽이다. TSV의 둘째 자리 표시는
+99.96%이므로 실제 raw 100%와 구분한다. 사용자는 130쪽 통 WMF 내부의 잔여 차이를
+추가 보정하지 않도록 지시했다. 후보 증거와 원본·PDF 해시는
+`mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md`에 정리했다.
+
+기존 45개 편람 회귀 파일의 첫머리에는 검사 유형과 실제 Native·fresh WASM 측정값을
+넣었다. 합성 입력 검사는 편람 수치를 합성 입력 자체의 측정으로 오인하지 않도록
+명시했다. 핵심 쪽 값 118개와 각 원본 전쪽 최저값을 측정 원본과 대조해 불일치가
+없었다. 문서 주석 44개 파일과 정식 증거는 `d0b31da1c6`에서 커밋했다. 신규
+9·309쪽 좌표 검사를 포함한 나머지 경계 파일은 회귀 실행과 제품 코드 검증 뒤
+함께 반영한다.
+
+고정 base `9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`의 전쪽 Native는
+두 원본 모두 383쪽으로, 반올림 전 raw 기준 후보 대비 하락이 없었다. base fresh
+WASM은 별도 빌드 후 전쪽 비교를 수행 중이며, 이 과정과 최종 회귀·필수 검증의
+종료 결과를 확인하기 전까지 PR 준비 완료로 판정하지 않는다.
+
+### 2026-10-29 별도 검증 worktree와 기준 WASM 재실행
+
+기준 `9418ed0c7c`의 최적화 WASM은 빌드 종료 코드 0이며 SHA-256은
+`5fd7d45d8c3484abf58952d28d4954b95a1eee6dd7c471068a66b5d88a2bfb31`이다.
+첫 전쪽 실행은 예전 base Native export에 `fontEnvironment` 필드가 없어 출력 전에
+중단됐다. base Native 명령에 전달한 환경과 후보 WASM 환경이 동일함을 확인해
+그 파일을 base WASM에 전달하고 별도 디렉터리에서 재실행했다. HWP 전 383쪽
+raw는 후보 대비 하락 0·개선 242·동일 141쪽이며 HWPX는 진행 중이다.
+
+검증 worktree는 `output/pr-review/issue8153-handbook-raw100-20261022/` 아래의
+`validation-worktree-c91a-20261029`다. 여유 공간을 보존하기 위해 대용량 정식
+`mydocs/pr/assets`는 복제하지 않고 본 작업 공간의 같은 경로를 참조한다. 그 외
+소스·fixture는 checkout했고 실제 미커밋 diff를 적용했다. root와 검증 worktree의
+제품·빌드 source diff SHA-256은 모두
+`93f11d74f272682aede1a833c9cc301a0c86820c44b3a129d3c365ff0892d5d3`이며,
+변경된 테스트 파일 10개의 바이트도 모두 일치한다. 이후 정식 증거 추가 커밋은
+제품·테스트를 바꾸지 않았다. 자동 생성 suite의 `--prepare`와 고정 base 기준
+`--check`는 통과했다. 전체 checkout은 공간 사용량을 확인하고 중단했으며 Git이
+미완성 worktree를 정리했다. 핵심 회귀와 전체 회귀는 종료 결과 확인 전이다.
+
+고정 base의 HWPX WASM 전 383쪽도 완료했다. 반올림 전 raw 기준 후보 대비
+하락 0·개선 252·동일 131쪽이다. HWP와 HWPX의 base Native/fresh WASM TSV는
+모두 `mydocs/pr/assets/issue_8153/handbook-validation-20261028/base/`에 보존했다.
+46·148·327·368·373쪽의 후보 review·overlay는 두 원본·두 출력 경로 각각
+기존 PNG와 PDF PNG로 만들었다. 개별 확대 판독 범위와 남은 획 차이는 정식
+증거 README에 원본·출력 경로별로 기록하며, 생성 자체를 전 영역 판독으로
+취급하지 않는다.
+
+별도 검증 worktree의 `issue_8153_handbook_print_boundaries`는 HWP·HWPX 각 1건,
+총 2건이 통과했다. 동일 후보 소스와 테스트로 전체 `cargo nextest run --tests
+--no-fail-fast`를 시작했으며 최종 summary 확인 전이다. 핵심 검사의 글상자 저장
+프레임 보정과 9·309쪽 검사는 `8a4420b371`, 독립 Print 간격 검사의 유형·허용
+오차 정리는 `2aa2e54ee0`에 단계적으로 커밋했다. 전체 검증 대상에는 아직 작업
+트리에 남은 다른 변경도 포함되므로 이를 두 커밋만의 단독 검증으로 표현하지 않는다.
