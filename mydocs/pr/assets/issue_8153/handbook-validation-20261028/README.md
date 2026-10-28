@@ -30,6 +30,16 @@ Cargo 설정과 검증 스크립트의 제품·빌드 입력은 변경하지 않
 픽셀 수는 두 원본 모두 변동이 없었다. 130쪽 WMF 내부 잔여는 사용자의 지시에
 따라 추가 보정하지 않는다.
 
+두 자리 TSV에서 100.00%로 보이더라도 반올림 전에는 미대응 픽셀이 있을 수 있다.
+이 측정 후보의 미대응 페이지는 두 원본에서 동일하며, Native와 fresh WASM을
+각각 구분하면 다음과 같다. 이후 제품 코드가 바뀐 후보의 측정 결과는 아니다.
+
+| 쪽 | Native raw | Native 미대응 픽셀 | fresh WASM raw | WASM 미대응 픽셀 |
+| ---: | ---: | ---: | ---: | ---: |
+| 43 | 99.99609% | 4 | 99.99601% | 4 |
+| 130 | 99.96463% | 23 | 99.96402% | 23 |
+| 141 | 99.99911% | 1 | 99.99911% | 1 |
+
 | 원본 | Native 전쪽 TSV | 9쪽 Native | 309쪽 Native |
 | --- | --- | --- | --- |
 | HWP | [TSV](native/handbook-hwp.tsv) | [review](native/handbook-hwp-p009-review.png) · [overlay](native/handbook-hwp-p009-overlay.png) | [review](native/handbook-hwp-p309-review.png) · [overlay](native/handbook-hwp-p309-overlay.png) |
