@@ -89,3 +89,8 @@ base 최저 raw는 91.89462%다. 두 원본의 base fresh WASM은 진행 중이�
 차이가 보인다. 이는 해당 영역의 Native 판독이며 HWPX·fresh WASM이나 다른 쪽의
 확대 판독을 대신하지 않는다. 원본 페이지의 raw는 100.00000%지만 실루엣 지표가
 이 농도 차이까지 동일함을 뜻하지는 않는다.
+
+같은 영역의 HWPX [독립 Print와 fresh WASM 확대 비교](wasm/handbook-hwpx-p373-text-review.png)에서도
+원문·줄바꿈이 대응하며 획 농도·가장자리 차이가 보인다. 이 판독은 HWPX의 해당
+영역과 fresh WASM에 한정한다. 두 이미지는 각각 해당 원본의 PDF 및 후보 PNG에서
+같은 좌표를 잘라 2배로 표시했다.
