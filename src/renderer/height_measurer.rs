@@ -6019,10 +6019,12 @@ pub const BLOCK_UNIT_MAX_ROWS: usize = 3;
 /// 12.07px 로 푼 뒤, 「미술」(행 184~187, 151.36px > 행 합 139.30px)의 부족분 12.06px 가 행 187 에
 /// 다시 더해졌다. 행 191~192 칸(37.09px)의 제약이 49.15px 로 깨졌고, 한/글 정본은 행 191+192 를
 /// 37.1px 로 그린다(글줄 위치 실측, #7685).
+/// 반복 풀이만으로 모든 제약 행을 정했으면 `true` 를 돌려준다. `false` 면 남은 행을
+/// 제약 잔여로 고르게 나눴다.
 pub(crate) fn solve_rowspan_row_heights(
     constraints: &[(usize, usize, f64)],
     row_heights: &mut [f64],
-) {
+) -> bool {
     let add_declared_overflow = |row_heights: &mut [f64], only_known: bool| -> bool {
         let mut changed = false;
         for &(r, span, total_h) in constraints {
@@ -6082,6 +6084,9 @@ pub(crate) fn solve_rowspan_row_heights(
             break;
         }
     }
+    let resolved = constraints
+        .iter()
+        .all(|&(r, span, _)| (r..r + span).all(|i| row_heights[i] != 0.0));
     for &(r, span, total_h) in constraints {
         let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
         let unknown_rows: Vec<usize> = (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
@@ -6097,6 +6102,7 @@ pub(crate) fn solve_rowspan_row_heights(
     // 가산한다 — 한글 관례 실측(연결맵 244×10 r183: c3 rs=4 선언 217.8px vs 행합 201.3px, 한글 행
     // 괘선 실측 r183 = 39.8+16.5 = 56.3px 정확 일치). 콘텐츠 기반 확장과 별개의 선언 기반 규칙이다.
     add_declared_overflow(row_heights, false);
+    resolved
 }
 
 /// 표의 모든 셀을 검사하여 rowspan 묶음 블록 경계를 산출한다 (Task #398).
