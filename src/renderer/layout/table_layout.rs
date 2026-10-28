@@ -8497,7 +8497,7 @@ impl LayoutEngine {
                             };
                             let anchor_y =
                                 super::table_inline_picture_origin::rendered_overlay_picture_origin(
-                                    cell_node, para, ctrl_idx, section_index, cp_idx,
+                                    cell_node, para, ctrl_idx, section_index, cp_idx, anchor_y,
                                 ).unwrap_or(anchor_y);
                             let unrestricted_take_place_cell_float =
                                 crate::renderer::float_placement::unrestricted_cell_float(

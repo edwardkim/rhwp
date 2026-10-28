@@ -25,6 +25,7 @@ pub(super) fn rendered_overlay_picture_origin(
     control_index: usize,
     section_index: usize,
     para_index: usize,
+    paragraph_anchor_y: f64,
 ) -> Option<f64> {
     use crate::model::control::Control;
     use crate::model::shape::{TextWrap, VertAlign, VertRelTo};
@@ -47,7 +48,12 @@ pub(super) fn rendered_overlay_picture_origin(
     }
     let owner =
         *crate::renderer::float_placement::stored_control_line_indices(para)?.get(control_index)?;
-    rendered_line_origin(cell_node, section_index, para_index, owner)
+    // 그림의 PARA 기준 원점은 문단 앵커다. 첫 줄의 셀 내 위치까지 더하면
+    // 문단 상단과 첫 글줄 사이 여백을 그림에 중복 적용한다. 소유 줄의
+    // 첫 줄 대비 이동량만 기존 문단 앵커에 반영한다.
+    let first = rendered_line_origin(cell_node, section_index, para_index, 0)?;
+    let owned = rendered_line_origin(cell_node, section_index, para_index, owner)?;
+    Some(paragraph_anchor_y + owned - first)
 }
 
 fn rendered_line_origin(
