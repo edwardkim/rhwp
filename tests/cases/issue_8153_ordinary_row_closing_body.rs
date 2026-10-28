@@ -1,4 +1,10 @@
-//! #8153: 문단 사이의 로컬 좌표 재시작이 표 뒤 본문을 밀지 않아야 한다.
+//! 관계형·고정형: 문단 사이의 로컬 좌표 재시작과 표 뒤 본문 위치를 보호한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 223쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 223쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 같은 원본·독립 Print의 223쪽은 Native/표준 최적화 fresh WASM 모두 raw 100%다.
 //! 근거: mydocs/plans/issue_8153_ordinary_row_remainder_20261027.md
 //! 글꼴 공급이나 Native paint 없이 원본 저장 줄의 소유·후속 본문 위치를 검사한다.

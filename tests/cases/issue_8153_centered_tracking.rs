@@ -1,4 +1,10 @@
-//! #8153: 발신명의의 실제 glyph 원점과 셀 소유를 독립 Print로 보호한다.
+//! 관계형·고정형: 발신명의의 실제 glyph 원점과 셀 소유를 독립 Print로 보호한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 179쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 179쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 두 원본 전쪽 Native/fresh WASM 최저 98% 이상인 조건에서 정한 ±2px 기대값이다.
 //! 근거: mydocs/plans/issue_8153_positive_terminal_tracking_20261025.md.
 #![cfg(not(target_arch = "wasm32"))]

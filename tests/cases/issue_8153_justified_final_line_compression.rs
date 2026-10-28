@@ -1,4 +1,12 @@
-//! #8153: Justify의 마지막 줄도 같은 공백 한계·잔여 글자 사이 압축을 소비한다.
+//! 관계형: Justify의 마지막 줄도 같은 공백 한계·잔여 글자 사이 압축을 소비한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 148쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 327쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 148쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 327쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 독립 2024 Print의 148·327쪽에서 관측한 글리프/공백 전진 구간이다.
 //! 절대 화면 좌표 핀이 아니며 원본 내용·소유와 실제 positions를 함께 검사한다.
 #![cfg(not(target_arch = "wasm32"))]

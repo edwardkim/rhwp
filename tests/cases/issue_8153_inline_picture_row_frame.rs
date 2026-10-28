@@ -1,4 +1,10 @@
-//! #8153: 원본 그림 줄의 상자와 셀 안 여백을 같은 행에서 소비한다.
+//! 관계형·고정형: 원본 그림 줄의 상자와 셀 안 여백을 같은 행에서 소비한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 86쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 86쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 근거: issue_8153_inline_picture_row_frame_20261026.md, 독립 2024 Print 86쪽.
 #![cfg(not(target_arch = "wasm32"))]
 

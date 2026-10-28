@@ -1,4 +1,11 @@
-//! #8153: 독립 Print 용지 관측과 공개 표본 계산을 실제 제품 함수에서 검사한다.
+//! 관계형: 독립 Print 용지 관측과 공개 표본 계산을 실제 제품 함수에서 검사한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
+//! HWP 163쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 163쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 제품 소스의 cfg(test) 증설 없이 정식 suite 자동 수집 경로를 사용한다.
 #[allow(dead_code)]
 #[path = "../../src/paint/print_paper.rs"]

@@ -1,4 +1,10 @@
-//! #8153: 그림의 독립 Print 색·마스크, 원본 소유와 물리 경계를 보호한다.
+//! 관계형·고정형: 그림의 독립 Print 색·마스크, 원본 소유와 물리 경계를 보호한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 255쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 255쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 두 원본 255쪽은 Native b2b / fresh DEV WASM 88d에서 raw 100%·미대응 0이다.
 //! 원본/PDF SHA·96dpi·확대 판독·표본 경로는
 //! `mydocs/plans/issue_8153_print_alpha_mask_20261026.md`에 연결한다.

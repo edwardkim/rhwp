@@ -1,4 +1,10 @@
-//! #8153: 원본 자간은 숫자 윤곽을 늘리지 않고 문단 끝 밑줄에 남지 않는다.
+//! 관계형: 원본 자간은 숫자 윤곽을 늘리지 않고 문단 끝 밑줄에 남지 않는다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 111쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 111쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 독립 Print 111쪽의 숫자 메트릭과 밑줄을 대조한다. 전체 쪽수·소유는 보존한다.
 #![cfg(not(target_arch = "wasm32"))]
 

@@ -1,4 +1,10 @@
-// #8153: 독립 2024 Print의 그림 틀 모서리와 닫힘 선을 실제 Native 출력으로 보호한다.
+//! 관계형·고정형: 독립 2024 Print의 그림 틀 모서리와 닫힘 선을 보호한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 239쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 239쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 // 96dpi CSS px, 잉크 임계값 232, 독립 PDF 점의 허용 오차 ±2px다.
 // 근거와 Native/fresh WASM TSV는 issue_8153_mixed_axis_bitmap_sampling_20261026.md 참조.
 // tests/cases의 정식 suite에서 native-skia feature로 실행한다.

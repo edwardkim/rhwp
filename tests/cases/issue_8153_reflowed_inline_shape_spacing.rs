@@ -1,4 +1,10 @@
-//! #8153: 재조판한 TAC 글상자 줄의 점유와 음수 간격을 보존한다.
+//! 관계형·고정형: 재조판한 TAC 글상자 줄의 점유와 음수 간격을 보존한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 289쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 289쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 두 원본 289쪽의 Native/fresh DEV WASM raw 100%·미대응 0 및 독립 Print는
 //! `mydocs/plans/issue_8153_reflowed_inline_shape_line_20261027.md`에 연결한다.
 #![cfg(not(target_arch = "wasm32"))]

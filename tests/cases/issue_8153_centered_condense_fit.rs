@@ -1,4 +1,10 @@
-//! #8153: 가운데 정렬의 원래 글자·공백 fit을 공백 전용 압축으로 바꾸지 않는다.
+//! 관계형: 가운데 정렬의 원래 글자·공백 fit을 공백 전용 압축으로 바꾸지 않는다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 46쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 46쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 두 원본 46쪽의 독립 Print 전진과 같은 글줄의 원문·소유를 보호한다.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::{

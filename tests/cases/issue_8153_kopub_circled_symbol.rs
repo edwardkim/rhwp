@@ -1,4 +1,10 @@
-//! #8153: 원문 기호의 공급 프로그램 전진폭과 뒤 글자 소유를 보존한다.
+//! 관계형: 원문 기호의 공급 프로그램 전진폭과 뒤 글자 소유를 보존한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 59쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 59쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 독립 Print 및 KoPub 6개 프로그램에서 각 기호의 전진은 900/1000em이다.
 //! HWP 5.0 표 33의 글자 크기 1000HU·장평 99%를 원본에서 확인했다.
 #![cfg(not(target_arch = "wasm32"))]

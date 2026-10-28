@@ -1,4 +1,10 @@
-//! #8153: 같은 런의 오른쪽 탭은 명시적 정지와 쪽번호 순서를 보존한다.
+//! 관계형: 같은 런의 오른쪽 탭은 명시적 정지와 쪽번호 순서를 보존한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 280쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 280쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! HWP5 §4.2.7 표 36·37과 독립 Print 280쪽, 관련 계획의 원본 관측 참조.
 #![cfg(not(target_arch = "wasm32"))]
 

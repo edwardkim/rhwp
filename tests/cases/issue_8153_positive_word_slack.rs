@@ -1,4 +1,10 @@
-//! #8153: 낱말을 넓히는 줄을 수치 잔여 때문에 글자 압축으로 바꾸지 않는다.
+//! 관계형·고정형: 낱말을 넓히는 줄과 독립 Print의 단어 원점을 보호한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 136쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 136쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 독립 2024 Print 136쪽, 96dpi의 단어 원점과 저장 줄·셀의 내용 순서를 보호한다.
 //! 양쪽 원본 Native/fresh DEV WASM raw 100%·미대응 0픽셀과 수정 전 FAIL/후 PASS는
 //! `mydocs/plans/issue_8153_justify_float_residual_20261027.md`에 연결한다.

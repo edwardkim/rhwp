@@ -1,4 +1,10 @@
-//! #8153: 공백 최소값으로 들어가는 저장 줄은 원 글자·들여쓰기 전진을 압축하지 않는다.
+//! 관계형: 공백 최소값으로 들어가는 저장 줄의 원 글자·들여쓰기 전진을 보호한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 200쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 200쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 같은 원본·글자모양의 짧은 정상 줄을 대조군으로 사용한다. 절대 쪽 좌표 핀이 아니다.
 #![cfg(not(target_arch = "wasm32"))]
 

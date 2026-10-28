@@ -1,4 +1,12 @@
-//! #8153: 저장 쪽 재시작 앞의 조각은 빈 셀과 빈 물리 띠도 함께 소유한다.
+//! 관계형·고정형: 저장 쪽 재시작 앞의 조각은 빈 셀과 빈 물리 띠도 소유한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 314쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 315쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 314쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 315쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 314쪽 독립 Print 세로선 끝 483.197998pt를 96dpi에서 ±2px로 대조한다.
 //! 근거: mydocs/plans/issue_8153_fragment_physical_band_20261025.md.
 #![cfg(not(target_arch = "wasm32"))]

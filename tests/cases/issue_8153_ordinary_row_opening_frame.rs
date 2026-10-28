@@ -1,4 +1,16 @@
-//! #8153: 여러 저장 프레임을 가진 일반 행의 첫 물리 상자와 내용 소유.
+//! 관계형·고정형: 여러 저장 프레임을 가진 일반 행의 첫 물리 상자와 내용 소유.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 316쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 326쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 344쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 352쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 316쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 326쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 344쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 352쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 독립 근거: issue_8153_ordinary_row_opening_frame_20261026.md.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::{model::control::Control, paint::RenderProfile, DocumentCore};

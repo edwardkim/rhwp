@@ -1,6 +1,12 @@
-//! #8153: 선언 크기의 두 축 재표본화·이진 coverage·원본 소유·독립 Print 경계.
+//! 관계형·고정형: 선언 크기의 두 축 재표본화·원본 소유·독립 Print 경계.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 144쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 144쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! Native 0fcbd1e42e / 표준 최적화 fresh WASM 70e060edad의 두 원본 144쪽 raw 100%·미대응 0.
-//! 같은 런의 두 원본 전쪽 최저는 Native 99.96446%, WASM 99.96402%다.
+//! 이 이전 런의 두 원본 전쪽 최저는 Native 99.96446%, WASM 99.96402%다.
 //! 원본/PDF SHA·96dpi·TSV·확대 판독·독립 정수 경계 대조는
 //! mydocs/plans/issue_8153_picture_device_stage_20261027.md에 연결한다.
 #![cfg(not(target_arch = "wasm32"))]

@@ -1,3 +1,9 @@
+//! 관계형·고정형: Print의 소수 원점과 Screen 격자를 합성 glyph로 대조한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 #![cfg(feature = "native-skia")]
 
 //! #8153: Print의 소수 원점과 Screen의 기존 격자를 실제 Native raster로 대조한다.

@@ -1,4 +1,10 @@
-//! #8153: 결측 U+2024의 실제 공급자 메트릭을 쓰고 원문·공백·기존 glyph hit를 보존한다.
+//! 관계형: 결측 U+2024의 실제 공급자 메트릭과 원문·공백·기존 glyph hit를 보존한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 368쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 368쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 독립 Print 368쪽의 점 2.07935px·공백 6.56px와 HBATANG 178/1024em이 근거다.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::{

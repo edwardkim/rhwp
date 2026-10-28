@@ -1,5 +1,15 @@
-//! #8153: 내용 프레임 수와 분리해 일반 행의 물리 잔여·다음 컷을 보존한다.
-//! 두 편람 전쪽 Native/fresh 표준 WASM 최저 99.96446/99.96402%와 독립 Print 근거는
+//! 관계형·고정형: 내용 프레임 수와 분리해 일반 행의 물리 잔여·다음 컷을 보존한다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 317쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 327쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 353쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 317쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 327쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 353쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 이전 후보의 두 편람 전쪽 Native/fresh 표준 WASM 최저 99.96446/99.96402%와 독립 Print 근거는
 //! mydocs/plans/issue_8153_ordinary_row_remainder_20261027.md에 연결한다.
 #![cfg(not(target_arch = "wasm32"))]
 

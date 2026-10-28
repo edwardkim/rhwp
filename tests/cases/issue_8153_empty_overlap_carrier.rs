@@ -1,4 +1,10 @@
-//! #8153: 빈 글자 겹침의 캐리어는 한 프레임을 차지하지만 문자를 그리지 않는다.
+//! 관계형: 빈 글자 겹침의 캐리어는 한 프레임을 차지하지만 문자를 그리지 않는다.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 59쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 59쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 한컴 2024 Print와 원본 HWP/HWPX의 59쪽 96dpi Native/fresh WASM raw는 98% 이상이다.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::{
