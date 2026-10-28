@@ -1572,6 +1572,15 @@ indexed 18개 모두 `printArea`였으므로 색 확장 여부와 `catmullRom` �
 코드가 변경됐으므로 과거 payload 대조를 현재 제품의 바이트 동일성으로 승격하지
 않는다.
 
+이후 분리 커밋 `ffae46e8a6`의 Native 라이브러리로 두 합성 입력을 직접
+실행했다. 2024 Print의 예약색 6개·indexed 12개는 모두 `printArea`이며,
+저장된 독립 Print JPEG와 같은 decoder로 비교한 RGB 전 픽셀이 일치한다.
+2022 Print와 두 Screen 경로는 `imageReconstruction` 표기가 없다. 실행 바이너리·
+라이브러리의 SHA-256과 전체 결과는 ignored `palette-profile-ffae46-diagnostic-20261029/`과
+`diagnose-palette-profile-producer-20261029.sha256`에 남겼다. 이는 payload와
+프로필의 직접 근거이며 해당 입력의 현재 Native·fresh WASM 시각 재검증이나
+기존 검사 2건의 수정 후 통과를 대신하지 않는다.
+
 `#501` 원본과 다른 경로에 있는 같은 이름의 HWP는 파일 SHA-256이 다르지만,
 두 번째 쪽에서 추출한 텍스트는 완전히 같다. 독립 PDF의 같은 쪽에도 `8,491`,
 `8,667` 등 대응 본문이 있다. 텍스트 일치만으로 PDF가 두 파일 모두의 정확한
@@ -1599,3 +1608,6 @@ indexed 18개 모두 `printArea`였으므로 색 확장 여부와 `catmullRom` �
 HWPX Native도 이후 전 383쪽을 완료했다. 두 형식 모두 이전 후보 대비 raw와
 미대응 픽셀 수가 달라진 쪽은 0쪽이고 최저 raw는 99.96463%다. 입력·독립 PDF와
 각 PDF 페이지 이미지 SHA-256을 확인했다. fresh WASM은 아직 빌드 중이다.
+두 Native TSV는 기존 정식 `handbook-validation-20261028/native/`의 각 원문과
+바이트까지 같아 중복 복사하지 않는다. 정식 증거의 제품 소스와 최신 커밋
+대응은 fresh WASM과 최종 재검증까지 마친 뒤 함께 갱신한다.
