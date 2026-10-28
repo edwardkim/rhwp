@@ -120,7 +120,7 @@ fn first_meaningful_line_via_export_text(rel: &str) -> Option<String> {
     None
 }
 
-// ── info --json title ──────────────────────────────────────────────────────
+// ── info --json 제목 ──────────────────────────────────────────────────────
 
 #[test]
 fn info_json_title_is_cover_first_meaningful_line() {
@@ -162,7 +162,7 @@ fn info_json_title_matches_export_text_first_line() {
     }
 }
 
-// ── batch info --json title ────────────────────────────────────────────────
+// ── batch info --json 제목 ────────────────────────────────────────────────
 
 #[test]
 fn batch_info_records_carry_title() {

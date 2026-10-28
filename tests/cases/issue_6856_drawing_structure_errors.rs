@@ -1,4 +1,4 @@
-//! Deliberately incomplete parser inputs, not valid Hancom samples.
+//! 유효한 한컴 문서가 아닌 의도적으로 불완전한 파서 입력이다.
 use rhwp::model::shape::{GroupShape, RectangleShape, ShapeObject, TextBox};
 use rhwp::model::{control::Control, document::Section, paragraph::Paragraph};
 use rhwp::parser::{
@@ -137,8 +137,8 @@ fn hwp_container(section: &[u8]) -> Vec<u8> {
     cfb.into_inner().into_inner()
 }
 
-// Same unused FAT-tail corruption strategy as the existing parser budget tests:
-// standard CFB rejects duplicate pointees, lenient CFB can still read real chains.
+// 기존 파서 예산 검사와 같은 미사용 FAT 꼬리 손상 방식이다.
+// 표준 CFB는 중복 참조를 거부하지만 관대한 CFB는 실제 체인을 읽을 수 있다.
 fn force_lenient(mut bytes: Vec<u8>) -> Vec<u8> {
     let sector_size = 1usize << u16::from_le_bytes(bytes[30..32].try_into().unwrap());
     let physical = (bytes.len() - 512) / sector_size;

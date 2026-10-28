@@ -107,9 +107,9 @@ fn font_trace_profiles_follow_source_ownership_and_preserve_font_decisions() {
     let with = traces
         .get(feature["withSubstFont"].as_str().expect("with subst id"))
         .expect("with subst trace");
-    // #8109: the HWP counterpart has standard FACE_NAME alternatives too.
-    // Independent DocInfo bytes show 217 alternative records; the exact-face
-    // fixture has none. Keep this metadata contrast separate from render pins.
+    // #8109: 대응하는 HWP에도 표준 FACE_NAME 대체 항목이 있다.
+    // 독립 DocInfo 바이트에는 대체 레코드 217개가 있지만 정확한 글꼴을 지정한
+    // 검증 문서에는 없다. 이 메타데이터 차이는 렌더 위치 검사와 구분한다.
     let counterpart = traces
         .get(
             feature["withHwpSubstFont"]

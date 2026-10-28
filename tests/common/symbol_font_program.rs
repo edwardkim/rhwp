@@ -55,7 +55,7 @@ pub fn mapped_program(source: &[u8], mappings: &[(char, u16)]) -> Vec<u8> {
 
 #[allow(dead_code)]
 pub fn with_bitmap_strikes(source: &[u8], ink: &[bool]) -> Vec<u8> {
-    // EBDT format 1 / EBLC index format 1: 12×12, gid 1, 1-bit.
+    // EBDT 형식 1 / EBLC 인덱스 형식 1: 12×12, gid 1, 1비트.
     // strike가 여러 개일 때 중간 크기의 정상 잉크도 반드시 보존해야 한다.
     let mut ebdt = 0x00020000u32.to_be_bytes().to_vec();
     let mut eblc = 0x00020000u32.to_be_bytes().to_vec();

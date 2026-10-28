@@ -557,8 +557,8 @@ fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
         backend: MetricBackend::Canvas2d,
     };
     let batch = core.collect_canvas_metric_requests(context).unwrap();
-    // The actual Studio fallback measured the source HFT quote as a full em.
-    // Feed that real observation through the public preparation/selection path.
+    // 실제 Studio 대체 글꼴은 원본 HFT 따옴표의 폭을 1em으로 측정했다.
+    // 이 관측을 공개 준비·선택 경로에 전달한다.
     let replies = batch
         .requests
         .iter()
@@ -624,9 +624,9 @@ fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
     assert_eq!(owners.len(), 1);
     assert!(owners[0]["text"].as_str().unwrap().starts_with("22"));
     let x = owners[0]["placement"]["runToPage"]["e"].as_f64().unwrap();
-    // C80: Native/fresh WASM all6 pages >=90%; p4=99.04483/99.03763%.
-    // Independent2020 Print p4 H2hdrM year origin82.3953476pt ->96CSSpx.
-    // T16 quote ToUnicode2019, Widths225, FontMatrix.001; no font hmtx inference.
+    // C80: Native/fresh WASM 전 6쪽이 90% 이상이며 4쪽은 99.04483/99.03763%다.
+    // 독립 2020 Print 4쪽 H2hdrM 연도 원점은 82.3953476pt이며 96 CSS px로 환산한다.
+    // T16 따옴표는 ToUnicode 2019, Widths 225, FontMatrix .001이며 hmtx를 추정하지 않는다.
     assert!(
         (x - 109.86046346028646).abs() <= 2.0,
         "year after HFT quote: {x}"
@@ -953,7 +953,7 @@ fn pii_declared_ttf_closing_angles_keep_source_order_and_independent_ends() {
     }
     let core = pii_declared_program_core();
     // 전66쪽 Native/fresh WASM90% 및18/43쪽 양쪽100%·review/overlay 직접 판독 후 추가.
-    // PDF CTM .12pt *96/72: p18 x1222,size125,W500 →205.52CSSpx;
+    // PDF CTM .12pt × 96/72: 18쪽 x1222, size125, W500 → 205.52 CSS px;
     // p43 x1021,size117,W500 →172.72CSSpx. 평균 점수나 후보 좌표를 근거로 삼지 않는다.
     for (page, count, label, expected_end) in
         [(18, 1, " 규제 개요 ", 205.52), (43, 2, "신  설", 172.72)]

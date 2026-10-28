@@ -1,4 +1,4 @@
-//! Independent source gaps stay editable, without rewriting authored spaces.
+//! 작성된 공백을 바꾸지 않으면서 독립 원본 간격을 편집 가능하게 유지한다.
 #![cfg(feature = "pdf-import")]
 use rhwp::{
     model::{control::Control, paragraph::Paragraph},

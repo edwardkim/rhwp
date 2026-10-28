@@ -1,6 +1,6 @@
-//! #4764 residual PDF raster fidelity after #3820 page-count lock.
+//! #4764: #3820의 쪽수 고정 이후 남은 PDF 래스터 충실도 검사.
 //!
-//! Does not rewrite #3772 ExtraLight bold or #3773 svg2pdf SubsetError.
+//! #3772의 ExtraLight 굵게 처리와 #3773의 svg2pdf SubsetError는 변경하지 않는다.
 
 #![cfg(not(target_arch = "wasm32"))]
 

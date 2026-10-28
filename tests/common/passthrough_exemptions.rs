@@ -74,8 +74,8 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         Exempt::SessionState,
         "#6389: 명시적 폰트 환경과 파생 조판·측정 캐시만 교체한다. issue_6389_environment_changes_measurement_and_paint_without_editing_document에서 적용·해제 전후 저장 bytes와 원본 face 보존을 검사한다.",
     ),
-    // #7084 render-session APIs do not mutate serialized document state.
-    // issue_7084_canvas_metric_session checks original HWP/HWPX IR and portable SVG preservation.
+    // #7084 렌더 세션 API는 직렬화된 문서 상태를 변경하지 않는다.
+    // issue_7084_canvas_metric_session은 원본 HWP/HWPX IR과 이동 가능한 SVG 보존을 검사한다.
     (
         "canvas_metric_requests.rs",
         "collect_canvas_metric_requests",
