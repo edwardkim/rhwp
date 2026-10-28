@@ -3,6 +3,7 @@
 //! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
 //! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
 //! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 이 검사는 특정 쪽 좌표가 아니라 문서 전체의 저장 전후 구조를 비교한다.
 //! 기대값은 원본 입력에서 읽으며 과거 page/px baseline을 사용하지 않는다.
 //! 근거: mydocs/plans/issue_8153_handbook_regression_replacement_20261025.md.
 #![cfg(not(target_arch = "wasm32"))]

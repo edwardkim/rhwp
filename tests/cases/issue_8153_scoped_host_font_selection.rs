@@ -5,6 +5,8 @@
 //! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
 //! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 합성 세션 프로토콜 검사이며 실물 글꼴 설치나 픽셀 일치의 증거가 아니다.
+//! 특정 편람 쪽을 입력으로 사용하지 않는다. 글꼴 이름과 대체 선언의 근거는
+//! mydocs/tech/한글문서파일형식_5.0_revision1.3.md의 글꼴과 ID 매핑 표다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::{
