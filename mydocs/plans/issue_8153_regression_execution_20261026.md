@@ -86,3 +86,9 @@ SVG 좌표를 소수 문자열 전체로 찾다가 직렬화 표현 차이로 �
 `issue_8153_print_glyph_geometry` 3건, `issue_8153_symbol_fallback` 1건이
 모두 통과했다. 위 결과는 기존 전체 integration 회귀의 미해결 2건이나
 후속 fresh WASM 브라우저 검사 결과를 대신하지 않는다.
+
+동일 제품 소스의 최적화 fresh WASM
+`3dbc71ea881554b86eeae35fcc124779946906c1e0d5b6145747a7d5fa040c77`을
+실제 Chromium의 `visual-sweep-canvas-fonts.browser.mjs`에 전달한 실행은
+8건 통과, 실패·skip 각 0건이다. 이 결과는 브라우저 회귀 실행에 한정하며
+Studio CanvasKit의 128쪽 상한에 따른 대체 동작과 별도로 기록한다.
