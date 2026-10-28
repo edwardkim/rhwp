@@ -969,6 +969,7 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
             )?,
             // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
             font_space_em: cs.font_space_em,
+            inherited_half_space_em: false,
             layout_half_space: false,
             regenerated_font_metrics: false,
             literal_figure_space: false,
@@ -1983,7 +1984,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     // 폭은 메트릭 갈래와 같은 `quantize_hwp_px` 격자(1/75px = HWPUNIT)에 올린다.
     // 이게 없으면 영문 슬롯 글꼴의 공백이 마침 반각과 같은 run(예: 영문 슬롯이
     // 휴먼명조 — 256/512 = 0.5 em)까지 공백마다 0.013px 씩 어긋난다.
-    let font_space_width = (c == ' ')
+    let font_space_width = (c == ' ' || (c == '\u{00a0}' && style.inherited_half_space_em))
         .then_some(style.font_space_em)
         .flatten()
         .map(|em| quantize_hwp_px(font_size * em));

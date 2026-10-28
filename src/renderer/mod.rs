@@ -533,6 +533,9 @@ pub struct TextStyle {
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
     pub font_space_em: Option<f64>,
+    /// 공백 전진값이 글꼴 폭이 아니라 상속 언어의 반각 환산값인지 구분한다.
+    #[serde(skip_serializing)]
+    pub inherited_half_space_em: bool,
     /// 줄 구성에서 선택한 반각 공백 규칙. 원문의 useFontSpace와 구별한다.
     #[serde(skip_serializing)]
     pub layout_half_space: bool,
@@ -868,6 +871,7 @@ impl Default for TextStyle {
             metric_font_family: None,
             original_glyph_metric_family: None,
             font_space_em: None,
+            inherited_half_space_em: false,
             layout_half_space: false,
             regenerated_font_metrics: false,
             literal_figure_space: false,
