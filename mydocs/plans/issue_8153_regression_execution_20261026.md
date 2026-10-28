@@ -71,3 +71,18 @@ SVG 좌표를 소수 문자열 전체로 찾다가 직렬화 표현 차이로 �
 같은 입력의 독립 출력이 확보됐는지 별도로 확인해야 한다. 이 확인 전에는 모든
 새 회귀 검사의 시각 선행 조건이 충족됐다고 판정하지 않는다.
 46개 파일에 각각 적힌 두 원본의 전쪽 최저값 92건도 같은 측정 결과와 일치한다.
+
+## 2026-10-29 최종 제품 소스의 Native Skia 재검증
+
+제품 소스 `a1e511dbebcc27e187ff847d5510358fa9fbada4`에서 `release-test`,
+`native-skia`, `target/pr-review`, 빌드 잡 8개로 실행했다. 별도 검증 worktree에
+`template/`이 누락된 첫 실행은 파일 읽기 오류 3건으로 실패했다. 기존 입력을
+연결한 뒤 전체 라이브러리를 재실행해 본 라이브러리 3,865건 통과·12건 무시,
+같은 명령의 나머지 라이브러리 182건 통과를 확인했다.
+
+이어 기존 CI 경로의 다섯 논리 case를 같은 제품 소스에서 순차 실행했다.
+`issue_2225_missing_picture_placeholder` 2건, `render_p37_direct_pdf_export`
+14건, `issue_8153_opaque_mixed_axis_image_sampling` 2건,
+`issue_8153_print_glyph_geometry` 3건, `issue_8153_symbol_fallback` 1건이
+모두 통과했다. 위 결과는 기존 전체 integration 회귀의 미해결 2건이나
+후속 fresh WASM 브라우저 검사 결과를 대신하지 않는다.
