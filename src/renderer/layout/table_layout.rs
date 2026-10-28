@@ -20715,6 +20715,38 @@ impl LayoutEngine {
     /// ends at an explicit stored vpos-frame reset.  Unlike a numeric overflow
     /// allowance, this exposes the exact CellUnit boundary that the source
     /// recorded for the current physical fragment.
+    /// 현재 이어받기 시작이 저장된 프레임의 시작과 같은 유닛 경계인지 확인한다.
+    /// 앞 조각이 저장 프레임 중간에서 용량 때문에 잘렸다면 이후 저장 재시작은
+    /// 현재 물리 쪽의 끝을 뜻하지 않는다. 이미 끝난 셀은 판정에서 제외한다.
+    pub(crate) fn row_start_owns_stored_frame(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        if start_cut.is_empty() {
+            return true;
+        }
+        let mut cells: Vec<_> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        cells.sort_by_key(|cell| cell.col);
+        if cells.len() != start_cut.len() {
+            return false;
+        }
+        cells.iter().zip(start_cut).all(|(cell, &start)| {
+            let units = self.cell_units(cell, table, styles);
+            start == 0
+                || start == units.len()
+                || units
+                    .get(start)
+                    .is_some_and(|unit| unit.stored_frame_break_before)
+        })
+    }
+
     pub(crate) fn stored_frame_cut_for_row(
         &self,
         table: &crate::model::table::Table,

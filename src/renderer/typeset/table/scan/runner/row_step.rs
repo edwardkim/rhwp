@@ -703,6 +703,8 @@ impl TypesetEngine {
                 enabled: source_tail_enabled,
                 mid_frame_only,
             } = source_tail_query.gate(&res);
+            let source_frame_owned =
+                layout_engine.row_start_owns_stored_frame(table, r, row_start_cut, styles);
             let mut uses_source_frame_tail = false;
             if source_tail_enabled {
                 // Capacity can pass an authenticated source frame even when
@@ -770,6 +772,7 @@ impl TypesetEngine {
             // 재시작이 용량 컷보다 뒤면 예산을 넘으므로 종전 용량 컷을 쓴다.
             let mut stored_restart_continuation_cut = false;
             if !row_start_cut.is_empty()
+                && source_frame_owned
                 && !uses_source_frame_tail
                 && !res.fully_consumed
                 && mt.allows_row_break_split()
