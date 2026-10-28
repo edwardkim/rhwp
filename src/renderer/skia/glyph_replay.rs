@@ -101,6 +101,8 @@ struct PreparedDraw {
     /// enclosing graph clip. The renderer's outer layer transform still applies.
     clips: Vec<Path>,
     paint: Paint,
+    /// 외곽선 효과 획. raster 출력에서 장치 한 칸보다 가늘게 긋지 않는다.
+    floor_stroke: bool,
     content: DrawContent,
 }
 
@@ -120,7 +122,13 @@ enum DrawContent {
 }
 
 impl PreparedGlyph {
-    pub fn draw(&self, canvas: &Canvas, antialias: bool, sampling: SamplingOptions) {
+    pub fn draw(
+        &self,
+        canvas: &Canvas,
+        antialias: bool,
+        sampling: SamplingOptions,
+        raster_target: bool,
+    ) {
         for draw in &self.draws {
             canvas.save();
             for clip in &draw.clips {
@@ -140,6 +148,13 @@ impl PreparedGlyph {
                     canvas.draw_glyphs_at(glyphs, positions.as_slice(), (0.0, 0.0), font, &paint);
                 }
                 DrawContent::Path(path) => {
+                    if draw.floor_stroke {
+                        super::line_replay::floor_stroke_to_device(
+                            canvas,
+                            &mut paint,
+                            raster_target,
+                        );
+                    }
                     canvas.draw_path(path, &paint);
                 }
                 DrawContent::Image {
@@ -312,6 +327,7 @@ pub(super) fn construct_glyph_font(
             transforms,
             clips: Vec::new(),
             paint: fill_paint(colorref_to_skia(run.paint_style.color, 1.0)),
+            floor_stroke: false,
             content: DrawContent::Glyphs {
                 font,
                 glyphs: run.glyph_ids.iter().map(|glyph| *glyph as u16).collect(),
@@ -377,11 +393,19 @@ fn prepare_glyph_effects(
                 (style.shadow_offset_x as f32, style.shadow_offset_y as f32),
             ));
         }
-        if style.outline_type > 0 {
+        // 외곽선 글자는 SVG·Canvas와 같은 굵기·반복 구간으로 윤곽만 긋는다.
+        if let Some((width, intervals)) =
+            crate::renderer::stroke_pattern::char_outline_stroke(style.outline_type)
+        {
             let mut stroke = fill;
             stroke.set_style(skia_safe::paint::Style::Stroke);
-            stroke.set_stroke_width((style.font_size as f32 / 25.0).max(0.5));
-            passes.push((highlight, (0.0, 0.0)));
+            stroke.set_stroke_width(width as f32);
+            stroke.set_stroke_cap(skia_safe::paint::Cap::Round);
+            stroke.set_stroke_join(skia_safe::paint::Join::Round);
+            if !intervals.is_empty() {
+                let intervals: Vec<f32> = intervals.iter().map(|v| *v as f32).collect();
+                stroke.set_path_effect(skia_safe::PathEffect::dash(&intervals, 0.0));
+            }
             passes.push((stroke, (0.0, 0.0)));
         } else {
             passes.push((fill, (0.0, 0.0)));
@@ -389,7 +413,7 @@ fn prepare_glyph_effects(
     }
     let mut draws = Vec::with_capacity(paths.len() * passes.len());
     // Preserve the branch's effect precedence and complete pass ordering:
-    // relief overrides shadow/outline; shadow precedes white fill and stroke.
+    // relief overrides shadow/outline; shadow precedes the outline stroke.
     for (paint, offset) in passes {
         for path in &paths {
             let shifted = path.with_offset(offset);
@@ -404,6 +428,7 @@ fn prepare_glyph_effects(
                 transforms: transforms.clone(),
                 clips: Vec::new(),
                 paint: paint.clone(),
+                floor_stroke: paint.style() == skia_safe::paint::Style::Stroke,
                 content: DrawContent::Path(shifted),
             });
         }
@@ -622,6 +647,7 @@ pub(super) fn prepare_glyph_outline(
                         transforms: vec![placement],
                         clips: Vec::new(),
                         paint,
+                        floor_stroke: false,
                         content: DrawContent::Path(path.clone()),
                     });
                 }
@@ -655,6 +681,7 @@ pub(super) fn prepare_glyph_outline(
                             layer.fill.as_ref()?,
                             layer.opacity.unwrap_or(1.0),
                         )?),
+                        floor_stroke: false,
                         content: DrawContent::Path(path),
                     });
                 }
@@ -829,6 +856,7 @@ pub(super) fn prepare_glyph_outline(
                         transforms,
                         clips,
                         paint,
+                        floor_stroke: false,
                         content: DrawContent::Path(path),
                     });
                 }
@@ -869,6 +897,7 @@ pub(super) fn prepare_glyph_outline(
                 transforms: transforms.into_iter().collect(),
                 clips: Vec::new(),
                 paint: fill_paint(Color::WHITE),
+                floor_stroke: false,
                 content: DrawContent::Image {
                     image,
                     destination: drawable_rect(payload.placement)?,
@@ -900,6 +929,7 @@ pub(super) fn prepare_glyph_outline(
                 transforms: transforms.into_iter().collect(),
                 clips: Vec::new(),
                 paint: fill_paint(Color::WHITE),
+                floor_stroke: false,
                 content: DrawContent::Image {
                     image,
                     destination: drawable_rect(viewport)?,

@@ -3618,18 +3618,32 @@ impl WebCanvasRenderer {
             render_pass(&self.ctx, dx, dy, &shadow_css, false, "", 0.0);
         }
 
-        // 외곽선 (fillText(흰색) + strokeText(글자색))
-        if style.outline_type > 0 {
-            let line_width = (font_size / 25.0).max(0.5);
+        // 외곽선: 채우지 않고 SVG와 같은 굵기·반복 구간으로 윤곽만 긋는다.
+        if let Some((line_width, intervals)) =
+            super::stroke_pattern::char_outline_stroke(style.outline_type)
+        {
+            let pattern = js_sys::Array::new();
+            for value in intervals {
+                pattern.push(&JsValue::from_f64(value));
+            }
+            self.ctx.save();
+            let _ = self.ctx.set_line_dash(&pattern);
+            self.ctx.set_line_cap("round");
+            self.ctx.set_line_join("round");
+            // 장치 한 칸보다 가는 pen은 다른 선과 같이 한 칸으로 올린다. 반복 구간은 그대로다.
+            self.ctx.set_line_width(line_width);
+            self.floor_line_width_to_device();
+            let line_width = self.ctx.line_width();
             render_pass(
                 &self.ctx,
                 0.0,
                 0.0,
-                "#ffffff",
+                "transparent",
                 true,
                 &text_color_css,
                 line_width,
             );
+            self.ctx.restore();
         } else {
             // 일반 텍스트 (그림자 위에 원본)
             render_pass(&self.ctx, 0.0, 0.0, &text_color_css, false, "", 0.0);
