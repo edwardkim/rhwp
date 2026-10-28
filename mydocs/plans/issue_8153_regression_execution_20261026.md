@@ -113,3 +113,10 @@ all-target Clippy, Native 라이브러리 Clippy, wasm32 라이브러리 Clippy�
 통과했다. 종료된 Cargo·Rust 프로세스가 없음을 확인한 뒤 검토 전용
 `target/pr-review/debug/incremental`의 종료된 대형 캐시 7개를 정리해 빌드
 여유 공간을 확보했다. 최종 소스의 전쪽 재검증은 별도로 실행한다.
+
+동일 소스의 최적화 fresh WASM SHA-256
+`9454c941a1a1bd16ea87d1a744695aa1bddc2fe48d167c086ce656b445f0f902`으로
+실제 Chromium 브라우저 회귀를 다시 실행해 8건 통과, 실패·skip 각 0건을
+확인했다. 검증 worktree의 추가된 공통 소스 두 파일은 커밋의 바이트와 직접
+대조했다. 이 브라우저 검사는 전쪽 TSV와 Studio의 실제 CanvasKit 경로를
+대신하지 않는다.
