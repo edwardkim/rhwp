@@ -171,3 +171,8 @@ WASM으로 2배 확대해 확인했다. 선택한 마지막 줄·앞뒤 문장�
 독립 Print에서 232쪽 표지 `※`의 xMin은 두 원본 모두 124.80pt(96dpi
 166.40px)이고, 후보 Native render tree의 해당 run 시작은 두 원본 모두 165.9px다.
 이는 같은 표지의 독립 좌표 대조이며 미측정 글꼴 자체의 전진 계약을 대체하지 않는다.
+
+[HWP 46쪽](handbook-hwp-p046-three-way.png)과 [HWPX 46쪽](handbook-hwpx-p046-three-way.png)의
+같은 표 영역을 독립 Print·Native·fresh WASM으로 2배 확대해 비교했다. 선택한
+`기업 간 거래`의 한 줄 소유와 주변 셀의 줄바꿈은 대응하며, 글꼴 획 농도와 표
+선 가장자리는 차이가 있다. 이 결과는 이미지에 표시된 영역에 한정한다.
