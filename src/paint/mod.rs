@@ -10,6 +10,7 @@ pub(crate) const MAX_PORTABLE_GLYPHS_PER_RUN: usize = 4096;
 mod bitmap_fill_frame;
 pub mod builder;
 mod cell_clip;
+use crate::renderer::render_tree;
 pub mod color_glyph;
 pub(crate) mod device_clip;
 pub(crate) mod device_fill;

@@ -1409,52 +1409,6 @@ fn char_overlap_without_border_keeps_body_font_size() {
     );
 }
 
-#[test]
-fn empty_char_overlap_retains_frame_without_svg_ink() {
-    let style = TextStyle {
-        font_size: 16.0,
-        ..Default::default()
-    };
-    let mut renderer = SvgRenderer::new();
-    renderer.begin_page(100.0, 100.0);
-    let before = renderer.output().to_owned();
-    renderer.draw_char_overlap(
-        "\u{3000}",
-        &style,
-        &CharOverlapInfo {
-            border_type: 0,
-            inner_char_size: 0,
-            empty_ink: true,
-        },
-        10.0,
-        10.0,
-        16.0,
-        16.0,
-    );
-    assert_eq!(
-        renderer.output(),
-        before,
-        "빈 구성은 SVG 잉크를 출력하지 않는다"
-    );
-    renderer.draw_char_overlap(
-        "가",
-        &style,
-        &CharOverlapInfo {
-            border_type: 0,
-            inner_char_size: 0,
-            empty_ink: false,
-        },
-        10.0,
-        10.0,
-        16.0,
-        16.0,
-    );
-    assert!(
-        renderer.output().contains("가"),
-        "실제 구성 글자는 출력한다"
-    );
-}
-
 /// [#4158] 실제 CharOverlap의 U+F02B1은 raw border가 0이어도 문자 자체의 의미에 따라
 /// 사각형과 숫자 1로 합성해야 한다. raw PUA를 폰트에 맡기면 backend별 tofu가 생긴다.
 #[test]

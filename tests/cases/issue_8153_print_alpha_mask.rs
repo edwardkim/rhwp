@@ -138,3 +138,84 @@ fn hwp_print_alpha_preserves_hidden_color_source_owner_and_bounds() {
 fn hwpx_print_alpha_preserves_hidden_color_source_owner_and_bounds() {
     verify("hwpx");
 }
+
+mod alpha_integer_contract {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/renderer/image_resolver/print_alpha_core.rs"
+    ));
+}
+use alpha_integer_contract::{bayer_rank, pargb_roundtrip, print_color};
+
+#[test]
+fn native_straight_alpha_precision_keeps_observed_low_bits() {
+    // 실제 Windows PArgb 표면에서 읽은 새 독립 대조군의 채널이다.
+    for (source, alpha, intermediate, delivered) in
+        [(242, 174, 241, 240), (47, 185, 46, 45), (3, 185, 2, 1)]
+    {
+        assert_eq!(pargb_roundtrip(source, alpha), intermediate);
+        assert_eq!(print_color(source, alpha), delivered);
+    }
+    assert_eq!(print_color(191, 255), 191);
+    assert_eq!(print_color(191, 0), 0);
+}
+
+#[test]
+fn alpha_rank_is_top_down_and_distinct_from_rgb555_surface_order() {
+    assert_eq!(bayer_rank(0, 0), 0);
+    assert_eq!(bayer_rank(1, 0), 128);
+    assert_eq!(bayer_rank(0, 1), 192);
+    assert_eq!(bayer_rank(1, 1), 64);
+    assert_eq!(bayer_rank(15, 15), 85);
+    assert_eq!(bayer_rank(17, 16), bayer_rank(1, 0));
+}
+
+// 실제 공통 표본화와 PNG 표식을 재사용한다. 작은 합성 PNG의 디코더만
+// 통합 테스트의 image 디코더로 공급하며 크기 제한 경로의 검증은 별개다.
+pub(crate) mod png_sampling {
+    #![allow(dead_code)]
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/renderer/png_sampling.rs"
+    ));
+}
+mod image_resolver {
+    pub(crate) use super::png_sampling;
+    pub(crate) fn decode_image_with_format_limited(
+        data: &[u8],
+        format: image::ImageFormat,
+    ) -> Option<image::DynamicImage> {
+        image::load_from_memory_with_format(data, format).ok()
+    }
+}
+mod actual_sampling {
+    #![allow(dead_code)]
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/renderer/print_image_sampling.rs"
+    ));
+}
+use actual_sampling::rasterize_masked;
+use std::io::Cursor;
+
+#[test]
+fn separate_mask_keeps_color_below_transparent_samples() {
+    // 두 원본 표본의 독립 평면 평균: 색=(127,0,127), 마스크=127.
+    // 먼저 premultiply하면 투명 빨강이 소실되어 이 계약을 지킬 수 없다.
+    let pixels = image::RgbaImage::from_raw(2, 1, vec![255, 0, 0, 0, 0, 0, 255, 255]).unwrap();
+    let mut encoded = Vec::new();
+    image::DynamicImage::ImageRgba8(pixels)
+        .write_to(&mut Cursor::new(&mut encoded), image::ImageFormat::Png)
+        .unwrap();
+    let rectangle = (10.0, 20.0, 1.0, 1.0);
+    assert!(rasterize_masked(&encoded, rectangle, (100.0, 100.0), 1.0).is_none());
+    png_sampling::mark_print_separate_alpha(&mut encoded);
+    let raster = rasterize_masked(&encoded, rectangle, (100.0, 100.0), 1.0).unwrap();
+    assert_eq!(
+        (raster.left, raster.top, raster.width, raster.height),
+        (10, 20, 1, 1)
+    );
+    assert_eq!(raster.rgba, [127, 0, 127, 127]);
+    encoded[43] ^= 1; // 자원 선언의 CRC가 잘못되면 별도 마스크 계약이 아니다.
+    assert!(rasterize_masked(&encoded, rectangle, (100.0, 100.0), 1.0).is_none());
+}

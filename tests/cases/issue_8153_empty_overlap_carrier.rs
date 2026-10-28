@@ -170,3 +170,67 @@ fn empty_and_explicit_spaces_keep_their_format_semantics() {
         assert_eq!(source.chars, chars, "원문 문자 배열을 변경하지 않는다");
     }
 }
+
+// 합성 렌더 트리는 공개 SVG 경로에서 겹침 출력 소비 계약을 검사한다.
+#[test]
+fn empty_char_overlap_retains_frame_without_svg_ink() {
+    use rhwp::renderer::{
+        composer::CharOverlapInfo,
+        render_tree::{BoundingBox, PageRenderTree},
+        svg::SvgRenderer,
+        Renderer, TextStyle,
+    };
+
+    fn render(text: &str, empty_ink: bool, include_run: bool) -> String {
+        let mut page = PageRenderTree::new(0, 100.0, 100.0);
+        let run = TextRunNode {
+            text: text.into(),
+            style: TextStyle {
+                font_size: 16.0,
+                ..Default::default()
+            },
+            char_shape_id: None,
+            para_shape_id: None,
+            section_index: None,
+            para_index: None,
+            char_start: None,
+            cell_context: None,
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: Some(CharOverlapInfo {
+                border_type: 0,
+                inner_char_size: 0,
+                empty_ink,
+            }),
+            border_fill_id: 0,
+            baseline: 16.0,
+            field_marker: Default::default(),
+            layout_positions: None,
+            display_text: None,
+        };
+        if include_run {
+            page.root.children.push(RenderNode::new(
+                1,
+                RenderNodeType::TextRun(run),
+                BoundingBox::new(10.0, 10.0, 16.0, 16.0),
+            ));
+        }
+        let mut renderer = SvgRenderer::new();
+        renderer.begin_page(100.0, 100.0);
+        renderer.render_tree(&page);
+        renderer.end_page();
+        renderer.output().to_owned()
+    }
+    let blank = render("\u{3000}", true, true);
+    assert_eq!(
+        blank,
+        render("", true, false),
+        "빈 구성은 SVG 잉크를 출력하지 않는다"
+    );
+    assert!(
+        render("가", false, true).contains("가"),
+        "실제 구성 글자는 출력한다"
+    );
+}

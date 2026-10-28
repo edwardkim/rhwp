@@ -136,3 +136,161 @@ fn hwpx_p291_background_keeps_own_print_clip() {
 fn hwpx_p301_background_keeps_own_print_clip() {
     verify("hwpx", 301);
 }
+
+// 같은 공통 함수를 호출해 페이지 컷·중첩·배경과 본문의 순서를 검증한다.
+mod layer_tree {
+    pub use rhwp::paint::layer_tree::*;
+}
+mod render_tree {
+    pub use rhwp::renderer::render_tree::*;
+}
+mod actual_cell_clip {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/paint/cell_clip_core.rs"
+    ));
+}
+
+mod cell_clip_contract {
+    use super::actual_cell_clip;
+    use rhwp::paint::{CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind};
+    use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType, TableCellNode};
+    use std::collections::HashSet;
+
+    fn fixture(fragment: bool) -> (RenderNode, TableCellNode) {
+        let cell = TableCellNode {
+            row: 0,
+            col: 0,
+            row_span: 1,
+            col_span: 1,
+            border_fill_id: 0,
+            text_direction: 0,
+            clip: true,
+            page_fragment: fragment,
+            model_cell_index: None,
+        };
+        let node = RenderNode::new(
+            1,
+            RenderNodeType::TableCell(cell.clone()),
+            BoundingBox::new(10.0, 20.0, 40.0, 50.0),
+        );
+        (node, cell)
+    }
+
+    fn build(
+        node: &RenderNode,
+        cell: &TableCellNode,
+        children: Vec<LayerNode>,
+        cache: CacheHint,
+    ) -> LayerNode {
+        actual_cell_clip::build(node, cell, children, cache, &HashSet::from([2, 4]))
+    }
+
+    fn leaf(id: u32) -> LayerNode {
+        LayerNode::leaf(BoundingBox::new(0.0, 0.0, 100.0, 100.0), Some(id), vec![])
+    }
+
+    fn physical(id: u32) -> LayerNode {
+        let clip = BoundingBox::new(9.9, 19.9, 40.0, 50.0);
+        LayerNode::clip_rect(clip, Some(id), clip, leaf(id), ClipKind::PrintBitmapFill)
+    }
+
+    fn leaves(node: &LayerNode, clips: &mut Vec<ClipKind>, out: &mut Vec<(u32, Vec<ClipKind>)>) {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    leaves(child, clips, out);
+                }
+            }
+            LayerNodeKind::ClipRect {
+                clip_kind, child, ..
+            } => {
+                clips.push(*clip_kind);
+                leaves(child, clips, out);
+                clips.pop();
+            }
+            LayerNodeKind::Leaf { .. } => out.push((node.source_node_id.unwrap(), clips.clone())),
+            _ => panic!("예상하지 않은 시험 노드"),
+        }
+    }
+
+    #[test]
+    fn direct_background_keeps_physical_clip_and_interleaved_content_keeps_cell_clip() {
+        let (node, cell) = fixture(false);
+        let children = vec![leaf(3), physical(2), leaf(5), physical(4), physical(6)];
+        let result = build(&node, &cell, children, CacheHint::None);
+        assert_eq!(result.source_node_id, Some(node.id));
+        assert!(matches!(
+            result.kind,
+            LayerNodeKind::Group {
+                group_kind: GroupKind::TableCell(_),
+                ..
+            }
+        ));
+        let mut actual = vec![];
+        leaves(&result, &mut vec![], &mut actual);
+        assert_eq!(
+            actual,
+            vec![
+                (3, vec![ClipKind::TableCell]),
+                (2, vec![ClipKind::PrintBitmapFill]),
+                (5, vec![ClipKind::TableCell]),
+                (4, vec![ClipKind::PrintBitmapFill]),
+                (6, vec![ClipKind::TableCell, ClipKind::PrintBitmapFill]),
+            ]
+        );
+    }
+
+    #[test]
+    fn page_cut_and_background_without_own_print_clip_keep_original_cell_clip() {
+        for fragment in [false, true] {
+            let (node, cell) = fixture(fragment);
+            let children = if fragment {
+                vec![physical(2), leaf(3)]
+            } else {
+                vec![leaf(2), leaf(3)]
+            };
+            let result = build(&node, &cell, children, CacheHint::None);
+            assert!(matches!(
+                result.kind,
+                LayerNodeKind::ClipRect {
+                    clip_kind: ClipKind::TableCell,
+                    ..
+                }
+            ));
+            let mut actual = vec![];
+            leaves(&result, &mut vec![], &mut actual);
+            assert!(actual
+                .iter()
+                .all(|(_, clips)| clips.first() == Some(&ClipKind::TableCell)));
+            assert_eq!(
+                actual.iter().map(|(id, _)| *id).collect::<Vec<_>>(),
+                vec![2, 3]
+            );
+        }
+    }
+
+    #[test]
+    fn nested_background_keeps_outer_cell_clip() {
+        let (node, cell) = fixture(false);
+        let inner = build(&node, &cell, vec![physical(2), leaf(3)], CacheHint::None);
+        let mut parent = node.clone();
+        parent.children.clear();
+        let result = actual_cell_clip::build(
+            &parent,
+            &cell,
+            vec![inner],
+            CacheHint::None,
+            &HashSet::new(),
+        );
+        let mut actual = vec![];
+        leaves(&result, &mut vec![], &mut actual);
+        assert_eq!(
+            actual,
+            vec![
+                (2, vec![ClipKind::TableCell, ClipKind::PrintBitmapFill]),
+                (3, vec![ClipKind::TableCell, ClipKind::TableCell]),
+            ]
+        );
+    }
+}

@@ -92,3 +92,18 @@ SVG 좌표를 소수 문자열 전체로 찾다가 직렬화 표현 차이로 �
 실제 Chromium의 `visual-sweep-canvas-fonts.browser.mjs`에 전달한 실행은
 8건 통과, 실패·skip 각 0건이다. 이 결과는 브라우저 회귀 실행에 한정하며
 Studio CanvasKit의 128쪽 상한에 따른 대체 동작과 별도로 기록한다.
+
+## source-side 검사 이전 진행
+
+최종 소스의 unit-tier 검사에서 신규 source-side 검사와 테스트 전용 import가
+정책에 걸렸다. 테스트 전용 import는 사용 지점으로 옮겼다. 셀 clip, 알파 정수,
+별도 마스크 표본, 빈 글자 겹침 검사를 기존 `tests/cases/`로 이전하고 있다.
+셀 clip은 원본 배경 ID 추출과 공통 분할 함수의 본문이 분리 전과 같으며,
+마스크 함수는 주석 표기를 제외한 본문이 같다. 알파 정수 함수 본문도 분리 전과 같다.
+이전한 검사는 준비된 검증 worktree의 실제 suite에서 글자 겹침 4건, 알파 마스크
+5건, 셀 clip 7건이 모두 통과했다. 최종 제품 소스의 Native/fresh WASM 전쪽
+시각 검증은 아직 확인 중이다.
+
+검증 worktree에서 기존 suite를 다시 준비한 뒤 48/48 target 예산과 고정 base
+manifest 검사는 통과했다. manifest 자체 검사도 23건 통과했다. 이는 이전한
+회귀 검사의 실제 실행이나 전체 회귀 실패의 해결을 대신하지 않는다.

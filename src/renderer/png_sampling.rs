@@ -1,7 +1,7 @@
-//! Sampling declared by a bounded PDF importer in a PNG resource.
-//! `rhWP` is a private ancillary, unsafe-to-copy chunk immediately after IHDR.
-//! Raw BinData preservation keeps this contract through HWP/HWPX save/reopen;
-//! ordinary images without the declaration retain the renderer's profile policy.
+// Sampling declared by a bounded PDF importer in a PNG resource.
+// `rhWP` is a private ancillary, unsafe-to-copy chunk immediately after IHDR.
+// Raw BinData preservation keeps this contract through HWP/HWPX save/reopen;
+// ordinary images without the declaration retain the renderer's profile policy.
 fn declaration(data: &[u8]) -> Option<(u8, u8)> {
     // JPEG APP15도 같은 버전·값과 CRC를 갖는다. 압축 decoder는 이 부가
     // 표식을 무시하고, 출력 재생만 실제 색 확장의 재구성 계약을 소비한다.

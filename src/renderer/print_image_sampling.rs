@@ -1,4 +1,4 @@
-//! Print 그림의 공통 장치 표본과 별도 색·마스크 출력 경로.
+// Print 그림의 공통 장치 표본과 별도 색·마스크 출력 경로.
 
 #[path = "print_image_sampling_core.rs"]
 mod core;
@@ -35,32 +35,4 @@ pub(crate) fn rasterize_masked(
         color[3] = alpha[0];
     }
     Some(colors)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::rasterize_masked;
-    use std::io::Cursor;
-
-    #[test]
-    fn separate_mask_keeps_color_below_transparent_samples() {
-        // 두 원본 표본의 독립 평면 평균: 색=(127,0,127), 마스크=127.
-        // 먼저 premultiply하면 투명 빨강이 소실되어 이 계약을 지킬 수 없다.
-        let pixels = image::RgbaImage::from_raw(2, 1, vec![255, 0, 0, 0, 0, 0, 255, 255]).unwrap();
-        let mut encoded = Vec::new();
-        image::DynamicImage::ImageRgba8(pixels)
-            .write_to(&mut Cursor::new(&mut encoded), image::ImageFormat::Png)
-            .unwrap();
-        let rectangle = (10.0, 20.0, 1.0, 1.0);
-        assert!(rasterize_masked(&encoded, rectangle, (100.0, 100.0), 1.0).is_none());
-        crate::renderer::image_resolver::png_sampling::mark_print_separate_alpha(&mut encoded);
-        let raster = rasterize_masked(&encoded, rectangle, (100.0, 100.0), 1.0).unwrap();
-        assert_eq!(
-            (raster.left, raster.top, raster.width, raster.height),
-            (10, 20, 1, 1)
-        );
-        assert_eq!(raster.rgba, [127, 0, 127, 127]);
-        encoded[43] ^= 1; // 자원 선언의 CRC가 잘못되면 별도 마스크 계약이 아니다.
-        assert!(rasterize_masked(&encoded, rectangle, (100.0, 100.0), 1.0).is_none());
-    }
 }

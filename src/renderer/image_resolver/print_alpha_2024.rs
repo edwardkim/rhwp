@@ -3,6 +3,10 @@
 //! 원본 PNG의 straight RGB를 보존한다. 색·마스크는 각각 장치 표본을 낸 뒤
 //! 합성하므로, backend의 PNG 디코딩으로 투명 픽셀 아래 색을 먼저 잃지 않는다.
 
+#[path = "print_alpha_core.rs"]
+mod core;
+use core::{bayer_rank, print_color};
+
 use std::io::Cursor;
 
 use super::{memoized, print_codec, print_tone, Conversion};
@@ -107,60 +111,4 @@ pub(super) fn encode_planes_with_palette(
         .ok()?;
     super::png_sampling::mark_print_separate_alpha(&mut bytes);
     Some(bytes)
-}
-
-/// 표준 16×16 Bayer 순위. 마스크는 top-down, RGB555 색 표면은 bottom-up이다.
-fn bayer_rank(x: u32, y: u32) -> u8 {
-    const BASE: [[u16; 2]; 2] = [[0, 2], [3, 1]];
-    let mut rank = 0;
-    for bit in 0..4 {
-        rank = rank * 4 + BASE[((y >> bit) & 1) as usize][((x >> bit) & 1) as usize];
-    }
-    rank as u8
-}
-
-/// 실제 PArgb 표면의 정수 premultiply/unpremultiply 계약.
-fn pargb_roundtrip(channel: u8, alpha: u8) -> u8 {
-    if alpha == 0 {
-        return 0;
-    }
-    let premultiplied = (u32::from(channel) * u32::from(alpha) + 127) / 255;
-    let reciprocal = (255 * 65536) / u32::from(alpha);
-    ((premultiplied * reciprocal) >> 16).min(255) as u8
-}
-
-/// 독립 Print의 색 전달식: PArgb 정수 경계의 합성이다.
-/// 실제 한컴 내부의 API 호출 횟수를 뜻하지 않는다. 원본·서로 다른 크기의
-/// 256단계 alpha 대조군은 같은 식과 RGB555/JPEG에서 전픽셀 일치했다.
-fn print_color(channel: u8, alpha: u8) -> u8 {
-    let straight = pargb_roundtrip(channel, alpha);
-    pargb_roundtrip(straight, alpha)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{bayer_rank, pargb_roundtrip, print_color};
-
-    #[test]
-    fn native_straight_alpha_precision_keeps_observed_low_bits() {
-        // 실제 Windows PArgb 표면에서 읽은 새 독립 대조군의 채널이다.
-        for (source, alpha, intermediate, delivered) in
-            [(242, 174, 241, 240), (47, 185, 46, 45), (3, 185, 2, 1)]
-        {
-            assert_eq!(pargb_roundtrip(source, alpha), intermediate);
-            assert_eq!(print_color(source, alpha), delivered);
-        }
-        assert_eq!(print_color(191, 255), 191);
-        assert_eq!(print_color(191, 0), 0);
-    }
-
-    #[test]
-    fn alpha_rank_is_top_down_and_distinct_from_rgb555_surface_order() {
-        assert_eq!(bayer_rank(0, 0), 0);
-        assert_eq!(bayer_rank(1, 0), 128);
-        assert_eq!(bayer_rank(0, 1), 192);
-        assert_eq!(bayer_rank(1, 1), 64);
-        assert_eq!(bayer_rank(15, 15), 85);
-        assert_eq!(bayer_rank(17, 16), bayer_rank(1, 0));
-    }
 }
