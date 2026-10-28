@@ -856,11 +856,8 @@ fn ensure_fragment_horizontal_frame_inside_clip(
 
 pub(super) fn translate_render_subtree_y(node: &mut RenderNode, delta_y: f64) {
     node.bbox.y += delta_y;
-    node.translate_paint_clip_y(delta_y);
-    if let RenderNodeType::Line(line) = &mut node.node_type {
-        line.y1 += delta_y;
-        line.y2 += delta_y;
-    }
+    // 선(`x1/y1–x2/y2`)과 경로(`commands`)는 자기 좌표를 들고 다니므로 함께 옮긴다.
+    super::LayoutEngine::translate_node_payload_y(node, delta_y);
     for child in &mut node.children {
         translate_render_subtree_y(child, delta_y);
     }

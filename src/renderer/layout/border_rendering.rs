@@ -2,7 +2,7 @@
 
 use super::super::render_tree::*;
 use super::super::style_resolver::{ResolvedBorderStyle, ResolvedStyleSet};
-use super::super::{LineStyle, StrokeDash};
+use super::super::{LineStyle, PathCommand, ShapeStyle, StrokeDash};
 use super::border_geometry::double_line_parts;
 use crate::model::style::{BorderLine, BorderLineType, CenterLine};
 use crate::model::table::{Cell, Table, TableZone, MAX_TABLE_GRID_CELLS};
@@ -1104,6 +1104,19 @@ pub(crate) fn create_border_line_nodes(
     x2: f64,
     y2: f64,
 ) -> Vec<RenderNode> {
+    create_box_border_line_nodes(tree, border, false, x1, y1, x2, y2)
+}
+
+/// 상자 한 변의 테두리선. `far_side`는 아래·오른쪽 변이며 물결선의 위상을 정한다.
+pub(crate) fn create_box_border_line_nodes(
+    tree: &mut PageLayoutContext,
+    border: &BorderLine,
+    far_side: bool,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+) -> Vec<RenderNode> {
     if border.line_type == BorderLineType::None {
         return vec![];
     }
@@ -1191,6 +1204,22 @@ pub(crate) fn create_border_line_nodes(
             )
         }
 
+        BorderLineType::Circle => {
+            create_circle_dot_nodes(tree, border.color, base_width, x1, y1, x2, y2)
+        }
+
+        BorderLineType::Wave | BorderLineType::DoubleWave => create_wave_nodes(
+            tree,
+            border.color,
+            base_width,
+            border.line_type == BorderLineType::DoubleWave,
+            far_side,
+            x1,
+            y1,
+            x2,
+            y2,
+        ),
+
         // 단일선 타입들
         _ => {
             if let Some(dash) = border_line_type_to_dash(border.line_type, border.width) {
@@ -1204,6 +1233,158 @@ pub(crate) fn create_border_line_nodes(
             }
         }
     }
+}
+
+/// 한/글 인쇄 격자 한 칸(1/600 inch)의 px 길이.
+const PRINT_UNIT_PX: f64 = 96.0 / 600.0;
+
+/// 경로 노드 하나를 만든다. 경계 상자는 꼭짓점에 `pad`를 더한 범위다.
+fn create_path_node(
+    tree: &mut PageLayoutContext,
+    commands: Vec<PathCommand>,
+    style: ShapeStyle,
+    points: &[(f64, f64)],
+    pad: f64,
+) -> RenderNode {
+    let (mut min_x, mut min_y) = (f64::INFINITY, f64::INFINITY);
+    let (mut max_x, mut max_y) = (f64::NEG_INFINITY, f64::NEG_INFINITY);
+    for &(x, y) in points {
+        min_x = min_x.min(x);
+        min_y = min_y.min(y);
+        max_x = max_x.max(x);
+        max_y = max_y.max(y);
+    }
+    let bbox = BoundingBox::new(
+        min_x - pad,
+        min_y - pad,
+        max_x - min_x + 2.0 * pad,
+        max_y - min_y + 2.0 * pad,
+    );
+    let id = tree.next_id();
+    RenderNode::new(
+        id,
+        RenderNodeType::Path(PathNode::new(commands, style, None)),
+        bbox,
+    )
+}
+
+/// 원형 점선(7). 한/글 2020·2022·2024 인쇄 PDF는 굵기 w가 5칸·12칸(1/600 inch)일 때
+/// 지름 6칸·12칸의 채운 원을 2w 간격으로 선 시작점부터 끝점까지 선 위에 찍는다.
+/// 지름은 w로 둔다.
+fn create_circle_dot_nodes(
+    tree: &mut PageLayoutContext,
+    color: u32,
+    w: f64,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+) -> Vec<RenderNode> {
+    let pitch = 2.0 * w;
+    if pitch <= 0.0 {
+        return vec![];
+    }
+    let len = (x2 - x1).hypot(y2 - y1);
+    let (ux, uy) = if len > 0.0 {
+        ((x2 - x1) / len, (y2 - y1) / len)
+    } else {
+        (1.0, 0.0)
+    };
+    let r = w / 2.0;
+    // 사분 원호를 3차 베지어로 근사하는 조절점 거리
+    let k = r * 0.552_284_749_830_793_6;
+    let count = (len / pitch + 1e-6).floor() as usize + 1;
+    let mut commands = Vec::with_capacity(count * 6);
+    let mut centers = Vec::with_capacity(count);
+    for i in 0..count {
+        let (cx, cy) = (x1 + ux * pitch * i as f64, y1 + uy * pitch * i as f64);
+        commands.extend([
+            PathCommand::MoveTo(cx + r, cy),
+            PathCommand::CurveTo(cx + r, cy + k, cx + k, cy + r, cx, cy + r),
+            PathCommand::CurveTo(cx - k, cy + r, cx - r, cy + k, cx - r, cy),
+            PathCommand::CurveTo(cx - r, cy - k, cx - k, cy - r, cx, cy - r),
+            PathCommand::CurveTo(cx + k, cy - r, cx + r, cy - k, cx + r, cy),
+            PathCommand::ClosePath,
+        ]);
+        centers.push((cx, cy));
+    }
+    let style = ShapeStyle {
+        fill_color: Some(color),
+        ..Default::default()
+    };
+    vec![create_path_node(tree, commands, style, &centers, r)]
+}
+
+/// 물결선(12)·이중 물결선(13). 한/글 Mac 12.30 인쇄 PDF(굵기 w = 24/600 inch)의 실측:
+/// 위아래 폭 w인 45° 지그재그를 굵기 w/4로 긋고, 꼭짓점마다 1/600 inch를 평평하게
+/// 이어 반주기가 w + 1/600 inch다. 가닥은 선에서 3w/8 떨어진 위·왼쪽과 아래·오른쪽에
+/// 하나씩 놓이며 물결선은 위·왼쪽 가닥만 긋는다. 상자 바깥쪽 가닥은 시작점 w/2 앞에서,
+/// 안쪽 가닥은 그보다 3w/4 뒤에서 위·왼쪽 꼭짓점부터 출발해 같은 꼭짓점 수만큼 간다.
+/// `far_side`는 상자의 아래·오른쪽 변이다.
+#[allow(clippy::too_many_arguments)]
+fn create_wave_nodes(
+    tree: &mut PageLayoutContext,
+    color: u32,
+    w: f64,
+    double: bool,
+    far_side: bool,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+) -> Vec<RenderNode> {
+    let len = (x2 - x1).hypot(y2 - y1);
+    if len < 0.01 || w <= 0.0 {
+        return vec![];
+    }
+    let (ux, uy) = ((x2 - x1) / len, (y2 - y1) / len);
+    // 위·왼쪽을 향하는 법선
+    let (nx, ny) = if uy - ux > 0.0 { (-uy, ux) } else { (uy, -ux) };
+    let step = w + PRINT_UNIT_PX;
+    let peaks = ((len + w) / step + 1e-6).floor() as usize;
+    let stroke = w / 4.0;
+    // (위·왼쪽 법선 방향 중심, 선 방향 시작 지연). 바깥쪽 가닥은 지연이 없다.
+    let lag = |outer: bool| if outer { 0.0 } else { 0.75 * w };
+    let upper = (0.375 * w, lag(!far_side));
+    let lower = (-0.375 * w, lag(far_side));
+    let strands: &[(f64, f64)] = if double { &[upper, lower] } else { &[upper] };
+    let mut nodes = Vec::with_capacity(strands.len());
+    for &(center, shift) in strands {
+        let point = |along: f64, up: f64| (x1 + ux * along + nx * up, y1 + uy * along + ny * up);
+        let mut points = Vec::with_capacity(peaks * 2 + 1);
+        for i in 0..=peaks {
+            let along = -w / 2.0 + shift + step * i as f64;
+            let up = center + if i % 2 == 0 { w / 2.0 } else { -w / 2.0 };
+            if i > 0 {
+                points.push(point(along - PRINT_UNIT_PX, up));
+            }
+            points.push(point(along, up));
+        }
+        let commands = points
+            .iter()
+            .enumerate()
+            .map(|(i, &(x, y))| {
+                if i == 0 {
+                    PathCommand::MoveTo(x, y)
+                } else {
+                    PathCommand::LineTo(x, y)
+                }
+            })
+            .collect();
+        let style = ShapeStyle {
+            stroke_color: Some(color),
+            stroke_width: stroke,
+            ..Default::default()
+        };
+        nodes.push(create_path_node(
+            tree,
+            commands,
+            style,
+            &points,
+            stroke / 2.0,
+        ));
+    }
+    nodes
 }
 
 /// 평행선 노드 생성 (이중선/삼중선용)
