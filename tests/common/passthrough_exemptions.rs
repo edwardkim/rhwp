@@ -704,6 +704,14 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "리스트 아이디를 구역·문단으로 풀어 넘길 뿐이다. 서식 적용과 무효화는 본문 경로 \
          (`apply_para_format_native`)와 셀 경로(`apply_para_format_in_cell_native`)가 한다.",
     ),
+    (
+        "commands/paragraph_format_path.rs",
+        "apply_para_format_in_cell_by_path",
+        Exempt::DelegatesTo("set_cell_para_shape_id_by_path"),
+        "#7637: 중첩 셀은 문단 모양 ID 적용 함수가 구역 raw_stream을 무효화한다. \
+         깊이 1은 직접 무효화하는 apply_para_format_in_cell_native에 위임한다. \
+         두 저장 경로는 nested-paragraph-format의 실제 WASM HWP/HWPX 왕복으로 검증한다.",
+    ),
     // ── 판정 보류 ──────────────────────────────────────────────────────────
     (
         "commands/document.rs",
