@@ -534,8 +534,11 @@ impl TypesetEngine {
         // 쪽 바닥 띠를 남긴다. 두 예약은 겹치므로 여유가 이미 남긴 만큼은 다시 빼지 않는다 —
         // 75544 65쪽 표 619(여유 4px · 바깥 아래 여백 1.9px)는 한/글이 본문 끝 5.9px 위에서
         // 첫 조각을 닫고 넷째 행을 싣는다.
+        // 표 안 각주가 쪽 바닥을 각주 영역으로 바꾸면 바깥 아래 여백은 그 위 구분 간격에 든다 —
+        // 정책연구용역 174쪽 1×1 표(각주 9개)는 한/글이 각주 영역 위까지 채운다.
+        let footnote_bottom = !table_footnotes.is_empty();
         let empty_host_first_fragment_reserve =
-            if !is_continuation && cursor_row == 0 && start_cut.is_empty() {
+            if !footnote_bottom && !is_continuation && cursor_row == 0 && start_cut.is_empty() {
                 (crate::renderer::typeset::empty_host_float_first_fragment_reserve_px(
                     para,
                     table,
