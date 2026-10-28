@@ -1252,3 +1252,13 @@ control 1개와 `vpos=0`이다. 실행 원문은 ignored
 `handbook-section11-host-dump-20261029.txt`에 보관했다. 두 원본 모두 이 특정
 호스트는 위 helper의 수용 조건을 충족하지 않는다. 다만 `PartialTable`에 원점을
 전달하는 나머지 경로는 별도로 검증해야 한다.
+
+후보 CLI의 314·315쪽 조판 항목 JSON을 두 편람 각각 확인했다. 네 항목 모두
+구역 11 문단 3의 `partialTable`, `isContinuation=true`이며 314쪽 끝 컷 `[4,1]`과
+315쪽 시작 컷 `[4,1]`이 연결된다. `layout_partial_table_item`의
+`first_fragment_origin` 선택은 `!is_continuation`일 때만 실행되므로 이 두 실제
+이어받기 조각의 paint는 그 분기를 직접 소비하지 않는다. 앞쪽 첫 조각의 원점
+변경이 후속 컷에 간접 영향을 주는 경우는 이 사실만으로 배제할 수 없다. 실제
+항목 JSON 네 개는 ignored `handbook-{hwp,hwpx}-page-{314,315}-items-20261029.json`에
+보관한다. 314·315쪽 Native/WASM review·overlay는 기존 후보 PNG와 독립 PDF PNG로
+새로 합성했다. PNG 생성은 저장 원점 조건의 실행 입증을 대신하지 않는다.
