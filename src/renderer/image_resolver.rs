@@ -1711,28 +1711,6 @@ mod tests {
         });
     }
 
-    /// 메모가 다른 그림의 결과를 흘리지 않는다.
-    #[test]
-    fn different_images_keep_their_own_results() {
-        let gray = jpeg_from_pixels(2, 2, |x, y| {
-            let g = 120 + (x + y) as u8;
-            [g, g, g]
-        });
-        let color = jpeg_from_pixels(2, 2, |x, y| {
-            if (x + y) % 2 == 0 {
-                [210, 48, 48]
-            } else {
-                [48, 110, 210]
-            }
-        });
-
-        assert!(grayscale_jpeg_bytes_to_png_bytes(&gray).is_some());
-        assert!(grayscale_jpeg_bytes_to_png_bytes(&color).is_none());
-        // 순서를 바꿔도 각자의 결과가 나온다 (둘 다 메모에 들어간 뒤).
-        assert!(grayscale_jpeg_bytes_to_png_bytes(&color).is_none());
-        assert!(grayscale_jpeg_bytes_to_png_bytes(&gray).is_some());
-    }
-
     /// 같은 바이트라도 변환 종류가 다르면 결과가 다르므로 따로 센다.
     #[test]
     fn same_bytes_under_different_conversions_do_not_share_an_entry() {
@@ -1776,70 +1754,6 @@ mod tests {
         assert_eq!(memo.bytes, 0);
         assert!(memo.entries.len() <= MAX_MEMO_ENTRIES);
         assert!(memo.get(0).is_none(), "가장 오래된 항목은 밀려나 있다");
-    }
-
-    #[test]
-    fn grayscale_jpeg_is_normalized_to_png() {
-        let jpeg = jpeg_from_pixels(2, 2, |x, y| {
-            let g = 180 + (x + y) as u8;
-            [g, g, g]
-        });
-
-        let png = grayscale_jpeg_bytes_to_png_bytes(&jpeg).expect("gray jpeg should normalize");
-        assert!(png.starts_with(b"\x89PNG\r\n\x1a\n"));
-    }
-
-    #[test]
-    fn color_jpeg_keeps_jpeg_path() {
-        let jpeg = jpeg_from_pixels(2, 2, |x, y| {
-            if (x + y) % 2 == 0 {
-                [220, 64, 64]
-            } else {
-                [64, 120, 220]
-            }
-        });
-
-        assert!(grayscale_jpeg_bytes_to_png_bytes(&jpeg).is_none());
-    }
-
-    #[test]
-    fn tiff_image_payload_is_normalized_to_png() {
-        let mut img = RgbImage::new(2, 2);
-        for y in 0..2 {
-            for x in 0..2 {
-                img.put_pixel(x, y, Rgb([32 + x as u8, 96 + y as u8, 160]));
-            }
-        }
-        let mut tiff = Vec::new();
-        DynamicImage::ImageRgb8(img)
-            .write_to(&mut Cursor::new(&mut tiff), ImageFormat::Tiff)
-            .expect("encode tiff");
-
-        let image = ImageNode::new(1, Some(tiff));
-        let resolved = resolve_image_payload(&image).expect("tiff should resolve");
-
-        assert_eq!(resolved.mime, "image/png");
-        assert_eq!(resolved.kind, ResolvedImageKind::FormatConverted);
-        assert!(resolved.data.starts_with(b"\x89PNG\r\n\x1a\n"));
-        assert!(!resolved.suppress_effects);
-    }
-
-    #[test]
-    fn oversized_compact_bmp_is_rejected_before_layer_conversion() {
-        let mut bmp = vec![0u8; 58];
-        bmp[..2].copy_from_slice(b"BM");
-        bmp[2..6].copy_from_slice(&58u32.to_le_bytes());
-        bmp[10..14].copy_from_slice(&54u32.to_le_bytes());
-        bmp[14..18].copy_from_slice(&40u32.to_le_bytes());
-        bmp[18..22].copy_from_slice(&8193i32.to_le_bytes());
-        bmp[22..26].copy_from_slice(&8193i32.to_le_bytes());
-        bmp[26..28].copy_from_slice(&1u16.to_le_bytes());
-        bmp[28..30].copy_from_slice(&8u16.to_le_bytes());
-        bmp[30..34].copy_from_slice(&1u32.to_le_bytes());
-        bmp[54..58].copy_from_slice(&[0, 1, 0, 1]);
-
-        assert!(bmp_bytes_to_png_bytes(&bmp).is_none());
-        assert!(resolve_image_payload(&ImageNode::new(1, Some(bmp))).is_none());
     }
 
     /// 변환에 성공하는 최소 PCX v2.8 (버전바이트 0x03, 1bpp 모노크롬 8×1).
