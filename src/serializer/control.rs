@@ -2209,7 +2209,9 @@ fn serialize_text_box_if_present(drawing: &DrawingObjAttr, level: u16, records: 
 ///
 /// 이 마스크 안은 IR enum/bool 필드가 정본이고, 밖(예: bit 1·27·31, 캡션 bit 29 —
 /// 방출 직전 `apply_caption_attr_bit` 가 강제, 잠금 bit 30 — pack 미방출이라 raw 보존)
-/// 은 파스 시점 raw 를 보존한다.
+/// 은 파스 시점 raw 를 보존한다. [#8335] 번호 범주 bit 26-27 은 `numbering_type` 이 정본이다 —
+/// 종전엔 bit 26 만 별도 플래그로, bit 27 은 raw(표는 adapter 가 TABLE 일 때만) 로 남겨
+/// HWPX 출처 `PICTURE` 표가 범주 없음, `NONE` 그림이 그림 범주로 저장됐다.
 const COMMON_ATTR_SEMANTIC_MASK: u32 = 0x01            // treat_as_char
     | (1 << 2)                                          // affect_line_spacing
     | (0x03 << 3)                                       // vert_rel_to
@@ -2223,7 +2225,7 @@ const COMMON_ATTR_SEMANTIC_MASK: u32 = 0x01            // treat_as_char
     | (1 << 20)                                         // size_protect
     | (0x07 << 21)                                      // text_wrap
     | (0x03 << 24)                                      // text_flow
-    | (1 << 26)                                         // hwp5_gen_shape_attr_bit26
+    | crate::model::shape::ObjectNumberingType::HWP5_ATTR_MASK // numbering_type (bit 26-27)
     | (1 << 28); // hwp5_gen_shape_attr_bit28
 
 fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
@@ -2308,7 +2310,7 @@ fn apply_caption_attr_bit(ctrl_data: &[u8], has_caption: bool) -> Vec<u8> {
 /// - bit 21-23: text_wrap
 /// - bit 24-25: text_flow
 /// - bit 20: size protect when VertRelTo is Para
-/// - bit 26: HWPX GenShape storage high bit 후보
+/// - bit 26-27: numbering_type (개체 번호 범주, [#8294]·[#8335])
 /// - bit 28: HWPX GenShape numbering category high bit 후보
 pub(crate) fn pack_common_attr_bits(common: &CommonObjAttr) -> u32 {
     let mut a: u32 = 0;
@@ -2336,9 +2338,7 @@ pub(crate) fn pack_common_attr_bits(common: &CommonObjAttr) -> u32 {
     a |= (height_criterion_to_bits(common.height_criterion) & 0x03) << 18;
     a |= (text_wrap_to_bits(common.text_wrap) & 0x07) << 21;
     a |= (text_flow_to_bits(common.text_flow) & 0x03) << 24;
-    if common.hwp5_gen_shape_attr_bit26 {
-        a |= 1 << 26;
-    }
+    a |= common.numbering_type.hwp5_attr_bits();
     if common.hwp5_gen_shape_attr_bit28 {
         a |= 1 << 28;
     }

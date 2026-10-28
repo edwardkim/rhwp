@@ -98,7 +98,6 @@ mod tests {
             flow_with_text: false,
             allow_overlap: false,
             affect_line_spacing: false,
-            hwp5_gen_shape_attr_bit26: false,
             size_protect: false,
             hwp5_gen_shape_attr_bit28: false,
             vert_rel_to: VertRelTo::Para,
@@ -137,10 +136,7 @@ mod tests {
         assert_eq!(parsed.treat_as_char, original.treat_as_char);
         assert_eq!(parsed.flow_with_text, original.flow_with_text);
         assert_eq!(parsed.allow_overlap, original.allow_overlap);
-        assert_eq!(
-            parsed.hwp5_gen_shape_attr_bit26,
-            original.hwp5_gen_shape_attr_bit26
-        );
+        assert_eq!(parsed.numbering_type, original.numbering_type);
         assert_eq!(parsed.size_protect, original.size_protect);
         assert_eq!(
             parsed.hwp5_gen_shape_attr_bit28,
@@ -167,7 +163,7 @@ mod tests {
         let mut original = make_sample();
         original.flow_with_text = true;
         original.allow_overlap = true;
-        original.hwp5_gen_shape_attr_bit26 = true;
+        original.numbering_type = crate::model::shape::ObjectNumberingType::Picture;
         original.size_protect = true;
         original.hwp5_gen_shape_attr_bit28 = true;
 
@@ -184,7 +180,10 @@ mod tests {
         assert!(parsed.flow_with_text);
         assert!(parsed.allow_overlap);
         assert!(parsed.size_protect);
-        assert!(parsed.hwp5_gen_shape_attr_bit26);
+        assert_eq!(
+            parsed.numbering_type,
+            crate::model::shape::ObjectNumberingType::Picture
+        );
         assert!(parsed.hwp5_gen_shape_attr_bit28);
     }
 

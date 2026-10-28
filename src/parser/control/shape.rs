@@ -356,25 +356,19 @@ pub(crate) fn parse_common_obj_attr(ctrl_data: &[u8]) -> CommonObjAttr {
     // 안 잠긴 표보다 정확히 `2^30` 만큼 크다(같은 문서 안 표 열둘로 대조). 여태 HWPX 경로에서만
     // 읽고 HWP5 는 늘 `false` 여서, 잠긴 개체가 저장·변환에서 풀려 나갔다.
     common.locked = attr & (1 << 30) != 0;
-    common.hwp5_gen_shape_attr_bit26 = attr & (1 << 26) != 0;
     common.hwp5_gen_shape_attr_bit28 = attr & (1 << 28) != 0;
     // [#5864] 개체 번호 범주(캡션 번호·상호참조 계열) — attr bits 26-28 의 3비트
     // 열거다. 07276 실측: 표 155/155(0=NONE 23·2=TABLE 126·1=PICTURE 6), 수식
     // 8/8(=3), gso 분포도 한글 2024 SaveAs HWPX 의 numberingType 과 정합
     // (PICTURE 28·TABLE 1 정확 일치). 종전엔 안 읽어 h2x 산출이 전량 NONE 이
     // 됐고, 한글이 상호참조 순번을 전부 1 로 재계산했다(07276 상호참조 153중
-    // 101 오염). bit26/28 개별 보존 플래그(hwp5_gen_shape_attr_bit26/28)는
-    // attr verbatim 왕복용으로 그대로 둔다.
+    // 101 오염).
     // [#8294] 범주는 bit 26-27 의 2비트다. bit 28 은 범주와 별개로 켜진다 — 한글 2024
     // `NumberingType` 은 원본 6·5·7 을 표·그림·수식(2·1·3)으로, 4 를 없음(0)으로 읽는다
     // (한글문서파일형식 표 166 · exam_math_no 수식·그림·표 전수). 3비트로 읽으면 표 1437·
     // 그림 435·수식 375(samples)가 범주를 잃어 캡션 번호가 모두 1이 된다.
-    common.numbering_type = match (attr >> 26) & 0x3 {
-        1 => crate::model::shape::ObjectNumberingType::Picture,
-        2 => crate::model::shape::ObjectNumberingType::Table,
-        3 => crate::model::shape::ObjectNumberingType::Equation,
-        _ => crate::model::shape::ObjectNumberingType::None,
-    };
+    // [#8335] bit 26 은 이 범주의 아래 비트다 — 저장기도 범주에서 다시 만든다.
+    common.numbering_type = crate::model::shape::ObjectNumberingType::from_hwp5_attr(attr);
     common.vert_rel_to = match (attr >> 3) & 0x03 {
         1 => VertRelTo::Page,
         2 => VertRelTo::Para,

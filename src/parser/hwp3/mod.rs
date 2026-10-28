@@ -5697,9 +5697,8 @@ fn assign_pic_numbers_in_controls(
                 // HWP3는 캡션 없는 그림도 암묵적 그림 순번에 포함한다.
                 // 이 범주를 IR에 명시해 HWP5/HWPX 저장 후에도 같은 개체가 센다.
                 pic.common.numbering_type = crate::model::shape::ObjectNumberingType::Picture;
-                // HWP5 방출기는 이 원시 의미 비트도 소비한다. 암묵적 범주를
+                // HWP5 방출기는 bit 28 원시 비트도 소비한다. 암묵적 범주를
                 // 정규화하는 이 경계에서 enum과 같은 PICTURE(001)로 맞춘다.
-                pic.common.hwp5_gen_shape_attr_bit26 = true;
                 pic.common.hwp5_gen_shape_attr_bit28 = false;
                 *pic_counter += 1;
                 let num = *pic_counter;

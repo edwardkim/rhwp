@@ -75,10 +75,6 @@ pub struct CommonObjAttr {
     /// bit 2 ⟺ affectLSpacing="1" 를 1:1 대조 검증했다. 이 필드가 없어
     /// 그림·도형·표 방출이 "0" 으로 하드코딩되던 유실을 해소한다.
     pub affect_line_spacing: bool,
-    /// HWPX 출처 GenShape를 HWP5로 저장할 때 필요한 storage high bit 후보.
-    ///
-    /// Table adapter의 `0x08000000` 보강과 다른 `0x04000000` bit 26이다.
-    pub hwp5_gen_shape_attr_bit26: bool,
     /// VertRelTo가 para일 때 크기 보호 여부 (HWP5 GenShape CTRL_HEADER attr bit 20).
     pub size_protect: bool,
     /// HWPX 출처 GenShape 번호 범주 high bit 후보 (HWP5 GenShape CTRL_HEADER attr bit 28).
@@ -129,6 +125,35 @@ pub enum ObjectNumberingType {
     Picture,
     Table,
     Equation,
+}
+
+impl ObjectNumberingType {
+    /// [#8335] HWP5 개체 공통 속성 attr 의 번호 범주 비트 자리(bit 26-27, #8294).
+    pub const HWP5_ATTR_MASK: u32 = 0x03 << 26;
+
+    /// HWP5 attr bit 26-27 의 번호 범주. bit 28 은 범주와 별개다(#8294).
+    pub fn from_hwp5_attr(attr: u32) -> Self {
+        match (attr >> 26) & 0x03 {
+            1 => Self::Picture,
+            2 => Self::Table,
+            3 => Self::Equation,
+            _ => Self::None,
+        }
+    }
+
+    /// 이 범주를 HWP5 attr bit 26-27 자리에 둔 값.
+    ///
+    /// 한컴이 같은 문서를 저장한 HWP·HWPX 32쌍의 개체 616개(표 348·그림 117·도형 91·
+    /// 수식 60) 전부에서 bit 26-27 이 `numberingType` 과 같다. 개체 종류와 무관하다 —
+    /// `NONE` 그림은 0, `PICTURE` 표는 1 이다.
+    pub fn hwp5_attr_bits(self) -> u32 {
+        (match self {
+            Self::None => 0,
+            Self::Picture => 1,
+            Self::Table => 2,
+            Self::Equation => 3,
+        }) << 26
+    }
 }
 
 /// HWPX 개체 `dropcapstyle` (드롭캡 표시 방식). OWPML Core 스키마 `DropCapStyleType`.

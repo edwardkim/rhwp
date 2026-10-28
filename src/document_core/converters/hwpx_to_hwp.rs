@@ -2014,15 +2014,14 @@ fn materialize_section_def_ctrl_tail(
 /// - HWPX 의 `font` 속성을 HWP5 EQEDIT 의 font_name 자리에 매핑한 결과 정답지와 자리값 swap
 ///   → Stage 2 에서 parser 직접 정정 (정답지: version_info="Equation Version 60", font_name="")
 ///
-/// 본 함수는 Stage 1 의 attr 재구성 (enum 필드 → bit 합성 + bit 27 보강) + raw_ctrl_data clear
+/// 본 함수는 Stage 1 의 attr 재구성 (enum 필드 → bit 합성) + raw_ctrl_data clear
 /// (직렬화기가 common 으로 재합성).
 fn adapt_equation(eq: &mut crate::model::control::Equation, report: &mut AdapterReport) {
-    const HWPX_EQUATION_NUMBERING_BIT: u32 = 0x0800_0000;
-
     let before = eq.common.attr;
-    // HWPX 출처는 attr=0 으로 IR 생성 → pack_common_attr_bits 로 enum 필드들에서 재합성 후
-    // bit 27 보강. 표 어댑터 (materialize_table_ctrl_header_attr) 와 동일 패턴.
-    eq.common.attr = pack_common_attr_bits(&eq.common) | HWPX_EQUATION_NUMBERING_BIT;
+    // HWPX 출처는 attr=0 으로 IR 생성 → pack_common_attr_bits 로 enum 필드들에서 재합성한다.
+    // [#8335] 위 bit 27 은 수식 번호 범주(11)의 윗 비트다 — packer 가 numberingType 에서
+    // 만든다. 종전 무조건 OR 은 `NONE` 수식을 표 범주(10)로 저장했다.
+    eq.common.attr = pack_common_attr_bits(&eq.common);
 
     // raw_ctrl_data 가 보존되어 있으면 직렬화기가 raw 우선 사용 → attr 갱신 무효화.
     // clear 하여 직렬화기가 common 으로 재합성하도록 함.
@@ -2447,7 +2446,6 @@ fn materialize_table_record_row_sizes(table: &mut Table, report: &mut AdapterRep
 }
 
 fn materialize_table_ctrl_header_attr(table: &mut Table, report: &mut AdapterReport) {
-    const HWPX_TABLE_NUMBERING_BIT: u32 = 0x0800_0000;
     const HWP5_TABLE_CAPTION_COMMON_ATTR_BIT: u32 = 0x2000_0000;
 
     let before = table.common.attr;
@@ -2457,14 +2455,10 @@ fn materialize_table_ctrl_header_attr(table: &mut Table, report: &mut AdapterRep
     // 2022 도 같은 변환에서 `0` 을 그대로 둔다 — HWPX 를 열어 HWP 로 저장한 실측에서
     // 13문서 표 84개 전부 보존, 정규화 0건(`tools/hangul_flowwithtext_oracle.py`).
     // #2697 의 표 번호 비트 무조건 OR 과 같은 계열이다.
+    // [#2697·#8335] 번호 범주 bit 26-27 은 `pack_common_attr_bits` 가 numberingType 에서
+    // 만든다. 종전엔 TABLE 일 때만 bit 27 을 따로 세워 `PICTURE` 표가 범주 없음(0)으로
+    // 저장됐다 — 그 표의 그림 캡션이 모두 1 이 됐다(policy_progress 그림 2~16).
     let mut attr = pack_common_attr_bits(&table.common);
-    // [#2697] 파서(materialize_hwpx_table_attrs)와 동일 게이트: "표 번호" 비트는
-    // numberingType 이 실제로 TABLE 일 때만 세운다. 종전 무조건 OR 은 numberingType=
-    // "PICTURE"/"NONE" 표를 HWP5 저장 시 표 번호 범주로 되돌려, 파서가 #2697 에서
-    // 제거한 IR 모순(numbering_type=Picture ↔ attr=TABLE)을 변환 계층이 재도입했다.
-    if table.common.numbering_type == crate::model::shape::ObjectNumberingType::Table {
-        attr |= HWPX_TABLE_NUMBERING_BIT;
-    }
     if table.caption.is_some() {
         attr |= HWP5_TABLE_CAPTION_COMMON_ATTR_BIT;
     }
@@ -3319,9 +3313,9 @@ mod tests {
         adapt_table(&mut table, &mut report);
 
         assert_eq!(
-            table.common.attr & 0x0800_0000,
-            0,
-            "PICTURE 번호 표에 TABLE 번호 비트가 서면 IR 모순: {:#010x}",
+            table.common.attr & ObjectNumberingType::HWP5_ATTR_MASK,
+            ObjectNumberingType::Picture.hwp5_attr_bits(),
+            "[#8335] PICTURE 번호 표는 그림 범주(01)로 저장: {:#010x}",
             table.common.attr
         );
         let flags = u32::from_le_bytes(

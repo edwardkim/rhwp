@@ -523,7 +523,6 @@ fn validate_common(
         || padding_nonzero(common.margin)
         || common.instance_id != 0
         || common.prevent_page_break != 0
-        || common.hwp5_gen_shape_attr_bit26
         || common.size_protect
         || common.hwp5_gen_shape_attr_bit28
         || common.text_flow != Default::default()
