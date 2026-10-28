@@ -135,9 +135,29 @@ impl Writer {
     }
 
     fn project<'a>(&mut self, t: &'a Table) -> Result<Cow<'a, Table>, String> {
+        // 격자 보존 기록은 ID로 표를 다시 찾는다. 기록이 걸린 ID가 겹칠 때만 뒤 표를
+        // 새 ID로 써서 HWPX 저장 전체가 실패하지 않게 한다. 기록과 무관한 표의 ID는 원본대로 둔다.
+        let id = t.common.instance_id;
+        let boundaries = projection(t)?;
+        let clashes = if boundaries.is_some() {
+            self.ids.contains_key(&id)
+        } else {
+            self.records.iter().any(|record| record.id == id)
+        };
+        let t: Cow<'a, Table> = if clashes {
+            let mut fresh = u32::MAX - self.ids.len() as u32;
+            while self.ids.contains_key(&fresh) {
+                fresh -= 1;
+            }
+            let mut renamed = t.clone();
+            renamed.common.instance_id = fresh;
+            Cow::Owned(renamed)
+        } else {
+            Cow::Borrowed(t)
+        };
         *self.ids.entry(t.common.instance_id).or_default() += 1;
-        let Some(boundaries) = projection(t)? else {
-            return Ok(Cow::Borrowed(t));
+        let Some(boundaries) = boundaries else {
+            return Ok(t);
         };
         // Bound the record allocation before serializing JSON (each u16 takes
         // at most six bytes including its separator; the fixed record fits 512).
@@ -147,7 +167,8 @@ impl Writer {
             .filter(|bytes| *bytes <= MAX_BYTES)
             .ok_or("HWPX 표 격자 보존 정보가 크기 한도를 넘습니다")?;
         let index = |row| boundaries.binary_search(&row).expect("proven row boundary") as u16;
-        let mut projected = t.clone();
+        let id = t.common.instance_id;
+        let mut projected = t.into_owned();
         projected.row_count = (boundaries.len() - 1) as u16;
         for c in &mut projected.cells {
             let end = index(c.row + c.row_span);
@@ -161,7 +182,7 @@ impl Writer {
         projected.rebuild_row_sizes();
         projected.rebuild_grid();
         self.records.push(Record {
-            id: t.common.instance_id,
+            id,
             fingerprint: fingerprint(&projected),
             boundaries,
         });
