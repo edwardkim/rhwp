@@ -7348,7 +7348,7 @@ impl LayoutEngine {
                     // 이어받는 외곽선은 필요한 면만 그린다. 채우기는 아래 문단별 paint가 소유한다.
                     let mut push_border_line =
                         |border: &BorderLine, x1: f64, y1: f64, x2: f64, y2: f64| {
-                            if !para_border_is_visible(border) {
+                            if !super::layout::border_rendering::text_border_is_drawn(border) {
                                 return;
                             }
                             let nodes = super::layout::border_rendering::create_border_line_nodes(
