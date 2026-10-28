@@ -5,7 +5,7 @@
 //! HWPX 86쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
 //! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
-//! 근거: issue_8153_inline_picture_row_frame_20261026.md, 독립 2024 Print 86쪽.
+//! 근거: mydocs/report/issue_8153_inline_picture_row_frame_20261026.md.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::control::Control;

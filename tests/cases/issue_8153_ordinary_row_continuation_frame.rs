@@ -6,7 +6,7 @@
 //! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
 //! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 312쪽의 표·셀·내용 컷을 보존하고 세 세로선의 끝을 ±2px로 확인한다.
-//! 근거: issue_8153_ordinary_row_continuation_frame_20261026.md.
+//! 근거: mydocs/report/issue_8153_ordinary_row_continuation_frame_20261026.md.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::{model::control::Control, paint::RenderProfile, DocumentCore};
 use serde_json::{json, Value};
