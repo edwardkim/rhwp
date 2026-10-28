@@ -233,3 +233,27 @@ WASM으로 2배 확대해 확인했다. 선택한 마지막 줄·앞뒤 문장�
 | HWP 315 | [review](native/handbook-hwp-p315-review.png) · [overlay](native/handbook-hwp-p315-overlay.png) | [review](wasm/handbook-hwp-p315-review.png) · [overlay](wasm/handbook-hwp-p315-overlay.png) |
 | HWPX 314 | [review](native/handbook-hwpx-p314-review.png) · [overlay](native/handbook-hwpx-p314-overlay.png) | [review](wasm/handbook-hwpx-p314-review.png) · [overlay](wasm/handbook-hwpx-p314-overlay.png) |
 | HWPX 315 | [review](native/handbook-hwpx-p315-review.png) · [overlay](native/handbook-hwpx-p315-overlay.png) | [review](wasm/handbook-hwpx-p315-review.png) · [overlay](wasm/handbook-hwpx-p315-overlay.png) |
+
+## 분리 소스의 2026-10-29 전쪽 재검증
+
+커밋 `ffae46e8a6`의 제품 소스를 별도 검증 worktree에서 빌드해 두 원본을
+같은 독립 Print PDF, 96dpi PDFium 및 2px raw 실루엣 조건으로 각각 전 383쪽
+재검증했다. Native 실행 파일 SHA-256은
+`9425abb8a2d6fb981992573aa618eced426f0ca745cf5d01cb3cc0c5e2970563`,
+최적화 fresh WASM SHA-256은
+`6894bcc9978476aa432b71a55ea149e821efcd27041a5ae137fe406b98ac888c`다.
+제품 소스 출력 시점과 이후 테스트 전용 서식·문서 커밋을 구분한다.
+
+두 입력 모두 Native 최저 raw 99.96463%, fresh WASM 최저 raw 99.96402%이며
+최저 쪽은 130쪽이다. Native와 fresh WASM 각각 미대응 0은 380쪽이며,
+43·130·141쪽의 정밀 raw 및 미대응 수는 위 표와 같다. 기존 후보와 전쪽 raw와
+미대응 수가 변한 쪽은 없다. 소수 둘째 자리 TSV 네 파일은 이 문서에 이미
+보존된 Native·WASM TSV와 바이트 단위로 같다. 130쪽 WMF 내부 차이는 사용자
+지시에 따라 추가 보정하지 않는다. 이 일치율은 색 농도의 완전한 일치를 뜻하지
+않으며 위 확대 판독 내용도 함께 적용된다.
+
+HWPX 출력 후 테스트 소스의 서식 편집이 검증 worktree에 일시 반영되어 최초
+완료 단계의 소스 무결성 검사가 실패했다. 해당 소스를 빌드 당시 상태로
+복원하고, 이미 완성된 전쪽 PNG의 출력 기록 해시와 입력·독립 PDF·PDF 래스터
+해시를 확인한 뒤 점수 계산과 소스 무결성 검사를 재실행해 완료했다. 새 글꼴은
+배포하지 않으며 시스템 글꼴과 Git에서 제외한 로컬 검증 캐시만 사용했다.
