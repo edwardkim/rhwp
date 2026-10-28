@@ -340,6 +340,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let operator = match record {
             META_DIBSTRETCHBLT::WithBitmap {
                 raster_operation,
+                src_height,
+                src_width,
+                y_src,
+                x_src,
                 dest_height,
                 dest_width,
                 y_dest,
@@ -394,7 +398,9 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 }
 
                 if raster_operation.use_source() {
-                    operator = operator.source_bitmap(*target);
+                    operator = operator
+                        .source_bitmap(*target)
+                        .source_rectangle(x_src, y_src, src_width, src_height);
                 }
 
                 operator
@@ -546,6 +552,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
     ) -> Result<Self, PlayError> {
         let META_STRETCHDIB {
             raster_operation,
+            src_height,
+            src_width,
+            y_src,
+            x_src,
             dest_height,
             dest_width,
             y_dst,
@@ -564,7 +574,20 @@ impl crate::wmf::converter::Player for SVGPlayer {
         }
 
         if raster_operation.use_source() {
-            operator = operator.source_bitmap(dib);
+            // StretchDIBits의 원점은 상향식 DIB에서는 왼쪽 아래, 하향식에서는 왼쪽 위다.
+            // 디코딩한 이미지는 왼쪽 위가 원점이므로 원래 행 방향을 함께 전달한다.
+            let bottom_up = match &dib.dib_header_info {
+                crate::wmf::parser::BitmapInfoHeader::Core(_) => true,
+                crate::wmf::parser::BitmapInfoHeader::Info(header) => header.height > 0,
+                crate::wmf::parser::BitmapInfoHeader::V4(header) => header.height > 0,
+                crate::wmf::parser::BitmapInfoHeader::V5(header) => header.height > 0,
+            };
+            operator = operator
+                .source_bitmap(dib)
+                .source_rectangle(x_src, y_src, src_width, src_height);
+            if bottom_up {
+                operator = operator.bottom_up_source();
+            }
         }
 
         let Some(elem) = operator
