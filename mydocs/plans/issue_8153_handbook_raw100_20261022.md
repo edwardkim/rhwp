@@ -1274,3 +1274,12 @@ HWPX 전용 사각 배치 보조 분기도 직전 문단에 control이 없어야
 바꾼다는 근거는 현재 확인되지 않았다. 이는 정적 조건과 실제 입력·조판 항목의
 대조이며 실행 중 helper 반환값을 계측한 결과는 아니다. 편람의 다른 표나 다른
 공통 값에 대한 판정으로 확대하지 않는다.
+
+두 편람의 전체 `dump-pages --json`에서 첫 표 조각
+(`partialTable`, `isContinuation=false`, 시작 행 0, 시작 컷 없음)을 열거했다.
+HWP와 HWPX 각각 22개이며, 완료된 쪽 항목 순서에서 바로 앞 항목이 같은 구역의
+이전 문단 `partialParagraph`이면서 시작 줄이 0보다 큰 사례는 두 원본 모두 0개다.
+목록은 ignored `handbook-first-fragment-predecessors-20261029.json`에 보관한다.
+이는 사용자에게 보여 주는 최종 쪽 항목의 후행 분석이다. 표 준비 중간에 추가·이동된
+항목이 있을 수 있으므로 `previous_paragraph_continues`의 런타임 분기 불진입을
+직접 입증하지 않는다. 실행 경로 계측과 미커밋 후보의 처리 범위 검토가 남는다.
