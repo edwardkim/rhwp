@@ -110,3 +110,10 @@ WASM SHA-256은 `5fd7d45d8c3484abf58952d28d4954b95a1eee6dd7c471068a66b5d88a2bfb3
 이전 base Native의 출력 메타데이터에는 글꼴 환경 필드가 없어 실제 Native 실행에
 전달한 환경 파일을 확인하고 후보 WASM의 환경과 같은 것을 확인해 base WASM에
 적용했다. base HWPX WASM은 진행 중이다.
+
+## 148쪽 마지막 줄 확대 판독
+
+HWPX 148쪽의 [독립 Print와 fresh WASM 확대 비교](wasm/handbook-hwpx-p148-text-review.png)에서
+`생산등록번호`부터 `설계한다.`까지의 글자·공백 순서와 한 줄 소유, 뒤따르는
+제목을 대조했다. 같은 영역을 2배로 표시했으며 획 농도·가장자리 차이가 보인다.
+이 판독은 해당 원본·쪽·경로에 한정한다.
