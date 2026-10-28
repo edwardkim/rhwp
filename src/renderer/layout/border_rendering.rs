@@ -1605,12 +1605,15 @@ fn border_line_type_to_dash(lt: BorderLineType, width: u8) -> Option<StrokeDash>
     }
 }
 
+/// 대각선 모양 3비트 중 꼭짓점 사이 대각선 비트 (HWPX `CENTER`).
+const DIAGONAL_CENTER: u16 = 0b010;
+
 /// 셀 대각선 렌더링
 /// HWP BorderFill.attr 비트:
 ///   bit 2~4: Slash(`/`) 대각선 모양
-///     000=none, 그 외=slash
 ///   bit 5~7: BackSlash(`\`) 대각선 모양
-///     000=none, 그 외=backslash
+///     3비트 중 0b010(HWPX `CENTER`)이 꼭짓점 사이 대각선이다. 꺾은선이 아니면
+///     한컴은 2·3·6을 같은 대각선 하나로 그리고, 이 비트가 없는 1은 그리지 않는다.
 ///   bit 8~9: Slash 대각선 꺾은선
 ///   bit 10: BackSlash 대각선 꺾은선
 ///   bit 13: 중심선
@@ -1685,7 +1688,7 @@ pub(crate) fn render_cell_diagonal(
                 diag.width,
                 &[p1, p2, p3, p4],
             ));
-        } else {
+        } else if slash_bits & DIAGONAL_CENTER != 0 {
             nodes.extend(create_diagonal_line_nodes(
                 tree, line_type, color, diag.width, x1, y2, x2, y1,
             ));
@@ -1706,7 +1709,7 @@ pub(crate) fn render_cell_diagonal(
                 diag.width,
                 &[p1, p2, p3, p4],
             ));
-        } else {
+        } else if backslash_bits & DIAGONAL_CENTER != 0 {
             nodes.extend(create_diagonal_line_nodes(
                 tree, line_type, color, diag.width, x1, y1, x2, y2,
             ));
