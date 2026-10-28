@@ -1580,6 +1580,9 @@ indexed 18개 모두 `printArea`였으므로 색 확장 여부와 `catmullRom` �
 `diagnose-palette-profile-producer-20261029.sha256`에 남겼다. 이는 payload와
 프로필의 직접 근거이며 해당 입력의 현재 Native·fresh WASM 시각 재검증이나
 기존 검사 2건의 수정 후 통과를 대신하지 않는다.
+두 합성 입력의 현재 커밋 Native 전쪽은 각각 1쪽이며 독립 2024 Print 대비
+raw 100%다. 실행·원본·PDF·PNG 해시와 overlay는 ignored
+`palette-ffae46-native-20261029/`에 기록했다. fresh WASM은 아직 검증 전이다.
 
 `#501` 원본과 다른 경로에 있는 같은 이름의 HWP는 파일 SHA-256이 다르지만,
 두 번째 쪽에서 추출한 텍스트는 완전히 같다. 독립 PDF의 같은 쪽에도 `8,491`,
