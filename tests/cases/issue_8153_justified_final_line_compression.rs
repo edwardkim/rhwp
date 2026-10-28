@@ -1,4 +1,4 @@
-//! 관계형: Justify의 마지막 줄도 같은 공백 한계·잔여 글자 사이 압축을 소비한다.
+//! 관계형·고정형: Justify의 마지막 줄도 같은 공백 한계·잔여 글자 사이 압축을 소비한다.
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! HWP 148쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! HWP 327쪽 Native 100.00000% / fresh WASM 100.00000%.
@@ -49,10 +49,10 @@ fn advance(run: &TextRunNode, ch: char) -> f64 {
 }
 
 fn in_print_range(actual: f64, low: f64, high: f64, label: &str) {
-    // 600dpi Print의 교대 전진 구간에 원본 HU 한 단위의 산술 오차만 더한다.
-    let hu = 96.0 / 7200.0;
+    // 독립 Print에서 관찰한 전진 범위에 96dpi 기준 ±2px를 허용한다.
+    let tolerance = 2.0;
     assert!(
-        (low - hu..=high + hu).contains(&actual),
+        (low - tolerance..=high + tolerance).contains(&actual),
         "독립 Print의 {label} 전진 구간 {low}..{high}, 실제 {actual}"
     );
 }

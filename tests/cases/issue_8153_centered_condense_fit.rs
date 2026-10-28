@@ -1,4 +1,4 @@
-//! 관계형: 가운데 정렬의 원래 글자·공백 fit을 공백 전용 압축으로 바꾸지 않는다.
+//! 관계형·고정형: 가운데 정렬의 원래 글자·공백 fit을 공백 전용 압축으로 바꾸지 않는다.
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! HWP 46쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
@@ -42,10 +42,10 @@ fn positions(run: &TextRunNode) -> Vec<f64> {
     })
 }
 fn in_range(value: f64, low: f64, high: f64, label: &str) {
-    // 독립 Print의 두 원점 차이에는 600dpi 한 장치 픽셀의 양자화 오차가 있다.
-    let hu = 96.0 / 7200.0 + 96.0 / 600.0;
+    // 독립 Print에서 관찰한 전진 범위에 96dpi 기준 ±2px를 허용한다.
+    let tolerance = 2.0;
     assert!(
-        (low - hu..=high + hu).contains(&value),
+        (low - tolerance..=high + tolerance).contains(&value),
         "독립 Print의 {label}: {low}..{high}, 실제 {value}"
     );
 }

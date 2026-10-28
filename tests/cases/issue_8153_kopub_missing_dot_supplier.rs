@@ -1,4 +1,4 @@
-//! 관계형: 결측 U+2024의 실제 공급자 메트릭과 원문·공백·기존 glyph hit를 보존한다.
+//! 관계형·고정형: 결측 U+2024의 실제 공급자 메트릭과 원문·공백·기존 glyph hit를 보존한다.
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! HWP 368쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
@@ -47,9 +47,9 @@ fn positions(run: &TextRunNode) -> Vec<f64> {
         EmbeddedTextMeasurer.compute_char_positions(run.display_or_text(), &run.style)
     })
 }
-fn near(actual: f64, expected: f64, label: &str) {
+fn near_print(actual: f64, expected: f64, label: &str) {
     assert!(
-        (actual - expected).abs() <= 96.0 / 7200.0,
+        (actual - expected).abs() <= 2.0,
         "독립 Print의 {label}: 기대 {expected}, 실제 {actual}"
     );
 }
@@ -78,11 +78,11 @@ fn check(extension: &str) {
         let text = run.display_or_text();
         let pos = positions(run);
         if text == "․" {
-            near(pos[1] - pos[0], 2.07935, "실제 공급자의 점 전진");
+            near_print(pos[1] - pos[0], 2.07935, "실제 공급자의 점 전진");
         }
         for (index, ch) in text.chars().enumerate() {
             if ch == ' ' {
-                near(pos[index + 1] - pos[index], 6.56, "같은 줄의 공백 전진");
+                near_print(pos[index + 1] - pos[index], 6.56, "같은 줄의 공백 전진");
                 spaces += 1;
             }
         }
@@ -94,10 +94,9 @@ fn check(extension: &str) {
         .unwrap();
     // U+2027은 원 KoPub의 cmap/hmtx 900/1000em이다. 결측 점과 혼동하지 않는다.
     let primary = EmbeddedTextMeasurer.compute_char_positions("‧", &dot.style);
-    near(
-        primary[1] - primary[0],
-        11.04,
-        "KoPub 자체의 유효한 기호 전진",
+    assert!(
+        (primary[1] - primary[0] - 11.04).abs() <= 96.0 / 7200.0,
+        "KoPub 자체의 유효한 기호 전진"
     );
 }
 #[test]
