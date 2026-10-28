@@ -2982,18 +2982,16 @@ fn parse_simple_control_char(
             utf16_len += 8;
             text_string.push('\u{FFFC}');
 
-            let kw1_bytes = &buf[0..120];
-            let kw2_bytes = &buf[120..240];
-
-            let mut field = crate::model::control::Field::default();
-            field.field_type = crate::model::control::FieldType::Unknown;
-            field.command = format!(
-                "IndexMark:{}:{}",
-                crate::parser::hwp3::encoding::decode_hwp3_string(kw1_bytes).trim_end_matches('\0'),
-                crate::parser::hwp3::encoding::decode_hwp3_string(kw2_bytes).trim_end_matches('\0')
-            );
-
-            controls.push(crate::model::control::Control::Field(field));
+            // [#8304] 찾아보기 표시(스펙 §10.20 표 61): 키워드 두 개는 `hchar array[60]`
+            // (파일 오프셋 2..122, 122..242 = buf[0..120], buf[120..240]). 공통 IR 의
+            // 찾아보기 표시로 옮긴다 — HWP5 `idxm`·HWPX `indexmark` 와 같은 컨트롤이라 두
+            // 저장 경로가 함께 보존한다. 쪽 번호(buf[240..242])는 조판이 다시 매긴다.
+            controls.push(crate::model::control::Control::IndexMark(
+                crate::model::control::IndexMark {
+                    first_key: crate::parser::hwp3::encoding::decode_hchar_array(&buf[0..120]),
+                    second_key: crate::parser::hwp3::encoding::decode_hchar_array(&buf[120..240]),
+                },
+            ));
             ctrl_data_records.push(None);
         }
         28 => {
