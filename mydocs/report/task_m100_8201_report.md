@@ -3,14 +3,15 @@
 Issue: [#8201](https://github.com/edwardkim/rhwp/issues/8201) ·
 계획: [task_m100_8201.md](../plans/task_m100_8201.md), [구현 계획](../plans/task_m100_8201_impl.md)
 
-PR base `0bb36e6f9`(upstream/devel), code head `90aba0886`.
-게이트·Visual Sweep 은 base `f770ef502` 위의 `529ee86d1`(code `f8f32af6c`)에서 실행했다. 그 뒤 upstream 이
-문서만 4커밋(`AGENTS.md`·`CLAUDE.md`·`mydocs/`) 바꿔 그 위로 다시 rebase 했고, 코드·테스트·자원 트리는
-`529ee86d1` 과 같다(`git diff 529ee86d1 HEAD` 는 upstream 문서 7개뿐). 새 base 로 `git diff --check`,
-manifest·unit tier `--check --base-ref 0bb36e6f9` 를 다시 실행해 통과했다.
-커밋: `6069ecad7` 계획·입력 보존 → `076ad6451` 회귀 가드(RED) → `2299c2f7a` refactor →
-`fb0e636a1` fix → `9dcd1fdd1` 합성 fixture 렌더링 검사 제외 → `a202d6474` 증적 →
-`90aba0886` 안쪽 '인'의 공개 대체 face → 증적 커밋.
+PR base `db5cd5bcc`(upstream/devel), code head `b0d4af057`. 게이트·Visual Sweep 은 그 위 문서 커밋
+`c936eaac0` 에서 실행했다(코드 동일).
+PR #8296 게시 뒤 upstream 이 402커밋 앞서 충돌이 나서 다시 rebase 했다. refactor 커밋에서 upstream 의
+글자 위치 헬퍼 `cluster_x`·Canvas2D 글꼴 체인 `canvas_text_font::family_chain`·Skia 바깥 `char_x` 와
+겹친 5개 파일, 공개 face 커밋에서 Canvas2D 글꼴 목록 1곳을 upstream 쪽 새 API 에 우리 판정을 얹는
+방식으로 풀었다. 이전 회차(base `0bb36e6f9`)의 결과는 이번 head 에 그대로 쓰지 않고 아래를 모두 다시 쟀다.
+커밋: `b09d5f36c` 계획·입력 보존 → `ae034d8c2` 회귀 가드(RED) → `95374d469` refactor →
+`19c5f0534` fix → `31b409f98` 합성 fixture 렌더링 검사 제외 → `5524c5fa1` 증적 →
+`b0d4af057` 안쪽 '인'의 공개 대체 face → 증적 커밋.
 
 ## 원인과 정답
 
@@ -47,15 +48,15 @@ GID 3 한 글리프(`/W` 1000, 타원 안 '인')로 그린다. 같은 글리프�
 
 ## 영향 범위
 
-samples 1,353 문서의 전 쪽 SVG(14,033쪽)를 base `f770ef502` 와 head `529ee86d1` 로 내보내 비교했다. 바뀐 문서는
+samples 1,356 문서의 전 쪽 SVG(14,050쪽)를 base `db5cd5bcc` 와 head `c936eaac0` 로 내보내 비교했다. 바뀐 문서는
 8개이며 모두 seal 문서다(이슈 서식, 복학원서 HWP·HWPX, issue4680, issue5800, issue5870, hwp3-table-caption,
 issue1842). 사라진 `(인)` 묶음 16곳과 새 "타원 + 안쪽 '인'" 16곳이 1:1로 대응하고, 그 밖의 텍스트 변화와
 쪽수 변화는 없다. 복학원서(HWP·HWPX) 접수증 날인선은 seal 이 좁아진 만큼 대시 글자와 그 선분이 2개씩
-늘었다. 나머지 1,345 문서는 바이트 단위로 같다(암호 문서 3건은 양쪽 모두 0쪽).
+늘었다. 나머지 1,348 문서는 바이트 단위로 같다(암호 문서 3건은 양쪽 모두 0쪽).
 
 ## 검증
 
-### Rust·Studio (검증 head `529ee86d1` = code `f8f32af6c`, 정책 비교 base `f770ef502`)
+### Rust·Studio (검증 head `c936eaac0` = code `b0d4af057`, 정책 비교 base `db5cd5bcc`)
 
 CONTRIBUTING 절차로 같은 SHA 의 별도 review worktree 에서 실행했다. 공용 target `target/pr-review`.
 
@@ -64,38 +65,40 @@ CONTRIBUTING 절차로 같은 SHA 의 별도 review worktree 에서 실행했다
 | `git diff --check base...head`, `cargo fmt --all -- --check` | 통과 |
 | Clippy native / `wasm32-unknown-unknown` lib / workspace all-targets (`-D warnings`) | 통과 |
 | `cargo build --workspace`, suite manifest 테스트·`--check --base-ref`, unit tier `--check --base-ref` | 통과 |
-| `cargo nextest run --cargo-profile release-test --tests` | 11,577 통과 / 0 실패 / 45 skip (코퍼스 래칫 포함) |
+| `cargo nextest run --cargo-profile release-test --tests` | 11,845 통과 / 0 실패 / 45 skip (코퍼스 래칫 포함) |
 | Native Skia: `--features native-skia --lib`, `issue_2225…`, `render_p37…` | `rhwp` lib 3,858 통과·12 ignored(workspace 다른 lib 182 통과) / 2 / 14 통과, 실패 0 |
 | 새 sample 보안 검사 (`RHWP_SECURITY_SWEEP_SAMPLES_JSON`) | 6 통과 |
-| RED ①: 최종 `issue_8201_seal_pua` 를 refactor 만 있는 `969721c95`(현 `2299c2f7a`) 에 넣어 실행 | 4 FAIL(seal 4.242 vs 한글 8.829, 상자 안 타원 0개, 복학원서 seal 기호 수, 공개 face 미요청) / 반례 1 PASS |
-| RED ②: 같은 테스트를 공개 face 보정 전 `e28bd0d21`(현 `9dcd1fdd1`) 에 넣어 실행 | 공개 face 검사 1 FAIL / 나머지 4 PASS |
+| RED ①: 최종 `issue_8201_seal_pua` 를 refactor 만 있는 `95374d469` 에 넣어 실행 | 4 FAIL(seal 4.242 vs 한글 8.829, 상자 안 타원 0개, 복학원서 seal 기호 수, 공개 face 미요청) / 반례 1 PASS |
+| RED ②: 같은 테스트를 공개 face 보정 전 `31b409f98` 에 넣어 실행 | 공개 face 검사 1 FAIL / 나머지 4 PASS |
 | 수정 후 같은 테스트 | 5 통과 |
 | Studio `tsc --noEmit`(fresh WASM 포함) | 통과. base 의 `package-lock.json` 으로 `npm ci` 한 뒤 실행 |
-| Studio 단위 `npm test` | 2,311건 중 27건 실패 — base `f770ef502`+base WASM 에서도 같은 27건(목록 동일). 이 환경(Node 22.12 타입 제거 실험 옵션)의 기존 실패 |
+| Studio 단위 `npm test` | 2,334건 중 27건 실패 — base `db5cd5bcc`+base WASM 에서도 같은 27건(목록 동일). 이 환경(Node 22.12 타입 제거 실험 옵션)의 기존 실패 |
 | `e2e/renderer-contract.test.mjs`(seal replay drawOval + '인' 추가) | 통과 |
 | `e2e/issue-536…`, `e2e/issue-4158…` 브라우저 e2e 원본 | base·head 모두 `renderPageToCanvas` 가 #7084 의 export 보호("supplemental metrics are active")에 걸려 판정 전 중단 — 테스트가 그 이전 작성분 |
 | 위 두 e2e 의 로컬 변형(Canvas2D 호출만 앱 export 경로와 같은 `withPortableMetrics` 로 감쌈, 커밋 안 함) | 4158: base·head 모두 전체 통과. 536: base·head 모두 상자 높이 37px 로 기대 30.7px(#7642 이전 0.72em 기준) 실패 — 같은 결과. 두 테스트의 Canvas2D PNG 는 base·head 바이트 동일 |
 | seal Canvas2D 로컬 e2e(이슈 서식 1쪽, `withPortableMetrics`) | head: seal 전진 9.174 = 한글 9.174, 잉크가 전진 상자 안 — 통과. base: 4.242 vs 8.829 — 실패(결함 재현) |
 
-산출물: Native CLI `rhwp-529ee86d1` SHA-256 `71321e87…`, fresh WASM `rhwp_bg.wasm` `b21782ca…`,
-`rhwp.js` `c1c8d182…`. base CLI `91e442e4…`, base WASM `rhwp_bg.wasm` `f51d1389…`(`rhwp.js` 는 head 와 같음).
+산출물: Native CLI `rhwp-c936eaac0` SHA-256 `d853748f…`, fresh WASM `rhwp_bg.wasm` `ee8c9f5c…`,
+`rhwp.js` `a48acb46…`. base CLI `a51516f5…`, base WASM `rhwp_bg.wasm` `39518a94…`(`rhwp.js` 는 head 와 같음).
 
 ### Visual Sweep (96dpi, print 프로필, 2px 관용 실루엣)
 
-base CLI `f770ef502`(SHA-256 `91e442e4…`)·base WASM(`f51d1389…`)과 head CLI `529ee86d1`·head fresh
-WASM(위 산출물)을 같은 입력·기준 PDF로 쟀다. 출력은 직전 base `238de6de4` 회차와 픽셀 단위로 같다.
+base CLI `db5cd5bcc`(SHA-256 `a51516f5…`)·base WASM(`39518a94…`)과 head CLI `c936eaac0`·head fresh
+WASM(위 산출물)을 같은 입력·기준 PDF로 쟀다. upstream 변경으로 base·head 모두 이전 회차와 렌더링이
+조금 달라졌고(이슈 서식 1쪽 99.65→99.84 등), base→head 차이는 여전히 seal 줄과 복학원서 서명란~날인선
+구간에만 있다.
 글꼴 공급은 아래 "검증 환경 주의"의 `RHWP_FONT_PATH` 로 base·head·Native·WASM 모두 같다. 값은 gate
 판정값인 실루엣 raw 일치율(%)이다.
 
 | 입력 · 기준 PDF | 쪽 | base Native | head Native | base WASM | head WASM |
 | --- | --- | --- | --- | --- | --- |
-| 이슈 서식 · `samples/issue8201/seal-delegation-form-2020.pdf` | 1 | 99.65126 | 99.67278 | 99.63982 | 99.66136 |
-| 〃 | 2 | 99.91336 | 99.91336 | 99.91352 | 99.91352 |
-| 복학원서 · `pdf/복학원서-2022.pdf` | 1 | 97.28575 | 97.32742 | 97.27006 | 97.31709 |
-| issue4680 · `pdf/issue4680/…bond_ledger_form-2020.pdf` | 1 | 98.64195 | 98.79450 | 98.65395 | 98.80607 |
+| 이슈 서식 · `samples/issue8201/seal-delegation-form-2020.pdf` | 1 | 99.83796 | 99.85941 | 99.82820 | 99.84967 |
+| 〃 | 2 | 99.91424 | 99.91424 | 99.91439 | 99.91439 |
+| 복학원서 · `pdf/복학원서-2022.pdf` | 1 | 97.28131 | 97.32161 | 97.26940 | 97.31414 |
+| issue4680 · `pdf/issue4680/…bond_ledger_form-2020.pdf` | 1 | 98.64195 | 98.79450 | 98.65413 | 98.80623 |
 
-복학원서만 색상 경계 대조 픽셀이 base·head 모두 185개다(보정값 Native 97.46709 → 97.50893,
-WASM 97.45127 → 97.49843). 나머지는 대조 픽셀 0개로 raw 와 보정값이 같다. 방법은
+복학원서만 색상 경계 대조 픽셀이 base·head 모두 185개다(보정값 Native 97.46308 → 97.50352,
+WASM 97.45092 → 97.49575). 나머지는 대조 픽셀 0개로 raw 와 보정값이 같다. 방법은
 `threshold_boundary_color_support_v1`, 2px 이웃, 색상 관용 32.
 
 전체 쪽수는 세 문서 모두 PDF 와 같다(2·1·1). 90% 미만·누락·측정 불가 쪽은 없고, 대표 review 의
@@ -103,7 +106,7 @@ WASM 97.45127 → 97.49843). 나머지는 대조 픽셀 0개로 raw 와 보정�
 점수와 별개로 review·300dpi 확대본을 직접 판독했다. 표 외곽·앞뒤 문단·쪽 구성은 base 와 같고, seal 이
 한컴처럼 타원 안 '인' 한 글자가 되며, 이슈 서식 `명` 이 셀 안에 들어오고, 복학원서 서명란·접수증 날인선
 가운데가 한컴과 같은 기호다(`mydocs/pr/assets/issue_8201_seal_pua/*-closeup.png`, Studio Canvas2D 는
-`…-canvas2d-closeup.png`). 남은 차이(제목 굵기, 복학원서 로고·`(Signature)` 라틴 글꼴)는 base 에도 같다.
+`…-canvas2d-closeup.png`). 남은 차이(제목 굵기, 복학원서 로고·`(Signature)` 라틴 글꼴·자간)는 base 에도 같다.
 
 ## 검증 환경 주의
 
