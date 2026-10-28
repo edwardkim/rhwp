@@ -76,7 +76,7 @@ WASM 출력 완료 기록의 SHA-256과 대조한 뒤 같은 PNG로 점수 계�
 개선 242쪽, 동일 141쪽이다. base 최저 raw는 91.89462%다.
 HWPX Native의 [base 전쪽 TSV](base/native/handbook-hwpx.tsv)도 383쪽이며,
 반올림 전 raw 기준 후보 대비 하락 0쪽, 개선 252쪽, 동일 131쪽이다.
-base 최저 raw는 91.89462%다. 두 원본의 base fresh WASM은 진행 중이다.
+base 최저 raw는 91.89462%다. 이후 base fresh WASM 결과는 아래에 기록한다.
 먼저 산출된 base HWP Native의 직접 비교에서 9쪽 raw는 99.99464% → 후보
 100.00000%, 130쪽은 98.92624% → 99.96463%, 309쪽은 양쪽 모두 100.00000%다.
 이는 선택한 세 쪽의 결과이며 base 전쪽 산출을 대신하지 않는다.
@@ -102,3 +102,11 @@ HWPX 46쪽의 [독립 Print와 fresh WASM 표 확대 비교](wasm/handbook-hwpx-
 소유를 대조했고, 글꼴 획 농도와 표 선의 가장자리에 차이가 보인다. 이 판독은
 해당 영역의 HWPX fresh WASM에 한정하며 다른 원본·경로의 판독을 대신하지 않는다.
 두 이미지는 각각 PDF와 후보 PNG의 같은 좌표를 잘라 2배로 표시했다.
+
+2026-10-29 고정 base의 HWP fresh WASM도 전 383쪽을 측정했다.
+[base HWP WASM TSV](base/wasm/handbook-hwp.tsv)의 최저 raw는 91.90995%이며,
+반올림 전 raw 기준 후보 대비 하락 0쪽, 개선 242쪽, 동일 141쪽이다. 최적화
+WASM SHA-256은 `5fd7d45d8c3484abf58952d28d4954b95a1eee6dd7c471068a66b5d88a2bfb31`이다.
+이전 base Native의 출력 메타데이터에는 글꼴 환경 필드가 없어 실제 Native 실행에
+전달한 환경 파일을 확인하고 후보 WASM의 환경과 같은 것을 확인해 base WASM에
+적용했다. base HWPX WASM은 진행 중이다.
