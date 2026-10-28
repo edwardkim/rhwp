@@ -2412,10 +2412,17 @@ impl TypesetEngine {
                         // 문단 위끝이므로 거기에 적용한 앞 간격을 더한 줄 위치를 원점으로 쓴다
                         // (한글문서파일형식 13쪽 표 51: 종전 줄 + 위 여백으로 +6.7px).
                         // 세로 오프셋이 있는 표는 오프셋이 가리키는 상자 원점이 다른 계약(#4068)이라
-                        // 이 대체 원점을 쓰지 않는다.
+                        // 이 대체 원점을 쓰지 않는다. 커서가 문단 위끝이라는 근거는 host 저장 줄이
+                        // `커서 + 앞 간격` 에 있을 때뿐이다 — 앞 문단 꼬리 줄간격이 커서에 없으면
+                        // (hcar-001 1쪽 pi=2: 커서 51.5 + 0 ≠ 저장 줄 56.3) 표가 그만큼 올라간다.
                         source_host_origin.or_else(|| {
-                            (signed_hwpunit(table.common.vertical_offset) == 0)
-                                .then_some(placement_para_start_height + applied_spacing_before)
+                            let line_top = placement_para_start_height + applied_spacing_before;
+                            (signed_hwpunit(table.common.vertical_offset) == 0
+                                && para.line_segs.first().is_some_and(|line| {
+                                    (hwpunit_to_px(line.vertical_pos, self.dpi) - line_top).abs()
+                                        <= 1.0
+                                }))
+                            .then_some(line_top)
                         }),
                         applied_spacing_before,
                         ft.effective_height,

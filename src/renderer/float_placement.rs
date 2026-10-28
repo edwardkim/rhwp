@@ -3829,9 +3829,11 @@ pub(crate) fn stored_frame_successor_shared_spacing_px(
 /// 배치가 없을 때(다음 문단에 저장 줄이 없는 「4.3.x」 제목 등)만 쓴다. 한글문서파일형식 50쪽:
 /// 표 317·321 뒤 제목 318·322 가 앞 간격 13.3px 만큼 내려가 표 323 마지막 행이 넘어갔다.
 ///
-/// 소비량은 `min(앞 간격, 바깥 아래 여백)` 이다. 앞 간격이 바깥 아래 여백보다 큰 경우의
-/// 한/글 동작은 확인하지 않았으므로 그 차이는 흐름에 남긴다. 조판과 배치가 같은 직전 항목으로
-/// 판정한다.
+/// 앞 간격이 바깥 아래 여백 띠 안에 다 들어갈 때만 앞 간격 전부를 띠가 흡수한다. 앞 간격이
+/// 띠보다 크면 한/글은 흡수하지 않는다 — 한/글 Print 는 float_fragment_frames split-rows-60
+/// (앞 간격 40.0px > 여백 3.8px) 2쪽 "다음 문단"을 조각 끝 + 여백 + 앞 간격 전부(310.72px)에
+/// 둔다. 일부만 빼면 정책연구용역 175쪽(4.0 > 1.9)·1341000 연구보고서 55쪽(7.6 > 1.9)이 어긋난다.
+/// 조판과 배치가 같은 직전 항목으로 판정한다.
 ///
 /// 저장 조판에서 다음 문단의 저장 첫 줄이 있으면 그 줄이 증언하는 앞 간격 소비량(커서 + 앞
 /// 간격 − 저장 위치)을 쓴다. samples 의 흡수 사례 118곳 중 117곳은 저장 줄이 위 규칙의 흡수량을
@@ -3894,8 +3896,11 @@ pub(crate) fn empty_host_float_successor_absorbed_spacing_px(
     {
         return 0.0;
     }
-    let absorbed =
-        spacing_before.min(hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi).max(0.0));
+    let outer_bottom = hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi).max(0.0);
+    if spacing_before > outer_bottom {
+        return 0.0;
+    }
+    let absorbed = spacing_before;
     // 다음 문단의 저장 첫 줄이 이 쪽 커서 기준으로 앞 간격 소비량(0..=앞 간격)을 증언하면 그
     // 값을 쓴다. 증언 범위 밖의 vpos(구역·쪽 경계 되감기 등)면 위 규칙을 그대로 쓴다.
     let stored_consumption = stored_layout

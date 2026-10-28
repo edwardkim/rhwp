@@ -1246,27 +1246,7 @@ impl TypesetEngine {
                             frame_height, placed_frame_fits,
                         );
                     }
-                    // [#8149] 저장 앵커는 host 의 **줄** 위치(앞 간격 뒤)다. 배치 계획이 없는
-                    // 흐름 원점은 앞 간격 전의 문단 위끝이라, 그 간격을 더해 같은 줄 위치끼리
-                    // 견준다(한글문서파일형식 38쪽 표 234: 저장 681.03 = 흐름 674.41 + 6.67).
-                    // 이 차이로 저장 첫 조각 프레임(선언 높이 = 첫 조각, #7147)을 버려 한/글보다
-                    // 한 행을 더 받았다.
-                    let host_line_anchor = if fragment_placement
-                        .and_then(|placement| placement.stored_host_origin)
-                        .is_some()
-                    {
-                        actual_anchor
-                    } else {
-                        actual_anchor
-                            + input
-                                .source
-                                .styles
-                                .para_styles
-                                .get(para.para_shape_id as usize)
-                                .map_or(0.0, |style| style.spacing_before.max(0.0))
-                    };
-                    (((anchor_px - actual_anchor).abs() <= 0.5
-                        || (anchor_px - host_line_anchor).abs() <= 0.5)
+                    ((anchor_px - actual_anchor).abs() <= 0.5
                         && flow_bottom_px <= source_first_fragment_flow_bottom + 0.5
                         && placed_frame_fits
                         // 뒤쪽 셀의 변경은 첫 상자의 빈 물리 띠를 지우지 않는다.
