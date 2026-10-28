@@ -180,6 +180,10 @@ TSV의 첫 세 열은 `page`, `tolerant_content_match_percent`, `below_90`이며
 `silhouette_raw_match_percent`, `silhouette_boundary_reconciled_pixels`를 뒤에 함께 기록한다.
 **90% gate·devel 대비 하락·98% px 회귀 판정은 모두 `silhouette_raw_match_percent`를 쓴다.**
 `below_90`도 raw 기준이다. 첫 번째 점수 열의 색상 경계 보정값은 진단용이며 판정을 대신하지 않는다.
+TSV의 일치율은 소수점 셋째 자리에서 반올림해 둘째 자리까지 표시한다. `100.00`은 실제 값이
+정확히 100%라는 뜻이 아니며, `90.00`으로 표시된 쪽도 원래 값이 90% 미만이면 `below_90=1`이다.
+정확한 점수와 90%·98%·100% 및 기준 대비 하락 판정에는 같은 실행의
+`silhouette_manifest.json`에 기록된 페이지별 정밀값을 사용한다.
 raw도2px 이웃을 허용하며, RGB까지 동일해야 하는 엄격 픽셀 지표와는 다르다.
 232 이진화 경계가 유색 PDF 픽셀을 빈 영역으로 오판하는 경우를 구분하기 위해 원값을 보존한다.
 내용 마스크232·2px 반경은 유지하며, 원래 불일치 픽셀 중 같은 위치 양쪽 모두 흰 배경

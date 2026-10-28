@@ -129,6 +129,29 @@ class RawGateTests(unittest.TestCase):
             self.assertEqual(manifest["metrics"][1]["silhouette_raw_match_percent"], 99.99911)
             self.assertEqual(manifest["pr_review_gate"]["status"], "re_review_required")
 
+    def test_rounded_tsv_does_not_change_precise_metrics_or_gate(self):
+        cases = [
+            (1, {"silhouette_raw_match_percent": 89.99911,
+                 "tolerant_content_match_percent": 99.99911,
+                 "silhouette_boundary_reconciled_pixels": 1}, {"page": 1}),
+            (2, {"silhouette_raw_match_percent": 99.99911,
+                 "tolerant_content_match_percent": 100.0,
+                 "silhouette_boundary_reconciled_pixels": 1}, {"page": 2}),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pairs = [(1, root / "a", root / "b"), (2, root / "c", root / "d")]
+            with patch.object(SWEEP, "ordered_page_map", return_value=iter(cases)):
+                manifest = SWEEP.write_silhouette_tsv(pairs, root, "rounding")
+            with (root / "silhouette.tsv").open(encoding="utf-8") as stream:
+                rows = list(csv.DictReader(stream, delimiter="\t"))
+            self.assertEqual(rows[0]["silhouette_raw_match_percent"], "90.00")
+            self.assertEqual(rows[0]["below_90"], "1")
+            self.assertEqual(rows[1]["silhouette_raw_match_percent"], "100.00")
+            self.assertEqual(manifest["metrics"][0]["silhouette_raw_match_percent"], 89.99911)
+            self.assertEqual(manifest["metrics"][1]["silhouette_raw_match_percent"], 99.99911)
+            self.assertEqual(manifest["pr_review_gate"]["status"], "re_review_required")
+
 
 if __name__ == "__main__":
     unittest.main()
