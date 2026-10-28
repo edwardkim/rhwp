@@ -1,0 +1,106 @@
+{
+  "measurements": [
+    {
+      "runtime": "native",
+      "workload": "cff-cid",
+      "before": {
+        "medianMs": 19.9199555,
+        "minMs": 18.834364,
+        "maxMs": 21.850896,
+        "n": 12
+      },
+      "candidate": {
+        "medianMs": 20.1589195,
+        "minMs": 19.734306,
+        "maxMs": 29.037006,
+        "n": 12
+      },
+      "deltaPercent": 1.1996211537721457
+    },
+    {
+      "runtime": "native",
+      "workload": "type3-twelve-pages",
+      "before": {
+        "medianMs": 334.15412349999997,
+        "minMs": 318.509124,
+        "maxMs": 381.740363,
+        "n": 12
+      },
+      "candidate": {
+        "medianMs": 345.746512,
+        "minMs": 326.450104,
+        "maxMs": 369.265038,
+        "n": 12
+      },
+      "deltaPercent": 3.4691741578942503
+    },
+    {
+      "runtime": "wasm",
+      "workload": "cff-cid",
+      "before": {
+        "medianMs": 2.9000000953674316,
+        "minMs": 2.600000023841858,
+        "maxMs": 3.899999976158142,
+        "n": 40
+      },
+      "candidate": {
+        "medianMs": 2.949999988079071,
+        "minMs": 2.600000023841858,
+        "maxMs": 3.5,
+        "n": 40
+      },
+      "deltaPercent": 1.7241341747371353
+    },
+    {
+      "runtime": "wasm",
+      "workload": "type3-twelve-pages",
+      "before": {
+        "medianMs": 322.35000002384186,
+        "minMs": 314.5,
+        "maxMs": 372.89999997615814,
+        "n": 40
+      },
+      "candidate": {
+        "medianMs": 321.1500000357628,
+        "minMs": 311.39999997615814,
+        "maxMs": 379.89999997615814,
+        "n": 40
+      },
+      "deltaPercent": -0.37226616658611045
+    },
+    {
+      "runtime": "native",
+      "workload": "500000-positive-memo-hits",
+      "before": {
+        "medianMs": 17.585029,
+        "lookupsPerSample": 500000
+      },
+      "candidate": {
+        "medianMs": 28.393299499999998,
+        "lookupsPerSample": 500000
+      },
+      "deltaNsPerHit": 21.616540999999998,
+      "deltaPercent": 61.46290972849688
+    },
+    {
+      "runtime": "wasm",
+      "workload": "500000-positive-memo-hits",
+      "before": {
+        "medianMs": 19.05000001192093,
+        "lookupsPerSample": 500000
+      },
+      "candidate": {
+        "medianMs": 30.150000035762787,
+        "lookupsPerSample": 500000
+      },
+      "deltaNsPerHit": 22.200000047683716,
+      "deltaPercent": 58.26771662412496
+    }
+  ],
+  "wasmBytes": {
+    "before": 23453911,
+    "candidate": 23456409,
+    "delta": 2498
+  },
+  "method": "Alternating before/candidate on same host. Native excludes first two rounds; product WASM excludes first two runs per instance; memo excludes first run. These finite samples do not prove universal latency or heap/RSS bounds."
+}

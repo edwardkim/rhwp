@@ -1,0 +1,22 @@
+[package]
+name = "issue8174-jpeg-audit"
+version = "0.0.0"
+edition = "2021"
+publish = false
+[workspace]
+exclude = ["observed-zune"]
+[lib]
+crate-type = ["cdylib", "rlib"]
+[dependencies]
+original = { package = "rhwp-zune-jpeg", path = "/home/edward/mygithub/rhwp/vendor/rhwp-zune-jpeg" }
+observed = { package = "issue8174-observed-zune", path = "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/jpeg-probe/observed-zune" }
+zune-core = "=0.5.3"
+serde_json = "1"
+wasm-bindgen = "0.2"
+[profile.release]
+lto = false
+codegen-units = 16
+[profile.release-test]
+inherits = "release"
+opt-level = 1
+codegen-units = 64

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "cff-cid-1001-glyphs.pdf",
+    "exit": 1,
+    "preserved": true,
+    "response": "\uc624\ub958: \uc720\ud6a8\ud558\uc9c0 \uc54a\uc740 \ud30c\uc77c: PDF \uc624\ub958: PDF_RESOURCE_LIMIT: font metric entries\n"
+  },
+  {
+    "name": "cff-simple-four-glyphs.pdf",
+    "exit": 1,
+    "preserved": true,
+    "response": "\uc624\ub958: \uc720\ud6a8\ud558\uc9c0 \uc54a\uc740 \ud30c\uc77c: PDF \uc624\ub958: PDF_RESOURCE_LIMIT: font metric entries\n"
+  },
+  {
+    "name": "cid-width-control.pdf",
+    "exit": 1,
+    "preserved": true,
+    "response": "\uc624\ub958: \uc720\ud6a8\ud558\uc9c0 \uc54a\uc740 \ud30c\uc77c: PDF \uc624\ub958: PDF_RESOURCE_LIMIT: font metric entries\n"
+  },
+  {
+    "name": "type1-three-mappings.pdf",
+    "exit": 1,
+    "preserved": true,
+    "response": "\uc624\ub958: \uc720\ud6a8\ud558\uc9c0 \uc54a\uc740 \ud30c\uc77c: PDF \uc624\ub958: PDF_RESOURCE_LIMIT: font metric entries\n"
+  }
+]

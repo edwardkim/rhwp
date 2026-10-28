@@ -23,6 +23,17 @@
 //! `<hc:img binaryItemIDRef>` 에 쓸 manifest id 는 반드시 `ctx.bin_data_map` 에 등록돼
 //! 있어야 한다. 등록되지 않은 bin_data_id 참조 시 `SerializeError::XmlError` 반환.
 
+use super::section::{
+    build_secpr_run_with_storage, render_hp_p_open_with_storage,
+    render_paragraph_parts_with_storage,
+};
+use super::shape::color_to_hex_with_storage;
+use super::table::write_caption_with_storage;
+use super::utils::{
+    empty_tag_with_storage, end_tag_with_storage, start_tag_attrs_with_storage,
+    start_tag_with_storage, text_with_storage, write_xml_decl_with_storage, xml_error,
+    xml_escape_with_storage, xml_value,
+};
 use std::io::Write;
 
 use quick_xml::Writer;
@@ -51,15 +62,27 @@ pub fn write_picture<W: Write>(
     pic: &Picture,
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
+    write_picture_with_storage(w, pic, ctx, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_picture_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    pic: &Picture,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // --- <hp:pic> 속성 ---
     // 속성 순서 (PictureType + 부모 AbstractShapeObjectType):
     // id, zOrder, numberingType, textWrap, textFlow, lock, dropcapstyle,
     // href, groupLevel, instid, reverse
-    let id_str = pic.common.instance_id.to_string();
-    let z_order = pic.common.z_order.to_string();
+    let id_str = xml_value(storage, pic.common.instance_id)?;
+    let z_order = xml_value(storage, pic.common.z_order)?;
     let tw = text_wrap_str(pic.common.text_wrap);
     let tf = text_flow_str(pic.common.text_flow);
-    let instid = pic.instance_id.to_string();
+    let instid = xml_value(storage, pic.instance_id)?;
     let href = pic.href.as_deref().unwrap_or("");
     // [#2861] 좌우 반전 — 종전 하드코딩 "0" 은 reverse="1" 로 저장된 그림의 반전 정보를
     // 왕복 시 소실시켰다.
@@ -73,9 +96,9 @@ pub fn write_picture<W: Write>(
     let numbering_type = numbering_type_str(pic.common.numbering_type);
     // [#TODO-IR] groupLevel 은 IR(shape_attr.group_level)을 보존한다. 종전 "0" 하드코딩은
     // 그룹 내 그림 개체의 중첩 레벨이 저장 시 유실됐다(shape.rs rect/line 경로는 이미 보존).
-    let group_level = pic.shape_attr.group_level.to_string();
+    let group_level = xml_value(storage, pic.shape_attr.group_level)?;
 
-    start_tag_attrs(
+    start_tag_attrs_with_storage(
         w,
         "hp:pic",
         &[
@@ -94,6 +117,7 @@ pub fn write_picture<W: Write>(
             ("instid", &instid),
             ("reverse", reverse),
         ],
+        storage,
     )?;
 
     // --- 자식 순서 (한컴 관찰 샘플 기준) ---
@@ -101,14 +125,14 @@ pub fn write_picture<W: Write>(
     // inMargin, imgDim, img, effects, sz, pos, outMargin
     // [#4668] hp:offset 은 shape_attr 원문 — pic 전용 writer 가 pos 유래로
     // 재작성하면 쪽 밖(wraparound) 그림이 무편집 저장 후 쪽 안에 노출된다.
-    super::shape::write_offset(w, &pic.shape_attr)?;
-    write_org_sz(w, &pic.shape_attr)?;
-    write_cur_sz(w, pic)?;
-    write_flip(w, &pic.shape_attr)?;
-    write_rotation_info(w, &pic.shape_attr)?;
+    super::shape::write_offset_with_storage(w, &pic.shape_attr, storage)?;
+    write_org_sz_with_storage(w, &pic.shape_attr, storage)?;
+    write_cur_sz_with_storage(w, pic, storage)?;
+    write_flip_with_storage(w, &pic.shape_attr, storage)?;
+    write_rotation_info_with_storage(w, &pic.shape_attr, storage)?;
     // [#1501] 그룹 자식 pic 의 transMatrix(render_tx/sx) 보존 — 종전 identity 고정 출력은
     // 그룹 내 자식을 원점·고유크기로 붕괴시켰다. shape.rs 의 raw_rendering 디코더 공유.
-    super::shape::write_rendering_info(w, &pic.shape_attr)?;
+    super::shape::write_rendering_info_with_storage(w, &pic.shape_attr, storage)?;
     // The outline belongs to the outer object frame, before its crop
     // rectangle. Keep a stored style even when its width is zero.
     // A missing/default NONE outline remains absent.
@@ -122,25 +146,25 @@ pub fn write_picture<W: Write>(
             width: pic.border_width,
             ..pic.border_attr
         };
-        super::shape::write_line_shape(w, &border)?;
+        super::shape::write_line_shape_with_storage(w, &border, storage)?;
     }
-    write_img_rect(w, pic)?;
-    write_img_clip(w, pic)?;
-    write_in_margin(w, pic)?;
-    write_img_dim(w, pic)?;
-    write_img(w, pic, ctx)?; // 3-way 단언 지점
-    write_effects(w, pic)?;
-    write_sz(w, &pic.common)?;
-    write_pos(w, &pic.common)?;
-    write_out_margin(w, &pic.common)?;
+    write_img_rect_with_storage(w, pic, storage)?;
+    write_img_clip_with_storage(w, pic, storage)?;
+    write_in_margin_with_storage(w, pic, storage)?;
+    write_img_dim_with_storage(w, pic, storage)?;
+    write_img_with_storage(w, pic, ctx, storage)?; // 3-way 단언 지점
+    write_effects_with_storage(w, pic, storage)?;
+    write_sz_with_storage(w, &pic.common, storage)?;
+    write_pos_with_storage(w, &pic.common, storage)?;
+    write_out_margin_with_storage(w, &pic.common, storage)?;
     // 캡션 (#1403) — 한컴 실물(aift.hwpx) 자식 순서: outMargin 뒤
     if let Some(cap) = &pic.caption {
-        write_caption(w, cap, ctx)?;
+        write_caption_with_storage(w, cap, ctx, storage)?;
     }
     // 설명 (#1392) — caption 직후 (aift 실물 공존 9건 전수 caption→shapeComment 순서)
-    super::shape::write_shape_comment(w, &pic.common)?;
+    super::shape::write_shape_comment_with_storage(w, &pic.common, storage)?;
 
-    end_tag(w, "hp:pic")?;
+    end_tag_with_storage(w, "hp:pic", storage)?;
     Ok(())
 }
 
@@ -150,12 +174,34 @@ fn write_org_sz<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
-    let ow = sa.original_width.to_string();
-    let oh = sa.original_height.to_string();
-    empty_tag(w, "hp:orgSz", &[("width", &ow), ("height", &oh)])
+    write_org_sz_with_storage(w, sa, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_org_sz_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    sa: &ShapeComponentAttr,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let ow = xml_value(storage, sa.original_width)?;
+    let oh = xml_value(storage, sa.original_height)?;
+    empty_tag_with_storage(w, "hp:orgSz", &[("width", &ow), ("height", &oh)], storage)
 }
 
 fn write_cur_sz<W: Write>(w: &mut Writer<W>, p: &Picture) -> Result<(), SerializeError> {
+    write_cur_sz_with_storage(w, p, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_cur_sz_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    p: &Picture,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // [#1389] 현재 크기는 shape_attr.current_width/height (IR 보존). 0 이면 common(sz)
     // 폴백 — 원본도 그 경우 sz=curSz. 종전 common 직출이라 current≠sz 인 pic 변형.
     // [#2017] 파싱 시 orgSz로 materialize된 dimension 은 원본 `0` sentinel 로 복원.
@@ -173,28 +219,54 @@ fn write_cur_sz<W: Write>(w: &mut Writer<W>, p: &Picture) -> Result<(), Serializ
     } else {
         p.common.height
     };
-    empty_tag(
+    empty_tag_with_storage(
         w,
         "hp:curSz",
-        &[("width", &cw.to_string()), ("height", &ch.to_string())],
+        &[
+            ("width", &xml_value(storage, cw)?),
+            ("height", &xml_value(storage, ch)?),
+        ],
+        storage,
     )
 }
 
 fn write_flip<W: Write>(w: &mut Writer<W>, sa: &ShapeComponentAttr) -> Result<(), SerializeError> {
+    write_flip_with_storage(w, sa, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_flip_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    sa: &ShapeComponentAttr,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let h = bool01(sa.horz_flip);
     let v = bool01(sa.vert_flip);
-    empty_tag(w, "hp:flip", &[("horizontal", h), ("vertical", v)])
+    empty_tag_with_storage(w, "hp:flip", &[("horizontal", h), ("vertical", v)], storage)
 }
 
 fn write_rotation_info<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
-    let angle = sa.rotation_angle.to_string();
-    let cx = sa.rotation_center.x.to_string();
-    let cy = sa.rotation_center.y.to_string();
+    write_rotation_info_with_storage(w, sa, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_rotation_info_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    sa: &ShapeComponentAttr,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let angle = xml_value(storage, sa.rotation_angle)?;
+    let cx = xml_value(storage, sa.rotation_center.x)?;
+    let cy = xml_value(storage, sa.rotation_center.y)?;
     let ri = bool01(sa.rotate_image);
-    empty_tag(
+    empty_tag_with_storage(
         w,
         "hp:rotationInfo",
         &[
@@ -203,10 +275,22 @@ fn write_rotation_info<W: Write>(
             ("centerY", &cy),
             ("rotateimage", ri),
         ],
+        storage,
     )
 }
 
 fn write_img_rect<W: Write>(w: &mut Writer<W>, p: &Picture) -> Result<(), SerializeError> {
+    write_img_rect_with_storage(w, p, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_img_rect_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    p: &Picture,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // [#1389] 꼭짓점은 border_x/border_y (IR 보존). 파서(parse_picture_img_rect)는
     // HWP5 SHAPE_PICTURE 스칼라 레이아웃으로 저장한다:
     //   border_x = [pt0.x, pt0.y, pt1.x, pt1.y], border_y = [pt2.x, pt2.y, pt3.x, pt3.y]
@@ -214,14 +298,14 @@ fn write_img_rect<W: Write>(w: &mut Writer<W>, p: &Picture) -> Result<(), Serial
     let bx = &p.border_x;
     let by = &p.border_y;
     if bx.iter().all(|&v| v == 0) && by.iter().all(|&v| v == 0) {
-        let w_str = p.common.width.to_string();
-        let h_str = p.common.height.to_string();
-        start_tag(w, "hp:imgRect")?;
-        empty_tag(w, "hc:pt0", &[("x", "0"), ("y", "0")])?;
-        empty_tag(w, "hc:pt1", &[("x", &w_str), ("y", "0")])?;
-        empty_tag(w, "hc:pt2", &[("x", &w_str), ("y", &h_str)])?;
-        empty_tag(w, "hc:pt3", &[("x", "0"), ("y", &h_str)])?;
-        end_tag(w, "hp:imgRect")?;
+        let w_str = xml_value(storage, p.common.width)?;
+        let h_str = xml_value(storage, p.common.height)?;
+        start_tag_with_storage(w, "hp:imgRect", storage)?;
+        empty_tag_with_storage(w, "hc:pt0", &[("x", "0"), ("y", "0")], storage)?;
+        empty_tag_with_storage(w, "hc:pt1", &[("x", &w_str), ("y", "0")], storage)?;
+        empty_tag_with_storage(w, "hc:pt2", &[("x", &w_str), ("y", &h_str)], storage)?;
+        empty_tag_with_storage(w, "hc:pt3", &[("x", "0"), ("y", &h_str)], storage)?;
+        end_tag_with_storage(w, "hp:imgRect", storage)?;
         return Ok(());
     }
     let pts = [
@@ -230,52 +314,92 @@ fn write_img_rect<W: Write>(w: &mut Writer<W>, p: &Picture) -> Result<(), Serial
         (by[0], by[1]), // pt2
         (by[2], by[3]), // pt3
     ];
-    start_tag(w, "hp:imgRect")?;
+    start_tag_with_storage(w, "hp:imgRect", storage)?;
     for (i, (x, y)) in pts.iter().enumerate() {
-        empty_tag(
+        empty_tag_with_storage(
             w,
-            &format!("hc:pt{i}"),
-            &[("x", &x.to_string()), ("y", &y.to_string())],
+            &xml_value(storage, format_args!("hc:pt{i}"))?,
+            &[
+                ("x", &xml_value(storage, x)?),
+                ("y", &xml_value(storage, y)?),
+            ],
+            storage,
         )?;
     }
-    end_tag(w, "hp:imgRect")?;
+    end_tag_with_storage(w, "hp:imgRect", storage)?;
     Ok(())
 }
 
 fn write_img_clip<W: Write>(w: &mut Writer<W>, p: &Picture) -> Result<(), SerializeError> {
-    let l = p.crop.left.to_string();
-    let r = p.crop.right.to_string();
-    let t = p.crop.top.to_string();
-    let b = p.crop.bottom.to_string();
-    empty_tag(
+    write_img_clip_with_storage(w, p, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_img_clip_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    p: &Picture,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let l = xml_value(storage, p.crop.left)?;
+    let r = xml_value(storage, p.crop.right)?;
+    let t = xml_value(storage, p.crop.top)?;
+    let b = xml_value(storage, p.crop.bottom)?;
+    empty_tag_with_storage(
         w,
         "hp:imgClip",
         &[("left", &l), ("right", &r), ("top", &t), ("bottom", &b)],
+        storage,
     )
 }
 
 fn write_in_margin<W: Write>(w: &mut Writer<W>, p: &Picture) -> Result<(), SerializeError> {
-    let l = p.padding.left.to_string();
-    let r = p.padding.right.to_string();
-    let t = p.padding.top.to_string();
-    let b = p.padding.bottom.to_string();
-    empty_tag(
+    write_in_margin_with_storage(w, p, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_in_margin_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    p: &Picture,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let l = xml_value(storage, p.padding.left)?;
+    let r = xml_value(storage, p.padding.right)?;
+    let t = xml_value(storage, p.padding.top)?;
+    let b = xml_value(storage, p.padding.bottom)?;
+    empty_tag_with_storage(
         w,
         "hp:inMargin",
         &[("left", &l), ("right", &r), ("top", &t), ("bottom", &b)],
+        storage,
     )
 }
 
 fn write_img_dim<W: Write>(w: &mut Writer<W>, p: &Picture) -> Result<(), SerializeError> {
+    write_img_dim_with_storage(w, p, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_img_dim_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    p: &Picture,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // [#1389] 원본 이미지 픽셀 크기 verbatim (IR img_dim). 종전 간이 계산
     // (common - crop)은 imgClip extent 의미 오해로 음수→0 변형이었다.
-    empty_tag(
+    empty_tag_with_storage(
         w,
         "hp:imgDim",
         &[
-            ("dimwidth", &p.img_dim.0.to_string()),
-            ("dimheight", &p.img_dim.1.to_string()),
+            ("dimwidth", &xml_value(storage, p.img_dim.0)?),
+            ("dimheight", &xml_value(storage, p.img_dim.1)?),
         ],
+        storage,
     )
 }
 
@@ -285,6 +409,18 @@ fn write_img<W: Write>(
     p: &Picture,
     ctx: &SerializeContext,
 ) -> Result<(), SerializeError> {
+    write_img_with_storage(w, p, ctx, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_img_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    p: &Picture,
+    ctx: &SerializeContext,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let bin_id = p.image_attr.bin_data_id;
     // #1567: bin_id==0 은 원본 `binaryItemIDRef=""`(이미지 참조 없는 placeholder pic, 표 셀
     // 등)에 대응한다(파서 `unwrap_or(0)`). resolve 실패해도 빈 ref 를 verbatim 방출해
@@ -294,18 +430,21 @@ fn write_img<W: Write>(
         Some(id) => id,
         None if bin_id == 0 => "",
         None => {
-            return Err(SerializeError::XmlError(format!(
-                "<hp:pic> binaryItemIDRef 미등록 bin_data_id={} (BinDataContent 누락)",
-                bin_id
-            )))
+            return Err(SerializeError::XmlError(xml_value(
+                storage,
+                format_args!(
+                    "<hp:pic> binaryItemIDRef 미등록 bin_data_id={} (BinDataContent 누락)",
+                    bin_id
+                ),
+            )?))
         }
     };
 
-    let bright = p.image_attr.brightness.to_string();
-    let contrast = p.image_attr.contrast.to_string();
+    let bright = xml_value(storage, p.image_attr.brightness)?;
+    let contrast = xml_value(storage, p.image_attr.contrast)?;
     let effect = image_effect_str(p.image_attr.effect);
-    let alpha = picture_alpha_str(p.image_attr.clamped_transparency());
-    empty_tag(
+    let alpha = picture_alpha_str_with_storage(p.image_attr.clamped_transparency(), storage)?;
+    empty_tag_with_storage(
         w,
         "hc:img",
         &[
@@ -315,47 +454,95 @@ fn write_img<W: Write>(
             ("effect", effect),
             ("alpha", &alpha),
         ],
+        storage,
     )
 }
 
 fn picture_alpha_str(transparency: u8) -> String {
-    crate::model::image::transparency_percent_to_alpha_byte(transparency).to_string()
+    picture_alpha_str_with_storage(transparency, &crate::storage::Unbounded)
+        .expect("unbounded XML writer")
+}
+
+pub(super) fn picture_alpha_str_with_storage<S: crate::storage::Storage>(
+    transparency: u8,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    xml_value(
+        storage,
+        crate::model::image::transparency_percent_to_alpha_byte(transparency),
+    )
 }
 
 fn write_effects<W: Write>(w: &mut Writer<W>, pic: &Picture) -> Result<(), SerializeError> {
-    start_tag(w, "hp:effects")?;
+    write_effects_with_storage(w, pic, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_effects_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    pic: &Picture,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    start_tag_with_storage(w, "hp:effects", storage)?;
     if let Some(shadow) = &pic.effects.shadow {
-        write_shadow(w, shadow)?;
+        write_shadow_with_storage(w, shadow, storage)?;
     }
-    end_tag(w, "hp:effects")?;
+    end_tag_with_storage(w, "hp:effects", storage)?;
     Ok(())
 }
 
 fn write_shadow<W: Write>(w: &mut Writer<W>, shadow: &PictureShadow) -> Result<(), SerializeError> {
+    write_shadow_with_storage(w, shadow, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_shadow_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    shadow: &PictureShadow,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let mut attrs = Vec::new();
-    push_opt_attr(&mut attrs, "style", shadow.style.as_deref());
-    push_opt_attr(&mut attrs, "alpha", shadow.alpha.as_deref());
-    push_opt_attr(&mut attrs, "radius", shadow.radius.as_deref());
-    push_opt_attr(&mut attrs, "direction", shadow.direction.as_deref());
-    push_opt_attr(&mut attrs, "distance", shadow.distance.as_deref());
-    push_opt_attr(&mut attrs, "alignStyle", shadow.align_style.as_deref());
-    push_opt_attr(
+    push_opt_attr_with_storage(&mut attrs, "style", shadow.style.as_deref(), storage)?;
+    push_opt_attr_with_storage(&mut attrs, "alpha", shadow.alpha.as_deref(), storage)?;
+    push_opt_attr_with_storage(&mut attrs, "radius", shadow.radius.as_deref(), storage)?;
+    push_opt_attr_with_storage(
+        &mut attrs,
+        "direction",
+        shadow.direction.as_deref(),
+        storage,
+    )?;
+    push_opt_attr_with_storage(&mut attrs, "distance", shadow.distance.as_deref(), storage)?;
+    push_opt_attr_with_storage(
+        &mut attrs,
+        "alignStyle",
+        shadow.align_style.as_deref(),
+        storage,
+    )?;
+    push_opt_attr_with_storage(
         &mut attrs,
         "rotationStyle",
         shadow.rotation_style.as_deref(),
-    );
+        storage,
+    )?;
 
-    start_tag_attrs(w, "hp:shadow", &attrs)?;
+    start_tag_attrs_with_storage(w, "hp:shadow", &attrs, storage)?;
     if let Some(skew) = &shadow.skew {
-        write_effect_point(w, "hp:skew", skew)?;
+        write_effect_point_with_storage(w, "hp:skew", skew, storage)?;
     }
     if let Some(scale) = &shadow.scale {
-        write_effect_point(w, "hp:scale", scale)?;
+        write_effect_point_with_storage(w, "hp:scale", scale, storage)?;
     }
     if let Some(color) = &shadow.color {
-        write_effect_color(w, color)?;
+        write_effect_color_with_storage(w, color, storage)?;
     }
-    end_tag(w, "hp:shadow")?;
+    end_tag_with_storage(w, "hp:shadow", storage)?;
     Ok(())
 }
 
@@ -364,38 +551,87 @@ fn write_effect_point<W: Write>(
     name: &str,
     point: &EffectPoint,
 ) -> Result<(), SerializeError> {
+    write_effect_point_with_storage(w, name, point, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_effect_point_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    name: &str,
+    point: &EffectPoint,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let mut attrs = Vec::new();
-    push_opt_attr(&mut attrs, "x", point.x.as_deref());
-    push_opt_attr(&mut attrs, "y", point.y.as_deref());
-    empty_tag(w, name, &attrs)
+    push_opt_attr_with_storage(&mut attrs, "x", point.x.as_deref(), storage)?;
+    push_opt_attr_with_storage(&mut attrs, "y", point.y.as_deref(), storage)?;
+    empty_tag_with_storage(w, name, &attrs, storage)
 }
 
 fn write_effect_color<W: Write>(
     w: &mut Writer<W>,
     color: &EffectColor,
 ) -> Result<(), SerializeError> {
+    write_effect_color_with_storage(w, color, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_effect_color_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    color: &EffectColor,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let mut attrs = Vec::new();
-    push_opt_attr(&mut attrs, "type", color.color_type.as_deref());
-    push_opt_attr(&mut attrs, "schemeIdx", color.scheme_idx.as_deref());
-    push_opt_attr(&mut attrs, "systemIdx", color.system_idx.as_deref());
-    push_opt_attr(&mut attrs, "presetIdx", color.preset_idx.as_deref());
+    push_opt_attr_with_storage(&mut attrs, "type", color.color_type.as_deref(), storage)?;
+    push_opt_attr_with_storage(
+        &mut attrs,
+        "schemeIdx",
+        color.scheme_idx.as_deref(),
+        storage,
+    )?;
+    push_opt_attr_with_storage(
+        &mut attrs,
+        "systemIdx",
+        color.system_idx.as_deref(),
+        storage,
+    )?;
+    push_opt_attr_with_storage(
+        &mut attrs,
+        "presetIdx",
+        color.preset_idx.as_deref(),
+        storage,
+    )?;
 
     if let Some(rgb) = &color.rgb {
-        start_tag_attrs(w, "hp:effectsColor", &attrs)?;
-        write_effect_rgb(w, rgb)?;
-        end_tag(w, "hp:effectsColor")?;
+        start_tag_attrs_with_storage(w, "hp:effectsColor", &attrs, storage)?;
+        write_effect_rgb_with_storage(w, rgb, storage)?;
+        end_tag_with_storage(w, "hp:effectsColor", storage)?;
     } else {
-        empty_tag(w, "hp:effectsColor", &attrs)?;
+        empty_tag_with_storage(w, "hp:effectsColor", &attrs, storage)?;
     }
     Ok(())
 }
 
 fn write_effect_rgb<W: Write>(w: &mut Writer<W>, rgb: &EffectRgb) -> Result<(), SerializeError> {
+    write_effect_rgb_with_storage(w, rgb, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_effect_rgb_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    rgb: &EffectRgb,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let mut attrs = Vec::new();
-    push_opt_attr(&mut attrs, "r", rgb.r.as_deref());
-    push_opt_attr(&mut attrs, "g", rgb.g.as_deref());
-    push_opt_attr(&mut attrs, "b", rgb.b.as_deref());
-    empty_tag(w, "hp:rgb", &attrs)
+    push_opt_attr_with_storage(&mut attrs, "r", rgb.r.as_deref(), storage)?;
+    push_opt_attr_with_storage(&mut attrs, "g", rgb.g.as_deref(), storage)?;
+    push_opt_attr_with_storage(&mut attrs, "b", rgb.b.as_deref(), storage)?;
+    empty_tag_with_storage(w, "hp:rgb", &attrs, storage)
 }
 
 fn push_opt_attr<'a>(
@@ -403,20 +639,46 @@ fn push_opt_attr<'a>(
     key: &'static str,
     value: Option<&'a str>,
 ) {
+    push_opt_attr_with_storage(attrs, key, value, &crate::storage::Unbounded)
+        .expect("unbounded XML writer")
+}
+
+pub(super) fn push_opt_attr_with_storage<'a, S: crate::storage::Storage>(
+    attrs: &mut Vec<(&'static str, &'a str)>,
+    key: &'static str,
+    value: Option<&'a str>,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if let Some(value) = value {
-        attrs.push((key, value));
+        storage.push(attrs, (key, value)).map_err(xml_error)?;
     }
+
+    Ok(())
 }
 
 fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
-    let width = c.width.to_string();
-    let height = c.height.to_string();
+    write_sz_with_storage(w, c, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_sz_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    c: &CommonObjAttr,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let width = xml_value(storage, c.width)?;
+    let height = xml_value(storage, c.height)?;
     // [#2712] widthRelTo/heightRelTo/protect 는 IR 을 보존한다. 종전 "ABSOLUTE"/"0"
     // 하드코딩은 HWP5 입력(parser/control/shape.rs:348/380/388 이 attr bit 20/15-17/18-19
     // 에서 채움)과 문서 코어 편집(set_cell_picture_properties 의 sizeProtect,
     // tests/issue_1436_size_protect_properties.rs:48)으로 들어온 값을 저장 때 버렸다.
     // 헬퍼는 도형 직렬화기와 공유해 관례를 하나로 유지한다(shape.rs:1000/1013).
-    empty_tag(
+    empty_tag_with_storage(
         w,
         "hp:sz",
         &[
@@ -426,17 +688,29 @@ fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Serial
             ("heightRelTo", height_criterion_str(c.height_criterion)),
             ("protect", bool01(c.size_protect)),
         ],
+        storage,
     )
 }
 
 fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
+    write_pos_with_storage(w, c, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_pos_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    c: &CommonObjAttr,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let treat = bool01(c.treat_as_char);
     let flow_with_text = bool01(c.flow_with_text);
     let allow_overlap = bool01(c.allow_overlap);
-    let vert_offset = c.vertical_offset.to_string();
-    let horz_offset = c.horizontal_offset.to_string();
+    let vert_offset = xml_value(storage, c.vertical_offset)?;
+    let horz_offset = xml_value(storage, c.horizontal_offset)?;
     let hold = bool01(c.prevent_page_break != 0); // [#1594] IR 보존
-    empty_tag(
+    empty_tag_with_storage(
         w,
         "hp:pos",
         &[
@@ -454,18 +728,31 @@ fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Seria
             ("vertOffset", &vert_offset),
             ("horzOffset", &horz_offset),
         ],
+        storage,
     )
 }
 
 fn write_out_margin<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
-    let l = c.margin.left.to_string();
-    let r = c.margin.right.to_string();
-    let t = c.margin.top.to_string();
-    let b = c.margin.bottom.to_string();
-    empty_tag(
+    write_out_margin_with_storage(w, c, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_out_margin_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    c: &CommonObjAttr,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let l = xml_value(storage, c.margin.left)?;
+    let r = xml_value(storage, c.margin.right)?;
+    let t = xml_value(storage, c.margin.top)?;
+    let b = xml_value(storage, c.margin.bottom)?;
+    empty_tag_with_storage(
         w,
         "hp:outMargin",
         &[("left", &l), ("right", &r), ("top", &t), ("bottom", &b)],
+        storage,
     )
 }
 

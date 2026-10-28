@@ -80,19 +80,40 @@ pub(crate) fn normalize(
     implicit_char_table: bool,
     cell_relative_frames: bool,
 ) -> Option<Vec<Paragraph>> {
-    let affected: Vec<_> = original
-        .iter()
-        .enumerate()
-        .filter(|(_, paragraph)| {
-            implicit_char_table
-                || (cell_relative_frames && has_displaced_cell(paragraph, styles, dpi))
-        })
-        .map(|(index, _)| index)
-        .collect();
-    if affected.is_empty() {
-        return None;
+    match normalize_with_storage(
+        original,
+        styles,
+        dpi,
+        implicit_char_table,
+        cell_relative_frames,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    let mut projected = original.to_vec();
+}
+pub(crate) fn normalize_with_storage<S: crate::storage::Storage>(
+    original: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    implicit_char_table: bool,
+    cell_relative_frames: bool,
+    storage: &S,
+) -> Result<Option<Vec<Paragraph>>, S::Error> {
+    let affected: Vec<_> = storage.collect(
+        original
+            .iter()
+            .enumerate()
+            .filter(|(_, paragraph)| {
+                implicit_char_table
+                    || (cell_relative_frames && has_displaced_cell(paragraph, styles, dpi))
+            })
+            .map(|(index, _)| index),
+    )?;
+    if affected.is_empty() {
+        return Ok(None);
+    }
+    let mut projected = storage.try_collect(original.iter().map(|p| storage.clone_paragraph(p)))?;
     for index in affected {
         // 셀 캐시만 지우면 바깥 host의 옛 전진이 남는다. 의존하는 호스트와
         // 하위 소유 프레임을 함께 구성하되 편집·직렬화의 원본은 유지한다.
@@ -101,5 +122,5 @@ pub(crate) fn normalize(
             implicit_char_table,
         );
     }
-    Some(projected)
+    Ok(Some(projected))
 }

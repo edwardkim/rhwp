@@ -292,7 +292,7 @@ fn blank_tail_is_line_sliver(tail: f64, line: f64, dpi: f64) -> bool {
 /// 다단 설정이나 독립 개체의 흐름 계약까지 이 판정으로 확대하지 않는다.
 pub(super) fn paragraph_has_plain_flow(paragraph: &Paragraph) -> bool {
     paragraph.controls.iter().all(|control| {
-        crate::renderer::cell_control_is_single_column_metadata(control)
+        crate::renderer::cell_control_is_text_metadata(control)
             || matches!(
                 control,
                 crate::model::control::Control::Footnote(_)

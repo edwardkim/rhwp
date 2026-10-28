@@ -19,6 +19,36 @@ impl TypesetEngine {
         picture_host_origin: (usize, u16, f64),
         native_hwp5_footnote_break: Option<notes::footnotes::boundary::NativeHwp5FootnoteBreak>,
     ) {
+        match self.place_paragraph_controls_with_storage(
+            st,
+            para_idx,
+            para,
+            paragraphs,
+            styles,
+            section_index,
+            has_table,
+            picture_host_origin,
+            native_hwp5_footnote_break,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn place_paragraph_controls_with_storage<S: crate::storage::Storage>(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        para: &Paragraph,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        section_index: usize,
+        has_table: bool,
+        picture_host_origin: (usize, u16, f64),
+        native_hwp5_footnote_break: Option<notes::footnotes::boundary::NativeHwp5FootnoteBreak>,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         // [#1995] 한 문단에 근접-전면(near-full-page) non-TAC 그림이 여러 장이면
         // (임베드 매뉴얼을 페이지 이미지로 삽입한 경우 등) 각 이미지는 공존 불가하므로
         // 각각 한 페이지에 단독 배치해야 한다. 미수정 시 96장이 한 앵커에 스택되어
@@ -27,15 +57,11 @@ impl TypesetEngine {
         // 글뒤로/글앞으로 그림은 후보·분모 모두에서 제외한다(#6511, `flow_noninline_picture`).
         let fullpage_img_body_h = st.base_available_height();
         let fullpage_img_ctrls: Vec<usize> = if fullpage_img_body_h > 0.0 && !has_table {
-            para.controls
-                .iter()
-                .enumerate()
-                .filter_map(|(ci, c)| {
-                    let pic = flow_noninline_picture(c)?;
-                    let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
-                    (h >= fullpage_img_body_h * 0.6).then_some(ci)
-                })
-                .collect()
+            storage.collect(para.controls.iter().enumerate().filter_map(|(ci, c)| {
+                let pic = flow_noninline_picture(c)?;
+                let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                (h >= fullpage_img_body_h * 0.6).then_some(ci)
+            }))?
         } else {
             Vec::new()
         };
@@ -100,8 +126,12 @@ impl TypesetEngine {
 
         // 인라인 컨트롤 처리: 도형/그림/수식/각주 (Paginator engine.rs:509-525 동일)
         // [#7860] 표 셀(중첩 표 포함) 안 미주도 소유 경로와 함께 문서 순서로 모은다.
-        let endnote_refs =
-            crate::renderer::pagination::paragraph_endnote_refs(section_index, para_idx, para);
+        let endnote_refs = crate::renderer::pagination::paragraph_endnote_refs_with_storage(
+            section_index,
+            para_idx,
+            para,
+            storage,
+        )?;
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
             // 확정 inline plan이 이미 등록한 도형은 같은 개체/흐름을
             // 기존 control 경로에서 다시 등록하지 않는다.
@@ -121,11 +151,14 @@ impl TypesetEngine {
             }
             // [#1995] 다수 전면 이미지: 각 전면 그림을 새 페이지에 단독 배치.
             if is_multi_fullpage_img_para && fullpage_img_ctrls.contains(&ctrl_idx) {
-                st.force_new_page();
-                st.append_item(PageItem::Shape {
-                    para_index: para_idx,
-                    control_index: ctrl_idx,
-                });
+                st.force_new_page_with_storage(storage)?;
+                st.append_item_with_storage(
+                    PageItem::Shape {
+                        para_index: para_idx,
+                        control_index: ctrl_idx,
+                    },
+                    storage,
+                )?;
                 // 페이지를 채워 후속 그림/문단이 다음 페이지로 밀리도록.
                 st.align_flow_to(fullpage_img_body_h);
                 continue;
@@ -135,10 +168,13 @@ impl TypesetEngine {
                 // 개체다. 종전에는 IR 에 배치가 없어 무조건 인라인으로 흘렀고,
                 // 쪽 하단 가운데 서식 번호가 제목 줄 안에 그려졌다.
                 Control::Form(form) if !form.common.treat_as_char => {
-                    st.append_item(PageItem::Shape {
-                        para_index: para_idx,
-                        control_index: ctrl_idx,
-                    });
+                    st.append_item_with_storage(
+                        PageItem::Shape {
+                            para_index: para_idx,
+                            control_index: ctrl_idx,
+                        },
+                        storage,
+                    )?;
                 }
                 Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
                     // [#6146] 저장 리셋 경계에서 떠나는 쪽의 흐름 말미에 이미 흘려
@@ -255,7 +291,7 @@ impl TypesetEngine {
                                 st.append_routed_item(page_idx, col_idx, item);
                             }
                             None => {
-                                st.append_item(item);
+                                st.append_item_with_storage(item, storage)?;
                             }
                         }
                         // [Task #1052] 글상자 내 각주 수집 (engine.rs:1376-1398 동등)
@@ -283,7 +319,7 @@ impl TypesetEngine {
                                     para, next, ctrl_idx, picture_host_origin.2, self.dpi,
                                 )
                             }) {
-                                st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
+                                st.record_paragraph_float_placement_with_storage((para_idx, ctrl_idx), placement, storage)?;
                                 st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(placement.anchor_y), styles);
                             }
                         }
@@ -323,7 +359,7 @@ impl TypesetEngine {
                                         && p.paragraph_end(st.current_height, 0.0) >= st.current_height
                                 }) {
                                     for (index, placement) in placements.into_iter().enumerate() {
-                                        st.record_paragraph_float_placement((para_idx, index), placement);
+                                        st.record_paragraph_float_placement_with_storage((para_idx, index), placement, storage)?;
                                     }
                                     st.align_flow_to(selected.paragraph_end(st.current_height, 0.0));
                                     continue;
@@ -347,7 +383,7 @@ impl TypesetEngine {
                                 p.paragraph_end(st.current_height, 0.0) <= st.available_height()
                                     && p.paragraph_end(st.current_height, 0.0) >= st.current_height
                             }) {
-                                st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
+                                st.record_paragraph_float_placement_with_storage((para_idx, ctrl_idx), placement, storage)?;
                                 st.align_flow_to(placement.paragraph_end(st.current_height, 0.0));
                                 continue;
                             }
@@ -369,7 +405,7 @@ impl TypesetEngine {
                                 {
                                     continue;
                                 }
-                                let saved = paragraphs.get(para_idx + 1).and_then(|next| {
+                                let saved = crate::storage::with_optional(|failure| paragraphs.get(para_idx + 1).and_then(|next| {
                                     // 앞 그림의 측정 흐름이 저장 원점과 다르면 중간부터
                                     // 절대 저장 좌표를 재개해 선행 본문을 덮지 않는다.
                                     let unresolved_picture_flow = st.current_items.iter().any(|item| {
@@ -417,7 +453,7 @@ impl TypesetEngine {
                                             && selected.anchor_y <= st.current_height
                                         {
                                             for (index, placement) in placements.into_iter().enumerate() {
-                                                st.record_paragraph_float_placement((para_idx, index), placement);
+                                                crate::storage::optional(st.record_paragraph_float_placement_with_storage((para_idx, index), placement, storage), failure)?;
                                             }
                                             // 계획의 본문 좌표와 다음 실제 커서가 같은 축을 쓴다.
                                             st.record_vpos_page_origin(Some(frame_vpos));
@@ -433,12 +469,12 @@ impl TypesetEngine {
                                         Some(st.current_height + hwpunit_to_px(base - frame_vpos, self.dpi)),
                                         self.dpi,
                                     )
-                                });
+                                }))?;
                                 if let Some(placement) = saved.filter(|p| {
                                     p.occupied_bottom <= st.available_height()
                                         && p.anchor_y <= st.current_height
                                 }) {
-                                    st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
+                                    st.record_paragraph_float_placement_with_storage((para_idx, ctrl_idx), placement, storage)?;
                                     st.align_flow_to(placement.paragraph_end(st.current_height, 0.0));
                                     continue;
                                 }
@@ -454,16 +490,19 @@ impl TypesetEngine {
                                     for (tc_idx, tc) in tp.controls.iter().enumerate() {
                                         if let Control::Footnote(fn_ctrl) = tc {
                                             if !st.pages.is_empty() {
-                                                st.record_current_footnote(FootnoteRef {
-                                                    number: fn_ctrl.number,
-                                                    source: FootnoteSource::ShapeTextBox {
-                                                        para_index: para_idx,
-                                                        shape_control_index: ctrl_idx,
-                                                        tb_para_index: tp_idx,
-                                                        tb_control_index: tc_idx,
+                                                st.record_current_footnote_with_storage(
+                                                    FootnoteRef {
+                                                        number: fn_ctrl.number,
+                                                        source: FootnoteSource::ShapeTextBox {
+                                                            para_index: para_idx,
+                                                            shape_control_index: ctrl_idx,
+                                                            tb_para_index: tp_idx,
+                                                            tb_control_index: tc_idx,
+                                                        },
+                                                        fragment: None,
                                                     },
-                                                    fragment: None,
-                                                });
+                                                    storage,
+                                                )?;
                                                 let fn_height = estimate_footnote_note_height(
                                                     fn_ctrl, self.dpi,
                                                 );
@@ -673,11 +712,14 @@ impl TypesetEngine {
                                         && st.current_items.len() > 1
                                     {
                                         st.remove_last_item();
-                                        st.advance_column_or_new_page();
-                                        st.append_item(PageItem::Shape {
-                                            para_index: para_idx,
-                                            control_index: ctrl_idx,
-                                        });
+                                        st.advance_column_or_new_page_with_storage(storage)?;
+                                        st.append_item_with_storage(
+                                            PageItem::Shape {
+                                                para_index: para_idx,
+                                                control_index: ctrl_idx,
+                                            },
+                                            storage,
+                                        )?;
                                         topbottom_cols.clear();
                                     }
                                 }
@@ -691,16 +733,17 @@ impl TypesetEngine {
                                 // 총량 = max(컬럼별 스택 높이). 새 float 이 겹치는 컬럼(들)에
                                 // 스택되면 그 컬럼 높이에 extra 가산, 안 겹치면 새 컬럼. 단일
                                 // float 은 컬럼 1개=extra 라 동작 불변.
-                                let overlapping: Vec<usize> = topbottom_cols
-                                    .iter()
-                                    .enumerate()
-                                    .filter(|(_, c)| c.1 > h_left && c.0 < h_right)
-                                    .map(|(i, _)| i)
-                                    .collect();
+                                let overlapping: Vec<usize> = storage.collect(
+                                    topbottom_cols
+                                        .iter()
+                                        .enumerate()
+                                        .filter(|(_, c)| c.1 > h_left && c.0 < h_right)
+                                        .map(|(i, _)| i),
+                                )?;
                                 let applied_before =
                                     topbottom_cols.iter().map(|c| c.2).fold(0.0_f64, f64::max);
                                 if overlapping.is_empty() {
-                                    topbottom_cols.push((h_left, h_right, extra));
+                                    storage.push(&mut topbottom_cols, (h_left, h_right, extra))?;
                                 } else {
                                     let base = overlapping
                                         .iter()
@@ -717,7 +760,8 @@ impl TypesetEngine {
                                     for &i in overlapping.iter().rev() {
                                         topbottom_cols.remove(i);
                                     }
-                                    topbottom_cols.push((new_l, new_r, base + extra));
+                                    storage
+                                        .push(&mut topbottom_cols, (new_l, new_r, base + extra))?;
                                 }
                                 let applied_after =
                                     topbottom_cols.iter().map(|c| c.2).fold(0.0_f64, f64::max);
@@ -750,6 +794,8 @@ impl TypesetEngine {
             .get(para.para_shape_id as usize)
             .map_or(0.0, |style| style.spacing_after);
         st.finish_paragraph_float_flow(para_idx, spacing_after);
+
+        Ok(())
     }
 }
 

@@ -76,6 +76,10 @@ class WorkflowContractWiringTests(unittest.TestCase):
             "'Validate workflow contracts' 단계에 한 줄 추가한다.",
         )
 
+    def test_crates_io_archive_and_source_preflight_contracts_are_invoked(self):
+        for name in ["test_crates_io_source_preflight.py", "test_crates_io_publish_preflight.py"]:
+            self.assertIn(f"scripts/tests/{name}", self.ci)
+
     def test_contract_tests_run_in_a_job_that_survives_impact_conditioning(self):
         """#3790 조건화 뒤에도 이 테스트들이 실제로 도는 job 에 있어야 한다.
 

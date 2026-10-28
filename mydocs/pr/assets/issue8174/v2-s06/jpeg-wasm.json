@@ -1,0 +1,5224 @@
+{
+  "rows": [
+    {
+      "name": "baseline-1x1-s0.jpg",
+      "result": {
+        "charged_bytes": 1527,
+        "decoded_bytes": 3,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            3
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "d94d12186c0f2fb7",
+        "pixel_prefix": [
+          0,
+          0,
+          0
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-1x1-s1.jpg",
+      "result": {
+        "charged_bytes": 2903,
+        "decoded_bytes": 3,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            3
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            32
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            32
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            32
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "upsampler scratch",
+            256
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "d94d12186c0f2fb7",
+        "pixel_prefix": [
+          0,
+          0,
+          0
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 2,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-1x1-s2.jpg",
+      "result": {
+        "charged_bytes": 3831,
+        "decoded_bytes": 3,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            3
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "upsampler scratch",
+            256
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "d94d12186c0f2fb7",
+        "pixel_prefix": [
+          0,
+          0,
+          0
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-9x9-s0.jpg",
+      "result": {
+        "charged_bytes": 2151,
+        "decoded_bytes": 243,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            243
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            256
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "1c92b3f61a616a39",
+        "pixel_prefix": [
+          0,
+          3,
+          0,
+          24,
+          0,
+          24,
+          63,
+          0,
+          49,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-9x9-s1.jpg",
+      "result": {
+        "charged_bytes": 3143,
+        "decoded_bytes": 243,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            243
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            32
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            32
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            32
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "upsampler scratch",
+            256
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "425138e1dcb15ab9",
+        "pixel_prefix": [
+          7,
+          0,
+          9,
+          28,
+          0,
+          28,
+          63,
+          0,
+          61,
+          96,
+          0,
+          83
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 4,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-9x9-s2.jpg",
+      "result": {
+        "charged_bytes": 4071,
+        "decoded_bytes": 243,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            243
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "upsampler scratch",
+            256
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "8bf8f0804a7a84af",
+        "pixel_prefix": [
+          14,
+          0,
+          23,
+          31,
+          0,
+          35,
+          58,
+          1,
+          52,
+          87,
+          4,
+          72
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-17x17-s0.jpg",
+      "result": {
+        "charged_bytes": 3159,
+        "decoded_bytes": 867,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            867
+          ],
+          [
+            "MCU coefficients",
+            384
+          ],
+          [
+            "MCU coefficients",
+            384
+          ],
+          [
+            "MCU coefficients",
+            384
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "73a34830dfd5ccd6",
+        "pixel_prefix": [
+          0,
+          3,
+          0,
+          24,
+          0,
+          24,
+          63,
+          0,
+          49,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-17x17-s1.jpg",
+      "result": {
+        "charged_bytes": 5527,
+        "decoded_bytes": 867,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            867
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "upsampler scratch",
+            512
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "14b5c8ec7f7c9852",
+        "pixel_prefix": [
+          7,
+          0,
+          2,
+          28,
+          0,
+          22,
+          63,
+          0,
+          58,
+          96,
+          0,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 6,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-17x17-s2.jpg",
+      "result": {
+        "charged_bytes": 7383,
+        "decoded_bytes": 867,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            867
+          ],
+          [
+            "upsample row",
+            128
+          ],
+          [
+            "upsample previous row",
+            128
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            1024
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            1024
+          ],
+          [
+            "MCU coefficients",
+            1024
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "upsampler scratch",
+            512
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "46ac2ea29b074a61",
+        "pixel_prefix": [
+          1,
+          0,
+          0,
+          21,
+          3,
+          17,
+          56,
+          2,
+          51,
+          89,
+          2,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-33x19-s0.jpg",
+      "result": {
+        "charged_bytes": 4941,
+        "decoded_bytes": 1881,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            1881
+          ],
+          [
+            "MCU coefficients",
+            640
+          ],
+          [
+            "MCU coefficients",
+            640
+          ],
+          [
+            "MCU coefficients",
+            640
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "7056bae968032850",
+        "pixel_prefix": [
+          0,
+          3,
+          0,
+          24,
+          0,
+          24,
+          63,
+          0,
+          49,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-33x19-s1.jpg",
+      "result": {
+        "charged_bytes": 8301,
+        "decoded_bytes": 1881,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            1881
+          ],
+          [
+            "upsample row",
+            96
+          ],
+          [
+            "upsample previous row",
+            96
+          ],
+          [
+            "upsample first row",
+            96
+          ],
+          [
+            "upsample destination",
+            768
+          ],
+          [
+            "upsample row",
+            48
+          ],
+          [
+            "upsample previous row",
+            48
+          ],
+          [
+            "upsample first row",
+            96
+          ],
+          [
+            "upsample destination",
+            768
+          ],
+          [
+            "upsample row",
+            48
+          ],
+          [
+            "upsample previous row",
+            48
+          ],
+          [
+            "upsample first row",
+            96
+          ],
+          [
+            "upsample destination",
+            768
+          ],
+          [
+            "MCU coefficients",
+            768
+          ],
+          [
+            "MCU coefficients",
+            384
+          ],
+          [
+            "MCU coefficients",
+            384
+          ],
+          [
+            "upsampler scratch",
+            768
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "5ba97129e31d5443",
+        "pixel_prefix": [
+          7,
+          0,
+          2,
+          28,
+          0,
+          22,
+          63,
+          0,
+          58,
+          96,
+          0,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 6,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-33x19-s2.jpg",
+      "result": {
+        "charged_bytes": 11085,
+        "decoded_bytes": 1881,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            1881
+          ],
+          [
+            "upsample row",
+            192
+          ],
+          [
+            "upsample previous row",
+            192
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            768
+          ],
+          [
+            "upsample row",
+            48
+          ],
+          [
+            "upsample previous row",
+            48
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            1536
+          ],
+          [
+            "upsample row",
+            48
+          ],
+          [
+            "upsample previous row",
+            48
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            1536
+          ],
+          [
+            "MCU coefficients",
+            1536
+          ],
+          [
+            "MCU coefficients",
+            384
+          ],
+          [
+            "MCU coefficients",
+            384
+          ],
+          [
+            "upsampler scratch",
+            768
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "301214a2ef1dbff3",
+        "pixel_prefix": [
+          1,
+          0,
+          0,
+          21,
+          3,
+          17,
+          56,
+          2,
+          51,
+          89,
+          2,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-65x33-s0.jpg",
+      "result": {
+        "charged_bytes": 11031,
+        "decoded_bytes": 6435,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            6435
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "81f7a4792a6d248a",
+        "pixel_prefix": [
+          0,
+          3,
+          0,
+          24,
+          0,
+          24,
+          63,
+          0,
+          49,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-65x33-s1.jpg",
+      "result": {
+        "charged_bytes": 16375,
+        "decoded_bytes": 6435,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            6435
+          ],
+          [
+            "upsample row",
+            160
+          ],
+          [
+            "upsample previous row",
+            160
+          ],
+          [
+            "upsample first row",
+            160
+          ],
+          [
+            "upsample destination",
+            1280
+          ],
+          [
+            "upsample row",
+            80
+          ],
+          [
+            "upsample previous row",
+            80
+          ],
+          [
+            "upsample first row",
+            160
+          ],
+          [
+            "upsample destination",
+            1280
+          ],
+          [
+            "upsample row",
+            80
+          ],
+          [
+            "upsample previous row",
+            80
+          ],
+          [
+            "upsample first row",
+            160
+          ],
+          [
+            "upsample destination",
+            1280
+          ],
+          [
+            "MCU coefficients",
+            1280
+          ],
+          [
+            "MCU coefficients",
+            640
+          ],
+          [
+            "MCU coefficients",
+            640
+          ],
+          [
+            "upsampler scratch",
+            1280
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "3fa11585fa3bc1e8",
+        "pixel_prefix": [
+          7,
+          0,
+          2,
+          28,
+          0,
+          22,
+          63,
+          0,
+          58,
+          96,
+          0,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 10,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-65x33-s2.jpg",
+      "result": {
+        "charged_bytes": 21015,
+        "decoded_bytes": 6435,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            6435
+          ],
+          [
+            "upsample row",
+            320
+          ],
+          [
+            "upsample previous row",
+            320
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            1280
+          ],
+          [
+            "upsample row",
+            80
+          ],
+          [
+            "upsample previous row",
+            80
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            2560
+          ],
+          [
+            "upsample row",
+            80
+          ],
+          [
+            "upsample previous row",
+            80
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            2560
+          ],
+          [
+            "MCU coefficients",
+            2560
+          ],
+          [
+            "MCU coefficients",
+            640
+          ],
+          [
+            "MCU coefficients",
+            640
+          ],
+          [
+            "upsampler scratch",
+            1280
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "264603e8e7da271f",
+        "pixel_prefix": [
+          1,
+          0,
+          0,
+          21,
+          3,
+          17,
+          56,
+          2,
+          51,
+          89,
+          2,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-129x65-s0.jpg",
+      "result": {
+        "charged_bytes": 32823,
+        "decoded_bytes": 25155,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            25155
+          ],
+          [
+            "MCU coefficients",
+            2176
+          ],
+          [
+            "MCU coefficients",
+            2176
+          ],
+          [
+            "MCU coefficients",
+            2176
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "d3464f90da8def6f",
+        "pixel_prefix": [
+          0,
+          3,
+          0,
+          24,
+          0,
+          24,
+          63,
+          0,
+          49,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-129x65-s1.jpg",
+      "result": {
+        "charged_bytes": 42135,
+        "decoded_bytes": 25155,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            25155
+          ],
+          [
+            "upsample row",
+            288
+          ],
+          [
+            "upsample previous row",
+            288
+          ],
+          [
+            "upsample first row",
+            288
+          ],
+          [
+            "upsample destination",
+            2304
+          ],
+          [
+            "upsample row",
+            144
+          ],
+          [
+            "upsample previous row",
+            144
+          ],
+          [
+            "upsample first row",
+            288
+          ],
+          [
+            "upsample destination",
+            2304
+          ],
+          [
+            "upsample row",
+            144
+          ],
+          [
+            "upsample previous row",
+            144
+          ],
+          [
+            "upsample first row",
+            288
+          ],
+          [
+            "upsample destination",
+            2304
+          ],
+          [
+            "MCU coefficients",
+            2304
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ],
+          [
+            "upsampler scratch",
+            2304
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "fa7c6352c58c5f8e",
+        "pixel_prefix": [
+          7,
+          0,
+          2,
+          28,
+          0,
+          22,
+          63,
+          0,
+          58,
+          96,
+          0,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 18,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-129x65-s2.jpg",
+      "result": {
+        "charged_bytes": 50487,
+        "decoded_bytes": 25155,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            25155
+          ],
+          [
+            "upsample row",
+            576
+          ],
+          [
+            "upsample previous row",
+            576
+          ],
+          [
+            "upsample first row",
+            576
+          ],
+          [
+            "upsample destination",
+            2304
+          ],
+          [
+            "upsample row",
+            144
+          ],
+          [
+            "upsample previous row",
+            144
+          ],
+          [
+            "upsample first row",
+            576
+          ],
+          [
+            "upsample destination",
+            4608
+          ],
+          [
+            "upsample row",
+            144
+          ],
+          [
+            "upsample previous row",
+            144
+          ],
+          [
+            "upsample first row",
+            576
+          ],
+          [
+            "upsample destination",
+            4608
+          ],
+          [
+            "MCU coefficients",
+            4608
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ],
+          [
+            "upsampler scratch",
+            2304
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "4a9308de5ada9e2e",
+        "pixel_prefix": [
+          1,
+          0,
+          0,
+          21,
+          3,
+          17,
+          56,
+          2,
+          51,
+          89,
+          2,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-1x1-s0.jpg",
+      "result": {
+        "charged_bytes": 1911,
+        "decoded_bytes": 3,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            3
+          ],
+          [
+            "progressive coefficients",
+            128
+          ],
+          [
+            "progressive coefficients",
+            128
+          ],
+          [
+            "progressive coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "d94d12186c0f2fb7",
+        "pixel_prefix": [
+          0,
+          0,
+          0
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-1x1-s1.jpg",
+      "result": {
+        "charged_bytes": 3191,
+        "decoded_bytes": 3,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            3
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            32
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            32
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            32
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "progressive coefficients",
+            256
+          ],
+          [
+            "progressive coefficients",
+            128
+          ],
+          [
+            "progressive coefficients",
+            128
+          ],
+          [
+            "upsampler scratch",
+            32
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "d94d12186c0f2fb7",
+        "pixel_prefix": [
+          0,
+          0,
+          0
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 2,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-1x1-s2.jpg",
+      "result": {
+        "charged_bytes": 4375,
+        "decoded_bytes": 3,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            3
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "progressive coefficients",
+            128
+          ],
+          [
+            "progressive coefficients",
+            128
+          ],
+          [
+            "upsampler scratch",
+            32
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "d94d12186c0f2fb7",
+        "pixel_prefix": [
+          0,
+          0,
+          0
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-9x9-s0.jpg",
+      "result": {
+        "charged_bytes": 3687,
+        "decoded_bytes": 243,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            243
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            256
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "1c92b3f61a616a39",
+        "pixel_prefix": [
+          0,
+          3,
+          0,
+          24,
+          0,
+          24,
+          63,
+          0,
+          49,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-9x9-s1.jpg",
+      "result": {
+        "charged_bytes": 3943,
+        "decoded_bytes": 243,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            243
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            32
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            32
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            32
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "progressive coefficients",
+            256
+          ],
+          [
+            "progressive coefficients",
+            256
+          ],
+          [
+            "upsampler scratch",
+            32
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "425138e1dcb15ab9",
+        "pixel_prefix": [
+          7,
+          0,
+          9,
+          28,
+          0,
+          28,
+          63,
+          0,
+          61,
+          96,
+          0,
+          83
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 4,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-9x9-s2.jpg",
+      "result": {
+        "charged_bytes": 4615,
+        "decoded_bytes": 243,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            243
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            16
+          ],
+          [
+            "upsample previous row",
+            16
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "progressive coefficients",
+            128
+          ],
+          [
+            "progressive coefficients",
+            128
+          ],
+          [
+            "upsampler scratch",
+            32
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            128
+          ],
+          [
+            "MCU coefficients",
+            128
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "8bf8f0804a7a84af",
+        "pixel_prefix": [
+          14,
+          0,
+          23,
+          31,
+          0,
+          35,
+          58,
+          1,
+          52,
+          87,
+          4,
+          72
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-17x17-s0.jpg",
+      "result": {
+        "charged_bytes": 6615,
+        "decoded_bytes": 867,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            867
+          ],
+          [
+            "progressive coefficients",
+            1152
+          ],
+          [
+            "progressive coefficients",
+            1152
+          ],
+          [
+            "progressive coefficients",
+            1152
+          ],
+          [
+            "MCU coefficients",
+            384
+          ],
+          [
+            "MCU coefficients",
+            384
+          ],
+          [
+            "MCU coefficients",
+            384
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "73a34830dfd5ccd6",
+        "pixel_prefix": [
+          0,
+          3,
+          0,
+          24,
+          0,
+          24,
+          63,
+          0,
+          49,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-17x17-s1.jpg",
+      "result": {
+        "charged_bytes": 8151,
+        "decoded_bytes": 867,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            867
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "progressive coefficients",
+            1536
+          ],
+          [
+            "progressive coefficients",
+            768
+          ],
+          [
+            "progressive coefficients",
+            768
+          ],
+          [
+            "upsampler scratch",
+            64
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            256
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "14b5c8ec7f7c9852",
+        "pixel_prefix": [
+          7,
+          0,
+          2,
+          28,
+          0,
+          22,
+          63,
+          0,
+          58,
+          96,
+          0,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 6,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-17x17-s2.jpg",
+      "result": {
+        "charged_bytes": 10007,
+        "decoded_bytes": 867,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            867
+          ],
+          [
+            "upsample row",
+            128
+          ],
+          [
+            "upsample previous row",
+            128
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            1024
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            1024
+          ],
+          [
+            "progressive coefficients",
+            2048
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "upsampler scratch",
+            64
+          ],
+          [
+            "MCU coefficients",
+            1024
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            256
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "46ac2ea29b074a61",
+        "pixel_prefix": [
+          1,
+          0,
+          0,
+          21,
+          3,
+          17,
+          56,
+          2,
+          51,
+          89,
+          2,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-33x19-s0.jpg",
+      "result": {
+        "charged_bytes": 10701,
+        "decoded_bytes": 1881,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            1881
+          ],
+          [
+            "progressive coefficients",
+            1920
+          ],
+          [
+            "progressive coefficients",
+            1920
+          ],
+          [
+            "progressive coefficients",
+            1920
+          ],
+          [
+            "MCU coefficients",
+            640
+          ],
+          [
+            "MCU coefficients",
+            640
+          ],
+          [
+            "MCU coefficients",
+            640
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "7056bae968032850",
+        "pixel_prefix": [
+          0,
+          3,
+          0,
+          24,
+          0,
+          24,
+          63,
+          0,
+          49,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-33x19-s1.jpg",
+      "result": {
+        "charged_bytes": 12237,
+        "decoded_bytes": 1881,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            1881
+          ],
+          [
+            "upsample row",
+            96
+          ],
+          [
+            "upsample previous row",
+            96
+          ],
+          [
+            "upsample first row",
+            96
+          ],
+          [
+            "upsample destination",
+            768
+          ],
+          [
+            "upsample row",
+            48
+          ],
+          [
+            "upsample previous row",
+            48
+          ],
+          [
+            "upsample first row",
+            96
+          ],
+          [
+            "upsample destination",
+            768
+          ],
+          [
+            "upsample row",
+            48
+          ],
+          [
+            "upsample previous row",
+            48
+          ],
+          [
+            "upsample first row",
+            96
+          ],
+          [
+            "upsample destination",
+            768
+          ],
+          [
+            "progressive coefficients",
+            2304
+          ],
+          [
+            "progressive coefficients",
+            1152
+          ],
+          [
+            "progressive coefficients",
+            1152
+          ],
+          [
+            "upsampler scratch",
+            96
+          ],
+          [
+            "MCU coefficients",
+            768
+          ],
+          [
+            "MCU coefficients",
+            384
+          ],
+          [
+            "MCU coefficients",
+            384
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "5ba97129e31d5443",
+        "pixel_prefix": [
+          7,
+          0,
+          2,
+          28,
+          0,
+          22,
+          63,
+          0,
+          58,
+          96,
+          0,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 6,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-33x19-s2.jpg",
+      "result": {
+        "charged_bytes": 15021,
+        "decoded_bytes": 1881,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            1881
+          ],
+          [
+            "upsample row",
+            192
+          ],
+          [
+            "upsample previous row",
+            192
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            768
+          ],
+          [
+            "upsample row",
+            48
+          ],
+          [
+            "upsample previous row",
+            48
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            1536
+          ],
+          [
+            "upsample row",
+            48
+          ],
+          [
+            "upsample previous row",
+            48
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            1536
+          ],
+          [
+            "progressive coefficients",
+            3072
+          ],
+          [
+            "progressive coefficients",
+            768
+          ],
+          [
+            "progressive coefficients",
+            768
+          ],
+          [
+            "upsampler scratch",
+            96
+          ],
+          [
+            "MCU coefficients",
+            1536
+          ],
+          [
+            "MCU coefficients",
+            384
+          ],
+          [
+            "MCU coefficients",
+            384
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "301214a2ef1dbff3",
+        "pixel_prefix": [
+          1,
+          0,
+          0,
+          21,
+          3,
+          17,
+          56,
+          2,
+          51,
+          89,
+          2,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-65x33-s0.jpg",
+      "result": {
+        "charged_bytes": 28311,
+        "decoded_bytes": 6435,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            6435
+          ],
+          [
+            "progressive coefficients",
+            5760
+          ],
+          [
+            "progressive coefficients",
+            5760
+          ],
+          [
+            "progressive coefficients",
+            5760
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "81f7a4792a6d248a",
+        "pixel_prefix": [
+          0,
+          3,
+          0,
+          24,
+          0,
+          24,
+          63,
+          0,
+          49,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-65x33-s1.jpg",
+      "result": {
+        "charged_bytes": 28055,
+        "decoded_bytes": 6435,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            6435
+          ],
+          [
+            "upsample row",
+            160
+          ],
+          [
+            "upsample previous row",
+            160
+          ],
+          [
+            "upsample first row",
+            160
+          ],
+          [
+            "upsample destination",
+            1280
+          ],
+          [
+            "upsample row",
+            80
+          ],
+          [
+            "upsample previous row",
+            80
+          ],
+          [
+            "upsample first row",
+            160
+          ],
+          [
+            "upsample destination",
+            1280
+          ],
+          [
+            "upsample row",
+            80
+          ],
+          [
+            "upsample previous row",
+            80
+          ],
+          [
+            "upsample first row",
+            160
+          ],
+          [
+            "upsample destination",
+            1280
+          ],
+          [
+            "progressive coefficients",
+            6400
+          ],
+          [
+            "progressive coefficients",
+            3200
+          ],
+          [
+            "progressive coefficients",
+            3200
+          ],
+          [
+            "upsampler scratch",
+            160
+          ],
+          [
+            "MCU coefficients",
+            1280
+          ],
+          [
+            "MCU coefficients",
+            640
+          ],
+          [
+            "MCU coefficients",
+            640
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "3fa11585fa3bc1e8",
+        "pixel_prefix": [
+          7,
+          0,
+          2,
+          28,
+          0,
+          22,
+          63,
+          0,
+          58,
+          96,
+          0,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 10,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-65x33-s2.jpg",
+      "result": {
+        "charged_bytes": 31415,
+        "decoded_bytes": 6435,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            6435
+          ],
+          [
+            "upsample row",
+            320
+          ],
+          [
+            "upsample previous row",
+            320
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            1280
+          ],
+          [
+            "upsample row",
+            80
+          ],
+          [
+            "upsample previous row",
+            80
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            2560
+          ],
+          [
+            "upsample row",
+            80
+          ],
+          [
+            "upsample previous row",
+            80
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            2560
+          ],
+          [
+            "progressive coefficients",
+            7680
+          ],
+          [
+            "progressive coefficients",
+            1920
+          ],
+          [
+            "progressive coefficients",
+            1920
+          ],
+          [
+            "upsampler scratch",
+            160
+          ],
+          [
+            "MCU coefficients",
+            2560
+          ],
+          [
+            "MCU coefficients",
+            640
+          ],
+          [
+            "MCU coefficients",
+            640
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "264603e8e7da271f",
+        "pixel_prefix": [
+          1,
+          0,
+          0,
+          21,
+          3,
+          17,
+          56,
+          2,
+          51,
+          89,
+          2,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-129x65-s0.jpg",
+      "result": {
+        "charged_bytes": 91575,
+        "decoded_bytes": 25155,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            25155
+          ],
+          [
+            "progressive coefficients",
+            19584
+          ],
+          [
+            "progressive coefficients",
+            19584
+          ],
+          [
+            "progressive coefficients",
+            19584
+          ],
+          [
+            "MCU coefficients",
+            2176
+          ],
+          [
+            "MCU coefficients",
+            2176
+          ],
+          [
+            "MCU coefficients",
+            2176
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "d3464f90da8def6f",
+        "pixel_prefix": [
+          0,
+          3,
+          0,
+          24,
+          0,
+          24,
+          63,
+          0,
+          49,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-129x65-s1.jpg",
+      "result": {
+        "charged_bytes": 81591,
+        "decoded_bytes": 25155,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            25155
+          ],
+          [
+            "upsample row",
+            288
+          ],
+          [
+            "upsample previous row",
+            288
+          ],
+          [
+            "upsample first row",
+            288
+          ],
+          [
+            "upsample destination",
+            2304
+          ],
+          [
+            "upsample row",
+            144
+          ],
+          [
+            "upsample previous row",
+            144
+          ],
+          [
+            "upsample first row",
+            288
+          ],
+          [
+            "upsample destination",
+            2304
+          ],
+          [
+            "upsample row",
+            144
+          ],
+          [
+            "upsample previous row",
+            144
+          ],
+          [
+            "upsample first row",
+            288
+          ],
+          [
+            "upsample destination",
+            2304
+          ],
+          [
+            "progressive coefficients",
+            20736
+          ],
+          [
+            "progressive coefficients",
+            10368
+          ],
+          [
+            "progressive coefficients",
+            10368
+          ],
+          [
+            "upsampler scratch",
+            288
+          ],
+          [
+            "MCU coefficients",
+            2304
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "fa7c6352c58c5f8e",
+        "pixel_prefix": [
+          7,
+          0,
+          2,
+          28,
+          0,
+          22,
+          63,
+          0,
+          58,
+          96,
+          0,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 18,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-129x65-s2.jpg",
+      "result": {
+        "charged_bytes": 83031,
+        "decoded_bytes": 25155,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            25155
+          ],
+          [
+            "upsample row",
+            576
+          ],
+          [
+            "upsample previous row",
+            576
+          ],
+          [
+            "upsample first row",
+            576
+          ],
+          [
+            "upsample destination",
+            2304
+          ],
+          [
+            "upsample row",
+            144
+          ],
+          [
+            "upsample previous row",
+            144
+          ],
+          [
+            "upsample first row",
+            576
+          ],
+          [
+            "upsample destination",
+            4608
+          ],
+          [
+            "upsample row",
+            144
+          ],
+          [
+            "upsample previous row",
+            144
+          ],
+          [
+            "upsample first row",
+            576
+          ],
+          [
+            "upsample destination",
+            4608
+          ],
+          [
+            "progressive coefficients",
+            23040
+          ],
+          [
+            "progressive coefficients",
+            5760
+          ],
+          [
+            "progressive coefficients",
+            5760
+          ],
+          [
+            "upsampler scratch",
+            288
+          ],
+          [
+            "MCU coefficients",
+            4608
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ],
+          [
+            "MCU coefficients",
+            1152
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "4a9308de5ada9e2e",
+        "pixel_prefix": [
+          1,
+          0,
+          0,
+          21,
+          3,
+          17,
+          56,
+          2,
+          51,
+          89,
+          2,
+          80
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-1x1-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 4983,
+        "decoded_bytes": 3,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            3
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "upsampler scratch",
+            256
+          ],
+          [
+            "worker upsample destination",
+            512
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "d94d12186c0f2fb7",
+        "pixel_prefix": [
+          0,
+          0,
+          0
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": true,
+        "worker_h_calls": 1,
+        "worker_h_capacity_growths": 1,
+        "worker_h_len_growths": 1
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-1x9-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 5007,
+        "decoded_bytes": 27,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            27
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "upsampler scratch",
+            256
+          ],
+          [
+            "worker upsample destination",
+            512
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "b267aa5eb1dd6171",
+        "pixel_prefix": [
+          0,
+          1,
+          0,
+          2,
+          20,
+          22,
+          0,
+          39,
+          46,
+          0,
+          56,
+          68
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": true,
+        "worker_h_calls": 1,
+        "worker_h_capacity_growths": 1,
+        "worker_h_len_growths": 1
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-9x1-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 6159,
+        "decoded_bytes": 27,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            27
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "upsampler scratch",
+            256
+          ],
+          [
+            "worker upsample destination",
+            1024
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "67e14753b3194b16",
+        "pixel_prefix": [
+          6,
+          4,
+          7,
+          29,
+          2,
+          21,
+          64,
+          1,
+          46,
+          96,
+          0,
+          71
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": true,
+        "worker_h_calls": 1,
+        "worker_h_capacity_growths": 1,
+        "worker_h_len_growths": 1
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-9x9-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 6375,
+        "decoded_bytes": 243,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            243
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "upsampler scratch",
+            256
+          ],
+          [
+            "worker upsample destination",
+            1024
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "63bd87c5c950d9df",
+        "pixel_prefix": [
+          0,
+          6,
+          0,
+          25,
+          1,
+          25,
+          65,
+          1,
+          51,
+          98,
+          0,
+          82
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": true,
+        "worker_h_calls": 1,
+        "worker_h_capacity_growths": 1,
+        "worker_h_len_growths": 1
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-17x17-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 10839,
+        "decoded_bytes": 867,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            867
+          ],
+          [
+            "upsample row",
+            96
+          ],
+          [
+            "upsample previous row",
+            96
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            768
+          ],
+          [
+            "upsample row",
+            128
+          ],
+          [
+            "upsample previous row",
+            128
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            1024
+          ],
+          [
+            "upsample row",
+            128
+          ],
+          [
+            "upsample previous row",
+            128
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            1024
+          ],
+          [
+            "MCU coefficients",
+            768
+          ],
+          [
+            "MCU coefficients",
+            1024
+          ],
+          [
+            "MCU coefficients",
+            1024
+          ],
+          [
+            "upsampler scratch",
+            512
+          ],
+          [
+            "worker upsample destination",
+            1536
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "010f1c0bbc245560",
+        "pixel_prefix": [
+          2,
+          8,
+          0,
+          26,
+          2,
+          26,
+          65,
+          1,
+          51,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": true,
+        "worker_h_calls": 2,
+        "worker_h_capacity_growths": 1,
+        "worker_h_len_growths": 1
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-33x1-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 15063,
+        "decoded_bytes": 99,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            99
+          ],
+          [
+            "upsample row",
+            160
+          ],
+          [
+            "upsample previous row",
+            160
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            1280
+          ],
+          [
+            "upsample row",
+            192
+          ],
+          [
+            "upsample previous row",
+            192
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            1536
+          ],
+          [
+            "upsample row",
+            192
+          ],
+          [
+            "upsample previous row",
+            192
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            1536
+          ],
+          [
+            "MCU coefficients",
+            1280
+          ],
+          [
+            "MCU coefficients",
+            1536
+          ],
+          [
+            "MCU coefficients",
+            1536
+          ],
+          [
+            "upsampler scratch",
+            768
+          ],
+          [
+            "worker upsample destination",
+            2560
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "4b1eb984662d68da",
+        "pixel_prefix": [
+          5,
+          3,
+          6,
+          28,
+          1,
+          20,
+          65,
+          2,
+          47,
+          96,
+          0,
+          71
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": true,
+        "worker_h_calls": 1,
+        "worker_h_capacity_growths": 1,
+        "worker_h_len_growths": 1
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-33x19-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 16845,
+        "decoded_bytes": 1881,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            1881
+          ],
+          [
+            "upsample row",
+            160
+          ],
+          [
+            "upsample previous row",
+            160
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            1280
+          ],
+          [
+            "upsample row",
+            192
+          ],
+          [
+            "upsample previous row",
+            192
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            1536
+          ],
+          [
+            "upsample row",
+            192
+          ],
+          [
+            "upsample previous row",
+            192
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            1536
+          ],
+          [
+            "MCU coefficients",
+            1280
+          ],
+          [
+            "MCU coefficients",
+            1536
+          ],
+          [
+            "MCU coefficients",
+            1536
+          ],
+          [
+            "upsampler scratch",
+            768
+          ],
+          [
+            "worker upsample destination",
+            2560
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "faad9b1d4fa13886",
+        "pixel_prefix": [
+          2,
+          8,
+          0,
+          26,
+          2,
+          26,
+          65,
+          1,
+          51,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": true,
+        "worker_h_calls": 2,
+        "worker_h_capacity_growths": 1,
+        "worker_h_len_growths": 1
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "baseline-65x33-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 31383,
+        "decoded_bytes": 6435,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            6435
+          ],
+          [
+            "upsample row",
+            288
+          ],
+          [
+            "upsample previous row",
+            288
+          ],
+          [
+            "upsample first row",
+            576
+          ],
+          [
+            "upsample destination",
+            2304
+          ],
+          [
+            "upsample row",
+            320
+          ],
+          [
+            "upsample previous row",
+            320
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            2560
+          ],
+          [
+            "upsample row",
+            320
+          ],
+          [
+            "upsample previous row",
+            320
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            2560
+          ],
+          [
+            "MCU coefficients",
+            2304
+          ],
+          [
+            "MCU coefficients",
+            2560
+          ],
+          [
+            "MCU coefficients",
+            2560
+          ],
+          [
+            "upsampler scratch",
+            1280
+          ],
+          [
+            "worker upsample destination",
+            4608
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "83c0e001608d67fe",
+        "pixel_prefix": [
+          2,
+          8,
+          0,
+          26,
+          2,
+          26,
+          65,
+          1,
+          51,
+          97,
+          0,
+          81
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": true,
+        "worker_h_calls": 3,
+        "worker_h_capacity_growths": 1,
+        "worker_h_len_growths": 1
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-1x1-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 6023,
+        "decoded_bytes": 3,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            3
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "progressive coefficients",
+            256
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "upsampler scratch",
+            16
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "worker upsample destination",
+            512
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "d94d12186c0f2fb7",
+        "pixel_prefix": [
+          0,
+          0,
+          0
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": true,
+        "worker_h_calls": 1,
+        "worker_h_capacity_growths": 1,
+        "worker_h_len_growths": 1
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-1x9-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 6047,
+        "decoded_bytes": 27,
+        "exact_budget_passed": true,
+        "healthy_followup_passed": true,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            27
+          ],
+          [
+            "upsample row",
+            32
+          ],
+          [
+            "upsample previous row",
+            32
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            256
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "progressive coefficients",
+            256
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "upsampler scratch",
+            16
+          ],
+          [
+            "MCU coefficients",
+            256
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "worker upsample destination",
+            512
+          ]
+        ],
+        "one_below_rejected": true,
+        "pixel_fnv1a64": "b267aa5eb1dd6171",
+        "pixel_prefix": [
+          0,
+          1,
+          0,
+          2,
+          20,
+          22,
+          0,
+          39,
+          46,
+          0,
+          56,
+          68
+        ],
+        "unmodified_pixels_equal": true,
+        "worker_growth_reservation_rejected": true,
+        "worker_h_calls": 1,
+        "worker_h_capacity_growths": 1,
+        "worker_h_len_growths": 1
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-9x1-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 6191,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            27
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "progressive coefficients",
+            256
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "upsampler scratch",
+            32
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ]
+        ],
+        "observer_error_equal": true,
+        "original_decode_error": "\"Invalid slice , would panic, invalid image\"",
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-9x9-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 6407,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            243
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "upsample row",
+            64
+          ],
+          [
+            "upsample previous row",
+            64
+          ],
+          [
+            "upsample first row",
+            64
+          ],
+          [
+            "upsample destination",
+            512
+          ],
+          [
+            "progressive coefficients",
+            256
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "progressive coefficients",
+            512
+          ],
+          [
+            "upsampler scratch",
+            32
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ],
+          [
+            "MCU coefficients",
+            512
+          ]
+        ],
+        "observer_error_equal": true,
+        "original_decode_error": "\"Invalid slice , would panic, invalid image\"",
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-17x17-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 13959,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            867
+          ],
+          [
+            "upsample row",
+            96
+          ],
+          [
+            "upsample previous row",
+            96
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            768
+          ],
+          [
+            "upsample row",
+            128
+          ],
+          [
+            "upsample previous row",
+            128
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            1024
+          ],
+          [
+            "upsample row",
+            128
+          ],
+          [
+            "upsample previous row",
+            128
+          ],
+          [
+            "upsample first row",
+            128
+          ],
+          [
+            "upsample destination",
+            1024
+          ],
+          [
+            "progressive coefficients",
+            1024
+          ],
+          [
+            "progressive coefficients",
+            2048
+          ],
+          [
+            "progressive coefficients",
+            2048
+          ],
+          [
+            "upsampler scratch",
+            48
+          ],
+          [
+            "MCU coefficients",
+            768
+          ],
+          [
+            "MCU coefficients",
+            1024
+          ],
+          [
+            "MCU coefficients",
+            1024
+          ]
+        ],
+        "observer_error_equal": true,
+        "original_decode_error": "\"Invalid slice , would panic, invalid image\"",
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-33x1-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 15655,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            99
+          ],
+          [
+            "upsample row",
+            160
+          ],
+          [
+            "upsample previous row",
+            160
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            1280
+          ],
+          [
+            "upsample row",
+            192
+          ],
+          [
+            "upsample previous row",
+            192
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            1536
+          ],
+          [
+            "upsample row",
+            192
+          ],
+          [
+            "upsample previous row",
+            192
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            1536
+          ],
+          [
+            "progressive coefficients",
+            768
+          ],
+          [
+            "progressive coefficients",
+            1536
+          ],
+          [
+            "progressive coefficients",
+            1536
+          ],
+          [
+            "upsampler scratch",
+            80
+          ],
+          [
+            "MCU coefficients",
+            1280
+          ],
+          [
+            "MCU coefficients",
+            1536
+          ],
+          [
+            "MCU coefficients",
+            1536
+          ]
+        ],
+        "observer_error_equal": true,
+        "original_decode_error": "\"Invalid slice , would panic, invalid image\"",
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-33x19-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 21277,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            1881
+          ],
+          [
+            "upsample row",
+            160
+          ],
+          [
+            "upsample previous row",
+            160
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            1280
+          ],
+          [
+            "upsample row",
+            192
+          ],
+          [
+            "upsample previous row",
+            192
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            1536
+          ],
+          [
+            "upsample row",
+            192
+          ],
+          [
+            "upsample previous row",
+            192
+          ],
+          [
+            "upsample first row",
+            192
+          ],
+          [
+            "upsample destination",
+            1536
+          ],
+          [
+            "progressive coefficients",
+            1536
+          ],
+          [
+            "progressive coefficients",
+            3072
+          ],
+          [
+            "progressive coefficients",
+            3072
+          ],
+          [
+            "upsampler scratch",
+            80
+          ],
+          [
+            "MCU coefficients",
+            1280
+          ],
+          [
+            "MCU coefficients",
+            1536
+          ],
+          [
+            "MCU coefficients",
+            1536
+          ]
+        ],
+        "observer_error_equal": true,
+        "original_decode_error": "\"Invalid slice , would panic, invalid image\"",
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progressive-65x33-mixed-Y1x2-Cb2x2-Cr2x2.jpg",
+      "result": {
+        "charged_bytes": 44839,
+        "normal_reservations": [
+          [
+            "components",
+            1140
+          ],
+          [
+            "output pixels",
+            6435
+          ],
+          [
+            "upsample row",
+            288
+          ],
+          [
+            "upsample previous row",
+            288
+          ],
+          [
+            "upsample first row",
+            576
+          ],
+          [
+            "upsample destination",
+            2304
+          ],
+          [
+            "upsample row",
+            320
+          ],
+          [
+            "upsample previous row",
+            320
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            2560
+          ],
+          [
+            "upsample row",
+            320
+          ],
+          [
+            "upsample previous row",
+            320
+          ],
+          [
+            "upsample first row",
+            320
+          ],
+          [
+            "upsample destination",
+            2560
+          ],
+          [
+            "progressive coefficients",
+            3840
+          ],
+          [
+            "progressive coefficients",
+            7680
+          ],
+          [
+            "progressive coefficients",
+            7680
+          ],
+          [
+            "upsampler scratch",
+            144
+          ],
+          [
+            "MCU coefficients",
+            2304
+          ],
+          [
+            "MCU coefficients",
+            2560
+          ],
+          [
+            "MCU coefficients",
+            2560
+          ]
+        ],
+        "observer_error_equal": true,
+        "original_decode_error": "\"Invalid slice , would panic, invalid image\"",
+        "worker_growth_reservation_rejected": false,
+        "worker_h_calls": 0,
+        "worker_h_capacity_growths": 0,
+        "worker_h_len_growths": 0
+      },
+      "healthyFollowupPixels": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "errors": [],
+  "hCalls": 106,
+  "growth": 10,
+  "scope": "optimized audit-only observer module and unmodified JPEG source in the same module; not a replacement Studio product bundle"
+}

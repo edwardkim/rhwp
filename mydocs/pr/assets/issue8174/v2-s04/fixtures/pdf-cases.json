@@ -1,0 +1,207 @@
+[
+  {
+    "name": "icc-cmyk-jpeg",
+    "input": "pdf/issue8174/features/icc-cmyk-jpeg.pdf",
+    "reference": "pdf/issue8174/features/reference/icc-cmyk-jpeg-gs.pdf"
+  },
+  {
+    "name": "icc-cmyk",
+    "input": "pdf/issue8174/features/icc-cmyk.pdf",
+    "reference": "pdf/issue8174/features/reference/icc-cmyk-gs.pdf"
+  },
+  {
+    "name": "icc-gray",
+    "input": "pdf/issue8174/features/icc-gray.pdf",
+    "reference": "pdf/issue8174/features/reference/icc-gray-gs.pdf"
+  },
+  {
+    "name": "icc-indexed",
+    "input": "pdf/issue8174/features/icc-indexed.pdf",
+    "reference": "pdf/issue8174/features/reference/icc-indexed-gs.pdf"
+  },
+  {
+    "name": "icc-indirect-filter",
+    "input": "pdf/issue8174/features/icc-indirect-filter.pdf",
+    "reference": "pdf/issue8174/features/reference/icc-indirect-filter-gs.pdf"
+  },
+  {
+    "name": "icc-jpeg",
+    "input": "pdf/issue8174/features/icc-jpeg.pdf",
+    "reference": "pdf/issue8174/features/reference/icc-jpeg-gs.pdf"
+  },
+  {
+    "name": "icc-path-cmyk",
+    "input": "pdf/issue8174/features/icc-path-cmyk.pdf",
+    "reference": "pdf/issue8174/features/reference/icc-path-cmyk-gs.pdf"
+  },
+  {
+    "name": "icc-path-rgb",
+    "input": "pdf/issue8174/features/icc-path-rgb.pdf",
+    "reference": "pdf/issue8174/features/reference/icc-path-rgb-gs.pdf"
+  },
+  {
+    "name": "icc-rgb",
+    "input": "pdf/issue8174/features/icc-rgb.pdf",
+    "reference": "pdf/issue8174/features/reference/icc-rgb-gs.pdf"
+  },
+  {
+    "name": "jpx-cmyk-alpha-boxed",
+    "input": "pdf/issue8174/features/jpx-cmyk-alpha-boxed.pdf",
+    "reference": "pdf/issue8174/features/reference/jpx-cmyk-alpha-independent.pdf"
+  },
+  {
+    "name": "jpx-cmyk-alpha",
+    "input": "pdf/issue8174/features/jpx-cmyk-alpha.pdf",
+    "reference": "pdf/issue8174/features/reference/jpx-cmyk-alpha-independent.pdf"
+  },
+  {
+    "name": "jpx-cmyk-premult-boxed",
+    "input": "pdf/issue8174/features/jpx-cmyk-premult-boxed.pdf",
+    "reference": "pdf/issue8174/features/reference/jpx-cmyk-premult-independent.pdf"
+  },
+  {
+    "name": "jpx-cmyk-premult",
+    "input": "pdf/issue8174/features/jpx-cmyk-premult.pdf",
+    "reference": "pdf/issue8174/features/reference/jpx-cmyk-premult-independent.pdf"
+  },
+  {
+    "name": "jpx-indexed-alpha-boxed",
+    "input": "pdf/issue8174/features/jpx-indexed-alpha-boxed.pdf",
+    "reference": "pdf/issue8174/features/reference/jpx-indexed-alpha-independent.pdf"
+  },
+  {
+    "name": "jpx-indexed-alpha",
+    "input": "pdf/issue8174/features/jpx-indexed-alpha.pdf",
+    "reference": "pdf/issue8174/features/reference/jpx-indexed-alpha-independent.pdf"
+  },
+  {
+    "name": "jpx-indexed-icc-premult-boxed",
+    "input": "pdf/issue8174/features/jpx-indexed-icc-premult-boxed.pdf",
+    "reference": "pdf/issue8174/features/reference/jpx-indexed-icc-premult-independent.pdf"
+  },
+  {
+    "name": "jpx-indexed-icc-premult",
+    "input": "pdf/issue8174/features/jpx-indexed-icc-premult.pdf",
+    "reference": "pdf/issue8174/features/reference/jpx-indexed-icc-premult-independent.pdf"
+  },
+  {
+    "name": "jpx-indexed-palette-premult-boxed",
+    "input": "pdf/issue8174/features/jpx-indexed-palette-premult-boxed.pdf",
+    "reference": "pdf/issue8174/features/reference/jpx-indexed-palette-premult-independent.pdf"
+  },
+  {
+    "name": "jpx-indexed-palette-premult",
+    "input": "pdf/issue8174/features/jpx-indexed-palette-premult.pdf",
+    "reference": "pdf/issue8174/features/reference/jpx-indexed-palette-premult-independent.pdf"
+  },
+  {
+    "name": "jpx-indexed-premult-boxed",
+    "input": "pdf/issue8174/features/jpx-indexed-premult-boxed.pdf",
+    "reference": "pdf/issue8174/features/reference/jpx-indexed-premult-independent.pdf"
+  },
+  {
+    "name": "jpx-indexed-premult",
+    "input": "pdf/issue8174/features/jpx-indexed-premult.pdf",
+    "reference": "pdf/issue8174/features/reference/jpx-indexed-premult-independent.pdf"
+  },
+  {
+    "name": "recovery-fake-header",
+    "input": "pdf/issue8174/features/recovery-fake-header.pdf",
+    "reference": "pdf/issue8174/features/reference/recovery-fake-header-original.pdf"
+  },
+  {
+    "name": "recovery-incremental",
+    "input": "pdf/issue8174/features/recovery-incremental.pdf",
+    "reference": "pdf/issue8174/features/reference/recovery-incremental-original.pdf"
+  },
+  {
+    "name": "recovery-missing-xref",
+    "input": "pdf/issue8174/features/recovery-missing-xref.pdf",
+    "reference": "pdf/issue8174/features/reference/recovery-original.pdf"
+  },
+  {
+    "name": "old-jbig2-generic_template0",
+    "input": "pdf/issue8183/jbig2-generic_template0.pdf",
+    "reference": "pdf/issue8183/jbig2-generic_template0.pdf"
+  },
+  {
+    "name": "old-jbig2-mask",
+    "input": "pdf/issue8183/jbig2-mask.pdf",
+    "reference": "pdf/issue8183/jbig2-mask.pdf"
+  },
+  {
+    "name": "old-jbig2-symbol_global",
+    "input": "pdf/issue8183/jbig2-symbol_global.pdf",
+    "reference": "pdf/issue8183/jbig2-symbol_global.pdf"
+  },
+  {
+    "name": "old-jbig2",
+    "input": "pdf/issue8183/jbig2.pdf",
+    "reference": "pdf/issue8183/jbig2.pdf"
+  },
+  {
+    "name": "old-jpx-alpha",
+    "input": "pdf/issue8183/jpx-alpha.pdf",
+    "reference": "pdf/issue8183/reference/jpx-alpha-gs.pdf"
+  },
+  {
+    "name": "old-jpx-indexed",
+    "input": "pdf/issue8183/jpx-indexed.pdf",
+    "reference": "pdf/issue8183/reference/jpx-indexed-gs.pdf"
+  },
+  {
+    "name": "old-jpx-mask",
+    "input": "pdf/issue8183/jpx-mask.pdf",
+    "reference": "pdf/issue8183/jpx-mask.pdf"
+  },
+  {
+    "name": "old-jpx-palette",
+    "input": "pdf/issue8183/jpx-palette.pdf",
+    "reference": "pdf/issue8183/jpx-palette.pdf"
+  },
+  {
+    "name": "old-jpx-premult",
+    "input": "pdf/issue8183/jpx-premult.pdf",
+    "reference": "pdf/issue8183/reference/jpx-premult-gs.pdf"
+  },
+  {
+    "name": "old-jpx-tiles",
+    "input": "pdf/issue8183/jpx-tiles.pdf",
+    "reference": "pdf/issue8183/jpx-tiles.pdf"
+  },
+  {
+    "name": "old-jpx",
+    "input": "pdf/issue8183/jpx.pdf",
+    "reference": "pdf/issue8183/jpx.pdf"
+  },
+  {
+    "name": "old-scan-jbig2-200",
+    "input": "pdf/issue8183/scan-jbig2-200.pdf",
+    "reference": "pdf/issue8183/scan-jbig2-200.pdf"
+  },
+  {
+    "name": "old-scan-jbig2",
+    "input": "pdf/issue8183/scan-jbig2.pdf",
+    "reference": "pdf/issue8183/scan-jbig2.pdf"
+  },
+  {
+    "name": "old-scan-jpeg-control-200",
+    "input": "pdf/issue8183/scan-jpeg-control-200.pdf",
+    "reference": "pdf/issue8183/scan-jpeg-control-200.pdf"
+  },
+  {
+    "name": "old-scan-jpeg-control",
+    "input": "pdf/issue8183/scan-jpeg-control.pdf",
+    "reference": "pdf/issue8183/scan-jpeg-control.pdf"
+  },
+  {
+    "name": "old-scan-jpx-200",
+    "input": "pdf/issue8183/scan-jpx-200.pdf",
+    "reference": "pdf/issue8183/scan-jpx-200.pdf"
+  },
+  {
+    "name": "old-scan-jpx",
+    "input": "pdf/issue8183/scan-jpx.pdf",
+    "reference": "pdf/issue8183/scan-jpx.pdf"
+  }
+]

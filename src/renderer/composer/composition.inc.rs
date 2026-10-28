@@ -17,11 +17,24 @@ pub(crate) fn compose_section_with_horizontal_shaping(
     section: &Section,
     styles: &ResolvedStyleSet,
 ) -> Vec<ComposedParagraph> {
-    section
-        .paragraphs
-        .iter()
-        .map(|paragraph| compose_paragraph_with_horizontal_shaping(paragraph, styles))
-        .collect()
+    match try_compose_section_with_horizontal_shaping(section, styles, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn try_compose_section_with_horizontal_shaping<S: crate::storage::Storage>(
+    section: &Section,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+) -> Result<Vec<ComposedParagraph>, S::Error> {
+    let mut paragraphs = storage.vec(section.paragraphs.len())?;
+    for paragraph in &section.paragraphs {
+        paragraphs.push(try_compose_paragraph_with_horizontal_shaping(
+            paragraph, styles, storage,
+        )?);
+    }
+    Ok(paragraphs)
 }
 
 /// [Task #991] HWP5 parser 가 extended ctrl (1-3, 11-12, 14-18, 21-23) 의
@@ -32,7 +45,10 @@ pub(crate) fn compose_section_with_horizontal_shaping(
 /// 부족하면 char_offsets gap (8 wchar 단위) 에 마커 삽입한 synth paragraph 반환.
 ///
 /// 영향 범위: composer 내부만 (rendering pipeline). para 원본 (editor) 영향 없음.
-fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
+fn try_synthesize_marker_paragraph<S: crate::storage::Storage>(
+    para: &Paragraph,
+    storage: &S,
+) -> Result<Option<Paragraph>, S::Error> {
     fn needs_synthesized_inline_marker(ctrl: &Control) -> bool {
         is_render_inline_control(ctrl)
     }
@@ -47,7 +63,7 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
         .count();
 
     if inline_ctrl_count == 0 {
-        return None;
+        return Ok(None);
     }
 
     // HWP3 정답지의 미주 수식 문단은 본문 텍스트 없이 줄바꿈/탭과
@@ -68,13 +84,13 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
         )
     });
     if text_has_only_layout_space && controls_are_tac_objects {
-        return None;
+        return Ok(None);
     }
 
     let existing_markers = para.text.chars().filter(|c| *c == '\u{FFFC}').count();
     if existing_markers >= inline_ctrl_count {
         // HWP3 path — 이미 마커 충분
-        return None;
+        return Ok(None);
     }
 
     // [Task #991 좁힘] 단일 control 또는 단일 leading ctrl 경우는 fix 미적용.
@@ -91,7 +107,7 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
     let first_off = offsets.first().copied().unwrap_or(0) as usize;
     let n_leading = first_off / 8;
     if n_leading < 2 || inline_ctrl_count < 3 {
-        return None;
+        return Ok(None);
     }
 
     // 원본 char_offsets 갭 분석이 이미 컨트롤을 텍스트 중간/뒤 위치로
@@ -99,44 +115,46 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
     // 쉼표/고정탭/일반 글자가 한 줄에 섞인 문단은 [0,0,2,2,4] 같은 raw
     // position 자체가 편집자가 입력한 순서다. 여기에 \u{FFFC}를 재합성하면
     // TAC가 쉼표/탭 뒤로 밀려 순서가 깨진다.
-    let raw_positions = para.control_text_positions();
-    let raw_inline_positions: Vec<usize> = para
-        .controls
-        .iter()
-        .enumerate()
-        .filter(|(_, ctrl)| needs_synthesized_inline_marker(ctrl))
-        .filter_map(|(i, _)| raw_positions.get(i).copied())
-        .collect();
+    let raw_positions = para.try_control_text_positions(storage)?;
+    let raw_inline_positions: Vec<usize> = storage.collect(
+        para.controls
+            .iter()
+            .enumerate()
+            .filter(|(_, ctrl)| needs_synthesized_inline_marker(ctrl))
+            .filter_map(|(i, _)| raw_positions.get(i).copied()),
+    )?;
     if raw_inline_positions.iter().any(|pos| *pos > 0) {
-        return None;
+        return Ok(None);
     }
     // 좁힘 조건 (n_leading >= 2) 통과 ⇒ offsets 비어있지 않음.
     // 따라서 빈 paragraph (offsets/chars empty) 경로는 본 좁힘 하에 도달 불가 —
     // 별도 분기 두지 않음 (검토 PR #995 §3.3 b).
 
     // HWP5 path — char_offsets gap 분석으로 누락된 마커 위치 합성
-    let chars: Vec<char> = para.text.chars().collect();
-    let mut new_text =
-        String::with_capacity(para.text.len() + (inline_ctrl_count - existing_markers) * 3);
-    let mut new_offsets: Vec<u32> =
-        Vec::with_capacity(para.char_offsets.len() + (inline_ctrl_count - existing_markers));
+    let chars: Vec<char> = storage.collect(para.text.chars())?;
+    let mut new_text = storage.string("")?;
+    let mut new_offsets: Vec<u32> = storage.vec(
+        para.char_offsets
+            .len()
+            .saturating_add(inline_ctrl_count - existing_markers),
+    )?;
 
     let mut literal_figure_spaces = Vec::new();
 
     // 첫 visible char 전 leading gap (좁힘 가드에서 계산한 n_leading 재사용)
     for i in 0..n_leading {
-        new_offsets.push((i * 8) as u32);
-        new_text.push('\u{FFFC}');
+        storage.push(&mut new_offsets, (i * 8) as u32)?;
+        storage.push_char(&mut new_text, '\u{FFFC}')?;
     }
 
     // visible chars 사이 / 후행
     for (i, &off) in offsets.iter().enumerate() {
         let ch = chars.get(i).copied().unwrap_or(' ');
         if para.literal_figure_spaces.binary_search(&i).is_ok() {
-            literal_figure_spaces.push(new_offsets.len());
+            storage.push(&mut literal_figure_spaces, new_offsets.len())?;
         }
-        new_offsets.push(off);
-        new_text.push(ch);
+        storage.push(&mut new_offsets, off)?;
+        storage.push_char(&mut new_text, ch)?;
 
         // 다음 char 까지의 gap 분석
         let char_width: u32 = if (ch as u32) > 0xFFFF { 2 } else { 1 };
@@ -152,8 +170,11 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
             .saturating_sub(char_width as usize);
         let n_ctrls_between = gap / 8;
         for k in 0..n_ctrls_between {
-            new_offsets.push((off as usize + char_width as usize + k * 8) as u32);
-            new_text.push('\u{FFFC}');
+            storage.push(
+                &mut new_offsets,
+                (off as usize + char_width as usize + k * 8) as u32,
+            )?;
+            storage.push_char(&mut new_text, '\u{FFFC}')?;
         }
     }
 
@@ -167,17 +188,17 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
         let last_w: usize = if (last_ch as u32) > 0xFFFF { 2 } else { 1 };
         let mut next_pos = last_off + last_w;
         for _ in 0..still_needed {
-            new_offsets.push(next_pos as u32);
-            new_text.push('\u{FFFC}');
+            storage.push(&mut new_offsets, next_pos as u32)?;
+            storage.push_char(&mut new_text, '\u{FFFC}')?;
             next_pos += 8;
         }
     }
 
-    let mut synth = para.clone();
+    let mut synth = storage.clone_paragraph(para)?;
     synth.text = new_text;
     synth.char_offsets = new_offsets;
     synth.literal_figure_spaces = literal_figure_spaces;
-    Some(synth)
+    Ok(Some(synth))
 }
 
 /// 문단을 줄별 텍스트 런으로 분할한다.
@@ -193,6 +214,18 @@ pub(crate) fn compose_paragraph_in_context(
     compose_paragraph_scoped(para, styles.supplemental_metrics.is_some(), Some(styles))
 }
 
+pub(crate) fn compose_paragraph_in_context_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+) -> Result<ComposedParagraph, S::Error> {
+    try_compose_paragraph_scoped(
+        para,
+        styles.supplemental_metrics.is_some(),
+        Some(styles),
+        storage,
+    )
+}
 pub(crate) fn compose_paragraph_for_metric_requests(para: &Paragraph) -> ComposedParagraph {
     compose_paragraph_scoped(para, true, None)
 }
@@ -202,28 +235,43 @@ fn compose_paragraph_scoped(
     protect_metrics: bool,
     metric_styles: Option<&ResolvedStyleSet>,
 ) -> ComposedParagraph {
+    match try_compose_paragraph_scoped(
+        para,
+        protect_metrics,
+        metric_styles,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+fn try_compose_paragraph_scoped<S: crate::storage::Storage>(
+    para: &Paragraph,
+    protect_metrics: bool,
+    metric_styles: Option<&ResolvedStyleSet>,
+    storage: &S,
+) -> Result<ComposedParagraph, S::Error> {
     // [Task #991] HWP5 parser 의 inline marker 누락 보정 (rendering 전용)
-    let synth_para = synthesize_marker_paragraph(para);
+    let synth_para = try_synthesize_marker_paragraph(para, storage)?;
     let para = synth_para.as_ref().unwrap_or(para);
 
-    let mut lines = compose_lines(para);
+    let mut lines = try_compose_lines(para, storage)?;
     if let Some(styles) = metric_styles {
-        punctuation_slots::resolve_run_slots(
+        punctuation_slots::try_resolve_run_slots(
             &mut lines,
             styles,
             crate::renderer::para_has_no_stored_line_segs(para),
-        );
+            storage,
+        )?;
     }
-    let inline_controls = identify_inline_controls(para);
+    let inline_controls = try_identify_inline_controls(para, storage)?;
 
     // treat_as_char 컨트롤의 텍스트 위치와 HWPUNIT 너비 수집
-    let tac_positions = find_render_inline_control_positions(para);
+    let tac_positions = try_find_render_inline_control_positions(para, storage)?;
     let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
-    let tac_controls: Vec<(usize, i32, usize)> = para
-        .controls
-        .iter()
-        .enumerate()
-        .filter_map(|(i, ctrl)| {
+    let tac_controls: Vec<(usize, i32, usize)> =
+        storage.collect(para.controls.iter().enumerate().filter_map(|(i, ctrl)| {
             let pos = *tac_positions.get(i)?;
             match ctrl {
                 Control::Picture(p) if p.common.treat_as_char => {
@@ -253,23 +301,18 @@ fn compose_paragraph_scoped(
                 }
                 _ => None,
             }
-        })
-        .collect();
+        }))?;
 
     // 각주/미주 위치 수집
-    let footnote_positions: Vec<(usize, u16, usize)> = para
-        .controls
-        .iter()
-        .enumerate()
-        .filter_map(|(i, ctrl)| {
+    let footnote_positions: Vec<(usize, u16, usize)> =
+        storage.collect(para.controls.iter().enumerate().filter_map(|(i, ctrl)| {
             let pos = *tac_positions.get(i)?;
             match ctrl {
                 Control::Footnote(fn_) => Some((pos, fn_.number, i)),
                 Control::Endnote(en) => Some((pos, en.number, i)),
                 _ => None,
             }
-        })
-        .collect();
+        }))?;
 
     // 각주 마커는 paragraph_layout에서 FootnoteMarker 노드로 처리 (텍스트에 삽입하지 않음)
 
@@ -304,7 +347,7 @@ fn compose_paragraph_scoped(
         });
     if let Some(ctrl_pos) = block_tac_split_pos {
         let total_chars = para.text.chars().count();
-        let chars: Vec<char> = para.text.chars().collect();
+        let chars: Vec<char> = storage.collect(para.text.chars())?;
         let line_end = |lines: &[ComposedLine], idx: usize| {
             lines
                 .get(idx + 1)
@@ -346,6 +389,7 @@ fn compose_paragraph_scoped(
                 };
                 lines[li].line_height = 400;
                 lines[li].baseline_distance = 320;
+                storage.reserve(&mut lines, 1)?;
                 lines.insert(li, table_line);
             }
         }
@@ -363,42 +407,43 @@ fn compose_paragraph_scoped(
         tab_extended: if super::para_has_no_stored_line_segs(para) {
             Vec::new()
         } else {
-            para.tab_extended.clone()
+            storage.copy_slice(&para.tab_extended)?
         },
         horizontal_shaping: None,
         frame_geometry: None,
     };
 
     if let Some(styles) = metric_styles {
-        equation_line_metrics::refresh_equation_rows(&mut composed, para, styles);
-        empty_line_metrics::refresh(&mut composed, para, styles);
+        equation_line_metrics::try_refresh_equation_rows(&mut composed, para, styles, storage)?;
+    empty_line_metrics::refresh_with_storage(&mut composed, para, styles, storage)?;
     }
 
-    supplemental_clusters::preserve_literal_spaces(&mut composed, &para.literal_figure_spaces);
+    supplemental_clusters::preserve_literal_spaces_with_storage(&mut composed, &para.literal_figure_spaces, storage)?;
 
     // CharOverlap 글자를 조합된 텍스트에 삽입
-    inject_char_overlap_text(&mut composed, para, metric_styles);
+    try_inject_char_overlap_text(&mut composed, para, metric_styles, storage)?;
 
     // PUA 테두리 숫자(사각형/원형 안의 숫자) → CharOverlap 런으로 변환
-    convert_pua_enclosed_numbers(&mut composed);
+    try_convert_pua_enclosed_numbers(&mut composed, storage)?;
 
     // Hanyang-PUA 옛한글 / 한컴 PUA와 legacy 제품명 표시 문자열 변환 (렌더링·측정용)
     // 제어 표기의 소프트 하이픈만 줄 끝에 표시한다. 모델 글자와 offset은 유지한다.
     let soft_hyphen_control = para.control_mask & (1u32 << 0x0018) != 0;
-    convert_pua_display_text(&mut composed, soft_hyphen_control, metric_styles);
+    try_convert_pua_display_text(&mut composed, soft_hyphen_control, metric_styles, storage)?;
 
     // Keep existing display projection intact; inserted control text has no source span.
     if protect_metrics {
         supplemental_clusters::preserve_boundaries(&mut composed, &para.text, metric_styles);
     }
 
-    mapped_symbol_fonts::split_mapped_symbol_font_runs(&mut composed);
+    mapped_symbol_fonts::try_split_mapped_symbol_font_runs(&mut composed, storage)?;
+    resolved_fields::try_apply(para, &mut composed, storage)?;
     if let Some(styles) = metric_styles {
-        conjoining_jamo::split_runs(&mut composed, styles);
+        conjoining_jamo::split_runs_with_storage(&mut composed, styles, storage)?;
     }
-    resolved_fields::apply(para, &mut composed);
 
-    composed
+    storage.bytes(0)?;
+    Ok(composed)
 }
 
 /// Legacy composition을 먼저 완성한 뒤 Q2-C shadow transaction의 qualified
@@ -408,12 +453,29 @@ pub(crate) fn compose_paragraph_with_horizontal_shaping(
     para: &Paragraph,
     styles: &ResolvedStyleSet,
 ) -> ComposedParagraph {
-    let mut composed = compose_paragraph_in_context(para, styles);
+    match try_compose_paragraph_with_horizontal_shaping(para, styles, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+fn try_compose_paragraph_with_horizontal_shaping<S: crate::storage::Storage>(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+) -> Result<ComposedParagraph, S::Error> {
+    let mut composed = try_compose_paragraph_scoped(
+        para,
+        styles.supplemental_metrics.is_some(),
+        Some(styles),
+        storage,
+    )?;
     // 본문 최초 composition과 편집 후 재조판이 같은 표제 투영을 소비한다.
     auto_number_projection::project(&mut composed, para);
     composed.horizontal_shaping =
         line_breaking::compose_horizontal_shaping_handoff(para, &composed, styles);
-    composed
+    storage.bytes(0)?;
+    Ok(composed)
 }
 
 /// 컴포즈드 줄 목록에서 첫 "텍스트 포함 줄"(런에 텍스트 성격 문자가 있는 줄)의 인덱스.

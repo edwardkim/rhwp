@@ -1,3 +1,5 @@
+import { publishPreparedPdf } from './pdf-open';
+import { RecoveryCipher } from '../recovery/recovery-crypto';
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
 import { CanvasMetricSession, withPortableMetrics } from './canvas-metric-session';
 import { HostCanvasFontSession, scopedHostCanvasFont, withHostCanvasFonts } from './host-canvas-fonts';
@@ -420,6 +422,9 @@ export class WasmBridge {
   private _fileName = 'document.hwp';
   private _currentFileHandle: FileSystemFileHandleLike | null = null;
   /** 현재 backing copy의 보호 의도만 보관한다. 암호 문자열은 보관하지 않는다. */
+  private _recoveryCipher: RecoveryCipher | null = null;
+  onRecoveryProtectionChanged?: () => void;
+  private _pdfImport: Record<string, unknown> | null = null;
   private _requiresPasswordForSave = false;
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
@@ -487,6 +492,7 @@ export class WasmBridge {
    * 비교 상세 창 등 보조 WasmBridge 인스턴스에서 반복 로드 시 메모리 누수를 줄이기 위해 사용한다.
    */
   releaseDocument(): void {
+    this._documentGeneration += 1;
     this.releaseCanvasFontResources();
     this.clearLayerResourceCache();
     if (this.doc) {
@@ -498,6 +504,8 @@ export class WasmBridge {
       this.doc = null;
     }
     this._currentFileHandle = null;
+    this.setRecoveryCipher(null);
+    this._pdfImport = null;
     this._requiresPasswordForSave = false;
     this._documentDigest = null;
   }
@@ -507,56 +515,48 @@ export class WasmBridge {
     fileName: string | undefined,
     requiresPasswordForSave: boolean,
     createDocument: () => HwpDocument,
+    validate?: (document: HwpDocument) => void,
+    prepared?: { digest: string },
   ): void {
     const nextFileName = fileName ?? 'document.hwp';
-    const nextDocumentDigest = `blake3:${bytesToHex(blake3(data))}`;
+    const nextDocumentDigest = prepared?.digest ?? `blake3:${bytesToHex(blake3(data))}`;
     let nextDoc: HwpDocument | null = null;
 
     try {
       nextDoc = createDocument();
-      nextDoc.convertToEditable();
-      this.ensureParagraphStableIdsFor(nextDoc);
+      if (!prepared) nextDoc.convertToEditable();
+      validate?.(nextDoc);
+      if (!prepared) this.ensureParagraphStableIdsFor(nextDoc);
       nextDoc.setFileName(nextFileName);
 
-      // 새 문서를 끝까지 준비한 뒤에만 기존 문서를 교체한다. 암호 필요·오답·손상
-      // 오류에서는 현재 문서와 최근 문서 연결을 그대로 유지해야 한다 (#3474).
-      const previousDoc = this.doc;
-      this.doc = nextDoc;
-      this._fileName = nextFileName;
-      this._currentFileHandle = null;
-      // 암호 문자열은 보관하지 않는다. 다음 저장에서 암호 재입력이 필요한지 여부만
-      // 문서 교체 성공과 같은 commit 구간에서 갱신한다 (#5986).
-      this._requiresPasswordForSave = requiresPasswordForSave;
-      this._documentDigest = nextDocumentDigest;
-      this._documentGeneration += 1;
-      this.releaseCanvasFontResources();
-      this.clearLayerResourceCache();
-      if (previousDoc) {
-        try {
-          previousDoc.free();
-        } catch {
-          /* noop */
-        }
-      }
-      console.log(`[WasmBridge] 문서 로드: ${this.pageCount}페이지`);
-
-      // [Task #741 후속] 외부 file path 그림 영역 영역 dev 환경 영역 영역 fetch (basename 영역
-      // 영역 영역 same dir 영역 image 영역 영역 영역 — 본 환경 dev 영역 영역 samples/ 영역
-      // Vite asset). 영역 영역 영역 영역 영역 부재 영역 영역 placeholder 표시.
-      void this.populateExternalImagesFromDevServer();
-
     } catch (error) {
-      if (nextDoc) {
-        try {
-          nextDoc.free();
-        } catch {
-          /* noop */
-        }
+      if (nextDoc && !prepared) {
+        try { nextDoc.free(); } catch { /* candidate cleanup */ }
       }
       throw error;
     }
-    // 알림은 문서 교체의 rollback 구간 밖에서 보낸다.
-    this.onFileNameChanged?.(this._fileName);
+    // Candidate preparation ends before this commit. Observers and cleanup may
+    // fail, but cannot return ownership of an already published document.
+    const previousDoc = this.doc;
+    this.doc = nextDoc;
+    this._fileName = nextFileName;
+    this._currentFileHandle = null;
+    const previousCipher = this._recoveryCipher;
+    this._recoveryCipher = null;
+    this._pdfImport = null;
+    this._requiresPasswordForSave = requiresPasswordForSave;
+    this._documentDigest = nextDocumentDigest;
+    this._documentGeneration += 1;
+    const notify = (work: () => void) => {
+      try { work(); } catch (error) { console.warn('[WasmBridge] 문서 교체 후 정리/알림 실패', error); }
+    };
+    notify(() => previousCipher?.dispose());
+    notify(() => this.releaseCanvasFontResources());
+    notify(() => this.clearLayerResourceCache());
+    if (previousDoc) notify(() => previousDoc.free());
+    if (previousCipher) notify(() => this.onRecoveryProtectionChanged?.());
+    notify(() => this.onFileNameChanged?.(this._fileName));
+    void this.populateExternalImagesFromDevServer();
   }
 
   loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
@@ -575,7 +575,44 @@ export class WasmBridge {
     return hasPdfImportCapability(HwpDocument);
   }
 
+  classifyHyperlinkDestination(uri: string): import('./link-navigation').LinkDestination | null {
+    const destination = JSON.parse(HwpDocument.classifyHyperlinkDestination(uri));
+    return destination.kind ? destination : null;
+  }
+
+  getPdfImportPolicy(options: object = {}): import('./pdf-open').PdfImportPolicy {
+    return JSON.parse(HwpDocument.getPdfImportPolicyWithOptions(options));
+  }
+
+  async loadImportedPdf(result: import('./pdf-open').PreparedPdfDocument, fileName: string,
+    signal = new AbortController().signal, generation = this.documentGeneration): Promise<DocumentInfo> {
+    await publishPreparedPdf(result, signal, () => generation === this.documentGeneration, {
+      create: timeout => {
+        const api = (wasmExports as unknown as { PdfEditorReopen: {
+          open(data: Uint8Array, options: object, maximum: number, remaining: number, timeout: number):
+            { takeDocument(): HwpDocument; free(): void } } }).PdfEditorReopen;
+        if (!api) throw new Error('PDF_IMPORT_DISABLED: 편집 문서 재열기 API가 없습니다.');
+        const owner = api.open(result.editable, JSON.parse(result.reopen.options),
+          result.reopen.inputBytes, result.reopen.decodedBytes, timeout);
+        try { return owner.takeDocument(); } finally { owner.free(); }
+      },
+      prepare: document => {
+        document.convertToEditable();
+        if (document.pageCount() !== result.pageCount) throw new Error('PDF_REOPEN_PAGE_COUNT: 편집 문서의 쪽수가 일치하지 않습니다.');
+        this.ensureParagraphStableIdsFor(document);
+        document.setFileName(fileName);
+      },
+      publish: (document, digest) => {
+        this.loadDocumentAtomically(result.input, fileName, false, () => document, undefined, { digest });
+        this._pdfImport = result.diagnostics;
+      },
+      destroy: document => document.free(),
+    });
+    return this.getDocumentInfo();
+  }
+
   getPdfImportDiagnostics(): Record<string, unknown> | null {
+    if (this._pdfImport) return this._pdfImport;
     const api = this.doc as unknown as { getPdfImportDiagnostics?: () => string } | null;
     return api?.getPdfImportDiagnostics ? JSON.parse(api.getPdfImportDiagnostics()) : null;
   }
@@ -646,6 +683,8 @@ export class WasmBridge {
     this.ensureParagraphStableIds();
     this._fileName = '새 문서.hwp';
     this._currentFileHandle = null;
+    this.setRecoveryCipher(null);
+    this._pdfImport = null;
     this._requiresPasswordForSave = false;
     this.doc.setFileName(this._fileName);
     try {
@@ -707,8 +746,20 @@ export class WasmBridge {
   }
 
   set requiresPasswordForSave(value: boolean) {
+    const changed = this._requiresPasswordForSave !== value;
     this._requiresPasswordForSave = value;
+    if (!value) this.setRecoveryCipher(null);
+    if (changed) this.onRecoveryProtectionChanged?.();
   }
+
+  get recoveryCipher(): RecoveryCipher | null { return this._recoveryCipher; }
+  setRecoveryCipher(cipher: RecoveryCipher | null): void {
+    if (this._recoveryCipher === cipher) return;
+    this._recoveryCipher?.dispose();
+    this._recoveryCipher = cipher;
+    this.onRecoveryProtectionChanged?.();
+  }
+
 
   get isNewDocument(): boolean {
     return this._fileName === '새 문서.hwp';
@@ -829,7 +880,7 @@ export class WasmBridge {
   }
 
   getSourceFormat(): string {
-    return this.doc?.getSourceFormat?.() ?? 'hwp';
+    return this._pdfImport ? 'pdf' : this.doc?.getSourceFormat?.() ?? 'hwp';
   }
 
   getHmlOpenMetadata(): HmlOpenMetadata | null {
@@ -3879,6 +3930,15 @@ export class WasmBridge {
   setFormValueInCell(sec: number, tablePara: number, tableCi: number, cellIdx: number, cellPara: number, formCi: number, valueJson: string): { ok: boolean } {
     if (!this.doc || typeof (this.doc as any).setFormValueInCell !== 'function') return { ok: false };
     return JSON.parse((this.doc as any).setFormValueInCell(sec, tablePara, tableCi, cellIdx, cellPara, formCi, valueJson));
+  }
+
+  getFormActionContext(address: import('../../../rhwp-shared/forms/action-runtime').FormAddress): import('../../../rhwp-shared/forms/action-runtime').FormActionContext {
+    if (!this.doc) throw new Error('FORM_ACTION_NO_DOCUMENT');
+    return JSON.parse((this.doc as HwpDocument & { getFormActionContext(json: string): string }).getFormActionContext(JSON.stringify(address)));
+  }
+  applyFormActionUpdates(updates: import('../../../rhwp-shared/forms/action-runtime').FormActionPlan['updates']): void {
+    if (!this.doc) throw new Error('FORM_ACTION_NO_DOCUMENT');
+    (this.doc as HwpDocument & { applyFormActionUpdates(json: string): void }).applyFormActionUpdates(JSON.stringify(updates));
   }
 
   /** 양식 개체 상세 정보를 반환한다. */

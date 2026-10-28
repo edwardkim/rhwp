@@ -1,0 +1,206 @@
+[
+  {
+    "runtime": "native",
+    "name": "cff",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "type3",
+    "pages": 12,
+    "minRaw": 98.34664
+  },
+  {
+    "runtime": "native",
+    "name": "body-basic",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "body-center",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "body-tj",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "body-baseline",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "body-columns",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "body-unrepresentable",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "multiline-cell",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "paragraph-origins",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "tj-cell",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "cell-nested",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "cell-picture-overlap",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "consecutive-moves",
+    "pages": 5,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "text-consecutive-moves",
+    "pages": 3,
+    "minRaw": 99.88074
+  },
+  {
+    "runtime": "native",
+    "name": "batch-operator-control",
+    "pages": 2,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "native",
+    "name": "maintainer-document",
+    "pages": 15,
+    "minRaw": 99.13508
+  },
+  {
+    "runtime": "wasm",
+    "name": "cff",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "type3",
+    "pages": 12,
+    "minRaw": 98.79246
+  },
+  {
+    "runtime": "wasm",
+    "name": "body-basic",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "body-center",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "body-tj",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "body-baseline",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "body-columns",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "body-unrepresentable",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "multiline-cell",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "paragraph-origins",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "tj-cell",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "cell-nested",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "cell-picture-overlap",
+    "pages": 1,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "consecutive-moves",
+    "pages": 5,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "text-consecutive-moves",
+    "pages": 3,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "batch-operator-control",
+    "pages": 2,
+    "minRaw": 100.0
+  },
+  {
+    "runtime": "wasm",
+    "name": "maintainer-document",
+    "pages": 15,
+    "minRaw": 99.11167
+  }
+]

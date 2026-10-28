@@ -95,7 +95,7 @@ pub enum FontEmbedMode {
 /// SVG 렌더러
 pub struct SvgRenderer {
     /// SVG 출력 버퍼
-    output: String,
+    output: super::svg_buffer::SvgBuffer,
     /// 그라데이션 정의 버퍼 (<defs> 내부)
     defs: Vec<String>,
     /// 그라데이션 ID 카운터
@@ -246,7 +246,7 @@ pub(super) struct LayerDebugOverlayProjection {
 impl SvgRenderer {
     pub fn new() -> Self {
         Self {
-            output: String::new(),
+            output: Default::default(),
             defs: Vec::new(),
             gradient_counter: 0,
             clip_counter: 0,
@@ -286,6 +286,28 @@ impl SvgRenderer {
     /// 생성된 SVG 문자열 반환
     pub fn output(&self) -> &str {
         &self.output
+    }
+
+    pub(crate) fn bound_output(
+        &mut self,
+        maximum: usize,
+        reservation: std::sync::Arc<dyn crate::storage::Reservation>,
+    ) {
+        self.output.bounded(maximum, reservation);
+    }
+
+    pub(crate) fn check_output(&self) -> Result<(), crate::error::HwpError> {
+        self.output.check()
+    }
+
+    pub(crate) fn insert_output_style(&mut self, style: &str) {
+        if let Some(position) = self.output.find('>') {
+            self.output.insert_str(position + 1, style);
+        }
+    }
+
+    pub(crate) fn take_checked_output(&mut self) -> Result<String, crate::error::HwpError> {
+        std::mem::take(&mut self.output).finish()
     }
 
     /// 수집된 폰트별 사용 글자 목록 반환

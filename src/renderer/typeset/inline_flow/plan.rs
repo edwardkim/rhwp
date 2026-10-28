@@ -21,16 +21,19 @@ pub(in crate::renderer::typeset) struct InlineFlowInput<'a> {
     pub visible_float_exclusions: Option<&'a [super::super::VisibleFloatExclusion]>,
 }
 
-pub(in crate::renderer::typeset) fn build_plan(
+pub(in crate::renderer::typeset) fn build_plan_with_storage<S: crate::storage::Storage>(
     input: InlineFlowInput<'_>,
     para: &Paragraph,
     para_index: usize,
     styles: &ResolvedStyleSet,
     tables: &[MeasuredTable],
     dpi: f64,
-) -> Option<InlineFlowPlan> {
+    storage: &S,
+) -> Result<Option<InlineFlowPlan>, S::Error> {
     let column = input.column;
-    let style = styles.para_styles.get(para.para_shape_id as usize)?;
+    let Some(style) = styles.para_styles.get(para.para_shape_id as usize) else {
+        return Ok(None);
+    };
     let container = LayoutRect {
         x: column.x + style.margin_left,
         width: (column.width - style.margin_left - style.margin_right).max(0.0),
@@ -43,12 +46,13 @@ pub(in crate::renderer::typeset) fn build_plan(
         height: input.page_height,
     };
     let mut exclusions: Vec<_> = if let Some(exclusions) = input.exclusions {
-        exclusions.values().cloned().collect()
+        storage.collect(exclusions.values().cloned())?
     } else {
         Vec::new()
     };
     if let Some(zones) = input.visible_float_exclusions {
-        exclusions.extend(
+        storage.extend(
+            &mut exclusions,
             zones
                 .iter()
                 .filter(|zone| zone.para_index != para_index)
@@ -59,7 +63,7 @@ pub(in crate::renderer::typeset) fn build_plan(
                         ..crate::renderer::px_to_hwpunit(column.y + zone.bottom, dpi),
                     policy: FrameExclusionPolicy::BothSides,
                 }),
-        );
+        )?;
     }
     let frame = ObjectPlacementFrame {
         container: &container,
@@ -70,12 +74,23 @@ pub(in crate::renderer::typeset) fn build_plan(
         alignment: style.alignment,
         dpi,
     };
-    let mut plan = if inline_flow::supports_plain_text(para) {
-        inline_flow::plan_plain_text(para, styles, &frame, &exclusions)?
+    let plan = if inline_flow::supports_plain_text(para) {
+        inline_flow::plan_plain_text_with_storage(para, styles, &frame, &exclusions, storage)?
     } else {
-        inline_flow::plan(para, para_index, styles, tables, &frame, &exclusions)?
+        inline_flow::plan_with_storage(
+            para,
+            para_index,
+            styles,
+            tables,
+            &frame,
+            &exclusions,
+            storage,
+        )?
     };
-    plan = inline_flow::floating_shapes::resolve(
+    let Some(mut plan) = plan else {
+        return Ok(None);
+    };
+    let Some(resolved) = inline_flow::floating_shapes::resolve_with_storage(
         plan,
         para,
         para_index,
@@ -83,7 +98,12 @@ pub(in crate::renderer::typeset) fn build_plan(
         tables,
         &frame,
         &exclusions,
-    )?;
+        storage,
+    )?
+    else {
+        return Ok(None);
+    };
+    plan = resolved;
     plan.relative_to(column.x, column.y);
-    Some(plan)
+    Ok(Some(plan))
 }

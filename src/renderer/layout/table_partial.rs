@@ -2230,7 +2230,7 @@ impl LayoutEngine {
                 });
                 if !owns_first_line
                     || !cut_units.is_none_or(|(start, _)| start == 0)
-                    || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
+                    || !crate::renderer::cell_paragraph_has_only_text_metadata(para)
                     || para.stored_text_partition_is_dirty()
                     || self
                         .render_normalization

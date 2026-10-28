@@ -23,8 +23,9 @@ const compilation = spawnSync(compiler, [
   'src/engine/deferred-pagination-runner.ts',
   '--target', 'ES2022',
   '--module', 'commonjs',
-  '--rootDir', 'src',
+  '--rootDir', '..',
   '--outDir', runtimeRoot,
+  '--listEmittedFiles',
   '--skipLibCheck',
   '--noCheck',
 ], {
@@ -38,9 +39,17 @@ assert.equal(
   `deferred pagination runner compile failed:\n${compilation.stdout}${compilation.stderr}`,
 );
 
+// Type-only imports also enter the compiler program. Shared sources must stay
+// inside the owned temporary tree rather than emit beside workspace inputs.
+for (const line of compilation.stdout.split(/\r?\n/).filter(line => line.startsWith('TSFILE: '))) {
+  const relative = path.relative(runtimeRoot, line.slice(8).trim());
+  assert.ok(relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative),
+    `test compiler escaped temporary output: ${line}`);
+}
+
 const require = createRequire(import.meta.url);
 const { DeferredPaginationRunner } = require(
-  path.join(runtimeRoot, 'engine', 'deferred-pagination-runner.js'),
+  path.join(runtimeRoot, 'rhwp-studio', 'src', 'engine', 'deferred-pagination-runner.js'),
 );
 
 after(() => {

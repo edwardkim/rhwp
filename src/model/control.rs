@@ -192,6 +192,7 @@ pub struct PageNumberPos {
     /// 대시 문자 (WCHAR, 항상 '-')
     pub dash_char: char,
 }
+crate::storage::clone_fields!(PageNumberPos, {format, position, user_symbol, prefix_char, suffix_char, dash_char});
 
 /// 책갈피 ('bokm' 컨트롤)
 #[derive(Debug, Clone, Default, serde::Serialize)]
@@ -343,6 +344,7 @@ pub struct PageHide {
     /// 쪽 번호 감추기
     pub hide_page_num: bool,
 }
+crate::storage::clone_fields!(PageHide, {hide_header, hide_footer, hide_master_page, hide_border, hide_fill, hide_page_num});
 
 /// 숨은 설명 ('tcmt' 컨트롤)
 #[derive(Debug, Default, Clone, serde::Serialize)]

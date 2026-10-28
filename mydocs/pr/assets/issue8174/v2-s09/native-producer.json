@@ -1,0 +1,9 @@
+{
+  "source": "1e7282ad64fae37bbf9684c1e77008e132473075",
+  "profile": "release-test",
+  "features": [
+    "native-skia"
+  ],
+  "sha256": "99de8d587cfbafeaae56f2361f6754ad9dcb5eca6943c4dfc702b32a9d9a8654",
+  "bytes": 74328872
+}

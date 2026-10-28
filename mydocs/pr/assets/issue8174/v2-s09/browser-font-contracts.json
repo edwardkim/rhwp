@@ -1,0 +1,111 @@
+[
+  {
+    "variant": "before",
+    "name": "cff",
+    "pages": 1,
+    "routes": [
+      {
+        "format": "import",
+        "pages": 1
+      },
+      {
+        "format": "hwp",
+        "pages": 1
+      },
+      {
+        "format": "hwpx",
+        "pages": 1
+      }
+    ]
+  },
+  {
+    "variant": "before",
+    "name": "type3",
+    "pages": 12,
+    "routes": [
+      {
+        "format": "import",
+        "pages": 12,
+        "rows": [
+          "손쳐내기식방호",
+          "장치의무부하동",
+          "작시험"
+        ]
+      },
+      {
+        "format": "hwp",
+        "pages": 12,
+        "rows": [
+          "손쳐내기식방호",
+          "장치의무부하동",
+          "작시험"
+        ]
+      },
+      {
+        "format": "hwpx",
+        "pages": 12,
+        "rows": [
+          "손쳐내기식방호",
+          "장치의무부하동",
+          "작시험"
+        ]
+      }
+    ]
+  },
+  {
+    "variant": "candidate",
+    "name": "cff",
+    "pages": 1,
+    "routes": [
+      {
+        "format": "import",
+        "pages": 1
+      },
+      {
+        "format": "hwp",
+        "pages": 1
+      },
+      {
+        "format": "hwpx",
+        "pages": 1
+      }
+    ]
+  },
+  {
+    "variant": "candidate",
+    "name": "type3",
+    "pages": 12,
+    "routes": [
+      {
+        "format": "import",
+        "pages": 12,
+        "rows": [
+          "손쳐내기식",
+          "방호장치의",
+          "무부하",
+          "동작시험"
+        ]
+      },
+      {
+        "format": "hwp",
+        "pages": 12,
+        "rows": [
+          "손쳐내기식",
+          "방호장치의",
+          "무부하",
+          "동작시험"
+        ]
+      },
+      {
+        "format": "hwpx",
+        "pages": 12,
+        "rows": [
+          "손쳐내기식",
+          "방호장치의",
+          "무부하",
+          "동작시험"
+        ]
+      }
+    ]
+  }
+]

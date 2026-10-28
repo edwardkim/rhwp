@@ -6,6 +6,11 @@
 pub(crate) mod helpers;
 pub(crate) use helpers::*;
 
+#[cfg(feature = "pdf-import")]
+mod pdf_import_session;
+#[cfg(feature = "pdf-import")]
+pub use pdf_import_session::PdfImportSession;
+
 pub mod builders;
 mod canvas_metric_requests;
 mod canvas_metrics;

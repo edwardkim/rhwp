@@ -113,8 +113,34 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         spacing_before_px: f64,
     ) {
+        match self.vpos_snap_current_height_with_storage(
+            st,
+            para_idx,
+            paragraphs,
+            composed,
+            styles,
+            spacing_before_px,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(in crate::renderer::typeset) fn vpos_snap_current_height_with_storage<
+        S: crate::storage::Storage,
+    >(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+        spacing_before_px: f64,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         if st.col_count != 1 {
-            return; // 다단은 Stage E
+            return Ok(()); // 다단은 Stage E
         }
         // 컬럼 첫 항목: anchor + page_base 확립 (렌더러 2186/2216 정합).
         // items.first() 의 vpos 를 page_base 로, 현 current_height 를 anchor 로 둔다.
@@ -370,7 +396,7 @@ impl TypesetEngine {
             {
                 let previous = *previous;
                 if previous != para_idx && st.vpos_prev_layout_para == Some(previous) {
-                    st.record_stored_paragraph_flow_end(previous, y);
+                    st.record_stored_paragraph_flow_end_with_storage(previous, y, storage)?;
                 }
             }
         }
@@ -385,5 +411,7 @@ impl TypesetEngine {
             hc.rejected_stored_forward_origin
                 .map(|source| (para_idx, source)),
         );
+
+        Ok(())
     }
 }

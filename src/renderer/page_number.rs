@@ -57,6 +57,17 @@ impl<'a> PageNumberAssigner<'a> {
     /// 한 페이지에 적용 가능한 NewNumber 가 여러 개 있어도 **마지막 1개만** 적용한다
     /// (소유 문단 인덱스 오름차순 — Vec 순서대로 평가하면 자연히 마지막이 우선).
     pub fn assign(&mut self, page: &PageContent) -> u32 {
+        match self.assign_with_storage(page, &crate::storage::Unbounded) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn assign_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        page: &PageContent,
+        storage: &S,
+    ) -> Result<u32, S::Error> {
         self.last_restarted = false;
         for (idx, &(nn_pi, nn_num)) in self.new_page_numbers.iter().enumerate() {
             if self.consumed.contains(&idx) {
@@ -69,7 +80,7 @@ impl<'a> PageNumberAssigner<'a> {
             };
             if applies {
                 self.counter = nn_num as u32;
-                self.consumed.insert(idx);
+                storage.insert_set(&mut self.consumed, idx)?;
                 self.numbering_started = true;
                 self.last_restarted = true;
             }
@@ -77,7 +88,7 @@ impl<'a> PageNumberAssigner<'a> {
         let assigned = self.counter;
         self.counter += 1;
         self.page_ordinal += 1;
-        assigned
+        Ok(assigned)
     }
 
     /// 직전 [`assign`](Self::assign) 이 NewNumber 로 카운터를 재설정했는지.
@@ -133,16 +144,28 @@ impl PageControlEvents {
         pages: &[PageContent],
         paragraphs: &[crate::model::paragraph::Paragraph],
     ) -> Self {
+        match Self::collect_with_storage(pages, paragraphs, &crate::storage::Unbounded) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn collect_with_storage<S: crate::storage::Storage>(
+        pages: &[PageContent],
+        paragraphs: &[crate::model::paragraph::Paragraph],
+        storage: &S,
+    ) -> Result<Self, S::Error> {
         use crate::model::control::Control;
         let mut by_paragraph: std::collections::HashMap<usize, Vec<(usize, &PageItem)>> =
             std::collections::HashMap::new();
         for (page_index, page) in pages.iter().enumerate() {
             for item in page.column_contents.iter().flat_map(|col| &col.items) {
                 if !matches!(item, PageItem::EndnoteSeparator { .. }) {
-                    by_paragraph
-                        .entry(item.para_index())
-                        .or_default()
-                        .push((page_index, item));
+                    let key = item.para_index();
+                    if !by_paragraph.contains_key(&key) {
+                        storage.reserve_map(&mut by_paragraph, 1)?;
+                    }
+                    storage.push(by_paragraph.entry(key).or_default(), (page_index, item))?;
                 }
             }
         }
@@ -158,16 +181,20 @@ impl PageControlEvents {
                 ) {
                     let items = by_paragraph.get(&pi).map(Vec::as_slice).unwrap_or(&[]);
                     // 미배치 NewNumber도 남겨 첫 발화 전 번호 숨김 계약을 보존한다.
-                    let page = control_page(para, ci, items).unwrap_or(usize::MAX);
+                    let page =
+                        control_page_with_storage(para, ci, items, storage)?.unwrap_or(usize::MAX);
                     if let Control::PageNumberPos(position) = control {
-                        events.positions.push((page, position.clone()));
+                        storage.push(
+                            &mut events.positions,
+                            (page, crate::storage::try_clone(position, storage)?),
+                        )?;
                     } else {
-                        events.collect_control(control, page);
+                        events.collect_control_with_storage(control, page, storage)?;
                     }
                 }
             }
         }
-        events
+        Ok(events)
     }
 
     /// An explicit position is active from its own physical anchor. A later
@@ -179,25 +206,35 @@ impl PageControlEvents {
             .find_map(|(target, position)| (*target <= page).then_some(position))
     }
 
-    fn collect_control(&mut self, control: &crate::model::control::Control, page: usize) {
+    fn collect_control_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        control: &crate::model::control::Control,
+        page: usize,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         use crate::model::control::{AutoNumberType, Control};
         match control {
-            Control::PageHide(hide) => self.hides.push((page, hide.clone())),
+            Control::PageHide(hide) => storage.push(
+                &mut self.hides,
+                (page, crate::storage::try_clone(hide, storage)?),
+            )?,
             Control::NewNumber(number) if number.number_type == AutoNumberType::Page => {
-                self.new_numbers.push((page, number.number));
+                storage.push(&mut self.new_numbers, (page, number.number))?;
             }
             // #6206: 셀 안 metadata는 외부 표의 첫 배치 쪽에 적용하는 기존 계약 유지.
             Control::Table(table) => {
                 for cell in &table.cells {
                     for para in &cell.paragraphs {
                         for control in &para.controls {
-                            self.collect_control(control, page);
+                            self.collect_control_with_storage(control, page, storage)?;
                         }
                     }
                 }
             }
             _ => {}
         }
+
+        Ok(())
     }
 }
 
@@ -212,72 +249,76 @@ fn item_starts(item: &PageItem) -> bool {
     }
 }
 
-fn control_page(
+fn control_page_with_storage<S: crate::storage::Storage>(
     para: &crate::model::paragraph::Paragraph,
     control_index: usize,
     items: &[(usize, &PageItem)],
-) -> Option<usize> {
-    let first = items
-        .iter()
-        .find(|(_, item)| item_starts(item))
-        .map(|(page, _)| *page);
-    if para.line_segs.len() < 2 || items.iter().all(|(page, _)| Some(*page) == first) {
-        return first;
-    }
-    // 빈 컨트롤 전용 문단에는 visible char_offsets가 없다. 논리 위치는 PageHide 등을
-    // 0칸으로 세므로 원본 char_count가 증명하는 8-unit 스트림 순서를 사용한다.
-    let positions = if para.text.is_empty()
-        && para.char_offsets.is_empty()
-        && para.char_count as usize >= para.controls.len().saturating_mul(8)
-    {
-        (0..para.controls.len())
-            .map(|ci| (ci as u32).saturating_mul(8))
-            .collect()
-    } else {
-        para.control_utf16_positions()
-    };
-    let source_line = |ci: usize| {
-        let position = *positions.get(ci)?;
-        (0..para.line_segs.len())
-            .rev()
-            .find(|&line| para.line_seg_text_start(line) <= position)
-    };
-    let Some(target_line) = source_line(control_index) else {
-        return first;
-    };
-    // 본문이 분할된 문단은 해당 소스 줄을 가진 fragment가 권위자다.
-    if let Some((page, _)) = items.iter().find(|(_, item)| match item {
-        PageItem::PartialParagraph {
-            start_line,
-            end_line,
-            ..
-        } => (*start_line..*end_line).contains(&target_line),
-        PageItem::FullParagraph { .. } => !para.text.is_empty(),
-        _ => false,
-    }) {
-        return Some(*page);
-    }
-    // 컨트롤 전용 문단에는 본문 fragment가 없으므로 같은 소스 줄에 실제 배치된
-    // 표/도형을 따른다. 분할 표의 continuation은 첫 등장으로 취급하지 않는다.
-    items
-        .iter()
-        .filter_map(|(page, item)| {
-            let ci = match item {
-                PageItem::Table { control_index, .. } | PageItem::Shape { control_index, .. } => {
-                    *control_index
-                }
-                PageItem::PartialTable {
-                    control_index,
-                    is_continuation: false,
-                    ..
-                } => *control_index,
-                _ => return None,
-            };
-            (source_line(ci) == Some(target_line)).then_some((ci.abs_diff(control_index), *page))
-        })
-        .min_by_key(|&(distance, page)| (distance, page))
-        .map(|(_, page)| page)
-        .or(first)
+    storage: &S,
+) -> Result<Option<usize>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        let first = items
+            .iter()
+            .find(|(_, item)| item_starts(item))
+            .map(|(page, _)| *page);
+        if para.line_segs.len() < 2 || items.iter().all(|(page, _)| Some(*page) == first) {
+            return first;
+        }
+        // 빈 컨트롤 전용 문단에는 visible char_offsets가 없다. 논리 위치는 PageHide 등을
+        // 0칸으로 세므로 원본 char_count가 증명하는 8-unit 스트림 순서를 사용한다.
+        let positions = if para.text.is_empty()
+            && para.char_offsets.is_empty()
+            && para.char_count as usize >= para.controls.len().saturating_mul(8)
+        {
+            crate::storage::optional(
+                storage.collect((0..para.controls.len()).map(|ci| (ci as u32).saturating_mul(8))),
+                failure,
+            )?
+        } else {
+            crate::storage::optional(para.control_utf16_positions_with_storage(storage), failure)?
+        };
+        let source_line = |ci: usize| {
+            let position = *positions.get(ci)?;
+            (0..para.line_segs.len())
+                .rev()
+                .find(|&line| para.line_seg_text_start(line) <= position)
+        };
+        let Some(target_line) = source_line(control_index) else {
+            return first;
+        };
+        // 본문이 분할된 문단은 해당 소스 줄을 가진 fragment가 권위자다.
+        if let Some((page, _)) = items.iter().find(|(_, item)| match item {
+            PageItem::PartialParagraph {
+                start_line,
+                end_line,
+                ..
+            } => (*start_line..*end_line).contains(&target_line),
+            PageItem::FullParagraph { .. } => !para.text.is_empty(),
+            _ => false,
+        }) {
+            return Some(*page);
+        }
+        // 컨트롤 전용 문단에는 본문 fragment가 없으므로 같은 소스 줄에 실제 배치된
+        // 표/도형을 따른다. 분할 표의 continuation은 첫 등장으로 취급하지 않는다.
+        items
+            .iter()
+            .filter_map(|(page, item)| {
+                let ci = match item {
+                    PageItem::Table { control_index, .. }
+                    | PageItem::Shape { control_index, .. } => *control_index,
+                    PageItem::PartialTable {
+                        control_index,
+                        is_continuation: false,
+                        ..
+                    } => *control_index,
+                    _ => return None,
+                };
+                (source_line(ci) == Some(target_line))
+                    .then_some((ci.abs_diff(control_index), *page))
+            })
+            .min_by_key(|&(distance, page)| (distance, page))
+            .map(|(_, page)| page)
+            .or(first)
+    })
 }
 
 #[cfg(test)]

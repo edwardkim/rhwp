@@ -49,11 +49,11 @@
 
 | ID·우선순위 | 대상과 현재 근거 | 처리 범위·종료 조건 | 상태 |
 | --- | --- | --- | --- |
-| B01 · 후속 보안 | Type1/CFF encoding 예약. `fonts/type1_encoding.rs`, `fonts/cff_encoding.rs`; `font-cmap-probe/next-font-audit.md`의 정적 관측 | 실제 simple/Type0 경로의 INDEX·charset·encoding 확장에 요청 예산 연결. 큰 선언·정확한 한도·실패 뒤 정상 요청과 정상 글자 매핑을 Native/WASM에서 확인 | 대기·미검증 |
-| B02 · 후속 보안 | glyph name·Unicode memo. `FontInfo::embedded_glyph_name`, `char_to_unicode`의 문자열/Vec/HashMap 생성·복사 | 실제 사용 경로의 생성·반환·memo 삽입 전 계상 및 sticky 오류 전달. cache hit·miss·fallback·요청 격리와 정상 텍스트 보존 확인 | 대기·미검증 |
+| B01 · 후속 보안 | Type1/CFF encoding 예약. `fonts/type1_encoding.rs`, `fonts/cff_encoding.rs`; `font-cmap-probe/next-font-audit.md`의 정적 관측 | 실제 simple/Type0 경로의 INDEX·charset·encoding 확장에 요청 예산 연결. 큰 선언·정확한 한도·실패 뒤 정상 요청과 정상 글자 매핑을 Native/WASM에서 확인 | #8174 S07에서 계상 보정·자원 계약 검증. 기존 CFF 폭 차이의 시각 완료는 보류 |
+| B02 · 후속 보안 | glyph name·Unicode memo. `FontInfo::embedded_glyph_name`, `char_to_unicode`의 문자열/Vec/HashMap 생성·복사 | 실제 사용 경로의 생성·반환·memo 삽입 전 계상 및 sticky 오류 전달. cache hit·miss·fallback·요청 격리와 정상 텍스트 보존 확인 | #8174 S07에서 glyph-name·memo 생성/복사·sticky·6종 CJK 계약 검증. 전체 할당 상한·시각 완료로 확대하지 않음 |
 | B03 · 후속 보안 | font/cache index·FontInfo 잔여 복사. `load_fonts_impl`, encoding/metric/name payload·`Arc::make_mut` | font set/name/fingerprint/identity index·정렬·extractor 이름 복사·남은 payload를 추적. 실제 deep copy와 공유를 구분해 제한·복구 검사. 이미 보완한 전역 cache 격리·TrueType map 공유는 재구현하지 않음 | 대기·미검증 |
 | B04 · 후속 보안 | 객체/색 공간 cache index·문자 생성·postprocess 및 frontend 수집의 남은 경계. 3.21은 소유 payload 복사만 검증 | 실제 `parse_pdf_with_options` → 추출 → recognition/lowering → Document 반환에서 기존 제한을 소비하지 않는 컬렉션·문자·진단 생성 경로를 목록화. 필요한 선행 제한과 정상 출력 보존을 검사하고 도달하지 않는 backend API는 근거와 함께 비해당 분리 | 대기·미검증 |
-| B05 · 보안 증거 | zune JPEG worker horizontal resize. [3.19](../working/task_m100_7911_stage2.md#319-rgbgray-jpeg의-실제-예약에-요청-예산-연결-2026-10-16)에서 실제 capacity 증가 분기 미관측 | 증가 분기를 소비하는 최소 정상 입력/한도 반례 확보, 예약 전 거절·정상 픽셀·오류 복구를 Native/WASM에서 실행. 해당 feature 경로에서 도달 불가라면 코드와 실행 근거로 판정 | 대기·실행 증거 부족 |
+| B05 · 보안 증거 | zune JPEG worker horizontal resize. [3.19](../working/task_m100_7911_stage2.md#319-rgbgray-jpeg의-실제-예약에-요청-예산-연결-2026-10-16)에서 실제 capacity 증가 분기 미관측 | 증가 분기를 소비하는 최소 정상 입력/한도 반례 확보, 예약 전 거절·정상 픽셀·오류 복구를 Native/WASM에서 실행. 해당 feature 경로에서 도달 불가라면 코드와 실행 근거로 판정 | #8174 S06에서 증가 예약의 실제 증거 보완·6개 progressive 호환 거절은 보정 대기 |
 | B06 · 제출 품질 | vendor 단독 strict Clippy. `jpeg-alloc-probe/lint-comparison.json`; 원본 129·patch 128건, 신규 worker 함수 길이 경고 1건 포함 | 고정 toolchain·feature로 upstream과 patch를 구분하고 보정이 만든 진단 해결. 적용 lint 정책과 원본 진단 처리 근거를 명시. blanket allow로 숨기거나 root lib PASS와 합치지 않음 | 대기·실행 실패 확인 |
 | B07 · 자원 계약 | 개별/누적 예산의 적용 범위·CPU·메모리 비용. 기존 제한은 총 heap/RSS 상한의 증명이 아님 | 제품 경로와 실제 활성 의존 graph에 대한 적용/미적용 경계 확정. 별도 이미지 64/128 MiB 초기 제안과 구현된 공통 예산의 차이를 명시·정합화. F3에서 실제 Worker의 deadline·취소·세션 보존·재생성을 확인했다. 여기에 자원 소진/지연 입력을 추가 검증하고 Native/WASM 비용 측정. 안전성 주장은 입증한 경계로 한정. 4단계에 실제 12쪽 변환 비용·WASM 크기와 관측 memory capacity를 기록했으나 추출/인식/lowering별 시간과 일반 상한은 미측정 | 진행·일부 비용 측정, 일반 상한 미검증 |
 | B08 · 패키지·배포 | backend와 zune/jpeg-decoder 보정판, root optional dependency와 저장소 공용 PDF Worker(`rhwp-shared/pdf/`). Worker의 npm export·나머지 앱 채택은 미연결 | 실제 배포 graph·정확한 버전·라이선스/NOTICE·고지·archive 내용 확인. 저장소 path 우회 없는 packaged Native/WASM 소비자가 동일 보정판을 사용하는지 검증. 외부 게시 권한/절차를 정리하되 `cargo publish`는 별도 승인 | Studio 직접 PDF 열기는 [#7946](https://github.com/edwardkim/rhwp/issues/7946)의 [로컬 구현·Docker/시각 검증](../working/task_m100_7946_stage2.md) 완료·사용자 시각 통과, 통합 대기. 패키지 배포·나머지 앱 채택은 대기·최신 통합본 미검증 |
@@ -66,6 +66,27 @@ B01–B04는 아직 실제 결함을 모두 재현한 목록이 아니라 미검
 실패가 관측된 항목이다. B09는 명시된 지원 제한과 출력 결함 가능성을 구분해 처리한다.
 원래 범위 밖 기능을 지원하도록 자동 확장하지 않으며, 현재 경로에서 발견한 누락·오류 은폐는 보정한다.
 
+#### 2026-10-25 #8174 v2-S06의 후속 실행
+
+위 표의 원 범위는 #7911의 인계 내용이며 B01·B02·B05 상태를 현행화했다. 현재 지원 확대의
+[S06 조사·재현](../working/task_m100_8174_v2_stage6.md)을 다음과 같이 연결한다. 과거 실행 결과를
+새 source의 보정 완료로 덮어쓰지 않는다.
+
+- **B01·B02:** source `695cea7b973fc54fc5ffc7f6d414f7ecf403b882`에서 Type1/CFF map의
+  `fontEntries: 1` 수용, memo 256개와 문자열 복사의 무계상, 직접 backend API의 sticky hit를
+  재현했다. 제품 wrapper의 sticky 검사는 유지된다. 원인 보정·경계 확대 실행은 남아 있다.
+- **B03·B04:** 기존 요청 분리·TrueType 공유·bounded object copy는 유지됐다. 잔여 index·
+  deep copy·frontend/Core/직렬화의 실제 선행 예약 보정은 미완료다.
+- **B05:** 독립 encoder/decoder로 만든 mixed sampling을 포함한 52개 입력에서 Native/WASM
+  각각 H 호출 106회·capacity 증가 요구 10회와 해당 예약 거절·복구를 확인했다. 46개 정상
+  디코딩 및 최소 1×1의 독립 RGB를 확인했다. mixed progressive 6개는 원본 decoder도 거절하므로
+  호환 제한을 유지한다. **기존의 증가 분기 미관측 상태는 이 새 증거로 보완했다.**
+- **B07:** Linux AS/CPU/wall/output, 실제 CLI 환경 필터와 Worker/Studio의 실패 후 보존을
+  실행했다. 파일·네트워크 confinement·브라우저 전체 메모리·동기 재열기의 강제 중단은 남아 있다.
+
+이 결과는 #8174의 보정 우선순위를 구체화한 감사 절편이다. B01–B04·B07 또는 비신뢰 입력의
+공식 지원 전체를 완료한 것으로 판정하지 않는다.
+
 ### 2.1 B10-1 — 저장 HWP의 한컴 재조판 시 1·11쪽 배치 차이
 
 - **상태:** 후속 구현 대기. 2026-10-16 메인테이너가 “1의 해결은 백로그에 기록해서 나중에 구현”, “2번을 진행”하도록 명시했다. 현재 저장·재열기 보정 checkpoint의 선행 조건에서 제외하며, 미달 값을 통과로 바꾸지 않는다. 담당은 미정이다.
@@ -75,6 +96,21 @@ B01–B04는 아직 실제 결함을 모두 재현한 목록이 아니라 미검
 - **완료 조건:** 같은 입력/저장본/독립 Print의 전체 쪽수·내용·그림 소속을 보존하고 관련 전쪽 Native/fresh Docker WASM TSV 90% 이상 및 1·11쪽 확대 판독을 확인한다. 그 후 독립 계약에 따른 관계형 회귀를 추가한다. 기존 올바른 검사·원본·실패 출력은 보존한다.
 - **영구 재현 입력:** `samples/issue7911/pdf-import-nested-table.{hwp,hwpx}` 및 `pdf/issue7911/pdf-import-{hwp,hwpx}-hancom2020.pdf`. 4단계 저장본은 기존 보정본과 바이트가 같고 Native/WASM 12쪽 픽셀도 같아 기존 독립 Print와 미달 수치를 재사용한다. 새 입력이나 새 Print로 바꾸지 않았다.
 - **증거:** `p3/native-hancom-scores/silhouette.tsv`, `p3/wasm-hancom-scores/silhouette.tsv`, `p3/hancom-png/`, `p3/native-source-scores/`, `p3/wasm-source-scores/` (위 증적 디렉터리 기준). 이번 후속 이관은 다른 미검증 경로나 배포 준비의 포괄 면제가 아니다.
+
+### 2.2 #8174 S07 — font 보정과 현재 시각 보류
+
+2026-10-25 [S07](../working/task_m100_8174_v2_stage7.md)의 source `0ca4dac500`에서 B01·B02의
+선계상·fallible reserve·sticky 오류를 보정했다. Native/WASM 정식 계약 11개, 실제
+CLI·Worker·Studio의 낮은 font 한도 거절과 실패 후 정상 요청을 확인했다. HWPX member와
+폰트 원본 13쪽의 전후 RGBA는 동일하며 성능 비용도 측정했다. B03·B04·B07의 남은 경계와
+전체 MD05 보안 감사는 유지한다.
+
+전쪽 점수와 별개로 독립 CFF PDF의 악센트·Greek·dash 폭 및 12쪽 PDF의 11쪽 27번 행
+줄바꿈 차이가 직접 판독에 남았다. 보정 전·고정 devel에서도 같으며 이를 신규 회귀라고
+기록하지 않는다. B09의 메트릭 없는 위치 fallback과 B10의 원본 PDF 출력 경계에서 계속
+보정할 항목이다. B10-1의 저장본 한컴 재조판과도 구분한다. 정상 글꼴을 공급해도 남는
+차이이므로 font 예외나 수치 gate 통과로 완료시키지 않는다. 원본·PDF·실패 증적을 S07에
+연결하고 시각 완료·PR 제출을 보류한다. 기존 테스트·입력·기대값은 제거·완화하지 않았다.
 
 ## 3. 이미 확보한 결과와 재사용 경계
 

@@ -12,13 +12,15 @@
 //! Everything that is not a recognized body paragraph (retained spans,
 //! tables, pictures, rules) keeps its paper position and is anchored to the
 //! page's first paragraph, a minimal empty line at the top of the body.
+use super::{allocation::Allocation, value_macro::request_json, PdfImportError};
 use crate::model::control::Control;
 use crate::model::document::Document;
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType};
 use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::model::shape::ShapeObject;
 use crate::model::style::LineSpacingType;
-use serde_json::{json, Value};
+use crate::storage::Storage;
+use serde_json::Value;
 
 /// A committed body frame and its observed text extent in page points.
 pub(super) struct BodyFrame {
@@ -36,25 +38,30 @@ pub(super) struct PageFrames {
 }
 
 /// Frames from one page's lowering report (`bodyParagraphMapping`).
-pub(super) fn page_frames(section: usize, report: &Value) -> PageFrames {
-    let frames = report["bodyParagraphMapping"]["frames"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter(|f| f["status"] == "paragraph_ir")
-        .filter_map(|f| {
-            let b = f["textBox"].as_array()?;
-            let n = |i: usize| b.get(i)?.as_f64().map(|v| v as f32);
-            Some(BodyFrame {
-                inst_id: u32::try_from(f["instanceId"].as_u64()?).ok()?,
-                left: n(0)?,
-                top: n(1)?,
-                right: n(2)?,
-                bottom: n(3)?,
-            })
-        })
-        .collect();
-    PageFrames { section, frames }
+pub(super) fn page_frames(
+    section: usize,
+    report: &Value,
+    allocation: Allocation<'_>,
+) -> Result<PageFrames, PdfImportError> {
+    let frames = allocation.collect(
+        report["bodyParagraphMapping"]["frames"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter(|f| f["status"] == "paragraph_ir")
+            .filter_map(|f| {
+                let b = f["textBox"].as_array()?;
+                let n = |i: usize| b.get(i)?.as_f64().map(|v| v as f32);
+                Some(BodyFrame {
+                    inst_id: u32::try_from(f["instanceId"].as_u64()?).ok()?,
+                    left: n(0)?,
+                    top: n(1)?,
+                    right: n(2)?,
+                    bottom: n(3)?,
+                })
+            }),
+    )?;
+    Ok(PageFrames { section, frames })
 }
 
 /// Height in HWPUNIT that an anchor line (no text) takes in its column.
@@ -68,22 +75,25 @@ fn hu(points: f32) -> i32 {
 /// several columns (a title band, a wide box) and stays positioned. Tall
 /// frames found the columns first, so a short spanning line cannot merge two
 /// columns into one.
-fn page_columns(frames: &[BodyFrame]) -> (Vec<(f32, f32)>, Vec<Option<usize>>) {
-    let mut order: Vec<usize> = (0..frames.len()).collect();
-    order.sort_by(|&a, &b| {
+fn page_columns(
+    frames: &[BodyFrame],
+    allocation: Allocation<'_>,
+) -> Result<(Vec<(f32, f32)>, Vec<Option<usize>>), PdfImportError> {
+    let mut order = allocation.collect(0..frames.len())?;
+    allocation.sort_by(&mut order, |&a, &b| {
         let h = |i: usize| frames[i].bottom - frames[i].top;
         h(b).total_cmp(&h(a))
-    });
+    })?;
     let mut columns: Vec<(f32, f32)> = Vec::new();
-    let mut owner = vec![None; frames.len()];
+    let mut owner = allocation.filled(frames.len(), None)?;
     for i in order {
         let f = &frames[i];
-        let hits: Vec<usize> = (0..columns.len())
-            .filter(|&c| f.left < columns[c].1 && columns[c].0 < f.right)
-            .collect();
+        let hits = allocation.collect(
+            (0..columns.len()).filter(|&c| f.left < columns[c].1 && columns[c].0 < f.right),
+        )?;
         match hits.as_slice() {
             [] => {
-                columns.push((f.left, f.right));
+                allocation.push(&mut columns, (f.left, f.right))?;
                 owner[i] = Some(columns.len() - 1);
             }
             [c] => {
@@ -95,17 +105,17 @@ fn page_columns(frames: &[BodyFrame]) -> (Vec<(f32, f32)>, Vec<Option<usize>>) {
         }
     }
     // Number columns left to right.
-    let mut rank: Vec<usize> = (0..columns.len()).collect();
-    rank.sort_by(|&a, &b| columns[a].0.total_cmp(&columns[b].0));
-    let mut position = vec![0; columns.len()];
+    let mut rank = allocation.collect(0..columns.len())?;
+    allocation.sort_by(&mut rank, |&a, &b| columns[a].0.total_cmp(&columns[b].0))?;
+    let mut position = allocation.filled(columns.len(), 0)?;
     for (to, &from) in rank.iter().enumerate() {
         position[from] = to;
     }
-    let sorted = rank.iter().map(|&c| columns[c]).collect();
-    (
+    let sorted = allocation.collect(rank.iter().map(|&c| columns[c]))?;
+    Ok((
         sorted,
-        owner.into_iter().map(|c| c.map(|c| position[c])).collect(),
-    )
+        allocation.collect(owner.into_iter().map(|c| c.map(|c| position[c])))?,
+    ))
 }
 
 fn take_frame(paragraph: &mut Paragraph, inst_id: u32) -> Option<Vec<Paragraph>> {
@@ -130,22 +140,32 @@ fn take_frame(paragraph: &mut Paragraph, inst_id: u32) -> Option<Vec<Paragraph>>
 /// Move every control of `anchor` to the front of `paragraph`. Each extended
 /// control takes eight stream units ahead of the first character, so text,
 /// character shape and line start positions shift with it.
-fn attach_leading_controls(paragraph: &mut Paragraph, mut anchor: Paragraph) {
+fn attach_leading_controls(
+    paragraph: &mut Paragraph,
+    mut anchor: Paragraph,
+    allocation: Allocation<'_>,
+) -> Result<(), PdfImportError> {
     let count = anchor.controls.len();
     if count == 0 {
-        return;
+        return Ok(());
     }
     let mut records = std::mem::take(&mut anchor.ctrl_data_records);
+    let extra = count.saturating_sub(records.len());
+    allocation.reserve(&mut records, extra)?;
     records.resize(count, None);
     let mut own = std::mem::take(&mut paragraph.ctrl_data_records);
+    let extra = paragraph.controls.len().saturating_sub(own.len());
+    allocation.reserve(&mut own, extra)?;
     own.resize(paragraph.controls.len(), None);
-    records.extend(own);
+    allocation.extend(&mut records, own)?;
     let mut controls = std::mem::take(&mut anchor.controls);
+    allocation.reserve(&mut controls, paragraph.controls.len())?;
     controls.append(&mut paragraph.controls);
     paragraph.controls = controls;
     paragraph.ctrl_data_records = records;
     paragraph.char_count += 8 * count as u32;
     paragraph.reserve_leading_extended_control_slots(count);
+    Ok(())
 }
 
 /// Columns as (left, right) boxes in HWPUNIT from the page edge. Unequal
@@ -190,12 +210,16 @@ fn continues(doc: &Document, previous: &Paragraph, next: &Paragraph) -> bool {
 /// Append `next` to `previous`, keeping the stored rows of both: the rows of
 /// `next` keep their own (column-relative) positions, as a paragraph that
 /// continues in the next column stores them.
-fn join(previous: &mut Paragraph, next: &Paragraph) {
+fn join(
+    previous: &mut Paragraph,
+    next: &Paragraph,
+    allocation: Allocation<'_>,
+) -> Result<(), PdfImportError> {
     use super::text_analysis::{line_join, LineJoin};
-    let last_line = previous.text.lines().last().unwrap_or("").to_string();
+    let last_line = previous.text.lines().last().unwrap_or("");
     let mut rows = std::mem::take(&mut previous.line_segs);
     if matches!(
-        line_join(&last_line, &next.text),
+        line_join(last_line, &next.text),
         LineJoin::InferredWordSpace
     ) {
         let end = previous.char_offsets.last().map_or(0, |&o| {
@@ -205,17 +229,21 @@ fn join(previous: &mut Paragraph, next: &Paragraph) {
                 .last()
                 .map_or(1, |c| c.len_utf16() as u32)
         });
-        previous.text.push(' ');
-        previous.char_offsets.push(end);
+        allocation.push_char(&mut previous.text, ' ')?;
+        allocation.push(&mut previous.char_offsets, end)?;
     }
-    let at = previous.merge_from(next);
+    let at = previous.merge_from_with_storage(next, &allocation)?;
     let shift = previous.char_offsets.get(at).copied().unwrap_or(0);
-    rows.extend(next.line_segs.iter().map(|seg| {
-        let mut seg = seg.clone();
-        seg.text_start += shift;
-        seg
-    }));
+    allocation.extend(
+        &mut rows,
+        next.line_segs.iter().map(|seg| {
+            let mut seg = seg.clone();
+            seg.text_start += shift;
+            seg
+        }),
+    )?;
     previous.line_segs = rows;
+    Ok(())
 }
 
 /// Body rows take the paragraph indent from the row tag, not from their
@@ -247,7 +275,8 @@ fn assemble(
     doc: &mut Document,
     out: &mut Vec<Paragraph>,
     pages: Vec<(Paragraph, Vec<Paragraph>, bool)>,
-) -> usize {
+    allocation: Allocation<'_>,
+) -> Result<usize, PdfImportError> {
     let mut joined = 0;
     for (page_no, (mut anchor, mut body, keep_anchor)) in pages.into_iter().enumerate() {
         if page_no == 0 {
@@ -261,16 +290,21 @@ fn assemble(
                 .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
                 .count();
             let mut rest = Paragraph::new_empty();
+            allocation.payload::<Control>(anchor.controls.len() - lead)?;
             rest.controls = anchor.controls.split_off(lead);
             if anchor.ctrl_data_records.len() > lead {
+                allocation.bytes(
+                    (anchor.ctrl_data_records.len() - lead)
+                        * std::mem::size_of_val(&anchor.ctrl_data_records[0]),
+                )?;
                 rest.ctrl_data_records = anchor.ctrl_data_records.split_off(lead);
             }
             anchor.char_count -= 8 * rest.controls.len() as u32;
             rest.para_shape_id = anchor.para_shape_id;
-            rest.char_shapes = anchor.char_shapes.clone();
-            rest.line_segs = anchor.line_segs.clone();
+            rest.char_shapes = allocation.clone_record(&anchor.char_shapes)?;
+            rest.line_segs = allocation.clone_record(&anchor.line_segs)?;
             rest.char_count = 1 + 8 * rest.controls.len() as u32;
-            out.push(anchor);
+            allocation.push(out, anchor)?;
             anchor = rest;
         }
         if !keep_anchor && page_no > 0 {
@@ -278,7 +312,7 @@ fn assemble(
                 first.column_type = ColumnBreakType::Page;
             }
         }
-        let mut cut = vec![false; body.len()];
+        let mut cut = allocation.filled(body.len(), false)?;
         for j in 0..body.len() {
             if !matches!(
                 body[j].column_type,
@@ -294,7 +328,7 @@ fn assemble(
             .flatten();
         match host {
             Some(h) => {
-                attach_leading_controls(&mut body[h], std::mem::take(&mut anchor));
+                attach_leading_controls(&mut body[h], std::mem::take(&mut anchor), allocation)?;
             }
             None => {
                 // The anchor opens the page, so nothing joins across its start.
@@ -309,7 +343,7 @@ fn assemble(
                         first.column_type = ColumnBreakType::None;
                     }
                 }
-                out.push(anchor);
+                allocation.push(out, anchor)?;
             }
         }
         for (j, paragraph) in body.into_iter().enumerate() {
@@ -320,46 +354,49 @@ fn assemble(
                     let after =
                         doc.doc_info.para_shapes[paragraph.para_shape_id as usize].spacing_after;
                     doc.doc_info.para_shapes[previous.para_shape_id as usize].spacing_after = after;
-                    join(previous, &paragraph);
+                    join(previous, &paragraph, allocation)?;
                     joined += 1;
                 }
-                _ => out.push(paragraph),
+                _ => allocation.push(out, paragraph)?,
             }
         }
     }
-    joined
+    Ok(joined)
 }
 
-fn column_def(boxes: &[(i32, i32)]) -> ColumnDef {
+fn column_def(
+    boxes: &[(i32, i32)],
+    allocation: Allocation<'_>,
+) -> Result<ColumnDef, PdfImportError> {
     const TOTAL: i64 = 32768;
     let body = i64::from((boxes[boxes.len() - 1].1 - boxes[0].0).max(1));
     let mut parts = Vec::new();
     for (i, &(left, right)) in boxes.iter().enumerate() {
-        parts.push(i64::from(right - left));
-        parts.push(boxes.get(i + 1).map_or(0, |next| i64::from(next.0 - right)));
+        allocation.push(&mut parts, i64::from(right - left))?;
+        allocation.push(
+            &mut parts,
+            boxes.get(i + 1).map_or(0, |next| i64::from(next.0 - right)),
+        )?;
     }
     // Cumulative rounding keeps the proportions summing to exactly 32768.
-    let mut edges = Vec::with_capacity(parts.len());
+    let mut edges = allocation.vec(parts.len())?;
     let mut acc = 0;
     for part in &parts {
         acc += part;
-        edges.push(acc * TOTAL / body);
+        allocation.push(&mut edges, acc * TOTAL / body)?;
     }
     let mut previous = 0;
-    let scaled: Vec<i16> = edges
-        .iter()
-        .map(|&edge| {
-            let value = (edge - previous).clamp(0, i64::from(i16::MAX)) as i16;
-            previous = edge;
-            value
-        })
-        .collect();
-    let widths: Vec<i16> = scaled.iter().step_by(2).copied().collect();
-    let gaps: Vec<i16> = scaled.iter().skip(1).step_by(2).copied().collect();
+    let scaled = allocation.collect(edges.iter().map(|&edge| {
+        let value = (edge - previous).clamp(0, i64::from(i16::MAX)) as i16;
+        previous = edge;
+        value
+    }))?;
+    let widths = allocation.collect(scaled.iter().step_by(2).copied())?;
+    let gaps = allocation.collect(scaled.iter().skip(1).step_by(2).copied())?;
     let spacing = boxes.windows(2).next().map_or(0, |w| {
         (w[1].0 - w[0].1).clamp(0, i32::from(i16::MAX)) as i16
     });
-    ColumnDef {
+    Ok(ColumnDef {
         column_type: ColumnType::Normal,
         column_count: boxes.len() as u16,
         direction: ColumnDirection::LeftToRight,
@@ -369,13 +406,17 @@ fn column_def(boxes: &[(i32, i32)]) -> ColumnDef {
         gaps,
         proportional_widths: true,
         ..Default::default()
-    }
+    })
 }
 
 /// Replace each page's positioned body frames with section text flow.
-pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, String> {
+pub(super) fn reflow(
+    doc: &mut Document,
+    pages: &[PageFrames],
+    allocation: Allocation<'_>,
+) -> Result<Value, PdfImportError> {
     if pages.is_empty() {
-        return Ok(json!({"layout":"editable","sections":0}));
+        return Ok(request_json!(allocation, {"layout":"editable","sections":0})?);
     }
     let base = pages[0].section;
     // Runs of consecutive pages with the same paper become one section each.
@@ -387,50 +428,56 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
             (q.width, q.height, q.landscape) == (pd.width, pd.height, pd.landscape)
         });
         if same {
-            runs.last_mut().unwrap().push(page);
+            allocation.push(runs.last_mut().unwrap(), page)?;
         } else {
-            runs.push(vec![page]);
+            let run = allocation.collect([page])?;
+            allocation.push(&mut runs, run)?;
         }
     }
-    let mut old: Vec<_> = doc.sections.drain(base..).collect();
+    let mut old = allocation.collect(doc.sections.drain(base..))?;
     let mut report = Vec::new();
     let mut anchor_shape = None;
     for run in runs {
         let first = run[0].section - base;
-        let pd = old[first].section_def.page_def.clone();
+        let pd = allocation.clone_record(&old[first].section_def.page_def)?;
         let width = if pd.landscape { pd.height } else { pd.width } as i32;
         let height = if pd.landscape { pd.width } else { pd.height } as i32;
-        let layouts: Vec<_> = run.iter().map(|p| page_columns(&p.frames)).collect();
+        let layouts =
+            allocation.try_collect(run.iter().map(|p| page_columns(&p.frames, allocation)))?;
         // The section's column grid is the most common page grid.
         let mut counts = std::collections::BTreeMap::new();
         for (columns, _) in &layouts {
             if !columns.is_empty() {
-                *counts.entry(columns.len()).or_insert(0usize) += 1;
+                let value = counts.get(&columns.len()).copied().unwrap_or(0usize) + 1;
+                allocation.insert(&mut counts, columns.len(), value)?;
             }
         }
         let Some((&count, _)) = counts.iter().max_by_key(|(n, c)| (**c, **n)) else {
             // Nothing recognized: keep the positioned pages as they were.
             for page in &run {
-                doc.sections.push(old[page.section - base].clone());
+                let section = allocation.clone_section(&old[page.section - base])?;
+                allocation.push(&mut doc.sections, section)?;
             }
             continue;
         };
-        let grid: Vec<&Vec<(f32, f32)>> = layouts
-            .iter()
-            .map(|(c, _)| c)
-            .filter(|c| c.len() == count)
-            .collect();
-        let median = |values: Vec<f32>| {
+        let grid =
+            allocation.collect(layouts.iter().map(|(c, _)| c).filter(|c| c.len() == count))?;
+        let median = |values: Vec<f32>| -> Result<f32, PdfImportError> {
             let mut v = values;
-            v.sort_by(f32::total_cmp);
-            v[v.len() / 2]
+            allocation.sort_by(&mut v, f32::total_cmp)?;
+            Ok(v[v.len() / 2])
         };
-        let lefts: Vec<i32> = (0..count)
-            .map(|c| hu(median(grid.iter().map(|g| g[c].0).collect())))
-            .collect();
-        let rights: Vec<i32> = (0..count)
-            .map(|c| hu(median(grid.iter().map(|g| g[c].1).collect())))
-            .collect();
+        let lefts = allocation.try_collect((0..count).map(|c| -> Result<i32, PdfImportError> {
+            Ok(hu(median(
+                allocation.collect(grid.iter().map(|g| g[c].0))?,
+            )?))
+        }))?;
+        let rights =
+            allocation.try_collect((0..count).map(|c| -> Result<i32, PdfImportError> {
+                Ok(hu(median(
+                    allocation.collect(grid.iter().map(|g| g[c].1))?,
+                )?))
+            }))?;
         let gap = if count > 1 {
             (0..count - 1)
                 .map(|c| lefts[c + 1] - rights[c])
@@ -441,55 +488,48 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
         };
         // Each column keeps its observed text edges. The renderer admits the
         // stored rows only for this exact frame; a wider box re-breaks them.
-        let boxes: Vec<(i32, i32)> = (0..count)
-            .map(|c| (lefts[c].max(0), rights[c].min(width)))
-            .collect();
+        let boxes =
+            allocation.collect((0..count).map(|c| (lefts[c].max(0), rights[c].min(width))))?;
         let margin_left = boxes[0].0;
         let margin_right = (width - boxes[count - 1].1).max(0);
         let column_left = |c: usize| boxes[c].0;
         let column_width_of = |c: usize| boxes[c].1 - boxes[c].0;
         // A frame joins the flow when its column maps onto one grid column.
-        let mut placed: Vec<Vec<Option<usize>>> = run
-            .iter()
-            .zip(&layouts)
-            .map(|(page, (columns, owner))| {
+        let mut placed =
+            allocation.try_collect(run.iter().zip(&layouts).map(|(page, (columns, owner))| {
                 let grid_of = |c: usize| {
                     let center = hu((columns[c].0 + columns[c].1) / 2.);
                     (0..count).min_by_key(|&g| ((boxes[g].0 + boxes[g].1) / 2 - center).abs())
                 };
-                let mapped: Vec<Option<usize>> = (0..columns.len()).map(grid_of).collect();
-                page.frames
-                    .iter()
-                    .zip(owner)
-                    .map(|(frame, o)| {
-                        let c = (*o)?;
-                        let g = mapped[c]?;
-                        // Text outside the column box (a page number in the
-                        // gutter) is not column flow; it keeps its position.
-                        let (left, right) = boxes[g];
-                        if hu(frame.left) < left - 100 || hu(frame.right) > right + 100 {
-                            return None;
-                        }
-                        // Two page columns on one grid column are not a column flow.
-                        (mapped.iter().filter(|m| **m == Some(g)).count() == 1).then_some(g)
-                    })
-                    .collect()
-            })
-            .collect();
+                let mapped = allocation.collect((0..columns.len()).map(grid_of))?;
+                allocation.collect(page.frames.iter().zip(owner).map(|(frame, o)| {
+                    let c = (*o)?;
+                    let g = mapped[c]?;
+                    // Text outside the column box (a page number in the
+                    // gutter) is not column flow; it keeps its position.
+                    let (left, right) = boxes[g];
+                    if hu(frame.left) < left - 100 || hu(frame.right) > right + 100 {
+                        return None;
+                    }
+                    // Two page columns on one grid column are not a column flow.
+                    (mapped.iter().filter(|m| **m == Some(g)).count() == 1).then_some(g)
+                }))
+            }))?;
         // A short frame that recurs at one height on half the pages or more
         // is a running header or footer (page number, booklet marks). It
         // keeps its page position instead of opening a column.
         let band = |f: &BodyFrame| (hu(f.top) / 200, hu(f.bottom) / 200);
         let mut recurring = std::collections::BTreeMap::new();
         for page in &run {
-            let bands: std::collections::BTreeSet<_> = page
-                .frames
-                .iter()
-                .filter(|f| f.bottom - f.top < 30.0)
-                .map(band)
-                .collect();
+            let bands = allocation.set_from(
+                page.frames
+                    .iter()
+                    .filter(|f| f.bottom - f.top < 30.0)
+                    .map(band),
+            )?;
             for b in bands {
-                *recurring.entry(b).or_insert(0usize) += 1;
+                let value = recurring.get(&b).copied().unwrap_or(0usize) + 1;
+                allocation.insert(&mut recurring, b, value)?;
             }
         }
         let running = run.len() >= 2;
@@ -505,19 +545,15 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
         // text starts higher keeps that text positioned, so every column top
         // is the page body top and a paragraph continued into the next column
         // starts there, as stored rows of a continued paragraph do.
-        let page_tops: Vec<f32> = run
-            .iter()
-            .zip(&placed)
-            .filter_map(|(p, owners)| {
-                p.frames
-                    .iter()
-                    .zip(owners)
-                    .filter(|(_, g)| g.is_some())
-                    .map(|(f, _)| f.top)
-                    .reduce(f32::min)
-            })
-            .collect();
-        let body_top = median(page_tops);
+        let page_tops = allocation.collect(run.iter().zip(&placed).filter_map(|(p, owners)| {
+            p.frames
+                .iter()
+                .zip(owners)
+                .filter(|(_, g)| g.is_some())
+                .map(|(f, _)| f.top)
+                .reduce(f32::min)
+        }))?;
+        let body_top = median(page_tops)?;
         for (page, owners) in run.iter().zip(placed.iter_mut()) {
             for (frame, owner) in page.frames.iter().zip(owners.iter_mut()) {
                 if frame.top < body_top - 2.0 {
@@ -535,7 +571,7 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
         let margin_top = hu(body_top).max(0);
         let margin_bottom =
             (height - hu(flowing().map(|f| f.bottom).fold(f32::MIN, f32::max))).max(0);
-        let mut section = old[first].clone();
+        let mut section = allocation.clone_section(&old[first])?;
         section.paragraphs.clear();
         {
             let pd = &mut section.section_def.page_def;
@@ -549,24 +585,28 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
         // An anchor line that reserves almost no height: fixed 1pt spacing.
         // Anchor lines hold no text. A 1pt face on a fixed 1pt line keeps
         // the height they take in the column known: `ANCHOR_HEIGHT`.
-        let (anchor_shape_id, anchor_char_id) = *anchor_shape.get_or_insert_with(|| {
-            let mut shape = doc.doc_info.para_shapes[0].clone();
+        let (anchor_shape_id, anchor_char_id) = if let Some(ids) = anchor_shape {
+            ids
+        } else {
+            let mut shape = allocation.clone_record(&doc.doc_info.para_shapes[0])?;
             shape.raw_data = None;
             shape.line_spacing_type = LineSpacingType::Fixed;
             shape.line_spacing = 2 * ANCHOR_HEIGHT;
             shape.spacing_before = 0;
             shape.spacing_after = 0;
-            doc.doc_info.para_shapes.push(shape);
-            let mut face = doc.doc_info.char_shapes[0].clone();
+            allocation.push(&mut doc.doc_info.para_shapes, shape)?;
+            let mut face = allocation.clone_record(&doc.doc_info.char_shapes[0])?;
             face.raw_data = None;
             face.base_size = ANCHOR_HEIGHT;
-            doc.doc_info.char_shapes.push(face);
-            (
+            allocation.push(&mut doc.doc_info.char_shapes, face)?;
+            let ids = (
                 (doc.doc_info.para_shapes.len() - 1) as u16,
                 (doc.doc_info.char_shapes.len() - 1) as u32,
-            )
-        });
-        let def = column_def(&boxes);
+            );
+            anchor_shape = Some(ids);
+            ids
+        };
+        let def = column_def(&boxes, allocation)?;
         let mut pages_report = Vec::new();
         let mut pages_flow = Vec::new();
         for (page_no, page) in run.iter().enumerate() {
@@ -581,11 +621,12 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
                     .controls
                     .retain(|c| !matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)));
                 anchor.char_count -= 8 * (before - anchor.controls.len()) as u32;
-                anchor.controls.insert(
-                    0,
-                    Control::SectionDef(Box::new(section.section_def.clone())),
-                );
-                anchor.controls.insert(1, Control::ColumnDef(def.clone()));
+                let section_def = allocation.clone_section_def(&section.section_def)?;
+                let section_def = allocation.boxed(section_def)?;
+                let column = allocation.clone_record(&def)?;
+                allocation.reserve(&mut anchor.controls, 2)?;
+                anchor.controls.insert(0, Control::SectionDef(section_def));
+                anchor.controls.insert(1, Control::ColumnDef(column));
                 anchor.char_count += 16;
             } else {
                 // One section definition and one column grid open the section.
@@ -601,10 +642,10 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
             // A separate anchor line is kept only when column 0 has none.
             let keep_anchor = !placed[page_no].contains(&Some(0));
             anchor.para_shape_id = anchor_shape_id;
-            anchor.char_shapes = vec![crate::model::paragraph::CharShapeRef {
+            anchor.char_shapes = allocation.collect([crate::model::paragraph::CharShapeRef {
                 start_pos: 0,
                 char_shape_id: anchor_char_id,
-            }];
+            }])?;
             for seg in &mut anchor.line_segs {
                 seg.vertical_pos = 0;
                 seg.line_height = ANCHOR_HEIGHT;
@@ -618,10 +659,11 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
             let mut moved = 0;
             let mut current_column = 0;
             for g in 0..count {
-                let mut members: Vec<usize> = (0..page.frames.len())
-                    .filter(|&i| placed[page_no][i] == Some(g))
-                    .collect();
-                members.sort_by(|&a, &b| page.frames[a].top.total_cmp(&page.frames[b].top));
+                let mut members = allocation
+                    .collect((0..page.frames.len()).filter(|&i| placed[page_no][i] == Some(g)))?;
+                allocation.sort_by(&mut members, |&a, &b| {
+                    page.frames[a].top.total_cmp(&page.frames[b].top)
+                })?;
                 // The anchor line occupies the top of the first column.
                 // Anchor lines (the section opener, a page anchor) occupy the
                 // top of the first column.
@@ -676,25 +718,25 @@ pub(super) fn reflow(doc: &mut Document, pages: &[PageFrames]) -> Result<Value, 
                         for _ in current_column + 1..g {
                             let mut empty = Paragraph::new_empty();
                             empty.column_type = ColumnBreakType::Column;
-                            body.push(empty);
+                            allocation.push(&mut body, empty)?;
                         }
                         paragraphs[0].column_type = ColumnBreakType::Column;
                         current_column = g;
                     }
                     previous_bottom = hu(frame.bottom);
                     moved += paragraphs.len();
-                    body.extend(paragraphs);
+                    allocation.extend(&mut body, paragraphs)?;
                 }
             }
             let positioned =
                 page.frames.len() - placed[page_no].iter().filter(|g| g.is_some()).count();
-            pages_report.push(json!({"sourceSection":page.section,"columns":count,"bodyParagraphs":moved,"positionedFrames":positioned}));
-            pages_flow.push((anchor, body, keep_anchor));
+            allocation.push(&mut pages_report, request_json!(allocation, {"sourceSection":page.section,"columns":count,"bodyParagraphs":moved,"positionedFrames":positioned})?)?;
+            allocation.push(&mut pages_flow, (anchor, body, keep_anchor))?;
         }
-        let joined = assemble(doc, &mut section.paragraphs, pages_flow);
+        let joined = assemble(doc, &mut section.paragraphs, pages_flow, allocation)?;
         mark_indented_rows(doc, &mut section.paragraphs);
-        report.push(json!({"pages":pages_report,"columns":count,"columnGap":gap,"joinedParagraphs":joined,"margins":[margin_left,margin_top,margin_right,margin_bottom]}));
-        doc.sections.push(section);
+        allocation.push(&mut report, request_json!(allocation, {"pages":pages_report,"columns":count,"columnGap":gap,"joinedParagraphs":joined,"margins":[margin_left,margin_top,margin_right,margin_bottom]})?)?;
+        allocation.push(&mut doc.sections, section)?;
     }
-    Ok(json!({"layout":"editable","sections":report}))
+    Ok(request_json!(allocation, {"layout":"editable","sections":report})?)
 }

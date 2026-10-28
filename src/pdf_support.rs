@@ -8,6 +8,8 @@ pub struct PdfImportSupport {
     pub enabled: bool,
     pub jbig2: bool,
     pub jpeg2000: bool,
+    pub icc: bool,
+    pub bounded_xref_recovery: bool,
 }
 
 /// Effective compiled support, including dependency feature unification.
@@ -21,5 +23,16 @@ pub const fn pdf_import_support() -> PdfImportSupport {
         enabled: cfg!(feature = "pdf-import"),
         jbig2,
         jpeg2000,
+        icc: {
+            #[cfg(feature = "pdf-import")]
+            {
+                pdf_oxide::icc_transform_support()
+            }
+            #[cfg(not(feature = "pdf-import"))]
+            {
+                false
+            }
+        },
+        bounded_xref_recovery: cfg!(feature = "pdf-import"),
     }
 }

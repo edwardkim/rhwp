@@ -129,6 +129,8 @@ pub struct DecodeSettings {
     pub strict: bool,
     /// A hint for the target resolution that the image should be decoded at.
     pub target_resolution: Option<(u32, u32)>,
+    /// PDF dictionary colour components override JP2 colour-space metadata.
+    pub pdf_colour_components: Option<u8>,
 }
 
 impl Default for DecodeSettings {
@@ -137,6 +139,7 @@ impl Default for DecodeSettings {
             resolve_palette_indices: true,
             strict: false,
             target_resolution: None,
+            pdf_colour_components: None,
         }
     }
 }
@@ -250,7 +253,9 @@ impl<'a> Image<'a> {
 
         // Note that this is only valid if all images have the same bit depth.
         let bit_depth = decoded_image.decoded_components[0].bit_depth;
-        convert_color_space(&mut decoded_image, bit_depth)?;
+        if settings.pdf_colour_components.is_none() {
+            convert_color_space(&mut decoded_image, bit_depth)?;
+        }
 
         Ok(decoded_image)
     }
@@ -270,6 +275,19 @@ pub(crate) fn resolve_alpha_and_color_space(
         && let Some(palette_box) = &boxes.palette
     {
         num_components = palette_box.columns.len();
+    }
+
+    if let Some(components) = settings.pdf_colour_components {
+        let color_space = match components {
+            1 => ColorSpace::Gray,
+            3 => ColorSpace::RGB,
+            4 => ColorSpace::CMYK,
+            _ => bail!(ValidationError::TooManyChannels),
+        };
+        if num_components != components as usize && num_components != components as usize + 1 {
+            bail!(ValidationError::TooManyChannels);
+        }
+        return Ok((color_space, num_components == components as usize + 1));
     }
 
     let mut has_alpha = false;

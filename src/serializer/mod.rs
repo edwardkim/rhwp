@@ -4,6 +4,7 @@
 //! `parser` 모듈의 역방향으로 동작한다.
 
 pub mod body_text;
+pub(crate) mod budget_cursor;
 pub mod byte_writer;
 pub mod cfb_writer;
 pub(crate) mod char_shape;

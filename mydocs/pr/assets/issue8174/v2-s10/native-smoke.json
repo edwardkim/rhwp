@@ -1,0 +1,140 @@
+[
+  {
+    "name": "cff",
+    "format": "hwp",
+    "pages": 1,
+    "bytes": 4096,
+    "reopened": true,
+    "execution": {
+      "addressSpaceLimitEnforced": true,
+      "cpuLimitEnforced": true,
+      "descendantGroupCleanup": true,
+      "filesystemNetworkSandbox": false,
+      "limits": {
+        "addressSpaceBytes": 4294967296,
+        "cpuSeconds": 90,
+        "diagnosticsBytes": 33554432,
+        "outputBytes": 134217728,
+        "wallTimeoutMs": 120000
+      },
+      "observedPeakRssBytes": 17035264,
+      "wallMillis": 11
+    }
+  },
+  {
+    "name": "cff",
+    "format": "hwpx",
+    "pages": 1,
+    "bytes": 6984,
+    "reopened": true,
+    "execution": {
+      "addressSpaceLimitEnforced": true,
+      "cpuLimitEnforced": true,
+      "descendantGroupCleanup": true,
+      "filesystemNetworkSandbox": false,
+      "limits": {
+        "addressSpaceBytes": 4294967296,
+        "cpuSeconds": 90,
+        "diagnosticsBytes": 33554432,
+        "outputBytes": 134217728,
+        "wallTimeoutMs": 120000
+      },
+      "observedPeakRssBytes": 17301504,
+      "wallMillis": 11
+    }
+  },
+  {
+    "name": "type3",
+    "format": "hwp",
+    "pages": 12,
+    "bytes": 1374208,
+    "reopened": true,
+    "execution": {
+      "addressSpaceLimitEnforced": true,
+      "cpuLimitEnforced": true,
+      "descendantGroupCleanup": true,
+      "filesystemNetworkSandbox": false,
+      "limits": {
+        "addressSpaceBytes": 4294967296,
+        "cpuSeconds": 90,
+        "diagnosticsBytes": 33554432,
+        "outputBytes": 134217728,
+        "wallTimeoutMs": 120000
+      },
+      "observedPeakRssBytes": 48799744,
+      "wallMillis": 366
+    }
+  },
+  {
+    "name": "type3",
+    "format": "hwpx",
+    "pages": 12,
+    "bytes": 1421989,
+    "reopened": true,
+    "execution": {
+      "addressSpaceLimitEnforced": true,
+      "cpuLimitEnforced": true,
+      "descendantGroupCleanup": true,
+      "filesystemNetworkSandbox": false,
+      "limits": {
+        "addressSpaceBytes": 4294967296,
+        "cpuSeconds": 90,
+        "diagnosticsBytes": 33554432,
+        "outputBytes": 134217728,
+        "wallTimeoutMs": 120000
+      },
+      "observedPeakRssBytes": 47206400,
+      "wallMillis": 381
+    }
+  },
+  {
+    "name": "maintainer-document",
+    "format": "hwp",
+    "pages": 15,
+    "bytes": 588288,
+    "reopened": true,
+    "execution": {
+      "addressSpaceLimitEnforced": true,
+      "cpuLimitEnforced": true,
+      "descendantGroupCleanup": true,
+      "filesystemNetworkSandbox": false,
+      "limits": {
+        "addressSpaceBytes": 4294967296,
+        "cpuSeconds": 90,
+        "diagnosticsBytes": 33554432,
+        "outputBytes": 134217728,
+        "wallTimeoutMs": 120000
+      },
+      "observedPeakRssBytes": 140500992,
+      "wallMillis": 1740
+    }
+  },
+  {
+    "name": "maintainer-document",
+    "format": "hwpx",
+    "pages": 15,
+    "bytes": 1273085,
+    "reopened": true,
+    "execution": {
+      "addressSpaceLimitEnforced": true,
+      "cpuLimitEnforced": true,
+      "descendantGroupCleanup": true,
+      "filesystemNetworkSandbox": false,
+      "limits": {
+        "addressSpaceBytes": 4294967296,
+        "cpuSeconds": 90,
+        "diagnosticsBytes": 33554432,
+        "outputBytes": 134217728,
+        "wallTimeoutMs": 120000
+      },
+      "observedPeakRssBytes": 123105280,
+      "wallMillis": 2072
+    }
+  },
+  {
+    "case": "tiny-font",
+    "rejected": true,
+    "existingOutputPreserved": true,
+    "nextNormalSucceeded": true
+  }
+]

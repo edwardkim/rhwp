@@ -26,29 +26,65 @@ pub(crate) fn project_current_marker_height_rows(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
-    if !projects_current_marker_geometry(para, box_, styles)
-        || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
-        || para.text.chars().any(char::is_control)
-        || para.stored_text_partition_is_dirty()
-        || super::stored_row_fragments::crosses_physical_frame(para)
-        || para
-            .line_segs
-            .iter()
-            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
-    {
-        return None;
+    match project_current_marker_height_rows_with_storage(
+        para,
+        box_,
+        styles,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    let marker = crate::renderer::layout::list_marker_geometry(para, styles)?;
-    let minimum_height = (marker.line_font_size_px * 7200.0 / dpi).round() as i32;
-    let first = para.line_segs.first()?;
-    if first.line_height >= minimum_height {
-        return None;
-    }
-    let mut frame = box_.frame(first.vertical_pos);
-    let rows = line_breaking::layout_paragraph_in_frame(para, &mut frame, styles, dpi)?;
-    rows.first()
-        .is_some_and(|row| row.line_height >= minimum_height)
-        .then(|| (rows, frame.project_space_metrics()))
+}
+pub(crate) fn project_current_marker_height_rows_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    box_: &ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        if !projects_current_marker_geometry(para, box_, styles)
+            || !crate::renderer::cell_paragraph_has_only_text_metadata(para)
+            || para.text.chars().any(char::is_control)
+            || para.stored_text_partition_is_dirty()
+            || super::stored_row_fragments::crosses_physical_frame(para)
+            || para
+                .line_segs
+                .iter()
+                .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        {
+            return None;
+        }
+        let marker = crate::renderer::layout::list_marker_geometry(para, styles)?;
+        let minimum_height = (marker.line_font_size_px * 7200.0 / dpi).round() as i32;
+        let first = para.line_segs.first()?;
+        if first.line_height >= minimum_height {
+            return None;
+        }
+        let mut frame = box_.frame(first.vertical_pos);
+        let rows = crate::storage::optional(
+            line_breaking::layout_paragraph_in_frame_with_storage(
+                para, &mut frame, styles, dpi, storage,
+            ),
+            failure,
+        )??;
+        if rows
+            .first()
+            .is_some_and(|row| row.line_height >= minimum_height)
+        {
+            Some((
+                rows,
+                crate::storage::optional(
+                    frame.try_project_space_metrics_since(0, storage),
+                    failure,
+                )?,
+            ))
+        } else {
+            None
+        }
+    })
 }
 
 /// 현재 문단 상자와 같은 원본 가로 프레임인지 인증한다.
@@ -81,36 +117,60 @@ pub(crate) fn project_current_body_box_rows(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
-    let style = styles.para_styles.get(para.para_shape_id as usize)?;
-    let extent = box_.effective();
-    if style.head_type != crate::model::style::HeadType::None
-        || !box_.is_usable()
-        || extent.start <= 0
-        || para.line_segs.len() < 2
-        || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
-        || para.text.chars().any(char::is_control)
-        || !para.line_segs.iter().all(|line| {
-            line.is_first_segment()
-                && line.is_last_segment()
-                && line.column_start < extent.start
-                && line.segment_width == extent.end - extent.start
-        })
-        || para.line_segs.windows(2).any(|pair| {
-            pair[1].vertical_pos <= pair[0].vertical_pos
-                || pair[1].is_first_line_of_page()
-                || pair[1].is_first_line_of_column()
-        })
-    {
-        return None;
-    }
-    project_stored_rows(
+    match project_current_body_box_rows_with_storage(
         para,
-        &box_.frame(para.line_segs[0].vertical_pos),
+        box_,
         styles,
         dpi,
-        false,
-        true,
-    )
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn project_current_body_box_rows_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    box_: &ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        let style = styles.para_styles.get(para.para_shape_id as usize)?;
+        let extent = box_.effective();
+        if style.head_type != crate::model::style::HeadType::None
+            || !box_.is_usable()
+            || extent.start <= 0
+            || para.line_segs.len() < 2
+            || !crate::renderer::cell_paragraph_has_only_text_metadata(para)
+            || para.text.chars().any(char::is_control)
+            || !para.line_segs.iter().all(|line| {
+                line.is_first_segment()
+                    && line.is_last_segment()
+                    && line.column_start < extent.start
+                    && line.segment_width == extent.end - extent.start
+            })
+            || para.line_segs.windows(2).any(|pair| {
+                pair[1].vertical_pos <= pair[0].vertical_pos
+                    || pair[1].is_first_line_of_page()
+                    || pair[1].is_first_line_of_column()
+            })
+        {
+            return None;
+        }
+        crate::storage::optional(
+            project_stored_rows_with_storage(
+                para,
+                &box_.frame(para.line_segs[0].vertical_pos),
+                styles,
+                dpi,
+                false,
+                true,
+                storage,
+            ),
+            failure,
+        )?
+    })
 }
 
 /// 원본 TTF로 잰 같은 상자에서 저장 경계가 본문을 먼저 끊었는지 확인한다.
@@ -122,84 +182,135 @@ pub(crate) fn project_current_source_program_rows(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
-    if !stored_rows_match_paragraph_box(para, box_)
-        || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
-        || para.text.chars().any(char::is_control)
-    {
-        return None;
+    match project_current_source_program_rows_with_storage(
+        para,
+        box_,
+        styles,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    let composed = super::compose_paragraph_in_context(para, styles);
-    let mut has_text = false;
-    let mut fallback_styles = styles.clone();
-    fallback_styles.source_program_projection_slots.clear();
-    for run in composed.lines.iter().flat_map(|line| &line.runs) {
-        if run.text.chars().all(char::is_whitespace) {
-            continue;
-        }
-        has_text = true;
-        let fallback = styles
-            .source_program_projection_slots
-            .get(&(run.char_style_id, run.lang_index))?;
-        if run.inserted_control_text {
+}
+pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    box_: &ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        if styles.source_program_projection_slots.is_empty() {
             return None;
         }
-        *fallback_styles
-            .char_styles
-            .get_mut(run.char_style_id as usize)? = fallback.clone();
-    }
-    if !has_text {
-        return None;
-    }
-    let first = para.line_segs.first()?.vertical_pos;
-    let frame = box_.frame(first);
-    // 대체 선언이 있다는 사실이나 현재 글자가 한 자 더 들어간다는 사실은
-    // 저장 줄이 다른 프로그램의 캐시라는 증거가 아니다. 문서가 지정한 대체
-    // 프로그램이 같은 상자에서 저장 줄 전체를 재현하는지 먼저 확인한다.
-    let fallback_rows =
-        line_breaking::layout_paragraph_in_frame(para, &mut frame.clone(), &fallback_styles, dpi)?;
-    if fallback_rows.len() != para.line_segs.len()
-        || fallback_rows
-            .iter()
-            .enumerate()
-            .any(|(index, row)| row.text_start != para.line_seg_text_start(index))
-    {
-        return None;
-    }
-    project_stored_rows(para, &frame, styles, dpi, false, true)
+        if !stored_rows_match_paragraph_box(para, box_)
+            || !crate::renderer::cell_paragraph_has_only_text_metadata(para)
+            || para.text.chars().any(char::is_control)
+        {
+            return None;
+        }
+        let composed = crate::storage::optional(
+            super::compose_paragraph_in_context_with_storage(para, styles, storage),
+            failure,
+        )?;
+        let mut has_text = false;
+        let mut fallback_styles =
+            crate::storage::optional(crate::storage::try_clone(styles, storage), failure)?;
+        fallback_styles.source_program_projection_slots.clear();
+        for run in composed.lines.iter().flat_map(|line| &line.runs) {
+            if run.text.chars().all(char::is_whitespace) {
+                continue;
+            }
+            has_text = true;
+            let fallback = styles
+                .source_program_projection_slots
+                .get(&(run.char_style_id, run.lang_index))?;
+            if run.inserted_control_text {
+                return None;
+            }
+            *fallback_styles
+                .char_styles
+                .get_mut(run.char_style_id as usize)? =
+                crate::storage::optional(crate::storage::try_clone(fallback, storage), failure)?;
+        }
+        if !has_text {
+            return None;
+        }
+        let first = para.line_segs.first()?.vertical_pos;
+        let frame = box_.frame(first);
+        // 대체 선언이 있다는 사실이나 현재 글자가 한 자 더 들어간다는 사실은
+        // 저장 줄이 다른 프로그램의 캐시라는 증거가 아니다. 문서가 지정한 대체
+        // 프로그램이 같은 상자에서 저장 줄 전체를 재현하는지 먼저 확인한다.
+        let fallback_rows = crate::storage::optional(
+            line_breaking::layout_paragraph_in_frame_with_storage(
+                para,
+                &mut crate::storage::optional(crate::storage::try_clone(&frame, storage), failure)?,
+                &fallback_styles,
+                dpi,
+                storage,
+            ),
+            failure,
+        )??;
+        if fallback_rows.len() != para.line_segs.len()
+            || fallback_rows
+                .iter()
+                .enumerate()
+                .any(|(index, row)| row.text_start != para.line_seg_text_start(index))
+        {
+            return None;
+        }
+        crate::storage::optional(
+            project_stored_rows_with_storage(para, &frame, styles, dpi, false, true, storage),
+            failure,
+        )?
+    })
 }
 
 /// 앞선 물리 경계가 없는 마지막 자동 어절의 캐시 원점 되감김인가.
 /// 명시적 쪽/단과 다른 가로 상자는 실제 프레임 소유자로 남긴다.
 pub(super) fn has_unmarked_final_word_rewind(para: &Paragraph) -> bool {
-    let Some((last, prefix)) = para.line_segs.split_last() else {
-        return false;
-    };
-    let Some(previous) = prefix.last() else {
-        return false;
-    };
-    let chars: Vec<_> = para.text.chars().collect();
-    let (start, _) = utf16_range_to_text_range(
-        &para.char_offsets,
-        para.line_seg_text_start(para.line_segs.len() - 1),
-        u32::MAX,
-        chars.len(),
-    );
-    start > 0
-        && start < chars.len()
-        && chars[start - 1].is_alphanumeric()
-        && chars[start].is_alphanumeric()
-        && !last.is_first_line_of_page()
-        && !last.is_first_line_of_column()
-        && last.vertical_pos >= 0
-        && last.vertical_pos < previous.vertical_pos
-        && last.column_start == previous.column_start
-        && last.segment_width > 0
-        && last.segment_width == previous.segment_width
-        && !prefix.windows(2).any(|pair| {
-            pair[1].is_first_line_of_page()
-                || pair[1].is_first_line_of_column()
-                || pair[1].vertical_pos < pair[0].vertical_pos
-        })
+    match has_unmarked_final_word_rewind_with_storage(para, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn has_unmarked_final_word_rewind_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    Ok({
+        let Some((last, prefix)) = para.line_segs.split_last() else {
+            return Ok(false);
+        };
+        let Some(previous) = prefix.last() else {
+            return Ok(false);
+        };
+        let chars: Vec<_> = storage.collect(para.text.chars())?;
+        let (start, _) = utf16_range_to_text_range(
+            &para.char_offsets,
+            para.line_seg_text_start(para.line_segs.len() - 1),
+            u32::MAX,
+            chars.len(),
+        );
+        start > 0
+            && start < chars.len()
+            && chars[start - 1].is_alphanumeric()
+            && chars[start].is_alphanumeric()
+            && !last.is_first_line_of_page()
+            && !last.is_first_line_of_column()
+            && last.vertical_pos >= 0
+            && last.vertical_pos < previous.vertical_pos
+            && last.column_start == previous.column_start
+            && last.segment_width > 0
+            && last.segment_width == previous.segment_width
+            && !prefix.windows(2).any(|pair| {
+                pair[1].is_first_line_of_page()
+                    || pair[1].is_first_line_of_column()
+                    || pair[1].vertical_pos < pair[0].vertical_pos
+            })
+    })
 }
 
 /// 저장 run과 현재 채움이 서로 다른 공백 전진을 사용하면 줄 분할도 재검토해야 한다.
@@ -209,22 +320,40 @@ pub(super) fn regenerated_spaces_change_metrics(
     styles: &ResolvedStyleSet,
     metric: SpaceMetric,
 ) -> bool {
-    composed
-        .lines
-        .iter()
-        .flat_map(|line| &line.runs)
-        .any(|run| {
+    match regenerated_spaces_change_metrics_with_storage(
+        composed,
+        styles,
+        metric,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn regenerated_spaces_change_metrics_with_storage<S: crate::storage::Storage>(
+    composed: &ComposedParagraph,
+    styles: &ResolvedStyleSet,
+    metric: SpaceMetric,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    Ok({
+        for run in composed.lines.iter().flat_map(|line| &line.runs) {
             if !run.text.contains(' ') {
-                return false;
+                continue;
             }
-            let stored = run.text_style(styles);
-            let mut regenerated = stored.clone();
+            let stored = run.try_text_style(styles, storage)?;
+            let mut regenerated = crate::storage::try_clone(&stored, storage)?;
             metric.apply_to_style(&mut regenerated);
             let advance = |style: &crate::renderer::TextStyle| {
                 crate::renderer::layout::estimate_text_width_unrounded(" ", style)
             };
-            (advance(&stored) - advance(&regenerated)).abs() > f64::EPSILON
-        })
+            if (advance(&stored) - advance(&regenerated)).abs() > f64::EPSILON {
+                return Ok(true);
+            }
+        }
+        false
+    })
 }
 
 /// 저장된 마지막 줄이 앞줄의 영숫자·한글 어절 중간에서 시작하는지 확인한다.
@@ -238,27 +367,58 @@ pub(super) fn can_rejoin_stored_word_tail(
     dpi: f64,
     supported_inline_picture: bool,
 ) -> bool {
-    if para.line_segs.len() < 2 {
-        return false;
+    match can_rejoin_stored_word_tail_with_storage(
+        para,
+        frame,
+        styles,
+        dpi,
+        supported_inline_picture,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    let chars: Vec<_> = para.text.chars().collect();
-    let (start, _) = utf16_range_to_text_range(
-        &para.char_offsets,
-        para.line_seg_text_start(para.line_segs.len() - 1),
-        u32::MAX,
-        chars.len(),
-    );
-    // 어절을 자른 경계인지는 앞줄 끝과 마지막 줄 첫 글자로 판단한다.
-    // 같은 줄 뒤의 다른 어절·문장부호는 이 경계의 소속을 바꾸지 않는다.
-    // 실제 줄 수 감소는 그 뒤 내용까지 포함한 동일 프레임 조판으로 확인한다.
-    if start == 0
-        || start >= chars.len()
-        || !chars[start - 1].is_alphanumeric()
-        || !chars[start].is_alphanumeric()
-    {
-        return false;
-    }
-    project_stored_soft_wraps(para, frame, styles, dpi, supported_inline_picture).is_some()
+}
+
+pub(crate) fn can_rejoin_stored_word_tail_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    frame: &LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    supported_inline_picture: bool,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    Ok({
+        if para.line_segs.len() < 2 {
+            return Ok(false);
+        }
+        let chars: Vec<_> = storage.collect(para.text.chars())?;
+        let (start, _) = utf16_range_to_text_range(
+            &para.char_offsets,
+            para.line_seg_text_start(para.line_segs.len() - 1),
+            u32::MAX,
+            chars.len(),
+        );
+        // 어절을 자른 경계인지는 앞줄 끝과 마지막 줄 첫 글자로 판단한다.
+        // 같은 줄 뒤의 다른 어절·문장부호는 이 경계의 소속을 바꾸지 않는다.
+        // 실제 줄 수 감소는 그 뒤 내용까지 포함한 동일 프레임 조판으로 확인한다.
+        if start == 0
+            || start >= chars.len()
+            || !chars[start - 1].is_alphanumeric()
+            || !chars[start].is_alphanumeric()
+        {
+            return Ok(false);
+        }
+        project_stored_soft_wraps_with_storage(
+            para,
+            frame,
+            styles,
+            dpi,
+            supported_inline_picture,
+            storage,
+        )?
+        .is_some()
+    })
 }
 
 /// 같은 frame에서 자동 줄을 다시 구성한다. 줄 수 감소는 캐시 무효화 근거가 아니다.
@@ -270,7 +430,35 @@ pub(crate) fn project_stored_soft_wraps(
     dpi: f64,
     supported_inline_picture: bool,
 ) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
-    project_stored_rows(para, frame, styles, dpi, supported_inline_picture, false)
+    match project_stored_soft_wraps_with_storage(
+        para,
+        frame,
+        styles,
+        dpi,
+        supported_inline_picture,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn project_stored_soft_wraps_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    frame: &LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    supported_inline_picture: bool,
+    storage: &S,
+) -> Result<Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)>, S::Error> {
+    project_stored_rows_with_storage(
+        para,
+        frame,
+        styles,
+        dpi,
+        supported_inline_picture,
+        false,
+        storage,
+    )
 }
 
 fn project_stored_rows(
@@ -281,31 +469,60 @@ fn project_stored_rows(
     supported_inline_picture: bool,
     refresh_physical_cache: bool,
 ) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
-    if let Some(projected) = super::stored_marker_frames::project(para, frame, styles, dpi) {
-        return Some(projected);
+    match project_stored_rows_with_storage(
+        para,
+        frame,
+        styles,
+        dpi,
+        supported_inline_picture,
+        refresh_physical_cache,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    if para.line_segs.len() < 2
-        || (!para.controls.is_empty()
-            && !supported_inline_picture
-            && !(refresh_physical_cache
-                && crate::renderer::cell_paragraph_has_only_single_column_metadata(para)))
-        || para.text.contains('\n')
-        || para.stored_text_partition_is_dirty()
-        || (!refresh_physical_cache
-            && super::stored_row_fragments::crosses_physical_frame(para)
-            && !has_unmarked_final_word_rewind(para))
-        || frame.models_exclusions()
-        || para
-            .line_segs
-            .iter()
-            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
-    {
-        return None;
-    }
-    let last = para.line_segs.last()?;
-    let previous = &para.line_segs[para.line_segs.len() - 2];
-    if !refresh_physical_cache
-        && (last.is_first_line_of_page()
+}
+fn project_stored_rows_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    frame: &LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    supported_inline_picture: bool,
+    refresh_physical_cache: bool,
+    storage: &S,
+) -> Result<Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        if let Some(projected) = crate::storage::optional(
+            super::stored_marker_frames::project_with_storage(para, frame, styles, dpi, storage),
+            failure,
+        )? {
+            return Some(projected);
+        }
+        if para.line_segs.len() < 2
+            || (!para.controls.is_empty()
+                && !supported_inline_picture
+                && !(refresh_physical_cache
+                    && crate::renderer::cell_paragraph_has_only_text_metadata(para)))
+            || para.text.contains('\n')
+            || para.stored_text_partition_is_dirty()
+            || (!refresh_physical_cache
+                && super::stored_row_fragments::crosses_physical_frame(para)
+                && !crate::storage::optional(
+                    has_unmarked_final_word_rewind_with_storage(para, storage),
+                    failure,
+                )?)
+            || frame.models_exclusions()
+            || para
+                .line_segs
+                .iter()
+                .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        {
+            return None;
+        }
+        let last = para.line_segs.last()?;
+        let previous = &para.line_segs[para.line_segs.len() - 2];
+        if !refresh_physical_cache
+            && (last.is_first_line_of_page()
         || last.is_first_line_of_column()
         || last.vertical_pos == previous.vertical_pos
         // 같은 가로 상자의 저장 캐시 되감김은 명시적 쪽 경계와 구분한다.
@@ -314,68 +531,102 @@ fn project_stored_rows(
                 || last.column_start != previous.column_start
                 || last.segment_width <= 0
                 || last.segment_width != previous.segment_width)))
-    {
-        return None;
-    }
-    let count = para.text.chars().count();
-    let (last_start, _) = utf16_range_to_text_range(
-        &para.char_offsets,
-        para.line_seg_text_start(para.line_segs.len() - 1),
-        u32::MAX,
-        count,
-    );
-    // 빈 문단·마지막 빈 예약 행의 물리 점유를 자동 어절 줄로 바꾸지 않는다.
-    if last_start == 0
-        || last_start >= count
-        || !para
-            .text
-            .chars()
-            .skip(last_start)
-            .any(|ch| !ch.is_whitespace())
-    {
-        return None;
-    }
-    let mut probe = frame.clone();
-    // 채움은 새 줄을 만들지만 원본의 줄별 들여쓰기 기록도 소비한다. 저장 줄을
-    // 비워 입력의 근거까지 없애면 명시적으로 꺼진 들여쓰기가 다시 적용된다.
-    let rows = line_breaking::layout_paragraph_in_frame(para, &mut probe, styles, dpi)?;
-    if refresh_physical_cache {
-        let cached = super::compose_paragraph_in_context(para, styles);
-        let chars: Vec<_> = para.text.chars().collect();
-        let source_index = |position| {
-            utf16_range_to_text_range(&para.char_offsets, position, u32::MAX, chars.len()).0
-        };
-        let fresh_starts: Vec<_> = rows
-            .iter()
-            .map(|line| source_index(line.text_start))
-            .collect();
-        // 다른 프로그램으로 저장한 캐시는 어절 안뿐 아니라 어절 사이에서도
-        // 너무 일찍 끝날 수 있다. 다음 저장 줄의 실제 첫 글자가 새 채움의
-        // 앞줄에 들어가는지 확인한다. 후행 공백만 이동한 차이는 근거가 아니다.
-        // 문자 줄을 다시 발행하면 캐시의 쪽/단 플래그도 다시 사용하지 않는다.
-        // 명시적 본문 개행은 이 경로에 들어오기 전에 보존한다.
-        let cached_content_boundary_moves = (1..para.line_segs.len()).any(|index| {
-            let start = source_index(para.line_seg_text_start(index));
-            let next_ink = chars
-                .iter()
-                .enumerate()
-                .skip(start)
-                .find(|(_, ch)| !ch.is_whitespace())
-                .map(|(index, _)| index);
-            start > 0
-                && next_ink.is_some_and(|next| {
-                    fresh_starts.partition_point(|&fresh| fresh <= next) < index + 1
-                })
-                && !cached
-                    .lines
-                    .get(index - 1)
-                    .is_some_and(|line| line.has_line_break)
-        });
-        return cached_content_boundary_moves.then(|| (rows, probe.project_space_metrics()));
-    }
-    // 마지막 자동 어절의 가짜 프레임 원점은 줄 수가 같아도 복원한다.
-    // 일반 저장 줄은 같은 줄 수라는 이유만으로 다시 구성하지 않는다.
-    (rows.len() < para.line_segs.len()
-        || (rows.len() == para.line_segs.len() && has_unmarked_final_word_rewind(para)))
-    .then(|| (rows, probe.project_space_metrics()))
+        {
+            return None;
+        }
+        let count = para.text.chars().count();
+        let (last_start, _) = utf16_range_to_text_range(
+            &para.char_offsets,
+            para.line_seg_text_start(para.line_segs.len() - 1),
+            u32::MAX,
+            count,
+        );
+        // 빈 문단·마지막 빈 예약 행의 물리 점유를 자동 어절 줄로 바꾸지 않는다.
+        if last_start == 0
+            || last_start >= count
+            || !para
+                .text
+                .chars()
+                .skip(last_start)
+                .any(|ch| !ch.is_whitespace())
+        {
+            return None;
+        }
+        let mut probe =
+            crate::storage::optional(crate::storage::try_clone(frame, storage), failure)?;
+        // 채움은 새 줄을 만들지만 원본의 줄별 들여쓰기 기록도 소비한다. 저장 줄을
+        // 비워 입력의 근거까지 없애면 명시적으로 꺼진 들여쓰기가 다시 적용된다.
+        let rows = crate::storage::optional(
+            line_breaking::layout_paragraph_in_frame_with_storage(
+                para, &mut probe, styles, dpi, storage,
+            ),
+            failure,
+        )??;
+        if refresh_physical_cache {
+            let cached = crate::storage::optional(
+                super::compose_paragraph_in_context_with_storage(para, styles, storage),
+                failure,
+            )?;
+            let chars = crate::storage::optional(storage.collect(para.text.chars()), failure)?;
+            let source_index = |position| {
+                utf16_range_to_text_range(&para.char_offsets, position, u32::MAX, chars.len()).0
+            };
+            let fresh_starts = crate::storage::optional(
+                storage.collect(rows.iter().map(|line| source_index(line.text_start))),
+                failure,
+            )?;
+            // 다른 프로그램으로 저장한 캐시는 어절 안뿐 아니라 어절 사이에서도
+            // 너무 일찍 끝날 수 있다. 다음 저장 줄의 실제 첫 글자가 새 채움의
+            // 앞줄에 들어가는지 확인한다. 후행 공백만 이동한 차이는 근거가 아니다.
+            // 문자 줄을 다시 발행하면 캐시의 쪽/단 플래그도 다시 사용하지 않는다.
+            // 명시적 본문 개행은 이 경로에 들어오기 전에 보존한다.
+            let cached_content_boundary_moves = (1..para.line_segs.len()).any(|index| {
+                let start = source_index(para.line_seg_text_start(index));
+                let next_ink = chars
+                    .iter()
+                    .enumerate()
+                    .skip(start)
+                    .find(|(_, ch)| !ch.is_whitespace())
+                    .map(|(index, _)| index);
+                start > 0
+                    && next_ink.is_some_and(|next| {
+                        fresh_starts.partition_point(|&fresh| fresh <= next) < index + 1
+                    })
+                    && !cached
+                        .lines
+                        .get(index - 1)
+                        .is_some_and(|line| line.has_line_break)
+            });
+            return if cached_content_boundary_moves {
+                Some((
+                    rows,
+                    crate::storage::optional(
+                        probe.try_project_space_metrics_since(0, storage),
+                        failure,
+                    )?,
+                ))
+            } else {
+                None
+            };
+        }
+        // 마지막 자동 어절의 가짜 프레임 원점은 줄 수가 같아도 복원한다.
+        // 일반 저장 줄은 같은 줄 수라는 이유만으로 다시 구성하지 않는다.
+        if rows.len() < para.line_segs.len()
+            || (rows.len() == para.line_segs.len()
+                && crate::storage::optional(
+                    has_unmarked_final_word_rewind_with_storage(para, storage),
+                    failure,
+                )?)
+        {
+            Some((
+                rows,
+                crate::storage::optional(
+                    probe.try_project_space_metrics_since(0, storage),
+                    failure,
+                )?,
+            ))
+        } else {
+            None
+        }
+    })
 }

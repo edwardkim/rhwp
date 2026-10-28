@@ -263,10 +263,16 @@ impl CharacterMapper {
 /// This is what pdf.js, MuPDF, and PDFBox 3.x use as the last name-based step
 /// before falling back to CID-as-Unicode. Documented in
 /// `docs/releases/plans/v0.3.54/research-tounicode-fallback-chain.md`.
+#[cfg(test)]
 pub(crate) fn glyph_name_to_unicode(glyph_name: &str) -> Option<String> {
+    glyph_name_to_unicode_char(glyph_name).map(|c| c.to_string())
+}
+
+/// Allocation-free scalar form of the same glyph-name resolution contract.
+pub(crate) fn glyph_name_to_unicode_char(glyph_name: &str) -> Option<char> {
     // 1) AGL exact match — covers "bullet", "fi", "fl", "ffi", "ffl", "endash", etc.
     if let Some(&ch) = ADOBE_GLYPH_LIST.get(glyph_name) {
-        return Some(ch.to_string());
+        return Some(ch);
     }
 
     // Some font producers append `.altN` / `.sc` / `.001` style variants to the
@@ -277,7 +283,7 @@ pub(crate) fn glyph_name_to_unicode(glyph_name: &str) -> Option<String> {
         let base = &glyph_name[..dot_idx];
         if !base.is_empty() {
             if let Some(&ch) = ADOBE_GLYPH_LIST.get(base) {
-                return Some(ch.to_string());
+                return Some(ch);
             }
         }
     }
@@ -289,7 +295,7 @@ pub(crate) fn glyph_name_to_unicode(glyph_name: &str) -> Option<String> {
                 if let Some(c) = char::from_u32(cp) {
                     // Reject surrogates and control chars (unprintable as text).
                     if !c.is_control() {
-                        return Some(c.to_string());
+                        return Some(c);
                     }
                 }
             }
@@ -304,7 +310,7 @@ pub(crate) fn glyph_name_to_unicode(glyph_name: &str) -> Option<String> {
                 if (cp <= 0x10FFFF) && !(0xD800..=0xDFFF).contains(&cp) {
                     if let Some(c) = char::from_u32(cp) {
                         if !c.is_control() {
-                            return Some(c.to_string());
+                            return Some(c);
                         }
                     }
                 }

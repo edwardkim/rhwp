@@ -16,6 +16,8 @@ pub struct Composition {
     size_ratio: f64,
 }
 
+crate::storage::clone_fields!(Composition, {border, owner_style, characters, spread, size_ratio});
+
 pub(crate) struct Glyph {
     pub bbox: BoundingBox,
     pub run: TextRunNode,

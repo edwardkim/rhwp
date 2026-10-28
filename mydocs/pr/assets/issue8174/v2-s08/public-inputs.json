@@ -1,0 +1,27 @@
+[
+  {
+    "path": "pdf/issue8174/clip/batch-operator-control.pdf",
+    "bytes": 1740,
+    "sha256": "5eb73b707e3ef445177ae549c5610c134a682be58ffdc6eadd5270ff2ff3886b"
+  },
+  {
+    "path": "pdf/issue8174/clip/compound-rejected.pdf",
+    "bytes": 770,
+    "sha256": "9ca54aa301bc0b07584ea6e90c10004e39a83dd4f329fd3482f2ed4627bef1fc"
+  },
+  {
+    "path": "pdf/issue8174/clip/consecutive-moves.pdf",
+    "bytes": 2228,
+    "sha256": "c3b30118ad369a36a0420eaed4456c69856b85c77a7266417e16bc8973f187de"
+  },
+  {
+    "path": "pdf/issue8174/clip/curve-rejected.pdf",
+    "bytes": 774,
+    "sha256": "9ea69e8162d6b9bd94c2b6ceafcadc996f1b99813e2d2f4c2f40829ea9a7385c"
+  },
+  {
+    "path": "pdf/issue8174/clip/text-consecutive-moves.pdf",
+    "bytes": 33026,
+    "sha256": "649d9dafb74cf46af108c6fe3abc40478d4f0f10ac430b11aa9d937890145bf1"
+  }
+]

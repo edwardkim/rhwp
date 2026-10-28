@@ -1,116 +1,266 @@
-//! HWPX 직렬화 공용 헬퍼 — XML escape / 공통 이벤트 쓰기
-
-use std::io::Write;
-
+//! HWPX shared XML events. Counting and output use the same borrowed encoder.
+use super::SerializeError;
 use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::Writer;
+use std::io::Write;
 
-use super::SerializeError;
-
-/// `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` 선언을 쓴다.
-pub fn write_xml_decl<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
-    w.write_event(Event::Decl(BytesDecl::new(
-        "1.0",
-        Some("UTF-8"),
-        Some("yes"),
-    )))
-    .map_err(|e| SerializeError::XmlError(e.to_string()))?;
-    Ok(())
+pub(super) fn xml_error(error: impl std::fmt::Display) -> SerializeError {
+    SerializeError::XmlError(format!("HWPX XML: {error}"))
+}
+pub(super) fn xml_value<S: crate::storage::Storage>(
+    storage: &S,
+    value: impl std::fmt::Display,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    storage.display(&value).map_err(xml_error)
 }
 
-/// 속성 없는 시작 태그
+pub fn write_xml_decl<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
+    write_xml_decl_with_storage(w, &crate::storage::Unbounded)
+}
+pub(super) fn write_xml_decl_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    storage.bytes(0).map_err(xml_error)?;
+    let declaration = BytesDecl::from_start(BytesStart::from_content(
+        r#"xml version="1.0" encoding="UTF-8" standalone="yes""#,
+        3,
+    ));
+    w.write_event(Event::Decl(declaration)).map_err(xml_error)
+}
 pub fn start_tag<W: Write>(w: &mut Writer<W>, name: &str) -> Result<(), SerializeError> {
     w.write_event(Event::Start(BytesStart::new(name)))
-        .map_err(|e| SerializeError::XmlError(e.to_string()))?;
-    Ok(())
+        .map_err(xml_error)
 }
-
-/// 속성 있는 시작 태그
+pub(super) fn start_tag_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    name: &str,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    storage.bytes(0).map_err(xml_error)?;
+    start_tag(w, name)
+}
+pub fn end_tag<W: Write>(w: &mut Writer<W>, name: &str) -> Result<(), SerializeError> {
+    w.write_event(Event::End(BytesEnd::new(name)))
+        .map_err(xml_error)
+}
+pub(super) fn end_tag_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    name: &str,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    storage.bytes(0).map_err(xml_error)?;
+    end_tag(w, name)
+}
 pub fn start_tag_attrs<W: Write>(
     w: &mut Writer<W>,
     name: &str,
     attrs: &[(&str, &str)],
 ) -> Result<(), SerializeError> {
-    let mut el = BytesStart::new(name);
-    for (k, v) in attrs {
-        let value = filter_xml_1_0_chars(v);
-        el.push_attribute((*k, value.as_str()));
-    }
-    w.write_event(Event::Start(el))
-        .map_err(|e| SerializeError::XmlError(e.to_string()))?;
-    Ok(())
+    start_tag_attrs_with_storage(w, name, attrs, &crate::storage::Unbounded)
 }
-
-/// 종료 태그
-pub fn end_tag<W: Write>(w: &mut Writer<W>, name: &str) -> Result<(), SerializeError> {
-    w.write_event(Event::End(BytesEnd::new(name)))
-        .map_err(|e| SerializeError::XmlError(e.to_string()))?;
-    Ok(())
+pub(super) fn start_tag_attrs_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    name: &str,
+    attrs: &[(&str, &str)],
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let bytes = storage
+        .binary(&XmlPayload::Tag(name, attrs))
+        .map_err(xml_error)?;
+    let content = std::str::from_utf8(&bytes).expect("XML encoder preserves UTF-8");
+    w.write_event(Event::Start(BytesStart::from_content(content, name.len())))
+        .map_err(xml_error)
 }
-
-/// 자기 닫힘 태그 (`<name a="..."/>`)
 pub fn empty_tag<W: Write>(
     w: &mut Writer<W>,
     name: &str,
     attrs: &[(&str, &str)],
 ) -> Result<(), SerializeError> {
-    let mut el = BytesStart::new(name);
-    for (k, v) in attrs {
-        let value = filter_xml_1_0_chars(v);
-        el.push_attribute((*k, value.as_str()));
-    }
-    w.write_event(Event::Empty(el))
-        .map_err(|e| SerializeError::XmlError(e.to_string()))?;
-    Ok(())
+    empty_tag_with_storage(w, name, attrs, &crate::storage::Unbounded)
 }
-
-/// 텍스트 노드 (자동 이스케이프)
+pub(super) fn empty_tag_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    name: &str,
+    attrs: &[(&str, &str)],
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let bytes = storage
+        .binary(&XmlPayload::Tag(name, attrs))
+        .map_err(xml_error)?;
+    let content = std::str::from_utf8(&bytes).expect("XML encoder preserves UTF-8");
+    w.write_event(Event::Empty(BytesStart::from_content(content, name.len())))
+        .map_err(xml_error)
+}
 pub fn text<W: Write>(w: &mut Writer<W>, content: &str) -> Result<(), SerializeError> {
-    let content = filter_xml_1_0_chars(content);
-    w.write_event(Event::Text(BytesText::new(&content)))
-        .map_err(|e| SerializeError::XmlError(e.to_string()))?;
-    Ok(())
+    text_with_storage(w, content, &crate::storage::Unbounded)
 }
-
-/// XML 1.0이 허용하는 문자만 남긴다.
-///
-/// `quick-xml`의 event writer는 `&` 등의 마크업 문자는 이스케이프하지만 XML 1.0 문자
-/// 범위까지 검증하지 않는다. HWPX의 텍스트와 속성 모두 이 helper를 거쳐야 저장한 패키지가
-/// 불법 XML이 되지 않는다 (#3382).
+pub(super) fn text_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    content: &str,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let bytes = storage
+        .binary(&XmlPayload::Text(content, Escape::Text))
+        .map_err(xml_error)?;
+    let content = std::str::from_utf8(&bytes).expect("XML encoder preserves UTF-8");
+    w.write_event(Event::Text(BytesText::from_escaped(content)))
+        .map_err(xml_error)
+}
+fn valid_xml_char(c: char) -> bool {
+    matches!(c,'\u{09}'|'\u{0A}'|'\u{0D}'|'\u{20}'..='\u{D7FF}'|'\u{E000}'..='\u{FFFD}'|'\u{10000}'..='\u{10FFFF}')
+}
 pub fn filter_xml_1_0_chars(s: &str) -> String {
-    s.chars()
-        .filter(|c| {
-            matches!(
-                c,
-                '\u{09}'
-                    | '\u{0A}'
-                    | '\u{0D}'
-                    | '\u{20}'..='\u{D7FF}'
-                    | '\u{E000}'..='\u{FFFD}'
-                    | '\u{10000}'..='\u{10FFFF}'
-            )
-        })
-        .collect()
+    s.chars().filter(|c| valid_xml_char(*c)).collect()
 }
-
-/// XML 속성·텍스트 이스케이프 (&, <, >, ", ')
-///
-/// XML 1.0 이 문서에 담을 수 없는 문자(제어문자 등)는 제거한다 — 남겨 두면 저장된
-/// HWPX 안의 XML 이 불법이 되어 한컴·뷰어가 파일 자체를 열지 못한다 (#3382 계열).
 pub fn xml_escape(s: &str) -> String {
-    let filtered = filter_xml_1_0_chars(s);
-    let mut out = String::with_capacity(filtered.len());
-    for c in filtered.chars() {
-        match c {
-            '&' => out.push_str("&amp;"),
-            '<' => out.push_str("&lt;"),
-            '>' => out.push_str("&gt;"),
-            '"' => out.push_str("&quot;"),
-            '\'' => out.push_str("&apos;"),
-            _ => out.push(c),
+    xml_escape_with_storage(s, &crate::storage::Unbounded).expect("unbounded XML escape")
+}
+pub(super) fn xml_escape_with_storage<S: crate::storage::Storage>(
+    s: &str,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let bytes = storage
+        .binary(&XmlPayload::Text(s, Escape::Literal))
+        .map_err(xml_error)?;
+    Ok(String::from_utf8(bytes).expect("XML encoder preserves UTF-8"))
+}
+#[derive(Clone, Copy, PartialEq)]
+enum Escape {
+    Literal,
+    Text,
+    Attribute,
+}
+enum XmlPayload<'a> {
+    Tag(&'a str, &'a [(&'a str, &'a str)]),
+    Text(&'a str, Escape),
+}
+impl crate::serializer::byte_writer::BinaryProducer for XmlPayload<'_> {
+    fn write<W: Write>(
+        &self,
+        w: &mut crate::serializer::byte_writer::ByteWriter<W>,
+    ) -> std::io::Result<()> {
+        match self {
+            Self::Tag(name, attrs) => {
+                w.write_bytes(name.as_bytes())?;
+                for (key, value) in *attrs {
+                    w.write_bytes(b" ")?;
+                    w.write_bytes(key.as_bytes())?;
+                    w.write_bytes(b"=\"")?;
+                    write_escaped(w, value, Escape::Attribute)?;
+                    w.write_bytes(b"\"")?;
+                }
+            }
+            Self::Text(value, mode) => write_escaped(w, value, *mode)?,
+        }
+        Ok(())
+    }
+}
+fn write_escaped<W: Write>(
+    w: &mut crate::serializer::byte_writer::ByteWriter<W>,
+    s: &str,
+    mode: Escape,
+) -> std::io::Result<()> {
+    let mut start = 0;
+    for (at, c) in s.char_indices() {
+        let replacement = match c {
+            '\t' if mode == Escape::Attribute => Some("&#9;"),
+            '\n' if mode == Escape::Attribute => Some("&#10;"),
+            '\r' if mode != Escape::Literal => Some("&#13;"),
+            '&' => Some("&amp;"),
+            '<' => Some("&lt;"),
+            '>' => Some("&gt;"),
+            '"' => Some("&quot;"),
+            '\'' => Some("&apos;"),
+            _ if !valid_xml_char(c) => Some(""),
+            _ => None,
+        };
+        if let Some(value) = replacement {
+            w.write_bytes(&s.as_bytes()[start..at])?;
+            w.write_bytes(value.as_bytes())?;
+            start = at + c.len_utf8();
         }
     }
-    out
+    w.write_bytes(&s.as_bytes()[start..])
+}
+
+/// Literal replacement shares the same borrowed spans with the fallible display sink.
+/// `match_indices` also preserves the standard empty-pattern UTF-8 boundary behavior.
+pub(super) fn xml_replacen<S: crate::storage::Storage>(
+    input: impl AsRef<str>,
+    needle: &str,
+    replacement: &str,
+    limit: usize,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    struct Replacement<'a> {
+        input: &'a str,
+        needle: &'a str,
+        replacement: &'a str,
+        limit: usize,
+    }
+    impl std::fmt::Display for Replacement<'_> {
+        fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut start = 0;
+            for (at, matched) in self.input.match_indices(self.needle).take(self.limit) {
+                out.write_str(&self.input[start..at])?;
+                out.write_str(self.replacement)?;
+                start = at + matched.len();
+            }
+            out.write_str(&self.input[start..])
+        }
+    }
+    xml_value(
+        storage,
+        Replacement {
+            input: input.as_ref(),
+            needle,
+            replacement,
+            limit,
+        },
+    )
+}
+pub(super) fn xml_insert<S: crate::storage::Storage>(
+    input: &mut String,
+    at: usize,
+    value: &str,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    storage
+        .reserve_string(input, value.len())
+        .map_err(xml_error)?;
+    input.insert_str(at, value);
+    Ok(())
 }
 
 #[cfg(test)]

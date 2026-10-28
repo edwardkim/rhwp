@@ -142,6 +142,20 @@ pub struct OutsideCellBorderPaint {
     fingerprint: [u8; 32],
 }
 
+// Feed the same canonical JSON bytes into the digest without an intermediate Vec.
+fn hash_json(value: &mut Sha256, source: &impl Serialize) {
+    struct DigestWriter<'a>(&'a mut Sha256);
+    impl std::io::Write for DigestWriter<'_> {
+        fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+            self.0.update(bytes);
+            Ok(bytes.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    serde_json::to_writer(DigestWriter(value), source).expect("serializable paint fingerprint");
+}
 fn table_fingerprint(t: &super::table::Table) -> [u8; 32] {
     let a = &t.common;
     let mut h = Sha256::new();
@@ -154,8 +168,9 @@ fn table_fingerprint(t: &super::table::Table) -> [u8; 32] {
     ] {
         h.update(v.to_le_bytes());
     }
-    h.update(
-        serde_json::to_vec(&(
+    hash_json(
+        &mut h,
+        &(
             a.horz_rel_to,
             a.vert_rel_to,
             a.horz_align,
@@ -163,11 +178,10 @@ fn table_fingerprint(t: &super::table::Table) -> [u8; 32] {
             a.treat_as_char,
             a.flow_with_text,
             a.text_wrap,
-        ))
-        .unwrap(),
+        ),
     );
     for c in &t.cells {
-        h.update(serde_json::to_vec(&Owner::new(a.instance_id, c)).unwrap());
+        hash_json(&mut h, &Owner::new(a.instance_id, c));
     }
     h.finalize().into()
 }
@@ -239,20 +253,54 @@ impl PaintMut<'_> {
 pub(crate) struct Resources<'a> {
     contents: &'a [BinDataContent],
     hashes: BTreeMap<u16, Option<([u8; 32], (u32, u32))>>,
+    reserve: Option<&'a dyn Fn(usize) -> Option<()>>,
 }
 impl<'a> Resources<'a> {
     pub(crate) fn new(contents: &'a [BinDataContent]) -> Self {
         Self {
             contents,
             hashes: BTreeMap::new(),
+            reserve: None,
         }
     }
+
+    pub(crate) fn with_reservation(
+        contents: &'a [BinDataContent],
+        reserve: &'a dyn Fn(usize) -> Option<()>,
+    ) -> Self {
+        Self {
+            reserve: Some(reserve),
+            ..Self::new(contents)
+        }
+    }
+
     fn image(&mut self, id: u16) -> Option<([u8; 32], (u32, u32))> {
+        if !self.hashes.contains_key(&id) {
+            if let Some(reserve) = self.reserve {
+                reserve(
+                    std::mem::size_of::<(u16, Option<([u8; 32], (u32, u32))>)>()
+                        + 4 * std::mem::size_of::<usize>(),
+                )?;
+            }
+        }
         *self.hashes.entry(id).or_insert_with(|| {
             let i = super::bin_data::content_index(self.contents, id)?;
-            let bytes = self.contents[i]
-                .data
-                .load_limited(super::bin_data::MAX_BIN_DATA_BYTES)?;
+            let bytes = match &self.contents[i].data {
+                super::bin_data::BinDataBytes::Loaded(bytes) => {
+                    std::borrow::Cow::Borrowed(bytes.as_slice())
+                }
+                other => {
+                    if let Some(reserve) = self.reserve {
+                        reserve(super::bin_data::MAX_BIN_DATA_BYTES)?;
+                    }
+                    std::borrow::Cow::Owned(
+                        other.load_limited(super::bin_data::MAX_BIN_DATA_BYTES)?,
+                    )
+                }
+            };
+            if bytes.len() > super::bin_data::MAX_BIN_DATA_BYTES {
+                return None;
+            }
             if bytes.get(..16)? != b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR" {
                 return None;
             }
@@ -584,23 +632,23 @@ fn fingerprint(
 }
 
 // SectionDef controls mirror the canonical master list; do not visit both copies.
-fn walk(
+fn walk<E>(
     ps: &[Paragraph],
     owner: Option<Owner>,
-    f: &mut impl FnMut(&CommonObjAttr, Option<Owner>, Option<PaintRef<'_>>),
+    f: &mut impl FnMut(&CommonObjAttr, Option<Owner>, Option<PaintRef<'_>>) -> Result<(), E>,
     depth: usize,
-) {
+) -> Result<(), E> {
     if depth > 64 {
-        return;
+        return Ok(());
     }
-    fn shape(
+    fn shape<E>(
         s: &ShapeObject,
         owner: Option<Owner>,
-        f: &mut impl FnMut(&CommonObjAttr, Option<Owner>, Option<PaintRef<'_>>),
+        f: &mut impl FnMut(&CommonObjAttr, Option<Owner>, Option<PaintRef<'_>>) -> Result<(), E>,
         depth: usize,
-    ) {
+    ) -> Result<(), E> {
         if depth > 64 {
-            return;
+            return Ok(());
         }
         f(
             s.common(),
@@ -610,40 +658,42 @@ fn walk(
             } else {
                 None
             },
-        );
+        )?;
         if let Some(tb) = s.drawing().and_then(|d| d.text_box.as_ref()) {
-            walk(&tb.paragraphs, None, f, depth + 1);
+            walk(&tb.paragraphs, None, f, depth + 1)?;
         }
         if let ShapeObject::Group(g) = s {
             for c in &g.children {
-                shape(c, None, f, depth + 1);
+                shape(c, None, f, depth + 1)?;
             }
         }
+        Ok(())
     }
     for p in ps {
         for c in &p.controls {
             match c {
                 Control::Table(t) => {
-                    f(&t.common, None, None);
+                    f(&t.common, None, None)?;
                     for cell in &t.cells {
                         walk(
                             &cell.paragraphs,
                             Some(Owner::new(t.common.instance_id, cell)),
                             f,
                             depth + 1,
-                        );
+                        )?;
                     }
                 }
-                Control::Shape(s) => shape(s, owner, f, depth + 1),
-                Control::Picture(p) => f(&p.common, owner, Some(PaintRef::Picture(p))),
-                Control::Header(h) => walk(&h.paragraphs, None, f, depth + 1),
-                Control::Footer(h) => walk(&h.paragraphs, None, f, depth + 1),
-                Control::Footnote(n) => walk(&n.paragraphs, None, f, depth + 1),
-                Control::Endnote(n) => walk(&n.paragraphs, None, f, depth + 1),
+                Control::Shape(s) => shape(s, owner, f, depth + 1)?,
+                Control::Picture(p) => f(&p.common, owner, Some(PaintRef::Picture(p)))?,
+                Control::Header(h) => walk(&h.paragraphs, None, f, depth + 1)?,
+                Control::Footer(h) => walk(&h.paragraphs, None, f, depth + 1)?,
+                Control::Footnote(n) => walk(&n.paragraphs, None, f, depth + 1)?,
+                Control::Endnote(n) => walk(&n.paragraphs, None, f, depth + 1)?,
                 _ => {}
             }
         }
     }
+    Ok(())
 }
 fn walk_mut(
     ps: &mut [Paragraph],
@@ -696,12 +746,26 @@ fn walk_mut(
     }
 }
 fn each(doc: &Document, f: &mut impl FnMut(&CommonObjAttr, Option<Owner>, Option<PaintRef<'_>>)) {
+    let result: Result<(), std::convert::Infallible> = try_each(doc, &mut |a, owner, rect| {
+        f(a, owner, rect);
+        Ok(())
+    });
+    match result {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
+}
+fn try_each<E>(
+    doc: &Document,
+    f: &mut impl FnMut(&CommonObjAttr, Option<Owner>, Option<PaintRef<'_>>) -> Result<(), E>,
+) -> Result<(), E> {
     for s in &doc.sections {
-        walk(&s.paragraphs, None, f, 0);
+        walk(&s.paragraphs, None, f, 0)?;
         for m in &s.section_def.master_pages {
-            walk(&m.paragraphs, None, f, 0);
+            walk(&m.paragraphs, None, f, 0)?;
         }
     }
+    Ok(())
 }
 
 struct Record {
@@ -833,11 +897,34 @@ impl Record {
 }
 
 pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
+    encode_with_storage(doc, &crate::storage::Unbounded)
+}
+pub(crate) fn encode_with_storage<S: crate::storage::Storage>(
+    doc: &Document,
+    storage: &S,
+) -> Result<Option<Vec<u8>>, String>
+where
+    S::Error: std::fmt::Display,
+{
     let mut counts = BTreeMap::<u32, usize>::new();
     let mut records = Vec::new();
     let mut over_budget = false;
-    let mut resources = Resources::new(&doc.bin_data_content);
-    each(doc, &mut |a, owner, rect| {
+    let failure = std::cell::RefCell::new(None);
+    let reserve = |count| match storage.bytes(count) {
+        Ok(()) => Some(()),
+        Err(error) => {
+            *failure.borrow_mut() = Some(error.to_string());
+            None
+        }
+    };
+    let mut resources = Resources::with_reservation(&doc.bin_data_content, &reserve);
+    try_each(doc, &mut |a, owner, rect| {
+        storage.bytes(0).map_err(|e| e.to_string())?;
+        if !counts.contains_key(&a.instance_id) {
+            storage
+                .tree_entry::<u32, usize>()
+                .map_err(|e| e.to_string())?;
+        }
         *counts.entry(a.instance_id).or_default() += 1;
         if let (Some(owner), Some(rect)) = (owner, rect) {
             let border = a.cell_border_paint.and_then(|paint| {
@@ -852,7 +939,7 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
             if border.is_some() || frame.is_some() {
                 if records.len() == MAX_RECORDS {
                     over_budget = true;
-                    return;
+                    return Ok(());
                 }
                 let (paint, hash, frame_only) = if let Some((paint, hash)) = border {
                     (paint, hash, false)
@@ -868,16 +955,21 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
                         true,
                     )
                 };
-                records.push(Record {
-                    id: a.instance_id,
-                    owner,
-                    paint,
-                    fingerprint: hash,
-                    outside: None,
-                    raster: rect.raster(),
-                    frame: frame == Some(hash),
-                    frame_only,
-                });
+                storage
+                    .push(
+                        &mut records,
+                        Record {
+                            id: a.instance_id,
+                            owner,
+                            paint,
+                            fingerprint: hash,
+                            outside: None,
+                            raster: rect.raster(),
+                            frame: frame == Some(hash),
+                            frame_only,
+                        },
+                    )
+                    .map_err(|e| e.to_string())?;
             }
         }
         if let (Some(tag), None, Some(rect)) = (a.outside_cell_border_paint, owner, rect) {
@@ -895,21 +987,30 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
             if table.is_some_and(|t| outside_owner(rect, t, &mut resources).is_some()) {
                 if records.len() == MAX_RECORDS {
                     over_budget = true;
-                    return;
+                    return Ok(());
                 }
-                records.push(Record {
-                    id: a.instance_id,
-                    owner: tag.owner,
-                    paint: tag.paint,
-                    fingerprint: tag.fingerprint,
-                    outside: Some(tag.table_fingerprint),
-                    raster: rect.raster(),
-                    frame: false,
-                    frame_only: false,
-                });
+                storage
+                    .push(
+                        &mut records,
+                        Record {
+                            id: a.instance_id,
+                            owner: tag.owner,
+                            paint: tag.paint,
+                            fingerprint: tag.fingerprint,
+                            outside: Some(tag.table_fingerprint),
+                            raster: rect.raster(),
+                            frame: false,
+                            frame_only: false,
+                        },
+                    )
+                    .map_err(|e| e.to_string())?;
             }
         }
-    });
+        if let Some(error) = failure.borrow_mut().take() {
+            return Err(error);
+        }
+        Ok(())
+    })?;
     if records.is_empty() {
         return Ok(None);
     }
@@ -933,7 +1034,7 @@ pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
     {
         return Err("ambiguous cell border paint ownership".into());
     }
-    let mut bytes = Vec::with_capacity(size);
+    let mut bytes = storage.vec(size).map_err(|e| e.to_string())?;
     let compound = cell_pens || records.iter().any(|r| r.paint.sides != 0);
     bytes.extend(if frames {
         MAGIC_CELL_FRAME
@@ -1079,12 +1180,20 @@ pub fn decode(doc: &mut Document, bytes: &[u8]) {
     }
 }
 pub fn native_editing_loss() -> crate::serializer::content_loss::ContentLoss {
+    match native_editing_loss_with_storage(&crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn native_editing_loss_with_storage<S: crate::storage::Storage>(
+    storage: &S,
+) -> Result<crate::serializer::content_loss::ContentLoss, S::Error> {
     use crate::serializer::content_loss::*;
-    ContentLoss {
+    Ok(ContentLoss {
         code: ContentLossCode::MetadataReduced,
         subject: ContentLossSubject::Control,
-        path: "셀 테두리 그림 소유: rhwp 왕복 보존, 한컴 편집 소유 미지원".into(),
+        path: storage.string("셀 테두리 그림 소유: rhwp 왕복 보존, 한컴 편집 소유 미지원")?,
         reason: ContentLossReason::UnsupportedByOutputFormat,
         resource_id: None,
-    }
+    })
 }

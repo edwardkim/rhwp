@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/agent_knowledge_map.md
-last_verified: 2026-10-23
+last_verified: 2026-10-24
 ---
 
 # 에이전트 지식 지도 — rhwp 참조 문서의 단일 진입점
@@ -324,7 +324,7 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 `edit set-cell` 은 `oldText` 때문에 `untrustedContent:true`,
 `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 342개 필드
+### 2-2. 전수 사전 — 344개 필드
 
 `capabilities` 의 `recordFields` 고유 **334개**와 그 밖의 실측·참조 필드를 합친
 342개다. `등장 명령` 은 자기서술
@@ -513,6 +513,8 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 | `outputFormat` | string | 산출 형식(`hwp5`·`hwpx`·`csv`) — 입력 형식 보존 규약의 결과 | `run`·`table-to-csv`·`csv-to-table`·`edit` |
 | `bytes` | number | 산출물 크기 | `export-pdf`·`export-hwpx`·`export-hml`·`export-doclang`·`convert`·`build-from-ingest`·`thumbnail` |
 | `diagnostics` | object | PDF 가져오기 진단. 원본 쪽·좌표 대응(`pages`)은 문서 파생 값이며 경고·처리 정책과 구분한다. `parserAllocationBoundsProven:false`는 전체 할당 경계 미입증을 뜻한다 | `import-pdf` |
+| `resourceProfile` | string | 선택한 자원 프로필(`standard`·`constrained`). 생략 시 `standard`이며 JSON 파일의 개별 제한은 프로필 한도 이하로만 적용한다 | `import-pdf` |
+| `execution` | object | Native worker의 적용 한도·실측 시간·관측 RSS 및 OS별 보호 적용 여부. `filesystemNetworkSandbox:false`이며 프로세스 트리 전체의 RSS 상한을 보장하지 않는다. [자원 정책](pdf_resource_policies.md)을 따른다 | `import-pdf` |
 | `changedPages` | number[]\|null | **재조판 후 0 기준으로 바뀐 쪽.** `null` = 확정 불가(전체를 봐야 한다). dry-run 은 항상 `null` | `edit` 3종·`csv-to-table`·`run` |
 | `verify` | object\|null | `{identical,diffCount}` 자기검증 결과. `--verify` 를 주지 않으면 **`null`** (실측) | `run`·`export-hwpx`·`csv-to-table`·`convert`·`edit` |
 | `verifyPages` | object\|null | 쪽 수 대조 결과. `--verify-pages` 없으면 `null` | `export-hwpx`·`convert` |

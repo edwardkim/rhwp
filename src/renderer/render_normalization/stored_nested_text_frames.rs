@@ -61,9 +61,31 @@ fn prove(
     host_index: usize,
     child: &Table,
 ) -> Option<StoredNestedTextFrames> {
-    let host = parent.paragraphs.get(host_index)?;
-    let successor = parent.paragraphs.get(host_index + 1)?;
-    if owner.page_break != TablePageBreak::RowBreak
+    match prove_with_storage(
+        document,
+        owner,
+        parent,
+        host_index,
+        child,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn prove_with_storage<S: crate::storage::Storage>(
+    document: &Document,
+    owner: &Table,
+    parent: &Cell,
+    host_index: usize,
+    child: &Table,
+    storage: &S,
+) -> Result<Option<StoredNestedTextFrames>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        let host = parent.paragraphs.get(host_index)?;
+        let successor = parent.paragraphs.get(host_index + 1)?;
+        if owner.page_break != TablePageBreak::RowBreak
         || owner.common.treat_as_char
         || parent.dirty_flag
         || host.stored_text_partition_is_dirty()
@@ -91,160 +113,173 @@ fn prove(
         || child.common.height > i32::MAX as u32
         || child.outer_margin_top < 0
         || child.outer_margin_bottom < 0
-    {
-        return None;
-    }
-    let cell = &child.cells[0];
-    if cell.dirty_flag
-        || cell.row_span != 1
-        || cell.col_span != 1
-        || cell.height <= child.common.height
-        || cell.paragraphs.iter().any(|paragraph| {
-            !original(paragraph)
-                || !paragraph.controls.is_empty()
-                || paragraph.text.trim().is_empty()
-        })
-    {
-        return None;
-    }
-    let spacing = |index: usize| {
-        let paragraph = cell.paragraphs.get(index)?;
-        let shape = document
-            .doc_info
-            .para_shapes
-            .get(usize::from(paragraph.para_shape_id))?;
-        let physical = |raw| {
-            crate::renderer::style_resolver::paragraph_margin_hwpunit(raw, &document.doc_info)
-        };
-        Some((
-            physical(shape.spacing_before).round() as i32,
-            physical(shape.spacing_after).round() as i32,
-        ))
-    };
-    let lines: Vec<_> = cell
-        .paragraphs
-        .iter()
-        .enumerate()
-        .flat_map(|(pi, paragraph)| {
-            paragraph
-                .line_segs
-                .iter()
-                .enumerate()
-                .map(move |(li, line)| (pi, li, line))
-        })
-        .collect();
-    let first = lines.first()?;
-    if first.2.vertical_pos != spacing(first.0)?.0 {
-        return None;
-    }
-    let mut restart = None;
-    for (index, pair) in lines.windows(2).enumerate() {
-        let (pi, _, previous) = pair[0];
-        let (next_pi, next_li, next) = pair[1];
-        if next.vertical_pos < previous.vertical_pos {
-            if restart.is_some()
-                || next_li != 0
-                || pi == next_pi
-                || next.vertical_pos != spacing(next_pi)?.0
-            {
-                return None;
-            }
-            restart = Some(index + 1);
-        } else {
-            let advance = i64::from(previous.line_height)
-                + i64::from(previous.line_spacing)
-                + if pi == next_pi {
-                    0
-                } else {
-                    i64::from(spacing(pi)?.1) + i64::from(spacing(next_pi)?.0)
-                };
-            if i64::from(next.vertical_pos) - i64::from(previous.vertical_pos) != advance {
-                return None;
-            }
+        {
+            return None;
         }
-    }
-    let restart = restart?;
-    let padding = cell.effective_padding(&child.padding);
-    let pad_top = i32::from(padding.top);
-    let pad_bottom = i32::from(padding.bottom);
-    if pad_top < 0 || pad_bottom < 0 {
-        return None;
-    }
-    let opening_ink_end = lines[restart - 1]
-        .2
-        .vertical_pos
-        .checked_add(lines[restart - 1].2.line_height)?
-        .checked_add(pad_top)?
-        .checked_add(pad_bottom)?;
-    let opening = i32::try_from(child.common.height).ok()?;
-    if opening < opening_ink_end {
-        return None;
-    }
-    let last = lines.last()?.2;
-    let tail = last
-        .vertical_pos
-        .checked_add(last.line_height)?
-        .checked_add(pad_top)?
-        .checked_add(pad_bottom)?;
-    let outer_top = i32::from(child.outer_margin_top);
-    let outer_bottom = i32::from(child.outer_margin_bottom);
-    // 부모 뒤 줄의 새 원점이 자식 마지막 상자와 사방 여백을 정확히 닫는다.
-    // 작은 로컬 되감김이나 선언 높이만으로 쪽 경계를 승격하지 않는다.
-    if successor.line_segs[0].vertical_pos
-        != tail.checked_add(outer_top)?.checked_add(outer_bottom)?
-        || successor.line_segs[0].vertical_pos >= host.line_segs[0].vertical_pos
-    {
-        return None;
-    }
-    let frames = vec![
-        StoredTextFrame {
-            start: 0,
-            end: restart,
-            body_height_hu: opening,
-        },
-        StoredTextFrame {
-            start: restart,
-            end: lines.len(),
-            body_height_hu: tail,
-        },
-    ];
-    for frame in &frames {
-        frame
-            .body_height_hu
-            .checked_add(outer_top)?
-            .checked_add(outer_bottom)?;
-    }
-    let mut units = Vec::with_capacity(lines.len());
-    for frame in &frames {
-        for index in frame.start..frame.end {
-            let (paragraph, line, source) = lines[index];
-            let end = index + 1 == frame.end;
-            let mut height = if end {
-                source.line_height
-            } else {
-                lines[index + 1].2.vertical_pos - source.vertical_pos
+        let cell = &child.cells[0];
+        if cell.dirty_flag
+            || cell.row_span != 1
+            || cell.col_span != 1
+            || cell.height <= child.common.height
+            || cell.paragraphs.iter().any(|paragraph| {
+                !original(paragraph)
+                    || !paragraph.controls.is_empty()
+                    || paragraph.text.trim().is_empty()
+            })
+        {
+            return None;
+        }
+        let spacing = |index: usize| {
+            let paragraph = cell.paragraphs.get(index)?;
+            let shape = document
+                .doc_info
+                .para_shapes
+                .get(usize::from(paragraph.para_shape_id))?;
+            let physical = |raw| {
+                crate::renderer::style_resolver::paragraph_margin_hwpunit(raw, &document.doc_info)
             };
-            if index == frame.start {
-                height += source.vertical_pos + pad_top + outer_top;
-            }
-            if end {
-                height += pad_bottom + outer_bottom;
-                if frame.start == 0 {
-                    height += opening - opening_ink_end;
+            Some((
+                physical(shape.spacing_before).round() as i32,
+                physical(shape.spacing_after).round() as i32,
+            ))
+        };
+        let lines: Vec<_> = crate::storage::optional(
+            storage.collect(
+                cell.paragraphs
+                    .iter()
+                    .enumerate()
+                    .flat_map(|(pi, paragraph)| {
+                        paragraph
+                            .line_segs
+                            .iter()
+                            .enumerate()
+                            .map(move |(li, line)| (pi, li, line))
+                    }),
+            ),
+            failure,
+        )?;
+        let first = lines.first()?;
+        if first.2.vertical_pos != spacing(first.0)?.0 {
+            return None;
+        }
+        let mut restart = None;
+        for (index, pair) in lines.windows(2).enumerate() {
+            let (pi, _, previous) = pair[0];
+            let (next_pi, next_li, next) = pair[1];
+            if next.vertical_pos < previous.vertical_pos {
+                if restart.is_some()
+                    || next_li != 0
+                    || pi == next_pi
+                    || next.vertical_pos != spacing(next_pi)?.0
+                {
+                    return None;
+                }
+                restart = Some(index + 1);
+            } else {
+                let advance = i64::from(previous.line_height)
+                    + i64::from(previous.line_spacing)
+                    + if pi == next_pi {
+                        0
+                    } else {
+                        i64::from(spacing(pi)?.1) + i64::from(spacing(next_pi)?.0)
+                    };
+                if i64::from(next.vertical_pos) - i64::from(previous.vertical_pos) != advance {
+                    return None;
                 }
             }
-            units.push(StoredTextFrameUnit {
-                paragraph,
-                line,
-                physical_height_hu: height,
-                starts_frame: index == frame.start,
-            });
         }
-    }
-    Some(StoredNestedTextFrames {
-        units,
-        frames,
-        parent_opening_owns_bottom_padding: false,
+        let restart = restart?;
+        let padding = cell.effective_padding(&child.padding);
+        let pad_top = i32::from(padding.top);
+        let pad_bottom = i32::from(padding.bottom);
+        if pad_top < 0 || pad_bottom < 0 {
+            return None;
+        }
+        let opening_ink_end = lines[restart - 1]
+            .2
+            .vertical_pos
+            .checked_add(lines[restart - 1].2.line_height)?
+            .checked_add(pad_top)?
+            .checked_add(pad_bottom)?;
+        let opening = i32::try_from(child.common.height).ok()?;
+        if opening < opening_ink_end {
+            return None;
+        }
+        let last = lines.last()?.2;
+        let tail = last
+            .vertical_pos
+            .checked_add(last.line_height)?
+            .checked_add(pad_top)?
+            .checked_add(pad_bottom)?;
+        let outer_top = i32::from(child.outer_margin_top);
+        let outer_bottom = i32::from(child.outer_margin_bottom);
+        // 부모 뒤 줄의 새 원점이 자식 마지막 상자와 사방 여백을 정확히 닫는다.
+        // 작은 로컬 되감김이나 선언 높이만으로 쪽 경계를 승격하지 않는다.
+        if successor.line_segs[0].vertical_pos
+            != tail.checked_add(outer_top)?.checked_add(outer_bottom)?
+            || successor.line_segs[0].vertical_pos >= host.line_segs[0].vertical_pos
+        {
+            return None;
+        }
+        let frames = crate::storage::optional(
+            storage.collect([
+                StoredTextFrame {
+                    start: 0,
+                    end: restart,
+                    body_height_hu: opening,
+                },
+                StoredTextFrame {
+                    start: restart,
+                    end: lines.len(),
+                    body_height_hu: tail,
+                },
+            ]),
+            failure,
+        )?;
+        for frame in &frames {
+            frame
+                .body_height_hu
+                .checked_add(outer_top)?
+                .checked_add(outer_bottom)?;
+        }
+        let mut units = crate::storage::optional(storage.vec(lines.len()), failure)?;
+        for frame in &frames {
+            for index in frame.start..frame.end {
+                let (paragraph, line, source) = lines[index];
+                let end = index + 1 == frame.end;
+                let mut height = if end {
+                    source.line_height
+                } else {
+                    lines[index + 1].2.vertical_pos - source.vertical_pos
+                };
+                if index == frame.start {
+                    height += source.vertical_pos + pad_top + outer_top;
+                }
+                if end {
+                    height += pad_bottom + outer_bottom;
+                    if frame.start == 0 {
+                        height += opening - opening_ink_end;
+                    }
+                }
+                crate::storage::optional(
+                    storage.push(
+                        &mut units,
+                        StoredTextFrameUnit {
+                            paragraph,
+                            line,
+                            physical_height_hu: height,
+                            starts_frame: index == frame.start,
+                        },
+                    ),
+                    failure,
+                )?;
+            }
+        }
+        Some(StoredNestedTextFrames {
+            units,
+            frames,
+            parent_opening_owns_bottom_padding: false,
+        })
     })
 }
 
@@ -255,116 +290,164 @@ fn prove_parent_closed(
     parent: &Cell,
     child: &Table,
 ) -> Option<StoredNestedTextFrames> {
-    let plan = crate::renderer::float_placement::stored_nested_row_frames(owner, parent, child)?;
-    let cell = child.cells.first()?;
-    let padding = cell.effective_padding(&child.padding);
-    let top_pad = i32::from(padding.top);
-    let bottom_pad = i32::from(padding.bottom);
-    let frames = vec![
-        StoredTextFrame {
-            start: 0,
-            end: plan.reset,
-            body_height_hu: plan.opening_height_hu,
-        },
-        StoredTextFrame {
-            start: plan.reset,
-            end: plan.lines.len(),
-            body_height_hu: plan.closing_height_hu,
-        },
-    ];
-    let mut units = Vec::with_capacity(plan.lines.len());
-    for frame in &frames {
-        for index in frame.start..frame.end {
-            let (paragraph, line, top) = plan.lines[index];
-            let starts = index == frame.start;
-            let ends = index + 1 == frame.end;
-            let end = if ends {
-                frame.body_height_hu - top_pad - bottom_pad
-            } else {
-                plan.lines[index + 1].2
-            };
-            let body = end.checked_sub(top)?;
-            if body <= 0 {
-                return None;
+    match prove_parent_closed_with_storage(owner, parent, child, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn prove_parent_closed_with_storage<S: crate::storage::Storage>(
+    owner: &Table,
+    parent: &Cell,
+    child: &Table,
+    storage: &S,
+) -> Result<Option<StoredNestedTextFrames>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        let plan = crate::storage::optional(
+            crate::renderer::float_placement::stored_nested_row_frames_with_storage(
+                owner, parent, child, storage,
+            ),
+            failure,
+        )??;
+        let cell = child.cells.first()?;
+        let padding = cell.effective_padding(&child.padding);
+        let top_pad = i32::from(padding.top);
+        let bottom_pad = i32::from(padding.bottom);
+        let frames = crate::storage::optional(
+            storage.collect([
+                StoredTextFrame {
+                    start: 0,
+                    end: plan.reset,
+                    body_height_hu: plan.opening_height_hu,
+                },
+                StoredTextFrame {
+                    start: plan.reset,
+                    end: plan.lines.len(),
+                    body_height_hu: plan.closing_height_hu,
+                },
+            ]),
+            failure,
+        )?;
+        let mut units = crate::storage::optional(storage.vec(plan.lines.len()), failure)?;
+        for frame in &frames {
+            for index in frame.start..frame.end {
+                let (paragraph, line, top) = plan.lines[index];
+                let starts = index == frame.start;
+                let ends = index + 1 == frame.end;
+                let end = if ends {
+                    frame.body_height_hu - top_pad - bottom_pad
+                } else {
+                    plan.lines[index + 1].2
+                };
+                let body = end.checked_sub(top)?;
+                if body <= 0 {
+                    return None;
+                }
+                let height = body
+                    .checked_add(if starts { top.checked_add(top_pad)? } else { 0 })?
+                    .checked_add(if ends { bottom_pad } else { 0 })?;
+                if height <= 0 {
+                    return None;
+                }
+                crate::storage::optional(
+                    storage.push(
+                        &mut units,
+                        StoredTextFrameUnit {
+                            paragraph,
+                            line,
+                            physical_height_hu: height,
+                            starts_frame: starts,
+                        },
+                    ),
+                    failure,
+                )?;
             }
-            let height = body
-                .checked_add(if starts { top.checked_add(top_pad)? } else { 0 })?
-                .checked_add(if ends { bottom_pad } else { 0 })?;
-            if height <= 0 {
-                return None;
-            }
-            units.push(StoredTextFrameUnit {
-                paragraph,
-                line,
-                physical_height_hu: height,
-                starts_frame: starts,
-            });
         }
-    }
-    // 이 별도 증명은 child의 바깥 여백 0을 요구한다. 각 physical unit과
-    // 실제 child frame의 높이가 정확히 같은 합으로 닫혀야 한다.
-    if frames.iter().any(|frame| {
-        units[frame.start..frame.end]
-            .iter()
-            .map(|unit| i64::from(unit.physical_height_hu))
-            .sum::<i64>()
-            != i64::from(frame.body_height_hu)
-    }) {
-        return None;
-    }
-    Some(StoredNestedTextFrames {
-        units,
-        frames,
-        parent_opening_owns_bottom_padding: true,
+        // 이 별도 증명은 child의 바깥 여백 0을 요구한다. 각 physical unit과
+        // 실제 child frame의 높이가 정확히 같은 합으로 닫혀야 한다.
+        if frames.iter().any(|frame| {
+            units[frame.start..frame.end]
+                .iter()
+                .map(|unit| i64::from(unit.physical_height_hu))
+                .sum::<i64>()
+                != i64::from(frame.body_height_hu)
+        }) {
+            return None;
+        }
+        Some(StoredNestedTextFrames {
+            units,
+            frames,
+            parent_opening_owns_bottom_padding: true,
+        })
     })
 }
 
 pub(super) fn collect(document: &Document) -> HashMap<usize, Arc<StoredNestedTextFrames>> {
-    fn visit(
-        document: &Document,
-        table: &Table,
-        result: &mut HashMap<usize, Arc<StoredNestedTextFrames>>,
-    ) {
-        for cell in &table.cells {
-            for (pi, paragraph) in cell.paragraphs.iter().enumerate() {
-                for control in &paragraph.controls {
-                    if let Control::Table(child) = control {
-                        let native_frames = document
-                            .layout_profile()
-                            .hwp5_stored_pagination_layout()
-                            .then(|| prove(document, table, cell, pi, child))
-                            .flatten();
-                        // 기존 HWP5 host 증명은 유지한다. 부모 선언/자식 재시작/뒤 줄이
-                        // 함께 닫은 원본 상자도 동일한 유닛·프레임 원장으로 전달한다.
-                        let parent_closed_frames = || {
-                            (pi == 0)
-                                .then(|| prove_parent_closed(table, cell, child))
-                                .flatten()
-                        };
-                        if let Some(frames) = native_frames.or_else(parent_closed_frames) {
-                            result
-                                .insert(child.as_ref() as *const Table as usize, Arc::new(frames));
+    match collect_with_storage(document, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn collect_with_storage<S: crate::storage::Storage>(
+    document: &Document,
+    storage: &S,
+) -> Result<HashMap<usize, Arc<StoredNestedTextFrames>>, S::Error> {
+    Ok({
+        fn visit_with_storage<S: crate::storage::Storage>(
+            document: &Document,
+            table: &Table,
+            result: &mut HashMap<usize, Arc<StoredNestedTextFrames>>,
+            storage: &S,
+        ) -> Result<(), S::Error> {
+            for cell in &table.cells {
+                for (pi, paragraph) in cell.paragraphs.iter().enumerate() {
+                    for control in &paragraph.controls {
+                        if let Control::Table(child) = control {
+                            let native_frames =
+                                if document.layout_profile().hwp5_stored_pagination_layout() {
+                                    prove_with_storage(document, table, cell, pi, child, storage)?
+                                } else {
+                                    None
+                                };
+                            let frames = match native_frames {
+                                Some(frames) => Some(frames),
+                                None if pi == 0 => {
+                                    prove_parent_closed_with_storage(table, cell, child, storage)?
+                                }
+                                None => None,
+                            };
+                            if let Some(frames) = frames {
+                                storage.reserve_map(result, 1)?;
+                                storage.bytes(std::mem::size_of::<StoredNestedTextFrames>())?;
+                                result.insert(
+                                    child.as_ref() as *const Table as usize,
+                                    Arc::new(frames),
+                                );
+                            }
+                            visit_with_storage(document, child, result, storage)?;
                         }
-                        visit(document, child, result);
+                    }
+                }
+            }
+
+            Ok(())
+        }
+        let mut result = HashMap::new();
+        let profile = document.layout_profile();
+        if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            && !profile.session_edited()
+        {
+            for section in &document.sections {
+                for paragraph in &section.paragraphs {
+                    for control in &paragraph.controls {
+                        if let Control::Table(table) = control {
+                            visit_with_storage(document, table, &mut result, storage)?;
+                        }
                     }
                 }
             }
         }
-    }
-    let mut result = HashMap::new();
-    let profile = document.layout_profile();
-    if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
-        && !profile.session_edited()
-    {
-        for section in &document.sections {
-            for paragraph in &section.paragraphs {
-                for control in &paragraph.controls {
-                    if let Control::Table(table) = control {
-                        visit(document, table, &mut result);
-                    }
-                }
-            }
-        }
-    }
-    result
+        result
+    })
 }

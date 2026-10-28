@@ -23,6 +23,7 @@ mod missing_fonts;
 pub(crate) use missing_fonts::{missing_char_table, missing_latin_default};
 mod page_number;
 mod resolved;
+pub(crate) use crate::storage;
 pub use resolved::{
     ResolvedBorderStyle, ResolvedCharStyle, ResolvedImageFill, ResolvedParaStyle, ResolvedStyleSet,
 };
@@ -36,9 +37,20 @@ pub fn resolve_styles(doc_info: &DocInfo, dpi: f64) -> ResolvedStyleSet {
 /// Layout provenance itself remains owned by `LayoutCompatibilityProfile` and
 /// is passed separately to consumers that need it.
 pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> ResolvedStyleSet {
+    match try_resolve_styles_for_document(document, dpi, &storage::Unbounded) {
+        Ok(styles) => styles,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
+    document: &Document,
+    dpi: f64,
+    storage: &S,
+) -> Result<ResolvedStyleSet, S::Error> {
     let profile = document.layout_profile();
-    let lookup = missing_fonts::lookup_context(document);
-    let mut styles = resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout());
+    let lookup = missing_fonts::try_lookup_context(document, storage)?;
+    let mut styles = try_resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout(), storage)?;
     if missing_fonts::missing_char_table(document) {
         styles.page_number_char_style_id = Some(0);
         styles.page_number_font_is_hft = false;
@@ -83,7 +95,7 @@ pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> Reso
             }
         }
     }
-    styles
+    Ok(styles)
 }
 
 fn collect_paragraph_space_styles(
@@ -271,7 +283,14 @@ pub(crate) fn resolve_styles_with_environment(
             }
         }
     }
-    refresh_source_program_projection_slots(&document.doc_info, &mut styles);
+    match refresh_source_program_projection_slots_with_storage(
+        &document.doc_info,
+        &mut styles,
+        &storage::Unbounded,
+    ) {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
     // 쪽번호도 명시적으로 공급한 원 HFT 폭 표를 소비한다. TTF로 적힌
     // 한양신명조를 원 프로그램으로 선택했는데 원 선언만 보면, 폭은 HFT로
     // 재면서 기준선은 TTF의 1/3em 여유를 적용해 위로 이동한다.
@@ -294,11 +313,46 @@ pub fn resolve_styles_with_variant(
     dpi: f64,
     is_hwp3_variant: bool,
 ) -> ResolvedStyleSet {
-    let char_styles = resolve_char_styles(doc_info, dpi);
-    let para_styles = resolve_para_styles_with_variant(doc_info, dpi, is_hwp3_variant);
-    let border_styles = resolve_border_styles(doc_info, dpi);
-    let numberings = doc_info.numberings.clone();
-    let bullets = doc_info.bullets.clone();
+    match try_resolve_styles_with_variant(doc_info, dpi, is_hwp3_variant, &storage::Unbounded) {
+        Ok(styles) => styles,
+        Err(never) => match never {},
+    }
+}
+
+fn try_resolve_styles_with_variant<S: storage::Storage>(
+    doc_info: &DocInfo,
+    dpi: f64,
+    is_hwp3_variant: bool,
+    storage: &S,
+) -> Result<ResolvedStyleSet, S::Error> {
+    let mut char_styles = storage.vec(doc_info.char_shapes.len())?;
+    for shape in &doc_info.char_shapes {
+        char_styles.push(try_resolve_single_char_style(
+            shape, doc_info, dpi, storage,
+        )?);
+    }
+    let mut para_styles = storage.vec(doc_info.para_shapes.len())?;
+    let char_unit_hu = para_margin_char_unit_hu(doc_info);
+    for shape in &doc_info.para_shapes {
+        para_styles.push(try_resolve_single_para_style(
+            shape,
+            &doc_info.tab_defs,
+            dpi,
+            is_hwp3_variant,
+            char_unit_hu,
+            storage,
+        )?);
+    }
+    let mut border_styles = storage.vec(doc_info.border_fills.len())?;
+    for fill in &doc_info.border_fills {
+        border_styles.push(try_resolve_single_border_style(fill, dpi, storage)?);
+    }
+    let numberings = storage.clone_record(&doc_info.numberings)?;
+    let bullets = storage.clone_record(&doc_info.bullets)?;
+    storage.bytes(
+        2 * std::mem::size_of::<usize>()
+            + std::mem::size_of::<super::native_pua_fonts::NativePuaFonts>(),
+    )?;
     let (page_number_char_style_id, page_number_font_is_hft) =
         page_number::resolve(doc_info, false);
 
@@ -306,16 +360,22 @@ pub fn resolve_styles_with_variant(
         source_program_projection_slots: Default::default(),
         native_pua_fonts: Default::default(),
         char_overlap_size_bounds: None,
-        source_char_shapes: doc_info
-            .char_shapes
-            .iter()
-            .map(|source| {
-                let mut shape = source.clone();
-                shape.raw_data = None;
-                shape
-            })
-            .collect::<Vec<_>>()
-            .into(),
+        source_char_shapes: {
+            storage.bytes(
+                2 * std::mem::size_of::<usize>()
+                    + std::mem::size_of_val(doc_info.char_shapes.as_slice()),
+            )?;
+            storage
+                .try_collect(doc_info.char_shapes.iter().map(|source| {
+                    if let Some(raw) = &source.raw_data {
+                        storage.bytes(raw.len())?;
+                    }
+                    let mut shape = storage.clone_record(source)?;
+                    shape.raw_data = None;
+                    Ok(shape)
+                }))?
+                .into()
+        },
         resolved_dpi: Some(dpi),
         isolated_jamo_font: None,
         page_number_char_style_id,
@@ -331,17 +391,22 @@ pub fn resolve_styles_with_variant(
         horizontal_shaping_context: None,
         supplemental_metrics: None,
     };
-    refresh_source_program_projection_slots(doc_info, &mut styles);
-    styles
+    refresh_source_program_projection_slots_with_storage(doc_info, &mut styles, storage)?;
+    Ok(styles)
 }
 
 /// 대체 선언과 실제 선택을 구분한다. HFT의 원본 전진, 내장 프로그램,
 /// 실제 대체 face 및 폭을 추정하는 face를 원본 TTF의 캐시 갱신 근거로 쓰지 않는다.
-fn refresh_source_program_projection_slots(doc_info: &DocInfo, styles: &mut ResolvedStyleSet) {
+fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
+    doc_info: &DocInfo,
+    styles: &mut ResolvedStyleSet,
+    storage: &S,
+) -> Result<(), S::Error> {
     styles.source_program_projection_slots.clear();
     let dpi = styles.resolved_dpi.unwrap_or(96.0);
-    let fallback_char_styles = std::cell::LazyCell::new(|| {
-        let mut fallback_info = doc_info.clone();
+    let mut fallback_char_styles = None;
+    let mut build_fallback = || -> Result<Vec<ResolvedCharStyle>, S::Error> {
+        let mut fallback_info = storage.clone_doc_info(doc_info)?;
         for fonts in &mut fallback_info.font_faces {
             for font in fonts {
                 if let Some(substitute) = font.subst_font.take() {
@@ -351,8 +416,13 @@ fn refresh_source_program_projection_slots(doc_info: &DocInfo, styles: &mut Reso
                 }
             }
         }
-        resolve_char_styles(&fallback_info, dpi)
-    });
+        storage.try_collect(
+            fallback_info
+                .char_shapes
+                .iter()
+                .map(|cs| try_resolve_single_char_style(cs, &fallback_info, dpi, storage)),
+        )
+    };
     for (shape_id, shape) in doc_info.char_shapes.iter().enumerate() {
         let Some(style) = styles.char_styles.get(shape_id) else {
             continue;
@@ -391,14 +461,24 @@ fn refresh_source_program_projection_slots(doc_info: &DocInfo, styles: &mut Reso
                 .as_deref()
                     == Some(primary);
             if own_metric {
-                if let Some(fallback) = fallback_char_styles.get(shape_id) {
-                    styles
-                        .source_program_projection_slots
-                        .insert((shape_id as u32, language), fallback.clone());
+                if fallback_char_styles.is_none() {
+                    fallback_char_styles = Some(build_fallback()?);
+                }
+                if let Some(fallback) = fallback_char_styles
+                    .as_ref()
+                    .and_then(|values| values.get(shape_id))
+                {
+                    let copied = crate::storage::try_clone(fallback, storage)?;
+                    storage.insert_map(
+                        &mut styles.source_program_projection_slots,
+                        (shape_id as u32, language),
+                        copied,
+                    )?;
                 }
             }
         }
     }
+    Ok(())
 }
 
 /// [#7391] 이 face 이름으로 **자기 자신의** 메트릭 표를 찾을 수 있는지.
@@ -541,22 +621,34 @@ fn resolve_char_styles(doc_info: &DocInfo, dpi: f64) -> Vec<ResolvedCharStyle> {
 
 /// 개별 CharShape 해소
 fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> ResolvedCharStyle {
+    match try_resolve_single_char_style(cs, doc_info, dpi, &storage::Unbounded) {
+        Ok(style) => style,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
+    cs: &CharShape,
+    doc_info: &DocInfo,
+    dpi: f64,
+    storage: &A,
+) -> Result<ResolvedCharStyle, A::Error> {
     // base_size는 HWPUNIT 단위
     let font_size = hwpunit_to_px(cs.base_size, dpi);
 
     // 7개 언어 카테고리별 폰트 이름, 자간, 장평 해소
-    let mut font_families = Vec::with_capacity(LANG_COUNT);
-    let mut font_families_metric_trusted = Vec::with_capacity(LANG_COUNT);
-    let mut font_families_glyph_fallback_advance_explicit = Vec::with_capacity(LANG_COUNT);
-    let mut font_families_hft_hangul = Vec::with_capacity(LANG_COUNT);
-    let mut font_families_source_hft = Vec::with_capacity(LANG_COUNT);
-    let mut font_families_hft_print_frame = Vec::with_capacity(LANG_COUNT);
-    let mut font_families_hft_fullwidth_dot = Vec::with_capacity(LANG_COUNT);
-    let mut font_families_metric_face: Vec<Option<String>> = Vec::with_capacity(LANG_COUNT);
-    let mut font_families_original_glyph_metric_face = Vec::with_capacity(LANG_COUNT);
-    let mut letter_spacings = Vec::with_capacity(LANG_COUNT);
-    let mut ratios = Vec::with_capacity(LANG_COUNT);
-    let mut font_sizes = Vec::with_capacity(LANG_COUNT);
+    let mut font_families = storage.vec(LANG_COUNT)?;
+    let mut font_families_metric_trusted = storage.vec(LANG_COUNT)?;
+    let mut font_families_glyph_fallback_advance_explicit = storage.vec(LANG_COUNT)?;
+    let mut font_families_hft_hangul = storage.vec(LANG_COUNT)?;
+    let mut font_families_source_hft = storage.vec(LANG_COUNT)?;
+    let mut font_families_hft_print_frame = storage.vec(LANG_COUNT)?;
+    let mut font_families_hft_fullwidth_dot = storage.vec(LANG_COUNT)?;
+    let mut font_families_metric_face: Vec<Option<String>> = storage.vec(LANG_COUNT)?;
+    let mut font_families_original_glyph_metric_face = storage.vec(LANG_COUNT)?;
+    let mut letter_spacings = storage.vec(LANG_COUNT)?;
+    let mut ratios = storage.vec(LANG_COUNT)?;
+    let mut font_sizes = storage.vec(LANG_COUNT)?;
     let mut latin_slot_legacy = false;
     let mut latin_declared_hft = false;
     let latin_slot_explicit = false;
@@ -568,7 +660,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
             .get(lang)
             .and_then(|faces| faces.get(font_id as usize));
         font_families_source_hft.push(source_font.is_some_and(|face| face.alt_type == 2));
-        let decision = lookup_font_name_decision(doc_info, lang, font_id);
+        let decision = try_lookup_font_name_decision(doc_info, lang, font_id, storage)?;
         let substituted = decision.substitution_boundary.is_some()
             && decision.normalized_face != decision.requested_face;
         // 대체 후보의 선언과 실제 주 공급자의 선택은 구분한다.
@@ -621,7 +713,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         // 프로그램 자체를 확인한 표만 사용하며 표시용 TTF와 구분한다.
         // HWP3 ASCII 반각 여부는 기존 문서의 저장 줄 증인이 계속 결정한다.
         font_families_metric_face.push(if let Some(face) = substitute_ttf {
-            Some(face.to_string())
+            Some(storage.string(face)?)
         } else if decision.alt_type == Some(2)
             && decision.requested_face.as_deref().is_some_and(|face| {
                 crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()
@@ -632,7 +724,8 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                 .requested_face
                 .as_deref()
                 .and_then(crate::renderer::font_metrics_data::legacy_hft_metric_face)
-                .map(str::to_string)
+                .map(|face| storage.string(face))
+                .transpose()?
         } else {
             (decision.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin))
                 .then(|| {
@@ -647,7 +740,8 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                         })
                 })
                 .flatten()
-                .map(str::to_string)
+                .map(|face| storage.string(face))
+                .transpose()?
         });
         // 선택되지 않은 대체 후보가 있는 type1도 원본 HFT 글리프를 쓸 수 있다.
         // 실제 선택한 TTF 대체 프로그램은 자기 전진폭을 소유한다. 전체 HFT 표 선택과
@@ -666,11 +760,12 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                             face,
                         )
                     })
-                    .map(str::to_owned)
+                    .map(|face| storage.string(face))
             })
-            .flatten(),
+            .flatten()
+            .transpose()?,
         );
-        font_families.push(decision.css_family_chain.join(","));
+        font_families.push(storage.join(&decision.css_family_chain, ",")?);
 
         // 굵기의 추가 전진은 측정에서 별도로 소비한다. 음수 자간과 상쇄되는
         // 사례도 저장 자간을 무시하는 근거가 아니므로 원본 값을 유지한다.
@@ -708,21 +803,22 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         cs.italic,
     );
     let primary = |chain: &String| {
-        chain
-            .split(',')
-            .next()
-            .unwrap_or("")
-            .trim()
-            .trim_matches(|c| c == '\'' || c == '"')
-            .to_string()
+        storage.string(
+            chain
+                .split(',')
+                .next()
+                .unwrap_or("")
+                .trim()
+                .trim_matches(|c| c == '\'' || c == '"'),
+        )
     };
     let explicit_latin_slot = latin_slot_explicit
         && latin_slot_legacy
-        && primary(&font_families[0]) != primary(&font_families[1]);
+        && primary(&font_families[0])? != primary(&font_families[1])?;
     let ascii_punct_latin_slot = ascii_punct_latin_slot || explicit_latin_slot;
-    let latin_primary = primary(&font_families[1]);
+    let latin_primary = primary(&font_families[1])?;
     let ascii_punct_latin_slot = ascii_punct_latin_slot
-        || (primary(&font_families[0]) != latin_primary
+        || (primary(&font_families[0])? != latin_primary
             && (latin_slot_explicit
                 || crate::renderer::font_metrics_data::find_metric(
                     &latin_primary,
@@ -732,11 +828,11 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                 .is_some_and(|found| found.metric.hangul.is_none())));
 
     // 한국어(0번) 값을 기본값으로 사용
-    let font_family = font_families[0].clone();
+    let font_family = storage.string(&font_families[0])?;
     let letter_spacing = letter_spacings[0];
     let ratio = ratios[0];
 
-    ResolvedCharStyle {
+    Ok(ResolvedCharStyle {
         font_family,
         font_families,
         font_families_metric_trusted,
@@ -753,7 +849,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_space_em,
         font_size,
         font_sizes,
-        font_positions: cs.char_offsets.to_vec(),
+        font_positions: storage.copy_slice(&cs.char_offsets)?,
         bold: cs.bold,
         italic: cs.italic,
         text_color: cs.text_color,
@@ -780,7 +876,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         strike_shape: cs.strike_shape,
         kerning: cs.kerning,
         shade_color: cs.shade_color,
-    }
+    })
 }
 
 /// [#7702] 한/글이 앞 글자 언어와 무관하게 **영문 슬롯** 글꼴로 재고 그리는 기호.
@@ -1027,6 +1123,18 @@ pub(crate) fn lookup_font_name_decision(
     lang_index: usize,
     font_id: u16,
 ) -> FontNameDecision {
+    match try_lookup_font_name_decision(doc_info, lang_index, font_id, &storage::Unbounded) {
+        Ok(decision) => decision,
+        Err(never) => match never {},
+    }
+}
+
+fn try_lookup_font_name_decision<A: storage::Storage>(
+    doc_info: &DocInfo,
+    lang_index: usize,
+    font_id: u16,
+    storage: &A,
+) -> Result<FontNameDecision, A::Error> {
     let mut decision = FontNameDecision {
         environment_profile_id: None,
         language_slot: lang_index,
@@ -1047,19 +1155,16 @@ pub(crate) fn lookup_font_name_decision(
         if (font_id as usize) < lang_fonts.len() {
             let font = &lang_fonts[font_id as usize];
             let name = &font.name;
-            decision.requested_face = Some(name.clone());
+            decision.requested_face = Some(storage.string(name)?);
             decision.alt_type = Some(font.alt_type);
             decision.embedded = Some(font.is_embedded);
             // 폰트 치환: HFT 등 웹 미지원 폰트를 렌더링 가능한 폰트로 완전 대체
             let substitution = resolve_font_substitution_decision(name, font.alt_type, lang_index);
-            let resolved = substitution
-                .map(|(face, _, _)| face)
-                .unwrap_or(name)
-                .to_string();
-            decision.normalized_face = Some(resolved.clone());
+            let resolved = storage.string(substitution.map(|(face, _, _)| face).unwrap_or(name))?;
+            decision.normalized_face = Some(storage.string(&resolved)?);
             decision.substitution_boundary = substitution.map(|(_, boundary, _)| boundary);
             decision.substitution_rule_id = substitution.map(|(_, _, rule_id)| rule_id);
-            decision.css_family_chain.push(resolved.clone());
+            storage.push(&mut decision.css_family_chain, storage.string(&resolved)?)?;
             if let Some(substitute) = font
                 .subst_font
                 .as_ref()
@@ -1068,7 +1173,7 @@ pub(crate) fn lookup_font_name_decision(
                 .filter(|substitute| substitute.face.trim() != resolved)
             {
                 let requested = substitute.face.trim();
-                decision.requested_subst_font = Some(requested.to_owned());
+                decision.requested_subst_font = Some(storage.string(requested)?);
                 // 대체 필드의 이름 해석은 주 글꼴의 별칭과 별도 계약이다.
                 // 독립 2020/2024 Print: 영문 HCR 대체 필드는 한컴바탕,
                 // 한글 대체 필드와 주 글꼴 HCR은 실제 HCR을 선택한다.
@@ -1086,18 +1191,17 @@ pub(crate) fn lookup_font_name_decision(
                             && rule.conditions.availability
                                 == Some("nonembedded-ttf-document-substitute")
                     });
-                let face = rule
-                    .map_or(requested, |rule| rule.target_face_or_policy)
-                    .to_owned();
+                let face =
+                    storage.string(rule.map_or(requested, |rule| rule.target_face_or_policy))?;
                 decision.document_substitute_rule_id = rule.map(|rule| rule.rule_id);
-                decision.subst_font = Some(face.clone());
+                decision.subst_font = Some(storage.string(&face)?);
                 if face != resolved {
-                    decision.css_family_chain.push(face);
+                    storage.push(&mut decision.css_family_chain, face)?;
                 }
             }
         }
     }
-    decision
+    Ok(decision)
 }
 
 pub(crate) fn lookup_font_name_in_environment(
@@ -1388,6 +1492,47 @@ fn resolve_single_para_style(
     is_hwp3_variant: bool,
     char_unit_hu: f64,
 ) -> ResolvedParaStyle {
+    match try_resolve_single_para_style(
+        ps,
+        tab_defs,
+        dpi,
+        is_hwp3_variant,
+        char_unit_hu,
+        &storage::Unbounded,
+    ) {
+        Ok(style) => style,
+        Err(never) => match never {},
+    }
+}
+
+/// Resolve one normalized paragraph from the original style tables. A compact
+/// character-ID projection must still use the document's default character size
+/// for CHAR-unit margins. The ordinary resolver consumes the same rule below.
+#[cfg(feature = "pdf-import")]
+pub(crate) fn try_resolve_paragraph_style<A: storage::Storage>(
+    ps: &ParaShape,
+    doc_info: &DocInfo,
+    dpi: f64,
+    storage: &A,
+) -> Result<ResolvedParaStyle, A::Error> {
+    try_resolve_single_para_style(
+        ps,
+        &doc_info.tab_defs,
+        dpi,
+        false,
+        para_margin_char_unit_hu(doc_info),
+        storage,
+    )
+}
+
+fn try_resolve_single_para_style<A: storage::Storage>(
+    ps: &ParaShape,
+    tab_defs: &[TabDef],
+    dpi: f64,
+    is_hwp3_variant: bool,
+    char_unit_hu: f64,
+    storage: &A,
+) -> Result<ResolvedParaStyle, A::Error> {
     // [#2070] 비-Percent 줄간격(Fixed/SpaceOnly/Minimum)도 여백·문단간격·탭과
     // 동일하게 저장값이 유효 HWPUNIT 의 2배다 — 통제 사다리(#2197)로 확정한
     // 계약과 실문서 이중 실증: 시장구조조사 본문 ps Fixed 3320HU, 한글 PDF
@@ -1406,18 +1551,16 @@ fn resolve_single_para_style(
     // TabItem.position은 ParaShape 여백과 동일하게 2배 스케일로 저장되므로
     // 렌더링 시 2로 나누어야 한다 (hwp2hwpx 변환 코드 및 HWP 대화상자 확인).
     let tab_def = tab_defs.get(ps.tab_def_id as usize);
-    let tab_stops: Vec<TabStop> = tab_def
-        .map(|td| {
-            td.tabs
-                .iter()
-                .map(|t| TabStop {
-                    position: hwpunit_to_px(t.position as i32, dpi) / 2.0, // HWP 탭 position은 실제 좌표의 2배로 저장됨 (한컴 격자 비교로 확인)
-                    tab_type: t.tab_type,
-                    fill_type: t.fill_type,
-                })
-                .collect()
-        })
-        .unwrap_or_default();
+    let mut tab_stops = storage.vec(tab_def.map_or(0, |definition| definition.tabs.len()))?;
+    if let Some(definition) = tab_def {
+        for tab in &definition.tabs {
+            tab_stops.push(TabStop {
+                position: hwpunit_to_px(tab.position as i32, dpi) / 2.0,
+                tab_type: tab.tab_type,
+                fill_type: tab.fill_type,
+            });
+        }
+    }
     let auto_tab_right = tab_def.map(|td| td.auto_tab_right).unwrap_or(false);
 
     // ParaShape의 여백 및 문단 간격은 값과 단위 비트를 함께 보존한다.
@@ -1434,7 +1577,7 @@ fn resolve_single_para_style(
     let margin_px = |stored: i32| {
         para_margin_hwpunit(stored, char_unit_hu) * dpi / crate::renderer::HWPUNIT_PER_INCH
     };
-    ResolvedParaStyle {
+    Ok(ResolvedParaStyle {
         alignment: ps.alignment,
         vertical_alignment: ((ps.attr1 >> 20) & 0x03) as u8,
         line_spacing,
@@ -1467,7 +1610,7 @@ fn resolve_single_para_style(
         keep_with_next: (ps.attr1 >> 17) & 1 != 0,
         keep_lines: (ps.attr1 >> 18) & 1 != 0,
         page_break_before: (ps.attr1 >> 19) & 1 != 0,
-    }
+    })
 }
 
 /// BorderFill → ResolvedBorderStyle 목록
@@ -1481,6 +1624,17 @@ fn resolve_border_styles(doc_info: &DocInfo, dpi: f64) -> Vec<ResolvedBorderStyl
 
 /// 개별 BorderFill 해소
 fn resolve_single_border_style(bf: &BorderFill, dpi: f64) -> ResolvedBorderStyle {
+    match try_resolve_single_border_style(bf, dpi, &storage::Unbounded) {
+        Ok(style) => style,
+        Err(never) => match never {},
+    }
+}
+
+fn try_resolve_single_border_style<S: storage::Storage>(
+    bf: &BorderFill,
+    dpi: f64,
+    storage: &S,
+) -> Result<ResolvedBorderStyle, S::Error> {
     let fill_color = match bf.fill.fill_type {
         FillType::Solid => bf.fill.solid.as_ref().and_then(|s| {
             // pattern_type > 0: 패턴 채우기 → 단색 fill 아님 (background_color는 패턴 배경)
@@ -1512,35 +1666,44 @@ fn resolve_single_border_style(bf: &BorderFill, dpi: f64) -> ResolvedBorderStyle
     };
 
     let gradient = match bf.fill.fill_type {
-        FillType::Gradient => bf.fill.gradient.as_ref().and_then(|g| {
-            // 유효성 검사: 색상 2개 미만이거나 비정상적으로 많으면 무효
-            if g.colors.len() < 2 || g.colors.len() > 64 {
-                return None;
-            }
-            // 중심좌표가 비정상 범위이면 파싱 오류로 판단
-            if g.center_x.abs() > 200 || g.center_y.abs() > 200 {
-                return None;
-            }
-            let positions: Vec<f64> = if g.positions.is_empty() {
-                let n = g.colors.len();
-                (0..n)
-                    .map(|i| i as f64 / (n.max(2) - 1).max(1) as f64)
-                    .collect()
+        FillType::Gradient => {
+            if let Some(g) = bf.fill.gradient.as_ref() {
+                // 유효성 검사: 색상 2개 미만이거나 비정상적으로 많으면 무효
+                if g.colors.len() < 2
+                    || g.colors.len() > 64
+                    || g.center_x.abs() > 200
+                    || g.center_y.abs() > 200
+                {
+                    None
+                } else {
+                    let positions: Vec<f64> = if g.positions.is_empty() {
+                        let n = g.colors.len();
+                        storage.collect((0..n).map(|i| i as f64 / (n.max(2) - 1).max(1) as f64))?
+                    } else {
+                        storage.collect(g.positions.iter().map(|&p| p as f64 / 100.0))?
+                    };
+                    // [#6822] `step`(띠 개수)·`step_center`(전이 위치)를 stop 으로 편다.
+                    let (colors, positions) = super::try_expand_gradient_steps(
+                        &g.colors,
+                        &positions,
+                        g.blur,
+                        g.step_center,
+                        storage,
+                    )?;
+                    storage.bytes(std::mem::size_of::<GradientFillInfo>())?;
+                    Some(Box::new(GradientFillInfo {
+                        gradient_type: g.gradient_type,
+                        angle: g.angle,
+                        center_x: g.center_x,
+                        center_y: g.center_y,
+                        colors,
+                        positions,
+                    }))
+                }
             } else {
-                g.positions.iter().map(|&p| p as f64 / 100.0).collect()
-            };
-            // [#6822] `step`(띠 개수)·`step_center`(전이 위치)를 stop 으로 편다.
-            let (colors, positions) =
-                super::expand_gradient_steps(&g.colors, &positions, g.blur, g.step_center);
-            Some(Box::new(GradientFillInfo {
-                gradient_type: g.gradient_type,
-                angle: g.angle,
-                center_x: g.center_x,
-                center_y: g.center_y,
-                colors,
-                positions,
-            }))
-        }),
+                None
+            }
+        }
         _ => None,
     };
 
@@ -1555,7 +1718,7 @@ fn resolve_single_border_style(bf: &BorderFill, dpi: f64) -> ResolvedBorderStyle
         _ => None,
     };
 
-    ResolvedBorderStyle {
+    Ok(ResolvedBorderStyle {
         borders: bf.borders,
         fill_color,
         pattern,
@@ -1568,7 +1731,7 @@ fn resolve_single_border_style(bf: &BorderFill, dpi: f64) -> ResolvedBorderStyle
         } else {
             CenterLine::from_hwp_attr(bf.attr)
         },
-    }
+    })
 }
 
 fn image_fill_effect(effect: u8) -> ImageEffect {

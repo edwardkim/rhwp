@@ -33,7 +33,19 @@ pub(super) fn gaps(
     alignment: Alignment,
     spare: f64,
 ) -> Vec<f64> {
-    let mut gaps = vec![0.0; row.len()];
+    match gaps_with_storage(row, ending, alignment, spare, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+pub(super) fn gaps_with_storage<S: crate::storage::Storage>(
+    row: &[InlineFlowBox],
+    ending: RowEnding<'_>,
+    alignment: Alignment,
+    spare: f64,
+    storage: &S,
+) -> Result<Vec<f64>, S::Error> {
+    let mut gaps = storage.filled(row.len(), 0.0)?;
     let enabled = match alignment {
         Alignment::Justify => matches!(ending, RowEnding::Soft(_)),
         Alignment::Split => !matches!(ending, RowEnding::Forced(_)),
@@ -41,7 +53,7 @@ pub(super) fn gaps(
         _ => false,
     };
     if !enabled || !spare.is_finite() || spare <= 0.0 {
-        return gaps;
+        return Ok(gaps);
     }
     let chars = ending.chars();
     let visible = |item: &InlineFlowBox| match &item.content {
@@ -52,22 +64,18 @@ pub(super) fn gaps(
         InlineFlowContent::FloatingTable { .. } | InlineFlowContent::FloatingShape { .. } => false,
     };
     let Some(first) = row.iter().position(visible) else {
-        return gaps;
+        return Ok(gaps);
     };
     let last = row.iter().rposition(visible).unwrap();
     // 작성 들여쓰기와 말미 공백은 본문 분배 영역에 넣지 않는다.
-    let word_slots: Vec<_> = (first..last)
-        .filter(|&index| {
-            matches!(&row[index].content, InlineFlowContent::Text { range, .. }
+    let word_slots: Vec<_> = storage.collect((first..last).filter(|&index| {
+        matches!(&row[index].content, InlineFlowContent::Text { range, .. }
                 if !range.is_empty() && chars[range.clone()].iter().all(|ch| *ch == ' '))
-        })
-        .collect();
+    }))?;
     let slots = if alignment != Alignment::Distribute && !word_slots.is_empty() {
         word_slots
     } else {
-        (first..last)
-            .filter(|&index| visible(&row[index]))
-            .collect()
+        storage.collect((first..last).filter(|&index| visible(&row[index])))?
     };
     if !slots.is_empty() {
         let extra = spare / slots.len() as f64;
@@ -75,5 +83,5 @@ pub(super) fn gaps(
             gaps[index] = extra;
         }
     }
-    gaps
+    Ok(gaps)
 }

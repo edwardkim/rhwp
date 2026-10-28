@@ -233,7 +233,31 @@ impl Paginator {
         section_index: usize,
         para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
     ) -> PaginationResult {
-        self.paginate_with_measured_opts(
+        match self.paginate_with_measured_with_storage(
+            paragraphs,
+            measured,
+            page_def,
+            column_def,
+            section_index,
+            para_styles,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn paginate_with_measured_with_storage<S: crate::storage::Storage>(
+        &self,
+        paragraphs: &[Paragraph],
+        measured: &MeasuredSection,
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        section_index: usize,
+        para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
+        storage: &S,
+    ) -> Result<PaginationResult, S::Error> {
+        self.paginate_with_measured_opts_with_storage(
             paragraphs,
             measured,
             page_def,
@@ -241,6 +265,7 @@ impl Paginator {
             section_index,
             para_styles,
             PaginationOpts::default(),
+            storage,
         )
     }
 
@@ -254,8 +279,34 @@ impl Paginator {
         para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
         opts: PaginationOpts,
     ) -> PaginationResult {
+        match self.paginate_with_measured_opts_with_storage(
+            paragraphs,
+            measured,
+            page_def,
+            column_def,
+            section_index,
+            para_styles,
+            opts,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn paginate_with_measured_opts_with_storage<S: crate::storage::Storage>(
+        &self,
+        paragraphs: &[Paragraph],
+        measured: &MeasuredSection,
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        section_index: usize,
+        para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
+        opts: PaginationOpts,
+        storage: &S,
+    ) -> Result<PaginationResult, S::Error> {
         let source_context = PaginationSourceContext::from_public_variant(opts.is_hwp3_variant);
-        self.paginate_with_measured_context(
+        self.paginate_with_measured_context_with_storage(
             paragraphs,
             measured,
             page_def,
@@ -264,6 +315,7 @@ impl Paginator {
             para_styles,
             opts,
             source_context,
+            storage,
         )
     }
 
@@ -278,7 +330,35 @@ impl Paginator {
         opts: PaginationOpts,
         profile: crate::model::provenance::LayoutCompatibilityProfile,
     ) -> PaginationResult {
-        self.paginate_with_measured_context(
+        match self.paginate_with_measured_profile_with_storage(
+            paragraphs,
+            measured,
+            page_def,
+            column_def,
+            section_index,
+            para_styles,
+            opts,
+            profile,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn paginate_with_measured_profile_with_storage<S: crate::storage::Storage>(
+        &self,
+        paragraphs: &[Paragraph],
+        measured: &MeasuredSection,
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        section_index: usize,
+        para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
+        opts: PaginationOpts,
+        profile: crate::model::provenance::LayoutCompatibilityProfile,
+        storage: &S,
+    ) -> Result<PaginationResult, S::Error> {
+        self.paginate_with_measured_context_with_storage(
             paragraphs,
             measured,
             page_def,
@@ -287,11 +367,12 @@ impl Paginator {
             para_styles,
             opts,
             PaginationSourceContext::from_profile(profile),
+            storage,
         )
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn paginate_with_measured_context(
+    fn paginate_with_measured_context_with_storage<S: crate::storage::Storage>(
         &self,
         paragraphs: &[Paragraph],
         measured: &MeasuredSection,
@@ -301,7 +382,8 @@ impl Paginator {
         para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
         opts: PaginationOpts,
         source_context: PaginationSourceContext,
-    ) -> PaginationResult {
+        storage: &S,
+    ) -> Result<PaginationResult, S::Error> {
         let hide_empty_line = opts.hide_empty_line;
         let respect_vpos_reset = opts.respect_vpos_reset;
         let is_hwp3_variant = opts.is_hwp3_variant;
@@ -322,7 +404,8 @@ impl Paginator {
         } else {
             0
         };
-        let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
+        let layout =
+            PageLayoutInfo::from_page_def_with_storage(page_def, column_def, self.dpi, storage)?;
         let tac_seg_width_fallback_hu = layout.column_width_hu();
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(is_hwp3_variant)
@@ -330,7 +413,11 @@ impl Paginator {
 
         // 머리말/꼬리말/쪽 번호 위치/새 번호 지정 컨트롤 수집
         let (hf_entries, page_number_pos) =
-            Self::collect_header_footer_controls(paragraphs, section_index);
+            crate::renderer::pagination::collect_header_footer_controls_with_storage(
+                paragraphs,
+                section_index,
+                storage,
+            )?;
 
         let col_count = column_def.column_count.max(1);
         let default_footnote_shape = crate::model::footnote::FootnoteShape::default();
@@ -395,8 +482,11 @@ impl Paginator {
                     hidden_empty_lines = 0;
                     hidden_empty_page = current_page;
                 }
-                let trimmed = para.text.replace(|c: char| c.is_control(), "");
-                let is_empty_para = trimmed.trim().is_empty() && para.controls.is_empty();
+                let trimmed_empty = para
+                    .text
+                    .chars()
+                    .all(|c| c.is_control() || c.is_whitespace());
+                let is_empty_para = trimmed_empty && para.controls.is_empty();
                 if is_empty_para
                     && !st.current_items.is_empty()
                     && st.current_height + para_height > st.available_height()
@@ -404,7 +494,7 @@ impl Paginator {
                 {
                     hidden_empty_lines += 1;
                     para_height = 0.0;
-                    hidden_empty_paras.insert(para_idx);
+                    storage.insert_set(&mut hidden_empty_paras, para_idx)?;
                 }
             }
 
@@ -425,13 +515,15 @@ impl Paginator {
 
             // 다단 나누기(MultiColumn)
             if para.column_type == ColumnBreakType::MultiColumn {
-                self.process_multicolumn_break(&mut st, para_idx, paragraphs, page_def);
+                self.process_multicolumn_break_with_storage(
+                    &mut st, para_idx, paragraphs, page_def, storage,
+                )?;
             }
 
             // 단 나누기(Column)
             if para.column_type == ColumnBreakType::Column {
                 if !st.current_items.is_empty() {
-                    self.process_column_break(&mut st);
+                    self.process_column_break_with_storage(&mut st, storage)?;
                 }
             }
 
@@ -617,7 +709,7 @@ impl Paginator {
                 || stored_vpos_reset_break)
                 && !st.current_items.is_empty()
             {
-                self.process_page_break(&mut st);
+                self.process_page_break_with_storage(&mut st, storage)?;
             }
 
             // tac 표: 표 실측 높이 + 텍스트 줄 높이(th)로 판단 (Task #19)
@@ -746,7 +838,7 @@ impl Paginator {
                     )),
                 )
             {
-                hidden_empty_paras.insert(para_idx);
+                storage.insert_set(&mut hidden_empty_paras, para_idx)?;
                 continue;
             }
 
@@ -756,11 +848,11 @@ impl Paginator {
                 && has_table
                 && tac_table_count_for_flush <= 1
             {
-                st.advance_column_or_new_page();
+                st.advance_column_or_new_page_with_storage(storage)?;
             }
 
             // 페이지가 아직 없으면 생성
-            st.ensure_page();
+            st.ensure_page_with_storage(storage)?;
 
             // TypesetEngine trailing empty guard 와 동일한 fallback 보호.
             // 마지막 빈 문단이 직전 trailing line_spacing 때문에 안전 가용 높이 밖에서
@@ -770,8 +862,11 @@ impl Paginator {
                 && !has_table
                 && !st.current_items.is_empty()
             {
-                let trimmed = para.text.replace(|c: char| c.is_control(), "");
-                let is_empty_para = trimmed.trim().is_empty() && para.controls.is_empty();
+                let trimmed_empty = para
+                    .text
+                    .chars()
+                    .all(|c| c.is_control() || c.is_whitespace());
+                let is_empty_para = trimmed_empty && para.controls.is_empty();
                 if is_empty_para {
                     let trailing_ls = para
                         .line_segs
@@ -794,18 +889,24 @@ impl Paginator {
                         })
                         .and_then(|prev_idx| paragraphs.get(prev_idx))
                         .map(|prev_para| {
-                            let trimmed = prev_para.text.replace(|c: char| c.is_control(), "");
-                            trimmed.trim().is_empty() && prev_para.controls.is_empty()
+                            let trimmed_empty = prev_para
+                                .text
+                                .chars()
+                                .all(|c| c.is_control() || c.is_whitespace());
+                            trimmed_empty && prev_para.controls.is_empty()
                         })
                         .unwrap_or(false);
                     if prior_trailing_drift && previous_item_is_empty_para {
-                        hidden_empty_paras.insert(para_idx);
+                        storage.insert_set(&mut hidden_empty_paras, para_idx)?;
                         continue;
                     }
                     if fit_fail_within_safety {
-                        st.current_items.push(PageItem::FullParagraph {
-                            para_index: para_idx,
-                        });
+                        storage.push(
+                            &mut st.current_items,
+                            PageItem::FullParagraph {
+                                para_index: para_idx,
+                            },
+                        )?;
                         continue;
                     }
                 }
@@ -896,14 +997,16 @@ impl Paginator {
                 {
                     // 어울림 문단: 표 옆에 배치 — pagination에서 높이 소비 없이 기록
                     // (표가 이미 이 공간을 차지하고 있음)
-                    st.current_column_wrap_around_paras
-                        .push(super::WrapAroundPara {
+                    storage.push(
+                        &mut st.current_column_wrap_around_paras,
+                        super::WrapAroundPara {
                             para_index: para_idx,
                             table_para_index: wrap_around_table_para,
                             has_text: !is_empty_para,
                             start_line: 0,
                             end_line: usize::MAX,
-                        });
+                        },
+                    )?;
                     continue;
                 } else {
                     wrap_around_cs = -1;
@@ -914,7 +1017,7 @@ impl Paginator {
 
             // 비-표 문단 처리
             if !has_table {
-                self.paginate_text_lines(
+                self.paginate_text_lines_with_storage(
                     &mut st,
                     para_idx,
                     para,
@@ -925,7 +1028,8 @@ impl Paginator {
                     is_hwp3_variant,
                     source_uses_inline_field_reset,
                     hwp3_converted_missing_lineseg,
-                );
+                    storage,
+                )?;
             }
 
             // 표 문단의 높이 보정용
@@ -933,7 +1037,7 @@ impl Paginator {
             let page_count_before_controls = st.pages.len();
 
             // 인라인 컨트롤 감지 (표/도형/각주)
-            self.process_controls(
+            self.process_controls_with_storage(
                 &mut st,
                 para_idx,
                 para,
@@ -945,7 +1049,8 @@ impl Paginator {
                 page_def,
                 height_before_controls,
                 tac_seg_width_fallback_hu,
-            );
+                storage,
+            )?;
 
             let page_changed = st.pages.len() != page_count_before_controls;
 
@@ -1139,11 +1244,11 @@ impl Paginator {
 
         // 마지막 남은 항목 처리
         if !st.current_items.is_empty() {
-            st.flush_column_always();
+            st.flush_column_always_with_storage(storage)?;
         }
 
         // 빈 문서인 경우 최소 1페이지 보장
-        st.ensure_page();
+        st.ensure_page_with_storage(storage)?;
 
         // 전체 어울림 리턴 문단 수집
         let mut all_wrap_around_paras = Vec::new();
@@ -1153,9 +1258,14 @@ impl Paginator {
             }
         }
         // 페이지 번호 + 머리말/꼬리말 할당
-        Self::finalize_pages(&mut st.pages, &hf_entries, &page_number_pos, paragraphs);
-
-        PaginationResult {
+        Self::finalize_pages_with_storage(
+            &mut st.pages,
+            &hf_entries,
+            &page_number_pos,
+            paragraphs,
+            storage,
+        )?;
+        Ok(PaginationResult {
             pages: st.pages,
             wrap_around_paras: all_wrap_around_paras,
             hidden_empty_paras,
@@ -1169,66 +1279,19 @@ impl Paginator {
             endnote_between_notes_hu: 0,
             endnote_separator_above_hu: 0,
             endnote_separator_below_hu: 0,
-        }
-    }
-
-    /// 머리말/꼬리말/쪽 번호 위치 컨트롤 수집
-    fn collect_header_footer_controls(
-        paragraphs: &[Paragraph],
-        section_index: usize,
-    ) -> (
-        Vec<(usize, HeaderFooterRef, bool, HeaderFooterApply)>,
-        Option<crate::model::control::PageNumberPos>,
-    ) {
-        let mut hf_entries = Vec::new();
-        let page_number_pos = crate::renderer::pagination::collect_page_number_pos(paragraphs);
-        for (pi, para) in paragraphs.iter().enumerate() {
-            for (ci, control) in para.controls.iter().enumerate() {
-                match control {
-                    Control::Header(h) => {
-                        let r = HeaderFooterRef {
-                            para_index: pi,
-                            control_index: ci,
-                            source_section_index: section_index,
-                            table_path: Vec::new(),
-                        };
-                        hf_entries.push((pi, r, true, h.apply_to));
-                    }
-                    Control::Footer(f) => {
-                        let r = HeaderFooterRef {
-                            para_index: pi,
-                            control_index: ci,
-                            source_section_index: section_index,
-                            table_path: Vec::new(),
-                        };
-                        hf_entries.push((pi, r, false, f.apply_to));
-                    }
-                    Control::Table(table) => {
-                        crate::renderer::pagination::collect_nested_header_footer_controls(
-                            table,
-                            pi,
-                            section_index,
-                            ci,
-                            &[],
-                            &mut hf_entries,
-                        );
-                    }
-                    _ => {}
-                }
-            }
-        }
-        (hf_entries, page_number_pos)
+        })
     }
 
     /// 다단 나누기 처리
-    fn process_multicolumn_break(
+    fn process_multicolumn_break_with_storage<S: crate::storage::Storage>(
         &self,
         st: &mut PaginationState,
         para_idx: usize,
         paragraphs: &[Paragraph],
         page_def: &PageDef,
-    ) {
-        st.flush_column();
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        st.flush_column_with_storage(storage)?;
 
         // 이전 존의 높이를 zone_y_offset에 누적
         let vpos_zone_height = if para_idx > 0 {
@@ -1260,26 +1323,41 @@ impl Paginator {
         for ctrl in &paragraphs[para_idx].controls {
             if let Control::ColumnDef(cd) = ctrl {
                 st.col_count = cd.column_count.max(1);
-                let new_layout = PageLayoutInfo::from_page_def(page_def, cd, self.dpi);
-                st.current_zone_layout = Some(new_layout.clone());
+                let new_layout =
+                    PageLayoutInfo::from_page_def_with_storage(page_def, cd, self.dpi, storage)?;
+                st.current_zone_layout = Some(crate::storage::try_clone(&new_layout, storage)?);
                 st.layout = new_layout;
                 break;
             }
         }
+
+        Ok(())
     }
 
     /// 단 나누기 처리
-    fn process_column_break(&self, st: &mut PaginationState) {
-        st.advance_column_or_new_page();
+    fn process_column_break_with_storage<S: crate::storage::Storage>(
+        &self,
+        st: &mut PaginationState,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        st.advance_column_or_new_page_with_storage(storage)?;
+
+        Ok(())
     }
 
     /// 쪽 나누기 처리
-    fn process_page_break(&self, st: &mut PaginationState) {
-        st.force_new_page();
+    fn process_page_break_with_storage<S: crate::storage::Storage>(
+        &self,
+        st: &mut PaginationState,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        st.force_new_page_with_storage(storage)?;
+
+        Ok(())
     }
 
     /// 비-표 문단의 줄 단위 분할
-    fn paginate_text_lines(
+    fn paginate_text_lines_with_storage<S: crate::storage::Storage>(
         &self,
         st: &mut PaginationState,
         para_idx: usize,
@@ -1291,7 +1369,8 @@ impl Paginator {
         is_hwp3_variant: bool,
         source_uses_inline_field_reset: bool,
         hwp3_converted_missing_lineseg: bool,
-    ) {
+        storage: &S,
+    ) -> Result<(), S::Error> {
         let available_now = st.available_height();
 
         let line_count_for_break = measured
@@ -1302,13 +1381,13 @@ impl Paginator {
         // LINE_SEG vpos-reset 강제 분리 지점 검출 (line>0 && vertical_pos==0)
         // 옵션 on + multicolumn이 아닌 경우에만 적용. multicolumn은 column-break 메커니즘 우선.
         let forced_breaks: Vec<usize> = if respect_vpos_reset {
-            let mut breaks: Vec<usize> = para
-                .line_segs
-                .iter()
-                .enumerate()
-                .filter(|(i, ls)| *i > 0 && ls.vertical_pos == 0)
-                .map(|(i, _)| i)
-                .collect();
+            let mut breaks: Vec<usize> = storage.collect(
+                para.line_segs
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, ls)| *i > 0 && ls.vertical_pos == 0)
+                    .map(|(i, _)| i),
+            )?;
             if let Some(line) = internal_vpos_page_break_line(
                 para,
                 line_count_for_break,
@@ -1316,7 +1395,7 @@ impl Paginator {
                 self.dpi,
             ) {
                 if !breaks.contains(&line) {
-                    breaks.push(line);
+                    storage.push(&mut breaks, line)?;
                 }
             }
             if let Some(line) = missing_lineseg_trailing_line_break(
@@ -1333,7 +1412,7 @@ impl Paginator {
                 hwp3_converted_missing_lineseg,
             ) {
                 if !breaks.contains(&line) {
-                    breaks.push(line);
+                    storage.push(&mut breaks, line)?;
                 }
             }
             breaks.sort_unstable();
@@ -1352,27 +1431,29 @@ impl Paginator {
         let col_breaks = if st.col_count > 1 {
             Self::detect_column_breaks_in_paragraph(para)
         } else {
-            vec![0]
+            storage.collect([0])?
         };
 
         if col_breaks.len() > 1 {
-            self.paginate_multicolumn_paragraph(
+            self.paginate_multicolumn_paragraph_with_storage(
                 st,
                 para_idx,
                 para,
                 measured,
                 para_height,
                 &col_breaks,
-            );
+                storage,
+            )?;
         } else if !forced_breaks.is_empty() {
-            self.paginate_with_forced_breaks(
+            self.paginate_with_forced_breaks_with_storage(
                 st,
                 para_idx,
                 para,
                 measured,
                 &forced_breaks,
                 base_available_height,
-            );
+                storage,
+            )?;
         } else if {
             // 문단 적합성 검사: trailing line_spacing 제외
             let trailing_ls = para
@@ -1404,9 +1485,12 @@ impl Paginator {
             advance_fits || text_box_fits
         } {
             // 문단 전체가 현재 페이지에 들어감
-            st.current_items.push(PageItem::FullParagraph {
-                para_index: para_idx,
-            });
+            storage.push(
+                &mut st.current_items,
+                PageItem::FullParagraph {
+                    para_index: para_idx,
+                },
+            )?;
             st.current_height += para_height;
         } else if let Some(mp) = measured.get_measured_paragraph(para_idx) {
             // 문단이 페이지를 초과 → 줄 단위 분할
@@ -1415,9 +1499,12 @@ impl Paginator {
             let sp_after = mp.spacing_after;
 
             if line_count == 0 {
-                st.current_items.push(PageItem::FullParagraph {
-                    para_index: para_idx,
-                });
+                storage.push(
+                    &mut st.current_items,
+                    PageItem::FullParagraph {
+                        para_index: para_idx,
+                    },
+                )?;
                 st.current_height += para_height;
             } else {
                 // 남은 공간이 없거나 첫 줄도 못 넣으면 플러시
@@ -1426,7 +1513,7 @@ impl Paginator {
                 if (st.current_height >= available_now || remaining_for_lines < first_line_h)
                     && !st.current_items.is_empty()
                 {
-                    st.advance_column_or_new_page();
+                    st.advance_column_or_new_page_with_storage(storage)?;
                 }
 
                 // 줄 단위 분할 루프
@@ -1491,12 +1578,15 @@ impl Paginator {
                             cumulative
                         };
                         if overflow_threshold > avail_for_lines && !st.current_items.is_empty() {
-                            st.advance_column_or_new_page();
+                            st.advance_column_or_new_page_with_storage(storage)?;
                             continue;
                         }
-                        st.current_items.push(PageItem::FullParagraph {
-                            para_index: para_idx,
-                        });
+                        storage.push(
+                            &mut st.current_items,
+                            PageItem::FullParagraph {
+                                para_index: para_idx,
+                            },
+                        )?;
                         // vpos 기준점: 페이지 분할 후 FP으로 배치된 경우
                         if st.page_vpos_base.is_none() {
                             if let Some(seg) = para.line_segs.first() {
@@ -1504,11 +1594,14 @@ impl Paginator {
                             }
                         }
                     } else {
-                        st.current_items.push(PageItem::PartialParagraph {
-                            para_index: para_idx,
-                            start_line: cursor_line,
-                            end_line,
-                        });
+                        storage.push(
+                            &mut st.current_items,
+                            PageItem::PartialParagraph {
+                                para_index: para_idx,
+                                start_line: cursor_line,
+                                end_line,
+                            },
+                        )?;
                         // vpos 기준점: 페이지 분할 후 PP로 배치된 경우
                         if st.page_vpos_base.is_none() {
                             if let Some(seg) = para.line_segs.get(cursor_line) {
@@ -1523,7 +1616,7 @@ impl Paginator {
                     }
 
                     // 나머지 줄 → 다음 단 또는 새 페이지
-                    st.advance_column_or_new_page();
+                    st.advance_column_or_new_page_with_storage(storage)?;
                     cursor_line = end_line;
 
                     // 새 페이지 시작 시 vpos 기준점 설정 (분할 시작 줄 기준)
@@ -1537,11 +1630,16 @@ impl Paginator {
             }
         } else {
             // MeasuredParagraph 없음 (fallback)
-            st.current_items.push(PageItem::FullParagraph {
-                para_index: para_idx,
-            });
+            storage.push(
+                &mut st.current_items,
+                PageItem::FullParagraph {
+                    para_index: para_idx,
+                },
+            )?;
             st.current_height += para_height;
         }
+
+        Ok(())
     }
 
     /// LINE_SEG vpos-reset에 의한 강제 분리 처리.
@@ -1550,7 +1648,7 @@ impl Paginator {
     /// 문단을 forced_breaks 위치에서 PartialParagraph로 분리하고 단/페이지를 진행한다.
     ///
     /// 각 세그먼트가 단일 단/페이지를 초과할 경우 자연 줄 분할로 fallback.
-    fn paginate_with_forced_breaks(
+    fn paginate_with_forced_breaks_with_storage<S: crate::storage::Storage>(
         &self,
         st: &mut PaginationState,
         para_idx: usize,
@@ -1558,35 +1656,43 @@ impl Paginator {
         measured: &MeasuredSection,
         forced_breaks: &[usize],
         base_available_height: f64,
-    ) {
+        storage: &S,
+    ) -> Result<(), S::Error> {
         let Some(mp) = measured.get_measured_paragraph(para_idx) else {
             // 측정 정보 없음 → fallback FullParagraph
-            st.current_items.push(PageItem::FullParagraph {
-                para_index: para_idx,
-            });
-            return;
+            storage.push(
+                &mut st.current_items,
+                PageItem::FullParagraph {
+                    para_index: para_idx,
+                },
+            )?;
+            return Ok(());
         };
 
         let line_count = mp.line_heights.len();
         if line_count == 0 {
-            st.current_items.push(PageItem::FullParagraph {
-                para_index: para_idx,
-            });
-            return;
+            storage.push(
+                &mut st.current_items,
+                PageItem::FullParagraph {
+                    para_index: para_idx,
+                },
+            )?;
+            return Ok(());
         }
 
         let sp_before = mp.spacing_before;
         let sp_after = mp.spacing_after;
 
         // 세그먼트 경계: [0, fb1, fb2, ..., line_count]
-        let mut boundaries: Vec<usize> = vec![0];
-        boundaries.extend(
+        let mut boundaries: Vec<usize> = storage.collect([0])?;
+        storage.extend(
+            &mut boundaries,
             forced_breaks
                 .iter()
                 .copied()
                 .filter(|&b| b > 0 && b < line_count),
-        );
-        boundaries.push(line_count);
+        )?;
+        storage.push(&mut boundaries, line_count)?;
         boundaries.dedup();
 
         for win_idx in 0..boundaries.len() - 1 {
@@ -1662,21 +1768,27 @@ impl Paginator {
                     || remaining_for_lines < first_line_h)
                     && !st.current_items.is_empty()
                 {
-                    st.advance_column_or_new_page();
+                    st.advance_column_or_new_page_with_storage(storage)?;
                     continue;
                 }
 
                 // 세그먼트 전체가 한 번에 배치되었고 문단 전체이면 FullParagraph
                 if cursor_line == 0 && end_line >= line_count {
-                    st.current_items.push(PageItem::FullParagraph {
-                        para_index: para_idx,
-                    });
+                    storage.push(
+                        &mut st.current_items,
+                        PageItem::FullParagraph {
+                            para_index: para_idx,
+                        },
+                    )?;
                 } else {
-                    st.current_items.push(PageItem::PartialParagraph {
-                        para_index: para_idx,
-                        start_line: cursor_line,
-                        end_line,
-                    });
+                    storage.push(
+                        &mut st.current_items,
+                        PageItem::PartialParagraph {
+                            para_index: para_idx,
+                            start_line: cursor_line,
+                            end_line,
+                        },
+                    )?;
                 }
 
                 if st.page_vpos_base.is_none() {
@@ -1690,19 +1802,21 @@ impl Paginator {
 
                 if cursor_line < seg_end {
                     // 세그먼트 내부 자연 분할 → 다음 단/페이지
-                    st.advance_column_or_new_page();
+                    st.advance_column_or_new_page_with_storage(storage)?;
                 }
             }
 
             // 세그먼트 종료 시점이 마지막이 아니면 강제 분리 (vpos-reset)
             if !is_last_segment {
-                st.advance_column_or_new_page();
+                st.advance_column_or_new_page_with_storage(storage)?;
             }
         }
+
+        Ok(())
     }
 
     /// 다단 문단의 단별 PartialParagraph 분할
-    fn paginate_multicolumn_paragraph(
+    fn paginate_multicolumn_paragraph_with_storage<S: crate::storage::Storage>(
         &self,
         st: &mut PaginationState,
         para_idx: usize,
@@ -1710,7 +1824,8 @@ impl Paginator {
         measured: &MeasuredSection,
         para_height: f64,
         col_breaks: &[usize],
-    ) {
+        storage: &S,
+    ) -> Result<(), S::Error> {
         let line_count = para.line_segs.len();
         let measured_line_count = measured
             .get_measured_paragraph(para_idx)
@@ -1736,27 +1851,35 @@ impl Paginator {
             };
 
             if break_start == 0 && break_end == line_count {
-                st.current_items.push(PageItem::FullParagraph {
-                    para_index: para_idx,
-                });
+                storage.push(
+                    &mut st.current_items,
+                    PageItem::FullParagraph {
+                        para_index: para_idx,
+                    },
+                )?;
             } else {
-                st.current_items.push(PageItem::PartialParagraph {
-                    para_index: para_idx,
-                    start_line: break_start,
-                    end_line: break_end,
-                });
+                storage.push(
+                    &mut st.current_items,
+                    PageItem::PartialParagraph {
+                        para_index: para_idx,
+                        start_line: break_start,
+                        end_line: break_end,
+                    },
+                )?;
             }
             st.current_height += part_height;
 
             // 마지막 부분이 아니면 다음 단으로 이동
             if bi + 1 < col_breaks.len() {
-                st.advance_column_or_new_page();
+                st.advance_column_or_new_page_with_storage(storage)?;
             }
         }
+
+        Ok(())
     }
 
     /// 인라인 컨트롤 처리 (표/도형/각주)
-    fn process_controls(
+    fn process_controls_with_storage<S: crate::storage::Storage>(
         &self,
         st: &mut PaginationState,
         para_idx: usize,
@@ -1769,7 +1892,8 @@ impl Paginator {
         page_def: &PageDef,
         para_start_height: f64,
         tac_seg_width_fallback_hu: i32,
-    ) {
+        storage: &S,
+    ) -> Result<(), S::Error> {
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
             match ctrl {
                 Control::Table(table) => {
@@ -1794,10 +1918,13 @@ impl Paginator {
                                 | crate::model::shape::TextWrap::BehindText
                         )
                     {
-                        st.current_items.push(PageItem::Shape {
-                            para_index: para_idx,
-                            control_index: ctrl_idx,
-                        });
+                        storage.push(
+                            &mut st.current_items,
+                            PageItem::Shape {
+                                para_index: para_idx,
+                                control_index: ctrl_idx,
+                            },
+                        )?;
                         continue;
                     }
                     // 페이지 하단/중앙 고정 비-TAC 표 (vert=Page/Paper + Bottom/Center):
@@ -1818,10 +1945,13 @@ impl Paginator {
                                 | crate::model::shape::VertAlign::Center
                         )
                     {
-                        st.current_items.push(PageItem::Table {
-                            para_index: para_idx,
-                            control_index: ctrl_idx,
-                        });
+                        storage.push(
+                            &mut st.current_items,
+                            PageItem::Table {
+                                para_index: para_idx,
+                                control_index: ctrl_idx,
+                            },
+                        )?;
                         continue;
                     }
                     // treat_as_char 표: 인라인이면 skip
@@ -1839,7 +1969,7 @@ impl Paginator {
                             continue;
                         }
                     }
-                    self.paginate_table_control(
+                    self.paginate_table_control_with_storage(
                         st,
                         para_idx,
                         ctrl_idx,
@@ -1850,20 +1980,22 @@ impl Paginator {
                         para_height_for_fit,
                         base_available_height,
                         para_start_height,
-                    );
+                        storage,
+                    )?;
                 }
                 Control::Shape(shape_obj) => {
                     // [Issue #476/#4092] treat_as_char 그림/도형은 박스가 속한 line 이 라우팅된 페이지/단에 등록.
                     // paragraph 가 페이지 분할되면 process_controls 시점에 st.current_items 는 마지막
                     // 페이지 상태이므로, 그대로 push 하면 박스가 잘못된 페이지에 떠 있게 된다.
                     let routed = if super::is_routable_treat_as_char_picture_or_shape(ctrl) {
-                        super::find_inline_control_target_page(
+                        super::find_inline_control_target_page_with_storage(
                             &st.pages,
                             &st.current_items,
                             para_idx,
                             ctrl_idx,
                             para,
-                        )
+                            storage,
+                        )?
                     } else {
                         None
                     };
@@ -1876,16 +2008,16 @@ impl Paginator {
                             // 이전 페이지의 해당 단 items 에 직접 push
                             if let Some(page) = st.pages.get_mut(page_idx) {
                                 if let Some(col) = page.column_contents.get_mut(col_idx) {
-                                    col.items.push(item);
+                                    storage.push(&mut col.items, item)?;
                                 } else {
-                                    st.current_items.push(item);
+                                    storage.push(&mut st.current_items, item)?;
                                 }
                             } else {
-                                st.current_items.push(item);
+                                storage.push(&mut st.current_items, item)?;
                             }
                         }
                         None => {
-                            st.current_items.push(item);
+                            storage.push(&mut st.current_items, item)?;
                         }
                     }
                     // 글상자 내 각주 수집
@@ -1894,16 +2026,19 @@ impl Paginator {
                             for (tc_idx, tc) in tp.controls.iter().enumerate() {
                                 if let Control::Footnote(fn_ctrl) = tc {
                                     if let Some(page) = st.pages.last_mut() {
-                                        page.footnotes.push(FootnoteRef {
-                                            number: fn_ctrl.number,
-                                            source: FootnoteSource::ShapeTextBox {
-                                                para_index: para_idx,
-                                                shape_control_index: ctrl_idx,
-                                                tb_para_index: tp_idx,
-                                                tb_control_index: tc_idx,
+                                        storage.push(
+                                            &mut page.footnotes,
+                                            FootnoteRef {
+                                                number: fn_ctrl.number,
+                                                source: FootnoteSource::ShapeTextBox {
+                                                    para_index: para_idx,
+                                                    shape_control_index: ctrl_idx,
+                                                    tb_para_index: tp_idx,
+                                                    tb_control_index: tc_idx,
+                                                },
+                                                fragment: None,
                                             },
-                                            fragment: None,
-                                        });
+                                        )?;
                                         let fn_height = super::estimate_footnote_note_height(
                                             &fn_ctrl, self.dpi,
                                         );
@@ -1915,10 +2050,13 @@ impl Paginator {
                     }
                 }
                 Control::Picture(pic) => {
-                    st.current_items.push(PageItem::Shape {
-                        para_index: para_idx,
-                        control_index: ctrl_idx,
-                    });
+                    storage.push(
+                        &mut st.current_items,
+                        PageItem::Shape {
+                            para_index: para_idx,
+                            control_index: ctrl_idx,
+                        },
+                    )?;
                     // 비-TAC 그림: 본문 공간을 차지하는 배치이면 높이 추가 (Task #10)
                     if !pic.common.treat_as_char
                         && matches!(
@@ -1939,21 +2077,27 @@ impl Paginator {
                     }
                 }
                 Control::Equation(_) => {
-                    st.current_items.push(PageItem::Shape {
-                        para_index: para_idx,
-                        control_index: ctrl_idx,
-                    });
+                    storage.push(
+                        &mut st.current_items,
+                        PageItem::Shape {
+                            para_index: para_idx,
+                            control_index: ctrl_idx,
+                        },
+                    )?;
                 }
                 Control::Footnote(fn_ctrl) => {
                     if let Some(page) = st.pages.last_mut() {
-                        page.footnotes.push(FootnoteRef {
-                            number: fn_ctrl.number,
-                            source: FootnoteSource::Body {
-                                para_index: para_idx,
-                                control_index: ctrl_idx,
+                        storage.push(
+                            &mut page.footnotes,
+                            FootnoteRef {
+                                number: fn_ctrl.number,
+                                source: FootnoteSource::Body {
+                                    para_index: para_idx,
+                                    control_index: ctrl_idx,
+                                },
+                                fragment: None,
                             },
-                            fragment: None,
-                        });
+                        )?;
                         let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
                         st.add_footnote_height(fn_height);
                     }
@@ -1961,10 +2105,12 @@ impl Paginator {
                 _ => {}
             }
         }
+
+        Ok(())
     }
 
     /// 표 페이지 분할
-    fn paginate_table_control(
+    fn paginate_table_control_with_storage<S: crate::storage::Storage>(
         &self,
         st: &mut PaginationState,
         para_idx: usize,
@@ -1976,50 +2122,49 @@ impl Paginator {
         para_height_for_fit: f64,
         base_available_height: f64,
         para_start_height: f64,
-    ) {
+        storage: &S,
+    ) -> Result<(), S::Error> {
         let table = if let Control::Table(t) = &para.controls[ctrl_idx] {
             t
         } else {
-            return;
+            return Ok(());
         };
         let measured_table = measured.get_measured_table(para_idx, ctrl_idx);
         // 표 본체 높이 (캡션 제외 — 캡션은 host_spacing/caption_overhead에서 별도 처리)
-        let effective_height = measured_table
-            .map(|mt| {
-                let cap_h = mt.caption_height;
-                let cap_s = if cap_h > 0.0 {
-                    table
-                        .caption
-                        .as_ref()
-                        .map(|c| crate::renderer::hwpunit_to_px(c.spacing as i32, self.dpi))
-                        .unwrap_or(0.0)
-                } else {
-                    0.0
-                };
-                mt.total_height - cap_h - cap_s
-            })
-            .unwrap_or_else(|| {
-                let row_count = table.row_count as usize;
-                let mut row_heights = vec![0.0f64; row_count];
-                for cell in &table.cells {
-                    if cell.row_span == 1 && (cell.row as usize) < row_count {
-                        let h = crate::renderer::hwpunit_to_px(cell.height as i32, self.dpi);
-                        if h > row_heights[cell.row as usize] {
-                            row_heights[cell.row as usize] = h;
-                        }
+        let effective_height = if let Some(mt) = measured_table {
+            let cap_h = mt.caption_height;
+            let cap_s = if cap_h > 0.0 {
+                table
+                    .caption
+                    .as_ref()
+                    .map(|c| crate::renderer::hwpunit_to_px(c.spacing as i32, self.dpi))
+                    .unwrap_or(0.0)
+            } else {
+                0.0
+            };
+            mt.total_height - cap_h - cap_s
+        } else {
+            let row_count = table.row_count as usize;
+            let mut row_heights = storage.filled(row_count, 0.0f64)?;
+            for cell in &table.cells {
+                if cell.row_span == 1 && (cell.row as usize) < row_count {
+                    let h = crate::renderer::hwpunit_to_px(cell.height as i32, self.dpi);
+                    if h > row_heights[cell.row as usize] {
+                        row_heights[cell.row as usize] = h;
                     }
                 }
-                let table_height: f64 = row_heights.iter().sum();
-                if table_height > 0.0 {
-                    table_height
-                } else {
-                    crate::renderer::hwpunit_to_px(1000, self.dpi)
-                }
-            });
+            }
+            let table_height: f64 = row_heights.iter().sum();
+            if table_height > 0.0 {
+                table_height
+            } else {
+                crate::renderer::hwpunit_to_px(1000, self.dpi)
+            }
+        };
 
         // 표 내 각주 높이 사전 계산
         let mut table_footnote_height = 0.0;
-        let table_notes = super::table_cell_footnotes(table);
+        let table_notes = super::table_cell_footnotes_with_storage(table, storage)?;
         let table_footnote_count = table_notes.len();
         for (_, fn_ctrl) in &table_notes {
             let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
@@ -2211,7 +2356,7 @@ impl Paginator {
         // 표가 현재 페이지에 전체 들어가는지 확인
         // 텍스트 문단과 동일한 0.5px 부동소수점 톨러런스 적용
         if st.current_height + effective_table_height <= table_available_height + 0.5 {
-            self.place_table_fits(
+            self.place_table_fits_with_storage(
                 st,
                 para_idx,
                 ctrl_idx,
@@ -2225,13 +2370,14 @@ impl Paginator {
                 para_start_height,
                 effective_height,
                 caption_extra_for_current,
-            );
+                storage,
+            )?;
         } else if is_tac_table {
             // 글자처럼 취급 표: 페이지에 걸치지 않고 통째로 다음 페이지로 이동
             if !st.current_items.is_empty() {
-                st.advance_column_or_new_page();
+                st.advance_column_or_new_page_with_storage(storage)?;
             }
-            self.place_table_fits(
+            self.place_table_fits_with_storage(
                 st,
                 para_idx,
                 ctrl_idx,
@@ -2245,10 +2391,11 @@ impl Paginator {
                 para_start_height,
                 effective_height,
                 caption_extra_for_current,
-            );
+                storage,
+            )?;
         } else if let Some(mt) = measured_table {
             // 비-TAC 표: 행 단위 분할
-            self.split_table_rows(
+            self.split_table_rows_with_storage(
                 st,
                 para_idx,
                 ctrl_idx,
@@ -2262,35 +2409,46 @@ impl Paginator {
                 host_spacing,
                 spacing_before_px,
                 is_tac_table,
-            );
+                storage,
+            )?;
         } else {
             // MeasuredTable 없으면 기존 방식 (전체 배치)
             if !st.current_items.is_empty() {
-                st.advance_column_or_new_page();
+                st.advance_column_or_new_page_with_storage(storage)?;
             }
-            st.current_items.push(PageItem::Table {
-                para_index: para_idx,
-                control_index: ctrl_idx,
-            });
+            storage.push(
+                &mut st.current_items,
+                PageItem::Table {
+                    para_index: para_idx,
+                    control_index: ctrl_idx,
+                },
+            )?;
             st.current_height += effective_height;
         }
 
         // 표 셀 내 각주 수집
         for (cell_path, fn_ctrl) in table_notes {
             if let Some(page) = st.pages.last_mut() {
-                page.footnotes.push(FootnoteRef {
-                    number: fn_ctrl.number,
-                    source: FootnoteSource::table_cell_path(para_idx, ctrl_idx, &cell_path),
-                    fragment: None,
-                });
+                storage.push(
+                    &mut page.footnotes,
+                    FootnoteRef {
+                        number: fn_ctrl.number,
+                        source: FootnoteSource::table_cell_path_with_storage(
+                            para_idx, ctrl_idx, &cell_path, storage,
+                        )?,
+                        fragment: None,
+                    },
+                )?;
                 let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
                 st.add_footnote_height(fn_height);
             }
         }
+
+        Ok(())
     }
 
     /// 표가 현재 페이지에 전체 들어가는 경우
-    fn place_table_fits(
+    fn place_table_fits_with_storage<S: crate::storage::Storage>(
         &self,
         st: &mut PaginationState,
         para_idx: usize,
@@ -2305,7 +2463,8 @@ impl Paginator {
         para_start_height: f64,
         effective_height: f64,
         caption_extra_for_current: f64,
-    ) {
+        storage: &S,
+    ) -> Result<(), S::Error> {
         let vertical_offset = Self::get_table_vertical_offset(table);
         // 어울림 표(text_wrap=0)는 호스트 텍스트를 wrap 영역에서 처리
         let is_wrap_around_table = !table.common.treat_as_char
@@ -2351,19 +2510,25 @@ impl Paginator {
                 } else {
                     mp.line_advances_sum(0..pre_table_end_line)
                 };
-                st.current_items.push(PageItem::PartialParagraph {
-                    para_index: para_idx,
-                    start_line: 0,
-                    end_line: pre_table_end_line,
-                });
+                storage.push(
+                    &mut st.current_items,
+                    PageItem::PartialParagraph {
+                        para_index: para_idx,
+                        start_line: 0,
+                        end_line: pre_table_end_line,
+                    },
+                )?;
                 st.current_height += pre_height;
             }
 
             // 표 배치
-            st.current_items.push(PageItem::Table {
-                para_index: para_idx,
-                control_index: ctrl_idx,
-            });
+            storage.push(
+                &mut st.current_items,
+                PageItem::Table {
+                    para_index: para_idx,
+                    control_index: ctrl_idx,
+                },
+            )?;
             // 비-TAC 자리차지 표(wrap=TopAndBottom, vert_offset>0, vert=Para):
             // 피트 판단은 문단 시작 y 기준 독립 배치이지만,
             // 후속 문단은 이 표의 하단 이후에 배치되어야 하므로
@@ -2431,11 +2596,14 @@ impl Paginator {
                 && !pre_text_exists
             {
                 let post_height: f64 = mp.line_advances_sum(post_table_start..total_lines);
-                st.current_items.push(PageItem::PartialParagraph {
-                    para_index: para_idx,
-                    start_line: post_table_start,
-                    end_line: total_lines,
-                });
+                storage.push(
+                    &mut st.current_items,
+                    PageItem::PartialParagraph {
+                        para_index: para_idx,
+                        start_line: post_table_start,
+                        end_line: total_lines,
+                    },
+                )?;
                 st.current_height += post_height;
             }
 
@@ -2443,16 +2611,21 @@ impl Paginator {
             // effective_height + host_spacing 기반 높이를 사용하므로
             // LINE_SEG trailing을 별도 추가하지 않는다.
         } else {
-            st.current_items.push(PageItem::Table {
-                para_index: para_idx,
-                control_index: ctrl_idx,
-            });
+            storage.push(
+                &mut st.current_items,
+                PageItem::Table {
+                    para_index: para_idx,
+                    control_index: ctrl_idx,
+                },
+            )?;
             st.current_height += table_total_height + caption_extra_for_current;
         }
+
+        Ok(())
     }
 
     /// 표 행 단위 분할
-    fn split_table_rows(
+    fn split_table_rows_with_storage<S: crate::storage::Storage>(
         &self,
         st: &mut PaginationState,
         para_idx: usize,
@@ -2467,7 +2640,8 @@ impl Paginator {
         host_spacing: f64,
         spacing_before_px: f64,
         _is_tac_table: bool,
-    ) {
+        storage: &S,
+    ) -> Result<(), S::Error> {
         // [Issue #4326] `mt`(MeasuredTable)는 `HeightMeasurer::measure_table_impl`이
         // 투명 1×1 래퍼를 벗긴 표를 기준으로 만들어질 수 있다 — `row_count`/`row_heights`가
         // `table`(바깥 컨트롤 표) 자신의 행 수와 다를 수 있다는 뜻이다. 이 함수가 아래에서
@@ -2548,7 +2722,7 @@ impl Paginator {
                 f64::MAX
             };
             if !first_row_splittable || remaining_on_page < min_content {
-                st.advance_column_or_new_page();
+                st.advance_column_or_new_page_with_storage(storage)?;
             }
         }
 
@@ -2829,31 +3003,37 @@ impl Paginator {
                     0.0
                 };
                 if cursor_row == 0 && !is_continuation && content_offset == 0.0 {
-                    st.current_items.push(PageItem::Table {
-                        para_index: para_idx,
-                        control_index: ctrl_idx,
-                    });
+                    storage.push(
+                        &mut st.current_items,
+                        PageItem::Table {
+                            para_index: para_idx,
+                            control_index: ctrl_idx,
+                        },
+                    )?;
                     st.current_height += partial_height + host_spacing;
                 } else {
-                    st.current_items.push(PageItem::PartialTable {
-                        para_index: para_idx,
-                        control_index: ctrl_idx,
-                        start_row: cursor_row,
-                        end_row,
-                        is_continuation,
-                        start_cut: Vec::new(),
-                        end_cut: Vec::new(),
-                        is_block_split: false,
-                        start_cut_is_block: false,
-                        row_cursor_is_nested,
-                        end_row_height_override: None,
-                        start_row_height_override: None,
-                        straddle_row_relief: Vec::new(),
-                        straddle_page_bands: Vec::new(),
-                        fragment_row_heights: None,
-                        fragment_block_frames: Vec::new(),
-                        end_row_owns_stored_frame: false,
-                    });
+                    storage.push(
+                        &mut st.current_items,
+                        PageItem::PartialTable {
+                            para_index: para_idx,
+                            control_index: ctrl_idx,
+                            start_row: cursor_row,
+                            end_row,
+                            is_continuation,
+                            start_cut: Vec::new(),
+                            end_cut: Vec::new(),
+                            is_block_split: false,
+                            start_cut_is_block: false,
+                            row_cursor_is_nested,
+                            end_row_height_override: None,
+                            start_row_height_override: None,
+                            straddle_row_relief: Vec::new(),
+                            straddle_page_bands: Vec::new(),
+                            fragment_row_heights: None,
+                            fragment_block_frames: Vec::new(),
+                            end_row_owns_stored_frame: false,
+                        },
+                    )?;
                     // 마지막 부분 표: spacing_after도 포함 (레이아웃과 일치)
                     let mp = measured.get_measured_paragraph(para_idx);
                     let sa = mp.map(|m| m.spacing_after).unwrap_or(0.0);
@@ -2863,26 +3043,29 @@ impl Paginator {
             }
 
             // 부분 표 배치
-            st.current_items.push(PageItem::PartialTable {
-                para_index: para_idx,
-                control_index: ctrl_idx,
-                start_row: cursor_row,
-                end_row,
-                is_continuation,
-                start_cut: Vec::new(),
-                end_cut: Vec::new(),
-                is_block_split: false,
-                start_cut_is_block: false,
-                row_cursor_is_nested,
-                end_row_height_override: None,
-                start_row_height_override: None,
-                straddle_row_relief: Vec::new(),
-                straddle_page_bands: Vec::new(),
-                fragment_row_heights: None,
-                fragment_block_frames: Vec::new(),
-                end_row_owns_stored_frame: false,
-            });
-            st.advance_column_or_new_page();
+            storage.push(
+                &mut st.current_items,
+                PageItem::PartialTable {
+                    para_index: para_idx,
+                    control_index: ctrl_idx,
+                    start_row: cursor_row,
+                    end_row,
+                    is_continuation,
+                    start_cut: Vec::new(),
+                    end_cut: Vec::new(),
+                    is_block_split: false,
+                    start_cut_is_block: false,
+                    row_cursor_is_nested,
+                    end_row_height_override: None,
+                    start_row_height_override: None,
+                    straddle_row_relief: Vec::new(),
+                    straddle_page_bands: Vec::new(),
+                    fragment_row_heights: None,
+                    fragment_block_frames: Vec::new(),
+                    end_row_owns_stored_frame: false,
+                },
+            )?;
+            st.advance_column_or_new_page_with_storage(storage)?;
 
             // 커서 전진
             if split_end_limit > 0.0 {
@@ -2899,17 +3082,22 @@ impl Paginator {
             }
             is_continuation = true;
         }
+
+        Ok(())
     }
 
     /// 페이지 번호 재설정 및 머리말/꼬리말 할당
-    fn finalize_pages(
+    fn finalize_pages_with_storage<S: crate::storage::Storage>(
         pages: &mut [PageContent],
         hf_entries: &[(usize, HeaderFooterRef, bool, HeaderFooterApply)],
         page_number_pos: &Option<crate::model::control::PageNumberPos>,
         paragraphs: &[Paragraph],
-    ) {
+        storage: &S,
+    ) -> Result<(), S::Error> {
         // 쪽번호: PageNumberAssigner 가 NewNumber 1회 적용 + 단조 증가를 보장 (Issue #353)
-        let events = crate::renderer::page_number::PageControlEvents::collect(pages, paragraphs);
+        let events = crate::renderer::page_number::PageControlEvents::collect_with_storage(
+            pages, paragraphs, storage,
+        )?;
         let mut assigner =
             crate::renderer::page_number::PageNumberAssigner::new_for_pages(&events.new_numbers, 1);
         // 머리말/꼬리말은 한번 설정되면 이후 페이지에도 유지 (누적).
@@ -2918,24 +3106,22 @@ impl Paginator {
         // 머리말/꼬리말은 정의된 문단이 등장하는 페이지부터 적용
         // (전체 스캔 초기 등록 제거 — 각 페이지의 범위 내 머리말만 누적)
         // 각 페이지의 다음 페이지 첫 문단 인덱스 사전 계산 (borrow 충돌 방지)
-        let next_page_first_paras: Vec<usize> = (0..pages.len())
-            .map(|i| {
-                pages
-                    .get(i + 1)
-                    .and_then(|p| p.column_contents.first())
-                    .and_then(|cc| {
-                        cc.items.iter().find_map(|item| match item {
-                            PageItem::FullParagraph { para_index } => Some(*para_index),
-                            PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
-                            PageItem::Table { para_index, .. } => Some(*para_index),
-                            PageItem::PartialTable { para_index, .. } => Some(*para_index),
-                            PageItem::Shape { para_index, .. } => Some(*para_index),
-                            PageItem::EndnoteSeparator { .. } => None,
-                        })
+        let next_page_first_paras: Vec<usize> = storage.collect((0..pages.len()).map(|i| {
+            pages
+                .get(i + 1)
+                .and_then(|p| p.column_contents.first())
+                .and_then(|cc| {
+                    cc.items.iter().find_map(|item| match item {
+                        PageItem::FullParagraph { para_index } => Some(*para_index),
+                        PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
+                        PageItem::Table { para_index, .. } => Some(*para_index),
+                        PageItem::PartialTable { para_index, .. } => Some(*para_index),
+                        PageItem::Shape { para_index, .. } => Some(*para_index),
+                        PageItem::EndnoteSeparator { .. } => None,
                     })
-                    .unwrap_or(usize::MAX)
-            })
-            .collect();
+                })
+                .unwrap_or(usize::MAX)
+        }))?;
         for (i, page) in pages.iter_mut().enumerate() {
             page.page_index = i as u32;
 
@@ -2956,28 +3142,34 @@ impl Paginator {
 
             // 현재 페이지까지의 머리말/꼬리말 업데이트
             // 현재 페이지의 마지막 문단까지만 포함 (다음 페이지 첫 문단의 머리말은 다음 페이지에서 등록)
-            active_hf.accumulate(hf_entries, page_last_para);
+            active_hf.accumulate_with_storage(hf_entries, page_last_para, storage)?;
 
-            let page_num_u32 = assigner.assign(page);
+            let page_num_u32 = assigner.assign_with_storage(page, storage)?;
             page.page_number = page_num_u32;
             page.page_number_restarted = assigner.last_restarted();
 
-            let (active_header, active_footer) = active_hf.active(page_num_u32);
+            let (active_header, active_footer) =
+                active_hf.active_with_storage(page_num_u32, storage)?;
             page.active_header = active_header;
             page.active_footer = active_footer;
 
             if !events.positions.is_empty() {
-                page.page_number_pos = events.active_position(i).cloned();
+                page.page_number_pos = events
+                    .active_position(i)
+                    .map(|value| crate::storage::try_clone(value, storage))
+                    .transpose()?;
             } else if !assigner.should_hide_page_number() {
-                page.page_number_pos = page_number_pos.clone();
+                page.page_number_pos = crate::storage::try_clone(page_number_pos, storage)?;
             }
             // 한 컨트롤의 감추기는 소스 위치가 매핑된 한 쪽에만 적용한다.
             if let Some((_, hide)) = events.hides.iter().rev().find(|(target, _)| *target == i) {
-                page.page_hide = Some(hide.clone());
+                page.page_hide = Some(crate::storage::try_clone(hide, storage)?);
             }
 
             let _ = page_last_para;
         }
+
+        Ok(())
     }
 
     /// 문단 인덱스가 해당 페이지에 속하는지 확인

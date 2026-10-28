@@ -508,6 +508,7 @@ export class CanvasView {
     this.zoomRefreshRequired = this.viewportManager.cancelPendingZoomRaster() || this.zoomRefreshRequired;
     const decisionChanged = this.activeRendererDecisionKey !== selection.diagnostics.decisionKey;
     if (decisionChanged) this.pageSurfaceLru?.clear();
+    const backendChanged = this.pageRenderer.getBackend() !== selection.backend;
     const changed = this.pageRenderer.configure(
       selection.backend,
       selection.diagnostics.renderProfile,
@@ -518,6 +519,10 @@ export class CanvasView {
           || selection.diagnostics.fallbackReason === 'canvaskitRuntimeFailed'
         ),
     );
+    if (backendChanged) {
+      this.releaseAllRenderedPages();
+      this.canvasPool.discardAll();
+    }
     if (decisionChanged && !changed) this.pageRenderer.invalidateDocumentRevision();
     this.activeRendererDecisionKey = selection.diagnostics.decisionKey;
     this.eventBus.emit('renderer-selection-changed', selection.diagnostics);

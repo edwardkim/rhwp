@@ -17,28 +17,43 @@ struct Envelope {
     programs: Vec<Vec<Option<NativeFontProgram>>>,
 }
 
-pub(crate) fn encode(info: &DocInfo, header: &[u8]) -> Option<Vec<u8>> {
+pub(crate) fn encode_with_storage<S: crate::storage::Storage>(
+    info: &DocInfo,
+    header: &[u8],
+    storage: &S,
+) -> Result<Option<Vec<u8>>, String>
+where
+    S::Error: std::fmt::Display,
+{
     if !info
         .font_faces
         .iter()
         .flatten()
         .any(|f| f.native_program.is_some())
     {
-        return None;
+        return Ok(None);
     }
     let envelope = Envelope {
         version: 1,
-        header_sha256: Sha256::digest(header).to_vec(),
-        // HWPX header는 항상 일곱 언어 슬롯을 출력한다.
-        programs: (0..7)
-            .map(|i| {
-                info.font_faces.get(i).map_or_else(Vec::new, |fonts| {
-                    fonts.iter().map(|f| f.native_program).collect()
-                })
-            })
-            .collect(),
+        header_sha256: storage
+            .copy_slice(Sha256::digest(header).as_slice())
+            .map_err(|e| e.to_string())?,
+        // HWPX header always emits seven language slots, including empty slots.
+        programs: storage
+            .try_collect((0..7).map(|i| {
+                storage.collect(
+                    info.font_faces
+                        .get(i)
+                        .into_iter()
+                        .flatten()
+                        .map(|f| f.native_program),
+                )
+            }))
+            .map_err(|e| e.to_string())?,
     };
-    serde_json::to_vec(&envelope).ok()
+    let mut writer = crate::serializer::budget_cursor::BudgetCursor::new(storage, usize::MAX);
+    serde_json::to_writer(&mut writer, &envelope).map_err(|e| e.to_string())?;
+    Ok(Some(writer.into_inner()))
 }
 
 pub(crate) fn decode(info: &mut DocInfo, header: &[u8], bytes: &[u8]) {

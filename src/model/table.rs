@@ -94,6 +94,7 @@ pub enum TablePageBreak {
     /// 나눔 (2) — 행 경계에서만 나눔 (인트라-로우 분할 없음)
     RowBreak,
 }
+crate::storage::clone_copy!(TablePageBreak);
 
 /// 표 영역 속성
 #[derive(Debug, Clone, Default, serde::Serialize)]
@@ -725,30 +726,37 @@ impl Table {
     /// as a whole, so repeating it once per cell makes large native tables
     /// quadratic and can prevent on-demand reflow from completing.
     pub(crate) fn paragraph_frame_owner_widths(&self) -> Vec<i32> {
+        match self.paragraph_frame_owner_widths_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn paragraph_frame_owner_widths_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Vec<i32>, S::Error> {
         #[cfg(test)]
         PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.set(calls.get() + 1));
 
         let to_i32 = |width: u64| width.min(i32::MAX as u64) as i32;
-        let mut owners = self
-            .cells
-            .iter()
-            .map(|cell| to_i32(u64::from(self.physical_cell_width_hu(cell))))
-            .collect::<Vec<_>>();
+        let mut owners =
+            storage.collect(self.cells.iter().map(|cell| to_i32(u64::from(cell.width))))?;
         let col_count = usize::from(self.col_count);
         if owners.is_empty()
             || col_count == 0
             || self.common.treat_as_char
             || self.common.width == 0
         {
-            return owners;
+            return Ok(owners);
         }
 
-        let nonclosing_rows = self.declared_width_rows_exceeding(0);
+        let nonclosing_rows = self.declared_width_rows_exceeding_with_storage(0, storage)?;
 
         // Extract only real single-column evidence. `base_grid_column_widths`
         // intentionally fills holes from the display grid; that fallback would
         // make excluded local/outlier data look like a paragraph-frame base.
-        let mut base_tracks = vec![0u32; col_count];
+        let mut base_tracks = storage.filled(col_count, 0u32)?;
         for cell in &self.cells {
             let col = usize::from(cell.col);
             if cell.row >= self.row_count
@@ -762,7 +770,7 @@ impl Table {
             base_tracks[col] = base_tracks[col].max(self.physical_cell_width_hu(cell));
         }
         if base_tracks.contains(&0) {
-            return owners;
+            return Ok(owners);
         }
         let base_total = base_tracks.iter().copied().map(u64::from).sum::<u64>();
         // 선언 폭에는 바깥 두 간격과 각 열 사이 간격도 들어 있다.
@@ -777,16 +785,19 @@ impl Table {
             }
         }
 
-        let mut rows = vec![Vec::<usize>::new(); usize::from(self.row_count)];
+        let mut rows = storage.vec(usize::from(self.row_count))?;
+        rows.resize_with(usize::from(self.row_count), Vec::<usize>::new);
         for (cell_index, cell) in self.cells.iter().enumerate() {
             if let Some(row) = rows.get_mut(usize::from(cell.row)) {
-                row.push(cell_index);
+                storage.push(row, cell_index)?;
             }
         }
         for (row_index, cell_indices) in rows.iter_mut().enumerate() {
             if nonclosing_rows.contains(&(row_index as u16)) {
                 continue;
             }
+            storage.bytes(std::mem::size_of_val(cell_indices.as_slice()))?;
+            storage.bytes(std::mem::size_of_val(cell_indices.as_slice()))?;
             cell_indices.sort_by_key(|index| self.cells[*index].col);
             let mut next_col = 0usize;
             let mut row_total = 0u64;
@@ -833,7 +844,7 @@ impl Table {
                 owners[cell_index] = to_i32(resolved);
             }
         }
-        owners
+        Ok(owners)
     }
 
     /// Complete row declarations wider than the persisted table width.
@@ -848,20 +859,36 @@ impl Table {
     }
 
     fn declared_width_rows_exceeding(&self, tolerance: u64) -> std::collections::BTreeSet<u16> {
+        match self.declared_width_rows_exceeding_with_storage(tolerance, &crate::storage::Unbounded)
+        {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn declared_width_rows_exceeding_with_storage<S: crate::storage::Storage>(
+        &self,
+        tolerance: u64,
+        storage: &S,
+    ) -> Result<std::collections::BTreeSet<u16>, S::Error> {
         let mut invalid = std::collections::BTreeSet::new();
         let col_count = usize::from(self.col_count);
         if col_count == 0 || self.common.width == 0 {
-            return invalid;
+            return Ok(invalid);
         }
         // 같은 행의 선언만 비교한다. 전체 셀을 행마다 다시 검색하지 않고,
         // 불변 입력을 한 번 모아 원래의 안정적 열 순서로 소비한다.
         let mut by_row = std::collections::BTreeMap::<u16, Vec<&Cell>>::new();
         for cell in &self.cells {
             if cell.row < self.row_count && cell.row_span == 1 {
-                by_row.entry(cell.row).or_default().push(cell);
+                if !by_row.contains_key(&cell.row) {
+                    storage.tree_entry::<u16, Vec<&Cell>>()?;
+                }
+                storage.push(by_row.entry(cell.row).or_default(), cell)?;
             }
         }
         for (row, mut cells) in by_row {
+            storage.bytes(std::mem::size_of_val(cells.as_slice()))?;
             cells.sort_by_key(|cell| cell.col);
             let mut next_col = 0usize;
             let mut total = 0u64;
@@ -882,10 +909,10 @@ impl Table {
                 && next_col == col_count
                 && total.saturating_sub(u64::from(self.common.width)) > tolerance
             {
-                invalid.insert(row);
+                storage.insert_tree_set(&mut invalid, row)?;
             }
         }
-        invalid
+        Ok(invalid)
     }
     /// [#5910] 병합 셀 선언 높이가 걸친 행들의 단일행 선언 합보다 **작을** 때, 한글이
     /// 마지막 걸침 행에서 흡수하는 축소량(HWPUNIT)을 행별로 계산한다.
@@ -1039,6 +1066,16 @@ impl Table {
     /// 패닉 → 모듈 트랩이 된다. 정상 파일은 실측상 최대 52,770 칸이라 아래
     /// 분기가 아예 실행되지 않으므로 동작 불변이다.
     pub fn rebuild_grid(&mut self) {
+        match self.rebuild_grid_with_storage(&crate::storage::Unbounded) {
+            Ok(()) => (),
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn rebuild_grid_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         let rc = self.row_count as usize;
         let cc = self.col_count as usize;
         let requested = rc.saturating_mul(cc);
@@ -1052,7 +1089,7 @@ impl Table {
         } else {
             requested
         };
-        self.cell_grid = vec![None; grid_len];
+        self.cell_grid = storage.filled(grid_len, None)?;
         for (idx, cell) in self.cells.iter().enumerate() {
             // [#4264] row/col은 파일에서 그대로 온 u16이고 span은 상한 검증이 없어
             // (row_span/col_span은 .max(1)로 최소값만 보장) row+row_span이 u16 상한을
@@ -1066,6 +1103,8 @@ impl Table {
                 }
             }
         }
+
+        Ok(())
     }
 
     /// [#2722] 셀이 실제로 가리키는 마지막 그리드 인덱스 + 1.
@@ -1389,31 +1428,56 @@ impl Table {
     /// 넓게 배치돼 본문 오른쪽 여백을 넘었다(samples 전수에서 12문서).
     /// 규칙을 모델로 올려 호출부가 고를 수 없게 한다.
     pub fn flow_width_hu(&self) -> HwpUnit {
-        if let Some(width) = self.closed_inline_grid_width_hu() {
-            width
-        } else if self.common.width > 0 {
-            self.common.width
-        } else {
-            self.get_column_widths().iter().sum()
+        match self.flow_width_hu_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
         }
     }
 
+    pub(crate) fn flow_width_hu_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<HwpUnit, S::Error> {
+        Ok({
+            if let Some(width) = self.closed_inline_grid_width_hu_with_storage(storage)? {
+                return Ok(width);
+            }
+            if self.common.width > 0 {
+                self.common.width
+            } else {
+                self.get_column_widths_with_storage(storage)?.iter().sum()
+            }
+        })
+    }
+
     pub fn get_column_widths(&self) -> Vec<HwpUnit> {
-        let mut widths = vec![0u32; self.col_count as usize];
-        for cell in &self.cells {
-            if cell.col_span == 1 && (cell.col as usize) < widths.len() {
-                if cell.width > widths[cell.col as usize] {
-                    widths[cell.col as usize] = cell.width;
+        match self.get_column_widths_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn get_column_widths_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Vec<HwpUnit>, S::Error> {
+        Ok({
+            let mut widths = storage.filled(self.col_count as usize, 0u32)?;
+            for cell in &self.cells {
+                if cell.col_span == 1 && (cell.col as usize) < widths.len() {
+                    if cell.width > widths[cell.col as usize] {
+                        widths[cell.col as usize] = cell.width;
+                    }
                 }
             }
-        }
-        // 폭이 0인 열은 기본값 1800 HWPUNIT (약 6.35mm)
-        for w in &mut widths {
-            if *w == 0 {
-                *w = 1800;
+            // 폭이 0인 열은 기본값 1800 HWPUNIT (약 6.35mm)
+            for w in &mut widths {
+                if *w == 0 {
+                    *w = 1800;
+                }
             }
-        }
-        widths
+            widths
+        })
     }
 
     /// Base grid column widths.
@@ -1465,20 +1529,40 @@ impl Table {
     /// 행별 높이를 추출한다 (row_span==1인 셀 기준).
     /// 높이가 0인 행은 기본값 400으로 대체 (새 셀 생성용).
     pub fn get_row_heights(&self) -> Vec<HwpUnit> {
-        let mut heights = self.get_raw_row_heights();
+        match self.get_row_heights_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn get_row_heights_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Vec<HwpUnit>, S::Error> {
+        let mut heights = self.get_raw_row_heights_with_storage(storage)?;
         // 높이가 0인 행은 기본값 400 HWPUNIT
         for h in &mut heights {
             if *h == 0 {
                 *h = 400;
             }
         }
-        heights
+        Ok(heights)
     }
 
     /// 행별 높이를 추출한다 (fallback 없이 원본 값 그대로).
     /// 병합 시 원본 height=0 (자동 맞춤) 보존용.
     pub fn get_raw_row_heights(&self) -> Vec<HwpUnit> {
-        let mut heights = vec![0u32; self.row_count as usize];
+        match self.get_raw_row_heights_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn get_raw_row_heights_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Vec<HwpUnit>, S::Error> {
+        let mut heights = storage.filled(self.row_count as usize, 0u32)?;
         for cell in &self.cells {
             if cell.row_span == 1 && (cell.row as usize) < heights.len() {
                 if cell.height > heights[cell.row as usize] {
@@ -1486,7 +1570,7 @@ impl Table {
                 }
             }
         }
-        heights
+        Ok(heights)
     }
 
     /// 여러 행에 걸친 셀이 덮는 측정 행을 표시한다.
@@ -1521,9 +1605,20 @@ impl Table {
 
     /// row_sizes를 행별 실제 셀 개수로 재계산한다.
     pub(crate) fn rebuild_row_sizes(&mut self) {
-        self.row_sizes = (0..self.row_count)
-            .map(|r| self.cells.iter().filter(|c| c.row == r).count() as i16)
-            .collect();
+        match self.rebuild_row_sizes_with_storage(&crate::storage::Unbounded) {
+            Ok(()) => (),
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn rebuild_row_sizes_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        self.row_sizes = storage.collect(
+            (0..self.row_count).map(|r| self.cells.iter().filter(|c| c.row == r).count() as i16),
+        )?;
+        Ok(())
     }
 
     /// 행을 삽입한다.

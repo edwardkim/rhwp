@@ -1,0 +1,38 @@
+{
+  "source": "9cabbff39da17da869bfff3048cfa328b3c17b7b",
+  "rejections": [
+    {
+      "name": "operators-8000001.pdf",
+      "error": "가져오지 못했습니다. Error: PDF_RESOURCE_LIMIT: 유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: content operators 설정을 확인한 뒤 다시 시도하세요.",
+      "activeStatePreserved": true
+    },
+    {
+      "name": "operators-8000000.pdf",
+      "error": "가져오지 못했습니다. Error: PDF_RESOURCE_LIMIT: 유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: content operators 설정을 확인한 뒤 다시 시도하세요.",
+      "activeStatePreserved": true
+    },
+    {
+      "name": "concentrated-4000000.pdf",
+      "error": "가져오지 못했습니다. Error: PDF_RESOURCE_LIMIT: 유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: content operator buffer 설정을 확인한 뒤 다시 시도하세요.",
+      "activeStatePreserved": true
+    },
+    {
+      "name": "cancel-8000000",
+      "error": null,
+      "activeStatePreserved": true
+    }
+  ],
+  "recovery": {
+    "pages": 15,
+    "hwpxBytes": 1256710,
+    "hwpBytes": 652288
+  },
+  "productHashes": [
+    {
+      "url": "http://127.0.0.1:7704/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+      "sha256": "eabd668c471a2d32c96f4a8ae72956030c500901c15f3f32ecd9031d8b57a680"
+    }
+  ],
+  "errors": [],
+  "privateDocument": "aggregate_only_no_source_or_identifying_content"
+}

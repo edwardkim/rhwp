@@ -210,24 +210,21 @@ pub(crate) fn setup_component_params<T: ZByteReaderTrait>(
         img.input_colorspace = ColorSpace::RGB;
     }
 
-    for component in &mut img.components {
-        // compute interleaved image info
-        // h_max contains the maximum horizontal component
+    // Every component uses the frame maxima, including components appearing
+    // before the one with the largest sampling factor in the SOF header.
+    // Progressive coefficient planes and IDCT row strides must agree on this
+    // same MCU grid; a running maximum gives them different padded widths.
+    for component in &img.components {
         img.h_max = max(img.h_max, component.horizontal_sample);
-        // v_max contains the maximum vertical component
         img.v_max = max(img.v_max, component.vertical_sample);
-        img.mcu_width = img.h_max * 8;
-        img.mcu_height = img.v_max * 8;
-        // Number of MCU's per width
-        img.mcu_x = usize::from(img.info.width).div_ceil(img.mcu_width);
-        // Number of MCU's per height
-        img.mcu_y = usize::from(img.info.height).div_ceil(img.mcu_height);
+    }
+    img.mcu_width = img.h_max * 8;
+    img.mcu_height = img.v_max * 8;
+    img.mcu_x = usize::from(img.info.width).div_ceil(img.mcu_width);
+    img.mcu_y = usize::from(img.info.height).div_ceil(img.mcu_height);
+    img.is_interleaved = img.h_max != 1 || img.v_max != 1;
 
-        if img.h_max != 1 || img.v_max != 1 {
-            // interleaved images have horizontal and vertical sampling factors
-            // not equal to 1.
-            img.is_interleaved = true;
-        }
+    for component in &mut img.components {
         // Extract quantization tables from the arrays into components
         let qt_table = *img.qt_tables[component.quantization_table_number as usize]
             .as_ref()
@@ -239,14 +236,13 @@ pub(crate) fn setup_component_params<T: ZByteReaderTrait>(
             })?;
 
         let x = (usize::from(img_width) * component.horizontal_sample + img.h_max - 1) / img.h_max;
-        let y = (usize::from(img_height) * component.horizontal_sample + img.h_max - 1) / img.v_max;
+        let y = (usize::from(img_height) * component.vertical_sample).div_ceil(img.v_max);
         component.x = x;
         component.w2 = img.mcu_x * component.horizontal_sample * 8;
         // probably not needed. :)
         component.y = y;
         component.quantization_table = qt_table;
-        // initially stride contains its horizontal sub-sampling
-        component.width_stride *= img.mcu_x * 8;
+        component.width_stride = component.w2;
     }
     {
         // Sampling factors are one thing that suck

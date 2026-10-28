@@ -1,0 +1,25 @@
+{
+  "command": [
+    "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s05-20261025/candidate-native/rhwp",
+    "import-pdf",
+    "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/environment-observation.pdf",
+    "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/environment-observation.hwpx",
+    "--resource-profile",
+    "constrained",
+    "--json"
+  ],
+  "observation": {
+    "own_sentinel_present": false,
+    "own_font_path_forwarded": true,
+    "worker_nonce_present": true,
+    "no_new_privs": "1",
+    "limits": [
+      "Max cpu time              20                   20                   seconds   ",
+      "Max core file size        0                    0                    bytes     ",
+      "Max address space         1073741824           1073741824           bytes     "
+    ],
+    "scope": "Only presence of owned sentinels and selected OS fields read; no ambient environment values captured"
+  },
+  "exit": 1,
+  "output_sentinel_preserved": true
+}

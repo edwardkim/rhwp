@@ -73,7 +73,7 @@ export const MUTATING_METHODS: readonly string[] = [
   // 필드/양식/찾아바꾸기/책갈피
   'insertHyperlink', 'updateHyperlink', 'replaceHyperlinkText', 'removeHyperlink',
   'setFieldValue', 'setFieldValueByName', 'removeFieldAt', 'insertClickHereField',
-  'updateClickHereProps', 'setFormValue', 'setFormValueInCell',
+  'updateClickHereProps', 'setFormValue', 'setFormValueInCell', 'applyFormActionUpdates',
   'replaceText', 'replaceOne', 'replaceAll',
   'addBookmark', 'deleteBookmark', 'renameBookmark',
   // lineseg 재계산 (#177 — 저장 lineseg 를 실제로 변경)

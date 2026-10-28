@@ -388,8 +388,15 @@ fn parse_settings_print_method(xml: &str) -> Option<u32> {
 }
 
 pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
+    parse_hwpx_with_reservation(data, None)
+}
+
+pub(crate) fn parse_hwpx_with_reservation(
+    data: &[u8],
+    reservation: Option<std::sync::Arc<dyn crate::storage::Reservation>>,
+) -> Result<Document, HwpxError> {
     // 1. ZIP 컨테이너 열기
-    let mut reader = reader::HwpxReader::open(data)?;
+    let mut reader = reader::HwpxReader::open_with_reservation(data, reservation.clone())?;
 
     // [Issue #1946] 암호화 HWPX 조기 감지. META-INF/manifest.xml 은 암호화 문서에서도
     // 평문이며, 암호화된 엔트리마다 <odf:encryption-data> 블록을 갖는다. 감지하면
@@ -678,7 +685,10 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         .collect();
     let bin_resolver: std::sync::Arc<dyn crate::model::bin_data::BinDataResolver> =
         std::sync::Arc::new(HwpxBinResolver {
-            reader: std::sync::Mutex::new(reader::HwpxReader::open(data)?),
+            reader: std::sync::Mutex::new(reader::HwpxReader::open_with_reservation(
+                data,
+                reservation.clone(),
+            )?),
             ole_hrefs,
         });
 

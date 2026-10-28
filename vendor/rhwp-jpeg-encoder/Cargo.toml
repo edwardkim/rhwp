@@ -11,10 +11,10 @@
 
 [package]
 edition = "2024"
-rust-version = "1.87"
+rust-version = "1.93.1"
 name = "rhwp-jpeg-encoder"
 version = "0.7.1-rhwp.1"
-publish = false
+publish = ["crates-io"]
 include = ["/Cargo.toml", "/src/**", "/README.md", "/RHWP_PATCHES.md", "/UPSTREAM.json", "/LICENSE-*"]
 authors = ["Volker Ströbel <volkerstroebel@mysurdity.de>"]
 build = false

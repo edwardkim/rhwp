@@ -12,15 +12,27 @@ impl<'a> ParagraphMetricScope<'a> {
             .is_none_or(|mask| mask.get(index).copied().unwrap_or(false))
     }
     pub(crate) fn new(chars: &'a [char], styles: &super::ResolvedStyleSet) -> Self {
-        Self(
-            styles.supplemental_metrics.as_ref().map(|_| {
-                let text: String = chars.iter().collect();
-                scalar_eligibility(&text)
-            }),
-            SpaceMetric::Stored,
+        match Self::try_new(
             chars,
-            &[],
-        )
+            styles,
+            &crate::renderer::style_resolver::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+    pub(crate) fn try_new<S: crate::renderer::style_resolver::storage::Storage>(
+        chars: &'a [char],
+        styles: &super::ResolvedStyleSet,
+        storage: &S,
+    ) -> Result<Self, S::Error> {
+        let mask = if styles.supplemental_metrics.is_some() {
+            let text = storage.chars(chars.iter().copied())?;
+            Some(crate::renderer::supplemental_metrics::try_scalar_eligibility(&text, storage)?)
+        } else {
+            None
+        };
+        Ok(Self(mask, SpaceMetric::Stored, chars, &[]))
     }
 
     pub(crate) fn with_space_metric(mut self, metric: SpaceMetric) -> Self {
@@ -40,10 +52,29 @@ impl<'a> ParagraphMetricScope<'a> {
         lang: usize,
         index: usize,
     ) -> super::TextStyle {
+        match self.try_style(
+            styles,
+            id,
+            lang,
+            index,
+            &crate::renderer::style_resolver::storage::Unbounded,
+        ) {
+            Ok(style) => style,
+            Err(never) => match never {},
+        }
+    }
+    pub(crate) fn try_style<S: crate::renderer::style_resolver::storage::Storage>(
+        &self,
+        styles: &super::ResolvedStyleSet,
+        id: u32,
+        lang: usize,
+        index: usize,
+        storage: &S,
+    ) -> Result<super::TextStyle, S::Error> {
         let mut style = self.2.get(index).map_or_else(
-            || super::resolved_to_text_style(styles, id, lang),
-            |&ch| super::punctuation_slots::character_style(ch, lang, styles, id),
-        );
+            || crate::renderer::layout::try_resolved_to_text_style(styles, id, lang, storage),
+            |&ch| super::punctuation_slots::try_character_style(ch, lang, styles, id, storage),
+        )?;
         if !self.allows(index) {
             style.supplemental_metrics = None;
         }
@@ -55,7 +86,7 @@ impl<'a> ParagraphMetricScope<'a> {
         self.1.apply_to_style(&mut style);
         // 이 scope는 새 줄의 채움·분할·투영을 측정한다.
         style.regenerated_font_metrics = true;
-        style
+        Ok(style)
     }
 }
 
@@ -153,8 +184,18 @@ fn split_run(run: ComposedTextRun, allowed: &[bool], output: &mut Vec<ComposedTe
 
 /// 원문 리터럴 공백의 출처를 표시 변환 전에 런에 전달한다.
 pub(super) fn preserve_literal_spaces(composed: &mut ComposedParagraph, indices: &[usize]) {
+    match preserve_literal_spaces_with_storage(composed, indices, &crate::storage::Unbounded) {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
+}
+pub(super) fn preserve_literal_spaces_with_storage<S: crate::storage::Storage>(
+    composed: &mut ComposedParagraph,
+    indices: &[usize],
+    storage: &S,
+) -> Result<(), S::Error> {
     if indices.is_empty() {
-        return;
+        return Ok(());
     }
     for line in &mut composed.lines {
         let mut offset = line.char_start;
@@ -163,26 +204,27 @@ pub(super) fn preserve_literal_spaces(composed: &mut ComposedParagraph, indices:
             let count = run.source_scalar_count();
             if count == 0 || !run.text.contains('\u{2007}') {
                 offset += count;
-                output.push(run);
+                storage.push(&mut output, run)?;
                 continue;
             }
             let mut boundaries: Vec<usize> =
-                run.text.char_indices().map(|(byte, _)| byte).collect();
-            boundaries.push(run.text.len());
-            let flags: Vec<bool> = run
-                .text
-                .chars()
-                .enumerate()
-                .map(|(i, ch)| ch == '\u{2007}' && indices.binary_search(&(offset + i)).is_ok())
-                .collect();
+                storage.collect(run.text.char_indices().map(|(byte, _)| byte))?;
+            storage.push(&mut boundaries, run.text.len())?;
+            let flags: Vec<bool> =
+                storage.collect(run.text.chars().enumerate().map(|(i, ch)| {
+                    ch == '\u{2007}' && indices.binary_search(&(offset + i)).is_ok()
+                }))?;
             let mut start = 0;
             for end in 1..=flags.len() {
                 if end == flags.len() || flags[end] != flags[start] {
-                    output.push(ComposedTextRun {
-                        text: run.text[boundaries[start]..boundaries[end]].to_owned(),
-                        literal_figure_space: flags[start],
-                        ..run.clone()
-                    });
+                    storage.push(
+                        &mut output,
+                        ComposedTextRun {
+                            text: storage.string(&run.text[boundaries[start]..boundaries[end]])?,
+                            literal_figure_space: flags[start],
+                            ..crate::storage::try_clone(&run, storage)?
+                        },
+                    )?;
                     start = end;
                 }
             }
@@ -190,4 +232,5 @@ pub(super) fn preserve_literal_spaces(composed: &mut ComposedParagraph, indices:
         }
         line.runs = output;
     }
+    Ok(())
 }

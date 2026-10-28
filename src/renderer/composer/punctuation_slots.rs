@@ -37,15 +37,35 @@ pub(super) fn character_style(
     ch: char,
     inherited: usize,
     styles: &ResolvedStyleSet,
-    style_id: u32,
+    id: u32,
 ) -> super::TextStyle {
+    match try_character_style(
+        ch,
+        inherited,
+        styles,
+        id,
+        &crate::renderer::style_resolver::storage::Unbounded,
+    ) {
+        Ok(style) => style,
+        Err(never) => match never {},
+    }
+}
+
+pub(super) fn try_character_style<S: crate::renderer::style_resolver::storage::Storage>(
+    ch: char,
+    inherited: usize,
+    styles: &ResolvedStyleSet,
+    style_id: u32,
+    storage: &S,
+) -> Result<super::TextStyle, S::Error> {
     let origin = space_origin(ch, inherited, styles.char_styles.get(style_id as usize));
     let lang = metric_slot(ch, inherited, styles, style_id);
-    let mut output = super::resolved_to_text_style(styles, style_id, lang);
+    let mut output =
+        crate::renderer::layout::try_resolved_to_text_style(styles, style_id, lang, storage)?;
     if let Some(origin) = origin {
         apply_space_origin(&mut output, styles, style_id, origin);
     }
-    output
+    Ok(output)
 }
 
 fn slot(ch: char, inherited: usize, regenerated: bool, style: Option<&ResolvedCharStyle>) -> usize {
@@ -90,13 +110,14 @@ pub(super) fn metric_slot(
     )
 }
 
-pub(super) fn resolve_run_slots(
+pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
     lines: &mut [ComposedLine],
     styles: &ResolvedStyleSet,
     regenerated: bool,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     for line in lines {
-        let mut resolved = Vec::new();
+        let mut resolved = storage.vec(0)?;
         for run in std::mem::take(&mut line.runs) {
             let style = styles.char_styles.get(run.char_style_id as usize);
             if run.char_overlap.is_some()
@@ -105,7 +126,7 @@ pub(super) fn resolve_run_slots(
                     .chars()
                     .any(|ch| slot(ch, run.lang_index, regenerated, style) != run.lang_index)
             {
-                resolved.push(run);
+                storage.push(&mut resolved, run)?;
                 continue;
             }
             // 원문 글자를 바꾸지 않고 같은 run의 언어 경계만 나눈다. 공백도
@@ -120,13 +141,20 @@ pub(super) fn resolve_run_slots(
                 let next_origin = space_origin(ch, run.lang_index, style);
                 if (next, next_origin) != (lang, origin) {
                     if byte > start {
-                        resolved.push(ComposedTextRun {
-                            text: run.text[start..byte].to_string(),
-                            display_text: run.display_for_model_range(model_start, scalar),
-                            lang_index: lang,
-                            neutral_space_origin: origin,
-                            ..run.clone()
-                        });
+                        storage.push(
+                            &mut resolved,
+                            ComposedTextRun {
+                                text: storage.string(&run.text[start..byte])?,
+                                display_text: run.try_display_for_model_range(
+                                    model_start,
+                                    scalar,
+                                    storage,
+                                )?,
+                                lang_index: lang,
+                                neutral_space_origin: origin,
+                                ..run.try_clone(storage)?
+                            },
+                        )?;
                     }
                     start = byte;
                     model_start = scalar;
@@ -135,16 +163,23 @@ pub(super) fn resolve_run_slots(
                 }
             }
             if start < run.text.len() {
-                resolved.push(ComposedTextRun {
-                    display_text: run
-                        .display_for_model_range(model_start, run.text.chars().count()),
-                    text: run.text[start..].to_string(),
-                    lang_index: lang,
-                    neutral_space_origin: origin,
-                    ..run
-                });
+                storage.push(
+                    &mut resolved,
+                    ComposedTextRun {
+                        display_text: run.try_display_for_model_range(
+                            model_start,
+                            run.text.chars().count(),
+                            storage,
+                        )?,
+                        text: storage.string(&run.text[start..])?,
+                        lang_index: lang,
+                        neutral_space_origin: origin,
+                        ..run
+                    },
+                )?;
             }
         }
         line.runs = resolved;
     }
+    Ok(())
 }

@@ -1,3 +1,8 @@
+import { setLinkHostHandler } from './core/link-navigation';
+import { RecoveryCipher, sameRecoveryDraft } from './recovery/recovery-crypto';
+import { setFormActionsEnabled } from './core/form-action-policy';
+import { isPdfInput, type PdfInputSource } from './core/pdf-open';
+import { showPdfImportDialog, cancelPdfImport } from './ui/pdf-import-dialog';
 import { installCommandErrorGlobalRouting, StudioCommandError, inspectCommandError, type CommandErrorV1 } from '@/core/command-error';
 import { setHostFontProvider, onHostFontsChanged, hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from '@/core/local-fonts';
 import { collectHostFontRequests, collectDocumentCanvasKitFontUsage, resolveDocumentCanvasKitFontUsage, type DocumentCanvasKitFontUsage } from '@/core/host-font-requests';
@@ -76,7 +81,7 @@ import {
 } from '@/core/local-fonts';
 import { userSettings } from '@/core/user-settings';
 import { AutosaveManager, type AutosaveScheduleSettings, type AutosaveStatus } from '@/recovery/autosave-manager';
-import { clearAutosaveDrafts, deleteAutosaveDraft, listAutosaveDrafts, type AutosaveDraft } from '@/recovery/autosave-store';
+import { clearAutosaveDrafts, deleteAutosaveDraft, getAutosaveDraft, listAutosaveDrafts, type AutosaveDraft } from '@/recovery/autosave-store';
 import { recoveryFileName } from '@/recovery/recovery-format';
 import { showAutosaveRecoveryDialog } from '@/recovery/recovery-ui';
 import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
@@ -134,12 +139,19 @@ Object.defineProperty(window, 'rhwpCommandErrors', { value: Object.freeze({
 documentState.installBeforeUnload(window);
 const autosaveManager = new AutosaveManager({
   exportBytes: () => wasm.exportHwp(),
-  // exportHwp()는 평문 HWP 바이트를 만든다. 보호 문서에서는 복구본을 남기지 않는다 (#5992).
-  isRecoveryBlocked: () => wasm.requiresPasswordForSave,
+  // No plaintext persistence: protected documents need a session-only recovery key.
+  isRecoveryBlocked: () => wasm.requiresPasswordForSave && !wasm.recoveryCipher,
+  protectDraft: async draft => {
+    if (!wasm.requiresPasswordForSave) return draft;
+    const cipher = wasm.recoveryCipher;
+    if (!cipher) throw new Error('RECOVERY_LOCKED');
+    return cipher.protect(draft);
+  },
   schedule: autosaveScheduleFromUserSettings(),
   onStatus: handleAutosaveStatus,
 });
 autosaveManager.connect(eventBus);
+wasm.onRecoveryProtectionChanged = () => { void autosaveManager.discardCurrentDraft('protection-changed'); };
 initThemeSync((effective, mode) => {
   eventBus.emit('theme-changed', { mode, effective });
   eventBus.emit('command-state-changed');
@@ -169,6 +181,8 @@ async function completeHostSave(fileName?: string): Promise<{ ok: true; wasDirty
 // 호스트를 위해 프로덕션 빌드에도 항상 노출한다 (iframe 호스트는 embed RPC 사용).
 (window as any).rhwpStudio = {
   notifySaved: (fileName?: string) => completeHostSave(fileName),
+  links: { setHandler: setLinkHostHandler },
+  forms: { setActionsEnabled: setFormActionsEnabled },
   fonts: { setProvider: setHostFontProvider, getState: getHostFontState },
 };
 
@@ -480,7 +494,7 @@ function handleAutosaveStatus(status: AutosaveStatus): void {
   autosavePreviousMessage = null;
   let nextMessage: string;
   if (status.state === 'saved') {
-    nextMessage = `복구용 자동 저장 완료 (${formatBytes(status.byteLength)})`;
+    nextMessage = `${status.encrypted ? '암호화 복구본 자동 저장' : '복구용 자동 저장'} 완료 (${formatBytes(status.byteLength)})`;
   } else if (status.state === 'blocked') {
     // 실패가 아니라 의도된 차단이므로 구분해서 알린다 (#5992).
     nextMessage = '보호 문서는 복구용 자동 저장을 하지 않습니다';
@@ -1575,7 +1589,7 @@ const PASSWORD_REQUIRED_MESSAGE = '비밀번호가 필요한 암호 문서';
 const PASSWORD_REJECTED_MESSAGE = '비밀번호가 일치하지 않거나 암호화 데이터가 손상되었습니다';
 
 function isDocumentOpenCancelled(error: unknown): error is DocumentOpenCancelledError {
-  return error instanceof DocumentOpenCancelledError;
+  return error instanceof DocumentOpenCancelledError || (error as { code?: string })?.code === 'PDF_IMPORT_CANCELLED';
 }
 
 function isPasswordRequiredError(error: unknown): boolean {
@@ -1606,15 +1620,23 @@ function passwordOpenFailure(error: unknown): Error {
  */
 async function openPasswordProtectedDocument(data: Uint8Array, fileName: string): Promise<void> {
   let retryMessage: string | undefined;
+  const generation = wasm.documentGeneration;
 
   while (true) {
     let password = await showHwpPasswordDialog(fileName, retryMessage);
     if (password === null) throw new DocumentOpenCancelledError();
 
+    let cipher: RecoveryCipher | null = null;
     try {
+      if (wasm.documentGeneration !== generation) throw new DocumentOpenCancelledError();
+      cipher = await RecoveryCipher.create(password);
+      if (wasm.documentGeneration !== generation) throw new DocumentOpenCancelledError();
       wasm.loadDocumentWithPassword(data, password, fileName);
+      wasm.setRecoveryCipher(cipher);
+      cipher = null;
       return;
     } catch (error) {
+      if (isDocumentOpenCancelled(error)) throw error;
       // CFB 암호문은 인증 태그가 없으므로 오입력과 암호화 데이터 손상을 완전히 구분할 수
       // 없다. 두 경우만 재입력 상태로 안내하고, 지원하지 않는 암호화/DRM 등은 원래의
       // 명시적 거부 오류를 유지한다.
@@ -1626,12 +1648,24 @@ async function openPasswordProtectedDocument(data: Uint8Array, fileName: string)
     } finally {
       // JavaScript 문자열을 확실히 zeroize할 수는 없지만, 대화상자 DOM과 이 지역 참조는
       // 시도 직후 해제한다. 최근 문서·URL·저장소·문서 메타데이터에는 전달하지 않는다.
+      cipher?.dispose();
       password = '';
     }
   }
 }
 
-async function loadDocumentForOpen(data: Uint8Array, fileName: string): Promise<DocumentInfo> {
+async function loadDocumentForOpen(data: Uint8Array, fileName: string, pdfSource?: PdfInputSource): Promise<DocumentInfo> {
+  if (pdfSource || isPdfInput(data, fileName)) {
+    if (!wasm.hasPdfImportCapability()) throw new Error('PDF_IMPORT_DISABLED: 이 빌드에서는 PDF 가져오기를 사용할 수 없습니다.');
+    const generation = wasm.documentGeneration;
+    let imported: DocumentInfo | undefined;
+    await showPdfImportDialog(pdfSource ?? { byteLength: data.byteLength, read: async () => data },
+      fileName, options => wasm.getPdfImportPolicy(options), async (prepared, signal) => {
+        imported = await wasm.loadImportedPdf(prepared, fileName, signal, generation);
+      }, userSettings.getPdfImportLayout());
+    if (!imported) throw new Error('PDF_IMPORT_CANCELLED');
+    return imported;
+  }
   try {
     return wasm.loadDocument(data, fileName);
   } catch (error) {
@@ -1671,9 +1705,13 @@ async function loadFile(
     return await withBusyCursor(document.documentElement, async () => {
       const startTime = performance.now();
       await updateLoadProgress(0, '파일 읽는 중...');
-      const data = new Uint8Array(await file.arrayBuffer());
-      await updateLoadProgress(15, '파일 읽기 완료');
-      await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true });
+      const pdf = /\.pdf$/i.test(file.name)
+        || isPdfInput(new Uint8Array(await file.slice(0, 1024).arrayBuffer()), file.name);
+      const data = pdf ? new Uint8Array() : new Uint8Array(await file.arrayBuffer());
+      if (!pdf) await updateLoadProgress(15, '파일 읽기 완료');
+      await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true,
+        ...(pdf ? { pdfSource: { byteLength: file.size, read: async () => new Uint8Array(await file.arrayBuffer()) } } : {}),
+      });
       return true;
     });
   } catch (error) {
@@ -1691,19 +1729,26 @@ async function loadBytes(
   fileName: string,
   fileHandle: typeof wasm.currentFileHandle,
   startTime = performance.now(),
-  options: { dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean } = {},
+  options: { dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean; pdfSource?: PdfInputSource; recoveryCipher?: RecoveryCipher; validateBeforeOpen?: () => Promise<void> } = {},
 ): Promise<void> {
   // 바이트로 여는 모든 경로(파일 열기 · ?url= · 자동저장 복구 · 호스트 API)의 공통 깔때기다.
   // 파싱·쪽 계산 동안 빈 화면만 보이므로 여기서 대기 커서를 든다.
   await withBusyCursor(document.documentElement, async () => {
     // 파싱 전에 먼저 빈 쪽 상태로 만든다 — 이전 문서를 붙잡고 있다가 한 번에 갈아치우면
     // 화면이 튀어 보인다. 파싱이 실패하면 아래 catch가 이전 문서 뷰를 되살린다.
-    canvasView?.showBlankPage();
+    const pdf = Boolean(options.pdfSource) || isPdfInput(data, fileName);
+    cancelPdfImport();
+    if (!pdf) canvasView?.showBlankPage();
     if (!options.dataReadProgressShown) {
       await updateLoadProgress(0, '문서 데이터 준비 중...');
     }
     await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
-    const docInfo = await loadDocumentForOpen(data, fileName);
+    await options.validateBeforeOpen?.();
+    const docInfo = await loadDocumentForOpen(data, fileName, options.pdfSource);
+    if (options.recoveryCipher) {
+      wasm.requiresPasswordForSave = true;
+      wasm.setRecoveryCipher(options.recoveryCipher);
+    }
     prepareCanvasRendererDocument();
     // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
     // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
@@ -1873,7 +1918,31 @@ async function offerAutosaveRecoveryIfIdle(): Promise<void> {
 
 async function restoreAutosaveDraft(draft: AutosaveDraft): Promise<void> {
   const fileName = recoveryFileName(draft.fileName);
-  await loadBytes(new Uint8Array(draft.data), fileName, null, performance.now(), { skipRecent: true });
+  const generation = wasm.documentGeneration;
+  let data: Uint8Array = new Uint8Array(draft.data);
+  let cipher: RecoveryCipher | undefined;
+  if (draft.protection) {
+    let retryMessage: string | undefined;
+    while (true) {
+      let password = await showHwpPasswordDialog(fileName, retryMessage);
+      if (password === null) throw new DocumentOpenCancelledError();
+      try {
+        const unlocked = await RecoveryCipher.unlock(draft, password);
+        data = unlocked.data; cipher = unlocked.cipher; break;
+      } catch { retryMessage = '암호가 다르거나 복구본이 변경되었습니다. 다시 확인하세요.'; }
+      finally { password = ''; }
+    }
+  }
+  try {
+    await loadBytes(data, fileName, null, performance.now(), { skipRecent: true, recoveryCipher: cipher,
+      validateBeforeOpen: async () => {
+        if (wasm.documentGeneration !== generation) throw new DocumentOpenCancelledError();
+        if (!sameRecoveryDraft(draft, await getAutosaveDraft(draft.id))) throw new Error('RECOVERY_STALE: 복구본이 삭제되거나 변경되었습니다.');
+        if (wasm.documentGeneration !== generation) throw new DocumentOpenCancelledError();
+      },
+    });
+  } catch (error) { cipher?.dispose(); throw error; }
+  finally { if (draft.protection) data.fill(0); }
   await deleteAutosaveDraft(draft.id);
   documentState.markDirty('autosave-recovered');
   showToast({
@@ -1884,11 +1953,13 @@ async function restoreAutosaveDraft(draft: AutosaveDraft): Promise<void> {
 
 
 async function createNewDocument(): Promise<void> {
+  cancelPdfImport();
   const msg = sbMessage();
   try {
     await withBusyCursor(document.documentElement, async () => {
       msg.textContent = '새 문서 생성 중...';
       const docInfo = wasm.createNewDocument();
+      eventBus.emit('document-swapped');
       prepareCanvasRendererDocument();
       plugins.notifyDocumentSwap();
       await autosaveManager.beginDocument(

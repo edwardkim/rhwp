@@ -464,6 +464,28 @@ fn metric_entry_provenance(
         provenance.known_limitations.push("Published advances do not establish the installed paint font or recover a missing PDF font program.".into());
         return Ok(provenance);
     }
+    if let Some(source) =
+        crate::renderer::font_metrics_data::nimbus_roman_metric_source(metric.metric)
+    {
+        let mut provenance = unlinked_provenance(
+            json!({
+                "sourceBoundaryId":"rust-metric.verified-sfnt",
+                "candidateKind":"metric-entry", "sourceFace":metric.metric.name,
+                "targetOrPolicy":format!("metric-entry:{}",metric.entry_index),
+                "conditions":{"bold":metric.metric.bold,"italic":metric.metric.italic,
+                    "emSize":metric.metric.em_size,"sfntSource":source},
+                "order":null,
+            }),
+            "verified-sfnt-advances",
+        )
+        .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))?;
+        provenance.evidence_anchor = source.into();
+        provenance.reason = Some("verifiedSfntAdvancesOutsideHistoricalLedger".into());
+        provenance.known_limitations.push(
+            "Measured advances do not establish the installed paint font or recover a missing PDF font program.".into(),
+        );
+        return Ok(provenance);
+    }
     let mut identity = json!({
         "sourceBoundaryId": "rust-metric.metric-table",
         "candidateKind": "metric-entry",

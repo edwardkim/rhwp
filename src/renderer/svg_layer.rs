@@ -363,6 +363,6 @@ impl LayerRenderer for SvgLayerRenderer {
             }
         }
         self.renderer.end_layer_page();
-        Ok(())
+        self.renderer.check_output()
     }
 }

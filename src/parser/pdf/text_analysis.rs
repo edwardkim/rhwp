@@ -38,6 +38,7 @@ struct ObservedSpan {
 }
 
 pub(super) struct ObservedText {
+    request: std::sync::Arc<pdf_oxide::import_limits::ImportBudget>,
     pub glyphs: Vec<Glyph>,
     spans: Vec<ObservedSpan>,
     pub glyph_observations_incomplete: bool,
@@ -138,11 +139,21 @@ pub(super) fn line_join(previous: &str, next: &str) -> LineJoin {
 }
 
 impl ObservedText {
-    pub fn observe(spans: &[TextSpan], media: (f32, f32, f32, f32)) -> Self {
+    pub(super) fn allocation(&self) -> super::allocation::Allocation<'_> {
+        super::allocation::Allocation(&self.request)
+    }
+
+    pub fn observe(
+        spans: &[TextSpan],
+        media: (f32, f32, f32, f32),
+        request: std::sync::Arc<pdf_oxide::import_limits::ImportBudget>,
+    ) -> Result<Self, super::PdfImportError> {
+        let allocation = super::allocation::Allocation(&request);
         let mut observed = Self {
             glyphs: Vec::new(),
-            spans: Vec::with_capacity(spans.len()),
+            spans: allocation.vec(spans.len())?,
             glyph_observations_incomplete: false,
+            request: std::sync::Arc::clone(&request),
         };
         for (i, span) in spans.iter().enumerate() {
             let count = span.text.chars().count();
@@ -160,9 +171,8 @@ impl ObservedText {
                     scalars: 0..count,
                     utf16: 0..span.text.encode_utf16().count() as u32,
                 },
-                text: span.text.clone(),
+                text: allocation.string(&span.text)?,
             });
-            // Retain coarse source ranges even when the detailed diagnostic budget ends.
             if observed.glyph_observations_incomplete || count > MAX_GLYPHS - observed.glyphs.len()
             {
                 observed.glyph_observations_incomplete = true;
@@ -181,10 +191,16 @@ impl ObservedText {
             } else {
                 "uniform_span_approximation"
             };
+            allocation.reserve(&mut observed.glyphs, count)?;
             let mut utf16 = 0;
-            for (source_character, ch) in span.to_chars().into_iter().enumerate() {
+            for (source_character, ch) in span
+                .to_chars_with_budget(&request)
+                .map_err(super::PdfImportError::backend)?
+                .into_iter()
+                .enumerate()
+            {
                 observed.glyphs.push(Glyph {
-                    id: format!("g:{i}:{source_character}"),
+                    id: allocation.id("g", &[i, source_character])?,
                     source_span: i,
                     source_character,
                     source_utf16: utf16,
@@ -203,19 +219,18 @@ impl ObservedText {
                 utf16 += ch.char.len_utf16() as u32;
             }
         }
-        observed
+        Ok(observed)
     }
 
-    /// T0 and owner-local recognition use the same recorded origins and line rule.
-    /// Owner filtering precedes grouping: a row band never joins adjacent cells.
+    /// T0 and owner-local recognition consume the same recorded line owners.
     pub fn lines(&self, indices: &[usize], tolerance_em: f32) -> Result<Vec<TextLine>, String> {
+        let allocation = super::allocation::Allocation(&self.request);
+        let error = |e: super::PdfImportError| e.to_string();
         if indices.iter().any(|i| *i >= self.spans.len()) {
             return Err("span reference out of range".into());
         }
-        let mut indices = indices.to_vec();
-        // Ordinary-sized runs establish line anchors before small raised/lowered
-        // runs attach to them. Source baseline coordinates are never snapped.
-        indices.sort_by(|a, b| {
+        let mut indices = allocation.copy_slice(indices).map_err(error)?;
+        indices.sort_unstable_by(|a, b| {
             self.spans[*b]
                 .font_size
                 .total_cmp(&self.spans[*a].font_size)
@@ -230,103 +245,113 @@ impl ObservedText {
         let mut groups: Vec<Vec<usize>> = Vec::new();
         for i in indices {
             let s = &self.spans[i];
-            let mut candidates: Vec<_> = groups
-                .iter()
-                .enumerate()
-                .filter_map(|(at, group)| {
-                    let anchor = &self.spans[group[0]];
-                    let delta = (anchor.baseline - s.baseline).abs();
-                    let same_baseline = delta <= tolerance_em * anchor.font_size.min(s.font_size);
-                    let adjacent = group.iter().any(|&member| {
-                        let b = self.spans[member].bounds;
-                        let gap =
-                            (s.bounds.x - (b.x + b.width)).max(b.x - (s.bounds.x + s.bounds.width));
-                        gap >= -anchor.font_size * 0.25 && gap <= anchor.font_size
-                    });
-                    let script = s.font_size < anchor.font_size * 0.85
-                        && delta <= anchor.font_size * 0.5
-                        && adjacent;
-                    (same_baseline || script).then_some((at, delta))
-                })
-                .collect();
-            candidates.sort_by(|a, b| a.1.total_cmp(&b.1));
-            // Equal competing baselines do not establish an owner.
-            let unique = candidates.first().filter(|first| {
-                candidates
-                    .get(1)
-                    .is_none_or(|second| (first.1 - second.1).abs() > 0.001)
-            });
-            if let Some(&(at, _)) = unique {
+            // Only the two nearest candidates decide uniqueness. Keeping them
+            // on the stack preserves stable tie handling without a temporary
+            // candidates Vec (and sort) for every source span.
+            let mut best: Option<(usize, f32)> = None;
+            let mut second = None;
+            for (at, group) in groups.iter().enumerate() {
+                let anchor = &self.spans[group[0]];
+                let delta = (anchor.baseline - s.baseline).abs();
+                let same_baseline = delta <= tolerance_em * anchor.font_size.min(s.font_size);
+                let adjacent = group.iter().any(|&member| {
+                    let b = self.spans[member].bounds;
+                    let gap =
+                        (s.bounds.x - (b.x + b.width)).max(b.x - (s.bounds.x + s.bounds.width));
+                    gap >= -anchor.font_size * 0.25 && gap <= anchor.font_size
+                });
+                let script = s.font_size < anchor.font_size * 0.85
+                    && delta <= anchor.font_size * 0.5
+                    && adjacent;
+                if same_baseline || script {
+                    if best.is_none_or(|(_, d)| delta < d) {
+                        second = best.map(|(_, d)| d);
+                        best = Some((at, delta));
+                    } else if second.is_none_or(|d| delta < d) {
+                        second = Some(delta);
+                    }
+                }
+            }
+            if let Some((at, _)) =
+                best.filter(|(_, d)| second.is_none_or(|next| (next - d).abs() > 0.001))
+            {
+                allocation.reserve(&mut groups[at], 1).map_err(error)?;
                 groups[at].push(i);
             } else {
-                groups.push(vec![i]);
+                allocation.reserve(&mut groups, 1).map_err(error)?;
+                let mut group = allocation.vec(1).map_err(error)?;
+                group.push(i);
+                groups.push(group);
             }
         }
+        allocation
+            .bytes(std::mem::size_of_val(groups.as_slice()))
+            .map_err(error)?;
         groups.sort_by(|a, b| {
             self.spans[a[0]]
                 .baseline
                 .total_cmp(&self.spans[b[0]].baseline)
         });
-        Ok(groups
-            .into_iter()
-            .map(|mut indices| {
-                indices.sort_by(|a, b| {
-                    self.spans[*a]
-                        .bounds
-                        .x
-                        .total_cmp(&self.spans[*b].bounds.x)
-                        .then(a.cmp(b))
-                });
-                let spans: Vec<_> = indices.iter().map(|i| &self.spans[*i]).collect();
-                let font = spans.iter().map(|s| s.font_size).fold(0., f32::max);
-                let left = spans
-                    .iter()
-                    .map(|s| s.bounds.x)
-                    .fold(f32::INFINITY, f32::min);
-                let right = spans
-                    .iter()
-                    .map(|s| s.bounds.x + s.bounds.width)
-                    .fold(f32::NEG_INFINITY, f32::max);
-                let top = spans
-                    .iter()
-                    .map(|s| s.bounds.y)
-                    .fold(f32::INFINITY, f32::min);
-                let bottom = spans
-                    .iter()
-                    .map(|s| s.bounds.y + s.bounds.height)
-                    .fold(f32::NEG_INFINITY, f32::max);
-                TextLine {
-                    // A leading small script is not the ordinary line baseline.
-                    // Use the largest observed type size, keeping source x order
-                    // for ties; the other baselines remain per-span observations.
-                    baseline: spans
-                        .iter()
-                        .find(|span| span.font_size == font)
-                        .unwrap()
-                        .baseline,
-                    source_ranges: spans.iter().map(|s| s.source.clone()).collect(),
-                    preview_text: spans.iter().map(|s| s.text.as_str()).collect(),
-                    disjoint: spans
-                        .windows(2)
-                        .any(|s| s[1].bounds.x - (s[0].bounds.x + s[0].bounds.width) > 3. * font),
-                    bbox: Rect::new(left, top, right - left, bottom - top),
-                    indices,
-                    left,
-                    right,
-                    top,
-                    bottom,
-                    font,
-                }
-            })
-            .collect())
+        let mut result = allocation.vec(groups.len()).map_err(error)?;
+        for mut indices in groups {
+            indices.sort_unstable_by(|a, b| {
+                self.spans[*a]
+                    .bounds
+                    .x
+                    .total_cmp(&self.spans[*b].bounds.x)
+                    .then(a.cmp(b))
+            });
+            let spans = || indices.iter().map(|i| &self.spans[*i]);
+            let font = spans().map(|s| s.font_size).fold(0., f32::max);
+            let left = spans().map(|s| s.bounds.x).fold(f32::INFINITY, f32::min);
+            let right = spans()
+                .map(|s| s.bounds.x + s.bounds.width)
+                .fold(f32::NEG_INFINITY, f32::max);
+            let top = spans().map(|s| s.bounds.y).fold(f32::INFINITY, f32::min);
+            let bottom = spans()
+                .map(|s| s.bounds.y + s.bounds.height)
+                .fold(f32::NEG_INFINITY, f32::max);
+            let mut source_ranges = allocation.vec(indices.len()).map_err(error)?;
+            source_ranges.extend(spans().map(|s| s.source.clone()));
+            let size = spans()
+                .try_fold(0usize, |n, s| n.checked_add(s.text.len()))
+                .ok_or("line text size overflow")?;
+            let mut preview_text = allocation.string_capacity(size).map_err(error)?;
+            for s in spans() {
+                preview_text.push_str(&s.text);
+            }
+            let baseline = spans().find(|s| s.font_size == font).unwrap().baseline;
+            let disjoint = indices.windows(2).any(|p| {
+                self.spans[p[1]].bounds.x
+                    - (self.spans[p[0]].bounds.x + self.spans[p[0]].bounds.width)
+                    > 3. * font
+            });
+            result.push(TextLine {
+                indices,
+                source_ranges,
+                baseline,
+                bbox: Rect::new(left, top, right - left, bottom - top),
+                font,
+                preview_text,
+                left,
+                right,
+                top,
+                bottom,
+                disjoint,
+            });
+        }
+        Ok(result)
     }
 
-    pub fn all_span_indices(&self) -> Vec<usize> {
-        self.spans
-            .iter()
-            .enumerate()
-            .filter_map(|(i, span)| (!span.source.scalars.is_empty()).then_some(i))
-            .collect()
+    pub fn all_span_indices(&self) -> Result<Vec<usize>, super::PdfImportError> {
+        let mut result = super::allocation::Allocation(&self.request).vec(self.spans.len())?;
+        result.extend(
+            self.spans
+                .iter()
+                .enumerate()
+                .filter_map(|(i, s)| (!s.source.scalars.is_empty()).then_some(i)),
+        );
+        Ok(result)
     }
 }
 
@@ -355,7 +380,9 @@ pub(super) struct LineContent {
 pub(super) fn reconstruct_line(
     spans: &[pdf_oxide::layout::TextSpan],
     indices: &[usize],
+    allocation: super::allocation::Allocation<'_>,
 ) -> Result<LineContent, String> {
+    use super::allocation::message;
     let mut source = Vec::new();
     for &span_index in indices {
         let span = spans.get(span_index).ok_or("invalid source span")?;
@@ -366,6 +393,7 @@ pub(super) fn reconstruct_line(
         {
             return Err("complete recorded glyph metrics unavailable".into());
         }
+        allocation.reserve(&mut source, count).map_err(message)?;
         let mut utf16 = 0;
         for (index, character) in span.text.chars().enumerate() {
             let origin = span.char_x_offsets[index];
@@ -392,7 +420,7 @@ pub(super) fn reconstruct_line(
     }
     // Line recognition already selected an owner and sorted source runs.
     // Do not independently interleave overlapping runs or sort their scalars.
-    let mut result = Vec::with_capacity(source.len());
+    let mut result = allocation.vec(source.len()).map_err(message)?;
     for (i, current) in source.iter().enumerate() {
         let mut current = current.clone();
         if let Some(next) = source.get(i + 1) {
@@ -417,16 +445,22 @@ pub(super) fn reconstruct_line(
                     nominal_advance: gap,
                     advance: gap,
                 };
-                result.push(current);
-                result.push(separator);
+                allocation.push(&mut result, current).map_err(message)?;
+                allocation.push(&mut result, separator).map_err(message)?;
                 continue;
             }
             current.advance = advance;
         }
-        result.push(current);
+        allocation.push(&mut result, current).map_err(message)?;
+    }
+    let mut text = String::new();
+    for character in &result {
+        allocation
+            .push_char(&mut text, character.character)
+            .map_err(message)?;
     }
     Ok(LineContent {
-        text: result.iter().map(|c| c.character).collect(),
+        text,
         characters: result,
     })
 }

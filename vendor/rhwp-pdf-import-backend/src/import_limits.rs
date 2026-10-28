@@ -76,7 +76,7 @@ impl From<String> for StreamData {
 }
 
 /// Explicit limits for one PDF import; zero never means unlimited.
-#[derive(Clone, Copy, Debug, serde::Serialize)]
+#[derive(Clone, Copy, Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PdfImportLimits {
     /// Input byte limit checked before the constructor's copy.
@@ -113,7 +113,8 @@ pub struct PdfImportLimits {
     pub cmap_entries: usize,
     /// Maximum conservative byte-scan work across CMap parses.
     pub cmap_scan_bytes: usize,
-    /// Maximum CID metric and TrueType mapping expansion work across fonts.
+    /// Maximum cumulative font metric, encoding, Unicode memo and owned
+    /// copy-on-write entry work. Resource/cache indices use `entries` instead.
     pub font_entries: usize,
     /// Maximum page-tree edge depth and concurrent indirect-object loads.
     pub reference_depth: usize,
@@ -211,11 +212,18 @@ pub struct ImportBudgetSnapshot {
     pub failure: Option<ImportLimitFailure>,
 }
 
+/// An optional owner check is cooperative; it cannot preempt opaque work.
+pub trait ImportWorkGuard: std::fmt::Debug + Send + Sync {
+    /// Return false to reject subsequent work in the current request.
+    fn permits_work(&self) -> bool;
+}
+
 /// Shared accounting with a sticky fatal state; not a global allocation tracker.
 #[derive(Debug)]
 pub struct ImportBudget {
     /// Immutable request policy.
     pub limits: PdfImportLimits,
+    work_guard: Option<Arc<dyn ImportWorkGuard>>,
     decoded: AtomicUsize,
     decoded_limit: AtomicUsize,
     operator_limit: AtomicUsize,
@@ -279,6 +287,7 @@ impl ImportBudget {
         }
         Ok(Self {
             limits,
+            work_guard: None,
             decoded: AtomicUsize::new(0),
             decoded_limit: AtomicUsize::new(limits.decoded_bytes),
             operator_limit: AtomicUsize::new(limits.operators),
@@ -326,6 +335,12 @@ impl ImportBudget {
             self.operator_limit.load(Ordering::Relaxed),
             "content operators",
         )
+    }
+
+    /// Install an owner check while the request is still exclusively owned.
+    pub fn with_work_guard(mut self, guard: Arc<dyn ImportWorkGuard>) -> Self {
+        self.work_guard = Some(guard);
+        self
     }
 
     /// Narrow output/metadata work without clearing previously consumed values.
@@ -381,6 +396,12 @@ impl ImportBudget {
                     .as_ref()
                     .map_or("request budget exhausted", |failure| failure.reason),
             ))
+        } else if self
+            .work_guard
+            .as_ref()
+            .is_some_and(|guard| !guard.permits_work())
+        {
+            Err(self.reject("request execution boundary"))
         } else {
             Ok(())
         }
@@ -516,7 +537,6 @@ impl ImportBudget {
         }
     }
 
-    #[cfg(any(feature = "jbig2", feature = "jpeg2000"))]
     pub(crate) fn charge_codec_work(&self, units: usize) -> Result<()> {
         self.charge(&self.codec_work, units, self.limits.codec_work_units, "codec work units")
     }

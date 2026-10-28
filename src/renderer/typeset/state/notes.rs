@@ -18,13 +18,26 @@ impl TypesetState {
     /// 쪽 전환을 확정한 뒤 다음 각주 lane의 같은 조각 높이를 fit과 paint에 예약한다.
     /// 앞 쪽에 남은 본문을 각주 suffix의 쪽으로 먼저 옮기지 않는다.
     pub(in crate::renderer::typeset) fn drain_deferred_body_footnotes(&mut self) {
+        match self.drain_deferred_body_footnotes_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(in crate::renderer::typeset) fn drain_deferred_body_footnotes_with_storage<
+        S: crate::storage::Storage,
+    >(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         for (note, height) in std::mem::take(&mut self.data.deferred_body_footnotes) {
             let draw_separator = note
                 .fragment
                 .map_or(true, |fragment| fragment.draw_separator);
-            self.record_current_footnote(note);
+            self.record_current_footnote_with_storage(note, storage)?;
             self.add_footnote_fragment_height(height, draw_separator);
         }
+        Ok(())
     }
 
     /// [#2559] 각주가 사용할 수 있는 빈 꼬리말 밴드 높이.

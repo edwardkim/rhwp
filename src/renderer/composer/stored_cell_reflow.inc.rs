@@ -26,55 +26,100 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     // 이 증거가 없는 경로의 표 배치 소유권은 바꾸지 않는다.
     measured_inline_table_heights: &[(usize, u32)],
 ) -> Option<ComposedParagraph> {
-    let stored_geometry_policy = stored_geometry_policy.into();
-    // loader가 만든 합성 줄은 원본 저장 캐시가 아니다. 독립 개체가 없는
-    // 본문은 현재 프레임에서 다시 구성하며 원본 IR은 보존한다.
-    let fresh_body = (!para.line_segs.is_empty()
-        && para.controls.is_empty()
-        && crate::renderer::para_has_no_stored_line_segs(para))
-    .then(|| {
-        let mut body = para.clone();
-        body.replace_line_segs(Vec::new());
-        body
-    });
-    let para = fresh_body.as_ref().unwrap_or(para);
-    // A degenerate box, or controls with their own layout owner, means there is
-    // no frame to build. The composition stands as it is — there is no second
-    // owner to hand it to.
-    //
-    // NO_LS 문단은 예외적으로 picture-band 게이트(비-TAC 그림 1개)도 허용한다 —
-    // 저장 행이 없어 fill 이 유일한 소유자인데, Square 그림 host 라는 이유로
-    // 여기서 사양하면 45자 합성 줄바꿈이 그대로 남아 감폭된 상자 폭을 넘는다
-    // (아이콘 옆 설명 한 줄이 열 밖까지 이어지는 형상). 저장 행이 있는 문단의
-    // 소유권 계약은 종전대로 본문 게이트만 통과한다.
-    // 글꼴 이름 검사는 HWPX 저장 배치일 때만 결과가 쓰이므로 그때만 한다.
-    let has_kopub_face = || {
-        para.char_shapes.iter().any(|reference| {
-            styles
-                .char_styles
-                .get(reference.char_shape_id as usize)
-                .is_some_and(|style| {
-                    style.font_families.iter().any(|face| {
-                        face.contains("KoPub돋움체")
-                            || face.contains("KoPub바탕체")
-                            || face.to_lowercase().contains("kopub dotum")
-                            || face.to_lowercase().contains("kopub batang")
+    match recompose_stored_lines_in_frame_with_known_square_band_with_storage(
+        composed,
+        para,
+        paragraph_box,
+        inner_width_px,
+        styles,
+        dpi,
+        stored_geometry_policy,
+        miss_policy,
+        float_carve_evidence,
+        known_square_band,
+        hwpx_stored_layout,
+        stored_rows_untrusted,
+        measured_inline_table_heights,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storage<
+    S: crate::storage::Storage,
+>(
+    composed: &ComposedParagraph,
+    para: &Paragraph,
+    paragraph_box: ParagraphBox,
+    inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    stored_geometry_policy: impl Into<crate::model::provenance::StoredGeometryPolicy>,
+    miss_policy: line_breaking::StoredRowMissPolicy,
+    // [#6175] 용지/쪽 기준 float 증거는 uniform ladder의 결손 폭과 세로 band를
+    // 함께 설명할 때만 저장 기하를 유지한다.
+    float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
+    known_square_band: bool,
+    hwpx_stored_layout: bool,
+    // 구역 전체가 합성 저장 사다리이면 행 경계도 현재 프레임에서 다시 만든다.
+    stored_rows_untrusted: bool,
+    // 현대 NO_LS 셀의 측정 소유자가 전달한 실측 표 높이다.
+    // 이 증거가 없는 경로의 표 배치 소유권은 바꾸지 않는다.
+    measured_inline_table_heights: &[(usize, u32)],
+    storage: &S,
+) -> Result<Option<ComposedParagraph>, S::Error> {
+    Ok({
+        let stored_geometry_policy = stored_geometry_policy.into();
+        // loader가 만든 합성 줄은 원본 저장 캐시가 아니다. 독립 개체가 없는
+        // 본문은 현재 프레임에서 다시 구성하며 원본 IR은 보존한다.
+        let fresh_body = if !para.line_segs.is_empty()
+            && para.controls.is_empty()
+            && crate::renderer::para_has_no_stored_line_segs(para)
+        {
+            let mut body = storage.clone_paragraph(para)?;
+            body.replace_line_segs(Vec::new());
+            Some(body)
+        } else {
+            None
+        };
+        let para = fresh_body.as_ref().unwrap_or(para);
+        // A degenerate box, or controls with their own layout owner, means there is
+        // no frame to build. The composition stands as it is — there is no second
+        // owner to hand it to.
+        //
+        // NO_LS 문단은 예외적으로 picture-band 게이트(비-TAC 그림 1개)도 허용한다 —
+        // 저장 행이 없어 fill 이 유일한 소유자인데, Square 그림 host 라는 이유로
+        // 여기서 사양하면 45자 합성 줄바꿈이 그대로 남아 감폭된 상자 폭을 넘는다
+        // (아이콘 옆 설명 한 줄이 열 밖까지 이어지는 형상). 저장 행이 있는 문단의
+        // 소유권 계약은 종전대로 본문 게이트만 통과한다.
+        let has_kopub_face = hwpx_stored_layout
+            && para.char_shapes.iter().any(|reference| {
+                styles
+                    .char_styles
+                    .get(reference.char_shape_id as usize)
+                    .is_some_and(|style| {
+                        style.font_families.iter().any(|face| {
+                            face.contains("KoPub돋움체")
+                                || face.contains("KoPub바탕체")
+                                || face.to_lowercase().contains("kopub dotum")
+                                || face.to_lowercase().contains("kopub batang")
+                        })
                     })
-                })
-        })
-    };
-    let justified_kopub = hwpx_stored_layout
-        && has_kopub_face()
-        && styles
-            .para_styles
-            .get(para.para_shape_id as usize)
-            .is_some_and(|style| style.alignment == crate::model::style::Alignment::Justify);
-    let justified_kopub_picture = justified_kopub
-        && para.controls.iter().any(|control| {
-            matches!(control, crate::model::control::Control::Picture(picture)
+            });
+        let justified_kopub = hwpx_stored_layout
+            && has_kopub_face
+            && styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .is_some_and(|style| style.alignment == crate::model::style::Alignment::Justify);
+        let justified_kopub_picture = justified_kopub
+            && para.controls.iter().any(|control| {
+                matches!(control, crate::model::control::Control::Picture(picture)
                 if picture.common.treat_as_char)
-        });
-    let single_tac_table_with_text = para.text.chars().any(|c| !c.is_whitespace())
+            });
+        let single_tac_table_with_text = para.text.chars().any(|c| !c.is_whitespace())
         && para
             .controls
             .iter()
@@ -83,7 +128,7 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             )
             .count()
             == 1;
-    let frame_admits_controls = line_breaking::supports_cached_body_frame_controls(para)
+        let frame_admits_controls = line_breaking::supports_cached_body_frame_controls(para)
         || inline_frame_admission::supports_uncached_inline_host(para)
         || (justified_kopub_picture
             && para.controls.iter().all(|control| {
@@ -108,30 +153,31 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             && (line_breaking::supports_overlay_table_frame_controls(para)
                 || line_breaking::supports_overlay_shape_frame_controls(para)));
     if !paragraph_box.is_usable() || !frame_admits_controls {
-        return None;
+        return Ok(None);
     }
 
-    // 저장 원점 복원은 측정·배치와 읽기 전용 증거 프로브가 같은 상자를 사용한다.
-    let paragraph_box = if stored_geometry_policy.requires_realign {
-        paragraph_box
-    } else {
-        paragraph_box.for_stored_body_rows(para)
-    };
-    let mut frame = paragraph_box.frame(
-        para.line_segs
-            .first()
-            .map(|segment| segment.vertical_pos)
-            .unwrap_or(0),
-    );
-    frame.kopub_justified_space = justified_kopub_picture;
-    // 일반 본문은 render-normalization이 새 줄과 후속 원점을 함께 발행한다.
-    // 셀 및 별도 그림 공백 메트릭의 기존 계약만 이 지역 프레임에서 해소한다.
-    let regenerated_spaces_change_metrics = frame.kopub_justified_space
-        && stored_word_tail::regenerated_spaces_change_metrics(
-            composed,
-            styles,
-            SpaceMetric::KoPubJustified,
+        // 저장 원점 복원은 측정·배치와 읽기 전용 증거 프로브가 같은 상자를 사용한다.
+        let paragraph_box = if stored_geometry_policy.requires_realign {
+            paragraph_box
+        } else {
+            paragraph_box.for_stored_body_rows(para)
+        };
+        let mut frame = paragraph_box.frame(
+            para.line_segs
+                .first()
+                .map(|segment| segment.vertical_pos)
+                .unwrap_or(0),
         );
+        frame.kopub_justified_space = justified_kopub_picture;
+        // 일반 본문은 render-normalization이 새 줄과 후속 원점을 함께 발행한다.
+        // 셀 및 별도 그림 공백 메트릭의 기존 계약만 이 지역 프레임에서 해소한다.
+        let regenerated_spaces_change_metrics = frame.kopub_justified_space
+            && stored_word_tail::regenerated_spaces_change_metrics_with_storage(
+                composed,
+                styles,
+                SpaceMetric::KoPubJustified,
+                storage,
+            )?;
     // 캐시 수용 실패 정책이나 줄 수 감소만으로 원본을 무효화하지 않는다.
     // 본문과 같은 마커 기하 갱신과 실제 공백 메트릭 변경만 공통 프레임에 요청한다.
     // 일반 geometry miss와 원문 밖 목록 마커의 기하 갱신은 별개다.
@@ -140,122 +186,100 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     // 보존하며, 저장 세대나 셀의 일반 miss 정책만으로 이 계약을 끄지 않는다.
     let refreshes_marker_metrics =
         stored_word_tail::projects_current_marker_geometry(para, &paragraph_box, styles);
-    let rejoinable_word_tail = !stored_geometry_policy.preserve_hwp3_origins
-        && (regenerated_spaces_change_metrics || refreshes_marker_metrics)
-        && stored_word_tail::can_rejoin_stored_word_tail(
+        let rejoinable_word_tail = !stored_geometry_policy.preserve_hwp3_origins
+            && (regenerated_spaces_change_metrics || refreshes_marker_metrics)
+            && stored_word_tail::can_rejoin_stored_word_tail_with_storage(para, &frame, styles, dpi, justified_kopub_picture, storage)?;
+        let stale = stored_geometry_policy.requires_realign
+            || (!para.layout_field_values.is_empty()
+                && (para.stored_text_partition_dirty
+                    || crate::renderer::para_has_no_stored_line_segs(para)))
+            || rejoinable_word_tail
+            || (stored_rows_untrusted && !para.line_segs.is_empty())
+            || stored_rows_are_stale_with_storage(composed, para, inner_width_px, styles, storage)?
+            || line_breaking::remeasured_equation_start_row(para).is_some()
+            || (stored_geometry_policy.stored_rows_before_hancom_2020
+                && stored_last_row_is_rejoinable_word_tail_with_storage(
+                    composed, para, styles, storage,
+                )?
+                && fresh_rows_absorb_stored_tail_with_storage(
+                    para,
+                    &frame,
+                    styles,
+                    dpi,
+                    stored_geometry_policy.preserve_hwp3_origins,
+                    miss_policy,
+                    float_carve_evidence,
+                    known_square_band,
+                    storage,
+                )?);
+        match line_breaking::resolve_stored_line_segs_in_frame_with_storage(
             para,
-            &frame,
+            &mut frame,
             styles,
             dpi,
-            justified_kopub_picture,
-        );
-    // 원본의 재정렬 요청은 일반 저장 줄의 압축 허용치와 별개로 수용을 거부한다.
-    let stale = stored_geometry_policy.requires_realign
-        || (!para.layout_field_values.is_empty()
-            && (para.stored_text_partition_dirty
-                || crate::renderer::para_has_no_stored_line_segs(para)))
-        || rejoinable_word_tail
-        || (stored_rows_untrusted && !para.line_segs.is_empty())
-        || stored_rows_are_stale(composed, para, inner_width_px, styles)
-        || line_breaking::remeasured_equation_start_row(para).is_some()
-        || (stored_geometry_policy.stored_rows_before_hancom_2020
-            && stored_last_row_is_rejoinable_word_tail(composed, para, styles)
-            && fresh_rows_absorb_stored_tail(
-                para,
-                &frame,
-                styles,
-                dpi,
-                stored_geometry_policy.preserve_hwp3_origins,
-                miss_policy,
-                float_carve_evidence,
-                known_square_band,
-            ));
-    match line_breaking::resolve_stored_line_segs_in_frame(
-        para,
-        &mut frame,
-        styles,
-        dpi,
-        stored_geometry_policy.preserve_hwp3_origins,
-        miss_policy,
-        stale,
-        float_carve_evidence,
-        known_square_band,
-    ) {
-        // Stale — the row cannot hold its own text — so the rebuilt row is the
-        // frame's. Its fill tokenizes through `para.char_shapes`
-        // (`line_breaking.rs`), which is the char-shape re-splitting #2632
-        // needed, so there is nothing the retired #2525 owner did that the
-        // frame does not.
-        Some(line_breaking::StoredRowResolution::Reflowed) => {
-            // The frame holds the rows; `project_line_segs` is the one place
-            // they become `LineSeg` again.
-            let mut reflowed_para = para.clone();
-            reflowed_para.replace_line_segs_with_space_metrics(
-                frame.project_line_segs(),
-                frame.project_space_metrics(),
-            );
-            // [#6102] 프레임이 새로 새긴 행 경계는 이미 HWP5 문단 축이다 —
-            // 원본의 [#5961] 보정폭을 물려받으면 fresh 경계가 이중 보정되어
-            // 줄이 보정폭만큼 늦게 끊긴다(36360328: fill 이 char 51(=raw 83)에
-            // 끊었는데 +8 재보정으로 59가 되어 첫 줄이 우단 밖 +75px).
-            reflowed_para.hwpx_axis_shift = 0;
-            let mut reflowed = compose_paragraph_in_context(&reflowed_para, styles);
-            preserve_context_resolved_runs(composed, &mut reflowed);
-            // 부분 재조판 앞행은 원래 저장 축과 이미 해석한 줄 소유를 보존한다.
-            // HWPX의 저장 축 보정을 새 HWP5 축의 뒤쪽에 다시 적용하지 않는다.
-            if let Some(prefix_len) = line_breaking::remeasured_equation_start_row(para) {
-                if prefix_len <= composed.lines.len() && prefix_len <= reflowed.lines.len() {
-                    reflowed.lines[..prefix_len].clone_from_slice(&composed.lines[..prefix_len]);
-                }
-            }
-            let mut reconciled = composed.clone();
-            reconciled.lines = reflowed.lines;
-            let uncached_inline_frame = inline_frame_admission::supports_uncached_inline_host(para);
-            if rejoinable_word_tail
-                || !measured_inline_table_heights.is_empty()
-                || uncached_inline_frame
-            {
-                // 가시 글자 경계는 그 앞의 개체 슬롯과 같은 줄 경계가 아닐 수 있다.
-                // 새 원시 프레임의 소유를 게시하여 배치가 줄을 다시 추측하지 않게 한다.
-                for control in &mut reconciled.inline_controls {
-                    if let Some(line) = control_slot_line_index_with_starts(
-                        para,
-                        control.control_index,
-                        reflowed_para
-                            .line_segs
-                            .iter()
-                            .map(|segment| segment.text_start),
-                    ) {
-                        control.line_index = line;
+            stored_geometry_policy.preserve_hwp3_origins,
+            miss_policy,
+            stale,
+            float_carve_evidence,
+            known_square_band,
+            storage,
+        )? {
+            // Stale — the row cannot hold its own text — so the rebuilt row is the
+            // frame's. Its fill tokenizes through `para.char_shapes`
+            // (`line_breaking.rs`), which is the char-shape re-splitting #2632
+            // needed, so there is nothing the retired #2525 owner did that the
+            // frame does not.
+            Some(line_breaking::StoredRowResolution::Reflowed) => {
+                // The frame holds the rows; `project_line_segs` is the one place
+                // they become `LineSeg` again.
+                let mut reflowed_para = storage.clone_paragraph(para)?;
+                reflowed_para.replace_line_segs_with_space_metrics(
+                    frame.try_project_line_segs_since(0, storage)?,
+                    frame.try_project_space_metrics_since(0, storage)?,
+                );
+                // [#6102] 프레임이 새로 새긴 행 경계는 이미 HWP5 문단 축이다 —
+                // 원본의 [#5961] 보정폭을 물려받으면 fresh 경계가 이중 보정되어
+                // 줄이 보정폭만큼 늦게 끊긴다(36360328: fill 이 char 51(=raw 83)에
+                // 끊었는데 +8 재보정으로 59가 되어 첫 줄이 우단 밖 +75px).
+                reflowed_para.hwpx_axis_shift = 0;
+                let mut reflowed =
+                    compose_paragraph_in_context_with_storage(&reflowed_para, styles, storage)?;
+                preserve_context_resolved_runs_with_storage(composed, &mut reflowed, storage)?;
+                // 부분 재조판 앞행은 원래 저장 축과 이미 해석한 줄 소유를 보존한다.
+                // HWPX의 저장 축 보정을 새 HWP5 축의 뒤쪽에 다시 적용하지 않는다.
+                if let Some(prefix_len) = line_breaking::remeasured_equation_start_row(para) {
+                    if prefix_len <= composed.lines.len() && prefix_len <= reflowed.lines.len() {
+                        for (dst, source) in reflowed.lines[..prefix_len]
+                            .iter_mut()
+                            .zip(&composed.lines[..prefix_len])
+                        {
+                            *dst = crate::storage::try_clone(source, storage)?;
+                        }
                     }
                 }
-                reconciled.frame_geometry =
-                    Some(std::sync::Arc::new(frame_geometry::FrameGeometry {
+                let mut reconciled = crate::storage::try_clone(composed, storage)?;
+                reconciled.lines = reflowed.lines;
+                let uncached_inline_frame = inline_frame_admission::supports_uncached_inline_host(para);
+                if rejoinable_word_tail || !measured_inline_table_heights.is_empty() || uncached_inline_frame {
+                    for control in &mut reconciled.inline_controls {
+                        if let Some(line) = control_slot_line_index_with_starts_with_storage(para, control.control_index, reflowed_para.line_segs.iter().map(|segment| segment.text_start), storage)? { control.line_index = line; }
+                    }
+                    storage.bytes(std::mem::size_of::<frame_geometry::FrameGeometry>() + 2 * std::mem::size_of::<usize>())?;
+                    reconciled.frame_geometry = Some(std::sync::Arc::new(frame_geometry::FrameGeometry {
                         line_segs: reflowed_para.line_segs,
                         space_metrics: reflowed_para.layout_space_metrics,
-                        inline_table_heights: measured_inline_table_heights.to_vec(),
+                        inline_table_heights: storage.copy_slice(measured_inline_table_heights)?,
                         stored_partition: false,
                     }));
+                }
+                if crate::renderer::para_has_no_stored_line_segs(para) {
+                    reconciled.horizontal_shaping = line_breaking::compose_horizontal_shaping_handoff(para, &reconciled, styles);
+                }
+                Some(reconciled)
             }
-            // Q2-D5-N1: source NO_LS has no usable width during the initial
-            // composition handoff. The physical frame is the first owner that
-            // knows the final intervals, so prepare Q2-C again only after that
-            // partition is complete. Stored-row D4 outcomes stay untouched.
-            if crate::renderer::para_has_no_stored_line_segs(para) {
-                reconciled.horizontal_shaping =
-                    line_breaking::compose_horizontal_shaping_handoff(para, &reconciled, styles);
-            }
-            Some(reconciled)
+            _ => None,
         }
-        // `Stored`: returning the composition unchanged is the answer, not a
-        // gap. The frame has already reproduced the stored physical-row key
-        // exactly. The metrics lane remains deliberately unpublished
-        // (§1.4.1's accept-arm write-back — see
-        // `StoredRowResolution::Stored` and `LayoutFrame::try_admit_stored_rows`
-        // for the measurement). `None`: the paragraph's controls have their own
-        // layout owner and no frame was ever built for it.
-        other => None,
-    }
+    })
 }
 
 /// [#7702] 한/글 2020 이전 제품이 저장한 줄이 condense 낱말 흡수 없이 끊겼는가.
@@ -284,28 +308,58 @@ fn fresh_rows_absorb_stored_tail(
     float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
     known_square_band: bool,
 ) -> bool {
-    let mut trial = frame.clone();
-    matches!(
-        line_breaking::resolve_stored_line_segs_in_frame(
-            para,
-            &mut trial,
-            styles,
-            dpi,
-            legacy_hwp3_stored_geometry,
-            miss_policy,
-            true,
-            float_carve_evidence,
-            known_square_band,
-        ),
-        Some(line_breaking::StoredRowResolution::Reflowed)
-    ) && {
-        let fresh = trial.project_line_segs();
-        fresh.len() + 1 == para.line_segs.len()
-            && fresh
-                .iter()
-                .zip(&para.line_segs)
-                .all(|(fresh, stored)| fresh.text_start == stored.text_start)
+    match fresh_rows_absorb_stored_tail_with_storage(
+        para,
+        frame,
+        styles,
+        dpi,
+        legacy_hwp3_stored_geometry,
+        miss_policy,
+        float_carve_evidence,
+        known_square_band,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
+}
+
+pub(crate) fn fresh_rows_absorb_stored_tail_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    frame: &crate::renderer::layout_frame::LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    legacy_hwp3_stored_geometry: bool,
+    miss_policy: line_breaking::StoredRowMissPolicy,
+    float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
+    known_square_band: bool,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    Ok({
+        let mut trial = crate::storage::try_clone(frame, storage)?;
+        matches!(
+            line_breaking::resolve_stored_line_segs_in_frame_with_storage(
+                para,
+                &mut trial,
+                styles,
+                dpi,
+                legacy_hwp3_stored_geometry,
+                miss_policy,
+                true,
+                float_carve_evidence,
+                known_square_band,
+                storage
+            )?,
+            Some(line_breaking::StoredRowResolution::Reflowed)
+        ) && {
+            let fresh = trial.try_project_line_segs_since(0, storage)?;
+            fresh.len() + 1 == para.line_segs.len()
+                && fresh
+                    .iter()
+                    .zip(&para.line_segs)
+                    .all(|(fresh, stored)| fresh.text_start == stored.text_start)
+        }
+    })
 }
 
 /// Read-only projection of the production stored-row cache decision.
@@ -409,99 +463,120 @@ pub(crate) fn probe_stored_row_disposition(
 /// number, so a strict Frame reflow owns only the partition and row metrics; it
 /// must not erase the already-resolved run payload.
 fn preserve_context_resolved_runs(source: &ComposedParagraph, reflowed: &mut ComposedParagraph) {
-    struct RunSpan<'a> {
-        start: usize,
-        end: usize,
-        run: &'a ComposedTextRun,
+    match preserve_context_resolved_runs_with_storage(source, reflowed, &crate::storage::Unbounded)
+    {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
+}
 
-    // Only these payloads are owned by the already context-resolved source.
-    // Style and language partitions remain the Frame composition's property.
-    let mut context_spans = Vec::new();
-    for line in &source.lines {
-        let mut start = line.char_start;
-        for run in &line.runs {
-            let end = start.saturating_add(run.text.chars().count());
-            if run.display_text.is_some()
-                || run.footnote_marker.is_some()
-                || run.char_overlap.is_some()
-            {
-                context_spans.push(RunSpan { start, end, run });
-            }
-            start = end;
+pub(crate) fn preserve_context_resolved_runs_with_storage<S: crate::storage::Storage>(
+    source: &ComposedParagraph,
+    reflowed: &mut ComposedParagraph,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let _: () = {
+        struct RunSpan<'a> {
+            start: usize,
+            end: usize,
+            run: &'a ComposedTextRun,
         }
-    }
-    if context_spans.is_empty() {
-        return;
-    }
 
-    for line in &mut reflowed.lines {
-        let mut run_start = line.char_start;
-        let mut overlaid = Vec::new();
-        for run in std::mem::take(&mut line.runs) {
-            let run_len = run.text.chars().count();
-            let run_end = run_start.saturating_add(run_len);
-            let overlapping: Vec<_> = context_spans
-                .iter()
-                .filter(|span| span.start < run_end && run_start < span.end)
-                .collect();
-            if overlapping.is_empty() {
-                overlaid.push(run);
-                run_start = run_end;
-                continue;
+        // Only these payloads are owned by the already context-resolved source.
+        // Style and language partitions remain the Frame composition's property.
+        let mut context_spans = Vec::new();
+        for line in &source.lines {
+            let mut start = line.char_start;
+            for run in &line.runs {
+                let end = start.saturating_add(run.text.chars().count());
+                if run.display_text.is_some()
+                    || run.footnote_marker.is_some()
+                    || run.char_overlap.is_some()
+                {
+                    storage.push(&mut context_spans, RunSpan { start, end, run })?;
+                }
+                start = end;
             }
+        }
+        if context_spans.is_empty() {
+            return Ok(());
+        }
 
-            let mut cuts = vec![run_start, run_end];
-            for span in &overlapping {
-                cuts.push(run_start.max(span.start));
-                cuts.push(run_end.min(span.end));
-            }
-            cuts.sort_unstable();
-            cuts.dedup();
-
-            for bounds in cuts.windows(2) {
-                let piece_start = bounds[0];
-                let piece_end = bounds[1];
-                if piece_start == piece_end {
+        for line in &mut reflowed.lines {
+            let mut run_start = line.char_start;
+            let mut overlaid = Vec::new();
+            for run in std::mem::take(&mut line.runs) {
+                let run_len = run.text.chars().count();
+                let run_end = run_start.saturating_add(run_len);
+                let overlapping: Vec<_> = storage.collect(
+                    context_spans
+                        .iter()
+                        .filter(|span| span.start < run_end && run_start < span.end),
+                )?;
+                if overlapping.is_empty() {
+                    storage.push(&mut overlaid, run)?;
+                    run_start = run_end;
                     continue;
                 }
 
-                let take_start = piece_start - run_start;
-                let take_end = piece_end - run_start;
-                let mut piece = run.clone();
-                piece.text = run
-                    .text
-                    .chars()
-                    .skip(take_start)
-                    .take(take_end - take_start)
-                    .collect();
-                piece.display_text = run.display_for_model_range(take_start, take_end);
-                if take_start != 0 || take_end != run_len {
-                    piece.footnote_marker = None;
-                    piece.char_overlap = None;
+                let mut cuts = storage.collect([run_start, run_end])?;
+                for span in &overlapping {
+                    storage.push(&mut cuts, run_start.max(span.start))?;
+                    storage.push(&mut cuts, run_end.min(span.end))?;
                 }
+                cuts.sort_unstable();
+                cuts.dedup();
 
-                if let Some(span) = overlapping
-                    .iter()
-                    .find(|span| span.start <= piece_start && piece_end <= span.end)
-                {
-                    let source_start = piece_start - span.start;
-                    let source_end = piece_end - span.start;
-                    piece.display_text = span.run.display_for_model_range(source_start, source_end);
-                    let owns_whole_payload = piece_start == span.start && piece_end == span.end;
-                    piece.footnote_marker = owns_whole_payload
-                        .then_some(span.run.footnote_marker)
-                        .flatten();
-                    piece.char_overlap = owns_whole_payload
-                        .then(|| span.run.char_overlap.clone())
-                        .flatten();
+                for bounds in cuts.windows(2) {
+                    let piece_start = bounds[0];
+                    let piece_end = bounds[1];
+                    if piece_start == piece_end {
+                        continue;
+                    }
+
+                    let take_start = piece_start - run_start;
+                    let take_end = piece_end - run_start;
+                    let mut piece = run.try_clone(storage)?;
+                    piece.text = storage.chars(
+                        run.text
+                            .chars()
+                            .skip(take_start)
+                            .take(take_end - take_start),
+                    )?;
+                    piece.display_text =
+                        run.try_display_for_model_range(take_start, take_end, storage)?;
+                    if take_start != 0 || take_end != run_len {
+                        piece.footnote_marker = None;
+                        piece.char_overlap = None;
+                    }
+
+                    if let Some(span) = overlapping
+                        .iter()
+                        .find(|span| span.start <= piece_start && piece_end <= span.end)
+                    {
+                        let source_start = piece_start - span.start;
+                        let source_end = piece_end - span.start;
+                        piece.display_text = span.run.try_display_for_model_range(
+                            source_start,
+                            source_end,
+                            storage,
+                        )?;
+                        let owns_whole_payload = piece_start == span.start && piece_end == span.end;
+                        piece.footnote_marker = owns_whole_payload
+                            .then_some(span.run.footnote_marker)
+                            .flatten();
+                        piece.char_overlap = owns_whole_payload
+                            .then(|| span.run.char_overlap.clone())
+                            .flatten();
+                    }
+                    storage.push(&mut overlaid, piece)?;
                 }
-                overlaid.push(piece);
+                run_start = run_end;
             }
-            run_start = run_end;
+            line.runs = overlaid;
         }
-        line.runs = overlaid;
-    }
+    };
+    Ok(())
 }
 
 /// The cell's rebuild, resolved through the physical frame.
@@ -580,88 +655,116 @@ pub fn recompose_cell_lines_in_frame(
     dpi: f64,
     stored_geometry_policy: impl Into<crate::model::provenance::StoredGeometryPolicy>,
 ) {
-    let stored_geometry_policy = stored_geometry_policy.into();
-    // 개체 흐름을 분리한 정규화가 이미 같은 줄의 높이·간격을 발행했다.
-    // 일반 합성 단일 줄처럼 캐시를 지우고 채우면 그림 뒤에 글자 줄간격을
-    // 다시 더해 측정·조각 상자가 부푼다. 원본 저장 줄로 승격하지 않고 그대로 소비한다.
-    if para.layout_object_projection && !para.stored_text_partition_is_dirty() {
-        return;
+    match recompose_cell_lines_in_frame_with_storage(
+        composed,
+        para,
+        cell_box,
+        styles,
+        dpi,
+        stored_geometry_policy,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    let has_synthetic_line_segs = !para.line_segs.is_empty()
-        && para
-            .line_segs
-            .iter()
-            .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
-    let has_authoritative_line_segs = !para.line_segs.is_empty() && !has_synthetic_line_segs;
-    if para.line_segs.len() >= 2
-        && has_synthetic_line_segs
-        && !para.stored_text_partition_is_dirty()
-    {
-        // HWPX 로드 단계에서 셀 폭/높이/anchor 속성으로 합성한 lineSeg 경계는
-        // 이미 문서 속성 기반 보정 결과다. 여기서 다시 폭 기준으로 합치고
-        // 재분할하면 RowBreak 표의 쪽 나눔 기준 줄 수가 원본 세로 정보와 어긋난다.
-        return;
-    }
-    if composed.lines.is_empty() || !cell_box.is_usable() {
-        return;
-    }
+}
 
-    let inner_width_px = cell_box.width_px(dpi);
-    let rebuilt = if has_authoritative_line_segs {
-        // OWPML 셀은 현재 속성의 내용 프레임으로 저장 키의 불일치를 해소한다.
-        // 원 HWP5의 clean miss는 아직 이 프레임이 소유하지 않는 저장 기하다.
-        // 편집 무효화·재정렬 요청은 출처와 별개로 공통 stale 판정을 따른다.
-        // 외부 어울림·다른 물리 쪽 등 계산 불가능한 경로는 resolver가 거절한다.
-        // 같은 셀의 외부 어울림이 정한 원점을 현재 문단 상자로 재현할 수는 없다.
-        // 폭의 소유권만으로 저장 원점까지 덮어쓰지 않는다(#5818 로고 옆 글줄).
-        let cell_box = cell_box.for_stored_body_rows(para);
-        let frame_origin = cell_box.effective().start;
-        let owns_stored_origins = para
-            .line_segs
-            .iter()
-            .all(|line| line.column_start == frame_origin);
-        let miss_policy = if stored_geometry_policy.hwpx_cell_geometry && owns_stored_origins {
-            line_breaking::StoredRowMissPolicy::Reflow
+pub(crate) fn recompose_cell_lines_in_frame_with_storage<S: crate::storage::Storage>(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    cell_box: ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    stored_geometry_policy: impl Into<crate::model::provenance::StoredGeometryPolicy>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let _: () = {
+        let stored_geometry_policy = stored_geometry_policy.into();
+        // 개체 흐름을 분리한 정규화가 이미 같은 줄의 높이·간격을 발행했다.
+        // 일반 합성 단일 줄처럼 캐시를 지우고 채우면 그림 뒤에 글자 줄간격을
+        // 다시 더해 측정·조각 상자가 부푼다. 원본 저장 줄로 승격하지 않고 그대로 소비한다.
+        if para.layout_object_projection && !para.stored_text_partition_is_dirty() {
+            return Ok(());
+        }
+        let has_synthetic_line_segs = !para.line_segs.is_empty()
+            && para
+                .line_segs
+                .iter()
+                .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
+        let has_authoritative_line_segs = !para.line_segs.is_empty() && !has_synthetic_line_segs;
+        if para.line_segs.len() >= 2
+            && has_synthetic_line_segs
+            && !para.stored_text_partition_is_dirty()
+        {
+            // HWPX 로드 단계에서 셀 폭/높이/anchor 속성으로 합성한 lineSeg 경계는
+            // 이미 문서 속성 기반 보정 결과다. 여기서 다시 폭 기준으로 합치고
+            // 재분할하면 RowBreak 표의 쪽 나눔 기준 줄 수가 원본 세로 정보와 어긋난다.
+            return Ok(());
+        }
+        if composed.lines.is_empty() || !cell_box.is_usable() {
+            return Ok(());
+        }
+
+        let inner_width_px = cell_box.width_px(dpi);
+        let rebuilt = if has_authoritative_line_segs {
+            // OWPML 셀은 현재 속성의 내용 프레임으로 저장 키의 불일치를 해소한다.
+            // 원 HWP5의 clean miss는 아직 이 프레임이 소유하지 않는 저장 기하다.
+            // 편집 무효화·재정렬 요청은 출처와 별개로 공통 stale 판정을 따른다.
+            // 외부 어울림·다른 물리 쪽 등 계산 불가능한 경로는 resolver가 거절한다.
+            // 같은 셀의 외부 어울림이 정한 원점을 현재 문단 상자로 재현할 수는 없다.
+            // 폭의 소유권만으로 저장 원점까지 덮어쓰지 않는다(#5818 로고 옆 글줄).
+            let cell_box = cell_box.for_stored_body_rows(para);
+            let frame_origin = cell_box.effective().start;
+            let owns_stored_origins = para
+                .line_segs
+                .iter()
+                .all(|line| line.column_start == frame_origin);
+            let miss_policy = if stored_geometry_policy.hwpx_cell_geometry && owns_stored_origins {
+                line_breaking::StoredRowMissPolicy::Reflow
+            } else {
+                line_breaking::StoredRowMissPolicy::UnmodelledUnlessStale
+            };
+            recompose_stored_lines_in_frame_with_storage(
+                composed,
+                para,
+                cell_box,
+                inner_width_px,
+                styles,
+                dpi,
+                stored_geometry_policy,
+                miss_policy,
+                // 셀 줄의 어울림 배제는 #5818 셀 계약이 따로 소유한다.
+                &[],
+                storage,
+            )?
         } else {
-            line_breaking::StoredRowMissPolicy::UnmodelledUnlessStale
+            // NO_LS is the arm this owner normally serves. A synthetic single row
+            // is not a source record to reproduce, so clear it on an isolated copy.
+            let mut rebuild_input = storage.clone_paragraph(para)?;
+            rebuild_input.line_segs.clear();
+            recompose_stored_lines_in_frame_with_storage(
+                composed,
+                &rebuild_input,
+                cell_box,
+                inner_width_px,
+                styles,
+                dpi,
+                stored_geometry_policy,
+                line_breaking::StoredRowMissPolicy::Reflow,
+                &[],
+                storage,
+            )?
         };
-        recompose_stored_lines_in_frame(
-            composed,
-            para,
-            cell_box,
-            inner_width_px,
-            styles,
-            dpi,
-            stored_geometry_policy,
-            miss_policy,
-            // 셀 줄의 어울림 배제는 #5818 셀 계약이 따로 소유한다.
-            &[],
-        )
-    } else {
-        // NO_LS is the arm this owner normally serves. A synthetic single row
-        // is not a source record to reproduce, so clear it on an isolated copy.
-        let mut rebuild_input = para.clone();
-        rebuild_input.line_segs.clear();
-        recompose_stored_lines_in_frame(
-            composed,
-            &rebuild_input,
-            cell_box,
-            inner_width_px,
-            styles,
-            dpi,
-            stored_geometry_policy,
-            line_breaking::StoredRowMissPolicy::Reflow,
-            &[],
-        )
+        if let Some(rebuilt) = rebuilt {
+            *composed = rebuilt;
+        }
+        // [#6802] 저장 한 줄을 지킨 줄의 넘치는 채움(리더)은 여기서 끊는다 — 측정(높이)과
+        // 배치(페인트)가 같은 이 함수를 타므로 두 경로가 같은 줄을 본다.
+        if has_authoritative_line_segs && !para.stored_text_partition_is_dirty() {
+            trim_leader_fill_overflow_with_storage(composed, inner_width_px, styles, storage)?;
+        }
     };
-    if let Some(rebuilt) = rebuilt {
-        *composed = rebuilt;
-    }
-    // [#6802] 저장 한 줄을 지킨 줄의 넘치는 채움(리더)은 여기서 끊는다 — 측정(높이)과
-    // 배치(페인트)가 같은 이 함수를 타므로 두 경로가 같은 줄을 본다.
-    if has_authoritative_line_segs && !para.stored_text_partition_is_dirty() {
-        trim_leader_fill_overflow(composed, inner_width_px, styles);
-    }
+    Ok(())
 }
 
 /// 저장 `LINE_SEG`가 없는 들여쓴 셀 문단의 구간별 자간을 안전하게

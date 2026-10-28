@@ -20,11 +20,15 @@ impl rhwp_codec_resource::ResourceBudget for Request {
     }
 }
 
+pub(crate) fn scope(budget: Option<&Arc<ImportBudget>>) -> Option<rhwp_codec_resource::Scope> {
+    budget.map(|b| rhwp_codec_resource::Scope::enter(Arc::new(Request(b.clone()))))
+}
+
 pub(crate) fn decode<T>(
     budget: Option<&Arc<ImportBudget>>,
     operation: impl FnOnce() -> Result<T>,
 ) -> Result<T> {
-    let _scope = budget.map(|b| rhwp_codec_resource::Scope::enter(Arc::new(Request(b.clone()))));
+    let _scope = scope(budget);
     let result = operation();
     // A codec parser may report EOF after a work check. Preserve the actual
     // sticky request failure instead of turning a limit into a parse error.

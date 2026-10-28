@@ -23,5 +23,5 @@ crates.io `jpeg-encoder` 0.7.1을 원본 라이선스·저작권과 함께 보�
 
 원본 registry package와 보정본을 혼동하지 않도록 내부 이름을 `rhwp-jpeg-encoder`
 `0.7.1-rhwp.1`로 구분한다. root의 코드 import alias `jpeg_encoder`는 유지한다.
-`publish = false`, 필요한 source·README·원본/패치 기록·세 라이선스 파일만 포함하는
+`publish = ["crates-io"]`, 필요한 source·README·원본/패치 기록·세 라이선스 파일만 포함하는
 package include와 source 사전 검사 후보를 등록한다. 실제 게시·registry 업로드는 수행하지 않는다.

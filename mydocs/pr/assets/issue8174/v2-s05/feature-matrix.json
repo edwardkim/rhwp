@@ -1,0 +1,39 @@
+[
+  {
+    "name": "final-metadata-test-deps",
+    "source": "sparse+http://127.0.0.1:48175/index/",
+    "features": [
+      "console_error_panic_hook",
+      "default",
+      "native-skia",
+      "pdf-icc",
+      "pdf-import",
+      "pdf-jbig2",
+      "pdf-jpeg2000",
+      "wasm-api"
+    ]
+  },
+  {
+    "name": "final-metadata-minimal",
+    "source": "sparse+http://127.0.0.1:48175/index/",
+    "features": []
+  },
+  {
+    "name": "final-wasm-metadata",
+    "source": "sparse+http://127.0.0.1:48175/index/",
+    "features": [
+      "console_error_panic_hook",
+      "default",
+      "pdf-icc",
+      "pdf-import",
+      "pdf-jbig2",
+      "pdf-jpeg2000",
+      "wasm-api"
+    ]
+  },
+  {
+    "name": "final-wasm-metadata-minimal",
+    "source": "sparse+http://127.0.0.1:48175/index/",
+    "features": []
+  }
+]

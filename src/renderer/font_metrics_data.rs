@@ -47,6 +47,9 @@ pub(crate) fn uses_hangul_jamo_overlay(metric: &FontMetric, character: char) -> 
     hangul_jamo::width(metric, character).is_some()
 }
 
+#[path = "font_metric_nimbus_roman.rs"]
+mod nimbus_roman;
+
 pub(crate) use legacy_hft::{
     is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
 };
@@ -142,6 +145,10 @@ include!("font_metrics_technical_symbols.rs");
 
 /// 실제 프로그램에서 확인한 cmap. DB의 미수집 범위를 glyph 결측으로 취급하지 않는다.
 pub(crate) fn verified_metric_has_glyph(metric: &FontMetric, ch: char) -> Option<bool> {
+    if nimbus_roman_metric_source(metric).is_some() {
+        // These ranges cover the actual program's complete Unicode cmap.
+        return Some(metric.get_width(ch).is_some());
+    }
     verified_program_has_glyph(metric, ch)
         .or_else(|| math_symbols::has_glyph(metric, ch))
         .or_else(|| math_alphabet::entry(metric, ch).map(|(present, _)| present))
@@ -580,6 +587,17 @@ pub(crate) fn core14_metric_source(metric: &FontMetric) -> Option<(&'static str,
     })
 }
 
+/// Actual SFNT table measurements, separate from the historical rule ledger.
+pub(crate) fn nimbus_roman_metric_source(metric: &FontMetric) -> Option<&'static str> {
+    if !metric.name.starts_with("Nimbus") {
+        return None;
+    }
+    nimbus_roman::METRICS
+        .iter()
+        .any(|entry| std::ptr::eq(entry, metric))
+        .then_some("data/font-metrics/nimbus-roman/source.json")
+}
+
 /// 기존 600-entry 물리 순서를 보존하고 독립 AFM 메트릭을 뒤에 연결한다.
 ///
 /// generated 595개와 measured overlay 5개를 정렬·dedupe하지 않는다.
@@ -597,6 +615,7 @@ impl FontMetrics {
             .chain(legacy_hft::METRICS.iter())
             .chain(hci_poppy::METRICS.iter())
             .chain(hci_tulip::METRICS.iter())
+            .chain(nimbus_roman::METRICS.iter())
     }
 }
 

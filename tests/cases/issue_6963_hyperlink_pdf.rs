@@ -234,7 +234,10 @@ fn invalid_scheme_outside_page_and_mismatched_lists_are_not_emitted() {
         "mailto:a@example.com"
     );
     assert!(export_uri("javascript:alert(1)").is_none());
-    assert!(export_uri("file:///private/test").is_none());
+    assert_eq!(
+        export_uri("file:///private/test").as_deref(),
+        Some("file:///private/test")
+    );
     assert!(svgs_to_pdf_with_links(&[tiny_svg(100)], &[], &PdfExportOptions::default()).is_err());
     let mut links = link("javascript:alert(1)");
     links.push(PdfLink {

@@ -8,23 +8,30 @@ use crate::model::style::{CharShape, UnderlineType};
 
 pub fn serialize_char_shape(cs: &CharShape) -> Vec<u8> {
     let mut w = ByteWriter::new();
+    write_char_shape(cs, &mut w).expect("Vec binary writer");
+    w.into_bytes()
+}
 
+pub(crate) fn write_char_shape<W: std::io::Write>(
+    cs: &CharShape,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
     for &id in &cs.font_ids {
-        w.write_u16(id).unwrap();
+        w.write_u16(id)?;
     }
     for &ratio in &cs.ratios {
-        w.write_u8(ratio).unwrap();
+        w.write_u8(ratio)?;
     }
     for &spacing in &cs.spacings {
-        w.write_i8(spacing).unwrap();
+        w.write_i8(spacing)?;
     }
     for &size in &cs.relative_sizes {
-        w.write_u8(size).unwrap();
+        w.write_u8(size)?;
     }
     for &offset in &cs.char_offsets {
-        w.write_i8(offset).unwrap();
+        w.write_i8(offset)?;
     }
-    w.write_i32(cs.base_size).unwrap();
+    w.write_i32(cs.base_size)?;
 
     let mut attr = cs.attr;
     set_flag(&mut attr, 0, cs.italic);
@@ -58,18 +65,18 @@ pub fn serialize_char_shape(cs: &CharShape) -> Vec<u8> {
     write_field(&mut attr, 21, 4, cs.emphasis_dot as u32);
     set_flag(&mut attr, 25, cs.use_font_space);
     set_flag(&mut attr, 30, cs.kerning);
-    w.write_u32(attr).unwrap();
+    w.write_u32(attr)?;
 
-    w.write_i8(cs.shadow_offset_x).unwrap();
-    w.write_i8(cs.shadow_offset_y).unwrap();
-    w.write_color_ref(cs.text_color).unwrap();
-    w.write_color_ref(cs.underline_color).unwrap();
-    w.write_color_ref(cs.shade_color).unwrap();
-    w.write_color_ref(cs.shadow_color).unwrap();
-    w.write_u16(cs.border_fill_id).unwrap();
-    w.write_color_ref(cs.strike_color).unwrap();
+    w.write_i8(cs.shadow_offset_x)?;
+    w.write_i8(cs.shadow_offset_y)?;
+    w.write_color_ref(cs.text_color)?;
+    w.write_color_ref(cs.underline_color)?;
+    w.write_color_ref(cs.shade_color)?;
+    w.write_color_ref(cs.shadow_color)?;
+    w.write_u16(cs.border_fill_id)?;
+    w.write_color_ref(cs.strike_color)?;
 
-    w.into_bytes()
+    Ok(())
 }
 
 fn set_flag(attr: &mut u32, bit: u32, enabled: bool) {

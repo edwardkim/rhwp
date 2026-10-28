@@ -20,8 +20,9 @@
 //! ```
 
 use super::TextSpan;
+use crate::{error::Result, import_storage::ImportStorage};
 
-/// Per-page font statistics. Computed in O(n) over the spans.
+/// Per-page font statistics. Stable grouping and medians use O(n log n) sorting.
 #[derive(Debug, Clone, PartialEq)]
 pub struct PageFontStats {
     /// Mode of `font_size` weighted by character count. The "1 em"
@@ -61,31 +62,35 @@ impl PageFontStats {
     ///
     /// Empty input → returns [`PageFontStats::default`].
     pub fn from_spans(spans: &[TextSpan]) -> Self {
+        Self::try_from_spans(spans, ImportStorage(None)).expect("font statistics allocation")
+    }
+    pub(crate) fn try_from_spans(
+        spans: &[TextSpan],
+        allocation: ImportStorage<'_>,
+    ) -> Result<Self> {
+        allocation.bytes(0)?;
         if spans.is_empty() {
-            return Self::default();
+            return Ok(Self::default());
         }
 
         // Mode of font_size weighted by character count.
         // Bin font sizes into 0.25 pt buckets so 11.97 / 12.00 / 12.03
         // (which all came from the same nominal 12 pt body) collapse to
         // one bucket.
-        let mut size_buckets: std::collections::HashMap<u32, usize> =
-            std::collections::HashMap::new();
-        let mut font_buckets: std::collections::HashMap<&str, usize> =
-            std::collections::HashMap::new();
+        let mut size_values = allocation.vec(spans.len())?;
+        let mut font_values = allocation.vec(spans.len())?;
         for s in spans {
             let chars = s.text.chars().count();
             if chars == 0 || !s.font_size.is_finite() || s.font_size <= 0.0 {
                 continue;
             }
-            // Quantize to 0.25 pt buckets. Use u32 to avoid silent saturation
-            // for large font sizes (e.g. poster / display fonts at 200+ pt).
-            let bucket = (s.font_size * 4.0).round() as u32;
-            *size_buckets.entry(bucket).or_insert(0) += chars;
-            *font_buckets.entry(s.font_name.as_str()).or_insert(0) += chars;
+            size_values.push(((s.font_size * 4.0).round() as u32, chars));
+            font_values.push((s.font_name.as_str(), chars));
         }
+        let size_buckets = weighted_buckets(size_values, allocation)?;
+        let font_buckets = weighted_buckets(font_values, allocation)?;
         if size_buckets.is_empty() {
-            return Self::default();
+            return Ok(Self::default());
         }
 
         // Both modes are picked with an explicit tie-break, NOT `max_by_key`.
@@ -117,20 +122,23 @@ impl PageFontStats {
             (*bucket as f32) / 4.0
         };
 
-        let body_font_name = font_buckets
+        let body_font = font_buckets
             .iter()
             .max_by(|(a_name, a_count), (b_name, b_count)| {
                 a_count.cmp(b_count).then_with(|| b_name.cmp(a_name))
             })
-            .map(|(name, _)| (*name).to_string())
+            .map(|(name, _)| *name)
             .unwrap_or_default();
+        let mut body_font_name = allocation.string_capacity(body_font.len())?;
+        body_font_name.push_str(body_font);
 
         // Dominant line height: median of baseline-to-baseline distances
         // between vertically-adjacent same-font same-size spans.
         // Sort spans by (font_name, x_center, y descending) and walk
         // adjacent pairs.
         let dominant_line_height =
-            compute_line_height(spans, &body_font_name, dominant_em).unwrap_or(dominant_em * 1.2);
+            compute_line_height(spans, &body_font_name, dominant_em, allocation)?
+                .unwrap_or(dominant_em * 1.2);
 
         // Dominant char width: total width of dominant-font spans
         // divided by their total character count. Falls back to
@@ -158,33 +166,55 @@ impl PageFontStats {
             dominant_em * 0.5
         };
 
-        Self {
+        Ok(Self {
             dominant_em,
             dominant_line_height,
             dominant_char_width,
             body_font_name,
-        }
+        })
     }
 }
 
-fn compute_line_height(spans: &[TextSpan], body_font: &str, dominant_em: f32) -> Option<f32> {
+fn weighted_buckets<T: Ord>(
+    mut values: Vec<(T, usize)>,
+    allocation: ImportStorage<'_>,
+) -> Result<Vec<(T, usize)>> {
+    allocation.sort_by(&mut values, |a, b| a.0.cmp(&b.0))?;
+    let mut grouped: Vec<(T, usize)> = allocation.vec(values.len())?;
+    for (key, weight) in values {
+        if let Some(last) = grouped.last_mut().filter(|last| last.0 == key) {
+            last.1 += weight;
+        } else {
+            grouped.push((key, weight));
+        }
+    }
+    Ok(grouped)
+}
+
+fn compute_line_height(
+    spans: &[TextSpan],
+    body_font: &str,
+    dominant_em: f32,
+    allocation: ImportStorage<'_>,
+) -> Result<Option<f32>> {
     // Collect y-baselines of dominant-font spans only.
-    let mut ys: Vec<f32> = spans
-        .iter()
-        .filter(|s| {
-            s.font_name == body_font
-                && (s.font_size - dominant_em).abs() < 0.5
-                && s.bbox.y.is_finite()
-        })
-        .map(|s| s.bbox.y)
-        .collect();
+    let mut ys = allocation.collect(
+        spans
+            .iter()
+            .filter(|s| {
+                s.font_name == body_font
+                    && (s.font_size - dominant_em).abs() < 0.5
+                    && s.bbox.y.is_finite()
+            })
+            .map(|s| s.bbox.y),
+    )?;
 
     if ys.len() < 4 {
-        return None;
+        return Ok(None);
     }
 
     // Sort descending (highest y = top of page first in PDF coords).
-    ys.sort_by(|a, b| crate::utils::safe_float_cmp(*b, *a));
+    allocation.sort_by(&mut ys, |a, b| crate::utils::safe_float_cmp(*b, *a))?;
 
     // Deduplicate baselines within 0.5 pt: multiple spans on the same
     // text line (bold run, mixed font) would otherwise inject zero-gaps.
@@ -195,17 +225,17 @@ fn compute_line_height(spans: &[TextSpan], body_font: &str, dominant_em: f32) ->
     // subscript/inline-math overlaps; wider are paragraph or section
     // breaks. This filter makes the column-grouping heuristic
     // unnecessary — cross-column gaps are almost always > 3em.
-    let mut gaps: Vec<f32> = ys
-        .windows(2)
-        .map(|w| w[0] - w[1])
-        .filter(|&g| g >= dominant_em * 0.5 && g <= dominant_em * 3.0)
-        .collect();
+    let mut gaps = allocation.collect(
+        ys.windows(2)
+            .map(|w| w[0] - w[1])
+            .filter(|&g| g >= dominant_em * 0.5 && g <= dominant_em * 3.0),
+    )?;
 
     if gaps.is_empty() {
-        return None;
+        return Ok(None);
     }
-    gaps.sort_by(|a, b| crate::utils::safe_float_cmp(*a, *b));
-    Some(gaps[gaps.len() / 2])
+    allocation.sort_by(&mut gaps, |a, b| crate::utils::safe_float_cmp(*a, *b))?;
+    Ok(Some(gaps[gaps.len() / 2]))
 }
 
 #[cfg(test)]

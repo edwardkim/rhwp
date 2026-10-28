@@ -31,36 +31,55 @@ pub(crate) fn missing_latin_default(document: &Document) -> Option<&'static str>
 }
 
 pub(super) fn lookup_context(document: &Document) -> Cow<'_, DocInfo> {
+    match try_lookup_context(document, &super::storage::Unbounded) {
+        Ok(lookup) => lookup,
+        Err(never) => match never {},
+    }
+}
+
+pub(super) fn try_lookup_context<'a, S: super::storage::Storage>(
+    document: &'a Document,
+    storage: &S,
+) -> Result<Cow<'a, DocInfo>, S::Error> {
     if missing_char_table(document) {
-        let mut info = document.doc_info.clone();
-        info.char_shapes.push(CharShape {
-            base_size: 1000,
-            ..Default::default()
-        });
+        let mut info = storage.clone_doc_info(&document.doc_info)?;
+        storage.push(
+            &mut info.char_shapes,
+            CharShape {
+                base_size: 1000,
+                ..Default::default()
+            },
+        )?;
+        let extra = 7usize.saturating_sub(info.font_faces.len());
+        storage.reserve(&mut info.font_faces, extra)?;
         info.font_faces.resize_with(7, Vec::new);
         for fonts in &mut info.font_faces {
             if fonts.is_empty() {
                 // 결측 표의 최초 Print는 Gulim을 사용한다. Save가 나중에
                 // 기록한 한컴바탕 선언으로 원래 Print를 바꾸지 않는다.
-                fonts.push(Font {
-                    name: "굴림".to_string(),
-                    alt_type: 1,
-                    default_name: Some("Gulim".to_string()),
-                    ..Default::default()
-                });
+                storage.push(
+                    fonts,
+                    Font {
+                        name: storage.string("굴림")?,
+                        alt_type: 1,
+                        default_name: Some(storage.string("Gulim")?),
+                        ..Default::default()
+                    },
+                )?;
             }
         }
-        return Cow::Owned(info);
+        return Ok(Cow::Owned(info));
     }
     let Some(name) = missing_latin_default(document) else {
-        return Cow::Borrowed(&document.doc_info);
+        return Ok(Cow::Borrowed(&document.doc_info));
     };
-    let mut info = document.doc_info.clone();
+    let mut info = storage.clone_doc_info(&document.doc_info)?;
+    storage.reserve(&mut info.font_faces[1], 1)?;
     info.font_faces[1].push(Font {
-        name: name.to_string(),
+        name: storage.string(name)?,
         alt_type: 1,
-        default_name: Some("Haansoft Batang".to_string()),
+        default_name: Some(storage.string("Haansoft Batang")?),
         ..Default::default()
     });
-    Cow::Owned(info)
+    Ok(Cow::Owned(info))
 }

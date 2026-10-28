@@ -20,13 +20,43 @@ impl TypesetEngine {
         para_style_break: bool,
         force_page_break: bool,
     ) -> bool {
+        match self.absorb_section_tail_with_storage(
+            st,
+            para_idx,
+            para,
+            paragraphs,
+            styles,
+            has_table,
+            last_content_para_idx,
+            para_style_break,
+            force_page_break,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn absorb_section_tail_with_storage<S: crate::storage::Storage>(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        para: &Paragraph,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        has_table: bool,
+        last_content_para_idx: Option<usize>,
+        para_style_break: bool,
+        force_page_break: bool,
+        storage: &S,
+    ) -> Result<bool, S::Error> {
         // 이 단계에서는 이미 확정한 각주 영역의 기존 빈 줄 이월만 준비한다.
         // 새 물리 예약은 뒤의 실제 문단 원점 선택 후 paragraph::flow에서 조회한다.
         st.prepare_saved_empty_run(para_idx, paragraphs, self.dpi, |_| None);
         if st.saved_empty_run_contains(para_idx) {
             // 실제 줄 상자를 fit/이월한다. 저장 reset 앞이라는 이유로
             // 줄의 물리 점유를 감추지 않는다.
-            return false;
+            return Ok(false);
         }
         // 이어받기 컷이 이미 다음 쪽을 열었다면 빈 줄도 그 쪽의 점유다.
         // 뒤의 같은 저장 리셋을 앞 쪽 꼬리로 해석해 줄 상자를 숨기지 않는다.
@@ -35,7 +65,7 @@ impl TypesetEngine {
             && para_idx + 1 < paragraphs.len()
             && st.stored_paragraph_boundary_already_open(paragraphs, para_idx + 1)
         {
-            return false;
+            return Ok(false);
         }
         // [Task #359] 단독 항목 페이지 차단:
         // 다음 pi 가 vpos-reset 가드를 발동할 예정이고 현재 pi 가 잔여 공간 부족으로
@@ -155,11 +185,14 @@ impl TypesetEngine {
                 found
             };
         if empty_tail_bridge_to_reset {
-            st.hide_empty_paragraph(para_idx);
-            st.append_item(PageItem::FullParagraph {
-                para_index: para_idx,
-            });
-            return true;
+            st.hide_empty_paragraph_with_storage(para_idx, storage)?;
+            st.append_item_with_storage(
+                PageItem::FullParagraph {
+                    para_index: para_idx,
+                },
+                storage,
+            )?;
+            return Ok(true);
         }
 
         // [#7288] **앞 프레임에 속한 빈 문단이 새 프레임의 첫 줄을 밀지 않는다.**
@@ -211,11 +244,14 @@ impl TypesetEngine {
                     })
             });
         if stale_frame_empty_absorbed {
-            st.hide_empty_paragraph(para_idx);
-            st.append_item(PageItem::FullParagraph {
-                para_index: para_idx,
-            });
-            return true;
+            st.hide_empty_paragraph_with_storage(para_idx, storage)?;
+            st.append_item_with_storage(
+                PageItem::FullParagraph {
+                    para_index: para_idx,
+                },
+                storage,
+            )?;
+            return Ok(true);
         }
 
         if next_will_vpos_reset {
@@ -233,13 +269,16 @@ impl TypesetEngine {
                     seg.vertical_pos > body_h_hu * 70 / 100
                 });
                 if page_bottom_empty_reset_bridge {
-                    st.hide_empty_paragraph(para_idx);
+                    st.hide_empty_paragraph_with_storage(para_idx, storage)?;
                     if !st.current_items.is_empty() {
-                        st.append_item(PageItem::FullParagraph {
-                            para_index: para_idx,
-                        });
+                        st.append_item_with_storage(
+                            PageItem::FullParagraph {
+                                para_index: para_idx,
+                            },
+                            storage,
+                        )?;
                     }
-                    return true;
+                    return Ok(true);
                 }
 
                 // [#1648] 빈 문단이 현재 페이지에 들어가면 정상 배치한다(한글 동작 —
@@ -321,11 +360,14 @@ impl TypesetEngine {
                     // → drop 대신 현재 페이지에 0-높이로 흡수 기록(hide_empty_line 와 동일
                     //   시멘틱). 페이지를 advance 하지 않으므로 단독 빈 페이지 회귀(synam-001
                     //   등)는 발생하지 않는다.
-                    st.hide_empty_paragraph(para_idx);
-                    st.append_item(PageItem::FullParagraph {
-                        para_index: para_idx,
-                    });
-                    return true;
+                    st.hide_empty_paragraph_with_storage(para_idx, storage)?;
+                    st.append_item_with_storage(
+                        PageItem::FullParagraph {
+                            para_index: para_idx,
+                        },
+                        storage,
+                    )?;
+                    return Ok(true);
                 }
                 // height·vpos 둘 다 fit → 정상 emit (아래로 진행)
             } else {
@@ -389,11 +431,14 @@ impl TypesetEngine {
                     // 어긋났다(rhwp_pNone). 한컴은 이 빈 문단을 현재 page 하단의 빈 줄로
                     // 흡수(위 주석)하므로, drop 대신 현재 페이지에 0-높이로 흡수 기록한다.
                     // 페이지를 advance 하지 않으므로 단독 page 회귀(sample18 등)는 없다.
-                    st.hide_empty_paragraph(para_idx);
-                    st.append_item(PageItem::FullParagraph {
-                        para_index: para_idx,
-                    });
-                    return true;
+                    st.hide_empty_paragraph_with_storage(para_idx, storage)?;
+                    st.append_item_with_storage(
+                        PageItem::FullParagraph {
+                            para_index: para_idx,
+                        },
+                        storage,
+                    )?;
+                    return Ok(true);
                 }
                 // fit 가능 — 정상 emit (기존 동작)
             }
@@ -447,7 +492,7 @@ impl TypesetEngine {
                 .unwrap_or(0.0);
             let avail = st.available_height() - st.current_height;
             if empty_h_px > avail {
-                return true;
+                return Ok(true);
             }
         }
 
@@ -473,7 +518,7 @@ impl TypesetEngine {
                         start_line: 0,
                         end_line: usize::MAX,
                     });
-                    return true;
+                    return Ok(true);
                 }
                 st.finish_behind_float_absorption();
             } else {
@@ -481,6 +526,6 @@ impl TypesetEngine {
             }
         }
 
-        false
+        Ok(false)
     }
 }

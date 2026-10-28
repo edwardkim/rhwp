@@ -264,6 +264,114 @@ pub fn serialize_control(
     }
 }
 
+/// The listed record producers reserve owned storage. Other variants still
+/// retain their legacy producer pending the remaining allocation audit.
+pub(crate) fn try_serialize_control<S: crate::storage::Storage>(
+    ctrl: &Control,
+    level: u16,
+    ctrl_data_record: Option<&[u8]>,
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let insert_pos = records.len();
+    match ctrl {
+        Control::Table(table) => try_serialize_table(table, level, records, storage)?,
+        Control::Picture(picture) => {
+            return try_serialize_picture_control(
+                picture,
+                level,
+                ctrl_data_record,
+                records,
+                storage,
+            );
+        }
+        Control::Shape(shape) => {
+            return try_serialize_shape_control(shape, level, ctrl_data_record, records, storage);
+        }
+        Control::SectionDef(section) => {
+            try_serialize_section_def(section, level, ctrl_data_record, records, storage)?
+        }
+        Control::ColumnDef(column) => try_serialize_column_def(column, level, records, storage)?,
+        _ => {
+            storage.bytes(0)?;
+            serialize_control(ctrl, level, ctrl_data_record, records);
+            return storage.bytes(0);
+        }
+    }
+    if let Some(data) = ctrl_data_record {
+        let data = storage.copy_slice(data)?;
+        storage.reserve(records, 1)?;
+        records.insert(
+            insert_pos + 1,
+            Record {
+                tag_id: tags::HWPTAG_CTRL_DATA,
+                level: level + 1,
+                size: data.len() as u32,
+                data,
+            },
+        );
+    }
+    storage.bytes(0)
+}
+
+struct ListHeaderFields {
+    para_count: u16,
+    list_attr: u32,
+    text_width: u32,
+    text_height: u32,
+    text_ref: u8,
+    num_ref: u8,
+    ext_flags: u16,
+}
+enum ControlPayload<'a> {
+    Section(&'a SectionDef),
+    Column(&'a ColumnDef),
+    Page(&'a PageDef),
+    Footnote(&'a FootnoteShape),
+    PageBorder(&'a PageBorderFill),
+    HeaderFooterList(ListHeaderFields),
+    Common(&'a CommonObjAttr),
+    Table(&'a Table),
+    Cell(&'a Cell),
+    CellExtra(&'a Cell),
+    Caption(&'a Caption),
+    Picture(&'a Picture),
+    Component(u32, &'a ShapeComponentAttr, bool),
+    Drawing(u32, &'a DrawingObjAttr, bool),
+    Detail(&'a ShapeObject),
+    TextBox(&'a crate::model::shape::TextBox),
+}
+impl super::byte_writer::BinaryProducer for ControlPayload<'_> {
+    fn write<W: std::io::Write>(&self, writer: &mut ByteWriter<W>) -> std::io::Result<()> {
+        match self {
+            Self::Section(value) => write_section_def(value, writer),
+            Self::Column(value) => write_column_def(value, writer),
+            Self::Page(value) => write_serialize_page_def(value, writer),
+            Self::Footnote(value) => write_serialize_footnote_shape(value, writer),
+            Self::PageBorder(value) => write_serialize_page_border_fill(value, writer),
+            Self::HeaderFooterList(value) => write_header_footer_list_header(value, writer),
+            Self::Common(value) => write_serialize_common_obj_attr(value, writer),
+            Self::Table(value) => write_serialize_table_record(value, writer),
+            Self::Cell(value) => write_cell_list(value, writer),
+            Self::CellExtra(value) => write_cell_list_extra(value, writer),
+            Self::Caption(value) => write_caption_list(value, writer),
+            Self::Picture(value) => write_picture_data(value, writer),
+            Self::Component(id, value, top) => write_shape_component_base(writer, *id, value, *top),
+            Self::Drawing(id, value, top) => {
+                write_drawing_shape_component(writer, *id, value, *top)
+            }
+            Self::Detail(value) => write_shape_detail(value, writer),
+            Self::TextBox(value) => write_text_box_header(value, writer),
+        }
+    }
+}
+fn plain_control_payload(payload: ControlPayload<'_>) -> Vec<u8> {
+    match crate::storage::Storage::binary(&crate::storage::Unbounded, &payload) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
 /// [#4396] `field.parameters`(HWPX `<hp:parameters>` 트리) 중 HWP5 로 옮길 자리가 없는
 /// 항목이 있으면 경고 문자열을 만든다. `command`(CTRL_HEADER 의 command)와
 /// `Number`(memo_index)는 이미 HWP5 쪽 슬롯이 있으므로 손실이 아니다 — 그 둘을 뺀
@@ -307,15 +415,26 @@ fn parameter_name(p: &Parameter) -> Option<&str> {
 
 /// ctrl_id + ctrl_data로 CTRL_HEADER 레코드 생성
 fn make_ctrl_record(ctrl_id: u32, level: u16, ctrl_data: &[u8]) -> Record {
-    let mut data = Vec::with_capacity(4 + ctrl_data.len());
+    match try_make_ctrl_record(ctrl_id, level, ctrl_data, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+fn try_make_ctrl_record<S: crate::storage::Storage>(
+    ctrl_id: u32,
+    level: u16,
+    ctrl_data: &[u8],
+    storage: &S,
+) -> Result<Record, S::Error> {
+    let mut data = storage.vec(ctrl_data.len().saturating_add(4))?;
     data.extend_from_slice(&ctrl_id.to_le_bytes());
     data.extend_from_slice(ctrl_data);
-    Record {
+    Ok(Record {
         tag_id: tags::HWPTAG_CTRL_HEADER,
         level,
         size: data.len() as u32,
         data,
-    }
+    })
 }
 
 // ============================================================
@@ -328,80 +447,85 @@ fn serialize_section_def(
     ctrl_data_record: Option<&[u8]>,
     records: &mut Vec<Record>,
 ) {
-    let mut w = ByteWriter::new();
-    // HWPX 파서(parse_start_num, pageStartsOn)는 page_num_type 필드만 세팅하고
-    // flags bit 20-21은 동기화하지 않는다. HWP5는 page_num_type을 별도 필드로
-    // 갖지 않고 flags bit 20-21로만 표현하므로, 여기서 반영하지 않으면 HWPX
-    // 출처 문서를 HWP5로 저장할 때 홀/짝 쪽번호 시작 설정이 유실된다.
-    let flags = (sd.flags & !0x0030_0000) | (((sd.page_num_type as u32) & 0x03) << 20);
-    w.write_u32(flags).unwrap();
-    w.write_i16(sd.column_spacing).unwrap();
-    w.write_i16(sd.line_grid).unwrap();
-    w.write_i16(sd.char_grid).unwrap();
-    w.write_u32(sd.default_tab_spacing).unwrap();
-    w.write_u16(sd.outline_numbering_id).unwrap();
-    w.write_u16(sd.page_num).unwrap();
-    w.write_u16(sd.picture_num).unwrap();
-    w.write_u16(sd.table_num).unwrap();
-    w.write_u16(sd.equation_num).unwrap();
-    // [Task #1058] HWP5 spec 표 129 정합 — SectionDef payload 26 byte (위 24 + 2 Language):
-    //   UINT16 대표Language (5.0.1.5 이상)
-    // 한컴 정답지는 26 byte payload + 8 byte zero (확장 영역) = 34 byte payload + 4 byte ctrl_id = 38 byte CTRL_HEADER.
-    // 원본 추가 바이트 복원 (라운드트립용)
-    if !sd.raw_ctrl_extra.is_empty() {
-        w.write_bytes(&sd.raw_ctrl_extra).unwrap();
-    } else {
-        // HWPX 출처: 한컴 default 10 byte (Language 0 + zero 8)
-        w.write_u16(0).unwrap(); // 대표Language = 0 (Application 지정)
-        w.write_bytes(&[0u8; 8]).unwrap(); // 추가 zero padding (관찰된 한컴 정답지 패턴)
-    }
-
-    records.push(make_ctrl_record(
-        tags::CTRL_SECTION_DEF,
+    match try_serialize_section_def(
+        sd,
         level,
-        w.as_bytes(),
-    ));
+        ctrl_data_record,
+        records,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
+}
+fn try_serialize_section_def<S: crate::storage::Storage>(
+    sd: &SectionDef,
+    level: u16,
+    ctrl_data_record: Option<&[u8]>,
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let header = storage.binary(&ControlPayload::Section(sd))?;
+    storage.push(
+        records,
+        try_make_ctrl_record(tags::CTRL_SECTION_DEF, level, &header, storage)?,
+    )?;
 
     // PAGE_DEF
-    records.push(Record {
-        tag_id: tags::HWPTAG_PAGE_DEF,
-        level: level + 1,
-        size: 0,
-        data: serialize_page_def(&sd.page_def),
-    });
+    storage.push(
+        records,
+        Record {
+            tag_id: tags::HWPTAG_PAGE_DEF,
+            level: level + 1,
+            size: 0,
+            data: storage.binary(&ControlPayload::Page(&sd.page_def))?,
+        },
+    )?;
 
     // FOOTNOTE_SHAPE (각주)
-    records.push(Record {
-        tag_id: tags::HWPTAG_FOOTNOTE_SHAPE,
-        level: level + 1,
-        size: 0,
-        data: serialize_footnote_shape(&sd.footnote_shape),
-    });
+    storage.push(
+        records,
+        Record {
+            tag_id: tags::HWPTAG_FOOTNOTE_SHAPE,
+            level: level + 1,
+            size: 0,
+            data: storage.binary(&ControlPayload::Footnote(&sd.footnote_shape))?,
+        },
+    )?;
 
     // FOOTNOTE_SHAPE (미주)
-    records.push(Record {
-        tag_id: tags::HWPTAG_FOOTNOTE_SHAPE,
-        level: level + 1,
-        size: 0,
-        data: serialize_footnote_shape(&sd.endnote_shape),
-    });
+    storage.push(
+        records,
+        Record {
+            tag_id: tags::HWPTAG_FOOTNOTE_SHAPE,
+            level: level + 1,
+            size: 0,
+            data: storage.binary(&ControlPayload::Footnote(&sd.endnote_shape))?,
+        },
+    )?;
 
     // PAGE_BORDER_FILL (첫 번째)
-    records.push(Record {
-        tag_id: tags::HWPTAG_PAGE_BORDER_FILL,
-        level: level + 1,
-        size: 0,
-        data: serialize_page_border_fill(&sd.page_border_fill),
-    });
-
-    // 추가 PAGE_BORDER_FILL (2번째, 3번째 등)
-    for pbf in &sd.extra_page_border_fills {
-        records.push(Record {
+    storage.push(
+        records,
+        Record {
             tag_id: tags::HWPTAG_PAGE_BORDER_FILL,
             level: level + 1,
             size: 0,
-            data: serialize_page_border_fill(pbf),
-        });
+            data: storage.binary(&ControlPayload::PageBorder(&sd.page_border_fill))?,
+        },
+    )?;
+
+    // 추가 PAGE_BORDER_FILL (2번째, 3번째 등)
+    for pbf in &sd.extra_page_border_fills {
+        storage.push(
+            records,
+            Record {
+                tag_id: tags::HWPTAG_PAGE_BORDER_FILL,
+                level: level + 1,
+                size: 0,
+                data: storage.binary(&ControlPayload::PageBorder(pbf))?,
+            },
+        )?;
     }
 
     // 기타 자식 레코드 복원 (바탕쪽 LIST_HEADER + 문단 등)
@@ -424,12 +548,15 @@ fn serialize_section_def(
             // payload가 같아도 원래 위치에서 보존한다.
             nested_ctrl_header_seen = true;
         }
-        records.push(Record {
-            tag_id: raw.tag_id,
-            level: raw.level,
-            size: raw.data.len() as u32,
-            data: raw.data.clone(),
-        });
+        storage.push(
+            records,
+            Record {
+                tag_id: raw.tag_id,
+                level: raw.level,
+                size: raw.data.len() as u32,
+                data: storage.copy_slice(&raw.data)?,
+            },
+        )?;
     }
 
     // HWPX 출처 바탕쪽은 raw child record가 없으므로 MasterPage 모델에서 HWP5 LIST_HEADER
@@ -440,9 +567,43 @@ fn serialize_section_def(
         .any(|raw| raw.tag_id == tags::HWPTAG_LIST_HEADER && raw.level == level + 1);
     if !has_raw_master_page_records {
         for master_page in sd.master_pages.iter().filter(|mp| !mp.is_extension) {
-            serialize_master_page(master_page, level + 1, records);
+            try_serialize_master_page(master_page, level + 1, records, storage)?;
         }
     }
+    Ok(())
+}
+fn write_section_def<W: std::io::Write>(
+    sd: &SectionDef,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
+    // HWPX 파서(parse_start_num, pageStartsOn)는 page_num_type 필드만 세팅하고
+    // flags bit 20-21은 동기화하지 않는다. HWP5는 page_num_type을 별도 필드로
+    // 갖지 않고 flags bit 20-21로만 표현하므로, 여기서 반영하지 않으면 HWPX
+    // 출처 문서를 HWP5로 저장할 때 홀/짝 쪽번호 시작 설정이 유실된다.
+    let flags = (sd.flags & !0x0030_0000) | (((sd.page_num_type as u32) & 0x03) << 20);
+    w.write_u32(flags)?;
+    w.write_i16(sd.column_spacing)?;
+    w.write_i16(sd.line_grid)?;
+    w.write_i16(sd.char_grid)?;
+    w.write_u32(sd.default_tab_spacing)?;
+    w.write_u16(sd.outline_numbering_id)?;
+    w.write_u16(sd.page_num)?;
+    w.write_u16(sd.picture_num)?;
+    w.write_u16(sd.table_num)?;
+    w.write_u16(sd.equation_num)?;
+    // [Task #1058] HWP5 spec 표 129 정합 — SectionDef payload 26 byte (위 24 + 2 Language):
+    //   UINT16 대표Language (5.0.1.5 이상)
+    // 한컴 정답지는 26 byte payload + 8 byte zero (확장 영역) = 34 byte payload + 4 byte ctrl_id = 38 byte CTRL_HEADER.
+    // 원본 추가 바이트 복원 (라운드트립용)
+    if !sd.raw_ctrl_extra.is_empty() {
+        w.write_bytes(&sd.raw_ctrl_extra)?;
+    } else {
+        // HWPX 출처: 한컴 default 10 byte (Language 0 + zero 8)
+        w.write_u16(0)?; // 대표Language = 0 (Application 지정)
+        w.write_bytes(&[0u8; 8])?; // 추가 zero padding (관찰된 한컴 정답지 패턴)
+    }
+
+    Ok(())
 }
 
 pub(crate) fn serialize_master_page(
@@ -450,8 +611,19 @@ pub(crate) fn serialize_master_page(
     level: u16,
     records: &mut Vec<Record>,
 ) {
+    match try_serialize_master_page(master_page, level, records, &crate::storage::Unbounded) {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn try_serialize_master_page<S: crate::storage::Storage>(
+    master_page: &MasterPage,
+    level: u16,
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
     let data = if !master_page.raw_list_header.is_empty() {
-        let mut data = master_page.raw_list_header.clone();
+        let mut data = storage.copy_slice(&master_page.raw_list_header)?;
         // 원본 목록은 보존하되 지정 쪽이 바뀌면 같은 소유 필드만 갱신한다.
         if let Some(kind) = master_page
             .optional_page_number
@@ -469,37 +641,46 @@ pub(crate) fn serialize_master_page(
             .unwrap_or_else(|| {
                 u16::from(master_page.overlap) | if master_page.is_extension { 0x02 } else { 0 }
             });
-        build_header_footer_list_header(
-            master_page.paragraphs.len() as u16,
-            0,
-            master_page.text_width,
-            master_page.text_height,
-            master_page.text_ref,
-            master_page.num_ref,
+        storage.binary(&ControlPayload::HeaderFooterList(ListHeaderFields {
+            para_count: master_page.paragraphs.len() as u16,
+            list_attr: 0,
+            text_width: master_page.text_width,
+            text_height: master_page.text_height,
+            text_ref: master_page.text_ref,
+            num_ref: master_page.num_ref,
             ext_flags,
-        )
+        }))?
     };
 
-    records.push(Record {
-        tag_id: tags::HWPTAG_LIST_HEADER,
-        level,
-        size: data.len() as u32,
-        data,
-    });
-    serialize_paragraph_list(&master_page.paragraphs, level, records);
+    storage.push(
+        records,
+        Record {
+            tag_id: tags::HWPTAG_LIST_HEADER,
+            level,
+            size: data.len() as u32,
+            data,
+        },
+    )?;
+    super::body_text::try_serialize_paragraph_list(&master_page.paragraphs, level, records, storage)
 }
 
 fn serialize_page_def(pd: &PageDef) -> Vec<u8> {
-    let mut w = ByteWriter::new();
-    w.write_u32(pd.width).unwrap();
-    w.write_u32(pd.height).unwrap();
-    w.write_u32(pd.margin_left).unwrap();
-    w.write_u32(pd.margin_right).unwrap();
-    w.write_u32(pd.margin_top).unwrap();
-    w.write_u32(pd.margin_bottom).unwrap();
-    w.write_u32(pd.margin_header).unwrap();
-    w.write_u32(pd.margin_footer).unwrap();
-    w.write_u32(pd.margin_gutter).unwrap();
+    plain_control_payload(ControlPayload::Page(pd))
+}
+
+fn write_serialize_page_def<W: std::io::Write>(
+    pd: &PageDef,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
+    w.write_u32(pd.width)?;
+    w.write_u32(pd.height)?;
+    w.write_u32(pd.margin_left)?;
+    w.write_u32(pd.margin_right)?;
+    w.write_u32(pd.margin_top)?;
+    w.write_u32(pd.margin_bottom)?;
+    w.write_u32(pd.margin_header)?;
+    w.write_u32(pd.margin_footer)?;
+    w.write_u32(pd.margin_gutter)?;
     // [#1166] 용지 방향(landscape)은 attr bit0 (parse: body_text.rs `attr & 0x01`).
     // HWPX 출처 문서는 pd.landscape 만 설정되고 attr bit0 은 0 이므로, 직렬화 시
     // landscape 를 attr bit0 에 동기화해야 HWP5 저장본이 가로 방향을 보존한다.
@@ -508,40 +689,52 @@ fn serialize_page_def(pd: &PageDef) -> Vec<u8> {
     } else {
         pd.attr & !0x01
     };
-    w.write_u32(attr).unwrap();
-    w.into_bytes()
+    w.write_u32(attr)?;
+    Ok(())
 }
 
 fn serialize_footnote_shape(fs: &FootnoteShape) -> Vec<u8> {
-    let mut w = ByteWriter::new();
-    w.write_u32(fs.attr).unwrap();
-    w.write_u16(char_to_wchar(fs.user_char)).unwrap();
-    w.write_u16(char_to_wchar(fs.prefix_char)).unwrap();
-    w.write_u16(char_to_wchar(fs.suffix_char)).unwrap();
-    w.write_u16(fs.start_number).unwrap();
+    plain_control_payload(ControlPayload::Footnote(fs))
+}
+
+fn write_serialize_footnote_shape<W: std::io::Write>(
+    fs: &FootnoteShape,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
+    w.write_u32(fs.attr)?;
+    w.write_u16(char_to_wchar(fs.user_char))?;
+    w.write_u16(char_to_wchar(fs.prefix_char))?;
+    w.write_u16(char_to_wchar(fs.suffix_char))?;
+    w.write_u16(fs.start_number)?;
     // [#7862] HWP5 노트 구분선 길이는 4바이트다(한컴 전폭 값 14692344 그대로).
-    w.write_i32(fs.separator_length).unwrap();
+    w.write_i32(fs.separator_length)?;
     // "구분선 위" 는 다음 i16 이다. HWPX 출처 모양은 `aboveLine` 을
     // `separator_margin_top` 에 두므로 정규화 접근자로 쓴다(HWP5 출처는 원값 그대로).
-    w.write_i16(fs.separator_above_margin_hu()).unwrap();
-    w.write_i16(fs.note_spacing).unwrap();
+    w.write_i16(fs.separator_above_margin_hu())?;
+    w.write_i16(fs.note_spacing)?;
     // 미문서화 2바이트 (원본 보존)
-    w.write_u16(fs.raw_unknown).unwrap();
-    w.write_u8(fs.separator_line_type).unwrap();
-    w.write_u8(fs.separator_line_width).unwrap();
-    w.write_color_ref(fs.separator_color).unwrap();
-    w.into_bytes()
+    w.write_u16(fs.raw_unknown)?;
+    w.write_u8(fs.separator_line_type)?;
+    w.write_u8(fs.separator_line_width)?;
+    w.write_color_ref(fs.separator_color)?;
+    Ok(())
 }
 
 fn serialize_page_border_fill(pbf: &PageBorderFill) -> Vec<u8> {
-    let mut w = ByteWriter::new();
-    w.write_u32(pbf.attr).unwrap();
-    w.write_i16(pbf.spacing_left).unwrap();
-    w.write_i16(pbf.spacing_right).unwrap();
-    w.write_i16(pbf.spacing_top).unwrap();
-    w.write_i16(pbf.spacing_bottom).unwrap();
-    w.write_u16(pbf.border_fill_id).unwrap();
-    w.into_bytes()
+    plain_control_payload(ControlPayload::PageBorder(pbf))
+}
+
+fn write_serialize_page_border_fill<W: std::io::Write>(
+    pbf: &PageBorderFill,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
+    w.write_u32(pbf.attr)?;
+    w.write_i16(pbf.spacing_left)?;
+    w.write_i16(pbf.spacing_right)?;
+    w.write_i16(pbf.spacing_top)?;
+    w.write_i16(pbf.spacing_bottom)?;
+    w.write_u16(pbf.border_fill_id)?;
+    Ok(())
 }
 
 // ============================================================
@@ -549,8 +742,27 @@ fn serialize_page_border_fill(pbf: &PageBorderFill) -> Vec<u8> {
 // ============================================================
 
 fn serialize_column_def(cd: &ColumnDef, level: u16, records: &mut Vec<Record>) {
-    let mut w = ByteWriter::new();
-
+    match try_serialize_column_def(cd, level, records, &crate::storage::Unbounded) {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
+}
+fn try_serialize_column_def<S: crate::storage::Storage>(
+    cd: &ColumnDef,
+    level: u16,
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let data = storage.binary(&ControlPayload::Column(cd))?;
+    storage.push(
+        records,
+        try_make_ctrl_record(tags::CTRL_COLUMN_DEF, level, &data, storage)?,
+    )
+}
+fn write_column_def<W: std::io::Write>(
+    cd: &ColumnDef,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
     // [#7523] 파서는 bit 12 가 꺼져 있으면 단 수만큼 너비·간격 쌍을 읽는다. 단별 너비가
     // 모자라면(너비 동일을 끈 채 단 수만 정한 편집) 렌더러처럼 같은 너비로 기록한다.
     let count = cd.column_count as usize;
@@ -580,28 +792,28 @@ fn serialize_column_def(cd: &ColumnDef, level: u16, records: &mut Vec<Record>) {
         a
     };
 
-    w.write_u16(attr).unwrap();
+    w.write_u16(attr)?;
 
     // hwplib 기준: same_width 여부에 따라 바이트 순서가 다름
     if !same_width && count > 1 {
         // same_width=false: [attr2(2)] [col0_width(2) col0_gap(2)] ...
-        w.write_u16(0).unwrap(); // attr2
+        w.write_u16(0)?; // attr2
         for i in 0..count {
-            w.write_i16(cd.widths[i]).unwrap();
+            w.write_i16(cd.widths[i])?;
             let gap = cd.gaps.get(i).copied().unwrap_or(0);
-            w.write_i16(gap).unwrap();
+            w.write_i16(gap)?;
         }
     } else {
         // same_width=true: [gap(2)] [attr2(2)]
-        w.write_i16(cd.spacing).unwrap();
-        w.write_u16(0).unwrap(); // attr2
+        w.write_i16(cd.spacing)?;
+        w.write_u16(0)?; // attr2
     }
 
-    w.write_u8(cd.separator_type).unwrap();
-    w.write_u8(cd.separator_width).unwrap();
-    w.write_color_ref(cd.separator_color).unwrap();
+    w.write_u8(cd.separator_type)?;
+    w.write_u8(cd.separator_width)?;
+    w.write_color_ref(cd.separator_color)?;
 
-    records.push(make_ctrl_record(tags::CTRL_COLUMN_DEF, level, w.as_bytes()));
+    Ok(())
 }
 
 // ============================================================
@@ -609,6 +821,17 @@ fn serialize_column_def(cd: &ColumnDef, level: u16, records: &mut Vec<Record>) {
 // ============================================================
 
 fn serialize_table(table: &Table, level: u16, records: &mut Vec<Record>) {
+    match try_serialize_table(table, level, records, &crate::storage::Unbounded) {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
+}
+fn try_serialize_table<S: crate::storage::Storage>(
+    table: &Table,
+    level: u16,
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
     // CTRL_HEADER: raw_ctrl_data는 CommonObjAttr 전체 (attr 포함)
     // Task 271에서 파싱 변경: ctrl_data 전체 = CommonObjAttr
     //
@@ -629,7 +852,7 @@ fn serialize_table(table: &Table, level: u16, records: &mut Vec<Record>) {
     let ctrl_data: &[u8] = if !table.raw_ctrl_data.is_empty() && raw_permitted {
         &table.raw_ctrl_data
     } else {
-        composed_common = serialize_common_obj_attr(&table.common);
+        composed_common = storage.binary(&ControlPayload::Common(&table.common))?;
         &composed_common
     };
     // [일곱 번째 계약] 개체 공통 속성 attr **bit 29 = 캡션 존재 플래그**. 한글 2022 는
@@ -637,26 +860,33 @@ fn serialize_table(table: &Table, level: u16, records: &mut Vec<Record>) {
     // 비트와 실제 캡션이 어긋나면 레코드 스트림을 오독해 문서 전체 개방을 거부한다
     // (HWP3 변환본 크롤 스윕 COM 이등분: 40429 표 attr bit29 로 확정, 양방향 반증).
     // HWP3 어댑터·HWPX 출처는 캡션을 방출하면서도 이 비트를 안 켰다. 방출 직전 강제한다.
-    let ctrl_data = apply_caption_attr_bit(ctrl_data, table.caption.is_some());
-    records.push(make_ctrl_record(tags::CTRL_TABLE, level, &ctrl_data));
+    let ctrl_data = try_apply_caption_attr_bit(ctrl_data, table.caption.is_some(), storage)?;
+    storage.push(
+        records,
+        try_make_ctrl_record(tags::CTRL_TABLE, level, &ctrl_data, storage)?,
+    )?;
 
     // 캡션 (TABLE 이전, level+1)
     if let Some(ref caption) = table.caption {
-        serialize_caption(caption, level + 1, records);
+        try_serialize_caption(caption, level + 1, records, storage)?;
     }
 
     // HWPTAG_TABLE 레코드
-    records.push(Record {
-        tag_id: tags::HWPTAG_TABLE,
-        level: level + 1,
-        size: 0,
-        data: serialize_table_record(table),
-    });
+    storage.push(
+        records,
+        Record {
+            tag_id: tags::HWPTAG_TABLE,
+            level: level + 1,
+            size: 0,
+            data: storage.binary(&ControlPayload::Table(table))?,
+        },
+    )?;
 
     // 셀 목록
     for cell in &table.cells {
-        serialize_cell(cell, level + 1, records);
+        try_serialize_cell(cell, level + 1, records, storage)?;
     }
+    Ok(())
 }
 
 /// HWPTAG_TABLE attr — 원본 비트는 보존하고, IR 이 가진 bit 0-1(쪽 경계에서 나눔)·
@@ -689,54 +919,81 @@ fn table_record_attr(table: &Table) -> u32 {
 }
 
 fn serialize_table_record(table: &Table) -> Vec<u8> {
-    let mut w = ByteWriter::new();
+    plain_control_payload(ControlPayload::Table(table))
+}
 
-    w.write_u32(table_record_attr(table)).unwrap();
+fn write_serialize_table_record<W: std::io::Write>(
+    table: &Table,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
+    w.write_u32(table_record_attr(table))?;
 
-    w.write_u16(table.row_count).unwrap();
-    w.write_u16(table.col_count).unwrap();
-    w.write_i16(table.cell_spacing).unwrap();
+    w.write_u16(table.row_count)?;
+    w.write_u16(table.col_count)?;
+    w.write_i16(table.cell_spacing)?;
 
     // 안쪽 여백
-    w.write_i16(table.padding.left).unwrap();
-    w.write_i16(table.padding.right).unwrap();
-    w.write_i16(table.padding.top).unwrap();
-    w.write_i16(table.padding.bottom).unwrap();
+    w.write_i16(table.padding.left)?;
+    w.write_i16(table.padding.right)?;
+    w.write_i16(table.padding.top)?;
+    w.write_i16(table.padding.bottom)?;
 
     // 행별 셀 수 (HWP 스펙: UINT16[NRows])
     for &h in &table.row_sizes {
-        w.write_i16(h).unwrap();
+        w.write_i16(h)?;
     }
 
-    w.write_u16(table.border_fill_id).unwrap();
+    w.write_u16(table.border_fill_id)?;
 
     // 영역 속성: UINT16 nZones + TableZone[nZones].
     //
     // `셀 테두리/배경 - 하나의 셀처럼 적용`은 개별 셀이 아니라 TABLE cellzone
     // overlay로 저장되어야 한컴에서 선택 영역 전체 대각선으로 표시된다.
-    w.write_u16(table.zones.len() as u16).unwrap();
+    w.write_u16(table.zones.len() as u16)?;
     for zone in &table.zones {
-        w.write_u16(zone.start_row).unwrap();
-        w.write_u16(zone.start_col).unwrap();
-        w.write_u16(zone.end_row).unwrap();
-        w.write_u16(zone.end_col).unwrap();
-        w.write_u16(zone.border_fill_id).unwrap();
+        w.write_u16(zone.start_row)?;
+        w.write_u16(zone.start_col)?;
+        w.write_u16(zone.end_row)?;
+        w.write_u16(zone.end_col)?;
+        w.write_u16(zone.border_fill_id)?;
     }
 
     // 원본 추가 바이트 복원 (라운드트립용)
     if !table.raw_table_record_extra.is_empty() {
-        w.write_bytes(&table.raw_table_record_extra).unwrap();
+        w.write_bytes(&table.raw_table_record_extra)?;
     }
 
-    w.into_bytes()
+    Ok(())
 }
 
 fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
-    let mut w = ByteWriter::new();
-
+    match try_serialize_cell(cell, level, records, &crate::storage::Unbounded) {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
+}
+fn try_serialize_cell<S: crate::storage::Storage>(
+    cell: &Cell,
+    level: u16,
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let data = storage.binary(&ControlPayload::Cell(cell))?;
+    storage.push(
+        records,
+        Record {
+            tag_id: tags::HWPTAG_LIST_HEADER,
+            level,
+            size: 0,
+            data,
+        },
+    )?;
+    super::body_text::try_serialize_paragraph_list(&cell.paragraphs, level, records, storage)
+}
+fn write_cell_list<W: std::io::Write>(cell: &Cell, w: &mut ByteWriter<W>) -> std::io::Result<()> {
     // LIST_HEADER 공통 (6 + 2 = 8바이트)
     let n_paragraphs = cell.paragraphs.len() as u16;
-    w.write_u16(n_paragraphs).unwrap();
+    w.write_u16(n_paragraphs)?;
 
     // list_attr 재구성 (text_direction + vertical_align)
     let v_align_code: u32 = match cell.vertical_align {
@@ -749,7 +1006,7 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
     let list_attr: u32 = ((cell.text_direction as u32) << 16)
         | (((cell.line_wrap as u32) & 0x03) << 19)
         | (v_align_code << 21);
-    w.write_u32(list_attr).unwrap();
+    w.write_u32(list_attr)?;
     // 파싱한 HWP5 셀은 raw_list_extra에 LIST_HEADER 확장 바이트를 보존한다.
     // 이 경우 width_ref=0도 유효한 원본값이므로 그대로 기록한다. 반대로 새로
     // 만든 셀은 한컴 호환 47바이트 LIST_HEADER 계약을 위해 기본값 0x0400을 쓴다.
@@ -759,41 +1016,45 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
     } else {
         cell.list_header_width_ref
     };
-    w.write_u16(list_header_width_ref).unwrap();
+    w.write_u16(list_header_width_ref)?;
 
     // 셀 속성
-    w.write_u16(cell.col).unwrap();
-    w.write_u16(cell.row).unwrap();
-    w.write_u16(cell.col_span).unwrap();
-    w.write_u16(cell.row_span).unwrap();
-    w.write_u32(cell.width).unwrap();
-    w.write_u32(cell.height).unwrap();
-    w.write_i16(cell.padding.left).unwrap();
-    w.write_i16(cell.padding.right).unwrap();
-    w.write_i16(cell.padding.top).unwrap();
-    w.write_i16(cell.padding.bottom).unwrap();
-    w.write_u16(cell.border_fill_id).unwrap();
+    w.write_u16(cell.col)?;
+    w.write_u16(cell.row)?;
+    w.write_u16(cell.col_span)?;
+    w.write_u16(cell.row_span)?;
+    w.write_u32(cell.width)?;
+    w.write_u32(cell.height)?;
+    w.write_i16(cell.padding.left)?;
+    w.write_i16(cell.padding.right)?;
+    w.write_i16(cell.padding.top)?;
+    w.write_i16(cell.padding.bottom)?;
+    w.write_u16(cell.border_fill_id)?;
 
     // 원본 추가 바이트 복원. HWPX/신규 생성 셀에는 원본이 없으므로
     // 한컴 저장본의 셀 LIST_HEADER 47바이트 contract에 맞춰 폭 참조를 보강한다.
     // [#1808] 모델의 field_name 과 raw_list_extra 인코딩이 일치하면 원본 보존,
     // 불일치(HWPX 출처 셀 필드, 편집기 변경)면 한컴 계약대로 재구성한다.
-    let raw_field = crate::parser::control::parse_cell_field_name(&cell.raw_list_extra);
-    if !cell.raw_list_extra.is_empty() && raw_field.as_deref() == cell.field_name.as_deref() {
-        w.write_bytes(&cell.raw_list_extra).unwrap();
+    if !cell.raw_list_extra.is_empty() && raw_cell_field_name_matches(cell) {
+        w.write_bytes(&cell.raw_list_extra)?;
     } else {
-        w.write_bytes(&build_cell_list_extra(cell)).unwrap();
+        write_cell_list_extra(cell, w)?;
     }
 
-    records.push(Record {
-        tag_id: tags::HWPTAG_LIST_HEADER,
-        level,
-        size: 0,
-        data: w.into_bytes(),
-    });
+    Ok(())
+}
 
-    // 셀 내부 문단 (원본 HWP에서는 LIST_HEADER와 같은 레벨)
-    serialize_paragraph_list(&cell.paragraphs, level, records);
+/// Compare the parser's lossy UTF-16 surface without creating a temporary String.
+fn raw_cell_field_name_matches(cell: &Cell) -> bool {
+    let Some(units) = crate::parser::control::cell_field_name_units(&cell.raw_list_extra) else {
+        return cell.field_name.is_none();
+    };
+    let Some(name) = cell.field_name.as_deref() else {
+        return false;
+    };
+    char::decode_utf16(units)
+        .map(|scalar| scalar.unwrap_or(char::REPLACEMENT_CHARACTER))
+        .eq(name.chars())
 }
 
 /// [#1808] 셀 LIST_HEADER 추가 바이트(34바이트 이후) 재구성 — 한컴 계약.
@@ -809,41 +1070,63 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
 ///   [+8]     00 ×8
 /// 파서 대칭: parser::control::parse_cell_field_name (offset 15/17).
 fn build_cell_list_extra(cell: &Cell) -> Vec<u8> {
-    // 원본 extra 가 있으면 선두 4바이트(폭 참조 계약값)를 보존한다.
+    plain_control_payload(ControlPayload::CellExtra(cell))
+}
+fn write_cell_list_extra<W: std::io::Write>(
+    cell: &Cell,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
     let width_bytes: [u8; 4] = if cell.raw_list_extra.len() >= 4 {
         cell.raw_list_extra[0..4].try_into().unwrap()
     } else {
         cell.width.to_le_bytes()
     };
-    match cell.field_name.as_deref() {
-        Some(name) if !name.is_empty() => {
-            let utf16: Vec<u16> = name.encode_utf16().collect();
-            let mut v = Vec::with_capacity(25 + utf16.len() * 2);
-            v.extend_from_slice(&width_bytes);
-            v.extend_from_slice(&[0xff, 0x1b, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00]);
-            v.extend_from_slice(&[0x40, 0x01, 0x00]);
-            v.extend_from_slice(&(utf16.len() as u16).to_le_bytes());
-            for cu in &utf16 {
-                v.extend_from_slice(&cu.to_le_bytes());
-            }
-            v.extend_from_slice(&[0u8; 8]);
-            v
+    w.write_bytes(&width_bytes)?;
+    if let Some(name) = cell.field_name.as_deref().filter(|name| !name.is_empty()) {
+        w.write_bytes(&[0xff, 0x1b, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00])?;
+        w.write_bytes(&[0x40, 0x01, 0x00])?;
+        w.write_u16(name.encode_utf16().count() as u16)?;
+        for unit in name.encode_utf16() {
+            w.write_u16(unit)?;
         }
-        _ => {
-            let mut v = Vec::with_capacity(13);
-            v.extend_from_slice(&width_bytes);
-            v.extend_from_slice(&[0u8; 9]);
-            v
-        }
+        w.write_zeros(8)?;
+    } else {
+        w.write_zeros(9)?;
     }
+    Ok(())
 }
 
 fn serialize_caption(caption: &Caption, level: u16, records: &mut Vec<Record>) {
-    let mut w = ByteWriter::new();
-
+    match try_serialize_caption(caption, level, records, &crate::storage::Unbounded) {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
+}
+fn try_serialize_caption<S: crate::storage::Storage>(
+    caption: &Caption,
+    level: u16,
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let data = storage.binary(&ControlPayload::Caption(caption))?;
+    storage.push(
+        records,
+        Record {
+            tag_id: tags::HWPTAG_LIST_HEADER,
+            level,
+            size: 0,
+            data,
+        },
+    )?;
+    super::body_text::try_serialize_paragraph_list(&caption.paragraphs, level, records, storage)
+}
+fn write_caption_list<W: std::io::Write>(
+    caption: &Caption,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
     // LIST_HEADER 공통 (8바이트: n_para + list_attr + width_ref)
     let n_paragraphs = caption.paragraphs.len() as u16;
-    w.write_u16(n_paragraphs).unwrap();
+    w.write_u16(n_paragraphs)?;
     // list_attr: bit 21~22 = 세로 정렬 (Left/Right 캡션용)
     let vert_align_bits: u32 = match caption.vert_align {
         CaptionVertAlign::Top => 0,
@@ -851,8 +1134,8 @@ fn serialize_caption(caption: &Caption, level: u16, records: &mut Vec<Record>) {
         CaptionVertAlign::Bottom => 2,
     };
     let list_attr: u32 = vert_align_bits << 21;
-    w.write_u32(list_attr).unwrap();
-    w.write_u16(0).unwrap(); // width_ref
+    w.write_u32(list_attr)?;
+    w.write_u16(0)?; // width_ref
 
     // 캡션 데이터
     let dir_val: u32 = match caption.direction {
@@ -865,23 +1148,15 @@ fn serialize_caption(caption: &Caption, level: u16, records: &mut Vec<Record>) {
     if caption.include_margin {
         caption_attr |= 0x04;
     }
-    w.write_u32(caption_attr).unwrap();
-    w.write_u32(caption.width).unwrap();
-    w.write_i16(caption.spacing).unwrap();
-    w.write_u32(caption.max_width).unwrap();
+    w.write_u32(caption_attr)?;
+    w.write_u32(caption.width)?;
+    w.write_i16(caption.spacing)?;
+    w.write_u32(caption.max_width)?;
     // 예약 필드 8바이트 (한컴 호환성: 원본 파일은 30바이트 LIST_HEADER)
-    w.write_u32(0).unwrap();
-    w.write_u32(0).unwrap();
+    w.write_u32(0)?;
+    w.write_u32(0)?;
 
-    records.push(Record {
-        tag_id: tags::HWPTAG_LIST_HEADER,
-        level,
-        size: 0,
-        data: w.into_bytes(),
-    });
-
-    // 캡션 내부 문단 (LIST_HEADER와 같은 레벨)
-    serialize_paragraph_list(&caption.paragraphs, level, records);
+    Ok(())
 }
 
 // ============================================================
@@ -1205,141 +1480,193 @@ fn serialize_picture_control(
     ctrl_data_record: Option<&[u8]>,
     records: &mut Vec<Record>,
 ) {
-    // CTRL_HEADER: ctrl_id(gso) + common_obj_attr
-    // [일곱 번째 계약] attr bit 29 = 캡션 존재 플래그 (apply_caption_attr_bit 참조).
-    let pic_ctrl = apply_caption_attr_bit(
-        &serialize_common_obj_attr(&pic.common),
-        pic.caption.is_some(),
-    );
-    records.push(make_ctrl_record(tags::CTRL_GEN_SHAPE, level, &pic_ctrl));
-
-    // 캡션 (SHAPE_COMPONENT 앞, level+1)
-    if let Some(ref caption) = pic.caption {
-        serialize_caption(caption, level + 1, records);
+    match try_serialize_picture_control(
+        pic,
+        level,
+        ctrl_data_record,
+        records,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(()) => (),
+        Err(never) => match never {},
     }
+}
 
-    // SHAPE_COMPONENT
-    records.push(Record {
-        tag_id: tags::HWPTAG_SHAPE_COMPONENT,
-        level: level + 1,
-        size: 0,
-        data: serialize_shape_component(tags::SHAPE_PICTURE_ID, &pic.shape_attr, true),
-    });
-
-    // CTRL_DATA: SHAPE_COMPONENT 자식으로 배치 (level+2)
-    if let Some(data) = ctrl_data_record {
-        records.push(Record {
-            tag_id: tags::HWPTAG_CTRL_DATA,
-            level: level + 2,
-            size: data.len() as u32,
-            data: data.to_vec(),
-        });
+fn try_serialize_picture_control<S: crate::storage::Storage>(
+    pic: &Picture,
+    level: u16,
+    ctrl_data_record: Option<&[u8]>,
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let mut header = storage.binary(&ControlPayload::Common(&pic.common))?;
+    set_caption_attr_bit(&mut header, pic.caption.is_some());
+    let record = try_make_ctrl_record(tags::CTRL_GEN_SHAPE, level, &header, storage)?;
+    storage.push(records, record)?;
+    if let Some(caption) = &pic.caption {
+        try_serialize_caption(caption, level + 1, records, storage)?;
     }
+    try_payload_record(
+        ControlPayload::Component(tags::SHAPE_PICTURE_ID, &pic.shape_attr, true),
+        tags::HWPTAG_SHAPE_COMPONENT,
+        level + 1,
+        records,
+        storage,
+    )?;
+    try_ctrl_data_record(ctrl_data_record, level + 2, records, storage)?;
+    try_payload_record(
+        ControlPayload::Picture(pic),
+        tags::HWPTAG_SHAPE_COMPONENT_PICTURE,
+        level + 2,
+        records,
+        storage,
+    )
+}
 
-    // SHAPE_COMPONENT_PICTURE (SHAPE_COMPONENT의 자식)
-    records.push(Record {
-        tag_id: tags::HWPTAG_SHAPE_COMPONENT_PICTURE,
-        level: level + 2,
-        size: 0,
-        data: serialize_picture_data(pic),
-    });
+fn try_payload_record<S: crate::storage::Storage>(
+    payload: ControlPayload<'_>,
+    tag_id: u16,
+    level: u16,
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let data = storage.binary(&payload)?;
+    storage.push(
+        records,
+        Record {
+            tag_id,
+            level,
+            size: 0,
+            data,
+        },
+    )
+}
+
+fn try_ctrl_data_record<S: crate::storage::Storage>(
+    data: Option<&[u8]>,
+    level: u16,
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    if let Some(data) = data {
+        let data = storage.copy_slice(data)?;
+        storage.push(
+            records,
+            Record {
+                tag_id: tags::HWPTAG_CTRL_DATA,
+                level,
+                size: data.len() as u32,
+                data,
+            },
+        )?;
+    }
+    Ok(())
 }
 
 fn serialize_picture_data(pic: &Picture) -> Vec<u8> {
-    let mut w = ByteWriter::new();
-    w.write_color_ref(pic.border_color).unwrap();
-    w.write_i32(pic.border_width).unwrap();
+    plain_control_payload(ControlPayload::Picture(pic))
+}
+
+fn write_picture_data<W: std::io::Write>(
+    pic: &Picture,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
+    w.write_color_ref(pic.border_color)?;
+    w.write_i32(pic.border_width)?;
     // 테두리 속성 워드(선 종류/끝모양 등, 표 87). 파서는 pic.border_attr.attr 로
     // 읽지만 종전엔 0 을 고정 방출해 스타일 테두리가 저장 시 유실됐다.
-    w.write_u32(pic.border_attr.attr).unwrap(); // border_attr
+    w.write_u32(pic.border_attr.attr)?; // border_attr
 
     for &x in &pic.border_x {
-        w.write_i32(x).unwrap();
+        w.write_i32(x)?;
     }
     for &y in &pic.border_y {
-        w.write_i32(y).unwrap();
+        w.write_i32(y)?;
     }
 
     // 자르기 정보
-    w.write_i32(pic.crop.left).unwrap();
-    w.write_i32(pic.crop.top).unwrap();
-    w.write_i32(pic.crop.right).unwrap();
-    w.write_i32(pic.crop.bottom).unwrap();
+    w.write_i32(pic.crop.left)?;
+    w.write_i32(pic.crop.top)?;
+    w.write_i32(pic.crop.right)?;
+    w.write_i32(pic.crop.bottom)?;
 
     // 안쪽 여백
-    w.write_i16(pic.padding.left).unwrap();
-    w.write_i16(pic.padding.right).unwrap();
-    w.write_i16(pic.padding.top).unwrap();
-    w.write_i16(pic.padding.bottom).unwrap();
+    w.write_i16(pic.padding.left)?;
+    w.write_i16(pic.padding.right)?;
+    w.write_i16(pic.padding.top)?;
+    w.write_i16(pic.padding.bottom)?;
 
     // HWP5는 명암→밝기 순서로 저장한다. parser와 대칭인 의미 IR 변환이다.
-    w.write_i8(pic.image_attr.contrast).unwrap();
-    w.write_i8(pic.image_attr.brightness).unwrap();
+    w.write_i8(pic.image_attr.contrast)?;
+    w.write_i8(pic.image_attr.brightness)?;
     let effect_val: u8 = match pic.image_attr.effect {
         ImageEffect::RealPic => 0,
         ImageEffect::GrayScale => 1,
         ImageEffect::BlackWhite => 2,
         ImageEffect::Pattern8x8 => 3,
     };
-    w.write_u8(effect_val).unwrap();
-    w.write_u16(pic.image_attr.bin_data_id).unwrap();
+    w.write_u8(effect_val)?;
+    w.write_u16(pic.image_attr.bin_data_id)?;
 
     // 원본 추가 바이트 복원 (라운드트립 보존)
     if !pic.raw_picture_extra.is_empty() {
-        w.write_bytes(&picture_raw_extra_with_transparency(pic))
-            .unwrap();
+        write_picture_extra(pic, w)?;
     } else {
         // border_opacity(1) + instance_id(4) + image_effect(4) = 9바이트
-        w.write_u8(pic.border_opacity).unwrap();
-        w.write_u32(pic.instance_id).unwrap();
-        w.write_u32(0).unwrap(); // image_effect_extra
-                                 // 원본 이미지 크기(HWPUNIT) + 플래그(1): 한컴 호환 추가 9바이트
-                                 // [#1929] IR img_dim(HWPX hp:imgDim 대응)이 있으면 우선 기록 —
-                                 // 종전 crop 폴백만으로는 HWPX→HWP5 왕복에서 imgDim 소실.
+        w.write_u8(pic.border_opacity)?;
+        w.write_u32(pic.instance_id)?;
+        w.write_u32(0)?; // image_effect_extra
+                         // 원본 이미지 크기(HWPUNIT) + 플래그(1): 한컴 호환 추가 9바이트
+                         // [#1929] IR img_dim(HWPX hp:imgDim 대응)이 있으면 우선 기록 —
+                         // 종전 crop 폴백만으로는 HWPX→HWP5 왕복에서 imgDim 소실.
         let (dim_w, dim_h) = if pic.img_dim != (0, 0) {
             pic.img_dim
         } else {
             (pic.crop.right as u32, pic.crop.bottom as u32)
         };
-        w.write_u32(dim_w).unwrap(); // original width
-        w.write_u32(dim_h).unwrap(); // original height
-        w.write_u8(pic.image_attr.transparency_alpha_byte())
-            .unwrap();
+        w.write_u32(dim_w)?; // original width
+        w.write_u32(dim_h)?; // original height
+        w.write_u8(pic.image_attr.transparency_alpha_byte())?;
     }
 
-    w.into_bytes()
+    Ok(())
 }
 
-fn picture_raw_extra_with_transparency(pic: &Picture) -> Vec<u8> {
+fn write_picture_extra<W: std::io::Write>(
+    pic: &Picture,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
+    let extra = &pic.raw_picture_extra;
     let transparency = pic.image_attr.transparency_alpha_byte();
-    let mut extra = pic.raw_picture_extra.clone();
     if extra.len() >= 18 {
-        if let Some(last) = extra.last_mut() {
-            *last = transparency;
+        w.write_bytes(&extra[..extra.len() - 1])?;
+        w.write_u8(transparency)?;
+    } else {
+        w.write_bytes(extra)?;
+        if transparency > 0 {
+            let width = if pic.shape_attr.original_width > 0 {
+                pic.shape_attr.original_width
+            } else {
+                pic.crop.right.max(0) as u32
+            };
+            let height = if pic.shape_attr.original_height > 0 {
+                pic.shape_attr.original_height
+            } else {
+                pic.crop.bottom.max(0) as u32
+            };
+            w.write_u32(width)?;
+            w.write_u32(height)?;
+            w.write_u8(transparency)?;
         }
-    } else if transparency > 0 {
-        let original_width = if pic.shape_attr.original_width > 0 {
-            pic.shape_attr.original_width
-        } else {
-            pic.crop.right.max(0) as u32
-        };
-        let original_height = if pic.shape_attr.original_height > 0 {
-            pic.shape_attr.original_height
-        } else {
-            pic.crop.bottom.max(0) as u32
-        };
-        extra.extend_from_slice(&original_width.to_le_bytes());
-        extra.extend_from_slice(&original_height.to_le_bytes());
-        extra.push(transparency);
     }
-    extra
+    Ok(())
 }
 
 // ============================================================
 // 도형 ('gso ' + Shape)
 // ============================================================
 
-fn synthesize_hwpx_shape_ctrl_data(shape: &ShapeObject) -> Option<Vec<u8>> {
+fn synthesize_hwpx_shape_ctrl_data(shape: &ShapeObject) -> Option<&'static [u8]> {
     let ShapeObject::Rectangle(rect) = shape else {
         return None;
     };
@@ -1356,7 +1683,7 @@ fn synthesize_hwpx_shape_ctrl_data(shape: &ShapeObject) -> Option<Vec<u8>> {
         return None;
     }
 
-    Some(vec![
+    Some(&[
         0x1b, 0x02, 0x01, 0x00, 0x00, 0x00, 0x03, 0x30, 0x00, 0x80, 0x03, 0x30, 0x01, 0x00, 0x00,
         0x00, 0x01, 0x70, 0x09, 0x00, 0x01, 0x00, 0x00, 0x00,
     ])
@@ -1368,15 +1695,30 @@ fn serialize_shape_control(
     ctrl_data_record: Option<&[u8]>,
     records: &mut Vec<Record>,
 ) {
+    // Preserve the original absence of CTRL_DATA for the shared primitive
+    // producer: synthesized rectangles emit both top-level and child records.
+    if !matches!(shape, ShapeObject::Group(_) | ShapeObject::Ole(_)) {
+        match try_serialize_shape_control(
+            shape,
+            level,
+            ctrl_data_record,
+            records,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(()) => (),
+            Err(never) => match never {},
+        }
+        return;
+    }
     let synthesized_ctrl_data = if ctrl_data_record.is_none() {
         synthesize_hwpx_shape_ctrl_data(shape)
     } else {
         None
     };
-    let ctrl_data_record = ctrl_data_record.or(synthesized_ctrl_data.as_deref());
+    let ctrl_data_record = ctrl_data_record.or(synthesized_ctrl_data);
 
     let emit_top_level_synthesized_ctrl_data = |records: &mut Vec<Record>| {
-        if let Some(data) = synthesized_ctrl_data.as_deref() {
+        if let Some(data) = synthesized_ctrl_data {
             records.push(Record {
                 tag_id: tags::HWPTAG_CTRL_DATA,
                 level: level + 1,
@@ -1421,259 +1763,6 @@ fn serialize_shape_control(
     };
 
     match shape {
-        ShapeObject::Line(line) => {
-            let is_connector = line.connector.is_some();
-            let sc_ctrl_id = if is_connector {
-                tags::SHAPE_CONNECTOR_ID
-            } else {
-                tags::SHAPE_LINE_ID
-            };
-            records.push(make_ctrl_record(
-                tags::CTRL_GEN_SHAPE,
-                level,
-                &apply_caption_attr_bit(
-                    &serialize_common_obj_attr(&line.common),
-                    line.drawing.caption.is_some(),
-                ),
-            ));
-            emit_top_level_synthesized_ctrl_data(records);
-            emit_caption(&line.drawing.caption, records);
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
-                level: level + 1,
-                size: 0,
-                data: serialize_drawing_shape_component(sc_ctrl_id, &line.drawing, true),
-            });
-            emit_ctrl_data(records);
-            serialize_text_box_if_present(&line.drawing, level + 2, records);
-            let mut w = ByteWriter::new();
-            w.write_i32(line.start.x).unwrap();
-            w.write_i32(line.start.y).unwrap();
-            w.write_i32(line.end.x).unwrap();
-            w.write_i32(line.end.y).unwrap();
-            if let Some(ref conn) = line.connector {
-                // 연결선 확장 데이터
-                w.write_u32(conn.link_type as u32).unwrap();
-                w.write_u32(conn.start_subject_id).unwrap();
-                w.write_u32(conn.start_subject_index).unwrap();
-                w.write_u32(conn.end_subject_id).unwrap();
-                w.write_u32(conn.end_subject_index).unwrap();
-                w.write_u32(conn.control_points.len() as u32).unwrap();
-                for cp in &conn.control_points {
-                    w.write_i32(cp.x).unwrap();
-                    w.write_i32(cp.y).unwrap();
-                    w.write_u16(cp.point_type).unwrap();
-                }
-                // [#3570] 한컴은 제어점 뒤에 0 4바이트를 더 쓴다(전수 20건 모두
-                // `00000000`). 종전에는 raw_trailing 이 비면 아무것도 쓰지 않아
-                // 레코드가 4바이트 짧았다. 다각형(위)과 같은 관례로 채운다.
-                if conn.raw_trailing.is_empty() {
-                    w.write_u32(0).unwrap();
-                } else {
-                    w.write_bytes(&conn.raw_trailing).unwrap();
-                }
-            } else {
-                w.write_i32(if line.started_right_or_bottom { 1 } else { 0 })
-                    .unwrap();
-            }
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT_LINE,
-                level: level + 2,
-                size: 0,
-                data: w.into_bytes(),
-            });
-        }
-        ShapeObject::Rectangle(rect) => {
-            records.push(make_ctrl_record(
-                tags::CTRL_GEN_SHAPE,
-                level,
-                &apply_caption_attr_bit(
-                    &serialize_common_obj_attr(&rect.common),
-                    rect.drawing.caption.is_some(),
-                ),
-            ));
-            emit_top_level_synthesized_ctrl_data(records);
-            emit_caption(&rect.drawing.caption, records);
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
-                level: level + 1,
-                size: 0,
-                data: serialize_drawing_shape_component(tags::SHAPE_RECT_ID, &rect.drawing, true),
-            });
-            emit_ctrl_data(records);
-            // 글상자(텍스트) 내용 직렬화
-            serialize_text_box_if_present(&rect.drawing, level + 2, records);
-            let mut w = ByteWriter::new();
-            w.write_u8(rect.round_rate).unwrap();
-            for i in 0..4 {
-                w.write_i32(rect.x_coords[i]).unwrap();
-                w.write_i32(rect.y_coords[i]).unwrap();
-            }
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT_RECTANGLE,
-                level: level + 2,
-                size: 0,
-                data: w.into_bytes(),
-            });
-        }
-        ShapeObject::Ellipse(ellipse) => {
-            records.push(make_ctrl_record(
-                tags::CTRL_GEN_SHAPE,
-                level,
-                &apply_caption_attr_bit(
-                    &serialize_common_obj_attr(&ellipse.common),
-                    ellipse.drawing.caption.is_some(),
-                ),
-            ));
-            emit_top_level_synthesized_ctrl_data(records);
-            emit_caption(&ellipse.drawing.caption, records);
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
-                level: level + 1,
-                size: 0,
-                data: serialize_drawing_shape_component(
-                    tags::SHAPE_ELLIPSE_ID,
-                    &ellipse.drawing,
-                    true,
-                ),
-            });
-            emit_ctrl_data(records);
-            serialize_text_box_if_present(&ellipse.drawing, level + 2, records);
-            let mut w = ByteWriter::new();
-            w.write_u32(ellipse.attr).unwrap();
-            w.write_i32(ellipse.center.x).unwrap();
-            w.write_i32(ellipse.center.y).unwrap();
-            w.write_i32(ellipse.axis1.x).unwrap();
-            w.write_i32(ellipse.axis1.y).unwrap();
-            w.write_i32(ellipse.axis2.x).unwrap();
-            w.write_i32(ellipse.axis2.y).unwrap();
-            w.write_i32(ellipse.start1.x).unwrap();
-            w.write_i32(ellipse.start1.y).unwrap();
-            w.write_i32(ellipse.end1.x).unwrap();
-            w.write_i32(ellipse.end1.y).unwrap();
-            w.write_i32(ellipse.start2.x).unwrap();
-            w.write_i32(ellipse.start2.y).unwrap();
-            w.write_i32(ellipse.end2.x).unwrap();
-            w.write_i32(ellipse.end2.y).unwrap();
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT_ELLIPSE,
-                level: level + 2,
-                size: 0,
-                data: w.into_bytes(),
-            });
-        }
-        ShapeObject::Polygon(poly) => {
-            records.push(make_ctrl_record(
-                tags::CTRL_GEN_SHAPE,
-                level,
-                &apply_caption_attr_bit(
-                    &serialize_common_obj_attr(&poly.common),
-                    poly.drawing.caption.is_some(),
-                ),
-            ));
-            emit_top_level_synthesized_ctrl_data(records);
-            emit_caption(&poly.drawing.caption, records);
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
-                level: level + 1,
-                size: 0,
-                data: serialize_drawing_shape_component(
-                    tags::SHAPE_POLYGON_ID,
-                    &poly.drawing,
-                    true,
-                ),
-            });
-            emit_ctrl_data(records);
-            serialize_text_box_if_present(&poly.drawing, level + 2, records);
-            let mut w = ByteWriter::new();
-            w.write_i32(poly.points.len() as i32).unwrap();
-            for p in &poly.points {
-                w.write_i32(p.x).unwrap();
-                w.write_i32(p.y).unwrap();
-            }
-            if poly.raw_trailing.is_empty() {
-                w.write_u32(0).unwrap();
-            } else {
-                w.write_bytes(&poly.raw_trailing).unwrap();
-            }
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT_POLYGON,
-                level: level + 2,
-                size: 0,
-                data: w.into_bytes(),
-            });
-        }
-        ShapeObject::Arc(arc) => {
-            records.push(make_ctrl_record(
-                tags::CTRL_GEN_SHAPE,
-                level,
-                &apply_caption_attr_bit(
-                    &serialize_common_obj_attr(&arc.common),
-                    arc.drawing.caption.is_some(),
-                ),
-            ));
-            emit_top_level_synthesized_ctrl_data(records);
-            emit_caption(&arc.drawing.caption, records);
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
-                level: level + 1,
-                size: 0,
-                data: serialize_drawing_shape_component(tags::SHAPE_ARC_ID, &arc.drawing, true),
-            });
-            emit_ctrl_data(records);
-            serialize_text_box_if_present(&arc.drawing, level + 2, records);
-            let mut w = ByteWriter::new();
-            w.write_u8(arc.arc_type).unwrap();
-            w.write_i32(arc.center.x).unwrap();
-            w.write_i32(arc.center.y).unwrap();
-            w.write_i32(arc.axis1.x).unwrap();
-            w.write_i32(arc.axis1.y).unwrap();
-            w.write_i32(arc.axis2.x).unwrap();
-            w.write_i32(arc.axis2.y).unwrap();
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT_ARC,
-                level: level + 2,
-                size: 0,
-                data: w.into_bytes(),
-            });
-        }
-        ShapeObject::Curve(curve) => {
-            records.push(make_ctrl_record(
-                tags::CTRL_GEN_SHAPE,
-                level,
-                &apply_caption_attr_bit(
-                    &serialize_common_obj_attr(&curve.common),
-                    curve.drawing.caption.is_some(),
-                ),
-            ));
-            emit_top_level_synthesized_ctrl_data(records);
-            emit_caption(&curve.drawing.caption, records);
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
-                level: level + 1,
-                size: 0,
-                data: serialize_drawing_shape_component(tags::SHAPE_CURVE_ID, &curve.drawing, true),
-            });
-            emit_ctrl_data(records);
-            serialize_text_box_if_present(&curve.drawing, level + 2, records);
-            let mut w = ByteWriter::new();
-            w.write_i32(curve.points.len() as i32).unwrap();
-            for p in &curve.points {
-                w.write_i32(p.x).unwrap();
-                w.write_i32(p.y).unwrap();
-            }
-            for &t in &curve.segment_types {
-                w.write_u8(t).unwrap();
-            }
-            // hwplib: sr.skip(4) — 4바이트 패딩
-            w.write_u32(0).unwrap();
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT_CURVE,
-                level: level + 2,
-                size: 0,
-                data: w.into_bytes(),
-            });
-        }
         ShapeObject::Group(group) => {
             records.push(make_ctrl_record(
                 tags::CTRL_GEN_SHAPE,
@@ -1699,42 +1788,6 @@ fn serialize_shape_control(
             for child in &group.children {
                 serialize_group_child(child, child_comp_level, child_type_level, records);
             }
-        }
-        ShapeObject::Picture(pic) => {
-            // [#2696] 그룹 해제(object_ops/shape.rs 의 ungroup_shape_native)는 그림
-            // 자식을 최상위 Control::Shape(ShapeObject::Picture) 로 삽입하면서
-            // char_count += 8 을 함께 적용한다. 종전에는 이 arm 이 아무
-            // 레코드도 방출하지 않아 그림이 사라질 뿐 아니라 PARA_TEXT 의 확장 컨트롤
-            // 문자와 CTRL_HEADER 개수가 어긋나 이후 컨트롤이 잘못된 위치에 결합됐다.
-            // Control::Picture 가 쓰는 검증된 경로에 그대로 위임한다.
-            serialize_picture_control(pic, level, ctrl_data_record, records);
-        }
-        ShapeObject::Chart(chart) => {
-            // Task #195 단계 2: raw_chart_data를 그대로 보존하여 라운드트립 유지
-            records.push(make_ctrl_record(
-                tags::CTRL_GEN_SHAPE,
-                level,
-                &apply_caption_attr_bit(
-                    &serialize_common_obj_attr(&chart.common),
-                    chart.caption.is_some(),
-                ),
-            ));
-            let sc_ctrl_id = chart.drawing.shape_attr.ctrl_id;
-            emit_caption(&chart.caption, records);
-            records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
-                level: level + 1,
-                size: 0,
-                data: serialize_drawing_shape_component(sc_ctrl_id, &chart.drawing, true),
-            });
-            emit_ctrl_data(records);
-            serialize_text_box_if_present(&chart.drawing, level + 2, records);
-            records.push(Record {
-                tag_id: tags::HWPTAG_CHART_DATA,
-                level: level + 2,
-                size: 0,
-                data: chart.raw_chart_data.clone(),
-            });
         }
         ShapeObject::Ole(ole) => {
             // [일곱 번째 계약 확장] gso 도형도 캡션 존재를 attr bit29 에 반영해야 한다
@@ -1773,7 +1826,224 @@ fn serialize_shape_control(
                 data: serialize_ole_data(ole),
             });
         }
+        _ => match try_serialize_shape_control(
+            shape,
+            level,
+            ctrl_data_record,
+            records,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(()) => (),
+            Err(never) => match never {},
+        },
     }
+}
+
+fn try_serialize_shape_control<S: crate::storage::Storage>(
+    shape: &ShapeObject,
+    level: u16,
+    ctrl_data_record: Option<&[u8]>,
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let (common, drawing, caption, component_id, detail_tag) = match shape {
+        ShapeObject::Line(v) => (
+            &v.common,
+            &v.drawing,
+            &v.drawing.caption,
+            if v.connector.is_some() {
+                tags::SHAPE_CONNECTOR_ID
+            } else {
+                tags::SHAPE_LINE_ID
+            },
+            tags::HWPTAG_SHAPE_COMPONENT_LINE,
+        ),
+        ShapeObject::Rectangle(v) => (
+            &v.common,
+            &v.drawing,
+            &v.drawing.caption,
+            tags::SHAPE_RECT_ID,
+            tags::HWPTAG_SHAPE_COMPONENT_RECTANGLE,
+        ),
+        ShapeObject::Ellipse(v) => (
+            &v.common,
+            &v.drawing,
+            &v.drawing.caption,
+            tags::SHAPE_ELLIPSE_ID,
+            tags::HWPTAG_SHAPE_COMPONENT_ELLIPSE,
+        ),
+        ShapeObject::Polygon(v) => (
+            &v.common,
+            &v.drawing,
+            &v.drawing.caption,
+            tags::SHAPE_POLYGON_ID,
+            tags::HWPTAG_SHAPE_COMPONENT_POLYGON,
+        ),
+        ShapeObject::Arc(v) => (
+            &v.common,
+            &v.drawing,
+            &v.drawing.caption,
+            tags::SHAPE_ARC_ID,
+            tags::HWPTAG_SHAPE_COMPONENT_ARC,
+        ),
+        ShapeObject::Curve(v) => (
+            &v.common,
+            &v.drawing,
+            &v.drawing.caption,
+            tags::SHAPE_CURVE_ID,
+            tags::HWPTAG_SHAPE_COMPONENT_CURVE,
+        ),
+        ShapeObject::Chart(v) => (
+            &v.common,
+            &v.drawing,
+            &v.caption,
+            v.drawing.shape_attr.ctrl_id,
+            tags::HWPTAG_CHART_DATA,
+        ),
+        ShapeObject::Picture(v) => {
+            return try_serialize_picture_control(v, level, ctrl_data_record, records, storage)
+        }
+        ShapeObject::Group(_) | ShapeObject::Ole(_) => {
+            // Not produced by PDF lowering. Their legacy scratch remains unaudited.
+            storage.bytes(0)?;
+            serialize_shape_control(shape, level, ctrl_data_record, records);
+            return storage.bytes(0);
+        }
+    };
+    let synthesized = if ctrl_data_record.is_none() {
+        synthesize_hwpx_shape_ctrl_data(shape)
+    } else {
+        None
+    };
+    let data = ctrl_data_record.or(synthesized);
+    let mut header = storage.binary(&ControlPayload::Common(common))?;
+    set_caption_attr_bit(&mut header, caption.is_some());
+    let record = try_make_ctrl_record(tags::CTRL_GEN_SHAPE, level, &header, storage)?;
+    storage.push(records, record)?;
+    try_ctrl_data_record(synthesized, level + 1, records, storage)?;
+    if let Some(caption) = caption {
+        try_serialize_caption(caption, level + 1, records, storage)?;
+    }
+    try_payload_record(
+        ControlPayload::Drawing(component_id, drawing, true),
+        tags::HWPTAG_SHAPE_COMPONENT,
+        level + 1,
+        records,
+        storage,
+    )?;
+    try_ctrl_data_record(data, level + 2, records, storage)?;
+    try_serialize_text_box_if_present(drawing, level + 2, records, storage)?;
+    try_payload_record(
+        ControlPayload::Detail(shape),
+        detail_tag,
+        level + 2,
+        records,
+        storage,
+    )
+}
+
+fn write_shape_detail<W: std::io::Write>(
+    shape: &ShapeObject,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
+    match shape {
+        ShapeObject::Line(line) => {
+            w.write_i32(line.start.x)?;
+            w.write_i32(line.start.y)?;
+            w.write_i32(line.end.x)?;
+            w.write_i32(line.end.y)?;
+            if let Some(ref conn) = line.connector {
+                // 연결선 확장 데이터
+                w.write_u32(conn.link_type as u32)?;
+                w.write_u32(conn.start_subject_id)?;
+                w.write_u32(conn.start_subject_index)?;
+                w.write_u32(conn.end_subject_id)?;
+                w.write_u32(conn.end_subject_index)?;
+                w.write_u32(conn.control_points.len() as u32)?;
+                for cp in &conn.control_points {
+                    w.write_i32(cp.x)?;
+                    w.write_i32(cp.y)?;
+                    w.write_u16(cp.point_type)?;
+                }
+                // [#3570] 한컴은 제어점 뒤에 0 4바이트를 더 쓴다(전수 20건 모두
+                // `00000000`). 종전에는 raw_trailing 이 비면 아무것도 쓰지 않아
+                // 레코드가 4바이트 짧았다. 다각형(위)과 같은 관례로 채운다.
+                if conn.raw_trailing.is_empty() {
+                    w.write_u32(0)?;
+                } else {
+                    w.write_bytes(&conn.raw_trailing)?;
+                }
+            } else {
+                w.write_i32(if line.started_right_or_bottom { 1 } else { 0 })?;
+            }
+        }
+        ShapeObject::Rectangle(rect) => {
+            w.write_u8(rect.round_rate)?;
+            for i in 0..4 {
+                w.write_i32(rect.x_coords[i])?;
+                w.write_i32(rect.y_coords[i])?;
+            }
+        }
+        ShapeObject::Ellipse(ellipse) => {
+            w.write_u32(ellipse.attr)?;
+            w.write_i32(ellipse.center.x)?;
+            w.write_i32(ellipse.center.y)?;
+            w.write_i32(ellipse.axis1.x)?;
+            w.write_i32(ellipse.axis1.y)?;
+            w.write_i32(ellipse.axis2.x)?;
+            w.write_i32(ellipse.axis2.y)?;
+            w.write_i32(ellipse.start1.x)?;
+            w.write_i32(ellipse.start1.y)?;
+            w.write_i32(ellipse.end1.x)?;
+            w.write_i32(ellipse.end1.y)?;
+            w.write_i32(ellipse.start2.x)?;
+            w.write_i32(ellipse.start2.y)?;
+            w.write_i32(ellipse.end2.x)?;
+            w.write_i32(ellipse.end2.y)?;
+        }
+        ShapeObject::Polygon(poly) => {
+            w.write_i32(poly.points.len() as i32)?;
+            for p in &poly.points {
+                w.write_i32(p.x)?;
+                w.write_i32(p.y)?;
+            }
+            if poly.raw_trailing.is_empty() {
+                w.write_u32(0)?;
+            } else {
+                w.write_bytes(&poly.raw_trailing)?;
+            }
+        }
+        ShapeObject::Arc(arc) => {
+            w.write_u8(arc.arc_type)?;
+            w.write_i32(arc.center.x)?;
+            w.write_i32(arc.center.y)?;
+            w.write_i32(arc.axis1.x)?;
+            w.write_i32(arc.axis1.y)?;
+            w.write_i32(arc.axis2.x)?;
+            w.write_i32(arc.axis2.y)?;
+        }
+        ShapeObject::Curve(curve) => {
+            w.write_i32(curve.points.len() as i32)?;
+            for p in &curve.points {
+                w.write_i32(p.x)?;
+                w.write_i32(p.y)?;
+            }
+            for &t in &curve.segment_types {
+                w.write_u8(t)?;
+            }
+            // hwplib: sr.skip(4) — 4바이트 패딩
+            w.write_u32(0)?;
+        }
+        ShapeObject::Chart(chart) => {
+            w.write_bytes(&chart.raw_chart_data)?;
+        }
+        _ => {
+            return Err(std::io::Error::other(
+                "shape has no primitive detail producer",
+            ))
+        }
+    }
+    Ok(())
 }
 
 /// 그룹('$con') SHAPE_COMPONENT 데이터: 공통 component + 자식 수(u16) +
@@ -2161,43 +2431,66 @@ fn ole_drawing_with_shape_component_contract(ole: &OleShape, top_level: bool) ->
 
 /// DrawingObjAttr의 text_box가 있으면 LIST_HEADER + 문단 목록 직렬화
 fn serialize_text_box_if_present(drawing: &DrawingObjAttr, level: u16, records: &mut Vec<Record>) {
-    if let Some(ref text_box) = drawing.text_box {
-        // LIST_HEADER
-        let mut w = ByteWriter::new();
-        // para_count: 스펙은 INT16이지만 실제 HWP 파일에서는 UINT32로 저장됨
-        w.write_u32(text_box.paragraphs.len() as u32).unwrap();
-        w.write_u32(text_box.list_attr).unwrap();
-        // 여백 + 최대 폭 (글상자 고유 데이터)
-        w.write_i16(text_box.margin_left).unwrap();
-        w.write_i16(text_box.margin_right).unwrap();
-        w.write_i16(text_box.margin_top).unwrap();
-        w.write_i16(text_box.margin_bottom).unwrap();
-        w.write_u32(text_box.max_width).unwrap();
-        // 원본 추가 바이트 복원 (라운드트립 보존)
-        // [Task #1058] hwplib::ForTextBox::listHeader 정합 — TextBox LIST_HEADER 의
-        // 마지막 13 byte 필드 contract:
-        //   sw.writeZero(8);                 // 8 byte zero padding
-        //   sw.writeSInt4(editableAtFormMode); // 4 byte (0 = false)
-        //   sw.writeUInt1(fieldNameFlag);     // 1 byte (0 = no fieldName)
-        // 한컴은 이 contract 가 누락되면 글상자 안 paragraph 를 본문 list 로 인식하여
-        // 신규 paragraph (각주) 추가 시 다단계 목록 번호 "1.1.1.1.1.1" 자동 부여.
-        // HWP 출처 IR 은 raw_list_header_extra 에 보존 → HWPX 출처 (raw 부재) 는 default 적용.
-        if !text_box.raw_list_header_extra.is_empty() {
-            w.write_bytes(&text_box.raw_list_header_extra).unwrap();
-        } else {
-            // HWPX 출처: 한컴 default 13 byte (zero 8 + editable 0 + fieldName flag 0)
-            w.write_bytes(&[0u8; 13]).unwrap();
-        }
-        records.push(Record {
-            tag_id: tags::HWPTAG_LIST_HEADER,
-            level,
-            size: 0,
-            data: w.into_bytes(),
-        });
-
-        // 문단 목록 (LIST_HEADER와 같은 레벨)
-        serialize_paragraph_list(&text_box.paragraphs, level, records);
+    match try_serialize_text_box_if_present(drawing, level, records, &crate::storage::Unbounded) {
+        Ok(()) => (),
+        Err(never) => match never {},
     }
+}
+
+fn try_serialize_text_box_if_present<S: crate::storage::Storage>(
+    drawing: &DrawingObjAttr,
+    level: u16,
+    records: &mut Vec<Record>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    if let Some(text_box) = &drawing.text_box {
+        try_payload_record(
+            ControlPayload::TextBox(text_box),
+            tags::HWPTAG_LIST_HEADER,
+            level,
+            records,
+            storage,
+        )?;
+        super::body_text::try_serialize_paragraph_list(
+            &text_box.paragraphs,
+            level,
+            records,
+            storage,
+        )?;
+    }
+    Ok(())
+}
+
+fn write_text_box_header<W: std::io::Write>(
+    text_box: &crate::model::shape::TextBox,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
+    // LIST_HEADER
+    // para_count: 스펙은 INT16이지만 실제 HWP 파일에서는 UINT32로 저장됨
+    w.write_u32(text_box.paragraphs.len() as u32)?;
+    w.write_u32(text_box.list_attr)?;
+    // 여백 + 최대 폭 (글상자 고유 데이터)
+    w.write_i16(text_box.margin_left)?;
+    w.write_i16(text_box.margin_right)?;
+    w.write_i16(text_box.margin_top)?;
+    w.write_i16(text_box.margin_bottom)?;
+    w.write_u32(text_box.max_width)?;
+    // 원본 추가 바이트 복원 (라운드트립 보존)
+    // [Task #1058] hwplib::ForTextBox::listHeader 정합 — TextBox LIST_HEADER 의
+    // 마지막 13 byte 필드 contract:
+    //   sw.writeZero(8);                 // 8 byte zero padding
+    //   sw.writeSInt4(editableAtFormMode); // 4 byte (0 = false)
+    //   sw.writeUInt1(fieldNameFlag);     // 1 byte (0 = no fieldName)
+    // 한컴은 이 contract 가 누락되면 글상자 안 paragraph 를 본문 list 로 인식하여
+    // 신규 paragraph (각주) 추가 시 다단계 목록 번호 "1.1.1.1.1.1" 자동 부여.
+    // HWP 출처 IR 은 raw_list_header_extra 에 보존 → HWPX 출처 (raw 부재) 는 default 적용.
+    if !text_box.raw_list_header_extra.is_empty() {
+        w.write_bytes(&text_box.raw_list_header_extra)?;
+    } else {
+        // HWPX 출처: 한컴 default 13 byte (zero 8 + editable 0 + fieldName flag 0)
+        w.write_bytes(&[0u8; 13])?;
+    }
+    Ok(())
 }
 
 // ============================================================
@@ -2227,7 +2520,13 @@ const COMMON_ATTR_SEMANTIC_MASK: u32 = 0x01            // treat_as_char
     | (1 << 28); // hwp5_gen_shape_attr_bit28
 
 fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
-    let mut w = ByteWriter::new();
+    plain_control_payload(ControlPayload::Common(common))
+}
+
+fn write_serialize_common_obj_attr<W: std::io::Write>(
+    common: &CommonObjAttr,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
     // [#5592] raw attr 를 통째로 우선하면 IR enum 필드(text_wrap·vert_rel_to·
     // treat_as_char 등)의 수정이 HWP5 저장에서 전량 유실된다 — #4495 봉인이
     // "common 직접 수정 → IR 합성" 을 약속해도, 합성기가 파스 시점 캐시(attr)를
@@ -2242,26 +2541,26 @@ fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
     } else {
         pack_common_attr_bits(common)
     };
-    w.write_u32(attr).unwrap();
-    w.write_u32(common.vertical_offset).unwrap();
-    w.write_u32(common.horizontal_offset).unwrap();
-    w.write_u32(common.width).unwrap();
-    w.write_u32(common.height).unwrap();
-    w.write_i32(common.z_order).unwrap();
-    w.write_i16(common.margin.left).unwrap();
-    w.write_i16(common.margin.right).unwrap();
-    w.write_i16(common.margin.top).unwrap();
-    w.write_i16(common.margin.bottom).unwrap();
-    w.write_u32(common.instance_id).unwrap();
+    w.write_u32(attr)?;
+    w.write_u32(common.vertical_offset)?;
+    w.write_u32(common.horizontal_offset)?;
+    w.write_u32(common.width)?;
+    w.write_u32(common.height)?;
+    w.write_i32(common.z_order)?;
+    w.write_i16(common.margin.left)?;
+    w.write_i16(common.margin.right)?;
+    w.write_i16(common.margin.top)?;
+    w.write_i16(common.margin.bottom)?;
+    w.write_u32(common.instance_id)?;
     // 쪽나눔 방지 (INT32)
-    w.write_i32(common.prevent_page_break).unwrap();
+    w.write_i32(common.prevent_page_break)?;
     // 설명문 (항상 길이 포함, 빈 문자열이면 0)
-    w.write_hwp_string(&common.description).unwrap();
+    w.write_hwp_string(&common.description)?;
     // 원본 추가 바이트 복원 (라운드트립 보존)
     if !common.raw_extra.is_empty() {
-        w.write_bytes(&common.raw_extra).unwrap();
+        w.write_bytes(&common.raw_extra)?;
     }
-    w.into_bytes()
+    Ok(())
 }
 
 /// 개체 공통 속성 attr 의 캡션 존재 플래그(bit 29) 를 실제 캡션 유무와 일치시킨다.
@@ -2270,8 +2569,22 @@ fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
 /// 비트와 실제 캡션이 어긋나면(캡션 있는데 0, 없는데 1) 레코드 스트림을 오독해 문서
 /// 전체 개방을 거부한다 — HWP3/HWPX 출처 표에서 캡션은 방출하면서 비트를 안 켜 발생했다.
 fn apply_caption_attr_bit(ctrl_data: &[u8], has_caption: bool) -> Vec<u8> {
+    match try_apply_caption_attr_bit(ctrl_data, has_caption, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+fn try_apply_caption_attr_bit<S: crate::storage::Storage>(
+    ctrl_data: &[u8],
+    has_caption: bool,
+    storage: &S,
+) -> Result<Vec<u8>, S::Error> {
+    let mut out = storage.copy_slice(ctrl_data)?;
+    set_caption_attr_bit(&mut out, has_caption);
+    Ok(out)
+}
+fn set_caption_attr_bit(out: &mut [u8], has_caption: bool) {
     const CAPTION_ATTR_BIT: u32 = 1 << 29;
-    let mut out = ctrl_data.to_vec();
     if out.len() >= 4 {
         let mut attr = u32::from_le_bytes([out[0], out[1], out[2], out[3]]);
         if has_caption {
@@ -2281,7 +2594,6 @@ fn apply_caption_attr_bit(ctrl_data: &[u8], has_caption: bool) -> Vec<u8> {
         }
         out[0..4].copy_from_slice(&attr.to_le_bytes());
     }
-    out
 }
 
 /// `CommonObjAttr` 의 enum 필드들로부터 attr u32 비트를 합성한다.
@@ -2478,9 +2790,7 @@ fn serialize_shape_component(
     attr: &ShapeComponentAttr,
     top_level: bool,
 ) -> Vec<u8> {
-    let mut w = ByteWriter::new();
-    write_shape_component_base(&mut w, default_ctrl_id, attr, top_level);
-    w.into_bytes()
+    plain_control_payload(ControlPayload::Component(default_ctrl_id, attr, top_level))
 }
 
 /// SHAPE_COMPONENT 데이터 직렬화 (DrawingObjAttr 전체 — 도형용)
@@ -2491,39 +2801,47 @@ fn serialize_drawing_shape_component(
     drawing: &DrawingObjAttr,
     top_level: bool,
 ) -> Vec<u8> {
-    let mut w = ByteWriter::new();
-    write_shape_component_base(&mut w, default_ctrl_id, &drawing.shape_attr, top_level);
+    plain_control_payload(ControlPayload::Drawing(default_ctrl_id, drawing, top_level))
+}
+
+fn write_drawing_shape_component<W: std::io::Write>(
+    w: &mut ByteWriter<W>,
+    default_ctrl_id: u32,
+    drawing: &DrawingObjAttr,
+    top_level: bool,
+) -> std::io::Result<()> {
+    write_shape_component_base(w, default_ctrl_id, &drawing.shape_attr, top_level)?;
 
     // 테두리 선 정보 (13바이트: color 4 + width 4 + attr 4 + outline 1)
-    w.write_color_ref(drawing.border_line.color).unwrap();
-    w.write_i32(drawing.border_line.width).unwrap();
-    w.write_u32(drawing.border_line.attr).unwrap();
-    w.write_u8(drawing.border_line.outline_style).unwrap();
+    w.write_color_ref(drawing.border_line.color)?;
+    w.write_i32(drawing.border_line.width)?;
+    w.write_u32(drawing.border_line.attr)?;
+    w.write_u8(drawing.border_line.outline_style)?;
 
     // 채우기 정보
-    serialize_shape_fill(&mut w, &drawing.fill);
+    serialize_shape_fill(w, &drawing.fill)?;
 
     // 그림자 정보 (16바이트)
-    w.write_u32(drawing.shadow_type).unwrap();
-    w.write_color_ref(drawing.shadow_color).unwrap();
-    w.write_i32(drawing.shadow_offset_x).unwrap();
-    w.write_i32(drawing.shadow_offset_y).unwrap();
+    w.write_u32(drawing.shadow_type)?;
+    w.write_color_ref(drawing.shadow_color)?;
+    w.write_i32(drawing.shadow_offset_x)?;
+    w.write_i32(drawing.shadow_offset_y)?;
 
     // 인스턴스 ID (4바이트) + 예약 (1바이트) + 그림자 투명도 (1바이트)
-    w.write_u32(drawing.inst_id).unwrap();
-    w.write_u8(0).unwrap(); // 예약
-    w.write_u8(drawing.shadow_alpha).unwrap();
+    w.write_u32(drawing.inst_id)?;
+    w.write_u8(0)?; // 예약
+    w.write_u8(drawing.shadow_alpha)?;
 
-    w.into_bytes()
+    Ok(())
 }
 
 /// ShapeComponentAttr 공통 기록 (ctrl_id + 속성 + 렌더링 행렬)
-fn write_shape_component_base(
-    w: &mut ByteWriter,
+fn write_shape_component_base<W: std::io::Write>(
+    w: &mut ByteWriter<W>,
     default_ctrl_id: u32,
     attr: &ShapeComponentAttr,
     top_level: bool,
-) {
+) -> std::io::Result<()> {
     // ctrl_id: 원본에서 보존된 값 사용, 없으면 기본값
     let actual_id = if attr.ctrl_id != 0 {
         attr.ctrl_id
@@ -2536,20 +2854,20 @@ fn write_shape_component_base(
         top_level
     };
 
-    w.write_u32(actual_id).unwrap();
+    w.write_u32(actual_id)?;
     if is_two {
-        w.write_u32(actual_id).unwrap();
+        w.write_u32(actual_id)?;
     }
 
     // ShapeComponentAttr
-    w.write_i32(attr.offset_x).unwrap();
-    w.write_i32(attr.offset_y).unwrap();
-    w.write_u16(attr.group_level).unwrap();
-    w.write_u16(attr.local_file_version).unwrap();
-    w.write_u32(attr.original_width).unwrap();
-    w.write_u32(attr.original_height).unwrap();
-    w.write_u32(attr.current_width).unwrap();
-    w.write_u32(attr.current_height).unwrap();
+    w.write_i32(attr.offset_x)?;
+    w.write_i32(attr.offset_y)?;
+    w.write_u16(attr.group_level)?;
+    w.write_u16(attr.local_file_version)?;
+    w.write_u32(attr.original_width)?;
+    w.write_u32(attr.original_height)?;
+    w.write_u32(attr.current_width)?;
+    w.write_u32(attr.current_height)?;
 
     // flip: 원본 전체 값 사용 (상위 비트 보존)
     let flip = if attr.flip != 0 {
@@ -2564,55 +2882,77 @@ fn write_shape_component_base(
         }
         f
     };
-    w.write_u32(flip).unwrap();
+    w.write_u32(flip)?;
 
-    w.write_i16(attr.rotation_angle).unwrap();
-    w.write_i32(attr.rotation_center.x).unwrap();
-    w.write_i32(attr.rotation_center.y).unwrap();
+    w.write_i16(attr.rotation_angle)?;
+    w.write_i32(attr.rotation_center.x)?;
+    w.write_i32(attr.rotation_center.y)?;
 
-    w.write_bytes(&shape_rendering_bytes(attr)).unwrap();
+    write_shape_rendering(w, attr)?;
+    Ok(())
 }
 
 /// HWP와 HWPX가 같은 저장 변환을 소비한다. 원본 행렬은 그대로 보존하고,
 /// 편집으로 raw 캐시가 사라진 개체는 기존 HWP 계약으로 회전·축척을 발행한다.
 pub(crate) fn shape_rendering_bytes(attr: &ShapeComponentAttr) -> Vec<u8> {
     let mut writer = ByteWriter::new();
-    write_shape_rendering(&mut writer, attr);
+    write_shape_rendering(&mut writer, attr).expect("Vec binary writer");
     writer.into_bytes()
 }
 
-fn write_shape_rendering(w: &mut ByteWriter, attr: &ShapeComponentAttr) {
+pub(crate) fn try_shape_rendering_bytes<S: crate::storage::Storage>(
+    attr: &ShapeComponentAttr,
+    storage: &S,
+) -> Result<Vec<u8>, S::Error> {
+    struct Rendering<'a>(&'a ShapeComponentAttr);
+    impl super::byte_writer::BinaryProducer for Rendering<'_> {
+        fn write<W: std::io::Write>(&self, out: &mut ByteWriter<W>) -> std::io::Result<()> {
+            write_shape_rendering(out, self.0)
+        }
+    }
+    storage.binary(&Rendering(attr))
+}
+
+fn write_shape_rendering<W: std::io::Write>(
+    w: &mut ByteWriter<W>,
+    attr: &ShapeComponentAttr,
+) -> std::io::Result<()> {
     if !attr.raw_rendering.is_empty() {
-        w.write_bytes(&attr.raw_rendering).unwrap();
+        w.write_bytes(&attr.raw_rendering)?;
     } else {
         let (translation, pairs) = super::shape_rendering::generated(attr);
-        w.write_u16(pairs.len() as u16).unwrap();
+        w.write_u16(pairs.len() as u16)?;
         for matrix in std::iter::once(translation).chain(
             pairs
                 .into_iter()
                 .flat_map(|(scale, rotation)| [scale, rotation]),
         ) {
             for value in matrix {
-                w.write_f64(value).unwrap();
+                w.write_f64(value)?;
             }
         }
     }
+    Ok(())
 }
 
-fn write_matrix(w: &mut ByteWriter, matrix: [f64; 6]) {
+fn write_matrix<W: std::io::Write>(w: &mut ByteWriter<W>, matrix: [f64; 6]) -> std::io::Result<()> {
     for value in matrix {
-        w.write_f64(value).unwrap();
+        w.write_f64(value)?;
     }
+    Ok(())
 }
 
 /// 편집으로 합성한 행렬을 HWP 저장 rendering 블록으로 만든다.
 pub(crate) fn serialize_affine_rendering(attr: &ShapeComponentAttr) -> Vec<u8> {
     let mut writer = ByteWriter::new();
-    write_parsed_rendering_matrix(&mut writer, attr);
+    write_parsed_rendering_matrix(&mut writer, attr).expect("Vec binary writer");
     writer.into_bytes()
 }
 
-fn write_parsed_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) {
+fn write_parsed_rendering_matrix<W: std::io::Write>(
+    w: &mut ByteWriter<W>,
+    attr: &ShapeComponentAttr,
+) -> std::io::Result<()> {
     // HWP parser composes rendering info as:
     // result = translation x rotation x scale
     //
@@ -2621,8 +2961,8 @@ fn write_parsed_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) 
     //
     // [#6874] 쌍 개수는 그룹 깊이 + 1 이다. 종전에는 깊이와 무관하게 1 을 써서, 명시
     // 변환을 가진 묶음 자식의 레코드가 한/글 저장본보다 96바이트씩 짧았다.
-    w.write_u16(attr.group_level.saturating_add(1)).unwrap();
-    write_matrix(w, [1.0, 0.0, attr.render_tx, 0.0, 1.0, attr.render_ty]);
+    w.write_u16(attr.group_level.saturating_add(1))?;
+    write_matrix(w, [1.0, 0.0, attr.render_tx, 0.0, 1.0, attr.render_ty])?;
     write_matrix(
         w,
         [
@@ -2633,56 +2973,60 @@ fn write_parsed_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) 
             attr.render_sy,
             0.0,
         ],
-    );
-    write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+    )?;
+    write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0])?;
     for _ in 0..attr.group_level {
-        write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
-        write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+        write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0])?;
+        write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0])?;
     }
+    Ok(())
 }
 
 /// 도형 채우기 직렬화 (SHAPE_COMPONENT 내부 — parse_fill과 동일한 형식)
-fn serialize_shape_fill(w: &mut ByteWriter, fill: &Fill) {
+fn serialize_shape_fill<W: std::io::Write>(
+    w: &mut ByteWriter<W>,
+    fill: &Fill,
+) -> std::io::Result<()> {
     let fill_type_val: u32 = match fill.fill_type {
         FillType::None => 0,
         FillType::Solid => 1,
         FillType::Image => 2,
         FillType::Gradient => 4,
     };
-    w.write_u32(fill_type_val).unwrap();
+    w.write_u32(fill_type_val)?;
 
     if fill_type_val == 0 {
         // 채우기 없음: 4바이트 추가 (additional_size = 0)
-        w.write_u32(0).unwrap();
-        return;
+        w.write_u32(0)?;
+        return Ok(());
     }
 
     // bit 0: 단색 채우기
     if fill_type_val & 0x01 != 0 {
         if let Some(ref solid) = fill.solid {
-            w.write_color_ref(solid.background_color).unwrap();
-            w.write_color_ref(solid.pattern_color).unwrap();
-            w.write_i32(solid.pattern_type).unwrap();
+            w.write_color_ref(solid.background_color)?;
+            w.write_color_ref(solid.pattern_color)?;
+            w.write_i32(solid.pattern_type)?;
         }
     }
 
     // bit 2: 그라데이션 채우기 (parse_fill 형식: kind=u8, angle/cx/cy/blur/count=u32)
     if fill_type_val & 0x04 != 0 {
         if let Some(ref grad) = fill.gradient {
-            w.write_u8(grad.gradient_type as u8).unwrap();
-            w.write_u32(grad.angle as u32).unwrap();
-            w.write_u32(grad.center_x as u32).unwrap();
-            w.write_u32(grad.center_y as u32).unwrap();
-            w.write_u32(grad.blur as u32).unwrap();
-            w.write_u32(grad.colors.len() as u32).unwrap();
+            w.write_u8(grad.gradient_type as u8)?;
+            w.write_u32(grad.angle as u32)?;
+            w.write_u32(grad.center_x as u32)?;
+            w.write_u32(grad.center_y as u32)?;
+            w.write_u32(grad.blur as u32)?;
+            w.write_u32(grad.colors.len() as u32)?;
             // change_points: count > 2일 때만 기록
             if grad.colors.len() > 2 {
                 for &pos in &grad.positions {
-                    w.write_i32(pos).unwrap();
+                    w.write_i32(pos)?;
                 }
             }
             for &color in &grad.colors {
-                w.write_color_ref(color).unwrap();
+                w.write_color_ref(color)?;
             }
         }
     }
@@ -2691,33 +3035,33 @@ fn serialize_shape_fill(w: &mut ByteWriter, fill: &Fill) {
     if fill_type_val & 0x02 != 0 {
         if let Some(ref img) = fill.image {
             let mode_val = super::doc_info::image_fill_mode_to_u8(img.fill_mode);
-            w.write_u8(mode_val).unwrap();
-            w.write_i8(img.brightness).unwrap();
-            w.write_i8(img.contrast).unwrap();
-            w.write_u8(img.effect).unwrap();
-            w.write_u16(img.bin_data_id).unwrap();
+            w.write_u8(mode_val)?;
+            w.write_i8(img.brightness)?;
+            w.write_i8(img.contrast)?;
+            w.write_u8(img.effect)?;
+            w.write_u16(img.bin_data_id)?;
         }
     }
 
     // 추가 속성. 그라데이션은 HWP5 fill contract상 blurring center 1바이트를 가진다.
     if fill_type_val & 0x04 != 0 {
-        w.write_u32(1).unwrap();
-        w.write_u8(fill.gradient.as_ref().map(|g| g.step_center).unwrap_or(0))
-            .unwrap();
+        w.write_u32(1)?;
+        w.write_u8(fill.gradient.as_ref().map(|g| g.step_center).unwrap_or(0))?;
     } else {
-        w.write_u32(0).unwrap();
+        w.write_u32(0)?;
     }
 
     // alpha 바이트 (채우기 종류별 각 1바이트)
     if fill_type_val & 0x01 != 0 {
-        w.write_u8(fill.alpha).unwrap();
+        w.write_u8(fill.alpha)?;
     }
     if fill_type_val & 0x04 != 0 {
-        w.write_u8(fill.alpha).unwrap();
+        w.write_u8(fill.alpha)?;
     }
     if fill_type_val & 0x02 != 0 {
-        w.write_u8(fill.alpha).unwrap();
+        w.write_u8(fill.alpha)?;
     }
+    Ok(())
 }
 
 /// LIST_HEADER(간단) + 문단 목록 직렬화
@@ -2784,17 +3128,31 @@ fn build_header_footer_list_header(
     num_ref: u8,
     ext_flags: u16,
 ) -> Vec<u8> {
-    let mut w = ByteWriter::new();
-    w.write_u16(para_count).unwrap();
-    w.write_u32(list_attr).unwrap();
-    w.write_u16(0).unwrap();
-    w.write_u32(text_width).unwrap();
-    w.write_u32(text_height).unwrap();
-    w.write_u8(text_ref).unwrap();
-    w.write_u8(num_ref).unwrap();
-    w.write_u16(ext_flags).unwrap();
-    w.write_bytes(&[0u8; 14]).unwrap();
-    w.into_bytes()
+    plain_control_payload(ControlPayload::HeaderFooterList(ListHeaderFields {
+        para_count,
+        list_attr,
+        text_width,
+        text_height,
+        text_ref,
+        num_ref,
+        ext_flags,
+    }))
+}
+
+fn write_header_footer_list_header<W: std::io::Write>(
+    input: &ListHeaderFields,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
+    w.write_u16(input.para_count)?;
+    w.write_u32(input.list_attr)?;
+    w.write_u16(0)?;
+    w.write_u32(input.text_width)?;
+    w.write_u32(input.text_height)?;
+    w.write_u8(input.text_ref)?;
+    w.write_u8(input.num_ref)?;
+    w.write_u16(input.ext_flags)?;
+    w.write_bytes(&[0u8; 14])?;
+    Ok(())
 }
 
 // ============================================================

@@ -1,0 +1,22 @@
+{
+  "checked": [
+    "production build has no development document globals",
+    "production PDF Worker imports and reopens the editable document",
+    "production form Worker performs the actual calculation and saves all three results",
+    "production Save preserves the original Click script",
+    "production HTTP WASM responses match the frozen optimized producer",
+    "production PDF and action Workers produce no page errors"
+  ],
+  "hashes": [
+    {
+      "url": "http://127.0.0.1:7706/assets/rhwp_bg-BTOBAT-V.wasm",
+      "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915"
+    },
+    {
+      "url": "http://127.0.0.1:7706/rhwp_bg.wasm",
+      "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915"
+    }
+  ],
+  "errors": [],
+  "storage": "Fake File System Access sink captures the real exported document; no user file is overwritten."
+}

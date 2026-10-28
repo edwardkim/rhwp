@@ -1,0 +1,41 @@
+{
+  "beforeSource": "5a77054519216f9f2dae6a779e7e334f3894466d",
+  "afterSource": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+  "buildCommand": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--target-dir",
+    "/home/edward/mygithub/rhwp/target/pr-review",
+    "-p",
+    "rhwp",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--message-format",
+    "json-render-diagnostics"
+  ],
+  "seconds": 286.708789555938,
+  "beforeCenter": [
+    0,
+    0,
+    0,
+    255
+  ],
+  "afterCenter": [
+    0,
+    128,
+    0,
+    255
+  ],
+  "expectedCenter": [
+    0,
+    128,
+    0,
+    255
+  ],
+  "result": "before FAIL / after PASS",
+  "beforeRlibSha256": "ee486dc367749fbc433be47a84dc26d6e72ad0c2621e6e0ec9838215f16a41eb"
+}

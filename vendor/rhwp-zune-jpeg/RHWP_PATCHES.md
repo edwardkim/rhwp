@@ -2,7 +2,7 @@
 
 Upstream: zune-jpeg **0.5.15** (licenses and original manifest retained;
 per-file source hashes in `UPSTREAM.json`). Local package: `rhwp-zune-jpeg`
-**0.5.15-rhwp.1**, `publish = false`. zune-core remains **0.5.3**.
+**0.5.15-rhwp.1**, `publish = ["crates-io"]`. zune-core remains **0.5.3**.
 This is a separate dependency of the optional PDF importer. The ordinary image
 crate continues to use registry zune-jpeg. No decoder feature or SIMD algorithm
 was removed. Source formatting follows the enclosing rhwp workspace.
@@ -47,3 +47,21 @@ See `mydocs/working/task_m100_7911_stage2.md` section 3.19 for exact commands,
 Native/fresh Docker WASM results, source hashes and unexecuted boundaries.
 Resource regressions live in `tests/cases/issue_7911_pdf_resource_limits.rs`.
 Synthetic JPEG fixtures are codec contracts, not Hancom rendering baselines.
+
+## Frame sampling geometry compatibility (#8174 T06)
+
+Resolve the maximum horizontal and vertical sampling factors across **all** SOF
+components before deriving the MCU grid and any component's padded row stride.
+A running maximum gave an early component a different grid from the progressive
+coefficient planes when a later component had a larger sampling factor. Keep the
+progressive bounds check; valid images must use a consistent grid, rather than
+bypassing the malformed-image guard. Derive component height from its vertical
+factor as well (the field is currently metadata, not the IDCT row consumer).
+
+The same setup serves baseline and progressive decoding. Existing cjpeg/djpeg
+controls cover both encodings, small/padded edges and mixed component sampling.
+The request allocator and all growth-before-reservation hooks remain in place.
+See `mydocs/working/task_m100_8174_t06_completion.md` for source lineage, actual
+Native/WASM product and independent-consumer verification, pixel comparisons,
+resource failure/recovery and visual evidence. Interpolation/IDCT differences
+from djpeg are reported separately from sampling geometry and content retention.

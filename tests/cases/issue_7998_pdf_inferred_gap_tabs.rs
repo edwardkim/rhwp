@@ -262,7 +262,7 @@ fn exercise(original: DocumentCore, needle: &str, expected: &str, expected_rows:
             assert_eq!(a.0, z.0);
             assert!(
                 (a.1 - z.1).abs() < 0.25 && (a.2 - z.2).abs() < 0.25,
-                "same restored text uses the same common origins"
+                "same restored text uses the same common origins; route {route}; needle {needle:?}; original {a:?}; restored {z:?}"
             );
         }
         for bytes in [

@@ -1,0 +1,24 @@
+{
+  "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "landlock_abi_query": {
+    "syscall": 444,
+    "flags": "LANDLOCK_CREATE_RULESET_VERSION",
+    "result": 3,
+    "errno": null,
+    "scope": "query only; no ruleset or confinement applied"
+  },
+  "bwrap_available": true,
+  "new_user_and_network_namespace_probe": {
+    "command": [
+      "unshare",
+      "--user",
+      "--map-root-user",
+      "--net",
+      "--",
+      "true"
+    ],
+    "exit": 0,
+    "stderr": ""
+  },
+  "product_sandbox_implemented": false
+}

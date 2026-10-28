@@ -8,6 +8,7 @@ pub struct StoredColumnTopSpacing {
     pub before: f64,
     pub source_origin_hu: i32,
 }
+crate::storage::clone_copy!(StoredColumnTopSpacing);
 
 /// 정규화한 연속 좌표와 원본의 쪽 상대 사다리를 섞지 않는다.
 /// 보존한 원본 좌표가 있으면 같은 줄 수의 완전한 원장만 사용한다.

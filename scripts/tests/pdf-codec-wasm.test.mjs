@@ -11,8 +11,8 @@ const root=resolve(import.meta.dirname,'../..');
 const out=resolve(process.env.PDF_CODEC_EVIDENCE||join(root,'output/pr-review/issue8183/wasm-contract'));mkdirSync(out,{recursive:true});
 const require=createRequire(join(root,'rhwp-studio/package.json')),puppeteer=require('puppeteer-core');
 const config=process.env.PDF_CODEC_EXPECT||'default',pkg=resolve(process.env.PDF_IMPORT_PKG||join(root,'pkg'));
-assert(['default','jbig2','jpx','both'].includes(config),'PDF_CODEC_EXPECT must name a build configuration');
-const expected={enabled:true,jbig2:['jbig2','both'].includes(config),jpeg2000:['jpx','both'].includes(config)};
+assert(['default','none','jbig2','jpx','both'].includes(config),'PDF_CODEC_EXPECT must name a build configuration');
+const expected={enabled:true,jbig2:['default','jbig2','both'].includes(config),jpeg2000:['default','jpx','both'].includes(config),icc:config==='default',boundedXrefRecovery:true};
 const inputs=Object.fromEntries(Object.entries(JSON.parse(readFileSync(join(root,'pdf/issue8183/provenance.json'))).files).filter(([name])=>!name.startsWith('reference/')&&name!=='work-limit-jpx.pdf'));
 const files=new Map();
 for(const n of ['rhwp.js','rhwp_bg.wasm'])files.set('/pkg/'+n,readFileSync(join(pkg,n)));
@@ -29,7 +29,7 @@ try{
   const module=await import('/pkg/rhwp.js'),wasm=await module.default();const {HwpDocument}=module;
   const support=JSON.parse(HwpDocument.getPdfImportSupport());
   const checked=[];function check(value,message){if(!value)throw Error(message);checked.push(message)}
-  check(JSON.stringify(support)===JSON.stringify(expected),'support matches requested build');
+  check(Object.keys(support).length===Object.keys(expected).length&&Object.keys(expected).every(k=>support[k]===expected[k]),'support matches requested build');
   const buffers={};for(const name of names)buffers[name]=new Uint8Array(await(await fetch('/inputs/'+name)).arrayBuffer());
   const exhaustedBytes=expected.jpeg2000?new Uint8Array(await(await fetch('/negative/work-jpx.pdf')).arrayBuffer()):null;
   const cases=[];
@@ -51,9 +51,9 @@ try{
   const {PdfImportSession}=await import('/rhwp-shared/pdf/import-session.js');
   let entries=0,cancelOnEntry=null,cancelBytes=0;const entryCounts={};
   const tracePorts=[];
-  const wrapperSource=`import {HwpDocument} from '${location.origin}/pkg/rhwp.js';
+  const wrapperSource=`import {PdfImportRequest} from '${location.origin}/pkg/rhwp.js';
 let port;const buffered=[];self.onmessage=e=>buffered.push(e);
-const original=HwpDocument.importPdf;HwpDocument.importPdf=function(...args){port?.postMessage({event:'import-api-entered',inputBytes:args[0].byteLength});return original.apply(this,args)};
+const original=PdfImportRequest.importPdf;PdfImportRequest.importPdf=function(...args){port?.postMessage({event:'import-api-entered',inputBytes:args[0].byteLength});return original.apply(this,args)};
 await import('${location.origin}/rhwp-shared/pdf/import-worker.js');
 const receive=self.onmessage;self.onmessage=e=>{if(e.data.observePort){port=e.data.observePort;return}receive(e)};
 for(const e of buffered)self.onmessage(e);`;

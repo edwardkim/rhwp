@@ -31,13 +31,15 @@ pub(crate) use stored_cell_flow_picture::{
 mod reflow_block_cell;
 mod reflow_block_lines;
 pub(crate) use reflow_block_lines::{
-    reflow_block_cell_flow_in_width, reflow_block_cell_flow_with_composed,
+    reflow_block_cell_flow_in_width, reflow_block_cell_flow_in_width_with_storage,
+    reflow_block_cell_flow_with_composed, reflow_block_cell_flow_with_composed_with_storage,
 };
 mod stored_closed_cell_frame;
 pub(crate) use reflow_block_cell::{
     has_reflow_block_cell_host, reflow_block_cell_flow, reflow_external_table_flow,
-    reflow_host_line_height, supports_reflow_external_table_frame, ReflowBlockCellFlow,
-    ReflowBlockOrigin, ReflowExternalTableFlow,
+    reflow_external_table_flow_with_storage, reflow_host_line_height,
+    supports_reflow_external_table_frame, ReflowBlockCellFlow, ReflowBlockOrigin,
+    ReflowExternalTableFlow,
 };
 pub(crate) mod stored_empty_host_frame;
 mod stored_nested_before_host;
@@ -2876,9 +2878,22 @@ pub(crate) fn stored_nested_row_frames(
     cell: &crate::model::table::Cell,
     child: &Table,
 ) -> Option<StoredNestedRowFrames> {
-    use crate::model::paragraph::{ColumnBreakType, LineSeg};
-    let structural = |para: &Paragraph| {
-        !para.stored_text_partition_is_dirty()
+    match stored_nested_row_frames_with_storage(parent, cell, child, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn stored_nested_row_frames_with_storage<S: crate::storage::Storage>(
+    parent: &Table,
+    cell: &crate::model::table::Cell,
+    child: &Table,
+    storage: &S,
+) -> Result<Option<StoredNestedRowFrames>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        use crate::model::paragraph::{ColumnBreakType, LineSeg};
+        let structural = |para: &Paragraph| {
+            !para.stored_text_partition_is_dirty()
             && !para.cell_format_vpos_dirty
             && !para.line_segs.is_empty()
             && para.controls.iter().all(
@@ -2887,173 +2902,174 @@ pub(crate) fn stored_nested_row_frames(
             && para.line_segs.iter().all(|line| {
                 line.line_height > 0 && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
             })
-    };
-    let text_end = |text_cell: &crate::model::table::Cell, table: &Table| {
-        if text_cell.dirty_flag || text_cell.text_direction != 0 {
+        };
+        let text_end = |text_cell: &crate::model::table::Cell, table: &Table| {
+            if text_cell.dirty_flag || text_cell.text_direction != 0 {
+                return None;
+            }
+            let mut previous = None;
+            let mut end = 0i64;
+            for para in &text_cell.paragraphs {
+                if !structural(para) {
+                    return None;
+                }
+                for (index, line) in para.line_segs.iter().enumerate() {
+                    let top = ladder_vpos(para, index, line.vertical_pos);
+                    if top < 0 || previous.is_some_and(|before| top < before) {
+                        return None;
+                    }
+                    previous = Some(top);
+                    end = end.max(i64::from(top) + i64::from(line.line_height));
+                }
+            }
+            let padding = text_cell.effective_padding(&table.padding);
+            Some(end + i64::from(padding.top) + i64::from(padding.bottom))
+        };
+        let last_row = usize::from(parent.row_count).checked_sub(1)?;
+        let host = cell.paragraphs.first()?;
+        let successor = cell.paragraphs.get(1)?;
+        let [anchor] = host.line_segs.as_slice() else {
+            return None;
+        };
+        let [child_cell] = child.cells.as_slice() else {
+            return None;
+        };
+        // 이 계획은 같은 셀 원점에서 시작한 본체의 두 프레임이다. 오프셋이나
+        // 바깥여백을 가진 개체는 별도 위치 상자의 증거가 필요하다.
+        if last_row == 0
+            || usize::from(cell.row) != last_row
+            || cell.row_span != 1
+            || cell.dirty_flag
+            || parent.page_break != crate::model::table::TablePageBreak::RowBreak
+            || !is_para_topbottom_float(&parent.common)
+            || !is_para_topbottom_float(&child.common)
+            || !child.common.flow_with_text
+            || child.common.allow_overlap
+            || child.common.vertical_offset != 0
+            || child.outer_margin_top != 0
+            || child.outer_margin_bottom != 0
+            || child.caption.is_some()
+            || child.row_count != 1
+            || child.col_count != 1
+            || child_cell.dirty_flag
+            || child_cell.text_direction != 0
+            || host.stored_text_partition_is_dirty()
+            || host.cell_format_vpos_dirty
+            || !host.text.trim().is_empty()
+            || anchor.line_height <= 0
+            || anchor.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || ladder_vpos(host, 0, anchor.vertical_pos) != 0
+            || !matches!(
+                host.column_type,
+                ColumnBreakType::None | ColumnBreakType::MultiColumn
+            )
+            || host
+                .controls
+                .iter()
+                .filter(|control| matches!(control, Control::Table(_)))
+                .count()
+                != 1
+            || !host.controls.iter().all(|control| {
+                matches!(control, Control::Table(table) if std::ptr::eq(table.as_ref(), child))
+                    || matches!(control, Control::ColumnDef(column) if column.column_count == 1)
+            })
+            || !structural(successor)
+            || parent.common.height == 0
+            || child.common.height == 0
+        {
             return None;
         }
-        let mut previous = None;
-        let mut end = 0i64;
-        for para in &text_cell.paragraphs {
+        let mut lines = Vec::new();
+        let mut reset = None;
+        for (pi, para) in child_cell.paragraphs.iter().enumerate() {
+            if !structural(para) {
+                return None;
+            }
+            for (li, line) in para.line_segs.iter().enumerate() {
+                if super::height_measurer::stored_seg_is_row_fragment(para, li) {
+                    continue;
+                }
+                let top = ladder_vpos(para, li, line.vertical_pos);
+                if top < 0 || (lines.is_empty() && top != 0) {
+                    return None;
+                }
+                if lines.last().is_some_and(|&(_, _, before)| top <= before) {
+                    if top != 0 || reset.replace(lines.len()).is_some() {
+                        return None;
+                    }
+                }
+                crate::storage::optional(storage.push(&mut lines, (pi, li, top)), failure)?;
+            }
+        }
+        let reset = reset?;
+        let padding = child_cell.effective_padding(&child.padding);
+        let (pi, li, top) = *lines.get(reset.checked_sub(1)?)?;
+        let first_ink_end = i64::from(top)
+            + i64::from(child_cell.paragraphs[pi].line_segs[li].line_height)
+            + i64::from(padding.top)
+            + i64::from(padding.bottom);
+        if first_ink_end > i64::from(child.common.height) {
+            return None;
+        }
+        let (pi, li, top) = *lines.last()?;
+        let closing = i64::from(top)
+            + i64::from(child_cell.paragraphs[pi].line_segs[li].line_height)
+            + i64::from(padding.top)
+            + i64::from(padding.bottom);
+        let next = successor.line_segs.first()?;
+        if i64::from(ladder_vpos(successor, 0, next.vertical_pos)) != closing {
+            return None;
+        }
+        let mut row_heights = crate::storage::optional(storage.filled(last_row, None), failure)?;
+        for other in &parent.cells {
+            if other.row_span != 1 {
+                return None;
+            }
+            if usize::from(other.row) < last_row {
+                let height = text_end(other, parent)?;
+                let slot = &mut row_heights[usize::from(other.row)];
+                *slot = Some(slot.unwrap_or(0i64).max(height));
+            }
+        }
+        let prefix = row_heights
+            .into_iter()
+            .try_fold(0i64, |sum, height| Some(sum + height?))?
+            + i64::from(parent.cell_spacing) * last_row as i64;
+        let parent_padding = cell.effective_padding(&parent.padding);
+        let parent_pad = i64::from(parent_padding.top) + i64::from(parent_padding.bottom);
+        let opening = i64::from(child.common.height) + parent_pad;
+        if prefix + opening != i64::from(parent.common.height) {
+            return None;
+        }
+        for other in parent
+            .cells
+            .iter()
+            .filter(|other| usize::from(other.row) == last_row)
+        {
+            if !std::ptr::eq(other, cell) && text_end(other, parent)? > opening {
+                return None;
+            }
+        }
+        let mut final_end = closing;
+        for para in cell.paragraphs.iter().skip(1) {
             if !structural(para) {
                 return None;
             }
             for (index, line) in para.line_segs.iter().enumerate() {
-                let top = ladder_vpos(para, index, line.vertical_pos);
-                if top < 0 || previous.is_some_and(|before| top < before) {
+                let top = i64::from(ladder_vpos(para, index, line.vertical_pos));
+                if top < closing {
                     return None;
                 }
-                previous = Some(top);
-                end = end.max(i64::from(top) + i64::from(line.line_height));
+                final_end = final_end.max(top + i64::from(line.line_height));
             }
         }
-        let padding = text_cell.effective_padding(&table.padding);
-        Some(end + i64::from(padding.top) + i64::from(padding.bottom))
-    };
-    let last_row = usize::from(parent.row_count).checked_sub(1)?;
-    let host = cell.paragraphs.first()?;
-    let successor = cell.paragraphs.get(1)?;
-    let [anchor] = host.line_segs.as_slice() else {
-        return None;
-    };
-    let [child_cell] = child.cells.as_slice() else {
-        return None;
-    };
-    // 이 계획은 같은 셀 원점에서 시작한 본체의 두 프레임이다. 오프셋이나
-    // 바깥여백을 가진 개체는 별도 위치 상자의 증거가 필요하다.
-    if last_row == 0
-        || usize::from(cell.row) != last_row
-        || cell.row_span != 1
-        || cell.dirty_flag
-        || parent.page_break != crate::model::table::TablePageBreak::RowBreak
-        || !is_para_topbottom_float(&parent.common)
-        || !is_para_topbottom_float(&child.common)
-        || !child.common.flow_with_text
-        || child.common.allow_overlap
-        || child.common.vertical_offset != 0
-        || child.outer_margin_top != 0
-        || child.outer_margin_bottom != 0
-        || child.caption.is_some()
-        || child.row_count != 1
-        || child.col_count != 1
-        || child_cell.dirty_flag
-        || child_cell.text_direction != 0
-        || host.stored_text_partition_is_dirty()
-        || host.cell_format_vpos_dirty
-        || !host.text.trim().is_empty()
-        || anchor.line_height <= 0
-        || anchor.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-        || ladder_vpos(host, 0, anchor.vertical_pos) != 0
-        || !matches!(
-            host.column_type,
-            ColumnBreakType::None | ColumnBreakType::MultiColumn
-        )
-        || host
-            .controls
-            .iter()
-            .filter(|control| matches!(control, Control::Table(_)))
-            .count()
-            != 1
-        || !host.controls.iter().all(|control| {
-            matches!(control, Control::Table(table) if std::ptr::eq(table.as_ref(), child))
-                || matches!(control, Control::ColumnDef(column) if column.column_count == 1)
+        Some(StoredNestedRowFrames {
+            lines,
+            reset,
+            opening_height_hu: i32::try_from(child.common.height).ok()?,
+            closing_height_hu: i32::try_from(closing).ok()?,
+            parent_row_height_hu: i32::try_from(opening + final_end + parent_pad).ok()?,
         })
-        || !structural(successor)
-        || parent.common.height == 0
-        || child.common.height == 0
-    {
-        return None;
-    }
-    let mut lines = Vec::new();
-    let mut reset = None;
-    for (pi, para) in child_cell.paragraphs.iter().enumerate() {
-        if !structural(para) {
-            return None;
-        }
-        for (li, line) in para.line_segs.iter().enumerate() {
-            if super::height_measurer::stored_seg_is_row_fragment(para, li) {
-                continue;
-            }
-            let top = ladder_vpos(para, li, line.vertical_pos);
-            if top < 0 || (lines.is_empty() && top != 0) {
-                return None;
-            }
-            if lines.last().is_some_and(|&(_, _, before)| top <= before) {
-                if top != 0 || reset.replace(lines.len()).is_some() {
-                    return None;
-                }
-            }
-            lines.push((pi, li, top));
-        }
-    }
-    let reset = reset?;
-    let padding = child_cell.effective_padding(&child.padding);
-    let (pi, li, top) = *lines.get(reset.checked_sub(1)?)?;
-    let first_ink_end = i64::from(top)
-        + i64::from(child_cell.paragraphs[pi].line_segs[li].line_height)
-        + i64::from(padding.top)
-        + i64::from(padding.bottom);
-    if first_ink_end > i64::from(child.common.height) {
-        return None;
-    }
-    let (pi, li, top) = *lines.last()?;
-    let closing = i64::from(top)
-        + i64::from(child_cell.paragraphs[pi].line_segs[li].line_height)
-        + i64::from(padding.top)
-        + i64::from(padding.bottom);
-    let next = successor.line_segs.first()?;
-    if i64::from(ladder_vpos(successor, 0, next.vertical_pos)) != closing {
-        return None;
-    }
-    let mut row_heights = vec![None; last_row];
-    for other in &parent.cells {
-        if other.row_span != 1 {
-            return None;
-        }
-        if usize::from(other.row) < last_row {
-            let height = text_end(other, parent)?;
-            let slot = &mut row_heights[usize::from(other.row)];
-            *slot = Some(slot.unwrap_or(0i64).max(height));
-        }
-    }
-    let prefix = row_heights
-        .into_iter()
-        .try_fold(0i64, |sum, height| Some(sum + height?))?
-        + i64::from(parent.cell_spacing) * last_row as i64;
-    let parent_padding = cell.effective_padding(&parent.padding);
-    let parent_pad = i64::from(parent_padding.top) + i64::from(parent_padding.bottom);
-    let opening = i64::from(child.common.height) + parent_pad;
-    if prefix + opening != i64::from(parent.common.height) {
-        return None;
-    }
-    for other in parent
-        .cells
-        .iter()
-        .filter(|other| usize::from(other.row) == last_row)
-    {
-        if !std::ptr::eq(other, cell) && text_end(other, parent)? > opening {
-            return None;
-        }
-    }
-    let mut final_end = closing;
-    for para in cell.paragraphs.iter().skip(1) {
-        if !structural(para) {
-            return None;
-        }
-        for (index, line) in para.line_segs.iter().enumerate() {
-            let top = i64::from(ladder_vpos(para, index, line.vertical_pos));
-            if top < closing {
-                return None;
-            }
-            final_end = final_end.max(top + i64::from(line.line_height));
-        }
-    }
-    Some(StoredNestedRowFrames {
-        lines,
-        reset,
-        opening_height_hu: i32::try_from(child.common.height).ok()?,
-        closing_height_hu: i32::try_from(closing).ok()?,
-        parent_row_height_hu: i32::try_from(opening + final_end + parent_pad).ok()?,
     })
 }
 
@@ -3552,6 +3568,7 @@ pub struct ParagraphFloatPlacement {
     pub table_top: f64,
     pub occupied_bottom: f64,
 }
+crate::storage::clone_copy!(ParagraphFloatPlacement);
 
 /// 본문 제한을 켠 빈 호스트의 세로 캡션 표는 완전한 흐름 상자를 공유한다.
 /// 원점은 호출자가 확정한 lane이며 표와 캡션을 다시 독립 이동하지 않는다.
@@ -6752,6 +6769,7 @@ pub struct InlineBoxPlacement {
     /// 수용한 저장 TAC 줄의 기준값과 단 앵커. 뒤 글줄도 같은 쌍을 소비한다.
     pub stored_column_frame: Option<StoredColumnFrame>,
 }
+crate::storage::clone_copy!(InlineBoxPlacement);
 
 impl InlineBoxPlacement {
     /// 회피 배치나 명시적인 줄 끝은 세로 프레임도 소유한다.
@@ -6872,32 +6890,56 @@ pub(crate) fn signed_hwpunit(value: HwpUnit) -> i32 {
 /// 이 매핑이 있으면 문단 높이는 "줄별 점유 높이의 합" 으로 계산된다 — 같은 줄의 표를
 /// 세로로 합산하지 않고, 여러 줄이면 각 줄이 제 몫을 낸다.
 pub(crate) fn para_nested_table_line_indices(para: &Paragraph) -> Option<Vec<Option<usize>>> {
-    let lines = stored_control_line_indices(para)?;
-    Some(
-        para.controls
-            .iter()
-            .zip(lines)
-            .map(|(ctrl, line)| matches!(ctrl, Control::Table(_)).then_some(line))
-            .collect(),
-    )
+    match para_nested_table_line_indices_with_storage(para, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn para_nested_table_line_indices_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    storage: &S,
+) -> Result<Option<Vec<Option<usize>>>, S::Error> {
+    let Some(lines) = stored_control_line_indices_with_storage(para, storage)? else {
+        return Ok(None);
+    };
+    Ok(Some(
+        storage.collect(
+            para.controls
+                .iter()
+                .zip(lines)
+                .map(|(ctrl, line)| matches!(ctrl, Control::Table(_)).then_some(line)),
+        )?,
+    ))
 }
 
 /// 저장 줄과 컨트롤은 모두 PARA_TEXT UTF-16 축에서 비교한다.
 /// visible character 위치로 투영하면 한 갭 안의 서로 다른 컨트롤 시작이 소실된다.
 pub(crate) fn stored_control_line_indices(para: &Paragraph) -> Option<Vec<usize>> {
-    if para.line_segs.is_empty() || crate::renderer::para_has_no_stored_line_segs(para) {
-        return None;
+    match stored_control_line_indices_with_storage(para, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    Some(
-        para.control_utf16_positions()
-            .into_iter()
-            .map(|pos| {
-                (0..para.line_segs.len())
-                    .rfind(|&li| para.line_seg_text_start(li) <= pos)
-                    .unwrap_or(0)
-            })
-            .collect(),
-    )
+}
+
+pub(crate) fn stored_control_line_indices_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    storage: &S,
+) -> Result<Option<Vec<usize>>, S::Error> {
+    if para.line_segs.is_empty() || crate::renderer::para_has_no_stored_line_segs(para) {
+        return Ok(None);
+    }
+    Ok(Some(
+        storage.collect(
+            para.control_utf16_positions_with_storage(storage)?
+                .into_iter()
+                .map(|pos| {
+                    (0..para.line_segs.len())
+                        .rfind(|&li| para.line_seg_text_start(li) <= pos)
+                        .unwrap_or(0)
+                }),
+        )?,
+    ))
 }
 
 /// 측정과 셀 배치가 함께 소비하는 중첩 표의 저장 줄 그룹.
@@ -7034,6 +7076,25 @@ pub(crate) fn stored_block_cell_flow(
     dpi: f64,
     mut table_height: impl FnMut(&Table) -> f64,
 ) -> Option<StoredBlockCellFlow> {
+    match stored_block_cell_flow_with_storage(
+        paragraphs,
+        styles,
+        dpi,
+        |table| Ok(table_height(table)),
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn stored_block_cell_flow_with_storage<S: crate::storage::Storage>(
+    paragraphs: &[Paragraph],
+    styles: &super::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+    mut table_height: impl FnMut(&Table) -> Result<f64, S::Error>,
+    storage: &S,
+) -> Result<Option<StoredBlockCellFlow>, S::Error> {
     // Mixed inline/wrapping/absolute objects have their own line composition.
     // This plan covers saved text lines and empty hosts of paragraph-relative
     // block tables. NO_LS and collapsed ladders retain their existing paths.
@@ -7071,20 +7132,16 @@ pub(crate) fn stored_block_cell_flow(
                 })
         })
     {
-        return None;
+        return Ok(None);
     }
-    let mut heights: Vec<Vec<f64>> = Vec::with_capacity(paragraphs.len());
+    let mut heights: Vec<Vec<f64>> = storage.vec(paragraphs.len())?;
     let mut unabsorbed_block = false;
     for (pi, para) in paragraphs.iter().enumerate() {
-        let h: Vec<f64> = para
-            .controls
-            .iter()
-            .map(|c| match c {
-                Control::Table(t) => table_height(t),
-                _ => 0.0,
-            })
-            .collect();
-        let block_height: f64 = nested_table_groups(para, false)
+        let h: Vec<f64> = storage.try_collect(para.controls.iter().map(|c| match c {
+            Control::Table(t) => table_height(t),
+            _ => Ok(0.0),
+        }))?;
+        let block_height: f64 = nested_table_groups_with_storage(para, false, storage)?
             .iter()
             .map(|group| nested_group_occupied_height(para, group, &h, 0.0, dpi))
             .sum();
@@ -7108,7 +7165,7 @@ pub(crate) fn stored_block_cell_flow(
                 .is_some()
             });
             if before_host_frame {
-                heights.push(h);
+                storage.push(&mut heights, h)?;
                 continue;
             }
             if let Some(next) = paragraphs.get(pi + 1) {
@@ -7130,21 +7187,24 @@ pub(crate) fn stored_block_cell_flow(
                     hwpunit_to_px(para.line_segs[0].line_height, dpi) < block_height;
             }
         }
-        heights.push(h);
+        storage.push(&mut heights, h)?;
     }
     if !unabsorbed_block {
         // 호스트 앞에서 닫힌 표는 저장 위치를 재사용할 수 있다. 이 결과를
         // 반환하지 않으면 fallback이 호스트 아래에 같은 표 높이를 다시 더한다.
-        return stored_closed_cell_frame::closed_before_host_flow(
+        return Ok(stored_closed_cell_frame::closed_before_host_flow(
             paragraphs, styles, &heights, dpi,
-        );
+        ));
     }
     let mut result = StoredBlockCellFlow {
-        paragraph_origins: Vec::with_capacity(paragraphs.len()),
-        origins: paragraphs
-            .iter()
-            .map(|p| vec![None; p.controls.len()])
-            .collect(),
+        paragraph_origins: storage.vec(paragraphs.len())?,
+        origins: {
+            let mut origins = storage.vec(paragraphs.len())?;
+            for p in paragraphs {
+                origins.push(storage.filled(p.controls.len(), None)?);
+            }
+            origins
+        },
         bottom: 0.0,
         closed_before_host: false,
     };
@@ -7158,9 +7218,9 @@ pub(crate) fn stored_block_cell_flow(
             super::cell_paragraph_spacing_before(para, pi, style.map_or(0.0, |s| s.spacing_before))
         };
         cursor += before;
-        result.paragraph_origins.push(cursor);
+        storage.push(&mut result.paragraph_origins, cursor)?;
         if has_block {
-            for group in nested_table_groups(para, false) {
+            for group in nested_table_groups_with_storage(para, false, storage)? {
                 let group_top = cursor;
                 let mut advance = 0.0_f64;
                 for ci in group.controls {
@@ -7205,7 +7265,7 @@ pub(crate) fn stored_block_cell_flow(
         }
         result.bottom = cursor;
     }
-    Some(result)
+    Ok(Some(result))
 }
 
 /// 문단 기준 글 앞/뒤 표는 같은 앵커에 겹치는 개체이며 별도의 흐름 띠가 아니다.
@@ -7414,7 +7474,18 @@ pub(crate) fn nested_host_gap_start(
 }
 
 pub(crate) fn nested_table_groups(para: &Paragraph, _hwpx_stored: bool) -> Vec<NestedTableGroup> {
-    let lines = para_nested_table_line_indices(para);
+    match nested_table_groups_with_storage(para, _hwpx_stored, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn nested_table_groups_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    _hwpx_stored: bool,
+    storage: &S,
+) -> Result<Vec<NestedTableGroup>, S::Error> {
+    let lines = para_nested_table_line_indices_with_storage(para, storage)?;
     let mut groups: Vec<NestedTableGroup> = Vec::new();
     for (ci, ctrl) in para.controls.iter().enumerate() {
         if !matches!(ctrl, Control::Table(_)) {
@@ -7422,31 +7493,36 @@ pub(crate) fn nested_table_groups(para: &Paragraph, _hwpx_stored: bool) -> Vec<N
         }
         let line = lines.as_ref().and_then(|v| v[ci]);
         if let Some(group) = groups.iter_mut().find(|g| g.line == line) {
-            group.controls.push(ci);
+            storage.push(&mut group.controls, ci)?;
         } else {
-            groups.push(NestedTableGroup {
-                line,
-                controls: vec![ci],
-                side_by_side: false,
-            });
+            storage.push(
+                &mut groups,
+                NestedTableGroup {
+                    line,
+                    controls: storage.collect([ci])?,
+                    side_by_side: false,
+                },
+            )?;
         }
     }
     for group in &mut groups {
-        let tables: Vec<&Table> = group
-            .controls
-            .iter()
-            .filter_map(|&ci| match &para.controls[ci] {
-                Control::Table(t) if !nested_table_is_overlay(t) => Some(t.as_ref()),
-                _ => None,
-            })
-            .collect();
+        let tables: Vec<&Table> =
+            storage.collect(
+                group
+                    .controls
+                    .iter()
+                    .filter_map(|&ci| match &para.controls[ci] {
+                        Control::Table(t) if !nested_table_is_overlay(t) => Some(t.as_ref()),
+                        _ => None,
+                    }),
+            )?;
         group.side_by_side = if group.line.is_some() {
-            line_nested_table_group_is_side_by_side(&tables)
+            line_nested_table_group_is_side_by_side_with_storage(&tables, storage)?
         } else {
-            para_float_group_is_side_by_side(para)
+            para_float_group_is_side_by_side_with_storage(para, storage)?
         };
     }
-    groups
+    Ok(groups)
 }
 
 /// [#6787] 한 **줄**에 놓인 중첩 표들이 나란히 놓이는 무리인가 — 즉 그 줄이 예약해야 할
@@ -7464,39 +7540,58 @@ pub(crate) fn nested_table_groups(para: &Paragraph, _hwpx_stored: bool) -> Vec<N
 /// 두 축이 문자 그대로 같은 함수를 부르므로 발동 조건이 갈리는 일이 구조적으로 없다.
 /// (그 비대칭이 `#6787` 의 실제 결함이었다.)
 pub(crate) fn line_nested_table_group_is_side_by_side(tables: &[&Table]) -> bool {
+    match line_nested_table_group_is_side_by_side_with_storage(tables, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn line_nested_table_group_is_side_by_side_with_storage<S: crate::storage::Storage>(
+    tables: &[&Table],
+    storage: &S,
+) -> Result<bool, S::Error> {
     if tables.len() < 2 {
-        return false;
+        return Ok(false);
     }
     // 글자처럼 취급되는 표들은 같은 줄에 있다는 사실만으로 나란하다.
     if tables.iter().all(|table| table.common.treat_as_char) {
-        return true;
+        return Ok(true);
     }
     let mut spans: Vec<(i32, i32)> = Vec::new();
     for table in tables {
         if !para_float_group_member_is_eligible(table) {
-            return false;
+            return Ok(false);
         }
         let start = signed_hwpunit(table.common.horizontal_offset);
         let width = table.common.width.min(i32::MAX as u32) as i32;
-        spans.push((start, start.saturating_add(width)));
+        storage.push(&mut spans, (start, start.saturating_add(width)))?;
     }
     spans.sort_unstable();
-    // 가로 구간이 하나라도 겹치면 나란히 놓을 수 없다.
-    spans.windows(2).all(|w| w[0].1 <= w[1].0 + 1)
+    Ok(
+        // 가로 구간이 하나라도 겹치면 나란히 놓을 수 없다.
+        spans.windows(2).all(|w| w[0].1 <= w[1].0 + 1),
+    )
 }
 
 /// 저장 사다리가 없어 줄 소속을 모르는 문단의 폴백 — 문단 전체를 한 무리로 본다.
 pub(crate) fn para_float_group_is_side_by_side(para: &Paragraph) -> bool {
-    let tables: Vec<&Table> = para
-        .controls
-        .iter()
-        .filter_map(|ctrl| match ctrl {
+    match para_float_group_is_side_by_side_with_storage(para, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn para_float_group_is_side_by_side_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    let tables: Vec<&Table> =
+        storage.collect(para.controls.iter().filter_map(|ctrl| match ctrl {
             Control::Table(table) => Some(table.as_ref()),
             _ => None,
-        })
-        .collect();
-    tables.iter().all(|t| !t.common.treat_as_char)
-        && line_nested_table_group_is_side_by_side(&tables)
+        }))?;
+    Ok(tables.iter().all(|t| !t.common.treat_as_char)
+        && line_nested_table_group_is_side_by_side_with_storage(&tables, storage)?)
 }
 
 /// 나란히 무리의 자격 — 무리 판정과 레인 배치가 **같은 술어**를 쓴다.
@@ -7528,6 +7623,16 @@ pub(crate) fn para_float_group_member_is_eligible(table: &Table) -> bool {
 pub(crate) fn paper_or_page_float_carve_evidence(
     paragraphs: &[crate::model::paragraph::Paragraph],
 ) -> Vec<FloatCarveEvidence> {
+    match paper_or_page_float_carve_evidence_with_storage(paragraphs, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn paper_or_page_float_carve_evidence_with_storage<S: crate::storage::Storage>(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    storage: &S,
+) -> Result<Vec<FloatCarveEvidence>, S::Error> {
     use crate::model::control::Control;
     let mut evidence = Vec::new();
     for para in paragraphs {
@@ -7561,11 +7666,11 @@ pub(crate) fn paper_or_page_float_carve_evidence(
             let vertical = top..top.saturating_add(height);
             let candidate = FloatCarveEvidence { width, vertical };
             if width > 0 && height > 0 && !evidence.contains(&candidate) {
-                evidence.push(candidate);
+                storage.push(&mut evidence, candidate)?;
             }
         }
     }
-    evidence
+    Ok(evidence)
 }
 
 /// [#6202] 용지 기준(`Paper`/`Page`) 어울림 개체를 재는 데 필요한 쪽 원점.

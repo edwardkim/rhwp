@@ -177,16 +177,34 @@ struct Envelope {
     version: u8,
     records: Vec<Record>,
 }
-fn fingerprint(p: &Paragraph, start: usize, end: usize, command: &str) -> Vec<u8> {
+fn fingerprint(p: &Paragraph, start: usize, end: usize, command: &str) -> [u8; 32] {
     let mut h = Sha256::new();
     h.update((command.len() as u64).to_le_bytes());
     h.update(command.as_bytes());
     for c in p.text.chars().skip(start).take(end - start) {
         h.update((c as u32).to_le_bytes());
     }
-    h.finalize().to_vec()
+    h.finalize().into()
 }
-fn collect(paras: &[Paragraph], out: &mut Vec<Record>) {
+#[derive(Serialize)]
+struct RecordRef<'a> {
+    id: u32,
+    fingerprint: [u8; 32],
+    format: &'a OriginalFormat,
+}
+#[derive(Serialize)]
+struct EnvelopeRef<'a> {
+    version: u8,
+    records: &'a [RecordRef<'a>],
+}
+fn collect<'a, S: crate::storage::Storage>(
+    paras: &'a [Paragraph],
+    out: &mut Vec<RecordRef<'a>>,
+    storage: &S,
+) -> Result<(), String>
+where
+    S::Error: std::fmt::Display,
+{
     for p in paras {
         for range in &p.field_ranges {
             let Some(Control::Field(f)) = p.controls.get(range.control_idx) else {
@@ -199,50 +217,72 @@ fn collect(paras: &[Paragraph], out: &mut Vec<Record>) {
                 && range.start_char_idx <= range.end_char_idx
                 && format.valid_for(range.end_char_idx - range.start_char_idx)
             {
-                out.push(Record {
-                    id: f.field_id,
-                    fingerprint: fingerprint(
-                        p,
-                        range.start_char_idx,
-                        range.end_char_idx,
-                        &f.command,
-                    ),
-                    format: format.clone(),
-                });
+                storage
+                    .push(
+                        out,
+                        RecordRef {
+                            id: f.field_id,
+                            fingerprint: fingerprint(
+                                p,
+                                range.start_char_idx,
+                                range.end_char_idx,
+                                &f.command,
+                            ),
+                            format,
+                        },
+                    )
+                    .map_err(|e| e.to_string())?;
             }
         }
         for c in &p.controls {
             match c {
                 Control::Table(t) => {
                     for cell in &t.cells {
-                        collect(&cell.paragraphs, out);
+                        collect(&cell.paragraphs, out, storage)?;
                     }
                 }
                 Control::Shape(s) => {
                     if let Some(tb) = s.drawing().and_then(|d| d.text_box.as_ref()) {
-                        collect(&tb.paragraphs, out);
+                        collect(&tb.paragraphs, out, storage)?;
                     }
                 }
                 _ => {}
             }
         }
     }
+    Ok(())
 }
 pub fn encode(doc: &Document) -> Option<Vec<u8>> {
+    encode_with_storage(doc, &crate::storage::Unbounded)
+        .ok()
+        .flatten()
+}
+pub(crate) fn encode_with_storage<S: crate::storage::Storage>(
+    doc: &Document,
+    storage: &S,
+) -> Result<Option<Vec<u8>>, String>
+where
+    S::Error: std::fmt::Display,
+{
     let mut records = Vec::new();
     for s in &doc.sections {
-        collect(&s.paragraphs, &mut records);
+        collect(&s.paragraphs, &mut records, storage)?;
     }
     if records.is_empty() {
-        None
-    } else {
-        serde_json::to_vec(&Envelope {
-            version: 1,
-            records,
-        })
-        .ok()
+        return Ok(None);
     }
+    let mut writer = crate::serializer::budget_cursor::BudgetCursor::new(storage, usize::MAX);
+    serde_json::to_writer(
+        &mut writer,
+        &EnvelopeRef {
+            version: 1,
+            records: &records,
+        },
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(Some(writer.into_inner()))
 }
+
 fn attach(paras: &mut [Paragraph], records: &HashMap<u32, Record>) {
     for p in paras {
         for range in &p.field_ranges {

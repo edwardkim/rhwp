@@ -409,7 +409,10 @@ fn parse_cell(records: &[Record]) -> Cell {
 /// 셀의 raw_list_extra에서 필드 이름을 추출한다.
 /// 구조: raw_list_extra[15..17] = name_len (u16 LE), [17..17+name_len*2] = UTF-16LE 문자열
 /// (직렬화 대칭: serializer::control::build_cell_list_extra — #1808)
-pub(crate) fn parse_cell_field_name(extra: &[u8]) -> Option<String> {
+/// Borrow the existing validated UTF-16 field-name surface without owned scratch.
+pub(crate) fn cell_field_name_units(
+    extra: &[u8],
+) -> Option<impl Iterator<Item = u16> + Clone + '_> {
     if extra.len() < 18 {
         return None;
     }
@@ -417,11 +420,16 @@ pub(crate) fn parse_cell_field_name(extra: &[u8]) -> Option<String> {
     if name_len == 0 || extra.len() < 17 + name_len * 2 {
         return None;
     }
-    let wchars: Vec<u16> = extra[17..17 + name_len * 2]
-        .chunks_exact(2)
-        .map(|c| u16::from_le_bytes([c[0], c[1]]))
+    Some(
+        extra[17..17 + name_len * 2]
+            .chunks_exact(2)
+            .map(|bytes| u16::from_le_bytes([bytes[0], bytes[1]])),
+    )
+}
+pub(crate) fn parse_cell_field_name(extra: &[u8]) -> Option<String> {
+    let name: String = char::decode_utf16(cell_field_name_units(extra)?)
+        .map(|scalar| scalar.unwrap_or(char::REPLACEMENT_CHARACTER))
         .collect();
-    let name = String::from_utf16_lossy(&wchars);
     if name.is_empty() {
         None
     } else {

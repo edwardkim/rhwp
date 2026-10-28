@@ -25,28 +25,41 @@ pub(super) fn generated_block_host_lines(
     cell: &Cell,
     anchors: &[CellUnitLineAnchor],
 ) -> Vec<(usize, usize)> {
-    let mut opened = None;
-    let mut generated = BTreeSet::new();
-    for anchor in anchors {
-        match *anchor {
-            CellUnitLineAnchor::Opens(para, line) => opened = Some((para, line)),
-            CellUnitLineAnchor::InsideAnOpenLine => {
-                if let Some((para, line)) = opened {
-                    if cell.paragraphs.get(para).is_some_and(|host| {
-                        host.text.is_empty()
-                            && host.controls.iter().any(|control| {
-                                matches!(control, Control::Table(table)
+    match generated_block_host_lines_with_storage(cell, anchors, &crate::storage::Unbounded) {
+        Ok(v) => v,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn generated_block_host_lines_with_storage<S: crate::storage::Storage>(
+    cell: &Cell,
+    anchors: &[CellUnitLineAnchor],
+    storage: &S,
+) -> Result<Vec<(usize, usize)>, S::Error> {
+    Ok({
+        let mut opened = None;
+        let mut generated = BTreeSet::new();
+        for anchor in anchors {
+            match *anchor {
+                CellUnitLineAnchor::Opens(para, line) => opened = Some((para, line)),
+                CellUnitLineAnchor::InsideAnOpenLine => {
+                    if let Some((para, line)) = opened {
+                        if cell.paragraphs.get(para).is_some_and(|host| {
+                            host.text.is_empty()
+                                && host.controls.iter().any(|control| {
+                                    matches!(control, Control::Table(table)
                                     if !table.common.treat_as_char)
-                            })
-                    }) {
-                        generated.insert((para, line));
+                                })
+                        }) {
+                            storage.insert_tree_set(&mut generated, (para, line))?;
+                        }
                     }
                 }
+                CellUnitLineAnchor::NoLineOfItsOwn => {}
             }
-            CellUnitLineAnchor::NoLineOfItsOwn => {}
         }
-    }
-    generated.into_iter().collect()
+        storage.collect(generated)?
+    })
 }
 
 pub(super) fn mark_generated_host_lines(

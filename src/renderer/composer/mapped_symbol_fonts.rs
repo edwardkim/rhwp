@@ -14,57 +14,61 @@ pub(super) fn owns_shadowed_circle_font(run: &ComposedTextRun) -> bool {
 
 /// 원문 한 글자와 대응 표시 한 글자가 같은 경계를 가질 때만 나눈다.
 /// 결합 문자·삽입 컨트롤·표시 길이가 다른 옛한글 투영을 기호 런으로 추측하지 않는다.
-pub(super) fn split_mapped_symbol_font_runs(composed: &mut ComposedParagraph) {
+pub(super) fn try_split_mapped_symbol_font_runs<S: crate::storage::Storage>(
+    composed: &mut ComposedParagraph,
+    storage: &S,
+) -> Result<(), S::Error> {
     for line in &mut composed.lines {
-        let mut next = Vec::with_capacity(line.runs.len());
+        let mut next = storage.vec(line.runs.len())?;
         for run in std::mem::take(&mut line.runs) {
             if !run.text.contains('\u{F06D}')
                 || run.char_overlap.is_some()
                 || run.footnote_marker.is_some()
                 || run.inserted_control_text
             {
-                next.push(run);
+                storage.push(&mut next, run)?;
                 continue;
             }
             let Some(display) = run.display_text.as_deref() else {
-                next.push(run);
+                storage.push(&mut next, run)?;
                 continue;
             };
-            let display_chars: Vec<_> = display.chars().collect();
+            let display_chars: Vec<_> = storage.collect(display.chars())?;
             if display_chars.len() != run.text.chars().count() {
-                next.push(run);
+                storage.push(&mut next, run)?;
                 continue;
             }
-            let mut ranges = Vec::new();
+            let mut ranges = storage.vec(0)?;
             let mut position = 0;
             let mut start = 0;
             for grapheme in run.text.graphemes(true) {
                 let end = position + grapheme.chars().count();
                 if grapheme == "\u{F06D}" && display_chars[position] == '\u{1F53E}' {
                     if start < position {
-                        ranges.push((start, position));
+                        storage.push(&mut ranges, (start, position))?;
                     }
-                    ranges.push((position, end));
+                    storage.push(&mut ranges, (position, end))?;
                     start = end;
                 }
                 position = end;
             }
             if ranges.is_empty() {
-                next.push(run);
+                storage.push(&mut next, run)?;
                 continue;
             }
             if start < position {
-                ranges.push((start, position));
+                storage.push(&mut ranges, (start, position))?;
             }
-            let raw_chars: Vec<_> = run.text.chars().collect();
+            let raw_chars: Vec<_> = storage.collect(run.text.chars())?;
             for (start, end) in ranges {
-                let mut piece = run.clone();
-                piece.text = raw_chars[start..end].iter().collect();
-                let displayed: String = display_chars[start..end].iter().collect();
+                let mut piece = run.try_clone(storage)?;
+                piece.text = storage.chars(raw_chars[start..end].iter().copied())?;
+                let displayed: String = storage.chars(display_chars[start..end].iter().copied())?;
                 piece.display_text = (displayed != piece.text).then_some(displayed);
-                next.push(piece);
+                storage.push(&mut next, piece)?;
             }
         }
         line.runs = next;
     }
+    Ok(())
 }

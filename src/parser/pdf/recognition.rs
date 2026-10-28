@@ -2,9 +2,13 @@
 use super::text_analysis::{
     line_join, paragraph_layout, LineJoin, ObservedText, ParagraphLayout, TextLine as Line,
 };
+use super::{
+    allocation::{message, Allocation},
+    value_macro::request_json,
+};
 use pdf_oxide::{extractors::PdfImage, geometry::Rect, layout::TextSpan};
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Clone, Copy)]
@@ -61,12 +65,13 @@ enum TableEvent {
     Hold,
 }
 
-struct Trace {
+struct Trace<'a> {
+    allocation: Allocation<'a>,
     context: Vec<String>,
     actor: &'static str,
     records: Vec<Value>,
 }
-impl Trace {
+impl Trace<'_> {
     fn record<S: std::fmt::Debug>(
         &mut self,
         from: S,
@@ -74,9 +79,16 @@ impl Trace {
         event: &str,
         reason: &str,
         evidence: Value,
-    ) {
-        self.records.push(json!({"context":self.context,"actor":self.actor,
-            "from":format!("{from:?}"),"to":format!("{to:?}"),"event":event,"reason":reason,"evidence":evidence}));
+    ) -> Result<(), String> {
+        let allocation = self.allocation;
+        let mut record = request_json!(allocation,{"context":self.context,"actor":self.actor,
+            "from":allocation.display(&format_args!("{from:?}"))?,
+            "to":allocation.display(&format_args!("{to:?}"))?,
+            "event":event,"reason":reason})?;
+        allocation
+            .set(&mut record, "evidence", evidence)
+            .map_err(message)?;
+        allocation.push(&mut self.records, record).map_err(message)
     }
 }
 
@@ -130,12 +142,14 @@ fn make_lines(
     if !valid_rect(region.bbox) || region.span_indices.len() > 20000 {
         return Err("invalid region or span budget".into());
     }
-    let indices = region.span_indices.clone();
-    let unique: BTreeSet<_> = indices.iter().copied().collect();
-    if unique.len() != indices.len() {
+    let allocation = observed.allocation();
+    let indices = &region.span_indices;
+    let mut sorted = allocation.copy_slice(indices).map_err(message)?;
+    sorted.sort_unstable();
+    if sorted.windows(2).any(|pair| pair[0] == pair[1]) {
         return Err("duplicate span ownership in region".into());
     }
-    for i in &indices {
+    for i in indices {
         let s = spans.get(*i).ok_or("span reference out of range")?;
         if !valid_rect(s.bbox)
             || !s.font_size.is_finite()
@@ -155,7 +169,7 @@ fn make_lines(
             return Err("span does not belong to supplied region".into());
         }
     }
-    observed.lines(&indices, policy.baseline_tolerance_em)
+    observed.lines(indices, policy.baseline_tolerance_em)
 }
 
 /// Enumerators and bullets that open a list item or a labelled block:
@@ -204,16 +218,23 @@ pub(super) fn starts_item(text: &str) -> bool {
 /// Width of the first word of `line`. Positioned PDF text often carries no
 /// space characters, so a word also ends at a gap between source span boxes
 /// that is at least a narrow word space wide.
-fn first_word_width(line: &Line, spans: &[TextSpan], em: f32) -> f32 {
-    let mut boxes: Vec<_> = line
-        .indices
-        .iter()
-        .filter_map(|&i| spans.get(i))
-        .map(|s| (s.bbox.x, s.bbox.x + s.bbox.width, s.text.as_str()))
-        .collect();
+fn first_word_width(
+    line: &Line,
+    spans: &[TextSpan],
+    em: f32,
+    allocation: Allocation<'_>,
+) -> Result<f32, String> {
+    let mut boxes = allocation
+        .collect(
+            line.indices
+                .iter()
+                .filter_map(|&i| spans.get(i))
+                .map(|s| (s.bbox.x, s.bbox.x + s.bbox.width, s.text.as_str())),
+        )
+        .map_err(message)?;
     boxes.sort_by(|a, b| a.0.total_cmp(&b.0));
     let Some(start) = boxes.first().map(|b| b.0) else {
-        return line.right - line.left;
+        return Ok(line.right - line.left);
     };
     for (k, &(left, right, text)) in boxes.iter().enumerate() {
         let body = if k == 0 { text.trim_start() } else { text };
@@ -221,22 +242,22 @@ fn first_word_width(line: &Line, spans: &[TextSpan], em: f32) -> f32 {
             let chars = text.chars().count().max(1) as f32;
             let lead = (text.len() - body.len()) + space;
             let before = text[..lead].chars().count() as f32;
-            return left + (right - left) * before / chars - start;
+            return Ok(left + (right - left) * before / chars - start);
         }
         if boxes
             .get(k + 1)
             .is_some_and(|next| next.0 - right >= 0.15 * em)
         {
-            return right - start;
+            return Ok(right - start);
         }
     }
-    line.right - line.left
+    Ok(line.right - line.left)
 }
 
-struct ParagraphMachine {
+struct ParagraphMachine<'a> {
     state: ParagraphState,
     owner: Rect,
-    trace: Trace,
+    trace: Trace<'a>,
     pending: Vec<Line>,
     output: Vec<ParagraphProposal>,
     /// (left, right, baseline, block) of every observed line in this owner.
@@ -245,20 +266,25 @@ struct ParagraphMachine {
     /// start on one of its own left edges.
     line_extents: Vec<(f32, f32, f32, usize)>,
 }
-impl ParagraphMachine {
+impl ParagraphMachine<'_> {
     /// The widest right edge among lines of `line`'s block that start
     /// exactly on a left edge of the pending paragraph or of `line` and lie
     /// within a few lines of it. Blocks with another start, across a
     /// paragraph gap or farther away keep their own measure.
-    fn measure_right(&self, line: &Line, em: f32) -> f32 {
-        let starts: Vec<f32> = self.pending.iter().chain([line]).map(|l| l.left).collect();
+    fn measure_right(&self, line: &Line, em: f32) -> Result<f32, String> {
+        let starts = self
+            .trace
+            .allocation
+            .collect(self.pending.iter().chain([line]).map(|l| l.left))
+            .map_err(message)?;
         let top = self.pending.first().map_or(line.baseline, |l| l.baseline);
         let block = self
             .line_extents
             .iter()
             .find(|e| e.2 == line.baseline && e.0 == line.left)
             .map(|e| e.3);
-        self.line_extents
+        Ok(self
+            .line_extents
             .iter()
             .filter(|(l, _, baseline, b)| {
                 Some(*b) == block
@@ -267,30 +293,45 @@ impl ParagraphMachine {
                     && starts.iter().any(|s| (l - s).abs() <= 0.5)
             })
             .map(|&(_, r, _, _)| r)
-            .fold(line.right, f32::max)
+            .fold(line.right, f32::max))
     }
     /// A line wraps only when the next word does not fit after it. If the
     /// first word of `line` fits in the room `previous` left before the
     /// measure, the author broke the line: the paragraph ends there.
     /// Two short lines centered on the owner carry no wrap evidence.
-    fn ends_short(&self, previous: &Line, line: &Line, em: f32, spans: &[TextSpan]) -> bool {
-        let measure = self.measure_right(line, em);
+    fn ends_short(
+        &self,
+        previous: &Line,
+        line: &Line,
+        em: f32,
+        spans: &[TextSpan],
+    ) -> Result<bool, String> {
+        let measure = self.measure_right(line, em)?;
         let room = measure - previous.right;
-        let word = first_word_width(line, spans, em);
+        let word = first_word_width(line, spans, em, self.trace.allocation)?;
         let center = self.owner.x + self.owner.width / 2.;
         let centered = |l: &Line| ((l.left + l.right) / 2. - center).abs() <= 0.5;
         let centered_pair =
             centered(previous) && centered(line) && measure - line.right > 0.25 * em;
         // A word follows a separator about a quarter em wide.
-        room >= word + 0.25 * em && !centered_pair
+        Ok(room >= word + 0.25 * em && !centered_pair)
     }
-    fn transition(&mut self, to: ParagraphState, event: &str, reason: &str, evidence: Value) {
-        self.trace.record(self.state, to, event, reason, evidence);
+
+    fn transition(
+        &mut self,
+        to: ParagraphState,
+        event: &str,
+        reason: &str,
+        evidence: Value,
+    ) -> Result<(), String> {
+        self.trace.record(self.state, to, event, reason, evidence)?;
         self.state = to;
+        Ok(())
     }
-    fn emit(&mut self, _spans: &[TextSpan], reason: &str) {
+    fn emit(&mut self, _spans: &[TextSpan], reason: &str) -> Result<(), String> {
+        let allocation = self.trace.allocation;
         if self.pending.is_empty() {
-            return;
+            return Ok(());
         }
         let layout = paragraph_layout(&self.pending, self.owner);
         if layout.is_none() && self.state != ParagraphState::Deferred {
@@ -298,51 +339,63 @@ impl ParagraphMachine {
                 ParagraphState::Deferred,
                 "HoldLayout",
                 "line_origins_need_additional_paragraph_layout",
-                json!({}),
-            );
+                request_json!(allocation, {})?,
+            )?;
         }
         let lines = std::mem::take(&mut self.pending);
-        let line_joins = (0..lines.len())
-            .map(|i| {
+        let line_joins = allocation
+            .collect((0..lines.len()).map(|i| {
                 if i == 0 {
                     LineJoin::Start
                 } else {
                     line_join(&lines[i - 1].preview_text, &lines[i].preview_text)
                 }
-            })
-            .collect();
-        let span_indices = lines
-            .iter()
-            .flat_map(|l| l.indices.iter().copied())
-            .collect();
-        self.output.push(ParagraphProposal {
-            status: self.state,
-            reason: reason.into(),
-            context: self.trace.context.clone(),
-            lines,
-            line_joins,
-            layout,
-            span_indices,
-        });
+            }))
+            .map_err(message)?;
+        let span_indices = allocation
+            .collect(lines.iter().flat_map(|l| l.indices.iter().copied()))
+            .map_err(message)?;
+        allocation
+            .push(
+                &mut self.output,
+                ParagraphProposal {
+                    status: self.state,
+                    reason: allocation.string(reason).map_err(message)?,
+                    context: allocation.strings(&self.trace.context).map_err(message)?,
+                    lines,
+                    line_joins,
+                    layout,
+                    span_indices,
+                },
+            )
+            .map_err(message)?;
+        Ok(())
     }
-    fn feed(&mut self, line: Line, spans: &[TextSpan], region: &Region, policy: Policy) {
+    fn feed(
+        &mut self,
+        line: Line,
+        spans: &[TextSpan],
+        region: &Region,
+        policy: Policy,
+    ) -> Result<(), String> {
+        let allocation = self.trace.allocation;
         if self.pending.is_empty() {
             self.transition(
                 ParagraphState::Accumulating,
                 "LineObserved",
                 "start_candidate",
-                json!({"spanIndices":line.indices}),
-            );
+                request_json!(allocation,{"spanIndices":line.indices})?,
+            )?;
             if line.disjoint {
                 self.transition(
                     ParagraphState::Deferred,
                     "SegmentationRequired",
                     "disjoint_horizontal_runs",
-                    json!({}),
-                );
+                    request_json!(allocation, {})?,
+                )?;
             }
-            self.pending.push(line);
-            return;
+            allocation.push(&mut self.pending, line).map_err(message)?;
+            return Ok(());
         }
         if self.state == ParagraphState::Deferred {
             let previous = self.pending.last().unwrap();
@@ -354,26 +407,26 @@ impl ParagraphMachine {
                     })))
                 // Unresolved content ends with its short last line. The next
                 // line is judged on its own evidence instead of being held.
-                || (!previous.disjoint && !line.disjoint && self.ends_short(previous, &line, em, spans));
+                || (!previous.disjoint && !line.disjoint && self.ends_short(previous, &line, em, spans)?);
             if clear_boundary {
-                self.emit(spans, "unresolved_region_ended");
+                self.emit(spans, "unresolved_region_ended")?;
                 self.transition(
                     ParagraphState::Idle,
                     "ResumeAfterBoundary",
                     "independent_boundary_after_deferred_content",
-                    json!({}),
-                );
-                self.feed(line, spans, region, policy);
-                return;
+                    request_json!(allocation, {})?,
+                )?;
+                self.feed(line, spans, region, policy)?;
+                return Ok(());
             }
             self.transition(
                 ParagraphState::Deferred,
                 "LineObserved",
                 "retain_unresolved_content",
-                json!({"spanIndices":line.indices}),
-            );
-            self.pending.push(line);
-            return;
+                request_json!(allocation,{"spanIndices":line.indices})?,
+            )?;
+            allocation.push(&mut self.pending, line).map_err(message)?;
+            return Ok(());
         }
         let previous = self.pending.last().unwrap();
         let em = previous.font.max(line.font);
@@ -391,7 +444,7 @@ impl ParagraphMachine {
             .obstacles
             .iter()
             .any(|b| b.y >= previous.bottom - 0.5 && b.y + b.height <= line.top + 0.5);
-        let short_end = !line.disjoint && self.ends_short(previous, &line, em, spans);
+        let short_end = !line.disjoint && self.ends_short(previous, &line, em, spans)?;
         // From the second line on, every continuation shares one left edge.
         // A different start begins the next paragraph's first line.
         let continuation_changed = self
@@ -406,23 +459,23 @@ impl ParagraphMachine {
                 .pending
                 .first()
                 .is_some_and(|first| (line.left - first.left).abs() <= 0.5);
-        let evidence = json!({"baselineGap":gap,"fontScale":em,"alignmentCompatible":alignment,
+        let evidence = request_json!(allocation,{"baselineGap":gap,"fontScale":em,"alignmentCompatible":alignment,
             "firstLineIndent":first_indent,"fontSizeChanged":size_change,"objectBoundary":object_boundary,
             "previousLineShort":short_end,"continuationLeftChanged":continuation_changed,
-            "itemMarker":item_start});
+            "itemMarker":item_start})?;
         if line.disjoint {
             self.transition(
                 ParagraphState::BoundaryCandidate,
                 "SegmentationRequired",
                 "disjoint_horizontal_runs",
-                evidence.clone(),
-            );
+                allocation.value(&evidence).map_err(message)?,
+            )?;
             self.transition(
                 ParagraphState::Deferred,
                 "Hold",
                 "region_segmentation_unknown",
                 evidence,
-            );
+            )?;
         } else if object_boundary
             || gap > policy.paragraph_gap_em * em
             || (region.body && size_change)
@@ -451,74 +504,76 @@ impl ParagraphMachine {
                 ParagraphState::BoundaryCandidate,
                 "BoundaryObserved",
                 reason,
-                evidence.clone(),
-            );
+                allocation.value(&evidence).map_err(message)?,
+            )?;
             self.transition(
                 ParagraphState::Confirmed,
                 "AcceptBoundary",
                 reason,
                 evidence,
-            );
-            self.emit(spans, reason);
+            )?;
+            self.emit(spans, reason)?;
             self.transition(
                 ParagraphState::Idle,
                 "CandidateEmitted",
                 "start_next_candidate",
-                json!({}),
-            );
+                request_json!(allocation, {})?,
+            )?;
             self.transition(
                 ParagraphState::Accumulating,
                 "LineObserved",
                 "start_candidate",
-                json!({"spanIndices":line.indices}),
-            );
+                request_json!(allocation,{"spanIndices":line.indices})?,
+            )?;
         } else if (!alignment && !first_indent) || size_change {
             self.transition(
                 ParagraphState::BoundaryCandidate,
                 "ConflictingClues",
                 "alignment_or_size_conflict",
-                evidence.clone(),
-            );
+                allocation.value(&evidence).map_err(message)?,
+            )?;
             self.transition(
                 ParagraphState::Deferred,
                 "Hold",
                 "insufficient_boundary_evidence",
                 evidence,
-            );
+            )?;
         } else {
             self.transition(
                 ParagraphState::Accumulating,
                 "LineObserved",
                 "compatible_continuation",
                 evidence,
-            );
+            )?;
         }
-        self.pending.push(line);
+        allocation.push(&mut self.pending, line).map_err(message)?;
+        Ok(())
     }
-    fn finish(mut self, spans: &[TextSpan]) -> RegionRecognition {
+    fn finish(mut self, spans: &[TextSpan]) -> Result<RegionRecognition, String> {
+        let allocation = self.trace.allocation;
         if !self.pending.is_empty() {
             if self.state != ParagraphState::Deferred {
                 self.transition(
                     ParagraphState::Confirmed,
                     "RegionEnd",
                     "owner_region_ended",
-                    json!({}),
-                );
+                    request_json!(allocation, {})?,
+                )?;
             } else {
                 self.transition(
                     ParagraphState::Deferred,
                     "RegionEnd",
                     "retain_unresolved_content",
-                    json!({}),
-                );
+                    request_json!(allocation, {})?,
+                )?;
             }
-            self.emit(spans, "region_end");
+            self.emit(spans, "region_end")?;
         }
-        RegionRecognition {
+        Ok(RegionRecognition {
             context: self.trace.context,
             paragraphs: self.output,
             transitions: self.trace.records,
-        }
+        })
     }
 }
 
@@ -553,6 +608,7 @@ fn recognize_region(
     {
         return Err("invalid recognition policy".into());
     }
+    let allocation = observed.allocation();
     let lines = make_lines(observed, spans, span_clips, region, media_box, policy)?;
     let mut machine = ParagraphMachine {
         state: ParagraphState::Idle,
@@ -571,21 +627,24 @@ fn recognize_region(
                 }
                 previous = Some(l);
                 if !l.disjoint {
-                    extents.push((l.left, l.right, l.baseline, block));
+                    allocation
+                        .push(&mut extents, (l.left, l.right, l.baseline, block))
+                        .map_err(message)?;
                 }
             }
             extents
         },
         trace: Trace {
-            context: region.context.clone(),
+            allocation,
+            context: allocation.strings(&region.context).map_err(message)?,
             actor: "paragraph",
             records: Vec::new(),
         },
     };
     for line in lines {
-        machine.feed(line, spans, region, policy);
+        machine.feed(line, spans, region, policy)?;
     }
-    Ok(machine.finish(spans))
+    machine.finish(spans)
 }
 
 fn contains(outer: Rect, inner: Rect) -> bool {
@@ -614,15 +673,21 @@ fn index(v: &Value) -> Result<usize, String> {
         .and_then(|n| usize::try_from(n).ok())
         .ok_or("invalid index".into())
 }
-fn indices(v: &Value) -> Result<Vec<usize>, String> {
-    v.as_array()
-        .ok_or("invalid reference array")?
-        .iter()
-        .map(index)
-        .collect()
+fn indices(allocation: Allocation<'_>, v: &Value) -> Result<Vec<usize>, String> {
+    allocation.try_collect::<_, String>(
+        v.as_array()
+            .ok_or("invalid reference array")?
+            .iter()
+            .map(index),
+    )
 }
 
-fn validate_table(table: &Value, span_count: usize, image_count: usize) -> Result<(), String> {
+fn validate_table(
+    allocation: Allocation<'_>,
+    table: &Value,
+    span_count: usize,
+    image_count: usize,
+) -> Result<(), String> {
     let rows = index(&table["rows"])?;
     let cols = index(&table["columns"])?;
     if rows == 0
@@ -633,21 +698,19 @@ fn validate_table(table: &Value, span_count: usize, image_count: usize) -> Resul
     {
         return Err("invalid grid dimensions".into());
     }
-    let mut occupied = vec![false; rows * cols];
+    let mut occupied = allocation.vec(rows * cols).map_err(message)?;
+    occupied.resize(rows * cols, false);
     let mut spans = BTreeSet::new();
     let mut images = BTreeSet::new();
     let bounds = rect(&table["bbox"])?;
     let axis = |v: &Value, len: usize| -> Result<Vec<f32>, String> {
-        let a: Vec<_> = v
-            .as_array()
-            .ok_or("axis missing")?
-            .iter()
-            .map(|n| {
+        let a = allocation.try_collect::<_, String>(
+            v.as_array().ok_or("axis missing")?.iter().map(|n| {
                 n.as_f64()
                     .map(|n| n as f32)
                     .ok_or("invalid axis value".to_string())
-            })
-            .collect::<Result<_, _>>()?;
+            }),
+        )?;
         if a.len() != len || a.iter().any(|n| !n.is_finite()) || a.windows(2).any(|w| w[1] <= w[0])
         {
             return Err("invalid grid axis".into());
@@ -699,12 +762,18 @@ fn validate_table(table: &Value, span_count: usize, image_count: usize) -> Resul
                 }
             }
         }
-        for i in indices(&c["spanIndices"])? {
+        for i in indices(allocation, &c["spanIndices"])? {
+            if !spans.contains(&i) {
+                allocation.tree_entry::<usize, ()>().map_err(message)?;
+            }
             if i >= span_count || !spans.insert(i) {
                 return Err("duplicate or invalid span owner".into());
             }
         }
-        for i in indices(&c["imageIndices"])? {
+        for i in indices(allocation, &c["imageIndices"])? {
+            if !images.contains(&i) {
+                allocation.tree_entry::<usize, ()>().map_err(message)?;
+            }
             if i >= image_count || !images.insert(i) {
                 return Err("duplicate or invalid image owner".into());
             }
@@ -714,29 +783,28 @@ fn validate_table(table: &Value, span_count: usize, image_count: usize) -> Resul
         return Err("uncovered grid slots".into());
     }
     super::table_topology::evidence(
+        allocation,
         rows,
         cols,
-        &cells
-            .iter()
-            .map(|c| {
-                Ok((
-                    index(&c["row"])?,
-                    index(&c["column"])?,
-                    index(&c["rowspan"])?,
-                    index(&c["colspan"])?,
-                ))
-            })
-            .collect::<Result<Vec<_>, String>>()?,
+        &allocation.try_collect::<_, String>(cells.iter().map(|c| {
+            Ok((
+                index(&c["row"])?,
+                index(&c["column"])?,
+                index(&c["rowspan"])?,
+                index(&c["colspan"])?,
+            ))
+        }))?,
     )?;
     Ok(())
 }
 
-struct TableMachine {
+struct TableMachine<'a> {
     state: TableState,
-    trace: Trace,
+    trace: Trace<'a>,
 }
-impl TableMachine {
+impl TableMachine<'_> {
     fn step(&mut self, event: TableEvent, reason: &str, evidence: Value) -> Result<(), String> {
+        let allocation = self.trace.allocation;
         let next = match (self.state, event) {
             (TableState::Searching, TableEvent::CandidateFound) => TableState::Candidate,
             (TableState::Candidate, TableEvent::ValidateGeometry) => TableState::Validating,
@@ -746,10 +814,27 @@ impl TableMachine {
             (TableState::Validating, TableEvent::Hold) => TableState::Deferred,
             _ => return Err("invalid table recognition transition".into()),
         };
-        self.trace
-            .record(self.state, next, &format!("{event:?}"), reason, evidence);
+        self.trace.record(
+            self.state,
+            next,
+            &allocation
+                .display(&format_args!("{event:?}"))
+                .map_err(message)?,
+            reason,
+            evidence,
+        )?;
         self.state = next;
         Ok(())
+    }
+}
+
+fn parent_value(
+    allocation: Allocation<'_>,
+    parent: Option<(usize, usize)>,
+) -> Result<Value, String> {
+    match parent {
+        Some((table, cell)) => Ok(request_json!(allocation,{"table":table,"cell":cell})?),
+        None => Ok(Value::Null),
     }
 }
 
@@ -762,66 +847,66 @@ pub fn recognize_page(
     media_box: (f32, f32, f32, f32),
     policy: Policy,
 ) -> Result<PageRecognition, String> {
+    let allocation = observed.allocation();
     let (left, bottom, right, top) = media_box;
     if ![left, bottom, right, top].iter().all(|v| v.is_finite()) || right <= left || top <= bottom {
         return Err("invalid recognition page".into());
     }
     let page_bounds = Rect::new(0.0, 0.0, right - left, top - bottom);
-    let image_boxes: Vec<_> = images
-        .iter()
-        .map(|i| {
-            let b = i.bbox().ok_or("image lacks geometry")?;
-            Ok(Rect::new(
-                b.x - left,
-                top - b.y - b.height,
-                b.width,
-                b.height,
-            ))
-        })
-        .collect::<Result<_, String>>()?;
+    let image_boxes = allocation.try_collect::<_, String>(images.iter().map(|i| {
+        let b = i.bbox().ok_or("image lacks geometry")?;
+        Ok(Rect::new(
+            b.x - left,
+            top - b.y - b.height,
+            b.width,
+            b.height,
+        ))
+    }))?;
     let candidates = detection["tables"]
         .as_array()
         .ok_or("table candidates missing")?;
     if candidates.len() > 128 {
         return Err("table recognition budget exceeded".into());
     }
-    let validations: Vec<_> = candidates
-        .iter()
-        .map(|t| validate_table(t, spans.len(), images.len()))
-        .collect();
-    let valid_ids: Vec<_> = validations
-        .iter()
-        .enumerate()
-        .filter_map(|(i, v)| v.is_ok().then_some(i))
-        .collect();
-    let geometry = valid_ids
-        .iter()
-        .map(|i| {
-            let t = &candidates[*i];
-            Ok((
-                rect(&t["bbox"])?,
+    let validations = allocation
+        .collect(
+            candidates
+                .iter()
+                .map(|t| validate_table(allocation, t, spans.len(), images.len())),
+        )
+        .map_err(message)?;
+    let valid_ids = allocation
+        .collect(
+            validations
+                .iter()
+                .enumerate()
+                .filter_map(|(i, v)| v.is_ok().then_some(i)),
+        )
+        .map_err(message)?;
+    let geometry = allocation.try_collect::<_, String>(valid_ids.iter().map(|i| {
+        let t = &candidates[*i];
+        Ok((
+            rect(&t["bbox"])?,
+            allocation.try_collect::<_, String>(
                 t["cells"]
                     .as_array()
                     .unwrap()
                     .iter()
-                    .map(|c| rect(&c["bbox"]))
-                    .collect::<Result<Vec<_>, String>>()?,
-            ))
-        })
-        .collect::<Result<Vec<_>, String>>()?;
-    let composed = super::table_hierarchy::compose(&geometry)?;
-    let mut placements = vec![
-        super::table_hierarchy::Placement {
-            parent: None,
-            depth: 0,
-            embedding: None,
-            deferred: None
-        };
-        candidates.len()
-    ];
-    for (local, &global) in valid_ids.iter().enumerate() {
-        placements[global] = composed[local].clone();
-        placements[global].parent = composed[local].parent.map(|(p, c)| (valid_ids[p], c));
+                    .map(|c| rect(&c["bbox"])),
+            )?,
+        ))
+    }))?;
+    let composed = super::table_hierarchy::compose(allocation, &geometry)?;
+    let mut placements = allocation.vec(candidates.len()).map_err(message)?;
+    placements.resize_with(candidates.len(), || super::table_hierarchy::Placement {
+        parent: None,
+        depth: 0,
+        embedding: None,
+        deferred: None,
+    });
+    for (local, mut placement) in composed.into_iter().enumerate() {
+        placement.parent = placement.parent.map(|(p, c)| (valid_ids[p], c));
+        placements[valid_ids[local]] = placement;
     }
     let mut tables = Vec::new();
     let mut regions = Vec::new();
@@ -832,13 +917,19 @@ pub fn recognize_page(
     for t in candidates {
         if let Some(cells) = t["cells"].as_array() {
             for c in cells {
-                if let Ok(ids) = indices(&c["spanIndices"]) {
+                if let Ok(ids) = indices(allocation, &c["spanIndices"]) {
                     for i in ids {
+                        if !span_owners.contains_key(&i) {
+                            allocation.tree_entry::<usize, usize>().map_err(message)?;
+                        }
                         *span_owners.entry(i).or_default() += 1;
                     }
                 }
-                if let Ok(ids) = indices(&c["imageIndices"]) {
+                if let Ok(ids) = indices(allocation, &c["imageIndices"]) {
                     for i in ids {
+                        if !image_owners.contains_key(&i) {
+                            allocation.tree_entry::<usize, usize>().map_err(message)?;
+                        }
                         *image_owners.entry(i).or_default() += 1;
                     }
                 }
@@ -850,11 +941,16 @@ pub fn recognize_page(
         .ok_or("ambiguity records missing")?;
     for a in ambiguous {
         if a["kind"] == "span" {
-            reserved.insert(index(&a["index"])?);
+            let i = index(&a["index"])?;
+            if !reserved.contains(&i) {
+                allocation.tree_entry::<usize, ()>().map_err(message)?;
+            }
+            reserved.insert(i);
         }
     }
     for (ti, t) in candidates.iter().enumerate() {
-        let mut chain = vec![ti];
+        let mut chain = allocation.vec(17).map_err(message)?;
+        chain.push(ti);
         let mut at = ti;
         for _ in 0..16 {
             let Some((parent, _)) = placements[at].parent else {
@@ -864,17 +960,23 @@ pub fn recognize_page(
             at = parent;
         }
         chain.reverse();
-        let mut context = vec!["page".to_string()];
+        let mut context = allocation.vec(chain.len() * 2).map_err(message)?;
+        context.push(allocation.string("page").map_err(message)?);
         for (level, &table) in chain.iter().enumerate() {
             if level > 0 {
-                context.push(format!("cell:{}", placements[table].parent.unwrap().1));
+                context.push(
+                    allocation
+                        .id("cell", &[placements[table].parent.unwrap().1])
+                        .map_err(message)?,
+                );
             }
-            context.push(format!("table:{table}"));
+            context.push(allocation.id("table", &[table]).map_err(message)?);
         }
         let mut machine = TableMachine {
             state: TableState::Searching,
             trace: Trace {
-                context: context.clone(),
+                allocation,
+                context: allocation.strings(&context).map_err(message)?,
                 actor: "table",
                 records: Vec::new(),
             },
@@ -882,16 +984,20 @@ pub fn recognize_page(
         machine.step(
             TableEvent::CandidateFound,
             "spatial_detector",
-            json!({"candidate":ti}),
+            request_json!(allocation,{"candidate":ti})?,
         )?;
         machine.step(
             TableEvent::ValidateGeometry,
             "check_grid_and_owners",
-            json!({}),
+            request_json!(allocation, {})?,
         )?;
-        let validation = validations[ti].clone().and_then(|_| {
+        let initial_validation = match &validations[ti] {
+            Ok(()) => Ok(()),
+            Err(reason) => Err(allocation.string(reason).map_err(message)?),
+        };
+        let validation = initial_validation.and_then(|_| {
             if let Some(reason) = &placements[ti].deferred {
-                return Err(reason.clone());
+                return Err(allocation.string(reason).map_err(message)?);
             }
             // A single row/column is still a table when the same geometry,
             // topology and unique-content ownership checks hold. The previous
@@ -903,10 +1009,8 @@ pub fn recognize_page(
                 return Err("detector deferred table composition".into());
             }
             if !t["hierarchy"].is_null() {
-                let expected = placements[ti]
-                    .parent
-                    .map(|(table, cell)| json!({"table":table,"cell":cell}));
-                if t["hierarchy"]["parent"] != json!(expected) {
+                let expected = parent_value(allocation, placements[ti].parent)?;
+                if t["hierarchy"]["parent"] != expected {
                     return Err("detector parent disagrees with cell-slot geometry".into());
                 }
             }
@@ -966,63 +1070,106 @@ pub fn recognize_page(
         // Reserve content even in a deferred table; never reinterpret it as page prose.
         if let Some(cells) = t["cells"].as_array() {
             for c in cells {
-                if let Ok(ids) = indices(&c["spanIndices"]) {
-                    reserved.extend(ids.into_iter().filter(|i| *i < spans.len()));
+                if let Ok(ids) = indices(allocation, &c["spanIndices"]) {
+                    for i in ids.into_iter().filter(|i| *i < spans.len()) {
+                        if !reserved.contains(&i) {
+                            allocation.tree_entry::<usize, ()>().map_err(message)?;
+                        }
+                        reserved.insert(i);
+                    }
                 }
             }
         }
         if let Err(reason) = validation {
-            machine.step(TableEvent::Hold, &reason, json!({}))?;
-            tables.push(json!({"candidate":ti,"status":"Deferred","reason":reason,"transitions":machine.trace.records}));
+            machine.step(TableEvent::Hold, &reason, request_json!(allocation, {})?)?;
+            let mut table =
+                request_json!(allocation,{"candidate":ti,"status":"Deferred","reason":reason})?;
+            allocation
+                .set(
+                    &mut table,
+                    "transitions",
+                    Value::Array(machine.trace.records),
+                )
+                .map_err(message)?;
+            allocation.push(&mut tables, table).map_err(message)?;
             continue;
         }
         machine.step(
             TableEvent::GeometryAccepted,
             "consistent_grid_and_unique_owners",
-            json!({"rows":t["rows"],"columns":t["columns"]}),
+            request_json!(allocation,{"rows":t["rows"],"columns":t["columns"]})?,
         )?;
-        machine.step(TableEvent::BeginCells, "enter_child_contexts", json!({}))?;
+        machine.step(
+            TableEvent::BeginCells,
+            "enter_child_contexts",
+            request_json!(allocation, {})?,
+        )?;
         let mut children = Vec::new();
         for (ci, c) in t["cells"].as_array().unwrap().iter().enumerate() {
-            let mut cell_context = context.clone();
-            cell_context.push(format!("cell:{ci}"));
-            let mut obstacles: Vec<_> = indices(&c["imageIndices"])?
-                .iter()
-                .map(|i| image_boxes[*i])
-                .collect();
-            let child_tables: Vec<_> = placements
-                .iter()
-                .enumerate()
-                .filter_map(|(child, p)| (p.parent == Some((ti, ci))).then_some(child))
-                .collect();
+            let mut cell_context = allocation.strings(&context).map_err(message)?;
+            allocation
+                .push(
+                    &mut cell_context,
+                    allocation.id("cell", &[ci]).map_err(message)?,
+                )
+                .map_err(message)?;
+            let mut obstacles = allocation
+                .collect(
+                    indices(allocation, &c["imageIndices"])?
+                        .iter()
+                        .map(|i| image_boxes[*i]),
+                )
+                .map_err(message)?;
+            let child_tables = allocation
+                .collect(
+                    placements
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(child, p)| (p.parent == Some((ti, ci))).then_some(child)),
+                )
+                .map_err(message)?;
             for child in &child_tables {
-                obstacles.push(rect(&candidates[*child]["bbox"])?);
+                allocation
+                    .push(&mut obstacles, rect(&candidates[*child]["bbox"])?)
+                    .map_err(message)?;
             }
             let region = Region {
                 body: false,
                 context: cell_context,
                 bbox: rect(&c["bbox"])?,
-                span_indices: indices(&c["spanIndices"])?,
+                span_indices: indices(allocation, &c["spanIndices"])?,
                 obstacles,
             };
             let result = recognize_region(observed, spans, span_clips, &region, media_box, policy)?;
-            children
-                .push(json!({"cell":ci,"row":c["row"],"column":c["column"],"imageIndices":c["imageIndices"],"childTableIndices":child_tables,"recognition":result}));
+            allocation.reserve(&mut children, 1).map_err(message)?;
+            children.push(request_json!(allocation,{"cell":ci,"row":c["row"],"column":c["column"],"imageIndices":c["imageIndices"],"childTableIndices":child_tables,"recognition":result})?);
+            allocation
+                .tree_entry::<(usize, usize), RegionRecognition>()
+                .map_err(message)?;
             cells.insert((ti, ci), result);
         }
         machine.step(
             TableEvent::EndCells,
             "child_contexts_closed",
-            json!({"cells":children.len()}),
+            request_json!(allocation,{"cells":children.len()})?,
         )?;
-        let mut table = json!({"candidate":ti,"status":"GeometryConfirmed","semanticStatus":"unverified",
-            "parent":placements[ti].parent.map(|(table,cell)|json!({"table":table,"cell":cell})),
-            "depth":placements[ti].depth});
+        let parent = parent_value(allocation, placements[ti].parent)?;
+        let mut table = request_json!(allocation,{"candidate":ti,"status":"GeometryConfirmed","semanticStatus":"unverified",
+            "parent":parent,
+            "depth":placements[ti].depth})?;
         // These JSON trees already own their values. Passing them through
         // json! serializes and allocates every nested glyph/transition again.
-        table["cells"] = Value::Array(children);
-        table["transitions"] = Value::Array(machine.trace.records);
-        tables.push(table);
+        allocation
+            .set(&mut table, "cells", Value::Array(children))
+            .map_err(message)?;
+        allocation
+            .set(
+                &mut table,
+                "transitions",
+                Value::Array(machine.trace.records),
+            )
+            .map_err(message)?;
+        allocation.push(&mut tables, table).map_err(message)?;
     }
     for _ in 0..=16 {
         let mut changed = false;
@@ -1034,12 +1181,26 @@ pub fn recognize_page(
                     } else {
                         i
                     };
-                    tables[held]["status"] = json!("Deferred");
-                    tables[held]["reason"] = json!("unresolved nested table context");
-                    tables[held]["transitions"].as_array_mut().unwrap().push(json!({
+                    allocation
+                        .set(
+                            &mut tables[held],
+                            "status",
+                            allocation.value("Deferred").map_err(message)?,
+                        )
+                        .map_err(message)?;
+                    allocation
+                        .set(
+                            &mut tables[held],
+                            "reason",
+                            allocation
+                                .value("unresolved nested table context")
+                                .map_err(message)?,
+                        )
+                        .map_err(message)?;
+                    allocation.push(tables[held]["transitions"].as_array_mut().unwrap(),request_json!(allocation,{
                         "actor":"table","from":"Complete","to":"Deferred","event":"HoldSubtree",
                         "reason":"unresolved nested table context","evidence":{"child":i,"parent":parent}
-                    }));
+                    })?).map_err(message)?;
                     changed = true;
                 }
             }
@@ -1048,49 +1209,63 @@ pub fn recognize_page(
             break;
         }
     }
-    let remaining: Vec<_> = spans
-        .iter()
-        .enumerate()
-        .filter(|(i, s)| !s.text.is_empty() && s.rotation_degrees == 0.0 && !reserved.contains(i))
-        .map(|(i, _)| i)
-        .collect();
+    let remaining = allocation
+        .collect(
+            spans
+                .iter()
+                .enumerate()
+                .filter(|(i, s)| {
+                    !s.text.is_empty() && s.rotation_degrees == 0.0 && !reserved.contains(i)
+                })
+                .map(|(i, _)| i),
+        )
+        .map_err(message)?;
     let mut body = Vec::new();
-    let partitions = super::body_regions::partition(spans, span_clips, &remaining, media_box);
-    let partition_error = partitions.as_ref().err().cloned();
-    let partitions = partitions.unwrap_or_else(|_| {
-        if remaining.is_empty() {
-            Vec::new()
-        } else {
-            vec![super::body_regions::Partition {
+    let partitions =
+        super::body_regions::partition(allocation, spans, span_clips, &remaining, media_box);
+    allocation.0.check().map_err(|e| e.to_string())?;
+    let partition_error = match &partitions {
+        Err(reason) => Some(allocation.string(reason).map_err(message)?),
+        Ok(_) => None,
+    };
+    let partitions = match partitions {
+        Ok(partitions) => partitions,
+        Err(_) if remaining.is_empty() => Vec::new(),
+        Err(_) => allocation
+            .collect([super::body_regions::Partition {
                 bounds: page_bounds,
                 spans: remaining,
-            }]
+            }])
+            .map_err(message)?,
+    };
+    let mut obstacles = allocation.copy_slice(&image_boxes).map_err(message)?;
+    for t in candidates {
+        if let Ok(b) = rect(&t["bbox"]) {
+            allocation.push(&mut obstacles, b).map_err(message)?;
         }
-    });
+    }
     for (i, partition) in partitions.into_iter().enumerate() {
-        let mut obstacles: Vec<_> = image_boxes.iter().copied().collect();
-        for t in candidates {
-            if let Ok(b) = rect(&t["bbox"]) {
-                obstacles.push(b);
-            }
-        }
         // Only the geometric intersection belongs to this owner. The original
         // image/table and its paint are not clipped or modified.
-        let clipped = obstacles
-            .into_iter()
-            .filter_map(|b| {
+        let clipped = allocation
+            .collect(obstacles.iter().copied().filter_map(|b| {
                 let x = b.x.max(partition.bounds.x);
                 let y = b.y.max(partition.bounds.y);
                 let right = (b.x + b.width).min(partition.bounds.x + partition.bounds.width);
                 let bottom = (b.y + b.height).min(partition.bounds.y + partition.bounds.height);
                 (right > x && bottom > y).then(|| Rect::new(x, y, right - x, bottom - y))
-            })
-            .collect();
+            }))
+            .map_err(message)?;
         let region = Region {
             body: true,
-            context: vec!["page".into(), format!("body-region:{i}")],
+            context: allocation
+                .collect([
+                    allocation.string("page").map_err(message)?,
+                    allocation.id("body-region", &[i]).map_err(message)?,
+                ])
+                .map_err(message)?,
             bbox: partition.bounds,
-            span_indices: partition.spans.clone(),
+            span_indices: allocation.copy_slice(&partition.spans).map_err(message)?,
             obstacles: clipped,
         };
         let mut recognized =
@@ -1098,23 +1273,36 @@ pub fn recognize_page(
         if let Some(reason) = &partition_error {
             for p in &mut recognized.paragraphs {
                 p.status = ParagraphState::Deferred;
-                p.reason = reason.clone();
+                p.reason = allocation.string(reason).map_err(message)?;
             }
         }
-        body.push(BodyRecognition {
-            bbox: region.bbox,
-            span_indices: partition.spans,
-            recognition: recognized,
-        });
+        allocation
+            .push(
+                &mut body,
+                BodyRecognition {
+                    bbox: region.bbox,
+                    span_indices: partition.spans,
+                    recognition: recognized,
+                },
+            )
+            .map_err(message)?;
     }
-    regions.extend(body.iter().map(|r| json!(r)));
-    let mut report = json!({"algorithm":"hierarchical-efsm-v4-body-regions","acceptance":"rule-based proposals, not authored paragraph/table metadata",
+    for region in &body {
+        allocation
+            .push(&mut regions, allocation.value(region).map_err(message)?)
+            .map_err(message)?;
+    }
+    let mut report = request_json!(allocation,{"algorithm":"hierarchical-efsm-v4-body-regions","acceptance":"rule-based proposals, not authored paragraph/table metadata",
         "policy":{"baselineToleranceEm":policy.baseline_tolerance_em,"alignmentToleranceEm":policy.alignment_tolerance_em,
             "paragraphGapEm":policy.paragraph_gap_em,"maxContextDepth":policy.max_context_depth},
         "unresolvedContent":ambiguous,"emission":"typed proposals; actual IR consumption is reported by lowering",
-        "limits":["body whitespace partitions require repeated gutter evidence; ambiguous runs retained","nested cell-slot structure inferred; lowering may preserve unresolved content as positioned spans","tagged semantics not reconstructed"]});
-    report["tables"] = Value::Array(tables);
-    report["bodyRegions"] = Value::Array(regions);
+        "limits":["body whitespace partitions require repeated gutter evidence; ambiguous runs retained","nested cell-slot structure inferred; lowering may preserve unresolved content as positioned spans","tagged semantics not reconstructed"]})?;
+    allocation
+        .set(&mut report, "tables", Value::Array(tables))
+        .map_err(message)?;
+    allocation
+        .set(&mut report, "bodyRegions", Value::Array(regions))
+        .map_err(message)?;
     Ok(PageRecognition {
         report,
         cells,

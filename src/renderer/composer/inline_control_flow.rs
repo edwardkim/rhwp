@@ -6,34 +6,50 @@ use super::{
 };
 
 pub(super) fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
-    let text_len = para.text.chars().count();
-    para.controls
-        .iter()
-        .zip(para.control_text_positions())
-        .zip(para.control_utf16_positions())
-        .filter_map(|((control, char_position), utf16_position)| {
-            // 글자처럼 취급되는 표는 renderer가 control 위치를 기준으로 별도
-            // TextRun/Table 경계를 만든다. 보이지 않는 PARA_TEXT 위치의 다음
-            // 글자 폭에 표 전체 폭을 더하면 HML의 `abc + table + efg`처럼
-            // 기존 경계를 잃는다. #3211의 HWP oracle은 수식·그림 계열의
-            // 재조판 폭을 대상으로 하므로 표는 기존 control 배치 경로에 둔다.
-            if matches!(control, Control::Table(_)) {
-                return None;
-            }
-            let (width_hwp, height_hwp) = inline_control_size_hwp(control)?;
-            let baseline_distance_hwp = flow_inline_baseline_hwp(control, height_hwp);
-            // 마지막 scalar 뒤 개체도 마지막 물리 줄의 높이·기준선을 소유한다.
-            // 빈 텍스트의 퇴화 수식 배정은 기존 전용 경로에 남긴다.
-            (text_len > 0 && char_position <= text_len).then_some(FlowInlineControl {
-                char_position,
-                utf16_position,
-                width_hwp,
-                height_hwp,
-                baseline_distance_hwp,
-                spacing_height_hwp: inline_control_spacing_height_hwp(control),
-            })
-        })
-        .collect()
+    match flow_inline_controls_with_storage(para, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn flow_inline_controls_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    storage: &S,
+) -> Result<Vec<FlowInlineControl>, S::Error> {
+    Ok({
+        if para.controls.is_empty() {
+            return Ok(Vec::new());
+        }
+        let text_len = para.text.chars().count();
+        storage.collect(
+            para.controls
+                .iter()
+                .zip(para.try_control_text_positions(storage)?)
+                .zip(para.control_utf16_positions_with_storage(storage)?)
+                .filter_map(|((control, char_position), utf16_position)| {
+                    // 글자처럼 취급되는 표는 renderer가 control 위치를 기준으로 별도
+                    // TextRun/Table 경계를 만든다. 보이지 않는 PARA_TEXT 위치의 다음
+                    // 글자 폭에 표 전체 폭을 더하면 HML의 `abc + table + efg`처럼
+                    // 기존 경계를 잃는다. #3211의 HWP oracle은 수식·그림 계열의
+                    // 재조판 폭을 대상으로 하므로 표는 기존 control 배치 경로에 둔다.
+                    if matches!(control, Control::Table(_)) {
+                        return None;
+                    }
+                    let (width_hwp, height_hwp) = inline_control_size_hwp(control)?;
+                    let baseline_distance_hwp = flow_inline_baseline_hwp(control, height_hwp);
+                    // 마지막 scalar 뒤 개체도 마지막 물리 줄의 높이·기준선을 소유한다.
+                    // 빈 텍스트의 퇴화 수식 배정은 기존 전용 경로에 남긴다.
+                    (text_len > 0 && char_position <= text_len).then_some(FlowInlineControl {
+                        char_position,
+                        utf16_position,
+                        width_hwp,
+                        height_hwp,
+                        baseline_distance_hwp,
+                        spacing_height_hwp: inline_control_spacing_height_hwp(control),
+                    })
+                }),
+        )?
+    })
 }
 
 /// 종단 개체는 명시적 개행 뒤의 마지막 빈 줄이 소유한다.

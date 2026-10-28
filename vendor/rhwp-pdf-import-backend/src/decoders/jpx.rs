@@ -76,7 +76,7 @@ pub struct JpxImage {
 /// still covers it, so the result is never smaller than requested and may be
 /// larger.
 pub fn decode_jpx_at(bytes: &[u8], target: Option<(u32, u32)>) -> Result<JpxImage> {
-    decode_jpx_with(bytes, target, true, None)
+    decode_jpx_with(bytes, target, true, None, None)
 }
 
 /// Decode a JP2/J2K codestream to its palette *indices*, one byte per pixel.
@@ -98,7 +98,7 @@ pub fn decode_jpx_at(bytes: &[u8], target: Option<(u32, u32)>) -> Result<JpxImag
 /// deeper than 8 bits cannot be one.
 #[cfg(all(feature = "jpeg2000", test))]
 pub fn decode_jpx_indices_at(bytes: &[u8], target: Option<(u32, u32)>) -> Result<JpxImage> {
-    decode_jpx_with(bytes, target, false, None)
+    decode_jpx_with(bytes, target, false, None, None)
 }
 
 #[cfg(feature = "jpeg2000")]
@@ -107,8 +107,9 @@ pub(crate) fn decode_jpx_for_pdf(
     target: Option<(u32, u32)>,
     palette: bool,
     expected: Option<(u32, u32)>,
+    pdf_colour_components: Option<u8>,
 ) -> Result<JpxImage> {
-    decode_jpx_with(bytes, target, palette, expected)
+    decode_jpx_with(bytes, target, palette, expected, pdf_colour_components)
 }
 
 #[cfg(feature = "jpeg2000")]
@@ -117,6 +118,7 @@ fn decode_jpx_with(
     target: Option<(u32, u32)>,
     resolve_palette_indices: bool,
     expected: Option<(u32, u32)>,
+    pdf_colour_components: Option<u8>,
 ) -> Result<JpxImage> {
     use hayro_jpeg2000::{DecodeSettings, DecoderContext, Image};
 
@@ -124,6 +126,7 @@ fn decode_jpx_with(
         target_resolution: target,
         resolve_palette_indices,
         strict: expected.is_some(),
+        pdf_colour_components,
     };
 
     let image = Image::new(bytes, &settings).map_err(|e| {
@@ -171,29 +174,34 @@ fn decode_jpx_with(
     // would rescale a 4-bit index to the 8-bit range (0..15 → 0..255), and a
     // lookup table cannot be read with that.
     if !resolve_palette_indices {
-        if comps.len() != 1 {
-            return Err(Error::Image("JPX Indexed requires exactly one component".into()));
+        if !matches!(comps.len(), 1 | 2)
+            || comps[0].bit_depth() > 8
+            || comps.iter().any(|c| c.samples().len() != npix)
+        {
+            return Err(Error::Image(
+                "JPX Indexed requires index and optional full-size alpha".into(),
+            ));
         }
-        let comp = &comps[0];
-        if comp.bit_depth() > 8 {
-            return Err(Error::UnsupportedFilter(format!(
-                "JPXDecode: a {}-bit component cannot index a colour table",
-                comp.bit_depth()
-            )));
+        let mut samples = rhwp_codec_resource::capacity(
+            rhwp_codec_resource::product(&[npix, comps.len()])
+                .map_err(|_| Error::Image("JPX index size".into()))?,
+        )
+        .map_err(|_| Error::Image("JPX index allocation".into()))?;
+        rhwp_codec_resource::work(npix).map_err(|_| Error::Image("JPX index work".into()))?;
+        for index in 0..npix {
+            samples.push(comps[0].samples()[index].round().clamp(0.0, 255.0) as u8);
+            if comps.len() == 2 {
+                let maximum = ((1u64 << comps[1].bit_depth()) - 1) as f32;
+                samples.push(
+                    (comps[1].samples()[index] * 255.0 / maximum)
+                        .round()
+                        .clamp(0.0, 255.0) as u8,
+                );
+            }
         }
-        let s = comp.samples();
-        if s.len() != npix {
-            return Err(Error::UnsupportedFilter(format!(
-                "JPXDecode: index component holds {} samples for a {width}x{height} image",
-                s.len()
-            )));
-        }
-        let samples =
-            rhwp_codec_resource::collect(s.iter().map(|&v| v.round().clamp(0.0, 255.0) as u8))
-                .map_err(|_| Error::Image("JPX index allocation".into()))?;
         return Ok(JpxImage {
             samples,
-            num_components: 1,
+            num_components: comps.len() as u8,
             colour_components: 1,
             source_bit_depth,
             width,
@@ -289,8 +297,9 @@ fn upsample_nearest_u8(sub: &[f32], sw: usize, sh: usize, fw: usize, fh: usize) 
 mod tests {
     use super::{decode_jpx_at, upsample_nearest_u8};
 
-    /// Grayscale JP2 codestream from the minimal repro (816x1056 DeviceGray).
-    const SAMPLE_JP2: &[u8] = include_bytes!("../../tests/fixtures/jpx/sample_gray.jp2");
+    /// Original synthetic 816x1056 DeviceGray geometry/resolution control.
+    /// The lost upstream scan is not reconstructed or used as a visual baseline.
+    const SYNTHETIC_GRAY_JP2: &[u8] = include_bytes!("testdata/gray-816x1056.jp2");
 
     /// WS1.7: nearest-neighbour upsample of a 2×2 subsampled plane to 4×4 —
     /// each source sample fills its 2×2 output block.
@@ -298,7 +307,7 @@ mod tests {
     fn upsample_nearest_2x2_to_4x4() {
         // 2×2 plane: [10 20 / 30 40]
         let sub = [10.0f32, 20.0, 30.0, 40.0];
-        let out = upsample_nearest_u8(&sub, 2, 2, 4, 4);
+        let out = upsample_nearest_u8(&sub, 2, 2, 4, 4).unwrap();
         assert_eq!(
             out,
             vec![
@@ -314,7 +323,7 @@ mod tests {
     #[test]
     fn upsample_nearest_2x2_to_3x3() {
         let sub = [1.0f32, 2.0, 3.0, 4.0];
-        let out = upsample_nearest_u8(&sub, 2, 2, 3, 3);
+        let out = upsample_nearest_u8(&sub, 2, 2, 3, 3).unwrap();
         assert_eq!(out.len(), 9);
         assert_eq!(out[0], 1); // (0,0)
         assert_eq!(out[8], 4); // (2,2) → source (1,1)
@@ -328,11 +337,11 @@ mod tests {
     /// phone survives, for a picture painted into a fraction of that.
     #[test]
     fn test_target_resolution_decodes_a_smaller_image() {
-        let full = decode_jpx_at(SAMPLE_JP2, None).expect("decode at full size");
+        let full = decode_jpx_at(SYNTHETIC_GRAY_JP2, None).expect("decode at full size");
         assert_eq!((full.width, full.height), (816, 1056), "test premise");
 
-        let small =
-            decode_jpx_at(SAMPLE_JP2, Some((200, 260))).expect("decode at a reduced resolution");
+        let small = decode_jpx_at(SYNTHETIC_GRAY_JP2, Some((200, 260)))
+            .expect("decode at a reduced resolution");
 
         // Never smaller than asked for — the decoder picks the smallest level
         // that still covers the target ...
@@ -361,12 +370,12 @@ mod tests {
 
     #[test]
     fn decode_jpx_grayscale() {
-        let img = decode_jpx_at(SAMPLE_JP2, None).expect("decode JP2 codestream");
+        let img = decode_jpx_at(SYNTHETIC_GRAY_JP2, None).expect("decode JP2 codestream");
 
         assert_eq!(img.num_components, 1);
         assert_eq!(img.samples.len(), 816 * 1056);
 
-        // A scanned page is not one flat value.
+        // The independently generated grayscale control is not one flat value.
         let first = img.samples[0];
         assert!(
             img.samples.iter().any(|&b| b != first),

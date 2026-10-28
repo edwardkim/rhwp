@@ -271,7 +271,7 @@ pub(super) fn print() {
     );
     println!("      --verify-pages        변환 전/후 렌더 페이지 수를 비교 (불일치 시 exit 4)");
     println!();
-    println!("  import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--layout fidelity|editable] [--json] [--table-inference]");
+    println!("  import-pdf <입력.pdf> <출력.hwpx|출력.hwp> [--source-pages 0,6-7] [--layout fidelity|editable] [--resource-profile standard|constrained] [--resource-limits limits.json] [--json] [--table-inference]");
     println!("      --table-inference    --json에 원본 문자를 포함한 표 추론 근거·후보를 추가");
     println!(
         "      PDF 전체 또는 선택 쪽을 가져오기 (기본 포함 pdf-import; 제외 빌드는 재빌드 필요)"

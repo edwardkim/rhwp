@@ -1,0 +1,18 @@
+[
+  {
+    "name": "cff-cid-1001-glyphs.pdf",
+    "error": "유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: font metric entries"
+  },
+  {
+    "name": "cff-simple-four-glyphs.pdf",
+    "error": "유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: font metric entries"
+  },
+  {
+    "name": "cid-width-control.pdf",
+    "error": "유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: font metric entries"
+  },
+  {
+    "name": "type1-three-mappings.pdf",
+    "error": "유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: font metric entries"
+  }
+]

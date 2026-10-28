@@ -90,12 +90,45 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
 
 /// HWPX 직렬화 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
 pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, SerializeError> {
+    let (writer, report) =
+        serialize_hwpx_into(doc, HwpxZipWriter::new(), &crate::storage::Unbounded, None)?;
+    Ok(SerializedDocument::new(writer.into_inner(), report))
+}
+
+#[cfg(feature = "pdf-import")]
+pub(crate) fn serialize_hwpx_with_storage<S: crate::storage::Storage>(
+    doc: &Document,
+    storage: &S,
+    maximum: usize,
+    reservation: std::sync::Arc<dyn crate::storage::Reservation>,
+) -> Result<Vec<u8>, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let writer = super::budget_cursor::BudgetCursor::new(storage, maximum);
+    let (writer, report) = serialize_hwpx_into(
+        doc,
+        HwpxZipWriter::with_writer(writer),
+        storage,
+        Some(reservation),
+    )?;
+    report.write_warnings_to_stderr();
+    Ok(writer.into_inner())
+}
+
+fn serialize_hwpx_into<W: std::io::Write + std::io::Seek, S: crate::storage::Storage>(
+    doc: &Document,
+    mut z: HwpxZipWriter<W>,
+    storage: &S,
+    reservation: Option<std::sync::Arc<dyn crate::storage::Reservation>>,
+) -> Result<(W, crate::serializer::ContentLossReport), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     use static_assets::*;
 
     // 1-pass: ID 풀 구성
-    let mut ctx = SerializeContext::collect_from_document(doc);
-
-    let mut z = HwpxZipWriter::new();
+    let mut ctx = SerializeContext::try_collect_from_document(doc, storage, reservation)?;
 
     // 1. mimetype (반드시 최초 엔트리, STORED, extra field 없음)
     z.write_stored("mimetype", b"application/hwp+zip")?;
@@ -110,20 +143,31 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     )?;
 
     // 3. Contents/header.xml — Stage 1 동적 생성 (IR 기반)
-    let header_xml = header::write_header(doc, &ctx)?;
+    let header_xml = header::write_header_with_storage(doc, &ctx, storage)?;
     z.write_deflated("Contents/header.xml", &header_xml)?;
     let mut hwp3_page_ownership =
         crate::model::hwp3_page_ownership::PageOwnership::for_document(doc, &header_xml);
-    if let Some(bytes) = crate::model::native_font_program::encode(&doc.doc_info, &header_xml) {
+    if let Some(bytes) =
+        crate::model::native_font_program::encode_with_storage(&doc.doc_info, &header_xml, storage)
+            .map_err(SerializeError::UnsupportedInput)?
+    {
         z.write_deflated(crate::model::native_font_program::HWPX_ENTRY, &bytes)?;
     }
 
     // 4. Contents/section{N}.xml — 실제 섹션만큼, 없으면 0개
-    let section_hrefs: Vec<String> = (0..doc.sections.len())
-        .map(|i| format!("Contents/section{}.xml", i))
-        .collect();
+    let mut section_hrefs = storage
+        .vec(doc.sections.len())
+        .map_err(context::context_error)?;
+    for i in 0..doc.sections.len() {
+        section_hrefs.push(
+            storage
+                .display(&format_args!("Contents/section{}.xml", i))
+                .map_err(context::context_error)?,
+        );
+    }
     for (i, sec) in doc.sections.iter().enumerate() {
-        let xml = section::write_section(sec, doc, i, &mut ctx)?;
+        let xml = section::write_section_with_storage(sec, doc, i, &mut ctx, storage)?;
+        ctx.check_storage()?;
         if let Some(ownership) = &mut hwp3_page_ownership {
             ownership.push_section(sec, &xml);
         }
@@ -139,11 +183,18 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     let mut mp_global = 0usize;
     for (section_idx, sec) in doc.sections.iter().enumerate() {
         for mp in &sec.section_def.master_pages {
-            let id = format!("masterpage{}", mp_global);
-            let href = format!("Contents/masterpage{}.xml", mp_global);
-            let xml = master_page::render_master_page_xml(mp, &id, &mut ctx);
+            let id = storage
+                .display(&format_args!("masterpage{}", mp_global))
+                .map_err(context::context_error)?;
+            let href = storage
+                .display(&format_args!("Contents/masterpage{}.xml", mp_global))
+                .map_err(context::context_error)?;
+            let xml = master_page::render_master_page_xml_with_storage(mp, &id, &mut ctx, storage)?;
+            ctx.check_storage()?;
             z.write_deflated(&href, xml.as_bytes())?;
-            master_items.push((section_idx, id, href));
+            storage
+                .push(&mut master_items, (section_idx, id, href))
+                .map_err(context::context_error)?;
             mp_global += 1;
         }
     }
@@ -178,31 +229,74 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
             z.write_deflated(path, bytes)?;
         }
     }
+    // HWP-origin scripts have no HWPX auxiliary parts. Reuse the same bounded
+    // counted UTF-16 decoder as the action query, then emit standard parts and
+    // their package references. Existing HWPX script bytes remain verbatim.
+    let mut converted_script_items = Vec::new();
+    if !doc
+        .hwpx_aux_entries
+        .iter()
+        .any(|(path, _)| path.starts_with("Scripts/"))
+        && doc.extra_streams.iter().any(|(path, bytes)| {
+            path.trim_start_matches('/') == "Scripts/DefaultJScript" && !bytes.is_empty()
+        })
+    {
+        let (header, source) =
+            crate::model::form_script::script_sources_from_streams(&doc.extra_streams)
+                .map_err(|error| SerializeError::UnsupportedInput(error.to_string()))?;
+        if !header.is_empty() || !source.is_empty() {
+            for (id, path, text) in [
+                ("rhwpHeaderScript", "Scripts/headerScripts", header),
+                ("rhwpSourceScript", "Scripts/sourceScripts", source),
+            ] {
+                let bytes: Vec<u8> = text.encode_utf16().flat_map(u16::to_le_bytes).collect();
+                z.write_deflated(path, &bytes)?;
+                converted_script_items.push((id, path));
+            }
+        }
+    }
 
     if let Some(bytes) = ctx
         .table_row_grids
-        .encode()
+        .encode_with_storage(storage)
         .map_err(SerializeError::UnsupportedInput)?
     {
         z.write_deflated(crate::model::table_row_grid::HWPX_ENTRY, &bytes)?;
         ctx.content_loss
-            .record(crate::model::table_row_grid::native_grid_loss());
+            .record_with_storage(
+                crate::model::table_row_grid::native_grid_loss_with_storage(storage)
+                    .map_err(context::context_error)?,
+                storage,
+            )
+            .map_err(context::context_error)?;
     }
-    if let Some(bytes) =
-        crate::model::border_paint::encode(doc).map_err(SerializeError::UnsupportedInput)?
+    if let Some(bytes) = crate::model::border_paint::encode_with_storage(doc, storage)
+        .map_err(SerializeError::UnsupportedInput)?
     {
         z.write_deflated(crate::model::border_paint::HWPX_ENTRY, &bytes)?;
         ctx.content_loss
-            .record(crate::model::border_paint::native_editing_loss());
+            .record_with_storage(
+                crate::model::border_paint::native_editing_loss_with_storage(storage)
+                    .map_err(context::context_error)?,
+                storage,
+            )
+            .map_err(context::context_error)?;
     }
-    if let Some(bytes) =
-        crate::model::text_clip::encode(doc).map_err(SerializeError::UnsupportedInput)?
+    if let Some(bytes) = crate::model::text_clip::encode_with_storage(doc, storage)
+        .map_err(SerializeError::UnsupportedInput)?
     {
         z.write_deflated(crate::model::text_clip::HWPX_ENTRY, &bytes)?;
         ctx.content_loss
-            .record(crate::model::text_clip::native_visibility_loss());
+            .record_with_storage(
+                crate::model::text_clip::native_visibility_loss_with_storage(storage)
+                    .map_err(context::context_error)?,
+                storage,
+            )
+            .map_err(context::context_error)?;
     }
-    if let Some(bytes) = crate::model::hyperlink_format::encode(doc) {
+    if let Some(bytes) = crate::model::hyperlink_format::encode_with_storage(doc, storage)
+        .map_err(SerializeError::UnsupportedInput)?
+    {
         z.write_deflated(crate::model::hyperlink_format::HWPX_ENTRY, &bytes)?;
     }
 
@@ -216,7 +310,8 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     // 8. BinData ZIP 엔트리 (Stage 4)
     //    `ctx.bin_data_map` 의 엔트리 순서대로 실제 바이너리를 ZIP에 추가.
     //    3-way 단언(binaryItemIDRef ↔ manifest ↔ ZIP entry) 의 1차 출력 지점.
-    let bin_entries = ctx.bin_data_entries();
+    ctx.check_storage()?;
+    let bin_entries = ctx.try_bin_data_entries(storage)?;
     let mut zip_bin_entries: HashSet<String> = HashSet::new();
     for entry in &bin_entries {
         // 외부 참조(isEmbeded=0)는 ZIP 엔트리가 없다 — manifest 항목만 방출 (#1891).
@@ -243,14 +338,24 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
         // 재압축이 필수라 원본 통과 fallback 이 없다. 상한 초과는 [#1917] 이 정한
         // 로드 실패 의미(빈 엔트리 placeholder + pic 컨트롤 보존)를 그대로 따른다 —
         // 여기서 오류로 중단하면 폭탄 문서 하나가 저장 자체를 막는다.
-        let bytes = match data.data.load_limited(MAX_BIN_DATA_BYTES) {
+        let bytes = match storage
+            .bin_data(&data.data, MAX_BIN_DATA_BYTES)
+            .map_err(|error| SerializeError::ZipError(error.to_string()))?
+        {
             Some(bytes) => bytes,
             None => {
-                ctx.content_loss.record(ContentLoss::binary_content_emptied(
-                    entry.bin_data_id,
-                    entry.href.clone(),
-                    ContentLossReason::ResourceReadFailedOrLimitExceeded,
-                ));
+                ctx.content_loss
+                    .record_with_storage(
+                        ContentLoss::binary_content_emptied(
+                            entry.bin_data_id,
+                            storage
+                                .string(&entry.href)
+                                .map_err(context::context_error)?,
+                            ContentLossReason::ResourceReadFailedOrLimitExceeded,
+                        ),
+                        storage,
+                    )
+                    .map_err(context::context_error)?;
                 Vec::new()
             }
         };
@@ -259,7 +364,9 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
             && bytes.len() >= 8
             && bytes[..8] == CFB_MAGIC
         {
-            let mut v = Vec::with_capacity(bytes.len() + 4);
+            let mut v = storage
+                .vec(bytes.len() + 4)
+                .map_err(context::context_error)?;
             v.extend_from_slice(&(bytes.len() as u32).to_le_bytes());
             v.extend_from_slice(&bytes);
             v
@@ -275,7 +382,13 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
             )?,
             None => z.write_deflated(&entry.href, &payload)?,
         }
-        zip_bin_entries.insert(entry.href.clone());
+        let href = storage
+            .string(&entry.href)
+            .map_err(context::context_error)?;
+        storage
+            .reserve_set(&mut zip_bin_entries, 1)
+            .map_err(context::context_error)?;
+        zip_bin_entries.insert(href);
     }
 
     // 8-1. [#3546] OOXML 차트 파트 — Chart/chartN.xml 바이트 원형 방출.
@@ -297,38 +410,59 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
             })?;
         // [#2550] 차트 파트도 같은 상한 — bin_data_content 를 공유하므로 폭탄 표면이다.
         // 상한 초과·로드 실패는 위 BinData 엔트리와 같은 빈 파트 placeholder 다.
-        let chart_bytes = match data.data.load_limited(MAX_BIN_DATA_BYTES) {
+        let chart_bytes = match storage
+            .bin_data(&data.data, MAX_BIN_DATA_BYTES)
+            .map_err(|error| SerializeError::ZipError(error.to_string()))?
+        {
             Some(bytes) => bytes,
             None => {
-                chart_losses.push(ContentLoss::binary_content_emptied(
-                    entry.bin_data_id,
-                    entry.href.clone(),
-                    ContentLossReason::ResourceReadFailedOrLimitExceeded,
-                ));
+                storage
+                    .push(
+                        &mut chart_losses,
+                        ContentLoss::binary_content_emptied(
+                            entry.bin_data_id,
+                            storage
+                                .string(&entry.href)
+                                .map_err(context::context_error)?,
+                            ContentLossReason::ResourceReadFailedOrLimitExceeded,
+                        ),
+                    )
+                    .map_err(context::context_error)?;
                 Vec::new()
             }
         };
         z.write_deflated(&entry.href, &chart_bytes)?;
     }
     for loss in chart_losses {
-        ctx.content_loss.record(loss);
+        ctx.content_loss
+            .record_with_storage(loss, storage)
+            .map_err(context::context_error)?;
     }
 
     // 9. Contents/content.hpf — 항상 동적 경로 + BinData 매니페스트 엔트리
-    let content_bin_entries: Vec<ContentBinDataEntry> = bin_entries
-        .iter()
-        .map(|e| ContentBinDataEntry {
-            id: e.manifest_id.clone(),
-            href: e.href.clone(),
-            media_type: e.media_type.clone(),
-            is_embedded: e.is_embedded,
-        })
-        .collect();
-    let content_hpf = content::write_content_hpf(
+    let mut content_bin_entries = storage
+        .vec(bin_entries.len())
+        .map_err(context::context_error)?;
+    for entry in &bin_entries {
+        content_bin_entries.push(ContentBinDataEntry {
+            id: storage
+                .string(&entry.manifest_id)
+                .map_err(context::context_error)?,
+            href: storage
+                .string(&entry.href)
+                .map_err(context::context_error)?,
+            media_type: storage
+                .string(&entry.media_type)
+                .map_err(context::context_error)?,
+            is_embedded: entry.is_embedded,
+        });
+    }
+    let content_hpf = content::write_content_hpf_with_scripts(
         &section_hrefs,
         &content_bin_entries,
         &master_items,
         doc.hwpx_aux_entry("Contents/content.hpf"),
+        &converted_script_items,
     )?;
     z.write_deflated("Contents/content.hpf", &content_hpf)?;
 
@@ -363,17 +497,17 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     }
 
     // 참조 정합성 단언 (Stage 1+)
-    ctx.assert_all_refs_resolved()?;
+    ctx.try_assert_all_refs_resolved(storage)?;
 
     // 3-way BinData 단언 (Stage 4):
     //   - ctx.bin_data_map 의 manifest_id/href 집합
     //   - content.hpf opf:item (위에서 content_bin_entries 로 생성됨, 집합 동일)
     //   - ZIP entry (위에서 zip_bin_entries 로 기록됨)
     // 세 집합이 동일해야 한컴이 바인딩 오류 없이 그림을 표시함.
-    assert_bin_data_3way(&bin_entries, &zip_bin_entries)?;
+    assert_bin_data_3way(&bin_entries, &zip_bin_entries, storage)?;
 
-    let bytes = z.finish()?;
-    Ok(SerializedDocument::new(bytes, ctx.content_loss))
+    let writer = z.finish_writer()?;
+    Ok((writer, ctx.content_loss))
 }
 
 /// Document IR을 한컴 ODF AES-256-CBC 비밀번호 보호 HWPX로 직렬화한다.
@@ -445,22 +579,43 @@ fn write_container_rdf(section_hrefs: &[String]) -> String {
 /// 3-way BinData 동기화 단언: `ctx.bin_data_entries()`, content.hpf manifest,
 /// ZIP entry 의 href 집합이 모두 일치하는지 확인.
 /// 외부 참조(isEmbeded=0) 항목은 ZIP 엔트리가 없는 것이 정상이므로 제외한다 (#1891).
-fn assert_bin_data_3way(
+fn assert_bin_data_3way<S: crate::storage::Storage>(
     bin_entries: &[context::BinDataEntry],
     zip_entries: &HashSet<String>,
-) -> Result<(), SerializeError> {
-    let ctx_hrefs: HashSet<String> = bin_entries
-        .iter()
-        .filter(|e| e.is_embedded)
-        .map(|e| e.href.clone())
-        .collect();
-    if ctx_hrefs != *zip_entries {
-        let missing_zip: Vec<_> = ctx_hrefs.difference(zip_entries).cloned().collect();
-        let orphan_zip: Vec<_> = zip_entries.difference(&ctx_hrefs).cloned().collect();
-        return Err(SerializeError::XmlError(format!(
-            "3-way BinData 불일치: ctx(href) vs zip_entries — ctx에만 있음: {:?}, zip에만 있음: {:?}",
-            missing_zip, orphan_zip
-        )));
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let mut ctx_hrefs = HashSet::new();
+    for entry in bin_entries.iter().filter(|entry| entry.is_embedded) {
+        if !ctx_hrefs.contains(entry.href.as_str()) {
+            storage
+                .reserve_set(&mut ctx_hrefs, 1)
+                .map_err(context::context_error)?;
+            ctx_hrefs.insert(entry.href.as_str());
+        }
+    }
+    if ctx_hrefs.len() != zip_entries.len()
+        || ctx_hrefs.iter().any(|href| !zip_entries.contains(*href))
+    {
+        let missing_zip = storage
+            .collect(
+                ctx_hrefs
+                    .iter()
+                    .copied()
+                    .filter(|href| !zip_entries.contains(*href)),
+            )
+            .map_err(context::context_error)?;
+        let orphan_zip = storage
+            .collect(
+                zip_entries
+                    .iter()
+                    .map(String::as_str)
+                    .filter(|href| !ctx_hrefs.contains(*href)),
+            )
+            .map_err(context::context_error)?;
+        return Err(SerializeError::XmlError(storage.display(&format_args!("3-way BinData 불일치: ctx(href) vs zip_entries — ctx에만 있음: {:?}, zip에만 있음: {:?}", missing_zip, orphan_zip)).map_err(context::context_error)?));
     }
     Ok(())
 }

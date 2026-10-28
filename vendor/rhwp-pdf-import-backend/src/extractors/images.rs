@@ -114,6 +114,61 @@ impl PdfImage {
         }
     }
 
+    fn convert_to_srgb_with_budget(
+        &mut self,
+        budget: &crate::import_limits::ImportBudget,
+    ) -> Result<()> {
+        let Some(transform) = self.build_icc_transform().filter(|t| t.has_cmm()) else {
+            budget.check()?;
+            return Ok(());
+        };
+        budget.check()?;
+        let (pixels, format) = match &self.data {
+            ImageData::Raw {
+                pixels,
+                format: PixelFormat::RGBA,
+            } if self.bits_per_component == 8 => {
+                let source_channels = transform.source_n_components() as usize;
+                if !matches!(source_channels, 1 | 3) {
+                    return Err(Error::Image("ICC RGBA source components".into()));
+                }
+                let mut rgba = sample_buffer(pixels.len(), Some(budget))?;
+                for pixel in pixels.chunks_exact(4) {
+                    let rgb = transform
+                        .convert_pixel(&pixel[..source_channels])
+                        .ok_or_else(|| Error::Image("ICC alpha conversion".into()))?;
+                    rgba.extend_from_slice(&rgb);
+                    rgba.push(pixel[3]);
+                }
+                (rgba, PixelFormat::RGBA)
+            },
+            ImageData::Raw { pixels, format } if self.bits_per_component == 8 => (
+                self.raw_rgb_with_budget(pixels, *format, budget)?
+                    .into_raw(),
+                PixelFormat::RGB,
+            ),
+            ImageData::Jpeg(_) => {
+                let rgb = Self::into_rgb_with_budget(
+                    self.decode_jpeg_with_budget(budget)?,
+                    Some(budget),
+                )?;
+                let rgb = if transform.source_n_components() == 4 {
+                    rgb
+                } else {
+                    self.raw_rgb_with_budget(rgb.as_raw(), PixelFormat::RGB, budget)?
+                };
+                (rgb.into_raw(), PixelFormat::RGB)
+            },
+            _ => return Err(Error::Unsupported("ICC source sample depth".into())),
+        };
+        budget.check()?;
+        self.data = ImageData::Raw { pixels, format };
+        self.color_space = ColorSpace::DeviceRGB;
+        self.icc_profile = None;
+        self.samples_are_raw = false;
+        Ok(())
+    }
+
     fn apply_opacity(
         &mut self,
         opacity: f32,
@@ -492,10 +547,10 @@ impl PdfImage {
     /// matching `Transform::convert_{cmyk,rgb,gray}_*` method based on
     /// the source pixel format. Used by the `decode_cmyk_jpeg_to_rgb_…`,
     /// `cmyk_to_rgb_with_transform`, and `save_raw_as_*` paths.
-    fn build_icc_transform(&self) -> Option<crate::color::Transform> {
+    fn build_icc_transform(&self) -> Option<std::sync::Arc<crate::color::Transform>> {
         self.icc_profile
             .as_ref()
-            .map(|p| crate::color::Transform::new_srgb_target(p.clone(), self.rendering_intent))
+            .map(|p| crate::color::IccProfile::cached_transform(p, self.rendering_intent))
     }
 
     /// Save the image as PNG format.
@@ -504,7 +559,8 @@ impl PdfImage {
             ImageData::Jpeg(jpeg_data) => {
                 if self.color_space.components() == 4 {
                     let transform = self.build_icc_transform();
-                    let rgb = decode_cmyk_jpeg_to_rgb_with_profile(jpeg_data, transform.as_ref())?;
+                    let rgb =
+                        decode_cmyk_jpeg_to_rgb_with_profile(jpeg_data, transform.as_deref())?;
                     let buf = image::ImageBuffer::<image::Rgb<u8>, _>::from_raw(
                         self.width,
                         self.height,
@@ -525,7 +581,14 @@ impl PdfImage {
                 // wide-gamut (Adobe RGB, ProPhoto, …) or a calibrated
                 // grayscale other than sRGB gamma.
                 let transform = self.build_icc_transform();
-                save_raw_as_png(pixels, self.width, self.height, *format, transform.as_ref(), path)
+                save_raw_as_png(
+                    pixels,
+                    self.width,
+                    self.height,
+                    *format,
+                    transform.as_deref(),
+                    path,
+                )
             },
         }
     }
@@ -546,7 +609,8 @@ impl PdfImage {
             ImageData::Jpeg(jpeg_data) => {
                 if self.color_space.components() == 4 {
                     let transform = self.build_icc_transform();
-                    let rgb = decode_cmyk_jpeg_to_rgb_with_profile(jpeg_data, transform.as_ref())?;
+                    let rgb =
+                        decode_cmyk_jpeg_to_rgb_with_profile(jpeg_data, transform.as_deref())?;
                     let buf = image::ImageBuffer::<image::Rgb<u8>, _>::from_raw(
                         self.width,
                         self.height,
@@ -561,7 +625,14 @@ impl PdfImage {
             },
             ImageData::Raw { pixels, format } => {
                 let transform = self.build_icc_transform();
-                save_raw_as_jpeg(pixels, self.width, self.height, *format, transform.as_ref(), path)
+                save_raw_as_jpeg(
+                    pixels,
+                    self.width,
+                    self.height,
+                    *format,
+                    transform.as_deref(),
+                    path,
+                )
             },
         }
     }
@@ -612,7 +683,8 @@ impl PdfImage {
         let ImageData::Raw { pixels, format } = &self.data else {
             return None;
         };
-        if self.bits_per_component != 8 || self.ccitt_params.is_some() {
+        if self.bits_per_component != 8 || self.ccitt_params.is_some() || self.icc_profile.is_some()
+        {
             return None;
         }
         let channels = match format {
@@ -665,6 +737,63 @@ impl PdfImage {
             .map_err(|e| Error::Encode(format!("Failed to encode PNG: {}", e)))
         };
 
+        let transform = self.build_icc_transform();
+        let mut write_converted = |pixels: &[u8], channels: usize| -> Result<()> {
+            if let Some(transform) = transform.as_ref().filter(|t| t.has_cmm()) {
+                let source_channels = if channels == 4 && transform.source_n_components() != 4 {
+                    transform.source_n_components() as usize
+                } else {
+                    channels
+                };
+                if source_channels != transform.source_n_components() as usize {
+                    return Err(Error::Image("ICC components differ from stored samples".into()));
+                }
+                let alpha = channels == 4 && source_channels != 4;
+                let output_channels = if alpha { 4 } else { 3 };
+                let count = pixels
+                    .len()
+                    .checked_div(channels)
+                    .and_then(|n| n.checked_mul(output_channels))
+                    .ok_or_else(|| Error::Image("ICC output geometry".into()))?;
+                let mut converted = sample_buffer(count, budget)?;
+                for row in pixels.chunks(self.width as usize * channels) {
+                    if let Some(budget) = budget {
+                        budget.check()?;
+                    }
+                    for pixel in row.chunks_exact(channels) {
+                        let rgb = transform
+                            .convert_pixel(&pixel[..source_channels])
+                            .ok_or_else(|| Error::Image("ICC sample conversion".into()))?;
+                        converted.extend_from_slice(&rgb);
+                        if alpha {
+                            converted.push(pixel[3]);
+                        }
+                    }
+                }
+                if let Some(budget) = budget {
+                    budget.check()?;
+                }
+                write_pixels(
+                    &converted,
+                    if alpha {
+                        image::ColorType::Rgba8
+                    } else {
+                        image::ColorType::Rgb8
+                    }
+                    .into(),
+                )
+            } else {
+                write_pixels(
+                    pixels,
+                    match channels {
+                        1 => image::ColorType::L8,
+                        4 => image::ColorType::Rgba8,
+                        _ => image::ColorType::Rgb8,
+                    }
+                    .into(),
+                )
+            }
+        };
         if let Some((pixels, channels)) = self.borrowed_png_samples() {
             let color = match channels {
                 1 => image::ColorType::L8,
@@ -672,7 +801,7 @@ impl PdfImage {
                 4 => image::ColorType::Rgba8,
                 _ => unreachable!("validated borrowed PNG samples"),
             };
-            return write_pixels(pixels, color.into());
+            return write_converted(pixels, color.channel_count() as usize);
         }
         match &self.data {
             ImageData::Raw { pixels, format } => {
@@ -692,7 +821,7 @@ impl PdfImage {
                     if expected_gray.checked_mul(4) != Some(pixels.len()) {
                         return Err(Error::Image("invalid RGBA image length".into()));
                     }
-                    write_pixels(pixels, image::ColorType::Rgba8.into())?;
+                    write_converted(pixels, 4)?;
                 } else if ccitt_budget.is_none()
                     && *format == PixelFormat::Grayscale
                     && matches!(self.color_space, ColorSpace::DeviceGray | ColorSpace::CalGray)
@@ -701,12 +830,17 @@ impl PdfImage {
                     // image 0.25 changed `write_image` to take
                     // `ExtendedColorType` — `ColorType::*` now converts
                     // through `Into`. API-only change, same semantics.
-                    write_pixels(pixels, image::ColorType::L8.into())?;
+                    write_converted(pixels, 1)?;
                 } else if ccitt_budget.is_none()
                     && *format == PixelFormat::RGB
                     && pixels.len() == expected_rgb
                 {
-                    write_pixels(pixels, image::ColorType::Rgb8.into())?;
+                    write_converted(pixels, 3)?;
+                } else if *format == PixelFormat::CMYK
+                    && self.bits_per_component == 8
+                    && transform.as_ref().is_some_and(|t| t.has_cmm())
+                {
+                    write_converted(pixels, 4)?;
                 } else {
                     let dynamic_image = if let Some(budget) = ccitt_budget {
                         self.decode_ccitt_with_budget(budget)?
@@ -738,7 +872,7 @@ impl PdfImage {
                             expected_rgb
                         )));
                     }
-                    write_pixels(rgb.as_raw(), image::ColorType::Rgb8.into())?;
+                    write_converted(rgb.as_raw(), 3)?;
                 }
             },
             ImageData::Jpeg(_) => {
@@ -748,7 +882,11 @@ impl PdfImage {
                     self.to_dynamic_image()?
                 };
                 let rgb = Self::into_rgb_with_budget(dynamic_image, budget)?;
-                write_pixels(rgb.as_raw(), image::ColorType::Rgb8.into())?;
+                if self.color_space.components() == 4 {
+                    write_pixels(rgb.as_raw(), image::ColorType::Rgb8.into())?;
+                } else {
+                    write_converted(rgb.as_raw(), 3)?;
+                }
             },
         }
 
@@ -793,6 +931,18 @@ impl PdfImage {
                     rgb.extend_from_slice(&value);
                 }
             },
+        }
+        if format != PixelFormat::CMYK {
+            if let Some(transform) = self.build_icc_transform().filter(|t| t.has_cmm()) {
+                let source_channels = transform.source_n_components() as usize;
+                for pixel in rgb.chunks_exact_mut(3) {
+                    let converted = transform
+                        .convert_pixel(&pixel[..source_channels.min(3)])
+                        .ok_or_else(|| Error::Image("ICC raw components".into()))?;
+                    pixel.copy_from_slice(&converted);
+                }
+                budget.check()?;
+            }
         }
         image::RgbImage::from_raw(self.width, self.height, rgb)
             .ok_or_else(|| Error::Image("invalid RGB image geometry".into()))
@@ -952,7 +1102,8 @@ impl PdfImage {
                     // not honor the APP14 inversion and yields near-black output
                     // (see decode_cmyk_jpeg_to_rgb_with_profile).
                     let transform = self.build_icc_transform();
-                    let rgb = decode_cmyk_jpeg_to_rgb_with_profile(jpeg_data, transform.as_ref())?;
+                    let rgb =
+                        decode_cmyk_jpeg_to_rgb_with_profile(jpeg_data, transform.as_deref())?;
                     return image::ImageBuffer::<image::Rgb<u8>, Vec<u8>>::from_raw(
                         self.width,
                         self.height,
@@ -1056,7 +1207,7 @@ impl PdfImage {
                                 },
                                 PixelFormat::CMYK => cmyk_to_rgb_with_transform(
                                     pixels,
-                                    self.build_icc_transform().as_ref(),
+                                    self.build_icc_transform().as_deref(),
                                 ),
                                 PixelFormat::RGB => pixels.clone(),
                                 PixelFormat::RGBA => unreachable!("handled above"),
@@ -1637,6 +1788,14 @@ pub fn extract_image_from_xobject_at(
         resolved_color_space
     };
 
+    // Preserve identity before the component-count resolver replaces the
+    // reference with a Stream. The request cache must see the original key.
+    let source_icc_reference = resolved_color_space
+        .as_array()
+        .filter(|a| a.first().and_then(Object::as_name) == Some("ICCBased"))
+        .and_then(|a| a.get(1))
+        .and_then(Object::as_reference);
+
     // For array-form color spaces (e.g. [/ICCBased <ref>], [/Indexed <base> <hi> <palette_ref>])
     // the second element is commonly an indirect reference to the ICC profile
     // stream / palette. `parse_color_space` only inspects the immediate
@@ -1693,7 +1852,10 @@ pub fn extract_image_from_xobject_at(
     // profile if one exists — the standard PDF/X assumption per
     // ISO 32000-1:2008 §14.11.5.
     let direct_icc_profile = if matches!(color_space, ColorSpace::ICCBased(_)) {
-        resolve_icc_profile_from_obj(doc, &resolved_color_space)
+        match (doc, source_icc_reference) {
+            (Some(doc), Some(reference)) => doc.import_icc_profile(reference),
+            _ => resolve_icc_profile_from_obj(doc, &resolved_color_space),
+        }
     } else if color_space == ColorSpace::DeviceCMYK {
         doc.and_then(|d| d.output_intent_cmyk_profile())
     } else {
@@ -1753,16 +1915,26 @@ pub fn extract_image_from_xobject_at(
         let indexed_transform = indexed_resolution.as_ref().and_then(|ir| {
             ir.base_profile
                 .clone()
-                .map(|p| crate::color::Transform::new_srgb_target(p, rendering_intent))
+                .map(|p| crate::color::IccProfile::cached_transform(&p, rendering_intent))
         });
         let indexed = indexed_resolution
             .as_ref()
-            .map(|ir| (ir, indexed_transform.as_ref()));
+            .map(|ir| (ir, indexed_transform.as_deref()));
         if indexed.is_some() {
             samples_are_raw = false;
         }
-        let (data, dec_w, dec_h) =
-            decode_jpx_image(xobject, obj_ref, doc, &color_space, indexed, target)?;
+        let direct_transform = direct_icc_profile
+            .as_ref()
+            .map(|p| crate::color::IccProfile::cached_transform(p, rendering_intent));
+        let (data, dec_w, dec_h) = decode_jpx_image(
+            xobject,
+            obj_ref,
+            doc,
+            &color_space,
+            indexed,
+            direct_transform.as_deref(),
+            target,
+        )?;
         if bits_per_component != 8 {
             samples_are_raw = false;
         }
@@ -1817,7 +1989,7 @@ pub fn extract_image_from_xobject_at(
             let transform = ir
                 .base_profile
                 .clone()
-                .map(|p| crate::color::Transform::new_srgb_target(p, rendering_intent));
+                .map(|p| crate::color::IccProfile::cached_transform(&p, rendering_intent));
             let indexed_decode = if budget.is_some() {
                 limited_indexed_decode(doc, dict.get("Decode"))?
             } else {
@@ -1831,9 +2003,10 @@ pub fn extract_image_from_xobject_at(
                 height,
                 bits_per_component,
                 IndexedDecodeContext {
-                    transform: transform.as_ref(),
+                    transform: transform.as_deref(),
                     budget,
                     decode: indexed_decode,
+                    preblended_opacity: None,
                 },
             )?;
             // Palette lookup replaces index samples with RGB, so the buffer
@@ -2058,10 +2231,17 @@ pub fn extract_image_from_xobject_at(
     // something to work with for palette-backed CMYK/Lab images too.
     if let Some(p) = direct_icc_profile {
         image.set_icc_profile(p);
-    } else if let Some(ir) = indexed_resolution.as_ref() {
-        if let Some(p) = ir.base_profile.clone() {
-            image.set_icc_profile(p);
-        }
+    }
+    if is_jpx
+        && matches!(
+            &image.data,
+            ImageData::Raw {
+                format: PixelFormat::RGBA,
+                ..
+            }
+        )
+    {
+        image.icc_profile = None; // JPX embedded alpha is converted before RGBA expansion.
     }
     image.set_rendering_intent(rendering_intent);
 
@@ -2233,6 +2413,10 @@ pub(crate) fn resolve_icc_profile_from_obj(
         return None;
     }
 
+    if let (Object::Reference(reference), Some(doc)) = (&arr[1], doc) {
+        return doc.import_icc_profile(*reference);
+    }
+
     // Second element should be a stream (already resolved by the caller
     // in the common path) or a reference we still need to dereference.
     let profile_obj = match (&arr[1], doc) {
@@ -2253,8 +2437,15 @@ pub(crate) fn resolve_icc_profile_from_obj(
         .and_then(|obj| obj.as_integer())
         .filter(|n| matches!(*n, 1 | 3 | 4))? as u8;
 
-    let bytes = profile_obj.decode_stream_data().ok()?;
-    let profile = crate::color::IccProfile::parse(bytes, n)?;
+    let bytes = match doc {
+        Some(doc) if doc.import_budget().is_some() => {
+            doc.decode_stream_with_encryption(&profile_obj, crate::object::ObjectRef::new(0, 0))
+        },
+        _ => profile_obj.decode_stream_data(),
+    }
+    .ok()?;
+    let mut profile = crate::color::IccProfile::parse(bytes, n)?;
+    profile.bind_budget(doc.and_then(|d| d.import_budget()));
     Some(std::sync::Arc::new(profile))
 }
 
@@ -2264,6 +2455,9 @@ pub(crate) fn resolve_icc_profile_from_obj(
 pub(crate) struct IndexedResolution {
     pub base_fmt: PixelFormat,
     pub palette: Vec<u8>,
+    /// False when palette samples were already colour-converted (currently Lab).
+    /// Such samples cannot be unblended in their original component ranges.
+    pub retains_source_samples: bool,
     /// `None` for device-dependent bases or bases we already folded
     /// colourimetrically (e.g. Lab, whose palette is rewritten to RGB
     /// before being returned).
@@ -2292,6 +2486,7 @@ fn resolve_indexed_palette(
     // [/ICCBased <stream_ref>], resolve inner references so
     // parse_color_space can read /N from the ICC stream dict.
     let outer = resolve_image_object(doc, &arr[1])?;
+    let source_profile = resolve_icc_profile_from_obj(doc, &outer);
     let base_obj = if let Some(d) = doc {
         if let Object::Array(inner) = &*outer {
             let mut inner = inner.clone();
@@ -2319,7 +2514,7 @@ fn resolve_indexed_palette(
     // `None` — the decoder then falls back to §10.3.5 CMYK→RGB math as
     // if no profile were present.
     let base_profile = if matches!(base_cs, ColorSpace::ICCBased(_)) {
-        resolve_icc_profile_from_obj(doc, &base_obj)
+        source_profile
     } else {
         None
     };
@@ -2388,6 +2583,7 @@ fn resolve_indexed_palette(
             base_fmt: PixelFormat::RGB,
             palette: rgb_palette,
             base_profile: None,
+            retains_source_samples: false,
         }));
     }
 
@@ -2395,6 +2591,7 @@ fn resolve_indexed_palette(
         base_fmt,
         palette: palette_bytes,
         base_profile,
+        retains_source_samples: true,
     }))
 }
 
@@ -2436,6 +2633,7 @@ fn expand_indexed_to_rgb(
 /// through an ICC transform when one is supplied. Used during image
 /// extraction when the base colour space is `/ICCBased` with N=4.
 #[cfg(any(test, feature = "jpeg2000"))]
+#[cfg(test)]
 fn expand_indexed_to_rgb_with_transform(
     raw: &[u8],
     palette: &[u8],
@@ -2456,6 +2654,7 @@ fn expand_indexed_to_rgb_with_transform(
             transform,
             budget: None,
             decode: None,
+            preblended_opacity: None,
         },
     )
 }
@@ -2464,6 +2663,9 @@ struct IndexedDecodeContext<'a> {
     transform: Option<&'a crate::color::Transform>,
     budget: Option<&'a crate::import_limits::ImportBudget>,
     decode: Option<(f64, f64)>,
+    /// Interleaved JPX samples and stride. Opacity is the last component.
+    /// Indexed preblending applies to palette colours, before colour conversion.
+    preblended_opacity: Option<(&'a [u8], usize)>,
 }
 
 fn expand_indexed_to_rgb_with_context(
@@ -2485,6 +2687,21 @@ fn expand_indexed_to_rgb_with_context(
     let w = width as usize;
     let h = height as usize;
     let n = base_fmt.bytes_per_pixel();
+    if let Some((samples, stride)) = context.preblended_opacity {
+        let required = w
+            .checked_mul(h)
+            .and_then(|pixels| pixels.checked_mul(stride));
+        if stride < 2 || required.is_none_or(|length| samples.len() < length) {
+            return Err(Error::Image("Indexed opacity sample extent".into()));
+        }
+        if let Some(budget) = context.budget {
+            budget.charge_codec_work(
+                w.checked_mul(h)
+                    .and_then(|pixels| pixels.checked_mul(n))
+                    .ok_or_else(|| budget.reject("Indexed preblend work"))?,
+            )?;
+        }
+    }
 
     // ISO 32000-2 §8.9.5.1 mandates bpc ∈ {1, 2, 4, 8} for Indexed color
     // spaces. Anything else (0, 3, 5, 6, 7, 9, 12, 16, …) used to be
@@ -2630,22 +2847,42 @@ fn expand_indexed_to_rgb_with_context(
                 out.extend_from_slice(&[0, 0, 0]);
                 continue;
             }
+            let mut straight = [0; 4];
+            let colour = if let Some((samples, stride)) = context.preblended_opacity {
+                let alpha = samples[(y * w + x) * stride + stride - 1];
+                for (output, value) in straight[..n].iter_mut().zip(&palette[off..off + n]) {
+                    *output = unassociate_zero_matte(*value, alpha);
+                }
+                &straight[..n]
+            } else {
+                &palette[off..off + n]
+            };
+            if let Some(transform) = transform {
+                let converted = transform.convert_pixel(colour);
+                if let Some(budget) = context.budget {
+                    budget.check()?;
+                }
+                if let Some(rgb) = converted {
+                    out.extend_from_slice(&rgb);
+                    continue;
+                }
+            }
             match base_fmt {
                 PixelFormat::RGBA => {
                     return Err(Error::Image("Indexed base cannot contain alpha".into()));
                 },
-                PixelFormat::RGB => out.extend_from_slice(&palette[off..off + 3]),
+                PixelFormat::RGB => out.extend_from_slice(&colour[..3]),
                 PixelFormat::Grayscale => {
-                    let g = palette[off];
+                    let g = colour[0];
                     out.push(g);
                     out.push(g);
                     out.push(g);
                 },
                 PixelFormat::CMYK => {
-                    let c = palette[off];
-                    let m = palette[off + 1];
-                    let y_c = palette[off + 2];
-                    let k = palette[off + 3];
+                    let c = colour[0];
+                    let m = colour[1];
+                    let y_c = colour[2];
+                    let k = colour[3];
                     let [r, g, b] = if let Some(t) = transform {
                         t.convert_cmyk_pixel(c, m, y_c, k)
                     } else {
@@ -3370,6 +3607,14 @@ fn decode_jbig2_image(
 /// `JpxDecoder` is a pass-through, so `decode_stream_*` yields the raw JPEG 2000
 /// codestream, which hayro-jpeg2000 (`decoders::jpx`) decodes to 8-bit
 /// component-interleaved samples.
+fn unassociate_zero_matte(value: u8, alpha: u8) -> u8 {
+    if alpha == 0 {
+        0
+    } else {
+        ((u32::from(value) * 255 + u32::from(alpha) / 2) / u32::from(alpha)).min(255) as u8
+    }
+}
+
 #[cfg(feature = "jpeg2000")]
 fn decode_jpx_image(
     xobject: &crate::object::Object,
@@ -3377,6 +3622,7 @@ fn decode_jpx_image(
     doc: Option<&crate::document::PdfDocument>,
     color_space: &ColorSpace,
     indexed: Option<(&IndexedResolution, Option<&crate::color::Transform>)>,
+    direct_transform: Option<&crate::color::Transform>,
     target: Option<(u32, u32)>,
 ) -> Result<(ImageData, u32, u32)> {
     crate::codec_resource::decode(doc.and_then(|d| d.import_budget()), || {
@@ -3429,39 +3675,83 @@ fn decode_jpx_image(
         // so the dictionary's table is read at 8 bits per index whatever
         // /BitsPerComponent says the codestream packed them at.
         if let Some((ir, transform)) = indexed {
-            if smask != 0 {
-                return Err(Error::Unsupported("Indexed JPX embedded soft mask".into()));
+            if smask == 2 && !ir.retains_source_samples {
+                return Err(Error::Unsupported(
+                    "preblended JPX Indexed palette requires source-space samples (Lab is unsupported)".into(),
+                ));
             }
-            let img =
-                crate::decoders::jpx::decode_jpx_for_pdf(&codestream, target, false, expected)?;
-            if let Some(budget) = doc.and_then(|d| d.import_budget()) {
-                budget.charge_codec_allocation(
-                    img.samples
-                        .len()
-                        .checked_mul(3)
-                        .ok_or_else(|| budget.reject("JPX palette bytes"))?,
-                )?;
+            let img = crate::decoders::jpx::decode_jpx_for_pdf(
+                &codestream,
+                target,
+                false,
+                expected,
+                Some(1),
+            )?;
+            let components = img.num_components as usize;
+            if components != if smask == 0 { components } else { 2 } {
+                return Err(Error::Image("JPX Indexed mask has no opacity component".into()));
             }
-            let expanded = expand_indexed_to_rgb_with_transform(
-                &img.samples,
+            let mut indices = rhwp_codec_resource::capacity(img.samples.len() / components)
+                .map_err(|_| Error::Image("JPX index allocation".into()))?;
+            for pixel in img.samples.chunks_exact(components) {
+                // ISO 32000-1 11.6.5.3: Indexed preblending affects the colour
+                // table, not the indices. Recover palette components before CMM.
+                indices.push(pixel[0]);
+            }
+            let expanded = expand_indexed_to_rgb_with_context(
+                &indices,
                 &ir.palette,
                 ir.base_fmt,
                 img.width,
                 img.height,
                 8,
-                transform,
+                IndexedDecodeContext {
+                    transform,
+                    budget: doc.and_then(|d| d.import_budget()).map(|b| &**b),
+                    decode: None,
+                    preblended_opacity: (smask == 2).then_some((&img.samples, components)),
+                },
             )?;
+            if smask == 0 {
+                return Ok((
+                    ImageData::Raw {
+                        pixels: expanded,
+                        format: PixelFormat::RGB,
+                    },
+                    img.width,
+                    img.height,
+                ));
+            }
+            let mut rgba = rhwp_codec_resource::capacity(
+                rhwp_codec_resource::product(&[indices.len(), 4])
+                    .map_err(|_| Error::Image("JPX Indexed alpha size".into()))?,
+            )
+            .map_err(|_| Error::Image("JPX Indexed alpha allocation".into()))?;
+            for (rgb, pixel) in expanded
+                .chunks_exact(3)
+                .zip(img.samples.chunks_exact(components))
+            {
+                rgba.extend_from_slice(rgb);
+                rgba.push(pixel[1]);
+            }
             return Ok((
                 ImageData::Raw {
-                    pixels: expanded,
-                    format: PixelFormat::RGB,
+                    pixels: rgba,
+                    format: PixelFormat::RGBA,
                 },
                 img.width,
                 img.height,
             ));
         }
 
-        let img = crate::decoders::jpx::decode_jpx_for_pdf(&codestream, target, true, expected)?;
+        let img = crate::decoders::jpx::decode_jpx_for_pdf(
+            &codestream,
+            target,
+            true,
+            expected,
+            dict.contains_key("ColorSpace")
+                .then_some(color_space.components() as u8),
+        )?;
 
         // A JPX codestream may carry an opacity channel alongside its colour
         // channels — a greyscale image decodes to two components, an RGB one to
@@ -3493,9 +3783,9 @@ fn decode_jpx_image(
         }
 
         if smask != 0 {
-            if decoded != colour_components + 1 || !matches!(colour_components, 1 | 3) {
+            if decoded != colour_components + 1 || !matches!(colour_components, 1 | 3 | 4) {
                 return Err(Error::Unsupported(
-                    "JPX embedded alpha requires Gray+alpha or RGB+alpha".into(),
+                    "JPX embedded alpha requires Gray, RGB or CMYK and alpha".into(),
                 ));
             }
             let count = rhwp_codec_resource::product(&[img.width as usize, img.height as usize, 4])
@@ -3508,17 +3798,22 @@ fn decode_jpx_image(
                 .zip(rgba.chunks_exact_mut(4))
             {
                 let alpha = source[colour_components];
-                for c in 0..3 {
-                    let value = source[if colour_components == 1 { 0 } else { c }];
-                    output[c] = if smask == 2 && alpha != 0 {
-                        ((u32::from(value) * 255 + u32::from(alpha) / 2) / u32::from(alpha))
-                            .min(255) as u8
-                    } else if smask == 2 {
-                        0
+                let mut color = [0; 4];
+                for c in 0..colour_components {
+                    color[c] = if smask == 2 {
+                        unassociate_zero_matte(source[c], alpha)
                     } else {
-                        value
+                        source[c]
                     };
                 }
+                let rgb = direct_transform
+                    .and_then(|t| t.convert_pixel(&color[..colour_components]))
+                    .unwrap_or_else(|| match colour_components {
+                        1 => [color[0]; 3],
+                        3 => [color[0], color[1], color[2]],
+                        _ => cmyk_pixel_to_rgb(color[0], color[1], color[2], color[3]),
+                    });
+                output[..3].copy_from_slice(&rgb);
                 output[3] = alpha;
             }
             return Ok((
@@ -3587,6 +3882,7 @@ fn decode_jpx_image(
     _doc: Option<&crate::document::PdfDocument>,
     _color_space: &ColorSpace,
     _indexed: Option<(&IndexedResolution, Option<&crate::color::Transform>)>,
+    _direct_transform: Option<&crate::color::Transform>,
     _target: Option<(u32, u32)>,
 ) -> Result<(ImageData, u32, u32)> {
     Err(Error::UnsupportedFilter(
@@ -4545,6 +4841,9 @@ impl<'doc> PdfImageHandle<'doc> {
             return Err(Error::Unsupported(
                 "decoded image dimensions differ from declaration".into(),
             ));
+        }
+        if let Some(budget) = self.doc.import_budget() {
+            image.convert_to_srgb_with_budget(budget)?;
         }
         let mask_interpolation = mask
             .as_ref()

@@ -27,6 +27,8 @@ use crate::serializer::SerializeError;
 pub struct IdPool<T: Copy + Eq + std::hash::Hash> {
     registered: HashSet<T>,
     referenced: HashSet<T>,
+    reservation: Option<std::sync::Arc<dyn crate::storage::Reservation>>,
+    storage_failure: Option<String>,
 }
 
 impl<T: Copy + Eq + std::hash::Hash> IdPool<T> {
@@ -34,17 +36,29 @@ impl<T: Copy + Eq + std::hash::Hash> IdPool<T> {
         Self {
             registered: HashSet::new(),
             referenced: HashSet::new(),
+            reservation: None,
+            storage_failure: None,
         }
     }
 
     /// header/DocInfo에서 정의되는 ID를 등록.
     pub fn register(&mut self, id: T) {
-        self.registered.insert(id);
+        if self.storage_failure.is_some() {
+            return;
+        }
+        if let Err(error) = insert_id(&self.reservation, &mut self.registered, id) {
+            self.storage_failure = Some(error);
+        }
     }
 
     /// section/기타 writer가 ID를 참조할 때 호출.
     pub fn reference(&mut self, id: T) {
-        self.referenced.insert(id);
+        if self.storage_failure.is_some() {
+            return;
+        }
+        if let Err(error) = insert_id(&self.reservation, &mut self.referenced, id) {
+            self.storage_failure = Some(error);
+        }
     }
 
     pub fn is_registered(&self, id: &T) -> bool {
@@ -207,7 +221,25 @@ impl SerializeContext {
     /// Stage 0에서는 최소 등록(header.xml 리소스만)만 수행한다. Stage 1~4에서
     /// 각 writer가 추가되면서 `reference()` 호출과 스캔 범위가 확장된다.
     pub fn collect_from_document(doc: &Document) -> Self {
+        Self::try_collect_from_document(doc, &crate::storage::Unbounded, None)
+            .expect("unbounded HWPX context")
+    }
+    pub(crate) fn try_collect_from_document<S: crate::storage::Storage>(
+        doc: &Document,
+        storage: &S,
+        reservation: Option<std::sync::Arc<dyn crate::storage::Reservation>>,
+    ) -> Result<Self, SerializeError>
+    where
+        S::Error: std::fmt::Display,
+    {
         let mut ctx = Self::default();
+        ctx.char_shape_ids.reservation = reservation.clone();
+        ctx.para_shape_ids.reservation = reservation.clone();
+        ctx.border_fill_ids.reservation = reservation.clone();
+        ctx.tab_pr_ids.reservation = reservation.clone();
+        ctx.numbering_ids.reservation = reservation.clone();
+        ctx.style_ids.reservation = reservation;
+
         ctx.line_segs_on_paragraph_axis = doc
             .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
             == Some(crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS);
@@ -229,9 +261,11 @@ impl SerializeContext {
         // 목록은 배열 인덱스가 곧 HWPX `id` 속성이 된다.
         for (idx, _) in doc.doc_info.char_shapes.iter().enumerate() {
             ctx.char_shape_ids.register(idx as u32);
+            ctx.check_storage()?;
         }
         for (idx, _) in doc.doc_info.para_shapes.iter().enumerate() {
             ctx.para_shape_ids.register(idx as u16);
+            ctx.check_storage()?;
         }
         // [#1384] borderFill id 는 1-based 방출(header.rs write_border_fill: idx+1)
         // 이고 borderFillIDRef 도 1-based 참조이므로, 등록도 1-based 로 맞춘다.
@@ -240,9 +274,11 @@ impl SerializeContext {
         // 인라인 등록(표/셀, 아래)은 IR 값(1-based) 그대로라 본래 정합 — 이로써 통일.
         for (idx, _) in doc.doc_info.border_fills.iter().enumerate() {
             ctx.border_fill_ids.register((idx + 1) as u16);
+            ctx.check_storage()?;
         }
         for (idx, _) in doc.doc_info.tab_defs.iter().enumerate() {
             ctx.tab_pr_ids.register(idx as u16);
+            ctx.check_storage()?;
         }
         // [#1409] numbering id 는 1-based 방출(header.rs write_numbering: id+1)이고
         // 실물도 1-based 이므로 등록도 1-based 로 맞춘다 (#1384 borderFill 동형).
@@ -250,9 +286,11 @@ impl SerializeContext {
         // HWP5 변환·미래 검사 활성화 대비.
         for (idx, _) in doc.doc_info.numberings.iter().enumerate() {
             ctx.numbering_ids.register((idx + 1) as u16);
+            ctx.check_storage()?;
         }
         for (idx, _) in doc.doc_info.styles.iter().enumerate() {
             ctx.style_ids.register(idx as u16);
+            ctx.check_storage()?;
         }
         // [#1933 보강] style 0 은 `effective_style_id`/`write_styles` 계약상 "항상
         // 등록됨" 취급이다 — `<hh:styles>` 블록 자체가 없는(styles 비어있는) 정상
@@ -262,6 +300,7 @@ impl SerializeContext {
         // round-trip이 `assert_all_refs_resolved` 에서 "미등록 styleIDRef: [0]" 로
         // 하드 실패했다(예: styles 블록이 없는 샘플의 HWPX 자기 왕복).
         ctx.style_ids.register(0);
+        ctx.check_storage()?;
 
         // 인라인 컨트롤(표/그림 등)의 borderFillIDRef를 사전 등록하여
         // assert_all_refs_resolved 검증 시 누락 방지. 중첩 표(셀 안의 표)와
@@ -269,7 +308,7 @@ impl SerializeContext {
         // `register_border_fills_in_paragraphs` 참조, `table_extract::collect_from_paragraph`
         // 와 같은 위상의 재귀).
         for sec in &doc.sections {
-            register_border_fills_in_paragraphs(&mut ctx, &sec.paragraphs, 0);
+            register_border_fills_in_paragraphs(&mut ctx, &sec.paragraphs, 0)?;
         }
 
         // BinData: bin_data_content의 storage_id → manifest 엔트리 생성.
@@ -283,10 +322,18 @@ impl SerializeContext {
             // manifest 등록 없이 원형 경로로 별도 방출한다.
             if bd.extension == "ooxml_chart" {
                 if let Some(n) = bd.id.checked_sub(60000).filter(|n| *n >= 1) {
-                    ctx.chart_entries.push(ChartPartEntry {
-                        href: format!("Chart/chart{}.xml", n),
-                        bin_data_id: bd.id,
-                    });
+                    let href = storage
+                        .display(&format_args!("Chart/chart{}.xml", n))
+                        .map_err(context_error)?;
+                    storage
+                        .push(
+                            &mut ctx.chart_entries,
+                            ChartPartEntry {
+                                href,
+                                bin_data_id: bd.id,
+                            },
+                        )
+                        .map_err(context_error)?;
                     continue;
                 }
             }
@@ -294,16 +341,24 @@ impl SerializeContext {
             // 예전엔 `.bin` 기본값을 붙였으나(#1981), 원본이 확장자 없는 BinData
             // (`BinData/image13.` 등, OLE·미상 임베드)를 담은 경우 라운드트립 확장자
             // 멀티셋이 `bin` vs `""` 로 어긋나 PKG_FAIL 이 났다. 원본 형태를 보존한다.
-            let manifest_id = format!("image{}", bd.id);
+            let manifest_id = storage
+                .display(&format_args!("image{}", bd.id))
+                .map_err(context_error)?;
             let ext = bd.extension.as_str();
-            let href = format!("BinData/{}.{}", manifest_id, ext);
+            let href = storage
+                .display(&format_args!("BinData/{}.{}", manifest_id, ext))
+                .map_err(context_error)?;
             let media_type = mime_from_ext(ext);
+            let additional = usize::from(!ctx.bin_data_map.contains_key(&bd.id));
+            storage
+                .reserve_map(&mut ctx.bin_data_map, additional)
+                .map_err(context_error)?;
             ctx.bin_data_map.insert(
                 bd.id,
                 BinDataEntry {
                     manifest_id,
                     href,
-                    media_type: media_type.to_string(),
+                    media_type: storage.string(media_type).map_err(context_error)?,
                     bin_data_id: bd.id,
                     is_embedded: true,
                 },
@@ -331,12 +386,20 @@ impl SerializeContext {
                 continue;
             }
             let ext = bd.extension.as_deref().unwrap_or("");
+            let additional = usize::from(!ctx.bin_data_map.contains_key(&bd.storage_id));
+            storage
+                .reserve_map(&mut ctx.bin_data_map, additional)
+                .map_err(context_error)?;
             ctx.bin_data_map.insert(
                 bd.storage_id,
                 BinDataEntry {
-                    manifest_id: format!("image{}", bd.storage_id),
-                    href: bd.abs_path.clone().unwrap_or_default(),
-                    media_type: mime_from_ext(ext).to_string(),
+                    manifest_id: storage
+                        .display(&format_args!("image{}", bd.storage_id))
+                        .map_err(context_error)?,
+                    href: storage
+                        .string(bd.abs_path.as_deref().unwrap_or_default())
+                        .map_err(context_error)?,
+                    media_type: storage.string(mime_from_ext(ext)).map_err(context_error)?,
                     bin_data_id: bd.storage_id,
                     is_embedded: false,
                 },
@@ -349,6 +412,9 @@ impl SerializeContext {
         for (i, bd) in doc.doc_info.bin_data_list.iter().enumerate() {
             let seq = (i + 1) as u16;
             if bd.storage_id != 0 && ctx.bin_data_map.contains_key(&bd.storage_id) {
+                storage
+                    .reserve_map(&mut ctx.bin_seq_to_storage, 1)
+                    .map_err(context_error)?;
                 ctx.bin_seq_to_storage.insert(seq, bd.storage_id);
             }
         }
@@ -371,33 +437,93 @@ impl SerializeContext {
             }
             let link_id = next_link_id;
             next_link_id += 1;
-            let href = bd
-                .abs_path
-                .clone()
-                .or_else(|| bd.rel_path.clone())
-                .unwrap_or_default();
+            let href = storage
+                .string(
+                    bd.abs_path
+                        .as_deref()
+                        .or(bd.rel_path.as_deref())
+                        .unwrap_or_default(),
+                )
+                .map_err(context_error)?;
             let ext = bd.extension.as_deref().unwrap_or("");
+            let additional = usize::from(!ctx.bin_data_map.contains_key(&link_id));
+            storage
+                .reserve_map(&mut ctx.bin_data_map, additional)
+                .map_err(context_error)?;
             ctx.bin_data_map.insert(
                 link_id,
                 BinDataEntry {
-                    manifest_id: format!("image{}", link_id),
+                    manifest_id: storage
+                        .display(&format_args!("image{}", link_id))
+                        .map_err(context_error)?,
                     href,
-                    media_type: mime_from_ext(ext).to_string(),
+                    media_type: storage.string(mime_from_ext(ext)).map_err(context_error)?,
                     bin_data_id: link_id,
                     is_embedded: false,
                 },
             );
+            storage
+                .reserve_map(&mut ctx.bin_seq_to_storage, 1)
+                .map_err(context_error)?;
             ctx.bin_seq_to_storage.insert(seq, link_id);
         }
 
-        ctx
+        ctx.check_storage()?;
+        Ok(ctx)
     }
 
     /// manifest·content.hpf 출력용 엔트리 목록 (삽입 순서 보존을 위해 `bin_data_id` 정렬).
     pub fn bin_data_entries(&self) -> Vec<BinDataEntry> {
-        let mut v: Vec<_> = self.bin_data_map.values().cloned().collect();
-        v.sort_by_key(|e| e.bin_data_id);
-        v
+        self.try_bin_data_entries(&crate::storage::Unbounded)
+            .expect("unbounded HWPX entries")
+    }
+    pub(crate) fn try_bin_data_entries<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Vec<BinDataEntry>, SerializeError>
+    where
+        S::Error: std::fmt::Display,
+    {
+        self.check_storage()?;
+        let mut entries = storage
+            .vec(self.bin_data_map.len())
+            .map_err(context_error)?;
+        for value in self.bin_data_map.values() {
+            entries.push(BinDataEntry {
+                manifest_id: storage.string(&value.manifest_id).map_err(context_error)?,
+                href: storage.string(&value.href).map_err(context_error)?,
+                media_type: storage.string(&value.media_type).map_err(context_error)?,
+                bin_data_id: value.bin_data_id,
+                is_embedded: value.is_embedded,
+            });
+        }
+        // Stable sort may allocate replacement scratch. Preserve equal-key
+        // ordering even for a caller-populated public map.
+        storage
+            .bytes(
+                entries
+                    .len()
+                    .saturating_mul(std::mem::size_of::<BinDataEntry>()),
+            )
+            .map_err(context_error)?;
+        entries.sort_by_key(|entry| entry.bin_data_id);
+        Ok(entries)
+    }
+    pub(crate) fn check_storage(&self) -> Result<(), SerializeError> {
+        if let Some(error) = [
+            &self.char_shape_ids.storage_failure,
+            &self.para_shape_ids.storage_failure,
+            &self.border_fill_ids.storage_failure,
+            &self.tab_pr_ids.storage_failure,
+            &self.numbering_ids.storage_failure,
+            &self.style_ids.storage_failure,
+        ]
+        .into_iter()
+        .find_map(Option::as_deref)
+        {
+            return Err(context_error(error));
+        }
+        Ok(())
     }
 
     /// `bin_data_id` → manifest id 조회 (Stage 4의 `<hc:img binaryItemIDRef="...">` 용).
@@ -419,39 +545,135 @@ impl SerializeContext {
 
     /// 모든 참조가 해소되었는지 단언. 해소되지 않은 ID가 있으면 `SerializeError::XmlError` 반환.
     pub fn assert_all_refs_resolved(&self) -> Result<(), SerializeError> {
+        self.try_assert_all_refs_resolved(&crate::storage::Unbounded)
+    }
+    pub(crate) fn try_assert_all_refs_resolved<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<(), SerializeError>
+    where
+        S::Error: std::fmt::Display,
+    {
+        self.check_storage()?;
         let mut missing: Vec<String> = Vec::new();
-        let cs = self.char_shape_ids.unresolved();
+        let cs = storage
+            .collect(
+                self.char_shape_ids
+                    .referenced
+                    .difference(&self.char_shape_ids.registered)
+                    .copied(),
+            )
+            .map_err(context_error)?;
         if !cs.is_empty() {
-            missing.push(format!("charPrIDRef: {:?}", cs));
+            storage
+                .push(
+                    &mut missing,
+                    storage
+                        .display(&format_args!("charPrIDRef: {:?}", cs))
+                        .map_err(context_error)?,
+                )
+                .map_err(context_error)?;
         }
-        let ps = self.para_shape_ids.unresolved();
+        let ps = storage
+            .collect(
+                self.para_shape_ids
+                    .referenced
+                    .difference(&self.para_shape_ids.registered)
+                    .copied(),
+            )
+            .map_err(context_error)?;
         if !ps.is_empty() {
-            missing.push(format!("paraPrIDRef: {:?}", ps));
+            storage
+                .push(
+                    &mut missing,
+                    storage
+                        .display(&format_args!("paraPrIDRef: {:?}", ps))
+                        .map_err(context_error)?,
+                )
+                .map_err(context_error)?;
         }
-        let bf = self.border_fill_ids.unresolved();
+        let bf = storage
+            .collect(
+                self.border_fill_ids
+                    .referenced
+                    .difference(&self.border_fill_ids.registered)
+                    .copied(),
+            )
+            .map_err(context_error)?;
         if !bf.is_empty() {
-            missing.push(format!("borderFillIDRef: {:?}", bf));
+            storage
+                .push(
+                    &mut missing,
+                    storage
+                        .display(&format_args!("borderFillIDRef: {:?}", bf))
+                        .map_err(context_error)?,
+                )
+                .map_err(context_error)?;
         }
-        let tp = self.tab_pr_ids.unresolved();
+        let tp = storage
+            .collect(
+                self.tab_pr_ids
+                    .referenced
+                    .difference(&self.tab_pr_ids.registered)
+                    .copied(),
+            )
+            .map_err(context_error)?;
         if !tp.is_empty() {
-            missing.push(format!("tabPrIDRef: {:?}", tp));
+            storage
+                .push(
+                    &mut missing,
+                    storage
+                        .display(&format_args!("tabPrIDRef: {:?}", tp))
+                        .map_err(context_error)?,
+                )
+                .map_err(context_error)?;
         }
-        let nm = self.numbering_ids.unresolved();
+        let nm = storage
+            .collect(
+                self.numbering_ids
+                    .referenced
+                    .difference(&self.numbering_ids.registered)
+                    .copied(),
+            )
+            .map_err(context_error)?;
         if !nm.is_empty() {
-            missing.push(format!("numberingIDRef: {:?}", nm));
+            storage
+                .push(
+                    &mut missing,
+                    storage
+                        .display(&format_args!("numberingIDRef: {:?}", nm))
+                        .map_err(context_error)?,
+                )
+                .map_err(context_error)?;
         }
-        let st = self.style_ids.unresolved();
+        let st = storage
+            .collect(
+                self.style_ids
+                    .referenced
+                    .difference(&self.style_ids.registered)
+                    .copied(),
+            )
+            .map_err(context_error)?;
         if !st.is_empty() {
-            missing.push(format!("styleIDRef: {:?}", st));
+            storage
+                .push(
+                    &mut missing,
+                    storage
+                        .display(&format_args!("styleIDRef: {:?}", st))
+                        .map_err(context_error)?,
+                )
+                .map_err(context_error)?;
         }
 
         if missing.is_empty() {
             Ok(())
         } else {
-            Err(SerializeError::XmlError(format!(
-                "미등록 ID 참조 발견: {}",
-                missing.join("; ")
-            )))
+            let joined = storage.join(&missing, "; ").map_err(context_error)?;
+            Err(SerializeError::XmlError(
+                storage
+                    .display(&format_args!("미등록 ID 참조 발견: {}", joined))
+                    .map_err(context_error)?,
+            ))
         }
     }
 
@@ -483,14 +705,22 @@ impl SerializeContext {
 const MAX_BORDER_FILL_SCAN_DEPTH: usize = 8;
 
 /// 표 하나의 `border_fill_id`(표/영역/셀)를 등록한다.
-fn register_table_border_fills(ctx: &mut SerializeContext, table: &crate::model::table::Table) {
+fn register_table_border_fills(
+    ctx: &mut SerializeContext,
+    table: &crate::model::table::Table,
+) -> Result<(), SerializeError> {
     ctx.border_fill_ids.register(table.border_fill_id);
+    ctx.check_storage()?;
     for zone in &table.zones {
         ctx.border_fill_ids.register(zone.border_fill_id);
+        ctx.check_storage()?;
     }
     for cell in &table.cells {
         ctx.border_fill_ids.register(cell.border_fill_id);
+        ctx.check_storage()?;
     }
+
+    Ok(())
 }
 
 /// 문단 목록을 재귀하며 표(및 중첩 표)의 `border_fill_id`를 사전 등록한다.
@@ -514,59 +744,67 @@ fn register_border_fills_in_paragraphs(
     ctx: &mut SerializeContext,
     paragraphs: &[crate::model::paragraph::Paragraph],
     depth: usize,
-) {
+) -> Result<(), SerializeError> {
     if depth >= MAX_BORDER_FILL_SCAN_DEPTH {
-        return;
+        return Ok(());
     }
     for para in paragraphs {
         for ctrl in &para.controls {
-            register_border_fills_in_control(ctx, ctrl, depth);
+            register_border_fills_in_control(ctx, ctrl, depth)?;
         }
     }
+
+    Ok(())
 }
 
-fn register_border_fills_in_control(ctx: &mut SerializeContext, ctrl: &Control, depth: usize) {
+fn register_border_fills_in_control(
+    ctx: &mut SerializeContext,
+    ctrl: &Control,
+    depth: usize,
+) -> Result<(), SerializeError> {
     match ctrl {
         Control::Table(tbl) => {
-            register_table_border_fills(ctx, tbl);
+            register_table_border_fills(ctx, tbl)?;
             for cell in &tbl.cells {
-                register_border_fills_in_paragraphs(ctx, &cell.paragraphs, depth + 1);
+                register_border_fills_in_paragraphs(ctx, &cell.paragraphs, depth + 1)?;
             }
             if let Some(caption) = &tbl.caption {
-                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1)?;
             }
         }
         Control::Shape(shape) => {
-            register_border_fills_in_shape(ctx, shape, depth);
+            register_border_fills_in_shape(ctx, shape, depth)?;
         }
         // 독립 그림 컨트롤(글상자/묶음 밖) — 자체 `caption` 을 갖는다(`src/model/image.rs`).
         Control::Picture(pic) => {
             if let Some(caption) = &pic.caption {
-                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1)?;
             }
         }
         Control::Header(h) => {
-            register_border_fills_in_paragraphs(ctx, &h.paragraphs, depth + 1);
+            register_border_fills_in_paragraphs(ctx, &h.paragraphs, depth + 1)?;
         }
         Control::Footer(f) => {
-            register_border_fills_in_paragraphs(ctx, &f.paragraphs, depth + 1);
+            register_border_fills_in_paragraphs(ctx, &f.paragraphs, depth + 1)?;
         }
         Control::Footnote(f) => {
-            register_border_fills_in_paragraphs(ctx, &f.paragraphs, depth + 1);
+            register_border_fills_in_paragraphs(ctx, &f.paragraphs, depth + 1)?;
         }
         Control::Endnote(e) => {
-            register_border_fills_in_paragraphs(ctx, &e.paragraphs, depth + 1);
+            register_border_fills_in_paragraphs(ctx, &e.paragraphs, depth + 1)?;
         }
         // 숨은 설명(메모) — 화면에 안 보여도 파일에는 문단 리스트로 존재한다.
         Control::HiddenComment(hc) => {
-            register_border_fills_in_paragraphs(ctx, &hc.paragraphs, depth + 1);
+            register_border_fills_in_paragraphs(ctx, &hc.paragraphs, depth + 1)?;
         }
         // 필드(누름틀 등) 메모 — `Field.memo_paragraphs`.
         Control::Field(f) => {
-            register_border_fills_in_paragraphs(ctx, &f.memo_paragraphs, depth + 1);
+            register_border_fills_in_paragraphs(ctx, &f.memo_paragraphs, depth + 1)?;
         }
         _ => {}
     }
+
+    Ok(())
 }
 
 /// `ShapeObject`(그리기 개체) 하나의 글상자·캡션과, 묶음이면 자식 개체까지 재귀한다.
@@ -581,38 +819,38 @@ fn register_border_fills_in_shape(
     ctx: &mut SerializeContext,
     shape: &crate::model::shape::ShapeObject,
     depth: usize,
-) {
+) -> Result<(), SerializeError> {
     if depth >= MAX_BORDER_FILL_SCAN_DEPTH {
-        return;
+        return Ok(());
     }
     use crate::model::shape::ShapeObject;
 
     if let Some(tb) = shape.drawing().and_then(|d| d.text_box.as_ref()) {
-        register_border_fills_in_paragraphs(ctx, &tb.paragraphs, depth + 1);
+        register_border_fills_in_paragraphs(ctx, &tb.paragraphs, depth + 1)?;
     }
 
     match shape {
         ShapeObject::Group(g) => {
             if let Some(caption) = &g.caption {
-                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1)?;
             }
             for child in &g.children {
-                register_border_fills_in_shape(ctx, child, depth + 1);
+                register_border_fills_in_shape(ctx, child, depth + 1)?;
             }
         }
         ShapeObject::Picture(p) => {
             if let Some(caption) = &p.caption {
-                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1)?;
             }
         }
         ShapeObject::Chart(c) => {
             if let Some(caption) = c.caption.as_ref().or(c.drawing.caption.as_ref()) {
-                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1)?;
             }
         }
         ShapeObject::Ole(o) => {
             if let Some(caption) = o.caption.as_ref().or(o.drawing.caption.as_ref()) {
-                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1)?;
             }
         }
         ShapeObject::Line(_)
@@ -622,10 +860,12 @@ fn register_border_fills_in_shape(
         | ShapeObject::Polygon(_)
         | ShapeObject::Curve(_) => {
             if let Some(caption) = shape.drawing().and_then(|d| d.caption.as_ref()) {
-                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1)?;
             }
         }
     }
+
+    Ok(())
 }
 
 fn mime_from_ext(ext: &str) -> &'static str {
@@ -640,6 +880,33 @@ fn mime_from_ext(ext: &str) -> &'static str {
     }
 }
 
+pub(super) fn context_error(error: impl std::fmt::Display) -> SerializeError {
+    SerializeError::XmlError(format!("HWPX context: {error}"))
+}
+fn insert_id<T: Copy + Eq + std::hash::Hash>(
+    reservation: &Option<std::sync::Arc<dyn crate::storage::Reservation>>,
+    values: &mut HashSet<T>,
+    id: T,
+) -> Result<(), String> {
+    if values.contains(&id) {
+        return Ok(());
+    }
+    if let Some(reservation) = reservation {
+        if values.len() == values.capacity() {
+            let capacity = values
+                .len()
+                .saturating_add(1)
+                .max(values.capacity().saturating_mul(2))
+                .max(8);
+            reservation.hash_payload(std::mem::size_of::<T>(), capacity)?;
+            values
+                .try_reserve(capacity - values.len())
+                .map_err(|_| reservation.reject("HWPX context ID set allocation"))?;
+        }
+    }
+    values.insert(id);
+    Ok(())
+}
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1416,7 +1416,7 @@ mod tests {
         pdf.extend_from_slice(trailer.as_bytes());
 
         let mut cursor = Cursor::new(pdf);
-        let table = parse_xref_iterative(&mut cursor, off_classic as u64).unwrap();
+        let table = parse_xref_iterative(&mut cursor, off_classic as u64, None).unwrap();
 
         // Object 1 from the classic table, object 2 ONLY from the /XRefStm.
         assert!(table.get(1).is_some(), "classic-table object 1 must resolve");

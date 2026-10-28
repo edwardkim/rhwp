@@ -1,0 +1,30 @@
+[
+  {
+    "kind": "preservation",
+    "runtime": "native",
+    "pages": 3,
+    "minimumRaw": 96.6158,
+    "basePixelDifference": 0
+  },
+  {
+    "kind": "preservation",
+    "runtime": "wasm",
+    "pages": 3,
+    "minimumRaw": 96.117,
+    "basePixelDifference": 0
+  },
+  {
+    "kind": "preservation-tac",
+    "runtime": "native",
+    "pages": 3,
+    "minimumRaw": 99.29369,
+    "basePixelDifference": 0
+  },
+  {
+    "kind": "preservation-tac",
+    "runtime": "wasm",
+    "pages": 3,
+    "minimumRaw": 99.30776,
+    "basePixelDifference": 0
+  }
+]

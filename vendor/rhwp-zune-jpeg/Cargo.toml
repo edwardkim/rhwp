@@ -10,8 +10,8 @@ include = [
 name = "rhwp-zune-jpeg"
 version = "0.5.15-rhwp.1"
 edition = "2021"
-rust-version = "1.75.0"
-publish = false
+rust-version = "1.93.1"
+publish = ["crates-io"]
 license = "MIT OR Apache-2.0 OR Zlib"
 description = "Request-bounded security patch of zune-jpeg for rhwp PDF import"
 [workspace]

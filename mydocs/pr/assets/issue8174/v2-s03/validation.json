@@ -1,0 +1,604 @@
+{
+  "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+  "validationSourceSha": "06bc42c98f55a3e27515f882f440ea7dd3b49048",
+  "fullSuiteSourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+  "baseSha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "scope": "V2-S03 local completion; Studio integration S04 and registry consumption S05 remain",
+  "gates": [
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 19.455910838907585
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "release-test",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 63.02833162306342
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "clippy-root",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 70.45266725402325
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "build-workspace",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--workspace",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 240.73596494097728
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 16.20536515302956
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "focused-issue_8174_pdf_resource_policy",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8174_pdf_resource_policy",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 12.06745801505167
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "focused-issue_8174_pdf_default_features",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8174_pdf_default_features",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 13.45204417000059
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "focused-issue_8174_link_destinations",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8174_link_destinations",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 14.665599270025268
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "nextest-final",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--tests",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 1889.6811350981006
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "native-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "4"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 33.48336253000889
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "native-issue_2225_missing_picture_placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast",
+        "--features",
+        "native-skia"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 1.645139814936556
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "native-render_p37_direct_pdf_export",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast",
+        "--features",
+        "native-skia"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 1.0017282760236412
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "native-skia_native_glyph_replay",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "skia_native_glyph_replay",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast",
+        "--features",
+        "native-skia"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 1.6553567230002955
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "reduced-wasm-check",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--no-default-features",
+        "--features",
+        "wasm-api",
+        "--lib"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 63.68101126898546
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "manifest-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 0.6719994340091944
+    },
+    {
+      "sourceSha": "06bc42c98f55a3e27515f882f440ea7dd3b49048",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "frontend-bindings",
+      "command": [
+        "node",
+        "--test",
+        "scripts/frontend-wasm-bindings.test.mjs"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 0.12172667495906353
+    },
+    {
+      "sourceSha": "06bc42c98f55a3e27515f882f440ea7dd3b49048",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "typescript",
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp/rhwp-studio",
+      "exit": 0,
+      "seconds": 0.877313937060535
+    },
+    {
+      "sourceSha": "06bc42c98f55a3e27515f882f440ea7dd3b49048",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "studio-node",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp/rhwp-studio",
+      "exit": 0,
+      "seconds": 13.35986652597785
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "wasm-runtime",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/pdf-import-wasm.test.mjs"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 11.704169537988491
+    },
+    {
+      "sourceSha": "4503eff0d982cfb5f108e79eb278a0be06346085",
+      "productSourceSha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+      "name": "codec-runtime",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/pdf-codec-wasm.test.mjs"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp",
+      "exit": 0,
+      "seconds": 3.8219561229925603
+    }
+  ],
+  "nextestSummary": [
+    "Summary [1192.231s] 11798 tests run: 11798 passed (8 slow), 45 skipped"
+  ],
+  "nativeLibraryResults": [
+    "test result: ok. 3863 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 33.14s",
+    "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+  ],
+  "nodeSummary": [
+    "ℹ tests 2445",
+    "ℹ suites 0",
+    "ℹ pass 2443",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 2",
+    "ℹ todo 0"
+  ],
+  "browserRuntime": {
+    "assertions": 240,
+    "normalWorkers": 9,
+    "memoryFaultWorkers": 3,
+    "preCopyMemory": {
+      "inputBytes": 8388608,
+      "before": 5832704,
+      "after": 5832704
+    },
+    "visualEvidenceIsSeparate": true
+  },
+  "codecRuntime": {
+    "cases": 19,
+    "checks": 158
+  },
+  "pdfVisual": {
+    "casesPerRuntime": 41,
+    "pagesPerRuntime": 41,
+    "runtimes": [
+      "native",
+      "wasm"
+    ],
+    "minimumRaw": 100,
+    "missingPages": 0,
+    "manifest": "manifest.json"
+  },
+  "svgVisual": {
+    "cases": 7,
+    "minimumRaw": 100,
+    "tsvs": [
+      {
+        "tsv": "svg-artwork/clip-opacity-native-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/clip-opacity-wasm-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/embedded-jpeg-native-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/embedded-jpeg-wasm-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/embedded-png-native-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/embedded-png-wasm-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/foreground-native-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/foreground-wasm-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/gradient-native-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/gradient-wasm-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/internal-use-native-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/internal-use-wasm-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/restricted-script-native-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "tsv": "svg-artwork/restricted-script-wasm-scores.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      }
+    ],
+    "beforeAfter": "svg-artwork/foreground-before-after.json",
+    "studioCanvasKitVerified": false
+  },
+  "preservation": [
+    {
+      "kind": "preservation",
+      "runtime": "native",
+      "pages": 3,
+      "minimumRaw": 96.6158,
+      "basePixelDifference": 0,
+      "baseSource": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+      "candidateSource": "9a9329766ae8068a841795c9cb0f216c5f790c84"
+    },
+    {
+      "kind": "preservation",
+      "runtime": "wasm",
+      "pages": 3,
+      "minimumRaw": 96.117,
+      "basePixelDifference": 0,
+      "baseSource": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+      "candidateSource": "9a9329766ae8068a841795c9cb0f216c5f790c84"
+    },
+    {
+      "kind": "preservation-tac",
+      "runtime": "native",
+      "pages": 3,
+      "minimumRaw": 99.29369,
+      "basePixelDifference": 0,
+      "baseSource": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+      "candidateSource": "9a9329766ae8068a841795c9cb0f216c5f790c84"
+    },
+    {
+      "kind": "preservation-tac",
+      "runtime": "wasm",
+      "pages": 3,
+      "minimumRaw": 99.30776,
+      "basePixelDifference": 0,
+      "baseSource": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+      "candidateSource": "9a9329766ae8068a841795c9cb0f216c5f790c84"
+    }
+  ],
+  "performance": {
+    "base": {
+      "moduleInitMedianMs": 105.25,
+      "memoryBytesMax": 9371648,
+      "jpeg-import": {
+        "firstMedianMs": 214.39999997615814,
+        "warmMedianMs": 32.75
+      },
+      "table-open": {
+        "firstMedianMs": 77.65000003576279,
+        "warmMedianMs": 14.449999988079071
+      },
+      "workerFirstMedianMs": 330.24999994039536,
+      "workerSubsequentMedianMs": 139.39999997615814,
+      "workerCount": 24
+    },
+    "candidate": {
+      "moduleInitMedianMs": 103.69999998807907,
+      "memoryBytesMax": 9371648,
+      "jpeg-import": {
+        "firstMedianMs": 205.25,
+        "warmMedianMs": 32.200000047683716
+      },
+      "table-open": {
+        "firstMedianMs": 77.70000004768372,
+        "warmMedianMs": 14.099999904632568
+      },
+      "workerFirstMedianMs": 321.80000001192093,
+      "workerSubsequentMedianMs": 138.94999998807907,
+      "workerCount": 24
+    }
+  },
+  "sourceCandidateCount": 14,
+  "preflightReportSummary": {
+    "schema_version": 1,
+    "source_sha": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+    "tool_sha256": "186885d14e8aad1298152dcf41cb8b971252e0c8298e3a9980b454990bcce2d7",
+    "input_digest_format": "json.dumps(sort_keys=True, ensure_ascii=True)",
+    "policy_sha256": "f43b453335b493f530dd97596f7aa27a5c54a19d591fcd293ca3f189a2c85eb3",
+    "runtime_contract_sha256": "1b83246bb3021d6b4a77e9a0fa8fbb6f0362ea6a6e55d05eb56061b3b9828e60",
+    "source_check": "pass",
+    "kind": "source-candidates-not-Cargo-crates",
+    "policy_status": "local-corrections-approved-before-publication",
+    "publish_ready": false,
+    "cargo_normalized": false,
+    "cargo_verified": false,
+    "registry_consumption_verified": false,
+    "decision_selection": null
+  },
+  "producerHashesVerified": true,
+  "equivalence": "No src/vendor/crates or Cargo manifest/lock changes after product source. Public declarations were synchronized to the same frozen producer at validation head; affected frontend bindings, TypeScript and Node suites were rerun. Final trailing commit changes documentation and evidence only.",
+  "logs": "output/pr-review/issue8174/v2-s03-20261024/",
+  "notes": [
+    "Initial stale derived suite ran zero tests and was not counted; regenerated the manifest and ran affected Clippy and focused tests before the complete suite.",
+    "Runtime JSON visualJudgment is not the visual gate. Separate Native/fresh WASM sweep and direct inspection are recorded in manifest and report.",
+    "Source preflight does not verify Cargo package, registry consumption or publish readiness."
+  ],
+  "changedDocumentChecks": {
+    "canonicalFiles": [
+      "mydocs/manual/pdf_image_codecs.md",
+      "mydocs/manual/pdf_resource_policies.md",
+      "mydocs/manual/security_feature_limits.md",
+      "mydocs/plans/task_m100_8174_maintainer_decisions.md",
+      "mydocs/tech/investigations/issue-8174/README.md"
+    ],
+    "canonicalMetadataErrors": [],
+    "reportLocalLinks": "pass"
+  }
+}

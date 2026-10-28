@@ -1,0 +1,38 @@
+{
+  "beforeSource": "bfafd891f6",
+  "before": {
+    "passed": 12,
+    "failed": 4,
+    "failures": [
+      "donated_cmap_rejects_owned_font_copy_before_detaching_shared_recipient",
+      "extractor_font_set_copy_reserves_names_and_slots_with_exact_boundary",
+      "font_metadata_copy_checks_remaining_bytes_before_copying_long_base_name",
+      "simple_widths_and_replaced_differences_obey_the_same_font_work_limit"
+    ]
+  },
+  "candidateSource": "1611ec923e32a3c539750241c675fe84cebf1223",
+  "candidate": {
+    "passed": 167,
+    "failed": 0,
+    "features": [
+      "native-skia"
+    ],
+    "profile": "release-test",
+    "failFast": false
+  },
+  "backendClippy": {
+    "features": [
+      "jbig2",
+      "jpeg2000",
+      "icc-qcms"
+    ],
+    "denyWarnings": true,
+    "exit": 0
+  },
+  "notCompletedByThisRecord": [
+    "fresh WASM execution",
+    "B04 frontend and Core serialization reservations",
+    "B07 confinement",
+    "final visual and performance integration"
+  ]
+}

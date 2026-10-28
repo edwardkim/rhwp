@@ -69,6 +69,7 @@ fn native_dot_coverage(
     width: u8,
     observed_width: u32,
     work: &mut usize,
+    allocation: Allocation<'_>,
 ) -> Option<bool> {
     let Some((pattern, stroke)) = crate::model::style::cell_dot_metrics_pt(width) else {
         return Some(false);
@@ -92,7 +93,7 @@ fn native_dot_coverage(
         if let Some(last) = actual.last_mut().filter(|last| a <= last.1 + 0.0101) {
             last.1 = last.1.max(b);
         } else {
-            actual.push((a, b));
+            allocation.push(&mut actual, (a, b)).ok()?;
         }
     }
     let mut at = from;
@@ -120,9 +121,10 @@ pub(super) fn plan(
     rule_controls: &[Option<usize>],
     grid: &Value,
 ) -> Option<Plan> {
+    let allocation = Allocation(&page.import_budget);
     let mut rules = Vec::new();
     let mut work = 0usize;
-    for path in refs(&grid["sourcePathIndices"]).ok()? {
+    for path in refs(&grid["sourcePathIndices"], allocation).ok()? {
         let source = page.paths.get(path)?;
         // A genuine closed rectangular stroke has the same four editable
         // cell sides as four separate strokes. Do not keep a cell-sized bitmap
@@ -174,16 +176,21 @@ pub(super) fn plan(
                 if ![at, from, to].iter().all(|n| n.is_finite()) || to <= from {
                     return None;
                 }
-                rules.push(Rule {
-                    control,
-                    horizontal,
-                    at,
-                    from,
-                    to,
-                    color,
-                    width: hu(source.stroke_width).ok()?,
-                    endpoint_extension: source.stroke_width / 2.,
-                });
+                allocation
+                    .push(
+                        &mut rules,
+                        Rule {
+                            control,
+                            horizontal,
+                            at,
+                            from,
+                            to,
+                            color,
+                            width: hu(source.stroke_width).ok()?,
+                            endpoint_extension: source.stroke_width / 2.,
+                        },
+                    )
+                    .ok()?;
                 count += 1;
             }
             if count != 4 {
@@ -263,21 +270,26 @@ pub(super) fn plan(
         {
             return None;
         }
-        rules.push(Rule {
-            control: ci,
-            horizontal,
-            at,
-            from,
-            to,
-            color: r.drawing.fill.solid.as_ref()?.background_color,
-            width: if horizontal { c.height } else { c.width },
-            endpoint_extension: 0.,
-        });
+        allocation
+            .push(
+                &mut rules,
+                Rule {
+                    control: ci,
+                    horizontal,
+                    at,
+                    from,
+                    to,
+                    color: r.drawing.fill.solid.as_ref()?.background_color,
+                    width: if horizontal { c.height } else { c.width },
+                    endpoint_extension: 0.,
+                },
+            )
+            .ok()?;
     }
     if rules.is_empty() {
         return None;
     }
-    let rule_ids = rules.iter().map(|r| r.control).collect::<BTreeSet<_>>();
+    let rule_ids = allocation.set_from(rules.iter().map(|r| r.control)).ok()?;
     for rule in &rules {
         let source = match &controls[rule.control] {
             Control::Shape(s) => s.common(),
@@ -338,7 +350,9 @@ pub(super) fn plan(
         controls: Vec::new(),
     };
     let mut side_controls = Vec::new();
-    let mut rule_owners = vec![Vec::new(); rules.len()];
+    let mut rule_owners = allocation
+        .collect((0..rules.len()).map(|_| Vec::new()))
+        .ok()?;
     for cell in array(&grid["cells"]).ok()? {
         let cell_index = result.borders.len();
         let b = &cell["bbox"];
@@ -352,7 +366,7 @@ pub(super) fn plan(
         for side in &mut border.borders {
             side.line_type = BorderLineType::None;
         }
-        let mut used = vec![BTreeSet::new(); 4];
+        let mut used = allocation.collect((0..4).map(|_| BTreeSet::new())).ok()?;
         for (side, (horizontal, at, from, to)) in [
             (false, x, y, y + h),
             (false, x + w, y, y + h),
@@ -381,12 +395,18 @@ pub(super) fn plan(
                 if covered_join(&rules, rule, from, to, a, b, &mut work)? {
                     continue;
                 }
-                segments.push((a, b));
-                styles.insert((rule.color, rule.width));
-                used[side].insert(rule.control);
-                rule_owners[ri].push((cell_index, side));
+                allocation.push(&mut segments, (a, b)).ok()?;
+                allocation
+                    .insert_set(&mut styles, (rule.color, rule.width))
+                    .ok()?;
+                allocation.insert_set(&mut used[side], rule.control).ok()?;
+                allocation
+                    .push(&mut rule_owners[ri], (cell_index, side))
+                    .ok()?;
             }
-            segments.sort_by(|a, b| a.0.total_cmp(&b.0));
+            allocation
+                .sort_by(&mut segments, |a, b| a.0.total_cmp(&b.0))
+                .ok()?;
             let mut end = from;
             let mut complete = true;
             for &(a, b) in &segments {
@@ -403,7 +423,15 @@ pub(super) fn plan(
             let width = border_width_index(observed_width as f64 / 100. * 25.4 / 72.);
             let line_type = if complete && end >= to - 0.0101 {
                 BorderLineType::Solid
-            } else if native_dot_coverage(&segments, from, to, width, observed_width, &mut work)? {
+            } else if native_dot_coverage(
+                &segments,
+                from,
+                to,
+                width,
+                observed_width,
+                &mut work,
+                allocation,
+            )? {
                 BorderLineType::Dot
             } else {
                 BorderLineType::None
@@ -418,8 +446,8 @@ pub(super) fn plan(
                 color,
             };
         }
-        result.borders.push(border);
-        side_controls.push(used);
+        allocation.push(&mut result.borders, border).ok()?;
+        allocation.push(&mut side_controls, used).ok()?;
     }
     // A rule can contribute to both sides of a shared edge or to several
     // unequal spans. Promote it only if every affected side has full evidence;
@@ -437,7 +465,7 @@ pub(super) fn plan(
                     result.borders[ci].borders[si].line_type == BorderLineType::None
                 })
             {
-                blocked.insert(rule.control);
+                allocation.insert_set(&mut blocked, rule.control).ok()?;
             }
         }
         let mut changed = false;
@@ -458,10 +486,13 @@ pub(super) fn plan(
             break;
         }
     }
-    result.controls = side_controls
-        .into_iter()
-        .map(|sides| sides.into_iter().flatten().collect())
-        .collect();
+    result.controls = allocation
+        .try_collect(
+            side_controls
+                .into_iter()
+                .map(|sides| allocation.set_from(sides.into_iter().flatten())),
+        )
+        .ok()?;
     if result.controls.iter().all(BTreeSet::is_empty) {
         return None;
     }

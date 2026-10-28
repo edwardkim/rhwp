@@ -65,6 +65,22 @@ pub fn write_content_hpf(
     master_items: &[(usize, String, String)],
     original_content_hpf: Option<&[u8]>,
 ) -> Result<Vec<u8>, SerializeError> {
+    write_content_hpf_with_scripts(
+        section_hrefs,
+        bin_data,
+        master_items,
+        original_content_hpf,
+        &[],
+    )
+}
+
+pub(super) fn write_content_hpf_with_scripts(
+    section_hrefs: &[String],
+    bin_data: &[BinDataEntry],
+    master_items: &[(usize, String, String)],
+    original_content_hpf: Option<&[u8]>,
+    additional_scripts: &[(&str, &str)],
+) -> Result<Vec<u8>, SerializeError> {
     // 원본 metadata 블록(있으면) — 본문과 무관한 저작자/일자/주제 보존용.
     let original_str = original_content_hpf.and_then(|b| std::str::from_utf8(b).ok());
     let original_metadata = original_str.and_then(extract_metadata_block);
@@ -210,8 +226,13 @@ pub fn write_content_hpf(
     )?;
 
     // [#3557] Scripts/* 항목 — 원본 태그 원문 splice(id·media-type 보존).
-    let script_items: Vec<(String, String)> =
+    let mut script_items: Vec<(String, String)> =
         original_str.map(extract_script_items).unwrap_or_default();
+    for (id, path) in additional_scripts {
+        script_items.push((id.to_string(), format!(
+            "<opf:item id=\"{id}\" href=\"{path}\" media-type=\"application/x-javascript ;charset=utf-16\"/>"
+        )));
+    }
     for (_, tag) in &script_items {
         w.get_mut()
             .write_all(tag.as_bytes())

@@ -20,7 +20,11 @@ pub(super) struct SeparatorSpaces {
     pub first_object: BTreeSet<usize>,
 }
 
-pub(super) fn classify(atoms: &[Atom], chars: &[char]) -> SeparatorSpaces {
+pub(super) fn classify_with_storage<S: crate::storage::Storage>(
+    atoms: &[Atom],
+    chars: &[char],
+    storage: &S,
+) -> Result<SeparatorSpaces, S::Error> {
     let mut separators = BTreeSet::new();
     let mut object_separators = BTreeSet::new();
     let mut followed_by_flow = false;
@@ -32,10 +36,10 @@ pub(super) fn classify(atoms: &[Atom], chars: &[char]) -> SeparatorSpaces {
                 ..
             }) if !range.is_empty() && chars[range.clone()].iter().all(|ch| *ch == ' ') => {
                 if followed_by_flow {
-                    separators.insert(range.start);
+                    storage.insert_tree_set(&mut separators, range.start)?;
                 }
                 if followed_by_object {
-                    object_separators.insert(range.start);
+                    storage.insert_tree_set(&mut object_separators, range.start)?;
                 }
             }
             Atom::Box(InlineFlowBox {
@@ -71,13 +75,15 @@ pub(super) fn classify(atoms: &[Atom], chars: &[char]) -> SeparatorSpaces {
         };
         // 개체는 가시 문자 축을 소비하지 않아도 작성 공백 그룹을 끊는다.
         if !previous_separator {
-            first_object.extend(position);
+            if let Some(position) = position {
+                storage.insert_tree_set(&mut first_object, position)?;
+            }
         }
         previous_separator = position.is_some();
     }
-    SeparatorSpaces {
+    Ok(SeparatorSpaces {
         wrap: separators,
         object: object_separators,
         first_object,
-    }
+    })
 }

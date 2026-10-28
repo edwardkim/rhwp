@@ -82,9 +82,12 @@ impl PaginationState {
     }
 
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
-    pub fn flush_column(&mut self) {
+    pub fn flush_column_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         if self.current_items.is_empty() {
-            return;
+            return Ok(());
         }
         let col_content = ColumnContent {
             paragraph_origins: Default::default(),
@@ -93,7 +96,7 @@ impl PaginationState {
             start_height: 0.0,
             endnote_flow: false,
             items: std::mem::take(&mut self.current_items),
-            zone_layout: self.current_zone_layout.clone(),
+            zone_layout: crate::storage::try_clone(&self.current_zone_layout, storage)?,
             zone_y_offset: self.current_zone_y_offset,
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
@@ -112,14 +115,21 @@ impl PaginationState {
             page_band_flow_starts: Default::default(),
         };
         if let Some(page) = self.pages.last_mut() {
-            page.column_contents.push(col_content);
+            storage.push(&mut page.column_contents, col_content)?;
         } else {
-            self.pages.push(self.new_page_content(vec![col_content]));
+            let page =
+                self.new_page_content_with_storage(storage.collect([col_content])?, storage)?;
+            storage.push(&mut self.pages, page)?;
         }
+
+        Ok(())
     }
 
     /// 현재 항목을 ColumnContent로 만들어 (비어있어도) 마지막 페이지에 push
-    pub fn flush_column_always(&mut self) {
+    pub fn flush_column_always_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         let col_content = ColumnContent {
             paragraph_origins: Default::default(),
             computed_paragraphs: Default::default(),
@@ -127,7 +137,7 @@ impl PaginationState {
             start_height: 0.0,
             endnote_flow: false,
             items: std::mem::take(&mut self.current_items),
-            zone_layout: self.current_zone_layout.clone(),
+            zone_layout: crate::storage::try_clone(&self.current_zone_layout, storage)?,
             zone_y_offset: self.current_zone_y_offset,
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
@@ -146,30 +156,42 @@ impl PaginationState {
             page_band_flow_starts: Default::default(),
         };
         if let Some(page) = self.pages.last_mut() {
-            page.column_contents.push(col_content);
+            storage.push(&mut page.column_contents, col_content)?;
         } else {
-            self.pages.push(self.new_page_content(vec![col_content]));
+            let page =
+                self.new_page_content_with_storage(storage.collect([col_content])?, storage)?;
+            storage.push(&mut self.pages, page)?;
         }
+
+        Ok(())
     }
 
     /// 다음 단으로 이동하거나, 마지막 단이면 새 페이지 생성
-    pub fn advance_column_or_new_page(&mut self) {
-        self.flush_column();
+    pub fn advance_column_or_new_page_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        self.flush_column_with_storage(storage)?;
         if self.current_column + 1 < self.col_count {
             self.current_column += 1;
             self.current_height = 0.0;
         } else {
-            self.push_new_page();
+            self.push_new_page_with_storage(storage)?;
         }
+
+        Ok(())
     }
 
     /// 페이지 전환 시 마지막 문단 항목이 overflow인지 점검.
     /// overflow이면 해당 항목을 overflow_carry로 이월하여 다음 페이지/단에 재삽입.
     /// FullParagraph / PartialParagraph만 대상 (표·글상자 제외).
-    fn check_last_item_overflow(&mut self) {
+    fn check_last_item_overflow_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         // carry가 이미 있으면 중복 방지
         if self.overflow_carry.is_some() {
-            return;
+            return Ok(());
         }
         let is_para_item = self.current_items.last().map_or(false, |item| {
             matches!(
@@ -178,43 +200,65 @@ impl PaginationState {
             )
         });
         if !is_para_item {
-            return;
+            return Ok(());
         }
         let available = self.available_height();
         if self.current_height <= available + 0.5 {
-            return;
+            return Ok(());
         }
         // overflow 감지: 방어 횟수 기록
         let page_idx = self.pages.len();
+        if !self.defense_counts.contains_key(&page_idx) {
+            storage.reserve_map(&mut self.defense_counts, 1)?;
+        }
         let count = self.defense_counts.entry(page_idx).or_insert(0);
         *count += 1;
         if *count > DEFENSE_MAX_PER_PAGE {
             // 상한 초과: 무한 루프 최종 차단, carry 발동 안 함
-            return;
+            return Ok(());
         }
         self.overflow_carry = self.current_items.pop();
+
+        Ok(())
     }
 
     /// overflow_carry 항목을 현재 페이지/단에 재삽입하고 current_height를 보정.
     /// page_vpos_base 설정은 호출자(engine.rs)가 para.line_segs 접근 후 수행.
-    pub fn reinsert_carry_with_height(&mut self, carry_height: f64) {
+    pub fn reinsert_carry_with_height_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        carry_height: f64,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         if let Some(carry) = self.overflow_carry.take() {
-            self.current_items.push(carry);
+            storage.push(&mut self.current_items, carry)?;
             self.current_height += carry_height;
         }
+
+        Ok(())
     }
 
     /// 강제 새 페이지 (쪽 나누기)
-    pub fn force_new_page(&mut self) {
-        self.flush_column();
-        self.push_new_page();
+    pub fn force_new_page_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        self.flush_column_with_storage(storage)?;
+        self.push_new_page_with_storage(storage)?;
+
+        Ok(())
     }
 
     /// 페이지가 비어있으면 첫 페이지 생성
-    pub fn ensure_page(&mut self) {
+    pub fn ensure_page_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         if self.pages.is_empty() {
-            self.pages.push(self.new_page_content(Vec::new()));
+            let page = self.new_page_content_with_storage(Vec::new(), storage)?;
+            storage.push(&mut self.pages, page)?;
         }
+
+        Ok(())
     }
 
     /// 사용 가능한 본문 높이 (각주 영역, 안전 여백, 존 오프셋 제외)
@@ -276,9 +320,15 @@ impl PaginationState {
     }
 
     /// 새 페이지 push + 상태 리셋
-    fn push_new_page(&mut self) {
-        self.pages.push(self.new_page_content(Vec::new()));
+    fn push_new_page_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        let page = self.new_page_content_with_storage(Vec::new(), storage)?;
+        storage.push(&mut self.pages, page)?;
         self.reset_for_new_page();
+
+        Ok(())
     }
 
     /// 새 페이지 상태 리셋
@@ -297,13 +347,17 @@ impl PaginationState {
     }
 
     /// PageContent 생성 헬퍼
-    fn new_page_content(&self, column_contents: Vec<ColumnContent>) -> PageContent {
-        PageContent {
+    fn new_page_content_with_storage<S: crate::storage::Storage>(
+        &self,
+        column_contents: Vec<ColumnContent>,
+        storage: &S,
+    ) -> Result<PageContent, S::Error> {
+        Ok(PageContent {
             page_index: self.pages.len() as u32,
             page_number: 0,
             page_number_restarted: false,
             section_index: self.section_index,
-            layout: self.layout.clone(),
+            layout: crate::storage::try_clone(&self.layout, storage)?,
             column_contents,
             active_header: None,
             active_footer: None,
@@ -313,6 +367,6 @@ impl PaginationState {
             active_master_page: None,
             extra_master_pages: Vec::new(),
             ladder_band_tables: Vec::new(),
-        }
+        })
     }
 }

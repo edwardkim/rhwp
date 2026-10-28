@@ -1,0 +1,114 @@
+{
+  "origin": "Public repository samples/form-02.hwp, Hancom2010 document metadata8.0.0.466; original empty Click functions; user confirmed no currently implemented business workflow to validate",
+  "scope": "Controlled finite calculation in the real stored form; not an existing customer application compatibility claim",
+  "generation": "Preserve every CFB stream except Scripts/DefaultJScript and FileHeader bit3 (flags1 to9). Preserve original counted UTF16 aliases/header; replace source by the finite Click handler; raw-deflate337bytes, zero-pad to original452byte stream. No auto-open handler. Actual Studio pointer click exports the after HWP and HWPX.",
+  "script": "function OnPushButton_Click(){var total=0;for(var i=1;i<=4;i++){total+=i;}Edit.Text=\"합계: \"+total;CheckBox.Value=1;PushButton.Caption=\"계산 완료\";}",
+  "beforeAfterPrintInputIdentity": {
+    "sameFinalInputAsPrint": true,
+    "inputSha256": "d480cf90aff4cbb2e2fd063d1094a93b387bfbf3aebe4cefb915be374df63c4d",
+    "reference": "pdf/issue8174/studio/button-after-s04-2020.pdf",
+    "referenceSha256": "8c22090a20d594a93ed98adc10800eec4adde369cd27b0159df915868bfc20f6",
+    "newMatchingPrint": true
+  },
+  "files": [
+    {
+      "path": "samples/form-02.hwp",
+      "bytes": 10752,
+      "sha256": "066a8ff7b7f0dba862b4b6c973abda5ed67a872868342100a7b0985b2d11aaf7"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8174/v2-s04/fixtures/button-calculation-scripted.hwp",
+      "bytes": 10752,
+      "sha256": "cdb53c04e16e5fe2478012215f9aa19e07d0d39e01a3e92ca85ecc312e9341ab"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8174/v2-s04/fixtures/button-after.hwp",
+      "bytes": 9216,
+      "sha256": "d480cf90aff4cbb2e2fd063d1094a93b387bfbf3aebe4cefb915be374df63c4d"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8174/v2-s04/fixtures/button-after.hwpx",
+      "bytes": 8648,
+      "sha256": "aac0b1885a746ee947984a7700443a2ac5f9b1d6b0be4ff752c8184b685d5afa"
+    },
+    {
+      "path": "pdf/issue8174/studio/button-before-2020.pdf",
+      "bytes": 20712,
+      "sha256": "dddd11a0bd8cfa22eee0cede81dcbe7685bf81edf26076076ba29344955de2a1"
+    },
+    {
+      "path": "pdf/issue8174/studio/button-after-s04-2020.pdf",
+      "bytes": 22164,
+      "sha256": "8c22090a20d594a93ed98adc10800eec4adde369cd27b0159df915868bfc20f6"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8174/v2-s04/fixtures/button-after-initial.hwp",
+      "bytes": 9216,
+      "sha256": "ffacf8c66baa9860a7aa3cdbf9c61ce2728fe3b15ddbc0ba77ae333d94d57612"
+    },
+    {
+      "path": "pdf/issue8174/studio/button-after-2020.pdf",
+      "bytes": 22164,
+      "sha256": "1d1474f379bc1be43d62a13f5f1ad69b5def0fac40feb54f29bfe3ec91f52aa1"
+    }
+  ],
+  "originalToBeforeStreams": [
+    {
+      "stream": "\u0005HwpSummaryInformation",
+      "originalSha256": "89c0707b7fc79d66fb6806ffbad47f6af3485bdf65205d1a11a09193e5b1c750",
+      "fixtureSha256": "89c0707b7fc79d66fb6806ffbad47f6af3485bdf65205d1a11a09193e5b1c750",
+      "equal": true
+    },
+    {
+      "stream": "BodyText/Section0",
+      "originalSha256": "0e6c139e0fd7354cc5d45cbb4af5f3055fa6e4cc3e34743d0c3e19efc8d5dd59",
+      "fixtureSha256": "0e6c139e0fd7354cc5d45cbb4af5f3055fa6e4cc3e34743d0c3e19efc8d5dd59",
+      "equal": true
+    },
+    {
+      "stream": "DocInfo",
+      "originalSha256": "727ec2e69d2d49c380c98589a4a96f622f804e8f82ae2ffeb01e6ec30a5a9db4",
+      "fixtureSha256": "727ec2e69d2d49c380c98589a4a96f622f804e8f82ae2ffeb01e6ec30a5a9db4",
+      "equal": true
+    },
+    {
+      "stream": "DocOptions/_LinkDoc",
+      "originalSha256": "9ed46f917b641902f285a607afe60e18c03ef8a6d9b3ca55c0b880a093463a9c",
+      "fixtureSha256": "9ed46f917b641902f285a607afe60e18c03ef8a6d9b3ca55c0b880a093463a9c",
+      "equal": true
+    },
+    {
+      "stream": "FileHeader",
+      "originalSha256": "ef1b996af73d61537d4f4780d03978fc6436f3702c2ceacf34a404763796b49c",
+      "fixtureSha256": "945f17abf673a81088c8855a0ad6f02915ae8fcf31cfdbfa38931ff5e2847b74",
+      "equal": false
+    },
+    {
+      "stream": "PrvImage",
+      "originalSha256": "76217dfeab6f6e9bbfea0f1de17d45d1847cc9ec8ecf235776664c03116cf4df",
+      "fixtureSha256": "76217dfeab6f6e9bbfea0f1de17d45d1847cc9ec8ecf235776664c03116cf4df",
+      "equal": true
+    },
+    {
+      "stream": "PrvText",
+      "originalSha256": "8dc87b9d06dc14b6f796bac86b70dc37718f6fb83b55ab1bfa58073f0a933626",
+      "fixtureSha256": "8dc87b9d06dc14b6f796bac86b70dc37718f6fb83b55ab1bfa58073f0a933626",
+      "equal": true
+    },
+    {
+      "stream": "Scripts/DefaultJScript",
+      "originalSha256": "ec8daff6e678cf81f7cc100e0ce29fcf21525ed6781fe407f561877f5c9833fe",
+      "fixtureSha256": "643504fb37728ae3a8345e0a9d02ac3503664a0f1df216b06204ad3db299b487",
+      "equal": false
+    },
+    {
+      "stream": "Scripts/JScriptVersion",
+      "originalSha256": "1322438fbe7c693f50ae634db95d80567379557dea3a970e75d06e63a0e16b55",
+      "fixtureSha256": "1322438fbe7c693f50ae634db95d80567379557dea3a970e75d06e63a0e16b55",
+      "equal": true
+    }
+  ],
+  "independentPrint": "Hancom2020 engine11.0.0.9136, verified font scope, Print method0, one-up,1page. Service explicitly scripts_disabled: static appearance only; never used as macro execution proof.",
+  "finalSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+  "note": "The corrected producer actual saved DocInfo differed, so a new matching independent Print was acquired. Both original Print/input and final Print/input are retained; no old Print was relabeled."
+}

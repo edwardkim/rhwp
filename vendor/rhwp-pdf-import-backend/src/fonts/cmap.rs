@@ -99,6 +99,16 @@ impl CMap {
     /// any code a later `bfchar` redefined (§9.10.3); `ranges` only holds
     /// runs that were contiguous in the final `chars` state.
     pub fn get(&self, code: &u32) -> Option<std::borrow::Cow<'_, str>> {
+        self.get_with_budget(code, None)
+    }
+
+    pub(crate) fn get_with_budget(
+        &self,
+        code: &u32,
+        budget: Option<&crate::import_limits::ImportBudget>,
+    ) -> Option<std::borrow::Cow<'_, str>> {
+        let allocation = super::allocation::FontAllocation(budget);
+        allocation.check()?;
         if let Some(s) = self.chars.get(code) {
             return Some(std::borrow::Cow::Borrowed(s));
         }
@@ -115,7 +125,7 @@ impl CMap {
             let r = &self.ranges[pos];
             let cp = r.target.wrapping_add(*code - r.start);
             if let Some(ch) = char::from_u32(cp) {
-                return Some(std::borrow::Cow::Owned(ch.to_string()));
+                return allocation.character(ch).map(std::borrow::Cow::Owned);
             }
         }
 

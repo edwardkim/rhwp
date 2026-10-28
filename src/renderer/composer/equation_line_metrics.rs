@@ -12,20 +12,49 @@ pub(super) fn refresh_equation_rows(
     refresh_rows(composed, para, styles, false);
 }
 
+pub(super) fn try_refresh_equation_rows<S: crate::storage::Storage>(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+) -> Result<(), S::Error> {
+    try_refresh_rows(composed, para, styles, false, storage)
+}
+
 fn refresh_rows(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
     styles: &ResolvedStyleSet,
     regenerated: bool,
 ) {
-    refresh_single_tac_host_row(composed, para, styles);
-    let positions = para.control_text_positions();
+    match try_refresh_rows(
+        composed,
+        para,
+        styles,
+        regenerated,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
+}
+
+fn try_refresh_rows<S: crate::storage::Storage>(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    regenerated: bool,
+    storage: &S,
+) -> Result<(), S::Error> {
+    try_refresh_single_tac_host_row(composed, para, styles, storage)?;
+    let positions = para.try_control_text_positions(storage)?;
     let dpi = styles.resolved_dpi.unwrap_or(DEFAULT_DPI);
-    let tac_offsets_px: Vec<_> = composed
-        .tac_controls
-        .iter()
-        .map(|(position, width, control)| (*position, hwpunit_to_px(*width, dpi), *control))
-        .collect();
+    let tac_offsets_px: Vec<_> = storage.collect(
+        composed
+            .tac_controls
+            .iter()
+            .map(|(position, width, control)| (*position, hwpunit_to_px(*width, dpi), *control)),
+    )?;
     // 글자 없는 수식 줄은 컨트롤 순번이 text 길이를 넘을 수 있다.
     // 표시 경로의 실제 줄 소속을 소비하며 text 범위로 다시 추측하지 않는다.
     let equation_owners =
@@ -257,6 +286,7 @@ fn refresh_rows(
             debug_assert!(hwpunit_to_px(line.line_height, DEFAULT_DPI) > 0.0);
         }
     }
+    Ok(())
 }
 
 /// 같은 높이를 공유하는 저장 예약 구간의 끝을 실제 후속 개체의 소유로 확인한다.
@@ -338,15 +368,16 @@ fn source_inline_box_height(
 ///
 /// rhwp가 합성한 줄은 HWPX에 저장하지 않으므로, 양식 개체만 든 문단을 저장했다가 다시 열면
 /// 줄이 하나도 없어 개체가 그려지지 않았다. 양식 개체 줄은 재조판처럼 개체 높이를 줄 높이로 쓴다.
-fn refresh_single_tac_host_row(
+fn try_refresh_single_tac_host_row<S: crate::storage::Storage>(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
     styles: &ResolvedStyleSet,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     let form_height = match para.controls.as_slice() {
         [Control::Equation(e)] if e.common.treat_as_char => 0,
         [Control::Form(f)] if f.common.treat_as_char => f.height as i32,
-        _ => return,
+        _ => return Ok(()),
     };
     // 직접 IR 편집 뒤 남은 합성 수식 줄은 정상 한컴 저장 줄의 근거가 아니다.
     // 단일 양식의 실제 높이와 같은 결과로 다시 잰다. 정상 저장 LineSeg는 보존한다.
@@ -361,7 +392,7 @@ fn refresh_single_tac_host_row(
             .chars()
             .any(|c| !c.is_whitespace() && !c.is_control() && c != '\u{fffc}')
     {
-        return;
+        return Ok(());
     }
     let fs = para
         .char_shapes
@@ -387,18 +418,22 @@ fn refresh_single_tac_host_row(
         line.line_height = line_height;
         line.baseline_distance = baseline;
         line.line_spacing = metrics.line_spacing;
-        return;
+        return Ok(());
     }
-    composed.lines.push(ComposedLine {
-        runs: Vec::new(),
-        line_height,
-        baseline_distance: baseline,
-        segment_width: 0,
-        column_start: 0,
-        line_spacing: metrics.line_spacing,
-        has_line_break: false,
-        char_start: 0,
-    });
+    storage.push(
+        &mut composed.lines,
+        ComposedLine {
+            runs: Vec::new(),
+            line_height,
+            baseline_distance: baseline,
+            segment_width: 0,
+            column_start: 0,
+            line_spacing: metrics.line_spacing,
+            has_line_break: false,
+            char_start: 0,
+        },
+    )?;
+    Ok(())
 }
 
 /// 실제 재조판 뒤 텍스트와 수식 줄을 composition과 같은 메트릭으로 저장한다.

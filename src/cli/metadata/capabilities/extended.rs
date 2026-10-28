@@ -114,11 +114,12 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
             let mut command = cmd_json(
                 "import-pdf",
                 "PDF 전체/선택 쪽을 HWPX 또는 HWP로 가져오기 (pdf-import feature)",
-                &["--source-pages", "--layout", "--json", "--table-inference"],
-                &["schemaVersion", "source", "output", "format", "bytes", "pageCount", "diagnostics"],
+                &["--source-pages", "--layout", "--json", "--table-inference", "--resource-profile", "--resource-limits"],
+                &["schemaVersion", "source", "output", "format", "bytes", "pageCount", "diagnostics", "resourceProfile", "execution"],
             );
             command["requiresFeature"] = serde_json::json!("pdf-import");
             command["available"] = serde_json::json!(rhwp::pdf_support::pdf_import_support().enabled);
+            command["resourceProfiles"] = serde_json::json!(["standard", "constrained"]);
             command
         },
         cmd_json(

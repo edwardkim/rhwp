@@ -1377,7 +1377,40 @@ pub fn svgs_to_pdf_with_links_and_to_chunk<F>(
     svg_pages: &[String],
     links: &[Vec<super::hyperlinks::PdfLink>],
     export_options: &PdfExportOptions,
+    to_chunk: F,
+) -> Result<Vec<u8>, String>
+where
+    F: FnMut(
+        &usvg::Tree,
+        bool,
+    ) -> Result<(pdf_writer::Chunk, pdf_writer::Ref), svg2pdf::ConversionError>,
+{
+    svgs_to_pdf_annotations_impl(
+        svg_pages,
+        links,
+        export_options,
+        to_chunk,
+        &vec![Vec::new(); svg_pages.len()],
+    )
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn svgs_to_pdf_with_annotations(
+    svg_pages: &[String],
+    links: &[Vec<super::hyperlinks::PdfLink>],
+    destinations: &[Vec<super::hyperlinks::PdfNamedDestination>],
+    options: &PdfExportOptions,
+) -> Result<Vec<u8>, String> {
+    svgs_to_pdf_annotations_impl(svg_pages, links, options, svg2pdf_to_chunk, destinations)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn svgs_to_pdf_annotations_impl<F>(
+    svg_pages: &[String],
+    links: &[Vec<super::hyperlinks::PdfLink>],
+    export_options: &PdfExportOptions,
     mut to_chunk: F,
+    destinations: &[Vec<super::hyperlinks::PdfNamedDestination>],
 ) -> Result<Vec<u8>, String>
 where
     F: FnMut(
@@ -1484,7 +1517,34 @@ where
 
     // PDF 생성
     let mut pdf = Pdf::new();
-    pdf.catalog(catalog_ref).pages(page_tree_ref);
+    let destinations_ref = alloc.bump();
+    pdf.catalog(catalog_ref)
+        .pages(page_tree_ref)
+        .destinations(destinations_ref);
+    {
+        let mut named = pdf.destinations(destinations_ref);
+        let mut names = std::collections::HashSet::new();
+        for (index, page) in page_datas.iter().enumerate() {
+            for destination in destinations.get(page.source_index).into_iter().flatten() {
+                if destination.x.is_finite()
+                    && destination.y.is_finite()
+                    && names.insert(destination.name.as_str())
+                {
+                    named
+                        .insert(pdf_writer::Name(
+                            super::hyperlinks::pdf_destination_key(&destination.name).as_bytes(),
+                        ))
+                        .page(page_refs[index])
+                        .xyz(
+                            (destination.x * 0.75) as f32,
+                            page.height - (destination.y * 0.75) as f32,
+                            None,
+                        );
+                }
+            }
+        }
+        named.finish();
+    }
     pdf.pages(page_tree_ref)
         .count(page_refs.len() as i32)
         .kids(page_refs.iter().copied());
@@ -1528,10 +1588,35 @@ where
                 ))
                 .page(page_ref)
                 .border(0.0, 0.0, 0.0, None);
-            annotation
-                .action()
-                .action_type(pdf_writer::types::ActionType::Uri)
-                .uri(pdf_writer::Str(link.uri.as_bytes()));
+            use crate::model::hyperlink::{classify_destination, LinkDestinationKind};
+            let mut action = annotation.action();
+            match classify_destination(&link.uri) {
+                Some(LinkDestinationKind::DocumentAnchor) => {
+                    action
+                        .action_type(pdf_writer::types::ActionType::GoTo)
+                        .destination_named(pdf_writer::Name(
+                            super::hyperlinks::pdf_destination_key(&link.uri[1..]).as_bytes(),
+                        ));
+                }
+                Some(LinkDestinationKind::RelativeFile | LinkDestinationKind::LocalFile)
+                    if !link.uri.to_ascii_lowercase().starts_with("file:") =>
+                {
+                    action.action_type(pdf_writer::types::ActionType::Launch);
+                    action
+                        .file_spec()
+                        .path(pdf_writer::Str(link.uri.as_bytes()))
+                        .unic_file(pdf_writer::TextStr(&link.uri));
+                }
+                Some(_) => {
+                    let uri = super::hyperlinks::export_uri(&link.uri)
+                        .ok_or("invalid PDF link destination")?;
+                    action
+                        .action_type(pdf_writer::types::ActionType::Uri)
+                        .uri(pdf_writer::Str(uri.as_bytes()));
+                }
+                None => return Err("invalid PDF link destination".into()),
+            }
+            action.finish();
             annotation.finish();
         }
 
@@ -1584,6 +1669,21 @@ pub fn layer_trees_to_pdf_with_options(
 pub fn layer_trees_to_pdf_with_links(
     layer_trees: &[crate::paint::PageLayerTree],
     links: &[Vec<super::hyperlinks::PdfLink>],
+    options: &DirectPdfExportOptions,
+) -> Result<Vec<u8>, String> {
+    layer_trees_to_pdf_with_annotations(
+        layer_trees,
+        links,
+        &vec![Vec::new(); layer_trees.len()],
+        options,
+    )
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub fn layer_trees_to_pdf_with_annotations(
+    layer_trees: &[crate::paint::PageLayerTree],
+    links: &[Vec<super::hyperlinks::PdfLink>],
+    destinations: &[Vec<super::hyperlinks::PdfNamedDestination>],
     options: &DirectPdfExportOptions,
 ) -> Result<Vec<u8>, String> {
     if links.len() != layer_trees.len() {
@@ -1643,8 +1743,11 @@ pub fn layer_trees_to_pdf_with_links(
 
     {
         let mut document = skia_safe::pdf::new_document(&mut output, Some(&metadata));
-        for ((tree, &(width, height)), links) in
-            layer_trees.iter().zip(page_sizes.iter()).zip(links)
+        for (page_index, ((tree, &(width, height)), links)) in layer_trees
+            .iter()
+            .zip(page_sizes.iter())
+            .zip(links)
+            .enumerate()
         {
             let mut page = document.begin_page((width, height), None);
             let canvas = page.canvas();
@@ -1653,19 +1756,37 @@ pub fn layer_trees_to_pdf_with_links(
             renderer
                 .render_page_to_canvas_strict(canvas, tree, options.raster_dpi / 96.0)
                 .map_err(|error| format!("direct PDF page replay failed: {error}"))?;
+            for destination in destinations.get(page_index).into_iter().flatten() {
+                if destination.x.is_finite() && destination.y.is_finite() {
+                    let mut name =
+                        super::hyperlinks::pdf_destination_key(&destination.name).into_bytes();
+                    name.push(0);
+                    canvas.annotate_named_destination(
+                        (destination.x as f32, destination.y as f32),
+                        &skia_safe::Data::new_copy(&name),
+                    );
+                }
+            }
             for link in super::hyperlinks::page_links(links, tree.page_width, tree.page_height) {
                 let r = link.rect;
-                let mut uri = link.uri.into_bytes();
+                let mut uri = super::hyperlinks::export_uri(&link.uri)
+                    .ok_or("invalid PDF link destination")?
+                    .into_bytes();
                 uri.push(0); // Skia URL annotation payload는 NUL 종료 문자열이다.
-                canvas.annotate_rect_with_url(
-                    skia_safe::Rect::from_xywh(
-                        r.x as f32,
-                        r.y as f32,
-                        r.width as f32,
-                        r.height as f32,
-                    ),
-                    &skia_safe::Data::new_copy(&uri),
+                let rect = skia_safe::Rect::from_xywh(
+                    r.x as f32,
+                    r.y as f32,
+                    r.width as f32,
+                    r.height as f32,
                 );
+                if link.uri.starts_with('#') {
+                    let mut name =
+                        super::hyperlinks::pdf_destination_key(&link.uri[1..]).into_bytes();
+                    name.push(0);
+                    canvas.annotate_link_to_destination(rect, &skia_safe::Data::new_copy(&name));
+                } else {
+                    canvas.annotate_rect_with_url(rect, &skia_safe::Data::new_copy(&uri));
+                }
             }
             document = page.end_page();
         }

@@ -7,7 +7,7 @@ use crate::renderer::typeset::{
 };
 impl TypesetEngine {
     #[allow(clippy::too_many_arguments)]
-    pub(super) fn place_paragraph_flow(
+    pub(super) fn place_paragraph_flow_with_storage<S: crate::storage::Storage>(
         &self,
         st: &mut TypesetState,
         para_idx: usize,
@@ -20,7 +20,8 @@ impl TypesetEngine {
         has_table: bool,
         issue2424_ts_enabled: bool,
         issue2424_prof: &mut Issue2424TypesetProfile,
-    ) -> Option<notes::footnotes::boundary::NativeHwp5FootnoteBreak> {
+        storage: &S,
+    ) -> Result<Option<notes::footnotes::boundary::NativeHwp5FootnoteBreak>, S::Error> {
         let issue2424_branch_started = issue2424_ts_enabled.then(std::time::Instant::now);
         let mut native_hwp5_footnote_break = None;
         if !has_table {
@@ -127,15 +128,17 @@ impl TypesetEngine {
                     .filter(|line| !is_synthetic_line_seg(line))
                     .map(|line| line.vertical_pos),
             );
-            let mut formatted = self.format_paragraph_with_known_square_band(
+            let formatted = self.format_paragraph_with_known_square_band_with_storage(
                 para,
                 composed.get(para_idx),
                 styles,
                 Some(col_w),
                 st.wrap_around_derived_band
                     || st.current_column_wrap_anchors.contains_key(&para_idx),
+                storage,
             );
             self.format_next_stored_vpos.set(None);
+            let mut formatted = formatted?;
             // HWP5 컨테이너는 파서의 raw 출처 봉인으로 편집 여부를 확인할 수 있다.
             // HWPX/원본 HWP3는 같은 출처 봉인이 없으므로 이 저장 증언 경로에 넣지 않는다.
             // 편집 중 복제한 줄을 정상 저장 원점으로 믿지 않고 기존 소유자에 남긴다.
@@ -200,14 +203,15 @@ impl TypesetEngine {
                 native_hwp5_first_footnote_overlap_break_line(&st, para, &formatted, self.dpi);
             let is_last_in_section = para_idx + 1 == paragraphs.len();
             // [Task #1027 Stage D] fit 직전 vpos 스냅으로 누적 drift 제거 (렌더러 정합).
-            self.vpos_snap_current_height(
+            self.vpos_snap_current_height_with_storage(
                 st,
                 para_idx,
                 paragraphs,
                 composed,
                 styles,
                 formatted.spacing_before,
-            );
+                storage,
+            )?;
             // 단 첫 줄이 완전한 자리차지 상자 뒤에 저장됐으면, 상자와 줄의
             // 닫힌 경계가 쪽 축 0을 인증한다. 그 줄의 양수 vpos를 쪽 원점으로
             // 빼면 뒤 본문이 올라가고 문단 내부의 다음 쪽 reset도 사라진다.
@@ -282,11 +286,18 @@ impl TypesetEngine {
                     formatted.height_for_fit.max(formatted.total_height),
                     next_h.unwrap_or(0.0),
                 ) {
-                    st.advance_column_or_new_page();
+                    st.advance_column_or_new_page_with_storage(storage)?;
                 }
             }
-            if !self.typeset_inline_flow(st, para_idx, para, styles, measured_tables) {
-                self.typeset_paragraph(
+            if !self.typeset_inline_flow_with_storage(
+                st,
+                para_idx,
+                para,
+                styles,
+                measured_tables,
+                storage,
+            )? {
+                self.typeset_paragraph_with_storage(
                     st,
                     para_idx,
                     para,
@@ -294,7 +305,8 @@ impl TypesetEngine {
                     paragraphs,
                     styles,
                     is_last_in_section,
-                );
+                    storage,
+                )?;
             }
             if let Some(origin) = opening_float_line.filter(|_| {
                 opening_page == (st.pages.len(), st.current_column)
@@ -302,13 +314,13 @@ impl TypesetEngine {
                         if *para_index == para_idx)
             }) {
                 // 실제 fit이 수용한 같은 원점·끝을 paint에도 전달한다.
-                st.record_paragraph_origin(crate::renderer::pagination::ParagraphOrigin {
+                st.record_paragraph_origin_with_storage(crate::renderer::pagination::ParagraphOrigin {
                     paragraph_index: para_idx,
                     spacing_before: formatted.spacing_before,
                     source_vpos_base: 0,
                     flow_start: origin - formatted.spacing_before,
                     flow_end: st.current_height,
-                });
+                }, storage)?;
             }
             if let Some(mut plan) = formatted
                 .square_host_plan
@@ -390,7 +402,7 @@ impl TypesetEngine {
             }
         } else {
             // 표 문단: Phase 2에서 전환 예정. 현재는 기존 방식 호환용 stub.
-            self.typeset_table_paragraph(
+            self.typeset_table_paragraph_with_storage(
                 st,
                 para_idx,
                 para,
@@ -401,7 +413,8 @@ impl TypesetEngine {
                 page_def,
                 paragraphs,
                 composed,
-            );
+                storage,
+            )?;
         }
         Issue2424TypesetProfile::add(
             if has_table {
@@ -412,6 +425,6 @@ impl TypesetEngine {
             issue2424_branch_started,
         );
 
-        native_hwp5_footnote_break
+        Ok(native_hwp5_footnote_break)
     }
 }

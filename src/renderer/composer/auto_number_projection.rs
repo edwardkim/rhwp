@@ -88,6 +88,13 @@ fn project_where(
     para: &Paragraph,
     owns: impl Fn(AutoNumberType) -> bool,
 ) {
+    if !para
+        .controls
+        .iter()
+        .any(|control| matches!(control, Control::AutoNumber(_)))
+    {
+        return;
+    }
     let sources = para.control_source_positions();
     for (index, control) in para.controls.iter().enumerate() {
         let Control::AutoNumber(number) = control else {

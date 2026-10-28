@@ -423,12 +423,13 @@ pub struct PdfDocument {
     /// Cached font sets keyed by /Font dictionary ObjectRef.
     /// Pages sharing the same /Font dict skip the entire load_fonts() loop.
     /// Bounded at 256 entries.
-    font_set_cache: Mutex<BoundedEntryCache<ObjectRef, Vec<(String, Arc<crate::fonts::FontInfo>)>>>,
+    font_set_cache:
+        Mutex<BoundedEntryCache<ObjectRef, Arc<Vec<(String, Arc<crate::fonts::FontInfo>)>>>>,
     /// Fingerprint-based font set cache for direct /Font dictionaries.
     /// Keyed by sorted font ObjectRefs hash, catches pages with different
     /// /Resources but same font references. Bounded at 256 entries.
     font_fingerprint_cache:
-        Mutex<BoundedEntryCache<u64, Vec<(String, Arc<crate::fonts::FontInfo>)>>>,
+        Mutex<BoundedEntryCache<u64, Arc<Vec<(String, Arc<crate::fonts::FontInfo>)>>>>,
     /// Name-based font set cache keyed by hash of sorted font names.
     /// Catches pages with different font ObjectRefs but the same font name→base font
     /// mapping (common in PDFs that create new font objects per page).
@@ -580,6 +581,8 @@ pub struct PdfDocument {
     /// hundreds of KB), so the result is cached for the document
     /// lifetime here. `Some(None)` means "checked once, no usable CMYK
     /// OutputIntent" — distinct from `None` (not yet checked).
+    import_icc_profiles:
+        Mutex<HashMap<ObjectRef, Option<std::sync::Arc<crate::color::IccProfile>>>>,
     output_intent_cmyk_profile_cache:
         Mutex<Option<Option<std::sync::Arc<crate::color::IccProfile>>>>,
     /// Accumulated extraction warnings for programmatic inspection.
@@ -1094,7 +1097,7 @@ impl PdfDocument {
         Ok(doc)
     }
 
-    /// Request-limited import. Corrupt-xref reconstruction and encryption are disabled.
+    /// Request-limited import with bounded xref recovery. Encryption requires a password API.
     /// This bounds decoded outputs, not all codec scratch or process memory.
     pub fn from_bytes_with_limits(
         data: Vec<u8>,
@@ -1114,8 +1117,17 @@ impl PdfDocument {
         if data.len() > limits.input_bytes {
             return Err(budget.reject("input bytes"));
         }
-        let source_bytes = data.clone();
-        let reader = PdfReader::Memory(BufReader::new(Cursor::new(data)));
+        budget.charge_decoded(data.len())?;
+        let mut source_bytes = Vec::new();
+        source_bytes
+            .try_reserve_exact(data.len())
+            .map_err(|_| budget.reject("PDF source copy allocation"))?;
+        source_bytes.extend_from_slice(&data);
+        // Keep the existing memory reader buffer size explicit and reserve its
+        // work before constructing it. Host supervision still bounds the heap.
+        const READER_BUFFER: usize = 8192;
+        budget.charge_decoded(READER_BUFFER)?;
+        let reader = PdfReader::Memory(BufReader::with_capacity(READER_BUFFER, Cursor::new(data)));
         let result = Self::open_from_reader_with_budget(reader, Some(budget.clone()));
         budget.check()?;
         let mut document = result?;
@@ -1258,14 +1270,14 @@ impl PdfDocument {
                 // However, if the xref is suspiciously small (< 5 entries), it's likely corrupted
                 // Try reconstruction to get a complete table
                 if xref.is_empty() {
-                    if import_budget.is_some() {
-                        return Err(Error::InvalidXref);
-                    }
                     log::warn!(
                         "Regular xref parsing succeeded but table is empty, attempting reconstruction"
                     );
                     xref_reconstructed = true;
-                    let (x, t, syn) = Self::try_reconstruct_xref(&mut reader)?;
+                    let (x, t, syn) = Self::try_reconstruct_xref_with_budget(
+                        &mut reader,
+                        import_budget.as_ref(),
+                    )?;
                     synthetic_objects = syn;
                     (x, t)
                 } else {
@@ -1278,12 +1290,11 @@ impl PdfDocument {
             Err(e) => {
                 if let Some(budget) = &import_budget {
                     budget.check()?;
-                    return Err(e);
                 }
                 log::warn!("Regular xref parsing failed: {}, attempting reconstruction", e);
 
                 // Fall back to xref reconstruction
-                match Self::try_reconstruct_xref(&mut reader) {
+                match Self::try_reconstruct_xref_with_budget(&mut reader, import_budget.as_ref()) {
                     Ok((reconstructed_xref, reconstructed_trailer, syn)) => {
                         log::info!("Successfully reconstructed xref table");
                         xref_reconstructed = true;
@@ -1291,6 +1302,9 @@ impl PdfDocument {
                         (reconstructed_xref, reconstructed_trailer)
                     },
                     Err(recon_err) => {
+                        if let Some(budget) = &import_budget {
+                            budget.check()?;
+                        }
                         log::error!("XRef reconstruction also failed: {}", recon_err);
                         return Err(e); // Return original error
                     },
@@ -1332,19 +1346,22 @@ impl PdfDocument {
         // Validate the /Root catalog is actually loadable. If not, the xref data is
         // corrupt despite parsing successfully — fall back to reconstruction.
         let (xref, trailer) = if !validate_root_loadable(&mut reader, &xref, &trailer) {
-            if import_budget.is_some() {
-                return Err(Error::InvalidXref);
-            }
             log::warn!(
                 "Root object not loadable after xref parse, falling back to xref reconstruction"
             );
-            match Self::try_reconstruct_xref(&mut reader) {
+            match Self::try_reconstruct_xref_with_budget(&mut reader, import_budget.as_ref()) {
                 Ok((x, t, syn)) => {
                     xref_reconstructed = true;
                     synthetic_objects = syn;
                     (x, t)
                 },
-                Err(_) => (xref, trailer), // Use original if reconstruction also fails
+                Err(error) => {
+                    if let Some(budget) = &import_budget {
+                        budget.check()?;
+                        return Err(error);
+                    }
+                    (xref, trailer)
+                },
             }
         } else {
             (xref, trailer)
@@ -1390,13 +1407,22 @@ impl PdfDocument {
             encryption_handler: Mutex::new(None),
             encrypt_dict_ref: Mutex::new(None),
             options: ParserOptions::default(),
-            import_budget,
+            import_budget: import_budget.clone(),
             header_offset,
-            font_cache: Mutex::new(BoundedEntryCache::new(512)),
-            font_set_cache: Mutex::new(BoundedEntryCache::new(256)),
-            font_fingerprint_cache: Mutex::new(BoundedEntryCache::new(256)),
-            font_name_set_cache: Mutex::new(BoundedEntryCache::new(256)),
-            font_identity_cache: Mutex::new(BoundedEntryCache::new(512)),
+            font_cache: Mutex::new(BoundedEntryCache::with_budget(512, import_budget.clone())),
+            font_set_cache: Mutex::new(BoundedEntryCache::with_budget(256, import_budget.clone())),
+            font_fingerprint_cache: Mutex::new(BoundedEntryCache::with_budget(
+                256,
+                import_budget.clone(),
+            )),
+            font_name_set_cache: Mutex::new(BoundedEntryCache::with_budget(
+                256,
+                import_budget.clone(),
+            )),
+            font_identity_cache: Mutex::new(BoundedEntryCache::with_budget(
+                512,
+                import_budget.clone(),
+            )),
             font_id_hash_cache: Mutex::new(HashMap::new()),
             structure_tree_cache: Mutex::new(None),
             structure_content_cache: Mutex::new(None),
@@ -1411,20 +1437,29 @@ impl PdfDocument {
             xobject_text_free_cache: Mutex::new(HashSet::new()),
             xobject_stream_cache: Mutex::new(HashMap::new()),
             xobject_stream_cache_bytes: AtomicUsize::new(0),
-            xobject_spans_cache: Mutex::new(BoundedEntryCache::new(
+            xobject_spans_cache: Mutex::new(BoundedEntryCache::with_budget(
                 DEFAULT_XOBJECT_CACHE_MAX_ENTRIES,
+                import_budget.clone(),
             )),
-            form_xobject_images_cache: Mutex::new(BoundedEntryCache::new(
+            form_xobject_images_cache: Mutex::new(BoundedEntryCache::with_budget(
                 DEFAULT_XOBJECT_CACHE_MAX_ENTRIES,
+                import_budget.clone(),
             )),
             erase_regions: Mutex::new(HashMap::new()),
-            page_content_cache: Mutex::new(BoundedEntryCache::new(64)),
-            import_page_operators: Mutex::new(BoundedEntryCache::new(1)),
-            page_spans_cache: Mutex::new(BoundedEntryCache::new(8)),
+            page_content_cache: Mutex::new(BoundedEntryCache::with_budget(
+                64,
+                import_budget.clone(),
+            )),
+            import_page_operators: Mutex::new(BoundedEntryCache::with_budget(
+                1,
+                import_budget.clone(),
+            )),
+            page_spans_cache: Mutex::new(BoundedEntryCache::with_budget(8, import_budget.clone())),
             search_index: Mutex::new(HashMap::new()),
-            page_chars_cache: Mutex::new(BoundedEntryCache::new(8)),
+            page_chars_cache: Mutex::new(BoundedEntryCache::with_budget(8, import_budget.clone())),
             running_artifact_signatures: Mutex::new(None),
             article_threads_cache: Mutex::new(None),
+            import_icc_profiles: Mutex::new(HashMap::new()),
             output_intent_cmyk_profile_cache: Mutex::new(None),
             accumulated_warnings: Mutex::new(Vec::new()),
             warning_sink: crate::extractors::warnings::WarningSink::new(),
@@ -1481,6 +1516,16 @@ impl PdfDocument {
     /// element is any SYNTHETIC objects (a rebuilt Catalog / page-tree root for a
     /// truncated file) the caller must seed into the object cache - empty in the
     /// ordinary case.
+    fn try_reconstruct_xref_with_budget<R: Read + Seek>(
+        reader: &mut R,
+        budget: Option<&std::sync::Arc<crate::import_limits::ImportBudget>>,
+    ) -> Result<(CrossRefTable, Object, Vec<(ObjectRef, Object)>)> {
+        match budget {
+            Some(budget) => crate::xref_bounded_recovery::recover(reader, budget),
+            None => Self::try_reconstruct_xref(reader),
+        }
+    }
+
     fn try_reconstruct_xref<R: Read + Seek>(
         reader: &mut R,
     ) -> Result<(CrossRefTable, Object, Vec<(ObjectRef, Object)>)> {
@@ -3212,11 +3257,14 @@ impl PdfDocument {
     ///
     /// See `crate::utils::snap_baselines_to_rows` for why the baseline alone
     /// is not a row key on a line that mixes font sizes.
-    fn sort_spans_by_snapped_rows(spans: &mut [crate::layout::TextSpan]) {
-        let all: Vec<usize> = (0..spans.len()).collect();
-        let row_baseline = crate::utils::snap_baselines_to_rows(spans, &all);
+    fn sort_spans_by_snapped_rows(
+        spans: &mut [crate::layout::TextSpan],
+        allocation: crate::import_storage::ImportStorage<'_>,
+    ) -> Result<()> {
+        let all = allocation.collect(0..spans.len())?;
+        let row_baseline = crate::utils::try_snap_baselines_to_rows(spans, &all, allocation)?;
         let mut order: Vec<usize> = all;
-        order.sort_by(|&a, &b| {
+        allocation.sort_by(&mut order, |&a, &b| {
             crate::utils::row_band_then_x(
                 row_baseline[a],
                 spans[a].bbox.x,
@@ -3224,307 +3272,13 @@ impl PdfDocument {
                 spans[b].bbox.x,
             )
             .then_with(|| crate::utils::safe_float_cmp(spans[b].bbox.y, spans[a].bbox.y))
-        });
-        let reordered: Vec<crate::layout::TextSpan> =
-            order.into_iter().map(|i| spans[i].clone()).collect();
-        spans.clone_from_slice(&reordered);
+        })?;
+        allocation.reorder(spans, &order)
     }
 
-    pub(crate) fn reorder_rowspan_labels(spans: &mut Vec<crate::layout::TextSpan>) {
-        use std::collections::HashMap;
-
-        if spans.len() < 10 {
-            return;
-        }
-
-        // Cluster by X proximity (15pt gap threshold). Walk spans ordered
-        // by left edge; start a new cluster whenever the gap exceeds the
-        // threshold.
-        let mut by_x: Vec<usize> = (0..spans.len()).collect();
-        by_x.sort_by(|&a, &b| crate::utils::safe_float_cmp(spans[a].bbox.x, spans[b].bbox.x));
-        const X_GAP: f32 = 15.0;
-        let mut columns: Vec<Vec<usize>> = Vec::new();
-        let mut cur: Vec<usize> = Vec::new();
-        let mut last_x = f32::NEG_INFINITY;
-        for &idx in &by_x {
-            let x = spans[idx].bbox.x;
-            if !cur.is_empty() && x - last_x > X_GAP {
-                columns.push(std::mem::take(&mut cur));
-            }
-            cur.push(idx);
-            last_x = x;
-        }
-        if !cur.is_empty() {
-            columns.push(cur);
-        }
-        if columns.len() < 2 {
-            return;
-        }
-
-        // Max column size is our reference for "dense".
-        let max_count = columns.iter().map(|c| c.len()).max().unwrap_or(0);
-        if max_count < 6 {
-            return;
-        }
-
-        // Sort columns by span count descending so we can pick the top
-        // dense cluster for anchor detection.
-        let mut col_order: Vec<usize> = (0..columns.len()).collect();
-        col_order.sort_by(|&a, &b| columns[b].len().cmp(&columns[a].len()));
-
-        // A column is "dense" when it holds a strict majority of the
-        // most populous column's spans. Pages with multiple dense data
-        // columns (three or more) let us derive the data-row range by
-        // intersecting their Y bands — headers and sub-headers populate
-        // only a subset of columns at their Y and fall out.
-        let dense_cols_count = columns.iter().filter(|c| c.len() * 2 > max_count).count();
-
-        // Most populous column, used for anchor Y lookups regardless.
-        let dense_col = &columns[col_order[0]];
-        let mut dense_ys: Vec<f32> = dense_col.iter().map(|&i| spans[i].bbox.y).collect();
-        dense_ys.sort_by(|a, b| crate::utils::safe_float_cmp(*b, *a));
-
-        // Compute the set of Y bands that count as "data". When several
-        // dense columns are available, require a band to have support in
-        // the top three; otherwise fall back to the single dense column's
-        // own Y values.
-        let band_of = |y: f32| (y / crate::utils::ROW_BAND_TOLERANCE_PT).round() as i32;
-        use std::collections::{BTreeSet, HashMap as StdHashMap, HashSet};
-
-        let data_bands: BTreeSet<i32> = if dense_cols_count >= 3 {
-            let top: Vec<&Vec<usize>> = col_order.iter().take(3).map(|&i| &columns[i]).collect();
-            let mut support: StdHashMap<i32, usize> = StdHashMap::new();
-            for col in &top {
-                let bands: HashSet<i32> = col.iter().map(|&i| band_of(spans[i].bbox.y)).collect();
-                for b in bands {
-                    *support.entry(b).or_insert(0) += 1;
-                }
-            }
-            support
-                .into_iter()
-                .filter(|(_, c)| *c >= 3)
-                .map(|(b, _)| b)
-                .collect()
-        } else if dense_cols_count == 2 {
-            let a: HashSet<i32> = columns[col_order[0]]
-                .iter()
-                .map(|&i| band_of(spans[i].bbox.y))
-                .collect();
-            let b: HashSet<i32> = columns[col_order[1]]
-                .iter()
-                .map(|&i| band_of(spans[i].bbox.y))
-                .collect();
-            a.intersection(&b).copied().collect()
-        } else {
-            dense_col
-                .iter()
-                .map(|&i| band_of(spans[i].bbox.y))
-                .collect()
-        };
-
-        if data_bands.len() < 4 {
-            return;
-        }
-        let band_pt = crate::utils::ROW_BAND_TOLERANCE_PT;
-        let data_top = (*data_bands.iter().next_back().unwrap() as f32) * band_pt + band_pt / 2.0;
-        let data_bot = (*data_bands.iter().next().unwrap() as f32) * band_pt - band_pt / 2.0;
-
-        // Y-bands occupied by the dense column. Genuine rowspan labels are
-        // vertically centred *between* data rows, so their Y-band must NOT
-        // appear in this set. Spans whose Y aligns with the dense column are
-        // line-continuation text on the same logical line, not labels.
-        let dense_bands: HashSet<i32> = dense_col
-            .iter()
-            .map(|&i| band_of(spans[i].bbox.y))
-            .collect();
-
-        // Numbered reference/bibliography lists render the leading marker
-        // ("1.", "2.", "3.") in a narrow column to the left of the body
-        // text. That marker column is sparse (one per entry) and its markers
-        // sit between body rows, so they look exactly like rowspan labels to
-        // the heuristic below — but they are NOT: each number belongs to its
-        // own entry and promoting them scrambles the reference order. Detect
-        // the pattern (>=3 numbered markers sharing a tight left-edge cluster
-        // and spread down >=3 distinct rows = a vertical numbered list) and
-        // exclude those markers from label promotion.
-        let is_numbered_marker = |i: usize| -> bool {
-            let t = spans[i].text.trim_start();
-            let digits = t.chars().take_while(|c| c.is_ascii_digit()).count();
-            (1..=3).contains(&digits) && t[digits..].starts_with(['.', ')'])
-        };
-        let numbered_excluded: HashSet<usize> = {
-            let markers: Vec<usize> = (0..spans.len())
-                .filter(|&i| is_numbered_marker(i))
-                .collect();
-            if markers.len() >= 3 {
-                let mut xs: Vec<f32> = markers.iter().map(|&i| spans[i].bbox.x).collect();
-                xs.sort_by(|a, b| crate::utils::safe_float_cmp(*a, *b));
-                let median_x = xs[xs.len() / 2];
-                let cluster: Vec<usize> = markers
-                    .iter()
-                    .copied()
-                    .filter(|&i| (spans[i].bbox.x - median_x).abs() <= 6.0)
-                    .collect();
-                let rows: HashSet<i32> =
-                    cluster.iter().map(|&i| band_of(spans[i].bbox.y)).collect();
-                if cluster.len() >= 3 && rows.len() >= 3 {
-                    cluster.into_iter().collect()
-                } else {
-                    HashSet::new()
-                }
-            } else {
-                HashSet::new()
-            }
-        };
-
-        // Collect "label" candidates: spans that sit in a "sparse"
-        // column — one that holds meaningfully fewer spans than the
-        // most populous column. A candidate only qualifies when it
-        // sits strictly inside the data Y range AND the sparse column
-        // it belongs to has at least two entries inside that range —
-        // single-span sparse cells are almost always stray annotations,
-        // not labels.
-        let mut labels: Vec<usize> = Vec::new();
-        for col in &columns {
-            if col.len() < 2 || col.len() * 2 >= max_count {
-                continue;
-            }
-            let in_data: Vec<usize> = col
-                .iter()
-                .copied()
-                .filter(|&i| {
-                    let y = spans[i].bbox.y;
-                    // Exclude spans on the same Y-band as the dense column:
-                    // those are line-continuation text, not rowspan labels.
-                    // Also exclude numbered-list markers (reference numbers),
-                    // which would otherwise be hoisted out of reading order.
-                    y > data_bot
-                        && y < data_top
-                        && !dense_bands.contains(&band_of(y))
-                        && !numbered_excluded.contains(&i)
-                })
-                .collect();
-            if in_data.len() >= 2 {
-                labels.extend(in_data);
-            }
-        }
-        if labels.is_empty() {
-            return;
-        }
-
-        // A stub label is a word. The clustering reasons in table terms — a
-        // sparse column against a dense one — and on prose it finds that shape
-        // anyway: a mathematics page whose lines are cut into many runs by
-        // inline symbols offered three single glyphs of a display equation as
-        // its sparse column, and promoting them to the head of their block
-        // reordered the paragraph around them, so a trailing line came out
-        // ahead of the line it continues (`criterionThe ridge regression ...`).
-        //
-        // ISO 32000-1:2008 §14.8.4.3.4 makes a table's row (TR) the element
-        // that holds its cells (TD), and a stub cell carries the row's name —
-        // text, not a lone glyph. Requiring most candidates to be more than one
-        // character keeps the promotion on the shape it was written for.
-        let multi_char = labels
-            .iter()
-            .filter(|&&i| spans[i].text.trim().chars().count() > 1)
-            .count();
-        if multi_char * 2 <= labels.len() {
-            return;
-        }
-        labels.sort_by(|&a, &b| crate::utils::safe_float_cmp(spans[b].bbox.y, spans[a].bbox.y));
-
-        // Labels that sit at near-identical Y values almost always
-        // annotate the same logical row block (e.g. a test-name in the
-        // "name" column alongside a unit "×10⁹/L" in the "unit" column,
-        // both vertically centred in the same 6-row group). Cluster
-        // labels by Y proximity so each logical block is promoted as a
-        // unit.
-        const CLUSTER_GAP: f32 = 10.0;
-        let mut clusters: Vec<Vec<usize>> = Vec::new();
-        let mut cur: Vec<usize> = Vec::new();
-        let mut last_y = f32::NAN;
-        for &idx in &labels {
-            let y = spans[idx].bbox.y;
-            if !cur.is_empty() && (last_y - y).abs() > CLUSTER_GAP {
-                clusters.push(std::mem::take(&mut cur));
-            }
-            cur.push(idx);
-            last_y = y;
-        }
-        if !cur.is_empty() {
-            clusters.push(cur);
-        }
-        let cluster_ys: Vec<f32> = clusters
-            .iter()
-            .map(|c| c.iter().map(|&i| spans[i].bbox.y).sum::<f32>() / c.len() as f32)
-            .collect();
-
-        // For each cluster, compute the midpoint partition boundaries
-        // against its immediate neighbour clusters and find the topmost
-        // dense-column Y that falls inside the partition. Promote every
-        // member of the cluster to the same anchor so they sort together
-        // at the top of their row block.
-        let mut promoted: HashMap<usize, f32> = HashMap::new();
-        for (k, cluster) in clusters.iter().enumerate() {
-            let c_y = cluster_ys[k];
-            let upper = if k > 0 {
-                (cluster_ys[k - 1] + c_y) / 2.0
-            } else {
-                f32::INFINITY
-            };
-            let lower = if k + 1 < clusters.len() {
-                (c_y + cluster_ys[k + 1]) / 2.0
-            } else {
-                f32::NEG_INFINITY
-            };
-            let upper_clamped = upper.min(data_top);
-            let lower_clamped = lower.max(data_bot - 1.0);
-            let mut anchor = f32::NEG_INFINITY;
-            for &y in &dense_ys {
-                if y <= upper_clamped && y > lower_clamped && y > anchor {
-                    anchor = y;
-                }
-            }
-            if anchor.is_finite() {
-                for &i in cluster {
-                    promoted.insert(i, anchor + 1.0);
-                }
-            }
-        }
-        if promoted.is_empty() {
-            return;
-        }
-
-        // Re-sort spans using the promoted Ys for labels and, for everything
-        // else, the baseline of the row the span is printed on. Keep the
-        // row-aware comparator so the ordering stays consistent with the rest
-        // of the pipeline.
-        //
-        // The unpromoted spans take their key from `snap_baselines_to_rows`
-        // rather than `bbox.y`: this re-sort covers the whole page, so reading
-        // the raw baseline here would undo the row grouping the caller just
-        // established and split a mixed-size row apart again.
-        let all: Vec<usize> = (0..spans.len()).collect();
-        let row_baseline = crate::utils::snap_baselines_to_rows(spans, &all);
-        let mut order: Vec<usize> = all;
-        order.sort_by(|&a, &b| {
-            let ya = promoted.get(&a).copied().unwrap_or(row_baseline[a]);
-            let yb = promoted.get(&b).copied().unwrap_or(row_baseline[b]);
-            // Band and x come from the promoted key — that is what lifts a
-            // label to the head of its row block. The final baseline tiebreak
-            // must come from the baseline the page actually draws: a promoted
-            // key is `anchor + 1.0`, an offset chosen to land inside the
-            // anchor's band, and it is bookkeeping rather than a position. Let
-            // it break the tie and it outranks a real baseline — a wrapped
-            // table cell's continuation line, promoted to `anchor + 1.0` and
-            // sharing its column's x exactly, sorted ahead of the line it
-            // continues and split that row apart.
-            crate::utils::row_band_then_x(ya, spans[a].bbox.x, yb, spans[b].bbox.x)
-                .then_with(|| crate::utils::safe_float_cmp(spans[b].bbox.y, spans[a].bbox.y))
-        });
-        let reordered: Vec<crate::layout::TextSpan> =
-            order.into_iter().map(|i| spans[i].clone()).collect();
-        *spans = reordered;
+    pub(crate) fn reorder_rowspan_labels(spans: &mut [crate::layout::TextSpan]) {
+        crate::rowspan_labels::reorder(spans, crate::import_storage::ImportStorage(None))
+            .expect("rowspan scratch allocation");
     }
 
     /// Recursively decrypt every `Object::String` inside `obj` using the
@@ -3586,6 +3340,37 @@ impl PdfDocument {
         offset: u64,
         already_corrected: bool,
     ) -> Result<Object> {
+        if let Some(budget) = self
+            .import_budget()
+            .filter(|_| !self.source_bytes.is_empty())
+        {
+            let parse_error = || Error::Decode("invalid bounded object extent".into());
+            let offset = usize::try_from(offset).map_err(|_| parse_error())?;
+            let input = self.source_bytes.get(offset..).ok_or_else(parse_error)?;
+            let (remaining, id) = crate::lexer::token(input).map_err(|_| parse_error())?;
+            let (remaining, generation) =
+                crate::lexer::token(remaining).map_err(|_| parse_error())?;
+            let (remaining, marker) = crate::lexer::token(remaining).map_err(|_| parse_error())?;
+            if id != crate::lexer::Token::Integer(i64::from(obj_ref.id))
+                || generation != crate::lexer::Token::Integer(i64::from(obj_ref.gen))
+                || marker != crate::lexer::Token::ObjStart
+            {
+                return Err(parse_error());
+            }
+            let (remaining, object) =
+                crate::parser::parse_indirect_prefix_with_budget(remaining, budget, |reference| {
+                    self.load_object(reference)
+                })?;
+            let (_, end) = crate::lexer::token(remaining).map_err(|_| parse_error())?;
+            if end != crate::lexer::Token::ObjEnd {
+                return Err(parse_error());
+            }
+            budget.check()?;
+            self.object_cache
+                .lock_or_recover()
+                .insert(obj_ref, crate::object_copy::clone_object(&object, Some(budget))?);
+            return Ok(object);
+        }
         // --- Phase 1: read the object header under a single lock guard ---
         // Holding one guard for seek+read prevents the split-lock race (#398 Race A)
         // where a concurrent thread can re-seek the shared BufReader between our
@@ -4415,6 +4200,48 @@ impl PdfDocument {
     ///
     /// Returns `None` when no output intent exists, no CMYK entry is
     /// present, or the profile stream can't be parsed as ICC.
+    pub(crate) fn import_icc_profile(
+        &self,
+        reference: ObjectRef,
+    ) -> Option<std::sync::Arc<crate::color::IccProfile>> {
+        if let Some(value) = self.import_icc_profiles.lock_or_recover().get(&reference) {
+            return value.clone();
+        }
+        let resolved = (|| {
+            let object = self.load_object(reference).ok()?;
+            let n = object
+                .as_dict()?
+                .get("N")?
+                .as_integer()
+                .filter(|n| matches!(n, 1 | 3 | 4))? as u8;
+            let bytes = self
+                .decode_stream_with_encryption(&object, reference)
+                .ok()?;
+            let mut profile = crate::color::IccProfile::parse(bytes, n)?;
+            profile.bind_budget(self.import_budget());
+            Some(std::sync::Arc::new(profile))
+        })();
+        let mut cache = self.import_icc_profiles.lock_or_recover();
+        if let Some(value) = cache.get(&reference) {
+            return value.clone();
+        }
+        if let Some(budget) = self.import_budget() {
+            budget.charge_entries(1).ok()?;
+            budget
+                .charge_decoded(std::mem::size_of::<(
+                    ObjectRef,
+                    Option<std::sync::Arc<crate::color::IccProfile>>,
+                )>())
+                .ok()?;
+            if cache.try_reserve(1).is_err() {
+                budget.reject("ICC profile cache allocation");
+                return None;
+            }
+        }
+        cache.entry(reference).or_insert(resolved).clone()
+    }
+
+    /// Cached CMYK source profile declared by the document OutputIntent.
     pub fn output_intent_cmyk_profile(&self) -> Option<std::sync::Arc<crate::color::IccProfile>> {
         // Memoise the (potentially expensive) decode + parse: hot rendering
         // paths consult this accessor once per paint, and qcms / lcms2
@@ -4502,6 +4329,10 @@ impl PdfDocument {
                 Object::Reference(r) => format!("DestOutputProfile {r}"),
                 _ => "inline DestOutputProfile".to_string(),
             };
+            let profile_reference = match &profile_obj {
+                Object::Reference(reference) => *reference,
+                _ => ObjectRef::new(0, 0),
+            };
             let profile_stream = match profile_obj {
                 Object::Reference(r) => {
                     match self.load_object(r) {
@@ -4522,7 +4353,8 @@ impl PdfDocument {
                 Some(4) => 4u8, // only CMYK; ignore RGB/Gray output intents here
                 _ => continue,
             };
-            let bytes = match profile_stream.decode_stream_data() {
+            let bytes = match self.decode_stream_with_encryption(&profile_stream, profile_reference)
+            {
                 Ok(b) => b,
                 Err(e) => {
                     log::warn!(
@@ -4532,7 +4364,10 @@ impl PdfDocument {
                 },
             };
             match crate::color::IccProfile::parse(bytes, n) {
-                Some(prof) => return Some(std::sync::Arc::new(prof)),
+                Some(mut prof) => {
+                    prof.bind_budget(self.import_budget());
+                    return Some(std::sync::Arc::new(prof));
+                },
                 None => {
                     log::warn!(
                         "OutputIntent {profile_label} is not a valid N=4 ICC profile; skipping"
@@ -10350,25 +10185,41 @@ impl PdfDocument {
     /// human-readable text in their /Contents field. Widget annotations are already
     /// handled by `extract_widget_spans`; Popup annotations hold no independent
     /// content (their text belongs to the parent annotation).
-    fn annotation_content_spans(&self, page_index: usize) -> Vec<TextSpan> {
+    fn annotation_content_spans(&self, page_index: usize) -> Result<Vec<TextSpan>> {
+        let allocation = crate::import_storage::ImportStorage(self.import_budget.as_deref());
+        allocation.bytes(0)?;
+
         use crate::geometry::Rect;
 
         let page_obj = match self.get_page(page_index) {
             Ok(o) => o,
-            Err(_) => return Vec::new(),
+            Err(_) => {
+                self.check_import_budget()?;
+                return Ok(Vec::new());
+            },
         };
         let page_dict = match page_obj.as_dict() {
             Some(d) => d,
-            None => return Vec::new(),
+            None => return Ok(Vec::new()),
         };
 
+        let resolved_annots;
         let annots_arr = match page_dict.get("Annots") {
-            Some(Object::Array(arr)) => arr.clone(),
-            Some(Object::Reference(r)) => match self.load_object(*r) {
-                Ok(Object::Array(arr)) => arr,
-                _ => return Vec::new(),
+            Some(Object::Array(arr)) => arr,
+            Some(Object::Reference(r)) => {
+                resolved_annots = match self.load_object(*r) {
+                    Ok(value) => value,
+                    Err(_) => {
+                        self.check_import_budget()?;
+                        return Ok(Vec::new());
+                    },
+                };
+                match &resolved_annots {
+                    Object::Array(arr) => arr,
+                    _ => return Ok(Vec::new()),
+                }
             },
-            _ => return Vec::new(),
+            _ => return Ok(Vec::new()),
         };
 
         let mut spans: Vec<TextSpan> = Vec::new();
@@ -10379,22 +10230,20 @@ impl PdfDocument {
                 Object::Reference(r) => *r,
                 _ => continue,
             };
-            let dict = match self.load_object(annot_ref) {
-                Ok(obj) => match obj.as_dict() {
-                    Some(d) => d.clone(),
-                    None => continue,
+            let annotation = match self.load_object(annot_ref) {
+                Ok(value) => value,
+                Err(_) => {
+                    self.check_import_budget()?;
+                    continue;
                 },
-                Err(_) => continue,
             };
-
-            let subtype = match dict.get("Subtype").and_then(|s| s.as_name()) {
-                Some(s) => s.to_string(),
-                None => continue,
+            let Some(dict) = annotation.as_dict() else {
+                continue;
             };
-            let subtype_lc = subtype.to_ascii_lowercase();
-
-            // Skip Widget (handled by extract_widget_spans) and Popup (no independent content).
-            if subtype_lc == "widget" || subtype_lc == "popup" {
+            let Some(subtype) = dict.get("Subtype").and_then(|value| value.as_name()) else {
+                continue;
+            };
+            if subtype.eq_ignore_ascii_case("Widget") || subtype.eq_ignore_ascii_case("Popup") {
                 continue;
             }
 
@@ -10411,14 +10260,18 @@ impl PdfDocument {
             // notes into the body text stream.
             // For FreeText/Stamp: try /Contents first; fall back to AP stream so that
             // Stamp annotations with empty /Contents but a rendered AP stream are included.
-            let is_visible = matches!(subtype_lc.as_str(), "freetext" | "stamp");
+            let is_visible =
+                subtype.eq_ignore_ascii_case("FreeText") || subtype.eq_ignore_ascii_case("Stamp");
             if !is_visible {
                 continue;
             }
 
             let text = {
                 let from_contents = if let Some(Object::String(s)) = dict.get("Contents") {
-                    let decoded = Self::decode_pdf_text_string(s).trim().to_string();
+                    let decoded = crate::annotation_text::trim(
+                        &crate::annotation_text::decode(s, allocation)?,
+                        allocation,
+                    )?;
                     if decoded.is_empty() {
                         None
                     } else {
@@ -10430,8 +10283,10 @@ impl PdfDocument {
                 if let Some(t) = from_contents {
                     t
                 } else {
-                    match self.extract_text_from_ap_stream(&dict) {
-                        Some(ap_text) if !ap_text.trim().is_empty() => ap_text.trim().to_string(),
+                    match self.try_extract_text_from_ap_stream(dict)? {
+                        Some(ap_text) if !ap_text.trim().is_empty() => {
+                            crate::annotation_text::trim(&ap_text, allocation)?
+                        },
                         _ => continue,
                     }
                 }
@@ -10439,12 +10294,19 @@ impl PdfDocument {
 
             // Use /Rect as the annotation's bounding box.
             // /Rect may be a direct array or an indirect reference to an array.
+            let resolved_rect;
             let rect_obj = match dict.get("Rect") {
-                Some(Object::Reference(r)) => match self.load_object(*r) {
-                    Ok(o) => o,
-                    Err(_) => continue,
+                Some(Object::Reference(reference)) => {
+                    resolved_rect = match self.load_object(*reference) {
+                        Ok(value) => value,
+                        Err(_) => {
+                            self.check_import_budget()?;
+                            continue;
+                        },
+                    };
+                    &resolved_rect
                 },
-                Some(o) => o.clone(),
+                Some(value) => value,
                 None => continue,
             };
             let rect = match rect_obj.as_array() {
@@ -10478,43 +10340,46 @@ impl PdfDocument {
                 _ => continue,
             };
 
-            spans.push(TextSpan {
-                provenance: None,
-                artifact_type: None,
-                text,
-                bbox: rect,
-                font_name: String::new(),
-                font_size: 12.0,
-                font_weight: crate::layout::text_block::FontWeight::Normal,
-                is_italic: false,
-                is_monospace: false,
-                color: crate::layout::text_block::Color {
-                    r: 0.0,
-                    g: 0.0,
-                    b: 0.0,
+            allocation.push(
+                &mut spans,
+                TextSpan {
+                    provenance: None,
+                    artifact_type: None,
+                    text,
+                    bbox: rect,
+                    font_name: String::new(),
+                    font_size: 12.0,
+                    font_weight: crate::layout::text_block::FontWeight::Normal,
+                    is_italic: false,
+                    is_monospace: false,
+                    color: crate::layout::text_block::Color {
+                        r: 0.0,
+                        g: 0.0,
+                        b: 0.0,
+                    },
+                    mcid: None,
+                    mcid_scope: None,
+                    sequence: base_sequence + idx,
+                    split_boundary_before: false,
+                    offset_semantic: false,
+                    char_spacing: 0.0,
+                    word_spacing: 0.0,
+                    horizontal_scaling: 100.0,
+                    primary_detected: false,
+                    char_widths: vec![],
+                    char_x_offsets: Vec::new(),
+                    heading_level: None,
+                    rotation_degrees: 0.0,
+                    wmode: 0,
+                    text_rise: 0.0,
+                    rtl_draw_logical: false,
+                    mirrored: false,
+                    page_rotation_applied: 0,
                 },
-                mcid: None,
-                mcid_scope: None,
-                sequence: base_sequence + idx,
-                split_boundary_before: false,
-                offset_semantic: false,
-                char_spacing: 0.0,
-                word_spacing: 0.0,
-                horizontal_scaling: 100.0,
-                primary_detected: false,
-                char_widths: vec![],
-                char_x_offsets: Vec::new(),
-                heading_level: None,
-                rotation_degrees: 0.0,
-                wmode: 0,
-                text_rise: 0.0,
-                rtl_draw_logical: false,
-                mirrored: false,
-                page_rotation_applied: 0,
-            });
+            )?;
         }
-
-        spans
+        self.check_import_budget()?;
+        Ok(spans)
     }
 
     /// Walk /Parent chain to find inherited /Ff (field flags) value.
@@ -10787,74 +10652,109 @@ impl PdfDocument {
         &self,
         annot_dict: &std::collections::HashMap<String, Object>,
     ) -> Option<String> {
-        use crate::extractors::TextExtractor;
-
-        // Get /AP dictionary
-        let ap_obj = annot_dict.get("AP")?;
-        let ap = if let Some(r) = ap_obj.as_reference() {
-            self.load_object(r).ok()?
-        } else {
-            ap_obj.clone()
+        self.try_extract_text_from_ap_stream(annot_dict)
+            .ok()
+            .flatten()
+    }
+    fn try_extract_text_from_ap_stream(
+        &self,
+        annot_dict: &std::collections::HashMap<String, Object>,
+    ) -> Result<Option<String>> {
+        let allocation = crate::import_storage::ImportStorage(self.import_budget.as_deref());
+        allocation.bytes(0)?;
+        let Some(ap_obj) = annot_dict.get("AP") else {
+            return Ok(None);
         };
-        let ap_dict = ap.as_dict()?;
-
-        // Get /N (Normal appearance) — can be a stream ref or a dictionary of states
-        let n_obj = ap_dict.get("N")?;
-        let (n_stream, n_ref) = match n_obj {
-            Object::Reference(r) => (self.load_object(*r).ok()?, *r),
-            _ => return None, // N must be a reference to a stream
-        };
-
-        // Verify it's a stream (has a dict with stream data)
-        let n_dict = n_stream.as_dict()?;
-
-        // Decode the AP/N stream
-        let stream_data = match self.decode_stream_with_encryption(&n_stream, n_ref) {
-            Ok(data) => data,
-            Err(_) => return None,
-        };
-
-        // Quick check: does the stream contain text operators?
-        if !Self::may_contain_text(&stream_data) {
-            return None;
-        }
-
-        // Create a temporary text extractor for this AP stream
-        let mut extractor = TextExtractor::new();
-
-        // Load fonts from the AP/N stream's own /Resources. No resources on
-        // the AP stream — try the annotation's /DR or parent page resources
-        // — means we can't decode fonts, so bail.
-        {
-            let resources = n_dict.get("Resources")?;
-            let res_obj = if let Some(r) = resources.as_reference() {
-                self.load_object(r)
-                    .ok()
-                    .unwrap_or_else(|| resources.clone())
-            } else {
-                resources.clone()
+        let resolved_ap;
+        let ap = if let Some(reference) = ap_obj.as_reference() {
+            resolved_ap = match self.load_object(reference) {
+                Ok(value) => value,
+                Err(_) => {
+                    self.check_import_budget()?;
+                    return Ok(None);
+                },
             };
-            extractor.set_resources(res_obj.clone());
-            extractor.set_document(self);
-            let _ = self.load_fonts(&res_obj, &mut extractor);
+            &resolved_ap
+        } else {
+            ap_obj
+        };
+        let Some(ap_dict) = ap.as_dict() else {
+            return Ok(None);
+        };
+        let Some(n_obj) = ap_dict.get("N") else {
+            return Ok(None);
+        };
+        let Some(n_ref) = n_obj.as_reference() else {
+            return Ok(None);
+        };
+        let n_stream = match self.load_object(n_ref) {
+            Ok(value) => value,
+            Err(_) => {
+                self.check_import_budget()?;
+                return Ok(None);
+            },
+        };
+        let Some(n_dict) = n_stream.as_dict() else {
+            return Ok(None);
+        };
+        let stream_data = match self.decode_stream_with_encryption(&n_stream, n_ref) {
+            Ok(value) => value,
+            Err(_) => {
+                self.check_import_budget()?;
+                return Ok(None);
+            },
+        };
+        if !Self::may_contain_text(&stream_data) {
+            return Ok(None);
         }
-
-        // Extract text spans from the AP stream
-        let spans = extractor.extract_text_spans(&stream_data).ok()?;
+        let mut extractor = crate::extractors::TextExtractor::new();
+        let Some(resources) = n_dict.get("Resources") else {
+            return Ok(None);
+        };
+        let res_obj = if let Some(reference) = resources.as_reference() {
+            match self.load_object(reference) {
+                Ok(value) => value,
+                Err(_) => {
+                    self.check_import_budget()?;
+                    crate::object_copy::clone_object(resources, self.import_budget.as_deref())?
+                },
+            }
+        } else {
+            crate::object_copy::clone_object(resources, self.import_budget.as_deref())?
+        };
+        extractor.set_resources(crate::object_copy::clone_object(
+            &res_obj,
+            self.import_budget.as_deref(),
+        )?);
+        extractor.set_document(self);
+        let _ = self.load_fonts(&res_obj, &mut extractor);
+        self.check_import_budget()?;
+        let spans = match extractor.extract_text_spans(&stream_data) {
+            Ok(value) => value,
+            Err(_) => {
+                self.check_import_budget()?;
+                return Ok(None);
+            },
+        };
         if spans.is_empty() {
-            return None;
+            return Ok(None);
         }
-
-        // Collect span text
-        let text: String = spans
-            .iter()
-            .map(|s| s.text.as_str())
-            .collect::<Vec<_>>()
-            .join(" ");
+        let bytes = spans.iter().try_fold(0usize, |n, span| {
+            n.checked_add(span.text.len())
+                .and_then(|n| n.checked_add(1))
+                .ok_or_else(|| allocation.reject("appearance text size"))
+        })?;
+        let mut text = allocation.string_capacity(bytes)?;
+        for (i, span) in spans.iter().enumerate() {
+            if i > 0 {
+                text.push(' ');
+            }
+            text.push_str(&span.text);
+        }
         if text.trim().is_empty() {
-            return None;
+            return Ok(None);
         }
-        Some(text)
+        Ok(Some(text))
     }
 
     /// Char-count capacity for what physically fits inside a widget
@@ -10973,35 +10873,8 @@ impl PdfDocument {
 
     /// Decode a PDF text string that may be UTF-16BE/LE (with BOM) or PDFDocEncoding.
     fn decode_pdf_text_string(bytes: &[u8]) -> String {
-        if bytes.len() >= 2 && bytes[0] == 0xFE && bytes[1] == 0xFF {
-            // UTF-16BE with BOM
-            let utf16_bytes = &bytes[2..];
-            let utf16_pairs: Vec<u16> = utf16_bytes
-                .as_chunks::<2>()
-                .0
-                .iter()
-                .map(|chunk| u16::from_be_bytes([chunk[0], chunk[1]]))
-                .collect();
-            String::from_utf16(&utf16_pairs)
-                .unwrap_or_else(|_| String::from_utf8_lossy(bytes).to_string())
-        } else if bytes.len() >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE {
-            // UTF-16LE with BOM
-            let utf16_bytes = &bytes[2..];
-            let utf16_pairs: Vec<u16> = utf16_bytes
-                .as_chunks::<2>()
-                .0
-                .iter()
-                .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
-                .collect();
-            String::from_utf16(&utf16_pairs)
-                .unwrap_or_else(|_| String::from_utf8_lossy(bytes).to_string())
-        } else {
-            // PDFDocEncoding — superset of ISO Latin-1
-            bytes
-                .iter()
-                .filter_map(|&b| crate::fonts::font_dict::pdfdoc_encoding_lookup(b))
-                .collect()
-        }
+        crate::annotation_text::decode(bytes, crate::import_storage::ImportStorage(None))
+            .expect("PDF text allocation")
     }
 
     /// Strip XHTML tags from rich content (/RC) to extract plain text.
@@ -13131,29 +13004,14 @@ impl PdfDocument {
     pub(crate) fn order_rotated_blocks(
         spans: Vec<crate::layout::TextSpan>,
     ) -> Vec<crate::layout::TextSpan> {
-        let mut groups: Vec<(f32, Vec<crate::layout::TextSpan>)> = Vec::new();
-        for s in spans {
-            let key = s.rotation_degrees;
-            match groups.iter_mut().find(|(k, _)| (*k - key).abs() < 0.5) {
-                Some(g) => g.1.push(s),
-                None => groups.push((key, vec![s])),
-            }
-        }
-        let mut out = Vec::new();
-        for (deg, mut group) in groups {
-            let (sin, cos) = (-deg).to_radians().sin_cos();
-            // Upright frame: rotate each origin by -deg, then read top→bottom,
-            // left→right exactly as horizontal text.
-            group.sort_by(|a, b| {
-                let ax = a.bbox.x * cos - a.bbox.y * sin;
-                let ay = a.bbox.x * sin + a.bbox.y * cos;
-                let bx = b.bbox.x * cos - b.bbox.y * sin;
-                let by = b.bbox.x * sin + b.bbox.y * cos;
-                crate::utils::row_aware_span_cmp(ay, ax, by, bx)
-            });
-            out.extend(group);
-        }
-        out
+        let mut spans = spans;
+        crate::rotated_order::reorder(
+            &mut spans,
+            false,
+            crate::import_storage::ImportStorage(None),
+        )
+        .expect("rotated scratch allocation");
+        spans
     }
 
     /// Re-attach an oversized lone leading capital (a drop-cap / table-title
@@ -13313,32 +13171,10 @@ impl PdfDocument {
     /// dropped so the number reads as one token. The leading digit must abut
     /// `¬` directly in both shapes, so a genuinely spaced negation (`5 ¬ 3`,
     /// `A ¬ B`) is left untouched. Every other `¬` is preserved.
+    #[cfg(test)]
     fn fix_digit_logicalnot_decimal(text: &str) -> String {
-        let chars: Vec<char> = text.chars().collect();
-        let mut out = String::with_capacity(text.len());
-        let mut i = 0;
-        while i < chars.len() {
-            let c = chars[i];
-            if c == '\u{00AC}' && i > 0 && chars[i - 1].is_ascii_digit() {
-                // Unspaced: digit ¬ digit.
-                if chars.get(i + 1).is_some_and(|n| n.is_ascii_digit()) {
-                    out.push('.');
-                    i += 1;
-                    continue;
-                }
-                // Spaced: digit ¬ <single space> digit — drop the lone space.
-                if chars.get(i + 1) == Some(&' ')
-                    && chars.get(i + 2).is_some_and(|n| n.is_ascii_digit())
-                {
-                    out.push('.');
-                    i += 2; // skip the ¬ and the single separating space
-                    continue;
-                }
-            }
-            out.push(c);
-            i += 1;
-        }
-        out
+        crate::text_normalization::decimal(text, crate::import_storage::ImportStorage(None))
+            .expect("decimal text allocation")
     }
 
     /// Drop spans whose bbox lies ENTIRELY outside the page's visible region —
@@ -13424,7 +13260,10 @@ impl PdfDocument {
         // cannot corrupt it.
         for span in &mut spans {
             if Self::is_cm_or_symbol_font(&span.font_name) && span.text.contains('\u{00AC}') {
-                span.text = Self::fix_digit_logicalnot_decimal(&span.text);
+                span.text = crate::text_normalization::decimal(
+                    &span.text,
+                    crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref)),
+                )?;
             }
         }
 
@@ -13501,31 +13340,62 @@ impl PdfDocument {
         if !spans.is_empty() && vertical_count * 2 >= spans.len() {
             // See `crate::utils::sort_vertical_tategaki` for the
             // column-clustering algorithm and the total-order rationale.
-            spans = crate::utils::sort_vertical_tategaki(spans, |s| &s.bbox);
-        } else if let Some(ordered) = Self::sidebar_body_reading_order(&spans) {
+            spans = crate::utils::try_sort_vertical_tategaki(
+                spans,
+                |s| &s.bbox,
+                crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref)),
+            )?;
+        } else if let Some(order) = crate::sidebar_order::order(
+            &spans,
+            crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref)),
+        )? {
             // RW-1: narrow-sidebar + wide-body first pages (full-width title band
             // over a metadata sidebar + body). Handled before the XY-cut so the
             // title is not sliced along the body gutter (§14.8.3).
-            spans = ordered;
-        } else if Self::is_multi_column_page(&spans) {
-            use crate::pipeline::reading_order::{
-                ReadingOrderContext as ROContext, ReadingOrderStrategy, XYCutStrategy,
-            };
+            crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref))
+                .reorder(&mut spans, &order)?;
+        } else if crate::column_detection::is_multi_column_page(
+            &spans,
+            crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref)),
+        )? {
+            use crate::pipeline::reading_order::{ReadingOrderContext as ROContext, XYCutStrategy};
             let strategy = XYCutStrategy::new();
             let context = ROContext::new().with_page(page_index as u32);
             // Clone needed: apply() takes ownership, and the Err branch
             // falls back to sorting the original vec in place.
-            match strategy.apply(spans.clone(), &context) {
+            match strategy.apply_with_storage(
+                self.copy_import_spans(&spans)?,
+                &context,
+                crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref)),
+            ) {
                 Ok(ordered) => {
-                    spans = ordered.into_iter().map(|o| o.span).collect();
+                    spans = crate::import_storage::ImportStorage(
+                        self.import_budget().map(AsRef::as_ref),
+                    )
+                    .collect(ordered.into_iter().map(|o| o.span))?;
                 },
                 Err(e) => {
+                    if matches!(e, Error::ImportResourceLimit(_)) {
+                        return Err(e);
+                    }
+                    crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref))
+                        .bytes(0)?;
                     log::debug!(
                         "XY-cut reading order failed on page {page_index} ({e}), \
                          falling back to row-aware sort"
                     );
-                    Self::sort_spans_by_snapped_rows(&mut spans);
-                    Self::reorder_rowspan_labels(&mut spans);
+                    Self::sort_spans_by_snapped_rows(
+                        &mut spans,
+                        crate::import_storage::ImportStorage(
+                            self.import_budget().map(AsRef::as_ref),
+                        ),
+                    )?;
+                    crate::rowspan_labels::reorder(
+                        &mut spans,
+                        crate::import_storage::ImportStorage(
+                            self.import_budget().map(AsRef::as_ref),
+                        ),
+                    )?;
                 },
             }
         } else {
@@ -13539,9 +13409,15 @@ impl PdfDocument {
             // 5 pt label beside an 8 pt name is 3.3 pt — further than the row
             // spacing itself, so the name banded with the row below the one it
             // is printed on.
-            Self::sort_spans_by_snapped_rows(&mut spans);
+            Self::sort_spans_by_snapped_rows(
+                &mut spans,
+                crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref)),
+            )?;
             // Lift multi-row-spanning labels to the top of their block.
-            Self::reorder_rowspan_labels(&mut spans);
+            crate::rowspan_labels::reorder(
+                &mut spans,
+                crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref)),
+            )?;
         }
 
         // Per-span rotation firewall. Runs drawn with a rotated text matrix
@@ -13555,24 +13431,20 @@ impl PdfDocument {
         // their own blocks, each ordered in an upright frame. No-op (and
         // byte-identical) when the page has no rotated spans.
         if spans.iter().any(|s| s.rotation_degrees != 0.0) {
-            let rotated: Vec<crate::layout::TextSpan> = spans
-                .iter()
-                .filter(|s| s.rotation_degrees != 0.0)
-                .cloned()
-                .collect();
-            spans.retain(|s| s.rotation_degrees == 0.0);
-            spans.extend(Self::order_rotated_blocks(rotated));
+            crate::rotated_order::reorder(
+                &mut spans,
+                true,
+                crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref)),
+            )?;
         }
 
         // Filter out spans in erase regions
-        let erase = self
-            .erase_regions
-            .lock_or_recover()
-            .get(&page_index)
-            .cloned();
-        if let Some(regions) = erase {
+        let erase = self.erase_regions.lock_or_recover();
+        if let Some(regions) = erase.get(&page_index) {
             spans.retain(|span| !regions.iter().any(|r| r.intersects(&span.bbox)));
         }
+
+        drop(erase);
 
         // Append text from non-Widget annotations (/Subtype /Text, FreeText,
         // Stamp, Highlight, etc.) that carry a /Contents entry. These are not
@@ -13583,7 +13455,10 @@ impl PdfDocument {
         // Annotation text is horizontal (rotation_degrees == 0), so on a 90°/270°
         // page it stays raw, matching the horizontal content spans above.
         let pre_annotation_len = spans.len();
-        spans.extend(self.annotation_content_spans(page_index));
+        let annotations = self.annotation_content_spans(page_index)?;
+        crate::import_storage::ImportStorage(self.import_budget.as_deref())
+            .reserve(&mut spans, annotations.len())?;
+        spans.extend(annotations);
         if let Some((rot, llx, lly, w, h)) = page_rotation {
             for s in spans[pre_annotation_len..].iter_mut() {
                 if rot != 180 && s.rotation_degrees == 0.0 {
@@ -13613,7 +13488,7 @@ impl PdfDocument {
                 .any(|c| matches!(c, '\u{2000}'..='\u{200B}' | '\u{202F}' | '\u{205F}'))
             {
                 span.text = crate::converters::text_post_processor::TextPostProcessor
-                    ::normalize_unicode_spaces(&span.text)
+                    ::try_normalize_unicode_spaces(&span.text,crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref)))?
                     .into_owned();
             }
         }
@@ -13625,7 +13500,14 @@ impl PdfDocument {
         // becomes a no-op, so there is no double-application risk.
         for span in &mut spans {
             if let Some(split) = Self::char_widths_boundary_split(span) {
-                let mut t = String::with_capacity(span.text.len() + 1);
+                let allocation =
+                    crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref));
+                let mut t = allocation.string_capacity(
+                    span.text
+                        .len()
+                        .checked_add(1)
+                        .ok_or_else(|| allocation.reject("text boundary size"))?,
+                )?;
                 t.push_str(&span.text[..split]);
                 t.push(' ');
                 t.push_str(&span.text[split..]);
@@ -13656,7 +13538,10 @@ impl PdfDocument {
         // the marks as separate `Tj` ops at the base glyph's X
         // coordinate. Without this pass extract_text returns the
         // raw two-glyph order "´Ecole" instead of "École".
-        Self::apply_combining_mark_composition(&mut spans);
+        crate::text_normalization::compose_marks(
+            &mut spans,
+            crate::import_storage::ImportStorage(self.import_budget().map(AsRef::as_ref)),
+        )?;
 
         // Stamp accurate per-glyph x-origins onto the finalized spans so that
         // `to_chars()` (and thus extract_words / extract_spans /
@@ -13664,7 +13549,7 @@ impl PdfDocument {
         // spec-aligned positions instead of drifting prefix-sums. Runs last, on
         // the fully post-processed spans, so alignment sees the same text the
         // consumers do.
-        self.stamp_char_x_offsets(page_index, &mut spans, preserve_script_glyphs);
+        self.stamp_char_x_offsets(page_index, &mut spans, preserve_script_glyphs)?;
 
         Ok(spans)
     }
@@ -13717,166 +13602,44 @@ impl PdfDocument {
         page_index: usize,
         spans: &mut [crate::layout::TextSpan],
         painted: bool,
-    ) {
-        // Horizontal-x offsets only make sense in an unrotated frame; the 180°
-        // mirror is the one rotation that leaves ALL spans in the displayed frame.
-        if self
-            .get_page_rotation(page_index)
-            .unwrap_or(0)
-            .rem_euclid(360)
-            == 180
-        {
-            return;
+    ) -> Result<()> {
+        self.check_import_budget()?;
+        // Only the 180-degree page mirror leaves every span in the displayed
+        // frame. Preserve that admission rule, including the ordinary fallback
+        // for unavailable rotation metadata, while propagating resource errors.
+        let rotation = match self.get_page_rotation(page_index) {
+            Ok(rotation) => rotation,
+            Err(error @ Error::ImportResourceLimit(_)) => return Err(error),
+            Err(_) => 0,
+        };
+        self.check_import_budget()?;
+        if rotation.rem_euclid(360) == 180 {
+            return Ok(());
         }
 
-        // Paint spans include Ts in their origin. Match them against the same
-        // painted glyph geometry, not the search cache's normalized baseline.
-        // Otherwise a raised multi-glyph run loses every horizontal anchor.
+        // Painted glyphs belong to the current extraction. Borrow their Vec
+        // directly rather than allocate a temporary Arc; search reuses its cache.
+        enum Characters {
+            Painted(Vec<crate::layout::TextChar>),
+            Cached(std::sync::Arc<Vec<crate::layout::TextChar>>),
+        }
         let characters = if painted {
             self.extract_chars_impl(page_index, HashSet::new(), HashSet::new(), true)
-                .map(std::sync::Arc::new)
+                .map(Characters::Painted)
         } else {
-            self.cached_page_chars(page_index)
+            self.cached_page_chars(page_index).map(Characters::Cached)
         };
-        let accurate = match characters {
-            Ok(chars) if !chars.is_empty() => chars,
-            _ => return,
+        self.check_import_budget()?;
+        let characters = match characters {
+            Ok(characters) => characters,
+            Err(error @ Error::ImportResourceLimit(_)) => return Err(error),
+            Err(_) => return Ok(()),
         };
-
-        // Baseline index: char positions ordered by `origin_y`, so each span's
-        // baseline slice is a binary-searched range rather than a linear scan
-        // over every glyph on the page (that scan made this pass
-        // O(spans x chars) — the dominant per-page cost on long documents).
-        let mut by_y: Vec<u32> = (0..accurate.len() as u32).collect();
-        by_y.sort_by(|&a, &b| {
-            crate::utils::safe_float_cmp(
-                accurate[a as usize].origin_y,
-                accurate[b as usize].origin_y,
-            )
-        });
-        let ys: Vec<f32> = by_y
-            .iter()
-            .map(|&i| accurate[i as usize].origin_y)
-            .collect();
-
-        for span in spans.iter_mut() {
-            // Rotated-content spans are in the displayed frame (mapped on 90/270)
-            // and their glyphs run vertically; a horizontal-x stamp from the raw
-            // chars would not correspond, so leave them to the prefix-sum path.
-            if span.rotation_degrees != 0.0 {
-                continue;
-            }
-            // Start clean: any offsets carried over via struct-update from a
-            // source span must not be trusted for this (possibly edited) text.
-            span.char_x_offsets.clear();
-
-            let glyphs: Vec<char> = span.text.chars().collect();
-            let n = glyphs.len();
-            if n == 0 {
-                continue;
-            }
-
-            // Accurate chars sharing this span's baseline, left-to-right.
-            let baseline_tol = 0.6 * span.font_size.max(1.0);
-            // Chars sharing this span's baseline, left-to-right. The y-sorted
-            // index brackets a candidate range; the exact `abs()` predicate then
-            // selects from it, so the result matches a full linear scan even
-            // where the bracket arithmetic rounds differently. The widened
-            // bracket keeps that range a superset. Ordering by
-            // (origin_x, source index) reproduces the previous stable
-            // filter-then-sort: ties on origin_x keep their `accurate` order.
-            let bracket = baseline_tol + baseline_tol.abs() * 1e-6 + f32::EPSILON;
-            let lo = ys.partition_point(|&y| y < span.bbox.y - bracket);
-            let hi = ys.partition_point(|&y| y <= span.bbox.y + bracket);
-            let mut idx: Vec<u32> = by_y[lo..hi]
-                .iter()
-                .copied()
-                .filter(|&i| (accurate[i as usize].origin_y - span.bbox.y).abs() <= baseline_tol)
-                .collect();
-            if idx.is_empty() {
-                continue;
-            }
-            idx.sort_by(|&a, &b| {
-                crate::utils::safe_float_cmp(
-                    accurate[a as usize].origin_x,
-                    accurate[b as usize].origin_x,
-                )
-                .then(a.cmp(&b))
-            });
-            let line: Vec<&crate::layout::TextChar> =
-                idx.iter().map(|&i| &accurate[i as usize]).collect();
-
-            // Greedy per-glyph alignment. Anchor the scan cursor at the accurate
-            // char nearest this span's left edge, then walk the span's glyphs,
-            // matching each to the next equal accurate char within a small
-            // forward window. Unlike an all-or-nothing contiguous match, a single
-            // unmatched glyph (an inserted word-boundary space, a ligature split,
-            // a combining mark) no longer discards the whole span — such glyphs
-            // are interpolated below so `char_x_offsets` still fills every index.
-            let start = line
-                .iter()
-                .position(|c| c.origin_x >= span.bbox.x - 0.5)
-                .unwrap_or(0);
-            let mut assigned: Vec<Option<f32>> = vec![None; n];
-            let mut li = start;
-            for (k, &g) in glyphs.iter().enumerate() {
-                let mut j = li;
-                let mut steps = 0;
-                while j < line.len() && steps < 6 {
-                    if line[j].char == g {
-                        assigned[k] = Some(line[j].origin_x);
-                        li = j + 1;
-                        break;
-                    }
-                    j += 1;
-                    steps += 1;
-                }
-            }
-
-            // Need enough real anchors to trust the run; otherwise fall back.
-            let anchors = assigned.iter().filter(|a| a.is_some()).count();
-            if anchors * 5 < n * 3 {
-                // < 60% matched
-                continue;
-            }
-
-            // Fill the gaps: each unmatched glyph takes the nearest preceding
-            // anchor plus the prefix sum of the (locally accurate) char_widths
-            // between them; if there is no preceding anchor, walk back from the
-            // nearest following one. Over the short spans between anchors the
-            // cumulative drift these interpolations reintroduce is sub-point.
-            let cw = &span.char_widths;
-            let width_at = |i: usize| -> f32 {
-                if cw.len() == n {
-                    cw[i]
-                } else {
-                    span.bbox.width / n as f32
-                }
-            };
-            let mut offs = vec![0.0f32; n];
-            // forward pass from preceding anchors
-            let mut last: Option<(usize, f32)> = None;
-            for k in 0..n {
-                if let Some(x) = assigned[k] {
-                    offs[k] = x;
-                    last = Some((k, x));
-                } else if let Some((lk, lx)) = last {
-                    let acc: f32 = (lk..k).map(width_at).sum();
-                    offs[k] = lx + acc;
-                }
-            }
-            // backfill any leading None from the first following anchor
-            if assigned[0].is_none() {
-                if let Some(fk) = assigned.iter().position(|a| a.is_some()) {
-                    let fx = assigned[fk].unwrap();
-                    for k in 0..fk {
-                        let acc: f32 = (k..fk).map(width_at).sum();
-                        offs[k] = fx - acc;
-                    }
-                }
-            }
-            span.char_x_offsets = offs;
-        }
+        let accurate = match &characters {
+            Characters::Painted(chars) => chars.as_slice(),
+            Characters::Cached(chars) => chars.as_slice(),
+        };
+        crate::span_alignment::stamp(accurate, spans, self.import_budget().map(AsRef::as_ref))
     }
 
     /// Fold a one-char spacing-diacritic span into the following
@@ -13886,106 +13649,10 @@ impl PdfDocument {
     /// `unicode_normalization::nfc` precompose where it can
     /// ("E\u{0301}" → "É"). The diacritic span is left empty so
     /// downstream rendering skips it.
+    #[cfg(test)]
     fn apply_combining_mark_composition(spans: &mut Vec<crate::layout::TextSpan>) {
-        use unicode_normalization::UnicodeNormalization;
-
-        fn combining_for(spacing: char) -> Option<char> {
-            Some(match spacing {
-                '\u{00B4}' => '\u{0301}', // acute
-                '\u{0060}' => '\u{0300}', // grave
-                '\u{005E}' => '\u{0302}', // circumflex
-                '\u{02C6}' => '\u{0302}', // modifier-letter circumflex
-                '\u{007E}' => '\u{0303}', // tilde
-                '\u{02DC}' => '\u{0303}', // small tilde
-                '\u{00A8}' => '\u{0308}', // diaeresis
-                '\u{00AF}' => '\u{0304}', // macron
-                '\u{02C9}' => '\u{0304}', // modifier-letter macron
-                '\u{00B8}' => '\u{0327}', // cedilla
-                '\u{02DA}' => '\u{030A}', // ring above
-                _ => return None,
-            })
-        }
-
-        // First pass: spans that already got merged at the extractor
-        // (when the LaTeX `(´)(Ecole)` pair both sit at the same
-        // text-matrix origin the upstream merge_adjacent_spans pulls
-        // them into a single "´Ecole" span). Fold the leading
-        // diacritic + base letter into the precomposed form.
-        for span in spans.iter_mut() {
-            let mut iter = span.text.chars();
-            let Some(d) = iter.next() else { continue };
-            let Some(base) = iter.next() else { continue };
-            let Some(combining) = combining_for(d) else {
-                continue;
-            };
-            if !base.is_alphabetic() {
-                continue;
-            }
-            let rest_start = d.len_utf8() + base.len_utf8();
-            let mut composed = String::with_capacity(span.text.len() + 2);
-            composed.push(base);
-            composed.push(combining);
-            composed.push_str(&span.text[rest_start..]);
-            span.text = composed.nfc().collect();
-        }
-
-        // Walk spans pairwise. The diacritic is on its own one-
-        // character span; the next span carries the base letter.
-        let mut i = 0;
-        while i + 1 < spans.len() {
-            let mark_char = {
-                let s = &spans[i];
-                let mut iter = s.text.chars();
-                let first = iter.next();
-                let rest = iter.next();
-                if rest.is_some() {
-                    None
-                } else {
-                    first.and_then(combining_for)
-                }
-            };
-            let Some(combining) = mark_char else {
-                i += 1;
-                continue;
-            };
-            // Geometric: same line, diacritic anchored over the base
-            // letter's left edge (within ±1 pt).
-            let (same_line, overlaps_x) = {
-                let p = &spans[i];
-                let n = &spans[i + 1];
-                let same = (p.bbox.y - n.bbox.y).abs() < p.font_size.max(n.font_size) * 0.6;
-                let dx = (p.bbox.x - n.bbox.x).abs();
-                (same, dx <= 1.5)
-            };
-            if !(same_line && overlaps_x) {
-                i += 1;
-                continue;
-            }
-            // The next span must start with a base letter we can
-            // attach a combining mark to (Latin letter / digit).
-            let Some(base) = spans[i + 1].text.chars().next() else {
-                i += 1;
-                continue;
-            };
-            if !base.is_alphabetic() {
-                i += 1;
-                continue;
-            }
-            // Build "<base><combining><rest>" and NFC-compose.
-            let mut composed = String::with_capacity(spans[i + 1].text.len() + 2);
-            composed.push(base);
-            composed.push(combining);
-            let rest_start = base.len_utf8();
-            composed.push_str(&spans[i + 1].text[rest_start..]);
-            spans[i + 1].text = composed.nfc().collect();
-            // Empty out the diacritic span; downstream consumers
-            // skip zero-text spans.
-            spans[i].text.clear();
-            i += 2;
-        }
-
-        // Drop any spans we emptied.
-        spans.retain(|s| !s.text.is_empty());
+        crate::text_normalization::compose_marks(spans, crate::import_storage::ImportStorage(None))
+            .expect("combining text allocation")
     }
 
     /// Substitute ASCII digits and a few punctuation characters in
@@ -14416,145 +14083,6 @@ impl PdfDocument {
     /// sink that [`Self::structured_warnings`] surfaces.
     pub fn push_structured_warning(&self, warning: crate::extractors::warnings::Warning) {
         self.warning_sink.push(warning);
-    }
-
-    /// Heuristic: does this page have two or more vertical text columns?
-    ///
-    /// Used by `extract_spans` to decide whether to pay the XY-cut cost
-    /// (correct but slower on large pages) or stick with the cheap row-
-    /// aware sort. The check bins span X-centers into a small histogram
-    /// and looks for two dense bands separated by a gutter whose spans
-    /// vertically overlap with each other — that's the defining shape
-    /// of a multi-column layout (newspaper / academic / dashboard) as
-    /// opposed to sparse side-notes that flank a single column.
-    ///
-    /// False negatives (missed multi-column page) just mean we use the
-    /// old reading order. False positives (single column routed through
-    /// XY-cut) cost a bit of CPU but produce the same or better result.
-    /// Both sides degrade gracefully.
-    /// True when the page splits into side-by-side columns separated by a clean
-    /// vertical gutter that no text span crosses.
-    ///
-    /// This is the small-page companion to the histogram detector in
-    /// [`Self::is_multi_column_page`]: a two-column page with only a handful of
-    /// wrapped lines per column (a short article, a synthetic fixture) carries
-    /// too few spans for a projection histogram to classify, yet the gutter is
-    /// perfectly unambiguous. We recover it directly:
-    ///
-    /// 1. Drop spans whose width exceeds 60 % of the content width — full-bleed
-    ///    headings/footers legitimately straddle the gutter and must not veto it
-    ///    (the recursive XY-Cut handles them with a horizontal cut first).
-    /// 2. Sweep the remaining boxes left-to-right merging their X extents; a
-    ///    forward jump of ≥ `MIN_GUTTER_PT` between the running right edge and
-    ///    the next box's left edge is an empty channel that no span crosses.
-    /// 3. Accept only when ≥ 2 spans sit on each side (genuine columns, not a
-    ///    stray indent or page number) and the two sides' vertical ranges
-    ///    overlap (columns sit beside each other, ruling out stacked blocks).
-    fn has_clean_column_gutter(spans: &[crate::layout::TextSpan]) -> bool {
-        /// Minimum empty-channel width. Real column gutters run ≥ 18pt; ordinary
-        /// inter-word/inter-cell gaps are both narrower and crossed by spans on
-        /// other lines, so they never survive the sweep.
-        const MIN_GUTTER_PT: f32 = 18.0;
-
-        // (x0, x1, y0, y1) for every non-empty, finite span.
-        let mut boxes: Vec<(f32, f32, f32, f32)> = spans
-            .iter()
-            .filter(|s| {
-                !s.text.trim().is_empty()
-                    && s.bbox.x.is_finite()
-                    && s.bbox.y.is_finite()
-                    && s.bbox.width.is_finite()
-                    && s.bbox.height.is_finite()
-                    && s.bbox.width > 0.0
-            })
-            .map(|s| (s.bbox.x, s.bbox.x + s.bbox.width, s.bbox.y, s.bbox.y + s.bbox.height))
-            .collect();
-        if boxes.len() < 4 {
-            return false;
-        }
-
-        let content_min_x = boxes.iter().map(|b| b.0).fold(f32::INFINITY, f32::min);
-        let content_max_x = boxes.iter().map(|b| b.1).fold(f32::NEG_INFINITY, f32::max);
-        let content_w = content_max_x - content_min_x;
-        if content_w < 100.0 {
-            return false; // a single narrow column cannot hold a gutter
-        }
-
-        // Exclude full-width headings/footers from the gutter sweep.
-        boxes.retain(|b| (b.1 - b.0) <= 0.6 * content_w);
-        if boxes.len() < 4 {
-            return false;
-        }
-        boxes.sort_by(|a, b| crate::utils::safe_float_cmp(a.0, b.0));
-
-        // Grid-row guard. A two-column body has exactly one text run per column
-        // on a line, so a row carries at most one wide internal gap (the
-        // gutter). A table / form row instead has several cells, i.e. two or
-        // more wide internal gaps. Group the (heading-excluded) boxes into rows
-        // by baseline and, when the majority of multi-box rows carry ≥ 2
-        // significant internal gaps, treat the page as a grid and bail — a
-        // single wide middle gap on a 2×N cell grid would otherwise read as a
-        // lone gutter. Mirrors the grid-row discriminator on the histogram path.
-        const MIN_GAP_PT: f32 = 6.0;
-        let mut rows: std::collections::BTreeMap<i32, Vec<(f32, f32)>> =
-            std::collections::BTreeMap::new();
-        for &(x0, x1, _y0, y1) in &boxes {
-            rows.entry(y1.round() as i32).or_default().push((x0, x1));
-        }
-        let (mut multi_gap_rows, mut counted_rows) = (0usize, 0usize);
-        for cells in rows.values() {
-            if cells.len() < 2 {
-                continue;
-            }
-            let mut s = cells.clone();
-            s.sort_by(|a, b| crate::utils::safe_float_cmp(a.0, b.0));
-            let gaps = s
-                .windows(2)
-                .filter(|w| w[1].0 - w[0].1 >= MIN_GAP_PT)
-                .count();
-            counted_rows += 1;
-            if gaps >= 2 {
-                multi_gap_rows += 1;
-            }
-        }
-        if counted_rows > 0 && multi_gap_rows * 2 >= counted_rows {
-            return false; // grid / form, not a two-column body
-        }
-
-        // Sweep-merge X extents and collect EVERY ≥ MIN_GUTTER_PT forward jump
-        // (a vertical channel no span crosses). A genuine two-column body has
-        // exactly ONE such corridor — the gutter; the lines inside each column
-        // overlap horizontally, so a column's own extents merge into a single
-        // contiguous run. A short-cell table (numeric grid, form) instead leaves
-        // a corridor between every cell column, so two or more qualifying gaps
-        // means a grid / multi-region layout, not two columns — reject it
-        // (matching the grid-row discriminator on the histogram path).
-        let mut cover_right = boxes[0].1;
-        let mut gutter_splits: Vec<usize> = Vec::new();
-        for i in 1..boxes.len() {
-            if boxes[i].0 - cover_right >= MIN_GUTTER_PT {
-                gutter_splits.push(i);
-            }
-            cover_right = cover_right.max(boxes[i].1);
-        }
-        if gutter_splits.len() != 1 {
-            return false; // 0 = single column; ≥ 2 = grid / multi-region
-        }
-
-        let (left, right) = boxes.split_at(gutter_splits[0]);
-        if left.len() < 2 || right.len() < 2 {
-            return false;
-        }
-        // Vertical ranges of the two sides must overlap — otherwise the
-        // "columns" are vertically stacked blocks (e.g. a body block above a
-        // sidebar), which read fine row-aware.
-        let l_y0 = left.iter().map(|b| b.2).fold(f32::INFINITY, f32::min);
-        let l_y1 = left.iter().map(|b| b.3).fold(f32::NEG_INFINITY, f32::max);
-        let r_y0 = right.iter().map(|b| b.2).fold(f32::INFINITY, f32::min);
-        let r_y1 = right.iter().map(|b| b.3).fold(f32::NEG_INFINITY, f32::max);
-        let overlap = l_y1.min(r_y1) - l_y0.max(r_y0);
-        let min_height = (l_y1 - l_y0).min(r_y1 - r_y0);
-        min_height > 0.0 && overlap > 0.5 * min_height
     }
 
     /// Gutter X for a page that is genuinely **two-column PROSE** (#734), or
@@ -15882,200 +15410,11 @@ impl PdfDocument {
     }
 
     fn is_multi_column_page(spans: &[crate::layout::TextSpan]) -> bool {
-        // Clean-gutter detector (handles short pages the histogram gates below
-        // reject for lack of spans). A genuine empty vertical channel that no
-        // span crosses, with multi-line content of overlapping vertical extent
-        // on both sides, is the unambiguous geometric signature of side-by-side
-        // columns — recoverable for untagged pages only from layout (XY-Cut,
-        // ISO 32000-1 §9.4, since there is no logical-structure hint).
-        if Self::has_clean_column_gutter(spans) {
-            return true;
-        }
-
-        if spans.len() < 12 {
-            return false; // too few to confidently split into columns
-        }
-
-        // Primary detector: line-start-X bimodality.
-        //
-        // The span-center histogram further down is noisy for word-level
-        // spans (every X position has many word starts on multi-word
-        // body-text lines). The reliable signal is the X position at
-        // which each *line* begins — a two-column body has a strong
-        // peak at the left-column-start X plus a strong peak at the
-        // right-column-start X, with a clear empty gutter between
-        // them. We cluster spans into lines by Y (1pt tolerance), pick
-        // the leftmost X per line, and look for ≥ 2 peaks separated by
-        // a gutter of ≥ 30pt with zero line-starts in it.
-        if Self::has_bimodal_line_starts(spans) {
-            return true;
-        }
-
-        let mut x_centers: Vec<f32> = spans
-            .iter()
-            .map(|s| s.bbox.x + s.bbox.width * 0.5)
-            .collect();
-        x_centers.sort_by(|a, b| crate::utils::safe_float_cmp(*a, *b));
-
-        // Degenerate CTM guard: drop centers more than MAX_EXTENT from the
-        // median so a rogue span ~1e16 doesn't explode the histogram.
-        const MAX_EXTENT_FROM_MEDIAN: f32 = 5_000.0;
-        let median = x_centers[x_centers.len() / 2];
-        x_centers.retain(|c| (*c - median).abs() <= MAX_EXTENT_FROM_MEDIAN);
-        if x_centers.len() < 12 {
-            return false;
-        }
-
-        let min = *x_centers.first().unwrap();
-        let max = *x_centers.last().unwrap();
-        let width = max - min;
-        if width < 100.0 {
-            return false; // spans cluster in a single vertical line — not columns
-        }
-
-        // Bin into 40 buckets; find peaks (≥ mean × 1.5) separated by at
-        // least one empty bucket.
-        const BUCKETS: usize = 40;
-        let bucket_width = width / BUCKETS as f32;
-        if bucket_width <= 0.0 {
-            return false;
-        }
-        let mut hist = [0usize; BUCKETS];
-        for c in &x_centers {
-            let idx = (((c - min) / bucket_width) as usize).min(BUCKETS - 1);
-            hist[idx] += 1;
-        }
-
-        let total: usize = hist.iter().sum();
-        let mean = total as f32 / BUCKETS as f32;
-        let threshold = (mean * 1.5).max(3.0);
-
-        let mut peaks = 0usize;
-        let mut in_peak = false;
-        for &count in &hist {
-            if count as f32 >= threshold {
-                if !in_peak {
-                    peaks += 1;
-                    in_peak = true;
-                }
-            } else if count == 0 {
-                in_peak = false;
-            }
-        }
-
-        if peaks < 2 {
-            return false;
-        }
-
-        // Confirmation: the peaks must have vertical overlap. If one "column"
-        // is a footer and the other is the body, they don't interact — row-
-        // aware is fine. Split spans into left-half vs right-half and check
-        // their Y ranges overlap.
-        let mid_x = (min + max) / 2.0;
-        let mut left_y_min = f32::INFINITY;
-        let mut left_y_max = f32::NEG_INFINITY;
-        let mut right_y_min = f32::INFINITY;
-        let mut right_y_max = f32::NEG_INFINITY;
-        for s in spans {
-            let cx = s.bbox.x + s.bbox.width * 0.5;
-            if (cx - median).abs() > MAX_EXTENT_FROM_MEDIAN {
-                continue;
-            }
-            let y_top = s.bbox.y + s.bbox.height;
-            if cx < mid_x {
-                left_y_min = left_y_min.min(s.bbox.y);
-                left_y_max = left_y_max.max(y_top);
-            } else {
-                right_y_min = right_y_min.min(s.bbox.y);
-                right_y_max = right_y_max.max(y_top);
-            }
-        }
-        let left_span = (left_y_max - left_y_min).max(0.0);
-        let right_span = (right_y_max - right_y_min).max(0.0);
-        let overlap = left_y_max.min(right_y_max) - left_y_min.max(right_y_min);
-        let min_span = left_span.min(right_span);
-        if !(min_span > 0.0 && overlap > 0.5 * min_span) {
-            return false;
-        }
-
-        // Require each half to contain enough spans to represent genuine body
-        // text columns. Copyright pages, title pages, and other sparse layouts
-        // can produce two X-center peaks with only 2–7 spans per "column" —
-        // these are not true multi-column body text.
-        let left_count = spans
-            .iter()
-            .filter(|s| {
-                let cx = s.bbox.x + s.bbox.width * 0.5;
-                (cx - median).abs() <= MAX_EXTENT_FROM_MEDIAN && cx < mid_x
-            })
-            .count();
-        let right_count = spans.len() - left_count;
-        if left_count.min(right_count) < 15 {
-            return false;
-        }
-
-        // Font-aware column-shape gate.
-        //
-        // Real two-column body text has tight column-edge alignment:
-        // most spans on each side share one dominant X position
-        // (the column start), with a handful of indented or
-        // section-header outliers. Scattered-fragment layouts spread
-        // their spans evenly across many X positions on each side.
-        //
-        // Measure the fraction of side-spans that fall into the
-        // largest X-cluster (cluster gap = `dominant_em`). Body text
-        // typically scores ≥ 0.5; scattered layouts score < 0.4.
-        // Reject pages where either side fails the threshold so
-        // XY-cut doesn't mis-route scattered content as multi-column.
-        let stats = crate::layout::PageFontStats::from_spans(spans);
-        let cluster_gap = stats.dominant_em.max(4.0);
-        let dominant_cluster_fraction = |take: &dyn Fn(f32) -> bool| -> f32 {
-            let mut xs: Vec<f32> = spans
-                .iter()
-                .filter(|s| {
-                    let cx = s.bbox.x + s.bbox.width * 0.5;
-                    (cx - median).abs() <= MAX_EXTENT_FROM_MEDIAN && take(cx)
-                })
-                .map(|s| s.bbox.x)
-                .collect();
-            let total = xs.len();
-            if total == 0 {
-                return 0.0;
-            }
-            xs.sort_by(|a, b| crate::utils::safe_float_cmp(*a, *b));
-            let mut best = 1usize;
-            let mut current = 1usize;
-            let mut last = xs[0];
-            for &x in &xs[1..] {
-                if x - last <= cluster_gap {
-                    current += 1;
-                    if current > best {
-                        best = current;
-                    }
-                } else {
-                    current = 1;
-                }
-                last = x;
-            }
-            best as f32 / total as f32
-        };
-        const MIN_DOMINANT_FRACTION: f32 = 0.5;
-        let left_frac = dominant_cluster_fraction(&|cx| cx < mid_x);
-        let right_frac = dominant_cluster_fraction(&|cx| cx >= mid_x);
-        if left_frac >= MIN_DOMINANT_FRACTION && right_frac >= MIN_DOMINANT_FRACTION {
-            return true;
-        }
-
-        // Additive accept path (no change to the gate above): shared-baseline
-        // two-column bodies — academic references / bibliographies — read
-        // left+right on the SAME Y line, so the row-aware sort interleaves
-        // them. Their word-granular left edges scatter, so the dominant-
-        // cluster gate above misses them. But they exhibit ONE persistent
-        // vertical gutter corridor (the signal poppler/MuPDF use, independent
-        // of line length). Detect it via within-line gap projection, prose-
-        // guarded so numeric / short-cell tables — which also reach here —
-        // stay on the row-aware path. See #607.
-        Self::has_persistent_gutter_corridor(spans, median, MAX_EXTENT_FROM_MEDIAN)
+        crate::column_detection::is_multi_column_page(
+            spans,
+            crate::import_storage::ImportStorage(None),
+        )
+        .expect("column scratch allocation")
     }
 
     /// Detect a single persistent vertical gutter corridor across the page —
@@ -16094,164 +15433,19 @@ impl PdfDocument {
     /// rows; a two-column body has one gutter). Full-width display-math /
     /// heading rows are excluded from the gutter-coverage denominator so a
     /// minority of them does not veto an otherwise two-column page.
+    #[cfg(test)]
     fn has_persistent_gutter_corridor(
         spans: &[crate::layout::TextSpan],
         median: f32,
         max_extent: f32,
     ) -> bool {
-        // Group spans into lines by rounded Y baseline; carry left/right
-        // extents for gap projection and char count for the prose guard.
-        let mut lines: std::collections::BTreeMap<i32, (Vec<(f32, f32)>, usize)> =
-            std::collections::BTreeMap::new();
-        let mut x_min = f32::MAX;
-        let mut x_max = f32::MIN;
-        for s in spans {
-            let cx = s.bbox.x + s.bbox.width * 0.5;
-            if (cx - median).abs() > max_extent {
-                continue; // degenerate-CTM guard, same as the caller
-            }
-            let y_key = (s.bbox.y + s.bbox.height).round() as i32;
-            let entry = lines.entry(y_key).or_default();
-            entry.0.push((s.bbox.x, s.bbox.x + s.bbox.width));
-            entry.1 += s.text.chars().filter(|c| !c.is_whitespace()).count();
-            x_min = x_min.min(s.bbox.x);
-            x_max = x_max.max(s.bbox.x + s.bbox.width);
-        }
-        let region_width = x_max - x_min;
-        if lines.len() < 12 || region_width < 200.0 {
-            return false;
-        }
-
-        let total_chars: usize = lines.values().map(|(_, c)| *c).sum();
-        let mean_chars = total_chars as f32 / lines.len() as f32;
-
-        // Largest within-line gap per line (≥ 6 pt suppresses word spacing);
-        // record the gap midpoint X. Also flag full-width lines with no internal
-        // gutter (display equations, full-width headings) so they neither support
-        // nor veto the corridor — they are excluded from the coverage denominator
-        // (Part 1b: display-math robustness, #536/arxiv_math).
-        const MIN_GAP_PT: f32 = 6.0;
-        let mut gap_positions: Vec<f32> = Vec::new();
-        let mut full_width_lines = 0usize;
-        let mut multi_gap_lines = 0usize;
-        for (line_spans, _) in lines.values() {
-            if line_spans.is_empty() {
-                continue;
-            }
-            let mut sorted = line_spans.clone();
-            sorted.sort_by(|a, b| crate::utils::safe_float_cmp(a.0, b.0));
-            let line_left = sorted.first().map(|s| s.0).unwrap_or(0.0);
-            let line_right = sorted.last().map(|s| s.1).unwrap_or(0.0);
-            let mut largest_gap = 0.0_f32;
-            let mut largest_mid = 0.0_f32;
-            let mut significant_gaps = 0usize;
-            for w in sorted.windows(2) {
-                let gap = w[1].0 - w[0].1;
-                if gap >= MIN_GAP_PT {
-                    significant_gaps += 1;
-                }
-                if gap > largest_gap {
-                    largest_gap = gap;
-                    largest_mid = (w[0].1 + w[1].0) * 0.5;
-                }
-            }
-            if (line_right - line_left) >= region_width * 0.9 && largest_gap < MIN_GAP_PT {
-                full_width_lines += 1;
-            }
-            // A line with two or more wide internal gaps is a grid row (≥ 3
-            // cells), not a two-column body line (one gutter). Used by the
-            // short-line table discriminator below.
-            if significant_gaps >= 2 {
-                multi_gap_lines += 1;
-            }
-            if largest_gap >= MIN_GAP_PT {
-                gap_positions.push(largest_mid);
-            }
-        }
-        if gap_positions.len() < 12 {
-            return false;
-        }
-        // Coverage denominator excludes full-width display rows.
-        let eff_lines = lines.len().saturating_sub(full_width_lines).max(1);
-
-        // Cluster gap midpoints (10 pt radius); find the dominant corridor.
-        const CLUSTER_RADIUS_PT: f32 = 10.0;
-        gap_positions.sort_by(|a, b| crate::utils::safe_float_cmp(*a, *b));
-        let mut best_size = 0usize;
-        let mut best_center = 0.0_f32;
-        let mut left = 0usize;
-        let mut right = 0usize;
-        let mut prefix: Vec<f32> = Vec::with_capacity(gap_positions.len() + 1);
-        prefix.push(0.0);
-        for &x in &gap_positions {
-            prefix.push(prefix.last().unwrap() + x);
-        }
-        for &pivot in &gap_positions {
-            while left < gap_positions.len() && gap_positions[left] < pivot - CLUSTER_RADIUS_PT {
-                left += 1;
-            }
-            while right < gap_positions.len() && gap_positions[right] <= pivot + CLUSTER_RADIUS_PT {
-                right += 1;
-            }
-            let count = right - left;
-            if count > best_size {
-                best_size = count;
-                best_center = (prefix[right] - prefix[left]) / count as f32;
-            }
-        }
-
-        // Gutter must sit near the page centre (0.30–0.70). A true two-column
-        // body splits down the middle; a table's dominant gap (label column vs
-        // data, or one of several cell boundaries) sits off-centre.
-        let gutter_offset = best_center - x_min;
-        let centre_ok =
-            gutter_offset >= region_width * 0.30 && gutter_offset <= region_width * 0.70;
-        if best_size < 16 || !centre_ok {
-            return false;
-        }
-
-        if mean_chars > 20.0 {
-            // Long-line two-column prose (the v0.3.57 accept path, unchanged
-            // except the coverage denominator now excludes display rows):
-            // concentration ≥ 62 %, coverage ≥ 50 % of (effective) lines.
-            return best_size * 50 >= gap_positions.len() * 31 && best_size * 2 >= eff_lines;
-        }
-
-        // Short-line bodies (verse / lexicon / dictionary editions, #536): the
-        // raw `mean_chars` floor used to reject these along with short-cell
-        // tables. Admit them only under STRICTER, length-independent guards a
-        // short-cell table cannot satisfy (Part 1a).
-        let strict_concentration = best_size * 10 >= gap_positions.len() * 7; // ≥ 70 %
-        let strict_coverage = best_size * 5 >= eff_lines * 3; // ≥ 60 % of lines
-        if !(strict_concentration && strict_coverage) {
-            return false;
-        }
-        // Column char-mass balance: each side of the gutter must carry ≥ 35 % of
-        // the non-whitespace characters. A narrow label / verse-number column
-        // paired with wide data is lopsided and rejected.
-        let (mut left_chars, mut right_chars) = (0usize, 0usize);
-        for s in spans {
-            let cx = s.bbox.x + s.bbox.width * 0.5;
-            if (cx - median).abs() > max_extent {
-                continue;
-            }
-            let n = s.text.chars().filter(|c| !c.is_whitespace()).count();
-            if cx < best_center {
-                left_chars += n;
-            } else {
-                right_chars += n;
-            }
-        }
-        let total = (left_chars + right_chars).max(1) as f32;
-        if (left_chars as f32) < total * 0.35 || (right_chars as f32) < total * 0.35 {
-            return false;
-        }
-        // Grid-row discriminator: a two-column body has ONE wide gap per line
-        // (the gutter); a multi-cell numeric table has ≥ 2 wide gaps on most
-        // rows (cell boundaries). Reject when the majority of lines are grid
-        // rows — this is what keeps short-cell tables off the XY-cut path
-        // without the raw `mean_chars` floor that also blocked short verse.
-        multi_gap_lines * 2 <= eff_lines
+        crate::column_detection::has_persistent_gutter_corridor(
+            spans,
+            median,
+            max_extent,
+            crate::import_storage::ImportStorage(None),
+        )
+        .expect("column scratch allocation")
     }
 
     /// RW-1: reading order for a **narrow-sidebar + wide-body** page (the MDPI /
@@ -16272,257 +15466,9 @@ impl PdfDocument {
     fn sidebar_body_reading_order(
         spans: &[crate::layout::TextSpan],
     ) -> Option<Vec<crate::layout::TextSpan>> {
-        use crate::utils::safe_float_cmp;
-        if spans.len() < 30 {
-            return None;
-        }
-        let x_min = spans.iter().map(|s| s.bbox.left()).fold(f32::MAX, f32::min);
-        let x_max = spans
-            .iter()
-            .map(|s| s.bbox.right())
-            .fold(f32::MIN, f32::max);
-        let y_min = spans.iter().map(|s| s.bbox.top()).fold(f32::MAX, f32::min);
-        let y_max = spans
-            .iter()
-            .map(|s| s.bbox.bottom())
-            .fold(f32::MIN, f32::max);
-        let width = (x_max - x_min).max(1.0);
-        let height = (y_max - y_min).max(1.0);
-        if !(width.is_finite() && height.is_finite()) {
-            return None;
-        }
-
-        // Cluster spans into baseline lines (top→bottom).
-        let mut order: Vec<usize> = (0..spans.len()).collect();
-        order.sort_by(|&a, &b| {
-            safe_float_cmp(spans[b].bbox.bottom(), spans[a].bbox.bottom())
-                .then_with(|| safe_float_cmp(spans[a].bbox.left(), spans[b].bbox.left()))
-        });
-        struct Line {
-            top_y: f32,
-            min_left: f32,
-            max_right: f32,
-            members: Vec<usize>,
-        }
-        let mut lines: Vec<Line> = Vec::new();
-        for &i in &order {
-            let s = &spans[i];
-            let h = (s.bbox.bottom() - s.bbox.top()).abs().max(1.0);
-            match lines.last_mut() {
-                Some(l) if (l.top_y - s.bbox.bottom()).abs() <= h * 0.6 => {
-                    l.min_left = l.min_left.min(s.bbox.left());
-                    l.max_right = l.max_right.max(s.bbox.right());
-                    l.members.push(i);
-                },
-                _ => lines.push(Line {
-                    top_y: s.bbox.bottom(),
-                    min_left: s.bbox.left(),
-                    max_right: s.bbox.right(),
-                    members: vec![i],
-                }),
-            }
-        }
-        if lines.len() < 12 {
-            return None;
-        }
-
-        // Find the body-column left edge: the most common line-start that sits
-        // well right of the page left margin (excludes the sidebar/title cluster
-        // anchored at x_min). The gutter is just left of it.
-        let body_left = {
-            const BIN: f32 = 5.0;
-            let nbins = ((width / BIN).ceil() as usize).clamp(1, 4096);
-            let mut hist = vec![0usize; nbins];
-            for l in &lines {
-                if l.min_left > x_min + width * 0.10 {
-                    let b = (((l.min_left - x_min) / BIN) as usize).min(nbins - 1);
-                    hist[b] += 1;
-                }
-            }
-            let (peak, &cnt) = hist.iter().enumerate().max_by_key(|(_, &c)| c)?;
-            if cnt < 5 {
-                return None; // no consistent body-column start
-            }
-            x_min + peak as f32 * BIN
-        };
-        // Gutter must be left-of-centre (a narrow sidebar, not a centred 2-col).
-        let gutter = body_left - width * 0.02;
-        if !(gutter > x_min + width * 0.12 && gutter < x_min + width * 0.45) {
-            return None;
-        }
-
-        // A full-width TITLE/heading row is typeset as many narrow word spans, so
-        // no single span satisfies the per-span band test below; its leftmost words
-        // (right edge ≤ gutter) would be miswept into the SIDEBAR and emitted last,
-        // shattering the title (e.g. an MDPI first page where the title sits in a
-        // large font across the full width, above the metadata sidebar + body).
-        // Detect these per LINE: a baseline line whose member words FLOW
-        // CONTINUOUSLY across the gutter (collective extent crosses it, ≥40% of the
-        // page width, and no large internal gap straddling the gutter) is a true
-        // full-width band — its words are evenly spaced, unlike a sidebar-label +
-        // body-line that merely SHARE a baseline (e.g. "Accepted: 1 March 2021"
-        // next to "1. Introduction"), which leaves a wide empty gutter corridor
-        // between the two columns. Members of such band lines are forced into the
-        // BAND group so the whole title row stays together at its vertical slot.
-        // The straddling-gap gate keeps shared sidebar/body baselines split.
-        let mut band_line_members: std::collections::HashSet<usize> =
-            std::collections::HashSet::new();
-        const MAX_STRADDLE_GAP_FRAC: f32 = 0.06; // ≈ gutter-corridor width
-                                                 // The title/author band sits ABOVE the body column (the body starts at the
-                                                 // affiliations/abstract). Restrict band promotion to lines above the
-                                                 // topmost PURE-BODY line (a line whose words all begin at/right of the
-                                                 // gutter, with no left-of-gutter member). Below that Y the page is the
-                                                 // two-column sidebar+body region, where a wide crossing line is a
-                                                 // sidebar-label + body-line sharing a baseline (e.g. "Switzerland." next to
-                                                 // "cancer, atrial fibrillation…") whose tight gutter corridor would
-                                                 // otherwise pass the straddle-gap gate and wrongly glue the sidebar inline.
-                                                 // Larger bottom-y == higher on the page (PDF user space).
-        let body_top_y = lines
-            .iter()
-            .filter(|l| l.min_left >= gutter)
-            .map(|l| l.top_y)
-            .fold(f32::NEG_INFINITY, f32::max);
-        for line in &lines {
-            if !(line.min_left < gutter
-                && line.max_right > gutter
-                && (line.max_right - line.min_left) > width * 0.40)
-            {
-                continue;
-            }
-            // Only the top-of-page title/author band, above the body column.
-            if body_top_y.is_finite() && line.top_y < body_top_y {
-                continue;
-            }
-            // Largest gap between consecutive members that straddles the gutter.
-            let mut xs: Vec<(f32, f32)> = line
-                .members
-                .iter()
-                .map(|&i| (spans[i].bbox.left(), spans[i].bbox.right()))
-                .collect();
-            xs.sort_by(|a, b| safe_float_cmp(a.0, b.0));
-            let mut max_straddle_gap = 0.0f32;
-            let mut prev_right = f32::NEG_INFINITY;
-            for &(l, r) in &xs {
-                if prev_right.is_finite() && prev_right < gutter && l > gutter {
-                    max_straddle_gap = max_straddle_gap.max(l - prev_right);
-                }
-                prev_right = prev_right.max(r);
-            }
-            if max_straddle_gap < width * MAX_STRADDLE_GAP_FRAC {
-                for &i in &line.members {
-                    band_line_members.insert(i);
-                }
-            }
-        }
-
-        // Classify each SPAN by the gutter. A publisher-metadata sidebar and the
-        // body usually SHARE baselines (the metadata column interleaves with body
-        // lines by Y), so a per-line cluster would fuse them into one full-width
-        // line and hide the sidebar — classify per span instead. BAND = a span
-        // genuinely spanning the gutter (a wide full-width title/heading), or a
-        // member of a continuous full-width band LINE (above). SIDEBAR = a span
-        // entirely left of the gutter. BODY = everything at/right of it.
-        let mut band: Vec<usize> = Vec::new();
-        let mut sidebar: Vec<usize> = Vec::new();
-        let mut body: Vec<usize> = Vec::new();
-        for (i, s) in spans.iter().enumerate() {
-            let l = s.bbox.left();
-            let r = s.bbox.right();
-            if band_line_members.contains(&i)
-                || (l < gutter && r > gutter && (r - l) > width * 0.40)
-            {
-                band.push(i);
-            } else if r <= gutter {
-                sidebar.push(i);
-            } else {
-                body.push(i);
-            }
-        }
-        // A real sidebar/body are each multi-line.
-        let line_count = |v: &[usize]| -> usize {
-            let mut ys: Vec<f32> = v.iter().map(|&i| spans[i].bbox.bottom()).collect();
-            ys.sort_by(|a, b| safe_float_cmp(*a, *b));
-            ys.dedup_by(|a, b| (*a - *b).abs() <= 2.0);
-            ys.len()
-        };
-        if line_count(&sidebar) < 5 || line_count(&body) < 8 {
-            return None;
-        }
-        // Sidebar genuinely narrower than the body column.
-        let col_width = |v: &[usize]| -> f32 {
-            let lo = v
-                .iter()
-                .map(|&i| spans[i].bbox.left())
-                .fold(f32::MAX, f32::min);
-            let hi = v
-                .iter()
-                .map(|&i| spans[i].bbox.right())
-                .fold(f32::MIN, f32::max);
-            (hi - lo).max(0.0)
-        };
-        let sw = col_width(&sidebar);
-        let bw = col_width(&body);
-        if sw >= width * 0.45 || sw >= bw * 0.70 {
-            return None; // left column not a narrow sidebar relative to the body
-        }
-        // ANTI-FORM discriminator. A bare narrow left column is geometrically
-        // indistinguishable from a label:value form (Name:/Address:/Date:) or a
-        // verse/margin-note page, and these PDFs carry NO background tint to anchor
-        // the sidebar. The reliable signal is semantic: a publisher-metadata
-        // sidebar carries recognisable furniture labels that never head a form
-        // field or a body column. Require >=2 DISTINCT labels so ordinary narrow
-        // columns and forms never engage this reordering.
-        let side_text: String = {
-            let mut t = String::new();
-            for &i in &sidebar {
-                t.push_str(&spans[i].text.to_lowercase());
-                t.push(' ');
-            }
-            t
-        };
-        const FURNITURE: [&str; 12] = [
-            "citation",
-            "received",
-            "accepted",
-            "published",
-            "copyright",
-            "licensee",
-            "academic editor",
-            "publisher",
-            "doi.org",
-            "issn",
-            "creative commons",
-            "open access",
-        ];
-        let furniture_hits = FURNITURE.iter().filter(|k| side_text.contains(**k)).count();
-        if furniture_hits < 2 {
-            return None;
-        }
-
-        // Emit: band + body merged top→bottom (title stays on top, body flows,
-        // any mid-body full-width element keeps its vertical slot), then the
-        // sidebar furniture last. Spans within a line read left→right.
-        let mut main: Vec<usize> = band;
-        main.extend(body);
-        let key = |idx: &usize| {
-            let s = &spans[*idx];
-            (s.bbox.bottom(), s.bbox.left())
-        };
-        main.sort_by(|a, b| {
-            let (ay, ax) = key(a);
-            let (by, bx) = key(b);
-            safe_float_cmp(by, ay).then_with(|| safe_float_cmp(ax, bx))
-        });
-        sidebar.sort_by(|a, b| {
-            let (ay, ax) = key(a);
-            let (by, bx) = key(b);
-            safe_float_cmp(by, ay).then_with(|| safe_float_cmp(ax, bx))
-        });
-        let mut out: Vec<crate::layout::TextSpan> = Vec::with_capacity(spans.len());
-        for i in main.into_iter().chain(sidebar) {
-            out.push(spans[i].clone());
-        }
-        Some(out)
+        crate::sidebar_order::order(spans, crate::import_storage::ImportStorage(None))
+            .expect("sidebar scratch allocation")
+            .map(|order| order.into_iter().map(|i| spans[i].clone()).collect())
     }
 
     /// Order spans by a topological sort over text BLOCKS (a precede relation),
@@ -16889,120 +15835,6 @@ impl PdfDocument {
         } else {
             None
         }
-    }
-
-    /// True if the spans cluster into lines whose leftmost X positions
-    /// form ≥ 2 distinct peaks separated by a clear gutter.
-    ///
-    /// Body-level word spans fill the X axis continuously, so the
-    /// span-center histogram cannot tell two-column body text apart
-    /// from a single-column page with varied line lengths. The line-
-    /// start histogram does: in two-column body text most lines start
-    /// at one of two X positions (left-column-start or right-column-
-    /// start), and the wide gutter between the columns produces a
-    /// long zero-count stretch.
-    fn has_bimodal_line_starts(spans: &[crate::layout::TextSpan]) -> bool {
-        const Y_BAND: f32 = 2.0;
-        const BIN_PT: f32 = 5.0;
-        const MIN_PEAK_COUNT: usize = 4;
-        const MIN_GUTTER_PT: f32 = 30.0;
-
-        if spans.len() < 24 {
-            return false;
-        }
-
-        // Cluster spans into lines by Y (descending so top-of-page first).
-        let mut lines: Vec<(f32, f32)> = Vec::new(); // (y, line_x_min)
-        let mut sorted = spans.to_vec();
-        sorted.sort_by(|a, b| {
-            crate::utils::safe_float_cmp(b.bbox.y, a.bbox.y)
-                .then_with(|| crate::utils::safe_float_cmp(a.bbox.x, b.bbox.x))
-        });
-
-        let mut current_y: Option<f32> = None;
-        let mut current_xmin: f32 = f32::INFINITY;
-        for s in &sorted {
-            match current_y {
-                Some(y) if (y - s.bbox.y).abs() <= Y_BAND => {
-                    current_xmin = current_xmin.min(s.bbox.x);
-                },
-                _ => {
-                    if let Some(y) = current_y {
-                        if current_xmin.is_finite() {
-                            lines.push((y, current_xmin));
-                        }
-                    }
-                    current_y = Some(s.bbox.y);
-                    current_xmin = s.bbox.x;
-                },
-            }
-        }
-        if let Some(y) = current_y {
-            if current_xmin.is_finite() {
-                lines.push((y, current_xmin));
-            }
-        }
-        if lines.len() < 16 {
-            return false;
-        }
-
-        // Bin line-start X positions.
-        let xmin = lines.iter().map(|(_, x)| *x).fold(f32::INFINITY, f32::min);
-        let xmax = lines
-            .iter()
-            .map(|(_, x)| *x)
-            .fold(f32::NEG_INFINITY, f32::max);
-        if !(xmin.is_finite() && xmax.is_finite()) || xmax - xmin < MIN_GUTTER_PT {
-            return false;
-        }
-        let bin_count = (((xmax - xmin) / BIN_PT).ceil() as usize).max(1);
-        if bin_count > 4096 {
-            return false; // degenerate CTM
-        }
-        let mut hist = vec![0usize; bin_count];
-        for (_, x) in &lines {
-            let idx = (((x - xmin) / BIN_PT) as usize).min(bin_count - 1);
-            hist[idx] += 1;
-        }
-
-        // Scan for ≥ 2 peaks (count ≥ MIN_PEAK_COUNT) with a long
-        // zero-count run between them.
-        let mut peaks: Vec<usize> = Vec::new(); // bin indices (peak center)
-        let mut in_peak = false;
-        let mut peak_start = 0usize;
-        for (i, &c) in hist.iter().enumerate() {
-            if c >= MIN_PEAK_COUNT {
-                if !in_peak {
-                    peak_start = i;
-                    in_peak = true;
-                }
-            } else if c == 0 && in_peak {
-                peaks.push((peak_start + i.saturating_sub(1)) / 2);
-                in_peak = false;
-            }
-        }
-        if in_peak {
-            peaks.push((peak_start + hist.len() - 1) / 2);
-        }
-        if peaks.len() < 2 {
-            return false;
-        }
-
-        // Check gutter: at least one pair of consecutive peaks must
-        // have ≥ MIN_GUTTER_PT zero-count between them.
-        let gutter_bins = (MIN_GUTTER_PT / BIN_PT) as usize;
-        for w in peaks.windows(2) {
-            let a = w[0];
-            let b = w[1];
-            if b <= a {
-                continue;
-            }
-            let zeros = hist[a + 1..b].iter().filter(|&&c| c == 0).count();
-            if zeros >= gutter_bins {
-                return true;
-            }
-        }
-        false
     }
 
     /// Numeric value 0–9 of a folio (page-number) digit, or `None` if `c` is
@@ -21200,9 +20032,8 @@ impl PdfDocument {
         }
         let font = self.load_object(font_ref).ok()?;
         let h = self.font_identity_hash_with_descendants(&font);
-        self.font_id_hash_cache
-            .lock_or_recover()
-            .insert(font_ref, h);
+        crate::fonts::allocation::CollectionAllocation(self.import_budget().map(AsRef::as_ref))
+            .insert(&mut self.font_id_hash_cache.lock_or_recover(), font_ref, h)?;
         Some(h)
     }
 
@@ -21695,7 +20526,9 @@ impl PdfDocument {
         resources: &Object,
         extractor: &mut crate::extractors::TextExtractor<'_>,
     ) -> Result<()> {
-        use crate::fonts::FontInfo;
+        use crate::fonts::{allocation::CollectionAllocation, FontInfo};
+        let allocation = CollectionAllocation(self.import_budget().map(AsRef::as_ref));
+        let font_allocation = || Error::ImportResourceLimit("font cache allocation");
 
         // Resources can be a reference or a dictionary
         let resources_obj = if let Some(res_ref) = resources.as_reference() {
@@ -21734,8 +20567,8 @@ impl PdfDocument {
                     .get(&font_dict_ref)
                     .cloned();
                 if let Some(cached_set) = cached_set_opt {
-                    for (name, font_arc) in &cached_set {
-                        extractor.add_font_shared(name.clone(), Arc::clone(font_arc));
+                    for (name, font_arc) in cached_set.iter() {
+                        extractor.try_add_font_shared(name, Arc::clone(font_arc))?;
                     }
                     extractor.share_truetype_cmaps();
                     return Ok(());
@@ -21743,6 +20576,12 @@ impl PdfDocument {
             }
 
             if let Some(font_dict) = font_dict_obj.as_dict() {
+                // One request-accounted ordering serves all three cache keys.
+                let mut sorted_font_entries = allocation
+                    .vec(font_dict.len())
+                    .ok_or_else(font_allocation)?;
+                sorted_font_entries.extend(font_dict.iter());
+                sorted_font_entries.sort_unstable_by_key(|(name, _)| name.as_str());
                 // Compute font fingerprint from (name → ObjectRef) pairs.
                 // Hash the MAPPING between font names and their object refs,
                 // not just the sets separately. This prevents false cache hits
@@ -21751,14 +20590,9 @@ impl PdfDocument {
                 let fingerprint = {
                     use std::hash::{Hash, Hasher};
                     let mut hasher = std::collections::hash_map::DefaultHasher::new();
-                    let mut name_ref_pairs: Vec<(&str, Option<ObjectRef>)> = font_dict
-                        .iter()
-                        .map(|(name, fo)| (name.as_str(), fo.as_reference()))
-                        .collect();
-                    name_ref_pairs.sort_by(|a, b| a.0.cmp(b.0));
-                    for (name, obj_ref) in &name_ref_pairs {
+                    for (name, font_obj) in &sorted_font_entries {
                         name.hash(&mut hasher);
-                        if let Some(r) = obj_ref {
+                        if let Some(r) = font_obj.as_reference() {
                             r.id.hash(&mut hasher);
                             r.gen.hash(&mut hasher);
                         }
@@ -21772,8 +20606,8 @@ impl PdfDocument {
                     .get(&fingerprint)
                     .cloned();
                 if let Some(cached_set) = cached_fingerprint_opt {
-                    for (name, font_arc) in &cached_set {
-                        extractor.add_font_shared(name.clone(), Arc::clone(font_arc));
+                    for (name, font_arc) in cached_set.iter() {
+                        extractor.try_add_font_shared(name, Arc::clone(font_arc))?;
                     }
                     extractor.share_truetype_cmaps();
                     return Ok(());
@@ -21787,10 +20621,11 @@ impl PdfDocument {
                 // pages verify ONE font via load+hash to confirm the mapping is the same.
                 let name_hash = {
                     use std::hash::{Hash, Hasher};
-                    let mut font_names: Vec<&str> = font_dict.keys().map(|k| k.as_str()).collect();
-                    font_names.sort();
                     let mut hasher = std::collections::hash_map::DefaultHasher::new();
-                    font_names.hash(&mut hasher);
+                    sorted_font_entries.len().hash(&mut hasher);
+                    for (name, _) in &sorted_font_entries {
+                        name.hash(&mut hasher);
+                    }
                     hasher.finish()
                 };
 
@@ -21803,8 +20638,6 @@ impl PdfDocument {
                 // HashMap iteration order is randomized per-process, which causes
                 // non-deterministic text extraction when font CMap sharing depends
                 // on the order fonts are loaded.
-                let mut sorted_font_entries: Vec<(&String, &Object)> = font_dict.iter().collect();
-                sorted_font_entries.sort_by_key(|(name, _)| name.as_str());
 
                 if let Some((cached_set, check_hash)) = cached_name_set {
                     // Verify the cached font set by computing a combined identity hash
@@ -21829,7 +20662,7 @@ impl PdfDocument {
                     };
                     if current_combined == check_hash {
                         for (name, font_arc) in cached_set.iter() {
-                            extractor.add_font_shared(name.clone(), Arc::clone(font_arc));
+                            extractor.try_add_font_shared(name, Arc::clone(font_arc))?;
                         }
                         extractor.share_truetype_cmaps();
                         return Ok(());
@@ -21841,11 +20674,13 @@ impl PdfDocument {
                 // Layer 4 must store only the delta so that a cache hit never injects
                 // parent-page fonts into a different page's extractor context, which
                 // would overwrite correctly-loaded fonts with wrong versions.
-                let extractor_names_before: std::collections::HashSet<String> = extractor
-                    .get_font_set()
-                    .into_iter()
-                    .map(|(k, _)| k)
-                    .collect();
+                let mut extractor_names_before = allocation
+                    .map(extractor.font_names().count())
+                    .ok_or_else(font_allocation)?;
+                for name in extractor.font_names() {
+                    let name = allocation.string(name).ok_or_else(font_allocation)?;
+                    extractor_names_before.insert(name, ());
+                }
 
                 let mut all_from_cache = true;
 
@@ -21855,7 +20690,7 @@ impl PdfDocument {
                         let cached_font_opt =
                             self.font_cache.lock_or_recover().get(&font_ref).cloned();
                         if let Some(cached) = cached_font_opt {
-                            extractor.add_font_shared((*name).clone(), cached);
+                            extractor.try_add_font_shared(name, cached)?;
                             continue;
                         }
                         all_from_cache = false;
@@ -21891,7 +20726,7 @@ impl PdfDocument {
                             self.font_cache
                                 .lock_or_recover()
                                 .insert(font_ref, Arc::clone(&cached));
-                            extractor.add_font_shared((*name).clone(), cached);
+                            extractor.try_add_font_shared(name, cached)?;
                             continue;
                         }
 
@@ -21908,13 +20743,19 @@ impl PdfDocument {
                                 self.font_cache
                                     .lock_or_recover()
                                     .insert(font_ref, Arc::clone(&cached));
-                                extractor.add_font_shared((*name).clone(), cached);
+                                extractor.try_add_font_shared(name, cached)?;
                                 continue;
                             }
                         }
 
                         match FontInfo::from_dict(&font, self) {
                             Ok(font_info) => {
+                                allocation
+                                    .bytes(
+                                        std::mem::size_of::<FontInfo>()
+                                            + 2 * std::mem::size_of::<usize>(),
+                                    )
+                                    .ok_or_else(font_allocation)?;
                                 let arc = Arc::new(font_info);
                                 // Populate the document-level caches always; the
                                 // global cross-document cache only for fonts that
@@ -21931,7 +20772,7 @@ impl PdfDocument {
                                 self.font_cache
                                     .lock_or_recover()
                                     .insert(font_ref, Arc::clone(&arc));
-                                extractor.add_font_shared((*name).clone(), arc);
+                                extractor.try_add_font_shared(name, arc)?;
                             },
                             Err(e) => {
                                 log::error!(
@@ -21948,7 +20789,13 @@ impl PdfDocument {
                         let font = *font_obj;
                         match FontInfo::from_dict(font, self) {
                             Ok(font_info) => {
-                                extractor.add_font((*name).clone(), font_info);
+                                allocation
+                                    .bytes(
+                                        std::mem::size_of::<FontInfo>()
+                                            + 2 * std::mem::size_of::<usize>(),
+                                    )
+                                    .ok_or_else(font_allocation)?;
+                                extractor.try_add_font_shared(name, Arc::new(font_info))?;
                             },
                             Err(e) => {
                                 log::error!(
@@ -21971,15 +20818,21 @@ impl PdfDocument {
                 extractor.share_truetype_cmaps();
 
                 // Cache font set by both ObjectRef and fingerprint
-                let font_set = extractor.get_font_set();
+                allocation
+                    .bytes(
+                        std::mem::size_of::<Vec<(String, Arc<FontInfo>)>>()
+                            + 2 * std::mem::size_of::<usize>(),
+                    )
+                    .ok_or_else(font_allocation)?;
+                let font_set = Arc::new(extractor.try_font_set()?);
                 if let Some(fdr) = font_dict_ref {
                     self.font_set_cache
                         .lock_or_recover()
-                        .insert(fdr, font_set.clone());
+                        .insert(fdr, Arc::clone(&font_set));
                 }
                 self.font_fingerprint_cache
                     .lock_or_recover()
-                    .insert(fingerprint, font_set.clone());
+                    .insert(fingerprint, Arc::clone(&font_set));
 
                 // Cache by font names for Layer 4. Store only the delta — fonts
                 // added by THIS load_fonts call — so that a cache hit never pollutes
@@ -22002,11 +20855,24 @@ impl PdfDocument {
                         }
                         h.finish()
                     };
-                    let l4_set: Vec<(String, Arc<FontInfo>)> = font_set
+                    let delta = font_set
                         .iter()
-                        .filter(|(k, _)| !extractor_names_before.contains(k.as_str()))
-                        .map(|(k, v)| (k.clone(), Arc::clone(v)))
-                        .collect();
+                        .filter(|(k, _)| !extractor_names_before.contains_key(k.as_str()));
+                    let mut l4_set = allocation
+                        .vec(delta.clone().count())
+                        .ok_or_else(font_allocation)?;
+                    for (name, font) in delta {
+                        l4_set.push((
+                            allocation.string(name).ok_or_else(font_allocation)?,
+                            Arc::clone(font),
+                        ));
+                    }
+                    allocation
+                        .bytes(
+                            std::mem::size_of::<Vec<(String, Arc<FontInfo>)>>()
+                                + 2 * std::mem::size_of::<usize>(),
+                        )
+                        .ok_or_else(font_allocation)?;
                     self.font_name_set_cache
                         .lock_or_recover()
                         .insert(name_hash, (Arc::new(l4_set), combined_check_hash));
@@ -26279,6 +25145,30 @@ fn find_substring(haystack: &[u8], needle: &[u8]) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn glyph_origin_scratch_failure_is_returned_by_the_document_path() {
+        use crate::import_limits::PdfImportLimits;
+        let bytes = build_minimal_pdf_with_font(b"BT /F1 12 Tf 20 100 Td (ABC) Tj ET");
+        let doc =
+            PdfDocument::from_bytes_with_limits(bytes.clone(), PdfImportLimits::default()).unwrap();
+        let mut spans = doc.extract_painted_spans(0).unwrap();
+        assert!(!spans.is_empty());
+        doc.cached_page_chars(0).unwrap();
+        doc.get_page_rotation(0).unwrap();
+        let budget = doc.import_budget().unwrap();
+        budget
+            .restrict_work_limits(budget.snapshot().decoded_bytes, budget.limits.operators)
+            .unwrap();
+        let result = doc.stamp_char_x_offsets(0, &mut spans, false);
+        assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
+        assert!(budget.check().is_err());
+        assert!(doc.stamp_char_x_offsets(0, &mut spans, false).is_err());
+        let fresh = PdfDocument::from_bytes_with_limits(bytes, PdfImportLimits::default()).unwrap();
+        let recovered = fresh.extract_painted_spans(0).unwrap();
+        assert!(!recovered.is_empty());
+        assert!(recovered.iter().any(|span| !span.char_x_offsets.is_empty()));
+    }
+
     use super::*;
     use std::io::Cursor;
 
@@ -31837,6 +30727,12 @@ mod tests {
     // ========================================================================
 
     fn build_pdf_with_annotations(annot_objects: Vec<(usize, Vec<u8>)>) -> Vec<u8> {
+        build_pdf_with_annotations_and_objects(annot_objects, Vec::new())
+    }
+    fn build_pdf_with_annotations_and_objects(
+        annot_objects: Vec<(usize, Vec<u8>)>,
+        extra_objects: Vec<(usize, Vec<u8>)>,
+    ) -> Vec<u8> {
         let mut pdf = b"%PDF-1.4\n".to_vec();
         let mut offsets: Vec<(usize, usize)> = Vec::new();
 
@@ -31862,7 +30758,7 @@ mod tests {
         );
         pdf.extend_from_slice(page_str.as_bytes());
 
-        for (obj_num, obj_data) in &annot_objects {
+        for (obj_num, obj_data) in annot_objects.iter().chain(extra_objects.iter()) {
             let off = pdf.len();
             offsets.push((*obj_num, off));
             pdf.extend_from_slice(obj_data);
@@ -31890,6 +30786,32 @@ mod tests {
         pdf
     }
 
+    #[test]
+    fn bounded_annotation_contents_and_appearance_propagate_resource_failure_and_recover() {
+        use crate::import_limits::{ImportBudget, PdfImportLimits};
+        use std::sync::Arc;
+        let contents=build_pdf_with_annotations(vec![(4,b"4 0 obj\n<< /Type /Annot /Subtype /FreeText /Contents (VISIBLE) /Rect [20 40 180 60] >>\nendobj\n".to_vec())]);
+        let stream = b"BT /F1 12 Tf 1 0 0 1 5 5 Tm (AP TEXT) Tj ET";
+        let appearance=build_pdf_with_annotations_and_objects(
+            vec![(4,b"4 0 obj\n<< /Type /Annot /Subtype /Stamp /AP << /N 5 0 R >> /Rect [20 40 180 60] >>\nendobj\n".to_vec())],
+            vec![(5,format!("5 0 obj\n<< /Type /XObject /Subtype /Form /BBox [0 0 160 20] /Resources << /Font << /F1 6 0 R >> >> /Length {} >>\nstream\n{}\nendstream\nendobj\n",stream.len(),std::str::from_utf8(stream).unwrap()).into_bytes()),(6,b"6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n".to_vec())]
+        );
+        for (input, expected) in [(contents, "VISIBLE"), (appearance, "AP TEXT")] {
+            let exhausted = Arc::new(ImportBudget::new(PdfImportLimits::default()).unwrap());
+            let doc =
+                PdfDocument::from_bytes_with_budget(input.clone(), Arc::clone(&exhausted)).unwrap();
+            exhausted
+                .charge_decoded(exhausted.limits.decoded_bytes - exhausted.decoded_bytes() - 1)
+                .unwrap();
+            assert!(doc.annotation_content_spans(0).is_err());
+            let fresh = Arc::new(ImportBudget::new(PdfImportLimits::default()).unwrap());
+            let doc = PdfDocument::from_bytes_with_budget(input, Arc::clone(&fresh)).unwrap();
+            let spans = doc.annotation_content_spans(0).unwrap();
+            assert_eq!(spans.len(), 1);
+            assert_eq!(spans[0].text, expected);
+            assert!(fresh.check().is_ok());
+        }
+    }
     #[test]
     fn test_annotation_freetext() {
         let annot = b"4 0 obj\n<< /Type /Annot /Subtype /FreeText /Contents (Hello from annotation) >>\nendobj\n".to_vec();

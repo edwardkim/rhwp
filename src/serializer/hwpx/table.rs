@@ -24,6 +24,16 @@
 //! HWPX에서 `table.attr` 는 0인 경우가 많으므로 비트 연산으로 `textWrap/textFlow/pageBreak` 등을
 //! 추출하면 안 된다. 반드시 `table.common.text_wrap`, `table.page_break` 등 파싱된 IR 필드를 사용.
 
+use super::section::{
+    build_secpr_run_with_storage, render_hp_p_open_with_storage,
+    render_paragraph_parts_with_storage,
+};
+use super::shape::color_to_hex_with_storage;
+use super::utils::{
+    empty_tag_with_storage, end_tag_with_storage, start_tag_attrs_with_storage,
+    start_tag_with_storage, text_with_storage, write_xml_decl_with_storage, xml_error,
+    xml_escape_with_storage, xml_value,
+};
 use std::io::Write;
 
 use quick_xml::Writer;
@@ -47,10 +57,22 @@ pub fn write_table<W: Write>(
     table: &Table,
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
+    write_table_with_storage(w, table, ctx, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_table_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    table: &Table,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // Keep the editable IR grid; HWPX rows must each contain a cell origin.
     let projected = ctx
         .table_row_grids
-        .table(table)
+        .table_with_storage(table, storage)
         .map_err(SerializeError::UnsupportedInput)?;
     let table = projected.as_ref();
     // borderFillIDRef 참조 등록 (assert_all_refs_resolved 검증 대상)
@@ -63,21 +85,21 @@ pub fn write_table<W: Write>(
     }
 
     // --- <hp:tbl> 시작 태그 + 속성 ---
-    let id_str = table.common.instance_id.to_string();
-    let z_order = table.common.z_order.to_string();
+    let id_str = xml_value(storage, table.common.instance_id)?;
+    let z_order = xml_value(storage, table.common.z_order)?;
     let text_wrap = text_wrap_str(table.common.text_wrap);
     let text_flow = text_flow_str(table.common.text_flow);
     // [#2840] lock(개체 잠금) — IR 보존 값 방출 (종전 false 하드코딩).
     let lock = bool01(table.common.locked);
     let page_break = table_page_break_str(table.page_break);
     let repeat_header = bool01(table.repeat_header);
-    let row_cnt = table.row_count.to_string();
-    let col_cnt = table.col_count.to_string();
-    let cell_spacing = table.cell_spacing.to_string();
-    let border_fill_id_ref = table.border_fill_id.to_string();
+    let row_cnt = xml_value(storage, table.row_count)?;
+    let col_cnt = xml_value(storage, table.col_count)?;
+    let cell_spacing = xml_value(storage, table.cell_spacing)?;
+    let border_fill_id_ref = xml_value(storage, table.border_fill_id)?;
     let no_adjust = bool01((table.attr | table.raw_table_record_attr) & 0x08 != 0);
 
-    start_tag_attrs(
+    start_tag_attrs_with_storage(
         w,
         "hp:tbl",
         &[
@@ -103,43 +125,60 @@ pub fn write_table<W: Write>(
             ("borderFillIDRef", &border_fill_id_ref),
             ("noAdjust", no_adjust),
         ],
+        storage,
     )?;
 
     // --- 자식: sz, pos, outMargin, (caption — 옵셔널), inMargin, tr[] ---
-    write_sz(w, &table.common)?;
-    write_pos(w, &table.common)?;
-    write_out_margin(w, table)?;
+    write_sz_with_storage(w, &table.common, storage)?;
+    write_pos_with_storage(w, &table.common, storage)?;
+    write_out_margin_with_storage(w, table, storage)?;
     if let Some(caption) = &table.caption {
-        write_caption(w, caption, ctx)?;
+        write_caption_with_storage(w, caption, ctx, storage)?;
     }
-    write_in_margin(w, table)?;
+    write_in_margin_with_storage(w, table, storage)?;
     // cellzoneList: inMargin 다음, tr 앞 (OWPML 자식 순서). 셀 영역 테두리/배경
     // 오버레이를 정의한다. 파서가 table.zones 로 보존하므로 그대로 되살린다.
-    write_cellzone_list(w, table)?;
+    write_cellzone_list_with_storage(w, table, storage)?;
 
     // tr[]: 행 단위 반복. 각 행에 속한 셀 (cell.row == r) 을 col 오름차순으로 출력.
     for row_idx in 0..table.row_count {
-        start_tag(w, "hp:tr")?;
-        let mut row_cells: Vec<&Cell> = table.cells.iter().filter(|c| c.row == row_idx).collect();
+        start_tag_with_storage(w, "hp:tr", storage)?;
+        let mut row_cells: Vec<&Cell> = storage
+            .collect(table.cells.iter().filter(|c| c.row == row_idx))
+            .map_err(xml_error)?;
+        storage
+            .bytes(std::mem::size_of_val(row_cells.as_slice()))
+            .map_err(xml_error)?;
         row_cells.sort_by_key(|c| c.col);
         for cell in row_cells {
-            write_cell(w, cell, ctx)?;
+            write_cell_with_storage(w, cell, ctx, storage)?;
         }
-        end_tag(w, "hp:tr")?;
+        end_tag_with_storage(w, "hp:tr", storage)?;
     }
 
-    end_tag(w, "hp:tbl")?;
+    end_tag_with_storage(w, "hp:tbl", storage)?;
     Ok(())
 }
 
 fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
-    let width = c.width.to_string();
-    let height = c.height.to_string();
+    write_sz_with_storage(w, c, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_sz_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    c: &CommonObjAttr,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let width = xml_value(storage, c.width)?;
+    let height = xml_value(storage, c.height)?;
     // [#2697] widthRelTo/heightRelTo/protect 는 IR 을 보존한다. 종전 "ABSOLUTE"/"0"
     // 하드코딩은 파서가 이미 읽어 둔 값(section.rs:1689/1693)을 저장 때 버려, 단/쪽/문단에
     // 맞춘 표가 절대값으로 바뀌고 크기 보호가 풀렸다. 이웃 write_pos 는 이미 모든 필드를
     // enum 헬퍼로 통과시킨다. 같은 hp:sz 를 다루는 form.rs:178-188 도 3속성 모두 보존한다.
-    empty_tag(
+    empty_tag_with_storage(
         w,
         "hp:sz",
         &[
@@ -149,6 +188,7 @@ fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Serial
             ("heightRelTo", height_criterion_str(c.height_criterion)),
             ("protect", bool01(c.size_protect)),
         ],
+        storage,
     )
 }
 
@@ -177,13 +217,24 @@ fn height_criterion_str(c: SizeCriterion) -> &'static str {
 }
 
 fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
+    write_pos_with_storage(w, c, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_pos_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    c: &CommonObjAttr,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let treat = bool01(c.treat_as_char);
-    let vert_offset = c.vertical_offset.to_string();
-    let horz_offset = c.horizontal_offset.to_string();
+    let vert_offset = xml_value(storage, c.vertical_offset)?;
+    let horz_offset = xml_value(storage, c.horizontal_offset)?;
     // [#1594] holdAnchorAndSO 는 IR(prevent_page_break)을 보존한다. 종전 "0" 하드코딩은
     // 페이지 하단 앵커 개체(발신명의 footer 등)의 1→0 드롭으로 한글 페이지 붕괴를 유발했다.
     let hold = bool01(c.prevent_page_break != 0);
-    empty_tag(
+    empty_tag_with_storage(
         w,
         "hp:pos",
         &[
@@ -208,15 +259,27 @@ fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Seria
             ("vertOffset", &vert_offset),
             ("horzOffset", &horz_offset),
         ],
+        storage,
     )
 }
 
 fn write_out_margin<W: Write>(w: &mut Writer<W>, t: &Table) -> Result<(), SerializeError> {
-    let left = t.outer_margin_left.to_string();
-    let right = t.outer_margin_right.to_string();
-    let top = t.outer_margin_top.to_string();
-    let bottom = t.outer_margin_bottom.to_string();
-    empty_tag(
+    write_out_margin_with_storage(w, t, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_out_margin_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    t: &Table,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let left = xml_value(storage, t.outer_margin_left)?;
+    let right = xml_value(storage, t.outer_margin_right)?;
+    let top = xml_value(storage, t.outer_margin_top)?;
+    let bottom = xml_value(storage, t.outer_margin_bottom)?;
+    empty_tag_with_storage(
         w,
         "hp:outMargin",
         &[
@@ -225,15 +288,27 @@ fn write_out_margin<W: Write>(w: &mut Writer<W>, t: &Table) -> Result<(), Serial
             ("top", &top),
             ("bottom", &bottom),
         ],
+        storage,
     )
 }
 
 fn write_in_margin<W: Write>(w: &mut Writer<W>, t: &Table) -> Result<(), SerializeError> {
-    let left = t.padding.left.to_string();
-    let right = t.padding.right.to_string();
-    let top = t.padding.top.to_string();
-    let bottom = t.padding.bottom.to_string();
-    empty_tag(
+    write_in_margin_with_storage(w, t, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_in_margin_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    t: &Table,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let left = xml_value(storage, t.padding.left)?;
+    let right = xml_value(storage, t.padding.right)?;
+    let top = xml_value(storage, t.padding.top)?;
+    let bottom = xml_value(storage, t.padding.bottom)?;
+    empty_tag_with_storage(
         w,
         "hp:inMargin",
         &[
@@ -242,6 +317,7 @@ fn write_in_margin<W: Write>(w: &mut Writer<W>, t: &Table) -> Result<(), Seriali
             ("top", &top),
             ("bottom", &bottom),
         ],
+        storage,
     )
 }
 
@@ -251,17 +327,28 @@ fn write_in_margin<W: Write>(w: &mut Writer<W>, t: &Table) -> Result<(), Seriali
 /// endColAddr, borderFillIDRef. borderFillIDRef 는 셀과 동일하게 raw 값(오프셋
 /// 없음)으로 쓴다 (parser `parse_u16`, 헤더 borderFill id 와 1:1).
 fn write_cellzone_list<W: Write>(w: &mut Writer<W>, t: &Table) -> Result<(), SerializeError> {
+    write_cellzone_list_with_storage(w, t, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_cellzone_list_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    t: &Table,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if t.zones.is_empty() {
         return Ok(());
     }
-    start_tag(w, "hp:cellzoneList")?;
+    start_tag_with_storage(w, "hp:cellzoneList", storage)?;
     for zone in &t.zones {
-        let start_row = zone.start_row.to_string();
-        let start_col = zone.start_col.to_string();
-        let end_row = zone.end_row.to_string();
-        let end_col = zone.end_col.to_string();
-        let border_fill = zone.border_fill_id.to_string();
-        empty_tag(
+        let start_row = xml_value(storage, zone.start_row)?;
+        let start_col = xml_value(storage, zone.start_col)?;
+        let end_row = xml_value(storage, zone.end_row)?;
+        let end_col = xml_value(storage, zone.end_col)?;
+        let border_fill = xml_value(storage, zone.border_fill_id)?;
+        empty_tag_with_storage(
             w,
             "hp:cellzone",
             &[
@@ -271,9 +358,10 @@ fn write_cellzone_list<W: Write>(w: &mut Writer<W>, t: &Table) -> Result<(), Ser
                 ("endColAddr", &end_col),
                 ("borderFillIDRef", &border_fill),
             ],
+            storage,
         )?;
     }
-    end_tag(w, "hp:cellzoneList")
+    end_tag_with_storage(w, "hp:cellzoneList", storage)
 }
 
 fn write_cell<W: Write>(
@@ -281,15 +369,27 @@ fn write_cell<W: Write>(
     cell: &Cell,
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
+    write_cell_with_storage(w, cell, ctx, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_cell_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    cell: &Cell,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let name = cell.field_name.as_deref().unwrap_or("");
     let header = bool01(cell.is_header);
     let has_margin = bool01(cell.apply_inner_margin);
     let protect = bool01(cell.cell_protect());
     let editable = bool01(cell.editable_in_form());
     let dirty = bool01(cell.dirty_flag);
-    let border_ref = cell.border_fill_id.to_string();
+    let border_ref = xml_value(storage, cell.border_fill_id)?;
 
-    start_tag_attrs(
+    start_tag_attrs_with_storage(
         w,
         "hp:tc",
         &[
@@ -301,16 +401,17 @@ fn write_cell<W: Write>(
             ("dirty", dirty),
             ("borderFillIDRef", &border_ref),
         ],
+        storage,
     )?;
 
     // 자식 순서: subList, cellAddr, cellSpan, cellSz, cellMargin
-    write_sub_list(w, cell, ctx)?;
-    write_cell_addr(w, cell)?;
-    write_cell_span(w, cell)?;
-    write_cell_sz(w, cell)?;
-    write_cell_margin(w, cell)?;
+    write_sub_list_with_storage(w, cell, ctx, storage)?;
+    write_cell_addr_with_storage(w, cell, storage)?;
+    write_cell_span_with_storage(w, cell, storage)?;
+    write_cell_sz_with_storage(w, cell, storage)?;
+    write_cell_margin_with_storage(w, cell, storage)?;
 
-    end_tag(w, "hp:tc")?;
+    end_tag_with_storage(w, "hp:tc", storage)?;
     Ok(())
 }
 
@@ -319,7 +420,19 @@ fn write_sub_list<W: Write>(
     cell: &Cell,
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
-    start_tag_attrs(
+    write_sub_list_with_storage(w, cell, ctx, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_sub_list_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    cell: &Cell,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    start_tag_attrs_with_storage(
         w,
         "hp:subList",
         &[
@@ -343,11 +456,12 @@ fn write_sub_list<W: Write>(
             ("hasTextRef", "0"),
             ("hasNumRef", "0"),
         ],
+        storage,
     )?;
 
-    write_sub_list_paragraphs(w, &cell.paragraphs, ctx)?;
+    write_sub_list_paragraphs_with_storage(w, &cell.paragraphs, ctx, storage)?;
 
-    end_tag(w, "hp:subList")?;
+    end_tag_with_storage(w, "hp:subList", storage)?;
     Ok(())
 }
 
@@ -372,34 +486,57 @@ fn write_sub_list_paragraphs<W: Write>(
     paragraphs: &[crate::model::paragraph::Paragraph],
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
-    ctx.sub_list_depth += 1;
-    let mut vert_cursor: u32 = 0;
-    for para in paragraphs {
-        ctx.para_shape_ids.reference(para.para_shape_id);
-        let sid = ctx.effective_style_id(para.style_id);
-        ctx.style_ids.reference(sid as u16);
+    write_sub_list_paragraphs_with_storage(w, paragraphs, ctx, &crate::storage::Unbounded)
+}
 
-        let (runs, linesegs, advance) = render_paragraph_parts(para, vert_cursor, ctx);
-        vert_cursor = advance;
-        let pid = ctx.next_para_id();
-        let mut p_xml = render_hp_p_open(para, pid, sid);
-        // [#5873] 셀 안 구역 나누기 — #4056 의 본문 경로와 같은 보완.
-        if let Some(crate::model::control::Control::SectionDef(sd)) = para
-            .controls
-            .iter()
-            .find(|c| matches!(c, crate::model::control::Control::SectionDef(_)))
-        {
-            p_xml.push_str(&build_secpr_run(sd, first_run_char_shape_id(para)));
+pub(super) fn write_sub_list_paragraphs_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let depth = ctx.sub_list_depth;
+    let result = (|| -> Result<(), SerializeError> {
+        ctx.sub_list_depth += 1;
+        let mut vert_cursor: u32 = 0;
+        for para in paragraphs {
+            ctx.para_shape_ids.reference(para.para_shape_id);
+            let sid = ctx.effective_style_id(para.style_id);
+            ctx.style_ids.reference(sid as u16);
+
+            let (runs, linesegs, advance) =
+                render_paragraph_parts_with_storage(para, vert_cursor, ctx, storage)?;
+            vert_cursor = advance;
+            let pid = ctx.next_para_id();
+            let mut p_xml = render_hp_p_open_with_storage(para, pid, sid, storage)?;
+            // [#5873] 셀 안 구역 나누기 — #4056 의 본문 경로와 같은 보완.
+            if let Some(crate::model::control::Control::SectionDef(sd)) = para
+                .controls
+                .iter()
+                .find(|c| matches!(c, crate::model::control::Control::SectionDef(_)))
+            {
+                storage
+                    .push_str(
+                        &mut p_xml,
+                        &build_secpr_run_with_storage(sd, first_run_char_shape_id(para), storage)?,
+                    )
+                    .map_err(xml_error)?;
+            }
+            storage.push_str(&mut p_xml, &runs).map_err(xml_error)?;
+            storage.push_str(&mut p_xml, &linesegs).map_err(xml_error)?;
+            storage.push_str(&mut p_xml, "</hp:p>").map_err(xml_error)?;
+            w.get_mut()
+                .write_all(p_xml.as_bytes())
+                .map_err(|e| SerializeError::XmlError(e.to_string()))?;
         }
-        p_xml.push_str(&runs);
-        p_xml.push_str(&linesegs);
-        p_xml.push_str("</hp:p>");
-        w.get_mut()
-            .write_all(p_xml.as_bytes())
-            .map_err(|e| SerializeError::XmlError(e.to_string()))?;
-    }
-    ctx.sub_list_depth -= 1;
-    Ok(())
+        ctx.sub_list_depth -= 1;
+        Ok(())
+    })();
+    ctx.sub_list_depth = depth;
+    result
 }
 
 /// `<hp:caption>` 직렬화 (#1387) — 자식 순서상 outMargin 과 inMargin 사이 (모듈 doc).
@@ -414,6 +551,18 @@ pub(super) fn write_caption<W: Write>(
     caption: &crate::model::shape::Caption,
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
+    write_caption_with_storage(w, caption, ctx, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_caption_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    caption: &crate::model::shape::Caption,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     use crate::model::shape::{CaptionDirection, CaptionVertAlign};
 
     let side = match caption.direction {
@@ -428,10 +577,10 @@ pub(super) fn write_caption<W: Write>(
         CaptionVertAlign::Bottom => "BOTTOM",
     };
     let full_sz = bool01(caption.include_margin);
-    let width = caption.width.to_string();
-    let gap = caption.spacing.to_string();
-    let last_width = caption.max_width.to_string();
-    start_tag_attrs(
+    let width = xml_value(storage, caption.width)?;
+    let gap = xml_value(storage, caption.spacing)?;
+    let last_width = xml_value(storage, caption.max_width)?;
+    start_tag_attrs_with_storage(
         w,
         "hp:caption",
         &[
@@ -441,8 +590,9 @@ pub(super) fn write_caption<W: Write>(
             ("gap", &gap),
             ("lastWidth", &last_width),
         ],
+        storage,
     )?;
-    start_tag_attrs(
+    start_tag_attrs_with_storage(
         w,
         "hp:subList",
         &[
@@ -457,40 +607,101 @@ pub(super) fn write_caption<W: Write>(
             ("hasTextRef", "0"),
             ("hasNumRef", "0"),
         ],
+        storage,
     )?;
-    write_sub_list_paragraphs(w, &caption.paragraphs, ctx)?;
-    end_tag(w, "hp:subList")?;
-    end_tag(w, "hp:caption")?;
+    write_sub_list_paragraphs_with_storage(w, &caption.paragraphs, ctx, storage)?;
+    end_tag_with_storage(w, "hp:subList", storage)?;
+    end_tag_with_storage(w, "hp:caption", storage)?;
     Ok(())
 }
 
 fn write_cell_addr<W: Write>(w: &mut Writer<W>, cell: &Cell) -> Result<(), SerializeError> {
-    let col = cell.col.to_string();
-    let row = cell.row.to_string();
-    empty_tag(w, "hp:cellAddr", &[("colAddr", &col), ("rowAddr", &row)])
+    write_cell_addr_with_storage(w, cell, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_cell_addr_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    cell: &Cell,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let col = xml_value(storage, cell.col)?;
+    let row = xml_value(storage, cell.row)?;
+    empty_tag_with_storage(
+        w,
+        "hp:cellAddr",
+        &[("colAddr", &col), ("rowAddr", &row)],
+        storage,
+    )
 }
 
 fn write_cell_span<W: Write>(w: &mut Writer<W>, cell: &Cell) -> Result<(), SerializeError> {
-    let cs = cell.col_span.max(1).to_string();
-    let rs = cell.row_span.max(1).to_string();
-    empty_tag(w, "hp:cellSpan", &[("colSpan", &cs), ("rowSpan", &rs)])
+    write_cell_span_with_storage(w, cell, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_cell_span_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    cell: &Cell,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let cs = xml_value(storage, cell.col_span.max(1))?;
+    let rs = xml_value(storage, cell.row_span.max(1))?;
+    empty_tag_with_storage(
+        w,
+        "hp:cellSpan",
+        &[("colSpan", &cs), ("rowSpan", &rs)],
+        storage,
+    )
 }
 
 fn write_cell_sz<W: Write>(w: &mut Writer<W>, cell: &Cell) -> Result<(), SerializeError> {
-    let w_s = cell.width.to_string();
-    let h_s = cell.height.to_string();
-    empty_tag(w, "hp:cellSz", &[("width", &w_s), ("height", &h_s)])
+    write_cell_sz_with_storage(w, cell, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_cell_sz_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    cell: &Cell,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let w_s = xml_value(storage, cell.width)?;
+    let h_s = xml_value(storage, cell.height)?;
+    empty_tag_with_storage(
+        w,
+        "hp:cellSz",
+        &[("width", &w_s), ("height", &h_s)],
+        storage,
+    )
 }
 
 fn write_cell_margin<W: Write>(w: &mut Writer<W>, cell: &Cell) -> Result<(), SerializeError> {
-    let l = cell.padding.left.to_string();
-    let r = cell.padding.right.to_string();
-    let t = cell.padding.top.to_string();
-    let b = cell.padding.bottom.to_string();
-    empty_tag(
+    write_cell_margin_with_storage(w, cell, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_cell_margin_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    cell: &Cell,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let l = xml_value(storage, cell.padding.left)?;
+    let r = xml_value(storage, cell.padding.right)?;
+    let t = xml_value(storage, cell.padding.top)?;
+    let b = xml_value(storage, cell.padding.bottom)?;
+    empty_tag_with_storage(
         w,
         "hp:cellMargin",
         &[("left", &l), ("right", &r), ("top", &t), ("bottom", &b)],
+        storage,
     )
 }
 

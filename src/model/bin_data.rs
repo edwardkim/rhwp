@@ -105,6 +105,13 @@ pub struct BinDataContent {
 pub trait BinDataResolver:
     std::fmt::Debug + Send + Sync + std::panic::RefUnwindSafe + std::panic::UnwindSafe
 {
+    /// Allocation-free upper bound for one bounded materialization. Implementers
+    /// returning Some must enforce it in `resolve_limited`; opaque resolvers may
+    /// retain None and let the host reserve the full requested limit first.
+    fn stable_size_bound(&self, _key: &str) -> Option<usize> {
+        None
+    }
+
     /// `key` 가 가리키는 BinData 의 바이트를 압축 해제하여 반환한다.
     ///
     /// 원본이 손상되었거나 엔트리가 없으면 빈 벡터를 반환한다
@@ -186,6 +193,10 @@ impl std::fmt::Debug for InMemorySharedBinDataResolver {
 }
 
 impl BinDataResolver for InMemorySharedBinDataResolver {
+    fn stable_size_bound(&self, _key: &str) -> Option<usize> {
+        Some(self.bytes.len())
+    }
+
     fn resolve(&self, _key: &str) -> Vec<u8> {
         self.bytes.to_vec()
     }

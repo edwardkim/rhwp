@@ -34,5 +34,5 @@ export function formatDraftSize(byteLength: number): string {
 export function describeDraft(draft: AutosaveDraft): string {
   const format = draft.sourceFormat.toUpperCase();
   const suffix = ['hwpx', 'hml'].includes(draft.sourceFormat.toLowerCase()) ? ' → HWP 복구본' : '';
-  return `${formatDraftSavedAt(draft.savedAt)} · ${formatDraftSize(draft.byteLength)} · ${format}${suffix}`;
+  return `${draft.protection ? '암호화된 복구본 · ' : ''}${formatDraftSavedAt(draft.savedAt)} · ${formatDraftSize(draft.byteLength)} · ${format}${suffix}`;
 }

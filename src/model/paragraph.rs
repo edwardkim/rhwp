@@ -213,6 +213,7 @@ pub struct MarkerHead {
     /// 마커 글자 모양 (`u32::MAX` 는 참조 없음 — 문단 첫 글자 모양을 따른다)
     pub char_shape_id: u32,
 }
+crate::storage::clone_copy!(MarkerHead);
 
 /// 줄 구성에서 선택한 공백 측정 규칙. 저장 형식의 bit나 글꼴 대체 규칙이 아니다.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -227,6 +228,7 @@ pub enum SpaceMetric {
     /// KoPub 양쪽 정렬의 공백 압축 측정.
     KoPubJustified,
 }
+crate::storage::clone_copy!(SpaceMetric);
 
 impl std::fmt::Debug for NumberingMarker {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -377,6 +379,7 @@ pub struct LineSeg {
     /// - bit 31: 구현 편의 property
     pub tag: u32,
 }
+crate::storage::clone_fields!(LineSeg, {text_start, vertical_pos, line_height, text_height, baseline_distance, line_spacing, column_start, segment_width, tag});
 
 impl LineSeg {
     pub const TAG_FIRST_LINE_OF_PAGE: u32 = 1 << 0;
@@ -587,16 +590,21 @@ impl Paragraph {
     }
 
     pub(crate) fn effective_markpen_range_tags(&self) -> Vec<RangeTag> {
-        if self.markpen_marks.is_empty() {
-            return self.range_tags.clone();
+        match self.try_effective_markpen_range_tags(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
         }
-        let mut ranges: Vec<_> = self
-            .range_tags
-            .iter()
-            .filter(|r| r.tag >> 24 != 2)
-            .cloned()
-            .collect();
-        let mut open = Vec::new();
+    }
+    pub(crate) fn try_effective_markpen_range_tags<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Vec<RangeTag>, S::Error> {
+        if self.markpen_marks.is_empty() {
+            return storage.collect(self.range_tags.iter().cloned());
+        }
+        let mut ranges: Vec<_> =
+            storage.collect(self.range_tags.iter().filter(|r| r.tag >> 24 != 2).cloned())?;
+        let mut open = storage.vec(0)?;
         for mark in &self.markpen_marks {
             let pos = mark.stream_position(self);
             if let Some(color) = &mark.color {
@@ -604,19 +612,22 @@ impl Paragraph {
                     .strip_prefix('#')
                     .filter(|s| s.len() == 6)
                     .and_then(|s| u32::from_str_radix(s, 16).ok());
-                open.push((pos, rgb));
+                storage.push(&mut open, (pos, rgb))?;
             } else if let Some((start, Some(rgb))) = open.pop() {
                 if pos >= start {
                     let bgr = ((rgb & 255) << 16) | (rgb & 0xff00) | ((rgb >> 16) & 255);
-                    ranges.push(RangeTag {
-                        start,
-                        end: pos,
-                        tag: 0x0200_0000 | bgr,
-                    });
+                    storage.push(
+                        &mut ranges,
+                        RangeTag {
+                            start,
+                            end: pos,
+                            tag: 0x0200_0000 | bgr,
+                        },
+                    )?;
                 }
             }
         }
-        ranges
+        Ok(ranges)
     }
 }
 
@@ -2151,9 +2162,20 @@ impl Paragraph {
     /// 병합 후 other 문단의 내용은 현재 문단에 포함된다.
     /// 반환값: 병합 지점의 char offset (원래 텍스트의 길이).
     pub fn merge_from(&mut self, other: &Paragraph) -> usize {
+        match self.merge_from_with_storage(other, &crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn merge_from_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        other: &Paragraph,
+        storage: &S,
+    ) -> Result<usize, S::Error> {
         // 텍스트 없이 컨트롤만 있는 문단(예: 그림 복사 클립보드)도 병합 대상 (#1323)
         if other.text.is_empty() && other.controls.is_empty() {
-            return self.text.chars().count();
+            return Ok(self.text.chars().count());
         }
         let self_text_len = self.text.chars().count();
 
@@ -2162,7 +2184,7 @@ impl Paragraph {
         // 갭이 인코딩되어 있지 않으므로 하나당 8 code unit을 가산해야 other 텍스트가 그
         // 뒤로 이어진다 (#1323). 끝 표지를 빠뜨리면 이어 붙인 글자가 그 자리를 덮는다.
         // 문단 끝 자동 번호는 자리표 글자가 번호의 8유닛을 차지하므로 따로 세지 않는다.
-        let control_positions = self.control_text_positions();
+        let control_positions = self.try_control_text_positions(storage)?;
         let trailing_number = self.trailing_auto_number(&control_positions);
         let trailing_slots = control_positions
             .iter()
@@ -2176,38 +2198,44 @@ impl Paragraph {
                 .count();
         let trailing_ctrl_units = trailing_slots as u32 * 8;
         let utf16_end: u32 = if !self.char_offsets.is_empty() {
-            let text_chars: Vec<char> = self.text.chars().collect();
+            let text_chars = storage.collect(self.text.chars())?;
             self.char_stream_end(&text_chars, self.char_offsets.len() - 1, trailing_number)
         } else {
             0
         } + trailing_ctrl_units;
 
         // 1. 텍스트 결합
-        self.text.push_str(&other.text);
-        self.literal_figure_spaces.extend(
+        storage.push_str(&mut self.text, &other.text)?;
+        storage.extend(
+            &mut self.literal_figure_spaces,
             other
                 .literal_figure_spaces
                 .iter()
                 .map(|&position| position + self_text_len),
-        );
+        )?;
 
         // 2. char_offsets 결합 (other의 오프셋에 utf16_end 추가)
         for &off in &other.char_offsets {
-            self.char_offsets.push(off + utf16_end);
+            storage.push(&mut self.char_offsets, off + utf16_end)?;
         }
 
         // 2-1. 제목 차례 표시 결합 — 문자 인덱스 축이라 앞 문단 길이만큼 민다.
-        self.markpen_marks
-            .extend(other.markpen_marks.iter().map(|m| MarkpenMark {
+        storage.extend(
+            &mut self.markpen_marks,
+            other.markpen_marks.iter().map(|m| MarkpenMark {
                 char_idx: m.char_idx + self_text_len,
                 color: m.color.clone(),
                 utf16_pos: m.utf16_pos.map(|pos| pos + utf16_end),
-            }));
+            }),
+        )?;
         for m in &other.title_marks {
-            self.title_marks.push(TitleMark {
-                char_idx: m.char_idx + self_text_len,
-                ignore: m.ignore,
-            });
+            storage.push(
+                &mut self.title_marks,
+                TitleMark {
+                    char_idx: m.char_idx + self_text_len,
+                    ignore: m.ignore,
+                },
+            )?;
         }
 
         // 3. char_shapes 결합 (other의 start_pos에 utf16_end 추가)
@@ -2222,10 +2250,13 @@ impl Paragraph {
             {
                 continue;
             }
-            self.char_shapes.push(CharShapeRef {
-                start_pos: new_pos,
-                char_shape_id: cs.char_shape_id,
-            });
+            storage.push(
+                &mut self.char_shapes,
+                CharShapeRef {
+                    start_pos: new_pos,
+                    char_shape_id: cs.char_shape_id,
+                },
+            )?;
         }
 
         // 4. line_segs: 원본 치수를 보존하여 리플로우 시 올바른 줄간격 유지
@@ -2246,7 +2277,7 @@ impl Paragraph {
         // 재생성하면 편집발 vpos 재계산이 이를 저장 단/쪽 리셋으로 오인해 병합
         // 문단을 구역 상단 좌표에 동결시킨다 (밴드 내 range-delete 시 +1 팬텀 쪽).
         let orig_vpos = orig_line_seg.as_ref().map(|o| o.vertical_pos).unwrap_or(0);
-        self.replace_line_segs(vec![LineSeg {
+        self.replace_line_segs(storage.collect([LineSeg {
             text_start: 0,
             vertical_pos: orig_vpos,
             line_height: lh,
@@ -2256,41 +2287,55 @@ impl Paragraph {
             segment_width: sw,
             tag,
             ..Default::default()
-        }]);
+        }])?);
 
         // 5. range_tags 결합 (other의 start/end에 utf16_end 추가)
         for rt in &other.range_tags {
-            self.range_tags.push(RangeTag {
-                start: rt.start + utf16_end,
-                end: rt.end + utf16_end,
-                tag: rt.tag,
-            });
+            storage.push(
+                &mut self.range_tags,
+                RangeTag {
+                    start: rt.start + utf16_end,
+                    end: rt.end + utf16_end,
+                    tag: rt.tag,
+                },
+            )?;
         }
 
         // 5-1. field_ranges 결합 (other의 char 인덱스에 self_text_len 추가)
         //      ctrl_offset은 병합 전 self.controls.len() — 5-2의 controls 병합보다 먼저 캡처
         let ctrl_offset = self.controls.len();
         for fr in &other.field_ranges {
-            self.field_ranges.push(FieldRange {
-                start_char_idx: fr.start_char_idx + self_text_len,
-                end_char_idx: fr.end_char_idx + self_text_len,
-                control_idx: fr.control_idx + ctrl_offset,
-                end_field_id: fr.end_field_id,
-                inner_slot_count: fr.inner_slot_count,
-            });
+            storage.push(
+                &mut self.field_ranges,
+                FieldRange {
+                    start_char_idx: fr.start_char_idx + self_text_len,
+                    end_char_idx: fr.end_char_idx + self_text_len,
+                    control_idx: fr.control_idx + ctrl_offset,
+                    end_field_id: fr.end_field_id,
+                    inner_slot_count: fr.inner_slot_count,
+                },
+            )?;
         }
 
         // 5-2. controls / ctrl_data_records / control_mask 병합 (#1323)
         //      ctrl_data_records[i]는 controls[i] 대응이므로 self 쪽을 None 패딩 후 이어붙인다.
         if !other.controls.is_empty() {
             while self.ctrl_data_records.len() < self.controls.len() {
-                self.ctrl_data_records.push(None);
+                storage.push(&mut self.ctrl_data_records, None)?;
             }
             for i in 0..other.controls.len() {
-                self.ctrl_data_records
-                    .push(other.ctrl_data_records.get(i).cloned().flatten());
+                let record = other
+                    .ctrl_data_records
+                    .get(i)
+                    .map(|record| crate::storage::try_clone(record, storage))
+                    .transpose()?
+                    .flatten();
+                storage.push(&mut self.ctrl_data_records, record)?;
             }
-            self.controls.extend(other.controls.iter().cloned());
+            for control in &other.controls {
+                let control = storage.clone_record(control)?;
+                storage.push(&mut self.controls, control)?;
+            }
         }
         // control_mask는 tab/개행 등 텍스트 기반 비트(#1323 이후 확장분)도 포함하므로,
         // other.controls가 비어 있어도 other.text의 tab/개행이 손실되지 않도록
@@ -2310,7 +2355,7 @@ impl Paragraph {
             self.has_para_text = true;
         }
 
-        self_text_len
+        Ok(self_text_len)
     }
 
     /// `controls[ci]` 가 갭의 슬롯 대신 `at` 번째 글자 자체를 차지하는가.
@@ -2794,18 +2839,28 @@ impl Paragraph {
     /// `positions[i]` = `controls[i]` 가 삽입되어야 할 텍스트 character 인덱스.
     /// 컨트롤이 없으면 빈 벡터.
     pub fn control_text_positions(&self) -> Vec<usize> {
+        match self.try_control_text_positions(&crate::storage::Unbounded) {
+            Ok(positions) => positions,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn try_control_text_positions<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Vec<usize>, S::Error> {
         let offsets = &self.char_offsets;
         let total_controls = self.controls.len();
 
         if total_controls == 0 {
-            return vec![];
+            return storage.vec(0);
         }
 
         if offsets.is_empty() {
             // char_offsets가 없는 경우: 인라인 컨트롤을 순차적으로 배치
             // secd/cold 등 비인라인 컨트롤은 position 0, 인라인 컨트롤은 순차 증가
             let mut pos = 0usize;
-            let mut positions = Vec::with_capacity(total_controls);
+            let mut positions = storage.vec(total_controls)?;
             for ctrl in &self.controls {
                 positions.push(pos);
                 if matches!(
@@ -2822,11 +2877,11 @@ impl Paragraph {
                     pos += 1;
                 }
             }
-            return positions;
+            return Ok(positions);
         }
 
-        let chars: Vec<char> = self.text.chars().collect();
-        let mut positions = Vec::with_capacity(total_controls);
+        let chars: Vec<char> = storage.collect(self.text.chars())?;
+        let mut positions = storage.vec(total_controls)?;
         // 파서가 보존한 본문 문자 축으로 갭의 부수 슬롯을 구분한다.
         // 같은 위치에 여러 필드 종료가 있어도 각각 원시 8유닛을 소비한다.
         let mut auxiliary_slots = std::collections::HashMap::<usize, usize>::new();
@@ -2837,6 +2892,9 @@ impl Paragraph {
             .chain(self.orphan_field_ends.iter().map(|end| end.char_idx))
             .chain(self.title_marks.iter().map(|mark| mark.char_idx))
         {
+            if !auxiliary_slots.contains_key(&position) {
+                storage.reserve_map(&mut auxiliary_slots, 1)?;
+            }
             *auxiliary_slots.entry(position).or_default() += 1;
         }
 
@@ -2950,15 +3008,23 @@ impl Paragraph {
         }
         let _ = already_filled; // 향후 디버그용 (현재 미사용)
 
-        positions
+        Ok(positions)
     }
 
     /// 갭의 제어와 원문 자리표를 소유하는 제어의 실제 UTF-16 시작 위치.
     pub(crate) fn control_utf16_positions(&self) -> Vec<u32> {
-        self.control_source_positions()
-            .into_iter()
-            .map(|source| source.utf16)
-            .collect()
+        match self.control_utf16_positions_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn control_utf16_positions_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Vec<u32>, S::Error> {
+        let sources = self.control_source_positions_with_storage(storage)?;
+        storage.collect(sources.into_iter().map(|source| source.utf16))
     }
 
     /// 편집/커서 이동용 control position 을 반환한다.

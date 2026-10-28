@@ -1,0 +1,26 @@
+[
+  {
+    "name": "cff-cid-1001-glyphs.pdf",
+    "bytes": 6165,
+    "sha256": "992033d8f02f2883b8364d50c79a984e6fc4c961fab4ec77d05a7100f7534a60",
+    "kind": "synthetic font/resource contract; no visual fidelity or executable exploit claim"
+  },
+  {
+    "name": "cff-simple-four-glyphs.pdf",
+    "bytes": 973,
+    "sha256": "d710a8ab0ba82e83fe7d469baf108d27b780944462e16cc2e8dfe4bd8629f6a7",
+    "kind": "synthetic font/resource contract; no visual fidelity or executable exploit claim"
+  },
+  {
+    "name": "cid-width-control.pdf",
+    "bytes": 901,
+    "sha256": "925b7d2d11eab2c93a3a2dea4b740429b5267121b38cfc1449535c60d863e310",
+    "kind": "synthetic font/resource contract; no visual fidelity or executable exploit claim"
+  },
+  {
+    "name": "type1-three-mappings.pdf",
+    "bytes": 951,
+    "sha256": "10c5a71bba5e59cae2f61246ec2e15d63f8f3fcf333f46cf5fa79cb3278e2b0a",
+    "kind": "synthetic font/resource contract; no visual fidelity or executable exploit claim"
+  }
+]

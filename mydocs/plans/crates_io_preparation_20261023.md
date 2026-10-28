@@ -1,7 +1,7 @@
 # crates.io 배포 사전 준비 계획
 
 - 작성일: 2026-10-23
-- 상태: 1단계 조사·공통 선행 절편 C01–C04와 승인된 로컬 기술 보완 범위 v1 완료. 실제 게시 준비 전체는 미완료다.
+- 상태: 1단계·C01–C04와 v1은 #8181로 병합됐고 코덱 opt-in은 #8183 / #8190으로 완료했다. 2026-10-24 재개 시 현행 12개 source 후보 검사를 통과했다. 실제 게시 준비 전체는 미완료다.
 - 요청: 다음 릴리즈는 0.9.0이며, crates.io 배포를 미리 준비한다.
 - 착수 기준 SHA: `upstream/devel` `def947c2149df5bc812d801e6e79be19a403b4d1`.
 - 사전 조사 기준 SHA: `605ccfd92f2f12f18e14182548d729f9929fda00`.
@@ -29,6 +29,29 @@
   유지하면서 실제 Cargo package·소비 검증을 진행하고 제품 버전 전환·실제 게시는 별도로 둔다.
 - 권위 절차: [문서·Git workflow](../manual/codex/docs_and_git_workflow.md),
   [배포 가이드](../manual/publish_guide.md), [GitHub 운영](../manual/github_operations.md).
+
+## 2026-10-24 재개 기준
+
+- 최신 기준 `upstream/devel`: `3536e72819e165dbe959ee42cfd4e4cf8db33ce7`.
+  현행화한 보안 문서는 로컬 commit `9e86df8742e943a55124a776411c3aca097a459c`에 보존했다.
+  재개 branch는 `chore/issue8174-resume-20261024`다.
+- [PR #8181](https://github.com/edwardkim/rhwp/pull/8181)의 실제 8개 Cargo package·독립 소비 결과는
+  완료 이력이다. [PR #8190](https://github.com/edwardkim/rhwp/pull/8190)으로 4개 codec/resource
+  package가 추가돼 현재 source 후보는 12개다. 예전 8개 검증을 현행 12개의 registry 검증으로 세지 않는다.
+- 결정 비의존 source 검사를 현재 ref에서 다시 실행해 12개 후보·내장 참조 15개·글꼴 5개와
+  archive readback을 확인했다. `publish_false` 11건과 `publish_ready=false`는 유지한다.
+  [재개 실행 기록](../working/task_m100_8174_stage2_corrections.md#2026-10-24-재개--코덱-opt-in-이후의-게시-후보)을 따른다.
+- 2026-10-24 사용자는 MD05-B의 비신뢰 PDF 업로드 공식 지원 목표를 선택한 뒤,
+  MD06의 **F01–F08 전체 기본 탑재**, MD07의 **CLI → WASM → Studio 전체 적용**을 지정했다.
+  기능 미지원으로 첫인상에서 사용을 포기하는 문제를 해소한다. 기능·환경 범위는 확정했으며,
+  구체적인 API·프로필 수치·조정 상한과 격리 경계를 구현·검증한다.
+  [보안 경계 조사](task_m100_8174_impl.md#2026-10-24-정책-선택과-보안-경계-조사)를 바탕으로
+  다음 구현·실제 패키지 소비 범위를 MD02–MD04에 연결한다. MD01·MD08·MD09와 실제 게시
+  승인은 별도로 유지하며 source 검사 통과를 확대된 보안 지원 완료로 표시하지 않는다.
+- [범위 v2의 절편별 구현 계획](task_m100_8174_impl.md#범위-v2--기본-기능과-환경별-자원-정책)은
+  CLI·공통 정책 → 기본 기능·Native → WASM → Studio → 포장·독립 소비 순서다.
+  F05–F08도 필수 범위로 포함한다. 아래 최초 1–3단계의 기본값 유지·거부 검사는 v1 이력이며,
+  v2는 바뀐 기능 계약의 정상 처리와 유한한 한도·실패 후 복구를 검증한다.
 
 ## 목표와 승인 경계
 

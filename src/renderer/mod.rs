@@ -113,6 +113,8 @@ pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod skia;
 pub(crate) mod static_svg;
+#[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
+pub(crate) mod static_svg_raster;
 pub(crate) mod stored_control_frame;
 pub(crate) mod stored_float_anchor;
 mod stored_line_ladder;
@@ -120,6 +122,7 @@ pub(crate) mod stored_page_origin;
 pub mod style_resolver;
 pub mod supplemental_metrics;
 pub mod svg;
+mod svg_buffer;
 pub mod svg_fragment;
 pub mod svg_layer;
 pub(crate) mod tab_leader;
@@ -166,6 +169,7 @@ pub struct TabStop {
     /// 채움 종류 (0=없음, 1=실선, 2=파선, 3=점선)
     pub fill_type: u8,
 }
+crate::storage::clone_fields!(TabStop, {position, tab_type, fill_type});
 
 /// 탭 리더(채움 기호) 렌더링 정보
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -177,6 +181,7 @@ pub struct TabLeaderInfo {
     /// 채움 종류 (1=실선, 2=파선, 3=점선)
     pub fill_type: u8,
 }
+crate::storage::clone_fields!(TabLeaderInfo, {start_x, end_x, fill_type});
 
 pub(crate) fn clamp_tab_leader_end_x(
     text: &str,
@@ -589,6 +594,7 @@ pub struct TextStyle {
     #[serde(skip_serializing)]
     pub ascii_punct_latin: Option<Box<LatinSlotMetrics>>,
 }
+crate::storage::clone_fields!(TextStyle, {literal_figure_space, literal_figure_space_em, native_pua_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, resolved_font_size, font_position, hft_print_frame, preserve_glyph_ink, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
 
 /// [#7418] 영문 슬롯의 기본 메트릭 — [`TextStyle::ascii_punct_latin`] 참조.
 #[derive(Debug, Clone, PartialEq)]
@@ -602,6 +608,9 @@ pub struct LatinSlotMetrics {
     pub letter_spacing: f64,
     pub ratio: f64,
 }
+
+crate::storage::clone_fields!(LatinSlotMetrics, {font_family, metric_font_family, original_glyph_metric_family, font_metric_trusted, letter_spacing, ratio});
+crate::storage::clone_copy!(crate::model::style::UnderlineType);
 
 /// 위첨자/아래첨자 글리프를 그릴 때 적용하는 본문 대비 글꼴 크기 배율.
 pub const SCRIPT_FONT_SCALE: f64 = 0.7;
@@ -1042,9 +1051,28 @@ pub fn expand_gradient_steps(
     step: i16,
     step_center: u8,
 ) -> (Vec<ColorRef>, Vec<f64>) {
+    match try_expand_gradient_steps(
+        colors,
+        positions,
+        step,
+        step_center,
+        &style_resolver::storage::Unbounded,
+    ) {
+        Ok(stops) => stops,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn try_expand_gradient_steps<S: style_resolver::storage::Storage>(
+    colors: &[ColorRef],
+    positions: &[f64],
+    step: i16,
+    step_center: u8,
+    storage: &S,
+) -> Result<(Vec<ColorRef>, Vec<f64>), S::Error> {
     let bands = step.max(0) as usize;
     if bands <= 1 || colors.len() < 2 {
-        return (colors.to_vec(), positions.to_vec());
+        return Ok((storage.copy_slice(colors)?, storage.copy_slice(positions)?));
     }
 
     // 띠 경계는 균등 위치 `m` 을 두 구간 선형으로 옮겨 가운데(m=0.5)가 `c` 에 오게 한다.
@@ -1058,8 +1086,8 @@ pub fn expand_gradient_steps(
         }
     };
 
-    let mut out_colors = Vec::with_capacity(bands * 2);
-    let mut out_positions = Vec::with_capacity(bands * 2);
+    let mut out_colors = storage.vec(bands * 2)?;
+    let mut out_positions = storage.vec(bands * 2)?;
     for i in 0..bands {
         let color = sample_ramp(colors, positions, i as f64 / (bands - 1) as f64);
         let start = warp(i as f64 / bands as f64);
@@ -1069,7 +1097,7 @@ pub fn expand_gradient_steps(
         out_colors.push(color);
         out_positions.push(end.clamp(0.0, 1.0));
     }
-    (out_colors, out_positions)
+    Ok((out_colors, out_positions))
 }
 
 /// [#6845] HWP 그러데이션 각도를 **사용자 좌표계**의 축 양 끝점으로 옮긴다.
@@ -1960,21 +1988,23 @@ pub(crate) fn cell_first_para_stored_lead(
 }
 
 /// 셀 안의 단일 단 정의는 글자·개체를 그리거나 세로 흐름을 전진하지 않는다.
-/// 원본 HWP는 텍스트 셀 문단에도 이 메타데이터를 보존할 수 있다.
-/// 여러 단 정의와 실제 개체 컨트롤은 일반 plain 글줄로 재분류하지 않는다.
-pub(crate) fn cell_control_is_single_column_metadata(
-    control: &crate::model::control::Control,
-) -> bool {
-    matches!(control, crate::model::control::Control::ColumnDef(columns)
-        if columns.column_count == 1)
+/// 원본 셀의 단 정의와 필드/링크 표식은 본문 글줄에 별도 상자를 추가하지 않는다.
+/// 필드 결과는 문단 텍스트가 소유하며, 원본 제어 주소는 그대로 보존한다.
+/// 여러 단 정의와 실제 개체 컨트롤은 일반 텍스트 글줄로 재분류하지 않는다.
+pub(crate) fn cell_control_is_text_metadata(control: &crate::model::control::Control) -> bool {
+    match control {
+        crate::model::control::Control::ColumnDef(columns) => columns.column_count == 1,
+        crate::model::control::Control::Field(_) | crate::model::control::Control::Hyperlink(_) => {
+            composer::control_is_width_neutral_marker(control)
+        }
+        _ => false,
+    }
 }
 
-pub(crate) fn cell_paragraph_has_only_single_column_metadata(
+pub(crate) fn cell_paragraph_has_only_text_metadata(
     para: &crate::model::paragraph::Paragraph,
 ) -> bool {
-    para.controls
-        .iter()
-        .all(cell_control_is_single_column_metadata)
+    para.controls.iter().all(cell_control_is_text_metadata)
 }
 
 /// Stored cell starts already express their lead in the saved frame. Reflow
@@ -2333,9 +2363,12 @@ pub(crate) fn first_seg_vpos_is_anchor(
     para: &crate::model::paragraph::Paragraph,
     cell_para_index: usize,
 ) -> bool {
-    para.line_segs
-        .first()
-        .is_some_and(|seg| cell_para_index == 0 || seg.vertical_pos > 0)
+    para.line_segs.first().is_some_and(|seg| {
+        // 재조판 줄의 vpos는 현재 문단 안의 로컬 원점이다. 저장된 셀 절대
+        // 앵커로 승격하면 첫 줄의 앞 간격을 선차감한 뒤 다시 잃게 된다.
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && (cell_para_index == 0 || seg.vertical_pos > 0)
+    })
 }
 
 /// 글자처럼 취급되는(`treat_as_char`) 그림·도형이 줄 흐름에서 차지하는 높이(px).
@@ -2612,26 +2645,43 @@ pub(crate) fn tac_object_stack_line_metrics(
     styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
 ) -> Option<Vec<(f64, f64)>> {
+    match tac_object_stack_line_metrics_with_storage(
+        para,
+        dpi,
+        available_width_px,
+        styles,
+        para_style,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn tac_object_stack_line_metrics_with_storage<S: crate::storage::Storage>(
+    para: &crate::model::paragraph::Paragraph,
+    dpi: f64,
+    available_width_px: Option<f64>,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+    storage: &S,
+) -> Result<Option<Vec<(f64, f64)>>, S::Error> {
     use crate::model::control::Control;
     if !para_has_no_stored_line_segs(para) {
-        return None;
+        return Ok(None);
     }
-    let objs: Vec<(f64, f64)> = para
-        .controls
-        .iter()
-        .filter_map(|c| {
-            let common = match c {
-                Control::Picture(pic) if pic.common.treat_as_char => &pic.common,
-                Control::Shape(s) if s.common().treat_as_char => s.common(),
-                _ => return None,
-            };
-            let w = hwpunit_to_px(common.width as i32, dpi);
-            let h = hwpunit_to_px(common.height as i32, dpi);
-            (h > 0.5).then_some((w, h))
-        })
-        .collect();
+    let objs: Vec<(f64, f64)> = storage.collect(para.controls.iter().filter_map(|c| {
+        let common = match c {
+            Control::Picture(pic) if pic.common.treat_as_char => &pic.common,
+            Control::Shape(s) if s.common().treat_as_char => s.common(),
+            _ => return None,
+        };
+        let w = hwpunit_to_px(common.width as i32, dpi);
+        let h = hwpunit_to_px(common.height as i32, dpi);
+        (h > 0.5).then_some((w, h))
+    }))?;
     if objs.is_empty() {
-        return None;
+        return Ok(None);
     }
     let leading = tac_object_stack_line_leading_px(para, styles, para_style);
     let avail = available_width_px.unwrap_or(f64::INFINITY).max(1.0);
@@ -2640,7 +2690,7 @@ pub(crate) fn tac_object_stack_line_metrics(
     let mut line_h = 0.0f64;
     for (w, h) in objs {
         if line_w > 0.0 && line_w + w > avail + 0.5 {
-            lines.push((line_h, leading));
+            storage.push(&mut lines, (line_h, leading))?;
             line_w = 0.0;
             line_h = 0.0;
         }
@@ -2648,9 +2698,9 @@ pub(crate) fn tac_object_stack_line_metrics(
         line_h = line_h.max(h);
     }
     if line_h > 0.0 {
-        lines.push((line_h, leading));
+        storage.push(&mut lines, (line_h, leading))?;
     }
-    (!lines.is_empty()).then_some(lines)
+    Ok((!lines.is_empty()).then_some(lines))
 }
 
 /// [#7418] 저장 줄 없는 문단의 글자처럼 취급 **표** 줄 — `(표 높이, 줄 뒤 leading)`.
@@ -4981,3 +5031,6 @@ mod tests {
         assert_eq!(format_number(12, NumberFormat::HangulNumber), "십이");
     }
 }
+
+crate::storage::clone_fields!(PatternFillInfo, {pattern_type, tile_size, pattern_color, background_color});
+crate::storage::clone_fields!(GradientFillInfo, {gradient_type, angle, center_x, center_y, colors, positions});

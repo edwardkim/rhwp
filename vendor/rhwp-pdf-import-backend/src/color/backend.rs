@@ -121,6 +121,14 @@ pub trait IccBackend {
         flags: TransformFlags,
     ) -> Option<Self::CmykRetarget>;
 
+    /// Source sample to sRGB without allocating a per-pixel buffer.
+    fn convert_pixel(transform: &Self::SrgbTransform, input: &[u8]) -> Option<[u8; 3]> {
+        match input {
+            [c, m, y, k] => Self::convert_cmyk_pixel(transform, [*c, *m, *y, *k]),
+            _ => None,
+        }
+    }
+
     /// Apply a CMYK retargeting transform to a single normalised
     /// CMYK pixel. Inputs and outputs are unit-interval f32 in the
     /// channel order C, M, Y, K. Round-tripping through 8-bit is the
@@ -216,6 +224,15 @@ mod qcms_impl {
                 })
         }
 
+        fn convert_pixel(transform: &Self::SrgbTransform, input: &[u8]) -> Option<[u8; 3]> {
+            if input.len() != transform.source_components as usize {
+                return None;
+            }
+            let mut output = [0; 3];
+            transform.inner.convert(input, &mut output);
+            Some(output)
+        }
+
         fn convert_cmyk_pixel(transform: &Self::SrgbTransform, cmyk: [u8; 4]) -> Option<[u8; 3]> {
             if transform.source_components != 4 {
                 return None;
@@ -230,7 +247,7 @@ mod qcms_impl {
                 return None;
             }
             let pixels = cmyk.len() / 4;
-            let mut out = vec![0u8; pixels * 3];
+            let mut out = rhwp_codec_resource::filled(0u8, pixels.checked_mul(3)?).ok()?;
             transform.inner.convert(cmyk, &mut out);
             Some(out)
         }
@@ -239,7 +256,7 @@ mod qcms_impl {
             if transform.source_components != 3 {
                 return None;
             }
-            let mut out = vec![0u8; rgb.len()];
+            let mut out = rhwp_codec_resource::filled(0u8, rgb.len()).ok()?;
             transform.inner.convert(rgb, &mut out);
             Some(out)
         }
@@ -248,7 +265,7 @@ mod qcms_impl {
             if transform.source_components != 1 {
                 return None;
             }
-            let mut out = vec![0u8; gray.len() * 3];
+            let mut out = rhwp_codec_resource::filled(0u8, gray.len().checked_mul(3)?).ok()?;
             transform.inner.convert(gray, &mut out);
             Some(out)
         }
@@ -433,6 +450,15 @@ mod lcms2_impl {
                 inner,
                 source_components: profile.n_components(),
             })
+        }
+
+        fn convert_pixel(transform: &Self::SrgbTransform, input: &[u8]) -> Option<[u8; 3]> {
+            if input.len() != transform.source_components as usize {
+                return None;
+            }
+            let mut output = [0; 3];
+            transform.inner.transform_pixels(input, &mut output);
+            Some(output)
         }
 
         fn convert_cmyk_pixel(transform: &Self::SrgbTransform, cmyk: [u8; 4]) -> Option<[u8; 3]> {

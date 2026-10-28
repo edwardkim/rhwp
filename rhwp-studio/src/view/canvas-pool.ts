@@ -85,6 +85,13 @@ export class CanvasPool {
     }
   }
 
+  /** A Canvas context mode survives backing-size resets. Retire both ownership sets
+   * when the renderer changes, rather than lending an incompatible element. */
+  discardAll(): void {
+    this.releaseAll();
+    this.available = [];
+  }
+
   /** 현재 사용 중인 페이지 인덱스 목록 */
   get activePages(): number[] {
     return Array.from(this.inUse.keys());

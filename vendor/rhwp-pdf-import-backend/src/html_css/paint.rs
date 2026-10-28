@@ -631,7 +631,7 @@ mod tests {
     use crate::writer::{EmbeddedFont, PdfWriter};
     use taffy::prelude::Size;
 
-    const DEJAVU: &[u8] = include_bytes!("../../tests/fixtures/fonts/DejaVuSans.ttf");
+    const DEJAVU: &[u8] = include_bytes!("../fonts/assets/DejaVuSans.ttf");
 
     #[test]
     fn smoke_paint_produces_pdf_with_pages() {

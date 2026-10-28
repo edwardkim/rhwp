@@ -1,0 +1,130 @@
+---
+kind: reference
+status: active
+canonical: mydocs/manual/studio_document_features.md
+last_verified: 2026-10-25
+---
+
+# Studio 문서 가져오기·연결·양식·보호 복구
+
+이 문서는 #8174 v2-S04 로컬 source의 사용자 동작을 설명한다. 배포된 Studio의 갱신 여부와
+crates.io 게시 완료는 별도다. 빌드별 PDF 기능은
+[코덱 가이드](pdf_image_codecs.md), 요청 예산은 [자원 정책](pdf_resource_policies.md)을 따른다.
+
+## PDF를 편집 문서로 열기
+
+파일 열기에서 PDF를 선택하고 「PDF 가져오기」의 「표준」 또는 「자원 절약」 프로필을 선택한다.
+입력 크기·선택 쪽 상한은 실제 변환기의 유효값으로 표시한다. 「고급 설정과 유효 한도」에서
+제한 시간과 개별 한도 JSON을 조정할 수 있다. JSON은 CLI 설정의 `policy` 안쪽 객체이며,
+선택한 프로필의 상한을 높일 수 없다. 잘못된 JSON·미지 필드·허용 범위 밖 값은 실행 전에 안내한다.
+
+「가져오기」를 누르면 파일 읽기 → 변환기 준비 → PDF 변환 → 편집 문서 준비 순으로 표시한다.
+진행 단계이며 백분율 추정치가 아니다. 파일 입력은 크기 검사 뒤에 읽으며, 변환·직렬화는
+전용 Worker에서 실행한다. 기본 제한 시간은 30초이고 UI 범위는 1–300초다.
+
+- 취소·한도 초과·Worker 실패는 현재 문서와 복구본·최근 문서·저장 핸들을 교체하지 않는다.
+- 실패 안내에서 설정을 고친 뒤 「다시 시도」할 수 있다. 새 Worker와 새 예산을 사용한다.
+- 성공한 후보를 남은 요청 예산 안에서 편집 문서로 재열고 쪽수·deadline·문서 세대를 확인한다.
+  대화상자는 이 단계까지 유지되며, 이벤트 루프에 양보해 대기 중인 취소를 처리한 뒤 현재 문서를 교체한다.
+  성공 후에는 일반 편집·HWP/HWPX 저장을 사용할 수 있다. 원래 PDF를 자동으로 덮어쓰지 않는다.
+- Worker는 취소·시간 초과 시 종료한다. main thread의 동기 재열기는 중간에 선점하지 못하며,
+  예약·읽기 경계에서 협력적으로 시간을 검사하고 deadline을 넘으면 후보를 거부한다. 브라우저 전체 메모리 상한이나
+  모든 문서의 즉시 응답을 보장한다는 뜻은 아니다.
+
+## SVG 글리프
+
+정적인 gradient·clip·opacity·내부 참조·내장 PNG/JPEG와 현재 글자색은 공통 정규화·raster
+결과를 CanvasKit이 소비한다. 입력 proof·자원 키·geometry 검사를 통과한 후보만 선택한다.
+지원 후보를 선택할 수 없으면 기존 대체 글자 표시 계약을 따른다. 외부 파일·네트워크를 읽거나
+script·animation·사용자 상호작용 코드를 실행하지 않는다. glyph raster와 캐시의 예산을 유지한다.
+
+## 연결 주소 열기
+
+링크의 실제 글자 영역을 클릭하면 웹·메일·문서 책갈피·상대 파일·로컬 파일·등록 앱 목적지를
+공통 분류 결과에 따라 처리한다. 문서 열기만으로 외부 동작을 실행하지 않는다.
+
+- 웹 주소는 opener를 분리한 새 창으로 연다. 팝업이 차단되면 허용 방법을 안내한다.
+- 문서 책갈피는 현재 문서의 실제 목적지로 커서를 옮긴다. 없는 목적지는 안내한다.
+- 메일은 host가 처리하지 않으면 브라우저의 메일 처리기로 전달한다.
+- 상대/로컬 파일은 브라우저가 경로를 직접 읽을 수 없어 원래 주소·복사·파일 선택을 제공한다.
+- 등록 앱은 원래 주소를 표시하고 「앱에서 열기」로 OS 처리기를 요청한다. 앱 설치와 실행 성공은
+  해당 OS/host가 결정한다. OS에서 앱을 열었다는 결과를 브라우저가 확인한 것으로 표시하지 않는다.
+
+연결된 host는 공개 API로 파일/앱/메일 처리기를 등록할 수 있다. 웹과 문서 책갈피는 Studio가
+처리한다. 처리기는 `true`일 때 처리 완료, `false`일 때 브라우저 안내를 요청한다. 실패는 throw 또는
+rejected Promise로 전달한다. 목적지와 원본 문서 정보는 읽기 전용 복사본이다.
+
+```js
+window.rhwpStudio.links.setHandler(async (destination, context) => {
+  if (destination.kind !== 'relativeFile') return false;
+  await myHost.openRelatedDocument(destination.uri, context.fileName);
+  return true;
+});
+// 연결 해제
+window.rhwpStudio.links.setHandler(null);
+```
+
+host는 자기 파일 접근·앱 실행 권한을 확인한다. 실행 중 원본 문서가 바뀌면 예전 링크의 방문
+색을 새 문서에 반영하지 않는다. 저장·undo가 허용된 편집 상태에서만 방문 서식을 변경한다.
+
+## 양식 명령 단추
+
+보존된 HWP/HWPX Click script를 읽고 제한된 호환 runtime으로 실행 계획을 만든다.
+이름으로 찾은 양식의 `Text`·`Caption`·`Value`·`Enabled`, 목록의 `ResetContent`·`InsertString`,
+변수·산술·조건·유한 반복·일반 함수, `String`·`Number`·`parseInt`와 일부 `Math` 함수를 지원한다.
+`this`는 클릭한 단추다. `HAction`의 `MoveDocBegin`·`MoveDocEnd`·`InsertText`는 실제 편집으로,
+`Print`·`FileSave`는 기존 출력·저장 dispatcher로 연결한다. 저장 암호·인쇄 UI는 기존 절차를 따른다.
+
+양식 갱신과 본문 편집은 기존 snapshot/undo의 한 작업으로 처리한다. 실행 계획이 실패하면
+부분 값을 반영하지 않는다. 양식 모드는 양식 값 갱신과 허용된 출력·저장 요청만 허용하며 본문
+삽입을 거부한다. 파일 저장이나 OS 동작 자체가 문서 undo로 취소되는 것은 아니다.
+
+이 runtime은 전체 JScript·한컴 자동화 API 구현이 아니다. 동적 코드·prototype·DOM·파일·네트워크·
+shell·임의 HAction은 실행하지 않고 오류를 안내한다. 원본 script는 저장·재열기 시 보존한다.
+문서를 여는 동안 `OnDocument_Open` 등 lifecycle 처리기를 자동 호출하지 않는다.
+
+| 경계 | 현재 값 |
+| --- | ---: |
+| script 합산 입력 | 1,048,576 JS code units |
+| HWP script stream | 저장 입력·복호/압축 해제 결과 각각 1 MiB |
+| HWPX script part | header/source 각각 UTF-16 바이트 최대 1 MiB |
+| token·실행 단계 | 각각 20,000 |
+| parser 중첩·함수 호출 깊이 | 64·32 |
+| 양식 개수 | 4,096 |
+| 생성 명령·양식 갱신 | 각각 최대 512 |
+| 문자열 한 개 | 65,536 JS code units |
+| 문자열 작업 예산 | 4 MiB |
+| 소유자의 기본 실행 시간 | 1초 |
+| 동시에 실행하는 단추 | 편집기당 1개 |
+
+Escape·문서 교체·deadline은 Worker를 종료한다. 실패 뒤 새 요청과 일반 편집을 계속할 수 있다.
+읽기 전용 host는 `window.rhwpStudio.forms.setActionsEnabled(false)`로 단추 실행을 차단한다.
+시작과 실제 반영 직전에 모두 검사하므로 이미 시작한 Worker도 반영할 수 없다. 다시 허용하려면
+`true`를 전달한다. 이 설정은 단추 실행 권한이며 편집기 전체를 읽기 전용으로 바꾸는 API는 아니다.
+이 수치는 전체 브라우저 RSS 상한이 아니다. 현 단계의 업무 대조군은 실제 한컴 생성 양식에
+검토한 계산 Click을 넣은 자료다. 기존 사용자 업무 문서와의 포괄적인 호환 검증을 뜻하지 않는다.
+
+## 보호 문서 자동 복구
+
+암호 문서를 UI에서 열거나 암호를 지정해 저장하면 세션 전용 복구 키를 준비한다. 편집 중
+자동 복구본은 IndexedDB에 암호화해 저장한다. 저장 암호를 보관하지 않고 브라우저 재시작 뒤
+「문서 복구」에서 암호를 다시 받는다. 복구 성공 후에도 보호 저장 의도를 유지하며 원본을 자동으로
+덮어쓰지 않는다. 기존 평문 draft는 계속 복구할 수 있다.
+
+복구 envelope는 버전 1, PBKDF2-HMAC-SHA256 600,000회·16바이트 salt와 AES-256-GCM,
+매 저장마다 새 12바이트 nonce·128-bit tag를 사용한다. 문서 식별자·파일명·형식·저장 시각·
+revision 등 메타데이터도 인증에 묶는다. 근거는 [Web Crypto AES-GCM](https://www.w3.org/TR/2017/REC-WebCryptoAPI-20170126/#aes-gcm),
+[PBKDF2](https://www.w3.org/TR/2017/REC-WebCryptoAPI-20170126/#pbkdf2),
+[OWASP의 PBKDF2 작업 인자](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)다.
+Web Crypto 지원과 secure context가 필요하다. 복구 데이터 한도는 64 MiB다.
+
+- 오입력·변조는 복구 문서를 게시하기 전에 거부한다. 취소는 복구본을 남긴다.
+- 암호 입력 중 삭제되거나 바뀐 복구본은 열지 않는다. 저장 중 폐기된 draft도 되살리지 않는다.
+- 암호 변경은 실제 저장 성공 뒤에 복구 키를 바꾼다. 취소·저장 실패는 기존 키와 보호 의도를 유지한다.
+- 문서 교체·보호 해제는 세션 키를 해제한다. 보호 상태인데 키가 없으면 평문 exporter 이전에
+  복구 저장을 차단한다. 직접 bridge를 호출하는 host는 이 UI 키 수명 계약을 함께 연결해야 한다.
+- 비밀번호·CryptoKey를 draft·최근 문서·URL·로그에 저장하지 않는다. JavaScript 문자열·브라우저
+  메모리 전체의 물리적 삭제나 OS의 모든 진단 저장을 보장하는 기능은 아니다.
+
+복구 키를 잃고 암호도 모르면 복구본을 해제할 수 없다. IndexedDB를 지우면 복구본도 사라지므로
+자동 복구를 원본의 정식 저장이나 별도 백업의 대체로 사용하지 않는다.

@@ -8,7 +8,7 @@
 //! - mtime은 1980-01-01 00:00로 고정(결정적 출력)
 //! - "version made by"의 호스트 OS 바이트도 고정(결정적 출력, #5969)
 
-use std::io::{Cursor, Write};
+use std::io::{Cursor, Seek, Write};
 
 use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, DateTime, System, ZipWriter};
@@ -16,8 +16,8 @@ use zip::{CompressionMethod, DateTime, System, ZipWriter};
 use super::SerializeError;
 
 /// HWPX ZIP 쓰기 래퍼
-pub struct HwpxZipWriter {
-    inner: ZipWriter<Cursor<Vec<u8>>>,
+pub struct HwpxZipWriter<W: Write + Seek = Cursor<Vec<u8>>> {
+    inner: ZipWriter<W>,
 }
 
 impl HwpxZipWriter {
@@ -26,6 +26,24 @@ impl HwpxZipWriter {
         HwpxZipWriter {
             inner: ZipWriter::new(Cursor::new(Vec::new())),
         }
+    }
+
+    /// ZIP을 마감하고 바이트를 반환한다.
+    pub fn finish(self) -> Result<Vec<u8>, SerializeError> {
+        Ok(self.finish_writer()?.into_inner())
+    }
+}
+
+impl<W: Write + Seek> HwpxZipWriter<W> {
+    pub(crate) fn with_writer(writer: W) -> Self {
+        Self {
+            inner: ZipWriter::new(writer),
+        }
+    }
+    pub(crate) fn finish_writer(self) -> Result<W, SerializeError> {
+        self.inner
+            .finish()
+            .map_err(|error| SerializeError::ZipError(error.to_string()))
     }
 
     /// ZIP 중앙 디렉터리 레코드의 "version made by" 상위 바이트(호스트 OS 표기).
@@ -77,7 +95,6 @@ impl HwpxZipWriter {
             .map_err(|e| SerializeError::ZipError(e.to_string()))?;
         Ok(())
     }
-
     /// 이미 deflate 한 데이터로 DEFLATED 엔트리를 추가한다(다시 압축하지 않는다).
     ///
     /// `raw_deflate` 는 `uncompressed_size` 바이트(CRC-32 `crc32`)를 raw deflate 한 바이트다.
@@ -103,15 +120,6 @@ impl HwpxZipWriter {
             .raw_copy_file_rename(entry, name)
             .map_err(|e| SerializeError::ZipError(e.to_string()))
     }
-
-    /// ZIP을 마감하고 바이트를 반환한다.
-    pub fn finish(self) -> Result<Vec<u8>, SerializeError> {
-        let cursor = self
-            .inner
-            .finish()
-            .map_err(|e| SerializeError::ZipError(e.to_string()))?;
-        Ok(cursor.into_inner())
-    }
 }
 
 /// [`HwpxZipWriter::write_deflated`] 가 남기는 엔트리 메타데이터로 엔트리 하나짜리 ZIP 을 만든다.
@@ -130,7 +138,7 @@ fn single_deflated_entry_zip(
     const DOS_DATE: u16 = (1 << 5) | 1;
     // 기본 파일 권한(0o100644)을 UNIX 외부 속성 상위 16비트에 둔다.
     const EXTERNAL_ATTRIBUTES: u32 = 0o100644 << 16;
-    let host_system = HwpxZipWriter::FIXED_HOST_SYSTEM as u16;
+    let host_system = HwpxZipWriter::<Cursor<Vec<u8>>>::FIXED_HOST_SYSTEM as u16;
     let size = u32::try_from(uncompressed_size)
         .ok()
         .filter(|v| *v < u32::MAX)?;

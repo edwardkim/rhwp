@@ -83,6 +83,13 @@ mod verification_exit_code_tests {
 
 fn main() {
     let raw_args: Vec<String> = env::args().collect();
+    // Private bounded IPC endpoint; no document bytes are passed in argv.
+    if raw_args
+        .get(1)
+        .is_some_and(|arg| arg == "__pdf-import-worker-v1")
+    {
+        process::exit(cli::commands::pdf_import::run_worker());
+    }
     if is_batch_invocation(&raw_args) && has_global_auth_option(&raw_args) {
         eprintln!(
             "오류: batch 는 --password·--password-stdin·--output-password·--output-password-stdin 을 지원하지 않습니다. stdin 은 파일 경로 목록 전용입니다."

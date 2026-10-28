@@ -1,0 +1,47 @@
+[
+  {
+    "name": "encrypted",
+    "input": "$REPO/output/pr-review/issue8174/v2-s05-20261025/negatives/encrypted.pdf",
+    "sha256": "c2ba0f0155c7aa77cc06740efd3890b15f828a8b89a83b787457452ce253ea17",
+    "exit": 1,
+    "error": "오류: 유효하지 않은 파일: PDF 오류: PDF_ENCRYPTION_UNSUPPORTED: encrypted PDF import is not supported\n",
+    "existing_output_preserved": true,
+    "healthy_followup_passed": true
+  },
+  {
+    "name": "unsupported-filter",
+    "input": "$REPO/output/pr-review/issue8174/v2-s05-20261025/negatives/unsupported-filter.pdf",
+    "sha256": "06a0a94449116387253fd015ebbb98fac8019cd552ba7f038f74b19c164f8941",
+    "exit": 1,
+    "error": "오류: 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed\n",
+    "existing_output_preserved": true,
+    "healthy_followup_passed": true
+  },
+  {
+    "name": "irrecoverable",
+    "input": "$REPO/output/pr-review/issue8174/v2-s05-20261025/negatives/irrecoverable.pdf",
+    "sha256": "d6d32c0b3c9b46baeeaf312a76e7c54f079f2ebb9991222f6d254c198426209e",
+    "exit": 1,
+    "error": "오류: 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed\n",
+    "existing_output_preserved": true,
+    "healthy_followup_passed": true
+  },
+  {
+    "name": "corrupt-JBIG2Decode",
+    "input": "$REPO/pdf/issue8183/corrupt-JBIG2Decode.pdf",
+    "sha256": "de52f1c9775df37588a374006663927a8669d9cd69ccfaa0bca296e530a3e7d1",
+    "exit": 1,
+    "error": "오류: 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed\n",
+    "existing_output_preserved": true,
+    "healthy_followup_passed": true
+  },
+  {
+    "name": "corrupt-JPXDecode",
+    "input": "$REPO/pdf/issue8183/corrupt-JPXDecode.pdf",
+    "sha256": "cbae1ac614897779f74de4457351e8740b2c55f4df9cd4818e17526ebce851d5",
+    "exit": 1,
+    "error": "오류: 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed\n",
+    "existing_output_preserved": true,
+    "healthy_followup_passed": true
+  }
+]

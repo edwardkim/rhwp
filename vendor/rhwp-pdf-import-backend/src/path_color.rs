@@ -1,7 +1,7 @@
 //! Solid path colour state (ISO 32000-1:2008 8.6.5.5, 8.6.8 Table 74).
 //! Resolve resource names in their current page/Form scope, then retain the
-//! resolved space in q/Q state. The bounded importer has no ICC CMM enabled;
-//! ICCBased uses its declared Alternate (or the specified N-based default).
+//! resolved space in q/Q state. ICCBased consumes the same cached CMM as images;
+//! invalid profiles retain their declared Alternate (or N-based default).
 //! Other colour families remain unsupported here, rather than guessing RGB
 //! from an arbitrary operand count.
 
@@ -51,12 +51,13 @@ impl DeviceSpace {
 
 /// Fixed-size, allocation-free colour state copied by q/Q. ICC ranges are
 /// input ranges; they must not be stretched to [0,1] like image Decode arrays.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub(crate) enum PathColorSpace {
     Device(DeviceSpace),
     IccAlternate {
         device: DeviceSpace,
         ranges: [[f32; 2]; 4],
+        transform: Option<std::sync::Arc<crate::color::Transform>>,
     },
     Unsupported,
 }
@@ -64,10 +65,14 @@ pub(crate) enum PathColorSpace {
 impl PathColorSpace {
     pub(crate) const GRAY: Self = Self::Device(DeviceSpace::Gray);
 
-    fn rgb(self, components: &[f32]) -> Option<(f32, f32, f32)> {
-        let (device, ranges) = match self {
-            Self::Device(device) => (device, [[0.0, 1.0]; 4]),
-            Self::IccAlternate { device, ranges } => (device, ranges),
+    fn rgb(&self, components: &[f32]) -> Option<(f32, f32, f32)> {
+        let (device, ranges, transform) = match self {
+            Self::Device(device) => (*device, [[0.0, 1.0]; 4], None),
+            Self::IccAlternate {
+                device,
+                ranges,
+                transform,
+            } => (*device, *ranges, transform.as_ref()),
             Self::Unsupported => return None,
         };
         if components.len() != device.components() || !components.iter().all(|c| c.is_finite()) {
@@ -77,10 +82,23 @@ impl PathColorSpace {
         for (i, value) in components.iter().enumerate() {
             c[i] = value.clamp(ranges[i][0], ranges[i][1]).clamp(0.0, 1.0);
         }
+        if let Some(transform) = transform {
+            let mut samples = [0; 4];
+            for (out, value) in samples.iter_mut().zip(c) {
+                *out = (value * 255.).round() as u8;
+            }
+            if let Some(rgb) = transform.convert_pixel(&samples[..device.components()]) {
+                return Some((
+                    f32::from(rgb[0]) / 255.,
+                    f32::from(rgb[1]) / 255.,
+                    f32::from(rgb[2]) / 255.,
+                ));
+            }
+        }
         Some(device.rgb(&c))
     }
 
-    fn initial(self) -> Option<(f32, f32, f32)> {
+    fn initial(&self) -> Option<(f32, f32, f32)> {
         match self {
             Self::Device(DeviceSpace::Cmyk) => self.rgb(&[0.0, 0.0, 0.0, 1.0]),
             Self::Device(device) | Self::IccAlternate { device, .. } => {
@@ -181,7 +199,19 @@ fn resolve(
             }
         }
     }
-    Ok(PathColorSpace::IccAlternate { device, ranges })
+    let transform = crate::extractors::images::resolve_icc_profile_from_obj(Some(doc), &object)
+        .map(|profile| {
+            crate::color::IccProfile::cached_transform(
+                &profile,
+                crate::color::RenderingIntent::default(),
+            )
+        });
+    doc.check_import_budget()?;
+    Ok(PathColorSpace::IccAlternate {
+        device,
+        ranges,
+        transform,
+    })
 }
 
 fn resolve_name(
@@ -222,14 +252,15 @@ impl PdfDocument {
         &self,
         op: &Operator,
         resources: Option<&Object>,
-        stroke_space: PathColorSpace,
-        fill_space: PathColorSpace,
+        stroke_space: &PathColorSpace,
+        fill_space: &PathColorSpace,
     ) -> Result<Option<ColourUpdate>> {
         use Operator::*;
         let (stroke, space, rgb) = match op {
             SetStrokeColorSpace { name } | SetFillColorSpace { name } => {
                 let space = resolve_name(self, name, resources, 0)?;
-                (matches!(op, SetStrokeColorSpace { .. }), Some(space), space.initial())
+                let initial = space.initial();
+                (matches!(op, SetStrokeColorSpace { .. }), Some(space), initial)
             },
             SetStrokeColor { components }
             | SetFillColor { components }
@@ -252,14 +283,17 @@ impl PdfDocument {
             ),
             SetStrokeRgb { r, g, b } | SetFillRgb { r, g, b } => {
                 let space = PathColorSpace::Device(DeviceSpace::Rgb);
-                (matches!(op, SetStrokeRgb { .. }), Some(space), space.rgb(&[*r, *g, *b]))
+                let rgb = space.rgb(&[*r, *g, *b]);
+                (matches!(op, SetStrokeRgb { .. }), Some(space), rgb)
             },
             SetStrokeCmyk { c, m, y, k } | SetFillCmyk { c, m, y, k } => {
                 let space = PathColorSpace::Device(DeviceSpace::Cmyk);
-                (matches!(op, SetStrokeCmyk { .. }), Some(space), space.rgb(&[*c, *m, *y, *k]))
+                let rgb = space.rgb(&[*c, *m, *y, *k]);
+                (matches!(op, SetStrokeCmyk { .. }), Some(space), rgb)
             },
             _ => return Ok(None),
         };
+        self.check_import_budget()?;
         Ok(Some(ColourUpdate { stroke, space, rgb }))
     }
 
@@ -287,7 +321,7 @@ impl PdfDocument {
         }
         let state = graphics.current();
         if let Some(update) =
-            self.colour_operator(op, resources, PathColorSpace::GRAY, state.fill_space)?
+            self.colour_operator(op, resources, &PathColorSpace::GRAY, &state.fill_space)?
         {
             graphics.set_fill_colour(update.space.unwrap_or(state.fill_space), update.rgb);
         }
@@ -304,8 +338,8 @@ impl PdfDocument {
         let Some(ColourUpdate { stroke, space, rgb }) = self.colour_operator(
             op,
             extractor.current_resources(),
-            state.stroke_color_space,
-            state.fill_color_space,
+            &state.stroke_color_space,
+            &state.fill_color_space,
         )?
         else {
             return Ok(false);

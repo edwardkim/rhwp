@@ -1,0 +1,22 @@
+use wasm_bindgen::prelude::*;
+#[cfg(feature="facade")]
+pub use rhwp::wasm_api::HwpDocument;
+#[cfg(not(feature="facade"))]
+use std::sync::atomic::{AtomicBool,Ordering};
+#[cfg(not(feature="facade"))]
+static STARTED:AtomicBool=AtomicBool::new(false);
+#[cfg(not(feature="facade"))]
+#[wasm_bindgen(start)]
+pub fn consumer_start(){STARTED.store(true,Ordering::SeqCst);}
+#[wasm_bindgen]
+pub fn consumer_owns_start()->bool {
+ #[cfg(not(feature="facade"))] {STARTED.load(Ordering::SeqCst)}
+ #[cfg(feature="facade")] {false}
+}
+#[wasm_bindgen]
+pub fn consumer_version()->String {rhwp::version()}
+#[wasm_bindgen]
+pub fn consumer_roundtrip(bytes:&[u8])->Result<Vec<u8>,String>{
+ let doc=rhwp::parse_document(bytes).map_err(|e|e.to_string())?;
+ rhwp::serializer::serialize_hwpx(&doc).map_err(|e|e.to_string())
+}

@@ -1216,12 +1216,29 @@ impl DocumentCore {
     }
 
     pub(crate) fn recompose_all_with_horizontal_shaping(&mut self) {
-        self.composed = self
-            .document
-            .sections
-            .iter()
-            .map(|section| compose_section_with_horizontal_shaping(section, &self.styles))
-            .collect();
+        match self.try_recompose_all_with_horizontal_shaping(&crate::storage::Unbounded) {
+            Ok(()) => (),
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn try_recompose_all_with_horizontal_shaping<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        let mut sections = storage.vec(self.document.sections.len())?;
+        for section in &self.document.sections {
+            sections.push(
+                crate::renderer::composer::try_compose_section_with_horizontal_shaping(
+                    section,
+                    &self.styles,
+                    storage,
+                )?,
+            );
+        }
+        storage.bytes(0)?;
+        self.composed = sections;
+        Ok(())
     }
 
     /// 현재 문서에서 실제 텍스트 run이 참조하는 embedded face만 exact slot registry에
@@ -1698,6 +1715,24 @@ impl DocumentCore {
     }
 
     fn render_layer_tree_svg(&self, layer_tree: &PageLayerTree) -> Result<String, HwpError> {
+        self.render_layer_tree_svg_with_limit(layer_tree, None)
+    }
+
+    pub(crate) fn render_page_svg_bounded(
+        &self,
+        page: u32,
+        maximum: usize,
+        reservation: std::sync::Arc<dyn crate::storage::Reservation>,
+    ) -> Result<String, HwpError> {
+        let tree = self.build_page_layer_tree_with_profile(page, RenderProfile::Screen)?;
+        self.render_layer_tree_svg_with_limit(&tree, Some((maximum, reservation)))
+    }
+
+    fn render_layer_tree_svg_with_limit(
+        &self,
+        layer_tree: &PageLayerTree,
+        limit: Option<(usize, std::sync::Arc<dyn crate::storage::Reservation>)>,
+    ) -> Result<String, HwpError> {
         let profile = layer_tree.profile;
 
         let mut renderer = SvgLayerRenderer::new();
@@ -1709,12 +1744,14 @@ impl DocumentCore {
                 .source_font_coverage
                 .register(family, bytes, 0);
         }
+        if let Some((maximum, reservation)) = limit {
+            renderer.inner_mut().bound_output(maximum, reservation);
+        }
         // WASM에서도 문서 내장 face 사용량을 수집한다. 실제 CSS 생성은 아래의
         // embedded-only 경로가 담당하므로 시스템 font file I/O는 발생하지 않는다.
         renderer.inner_mut().font_embed_mode = crate::renderer::svg::FontEmbedMode::Style;
         renderer.inner_mut().annotate_metric_font = self.annotate_metric_font;
         renderer.render_page(layer_tree)?;
-        let mut svg = renderer.output().to_string();
 
         // [#2524/#3126] print/profile SVG도 브라우저가 문서 내장 폰트를 직접
         // 해석할 수 있게 원본 font bytes를 data URI로 포함한다. Layer SVG가
@@ -1722,11 +1759,10 @@ impl DocumentCore {
         let style_css =
             crate::renderer::svg::generate_embedded_font_style(renderer.inner(), &embedded_fonts);
         if !style_css.is_empty() {
-            if let Some(pos) = svg.find('>') {
-                let insert = crate::renderer::svg::svg_font_style_element(&style_css);
-                svg.insert_str(pos + 1, &insert);
-            }
+            let insert = crate::renderer::svg::svg_font_style_element(&style_css);
+            renderer.inner_mut().insert_output_style(&insert);
         }
+        let mut svg = renderer.inner_mut().take_checked_output()?;
         if !profile.shows_editor_visuals() {
             let links = self
                 .hyperlinks_in_layer_tree(&layer_tree)?
@@ -1796,9 +1832,11 @@ impl DocumentCore {
 
         let mut svg_pages = Vec::with_capacity(page_nums.len());
         let mut page_links = Vec::with_capacity(page_nums.len());
+        let mut destinations = Vec::with_capacity(page_nums.len());
         for &page_num in page_nums {
             let tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
             svg_pages.push(self.render_layer_tree_svg(&tree)?);
+            destinations.push(self.bookmarks_in_layer_tree(&tree)?);
             page_links.push(
                 self.hyperlinks_in_layer_tree(&tree)?
                     .iter()
@@ -1806,8 +1844,13 @@ impl DocumentCore {
                     .collect(),
             );
         }
-        crate::renderer::pdf::svgs_to_pdf_with_links(&svg_pages, &page_links, options)
-            .map_err(HwpError::RenderError)
+        crate::renderer::pdf::svgs_to_pdf_with_annotations(
+            &svg_pages,
+            &page_links,
+            &destinations,
+            options,
+        )
+        .map_err(HwpError::RenderError)
     }
 
     /// PDF export for the full document.
@@ -1876,8 +1919,10 @@ impl DocumentCore {
 
         let mut layer_trees = Vec::with_capacity(page_nums.len());
         let mut page_links = Vec::with_capacity(page_nums.len());
+        let mut destinations = Vec::with_capacity(page_nums.len());
         for &page_num in page_nums {
             let tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
+            destinations.push(self.bookmarks_in_layer_tree(&tree)?);
             page_links.push(
                 self.hyperlinks_in_layer_tree(&tree)?
                     .iter()
@@ -1886,8 +1931,13 @@ impl DocumentCore {
             );
             layer_trees.push(tree);
         }
-        crate::renderer::pdf::layer_trees_to_pdf_with_links(&layer_trees, &page_links, options)
-            .map_err(HwpError::RenderError)
+        crate::renderer::pdf::layer_trees_to_pdf_with_annotations(
+            &layer_trees,
+            &page_links,
+            &destinations,
+            options,
+        )
+        .map_err(HwpError::RenderError)
     }
 
     /// Direct PageLayerTree PDF export for the full document.
@@ -5128,19 +5178,45 @@ impl DocumentCore {
     /// 측정 통일(B). `paginate_pass` 의 `force_break_before` 훅과 `LayoutOverflow` 의
     /// section_index/is_first_in_column 계측은 측정 통일 작업의 진단·후속용으로 유지한다.
     pub(crate) fn paginate(&mut self) {
+        match self.paginate_with_storage(&crate::storage::Unbounded) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn paginate_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         self.pending_pagination_job = None;
         let sec_count = self.document.sections.len().max(1);
-        let empty_breaks: Vec<std::collections::HashSet<usize>> =
-            vec![std::collections::HashSet::new(); sec_count];
+        let empty_breaks: Vec<std::collections::HashSet<usize>> = {
+            let mut out = storage.vec(sec_count)?;
+            out.resize_with(sec_count, std::collections::HashSet::new);
+            out
+        };
         self.body_page_field_error = None;
-        self.paginate_pass(&empty_breaks);
+        self.paginate_pass_with_storage(&empty_breaks, storage)?;
         self.settle_body_page_fields(&empty_breaks);
         // [#2424] full path가 최신 dirty state를 반영했으므로 deferred target을 소비한다.
         // 이후 resumable job도 shadow result commit 성공 시 같은 수명 규칙을 적용한다.
         self.deferred_pagination_descriptor = None;
+
+        Ok(())
     }
 
     pub(super) fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
+        match self.paginate_pass_with_storage(force_breaks, &crate::storage::Unbounded) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn paginate_pass_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        force_breaks: &[std::collections::HashSet<usize>],
+        storage: &S,
+    ) -> Result<(), S::Error> {
         // [#4968 R4C-3] 이번 pass의 모든 fresh-layout 경로가 동일한 exact-source
         // generation을 읽는다. 등록 source가 없으면 None으로 K0 fast path를 고정한다.
         self.ensure_exact_font_measurement_contexts();
@@ -5174,7 +5250,7 @@ impl DocumentCore {
             .unwrap_or_default();
         // [#2308] #2004 revision cache와 #2195 sparse overlay를 source IR에서 갱신한다.
         let issue2424_normalize_started = issue2424_profile_enabled.then(std::time::Instant::now);
-        self.compute_render_normalized();
+        self.compute_render_normalized_with_storage(storage)?;
         let issue2424_normalize_elapsed = issue2424_normalize_started
             .map(|started| started.elapsed())
             .unwrap_or_default();
@@ -5201,54 +5277,64 @@ impl DocumentCore {
             self.measured_sections.clear();
             let default_section = Section::default();
             let empty_composed: Vec<ComposedParagraph> = Vec::new();
-            let measured = measurer.measure_section(
+            let measured = measurer.measure_section_with_storage(
                 &default_section.paragraphs,
                 &empty_composed,
                 &self.styles,
                 None,
-            );
-            let result = paginator.paginate_with_measured(
+                storage,
+            )?;
+            let result = paginator.paginate_with_measured_with_storage(
                 &default_section.paragraphs,
                 &measured,
                 &default_section.section_def.page_def,
                 &ColumnDef::default(),
                 0,
                 &self.styles.para_styles,
-            );
-            self.pagination.push(result);
-            self.measured_tables.push(measured.tables.clone());
-            self.measured_sections.push(measured);
-            return;
+                storage,
+            )?;
+            storage.push(&mut self.pagination, result)?;
+            storage.push(
+                &mut self.measured_tables,
+                crate::storage::try_clone(&measured.tables, storage)?,
+            )?;
+            storage.push(&mut self.measured_sections, measured)?;
+            return Ok(());
         }
 
         // 벡터 크기 동기화
         let sec_count = self.document.sections.len();
         while self.pagination.len() < sec_count {
-            self.pagination.push(PaginationResult {
-                pages: Vec::new(),
-                wrap_around_paras: Vec::new(),
-                hidden_empty_paras: std::collections::HashSet::new(),
-                pre_emitted_host_paras: std::collections::HashSet::new(),
-                pre_emitted_host_heights: std::collections::HashMap::new(),
-                pre_emitted_host_content_heights: std::collections::HashMap::new(),
-                endnotes: Vec::new(),
-                endnote_paragraphs: Vec::new(),
-                endnote_para_sources: Vec::new(),
-                endnote_measured_tables: Vec::new(),
-                endnote_between_notes_hu: 0,
-                endnote_separator_above_hu: 0,
-                endnote_separator_below_hu: 0,
-            });
+            storage.push(
+                &mut self.pagination,
+                PaginationResult {
+                    pages: Vec::new(),
+                    wrap_around_paras: Vec::new(),
+                    hidden_empty_paras: std::collections::HashSet::new(),
+                    pre_emitted_host_paras: std::collections::HashSet::new(),
+                    pre_emitted_host_heights: std::collections::HashMap::new(),
+                    pre_emitted_host_content_heights: std::collections::HashMap::new(),
+                    endnotes: Vec::new(),
+                    endnote_paragraphs: Vec::new(),
+                    endnote_para_sources: Vec::new(),
+                    endnote_measured_tables: Vec::new(),
+                    endnote_between_notes_hu: 0,
+                    endnote_separator_above_hu: 0,
+                    endnote_separator_below_hu: 0,
+                },
+            )?;
         }
         self.pagination.truncate(sec_count);
         while self.para_column_map.len() < sec_count {
-            self.para_column_map.push(Vec::new());
+            storage.push(&mut self.para_column_map, Vec::new())?;
         }
         self.para_column_map.truncate(sec_count);
         while self.measured_tables.len() < sec_count {
-            self.measured_tables.push(Vec::new());
+            storage.push(&mut self.measured_tables, Vec::new())?;
         }
         self.measured_tables.truncate(sec_count);
+        let additional_dirty = sec_count.saturating_sub(self.dirty_sections.len());
+        storage.reserve(&mut self.dirty_sections, additional_dirty)?;
         self.dirty_sections.resize(sec_count, true);
         self.dirty_sections.truncate(sec_count);
         // 앞 구역의 문서 끝 미주는 마지막 구역이 모아 그린다. 미주가 있거나 마지막 구역이
@@ -5274,14 +5360,17 @@ impl DocumentCore {
             }
         }
         while self.measured_sections.len() < sec_count {
-            self.measured_sections.push(MeasuredSection {
-                fallback_paragraphs: Vec::new(),
-                tables: Vec::new(),
-            });
+            storage.push(
+                &mut self.measured_sections,
+                MeasuredSection {
+                    fallback_paragraphs: Vec::new(),
+                    tables: Vec::new(),
+                },
+            )?;
         }
         self.measured_sections.truncate(sec_count);
         while self.dirty_paragraphs.len() < sec_count {
-            self.dirty_paragraphs.push(None);
+            storage.push(&mut self.dirty_paragraphs, None)?;
         }
         self.dirty_paragraphs.truncate(sec_count);
         // 구역 간 쪽번호 위치/번호 상속
@@ -5311,7 +5400,8 @@ impl DocumentCore {
                 if let Some(pages) = self.pagination.get(idx) {
                     if let Some(last) = pages.pages.last() {
                         if last.page_number_pos.is_some() {
-                            carry_page_number_pos = last.page_number_pos.clone();
+                            carry_page_number_pos =
+                                crate::storage::try_clone(&last.page_number_pos, storage)?;
                         }
                         carry_last_page_number = last.page_number;
                     }
@@ -5320,16 +5410,20 @@ impl DocumentCore {
                         let is_odd = page.page_number % 2 == 1;
                         if page.active_header.is_some() {
                             if is_odd {
-                                carry_header_odd = page.active_header.clone();
+                                carry_header_odd =
+                                    crate::storage::try_clone(&page.active_header, storage)?;
                             } else {
-                                carry_header_even = page.active_header.clone();
+                                carry_header_even =
+                                    crate::storage::try_clone(&page.active_header, storage)?;
                             }
                         }
                         if page.active_footer.is_some() {
                             if is_odd {
-                                carry_footer_odd = page.active_footer.clone();
+                                carry_footer_odd =
+                                    crate::storage::try_clone(&page.active_footer, storage)?;
                             } else {
-                                carry_footer_even = page.active_footer.clone();
+                                carry_footer_even =
+                                    crate::storage::try_clone(&page.active_footer, storage)?;
                             }
                         }
                     }
@@ -5376,37 +5470,48 @@ impl DocumentCore {
                     .get(idx)
                     .and_then(|opt| opt.as_deref());
                 let column_def_sel = Self::find_initial_column_def(para_src);
-                let layout_sel = crate::renderer::page_layout::PageLayoutInfo::from_page_def(
-                    &section.section_def.page_def,
-                    &column_def_sel,
-                    self.dpi,
-                );
+                let layout_sel =
+                    crate::renderer::page_layout::PageLayoutInfo::from_page_def_with_storage(
+                        &section.section_def.page_def,
+                        &column_def_sel,
+                        self.dpi,
+                        storage,
+                    )?;
                 let col_w_sel = layout_sel
                     .column_areas
                     .first()
                     .map(|a| a.width)
                     .unwrap_or(layout_sel.body_area.width);
-                measurer.measure_section_selective(
+                measurer.measure_section_selective_with_storage(
                     para_src,
                     composed,
                     &self.styles,
                     &self.measured_sections[idx],
                     dirty_paras,
                     Some(col_w_sel),
-                )
+                    storage,
+                )?
             } else {
                 let column_def_pre = Self::find_initial_column_def(para_src);
-                let layout_pre = crate::renderer::page_layout::PageLayoutInfo::from_page_def(
-                    &section.section_def.page_def,
-                    &column_def_pre,
-                    self.dpi,
-                );
+                let layout_pre =
+                    crate::renderer::page_layout::PageLayoutInfo::from_page_def_with_storage(
+                        &section.section_def.page_def,
+                        &column_def_pre,
+                        self.dpi,
+                        storage,
+                    )?;
                 let col_w_pre = layout_pre
                     .column_areas
                     .first()
                     .map(|a| a.width)
                     .unwrap_or(layout_pre.body_area.width);
-                measurer.measure_section(para_src, composed, &self.styles, Some(col_w_pre))
+                measurer.measure_section_with_storage(
+                    para_src,
+                    composed,
+                    &self.styles,
+                    Some(col_w_pre),
+                    storage,
+                )?
             };
             if let Some(started) = issue2424_measure_started {
                 issue2424_measure_elapsed += started.elapsed();
@@ -5422,7 +5527,7 @@ impl DocumentCore {
                 .unwrap_or(false);
             let mut result = if use_paginator {
                 let profile = self.document.layout_profile();
-                paginator.paginate_with_measured_profile(
+                paginator.paginate_with_measured_profile_with_storage(
                     para_src,
                     &measured,
                     &section.section_def.page_def,
@@ -5433,10 +5538,14 @@ impl DocumentCore {
                         hide_empty_line: section.section_def.hide_empty_line,
                         respect_vpos_reset: self.respect_vpos_reset,
                         is_hwp3_variant: profile.hwp3_layout(),
-                        footnote_shape: Some(section.section_def.footnote_shape.clone()),
+                        footnote_shape: Some(crate::storage::try_clone(
+                            &section.section_def.footnote_shape,
+                            storage,
+                        )?),
                     },
                     profile,
-                )
+                    storage,
+                )?
             } else {
                 use crate::renderer::pagination::{DeferredEndnote, EndnoteDeferral};
                 use crate::renderer::typeset::TypesetEngine;
@@ -5469,12 +5578,17 @@ impl DocumentCore {
                         for (pi, para) in sec_j.paragraphs.iter().enumerate() {
                             // [#7860] 표 셀 안 미주도 본문 수집과 같은 경로·순서로 모은다.
                             for (reff, en) in
-                                crate::renderer::pagination::paragraph_endnote_refs(sj, pi, para)
+                                crate::renderer::pagination::paragraph_endnote_refs_with_storage(
+                                    sj, pi, para, storage,
+                                )?
                             {
-                                acc.push(DeferredEndnote {
-                                    reff,
-                                    endnote: en.clone(),
-                                });
+                                storage.push(
+                                    &mut acc,
+                                    DeferredEndnote {
+                                        reff,
+                                        endnote: crate::storage::try_clone(en, storage)?,
+                                    },
+                                )?;
                             }
                         }
                     }
@@ -5495,12 +5609,12 @@ impl DocumentCore {
                 } else {
                     EndnoteDeferral::None
                 };
-                let typesetter = TypesetEngine::new(self.dpi)
-                    .with_render_normalization(std::sync::Arc::clone(
-                        &self.render_normalization.overlay,
-                    ))
-                    .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing));
-                typesetter.typeset_section_with_variant(
+                let typesetter = TypesetEngine::new_with_render_normalization(
+                    self.dpi,
+                    std::sync::Arc::clone(&self.render_normalization.overlay),
+                )
+                .with_section_column_spacing_hu(i32::from(section.section_def.column_spacing));
+                typesetter.typeset_section_with_variant_with_storage(
                     para_src,
                     composed,
                     &self.styles,
@@ -5516,7 +5630,8 @@ impl DocumentCore {
                     Some(&section.section_def.endnote_shape),
                     force_breaks.get(idx).unwrap_or(&empty_breaks),
                     endnote_deferral,
-                )
+                    storage,
+                )?
             };
             if let Some(started) = issue2424_typeset_started {
                 issue2424_typeset_elapsed += started.elapsed();
@@ -5537,8 +5652,14 @@ impl DocumentCore {
                 insert_hwp3_title_filler_page(&mut result, idx);
             }
 
-            self.measured_tables[idx] = measured.tables.clone();
-            self.measured_tables[idx].extend_from_slice(&result.endnote_measured_tables);
+            self.measured_tables[idx] = crate::storage::try_clone(&measured.tables, storage)?;
+            storage.reserve(
+                &mut self.measured_tables[idx],
+                result.endnote_measured_tables.len(),
+            )?;
+            for table in &result.endnote_measured_tables {
+                self.measured_tables[idx].push(crate::storage::try_clone(table, storage)?);
+            }
             self.measured_sections[idx] = measured;
 
             // ── 수렴 감지: 이전 페이지네이션과 비교하여 변경 흡수 지점 탐색 ──
@@ -5559,20 +5680,19 @@ impl DocumentCore {
                         for pi in converge_page..check_end {
                             let new_page = &result.pages[pi];
                             let old_page = &old_result.pages[pi];
-                            let new_items: Vec<usize> = new_page
-                                .column_contents
-                                .iter()
-                                .flat_map(|cc| cc.items.iter().map(|it| it.para_index()))
-                                .collect();
-                            let old_items: Vec<usize> = old_page
-                                .column_contents
-                                .iter()
-                                .flat_map(|cc| {
+                            let new_items: Vec<usize> = storage.collect(
+                                new_page
+                                    .column_contents
+                                    .iter()
+                                    .flat_map(|cc| cc.items.iter().map(|it| it.para_index())),
+                            )?;
+                            let old_items: Vec<usize> = storage.collect(
+                                old_page.column_contents.iter().flat_map(|cc| {
                                     cc.items
                                         .iter()
                                         .map(|it| (it.para_index() as i64 + offset as i64) as usize)
-                                })
-                                .collect();
+                                }),
+                            )?;
                             if new_items != old_items {
                                 eprintln!("CONVERGENCE_VERIFY_FAIL: sec{} page {} new={:?} old+offset={:?}",
                                     idx, pi + 1, new_items, old_items);
@@ -5601,10 +5721,10 @@ impl DocumentCore {
             // carry 로 폴백하면 정의 문단 앞 쪽들이 자기 구역의 (나중) 정의를 미리
             // 쓰게 되므로, 앞 구역까지의 상태를 따로 보관한다.
             let carry_hf_before_section = (
-                carry_header_odd.clone(),
-                carry_header_even.clone(),
-                carry_footer_odd.clone(),
-                carry_footer_even.clone(),
+                crate::storage::try_clone(&carry_header_odd, storage)?,
+                crate::storage::try_clone(&carry_header_even, storage)?,
+                crate::storage::try_clone(&carry_footer_odd, storage)?,
+                crate::storage::try_clone(&carry_footer_even, storage)?,
             );
             // 머리말/꼬리말 carry 업데이트:
             // 페이지 active_header뿐 아니라 구역에 정의된 머리말 컨트롤도 carry에 반영
@@ -5616,30 +5736,36 @@ impl DocumentCore {
                     for (ci, ctrl) in para.controls.iter().enumerate() {
                         match ctrl {
                             Control::Header(h) => {
-                                entries.push((
-                                    pi,
-                                    HeaderFooterRef {
-                                        para_index: pi,
-                                        control_index: ci,
-                                        source_section_index: idx,
-                                        table_path: Vec::new(),
-                                    },
-                                    true,
-                                    h.apply_to,
-                                ));
+                                storage.push(
+                                    &mut entries,
+                                    (
+                                        pi,
+                                        HeaderFooterRef {
+                                            para_index: pi,
+                                            control_index: ci,
+                                            source_section_index: idx,
+                                            table_path: Vec::new(),
+                                        },
+                                        true,
+                                        h.apply_to,
+                                    ),
+                                )?;
                             }
                             Control::Footer(f) => {
-                                entries.push((
-                                    pi,
-                                    HeaderFooterRef {
-                                        para_index: pi,
-                                        control_index: ci,
-                                        source_section_index: idx,
-                                        table_path: Vec::new(),
-                                    },
-                                    false,
-                                    f.apply_to,
-                                ));
+                                storage.push(
+                                    &mut entries,
+                                    (
+                                        pi,
+                                        HeaderFooterRef {
+                                            para_index: pi,
+                                            control_index: ci,
+                                            source_section_index: idx,
+                                            table_path: Vec::new(),
+                                        },
+                                        false,
+                                        f.apply_to,
+                                    ),
+                                )?;
                             }
                             Control::Table(table) => {
                                 crate::renderer::pagination::collect_nested_header_footer_controls(
@@ -5664,7 +5790,7 @@ impl DocumentCore {
                     };
                     match apply_to {
                         HFA::Both => {
-                            *odd = Some(reference.clone());
+                            *odd = Some(crate::storage::try_clone(&reference, storage)?);
                             *even = Some(reference);
                         }
                         HFA::Odd => *odd = Some(reference),
@@ -5678,7 +5804,7 @@ impl DocumentCore {
             if !section_has_own_pnp {
                 if let Some(ref prev_pnp) = carry_page_number_pos {
                     for page in &mut result.pages {
-                        page.page_number_pos = Some(prev_pnp.clone());
+                        page.page_number_pos = Some(crate::storage::try_clone(prev_pnp, storage)?);
                     }
                 }
             }
@@ -5728,9 +5854,9 @@ impl DocumentCore {
                     for page in &mut result.pages {
                         let is_odd = page.page_number % 2 == 1;
                         page.active_header = if is_odd {
-                            carry_header_odd.clone()
+                            crate::storage::try_clone(&carry_header_odd, storage)?
                         } else {
-                            carry_header_even.clone()
+                            crate::storage::try_clone(&carry_header_even, storage)?
                         };
                     }
                 }
@@ -5739,9 +5865,9 @@ impl DocumentCore {
                     for page in &mut result.pages {
                         let is_odd = page.page_number % 2 == 1;
                         page.active_footer = if is_odd {
-                            carry_footer_odd.clone()
+                            crate::storage::try_clone(&carry_footer_odd, storage)?
                         } else {
-                            carry_footer_even.clone()
+                            crate::storage::try_clone(&carry_footer_even, storage)?
                         };
                     }
                 }
@@ -5761,7 +5887,8 @@ impl DocumentCore {
             // carry 업데이트
             if let Some(last) = result.pages.last() {
                 if last.page_number_pos.is_some() {
-                    carry_page_number_pos = last.page_number_pos.clone();
+                    carry_page_number_pos =
+                        crate::storage::try_clone(&last.page_number_pos, storage)?;
                 }
                 carry_last_page_number = last.page_number;
             }
@@ -5780,30 +5907,36 @@ impl DocumentCore {
                     for (ci, ctrl) in para.controls.iter().enumerate() {
                         match ctrl {
                             Control::Header(h) => {
-                                entries.push((
-                                    pi,
-                                    HeaderFooterRef {
-                                        para_index: pi,
-                                        control_index: ci,
-                                        source_section_index: idx,
-                                        table_path: Vec::new(),
-                                    },
-                                    true,
-                                    h.apply_to,
-                                ));
+                                storage.push(
+                                    &mut entries,
+                                    (
+                                        pi,
+                                        HeaderFooterRef {
+                                            para_index: pi,
+                                            control_index: ci,
+                                            source_section_index: idx,
+                                            table_path: Vec::new(),
+                                        },
+                                        true,
+                                        h.apply_to,
+                                    ),
+                                )?;
                             }
                             Control::Footer(f) => {
-                                entries.push((
-                                    pi,
-                                    HeaderFooterRef {
-                                        para_index: pi,
-                                        control_index: ci,
-                                        source_section_index: idx,
-                                        table_path: Vec::new(),
-                                    },
-                                    false,
-                                    f.apply_to,
-                                ));
+                                storage.push(
+                                    &mut entries,
+                                    (
+                                        pi,
+                                        HeaderFooterRef {
+                                            para_index: pi,
+                                            control_index: ci,
+                                            source_section_index: idx,
+                                            table_path: Vec::new(),
+                                        },
+                                        false,
+                                        f.apply_to,
+                                    ),
+                                )?;
                             }
                             // 표 셀 안에 중첩 정의된 머리말/꼬리말도 수집한다. (수능 수학
                             // 선택과목 소책자의 4쪽 머리말이 제목표 셀 안에 있는 사례 — 이게
@@ -5842,9 +5975,9 @@ impl DocumentCore {
                         })
                         .max();
                     if let Some(last_pi) = page_last_para {
-                        active.accumulate(&entries, last_pi);
+                        active.accumulate_with_storage(&entries, last_pi, storage)?;
                     }
-                    let (header, footer) = active.active(page.page_number);
+                    let (header, footer) = active.active_with_storage(page.page_number, storage)?;
                     // 이 구역에 없는 종류는 건드리지 않는다 — 앞 구역에서 상속받은 것이 살아 있다.
                     //
                     // [#5802] 종류는 있어도 **슬롯(홀짝)** 이 비면 앞 구역 carry 의 같은
@@ -5856,22 +5989,26 @@ impl DocumentCore {
                     let (prev_h_odd, prev_h_even, prev_f_odd, prev_f_even) =
                         &carry_hf_before_section;
                     if has_header {
-                        page.active_header = header.or_else(|| {
+                        page.active_header = if header.is_some() {
+                            header
+                        } else {
                             if is_odd {
-                                prev_h_odd.clone()
+                                crate::storage::try_clone(prev_h_odd, storage)?
                             } else {
-                                prev_h_even.clone()
+                                crate::storage::try_clone(prev_h_even, storage)?
                             }
-                        });
+                        };
                     }
                     if has_footer {
-                        page.active_footer = footer.or_else(|| {
+                        page.active_footer = if footer.is_some() {
+                            footer
+                        } else {
                             if is_odd {
-                                prev_f_odd.clone()
+                                crate::storage::try_clone(prev_f_odd, storage)?
                             } else {
-                                prev_f_even.clone()
+                                crate::storage::try_clone(prev_f_even, storage)?
                             }
-                        });
+                        };
                     }
                 }
             }
@@ -5888,12 +6025,12 @@ impl DocumentCore {
             self.dirty_sections[idx] = false;
             // 문단 dirty 비트맵 초기화 (모든 문단 clean)
             let para_count = section.paragraphs.len();
-            self.dirty_paragraphs[idx] = Some(vec![false; para_count]);
+            self.dirty_paragraphs[idx] = Some(storage.filled(para_count, false)?);
 
             // 문단→단 인덱스 매핑 구축
             {
                 use crate::renderer::pagination::PageItem;
-                let mut col_map = vec![0u16; para_count];
+                let mut col_map = storage.filled(para_count, 0u16)?;
                 for page in &self.pagination[idx].pages {
                     for col_content in &page.column_contents {
                         let ci = col_content.column_index;
@@ -5964,6 +6101,8 @@ impl DocumentCore {
                 other.as_secs_f64() * 1000.0,
             );
         }
+
+        Ok(())
     }
 
     /// 글로벌 페이지 번호로 해당 페이지와 문단/구성 목록을 찾는다.
@@ -6015,49 +6154,66 @@ impl DocumentCore {
     /// 렌더링 정규화본(미배치 줄 캐시 제외, 부동 전면 이미지 스택 재분류)을 재계산.
     /// 원본 `document`/`composed` 는 무손상(save 무결). paginate 시작 시 호출.
     pub(crate) fn compute_render_normalized(&mut self) {
+        match self.compute_render_normalized_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn compute_render_normalized_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         let sec_count = self.document.sections.len();
         let profile = self.effective_layout_profile();
         let normalize_widthless_rows =
             profile.hwpx_stored_layout() && !profile.legacy_hwp3_stored_geometry();
+        let additional =
+            sec_count.saturating_sub(self.render_normalization.section_revisions.len());
+        storage.reserve(&mut self.render_normalization.section_revisions, additional)?;
         self.render_normalization
             .section_revisions
             .resize(sec_count, 0);
         let mut previous = std::mem::take(&mut self.render_normalization.sections);
+        let additional = sec_count.saturating_sub(previous.len());
+        storage.reserve(&mut previous, additional)?;
         previous.resize_with(sec_count, || None);
-        let mut out = Vec::with_capacity(sec_count);
+        let mut out = storage.vec(sec_count)?;
         for idx in 0..sec_count {
             let source_revision = self.render_normalization.section_revisions[idx];
             if previous[idx]
                 .as_ref()
                 .is_some_and(|section| section.source_revision == source_revision)
             {
-                out.push(previous[idx].take());
+                storage.push(&mut out, previous[idx].take())?;
                 continue;
             }
             let section = &self.document.sections[idx];
             let cached_frames =
-                crate::renderer::render_normalization::cached_frame_owner::normalize(
+                crate::renderer::render_normalization::cached_frame_owner::normalize_with_storage(
                     &section.paragraphs,
                     &self.styles,
                     self.dpi,
                     crate::renderer::style_resolver::missing_char_table(&self.document),
                     profile.hwpx_container() && !profile.legacy_hwp3_stored_geometry(),
-                );
+                    storage,
+                )?;
             let source_paragraphs = cached_frames.as_deref().unwrap_or(&section.paragraphs);
             let pd = &section.section_def.page_def;
             let body_area = PageAreas::from_page_def(pd).body_area;
             let body_h_hu = body_area.height();
             let body_bottom_hu = body_area.bottom;
             let min_height_hu = (body_h_hu / 2).max(1);
-            let matches: Vec<usize> = source_paragraphs
-                .iter()
-                .enumerate()
-                .filter(|(_, p)| {
-                    para_is_floating_image_stack(p, min_height_hu)
-                        && !body_pile_stays_on_anchor_page(p, min_height_hu, body_bottom_hu)
-                })
-                .map(|(i, _)| i)
-                .collect();
+            let matches: Vec<usize> = storage.collect(
+                source_paragraphs
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, p)| {
+                        para_is_floating_image_stack(p, min_height_hu)
+                            && !body_pile_stays_on_anchor_page(p, min_height_hu, body_bottom_hu)
+                    })
+                    .map(|(i, _)| i),
+            )?;
             // [#2004] 표 셀 내부 부동 이미지 스택 검출(본문 스택과 별개 경로).
             let has_cell_stack = source_paragraphs.iter().any(|p| {
                 p.controls.iter().any(|ctrl| match ctrl {
@@ -6069,27 +6225,32 @@ impl DocumentCore {
                     _ => false,
                 })
             });
-            let math_tables = crate::renderer::render_normalization::math_table::normalize(
-                source_paragraphs,
-                &self.styles,
-            );
-            let math_textboxes = crate::renderer::render_normalization::math_textbox::normalize(
-                math_tables.as_deref().unwrap_or(source_paragraphs),
-                &self.styles,
-            );
-            let text_metrics = (!profile.hwp3_layout())
-                .then(|| {
-                    crate::renderer::render_normalization::stored_text_metrics::normalize(
-                        math_textboxes
-                            .as_deref()
-                            .or(math_tables.as_deref())
-                            .unwrap_or(source_paragraphs),
-                        &self.styles,
-                        self.dpi,
-                        profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx(),
-                    )
-                })
-                .flatten();
+            let math_tables =
+                crate::renderer::render_normalization::math_table::normalize_with_storage(
+                    source_paragraphs,
+                    &self.styles,
+                    storage,
+                )?;
+            let math_textboxes =
+                crate::renderer::render_normalization::math_textbox::normalize_with_storage(
+                    math_tables.as_deref().unwrap_or(source_paragraphs),
+                    &self.styles,
+                    storage,
+                )?;
+            let text_metrics = if !profile.hwp3_layout() {
+                crate::renderer::render_normalization::stored_text_metrics::normalize_with_storage(
+                    math_textboxes
+                        .as_deref()
+                        .or(math_tables.as_deref())
+                        .unwrap_or(source_paragraphs),
+                    &self.styles,
+                    self.dpi,
+                    profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx(),
+                    storage,
+                )?
+            } else {
+                None
+            };
             let text_metric_changes: Vec<usize> = text_metrics
                 .as_deref()
                 .map(|paragraphs| {
@@ -6097,45 +6258,49 @@ impl DocumentCore {
                         .as_deref()
                         .or(math_tables.as_deref())
                         .unwrap_or(source_paragraphs);
-                    paragraphs
-                        .iter()
-                        .zip(source)
-                        .enumerate()
-                        .filter(|(_, (projected, original))| {
-                            projected.line_segs.iter().zip(&original.line_segs).any(
-                                |(projected, original)| {
-                                    projected.line_height != original.line_height
-                                        || projected.text_height != original.text_height
-                                        || projected.baseline_distance != original.baseline_distance
-                                },
-                            )
-                        })
-                        .map(|(index, _)| index)
-                        .collect()
+                    storage.collect(
+                        paragraphs
+                            .iter()
+                            .zip(source)
+                            .enumerate()
+                            .filter(|(_, (projected, original))| {
+                                projected.line_segs.iter().zip(&original.line_segs).any(
+                                    |(projected, original)| {
+                                        projected.line_height != original.line_height
+                                            || projected.text_height != original.text_height
+                                            || projected.baseline_distance
+                                                != original.baseline_distance
+                                    },
+                                )
+                            })
+                            .map(|(index, _)| index),
+                    )
                 })
+                .transpose()?
                 .unwrap_or_default();
             // 프로그램 교체는 어느 형식에서도 현재 줄 메트릭을 바꿀 수 있다.
             // 기존 목록 캐시 갱신의 형식·저장 프레임 경계는 별도로 보존한다.
             let refresh_markers = (profile.hwp5_stored_pagination_layout()
                 || profile.hwpx_stored_layout())
                 && !profile.legacy_hwp3_stored_geometry();
-            let stored_word_tails = (!profile.session_edited()).then_some(()).and_then(|_| {
+            let stored_word_tails = if !profile.session_edited() {
                 // 구판 자체 변환본은 원 HWP의 줄을 보존했지만 XML 1.2의
                 // 여백 단위는 달라졌다. marker 2 이후와 한컴 원본은 제외한다.
-                let previous_margins = (self
+                let previous_margins = if self
                     .document
                     .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
                     == Some(b"1")
-                    && self.document.doc_info.hwpml_version.as_deref() == Some("1.2"))
-                .then(|| {
-                    crate::renderer::composer::stored_margin_context::previous_margin_styles(
+                    && self.document.doc_info.hwpml_version.as_deref() == Some("1.2")
+                {
+                    crate::renderer::composer::stored_margin_context::previous_margin_styles_with_storage(
                         &self.document.doc_info,
                         &self.styles,
-                        self.dpi,
-                    )
-                })
-                .flatten();
-                crate::renderer::render_normalization::stored_word_tail::normalize(
+                        self.dpi, storage,
+                    )?
+                } else {
+                    None
+                };
+                crate::renderer::render_normalization::stored_word_tail::normalize_with_storage(
                     text_metrics
                         .as_deref()
                         .or(math_textboxes.as_deref().or(math_tables.as_deref()))
@@ -6146,47 +6311,46 @@ impl DocumentCore {
                     refresh_markers,
                     self.dpi,
                     previous_margins.as_ref(),
-                )
-            });
+                    storage,
+                )?
+            } else {
+                None
+            };
             let paragraph_geometry_changed = cached_frames.is_some()
                 || stored_word_tails.is_some()
                 || math_textboxes.is_some()
                 || math_tables.is_some();
             let unplaced_rows =
                 normalize_widthless_rows && section_has_unplaced_stored_rows(source_paragraphs);
-            let widthless: Vec<usize> = source_paragraphs
-                .iter()
-                .enumerate()
-                .filter(|(_, para)| unplaced_rows && has_widthless_stored_rows(para))
-                .map(|(index, _)| index)
-                .collect();
-            let inline_frames: Vec<(usize, Paragraph)> =
-                if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
-                    && !profile.session_edited()
-                {
-                    source_paragraphs
-                        .iter()
-                        .enumerate()
-                        .filter_map(|(index, paragraph)| {
-                            crate::renderer::layout::normalized_single_line_inline_textbox_host(
-                                paragraph,
-                                &self.styles,
-                                self.dpi,
-                            )
-                            .or_else(|| {
-                                crate::renderer::composer::inline_box_rows::normalized_host(
-                                    paragraph,
-                                    &self.styles,
-                                    self.dpi,
-                                    profile,
-                                )
-                            })
-                            .map(|projected| (index, projected))
-                        })
-                        .collect()
-                } else {
-                    Vec::new()
-                };
+            let widthless: Vec<usize> = storage.collect(
+                source_paragraphs
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, para)| unplaced_rows && has_widthless_stored_rows(para))
+                    .map(|(index, _)| index),
+            )?;
+            let mut inline_frames = storage.vec(0)?;
+            if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+                && !profile.session_edited()
+            {
+                for (index, paragraph) in source_paragraphs.iter().enumerate() {
+                    let mut projected = crate::renderer::layout::normalized_single_line_inline_textbox_host_with_storage(paragraph, &self.styles, self.dpi, storage)?;
+                    if projected.is_none() {
+                        projected = crate::renderer::composer::inline_box_rows::normalized_host_with_table_height_with_storage(paragraph, &self.styles, |table, ci| {
+                            let measured = crate::renderer::height_measurer::HeightMeasurer::new(self.dpi)
+                                .with_stored_geometry_policy(profile.stored_geometry_policy())
+                                .with_native_hwp5(profile.native_hwp5_layout())
+                                .with_hwpx_stored_layout(profile.hwpx_stored_layout())
+                                .with_session_edited(profile.session_edited())
+                                .measure_table_with_storage(table, 0, ci, &self.styles, storage)?;
+                            Ok((measured.total_height.is_finite() && measured.total_height > 0.0).then(|| crate::renderer::px_to_hwpunit(measured.total_height, self.dpi)))
+                        }, storage)?;
+                    }
+                    if let Some(projected) = projected {
+                        storage.push(&mut inline_frames, (index, projected))?;
+                    }
+                }
+            }
             if matches.is_empty()
                 && !has_cell_stack
                 && widthless.is_empty()
@@ -6194,14 +6358,21 @@ impl DocumentCore {
                 && !paragraph_geometry_changed
                 && text_metrics.is_none()
             {
-                out.push(None);
+                storage.push(&mut out, None)?;
                 continue;
             }
-            let mut np = stored_word_tails
+            let mut np = match stored_word_tails
                 .or(text_metrics)
                 .or(math_textboxes)
                 .or(math_tables)
-                .unwrap_or_else(|| source_paragraphs.to_vec());
+            {
+                Some(paragraphs) => paragraphs,
+                None => storage.try_collect(
+                    source_paragraphs
+                        .iter()
+                        .map(|paragraph| storage.clone_paragraph(paragraph)),
+                )?,
+            };
             let mut frame_changes = Vec::new();
             if !inline_frames.is_empty() {
                 let mut frames = inline_frames.into_iter().peekable();
@@ -6235,7 +6406,7 @@ impl DocumentCore {
                                 line.vertical_pos = line.vertical_pos.saturating_sub(shift_hu);
                             }
                         }
-                        frame_changes.push(index);
+                        storage.push(&mut frame_changes, index)?;
                         shift_hu = shift_hu.saturating_add(old_height - new_height);
                     } else if shift_hu != 0 && !paragraph.line_segs.is_empty() {
                         // 원점 이동은 문자 경계·가로 폭·공백 메트릭을 다시 만든
@@ -6246,7 +6417,7 @@ impl DocumentCore {
                             line.vertical_pos = line.vertical_pos.saturating_sub(shift_hu);
                         }
                         paragraph.source_line_seg_vertical_pos = None;
-                        frame_changes.push(index);
+                        storage.push(&mut frame_changes, index)?;
                     }
                 }
             }
@@ -6262,69 +6433,80 @@ impl DocumentCore {
                 reclassify_floating_pictures_inline(&mut np[i]);
             }
             let base = self.composed.get(idx);
-            let nc: Vec<ComposedParagraph> = np
-                .iter()
-                .enumerate()
-                .map(|(i, p)| {
-                    if matches.binary_search(&i).is_ok()
-                        || widthless.binary_search(&i).is_ok()
-                        || frame_changes.binary_search(&i).is_ok()
-                        || text_metric_changes.binary_search(&i).is_ok()
-                        || paragraph_geometry_changed
-                    {
-                        let mut c = crate::renderer::composer::compose_paragraph_in_context(
+            let nc: Vec<ComposedParagraph> = storage
+                .try_collect(np.iter().enumerate().map(|(i, p)| {
+                if matches.binary_search(&i).is_ok()
+                    || widthless.binary_search(&i).is_ok()
+                    || frame_changes.binary_search(&i).is_ok()
+                    || text_metric_changes.binary_search(&i).is_ok()
+                    || paragraph_geometry_changed
+                {
+                    let mut c =
+                        crate::renderer::composer::compose_paragraph_in_context_with_storage(
                             p,
                             &self.styles,
-                        );
-                        // [#2004] composer 가 line_seg 부족(HWP5 빈-문단)으로 1줄로 붕괴하면
-                        // 그림 수만큼 줄을 합성(모두 char_start 동일)해 Stage2 stacked 게이트
-                        // (comp.lines.len()==tac_controls) 가 발동하게 한다.
-                        let npics = c.tac_controls.len();
-                        if matches.binary_search(&i).is_ok()
-                            && npics >= 2
-                            && c.lines.len() != npics
-                            && !c.lines.is_empty()
-                        {
-                            let template = c.lines[0].clone();
-                            let mut lines = Vec::with_capacity(npics);
-                            for k in 0..npics {
-                                let lh_hu = p
-                                    .controls
-                                    .get(c.tac_controls[k].2)
-                                    .and_then(|ctrl| {
-                                        floating_stack_picture_common(ctrl)
-                                            .map(|cm| cm.height as i32)
-                                    })
-                                    .unwrap_or(template.line_height);
-                                let mut l = template.clone();
-                                l.runs = Vec::new();
-                                l.char_start = 0;
-                                l.line_height = lh_hu;
-                                l.has_line_break = false;
-                                lines.push(l);
-                            }
-                            c.lines = lines;
+                            storage,
+                        )?;
+                    // [#2004] composer 가 line_seg 부족(HWP5 빈-문단)으로 1줄로 붕괴하면
+                    // 그림 수만큼 줄을 합성(모두 char_start 동일)해 Stage2 stacked 게이트
+                    // (comp.lines.len()==tac_controls) 가 발동하게 한다.
+                    let npics = c.tac_controls.len();
+                    if matches.binary_search(&i).is_ok()
+                        && npics >= 2
+                        && c.lines.len() != npics
+                        && !c.lines.is_empty()
+                    {
+                        let template = crate::storage::try_clone(&c.lines[0], storage)?;
+                        let mut lines = storage.vec(npics)?;
+                        for k in 0..npics {
+                            let lh_hu = p
+                                .controls
+                                .get(c.tac_controls[k].2)
+                                .and_then(|ctrl| {
+                                    floating_stack_picture_common(ctrl).map(|cm| cm.height as i32)
+                                })
+                                .unwrap_or(template.line_height);
+                            let mut l = crate::storage::try_clone(&template, storage)?;
+                            l.runs = Vec::new();
+                            l.char_start = 0;
+                            l.line_height = lh_hu;
+                            l.has_line_break = false;
+                            storage.push(&mut lines, l)?;
                         }
-                        c
-                    } else {
-                        base.and_then(|c| c.get(i)).cloned().unwrap_or_else(|| {
-                            crate::renderer::composer::compose_paragraph_in_context(p, &self.styles)
-                        })
+                        c.lines = lines;
                     }
-                })
-                .collect();
-            out.push(Some(super::super::RenderNormalizedSection {
-                source_revision,
-                paragraphs: std::sync::Arc::new(np),
-                composed: std::sync::Arc::new(nc),
-            }));
+                    Ok(c)
+                } else {
+                    match base.and_then(|c| c.get(i)) {
+                        Some(composed) => crate::storage::try_clone(composed, storage),
+                        None => {
+                            crate::renderer::composer::compose_paragraph_in_context_with_storage(
+                                p,
+                                &self.styles,
+                                storage,
+                            )
+                        }
+                    }
+                }
+            }))?;
+            storage.bytes(
+                std::mem::size_of::<Vec<Paragraph>>()
+                    + std::mem::size_of::<Vec<ComposedParagraph>>(),
+            )?;
+            storage.push(
+                &mut out,
+                Some(super::super::RenderNormalizedSection {
+                    source_revision,
+                    paragraphs: std::sync::Arc::new(np),
+                    composed: std::sync::Arc::new(nc),
+                }),
+            )?;
         }
         self.render_normalization.sections = out;
         let mut overlay =
-            crate::renderer::render_normalization::RenderNormalizationOverlay::from_document_reusing(
+            crate::renderer::render_normalization::RenderNormalizationOverlay::from_document_reusing_with_storage(
                 &self.document,
-                &self.render_normalization.overlay,
-            );
+                &self.render_normalization.overlay,storage)?;
         for (source, rendered) in self
             .document
             .sections
@@ -6332,11 +6514,12 @@ impl DocumentCore {
             .zip(&self.render_normalization.sections)
         {
             if let Some(rendered) = rendered {
-                overlay.register_rendered_text_partitions(
+                overlay.register_rendered_text_partitions_with_storage(
                     &source.paragraphs,
                     &rendered.paragraphs,
                     &self.styles,
-                );
+                    storage,
+                )?;
             }
         }
         for (section_index, section) in self.document.sections.iter().enumerate() {
@@ -6353,7 +6536,7 @@ impl DocumentCore {
                     {
                         continue;
                     }
-                    overlay.register_text_reflowed_table(table);
+                    overlay.register_text_reflowed_table_with_storage(table, storage)?;
                     if let Some(Control::Table(normalized)) = self
                         .render_normalization
                         .sections
@@ -6362,14 +6545,17 @@ impl DocumentCore {
                         .and_then(|section| section.paragraphs.get(paragraph_index))
                         .and_then(|paragraph| paragraph.controls.get(control_index))
                     {
-                        overlay.register_text_reflowed_table(normalized);
+                        overlay.register_text_reflowed_table_with_storage(normalized, storage)?;
                     }
                 }
             }
         }
+        storage.bytes(std::mem::size_of_val(&overlay))?;
         let overlay = std::sync::Arc::new(overlay);
         self.render_normalization.overlay = std::sync::Arc::clone(&overlay);
         self.layout_engine.set_render_normalization_overlay(overlay);
+
+        Ok(())
     }
 
     pub(crate) fn refresh_render_normalized_body_paragraph_after_edit(

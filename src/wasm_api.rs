@@ -45,19 +45,31 @@ use crate::renderer::DEFAULT_DPI;
 #[cfg(target_arch = "wasm32")]
 mod bitmap_raster;
 mod canvas_metrics;
+mod form_action;
 mod hyperlink;
 mod layout_generation;
 #[cfg(all(feature = "pdf-import", target_arch = "wasm32"))]
 mod pdf_import;
+#[cfg(all(feature = "pdf-import", target_arch = "wasm32"))]
+mod pdf_request;
 #[cfg(target_arch = "wasm32")]
 mod print_image_sampling;
 /// 어떤 렌더 export가 교체 가능한 경계 뒤에 있는지 선언하는 곳 (#4577, #4642).
 mod render_patch_boundary;
+#[cfg(target_arch = "wasm32")]
+mod static_svg_raster;
 mod table_cell_bboxes;
 mod template_automation;
 
 #[cfg(target_arch = "wasm32")]
 mod layer_export;
+
+// Preserve the Native facade's existing slice signature while passing a JS
+// reference on WASM. No Native dependency on target-specific js-sys is added.
+#[cfg(target_arch = "wasm32")]
+type PdfImportInput = JsValue;
+#[cfg(not(target_arch = "wasm32"))]
+type PdfImportInput = [u8];
 
 impl From<HwpError> for JsValue {
     fn from(err: HwpError) -> Self {
@@ -633,15 +645,57 @@ impl HwpDocument {
         }
     }
 
+    /// Resolve the same strict options used by importPdf before copying input.
+    /// The zero-argument getPdfImportPolicy() remains the standard profile.
+    #[wasm_bindgen(js_name = getPdfImportPolicyWithOptions)]
+    pub fn get_pdf_import_policy_with_options(options: JsValue) -> Result<String, JsValue> {
+        #[cfg(all(feature = "pdf-import", target_arch = "wasm32"))]
+        {
+            let (_, policy, _) = pdf_import::options(options)?;
+            Ok(serde_json::to_string(&policy).expect("PDF policy is serializable"))
+        }
+        #[cfg(not(all(feature = "pdf-import", target_arch = "wasm32")))]
+        {
+            let _ = options;
+            Err(JsValue::from_str(
+                "PDF_IMPORT_DISABLED: a PDF-enabled WASM runtime is required",
+            ))
+        }
+    }
+
+    /// Host execution requirements, distinct from parser request counters.
+    #[wasm_bindgen(js_name = getPdfImportRuntimeCapabilities)]
+    pub fn get_pdf_import_runtime_capabilities() -> String {
+        serde_json::json!({
+            "schemaVersion": 1,
+            "executionModel": "synchronous",
+            "preCopyPolicyValidation": cfg!(all(feature = "pdf-import", target_arch = "wasm32")),
+            "interruption": "hostWorkerTermination",
+            "requestTransportReservations": cfg!(all(feature = "pdf-import", target_arch = "wasm32")),
+            "editorReopenRemainingCredit": cfg!(all(feature = "pdf-import", target_arch = "wasm32")),
+            "editorReopenInterruption": "cooperativeChecksAndPublicationYield",
+            "mainThreadPreemption": false,
+            "processMemoryLimitEnforced": false,
+            "filesystemNetworkSandbox": false,
+        })
+        .to_string()
+    }
+
     /// PDF 전체 또는 선택 쪽을 공통 IR로 가져온다 (기본 포함 `pdf-import`).
     /// options.sourcePages는 0-based 증가 배열이며 생략하면 전체 쪽이다.
     /// 동기 실행이므로 브라우저에서 취소/시간 제한이 필요하면 Worker에서 호출한다.
     #[wasm_bindgen(js_name = importPdf)]
-    pub fn import_pdf(data: &[u8], options: JsValue) -> Result<HwpDocument, JsValue> {
+    pub fn import_pdf(
+        #[wasm_bindgen(unchecked_param_type = "Uint8Array")] data: &PdfImportInput,
+        options: JsValue,
+    ) -> Result<HwpDocument, JsValue> {
         #[cfg(all(feature = "pdf-import", target_arch = "wasm32"))]
         {
-            let options = pdf_import::options(options)?;
-            DocumentCore::from_pdf_bytes(data, &options)
+            let (options, policy, _) = pdf_import::options(options)?;
+            let mut session = crate::PdfImportSession::new(policy)?;
+            let data = pdf_import::copy_input(data, &policy, &mut session)?;
+            session
+                .open(&data, &options)
                 .map(|core| HwpDocument { core })
                 .map_err(JsValue::from)
         }

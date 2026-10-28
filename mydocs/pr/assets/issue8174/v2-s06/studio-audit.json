@@ -1,0 +1,191 @@
+{
+  "before": {
+    "generation": 2,
+    "name": "hwp_table_test.hwp",
+    "pages": 3,
+    "draft": "51ae643f-4a69-41e2-bfd4-10af5d691fe8",
+    "stored": [],
+    "handle": null,
+    "recents": [
+      "hwp_table_test.hwp"
+    ]
+  },
+  "afterFailure": {
+    "generation": 2,
+    "name": "hwp_table_test.hwp",
+    "pages": 3,
+    "draft": "51ae643f-4a69-41e2-bfd4-10af5d691fe8",
+    "stored": [],
+    "handle": null,
+    "recents": [
+      "hwp_table_test.hwp"
+    ]
+  },
+  "rejected": "가져오지 못했습니다. Error: PDF_RESOURCE_LIMIT: 유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: font metric entries 설정을 확인한 뒤 다시 시도하세요.",
+  "accepted": {
+    "name": "cff-cid-1001-glyphs.pdf",
+    "pages": 1,
+    "diagnostics": {
+      "pdfImportSupport": {
+        "enabled": true,
+        "jbig2": true,
+        "jpeg2000": true,
+        "icc": true,
+        "boundedXrefRecovery": true
+      },
+      "sourcePageCount": 1,
+      "pages": [
+        {
+          "sourcePage": 0,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            240,
+            200
+          ],
+          "sourceSpans": [
+            {
+              "sourceSpan": 0,
+              "bounds": [
+                10,
+                38.6,
+                19.8,
+                12
+              ],
+              "baseline": 50
+            }
+          ],
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "bodyParagraphMapping": {
+              "frames": [
+                {
+                  "instanceId": 2,
+                  "paragraphCount": 1,
+                  "region": 0,
+                  "spans": [
+                    0
+                  ],
+                  "status": "paragraph_ir"
+                }
+              ],
+              "policy": "owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained",
+              "semanticParagraphs": 1
+            },
+            "boundaryPaintPolicy": "standard borders or source paint partitioned into cell-owned drawings; no page-level duplicate",
+            "candidateCount": 0,
+            "clipCount": 0,
+            "coordinateSystem": "page-local top-left points; source geometry in page user space",
+            "detectionDeferredReason": null,
+            "executionState": "EXPORTED",
+            "externalBoundaryPaint": {
+              "owner": "unchanged page source control outside logical table frame",
+              "sourcePathIndices": []
+            },
+            "glyphCount": 3,
+            "idScope": "source page and deterministic extraction order",
+            "imageCount": 0,
+            "incompleteReasons": [],
+            "initialBlockCount": 1,
+            "interpretation": "observations and competing hypotheses, not authored Excel/HWP objects",
+            "loweringDeferred": [],
+            "nativeBorderCells": 0,
+            "nativeBorderPaintFragments": 0,
+            "nativeCellBackgrounds": {
+              "policy": "single opaque rectangle behind all owned content becomes standard full-cell fill; source inset is normalized; ambiguous or partial highlights retain source paint",
+              "sources": []
+            },
+            "paintPathCount": 0,
+            "paragraphMappingPolicy": {
+              "bodyRegions": "confirmed owner-local paragraphs share the cell paragraph adapter; ambiguous source spans retained",
+              "confirmed": "one proposal becomes one Paragraph with multiple source LineSegs",
+              "deferred": "line frames retained; paragraph grouping unverified",
+              "lineJoins": "inferred wrap connections; original whitespace retained"
+            },
+            "policy": {
+              "axisTolerancePt": 0.5,
+              "inlineGapEm": 0.5,
+              "lineBaselineEm": 0.2,
+              "maxCandidates": 128,
+              "maxClipRegions": 512,
+              "maxGlyphs": 32768,
+              "maxTiles": 4096,
+              "maxWork": 1000000
+            },
+            "regionGeometry": "declared clip paths; effective visibility also depends on parent intersections",
+            "rejectedComponents": [],
+            "ruleVersion": "tsg-observations-v1",
+            "schemaVersion": 1,
+            "semanticTables": 0,
+            "status": "observed"
+          }
+        }
+      ],
+      "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+      "parserAllocationBoundsProven": false,
+      "warnings": [
+        "Experimental PDF frontend; upstream allocation bounds remain unproven",
+        "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+        "Deferred table families retain positional content; inspect page diagnostics"
+      ],
+      "resourcePolicy": {
+        "schemaVersion": 1,
+        "maxSourcePages": 100000,
+        "maxSelectedPages": 1024,
+        "maxPathOperations": 20000,
+        "maxDocumentPathOperations": 80000,
+        "maxDocumentImagePlacements": 4000000,
+        "maxImagePixels": 16000000,
+        "maxDocumentImagePixels": 64000000,
+        "maxTextBytes": 2097152,
+        "backend": {
+          "inputBytes": 67108864,
+          "streamBytes": 33554432,
+          "codecAllocationBytes": 33554432,
+          "codecWorkUnits": 1000000000,
+          "decodedBytes": 268435456,
+          "filters": 8,
+          "nesting": 16,
+          "objects": 50000,
+          "entries": 400000,
+          "operators": 250000,
+          "graphicsStack": 128,
+          "stringBytes": 65536,
+          "textBytes": 2097152,
+          "spans": 40000,
+          "cmapBytes": 1048576,
+          "cmapEntries": 100000,
+          "cmapScanBytes": 67108864,
+          "fontEntries": 1,
+          "referenceDepth": 32,
+          "referenceVisits": 250000,
+          "formDepth": 16,
+          "xobjectVisits": 250000
+        }
+      },
+      "resourceUsage": {
+        "decodedBytes": 21244,
+        "codecAllocatedBytes": 0,
+        "codecWorkUnits": 0,
+        "parsedObjects": 58,
+        "collectionEntries": 65,
+        "operators": 5,
+        "textBytes": 6,
+        "spans": 1,
+        "referenceVisits": 20,
+        "xobjectVisits": 0,
+        "contentParseCalls": 1,
+        "pageOperatorCacheHits": 3,
+        "pageStreamCacheHits": 3,
+        "formStreamCacheHits": 0,
+        "failure": null
+      }
+    }
+  },
+  "errors": [],
+  "scope": "actual Studio UI/Worker/main-thread reopen audit; resource acceptance is a finding, not visual fidelity proof"
+}

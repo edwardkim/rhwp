@@ -1,0 +1,9 @@
+{
+  "initial": 1,
+  "retained": 1,
+  "recovered": 1,
+  "error": "Error: PDF_RESOURCE_LIMIT: 유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: font metric entries",
+  "saved": 7538,
+  "created": 2,
+  "terminated": 2
+}

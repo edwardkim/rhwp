@@ -1,0 +1,198 @@
+{
+  "source": "695cea7b973fc54fc5ffc7f6d414f7ecf403b882",
+  "kind": "selected actual call paths; not an exhaustive allocator proof",
+  "sites": [
+    {
+      "backlog": "B01",
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/type1_encoding.rs",
+      "line": 28,
+      "source_sha256": "f3e174f46251920290f12564d0bca6bcb3a0d32d9101fcf637ceccc1fcb068cd",
+      "git_blob": "554cc08a7e957badcce3581ab089d9b6bc45fa03",
+      "observation": "Encoding HashMap and glyph-name String have no request context; actual tiny-font acceptance reproduced."
+    },
+    {
+      "backlog": "B01",
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/cff_encoding.rs",
+      "line": 454,
+      "source_sha256": "055220236f94f4cb4711cd25c9f62c079f19d44523a631a20aba6a3e7dd46950",
+      "git_blob": "230de6e532a5df7771205917bc38732c193ac99a",
+      "observation": "Offsets/entry Vec allocations use declared INDEX count without request accounting; checked offset and bounded DICT stack review required."
+    },
+    {
+      "backlog": "B01",
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/cff_encoding.rs",
+      "line": 870,
+      "source_sha256": "055220236f94f4cb4711cd25c9f62c079f19d44523a631a20aba6a3e7dd46950",
+      "git_blob": "230de6e532a5df7771205917bc38732c193ac99a",
+      "observation": "Declared glyph count expands SID Vec, then simple/CID maps; actual 1001 CID entries accepted at cap 1."
+    },
+    {
+      "backlog": "B01",
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/cff_encoding.rs",
+      "line": 1353,
+      "source_sha256": "055220236f94f4cb4711cd25c9f62c079f19d44523a631a20aba6a3e7dd46950",
+      "git_blob": "230de6e532a5df7771205917bc38732c193ac99a",
+      "observation": "Name String/reverse-map/final byte-map allocation has no request budget parameter."
+    },
+    {
+      "backlog": "B02",
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/font_dict.rs",
+      "line": 498,
+      "source_sha256": "5a3397d64e3a70c5b414c5a31a18878c294ddb054c578a83eba93c567def5253",
+      "git_blob": "85b9370eb13b062e221cdf490895b14bc429dbae",
+      "observation": "OnceLock Vec and per-glyph String creation lack originating-budget reservation."
+    },
+    {
+      "backlog": "B02",
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/font_dict.rs",
+      "line": 4324,
+      "source_sha256": "5a3397d64e3a70c5b414c5a31a18878c294ddb054c578a83eba93c567def5253",
+      "git_blob": "85b9370eb13b062e221cdf490895b14bc429dbae",
+      "observation": "Memo hit clone/miss normalization/insertion and cached result after sticky failure reproduced in direct backend API. Product extraction wrappers still check sticky state."
+    },
+    {
+      "backlog": "B03",
+      "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+      "line": 21792,
+      "source_sha256": "51719b7359c7c5f72143c1da1834dd66bb17005c45ceeed5b28b16217212b6a5",
+      "git_blob": "fe9b1ba84b8d4bd960fcbb7deb2a5865d342ff7b",
+      "observation": "Font cache layers clone names/sets and build sort/fingerprint indices; limited global-cache bypass already exists and request separation passed."
+    },
+    {
+      "backlog": "B03",
+      "path": "vendor/rhwp-pdf-import-backend/src/extractors/text.rs",
+      "line": 3365,
+      "source_sha256": "65275b1cbda9c1a8c4875c3274b3b138fd03a28f4b5008b0bda4dd5c57f35f6e",
+      "git_blob": "727907d15653d114f7120f34d13ee46171014b4d",
+      "observation": "Builds Vec of owned names plus shared font Arcs. Arc sharing and deep payload copying must be counted separately."
+    },
+    {
+      "backlog": "B03",
+      "path": "vendor/rhwp-pdf-import-backend/src/extractors/text.rs",
+      "line": 3375,
+      "source_sha256": "65275b1cbda9c1a8c4875c3274b3b138fd03a28f4b5008b0bda4dd5c57f35f6e",
+      "git_blob": "727907d15653d114f7120f34d13ee46171014b4d",
+      "observation": "Copy-on-write FontInfo branch uses Arc::make_mut. Direct FontInfo clone allocations measured; not a claim that every measured CFF clone follows this product branch."
+    },
+    {
+      "backlog": "B04",
+      "path": "vendor/rhwp-pdf-import-backend/src/object_copy.rs",
+      "line": 14,
+      "source_sha256": "6ce4970e778d0e4b5c4b0a657a4499df717c92c488e109e10dfee38b26298536",
+      "git_blob": "2f41403ab8204229631e524a04fc5afd507f515a",
+      "observation": "Existing bounded owned-tree copy remains; does not establish all cache index/HashMap allocator overhead bounds."
+    },
+    {
+      "backlog": "B04",
+      "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+      "line": 12999,
+      "source_sha256": "51719b7359c7c5f72143c1da1834dd66bb17005c45ceeed5b28b16217212b6a5",
+      "git_blob": "fe9b1ba84b8d4bd960fcbb7deb2a5865d342ff7b",
+      "observation": "Orders HashMap, postprocess and final output collect precede final sticky check; inventory further reservation boundaries."
+    },
+    {
+      "backlog": "B04",
+      "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+      "line": 13497,
+      "source_sha256": "51719b7359c7c5f72143c1da1834dd66bb17005c45ceeed5b28b16217212b6a5",
+      "git_blob": "fe9b1ba84b8d4bd960fcbb7deb2a5865d342ff7b",
+      "observation": "Postprocessing owns and transforms spans; prior lexical/span counters are separate from allocation reservations."
+    },
+    {
+      "backlog": "B04",
+      "path": "src/parser/pdf/extract.rs",
+      "line": 18,
+      "source_sha256": "57bf4b3a62abf3cd82bfb597847cc663d42cbfa912f8545ff79b8d70466f598c",
+      "git_blob": "96e669987c3d590c69328fa683b2baa30e303f3f",
+      "observation": "Parallel span/order/font Vec and clip map collect precede later frontend text/path checks."
+    },
+    {
+      "backlog": "B04",
+      "path": "src/parser/pdf/mod.rs",
+      "line": 278,
+      "source_sha256": "27291fe274a11c4d3b563d9498766ca245db4b3a2ae118e299503ba1043f5c2e",
+      "git_blob": "f3f5f2b335b5c7c4cdf5bc9e1a0fc16f12a8c08b",
+      "observation": "Input copy is prechecked; shared request exists. Recognition/lowering/IR/provenance and metadata collections are not whole-heap accounting."
+    },
+    {
+      "backlog": "B04",
+      "path": "src/parser/pdf/recognition.rs",
+      "line": 11,
+      "source_sha256": "e41dc14b65ea46223de16fb2c4264b24f61a1ced7b2d8879feac766a978d9c11",
+      "git_blob": "6c6624cddf42f19580ad653afa93c8566f8fecd4",
+      "observation": "Recognition builds owned collections and diagnostic Values; no complete per-phase allocation bound proven by this audit."
+    },
+    {
+      "backlog": "B04",
+      "path": "src/cli/commands/pdf_import/worker.rs",
+      "line": 89,
+      "source_sha256": "c8648a2fa5b9253a0b8e1b2323660f27ccca120f728bb9c24ddf3aa925d1adf3",
+      "git_blob": "aad53116a25971d8ea4a10d27682a759274e13e9",
+      "observation": "Serialization Vec exists before output-length check, JSON Vec before diagnostics-length check. Linux worker AS limit is a different protection."
+    },
+    {
+      "backlog": "B05",
+      "path": "vendor/rhwp-zune-jpeg/src/components.rs",
+      "line": 190,
+      "source_sha256": "3d9c489be0809c2c1cd1c4fe02053083395364a8641a71daa8ca64466b3fbf9f",
+      "git_blob": "7b37a26bad9929b63b5fe05866b0d04c5ba15760",
+      "observation": "Initial destination depends on width, sample ratio, fix multiplier and 8; H resize requires twice raw_coeff length, which also includes vertical_sample."
+    },
+    {
+      "backlog": "B05",
+      "path": "vendor/rhwp-zune-jpeg/src/worker.rs",
+      "line": 539,
+      "source_sha256": "29850ef9ddbf482b0bbec879bef92a4a1c69cb735900b560e565e61b3b24455e",
+      "git_blob": "98cce0fba98d36058f2722be768368ddf134ccf2",
+      "observation": "Instrumented copy records actual H capacity-growth requirements immediately before unchanged request allocator resize."
+    },
+    {
+      "backlog": "B05",
+      "path": "vendor/rhwp-zune-jpeg/src/allocation.rs",
+      "line": 29,
+      "source_sha256": "a51901d6674f7ac21b59b0efda8c8cdfe8bd26df86028bd8de6ea7f879fb61e7",
+      "git_blob": "22f9052d3fb9e83d57b74b266acd2718cb96ac6f",
+      "observation": "Budget reserve precedes try_reserve_exact; growth-specific budget denial exercised in Native and WASM."
+    },
+    {
+      "backlog": "B07",
+      "path": "src/cli/commands/pdf_import.rs",
+      "line": 205,
+      "source_sha256": "c760a65d52c0ff1a9e35690d7af2bbf0428c371d77cbeb06eed8eed07b8441d8",
+      "git_blob": "90c5efbeeb102737dc2dee2ac4898b0fff66dfcc",
+      "observation": "Actual product worker drops owned unrelated environment sentinel and preserves owned font path; generic supervisor capability probe is separate."
+    },
+    {
+      "backlog": "B07",
+      "path": "src/resource_supervisor.rs",
+      "line": 114,
+      "source_sha256": "87108aa418acf93835d7ef83f048662d6c02eda3ea3e30d74032ed924afdde09",
+      "git_blob": "c5aca4a3228003da1b60b45433803310ea355ae9",
+      "observation": "Linux AS/CPU/core0/no_new_privs/private process group; no filesystem/network ruleset."
+    },
+    {
+      "backlog": "B07",
+      "path": "rhwp-shared/pdf/import-session.js",
+      "line": 11,
+      "source_sha256": "478bb5daa5f527ab96395214600b5c70e32daa12a6db8d80634c3d04e231a943",
+      "git_blob": "137d7a0d55942c2058b63e2511f1ac3b1b1cd7eb",
+      "observation": "Actual budget failure retains active document; deadline closes candidate and next request creates fresh Worker."
+    },
+    {
+      "backlog": "B07",
+      "path": "rhwp-studio/src/core/pdf-open.ts",
+      "line": 46,
+      "source_sha256": "5937696dbec1198803a0ffeab28f2cac48b9c9a66587683fcc1e3335526ef140",
+      "git_blob": "e3dee14a22188d8e81e14159fe7b8b554f4e8bd9",
+      "observation": "Worker import, serialize, export and dispose; actual Studio budget rejection preserves document/draft/recents."
+    },
+    {
+      "backlog": "B07",
+      "path": "rhwp-studio/src/core/wasm-bridge.ts",
+      "line": 582,
+      "source_sha256": "69140bd5a9cc74e8552e510e5e0fb9c42fb435381dfbfc3bfbd8f88c4ba20633",
+      "git_blob": "0a3cc62b9289ebe027b4473bcebc596a43768ac4",
+      "observation": "Main-thread HWPX constructor is synchronous and deadline is checked afterwards; no hard preemption or browser-wide memory limit."
+    }
+  ]
+}

@@ -13670,7 +13670,7 @@ impl LayoutEngine {
                     .render_normalization
                     .borrow()
                     .cell_frame_reflowed(table, cell)
-                    && crate::renderer::cell_paragraph_has_only_single_column_metadata(paragraph))
+                    && crate::renderer::cell_paragraph_has_only_text_metadata(paragraph))
         })) && self
             .cell_units(cell, table, styles)
             .get(start_unit)
@@ -16380,7 +16380,7 @@ impl LayoutEngine {
                             });
                             // 재시작 컷 후보와 원본의 물리 쪽 프레임 인증을 구분한다.
                             let row_has_plain_restart_cut = self
-                                .stored_plain_restart_cut(nt, ri, &[], styles, false)
+                                .stored_plain_restart_cut(nt, ri, &[], styles, false, None)
                                 .is_some();
                             let parent_keeps_child_source_frame =
                                 !crate::renderer::typeset::is_reparsed_single_column_cell_split_row(
@@ -18223,10 +18223,29 @@ impl LayoutEngine {
         cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> Vec<usize> {
-        let order = self.indexed_row_cut_cell_order(table, row);
-        cut.iter()
-            .enumerate()
-            .map(|(index, &start)| {
+        match self.skip_leading_free_spacers_in_row_cut_with_storage(
+            table,
+            row,
+            cut,
+            styles,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn skip_leading_free_spacers_in_row_cut_with_storage<S: crate::storage::Storage>(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+        storage: &S,
+    ) -> Result<Vec<usize>, S::Error> {
+        Ok({
+            let order = self.indexed_row_cut_cell_order(table, row);
+            storage.collect(cut.iter().enumerate().map(|(index, &start)| {
                 let Some(cell) = order.get(index).and_then(|&ci| table.cells.get(ci)) else {
                     return start;
                 };
@@ -18235,8 +18254,8 @@ impl LayoutEngine {
                 }
                 let units = self.cell_units(cell, table, styles);
                 self.physical_start_after_leading_spacers(cell, table, &units, start, styles)
-            })
-            .collect()
+            }))?
+        })
     }
 
     /// `RowCut`(`start_cut`/`end_cut`) 의 슬롯 순서 — `row` 의 `row_span == 1` 칸을 col
@@ -18246,15 +18265,29 @@ impl LayoutEngine {
     /// 경로(`DocumentCore::writeback_reflowed_table_frames`, #7114)가 생기면서 정의가
     /// 갈리면 저장본이 엉뚱한 칸의 사다리를 고쳐 쓰게 되므로 한 곳으로 모았다.
     pub(crate) fn row_cut_cell_order(table: &crate::model::table::Table, row: usize) -> Vec<usize> {
-        let mut cells: Vec<(u16, usize)> = table
-            .cells
-            .iter()
-            .enumerate()
-            .filter(|(_, cell)| cell.row as usize == row && cell.row_span == 1)
-            .map(|(idx, cell)| (cell.col, idx))
-            .collect();
-        cells.sort_by_key(|(col, _)| *col);
-        cells.into_iter().map(|(_, idx)| idx).collect()
+        match Self::row_cut_cell_order_with_storage(table, row, &crate::storage::Unbounded) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn row_cut_cell_order_with_storage<S: crate::storage::Storage>(
+        table: &crate::model::table::Table,
+        row: usize,
+        storage: &S,
+    ) -> Result<Vec<usize>, S::Error> {
+        Ok({
+            let mut cells: Vec<(u16, usize)> = storage.collect(
+                table
+                    .cells
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, cell)| cell.row as usize == row && cell.row_span == 1)
+                    .map(|(idx, cell)| (cell.col, idx)),
+            )?;
+            storage.stable_sort_by(&mut cells, |a, b| a.0.cmp(&b.0))?;
+            storage.collect(cells.into_iter().map(|(_, idx)| idx))?
+        })
     }
 
     /// [#7114] 셀 유닛 서수 → 저장 사다리에서 그 유닛이 여는 줄([`CellUnitLineAnchor`]).
@@ -18266,10 +18299,27 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
     ) -> Vec<CellUnitLineAnchor> {
-        let mut opened: Option<(usize, usize)> = None;
-        self.cell_units(cell, table, styles)
-            .iter()
-            .map(|unit| {
+        match self.cell_unit_line_anchors_with_storage(
+            cell,
+            table,
+            styles,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn cell_unit_line_anchors_with_storage<S: crate::storage::Storage>(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        storage: &S,
+    ) -> Result<Vec<CellUnitLineAnchor>, S::Error> {
+        Ok({
+            let mut opened: Option<(usize, usize)> = None;
+            storage.collect(self.cell_units(cell, table, styles).iter().map(|unit| {
                 if unit.vis_start >= unit.vis_end {
                     return CellUnitLineAnchor::NoLineOfItsOwn;
                 }
@@ -18279,8 +18329,8 @@ impl LayoutEngine {
                 }
                 opened = Some(line);
                 CellUnitLineAnchor::Opens(line.0, line.1)
-            })
-            .collect()
+            }))?
+        })
     }
 
     /// Source rewinds that also order a deferred floating band cannot be
@@ -18292,10 +18342,27 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
     ) -> Vec<(usize, usize)> {
-        let units = self.cell_units(cell, table, styles);
-        units
-            .windows(2)
-            .filter_map(|pair| {
+        match self.cell_deferred_picture_source_frames_with_storage(
+            cell,
+            table,
+            styles,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn cell_deferred_picture_source_frames_with_storage<S: crate::storage::Storage>(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        storage: &S,
+    ) -> Result<Vec<(usize, usize)>, S::Error> {
+        Ok({
+            let units = self.cell_units(cell, table, styles);
+            storage.collect(units.windows(2).filter_map(|pair| {
                 let owner = &pair[0];
                 let next = &pair[1];
                 let para = cell.paragraphs.get(owner.para_idx)?;
@@ -18309,8 +18376,8 @@ impl LayoutEngine {
                     && next.stored_frame_break_before
                     && owner.para_idx < next.para_idx)
                     .then_some((owner.para_idx, next.para_idx))
-            })
-            .collect()
+            }))?
+        })
     }
 
     /// [#7114] 행 유닛이 host 줄의 줄간격을 계상하지 않은 중첩 표 host 문단들.
@@ -18323,16 +18390,38 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
     ) -> std::collections::BTreeSet<usize> {
-        let units = self.cell_units(cell, table, styles);
-        let host_rows = || units.iter().filter(|unit| unit.nested_row.is_some());
-        let charged: std::collections::BTreeSet<usize> = host_rows()
-            .filter(|unit| unit.host_trailing_spacing_charged)
-            .map(|unit| unit.para_idx)
-            .collect();
-        host_rows()
-            .map(|unit| unit.para_idx)
-            .filter(|para_idx| !charged.contains(para_idx))
-            .collect()
+        match self.cell_uncharged_nested_hosts_with_storage(
+            cell,
+            table,
+            styles,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn cell_uncharged_nested_hosts_with_storage<S: crate::storage::Storage>(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        storage: &S,
+    ) -> Result<std::collections::BTreeSet<usize>, S::Error> {
+        Ok({
+            let units = self.cell_units(cell, table, styles);
+            let host_rows = || units.iter().filter(|unit| unit.nested_row.is_some());
+            let charged: std::collections::BTreeSet<usize> = storage.set_from(
+                host_rows()
+                    .filter(|unit| unit.host_trailing_spacing_charged)
+                    .map(|unit| unit.para_idx),
+            )?;
+            storage.set_from(
+                host_rows()
+                    .map(|unit| unit.para_idx)
+                    .filter(|para_idx| !charged.contains(para_idx)),
+            )?
+        })
     }
 
     /// [#2097] 셀 문단 cp_idx 의 첫 유닛 앞까지의 누적 콘텐츠 높이(셀-로컬).
@@ -19462,10 +19551,13 @@ impl LayoutEngine {
                             .contains(&(table as *const crate::model::table::Table as usize))
                             && self.stored_plain_line_restart(cell, table, para, next.vis_start)
                             && self
-                                .row_plain_restart_capacity_cut(
+                                .stored_plain_restart_cut(
                                     table,
                                     usize::from(cell.row),
+                                    &[],
                                     styles,
+                                    false,
+                                    Some((cell, start_cut)),
                                 )
                                 .is_some_and(|cut| {
                                     self.indexed_row_cut_cell_order(table, usize::from(cell.row))
@@ -21968,7 +22060,7 @@ impl LayoutEngine {
                 .render_normalization
                 .borrow()
                 .cell_frame_reflowed(table, cell)
-            || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
+            || !crate::renderer::cell_paragraph_has_only_text_metadata(para)
             || para.stored_text_partition_is_dirty()
             || para.cell_format_vpos_dirty
             || line == 0
@@ -22024,7 +22116,7 @@ impl LayoutEngine {
         row: usize,
         styles: &ResolvedStyleSet,
     ) -> Option<Vec<usize>> {
-        self.stored_plain_restart_cut(table, row, &[], styles, true)
+        self.stored_plain_restart_cut(table, row, &[], styles, true, None)
     }
 
     /// 셀 저장 줄의 새 원점 재시작에서 자른 쪽 끝 행 상자: max(행 선언 높이, 그 컷까지의 내용 높이).
@@ -22060,7 +22152,7 @@ impl LayoutEngine {
         // The capacity-selected cut, not the number of remaining lines,
         // identifies ownership. A restart may leave a complete multi-line
         // suffix; its actual physical height is still checked by the scanner.
-        self.stored_plain_restart_cut(table, row, &[], styles, false)
+        self.stored_plain_restart_cut(table, row, &[], styles, false, None)
     }
 
     /// 이미 시작 컷에서 이어받은 행의 다음 저장 재시작 컷. 셀마다 시작 컷 뒤 첫 새 원점
@@ -22077,7 +22169,7 @@ impl LayoutEngine {
         if start_cut.is_empty() {
             return None;
         }
-        self.stored_plain_restart_cut(table, row, start_cut, styles, false)
+        self.stored_plain_restart_cut(table, row, start_cut, styles, false, None)
     }
 
     /// 문단 첫 줄의 새 원점이 셀 좌표 재시작인가. 앞 문단도 같은 셀 좌표(첫 줄 양수
@@ -22099,7 +22191,7 @@ impl LayoutEngine {
                 .borrow()
                 .cell_frame_reflowed(table, cell)
             || [previous, para].iter().any(|p| {
-                !crate::renderer::cell_paragraph_has_only_single_column_metadata(p)
+                !crate::renderer::cell_paragraph_has_only_text_metadata(p)
                     || p.stored_text_partition_is_dirty()
                     || p.cell_format_vpos_dirty
             })
@@ -22136,8 +22228,8 @@ impl LayoutEngine {
         start_cut: &[usize],
         styles: &ResolvedStyleSet,
         source_owned: bool,
+        capacity_cell_start: Option<(&crate::model::table::Cell, usize)>,
     ) -> Option<Vec<usize>> {
-        let after_start = !start_cut.is_empty();
         let mut cells: Vec<_> = table
             .cells
             .iter()
@@ -22152,7 +22244,7 @@ impl LayoutEngine {
         for cell in cells {
             if cell.row_span != 1
                 || cell.paragraphs.iter().any(|para| {
-                    !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
+                    !crate::renderer::cell_paragraph_has_only_text_metadata(para)
                         || para.stored_text_partition_is_dirty()
                         || para.cell_format_vpos_dirty
                         || para.line_segs.is_empty()
@@ -22167,7 +22259,17 @@ impl LayoutEngine {
                 return None;
             }
             let units = self.cell_units(cell, table, styles);
-            let start = start_cut.get(cut.len()).copied().unwrap_or(0);
+            // Capacity fitting already owns a current cut in this cell. Search
+            // after that cut, rather than authenticating only the row's first
+            // restart. Sibling cells retain their existing cut and source checks.
+            // This query permits a fitting tail; it does not force a page break.
+            let cell_start = capacity_cell_start
+                .filter(|(owner, _)| std::ptr::eq(*owner, cell))
+                .map(|(_, start)| start);
+            let after_start = !start_cut.is_empty() || cell_start.is_some_and(|start| start > 0);
+            let start = cell_start
+                .or_else(|| start_cut.get(cut.len()).copied())
+                .unwrap_or(0);
             if after_start && start >= units.len() {
                 cut.push(units.len());
                 continue;
@@ -22292,7 +22394,7 @@ impl LayoutEngine {
     ) -> Option<f64> {
         if start_cut.iter().any(|cut| *cut > 0)
             || self
-                .stored_plain_restart_cut(table, row, &[], styles, true)?
+                .stored_plain_restart_cut(table, row, &[], styles, true, None)?
                 .as_slice()
                 != end_cut
         {
@@ -22596,7 +22698,7 @@ impl LayoutEngine {
         if children.next().is_some()
             || host.controls.iter().any(|control| {
                 !matches!(control, Control::Table(_))
-                    && !crate::renderer::cell_control_is_single_column_metadata(control)
+                    && !crate::renderer::cell_control_is_text_metadata(control)
             })
         {
             return None;
@@ -24810,7 +24912,7 @@ impl LayoutEngine {
         let Some(para) = cell.paragraphs.get(unit.para_idx) else {
             return 0.0;
         };
-        if !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
+        if !crate::renderer::cell_paragraph_has_only_text_metadata(para)
             || para.stored_text_partition_is_dirty()
             || para.cell_format_vpos_dirty
             || unit.vis_end != unit.vis_start + 1

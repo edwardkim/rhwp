@@ -83,6 +83,7 @@ export class HwpDocument {
      * 미주 모양을 적용한다.
      */
     applyEndnoteShape(section_idx: number, props_json: string): string;
+    applyFormActionUpdates(updates_json: string): void;
     /**
      * 머리말/꼬리말 마당(템플릿)을 적용한다.
      */
@@ -181,6 +182,10 @@ export class HwpDocument {
      * SetZOrderCommand 가 undo/redo 절대 복원 쌍으로 소비한다.
      */
     changeShapeZOrder(section_idx: number, parent_para_idx: number, control_idx: number, operation: string): string;
+    /**
+     * Shared destination semantics for host routing; this never executes a link.
+     */
+    static classifyHyperlinkDestination(uri: string): string;
     /**
      * 활성 필드를 해제한다 (안내문 다시 표시).
      */
@@ -953,6 +958,7 @@ export class HwpDocument {
      * 각주 정보를 조회한다.
      */
     getFootnoteInfo(section_idx: number, para_idx: number, control_idx: number): string;
+    getFormActionContext(address_json: string): string;
     /**
      * 페이지 좌표에서 양식 개체를 찾는다.
      *
@@ -1199,7 +1205,10 @@ export class HwpDocument {
     /**
      * 특정 페이지의 텍스트 레이아웃 정보를 JSON 문자열로 반환한다.
      *
-     * 각 TextRun의 위치, 텍스트, 글자별 X 좌표 경계값을 포함한다.
+     * 각 TextRun의 위치, 모델 `text`, 모델 경계 `charX`와 `charStart`를 포함한다.
+     * 표시 치환이 있는 런에는 `displayText`와 `displayCharX`가 추가된다.
+     * 두 X 배열은 런 원점 기준 Unicode scalar 경계(N+1개)이며,
+     * 표시 인덱스는 선택·커서·편집 오프셋으로 사용할 수 없다 (#7909).
      */
     getPageTextLayout(page_num: number): string;
     /**
@@ -1241,6 +1250,19 @@ export class HwpDocument {
      * Worker가 입력을 복사하기 전에 제품의 실제 요청 한도를 조회한다.
      */
     static getPdfImportPolicy(): string;
+    /**
+     * Resolve the same strict options used by importPdf before copying input.
+     * The zero-argument getPdfImportPolicy() remains the standard profile.
+     */
+    static getPdfImportPolicyWithOptions(options: any): string;
+    /**
+     * Host execution requirements, distinct from parser request counters.
+     */
+    static getPdfImportRuntimeCapabilities(): string;
+    /**
+     * Compile-time support of this artifact, queryable before opening a PDF.
+     */
+    static getPdfImportSupport(): string;
     /**
      * 그림 컨트롤의 속성을 조회한다.
      *
@@ -1894,6 +1916,10 @@ export class HwpDocument {
      */
     static openWithPassword(data: Uint8Array, password: string): HwpDocument;
     /**
+     * 일반 FontFace 전용 기본 윤곽 사본. 원본·컬러 자원·문서 상태는 변경하지 않는다.
+     */
+    ordinaryTextFontProgram(bytes: Uint8Array, face_index: number): Uint8Array | undefined;
+    /**
      * 총 페이지 수를 반환한다.
      */
     pageCount(): number;
@@ -1990,6 +2016,7 @@ export class HwpDocument {
      * 실제 FontFace의 원본 HFT 프로그램을 paint 전용으로 등록한다. 재조판하지 않는다.
      */
     registerHftOutlineFont(family: string, bytes: Uint8Array, face_index: number): boolean;
+    registerLiteralFigureSpaceFont(family: string, bold: boolean, italic: boolean, bytes: Uint8Array, face_index: number): boolean;
     /**
      * 문서 측정 slot과 별도로 SVG/WMF paint에 실제 선택한 font face를 공급한다.
      */
@@ -2645,6 +2672,44 @@ export class HwpViewer {
 }
 
 /**
+ * A generated editor handoff has its own finite remaining-credit scope. Once
+ * taken, the ordinary document and lazy assets own an independent lifetime.
+ */
+export class PdfEditorReopen {
+    private constructor();
+    free(): void;
+    [Symbol.dispose](): void;
+    static open(data: any, options: any, maximum: number, remaining: number, timeout_ms: number): PdfEditorReopen;
+    resourceUsage(): string;
+    takeDocument(): HwpDocument;
+}
+
+export class PdfImportRequest {
+    private constructor();
+    free(): void;
+    [Symbol.dispose](): void;
+    exportDocument(format: string, maximum: number): Uint8Array;
+    getTransferLimits(): string;
+    static importPdf(data: any, options: any): PdfImportRequest;
+    inspect(): string;
+    open(data: any): void;
+    pageCount(): number;
+    /**
+     * Construct the request before its owner makes the private transfer copy.
+     */
+    static prepare(options: any): PdfImportRequest;
+    remainingDecodedBytes(): number;
+    renderPageSvg(page: number): string;
+    renderPageSvgLimited(page: number, maximum: number): string;
+    reserveInput(length: number): void;
+    /**
+     * Count and reserve response backing before allocation, using the same
+     * cumulative request as parsing, Core construction and first serialization.
+     */
+    reserveResponseCopy(bytes: number): void;
+}
+
+/**
  * HWP 파일에서 썸네일 이미지만 경량 추출 (전체 파싱 없이)
  *
  * 반환: JSON `{ "format": "png"|"gif", "base64": "...", "width": N, "height": N }`
@@ -2657,7 +2722,20 @@ export function extractThumbnail(data: Uint8Array): any;
  */
 export function init_panic_hook(): void;
 
-export function prepareBitmapRaster(bytes: Uint8Array, destination: Float64Array, matrix: Float64Array, profile: string): any;
+export function isPrintMetafile(data: Uint8Array): boolean;
+
+export function prepareBitmapRaster(bytes: Uint8Array, destination: Float64Array, matrix: Float64Array, profile: string, paper_grid?: Float64Array | null): any;
+
+export function prepareStaticSvgRaster(options_json: string, fragment: string): any;
+
+/**
+ * host의 실제 JPEG codec 결과만 받아 Native와 같은 공통 재생을 수행한다.
+ */
+export function rasterizePrintMetafile(data: Uint8Array, matrix: Float64Array, decode: Function): Uint8Array | undefined;
+
+export function resamplePrintBitmapRgba(rgba: Uint8Array, width: number, height: number, destination: Float64Array): Uint8Array | undefined;
+
+export function resamplePrintFrameRgba(rgba: Uint8Array, width: number, height: number, frame: Float64Array, scale: Float64Array): Uint8Array | undefined;
 
 export function version(): string;
 
@@ -2665,8 +2743,6 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
-    readonly version: () => [number, number];
-    readonly init_panic_hook: () => void;
     readonly __wbg_documentexport_free: (a: number, b: number) => void;
     readonly __wbg_hwpdocument_free: (a: number, b: number) => void;
     readonly __wbg_hwpviewer_free: (a: number, b: number) => void;
@@ -2684,6 +2760,7 @@ export interface InitOutput {
     readonly hwpdocument_applyCharFormatInCellEx: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_applyCharFormatInHeaderFooter: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => [number, number, number, number];
     readonly hwpdocument_applyEndnoteShape: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_applyFormActionUpdates: (a: number, b: number, c: number) => [number, number];
     readonly hwpdocument_applyHfTemplate: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_applyParaFormat: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_applyParaFormatAtCursor: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
@@ -2705,6 +2782,7 @@ export interface InitOutput {
     readonly hwpdocument_capturePictureTransform: (a: number, b: number, c: number) => [number, number, number];
     readonly hwpdocument_captureSectionRaw: (a: number, b: number) => [number, number, number];
     readonly hwpdocument_changeShapeZOrder: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
+    readonly hwpdocument_classifyHyperlinkDestination: (a: number, b: number) => [number, number];
     readonly hwpdocument_clearActiveField: (a: number) => void;
     readonly hwpdocument_clearClipboard: (a: number) => void;
     readonly hwpdocument_clearExactFontInstance: (a: number, b: number, c: number) => [number, number, number, number];
@@ -2858,6 +2936,7 @@ export interface InitOutput {
     readonly hwpdocument_getFontDecisionTrace: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_getFootnoteAtCursor: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_getFootnoteInfo: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_getFormActionContext: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_getFormObjectAt: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_getFormObjectInfo: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_getFormValue: (a: number, b: number, c: number, d: number) => [number, number, number, number];
@@ -2925,6 +3004,9 @@ export interface InitOutput {
     readonly hwpdocument_getParagraphLength: (a: number, b: number, c: number) => [number, number, number];
     readonly hwpdocument_getPdfImportDiagnostics: (a: number) => [number, number];
     readonly hwpdocument_getPdfImportPolicy: () => [number, number];
+    readonly hwpdocument_getPdfImportPolicyWithOptions: (a: any) => [number, number, number, number];
+    readonly hwpdocument_getPdfImportRuntimeCapabilities: () => [number, number];
+    readonly hwpdocument_getPdfImportSupport: () => [number, number];
     readonly hwpdocument_getPictureProperties: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_getPositionOfPage: (a: number, b: number) => [number, number, number, number];
     readonly hwpdocument_getScanItems: (a: number) => [number, number];
@@ -2954,7 +3036,6 @@ export interface InitOutput {
     readonly hwpdocument_getTableBBox: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_getTableBBoxAtPage: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_getTableCellBboxes: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
-    readonly hwpdocument_getTableCellBboxesAtPage: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_getTableCellBboxesByPath: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_getTableDimensions: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_getTableDimensionsByPath: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
@@ -2980,7 +3061,7 @@ export interface InitOutput {
     readonly hwpdocument_hitTestInHeaderFooter: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_hitTestInHeaderFooterTarget: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
     readonly hwpdocument_importParagraphBlock: (a: number, b: number, c: number, d: number) => [number, number, number, number];
-    readonly hwpdocument_importPdf: (a: number, b: number, c: any) => [number, number, number];
+    readonly hwpdocument_importPdf: (a: any, b: any) => [number, number, number];
     readonly hwpdocument_injectExternalImage: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
     readonly hwpdocument_injectExternalImageByKey: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
     readonly hwpdocument_insertAutoNumberAtCursor: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
@@ -3037,6 +3118,7 @@ export interface InitOutput {
     readonly hwpdocument_navigateNextEditable: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number];
     readonly hwpdocument_new: (a: number, b: number) => [number, number, number];
     readonly hwpdocument_openWithPassword: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly hwpdocument_ordinaryTextFontProgram: (a: number, b: number, c: number, d: number) => [number, number];
     readonly hwpdocument_pageCount: (a: number) => number;
     readonly hwpdocument_pageHasFootnoteFootholds: (a: number, b: number) => number;
     readonly hwpdocument_pasteControl: (a: number, b: number, c: number, d: number) => [number, number, number, number];
@@ -3055,6 +3137,7 @@ export interface InitOutput {
     readonly hwpdocument_registerCanvasMetricReplies: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
     readonly hwpdocument_registerExactFontSource: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_registerHftOutlineFont: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
+    readonly hwpdocument_registerLiteralFigureSpaceFont: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number];
     readonly hwpdocument_registerMetafileFont: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
     readonly hwpdocument_registerNativePuaFont: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number];
     readonly hwpdocument_registerTextFontGlyphCoverage: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
@@ -3129,7 +3212,6 @@ export interface InitOutput {
     readonly hwpdocument_setFormValue: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_setFormValueInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
     readonly hwpdocument_setFormValueInCellEx: (a: number, b: number, c: number) => [number, number, number, number];
-    readonly hwpdocument_setHangul2024Compat: (a: number, b: number) => void;
     readonly hwpdocument_setHeaderFooterPictureProperties: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
     readonly hwpdocument_setNoteEquationProperties: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => [number, number, number, number];
     readonly hwpdocument_setNoteEquationPropertiesEx: (a: number, b: number, c: number) => [number, number, number, number];
@@ -3185,11 +3267,48 @@ export interface InitOutput {
     readonly hwpviewer_setZoom: (a: number, b: number) => void;
     readonly hwpviewer_updateViewport: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly hwpviewer_visiblePages: (a: number) => [number, number];
-    readonly prepareBitmapRaster: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => any;
-    readonly version: () => [number, number];
-    readonly init_panic_hook: () => void;
+    readonly prepareStaticSvgRaster: (a: number, b: number, c: number, d: number) => any;
     readonly hwpviewer_pageCount: (a: number) => number;
     readonly hwpviewer_setAnnotateMetricFont: (a: number, b: number) => void;
+    readonly __wbg_pdfeditorreopen_free: (a: number, b: number) => void;
+    readonly __wbg_pdfimportrequest_free: (a: number, b: number) => void;
+    readonly hwpdocument_getTableCellBboxesAtPage: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
+    readonly hwpdocument_setHangul2024Compat: (a: number, b: number) => void;
+    readonly pdfeditorreopen_open: (a: any, b: any, c: number, d: number, e: number) => [number, number, number];
+    readonly pdfeditorreopen_resourceUsage: (a: number) => [number, number];
+    readonly pdfeditorreopen_takeDocument: (a: number) => [number, number, number];
+    readonly pdfimportrequest_exportDocument: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly pdfimportrequest_getTransferLimits: (a: number) => [number, number];
+    readonly pdfimportrequest_importPdf: (a: any, b: any) => [number, number, number];
+    readonly pdfimportrequest_inspect: (a: number) => [number, number, number, number];
+    readonly pdfimportrequest_open: (a: number, b: any) => [number, number];
+    readonly pdfimportrequest_pageCount: (a: number) => number;
+    readonly pdfimportrequest_prepare: (a: any) => [number, number, number];
+    readonly pdfimportrequest_remainingDecodedBytes: (a: number) => number;
+    readonly pdfimportrequest_renderPageSvg: (a: number, b: number) => [number, number, number, number];
+    readonly pdfimportrequest_renderPageSvgLimited: (a: number, b: number, c: number) => [number, number, number, number];
+    readonly pdfimportrequest_reserveInput: (a: number, b: number) => [number, number];
+    readonly pdfimportrequest_reserveResponseCopy: (a: number, b: number) => [number, number];
+    readonly isPrintMetafile: (a: number, b: number) => number;
+    readonly prepareBitmapRaster: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => any;
+    readonly rasterizePrintMetafile: (a: number, b: number, c: number, d: number, e: any) => [number, number];
+    readonly resamplePrintBitmapRgba: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
+    readonly resamplePrintFrameRgba: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
+    readonly version: () => [number, number];
+    readonly init_panic_hook: () => void;
+    readonly qcms_enable_iccv4: () => void;
+    readonly qcms_profile_precache_output_transform: (a: number) => void;
+    readonly qcms_transform_data_bgra_out_lut: (a: number, b: number, c: number, d: number) => void;
+    readonly qcms_transform_data_bgra_out_lut_precache: (a: number, b: number, c: number, d: number) => void;
+    readonly qcms_transform_data_rgb_out_lut: (a: number, b: number, c: number, d: number) => void;
+    readonly qcms_transform_data_rgb_out_lut_precache: (a: number, b: number, c: number, d: number) => void;
+    readonly qcms_transform_data_rgba_out_lut: (a: number, b: number, c: number, d: number) => void;
+    readonly qcms_transform_data_rgba_out_lut_precache: (a: number, b: number, c: number, d: number) => void;
+    readonly qcms_transform_release: (a: number) => void;
+    readonly qcms_profile_is_bogus: (a: number) => number;
+    readonly qcms_white_point_sRGB: (a: number) => void;
+    readonly lut_inverse_interp16: (a: number, b: number, c: number) => number;
+    readonly lut_interp_linear16: (a: number, b: number, c: number) => number;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
     readonly __wbindgen_exn_store: (a: number) => void;

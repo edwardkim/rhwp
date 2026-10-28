@@ -1,0 +1,159 @@
+{
+  "allocation_metric": "sum of requested sizes for alloc/alloc_zeroed/realloc; not live heap or RSS",
+  "font_probes": [
+    {
+      "budget_ok_before_sentinel": true,
+      "cached_after_sticky_failure": "A",
+      "cached_before_failure": "A",
+      "font_clone_allocation_requests_bytes": 67,
+      "font_clone_decoded_charge_delta": 0,
+      "font_entries_limit": 1,
+      "fresh_request_a": "A",
+      "mapping": {
+        "cff_cid_to_gid_entries": null,
+        "cff_gid_entries": null,
+        "custom_encoding_entries": 3
+      },
+      "memo_allocation_requests_bytes": 33800,
+      "memo_decoded_charge_delta": 0,
+      "memo_entries": 256,
+      "path": "inputs/type1-three-mappings.pdf",
+      "single_ascii_memo_hit_clone_allocation_bytes": 1,
+      "sticky_seen_by_document": true,
+      "unicode_a": "A"
+    },
+    {
+      "budget_ok_before_sentinel": true,
+      "cached_after_sticky_failure": "A",
+      "cached_before_failure": "A",
+      "font_clone_allocation_requests_bytes": 64,
+      "font_clone_decoded_charge_delta": 0,
+      "font_entries_limit": 1,
+      "fresh_request_a": "A",
+      "mapping": {
+        "cff_cid_to_gid_entries": null,
+        "cff_gid_entries": 3,
+        "custom_encoding_entries": 0
+      },
+      "memo_allocation_requests_bytes": 34862,
+      "memo_decoded_charge_delta": 0,
+      "memo_entries": 256,
+      "path": "inputs/cff-simple-four-glyphs.pdf",
+      "single_ascii_memo_hit_clone_allocation_bytes": 1,
+      "sticky_seen_by_document": true,
+      "unicode_a": "A"
+    },
+    {
+      "budget_ok_before_sentinel": true,
+      "cached_after_sticky_failure": "A",
+      "cached_before_failure": "A",
+      "font_clone_allocation_requests_bytes": 10294,
+      "font_clone_decoded_charge_delta": 0,
+      "font_entries_limit": 1,
+      "fresh_request_a": "A",
+      "mapping": {
+        "cff_cid_to_gid_entries": 1001,
+        "cff_gid_entries": null,
+        "custom_encoding_entries": 0
+      },
+      "memo_allocation_requests_bytes": 39842,
+      "memo_decoded_charge_delta": 0,
+      "memo_entries": 256,
+      "path": "inputs/cff-cid-1001-glyphs.pdf",
+      "single_ascii_memo_hit_clone_allocation_bytes": 1,
+      "sticky_seen_by_document": true,
+      "unicode_a": "A"
+    }
+  ],
+  "request_isolation": {
+    "different_requests_font_separate": true,
+    "different_requests_memo_separate": true,
+    "same_basefont_different_program_a": "A",
+    "same_basefont_different_program_b": "B",
+    "same_document_font_shared": true
+  },
+  "supervisor": {
+    "address_space": {
+      "metrics": {
+        "addressSpaceLimitEnforced": true,
+        "cpuLimitEnforced": true,
+        "descendantGroupCleanup": true,
+        "filesystemNetworkSandbox": false,
+        "limits": {
+          "addressSpaceBytes": 67108864,
+          "cpuSeconds": 20,
+          "diagnosticsBytes": 8388608,
+          "outputBytes": 33554432,
+          "wallTimeoutMs": 30000
+        },
+        "observedPeakRssBytes": 11194368,
+        "wallMillis": 26
+      },
+      "stdout": "{\"memory_error\": true}\n",
+      "success": true
+    },
+    "cpu_limit": {
+      "metrics": {
+        "addressSpaceLimitEnforced": true,
+        "cpuLimitEnforced": true,
+        "descendantGroupCleanup": true,
+        "filesystemNetworkSandbox": false,
+        "limits": {
+          "addressSpaceBytes": 1073741824,
+          "cpuSeconds": 1,
+          "diagnosticsBytes": 8388608,
+          "outputBytes": 33554432,
+          "wallTimeoutMs": 5000
+        },
+        "observedPeakRssBytes": 10547200,
+        "wallMillis": 1003
+      },
+      "stdout": "",
+      "success": false
+    },
+    "healthy_followup": {
+      "metrics": {
+        "addressSpaceLimitEnforced": true,
+        "cpuLimitEnforced": true,
+        "descendantGroupCleanup": true,
+        "filesystemNetworkSandbox": false,
+        "limits": {
+          "addressSpaceBytes": 1073741824,
+          "cpuSeconds": 20,
+          "diagnosticsBytes": 8388608,
+          "outputBytes": 33554432,
+          "wallTimeoutMs": 30000
+        },
+        "observedPeakRssBytes": 10223616,
+        "wallMillis": 16
+      },
+      "stdout": "healthy followup\n",
+      "success": true
+    },
+    "output_limit": {
+      "error": "PDF_PROCESS_OUTPUT_LIMIT"
+    },
+    "own_file_env_loopback": {
+      "metrics": {
+        "addressSpaceLimitEnforced": true,
+        "cpuLimitEnforced": true,
+        "descendantGroupCleanup": true,
+        "filesystemNetworkSandbox": false,
+        "limits": {
+          "addressSpaceBytes": 1073741824,
+          "cpuSeconds": 20,
+          "diagnosticsBytes": 8388608,
+          "outputBytes": 33554432,
+          "wallTimeoutMs": 30000
+        },
+        "observedPeakRssBytes": 12361728,
+        "wallMillis": 26
+      },
+      "stdout": "{\"file\": \"owned-readable-value\", \"env\": \"owned-audit-value\", \"loopback\": \"127.0.0.1\"}\n",
+      "success": true
+    },
+    "timeout": {
+      "error": "PDF_PROCESS_TIMEOUT"
+    }
+  }
+}

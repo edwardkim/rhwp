@@ -44,7 +44,9 @@ use super::context::SerializeContext;
 use super::field::{
     write_bookmark, write_field_begin, write_field_end, write_field_end_full, write_hyperlink_begin,
 };
-use super::utils::xml_escape;
+use super::utils::{
+    xml_error, xml_escape, xml_escape_with_storage, xml_insert, xml_replacen, xml_value,
+};
 use super::SerializeError;
 use super::{picture, table};
 
@@ -53,9 +55,23 @@ const EMPTY_SECTION_XML: &str = include_str!("templates/empty_section0.xml");
 /// MEMO subList 여는 태그 (#1391) — 실물(aift) 고정 속성.
 /// `textDirection` 만 원본값 보존(가변); 나머지는 실측 고정 속성.
 fn render_sub_list_open(text_direction: Option<&str>) -> String {
-    format!(
-        r#"<hp:subList id="" textDirection="{}" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
-        text_direction.unwrap_or("HORIZONTAL"),
+    render_sub_list_open_with_storage(text_direction, &crate::storage::Unbounded)
+        .expect("unbounded object XML")
+}
+
+fn render_sub_list_open_with_storage<S: crate::storage::Storage>(
+    text_direction: Option<&str>,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    xml_value(
+        storage,
+        format_args!(
+            r#"<hp:subList id="" textDirection="{}" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
+            text_direction.unwrap_or("HORIZONTAL"),
+        ),
     )
 }
 const LINESEG_SLOT_OPEN: &str = "<hp:linesegarray>";
@@ -85,6 +101,16 @@ const TEMPLATE_VISIBILITY: &str = r#"<hp:visibility hideFirstHeader="0" hideFirs
 /// hideFirstEmptyLine)만 치환하고, IR 미보존 필드(hideFirstPageNum·showLineNumber)는
 /// 템플릿 기본값("0")을 유지한다.
 fn render_visibility(sd: &SectionDef) -> String {
+    render_visibility_with_storage(sd, &crate::storage::Unbounded).expect("unbounded section XML")
+}
+
+fn render_visibility_with_storage<S: crate::storage::Storage>(
+    sd: &SectionDef,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let b = |v: bool| if v { "1" } else { "0" };
     // [#5717] SHOW_FIRST(구역 첫 쪽에만 표시, flags bit 8/9)를 왕복 보존한다 —
     // 한글 2022 가 같은 문서를 HWPX 로 저장할 때 쓰는 어휘 그대로다(성북구 실측).
@@ -97,59 +123,109 @@ fn render_visibility(sd: &SectionDef) -> String {
             "SHOW_ALL"
         }
     };
-    format!(
-        r#"<hp:visibility hideFirstHeader="{}" hideFirstFooter="{}" hideFirstMasterPage="{}" border="{}" fill="{}" hideFirstPageNum="0" hideFirstEmptyLine="{}" showLineNumber="0"/>"#,
-        b(sd.hide_header),
-        b(sd.hide_footer),
-        b(sd.hide_master_page),
-        bf(sd.hide_border, sd.first_page_border),
-        bf(sd.hide_fill, sd.first_page_fill),
-        b(sd.hide_empty_line),
+    xml_value(
+        storage,
+        format_args!(
+            r#"<hp:visibility hideFirstHeader="{}" hideFirstFooter="{}" hideFirstMasterPage="{}" border="{}" fill="{}" hideFirstPageNum="0" hideFirstEmptyLine="{}" showLineNumber="0"/>"#,
+            b(sd.hide_header),
+            b(sd.hide_footer),
+            b(sd.hide_master_page),
+            bf(sd.hide_border, sd.first_page_border),
+            bf(sd.hide_fill, sd.first_page_fill),
+            b(sd.hide_empty_line),
+        ),
     )
 }
 
 /// 템플릿의 visibility 고정 문자열을 IR 기반 값으로 1회 치환.
 fn replace_visibility(xml: &str, sd: &SectionDef) -> String {
-    xml.replacen(TEMPLATE_VISIBILITY, &render_visibility(sd), 1)
+    replace_visibility_with_storage(xml, sd, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn replace_visibility_with_storage<S: crate::storage::Storage>(
+    xml: &str,
+    sd: &SectionDef,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    xml_replacen(
+        xml,
+        TEMPLATE_VISIBILITY,
+        &render_visibility_with_storage(sd, storage)?,
+        1,
+        storage,
+    )
 }
 
 /// [#1987] 템플릿 secPr 의 하드코딩 스칼라(spaceColumns, outlineShapeIDRef, memoShapeIDRef 등)를
 /// IR 값으로 치환.
 /// 각 속성은 템플릿 secPr 여는 태그에 정확히 1회 등장하므로 replacen(1)로 안전하다.
 fn replace_secpr_scalars(xml: &str, sd: &SectionDef) -> String {
-    let out = xml.replacen(
+    replace_secpr_scalars_with_storage(xml, sd, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn replace_secpr_scalars_with_storage<S: crate::storage::Storage>(
+    xml: &str,
+    sd: &SectionDef,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let out = xml_replacen(
+        xml,
         r#"spaceColumns="1134""#,
-        &format!(r#"spaceColumns="{}""#, sd.column_spacing),
+        &xml_value(
+            storage,
+            format_args!(r#"spaceColumns="{}""#, sd.column_spacing),
+        )?,
         1,
-    );
+        storage,
+    )?;
     // 구역 세로쓰기: 파서는 textDirection="VERTICAL" → text_direction=1 로 읽지만
     // (parser/hwpx/section.rs) 직렬화기는 이 필드를 재출력하지 않아, 세로쓰기 구역이
     // .hwpx 저장 시 HORIZONTAL 로 유실됐다. text_direction==1 일 때만 치환한다
     // (기본 0 문서는 템플릿 HORIZONTAL 유지). 템플릿엔 secPr 에만 등장하므로 replacen(1) 안전.
     let out = if sd.text_direction == 1 {
-        out.replacen(
+        xml_replacen(
+            out,
             r#"textDirection="HORIZONTAL""#,
             r#"textDirection="VERTICAL""#,
             1,
-        )
+            storage,
+        )?
     } else {
         out
     };
-    let out = out.replacen(
+    let out = xml_replacen(
+        out,
         r#"outlineShapeIDRef="1""#,
-        &format!(r#"outlineShapeIDRef="{}""#, sd.outline_numbering_id),
+        &xml_value(
+            storage,
+            format_args!(r#"outlineShapeIDRef="{}""#, sd.outline_numbering_id),
+        )?,
         1,
-    );
+        storage,
+    )?;
 
     // [#2779] 메모 모양 참조. 파서가 secPr@memoShapeIDRef 를 memo_shape_id 로 읽지만
     // 직렬화가 템플릿 상수 "0" 만 방출해, 메모 모양이 지정된 구역이 저장마다 0 으로
     // 리셋됐다(실측 14 secPr/9 파일). 템플릿 secPr 여는 태그에 정확히 1회 등장하고
     // 기본 SectionDef 도 0 이라 기본 문서 출력은 바이트 동일하다.
-    let out = out.replacen(
+    let out = xml_replacen(
+        out,
         r#"memoShapeIDRef="0""#,
-        &format!(r#"memoShapeIDRef="{}""#, sd.memo_shape_id),
+        &xml_value(
+            storage,
+            format_args!(r#"memoShapeIDRef="{}""#, sd.memo_shape_id),
+        )?,
         1,
-    );
+        storage,
+    )?;
 
     // 기본 탭 폭. HWPX 파서는 secPr 의 tabStop 속성을 default_tab_spacing 으로 읽는다
     // (parser/hwpx/section.rs). 치환하지 않으면 열었던 값과 무관하게 늘 템플릿 상수
@@ -159,36 +235,51 @@ fn replace_secpr_scalars(xml: &str, sd: &SectionDef) -> String {
     // 0 이다. 0 을 그대로 내보내면 탭 폭이 0 이 되어 지금보다 나빠지므로, 값이 있을 때만
     // 치환하고 없으면 템플릿 기본값을 유지한다.
     let out = if sd.default_tab_spacing != 0 {
-        out.replacen(
+        xml_replacen(
+            out,
             r#"tabStop="8000""#,
-            &format!(r#"tabStop="{}""#, sd.default_tab_spacing),
+            &xml_value(
+                storage,
+                format_args!(r#"tabStop="{}""#, sd.default_tab_spacing),
+            )?,
             1,
-        )
+            storage,
+        )?
     } else {
         out
     };
 
     // 구역 그리드와 시작 번호. 템플릿 상수가 모두 0 이고 SectionDef 기본값도 0 이라
     // 기본 문서의 출력은 그대로이며, 파싱된 문서에서만 실제 값이 살아난다.
-    let out = out.replacen(
+    let out = xml_replacen(
+        out,
         r#"<hp:grid lineGrid="0" charGrid="0" wonggojiFormat="0"/>"#,
-        &format!(
-            r#"<hp:grid lineGrid="{}" charGrid="{}" wonggojiFormat="0"/>"#,
-            sd.line_grid, sd.char_grid
-        ),
+        &xml_value(
+            storage,
+            format_args!(
+                r#"<hp:grid lineGrid="{}" charGrid="{}" wonggojiFormat="0"/>"#,
+                sd.line_grid, sd.char_grid
+            ),
+        )?,
         1,
-    );
-    out.replacen(
+        storage,
+    )?;
+    xml_replacen(
+        out,
         r#"<hp:startNum pageStartsOn="BOTH" page="0" pic="0" tbl="0" equation="0"/>"#,
-        &format!(
-            r#"<hp:startNum pageStartsOn="{}" page="{}" pic="{}" tbl="{}" equation="{}"/>"#,
-            page_starts_on_str(sd.page_num_type),
-            sd.page_num,
-            sd.picture_num,
-            sd.table_num,
-            sd.equation_num
-        ),
+        &xml_value(
+            storage,
+            format_args!(
+                r#"<hp:startNum pageStartsOn="{}" page="{}" pic="{}" tbl="{}" equation="{}"/>"#,
+                page_starts_on_str(sd.page_num_type),
+                sd.page_num,
+                sd.picture_num,
+                sd.table_num,
+                sd.equation_num
+            ),
+        )?,
         1,
+        storage,
     )
 }
 
@@ -222,28 +313,55 @@ fn note_line_type_str(t: u8) -> &'static str {
 
 /// [#1984] separator_color(0xBBGGRR LE) → "#RRGGBB" (parser noteLine color 역매핑).
 fn note_color_hex(c: u32) -> String {
+    note_color_hex_with_storage(c, &crate::storage::Unbounded).expect("unbounded section XML")
+}
+
+fn note_color_hex_with_storage<S: crate::storage::Storage>(
+    c: u32,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let r = c & 0xFF;
     let g = (c >> 8) & 0xFF;
     let b = (c >> 16) & 0xFF;
-    format!("#{r:02X}{g:02X}{b:02X}")
+    xml_value(storage, format_args!("#{r:02X}{g:02X}{b:02X}"))
 }
 
 /// [#1984] FootnoteShape → `<hp:noteLine .../>` + `<hp:noteSpacing .../>` 두 요소.
 fn render_note_line_spacing(shape: &crate::model::footnote::FootnoteShape) -> (String, String) {
-    let note_line = format!(
-        r#"<hp:noteLine length="{}" type="{}" width="{} mm" color="{}"/>"#,
-        shape.separator_length,
-        note_line_type_str(shape.separator_line_type),
-        line_width_mm(shape.separator_line_width),
-        note_color_hex(shape.separator_color),
-    );
-    let note_spacing = format!(
-        r#"<hp:noteSpacing betweenNotes="{}" belowLine="{}" aboveLine="{}"/>"#,
-        shape.between_notes_margin_hu(),
-        shape.separator_below_margin_hu(),
-        shape.separator_above_margin_hu(),
-    );
-    (note_line, note_spacing)
+    render_note_line_spacing_with_storage(shape, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn render_note_line_spacing_with_storage<S: crate::storage::Storage>(
+    shape: &crate::model::footnote::FootnoteShape,
+    storage: &S,
+) -> Result<(String, String), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let note_line = xml_value(
+        storage,
+        format_args!(
+            r#"<hp:noteLine length="{}" type="{}" width="{} mm" color="{}"/>"#,
+            shape.separator_length,
+            note_line_type_str(shape.separator_line_type),
+            line_width_mm(shape.separator_line_width),
+            note_color_hex_with_storage(shape.separator_color, storage)?,
+        ),
+    )?;
+    let note_spacing = xml_value(
+        storage,
+        format_args!(
+            r#"<hp:noteSpacing betweenNotes="{}" belowLine="{}" aboveLine="{}"/>"#,
+            shape.between_notes_margin_hu(),
+            shape.separator_below_margin_hu(),
+            shape.separator_above_margin_hu(),
+        ),
+    )?;
+    Ok((note_line, note_spacing))
 }
 
 /// FootnoteNumbering → HWPX `type` 토큰.
@@ -265,10 +383,24 @@ fn note_numbering_str(numbering: crate::model::footnote::FootnoteNumbering) -> &
 }
 
 fn render_note_numbering(shape: &crate::model::footnote::FootnoteShape) -> String {
-    format!(
-        r#"<hp:numbering type="{}" newNum="{}"/>"#,
-        note_numbering_str(shape.numbering),
-        shape.start_number,
+    render_note_numbering_with_storage(shape, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn render_note_numbering_with_storage<S: crate::storage::Storage>(
+    shape: &crate::model::footnote::FootnoteShape,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    xml_value(
+        storage,
+        format_args!(
+            r#"<hp:numbering type="{}" newNum="{}"/>"#,
+            note_numbering_str(shape.numbering),
+            shape.start_number,
+        ),
     )
 }
 
@@ -313,10 +445,25 @@ fn render_note_placement(
     shape: &crate::model::footnote::FootnoteShape,
     is_end_note: bool,
 ) -> String {
-    format!(
-        r#"<hp:placement place="{}" beneathText="{}"/>"#,
-        note_place_str(shape.placement, is_end_note),
-        u8::from(shape.print_inline_after_text),
+    render_note_placement_with_storage(shape, is_end_note, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn render_note_placement_with_storage<S: crate::storage::Storage>(
+    shape: &crate::model::footnote::FootnoteShape,
+    is_end_note: bool,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    xml_value(
+        storage,
+        format_args!(
+            r#"<hp:placement place="{}" beneathText="{}"/>"#,
+            note_place_str(shape.placement, is_end_note),
+            u8::from(shape.print_inline_after_text),
+        ),
     )
 }
 
@@ -363,16 +510,39 @@ fn note_number_format_str(format: crate::model::footnote::NumberFormat) -> &'sta
 /// 한컴이 열지 못한다. 같은 파일 `render_hp_t_content` 도 `< 0x20` 을 방출 대상에서 뺀다.
 /// (코퍼스 828 note shape 의 장식 문자는 전부 `'\0'` 또는 출력 가능 문자였다.)
 fn note_deco_char_attr(c: char, fallback: &str) -> String {
-    if (c as u32) < 0x20 {
-        fallback.to_string()
+    note_deco_char_attr_with_storage(c, fallback, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn note_deco_char_attr_with_storage<S: crate::storage::Storage>(
+    c: char,
+    fallback: &str,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    Ok(if (c as u32) < 0x20 {
+        xml_value(storage, fallback)?
     } else {
-        xml_escape(&c.to_string())
-    }
+        xml_escape_with_storage(&xml_value(storage, c)?, storage)?
+    })
 }
 
 /// [#2742] FootnoteShape → `<hp:autoNumFormat .../>`.
 /// 속성 순서는 템플릿·한컴 실물과 같이 type → userChar → prefixChar → suffixChar → supscript.
 fn render_auto_num_format(shape: &crate::model::footnote::FootnoteShape) -> String {
+    render_auto_num_format_with_storage(shape, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn render_auto_num_format_with_storage<S: crate::storage::Storage>(
+    shape: &crate::model::footnote::FootnoteShape,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // [#6872] 번호 모양이 **사용자 기호**면 표시는 그 기호 하나로 끝난다 — 한컴도
     // `suffixChar` 를 비운다(코퍼스 HWPX 3,418건의 노트 모양 7,778개 중 `suffixChar=""`
     // 는 1개이고 그것이 유일한 `USER_CHAR` 다). 이때 기본값 `)` 를 채우면 표시가 `*` 에서
@@ -385,13 +555,16 @@ fn render_auto_num_format(shape: &crate::model::footnote::FootnoteShape) -> Stri
     } else {
         ")"
     };
-    format!(
-        r#"<hp:autoNumFormat type="{}" userChar="{}" prefixChar="{}" suffixChar="{}" supscript="{}"/>"#,
-        note_number_format_str(shape.number_format),
-        note_deco_char_attr(shape.user_char, ""),
-        note_deco_char_attr(shape.prefix_char, ""),
-        note_deco_char_attr(shape.suffix_char, suffix_fallback),
-        u8::from(shape.number_code_superscript),
+    xml_value(
+        storage,
+        format_args!(
+            r#"<hp:autoNumFormat type="{}" userChar="{}" prefixChar="{}" suffixChar="{}" supscript="{}"/>"#,
+            note_number_format_str(shape.number_format),
+            note_deco_char_attr_with_storage(shape.user_char, "", storage)?,
+            note_deco_char_attr_with_storage(shape.prefix_char, "", storage)?,
+            note_deco_char_attr_with_storage(shape.suffix_char, suffix_fallback, storage)?,
+            u8::from(shape.number_code_superscript),
+        ),
     )
 }
 
@@ -404,11 +577,27 @@ const TEMPLATE_AUTO_NUM_FORMAT: &str =
 /// 다시 잡는 버그가 있어 각주/미주 numbering 처럼 fn/en 템플릿 문자열이 동일한 경우
 /// 위치 기반 분할이 필요하다). needle 이 2회 미만이면 원본을 반환한다.
 fn replace_first_two(haystack: &str, needle: &str, first: &str, second: &str) -> String {
+    replace_first_two_with_storage(haystack, needle, first, second, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn replace_first_two_with_storage<S: crate::storage::Storage>(
+    haystack: &str,
+    needle: &str,
+    first: &str,
+    second: &str,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let mut parts = haystack.splitn(3, needle);
-    match (parts.next(), parts.next(), parts.next()) {
-        (Some(a), Some(b), Some(c)) => format!("{a}{first}{b}{second}{c}"),
-        _ => haystack.to_string(),
-    }
+    Ok(match (parts.next(), parts.next(), parts.next()) {
+        (Some(a), Some(b), Some(c)) => {
+            xml_value(storage, format_args!("{a}{first}{b}{second}{c}"))?
+        }
+        _ => xml_value(storage, haystack)?,
+    })
 }
 
 /// [#1984] 템플릿 footNotePr/endNotePr 의 하드코딩 noteLine·noteSpacing 을 IR 값으로 치환.
@@ -417,6 +606,18 @@ fn replace_first_two(haystack: &str, needle: &str, first: &str, second: &str) ->
 /// 갈린다(1543000: 각주 overhead 32.83→19.39px → p141 표 1행/3행 → 192/190쪽). 파서는
 /// 값을 FootnoteShape 로 수집하나 직렬화가 템플릿 상수만 방출하던 결함.
 fn replace_footnote_shape(xml: &str, sd: &SectionDef) -> String {
+    replace_footnote_shape_with_storage(xml, sd, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn replace_footnote_shape_with_storage<S: crate::storage::Storage>(
+    xml: &str,
+    sd: &SectionDef,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // [#2742] 번호 모양·사용자 기호·앞/뒤 장식 문자·위첨자. 파서는 HWPX(autoNumFormat)와
     // HWP5(FOOTNOTE_SHAPE attr) 양쪽에서 이 5필드를 FootnoteShape 로 읽지만 직렬화가
     // 템플릿 상수만 방출해, 저장할 때마다 구역 각주/미주 모양이 한컴 기본값으로 리셋됐다.
@@ -424,48 +625,53 @@ fn replace_footnote_shape(xml: &str, sd: &SectionDef) -> String {
     // 「문1）」 대신 「1)」로 매겨진다(실측: 코퍼스 330파일 중 18파일 · note shape 19개).
     // 각주/미주 템플릿 문자열이 완전히 같아 연쇄 replacen 은 두 번째 슬롯을 못 잡는다 —
     // numbering 과 같은 사유로 위치 기반 2회 치환을 쓴다.
-    let xml = replace_first_two(
+    let xml = replace_first_two_with_storage(
         xml,
         TEMPLATE_AUTO_NUM_FORMAT,
-        &render_auto_num_format(&sd.footnote_shape),
-        &render_auto_num_format(&sd.endnote_shape),
-    );
+        &render_auto_num_format_with_storage(&sd.footnote_shape, storage)?,
+        &render_auto_num_format_with_storage(&sd.endnote_shape, storage)?,
+        storage,
+    )?;
     // 템플릿: 첫 noteLine(length="-1")·noteSpacing(betweenNotes="283") = 각주,
     // 둘째(length="14692344"·betweenNotes="0") = 미주.
-    let (fn_line, fn_spacing) = render_note_line_spacing(&sd.footnote_shape);
-    let (en_line, en_spacing) = render_note_line_spacing(&sd.endnote_shape);
-    let out = xml
-        .replacen(
-            r##"<hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>"##,
-            &fn_line,
-            1,
-        )
-        .replacen(
-            r#"<hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/>"#,
-            &fn_spacing,
-            1,
-        )
-        .replacen(
+    let (fn_line, fn_spacing) = render_note_line_spacing_with_storage(&sd.footnote_shape, storage)?;
+    let (en_line, en_spacing) = render_note_line_spacing_with_storage(&sd.endnote_shape, storage)?;
+    let out = xml_replacen(
+        xml_replacen(
+            xml_replacen(
+                xml_replacen(
+                    xml,
+                    r##"<hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>"##,
+                    &fn_line,
+                    1,
+                    storage,
+                )?,
+                r#"<hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/>"#,
+                &fn_spacing,
+                1,
+                storage,
+            )?,
             r##"<hp:noteLine length="14692344" type="SOLID" width="0.12 mm" color="#000000"/>"##,
             &en_line,
             1,
-        )
-        .replacen(
-            r#"<hp:noteSpacing betweenNotes="0" belowLine="567" aboveLine="850"/>"#,
-            &en_spacing,
-            1,
-        );
+            storage,
+        )?,
+        r#"<hp:noteSpacing betweenNotes="0" belowLine="567" aboveLine="850"/>"#,
+        &en_spacing,
+        1,
+        storage,
+    )?;
     // 번호 매기기(각주 번호 종류 + 시작 번호). 템플릿은 fn/en 모두
     // `type="CONTINUOUS" newNum="1"` 로 동일해, 미치환 시 페이지/구역마다
     // 새로 매기거나 시작 번호가 1이 아닌 문서가 저장 때 연속·1로 되돌아간다.
     // fn/en 템플릿 문자열이 같으므로 위치 기반 2회 치환을 쓴다.
-    let out = replace_first_two(
+    let out = replace_first_two_with_storage(
         &out,
         r#"<hp:numbering type="CONTINUOUS" newNum="1"/>"#,
-        &render_note_numbering(&sd.footnote_shape),
-        &render_note_numbering(&sd.endnote_shape),
-    );
-
+        &render_note_numbering_with_storage(&sd.footnote_shape, storage)?,
+        &render_note_numbering_with_storage(&sd.endnote_shape, storage)?,
+        storage,
+    )?;
     // placement — 배치 방법(place)과 beneathText(본문 아래 바로 이어 출력).
     //
     // beneathText 는 같은 요소의 독립 bool 이라 종전에도 IR 반영됐다(템플릿 "0" 고정
@@ -477,15 +683,18 @@ fn replace_footnote_shape(xml: &str, sd: &SectionDef) -> String {
     // 각주 슬롯의 방출 토큰은 EACH_COLUMN/MERGED_COLUMN/RIGHT_MOST_COLUMN 셋 뿐이라
     // 미주 앵커(END_OF_DOCUMENT)를 새로 만들어내지 않는다 — 연쇄 replacen(1) 이
     // 서로의 슬롯을 훔칠 수 없다(기존 코드와 동일 근거).
-    out.replacen(
-        r#"<hp:placement place="EACH_COLUMN" beneathText="0"/>"#,
-        &render_note_placement(&sd.footnote_shape, false),
-        1,
-    )
-    .replacen(
+    xml_replacen(
+        xml_replacen(
+            out,
+            r#"<hp:placement place="EACH_COLUMN" beneathText="0"/>"#,
+            &render_note_placement_with_storage(&sd.footnote_shape, false, storage)?,
+            1,
+            storage,
+        )?,
         r#"<hp:placement place="END_OF_DOCUMENT" beneathText="0"/>"#,
-        &render_note_placement(&sd.endnote_shape, true),
+        &render_note_placement_with_storage(&sd.endnote_shape, true, storage)?,
         1,
+        storage,
     )
 }
 
@@ -522,40 +731,54 @@ pub fn write_section(
     index: usize,
     ctx: &mut SerializeContext,
 ) -> Result<Vec<u8>, SerializeError> {
+    write_section_with_storage(section, doc, index, ctx, &crate::storage::Unbounded)
+}
+
+pub(super) fn write_section_with_storage<S: crate::storage::Storage>(
+    section: &Section,
+    doc: &Document,
+    index: usize,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<Vec<u8>, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let mut vert_cursor: u32 = 0;
 
     let first_para = section.paragraphs.first();
     // [#1584] 첫 문단 렌더 직전 set — 본문 첫 ColumnDef(섹션 템플릿 흡수분)의 인라인
     // XML 방출만 1회 억제한다(슬롯 위치는 보존). 렌더 직후 reset 하여 추가 문단 누설 방지.
     ctx.body_coldef_template_pending = true;
-    let (first_runs, first_linesegs, first_advance) = match first_para {
-        Some(p) => render_paragraph_parts(p, vert_cursor, ctx),
-        // 문단이 없는 섹션(비파싱 IR) — linesegarray 방출 생략 (#1380)
-        None => (String::new(), String::new(), vert_cursor),
+    let first_parts = match first_para {
+        Some(p) => render_paragraph_parts_with_storage(p, vert_cursor, ctx, storage),
+        None => Ok((String::new(), String::new(), vert_cursor)),
     };
     ctx.body_coldef_template_pending = false;
+    let (first_runs, first_linesegs, first_advance) = first_parts?;
+    ctx.check_storage()?;
     vert_cursor = first_advance;
 
     // 치환은 모두 pristine 템플릿의 고정 anchor 에 대해 수행한다 (#1378):
     // linesegarray 치환을 콘텐츠(run 시퀀스) 삽입보다 먼저 두어, 콘텐츠에 포함된
     // 중첩 linesegarray(각주·머리말 등)가 anchor 탐색을 오염시키지 않도록 한다.
-    let mut out = replace_first_linesegs(EMPTY_SECTION_XML, &first_linesegs);
-    out = replace_page_pr(&out, &section.section_def.page_def);
+    let mut out = replace_first_linesegs_with_storage(EMPTY_SECTION_XML, &first_linesegs, storage)?;
+    out = replace_page_pr_with_storage(&out, &section.section_def.page_def, storage)?;
     // 쪽 테두리/배경 — 템플릿의 하드코딩 borderFillIDRef="1"(테두리 없음)을 IR 값으로
     // 치환한다. 누락 시 문서의 쪽 테두리가 소실되어 외곽 4선 노드가 사라진다(#1388 동형).
-    out = replace_page_border_fill(&out, &section.section_def);
+    out = replace_page_border_fill_with_storage(&out, &section.section_def, storage)?;
     // [#1637] secPr visibility — 템플릿 고정값을 IR 값으로 치환(hideFirstEmptyLine 등 보존).
-    out = replace_visibility(&out, &section.section_def);
+    out = replace_visibility_with_storage(&out, &section.section_def, storage)?;
 
     // [#1987] secPr 스칼라 필드 — 템플릿 하드코딩(spaceColumns="1134", outlineShapeIDRef="1")을
     // IR 값으로 치환한다. 미치환 시 원본이 spaceColumns=1130·outlineShapeIDRef=0 등이어도
     // 1134/1 로 방출돼 단 간격·개요번호 문단모양 참조가 어긋난다. ir-diff 는 secPr 스칼라를
     // 비교하지 않아 못 잡던 저장 충실도 결함.
-    out = replace_secpr_scalars(&out, &section.section_def);
+    out = replace_secpr_scalars_with_storage(&out, &section.section_def, storage)?;
 
     // [#1984] 각주/미주 모양(구분선 여백·주석간격)을 IR 값으로 치환 — 미치환 시 각주 zone
     // 높이가 기본값으로 고정돼 각주 있는 페이지의 표 분할·페이지 수가 갈린다.
-    out = replace_footnote_shape(&out, &section.section_def);
+    out = replace_footnote_shape_with_storage(&out, &section.section_def, storage)?;
 
     // 바탕쪽(masterPage) — secPr 의 masterPageCnt 치환 + secPr 내부 끝에 idRef 참조 삽입.
     // 누락 시 라운드트립에서 바탕쪽 전체(그 안의 그림/표/문단 노드 포함)가 소실된다.
@@ -566,16 +789,33 @@ pub fn write_section(
             .iter()
             .map(|s| s.section_def.master_pages.len())
             .sum();
-        let ids: Vec<String> = (0..master_pages.len())
-            .map(|k| format!("masterpage{}", base + k))
-            .collect();
-        out = out.replacen(
+        let mut ids = storage.vec(master_pages.len()).map_err(xml_error)?;
+        for k in 0..master_pages.len() {
+            storage
+                .push(
+                    &mut ids,
+                    xml_value(storage, format_args!("masterpage{}", base + k))?,
+                )
+                .map_err(xml_error)?;
+        }
+        out = xml_replacen(
+            out,
             r#"masterPageCnt="0""#,
-            &format!(r#"masterPageCnt="{}""#, master_pages.len()),
+            &xml_value(
+                storage,
+                format_args!(r#"masterPageCnt="{}""#, master_pages.len()),
+            )?,
             1,
-        );
-        let refs = super::master_page::render_master_page_refs(&ids);
-        out = out.replacen("</hp:secPr>", &format!("{refs}</hp:secPr>"), 1);
+            storage,
+        )?;
+        let refs = super::master_page::render_master_page_refs_with_storage(&ids, storage)?;
+        out = xml_replacen(
+            out,
+            "</hp:secPr>",
+            &xml_value(storage, format_args!("{refs}</hp:secPr>"))?,
+            1,
+            storage,
+        )?;
     }
 
     // [#1407] 본문 단 정의(colPr) — 첫 문단 IR 의 ColumnDef 를 템플릿 하드코딩
@@ -588,7 +828,13 @@ pub fn write_section(
             .iter()
             .find(|c| matches!(c, Control::ColumnDef(_)))
         {
-            out = out.replacen(TEMPLATE_BODY_COL_PR, &render_col_pr_ctrl(cd), 1);
+            out = xml_replacen(
+                out,
+                TEMPLATE_BODY_COL_PR,
+                &render_col_pr_ctrl_with_storage(cd, storage)?,
+                1,
+                storage,
+            )?;
         }
     }
 
@@ -598,20 +844,23 @@ pub fn write_section(
         // 강등해 미등록 ID 방출을 막고, 참조 집합/assert 동작은 종전 유지한다.
         let pid = ctx.next_para_id();
         let sid = ctx.effective_style_id(p.style_id);
-        let new_p_tag = render_hp_p_open(p, pid, sid);
-        out = out.replacen(TEMPLATE_FIRST_P_TAG, &new_p_tag, 1);
+        let new_p_tag = render_hp_p_open_with_storage(p, pid, sid, storage)?;
+        out = xml_replacen(out, TEMPLATE_FIRST_P_TAG, &new_p_tag, 1, storage)?;
 
         // 섹션 첫 run(secPr/colPr 전용)의 charPrIDRef 를 첫 텍스트 run id 와 일치시킨다.
         // 파서는 이 run 시작에서도 (0, id) 를 기록하므로, id 가 다르면 재파싱 시
         // 가짜 (0, 0) entry 가 생긴다 (#1378 stage1 양상 ②).
         let first_cs = first_run_char_shape_id(p);
         if first_cs != 0 {
-            let new_secpr_run = format!(r#"<hp:run charPrIDRef="{}"><hp:secPr "#, first_cs);
-            out = out.replacen(TEMPLATE_SECPR_RUN_OPEN, &new_secpr_run, 1);
+            let new_secpr_run = xml_value(
+                storage,
+                format_args!(r#"<hp:run charPrIDRef="{}"><hp:secPr "#, first_cs),
+            )?;
+            out = xml_replacen(out, TEMPLATE_SECPR_RUN_OPEN, &new_secpr_run, 1, storage)?;
         }
 
         // 템플릿의 텍스트 run 전체를 문단의 run 시퀀스(다중 run 분할 포함)로 1회 치환.
-        out = out.replacen(TEMPLATE_TEXT_RUN, &first_runs, 1);
+        out = xml_replacen(out, TEMPLATE_TEXT_RUN, &first_runs, 1, storage)?;
 
         // [#3367/#4433] 컨트롤 방출 순서를 IR 순서에 맞춘다 — HWP5 원본이
         // `[cold, secd]` 인 문단(field-01 실측: 전 구역 cold→secd)을 템플릿 고정
@@ -640,14 +889,14 @@ pub fn write_section(
             {
                 // 위 #1407 치환이 이미 심어 둔 IR colPr 블록을 정확히 되찾아
                 // (render_col_pr_ctrl 은 결정적) secPr 앞으로 옮긴다.
-                let rendered = render_col_pr_ctrl(cd);
+                let rendered = render_col_pr_ctrl_with_storage(cd, storage)?;
                 if let Some(colpr_at) = out.find(&rendered) {
                     out.replace_range(colpr_at..colpr_at + rendered.len(), "");
                     if let Some(secpr_at) = out.find("<hp:secPr ") {
-                        out.insert_str(secpr_at, &rendered);
+                        xml_insert(&mut out, secpr_at, &rendered, storage)?;
                     } else {
                         // secPr 미발견(비정상 템플릿) — 원위치 복원으로 무손실 유지.
-                        out.insert_str(colpr_at, &rendered);
+                        xml_insert(&mut out, colpr_at, &rendered, storage)?;
                     }
                 }
             }
@@ -658,11 +907,18 @@ pub fn write_section(
     if section.paragraphs.len() > 1 {
         let mut extra = String::new();
         for p in section.paragraphs.iter().skip(1) {
-            let (runs, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
+            let (runs, linesegs, advance) =
+                render_paragraph_parts_with_storage(p, vert_cursor, ctx, storage)?;
+            ctx.check_storage()?;
             vert_cursor = advance;
             let pid = ctx.next_para_id();
             let sid = ctx.effective_style_id(p.style_id);
-            extra.push_str(&render_hp_p_open(p, pid, sid));
+            storage
+                .push_str(
+                    &mut extra,
+                    &render_hp_p_open_with_storage(p, pid, sid, storage)?,
+                )
+                .map_err(xml_error)?;
             // [#4056] 후속 문단이 구역나누기(SectionDef)면 그 구역을 secPr 로 방출한다.
             // `render_runs` 는 SectionDef 슬롯을 hidden 처리해 XML 을 내지 않으므로
             // 여기서 내지 않으면 뒤 구역이 통째로 사라져 쪽나눔이 소실된다.
@@ -671,13 +927,24 @@ pub fn write_section(
                 .iter()
                 .find(|c| matches!(c, Control::SectionDef(_)))
             {
-                extra.push_str(&build_secpr_run(sd, first_run_char_shape_id(p)));
+                storage
+                    .push_str(
+                        &mut extra,
+                        &build_secpr_run_with_storage(sd, first_run_char_shape_id(p), storage)?,
+                    )
+                    .map_err(xml_error)?;
             }
-            extra.push_str(&runs);
-            extra.push_str(&linesegs);
-            extra.push_str("</hp:p>");
+            storage.push_str(&mut extra, &runs).map_err(xml_error)?;
+            storage.push_str(&mut extra, &linesegs).map_err(xml_error)?;
+            storage.push_str(&mut extra, "</hp:p>").map_err(xml_error)?;
         }
-        out = out.replacen(PARA_CLOSE, &format!("</hp:p>{}</hs:sec>", extra), 1);
+        out = xml_replacen(
+            out,
+            PARA_CLOSE,
+            &xml_value(storage, format_args!("</hp:p>{}</hs:sec>", extra))?,
+            1,
+            storage,
+        )?;
     }
 
     Ok(out.into_bytes())
@@ -692,6 +959,19 @@ pub fn write_section(
 /// (미등록 스타일 → 0, #1933). 전 문단 경로가 이 함수를 거치므로 여기가 단일
 /// 방출 지점이다.
 pub(crate) fn render_hp_p_open(p: &Paragraph, id: u32, style_id_ref: u8) -> String {
+    render_hp_p_open_with_storage(p, id, style_id_ref, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+pub(super) fn render_hp_p_open_with_storage<S: crate::storage::Storage>(
+    p: &Paragraph,
+    id: u32,
+    style_id_ref: u8,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // 합성 쪽나눔(파서가 자연 쪽 경계에서 승격, HWP3)은 문서 내용이 아니라 조판
     // 힌트라 저장하지 않는다. 저장하면 한글 재조판의 자연 경계와 이중 작용해
     // 빈 쪽을 만든다(07615: 합성 138건이 264→329쪽 부풀림, 중화 시 264쪽 복원).
@@ -709,9 +989,12 @@ pub(crate) fn render_hp_p_open(p: &Paragraph, id: u32, style_id_ref: u8) -> Stri
         } else {
             0
         };
-    format!(
-        r#"<hp:p id="{}" paraPrIDRef="{}" styleIDRef="{}" pageBreak="{}" columnBreak="{}" merged="0">"#,
-        id, p.para_shape_id, style_id_ref, page_break, column_break,
+    xml_value(
+        storage,
+        format_args!(
+            r#"<hp:p id="{}" paraPrIDRef="{}" styleIDRef="{}" pageBreak="{}" columnBreak="{}" merged="0">"#,
+            id, p.para_shape_id, style_id_ref, page_break, column_break,
+        ),
     )
 }
 
@@ -737,6 +1020,18 @@ pub(super) fn first_run_char_shape_id(p: &Paragraph) -> u32 {
 /// [#5873] 표 셀(subList) 안 문단도 같은 보완이 필요하다 —
 /// `table.rs::write_sub_list_paragraphs` 가 이 함수를 재사용한다.
 pub(super) fn build_secpr_run(sd: &SectionDef, first_cs: u32) -> String {
+    build_secpr_run_with_storage(sd, first_cs, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+pub(super) fn build_secpr_run_with_storage<S: crate::storage::Storage>(
+    sd: &SectionDef,
+    first_cs: u32,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let start = EMPTY_SECTION_XML
         .find("<hp:secPr ")
         .expect("템플릿에 secPr 열기 태그가 있어야 함");
@@ -744,13 +1039,16 @@ pub(super) fn build_secpr_run(sd: &SectionDef, first_cs: u32) -> String {
         .find("</hp:secPr>")
         .map(|e| start + e + "</hp:secPr>".len())
         .expect("템플릿에 secPr 닫기 태그가 있어야 함");
-    let mut secpr = EMPTY_SECTION_XML[start..end].to_string();
-    secpr = replace_page_pr(&secpr, &sd.page_def);
-    secpr = replace_page_border_fill(&secpr, sd);
-    secpr = replace_visibility(&secpr, sd);
-    secpr = replace_secpr_scalars(&secpr, sd);
-    secpr = replace_footnote_shape(&secpr, sd);
-    format!(r#"<hp:run charPrIDRef="{}">{}</hp:run>"#, first_cs, secpr)
+    let mut secpr = xml_value(storage, &EMPTY_SECTION_XML[start..end])?;
+    secpr = replace_page_pr_with_storage(&secpr, &sd.page_def, storage)?;
+    secpr = replace_page_border_fill_with_storage(&secpr, sd, storage)?;
+    secpr = replace_visibility_with_storage(&secpr, sd, storage)?;
+    secpr = replace_secpr_scalars_with_storage(&secpr, sd, storage)?;
+    secpr = replace_footnote_shape_with_storage(&secpr, sd, storage)?;
+    xml_value(
+        storage,
+        format_args!(r#"<hp:run charPrIDRef="{}">{}</hp:run>"#, first_cs, secpr),
+    )
 }
 
 /// Paragraph 하나를 (완전한 `<hp:run>` 시퀀스 XML, `<hp:linesegarray>` 요소 XML,
@@ -766,6 +1064,19 @@ pub(crate) fn render_paragraph_parts(
     vert_start: u32,
     ctx: &mut SerializeContext,
 ) -> (String, String, u32) {
+    render_paragraph_parts_with_storage(para, vert_start, ctx, &crate::storage::Unbounded)
+        .expect("unbounded run XML")
+}
+
+pub(super) fn render_paragraph_parts_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    vert_start: u32,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<(String, String, u32), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // 첫 run의 secPr/colPr는 각각 실제 8유닛 슬롯이다. 원본에 없는 정의만
     // 템플릿이 추가하면 뒤 줄의 시작도 같은 폭만큼 전진해야 한다.
     let injected_prefix_units = if ctx.line_segs_on_paragraph_axis
@@ -790,143 +1101,163 @@ pub(crate) fn render_paragraph_parts(
         serialized_axis_end,
         mut hwp5_only_slot_positions,
         collapsed_slot_positions,
-    ) = render_runs(para, ctx);
+    ) = render_runs_with_storage(para, ctx, storage)?;
 
-    // [#4778] 위치 축이 무너진 문단(파서가 담지 못한 8유닛 슬롯 — 예: 차례표지
-    // 0x0008 — 이 있거나 mismatch 폴백으로 컨트롤을 말미에 몰아쓴 문단)에는 저장
-    // lineseg 를 방출하지 않는다. 방출 텍스트와 textpos 사다리가 어긋난 lineseg 를
-    // 한글 2022 가 만나면 **그 문단부터 문서 끝까지 본문을 통째로 폐기**한다
-    // (성년후견 h2x: -112,075자 실측 — lineseg 억제만으로 전량 회복). 방출을
-    // 생략하면 한글이 열 때 재계산한다(#1380 과 같은 계약).
-    // [#5563] 문단 축을 넘어서는 `textpos` 를 실은 줄은 내보내지 않는다. 원본이
-    // 들고 있던 낡은 줄나눔 캐시가 그대로 옮겨 실리면(07990: 5개 문단이 길이 15 에
-    // textpos 119 등) 한글 2022 가 "다음 줄은 119번째 글자에서 시작"을 14글자 문단에서
-    // 해소하려다 **파일 개방이 끝나지 않는다**(COM Open 3,663초 미반환 실측). rhwp 는
-    // 자기가 쓴 파일을 그대로 다시 읽으므로 `--verify` 로는 잡히지 않는다.
-    //
-    // 판정은 HWP5 저장기의 #4677 계약(`line_segs_within_text_axis`)을 그대로 쓴다 —
-    // 경계 `text_start == char_count` 는 정상(한컴 자신이 쓰는 값)이라 `>` 이고, 범위
-    // 밖이 나오면 그 앞까지만 남긴다. 첫 줄부터 범위 밖이면 요소를 통째로 생략해
-    // 한글이 스스로 조판하게 한다(#1380 과 같은 계약).
-    //
-    // `char_count` 가 0 인 합성 IR(파서를 거치지 않은 문단)은 축 증거가 없으므로
-    // 종전대로 원본 줄을 그대로 낸다.
-    // `DocumentCore`는 빈 누름틀의 안내문 텍스트를 IR에서 비울 수 있지만,
-    // 직렬화기는 그 Field 슬롯과 안내문을 다시 방출한다. 이때 IR `char_count`만
-    // 상한으로 쓰면 필드 뒤의 정상 lineseg까지 잘려 셀 세로 정렬이 달라진다
-    // (issue1893의 `textpos=25`). 실제 방출한 축 끝도 함께 써야 한다.
-    //
-    // [#5943] 그 상한을 쓰기 전에 **축을 HWPX 쪽으로 내린다**. HWP5 문단 축은 구역 정의와
-    // 템플릿 흡수 단 정의에도 8유닛씩을 주지만 HWPX 문단에는 그 자리가 없다(`hp:secPr` 은
-    // 구역 머리 run 소속). 그래서 구역 첫 문단에서 두 축이 16유닛 어긋나고, 원본 그대로 실은
-    // `textpos` 가 한글이 세는 자리보다 뒤를 가리킨다. 한글 2024 는 그 문단부터 본문을
-    // 폐기한다(02502.h2x: 9쪽 6,040자 → 1쪽 423자. `textpos` 를 48→40 으로 내리면 여전히
-    // 실패, **32 로 내리면 완전 복원** — 축이 16 짧다는 직접 증거다). 2022 는 관대했다.
-    // `char_count` 도 HWP5 축이므로 상한에서 같은 폭을 뺀다.
-    //
-    // 단 **HWPX 출처는 손대지 않는다**. `LineSeg::text_start` 는 파서가 파일 값을 그대로
-    // 담으므로 출처마다 축이 다르다 — HWPX 원본의 `textpos` 는 이미 HWPX 축이라 한 번 더
-    // 빼면 왕복이 깨진다(aift.hwpx 문단 0: `textpos 24 → 8`).
-    // [#7526] rhwp 원본 마커 문서는 문단마다 가른다 — HWPX 에서 읽은 그대로인 문단(보정폭
-    // 0 아님)만 날값을 둔다.
-    if ctx.line_segs_on_hwpx_axis || para.hwpx_axis_shift != 0 {
-        hwp5_only_slot_positions.clear();
-    }
-    // [#6871] 우리가 **접은** 슬롯은 출처와 무관하게 축에서 뺀다.
-    //
-    // 위 게이트가 다루는 `secd`·`cold` 는 HWPX 축에 **원래 없던** 자리라, HWPX 출처면
-    // 이미 빠져 있어 다시 빼면 왕복이 깨진다. 반면 `#6869` 가 접는 중복 쪽번호는 원본
-    // HWPX 축에 **분명히 있던** 자리다 — 접고도 빼지 않으면 `textpos` 가 방출 축보다
-    // 길어져 한글이 파일을 열지 못한다.
-    //
-    // 실측(156730118, s39 `02482`): 원본은 한글이 1쪽으로 폐기하고 컨트롤만 접은 산출도
-    // 마찬가지인데, 접기 + 축 −16 을 함께 하면 **2쪽으로 정상 개봉**한다. `#6871` 의 네
-    // 문서가 모두 이 형상(한 문단에 쪽번호 3개)이다.
-    hwp5_only_slot_positions.extend(collapsed_slot_positions);
-    hwp5_only_slot_positions.sort_unstable();
-    hwp5_only_slot_positions.dedup();
-    let hwp5_only_units = 8 * hwp5_only_slot_positions.len() as u32;
-    let serializable_line_segs = para.serializable_line_segs();
-    let rebased_line_segs: Option<Vec<LineSeg>> = ((!hwp5_only_slot_positions.is_empty()
-        || ctx.line_segs_on_paragraph_axis)
-        && !serializable_line_segs.is_empty())
-    .then(|| {
-        serializable_line_segs
-            .iter()
-            .map(|seg| {
-                let text_start = if ctx.line_segs_on_paragraph_axis {
-                    para.line_seg_text_start_of(seg.text_start)
-                } else {
-                    seg.text_start
-                };
-                let shift = 8 * hwp5_only_slot_positions
-                    .iter()
-                    .filter(|&&pos| pos < text_start)
-                    .count() as u32;
-                LineSeg {
-                    text_start: text_start.saturating_sub(shift).saturating_add(
-                        if text_start == 0 {
-                            0
-                        } else {
-                            injected_prefix_units
-                        },
-                    ),
-                    ..seg.clone()
-                }
-            })
-            .collect()
-    });
-    let source_line_segs = rebased_line_segs
-        .as_deref()
-        .unwrap_or(serializable_line_segs);
-
-    let line_seg_axis_end = para
-        .char_count
-        .max(serialized_axis_end)
-        .saturating_add(injected_prefix_units)
-        .saturating_sub(hwp5_only_units);
-    let axis_line_segs = if !crate::serializer::line_cache::can_serialize_line_partition(para) {
-        // The retained rows are an edit-reflow template, not a partition of
-        // the current text. Omit the cache and let the consumer recompute it.
-        &source_line_segs[..0]
-    } else if line_seg_axis_end > 0 {
-        line_segs_within_text_axis(source_line_segs, line_seg_axis_end)
-    } else {
-        source_line_segs
-    };
-
-    // [#5847] 줄 전체가 reflow 합성(bit31)인 문단 — 원본에 linesegarray 가 없어
-    // rhwp 가 조판용으로 만든 줄이다. 파일로 내면 구역 누적 vertpos 와 bit31
-    // 플래그가 그대로 실려 한글 2022 가 캐시를 신뢰하다 조판을 폐기한다
-    // (08818: 81쪽 → 5쪽). 원본과 같게 방출을 생략해 한글이 재계산하게 한다
-    // (#1380 계약). HWP5→HWPX materialize 는 별도 placeholder 를 쓰므로 무관.
-    let all_synthetic = !axis_line_segs.is_empty()
-        && axis_line_segs
-            .iter()
-            .all(|s| s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
-
-    if !axis_line_segs.is_empty() && position_axis_intact && !all_synthetic {
-        // IR 기반 출력 — 원본 lineseg 값 보존 (#177)
+    (|| -> Result<(String, String, u32), SerializeError> {
+        // [#4778] 위치 축이 무너진 문단(파서가 담지 못한 8유닛 슬롯 — 예: 차례표지
+        // 0x0008 — 이 있거나 mismatch 폴백으로 컨트롤을 말미에 몰아쓴 문단)에는 저장
+        // lineseg 를 방출하지 않는다. 방출 텍스트와 textpos 사다리가 어긋난 lineseg 를
+        // 한글 2022 가 만나면 **그 문단부터 문서 끝까지 본문을 통째로 폐기**한다
+        // (성년후견 h2x: -112,075자 실측 — lineseg 억제만으로 전량 회복). 방출을
+        // 생략하면 한글이 열 때 재계산한다(#1380 과 같은 계약).
+        // [#5563] 문단 축을 넘어서는 `textpos` 를 실은 줄은 내보내지 않는다. 원본이
+        // 들고 있던 낡은 줄나눔 캐시가 그대로 옮겨 실리면(07990: 5개 문단이 길이 15 에
+        // textpos 119 등) 한글 2022 가 "다음 줄은 119번째 글자에서 시작"을 14글자 문단에서
+        // 해소하려다 **파일 개방이 끝나지 않는다**(COM Open 3,663초 미반환 실측). rhwp 는
+        // 자기가 쓴 파일을 그대로 다시 읽으므로 `--verify` 로는 잡히지 않는다.
         //
-        // [#5847] reflow 의 구역 단위 vpos 재계산이 원본 캐시 보유 문단의
-        // vertpos 를 문서 누적 좌표로 덮어쓴 경우, 파싱 때 스냅샷해 둔 원본
-        // 쪽-상대 좌표로 되돌려 낸다 — 누적 좌표가 파일로 나가면 한글 2022 가
-        // 캐시를 신뢰해 조판을 폐기한다(08818: 81쪽 → 5쪽). axis 절단은 앞
-        // 접두 슬라이스라 인덱스가 그대로 대응한다.
-        let source_vpos = crate::serializer::line_cache::source_vertical_positions(para)
-            .map(|v| &v[..axis_line_segs.len()]);
-        let linesegs = format!(
-            "{}{}{}",
-            LINESEG_SLOT_OPEN,
-            render_lineseg_array_from_ir(axis_line_segs, source_vpos),
-            LINESEG_SLOT_CLOSE
-        );
-        let vert_end = next_vert_cursor_from_ir(axis_line_segs, source_vpos, vert_start);
-        (runs_xml, linesegs, vert_end)
-    } else {
-        // IR 에 line_segs 없음 — linesegarray 방출 생략 (#1380)
-        (runs_xml, String::new(), vert_start)
-    }
+        // 판정은 HWP5 저장기의 #4677 계약(`line_segs_within_text_axis`)을 그대로 쓴다 —
+        // 경계 `text_start == char_count` 는 정상(한컴 자신이 쓰는 값)이라 `>` 이고, 범위
+        // 밖이 나오면 그 앞까지만 남긴다. 첫 줄부터 범위 밖이면 요소를 통째로 생략해
+        // 한글이 스스로 조판하게 한다(#1380 과 같은 계약).
+        //
+        // `char_count` 가 0 인 합성 IR(파서를 거치지 않은 문단)은 축 증거가 없으므로
+        // 종전대로 원본 줄을 그대로 낸다.
+        // `DocumentCore`는 빈 누름틀의 안내문 텍스트를 IR에서 비울 수 있지만,
+        // 직렬화기는 그 Field 슬롯과 안내문을 다시 방출한다. 이때 IR `char_count`만
+        // 상한으로 쓰면 필드 뒤의 정상 lineseg까지 잘려 셀 세로 정렬이 달라진다
+        // (issue1893의 `textpos=25`). 실제 방출한 축 끝도 함께 써야 한다.
+        //
+        // [#5943] 그 상한을 쓰기 전에 **축을 HWPX 쪽으로 내린다**. HWP5 문단 축은 구역 정의와
+        // 템플릿 흡수 단 정의에도 8유닛씩을 주지만 HWPX 문단에는 그 자리가 없다(`hp:secPr` 은
+        // 구역 머리 run 소속). 그래서 구역 첫 문단에서 두 축이 16유닛 어긋나고, 원본 그대로 실은
+        // `textpos` 가 한글이 세는 자리보다 뒤를 가리킨다. 한글 2024 는 그 문단부터 본문을
+        // 폐기한다(02502.h2x: 9쪽 6,040자 → 1쪽 423자. `textpos` 를 48→40 으로 내리면 여전히
+        // 실패, **32 로 내리면 완전 복원** — 축이 16 짧다는 직접 증거다). 2022 는 관대했다.
+        // `char_count` 도 HWP5 축이므로 상한에서 같은 폭을 뺀다.
+        //
+        // 단 **HWPX 출처는 손대지 않는다**. `LineSeg::text_start` 는 파서가 파일 값을 그대로
+        // 담으므로 출처마다 축이 다르다 — HWPX 원본의 `textpos` 는 이미 HWPX 축이라 한 번 더
+        // 빼면 왕복이 깨진다(aift.hwpx 문단 0: `textpos 24 → 8`).
+        // [#7526] rhwp 원본 마커 문서는 문단마다 가른다 — HWPX 에서 읽은 그대로인 문단(보정폭
+        // 0 아님)만 날값을 둔다.
+        if ctx.line_segs_on_hwpx_axis || para.hwpx_axis_shift != 0 {
+            hwp5_only_slot_positions.clear();
+        }
+        // [#6871] 우리가 **접은** 슬롯은 출처와 무관하게 축에서 뺀다.
+        //
+        // 위 게이트가 다루는 `secd`·`cold` 는 HWPX 축에 **원래 없던** 자리라, HWPX 출처면
+        // 이미 빠져 있어 다시 빼면 왕복이 깨진다. 반면 `#6869` 가 접는 중복 쪽번호는 원본
+        // HWPX 축에 **분명히 있던** 자리다 — 접고도 빼지 않으면 `textpos` 가 방출 축보다
+        // 길어져 한글이 파일을 열지 못한다.
+        //
+        // 실측(156730118, s39 `02482`): 원본은 한글이 1쪽으로 폐기하고 컨트롤만 접은 산출도
+        // 마찬가지인데, 접기 + 축 −16 을 함께 하면 **2쪽으로 정상 개봉**한다. `#6871` 의 네
+        // 문서가 모두 이 형상(한 문단에 쪽번호 3개)이다.
+        storage
+            .reserve(
+                &mut hwp5_only_slot_positions,
+                collapsed_slot_positions.len(),
+            )
+            .map_err(xml_error)?;
+        hwp5_only_slot_positions.extend(collapsed_slot_positions);
+        hwp5_only_slot_positions.sort_unstable();
+        hwp5_only_slot_positions.dedup();
+        let hwp5_only_units = 8 * hwp5_only_slot_positions.len() as u32;
+        let serializable_line_segs = para.serializable_line_segs();
+        let rebased_line_segs: Option<Vec<LineSeg>> = if (!hwp5_only_slot_positions.is_empty()
+            || ctx.line_segs_on_paragraph_axis)
+            && !serializable_line_segs.is_empty()
+        {
+            Some(
+                storage
+                    .collect(serializable_line_segs.iter().map(|seg| {
+                        let text_start = if ctx.line_segs_on_paragraph_axis {
+                            para.line_seg_text_start_of(seg.text_start)
+                        } else {
+                            seg.text_start
+                        };
+                        let shift = 8 * hwp5_only_slot_positions
+                            .iter()
+                            .filter(|&&pos| pos < text_start)
+                            .count() as u32;
+                        LineSeg {
+                            text_start: text_start.saturating_sub(shift).saturating_add(
+                                if text_start == 0 {
+                                    0
+                                } else {
+                                    injected_prefix_units
+                                },
+                            ),
+                            ..seg.clone()
+                        }
+                    }))
+                    .map_err(xml_error)?,
+            )
+        } else {
+            None
+        };
+        let source_line_segs = rebased_line_segs
+            .as_deref()
+            .unwrap_or(serializable_line_segs);
+
+        let line_seg_axis_end = para
+            .char_count
+            .max(serialized_axis_end)
+            .saturating_add(injected_prefix_units)
+            .saturating_sub(hwp5_only_units);
+        let axis_line_segs = if !crate::serializer::line_cache::can_serialize_line_partition(para) {
+            // The retained rows are an edit-reflow template, not a partition of
+            // the current text. Omit the cache and let the consumer recompute it.
+            &source_line_segs[..0]
+        } else if line_seg_axis_end > 0 {
+            line_segs_within_text_axis(source_line_segs, line_seg_axis_end)
+        } else {
+            source_line_segs
+        };
+
+        // [#5847] 줄 전체가 reflow 합성(bit31)인 문단 — 원본에 linesegarray 가 없어
+        // rhwp 가 조판용으로 만든 줄이다. 파일로 내면 구역 누적 vertpos 와 bit31
+        // 플래그가 그대로 실려 한글 2022 가 캐시를 신뢰하다 조판을 폐기한다
+        // (08818: 81쪽 → 5쪽). 원본과 같게 방출을 생략해 한글이 재계산하게 한다
+        // (#1380 계약). HWP5→HWPX materialize 는 별도 placeholder 를 쓰므로 무관.
+        let all_synthetic = !axis_line_segs.is_empty()
+            && axis_line_segs
+                .iter()
+                .all(|s| s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
+        Ok(
+            if !axis_line_segs.is_empty() && position_axis_intact && !all_synthetic {
+                // IR 기반 출력 — 원본 lineseg 값 보존 (#177)
+                //
+                // [#5847] reflow 의 구역 단위 vpos 재계산이 원본 캐시 보유 문단의
+                // vertpos 를 문서 누적 좌표로 덮어쓴 경우, 파싱 때 스냅샷해 둔 원본
+                // 쪽-상대 좌표로 되돌려 낸다 — 누적 좌표가 파일로 나가면 한글 2022 가
+                // 캐시를 신뢰해 조판을 폐기한다(08818: 81쪽 → 5쪽). axis 절단은 앞
+                // 접두 슬라이스라 인덱스가 그대로 대응한다.
+                let source_vpos = crate::serializer::line_cache::source_vertical_positions(para)
+                    .map(|v| &v[..axis_line_segs.len()]);
+                let linesegs = xml_value(
+                    storage,
+                    format_args!(
+                        "{}{}{}",
+                        LINESEG_SLOT_OPEN,
+                        render_lineseg_array_from_ir_with_storage(
+                            axis_line_segs,
+                            source_vpos,
+                            storage
+                        )?,
+                        LINESEG_SLOT_CLOSE
+                    ),
+                )?;
+                let vert_end = next_vert_cursor_from_ir(axis_line_segs, source_vpos, vert_start);
+                (runs_xml, linesegs, vert_end)
+            } else {
+                // IR 에 line_segs 없음 — linesegarray 방출 생략 (#1380)
+                (runs_xml, String::new(), vert_start)
+            },
+        )
+    })()
+    .map_err(|error| SerializeError::XmlError(format!("HWPX lineseg: {error}")))
 }
 
 /// [#5140] 한컴 사용자 정의 기호를 HWPX 표기(평면 15 보충 PUA)로 올린다.
@@ -1005,18 +1336,41 @@ pub(crate) struct InlineCursor<'a> {
 impl InlineCursor<'_> {
     /// 현재 문자 위치에 걸린 제목 차례 표시를 전부 방출한다.
     fn flush_marks_at_cursor(&mut self, t_xml: &mut String, buf: &mut String) {
+        self.flush_marks_at_cursor_with_storage(t_xml, buf, &crate::storage::Unbounded)
+            .expect("unbounded run XML")
+    }
+
+    fn flush_marks_at_cursor_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        t_xml: &mut String,
+        buf: &mut String,
+        storage: &S,
+    ) -> Result<(), SerializeError>
+    where
+        S::Error: std::fmt::Display,
+    {
         // [#6956] 형광펜 표지 — 제목 차례 표시와 같은 자리에서 순서대로 흘린다.
         while let Some(m) = self.markpen_marks.get(self.markpen_idx) {
             if m.char_idx > self.char_idx {
                 break;
             }
-            flush_buf(t_xml, buf);
+            flush_buf_with_storage(t_xml, buf, storage)?;
             match &m.color {
-                Some(color) => t_xml.push_str(&format!(
-                    r#"<hp:markpenBegin color="{}"/>"#,
-                    xml_escape(color)
-                )),
-                None => t_xml.push_str("<hp:markpenEnd/>"),
+                Some(color) => storage
+                    .push_str(
+                        t_xml,
+                        &xml_value(
+                            storage,
+                            format_args!(
+                                r#"<hp:markpenBegin color="{}"/>"#,
+                                xml_escape_with_storage(color, storage)?
+                            ),
+                        )?,
+                    )
+                    .map_err(xml_error)?,
+                None => storage
+                    .push_str(t_xml, "<hp:markpenEnd/>")
+                    .map_err(xml_error)?,
             }
             self.markpen_idx += 1;
         }
@@ -1024,13 +1378,23 @@ impl InlineCursor<'_> {
             if m.char_idx > self.char_idx {
                 break;
             }
-            flush_buf(t_xml, buf);
-            t_xml.push_str(&format!(
-                r#"<hp:titleMark ignore="{}"/>"#,
-                if m.ignore { 1 } else { 0 }
-            ));
+            flush_buf_with_storage(t_xml, buf, storage)?;
+            storage
+                .push_str(
+                    t_xml,
+                    &xml_value(
+                        storage,
+                        format_args!(
+                            r#"<hp:titleMark ignore="{}"/>"#,
+                            if m.ignore { 1 } else { 0 }
+                        ),
+                    )?,
+                )
+                .map_err(xml_error)?;
             self.mark_idx += 1;
         }
+
+        Ok(())
     }
 
     /// [#5537] 다음 미방출 표시가 현재 위치에 걸려 있고 **닫히는 run 소유**
@@ -1051,32 +1415,84 @@ impl InlineCursor<'_> {
     /// 종전대로 다음 run 머리에서 flush 된다(한컴 실측 두 형태 공존).
     /// [#6956] 조각 말미에서 현재 문자 위치에 걸린 형광펜 표지를 마저 낸다.
     fn flush_markpen_at_fragment_end(&mut self, t_xml: &mut String, buf: &mut String) {
+        self.flush_markpen_at_fragment_end_with_storage(t_xml, buf, &crate::storage::Unbounded)
+            .expect("unbounded run XML")
+    }
+
+    fn flush_markpen_at_fragment_end_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        t_xml: &mut String,
+        buf: &mut String,
+        storage: &S,
+    ) -> Result<(), SerializeError>
+    where
+        S::Error: std::fmt::Display,
+    {
         while let Some(m) = self.markpen_marks.get(self.markpen_idx) {
             if m.char_idx > self.char_idx {
                 break;
             }
-            flush_buf(t_xml, buf);
+            flush_buf_with_storage(t_xml, buf, storage)?;
             match &m.color {
-                Some(color) => t_xml.push_str(&format!(
-                    r#"<hp:markpenBegin color="{}"/>"#,
-                    xml_escape(color)
-                )),
-                None => t_xml.push_str("<hp:markpenEnd/>"),
+                Some(color) => storage
+                    .push_str(
+                        t_xml,
+                        &xml_value(
+                            storage,
+                            format_args!(
+                                r#"<hp:markpenBegin color="{}"/>"#,
+                                xml_escape_with_storage(color, storage)?
+                            ),
+                        )?,
+                    )
+                    .map_err(xml_error)?,
+                None => storage
+                    .push_str(t_xml, "<hp:markpenEnd/>")
+                    .map_err(xml_error)?,
             }
             self.markpen_idx += 1;
         }
+
+        Ok(())
     }
 
     fn flush_prev_owned_marks_at_fragment_end(&mut self, t_xml: &mut String, buf: &mut String) {
+        self.flush_prev_owned_marks_at_fragment_end_with_storage(
+            t_xml,
+            buf,
+            &crate::storage::Unbounded,
+        )
+        .expect("unbounded run XML")
+    }
+
+    fn flush_prev_owned_marks_at_fragment_end_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        t_xml: &mut String,
+        buf: &mut String,
+        storage: &S,
+    ) -> Result<(), SerializeError>
+    where
+        S::Error: std::fmt::Display,
+    {
         while self.has_pending_prev_owned_mark() {
             let m = &self.title_marks[self.mark_idx];
-            flush_buf(t_xml, buf);
-            t_xml.push_str(&format!(
-                r#"<hp:titleMark ignore="{}"/>"#,
-                if m.ignore { 1 } else { 0 }
-            ));
+            flush_buf_with_storage(t_xml, buf, storage)?;
+            storage
+                .push_str(
+                    t_xml,
+                    &xml_value(
+                        storage,
+                        format_args!(
+                            r#"<hp:titleMark ignore="{}"/>"#,
+                            if m.ignore { 1 } else { 0 }
+                        ),
+                    )?,
+                )
+                .map_err(xml_error)?;
             self.mark_idx += 1;
         }
+
+        Ok(())
     }
 }
 
@@ -1091,19 +1507,32 @@ pub(crate) fn render_hp_t_content(
     tab_extended: &[[u16; 7]],
     cursor: &mut InlineCursor<'_>,
 ) -> String {
-    let mut t_xml = String::from("<hp:t>");
+    render_hp_t_content_with_storage(text, tab_extended, cursor, &crate::storage::Unbounded)
+        .expect("unbounded run XML")
+}
+
+fn render_hp_t_content_with_storage<S: crate::storage::Storage>(
+    text: &str,
+    tab_extended: &[[u16; 7]],
+    cursor: &mut InlineCursor<'_>,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let mut t_xml = storage.string("<hp:t>").map_err(xml_error)?;
     let mut buf = String::new();
     // 조각 첫머리에서도 훑는다 — char_shape 경계가 표시 자리에 걸리면 그 표시만 담은
     // 빈 run 이 나오는데(한컴 실측: `<hp:t><hp:titleMark ignore="1"/></hp:t>`),
     // 문자 루프만으로는 문자가 없어 그 run 을 그냥 지나친다.
-    cursor.flush_marks_at_cursor(&mut t_xml, &mut buf);
+    cursor.flush_marks_at_cursor_with_storage(&mut t_xml, &mut buf, storage)?;
     for c in text.chars() {
         // 제목 차례 표시는 이 문자 **앞**에 놓인다.
-        cursor.flush_marks_at_cursor(&mut t_xml, &mut buf);
+        cursor.flush_marks_at_cursor_with_storage(&mut t_xml, &mut buf, storage)?;
         cursor.char_idx += 1;
         match c {
             '\t' => {
-                flush_buf(&mut t_xml, &mut buf);
+                flush_buf_with_storage(&mut t_xml, &mut buf, storage)?;
                 let (width, leader, tab_type) = if let Some(ext) = tab_extended.get(cursor.tab_idx)
                 {
                     cursor.tab_idx += 1;
@@ -1116,14 +1545,24 @@ pub(crate) fn render_hp_t_content(
                 } else {
                     (TAB_NO_DATA_WIDTH_MARKER, 0u16, 1u16)
                 };
-                t_xml.push_str(&format!(
-                    r#"<hp:tab width="{}" leader="{}" type="{}"/>"#,
-                    width, leader, tab_type
-                ));
+                storage
+                    .push_str(
+                        &mut t_xml,
+                        &xml_value(
+                            storage,
+                            format_args!(
+                                r#"<hp:tab width="{}" leader="{}" type="{}"/>"#,
+                                width, leader, tab_type
+                            ),
+                        )?,
+                    )
+                    .map_err(xml_error)?;
             }
             '\n' => {
-                flush_buf(&mut t_xml, &mut buf);
-                t_xml.push_str("<hp:lineBreak/>");
+                flush_buf_with_storage(&mut t_xml, &mut buf, storage)?;
+                storage
+                    .push_str(&mut t_xml, "<hp:lineBreak/>")
+                    .map_err(xml_error)?;
             }
             // HWP 코드 31과 fwSpace 요소는 기존 요소 표기를 유지한다(#4675).
             // 실제 리터럴 U+2007은 다른 문자 폭 계약이므로 요소로 바꾸지 않는다.
@@ -1132,10 +1571,12 @@ pub(crate) fn render_hp_t_content(
                     .literal_figure_spaces
                     .contains(&(cursor.char_idx - 1))
                 {
-                    buf.push(c);
+                    storage.push_char(&mut buf, c).map_err(xml_error)?;
                 } else {
-                    flush_buf(&mut t_xml, &mut buf);
-                    t_xml.push_str("<hp:fwSpace/>");
+                    flush_buf_with_storage(&mut t_xml, &mut buf, storage)?;
+                    storage
+                        .push_str(&mut t_xml, "<hp:fwSpace/>")
+                        .map_err(xml_error)?;
                 }
             }
             // [#5174] 묶음 빈칸은 U+2007 과 달리 **원본 표기를 따라간다.** 종전에는 늘
@@ -1147,8 +1588,10 @@ pub(crate) fn render_hp_t_content(
             // PARA_HEADER 가 직접 주고(제어코드 존재와 5,553/5,553 일치), HWPX 원본은
             // 파서가 `<hp:nbSpace/>` 를 만났을 때 세운다.
             '\u{00A0}' if cursor.nb_space_as_element => {
-                flush_buf(&mut t_xml, &mut buf);
-                t_xml.push_str("<hp:nbSpace/>");
+                flush_buf_with_storage(&mut t_xml, &mut buf, storage)?;
+                storage
+                    .push_str(&mut t_xml, "<hp:nbSpace/>")
+                    .map_err(xml_error)?;
             }
             // [#4895] 소프트 하이픈(U+00AD)은 U+2007 과 달리 **원본 표기를 따라간다.**
             // 종전에는 늘 `<hp:hyphen/>` 요소로 내렸는데(#4776), 한컴이 만든 문서는
@@ -1165,22 +1608,26 @@ pub(crate) fn render_hp_t_content(
             // [#7993] 요소 이름은 한/글 표기 `hp:hypen` 이다 — `hp:hyphen` 은 한/글이
             // 모르는 요소로 버린다(위 «글자를 버린다» 실측의 원인, 07615 h2x 265 → 264쪽).
             '\u{00AD}' if cursor.soft_hyphen_as_element => {
-                flush_buf(&mut t_xml, &mut buf);
-                t_xml.push_str("<hp:hypen/>");
+                flush_buf_with_storage(&mut t_xml, &mut buf, storage)?;
+                storage
+                    .push_str(&mut t_xml, "<hp:hypen/>")
+                    .map_err(xml_error)?;
             }
             c if (c as u32) < 0x20 => { /* 기타 제어문자 무시 */ }
-            c => buf.push(hancom_symbol_for_hwpx(c)),
+            c => storage
+                .push_char(&mut buf, hancom_symbol_for_hwpx(c))
+                .map_err(xml_error)?,
         }
     }
     // [#5537] 조각 말미 — 닫히는 run 소유의 표시(경계 유닛 = 표시 끝 유닛)는 여기서
     // 방출한다. 다음 run 머리로 넘기면 재파싱 char_shapes 경계가 8유닛 무너진다.
-    cursor.flush_prev_owned_marks_at_fragment_end(&mut t_xml, &mut buf);
+    cursor.flush_prev_owned_marks_at_fragment_end_with_storage(&mut t_xml, &mut buf, storage)?;
     // [#6956] 형광펜 닫는 표지는 런 **끝**에 오는 것이 한컴 실측 형태다. 문자 루프는
     // 글자 **앞**에서만 흘리므로 여기서 현재 위치에 걸린 것을 마저 낸다.
-    cursor.flush_markpen_at_fragment_end(&mut t_xml, &mut buf);
-    flush_buf(&mut t_xml, &mut buf);
-    t_xml.push_str("</hp:t>");
-    t_xml
+    cursor.flush_markpen_at_fragment_end_with_storage(&mut t_xml, &mut buf, storage)?;
+    flush_buf_with_storage(&mut t_xml, &mut buf, storage)?;
+    storage.push_str(&mut t_xml, "</hp:t>").map_err(xml_error)?;
+    Ok(t_xml)
 }
 
 /// 문단 콘텐츠를 `char_shapes` 경계 기준 다중 `<hp:run>` 으로 분할 출력하는 빌더 (#1378).
@@ -1208,17 +1655,33 @@ struct RunSplitter {
 
 impl RunSplitter {
     fn new(para: &Paragraph) -> Self {
+        Self::new_with_storage(para, &crate::storage::Unbounded).expect("unbounded run XML")
+    }
+
+    fn new_with_storage<S: crate::storage::Storage>(
+        para: &Paragraph,
+        storage: &S,
+    ) -> Result<Self, SerializeError>
+    where
+        S::Error: std::fmt::Display,
+    {
         // #3500/#3739: 연속 동일 id 도 start_pos 가 다르면 별도 run.
-        let mut segs = super::char_shapes::plan_run_boundaries_of(para);
+        let mut segs = storage
+            .collect(
+                para.char_shapes
+                    .iter()
+                    .map(|cs| (cs.start_pos, cs.char_shape_id)),
+            )
+            .map_err(xml_error)?;
         if segs.is_empty() {
-            segs.push((0, 0)); // 규칙 3
+            storage.push(&mut segs, (0, 0)).map_err(xml_error)?; // 규칙 3
         }
-        Self {
+        Ok(Self {
             segs,
             next: 1,
             runs: String::new(),
             content: String::new(),
-        }
+        })
     }
 
     /// 경계가 없는 단일 run 문단인지.
@@ -1233,16 +1696,43 @@ impl RunSplitter {
 
     /// `pos` 이하 위치의 경계를 모두 적용 — 규칙 1 (경계 먼저, 콘텐츠는 새 run 소속).
     fn cut_before(&mut self, pos: u32) {
+        self.cut_before_with_storage(pos, &crate::storage::Unbounded)
+            .expect("unbounded run XML")
+    }
+
+    fn cut_before_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        pos: u32,
+        storage: &S,
+    ) -> Result<(), SerializeError>
+    where
+        S::Error: std::fmt::Display,
+    {
         while self.needs_cut(pos) {
-            self.cut_one();
+            self.cut_one_with_storage(storage)?;
         }
+
+        Ok(())
     }
 
     /// 경계 1개만 적용한다 — 같은 위치에 여러 경계가 겹칠 때 그중 특정 run 에
     /// 콘텐츠를 넣어야 하는 경우에 쓴다 (#3545 안내문 잔재 복원).
     fn cut_one(&mut self) {
-        self.close_run();
+        self.cut_one_with_storage(&crate::storage::Unbounded)
+            .expect("unbounded run XML")
+    }
+
+    fn cut_one_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), SerializeError>
+    where
+        S::Error: std::fmt::Display,
+    {
+        self.close_run_with_storage(storage)?;
         self.next += 1;
+
+        Ok(())
     }
 
     /// 현재 열려 있는 run 의 `charPrIDRef`.
@@ -1252,49 +1742,108 @@ impl RunSplitter {
 
     /// 현재 run 을 `<hp:run charPrIDRef>` 로 감싸 완성 목록에 추가.
     fn close_run(&mut self) {
-        self.runs.push_str(&format!(
-            r#"<hp:run charPrIDRef="{}">"#,
-            self.segs[self.next - 1].1
-        ));
+        self.close_run_with_storage(&crate::storage::Unbounded)
+            .expect("unbounded run XML")
+    }
+
+    fn close_run_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), SerializeError>
+    where
+        S::Error: std::fmt::Display,
+    {
+        storage
+            .push_str(
+                &mut self.runs,
+                &xml_value(
+                    storage,
+                    format_args!(r#"<hp:run charPrIDRef="{}">"#, self.segs[self.next - 1].1),
+                )?,
+            )
+            .map_err(xml_error)?;
         if self.content.is_empty() {
             // 규칙 5 — 빈 run 도 <hp:t></hp:t> 로 방출해 재파싱 시 entry 보존
-            self.runs.push_str("<hp:t></hp:t>");
+            storage
+                .push_str(&mut self.runs, "<hp:t></hp:t>")
+                .map_err(xml_error)?;
         } else {
-            self.runs.push_str(&self.content);
+            storage
+                .push_str(&mut self.runs, &self.content)
+                .map_err(xml_error)?;
             self.content.clear();
         }
-        self.runs.push_str("</hp:run>");
+        storage
+            .push_str(&mut self.runs, "</hp:run>")
+            .map_err(xml_error)?;
+
+        Ok(())
     }
 
     /// 잔여 경계(콘텐츠 끝 이후 시작)를 빈 run 으로 방출하고 마지막 run 을 닫는다.
     fn finish(mut self) -> String {
+        self.finish_with_storage(&crate::storage::Unbounded)
+            .expect("unbounded run XML")
+    }
+
+    fn finish_with_storage<S: crate::storage::Storage>(
+        mut self,
+        storage: &S,
+    ) -> Result<String, SerializeError>
+    where
+        S::Error: std::fmt::Display,
+    {
         while self.next < self.segs.len() {
-            self.close_run();
+            self.close_run_with_storage(storage)?;
             self.next += 1;
         }
-        self.close_run();
-        self.runs
+        self.close_run_with_storage(storage)?;
+        Ok(self.runs)
     }
 }
 
 /// `<hp:ctrl><hp:fieldEnd beginIDRef=".."/></hp:ctrl>` 방출 공통 경로.
 fn emit_field_end(out: &mut String, para: &Paragraph, fr: &FieldRange) {
+    emit_field_end_with_storage(out, para, fr, &crate::storage::Unbounded)
+        .expect("unbounded run XML")
+}
+
+fn emit_field_end_with_storage<S: crate::storage::Storage>(
+    out: &mut String,
+    para: &Paragraph,
+    fr: &FieldRange,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if let Some(Control::Field(f)) = para.controls.get(fr.control_idx) {
         // [Task #bookmark-hyperlink] 짝(matched) fieldEnd 자신의 fieldid 는 fieldBegin 의
         // id(f.field_id, beginIDRef 로 사용)와 별개 값 — 파싱된 fr.end_field_id 를 그대로
         // 되돌려 써야 한다. 과거엔 write_field_end 로 beginIDRef 만 쓰고 fieldid 는 항상
         // 누락시켰다(고아 fieldEnd 경로만 write_field_end_full 로 보존, 비대칭).
         let xml_result = if fr.end_field_id == 0 {
-            writer_to_string(|w| write_field_end(w, f.field_id))
+            checked_xml_result(
+                writer_to_string_with_storage(|w| write_field_end(w, f.field_id), storage),
+                storage,
+            )?
         } else {
-            writer_to_string(|w| write_field_end_full(w, f.field_id, fr.end_field_id))
+            checked_xml_result(
+                writer_to_string_with_storage(
+                    |w| write_field_end_full(w, f.field_id, fr.end_field_id),
+                    storage,
+                ),
+                storage,
+            )?
         };
         if let Ok(xml) = xml_result {
-            out.push_str("<hp:ctrl>");
-            out.push_str(&xml);
-            out.push_str("</hp:ctrl>");
+            storage.push_str(out, "<hp:ctrl>").map_err(xml_error)?;
+            storage.push_str(out, &xml).map_err(xml_error)?;
+            storage.push_str(out, "</hp:ctrl>").map_err(xml_error)?;
         }
     }
+
+    Ok(())
 }
 
 /// [#3545] 적재 정규화가 지운 **초기 상태 누름틀의 안내문 본문 run** 을 되살린다.
@@ -1314,34 +1863,51 @@ fn emit_guide_residue(
     fr: &FieldRange,
     pos: u32,
 ) -> u32 {
+    emit_guide_residue_with_storage(splitter, para, fr, pos, &crate::storage::Unbounded)
+        .expect("unbounded run XML")
+}
+
+fn emit_guide_residue_with_storage<S: crate::storage::Storage>(
+    splitter: &mut RunSplitter,
+    para: &Paragraph,
+    fr: &FieldRange,
+    pos: u32,
+    storage: &S,
+) -> Result<u32, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // 값이 채워진 필드는 본문 run 이 이미 있다 — 중복 주입 금지.
     if fr.start_char_idx != fr.end_char_idx {
-        return 0;
+        return Ok(0);
     }
     let Some(Control::Field(f)) = para.controls.get(fr.control_idx) else {
-        return 0;
+        return Ok(0);
     };
     // 수정됨(bit 15) 표식이 선 필드는 초기 상태가 아니다 — 사용자가 비운 값을 되살리면 안 된다.
     if f.is_dirty() {
-        return 0;
+        return Ok(0);
     }
     let Some(residue) = f.guide_residue.as_ref() else {
-        return 0;
+        return Ok(0);
     };
     if residue.text.is_empty() {
-        return 0;
+        return Ok(0);
     }
     // 잔재를 담던 run 의 경계까지만 먼저 끊는다 — 삭제 수술이 같은 위치에 접어 둔
     // zero-width run 들이 원본 서식(charPrIDRef)의 유일한 근거다.
     while splitter.needs_cut(pos) && splitter.current_shape_id() != residue.char_shape_id {
-        splitter.cut_one();
+        splitter.cut_one_with_storage(storage)?;
     }
     // 안내문 잔재는 합성 텍스트라 탭 확장·제목 차례 표시가 없다 — 빈 커서로 낸다.
     let mut cursor = InlineCursor::default();
-    splitter
-        .content
-        .push_str(&render_hp_t_content(&residue.text, &[], &mut cursor));
-    residue.text.encode_utf16().count() as u32
+    storage
+        .push_str(
+            &mut splitter.content,
+            &render_hp_t_content_with_storage(&residue.text, &[], &mut cursor, storage)?,
+        )
+        .map_err(xml_error)?;
+    Ok(residue.text.encode_utf16().count() as u32)
 }
 
 /// `pos` 위치에서 경계를 적용하고 `fieldEnd` 를 방출한다.
@@ -1355,10 +1921,24 @@ fn emit_field_end_at(
     fr: &FieldRange,
     pos: u32,
 ) -> u32 {
-    let guide_units = emit_guide_residue(splitter, para, fr, pos);
-    splitter.cut_before(pos);
-    emit_field_end(&mut splitter.content, para, fr);
-    guide_units
+    emit_field_end_at_with_storage(splitter, para, fr, pos, &crate::storage::Unbounded)
+        .expect("unbounded run XML")
+}
+
+fn emit_field_end_at_with_storage<S: crate::storage::Storage>(
+    splitter: &mut RunSplitter,
+    para: &Paragraph,
+    fr: &FieldRange,
+    pos: u32,
+    storage: &S,
+) -> Result<u32, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let guide_units = emit_guide_residue_with_storage(splitter, para, fr, pos, storage)?;
+    splitter.cut_before_with_storage(pos, storage)?;
+    emit_field_end_with_storage(&mut splitter.content, para, fr, storage)?;
+    Ok(guide_units)
 }
 
 /// 고아(다단락) fieldEnd 를 `<hp:ctrl><hp:fieldEnd .../></hp:ctrl>` 로 방출 (Task #1556).
@@ -1381,14 +1961,34 @@ fn emit_field_end_at(
 ///
 /// 앞 문단에 진짜 `fieldBegin` 이 있는 정상 다단락 고아는 종전대로 방출한다.
 fn emit_orphan_field_end(out: &mut String, ofe: &OrphanFieldEnd) {
+    emit_orphan_field_end_with_storage(out, ofe, &crate::storage::Unbounded)
+        .expect("unbounded run XML")
+}
+
+fn emit_orphan_field_end_with_storage<S: crate::storage::Storage>(
+    out: &mut String,
+    ofe: &OrphanFieldEnd,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if ofe.begin_id_ref == 0 {
-        return;
+        return Ok(());
     }
-    if let Ok(xml) = writer_to_string(|w| write_field_end_full(w, ofe.begin_id_ref, ofe.field_id)) {
-        out.push_str("<hp:ctrl>");
-        out.push_str(&xml);
-        out.push_str("</hp:ctrl>");
+    if let Ok(xml) = checked_xml_result(
+        writer_to_string_with_storage(
+            |w| write_field_end_full(w, ofe.begin_id_ref, ofe.field_id),
+            storage,
+        ),
+        storage,
+    )? {
+        storage.push_str(out, "<hp:ctrl>").map_err(xml_error)?;
+        storage.push_str(out, &xml).map_err(xml_error)?;
+        storage.push_str(out, "</hp:ctrl>").map_err(xml_error)?;
     }
+
+    Ok(())
 }
 
 /// 문단 텍스트 전체를 char_shapes 경계로 분할하며 `splitter` 에 누적한다.
@@ -1396,32 +1996,54 @@ fn emit_orphan_field_end(out: &mut String, ofe: &OrphanFieldEnd) {
 /// `char_offsets` 로 문자 idx → UTF-16 위치를 매핑하므로 IR 내 컨트롤(8 유닛 갭)이
 /// 있어도 경계 위치가 어긋나지 않는다.
 fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, cursor: &mut InlineCursor<'_>) {
+    split_text_into_with_storage(splitter, para, cursor, &crate::storage::Unbounded)
+        .expect("unbounded run XML")
+}
+
+fn split_text_into_with_storage<S: crate::storage::Storage>(
+    splitter: &mut RunSplitter,
+    para: &Paragraph,
+    cursor: &mut InlineCursor<'_>,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let mut text_buf = String::new();
     let mut running_pos = 0u32;
     for (idx, c) in para.text.chars().enumerate() {
         let char_pos = para.char_offsets.get(idx).copied().unwrap_or(running_pos);
         if splitter.needs_cut(char_pos) {
-            flush_text_fragment(
+            flush_text_fragment_with_storage(
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
                 cursor,
-            );
-            splitter.cut_before(char_pos);
+                storage,
+            )?;
+            splitter.cut_before_with_storage(char_pos, storage)?;
         }
-        text_buf.push(c);
+        storage.push_char(&mut text_buf, c).map_err(xml_error)?;
         running_pos = char_pos
             .max(running_pos)
             .saturating_add(char_utf16_width(c));
     }
-    flush_text_fragment(
+    flush_text_fragment_with_storage(
         &mut splitter.content,
         &mut text_buf,
         &para.tab_extended,
         cursor,
-    );
+        storage,
+    )?;
     // 마지막 문자 뒤에 남은 제목 차례 표시 — 빈 조각으로 한 번 더 낸다.
-    flush_trailing_title_marks(&mut splitter.content, &para.tab_extended, cursor);
+    flush_trailing_title_marks_with_storage(
+        &mut splitter.content,
+        &para.tab_extended,
+        cursor,
+        storage,
+    )?;
+
+    Ok(())
 }
 
 /// [#5943] 슬롯을 방출하되 **XML 을 한 글자도 내지 않았으면** 그 위치를 기록한다.
@@ -1440,6 +2062,30 @@ fn render_control_slot_tracked(
     hwp5_only_slot_positions: &mut Vec<u32>,
     collapsed_slot_positions: &mut Vec<u32>,
 ) {
+    render_control_slot_tracked_with_storage(
+        out,
+        control,
+        ctx,
+        hwp5_pos,
+        hwp5_only_slot_positions,
+        collapsed_slot_positions,
+        &crate::storage::Unbounded,
+    )
+    .expect("unbounded run XML")
+}
+
+fn render_control_slot_tracked_with_storage<S: crate::storage::Storage>(
+    out: &mut String,
+    control: &Control,
+    ctx: &mut SerializeContext,
+    hwp5_pos: u32,
+    hwp5_only_slot_positions: &mut Vec<u32>,
+    collapsed_slot_positions: &mut Vec<u32>,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let before = out.len();
     // XML이 인라인에서 비어도 구역 머리 run이나 별도 secPr run으로 옮겨진
     // 정의는 실제 출력에 남는다. 새 문단 축 계약에서 이를 삭제 슬롯으로 세지 않는다.
@@ -1451,15 +2097,21 @@ fn render_control_slot_tracked(
     // [#6871] 이 슬롯이 **우리가 접은 것**인지 미리 안다 — 두 번째 이후 쪽번호 위치.
     let collapses_here =
         matches!(control, Control::PageNumberPos(_)) && ctx.para_page_num_pos_emitted;
-    render_control_slot(out, control, ctx);
+    render_control_slot_with_storage(out, control, ctx, storage)?;
     if out.len() == before && !relocated_definition {
         if collapses_here {
             // [#6871] **출처와 무관하게** 축에서 빼야 한다 — 아래 호출부 주석.
-            collapsed_slot_positions.push(hwp5_pos);
+            storage
+                .push(collapsed_slot_positions, hwp5_pos)
+                .map_err(xml_error)?;
         } else {
-            hwp5_only_slot_positions.push(hwp5_pos);
+            storage
+                .push(hwp5_only_slot_positions, hwp5_pos)
+                .map_err(xml_error)?;
         }
     }
+
+    Ok(())
 }
 
 /// Paragraph 본문을 완전한 `<hp:run>` 시퀀스로 직렬화한다 (#1378 다중 run 분할).
@@ -1486,30 +2138,75 @@ impl PositionedMarkpens<'_> {
         para: &Paragraph,
         cursor: &mut InlineCursor<'_>,
     ) {
+        self.flush_with_storage(
+            position,
+            splitter,
+            text,
+            para,
+            cursor,
+            &crate::storage::Unbounded,
+        )
+        .expect("unbounded run XML")
+    }
+
+    fn flush_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        position: u32,
+        splitter: &mut RunSplitter,
+        text: &mut String,
+        para: &Paragraph,
+        cursor: &mut InlineCursor<'_>,
+        storage: &S,
+    ) -> Result<(), SerializeError>
+    where
+        S::Error: std::fmt::Display,
+    {
         if !self
             .marks
             .get(self.next)
             .is_some_and(|(pos, _)| *pos <= position)
         {
-            return;
+            return Ok(());
         }
-        flush_text_fragment(&mut splitter.content, text, &para.tab_extended, cursor);
+        flush_text_fragment_with_storage(
+            &mut splitter.content,
+            text,
+            &para.tab_extended,
+            cursor,
+            storage,
+        )?;
         while let Some(&(pos, mark)) = self.marks.get(self.next) {
             if pos > position {
                 break;
             }
-            splitter.cut_before(pos);
-            splitter.content.push_str("<hp:t>");
+            splitter.cut_before_with_storage(pos, storage)?;
+            storage
+                .push_str(&mut splitter.content, "<hp:t>")
+                .map_err(xml_error)?;
             match &mark.color {
-                Some(color) => splitter.content.push_str(&format!(
-                    r#"<hp:markpenBegin color="{}"/>"#,
-                    xml_escape(color)
-                )),
-                None => splitter.content.push_str("<hp:markpenEnd/>"),
+                Some(color) => storage
+                    .push_str(
+                        &mut splitter.content,
+                        &xml_value(
+                            storage,
+                            format_args!(
+                                r#"<hp:markpenBegin color="{}"/>"#,
+                                xml_escape_with_storage(color, storage)?
+                            ),
+                        )?,
+                    )
+                    .map_err(xml_error)?,
+                None => storage
+                    .push_str(&mut splitter.content, "<hp:markpenEnd/>")
+                    .map_err(xml_error)?,
             }
-            splitter.content.push_str("</hp:t>");
+            storage
+                .push_str(&mut splitter.content, "</hp:t>")
+                .map_err(xml_error)?;
             self.next += 1;
         }
+
+        Ok(())
     }
 }
 
@@ -1517,18 +2214,39 @@ fn render_runs(
     para: &Paragraph,
     ctx: &mut SerializeContext,
 ) -> (String, bool, u32, Vec<u32>, Vec<u32>) {
-    // [#6869/#6871] 표·머리말 등 자식 문단도 같은 context로 재귀 호출된다.
-    // 본체의 조기 반환을 포함해 문단 종료 뒤에는 부모의 방출 상태로 돌아가야 한다.
-    let parent_page_num_pos_emitted = std::mem::replace(&mut ctx.para_page_num_pos_emitted, false);
-    let result = render_runs_in_paragraph_scope(para, ctx);
-    ctx.para_page_num_pos_emitted = parent_page_num_pos_emitted;
-    result
+    render_runs_with_storage(para, ctx, &crate::storage::Unbounded).expect("unbounded run XML")
+}
+
+fn render_runs_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<(String, bool, u32, Vec<u32>, Vec<u32>), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let parent = std::mem::replace(&mut ctx.para_page_num_pos_emitted, false);
+    let result = render_runs_in_paragraph_scope_with_storage(para, ctx, storage);
+    ctx.para_page_num_pos_emitted = parent;
+    result.map_err(|error| SerializeError::XmlError(format!("HWPX run: {error}")))
 }
 
 fn render_runs_in_paragraph_scope(
     para: &Paragraph,
     ctx: &mut SerializeContext,
 ) -> (String, bool, u32, Vec<u32>, Vec<u32>) {
+    render_runs_in_paragraph_scope_with_storage(para, ctx, &crate::storage::Unbounded)
+        .expect("unbounded run XML")
+}
+
+fn render_runs_in_paragraph_scope_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<(String, bool, u32, Vec<u32>, Vec<u32>), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // ID 참조 무결성 (구현계획서 1.5): 실제 char_shapes entry 만 reference.
     // 빈 IR 의 fallback 0 은 제외 — char_shapes 미등록 문서(`Document::default()`)의
     // 직렬화를 깨지 않도록.
@@ -1550,10 +2268,11 @@ fn render_runs_in_paragraph_scope(
         && para.markpen_marks.is_empty()
     {
         // 방출할 것이 없는 문단 — 옮길 슬롯도 없으므로 위치 축은 그대로다.
-        return (String::new(), true, 0, Vec::new(), Vec::new());
+        return Ok((String::new(), true, 0, Vec::new(), Vec::new()));
     }
 
-    let mut splitter = RunSplitter::new(para);
+    ctx.check_storage()?;
+    let mut splitter = RunSplitter::new_with_storage(para, storage)?;
 
     let slot_count = inferred_control_slot_count(para);
     // [#4778] U+FFFC 마커는 컨트롤이 없어도 위치 축의 정규 시민이다(HWP3 암호 변환본:
@@ -1568,8 +2287,8 @@ fn render_runs_in_paragraph_scope(
             // char-offset 정합을 보존하고, 그 XML 만 render_control_slot 의 consume-once
             // 플래그로 억제한다(템플릿이 이미 방출 — 중복 방지). 2번째+ 는 인라인 방출.
             (
-                para.controls.iter().collect(),
-                (0..para.controls.len()).collect(),
+                storage.collect(para.controls.iter()).map_err(xml_error)?,
+                storage.collect(0..para.controls.len()).map_err(xml_error)?,
             )
         } else {
             // [Task #1379] 셀·글상자 subList(depth>0) 경로에서는 ColumnDef 도 인라인 슬롯으로
@@ -1587,13 +2306,13 @@ fn render_runs_in_paragraph_scope(
                 let keep = if matches!(c, Control::ColumnDef(_)) {
                     col_seen += 1;
                     if suppress_first_col && col_seen == 1 {
-                        hidden.push(i);
+                        storage.push(&mut hidden, i).map_err(xml_error)?;
                         false
                     } else {
                         true
                     }
                 } else if matches!(c, Control::SectionDef(_)) {
-                    hidden.push(i);
+                    storage.push(&mut hidden, i).map_err(xml_error)?;
                     false
                 } else {
                     // [#4677] 위치 축은 책갈피까지 포함한다(`occupies_hwpx_slot_axis`).
@@ -1608,8 +2327,8 @@ fn render_runs_in_paragraph_scope(
                     slot
                 };
                 if keep {
-                    s.push(c);
-                    si.push(i);
+                    storage.push(&mut s, c).map_err(xml_error)?;
+                    storage.push(&mut si, i).map_err(xml_error)?;
                 }
             }
             // [Task #1591 v2] hidden 슬롯 정합: cc 증거(slot_count)가 hidden 후보
@@ -1630,8 +2349,8 @@ fn render_runs_in_paragraph_scope(
                         keep_iter.next();
                     }
                     if kept || hidden.contains(&i) {
-                        s2.push(c);
-                        si2.push(i);
+                        storage.push(&mut s2, c).map_err(xml_error)?;
+                        storage.push(&mut si2, i).map_err(xml_error)?;
                     }
                 }
                 // 첫 ColumnDef 를 슬롯으로 되살렸으므로 consume-once 플래그를 유지해
@@ -1656,15 +2375,13 @@ fn render_runs_in_paragraph_scope(
     // 다음 run 머리로 넘기면 재파싱 경계가 15→7 로 무너진다). 표시가 문자 갭
     // 없이 놓인 합성 IR(char_offsets 에 8유닛 갭 없음)은 어느 경계에도 안 걸려
     // 종전 동작(다음 run 머리) 그대로다.
-    let mark_owned_by_prev: Vec<bool> = para
-        .title_marks
-        .iter()
-        .map(|m| {
+    let mark_owned_by_prev: Vec<bool> = storage
+        .collect(para.title_marks.iter().map(|m| {
             para.char_offsets.get(m.char_idx).is_some_and(|&end_unit| {
                 end_unit >= 8 && para.char_shapes.iter().any(|cs| cs.start_pos == end_unit)
             })
-        })
-        .collect();
+        }))
+        .map_err(xml_error)?;
     let mut cursor = InlineCursor {
         title_marks: &para.title_marks,
         markpen_marks: &para.markpen_marks,
@@ -1684,45 +2401,53 @@ fn render_runs_in_paragraph_scope(
         && para.orphan_field_ends.is_empty()
         && splitter.single_run()
     {
-        let t = render_hp_t_content(&para.text, &para.tab_extended, &mut cursor);
-        splitter.content.push_str(&t);
-        flush_trailing_title_marks(&mut splitter.content, &para.tab_extended, &mut cursor);
+        let t =
+            render_hp_t_content_with_storage(&para.text, &para.tab_extended, &mut cursor, storage)?;
+        storage
+            .push_str(&mut splitter.content, &t)
+            .map_err(xml_error)?;
+        flush_trailing_title_marks_with_storage(
+            &mut splitter.content,
+            &para.tab_extended,
+            &mut cursor,
+            storage,
+        )?;
         // 슬롯이 하나도 없는데 char_count 는 슬롯을 주장하면(파서가 못 읽은 컨트롤 —
         // 예: 차례표지 0x0008) 방출 축이 원본보다 짧다 — 이때 lineseg 를 그대로 쓰면
         // 한글이 그 문단부터 본문을 폐기한다(#4778). 축 붕괴를 호출부에 알린다.
         // U+FFFC 마커가 슬롯 주장을 전부 설명하면 종전 계약 유지(#3739).
-        return (
-            splitter.finish(),
+        return Ok((
+            splitter.finish_with_storage(storage)?,
             slot_count == 0 || marker_count >= slot_count,
             0,
             Vec::new(),
             Vec::new(),
-        );
+        ));
     }
 
     // mismatch 경로: 슬롯 위치 추정 불가 — 텍스트(경계 분할 포함) 후 슬롯 일괄 방출
     if slot_count != slots.len() {
-        split_text_into(&mut splitter, para, &mut cursor);
+        split_text_into_with_storage(&mut splitter, para, &mut cursor, storage)?;
         // [#3532] 본문 끝 zero-width 글자모양 경계(문단 마크 전용 모양)는 말미
         // 컨트롤보다 앞에 적용한다 — 종전에는 컨트롤을 먼저 몰아써서 재파싱
         // 경계가 컨트롤 슬롯 폭(8유닛×n)만큼 밀렸다(hwp3-sample10 실측:
         // (50,80)→(66,80)). 경계를 먼저 끊으면 컨트롤이 마지막 run 안쪽(경계
         // 뒤)에 실려 왕복이 고정점이 된다.
         let text_units: u32 = para.text.chars().map(char_utf16_width).sum();
-        splitter.cut_before(text_units);
+        splitter.cut_before_with_storage(text_units, storage)?;
         for slot in slots.iter() {
-            render_control_slot(&mut splitter.content, slot, ctx);
+            render_control_slot_with_storage(&mut splitter.content, slot, ctx, storage)?;
         }
         // [Task #1591 v2] 균형 field_ranges 의 닫는 fieldEnd 도 말미 복원 — 이 경로는
         // fieldBegin(슬롯)만 방출하고 fieldEnd 방출 코드가 없어 same-para 균형 필드가
         // 1/0 으로 깨지며 cc −8 (#1593). #1556 고아 복원과 동형(위치 대신 말미 일괄).
         for fr in &para.field_ranges {
-            emit_field_end(&mut splitter.content, para, fr);
+            emit_field_end_with_storage(&mut splitter.content, para, fr, storage)?;
         }
         // [Task #1556] 위치 추정 불가 경로에서도 고아 fieldEnd 의 8유닛 슬롯은 복원한다
         // (정확한 위치 대신 말미 일괄 — 최소한 char_count 보존).
         for ofe in &para.orphan_field_ends {
-            emit_orphan_field_end(&mut splitter.content, ofe);
+            emit_orphan_field_end_with_storage(&mut splitter.content, ofe, storage)?;
         }
         // 컨트롤을 말미로 몰았으므로 원본 lineseg 좌표계는 더 이상 유효하지 않다 —
         // 호출부가 저장 lineseg 방출을 억제하게 한다(#4778). 단, 슬롯 부족분이
@@ -1737,13 +2462,13 @@ fn render_runs_in_paragraph_scope(
         let shortfall = slot_count.saturating_sub(slots.len());
         let text_unshifted_and_in_range = text_positions_unshifted(para)
             && para.line_segs.iter().all(|ls| ls.text_start <= text_units);
-        return (
-            splitter.finish(),
+        return Ok((
+            splitter.finish_with_storage(storage)?,
             marker_count >= shortfall || text_unshifted_and_in_range,
             0,
             Vec::new(),
             Vec::new(),
-        );
+        ));
     }
 
     // 슬롯으로 세어 놓고 XML 은 내지 않는 컨트롤이 섞여 있으면, 방출 축은 그만큼 짧다.
@@ -1754,13 +2479,18 @@ fn render_runs_in_paragraph_scope(
     // 메인 경로 — UTF-16 위치 축 위에서 슬롯/필드/문자/경계를 함께 처리
     cursor.markpen_marks = &[];
     let mut markpens = PositionedMarkpens {
-        marks: para
-            .markpen_marks
-            .iter()
-            .map(|m| (m.stream_position(para), m))
-            .collect(),
+        marks: storage
+            .collect(
+                para.markpen_marks
+                    .iter()
+                    .map(|m| (m.stream_position(para), m)),
+            )
+            .map_err(xml_error)?,
         next: 0,
     };
+    storage
+        .bytes(std::mem::size_of_val(markpens.marks.as_slice()))
+        .map_err(xml_error)?;
     markpens.marks.sort_by_key(|(pos, _)| *pos);
     let mut text_buf = String::new();
     let mut slot_idx = 0usize;
@@ -1770,9 +2500,13 @@ fn render_runs_in_paragraph_scope(
     let mut hwp5_only_slot_positions: Vec<u32> = Vec::new();
     // [#6871] 우리가 접은 슬롯(중복 쪽번호)의 위치 — 출처와 무관하게 축에서 뺀다.
     let mut collapsed_slot_positions: Vec<u32> = Vec::new();
-    let mut field_end_emitted = vec![false; para.field_ranges.len()];
+    let mut field_end_emitted = storage.vec(para.field_ranges.len()).map_err(xml_error)?;
+    field_end_emitted.resize(para.field_ranges.len(), false);
     // [Task #1556] 고아 fieldEnd 방출 추적.
-    let mut orphan_emitted = vec![false; para.orphan_field_ends.len()];
+    let mut orphan_emitted = storage
+        .vec(para.orphan_field_ends.len())
+        .map_err(xml_error)?;
+    orphan_emitted.resize(para.orphan_field_ends.len(), false);
     let text_char_count = para.text.chars().count();
 
     // 빈 문단(text == "")의 0-length 필드: 메인 루프가 실행되지 않아
@@ -1781,22 +2515,24 @@ fn render_runs_in_paragraph_scope(
     // 연속 또는 중첩 필드의 닫는 순서가 뒤바뀐다.
     if para.text.is_empty() {
         while slot_idx < slots.len() {
-            splitter.cut_before(expected_utf16_pos);
-            markpens.flush(
+            splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+            markpens.flush_with_storage(
                 expected_utf16_pos,
                 &mut splitter,
                 &mut text_buf,
                 para,
                 &mut cursor,
-            );
-            render_control_slot_tracked(
+                storage,
+            )?;
+            render_control_slot_tracked_with_storage(
                 &mut splitter.content,
                 slots[slot_idx],
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
                 &mut collapsed_slot_positions,
-            );
+                storage,
+            )?;
             let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1805,8 +2541,13 @@ fn render_runs_in_paragraph_scope(
                     && fr.start_char_idx == fr.end_char_idx
                     && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
                 {
-                    let guide_units =
-                        emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                    let guide_units = emit_field_end_at_with_storage(
+                        &mut splitter,
+                        para,
+                        fr,
+                        expected_utf16_pos,
+                        storage,
+                    )?;
                     expected_utf16_pos = expected_utf16_pos
                         .saturating_add(guide_units)
                         .saturating_add(8);
@@ -1817,8 +2558,8 @@ fn render_runs_in_paragraph_scope(
         // [Task #1556] 빈 문단의 고아 fieldEnd (char_idx == 0).
         for (i, ofe) in para.orphan_field_ends.iter().enumerate() {
             if ofe.char_idx == 0 && !orphan_emitted[i] {
-                splitter.cut_before(expected_utf16_pos);
-                emit_orphan_field_end(&mut splitter.content, ofe);
+                splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+                emit_orphan_field_end_with_storage(&mut splitter.content, ofe, storage)?;
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 orphan_emitted[i] = true;
             }
@@ -1875,41 +2616,49 @@ fn render_runs_in_paragraph_scope(
                 .position(|(i, ofe)| ofe.char_idx == idx && !orphan_emitted[i])
                 .filter(|_| !field_begin_owns_gap)
             {
-                flush_text_fragment(
+                flush_text_fragment_with_storage(
                     &mut splitter.content,
                     &mut text_buf,
                     &para.tab_extended,
                     &mut cursor,
-                );
-                splitter.cut_before(expected_utf16_pos);
-                emit_orphan_field_end(&mut splitter.content, &para.orphan_field_ends[oi]);
+                    storage,
+                )?;
+                splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+                emit_orphan_field_end_with_storage(
+                    &mut splitter.content,
+                    &para.orphan_field_ends[oi],
+                    storage,
+                )?;
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 orphan_emitted[oi] = true;
                 continue;
             }
-            flush_text_fragment(
+            flush_text_fragment_with_storage(
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
                 &mut cursor,
-            );
+                storage,
+            )?;
             // 슬롯 시작 위치의 경계 — 슬롯은 새 run 소속 (규칙 1)
-            splitter.cut_before(expected_utf16_pos);
-            markpens.flush(
+            splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+            markpens.flush_with_storage(
                 expected_utf16_pos,
                 &mut splitter,
                 &mut text_buf,
                 para,
                 &mut cursor,
-            );
-            render_control_slot_tracked(
+                storage,
+            )?;
+            render_control_slot_tracked_with_storage(
                 &mut splitter.content,
                 slots[slot_idx],
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
                 &mut collapsed_slot_positions,
-            );
+                storage,
+            )?;
             let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1926,8 +2675,13 @@ fn render_runs_in_paragraph_scope(
                     && fr.end_char_idx == idx
                     && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
                 {
-                    let guide_units =
-                        emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                    let guide_units = emit_field_end_at_with_storage(
+                        &mut splitter,
+                        para,
+                        fr,
+                        expected_utf16_pos,
+                        storage,
+                    )?;
                     expected_utf16_pos = expected_utf16_pos
                         .saturating_add(guide_units)
                         .saturating_add(8);
@@ -1939,14 +2693,15 @@ fn render_runs_in_paragraph_scope(
         // [Task #1556] 고아 fieldEnd (char_idx == idx): 문자 push 전에 8유닛 슬롯 방출.
         for (i, ofe) in para.orphan_field_ends.iter().enumerate() {
             if ofe.char_idx == idx && !orphan_emitted[i] {
-                flush_text_fragment(
+                flush_text_fragment_with_storage(
                     &mut splitter.content,
                     &mut text_buf,
                     &para.tab_extended,
                     &mut cursor,
-                );
-                splitter.cut_before(expected_utf16_pos);
-                emit_orphan_field_end(&mut splitter.content, ofe);
+                    storage,
+                )?;
+                splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+                emit_orphan_field_end_with_storage(&mut splitter.content, ofe, storage)?;
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 orphan_emitted[i] = true;
             }
@@ -1960,28 +2715,31 @@ fn render_runs_in_paragraph_scope(
         // 표시 문자를 그 control의 HWPX 표현으로 직접 바꾼다. 실제 리터럴 U+FFFC나
         // 위치가 불명확한 합성 IR은 기존 텍스트 경로를 유지한다.
         if c == '\u{fffc}' && slot_idx < slots.len() && char_pos == expected_utf16_pos {
-            flush_text_fragment(
+            flush_text_fragment_with_storage(
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
                 &mut cursor,
-            );
-            splitter.cut_before(expected_utf16_pos);
-            markpens.flush(
+                storage,
+            )?;
+            splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+            markpens.flush_with_storage(
                 expected_utf16_pos,
                 &mut splitter,
                 &mut text_buf,
                 para,
                 &mut cursor,
-            );
-            render_control_slot_tracked(
+                storage,
+            )?;
+            render_control_slot_tracked_with_storage(
                 &mut splitter.content,
                 slots[slot_idx],
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
                 &mut collapsed_slot_positions,
-            );
+                storage,
+            )?;
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             continue;
@@ -1995,13 +2753,20 @@ fn render_runs_in_paragraph_scope(
                 && fr.end_char_idx == idx
                 && !field_end_emitted[i]
             {
-                flush_text_fragment(
+                flush_text_fragment_with_storage(
                     &mut splitter.content,
                     &mut text_buf,
                     &para.tab_extended,
                     &mut cursor,
-                );
-                let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                    storage,
+                )?;
+                let guide_units = emit_field_end_at_with_storage(
+                    &mut splitter,
+                    para,
+                    fr,
+                    expected_utf16_pos,
+                    storage,
+                )?;
                 expected_utf16_pos = expected_utf16_pos
                     .saturating_add(guide_units)
                     .saturating_add(8);
@@ -2028,28 +2793,31 @@ fn render_runs_in_paragraph_scope(
             && matches!(slots[slot_idx], Control::AutoNumber(_))
             && is_autonum_placeholder
         {
-            flush_text_fragment(
+            flush_text_fragment_with_storage(
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
                 &mut cursor,
-            );
-            splitter.cut_before(expected_utf16_pos);
-            markpens.flush(
+                storage,
+            )?;
+            splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+            markpens.flush_with_storage(
                 expected_utf16_pos,
                 &mut splitter,
                 &mut text_buf,
                 para,
                 &mut cursor,
-            );
-            render_control_slot_tracked(
+                storage,
+            )?;
+            render_control_slot_tracked_with_storage(
                 &mut splitter.content,
                 slots[slot_idx],
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
                 &mut collapsed_slot_positions,
-            );
+                storage,
+            )?;
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             continue;
@@ -2057,17 +2825,25 @@ fn render_runs_in_paragraph_scope(
 
         // 문자 위치의 경계 — 문자는 새 run 소속 (규칙 1)
         if splitter.needs_cut(char_pos) {
-            flush_text_fragment(
+            flush_text_fragment_with_storage(
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
                 &mut cursor,
-            );
-            splitter.cut_before(char_pos);
+                storage,
+            )?;
+            splitter.cut_before_with_storage(char_pos, storage)?;
         }
 
-        markpens.flush(char_pos, &mut splitter, &mut text_buf, para, &mut cursor);
-        text_buf.push(c);
+        markpens.flush_with_storage(
+            char_pos,
+            &mut splitter,
+            &mut text_buf,
+            para,
+            &mut cursor,
+            storage,
+        )?;
+        storage.push_char(&mut text_buf, c).map_err(xml_error)?;
         let width = char_utf16_width(c);
         if char_pos >= expected_utf16_pos {
             expected_utf16_pos = char_pos.saturating_add(width);
@@ -2083,13 +2859,20 @@ fn render_runs_in_paragraph_scope(
                 && !field_end_emitted[i]
                 && fr.start_char_idx < fr.end_char_idx
             {
-                flush_text_fragment(
+                flush_text_fragment_with_storage(
                     &mut splitter.content,
                     &mut text_buf,
                     &para.tab_extended,
                     &mut cursor,
-                );
-                let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                    storage,
+                )?;
+                let guide_units = emit_field_end_at_with_storage(
+                    &mut splitter,
+                    para,
+                    fr,
+                    expected_utf16_pos,
+                    storage,
+                )?;
                 // [#1407] fieldEnd 는 8유닛 슬롯을 소비한다. expected 를 +8 진행하지
                 // 않으면 다음 idx 에서 텍스트-끝 슬롯(newNum 등)이 이 8유닛 갭을
                 // 가로채 텍스트가 +8 밀린다 (143E 문단 0.14: char_offsets[3] 27→35).
@@ -2101,13 +2884,19 @@ fn render_runs_in_paragraph_scope(
         }
     }
 
-    flush_text_fragment(
+    flush_text_fragment_with_storage(
         &mut splitter.content,
         &mut text_buf,
         &para.tab_extended,
         &mut cursor,
-    );
-    flush_trailing_title_marks(&mut splitter.content, &para.tab_extended, &mut cursor);
+        storage,
+    )?;
+    flush_trailing_title_marks_with_storage(
+        &mut splitter.content,
+        &para.tab_extended,
+        &mut cursor,
+        storage,
+    )?;
 
     // end_char_idx >= text.len() 인 경우 루프에서 감지되지 않으므로 루프 후에 처리.
     // [Task #1893] 단, 문단 끝의 0-length 필드(start == end == text.len())는 자기
@@ -2123,7 +2912,13 @@ fn render_runs_in_paragraph_scope(
             if begin_slot_pending {
                 continue;
             }
-            let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+            let guide_units = emit_field_end_at_with_storage(
+                &mut splitter,
+                para,
+                fr,
+                expected_utf16_pos,
+                storage,
+            )?;
             expected_utf16_pos = expected_utf16_pos
                 .saturating_add(guide_units)
                 .saturating_add(8);
@@ -2138,30 +2933,32 @@ fn render_runs_in_paragraph_scope(
                 ofe.char_idx >= text_char_count,
                 "미방출 고아 fieldEnd 는 텍스트 끝이어야 함"
             );
-            splitter.cut_before(expected_utf16_pos);
-            emit_orphan_field_end(&mut splitter.content, ofe);
+            splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+            emit_orphan_field_end_with_storage(&mut splitter.content, ofe, storage)?;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             orphan_emitted[i] = true;
         }
     }
 
     while slot_idx < slots.len() {
-        splitter.cut_before(expected_utf16_pos);
-        markpens.flush(
+        splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+        markpens.flush_with_storage(
             expected_utf16_pos,
             &mut splitter,
             &mut text_buf,
             para,
             &mut cursor,
-        );
-        render_control_slot_tracked(
+            storage,
+        )?;
+        render_control_slot_tracked_with_storage(
             &mut splitter.content,
             slots[slot_idx],
             ctx,
             expected_utf16_pos,
             &mut hwp5_only_slot_positions,
             &mut collapsed_slot_positions,
-        );
+            storage,
+        )?;
         let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
         slot_idx += 1;
         expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -2177,7 +2974,13 @@ fn render_runs_in_paragraph_scope(
                 && fr.start_char_idx == fr.end_char_idx
                 && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
             {
-                let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                let guide_units = emit_field_end_at_with_storage(
+                    &mut splitter,
+                    para,
+                    fr,
+                    expected_utf16_pos,
+                    storage,
+                )?;
                 expected_utf16_pos = expected_utf16_pos
                     .saturating_add(guide_units)
                     .saturating_add(8);
@@ -2188,21 +2991,34 @@ fn render_runs_in_paragraph_scope(
     // [Task #1893] 방어: 지연분이 슬롯 루프에서 매칭되지 못했으면 말미에 방출(종전 동작).
     for (i, fr) in para.field_ranges.iter().enumerate() {
         if !field_end_emitted[i] {
-            let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+            let guide_units = emit_field_end_at_with_storage(
+                &mut splitter,
+                para,
+                fr,
+                expected_utf16_pos,
+                storage,
+            )?;
             expected_utf16_pos = expected_utf16_pos
                 .saturating_add(guide_units)
                 .saturating_add(8);
             field_end_emitted[i] = true;
         }
     }
-    markpens.flush(u32::MAX, &mut splitter, &mut text_buf, para, &mut cursor);
-    (
-        splitter.finish(),
+    markpens.flush_with_storage(
+        u32::MAX,
+        &mut splitter,
+        &mut text_buf,
+        para,
+        &mut cursor,
+        storage,
+    )?;
+    Ok((
+        splitter.finish_with_storage(storage)?,
         axis_faithful,
         expected_utf16_pos,
         hwp5_only_slot_positions,
         collapsed_slot_positions,
-    )
+    ))
 }
 
 fn inferred_control_slot_count(para: &Paragraph) -> usize {
@@ -2360,13 +3176,40 @@ fn flush_text_fragment(
     tab_extended: &[[u16; 7]],
     cursor: &mut InlineCursor<'_>,
 ) {
+    flush_text_fragment_with_storage(
+        out,
+        text_buf,
+        tab_extended,
+        cursor,
+        &crate::storage::Unbounded,
+    )
+    .expect("unbounded run XML")
+}
+
+fn flush_text_fragment_with_storage<S: crate::storage::Storage>(
+    out: &mut String,
+    text_buf: &mut String,
+    tab_extended: &[[u16; 7]],
+    cursor: &mut InlineCursor<'_>,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // [#5537] 닫히는 run 소유의 제목 차례 표시(경계 유닛 = 표시 끝 유닛)가 걸려
     // 있으면 버퍼가 비어도 조각을 방출한다 — 건너뛰면 표시가 다음 run 머리로
     // 넘어가 재파싱 char_shapes 경계가 표시 폭(8유닛)만큼 무너진다.
     if !text_buf.is_empty() || cursor.has_pending_prev_owned_mark() {
-        out.push_str(&render_hp_t_content(text_buf, tab_extended, cursor));
+        storage
+            .push_str(
+                out,
+                &render_hp_t_content_with_storage(text_buf, tab_extended, cursor, storage)?,
+            )
+            .map_err(xml_error)?;
         text_buf.clear();
     }
+
+    Ok(())
 }
 
 /// 문단 끝에 남은 제목 차례 표시를 빈 `<hp:t>` 조각으로 방출한다.
@@ -2378,79 +3221,155 @@ fn flush_trailing_title_marks(
     tab_extended: &[[u16; 7]],
     cursor: &mut InlineCursor<'_>,
 ) {
+    flush_trailing_title_marks_with_storage(out, tab_extended, cursor, &crate::storage::Unbounded)
+        .expect("unbounded run XML")
+}
+
+fn flush_trailing_title_marks_with_storage<S: crate::storage::Storage>(
+    out: &mut String,
+    tab_extended: &[[u16; 7]],
+    cursor: &mut InlineCursor<'_>,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if cursor.mark_idx < cursor.title_marks.len() {
-        out.push_str(&render_hp_t_content("", tab_extended, cursor));
+        storage
+            .push_str(
+                out,
+                &render_hp_t_content_with_storage("", tab_extended, cursor, storage)?,
+            )
+            .map_err(xml_error)?;
     }
+
+    Ok(())
 }
 
 fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeContext) {
+    render_control_slot_with_storage(out, control, ctx, &crate::storage::Unbounded)
+        .expect("unbounded run XML")
+}
+
+fn render_control_slot_with_storage<S: crate::storage::Storage>(
+    out: &mut String,
+    control: &Control,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     match control {
         // [#4677] 책갈피는 위치 슬롯이다 — 슬롯 축에 들어온 이상 여기서 제자리에 방출한다
         // (종전 `emit_inorder_bookmarks` 의 역할을 대체).
-        Control::Bookmark(bm) => match writer_to_string(|w| write_bookmark(w, bm)) {
+        Control::Bookmark(bm) => match checked_xml_result(
+            writer_to_string_with_storage(|w| write_bookmark(w, bm), storage),
+            storage,
+        )? {
             Ok(xml) => {
-                out.push_str("<hp:ctrl>");
-                out.push_str(&xml);
-                out.push_str("</hp:ctrl>");
+                storage.push_str(out, "<hp:ctrl>").map_err(xml_error)?;
+                storage.push_str(out, &xml).map_err(xml_error)?;
+                storage.push_str(out, "</hp:ctrl>").map_err(xml_error)?;
             }
             Err(e) => eprintln!("[hwpx] Bookmark 직렬화 실패: {e}"),
         },
         Control::Hyperlink(link) => {
             let field_id = ctx.next_generated_hyperlink_id();
-            match writer_to_string(|w| write_hyperlink_begin(w, link, field_id)) {
+            match checked_xml_result(
+                writer_to_string_with_storage(
+                    |w| write_hyperlink_begin(w, link, field_id),
+                    storage,
+                ),
+                storage,
+            )? {
                 Ok(xml) => {
-                    out.push_str("<hp:ctrl>");
-                    out.push_str(&xml);
-                    out.push_str("</hp:ctrl>");
+                    storage.push_str(out, "<hp:ctrl>").map_err(xml_error)?;
+                    storage.push_str(out, &xml).map_err(xml_error)?;
+                    storage.push_str(out, "</hp:ctrl>").map_err(xml_error)?;
                 }
                 Err(e) => eprintln!("[hwpx] Hyperlink 직렬화 실패: {e}"),
             }
         }
         // 찾아보기 표식 — 한컴 실측(06926, 23건)은 `secondKey` 가 비면 아예 쓰지 않는다.
         Control::IndexMark(im) => {
-            out.push_str("<hp:ctrl><hp:indexmark><hp:firstKey>");
-            out.push_str(&xml_escape(&im.first_key));
-            out.push_str("</hp:firstKey>");
+            storage
+                .push_str(out, "<hp:ctrl><hp:indexmark><hp:firstKey>")
+                .map_err(xml_error)?;
+            storage
+                .push_str(out, &xml_escape_with_storage(&im.first_key, storage)?)
+                .map_err(xml_error)?;
+            storage.push_str(out, "</hp:firstKey>").map_err(xml_error)?;
             if !im.second_key.is_empty() {
-                out.push_str("<hp:secondKey>");
-                out.push_str(&xml_escape(&im.second_key));
-                out.push_str("</hp:secondKey>");
+                storage.push_str(out, "<hp:secondKey>").map_err(xml_error)?;
+                storage
+                    .push_str(out, &xml_escape_with_storage(&im.second_key, storage)?)
+                    .map_err(xml_error)?;
+                storage
+                    .push_str(out, "</hp:secondKey>")
+                    .map_err(xml_error)?;
             }
-            out.push_str("</hp:indexmark></hp:ctrl>");
+            storage
+                .push_str(out, "</hp:indexmark></hp:ctrl>")
+                .map_err(xml_error)?;
         }
         Control::Equation(eq) => {
-            out.push_str(&render_equation(eq));
+            storage
+                .push_str(out, &render_equation_with_storage(eq, storage)?)
+                .map_err(xml_error)?;
         }
-        Control::Table(tbl) => match writer_to_string(|w| table::write_table(w, tbl, ctx)) {
-            Ok(xml) => out.push_str(&xml),
+        Control::Table(tbl) => match checked_xml_result(
+            writer_to_string_with_storage(
+                |w| table::write_table_with_storage(w, tbl, ctx, storage),
+                storage,
+            ),
+            storage,
+        )? {
+            Ok(xml) => storage.push_str(out, &xml).map_err(xml_error)?,
             Err(e) => eprintln!("[hwpx] Table 직렬화 실패: {e}"),
         },
-        Control::Picture(pic) => match writer_to_string(|w| picture::write_picture(w, pic, ctx)) {
-            Ok(xml) => out.push_str(&xml),
+        Control::Picture(pic) => match checked_xml_result(
+            writer_to_string_with_storage(
+                |w| picture::write_picture_with_storage(w, pic, ctx, storage),
+                storage,
+            ),
+            storage,
+        )? {
+            Ok(xml) => storage.push_str(out, &xml).map_err(xml_error)?,
             Err(e) => eprintln!("[hwpx] Picture 직렬화 실패: {e}"),
         },
         Control::Shape(shape) => {
-            out.push_str(&render_shape(shape, ctx));
+            storage
+                .push_str(out, &render_shape_with_storage(shape, ctx, storage)?)
+                .map_err(xml_error)?;
         }
         Control::Footnote(note) => {
-            out.push_str(&render_footnote(note, ctx));
+            storage
+                .push_str(out, &render_footnote_with_storage(note, ctx, storage)?)
+                .map_err(xml_error)?;
         }
         Control::Endnote(note) => {
-            out.push_str(&render_endnote(note, ctx));
+            storage
+                .push_str(out, &render_endnote_with_storage(note, ctx, storage)?)
+                .map_err(xml_error)?;
         }
         Control::Field(f) => {
             // fieldBegin은 <hp:ctrl>...</hp:ctrl>로 감싸야 함 (Table/Picture와 달리)
-            out.push_str("<hp:ctrl>");
+            storage.push_str(out, "<hp:ctrl>").map_err(xml_error)?;
             // [#5866] HWP5 출처 메모(command `MEMO/…`)는 한글 실측 형상(파라미터
             // 6종 + 빈 subList)으로 방출한다 — CROSSREF 로 굳히면 필드 범위
             // 숨김이 풀려 메모 대상 텍스트가 본문에 붙는다.
             if let Some(memo_children) = super::field::memo_field_children_xml(f) {
-                out.push_str(&super::field::field_begin_open_tag(f));
-                out.push('>');
-                out.push_str(&memo_children);
-                out.push_str("</hp:fieldBegin>");
-                out.push_str("</hp:ctrl>");
-                return;
+                storage
+                    .push_str(out, &super::field::field_begin_open_tag(f))
+                    .map_err(xml_error)?;
+                storage.push_char(out, '>').map_err(xml_error)?;
+                storage.push_str(out, &memo_children).map_err(xml_error)?;
+                storage
+                    .push_str(out, "</hp:fieldBegin>")
+                    .map_err(xml_error)?;
+                storage.push_str(out, "</hp:ctrl>").map_err(xml_error)?;
+                return Ok(());
             }
             let generated_params = generated_field_parameters(f);
             let has_params = f.raw_parameters_xml.is_some() || generated_params.is_some();
@@ -2458,72 +3377,121 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                 && !f.memo_paragraphs.is_empty();
             if has_params || has_memo {
                 // [#1391] 자식(parameters / memo subList)이 있으면 start/end 태그.
-                out.push_str(&super::field::field_begin_open_tag(f));
-                out.push('>');
+                storage
+                    .push_str(out, &super::field::field_begin_open_tag(f))
+                    .map_err(xml_error)?;
+                storage.push_char(out, '>').map_err(xml_error)?;
                 if let Some(params) = f
                     .raw_parameters_xml
                     .as_deref()
                     .or(generated_params.as_deref())
                 {
-                    out.push_str(params);
+                    storage.push_str(out, params).map_err(xml_error)?;
                 }
                 if has_memo {
-                    out.push_str(&render_sub_list_open(f.memo_text_direction.as_deref()));
+                    storage
+                        .push_str(
+                            out,
+                            &render_sub_list_open_with_storage(
+                                f.memo_text_direction.as_deref(),
+                                storage,
+                            )?,
+                        )
+                        .map_err(xml_error)?;
                     let mut vert_cursor: u32 = 0;
                     for para in &f.memo_paragraphs {
                         ctx.para_shape_ids.reference(para.para_shape_id);
                         let sid = ctx.effective_style_id(para.style_id);
                         ctx.style_ids.reference(sid as u16);
                         let (runs, linesegs, advance) =
-                            render_paragraph_parts(para, vert_cursor, ctx);
+                            render_paragraph_parts_with_storage(para, vert_cursor, ctx, storage)?;
                         vert_cursor = advance;
                         let pid = ctx.next_para_id();
-                        out.push_str(&render_hp_p_open(para, pid, sid));
-                        out.push_str(&runs);
-                        out.push_str(&linesegs);
-                        out.push_str("</hp:p>");
+                        storage
+                            .push_str(
+                                out,
+                                &render_hp_p_open_with_storage(para, pid, sid, storage)?,
+                            )
+                            .map_err(xml_error)?;
+                        storage.push_str(out, &runs).map_err(xml_error)?;
+                        storage.push_str(out, &linesegs).map_err(xml_error)?;
+                        storage.push_str(out, "</hp:p>").map_err(xml_error)?;
                     }
-                    out.push_str("</hp:subList>");
+                    storage.push_str(out, "</hp:subList>").map_err(xml_error)?;
                 }
-                out.push_str("</hp:fieldBegin>");
+                storage
+                    .push_str(out, "</hp:fieldBegin>")
+                    .map_err(xml_error)?;
             } else {
-                match writer_to_string(|w| write_field_begin(w, f)) {
-                    Ok(xml) => out.push_str(&xml),
+                match checked_xml_result(
+                    writer_to_string_with_storage(|w| write_field_begin(w, f), storage),
+                    storage,
+                )? {
+                    Ok(xml) => storage.push_str(out, &xml).map_err(xml_error)?,
                     Err(e) => eprintln!("[hwpx] Field 직렬화 실패: {e}"),
                 }
             }
-            out.push_str("</hp:ctrl>");
+            storage.push_str(out, "</hp:ctrl>").map_err(xml_error)?;
         }
-        Control::PageHide(ph) => out.push_str(&render_page_hiding(ph)),
+        Control::PageHide(ph) => storage
+            .push_str(out, &render_page_hiding_with_storage(ph, storage)?)
+            .map_err(xml_error)?,
         Control::PageNumberPos(pn) => {
             // [#6869] 같은 문단의 두 번째 이후 쪽번호 위치 컨트롤은 내지 않는다.
             // XML 을 한 글자도 내지 않으므로 `render_control_slot_tracked` 가 이 슬롯을
             // "HWP5 축에만 있는 슬롯" 으로 세고, `#5943` 의 `textpos` 보정이 그대로 걸린다.
             if !ctx.para_page_num_pos_emitted {
                 ctx.para_page_num_pos_emitted = true;
-                out.push_str(&render_page_num(pn));
+                storage
+                    .push_str(out, &render_page_num_with_storage(pn, storage)?)
+                    .map_err(xml_error)?;
             }
         }
-        Control::PageNumCtrl(pnc) => out.push_str(&format!(
-            r#"<hp:ctrl><hp:pageNumCtrl pageStartsOn="{}"/></hp:ctrl>"#,
-            pnc.page_starts_on.as_hwpx()
-        )),
-        Control::NewNumber(nn) => out.push_str(&render_new_num(nn)),
-        Control::Header(h) => out.push_str(&render_header(h, ctx)),
-        Control::Footer(f) => out.push_str(&render_footer(f, ctx)),
-        Control::AutoNumber(an) => out.push_str(&render_autonum(an)),
-        Control::Form(form) => match writer_to_string(|w| super::form::write_form(w, form)) {
+        Control::PageNumCtrl(pnc) => storage
+            .push_str(
+                out,
+                &xml_value(
+                    storage,
+                    format_args!(
+                        r#"<hp:ctrl><hp:pageNumCtrl pageStartsOn="{}"/></hp:ctrl>"#,
+                        pnc.page_starts_on.as_hwpx()
+                    ),
+                )?,
+            )
+            .map_err(xml_error)?,
+        Control::NewNumber(nn) => storage
+            .push_str(out, &render_new_num_with_storage(nn, storage)?)
+            .map_err(xml_error)?,
+        Control::Header(h) => storage
+            .push_str(out, &render_header_with_storage(h, ctx, storage)?)
+            .map_err(xml_error)?,
+        Control::Footer(f) => storage
+            .push_str(out, &render_footer_with_storage(f, ctx, storage)?)
+            .map_err(xml_error)?,
+        Control::AutoNumber(an) => storage
+            .push_str(out, &render_autonum_with_storage(an, storage)?)
+            .map_err(xml_error)?,
+        Control::Form(form) => match checked_xml_result(
+            writer_to_string_with_storage(|w| super::form::write_form(w, form), storage),
+            storage,
+        )? {
             // 폼은 <hp:run> 직접 자식 (Table/Picture와 동일, <hp:ctrl> 비포장)
-            Ok(xml) => out.push_str(&xml),
+            Ok(xml) => storage.push_str(out, &xml).map_err(xml_error)?,
             Err(e) => eprintln!("[hwpx] Form 직렬화 실패: {e}"),
         },
-        Control::CharOverlap(co) => out.push_str(&render_compose(co)),
+        Control::CharOverlap(co) => storage
+            .push_str(out, &render_compose_with_storage(co, storage)?)
+            .map_err(xml_error)?,
         // [Task #1587] 덧말(Ruby) 인라인 방출. is_hwpx_inline_slot 에 등록돼 슬롯 위치는
         // 자동이나 종전 방출 arm 부재로 드롭됐다. parse_dutmal 의 역매핑.
-        Control::Ruby(r) => out.push_str(&render_dutmal(r)),
+        Control::Ruby(r) => storage
+            .push_str(out, &render_dutmal_with_storage(r, storage)?)
+            .map_err(xml_error)?,
         // 숨은 설명 — 화면에 안 보여도 파일에는 문단 리스트로 존재한다. 방출 arm 이
         // 없던 탓에 저장할 때마다 통째로 사라졌다(자세한 근거는 아래 catch-all 주석).
-        Control::HiddenComment(hc) => out.push_str(&render_hidden_comment(hc, ctx)),
+        Control::HiddenComment(hc) => storage
+            .push_str(out, &render_hidden_comment_with_storage(hc, ctx, storage)?)
+            .map_err(xml_error)?,
         // [Task #1379/#1584] 인라인 colPr 방출.
         // - subList(depth>0): 전부 인라인 방출(원본 XML 인라인 존재).
         // - 본문(depth 0): 첫 문단의 첫 ColumnDef 1개는 섹션 템플릿 colPr 앵커가 이미
@@ -2533,7 +3501,9 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
             if ctx.sub_list_depth == 0 && ctx.body_coldef_template_pending {
                 ctx.body_coldef_template_pending = false;
             } else {
-                out.push_str(&render_col_pr_ctrl(cd));
+                storage
+                    .push_str(out, &render_col_pr_ctrl_with_storage(cd, storage)?)
+                    .map_err(xml_error)?;
             }
         }
         // [#4388] Unknown은 HWPX 로 옮길 대응 표현이 없어 여기서도 드롭된다.
@@ -2559,6 +3529,10 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         //     여전히 별도 작업이 필요하다.
         c => warn_if_unrepresentable_in_hwpx(c),
     }
+
+    ctx.check_storage()?;
+
+    Ok(())
 }
 
 /// [#4388] HWPX 로 옮길 대응 표현이 없어 드롭되는 컨트롤(Hyperlink/Unknown)을
@@ -2601,6 +3575,16 @@ fn warn_if_unrepresentable_in_hwpx(control: &Control) {
 /// 덧말(Ruby) `<hp:dutmal>` 직렬화 (#1587). `parse_dutmal` 의 역매핑.
 /// 속성 순서는 한컴 실측(posType szRatio option styleIDRef align)을 따른다.
 fn render_dutmal(r: &Ruby) -> String {
+    render_dutmal_with_storage(r, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn render_dutmal_with_storage<S: crate::storage::Storage>(
+    r: &Ruby,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let pos_type = match r.pos_type {
         1 => "BOTTOM",
         _ => "TOP",
@@ -2610,15 +3594,18 @@ fn render_dutmal(r: &Ruby) -> String {
         2 => "CENTER",
         _ => "LEFT",
     };
-    format!(
-        r#"<hp:dutmal posType="{}" szRatio="{}" option="{}" styleIDRef="{}" align="{}"><hp:mainText>{}</hp:mainText><hp:subText>{}</hp:subText></hp:dutmal>"#,
-        pos_type,
-        r.sz_ratio,
-        r.option,
-        r.style_id_ref,
-        align,
-        xml_escape(&r.main_text),
-        xml_escape(&r.ruby_text),
+    xml_value(
+        storage,
+        format_args!(
+            r#"<hp:dutmal posType="{}" szRatio="{}" option="{}" styleIDRef="{}" align="{}"><hp:mainText>{}</hp:mainText><hp:subText>{}</hp:subText></hp:dutmal>"#,
+            pos_type,
+            r.sz_ratio,
+            r.option,
+            r.style_id_ref,
+            align,
+            xml_escape_with_storage(&r.main_text, storage)?,
+            xml_escape_with_storage(&r.ruby_text, storage)?,
+        ),
     )
 }
 
@@ -2648,6 +3635,16 @@ fn generated_field_parameters(field: &Field) -> Option<String> {
 /// 셀·글상자 subList 인라인 `<hp:ctrl><hp:colPr .../></hp:ctrl>` (#1379 3단계).
 /// `parse_col_pr` / `parse_col_line` / `parse_col_sz`(parser/hwpx/section.rs)의 역매핑.
 fn render_col_pr_ctrl(cd: &ColumnDef) -> String {
+    render_col_pr_ctrl_with_storage(cd, &crate::storage::Unbounded).expect("unbounded section XML")
+}
+
+fn render_col_pr_ctrl_with_storage<S: crate::storage::Storage>(
+    cd: &ColumnDef,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let col_type = match cd.column_type {
         ColumnType::Distribute => "BalancedNewspaper",
         ColumnType::Parallel => "Parallel",
@@ -2658,10 +3655,13 @@ fn render_col_pr_ctrl(cd: &ColumnDef) -> String {
         ColumnDirection::Mirror => "MIRROR",
         ColumnDirection::LeftToRight => "LEFT",
     };
-    let mut out = format!(
-        r#"<hp:ctrl><hp:colPr id="" type="{}" layout="{}" colCount="{}" sameSz="{}" sameGap="{}""#,
-        col_type, layout, cd.column_count, cd.same_width as u8, cd.spacing,
-    );
+    let mut out = xml_value(
+        storage,
+        format_args!(
+            r#"<hp:ctrl><hp:colPr id="" type="{}" layout="{}" colCount="{}" sameSz="{}" sameGap="{}""#,
+            col_type, layout, cd.column_count, cd.same_width as u8, cd.spacing,
+        ),
+    )?;
     // [#4387] sameSz="false"(단 너비 개별 지정)일 때 <hp:colSz>(단별 너비·간격,
     // ColumnDefType 스키마상 colLine 다음 자식)를 방출한다. 미방출 시 HWPX
     // 왕복에서 불균등 단 너비가 사라지고 렌더러(page_layout.rs
@@ -2670,25 +3670,45 @@ fn render_col_pr_ctrl(cd: &ColumnDef) -> String {
     if !cd.same_width {
         for (i, w) in cd.widths.iter().enumerate() {
             let gap = cd.gaps.get(i).copied().unwrap_or(0);
-            col_sz_xml.push_str(&format!(r#"<hp:colSz width="{}" gap="{}"/>"#, w, gap));
+            storage
+                .push_str(
+                    &mut col_sz_xml,
+                    &xml_value(
+                        storage,
+                        format_args!(r#"<hp:colSz width="{}" gap="{}"/>"#, w, gap),
+                    )?,
+                )
+                .map_err(xml_error)?;
         }
     }
     if cd.separator_type != 0 || !col_sz_xml.is_empty() {
-        out.push('>');
+        storage.push_char(&mut out, '>').map_err(xml_error)?;
         if cd.separator_type != 0 {
-            out.push_str(&format!(
-                r#"<hp:colLine type="{}" width="{} mm" color="{}"/>"#,
-                col_line_type_str(cd.separator_type),
-                line_width_mm(cd.separator_width),
-                super::shape::color_to_hex(cd.separator_color),
-            ));
+            storage
+                .push_str(
+                    &mut out,
+                    &xml_value(
+                        storage,
+                        format_args!(
+                            r#"<hp:colLine type="{}" width="{} mm" color="{}"/>"#,
+                            col_line_type_str(cd.separator_type),
+                            line_width_mm(cd.separator_width),
+                            super::shape::color_to_hex_with_storage(cd.separator_color, storage)?,
+                        ),
+                    )?,
+                )
+                .map_err(xml_error)?;
         }
-        out.push_str(&col_sz_xml);
-        out.push_str("</hp:colPr></hp:ctrl>");
+        storage.push_str(&mut out, &col_sz_xml).map_err(xml_error)?;
+        storage
+            .push_str(&mut out, "</hp:colPr></hp:ctrl>")
+            .map_err(xml_error)?;
     } else {
-        out.push_str("/></hp:ctrl>");
+        storage
+            .push_str(&mut out, "/></hp:ctrl>")
+            .map_err(xml_error)?;
     }
-    out
+    Ok(out)
 }
 
 /// `parse_hwpx_line_type` 역매핑 (colLine type).
@@ -2730,6 +3750,16 @@ fn line_width_mm(w: u8) -> &'static str {
 /// `parse_compose`(parser/hwpx/section.rs)의 역매핑. charPr 목록은 미설정(u32::MAX)
 /// 항목 포함 원본 그대로 방출한다 (ID 참조 등록 비대상).
 fn render_compose(co: &CharOverlap) -> String {
+    render_compose_with_storage(co, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn render_compose_with_storage<S: crate::storage::Storage>(
+    co: &CharOverlap,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let circle_type = match co.border_type {
         1 => "SHAPE_CIRCLE",
         2 => "SHAPE_REVERSAL_CIRCLE",
@@ -2746,61 +3776,92 @@ fn render_compose(co: &CharOverlap) -> String {
     };
     // [#5140] 겹침 글자도 사용자 정의 기호일 수 있다. 속성이라 위치 축과 무관하므로
     // 본문과 같은 표를 그대로 적용한다.
-    let text: String = co
-        .chars
-        .iter()
-        .map(|&c| hancom_symbol_for_hwpx(c))
-        .collect();
-    let mut out = format!(
-        r#"<hp:compose circleType="{}" charSz="{}" composeType="{}" charPrCnt="{}" composeText="{}">"#,
-        circle_type,
-        co.inner_char_size,
-        compose_type,
-        co.char_shape_ids.len(),
-        xml_escape(&text),
-    );
+    let text = storage
+        .chars(co.chars.iter().map(|&c| hancom_symbol_for_hwpx(c)))
+        .map_err(xml_error)?;
+    let mut out = xml_value(
+        storage,
+        format_args!(
+            r#"<hp:compose circleType="{}" charSz="{}" composeType="{}" charPrCnt="{}" composeText="{}">"#,
+            circle_type,
+            co.inner_char_size,
+            compose_type,
+            co.char_shape_ids.len(),
+            xml_escape_with_storage(&text, storage)?,
+        ),
+    )?;
     for id in &co.char_shape_ids {
-        out.push_str(&format!(r#"<hp:charPr prIDRef="{}"/>"#, id));
+        storage
+            .push_str(
+                &mut out,
+                &xml_value(storage, format_args!(r#"<hp:charPr prIDRef="{}"/>"#, id))?,
+            )
+            .map_err(xml_error)?;
     }
-    out.push_str("</hp:compose>");
-    out
+    storage
+        .push_str(&mut out, "</hp:compose>")
+        .map_err(xml_error)?;
+    Ok(out)
 }
 
 /// 장식 문자(userChar/prefixChar/suffixChar)용 속성값. '\0'(미설정)은 빈 문자열.
 fn ctrl_char_attr(c: char) -> String {
-    if c == '\0' {
+    ctrl_char_attr_with_storage(c, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn ctrl_char_attr_with_storage<S: crate::storage::Storage>(
+    c: char,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    Ok(if c == '\0' {
         String::new()
     } else {
-        xml_escape(&c.to_string())
-    }
+        xml_escape_with_storage(&xml_value(storage, c)?, storage)?
+    })
 }
 
 /// `<hp:ctrl><hp:autoNum num=".." numType=".."><hp:autoNumFormat .../></hp:autoNum></hp:ctrl>`
 /// 자동 번호(AutoNumber) 컨트롤. format은 pageNum formatType과 동일한 코드→문자열 매핑.
 fn render_autonum(an: &AutoNumber) -> String {
-    format!(
-        concat!(
-            r#"<hp:ctrl><hp:autoNum num="{num}" numType="{nt}">"#,
-            r#"<hp:autoNumFormat type="{ty}" userChar="{u}" prefixChar="{p}" "#,
-            r#"suffixChar="{s}" supscript="{sup}"/></hp:autoNum></hp:ctrl>"#
+    render_autonum_with_storage(an, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn render_autonum_with_storage<S: crate::storage::Storage>(
+    an: &AutoNumber,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    xml_value(
+        storage,
+        format_args!(
+            concat!(
+                r#"<hp:ctrl><hp:autoNum num="{num}" numType="{nt}">"#,
+                r#"<hp:autoNumFormat type="{ty}" userChar="{u}" prefixChar="{p}" "#,
+                r#"suffixChar="{s}" supscript="{sup}"/></hp:autoNum></hp:ctrl>"#
+            ),
+            num = an.number,
+            nt = auto_number_type_to_str(an.number_type),
+            // [#2957] <hp:autoNumFormat type> 은 <hp:pageNum formatType> 과 달리 원 문자
+            // 형식을 "CIRCLED_DIGIT"로 표기한다(각주/미주 경로에서 실측 검증됨, #2742).
+            ty = if an.format == 1 {
+                "CIRCLED_DIGIT"
+            } else if an.format == 18 {
+                // [#6872] 사용자 기호(`NumberFormat::UserChar` 서수). `page_num_format_to_str`
+                // 는 쪽 번호용 0..7 만 알아서 이 값을 DIGIT 으로 떨궜다.
+                "USER_CHAR"
+            } else {
+                page_num_format_to_str(an.format)
+            },
+            u = ctrl_char_attr_with_storage(an.user_symbol, storage)?,
+            p = ctrl_char_attr_with_storage(an.prefix_char, storage)?,
+            s = ctrl_char_attr_with_storage(an.suffix_char, storage)?,
+            sup = an.superscript as u8,
         ),
-        num = an.number,
-        nt = auto_number_type_to_str(an.number_type),
-        // [#2957] <hp:autoNumFormat type> 은 <hp:pageNum formatType> 과 달리 원 문자
-        // 형식을 "CIRCLED_DIGIT"로 표기한다(각주/미주 경로에서 실측 검증됨, #2742).
-        ty = if an.format == 1 {
-            "CIRCLED_DIGIT"
-        } else if an.format == 18 {
-            // [#6872] 사용자 기호(`NumberFormat::UserChar` 서수). `page_num_format_to_str`
-            // 는 쪽 번호용 0..7 만 알아서 이 값을 DIGIT 으로 떨궜다.
-            "USER_CHAR"
-        } else {
-            page_num_format_to_str(an.format)
-        },
-        u = ctrl_char_attr(an.user_symbol),
-        p = ctrl_char_attr(an.prefix_char),
-        s = ctrl_char_attr(an.suffix_char),
-        sup = an.superscript as u8,
     )
 }
 
@@ -2821,40 +3882,70 @@ fn render_header_footer(
     h: HeaderFooterFields<'_>,
     ctx: &mut SerializeContext,
 ) -> String {
-    let mut out = format!(
-        concat!(
-            r#"<hp:ctrl><hp:{tag} id="{id}" applyPageType="{apply}">"#,
-            r#"<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="{va}" "#,
-            r#"linkListIDRef="0" linkListNextIDRef="0" textWidth="{tw}" textHeight="{th}" "#,
-            r#"hasTextRef="{tr}" hasNumRef="{nr}">"#
+    render_header_footer_with_storage(tag, h, ctx, &crate::storage::Unbounded)
+        .expect("unbounded object XML")
+}
+
+fn render_header_footer_with_storage<S: crate::storage::Storage>(
+    tag: &str,
+    h: HeaderFooterFields<'_>,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let mut out = xml_value(
+        storage,
+        format_args!(
+            concat!(
+                r#"<hp:ctrl><hp:{tag} id="{id}" applyPageType="{apply}">"#,
+                r#"<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="{va}" "#,
+                r#"linkListIDRef="0" linkListNextIDRef="0" textWidth="{tw}" textHeight="{th}" "#,
+                r#"hasTextRef="{tr}" hasNumRef="{nr}">"#
+            ),
+            tag = tag,
+            id = h.id,
+            apply = apply_page_type_to_str(h.apply_to),
+            // [#6186] 종전에는 늘 "TOP" 으로 굳혀 저장해 세로 정렬이 왕복에서 유실됐다.
+            va = match (h.list_attr >> 21) & 0b11 {
+                1 => "CENTER",
+                2 => "BOTTOM",
+                _ => "TOP",
+            },
+            tw = h.text_width,
+            th = h.text_height,
+            tr = h.text_ref,
+            nr = h.num_ref,
         ),
-        tag = tag,
-        id = h.id,
-        apply = apply_page_type_to_str(h.apply_to),
-        // [#6186] 종전에는 늘 "TOP" 으로 굳혀 저장해 세로 정렬이 왕복에서 유실됐다.
-        va = match (h.list_attr >> 21) & 0b11 {
-            1 => "CENTER",
-            2 => "BOTTOM",
-            _ => "TOP",
-        },
-        tw = h.text_width,
-        th = h.text_height,
-        tr = h.text_ref,
-        nr = h.num_ref,
-    );
+    )?;
     let mut vert_cursor: u32 = 0;
     for p in h.paragraphs.iter() {
-        let (runs, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
+        let (runs, linesegs, advance) =
+            render_paragraph_parts_with_storage(p, vert_cursor, ctx, storage)?;
         vert_cursor = advance;
         let pid = ctx.next_para_id();
         let sid = ctx.effective_style_id(p.style_id);
-        out.push_str(&render_hp_p_open(p, pid, sid));
-        out.push_str(&runs);
-        out.push_str(&linesegs);
-        out.push_str("</hp:p>");
+        storage
+            .push_str(
+                &mut out,
+                &render_hp_p_open_with_storage(p, pid, sid, storage)?,
+            )
+            .map_err(xml_error)?;
+        storage.push_str(&mut out, &runs).map_err(xml_error)?;
+        storage.push_str(&mut out, &linesegs).map_err(xml_error)?;
+        storage.push_str(&mut out, "</hp:p>").map_err(xml_error)?;
     }
-    out.push_str(&format!("</hp:subList></hp:{tag}></hp:ctrl>", tag = tag));
-    out
+    storage
+        .push_str(
+            &mut out,
+            &xml_value(
+                storage,
+                format_args!("</hp:subList></hp:{tag}></hp:ctrl>", tag = tag),
+            )?,
+        )
+        .map_err(xml_error)?;
+    Ok(out)
 }
 
 /// render_header_footer 공통 인자 묶음 (Header/Footer가 동일 필드를 가짐).
@@ -2878,7 +3969,18 @@ fn hwpx_header_footer_id(raw_ctrl_extra: &[u8]) -> u32 {
 }
 
 fn render_header(h: &Header, ctx: &mut SerializeContext) -> String {
-    render_header_footer(
+    render_header_with_storage(h, ctx, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn render_header_with_storage<S: crate::storage::Storage>(
+    h: &Header,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    render_header_footer_with_storage(
         "header",
         HeaderFooterFields {
             id: hwpx_header_footer_id(&h.raw_ctrl_extra),
@@ -2891,11 +3993,23 @@ fn render_header(h: &Header, ctx: &mut SerializeContext) -> String {
             paragraphs: &h.paragraphs,
         },
         ctx,
+        storage,
     )
 }
 
 fn render_footer(f: &Footer, ctx: &mut SerializeContext) -> String {
-    render_header_footer(
+    render_footer_with_storage(f, ctx, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn render_footer_with_storage<S: crate::storage::Storage>(
+    f: &Footer,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    render_header_footer_with_storage(
         "footer",
         HeaderFooterFields {
             id: hwpx_header_footer_id(&f.raw_ctrl_extra),
@@ -2908,23 +4022,37 @@ fn render_footer(f: &Footer, ctx: &mut SerializeContext) -> String {
             paragraphs: &f.paragraphs,
         },
         ctx,
+        storage,
     )
 }
 
 /// `<hp:ctrl><hp:pageHiding .../></hp:ctrl>` — 감추기(PageHide) 컨트롤.
 /// `parse_page_hiding_attrs`의 역매핑. bool → "0"/"1" (한컴 정합).
 fn render_page_hiding(ph: &PageHide) -> String {
-    format!(
-        concat!(
-            r#"<hp:ctrl><hp:pageHiding hideHeader="{}" hideFooter="{}" "#,
-            r#"hideMasterPage="{}" hideBorder="{}" hideFill="{}" hidePageNum="{}"/></hp:ctrl>"#
+    render_page_hiding_with_storage(ph, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn render_page_hiding_with_storage<S: crate::storage::Storage>(
+    ph: &PageHide,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    xml_value(
+        storage,
+        format_args!(
+            concat!(
+                r#"<hp:ctrl><hp:pageHiding hideHeader="{}" hideFooter="{}" "#,
+                r#"hideMasterPage="{}" hideBorder="{}" hideFill="{}" hidePageNum="{}"/></hp:ctrl>"#
+            ),
+            ph.hide_header as u8,
+            ph.hide_footer as u8,
+            ph.hide_master_page as u8,
+            ph.hide_border as u8,
+            ph.hide_fill as u8,
+            ph.hide_page_num as u8,
         ),
-        ph.hide_header as u8,
-        ph.hide_footer as u8,
-        ph.hide_master_page as u8,
-        ph.hide_border as u8,
-        ph.hide_fill as u8,
-        ph.hide_page_num as u8,
     )
 }
 
@@ -2965,17 +4093,30 @@ fn page_num_format_to_str(fmt: u8) -> &'static str {
 
 /// `<hp:ctrl><hp:pageNum .../></hp:ctrl>` — 쪽 번호 위치(PageNumberPos) 컨트롤.
 fn render_page_num(pn: &PageNumberPos) -> String {
+    render_page_num_with_storage(pn, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn render_page_num_with_storage<S: crate::storage::Storage>(
+    pn: &PageNumberPos,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // dash_char 기본값은 '-' (모델: 항상 '-'); '\0'이면 '-'로 폴백.
     let side = if pn.dash_char == '\0' {
         '-'
     } else {
         pn.dash_char
     };
-    format!(
-        r#"<hp:ctrl><hp:pageNum pos="{}" formatType="{}" sideChar="{}"/></hp:ctrl>"#,
-        page_num_pos_to_str(pn.position),
-        page_num_format_to_str(pn.format),
-        xml_escape(&side.to_string()),
+    xml_value(
+        storage,
+        format_args!(
+            r#"<hp:ctrl><hp:pageNum pos="{}" formatType="{}" sideChar="{}"/></hp:ctrl>"#,
+            page_num_pos_to_str(pn.position),
+            page_num_format_to_str(pn.format),
+            xml_escape_with_storage(&xml_value(storage, side)?, storage)?,
+        ),
     )
 }
 
@@ -2998,11 +4139,55 @@ fn auto_number_type_to_str(t: AutoNumberType) -> &'static str {
 
 /// `<hp:ctrl><hp:newNum .../></hp:ctrl>` — 새 번호 지정(NewNumber) 컨트롤.
 fn render_new_num(nn: &NewNumber) -> String {
-    format!(
-        r#"<hp:ctrl><hp:newNum num="{}" numType="{}"/></hp:ctrl>"#,
-        nn.number,
-        auto_number_type_to_str(nn.number_type),
+    render_new_num_with_storage(nn, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn render_new_num_with_storage<S: crate::storage::Storage>(
+    nn: &NewNumber,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    xml_value(
+        storage,
+        format_args!(
+            r#"<hp:ctrl><hp:newNum num="{}" numType="{}"/></hp:ctrl>"#,
+            nn.number,
+            auto_number_type_to_str(nn.number_type),
+        ),
     )
+}
+
+fn checked_xml_result<S: crate::storage::Storage, T>(
+    result: Result<T, SerializeError>,
+    storage: &S,
+) -> Result<Result<T, SerializeError>, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    // Existing semantic-error branches remain; request exhaustion must escape them.
+    storage.bytes(0).map_err(xml_error)?;
+    Ok(result)
+}
+fn writer_to_string_with_storage<S: crate::storage::Storage, F>(
+    f: F,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+    F: FnOnce(
+        &mut Writer<crate::serializer::budget_cursor::BudgetCursor<'_, S>>,
+    ) -> Result<(), SerializeError>,
+{
+    let mut writer = Writer::new(crate::serializer::budget_cursor::BudgetCursor::new(
+        storage,
+        usize::MAX,
+    ));
+    f(&mut writer)?;
+    String::from_utf8(writer.into_inner().into_inner()).map_err(|error| {
+        SerializeError::XmlError(format!("invalid UTF-8 from XML writer: {error}"))
+    })
 }
 
 fn writer_to_string<F>(f: F) -> Result<String, SerializeError>
@@ -3017,30 +4202,68 @@ where
 }
 
 fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
+    render_shape_with_storage(shape, ctx, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn render_shape_with_storage<S: crate::storage::Storage>(
+    shape: &ShapeObject,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // Rectangle: Writer-based serializer (drawText 포함)
     if let ShapeObject::Rectangle(r) = shape {
-        return match writer_to_string(|w| super::shape::write_rect(w, r, ctx)) {
-            Ok(xml) => xml,
-            Err(e) => {
-                eprintln!("[hwpx] Shape::Rectangle 직렬화 실패: {e}");
-                String::new()
-            }
-        };
+        return Ok(
+            match checked_xml_result(
+                writer_to_string_with_storage(
+                    |w| super::shape::write_rect_with_storage(w, r, ctx, storage),
+                    storage,
+                ),
+                storage,
+            )? {
+                Ok(xml) => xml,
+                Err(e) => {
+                    eprintln!("[hwpx] Shape::Rectangle 직렬화 실패: {e}");
+                    String::new()
+                }
+            },
+        );
     }
     // Line: Writer-based serializer
     if let ShapeObject::Line(l) = shape {
-        return match writer_to_string(|w| super::shape::write_line(w, l, ctx)) {
-            Ok(xml) => xml,
-            Err(e) => {
-                eprintln!("[hwpx] Shape::Line 직렬화 실패: {e}");
-                String::new()
-            }
-        };
+        return Ok(
+            match checked_xml_result(
+                writer_to_string_with_storage(
+                    |w| super::shape::write_line_with_storage(w, l, ctx, storage),
+                    storage,
+                ),
+                storage,
+            )? {
+                Ok(xml) => xml,
+                Err(e) => {
+                    eprintln!("[hwpx] Shape::Line 직렬화 실패: {e}");
+                    String::new()
+                }
+            },
+        );
     }
     if let ShapeObject::Group(g) = shape {
-        let mut xml = match writer_to_string(|w| {
-            super::shape::write_container_open(w, &g.common, &g.shape_attr)
-        }) {
+        let mut xml = match checked_xml_result(
+            writer_to_string_with_storage(
+                |w| {
+                    super::shape::write_container_open_with_storage(
+                        w,
+                        &g.common,
+                        &g.shape_attr,
+                        storage,
+                    )
+                },
+                storage,
+            ),
+            storage,
+        )? {
             Ok(xml) => xml,
             Err(e) => {
                 eprintln!("[hwpx] Shape::Group 직렬화 실패: {e}");
@@ -3048,17 +4271,31 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
             }
         };
         for child in &g.children {
-            xml.push_str(&render_shape(child, ctx));
+            storage
+                .push_str(&mut xml, &render_shape_with_storage(child, ctx, storage)?)
+                .map_err(xml_error)?;
         }
         // 캡션 (#1403) 은 자식 도형 뒤에 방출 — 한컴 실물(aift.hwpx) 순서
         // 설명(#1392)은 캡션 직후 (write_container_close 내부)
-        match writer_to_string(|w| {
-            super::shape::write_container_close(w, g.caption.as_ref(), &g.common, ctx)
-        }) {
-            Ok(close) => xml.push_str(&close),
+        match checked_xml_result(
+            writer_to_string_with_storage(
+                |w| {
+                    super::shape::write_container_close_with_storage(
+                        w,
+                        g.caption.as_ref(),
+                        &g.common,
+                        ctx,
+                        storage,
+                    )
+                },
+                storage,
+            ),
+            storage,
+        )? {
+            Ok(close) => storage.push_str(&mut xml, &close).map_err(xml_error)?,
             Err(e) => eprintln!("[hwpx] Shape::Group 닫기 실패: {e}"),
         }
-        return xml;
+        return Ok(xml);
     }
     const NO_PTS: &[crate::model::Point] = &[];
     let (tag, c, caption, drawing, points): (
@@ -3100,61 +4337,93 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
         ),
         ShapeObject::Group(_) => unreachable!(),
         ShapeObject::Picture(pic) => {
-            return match writer_to_string(|w| picture::write_picture(w, pic, ctx)) {
-                Ok(xml) => xml,
-                Err(e) => {
-                    eprintln!("[hwpx] Shape::Picture 직렬화 실패: {e}");
-                    String::new()
-                }
-            };
+            return Ok(
+                match checked_xml_result(
+                    writer_to_string_with_storage(
+                        |w| picture::write_picture_with_storage(w, pic, ctx, storage),
+                        storage,
+                    ),
+                    storage,
+                )? {
+                    Ok(xml) => xml,
+                    Err(e) => {
+                        eprintln!("[hwpx] Shape::Picture 직렬화 실패: {e}");
+                        String::new()
+                    }
+                },
+            );
         }
         ShapeObject::Chart(ch) => ("chart", &ch.common, &ch.caption, None, NO_PTS),
         ShapeObject::Ole(o) => {
             // [#3546] hp:chart 출신(chart_id_ref 표식)은 hp:ole 이 아니라 원형
             // hp:chart(+switch) 구조로 재방출한다.
-            return match writer_to_string(|w| super::shape::write_ole_or_chart(w, o, ctx)) {
-                Ok(xml) => xml,
-                Err(e) => {
-                    eprintln!("[hwpx] Shape::Ole 직렬화 실패: {e}");
-                    String::new()
-                }
-            };
+            return Ok(
+                match checked_xml_result(
+                    writer_to_string_with_storage(
+                        |w| super::shape::write_ole_or_chart_with_storage(w, o, ctx, storage),
+                        storage,
+                    ),
+                    storage,
+                )? {
+                    Ok(xml) => xml,
+                    Err(e) => {
+                        eprintln!("[hwpx] Shape::Ole 직렬화 실패: {e}");
+                        String::new()
+                    }
+                },
+            );
         }
     };
     // [Task #1598] ellipse / arc 전용 지오메트리(center/축/시작끝점) — 미방출 시 한글이
     // 타원/호를 다르게 렌더 → 누적 레이아웃 변동 → 페이지 붕괴(#1589 잔여). hc:pt(polygon/
     // curve) 와 상호배타이므로 동일 위치(shadow 직후, sz 직전)에 방출.
-    let hc = |t: &str, p: &crate::model::Point| format!(r#"<hc:{t} x="{}" y="{}"/>"#, p.x, p.y);
+    let hc = |t: &str, p: &crate::model::Point| {
+        xml_value(
+            storage,
+            format_args!(r#"<hc:{t} x="{}" y="{}"/>"#, p.x, p.y),
+        )
+    };
     let geom_tail = match shape {
-        ShapeObject::Ellipse(e) => format!(
-            "{}{}{}{}{}{}{}",
-            hc("center", &e.center),
-            hc("ax1", &e.axis1),
-            hc("ax2", &e.axis2),
-            hc("start1", &e.start1),
-            hc("end1", &e.end1),
-            hc("start2", &e.start2),
-            hc("end2", &e.end2),
-        ),
-        ShapeObject::Arc(a) => format!(
-            "{}{}{}",
-            hc("center", &a.center),
-            hc("ax1", &a.axis1),
-            hc("ax2", &a.axis2),
-        ),
+        ShapeObject::Ellipse(e) => xml_value(
+            storage,
+            format_args!(
+                "{}{}{}{}{}{}{}",
+                hc("center", &e.center)?,
+                hc("ax1", &e.axis1)?,
+                hc("ax2", &e.axis2)?,
+                hc("start1", &e.start1)?,
+                hc("end1", &e.end1)?,
+                hc("start2", &e.start2)?,
+                hc("end2", &e.end2)?,
+            ),
+        )?,
+        ShapeObject::Arc(a) => xml_value(
+            storage,
+            format_args!(
+                "{}{}{}",
+                hc("center", &a.center)?,
+                hc("ax1", &a.axis1)?,
+                hc("ax2", &a.axis2)?,
+            ),
+        )?,
         // [#4676] curve 는 점을 `<hp:seg>` 체인으로 방출한다 — `<hc:pt>` 나열은 한글이
         // 열다 죽는다(RPC 0x800706BE). 한컴 원본 실측: hp:curve 는 seg 만 쓰고 hc:pt 는
         // 한 번도 쓰지 않는다. seg 는 이웃한 두 점을 잇는 구간이므로 점 N 개 → seg N-1 개.
-        ShapeObject::Curve(cv) => curve_segs_xml(&cv.points, &cv.segment_types),
+        ShapeObject::Curve(cv) => {
+            curve_segs_xml_with_storage(&cv.points, &cv.segment_types, storage)?
+        }
         _ => String::new(),
     };
     // [#4388] `<hp:arc>` 전용 `type` 속성(NORMAL/PIE/CHORD) — OWPML `CArcType` 계약.
     // 종전엔 이 속성 자체가 방출되지 않아 `arc_type` 이 항상 0(NORMAL)으로 저장됐다.
     let extra_attrs = match shape {
-        ShapeObject::Arc(a) => format!(r#" type="{}""#, arc_type_hwpx_str(a.arc_type)),
+        ShapeObject::Arc(a) => xml_value(
+            storage,
+            format_args!(r#" type="{}""#, arc_type_hwpx_str(a.arc_type)),
+        )?,
         _ => String::new(),
     };
-    render_common_shape_xml(
+    render_common_shape_xml_with_storage(
         tag,
         c,
         caption,
@@ -3163,6 +4432,7 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
         &geom_tail,
         &extra_attrs,
         ctx,
+        storage,
     )
 }
 
@@ -3180,20 +4450,38 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
 /// HWP5 `1`이 기대하는 베지어 제어점 두 개를 담지 않으므로 파서는 이 필드에 옮기지 않는다.
 /// 비어 있으면 한글 호환을 위해 CURVE로 방출한다.
 fn curve_segs_xml(points: &[crate::model::Point], segment_types: &[u8]) -> String {
-    points
-        .windows(2)
-        .enumerate()
-        .map(|(i, w)| {
-            let kind = match segment_types.get(i) {
-                Some(0) => "LINE",
-                _ => "CURVE",
-            };
-            format!(
-                r#"<hp:seg type="{}" x1="{}" y1="{}" x2="{}" y2="{}"/>"#,
-                kind, w[0].x, w[0].y, w[1].x, w[1].y
+    curve_segs_xml_with_storage(points, segment_types, &crate::storage::Unbounded)
+        .expect("unbounded object XML")
+}
+
+fn curve_segs_xml_with_storage<S: crate::storage::Storage>(
+    points: &[crate::model::Point],
+    segment_types: &[u8],
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let mut out = String::new();
+    for (i, w) in points.windows(2).enumerate() {
+        let kind = match segment_types.get(i) {
+            Some(0) => "LINE",
+            _ => "CURVE",
+        };
+        storage
+            .push_str(
+                &mut out,
+                &xml_value(
+                    storage,
+                    format_args!(
+                        r#"<hp:seg type="{}" x1="{}" y1="{}" x2="{}" y2="{}"/>"#,
+                        kind, w[0].x, w[0].y, w[1].x, w[1].y
+                    ),
+                )?,
             )
-        })
-        .collect()
+            .map_err(xml_error)?;
+    }
+    Ok(out)
 }
 
 /// [#4388] `ArcShape.arc_type` (0: Arc, 1: CircularSector, 2: Bow) →
@@ -3217,115 +4505,191 @@ fn render_common_shape_xml(
     extra_attrs: &str,
     ctx: &mut SerializeContext,
 ) -> String {
-    // 도형 좌표계 블록(offset/orgSz/curSz/flip/rotationInfo/renderingInfo) — 누락 시
-    // 회전/뒤집힘이 소실되어 bbox 가 전치되는 등 렌더가 어긋난다(#1501 동류, polygon 등).
-    let shape_block = drawing
-        .map(|d| {
-            writer_to_string(|w| super::shape::write_shape_component_block(w, &d.shape_attr))
-                .unwrap_or_default()
-        })
+    render_common_shape_xml_with_storage(
+        tag,
+        c,
+        caption,
+        drawing,
+        points,
+        geom_tail,
+        extra_attrs,
+        ctx,
+        &crate::storage::Unbounded,
+    )
+    .expect("unbounded object XML")
+}
+
+fn render_common_shape_xml_with_storage<S: crate::storage::Storage>(
+    tag: &str,
+    c: &CommonObjAttr,
+    caption: &Option<crate::model::shape::Caption>,
+    drawing: Option<&crate::model::shape::DrawingObjAttr>,
+    points: &[crate::model::Point],
+    geom_tail: &str,
+    // [#4388] 태그별 부가 속성(현재는 `<hp:arc type="...">` 전용) — 없으면 "".
+    extra_attrs: &str,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let shape_block = if let Some(d) = drawing {
+        checked_xml_result(
+            writer_to_string_with_storage(
+                |w| {
+                    super::shape::write_shape_component_block_with_storage(
+                        w,
+                        &d.shape_attr,
+                        storage,
+                    )
+                },
+                storage,
+            ),
+            storage,
+        )?
+        .unwrap_or_default()
+    } else {
+        String::new()
+    };
+    let geometry = if let Some(d) = drawing {
+        let ls = checked_xml_result(
+            writer_to_string_with_storage(
+                |w| super::shape::write_line_shape_with_storage(w, &d.border_line, storage),
+                storage,
+            ),
+            storage,
+        )?
         .unwrap_or_default();
-    // [#1596] 지오메트리(lineShape/fillBrush/shadow/꼭짓점) — 종전 드롭으로 도형 형상 소실 →
-    // 페이지 붕괴(#1589 잔여). write_rect 와 동형 순서(shape_block 직후, sz 직전).
-    let geometry = drawing
-        .map(|d| {
-            let ls = writer_to_string(|w| super::shape::write_line_shape(w, &d.border_line))
-                .unwrap_or_default();
-            let fb = writer_to_string(|w| super::shape::write_fill_brush(w, &d.fill, ctx))
-                .unwrap_or_default();
-            let sh = writer_to_string(|w| super::shape::write_shadow(w, d)).unwrap_or_default();
-            // [Issue #1944] drawText(도형 내 글상자 문단) — rect 경로(shape.rs write_rect)는
-            // shadow 직후 방출하나 legacy 공용 경로(ellipse/arc/polygon/curve)는 누락해
-            // 도형 안 텍스트가 저장 시 소실됐다(순서도 마름모 라벨 등). OWPML 순서
-            // (shadow → drawText → hc:pt) 대로 shadow 와 points 사이에 방출한다.
-            let dt = d
-                .text_box
-                .as_ref()
-                .filter(|tb| !tb.paragraphs.is_empty())
-                .map(|tb| {
-                    writer_to_string(|w| super::shape::write_draw_text(w, tb, ctx))
-                        .unwrap_or_default()
-                })
-                .unwrap_or_default();
-            let pts: String = points
-                .iter()
-                .map(|p| format!(r#"<hc:pt x="{}" y="{}"/>"#, p.x, p.y))
-                .collect();
-            // [#1598] ellipse/arc 전용 지오메트리(center/축/시작끝점)는 hc:pt 와 상호배타.
-            format!("{ls}{fb}{sh}{dt}{pts}{geom_tail}")
-        })
+        let fb = checked_xml_result(
+            writer_to_string_with_storage(
+                |w| super::shape::write_fill_brush_with_storage(w, &d.fill, ctx, storage),
+                storage,
+            ),
+            storage,
+        )?
         .unwrap_or_default();
+        let sh = checked_xml_result(
+            writer_to_string_with_storage(
+                |w| super::shape::write_shadow_with_storage(w, d, storage),
+                storage,
+            ),
+            storage,
+        )?
+        .unwrap_or_default();
+        let dt = if let Some(tb) = d.text_box.as_ref().filter(|tb| !tb.paragraphs.is_empty()) {
+            checked_xml_result(
+                writer_to_string_with_storage(
+                    |w| super::shape::write_draw_text_with_storage(w, tb, ctx, storage),
+                    storage,
+                ),
+                storage,
+            )?
+            .unwrap_or_default()
+        } else {
+            String::new()
+        };
+        let mut pts = String::new();
+        for p in points {
+            storage
+                .push_str(
+                    &mut pts,
+                    &xml_value(storage, format_args!(r#"<hc:pt x="{}" y="{}"/>"#, p.x, p.y))?,
+                )
+                .map_err(xml_error)?;
+        }
+        xml_value(storage, format_args!("{ls}{fb}{sh}{dt}{pts}{geom_tail}"))?
+    } else {
+        String::new()
+    };
     // 태그 부수 속성 — numberingType/dropcapstyle/href/groupLevel/instid (rect/line 동형).
     let group_level = drawing.map(|d| d.shape_attr.group_level).unwrap_or(0);
     let instid = drawing
         .map(|d| d.inst_id)
         .filter(|&i| i != 0)
         .unwrap_or(c.instance_id);
-    let mut out = format!(
-        concat!(
-            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="{tf}" lock="{lock}" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}"{extra}>"#,
-            "{block}",
-            "{geometry}",
-            r#"<hp:sz width="{w}" height="{h}" widthRelTo="{wrt}" heightRelTo="{hrt}" protect="{prot}"/>"#,
-            r#"<hp:pos treatAsChar="{tac}" affectLSpacing="0" flowWithText="{fwt}" allowOverlap="{ao}" holdAnchorAndSO="{hold}" vertRelTo="{vr}" vertAlign="{va}" horzRelTo="{hr}" horzAlign="{ha}" vertOffset="{vo}" horzOffset="{ho}"/>"#,
-            r#"<hp:outMargin left="{ml}" right="{mr}" top="{mt}" bottom="{mb}"/>"#,
+    let mut out = xml_value(
+        storage,
+        format_args!(
+            concat!(
+                r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="{tf}" lock="{lock}" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}"{extra}>"#,
+                "{block}",
+                "{geometry}",
+                r#"<hp:sz width="{w}" height="{h}" widthRelTo="{wrt}" heightRelTo="{hrt}" protect="{prot}"/>"#,
+                r#"<hp:pos treatAsChar="{tac}" affectLSpacing="0" flowWithText="{fwt}" allowOverlap="{ao}" holdAnchorAndSO="{hold}" vertRelTo="{vr}" vertAlign="{va}" horzRelTo="{hr}" horzAlign="{ha}" vertOffset="{vo}" horzOffset="{ho}"/>"#,
+                r#"<hp:outMargin left="{ml}" right="{mr}" top="{mt}" bottom="{mb}"/>"#,
+            ),
+            tag = tag,
+            extra = extra_attrs,
+            block = shape_block,
+            geometry = geometry,
+            id = c.instance_id,
+            zo = c.z_order,
+            nt = super::shape::numbering_type_str(c.numbering_type),
+            // [#2840] lock(개체 잠금) — IR 보존 값 방출 (종전 "0" 하드코딩).
+            lock = if c.locked { "1" } else { "0" },
+            gl = group_level,
+            iid = instid,
+            tw = text_wrap_to_hwpx(c.text_wrap),
+            // [#2790] textFlow(글 흐름) — 종전 "BOTH_SIDES" 리터럴은 파서
+            // (parse_object_element_attrs:2962)가 IR 에 적재한 값을 저장에서만 버리는 순손실이었다.
+            // write_rect/write_line(shape.rs)·render_equation 은 이미 IR 기반이다.
+            tf = text_flow_to_hwpx(c.text_flow),
+            tac = if c.treat_as_char { "1" } else { "0" },
+            fwt = if c.flow_with_text { "1" } else { "0" },
+            ao = if c.allow_overlap { "1" } else { "0" },
+            hold = if c.prevent_page_break != 0 { "1" } else { "0" },
+            w = c.width,
+            h = c.height,
+            // [#2726] 종전 widthRelTo/heightRelTo 는 "ABSOLUTE" 리터럴, protect 는 아예
+            // 미방출이었다. 파서(parse_object_layout_child:2909)가 이미 3값을 IR 에 적재하므로
+            // 저장에서만 버려지는 순손실이었다. #2697(표)·#2712(rect/line/container/pic) 와 동형.
+            wrt = size_criterion_str(c.width_criterion),
+            hrt = height_criterion_str(c.height_criterion),
+            prot = if c.size_protect { "1" } else { "0" },
+            vr = vert_rel_to_hwpx(c.vert_rel_to),
+            va = vert_align_to_hwpx(c.vert_align),
+            hr = horz_rel_to_hwpx(c.horz_rel_to),
+            ha = horz_align_to_hwpx(c.horz_align),
+            vo = c.vertical_offset,
+            ho = c.horizontal_offset,
+            ml = c.margin.left,
+            mr = c.margin.right,
+            mt = c.margin.top,
+            mb = c.margin.bottom,
         ),
-        tag = tag,
-        extra = extra_attrs,
-        block = shape_block,
-        geometry = geometry,
-        id = c.instance_id,
-        zo = c.z_order,
-        nt = super::shape::numbering_type_str(c.numbering_type),
-        // [#2840] lock(개체 잠금) — IR 보존 값 방출 (종전 "0" 하드코딩).
-        lock = if c.locked { "1" } else { "0" },
-        gl = group_level,
-        iid = instid,
-        tw = text_wrap_to_hwpx(c.text_wrap),
-        // [#2790] textFlow(글 흐름) — 종전 "BOTH_SIDES" 리터럴은 파서
-        // (parse_object_element_attrs:2962)가 IR 에 적재한 값을 저장에서만 버리는 순손실이었다.
-        // write_rect/write_line(shape.rs)·render_equation 은 이미 IR 기반이다.
-        tf = text_flow_to_hwpx(c.text_flow),
-        tac = if c.treat_as_char { "1" } else { "0" },
-        fwt = if c.flow_with_text { "1" } else { "0" },
-        ao = if c.allow_overlap { "1" } else { "0" },
-        hold = if c.prevent_page_break != 0 { "1" } else { "0" },
-        w = c.width,
-        h = c.height,
-        // [#2726] 종전 widthRelTo/heightRelTo 는 "ABSOLUTE" 리터럴, protect 는 아예
-        // 미방출이었다. 파서(parse_object_layout_child:2909)가 이미 3값을 IR 에 적재하므로
-        // 저장에서만 버려지는 순손실이었다. #2697(표)·#2712(rect/line/container/pic) 와 동형.
-        wrt = size_criterion_str(c.width_criterion),
-        hrt = height_criterion_str(c.height_criterion),
-        prot = if c.size_protect { "1" } else { "0" },
-        vr = vert_rel_to_hwpx(c.vert_rel_to),
-        va = vert_align_to_hwpx(c.vert_align),
-        hr = horz_rel_to_hwpx(c.horz_rel_to),
-        ha = horz_align_to_hwpx(c.horz_align),
-        vo = c.vertical_offset,
-        ho = c.horizontal_offset,
-        ml = c.margin.left,
-        mr = c.margin.right,
-        mt = c.margin.top,
-        mb = c.margin.bottom,
-    );
+    )?;
     // 캡션 (#1403) — HWP5 파서는 모든 도형의 캡션을 적재하므로(parser/control/shape.rs)
     // legacy 경로(ellipse/arc/polygon/curve/chart/ole)도 방출해야 소실되지 않는다.
     if let Some(cap) = caption {
-        match writer_to_string(|w| super::table::write_caption(w, cap, ctx)) {
-            Ok(xml) => out.push_str(&xml),
+        match checked_xml_result(
+            writer_to_string_with_storage(
+                |w| super::table::write_caption_with_storage(w, cap, ctx, storage),
+                storage,
+            ),
+            storage,
+        )? {
+            Ok(xml) => storage.push_str(&mut out, &xml).map_err(xml_error)?,
             Err(e) => eprintln!("[hwpx] Shape({tag}) 캡션 직렬화 실패: {e}"),
         }
     }
     // 설명 (#1451) — caption 직후 (OWPML AbstractShapeObjectType: outMargin→caption→shapeComment).
     // picture.rs:104 선례와 동일 순서. legacy 경로(ellipse/arc/polygon/curve/chart/ole) 보존.
     // 빈 description 미방출은 write_shape_comment 내부 가드로 보장된다.
-    match writer_to_string(|w| super::shape::write_shape_comment(w, c)) {
-        Ok(xml) => out.push_str(&xml),
+    match checked_xml_result(
+        writer_to_string_with_storage(
+            |w| super::shape::write_shape_comment_with_storage(w, c, storage),
+            storage,
+        ),
+        storage,
+    )? {
+        Ok(xml) => storage.push_str(&mut out, &xml).map_err(xml_error)?,
         Err(e) => eprintln!("[hwpx] Shape({tag}) shapeComment 직렬화 실패: {e}"),
     }
-    out.push_str(&format!("</hp:{tag}>"));
-    out
+    storage
+        .push_str(&mut out, &xml_value(storage, format_args!("</hp:{tag}>"))?)
+        .map_err(xml_error)?;
+    Ok(out)
 }
 
 /// [#2716] `<hp:footNote>` / `<hp:endNote>` 의 IR 보존 속성 묶음.
@@ -3360,13 +4724,41 @@ struct NoteAttrs {
 /// 닫는 장식이 없는(0) 각주가 오염된다 — HWP5 직렬화기가 `serializer/control.rs` 에서
 /// 같은 이유로 고친 문제이므로 0 이어도 항상 방출한다.
 fn render_note_attrs(attrs: &NoteAttrs) -> String {
+    render_note_attrs_with_storage(attrs, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn render_note_attrs_with_storage<S: crate::storage::Storage>(
+    attrs: &NoteAttrs,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let mut out = String::new();
     if attrs.number_shape != 0 {
-        out.push_str(&format!(r#" flag="{}""#, attrs.number_shape));
+        storage
+            .push_str(
+                &mut out,
+                &xml_value(storage, format_args!(r#" flag="{}""#, attrs.number_shape))?,
+            )
+            .map_err(xml_error)?;
     }
-    out.push_str(&format!(r#" number="{}""#, attrs.number));
+    storage
+        .push_str(
+            &mut out,
+            &xml_value(storage, format_args!(r#" number="{}""#, attrs.number))?,
+        )
+        .map_err(xml_error)?;
     if attrs.prefix_char != 0 {
-        out.push_str(&format!(r#" prefixChar="{}""#, attrs.prefix_char));
+        storage
+            .push_str(
+                &mut out,
+                &xml_value(
+                    storage,
+                    format_args!(r#" prefixChar="{}""#, attrs.prefix_char),
+                )?,
+            )
+            .map_err(xml_error)?;
     }
     // [#6872] 사용자 기호로 온 장식 문자는 같은 이름으로 되돌린다. 한컴은 번호 모양이
     // 사용자 기호일 때 `suffixChar` 를 아예 쓰지 않으므로(156513948 각주 5개 실측),
@@ -3376,11 +4768,19 @@ fn render_note_attrs(attrs: &NoteAttrs) -> String {
     } else {
         "suffixChar"
     };
-    out.push_str(&format!(
-        r#" {}="{}" instId="{}""#,
-        deco_name, attrs.suffix_char, attrs.inst_id
-    ));
-    out
+    storage
+        .push_str(
+            &mut out,
+            &xml_value(
+                storage,
+                format_args!(
+                    r#" {}="{}" instId="{}""#,
+                    deco_name, attrs.suffix_char, attrs.inst_id
+                ),
+            )?,
+        )
+        .map_err(xml_error)?;
+    Ok(out)
 }
 
 /// [#2726] 너비 기준 → HWPX `widthRelTo`. 파서 `parse_size_criterion(_, true)` 의 정확한 역.
@@ -3416,24 +4816,55 @@ fn render_note_sublist(
     paragraphs: &[Paragraph],
     ctx: &mut SerializeContext,
 ) -> String {
-    let mut out = format!(
-        r#"<hp:ctrl><hp:{tag}{attrs}><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
-        tag = tag,
-        attrs = render_note_attrs(&attrs),
-    );
+    render_note_sublist_with_storage(tag, attrs, paragraphs, ctx, &crate::storage::Unbounded)
+        .expect("unbounded object XML")
+}
+
+fn render_note_sublist_with_storage<S: crate::storage::Storage>(
+    tag: &str,
+    attrs: NoteAttrs,
+    paragraphs: &[Paragraph],
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let mut out = xml_value(
+        storage,
+        format_args!(
+            r#"<hp:ctrl><hp:{tag}{attrs}><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
+            tag = tag,
+            attrs = render_note_attrs_with_storage(&attrs, storage)?,
+        ),
+    )?;
     let mut vert_cursor: u32 = 0;
     for p in paragraphs.iter() {
-        let (runs, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
+        let (runs, linesegs, advance) =
+            render_paragraph_parts_with_storage(p, vert_cursor, ctx, storage)?;
         vert_cursor = advance;
         let pid = ctx.next_para_id();
         let sid = ctx.effective_style_id(p.style_id);
-        out.push_str(&render_hp_p_open(p, pid, sid));
-        out.push_str(&runs);
-        out.push_str(&linesegs);
-        out.push_str("</hp:p>");
+        storage
+            .push_str(
+                &mut out,
+                &render_hp_p_open_with_storage(p, pid, sid, storage)?,
+            )
+            .map_err(xml_error)?;
+        storage.push_str(&mut out, &runs).map_err(xml_error)?;
+        storage.push_str(&mut out, &linesegs).map_err(xml_error)?;
+        storage.push_str(&mut out, "</hp:p>").map_err(xml_error)?;
     }
-    out.push_str(&format!("</hp:subList></hp:{tag}></hp:ctrl>", tag = tag));
-    out
+    storage
+        .push_str(
+            &mut out,
+            &xml_value(
+                storage,
+                format_args!("</hp:subList></hp:{tag}></hp:ctrl>", tag = tag),
+            )?,
+        )
+        .map_err(xml_error)?;
+    Ok(out)
 }
 
 /// 숨은 설명(`<hp:hiddenComment>`) — 스키마상 `subList` 하나만 갖는다
@@ -3442,29 +4873,63 @@ fn render_hidden_comment(
     hc: &crate::model::control::HiddenComment,
     ctx: &mut SerializeContext,
 ) -> String {
+    render_hidden_comment_with_storage(hc, ctx, &crate::storage::Unbounded)
+        .expect("unbounded object XML")
+}
+
+fn render_hidden_comment_with_storage<S: crate::storage::Storage>(
+    hc: &crate::model::control::HiddenComment,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let mut out = String::from("<hp:ctrl><hp:hiddenComment>");
-    out.push_str(&render_sub_list_open(None));
+    storage
+        .push_str(&mut out, &render_sub_list_open_with_storage(None, storage)?)
+        .map_err(xml_error)?;
     let mut vert_cursor: u32 = 0;
     for p in hc.paragraphs.iter() {
         ctx.para_shape_ids.reference(p.para_shape_id);
         let sid = ctx.effective_style_id(p.style_id);
         ctx.style_ids.reference(sid as u16);
-        let (runs, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
+        let (runs, linesegs, advance) =
+            render_paragraph_parts_with_storage(p, vert_cursor, ctx, storage)?;
         vert_cursor = advance;
         let pid = ctx.next_para_id();
-        out.push_str(&render_hp_p_open(p, pid, sid));
-        out.push_str(&runs);
-        out.push_str(&linesegs);
-        out.push_str("</hp:p>");
+        storage
+            .push_str(
+                &mut out,
+                &render_hp_p_open_with_storage(p, pid, sid, storage)?,
+            )
+            .map_err(xml_error)?;
+        storage.push_str(&mut out, &runs).map_err(xml_error)?;
+        storage.push_str(&mut out, &linesegs).map_err(xml_error)?;
+        storage.push_str(&mut out, "</hp:p>").map_err(xml_error)?;
     }
-    out.push_str("</hp:subList></hp:hiddenComment></hp:ctrl>");
-    out
+    storage
+        .push_str(&mut out, "</hp:subList></hp:hiddenComment></hp:ctrl>")
+        .map_err(xml_error)?;
+    Ok(out)
 }
 
 fn render_footnote(note: &Footnote, ctx: &mut SerializeContext) -> String {
+    render_footnote_with_storage(note, ctx, &crate::storage::Unbounded)
+        .expect("unbounded object XML")
+}
+
+fn render_footnote_with_storage<S: crate::storage::Storage>(
+    note: &Footnote,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // [#2716] IR 이 보존한 장식 문자/번호 모양/고유 ID 를 모두 방출한다. 종전엔 number 만
     // 써서 저장 왕복마다 앞 장식('문')이 사라지고 뒤 장식이 ')' 로 변조됐다.
-    render_note_sublist(
+    render_note_sublist_with_storage(
         "footNote",
         NoteAttrs {
             number: note.number,
@@ -3476,12 +4941,25 @@ fn render_footnote(note: &Footnote, ctx: &mut SerializeContext) -> String {
         },
         &note.paragraphs,
         ctx,
+        storage,
     )
 }
 
 fn render_endnote(note: &Endnote, ctx: &mut SerializeContext) -> String {
+    render_endnote_with_storage(note, ctx, &crate::storage::Unbounded)
+        .expect("unbounded object XML")
+}
+
+fn render_endnote_with_storage<S: crate::storage::Storage>(
+    note: &Endnote,
+    ctx: &mut SerializeContext,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // [#2716] Footnote 와 동일 계약.
-    render_note_sublist(
+    render_note_sublist_with_storage(
         "endNote",
         NoteAttrs {
             number: note.number,
@@ -3493,10 +4971,21 @@ fn render_endnote(note: &Endnote, ctx: &mut SerializeContext) -> String {
         },
         &note.paragraphs,
         ctx,
+        storage,
     )
 }
 
 fn render_equation(eq: &Equation) -> String {
+    render_equation_with_storage(eq, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn render_equation_with_storage<S: crate::storage::Storage>(
+    eq: &Equation,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let c = &eq.common;
     // 한컴 저장본이 보존하는 크기 보호를 내보내기에서도 유지한다.
     // false는 기존과 같이 생략한다.
@@ -3505,33 +4994,36 @@ fn render_equation(eq: &Equation) -> String {
     } else {
         ""
     };
-    let id = c.instance_id.to_string();
-    let z_order = c.z_order.to_string();
-    let version = xml_escape(&eq.version_info);
-    let baseline = eq.baseline.to_string();
-    let text_color = color_ref_to_hwpx(eq.color);
-    let base_unit = eq.font_size.to_string();
-    let font = xml_escape(&eq.font_name);
-    let script = xml_escape(&eq.script);
-    let width = c.width.to_string();
-    let height = c.height.to_string();
+    let id = xml_value(storage, c.instance_id)?;
+    let z_order = xml_value(storage, c.z_order)?;
+    let version = xml_escape_with_storage(&eq.version_info, storage)?;
+    let baseline = xml_value(storage, eq.baseline)?;
+    let text_color = color_ref_to_hwpx_with_storage(eq.color, storage)?;
+    let base_unit = xml_value(storage, eq.font_size)?;
+    let font = xml_escape_with_storage(&eq.font_name, storage)?;
+    let script = xml_escape_with_storage(&eq.script, storage)?;
+    let width = xml_value(storage, c.width)?;
+    let height = xml_value(storage, c.height)?;
     let treat = if c.treat_as_char { "1" } else { "0" };
     let flow_with_text = if c.flow_with_text { "1" } else { "0" };
-    let vert_offset = c.vertical_offset.to_string();
-    let horz_offset = c.horizontal_offset.to_string();
-    let margin_left = c.margin.left.to_string();
-    let margin_right = c.margin.right.to_string();
-    let margin_top = c.margin.top.to_string();
-    let margin_bottom = c.margin.bottom.to_string();
+    let vert_offset = xml_value(storage, c.vertical_offset)?;
+    let horz_offset = xml_value(storage, c.horizontal_offset)?;
+    let margin_left = xml_value(storage, c.margin.left)?;
+    let margin_right = xml_value(storage, c.margin.right)?;
+    let margin_top = xml_value(storage, c.margin.top)?;
+    let margin_bottom = xml_value(storage, c.margin.bottom)?;
 
     // 설명 (#1392) — outMargin 직후, 빈 description 은 미방출
     let shape_comment = if c.description.is_empty() {
         String::new()
     } else {
-        format!(
-            "<hp:shapeComment>{}</hp:shapeComment>",
-            xml_escape(&c.description)
-        )
+        xml_value(
+            storage,
+            format_args!(
+                "<hp:shapeComment>{}</hp:shapeComment>",
+                xml_escape_with_storage(&c.description, storage)?
+            ),
+        )?
     };
 
     // [#1594] holdAnchorAndSO 는 IR(prevent_page_break)을 보존(종전 "0" 하드코딩 제거).
@@ -3563,15 +5055,17 @@ fn render_equation(eq: &Equation) -> String {
     // [#2782] 개체 겹침 허용(allowOverlap) — 종전 하드코딩 "0" 제거, IR 값을 방출.
     // 같은 요소의 treatAsChar·flowWithText 는 이미 IR 기반이었다.
     let allow_overlap = if c.allow_overlap { "1" } else { "0" };
-
-    format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="{width_rel_to}" height="{height}" heightRelTo="{height_rel_to}"{size_protect}/><hp:pos treatAsChar="{treat}" affectLSpacing="{affect_line_spacing}" flowWithText="{flow_with_text}" allowOverlap="{allow_overlap}" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
-        text_wrap_to_hwpx(c.text_wrap),
-        text_flow_to_hwpx(c.text_flow),
-        vert_rel_to_hwpx(c.vert_rel_to),
-        horz_rel_to_hwpx(c.horz_rel_to),
-        vert_align_to_hwpx(c.vert_align),
-        horz_align_to_hwpx(c.horz_align),
+    xml_value(
+        storage,
+        format_args!(
+            r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="{width_rel_to}" height="{height}" heightRelTo="{height_rel_to}"{size_protect}/><hp:pos treatAsChar="{treat}" affectLSpacing="{affect_line_spacing}" flowWithText="{flow_with_text}" allowOverlap="{allow_overlap}" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+            text_wrap_to_hwpx(c.text_wrap),
+            text_flow_to_hwpx(c.text_flow),
+            vert_rel_to_hwpx(c.vert_rel_to),
+            horz_rel_to_hwpx(c.horz_rel_to),
+            vert_align_to_hwpx(c.vert_align),
+            horz_align_to_hwpx(c.horz_align),
+        ),
     )
 }
 
@@ -3586,19 +5080,29 @@ fn char_utf16_width(c: char) -> u32 {
 }
 
 fn color_ref_to_hwpx(color: u32) -> String {
+    color_ref_to_hwpx_with_storage(color, &crate::storage::Unbounded).expect("unbounded object XML")
+}
+
+fn color_ref_to_hwpx_with_storage<S: crate::storage::Storage>(
+    color: u32,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if color == 0xFFFFFFFF {
-        return "none".to_string();
+        return xml_value(storage, "none");
     }
 
     let a = (color >> 24) & 0xFF;
     let r = color & 0xFF;
     let g = (color >> 8) & 0xFF;
     let b = (color >> 16) & 0xFF;
-    if a == 0 {
-        format!("#{r:02X}{g:02X}{b:02X}")
+    Ok(if a == 0 {
+        xml_value(storage, format_args!("#{r:02X}{g:02X}{b:02X}"))?
     } else {
-        format!("#{a:02X}{r:02X}{g:02X}{b:02X}")
-    }
+        xml_value(storage, format_args!("#{a:02X}{r:02X}{g:02X}{b:02X}"))?
+    })
 }
 
 fn text_wrap_to_hwpx(wrap: TextWrap) -> &'static str {
@@ -3667,29 +5171,62 @@ fn horz_align_to_hwpx(align: HorzAlign) -> &'static str {
 /// [#5847] `vpos_override` 가 있으면 각 줄의 `vertpos` 를 그 값(원본 쪽-상대
 /// 좌표 스냅샷)으로 낸다 — reflow 재계산이 덮어쓴 IR 값 대신.
 fn render_lineseg_array_from_ir(segs: &[LineSeg], vpos_override: Option<&[i32]>) -> String {
+    render_lineseg_array_from_ir_with_storage(segs, vpos_override, &crate::storage::Unbounded)
+        .expect("unbounded run XML")
+}
+
+fn render_lineseg_array_from_ir_with_storage<S: crate::storage::Storage>(
+    segs: &[LineSeg],
+    vpos_override: Option<&[i32]>,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let mut out = String::new();
     for (i, seg) in segs.iter().enumerate() {
         let vpos = vpos_override
             .and_then(|v| v.get(i).copied())
             .unwrap_or(seg.vertical_pos);
-        out.push_str(&render_one_lineseg(seg, seg.text_start, vpos));
+        storage
+            .push_str(
+                &mut out,
+                &render_one_lineseg_with_storage(seg, seg.text_start, vpos, storage)?,
+            )
+            .map_err(xml_error)?;
     }
-    out
+    Ok(out)
 }
 
 /// `<hp:lineseg>` 한 줄 — `textpos` 만 호출부가 정하고 나머지 8필드는 IR 값 그대로.
 fn render_one_lineseg(seg: &LineSeg, text_start: u32, vertical_pos: i32) -> String {
-    format!(
-        r#"<hp:lineseg textpos="{}" vertpos="{}" vertsize="{}" textheight="{}" baseline="{}" spacing="{}" horzpos="{}" horzsize="{}" flags="{}"/>"#,
-        text_start,
-        vertical_pos,
-        seg.line_height,
-        seg.text_height,
-        seg.baseline_distance,
-        seg.line_spacing,
-        seg.column_start,
-        seg.segment_width,
-        seg.tag,
+    render_one_lineseg_with_storage(seg, text_start, vertical_pos, &crate::storage::Unbounded)
+        .expect("unbounded run XML")
+}
+
+fn render_one_lineseg_with_storage<S: crate::storage::Storage>(
+    seg: &LineSeg,
+    text_start: u32,
+    vertical_pos: i32,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    xml_value(
+        storage,
+        format_args!(
+            r#"<hp:lineseg textpos="{}" vertpos="{}" vertsize="{}" textheight="{}" baseline="{}" spacing="{}" horzpos="{}" horzsize="{}" flags="{}"/>"#,
+            text_start,
+            vertical_pos,
+            seg.line_height,
+            seg.text_height,
+            seg.baseline_distance,
+            seg.line_spacing,
+            seg.column_start,
+            seg.segment_width,
+            seg.tag,
+        ),
     )
 }
 
@@ -3722,16 +5259,43 @@ fn next_vert_cursor_from_ir(
 }
 
 fn flush_buf(t_xml: &mut String, buf: &mut String) {
+    flush_buf_with_storage(t_xml, buf, &crate::storage::Unbounded).expect("unbounded run XML")
+}
+
+fn flush_buf_with_storage<S: crate::storage::Storage>(
+    t_xml: &mut String,
+    buf: &mut String,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if !buf.is_empty() {
-        t_xml.push_str(&xml_escape(buf));
+        storage
+            .push_str(t_xml, &xml_escape_with_storage(buf, storage)?)
+            .map_err(xml_error)?;
         buf.clear();
     }
+
+    Ok(())
 }
 
 /// 템플릿의 첫 `<hp:linesegarray>...</hp:linesegarray>` **요소 전체**를
 /// `new_element` 로 치환한다. `new_element` 가 빈 문자열이면 요소가 제거된다
 /// (#1380 — line_segs 빈 문단의 linesegarray 방출 생략).
 fn replace_first_linesegs(xml: &str, new_element: &str) -> String {
+    replace_first_linesegs_with_storage(xml, new_element, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn replace_first_linesegs_with_storage<S: crate::storage::Storage>(
+    xml: &str,
+    new_element: &str,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let open = xml
         .find(LINESEG_SLOT_OPEN)
         .expect("template has linesegarray");
@@ -3739,11 +5303,10 @@ fn replace_first_linesegs(xml: &str, new_element: &str) -> String {
         .find(LINESEG_SLOT_CLOSE)
         .expect("template has closing linesegarray");
     let elem_end = open + close_rel + LINESEG_SLOT_CLOSE.len();
-    let mut out = String::with_capacity(xml.len() + new_element.len());
-    out.push_str(&xml[..open]);
-    out.push_str(new_element);
-    out.push_str(&xml[elem_end..]);
-    out
+    xml_value(
+        storage,
+        format_args!("{}{}{}", &xml[..open], new_element, &xml[elem_end..]),
+    )
 }
 
 /// [#1166] 템플릿 pagePr 의 고정 용지 속성(landscape/width/height)을 IR page_def
@@ -3758,6 +5321,18 @@ fn replace_first_linesegs(xml: &str, new_element: &str) -> String {
 /// 변형됐다 (samples/hwpx 전수 51/74 섹션 영향, 본문 +56.7px 시프트·페이지 수 변동).
 /// gutterType ↔ binding 매핑은 parser/hwpx/section.rs `parse_page_pr` 의 역매핑.
 fn replace_page_pr(xml: &str, page_def: &crate::model::page::PageDef) -> String {
+    replace_page_pr_with_storage(xml, page_def, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn replace_page_pr_with_storage<S: crate::storage::Storage>(
+    xml: &str,
+    page_def: &crate::model::page::PageDef,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // 템플릿의 pagePr 여는 태그(고정 문자열) → IR 기반으로 교체.
     const TEMPLATE_PAGE_PR: &str =
         r#"<hp:pagePr landscape="WIDELY" width="59528" height="84186" gutterType="LEFT_ONLY">"#;
@@ -3771,36 +5346,42 @@ fn replace_page_pr(xml: &str, page_def: &crate::model::page::PageDef) -> String 
         crate::model::page::BindingMethod::DuplexSided => "LEFT_RIGHT",
         crate::model::page::BindingMethod::TopFlip => "TOP_BOTTOM",
     };
-    let new_page_pr = format!(
-        r#"<hp:pagePr landscape="{}" width="{}" height="{}" gutterType="{}">"#,
-        landscape, page_def.width, page_def.height, gutter_type,
-    );
+    let new_page_pr = xml_value(
+        storage,
+        format_args!(
+            r#"<hp:pagePr landscape="{}" width="{}" height="{}" gutterType="{}">"#,
+            landscape, page_def.width, page_def.height, gutter_type,
+        ),
+    )?;
     let out = if xml.contains(TEMPLATE_PAGE_PR) {
-        xml.replacen(TEMPLATE_PAGE_PR, &new_page_pr, 1)
+        xml_replacen(xml, TEMPLATE_PAGE_PR, &new_page_pr, 1, storage)?
     } else {
         // 템플릿이 변경됐거나 이미 치환된 경우 — 원본 유지(회귀 방지).
-        xml.to_string()
+        xml_value(storage, xml)?
     };
 
     // 템플릿의 hp:margin(고정 문자열) → IR 여백 7필드로 교체 (#1388).
     // write_section 은 콘텐츠 삽입 전에 호출하므로 템플릿 내 유일 1회 등장이 보장된다.
     const TEMPLATE_PAGE_MARGIN: &str = r#"<hp:margin header="4252" footer="4252" gutter="0" left="8504" right="8504" top="5668" bottom="4252"/>"#;
-    let new_margin = format!(
-        r#"<hp:margin header="{}" footer="{}" gutter="{}" left="{}" right="{}" top="{}" bottom="{}"/>"#,
-        page_def.margin_header,
-        page_def.margin_footer,
-        page_def.margin_gutter,
-        page_def.margin_left,
-        page_def.margin_right,
-        page_def.margin_top,
-        page_def.margin_bottom,
-    );
-    if out.contains(TEMPLATE_PAGE_MARGIN) {
-        out.replacen(TEMPLATE_PAGE_MARGIN, &new_margin, 1)
+    let new_margin = xml_value(
+        storage,
+        format_args!(
+            r#"<hp:margin header="{}" footer="{}" gutter="{}" left="{}" right="{}" top="{}" bottom="{}"/>"#,
+            page_def.margin_header,
+            page_def.margin_footer,
+            page_def.margin_gutter,
+            page_def.margin_left,
+            page_def.margin_right,
+            page_def.margin_top,
+            page_def.margin_bottom,
+        ),
+    )?;
+    Ok(if out.contains(TEMPLATE_PAGE_MARGIN) {
+        xml_replacen(out, TEMPLATE_PAGE_MARGIN, &new_margin, 1, storage)?
     } else {
         // 템플릿이 변경됐거나 이미 치환된 경우 — 원본 유지(회귀 방지).
         out
-    }
+    })
 }
 
 /// 템플릿의 3개 `pageBorderFill`(BOTH/EVEN/ODD, 하드코딩 borderFillIDRef="1") 을 IR 값으로
@@ -3814,34 +5395,61 @@ fn replace_page_pr(xml: &str, page_def: &crate::model::page::PageDef) -> String 
 /// 늘어난다(#2896 CI 발견 — IR 필드 스윕 baseline 발산). 대신 그 자리는 템플릿에서
 /// 통째로 제거해 원본 문서 구조(단일 BOTH)를 보존한다.
 fn replace_page_border_fill(xml: &str, sec_def: &crate::model::document::SectionDef) -> String {
+    replace_page_border_fill_with_storage(xml, sec_def, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn replace_page_border_fill_with_storage<S: crate::storage::Storage>(
+    xml: &str,
+    sec_def: &crate::model::document::SectionDef,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let entries: [(&str, Option<&crate::model::page::PageBorderFill>); 3] = [
         ("BOTH", Some(&sec_def.page_border_fill)),
         ("EVEN", sec_def.extra_page_border_fills.first()),
         ("ODD", sec_def.extra_page_border_fills.get(1)),
     ];
-    let mut out = xml.to_string();
+    let mut out = xml_value(storage, xml)?;
     for (ty, pbf) in entries {
         // 템플릿 고정 문자열 (empty_section0.xml 와 정확히 일치해야 함).
-        let template = format!(
-            r#"<hp:pageBorderFill type="{ty}" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER"><hp:offset left="1417" right="1417" top="1417" bottom="1417"/></hp:pageBorderFill>"#
-        );
+        let template = xml_value(
+            storage,
+            format_args!(
+                r#"<hp:pageBorderFill type="{ty}" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER"><hp:offset left="1417" right="1417" top="1417" bottom="1417"/></hp:pageBorderFill>"#
+            ),
+        )?;
         if out.contains(&template) {
             let replacement = match pbf {
-                Some(pbf) => render_page_border_fill(ty, pbf),
+                Some(pbf) => render_page_border_fill_with_storage(ty, pbf, storage)?,
                 // IR 에 이 슬롯의 실데이터가 없음 — BOTH 를 복제해 채우는 대신
                 // 요소 자체를 제거한다(원본 없던 EVEN/ODD 요소를 만들어내지 않음).
                 None => String::new(),
             };
-            out = out.replacen(&template, &replacement, 1);
+            out = xml_replacen(out, &template, &replacement, 1, storage)?;
         }
         // 미일치 시 원본 유지(회귀 방지) — replace_page_pr 패턴과 동형.
     }
-    out
+    Ok(out)
 }
 
 /// 단일 `pageBorderFill` 요소를 IR 에서 재구성한다. attr 비트 → textBorder/fillArea/
 /// headerInside/footerInside (parser `page_border_fill_attr` 의 역).
 fn render_page_border_fill(ty: &str, pbf: &crate::model::page::PageBorderFill) -> String {
+    render_page_border_fill_with_storage(ty, pbf, &crate::storage::Unbounded)
+        .expect("unbounded section XML")
+}
+
+fn render_page_border_fill_with_storage<S: crate::storage::Storage>(
+    ty: &str,
+    pbf: &crate::model::page::PageBorderFill,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let text_border = if pbf.attr & 0x0000_0001 != 0 {
         "PAPER"
     } else {
@@ -3864,17 +5472,20 @@ fn render_page_border_fill(ty: &str, pbf: &crate::model::page::PageBorderFill) -
     } else {
         "0"
     };
-    format!(
-        r#"<hp:pageBorderFill type="{ty}" borderFillIDRef="{}" textBorder="{}" headerInside="{}" footerInside="{}" fillArea="{}"><hp:offset left="{}" right="{}" top="{}" bottom="{}"/></hp:pageBorderFill>"#,
-        pbf.border_fill_id,
-        text_border,
-        header_inside,
-        footer_inside,
-        fill_area,
-        pbf.spacing_left,
-        pbf.spacing_right,
-        pbf.spacing_top,
-        pbf.spacing_bottom,
+    xml_value(
+        storage,
+        format_args!(
+            r#"<hp:pageBorderFill type="{ty}" borderFillIDRef="{}" textBorder="{}" headerInside="{}" footerInside="{}" fillArea="{}"><hp:offset left="{}" right="{}" top="{}" bottom="{}"/></hp:pageBorderFill>"#,
+            pbf.border_fill_id,
+            text_border,
+            header_inside,
+            footer_inside,
+            fill_area,
+            pbf.spacing_left,
+            pbf.spacing_right,
+            pbf.spacing_top,
+            pbf.spacing_bottom,
+        ),
     )
 }
 

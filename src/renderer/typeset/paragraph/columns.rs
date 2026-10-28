@@ -13,6 +13,29 @@ pub(super) fn detect_breaks(
     body_height_px: f64,
     dpi: f64,
 ) -> Vec<usize> {
+    match detect_breaks_with_storage(
+        para,
+        col_count,
+        current_column,
+        current_endnote_flow,
+        body_height_px,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(super) fn detect_breaks_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    col_count: u16,
+    current_column: u16,
+    current_endnote_flow: bool,
+    body_height_px: f64,
+    dpi: f64,
+    storage: &S,
+) -> Result<Vec<usize>, S::Error> {
     // 다단 레이아웃에서 문단 내 단 경계 감지
     // [Task #459] on_first_multicolumn_page 가드 제거: 다단 구역이 여러 페이지에 걸칠 때
     // 후속 페이지에서도 LINE_SEG vpos-reset 으로 인코딩된 단 경계를 인식해야 함.
@@ -22,13 +45,13 @@ pub(super) fn detect_breaks(
     // 가드 2종: ①미주 흐름은 한 단 안에서도 vpos 가 크게 되감기므로 제외
     // (ColumnContent.endnote_flow 계약) ②되감김 목표가 단 상단 근방일 때만 인정
     // (detect_near_top_rewind_breaks — 페이지 중간 되감김은 어울림 흐름 잔재).
-    if col_count > 1 && current_column == 0 {
-        detect_column_breaks_in_paragraph(para)
+    Ok(if col_count > 1 && current_column == 0 {
+        detect_column_breaks_in_paragraph_with_storage(para, storage)?
     } else if col_count > 1 && current_column > 0 && !current_endnote_flow {
-        detect_near_top_rewind_breaks(para, body_height_px, dpi)
+        detect_near_top_rewind_breaks_with_storage(para, body_height_px, dpi, storage)?
     } else {
-        vec![0]
-    }
+        storage.collect([0])?
+    })
 }
 
 /// 범위가 구성 줄 수 밖이면 기존 루프를 종료한다. 별도의 fit 판단을 추가하지 않는다.
@@ -71,10 +94,27 @@ pub(super) fn plan_fragment(
 /// 잔재이므로 제외한다. 단 0 시작 경로(`detect_column_breaks_in_paragraph`,
 /// 임계값 없는 any-decrease)는 건드리지 않는다.
 fn detect_near_top_rewind_breaks(para: &Paragraph, body_height_px: f64, dpi: f64) -> Vec<usize> {
+    match detect_near_top_rewind_breaks_with_storage(
+        para,
+        body_height_px,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+fn detect_near_top_rewind_breaks_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    body_height_px: f64,
+    dpi: f64,
+    storage: &S,
+) -> Result<Vec<usize>, S::Error> {
     const NEAR_TOP_RATIO: f64 = 0.15;
-    let mut breaks = vec![0usize];
+    let mut breaks = storage.collect([0usize])?;
     if para.line_segs.len() <= 1 {
-        return breaks;
+        return Ok(breaks);
     }
     for i in 1..para.line_segs.len() {
         let prev = &para.line_segs[i - 1];
@@ -83,22 +123,32 @@ fn detect_near_top_rewind_breaks(para: &Paragraph, body_height_px: f64, dpi: f64
             && crate::renderer::hwpunit_to_px(curr.vertical_pos, dpi)
                 <= body_height_px * NEAR_TOP_RATIO
         {
-            breaks.push(i);
+            storage.push(&mut breaks, i)?;
         }
     }
-    breaks
+    Ok(breaks)
 }
 
 /// 다단 레이아웃에서 문단 내 단 경계를 감지한다.
 fn detect_column_breaks_in_paragraph(para: &Paragraph) -> Vec<usize> {
-    let mut breaks = vec![0usize];
+    match detect_column_breaks_in_paragraph_with_storage(para, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+fn detect_column_breaks_in_paragraph_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    storage: &S,
+) -> Result<Vec<usize>, S::Error> {
+    let mut breaks = storage.collect([0usize])?;
     if para.line_segs.len() <= 1 {
-        return breaks;
+        return Ok(breaks);
     }
     for i in 1..para.line_segs.len() {
         if para.line_segs[i].vertical_pos < para.line_segs[i - 1].vertical_pos {
-            breaks.push(i);
+            storage.push(&mut breaks, i)?;
         }
     }
-    breaks
+    Ok(breaks)
 }

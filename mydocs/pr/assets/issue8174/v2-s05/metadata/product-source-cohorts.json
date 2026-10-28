@@ -1,0 +1,24 @@
+{
+  "validated_s04_product_source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+  "final_package_source": "9c9c272fe1670baf305800dfc906349fa7933d4a",
+  "changed_build_tree_files": [
+    "vendor/rhwp-pdf-import-backend/Cargo.lock"
+  ],
+  "all_rust_sources_manifests_root_lock_build_script_and_fonts_identical": true,
+  "vendor_lock_note": "Backend standalone lock replaces upstream qcms with the already-used local fork; consumer resolves exactly the original root lock dependency versions.",
+  "studio_product_sources_and_tests_identical": true,
+  "compared_paths": [
+    "src",
+    "crates",
+    "vendor",
+    "Cargo.toml",
+    "Cargo.lock",
+    "build.rs",
+    "assets/fonts",
+    "rhwp-studio/src",
+    "rhwp-studio/e2e",
+    "rhwp-studio/package.json",
+    "rhwp-studio/package-lock.json",
+    "rhwp-shared"
+  ]
+}

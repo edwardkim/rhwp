@@ -1,0 +1,646 @@
+{
+  "executable": "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s05-20261025/candidate-native/rhwp",
+  "sha256": "406c7c9f85d6cb7f54f503eb80a73e7deb06258a9ee8b16c1a32d8e748cd9503",
+  "rows": [
+    {
+      "name": "cff-cid-1001-glyphs.pdf",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s05-20261025/candidate-native/rhwp",
+        "import-pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/inputs/cff-cid-1001-glyphs.pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/cff-cid-1001-glyphs.pdf.hwpx",
+        "--resource-profile",
+        "constrained",
+        "--resource-limits",
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/tiny-font-policy.json",
+        "--json"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.020591808017343283,
+      "output_bytes": 6515,
+      "sentinel_preserved": false,
+      "payload": {
+        "bytes": 6515,
+        "execution": {
+          "addressSpaceLimitEnforced": true,
+          "cpuLimitEnforced": true,
+          "descendantGroupCleanup": true,
+          "filesystemNetworkSandbox": false,
+          "limits": {
+            "addressSpaceBytes": 1073741824,
+            "cpuSeconds": 20,
+            "diagnosticsBytes": 8388608,
+            "outputBytes": 33554432,
+            "wallTimeoutMs": 30000
+          },
+          "observedPeakRssBytes": 17776640,
+          "wallMillis": 11
+        },
+        "format": "hwpx",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/cff-cid-1001-glyphs.pdf.hwpx",
+        "pageCount": 1,
+        "resourceProfile": "constrained",
+        "schemaVersion": "1.0",
+        "source": "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/inputs/cff-cid-1001-glyphs.pdf",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "diagnostics.pages"
+        ],
+        "diagnostics": {
+          "pages": [
+            {
+              "deferredTables": 0,
+              "mediaBox": [
+                0.0,
+                0.0,
+                240.0,
+                200.0
+              ],
+              "nestedTables": 0,
+              "outputSection": 0,
+              "semanticTables": 0,
+              "sourcePage": 0,
+              "sourceSpans": [
+                {
+                  "baseline": 50.0,
+                  "bounds": [
+                    10.0,
+                    38.599998474121094,
+                    19.799999237060547,
+                    12.0
+                  ],
+                  "sourceSpan": 0
+                }
+              ],
+              "tableInference": {
+                "bodyParagraphMapping": {
+                  "frames": [
+                    {
+                      "instanceId": 2,
+                      "paragraphCount": 1,
+                      "region": 0,
+                      "spans": [
+                        0
+                      ],
+                      "status": "paragraph_ir"
+                    }
+                  ],
+                  "policy": "owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained",
+                  "semanticParagraphs": 1
+                },
+                "boundaryPaintPolicy": "standard borders or source paint partitioned into cell-owned drawings; no page-level duplicate",
+                "candidateCount": 0,
+                "clipCount": 0,
+                "coordinateSystem": "page-local top-left points; source geometry in page user space",
+                "detectionDeferredReason": null,
+                "executionState": "EXPORTED",
+                "externalBoundaryPaint": {
+                  "owner": "unchanged page source control outside logical table frame",
+                  "sourcePathIndices": []
+                },
+                "glyphCount": 3,
+                "idScope": "source page and deterministic extraction order",
+                "imageCount": 0,
+                "incompleteReasons": [],
+                "initialBlockCount": 1,
+                "interpretation": "observations and competing hypotheses, not authored Excel/HWP objects",
+                "loweringDeferred": [],
+                "nativeBorderCells": 0,
+                "nativeBorderPaintFragments": 0,
+                "nativeCellBackgrounds": {
+                  "policy": "single opaque rectangle behind all owned content becomes standard full-cell fill; source inset is normalized; ambiguous or partial highlights retain source paint",
+                  "sources": []
+                },
+                "paintPathCount": 0,
+                "paragraphMappingPolicy": {
+                  "bodyRegions": "confirmed owner-local paragraphs share the cell paragraph adapter; ambiguous source spans retained",
+                  "confirmed": "one proposal becomes one Paragraph with multiple source LineSegs",
+                  "deferred": "line frames retained; paragraph grouping unverified",
+                  "lineJoins": "inferred wrap connections; original whitespace retained"
+                },
+                "policy": {
+                  "axisTolerancePt": 0.5,
+                  "inlineGapEm": 0.5,
+                  "lineBaselineEm": 0.2,
+                  "maxCandidates": 128,
+                  "maxClipRegions": 512,
+                  "maxGlyphs": 32768,
+                  "maxTiles": 4096,
+                  "maxWork": 1000000
+                },
+                "regionGeometry": "declared clip paths; effective visibility also depends on parent intersections",
+                "rejectedComponents": [],
+                "ruleVersion": "tsg-observations-v1",
+                "schemaVersion": 1,
+                "semanticTables": 0,
+                "status": "observed"
+              },
+              "unsupportedPaths": 0
+            }
+          ],
+          "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+          "parserAllocationBoundsProven": false,
+          "pdfImportSupport": {
+            "boundedXrefRecovery": true,
+            "enabled": true,
+            "icc": true,
+            "jbig2": true,
+            "jpeg2000": true
+          },
+          "resourcePolicy": {
+            "backend": {
+              "cmapBytes": 1048576,
+              "cmapEntries": 100000,
+              "cmapScanBytes": 67108864,
+              "codecAllocationBytes": 33554432,
+              "codecWorkUnits": 1000000000,
+              "decodedBytes": 268435456,
+              "entries": 100000,
+              "filters": 8,
+              "fontEntries": 1,
+              "formDepth": 16,
+              "graphicsStack": 128,
+              "inputBytes": 16777216,
+              "nesting": 16,
+              "objects": 50000,
+              "operators": 250000,
+              "referenceDepth": 32,
+              "referenceVisits": 100000,
+              "spans": 40000,
+              "streamBytes": 33554432,
+              "stringBytes": 65536,
+              "textBytes": 2097152,
+              "xobjectVisits": 10000
+            },
+            "maxDocumentImagePixels": 16000000,
+            "maxDocumentImagePlacements": 10000,
+            "maxDocumentPathOperations": 80000,
+            "maxImagePixels": 4000000,
+            "maxPathOperations": 20000,
+            "maxSelectedPages": 64,
+            "maxSourcePages": 100000,
+            "maxTextBytes": 2097152,
+            "schemaVersion": 1
+          },
+          "resourceUsage": {
+            "codecAllocatedBytes": 0,
+            "codecWorkUnits": 0,
+            "collectionEntries": 65,
+            "contentParseCalls": 1,
+            "decodedBytes": 27860,
+            "failure": null,
+            "formStreamCacheHits": 0,
+            "operators": 5,
+            "pageOperatorCacheHits": 3,
+            "pageStreamCacheHits": 3,
+            "parsedObjects": 58,
+            "referenceVisits": 20,
+            "spans": 1,
+            "textBytes": 6,
+            "xobjectVisits": 0
+          },
+          "sourcePageCount": 1,
+          "warnings": [
+            "Experimental PDF frontend; upstream allocation bounds remain unproven",
+            "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+            "Deferred table families retain positional content; inspect page diagnostics"
+          ]
+        }
+      }
+    },
+    {
+      "name": "cff-simple-four-glyphs.pdf",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s05-20261025/candidate-native/rhwp",
+        "import-pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/inputs/cff-simple-four-glyphs.pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/cff-simple-four-glyphs.pdf.hwpx",
+        "--resource-profile",
+        "constrained",
+        "--resource-limits",
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/tiny-font-policy.json",
+        "--json"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.0208531750831753,
+      "output_bytes": 6483,
+      "sentinel_preserved": false,
+      "payload": {
+        "bytes": 6483,
+        "execution": {
+          "addressSpaceLimitEnforced": true,
+          "cpuLimitEnforced": true,
+          "descendantGroupCleanup": true,
+          "filesystemNetworkSandbox": false,
+          "limits": {
+            "addressSpaceBytes": 1073741824,
+            "cpuSeconds": 20,
+            "diagnosticsBytes": 8388608,
+            "outputBytes": 33554432,
+            "wallTimeoutMs": 30000
+          },
+          "observedPeakRssBytes": 24596480,
+          "wallMillis": 11
+        },
+        "format": "hwpx",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/cff-simple-four-glyphs.pdf.hwpx",
+        "pageCount": 1,
+        "resourceProfile": "constrained",
+        "schemaVersion": "1.0",
+        "source": "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/inputs/cff-simple-four-glyphs.pdf",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "diagnostics.pages"
+        ],
+        "diagnostics": {
+          "pages": [
+            {
+              "deferredTables": 0,
+              "mediaBox": [
+                0.0,
+                0.0,
+                240.0,
+                200.0
+              ],
+              "nestedTables": 0,
+              "outputSection": 0,
+              "semanticTables": 0,
+              "sourcePage": 0,
+              "sourceSpans": [
+                {
+                  "baseline": 50.0,
+                  "bounds": [
+                    10.0,
+                    38.599998474121094,
+                    18.0,
+                    12.0
+                  ],
+                  "sourceSpan": 0
+                }
+              ],
+              "tableInference": {
+                "bodyParagraphMapping": {
+                  "frames": [
+                    {
+                      "instanceId": 2,
+                      "paragraphCount": 1,
+                      "region": 0,
+                      "spans": [
+                        0
+                      ],
+                      "status": "paragraph_ir"
+                    }
+                  ],
+                  "policy": "owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained",
+                  "semanticParagraphs": 1
+                },
+                "boundaryPaintPolicy": "standard borders or source paint partitioned into cell-owned drawings; no page-level duplicate",
+                "candidateCount": 0,
+                "clipCount": 0,
+                "coordinateSystem": "page-local top-left points; source geometry in page user space",
+                "detectionDeferredReason": null,
+                "executionState": "EXPORTED",
+                "externalBoundaryPaint": {
+                  "owner": "unchanged page source control outside logical table frame",
+                  "sourcePathIndices": []
+                },
+                "glyphCount": 3,
+                "idScope": "source page and deterministic extraction order",
+                "imageCount": 0,
+                "incompleteReasons": [],
+                "initialBlockCount": 1,
+                "interpretation": "observations and competing hypotheses, not authored Excel/HWP objects",
+                "loweringDeferred": [],
+                "nativeBorderCells": 0,
+                "nativeBorderPaintFragments": 0,
+                "nativeCellBackgrounds": {
+                  "policy": "single opaque rectangle behind all owned content becomes standard full-cell fill; source inset is normalized; ambiguous or partial highlights retain source paint",
+                  "sources": []
+                },
+                "paintPathCount": 0,
+                "paragraphMappingPolicy": {
+                  "bodyRegions": "confirmed owner-local paragraphs share the cell paragraph adapter; ambiguous source spans retained",
+                  "confirmed": "one proposal becomes one Paragraph with multiple source LineSegs",
+                  "deferred": "line frames retained; paragraph grouping unverified",
+                  "lineJoins": "inferred wrap connections; original whitespace retained"
+                },
+                "policy": {
+                  "axisTolerancePt": 0.5,
+                  "inlineGapEm": 0.5,
+                  "lineBaselineEm": 0.2,
+                  "maxCandidates": 128,
+                  "maxClipRegions": 512,
+                  "maxGlyphs": 32768,
+                  "maxTiles": 4096,
+                  "maxWork": 1000000
+                },
+                "regionGeometry": "declared clip paths; effective visibility also depends on parent intersections",
+                "rejectedComponents": [],
+                "ruleVersion": "tsg-observations-v1",
+                "schemaVersion": 1,
+                "semanticTables": 0,
+                "status": "observed"
+              },
+              "unsupportedPaths": 0
+            }
+          ],
+          "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+          "parserAllocationBoundsProven": false,
+          "pdfImportSupport": {
+            "boundedXrefRecovery": true,
+            "enabled": true,
+            "icc": true,
+            "jbig2": true,
+            "jpeg2000": true
+          },
+          "resourcePolicy": {
+            "backend": {
+              "cmapBytes": 1048576,
+              "cmapEntries": 100000,
+              "cmapScanBytes": 67108864,
+              "codecAllocationBytes": 33554432,
+              "codecWorkUnits": 1000000000,
+              "decodedBytes": 268435456,
+              "entries": 100000,
+              "filters": 8,
+              "fontEntries": 1,
+              "formDepth": 16,
+              "graphicsStack": 128,
+              "inputBytes": 16777216,
+              "nesting": 16,
+              "objects": 50000,
+              "operators": 250000,
+              "referenceDepth": 32,
+              "referenceVisits": 100000,
+              "spans": 40000,
+              "streamBytes": 33554432,
+              "stringBytes": 65536,
+              "textBytes": 2097152,
+              "xobjectVisits": 10000
+            },
+            "maxDocumentImagePixels": 16000000,
+            "maxDocumentImagePlacements": 10000,
+            "maxDocumentPathOperations": 80000,
+            "maxImagePixels": 4000000,
+            "maxPathOperations": 20000,
+            "maxSelectedPages": 64,
+            "maxSourcePages": 100000,
+            "maxTextBytes": 2097152,
+            "schemaVersion": 1
+          },
+          "resourceUsage": {
+            "codecAllocatedBytes": 0,
+            "codecWorkUnits": 0,
+            "collectionEntries": 56,
+            "contentParseCalls": 1,
+            "decodedBytes": 13761,
+            "failure": null,
+            "formStreamCacheHits": 0,
+            "operators": 5,
+            "pageOperatorCacheHits": 3,
+            "pageStreamCacheHits": 3,
+            "parsedObjects": 49,
+            "referenceVisits": 19,
+            "spans": 1,
+            "textBytes": 3,
+            "xobjectVisits": 0
+          },
+          "sourcePageCount": 1,
+          "warnings": [
+            "Experimental PDF frontend; upstream allocation bounds remain unproven",
+            "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+            "Deferred table families retain positional content; inspect page diagnostics"
+          ]
+        }
+      }
+    },
+    {
+      "name": "cid-width-control.pdf",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s05-20261025/candidate-native/rhwp",
+        "import-pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/inputs/cid-width-control.pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/cid-width-control.pdf.hwpx",
+        "--resource-profile",
+        "constrained",
+        "--resource-limits",
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/tiny-font-policy.json",
+        "--json"
+      ],
+      "exit": 1,
+      "elapsed_seconds": 0.010642855893820524,
+      "output_bytes": 21,
+      "sentinel_preserved": true,
+      "payload": {
+        "stdout": "",
+        "stderr": "\uc624\ub958: \uc720\ud6a8\ud558\uc9c0 \uc54a\uc740 \ud30c\uc77c: PDF \uc624\ub958: PDF_RESOURCE_LIMIT: font metric entries\n"
+      }
+    },
+    {
+      "name": "type1-three-mappings.pdf",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s05-20261025/candidate-native/rhwp",
+        "import-pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/inputs/type1-three-mappings.pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/type1-three-mappings.pdf.hwpx",
+        "--resource-profile",
+        "constrained",
+        "--resource-limits",
+        "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/tiny-font-policy.json",
+        "--json"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.02575479308143258,
+      "output_bytes": 6485,
+      "sentinel_preserved": false,
+      "payload": {
+        "bytes": 6485,
+        "execution": {
+          "addressSpaceLimitEnforced": true,
+          "cpuLimitEnforced": true,
+          "descendantGroupCleanup": true,
+          "filesystemNetworkSandbox": false,
+          "limits": {
+            "addressSpaceBytes": 1073741824,
+            "cpuSeconds": 20,
+            "diagnosticsBytes": 8388608,
+            "outputBytes": 33554432,
+            "wallTimeoutMs": 30000
+          },
+          "observedPeakRssBytes": 24571904,
+          "wallMillis": 11
+        },
+        "format": "hwpx",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/type1-three-mappings.pdf.hwpx",
+        "pageCount": 1,
+        "resourceProfile": "constrained",
+        "schemaVersion": "1.0",
+        "source": "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s06-20261025/inputs/type1-three-mappings.pdf",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "diagnostics.pages"
+        ],
+        "diagnostics": {
+          "pages": [
+            {
+              "deferredTables": 0,
+              "mediaBox": [
+                0.0,
+                0.0,
+                240.0,
+                200.0
+              ],
+              "nestedTables": 0,
+              "outputSection": 0,
+              "semanticTables": 0,
+              "sourcePage": 0,
+              "sourceSpans": [
+                {
+                  "baseline": 50.0,
+                  "bounds": [
+                    10.0,
+                    38.599998474121094,
+                    18.0,
+                    12.0
+                  ],
+                  "sourceSpan": 0
+                }
+              ],
+              "tableInference": {
+                "bodyParagraphMapping": {
+                  "frames": [
+                    {
+                      "instanceId": 2,
+                      "paragraphCount": 1,
+                      "region": 0,
+                      "spans": [
+                        0
+                      ],
+                      "status": "paragraph_ir"
+                    }
+                  ],
+                  "policy": "owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained",
+                  "semanticParagraphs": 1
+                },
+                "boundaryPaintPolicy": "standard borders or source paint partitioned into cell-owned drawings; no page-level duplicate",
+                "candidateCount": 0,
+                "clipCount": 0,
+                "coordinateSystem": "page-local top-left points; source geometry in page user space",
+                "detectionDeferredReason": null,
+                "executionState": "EXPORTED",
+                "externalBoundaryPaint": {
+                  "owner": "unchanged page source control outside logical table frame",
+                  "sourcePathIndices": []
+                },
+                "glyphCount": 3,
+                "idScope": "source page and deterministic extraction order",
+                "imageCount": 0,
+                "incompleteReasons": [],
+                "initialBlockCount": 1,
+                "interpretation": "observations and competing hypotheses, not authored Excel/HWP objects",
+                "loweringDeferred": [],
+                "nativeBorderCells": 0,
+                "nativeBorderPaintFragments": 0,
+                "nativeCellBackgrounds": {
+                  "policy": "single opaque rectangle behind all owned content becomes standard full-cell fill; source inset is normalized; ambiguous or partial highlights retain source paint",
+                  "sources": []
+                },
+                "paintPathCount": 0,
+                "paragraphMappingPolicy": {
+                  "bodyRegions": "confirmed owner-local paragraphs share the cell paragraph adapter; ambiguous source spans retained",
+                  "confirmed": "one proposal becomes one Paragraph with multiple source LineSegs",
+                  "deferred": "line frames retained; paragraph grouping unverified",
+                  "lineJoins": "inferred wrap connections; original whitespace retained"
+                },
+                "policy": {
+                  "axisTolerancePt": 0.5,
+                  "inlineGapEm": 0.5,
+                  "lineBaselineEm": 0.2,
+                  "maxCandidates": 128,
+                  "maxClipRegions": 512,
+                  "maxGlyphs": 32768,
+                  "maxTiles": 4096,
+                  "maxWork": 1000000
+                },
+                "regionGeometry": "declared clip paths; effective visibility also depends on parent intersections",
+                "rejectedComponents": [],
+                "ruleVersion": "tsg-observations-v1",
+                "schemaVersion": 1,
+                "semanticTables": 0,
+                "status": "observed"
+              },
+              "unsupportedPaths": 0
+            }
+          ],
+          "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+          "parserAllocationBoundsProven": false,
+          "pdfImportSupport": {
+            "boundedXrefRecovery": true,
+            "enabled": true,
+            "icc": true,
+            "jbig2": true,
+            "jpeg2000": true
+          },
+          "resourcePolicy": {
+            "backend": {
+              "cmapBytes": 1048576,
+              "cmapEntries": 100000,
+              "cmapScanBytes": 67108864,
+              "codecAllocationBytes": 33554432,
+              "codecWorkUnits": 1000000000,
+              "decodedBytes": 268435456,
+              "entries": 100000,
+              "filters": 8,
+              "fontEntries": 1,
+              "formDepth": 16,
+              "graphicsStack": 128,
+              "inputBytes": 16777216,
+              "nesting": 16,
+              "objects": 50000,
+              "operators": 250000,
+              "referenceDepth": 32,
+              "referenceVisits": 100000,
+              "spans": 40000,
+              "streamBytes": 33554432,
+              "stringBytes": 65536,
+              "textBytes": 2097152,
+              "xobjectVisits": 10000
+            },
+            "maxDocumentImagePixels": 16000000,
+            "maxDocumentImagePlacements": 10000,
+            "maxDocumentPathOperations": 80000,
+            "maxImagePixels": 4000000,
+            "maxPathOperations": 20000,
+            "maxSelectedPages": 64,
+            "maxSourcePages": 100000,
+            "maxTextBytes": 2097152,
+            "schemaVersion": 1
+          },
+          "resourceUsage": {
+            "codecAllocatedBytes": 0,
+            "codecWorkUnits": 0,
+            "collectionEntries": 54,
+            "contentParseCalls": 1,
+            "decodedBytes": 13119,
+            "failure": null,
+            "formStreamCacheHits": 0,
+            "operators": 5,
+            "pageOperatorCacheHits": 3,
+            "pageStreamCacheHits": 3,
+            "parsedObjects": 47,
+            "referenceVisits": 19,
+            "spans": 1,
+            "textBytes": 3,
+            "xobjectVisits": 0
+          },
+          "sourcePageCount": 1,
+          "warnings": [
+            "Experimental PDF frontend; upstream allocation bounds remain unproven",
+            "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+            "Deferred table families retain positional content; inspect page diagnostics"
+          ]
+        }
+      }
+    }
+  ]
+}

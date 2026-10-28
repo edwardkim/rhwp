@@ -1,0 +1,58 @@
+[
+  {
+    "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+    "name": "native-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "$REPO/target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp"
+    ],
+    "seconds": 245.44235702499282,
+    "exit": 0,
+    "environment": {
+      "CARGO_BUILD_JOBS": "4",
+      "CARGO_TARGET_DIR": "$REPO/target/pr-review"
+    }
+  },
+  {
+    "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+    "name": "native-render-probes",
+    "command": [
+      "python3",
+      "output/pr-review/issue8174/v2-s04-20261025/prepare_render_probe.py"
+    ],
+    "seconds": 1.3099871759768575,
+    "exit": 0,
+    "environment": {
+      "CARGO_BUILD_JOBS": "4",
+      "CARGO_TARGET_DIR": "$REPO/target/pr-review"
+    }
+  },
+  {
+    "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+    "name": "wasm-build",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg"
+    ],
+    "seconds": 628.0684182109544,
+    "exit": 0,
+    "environment": {
+      "CARGO_BUILD_JOBS": "4",
+      "CARGO_TARGET_DIR": "$REPO/target/pr-review",
+      "CARGO_PROFILE_RELEASE_CODEGEN_UNITS": "16"
+    },
+    "optimizedWithWasmOpt": true
+  }
+]

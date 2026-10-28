@@ -1,0 +1,33 @@
+{
+  "source": "9cabbff39da17da869bfff3048cfa328b3c17b7b",
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "pkg"
+  ],
+  "seconds": 705.7028450220823,
+  "files": {
+    "rhwp.js": {
+      "sha256": "fa0a049c0589becff4a92a5fbaf630d4b128683ac86afe98cd8df36fd205c180",
+      "bytes": 490527
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "eabd668c471a2d32c96f4a8ae72956030c500901c15f3f32ecd9031d8b57a680",
+      "bytes": 23454763
+    },
+    "rhwp.d.ts": {
+      "sha256": "870fe498b4cf435761f774b64357e16d6c37326075170f34fe9b2116e4f0bd51",
+      "bytes": 196632
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "sha256": "e48bee87c1397db46e940c9653e8a3cf7b02e9edad011c9159896beb7e8278ab",
+      "bytes": 67721
+    },
+    "package.json": {
+      "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+      "bytes": 429
+    }
+  }
+}

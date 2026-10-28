@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-10-22
+last_verified: 2026-10-24
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -101,10 +101,11 @@ Sixel과 Kitty 모두 **렌더링 호스트에 글꼴이 필요**하다. SSH이�
 
 ## PDF 가져오기 (기본 포함)
 
-`rhwp capabilities`의 `pdfImportSupport`에서 현재 바이너리의 `enabled`·`jbig2`·`jpeg2000`을
-확인합니다. JBIG2·JPEG 2000은 각각 `pdf-jbig2`·`pdf-jpeg2000`을 빌드 시 선택하며 기본값은
-비활성입니다. 필요한 코덱 식별·선택 설치·실패 진단은 [PDF 이미지 코덱 가이드](pdf_image_codecs.md)를
-따릅니다. 성공한 가져오기의 `diagnostics.pdfImportSupport`도 같은 정보를 제공합니다.
+`rhwp capabilities`의 `pdfImportSupport`에서 현재 바이너리의 `enabled`·`jbig2`·`jpeg2000`·
+`icc`·`boundedXrefRecovery`를 확인합니다. #8174 v2-S02 로컬 source는 JBIG2·JPEG 2000·
+ICC를 기본 포함하고 예산 있는 xref 복구를 제공합니다. 실제 배포 산출물은 지원 조회로 확인합니다.
+설치·개발용 제외 빌드·실패 진단은 [PDF 이미지 코덱 가이드](pdf_image_codecs.md)를 따릅니다.
+성공한 가져오기의 `diagnostics.pdfImportSupport`도 같은 정보를 제공합니다.
 
 기본 빌드에 포함된 `pdf-import`로 PDF를 공통 Document IR로 가져와 HWPX 또는 HWP로 저장한다.
 devel에서 함께 구현하는 기능이며, parser 전체 할당 경계는 아직 미입증이다.
@@ -130,10 +131,17 @@ rhwp import-pdf input.pdf review.hwpx --json --table-inference
 
 # 본문 문단을 구역 본문 흐름(다단·단/쪽 나누기)으로 가져오기
 rhwp import-pdf input.pdf editable.hwpx --layout editable --json
+
+# 작은 자원 환경과 프로필 이내의 명시적 한도
+rhwp import-pdf input.pdf selected.hwpx --resource-profile constrained --json
+rhwp import-pdf input.pdf result.hwpx --resource-limits limits.json --json
 ```
 
 - 입력·출력 위치 인자 두 개가 필수이며 출력 확장자는 `.hwpx` 또는 `.hwp`다.
   `--source-pages`·`--json`은 위치 인자 앞뒤에 둘 수 있다.
+- `--resource-profile standard|constrained`와 `--resource-limits <JSON 파일>`로 요청·실행 한도를
+  지정한다. 생략하면 standard다. 설정·유효값·Linux 감독과 다른 host의 경계는
+  [PDF 자원 정책](pdf_resource_policies.md)을 따른다. 별도 작업자의 성공 뒤에 출력 파일을 교체한다.
 - 쪽 선택 생략은 전체 쪽이다. 목록은 엄격히 증가해야 하며 중복·역순·빈 항목·범위 초과와
   미지/중복 옵션은 exit 2다. `--page`는 렌더 출력 옵션이므로 이 명령에서 사용하지 않는다.
 - 읽기·PDF 처리·저장 실패는 exit 1, 성공은 exit 0이다. 실패하면 stdout은 비어 있고
@@ -141,7 +149,8 @@ rhwp import-pdf input.pdf editable.hwpx --layout editable --json
 - 원본과 같은 파일(심볼릭 링크, Unix hard link 포함)은 거부한다. 모든 선택 쪽을 처리·직렬화한
   후 같은 폴더의 임시 파일을 원자적으로 교체한다. 처리/교체 실패 시 기존 출력 파일을 보존한다.
 - `--json` 성공 봉투는 `schemaVersion`, `source`, `output`, `format`, `bytes`, `pageCount`,
-  `diagnostics`와 출처 표지를 포함한다. `diagnostics.pages`의 `sourcePage` → `outputSection`은
+  `diagnostics`, `resourceProfile`, `execution`과 출처 표지를 포함한다.
+  `diagnostics.pages`의 `sourcePage` → `outputSection`은
   원본 쪽과 가져온 구역의 0-based 대응이며 `pageCount`는 Core가 조판한 쪽수다. 이 둘을 동일한
   값으로 가정하지 않는다. `paragraphPolicy`, `warnings`, `parserAllocationBoundsProven=false`도
   진단에 남긴다. 원본 좌표를 담는 `diagnostics.pages`는 비신뢰 문서 파생 필드로 표시한다.
@@ -170,7 +179,8 @@ feature-on에서는 기존 `info input.pdf --json`, `export-svg input.pdf`,
 `export-hwpx input.pdf output.hwpx`, `convert input.pdf output.hwp`도 **전체 쪽** 공통 로더를 쓴다.
 선택 쪽은 `import-pdf`로 저장한 뒤 기존 조회·렌더 명령을 사용한다.
 MCP `hwp_import_pdf`도 같은 CLI를 사용한다. 필수 인자는 `path`·`output`이며 선택 문자열
-`sourcePages`의 문법은 `--source-pages`와 같다. 별도 파싱·변환 구현은 두지 않는다.
+`sourcePages`의 문법은 `--source-pages`와 같다. 선택 문자열 `resourceProfile`·`resourceLimits`는
+각각 `--resource-profile`·`--resource-limits`에 전달한다. 별도 파싱·변환 구현은 두지 않는다.
 
 ## 비밀번호 보호 HWP
 

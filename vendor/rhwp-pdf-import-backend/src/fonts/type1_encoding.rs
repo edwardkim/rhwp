@@ -16,6 +16,8 @@
 //! Per PDF spec §9.6.6.2: when no /BaseEncoding is specified, the implicit
 //! base encoding for an embedded font is the font program's built-in encoding.
 
+use super::allocation::FontAllocation;
+use crate::import_limits::ImportBudget;
 use std::collections::HashMap;
 
 /// Parse the encoding from a Type 1 font program.
@@ -26,6 +28,16 @@ use std::collections::HashMap;
 /// Returns a HashMap mapping character codes (u8) to Unicode characters,
 /// or None if no custom encoding is found.
 pub fn parse_type1_encoding(font_data: &[u8]) -> Option<HashMap<u8, char>> {
+    parse_type1_encoding_with_budget(font_data, None)
+}
+
+/// Parse built-in encoding under the originating request, preserving sticky failures.
+pub fn parse_type1_encoding_with_budget(
+    font_data: &[u8],
+    budget: Option<&ImportBudget>,
+) -> Option<HashMap<u8, char>> {
+    let allocation = FontAllocation(budget);
+    allocation.check()?;
     // Find the /Encoding keyword in the clear text section.
     // The clear text section ends at "currentfile eexec" or at binary data.
     // We search within the first portion of the file (clear text is typically <10KB).
@@ -65,8 +77,8 @@ pub fn parse_type1_encoding(font_data: &[u8]) -> Option<HashMap<u8, char>> {
         // Parse: whitespace CODE whitespace /GLYPHNAME whitespace put
         let remaining = &search_data[pos..search_limit.min(search_data.len())];
         if let Some((code, glyph_name, consumed)) = parse_dup_entry(remaining) {
-            if let Some(unicode_char) = super::font_dict::glyph_name_to_unicode(&glyph_name) {
-                encoding_map.insert(code, unicode_char);
+            if let Some(unicode_char) = super::font_dict::glyph_name_to_unicode(glyph_name) {
+                allocation.insert(&mut encoding_map, code, unicode_char)?;
             }
             pos += consumed;
         }
@@ -89,7 +101,7 @@ pub fn parse_type1_encoding(font_data: &[u8]) -> Option<HashMap<u8, char>> {
 
 /// Parse a single "CODE /GLYPHNAME put" entry after "dup".
 /// Returns (code, glyph_name, bytes_consumed) or None.
-fn parse_dup_entry(data: &[u8]) -> Option<(u8, String, usize)> {
+fn parse_dup_entry(data: &[u8]) -> Option<(u8, &str, usize)> {
     let mut pos = 0;
 
     // Skip whitespace
@@ -141,7 +153,7 @@ fn parse_dup_entry(data: &[u8]) -> Option<(u8, String, usize)> {
     }
     pos += 3;
 
-    Some((code as u8, glyph_name.to_string(), pos))
+    Some((code as u8, glyph_name, pos))
 }
 
 /// Find a byte sequence in data, returning its starting offset.

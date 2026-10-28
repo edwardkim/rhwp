@@ -1,4 +1,5 @@
 //! Guarded spatial substitution into cell slots, inspired by nonsymmetric operad composition.
+use super::allocation::{message, Allocation};
 use pdf_oxide::geometry::Rect;
 
 const EPS: f32 = 0.5;
@@ -51,7 +52,10 @@ fn overlaps(a: Rect, b: Rect) -> bool {
 }
 
 /// Tables and cells must already have passed local geometry and cellular-chain validation.
-pub fn compose(tables: &[(Rect, Vec<Rect>)]) -> Result<Vec<Placement>, String> {
+pub fn compose(
+    allocation: Allocation<'_>,
+    tables: &[(Rect, Vec<Rect>)],
+) -> Result<Vec<Placement>, String> {
     if tables.len() > 128 {
         return Err("table composition budget exceeded".into());
     }
@@ -64,15 +68,13 @@ pub fn compose(tables: &[(Rect, Vec<Rect>)]) -> Result<Vec<Placement>, String> {
             return Err("invalid table composition geometry".into());
         }
     }
-    let mut placements = vec![
-        Placement {
-            parent: None,
-            depth: 0,
-            embedding: None,
-            deferred: None
-        };
-        tables.len()
-    ];
+    let mut placements = allocation.vec(tables.len()).map_err(message)?;
+    placements.resize_with(tables.len(), || Placement {
+        parent: None,
+        depth: 0,
+        embedding: None,
+        deferred: None,
+    });
     for (child, (b, _)) in tables.iter().enumerate() {
         let parent = tables
             .iter()
@@ -86,17 +88,10 @@ pub fn compose(tables: &[(Rect, Vec<Rect>)]) -> Result<Vec<Placement>, String> {
                 (a.1 .0.width * a.1 .0.height).total_cmp(&(b.1 .0.width * b.1 .0.height))
             });
         if let Some((pi, (_, cells))) = parent {
-            let owners: Vec<_> = cells
-                .iter()
-                .enumerate()
-                .filter(|(_, c)| strict(**c, *b))
-                .collect();
-            if owners.len() != 1 {
-                placements[child].deferred =
-                    Some("child grid crosses or touches parent cell boundary".into());
-                placements[pi].deferred = Some("unresolved child grid attachment".into());
-            } else {
-                let (ci, c) = owners[0];
+            let mut owners = cells.iter().enumerate().filter(|(_, c)| strict(**c, *b));
+            let first = owners.next();
+            let unique = first.filter(|_| owners.next().is_none());
+            if let Some((ci, c)) = unique {
                 placements[child].parent = Some((pi, ci));
                 placements[child].embedding = Some(Embedding {
                     x: (b.x - c.x) / c.width,
@@ -104,6 +99,17 @@ pub fn compose(tables: &[(Rect, Vec<Rect>)]) -> Result<Vec<Placement>, String> {
                     width: b.width / c.width,
                     height: b.height / c.height,
                 });
+            } else {
+                placements[child].deferred = Some(
+                    allocation
+                        .string("child grid crosses or touches parent cell boundary")
+                        .map_err(message)?,
+                );
+                placements[pi].deferred = Some(
+                    allocation
+                        .string("unresolved child grid attachment")
+                        .map_err(message)?,
+                );
             }
         }
     }
@@ -111,8 +117,16 @@ pub fn compose(tables: &[(Rect, Vec<Rect>)]) -> Result<Vec<Placement>, String> {
         for b in a + 1..tables.len() {
             let (aa, bb) = (tables[a].0, tables[b].0);
             if overlaps(aa, bb) && !strict(aa, bb) && !strict(bb, aa) {
-                placements[a].deferred = Some("non-laminar or touching table candidates".into());
-                placements[b].deferred = Some("non-laminar or touching table candidates".into());
+                placements[a].deferred = Some(
+                    allocation
+                        .string("non-laminar or touching table candidates")
+                        .map_err(message)?,
+                );
+                placements[b].deferred = Some(
+                    allocation
+                        .string("non-laminar or touching table candidates")
+                        .map_err(message)?,
+                );
             }
         }
     }
@@ -122,7 +136,11 @@ pub fn compose(tables: &[(Rect, Vec<Rect>)]) -> Result<Vec<Placement>, String> {
         while let Some((parent, _)) = placements[at].parent {
             depth += 1;
             if depth > MAX_DEPTH {
-                placements[child].deferred = Some("table composition depth exceeded".into());
+                placements[child].deferred = Some(
+                    allocation
+                        .string("table composition depth exceeded")
+                        .map_err(message)?,
+                );
                 break;
             }
             at = parent;
@@ -140,7 +158,11 @@ pub fn compose(tables: &[(Rect, Vec<Rect>)]) -> Result<Vec<Placement>, String> {
                     } else {
                         p
                     };
-                    placements[held].deferred = Some("unresolved table composition family".into());
+                    placements[held].deferred = Some(
+                        allocation
+                            .string("unresolved table composition family")
+                            .map_err(message)?,
+                    );
                     changed = true;
                 }
             }

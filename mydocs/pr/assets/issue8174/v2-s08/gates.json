@@ -1,0 +1,16 @@
+{
+  "productSource": "9cabbff39d",
+  "newRegression": {
+    "command": "CARGO_TARGET_DIR=<repo>/target/pr-review CARGO_BUILD_JOBS=4 node scripts/run-rust-test.mjs issue_8174_pdf_consecutive_moves -- --cargo-profile release-test",
+    "tests": 5,
+    "passed": 5,
+    "failed": 0,
+    "log": "output/pr-review/issue8174/v2-s08-20261025/t02-new-regression-final.log"
+  },
+  "existingNonrectangularClipRegression": {
+    "tests": 11,
+    "passed": 11,
+    "log": "output/pr-review/issue8174/v2-s08-20261025/t02-existing-clips.log"
+  },
+  "wholeFinalPrGates": "pending_after_T03_to_T06"
+}

@@ -15,7 +15,8 @@ struct Band {
     frame: Frame,
     ink: Vec<Frame>,
 }
-pub(super) struct Compound {
+pub(super) struct Compound<'a> {
+    allocation: Allocation<'a>,
     target: usize,
     bands: Vec<Band>,
     source_id: u32,
@@ -45,7 +46,7 @@ fn support(rect: [f64; 4], source: Frame, size: [f64; 2]) -> Frame {
     }
 }
 #[allow(clippy::too_many_arguments)]
-pub(super) fn plan(
+pub(super) fn plan<'a>(
     original: &Control,
     source: Frame,
     path: &pdf_oxide::elements::PathContent,
@@ -55,7 +56,8 @@ pub(super) fn plan(
     required: &[BTreeSet<usize>],
     resources: &[BinDataContent],
     work: &mut usize,
-) -> Result<Option<Compound>, String> {
+    allocation: Allocation<'a>,
+) -> Result<Option<Compound<'a>>, String> {
     use pdf_oxide::elements::{LineCap, PathOperation};
     if path.operations.len()<4 || path.operations.len()>64 || !path.operations.len().is_multiple_of(2)
         || path.fill_color.is_some() || path.stroke_color.is_none() || path.matrix.is_some()
@@ -67,9 +69,33 @@ pub(super) fn plan(
     let Some(i) = bin_data::content_index(resources, p.image_attr.bin_data_id) else {
         return Ok(None);
     };
-    let Some(bytes) = resources[i].data.load_limited(bin_data::MAX_BIN_DATA_BYTES) else {
-        return Ok(None);
+    // PDF lowering stores resident PNG bytes. Borrow them rather than copy
+    // the whole image to inspect its small generated stroke witness.
+    let bytes = match &resources[i].data {
+        bin_data::BinDataBytes::Loaded(bytes) => std::borrow::Cow::Borrowed(bytes.as_slice()),
+        other => {
+            allocation
+                .bytes(bin_data::MAX_BIN_DATA_BYTES)
+                .map_err(message)?;
+            let Some(bytes) = other.load_limited(bin_data::MAX_BIN_DATA_BYTES) else {
+                return Ok(None);
+            };
+            std::borrow::Cow::Owned(bytes)
+        }
     };
+    if let Some(length) = bytes
+        .get(33..37)
+        .and_then(|b| <[u8; 4]>::try_from(b).ok())
+        .map(u32::from_be_bytes)
+        .filter(|&n| n <= 4096)
+    {
+        // Only typed numeric vectors are allocated by this derived witness
+        // parser. 32 bytes per encoded byte covers their geometric replacement
+        // buffers; PNG pixels are not decoded here. Allocator metadata is separate.
+        allocation
+            .bytes(length as usize * 32 + std::mem::size_of::<PdfStroke>() + 32)
+            .map_err(message)?;
+    }
     let Some(stroke) = PdfStroke::read(&bytes) else {
         return Ok(None);
     };
@@ -114,18 +140,26 @@ pub(super) fn plan(
         let Some(frame) = intersection(support(rect, source, stroke.frame), source, None) else {
             return Ok(None);
         };
-        let Some(rects) = stroke.segment_rectangles(e) else {
+        let Some(rects) = stroke.try_segment_rectangles(e, |out, rectangle| {
+            allocation.push(out, rectangle).map_err(message)
+        })?
+        else {
             return Ok(None);
         };
         ink_count += rects.len();
         if ink_count > 8192 {
             return Ok(None);
         }
-        let ink = rects
-            .into_iter()
-            .filter_map(|r| intersection(support(r, source, stroke.frame), source, None))
-            .collect();
-        bands.push(Band { axis, frame, ink });
+        let ink = allocation
+            .collect(
+                rects
+                    .into_iter()
+                    .filter_map(|r| intersection(support(r, source, stroke.frame), source, None)),
+            )
+            .map_err(message)?;
+        allocation
+            .push(&mut bands, Band { axis, frame, ink })
+            .map_err(message)?;
     }
     let mut target = None;
     for (ti, t) in targets.iter().enumerate() {
@@ -156,11 +190,16 @@ pub(super) fn plan(
             for c in &frames[ti] {
                 tick(work)?;
                 if side(a, *c).is_some() {
-                    covered.push(if a.horizontal {
-                        (c.x, c.right)
-                    } else {
-                        (c.y, c.bottom)
-                    });
+                    allocation
+                        .push(
+                            &mut covered,
+                            if a.horizontal {
+                                (c.x, c.right)
+                            } else {
+                                (c.y, c.bottom)
+                            },
+                        )
+                        .map_err(message)?;
                 }
             }
             covered.sort_unstable();
@@ -200,6 +239,7 @@ pub(super) fn plan(
         }
     }
     Ok(target.map(|target| Compound {
+        allocation,
         target,
         bands,
         source_id: common(original).unwrap().instance_id,
@@ -228,17 +268,21 @@ fn overlay(
     cut: Frame,
     bit: u8,
     work: &mut usize,
+    allocation: Allocation<'_>,
 ) -> Result<(), String> {
     let mut next = Vec::new();
     for (frame, mask) in pieces.drain(..) {
         tick(work)?;
         if let Some(hit) = intersection(frame, cut, None) {
-            let mut rest = vec![frame];
-            subtract(&mut rest, hit, None, work)?;
+            let mut rest = allocation.collect([frame]).map_err(message)?;
+            subtract(&mut rest, hit, None, work, allocation)?;
+            allocation.reserve(&mut next, rest.len()).map_err(message)?;
             next.extend(rest.into_iter().map(|r| (r, mask)));
-            next.push((hit, mask | bit));
+            allocation
+                .push(&mut next, (hit, mask | bit))
+                .map_err(message)?;
         } else {
-            next.push((frame, mask));
+            allocation.push(&mut next, (frame, mask)).map_err(message)?;
         }
         if next.len() > MAX_FRAGMENTS {
             return Err("compound paint fragment budget exceeded".into());
@@ -247,7 +291,7 @@ fn overlay(
     *pieces = next;
     Ok(())
 }
-impl Compound {
+impl Compound<'_> {
     fn split(
         &self,
         piece: Frame,
@@ -255,7 +299,8 @@ impl Compound {
         outer: Option<Frame>,
         work: &mut usize,
     ) -> Result<Vec<CellPart>, String> {
-        let mut pieces = vec![(piece, 0)];
+        let allocation = self.allocation;
+        let mut pieces = allocation.collect([(piece, 0)]).map_err(message)?;
         let mut candidates = Vec::new();
         for band in &self.bands {
             tick(work)?;
@@ -286,19 +331,26 @@ impl Compound {
                 }
             };
             if let Some(cut) = intersection(band.frame, clip, None) {
-                overlay(&mut pieces, cut, 1 << dir, work)?;
-                candidates.push((band, dir));
+                overlay(&mut pieces, cut, 1 << dir, work, allocation)?;
+                allocation
+                    .push(&mut candidates, (band, dir))
+                    .map_err(message)?;
             }
         }
         let mut result = Vec::new();
         for (frame, mask) in pieces {
             if mask.count_ones() <= 1 {
-                result.push((frame, CellBorderPaint::from_mask(mask, self.source_id)));
+                allocation
+                    .push(
+                        &mut result,
+                        (frame, CellBorderPaint::from_mask(mask, self.source_id)),
+                    )
+                    .map_err(message)?;
                 continue;
             }
             // Coarse bands overlap at joints. Refine only these small regions
             // by actual dash ink, so a gap cannot preserve the removed axis.
-            let mut joint = vec![(frame, 0)];
+            let mut joint = allocation.collect([(frame, 0)]).map_err(message)?;
             for (band, dir) in &candidates {
                 if mask & (1 << dir) == 0 {
                     continue;
@@ -306,10 +358,13 @@ impl Compound {
                 for &ink in &band.ink {
                     tick(work)?;
                     if intersection(frame, ink, None).is_some() {
-                        overlay(&mut joint, ink, 1 << dir, work)?;
+                        overlay(&mut joint, ink, 1 << dir, work, allocation)?;
                     }
                 }
             }
+            allocation
+                .reserve(&mut result, joint.len())
+                .map_err(message)?;
             result.extend(
                 joint
                     .into_iter()
@@ -328,6 +383,7 @@ impl Compound {
         cell: Frame,
         work: &mut usize,
     ) -> Result<Vec<CellPart>, String> {
+        let allocation = self.allocation;
         if ti != self.target {
             // A path's raster frame can enclose a descendant without any of
             // its ink entering that cell. Do not materialize that empty crop
@@ -342,16 +398,18 @@ impl Compound {
             if !painted {
                 return Ok(Vec::new());
             }
-            return Ok(vec![(piece, None)]);
+            return allocation.collect([(piece, None)]).map_err(message);
         }
         // Every certified segment follows this grid. The untagged remainder
         // has no PDF ink. Keeping it as a native crop can reintroduce filtered
         // edge samples after a neighbouring owned stroke is explicitly erased.
-        Ok(self
-            .split(piece, cell, None, work)?
-            .into_iter()
-            .filter(|(_, tag)| tag.is_some())
-            .collect())
+        allocation
+            .collect(
+                self.split(piece, cell, None, work)?
+                    .into_iter()
+                    .filter(|(_, tag)| tag.is_some()),
+            )
+            .map_err(message)
     }
     pub(super) fn outside(
         &self,
@@ -360,6 +418,7 @@ impl Compound {
         targets: &[Target<'_>],
         work: &mut usize,
     ) -> Result<Vec<OutsidePart>, String> {
+        let allocation = self.allocation;
         let ti = self.target;
         let region = bounds(targets[ti].grid)?;
         let mut unowned = remaining;
@@ -369,9 +428,11 @@ impl Compound {
             for frame in unowned {
                 for (r, tag) in self.split(frame, *cell, Some(region), work)? {
                     if let Some(tag) = tag {
-                        out.push((r, Some((ti, ci, tag))));
+                        allocation
+                            .push(&mut out, (r, Some((ti, ci, tag))))
+                            .map_err(message)?;
                     } else {
-                        next.push(r);
+                        allocation.push(&mut next, r).map_err(message)?;
                     }
                 }
                 if out.len() + next.len() > MAX_FRAGMENTS {

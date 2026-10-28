@@ -1,0 +1,1402 @@
+[
+  {
+    "v": "base",
+    "round": 0,
+    "initMs": 116.19999992847443,
+    "samples": [
+      {
+        "name": "jpeg-import",
+        "run": 0,
+        "ms": 219.19999992847443,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 0,
+        "ms": 80,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 1,
+        "ms": 34,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 1,
+        "ms": 16.899999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 2,
+        "ms": 33.89999997615814,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 2,
+        "ms": 17.5,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 3,
+        "ms": 34.60000002384186,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 3,
+        "ms": 15.800000071525574,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 4,
+        "ms": 33.59999990463257,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 4,
+        "ms": 14.600000023841858,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 5,
+        "ms": 32.200000047683716,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 5,
+        "ms": 14.100000023841858,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 6,
+        "ms": 34.699999928474426,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 6,
+        "ms": 14.399999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 7,
+        "ms": 33.10000002384186,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 7,
+        "ms": 13.899999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 8,
+        "ms": 33,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 8,
+        "ms": 14.200000047683716,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 9,
+        "ms": 35.299999952316284,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 9,
+        "ms": 13.399999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 10,
+        "ms": 36.700000047683716,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 10,
+        "ms": 12.799999952316284,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 11,
+        "ms": 31.800000071525574,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 11,
+        "ms": 13.399999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      }
+    ]
+  },
+  {
+    "v": "candidate",
+    "round": 0,
+    "initMs": 105.70000004768372,
+    "samples": [
+      {
+        "name": "jpeg-import",
+        "run": 0,
+        "ms": 215.5,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 0,
+        "ms": 81.60000002384186,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 1,
+        "ms": 32.39999997615814,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 1,
+        "ms": 16.5,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 2,
+        "ms": 34.799999952316284,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 2,
+        "ms": 15.600000023841858,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 3,
+        "ms": 34.5,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 3,
+        "ms": 18,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 4,
+        "ms": 33.200000047683716,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 4,
+        "ms": 14,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 5,
+        "ms": 32.299999952316284,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 5,
+        "ms": 13.899999976158142,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 6,
+        "ms": 31.800000071525574,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 6,
+        "ms": 13.899999976158142,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 7,
+        "ms": 32.89999997615814,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 7,
+        "ms": 13.600000023841858,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 8,
+        "ms": 32.200000047683716,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 8,
+        "ms": 13.099999904632568,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 9,
+        "ms": 31.800000071525574,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 9,
+        "ms": 13.600000023841858,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 10,
+        "ms": 32.299999952316284,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 10,
+        "ms": 14.5,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 11,
+        "ms": 32.60000002384186,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 11,
+        "ms": 13.199999928474426,
+        "pages": 3,
+        "memoryBytes": 9437184
+      }
+    ]
+  },
+  {
+    "v": "candidate",
+    "round": 1,
+    "initMs": 108.69999992847443,
+    "samples": [
+      {
+        "name": "jpeg-import",
+        "run": 0,
+        "ms": 219.30000007152557,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 0,
+        "ms": 83,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 1,
+        "ms": 32.59999990463257,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 1,
+        "ms": 17,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 2,
+        "ms": 32.5,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 2,
+        "ms": 15.299999952316284,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 3,
+        "ms": 36.5,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 3,
+        "ms": 18.600000023841858,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 4,
+        "ms": 34.5,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 4,
+        "ms": 21,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 5,
+        "ms": 32.300000071525574,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 5,
+        "ms": 14.099999904632568,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 6,
+        "ms": 36.10000002384186,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 6,
+        "ms": 14,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 7,
+        "ms": 32.60000002384186,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 7,
+        "ms": 13.399999976158142,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 8,
+        "ms": 32.299999952316284,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 8,
+        "ms": 13.200000047683716,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 9,
+        "ms": 34.39999997615814,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 9,
+        "ms": 13.899999976158142,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 10,
+        "ms": 32.5,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 10,
+        "ms": 14,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 11,
+        "ms": 32.300000071525574,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 11,
+        "ms": 13.899999976158142,
+        "pages": 3,
+        "memoryBytes": 9437184
+      }
+    ]
+  },
+  {
+    "v": "base",
+    "round": 1,
+    "initMs": 104.29999995231628,
+    "samples": [
+      {
+        "name": "jpeg-import",
+        "run": 0,
+        "ms": 213.5,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 0,
+        "ms": 87,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 1,
+        "ms": 32.40000009536743,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 1,
+        "ms": 17.600000023841858,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 2,
+        "ms": 34.89999997615814,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 2,
+        "ms": 15.600000023841858,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 3,
+        "ms": 33.89999997615814,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 3,
+        "ms": 15.400000095367432,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 4,
+        "ms": 33.699999928474426,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 4,
+        "ms": 15.100000023841858,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 5,
+        "ms": 32.299999952316284,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 5,
+        "ms": 14,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 6,
+        "ms": 32.60000002384186,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 6,
+        "ms": 17,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 7,
+        "ms": 38.299999952316284,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 7,
+        "ms": 13.300000071525574,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 8,
+        "ms": 31.299999952316284,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 8,
+        "ms": 12.899999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 9,
+        "ms": 33.800000071525574,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 9,
+        "ms": 17.399999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 10,
+        "ms": 33,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 10,
+        "ms": 12.799999952316284,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 11,
+        "ms": 31.700000047683716,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 11,
+        "ms": 15.200000047683716,
+        "pages": 3,
+        "memoryBytes": 9371648
+      }
+    ]
+  },
+  {
+    "v": "base",
+    "round": 2,
+    "initMs": 107.89999997615814,
+    "samples": [
+      {
+        "name": "jpeg-import",
+        "run": 0,
+        "ms": 213.20000004768372,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 0,
+        "ms": 84.89999997615814,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 1,
+        "ms": 38.09999990463257,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 1,
+        "ms": 16.5,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 2,
+        "ms": 36.200000047683716,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 2,
+        "ms": 15.899999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 3,
+        "ms": 34.60000002384186,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 3,
+        "ms": 16.899999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 4,
+        "ms": 35.200000047683716,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 4,
+        "ms": 14.199999928474426,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 5,
+        "ms": 32.300000071525574,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 5,
+        "ms": 14.299999952316284,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 6,
+        "ms": 31.800000071525574,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 6,
+        "ms": 13.799999952316284,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 7,
+        "ms": 32.39999997615814,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 7,
+        "ms": 15.200000047683716,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 8,
+        "ms": 32.5,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 8,
+        "ms": 13.399999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 9,
+        "ms": 32.299999952316284,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 9,
+        "ms": 13.200000047683716,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 10,
+        "ms": 32,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 10,
+        "ms": 12.799999952316284,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 11,
+        "ms": 36,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 11,
+        "ms": 12.899999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      }
+    ]
+  },
+  {
+    "v": "candidate",
+    "round": 2,
+    "initMs": 115.59999990463257,
+    "samples": [
+      {
+        "name": "jpeg-import",
+        "run": 0,
+        "ms": 220.70000004768372,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 0,
+        "ms": 83,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 1,
+        "ms": 33.10000002384186,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 1,
+        "ms": 17.5,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 2,
+        "ms": 34.39999997615814,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 2,
+        "ms": 15.5,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 3,
+        "ms": 34.60000002384186,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 3,
+        "ms": 15.899999976158142,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 4,
+        "ms": 34.200000047683716,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 4,
+        "ms": 13.799999952316284,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 5,
+        "ms": 37.5,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 5,
+        "ms": 14,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 6,
+        "ms": 31.799999952316284,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 6,
+        "ms": 14.100000023841858,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 7,
+        "ms": 32.39999997615814,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 7,
+        "ms": 13.700000047683716,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 8,
+        "ms": 32.700000047683716,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 8,
+        "ms": 13.5,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 9,
+        "ms": 32,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 9,
+        "ms": 13.5,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 10,
+        "ms": 32.39999997615814,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 10,
+        "ms": 13.5,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 11,
+        "ms": 31.799999952316284,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 11,
+        "ms": 12.800000071525574,
+        "pages": 3,
+        "memoryBytes": 9437184
+      }
+    ]
+  },
+  {
+    "v": "candidate",
+    "round": 3,
+    "initMs": 110,
+    "samples": [
+      {
+        "name": "jpeg-import",
+        "run": 0,
+        "ms": 211.40000009536743,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 0,
+        "ms": 82.69999992847443,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 1,
+        "ms": 32.300000071525574,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 1,
+        "ms": 16.5,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 2,
+        "ms": 33,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 2,
+        "ms": 15.399999976158142,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 3,
+        "ms": 34.60000002384186,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 3,
+        "ms": 16.399999976158142,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 4,
+        "ms": 38.699999928474426,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 4,
+        "ms": 21.300000071525574,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 5,
+        "ms": 32.5,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 5,
+        "ms": 13.799999952316284,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 6,
+        "ms": 32.200000047683716,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 6,
+        "ms": 14,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 7,
+        "ms": 33.199999928474426,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 7,
+        "ms": 13.5,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 8,
+        "ms": 32.10000002384186,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 8,
+        "ms": 13.100000023841858,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 9,
+        "ms": 32.699999928474426,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 9,
+        "ms": 13.900000095367432,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 10,
+        "ms": 33.39999997615814,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 10,
+        "ms": 14.399999976158142,
+        "pages": 3,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "jpeg-import",
+        "run": 11,
+        "ms": 32.60000002384186,
+        "pages": 1,
+        "memoryBytes": 9437184
+      },
+      {
+        "name": "table-open",
+        "run": 11,
+        "ms": 13.699999928474426,
+        "pages": 3,
+        "memoryBytes": 9437184
+      }
+    ]
+  },
+  {
+    "v": "base",
+    "round": 3,
+    "initMs": 106.10000002384186,
+    "samples": [
+      {
+        "name": "jpeg-import",
+        "run": 0,
+        "ms": 213,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 0,
+        "ms": 78.5,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 1,
+        "ms": 32.5,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 1,
+        "ms": 16.899999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 2,
+        "ms": 32.89999997615814,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 2,
+        "ms": 15.399999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 3,
+        "ms": 33.60000002384186,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 3,
+        "ms": 15.600000023841858,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 4,
+        "ms": 33.799999952316284,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 4,
+        "ms": 14.600000023841858,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 5,
+        "ms": 32.10000002384186,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 5,
+        "ms": 14.200000047683716,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 6,
+        "ms": 31.699999928474426,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 6,
+        "ms": 14,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 7,
+        "ms": 32.5,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 7,
+        "ms": 13.300000071525574,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 8,
+        "ms": 31.199999928474426,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 8,
+        "ms": 13.300000071525574,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 9,
+        "ms": 39.5,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 9,
+        "ms": 13.099999904632568,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 10,
+        "ms": 31.600000023841858,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 10,
+        "ms": 13,
+        "pages": 3,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "jpeg-import",
+        "run": 11,
+        "ms": 31.200000047683716,
+        "pages": 1,
+        "memoryBytes": 9371648
+      },
+      {
+        "name": "table-open",
+        "run": 11,
+        "ms": 13.399999976158142,
+        "pages": 3,
+        "memoryBytes": 9371648
+      }
+    ]
+  }
+]

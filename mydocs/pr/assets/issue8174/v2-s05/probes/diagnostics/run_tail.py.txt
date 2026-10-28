@@ -1,0 +1,8 @@
+from pathlib import Path
+import run_consumer as helper
+B,R,C=helper.BASE,helper.ROOT,helper.CONSUMER
+helper.CONFIG+=['--config','registries.rhwp-final.index="sparse+http://127.0.0.1:48175/index/"']
+exe=B/'installed-final/bin/rhwp'
+helper.cargo('final-metadata-test-deps',['metadata','--format-version','1','--features','native','--filter-platform','x86_64-unknown-linux-gnu'])
+s=(B/'run_final.py').read_text();tail=s[s.index(" helper.cargo('final-registry-contracts'"):]
+exec('if True:\n'+tail)

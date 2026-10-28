@@ -5,6 +5,8 @@
  * IndexedDB를 사용할 수 없는 테스트/제한 환경에서는 메모리 저장소로 폴백한다.
  */
 
+import type { RecoveryEnvelope } from './recovery-crypto.ts';
+
 const DB_NAME = 'rhwpStudioAutosave';
 const DB_VER = 1;
 const DRAFTS = 'drafts';
@@ -18,6 +20,7 @@ export interface AutosaveDraft {
   byteLength: number;
   data: Uint8Array;
   dirtyReason?: string;
+  protection?: RecoveryEnvelope;
 }
 
 type DraftRow = Omit<AutosaveDraft, 'data'> & { data?: ArrayBuffer };
@@ -39,7 +42,8 @@ function bytesToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
 }
 
 function cloneDraft(draft: AutosaveDraft): AutosaveDraft {
-  return { ...draft, data: cloneBytes(draft.data) };
+  return { ...draft, data: cloneBytes(draft.data),
+    ...(draft.protection ? { protection: structuredClone(draft.protection) } : {}) };
 }
 
 function rowToDraft(row: DraftRow): AutosaveDraft {

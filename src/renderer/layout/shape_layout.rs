@@ -316,50 +316,75 @@ fn measure_composed_text_range_width(
     end: usize,
     space_advance_override: Option<f64>,
 ) -> f64 {
-    if start >= end {
-        return 0.0;
+    match measure_composed_text_range_width_with_storage(
+        composed,
+        styles,
+        start,
+        end,
+        space_advance_override,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
+}
 
-    let tab_width = styles
-        .para_styles
-        .get(composed.para_style_id as usize)
-        .map(|s| s.default_tab_width)
-        .unwrap_or(0.0);
-    let mut width = 0.0;
-
-    for line in &composed.lines {
-        let mut run_start = line.char_start;
-        for run in &line.runs {
-            let run_len = run.text.chars().count();
-            let run_end = run_start + run_len;
-            let seg_start = start.max(run_start);
-            let seg_end = end.min(run_end);
-
-            if seg_start < seg_end {
-                let seg_text: String = run
-                    .text
-                    .chars()
-                    .skip(seg_start - run_start)
-                    .take(seg_end - seg_start)
-                    .collect();
-                if let Some(space_advance) = space_advance_override {
-                    let space_count = seg_text.chars().filter(|&ch| ch == ' ').count();
-                    if space_count > 0 && seg_text.chars().all(|ch| ch == ' ') {
-                        width += space_advance * space_count as f64;
-                        run_start = run_end;
-                        continue;
-                    }
-                }
-                let mut style = run.text_style(styles);
-                style.default_tab_width = tab_width;
-                width += estimate_text_width(&seg_text, &style);
-            }
-
-            run_start = run_end;
+pub(crate) fn measure_composed_text_range_width_with_storage<S: crate::storage::Storage>(
+    composed: &ComposedParagraph,
+    styles: &ResolvedStyleSet,
+    start: usize,
+    end: usize,
+    space_advance_override: Option<f64>,
+    storage: &S,
+) -> Result<f64, S::Error> {
+    Ok({
+        if start >= end {
+            return Ok(0.0);
         }
-    }
 
-    width
+        let tab_width = styles
+            .para_styles
+            .get(composed.para_style_id as usize)
+            .map(|s| s.default_tab_width)
+            .unwrap_or(0.0);
+        let mut width = 0.0;
+
+        for line in &composed.lines {
+            let mut run_start = line.char_start;
+            for run in &line.runs {
+                let run_len = run.text.chars().count();
+                let run_end = run_start + run_len;
+                let seg_start = start.max(run_start);
+                let seg_end = end.min(run_end);
+
+                if seg_start < seg_end {
+                    let seg_text = storage.chars(
+                        run.text
+                            .chars()
+                            .skip(seg_start - run_start)
+                            .take(seg_end - seg_start),
+                    )?;
+                    if let Some(space_advance) = space_advance_override {
+                        let space_count = seg_text.chars().filter(|&ch| ch == ' ').count();
+                        if space_count > 0 && seg_text.chars().all(|ch| ch == ' ') {
+                            width += space_advance * space_count as f64;
+                            run_start = run_end;
+                            continue;
+                        }
+                    }
+                    let mut style = run.try_text_style(styles, storage)?;
+                    style.default_tab_width = tab_width;
+                    width += super::text_measurement::estimate_text_width_with_storage(
+                        &seg_text, &style, storage,
+                    )?;
+                }
+
+                run_start = run_end;
+            }
+        }
+
+        width
+    })
 }
 
 fn textbox_tac_space_advance_override(
@@ -433,127 +458,167 @@ pub(crate) fn normalized_single_line_inline_textbox_host(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<Paragraph> {
-    let [host_line] = host.line_segs.as_slice() else {
-        return None;
-    };
-    let [Control::Shape(shape)] = host.controls.as_slice() else {
-        return None;
-    };
-    let common = shape.common();
-    let attr = shape.shape_attr();
-    let drawing = shape.drawing()?;
-    let text_box = drawing.text_box.as_ref()?;
-    let [paragraph] = text_box.paragraphs.as_slice() else {
-        return None;
-    };
-    let first = paragraph.line_segs.first()?;
-    let last = paragraph.line_segs.last()?;
-    if !host.text.is_empty()
-        || host.stored_text_partition_is_dirty()
-        || host.cell_format_vpos_dirty
-        || host_line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-        || !common.treat_as_char
-        || common.size_protect
-        || drawing.caption.is_some()
-        || common.height == 0
-        || common.height > i32::MAX as u32
-        || common.width == 0
-        || common.width > i32::MAX as u32
-        || attr.group_level != 0
-        || attr.rotation_angle != 0
-        || attr.render_b.abs() > 1e-6
-        || attr.render_c.abs() > 1e-6
-        || attr.render_ty.abs() > 1e-6
-        || (attr.render_sx - 1.0).abs() > 1e-6
-        || attr.original_width != common.width
-        || attr.current_width != common.width
-        || attr.original_height != common.height
-        || attr.current_height <= common.height
-        || attr.current_height > i32::MAX as u32
-        || (attr.render_sy - f64::from(attr.current_height) / f64::from(attr.original_height)).abs()
-            > 1e-6
-        || host_line.line_height != shape.flow_height_hu()
-        || host_line.segment_width <= 0
-        || text_box.list_attr & 0x07 != 0
-        || text_box.raw_list_header_extra.iter().any(|&byte| byte != 0)
-        || [
-            text_box.margin_left,
-            text_box.margin_right,
-            text_box.margin_top,
-            text_box.margin_bottom,
-        ]
-        .iter()
-        .any(|&margin| margin < 0)
-        || !matrix_textbox_lines_need_reflow(paragraph)
-        || paragraph.text.contains(['\r', '\t'])
-        || paragraph.stored_text_partition_is_dirty()
-        || first.vertical_pos != 0
-        || first.text_start != 0
-        || paragraph.line_segs.iter().any(|line| {
-            line.line_height <= 0
-                || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-        })
-        || paragraph.line_seg_text_start(paragraph.line_segs.len() - 1)
-            >= paragraph.char_offsets.last().copied()?.saturating_add(1)
-    {
-        return None;
-    }
-    let padding = i32::from(text_box.margin_top) + i32::from(text_box.margin_bottom);
-    let cached_height = last
-        .vertical_pos
-        .checked_add(last.line_height)?
-        .checked_add(padding)?;
-    if cached_height != attr.current_height as i32 {
-        return None;
-    }
-    let para_style = styles.para_styles.get(paragraph.para_shape_id as usize)?;
-    let inner_width = hwpunit_to_px(
-        common.width as i32 - i32::from(text_box.margin_left) - i32::from(text_box.margin_right),
-        dpi,
-    ) - para_style.margin_left
-        - para_style.margin_right
-        - para_style.indent.max(0.0);
-    let composed = crate::renderer::composer::compose_paragraph_in_context(paragraph, styles);
-    let width = measure_composed_text_range_width(
-        &composed,
-        styles,
-        0,
-        paragraph.text.chars().count(),
-        None,
-    );
-    let height = first
-        .line_height
-        .checked_add(padding)?
-        .max(common.height as i32);
-    if inner_width <= 0.0
-        || !width.is_finite()
-        || width > inner_width
-        || height >= attr.current_height as i32
-    {
-        return None;
-    }
-    let mut projected = host.clone();
-    let Control::Shape(shape) = &mut projected.controls[0] else {
-        return None;
-    };
-    let mut single_line = first.clone();
-    single_line.segment_width = px_to_hwpunit(inner_width, dpi);
-    single_line.tag |= crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
-    shape.drawing_mut()?.text_box.as_mut()?.paragraphs[0].replace_line_segs(vec![single_line]);
-    let attr = shape.shape_attr_mut();
-    attr.current_height = height as u32;
-    attr.render_sy = f64::from(height) / f64::from(attr.original_height);
-    attr.rotation_center.y = height / 2;
-    reflow_line_segs(
-        &mut projected,
-        ParagraphBox::content_width_px(hwpunit_to_px(host_line.segment_width, dpi), dpi),
+    match normalized_single_line_inline_textbox_host_with_storage(
+        host,
         styles,
         dpi,
-    );
-    for line in &mut projected.line_segs {
-        line.tag |= crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    Some(projected)
+}
+
+pub(crate) fn normalized_single_line_inline_textbox_host_with_storage<
+    S: crate::storage::Storage,
+>(
+    host: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<Paragraph>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        let [host_line] = host.line_segs.as_slice() else {
+            return None;
+        };
+        let [Control::Shape(shape)] = host.controls.as_slice() else {
+            return None;
+        };
+        let common = shape.common();
+        let attr = shape.shape_attr();
+        let drawing = shape.drawing()?;
+        let text_box = drawing.text_box.as_ref()?;
+        let [paragraph] = text_box.paragraphs.as_slice() else {
+            return None;
+        };
+        let first = paragraph.line_segs.first()?;
+        let last = paragraph.line_segs.last()?;
+        if !host.text.is_empty()
+            || host.stored_text_partition_is_dirty()
+            || host.cell_format_vpos_dirty
+            || host_line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || !common.treat_as_char
+            || common.size_protect
+            || drawing.caption.is_some()
+            || common.height == 0
+            || common.height > i32::MAX as u32
+            || common.width == 0
+            || common.width > i32::MAX as u32
+            || attr.group_level != 0
+            || attr.rotation_angle != 0
+            || attr.render_b.abs() > 1e-6
+            || attr.render_c.abs() > 1e-6
+            || attr.render_ty.abs() > 1e-6
+            || (attr.render_sx - 1.0).abs() > 1e-6
+            || attr.original_width != common.width
+            || attr.current_width != common.width
+            || attr.original_height != common.height
+            || attr.current_height <= common.height
+            || attr.current_height > i32::MAX as u32
+            || (attr.render_sy - f64::from(attr.current_height) / f64::from(attr.original_height))
+                .abs()
+                > 1e-6
+            || host_line.line_height != shape.flow_height_hu()
+            || host_line.segment_width <= 0
+            || text_box.list_attr & 0x07 != 0
+            || text_box.raw_list_header_extra.iter().any(|&byte| byte != 0)
+            || [
+                text_box.margin_left,
+                text_box.margin_right,
+                text_box.margin_top,
+                text_box.margin_bottom,
+            ]
+            .iter()
+            .any(|&margin| margin < 0)
+            || !matrix_textbox_lines_need_reflow(paragraph)
+            || paragraph.text.contains(['\r', '\t'])
+            || paragraph.stored_text_partition_is_dirty()
+            || first.vertical_pos != 0
+            || first.text_start != 0
+            || paragraph.line_segs.iter().any(|line| {
+                line.line_height <= 0
+                    || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            })
+            || paragraph.line_seg_text_start(paragraph.line_segs.len() - 1)
+                >= paragraph.char_offsets.last().copied()?.saturating_add(1)
+        {
+            return None;
+        }
+        let padding = i32::from(text_box.margin_top) + i32::from(text_box.margin_bottom);
+        let cached_height = last
+            .vertical_pos
+            .checked_add(last.line_height)?
+            .checked_add(padding)?;
+        if cached_height != attr.current_height as i32 {
+            return None;
+        }
+        let para_style = styles.para_styles.get(paragraph.para_shape_id as usize)?;
+        let inner_width = hwpunit_to_px(
+            common.width as i32
+                - i32::from(text_box.margin_left)
+                - i32::from(text_box.margin_right),
+            dpi,
+        ) - para_style.margin_left
+            - para_style.margin_right
+            - para_style.indent.max(0.0);
+        let composed = crate::storage::optional(
+            crate::renderer::composer::compose_paragraph_in_context_with_storage(
+                paragraph, styles, storage,
+            ),
+            failure,
+        )?;
+        let width = crate::storage::optional(
+            measure_composed_text_range_width_with_storage(
+                &composed,
+                styles,
+                0,
+                paragraph.text.chars().count(),
+                None,
+                storage,
+            ),
+            failure,
+        )?;
+        let height = first
+            .line_height
+            .checked_add(padding)?
+            .max(common.height as i32);
+        if inner_width <= 0.0
+            || !width.is_finite()
+            || width > inner_width
+            || height >= attr.current_height as i32
+        {
+            return None;
+        }
+        let mut projected = crate::storage::optional(storage.clone_paragraph(host), failure)?;
+        let Control::Shape(shape) = &mut projected.controls[0] else {
+            return None;
+        };
+        let mut single_line =
+            crate::storage::optional(crate::storage::try_clone(first, storage), failure)?;
+        single_line.segment_width = px_to_hwpunit(inner_width, dpi);
+        single_line.tag |= crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+        shape.drawing_mut()?.text_box.as_mut()?.paragraphs[0].replace_line_segs(
+            crate::storage::optional(storage.collect([single_line]), failure)?,
+        );
+        let attr = shape.shape_attr_mut();
+        attr.current_height = height as u32;
+        attr.render_sy = f64::from(height) / f64::from(attr.original_height);
+        attr.rotation_center.y = height / 2;
+        crate::storage::optional(
+            crate::renderer::composer::try_reflow_line_segs(
+                &mut projected,
+                ParagraphBox::content_width_px(hwpunit_to_px(host_line.segment_width, dpi), dpi),
+                styles,
+                dpi,
+                storage,
+            ),
+            failure,
+        )?;
+        for line in &mut projected.line_segs {
+            line.tag |= crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+        }
+        Some(projected)
+    })
 }
 
 fn matrix_textbox_lines_overflow_height(para: &Paragraph, available_height: f64, dpi: f64) -> bool {

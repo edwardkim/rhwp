@@ -892,8 +892,13 @@ pub(super) fn prepare_glyph_outline(
                 return None;
             }
             let fragment = resources.svg_fragment(payload.svg_ref)?;
-            let (image, bytes) =
-                svg_glyph_image(fragment, payload.view_box, viewport, raster_scale)?;
+            let (image, bytes) = svg_glyph_image(
+                fragment,
+                payload.view_box,
+                viewport,
+                raster_scale,
+                outline.paint_style.color,
+            )?;
             let transforms = optional_matrix(payload.transform_to_run)?;
             result.byte_cost = bytes;
             result.draws.push(PreparedDraw {
@@ -928,106 +933,27 @@ fn svg_glyph_image(
     view_box: BoundingBox,
     bbox: BoundingBox,
     scale: f32,
+    color: u32,
 ) -> Option<(Image, usize)> {
-    use quick_xml::{
-        events::{BytesEnd, Event},
-        Reader, Writer, XmlVersion,
-    };
-    use resvg::{tiny_skia, usvg};
-    if !crate::renderer::static_svg::static_svg_fragment_has_path_layer(fragment) {
-        return None;
-    }
-    drawable_rect(bbox)?;
-    drawable_rect(view_box)?;
-    let width = (bbox.width * f64::from(scale)).ceil();
-    let height = (bbox.height * f64::from(scale)).ceil();
-    if !width.is_finite()
-        || !height.is_finite()
-        || width < 1.0
-        || height < 1.0
-        || width * height > MAX_IMAGE_PIXELS as f64
-    {
-        return None;
-    }
-    // The payload viewBox replaces only the outer container's viewport.
-    // Nested SVG elements retain their own viewport, scaling and clipping.
-    let mut reader = Reader::from_str(fragment);
-    let mut writer = Writer::new(Vec::new());
-    let mut depth = 0usize;
-    loop {
-        let event = reader.read_event().ok()?;
-        let empty = matches!(&event, Event::Empty(_));
-        if let Event::Start(element) | Event::Empty(element) = &event {
-            if element.name().as_ref() == "path" {
-                if let Some(attribute) = element.try_get_attribute("d").ok()? {
-                    let commands = attribute.normalized_value(XmlVersion::Implicit1_0).ok()?;
-                    // usvg may discard a malformed path but retain valid siblings.
-                    // A strict alternative must not silently lose part of its ink.
-                    for (index, segment) in
-                        svgtypes::PathParser::from(commands.as_ref()).enumerate()
-                    {
-                        if index >= MAX_PATH_COMMANDS || segment.is_err() {
-                            return None;
-                        }
-                    }
-                }
-            }
-        }
-
-        let rewrite_container = match &event {
-            Event::Start(element) | Event::Empty(element) => {
-                depth == 0 && element.name().as_ref() == "svg"
-            }
-            Event::End(element) => depth == 1 && element.name().as_ref() == "svg",
-            _ => false,
-        };
-        match &event {
-            Event::Start(_) => depth = depth.checked_add(1)?,
-            Event::End(_) => depth = depth.checked_sub(1)?,
-            _ => {}
-        }
-        match event {
-            Event::Eof => {
-                if depth != 0 {
-                    return None;
-                }
-                break;
-            }
-            Event::Start(mut element) | Event::Empty(mut element) if rewrite_container => {
-                element.set_name("g");
-                writer
-                    .write_event(if empty {
-                        Event::Empty(element)
-                    } else {
-                        Event::Start(element)
-                    })
-                    .ok()?;
-            }
-            Event::End(_) if rewrite_container => {
-                writer.write_event(Event::End(BytesEnd::new("g"))).ok()?;
-            }
-            event => {
-                writer.write_event(event).ok()?;
-            }
-        }
-    }
-    let inner = String::from_utf8(writer.into_inner()).ok()?;
-    let svg = format!("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{width}\" height=\"{height}\" viewBox=\"{} {} {} {}\" preserveAspectRatio=\"none\">{inner}</svg>", view_box.x,view_box.y,view_box.width,view_box.height);
-    let mut options = usvg::Options::default();
-    options.image_href_resolver = usvg::ImageHrefResolver {
-        resolve_data: Box::new(|_, _, _| None),
-        resolve_string: Box::new(|_, _| None),
-    };
-    let tree = usvg::Tree::from_str(&svg, &options).ok()?;
-    if tree.root().children().is_empty() {
-        return None;
-    }
-    let mut pixels = tiny_skia::Pixmap::new(width as u32, height as u32)?;
-    resvg::render(&tree, tiny_skia::Transform::default(), &mut pixels.as_mut());
-    let byte_cost = pixels.data().len();
-    let encoded = pixels.encode_png().ok()?;
-    let image = Image::from_encoded(Data::new_copy(&encoded))?.make_raster_image(None, None)?;
-    Some((image, byte_cost))
+    let foreground = format!(
+        "#{:02x}{:02x}{:02x}",
+        color & 255,
+        (color >> 8) & 255,
+        (color >> 16) & 255
+    );
+    let raster = crate::renderer::static_svg_raster::prepare_static_svg_raster(
+        fragment,
+        view_box,
+        bbox,
+        f64::from(scale),
+        &foreground,
+    )?;
+    let image = Image::from_encoded(Data::new_copy(&raster.png))?.make_raster_image(None, None)?;
+    debug_assert_eq!(
+        (image.width(), image.height()),
+        (raster.width as i32, raster.height as i32)
+    );
+    Some((image, raster.byte_cost))
 }
 
 fn optional_matrix(transform: Option<LayerAffineTransform>) -> Option<Option<Matrix>> {

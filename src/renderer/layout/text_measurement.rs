@@ -27,6 +27,13 @@ use super::super::conjoining_jamo::{
     cluster_lengths as build_cluster_len, is_hangul_choseong, is_hangul_jongseong,
     is_hangul_jungseong,
 };
+pub(crate) fn build_cluster_len_with_storage<S: crate::storage::Storage>(
+    chars: &[char],
+    storage: &S,
+) -> Result<Vec<u8>, S::Error> {
+    storage.bytes(chars.len())?;
+    Ok(build_cluster_len(chars))
+}
 
 /// [#2279] 자간(%)의 픽셀 기여 — 한글은 자간을 **해당 글자의 진행폭 비례**로
 /// 적용한다 (fs-비례 아님). 무신축 Justify 마지막 줄 실측(36392557 pi34,
@@ -503,171 +510,201 @@ impl EmbeddedTextMeasurer {
     /// 말 것 — 그쪽은 줄바꿈 엔진 전용의 **다른 구현**이라 사용자 탭 스톱과 인라인 탭 ext
     /// 데이터를 읽지 않는다.
     fn estimate_text_width_exact(&self, text: &str, style: &TextStyle) -> f64 {
-        let (font_size, _, tab_w) = style_params(style);
-        let chars: Vec<char> = text.chars().collect();
-        let cluster_len = build_cluster_len(&chars);
-        let char_count = chars.len();
-        let has_custom_tabs = !style.tab_stops.is_empty() || style.auto_tab_right;
+        match self.estimate_text_width_exact_with_storage(text, style, &crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
 
-        let supplemental = super::super::supplemental_metrics::standalone_scalar_mask(text, style);
-        let contextual = super::super::arabic_context::advances(&chars, style);
-        let char_width = |i: usize| -> f64 {
-            char_width_decision_with_hft_tracking(
-                &chars,
-                &cluster_len,
-                i,
-                style,
-                supplemental.as_ref().is_some_and(|mask| mask[i]),
-                true,
-                contextual.as_ref().and_then(|widths| widths[i]),
-            )
-            .final_width_px
-        };
+    pub(crate) fn estimate_text_width_exact_with_storage<S: crate::storage::Storage>(
+        &self,
+        text: &str,
+        style: &TextStyle,
+        storage: &S,
+    ) -> Result<f64, S::Error> {
+        Ok({
+            let (font_size, _, tab_w) = style_params(style);
+            let chars: Vec<char> = storage.collect(text.chars())?;
+            let cluster_len = build_cluster_len_with_storage(&chars, storage)?;
+            let char_count = chars.len();
+            let has_custom_tabs = !style.tab_stops.is_empty() || style.auto_tab_right;
 
-        let mut total = 0.0;
-        let mut tab_char_idx = 0usize;
-        for i in 0..char_count {
-            let c = chars[i];
-            if cluster_len[i] == 0 {
-                continue;
-            }
-            if c == '\t' {
-                if let Some(position) = style
-                    .auto_left_tab_position
-                    .filter(|position| *position > style.line_x_offset + total)
-                {
-                    total = position - style.line_x_offset;
-                    tab_char_idx += 1;
+            let supplemental =
+                super::super::supplemental_metrics::standalone_scalar_mask_with_storage(
+                    text, style, storage,
+                )?;
+            let contextual =
+                super::super::arabic_context::advances_with_storage(&chars, style, storage)?;
+            let char_width = |i: usize| -> f64 {
+                char_width_decision_with_hft_tracking(
+                    &chars,
+                    &cluster_len,
+                    i,
+                    style,
+                    supplemental.as_ref().is_some_and(|mask| mask[i]),
+                    true,
+                    contextual.as_ref().and_then(|widths| widths[i]),
+                )
+                .final_width_px
+            };
+
+            let mut total = 0.0;
+            let mut tab_char_idx = 0usize;
+            for i in 0..char_count {
+                let c = chars[i];
+                if cluster_len[i] == 0 {
                     continue;
                 }
-                // 인라인 탭 (HWP tab_extended / HWPX 인라인 탭)
-                // NOTE: 네이티브 경로는 `tab_type = ext[2]` 전체 u16 해석을 유지.
-                // 기존 golden SVG (issue-147, issue-267) 가 이 "우연한 LEFT 폴백" 동작에
-                // 의존하고 있어, 이를 바꾸면 회귀 발생. WASM 경로만 inline_tab_type 사용.
-                // [Issue #630 Stage 4 검증] HWP5 의 `ext[0]` 가 이미 right-tab 결과 위치
-                // (= 우측 끝 - 한컴_seg_w) 로 저장되어 있어 LEFT fallback 이 인코딩 의도와
-                // 정합. RIGHT 정확 매치 시 seg_w 이중 차감 → ≈seg_w (≈112px) 좌측 이탈
-                // (aift p4 1-1 등 23/24 라인 모두 영향). 본 LEFT fallback 동작 유지.
-                // 자리표는 탭 순번만 보존한다. 글자 위치 계산과 같이 저장 폭이
-                // 없는 탭은 기본 정지로 내려가야 정렬에 쓰는 전체 폭도 일치한다.
-                let stored_ext = style
-                    .inline_tabs
-                    .get(tab_char_idx)
-                    .filter(|ext| !crate::model::paragraph::tab_ext_is_placeholder(ext));
-                if let Some(ext) = stored_ext {
-                    let tab_width_px = ext[0] as f64 * 96.0 / 7200.0;
-                    let tab_type = ext[2];
-                    let tab_target = total + tab_width_px;
-                    // [Task #874] auto_tab_right 가 활성된 paragraph 에서 단일 tab 의
-                    // 인라인 tab_extended 는 Hancom 의 right-tab 결과 위치(= 우측 끝 -
-                    // 한컴_seg_w) 를 ext[0] 로 저장. 우리 폰트의 seg_w 와 다르면 좌측
-                    // 이탈 발생 (shortcut.hwp pi=144 `Alt+Shift+C` 27 px 부족). auto_right
-                    // 일 때는 우리 metric 기준 right-edge - our_seg_w 로 override.
-                    let has_more_tabs_after = chars[i + 1..].contains(&'\t');
-                    // [Task #874 #10] ext[2] high-byte 가 명시적 LEFT(1)/DECIMAL(4) 면
-                    // auto_tab_right paragraph 라도 override 금지 — exam_math.hwp p7
-                    // item 18 (Task #290) 의 inline LEFT tab 회귀 차단.
-                    let inline_type_hi = ((tab_type >> 8) & 0xFF) as u8;
-                    let inline_is_explicit_left = inline_type_hi == 1 || inline_type_hi == 4;
-                    let override_to_right = style.auto_tab_right
-                        && !has_more_tabs_after
-                        && style.available_width > 0.0
-                        && !inline_is_explicit_left;
-                    if override_to_right {
-                        // [Task #874 #2] lang split 로 post-tab 콘텐츠가 후속 run 으로
-                        // 쪼개진 경우 (예: "F3→Alt+I" → "F3"/"→"/"Alt+I"), 현재 run 내부
-                        // 측정만으로는 seg_w 가 부족. paragraph_layout 이 미리 합산한
-                        // block_w override 가 있으면 그것을 사용.
-                        let seg_w = style.right_tab_block_width_override.unwrap_or_else(|| {
-                            measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
-                        });
-                        let right_edge_rel =
-                            style.text_start_offset + style.available_width - style.line_x_offset;
-                        total = (right_edge_rel - seg_w).max(total);
-                    } else if inline_type_hi == 0
-                        && !has_more_tabs_after
-                        && (tab_suffix_is_ascii_page_number(&chars, i + 1)
-                            || style.right_tab_block_width_override.is_some())
+                if c == '\t' {
+                    if let Some(position) = style
+                        .auto_left_tab_position
+                        .filter(|position| *position > style.line_x_offset + total)
                     {
-                        if let Some(target_rel) = right_leader_tab_target_rel(style) {
+                        total = position - style.line_x_offset;
+                        tab_char_idx += 1;
+                        continue;
+                    }
+                    // 인라인 탭 (HWP tab_extended / HWPX 인라인 탭)
+                    // NOTE: 네이티브 경로는 `tab_type = ext[2]` 전체 u16 해석을 유지.
+                    // 기존 golden SVG (issue-147, issue-267) 가 이 "우연한 LEFT 폴백" 동작에
+                    // 의존하고 있어, 이를 바꾸면 회귀 발생. WASM 경로만 inline_tab_type 사용.
+                    // [Issue #630 Stage 4 검증] HWP5 의 `ext[0]` 가 이미 right-tab 결과 위치
+                    // (= 우측 끝 - 한컴_seg_w) 로 저장되어 있어 LEFT fallback 이 인코딩 의도와
+                    // 정합. RIGHT 정확 매치 시 seg_w 이중 차감 → ≈seg_w (≈112px) 좌측 이탈
+                    // (aift p4 1-1 등 23/24 라인 모두 영향). 본 LEFT fallback 동작 유지.
+                    // 자리표는 탭 순번만 보존한다. 글자 위치 계산과 같이 저장 폭이
+                    // 없는 탭은 기본 정지로 내려가야 정렬에 쓰는 전체 폭도 일치한다.
+                    let stored_ext = style
+                        .inline_tabs
+                        .get(tab_char_idx)
+                        .filter(|ext| !crate::model::paragraph::tab_ext_is_placeholder(ext));
+                    if let Some(ext) = stored_ext {
+                        let tab_width_px = ext[0] as f64 * 96.0 / 7200.0;
+                        let tab_type = ext[2];
+                        let tab_target = total + tab_width_px;
+                        // [Task #874] auto_tab_right 가 활성된 paragraph 에서 단일 tab 의
+                        // 인라인 tab_extended 는 Hancom 의 right-tab 결과 위치(= 우측 끝 -
+                        // 한컴_seg_w) 를 ext[0] 로 저장. 우리 폰트의 seg_w 와 다르면 좌측
+                        // 이탈 발생 (shortcut.hwp pi=144 `Alt+Shift+C` 27 px 부족). auto_right
+                        // 일 때는 우리 metric 기준 right-edge - our_seg_w 로 override.
+                        let has_more_tabs_after = chars[i + 1..].contains(&'\t');
+                        // [Task #874 #10] ext[2] high-byte 가 명시적 LEFT(1)/DECIMAL(4) 면
+                        // auto_tab_right paragraph 라도 override 금지 — exam_math.hwp p7
+                        // item 18 (Task #290) 의 inline LEFT tab 회귀 차단.
+                        let inline_type_hi = ((tab_type >> 8) & 0xFF) as u8;
+                        let inline_is_explicit_left = inline_type_hi == 1 || inline_type_hi == 4;
+                        let override_to_right = style.auto_tab_right
+                            && !has_more_tabs_after
+                            && style.available_width > 0.0
+                            && !inline_is_explicit_left;
+                        if override_to_right {
+                            // [Task #874 #2] lang split 로 post-tab 콘텐츠가 후속 run 으로
+                            // 쪼개진 경우 (예: "F3→Alt+I" → "F3"/"→"/"Alt+I"), 현재 run 내부
+                            // 측정만으로는 seg_w 가 부족. paragraph_layout 이 미리 합산한
+                            // block_w override 가 있으면 그것을 사용.
                             let seg_w = style.right_tab_block_width_override.unwrap_or_else(|| {
                                 measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
                             });
-                            total = (target_rel - seg_w).max(total);
-                        } else {
-                            total = tab_target.max(total);
-                        }
-                    } else {
-                        match tab_type {
-                            1 => {
+                            let right_edge_rel = style.text_start_offset + style.available_width
+                                - style.line_x_offset;
+                            total = (right_edge_rel - seg_w).max(total);
+                        } else if inline_type_hi == 0
+                            && !has_more_tabs_after
+                            && (tab_suffix_is_ascii_page_number(&chars, i + 1)
+                                || style.right_tab_block_width_override.is_some())
+                        {
+                            if let Some(target_rel) = right_leader_tab_target_rel(style) {
                                 let seg_w =
                                     measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
-                                total = (tab_target - seg_w).max(total);
-                            }
-                            2 => {
-                                let seg_w =
-                                    measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
-                                total = (tab_target - seg_w / 2.0).max(total);
-                            }
-                            _ => {
+                                total = (target_rel - seg_w).max(total);
+                            } else {
                                 total = tab_target.max(total);
                             }
+                        } else {
+                            match tab_type {
+                                1 => {
+                                    let seg_w = measure_segment_from(
+                                        &chars,
+                                        &cluster_len,
+                                        i + 1,
+                                        &char_width,
+                                    );
+                                    total = (tab_target - seg_w).max(total);
+                                }
+                                2 => {
+                                    let seg_w = measure_segment_from(
+                                        &chars,
+                                        &cluster_len,
+                                        i + 1,
+                                        &char_width,
+                                    );
+                                    total = (tab_target - seg_w / 2.0).max(total);
+                                }
+                                _ => {
+                                    total = tab_target.max(total);
+                                }
+                            }
                         }
-                    }
-                    tab_char_idx += 1;
-                } else if has_custom_tabs {
-                    let has_more_tabs_after = chars[i + 1..].contains(&'\t');
-                    let abs_x = style.line_x_offset + total;
-                    let (tab_pos, tab_type, _) = find_next_tab_stop(
-                        abs_x,
-                        &style.tab_stops,
-                        tab_w,
-                        style.auto_tab_right,
-                        style.available_width,
-                        style.text_start_offset,
-                    );
-                    let rel_tab = tab_pos - style.line_x_offset;
-                    match tab_type {
-                        1 => {
-                            // 오른쪽
-                            let seg_w = if !has_more_tabs_after {
-                                style.right_tab_block_width_override.unwrap_or_else(|| {
+                        tab_char_idx += 1;
+                    } else if has_custom_tabs {
+                        let has_more_tabs_after = chars[i + 1..].contains(&'\t');
+                        let abs_x = style.line_x_offset + total;
+                        let (tab_pos, tab_type, _) = find_next_tab_stop(
+                            abs_x,
+                            &style.tab_stops,
+                            tab_w,
+                            style.auto_tab_right,
+                            style.available_width,
+                            style.text_start_offset,
+                        );
+                        let rel_tab = tab_pos - style.line_x_offset;
+                        match tab_type {
+                            1 => {
+                                // 오른쪽
+                                let seg_w = if !has_more_tabs_after {
+                                    style.right_tab_block_width_override.unwrap_or_else(|| {
+                                        measure_segment_from(
+                                            &chars,
+                                            &cluster_len,
+                                            i + 1,
+                                            &char_width,
+                                        )
+                                    })
+                                } else {
                                     measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
-                                })
-                            } else {
-                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
-                            };
-                            total = (rel_tab - seg_w).max(total);
+                                };
+                                total = (rel_tab - seg_w).max(total);
+                            }
+                            2 => {
+                                // 가운데
+                                let seg_w =
+                                    measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
+                                total = (rel_tab - seg_w / 2.0).max(total);
+                            }
+                            _ => {
+                                // 왼쪽(0), 소수점(3) → 왼쪽과 동일 처리
+                                total = rel_tab.max(total);
+                            }
                         }
-                        2 => {
-                            // 가운데
-                            let seg_w =
-                                measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
-                            total = (rel_tab - seg_w / 2.0).max(total);
+                        tab_char_idx += 1;
+                    } else {
+                        // 기본 등간격 탭: 라인 절대 위치(line_x_offset + total) 기준으로 계산
+                        let abs_x = style.line_x_offset + total;
+                        if tab_w > 0.0 {
+                            let next_abs = ((abs_x / tab_w).floor() + 1.0) * tab_w;
+                            total = (next_abs - style.line_x_offset).max(total);
                         }
-                        _ => {
-                            // 왼쪽(0), 소수점(3) → 왼쪽과 동일 처리
-                            total = rel_tab.max(total);
-                        }
+                        tab_char_idx += 1;
                     }
-                    tab_char_idx += 1;
-                } else {
-                    // 기본 등간격 탭: 라인 절대 위치(line_x_offset + total) 기준으로 계산
-                    let abs_x = style.line_x_offset + total;
-                    if tab_w > 0.0 {
-                        let next_abs = ((abs_x / tab_w).floor() + 1.0) * tab_w;
-                        total = (next_abs - style.line_x_offset).max(total);
-                    }
-                    tab_char_idx += 1;
+                    continue;
                 }
-                continue;
+                if cluster_len[i] == 0 {
+                    continue;
+                }
+                total += char_width(i);
             }
-            if cluster_len[i] == 0 {
-                continue;
-            }
-            total += char_width(i);
-        }
-        total
+            total
+        })
     }
 }
 
@@ -867,13 +904,37 @@ fn default_measurer() -> EmbeddedTextMeasurer {
 
 // ── 스타일 변환 ─────────────────────────────────────────────────────
 
-pub(crate) fn resolved_to_text_style(
+pub(crate) fn resolved_to_text_style(styles: &ResolvedStyleSet, id: u32, lang: usize) -> TextStyle {
+    match try_resolved_to_text_style(
+        styles,
+        id,
+        lang,
+        &crate::renderer::style_resolver::storage::Unbounded,
+    ) {
+        Ok(style) => style,
+        Err(never) => match never {},
+    }
+}
+
+fn try_original_metric_family<S: crate::renderer::style_resolver::storage::Storage>(
+    face: Option<&str>,
+    storage: &S,
+) -> Result<Option<std::sync::Arc<String>>, S::Error> {
+    face.map(|face| {
+        storage.bytes(2 * std::mem::size_of::<usize>() + std::mem::size_of::<String>())?;
+        Ok(std::sync::Arc::new(storage.string(face)?))
+    })
+    .transpose()
+}
+
+pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::storage::Storage>(
     styles: &ResolvedStyleSet,
     char_style_id: u32,
     lang_index: usize,
-) -> TextStyle {
+    storage: &S,
+) -> Result<TextStyle, S::Error> {
     if let Some(cs) = styles.char_styles.get(char_style_id as usize) {
-        TextStyle {
+        Ok(TextStyle {
             native_pua_metrics: (!styles.has_exact_font_source(char_style_id, lang_index))
                 .then(|| {
                     styles.native_pua_fonts.get(
@@ -905,16 +966,20 @@ pub(crate) fn resolved_to_text_style(
                 )
                 .then_some(crate::renderer::IsolatedJamoFont::HcrDotum)
             }),
-            font_family: cs.font_family_for_lang(lang_index).to_string(),
+            font_family: storage.string(cs.font_family_for_lang(lang_index))?,
             supplemental_metrics: styles.supplemental_metrics.clone(),
             font_metric_trusted: cs.font_metric_trusted_for_lang(lang_index),
             glyph_fallback_advance_explicit: cs
                 .glyph_fallback_advance_explicit_for_lang(lang_index),
             // [#7391] 폭만 선언 face 의 표로 되돌린다. 표시 글꼴(`font_family`)은 그대로다.
-            metric_font_family: cs.metric_face_for_lang(lang_index).map(str::to_string),
-            original_glyph_metric_family: cs
-                .original_glyph_metric_face_for_lang(lang_index)
-                .map(|face| std::sync::Arc::new(face.to_owned())),
+            metric_font_family: cs
+                .metric_face_for_lang(lang_index)
+                .map(|face| storage.string(face))
+                .transpose()?,
+            original_glyph_metric_family: try_original_metric_family(
+                cs.original_glyph_metric_face_for_lang(lang_index),
+                storage,
+            )?,
             // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
             font_space_em: cs.font_space_em,
             layout_half_space: false,
@@ -969,21 +1034,28 @@ pub(crate) fn resolved_to_text_style(
             strike_color: cs.strike_color,
             shade_color: cs.shade_color,
             // [#7418] 한글 등 영문 외 슬롯 run 에서 ASCII 구두점은 영문 슬롯 메트릭으로 잰다.
-            ascii_punct_latin: (lang_index != 1 && cs.ascii_punct_latin_slot).then(|| {
-                Box::new(crate::renderer::LatinSlotMetrics {
-                    font_family: cs.font_family_for_lang(1).to_string(),
-                    metric_font_family: cs.metric_face_for_lang(1).map(str::to_string),
-                    original_glyph_metric_family: cs
-                        .original_glyph_metric_face_for_lang(1)
-                        .map(|face| std::sync::Arc::new(face.to_owned())),
-                    font_metric_trusted: cs.font_metric_trusted_for_lang(1),
-                    letter_spacing: resolved_letter_spacing(styles, char_style_id, 1),
-                    ratio: cs.ratio_for_lang(1),
+            ascii_punct_latin: (lang_index != 1 && cs.ascii_punct_latin_slot)
+                .then(|| {
+                    storage.bytes(std::mem::size_of::<crate::renderer::LatinSlotMetrics>())?;
+                    Ok(Box::new(crate::renderer::LatinSlotMetrics {
+                        font_family: storage.string(cs.font_family_for_lang(1))?,
+                        metric_font_family: cs
+                            .metric_face_for_lang(1)
+                            .map(|face| storage.string(face))
+                            .transpose()?,
+                        original_glyph_metric_family: try_original_metric_family(
+                            cs.original_glyph_metric_face_for_lang(1),
+                            storage,
+                        )?,
+                        font_metric_trusted: cs.font_metric_trusted_for_lang(1),
+                        letter_spacing: resolved_letter_spacing(styles, char_style_id, 1),
+                        ratio: cs.ratio_for_lang(1),
+                    }))
                 })
-            }),
-        }
+                .transpose()?,
+        })
     } else {
-        TextStyle::default()
+        Ok(TextStyle::default())
     }
 }
 
@@ -2468,13 +2540,25 @@ pub(crate) fn estimate_text_width_exact(text: &str, style: &TextStyle) -> f64 {
 /// 한컴은 HWPUNIT 정수로 폭을 누적하므로, round 없이 px를 합산한 뒤
 /// 줄바꿈 비교 시점에서 available_width와 비교하는 것이 더 정확하다.
 pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f64 {
+    match estimate_text_width_unrounded_with_storage(text, style, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn estimate_text_width_unrounded_with_storage<S: crate::storage::Storage>(
+    text: &str,
+    style: &TextStyle,
+    storage: &S,
+) -> Result<f64, S::Error> {
     let (_, _, tab_w) = style_params(style);
-    let chars: Vec<char> = text.chars().collect();
-    let cluster_len = build_cluster_len(&chars);
+    let chars: Vec<char> = storage.collect(text.chars())?;
+    let cluster_len = build_cluster_len_with_storage(&chars, storage)?;
     let char_count = chars.len();
 
-    let supplemental = super::super::supplemental_metrics::standalone_scalar_mask(text, style);
-    let contextual = super::super::arabic_context::advances(&chars, style);
+    let supplemental = super::super::supplemental_metrics::standalone_scalar_mask_with_storage(
+        text, style, storage,
+    )?;
+    let contextual = super::super::arabic_context::advances_with_storage(&chars, style, storage)?;
     let char_width = |i: usize| -> f64 {
         char_width_decision_with_hft_tracking(
             &chars,
@@ -2504,7 +2588,7 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         }
         total += char_width(i);
     }
-    total // round 없이 반환
+    Ok(total) // round 없이 반환
 }
 
 /// 한컴이 폭 변경 뒤 LINE_SEG를 다시 만들 때 쓰는 공백 advance.
@@ -2910,6 +2994,16 @@ pub(crate) fn vertical_substitute_char(c: char) -> Option<char> {
         '_' => Some('\u{FE33}'), // _ → ︳ (vertical low line)
         _ => None,
     }
+}
+
+pub(crate) fn estimate_text_width_with_storage<S: crate::storage::Storage>(
+    text: &str,
+    style: &TextStyle,
+    storage: &S,
+) -> Result<f64, S::Error> {
+    Ok(default_measurer()
+        .estimate_text_width_exact_with_storage(text, style, storage)?
+        .round())
 }
 
 // ── 테스트 ──────────────────────────────────────────────────────────

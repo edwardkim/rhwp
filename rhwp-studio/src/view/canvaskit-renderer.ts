@@ -403,6 +403,7 @@ export class CanvasKitLayerRenderer {
   private readonly croppedEffectImages = new WeakMap<SkImage, { width: number; height: number }>();
   private nextImageKey = 1;
   private currentProfile: LayerRenderProfile = 'screen';
+  private svgRasterScale = 1;
   private preferRasterDepth = 0;
   private readonly surfaceCache = new CanvasKitSurfaceCache();
   private readonly staticPictures = new BoundedNativeCache<StaticPictureEntry>(32, 64 * 1024 * 1024, entry => entry.picture.delete());
@@ -980,6 +981,7 @@ export class CanvasKitLayerRenderer {
       throw new Error('CanvasKit renderer가 이미 dispose되었습니다');
     }
     this.syncDocumentGeneration(documentGeneration);
+    this.svgRasterScale = scale;
     this.unsupportedOps.clear();
     this.currentImageFailures.clear();
     this.currentFontSubstitutions.clear();
@@ -1626,7 +1628,8 @@ export class CanvasKitLayerRenderer {
       return imageOp !== null && this.imageForOp(imageOp) !== null;
     }
     if (op.payloadKind === 'svgGlyph') {
-      return this.staticSvgGlyphPathLayers(op) !== null;
+      return typeof bitmapRasterWasm.prepareStaticSvgRaster === 'function'
+        ? this.staticSvgGlyphRaster(op) !== null : this.staticSvgGlyphPathLayers(op) !== null;
     }
     return op.payloadKind === 'colorLayers'
       || op.payloadKind === 'monochromeFill'
@@ -1693,7 +1696,7 @@ export class CanvasKitLayerRenderer {
     };
   }
 
-  private staticSvgGlyphPathLayers(op: LayerGlyphOutlineOp): StaticSvgPathLayer[] | null {
+  private staticSvgGlyphSource(op: LayerGlyphOutlineOp): { fragment: string; resourceKey: string; currentColor: string } | null {
     const payload = op.svgGlyph;
     const resources = this.currentResources;
     const index = this.layerResourceIndex(
@@ -1721,6 +1724,38 @@ export class CanvasKitLayerRenderer {
     }
     const currentColor = op.paintStyle?.color ?? '#000000';
     if (currentColor.length > 256) return null;
+    return { fragment, resourceKey, currentColor };
+  }
+
+  private staticSvgGlyphRaster(op: LayerGlyphOutlineOp): SkImage | null {
+    const source = this.staticSvgGlyphSource(op);
+    const view = op.svgGlyph?.viewBox;
+    const viewport = op.svgGlyph?.fontEmBox ?? op.bbox;
+    if (!source || !view || !this.boundsAreDrawable(viewport) || !this.boundsAreDrawable(view)) return null;
+    const options = { viewBox: [view.x, view.y, view.width, view.height],
+      viewport: [viewport.x, viewport.y, viewport.width, viewport.height],
+      scale: this.svgRasterScale, currentColor: source.currentColor };
+    const key = `svgGlyphRaster:${source.resourceKey}:${JSON.stringify(options)}`;
+    const cached = this.imageCache.get(key);
+    if (cached) {
+      this.imageCacheHits++; this.imageCache.delete(key); this.imageCache.set(key, cached); return cached.image;
+    }
+    if (this.svgGlyphParseFailures.has(key)) return null;
+    this.imageCacheMisses++;
+    try {
+      const raster = bitmapRasterWasm.prepareStaticSvgRaster(JSON.stringify(options), source.fragment);
+      if (!raster || !(raster.bytes instanceof Uint8Array) || !Number.isSafeInteger(raster.byteCost)
+        || raster.byteCost < 4 || raster.byteCost > 16_777_216 * 4) throw new Error('SVG_RASTER_BUDGET');
+      const image = this.canvasKit.MakeImageFromEncoded(raster.bytes);
+      if (!image) throw new Error('SVG_RASTER_DECODE');
+      return this.retainImage(key, image, raster.byteCost / 4);
+    } catch { this.rememberSvgGlyphParseFailure(key); return null; }
+  }
+
+  private staticSvgGlyphPathLayers(op: LayerGlyphOutlineOp): StaticSvgPathLayer[] | null {
+    const source = this.staticSvgGlyphSource(op);
+    if (!source) return null;
+    const { fragment, resourceKey, currentColor } = source;
     const svgCacheKey = `${resourceKey}:${currentColor}`;
     const cached = this.svgGlyphPathCache.get(svgCacheKey);
     if (cached) {
@@ -2458,6 +2493,19 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderSvgGlyphOutline(canvas: SkCanvas, op: LayerGlyphOutlineOp): void {
+    if (typeof bitmapRasterWasm.prepareStaticSvgRaster === 'function') {
+      const image = this.staticSvgGlyphRaster(op);
+      const viewport = op.svgGlyph?.fontEmBox ?? op.bbox;
+      if (!image) { this.unsupportedOps.add('glyphOutline:svgReplayInvariant'); return; }
+      canvas.save();
+      try {
+        const matrix = this.affineToCanvasKitMatrix(op.svgGlyph?.transformToRun);
+        if (matrix) canvas.concat(matrix);
+        this.drawImageRect(canvas, image, this.canvasKit.XYWHRect(0, 0, image.width(), image.height()),
+          this.canvasKit.XYWHRect(viewport.x, viewport.y, viewport.width, viewport.height));
+      } finally { canvas.restore(); }
+      return;
+    }
     const payload = op.svgGlyph;
     const viewBox = payload?.viewBox;
     const placement = payload?.fontEmBox ?? op.bbox;

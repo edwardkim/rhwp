@@ -15,6 +15,7 @@ use crate::renderer::layout::{
     hancom_regenerated_space_width, is_cjk_char, kopub_space_advance_em, resolved_letter_spacing,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
+use crate::renderer::style_resolver::storage::{Storage, Unbounded};
 use crate::renderer::style_resolver::{
     detect_lang_category, is_latin_slot_symbol, ResolvedParaStyle, ResolvedStyleSet,
 };
@@ -418,28 +419,41 @@ fn token_line_font_size(styles: &ResolvedStyleSet, style_id: u32) -> f64 {
 /// Lexical text units shared with physical TAC row placement. Inline control
 /// boundaries remain owned by the caller, rather than joined into a word.
 pub(crate) fn text_word_ranges(para: &Paragraph, styles: &ResolvedStyleSet) -> Vec<Range<usize>> {
-    let chars: Vec<_> = para.text.chars().collect();
+    match text_word_ranges_with_storage(para, styles, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn text_word_ranges_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+) -> Result<Vec<Range<usize>>, S::Error> {
+    let chars: Vec<_> = storage.collect(para.text.chars())?;
     let style = styles.para_styles.get(para.para_shape_id as usize);
-    tokenize_paragraph_with_regenerated_space_metric(
-        &chars,
-        &para.char_offsets,
-        &para.char_shapes,
-        styles,
-        style.map_or(0, |s| s.english_break_unit),
-        style.map_or(0, |s| s.korean_break_unit),
-        SpaceMetric::Stored,
-        &[],
-        para.control_mask & (1 << 0x18) != 0,
-        &para.literal_figure_spaces,
+    storage.collect(
+        try_tokenize_paragraph_with_regenerated_space_metric(
+            &chars,
+            &para.char_offsets,
+            &para.char_shapes,
+            styles,
+            style.map_or(0, |s| s.english_break_unit),
+            style.map_or(0, |s| s.korean_break_unit),
+            SpaceMetric::Stored,
+            &[],
+            para.control_mask & (1 << 0x18) != 0,
+            &para.literal_figure_spaces,
+            storage,
+        )?
+        .into_iter()
+        .filter_map(|token| match token {
+            BreakToken::Text {
+                start_idx, end_idx, ..
+            } => Some(start_idx..end_idx),
+            _ => None,
+        }),
     )
-    .into_iter()
-    .filter_map(|token| match token {
-        BreakToken::Text {
-            start_idx, end_idx, ..
-        } => Some(start_idx..end_idx),
-        _ => None,
-    })
-    .collect()
 }
 
 fn tokenize_paragraph_with_regenerated_space_metric(
@@ -454,37 +468,74 @@ fn tokenize_paragraph_with_regenerated_space_metric(
     soft_hyphen_control: bool,
     literal_figure_spaces: &[usize],
 ) -> Vec<BreakToken> {
+    match try_tokenize_paragraph_with_regenerated_space_metric(
+        text_chars,
+        char_offsets,
+        char_shapes,
+        styles,
+        english_break_unit,
+        korean_break_unit,
+        space_metric,
+        inline_controls,
+        soft_hyphen_control,
+        literal_figure_spaces,
+        &crate::renderer::style_resolver::storage::Unbounded,
+    ) {
+        Ok(tokens) => tokens,
+        Err(never) => match never {},
+    }
+}
+
+fn try_tokenize_paragraph_with_regenerated_space_metric<
+    S: crate::renderer::style_resolver::storage::Storage,
+>(
+    text_chars: &[char],
+    char_offsets: &[u32],
+    char_shapes: &[CharShapeRef],
+    styles: &ResolvedStyleSet,
+    english_break_unit: u8,
+    korean_break_unit: u8,
+    space_metric: SpaceMetric,
+    inline_controls: &[FlowInlineControl],
+    soft_hyphen_control: bool,
+    literal_figure_spaces: &[usize],
+    storage: &S,
+) -> Result<Vec<BreakToken>, S::Error> {
     let text_len = text_chars.len();
     if text_len == 0 {
-        return Vec::new();
+        return Ok(Vec::new());
     }
 
     let mut tokens = Vec::new();
     let mut i = 0;
-    let metric_scope = ParagraphMetricScope::new(text_chars, styles)
+    let metric_scope = ParagraphMetricScope::try_new(text_chars, styles, storage)?
         .with_space_metric(space_metric)
         .with_literal_figure_spaces(literal_figure_spaces);
     let mut current_lang: usize = 0;
 
     while i < text_len {
+        storage.reserve(&mut tokens, 1)?;
         let ch = text_chars[i];
 
         if soft_hyphen_control && ch == '\u{00AD}' {
             let position = char_offsets.get(i).copied().unwrap_or(i as u32);
             let shape = find_active_char_shape(char_shapes, position);
-            let style = metric_scope.style(styles, shape, current_lang, i);
-            tokens.push(BreakToken::DiscretionaryHyphen {
-                idx: i,
-                width: estimate_text_width_unrounded("-", &style),
-                max_font_size: token_line_font_size(styles, shape),
-            });
+            let style = metric_scope.try_style(styles, shape, current_lang, i, storage)?;
+            storage.push(
+                &mut tokens,
+                BreakToken::DiscretionaryHyphen {
+                    idx: i,
+                    width: estimate_text_width_unrounded("-", &style),
+                    max_font_size: token_line_font_size(styles, shape),
+                },
+            )?;
             i += 1;
             continue;
         }
 
         // 강제 줄 바꿈
         if ch == '\n' {
-            tokens.push(BreakToken::LineBreak { idx: i });
+            storage.push(&mut tokens, BreakToken::LineBreak { idx: i })?;
             i += 1;
             continue;
         }
@@ -497,13 +548,16 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 i as u32
             };
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
-            let ts = metric_scope.style(styles, style_id, current_lang, i);
+            let ts = metric_scope.try_style(styles, style_id, current_lang, i, storage)?;
             let font_size = token_line_font_size(styles, style_id);
-            tokens.push(BreakToken::Tab {
-                idx: i,
-                max_font_size: font_size,
-                auto_left_target: None,
-            });
+            storage.push(
+                &mut tokens,
+                BreakToken::Tab {
+                    idx: i,
+                    max_font_size: font_size,
+                    auto_left_target: None,
+                },
+            )?;
             i += 1;
             continue;
         }
@@ -517,15 +571,18 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 char_shapes,
                 char_offsets.get(i).copied().unwrap_or(i as u32),
             );
-            tokens.push(BreakToken::Text {
-                start_idx: i,
-                end_idx: i + 1,
-                base_width: width,
-                width,
-                max_font_size: token_line_font_size(styles, style_id),
-                base_char_widths: vec![width],
-                char_widths: vec![width],
-            });
+            storage.push(
+                &mut tokens,
+                BreakToken::Text {
+                    start_idx: i,
+                    end_idx: i + 1,
+                    base_width: width,
+                    width,
+                    max_font_size: token_line_font_size(styles, style_id),
+                    base_char_widths: storage.collect([width])?,
+                    char_widths: storage.collect([width])?,
+                },
+            )?;
             i += 1;
             continue;
         }
@@ -536,20 +593,23 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 i as u32
             };
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
-            let ts = metric_scope.style(styles, style_id, current_lang, i);
+            let ts = metric_scope.try_style(styles, style_id, current_lang, i, storage)?;
             let font_size = token_line_font_size(styles, style_id);
             let inline_width = inline_width_px_at(inline_controls, i, styles);
             let unspaced = crate::renderer::TextStyle {
                 letter_spacing: 0.0,
                 ..ts.clone()
             };
-            tokens.push(BreakToken::Space {
-                idx: i,
-                width: space_metric.space_advance(&ts) + inline_width,
-                condense_base: space_metric.space_advance(&unspaced),
-                max_font_size: font_size,
-                inline_width,
-            });
+            storage.push(
+                &mut tokens,
+                BreakToken::Space {
+                    idx: i,
+                    width: space_metric.space_advance(&ts) + inline_width,
+                    condense_base: space_metric.space_advance(&unspaced),
+                    max_font_size: font_size,
+                    inline_width,
+                },
+            )?;
             i += 1;
             continue;
         }
@@ -564,7 +624,6 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 // 어절 모드: 연속 한글 + 후행 금칙 문자를 하나의 토큰으로
                 let start = i;
                 let mut max_fs = 0.0f64;
-                let mut token_text = String::new();
                 let mut token_lang = current_lang;
 
                 while i < text_len {
@@ -598,12 +657,11 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         current_lang = detected;
                         detected
                     };
-                    let ts = metric_scope.style(styles, style_id, lang, i);
+                    let ts = metric_scope.try_style(styles, style_id, lang, i, storage)?;
                     let fs = token_line_font_size(styles, style_id);
                     if fs > max_fs {
                         max_fs = fs;
                     }
-                    token_text.push(c);
                     i += 1;
                 }
 
@@ -627,16 +685,15 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         current_lang = detected;
                         detected
                     };
-                    let ts = metric_scope.style(styles, style_id, lang, i);
+                    let ts = metric_scope.try_style(styles, style_id, lang, i, storage)?;
                     let fs = token_line_font_size(styles, style_id);
                     if fs > max_fs {
                         max_fs = fs;
                     }
-                    token_text.push(c);
                     i += 1;
                 }
 
-                if !token_text.is_empty() {
+                if i > start {
                     // 토큰 폭과 **그 합을 이루는 글자별 폭**을 한 번에 받는다.
                     //
                     // 종전에는 글자별 폭을 inline control 이 있는 토큰에만 채웠다.
@@ -647,25 +704,30 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                     // 실제 전진폭은 11.400px 인데 폴백은 12.000px 로 세어 줄마다 42자만
                     // 담았다 — 43번째 글자는 19px 을 남기고 들어가는데도 거부됐다.
                     // 한/글 출력은 같은 줄에 44자를 담는다.
-                    let (width, char_widths) = measure_token_char_widths(
+                    let (width, char_widths) = try_measure_token_chars(
                         &metric_scope,
-                        &token_text,
+                        &text_chars[start..i],
                         start,
                         char_offsets,
                         char_shapes,
                         styles,
                         current_lang,
                         inline_controls,
-                    );
-                    tokens.push(BreakToken::Text {
-                        start_idx: start,
-                        end_idx: i,
-                        base_width: width,
-                        width,
-                        max_font_size: max_fs,
-                        base_char_widths: char_widths.clone(),
-                        char_widths,
-                    });
+                        true,
+                        storage,
+                    )?;
+                    storage.push(
+                        &mut tokens,
+                        BreakToken::Text {
+                            start_idx: start,
+                            end_idx: i,
+                            base_width: width,
+                            width,
+                            max_font_size: max_fs,
+                            base_char_widths: storage.copy_slice(&char_widths)?,
+                            char_widths,
+                        },
+                    )?;
                 }
                 continue;
             } else {
@@ -677,19 +739,18 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 };
                 let style_id = find_active_char_shape(char_shapes, utf16_pos);
                 current_lang = detect_lang_category(ch);
-                let ts = metric_scope.style(styles, style_id, current_lang, i);
+                let ts = metric_scope.try_style(styles, style_id, current_lang, i, storage)?;
                 let fs = token_line_font_size(styles, style_id);
                 // [#7702] 첫가끝 자모(초성+중성(+종성))는 한 글자다 — 옛한글 `ᄒᆞᆫ` 을 자모마다
                 // 한 글자 폭으로 재면 줄을 두 글자 일찍 끊는다. 그리기(`split_into_clusters`)처럼
                 // 묶어 잰다.
                 let cluster_end = hangul_jamo_cluster_end(text_chars, i);
-                let cluster: String = text_chars[i..cluster_end].iter().collect();
-                let mut w = estimate_text_width_unrounded(
-                    &super::one_to_one_pua_replay_text(&cluster),
-                    &ts,
-                ) + (i..cluster_end)
-                    .map(|idx| inline_width_px_at(inline_controls, idx, styles))
-                    .sum::<f64>();
+                let mut single = [0u8; 4];
+                let display = metric_display(&text_chars[i..cluster_end], &mut single, storage)?;
+                let mut w = estimate_text_width_unrounded(&display, &ts)
+                    + (i..cluster_end)
+                        .map(|idx| inline_width_px_at(inline_controls, idx, styles))
+                        .sum::<f64>();
                 // 글자 모드에서도 **줄 머리 금칙**을 지킨다.
                 //
                 // 어절 모드(위 분기)만 후행 금칙 문자를 앞 토큰에 흡수하고 있어, 글자 모드
@@ -725,20 +786,24 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                     } else {
                         detect_lang_category(text_chars[i])
                     };
-                    let follow_ts = metric_scope.style(styles, follow_style, follow_lang, i);
+                    let follow_ts =
+                        metric_scope.try_style(styles, follow_style, follow_lang, i, storage)?;
                     w += reflow_scalar_width(text_chars[i], &follow_ts)
                         + inline_width_px_at(inline_controls, i, styles);
                     i += 1;
                 }
-                tokens.push(BreakToken::Text {
-                    start_idx: start,
-                    end_idx: i,
-                    base_width: w,
-                    width: w,
-                    max_font_size: fs,
-                    base_char_widths: vec![],
-                    char_widths: vec![],
-                });
+                storage.push(
+                    &mut tokens,
+                    BreakToken::Text {
+                        start_idx: start,
+                        end_idx: i,
+                        base_width: w,
+                        width: w,
+                        max_font_size: fs,
+                        base_char_widths: vec![],
+                        char_widths: vec![],
+                    },
+                )?;
                 continue;
             }
         }
@@ -749,7 +814,6 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 // 단어/하이픈 모드: 연속 라틴 문자를 하나의 토큰으로
                 let start = i;
                 let mut max_fs = 0.0f64;
-                let mut token_text = String::new();
 
                 while i < text_len {
                     let c = text_chars[i];
@@ -763,7 +827,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         break;
                     }
                     // 하이픈 모드: 하이픈에서 분할 (하이픈 포함 후 분리)
-                    if english_break_unit == 1 && c == '-' && !token_text.is_empty() {
+                    if english_break_unit == 1 && c == '-' && i > start {
                         let utf16_pos = if i < char_offsets.len() {
                             char_offsets[i]
                         } else {
@@ -771,12 +835,11 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         };
                         let style_id = find_active_char_shape(char_shapes, utf16_pos);
                         let lang = 1usize; // English
-                        let ts = metric_scope.style(styles, style_id, lang, i);
+                        let ts = metric_scope.try_style(styles, style_id, lang, i, storage)?;
                         let fs = token_line_font_size(styles, style_id);
                         if fs > max_fs {
                             max_fs = fs;
                         }
-                        token_text.push(c);
                         i += 1;
                         break; // 하이픈 뒤에서 분할
                     }
@@ -793,51 +856,56 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         current_lang = 1; // English
                         1
                     };
-                    let ts = metric_scope.style(styles, style_id, lang, i);
+                    let ts = metric_scope.try_style(styles, style_id, lang, i, storage)?;
                     let fs = token_line_font_size(styles, style_id);
                     if fs > max_fs {
                         max_fs = fs;
                     }
-                    token_text.push(c);
                     i += 1;
                 }
 
-                if !token_text.is_empty() {
-                    let width = measure_token_width(
+                if i > start {
+                    let (width, _) = try_measure_token_chars(
                         &metric_scope,
-                        &token_text,
+                        &text_chars[start..i],
                         start,
                         char_offsets,
                         char_shapes,
                         styles,
                         current_lang,
                         inline_controls,
-                    );
+                        false,
+                        storage,
+                    )?;
                     // 개별 글자 폭 수집 (char_level_break용)
-                    let cw: Vec<f64> = (start..i)
-                        .map(|ci| {
-                            let c = text_chars[ci];
-                            let u16p = if ci < char_offsets.len() {
-                                char_offsets[ci]
-                            } else {
-                                ci as u32
-                            };
-                            let sid = find_active_char_shape(char_shapes, u16p);
-                            let lang = if is_lang_neutral(c) { current_lang } else { 1 };
-                            let ts = metric_scope.style(styles, sid, lang, ci);
+                    let mut cw = storage.vec(i - start)?;
+                    for ci in start..i {
+                        let c = text_chars[ci];
+                        let u16p = if ci < char_offsets.len() {
+                            char_offsets[ci]
+                        } else {
+                            ci as u32
+                        };
+                        let sid = find_active_char_shape(char_shapes, u16p);
+                        let lang = if is_lang_neutral(c) { current_lang } else { 1 };
+                        let ts = metric_scope.try_style(styles, sid, lang, ci, storage)?;
+                        cw.push(
                             reflow_scalar_width(c, &ts)
-                                + inline_width_px_at(inline_controls, ci, styles)
-                        })
-                        .collect();
-                    tokens.push(BreakToken::Text {
-                        start_idx: start,
-                        end_idx: i,
-                        base_width: width,
-                        width,
-                        max_font_size: max_fs,
-                        base_char_widths: cw.clone(),
-                        char_widths: cw,
-                    });
+                                + inline_width_px_at(inline_controls, ci, styles),
+                        );
+                    }
+                    storage.push(
+                        &mut tokens,
+                        BreakToken::Text {
+                            start_idx: start,
+                            end_idx: i,
+                            base_width: width,
+                            width,
+                            max_font_size: max_fs,
+                            base_char_widths: storage.copy_slice(&cw)?,
+                            char_widths: cw,
+                        },
+                    )?;
                 }
                 continue;
             } else {
@@ -849,19 +917,22 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 };
                 let style_id = find_active_char_shape(char_shapes, utf16_pos);
                 current_lang = 1;
-                let ts = metric_scope.style(styles, style_id, current_lang, i);
+                let ts = metric_scope.try_style(styles, style_id, current_lang, i, storage)?;
                 let fs = token_line_font_size(styles, style_id);
                 let w =
                     reflow_scalar_width(ch, &ts) + inline_width_px_at(inline_controls, i, styles);
-                tokens.push(BreakToken::Text {
-                    start_idx: i,
-                    end_idx: i + 1,
-                    base_width: w,
-                    width: w,
-                    max_font_size: fs,
-                    base_char_widths: vec![],
-                    char_widths: vec![],
-                });
+                storage.push(
+                    &mut tokens,
+                    BreakToken::Text {
+                        start_idx: i,
+                        end_idx: i + 1,
+                        base_width: w,
+                        width: w,
+                        max_font_size: fs,
+                        base_char_widths: vec![],
+                        char_widths: vec![],
+                    },
+                )?;
                 i += 1;
                 continue;
             }
@@ -876,18 +947,21 @@ fn tokenize_paragraph_with_regenerated_space_metric(
             };
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
             current_lang = detect_lang_category(ch);
-            let ts = metric_scope.style(styles, style_id, current_lang, i);
+            let ts = metric_scope.try_style(styles, style_id, current_lang, i, storage)?;
             let fs = token_line_font_size(styles, style_id);
             let w = reflow_scalar_width(ch, &ts) + inline_width_px_at(inline_controls, i, styles);
-            tokens.push(BreakToken::Text {
-                start_idx: i,
-                end_idx: i + 1,
-                base_width: w,
-                width: w,
-                max_font_size: fs,
-                base_char_widths: vec![],
-                char_widths: vec![],
-            });
+            storage.push(
+                &mut tokens,
+                BreakToken::Text {
+                    start_idx: i,
+                    end_idx: i + 1,
+                    base_width: w,
+                    width: w,
+                    max_font_size: fs,
+                    base_char_widths: vec![],
+                    char_widths: vec![],
+                },
+            )?;
             i += 1;
             continue;
         }
@@ -907,30 +981,33 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 current_lang = detected;
                 detected
             };
-            let ts = metric_scope.style(styles, style_id, lang, i);
+            let ts = metric_scope.try_style(styles, style_id, lang, i, storage)?;
             let fs = token_line_font_size(styles, style_id);
             let w = reflow_scalar_width(ch, &ts) + inline_width_px_at(inline_controls, i, styles);
-            tokens.push(BreakToken::Text {
-                start_idx: i,
-                end_idx: i + 1,
-                base_width: w,
-                width: w,
-                max_font_size: fs,
-                base_char_widths: vec![],
-                char_widths: vec![],
-            });
+            storage.push(
+                &mut tokens,
+                BreakToken::Text {
+                    start_idx: i,
+                    end_idx: i + 1,
+                    base_width: w,
+                    width: w,
+                    max_font_size: fs,
+                    base_char_widths: vec![],
+                    char_widths: vec![],
+                },
+            )?;
             i += 1;
         }
     }
 
-    tokens
+    Ok(tokens)
 }
 
 /// 모든 토큰 분기가 원문 슬롯을 보존하며 동일한 표시 글리프를 측정한다.
 fn reflow_scalar_width(ch: char, style: &crate::renderer::TextStyle) -> f64 {
-    let source = ch.to_string();
-    let display = super::one_to_one_pua_replay_text(&source);
-    estimate_text_width_unrounded(&display, style)
+    let display = super::verified_pua_replay_scalar(ch).unwrap_or(ch);
+    let mut bytes = [0u8; 4];
+    estimate_text_width_unrounded(display.encode_utf8(&mut bytes), style)
 }
 
 /// 토큰 텍스트의 폭을 글자별 언어 인식 측정으로 합산한다.
@@ -944,17 +1021,61 @@ fn measure_token_width(
     default_lang: usize,
     inline_controls: &[FlowInlineControl],
 ) -> f64 {
-    measure_token_char_widths(
+    let mut iter = text.chars();
+    let first = iter.next();
+    if let Some(first) = first.filter(|_| iter.clone().next().is_none()) {
+        return match try_measure_token_chars(
+            metric_scope,
+            std::slice::from_ref(&first),
+            start_char_idx,
+            char_offsets,
+            char_shapes,
+            styles,
+            default_lang,
+            inline_controls,
+            false,
+            &crate::renderer::style_resolver::storage::Unbounded,
+        ) {
+            Ok((width, _)) => width,
+            Err(never) => match never {},
+        };
+    }
+    let chars: Vec<_> = text.chars().collect();
+    match try_measure_token_chars(
         metric_scope,
-        text,
+        &chars,
         start_char_idx,
         char_offsets,
         char_shapes,
         styles,
         default_lang,
         inline_controls,
-    )
-    .0
+        false,
+        &crate::renderer::style_resolver::storage::Unbounded,
+    ) {
+        Ok((width, _)) => width,
+        Err(never) => match never {},
+    }
+}
+
+/// Scalar display uses the shared mapping without per-glyph heap strings.
+fn metric_display<'a, S: crate::renderer::style_resolver::storage::Storage>(
+    chars: &[char],
+    single: &'a mut [u8; 4],
+    storage: &S,
+) -> Result<std::borrow::Cow<'a, str>, S::Error> {
+    if let [scalar] = chars {
+        let scalar = super::verified_pua_replay_scalar(*scalar).unwrap_or(*scalar);
+        return Ok(std::borrow::Cow::Borrowed(scalar.encode_utf8(single)));
+    }
+    Ok(std::borrow::Cow::Owned(
+        storage.chars(
+            chars
+                .iter()
+                .copied()
+                .map(|c| super::verified_pua_replay_scalar(c).unwrap_or(c)),
+        )?,
+    ))
 }
 
 /// 토큰 전체 폭과, **그 합을 이루는 글자별 폭**을 함께 낸다.
@@ -962,20 +1083,25 @@ fn measure_token_width(
 /// 줄 나눔은 토큰이 통째로 들어갈 때는 합만 쓰고, 안 들어갈 때는 글자 단위 폴백에서
 /// 개별 폭을 쓴다. 두 값이 같은 순회에서 나와야 한 토큰을 두 잣대로 재지 않는다.
 /// 합은 종전 `measure_token_width` 와 같은 순서로 누적하므로 값이 바뀌지 않는다.
-fn measure_token_char_widths(
+fn try_measure_token_chars<S: crate::renderer::style_resolver::storage::Storage>(
     metric_scope: &ParagraphMetricScope,
-    text: &str,
+    chars: &[char],
     start_char_idx: usize,
     char_offsets: &[u32],
     char_shapes: &[CharShapeRef],
     styles: &ResolvedStyleSet,
     default_lang: usize,
     inline_controls: &[FlowInlineControl],
-) -> (f64, Vec<f64>) {
+    retain_widths: bool,
+    storage: &S,
+) -> Result<(f64, Vec<f64>), S::Error> {
     let mut total = 0.0;
-    let mut char_widths = Vec::with_capacity(text.len());
+    let mut char_widths = if retain_widths {
+        storage.vec(chars.len())?
+    } else {
+        Vec::new()
+    };
     let mut current_lang = default_lang;
-    let chars: Vec<char> = text.chars().collect();
     let mut offset = 0;
     while offset < chars.len() {
         let ch = chars[offset];
@@ -996,22 +1122,26 @@ fn measure_token_char_widths(
             current_lang = detected;
             detected
         };
-        let ts = metric_scope.style(styles, style_id, lang, idx);
+        let ts = metric_scope.try_style(styles, style_id, lang, idx, storage)?;
         // 원문과 언어 슬롯은 유지하고 paint와 같은 1:1 표시 글리프로 잰다.
-        let source: String = chars[offset..cluster_end].iter().collect();
-        let display = super::one_to_one_pua_replay_text(&source);
+        let mut single = [0u8; 4];
+        let display = metric_display(&chars[offset..cluster_end], &mut single, storage)?;
         let width = estimate_text_width_unrounded(&display, &ts)
             + inline_width_px_at(inline_controls, idx, styles);
         total += width;
-        char_widths.push(width);
+        if retain_widths {
+            char_widths.push(width);
+        }
         for tail in offset + 1..cluster_end {
             let tail_width = inline_width_px_at(inline_controls, start_char_idx + tail, styles);
             total += tail_width;
-            char_widths.push(tail_width);
+            if retain_widths {
+                char_widths.push(tail_width);
+            }
         }
         offset = cluster_end;
     }
-    (total, char_widths)
+    Ok((total, char_widths))
 }
 
 /// [#7702] `start` 에서 시작하는 첫가끝 자모 묶음(초성 + 중성 (+ 종성))의 끝 (배타).
@@ -1564,51 +1694,89 @@ fn fit_test_letter_spacing_trim_hwp(letter_spacing_px: &[f64], token_end_idx: us
 /// 원문 문자별 실제 글리프 자간이다. 선언된 글꼴 크기 비율과 구분한다.
 /// 줄 채움과 최종 정렬이 동일한 표시 문자·슬롯·측정 함수를 소비한다.
 fn resolved_letter_spacing_px(
+    chars: &[char],
+    offsets: &[u32],
+    shapes: &[CharShapeRef],
+    styles: &ResolvedStyleSet,
+    space: SpaceMetric,
+    literal_figure_spaces: &[usize],
+) -> Vec<f64> {
+    match try_resolved_letter_spacing_px(
+        chars,
+        offsets,
+        shapes,
+        styles,
+        space,
+        literal_figure_spaces,
+        &Unbounded,
+    ) {
+        Ok(values) => values,
+        Err(never) => match never {},
+    }
+}
+
+fn try_resolved_letter_spacing_px<S: Storage>(
     text_chars: &[char],
     char_offsets: &[u32],
     char_shapes: &[CharShapeRef],
     styles: &ResolvedStyleSet,
     space_metric: SpaceMetric,
     literal_figure_spaces: &[usize],
-) -> Vec<f64> {
+    storage: &S,
+) -> Result<Vec<f64>, S::Error> {
     let mut lang = 0usize;
-    let metric_scope = ParagraphMetricScope::new(text_chars, styles)
+    let metric_scope = ParagraphMetricScope::try_new(text_chars, styles, storage)?
         .with_space_metric(space_metric)
         .with_literal_figure_spaces(literal_figure_spaces);
-    text_chars
-        .iter()
-        .enumerate()
-        .map(|(idx, ch)| {
-            let utf16_pos = char_offsets.get(idx).copied().unwrap_or(idx as u32);
-            let style_id = find_active_char_shape(char_shapes, utf16_pos);
-            // [#7418] 영문 슬롯으로 재는 구두점은 자간도 영문 슬롯 값이다(`char_width_decision`).
-            let char_lang = char_lang_slot(*ch, &mut lang, punct_latin_slot(styles, style_id));
-            let spacing_lang =
-                super::punctuation_slots::metric_slot(*ch, char_lang, styles, style_id);
-            // 자간이 없는 대부분의 문자에서는 스타일 복제와 재측정을 피한다.
-            if resolved_letter_spacing(styles, style_id, spacing_lang) == 0.0 {
-                return 0.0;
-            }
-            let style = metric_scope.style(styles, style_id, char_lang, idx);
-            glyph_letter_spacing_advance(&ch.to_string(), &style)
-        })
-        .collect()
+    let mut values = storage.vec(text_chars.len())?;
+    for (idx, ch) in text_chars.iter().enumerate() {
+        let utf16_pos = char_offsets.get(idx).copied().unwrap_or(idx as u32);
+        let style_id = find_active_char_shape(char_shapes, utf16_pos);
+        // [#7418] 영문 슬롯으로 재는 구두점은 자간도 영문 슬롯 값이다(`char_width_decision`).
+        let char_lang = char_lang_slot(*ch, &mut lang, punct_latin_slot(styles, style_id));
+        let spacing_lang = super::punctuation_slots::metric_slot(*ch, char_lang, styles, style_id);
+        // 자간이 없는 대부분의 문자에서는 스타일 복제와 재측정을 피한다.
+        if resolved_letter_spacing(styles, style_id, spacing_lang) == 0.0 {
+            values.push(0.0);
+            continue;
+        }
+        let style = metric_scope.try_style(styles, style_id, char_lang, idx, storage)?;
+        values.push(glyph_letter_spacing_advance(
+            ch.encode_utf8(&mut [0; 4]),
+            &style,
+        ));
+    }
+    Ok(values)
 }
 
 fn resolved_paragraph_letter_spacing(
     para: &Paragraph,
+    chars: &[char],
+    styles: &ResolvedStyleSet,
+    space: SpaceMetric,
+) -> Vec<f64> {
+    match try_resolved_paragraph_letter_spacing(para, chars, styles, space, &Unbounded) {
+        Ok(values) => values,
+        Err(never) => match never {},
+    }
+}
+
+fn try_resolved_paragraph_letter_spacing<S: Storage>(
+    para: &Paragraph,
     text_chars: &[char],
     styles: &ResolvedStyleSet,
     space_metric: SpaceMetric,
-) -> Vec<f64> {
-    let mut values = resolved_letter_spacing_px(
+    storage: &S,
+) -> Result<Vec<f64>, S::Error> {
+    let mut values = try_resolved_letter_spacing_px(
         text_chars,
         &para.char_offsets,
         &para.char_shapes,
         styles,
         space_metric,
         &para.literal_figure_spaces,
-    );
+        storage,
+    )?;
     for (position, value) in &para.layout_field_values {
         if let Some(spacing) = values.get_mut(*position) {
             let shape = para.char_shape_id_at(*position).unwrap_or(0);
@@ -1616,7 +1784,7 @@ fn resolved_paragraph_letter_spacing(
             *spacing = resolved_letter_spacing(styles, shape, lang);
         }
     }
-    values
+    Ok(values)
 }
 
 /// fit test 에 쓰는 후보 폭. 펜이 전진하는 폭과 **다른 값**이다.
@@ -1892,8 +2060,43 @@ fn fill_lines(
     initial_start_idx: usize,
     initial_is_first_line: bool,
     allow_metric_tolerance: bool,
-    mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
+    kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
 ) -> Vec<LineBreakResult> {
+    match try_fill_lines(
+        tokens,
+        text_chars,
+        available_width_px,
+        indent_px,
+        tabs,
+        korean_break_unit,
+        condense_min_space,
+        letter_spacing_px,
+        initial_start_idx,
+        initial_is_first_line,
+        allow_metric_tolerance,
+        kerning,
+        &Unbounded,
+    ) {
+        Ok(lines) => lines,
+        Err(never) => match never {},
+    }
+}
+
+fn try_fill_lines<S: Storage>(
+    tokens: &[BreakToken],
+    text_chars: &[char],
+    available_width_px: f64,
+    indent_px: f64,
+    tabs: TabFill<'_>,
+    korean_break_unit: u8,
+    condense_min_space: u8,
+    letter_spacing_px: &[f64],
+    initial_start_idx: usize,
+    initial_is_first_line: bool,
+    allow_metric_tolerance: bool,
+    mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
+    storage: &S,
+) -> Result<Vec<LineBreakResult>, S::Error> {
     let mut cursor = FillCursor::new(initial_start_idx, initial_is_first_line);
     cursor.allow_metric_tolerance = allow_metric_tolerance;
     let mut results = Vec::new();
@@ -1910,10 +2113,10 @@ fn fill_lines(
         &mut cursor,
         kerning.as_deref_mut(),
     ) {
-        results.push(interval.line);
+        storage.push(&mut results, interval.line)?;
     }
 
-    results
+    Ok(results)
 }
 
 /// Fill at most one logical row and retain the greedy continuation state.
@@ -2975,31 +3178,45 @@ fn floating_anchor_char_font_sizes(
     para: &Paragraph,
     styles: &ResolvedStyleSet,
 ) -> Vec<(usize, f64)> {
-    if para.controls.is_empty() || para.char_shapes.is_empty() {
-        return Vec::new();
+    match floating_anchor_char_font_sizes_with_storage(para, styles, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    let text_positions = para.control_text_positions();
-    let utf16_positions = para.control_utf16_positions();
-    para.controls
-        .iter()
-        .zip(text_positions)
-        .zip(utf16_positions)
-        .filter(|((ctrl, _), _)| match ctrl {
-            Control::Table(table) => !table.common.treat_as_char,
-            Control::Picture(pic) => !pic.common.treat_as_char,
-            Control::Shape(shape) => !shape.common().treat_as_char,
-            _ => false,
-        })
-        .filter_map(|((_, text_pos), utf16_pos)| {
-            let id = find_active_char_shape(&para.char_shapes, utf16_pos);
-            styles
-                .char_styles
-                .get(id as usize)
-                .map(|style| style.font_size)
-                .filter(|fs| *fs > 0.0)
-                .map(|fs| (text_pos, fs))
-        })
-        .collect()
+}
+
+pub(crate) fn floating_anchor_char_font_sizes_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+) -> Result<Vec<(usize, f64)>, S::Error> {
+    Ok({
+        if para.controls.is_empty() || para.char_shapes.is_empty() {
+            return Ok(Vec::new());
+        }
+        let text_positions = para.try_control_text_positions(storage)?;
+        let utf16_positions = para.control_utf16_positions_with_storage(storage)?;
+        storage.collect(
+            para.controls
+                .iter()
+                .zip(text_positions)
+                .zip(utf16_positions)
+                .filter(|((ctrl, _), _)| match ctrl {
+                    Control::Table(table) => !table.common.treat_as_char,
+                    Control::Picture(pic) => !pic.common.treat_as_char,
+                    Control::Shape(shape) => !shape.common().treat_as_char,
+                    _ => false,
+                })
+                .filter_map(|((_, text_pos), utf16_pos)| {
+                    let id = find_active_char_shape(&para.char_shapes, utf16_pos);
+                    styles
+                        .char_styles
+                        .get(id as usize)
+                        .map(|style| style.font_size)
+                        .filter(|fs| *fs > 0.0)
+                        .map(|fs| (text_pos, fs))
+                }),
+        )?
+    })
 }
 
 /// `range` 줄에 놓인 개체 기준 문자의 가장 큰 글꼴 크기(px). 문단 끝 기준 문자는 마지막 줄 소속이다.
@@ -3051,29 +3268,43 @@ fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
 }
 
 fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
-    let (width, height) = match ctrl {
-        Control::Picture(pic) if pic.common.treat_as_char => {
-            super::inline_picture_occupied_size_hu(pic)
-        }
-        Control::Shape(shape) if shape.common().treat_as_char => tac_shape_box_hu(shape),
-        Control::Table(table) if table.common.treat_as_char => {
-            // [#5785 후속] 선언 폭 우선 — 원시 열 합은 행별 구획이 다른 표에서 과대집계된다.
-            let width = table.flow_width_hu() as i32;
-            (width, table.common.height as i32)
-        }
-        Control::Equation(eq) if eq.common.treat_as_char => (
-            crate::renderer::equation::inline_box::horizontal_metrics(eq).occupied_width_hwp(),
-            crate::renderer::equation::flow_height_hwp(eq) as i32,
-        ),
-        Control::Form(form) if form.common.treat_as_char => (form.width as i32, form.height as i32),
-        _ => return None,
-    };
-
-    if width > 0 && height > 0 {
-        Some((width, height))
-    } else {
-        None
+    match inline_control_size_hwp_with_storage(ctrl, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
+}
+
+pub(crate) fn inline_control_size_hwp_with_storage<S: crate::storage::Storage>(
+    ctrl: &Control,
+    storage: &S,
+) -> Result<Option<(i32, i32)>, S::Error> {
+    Ok({
+        let (width, height) = match ctrl {
+            Control::Picture(pic) if pic.common.treat_as_char => {
+                super::inline_picture_occupied_size_hu(pic)
+            }
+            Control::Shape(shape) if shape.common().treat_as_char => tac_shape_box_hu(shape),
+            Control::Table(table) if table.common.treat_as_char => {
+                // [#5785 후속] 선언 폭 우선 — 원시 열 합은 행별 구획이 다른 표에서 과대집계된다.
+                let width = table.flow_width_hu_with_storage(storage)? as i32;
+                (width, table.common.height as i32)
+            }
+            Control::Equation(eq) if eq.common.treat_as_char => (
+                crate::renderer::equation::inline_box::horizontal_metrics(eq).occupied_width_hwp(),
+                crate::renderer::equation::flow_height_hwp(eq) as i32,
+            ),
+            Control::Form(form) if form.common.treat_as_char => {
+                (form.width as i32, form.height as i32)
+            }
+            _ => return Ok(None),
+        };
+
+        if width > 0 && height > 0 {
+            Some((width, height))
+        } else {
+            None
+        }
+    })
 }
 
 /// 줄의 점유 상자는 표 본체와 바깥 여백을 함께 포함한다.
@@ -3083,36 +3314,67 @@ fn inline_control_occupied_size_hwp(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<(i32, i32)> {
-    if let Control::Table(table) = control {
-        if let Some(measured) = super::measured_reflow_inline_table(table, styles, dpi) {
-            let width = i32::try_from(table.flow_width_hu())
-                .ok()?
+    match inline_control_occupied_size_hwp_with_storage(
+        control,
+        styles,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn inline_control_occupied_size_hwp_with_storage<S: crate::storage::Storage>(
+    control: &Control,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<(i32, i32)>, S::Error> {
+    Ok({
+        if let Control::Table(table) = control {
+            if let Some(measured) =
+                super::measured_reflow_inline_table_with_storage(table, styles, dpi, storage)?
+            {
+                let Some(width) = i32::try_from(table.flow_width_hu_with_storage(storage)?)
+                    .ok()
+                    .map(|width| {
+                        width
+                            .saturating_add(i32::from(table.outer_margin_left))
+                            .saturating_add(i32::from(table.outer_margin_right))
+                    })
+                else {
+                    return Ok(None);
+                };
+                let height = px_to_hwpunit(measured.total_height, dpi)
+                    .saturating_add(i32::from(table.outer_margin_top))
+                    .saturating_add(i32::from(table.outer_margin_bottom));
+                return Ok((width > 0 && height > 0).then_some((width, height)));
+            }
+        }
+
+        let Some((mut width, mut height)) = inline_control_size_hwp_with_storage(control, storage)?
+        else {
+            return Ok(None);
+        };
+        if let Control::Table(table) = control {
+            // 편집으로 셀 내용이 선언 높이를 넘으면 실제 표 배치도 행 높이를 키운다.
+            // 같은 측정기를 소비하여 작은 선언값으로 본문 줄 높이를 과소 발행하지 않는다.
+            let measured = crate::renderer::height_measurer::HeightMeasurer::new(dpi)
+                .with_session_edited(true)
+                .measure_table_with_storage(table, 0, 0, styles, storage)?;
+            // 위/아래 캡션도 인라인 개체가 소유하는 물리 상자다. 표 본체만
+            // 발행하면 캡션 글줄에 다음 개체가 놓이고 저장 줄도 그 높이로 굳는다.
+            height = height.max(px_to_hwpunit(measured.total_height, dpi));
+            width = width
                 .saturating_add(i32::from(table.outer_margin_left))
                 .saturating_add(i32::from(table.outer_margin_right));
-            let height = px_to_hwpunit(measured.total_height, dpi)
+            height = height
                 .saturating_add(i32::from(table.outer_margin_top))
                 .saturating_add(i32::from(table.outer_margin_bottom));
-            return (width > 0 && height > 0).then_some((width, height));
         }
-    }
-    let (mut width, mut height) = inline_control_size_hwp(control)?;
-    if let Control::Table(table) = control {
-        // 편집으로 셀 내용이 선언 높이를 넘으면 실제 표 배치도 행 높이를 키운다.
-        // 같은 측정기를 소비하여 작은 선언값으로 본문 줄 높이를 과소 발행하지 않는다.
-        let measured = crate::renderer::height_measurer::HeightMeasurer::new(dpi)
-            .with_session_edited(true)
-            .measure_table(table, 0, 0, styles);
-        // 위/아래 캡션도 인라인 개체가 소유하는 물리 상자다. 표 본체만
-        // 발행하면 캡션 글줄에 다음 개체가 놓이고 저장 줄도 그 높이로 굳는다.
-        height = height.max(px_to_hwpunit(measured.total_height, dpi));
-        width = width
-            .saturating_add(i32::from(table.outer_margin_left))
-            .saturating_add(i32::from(table.outer_margin_right));
-        height = height
-            .saturating_add(i32::from(table.outer_margin_top))
-            .saturating_add(i32::from(table.outer_margin_bottom));
-    }
-    Some((width, height))
+        Some((width, height))
+    })
 }
 
 fn inline_control_spacing_height_hwp(control: &Control) -> Option<i32> {
@@ -3136,40 +3398,64 @@ fn flow_inline_controls_with_tac_tables(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Vec<FlowInlineControl> {
-    let text_len = para.text.chars().count();
-    let mut controls = flow_inline_controls(para);
-    for ((control, char_position), utf16_position) in para
-        .controls
-        .iter()
-        .zip(para.control_text_positions())
-        .zip(para.control_utf16_positions())
-    {
-        let Control::Table(table) = control else {
-            continue;
-        };
-        if !table.common.treat_as_char || char_position >= text_len {
-            continue;
-        }
-        let Some((width_hwp, height_hwp)) = inline_control_occupied_size_hwp(control, styles, dpi)
-        else {
-            continue;
-        };
-        controls.push(FlowInlineControl {
-            char_position,
-            utf16_position,
-            width_hwp,
-            height_hwp,
-            baseline_distance_hwp: None,
-            spacing_height_hwp: inline_control_spacing_height_hwp(control),
-        });
+    match flow_inline_controls_with_tac_tables_with_storage(
+        para,
+        styles,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    controls.sort_by_key(|control| control.char_position);
-    controls
+}
+
+fn flow_inline_controls_with_tac_tables_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<Vec<FlowInlineControl>, S::Error> {
+    Ok({
+        let text_len = para.text.chars().count();
+        let mut controls = flow_inline_controls_with_storage(para, storage)?;
+        for ((control, char_position), utf16_position) in para
+            .controls
+            .iter()
+            .zip(para.try_control_text_positions(storage)?)
+            .zip(para.control_utf16_positions_with_storage(storage)?)
+        {
+            let Control::Table(table) = control else {
+                continue;
+            };
+            if !table.common.treat_as_char || char_position >= text_len {
+                continue;
+            }
+            let Some((width_hwp, height_hwp)) =
+                inline_control_occupied_size_hwp_with_storage(control, styles, dpi, storage)?
+            else {
+                continue;
+            };
+            storage.push(
+                &mut controls,
+                FlowInlineControl {
+                    char_position,
+                    utf16_position,
+                    width_hwp,
+                    height_hwp,
+                    baseline_distance_hwp: None,
+                    spacing_height_hwp: inline_control_spacing_height_hwp(control),
+                },
+            )?;
+        }
+        storage.bytes(std::mem::size_of_val(controls.as_slice()))?;
+        controls.sort_by_key(|control| control.char_position);
+        controls
+    })
 }
 
 #[path = "inline_control_flow.rs"]
 mod inline_control_flow;
-use inline_control_flow::flow_inline_controls;
+use inline_control_flow::{flow_inline_controls, flow_inline_controls_with_storage};
 
 fn flow_inline_baseline_hwp(control: &Control, _height_hwp: i32) -> Option<i32> {
     match control {
@@ -3814,42 +4100,67 @@ fn apply_resolved_field_tokens(
     inline: &[FlowInlineControl],
     tokens: &mut Vec<BreakToken>,
 ) {
-    if para.layout_field_values.is_empty() {
-        return;
+    match apply_resolved_field_tokens_with_storage(
+        para,
+        styles,
+        inline,
+        tokens,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    let mut resolved = Vec::new();
-    for token in tokens.drain(..) {
-        let field = match &token {
-            BreakToken::Space { idx, .. } => Some(*idx),
-            BreakToken::Text {
-                start_idx, end_idx, ..
-            } if *end_idx == *start_idx + 1 => Some(*start_idx),
-            _ => None,
+}
+
+fn apply_resolved_field_tokens_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    inline: &[FlowInlineControl],
+    tokens: &mut Vec<BreakToken>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    {
+        if para.layout_field_values.is_empty() {
+            return Ok(());
         }
-        .and_then(|position| {
-            super::resolved_fields::token_width(para, position, styles).map(|(width, size)| {
-                (
-                    position,
-                    width + inline_width_px_at(inline, position, styles),
-                    size,
-                )
-            })
-        });
-        if let Some((position, width, size)) = field {
-            resolved.push(BreakToken::Text {
-                start_idx: position,
-                end_idx: position + 1,
-                base_width: width,
-                width,
-                max_font_size: size,
-                base_char_widths: vec![width],
-                char_widths: vec![width],
+        let mut resolved = Vec::new();
+        for token in tokens.drain(..) {
+            let field = match &token {
+                BreakToken::Space { idx, .. } => Some(*idx),
+                BreakToken::Text {
+                    start_idx, end_idx, ..
+                } if *end_idx == *start_idx + 1 => Some(*start_idx),
+                _ => None,
+            }
+            .and_then(|position| {
+                super::resolved_fields::token_width(para, position, styles).map(|(width, size)| {
+                    (
+                        position,
+                        width + inline_width_px_at(inline, position, styles),
+                        size,
+                    )
+                })
             });
-        } else {
-            resolved.push(token);
+            if let Some((position, width, size)) = field {
+                storage.push(
+                    &mut resolved,
+                    BreakToken::Text {
+                        start_idx: position,
+                        end_idx: position + 1,
+                        base_width: width,
+                        width,
+                        max_font_size: size,
+                        base_char_widths: storage.collect([width])?,
+                        char_widths: storage.collect([width])?,
+                    },
+                )?;
+            } else {
+                storage.push(&mut resolved, token)?;
+            }
         }
-    }
-    *tokens = resolved;
+        *tokens = resolved;
+    };
+    Ok(())
 }
 
 /// Lay out the small scalar/Picture-band paragraph subset through a
@@ -3865,6 +4176,25 @@ pub(crate) fn layout_paragraph_in_frame(
     dpi: f64,
 ) -> Option<Vec<LineSeg>> {
     layout_paragraph_in_frame_impl(para, frame, styles, dpi, true, 0, FramePurpose::Body)
+}
+
+pub(crate) fn layout_paragraph_in_frame_with_storage<S: Storage>(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<Vec<LineSeg>>, S::Error> {
+    try_layout_paragraph_in_frame_impl(
+        para,
+        frame,
+        styles,
+        dpi,
+        true,
+        0,
+        FramePurpose::Body,
+        storage,
+    )
 }
 
 /// 일반 본문 수용 조건을 유지하고 원본 선두 번호와 그림 앵커만 조회한다.
@@ -3894,6 +4224,31 @@ fn layout_paragraph_in_frame_impl(
     start_char: usize,
     purpose: FramePurpose,
 ) -> Option<Vec<LineSeg>> {
+    match try_layout_paragraph_in_frame_impl(
+        para,
+        frame,
+        styles,
+        dpi,
+        allow_kerning,
+        start_char,
+        purpose,
+        &Unbounded,
+    ) {
+        Ok(lines) => lines,
+        Err(never) => match never {},
+    }
+}
+
+fn try_layout_paragraph_in_frame_impl<S: Storage>(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    allow_kerning: bool,
+    start_char: usize,
+    purpose: FramePurpose,
+    storage: &S,
+) -> Result<Option<Vec<LineSeg>>, S::Error> {
     // [#6102] 폭-중립 자리차지 표 host 도 fill 대상 — 표는 줄 폭을 소비하지
     // 않으므로(자기 레이아웃 소유자가 따로 배치) 텍스트만 재래핑하면 된다.
     // [#7160] 저장 줄이 없는 글자처럼 취급 표 host 는 이 채움이 유일한 소유자다.
@@ -3909,15 +4264,18 @@ fn layout_paragraph_in_frame_impl(
         FramePurpose::PictureAnchor => picture_anchor_projection::admits(para),
     };
     if !supported {
-        return None;
+        return Ok(None);
     }
 
-    let projected = ((para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
-        || no_ls_inline_picture_host_fill(para))
-    .then(|| inline_frame_input::project(para, styles, dpi))
-    .flatten();
+    let projected = if (para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
+        || no_ls_inline_picture_host_fill(para)
+    {
+        inline_frame_input::project_with_storage(para, styles, dpi, storage)?
+    } else {
+        None
+    };
     let para = projected.as_ref().map_or(para, |(input, _)| input);
-    let mut text_chars = para.text.chars().collect::<Vec<_>>();
+    let mut text_chars = storage.collect(para.text.chars())?;
     // 필드는 공백을 건너뛰는 줄 경계가 아닌 원자 토큰이다. 토큰화 전용
     // 필드 마커로 투영하며 원문과 모델 축은 바꾸지 않는다.
     for (position, _) in &para.layout_field_values {
@@ -3974,12 +4332,12 @@ fn layout_paragraph_in_frame_impl(
     // `FlowInlineControl` path. A non-TAC Picture deliberately contributes no
     // inline token: it is represented by the caller's exclusion instead.
     let mut inline_controls = if let Some((_, controls)) = projected.as_ref() {
-        controls.clone()
+        storage.copy_slice(controls)?
     } else if para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para) {
         // [#7160] 저장 줄이 없는 TAC 표 host 는 표 폭까지 줄 경계 판정에 넣는다.
-        flow_inline_controls_with_tac_tables(para, styles, dpi)
+        flow_inline_controls_with_tac_tables_with_storage(para, styles, dpi, storage)?
     } else {
-        flow_inline_controls(para)
+        flow_inline_controls_with_storage(para, storage)?
     };
     if purpose == FramePurpose::PictureAnchor {
         let prefix = crate::renderer::layout::leading_endnote_prefix_geometry(para, styles, 0);
@@ -3992,6 +4350,7 @@ fn layout_paragraph_in_frame_impl(
             }
             // 표시가 전진시키는 첫 본문의 원점을 동일한 inline 채움에 연결한다.
             // 원본 scalar/control offset을 바꾸거나 번호를 문서에 삽입하지 않는다.
+            storage.reserve(&mut inline_controls, 1)?;
             inline_controls.push(FlowInlineControl {
                 char_position: 0,
                 utf16_position: 0,
@@ -4000,6 +4359,7 @@ fn layout_paragraph_in_frame_impl(
                 baseline_distance_hwp: Some(px_to_hwpunit(prefix.baseline, dpi)),
                 spacing_height_hwp: None,
             });
+            storage.bytes(std::mem::size_of_val(inline_controls.as_slice()))?;
             inline_controls.sort_by_key(|control| control.char_position);
         }
     }
@@ -4017,7 +4377,7 @@ fn layout_paragraph_in_frame_impl(
         } else {
             SpaceMetric::Stored
         };
-    let mut tokens = tokenize_paragraph_with_regenerated_space_metric(
+    let mut tokens = try_tokenize_paragraph_with_regenerated_space_metric(
         &text_chars,
         &para.char_offsets,
         &para.char_shapes,
@@ -4028,8 +4388,9 @@ fn layout_paragraph_in_frame_impl(
         &inline_controls,
         para.control_mask & (1 << 0x18) != 0,
         &para.literal_figure_spaces,
-    );
-    apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
+        storage,
+    )?;
+    apply_resolved_field_tokens_with_storage(para, styles, &inline_controls, &mut tokens, storage)?;
     apply_auto_left_tab_targets(&mut tokens, para_style);
     let prepared_kerning = allow_kerning
         .then(|| {
@@ -4062,7 +4423,7 @@ fn layout_paragraph_in_frame_impl(
         && para_style
             .is_some_and(|style| style.alignment == crate::model::style::Alignment::Justify))
     .then(|| {
-        let mut tokens = tokenize_paragraph_with_regenerated_space_metric(
+        let mut tokens = try_tokenize_paragraph_with_regenerated_space_metric(
             &text_chars,
             &para.char_offsets,
             &para.char_shapes,
@@ -4073,13 +4434,21 @@ fn layout_paragraph_in_frame_impl(
             &inline_controls,
             para.control_mask & (1 << 0x18) != 0,
             &para.literal_figure_spaces,
-        );
-        apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
+            storage,
+        )?;
+        apply_resolved_field_tokens_with_storage(
+            para,
+            styles,
+            &inline_controls,
+            &mut tokens,
+            storage,
+        )?;
         apply_auto_left_tab_targets(&mut tokens, para_style);
-        tokens
-    });
+        Ok(tokens)
+    })
+    .transpose()?;
     let mut letter_spacing_px =
-        resolved_paragraph_letter_spacing(para, &text_chars, styles, space_metric);
+        try_resolved_paragraph_letter_spacing(para, &text_chars, styles, space_metric, storage)?;
     if projected.is_some() {
         for control in &inline_controls {
             letter_spacing_px[control.char_position] = 0.0;
@@ -4135,7 +4504,7 @@ fn layout_paragraph_in_frame_impl(
         .map(|segment| segment.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY)
         .unwrap_or(LineSeg::TAG_IMPLEMENTATION_PROPERTY);
     let first_row = frame.row_count();
-    let frame_checkpoint = frame.clone();
+    let frame_checkpoint = frame.try_append_checkpoint(storage)?;
     let mut cursor = FillCursor::replay_from_boundary(&tokens, start_char, start_char == 0);
     // 확정된 물리 구간은 원본 격자 폭 자체가 경계다. 추정 여유를 더하면
     // 4 HU 격자로 내린 칸에도 26 HU 초과 글자가 들어가 격자 계약이 무효화된다.
@@ -4143,7 +4512,7 @@ fn layout_paragraph_in_frame_impl(
 
     let result = (|| {
         while !cursor.finished {
-            let row_frame_checkpoint = frame.clone();
+            let row_frame_checkpoint = frame.try_append_checkpoint(storage)?;
             let cursor_checkpoint = cursor.clone();
             let mut candidate_height = frame_metrics_for_line(
                 fallback_font_size,
@@ -4154,27 +4523,32 @@ fn layout_paragraph_in_frame_impl(
             )
             .line_height;
             const MAX_ROW_HEIGHT_TRIALS: usize = 8;
-            let mut attempted_trials = Vec::with_capacity(MAX_ROW_HEIGHT_TRIALS);
+            let mut attempted_trials = storage.vec(MAX_ROW_HEIGHT_TRIALS)?;
 
             loop {
-                frame.restore_checkpoint(row_frame_checkpoint.clone());
+                frame.try_restore_append_checkpoint(&row_frame_checkpoint, storage)?;
                 cursor = cursor_checkpoint.clone();
-                let intervals = frame.carve(candidate_height).to_vec();
+                let intervals =
+                    storage.collect(frame.try_carve(candidate_height, storage)?.iter().cloned())?;
                 // Asked before filling so a degenerate carve costs no
                 // tokenization, but it is the same question
                 // `commit_carved_row` asks — one rule, not two.
                 if !frame.carved_row_is_usable() {
-                    return None;
+                    return Ok(None);
                 }
-                let trial = (frame.top, candidate_height, intervals.clone());
+                let trial = (
+                    frame.top,
+                    candidate_height,
+                    storage.collect(intervals.iter().cloned())?,
+                );
                 if attempted_trials.contains(&trial)
                     || attempted_trials.len() == MAX_ROW_HEIGHT_TRIALS
                 {
-                    return None;
+                    return Ok(None);
                 }
                 attempted_trials.push(trial);
 
-                let mut segments = Vec::with_capacity(intervals.len());
+                let mut segments = storage.vec(intervals.len())?;
                 // 번호·글머리표도 첫 물리 줄의 글자다. 뒤 줄에는 참여하지 않는다.
                 let mut maximum_font_size = if start_char == 0 && frame.row_count() == first_row {
                     marker_font_size
@@ -4284,7 +4658,7 @@ fn layout_paragraph_in_frame_impl(
                         cursor = replay;
                         filled
                     } else {
-                        fill_one_interval(
+                        let Some(filled) = fill_one_interval(
                             &tokens,
                             &text_chars,
                             available_width_px,
@@ -4295,7 +4669,10 @@ fn layout_paragraph_in_frame_impl(
                             &letter_spacing_px,
                             &mut cursor,
                             kerning_break_session.as_mut(),
-                        )?
+                        ) else {
+                            return Ok(None);
+                        };
+                        filled
                     };
                     let line = &filled.line;
                     maximum_font_size = maximum_font_size.max(line.max_font_size);
@@ -4420,34 +4797,39 @@ fn layout_paragraph_in_frame_impl(
                         segment.source_tag &= !LineSeg::TAG_INDENTATION;
                     }
                 }
-                frame.commit_carved_row(metrics, segments)?;
+                if frame
+                    .try_commit_carved_row(metrics, segments, storage)?
+                    .is_none()
+                {
+                    return Ok(None);
+                }
                 break;
             }
         }
         // [#7160] 저장 줄이 없는 TAC 표 host 에서만 말미 공백 줄을 앞 줄이 흡수한다 —
         // 표가 자기 줄을 얻으면서 그 앞에 남던 공백 줄이 한/글에는 없다.
         if para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para) {
-            frame.absorb_whitespace_only_rows(&para.text, first_row);
+            frame.try_absorb_whitespace_only_rows(&para.text, first_row, storage)?;
         }
         // 실제 행에 확정한 플래그를 그대로 투영한다. 평탄화한 segment 번호로
         // 첫/후속 줄을 다시 추측하면 같은 물리 행의 뒤 구간에 내어쓰기가 붙는다.
-        Some(frame.project_line_segs_since(first_row))
+        Ok(Some(frame.try_project_line_segs_since(first_row, storage)?))
     })();
 
     let kerning_failed = kerning_break_session
         .as_ref()
         .and_then(|session| session.failed_reason())
         .is_some();
-    if result.is_none() {
-        frame.restore_checkpoint(frame_checkpoint);
+    if !matches!(result, Ok(Some(_))) {
+        frame.restore_owned_append_checkpoint(frame_checkpoint);
     }
     drop(kerning_break_session);
     drop(kerning_transaction);
-    if kerning_failed {
+    if kerning_failed && result.is_ok() {
         // 한 boundary라도 예산/범위 검증에 실패하면 일부 K1 row를 게시하지
         // 않고 문단 전체를 원래 scalar transaction으로 다시 실행한다.
-        return layout_paragraph_in_frame_impl(
-            para, frame, styles, dpi, false, start_char, purpose,
+        return try_layout_paragraph_in_frame_impl(
+            para, frame, styles, dpi, false, start_char, purpose, storage,
         );
     }
     result
@@ -4537,164 +4919,218 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
     known_square_band: bool,
 ) -> Option<StoredRowResolution> {
-    // [#6102] 폭-중립 float 표 host 는 본문 프레임 게이트가 이미 통과시킨
-    // 문단이다 — picture-band 게이트만으로 사양하면 저장 textpos 의
-    // admission 검증이 통째로 빠져 결재문서본문 계열의 첫 줄이 우단 밖으로
-    // 넘친다(36360328 +75px, 한글 2020 은 재래핑). 단, 이 계보는 **stale
-    // (물리 위반) 증거가 있을 때만** 개입한다 — 증거 없이 admission 불일치
-    // 만으로 재래핑하면 종전 무소유였던 float-host 문단의 확정 핀이 흔들린다.
-    // 저장 줄이 아예 없으면 보호할 저장 기하가 없다. 폭-중립 표 호스트도
-    // 아래 NO_LS fill로 보내 현재 frame의 줄 경계를 계산한다 (#6950).
-    // [#7160] 글자처럼 취급 표 host 도 같은 축이다 — 저장 줄이 없으면 아래 NO_LS fill 이
-    // 유일한 소유자이고, `inline_control_size_hwp` 가 그 표의 폭을 인라인 토큰으로 계상한다.
-    // 거절하면 45자 합성 줄이 그대로 남아 표가 자기 줄을 못 얻는다(distribution_doc 3쪽).
-    // 글앞/글뒤 표·그림·도형만 가진 host 도 저장 줄이 없으면 같다.
-    let tac_table_host_fill = para.line_segs.is_empty()
-        && (supports_tac_table_band_frame_controls(para)
-            || supports_overlay_table_frame_controls(para)
-            || supports_overlay_shape_frame_controls(para));
-    if !supports_picture_band_frame_controls(para)
-        && !tac_table_host_fill
-        && !no_ls_inline_picture_host_fill(para)
-    {
-        if !supports_cached_body_frame_controls(para) || (!stale && !para.line_segs.is_empty()) {
-            return None;
-        }
+    match resolve_stored_line_segs_in_frame_with_storage(
+        para,
+        frame,
+        styles,
+        dpi,
+        legacy_hwp3_stored_geometry,
+        miss_policy,
+        stale,
+        float_carve_evidence,
+        known_square_band,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
+}
 
-    // NO_LS: there is no stored record to compare, so this is the rebuild case
-    // outright and belongs to the frame's fill. The fill tokenizes through
-    // `para.char_shapes`, which is the char-shape re-splitting #2632 needed —
-    // a mixed-char-shape paragraph must measure the way it renders.
-    if para.line_segs.is_empty() {
-        return layout_paragraph_in_frame(para, frame, styles, dpi)
-            .map(|_| StoredRowResolution::Reflowed);
-    }
-
-    // HWP3-lineage stored rows use a legacy horizontal-origin lane that the
-    // common ParaShape does not carry. The first sample16 mismatch is a
-    // non-stale row stored at 2500..50024 while the common style resolves a
-    // 5000..50024 Frame (margin 5000, hanging indent -2500). HWP3→HWP5 keeps
-    // that stored origin too (#1892 round-trip: stored 0..42520 versus Frame
-    // 1200..42520), so provenance — not the current container — owns the gate.
-    // This is not a cache-key mismatch the common Frame can repair; it lacks
-    // jurisdiction. Edited/stale text still takes the fresh fill below, and
-    // NO_LS already took the Frame-owned branch above.
-    if legacy_hwp3_stored_geometry && !stale {
-        return None;
-    }
-
-    // 한 프레임은 다른 단·쪽의 시작을 소유하지 않는다. 저장 분할이 유효한
-    // 문단의 전체 사다리를 이 프레임의 캐시와 비교해 거절한 뒤 다시 채우면,
-    // 원래 단 경계와 후속 문단의 원점까지 사라진다. 편집·명시적 stale 경로는
-    // 현재 프레임의 재조판 계약을 유지한다.
-    if !stale
-        && !para.stored_text_partition_is_dirty()
-        && super::stored_row_fragments::crosses_physical_frame(para)
-    {
-        return None;
-    }
-
-    // #4755 §1 recomputes a FIRST..LAST split row as one physical row, and the
-    // picture-band frame does exactly that because it holds the exclusion that
-    // split it. A frame with no exclusions cannot: it carves one full-width
-    // interval, so reflowing a split row there flattens it and destroys the
-    // stored fragment geometry (#4690 `30098` p3 pi=48 stores `0..3402` and
-    // `45305..48188` around a float; a full-width recompute loses the right
-    // fragment entirely).
-    //
-    // An exclusion need not split one physical row into multiple slots. It can
-    // leave one narrowed slot for several rows and then end, returning later
-    // rows to the full frame width. #4090 pi=45 is exactly that shape: six
-    // `0+26319` rows beside a Square table, followed by one `0+48188` row below
-    // it. Different single-slot row extents therefore prove the same missing
-    // per-band geometry as FIRST..LAST splitting. That is a limit of
-    // jurisdiction, not a comparison tolerance — the frame declines rather
-    // than claiming rows whose geometry it cannot compute, and the paragraph
-    // stays with its established owner.
-    //
-    // This guard is live and load-bearing: it keeps cache admission and strict
-    // reflow from flattening a split row when this frame lacks the exclusion
-    // geometry that originally produced it. The multi-slot comparison becomes
-    // live when a caller supplies those exclusions.
-    if !frame.models_exclusions()
-        && stored_rows_require_external_geometry(
-            para,
-            frame,
-            float_carve_evidence,
-            known_square_band,
-        )
-    {
-        return None;
-    }
-
-    // 수식 대체 폭이 달라진 곳부터만 채운다. 앞행은 같은 프레임의 수용 검사와
-    // 저장 줄 출처를 통과해야 하며, 실패하면 이 부분 경로는 결과를 남기지 않는다.
-    if let Some(start_row) = remeasured_equation_start_row(para) {
-        let checkpoint = frame.clone();
-        if !para.stored_text_partition_is_dirty()
-            && !stored_rows_require_external_geometry(
-                para,
-                frame,
-                float_carve_evidence,
-                known_square_band,
-            )
-            && (start_row == 0
-                || frame.try_admit_stored_rows(&para.line_segs[..start_row], |row| {
-                    stored_row_metrics(para, styles, dpi, row)
-                }))
-        {
-            let (start_char, _) = super::utf16_range_to_text_range(
-                &para.char_offsets,
-                para.line_seg_text_start(start_row),
-                u32::MAX,
-                para.text.chars().count(),
-            );
-            if layout_paragraph_in_frame_impl(
-                para,
-                frame,
-                styles,
-                dpi,
-                true,
-                start_char,
-                FramePurpose::Body,
-            )
-            .is_some()
+pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    legacy_hwp3_stored_geometry: bool,
+    miss_policy: StoredRowMissPolicy,
+    stale: bool,
+    // [#6175] 같은 세로 band의 용지/쪽 기준 어울림 개체 증거(HWPUNIT).
+    // 저장 행의 결손 폭과 세로 위치가 함께 맞으면 좁음의 출처가 외부 기하다.
+    float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
+    known_square_band: bool,
+    storage: &S,
+) -> Result<Option<StoredRowResolution>, S::Error> {
+    let rollback = if S::UNBOUNDED {
+        None
+    } else {
+        Some(frame.try_append_checkpoint(storage)?)
+    };
+    let resolved = (|| -> Result<Option<StoredRowResolution>, S::Error> {
+        Ok({
+            // [#6102] 폭-중립 float 표 host 는 본문 프레임 게이트가 이미 통과시킨
+            // 문단이다 — picture-band 게이트만으로 사양하면 저장 textpos 의
+            // admission 검증이 통째로 빠져 결재문서본문 계열의 첫 줄이 우단 밖으로
+            // 넘친다(36360328 +75px, 한글 2020 은 재래핑). 단, 이 계보는 **stale
+            // (물리 위반) 증거가 있을 때만** 개입한다 — 증거 없이 admission 불일치
+            // 만으로 재래핑하면 종전 무소유였던 float-host 문단의 확정 핀이 흔들린다.
+            // 저장 줄이 아예 없으면 보호할 저장 기하가 없다. 폭-중립 표 호스트도
+            // 아래 NO_LS fill로 보내 현재 frame의 줄 경계를 계산한다 (#6950).
+            // [#7160] 글자처럼 취급 표 host 도 같은 축이다 — 저장 줄이 없으면 아래 NO_LS fill 이
+            // 유일한 소유자이고, `inline_control_size_hwp` 가 그 표의 폭을 인라인 토큰으로 계상한다.
+            // 거절하면 45자 합성 줄이 그대로 남아 표가 자기 줄을 못 얻는다(distribution_doc 3쪽).
+            let tac_table_host_fill = para.line_segs.is_empty()
+                && (supports_tac_table_band_frame_controls(para)
+                    || supports_overlay_table_frame_controls(para)
+                    || supports_overlay_shape_frame_controls(para));
+            if !supports_picture_band_frame_controls(para)
+                && !tac_table_host_fill
+                && !no_ls_inline_picture_host_fill(para)
             {
-                return Some(StoredRowResolution::Reflowed);
+                if !supports_cached_body_frame_controls(para)
+                    || (!stale && !para.line_segs.is_empty())
+                {
+                    return Ok(None);
+                }
             }
+
+            // NO_LS: there is no stored record to compare, so this is the rebuild case
+            // outright and belongs to the frame's fill. The fill tokenizes through
+            // `para.char_shapes`, which is the char-shape re-splitting #2632 needed —
+            // a mixed-char-shape paragraph must measure the way it renders.
+            if para.line_segs.is_empty() {
+                return Ok(layout_paragraph_in_frame_with_storage(
+                    para, frame, styles, dpi, storage,
+                )?
+                .map(|_| StoredRowResolution::Reflowed));
+            }
+
+            // HWP3-lineage stored rows use a legacy horizontal-origin lane that the
+            // common ParaShape does not carry. The first sample16 mismatch is a
+            // non-stale row stored at 2500..50024 while the common style resolves a
+            // 5000..50024 Frame (margin 5000, hanging indent -2500). HWP3→HWP5 keeps
+            // that stored origin too (#1892 round-trip: stored 0..42520 versus Frame
+            // 1200..42520), so provenance — not the current container — owns the gate.
+            // This is not a cache-key mismatch the common Frame can repair; it lacks
+            // jurisdiction. Edited/stale text still takes the fresh fill below, and
+            // NO_LS already took the Frame-owned branch above.
+            if legacy_hwp3_stored_geometry && !stale {
+                return Ok(None);
+            }
+
+            // 한 프레임은 다른 단·쪽의 시작을 소유하지 않는다. 저장 분할이 유효한
+            // 문단의 전체 사다리를 이 프레임의 캐시와 비교해 거절한 뒤 다시 채우면,
+            // 원래 단 경계와 후속 문단의 원점까지 사라진다. 편집·명시적 stale 경로는
+            // 현재 프레임의 재조판 계약을 유지한다.
+            if !stale
+                && !para.stored_text_partition_is_dirty()
+                && super::stored_row_fragments::crosses_physical_frame(para)
+            {
+                return Ok(None);
+            }
+
+            // #4755 §1 recomputes a FIRST..LAST split row as one physical row, and the
+            // picture-band frame does exactly that because it holds the exclusion that
+            // split it. A frame with no exclusions cannot: it carves one full-width
+            // interval, so reflowing a split row there flattens it and destroys the
+            // stored fragment geometry (#4690 `30098` p3 pi=48 stores `0..3402` and
+            // `45305..48188` around a float; a full-width recompute loses the right
+            // fragment entirely).
+            //
+            // An exclusion need not split one physical row into multiple slots. It can
+            // leave one narrowed slot for several rows and then end, returning later
+            // rows to the full frame width. #4090 pi=45 is exactly that shape: six
+            // `0+26319` rows beside a Square table, followed by one `0+48188` row below
+            // it. Different single-slot row extents therefore prove the same missing
+            // per-band geometry as FIRST..LAST splitting. That is a limit of
+            // jurisdiction, not a comparison tolerance — the frame declines rather
+            // than claiming rows whose geometry it cannot compute, and the paragraph
+            // stays with its established owner.
+            //
+            // This guard is live and load-bearing: it keeps cache admission and strict
+            // reflow from flattening a split row when this frame lacks the exclusion
+            // geometry that originally produced it. The multi-slot comparison becomes
+            // live when a caller supplies those exclusions.
+            if !frame.models_exclusions()
+                && stored_rows_require_external_geometry(
+                    para,
+                    frame,
+                    float_carve_evidence,
+                    known_square_band,
+                )
+            {
+                return Ok(None);
+            }
+
+            // 수식 대체 폭이 달라진 곳부터만 채운다. 앞행은 같은 프레임의 수용 검사와
+            // 저장 줄 출처를 통과해야 하며, 실패하면 이 부분 경로는 결과를 남기지 않는다.
+            if let Some(start_row) = remeasured_equation_start_row(para) {
+                let checkpoint = frame.try_append_checkpoint(storage)?;
+                if !para.stored_text_partition_is_dirty()
+                    && !stored_rows_require_external_geometry(
+                        para,
+                        frame,
+                        float_carve_evidence,
+                        known_square_band,
+                    )
+                    && (start_row == 0
+                        || frame.try_admit_stored_rows_with_storage(
+                            &para.line_segs[..start_row],
+                            |row| stored_row_metrics(para, styles, dpi, row),
+                            storage,
+                        )?)
+                {
+                    let (start_char, _) = super::utf16_range_to_text_range(
+                        &para.char_offsets,
+                        para.line_seg_text_start(start_row),
+                        u32::MAX,
+                        para.text.chars().count(),
+                    );
+                    if try_layout_paragraph_in_frame_impl(
+                        para,
+                        frame,
+                        styles,
+                        dpi,
+                        true,
+                        start_char,
+                        FramePurpose::Body,
+                        storage,
+                    )?
+                    .is_some()
+                    {
+                        return Ok(Some(StoredRowResolution::Reflowed));
+                    }
+                }
+                frame.restore_owned_append_checkpoint(checkpoint);
+                return Ok(None);
+            }
+
+            let entry_checkpoint = frame.try_append_checkpoint(storage)?;
+            let cache_geometry_matches = stored_rows_reproduce_frame_expectation_with_storage(
+                para, frame, styles, dpi, storage,
+            )?;
+            if cache_geometry_matches && !stale {
+                return Ok(Some(StoredRowResolution::Stored));
+            }
+
+            // Admission commits recomputed rows into the frame. A stale cache must not
+            // leave those rows behind before the fresh fill starts. Rejection already
+            // restores internally, so this is deliberately idempotent on that arm.
+            frame.restore_owned_append_checkpoint(entry_checkpoint);
+            if !cache_geometry_matches
+                && !stale
+                && miss_policy == StoredRowMissPolicy::UnmodelledUnlessStale
+            {
+                return Ok(None);
+            }
+            if !cache_geometry_matches {
+                report_stored_row_key_mismatch_with_storage(para, frame, styles, dpi, storage)?;
+            }
+
+            let mut reflow_input = storage.clone_paragraph(para)?;
+            // A rejected row cannot remain the provenance template for fresh rows:
+            // placement/empty flags describe the stored physical rows, not this
+            // frame's newly carved projection.
+            reflow_input.line_segs.clear();
+            layout_paragraph_in_frame_with_storage(&reflow_input, frame, styles, dpi, storage)?
+                .map(|_| StoredRowResolution::Reflowed)
+        })
+    })();
+    if resolved.is_err() {
+        if let Some(checkpoint) = rollback {
+            frame.restore_owned_append_checkpoint(checkpoint);
         }
-        frame.restore_checkpoint(checkpoint);
-        return None;
     }
-
-    let entry_checkpoint = frame.clone();
-    let cache_geometry_matches = stored_rows_reproduce_frame_expectation(para, frame, styles, dpi);
-    if cache_geometry_matches && !stale {
-        return Some(StoredRowResolution::Stored);
-    }
-
-    // Admission commits recomputed rows into the frame. A stale cache must not
-    // leave those rows behind before the fresh fill starts. Rejection already
-    // restores internally, so this is deliberately idempotent on that arm.
-    frame.restore_checkpoint(entry_checkpoint);
-    if !cache_geometry_matches
-        && !stale
-        && miss_policy == StoredRowMissPolicy::UnmodelledUnlessStale
-    {
-        return None;
-    }
-    if !cache_geometry_matches {
-        report_stored_row_key_mismatch(para, frame, styles, dpi);
-    }
-
-    let mut reflow_input = para.clone();
-    // A rejected row cannot remain the provenance template for fresh rows:
-    // placement/empty flags describe the stored physical rows, not this
-    // frame's newly carved projection.
-    reflow_input.line_segs.clear();
-    layout_paragraph_in_frame(&reflow_input, frame, styles, dpi)
-        .map(|_| StoredRowResolution::Reflowed)
+    resolved
 }
 
 /// [#6175] 저장 행의 결손 폭이 어울림 개체의 흐름 폭과 같다고 볼 허용 오차(HWPUNIT).
@@ -4733,8 +5169,31 @@ pub(crate) fn stored_rows_reproduce_frame_expectation(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> bool {
-    frame.try_admit_stored_rows(&para.line_segs, |row| {
-        stored_row_metrics(para, styles, dpi, row)
+    match stored_rows_reproduce_frame_expectation_with_storage(
+        para,
+        frame,
+        styles,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn stored_rows_reproduce_frame_expectation_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    Ok({
+        frame.try_admit_stored_rows_with_storage(
+            &para.line_segs,
+            |row| stored_row_metrics(para, styles, dpi, row),
+            storage,
+        )?
     })
 }
 
@@ -4749,21 +5208,50 @@ fn report_stored_row_key_mismatch(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
-    if std::env::var_os("RHWP_DIAG_STORED_ROW_KEY").is_none() {
-        return;
+    match report_stored_row_key_mismatch_with_storage(
+        para,
+        frame,
+        styles,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    let mut probe = frame.clone();
-    if !stored_rows_reproduce_frame_expectation(para, &mut probe, styles, dpi) {
-        eprintln!(
-            "DIAG_STORED_ROW_KEY mismatch rows={} stored=[{}]",
-            para.line_segs.len(),
-            para.line_segs
-                .iter()
-                .map(|segment| format!("{}+{}", segment.column_start, segment.segment_width))
-                .collect::<Vec<_>>()
-                .join(" "),
-        );
-    }
+}
+
+pub(crate) fn report_stored_row_key_mismatch_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    frame: &LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let _: () = {
+        if std::env::var_os("RHWP_DIAG_STORED_ROW_KEY").is_none() {
+            return Ok(());
+        }
+        let mut probe = crate::storage::try_clone(frame, storage)?;
+        if !stored_rows_reproduce_frame_expectation_with_storage(
+            para, &mut probe, styles, dpi, storage,
+        )? {
+            eprintln!(
+                "DIAG_STORED_ROW_KEY mismatch rows={} stored=[{}]",
+                para.line_segs.len(),
+                {
+                    let mut entries = storage.vec(para.line_segs.len())?;
+                    for segment in &para.line_segs {
+                        entries.push(storage.display(&format_args!(
+                            "{}+{}",
+                            segment.column_start, segment.segment_width
+                        ))?);
+                    }
+                    storage.join(&entries, " ")?
+                },
+            );
+        }
+    };
+    Ok(())
 }
 
 /// This mirrors `float_placement::horizontal_range`'s `HorzRelTo::Para`
@@ -5023,6 +5511,43 @@ fn reflow_line_segs_impl(
     split_stale_cell_reflow: bool,
     object_line_font_basis: bool,
 ) -> bool {
+    match try_reflow_line_segs_impl(
+        para,
+        paragraph_box,
+        styles,
+        dpi,
+        preserve_prefix_for_edit,
+        split_stale_cell_reflow,
+        object_line_font_basis,
+        &Unbounded,
+    ) {
+        Ok(result) => result,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn try_reflow_line_segs<S: Storage>(
+    para: &mut Paragraph,
+    paragraph_box: ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<(), S::Error> {
+    try_reflow_line_segs_impl(para, paragraph_box, styles, dpi, None, false, true, storage)?;
+    super::equation_line_metrics::publish_regenerated_rows(para, styles);
+    Ok(())
+}
+
+fn try_reflow_line_segs_impl<S: Storage>(
+    para: &mut Paragraph,
+    paragraph_box: ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    preserve_prefix_for_edit: Option<usize>,
+    split_stale_cell_reflow: bool,
+    object_line_font_basis: bool,
+    storage: &S,
+) -> Result<bool, S::Error> {
     // An impossible box publishes nothing, and this must be the first thing
     // that happens — before the memo invalidation below, which is already a
     // mutation.
@@ -5041,7 +5566,7 @@ fn reflow_line_segs_impl(
     // so the one consumer that reads it (`reflow_cell_paragraph`) takes its
     // conservative branch.
     if !paragraph_box.is_usable() {
-        return false;
+        return Ok(false);
     }
     // [#4677] 줄을 다시 계산하면 이전에 붙여 둔 조판 전용 보강 줄은 사라진다 — 표식을
     // 남겨 두면 실제 줄을 저장에서 잘라 내게 된다.
@@ -5069,12 +5594,24 @@ fn reflow_line_segs_impl(
         // invisible control slots before filling, rather than measuring text
         // alone and attaching an end-of-paragraph picture during paint. The
         // returned raw UTF-16 rows are consumed by measurement, paint and save.
-        let mut input = para.clone();
+        let mut input = storage.clone_record(para)?;
         input.line_segs.clear();
         let mut frame = paragraph_box.frame(orig.as_ref().map_or(0, |line| line.vertical_pos));
-        if let Some(lines) = layout_paragraph_in_frame(&input, &mut frame, styles, dpi) {
-            para.replace_line_segs_with_space_metrics(lines, frame.project_space_metrics());
-            return false;
+        if let Some(lines) = try_layout_paragraph_in_frame_impl(
+            &input,
+            &mut frame,
+            styles,
+            dpi,
+            true,
+            0,
+            FramePurpose::Body,
+            storage,
+        )? {
+            para.replace_line_segs_with_space_metrics(
+                lines,
+                frame.try_project_space_metrics_since(0, storage)?,
+            );
+            return Ok(false);
         }
     }
 
@@ -5129,21 +5666,21 @@ fn reflow_line_segs_impl(
         // 차지하므로, 컨트롤 인덱스를 그대로 쓰면 둘째 줄이 첫 제어문자 블록 한가운데(=1)를
         // 가리킨다. 한글 2022 는 그런 문서를 열 때 본문을 통째로 버리고 빈 1쪽으로 연다
         // (10k 전수 스윕의 x2h 본문 소실군 — 저장본은 rhwp 재파싱만 통과하는 함정).
-        let inline_sizes = para
-            .controls
-            .iter()
-            .scan(0u32, |utf16_pos, ctrl| {
-                let start = *utf16_pos;
-                if ctrl.occupies_ctrl_char_slot() {
-                    *utf16_pos += CTRL_CHAR_CODE_UNITS;
-                }
-                Some((start, ctrl))
-            })
-            .filter_map(|(start, ctrl)| {
-                inline_control_occupied_size_hwp(ctrl, styles, dpi)
-                    .map(|occupied| (start, occupied))
-            })
-            .collect::<Vec<_>>();
+        let inline_sizes = storage.collect(
+            para.controls
+                .iter()
+                .scan(0u32, |utf16_pos, ctrl| {
+                    let start = *utf16_pos;
+                    if ctrl.occupies_ctrl_char_slot() {
+                        *utf16_pos += CTRL_CHAR_CODE_UNITS;
+                    }
+                    Some((start, ctrl))
+                })
+                .filter_map(|(start, ctrl)| {
+                    inline_control_occupied_size_hwp(ctrl, styles, dpi)
+                        .map(|occupied| (start, occupied))
+                }),
+        )?;
         if !inline_sizes.is_empty() {
             let max_line_width = seg_width_hwp.max(1);
             let mut line_specs: Vec<(u32, i32, i32)> = Vec::new();
@@ -5153,7 +5690,7 @@ fn reflow_line_segs_impl(
 
             for (utf16_start, (ctrl_width, ctrl_height)) in inline_sizes.iter().copied() {
                 if line_width > 0 && line_width + ctrl_width > max_line_width {
-                    line_specs.push((line_start, line_width, line_height));
+                    storage.push(&mut line_specs, (line_start, line_width, line_height))?;
                     line_start = utf16_start;
                     line_width = 0;
                     line_height = 0;
@@ -5161,10 +5698,10 @@ fn reflow_line_segs_impl(
                 line_width += ctrl_width;
                 line_height = line_height.max(ctrl_height);
             }
-            line_specs.push((line_start, line_width, line_height));
+            storage.push(&mut line_specs, (line_start, line_width, line_height))?;
 
-            let orig_line_segs = para.line_segs.clone();
-            let mut new_line_segs = Vec::with_capacity(line_specs.len());
+            let orig_line_segs = storage.collect(para.line_segs.iter().cloned())?;
+            let mut new_line_segs = storage.vec(line_specs.len())?;
             // 개체만 있는 줄도 줄간격 기준은 **그 문단의 글자모양 크기**다. 한컴은 개체 높이를
             // line_height 에만 반영하고 spacing 은 글자 높이로 계산한다(정답지 개체 줄 18/18:
             // 165%·14pt 문단의 표 줄 spacing 912 = 1400×0.65, 160%·10pt 문단의 그림 줄 600 = 1000×0.6).
@@ -5201,7 +5738,7 @@ fn reflow_line_segs_impl(
                     };
                 }
                 apply_inline_control_line_height(&mut seg, height_hwp);
-                new_line_segs.push(seg);
+                storage.push(&mut new_line_segs, seg)?;
             }
 
             if split_stale_cell_reflow {
@@ -5247,12 +5784,42 @@ fn reflow_line_segs_impl(
                 &para.line_segs,
                 seg_width_hwp,
             );
-            para.replace_line_segs(vec![seg]);
+            para.replace_line_segs(storage.collect([seg])?);
         }
-        return false;
+        return Ok(false);
     }
 
-    let mut text_chars: Vec<char> = para.text.chars().collect();
+    // The frame owns physical-row recurrence only for an ordinary scalar
+    // reflow. Stored-prefix edits, split-cell recovery, empty paragraphs, and
+    // inline controls retain their established specialized paths below.
+    let frame_eligible = !split_stale_cell_reflow
+        && preserve_prefix_for_edit.is_none()
+        && !para.text.is_empty()
+        && para.controls.is_empty();
+    if frame_eligible {
+        // 편집 프레임과 렌더 프레임이 이제 같은 상자에서 나온다 — 종전엔 이쪽만
+        // `0..seg_width_hwp`(문단 기준, 미스냅)라 열 기준 렌더 프레임과 어긋났다.
+        let mut frame =
+            paragraph_box.frame(orig.as_ref().map(|line| line.vertical_pos).unwrap_or(0));
+        if let Some(projected) = try_layout_paragraph_in_frame_impl(
+            para,
+            &mut frame,
+            styles,
+            dpi,
+            true,
+            0,
+            FramePurpose::Body,
+            storage,
+        )? {
+            para.replace_line_segs_with_space_metrics(
+                projected,
+                frame.try_project_space_metrics_since(0, storage)?,
+            );
+            return Ok(false);
+        }
+    }
+
+    let mut text_chars = storage.collect(para.text.chars())?;
     // 필드는 공백을 건너뛰는 줄 경계가 아닌 원자 토큰이다. 토큰화 전용
     // 필드 마커로 투영하며 원문과 모델 축은 바꾸지 않는다.
     for (position, _) in &para.layout_field_values {
@@ -5262,7 +5829,7 @@ fn reflow_line_segs_impl(
     }
 
     let text_len = text_chars.len();
-    let inline_controls = flow_inline_controls(para);
+    let inline_controls = flow_inline_controls_with_storage(para, storage)?;
 
     // 문단 스타일에서 들여쓰기 및 줄 나눔 설정 조회 (들여쓰기는 목록 마커를 얹은 값)
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
@@ -5276,7 +5843,7 @@ fn reflow_line_segs_impl(
     } else {
         SpaceMetric::Stored
     };
-    let mut tokens = tokenize_paragraph_with_regenerated_space_metric(
+    let mut tokens = try_tokenize_paragraph_with_regenerated_space_metric(
         &text_chars,
         &para.char_offsets,
         &para.char_shapes,
@@ -5288,8 +5855,9 @@ fn reflow_line_segs_impl(
         &inline_controls,
         para.control_mask & (1 << 0x18) != 0,
         &para.literal_figure_spaces,
-    );
-    apply_resolved_field_tokens(para, styles, &inline_controls, &mut tokens);
+        storage,
+    )?;
+    apply_resolved_field_tokens_with_storage(para, styles, &inline_controls, &mut tokens, storage)?;
     apply_auto_left_tab_targets(&mut tokens, para_style);
     let prepared_kerning = prepare_paragraph_kerning(
         para,
@@ -5305,7 +5873,7 @@ fn reflow_line_segs_impl(
     // char_offsets와 token 경계 모두에 정확히 대응할 때만 suffix reflow를 허용한다.
     // 그렇지 않으면 (HWPX 합성 boundary, inline control, token 내부 boundary 등) full
     // reflow가 보수적인 경로다.
-    let original_line_segs = para.line_segs.clone();
+    let original_line_segs = storage.collect(para.line_segs.iter().cloned())?;
     let token_start_idx = |token: &BreakToken| match token {
         BreakToken::Text { start_idx, .. } => *start_idx,
         BreakToken::DiscretionaryHyphen { idx, .. }
@@ -5368,31 +5936,13 @@ fn reflow_line_segs_impl(
                         .map(|token_idx| (char_idx, token_idx))
                 });
                 if let Some((char_idx, token_idx)) = suffix_token_start {
-                    preserved_prefix = original_line_segs[..affected_line].to_vec();
+                    preserved_prefix =
+                        storage.collect(original_line_segs[..affected_line].iter().cloned())?;
                     reflow_start_idx = char_idx;
                     reflow_is_first_line = false;
                     token_start = token_idx;
                 }
             }
-        }
-    }
-
-    // The frame owns physical-row recurrence only for an ordinary scalar
-    // reflow. Stored-prefix edits, split-cell recovery, empty paragraphs, and
-    // inline controls retain their established specialized paths below.
-    let frame_eligible = !split_stale_cell_reflow
-        && preserve_prefix_for_edit.is_none()
-        && !para.text.is_empty()
-        && para.controls.is_empty()
-        && preserved_prefix.is_empty();
-    if frame_eligible {
-        // 편집 프레임과 렌더 프레임이 이제 같은 상자에서 나온다 — 종전엔 이쪽만
-        // `0..seg_width_hwp`(문단 기준, 미스냅)라 열 기준 렌더 프레임과 어긋났다.
-        let mut frame =
-            paragraph_box.frame(orig.as_ref().map(|line| line.vertical_pos).unwrap_or(0));
-        if let Some(projected) = layout_paragraph_in_frame(para, &mut frame, styles, dpi) {
-            para.replace_line_segs_with_space_metrics(projected, frame.project_space_metrics());
-            return false;
         }
     }
 
@@ -5409,7 +5959,7 @@ fn reflow_line_segs_impl(
         )
         .ok()
     });
-    let mut line_breaks = fill_lines(
+    let mut line_breaks = try_fill_lines(
         &tokens[token_start..],
         &text_chars,
         available_width_px,
@@ -5417,7 +5967,13 @@ fn reflow_line_segs_impl(
         TabFill::for_paragraph(para_style, indent_px, available_width_px),
         korean_break_unit,
         condense_min_space,
-        &resolved_paragraph_letter_spacing(para, &text_chars, styles, reflow_space_metric),
+        &try_resolved_paragraph_letter_spacing(
+            para,
+            &text_chars,
+            styles,
+            reflow_space_metric,
+            storage,
+        )?,
         reflow_start_idx,
         reflow_is_first_line,
         // A split supplies the new cell's physical box, just like Frame fill.
@@ -5425,7 +5981,8 @@ fn reflow_line_segs_impl(
         // that box and change the persisted logical row partition.
         !split_stale_cell_reflow,
         kerning_break_session.as_mut(),
-    );
+        storage,
+    )?;
     let kerning_failed = kerning_break_session
         .as_ref()
         .and_then(|session| session.failed_reason())
@@ -5433,7 +5990,7 @@ fn reflow_line_segs_impl(
     drop(kerning_break_session);
     drop(kerning_transaction);
     if kerning_failed {
-        line_breaks = fill_lines(
+        line_breaks = try_fill_lines(
             &tokens[token_start..],
             &text_chars,
             available_width_px,
@@ -5441,12 +5998,19 @@ fn reflow_line_segs_impl(
             TabFill::for_paragraph(para_style, indent_px, available_width_px),
             korean_break_unit,
             condense_min_space,
-            &resolved_paragraph_letter_spacing(para, &text_chars, styles, reflow_space_metric),
+            &try_resolved_paragraph_letter_spacing(
+                para,
+                &text_chars,
+                styles,
+                reflow_space_metric,
+                storage,
+            )?,
             reflow_start_idx,
             reflow_is_first_line,
             !split_stale_cell_reflow,
             None,
-        );
+            storage,
+        )?;
     }
     // TAC 표의 호스트를 편집하면 이전 줄 경계는 더 이상 권위가 없다.
     // 표 앞의 실제 텍스트와 표가 남은 폭에 함께 들어가는지 판정하고, 실패하면
@@ -5468,7 +6032,7 @@ fn reflow_line_segs_impl(
     let terminal_inline_control = para
         .controls
         .iter()
-        .zip(para.control_text_positions())
+        .zip(para.try_control_text_positions(storage)?)
         .any(|(control, position)| position == text_len && control.is_treat_as_char_object());
     let occupied_controls: Vec<_> = if split_stale_cell_reflow
         || edited_tac_table
@@ -5506,10 +6070,11 @@ fn reflow_line_segs_impl(
                 )
             })
             .flatten();
-    let floating_anchors = floating_anchor_char_font_sizes(para, styles);
+    let floating_anchors = floating_anchor_char_font_sizes_with_storage(para, styles, storage)?;
     let preserved_prefix_len = preserved_prefix.len();
     let mut new_line_segs: Vec<LineSeg> = preserved_prefix;
     for (line_idx, lb) in line_breaks.iter().enumerate() {
+        storage.reserve(&mut new_line_segs, 3)?;
         let utf16_start = if new_line_segs.is_empty() {
             0 // 첫 번째 줄의 text_start는 항상 0 (문단 시작)
         } else {
@@ -5595,6 +6160,7 @@ fn reflow_line_segs_impl(
     }
 
     if new_line_segs.is_empty() {
+        storage.reserve(&mut new_line_segs, 1)?;
         new_line_segs.push(make_line_seg(
             0,
             paragraph_font_size_px(para, styles).unwrap_or(12.0),
@@ -5649,20 +6215,17 @@ fn reflow_line_segs_impl(
         seg_width_hwp,
     );
 
-    let space_metrics = new_line_segs
-        .iter()
-        .enumerate()
-        .map(|(index, line)| {
+    let space_metrics =
+        storage.collect(new_line_segs.iter().enumerate().map(|(index, line)| {
             let rule = if index < preserved_prefix_len {
                 para.line_space_metric(index)
             } else {
                 reflow_space_metric
             };
             (line.text_start, rule)
-        })
-        .collect();
+        }))?;
     para.replace_line_segs_with_space_metrics(new_line_segs, space_metrics);
-    preserved_prefix_len > 0
+    Ok(preserved_prefix_len > 0)
 }
 
 /// 구역 내 문단들의 vertical_pos를 순차적으로 재계산한다.

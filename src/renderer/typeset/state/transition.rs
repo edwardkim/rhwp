@@ -481,12 +481,22 @@ impl TypesetState {
 
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
     pub(in crate::renderer::typeset) fn flush_column(&mut self) {
+        match self.flush_column_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(in crate::renderer::typeset) fn flush_column_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         self.data.pending_paragraph_origins.clear();
         // [#4090] 쪽이 끝나면 어울림 밴드도 끝난다 — 개체 높이를 used 에 반영한다.
         self.close_square_band();
         self.data.inline_box_flow_bottom = 0.0;
         if !self.has_column_content() {
-            return;
+            return Ok(());
         }
         let col_content = ColumnContent {
             paragraph_origins: std::mem::take(&mut self.data.paragraph_origins),
@@ -494,8 +504,8 @@ impl TypesetState {
             column_index: self.data.current_column,
             start_height: self.data.current_start_height,
             endnote_flow: self.data.current_endnote_flow,
-            items: self.take_current_page_items(),
-            zone_layout: self.data.current_zone_layout.clone(),
+            items: self.take_current_page_items_with_storage(storage)?,
+            zone_layout: crate::storage::try_clone(&self.data.current_zone_layout, storage)?,
             zone_y_offset: self.data.current_zone_y_offset,
             wrap_around_paras: std::mem::take(&mut self.data.current_column_wrap_around_paras),
             used_height: self.data.current_height,
@@ -514,15 +524,20 @@ impl TypesetState {
             page_band_flow_starts: std::mem::take(&mut self.data.page_band_flow_starts),
         };
         if let Some(page) = self.data.pages.last_mut() {
-            page.column_contents.push(col_content);
+            storage.push(&mut page.column_contents, col_content)?;
         } else {
-            let page = self.new_page_content(vec![col_content]);
-            self.data.pages.push(page);
+            let columns = storage.collect([col_content])?;
+            let page = self.new_page_content_with_storage(columns, storage)?;
+            storage.push(&mut self.data.pages, page)?;
         }
         // [#5699 H1] 이번 단에서 발동한 사다리-미계상 표를 소속 쪽에 기록.
         if !self.data.current_ladder_band_tables.is_empty() {
             let data = &mut *self.data;
             if let Some(page) = data.pages.last_mut() {
+                storage.reserve(
+                    &mut page.ladder_band_tables,
+                    data.current_ladder_band_tables.len(),
+                )?;
                 page.ladder_band_tables
                     .append(&mut data.current_ladder_band_tables);
             } else {
@@ -536,20 +551,35 @@ impl TypesetState {
         // [compat 2024] hangul2024_reclaimed 는 여기서 리셋하지 않는다 —
         // flush_column 은 Square 밴드 마감 등 쪽/단 전환 없이도 불리므로,
         // 리셋은 실제 전환 지점(advance_column_or_new_page/reset_for_new_page)에서.
+        Ok(())
     }
 
     /// deferred Square picture는 layout의 z/order상 이 column의 첫 item이어야 하지만,
     /// typeset 중에는 height·vpos·fit에 관여하면 안 된다. 실제 column을 flush할 때만
     /// 앞에 materialize해 두 성질을 함께 보존한다.
     pub(in crate::renderer::typeset) fn take_current_page_items(&mut self) -> Vec<PageItem> {
-        let mut items = std::mem::take(&mut self.data.page_start_square_pictures)
-            .into_iter()
-            .map(|deferred| PageItem::Shape {
-                para_index: deferred.para_index,
-                control_index: deferred.control_index,
-            })
-            .collect::<Vec<_>>();
-        items.extend(
+        match self.take_current_page_items_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(in crate::renderer::typeset) fn take_current_page_items_with_storage<
+        S: crate::storage::Storage,
+    >(
+        &mut self,
+        storage: &S,
+    ) -> Result<Vec<PageItem>, S::Error> {
+        let mut items = storage.collect(
+            std::mem::take(&mut self.data.page_start_square_pictures)
+                .into_iter()
+                .map(|deferred| PageItem::Shape {
+                    para_index: deferred.para_index,
+                    control_index: deferred.control_index,
+                }),
+        )?;
+        storage.extend(
+            &mut items,
             std::mem::take(&mut self.data.page_start_stored_frames)
                 .into_iter()
                 .map(|deferred| match deferred.kind {
@@ -565,13 +595,26 @@ impl TypesetState {
                         control_index: deferred.control_index,
                     },
                 }),
-        );
+        )?;
+        storage.reserve(&mut items, self.data.current_items.len())?;
         items.append(&mut self.data.current_items);
-        items
+        Ok(items)
     }
 
     /// 비어있어도 flush
     pub(in crate::renderer::typeset) fn flush_column_always(&mut self) {
+        match self.flush_column_always_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(in crate::renderer::typeset) fn flush_column_always_with_storage<
+        S: crate::storage::Storage,
+    >(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         self.data.pending_paragraph_origins.clear();
         self.data.inline_box_flow_bottom = 0.0;
         let col_content = ColumnContent {
@@ -580,8 +623,8 @@ impl TypesetState {
             column_index: self.data.current_column,
             start_height: self.data.current_start_height,
             endnote_flow: self.data.current_endnote_flow,
-            items: self.take_current_page_items(),
-            zone_layout: self.data.current_zone_layout.clone(),
+            items: self.take_current_page_items_with_storage(storage)?,
+            zone_layout: crate::storage::try_clone(&self.data.current_zone_layout, storage)?,
             zone_y_offset: self.data.current_zone_y_offset,
             wrap_around_paras: std::mem::take(&mut self.data.current_column_wrap_around_paras),
             used_height: self.data.current_height,
@@ -600,21 +643,27 @@ impl TypesetState {
             page_band_flow_starts: std::mem::take(&mut self.data.page_band_flow_starts),
         };
         if let Some(page) = self.data.pages.last_mut() {
-            page.column_contents.push(col_content);
+            storage.push(&mut page.column_contents, col_content)?;
         } else {
-            let page = self.new_page_content(vec![col_content]);
-            self.data.pages.push(page);
+            let columns = storage.collect([col_content])?;
+            let page = self.new_page_content_with_storage(columns, storage)?;
+            storage.push(&mut self.data.pages, page)?;
         }
         // [#5699 H1] 이번 단에서 발동한 사다리-미계상 표를 소속 쪽에 기록.
         if !self.data.current_ladder_band_tables.is_empty() {
             let data = &mut *self.data;
             if let Some(page) = data.pages.last_mut() {
+                storage.reserve(
+                    &mut page.ladder_band_tables,
+                    data.current_ladder_band_tables.len(),
+                )?;
                 page.ladder_band_tables
                     .append(&mut data.current_ladder_band_tables);
             } else {
                 self.data.current_ladder_band_tables.clear();
             }
         }
+        Ok(())
     }
 
     /// 다음 단 또는 새 페이지
@@ -718,6 +767,19 @@ impl TypesetState {
 
     #[track_caller]
     pub(in crate::renderer::typeset) fn advance_column_or_new_page(&mut self) {
+        match self.advance_column_or_new_page_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    #[track_caller]
+    pub(in crate::renderer::typeset) fn advance_column_or_new_page_with_storage<
+        S: crate::storage::Storage,
+    >(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         if std::env::var("RHWP_FLOW_BREAK_DEBUG").is_ok() {
             eprintln!(
                 "FLOW_BREAK caller={} page={} column={} height={} next_note={:?}",
@@ -728,7 +790,7 @@ impl TypesetState {
                 self.data.endnote_para_sources.last()
             );
         }
-        self.flush_column();
+        self.flush_column_with_storage(storage)?;
         self.data.visible_float_exclusions.clear();
         self.data.page_anchored_bands.clear();
         if self.data.current_column + 1 < self.data.col_count {
@@ -755,43 +817,76 @@ impl TypesetState {
             self.data.hangul2024_reclaimed = 0.0;
             self.data.column_had_compact_endnote_rewind = false;
             self.reset_vpos_cursor();
-            self.activate_next_column_stored_frames();
+            self.activate_next_column_stored_frames_with_storage(storage)?;
             // 예약한 개체 상자와 항목을 같은 단에서 확정한다. 본문은 그 뒤에 이어진다.
             for (para_idx, ctrl_idx, flow) in std::mem::take(&mut self.data.deferred_column_shapes)
             {
-                self.commit_table_host_shape(para_idx, ctrl_idx, flow, None);
+                self.commit_table_host_shape_with_storage(para_idx, ctrl_idx, flow, None, storage)?;
             }
         } else {
-            self.push_new_page();
+            self.push_new_page_with_storage(storage)?;
         }
+        Ok(())
     }
 
     /// 강제 새 페이지
     pub(in crate::renderer::typeset) fn force_new_page(&mut self) {
-        self.finish_deferred_column_shapes();
-        self.flush_column();
-        self.push_new_page();
+        match self.force_new_page_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(in crate::renderer::typeset) fn force_new_page_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        self.finish_deferred_column_shapes_with_storage(storage)?;
+        self.flush_column_with_storage(storage)?;
+        self.push_new_page_with_storage(storage)?;
+        Ok(())
     }
 
     /// 페이지 보장
     pub(in crate::renderer::typeset) fn ensure_page(&mut self) {
-        if self.data.pages.is_empty() {
-            let page = self.new_page_content(Vec::new());
-            self.data.pages.push(page);
+        match self.ensure_page_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
         }
+    }
+
+    pub(in crate::renderer::typeset) fn ensure_page_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        if self.data.pages.is_empty() {
+            let page = self.new_page_content_with_storage(Vec::new(), storage)?;
+            storage.push(&mut self.data.pages, page)?;
+        }
+        Ok(())
     }
 
     /// 새 페이지 push + 상태 리셋
     pub(in crate::renderer::typeset) fn push_new_page(&mut self) {
-        self.finish_next_column_stored_frames();
+        match self.push_new_page_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(in crate::renderer::typeset) fn push_new_page_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        self.finish_next_column_stored_frames_with_storage(storage)?;
         if !self.data.deferred_column_shapes.is_empty() {
-            self.finish_deferred_column_shapes();
-            self.flush_column();
+            self.finish_deferred_column_shapes_with_storage(storage)?;
+            self.flush_column_with_storage(storage)?;
         }
         let page_number = self.data.pages.len() as u32 + 1;
         self.data.layout.apply_column_page_number(page_number);
-        let page = self.new_page_content(Vec::new());
-        self.data.pages.push(page);
+        let page = self.new_page_content_with_storage(Vec::new(), storage)?;
+        storage.push(&mut self.data.pages, page)?;
         // 합성 어울림 배제 사각형은 쪽 단위 — 새 쪽에서 비운다.
         self.data.wrap_synth_rects.clear();
         self.reset_for_new_page();
@@ -804,11 +899,14 @@ impl TypesetState {
             // 전에 호출된다. 따라서 이 지점에서 다음 page column에 직접 anchor를
             // 등록해야 p1356처럼 whole-narrow paragraph도 stored cs/sw를 보존한다.
             for wrap_target_para_index in &deferred.wrap_target_para_indices {
-                self.data
-                    .current_column_wrap_anchors
-                    .insert(*wrap_target_para_index, deferred.wrap_anchor.clone());
+                let anchor = crate::storage::try_clone(&deferred.wrap_anchor, storage)?;
+                storage.insert_map(
+                    &mut self.data.current_column_wrap_anchors,
+                    *wrap_target_para_index,
+                    anchor,
+                )?;
             }
-            self.data.page_start_square_pictures.push(deferred);
+            storage.push(&mut self.data.page_start_square_pictures, deferred)?;
         }
         // 저장 그림과 첫 본문이 같은 상단 프레임을 소비한다. 실제 출력도 이 계획을 쓴다.
         for deferred in std::mem::take(&mut self.data.deferred_next_page_stored_frames) {
@@ -826,11 +924,12 @@ impl TypesetState {
             };
             self.data.current_height = self.data.current_height.max(next_flow_y);
             self.data.vpos_page_base = Some(0);
-            self.data.paragraph_float_placements.insert(
+            storage.insert_map(
+                &mut self.data.paragraph_float_placements,
                 (deferred.para_index, deferred.control_index),
                 deferred.placement,
-            );
-            self.data.page_start_stored_frames.push(deferred);
+            )?;
+            storage.push(&mut self.data.page_start_stored_frames, deferred)?;
         }
         // Task #321: 새 페이지에서는 body-wide top reserve 초기화
         self.data.pending_body_wide_top_reserve = 0.0;
@@ -840,13 +939,14 @@ impl TypesetState {
         // `items.first()` 를 보는 휴리스틱이 조각을 본문으로 읽는다.
         let mut overlay_top_reserve = 0.0f64;
         let data = &mut *self.data;
-        data.current_column_overlay_continuations.extend(
+        storage.extend(
+            &mut data.current_column_overlay_continuations,
             std::mem::take(&mut data.pending_overlay_continuations)
                 .into_iter()
                 .inspect(|continuation| {
                     overlay_top_reserve = overlay_top_reserve.max(continuation.reserve_px);
                 }),
-        );
+        )?;
         // 잔여 높이를 새 쪽 흐름에 무조건 예약하면 안 된다 — #4514 기제에서 필러
         // 문단들이 이미 표 높이만큼 흐름 공간을 만들므로 이중 계상이 된다(실측:
         // 예약 시 48 → 56쪽, 한컴 46쪽에서 더 멀어짐). 그래서 대기열 등록부(#5792
@@ -856,7 +956,8 @@ impl TypesetState {
             self.data.current_height = self.data.current_height.max(overlay_top_reserve);
             self.data.current_start_height = self.data.current_height;
         }
-        self.drain_deferred_body_footnotes();
+        self.drain_deferred_body_footnotes_with_storage(storage)?;
+        Ok(())
     }
 
     pub(in crate::renderer::typeset) fn reset_for_new_page(&mut self) {
@@ -1032,12 +1133,25 @@ impl TypesetState {
         &self,
         column_contents: Vec<ColumnContent>,
     ) -> PageContent {
-        PageContent {
+        match self.new_page_content_with_storage(column_contents, &crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(in crate::renderer::typeset) fn new_page_content_with_storage<
+        S: crate::storage::Storage,
+    >(
+        &self,
+        column_contents: Vec<ColumnContent>,
+        storage: &S,
+    ) -> Result<PageContent, S::Error> {
+        Ok(PageContent {
             page_index: self.data.pages.len() as u32,
             page_number: 0,
             page_number_restarted: false,
             section_index: self.data.section_index,
-            layout: self.data.layout.clone(),
+            layout: crate::storage::try_clone(&self.data.layout, storage)?,
             column_contents,
             active_header: None,
             active_footer: None,
@@ -1047,6 +1161,6 @@ impl TypesetState {
             active_master_page: None,
             extra_master_pages: Vec::new(),
             ladder_band_tables: Vec::new(),
-        }
+        })
     }
 }

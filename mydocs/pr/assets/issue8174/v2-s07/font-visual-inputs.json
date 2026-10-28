@@ -1,0 +1,18 @@
+{
+  "font": "/usr/share/fonts/opentype/urw-base35/NimbusRoman-Regular.otf",
+  "fontSha256": "fd41669443616a7ae890c42e53a58f47fa24a940fd1e367acaff665cf5b6e9d8",
+  "fixtures": [
+    {
+      "input": "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s07-20261025/font-visual-inputs/cff-cid.pdf",
+      "reference": "/home/edward/mygithub/rhwp/output/pr-review/issue8174/v2-s07-20261025/font-visual-inputs/cff-cid.pdf",
+      "sha256": "260137e34705089445dceb0766e8736dece73b5aa3aacb54c42f0519a03e564c",
+      "pages": 1
+    },
+    {
+      "input": "/home/edward/mygithub/rhwp/pdf/issue5875/nested_table_text_caption-2020.pdf",
+      "reference": "/home/edward/mygithub/rhwp/pdf/issue5875/nested_table_text_caption-2020.pdf",
+      "sha256": "6308671fc56b1bfd9e72660edd6edf574a4e16f75e84e0bf35399339d9ce3702",
+      "pages": 12
+    }
+  ]
+}

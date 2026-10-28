@@ -1,6 +1,8 @@
 [package]
+rust-version = "1.93.1"
+publish = ["crates-io"]
 name = "rhwp"
-version = "0.8.7"
+version = "0.9.0"
 edition = "2021"
 description = "HWP/HWPX document engine for Rust applications, WebAssembly, and CLI automation"
 license = "MIT"
@@ -24,6 +26,7 @@ include = [
     "/assets/fonts/LatinModernMath-VariableOutline-subset.otf",
     "/assets/fonts/MANIFEST-RHWP-LMM-VariableOutline.txt",
     "/assets/fonts/licenses/**",
+    "/data/font-metrics/nimbus-roman/**",
     "/mydocs/manual/agent_knowledge_map.md",
     "/mydocs/manual/agent_troubleshooting_guide.md",
     "/mydocs/manual/gym_optional_tool.md",
@@ -34,11 +37,12 @@ include = [
     "/mydocs/manual/recipes/05_mail_merge_batch_fill.md",
     "/mydocs/manual/recipes/06_visual_regression_before_after.md",
     "/mydocs/tech/agent_roadmap/atlas_r1_r200.md",
-    "/packaging/crates-io/README_PACKAGE.md"
+    "/packaging/crates-io/README_PACKAGE.md",
+    "/packaging/crates-io/examples/pdf_isolation_host.rs"
 ]
 
 [workspace]
-exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder", "vendor/rhwp-jpeg-encoder", "vendor/svg2pdf", "vendor/rhwp-codec-resource", "vendor/rhwp-hayro-jbig2", "vendor/rhwp-hayro-jpeg2000", "vendor/rhwp-hayro-ccitt"]
+exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-qcms", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder", "vendor/rhwp-jpeg-encoder", "vendor/svg2pdf", "vendor/rhwp-codec-resource", "vendor/rhwp-hayro-jbig2", "vendor/rhwp-hayro-jpeg2000", "vendor/rhwp-hayro-ccitt"]
 members = ["crates/*", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert", "tools/llm_verifier/verdict_protocol", "tools/llm_verifier/claim_bind", "tools/llm_verifier/criteria_decomp"]
 default-members = [".", "crates/*"]
 resolver = "2"
@@ -338,7 +342,7 @@ jpeg-encoder = { package = "rhwp-jpeg-encoder", path = "vendor/rhwp-jpeg-encoder
 tiny-skia = { version = "0.12", optional = true, default-features = false, features = ["std", "simd"] }
 pcx = "0.2"
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+serde_json = { version = "1", features = ["raw_value"] }
 ttf-parser = "0.25"
 rustybuzz = "0.20"
 resvg = { version = "0.47", default-features = false, features = ["text", "raster-images"] }
@@ -350,8 +354,9 @@ console_error_panic_hook = { version = "0.1", optional = true }
 subsecond = { version = "=0.7.10", optional = true }
 
 [features]
-default = ["console_error_panic_hook", "pdf-import", "wasm-api"]
+default = ["console_error_panic_hook", "pdf-import", "pdf-jbig2", "pdf-jpeg2000", "pdf-icc", "wasm-api"]
 pdf-import = ["dep:pdf_oxide", "dep:office_oxide", "dep:tiny-skia"]
+pdf-icc = ["pdf-import", "pdf_oxide/icc-qcms"]
 pdf-jbig2 = ["pdf-import", "pdf_oxide/jbig2"]
 pdf-jpeg2000 = ["pdf-import", "pdf_oxide/jpeg2000"]
 # 브라우저 JS 바인딩(`wasm_api`)과 자동 panic hook 초기화·`version` export.
@@ -366,6 +371,10 @@ native-skia = ["dep:skia-safe", "dep:icy_sixel"]
 subsecond-dev = ["dep:subsecond"]
 # 릴리즈 CLI 설치에서 제외하는 저장소 개발 도구.
 dev-tools = []
+
+# Native 요청 감독의 OS 제한과 process group.
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
 
 # PDF 내보내기·SVG 웹폰트 부분집합 (네이티브 전용)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -540,6 +549,11 @@ path = "tools/fixture_generators/build_issue_5800_fixture.rs"
 name = "font_metric_coverage_worker"
 path = "tools/diagnostics/font_metric_coverage_worker.rs"
 
+[[example]]
+name = "pdf_isolation_host"
+path = "packaging/crates-io/examples/pdf_isolation_host.rs"
+required-features = ["pdf-import"]
+
 [profile.dev]
 # 로컬 실행 파일의 크기를 줄이되 함수·파일·줄 단위 역추적 정보는 유지한다.
 debug = 1
@@ -563,3 +577,6 @@ codegen-units = 16
 # 사실상 유일한 공급원이라 삭제 시 빌드가 불능이 된다. 결정화 커밋의 authorship 은
 # 그대로 보존된다(원 작성자 planet6897, 이관 동의 완료).
 #
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]

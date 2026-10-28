@@ -488,8 +488,14 @@ impl PathExtractor {
     /// Begins a new subpath at the specified point.
     pub fn move_to(&mut self, x: f32, y: f32) {
         let point = self.transform_point(x, y);
-        self.current_operations
-            .push(PathOperation::MoveTo(point.x, point.y));
+        // Consecutive m operators replace the pending, segment-free subpath
+        // start (PDF 32000-1, table 59). Preserve actual preceding subpaths.
+        if let Some(PathOperation::MoveTo(a, b)) = self.current_operations.last_mut() {
+            (*a, *b) = (point.x, point.y);
+        } else {
+            self.current_operations
+                .push(PathOperation::MoveTo(point.x, point.y));
+        }
         self.current_point = Some(point);
         self.subpath_start = Some(point);
     }
@@ -547,6 +553,10 @@ impl PathExtractor {
     ///
     /// Adds a complete rectangle subpath.
     pub fn rectangle(&mut self, x: f32, y: f32, width: f32, height: f32) {
+        // re begins with an implicit m, which also replaces a pending m.
+        if matches!(self.current_operations.last(), Some(PathOperation::MoveTo(..))) {
+            self.current_operations.pop();
+        }
         // Rectangle needs to transform all corners properly
         let p1 = self.transform_point(x, y);
         let p2 = self.transform_point(x + width, y + height);

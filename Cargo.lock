@@ -460,9 +460,9 @@ checksum = "f079e83a288787bcd14a6aea84cee5c87a67c5a3e660c30f557a3d24761b3527"
 
 [[package]]
 name = "chacha20"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d524456ba66e72eb8b115ff89e01e497f8e6d11d78b70b1aa13c0fbd97540a81"
+checksum = "65c35e4b699c7e15ccbe7ee35c005e4fc0a278d22238a2857e6ce2dadeda1b06"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -2135,7 +2135,7 @@ dependencies = [
 
 [[package]]
 name = "rhwp"
-version = "0.8.7"
+version = "0.9.0"
 dependencies = [
  "aes",
  "argon2",
@@ -2159,6 +2159,7 @@ dependencies = [
  "icy_sixel",
  "image",
  "js-sys",
+ "libc",
  "ml-dsa",
  "ml-kem",
  "office_oxide",
@@ -2316,6 +2317,7 @@ dependencies = [
  "rhwp-hayro-jbig2",
  "rhwp-hayro-jpeg2000",
  "rhwp-jpeg-decoder",
+ "rhwp-qcms",
  "rhwp-zune-jpeg",
  "serde",
  "serde_json",
@@ -2333,6 +2335,13 @@ dependencies = [
  "weezl 0.2.1",
  "zlib-rs",
  "zune-core 0.5.3",
+]
+
+[[package]]
+name = "rhwp-qcms"
+version = "0.3.0-rhwp.1"
+dependencies = [
+ "rhwp-codec-resource",
 ]
 
 [[package]]

@@ -26,3 +26,11 @@ normal Rust allocation; this does not make allocator exhaustion recoverable.
 Only input-sized codec storage and accounted work are controlled here. Existing
 whole-parser and process memory limitations remain.
 This work is tracked by rhwp issue #8183 and does not prove process-wide memory or CPU bounds.
+
+## #8174 PDF 색 공간 우선순위
+
+`DecodeSettings.pdf_colour_components`가 있으면 PDF dictionary의 색 성분 수와 선택적 opacity를
+실제 decode 검증에 사용한다. raw J2K에 임의의 RGB/Gray metadata를 합성한 뒤 strict 모드가
+정상 index+alpha·CMYK+alpha를 거부하지 않게 한다. PDF 색 공간을 선언했을 때 JP2의 별도
+색 변환을 중복 적용하지 않는다. 독립 codestream 사용의 기본값은 `None`으로 유지한다.
+기존 요청별 예약·반복·실패 전파는 유지한다.

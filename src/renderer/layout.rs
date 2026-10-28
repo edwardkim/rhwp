@@ -3081,30 +3081,51 @@ pub(crate) fn vpos_corrected_end_y(
 /// 논리 1칸씩 증가하지만 HWP `LINE_SEG.text_start`는 컨트롤당 8-unit 원시 스트림을
 /// 보존하므로, 그 단위로 환산해 소유 줄을 고른다.
 pub(crate) fn control_line_seg_index(para: &Paragraph, control_index: usize) -> Option<usize> {
-    match para.line_segs.len() {
-        0 => return None,
-        1 => return Some(0),
-        _ => {}
+    match control_line_seg_index_with_storage(para, control_index, &crate::storage::Unbounded) {
+        Ok(v) => v,
+        Err(never) => match never {},
     }
-    let positions = para.control_text_positions();
-    let p = *positions.get(control_index)?;
-    if para.text.is_empty() && para.char_offsets.is_empty() {
-        let stream_pos = para
-            .empty_control_stream_position(control_index)
-            .map_or_else(|| p.saturating_mul(8), |pos| pos as usize);
-        // [#5961] `stream_pos` 는 컨트롤당 8유닛인 HWP5 축이므로 `text_start` 도 올린다.
-        return para
-            .line_segs
-            .iter()
-            .enumerate()
-            .rev()
-            .find(|(idx, _)| para.line_seg_text_start(*idx) as usize <= stream_pos)
-            .map(|(idx, _)| idx)
-            .or(Some(0));
-    }
-    // 같은 논리 문자 뒤의 서로 다른 제어 슬롯도 각자의 원시 줄을 소유한다.
-    // 보이는 문자 위치로 줄 시작을 압축하면 공백 뒤 여러 표가 마지막 줄에 몰린다.
-    crate::renderer::composer::control_slot_line_index(para, control_index)
+}
+
+pub(crate) fn control_line_seg_index_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    control_index: usize,
+    storage: &S,
+) -> Result<Option<usize>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        match para.line_segs.len() {
+            0 => return None,
+            1 => return Some(0),
+            _ => {}
+        }
+        let positions =
+            crate::storage::optional(para.try_control_text_positions(storage), failure)?;
+        let p = *positions.get(control_index)?;
+        if para.text.is_empty() && para.char_offsets.is_empty() {
+            let stream_pos = para
+                .empty_control_stream_position(control_index)
+                .map_or_else(|| p.saturating_mul(8), |pos| pos as usize);
+            // [#5961] `stream_pos` 는 컨트롤당 8유닛인 HWP5 축이므로 `text_start` 도 올린다.
+            return para
+                .line_segs
+                .iter()
+                .enumerate()
+                .rev()
+                .find(|(idx, _)| para.line_seg_text_start(*idx) as usize <= stream_pos)
+                .map(|(idx, _)| idx)
+                .or(Some(0));
+        }
+        // 같은 논리 문자 뒤의 서로 다른 제어 슬롯도 각자의 원시 줄을 소유한다.
+        // 보이는 문자 위치로 줄 시작을 압축하면 공백 뒤 여러 표가 마지막 줄에 몰린다.
+        crate::storage::optional(
+            crate::renderer::composer::control_slot_line_index_with_storage(
+                para,
+                control_index,
+                storage,
+            ),
+            failure,
+        )?
+    })
 }
 
 /// [#7702] 쪽 첫 문단이 합성 줄(`TAG_IMPLEMENTATION_PROPERTY`)로 시작하면 쪽 기준점에서
@@ -3576,7 +3597,10 @@ pub(crate) use super::composer::shape_caption_for_layout;
 pub(crate) use paragraph_layout::ensure_min_baseline;
 pub(crate) use paragraph_layout::leading_endnote_prefix_geometry;
 pub(crate) use paragraph_layout::{assign_numbering_markers, list_marker_geometry};
-pub(crate) use shape_layout::normalized_single_line_inline_textbox_host;
+pub(crate) use shape_layout::{
+    normalized_single_line_inline_textbox_host,
+    normalized_single_line_inline_textbox_host_with_storage,
+};
 pub(crate) use table_layout::border_style_has_diagonal;
 pub(crate) use table_layout::SavedZeroOriginWitness;
 pub(crate) use table_partial::cell_crosses_fragment_end;
@@ -3586,11 +3610,12 @@ pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use terminal_tracking::glyph_letter_spacing_advance;
 pub(crate) use text_measurement::{
     char_width_decision, compute_char_positions, compute_glyph_fit_positions, estimate_text_width,
-    estimate_text_width_exact, estimate_text_width_unrounded, extract_tab_leaders_with_extended,
+    estimate_text_width_exact, estimate_text_width_unrounded,
+    estimate_text_width_unrounded_with_storage, extract_tab_leaders_with_extended,
     find_next_tab_stop, hancom_regenerated_space_width, has_hft_bold_tracking, is_cjk_char,
     is_halfwidth_cjk_quote, kopub_declared_space_em, kopub_space_advance_em,
     resolved_letter_spacing, resolved_to_text_style, split_into_clusters,
-    trace_char_width_decisions, CharWidthDecision,
+    trace_char_width_decisions, try_resolved_to_text_style, CharWidthDecision,
 };
 // [#6060] forces_halfwidth_cjk_quote 는 통합 테스트
 // (tests/cases/issue_6060_cjk_quote_paint_measure_parity.rs) 에서 측정-페인트 정합을

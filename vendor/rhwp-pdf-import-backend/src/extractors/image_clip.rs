@@ -215,6 +215,17 @@ struct ClipPath {
 }
 
 impl ClipPath {
+    fn move_to(&mut self, point: Point) {
+        // ISO 32000-1 Table 59: a consecutive m replaces the previous m.
+        // A lone move has no segment and must not create a compound boundary.
+        if self.len == 1 {
+            self.len = 0;
+        } else if self.len != 0 {
+            self.unsupported = true;
+        }
+        self.push(point);
+    }
+
     fn push(&mut self, point: Point) {
         if self.len == self.points.len() || !point.x.is_finite() || !point.y.is_finite() {
             self.unsupported = true;
@@ -347,10 +358,7 @@ impl ImageClipTracker {
                 self.current.ctm = Matrix { a, b, c, d, e, f }.multiply(&self.current.ctm)
             },
             MoveTo { x, y } => {
-                if self.path.len != 0 {
-                    self.path.unsupported = true;
-                }
-                self.path.push(self.current.ctm.transform_point(x, y));
+                self.path.move_to(self.current.ctm.transform_point(x, y));
             },
             LineTo { x, y } => self.path.push(self.current.ctm.transform_point(x, y)),
             Rectangle {
@@ -359,15 +367,9 @@ impl ImageClipTracker {
                 width,
                 height,
             } => {
-                if self.path.len != 0 {
-                    self.path.unsupported = true;
-                }
-                for (px, py) in [
-                    (x, y),
-                    (x + width, y),
-                    (x + width, y + height),
-                    (x, y + height),
-                ] {
+                // re begins with an implicit m, then appends three segments.
+                self.path.move_to(self.current.ctm.transform_point(x, y));
+                for (px, py) in [(x + width, y), (x + width, y + height), (x, y + height)] {
                     self.path.push(self.current.ctm.transform_point(px, py));
                 }
             },

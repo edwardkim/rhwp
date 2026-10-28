@@ -1,0 +1,116 @@
+"""Local-only .crate consumption diagnostic. Never invokes cargo publish."""
+import fnmatch, functools, hashlib, http.server, io, json, os, re, shutil, subprocess, tarfile, threading, time, tomllib, urllib.request
+from pathlib import Path
+BASE=Path(__file__).resolve().parent
+ROOT=Path("/home/edward/mygithub/rhwp")
+TARGET=ROOT/"target/pr-review"
+ARCHIVES=BASE/"crates"
+ARCHIVES.mkdir(exist_ok=True)
+INDEX=BASE/"index-cache"
+INDEX.mkdir(exist_ok=True)
+ROWS={}
+FILES={}
+REQUESTS=[]
+
+def record(name,args,cwd=ROOT):
+    assert args[0] in {"cargo","node"} and "publish" not in args
+    start=time.time();env=os.environ.copy();env.update(CARGO_TARGET_DIR=str(TARGET),CARGO_BUILD_JOBS="4")
+    with (BASE/(name+".stdout")).open("w") as out,(BASE/(name+".stderr")).open("w") as err:
+        done=subprocess.run(args,cwd=cwd,env=env,stdout=out,stderr=err)
+    (BASE/(name+".command.json")).write_text(json.dumps({"command":args,"cwd":str(cwd),"exit_code":done.returncode,"seconds":round(time.time()-start,3)},indent=2)+"\n")
+    print(name,done.returncode,round(time.time()-start,2),flush=True)
+    if done.returncode:raise RuntimeError((name,(BASE/(name+".stderr")).read_text()[-2500:]))
+
+class Handler(http.server.BaseHTTPRequestHandler):
+    def log_message(self,*args):pass
+    def do_GET(self):
+        path=self.path.split("?",1)[0];REQUESTS.append(path)
+        if path=="/index/config.json":
+            raw=json.dumps({"dl":ORIGIN+"/crates/{crate}/{version}/download"}).encode()
+        elif path.startswith("/index/"):
+            key=path.removeprefix("/index/")
+            if not re.fullmatch(r"[A-Za-z0-9_./-]+",key) or ".." in key.split("/"):self.send_error(400);return
+            name=key.rsplit("/",1)[-1]
+            if name in ROWS:raw=json.dumps(ROWS[name],separators=(",",":")).encode()+b"\n"
+            else:
+                cache=INDEX/key
+                if cache.exists():raw=cache.read_bytes()
+                else:
+                    try:
+                        raw=urllib.request.urlopen("https://index.crates.io/"+key,timeout=30).read()
+                    except Exception as error:self.send_error(404,str(error));return
+                    cache.parent.mkdir(parents=True,exist_ok=True);cache.write_bytes(raw)
+        elif match:=re.fullmatch(r"/crates/([A-Za-z0-9_-]+)/([^/]+)/download",path):
+            name,version=match.groups()
+            if (name,version) in FILES:raw=FILES[name,version].read_bytes()
+            else:
+                self.send_response(302);self.send_header("Location",f"https://static.crates.io/crates/{name}/{name}-{version}.crate");self.end_headers();return
+        else:self.send_error(404);return
+        self.send_response(200);self.send_header("Content-Length",str(len(raw)));self.send_header("Cache-Control","no-cache");self.end_headers();self.wfile.write(raw)
+
+def index_row(path):
+    with tarfile.open(path,"r:gz") as archive:
+        members=archive.getmembers()
+        manifest=tomllib.loads(archive.extractfile(next(m for m in members if m.name.endswith("/Cargo.toml"))).read().decode())
+        assert all(m.isfile() or m.isdir() for m in members)
+    package=manifest["package"];deps=[]
+    def collect(table,target=None):
+        for kind,key in [("normal","dependencies"),("build","build-dependencies"),("dev","dev-dependencies")]:
+            for alias,spec in table.get(key,{}).items():
+                if isinstance(spec,str):spec={"version":spec}
+                assert "path" not in spec and "git" not in spec,(package["name"],alias,spec)
+                deps.append({"name":alias,"req":spec["version"],"features":spec.get("features",[]),"optional":spec.get("optional",False),"default_features":spec.get("default-features",True),"target":target,"kind":kind,"registry":None,"package":spec.get("package")})
+    collect(manifest)
+    for target,table in manifest.get("target",{}).items():collect(table,target)
+    row={"name":package["name"],"vers":package["version"],"deps":deps,"cksum":hashlib.sha256(path.read_bytes()).hexdigest(),"features":{},"features2":manifest.get("features",{}),"yanked":False,"links":package.get("links"),"v":2}
+    if "rust-version" in package:row["rust_version"]=package["rust-version"]
+    return row,manifest,members
+
+if __name__=="__main__":
+    server=http.server.ThreadingHTTPServer(("127.0.0.1",48174),Handler)
+    ORIGIN=f"http://127.0.0.1:{server.server_port}"
+    threading.Thread(target=server.serve_forever,daemon=True).start()
+    cfg=["--config",'source.crates-io.replace-with="rhwp-validation"',"--config",f'source.rhwp-validation.registry="sparse+{ORIGIN}/index/"']
+    policy=json.loads((ROOT/"packaging/crates-io/source-policy.json").read_text())
+    results=[]
+    try:
+        preflight=json.loads((BASE/"source-preflight/source-preflight.json").read_text())
+        specs={spec["published_name"]:spec for spec in policy["packages"]}
+        for name in preflight["dependency_order"]:
+            spec=specs[name]
+            manifest_path=ROOT/spec["source"]/"Cargo.toml";manifest=tomllib.loads(manifest_path.read_text());pkg=manifest["package"]
+            version=pkg["version"]
+            if isinstance(version,dict):version=manifest["workspace"]["package"]["version"]
+            name=pkg["name"]
+            args=["cargo",*cfg,"package","--manifest-path",str(manifest_path),"--package",name,"--no-verify","--registry","crates-io"]
+            # Final runs require a committed worktree; the dirty option is only for explicit diagnostics.
+            if os.environ.get("RHWP_DIAGNOSTIC_DIRTY")=="1":args.append("--allow-dirty")
+            record("package-"+name,args)
+            source=TARGET/"package"/f"{name}-{version}.crate";dest=ARCHIVES/source.name;shutil.copyfile(source,dest)
+            row,normalized,members=index_row(dest)
+            ledger=json.loads((BASE/"source-preflight"/(name+".files.json")).read_text())
+            expected={r["package_path"]:r for r in ledger}
+            generated={"Cargo.lock","Cargo.toml","Cargo.toml.orig",".cargo_vcs_info.json"}
+            with tarfile.open(dest,"r:gz") as archive:
+                actual={m.name.split("/",1)[1]:m for m in archive.getmembers() if m.isfile()}
+                assert set(actual)<=set(expected)|generated,(name,"unexpected files",set(actual)-set(expected)-generated)
+                assert set(expected)<=set(actual),(name,"missing files",set(expected)-set(actual))
+                for relative,member in actual.items():
+                    if relative in generated:continue
+                    assert hashlib.sha256(archive.extractfile(member).read()).hexdigest()==expected[relative]["sha256"],(name,relative,"source mismatch")
+                vcs=json.loads(archive.extractfile(actual[".cargo_vcs_info.json"]).read())
+                assert vcs["git"]["sha1"]==preflight["source_sha"] and not vcs["git"].get("dirty",False),vcs
+                original=archive.extractfile(actual["Cargo.toml.orig"]).read()
+                assert hashlib.sha256(original).hexdigest()==expected["Cargo.toml"]["sha256"]
+            ROWS[name]=row;FILES[name,version]=dest
+            (BASE/(name+".index.json")).write_text(json.dumps(row,indent=2)+"\n")
+            assert "patch" not in normalized and "workspace" not in normalized
+            assert len(dest.read_bytes())<10_000_000
+            results.append({"name":name,"version":version,"bytes":dest.stat().st_size,"sha256":row["cksum"],"files":len(members),"publish_guard":normalized["package"].get("publish"),"cargo_verified":False})
+        (BASE/"packages.json").write_text(json.dumps({"source_sha":subprocess.check_output(["git","rev-parse","HEAD"],cwd=ROOT,text=True).strip(),"packages":results,"cargo_normalized":True,"cargo_verified":False,"real_crates_io_verified":False,"publish_ready":False},indent=2)+"\n")
+        (BASE/"registry-config.json").write_text(json.dumps({"origin":ORIGIN,"cargo_config":cfg},indent=2)+"\n")
+        print("REGISTRY READY",flush=True)
+        while not (BASE/"stop-registry").exists():time.sleep(1)
+    finally:
+        (BASE/"http-requests.json").write_text(json.dumps(REQUESTS,indent=2)+"\n")
+        server.shutdown()

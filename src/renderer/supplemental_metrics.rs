@@ -451,18 +451,38 @@ pub fn canvas_measured_descriptor<'a>(style: &'a TextStyle, cluster: &str) -> Op
 /// must stay wholly on the old path, rather than partially replacing one scalar.
 /// No additional segmentation/allocation occurs without an active snapshot.
 pub(crate) fn standalone_scalar_mask(text: &str, style: &TextStyle) -> Option<Vec<bool>> {
-    if !style.supplemental_metrics.as_ref()?.is_active() {
-        return None;
+    match standalone_scalar_mask_with_storage(text, style, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    Some(scalar_eligibility(text))
+}
+
+pub(crate) fn standalone_scalar_mask_with_storage<S: crate::storage::Storage>(
+    text: &str,
+    style: &TextStyle,
+    storage: &S,
+) -> Result<Option<Vec<bool>>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        if !style.supplemental_metrics.as_ref()?.is_active() {
+            return None;
+        }
+        crate::storage::optional(try_scalar_eligibility(text, storage), failure)
+    })
 }
 
 /// One Unicode grapheme policy for paragraph preparation and local measurement.
 pub(crate) fn scalar_eligibility(text: &str) -> Vec<bool> {
-    text.graphemes(true)
-        .flat_map(|g| {
-            let count = g.chars().count();
-            std::iter::repeat_n(count == 1, count)
-        })
-        .collect()
+    match try_scalar_eligibility(text, &crate::renderer::style_resolver::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn try_scalar_eligibility<S: crate::renderer::style_resolver::storage::Storage>(
+    text: &str,
+    storage: &S,
+) -> Result<Vec<bool>, S::Error> {
+    storage.collect(text.graphemes(true).flat_map(|g| {
+        let count = g.chars().count();
+        std::iter::repeat_n(count == 1, count)
+    }))
 }

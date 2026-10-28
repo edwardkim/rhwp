@@ -1,0 +1,508 @@
+[
+  {
+    "change": "proof",
+    "diagnostics": {
+      "surfaceCreated": 1,
+      "surfaceReused": 0,
+      "staticPictureCacheEntries": 0,
+      "staticPictureCacheBytes": 0,
+      "staticPictureCacheHits": 0,
+      "staticPictureCacheMisses": 0,
+      "staticPictureCacheEvictions": 0,
+      "textBlobCacheEntries": 1,
+      "textBlobCacheBytes": 220,
+      "textBlobCacheHits": 0,
+      "textBlobCacheMisses": 1,
+      "fallbackFamilyCacheEntries": 1,
+      "paragraphFontEntries": 3,
+      "paragraphFontBytes": 2287432,
+      "paragraphProviderBuilds": 0,
+      "paragraphFontRejections": 0,
+      "pendingImageLoads": 0,
+      "mode": "strict",
+      "surfacePreference": "software",
+      "surfaceBackend": "software",
+      "surfaceFallbackReason": null,
+      "lastRenderCompleted": true,
+      "lastUnsupportedOps": [],
+      "lastExpectedUnsupportedOps": [],
+      "lastUnexpectedUnsupportedOps": [],
+      "lastRenderError": null,
+      "passesRuntimeReadinessGate": true,
+      "readinessBlockers": [],
+      "hiddenCanvas2dOverlayUsed": false,
+      "lastRenderDurationMs": 43.10000002384186,
+      "renderCount": 1,
+      "imageCacheEntries": 0,
+      "imageCacheLimit": 128,
+      "imageCachePixels": 0,
+      "imageCachePixelLimit": 67108864,
+      "imageCacheHits": 0,
+      "imageCacheMisses": 0,
+      "imageCacheEvictions": 0,
+      "mipmapCacheEntries": 0,
+      "mipmapCacheBytes": 0,
+      "mipmapCacheHits": 0,
+      "mipmapCacheMisses": 0,
+      "imageFailureCacheHits": 0,
+      "imageFailures": [],
+      "localTypefaceCount": 0,
+      "localTypefaceLoadFailureCount": 0,
+      "localTypefacePendingCount": 0,
+      "bundledTypefaceCount": 0,
+      "bundledTypefaceLoadFailureCount": 0,
+      "glyphRunFontBlobCount": 0,
+      "glyphRunFontBlobBytes": 0,
+      "glyphRunTypefaceCount": 0,
+      "glyphRunFontCount": 0,
+      "fontSubstitutionLimit": 4096,
+      "unregisteredFontFallbacks": 1,
+      "fontSubstitutions": [
+        {
+          "requestedFamily": "sans-serif",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        }
+      ],
+      "replayFeatureCounts": {
+        "dashedStrokes": 0,
+        "glyphRuns": 0,
+        "tabLeaders": 0,
+        "charOverlaps": 0,
+        "verticalPresentationPunctuation": 0,
+        "verticalTextRuns": 0
+      },
+      "textVariantDiagnosticGroups": 1,
+      "textVariantDiagnosticParts": 2,
+      "replayDiagnosticsDropped": 0
+    },
+    "selections": [
+      {
+        "backend": "canvaskit",
+        "equivalenceGroup": "text-0",
+        "selectedVariantId": "textRun",
+        "selectedVariantKind": "textRun",
+        "selectedReason": "defaultTextRunFallback",
+        "partsExpected": 1,
+        "partsSelected": 1,
+        "parts": [
+          {
+            "replayable": true,
+            "equivalenceGroup": "text-0",
+            "variantId": "textRun",
+            "variantKind": "textRun",
+            "partIndex": 0,
+            "partCount": 1
+          },
+          {
+            "replayable": false,
+            "reason": "unsupportedSvgGlyph",
+            "outlineEligibility": {
+              "strictVisualEligible": true,
+              "payloadSupported": false,
+              "paintStyleSupported": true,
+              "replayEligible": false,
+              "reason": "unsupportedSvgGlyph"
+            },
+            "equivalenceGroup": "text-0",
+            "variantId": "glyphOutline",
+            "variantKind": "glyphOutline",
+            "partIndex": 0,
+            "partCount": 1
+          }
+        ],
+        "rejectedVariants": [
+          {
+            "variantId": "glyphOutline",
+            "variantKind": "glyphOutline",
+            "reasons": [
+              "unsupportedSvgGlyph"
+            ]
+          }
+        ],
+        "truncated": false,
+        "renderProfile": "screen"
+      }
+    ]
+  },
+  {
+    "change": "resource",
+    "diagnostics": {
+      "surfaceCreated": 2,
+      "surfaceReused": 0,
+      "staticPictureCacheEntries": 0,
+      "staticPictureCacheBytes": 0,
+      "staticPictureCacheHits": 0,
+      "staticPictureCacheMisses": 0,
+      "staticPictureCacheEvictions": 0,
+      "textBlobCacheEntries": 1,
+      "textBlobCacheBytes": 220,
+      "textBlobCacheHits": 0,
+      "textBlobCacheMisses": 1,
+      "fallbackFamilyCacheEntries": 1,
+      "paragraphFontEntries": 3,
+      "paragraphFontBytes": 2287432,
+      "paragraphProviderBuilds": 0,
+      "paragraphFontRejections": 0,
+      "pendingImageLoads": 0,
+      "mode": "strict",
+      "surfacePreference": "software",
+      "surfaceBackend": "software",
+      "surfaceFallbackReason": null,
+      "lastRenderCompleted": true,
+      "lastUnsupportedOps": [],
+      "lastExpectedUnsupportedOps": [],
+      "lastUnexpectedUnsupportedOps": [],
+      "lastRenderError": null,
+      "passesRuntimeReadinessGate": true,
+      "readinessBlockers": [],
+      "hiddenCanvas2dOverlayUsed": false,
+      "lastRenderDurationMs": 4.899999976158142,
+      "renderCount": 1,
+      "imageCacheEntries": 0,
+      "imageCacheLimit": 128,
+      "imageCachePixels": 0,
+      "imageCachePixelLimit": 67108864,
+      "imageCacheHits": 0,
+      "imageCacheMisses": 0,
+      "imageCacheEvictions": 0,
+      "mipmapCacheEntries": 0,
+      "mipmapCacheBytes": 0,
+      "mipmapCacheHits": 0,
+      "mipmapCacheMisses": 0,
+      "imageFailureCacheHits": 0,
+      "imageFailures": [],
+      "localTypefaceCount": 0,
+      "localTypefaceLoadFailureCount": 0,
+      "localTypefacePendingCount": 0,
+      "bundledTypefaceCount": 0,
+      "bundledTypefaceLoadFailureCount": 0,
+      "glyphRunFontBlobCount": 0,
+      "glyphRunFontBlobBytes": 0,
+      "glyphRunTypefaceCount": 0,
+      "glyphRunFontCount": 0,
+      "fontSubstitutionLimit": 4096,
+      "unregisteredFontFallbacks": 1,
+      "fontSubstitutions": [
+        {
+          "requestedFamily": "sans-serif",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        }
+      ],
+      "replayFeatureCounts": {
+        "dashedStrokes": 0,
+        "glyphRuns": 0,
+        "tabLeaders": 0,
+        "charOverlaps": 0,
+        "verticalPresentationPunctuation": 0,
+        "verticalTextRuns": 0
+      },
+      "textVariantDiagnosticGroups": 1,
+      "textVariantDiagnosticParts": 2,
+      "replayDiagnosticsDropped": 0
+    },
+    "selections": [
+      {
+        "backend": "canvaskit",
+        "equivalenceGroup": "text-0",
+        "selectedVariantId": "textRun",
+        "selectedVariantKind": "textRun",
+        "selectedReason": "defaultTextRunFallback",
+        "partsExpected": 1,
+        "partsSelected": 1,
+        "parts": [
+          {
+            "replayable": true,
+            "equivalenceGroup": "text-0",
+            "variantId": "textRun",
+            "variantKind": "textRun",
+            "partIndex": 0,
+            "partCount": 1
+          },
+          {
+            "replayable": false,
+            "reason": "outlineResourceNotReplayable",
+            "outlineEligibility": {
+              "strictVisualEligible": true,
+              "payloadSupported": true,
+              "paintStyleSupported": true,
+              "replayEligible": false,
+              "reason": "outlineResourceNotReplayable"
+            },
+            "equivalenceGroup": "text-0",
+            "variantId": "glyphOutline",
+            "variantKind": "glyphOutline",
+            "partIndex": 0,
+            "partCount": 1
+          }
+        ],
+        "rejectedVariants": [
+          {
+            "variantId": "glyphOutline",
+            "variantKind": "glyphOutline",
+            "reasons": [
+              "outlineResourceNotReplayable"
+            ]
+          }
+        ],
+        "truncated": false,
+        "renderProfile": "screen"
+      }
+    ]
+  },
+  {
+    "change": "geometry",
+    "diagnostics": {
+      "surfaceCreated": 3,
+      "surfaceReused": 0,
+      "staticPictureCacheEntries": 0,
+      "staticPictureCacheBytes": 0,
+      "staticPictureCacheHits": 0,
+      "staticPictureCacheMisses": 0,
+      "staticPictureCacheEvictions": 0,
+      "textBlobCacheEntries": 1,
+      "textBlobCacheBytes": 220,
+      "textBlobCacheHits": 0,
+      "textBlobCacheMisses": 1,
+      "fallbackFamilyCacheEntries": 1,
+      "paragraphFontEntries": 3,
+      "paragraphFontBytes": 2287432,
+      "paragraphProviderBuilds": 0,
+      "paragraphFontRejections": 0,
+      "pendingImageLoads": 0,
+      "mode": "strict",
+      "surfacePreference": "software",
+      "surfaceBackend": "software",
+      "surfaceFallbackReason": null,
+      "lastRenderCompleted": true,
+      "lastUnsupportedOps": [],
+      "lastExpectedUnsupportedOps": [],
+      "lastUnexpectedUnsupportedOps": [],
+      "lastRenderError": null,
+      "passesRuntimeReadinessGate": true,
+      "readinessBlockers": [],
+      "hiddenCanvas2dOverlayUsed": false,
+      "lastRenderDurationMs": 2,
+      "renderCount": 1,
+      "imageCacheEntries": 0,
+      "imageCacheLimit": 128,
+      "imageCachePixels": 0,
+      "imageCachePixelLimit": 67108864,
+      "imageCacheHits": 0,
+      "imageCacheMisses": 0,
+      "imageCacheEvictions": 0,
+      "mipmapCacheEntries": 0,
+      "mipmapCacheBytes": 0,
+      "mipmapCacheHits": 0,
+      "mipmapCacheMisses": 0,
+      "imageFailureCacheHits": 0,
+      "imageFailures": [],
+      "localTypefaceCount": 0,
+      "localTypefaceLoadFailureCount": 0,
+      "localTypefacePendingCount": 0,
+      "bundledTypefaceCount": 0,
+      "bundledTypefaceLoadFailureCount": 0,
+      "glyphRunFontBlobCount": 0,
+      "glyphRunFontBlobBytes": 0,
+      "glyphRunTypefaceCount": 0,
+      "glyphRunFontCount": 0,
+      "fontSubstitutionLimit": 4096,
+      "unregisteredFontFallbacks": 1,
+      "fontSubstitutions": [
+        {
+          "requestedFamily": "sans-serif",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        }
+      ],
+      "replayFeatureCounts": {
+        "dashedStrokes": 0,
+        "glyphRuns": 0,
+        "tabLeaders": 0,
+        "charOverlaps": 0,
+        "verticalPresentationPunctuation": 0,
+        "verticalTextRuns": 0
+      },
+      "textVariantDiagnosticGroups": 1,
+      "textVariantDiagnosticParts": 2,
+      "replayDiagnosticsDropped": 0
+    },
+    "selections": [
+      {
+        "backend": "canvaskit",
+        "equivalenceGroup": "text-0",
+        "selectedVariantId": "textRun",
+        "selectedVariantKind": "textRun",
+        "selectedReason": "defaultTextRunFallback",
+        "partsExpected": 1,
+        "partsSelected": 1,
+        "parts": [
+          {
+            "replayable": true,
+            "equivalenceGroup": "text-0",
+            "variantId": "textRun",
+            "variantKind": "textRun",
+            "partIndex": 0,
+            "partCount": 1
+          },
+          {
+            "replayable": false,
+            "reason": "unsupportedSvgGlyph",
+            "outlineEligibility": {
+              "strictVisualEligible": true,
+              "payloadSupported": false,
+              "paintStyleSupported": true,
+              "replayEligible": false,
+              "reason": "unsupportedSvgGlyph"
+            },
+            "equivalenceGroup": "text-0",
+            "variantId": "glyphOutline",
+            "variantKind": "glyphOutline",
+            "partIndex": 0,
+            "partCount": 1
+          }
+        ],
+        "rejectedVariants": [
+          {
+            "variantId": "glyphOutline",
+            "variantKind": "glyphOutline",
+            "reasons": [
+              "unsupportedSvgGlyph"
+            ]
+          }
+        ],
+        "truncated": false,
+        "renderProfile": "screen"
+      }
+    ]
+  },
+  {
+    "change": "transform",
+    "diagnostics": {
+      "surfaceCreated": 4,
+      "surfaceReused": 0,
+      "staticPictureCacheEntries": 0,
+      "staticPictureCacheBytes": 0,
+      "staticPictureCacheHits": 0,
+      "staticPictureCacheMisses": 0,
+      "staticPictureCacheEvictions": 0,
+      "textBlobCacheEntries": 0,
+      "textBlobCacheBytes": 0,
+      "textBlobCacheHits": 0,
+      "textBlobCacheMisses": 0,
+      "fallbackFamilyCacheEntries": 0,
+      "paragraphFontEntries": 3,
+      "paragraphFontBytes": 2287432,
+      "paragraphProviderBuilds": 0,
+      "paragraphFontRejections": 0,
+      "pendingImageLoads": 0,
+      "mode": "strict",
+      "surfacePreference": "software",
+      "surfaceBackend": "software",
+      "surfaceFallbackReason": null,
+      "lastRenderCompleted": true,
+      "lastUnsupportedOps": [],
+      "lastExpectedUnsupportedOps": [],
+      "lastUnexpectedUnsupportedOps": [],
+      "lastRenderError": null,
+      "passesRuntimeReadinessGate": true,
+      "readinessBlockers": [],
+      "hiddenCanvas2dOverlayUsed": false,
+      "lastRenderDurationMs": 3.600000023841858,
+      "renderCount": 1,
+      "imageCacheEntries": 1,
+      "imageCacheLimit": 128,
+      "imageCachePixels": 900,
+      "imageCachePixelLimit": 67108864,
+      "imageCacheHits": 2,
+      "imageCacheMisses": 1,
+      "imageCacheEvictions": 0,
+      "mipmapCacheEntries": 0,
+      "mipmapCacheBytes": 0,
+      "mipmapCacheHits": 0,
+      "mipmapCacheMisses": 0,
+      "imageFailureCacheHits": 0,
+      "imageFailures": [],
+      "localTypefaceCount": 0,
+      "localTypefaceLoadFailureCount": 0,
+      "localTypefacePendingCount": 0,
+      "bundledTypefaceCount": 0,
+      "bundledTypefaceLoadFailureCount": 0,
+      "glyphRunFontBlobCount": 0,
+      "glyphRunFontBlobBytes": 0,
+      "glyphRunTypefaceCount": 0,
+      "glyphRunFontCount": 0,
+      "fontSubstitutionLimit": 4096,
+      "unregisteredFontFallbacks": 0,
+      "fontSubstitutions": [],
+      "replayFeatureCounts": {
+        "dashedStrokes": 0,
+        "glyphRuns": 0,
+        "tabLeaders": 0,
+        "charOverlaps": 0,
+        "verticalPresentationPunctuation": 0,
+        "verticalTextRuns": 0
+      },
+      "textVariantDiagnosticGroups": 1,
+      "textVariantDiagnosticParts": 2,
+      "replayDiagnosticsDropped": 0
+    },
+    "selections": [
+      {
+        "backend": "canvaskit",
+        "equivalenceGroup": "text-0",
+        "selectedVariantId": "glyphOutline",
+        "selectedVariantKind": "glyphOutline",
+        "selectedReason": "glyphOutlineStrictProfile",
+        "anchorOpId": "text-0",
+        "partsExpected": 1,
+        "partsSelected": 1,
+        "parts": [
+          {
+            "replayable": true,
+            "equivalenceGroup": "text-0",
+            "variantId": "textRun",
+            "variantKind": "textRun",
+            "partIndex": 0,
+            "partCount": 1
+          },
+          {
+            "replayable": true,
+            "outlineEligibility": {
+              "strictVisualEligible": true,
+              "payloadSupported": true,
+              "paintStyleSupported": true,
+              "replayEligible": true
+            },
+            "equivalenceGroup": "text-0",
+            "variantId": "glyphOutline",
+            "variantKind": "glyphOutline",
+            "partIndex": 0,
+            "partCount": 1
+          }
+        ],
+        "rejectedVariants": [
+          {
+            "variantId": "textRun",
+            "variantKind": "textRun",
+            "reasons": [
+              "defaultFallbackNotSelected"
+            ]
+          }
+        ],
+        "outlineEligibility": {
+          "strictVisualEligible": true,
+          "payloadSupported": true,
+          "paintStyleSupported": true,
+          "replayEligible": true
+        },
+        "truncated": false,
+        "renderProfile": "screen"
+      }
+    ]
+  }
+]

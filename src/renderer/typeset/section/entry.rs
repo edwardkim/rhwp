@@ -31,16 +31,57 @@ impl TypesetEngine {
         force_break_before: &std::collections::HashSet<usize>,
         has_table: bool,
     ) -> Option<ParagraphBoundary<'a>> {
+        match self.prepare_paragraph_boundary_with_storage(
+            st,
+            para_idx,
+            para,
+            paragraphs,
+            styles,
+            page_def,
+            column_def,
+            profile,
+            variant_prev_para_idx,
+            body_height_hu_for_variant,
+            force_break_before,
+            has_table,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn prepare_paragraph_boundary_with_storage<'a, S: crate::storage::Storage>(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        para: &Paragraph,
+        paragraphs: &[Paragraph],
+        styles: &'a ResolvedStyleSet,
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        profile: crate::model::provenance::LayoutCompatibilityProfile,
+        variant_prev_para_idx: Option<usize>,
+        body_height_hu_for_variant: i32,
+        force_break_before: &std::collections::HashSet<usize>,
+        has_table: bool,
+        storage: &S,
+    ) -> Result<Option<ParagraphBoundary<'a>>, S::Error> {
         // [Task #702] 새 ColumnDef 검출. shortcut.hwp p2/p3 파일/미리보기/편집 등은
         // [쪽나누기]+단정의:1단 (header) → [단나누기]+단정의:2단 (content) 패턴 사용.
         // [다단나누기] 외에도 Page/Column break 의 ColumnDef 차이도 zone 재정의 신호로 인식.
-        let new_col_def_opt: Option<ColumnDef> = para.controls.iter().find_map(|c| {
-            if let Control::ColumnDef(cd) = c {
-                Some(cd.clone())
-            } else {
-                None
-            }
-        });
+        let new_col_def_opt: Option<ColumnDef> = para
+            .controls
+            .iter()
+            .find_map(|c| {
+                if let Control::ColumnDef(cd) = c {
+                    Some(cd)
+                } else {
+                    None
+                }
+            })
+            .map(|cd| storage.clone_record(cd))
+            .transpose()?;
         let has_diff_col_def = new_col_def_opt
             .as_ref()
             .map(|cd| {
@@ -55,13 +96,13 @@ impl TypesetEngine {
             && para.controls.is_empty()
             && para
                 .text
-                .replace(|c: char| c.is_control(), "")
-                .trim()
-                .is_empty();
+                .chars()
+                .filter(|c| !c.is_control())
+                .all(char::is_whitespace);
         if is_terminal_empty_para && para.column_type == ColumnBreakType::Column {
             // 1단 구역 끝의 빈 단나누기 문단은 다음 단/밴드가 없으므로
             // 별도 빈 페이지를 만들지 않는다.
-            return None;
+            return Ok(None);
         }
         // 명시적 쪽 나누기는 빈 마지막 문단도 다음 쪽으로 보낸다.
         // 앞 쪽의 남은 공간만으로 생략하면 실제 한컴 Print의 빈 끝 쪽이 유실된다.
@@ -94,7 +135,7 @@ impl TypesetEngine {
         if is_overlay_guide_empty_para && !original_overlay_guide_owns_flow {
             // 글앞/글뒤 표 뒤의 빈 guide 줄은 떠 있는 개체의 위치 보조값이며,
             // 다단 flow 높이를 소비하지 않는다.
-            return None;
+            return Ok(None);
         }
 
         let closed_frame_guide = (para.text.is_empty()
@@ -139,11 +180,14 @@ impl TypesetEngine {
         if closed_frame_guide {
             // 표 배치가 이 정확한 원본 프레임을 이미 수용했다.
             // 안내 줄을 두 번 소비하지 않고 문단 출처를 보존한다.
-            st.hide_empty_paragraph(para_idx);
-            st.append_item(PageItem::FullParagraph {
-                para_index: para_idx,
-            });
-            return None;
+            st.hide_empty_paragraph_with_storage(para_idx, storage)?;
+            st.append_item_with_storage(
+                PageItem::FullParagraph {
+                    para_index: para_idx,
+                },
+                storage,
+            )?;
+            return Ok(None);
         }
 
         let is_native_hwp5_figure_table_overlay_guide_empty = profile
@@ -154,11 +198,14 @@ impl TypesetEngine {
             // 표 paint span 내부의 빈 HWP line은 다시 높이를 소비하면 안 되지만,
             // PI↔page 진단에서 문단 자체는 계속 추적 가능해야 하므로 0-height item으로
             // 남긴다.
-            st.hide_empty_paragraph(para_idx);
-            st.append_item(PageItem::FullParagraph {
-                para_index: para_idx,
-            });
-            return None;
+            st.hide_empty_paragraph_with_storage(para_idx, storage)?;
+            st.append_item_with_storage(
+                PageItem::FullParagraph {
+                    para_index: para_idx,
+                },
+                storage,
+            )?;
+            return Ok(None);
         }
 
         // 다단 나누기
@@ -212,7 +259,7 @@ impl TypesetEngine {
                 {
                     self.start_new_column_band(st, para_idx, paragraphs);
                 } else {
-                    st.advance_column_or_new_page();
+                    st.advance_column_or_new_page_with_storage(storage)?;
                 }
             }
         }
@@ -257,7 +304,7 @@ impl TypesetEngine {
         if (force_page_break || para_style_break || variant_vpos_reset_break)
             && !st.current_items.is_empty()
         {
-            st.force_new_page();
+            st.force_new_page_with_storage(storage)?;
             // [Task #702] 쪽나누기 + 새 ColumnDef = 새 페이지에서 col 정의 적용.
             // 단 수·종류가 같아도 단 너비·방향·구분선이 바뀐 정의는 새 쪽부터 그 배치를 쓴다.
             let new_page_columns = new_col_def_opt.as_ref().and_then(|cd| {
@@ -286,7 +333,7 @@ impl TypesetEngine {
         // para_idx 가 현재 페이지에 이미 항목이 있으면 새 페이지를 강제 (force_page_break 등가).
         // 빈 셋(reflow hint 없음)이면 무동작 → 기존 출력 불변.
         if force_break_before.contains(&para_idx) && !st.current_items.is_empty() {
-            st.force_new_page();
+            st.force_new_page_with_storage(storage)?;
         }
 
         if para_is_pre_paper_page_square_table_scaffold(para_idx, paragraphs)
@@ -295,16 +342,16 @@ impl TypesetEngine {
             // [#2019 v3] Paper/Page 기준 Square 표를 둘러싼 빈 스캐폴드 문단.
             // 쪽나누기/ColumnDef 효과는 위에서 적용하되, PDF 기준으로는 별도 빈 줄을
             // 렌더하거나 본문 흐름 높이를 소비하지 않는다.
-            st.hide_empty_paragraph(para_idx);
-            return None;
+            st.hide_empty_paragraph_with_storage(para_idx, storage)?;
+            return Ok(None);
         }
 
-        Some(ParagraphBoundary {
+        Ok(Some(ParagraphBoundary {
             para_style,
             para_style_break,
             force_page_break,
             overlay_columndef_separator_break,
-        })
+        }))
     }
 }
 
