@@ -107,3 +107,9 @@ Studio CanvasKit의 128쪽 상한에 따른 대체 동작과 별도로 기록한
 검증 worktree에서 기존 suite를 다시 준비한 뒤 48/48 target 예산과 고정 base
 manifest 검사는 통과했다. manifest 자체 검사도 23건 통과했다. 이는 이전한
 회귀 검사의 실제 실행이나 전체 회귀 실패의 해결을 대신하지 않는다.
+
+검사 이전 소스 `412426515e`에서 `cargo fmt --all -- --check`, workspace
+all-target Clippy, Native 라이브러리 Clippy, wasm32 라이브러리 Clippy가 모두
+통과했다. 종료된 Cargo·Rust 프로세스가 없음을 확인한 뒤 검토 전용
+`target/pr-review/debug/incremental`의 종료된 대형 캐시 7개를 정리해 빌드
+여유 공간을 확보했다. 최종 소스의 전쪽 재검증은 별도로 실행한다.
