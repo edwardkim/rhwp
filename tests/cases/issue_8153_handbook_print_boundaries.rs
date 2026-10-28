@@ -1,4 +1,24 @@
-//! #8153: 독립 한컴 2024 KoPub Print와 검증한 핵심 출력 경계.
+//! 관계형·고정형: #8153 독립 한컴 2024 KoPub Print의 핵심 출력 경계.
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 9쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 94쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 149쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 153쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 163쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 309쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 310쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 383쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 9쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 94쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 149쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 153쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 163쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 309쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 310쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 383쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 두 원본의 383쪽 소유, 묶음 그림/crop/테두리, 중첩 표의 실제 행 하한을 함께 보호한다.
 //! 좌표는 독립 PDF의 pt를 96dpi CSS px로 환산하며 허용 오차는 ±2px다.
 //! Native/fresh WASM TSV·입력/PDF SHA·직접 판독은 #8153 검증 기록에 연결한다.
@@ -267,8 +287,45 @@ fn verify(extension: &str) {
             .split_whitespace()
             .collect::<String>()
     };
+    let chapter = core.build_page_render_tree(8).expect("9쪽 장 간지");
+    let mut chapter_nodes = Vec::new();
+    visit(&chapter.root, &mut chapter_nodes);
+    let first_items: Vec<_> = ["1. ‘", "2. "]
+        .into_iter()
+        .map(|prefix| {
+            let matches: Vec<_> = chapter_nodes
+                .iter()
+                .copied()
+                .filter(|node| {
+                    matches!(&node.node_type, RenderNodeType::TextRun(run)
+                        if run.text.starts_with(prefix))
+                })
+                .collect();
+            assert_eq!(matches.len(), 1, "9쪽 항목의 소유·누락·중복: {prefix}");
+            // 두 원본의 독립 한컴 Print에서 xMin=277.68pt다.
+            near(matches[0].bbox.x, 277.68 * 96.0 / 72.0, "9쪽 항목 원점");
+            matches[0]
+        })
+        .collect();
+    assert!(
+        first_items[0].bbox.y + first_items[0].bbox.height <= first_items[1].bbox.y,
+        "장 간지 항목의 순서와 비겹침을 보존한다"
+    );
     assert!(compact(308).starts_with("부록"), "309쪽 부록의 쪽 소유");
     assert!(compact(309).is_empty(), "부록 간지 뒤 빈 쪽 보존");
+    let appendix = core.build_page_render_tree(308).expect("부록 간지");
+    let mut appendix_nodes = Vec::new();
+    visit(&appendix.root, &mut appendix_nodes);
+    let titles: Vec<_> = appendix_nodes
+        .into_iter()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::TextRun(run)
+                if run.text.starts_with("행정업무의"))
+        })
+        .collect();
+    assert_eq!(titles.len(), 1, "부록 간지의 제목은 한 번만 표시한다");
+    // 두 원본의 독립 한컴 Print에서 xMin=241.56pt, 96dpi에서 322.08px다.
+    near(titles[0].bbox.x, 241.56 * 96.0 / 72.0, "부록 제목 원점");
     assert!(
         compact(382).contains("발행처:행정안전부정보공개과"),
         "마지막 판권 내용 보존"

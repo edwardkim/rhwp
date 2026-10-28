@@ -6821,8 +6821,9 @@ impl LayoutEngine {
                 // 프레임 구간에는 문단 여백·배제가 이미 들어 있지만, 채움이
                 // 별도로 차감한 들여쓰기는 글자 원점과 가용 폭에도 한 번 적용한다.
                 (line_indent, 0.0)
-            } else if stored_inline_own_margin {
-                // cs는 문단 여백을 소유하지만 줄별 들여쓰기는 별도 소비한다.
+            } else if stored_inline_own_margin || stored_textbox_line {
+                // 유효한 저장 줄의 시작·폭은 완성된 프레임이다. 문단 여백을
+                // 다시 적용하지 않고 별도 줄 들여쓰기만 소비한다.
                 (line_indent, 0.0)
             } else if hwp3_password_stored_segment_line_box
                 || stored_segment_line_box_cannot_hold_margins
