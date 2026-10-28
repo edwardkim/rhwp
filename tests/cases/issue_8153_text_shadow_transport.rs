@@ -1,9 +1,12 @@
 //! 관계형·고정형: 실제 글꼴 공급 → 공통 Print 계획 → JSON/SVG·본문/셀 clip 계약.
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
+//! 관련 실사례 HWP 9쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 관련 실사례 HWPX 9쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
 //! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
 //! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 실사례와 합성 검사의 관계: mydocs/plans/issue_8153_continuous_text_shadow_20261026.md.
 //! 저장소가 직접 만든 MIT 합성 TTF를 메모리에서 읽는다. 한컴 시각 일치의 증거와 구분한다.
 #![cfg(not(target_arch = "wasm32"))]
 
