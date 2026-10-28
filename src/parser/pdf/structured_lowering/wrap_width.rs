@@ -289,7 +289,12 @@ pub(super) fn fit(
                 > 50
                 || (!centered && (physical_start - stored.column_start).abs() > 50)
             {
-                return Err("ordinary flow does not reproduce source origins".into());
+                return Err(allocation.display(&format_args!(
+                    "ordinary flow does not reproduce source origins: row={index}, freshBaselineHu={}, sourceBaselineHu={}, freshStartHu={physical_start}, sourceStartHu={}",
+                    fresh.vertical_pos + fresh.baseline_distance,
+                    stored.vertical_pos + stored.baseline_distance,
+                    stored.column_start,
+                )).map_err(message)?);
             }
         }
         let (left, right) = trial.margins(width);

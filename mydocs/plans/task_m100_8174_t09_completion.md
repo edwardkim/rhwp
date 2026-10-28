@@ -8,7 +8,7 @@
 visual_fixture_evidence이며 PR review·오늘할일은 채번·정확한 code head CI 성공 뒤 기록한다.
 
 - 시작 head: `4ef642c9edf8313ce07bc6e3334f9cd77ca8b350`.
-- 고정 최신 devel: `db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc`.
+- 1차 고정 devel: `db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc`.
 - 공통 기준: `9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`.
 - 본인 열린 PR은 조회 결과 0개다. 이슈는 open·담당자 edwardkim이다.
 
@@ -25,3 +25,5 @@ Cargo는 기본 작업공간의 `target/pr-review` 한 곳을 순차 사용한�
 `output/pr-review/issue8174/t09-completion-20261028/`에 보존한다. 현재 base 확인만을 위한
 반복 rebase나 이미 검증한 동일 code head의 불필요한 재실행은 하지 않는다. source가 실제로
 바뀐 통합 후보의 검증은 T08 결과로 대체하지 않는다.
+
+2026-10-29 제출 직전 추가 기준은 `f291d772a105d46a4d4d7f40ed13e82391ebdc1a`다. #8348의 기여 PR 20개와 #8350의 기록을 실제 통합하고 같은 T09 범위에서 기능 보존·최종 검증을 계속한다. 이전 `db5cd5bcc` 후보의 통과를 이 기준의 통과로 재사용하지 않는다.

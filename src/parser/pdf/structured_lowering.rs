@@ -192,11 +192,11 @@ impl SourceStyles {
 fn source_baseline_position(
     page: &ExtractedPage,
     doc: &Document,
-    line: &TextLine,
+    baseline: f32,
     span: usize,
     base_id: u32,
 ) -> Result<(i8, f64), String> {
-    let source_delta = page.media_box.3 - page.spans[span].bbox.y - line.baseline;
+    let source_delta = page.media_box.3 - page.spans[span].bbox.y - baseline;
     let size = doc.doc_info.char_shapes[base_id as usize].base_size as f64 / 100.;
     let position = (f64::from(source_delta) / size * 100.).round();
     if !position.is_finite() || !(-100. ..=100.).contains(&position) {
@@ -219,7 +219,7 @@ fn positioned_span_style(
     cache: &mut BTreeMap<(u32, u8, i8, i8), u32>,
 ) -> Result<u32, String> {
     let allocation = Allocation(&page.import_budget);
-    let (position, _) = source_baseline_position(page, doc, line, span, base_id)?;
+    let (position, _) = source_baseline_position(page, doc, line.baseline, span, base_id)?;
     if position == 0 {
         return Ok(base_id);
     }
@@ -336,6 +336,7 @@ fn observed_line_text(
     styles: &SourceStyles,
     cache: &mut BTreeMap<(u32, u8, i8, i8), u32>,
     owner_x: f32,
+    paragraph_baseline: f32,
 ) -> Result<ObservedLineText, String> {
     use crate::renderer::style_resolver::detect_lang_category;
     let allocation = Allocation(&page.import_budget);
@@ -365,7 +366,7 @@ fn observed_line_text(
         // only the observed displacement in ordinary HWP CHAROFFSET; setting
         // the superscript flag would shrink a small PDF glyph a second time.
         let (position, baseline_error) =
-            source_baseline_position(page, doc, line, glyph.span, base_id)?;
+            source_baseline_position(page, doc, paragraph_baseline, glyph.span, base_id)?;
         maximum_baseline_error = maximum_baseline_error.max(baseline_error);
         let lang = detect_lang_category(glyph.character);
         let mut style = styles.text_style(base_id, lang)?;
@@ -592,6 +593,8 @@ fn observed_line_text(
             "maximumOriginQuantizationErrorPt":maximum_origin_error,
             "maximumBaselineQuantizationErrorPt":maximum_baseline_error,
             "lineBaselinePt":line.baseline,
+            "paragraphBaselinePt":paragraph_baseline,
+            "baselinePolicy":"observed glyph origins encoded as ordinary character positions on the paragraph grid",
             "status":"observed_origins_with_nominal_widths",
             "hwpQuantization":"integer-percent ratio, spacing and character position; no source-font outline recovery"
         })?,
@@ -905,7 +908,7 @@ fn paragraph(
             72.,
         ))
     }))?;
-    let row_tops: Vec<_> = allocation
+    let mut row_tops: Vec<_> = allocation
         .collect(
             lines
                 .iter()
@@ -914,6 +917,36 @@ fn paragraph(
         )
         .map_err(message)?;
     let top = row_tops[0];
+    // Observed row baselines are not an authored paragraph grid. Infer one
+    // ordinary fixed advance, then encode each original glyph's displacement
+    // with the existing HWP character-position contract. This preserves PDF
+    // glyph origins without manufacturing hard breaks or per-backend offsets.
+    let fixed_advance = if fixed_line_height {
+        let (distance, weight) = row_tops.iter().enumerate().skip(1).fold(
+            (0.0_f64, 0.0_f64),
+            |(distance, weight), (index, row_top)| {
+                let index = index as f64;
+                (
+                    distance + index * f64::from(*row_top - top),
+                    weight + index * index,
+                )
+            },
+        );
+        let advance = if weight > 0.0 {
+            (distance / weight) as f32
+        } else {
+            first.font
+        };
+        let advance = hu(advance)? as f32 / 100.;
+        let mut current = top;
+        for (row_top, metrics) in row_tops.iter_mut().zip(&row_metrics) {
+            *row_top = current;
+            current += advance.max(metrics.line_height as f32 / 100.);
+        }
+        Some(advance)
+    } else {
+        None
+    };
     let layout = proposal
         .layout
         .as_ref()
@@ -960,6 +993,7 @@ fn paragraph(
                 styles,
                 &mut glyph_styles,
                 cell_x,
+                line_top + metrics.baseline_distance as f32 / 100.,
             );
             page.import_budget
                 .check()
@@ -1173,12 +1207,8 @@ fn paragraph(
     } else {
         LineSpacingType::Percent
     };
-    style.line_spacing = if fixed_line_height {
-        physical_margin(
-            lines
-                .get(1)
-                .map_or(first.font, |next| next.baseline - first.baseline),
-        )?
+    style.line_spacing = if let Some(advance) = fixed_advance {
+        physical_margin(advance)?
     } else if lines.len() > 1 {
         ((lines[1].baseline - first.baseline) / first.font * 100.).round() as i32
     } else {

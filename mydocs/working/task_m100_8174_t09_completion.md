@@ -236,3 +236,53 @@ preflight 출력은 검증 worktree 내부의 ignored output만 허용하므로 
 [통합 완료 보고](../report/task_m100_8174_report.md)에 현재 source·지원/보안 경계·실제 소비·전쪽 증적을 연결했다. 일반 release library의 12GiB 컴파일 제한 OOM은 16GiB 실행 한도에서 같은 opt3/LTO/cgu1로 재실행해 통과했다. 제품 정책·assertion·기존 사용자 서버는 바꾸지 않았다. 통과한 build·전체 회귀·archive는 유지했다.
 
 독립 소비는 원본 테스트의 cases/fixtures/PDF 상대 구조를 유지하고 모든 입력 바이트를 대조해 공개 계약 54개를 통과했다. 실제 `.crate`는 Cargo `--no-verify`로 포장한 뒤 strict gzip·manifest/원본/digest·독립 컴파일/실행으로 검증했다. 실제 crates.io publish/dry-run·owner 확보·태그는 실행하지 않았다. 최종 원격 결과는 이 PR의 archive self-review·오늘할일·후속 comment에 exact head/merge SHA로 연결한다.
+
+
+## #8348·#8350 추가 통합과 현재 검증
+
+제출 직전 최신 devel `f291d772a105d46a4d4d7f40ed13e82391ebdc1a`을 확인했다. #8348은
+제목과 달리 기여 PR 20개의 실제 조판·PDF·그림·성능·Studio 변경을 포함한다. 이전 검증 후보
+`237ded61b4`는 `backup/issue8174-pre8348-237ded61b4`에 보존하고, 누적 트리가 같은 커밋
+`3484f9d74a`를 만든 뒤 최신 devel로 실제 리베이스했다. 23개 파일의 충돌을 보정한 후보는
+`4d56be303c`이며 요청 수명 검사 보강의 컴파일 보정은 `17e3a39808`이다.
+
+PDF `layout`과 자원 정책 옵션을 CLI·격리 Worker·공통 JS Worker·WASM 경계에서 함께
+전달한다. Studio의 PDF 대화상자도 기존 환경 설정의 편집 우선 선택을 전달하도록 연결했다.
+새 편집 모드의 문단 병합·다단 재배치·진단 JSON, 부동 도형의 plan·소유 상태와 셀 색인의
+할당에는 같은 Storage를 전달했다. 새 endnote memo는 최초 PDF와 첫 저장에 endnote가
+생성되지 않는 경계이며, 일반 HWP의 기존 소비는 별도 보존 검증 대상이다.
+
+현재 fmt·diff·suite/unit 정책·Native/WASM Clippy·Native 제품 빌드와 Studio Node
+2,665 PASS(기존 2 skip)·TypeScript·공통 Worker 25 PASS를 확인했다. 파생 suite의 초기
+갱신 누락은 prepare 후 재검증했고, 테스트의 `DocumentCore` Debug 요구를 제거한 뒤
+PDF 요청 수명 43개는 두 배치 모드와 실패 고정·새 요청 복구까지 통과했다.
+
+새 devel의 PDF editable 회귀는 2 PASS / 2 FAIL이다. 같은 2020 시험지의 실제 CLI에서
+기준은 본문 문단 256개, 초기 후보는 235개이며, 실패한 문단은 위치 고정 owner로 남는다.
+상세 진단에서 원점 검증 25건의 거부를 확인했다. 이 중 19건은 첫 줄 간격 하나를 문단 전체에
+반복할 때 인쇄 좌표의 반올림이 누적된 경우다. 전체 source baseline의 고정 전진량을 대조하면
+동일한 50 HU 허용 범위 안의 잔차는 6–48 HU다. 공통 source 행 생성에서 전체 관측 줄로
+전진량을 추론하는 보정을 진단 중이며, 엄격한 컷·원점 witness와 기존 회귀는 유지한다.
+보정 완료·최종 제품·전쪽 판독·포장 통과로 아직 판정하지 않는다. PR 생성·push·merge는
+실행하지 않았다. 재검증 증적은 ignored `output/pr-review/issue8174/t09-post8348-20261029/`다.
+
+
+### PDF 편집 모드의 원점·글자 위치 보정
+
+첫 간격의 누적 오차를 전체 관측 줄로 추론한 고정 전진량으로 고치자 2020 문서의 본문 소유와
+2010 7쪽 위치 검사를 회복했다. 진단용 root opt0에서는 3 PASS / 1 FAIL이며 2010 문단은
+마지막 줄 baseline이 일정한 격자와 실제로 다름을 확인했다. 첫 문단의 최적 단일 전진량·원점만으로는
+잔차 최솟값도 52.13 HU여서 기존 50 HU 조건을 충족하지 않는다. 허용치를 늘리지 않았다.
+
+PDF의 관측 줄 기준선과 문단의 배치 격자를 구분했다. 공통 paragraph producer가 전체 관측으로
+고정 전진량을 정하고 공통 줄 메트릭의 같은 격자를 생성한다. 각 실제 source glyph와 그 격자의
+baseline 차이는 기존 HWP `CHAROFFSET` 계약으로 표현한다. 원래 관측 baseline과 격자 baseline,
+독립 source glyph에 대한 위치 양자화 오차는 별도로 기록하며 원문·폭·줄 컷을 바꾸지 않는다.
+과도한 문자 위치·표현 불가능한 폭/컷은 기존 owner 보존 경로로 돌아간다. 측정·저장·배치가
+같은 발행 문단을 소비하며 backend 좌표 보정·강제 개행·문서 식별 분기를 추가하지 않았다.
+
+진단용 opt0에서 기존 editable 회귀는 **4 PASS**다. 세 PDF의 본문 소유·단/쪽 이어짐과 양쪽 저장·
+재열기, 독립 7쪽 위치·실제 편집 검사를 유지한다. 이 결과를 최종 opt1 Native·표준 최적화 WASM·
+전쪽 시각·성능 통과로 표시하지 않는다. 기존 Type3 네 줄·셀 소유 대조군과 최종 검증을 이어간다.
+
+기존 CFF·Type3 공개 대조군 2건도 같은 진단용 opt0에서 통과했다. Type3 원본 전체/선택 쪽과 양쪽 저장·재열기의 네 줄 및 셀 소유를 유지한다. 새 코드의 최종 최적화 제품 검증은 아래 현재 원장으로 확정할 때까지 미완료다.
