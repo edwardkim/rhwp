@@ -1,7 +1,9 @@
 //! 관계형: 묶음 빈칸의 제어·리터럴 혼용 표기를 보존한다.
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
+//! HWP 232쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWPX 232쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
 //! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //!
@@ -11,7 +13,47 @@
 use std::io::{Cursor, Read, Write};
 
 use rhwp::model::paragraph::Paragraph;
+use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
+use rhwp::renderer::TextStyle;
 use rhwp::DocumentCore;
+
+#[test]
+fn inherited_half_space_and_font_space_keep_distinct_nbspace_contracts() {
+    let base = TextStyle {
+        font_family: "__unregistered_test_font__".into(),
+        font_size: 20.0,
+        ..Default::default()
+    };
+    let mut font_space = base.clone();
+    font_space.font_space_em = Some(0.25);
+    let mut inherited = font_space.clone();
+    inherited.inherited_half_space_em = true;
+
+    let measurer = EmbeddedTextMeasurer;
+    let advance = |text: &str, style: &TextStyle| {
+        let positions = measurer.compute_char_positions(text, style);
+        positions[1] - positions[0]
+    };
+    let nbsp_without_font_space = advance("\u{00a0}", &base);
+    let nbsp_with_font_space = advance("\u{00a0}", &font_space);
+    assert!(
+        (nbsp_with_font_space - nbsp_without_font_space).abs() < 0.02,
+        "일반 글꼴 공백 선택은 묶음 빈칸 전진을 바꾸지 않는다"
+    );
+    assert!(
+        (advance(" ", &font_space) - advance(" ", &base)).abs() > 2.0,
+        "일반 공백은 선택한 글꼴 공백 전진을 소비한다"
+    );
+    let inherited_advance = advance("\u{00a0}", &inherited);
+    assert!(
+        (inherited_advance - advance(" ", &font_space)).abs() < 0.02,
+        "상속 반각 전진은 같은 크기의 일반 공백 전진과 일치한다: {inherited_advance}"
+    );
+    assert!(
+        (inherited_advance - nbsp_with_font_space).abs() > 2.0,
+        "상속 반각과 일반 글꼴 공백 선택을 구분한다"
+    );
+}
 
 fn mixed_source() -> Vec<u8> {
     let core = DocumentCore::from_bytes(include_bytes!("../../saved/blank2010.hwp")).unwrap();
