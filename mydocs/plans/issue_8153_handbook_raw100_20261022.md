@@ -1577,3 +1577,16 @@ indexed 18개 모두 `printArea`였으므로 색 확장 여부와 `catmullRom` �
 `8,667` 등 대응 본문이 있다. 텍스트 일치만으로 PDF가 두 파일 모두의 정확한
 독립 출력이거나 페이지 배치까지 같다고 보지는 않는다. 실제 입력·PDF와 각
 쪽을 시각 대조하기 전에는 다른 경로의 기존 TSV를 해당 테스트 근거로 쓰지 않는다.
+
+사용자 지시에 따라 새 글꼴은 배포하지 않고 내부 시스템 설치본만 검증에 쓴다.
+고정 base `9418ed0c` 대비 HEAD의 추가·수정 경로에서 TTF·OTF·TTC·WOFF
+파일은 없다. 추가된 파일 308개의 글꼴 magic과 추가 HWPX 세 개의 압축 항목을
+확인해 글꼴 형식을 발견하지 않았고, 추가 PDF 세 개의 `pdffonts`에도 글꼴
+레코드가 없다. 확인 결과는 ignored `new-font-distribution-audit-20261029.json`에
+있다. 기존 base에 포함된 글꼴은 이 추가분 검사 범위에 넣지 않았다. 브라우저용
+임시 처리본은 Git에서 제외된 `output/pr-review/font-catalog-cache/`에만 둔다.
+
+분리 커밋 `ffae46e8a6`의 Native Skia CLI 빌드는 빌드 작업 8개로 통과했다.
+실행 파일 SHA-256은 `9425abb8a2d6fb981992573aa618eced426f0ca745cf5d01cb3cc0c5e2970563`이며
+제품 소스 diff가 빈 상태에서 빌드했다. 편람 두 형식의 핵심 14쪽 비교와
+같은 커밋의 최적화 fresh WASM 빌드를 시작했다. 결과는 아직 진행 중이다.
