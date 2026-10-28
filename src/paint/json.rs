@@ -23,8 +23,6 @@ use crate::paint::{
     SvgGlyphPayload, TextDecorationKind, TextSourceAnnotation, TextSourceEntry, TextSourceId,
     TextSourceRange, TextSourceSpan, TextSourceTable, TextV2Diagnostics, LAYER_TREE_SCHEMA,
 };
-#[cfg(test)]
-use crate::renderer::composer::expand_pua_render_text;
 use crate::renderer::composer::expand_pua_render_text_in_style;
 use crate::renderer::equation::ast::MatrixStyle;
 use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
@@ -4218,7 +4216,7 @@ mod tests {
 
         let value: Value = serde_json::from_str(&json).expect("valid layer JSON");
         let ops = value["root"]["ops"].as_array().expect("leaf ops");
-        let display_text = expand_pua_render_text(&run.text);
+        let display_text = crate::renderer::composer::expand_pua_render_text(&run.text);
         let positions = compute_char_positions(&display_text, &run.style);
         let expected_end = clamp_tab_leader_end_x(
             &display_text,
