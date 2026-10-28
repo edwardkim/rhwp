@@ -1858,7 +1858,8 @@ impl Paragraph {
         let nb_spaces = self.materialized_nb_space_controls();
         let new_nb_spaces = nb_spaces
             .iter()
-            .filter_map(|&index| (index >= split_pos).then(|| index - split_pos))
+            .filter(|&&index| index >= split_pos)
+            .map(|&index| index - split_pos)
             .collect();
         self.nb_space_control_indices = Some(
             nb_spaces
