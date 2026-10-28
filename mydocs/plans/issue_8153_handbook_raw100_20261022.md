@@ -1614,3 +1614,11 @@ HWPX Native도 이후 전 383쪽을 완료했다. 두 형식 모두 이전 후�
 두 Native TSV는 기존 정식 `handbook-validation-20261028/native/`의 각 원문과
 바이트까지 같아 중복 복사하지 않는다. 정식 증거의 제품 소스와 최신 커밋
 대응은 fresh WASM과 최종 재검증까지 마친 뒤 함께 갱신한다.
+
+분리 커밋의 최적화 web WASM 빌드도 완료했다. Studio 첫 단위 실행은 격리 환경의
+Node `spawnSync`가 `EPERM`으로 자식 프로세스를 실행하지 못했고 검증 작업 트리에
+editor·공통 PDF 테스트 경로도 빠져 유효한 전체 결과가 아니었다. 경로를 보완하고
+자식 프로세스 실행을 확인한 재실행은 2,456건 통과·실패 0건·2건 건너뜀이다.
+두 건은 Node용 WASM 부재가 이유여서 같은 커밋의 내부 검증용 `pkg-node`를
+빌드한 뒤 각각 재실행한다. 해당 로그는 ignored `studio-unit-ffae46-r2-20261029.log`,
+`isolated-ffae46-node-wasm-build-20261029.log`다. web WASM 전쪽은 진행 중이다.
