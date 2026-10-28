@@ -286,3 +286,14 @@ baseline 차이는 기존 HWP `CHAROFFSET` 계약으로 표현한다. 원래 관
 전쪽 시각·성능 통과로 표시하지 않는다. 기존 Type3 네 줄·셀 소유 대조군과 최종 검증을 이어간다.
 
 기존 CFF·Type3 공개 대조군 2건도 같은 진단용 opt0에서 통과했다. Type3 원본 전체/선택 쪽과 양쪽 저장·재열기의 네 줄 및 셀 소유를 유지한다. 새 코드의 최종 최적화 제품 검증은 아래 현재 원장으로 확정할 때까지 미완료다.
+
+
+### 새 editable 경로의 저장 reset 원장
+
+최신 devel의 continuation reset 원장은 각주가 없어도 1단·여러 쪽의 같은 본문 문단에서
+기록할 수 있다. 새로운 `stored_reset_note_fragments` append도 호출자의 Storage를 전달하도록
+연결했다. suffix 제어 소유 검사는 위치 배열을 만들기 전에 동일한 제어 종류·Para 상대 조건을
+먼저 확인한다. 초기 PDF는 각주를 생성하지 않고 그림은 Paper 상대이므로 이 오래된 suffix
+배열 경로에는 진입하지 않는다. note prefix 배열·미주 memo는 해당 note 생성이 없어 비도달이며,
+HWP5 저장 host 전용 plan은 PDF 출처와 생성 geometry 계약이 다르다. 기존 일반 HWP의 조건과
+결과는 유지하고 실제 이어받기 회귀와 요청 한도 검사를 최종 source에서 다시 확인한다.

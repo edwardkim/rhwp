@@ -378,9 +378,27 @@ impl TypesetState {
         para_idx: usize,
         start_line: usize,
     ) {
-        self.data
-            .stored_reset_note_fragments
-            .push((para_idx, start_line));
+        match self.record_stored_reset_note_fragment_with_storage(
+            para_idx,
+            start_line,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+    pub(in crate::renderer::typeset) fn record_stored_reset_note_fragment_with_storage<
+        S: crate::storage::Storage,
+    >(
+        &mut self,
+        para_idx: usize,
+        start_line: usize,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.push(
+            &mut self.data.stored_reset_note_fragments,
+            (para_idx, start_line),
+        )
     }
     pub(in crate::renderer::typeset) fn finish_behind_float_absorption(&mut self) {
         self.data.behind_float_table_para = None;

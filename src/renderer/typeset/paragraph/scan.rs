@@ -354,24 +354,26 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
     // A note or paragraph-relative floating picture whose marker belongs after
     // the stored page reset cannot change the control-free prefix's owner. Use the same codepoint space
     // as control_text_positions; LineSeg.text_start is an original UTF-16 slot.
+    // Check structural ownership before deriving positions. Initial PDF paint
+    // is Paper-relative and has no Footnote controls, so it cannot enter this
+    // legacy suffix-owner allocation even for editable page continuations.
     let only_suffix_controls = !para.controls.is_empty()
+        && para.controls.iter().all(|control| match control {
+            crate::model::control::Control::Footnote(_) => true,
+            crate::model::control::Control::Picture(picture) => {
+                !picture.common.treat_as_char
+                    && picture.common.vert_rel_to == crate::model::shape::VertRelTo::Para
+            }
+            _ => false,
+        })
         && !para.char_offsets.is_empty()
         && para.line_segs.get(break_line).is_some_and(|line| {
             let break_char = para.utf16_pos_to_char_idx(line.text_start);
             let positions = para.control_text_positions();
-            para.controls.iter().enumerate().all(|(index, control)| {
-                let suffix_owner = match control {
-                    crate::model::control::Control::Footnote(_) => true,
-                    crate::model::control::Control::Picture(picture) => {
-                        !picture.common.treat_as_char
-                            && picture.common.vert_rel_to == crate::model::shape::VertRelTo::Para
-                    }
-                    _ => false,
-                };
-                suffix_owner
-                    && positions
-                        .get(index)
-                        .is_some_and(|&position| position >= break_char)
+            para.controls.iter().enumerate().all(|(index, _)| {
+                positions
+                    .get(index)
+                    .is_some_and(|&position| position >= break_char)
             })
         })
         && saved_line_range_fits_body_tail(

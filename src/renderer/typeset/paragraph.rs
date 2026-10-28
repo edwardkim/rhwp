@@ -390,7 +390,7 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
         }
         st.commit_split_paragraph_fragment_with_storage(fragment, storage)?;
         if continuation_reset_line == Some(end_line) {
-            st.record_stored_reset_note_fragment(para_idx, cursor_line);
+            st.record_stored_reset_note_fragment_with_storage(para_idx, cursor_line, storage)?;
         }
 
         if end_line >= line_count {
