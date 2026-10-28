@@ -193,3 +193,17 @@ WASM으로 2배 확대해 확인했다. 선택한 마지막 줄·앞뒤 문장�
 | --- | --- | --- |
 | HWP | [review](native/handbook-hwp-p311-review.png) · [overlay](native/handbook-hwp-p311-overlay.png) | [review](wasm/handbook-hwp-p311-review.png) · [overlay](wasm/handbook-hwp-p311-overlay.png) |
 | HWPX | [review](native/handbook-hwpx-p311-review.png) · [overlay](native/handbook-hwpx-p311-overlay.png) | [review](wasm/handbook-hwpx-p311-review.png) · [overlay](wasm/handbook-hwpx-p311-overlay.png) |
+
+## 311→312쪽 표 내용 이어받기
+
+독립 Print와 두 원본의 Native·fresh WASM render tree에서 311쪽 말미의 `2의2.`와
+312쪽 첫 내용 `전자문서 형식을`, 이어지는 `기술의 표준`을 대조했다. 네 후보
+출력 모두 앞의 항목은 311쪽에 한 번, 이어지는 두 문구는 312쪽에 각각 한 번
+있으며 반대쪽에는 나타나지 않는다. 312쪽의 각 raw는 100.00000%다. 페이지
+전체 overlay에서 표 머리·열·내용을 확인했으며 획 농도와 가장자리 차이가 보인다.
+텍스트 소유와 이미지 판독은 각각 확인한 범위만 뜻한다.
+
+| 원본 | Native | fresh WASM |
+| --- | --- | --- |
+| HWP | [review](native/handbook-hwp-p312-review.png) · [overlay](native/handbook-hwp-p312-overlay.png) | [review](wasm/handbook-hwp-p312-review.png) · [overlay](wasm/handbook-hwp-p312-overlay.png) |
+| HWPX | [review](native/handbook-hwpx-p312-review.png) · [overlay](native/handbook-hwpx-p312-overlay.png) | [review](wasm/handbook-hwpx-p312-review.png) · [overlay](wasm/handbook-hwpx-p312-overlay.png) |
