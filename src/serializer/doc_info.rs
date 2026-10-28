@@ -723,11 +723,16 @@ fn serialize_bullet(bullet: &Bullet) -> Vec<u8> {
     // 글머리표 문자 (WCHAR)
     w.write_u16(char_to_wchar(bullet.bullet_char)).unwrap();
 
-    // 이미지 글머리표 여부 (INT32)
-    w.write_i32(bullet.image_bullet).unwrap();
+    // 이미지 글머리표 여부 (INT32). 모델의 image_bullet 은 그림 ID 이므로 여부와 ID 로 나눈다.
+    w.write_i32(i32::from(bullet.image_bullet != 0)).unwrap();
 
-    // 이미지 글머리 데이터 (4바이트)
-    for &byte in &bullet.image_data {
+    // 이미지 글머리 데이터 (4바이트: 대비, 밝기, 효과, 그림 ID)
+    let mut image_data = bullet.image_data;
+    if bullet.image_bullet != 0 {
+        // HWP 는 그림 ID 를 1바이트에 담는다. 255 를 넘는 ID 는 담을 수 없어 0 으로 쓴다.
+        image_data[3] = u8::try_from(bullet.image_bullet).unwrap_or(0);
+    }
+    for byte in image_data {
         w.write_u8(byte).unwrap();
     }
 
