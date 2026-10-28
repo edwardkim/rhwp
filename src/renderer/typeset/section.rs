@@ -49,6 +49,8 @@ impl TypesetEngine {
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
         // [#2403] 소스분기 프로파일 — 엔진(Cell)과 state 에 한 번에 배선.
         self.profile.set(profile);
+        // 미주 단 측정 재사용은 같은 구역의 문단·스타일 안에서만 유효하다.
+        self.endnote_column_replays.borrow_mut().clear();
         // [#5854] 통짜 합성 LINE_SEG 사다리 판정 — 구역당 한 번.
         self.uniform_filler_ladder
             .set(crate::renderer::stored_line_ladder_is_uniform_filler(

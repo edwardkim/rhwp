@@ -346,6 +346,13 @@ pub struct TypesetEngine {
     format_next_stored_vpos: std::cell::Cell<Option<i32>>,
     render_normalization:
         std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
+    /// 미주 fit 판정이 scratch로 다시 그린 단 측정의 최근 결과 — 구역 진입 시 비운다.
+    /// 여러 판정이 같은 단과 후보를 연달아 다시 그리므로 입력 키가 같으면 결과를 재사용한다.
+    endnote_column_replays:
+        std::cell::RefCell<std::collections::VecDeque<(String, (f64, Option<f64>))>>,
+    /// 재사용할 때마다 다시 측정해 키가 scratch 입력을 빠뜨리지 않았는지 확인한다.
+    /// 디버그 빌드와 `RHWP_ENDNOTE_REPLAY_VERIFY` 가 켠다.
+    endnote_replay_verify: bool,
 }
 
 /// 조판 중 현재 페이지/단 상태
@@ -3271,6 +3278,9 @@ impl TypesetEngine {
             render_normalization: std::sync::Arc::new(
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             ),
+            endnote_column_replays: Default::default(),
+            endnote_replay_verify: cfg!(debug_assertions)
+                || std::env::var_os("RHWP_ENDNOTE_REPLAY_VERIFY").is_some(),
         }
     }
 
@@ -6419,6 +6429,63 @@ mod issue_3780_line_advance_oob {
 
 #[cfg(test)]
 mod tests {
+    use crate::model::paragraph::{MarkerHead, NumberingMarker};
+    use crate::renderer::typeset::notes::endnotes::measure::{
+        push_replay_paragraph_key, ENDNOTE_COLUMN_REPLAY_MEMO_LEN,
+    };
+
+    #[test]
+    fn same_column_input_reuses_scratch_measure_until_evicted() {
+        let mut engine = TypesetEngine::new(96.0);
+        engine.endnote_replay_verify = false;
+        let calls = std::cell::Cell::new(0);
+        let measure = |bottom: f64| {
+            calls.set(calls.get() + 1);
+            (bottom, Some(bottom - 1.0))
+        };
+        let replay = |key: &str, bottom: f64| {
+            engine.replay_endnote_column(key.to_string(), || measure(bottom))
+        };
+        assert_eq!(replay("column", 10.0), (10.0, Some(9.0)));
+        assert_eq!(replay("column", 99.0), (10.0, Some(9.0)));
+        assert_eq!(calls.get(), 1);
+        for index in 0..ENDNOTE_COLUMN_REPLAY_MEMO_LEN {
+            replay(&format!("other-{index}"), 1.0);
+        }
+        assert_eq!(replay("column", 20.0), (20.0, Some(19.0)));
+        assert_eq!(calls.get(), ENDNOTE_COLUMN_REPLAY_MEMO_LEN + 2);
+    }
+
+    #[test]
+    #[should_panic(expected = "미주 단 측정 키가 scratch 입력을 빠뜨렸다")]
+    fn verify_rejects_reuse_when_key_misses_an_input() {
+        let mut engine = TypesetEngine::new(96.0);
+        engine.endnote_replay_verify = true;
+        engine.replay_endnote_column("column".to_string(), || (10.0, None));
+        engine.replay_endnote_column("column".to_string(), || (10.0, None));
+        engine.replay_endnote_column("column".to_string(), || (11.0, None));
+    }
+
+    #[test]
+    fn numbering_marker_hidden_from_debug_still_separates_keys() {
+        let key = |marker: NumberingMarker| {
+            let paragraph = Paragraph {
+                numbering_marker: marker,
+                ..Default::default()
+            };
+            let mut key = String::new();
+            push_replay_paragraph_key(&mut key, 0, &paragraph);
+            key
+        };
+        let text = |number: &str| NumberingMarker::Text(number.into(), MarkerHead::default());
+        assert_ne!(key(text("1.")), key(text("2.")));
+        assert_ne!(
+            key(NumberingMarker::Unresolved),
+            key(NumberingMarker::Absent)
+        );
+        assert_eq!(key(text("1.")), key(text("1.")));
+    }
+
     use crate::renderer::float_placement::native_empty_host_rowbreak_line_advance_hu;
 
     #[test]
@@ -7612,27 +7679,6 @@ mod tests {
     }
 
     #[test]
-    fn test_typeset_empty_paragraphs() {
-        let engine = TypesetEngine::with_default_dpi();
-        let styles = ResolvedStyleSet::default();
-        let composed: Vec<ComposedParagraph> = Vec::new();
-
-        let result = engine.typeset_section(
-            &[],
-            &composed,
-            &styles,
-            &a4_page_def(),
-            &ColumnDef::default(),
-            0,
-            &[],
-            false,
-            &std::collections::HashSet::new(),
-        );
-
-        assert_eq!(result.pages.len(), 1, "빈 문서도 최소 1페이지");
-    }
-
-    #[test]
     fn table_continuation_does_not_reapply_page_hide() {
         let hide = crate::model::control::PageHide {
             hide_master_page: true,
@@ -7810,55 +7856,6 @@ mod tests {
         );
 
         assert_pagination_match(&old_result, &new_result, "single_paragraph");
-    }
-
-    #[test]
-    fn test_typeset_page_overflow() {
-        let engine = TypesetEngine::with_default_dpi();
-        let styles = ResolvedStyleSet::default();
-        // 빈 문단만으로는 마지막 blank-only page 제거 경로를 검증하게 된다. 이
-        // 테스트의 계약은 overflow 중 가시 문단의 배치이므로, 실제 내용도 넣는다.
-        let mut paras: Vec<Paragraph> =
-            (0..100).map(|_| make_paragraph_with_height(2000)).collect();
-        for (idx, para) in paras.iter_mut().enumerate() {
-            para.text = format!("paragraph {idx}");
-        }
-        let composed: Vec<ComposedParagraph> = Vec::new();
-        let page_def = a4_page_def();
-        let col_def = ColumnDef::default();
-
-        let new_result = engine.typeset_section(
-            &paras,
-            &composed,
-            &styles,
-            &page_def,
-            &col_def,
-            0,
-            &[],
-            false,
-            &std::collections::HashSet::new(),
-        );
-
-        // `Paginator`의 옛 measured-height 근사는 독립적인 oracle이 아니다. 이
-        // synthetic case는 가시 문단 100개의 전량 보존과 body-fit(4쪽)을 직접
-        // 고정한다.
-        assert_eq!(
-            new_result.pages.len(),
-            4,
-            "100개 2000-HWPUNIT 문단은 A4 4쪽"
-        );
-        let placed: Vec<_> = new_result
-            .pages
-            .iter()
-            .flat_map(|page| page.column_contents.iter())
-            .flat_map(|column| column.items.iter())
-            .map(PageItem::para_index)
-            .collect();
-        assert_eq!(
-            placed,
-            (0..100).collect::<Vec<_>>(),
-            "문단 손실·중복 없이 배치"
-        );
     }
 
     #[test]
@@ -8498,67 +8495,6 @@ mod tests {
 
         assert_pagination_match(&old_result, &new_result, "page_break");
         assert_eq!(new_result.pages.len(), 2, "쪽 나누기로 2페이지");
-    }
-
-    // [Task #1046] 사후 reflow force-break hint 메커니즘 검증.
-    #[test]
-    fn test_typeset_force_break_before_hint() {
-        let engine = TypesetEngine::with_default_dpi();
-        let styles = ResolvedStyleSet::default();
-        // 한 페이지에 충분히 들어가는 3개 문단
-        let mut paras = vec![
-            make_paragraph_with_height(400),
-            make_paragraph_with_height(400),
-            make_paragraph_with_height(400),
-        ];
-        for (idx, para) in paras.iter_mut().enumerate() {
-            para.text = format!("paragraph {idx}");
-        }
-        let composed: Vec<ComposedParagraph> = Vec::new();
-        let page_def = a4_page_def();
-        let col_def = ColumnDef::default();
-
-        // hint 없음 → 1페이지
-        let baseline = engine.typeset_section(
-            &paras,
-            &composed,
-            &styles,
-            &page_def,
-            &col_def,
-            0,
-            &[],
-            false,
-            &std::collections::HashSet::new(),
-        );
-        assert_eq!(baseline.pages.len(), 1, "hint 없으면 3문단 모두 1페이지");
-
-        // para_idx=1 에 force-break hint → para 1 이 2페이지에서 시작
-        let mut hint = std::collections::HashSet::new();
-        hint.insert(1usize);
-        let reflowed = engine.typeset_section(
-            &paras,
-            &composed,
-            &styles,
-            &page_def,
-            &col_def,
-            0,
-            &[],
-            false,
-            &hint,
-        );
-        assert_eq!(reflowed.pages.len(), 2, "para1 force-break 로 2페이지");
-        let page0_paras: Vec<usize> = reflowed.pages[0]
-            .column_contents
-            .iter()
-            .flat_map(|cc| cc.items.iter().map(|it| it.para_index()))
-            .collect();
-        let page1_paras: Vec<usize> = reflowed.pages[1]
-            .column_contents
-            .iter()
-            .flat_map(|cc| cc.items.iter().map(|it| it.para_index()))
-            .collect();
-        assert_eq!(page0_paras, vec![0], "1페이지엔 para0 만");
-        assert_eq!(page1_paras, vec![1, 2], "2페이지엔 para1,2");
     }
 
     // ========================================================

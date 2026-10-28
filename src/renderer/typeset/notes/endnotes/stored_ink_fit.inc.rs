@@ -285,10 +285,6 @@ impl TypesetEngine {
         let a3_paras: Vec<Paragraph> = std::iter::once(Paragraph::default())
             .chain(local_paras.iter().cloned())
             .collect();
-        let a3_composed: Vec<crate::renderer::composer::ComposedParagraph> = a3_paras
-            .iter()
-            .map(crate::renderer::composer::compose_paragraph)
-            .collect();
         let remap = |item: &PageItem| -> Option<PageItem> {
             match item {
                 PageItem::FullParagraph { para_index } => {
@@ -482,19 +478,31 @@ impl TypesetEngine {
                 .filter_map(|(para, start)| to_local(*para).map(|local| (local, *start)))
                 .collect(),
         };
-        let scratch = crate::renderer::layout::LayoutEngine::new(self.dpi);
-        self.prime_section_cell_context(&scratch);
-        // 렌더 셋업과 같은 출처 프로필·정규화를 싣는다. 프로필이 기본값이면 HWP3 변환본의
-        // 수식 줄 들여쓰기 배율이 두 배가 되어 이어지는 수식 줄이 좁아지고 한 줄 더 꺾인다.
-        scratch.set_layout_profile(st.profile);
-        scratch.set_hwp3_origin_flow_spacing_before(st.profile.hwp3_origin_flow_spacing_before());
-        scratch.set_render_normalization_overlay(std::sync::Arc::clone(&self.render_normalization));
-        let (bottom, ink_bottom) = scratch.measure_endnote_column_extent(
-            local_items,
-            &a3_paras,
-            &a3_composed,
+        // 배치 맵은 호출마다 새로 모으므로 키에는 순서를 고정해 싣는다. `..` 없이 풀어
+        // 새 필드가 생기면 빌드가 깨지게 한다. 아래 scratch에 새 입력을 넘기면 이 키에도 싣는다.
+        fn sorted<K: Ord, V>(map: &std::collections::HashMap<K, V>) -> Vec<(&K, &V)> {
+            let mut entries: Vec<_> = map.iter().collect();
+            entries.sort_by(|a, b| a.0.cmp(b.0));
+            entries
+        }
+        let crate::renderer::layout::EndnoteColumnPlacements {
+            host_compositions,
+            stored_paragraph_flow_ends,
+            stored_column_top_spacings,
+            wrap_anchors,
+            inline_placements,
+            inline_flow_plans,
+            paragraph_float_placements,
+            float_pushed_line_spacings,
+            page_band_flow_starts,
+        } = &placements;
+        let mut key = format!(
+            "extent|{:p}|{:?}|{:?}|{:?}|{:?}|{}|{}|{:?}|{}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}",
             styles,
-            &col_area,
+            st.profile,
+            self.section_column_spacing_hu.get(),
+            local_items,
+            col_area,
             st.current_start_height,
             st.section_index,
             (
@@ -502,10 +510,54 @@ impl TypesetEngine {
                 st.endnote_between_notes_hu,
                 st.endnote_separator_below_hu,
             ),
-            (source_base, &local_sources),
-            placements,
-            &[],
+            source_base,
+            local_sources,
+            sorted(host_compositions),
+            sorted(stored_paragraph_flow_ends),
+            sorted(stored_column_top_spacings),
+            sorted(wrap_anchors),
+            sorted(inline_placements),
+            sorted(inline_flow_plans),
+            sorted(paragraph_float_placements),
+            sorted(float_pushed_line_spacings),
+            sorted(page_band_flow_starts),
         );
+        for (index, paragraph) in a3_paras.iter().enumerate() {
+            push_replay_paragraph_key(&mut key, index, paragraph);
+        }
+        let (bottom, ink_bottom) = self.replay_endnote_column(key, || {
+            let a3_composed: Vec<crate::renderer::composer::ComposedParagraph> = a3_paras
+                .iter()
+                .map(crate::renderer::composer::compose_paragraph)
+                .collect();
+            let scratch = crate::renderer::layout::LayoutEngine::new(self.dpi);
+            self.prime_section_cell_context(&scratch);
+            // 렌더 셋업과 같은 출처 프로필·정규화를 싣는다. 프로필이 기본값이면 HWP3 변환본의
+            // 수식 줄 들여쓰기 배율이 두 배가 되어 이어지는 수식 줄이 좁아지고 한 줄 더 꺾인다.
+            scratch.set_layout_profile(st.profile);
+            scratch
+                .set_hwp3_origin_flow_spacing_before(st.profile.hwp3_origin_flow_spacing_before());
+            scratch.set_render_normalization_overlay(std::sync::Arc::clone(
+                &self.render_normalization,
+            ));
+            scratch.measure_endnote_column_extent(
+                local_items,
+                &a3_paras,
+                &a3_composed,
+                styles,
+                &col_area,
+                st.current_start_height,
+                st.section_index,
+                (
+                    st.endnote_separator_above_hu,
+                    st.endnote_between_notes_hu,
+                    st.endnote_separator_below_hu,
+                ),
+                (source_base, &local_sources),
+                placements,
+                &[],
+            )
+        });
         if ssot_debug {
             eprintln!(
                 "EN_COLSIM start_h={:.1} avail={:.1} items={} bottom={:.1} ink={:?}",
