@@ -109,7 +109,7 @@ HWPX 46쪽의 [독립 Print와 fresh WASM 표 확대 비교](wasm/handbook-hwpx-
 WASM SHA-256은 `5fd7d45d8c3484abf58952d28d4954b95a1eee6dd7c471068a66b5d88a2bfb31`이다.
 이전 base Native의 출력 메타데이터에는 글꼴 환경 필드가 없어 실제 Native 실행에
 전달한 환경 파일을 확인하고 후보 WASM의 환경과 같은 것을 확인해 base WASM에
-적용했다. base HWPX WASM은 진행 중이다.
+적용했다. base HWPX WASM 결과는 아래에 기록한다.
 
 ## 148쪽 마지막 줄 확대 판독
 
@@ -124,3 +124,8 @@ HWPX 327쪽의 [독립 Print와 fresh WASM 확대 비교](wasm/handbook-hwpx-p32
 `관리에 관한 법률 시행령`부터 `등록정보로 관리하여야 한다.`까지의 줄 구성과
 앞뒤 문장을 대조했다. 같은 영역을 2배로 표시했으며 글꼴 획 농도와 가장자리에
 차이가 보인다. 이 판독은 해당 원본·쪽·경로에 한정한다.
+
+2026-10-29 고정 base의 HWPX fresh WASM도 전 383쪽을 측정했다.
+[base HWPX WASM TSV](base/wasm/handbook-hwpx.tsv)의 최저 raw는 91.90995%이며,
+반올림 전 raw 기준 후보 대비 하락 0쪽, 개선 252쪽, 동일 131쪽이다. 동일한
+기준 WASM과 각 원본의 실제 지정 글꼴 환경을 사용했다.
